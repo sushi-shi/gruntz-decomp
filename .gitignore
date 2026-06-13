@@ -1,0 +1,41 @@
+# ---------------------------------------------------------------------------
+# Large / non-distributable artifacts — never committed.
+# ---------------------------------------------------------------------------
+# Retail game binaries (copyright; fetched from archive.org via the flake) and
+# cloned reference repos. NOTE: refs/vostok is a PRIVATE upstream — keep it out
+# of any public history.
+/binaries/
+/refs/
+
+# Generated build / diff outputs: delinked COFF, synthesised PDBs, the objdiff
+# project, recompiled objects, and the Wine prefix.
+/build/
+/out/
+**/.wineprefix/
+*.exe
+*.dll
+*.pdb
+*.obj
+*.lib
+
+# ---------------------------------------------------------------------------
+# Nix  (flake.lock IS committed — do not ignore it)
+# ---------------------------------------------------------------------------
+/result
+/result-*
+/.direnv/
+
+# ---------------------------------------------------------------------------
+# clangd / editors / OS
+# ---------------------------------------------------------------------------
+/compile_commands.json
+/clangd-vfs.yaml
+/.cache/
+.vscode/
+*~
+
+# ---------------------------------------------------------------------------
+# Python (scripts/)
+# ---------------------------------------------------------------------------
+**/__pycache__/
+*.pyc
