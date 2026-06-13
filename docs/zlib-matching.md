@@ -33,6 +33,32 @@ For a clean match our source must EQUAL upstream zlib 1.0.4 — do not edit
 belongs in the **build configuration**, not the source. (Cross-check function bodies
 against the FID/cross-game results in `docs/libraries-and-funcid.md`.)
 
+## Calibrated flag set (adler32, iteration 1)
+**`cl /c /O2 /MT <file>.c`** (cdecl). `/Ox` is byte-identical to `/O2` for adler32.
+
+- Target `adler32` = `FUN_005882d0` (RVA 0x1882d0 / VA 0x5882d0), **296 bytes, 124
+  instructions**, self-contained (zero relocations). Lives in delink seg
+  `build/delink/target/seg_0018.cpp.obj` at .text offset 0x5c18.
+- `/O2 /MT` (and `/Ox /MT`) produce the function **byte-exact** over all 296 bytes
+  (the obj symbol spans 304 bytes only because of 8 trailing `nop` inter-function
+  alignment pad, which is not part of the body). objdiff reports
+  **matched_code_percent = 100.0, fuzzy_match_percent = 100.0**.
+- `/O1`, `/Os`, `/Od` do **not** match: they emit a `push ebp; mov ebp,esp` stack
+  frame and a different s1/s2 register allocation. All opt levels keep `% 65521` as a
+  literal `mov reg,0xfff1; div reg` (MSVC5 never strength-reduces this unsigned
+  modulo) — so the literal-divisor cue alone does NOT distinguish opt levels; the
+  frameless layout does, and only `/O2`/`/Ox` produce it. (The "try /O1//Os first"
+  calibration hint was disproven empirically.)
+- `/Gy`, `/GF`, `/Zp1|/Zp4|/Zp8` have **no effect** on adler32 (no statics referenced,
+  no structs), so they're not constrained by this function — leave at defaults until a
+  function that exercises them is matched.
+
+Artifacts: `build/zlib-cal/` (per-flag `.obj` + extracted `code_*.bin` + disasms +
+`compare-table.txt`); objdiff project `build/objdiff/adler32-only/` (target
+`build/delink/target/adler32_only.obj` = the extracted 296 target bytes as `_adler32`,
+base `build/delink/base/seg_0018.cpp.obj` = `cl /O2 /MT adler32.c`).
+
 ## Status
-Source vendored. Compilation + flag-iteration is **step 5** of the build-up plan and is
-gated on the VC++ 5.0 toolchain (`nix develop .#build`).
+Source vendored. **Step 5 (flag calibration) started: adler32 byte-matches at `/O2 /MT`
+(100% objdiff).** Next: confirm the same flags hold on a function that uses statics /
+structs (e.g. a deflate/inflate TU) before locking `/O2 /MT` as the global build flags.
