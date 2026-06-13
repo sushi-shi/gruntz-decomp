@@ -28,12 +28,13 @@ in *lexicographic* order of their identifier names." **This is false for MSVC
 
 - **`/Od`:** the slot order **does change when you rename locals** (so names *do*
   influence layout — declaration order is NOT the key either), but the order is
-  **not lexicographic**. It is a **name-dependent hash/bucket order** that you
-  cannot predict by alphabetizing. Two name sets that are identical in
-  declaration position produce *different* `[ebp-X]` assignments, and a name set
-  that is already in alphabetical order (`aaa,bbb,ccc,ddd`) does **not** get
-  alphabetical slots (see test t7: `aaa` landed at the *farthest* slot, not the
-  closest). So: renaming perturbs `/Od` layout, but alphabetizing won't
+  **not lexicographic**. It is a **16-bucket name-hash order** with LIFO collision
+  chains, walked in ascending-bucket cyclic order (fully reverse-engineered
+  below — it *is* predictable, just not by alphabetizing). Two name sets that are
+  identical in declaration position produce *different* `[ebp-X]` assignments, and
+  a name set that is already in alphabetical order (`aaa,bbb,ccc,ddd`) does **not**
+  get alphabetical slots (see test t7: `aaa` landed at the *farthest* slot, not
+  the closest). So: renaming perturbs `/Od` layout, but alphabetizing won't
   reproduce a target's order.
 - **`/O2` (our match flags):** renaming stack-resident locals has **zero effect**
   on codegen — the `.text` is **byte-identical** before/after a rename (only the
@@ -109,13 +110,51 @@ layout is **not** size/alignment-bucketed — the `int` (`mike@-0x10`) sits betw
 the two 8-byte doubles (`bravo@-0xc`, `zulu@-0x18`); each symbol just consumes
 its natural size at its hash-ordered position.
 
-**Bottom line for matchers.** Do **not** try to reproduce a target's stack-slot
-order by renaming/alphabetizing locals — it doesn't work for VC5 (no-op at `/O2`;
-unpredictable hash shuffle at `/Od`). Match offsets by matching the locals'
-*types, sizes, address-escaping and live ranges* instead.
+### The `/Od` ordering key, reverse-engineered (so it *is* predictable)
 
-*(Refuted by `build/asm-experiments/t1`–`t7`, this experiment. No in-repo
-byte-match function cites this because the rule is not actionable.)*
+Follow-up experiment pinned the exact `/Od` mechanism. It is a **16-bucket hash
+table** in the C1 front-end's local-symbol scope:
+
+1. **Bucket.** Each identifier hashes to a bucket `0..15`. For a **single-char**
+   name the bucket is exactly `ord(c) % 16` (verified: `a`→1 … `o`→15, `p`→0; all
+   26 lowercase letters land monotonically in cyclic `ord%16` order). For
+   multi-char names the bucket is MSVC's internal identifier hash — **deterministic
+   but not a clean closed form**: it is *not* `sum%16`, *not* a `h*K+c` rolling
+   hash mod 2ⁿ, *not* ELF/PJW/sdbm/K&R, and *not* linear in first/last/sum/len
+   (all searched, none fit). Measure it empirically (see the ruler trick below).
+2. **Chaining = LIFO.** Multiple locals in the same bucket chain
+   **last-declared-first**: of two colliding names, the one declared **later**
+   gets the slot **closer to `ebp`**. (Verified: decl `mike,delta` → slots
+   `delta,mike`; decl `delta,mike` → `mike,delta`.)
+3. **Walk = ascending buckets, cyclically.** Slots (`[ebp-0x10]` then outward)
+   are handed out by walking buckets `0,1,…,15`. The *absolute* starting bucket
+   shifts with the total symbol count (params + temps also occupy buckets), so
+   only the **cyclic relative order** of your locals is fixed — but that is
+   exactly what matters for matching.
+
+**This fully predicts `/Od` slot order without compiling**, given each name's
+bucket: group locals by bucket, reverse each bucket (LIFO), concatenate buckets
+`0→15`, rotate to taste. Validated end-to-end on 12/12 random name sets and on
+all of t1/t2/t3/t7 (cyclic-exact), including sets with collisions.
+
+**Ruler trick to measure a name's bucket** (when you can't derive it): compile a
+function whose locals are the 16 single-char names `p,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o`
+(buckets `0..15`) plus your target; the ruler entry immediately *after* the
+target in slot order is its bucket. (`scripts`-free; see `build/asm-experiments/`
+harness.) In practice you rarely need this — at `/O2` it's moot (below) and at
+`/Od` you can just compile and read the offsets directly.
+
+**Bottom line for matchers.** Do **not** alphabetize locals to reproduce a
+target's stack order — that is not the key. At **`/O2`** (our match flags)
+renaming is a **no-op** anyway (byte-identical `.text`); match offsets by the
+locals' *types, sizes, address-escaping and live ranges*. At **`/Od`** the order
+is a 16-bucket name hash (LIFO chains, ascending cyclic walk) — predictable but
+only worth modelling if you ever match `/Od` code (we don't; the locked flags are
+`/O2`).
+
+*(Refuted/characterized by `build/asm-experiments/t1`–`t7` + the bucket-hash
+follow-up, this experiment. No in-repo byte-match function cites this because at
+`/O2` the rule is moot.)*
 
 ---
 
