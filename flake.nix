@@ -245,8 +245,8 @@
       gruntz-toolchain = pkgs.runCommand "gruntz-toolchain-vc50" {
         src = pkgs.fetchurl {
           name = "gruntz-toolchain-vc50.tar.xz";
-          url = "https://github.com/srp-survarium/gruntz-build-env/releases/download/v1.0/gruntz-toolchain-vc50.tar.xz";
-          sha256 = pkgs.lib.fakeHash; # TODO: replace once the tarball is published
+          url = "https://github.com/sushi-shi/gruntz-decomp/releases/download/toolchain-vc50-sp3/gruntz-toolchain-vc50.tar.xz";
+          sha256 = "sha256-ZPmOGI8kE4cITshErqOvRZH9MIxXYcVD14nD7ZPURRE=";
         };
         nativeBuildInputs = [ pkgs.gnutar pkgs.xz ];
       } ''
