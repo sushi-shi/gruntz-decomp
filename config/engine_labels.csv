@@ -95,7 +95,7 @@ rva,name,class,prototype,kind,source,confidence
 0x083260,UnknownClassInCGruntzMgr::~UnknownClassInCGruntzMgr,UnknownClassInCGruntzMgr,UnknownClassInCGruntzMgr::~UnknownClassInCGruntzMgr(),dtor,tomalla,high
 0x083330,CGruntzMgr::vector_deleting_destructor,CGruntzMgr,vftable slot 0 (vector deleting destructor),dtor,tomalla,high
 0x083360,CGruntzMgr::~CGruntzMgr,CGruntzMgr,CGruntzMgr::~CGruntzMgr(),dtor,tomalla,high
-0x083450,CGruntzMapMgr::CGruntzMapMgr,CGruntzMapMgr,CGruntzMapMgr::CGruntzMapMgr(void)  [ghidra-existing-name: opt_get_SoundVolume],ctor,rtti-vptr,high
+0x083450,RezSync::Init,RezSync,"bool RezSync::Init()  [mounts GRUNTZ.VRZ/ZZZ/XXX via CRezDir::OpenSub @0x53b0c0, constructs RezSync @0x57d8f0; xrefs 'GRUNTZ.VRZ'@0x60fcb8 'RezSync'@0x60fc70. CORRECTS prior rtti-vptr label CGruntzMapMgr::CGruntzMapMgr (misattribution: this has SEH + 0x428 frame + archive-open logic, not a ctor). CAVEAT: one of the 52 v1.01-CHANGED funcs; tomalla annotation is v0.77 - reverse from v0.76 before matching.]",method,rez-trace,high
 0x0855e0,CGruntzMgr::UnknownClose,CGruntzMgr,void CGruntzMgr::UnknownClose(),method,tomalla,high
 0x085d10,CGruntzMapMgr::~CGruntzMapMgr,CGruntzMapMgr,CGruntzMapMgr::~CGruntzMapMgr(void),dtor,rtti-vptr,high
 0x08c710,CState::~CState,CState,CState::~CState(void),dtor,rtti-vtable,high
@@ -300,7 +300,7 @@ rva,name,class,prototype,kind,source,confidence
 0x15d030,UnknownRemus::VirtualMethodUnknown34,UnknownRemus,void UnknownRemus::VirtualMethodUnknown34(),vfunc,tomalla,high
 0x15d0d0,UnknownRemus::VirtualMethodUnknown30,UnknownRemus,void UnknownRemus::VirtualMethodUnknown30(),vfunc,tomalla,high
 0x15d1f0,UnknownRemus::VirtualMethodUnknown1C,UnknownRemus,void UnknownRemus::VirtualMethodUnknown1C(),vfunc,tomalla,high
-0x15d280,UnknownRemus::VirtualMethodUnknown38,UnknownRemus,void UnknownRemus::VirtualMethodUnknown38(),vfunc,tomalla,high
+0x15d280,CGameLevel::LoadWwd,CGameLevel,"int CGameLevel::LoadWwd(WwdFile* pWwd)  [tomalla: UnknownRemus::VirtualMethodUnknown38 -> UnknownRemus IS CGameLevel; LoadWwd is vtable slot 0x38]",vfunc,rez-trace,high
 0x15d500,UnknownRemus::VirtualMethodUnknown40,UnknownRemus,void UnknownRemus::VirtualMethodUnknown40(),vfunc,tomalla,high
 0x15d630,UnknownRemus::VirtualMethodUnknown3C,UnknownRemus,void UnknownRemus::VirtualMethodUnknown3C(),vfunc,tomalla,high
 0x15d680,UnknownRemus::VirtualMethodUnknown44,UnknownRemus,void UnknownRemus::VirtualMethodUnknown44(),vfunc,tomalla,high
@@ -326,11 +326,11 @@ rva,name,class,prototype,kind,source,confidence
 0x179830,Font::LoadFont,Font,bool Font::LoadFont(CString szFileName),method,tomalla,high
 0x17c040,,CDirectDrawMgr,,import-caller,"import:DirectDrawCreate",high
 0x18c780,,,,import-caller,"import:FindFirstFileA",low
-0x1bf200,,,,import-caller,"import:CreateFileA",low
-0x1bf328,,,,import-caller,"import:ReadFile",low
-0x1bf362,,,,import-caller,"import:WriteFile",low
-0x1bf3ad,,,,import-caller,"import:SetFilePointer",low
-0x1bf3dc,,,,import-caller,"import:SetFilePointer",low
+0x1bf200,CFileIO::Open,CFileIO,"void* CFileIO::Open(...)  [wraps CreateFileA, IAT 0x6c4058; rez-trace fileio]",method,rez-trace,high
+0x1bf328,CFileIO::Read,CFileIO,"int CFileIO::Read(void* buf, unsigned int n)  [wraps ReadFile, IAT 0x6c405c; pulls the 1524-byte WWD header; rez-trace fileio]",method,rez-trace,high
+0x1bf362,CFileIO::Write,CFileIO,"int CFileIO::Write(...)  [wraps WriteFile, IAT 0x6c4060; save path, not on load chain; rez-trace fileio]",method,rez-trace,med
+0x1bf3ad,CFileIO::Seek,CFileIO,"int CFileIO::Seek(...)  [wraps SetFilePointer, IAT 0x6c4064; rez-trace fileio]",method,rez-trace,med
+0x1bf3dc,CFileIO::Seek2,CFileIO,"int CFileIO::Seek2(...)  [wraps SetFilePointer sibling; rez-trace fileio]",method,rez-trace,med
 0x1bf702,,,,import-caller,"import:RegQueryValueExA",med
 0x1bf8f8,,,,import-caller,"import:FindFirstFileA",low
 0x1c152f,,,,import-caller,"import:GetFileSize",low
@@ -345,3 +345,42 @@ rva,name,class,prototype,kind,source,confidence
 0x1d4fbd,,,,import-caller,"import:RegCloseKey,RegQueryValueExA",med
 0x1d5029,,,,import-caller,"import:RegCloseKey",med
 0x1d513b,,,,import-caller,"import:RegCloseKey",med
+#
+# ---- REZ -> WWD -> zlib asset-load subsystem (rez-trace, labeler aecbb6bb) ----
+# Folded from build/openclaw-rez/function_roles.csv. Authoritative Gruntz names
+# from string xrefs (CRezDir::Load/OpenSub, RezSync); WWD/RezMgr conventions
+# otherwise. unit split: rezmgr/rezsync/fileio/wwd/image/zlib. RezMgr container
+# offsets are @unconfirmed (Claw REZ != Monolith RezMgr - reverse from Gruntz).
+# (0x83450 RezSync::Init, 0x15d280 CGameLevel::LoadWwd and the 0x1bfxxx CFileIO
+#  rows are enriched/corrected in place above; not repeated here.)
+#
+# RezMgr archive layer (unit=rezmgr):
+0x13a0f0,CRezDir::Load,CRezDir,"int CRezDir::Load(...)  [recursive dir parse; pushes assert 'CRezDir::Load Failed! (File is not sorted!)'@0x61a070; recurses self @0x53a0f0; sorted-dir/binary-search invariant. @unconfirmed container offsets]",method,rez-trace,high
+0x13b0c0,CRezDir::OpenSub,CRezDir,"void* CRezDir::OpenSub(char* name)  [name lookup via CRezDir::FindEntry @0x53c080; dir branch allocs 0x38 CRezDir (ctor @0x53c940), file branch 0x24 CRezItm (ctor @0x53c540); called by RezSync::Init for VRZ/ZZZ/XXX]",method,rez-trace,high
+0x13c080,CRezDir::FindEntry,CRezDir,"void* CRezDir::FindEntry(char* name)  [binary search over the sorted dir; called by OpenSub @0x53b0c0]",method,rez-trace,med
+0x13c540,CRezItm::CRezItm,CRezItm,"CRezItm::CRezItm(...)  [0x24-byte (36) leaf-resource (file) node ctor; from the file branch of OpenSub]",ctor,rez-trace,med
+0x13c940,CRezDir::CRezDir,CRezDir,"CRezDir::CRezDir(...)  [0x38-byte (56) subdirectory node ctor; from the dir branch of OpenSub]",ctor,rez-trace,med
+0x091670,RezMgr::MakeRezPath,RezMgr,"char* RezMgr::MakeRezPath(...)  [builds archive path from 'Gruntz.REZ'@0x60c674 + prefix@0x60c66c ('%s\\%s'); CreateFileA-wrapper region]",method,rez-trace,med
+0x13e5d0,RezMgr::MakeImageKey,RezMgr,"char* RezMgr::MakeImageKey(...)  [appends '.'+ext '.PCX'@0x61a0dc/'.BMP'@0x61a0e4/'.PID'@0x61a0d4; image resource key builder]",method,rez-trace,med
+# (0x1fa12 is INSIDE StartUpPrompt @0x01f9b0 (already labeled) - a 'Gruntz.REZ' string
+#  xref site, not a function start; not added as a separate row.)
+#
+# WWD level deserialization (unit=wwd):
+0x160790,WwdFile::InflateMainBlock,WwdFile,"int WwdFile::InflateMainBlock(...)  [planesOffset[+0x2e0]<=0x5f4; test flags[+8],0x2 (COMPRESS); mainBlockLength[+0x2e8]; calls uncompress @0x585320 (out+planesOffset,in+planesOffset). zlib bridge for WWD.]",method,rez-trace,high
+0x160530,WwdFile::IsValidWwd,WwdFile,"bool WwdFile::IsValidWwd(...)  [opens (CreateFileA-wrapper @0x5bf200), reads 1524 B (ReadFile-wrapper @0x5bf328), require read==0x5f4 && firstDword<=0x5f4. WWD header-size signature probe.]",method,rez-trace,high
+0x160660,WwdFile::CheckHeader,WwdFile,"bool WwdFile::CheckHeader(...)  [second 0x5f4-checking validator adjacent to IsValidWwd @0x560530]",method,rez-trace,med
+0x15d8d0,WwdFile::ReadPlane,WwdFile,"int WwdFile::ReadPlane(...)  [per-plane reader dispatched from LoadWwd @0x55d280; 0xa0=160-byte plane stride; fans out to tile/imageset/object sub-readers (0x55e130,0x562010,0x5615a0,...)]",method,rez-trace,med
+0x162af0,WwdFile::ReadPlaneObjects,WwdFile,"int WwdFile::ReadPlaneObjects(...)  [advances source ptr by 0x11c (284 = fixed object record) via lea[esi+0x11c]+rep movs; then 4 length-prefixed strings name/logic/imageSet/sound]",method,rez-trace,high
+# (0x1635xx WwdFile::ValidateMapTile - the map-tile bounds checker using format
+#  'Plane %s: Bad map tile value (%i) at %i,%i'@0x61ab36 (sprintf @0x51f890) - lives
+#  in a functions.csv RECOVERY GAP (0x163510..0x163670); no function row yet, so it
+#  cannot be labeled by RVA until boundary recovery carves it. NOT added.)
+#
+# PID image deserialization (unit=image):
+0x175a90,Image::LoadFromRez,Image,"Image* Image::LoadFromRez(char* name)  [resolves a .PID@0x61a0d4 by name via RezMgr then decodes; PidFile.cpp load chain]",method,rez-trace,med
+0x148940,,,,rez-trace,"second '.PID' xref; image-format dispatch consumer (entry not pinned)",low
+#
+# zlib chain leaves (unit=zlib; uncompress/inflate to be byte-MATCHED in Phase 2):
+0x185320,_uncompress,,"int uncompress(Bytef* dest, uLongf* destLen, const Bytef* source, uLong sourceLen)  [one-shot inflate wrapper; calls inflate @0x585be0; sole caller is WwdFile::InflateMainBlock @0x560790. zlib 1.0.4 uncompr.c]",free,rez-trace,high
+0x185be0,_inflate,,"int inflate(z_streamp z, int f)  [zlib inflate() state machine; drives inflate_blocks @0x5875a0 (matched _inflate_blocks @0x1875a0). zlib 1.0.4 inflate.c]",free,rez-trace,high
+0x185ab0,_inflateReset,,"int inflateReset(z_streamp z)  [zlib inflateInit/Reset; calls _inflate_blocks_new @0x587530 (matched). zlib 1.0.4 inflate.c]",free,rez-trace,med

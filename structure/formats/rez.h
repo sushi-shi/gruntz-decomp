@@ -21,6 +21,19 @@
  * which proves the directory MUST be sorted (the loader binary-searches it). Exact
  * byte offsets/widths and header layout are NOT recovered — all @todo.
  *
+ * @unconfirmed CONTAINER OFFSETS: Gruntz uses Monolith's *RezMgr* archive, which
+ * is a DIFFERENT on-disk container from the CLAW REZ that OpenClaw's
+ * RezArchiveFile.cpp parses (Claw's: 127-byte header + version + recursive
+ * dir/file records with isDirectoryFlag/offset/size/dateAndTime/fileId/4-char-
+ * reversed-ext). OpenClaw therefore pins only the SEMANTIC field set
+ * (Type/Name/Size/ID/offset/date) and the BEHAVIOUR (sorted dir, binary search,
+ * recursive tree, alloc dir buffer then virtual-read it) — NOT the RezMgr byte
+ * offsets. Do NOT take RezMgr container offsets from OpenClaw: reverse them from
+ * the Gruntz RezMgr code (CRezDir::Load @0x13a0f0, CRezDir::OpenSub @0x13b0c0,
+ * CRezDir::FindEntry @0x13c080, the CRezItm/CRezDir ctors @0x13c540/@0x13c940)
+ * before writing byte-layout source. The WWD/PID formats (formats/wwd.h,
+ * formats/wwd_object.h) ARE pinned; only the REZ container is @unconfirmed.
+ *
  * See ../managers/rezsync.h for the RezSync / CRezDir loader classes (the in-memory
  * directory tree built from this on-disk format).
  */
