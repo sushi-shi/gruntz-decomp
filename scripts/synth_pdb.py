@@ -90,8 +90,39 @@ def sanitize_name(name: str) -> str:
     return cleaned.replace("'", "''")
 
 
-def read_functions(path):
-    """Yield (rva, size, name) for .text functions with size > 0."""
+def read_names_map(path):
+    """Read the curated RVA -> (symbol name, source unit) overlay.
+
+    The CSV has columns ``rva,name,unit`` (rva hex, e.g. ``0x1882d0``). This is
+    the human-grown mapping at the heart of the matching loop: it renames the
+    delinker's address-named ``FUN_<rva>`` placeholders to the real source
+    symbols (``_adler32``) and records WHICH translation unit each belongs to,
+    so the delinker can emit one ``<unit>.c.obj`` per source TU instead of
+    address-bucketed segs. Returns ``{rva: (name, unit)}``; empty if no path.
+    """
+    overlay = {}
+    if not path:
+        return overlay
+    with open(path, newline="") as f:
+        # Drop full-line '#' comments before the header so DictReader binds the
+        # real 'rva,name,unit' columns (the CSV is documented with a comment
+        # preamble).
+        lines = [ln for ln in f if not ln.lstrip().startswith("#")]
+    for row in csv.DictReader(lines):
+        rva_s = (row.get("rva") or "").strip()
+        if not rva_s:
+            continue
+        overlay[int(rva_s, 16)] = (row["name"].strip(), row["unit"].strip())
+    return overlay
+
+
+def read_functions(path, names_map=None):
+    """Yield (rva, size, name) for .text functions with size > 0.
+
+    If ``names_map`` (``{rva: (name, unit)}``) supplies an entry for an RVA, its
+    curated name overrides the Ghidra ``FUN_<rva>`` placeholder.
+    """
+    names_map = names_map or {}
     out = []
     with open(path, newline="") as f:
         reader = csv.DictReader(f)
@@ -103,6 +134,8 @@ def read_functions(path):
                 continue
             if not (TEXT_BASE <= rva < TEXT_END):
                 continue
+            if rva in names_map:
+                name = names_map[rva][0]
             out.append((rva, size, name))
     return out
 
@@ -132,19 +165,26 @@ def read_data_symbols(path):
     return rdata_list, data_list
 
 
-def func_source_file(rva, bucket_shift):
+def func_source_file(rva, bucket_shift, names_map=None):
     """Synthetic source path under the engine root for a function at `rva`.
 
-    Functions are grouped into translation units by the high bits of their
-    .text offset, giving objdiff per-TU granularity instead of one giant .obj.
-    The path lives under `c:\\proj\\` so the delinker's get_function_location
-    strips the engine prefix and writes `<bucket>.obj`.
+    A function named in ``names_map`` is attributed to its curated source unit,
+    ``c:\\proj\\<unit>.c``, so the delinker emits a clean per-TU ``<unit>.c.obj``
+    that objdiff pairs directly against the recompiled ``<unit>.obj``. Otherwise
+    functions are grouped by the high bits of their .text offset into
+    address-bucketed ``seg_NNNN.cpp`` (per-TU granularity for the un-named
+    remainder). Either way the path lives under `c:\\proj\\` so the delinker's
+    get_function_location strips the engine prefix and writes ``<stem>.obj``.
     """
+    names_map = names_map or {}
+    if rva in names_map:
+        return r"c:\proj\%s.c" % names_map[rva][1]
     bucket = (rva - TEXT_BASE) >> bucket_shift
     return r"c:\proj\seg_%04x.cpp" % bucket
 
 
-def emit_yaml(funcs, rdata_syms, data_syms, module_path, out, bucket_shift=0):
+def emit_yaml(funcs, rdata_syms, data_syms, module_path, out, bucket_shift=0,
+              names_map=None):
     """Write the yaml2pdb description to file object `out`.
 
     If bucket_shift > 0, emit C13 line info (FileChecksums + Lines subsections
@@ -162,7 +202,7 @@ def emit_yaml(funcs, rdata_syms, data_syms, module_path, out, bucket_shift=0):
     files_set = set()
     if split:
         for rva, size, name in funcs:
-            sf = func_source_file(rva, bucket_shift)
+            sf = func_source_file(rva, bucket_shift, names_map)
             func_files.append(sf)
             if sf not in files_set:
                 files_set.add(sf)
@@ -379,6 +419,10 @@ def main():
                          "e.g. 16 -> ~31 TUs of 64 KiB .text each.")
     ap.add_argument("--yaml-only", action="store_true",
                     help="emit YAML and stop (skip yaml2pdb + patch).")
+    ap.add_argument("--names-map",
+                    help="curated RVA->name,unit overlay CSV (config/symbol_names.csv): "
+                         "renames matched FUN_<rva> to the source symbol and groups "
+                         "them into a per-unit <unit>.c.obj (requires --bucket-shift>0).")
     args = ap.parse_args()
 
     read_sections(args.exe)
@@ -386,14 +430,16 @@ def main():
           % (TEXT_BASE, TEXT_END, RDATA_BASE, RDATA_END, DATA_BASE, DATA_END),
           file=sys.stderr)
 
-    funcs = read_functions(args.functions)
+    names_map = read_names_map(args.names_map)
+    funcs = read_functions(args.functions, names_map)
     rdata_syms, data_syms = read_data_symbols(args.symbols)
-    print("[synth_pdb] functions: %d  rdata: %d  data: %d"
-          % (len(funcs), len(rdata_syms), len(data_syms)), file=sys.stderr)
+    print("[synth_pdb] functions: %d  rdata: %d  data: %d  named: %d"
+          % (len(funcs), len(rdata_syms), len(data_syms), len(names_map)),
+          file=sys.stderr)
 
     with open(args.out_yaml, "w") as out:
         emit_yaml(funcs, rdata_syms, data_syms, args.module_path, out,
-                  bucket_shift=args.bucket_shift)
+                  bucket_shift=args.bucket_shift, names_map=names_map)
     print("[synth_pdb] wrote YAML -> %s (%d bytes)"
           % (args.out_yaml, os.path.getsize(args.out_yaml)), file=sys.stderr)
 

@@ -1,0 +1,23 @@
+# symbol_names.csv - the curated target-RVA -> source-symbol map.
+#
+# This is the human-grown heart of the matching loop. Each row names one
+# function in the delinked target (GRUNTZ.EXE) with its real source symbol and
+# records which translation unit it belongs to. scripts/rebuild.py applies this
+# as an overlay onto build/ghidra-enrich/exports/functions.csv, so the synth
+# PDB + vostok-delinker emit a per-unit <unit>.c.obj (named symbols) that
+# objdiff pairs directly against the recompiled base <unit>.obj.
+#
+# Columns:
+#   rva  - .text RVA in GRUNTZ.EXE (hex, ImageBase 0x400000; VA = 0x400000+rva).
+#   name - exact symbol as the compiler emits it. VC5 cdecl => leading '_'
+#          (e.g. _adler32). Must equal the base object's symbol for objdiff to
+#          pair the two.
+#   unit - source translation unit stem (no extension). All rows with the same
+#          unit are grouped into one target <unit>.c.obj, mirroring the base
+#          <unit>.obj from compiling vendor/zlib-1.0.4/<unit>.c.
+#
+# Grow this file as functions are identified; re-run scripts/rebuild.py.
+# Currently scoped to zlib 1.0.4 (see docs/zlib-matching.md) but designed to
+# extend to the whole engine.
+rva,name,unit
+0x1882d0,_adler32,adler32
