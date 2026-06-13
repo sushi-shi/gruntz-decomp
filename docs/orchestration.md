@@ -3,7 +3,8 @@
 Audience: the **orchestrator** (agent or human) that decomposes the Gruntz
 decompilation into worker tasks. This encodes the strategy and the hard-won
 facts so dispatch is effective. Companion docs: `matching-patterns.md` (codegen
-idioms), `build-system.md` (the loop), `zlib-matching.md` (flags), `runtime-dlls.md`
+idioms), `build-system.md` (the loop), `zlib-matching.md` (compile flags),
+`linker-flags.md` (the deferred whole-binary link phase), `runtime-dlls.md`
 (imports + the DX label seed). Data: `config/symbol_names.csv` (matched set),
 `config/engine_labels.csv` (labels), `config/units.toml` (build manifest),
 `build/fid/library_labels.csv` (exclusions).
@@ -43,7 +44,37 @@ misleading (Pareto) — a "47% by bytes" milestone is ~455 functions, not 7,000.
 4. **By TU (contiguity) for locality.** Functions cluster contiguously by source
    file. Dispatch a worker per **TU / manager region** — it matches a whole
    `.cpp`'s functions together (shared headers/types, one `src/` file), far more
-   efficient than scattered functions.
+   efficient than scattered functions. (This also **contains compiler-entropy
+   blast radius** — see below — by keeping a TU's symbol set self-contained.)
+
+---
+
+## 2a. Entropy expectation — calibrate "done" before dispatching
+
+Encode this in **every matcher prompt** (full detail + mitigations in
+`matching-patterns.md` § "Compiler entropy — set expectations FIRST"):
+
+- **A high-90s plateau is success, not failure.** The MSVC5 backend
+  pseudo-randomly varies codegen of unrelated functions in response to *any*
+  header/source edit (it behaves "like it uses the file as the random seed");
+  ~5% of functions fluctuate at any time and isle plateaued at ~98%
+  instruction-accuracy. Do **not** read the last few percent on a near-green
+  function as a bug — the objdiff number on the **entropy tail is advisory, not a
+  verdict**.
+- **Don't chase entropy and don't sacrifice a correct function to chase another.**
+  If two functions can't both be green, annotate the green-enough one and move on;
+  ping-ponging ("whack-a-mole") burns workers for no net gain.
+- When a **previously-green** function regresses after an *unrelated* edit,
+  suspect entropy first (revert/re-scope), not a logic bug.
+- This is the **same family of symbol-table sensitivity** as our reverse-engineered
+  `/Od` 16-bucket name-hash — the compiler's symbol table leaking into codegen.
+  Per-TU dispatch (§2.4) is the structural mitigation: keep each TU's symbol
+  **set + include order** matching the original so an edit's blast radius stays
+  inside one TU.
+
+If a logically identical function won't match, suspect in order: (1) a real
+source diff, (2) entropy, (3) wrong toolchain SP/version (we target VC5 SP3 —
+`matching-patterns.md` § "Service-pack sensitivity").
 
 ---
 
@@ -159,6 +190,35 @@ prototype starts far ahead of one staring at `FUN_00482f50`.
 - **Labeled** = attributed to class/TU + named in `config/engine_labels.csv`.
 - **Matched** = objdiff byte-exact (reloc-masked); the ~99.5%-fuzzy reloc-typing
   cases confirmed by direct byte-compare. Graduates from a label into
-  `config/symbol_names.csv` + `src/` + `config/units.toml`.
+  `config/symbol_names.csv` + `src/` + `config/units.toml`. **For the entropy tail**
+  (§2a), a stable high-90s function with no identifiable source diff counts as
+  *done* — annotate it green-enough; the residual is compiler entropy, not a bug.
 - Report progress in **bytes matched** (and big-function count), not raw function
   count — that's the metric that reflects real completion given the Pareto.
+- We use the **delink → `cl` → objdiff** loop; **`reccmp` is not used here**, so
+  its address-reconciliation and `FOLDED`/folding machinery do not apply (ICF is
+  measured OFF — see `docs/linker-flags.md`).
+
+---
+
+## 9. Ideas worth trying [HEURISTIC] — and one parked future option
+
+Reference practice from isledecomp/reccmp, to fold into how we sequence work
+(unconfirmed for this project; try and report):
+
+1. **Recover TYPES first.** Reconstruct struct sizes and field offsets *before*
+   bodies — wrong offsets mismatch **every** member access in **every** function
+   that touches the struct, so types are the highest-leverage prerequisite. (We
+   already treat offsets as load-bearing — `matching-patterns.md`; this makes it a
+   sequencing rule: types before bodies in a TU.)
+2. **Match leaf functions first to anchor callers** (reinforces §2.2). A caller
+   whose callees are already matched is verifiable in isolation; a caller into
+   unmatched engine code is not.
+3. **Auto-sync Ghidra from the decomp (round-trip).** As types/names are solved in
+   `src/`, propagate them back into the Ghidra RE DB so the database doesn't rot —
+   solved struct layouts and names should flow both ways, not just delink → src.
+4. **PARKED (future — do NOT implement now): reuse vostok's score DB.** vostok
+   tracks each function's *max* score over time; adopting that for our
+   progress-tracking would let us **absorb entropy churn** (§2a) — record the best
+   score a function ever reached so a later entropy re-roll doesn't look like a
+   regression. Documented as an option; not built.
