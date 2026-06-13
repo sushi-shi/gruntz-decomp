@@ -62,3 +62,12 @@ rva,name,unit
 0x186db0,_deflate_fast,deflate
 0x187000,_longest_match,deflate
 0x187170,_deflate_slow,deflate
+# --- engine constructors (self-located via RTTI vftables) -------------------
+# MSVC-mangled thiscall ctor names (??0<Class>@@QAE@XZ). The vftable store is a
+# DIR32 relocation; objdiff compares the code bytes (reloc target named
+# differently on each side - see report).
+0x13cf00,??0CGameWnd@@QAE@XZ,gamewnd
+0x13d590,??0CGameApp@@QAE@XZ,gameapp
+0x1005d0,??0CStatusBarItem@@QAE@XZ,statusbaritem
+0x101fa0,??0CSBI_RectOnly@@QAE@XZ,sbi_rectonly
+0x1107f0,??0CTileTriggerLogic@@QAE@XZ,tiletriggerlogic

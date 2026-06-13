@@ -76,3 +76,40 @@ status = "matched"
 unit = "zutil"
 source = "vendor/zlib-1.0.4/zutil.c"
 status = "matched"
+
+# --- engine constructors (src/) ---------------------------------------------
+# First byte-matched ENGINE (non-library) code: small self-contained ctors that
+# store a vftable then zero/seed members. Each ctor's matched field offsets ARE
+# the confirmed v0.76 class layout. These are C++ TUs compiled at the same
+# locked /O2 /MT flags; symbols are MSVC-mangled ctor names (see
+# config/symbol_names.csv). Self-located via RTTI vftables (NOT tomalla v0.77
+# addresses).
+
+# Headers live next to their sources (src/Wap32, src/Gruntz); MSVC resolves
+# #include "x.h" relative to the including source file, so no /I flag and the
+# locked global /O2 /MT set is used unchanged.
+
+[[unit]]
+unit = "gamewnd"
+source = "src/Wap32/GameWnd.cpp"
+status = "matched"
+
+[[unit]]
+unit = "gameapp"
+source = "src/Wap32/GameApp.cpp"
+status = "matched"
+
+[[unit]]
+unit = "statusbaritem"
+source = "src/Gruntz/StatusBarItem.cpp"
+status = "matched"
+
+[[unit]]
+unit = "sbi_rectonly"
+source = "src/Gruntz/SBI_RectOnly.cpp"
+status = "matched"
+
+[[unit]]
+unit = "tiletriggerlogic"
+source = "src/Gruntz/TileTriggerLogic.cpp"
+status = "matched"
