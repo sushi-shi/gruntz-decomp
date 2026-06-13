@@ -246,6 +246,18 @@ def step1_vc5_base(work: Path, stage: Path) -> Path:
     else:
         log("WARNING: VC/mfc not found - NAFXCW.LIB may be missing (needed for FID).")
 
+    # cl.exe IMPORTS mspdb50.dll at LOAD time (it is in cl's PE import table, not
+    # just a /Zi-time dependency) and it ships under SHAREDIDE/BIN, NOT VC/bin - so
+    # without this copy cl.exe fails to load under Wine (c0000135) and silently
+    # produces no .obj. mspdb50.dll itself only imports MSVCRT + KERNEL32 (both Wine
+    # builtins). Verified: `wine cl /c hello.cpp` -> i386 COFF .obj once present.
+    mspdb = find_named(iso_dir, "mspdb50.dll")
+    if mspdb:
+        shutil.copy2(str(mspdb), str(stage_msvc / "bin" / mspdb.name))
+        log(f"  bundled {mspdb.name} from {mspdb} (cl.exe imports it)")
+    else:
+        log("WARNING: MSPDB50.DLL not found under the ISO - cl.exe will fail to load!")
+
     return stage_msvc
 
 
