@@ -38,6 +38,56 @@ So: `gruntz-runtime` is for *running* the result, not for the matching build.
 
 ---
 
+## Import table (verified) — DirectX is dynamic, and it doubles as a labeling signal
+
+Parsing `GRUNTZ.EXE`'s PE import directory (authoritative, not just strings)
+gives the exact dynamic dependency set — **16 DLLs**:
+
+- Win32 system: `KERNEL32(152) USER32(156) GDI32(83) ADVAPI32(11) COMCTL32(9)
+  SHELL32(4) VERSION(3) WINSPOOL(3) comdlg32(1) WINMM(1)`
+- DirectX 6: **`DDRAW(2) DSOUND(1) DINPUT(1) DPLAYX(3)`**
+- Audio/video: **`mss32(16)` (Miles `AIL_*`), `smackw32(10)` (`Smack*`)**
+
+**DirectX is loaded dynamically** (system DLLs, bound by the loader) — never
+statically linked into the EXE. Only the *creator* entry points are
+named-imported: `DirectDrawCreate`/`DirectDrawEnumerateA`, `DirectSoundCreate`
+(DSOUND `#1`), `DirectInputCreateA`, DirectPlay (DPLAYX `#1`/`#2`/`#4`).
+Everything after is **COM vtable dispatch** on the returned interface pointers
+(`call dword ptr [iface+0xNN]`), not named imports — which is why DDRAW shows
+only 2 imports despite heavy use. The one *static* DirectX artifact is **`dxguid`**
+(the `IID_`/`CLSID_` GUID constants baked into `.rdata`; a static lib, not a DLL,
+so absent from the import table). `SFMAN32` and `CTL3D32` are also absent here —
+confirming they're `LoadLibrary`'d at runtime, not load-time imports.
+
+Matching the DirectX-calling code is fully covered by the **DX6 SDK in the
+toolchain** (`dx/Include` + `dx/Lib`): import thunks (`ddraw/dsound/dinput/
+dplayx.lib`), the GUIDs (`dxguid`), and the COM interface **vtable layouts**
+(`ddraw.h` etc.) so a `pIface->Method()` in reconstructed source compiles to the
+exact vtable slot the disassembly shows.
+
+### Why this matters for labeling
+
+A function that calls a DirectX/audio *creator* is, with high confidence, in the
+corresponding **manager TU** (the leaked `C:\Proj\{DDrawMgr,Dsndmgr,DinMgr2,NetMgr}`).
+Resolving the import thunks (`jmp dword ptr [IAT]`) and their `call` sites yields
+a small but high-confidence **label seed** (verified):
+
+| creator | manager / TU | caller function(s) (v0.76 RVA) |
+|---|---|---|
+| `DirectDrawCreate` | `CDirectDrawMgr` / `DDrawMgr.cpp` | `0x141dc0`, `0x17c040` |
+| `DirectSoundCreate` (DSOUND `#1`) | `DirectSoundMgr` / `Dsndmgr.cpp` | `0x136550` |
+| `DirectInputCreateA` | `DirectInputMgr2` / `DinMgr2.cpp` | `0x132ce0` |
+| DirectPlay (DPLAYX `#1`/`#2`/`#4`) | `CNetMgr` / `NetMgr.cpp` | `0x178280`, `0x1780b0`, `0x1782d0`, `0x8eca0` |
+
+8 distinct functions anchor the four manager TUs; the rest of each TU is the
+contiguous region around its anchor plus the functions doing COM vtable calls on
+the stored interface pointer. The same trick attributes the audio/cutscene code
+via callers of `mss32!AIL_*` and `smackw32!Smack*`. Caveats: only *creator* calls
+are caught this way (COM vtable calls need interface-pointer typing), and if a
+creator call is inlined into a larger function the owner is that larger function.
+
+---
+
 ## The DLLs
 
 Verified against `GRUNTZ.EXE`'s own strings - the imported/LoadLibrary'd DLL
