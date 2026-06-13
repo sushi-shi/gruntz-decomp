@@ -62,6 +62,16 @@ rva,name,unit
 0x186db0,_deflate_fast,deflate
 0x187000,_longest_match,deflate
 0x187170,_deflate_slow,deflate
+# --- zlib 1.0.4 inflate.c (the WWD decompress chain leaf) -------------------
+0x185a10,_inflateReset,inflate
+0x185a60,_inflateEnd,inflate
+0x185ab0,_inflateInit2_,inflate
+0x185bc0,_inflateInit_,inflate
+0x185be0,_inflate,inflate
+0x186010,_inflateSetDictionary,inflate
+0x1860a0,_inflateSync,inflate
+# --- zlib 1.0.4 uncompr.c (one-shot inflate wrapper; sole WWD caller) -------
+0x185320,_uncompress,uncompr
 # --- engine constructors (self-located via RTTI vftables) -------------------
 # MSVC-mangled thiscall ctor names (??0<Class>@@QAE@XZ). The vftable store is a
 # DIR32 relocation; objdiff compares the code bytes (reloc target named

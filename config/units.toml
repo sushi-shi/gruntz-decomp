@@ -77,6 +77,16 @@ unit = "zutil"
 source = "vendor/zlib-1.0.4/zutil.c"
 status = "matched"
 
+[[unit]]
+unit = "inflate"
+source = "vendor/zlib-1.0.4/inflate.c"
+status = "matched"
+
+[[unit]]
+unit = "uncompr"
+source = "vendor/zlib-1.0.4/uncompr.c"
+status = "matched"
+
 # --- engine constructors (src/) ---------------------------------------------
 # First byte-matched ENGINE (non-library) code: small self-contained ctors that
 # store a vftable then zero/seed members. Each ctor's matched field offsets ARE
