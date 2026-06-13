@@ -38,19 +38,35 @@ in *lexicographic* order of their identifier names." **This is false for MSVC
   reproduce a target's order.
 - **`/O2` (our match flags):** renaming stack-resident locals has **zero effect**
   on codegen — the `.text` is **byte-identical** before/after a rename (only the
-  symbol/string table grows for longer names). Slot layout at `/O2` is driven by
-  the optimizer's allocation/scheduling, **independent of identifier names**.
-  And as noted, most scalars enregister/coalesce at `/O2` and get **no slot at
-  all**. **Practical relevance to our matching: essentially nil.** Don't rename
-  locals hoping to shift `/O2` stack offsets — it won't move them. To change a
-  `/O2` stack slot you must change something the optimizer sees: the local's
-  **type/size**, whether its **address escapes**, its **live range**, or the
-  **count/order of operations** on it.
+  symbol/string table grows for longer names). This was re-verified on
+  *non-trivial* functions, not just toys (see "Does it hold for complex `/O2`
+  functions?" below): 12 spilling scalars, 4 escaped arrays + 4 spill scalars, 6
+  escaped structs, and a loop/branch function with mixed-size (`char[7]`,
+  `int[3]`, `double[2]`) escaped objects + spills — **all byte-identical under
+  rename**, including under reversed/permuted name assignment. The C1 name-hash
+  (the `/Od` ordering key) is **gone** by the time the optimizer rebuilds the
+  frame; `/O2` re-lays the frame from its own value/object lists. Most scalars
+  also enregister/coalesce at `/O2` and get **no slot at all**. **Practical
+  relevance to our matching: nil.** To move a `/O2` stack slot you must change
+  something the optimizer sees: the local's **type/size**, whether its **address
+  escapes**, its **live range**, or the **count/order of operations** on it —
+  never its name.
+- **`/O2` stack-object ordering key = DECLARATION order** (not the `/Od`
+  name-hash). For genuinely stack-resident objects (address-taken arrays/structs),
+  the optimizer assigns frame offsets in **source declaration order**: the
+  first-declared object gets the highest `[esp+X]` (allocated first / deepest),
+  the last-declared the lowest, regardless of names. *Verified:* 5 escaped
+  `int[2]` arrays got `[esp+0x20,0x18,0x10,0x8,0x0]` in declaration order, and
+  this was **identical** for names `zulu,alpha,…`, for `aaa,bbb,…`, and for the
+  **reversed** decl list `oscar,bravo,mike,alpha,zulu`. So to match a `/O2` frame
+  layout, **declare your stack objects in the order their slots appear** (highest
+  offset first) — and don't bother with names.
 
 **So how *do* you match a `/O2` stack offset?** Match the *shape*, not the name:
 reproduce the same set of genuinely-stack-resident objects (same types/sizes,
-same address-escaping, same live ranges). The compiler then assigns the same
-offsets deterministically regardless of what you call them. Renaming is a no-op.
+same address-escaping, same live ranges) in the **same declaration order**. The
+compiler then assigns the same offsets deterministically regardless of what you
+call them. Renaming is a no-op.
 
 **Evidence (MSVC 5.0 SP3, `cl /c /MT`, scratch in `build/asm-experiments/`).**
 All probes had 4 `int[4]` locals in fixed declaration positions `pos0..pos3`,
@@ -104,6 +120,23 @@ shuffled order matched its original `.text` exactly.)
 diff empty. Renaming changed only the COFF symbol/string table, never a single
 code byte or stack offset. (Test t5 vs t6.) Likewise t1↔t2↔t3 at `/O2` were
 byte-identical to each other.
+
+**Does it hold for complex `/O2` functions?** Yes — the "no-op" is not an
+artifact of trivial test functions. Re-tested with real register pressure and
+named stack objects (`build/asm-experiments/exp_o2*.py`), comparing each function
+against a fully-renamed twin (and permuted/reversed name assignments):
+
+| `/O2` scenario | `.text` size | rename → identical? |
+|----------------|-------------:|:-------------------:|
+| 12 simultaneously-live scalars (real spills to `[esp]`) | 336 B | yes |
+| 4 address-taken `int[2]` + 4 spill scalars | 208 B | yes |
+| 6 address-taken `struct{int a,b,c;}` | 336 B | yes |
+| loop+branch, `char[7]`+`int[3]`+`double[2]` escaped + 4 spill scalars | 240 B | yes |
+| 5 escaped `int[2]`, names `zulu…` vs `aaa…` vs **reversed** decl | 240 B | yes (all 3) |
+
+All byte-identical. The 5-array case also pins the **`/O2` ordering key as
+declaration order**: offsets `[esp+0x20,0x18,0x10,0x8,0x0]` (first-declared
+deepest) held across every name permutation including the reversed list.
 
 Mixed sizes (`double zulu; char alpha[3]; int mike; double bravo`, `/Od`, t4):
 layout is **not** size/alignment-bucketed — the `int` (`mike@-0x10`) sits between
