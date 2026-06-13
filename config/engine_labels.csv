@@ -1,0 +1,310 @@
+# engine_labels.csv - engine function LABEL registry (attribution + names).
+#
+# Distinct from config/symbol_names.csv (the byte-MATCHED set that drives src/).
+# These are LABELS: real names + classes + prototypes attributed to v1.0.0.76
+# engine functions from two sources. They graduate into symbol_names.csv + src/
+# only when actually byte-matched. Used to grow the partition + guide matching
+# and applied into build/ghidra-named (the comprehension DB) for readable decomp.
+#
+# Sources:
+#   tomalla     - refs/tomalla-gruntz manual annotations harvested for v1.0.1.77
+#                 (build/tomalla-harvest/address_dict.csv), re-anchored to v0.76
+#                 via the v0.76<->v0.77 patch offset map (build/patch-diff/,
+#                 17 piecewise offset levels). 52 v1.01-CHANGED funcs are skipped.
+#                 Real names + prototypes + owning class.
+#   rtti-vptr   - ctor/dtor discovered by xref to ??_7<Class>@@6B@: a function
+#                 storing the class vftable into [this+0] (MOV [reg],<vft>) is a
+#                 ctor/dtor (docs/matching-patterns.md vtable-pointer store).
+#                 Attributed to the most-derived class (last vptr store in a ctor).
+#   rtti-vtable - dtor body reached via the vftable slot-0 vector-deleting-destructor
+#                 thunk chain.
+# (Class virtuals are already labeled Class::vfunc_N in build/ghidra-named by the
+#  prior enrichment; not re-listed here.)
+#
+# Columns: rva,name,class,prototype,kind,source,confidence
+#   rva=v0.76 .text RVA (hex, ImageBase 0x400000). kind=ctor|dtor|vfunc|method|free.
+#   confidence: high=unique attribution; med=ICF-folded / multi-vftable function.
+rva,name,class,prototype,kind,source,confidence
+0x007da0,CActionArea::CActionArea,CActionArea,CActionArea::CActionArea(void),ctor,rtti-vptr,med
+0x00afb0,AdvancedOptionsDialogProc,,"INT_PTR CALLBACK AdvancedOptionsDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)",free,tomalla,high
+0x00b110,SaveOption,,"void SaveOption(HWND hWnd, Utils::RegistryHelper* pRegistryHelper, char* szValueName, DWORD controlId)",free,tomalla,high
+0x00b160,SetDefaults,,void SetDefaults(HWND hWnd),free,tomalla,high
+0x00b1b0,LoadOptions,,"void LoadOptions(HWND hWnd, Utils::RegistryHelper* pRegistryHelper)",free,tomalla,high
+0x00b270,SaveOptions,,"void SaveOptions(HWND hWnd, Utils::RegistryHelper* pRegistryHelper)",free,tomalla,high
+0x00b6a0,CAmbientSound::~CAmbientSound_00b6a0,CAmbientSound,CAmbientSound::~CAmbientSound(void),dtor,rtti-vptr,high
+0x00b7b0,CAmbientSound::~CAmbientSound_00b7b0,CAmbientSound,CAmbientSound::~CAmbientSound(void),dtor,rtti-vptr,high
+0x00b850,CAmbientPosSound::~CAmbientPosSound_00b850,CAmbientPosSound,CAmbientPosSound::~CAmbientPosSound(void),dtor,rtti-vptr,high
+0x00b960,CAmbientPosSound::~CAmbientPosSound_00b960,CAmbientPosSound,CAmbientPosSound::~CAmbientPosSound(void),dtor,rtti-vptr,high
+0x00bb60,CRandomAmbientSound::~CRandomAmbientSound,CRandomAmbientSound,CRandomAmbientSound::~CRandomAmbientSound(void),dtor,rtti-vptr,high
+0x010b20,CSecretLevelTrigger::CSecretLevelTrigger_010b20,CSecretLevelTrigger,CSecretLevelTrigger::CSecretLevelTrigger(void),ctor,rtti-vptr,med
+0x011160,CTileTrigger::CTileTrigger_011160,CTileTrigger,CTileTrigger::CTileTrigger(void),ctor,rtti-vptr,med
+0x011ef0,CGruntHealthSprite::CGruntHealthSprite_011ef0,CGruntHealthSprite,CGruntHealthSprite::CGruntHealthSprite(void),ctor,rtti-vptr,med
+0x0126e0,CProjectile::CProjectile_0126e0,CProjectile,CProjectile::CProjectile(void),ctor,rtti-vptr,med
+0x013170,CPathHazard::CPathHazard_013170,CPathHazard,CPathHazard::CPathHazard(void),ctor,rtti-vptr,med
+0x013470,CVoiceTrigger::CVoiceTrigger_013470,CVoiceTrigger,CVoiceTrigger::CVoiceTrigger(void),ctor,rtti-vptr,med
+0x0138d0,CUserLogic::CUserLogic_0138d0,CUserLogic,CUserLogic::CUserLogic(void),ctor,rtti-vptr,med
+0x013940,CMovingLogic::CMovingLogic,CMovingLogic,CMovingLogic::CMovingLogic(void),ctor,rtti-vptr,med
+0x014b30,CBattlezDlg::CBattlezDlg,CBattlezDlg,CBattlezDlg::CBattlezDlg(void),ctor,rtti-vptr,high
+0x017930,CBattlezDlgColors::CBattlezDlgColors,CBattlezDlgColors,CBattlezDlgColors::CBattlezDlgColors(void),ctor,rtti-vptr,high
+0x018030,CBattlezDlgCustom::CBattlezDlgCustom,CBattlezDlgCustom,CBattlezDlgCustom::CBattlezDlgCustom(void),ctor,rtti-vptr,high
+0x01f9b0,StartUpPrompt,,bool StartUpPrompt(HWND hParentWindow),free,tomalla,high
+0x01fd50,Utils::WinAPI::IsGruntzCDInAnyDrive,Utils::WinAPI,bool Utils::WinAPI::IsGruntzCDInAnyDrive(),method,tomalla,high
+0x01ffe0,Utils::WinAPI::GetGruntzDriveLetter,Utils::WinAPI,char Utils::WinAPI::GetGruntzDriveLetter(),method,tomalla,high
+0x0234a0,CCheckpointDlg::CCheckpointDlg,CCheckpointDlg,CCheckpointDlg::CCheckpointDlg(void),ctor,rtti-vptr,high
+0x024220,CGruntzSingleCommand::CGruntzSingleCommand,CGruntzSingleCommand,CGruntzSingleCommand::CGruntzSingleCommand(void),ctor,rtti-vptr,high
+0x0242f0,CGruntzCommand::CGruntzCommand_0242f0,CGruntzCommand,CGruntzCommand::CGruntzCommand(void),ctor,rtti-vptr,high
+0x024330,CGruntzCommand::~CGruntzCommand,CGruntzCommand,CGruntzCommand::~CGruntzCommand(void),dtor,rtti-vtable,high
+0x024360,CGruntzMultiCommand::CGruntzMultiCommand,CGruntzMultiCommand,CGruntzMultiCommand::CGruntzMultiCommand(void),ctor,rtti-vptr,high
+0x024430,CGruntzCommand::CGruntzCommand_024430,CGruntzCommand,CGruntzCommand::CGruntzCommand(void),ctor,rtti-vptr,high
+0x024dc0,UnknownClassArrays::UnknownClassArrays,UnknownClassArrays,UnknownClassArrays::UnknownClassArrays(),ctor,tomalla,high
+0x024f80,UnknownClassArrays::~UnknownClassArrays,UnknownClassArrays,UnknownClassArrays::~UnknownClassArrays(),dtor,tomalla,high
+0x025ca0,UnknownClassArrays::FreeArrays,UnknownClassArrays,void UnknownClassArrays::FreeArrays(),method,tomalla,high
+0x03a340,CCursorSnapSprite::CCursorSnapSprite,CCursorSnapSprite,CCursorSnapSprite::CCursorSnapSprite(void),ctor,rtti-vptr,med
+0x03df30,CGruntStartingPoint::CGruntStartingPoint,CGruntStartingPoint,CGruntStartingPoint::CGruntStartingPoint(void),ctor,rtti-vptr,med
+0x03e520,CGruntCreationPoint::CGruntCreationPoint,CGruntCreationPoint,CGruntCreationPoint::CGruntCreationPoint(void),ctor,rtti-vptr,med
+0x03ecf0,CExitTrigger::CExitTrigger,CExitTrigger,CExitTrigger::CExitTrigger(void),ctor,rtti-vptr,med
+0x03fc70,CWormhole::CWormhole,CWormhole,CWormhole::CWormhole(void),ctor,rtti-vptr,med
+0x040490,CGruntPuddle::CGruntPuddle,CGruntPuddle,CGruntPuddle::CGruntPuddle(void),ctor,rtti-vptr,med
+0x041020,CTeleporter::CTeleporter,CTeleporter,CTeleporter::CTeleporter(void),ctor,rtti-vptr,med
+0x041e90,CSecretTeleporterTrigger::CSecretTeleporterTrigger,CSecretTeleporterTrigger,CSecretTeleporterTrigger::CSecretTeleporterTrigger(void),ctor,rtti-vptr,med
+0x0424b0,CSecretLevelTrigger::CSecretLevelTrigger_0424b0,CSecretLevelTrigger,CSecretLevelTrigger::CSecretLevelTrigger(void),ctor,rtti-vptr,med
+0x042d40,CWarlord::CWarlord,CWarlord,CWarlord::CWarlord(void),ctor,rtti-vptr,med
+0x045d30,CFortressFlag::CFortressFlag,CFortressFlag,CFortressFlag::CFortressFlag(void),ctor,rtti-vptr,med
+0x046ad0,CParticlez::CParticlez,CParticlez,CParticlez::CParticlez(void),ctor,rtti-vptr,med
+0x0470e0,CExplosion::CExplosion,CExplosion,CExplosion::CExplosion(void),ctor,rtti-vptr,med
+0x047a10,CGrunt::CGrunt,CGrunt,CGrunt::CGrunt(void),ctor,rtti-vptr,med
+0x058cd0,CUserLogic::CUserLogic_058cd0,CUserLogic,CUserLogic::CUserLogic(void),ctor,rtti-vptr,med
+0x07e3e0,CGruntSelectedSprite::CGruntSelectedSprite,CGruntSelectedSprite,CGruntSelectedSprite::CGruntSelectedSprite(void),ctor,rtti-vptr,med
+0x07eb00,CGruntHealthSprite::CGruntHealthSprite_07eb00,CGruntHealthSprite,CGruntHealthSprite::CGruntHealthSprite(void),ctor,rtti-vptr,med
+0x07f350,CGruntToySprite::CGruntToySprite,CGruntToySprite,CGruntToySprite::CGruntToySprite(void),ctor,rtti-vptr,med
+0x07fae0,CGruntStaminaSprite::CGruntStaminaSprite,CGruntStaminaSprite,CGruntStaminaSprite::CGruntStaminaSprite(void),ctor,rtti-vptr,high
+0x07fbd0,CGruntToyTimeSprite::CGruntToyTimeSprite,CGruntToyTimeSprite,CGruntToyTimeSprite::CGruntToyTimeSprite(void),ctor,rtti-vptr,high
+0x07fcc0,CGruntWingzTimeSprite::CGruntWingzTimeSprite,CGruntWingzTimeSprite,CGruntWingzTimeSprite::CGruntWingzTimeSprite(void),ctor,rtti-vptr,high
+0x07fdb0,CGruntPowerupSprite::CGruntPowerupSprite,CGruntPowerupSprite,CGruntPowerupSprite::CGruntPowerupSprite(void),ctor,rtti-vptr,med
+0x080850,CGruntzApp::CGruntzApp,CGruntzApp,CGruntzApp::CGruntzApp(void)  [ghidra-existing-name: ??0CMetaFileDC@@QAE@XZ],ctor,rtti-vptr,high
+0x0808b0,CGruntzApp::~CGruntzApp,CGruntzApp,CGruntzApp::~CGruntzApp(),dtor,tomalla,high
+0x080930,CGruntzApp::VirtualUnknownMethod03,CGruntzApp,"bool CGruntzApp::VirtualUnknownMethod03(HINSTANCE hInstance, char* szWindowName, char* szGameIdentifier, char* szCmdLine, char windowClassFlags, int windowWidth, int windowHeight)",method,tomalla,high
+0x080a20,CGruntzApp::InitializeGameManager,CGruntzApp,WAP32::CGameMgr* CGruntzApp::InitializeGameManager(),method,tomalla,high
+0x080ac0,CGruntzApp::ShowError,CGruntzApp,void CGruntzApp::ShowError(),method,tomalla,high
+0x080c70,CGruntzApp::ErrorDialogProc,CGruntzApp,"INT_PTR CALLBACK CGruntzApp::ErrorDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)",method,tomalla,high
+0x080cf0,CGameApp::CGameApp,CGameApp,CGameApp::CGameApp(void),ctor,rtti-vptr,high
+0x080db0,WAP32::CGameApp::ShowError,WAP32::CGameApp,void WAP32::CGameApp::ShowError(),method,tomalla,high
+0x080dd0,CGameApp::vector_deleting_destructor,CGameApp,vftable slot 0 (vector deleting destructor),dtor,tomalla,high
+0x083030,CGruntzMgr::CGruntzMgr,CGruntzMgr,CGruntzMgr::CGruntzMgr(),ctor,tomalla,high
+0x083260,UnknownClassInCGruntzMgr::~UnknownClassInCGruntzMgr,UnknownClassInCGruntzMgr,UnknownClassInCGruntzMgr::~UnknownClassInCGruntzMgr(),dtor,tomalla,high
+0x083330,CGruntzMgr::vector_deleting_destructor,CGruntzMgr,vftable slot 0 (vector deleting destructor),dtor,tomalla,high
+0x083360,CGruntzMgr::~CGruntzMgr,CGruntzMgr,CGruntzMgr::~CGruntzMgr(),dtor,tomalla,high
+0x083450,CGruntzMapMgr::CGruntzMapMgr,CGruntzMapMgr,CGruntzMapMgr::CGruntzMapMgr(void)  [ghidra-existing-name: opt_get_SoundVolume],ctor,rtti-vptr,high
+0x0855e0,CGruntzMgr::UnknownClose,CGruntzMgr,void CGruntzMgr::UnknownClose(),method,tomalla,high
+0x085d10,CGruntzMapMgr::~CGruntzMapMgr,CGruntzMapMgr,CGruntzMapMgr::~CGruntzMapMgr(void),dtor,rtti-vptr,high
+0x08c710,CState::~CState,CState,CState::~CState(void),dtor,rtti-vtable,high
+0x08c9d0,CPlay::CPlay,CPlay,CPlay::CPlay(void),ctor,rtti-vptr,med
+0x08d5e0,CCreditsState::~CCreditsState,CCreditsState,CCreditsState::~CCreditsState(void),dtor,rtti-vptr,med
+0x08dc60,CGruntzMgr::ReportError,CGruntzMgr,"void CGruntzMgr::ReportError(int errorMessageId, int errorCode)",method,tomalla,high
+0x08eca0,CGruntzMgr::InitializeLobbyConnectionSettings,CGruntzMgr,bool CGruntzMgr::InitializeLobbyConnectionSettings(),method,tomalla,high
+0x08fa70,CGruntzMgr::GetGruntzDriveLetter,CGruntzMgr,char CGruntzMgr::GetGruntzDriveLetter(),method,tomalla,high
+0x094640,CGruntzWnd::CGruntzWnd,CGruntzWnd,CGruntzWnd::CGruntzWnd(),ctor,tomalla,high
+0x094670,CGruntzWnd::vector_deleting_destructor,CGruntzWnd,vftable slot 0 (vector deleting destructor),dtor,tomalla,high
+0x0946a0,CGruntzWnd::~CGruntzWnd,CGruntzWnd,CGruntzWnd::~CGruntzWnd(),dtor,tomalla,high
+0x094c10,CGameWnd::CGameWnd,CGameWnd,CGameWnd::CGameWnd(void),ctor,rtti-vptr,high
+0x094d80,CGameWnd::~CGameWnd,CGameWnd,CGameWnd::~CGameWnd(void),dtor,rtti-vtable,high
+0x095b10,CInGameIcon::CInGameIcon,CInGameIcon,CInGameIcon::CInGameIcon(void),ctor,rtti-vptr,med
+0x098140,CToyPeek::CToyPeek,CToyPeek,CToyPeek::CToyPeek(void),ctor,rtti-vptr,med
+0x099110,CInGameText::CInGameText,CInGameText,CInGameText::CInGameText(void),ctor,rtti-vptr,med
+0x09b8b0,CLevelTime::CLevelTime,CLevelTime,CLevelTime::CLevelTime(void),ctor,rtti-vptr,med
+0x09cf00,CLightFx::CLightFx,CLightFx,CLightFx::CLightFx(void),ctor,rtti-vptr,med
+0x09e940,CMapMgr::CMapMgr,CMapMgr,CMapMgr::CMapMgr(void),ctor,rtti-vptr,high
+0x09e9e0,CMapMgr::~CMapMgr,CMapMgr,CMapMgr::~CMapMgr(void),dtor,rtti-vptr,high
+0x0a9e00,CDoNothingNormal::CDoNothingNormal,CDoNothingNormal,CDoNothingNormal::CDoNothingNormal(void),ctor,rtti-vptr,high
+0x0aad20,CAniCycle::CAniCycle,CAniCycle,CAniCycle::CAniCycle(void),ctor,rtti-vptr,med
+0x0ab310,CSingleFrameMessage::CSingleFrameMessage,CSingleFrameMessage,CSingleFrameMessage::CSingleFrameMessage(void),ctor,rtti-vptr,med
+0x0ab940,CSimpleAnimation::CSimpleAnimation,CSimpleAnimation,CSimpleAnimation::CSimpleAnimation(void),ctor,rtti-vptr,med
+0x0abfa0,CFrontCandy::CFrontCandy,CFrontCandy,CFrontCandy::CFrontCandy(void),ctor,rtti-vptr,med
+0x0ac1d0,CDoNothing::CDoNothing,CDoNothing,CDoNothing::CDoNothing(void),ctor,rtti-vptr,med
+0x0ac3f0,CBehindCandy::CBehindCandy,CBehindCandy,CBehindCandy::CBehindCandy(void),ctor,rtti-vptr,med
+0x0ac620,CEyeCandy::CEyeCandy,CEyeCandy,CEyeCandy::CEyeCandy(void),ctor,rtti-vptr,med
+0x0ac870,CEyeCandyAni::CEyeCandyAni,CEyeCandyAni,CEyeCandyAni::CEyeCandyAni(void),ctor,rtti-vptr,med
+0x0acf40,CFrontCandyAni::CFrontCandyAni,CFrontCandyAni,CFrontCandyAni::CFrontCandyAni(void),ctor,rtti-vptr,med
+0x0ad540,CBehindCandyAni::CBehindCandyAni,CBehindCandyAni,CBehindCandyAni::CBehindCandyAni(void),ctor,rtti-vptr,med
+0x0adbe0,CMenuSparkle::CMenuSparkle,CMenuSparkle,CMenuSparkle::CMenuSparkle(void),ctor,rtti-vptr,med
+0x0ae3f0,CWayPoint::CWayPoint,CWayPoint,CWayPoint::CWayPoint(void),ctor,rtti-vptr,med
+0x0ae5f0,CGuardPoint::CGuardPoint,CGuardPoint,CGuardPoint::CGuardPoint(void),ctor,rtti-vptr,med
+0x0ae7f0,CSingleAnimation::CSingleAnimation,CSingleAnimation,CSingleAnimation::CSingleAnimation(void),ctor,rtti-vptr,med
+0x0af820,CRollingBall::CRollingBall,CRollingBall,CRollingBall::CRollingBall(void),ctor,rtti-vptr,med
+0x0b1200,CSpotLight::CSpotLight,CSpotLight,CSpotLight::CSpotLight(void),ctor,rtti-vptr,med
+0x0b23a0,CKitchenSlime::CKitchenSlime,CKitchenSlime,CKitchenSlime::CKitchenSlime(void),ctor,rtti-vptr,med
+0x0b35a0,CPathHazard::CPathHazard_0b35a0,CPathHazard,CPathHazard::CPathHazard(void),ctor,rtti-vptr,med
+0x0b49b0,CRainCloud::CRainCloud,CRainCloud,CRainCloud::CRainCloud(void),ctor,rtti-vptr,high
+0x0b4a90,CUFO::CUFO,CUFO,CUFO::CUFO(void),ctor,rtti-vptr,high
+0x0b5460,CNetMgr::CNetMgr_0b5460,CNetMgr,CNetMgr::CNetMgr(void),ctor,rtti-vptr,high
+0x0b6000,CNetMgr::CNetMgr_0b6000,CNetMgr,CNetMgr::CNetMgr(void),ctor,rtti-vptr,high
+0x0c1750,CMultiStartDlg::CMultiStartDlg,CMultiStartDlg,CMultiStartDlg::CMultiStartDlg(void),ctor,rtti-vptr,high
+0x0c59f0,CObjectDropper::CObjectDropper,CObjectDropper,CObjectDropper::CObjectDropper(void),ctor,rtti-vptr,med
+0x0c68b0,CDroppedObject::CDroppedObject,CDroppedObject,CDroppedObject::CDroppedObject(void),ctor,rtti-vptr,med
+0x0c7490,CDroppedObjectShadow::CDroppedObjectShadow,CDroppedObjectShadow,CDroppedObjectShadow::CDroppedObjectShadow(void),ctor,rtti-vptr,med
+0x0da790,UnknownClassInCGruntzMgr::UnknownClassInCGruntzMgr,UnknownClassInCGruntzMgr,UnknownClassInCGruntzMgr::UnknownClassInCGruntzMgr(),ctor,tomalla,high
+0x0dec60,CProjectile::CProjectile_0dec60,CProjectile,CProjectile::CProjectile(void),ctor,rtti-vptr,med
+0x0e0650,CBoomerang::CBoomerang,CBoomerang,CBoomerang::CBoomerang(void),ctor,rtti-vptr,high
+0x0e1b90,CTimeBomb::CTimeBomb,CTimeBomb,CTimeBomb::CTimeBomb(void),ctor,rtti-vptr,med
+0x0fb7a0,CStaticHazard::CStaticHazard,CStaticHazard,CStaticHazard::CStaticHazard(void),ctor,rtti-vptr,med
+0x0ffde0,CSBI_RectOnly::~CSBI_RectOnly,CSBI_RectOnly,CSBI_RectOnly::~CSBI_RectOnly(void),dtor,rtti-vptr,med
+0x101580,CSBI_ImageSet::CSBI_ImageSet,CSBI_ImageSet,CSBI_ImageSet::CSBI_ImageSet(void),ctor,rtti-vptr,med
+0x101fa0,CSBI_RectOnly::CSBI_RectOnly,CSBI_RectOnly,CSBI_RectOnly::CSBI_RectOnly(void),ctor,rtti-vptr,high
+0x105070,CSBI_SideTab::~CSBI_SideTab,CSBI_SideTab,CSBI_SideTab::~CSBI_SideTab(void),dtor,rtti-vptr,high
+0x10a340,CSBI_Image::~CSBI_Image,CSBI_Image,CSBI_Image::~CSBI_Image(void),dtor,rtti-vptr,med
+0x10c230,CStatusBarSprite::CStatusBarSprite,CStatusBarSprite,CStatusBarSprite::CStatusBarSprite(void),ctor,rtti-vptr,med
+0x10d650,CWarpStonePad::CWarpStonePad,CWarpStonePad,CWarpStonePad::CWarpStonePad(void),ctor,rtti-vptr,med
+0x10dc40,CTileTriggerSwitch::CTileTriggerSwitch,CTileTriggerSwitch,CTileTriggerSwitch::CTileTriggerSwitch(void),ctor,rtti-vptr,med
+0x10e220,CTileTrigger::CTileTrigger_10e220,CTileTrigger,CTileTrigger::CTileTrigger(void),ctor,rtti-vptr,med
+0x10e800,CBrickz::CBrickz,CBrickz,CBrickz::CBrickz(void),ctor,rtti-vptr,med
+0x10ee20,CCheckpointTrigger::CCheckpointTrigger,CCheckpointTrigger,CCheckpointTrigger::CCheckpointTrigger(void),ctor,rtti-vptr,med
+0x10fa60,CTileSecretTrigger::CTileSecretTrigger,CTileSecretTrigger,CTileSecretTrigger::CTileSecretTrigger(void)  [ghidra-existing-name: ??0__non_rtti_object@@QAE@ABV0@@Z],ctor,rtti-vptr,high
+0x10fa90,CGiantRock::CGiantRock,CGiantRock,CGiantRock::CGiantRock(void)  [ghidra-existing-name: ??0__non_rtti_object@@QAE@ABV0@@Z],ctor,rtti-vptr,high
+0x10fac0,CCoveredPowerup::CCoveredPowerup,CCoveredPowerup,CCoveredPowerup::CCoveredPowerup(void)  [ghidra-existing-name: ??0__non_rtti_object@@QAE@ABV0@@Z],ctor,rtti-vptr,high
+0x10faf0,CTileTriggerTransition::CTileTriggerTransition,CTileTriggerTransition,CTileTriggerTransition::CTileTriggerTransition(void),ctor,rtti-vptr,med
+0x110430,CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_110430,CTileTriggerSwitchLogic,CTileTriggerSwitchLogic::CTileTriggerSwitchLogic(void),ctor,rtti-vptr,high
+0x111f10,CTileMultiTriggerSwitchLogic::CTileMultiTriggerSwitchLogic,CTileMultiTriggerSwitchLogic,CTileMultiTriggerSwitchLogic::CTileMultiTriggerSwitchLogic(void)  [ghidra-existing-name: ??0CMetaFileDC@@QAE@XZ],ctor,rtti-vptr,high
+0x112050,CTileExclusiveTriggerSwitchLogic::CTileExclusiveTriggerSwitchLogic,CTileExclusiveTriggerSwitchLogic,CTileExclusiveTriggerSwitchLogic::CTileExclusiveTriggerSwitchLogic(void)  [ghidra-existing-name: ??0CMetaFileDC@@QAE@XZ],ctor,rtti-vptr,high
+0x112210,CGiantRockLogic::CGiantRockLogic,CGiantRockLogic,CGiantRockLogic::CGiantRockLogic(void)  [ghidra-existing-name: ??0CMetaFileDC@@QAE@XZ],ctor,rtti-vptr,high
+0x112240,CCoveredPowerupLogic::CCoveredPowerupLogic,CCoveredPowerupLogic,CCoveredPowerupLogic::CCoveredPowerupLogic(void)  [ghidra-existing-name: ??0CMetaFileDC@@QAE@XZ],ctor,rtti-vptr,high
+0x112270,CTileTimeTriggerLogic::CTileTimeTriggerLogic,CTileTimeTriggerLogic,CTileTimeTriggerLogic::CTileTimeTriggerLogic(void)  [ghidra-existing-name: ??0CMetaFileDC@@QAE@XZ],ctor,rtti-vptr,high
+0x112760,CTileSecretTriggerLogic::CTileSecretTriggerLogic,CTileSecretTriggerLogic,CTileSecretTriggerLogic::CTileSecretTriggerLogic(void)  [ghidra-existing-name: ??0CMetaFileDC@@QAE@XZ],ctor,rtti-vptr,high
+0x112790,CTileSecretTriggerSwitchLogic::CTileSecretTriggerSwitchLogic,CTileSecretTriggerSwitchLogic,CTileSecretTriggerSwitchLogic::CTileSecretTriggerSwitchLogic(void)  [ghidra-existing-name: ??0CMetaFileDC@@QAE@XZ],ctor,rtti-vptr,high
+0x1127c0,CTileTimeTriggerSwitchLogic::CTileTimeTriggerSwitchLogic,CTileTimeTriggerSwitchLogic,CTileTimeTriggerSwitchLogic::CTileTimeTriggerSwitchLogic(void)  [ghidra-existing-name: ??0CMetaFileDC@@QAE@XZ],ctor,rtti-vptr,high
+0x1127f0,CCheckpointTriggerSwitchLogic::CCheckpointTriggerSwitchLogic,CCheckpointTriggerSwitchLogic,CCheckpointTriggerSwitchLogic::CCheckpointTriggerSwitchLogic(void)  [ghidra-existing-name: ??0CMetaFileDC@@QAE@XZ],ctor,rtti-vptr,high
+0x112820,CGruntzApp::vector_deleting_destructor,CGruntzApp,vftable slot 0 (vector deleting destructor),dtor,tomalla,high
+0x1145c0,CToobSpikez::CToobSpikez,CToobSpikez,CToobSpikez::CToobSpikez(void),ctor,rtti-vptr,med
+0x115810,CGruntzMgr::InitializeFonts,CGruntzMgr,bool CGruntzMgr::InitializeFonts(),method,tomalla,high
+0x115f60,CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_115f60,CTileTriggerSwitchLogic,CTileTriggerSwitchLogic::CTileTriggerSwitchLogic(void),ctor,rtti-vptr,high
+0x116320,CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_116320,CTileTriggerSwitchLogic,CTileTriggerSwitchLogic::CTileTriggerSwitchLogic(void),ctor,rtti-vptr,high
+0x1189c0,Utils::WinAPI::FileExists,Utils::WinAPI,bool Utils::WinAPI::FileExists(char* szPath),method,tomalla,high
+0x118ce0,Utils::WinAPI::LegacyAreProcessesRunning,Utils::WinAPI,"bool Utils::WinAPI::LegacyAreProcessesRunning(char* szDescriptor, int minCount, HANDLE* pOutProcessHandle)",method,tomalla,high
+0x118f60,LegacyFindModule,,"bool LegacyFindModule(DWORD processId, DWORD moduleId, PMODULEENTRY32 pOutFoundModuleEntry, DWORD moduleEntrySize)",free,tomalla,high
+0x1198a0,CGruntVoice::CGruntVoice,CGruntVoice,CGruntVoice::CGruntVoice(void),ctor,rtti-vptr,med
+0x119b50,CVoiceTrigger::CVoiceTrigger_119b50,CVoiceTrigger,CVoiceTrigger::CVoiceTrigger(void),ctor,rtti-vptr,med
+0x11c860,WinMain,,"int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)",free,tomalla,high
+0x133380,CGameMgr::vector_deleting_destructor,CGameMgr,vftable slot 0 (vector deleting destructor),dtor,tomalla,high
+0x1350b0,UnknownSalazar::getLookupTableValue,UnknownSalazar,int UnknownSalazar::getLookupTableValue(int index),method,tomalla,high
+0x1351a0,UnknownSalazar::initializeUnknownLookupTable,UnknownSalazar,void UnknownSalazar::initializeUnknownLookupTable(),method,tomalla,high
+0x136440,UnknownSalazar::UnknownSalazar,UnknownSalazar,UnknownSalazar::UnknownSalazar(),ctor,tomalla,high
+0x1364c0,UnknownSalazar::~UnknownSalazar,UnknownSalazar,UnknownSalazar::~UnknownSalazar(),dtor,tomalla,high
+0x1376d0,UnknownVoldemort::UnknownVoldemort,UnknownVoldemort,UnknownVoldemort::UnknownVoldemort(),ctor,tomalla,high
+0x1376f0,UnknownVoldemort::~UnknownVoldemort,UnknownVoldemort,UnknownVoldemort::~UnknownVoldemort(),dtor,tomalla,high
+0x139210,Utils::RegistryHelper::Open,Utils::RegistryHelper,"bool Utils::RegistryHelper::Open(char* szKeyName1, char* szKeyName2, char* szKeyName3, char* szKeyName4, HKEY hKey, char* szSubKey)",method,tomalla,high
+0x139330,Utils::RegistryHelper::Close,Utils::RegistryHelper,void Utils::RegistryHelper::Close(),method,tomalla,high
+0x139370,Utils::RegistryHelper::InitializeLastKey,Utils::RegistryHelper,bool Utils::RegistryHelper::InitializeLastKey(char* szLastKey),method,tomalla,high
+0x1394a0,Utils::RegistryHelper::GetValueString,Utils::RegistryHelper,"char* Utils::RegistryHelper::GetValueString(char* szValueName, char* szValueBuffer, unsigned int* pValueBufferSize, char* szDefault)",method,tomalla,high
+0x1395d0,Utils::RegistryHelper::GetValueDword,Utils::RegistryHelper,"DWORD Utils::RegistryHelper::GetValueDword(char* szValueName, DWORD valueDefault)",method,tomalla,high
+0x139650,Utils::RegistryHelper::GetRegistryKey,Utils::RegistryHelper,"bool Utils::RegistryHelper::GetRegistryKey(HKEY hKey, char* szSubKey, PHKEY phKeyResult)",method,tomalla,high
+0x13cf00,WAP32::CGameWnd::CGameWnd,WAP32::CGameWnd,WAP32::CGameWnd::CGameWnd(),ctor,tomalla,high
+0x13cf20,WAP32::CGameWnd::CreateAndShow,WAP32::CGameWnd,"bool WAP32::CGameWnd::CreateAndShow(CREATESTRUCTA* pCreateStruct, WAP32::CGameApp* pGameApp)",method,tomalla,high
+0x13cfb0,WAP32::CGameWnd::Destroy,WAP32::CGameWnd,void WAP32::CGameWnd::Destroy(),method,tomalla,high
+0x13cff0,WAP32::CGameApp::GameWindowProc,WAP32::CGameApp,"LRESULT CALLBACK WAP32::CGameApp::GameWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)",method,tomalla,high
+0x13d490,WAP32::CGameWnd::QuitMessageLoop,WAP32::CGameWnd,void WAP32::CGameWnd::QuitMessageLoop(),method,tomalla,high
+0x13d590,WAP32::CGameApp::CGameApp,WAP32::CGameApp,WAP32::CGameApp::CGameApp(),ctor,tomalla,high
+0x13d5d0,WAP32::CGameApp::VirtualUnknownMethod02,WAP32::CGameApp,"bool WAP32::CGameApp::VirtualUnknownMethod02(GameInfo* pGameInfo, WNDCLASSA* pWndClass, CREATESTRUCTA* pCreateStruct)",method,tomalla,high
+0x13d7b0,WAP32::CGameApp::VirtualUnknownMethod03,WAP32::CGameApp,"bool WAP32::CGameApp::VirtualUnknownMethod03(HINSTANCE hInstance, char* szWindowName, char* szGameIdentifier, char* szCmdLine, char windowClassFlags, int windowWidth, int windowHeight)",method,tomalla,high
+0x13d8c0,WAP32::CGameApp::CloseResources,WAP32::CGameApp,void WAP32::CGameApp::CloseResources(),method,tomalla,high
+0x13d9b0,WAP32::CGameApp::InitializeDefaultWindowClass,WAP32::CGameApp,void WAP32::CGameApp::InitializeDefaultWindowClass(),method,tomalla,high
+0x13da50,WAP32::CGameApp::InitializeDefaultCreateStruct,WAP32::CGameApp,void WAP32::CGameApp::InitializeDefaultCreateStruct(),method,tomalla,high
+0x13db60,CGruntzApp::InitializeGameWindow,CGruntzApp,WAP32::CGameWnd* CGruntzApp::InitializeGameWindow()  [ICF-folded: WAP32::CGameApp::InitializeGameWindow],method,tomalla,med
+0x13dbc0,WAP32::CGameApp::InitializeGameManager,WAP32::CGameApp,WAP32::CGameMgr* WAP32::CGameApp::InitializeGameManager(),method,tomalla,high
+0x13dc20,WAP32::CGameApp::InitializeAccelerators,WAP32::CGameApp,bool WAP32::CGameApp::InitializeAccelerators(char* szGameIdentifier),method,tomalla,high
+0x13dc90,WAP32::CGameApp::FreeGameManager,WAP32::CGameApp,void WAP32::CGameApp::FreeGameManager(),method,tomalla,high
+0x13dcb0,WAP32::CGameApp::ReportError,WAP32::CGameApp,"void WAP32::CGameApp::ReportError(int errorMessageId, int errorCode)",method,tomalla,high
+0x13dd10,WAP32::CGameMgr::CGameMgr,WAP32::CGameMgr,WAP32::CGameMgr::CGameMgr(),ctor,tomalla,high
+0x13dd50,WAP32::CGameMgr::UnknownVirtualMethod1,WAP32::CGameMgr,"bool WAP32::CGameMgr::UnknownVirtualMethod1(WAP32::CGameWnd* pGameWnd, char* szCmdLine)",vfunc,tomalla,high
+0x13ddb0,WAP32::CGameMgr::UnknownClose,WAP32::CGameMgr,void WAP32::CGameMgr::UnknownClose(),method,tomalla,high
+0x13dea0,WAP32::CGameMgr::UnknownMethodInitializeTimeGlobal,WAP32::CGameMgr,void WAP32::CGameMgr::UnknownMethodInitializeTimeGlobal(),method,tomalla,high
+0x13dfe0,Utils::WinAPI::ActiveWait,Utils::WinAPI,void Utils::WinAPI::ActiveWait(unsigned int milliseconds),method,tomalla,high
+0x141cc0,UnknownFilch::UnknownFilch,UnknownFilch,UnknownFilch::UnknownFilch(),ctor,tomalla,high
+0x152650,UnknownPettigrew::VirtualMethodUnknown1C,UnknownPettigrew,void UnknownPettigrew::VirtualMethodUnknown1C(),vfunc,tomalla,high
+0x154aa0,UnknownSeverus::VirtualMethodUnknown18,UnknownSeverus,bool UnknownSeverus::VirtualMethodUnknown18(),vfunc,tomalla,high
+0x154ac0,UnknownSeverus::VirtualMethodUnknown1C,UnknownSeverus,void UnknownSeverus::VirtualMethodUnknown1C(),vfunc,tomalla,high
+0x154ae0,UnknownSeverus::VirtualMethodUnknown38,UnknownSeverus,void UnknownSeverus::VirtualMethodUnknown38(),vfunc,tomalla,high
+0x154be0,UnknownSeverus::VirtualMethodUnknown40,UnknownSeverus,void UnknownSeverus::VirtualMethodUnknown40(),vfunc,tomalla,high
+0x154ce0,UnknownSeverus::VirtualMethodUnknown30,UnknownSeverus,void UnknownSeverus::VirtualMethodUnknown30(),vfunc,tomalla,high
+0x154df0,UnknownSeverus::VirtualMethodUnknown24,UnknownSeverus,void UnknownSeverus::VirtualMethodUnknown24(),vfunc,tomalla,high
+0x154f00,UnknownSeverus::VirtualMethodUnknown3C,UnknownSeverus,void UnknownSeverus::VirtualMethodUnknown3C(),vfunc,tomalla,high
+0x154f20,UnknownSeverus::VirtualMethodUnknown34,UnknownSeverus,void UnknownSeverus::VirtualMethodUnknown34(),vfunc,tomalla,high
+0x154f40,UnknownSeverus::VirtualMethodUnknown2C,UnknownSeverus,void UnknownSeverus::VirtualMethodUnknown2C(),vfunc,tomalla,high
+0x154f60,UnknownSeverus::VirtualMethodUnknown28,UnknownSeverus,void UnknownSeverus::VirtualMethodUnknown28(),vfunc,tomalla,high
+0x154f80,UnknownSeverus::VirtualMethodUnknown48,UnknownSeverus,void UnknownSeverus::VirtualMethodUnknown48(),vfunc,tomalla,high
+0x155160,UnknownSeverus::VirtualMethodUnknown4C,UnknownSeverus,void UnknownSeverus::VirtualMethodUnknown4C(),vfunc,tomalla,high
+0x155280,UnknownSeverus::VirtualMethodUnknown50,UnknownSeverus,void UnknownSeverus::VirtualMethodUnknown50(),vfunc,tomalla,high
+0x155720,UnknownCGruntzMgrLucius::~UnknownCGruntzMgrLucius,UnknownCGruntzMgrLucius,UnknownCGruntzMgrLucius::~UnknownCGruntzMgrLucius(),dtor,tomalla,high
+0x155840,UnknownClassCGruntzMgrHarryPotter::UnknownClassCGruntzMgrHarryPotter,UnknownClassCGruntzMgrHarryPotter,UnknownClassCGruntzMgrHarryPotter::UnknownClassCGruntzMgrHarryPotter(),ctor,tomalla,high
+0x1558b0,UnknownClassCGruntzMgrHarryPotter::~UnknownClassCGruntzMgrHarryPotter,UnknownClassCGruntzMgrHarryPotter,UnknownClassCGruntzMgrHarryPotter::~UnknownClassCGruntzMgrHarryPotter(),dtor,tomalla,high
+0x155900,UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod18,UnknownClassCGruntzMgrHarryPotter,"bool UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod18(HWND hWnd, int unknown1, int unknown2, int unknown3, int flagsUnknown)",vfunc,tomalla,high
+0x155e20,UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod1C,UnknownClassCGruntzMgrHarryPotter,void UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod1C(),vfunc,tomalla,high
+0x155f00,UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod14,UnknownClassCGruntzMgrHarryPotter,void UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod14(),vfunc,tomalla,high
+0x156cb0,UnknownCGruntzMgrLucius::UnknownCGruntzMgrLucius,UnknownCGruntzMgrLucius,"UnknownCGruntzMgrLucius::UnknownCGruntzMgrLucius(UnknownClassCGruntzMgrHarryPotter* pUnknownHarryPotter, int unknown2, int unknown3) : UnknownCGruntzMgrHogwarts(unknown2)",ctor,tomalla,high
+0x156cd0,UnknownAlbus::VirtualMethodUnknown14,UnknownAlbus,void UnknownAlbus::VirtualMethodUnknown14(),vfunc,tomalla,high
+0x156de0,UnknownSeverus::VirtualMethodUnknown20,UnknownSeverus,void UnknownSeverus::VirtualMethodUnknown20(),vfunc,tomalla,high
+0x156df0,UnknownSeverus::~UnknownSeverus,UnknownSeverus,UnknownSeverus::~UnknownSeverus(),dtor,tomalla,high
+0x156e80,UnknownSeverus::VirtualMethodUnknown44,UnknownSeverus,void UnknownSeverus::VirtualMethodUnknown44(),vfunc,tomalla,high
+0x156ec0,UnknownSeverus::VirtualMethodUnknown54,UnknownSeverus,void UnknownSeverus::VirtualMethodUnknown54(),vfunc,tomalla,high
+0x156f00,UnknownHagrid::VirtualMethodUnknown14,UnknownHagrid,void UnknownHagrid::VirtualMethodUnknown14(),vfunc,tomalla,high
+0x156f20,UnknownHagrid::VirtualMethodUnknown20,UnknownHagrid,void UnknownHagrid::VirtualMethodUnknown20(),vfunc,tomalla,high
+0x156f50,UnknownHagrid::~UnknownHagrid,UnknownHagrid,UnknownHagrid::~UnknownHagrid(),dtor,tomalla,high
+0x156fc0,UnknownHagrid::VirtualMethodUnknown18,UnknownHagrid,bool UnknownHagrid::VirtualMethodUnknown18(),vfunc,tomalla,high
+0x156fd0,UnknownHagrid::VirtualMethodUnknown24,UnknownHagrid,void UnknownHagrid::VirtualMethodUnknown24(),vfunc,tomalla,high
+0x157150,UnknownHagrid::VirtualMethodUnknown30,UnknownHagrid,void UnknownHagrid::VirtualMethodUnknown30(),vfunc,tomalla,high
+0x157330,UnknownHagrid::VirtualMethodUnknown2C,UnknownHagrid,void UnknownHagrid::VirtualMethodUnknown2C(),vfunc,tomalla,high
+0x1573e0,UnknownHagrid::VirtualMethodUnknown28,UnknownHagrid,void UnknownHagrid::VirtualMethodUnknown28(),vfunc,tomalla,high
+0x157480,UnknownDraco::VirtualMethodUnknown14,UnknownDraco,void UnknownDraco::VirtualMethodUnknown14(),vfunc,tomalla,high
+0x1574a0,UnknownDraco::VirtualMethodUnknown20,UnknownDraco,void UnknownDraco::VirtualMethodUnknown20(),vfunc,tomalla,high
+0x1574b0,UnknownDraco::~UnknownDraco,UnknownDraco,UnknownDraco::~UnknownDraco(),dtor,tomalla,high
+0x1574d0,UnknownCGruntzMgrLucius::VirtualMethodUnknown14,UnknownCGruntzMgrLucius,void UnknownCGruntzMgrLucius::VirtualMethodUnknown14(),vfunc,tomalla,high
+0x157530,UnknownMinerva::VirtualMethodUnknown14,UnknownMinerva,void UnknownMinerva::VirtualMethodUnknown14(),vfunc,tomalla,high
+0x157550,UnknownMinerva::~UnknownMinerva,UnknownMinerva,UnknownMinerva::~UnknownMinerva(),dtor,tomalla,high
+0x1575e0,UnknownHermiona::VirtualMethodUnknown14,UnknownHermiona,void UnknownHermiona::VirtualMethodUnknown14(),vfunc,tomalla,high
+0x157600,UnknownAlbus::VirtualMethodUnknown20,UnknownAlbus,void UnknownAlbus::VirtualMethodUnknown20()  [ICF-folded: UnknownHermiona::VirtualMethodUnknown20],vfunc,tomalla,med
+0x157610,UnknownAlbus::~UnknownAlbus,UnknownAlbus,UnknownAlbus::~UnknownAlbus()  [ICF-folded: UnknownHermiona::~UnknownHermiona],dtor,tomalla,med
+0x1576c0,UnknownCGruntzMgrLucius::VirtualMethodUnknown1C,UnknownCGruntzMgrLucius,"void UnknownCGruntzMgrLucius::VirtualMethodUnknown1C()  [ICF-folded: UnknownAlbus::VirtualMethodUnknown18, UnknownHermiona::VirtualMethodUnknown18]",vfunc,tomalla,med
+0x1576d0,UnknownSeverus::VirtualMethodUnknown14,UnknownSeverus,void UnknownSeverus::VirtualMethodUnknown14()  [ICF-folded: UnknownSirius::VirtualMethodUnknown14],vfunc,tomalla,med
+0x1576f0,UnknownSirius::VirtualMethodUnknown20,UnknownSirius,void UnknownSirius::VirtualMethodUnknown20(),vfunc,tomalla,high
+0x157700,UnknownSirius::~UnknownSirius,UnknownSirius,UnknownSirius::~UnknownSirius(),dtor,tomalla,high
+0x157790,UnknownCGruntzMgrLucius::VirtualMethodUnknown20,UnknownCGruntzMgrLucius,void UnknownCGruntzMgrLucius::VirtualMethodUnknown20()  [ICF-folded: UnknownSirius::VirtualMethodUnknown18],vfunc,tomalla,med
+0x1577a0,UnknownPettigrew::VirtualMethodUnknown14,UnknownPettigrew,void UnknownPettigrew::VirtualMethodUnknown14(),vfunc,tomalla,high
+0x1577c0,UnknownPettigrew::~UnknownPettigrew,UnknownPettigrew,UnknownPettigrew::~UnknownPettigrew(),dtor,tomalla,high
+0x157ae0,UnknownPettigrew::VirtualMethodUnknown18,UnknownPettigrew,bool UnknownPettigrew::VirtualMethodUnknown18()  [ICF-folded: UnknownMinerva::VirtualMethodUnknown1C],vfunc,tomalla,med
+0x157bc0,UnknownMinerva::ClearUnknownMap,UnknownMinerva,void UnknownMinerva::ClearUnknownMap(),method,tomalla,high
+0x1588f0,UnknownDraco::VirtualMethodUnknown24,UnknownDraco,void UnknownDraco::VirtualMethodUnknown24(),vfunc,tomalla,high
+0x158ac0,UnknownDraco::VirtualMethodUnknown1C,UnknownDraco,void UnknownDraco::VirtualMethodUnknown1C(),vfunc,tomalla,high
+0x1591e0,UnknownHermiona::VirtualMethodUnknown1C,UnknownHermiona,void UnknownHermiona::VirtualMethodUnknown1C(),vfunc,tomalla,high
+0x1591f0,UnknownHermiona::VirtualMethodUnknown3C,UnknownHermiona,void UnknownHermiona::VirtualMethodUnknown3C(),vfunc,tomalla,high
+0x159a70,UnknownHermiona::VirtualMethodUnknown24,UnknownHermiona,void UnknownHermiona::VirtualMethodUnknown24(),vfunc,tomalla,high
+0x159c90,UnknownHermiona::VirtualMethodUnknown28,UnknownHermiona,void UnknownHermiona::VirtualMethodUnknown28(),vfunc,tomalla,high
+0x159cc0,UnknownHermiona::VirtualMethodUnknown2C,UnknownHermiona,void UnknownHermiona::VirtualMethodUnknown2C(),vfunc,tomalla,high
+0x159cf0,UnknownHermiona::VirtualMethodUnknown30,UnknownHermiona,void UnknownHermiona::VirtualMethodUnknown30(),vfunc,tomalla,high
+0x159d40,UnknownHermiona::VirtualMethodUnknown34,UnknownHermiona,void UnknownHermiona::VirtualMethodUnknown34(),vfunc,tomalla,high
+0x159d90,UnknownHermiona::VirtualMethodUnknown38,UnknownHermiona,void UnknownHermiona::VirtualMethodUnknown38(),vfunc,tomalla,high
+0x15ccd0,UnknownRemus::UnknownRemus,UnknownRemus,"UnknownRemus::UnknownRemus(UnknownClassCGruntzMgrHarryPotter* pUnknownHarryPotter, int unknown2, int unknown3) : UnknownCGruntzMgrLucius(pUnknownHarryPotter, unknown2, unknown3)",ctor,tomalla,high
+0x15cdf0,UnknownRemus::VirtualMethodUnknown2C,UnknownRemus,void UnknownRemus::VirtualMethodUnknown2C(),vfunc,tomalla,high
+0x15ceb0,UnknownRemus::VirtualMethodUnknown28,UnknownRemus,void UnknownRemus::VirtualMethodUnknown28(),vfunc,tomalla,high
+0x15cf70,UnknownRemus::VirtualMethodUnknown24,UnknownRemus,void UnknownRemus::VirtualMethodUnknown24(),vfunc,tomalla,high
+0x15d030,UnknownRemus::VirtualMethodUnknown34,UnknownRemus,void UnknownRemus::VirtualMethodUnknown34(),vfunc,tomalla,high
+0x15d0d0,UnknownRemus::VirtualMethodUnknown30,UnknownRemus,void UnknownRemus::VirtualMethodUnknown30(),vfunc,tomalla,high
+0x15d1f0,UnknownRemus::VirtualMethodUnknown1C,UnknownRemus,void UnknownRemus::VirtualMethodUnknown1C(),vfunc,tomalla,high
+0x15d280,UnknownRemus::VirtualMethodUnknown38,UnknownRemus,void UnknownRemus::VirtualMethodUnknown38(),vfunc,tomalla,high
+0x15d500,UnknownRemus::VirtualMethodUnknown40,UnknownRemus,void UnknownRemus::VirtualMethodUnknown40(),vfunc,tomalla,high
+0x15d630,UnknownRemus::VirtualMethodUnknown3C,UnknownRemus,void UnknownRemus::VirtualMethodUnknown3C(),vfunc,tomalla,high
+0x15d680,UnknownRemus::VirtualMethodUnknown44,UnknownRemus,void UnknownRemus::VirtualMethodUnknown44(),vfunc,tomalla,high
+0x161190,UnknownRemus::VirtualMethodUnknown14,UnknownRemus,void UnknownRemus::VirtualMethodUnknown14(),vfunc,tomalla,high
+0x1611b0,UnknownRemus::VirtualMethodUnknown20,UnknownRemus,void UnknownRemus::VirtualMethodUnknown20(),vfunc,tomalla,high
+0x1611c0,UnknownRemus::~UnknownRemus,UnknownRemus,UnknownRemus::~UnknownRemus(),dtor,tomalla,high
+0x163bf0,UnknownHagrid::VirtualMethodUnknown34,UnknownHagrid,void UnknownHagrid::VirtualMethodUnknown34(),vfunc,tomalla,high
+0x163c60,UnknownHagrid::VirtualMethodUnknown1C,UnknownHagrid,void UnknownHagrid::VirtualMethodUnknown1C(),vfunc,tomalla,high
+0x165210,UnknownSeverus::VirtualMethodUnknown58,UnknownSeverus,void UnknownSeverus::VirtualMethodUnknown58()  [ICF-folded: UnknownSirius::VirtualMethodUnknown1C],vfunc,tomalla,med
+0x1652c0,UnknownSirius::VirtualMethodUnknown24,UnknownSirius,void UnknownSirius::VirtualMethodUnknown24(),vfunc,tomalla,high
+0x1658c0,UnknownAlbus::VirtualMethodUnknown24,UnknownAlbus,void UnknownAlbus::VirtualMethodUnknown24(),vfunc,tomalla,high
+0x165990,UnknownAlbus::VirtualMethodUnknown28,UnknownAlbus,void UnknownAlbus::VirtualMethodUnknown28(),vfunc,tomalla,high
+0x165a10,UnknownAlbus::VirtualMethodUnknown2C,UnknownAlbus,void UnknownAlbus::VirtualMethodUnknown2C(),vfunc,tomalla,high
+0x165a90,UnknownAlbus::VirtualMethodUnknown30,UnknownAlbus,void UnknownAlbus::VirtualMethodUnknown30(),vfunc,tomalla,high
+0x165b90,UnknownAlbus::VirtualMethodUnknown1C,UnknownAlbus,void UnknownAlbus::VirtualMethodUnknown1C(),vfunc,tomalla,high
+0x1776a0,CNetMgr::ReportError,CNetMgr,"void CNetMgr::ReportError(char* szFile, int lineNumber, HRESULT hResult, HWND hWnd)",method,tomalla,high
+0x179700,Font::Font,Font,Font::Font(),ctor,tomalla,high
+0x179720,Font::AllocateMemory,Font,bool Font::AllocateMemory(int lettersCount),method,tomalla,high
+0x1797b0,Font::FreeMemory,Font,void Font::FreeMemory(),method,tomalla,high
+0x179830,Font::LoadFont,Font,bool Font::LoadFont(CString szFileName),method,tomalla,high
