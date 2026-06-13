@@ -1,0 +1,164 @@
+# Orchestration guide — dispatching matchers & labelers
+
+Audience: the **orchestrator** (agent or human) that decomposes the Gruntz
+decompilation into worker tasks. This encodes the strategy and the hard-won
+facts so dispatch is effective. Companion docs: `matching-patterns.md` (codegen
+idioms), `build-system.md` (the loop), `zlib-matching.md` (flags), `runtime-dlls.md`
+(imports + the DX label seed). Data: `config/symbol_names.csv` (matched set),
+`config/engine_labels.csv` (labels), `config/units.toml` (build manifest),
+`build/fid/library_labels.csv` (exclusions).
+
+---
+
+## 1. The surface is stratified — don't treat 14,411 functions as uniform
+
+- **Excluded (never match):** ~1,743 library (CRT `LIBCMT` / MFC `NAFXCW` / zlib,
+  FID-labeled) + ~1,269 LOW generic stubs ≈ **3,012 (~21% count / ~15% bytes)**.
+  Byte-matched-by-construction or trivial. Filter these out via
+  `build/fid/library_labels.csv` before dispatching anything.
+- **Real target:** ~11,400 engine+game functions (~85% of bytes).
+- **Effort is wildly non-uniform (the central planning fact):** median function
+  is **11 bytes**; ~10k functions are ≤32 B (a cheap tail); but
+  **~1,400 functions >128 B hold ~71% of the code, ~455 >512 B hold ~47%, the
+  largest 1% (144) hold 29%.** Matching *effort* ≈ understanding a few-hundred-to-
+  ~1,400 **big** functions; the tiny tail is volume, not difficulty.
+
+**Progress is measured in BYTES matched, not function count.** Count is
+misleading (Pareto) — a "47% by bytes" milestone is ~455 functions, not 7,000.
+
+---
+
+## 2. Prioritization — how to sequence dispatch
+
+1. **Big-first for understanding.** Target functions >~256 B first; they hold most
+   of the code and carry the semantics. A matcher on a big function is a
+   high-value deep task worth a dedicated worker.
+2. **Leaf-first within that (dependencies).** A function that calls many *unmatched*
+   engine functions is hard to verify in isolation. Prefer targets whose callees
+   are already matched / library / tiny leaves. Among the big functions, start
+   with the most self-contained.
+3. **The tiny tail: batch, never deep-dive.** ≤32 B functions (accessors, thunks,
+   trivial getters/setters, vtable-slot stubs) are cheap — many per worker, or
+   generated from the class layout. Never spend a deep worker on a 6-byte stub.
+4. **By TU (contiguity) for locality.** Functions cluster contiguously by source
+   file. Dispatch a worker per **TU / manager region** — it matches a whole
+   `.cpp`'s functions together (shared headers/types, one `src/` file), far more
+   efficient than scattered functions.
+
+---
+
+## 3. Two worker types — label broadly, then match deeply
+
+- **Labeler** — attributes a function to its class/TU and names it, *without*
+  necessarily byte-matching. Sources (Section 4). Output: rows in
+  `config/engine_labels.csv` + names applied to the `build/ghidra-named` DB.
+  Cheap, fans out wide, grows the partition and the roadmap. **Dispatch labelers
+  first/broadly to map the territory.**
+- **Matcher** — byte-matches a function: writes `src/<Module>/<TU>.cpp` (+ headers),
+  runs the `rebuild.py` (ninja→objdiff) loop to byte-exact. Expensive, deep,
+  one function/TU at a time. **Dispatch matchers on *labeled* targets** (so the
+  worker knows the function's identity + prototype before reading it),
+  prioritized by Section 2.
+
+Labels make matching faster — a matcher handed `CGruntzMgr::Init(...)` with a
+prototype starts far ahead of one staring at `FUN_00482f50`.
+
+---
+
+## 4. Label sources, ranked by leverage (for picking targets)
+
+1. **tomalla re-anchored (~250)** — real names + prototypes (mostly the bootstrap
+   path). Highest head-start: named *and* partly understood. (v0.77 → v0.76 via the
+   patch offset map; **skip the 52 v1.01-changed functions**.)
+2. **RTTI** — real **class names** (231) + **ctors/dtors** (functions that store
+   `??_7Class@@6B@` into `[this]` — the vptr-store xref) + **virtuals**
+   (`vfunc_N`, vtable slots). Dense on a class's virtual interface; *sparse* on its
+   non-virtual methods.
+3. **Import-caller seed (any DISCRIMINATING import).** Callers of a
+   subsystem-specific imported function attribute to that subsystem's TU.
+   Verified seeds:
+   - DirectX/audio creators → managers: `DirectDrawCreate`→`CDirectDrawMgr`/DDrawMgr
+     (`0x141dc0`,`0x17c040`), `DirectSoundCreate`→Dsndmgr (`0x136550`),
+     `DirectInputCreateA`→DinMgr2 (`0x132ce0`), DirectPlay→`CNetMgr`/NetMgr
+     (`0x178280`/`0x1780b0`/`0x1782d0` contiguous + `0x8eca0`); `mss32!AIL_*`→sound,
+     `smackw32!Smack*`→cutscenes.
+   - `ADVAPI32!Reg*` (`RegQueryValueExA`/`RegSetValueExA`/`RegCreateKeyExA`…) →
+     config/options: **13 fns tightly clustered at `0x139xxx` = the `RegistryHelper`
+     TU** (+ writers at `0x1ccxxx`/`0x1c7`/`0x1d4`; tomalla's `RegistryHelper::
+     GetRegistryKey` at `0x13axxx` confirms the region).
+   - `KERNEL32` file I/O (`CreateFileA`/`ReadFile`/`WriteFile`/`FindFirstFileA`/
+     `SetFilePointer`/`OpenFile`) → RezMgr/save-load/file wrappers: ~19 fns, broader
+     (a file-heavy cluster at `0x1bfxxx`).
+   - Networking = DirectPlay (`DPLAYX`) here — there is no winsock in this binary.
+   - **CAVEAT — discriminating vs broad:** a *rare* subsystem API pins a TU tightly
+     (`DirectDrawCreate` = 2 callers; `Reg*` clusters at `RegistryHelper`); a *common*
+     one (file I/O, and especially generic `memcpy`/`HeapAlloc`/`GetTickCount`) is
+     used everywhere and attributes a broad set or nothing useful — weight by import
+     rarity.
+   - **CODEGEN (scan BOTH forms):** Win32 imports are `__declspec(dllimport)` →
+     called directly as `FF15 [IAT]`; non-dllimport SDKs (DirectX) → `FF25 [IAT]`
+     thunk + `E8` callers. See `runtime-dlls.md`.
+4. **String/format xrefs** — functions referencing distinctive literals (leaked
+   `C:\Proj\` paths, format/debug strings, WWD/REZ tokens) → name/attribute.
+5. **Contiguity** — once a TU's anchor is found, its address neighbors are the same
+   TU. (NB: blind data/call-graph clustering does NOT work here — boundaries come
+   from labels, not graph analysis. See the TU-clustering note.)
+
+---
+
+## 5. The matching workflow (put this in every matcher prompt)
+
+1. Locate the target's RVA; confirm it's a real function start.
+2. Add `rva,name,unit` to `config/symbol_names.csv`; add/extend the unit in
+   `config/units.toml` with its `src/<Module>/<TU>.cpp` source.
+3. Write the source: reconstruct the class(es)/struct(s) (offsets are load-bearing;
+   names are placeholders) and the function body.
+4. `nix develop .#build --command python3 scripts/rebuild.py`; read objdiff.
+5. Iterate the source to **byte-exact**, using `matching-patterns.md` for the
+   codegen idioms. Locked flags `/O2 /MT` — do not recalibrate.
+6. Navigate with `scripts/clangd_query.py def|refs|hover|symbol`.
+
+---
+
+## 6. Gotchas the orchestrator MUST encode in worker prompts
+
+- **Match by *shape*, not names.** Stack-local order is name-independent at `/O2`
+  (renaming is a byte-identical no-op); match offsets via types/sizes/address-
+  escaping/live-ranges/declaration-order. (The "name order" heuristic was refuted.)
+- **Reloc-typing scoring artifact.** vtable/global stores show ~99.5% *fuzzy* (not
+  100% exact) due to the delinker emitting REL32-vs-`cl`'s DIR32 against differently-
+  named symbols — **the code bytes match**; confirm by direct byte-compare. Don't
+  chase the phantom diff.
+- **Do NOT match the 52 v1.01-changed functions** against tomalla's v0.77 annotations.
+- **DirectX/Win32/COM calls are external** — never match the implementation (it's in
+  system DLLs). The DX6 SDK (`dx/Include`) supplies the COM vtable layouts so
+  `pIface->Method()` compiles to the right slot.
+- **Ghidra scripting:** use Ghidra **11.4.2** (the flake's 12.0.4 routes `.py` to
+  PyGhidra, no jpype).
+
+---
+
+## 7. Concurrency & commit discipline
+
+- **Read-only / Ghidra labelers fan out wide** (many concurrent) — they write
+  scratch + propose; the orchestrator integrates.
+- **Matchers can run several concurrently** (the `wineserver` mediates shared-prefix
+  `cl` builds), but each owns a distinct `src/` file / unit.
+- **ONE committer at a time.** Concurrent `git commit`s race the index. Either keep
+  workers **non-committing** (they leave working-tree changes; the orchestrator
+  commits centrally in atomic batches) or serialize commits. Workers should
+  `git add` only their own files, never `git add -A` (gitignored scratch + other
+  workers' uncommitted work must not be swept in).
+- Don't run two heavy Ghidra operations on the same project concurrently; copy the
+  project (`build/ghidra-<x>`) per heavy job.
+
+---
+
+## 8. Definition of done
+
+- **Labeled** = attributed to class/TU + named in `config/engine_labels.csv`.
+- **Matched** = objdiff byte-exact (reloc-masked); the ~99.5%-fuzzy reloc-typing
+  cases confirmed by direct byte-compare. Graduates from a label into
+  `config/symbol_names.csv` + `src/` + `config/units.toml`.
+- Report progress in **bytes matched** (and big-function count), not raw function
+  count — that's the metric that reflects real completion given the Pareto.
