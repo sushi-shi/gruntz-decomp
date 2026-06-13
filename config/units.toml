@@ -1,0 +1,78 @@
+# units.toml - the per-translation-unit build manifest (single source of truth).
+#
+# This file is per-TU; it is the counterpart to config/symbol_names.csv, which
+# is per-FUNCTION (rva,name,unit). Every `unit` here MUST line up with a `unit`
+# value used in symbol_names.csv so the recompiled base object pairs with the
+# delinked target object of the same name. configure.py reads this manifest and
+# emits build.ninja + compile_commands.json + the objdiff project JSON.
+#
+# [build] holds the global locked toolchain configuration.
+#   cflags  - the calibrated VC5 flag set (docs/zlib-matching.md): cl /c /O2 /MT
+#             (cdecl). NO /Gy/GF/Zp override: /Gy is implied by /O2, default
+#             packing /Zp8 matches, /GF has no effect. A unit MAY override this
+#             with its own `cflags` for a FUTURE TU that needs different flags.
+#   compiler/platform - passed through to the objdiff scratch block.
+#
+# [[unit]] - one per translation unit:
+#   unit    - stem (no extension); the obj is <unit>.obj, the target is
+#             <unit>.c.obj. Must match symbol_names.csv's `unit` column.
+#   source  - source path, relative to the repo root.
+#   status  - "matched" (byte-exact, in the pass set) or "wip" (in progress).
+#   cflags  - OPTIONAL per-unit flag override (defaults to [build].cflags).
+#
+# Add a TU: add an [[unit]] block here (+ its functions to symbol_names.csv),
+# then re-run `python3 configure.py` and `ninja`.
+
+[build]
+cflags = ["/nologo", "/c", "/O2", "/MT"]
+compiler = "msvc5.0"
+platform = "win32"
+
+# --- zlib 1.0.4 (vendor/zlib-1.0.4) -----------------------------------------
+# 9 matched TUs; 42 functions byte-exact at the locked flags. See
+# docs/zlib-matching.md and config/symbol_names.csv.
+
+[[unit]]
+unit = "adler32"
+source = "vendor/zlib-1.0.4/adler32.c"
+status = "matched"
+
+[[unit]]
+unit = "deflate"
+source = "vendor/zlib-1.0.4/deflate.c"
+status = "matched"
+
+[[unit]]
+unit = "trees"
+source = "vendor/zlib-1.0.4/trees.c"
+status = "matched"
+
+[[unit]]
+unit = "inftrees"
+source = "vendor/zlib-1.0.4/inftrees.c"
+status = "matched"
+
+[[unit]]
+unit = "infblock"
+source = "vendor/zlib-1.0.4/infblock.c"
+status = "matched"
+
+[[unit]]
+unit = "infcodes"
+source = "vendor/zlib-1.0.4/infcodes.c"
+status = "matched"
+
+[[unit]]
+unit = "inffast"
+source = "vendor/zlib-1.0.4/inffast.c"
+status = "matched"
+
+[[unit]]
+unit = "infutil"
+source = "vendor/zlib-1.0.4/infutil.c"
+status = "matched"
+
+[[unit]]
+unit = "zutil"
+source = "vendor/zlib-1.0.4/zutil.c"
+status = "matched"

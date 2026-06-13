@@ -1,0 +1,313 @@
+#!/usr/bin/env python3
+"""configure.py - generate the Gruntz matching build from the units manifest.
+
+Single source of truth: config/units.toml (per-TU). This script reads it and
+emits, from one manifest:
+
+  * build.ninja            - the native incremental build graph (Linux ninja
+                             driving `wine cl` via scripts/cc_wrap.py).
+  * compile_commands.json  - for clangd / tooling (reader only).
+  * build/objdiff/objdiff.json - the objdiff project pairing each recompiled
+                             base obj against its delinked target obj BY SYMBOL
+                             NAME (absorbs the old scripts/generate_objdiff_config.py).
+
+Two graph phases (see docs/build-system.md):
+  1. compile -> .obj   - IMPLEMENTED. Each manifest unit's source compiles to
+                         build/objdiff/base/<unit>.obj via the `cl` rule.
+  2. link -> .EXE      - DEFERRED. A clearly-marked placeholder (emit_link_phase)
+                         marks where whole-binary verification will go later.
+
+The TARGET (delink) half is orchestrated as a ninja `delink` rule that runs
+scripts/delink_target.py (synth_pdb -> vostok-delinker -> collect <unit>.c.obj).
+
+Run inside `nix develop .#build`:
+    python3 configure.py        # regenerate build.ninja + the two JSONs
+    ninja                       # build the base objs + delink the target
+    objdiff-cli report generate -p build/objdiff -o build/objdiff/report.json
+
+Add a TU: add an [[unit]] block to config/units.toml (+ its functions to
+config/symbol_names.csv), then re-run configure.py and ninja.
+"""
+
+import argparse
+import json
+import struct
+import sys
+import tomllib
+from pathlib import Path
+
+REPO = Path(__file__).resolve().parent
+MANIFEST = REPO / "config" / "units.toml"
+
+# scripts/ holds the vendored ninja_syntax helper; make it importable whether
+# configure.py is run from the repo root or elsewhere.
+sys.path.insert(0, str(REPO / "scripts"))
+import ninja_syntax  # noqa: E402
+
+# --- paths (all relative to the repo root, which is the ninja build root) ----
+PY = "python3"
+CC_WRAP = "scripts/cc_wrap.py"
+DELINK = "scripts/delink_target.py"
+NAMES_CSV = "config/symbol_names.csv"
+
+# Target (delink) inputs.
+EXE = "build/exe/GRUNTZ.delinkable.EXE"
+FUNCTIONS = "build/ghidra-enrich/exports/functions.csv"
+SYMBOLS = "build/ghidra-enrich/exports/symbols.csv"
+
+# Out-dir layout (under build/, git-ignored).
+OBJDIFF_DIR = "build/objdiff"
+BASE_DIR = "build/objdiff/base"      # recompiled base objs (phase 1 outputs)
+TARGET_DIR = "build/objdiff/target"  # collected delinked target objs
+DELINK_RAW = "build/delink/named"    # raw vostok-delinker output
+PDB_DIR = "build/pdb"                # synth PDB/YAML
+
+
+# --- manifest ---------------------------------------------------------------
+def load_manifest(path: Path) -> dict:
+    with path.open("rb") as f:
+        data = tomllib.load(f)
+    build = data.get("build", {})
+    if "cflags" not in build:
+        raise SystemExit(f"{path}: [build].cflags is required")
+    units = data.get("unit", [])
+    if not units:
+        raise SystemExit(f"{path}: no [[unit]] entries")
+    seen = set()
+    for u in units:
+        for key in ("unit", "source"):
+            if key not in u:
+                raise SystemExit(f"{path}: a [[unit]] is missing '{key}'")
+        if u["unit"] in seen:
+            raise SystemExit(f"{path}: duplicate unit '{u['unit']}'")
+        seen.add(u["unit"])
+        u.setdefault("status", "wip")
+        u.setdefault("cflags", build["cflags"])  # per-unit override or global
+    return data
+
+
+# --- build.ninja ------------------------------------------------------------
+def emit_link_phase(w: ninja_syntax.Writer) -> None:
+    """PLACEHOLDER for graph phase 2 (link -> candidate .EXE).
+
+    NOT IMPLEMENTED YET. Whole-binary verification (link every base .obj into a
+    candidate GRUNTZ.EXE and byte-compare against the retail binary) goes here.
+    When implemented this will add:
+      * a `link` rule running `wine link.exe` via a wrapper, fed a RESPONSE FILE
+        (@objs.rsp) - VC5's link has a short command-line limit under wine, so
+        the obj list + flags must go through a response file, not argv.
+      * link flags pinned by matching: /OPT:REF /OPT:ICF plus the exact link
+        ORDER (COMDAT order, not source order - see docs/zlib-matching.md).
+      * inputs = every base <unit>.obj; output = build/exe/GRUNTZ.candidate.EXE
+        plus a verify step diffing it against the retail EXE.
+    See docs/build-system.md "Deferred: the link phase".
+    """
+    w.comment("=== PHASE 2 (DEFERRED): link -> candidate .EXE ===")
+    w.comment("Not implemented. Whole-binary verification will add a `link` "
+              "rule (wine link.exe via a @response file - VC5 link has a short "
+              "cmdline limit under wine), /OPT:REF /OPT:ICF + the matched link "
+              "order, fed every base <unit>.obj. See configure.py:emit_link_phase "
+              "and docs/build-system.md.")
+    w.newline()
+
+
+def emit_ninja(manifest: dict, out: Path) -> None:
+    build = manifest["build"]
+    units = manifest["unit"]
+    global_cflags = build["cflags"]
+
+    with out.open("w", encoding="utf-8") as f:
+        w = ninja_syntax.Writer(f)
+        w.comment("GENERATED by configure.py from config/units.toml - do not edit.")
+        w.comment("Regenerate: python3 configure.py")
+        w.newline()
+
+        w.variable("ninja_required_version", "1.7")
+        w.variable("py", PY)
+        w.variable("cflags", " ".join(global_cflags))
+        w.newline()
+
+        # Regenerate build.ninja when the manifest or configure.py changes.
+        w.rule("configure",
+               command=f"{PY} configure.py",
+               description="configure.py (regenerate build.ninja)",
+               generator=True)
+        w.build("build.ninja", "configure",
+                implicit=["configure.py", "config/units.toml",
+                          "scripts/ninja_syntax.py"])
+        w.newline()
+
+        # PHASE 1: compile each TU's source -> base .obj via the wine-cl wrapper.
+        w.comment("=== PHASE 1: compile -> base .obj (cl /O2 /MT under wine) ===")
+        w.rule("cl",
+               command=f"{PY} {CC_WRAP} --out $out --src $in -- $cflags",
+               description="cl $unit")
+        w.newline()
+
+        base_objs = []
+        for u in units:
+            obj = f"{BASE_DIR}/{u['unit']}.obj"
+            base_objs.append(obj)
+            variables = {"unit": u["unit"]}
+            # Per-unit cflags override (defaults to the global locked flags).
+            if u["cflags"] != global_cflags:
+                variables["cflags"] = " ".join(u["cflags"])
+            w.build(obj, "cl", inputs=u["source"],
+                    implicit=[CC_WRAP], variables=variables)
+        w.newline()
+
+        # TARGET (delink) half: one rule produces all in-scope <unit>.c.obj.
+        w.comment("=== TARGET: delink GRUNTZ.EXE -> named per-unit .c.obj ===")
+        unit_args = " ".join(f"--unit {u['unit']}" for u in units)
+        w.rule("delink",
+               command=(f"{PY} {DELINK} --exe {EXE} --functions {FUNCTIONS} "
+                        f"--symbols {SYMBOLS} --names-map {NAMES_CSV} "
+                        f"--pdb-dir {PDB_DIR} --delink-dir {DELINK_RAW} "
+                        f"--target-dir {TARGET_DIR} {unit_args}"),
+               description="delink GRUNTZ.EXE -> target objs")
+        target_objs = [f"{TARGET_DIR}/{u['unit']}.c.obj" for u in units]
+        w.build(target_objs, "delink",
+                inputs=[EXE, FUNCTIONS, SYMBOLS, NAMES_CSV],
+                implicit=[DELINK, "scripts/synth_pdb.py"])
+        w.newline()
+
+        # Convenience aliases.
+        w.comment("=== aliases ===")
+        w.build("base", "phony", inputs=base_objs)
+        w.build("target", "phony", inputs=target_objs)
+        w.build("all", "phony", inputs=base_objs + target_objs)
+        w.default(["all"])
+        w.newline()
+
+        emit_link_phase(w)
+
+
+# --- compile_commands.json --------------------------------------------------
+def emit_compile_commands(manifest: dict, out: Path) -> None:
+    """Emit compile_commands.json so clangd can read the base sources.
+
+    The command is the cl invocation as the wrapper runs it (cl plus the
+    per-unit flags); the directory is the repo root.
+    """
+    entries = []
+    for u in manifest["unit"]:
+        cflags = u["cflags"]
+        entries.append({
+            "directory": str(REPO),
+            "file": u["source"],
+            "output": f"{BASE_DIR}/{u['unit']}.obj",
+            "arguments": ["cl", *cflags, f"/Fo{BASE_DIR}/{u['unit']}.obj",
+                          u["source"]],
+        })
+    with out.open("w", encoding="utf-8") as f:
+        json.dump(entries, f, indent=2)
+        f.write("\n")
+
+
+# --- objdiff project (absorbs scripts/generate_objdiff_config.py) -----------
+def write_dummy(path: Path) -> None:
+    """A minimal valid empty i386 COFF (.text, no symbols) for units whose
+    target side has no named functions yet, so objdiff still lists them."""
+    symbol_table_offset = 20 + 40  # header + 1 section header
+    header = struct.pack(
+        "<HHIIIHH",
+        0x14C,                 # Machine: IMAGE_FILE_MACHINE_I386
+        1,                     # NumberOfSections
+        0,                     # TimeDateStamp
+        symbol_table_offset,   # PointerToSymbolTable
+        0,                     # NumberOfSymbols
+        0,                     # SizeOfOptionalHeader
+        0,                     # Characteristics
+    )
+    section = struct.pack(
+        "<8sIIIIIIHHI",
+        b".text\0\0\0",
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0x60000020,            # CODE | EXECUTE | READ
+    )
+    string_table = struct.pack("<I", 4)  # empty string table (size field only)
+    path.write_bytes(header + section + string_table)
+
+
+def units_with_named_functions(names_csv: Path) -> set:
+    """Units that have >=1 row in symbol_names.csv (so the delinker emits a
+    <unit>.c.obj for them). This is the INTENT that decides objdiff's
+    target_path - we cannot probe the filesystem because configure.py runs
+    BEFORE ninja builds the objs."""
+    units = set()
+    if not names_csv.exists():
+        return units
+    import csv
+    with names_csv.open(newline="") as f:
+        rows = [ln for ln in f if not ln.lstrip().startswith("#")]
+    for row in csv.DictReader(rows):
+        unit = (row.get("unit") or "").strip()
+        if unit:
+            units.add(unit)
+    return units
+
+
+def emit_objdiff(manifest: dict, objdiff_dir: Path) -> None:
+    """Write build/objdiff/objdiff.json pairing base <-> target BY NAME.
+
+    base   : ./base/<unit>.obj      (cl /O2 /MT vendor/zlib-1.0.4/<unit>.c)
+    target : ./target/<unit>.c.obj  (delinked, named per symbol_names.csv)
+
+    Symbols are pre-named on both sides (cdecl `_<name>`), so objdiff pairs them
+    directly with no `symbol_mappings` overlay. Paths reflect build INTENT, not
+    the current filesystem: configure.py runs before ninja, so probing for the
+    objs would (wrongly) point everything at the dummy. ninja always builds a
+    base obj for every manifest unit; the delinker emits a <unit>.c.obj only for
+    units that have rows in symbol_names.csv, so a unit with no named target
+    functions yet is paired against the empty dummy.obj (lists at 0%).
+    """
+    build = manifest["build"]
+    objdiff_dir.mkdir(parents=True, exist_ok=True)
+    write_dummy(objdiff_dir / "dummy.obj")
+    named = units_with_named_functions(REPO / NAMES_CSV)
+    units = []
+    for u in manifest["unit"]:
+        base_path = f"./base/{u['unit']}.obj"   # ninja always builds this
+        target_path = (f"./target/{u['unit']}.c.obj"
+                       if u["unit"] in named else "./dummy.obj")
+        units.append({
+            "name": u["unit"],
+            "target_path": target_path,
+            "base_path": base_path,
+            "scratch": {
+                "platform": build.get("platform", "win32"),
+                "compiler": build.get("compiler", "msvc5.0"),
+            },
+        })
+    obj = {
+        "$schema": "https://raw.githubusercontent.com/encounter/objdiff/main/config.schema.json",
+        "build_base": False,
+        "build_target": False,
+        "watch_patterns": ["*.obj"],
+        "units": units,
+    }
+    with (objdiff_dir / "objdiff.json").open("w", encoding="utf-8") as f:
+        json.dump(obj, f, indent=2)
+        f.write("\n")
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--manifest", default=MANIFEST, type=Path)
+    args = ap.parse_args()
+
+    manifest = load_manifest(args.manifest)
+    n = len(manifest["unit"])
+
+    emit_ninja(manifest, REPO / "build.ninja")
+    emit_compile_commands(manifest, REPO / "compile_commands.json")
+    emit_objdiff(manifest, REPO / OBJDIFF_DIR)
+
+    print(f"[configure] wrote build.ninja, compile_commands.json, "
+          f"{OBJDIFF_DIR}/objdiff.json ({n} units)")
+    print("[configure] next: ninja   (then objdiff-cli report generate "
+          f"-p {OBJDIFF_DIR} -o {OBJDIFF_DIR}/report.json)")
+
+
+if __name__ == "__main__":
+    main()

@@ -262,6 +262,7 @@
         vostok-delinker
         pkgs.ghidra        # auto-analysis + fake-PDB generation (add the pdbgen script)
         pkgs.llvm          # llvm-pdbutil: inspect / synthesise PDBs
+        pkgs.ninja         # native incremental driver for the matching build (configure.py -> build.ninja)
         pkgs.python3
         pkgs.ripgrep
         pkgs.file
