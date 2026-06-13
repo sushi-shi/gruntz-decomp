@@ -189,6 +189,56 @@ ButeMgr) are likewise name-only.
 | CRezDir | manager | (REZ/VRZ loader) | name | strings | managers/rezsync.h |
 | ButeMgr | manager | (attributez.txt/dwrects.txt) | name | strings | managers/butemgr.h |
 
+## Reconstructed util classes (tomalla-derived, NOT in RTTI)
+
+tomalla-invented names for real binary classes with matched layouts.
+`@approx tomalla 1.0.1.77` — offsets version-independent; function addresses
+deferred to the re-anchor.
+
+| Name | Kind | Source file | Known | From | Scaffold |
+|---|---|---|---|---|---|
+| Utils::RegistryHelper | util | C:\Proj\Gruntz (util TU?) | layout (0x21C) | tomalla | utils/registry_helper.h |
+| Utils::MemoryPool<T> | util/template | C:\Proj\Gruntz (util TU?) | layout (0x10) | tomalla | utils/memory_pool.h |
+| Font | util | C:\Proj\Gruntz\font.cpp | layout (0x14) + .fnt format | tomalla | utils/font.h |
+| Pair | struct | C:\Proj\Gruntz | layout {int;int} | tomalla | game/cgruntzmgr.h |
+| UnknownClassArrays | nested | C:\Proj\Gruntz\GruntzMgr.cpp | layout (~0x144) | tomalla | game/cgruntzmgr.h |
+| UnknownClassInCGruntzMgr | nested | C:\Proj\Gruntz\GruntzMgr.cpp | layout (0x238) | tomalla | game/cgruntzmgr.h |
+
+## HYPOTHESIZED CDirectDrawMgr surface/page-manager family (tomalla "harry_potter")
+
+NOT in RTTI; ALL names are tomalla placeholders. The class IDENTITY (= CDirectDrawMgr
+family, C:\Proj\DDrawMgr) is a HYPOTHESIS; offsets/sizes/inheritance are high
+confidence. `@approx tomalla 1.0.1.77`. Held in CGruntzMgr @0x30. Method addresses
+(~120 stubs) deferred to the re-anchor.
+
+| Name (placeholder) | Size | Base | Notes | Scaffold |
+|---|---|---|---|---|
+| UnknownClassCGruntzMgrHarryPotter | 0x40 | CObject | family manager; UnknownVirtualMethod18 = 640x480x16 init | managers/ddrawmgr_surface_family.h |
+| UnknownCGruntzMgrHogwarts | 0x8 | CObject | common base | managers/ddrawmgr_surface_family.h |
+| UnknownCGruntzMgrLucius | 0x10 | …Hogwarts | shared sub-manager base | managers/ddrawmgr_surface_family.h |
+| UnknownDraco | 0x1c | …Lucius | | managers/ddrawmgr_surface_family.h |
+| UnknownHermiona | 0x6c | …Lucius | CObList + 2×CMapPtrToPtr | managers/ddrawmgr_surface_family.h |
+| UnknownHagrid | 0x2c | …Lucius | CObList | managers/ddrawmgr_surface_family.h |
+| UnknownSeverus | 0x2c | …Lucius | static DDSURFACEDESC-shaped struct | managers/ddrawmgr_surface_family.h |
+| UnknownSirius | 0x2c | …Lucius | CMapStringToOb | managers/ddrawmgr_surface_family.h |
+| UnknownAlbus | 0x68 | …Lucius | 3×CMapStringToOb | managers/ddrawmgr_surface_family.h |
+| UnknownRemus | 0x6d4 | …Lucius | resolution ladder; 3×CObArray + buffer | managers/ddrawmgr_surface_family.h |
+| UnknownMinerva | 0x38 | …Lucius | CMapStringToPtr | managers/ddrawmgr_surface_family.h |
+| UnknownPettigrew | 0x2c | …Lucius | CMapStringToPtr | managers/ddrawmgr_surface_family.h |
+| UnknownFilch | 0x948 | (none) | 2×CPtrList + CPtrArray | managers/ddrawmgr_surface_family.h |
+| UnknownSalazar | 0x94 | (vtable) | 101-entry volume→attenuation table | managers/ddrawmgr_surface_family.h |
+| UnknownVoldemort | 0x9c | UnknownSalazar | | managers/ddrawmgr_surface_family.h |
+
+## Version-independent on-disk data formats (shared editor<->game)
+
+Not classes — on-disk record formats. Field SET high confidence (editor labels /
+loader asserts); byte layout @todo. See docs/editor-notes.md.
+
+| Name | Kind | Source | Known | From | Scaffold |
+|---|---|---|---|---|---|
+| WwdObject | format | .WWD world file | field set + flag enums | editor strings | formats/wwd_object.h |
+| RezDirEntry | format | .REZ/.VRZ "RezMgr" archive | field set {Type,Name,Size,ID} + sorted invariant | editor strings + game assert | formats/rez.h |
+
 ## Library link-artifacts (statically-linked MFC / CRT / COM / AFX — NOT targets)
 
 All from RTTI; published library types; listed (as comments) in `mfc_runtime.h`.

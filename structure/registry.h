@@ -4,8 +4,11 @@
 /*
  * Registry-backed configuration.
  *
- * Gruntz reads its options from HKLM\Software\Monolith Productions\Gruntz\1.0
- * (read-only path: RegOpenKeyA / RegQueryValueExA — see STRINGS_ANALYSIS.md §2).
+ * Gruntz reads/writes its options at HKLM\Software\Monolith Productions\Gruntz\1.0
+ * (RegQueryValueExA reads; tomalla's Utils::RegistryHelper shows the key is opened
+ * with RegCreateKeyExA — i.e. CREATE-or-open, not read-only — and values are also
+ * written back via SetValueDword. See STRINGS_ANALYSIS.md §2 and
+ * ../structure/utils/registry_helper.h).
  * Each value-name below maps 1:1 to a CGruntzMgr / options field. The raw
  * registry value-name string is kept verbatim in a comment; the C++ field name
  * is a normalized version of it.
@@ -31,15 +34,16 @@ struct GruntzRegistryConfig
     int  disableMusic;          // "Disable Music"
     int  disableSoundFonts;     // "Disable SoundFonts"
     int  disableSoundEffectz;   // "Disable Sound Effectz"
-    int  soundVolume;           // "Sound Volume"
-    int  musicVolume;           // "Music Volume"
-    int  voiceVolume;           // "Voice Volume"
+    int  ambient;               // "Ambient"   (ambient-sound enable flag)
+    int  soundVolume;           // "Sound Volume"   (default 60)
+    int  musicVolume;           // "Music Volume"   (default 100)
+    int  voiceVolume;           // "Voice Volume"   (default 80)
     int  sound;                 // "Sound"   (enable flag)
     int  music;                 // "Music"   (enable flag)
     int  voice;                 // "Voice"   (enable flag)
 
     /* --- Video --- */
-    int  resolution;            // "Resolution"  (CGruntzMgr decodes -> width/height)
+    int  resolution;            // "Resolution"  (default 1; decoded -> width/height)
     int  disableDirectVideoAccess; // "Disable Direct Video Access"
     int  disableFades;          // "Disable Fades"
     int  disableHighQualityMovie;  // "Disable High Quality Movie"
@@ -47,17 +51,25 @@ struct GruntzRegistryConfig
     int  enableHiColor;         // "Enable HiColor"
     int  enableTrueColor;       // "Enable TrueColor"
     int  enableTriple;          // "Enable Triple"   (triple buffering)
+    int  highDetail;            // "High Detail"   (default 1)
+    int  interlaced;            // "Interlaced"    (default 0)
 
     /* --- Input / scroll --- */
     int  disableJoystick;       // "Disable Joystick"
-    int  scrollSpeed;           // "Scroll Speed"
+    int  scrollSpeed;           // "Scroll Speed"   (default 20)
 
     /* --- Gameplay --- */
-    int  easyMode;              // "Easy Mode"
+    int  easyMode;              // "Easy Mode"     (default 0)
+    int  checkpointPrompts;     // "Checkpoint Prompts"   (default 1)
     int  enableCheatzfile;      // "Enable Cheatzfile"   (gates CHEATZ.TXT)
     CString playerName;         // "Player Name"
     CString gameName;           // "Game Name"
     int  defaultMaxGruntz;      // "DefaultMaxGruntz"
+
+    /* --- Install / session bookkeeping --- */
+    CString cdRomDrive;         // "CdRom Drive"   (cached CD drive letter, string)
+    int  numRuns;               // "Num Runs"      (times the game has been launched)
+    int  numMovies;             // "Num Movies"    (intro/movie playback counter)
 
     /*
      * --- Per-save / last-used (INDEXED slots) ---

@@ -43,14 +43,24 @@ structure/
   managers/   one header per leaked manager TU:
               CDirectDrawMgr (DDRAWMGR.CPP), DirectSoundMgr (DSNDMGR.CPP),
               DirectInputMgr2 (DinMgr2.cpp), CNetMgr (NetMgr.cpp),
-              RezSync/CRezDir (REZ/VRZ loader), ButeMgr (attributez.txt config)
+              RezSync/CRezDir (REZ/VRZ loader), ButeMgr (attributez.txt config),
+              ddrawmgr_surface_family.h (HYPOTHESIZED DDrawMgr surface/page family)
   game/       the Gruntz game layer (C:\Proj\Gruntz):
               CGruntzMgr, CGrunt, the CUserLogic dispatch system, the trigger
               family, and the long tail of game classes grouped by theme.
+  utils/      reconstructed util classes (tomalla-derived, @approx 1.0.1.77):
+              Utils::RegistryHelper, Utils::MemoryPool<T>, Font (+ .fnt format)
+  formats/    version-independent on-disk data formats (shared editor<->game):
+              wwd_object.h (WWD world-object record + flag enums),
+              rez.h (REZ/VRZ "RezMgr" archive directory entry)
   enums.h     game taxonomy enums (GruntType, Tool, Toy, …, Statez, LaunchMode)
-  registry.h  the ~30 registry value-names as a config struct
+              + LaunchModeCode, Resolution, Commands, GruntzVolumeAttenuation
+  registry.h  the registry value-names as a config struct
   INDEX.md    table of every one of the 231 RTTI classes
 ```
+
+(See also `docs/editor-notes.md` for the editor-only MFC classes that are
+deliberately NOT modeled here, and the editor<->game data-model evidence.)
 
 ## Annotation conventions (reused from tomalla)
 
@@ -75,7 +85,12 @@ Each stubbed class keeps its **verbatim RTTI mangled name** in a comment
 
 1. **Field + vtable layout** (high confidence, ported from tomalla, marked):
    `CGameApp`, `CGameMgr`, `CGameWnd`, `CGruntzMgr`, `CGruntzApp`, `CGruntzWnd`,
-   `CNetMgr` (partial), `Utils::RegistryHelper`, `Utils::MemoryPool<T>`.
+   `CNetMgr` (partial), `Utils::RegistryHelper`, `Utils::MemoryPool<T>`, `Font`,
+   the `UnknownClassArrays` / `UnknownClassInCGruntzMgr` nested types, and the
+   `ddrawmgr_surface_family.h` hierarchy (offsets/sizes/inheritance high
+   confidence; class IDENTITY = HYPOTHESIS, names = tomalla placeholders).
+   Also the version-independent on-disk formats `WwdObject` (field SET high
+   confidence, byte layout @todo) and `RezDirEntry` (field set, layout @todo).
 2. **Field *order* known, types guessed** (`CGrunt`, from the debug-dump string —
    every member is `@todo`-typed with the raw token kept in a comment).
 3. **Name-only** (the bulk): we know the class exists and (often) its rough role

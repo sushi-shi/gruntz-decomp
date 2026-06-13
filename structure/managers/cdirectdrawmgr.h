@@ -15,6 +15,12 @@
  *
  * This is a shared WAP32 engine manager (same code is expected in Claw / Get
  * Medieval). DirectX 5 baseline ("DirectX 5 is required").
+ *
+ * HYPOTHESIS: tomalla's reconstructed "harry_potter" surface/page-manager class
+ * family (held in CGruntzMgr @0x30, inits 640x480x16, owns a DDSURFACEDESC-shaped
+ * static struct) is believed to BE this CDirectDrawMgr family. That hierarchy —
+ * with full version-independent offsets/sizes/inheritance — is modeled separately
+ * in ddrawmgr_surface_family.h (tagged as a HYPOTHESIS, names are placeholders).
  */
 
 #undef UNICODE

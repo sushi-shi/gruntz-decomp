@@ -24,19 +24,25 @@
 #include <dplobby.h>
 
 #include "../wap32/cgamemgr.h"
+#include "../utils/registry_helper.h"   // Utils::RegistryHelper (m_pRegistryHelper)
+#include "../utils/memory_pool.h"       // Utils::MemoryPool<T>  (memory_pool)
+#include "../utils/font.h"              // Font (font_large/medium/small/tiny)
 
 /* --- helper types ported from tomalla --- */
 
+// Element type of CGruntzMgr::memory_pool (Utils::MemoryPool<Pair>).
 struct Pair
 {
     int a;
     int b;
 };
 
-/* Forward decls for the static members tomalla typed (utils/font/harry_potter). */
-namespace Utils { template <typename T> class MemoryPool; class RegistryHelper; }
-class Font;                                 //@todo: Font (large/medium/small/tiny)
-class UnknownClassCGruntzMgrHarryPotter;    //@todo: surface-restore handler?
+/*
+ * Forward decl for the surface/page-manager family root held at @0x30.
+ * HYPOTHESIZED CDirectDrawMgr — see ../managers/ddrawmgr_surface_family.h
+ * (tomalla's "harry_potter" hierarchy; class identity is a HYPOTHESIS).
+ */
+class UnknownClassCGruntzMgrHarryPotter;
 
 /*
  * UnknownClassArrays — nested array bundle inside UnknownClassInCGruntzMgr.
@@ -158,7 +164,9 @@ public:
 
     //@offset: 2c
     int fieldUnknown02C; // @todo: pointer to current game state (a CState subclass)
-    //@offset: 30
+    //@offset: 30  HYPOTHESIZED CDirectDrawMgr family root (constructed during init;
+    //             its UnknownVirtualMethod18 does the 640x480x16 display-mode init).
+    //             See ../managers/ddrawmgr_surface_family.h.
     UnknownClassCGruntzMgrHarryPotter* fieldUnknown030_maybeSurfaceRestoreHandler;
     //@offset: 34
     int fieldUnknown034;
@@ -174,7 +182,7 @@ public:
     int m_numRuns;
     //@offset: 84
     int m_numMovies;
-    //@offset: 88
+    //@offset: 88   (ctor default fieldUnknown088 = 16  @approx tomalla 1.0.1.77)
     int fieldUnknown088, fieldUnknown08C, fieldUnknown090;
     //@offset: 94
     int m_resolutionWidth;
@@ -186,7 +194,7 @@ public:
     bool m_unknownIsLobbyConnectionSettingsAttempted;
     //@offset: a4
     int fieldUnknown0A4, fieldUnknown0A8, fieldUnknown0AC, fieldUnknown0B0, fieldUnknown0B4;
-    //@offset: b8
+    //@offset: b8   "Checkpoint Prompts" (ctor default 1  @approx tomalla 1.0.1.77)
     int m_isCheckpointPrompts;
     //@offset: bc
     int fieldUnknown0BC;
@@ -196,7 +204,7 @@ public:
     DPLCONNECTION* m_pDirectPlayConnection;
     //@offset: c8
     CString strUnknownString0C8;
-    //@offset: cc
+    //@offset: cc   (ctor default fieldUnknown0CC = 30  @approx tomalla 1.0.1.77)
     int fieldUnknown0CC;
     //@offset: d0
     char m_driveLetter;
@@ -208,29 +216,29 @@ public:
     CString strUnknownString0EC;
     //@offset: f0
     CString strUnknownString0F0;
-    //@offset: f4
+    //@offset: f4   (ctor default fieldUnknown0F4 = 1  @approx tomalla 1.0.1.77)
     int fieldUnknown0F4, fieldUnknown0F8, fieldUnknown0FC;
-    //@offset: 100
+    //@offset: 100  (ctor default 1 — all enable flags default enabled)
     int m_isVoiceEnabled;
-    //@offset: 104
+    //@offset: 104  "Ambient"  (ctor default 1)
     int m_isAmbientEnabled;
-    //@offset: 108
+    //@offset: 108  "Interlaced"  (ctor default 0)
     int m_isInterlaced;
-    //@offset: 10c
+    //@offset: 10c  "High Detail"  (ctor default 1)
     int m_isHighDetail;
-    //@offset: 110
+    //@offset: 110  (ctor default 1 — second high-detail flag)
     int m_unknownSecondIsHighDetail;
     //@offset: 114
     int fieldUnknown114;
-    //@offset: 118
+    //@offset: 118  "Easy Mode"  (ctor default 0)
     int m_isEasyMode;
-    //@offset: 11c
+    //@offset: 11c  "Sound Volume"  (registry default 60)
     int m_soundVolume;
-    //@offset: 120
+    //@offset: 120  "Voice Volume"  (registry default 80)
     int m_voiceVolume;
-    //@offset: 124
+    //@offset: 124  "Scroll Speed"  (registry default 20)
     int m_scrollSpeed;
-    //@offset: 128
+    //@offset: 128   (ctor default fieldUnknown138 = 3  @approx tomalla 1.0.1.77)
     int fieldUnknown128, fieldUnknown12C, fieldUnknown130, fieldUnknown134, fieldUnknown138;
     //@offset: 13c
     char _padding4[0x14];
