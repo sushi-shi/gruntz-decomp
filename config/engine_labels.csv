@@ -49,6 +49,7 @@ rva,name,class,prototype,kind,source,confidence
 0x018030,CBattlezDlgCustom::CBattlezDlgCustom,CBattlezDlgCustom,CBattlezDlgCustom::CBattlezDlgCustom(void),ctor,rtti-vptr,high
 0x01f9b0,StartUpPrompt,,bool StartUpPrompt(HWND hParentWindow),free,tomalla,high
 0x01fd50,Utils::WinAPI::IsGruntzCDInAnyDrive,Utils::WinAPI,bool Utils::WinAPI::IsGruntzCDInAnyDrive(),method,tomalla,high
+0x01fd70,,,,import-caller,"import:OpenFile",low
 0x01ffe0,Utils::WinAPI::GetGruntzDriveLetter,Utils::WinAPI,char Utils::WinAPI::GetGruntzDriveLetter(),method,tomalla,high
 0x0234a0,CCheckpointDlg::CCheckpointDlg,CCheckpointDlg,CCheckpointDlg::CCheckpointDlg(void),ctor,rtti-vptr,high
 0x024220,CGruntzSingleCommand::CGruntzSingleCommand,CGruntzSingleCommand,CGruntzSingleCommand::CGruntzSingleCommand(void),ctor,rtti-vptr,high
@@ -146,6 +147,7 @@ rva,name,class,prototype,kind,source,confidence
 0x0dec60,CProjectile::CProjectile_0dec60,CProjectile,CProjectile::CProjectile(void),ctor,rtti-vptr,med
 0x0e0650,CBoomerang::CBoomerang,CBoomerang,CBoomerang::CBoomerang(void),ctor,rtti-vptr,high
 0x0e1b90,CTimeBomb::CTimeBomb,CTimeBomb,CTimeBomb::CTimeBomb(void),ctor,rtti-vptr,med
+0x0f90f0,,,,import-caller,"import:OpenFile",low
 0x0fb7a0,CStaticHazard::CStaticHazard,CStaticHazard,CStaticHazard::CStaticHazard(void),ctor,rtti-vptr,med
 0x0ffde0,CSBI_RectOnly::~CSBI_RectOnly,CSBI_RectOnly,CSBI_RectOnly::~CSBI_RectOnly(void),dtor,rtti-vptr,med
 0x101580,CSBI_ImageSet::CSBI_ImageSet,CSBI_ImageSet,CSBI_ImageSet::CSBI_ImageSet(void),ctor,rtti-vptr,med
@@ -183,16 +185,26 @@ rva,name,class,prototype,kind,source,confidence
 0x1198a0,CGruntVoice::CGruntVoice,CGruntVoice,CGruntVoice::CGruntVoice(void),ctor,rtti-vptr,med
 0x119b50,CVoiceTrigger::CVoiceTrigger_119b50,CVoiceTrigger,CVoiceTrigger::CVoiceTrigger(void),ctor,rtti-vptr,med
 0x11c860,WinMain,,"int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)",free,tomalla,high
+0x11f900,,,,import-caller,"import:FindFirstFileA",low
+0x12abf0,,,,import-caller,"import:WriteFile",low
+0x12d230,,,,import-caller,"import:WriteFile",low
+0x12d460,,,,import-caller,"import:CreateFileA",low
+0x12d880,,,,import-caller,"import:SetFilePointer",low
+0x1315d0,,,,import-caller,"import:ReadFile",low
+0x132ce0,,DirectInputMgr2,,import-caller,"import:DirectInputCreateA",high
 0x133380,CGameMgr::vector_deleting_destructor,CGameMgr,vftable slot 0 (vector deleting destructor),dtor,tomalla,high
 0x1350b0,UnknownSalazar::getLookupTableValue,UnknownSalazar,int UnknownSalazar::getLookupTableValue(int index),method,tomalla,high
 0x1351a0,UnknownSalazar::initializeUnknownLookupTable,UnknownSalazar,void UnknownSalazar::initializeUnknownLookupTable(),method,tomalla,high
 0x136440,UnknownSalazar::UnknownSalazar,UnknownSalazar,UnknownSalazar::UnknownSalazar(),ctor,tomalla,high
 0x1364c0,UnknownSalazar::~UnknownSalazar,UnknownSalazar,UnknownSalazar::~UnknownSalazar(),dtor,tomalla,high
+0x136550,,DirectSoundMgr,,import-caller,"import:DSOUND.dll!#1",high
 0x1376d0,UnknownVoldemort::UnknownVoldemort,UnknownVoldemort,UnknownVoldemort::UnknownVoldemort(),ctor,tomalla,high
 0x1376f0,UnknownVoldemort::~UnknownVoldemort,UnknownVoldemort,UnknownVoldemort::~UnknownVoldemort(),dtor,tomalla,high
 0x139210,Utils::RegistryHelper::Open,Utils::RegistryHelper,"bool Utils::RegistryHelper::Open(char* szKeyName1, char* szKeyName2, char* szKeyName3, char* szKeyName4, HKEY hKey, char* szSubKey)",method,tomalla,high
 0x139330,Utils::RegistryHelper::Close,Utils::RegistryHelper,void Utils::RegistryHelper::Close(),method,tomalla,high
 0x139370,Utils::RegistryHelper::InitializeLastKey,Utils::RegistryHelper,bool Utils::RegistryHelper::InitializeLastKey(char* szLastKey),method,tomalla,high
+0x1393b0,,,,import-caller,"import:RegSetValueExA",med
+0x139460,,,,import-caller,"import:RegSetValueExA",med
 0x1394a0,Utils::RegistryHelper::GetValueString,Utils::RegistryHelper,"char* Utils::RegistryHelper::GetValueString(char* szValueName, char* szValueBuffer, unsigned int* pValueBufferSize, char* szDefault)",method,tomalla,high
 0x1395d0,Utils::RegistryHelper::GetValueDword,Utils::RegistryHelper,"DWORD Utils::RegistryHelper::GetValueDword(char* szValueName, DWORD valueDefault)",method,tomalla,high
 0x139650,Utils::RegistryHelper::GetRegistryKey,Utils::RegistryHelper,"bool Utils::RegistryHelper::GetRegistryKey(HKEY hKey, char* szSubKey, PHKEY phKeyResult)",method,tomalla,high
@@ -218,6 +230,7 @@ rva,name,class,prototype,kind,source,confidence
 0x13dea0,WAP32::CGameMgr::UnknownMethodInitializeTimeGlobal,WAP32::CGameMgr,void WAP32::CGameMgr::UnknownMethodInitializeTimeGlobal(),method,tomalla,high
 0x13dfe0,Utils::WinAPI::ActiveWait,Utils::WinAPI,void Utils::WinAPI::ActiveWait(unsigned int milliseconds),method,tomalla,high
 0x141cc0,UnknownFilch::UnknownFilch,UnknownFilch,UnknownFilch::UnknownFilch(),ctor,tomalla,high
+0x141dc0,,CDirectDrawMgr,,import-caller,"import:DirectDrawCreate",high
 0x152650,UnknownPettigrew::VirtualMethodUnknown1C,UnknownPettigrew,void UnknownPettigrew::VirtualMethodUnknown1C(),vfunc,tomalla,high
 0x154aa0,UnknownSeverus::VirtualMethodUnknown18,UnknownSeverus,bool UnknownSeverus::VirtualMethodUnknown18(),vfunc,tomalla,high
 0x154ac0,UnknownSeverus::VirtualMethodUnknown1C,UnknownSeverus,void UnknownSeverus::VirtualMethodUnknown1C(),vfunc,tomalla,high
@@ -304,7 +317,31 @@ rva,name,class,prototype,kind,source,confidence
 0x165a90,UnknownAlbus::VirtualMethodUnknown30,UnknownAlbus,void UnknownAlbus::VirtualMethodUnknown30(),vfunc,tomalla,high
 0x165b90,UnknownAlbus::VirtualMethodUnknown1C,UnknownAlbus,void UnknownAlbus::VirtualMethodUnknown1C(),vfunc,tomalla,high
 0x1776a0,CNetMgr::ReportError,CNetMgr,"void CNetMgr::ReportError(char* szFile, int lineNumber, HRESULT hResult, HWND hWnd)",method,tomalla,high
+0x1780b0,,CNetMgr,,import-caller,"import:DPLAYX.dll!#1",high
+0x178280,,CNetMgr,,import-caller,"import:DPLAYX.dll!#2",high
+0x1782d0,,CNetMgr,,import-caller,"import:DPLAYX.dll!#1",high
 0x179700,Font::Font,Font,Font::Font(),ctor,tomalla,high
 0x179720,Font::AllocateMemory,Font,bool Font::AllocateMemory(int lettersCount),method,tomalla,high
 0x1797b0,Font::FreeMemory,Font,void Font::FreeMemory(),method,tomalla,high
 0x179830,Font::LoadFont,Font,bool Font::LoadFont(CString szFileName),method,tomalla,high
+0x17c040,,CDirectDrawMgr,,import-caller,"import:DirectDrawCreate",high
+0x18c780,,,,import-caller,"import:FindFirstFileA",low
+0x1bf200,,,,import-caller,"import:CreateFileA",low
+0x1bf328,,,,import-caller,"import:ReadFile",low
+0x1bf362,,,,import-caller,"import:WriteFile",low
+0x1bf3ad,,,,import-caller,"import:SetFilePointer",low
+0x1bf3dc,,,,import-caller,"import:SetFilePointer",low
+0x1bf702,,,,import-caller,"import:RegQueryValueExA",med
+0x1bf8f8,,,,import-caller,"import:FindFirstFileA",low
+0x1c152f,,,,import-caller,"import:GetFileSize",low
+0x1c1609,,,,import-caller,"import:FindFirstFileA",low
+0x1c176a,,,,import-caller,"import:CreateFileA",low
+0x1c7cb3,,,,import-caller,"import:RegCloseKey,RegOpenKeyExA,RegQueryValueExA",med
+0x1ccae7,,,,import-caller,"import:RegCloseKey,RegSetValueExA",med
+0x1ccb5c,,,,import-caller,"import:RegCloseKey,RegSetValueExA",med
+0x1ccbfc,,,,import-caller,"import:RegCloseKey,RegSetValueExA",med
+0x1d4ee3,,,,import-caller,"import:RegOpenKeyExA",med
+0x1d4f77,,,,import-caller,"import:RegCloseKey,RegCreateKeyExA",med
+0x1d4fbd,,,,import-caller,"import:RegCloseKey,RegQueryValueExA",med
+0x1d5029,,,,import-caller,"import:RegCloseKey",med
+0x1d513b,,,,import-caller,"import:RegCloseKey",med
