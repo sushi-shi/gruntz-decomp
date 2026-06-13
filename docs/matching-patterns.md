@@ -20,37 +20,102 @@ When you confirm or discover a pattern, add it here and cite the function.
 
 ---
 
-## [HEURISTIC] Stack locals are laid out in *name* order, not declaration order
+## [REFUTED → QUALIFIED] Stack-local slot order is **name-dependent but NOT alphabetical**; and at `/O2` it does **not** depend on names at all
 
-**Claim.** A C++ compiler keeps the function's local symbols in a name-keyed
-sorted container (a tree/map). Stack-slot assignment walks that container, so
-stack-resident locals get their `[ebp-X]` / `[esp+X]` offsets assigned in
-**lexicographic order of their identifier names** — *not* in declaration order,
-use order, or appearance order.
+**Original claim (refuted).** "Stack-resident locals get their `[ebp-X]` offsets
+in *lexicographic* order of their identifier names." **This is false for MSVC
+5.0 SP3.** Tested empirically (see evidence below). What's actually true:
 
-**Why it matters for matching.** If your recompiled function's stack offsets
-don't line up with the target's, the body won't byte-match (every `mov`/`lea`
-touching a local differs). You can't see the original names, but you *can* read
-the **slot order** off the target's disassembly (which `[ebp-X]` is touched
-first, their relative offsets). To reproduce it, **rename your locals so their
-alphabetical order matches the target's slot order** (e.g. name them `a_…`,
-`b_…`, `c_…` in slot order).
+- **`/Od`:** the slot order **does change when you rename locals** (so names *do*
+  influence layout — declaration order is NOT the key either), but the order is
+  **not lexicographic**. It is a **name-dependent hash/bucket order** that you
+  cannot predict by alphabetizing. Two name sets that are identical in
+  declaration position produce *different* `[ebp-X]` assignments, and a name set
+  that is already in alphabetical order (`aaa,bbb,ccc,ddd`) does **not** get
+  alphabetical slots (see test t7: `aaa` landed at the *farthest* slot, not the
+  closest). So: renaming perturbs `/Od` layout, but alphabetizing won't
+  reproduce a target's order.
+- **`/O2` (our match flags):** renaming stack-resident locals has **zero effect**
+  on codegen — the `.text` is **byte-identical** before/after a rename (only the
+  symbol/string table grows for longer names). Slot layout at `/O2` is driven by
+  the optimizer's allocation/scheduling, **independent of identifier names**.
+  And as noted, most scalars enregister/coalesce at `/O2` and get **no slot at
+  all**. **Practical relevance to our matching: essentially nil.** Don't rename
+  locals hoping to shift `/O2` stack offsets — it won't move them. To change a
+  `/O2` stack slot you must change something the optimizer sees: the local's
+  **type/size**, whether its **address escapes**, its **live range**, or the
+  **count/order of operations** on it.
 
-**Status: UNVERIFIED for MSVC 5.0** — flagged by the project owner as a thing to
-try; not yet confirmed for this compiler version. Cautions:
-- Under `/O2`, most scalar locals are **enregistered or coalesced**, so they
-  never get a stack slot at all. This rule, *if* true here, applies mainly to
-  **stack-resident** locals: structs, arrays, address-taken variables, and
-  spills the optimizer couldn't avoid.
-- The real ordering key could instead be declaration order, *reverse*
-  declaration order, or size/alignment-bucketed. **Name order is the first
-  hypothesis to test**, not an established fact.
+**So how *do* you match a `/O2` stack offset?** Match the *shape*, not the name:
+reproduce the same set of genuinely-stack-resident objects (same types/sizes,
+same address-escaping, same live ranges). The compiler then assigns the same
+offsets deterministically regardless of what you call them. Renaming is a no-op.
 
-**How to test (do this before relying on it).** Write a small function with
-several stack-resident locals of the same type, compile at `/O2 /MT`, and read
-the assigned offsets. Then permute the *names* (not the declarations) and
-recompile: if the slot↔offset assignment tracks the name order, the rule holds
-for VC5. Record the result here.
+**Evidence (MSVC 5.0 SP3, `cl /c /MT`, scratch in `build/asm-experiments/`).**
+All probes had 4 `int[4]` locals in fixed declaration positions `pos0..pos3`,
+each address-taken (passed to `sink`) and live (stored to `out`), so all four
+stay stack-resident. Only the **names** were permuted across runs. Slot index 0
+= closest to `ebp` (`-0x10`), 3 = farthest (`-0x40`).
+
+`/Od` — slot assignment vs. names (decl position fixed, names permuted):
+
+| run | pos0 | pos1 | pos2 | pos3 | closest→farthest (`-0x10`→`-0x40`) | alphabetical? |
+|-----|------|------|------|------|------------------------------------|---------------|
+| t1  | `zulu@-40` | `alpha@-10` | `mike@-30` | `bravo@-20` | alpha,bravo,mike,zulu | coincidentally yes |
+| t2  | `delta@-20` | `yankee@-10` | `charlie@-30` | `oscar@-40` | yankee,delta,charlie,oscar | **no** |
+| t3  | `sierra@-40` | `golf@-30` | `tango@-20` | `alpha@-10` | alpha,tango,golf,sierra | **no** |
+| t7  | `aaa@-40` | `bbb@-10` | `ccc@-20` | `ddd@-30` | bbb,ccc,ddd,aaa | **no** (names already sorted; slots are not) |
+
+t1's "alphabetical" result is a coincidence; t2/t3/t7 break it. Renaming clearly
+**reshuffles** the offsets (so not declaration order), but along a hash order, not
+A→Z. Even the loop counter `i` moved slot when only the *array* names changed
+(t5 `i@-0x24` vs renamed-twin t6 `i@-0x4`), confirming a whole-symbol-table
+re-hash.
+
+Other positional rules tested against the same data and **also refuted** (decl
+position → slot, slot 0 = closest `-0x10`, 3 = farthest `-0x40`):
+
+| run | pos0 | pos1 | pos2 | pos3 |
+|-----|------|------|------|------|
+| t1  | slot3 | slot0 | slot2 | slot1 |
+| t2  | slot1 | slot0 | slot2 | slot3 |
+| t3  | slot3 | slot2 | slot1 | slot0 |
+| t7  | slot3 | slot0 | slot1 | slot2 |
+
+- *"first-declared goes to the farthest slot, rest ordered"* — fails: t2's
+  pos0 lands in slot 1, not the farthest (pos3 does).
+- *"reverse declaration order"* — would need pos0→slot3,…,pos3→slot0 every
+  time; t1/t2/t7 violate it.
+- *"the rest (pos1..3) are in declaration order among themselves"* — fails on
+  t1 (slots 0,2,1, not monotonic).
+
+There is **no positional rule**; the slot is a function of the **name** through a
+hash. The mapping is **deterministic** (same source → same offsets) but **not**
+computable by hand from the names.
+
+**Build order is irrelevant.** Recompiling the same TUs in a different sequence
+(reversed/interleaved, sharing one persistent `wineserver`) produces
+**byte-identical** `.text` — the layout depends only on the source TU, not on
+compile order or prior-invocation state. (Verified: every probe rebuilt in a
+shuffled order matched its original `.text` exactly.)
+
+`/O2` — same probes, renamed twin: `.text` **byte-identical** (0xb0 bytes both),
+diff empty. Renaming changed only the COFF symbol/string table, never a single
+code byte or stack offset. (Test t5 vs t6.) Likewise t1↔t2↔t3 at `/O2` were
+byte-identical to each other.
+
+Mixed sizes (`double zulu; char alpha[3]; int mike; double bravo`, `/Od`, t4):
+layout is **not** size/alignment-bucketed — the `int` (`mike@-0x10`) sits between
+the two 8-byte doubles (`bravo@-0xc`, `zulu@-0x18`); each symbol just consumes
+its natural size at its hash-ordered position.
+
+**Bottom line for matchers.** Do **not** try to reproduce a target's stack-slot
+order by renaming/alphabetizing locals — it doesn't work for VC5 (no-op at `/O2`;
+unpredictable hash shuffle at `/Od`). Match offsets by matching the locals'
+*types, sizes, address-escaping and live ranges* instead.
+
+*(Refuted by `build/asm-experiments/t1`–`t7`, this experiment. No in-repo
+byte-match function cites this because the rule is not actionable.)*
 
 ---
 
