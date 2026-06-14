@@ -618,3 +618,32 @@ rva,name,class,prototype,kind,source,confidence
 0x008a40,BuildLogicTypeTable,,[LogicHit/LogicAttack/LogicBump logic-type name table],free,decomp-xref,med
 0x018d30,BootyState::vfunc_9,,__thiscall(this) [vtable slot 9; BOOTY_LOOP loop-music handler],vfunc,decomp-xref,med
 0x03c0e0,BuildWorldLevelKey,,__thiscall(this) [WORLDZ_LEVEL_%i level-key builder],method,decomp-xref,med
+#
+# --- decomp-xref pass, batch 6: CButeMgr getters+parser, CSBI sprites, MULTI_* ---
+0x171aa0,CButeMgr::GetIntDef,CButeMgr,"__thiscall(this,tag,key,def) [type-tag 0; returns def on miss/mismatch; 94 callers (object LoadAttributes)]",method,decomp-xref,high
+0x1721e0,CButeMgr::GetDwordDef,CButeMgr,"__thiscall(this,tag,key,def) [type-tag 1; returns def on miss; 104 callers]",method,decomp-xref,high
+0x173180,CButeMgr::GetStringDef,CButeMgr,"__thiscall(this,tag,key,def) [type-tag 4; returns def on miss]",method,decomp-xref,med
+0x1704c0,CButeMgr::Parse,CButeMgr,__thiscall(this) [recursive-descent .att parser; 'ButeMgr: %d : Bad symbol encountered'],method,decomp-xref,high
+0x1711b0,CButeMgr::ParseTagLine,CButeMgr,__thiscall(this) [reads a tag=value line; 'ButeMgr: duplicate tag encountered'],method,decomp-xref,med
+0x170710,CButeMgr::ScanToken,CButeMgr,"__thiscall(this,a) [lexer token scan; 'ButeMgr: %d : A formatting error']",method,decomp-xref,med
+0x0e2d10,LoadGruntzPalette,,"bool __thiscall(this,a,name) [builds GRUNTZ_PALETTEZ_%s key, looks up + applies palette]",method,decomp-xref,med
+0x11c210,BuildVoiceSoundList,,__thiscall(this) [VOICES_%s/VOICES_%s_%s voice-sound CObList],method,decomp-xref,med
+0x0c16b0,BuildNamedGruntTable,,[Beefy/Serra/Jebediah... named-grunt roster],free,decomp-xref,med
+0x0bad40,CNetMgr::OnMultiPause,CNetMgr,__thiscall(this) [MULTI_PAUSE],method,decomp-xref,med
+0x0badd0,CNetMgr::OnMultiOptions,CNetMgr,__thiscall(this) [MULTI_OPTIONZ],method,decomp-xref,med
+0x0bae40,CNetMgr::OnOutOfSync,CNetMgr,__thiscall(this) [MULTI_OUTOFSYNC],method,decomp-xref,med
+0x0bc110,CNetMgr::OnDropPlayer,CNetMgr,__thiscall(this) [MULTI_DROPPLAYER],method,decomp-xref,med
+0x0ba620,LoadMenuSelectSprite,,"__thiscall(this,a) [GAME_MENUS_SELECT]",method,decomp-xref,med
+0x0d7440,LoadLoadingBarSprite,,__thiscall(this) [GAME_LOADINGBAR],method,decomp-xref,med
+0x0e8a70,BuildResourceTabStatusBar,,__thiscall(this) [GAME_STATUSBAR_TABZ_RESOURCETAB],method,decomp-xref,med
+0x0e9850,BuildStatzTabSmallSprite,,__thiscall(this) [GAME_STATUSBAR_TABZ_STATZTAB_SMA],method,decomp-xref,med
+0x0fe6b0,LoadMainStatusBarSprite,,__thiscall(this) [GAME_STATUSBAR_MAINBAR],method,decomp-xref,med
+0x0ffb20,LoadDestructButtonSprite,,"__thiscall(this,a) [GAME_DESTRUCT self-destruct button]",method,decomp-xref,med
+0x102180,BuildGameTabResumeButton,,"__thiscall(this,a) [GAME_STATUSBAR_TABZ_GAMETAB_RESUME]",method,decomp-xref,med
+0x102200,BuildGameTabPauseButton,,__thiscall(this) [GAME_STATUSBAR_TABZ_GAMETAB_PAUSE],method,decomp-xref,med
+0x104e60,LoadStatzTabToggleSprite,,"__thiscall(this,a,b) [GAME_STATZTABTOGGLE]",method,decomp-xref,med
+0x1055b0,LoadGooCookingSprite,,"__thiscall(this,a) [GAME_GOOCOOKING1 grunt-oven cooking]",method,decomp-xref,med
+0x110570,LoadSwitchDownSprite,,__thiscall(this) [GAME_SWITCHDOWN tile-switch],method,decomp-xref,med
+0x1106b0,LoadSwitchUpSprite,,__thiscall(this) [GAME_SWITCHUP tile-switch],method,decomp-xref,med
+0x0cbcc0,StatusBarItem::vfunc_12,,"__thiscall(this,a,b) [vtable slot 0x0c; GAME_TABHIGHLIGHT1 tab draw/update]",vfunc,decomp-xref,med
+0x0ce660,StatusBarItem::vfunc_16,,"__thiscall(this,a,b,c) [vtable slot 0x10; GAME_TABHIGHLIGHT1]",vfunc,decomp-xref,med
