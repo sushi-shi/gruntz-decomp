@@ -84,6 +84,11 @@ rva,name,unit
 # differently on each side - see report).
 0x13cf00,??0CGameWnd@@QAE@XZ,gamewnd
 0x13d590,??0CGameApp@@QAE@XZ,gameapp
+# --- CGameApp methods (this cluster) ----------------------------------------
+0x13d8c0,?CloseResources@CGameApp@@QAEXXZ,gameapp
+0x13dc20,?InitializeAccelerators@CGameApp@@QAEHPBD@Z,gameapp
+0x13dcb0,?ReportError@CGameApp@@QAEXIJ@Z,gameapp
+0x13d9b0,?InitializeDefaultWindowClass@CGameApp@@QAEXXZ,gameapp
 0x1005d0,??0CStatusBarItem@@QAE@XZ,statusbaritem
 0x101fa0,??0CSBI_RectOnly@@QAE@XZ,sbi_rectonly
 0x1107f0,??0CTileTriggerLogic@@QAE@XZ,tiletriggerlogic

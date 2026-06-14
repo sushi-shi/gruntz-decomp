@@ -6,6 +6,53 @@
 #define WAP32_H
 
 // ---------------------------------------------------------------------------
+// Minimal Win32 surface (we do NOT pull in <windows.h> to keep the visible
+// symbol SET small - the compiler hashes the visible set and entropy follows
+// header churn; see docs/matching-patterns.md). Only the few __stdcall imports
+// and the WNDCLASSA layout that the matched methods touch are declared.
+// ---------------------------------------------------------------------------
+typedef int                 BOOL;
+typedef unsigned int        UINT;
+typedef unsigned long       DWORD;
+typedef unsigned int        WPARAM;
+typedef long                LPARAM;
+typedef long                LRESULT;
+typedef const char *        LPCSTR;
+typedef void *              HANDLE;
+typedef HANDLE              HWND;
+typedef HANDLE              HINSTANCE;
+typedef HANDLE              HICON;
+typedef HANDLE              HCURSOR;
+typedef HANDLE              HBRUSH;
+typedef HANDLE              HMENU;
+typedef HANDLE              HACCEL;
+typedef HANDLE              HGDIOBJ;
+
+typedef LRESULT (__stdcall *WNDPROC)(HWND, UINT, WPARAM, LPARAM);
+
+typedef struct tagWNDCLASSA {
+    UINT      style;          // +0x00
+    WNDPROC   lpfnWndProc;    // +0x04
+    int       cbClsExtra;     // +0x08
+    int       cbWndExtra;     // +0x0c
+    HINSTANCE hInstance;      // +0x10
+    HICON     hIcon;          // +0x14
+    HCURSOR   hCursor;        // +0x18
+    HBRUSH    hbrBackground;  // +0x1c
+    LPCSTR    lpszMenuName;   // +0x20
+    LPCSTR    lpszClassName;  // +0x24
+} WNDCLASSA;                  // 0x28 bytes (10 dwords)
+
+extern "C" {
+__declspec(dllimport) BOOL    __stdcall DestroyAcceleratorTable(HACCEL hAccel);
+__declspec(dllimport) HACCEL  __stdcall LoadAcceleratorsA(HINSTANCE hInstance, LPCSTR lpTableName);
+__declspec(dllimport) BOOL    __stdcall PostMessageA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
+__declspec(dllimport) HCURSOR __stdcall LoadCursorA(HINSTANCE hInstance, LPCSTR lpCursorName);
+__declspec(dllimport) HICON   __stdcall LoadIconA(HINSTANCE hInstance, LPCSTR lpIconName);
+__declspec(dllimport) HGDIOBJ __stdcall GetStockObject(int i);
+}
+
+// ---------------------------------------------------------------------------
 // CGameWnd - WAP32 window wrapper.
 //   vftable @0x5ea344. ctor (RVA 0x13cf00, 17 bytes) zeroes m_4 (+0x04) and
 //   m_c (+0x0c); vptr stored first (natural single-class form).
@@ -21,6 +68,20 @@ public:
     int  m_c;   // +0x0c  zeroed by ctor
 };
 
+// Minimal polymorphic resource objects whose pointers live in CGameApp::m_4 /
+// m_8. CloseResources `delete`s them; the scalar-deleting destructor is at
+// vtable slot 0, so a single virtual dtor reproduces `mov [ecx];push 1;call`.
+// m_4 additionally exposes a window handle (+0x4) + a guard flag (+0xc) used
+// by ReportError to post WM_CLOSE.
+class CGameResource {
+public:
+    virtual ~CGameResource();
+
+    int m_4;   // +0x04  (HWND for ReportError's PostMessageA)
+    int m_8;   // +0x08
+    int m_c;   // +0x0c  guard flag
+};
+
 // ---------------------------------------------------------------------------
 // CGameApp - WAP32 application object.
 //   vftable @0x5e9b0c. ctor (RVA 0x13d590, 60 bytes) zeroes a handful of
@@ -34,16 +95,30 @@ public:
     virtual ~CGameApp();
     virtual int Wap32GameAppVfunc0();
 
-    int  m_4;            // +0x04
-    int  m_8;            // +0x08
-    int  m_c;            // +0x0c
-    int  m_10;           // +0x10
-    char m_pad14[0x240 - 0x14];
+    void CloseResources();                       // 0x13d8c0
+    BOOL InitializeAccelerators(LPCSTR lpTable);  // 0x13dc20
+    void ReportError(WPARAM wParam, LPARAM lParam); // 0x13dcb0
+    void InitializeDefaultWindowClass();          // 0x13d9b0
+
+    // Static window procedure stored into m_wc.lpfnWndProc (RVA 0x13cff0).
+    static LRESULT __stdcall GameWindowProc(HWND, UINT, WPARAM, LPARAM);
+
+    CGameResource *m_4;  // +0x04  deleted by CloseResources
+    CGameResource *m_8;  // +0x08  deleted by CloseResources
+    HINSTANCE m_c;       // +0x0c  hInstance
+    HACCEL m_10;         // +0x10  accelerator table
+    char m_pad14[0x18 - 0x14];
+    char m_18;           // +0x18  flag byte (bit 0x1: use system arrow cursor)
+    char m_pad19[0xa0 - 0x19];
+    char m_a0[0x160 - 0xa0]; // +0xa0  cursor/icon resource name buffer
+    char m_160[0x1e8 - 0x160]; // +0x160 window class name buffer
+    WNDCLASSA m_wc;      // +0x1e8  registered window class
+    char m_pad210[0x240 - 0x210];
     int  m_240;          // +0x240
-    int  m_244;          // +0x244 (not touched)
-    int  m_248;          // +0x248
-    int  m_24c;          // +0x24c
-    int  m_250;          // +0x250
+    int  m_244;          // +0x244
+    int  m_248;          // +0x248  error-reported guard
+    int  m_24c;          // +0x24c  error code
+    int  m_250;          // +0x250  error detail
 };
 
 #endif // WAP32_H
