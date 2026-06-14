@@ -265,10 +265,10 @@ enum Resolution
  * Commands — WM_COMMAND notification codes posted by the app.
  * @approx tomalla 1.0.1.77.
  * ------------------------------------------------------------------ */
-struct Commands
+enum Commands
 {
     // Posted when the game is launched from a DirectPlay lobby (LOBBYLAUNCH).
-    static const int LobbyLaunch = 0x80B7;
+    LOBBYLAUNCH = 0x80B7
 };
 
 /* ------------------------------------------------------------------ *

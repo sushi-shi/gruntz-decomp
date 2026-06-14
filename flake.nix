@@ -78,9 +78,8 @@
         '';
       };
 
-      # gruntz-exe - the decomp target. The IA /download/<id>/<iso>/<inner-path>
-      # URL (inner path %2F-encoded) 302s to a data node; fetchurl follows it.
-      # EN retail v1.0, 2,511,872 bytes, MD5 81c7f648db99501bed6e1ee71e66e4a0.
+      # gruntz-exe - the decomp target.
+      # EN retail v1.0, 2,511,872 bytes
       gruntz-exe = pkgs.fetchurl {
         name = "GRUNTZ.EXE";
         url = "https://archive.org/download/gruntz-pc/Gruntz.iso/GAME%2FGRUNTZ.EXE";
@@ -125,18 +124,9 @@
         inherit (gruntz-sfman32-src) url sha256;
       };
 
-      # GRUNTZ.REZ - packed asset archive. Needed to RUN the game, not to build the
-      # EXE, and large (~74 MiB), so left a fakeHash placeholder (never realised) to
-      # avoid a big fetch. Pin with `nix-prefetch-url --name GRUNTZ.REZ <url>`.
-      gruntz-rez = pkgs.fetchurl {
-        name = "GRUNTZ.REZ";
-        url = "https://archive.org/download/gruntz-pc/Gruntz.iso/DATA%2FGRUNTZ.REZ";
-        sha256 = pkgs.lib.fakeHash; # TODO: ~74 MiB; pin when you want the assets
-      };
-
       # gruntz-runtime - assembles the runtime DLLs into one out dir. mss32 +
       # smackw32 are always copied; sfman32 is skipped cleanly while it is a
-      # fakeHash placeholder. GRUNTZ.REZ is not bundled (use `gruntz-rez` directly).
+      # fakeHash placeholder.
       gruntz-runtime = pkgs.runCommand "gruntz-runtime" {
         # Env var names use underscores (a hyphen is not a valid shell name).
         gruntz_mss32 = gruntz-mss32;
@@ -176,7 +166,7 @@
         exec python3 "''${GRUNTZ_DIR:-$PWD}/scripts/gruntz.py" "$@"
       '';
 
-      # Tools common to both shells (analysis + diffing; no MSVC).
+      # Tools common to both shells (analysis + diffing).
       commonTools = [
         gruntz-cli
         rust
@@ -184,13 +174,9 @@
         objdiff-cli
         vostok-delinker
       ] ++ (with pkgs; [
+        (python3.withPackages (ps: [ ps.pyghidra ]))   # pyghidra + jpype1: headless Ghidra scripting
         ghidra
         ninja
-        python3
-        ripgrep
-        file
-        xxd
-        jq
 
         llvm            # llvm-pdbutil
         clang-tools     # clangd
@@ -200,18 +186,20 @@
                              # windows-msvc (verified: wrapped clang yields 0 structs).
                              # Reached via $GRUNTZ_CLANG so it never clashes with
                              # the wrapped clang clangd may pull in.
+
+        ripgrep
+        file
+        xxd
+        jq
       ]);
 
     in {
       packages.${system} = {
         inherit vostok-delinker objdiff objdiff-cli gruntz-exe gruntz-toolchain
-          gruntz-mss32 gruntz-smackw32 gruntz-rez gruntz-runtime;
+          gruntz-mss32 gruntz-smackw32 gruntz-runtime;
         default = vostok-delinker;
       };
 
-      # Both shells must be siblings under one `devShells.${system}` attrset: a
-      # dynamic key in two separate attrpaths trips "dynamic attribute already
-      # defined".
       devShells.${system} = {
         # Default shell - no MSVC: analysis, target-side delink, objdiff.
         default = pkgs.mkShell {
@@ -234,7 +222,7 @@
         # mspdbsrv; VC5 may not need it but it is a harmless superset).
         build = pkgs.mkShell {
           name = "gruntz-build";
-          packages = commonTools ++ [ pkgs.wineWow64Packages.staging ];
+          packages = commonTools ++ [ pkgs.wineWow64Packages.staging pkgs.jdk21 ];
           shellHook = ''
             export GRUNTZ_DIR="$PWD"
             export GRUNTZ_EXE="${gruntz-exe}"
@@ -247,6 +235,10 @@
             export MSVC_DIR="${gruntz-toolchain}/msvc"
             export DXSDK_DIR="${gruntz-toolchain}/dx"
             export NINJA_DIR="${gruntz-toolchain}/ninja"
+            # PyGhidra (replaces Jython): pyghidra.start() bootstraps the Ghidra JVM
+            # via jpype so the headless apply/export scripts run as CPython3.
+            export GHIDRA_INSTALL_DIR="${pkgs.ghidra}/lib/ghidra"
+            export JAVA_HOME="${pkgs.jdk21}/lib/openjdk"
 
             # Proprietary runtime DLLs (mss32 + smackw32, and sfman32 once pinned).
             # These run ALONGSIDE the recompiled EXE under wine - none are needed
@@ -256,14 +248,19 @@
             echo "[gruntz] runtime    : $GRUNTZ_RUNTIME (MSS32/SMACKW32 DLLs)"
             echo "[gruntz] target EXE : $GRUNTZ_EXE"
             echo "[gruntz] cli        : 'gruntz <cmd>' (init/build/clangd/status/labels/structs/ghidra-refresh/todo)"
-            # `gruntz init` is idempotent - run it on startup. The first run builds the
-            # local env incl. the Ghidra DB (minutes); afterwards the heavy Ghidra step
-            # self-skips (exports present), so it is a fast no-op.
-            if [ ! -f "$GRUNTZ_DIR/build/ghidra-enrich/exports/functions.csv" ]; then
-              echo "[gruntz] init       : first-time setup - building the Ghidra DB (~minutes) ..."
+            # `gruntz init` is idempotent - run it on startup (set GRUNTZ_SKIP_INIT=1
+            # to skip, e.g. when you only need clang/gen_structs and not the Ghidra DB).
+            # First run builds the local env incl. the Ghidra DB (minutes); afterwards
+            # the heavy Ghidra step self-skips (exports present), so it is a fast no-op.
+            if [ -n "$GRUNTZ_SKIP_INIT" ]; then
+              echo "[gruntz] init       : skipped (GRUNTZ_SKIP_INIT set)"
+            else
+              if [ ! -f "$GRUNTZ_DIR/build/ghidra-enrich/exports/functions.csv" ]; then
+                echo "[gruntz] init       : first-time setup - building the Ghidra DB (~minutes) ..."
+              fi
+              python3 "$GRUNTZ_DIR/scripts/gruntz.py" init \
+                || echo "[gruntz] init       : failed - fix + re-run 'gruntz init'"
             fi
-            python3 "$GRUNTZ_DIR/scripts/gruntz.py" init \
-              || echo "[gruntz] init       : failed - fix + re-run 'gruntz init'"
           '';
         };
       };
