@@ -349,3 +349,25 @@ unit = "winmain"
 source = "src/Gruntz/WinMain.cpp"
 status = "matched"
 cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+
+# --- CState game-state hierarchy (src/Gruntz/GameMode.cpp) ------------------
+# The polymorphic game-state ("mode") classes the per-frame tick drives. RezMgr::
+# PerFrameTick (matched, `rezmgr`) holds the active state at RezMgr+0x2c (m_mode)
+# and each frame calls m_mode->vtbl[+0x10] (Update -> a state-ID int, gated on
+# != 0x11) and m_mode->vtbl[+0x14] (Render -> the per-frame step+draw). Base
+# CState (vftable @0x5ea21c, derives from a WAP32 base @0xfa150); concrete states
+# CPlay/CMenuState/CCreditsState/CBootyState (their own vftables @0x5ea0bc/
+# 0x5e9e84/0x5e9c64/0x5e9cec). THE FINDING: each Update() (slot +0x10) is a 6-byte
+# stub returning the state's ID tag (1/3/5/8/0xa) - NOT the simulation; the real
+# per-frame step+draw is Render() (slot +0x14). Matched leaves: CState ctor
+# @0x8c750, CState dtor @0x8c710, CState::Update/Render @0x8c4b0/@0x8c4d0 (both
+# `return 1;`), and the four concrete Update ID-stubs. The heavy Render overrides
+# (CCreditsState @0x391d0 380B, CMenuState @0xa0750 464B, CBootyState @0x1c210
+# 1205B, CPlay @0xc8cf0 3092B) are carcassed/mapped in the .cpp - next targets.
+# Plain /O2 /MT (no /GX): all matched fns are scalar - no stack C++ object / EH
+# frame. The base dtor + operator delete are external no-body fns (reloc-masked).
+[[unit]]
+unit = "gamemode"
+source = "src/Gruntz/GameMode.cpp"
+status = "matched"
+cflags = ["/nologo", "/c", "/O2", "/MT"]

@@ -17,6 +17,76 @@ fast-moving scratchpad. Newest at top within each section.
   -o - --format json-pretty`. Roll-up: `scripts/rebuild.py`.
 
 ## Subsystem notes
+### THE GAME-STATE HIERARCHY — CState + the per-frame Update/Render (new unit `gamemode` — 8/8 BYTE-EXACT under reloc-masking, 99.84% fuzzy)
+- **THE HEADLINE: the `m_mode` polymorphic state that PerFrameTick drives is now a
+  reconstructed class hierarchy, and the slot +0x10 / +0x14 mystery is solved.**
+  New TU `src/Gruntz/GameMode.{cpp,h}`. The active game-state object (RezMgr+0x2c,
+  m_mode) is a **`CState`** (RTTI `.?AVCState@@`, vftable **@0x5ea21c**), with
+  concrete subclasses **`CPlay`** (in-game PLAY, vftable @0x5ea0bc), **`CMenuState`**
+  (front-end, @0x5e9e84), **`CCreditsState`** (@0x5e9c64), **`CBootyState`** (bonus,
+  @0x5e9cec). CState itself derives from a WAP32 base @0xfa150 (the dtor chains it).
+  Found the vtables by walking RTTI: each type descriptor (`.?AVCxxx@@`) → its COL
+  (the word at COL+0xc) → the vtable (the word at vtable-4 == COL). The COL’s
+  typeDescVA confirmed 0x5ea21c is genuinely `CState`’s own vtable.
+- **THE KEY FINDING — slot +0x10 (Update) is a STATE-ID QUERY, not the simulation.**
+  Every state’s Update (vtbl +0x10) is a **6-byte `mov eax,<id>; ret` stub**:
+  CState=1 (@0x8c4b0), CPlay=3 (@0x8c910), CMenuState=5 (@0x8ce10),
+  CCreditsState=8 (@0x8d590), CBootyState=0xa (@0x8d3f0). So PerFrameTick’s
+  `if (Update() != 0x11)` timing gate is **testing *which state* is active** (0x11 =
+  some specific state’s id whose frames don’t advance the clock — a load/pause
+  state). **The real per-frame step+draw is slot +0x14 (Render).** Base
+  `CState::Render` (@0x8c4d0) is a trivial `return 1;`; the concrete states OVERRIDE
+  it with the heavy work: **CCreditsState::Render @0x391d0 (380 B), CMenuState::Render
+  @0xa0750 (464 B), CBootyState::Render @0x1c210 (1205 B), and the in-game
+  `CPlay::Render` @0xc8cf0 (3092 B = the per-frame heart — THE next big target).**
+- **The per-frame Render spine (mapped from CCreditsState::Render, the 380-B leaf,
+  carcassed in GameMode.cpp):** input poll (`m_c->m_4->[+0x10]->m_2c->m_8` vptr[+0x60])
+  → an input virtual `this->vtbl[+0x20]` (slot 8) that on nonzero `PostMessageA(hwnd,
+  0xfa0, 0x8006, 0)` and bails → **per-entity Update loop over g_entityList @0x645574**
+  (count@+4, elem array@+8; each `e->vtbl[+0x10]()`) → an entity scan that
+  `PostMessageA(hwnd, 0x111 WM_COMMAND, 0x8023|0x8027)` on the first flagged entity
+  (`e->m_2ac & 0xffffff`) → two this-sub-steps → **draw** (`m_c->m_4->[+0x10]->m_2c`
+  @0x13e850 then the blit `m_4->m_14 / m_4->m_18` @0x1564) → two latched one-shot FX
+  (+0x1b4 latch, +0x1c4 gate). All four concrete Renders follow this spine, scaled
+  to their state. **g_entityList @0x645574 (count@+4, elems@+8) is the per-frame
+  entity set every state Render iterates** — pinned for the next layer.
+- **TWO CODEGEN LEVERS that took the scalar-deleting dtor `??_G` @0x8c710 byte-exact:**
+  (1) **the base cleanup (@0xfa150) is `__thiscall`** — model it as a method on a
+  tiny helper struct (`((CGameModeBase*)this)->BaseCleanup()`) so the dtor tail-call
+  emits NO `add esp,4` (a free `extern "C"` fn → cdecl → spurious cleanup, 90.8%).
+  (2) **define `~CState()` INLINE in the header** so MSVC folds the vtable-restore +
+  base cleanup directly into the synthesized `??_G` thunk — the target inlines the
+  dtor body (store vtbl; call base; `test [esp+8],1`; conditional `operator delete`;
+  `mov eax,esi; ret 4`) rather than emitting a `call ??1`. Out-of-line dtor → `??_G`
+  does `call ??1CState` (one extra instruction, structural diff); inline → 98.75%
+  (byte-identical, 3 reloc-masked operands). **General rule: to match a `??_G` whose
+  target has the dtor inlined, define the virtual dtor body inline in the header.**
+- **The `??_G` scalar-deleting dtor IS the slot-0 vtable function** (it carries the
+  hidden `int flags` arg: `test [esp+8],1` then conditional delete, `ret 4`), mangles
+  `??_GClass@@UAEPAXI@Z`. The plain `??1Class@@UAE@XZ` is the body it inlines.
+- **The CState ctor @0x8c750 (169 B) matched byte-exact on the FIRST try** — a pure
+  flat scalar zero/seed (no EH frame, no embedded sub-objects): `mov eax,ecx;
+  mov edx,0x40; xor ecx,ecx; mov [eax],vtbl; <30 member stores>; ret`, seeding
+  +0x170/+0x174/+0x180/+0x184 = 0x40 (a time/budget block) and zeroing the rest.
+  The member-store ORDER in the source (declaration order) reproduced MSVC’s exact
+  schedule — unlike the entropy-class CRezDir/manager ctors, this flat-scalar ctor
+  is NOT store-order-sensitive (no interleaved sub-object ctors to perturb it).
+- **CState LAYOUT pinned (≥0x1a8 B; the concrete states extend it much further):**
+  ctor-written scalars +0x4/8/c/14/18/24/28/2c/38/3c = 0, +0x4c (byte) = 0,
+  +0x150/154/160/164/168/16c/178/17c/188..1a4 = 0, **+0x170/174/180/184 = 0x40**
+  (the time/budget seeds). Render-path members: **+0x4** owner/CGruntzMgr back-ptr
+  (→+0x4→+0x4 = HWND), **+0xc** input/anim sub-object holder, **+0x24** a state
+  discriminator (==5 → WM 0x8023 vs 0x8027), **+0x1b4** one-shot FX latch, **+0x1c4**
+  conditional-FX gate.
+- **UNLOCKED (the next game-logic layer):** the state hierarchy is anchored — all
+  five state classes named with their vtables, the Update state-IDs decoded, and the
+  Render per-frame spine mapped. **`CPlay::Render` @0xc8cf0 (3092 B) is THE dedicated
+  next target** — the in-game per-frame simulation+draw (the grunt/level step). The
+  per-frame entity set `g_entityList @0x645574` (count@+4, elems@+8; `e->vtbl[+0x10]`
+  = per-entity Update) is the layer below that. The other state OnActivate vfuncs
+  already labeled (CBootyState @0x1d440/0x1f6f0, GameLevelState @0xcb800) plug into
+  this hierarchy.
+
 ### THE PER-FRAME GAME TICK — CGruntzMgr::PerFrameTick (extended `rezmgr` — BYTE-EXACT under reloc-masking, 98.70% fuzzy)
 - **THE HEADLINE: the heart of the game loop is matched byte-exact.** The chain is
   closed end to end: `WinMain → new CGruntzApp → VirtualUnknownMethod02 stores

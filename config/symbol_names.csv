@@ -248,3 +248,15 @@ rva,name,unit
 
 # WinMain program entry (src/Gruntz/WinMain.cpp).
 0x11c860,_WinMain@16,winmain
+# --- CState game-state hierarchy (src/Gruntz/GameMode.cpp) -------------------
+# The per-frame state ("mode") classes driven by RezMgr::PerFrameTick (m_2c->
+# Update slot+0x10 = a state-ID stub; m_2c->Render slot+0x14 = the per-frame
+# step+draw). Base CState (vftable @0x5ea21c) + four concrete Update ID-stubs.
+0x08c750,??0CState@@QAE@XZ,gamemode
+0x08c710,??_GCState@@UAEPAXI@Z,gamemode
+0x08c4b0,?Update@CState@@UAEHXZ,gamemode
+0x08c4d0,?Render@CState@@UAEHXZ,gamemode
+0x08c910,?Update@CPlay@@UAEHXZ,gamemode
+0x08ce10,?Update@CMenuState@@UAEHXZ,gamemode
+0x08d590,?Update@CCreditsState@@UAEHXZ,gamemode
+0x08d3f0,?Update@CBootyState@@UAEHXZ,gamemode
