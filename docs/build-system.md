@@ -135,15 +135,15 @@ Unchanged in spirit, just orchestrated by ninja. The `delink` rule runs
 1. runs `scripts/gruntz/build/synth_pdb.py` (overlay `build/gen/symbol_names.csv` onto the
    Ghidra `functions.csv`/`symbols.csv` -> a fabricated `gruntz_named.pdb`,
    bucket-shift 16 so un-named functions group into `seg_NNNN.cpp`),
-2. runs `vostok-delinker` on the **break_reloc_cycle'd**
-   `build/exe/GRUNTZ.delinkable.EXE` -> `build/delink/named/`,
+2. runs `vostok-delinker` on `build/exe/GRUNTZ.EXE` (the stable retail copy)
+   -> `build/delink/named/`,
 3. collects the in-scope `<unit>.c.obj` into `build/objdiff/target/`.
 
-`synth_pdb.py` and `reloc.py` (under `scripts/gruntz/build/`) are kept. The whole
-one-time local setup runs in `gruntz init`: the EXE prep
-(`reloc.py` -> `GRUNTZ.delinkable.EXE`), and the heavy Ghidra DB build +
-`functions.csv`/`symbols.csv` export (import + auto-analyze GRUNTZ.EXE, then
-`apply.py`/`export.py`). The FID library labels are tracked
+`synth_pdb.py` (under `scripts/gruntz/build/`) is kept. The whole one-time local
+setup runs in `gruntz init`: a stable retail copy at `build/exe/GRUNTZ.EXE`, and
+the heavy Ghidra DB build + `functions.csv`/`symbols.csv` export (import +
+auto-analyze GRUNTZ.EXE, then `apply.py`/`export.py`). The FID library labels are
+tracked
 (`config/library_labels.csv`, so they survive `git clean`); regenerate them with
 `scripts/analysis/fid_generate.py`.
 

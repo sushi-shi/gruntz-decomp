@@ -18,8 +18,8 @@ This is the TARGET (delink) half of the matching pipeline, run as one ninja rule
 The base/compile half (cl /O2 /MT under wine) is a separate ninja graph driven
 by scripts/gruntz/build/cc_wrap.py; the two are paired BY SYMBOL NAME in the
 objdiff project (configure.py), no symbol_mappings. KEEP
-scripts/gruntz/build/synth_pdb.py + scripts/gruntz/build/reloc.py - this script
-orchestrates them, it does not replace them.
+scripts/gruntz/build/synth_pdb.py - this script orchestrates it, it does not
+replace it.
 
 Units to collect are taken from --unit (repeatable) so configure.py can pass
 exactly the manifest's unit set. The remaining address-bucketed seg_NNNN.cpp.obj
@@ -57,7 +57,7 @@ def tool(name: str) -> str:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--exe", required=True, help="break_reloc_cycle'd delinkable EXE.")
+    ap.add_argument("--exe", required=True, help="the retail GRUNTZ.EXE.")
     ap.add_argument("--functions", required=True, help="ghidra functions.csv.")
     ap.add_argument("--symbols", required=True, help="ghidra symbols.csv.")
     ap.add_argument("--names-map", required=True, help="build/gen/symbol_names.csv.")

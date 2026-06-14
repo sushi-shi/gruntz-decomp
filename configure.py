@@ -94,7 +94,7 @@ GEN_LABELS = "scripts/gruntz/build/labels.py"
 GEN_NAMES = "build/gen/symbol_names.csv"
 
 # Target (delink) inputs.
-EXE = "build/exe/GRUNTZ.delinkable.EXE"
+EXE = "build/exe/GRUNTZ.EXE"
 FUNCTIONS = "build/ghidra-enrich/exports/functions.csv"
 SYMBOLS = "build/ghidra-enrich/exports/symbols.csv"
 

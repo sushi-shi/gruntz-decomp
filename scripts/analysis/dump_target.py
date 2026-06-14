@@ -17,7 +17,7 @@ from pathlib import Path
 
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
             Path(__file__).resolve().parent)
-EXE = Path(os.environ.get("GRUNTZ_EXE") or REPO / "build/exe/GRUNTZ.delinkable.EXE")
+EXE = Path(os.environ.get("GRUNTZ_EXE") or REPO / "build/exe/GRUNTZ.EXE")
 FUNCS = REPO / "build/ghidra/exports/functions.csv"
 SYMS = REPO / "build/ghidra/exports/symbols.csv"
 IMAGEBASE = 0x400000

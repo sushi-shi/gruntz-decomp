@@ -24,7 +24,7 @@ from pathlib import Path
 
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
             Path(__file__).resolve().parent)
-EXE = Path(os.environ.get("GRUNTZ_EXE") or REPO / "build/exe/GRUNTZ.delinkable.EXE")
+EXE = Path(os.environ.get("GRUNTZ_EXE") or REPO / "build/exe/GRUNTZ.EXE")
 FUNCS = REPO / "build/ghidra/exports/functions.csv"
 LABELS = REPO / "config/engine_labels.csv"
 MATCHED = REPO / "build/gen/symbol_names.csv"   # generated (was config/symbol_names.csv)

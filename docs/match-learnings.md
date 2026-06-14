@@ -6,7 +6,7 @@ fast-moving scratchpad. Newest at top within each section.
 
 ## How the loop runs (orchestrator + matcher contract)
 - Matchers run **sequentially in the main worktree** (the `build/` tree —
-  delinkable EXE, ghidra DB, toolchain — is gitignored, so git worktrees can't
+  retail EXE copy, ghidra DB, toolchain — is gitignored, so git worktrees can't
   build; and `symbol_names.csv`/`units.toml`/the wine prefix/`build/` are shared).
 - Each matcher = one TU = **its own atomic commit** (adds only its own files) +
   `git push`. After each, the orchestrator refreshes the comprehension DB

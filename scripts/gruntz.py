@@ -15,7 +15,7 @@ Subcommands
 
             src/<unit>.cpp --cl(wine)--> base/<unit>.obj
             ALL src @address + ALL base objs --gen_labels--> build/gen/symbol_names.csv
-            symbol_names.csv + ghidra functions.csv/symbols.csv + delinkable EXE
+            symbol_names.csv + ghidra functions.csv/symbols.csv + GRUNTZ.EXE
                 --delink(synth_pdb -> vostok-delinker)--> target/<unit>.c.obj
             base vs target --objdiff--> report.json
 
@@ -28,7 +28,7 @@ Subcommands
   ghidra-refresh  Apply generated names/structs/enums to the Ghidra DB and
                   re-export functions.csv/symbols.csv (the Part-2 loop that feeds
                   the delink). See the docstring on cmd_ghidra_refresh.
-  init          One-time FULL local setup: dirs + configure + delinkable EXE +
+  init          One-time FULL local setup: dirs + configure + retail EXE copy +
                 wine prefix + clangd compdb + the Ghidra DB (import+analyze
                 GRUNTZ.EXE -> functions.csv/symbols.csv). HEAVY first run.
   clangd        (Re)generate the clangd compile DB (editor; after adding a unit).
@@ -63,10 +63,8 @@ GEN_NAMES          = REPO / "build" / "gen" / "symbol_names.csv"
 GHIDRA_PROJECT_DIR = REPO / "build" / "ghidra-named"
 GHIDRA_PROJECT     = "gruntz"                                          # project name (gruntz.{gpr,rep})
 GHIDRA_FUNCTIONS   = REPO / "build" / "ghidra-enrich" / "exports" / "functions.csv"  # delink input
-RETAIL_EXE         = REPO / "build" / "exe" / "GRUNTZ.EXE"             # stable copy of $GRUNTZ_EXE
-DELINKABLE_EXE     = REPO / "build" / "exe" / "GRUNTZ.delinkable.EXE"  # reloc-broken (delink input)
+RETAIL_EXE         = REPO / "build" / "exe" / "GRUNTZ.EXE"             # stable copy of $GRUNTZ_EXE (delink input + Ghidra import)
 CONFIGURE          = REPO / "configure.py"
-RELOC              = BUILD / "reloc.py"
 
 
 def log(msg: str) -> None:
@@ -129,7 +127,7 @@ def summarize(report: dict) -> None:
 # --- subcommands -----------------------------------------------------------
 def cmd_build(args) -> None:
     run([sys.executable, str(CONFIGURE)])             # regenerate build.ninja + the JSONs
-    _ensure_delinkable_exe()                          # cheap, idempotent (reloc over $GRUNTZ_EXE)
+    _ensure_retail_copy()                             # cheap, idempotent (stable retail copy)
     if not GHIDRA_FUNCTIONS.exists():
         die(f"no Ghidra exports ({GHIDRA_FUNCTIONS.relative_to(REPO)}) - run `gruntz init` first.")
     ninja = tool("ninja")
@@ -207,23 +205,21 @@ def _run_enrich(analyze: bool) -> None:
     run(cmd)
 
 
-def _ensure_delinkable_exe() -> None:
-    """Reloc-break $GRUNTZ_EXE -> build/exe/GRUNTZ.delinkable.EXE (a delink input).
+def _ensure_retail_copy() -> None:
+    """Keep a stable-named retail copy at build/exe/GRUNTZ.EXE.
 
-    Pure, deterministic transform of the pinned retail EXE via reloc.py. Also keeps
-    a stable-named retail copy at build/exe/GRUNTZ.EXE so PyGhidra imports a program
-    named GRUNTZ.EXE (the run_enrich.py import target). Idempotent.
+    PyGhidra imports a program named GRUNTZ.EXE (the run_enrich.py import target)
+    and the delinker reads this same copy as its input. The delinker handles
+    cyclic relocation pointers itself, so no reloc-break preprocessing is needed.
+    Idempotent.
     """
     retail = os.environ.get("GRUNTZ_EXE")
     if not retail:
-        log("GRUNTZ_EXE unset - skipping delinkable-EXE prep (run inside nix develop).")
+        log("GRUNTZ_EXE unset - skipping retail-EXE copy (run inside nix develop).")
         return
     RETAIL_EXE.parent.mkdir(parents=True, exist_ok=True)
     if not RETAIL_EXE.exists():
         shutil.copyfile(retail, RETAIL_EXE)
-    if not DELINKABLE_EXE.exists():
-        run([sys.executable, str(RELOC), "--in-exe", str(RETAIL_EXE),
-             "--out-exe", str(DELINKABLE_EXE)])
 
 
 def _build_ghidra_db(reimport: bool = False) -> None:
@@ -261,7 +257,7 @@ def cmd_init(args) -> None:
     checkout goes straight to `gruntz build` after one `init`:
       - the git-ignored build dirs;
       - build.ninja + compile_commands.json + objdiff.json (configure.py);
-      - reloc-break $GRUNTZ_EXE -> build/exe/GRUNTZ.delinkable.EXE (a delink input);
+      - a stable retail copy at build/exe/GRUNTZ.EXE (the delink input + Ghidra import);
       - the Wine prefix + MSVC 5.0 toolchain registration (toolchain.py);
       - the clangd compile DB (clangd.py);
       - the Ghidra DB: PyGhidra (run_enrich.py) imports + auto-analyzes GRUNTZ.EXE
@@ -277,10 +273,10 @@ def cmd_init(args) -> None:
               "build/ghidra-enrich/exports"):
         (REPO / d).mkdir(parents=True, exist_ok=True)
     run([sys.executable, str(CONFIGURE)])            # build.ninja + compile_commands + objdiff.json
-    _ensure_delinkable_exe()                         # reloc.py over $GRUNTZ_EXE (cheap, idempotent)
+    _ensure_retail_copy()                            # stable retail copy (cheap, idempotent)
     if not os.environ.get("MSVC_DIR"):
         log("MSVC_DIR unset - run inside `nix develop .#build` for the toolchain + "
-            "Ghidra steps. Did dirs + configure + delinkable EXE only.")
+            "Ghidra steps. Did dirs + configure + retail copy only.")
         return
     tc = [sys.executable, str(INIT / "toolchain.py")]
     if args.force:
