@@ -179,7 +179,7 @@ prototype starts far ahead of one staring at `FUN_00482f50`.
   `pIface->Method()` compiles to the right slot.
 - **Ghidra scripting:** the headless enrichment/export run under **PyGhidra**
   (Ghidra 12.0.4 + `jpype1`, both from the flake) via `scripts/gruntz/ghidra/run_enrich.py`
-  - `pyghidra.start()` + `ghidra_script(...)`, not `analyzeHeadless -postScript`.
+  - `pyghidra.start()` + `ghidra_script(...)`.
 
 ---
 

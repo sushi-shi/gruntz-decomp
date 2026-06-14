@@ -270,12 +270,6 @@ Reference workflow + scripts for vintage MSVC libs:
 `github.com/threatrack/ghidra-fidb-repo`. Build doc: `ghidra-data/FunctionID/
 building_fid.txt`.
 
-> NOTE: a separate agent is already running Ghidra headless on the EXE. The FID
-> generation above operates on the *.lib programs*, not the EXE, so it does not
-> conflict; the attach+analyze step (5) is what touches the EXE project and should be
-> coordinated with that agent (run after its initial auto-analysis completes, or
-> headless via `analyzeHeadless … -postScript` with the FID analyzer enabled).
-
 ### 4.2 IDA FLIRT — N/A (we have no IDA), documented for completeness
 
 If we had IDA: `pcf` (COFF) / `plib` would turn `LIBCMT.LIB` / `NAFXCW.LIB` /
