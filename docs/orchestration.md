@@ -155,8 +155,11 @@ prototype starts far ahead of one staring at `FUN_00482f50`.
    source. (`build/gen/symbol_names.csv`, the matched set, is generated from the
    `// @address:` comments in `src/` — don't hand-edit it.)
 3. Write the source: reconstruct the class(es)/struct(s) (offsets are load-bearing;
-   names are placeholders) and the function body, each function carrying a
-   `// @address:` block with its RVA.
+   names are placeholders) and the function body. Annotate **each** function with
+   the canonical block — a `// ----` rule, a one-line description, then
+   `// @address: 0x<rva>` and `// @size: 0x<bytes>`, closed by another rule (worked
+   example in `build-system.md` "Add a translation unit"). Only `@address` is
+   parsed; `@size` is the human cross-check against `functions.csv`.
 4. `nix develop .#build --command gruntz build`; read objdiff.
 5. Iterate the source to **byte-exact**, using `matching-patterns.md` for the
    codegen idioms. Locked flags `/O2 /MT` — do not recalibrate.

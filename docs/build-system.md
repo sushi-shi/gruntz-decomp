@@ -166,8 +166,29 @@ does not exist yet is paired against an empty `dummy.obj` so it still lists at
 ## Add a translation unit
 
 1. add an `[[unit]]` block to `config/units.toml` (`unit`, `source`, `status`);
-2. annotate each matched function in `src/` with `// @address: 0x<rva>` (the
-   label map regenerates from these — no hand-edited CSV);
+2. annotate **each** matched function in `src/` with the canonical block — a `// ----`
+   rule, a one-line description, then `@address` and `@size`, closed by another
+   rule. A real example from `src/Gruntz/SBI_RectOnly.cpp`:
+
+   ```cpp
+   // ---------------------------------------------------------------------------
+   // CSBI_RectOnly::CSBI_RectOnly()
+   // Inlines the CStatusBarItem base ctor (the dead m_8=0 store is elided),
+   // stores its own vptr, then sets m_8 = 1.
+   //
+   // @address: 0x101fa0    // retail .text RVA (VA = 0x400000 + rva)
+   // @size:    0x1b        // the function's byte_size from functions.csv
+   // ---------------------------------------------------------------------------
+   CSBI_RectOnly::CSBI_RectOnly()
+   {
+       m_8 = 1;
+   }
+   ```
+
+   `gen_labels` parses only `@address` (plus an optional `@symbol` override for the
+   rare case clang's MS mangling differs from VC5's); `@size` is documentation —
+   the human cross-check against `functions.csv`. The label map regenerates from
+   these annotations — never hand-edit the CSV;
 3. `gruntz build` (configure -> compile -> labels -> delink -> objdiff).
 
 ## Generated vs. tracked
