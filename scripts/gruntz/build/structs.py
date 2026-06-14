@@ -24,9 +24,11 @@ Outputs (default --out-dir build/gen):
     enums.json   : [{name, members:[{name,value}], source}]
 
 Flags come from the clangd compilation database (build/clangd/compile_commands.json,
-the clang-friendly clang-cl DB from gen_clangd.py) when available; otherwise pass
-`--tu FILE` + `--flag ...` directly (the self-contained TUs - FileStream, RezMgr -
-parse with only the target/ms flags, no toolchain headers).
+the clang-friendly clang-cl DB from gen_clangd.py) when available; those entries are
+clang-cl form (/imsvc, /D...), so they run under clang's `--driver-mode=cl`. The
+`--tu`/`--header` paths carry clang-style MS_FLAGS and use the plain driver. Pass
+`--tu FILE` + `--flag ...` directly for self-contained TUs that parse with only the
+target/ms flags, no toolchain headers.
 """
 
 import argparse
@@ -176,8 +178,13 @@ def parse_enums(ast_json):
     return enums
 
 
-def run_clang(clang, args, tu, extra):
-    cmd = [clang, *args, tu, "-fsyntax-only", *extra]
+def run_clang(clang, args, tu, extra, driver="plain"):
+    # compdb flags are clang-cl form (/imsvc, /D...): the plain clang driver
+    # treats "/imsvc" as an input file ("no such file or directory: '/imsvc'"),
+    # so those units must run in cl driver mode. The structure/ header wrappers
+    # carry clang-style MS_FLAGS and use the plain driver.
+    pre = ["--driver-mode=cl"] if driver == "cl" else []
+    cmd = [clang, *pre, *args, tu, "-fsyntax-only", *extra]
     res = subprocess.run(cmd, capture_output=True, text=True)
     # Layout dump goes to stdout; diagnostics to stderr. Return both so a parse
     # over stdout works and we can surface hard errors.
@@ -238,23 +245,24 @@ def main():
     ap.add_argument("--out-dir", default=str(REPO / "build/gen"))
     args = ap.parse_args()
 
-    # units: (tu_path, clang_flags, source_label). src TUs from --tu or the compdb;
-    # comprehension headers (structure/) wrapped into per-header .cpp TUs.
+    # units: (tu_path, clang_flags, source_label, driver). compdb TUs carry
+    # clang-cl flags -> "cl" driver; --tu and structure/ header wrappers carry
+    # clang-style MS_FLAGS -> "plain" driver.
     units = []
     if args.tu:
-        units += [(tu, [*MS_FLAGS, *args.flag], tu) for tu in args.tu]
+        units += [(tu, [*MS_FLAGS, *args.flag], tu, "plain") for tu in args.tu]
     elif Path(args.compdb).exists():
-        units += [(tu, flags, tu) for (tu, flags) in compdb_entries(args.compdb)]
-    units += header_units(args.header)
+        units += [(tu, flags, tu, "cl") for (tu, flags) in compdb_entries(args.compdb)]
+    units += [(w, flags, h, "plain") for (w, flags, h) in header_units(args.header)]
     if not units:
         ap.error(f"no --tu/--header given and no compdb at {args.compdb}")
 
     structs = {}   # name -> {name,size,fields,source}; src/ wins over structure/
     enums = {}
-    for tu, flags, source in units:
+    for tu, flags, source, driver in units:
         src_priority = 0 if "/src/" in source or source.startswith("src/") else 1
         lo_out, lo_err, lo_rc = run_clang(
-            args.clang, flags, tu, ["-Xclang", "-fdump-record-layouts-complete"])
+            args.clang, flags, tu, ["-Xclang", "-fdump-record-layouts-complete"], driver)
         if lo_rc != 0 and not lo_out:
             log(f"WARN {source}: layout dump failed rc={lo_rc}\n{lo_err.strip()[:400]}")
         for name, (size, fields) in parse_record_layouts(lo_out).items():
@@ -272,7 +280,7 @@ def main():
                 structs[name] = rec
 
         ast_out, ast_err, ast_rc = run_clang(
-            args.clang, flags, tu, ["-Xclang", "-ast-dump=json"])
+            args.clang, flags, tu, ["-Xclang", "-ast-dump=json"], driver)
         if ast_out.strip():
             try:
                 tree = json.loads(ast_out)
