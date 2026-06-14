@@ -508,3 +508,33 @@ rva,name,class,prototype,kind,source,confidence
 0x170750,ButeMgr::ParseAttributeFile,,__thiscall(this) [.att attribute-file parser; emits 'ButeMgr: duplicate symbol encountered'; 2 callers],method,decomp-xref,med
 0x16d9c0,GetContainerErrorString,,"__thiscall(this,code) [maps container status code -> 'Out of memory'/'Overflow'/'Null pointer argument'/...; 5 callers; Monolith container lib]",method,decomp-xref,low
 0x185000,DebugPrintf,,[DPRINTF/FILEAPPEND/STDOUT debug-log helper; called from 0x184b70],free,decomp-xref,low
+#
+# --- decomp-xref pass, batch 2: NetMgr/objects/states/status-bar (read from decompiler) ---
+0x0bca50,CNetMgr::HandleSessionError,CNetMgr,__thiscall(this) [DirectPlay session-end messages: 'game session has been terminated'/'removed from the game'/'game is closed'/'already full'/version-mismatch; this+0x524..0x5bc],method,decomp-xref,med
+0x0b7b10,CNetMgr::SetupSession,CNetMgr,[Player_Name/Game_Name/'Multiplayer Gruntz' DirectPlay session create/join],method,decomp-xref,med
+0x0b9750,CNetMgr::SendChat,CNetMgr,"__thiscall(this,a,b,c) [GAME_CHAT multiplayer chat msg; this+0x528..0x580]",method,decomp-xref,med
+0x0b8cf0,CNetMgr::ApplyServiceConfig,CNetMgr,"__thiscall(this,a) [writes service config this+0x524/0x578/0x5a4/0x5bc/0x5c0 (CNetMgr config region)]",method,decomp-xref,low
+0x0412c0,CWormhole::LoadAttributes,CWormhole,__thiscall(this) [GAME_WORMHOLE/GAME_TELEPORTEROPEN sprites + attrs into this+0x14..0x68],method,decomp-xref,med
+0x0411f0,CWormhole::LoadColors,CWormhole,__thiscall(this) [SecretColor/SingleUseColor/NormalColor + Wormhole tint into this+0x10],method,decomp-xref,med
+0x044c00,CWarlord::LoadAttributes,CWarlord,__thiscall(this) [Warlordz/PanicRadius attrs into this+0x88..0x94],method,decomp-xref,med
+0x044d10,CWarlord::LoadAttributes2,CWarlord,__thiscall(this) [Warlordz/PanicRadius variant (this+0x88..0x94)],method,decomp-xref,med
+0x0fc0b0,CStaticHazard::LoadAttributes2,CStaticHazard,__thiscall(this) [LEVEL_STATICHAZARDGO/IDLE sprites + attrs into this+0x10..0x60 (sibling of 0x0fc1a0)],method,decomp-xref,med
+0x0810f0,CBrickz::LoadAttributes,CBrickz,"__thiscall(this,a,b) [Brickz/Brown/Black brick color+type setup; this+0x78/0x90]",method,decomp-xref,med
+0x03f5f0,HandleFortConquered,,__thiscall(this) [Battlez fort capture: 'was conquered by' + Explosion/GAME_EXPLOSION3; this+0x54/0x58],method,decomp-xref,med
+0x063db0,LoadVehicleGruntAnimations,,__thiscall(this) [GRUNTZ_GOKARTGRUNT/BIGWHEELGRUNT vehicle-grunt anim setup; many this+offsets],method,decomp-xref,med
+0x057890,BuildGruntLoseItemAnimation,,__thiscall(this) [SingleAnimation GRUNTZ_<type>_LOSEITEM; this+0x10..0x1e4],method,decomp-xref,med
+0x0a0a30,CAttract::vfunc_6,CAttract,__thiscall(this) [vtable slot 6; STATEZ_ATTRACT/TITLE_%d/BrightnessPercent attract-mode virtual],vfunc,decomp-xref,med
+0x0a03f0,CAttract::LoadTitleConfig,CAttract,"__thiscall(this,a) [reads BrightnessPercent + TITLE_%d title-screen config; this+0x2c]",method,decomp-xref,med
+0x039570,InitAttractTitle,,__thiscall(this) [STATEZ_ATTRACT title fade-in; BrightnessPercent/TITLE_%d; this+0x2c/0x208],method,decomp-xref,med
+0x0f9780,CSplashState::LoadSounds,CSplashState,__thiscall(this) [STATEZ_SPLASH SOUNDZ load; this+0x2c],method,decomp-xref,med
+0x0387c0,LoadInputDeviceConfig,,"__thiscall(this,a,b) [Keyboard/Joystick_1..4 DinMgr2 input-device config; this+0x14]",method,decomp-xref,med
+0x0e9600,BuildStatzTabStatusBar,,__thiscall(this) [GAME_STATUSBAR_TABZ_STATZTAB_TAB statz-tab sprite set into this+0x0c..0x44],method,decomp-xref,med
+0x0ea1f0,BuildMultiplayerTabStatusBar,,__thiscall(this) [GAME_STATUSBAR_TABZ_MULTIPLAYERTAB/STATZTAB_SEL tab sprites into this+0x0c..0x48],method,decomp-xref,med
+0x0d1710,LoadSBITextEdges,,"__thiscall(this,a) [TextTop/Bottom/Left/RightEdge status-bar-item text rect; this+0x510]",method,decomp-xref,med
+0x0d1890,LoadSBITextEdges2,,__thiscall(this) [TextTop/Bottom/Left/RightEdge variant; this+0x40c],method,decomp-xref,med
+0x090d10,LoadMonologoSprite,,__thiscall(this) [GAME_MONOLITH/MONOLITH splash-logo sprite; this+0x2c/0x30],method,decomp-xref,med
+0x092420,LoadSaveMessageSprite,,__thiscall(this) [GAME_SAVE/GAME_SAVEMSG save-feedback sprite; this+0x44],method,decomp-xref,med
+0x07b440,BuildRockBreakParticles,,"__thiscall(this,...) [Particlez/LEVEL_ROCKBREAK rock-break particle effect; this+0x22c]",method,decomp-xref,med
+0x0f8970,SFManager::SelectBestDevice,,"[SFMAN32.DLL SoundFont manager: enumerates devices, picks best by rating ('Best Device number is %d')]",free,decomp-xref,med
+0x0cf770,DrawDebugStats,,[debug overlay: 'Fps: %i'/'Objs: %i'/'Pos: %i %i'],free,decomp-xref,low
+0x090550,LaunchPortalExe,,['Monolith Productions'/Portal/portal_exe external-portal launcher],free,decomp-xref,low
