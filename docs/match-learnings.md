@@ -17,6 +17,108 @@ fast-moving scratchpad. Newest at top within each section.
   -o - --format json-pretty`. Roll-up: `scripts/rebuild.py`.
 
 ## Subsystem notes
+### CButeMgr .att/.bute attribute config-parser (unit `butemgr` — 11/11 byte-exact; 2 documented entropy residues)
+- New TU `src/Bute/ButeMgr.{cpp,h}`. The engine **CButeMgr** — the attribute layer
+  the WHOLE game reads entity stats through (GetInt alone has 117 callers, GetIntDef
+  94, GetDwordDef 104). A two-level keyed store + a recursive-descent lexer/parser.
+  Built **`/O2 /MT /GX`** — the getters use **args-in-registers + no ebp frames (the
+  /O2 tell)**, NOT the /O1 push-memory-operand MFC shape (CButeMgr uses CString but
+  is NOT MFC-`CObject`-derived; the /GX is only for ParseTagLine's `new`-under-EH
+  frame and the GetString function-local static's atexit dtor). All 11 fns equal
+  instruction count + 0 non-reloc body mismatches (verified vs dump_target.py +
+  llvm-objdump -dr); fuzzy 94–99.5% = reloc-masked operands only.
+- **CButeMgr LAYOUT (pinned from the getters/parser):** `+0x08` int m_lineNo (the
+  `%d` in error msgs); **`+0x18` the store root `CButeTree` m_tree** (getters do
+  `lea ecx,[this+0x18]; Find(tag)`); `+0x44` void* m_pNode (last node ParseTagLine
+  created); `+0xa4` void* m_pText (a text accumulator; the parser appends at
+  `*m_pText + 0xc`); **`+0xa8` char m_curChar** (lexer current char); **`+0xaa`
+  short m_tokType** (token type); **`+0xae` char m_token[]** (token buffer, indexed
+  by the FILE-SCOPE counter @0x6bf678, not a member); `+0x100` CString m_tagName;
+  `+0x10c`/`+0x10d` two parser flag bytes (m_10c = echo-to-accumulator enable;
+  m_10d = suppress-duplicate-tag-check).
+- **THE SHARED TAG-LOOKUP HELPER = `CButeTree::Find` @0x16d190** (__thiscall, `ret
+  4`, returns the matching record ptr or null). The store is **two-level**: every
+  getter does `m_tree.Find(tag)` → a per-tag sub-tree, then `subtree.Find(key)` → a
+  typed value record **`{ int type; void* pValue; }`** (type @+0, value-ptr @+4; the
+  scalar value sits at `[pValue]`, the string char* IS `[pValue]`). Insert =
+  @0x16db90 (__thiscall(this,key,node)). Modeled both Find/Insert as a tiny
+  data-less `CButeTree` class addressed at `this+0x18` (a `char m_treeRaw[...]` +
+  `reinterpret_cast` accessor — a data-less class member would be size-1 and break
+  the +0x44 offset; the raw-bytes-then-cast trick keeps every field at its RVA).
+- **TYPE-CHECK CODEGEN IS THE LOAD-BEARING LEVER (the getter family):** the type
+  tag is checked differently per constant and the polarity dictates block layout —
+  - **type `== 0`** (GetInt/GetIntDef) → write `if (rec->type == 0) return v;` →
+    `cmp [eax],0; jne mismatch` (success INLINE, mismatch jumped-to-tail).
+  - **type `== 1`** (GetDword/GetDwordDef) → write **`switch (rec->type){ case 1:
+    return v; }`** → `mov ecx,[eax]; dec ecx; je success` (success AT TAIL, mismatch
+    inline). An `if (==1)` emits `cmp [eax],1; jne` (wrong polarity, ~57%); the
+    `switch` strength-reduces to load+dec+jz and floats the case body to the tail.
+  - **type `== 4`** (GetString/GetStringDef) → `if (rec->type == 4)` (like type 0).
+  - **multi-type (GetFloat 0|3, GetDouble 0|2)** → **`switch (rec->type){ case 0:…;
+    case N:…; }`** → `mov ecx,[eax]; sub/cmp ladder` (loads type ONCE into a reg).
+  Rule of thumb: **single non-zero constant or a multi-way test ⇒ `switch` (loads to
+  reg, case-at-tail); `== 0` / `== 4` ⇒ `if` (cmp-mem, success-inline).**
+- **THE 3-WAY ERROR LAYOUT (no-default getters) ⇒ NESTED-IF, not early-returns.**
+  The target lays the three failure blocks (type-mismatch INLINE as the switch
+  fall-through, then symbol-not-found, then invalid-tag) at the function TAIL in
+  that order, reached by forward `je`. Writing `if(!grp){err;return} ...` early-
+  returns emits each error INLINE via `jne`-skip (21–50%). Writing it as
+  **`if (grp) { rec=Find(key); if (rec) { <type check> err1; return E; } err2;
+  return E; } err3; return E;`** (success deepest, errors as the trailing else
+  cascade) floats the cold blocks to the tail → 99%+. (Same family as the
+  AdvancedOptions switch-tail idiom.) `goto`s to bottom labels did NOT help — MSVC
+  inlines them; the nested-if-with-success-deepest is what flips it.
+- **GetString's MFC function-local `static CString empty` magic-static:** a
+  function-local `static AfxString s_empty("");` emits the exact one-shot guarded
+  init: `mov al,1; mov cl,[guard]; test al,cl; jne skip; <or guard bit>; mov [guard];
+  call CString::CString(lit); push dtorThunk; call atexit; skip:`. Return the empty
+  on errors via `(char*)&s_empty` (the CString object address = its char* @+0).
+  PLATEAU 98.0%: a pure **tag↔key ebx/edi register-alloc coin-flip** — the static
+  block touches `bl`, and the target reuses ebx for `tag` after it while my build
+  picks edi; logic/CFG byte-exact, entropy-class (no source lever flipped it).
+- **ParseTagLine @0x1711b0 (96.9%, 1-instr residue):** `if(!ScanToken(4)) return 0;
+  m_tagName = m_token; if(!m_10d){ if(tree.Find(tok)){report dup;return 0;}
+  node = new CButeNode(desc,2); m_pNode=node; tree.Insert(tok,node);} return
+  ScanToken(3);`. The new node carries a C++ EH frame (free-on-unwind). **Register
+  alloc needed a hint**: pinning `char* tok = m_token;` + `CButeTree* t = Tree();`
+  as locals reused across Find+Insert made MSVC allocate the 4th callee-saved reg
+  (ebp, used as a GP reg under /O2) exactly like the target — without the hint the
+  optimizer dropped ebp and the whole ebx/ebp/edi assignment + EH-slot offsets
+  shifted (84%→97%). The lone residue = an MSVC5 **EH-epilogue bool-return
+  normalization** (`test al,al; setne al` on the final ScanToken result) that no
+  source form reproduced (`!= 0` gave `neg al`; temp-bool/direct-return omit it).
+- **Two-vtable node construction (the `new CButeNode` inline-vbase idiom):** the
+  target does `op_new(0x2c); ctor(desc,2); mov [node],vtblA; mov [node+8],vtblB`
+  with the **two vtable stores INLINE at the new-site** (a multiply-derived node).
+  Reproduce by modeling CButeNode `: public CButeNodeBase` where the base ctor is
+  external/no-body (the engine @0x16dff0, __thiscall) and the **derived ctor is
+  INLINE** doing `m_vtblA = &g_nodeVtblA; m_vtblB = &g_nodeVtblB;` — `new
+  CButeNode(...)` then emits op_new + the null-check + base-ctor call + the two
+  inline DIR32 vtable stores, exactly. (An external/no-body single ctor puts NO
+  inline vtable stores; an empty base subobject is size-0 so m_vtblA stays @+0.)
+- **Parse @0x1704c0 (94.2%, the recursive-descent lexer):** a 6-entry jump-table
+  `switch` on the char-class. **Read the table from the EXE** (file-offset map at
+  VA 0x5706a4): case0=bad-symbol(return 0), case1/2=value-char (ReadValue + opt
+  token-store + opt accumulator-append + NextChar + LOOP), case3/4/5=identifier
+  (ReadIdent + opt store/append + NextChar + recurse-if-`m_tokType==0` + 0-terminate
+  + return 1). **The `cls > 5` bounds test IS the switch's own range-check — do NOT
+  write a separate `if (>5) continue;`** (that emits a DUPLICATE `cmp;ja`); just
+  `switch(cls)` with no default + cases 1/2 `break` (loop) + the rest `return`, so
+  `>5` falls through the switch to the loop top. The token counter is a **file-scope
+  signed `short` @0x6bf678** (`movsx` reads + `inc word`); `m_token[g_tokenLen++]`.
+  Append target = `((CButeText*)((char*)m_pText + 0xc))->AppendChar(c)` (@0x192060,
+  __thiscall). Lex helpers PeekClass@0x170400 / ReadValue@0x170430 / ReadIdent@
+  0x170460 are __thiscall(this, kind, c) (kind starts 0x11, reassigned by ReadValue);
+  NextChar@0x170390 __thiscall(this). Residue = a single trailing alignment `nop`
+  before the jump table (inter-function pad; the body is byte-exact).
+- **UNLOCKED:** the entire .att attribute-read path is now verifiable end-to-end —
+  every `LoadAttributes`/object-stat reader (CGrunt, towerz, bridgez, etc.) that
+  calls Get{Int,Dword,Float,Double,String}[Def] has its leaf getters byte-exact;
+  CButeTree::Find/Insert @0x16d190/0x16db90, the lex helpers @0x1703xx-0x1704xx, the
+  node ctor @0x16dff0, the CString helpers, and the error reporter @0x1706c0 are all
+  anchored callees for the rest of the CButeMgr cluster (file load/save, GetTypedRef
+  tag5-8 @0x173770/0x173d00/0x174240/0x1747c0).
+
 ### RezMgr archive container (unit `rezmgr` — 3 byte-exact + 1 plateau; OpenSub deferred)
 - New TU `src/Rez/RezMgr.cpp` (+ `.h`). The Monolith "RezMgr Version 1" in-memory
   directory-tree node classes. CONFIRMED the long-@unconfirmed container offsets

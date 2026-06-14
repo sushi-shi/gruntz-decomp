@@ -185,3 +185,15 @@ rva,name,unit
 0x09e7e0,??1CMapArrayA@@QAE@XZ,mapmgr
 0x09e820,??0CMapArrayB@@QAE@XZ,mapmgr
 0x09e900,??1CMapArrayB@@QAE@XZ,mapmgr
+# --- CButeMgr .att/.bute attribute config-parser (unit butemgr) -------------
+0x170710,?ScanToken@CButeMgr@@QAE_NH@Z,butemgr
+0x171aa0,?GetIntDef@CButeMgr@@QAEHPAD0H@Z,butemgr
+0x171af0,?GetInt@CButeMgr@@QAEHPAD0@Z,butemgr
+0x1721e0,?GetDwordDef@CButeMgr@@QAEKPAD0K@Z,butemgr
+0x172240,?GetDword@CButeMgr@@QAEKPAD0@Z,butemgr
+0x172730,?GetFloat@CButeMgr@@QAEMPAD0@Z,butemgr
+0x172c40,?GetDouble@CButeMgr@@QAENPAD0@Z,butemgr
+0x173180,?GetStringDef@CButeMgr@@QAEPADPAD00@Z,butemgr
+0x1731d0,?GetString@CButeMgr@@QAEPADPAD0@Z,butemgr
+0x1711b0,?ParseTagLine@CButeMgr@@QAE_NXZ,butemgr
+0x1704c0,?Parse@CButeMgr@@QAE_NXZ,butemgr

@@ -240,6 +240,32 @@ source = "src/Gruntz/MapMgr.cpp"
 status = "wip"
 cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
 
+# --- CButeMgr .att/.bute attribute config-parser (src/Bute) -----------------
+# The attribute layer the whole game reads entity stats through: a two-level
+# keyed store (tag-group -> key -> typed value record) populated by a recursive-
+# descent lexer/parser over the .att text and queried by a family of typed
+# getters (GetInt/GetDword/GetFloat/GetDouble/GetString + their *Def variants).
+# All getters funnel through one __thiscall find-by-key helper (CButeTree::Find
+# @0x16d190): outer Find(tag) on m_tree (+0x18) yields the tag sub-tree, inner
+# Find(key) yields the typed value record { int type; void* pValue; }. ParseTagLine
+# allocates a store node + copies the tag CString under a C++ EH frame -> /GX;
+# engine code -> /O2 (the getters use args-in-regs/no-ebp-frames, the /O2 tell,
+# NOT the /O1 push-memory-operand MFC shape).
+# 11/11 driven byte-exact modulo reloc-masked operands (the Find/Insert/ReportError
+# /CString/operator-new/lex-helper calls, the 6 ButeMgr format-string literals, the
+# float/double-zero + node-vtable/descriptor globals, the g_tokenLen counter, the
+# Parse jump table, and the C++ EH FuncInfo/fs:0). Verified equal instruction counts
+# + 0 non-reloc body mismatches vs dump_target.py / llvm-objdump -dr. Two documented
+# entropy residues: GetString @0x1731d0 (98.0% - a tag/key ebx<->edi reg-alloc
+# coin-flip perturbed by the magic-static block) and ParseTagLine @0x1711b0 (96.9% -
+# one MSVC5 EH-epilogue `test al,al; setne al` bool-return normalization); both have
+# logic/layout/CFG byte-exact. See docs/match-learnings.md.
+[[unit]]
+unit = "butemgr"
+source = "src/Bute/ButeMgr.cpp"
+status = "wip"
+cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+
 # --- Win32 helper free functions (src/Utils) --------------------------------
 # GetGruntzDriveLetter has a C++ exception frame (__CxxFrameHandler + FuncInfo)
 # around its stack-local RegistryHelper, whose destructor (Close) runs on unwind
