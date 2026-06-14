@@ -60,7 +60,7 @@ CSV_ENGINE = ROOT + "/config/engine_labels.csv"
 CSV_SYMBOL   = ROOT + "/build/gen/symbol_names.csv"
 STRUCTS_JSON = ROOT + "/build/gen/structs.json"
 ENUMS_JSON   = ROOT + "/build/gen/enums.json"
-CSV_FID    = ROOT + "/config/library_labels.csv"   # tracked FID output (survives `git clean`)
+CSV_FID    = ROOT + "/config/library_labels.csv"
 REPORT     = ROOT + "/build/ghidra-named/exports/enrichment_apply_report.txt"
 
 prog     = currentProgram

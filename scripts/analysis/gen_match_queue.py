@@ -28,7 +28,7 @@ EXE = Path(os.environ.get("GRUNTZ_EXE") or REPO / "build/exe/GRUNTZ.delinkable.E
 FUNCS = REPO / "build/ghidra/exports/functions.csv"
 LABELS = REPO / "config/engine_labels.csv"
 MATCHED = REPO / "build/gen/symbol_names.csv"   # generated (was config/symbol_names.csv)
-FID = REPO / "config/library_labels.csv"   # tracked FID output (survives `git clean`)
+FID = REPO / "config/library_labels.csv"
 CHANGED = REPO / "build/patch-diff/validated_changed.pkl"
 OUT = REPO / "docs/match-queue.md"
 

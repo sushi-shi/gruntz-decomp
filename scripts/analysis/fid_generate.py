@@ -1,87 +1,98 @@
 #!/usr/bin/env python3
 """fid_generate.py - regenerate config/library_labels.csv (the FID library labels).
 
-`config/library_labels.csv` (rva,name,lib,confidence,source) is TRACKED in the
-repo: it is the FID output that `apply.py` consumes to name CRT/MFC/zlib library
-functions in GRUNTZ.EXE (so they are excluded from the hand-matching surface).
-The committed CSV is canonical and survives `git clean`; you only need to
-regenerate it if the VC5 libs, the zlib build, or GRUNTZ.EXE change.
+`config/library_labels.csv` (rva,name,lib,confidence,source) is the TRACKED output
+of a custom **masked-byte COFF-signature matcher** (NOT Ghidra FID). `apply.py`
+names CRT/MFC/zlib library functions from it and `gen_match_queue.py` excludes
+them. The committed CSV is canonical and survives `git clean`; regenerate only
+when the VC5 libs, GRUNTZ.EXE, or the Ghidra function boundaries change.
 
-This script does the deterministic, scriptable prefix of the FID workflow and
-then guides the FunctionID-plugin step, which Ghidra exposes through its FID API
-rather than a plain headless flag. Full recipe + rationale: docs/libraries-and-funcid.md §4.1.
+Pipeline (stages under scripts/analysis/fid/):
+  1. unpack .obj members from $MSVC_DIR/lib/{LIBCMT,NAFXCW}.LIB   (llvm-ar)
+  2. fid/coff_sig.py   -> build/fid/sigs.pkl       (masked per-symbol signatures)
+  3. fid/classify.py   -> build/fid/library_labels.csv  (anchored: matches at known
+                          function starts; prepends zlib from build/gen/symbol_names.csv)
+  4. fid/unanchored.py -> build/fid/offstart_matches.csv (bodies at starts Ghidra missed)
+  5. merge (3)+(4) with a `source` column -> config/library_labels.csv
 
-Inputs (inside `nix develop .#build`):
-  $MSVC_DIR/lib/LIBCMT.LIB   - static MT CRT (also covers MSVC5 iostreams)
-  $MSVC_DIR/lib/NAFXCW.LIB   - static MFC 4.2 release
-  a zlib-1.0.4 .lib rebuilt under VC5 /O2 /MT (see docs/zlib-matching.md)
+Stages 2-4 (coff_sig/classify/unanchored) are the original matcher, verbatim. The
+.obj unpack (1) and the source-tagged merge (5) are RECONSTRUCTED here - the
+original glue was never committed - so on the first regeneration, diff the result
+against the tracked config/library_labels.csv before trusting it.
 
-Steps:
-  1. import each .lib as a Ghidra program + auto-analyze (this script, headless);
-  2. create/populate a FidDb from those programs (FunctionID plugin) and run the
-     FID analyzer on the GRUNTZ.EXE program in build/ghidra-named;
-  3. export the matched (rva,name,lib,confidence) rows -> config/library_labels.csv.
-
-Steps 2-3 use the Ghidra FunctionID API (ghidra.feature.fid.*); they are NOT yet
-wired headless here - see §4.1 for the exact plugin actions. Until they are, run
-them from the Ghidra GUI and drop the export at config/library_labels.csv.
+Run inside `nix develop .#build`: needs $MSVC_DIR, $GRUNTZ_EXE, llvm-ar, and
+build/ghidra-enrich/exports/functions.csv (produce it with `gruntz bootstrap`).
 """
-import os
-import shutil
-import subprocess
-import sys
+import csv, os, shutil, subprocess, sys
 from pathlib import Path
 
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
             Path(__file__).resolve().parent.parent)
-OUT = REPO / "config" / "library_labels.csv"        # tracked, canonical
-FID_WORK = REPO / "build" / "fid"                    # scratch: imported .lib programs
+FID = Path(__file__).resolve().parent / "fid"            # stage scripts
+WORK = REPO / "build" / "fid"                            # scratch (gitignored)
+FUNCS = REPO / "build" / "ghidra-enrich" / "exports" / "functions.csv"
+OUT = REPO / "config" / "library_labels.csv"             # tracked, canonical
 
 
-def find_libs() -> list[Path]:
-    msvc = os.environ.get("MSVC_DIR")
-    if not msvc:
-        sys.exit("[fid] $MSVC_DIR unset - run inside `nix develop .#build`.")
-    libdir = Path(msvc) / "lib"
-    libs = []
-    for name in ("LIBCMT.LIB", "NAFXCW.LIB"):
-        p = libdir / name
-        if p.exists():
-            libs.append(p)
-        else:
-            print(f"[fid] WARNING: {p} not found - FID hit-rate will drop.", file=sys.stderr)
-    # zlib has no prebuilt VC5 .lib; rebuild zlib-1.0.4 under VC5 /O2 /MT first.
-    return libs
+def sh(*cmd, cwd=None):
+    print("[fid] $ " + " ".join(str(c) for c in cmd))
+    subprocess.run([str(c) for c in cmd], check=True, cwd=str(cwd) if cwd else None)
 
 
-def analyze_headless():
-    found = shutil.which("analyzeHeadless")
-    if found:
-        return found
-    for link in ("result", "result-1"):
-        p = REPO / link / "bin" / "analyzeHeadless"
-        if p.exists():
-            return str(p)
-    return "analyzeHeadless"
+def unpack_lib(lib_path: Path, objs_dir: Path) -> None:
+    """llvm-ar-extract a .LIB's .obj members into objs_dir (cleared first)."""
+    if not lib_path.exists():
+        sys.exit(f"[fid] {lib_path} not found - check $MSVC_DIR.")
+    objs_dir.mkdir(parents=True, exist_ok=True)
+    for f in objs_dir.glob("*"):
+        f.unlink()
+    ar = shutil.which("llvm-ar") or "llvm-ar"
+    sh(ar, "x", lib_path, cwd=objs_dir)   # extracts members into cwd
 
 
 def main() -> None:
-    libs = find_libs()
-    if not libs:
-        sys.exit("[fid] no VC5 libs found; cannot regenerate.")
-    FID_WORK.mkdir(parents=True, exist_ok=True)
-    analyze = analyze_headless()
-    # Step 1: import each .lib + auto-analyze into its own scratch program.
-    for lib in libs:
-        print(f"[fid] importing + analyzing {lib.name} ...")
-        subprocess.run([analyze, str(FID_WORK), "libs", "-import", str(lib)], check=True)
-    # Steps 2-3: FidDb create/populate + analyze GRUNTZ.EXE + export matches.
-    print("[fid] imported the library programs into", FID_WORK)
-    print("[fid] NEXT (Ghidra FunctionID plugin - see docs/libraries-and-funcid.md §4.1):")
-    print("        create+populate a FidDb from those programs, attach it, run the")
-    print("        FID analyzer on build/ghidra-named, and export the matches to:")
-    print(f"        {OUT}")
-    print("[fid] The committed config/library_labels.csv remains canonical until then.")
+    msvc = os.environ.get("MSVC_DIR")
+    if not msvc:
+        sys.exit("[fid] $MSVC_DIR unset - run inside `nix develop .#build`.")
+    exe = os.environ.get("GRUNTZ_EXE") or str(REPO / "build/exe/GRUNTZ.EXE")
+    if not Path(exe).exists():
+        sys.exit(f"[fid] EXE not found ({exe}) - set $GRUNTZ_EXE or run `gruntz init`.")
+    if not FUNCS.exists():
+        sys.exit(f"[fid] {FUNCS} missing - run `gruntz bootstrap` first.")
+    WORK.mkdir(parents=True, exist_ok=True)
+
+    # 1. unpack the static libs to .obj members
+    libdir = Path(msvc) / "lib"
+    unpack_lib(libdir / "LIBCMT.LIB", WORK / "libcmt_objs")
+    unpack_lib(libdir / "NAFXCW.LIB", WORK / "nafxcw_objs")
+
+    # 2. extract masked signatures
+    sigs = WORK / "sigs.pkl"
+    sh(sys.executable, FID / "coff_sig.py", WORK / "libcmt_objs", WORK / "nafxcw_objs", sigs, 1)
+
+    # 3. anchored matches (classify.py also writes WORK/library_labels.csv next to its out-csv)
+    sh(sys.executable, FID / "classify.py", sigs, exe, FUNCS, WORK / "matches.csv")
+
+    # 4. off-start matches (bodies Ghidra did not carve)
+    sh(sys.executable, FID / "unanchored.py", sigs, exe, FUNCS, WORK / "offstart_matches.csv")
+
+    # 5. merge with a `source` column -> config/library_labels.csv
+    rows, seen = [], set()
+    with open(WORK / "library_labels.csv", newline="") as f:
+        for r in csv.DictReader(f):
+            rows.append((r["rva"], r["name"], r["lib"], r["confidence"], "anchored"))
+            seen.add(r["rva"])
+    with open(WORK / "offstart_matches.csv", newline="") as f:
+        for r in csv.DictReader(f):
+            if r["rva"] in seen:
+                continue
+            rows.append((r["rva"], r["name"], r["lib"], r["confidence"], "offstart-ghidra-missed"))
+    with open(OUT, "w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["rva", "name", "lib", "confidence", "source"])
+        w.writerows(rows)
+    print(f"[fid] wrote {OUT.relative_to(REPO)} ({len(rows)} rows). "
+          "Diff against the committed copy to confirm the reconstruction.")
 
 
 if __name__ == "__main__":
