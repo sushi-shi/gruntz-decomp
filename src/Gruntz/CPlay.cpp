@@ -438,7 +438,7 @@ void CPlay::StepC()
 // pins the view discriminator m_480, OnRegion3/4 fire an extra cue on enter/leave.
 // ===========================================================================
 // @address: 0x0d8a00
-// @size:    0xa0
+// @size:    0x73
 int CPlay::OnRegion2(int z)         // @0xd8a00  (region-0 / gate m_470, timer +0x430)
 {
     if (z != 0) { m_470 = 1; RegionEnter(); m_480 = 1; }
@@ -450,7 +450,7 @@ int CPlay::OnRegion2(int z)         // @0xd8a00  (region-0 / gate m_470, timer +
 }
 
 // @address: 0x0d8aa0
-// @size:    0x80
+// @size:    0x5f
 int CPlay::OnRegion1(int z)         // @0xd8aa0  (region-1 / gate m_474, timer +0x440)
 {
     if (z != 0) { m_474 = 1; RegionEnter(); }
@@ -462,7 +462,7 @@ int CPlay::OnRegion1(int z)         // @0xd8aa0  (region-1 / gate m_474, timer +
 }
 
 // @address: 0x0d8b20
-// @size:    0xa0
+// @size:    0x74
 int CPlay::OnRegion3(int z)         // @0xd8b20  (region-2 / gate m_478, timer +0x450)
 {
     if (z != 0) {
@@ -480,7 +480,7 @@ int CPlay::OnRegion3(int z)         // @0xd8b20  (region-2 / gate m_478, timer +
 }
 
 // @address: 0x0d8bc0
-// @size:    0xa0
+// @size:    0x71
 int CPlay::OnRegion4(int z)         // @0xd8bc0  (region-3 / gate m_47c, timer +0x460)
 {
     if (z != 0) {
