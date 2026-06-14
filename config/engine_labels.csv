@@ -384,3 +384,36 @@ rva,name,class,prototype,kind,source,confidence
 0x185320,_uncompress,,"int uncompress(Bytef* dest, uLongf* destLen, const Bytef* source, uLong sourceLen)  [one-shot inflate wrapper; calls inflate @0x585be0; sole caller is WwdFile::InflateMainBlock @0x560790. zlib 1.0.4 uncompr.c]",free,rez-trace,high
 0x185be0,_inflate,,"int inflate(z_streamp z, int f)  [zlib inflate() state machine; drives inflate_blocks @0x5875a0 (matched _inflate_blocks @0x1875a0). zlib 1.0.4 inflate.c]",free,rez-trace,high
 0x185ab0,_inflateReset,,"int inflateReset(z_streamp z)  [zlib inflateInit/Reset; calls _inflate_blocks_new @0x587530 (matched). zlib 1.0.4 inflate.c]",free,rez-trace,med
+#
+# === string-xref pass (Ghidra function boundaries x binary string refs) ===
+# Each function below directly loads (push/mov imm32) the listed .rdata string
+# literals; role inferred from the WAP32/Gruntz string taxonomy (docs/strings-
+# analysis.md) + address contiguity to known anchors. Names are INFERRED
+# (source=string-xref): high = self-identifying / unambiguous role; med = role
+# certain, exact identity/class inferred. Reproducible: scripts/string_xref_labels.py.
+0x141400,CDirectDrawMgr::GetErrorString,CDirectDrawMgr,"[maps DDERR_*/HRESULT -> symbol + human description; self-IDs module 'DirectDrawMgr'; uses WAP32 reporter fmt '%s, line %i: %s (%i) - %s'; same DDrawMgr TU as DirectDrawCreate caller @0x141dc0]",method,string-xref,high
+0x133590,DirectInputMgr2::GetErrorString,DirectInputMgr2,[maps DIERR_* -> symbol + description; self-IDs 'DirectInputMgr2'; same DinMgr2 TU as DirectInputCreateA caller @0x132ce0],method,string-xref,high
+0x138150,DirectSoundMgr::GetErrorString,DirectSoundMgr,[maps DSERR_* -> symbol + description; self-IDs 'DirectSoundMgr'; same Dsndmgr TU as DirectSoundCreate caller @0x136550],method,string-xref,high
+0x00a3b0,CreateGameObjectByName,,[WWD object factory: dispatches on object type-name string (ActionArea/AmbientSound/AniCycle/Boomerang/Brickz/CheckpointTrigger/CoveredPowerup/... full WAP object roster) to construct the matching CWap* object; abuts CActionArea::CActionArea @0x07da0],free,string-xref,high
+0x08ff30,CGruntzMgr::BuildMoviePath,CGruntzMgr,[formats cutscene path '%c:\Movies\%s' over Gruntz0..8.vob/Logo.vob; CGruntzMgr TU (GetGruntzDriveLetter @0x08fa70 abuts)],method,string-xref,high
+0x0f8f30,BuildSoundFontPath,,[formats Miles/DLS soundfont path '%c:\MUSIC\Gruntz.SF2' / 'Gruntz4.SF2'],free,string-xref,high
+0x065e80,LoadPickupSprites,,[registers GRUNTZ_PICKUPS_* sprite namespace (59 pickup keys)],free,string-xref,med
+0x07c620,LoadPowerupIconSprites,,[loads GAME_INGAMEICONZ_POWERUPZ_* powerup HUD icons; reads CoveredTimeBombTime],free,string-xref,med
+0x060150,LoadGruntDeathAnimations,,[GRUNTZ_DEATHZ_* death/exit animation sprite loader; CUserLogic region],free,string-xref,med
+0x048470,CGrunt::BuildAnimationKey,CGrunt,[assembles GRUNTZ_<type>_<dir>_<action> sprite-namespace keys; CGrunt TU (CGrunt::CGrunt @0x047a10)],method,string-xref,med
+0x0d0120,LoadCursorSprites,,[GAME_CURSORZ_* tool/toy cursor-sprite loader (35 cursor keys + NORMCHIPZ)],free,string-xref,med
+0x0e2400,BuildToolToyColorKey,,[builds <COLOR>TOOL/<COLOR>TOY ownership-tint keys across 17 colors],free,string-xref,med
+0x0dc060,LoadLevelEffectSprites,,[loads GAME_*/LEVEL_* hazard + GRUNTZ_DEATHZ_* effect sprites/sounds; CGruntzMgr region],free,string-xref,med
+0x0d65d0,LoadWarlordSprites,,[WARLORDZ_NAPOLEAN/PATTON/VIKING boss sprite loader],free,string-xref,med
+0x0a11d0,LoadAreaLevelTable,,[references AREA1..AREA8 + level/world keys; big map/level load dispatch; CMapMgr region (~CMapMgr @0x09e9e0)],method,string-xref,med
+0x093d40,BuildLevelRezPath,,[formats AREA%i_WORLDZ/LEVEL%i/TRAINING%i/'custom\' level resource keys; RezMgr path TU (MakeRezPath @0x091670)],free,string-xref,med
+0x0dbc80,BuildWorldLevelPath,,[formats 'WORLDZ\LEVEL%i'/'WORLDZ\TRAINING%i'; BATTLEZ_/MULTI_ mode prefixes; CGruntzMgr region],free,string-xref,med
+0x0c20a0,CMultiStartDlg::InitPlayerSlots,CMultiStartDlg,"[multiplayer setup: Human / Computer(easy|normal|difficult), CustomMultiMap/LastMultiMap; CMultiStartDlg TU @0x0c1750]",method,string-xref,med
+0x0e44e0,BuildLevelTitleString,,[formats 'Questz: Stage %d of %s' / 'Battlez: %s' / Custom level titles],free,string-xref,med
+0x01ed30,DrawBattleStats,,[renders BATTLE STATZ panel labels: Gruntz:/Killz:/Cursez:/Fortz:/Powerupz:],free,string-xref,med
+0x018740,GetEndLevelStatLabels,,[Coinz:/Deathz:/Powerupz:/Secretz:/Survivorz:/Time:/Toolz:/Toyz: end-of-level results labels],free,string-xref,med
+0x01c210,CheckWarpLetterBonus,,[BOOTY_BOOM/BOOTY_WARP + 'Collect all four WARP letterz...' secret-bonus messages],free,string-xref,med
+0x01c9d0,ShowLevelCompleteMessage,,['Level Completed!'/'World Completed!' + WARP-letterz cheat-unlock messages],free,string-xref,med
+0x022e60,LoadCheatConfig,,[reads Cheatz/NumCheatz/Cheat%i + ExpMonth/ExpYear cheat-code config],free,string-xref,med
+0x082990,GetWorldDisplayName,,"[returns world display name ('Gruntz in Space'/'Honey, I Shrunk the Gruntz!'/'Rocky Roadz'/...); 121B table lookup]",free,string-xref,med
+0x018830,LoadBootyCheatState,,[STATEZ_BOOTY/BootyCheatz/Cheat%i + GRUNTZ_WANDGRUNT sprite setup],free,string-xref,low
