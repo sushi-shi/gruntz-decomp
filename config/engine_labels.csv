@@ -568,3 +568,26 @@ rva,name,class,prototype,kind,source,confidence
 0x01ec20,GetWarlordName,,[returns warlord name NAPOLEAN/PATTON/VIKING by index],free,decomp-xref,med
 0x0dd340,BuildWarlordNameTable,,[WARLORDZ_NAPOLEAN/PATTON/VIKING namespace table],free,decomp-xref,low
 0x0dd050,BuildGruntNamespaceList,,[NORMALGRUNT/DEATHZ/ENTRANCEZ/EXITZ/GRUNTPUDDLE/PICKUPS/BOMBGRUNT base namespace list],free,decomp-xref,low
+#
+# --- decomp-xref pass, batch 4: object/level resource loaders, machine HUDs, util ---
+0x09a510,LoadObjectImageResources,,"__thiscall(this,a) [enumerates object map, builds OBJECTZ_/IMAGEZ_%s keys, loads image banks via CObList]",method,decomp-xref,med
+0x09a910,LoadObjectSoundResources,,"__thiscall(this,a) [OBJECTZ_/SOUNDZ_%s object sound-bank enumerator]",method,decomp-xref,med
+0x09ac20,LoadObjectAnimResources,,"__thiscall(this,a) [OBJECTZ_/ANIZ_%s object animation enumerator]",method,decomp-xref,med
+0x065a60,LoadWandGruntItemConfig,,__thiscall(this) [WANDGRUNT ItemDowntime/HealthLoss attrs],method,decomp-xref,med
+0x0612a0,LoadGruntDecayConfig,,__thiscall(this) [Grunt DecayTime attr],method,decomp-xref,med
+0x061570,LoadGruntDecayConfig2,,__thiscall(this) [Grunt DecayTime (variant)],method,decomp-xref,low
+0x06a060,LoadGruntMovingDeathConfig,,__thiscall(this) [Grunt MovingDeathTime attr],method,decomp-xref,med
+0x0d12b0,LoadScrollSpeedOptions,,__thiscall(this) [Optionz Min/MaxScrollSpeed display options],method,decomp-xref,med
+0x0cffe0,LoadImageBanks_vfunc29,,bool __thiscall(this) [vtable slot 0x1d; loads GRUNTZ + second image bank into this+0x30/0x34],vfunc,decomp-xref,med
+0x0a09a0,LoadStateImages_vfunc8,,__thiscall(this) [vtable slot 8; loads IMAGEZ bank],vfunc,decomp-xref,med
+0x0db6c0,LoadLevelSounds,,"__thiscall(this,a) [LEVEL/SOUNDZ level sound-bank load]",method,decomp-xref,med
+0x0db7e0,LoadLevelImages,,"__thiscall(this,a) [LEVEL/IMAGEZ level image-bank load]",method,decomp-xref,med
+0x106660,UpdateRezMachineSnoozeStatusBar,,__thiscall(this) [StatusBar + LeftMachineSnoozingDelay],method,decomp-xref,med
+0x107590,UpdateFallingItemStatusBar,,"__thiscall(this,a,b,c) [StatusBar + FallingItemDelay]",method,decomp-xref,med
+0x107a10,UpdateRezMachineWakeStatusBar,,__thiscall(this) [StatusBar + LeftMachineWakingDelay],method,decomp-xref,med
+0x10b320,UpdateDestructButtonStatusBar,,__thiscall(this) [StatusBar + DestructButtonWarningDelay],method,decomp-xref,med
+0x10bc30,UpdateDestructButtonStatusBar2,,"__thiscall(this,a) [StatusBar + DestructButtonWarningDelay (variant)]",method,decomp-xref,low
+0x112a50,BuildStatzTabSmall_vfunc1,,"__thiscall(this,...) [vtable slot 1; copies 0x18-dword rect into this+0x2c.., BehindCandy + GAME_STATUSBAR_TABZ_STATZTAB_SMA]",vfunc,decomp-xref,med
+0x114ff0,SaveScreenshot,,"(int,RegistryHelper*,...) [reads 'Screen Dump Count' via RegistryHelper, writes Gruntz_%04i.BMP]",free,decomp-xref,high
+0x0bf1d0,BuildGruntzCrcInfo,,__thiscall(this) ['crc info for all gruntz' diagnostic string; wsprintf+rand],method,decomp-xref,low
+0x1183b0,FormatGameInfoString,,__thiscall(this) [formats 'Name: %s Type: %i Location: %s Vers...' + session time into DAT_0064ebf8],method,decomp-xref,low
