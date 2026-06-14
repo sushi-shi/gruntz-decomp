@@ -2,6 +2,7 @@
 // Matched: ??0CStatusBarItem@@QAE@XZ @ RVA 0x1005d0 (byte-exact).
 #include "StatusBarItem.h"
 
+// @address: 0x1005d0
 CStatusBarItem::CStatusBarItem()
 {
     m_4  = 0;

@@ -45,16 +45,11 @@ namespace Utils
         void Free(T* pData);
 
     private:
-        //@offset: 0
-        char* m_pBlock;          // the single contiguous backing block
-        //@offset: 4
-        Node* m_pNextFreeNode;   // head of the free-list
-        //@offset: 8
-        unsigned int m_nodesCount;
-        //@offset: c
-        unsigned int m_dataOffset;  // offset from Node* to its `data` (= sizeof(Node*))
-        // (total 0x10)
-    };
+        char* m_pBlock;             // +0x00  the single contiguous backing block
+        Node* m_pNextFreeNode;      // +0x04  head of the free-list
+        unsigned int m_nodesCount;  // +0x08
+        unsigned int m_dataOffset;  // +0x0c  offset from Node* to its `data`
+    };                              // 0x10 bytes
 }
 
 #endif /* UTILS_MEMORY_POOL_H */

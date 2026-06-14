@@ -14,6 +14,7 @@ namespace Utils {
 // szLastKey into the m_1c/m_11c buffers, then resolves the deepest value key
 // through InitializeLastKey. Returns 1 on full success, 0 on any failure.
 // -------------------------------------------------------------------------
+// @address: 0x139210
 int RegistryHelper::Open(char *szKeyName1, char *szKeyName2, char *szKeyName3,
                          char *szLastKey, HKEY hKey, char *szSubKey)
 {
@@ -44,6 +45,7 @@ int RegistryHelper::Open(char *szKeyName1, char *szKeyName2, char *szKeyName3,
 // Resolves m_18 (the deepest value key): when szLastKey is null it aliases
 // m_14; otherwise it opens szLastKey under m_14 via GetRegistryKey.
 // -------------------------------------------------------------------------
+// @address: 0x139370
 int RegistryHelper::InitializeLastKey(char *szLastKey)
 {
     if (!m_0)
@@ -63,6 +65,7 @@ int RegistryHelper::InitializeLastKey(char *szLastKey)
 // into the buffer (and reports its length via *pValueBufferSize), or clears
 // the size and returns 0 when there is no default.
 // -------------------------------------------------------------------------
+// @address: 0x1394a0
 char *RegistryHelper::GetValueString(char *szValueName, char *szValueBuffer,
                                      unsigned int *pValueBufferSize, char *szDefault)
 {
@@ -90,6 +93,7 @@ char *RegistryHelper::GetValueString(char *szValueName, char *szValueBuffer,
 // RegistryHelper::GetValueDword  @ RVA 0x1395d0 (80 B).
 // Reads a REG_DWORD value, returning valueDefault on any failure.
 // -------------------------------------------------------------------------
+// @address: 0x1395d0
 DWORD RegistryHelper::GetValueDword(char *szValueName, DWORD valueDefault)
 {
     DWORD dwType;
@@ -113,6 +117,7 @@ DWORD RegistryHelper::GetValueDword(char *szValueName, DWORD valueDefault)
 // Writes szValue as a REG_SZ value (length includes the terminator).
 // Returns nonzero on success.
 // -------------------------------------------------------------------------
+// @address: 0x1393b0
 int RegistryHelper::SetValueString(char *szValueName, char *szValue)
 {
     if (!m_0)
@@ -129,6 +134,7 @@ int RegistryHelper::SetValueString(char *szValueName, char *szValue)
 // RegistryHelper::SetValueDword  @ RVA 0x139460 (51 B).
 // Writes value as a 4-byte REG_DWORD value. Returns nonzero on success.
 // -------------------------------------------------------------------------
+// @address: 0x139460
 int RegistryHelper::SetValueDword(char *szValueName, DWORD value)
 {
     if (!m_0)
@@ -144,6 +150,7 @@ int RegistryHelper::SetValueDword(char *szValueName, DWORD value)
 // Closes the whole chain of opened keys (skipping the duplicate close when
 // the last two keys are the same handle).
 // -------------------------------------------------------------------------
+// @address: 0x139330
 void RegistryHelper::Close()
 {
     if (m_0) {
@@ -164,6 +171,7 @@ void RegistryHelper::Close()
 // -------------------------------------------------------------------------
 static char s_lpClass[1];
 
+// @address: 0x139650
 int RegistryHelper::GetRegistryKey(HKEY hKey, char *szSubKey, PHKEY phKeyResult)
 {
     DWORD dwDisposition;

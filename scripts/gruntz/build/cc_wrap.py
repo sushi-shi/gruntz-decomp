@@ -31,7 +31,7 @@ import sys
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-GRUNTZ_DIR = SCRIPT_DIR.parent
+GRUNTZ_DIR = next((p for p in SCRIPT_DIR.parents if (p / "flake.nix").exists()), SCRIPT_DIR)
 
 
 def die(msg: str) -> None:

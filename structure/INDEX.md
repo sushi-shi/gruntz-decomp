@@ -21,7 +21,7 @@ Scaffold file column: where the stub lives under `structure/`.
 
 | Name | Kind | Source file | RTTI mangled | Known | From | Scaffold |
 |---|---|---|---|---|---|---|
-| CGruntzApp | game | C:\Proj\Gruntz | `.?AVCGruntzApp@@` | layout | rtti+tomalla | game/cgruntzapp.h |
+| CGruntzApp | game | C:\Proj\Gruntz | `.?AVCGruntzApp@@` | layout | rtti+tomalla | graduated: src/Gruntz/GruntzApp.cpp |
 | CGruntzWnd | game | C:\Proj\Gruntz | `.?AVCGruntzWnd@@` | layout | rtti+tomalla | game/cgruntzwnd.h |
 | CGruntzMgr | game | C:\Proj\Gruntz\GruntzMgr.cpp | `.?AVCGruntzMgr@@` | layout | rtti+tomalla | game/cgruntzmgr.h |
 | CGruntzMapMgr | game | C:\Proj\Gruntz | `.?AVCGruntzMapMgr@@` | name | rtti+strings | game/mapmgr.h |
@@ -46,7 +46,7 @@ Scaffold file column: where the stub lives under `structure/`.
 | CBootyState | game | C:\Proj\Gruntz | `.?AVCBootyState@@` | name | rtti+strings | game/states.h |
 | CMultiBootyState | game | C:\Proj\Gruntz | `.?AVCMultiBootyState@@` | name | rtti+strings | game/states.h |
 | CTileTrigger | game | C:\Proj\Gruntz | `.?AVCTileTrigger@@` | name | rtti+strings | game/triggers.h |
-| CTileTriggerLogic | game | C:\Proj\Gruntz | `.?AVCTileTriggerLogic@@` | name | rtti+strings | game/triggers.h |
+| CTileTriggerLogic | game | C:\Proj\Gruntz | `.?AVCTileTriggerLogic@@` | layout | rtti+matched | graduated: src/Gruntz/TileTriggerLogic.h |
 | CTileTriggerSwitch | game | C:\Proj\Gruntz | `.?AVCTileTriggerSwitch@@` | name | rtti+strings | game/triggers.h |
 | CTileTriggerSwitchLogic | game | C:\Proj\Gruntz | `.?AVCTileTriggerSwitchLogic@@` | name | rtti+strings | game/triggers.h |
 | CTileTriggerTransition | game | C:\Proj\Gruntz | `.?AVCTileTriggerTransition@@` | name | rtti | game/triggers.h |
@@ -100,7 +100,7 @@ Scaffold file column: where the stub lives under `structure/`.
 | CAmbientSound | game | C:\Proj\Gruntz | `.?AVCAmbientSound@@` | name | rtti+strings | game/ambient_sound.h |
 | CAmbientPosSound | game | C:\Proj\Gruntz | `.?AVCAmbientPosSound@@` | name | rtti | game/ambient_sound.h |
 | CRandomAmbientSound | game | C:\Proj\Gruntz | `.?AVCRandomAmbientSound@@` | name | rtti | game/ambient_sound.h |
-| CStatusBarItem | game | C:\Proj\Gruntz | `.?AVCStatusBarItem@@` | name | rtti | game/statusbar.h |
+| CStatusBarItem | game | C:\Proj\Gruntz | `.?AVCStatusBarItem@@` | layout | rtti+matched | graduated: src/Gruntz/StatusBarItem.h |
 | CSBI_Image | game | C:\Proj\Gruntz | `.?AVCSBI_Image@@` | name | rtti | game/statusbar.h |
 | CSBI_ImageSet | game | C:\Proj\Gruntz | `.?AVCSBI_ImageSet@@` | name | rtti | game/statusbar.h |
 | CSBI_ImageSetAni | game | C:\Proj\Gruntz | `.?AVCSBI_ImageSetAni@@` | name | rtti | game/statusbar.h |
@@ -149,9 +149,9 @@ Scaffold file column: where the stub lives under `structure/`.
 
 | Name | Kind | Source file | RTTI mangled | Known | From | Scaffold |
 |---|---|---|---|---|---|---|
-| CGameApp | wap32 | (engine, shared) | `.?AVCGameApp@@` | layout | rtti+tomalla | wap32/cgameapp.h |
+| CGameApp | wap32 | (engine, shared) | `.?AVCGameApp@@` | layout | rtti+tomalla | graduated: src/Wap32/Wap32.h |
 | CGameMgr | wap32 | (engine, shared) | `.?AVCGameMgr@@` | layout | rtti+tomalla | wap32/cgamemgr.h |
-| CGameWnd | wap32 | (engine, shared) | `.?AVCGameWnd@@` | layout | rtti+tomalla | wap32/cgamewnd.h |
+| CGameWnd | wap32 | (engine, shared) | `.?AVCGameWnd@@` | layout | rtti+tomalla | graduated: src/Wap32/Wap32.h |
 | CWapObj | wap32 | (engine) | `.?AVCWapObj@@` | name | rtti | wap32/cwapobj.h |
 | CWapX | wap32 | (engine) | `.?AVCWapX@@` | name | rtti | wap32/cwapobj.h |
 | zErrHandling | wap32 | (z-runtime) | `.?AVzErrHandling@@` | name | rtti | wap32/zruntime.h |
@@ -185,8 +185,8 @@ ButeMgr) are likewise name-only.
 | PLAYLISTINFOSTRUCT | struct | C:\Proj\Dsndmgr | name (held in CArray) | rtti(template)+strings | managers/directsoundmgr.h |
 | DirectInputMgr2 | manager | C:\Proj\DinMgr2\DinMgr2.cpp | name | strings | managers/directinputmgr2.h |
 | InputDevice | manager | C:\Proj\DinMgr2\InputDevice.cpp | name | srcpath | managers/directinputmgr2.h |
-| RezSync | manager | (REZ/VRZ loader) | name | strings | managers/rezsync.h |
-| CRezDir | manager | (REZ/VRZ loader) | name | strings | managers/rezsync.h |
+| RezSync | manager | (REZ/VRZ loader) | name | strings | graduated: src/Rez/RezMgr.h |
+| CRezDir | manager | (REZ/VRZ loader) | name | strings | graduated: src/Rez/RezMgr.h |
 | ButeMgr | manager | (attributez.txt/dwrects.txt) | name | strings | managers/butemgr.h |
 
 ## Reconstructed util classes (tomalla-derived, NOT in RTTI)
@@ -197,7 +197,7 @@ deferred to the re-anchor.
 
 | Name | Kind | Source file | Known | From | Scaffold |
 |---|---|---|---|---|---|
-| Utils::RegistryHelper | util | C:\Proj\Gruntz (util TU?) | layout (0x21C) | tomalla | utils/registry_helper.h |
+| Utils::RegistryHelper | util | C:\Proj\Gruntz (util TU?) | layout (0x21C) | tomalla | graduated: src/Utils/RegistryHelper.h |
 | Utils::MemoryPool<T> | util/template | C:\Proj\Gruntz (util TU?) | layout (0x10) | tomalla | utils/memory_pool.h |
 | Font | util | C:\Proj\Gruntz\font.cpp | layout (0x14) + .fnt format | tomalla | utils/font.h |
 | Pair | struct | C:\Proj\Gruntz | layout {int;int} | tomalla | game/cgruntzmgr.h |

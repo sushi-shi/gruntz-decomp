@@ -52,6 +52,7 @@ CRezItmBase::CRezItmBase(void *parent)
 // Base ctor (vtbl @0x5ef768 + parent), then derived vtbl @0x5ef788, m_10 = 0,
 // m_14 = 0, m_20 = -1. m_18/m_1c untouched.
 // ---------------------------------------------------------------------------
+// @address: 0x13c540
 CRezItm::CRezItm(void *parent) : CRezItmBase(parent)
 {
     m_10 = 0;
@@ -65,6 +66,7 @@ CRezItm::CRezItm(void *parent) : CRezItmBase(parent)
 // collection's two vtables), m_20=m_24=m_28=m_34=0, derived vtbl @0x5ef7a8,
 // m_2c=rezMgr, m_30=1.
 // ---------------------------------------------------------------------------
+// @address: 0x13c940
 CRezDir::CRezDir(void *parent, void *rezMgr) : CRezItmBase(parent)
 {
     m_14 = 0;
@@ -87,6 +89,7 @@ CRezDir::CRezDir(void *parent, void *rezMgr) : CRezItmBase(parent)
 // of the record) has bit 0x4000 set (i.e. the entry is a directory).
 // `this` is never read here.
 // ---------------------------------------------------------------------------
+// @address: 0x13c080
 int CRezDir::FindEntry(char *name)
 {
     RezFindRec rec;
@@ -108,6 +111,7 @@ static const char s_notSorted[] = "CRezDir::Load Failed! (File is not sorted!)";
 // iterate the child collection (First/Next) and recurse Load(1) into each
 // child's sub-dir node (node->m_14). Returns 1.
 // ---------------------------------------------------------------------------
+// @address: 0x13a0f0
 int CRezDirNode::Load(int childFlag)
 {
     if (m_buf != 0)

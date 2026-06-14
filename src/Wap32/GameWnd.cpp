@@ -2,6 +2,7 @@
 // Matched: ??0CGameWnd@@QAE@XZ @ RVA 0x13cf00 (byte-exact).
 #include "Wap32.h"
 
+// @address: 0x13cf00
 CGameWnd::CGameWnd()
 {
     m_4 = 0;
@@ -19,6 +20,7 @@ static CGameWnd *s_activeWnd;
 // SHOWNORMAL). Bails (returning 0) if params/owner is null or a window is
 // already active.
 // -------------------------------------------------------------------------
+// @address: 0x13cf20
 int CGameWnd::CreateAndShow(CGameWndCreateParams *pParams, void *pOwner)
 {
     if (!pParams)

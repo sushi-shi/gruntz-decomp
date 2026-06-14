@@ -46,9 +46,9 @@
  *      on-disk order, so it is NOT a byte-layout source.
  */
 
-#undef UNICODE
-#undef _UNICODE
-#include <afxwin.h>
+// CString in the editor-grouped WwdObject view is an MFC type (a single char*);
+// modeled here as a 4-byte placeholder so the header parses without <afxwin.h>.
+typedef void *WwdCString;
 
 /* Inclusive rectangle, {left,top,right,bottom}, as used by every object rect. */
 struct WwdRect
@@ -60,11 +60,11 @@ struct WwdRect
 };
 
 /*
- * WwdObjectRecord — the PINNED on-disk fixed object record.
- * @size: 0x11C (284 bytes), confirmed by WwdFile::ReadPlaneObjects @0x162af0
- *        (`lea [esi+0x11c]` + `rep movs` per object). After this fixed block come
- *        FOUR length-prefixed (lengths at +0x04/+0x08/+0x0C/+0x10) variable
- *        strings: name, logic, imageSet, sound (NOT NUL-terminated on disk).
+ * WwdObjectRecord — the PINNED on-disk fixed object record (sizeof == 0x11C, 284
+ * bytes), confirmed by WwdFile::ReadPlaneObjects @0x162af0 (`lea [esi+0x11c]` +
+ * `rep movs` per object). After this fixed block come FOUR length-prefixed
+ * (lengths at +0x04/+0x08/+0x0C/+0x10) variable strings: name, logic, imageSet,
+ * sound (NOT NUL-terminated on disk).
  *
  * All fields are little-endian 32-bit. Offsets in comments are byte offsets into
  * the record. This is the load-bearing layout; the editor-grouped WwdObject below
@@ -132,9 +132,9 @@ struct WwdObjectRecord
 
 /*
  * WwdObject — one world-object record (editor-grouped, name-rich VIEW).
- * @size: not a byte-layout source — see WwdObjectRecord above for the PINNED
- *        on-disk fixed 0x11C layout. Member ORDER here is editor-dialog grouping,
- *        not on-disk order.
+ * NOT a byte-layout source — see WwdObjectRecord above for the PINNED on-disk
+ * fixed 0x11C layout. Member ORDER here is editor-dialog grouping, not on-disk
+ * order.
  *
  * Field NAMES are the editor's labels, in dialog grouping order. The game's
  * CObject (and every gameplay subclass: CGrunt, hazards, triggers, …) is built
@@ -143,10 +143,10 @@ struct WwdObjectRecord
 struct WwdObject
 {
     /* --- Identification (Object-Properties dialog) --- */
-    CString name;        // "Name:"        object instance name (length-prefixed on disk)
-    CString logic;       // "Logic:"       logic-program name (-> CUserLogic dispatch)
-    CString imageSet;    // "Image Set:"   primary image-set name (length-prefixed STRING on disk, NOT an int)
-    CString sound;       // trailing sound/"animation" string (length-prefixed on disk; editor omitted it)
+    WwdCString name;        // "Name:"        object instance name (length-prefixed on disk)
+    WwdCString logic;       // "Logic:"       logic-program name (-> CUserLogic dispatch)
+    WwdCString imageSet;    // "Image Set:"   primary image-set name (length-prefixed STRING on disk, NOT an int)
+    WwdCString sound;       // trailing sound/"animation" string (length-prefixed on disk; editor omitted it)
 
     /* --- Attributes --- */
     int score;           // "Score:"
@@ -210,14 +210,14 @@ struct WwdObject
      * WwdHeader.imageSet1..4 / prefix1..4 in wwd.h), NOT to the per-object
      * on-disk record (WwdObjectRecord) — they are reproduced here only because the
      * editor surfaces them via an object-adjacent dialog. */
-    CString imageSet1, imageSet2, imageSet3, imageSet4;  // "Image Set 1:".."4:"
-    CString prefix1, prefix2, prefix3, prefix4;          // "Prefix 1:".."4:"
+    WwdCString imageSet1, imageSet2, imageSet3, imageSet4;  // "Image Set 1:".."4:"
+    WwdCString prefix1, prefix2, prefix3, prefix4;          // "Prefix 1:".."4:"
 };
 
 /*
  * Object Flags — the 1-bit toggles in the editor's "Object Flags" dialog, in label
  * order. These are the WAP32-engine object flag bits (shared with WapWorld/GMEdit).
- * Bit VALUES are @todo (label order != bit order until confirmed); names verbatim.
+ * Bit VALUES are unverified (label order != bit order until confirmed); names verbatim.
  */
 enum WwdObjectFlags
 {
@@ -235,7 +235,7 @@ enum WwdObjectFlags
     WWD_OBJ_MIRROR,          // "Mirror"
     WWD_OBJ_INVERT,          // "Invert"
     WWD_OBJ_FLASH            // "Flash"
-    //@todo: bit positions/values unverified against the binary
+    // (bit positions/values unverified against the binary; label order only.)
 };
 
 /*
@@ -257,14 +257,14 @@ enum WwdHitTypeFlags
     WWD_HIT_USER2,     // "User 2"
     WWD_HIT_USER3,     // "User 3"
     WWD_HIT_USER4      // "User 4"
-    //@todo: bit positions/values unverified against the binary
+    // (bit positions/values unverified against the binary; label order only.)
 };
 
 /*
  * Dynamic / Draw / User flag words also expose a generic "Flag 1".."Flag 12"
  * checklist in the editor ("Add Flags"). Those 12 generic bits map to whichever
- * flag word is being edited; not modeled as a distinct enum.
- *   @todo: which word(s) the 12 generic flags apply to, and their bit meanings.
+ * flag word is being edited; not modeled as a distinct enum. (Which word(s) the
+ * 12 generic flags apply to, and their bit meanings, are unverified.)
  */
 
 #endif /* FORMATS_WWD_OBJECT_H */

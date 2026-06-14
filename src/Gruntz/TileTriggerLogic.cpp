@@ -2,6 +2,7 @@
 // Matched: ??0CTileTriggerLogic@@QAE@XZ @ RVA 0x1107f0 (byte-exact).
 #include "TileTriggerLogic.h"
 
+// @address: 0x1107f0
 CTileTriggerLogic::CTileTriggerLogic()
 {
     // m_block initialised before m_1c so the optimiser emits the rep stosl

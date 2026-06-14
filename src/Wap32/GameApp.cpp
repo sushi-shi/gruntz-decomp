@@ -20,6 +20,7 @@ public:
 // File-scope instance counter (binary: global int @ 0x653c6c, bumped per ctor).
 static int s_gameAppCount;
 
+// @address: 0x13d590
 CGameApp::CGameApp()
 {
     m_4   = 0;
@@ -37,6 +38,7 @@ CGameApp::CGameApp()
 // CGameApp::CloseResources  @ RVA 0x13d8c0 (66 B) - byte-exact.
 // Frees the accelerator table then deletes the two resource objects.
 // -------------------------------------------------------------------------
+// @address: 0x13d8c0
 void CGameApp::CloseResources()
 {
     if (m_10) {
@@ -57,6 +59,7 @@ void CGameApp::CloseResources()
 // CGameApp::InitializeAccelerators  @ RVA 0x13dc20 (73 B) - byte-exact.
 // Reloads the accelerator table; returns whether it loaded.
 // -------------------------------------------------------------------------
+// @address: 0x13dc20
 BOOL CGameApp::InitializeAccelerators(LPCSTR lpTable)
 {
     if (lpTable && *lpTable) {
@@ -74,6 +77,7 @@ BOOL CGameApp::InitializeAccelerators(LPCSTR lpTable)
 // CGameApp::ReportError  @ RVA 0x13dcb0 (87 B) - byte-exact.
 // Records an error once (guarded by m_248), posting WM_CLOSE to the window.
 // -------------------------------------------------------------------------
+// @address: 0x13dcb0
 void CGameApp::ReportError(WPARAM wParam, LPARAM lParam)
 {
     if (m_248)
@@ -90,6 +94,7 @@ void CGameApp::ReportError(WPARAM wParam, LPARAM lParam)
 // CGameApp::InitializeDefaultWindowClass  @ RVA 0x13d9b0 (160 B) - byte-exact.
 // Fills the embedded WNDCLASSA (m_wc @ +0x1e8) and loads its icon/cursor.
 // -------------------------------------------------------------------------
+// @address: 0x13d9b0
 void CGameApp::InitializeDefaultWindowClass()
 {
     int i;
@@ -122,6 +127,7 @@ void CGameApp::InitializeDefaultWindowClass()
 // address cluster, so it belongs to CGameApp (not CGruntzApp; uses no
 // game-app-specific >=0x254 fields).
 // -------------------------------------------------------------------------
+// @address: 0x13db60
 CGameWnd *CGameApp::InitializeGameWindow()
 {
     return new CGameWnd;
@@ -134,6 +140,7 @@ CGameWnd *CGameApp::InitializeGameWindow()
 // hInstance is required (null -> 0). The three name strings are conditionally
 // strcpy'd (inline rep movs at /O2/Oi).
 // -------------------------------------------------------------------------
+// @address: 0x13d7b0
 int CGameApp::VirtualUnknownMethod03(HINSTANCE hInstance, char *szWindowName,
                                      char *szGameIdentifier, char *szCmdLine,
                                      int windowClassFlags, int windowWidth,
@@ -167,6 +174,7 @@ int CGameApp::VirtualUnknownMethod03(HINSTANCE hInstance, char *szWindowName,
 //   bit1 (Windowed) -> a "Gruntz" menu, gameInfo width/height, overlapped or
 //   caption style; otherwise -> fullscreen popup at the screen metrics.
 // -------------------------------------------------------------------------
+// @address: 0x13da50
 void CGameApp::InitializeDefaultCreateStruct()
 {
     int i;
@@ -232,6 +240,7 @@ void CGameApp::InitializeDefaultCreateStruct()
 // resolve hInstance, build the class+window names, register the class, create
 // the window via CGameWnd::CreateAndShow, then bring up the game manager.
 // -------------------------------------------------------------------------
+// @address: 0x13d5d0
 int CGameApp::VirtualUnknownMethod02(GameInfo *pGameInfo, WNDCLASSA *pWndClass,
                                      CREATESTRUCTA *pCreateStruct)
 {

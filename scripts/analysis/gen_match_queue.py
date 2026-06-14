@@ -22,11 +22,12 @@ Run inside nix develop: nix develop .#build --command python3 scripts/gen_match_
 import struct, csv, bisect, pickle
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parent.parent
+REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
+            Path(__file__).resolve().parent)
 EXE = REPO / "binaries/retail_en/GRUNTZ.EXE"
 FUNCS = REPO / "build/ghidra/exports/functions.csv"
 LABELS = REPO / "config/engine_labels.csv"
-MATCHED = REPO / "config/symbol_names.csv"
+MATCHED = REPO / "build/gen/symbol_names.csv"   # generated (was config/symbol_names.csv)
 FID = REPO / "build/fid/library_labels.csv"
 CHANGED = REPO / "build/patch-diff/validated_changed.pkl"
 OUT = REPO / "docs/match-queue.md"

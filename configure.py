@@ -74,16 +74,21 @@ def local_headers(source: str) -> list:
                 stack.append(hrel)
     return sorted(seen)
 
-# scripts/ holds the vendored ninja_syntax helper; make it importable whether
-# configure.py is run from the repo root or elsewhere.
-sys.path.insert(0, str(REPO / "scripts"))
+# scripts/gruntz/build/ holds the build-pipeline modules incl. the vendored
+# ninja_syntax helper; make it importable whether configure.py is run from the
+# repo root or elsewhere.
+sys.path.insert(0, str(REPO / "scripts" / "gruntz" / "build"))
 import ninja_syntax  # noqa: E402
 
 # --- paths (all relative to the repo root, which is the ninja build root) ----
 PY = "python3"
-CC_WRAP = "scripts/cc_wrap.py"
-DELINK = "scripts/delink_target.py"
-NAMES_CSV = "config/symbol_names.csv"
+CC_WRAP = "scripts/gruntz/build/cc_wrap.py"
+DELINK = "scripts/gruntz/build/delink.py"
+GEN_LABELS = "scripts/gruntz/build/labels.py"
+# The rva->name,unit map is GENERATED from src `// @address:` annotations joined
+# to the base objs (clang mangledName INTERSECT nm) - no hand-written CSV. See
+# docs/source-consolidation-investigation.md.
+GEN_NAMES = "build/gen/symbol_names.csv"
 
 # Target (delink) inputs.
 EXE = "build/exe/GRUNTZ.delinkable.EXE"
@@ -169,7 +174,7 @@ def emit_ninja(manifest: dict, out: Path) -> None:
                generator=True)
         w.build("build.ninja", "configure",
                 implicit=["configure.py", "config/units.toml",
-                          "scripts/ninja_syntax.py"])
+                          "scripts/gruntz/build/ninja_syntax.py"])
         w.newline()
 
         # PHASE 1: compile each TU's source -> base .obj via the wine-cl wrapper.
@@ -192,19 +197,33 @@ def emit_ninja(manifest: dict, out: Path) -> None:
                     variables=variables)
         w.newline()
 
+        # LABELS: regenerate build/gen/symbol_names.csv from the src @address
+        # annotations + the base objs (clang mangledName INTERSECT nm). This is
+        # the generated replacement for the hand-maintained config/symbol_names.csv.
+        w.comment("=== LABELS: src @address + base objs -> symbol_names.csv ===")
+        labels_args = " ".join(
+            f"--tu {u['source']} --obj {BASE_DIR}/{u['unit']}.obj" for u in units)
+        w.rule("gen_labels",
+               command=f"{PY} {GEN_LABELS} {labels_args} --out {GEN_NAMES}",
+               description="gen_labels (src @address -> symbol_names.csv)")
+        w.build(GEN_NAMES, "gen_labels",
+                inputs=[u["source"] for u in units] + base_objs,
+                implicit=[GEN_LABELS, "config/units.toml"])
+        w.newline()
+
         # TARGET (delink) half: one rule produces all in-scope <unit>.c.obj.
         w.comment("=== TARGET: delink GRUNTZ.EXE -> named per-unit .c.obj ===")
         unit_args = " ".join(f"--unit {u['unit']}" for u in units)
         w.rule("delink",
                command=(f"{PY} {DELINK} --exe {EXE} --functions {FUNCTIONS} "
-                        f"--symbols {SYMBOLS} --names-map {NAMES_CSV} "
+                        f"--symbols {SYMBOLS} --names-map {GEN_NAMES} "
                         f"--pdb-dir {PDB_DIR} --delink-dir {DELINK_RAW} "
                         f"--target-dir {TARGET_DIR} {unit_args}"),
                description="delink GRUNTZ.EXE -> target objs")
         target_objs = [f"{TARGET_DIR}/{u['unit']}.c.obj" for u in units]
         w.build(target_objs, "delink",
-                inputs=[EXE, FUNCTIONS, SYMBOLS, NAMES_CSV],
-                implicit=[DELINK, "scripts/synth_pdb.py"])
+                inputs=[EXE, FUNCTIONS, SYMBOLS, GEN_NAMES],
+                implicit=[DELINK, "scripts/gruntz/build/synth_pdb.py"])
         w.newline()
 
         # Convenience aliases.
@@ -300,7 +319,12 @@ def emit_objdiff(manifest: dict, objdiff_dir: Path) -> None:
     build = manifest["build"]
     objdiff_dir.mkdir(parents=True, exist_ok=True)
     write_dummy(objdiff_dir / "dummy.obj")
-    named = units_with_named_functions(REPO / NAMES_CSV)
+    # GEN_NAMES is a BUILD output (ninja's gen_labels), so it may not exist at
+    # configure time. When absent (fresh tree), assume every manifest unit will be
+    # named once gen_labels runs; when present, use it for accurate dummy pairing.
+    named = (units_with_named_functions(REPO / GEN_NAMES)
+             if (REPO / GEN_NAMES).exists()
+             else {u["unit"] for u in manifest["unit"]})
     units = []
     for u in manifest["unit"]:
         base_path = f"./base/{u['unit']}.obj"   # ninja always builds this

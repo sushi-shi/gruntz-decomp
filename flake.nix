@@ -269,6 +269,15 @@
         pkgs.xxd
         pkgs.jq
         pkgs.clang-tools     # clangd over compile_commands.json (reader only)
+        pkgs.llvmPackages.clang-unwrapped  # clang DRIVER for gen_structs/gen_labels.
+                             # MUST be UNWRAPPED: the nix cc-wrapper injects host
+                             # (x86_64-linux) flags that break --target=i686-pc-
+                             # windows-msvc (verified: wrapped clang yields 0 structs).
+                             # Used parse-only: `-ast-dump=json -fparse-all-comments`
+                             # -> @address + MS-ABI mangledName; `-fdump-record-
+                             # layouts-complete` -> field offsets. Reached via
+                             # $GRUNTZ_CLANG (set in shellHook) so it never clashes
+                             # with the wrapped clang clangd may pull in.
         pkgs.detect-it-easy  # diec: PE compiler/linker fingerprint confirmer (Rich/@comp.id)
       ];
 
@@ -292,9 +301,13 @@
           shellHook = ''
             export GRUNTZ_DIR="$PWD"
             export GRUNTZ_EXE="${gruntz-exe}"
+            export GRUNTZ_CLANG="${pkgs.llvmPackages.clang-unwrapped}/bin/clang"
+            gruntz() { python3 "$GRUNTZ_DIR/gruntz.py" "$@"; }
             echo "[gruntz] target EXE : $GRUNTZ_EXE"
             echo "[gruntz] tools      : vostok-delinker, objdiff(-cli), ghidra, llvm-pdbutil"
-            echo "[gruntz] base/MSVC  : 'nix develop .#build' (needs the VC5 toolchain tarball)"
+            echo "[gruntz] clang      : $GRUNTZ_CLANG (unwrapped; gen_structs/gen_labels)"
+            echo "[gruntz] cli        : 'gruntz <cmd>' (status/labels/structs/ghidra-refresh/todo)"
+            echo "[gruntz] base/MSVC  : 'nix develop .#build' for 'gruntz build'/'init' (VC5 + wine)"
           '';
         };
 
@@ -307,7 +320,9 @@
           shellHook = ''
             export GRUNTZ_DIR="$PWD"
             export GRUNTZ_EXE="${gruntz-exe}"
-            export WINEPREFIX="$GRUNTZ_DIR/binaries/.wineprefix"
+            export GRUNTZ_CLANG="${pkgs.llvmPackages.clang-unwrapped}/bin/clang"
+            gruntz() { python3 "$GRUNTZ_DIR/gruntz.py" "$@"; }
+            export WINEPREFIX="$GRUNTZ_DIR/build/wineprefix"   # generated state lives under build/
             export WINEDEBUG="fixme-all,err-kerberos"
             export WINEDLLOVERRIDES="mscoree,mshtml="
             export GRUNTZ_TOOLCHAIN="${gruntz-toolchain}"
@@ -321,6 +336,17 @@
             echo "[gruntz] MSVC 5.0   : $MSVC_DIR/bin/cl.exe   (run under wine)"
             echo "[gruntz] runtime    : $GRUNTZ_RUNTIME (MSS32/SMACKW32 DLLs)"
             echo "[gruntz] target EXE : $GRUNTZ_EXE"
+            echo "[gruntz] cli        : 'gruntz <cmd>' (init/build/status/labels/structs/ghidra-refresh/todo)"
+            # First entry self-builds the local environment (Wine prefix + clangd
+            # compdb) via `gruntz.py init`; idempotent, so later shells skip it.
+            if [ ! -f "$WINEPREFIX/system.reg" ] || \
+               [ ! -f "$GRUNTZ_DIR/build/clangd/compile_commands.json" ]; then
+              echo "[gruntz] init       : first entry - setting up local environment ..."
+              python3 "$GRUNTZ_DIR/gruntz.py" init \
+                || echo "[gruntz] init failed; run 'python3 gruntz.py init' manually"
+            else
+              echo "[gruntz] init       : ready (run 'python3 gruntz.py init' to refresh)"
+            fi
           '';
         };
       };

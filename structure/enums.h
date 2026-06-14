@@ -7,7 +7,7 @@
  * Enumerator NAMES are mined verbatim from STRINGS_ANALYSIS.md (the resource-key
  * namespaces / CLI tokens in GRUNTZ.EXE). Enumerator VALUES are unknown — the
  * binary numbering is not recovered, so values are left implicit (0..N in the
- * order the names appear) and marked @todo where ordering matters. Do NOT rely on
+ * order the names appear) and marked TODO where ordering matters. Do NOT rely on
  * these integer values for matching until verified against the binary tables.
  */
 
@@ -55,7 +55,7 @@ enum GruntType
     GRUNT_SQUEAKTOY,     // SQUEAKTOYGRUNT
     GRUNT_HAREKRISHNA,   // HAREKRISHNAGRUNT
     GRUNT_TYPE_COUNT     // = 36
-    //@todo: exact integer values / ordering unverified against the binary
+    // (unverified) exact integer values / ordering unverified against the binary
 };
 
 /* ------------------------------------------------------------------ *
@@ -87,7 +87,7 @@ enum Tool
     TOOL_WELDERZ,        // TOOLZ_WELDERZ
     TOOL_WINGZ,          // TOOLZ_WINGZ
     TOOL_COUNT           // = 22
-    //@todo: exact integer values / ordering unverified against the binary
+    // (unverified) exact integer values / ordering unverified against the binary
 };
 
 /* ------------------------------------------------------------------ *
@@ -107,7 +107,7 @@ enum Toy
     TOY_SQUEAKTOYZ,      // TOYZ_SQUEAKTOYZ
     TOY_YOYOZ,           // TOYZ_YOYOZ
     TOY_COUNT            // = 10
-    //@todo: exact integer values / ordering unverified against the binary
+    // (unverified) exact integer values / ordering unverified against the binary
 };
 
 /* ------------------------------------------------------------------ *
@@ -121,7 +121,7 @@ enum Warlord
     WARLORD_PATTON,      // WARLORDZ_PATTON
     WARLORD_VIKING,      // WARLORDZ_VIKING
     WARLORD_COUNT        // = 4
-    //@todo: exact integer values / ordering unverified against the binary
+    // (unverified) exact integer values / ordering unverified against the binary
 };
 
 /* ------------------------------------------------------------------ *
@@ -136,7 +136,7 @@ enum Powerup
     POWERUP_ROIDZ,       // POWERUPZ_ROIDZ
     POWERUP_CONVERSION,  // POWERUPZ_CONVERSION  (help text at string id 0x81ef)
     POWERUP_COUNT        // = 5
-    //@todo: exact integer values / ordering unverified against the binary
+    // (unverified) exact integer values / ordering unverified against the binary
 };
 
 /* ------------------------------------------------------------------ *
@@ -163,13 +163,13 @@ enum ColorTint
     TINT_WHITE,          // WHITE
     TINT_YELLOW,         // YELLOW
     TINT_COUNT           // = 17
-    //@todo: exact integer values / ordering unverified against the binary
+    // (unverified) exact integer values / ordering unverified against the binary
 };
 
 /* ------------------------------------------------------------------ *
  * Direction — 8-way movement. The CGrunt debug dump prints [dir=%d].
  * Source: STRINGS_ANALYSIS.md §11 ("NORTH SOUTH EAST WEST" + diagonals).
- * Ordering below is a GUESS (clockwise from North); @todo verify.
+ * Ordering below is a GUESS (clockwise from North); TODO verify.
  * ------------------------------------------------------------------ */
 enum Direction
 {
@@ -182,7 +182,7 @@ enum Direction
     DIR_WEST,            // WEST
     DIR_NORTHWEST,       // NORTH-WEST
     DIR_COUNT            // = 8
-    //@todo: numbering/winding order unverified against the binary
+    // (unverified) numbering/winding order unverified against the binary
 };
 
 /* ------------------------------------------------------------------ *
@@ -190,7 +190,7 @@ enum Direction
  * subclasses (CSplashState, CMenuState, …). Source: STRINGS_ANALYSIS.md §11.
  * Only these STATEZ_ names were mined; other CState subclasses (CPlay, CMulti,
  * CDemo, CAttract, CHelpState, CCreditsState …) exist as classes but no
- * STATEZ_ token was found for each — @todo to map subclass <-> state id.
+ * STATEZ_ token was found for each — TODO to map subclass <-> state id.
  * ------------------------------------------------------------------ */
 enum Statez
 {
@@ -203,7 +203,7 @@ enum Statez
     STATEZ_BOOTY,        // STATEZ_BOOTY     -> CBootyState
     STATEZ_MULTI,        // STATEZ_MULTI     -> CMulti / CMultiBootyState
     STATEZ_COUNT
-    //@todo: exact integer values / ordering unverified against the binary
+    // (unverified) exact integer values / ordering unverified against the binary
 };
 
 /* ------------------------------------------------------------------ *
@@ -228,8 +228,8 @@ enum LaunchMode
     LAUNCH_LOBBYLAUNCH,  // "LOBBYLAUNCH" launched from a DirectPlay lobby
     LAUNCH_QUICKSTART,   // "QUICKSTART"  quick start
     LAUNCH_MODE_COUNT
-    //@note: these are flags/modes parsed from the command line, not a strict
-    //       sequential enum in the binary — @todo confirm representation.
+    // (note) these are flags/modes parsed from the command line, not a strict
+    //       sequential enum in the binary — TODO confirm representation.
 };
 
 /* ------------------------------------------------------------------ *
@@ -245,7 +245,7 @@ enum LaunchModeCode
     LAUNCHCODE_DEMO    = 7,   // "DEMO"
     LAUNCHCODE_SELECT  = 16,  // "SELECT"
     LAUNCHCODE_MULTI   = 17   // "MULTI"
-    //@todo: codes for the remaining tokens (ATTRACT/HOST/JOIN/…) not recovered
+    // (unverified) codes for the remaining tokens (ATTRACT/HOST/JOIN/…) not recovered
 };
 
 /* ------------------------------------------------------------------ *

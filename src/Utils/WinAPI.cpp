@@ -37,6 +37,7 @@ char GetGruntzDriveLetter();
 // re-emitted in this TU). Tests a path via OpenFile(OF_EXIST). Returns false
 // for a null/empty path.
 // -------------------------------------------------------------------------
+// @address: 0x1189c0
 int FileExists(char *szPath)
 {
     OFSTRUCT of;
@@ -52,6 +53,7 @@ int FileExists(char *szPath)
 // ActiveWait  @ RVA 0x13dfe0 (33 B). Busy-waits ~milliseconds using
 // timeGetTime (no Sleep; spins).
 // -------------------------------------------------------------------------
+// @address: 0x13dfe0
 void ActiveWait(unsigned int milliseconds)
 {
     DWORD target = timeGetTime() + milliseconds;
@@ -63,6 +65,7 @@ void ActiveWait(unsigned int milliseconds)
 // IsGruntzCDInAnyDrive  @ RVA 0x1fd50 (15 B). True iff a CD drive holding the
 // Gruntz disc was found.
 // -------------------------------------------------------------------------
+// @address: 0x1fd50
 int IsGruntzCDInAnyDrive()
 {
     char letter = GetGruntzDriveLetter();
@@ -84,6 +87,7 @@ static char s_cdDriveLetter;
 // Returns the letter (0 if none). The local RegistryHelper's destructor
 // (Close) runs at scope exit -> the C++ EH frame.
 // -------------------------------------------------------------------------
+// @address: 0x1ffe0
 char GetGruntzDriveLetter()
 {
     if (s_cdDriveLetter == 0) {

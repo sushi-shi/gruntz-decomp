@@ -15,7 +15,8 @@ Usage (inside nix develop .#build):
 import sys, struct, csv, subprocess, shutil
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parent.parent
+REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
+            Path(__file__).resolve().parent)
 EXE = REPO / "binaries/retail_en/GRUNTZ.EXE"
 FUNCS = REPO / "build/ghidra/exports/functions.csv"
 SYMS = REPO / "build/ghidra/exports/symbols.csv"

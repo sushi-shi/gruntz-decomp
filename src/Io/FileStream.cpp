@@ -33,6 +33,7 @@
 // m_handle = -1 (INVALID_HANDLE_VALUE), then the final CFileIO vtable; m_open
 // stays 0. The CString ctor under EH installs the unwind frame.
 // ---------------------------------------------------------------------------
+// @address: 0x1befd7
 CFileIO::CFileIO()
 {
     m_handle = (HANDLE)-1;
@@ -40,9 +41,15 @@ CFileIO::CFileIO()
 }
 
 // ---------------------------------------------------------------------------
+// CFileIO::`scalar deleting destructor' (compiler-generated thunk; no body).
+// @address: 0x1bf017
+// @symbol:  ??_GCFileIO@@UAEPAXI@Z
+
+// ---------------------------------------------------------------------------
 // CFileIO::~CFileIO()  @ 0x1bf121 (78 B).
 // Closes the handle if we own one (m_handle != -1 && m_open), then the CString
 // member dtor runs and the vtable is restored to base on unwind.
+// @address: 0x1bf121
 // ---------------------------------------------------------------------------
 CFileIO::~CFileIO()
 {
@@ -56,6 +63,7 @@ CFileIO::~CFileIO()
 // Same two-phase vtable + CString-member construction + EH frame as the default
 // ctor. Used by the handle-duplicating clone path (engine fn @0x1bf16f).
 // ---------------------------------------------------------------------------
+// @address: 0x1bf033
 CFileIO::CFileIO(HANDLE hFile)
 {
     m_open = 0;
@@ -67,6 +75,7 @@ CFileIO::CFileIO(HANDLE hFile)
 // ReadFile(m_handle, buf, n, &n, NULL); throws on failure; returns count read.
 // nCount==0 short-circuits to 0 before touching the handle.
 // ---------------------------------------------------------------------------
+// @address: 0x1bf328
 unsigned int CFileIO::Read(void *lpBuf, unsigned int nCount)
 {
     if (nCount == 0)
@@ -86,6 +95,7 @@ unsigned int CFileIO::Read(void *lpBuf, unsigned int nCount)
 // generic "disk full"/short-write error if fewer than n bytes were written.
 // nCount==0 short-circuits (no-op).
 // ---------------------------------------------------------------------------
+// @address: 0x1bf362
 void CFileIO::Write(const void *lpBuf, unsigned int nCount)
 {
     DWORD nWritten;
@@ -104,6 +114,7 @@ void CFileIO::Write(const void *lpBuf, unsigned int nCount)
 // CFileIO::Seek  @ 0x1bf3ad (47 B, ret 8).
 // SetFilePointer(m_handle, off, NULL, from); throws on -1; returns new pos.
 // ---------------------------------------------------------------------------
+// @address: 0x1bf3ad
 LONG CFileIO::Seek(LONG lOff, int nFrom)
 {
     LONG pos = (LONG)SetFilePointer(m_handle, lOff, 0, (DWORD)nFrom);
@@ -117,6 +128,7 @@ LONG CFileIO::Seek(LONG lOff, int nFrom)
 // SetFilePointer(m_handle, 0, NULL, FILE_CURRENT); throws on -1; returns the
 // current file position.
 // ---------------------------------------------------------------------------
+// @address: 0x1bf3dc
 LONG CFileIO::GetPosition()
 {
     LONG pos = (LONG)SetFilePointer(m_handle, 0, 0, 1 /*FILE_CURRENT*/);
@@ -130,6 +142,7 @@ LONG CFileIO::GetPosition()
 // CloseHandle(m_handle) if open; reset m_handle = -1, m_open = 0, empty m_name;
 // then throw the OS error if CloseHandle failed.
 // ---------------------------------------------------------------------------
+// @address: 0x1bf426
 void CFileIO::Close()
 {
     BOOL failed = 0;
@@ -168,6 +181,7 @@ struct SecurityAttributes {
     BOOL   bInheritHandle;      // +0x08
 };
 
+// @address: 0x1bf200
 BOOL CFileIO::Open(const char *lpszFileName, unsigned int nOpenFlags, void *pError)
 {
     char szPath[0x104];  // MAX_PATH (260) - frame is 0x110 with the SA local

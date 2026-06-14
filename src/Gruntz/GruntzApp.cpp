@@ -70,6 +70,7 @@ public:
 // a C++ EH frame (this TU needs /GX). The push-ecx is MSVC reserving one dword
 // of locals for the new pointer / EH-tracked object; `this` is never read.
 // ---------------------------------------------------------------------------
+// @address: 0x80a20
 WAP32::CGameMgr *CGruntzApp::InitializeGameManager()
 {
     return new WAP32::CGameMgr;
@@ -83,6 +84,7 @@ WAP32::CGameMgr *CGruntzApp::InitializeGameManager()
 // handled cases, 0 otherwise. The switch reproduces the sub-0x110 / je / dec /
 // jne message ladder with the WM_INITDIALOG body laid out at the function tail.
 // ---------------------------------------------------------------------------
+// @address: 0x80c70
 INT_PTR __stdcall CGruntzApp::ErrorDialogProc(HWND hWnd, UINT message,
                                               WPARAM wParam, LPARAM lParam)
 {

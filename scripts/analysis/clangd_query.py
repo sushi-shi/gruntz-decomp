@@ -36,7 +36,8 @@ import sys
 import time
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
+            Path(__file__).resolve().parent)
 CDB_DIR = ROOT / "build" / "clangd"
 CDB = CDB_DIR / "compile_commands.json"
 

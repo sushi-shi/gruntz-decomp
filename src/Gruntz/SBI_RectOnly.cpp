@@ -35,6 +35,7 @@ public:
 CStatusBarItem::~CStatusBarItem() {}
 int CStatusBarItem::SbiVfunc0() { return 0; }
 
+// @address: 0x101fa0
 CSBI_RectOnly::CSBI_RectOnly()
 {
     m_8 = 1;

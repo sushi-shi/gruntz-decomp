@@ -67,6 +67,7 @@ static HINSTANCE             g_hInstance;
 // __cdecl free function (ends in `ret`). pRegistryHelper->SetValueDword is
 // __thiscall (this in ECX).
 // ---------------------------------------------------------------------------
+// @address: 0xb110
 void SaveOption(HWND hWnd, Utils::RegistryHelper *pRegistryHelper,
                 char *szValueName, DWORD controlId)
 {
@@ -82,6 +83,7 @@ void SaveOption(HWND hWnd, Utils::RegistryHelper *pRegistryHelper,
 // IAT slot in EDI (one `mov edi,ds:[__imp]; call edi` reused 4x for the four
 // `BST_UNCHECKED` calls).
 // ---------------------------------------------------------------------------
+// @address: 0xb160
 void SetDefaults(HWND hWnd)
 {
     CheckDlgButton(hWnd, IDC_DISABLE_VIDEO, 0);
@@ -96,6 +98,7 @@ void SetDefaults(HWND hWnd)
 // checkboxes. GetValueDword is __thiscall; CheckDlgButton's IAT slot is cached
 // in EBX. Note the source loads pRegistryHelper into ESI and hWnd into EDI.
 // ---------------------------------------------------------------------------
+// @address: 0xb1b0
 void LoadOptions(HWND hWnd, Utils::RegistryHelper *pRegistryHelper)
 {
     if (pRegistryHelper) {
@@ -118,6 +121,7 @@ void LoadOptions(HWND hWnd, Utils::RegistryHelper *pRegistryHelper)
 // incremental-link thunk (call rel32 -> jmp -> body); the IAT-less 5x call
 // pattern with `add esp,0x10` after each is the __cdecl 4-arg call cleanup.
 // ---------------------------------------------------------------------------
+// @address: 0xb270
 void SaveOptions(HWND hWnd, Utils::RegistryHelper *pRegistryHelper)
 {
     if (pRegistryHelper) {
@@ -136,6 +140,7 @@ void SaveOptions(HWND hWnd, Utils::RegistryHelper *pRegistryHelper)
 // its icon and restoring it if iconic). WM_COMMAND handles OK (save+close),
 // Cancel (close), and the "Defaults" button.
 // ---------------------------------------------------------------------------
+// @address: 0xafb0
 INT_PTR __stdcall AdvancedOptionsDialogProc(HWND hWnd, UINT message,
                                             WPARAM wParam, LPARAM lParam)
 {

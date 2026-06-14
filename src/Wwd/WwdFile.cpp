@@ -33,6 +33,7 @@
 // is constructed (no destructor on those paths); the stream's ctor runs only
 // after both guards, so its dtor unwinds the remaining exits.
 // ---------------------------------------------------------------------------
+// @address: 0x160530
 int __stdcall WwdFile_IsValidWwd(const char* name, void* headerBuf)
 {
     if (name == 0)
@@ -61,6 +62,7 @@ int __stdcall WwdFile_IsValidWwd(const char* name, void* headerBuf)
 // the NUL-terminated leading bytes - the binary does `repnz scasb; rep movs`,
 // i.e. a strcpy of the header buffer into the caller's output).
 // ---------------------------------------------------------------------------
+// @address: 0x160660
 int __stdcall WwdFile_CheckHeader(const char* name, void* headerOut)
 {
     char header[0x5f4];
@@ -85,6 +87,7 @@ int __stdcall WwdFile_CheckHeader(const char* name, void* headerOut)
     return 1;
 }
 
+// @address: 0x160790
 int __stdcall WwdFile_InflateMainBlock(WwdHeader* src, Bytef* dest, unsigned int destLen)
 {
     uLongf outLen;

@@ -6,7 +6,7 @@
  * Warlord (enemy boss), and the dropped-object system (objects a grunt drops, with
  * shadows, managed by an object dropper).
  *
- * Provenance: ALL names from RTTI (mangled names kept). Name-only / @todo.
+ * Provenance: ALL names from RTTI (mangled names kept). Name-only stubs (no layout recovered).
  * Corroborating: GAME_TELEPORTER sound key; WARLORDZ_* (KING/NAPOLEAN/PATTON/
  * VIKING) sprite namespace (STRINGS_ANALYSIS.md §11); fortress-capture MP objective
  * text (§10).
