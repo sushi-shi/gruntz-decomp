@@ -8,8 +8,8 @@
  *
  * Layout ported from tomalla (@approx tomalla 1.0.1.77; field OFFSETS are
  * version-independent). Has graduated into src/Utils/RegistryHelper.h (matched
- * 0x21C layout); this comprehension restatement exists only so gen_structs emits
- * a RegistryHelper layout standalone (gen_structs prefers the src/ definition on
+ * 0x21C layout); this comprehension restatement exists only so `gruntz structs` emits
+ * a RegistryHelper layout standalone (`gruntz structs` prefers the src/ definition on
  * overlap). Self-contained (no <afxwin.h>): the HKEY handle type is typedef'd
  * here. Non-polymorphic — the first field is at +0x00.
  *

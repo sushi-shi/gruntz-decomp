@@ -8,7 +8,7 @@
  * Layout ported from tomalla (@approx tomalla 1.0.1.77). The vtable is mostly
  * unrecovered. CGameWnd has graduated into src/Wap32/Wap32.h (matched 0x10
  * layout); a minimal matching base is restated here only so this comprehension
- * subclass lays out standalone (gen_structs prefers the src/ CGameWnd on overlap).
+ * subclass lays out standalone (`gruntz structs` prefers the src/ CGameWnd on overlap).
  */
 
 namespace WAP32

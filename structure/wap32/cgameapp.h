@@ -8,7 +8,7 @@
  * Layout ported from tomalla (@approx tomalla 1.0.1.77; offsets version-independent).
  * The class has graduated into src/Wap32/Wap32.h (matched 0x254 layout); this
  * comprehension restatement exists only so the unmatched subclass CGruntzApp lays
- * out standalone under gen_structs' per-header wrapping (gen_structs prefers the
+ * out standalone under `gruntz structs`' per-header wrapping (`gruntz structs` prefers the
  * src/ CGameApp on overlap). Self-contained (no <afxwin.h>): the few Win32 handle
  * types the layout needs are typedef'd here so the header parses standalone.
  *

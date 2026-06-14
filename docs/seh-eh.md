@@ -1,7 +1,9 @@
 # Exception handling (SEH / C++ EH) in GRUNTZ.EXE
 
-Tool: **`scripts/seh_extract.py`** (stdlib-only; run via `nix shell nixpkgs#python3` or
-inside `nix develop`). Outputs `build/seh/seh_segments.json` + `summary.txt` (gitignored).
+The one-shot `seh_extract.py` analysis script that produced these findings has been
+retired (it was a discovery aid, not part of the matching loop); the results below are
+preserved here. Recover it from git history (`git log --diff-filter=D -- scripts/seh_extract.py`)
+if you need to re-run the extraction.
 
 ## The x86 / VC5 EH model
 Gruntz is x86, so there is **no `.pdata`/`.xdata`** (that's x64). MSVC 5.0 C++ exception

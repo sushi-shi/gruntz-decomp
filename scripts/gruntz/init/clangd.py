@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""gen_clangd.py - generate a clangd compilation database for the Gruntz tree.
+"""clangd.py - generate a clangd compilation database for the Gruntz tree.
 
-This is ADDITIVE editor tooling that runs ALONGSIDE the real matching build; it
-does not touch it. The matching build compiles with MSVC 5.0's CL.EXE under wine
-(scripts/cc_wrap.py), which clangd - being clang-based - cannot invoke. So we
+Invoke via `gruntz clangd`. This is ADDITIVE editor tooling that runs ALONGSIDE
+the real matching build; it does not touch it. The matching build compiles with
+MSVC 5.0's CL.EXE under wine (scripts/gruntz/build/cc_wrap.py), which clangd -
+being clang-based - cannot invoke. So we
 emit our OWN compilation database, in clang-cl driver form, that points clang at
 the toolchain's MSVC/MFC/DirectX headers and asks it to *emulate* MSVC 5.0
 (cl 11.00 == _MSC_VER 1100). clang reads those headers as plain files, so no wine
@@ -28,7 +29,7 @@ Include resolution (in priority order):
 Usage:
     # inside `nix develop .#build` (env already set), or plain - it will fall
     # back to building the toolchain:
-    python3 scripts/gen_clangd.py
+    gruntz clangd          # or: python3 scripts/gruntz/init/clangd.py
 """
 
 import json
@@ -77,7 +78,7 @@ def resolve_include_dirs() -> tuple[Path, Path, str]:
             return msvc_inc, dx_inc, "env ($MSVC_DIR / $DXSDK_DIR)"
 
     # Fall back to building the toolchain and reading its result path.
-    print("[gen_clangd] MSVC_DIR/DXSDK_DIR not in env - "
+    print("[clangd] MSVC_DIR/DXSDK_DIR not in env - "
           "running `nix build .#gruntz-toolchain` ...", file=sys.stderr)
     try:
         out = subprocess.check_output(
@@ -86,7 +87,7 @@ def resolve_include_dirs() -> tuple[Path, Path, str]:
         ).strip().splitlines()
     except (subprocess.CalledProcessError, FileNotFoundError) as e:
         raise SystemExit(
-            "[gen_clangd] ERROR: could not resolve the toolchain headers. "
+            "[clangd] ERROR: could not resolve the toolchain headers. "
             "Run inside `nix develop .#build` (sets MSVC_DIR/DXSDK_DIR), or "
             f"ensure `nix build .#gruntz-toolchain` works.\n  cause: {e}")
     root = Path(out[-1])
@@ -94,7 +95,7 @@ def resolve_include_dirs() -> tuple[Path, Path, str]:
     dx_inc = root / "dx" / "Include"
     if not msvc_inc.is_dir() or not dx_inc.is_dir():
         raise SystemExit(
-            f"[gen_clangd] ERROR: toolchain at {root} is missing "
+            f"[clangd] ERROR: toolchain at {root} is missing "
             f"msvc/include or dx/Include.")
     return msvc_inc, dx_inc, f"nix build .#gruntz-toolchain ({root})"
 
@@ -187,13 +188,13 @@ def main() -> None:
         f.write("\n")
 
     # Print the exact flag line so it is easy to reproduce a single-file check.
-    print(f"[gen_clangd] wrote {OUT_FILE.relative_to(REPO)} "
+    print(f"[clangd] wrote {OUT_FILE.relative_to(REPO)} "
           f"({len(entries)} units)")
-    print(f"[gen_clangd] include dirs ({source}):")
+    print(f"[clangd] include dirs ({source}):")
     print(f"    MSVC/MFC : {msvc_inc}")
     print(f"    DirectX  : {dx_inc}")
     print(f"    lowercase mirrors -> {MIRROR_DIR} (resolves <string.h> etc.)")
-    print("[gen_clangd] clang-cl flags per unit:")
+    print("[clangd] clang-cl flags per unit:")
     print("    clang-cl /c <src> " + " ".join(shared))
 
 

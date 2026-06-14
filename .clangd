@@ -1,18 +1,18 @@
 # clangd over the GENERATED clang-cl compilation database. This is ADDITIVE
 # editor tooling (go-to-def / completion / hover / diagnostics) that runs
 # alongside the real matching build - it does NOT drive or verify it. The Wine
-# MSVC 5.0 build (scripts/cc_wrap.py) is the sole verdict on correctness; clang
-# is only a READER of this MSVC5-dialect code.
+# MSVC 5.0 build (scripts/gruntz/build/cc_wrap.py) is the sole verdict on
+# correctness; clang is only a READER of this MSVC5-dialect code.
 #
-# Generate the DB first:  python3 scripts/gen_clangd.py   (see docs/clangd.md)
+# Generate the DB first:  gruntz clangd   (see docs/clangd.md)
 CompileFlags:
   # Point at build/clangd/ (NOT the repo root) so we never collide with the
   # matching build's own repo-root compile_commands.json (the cl-under-wine one
-  # emitted by configure.py). gen_clangd.py writes build/clangd/compile_commands.json.
+  # emitted by configure.py). gruntz clangd writes build/clangd/compile_commands.json.
   CompilationDatabase: build/clangd
   Add:
     # Emulate MSVC 5.0 (cl 11.00 == _MSC_VER 1100) so the ancient MFC 4.2 / CRT
-    # headers take their MSVC-version codepaths. Mirrors gen_clangd.py; also
+    # headers take their MSVC-version codepaths. Mirrors gruntz/init/clangd.py; also
     # applies when clangd opens a header with no direct compdb entry.
     - --target=i386-pc-windows-msvc
     - -fms-compatibility-version=11.00
