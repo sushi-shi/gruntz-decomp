@@ -129,3 +129,9 @@ status = "matched"
 unit = "wwdfile"
 source = "src/Wwd/WwdFile.cpp"
 status = "wip"
+
+# --- Registry/config wrapper (src/Utils) ------------------------------------
+[[unit]]
+unit = "registryhelper"
+source = "src/Utils/RegistryHelper.cpp"
+status = "matched"
