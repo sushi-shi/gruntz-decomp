@@ -59,6 +59,8 @@ namespace Utils {
 // ---------------------------------------------------------------------------
 class RegistryHelper {
 public:
+    RegistryHelper() { m_0 = 0; }
+    ~RegistryHelper() { Close(); }
     int   Open(char *szKeyName1, char *szKeyName2, char *szKeyName3,
                char *szLastKey, HKEY hKey, char *szSubKey);
     int   InitializeLastKey(char *szLastKey);

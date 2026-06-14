@@ -142,3 +142,14 @@ status = "matched"
 unit = "advancedoptions"
 source = "src/Gruntz/AdvancedOptions.cpp"
 status = "matched"
+
+# --- Win32 helper free functions (src/Utils) --------------------------------
+# GetGruntzDriveLetter has a C++ exception frame (__CxxFrameHandler + FuncInfo)
+# around its stack-local RegistryHelper, whose destructor (Close) runs on unwind
+# -> this TU was built with C++ EH enabled (/GX). The other three helpers carry
+# the EH cost as zero extra code.
+[[unit]]
+unit = "winapi"
+source = "src/Utils/WinAPI.cpp"
+status = "matched"
+cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]

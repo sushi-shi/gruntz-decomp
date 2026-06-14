@@ -17,6 +17,70 @@ fast-moving scratchpad. Newest at top within each section.
   -o - --format json-pretty`. Roll-up: `scripts/rebuild.py`.
 
 ## Subsystem notes
+### Utils::WinAPI (Win32 helper TU — unit `winapi`; 4/4 driven to byte-exact)
+- New TU `src/Utils/WinAPI.cpp`. `FileExists` @0x1189c0, `ActiveWait` @0x13dfe0,
+  `IsGruntzCDInAnyDrive` @0x1fd50 are 100% (reloc/IAT/thunk-masked only);
+  `GetGruntzDriveLetter` @0x1ffe0 plateaus 97.9% on a register-allocation residue
+  (logic/struct/EH/control-flow byte-exact — see below).
+- **`FileExists(char*)` returns `int`, not `bool`** — the disasm zeroes/copies via
+  full-width `eax` (`xor eax,eax`, `mov eax,edx`), so the symbol is `…@@YAHPAD@Z`
+  (H), not `_N`. Picked by the result WIDTH in the bytes, not the prompt's "bool".
+  Same for `IsGruntzCDInAnyDrive` → `…@@YAHXZ`. Impl = `OpenFile(path,&of,0x4000
+  /*OF_EXIST*/) != -1` over a 0x88-byte `OFSTRUCT` local; null/empty path returns
+  the (already-zero) pointer in eax with NO explicit `xor` (MSVC reuses the loaded
+  arg reg — write `if(!p) return 0;` and it reuses eax). FileExists is **emitted
+  twice** (0x1189c0 and 0x1fd70, byte-identical); objdiff pairs by NAME so map the
+  one symbol to either RVA (used 0x1189c0).
+- `ActiveWait(ms)` is a `timeGetTime()` busy-spin: `DWORD t=timeGetTime()+ms;
+  while(timeGetTime()<t);` — uses **WINMM!timeGetTime**, not Sleep/GetTickCount.
+- **CD-detection (`GetGruntzDriveLetter`)**: memoised in a file-scope `static char`
+  (binary @0x62b25c; 0 = unprobed). (1) Reads `HKLM\Software\Monolith Productions\
+  Gruntz\1.0` value **"CdRom Drive"** via `Utils::RegistryHelper` (Open args decode
+  exactly like AdvancedOptions, szSubKey defaulting to "Software"); if the stored
+  byte `> 0x14` (a real letter) it `sprintf("%c:\\")` + `GetDriveTypeA==5
+  (DRIVE_CDROM)` + `FileExists("%c:\\GAME\\GRUNTZ.EXE")`. (2) Else scans `'A'..'Z'`
+  with the same drive-type + marker-file check. **Marker file = `<L>:\GAME\
+  GRUNTZ.EXE`**; format strings `"%c:\\"` and `"%c:\\GAME\\GRUNTZ.EXE"` via the
+  engine's `sprintf` @0x11f890. Both found-paths share one tail (`s_x=letter;
+  return letter`) → reproduce with a `goto found;` single exit.
+- **`RegistryHelper` needs a ctor + dtor here** (added inline to the header):
+  `RegistryHelper(){m_0=0;}` and `~RegistryHelper(){Close();}`. The stack-local
+  `reg` makes MSVC emit a **C++ EH frame** (`__CxxFrameHandler` + FuncInfo, the
+  `fs:0` registration + `push -1; push handler`), so this TU must build with
+  **`/GX`** (per-unit `cflags` override — the global locked set has no /GX). Adding
+  /GX took GetGruntzDriveLetter 73%→94%; the ctor fixed the early `reg.m_0=0`
+  scheduling (it inlines at the object's scope-entry, exactly where the binary
+  zeroes it) and the dtor (Close) inlines at each `return` with the
+  `mov [eh_state],-1; call Close` shape. **Adding the ctor/dtor to the shared
+  header did NOT regress the already-matched `registryhelper`/`advancedoptions`
+  units** (verified) — a clean way to share a class across TUs.
+- **`/GX` ⇒ C++ EH frame** is the load-bearing flag tell: a function with `fs:0`
+  + `push -1; push <handler>` where the handler is `mov eax,OFFSET FuncInfo; jmp
+  __CxxFrameHandler` means a stack object with a destructor under `/GX`. The
+  handler/FuncInfo/`__except_list`/`$L` symbols are all reloc-masked in objdiff.
+- **Stack-buffer SIZES are load-bearing for the frame + slot offsets.** At /O2
+  slot *names* are free but sizes/decl drive placement: matching the binary's
+  `sub esp,0x460` + the reg-object landing exactly at `[esp+0x150]` required
+  `value[32]`, `drivePath[32]`, `exePath[256]` (so `0x10+32+32+256 = 0x150`), reg
+  (0x21c), then the A-Z scan's own `drivePathScan[256]` placed AFTER reg. The two
+  paths SHARE `exePath` (one slot) but get DISTINCT drive-path buffers (MSVC's
+  live-range allocation) — model that as two separate buffers + one shared.
+- **Plateau (97.9%)**: the sole residue is MSVC reading the value byte into `bl`
+  directly (`mov bl,value[0]; movsx esi,bl`) vs the target's `mov al,…; movsx
+  esi,al; mov bl,al` — a register-allocation coin-flip (`letter` must end in `bl`
+  for the A-Z loop counter; the target spills via al-then-copy, we read straight
+  into bl). Same opcodes, different reg field + one redundant `mov bl,al`. No
+  source lever flips it (tried char/int temps, signed-char cmp, letter-vs-driveChar
+  as the %c arg) — entropy-class; left per the doctrine.
+- OPTIONAL `LegacyAreProcessesRunning` @0x118ce0 LEFT OUT: 501 B TOOLHELP32 process
+  enum (GetModuleHandleA/GetProcAddress for CreateToolhelp32Snapshot/Process32First
+  /Process32Next, OpenProcess, CloseHandle, PROCESSENTRY32 @0x128) that also calls
+  three un-identified helpers (0x118f60, 0x120090 [133 B], 0x11fdf0 [208 B, likely
+  strstr]) — too many new deps to match cleanly without destabilising the 4 greens.
+- UNLOCKED (callers now anchored): `WinMain` @0x11c860, `CGruntzMgr::Get*` CD-gate
+  callers of `IsGruntzCDInAnyDrive`/`GetGruntzDriveLetter`, and the `sprintf`
+  @0x11f890 call surface.
+
 ### zlib (DONE — 51 fns byte-exact)
 - 1.0.4, statically linked, locked flags `/O2 /MT` (cdecl). The REZ entry payloads
   are raw deflate → `_inflate*`/`_uncompress` are the live decompressors.
