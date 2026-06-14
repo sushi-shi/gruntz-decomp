@@ -4,6 +4,74 @@ Per-function / per-subsystem insights gathered while byte-matching. Durable,
 generalizable findings graduate into `docs/matching-patterns.md`; this file is the
 fast-moving scratchpad. Newest at top within each section.
 
+### CPlay per-frame SUB-STEPS — the 4 screen-region one-shots BYTE-EXACT + 4 carcass leaves (extended `cplay`; 4/8 byte-exact under reloc-masking)
+- **THE HEADLINE: the four screen-region scroll one-shots `CPlay::OnRegion0..3`
+  (the carcass's OnRegion2/1/3/4) are BYTE-EXACT** (`?OnRegion{1,2,3,4}@CPlay@@QAEHH@Z`,
+  @0xd8aa0/0xd8a00/0xd8b20/0xd8bc0, 99.2/99.3/99.2/99.0% — every residual is a
+  reloc-masked call/global). Plus 4 faithful carcass leaves: `StepC@0xd8d90`
+  (84.5%), `StepScroll@0xd1ac0` (78.2%), `StepInputA@0xd11e0` (89.6%),
+  `PlayCueAt@0xd1890` (86.6%). All 8 sub-steps now have real bodies; CPlay::Render
+  carcass kept (its OnRegion1 call fixed to take the `g_645588` arg; PlayCueAt
+  fixed 7→**8** args — it is `ret 0x20`, the 8th arg = a rect-source ptr).
+- **THE KEY LEVER (the one that took all 4 OnRegion handlers byte-exact): a per-frame
+  64-BIT countdown-timer field is written by ONE 64-bit store, not two int stores.**
+  Each OnRegion arms its timer with `lo = g_645588 (the game clock), hi = 0`. Writing
+  `m_lo = g_645588; m_hi = 0;` (two int stores) makes MSVC reorder them (it schedules
+  the const `hi=0` store before the `lo=eax` store → structural diff @93-94%). Writing
+  **`*(unsigned __int64*)&m_lo = g_645588;`** (a single 64-bit zero-extending store)
+  emits the exact `mov [obj+lo],eax; mov [obj+hi],0` in lo-then-hi order → byte-exact.
+  *General rule: an adjacent {lo:=clock, hi:=0} timer/counter pair that the target
+  writes lo-first is a 64-bit store of the zero-extended clock; model it as one
+  `*(unsigned __int64*)&lo = clockval;` to get the store order MSVC won't give you
+  from two int assignments.* (The OnRegion shape: `gate = bool(z); if(z) Enter()
+  else Leave(); *(u64*)&timerLo = g_645588;` where Enter/Leave are no-arg thiscall
+  sub-steps @0xd88f0/0xd8960, +optional cue.) OnRegion3 fires `Eng_RegionCueA(0x7530,
+  6,6,0,0x2d)` (cdecl 5) on ENTER; OnRegion0(0xd8bc0) posts `reg->m_68->Post(-1,0)`
+  (thiscall ret 8) on LEAVE.
+- **`& 0xffffffe0` (align-down-to-0x20) is encoded `and al,0xe0` when only the value's
+  low byte changes and the result is stored back as the SAME int.** StepScroll aligns
+  two axes the same way (`(x & ~0x1f) + 0x10`) but the target uses `and edi,0xffffffe0`
+  (dword) for one and `and al,0xe0` (byte, `24 e0`) for the other. They are the SAME
+  operation — `al & 0xe0` keeps the upper 24 bits unchanged ⇒ == `& 0xffffffe0`.
+  Write BOTH as `& ~0x1f` (NOT `& 0xe0`, which would clear bits 5-7 too) and MSVC
+  picks the byte-encoding for whichever value it tracks as low-byte-only. *Lesson:
+  `and r8,0xe0` in the target is `& ~0x1f`, not `& 0xe0`.*
+- **PlayCueAt @0xd1890 (442 B, ret 0x20 = 8 args) = the on-screen text cue.** Args
+  `(cueId, a2, a3, a4, a5, a6, a7, rectSrc)`; de-dupes on the per-cue state object
+  `this+0x410` (`if (cueId != m_40c) { if (!CueState(&m_410).Probe(cueId)) return;
+  m_40c = cueId; }`); builds the cue RECT from the font text-margins via the GLOBAL
+  CButeMgr @0x6453d8 — `GetInt("Font", "Text{Left,Top,Right,Bottom}Edge")` (reuse
+  `?GetInt@CButeMgr@@QAEHPAD0@Z`, butemgr, by casting a `(CButeMgr*)0x6453d8`) — applied
+  to the caller's rect (rectSrc!=0, esi-resident so corners read INLINE per GetInt) or
+  the viewport rect at `m_c->m_24+0x10` (rectSrc==0, that ptr is clobbered by GetInt so
+  all 4 corners pre-read); a3 selects the Top vs Default cue renderer (cdecl 9 args).
+  The font tag string @0x60c818 = `"Font"`; edges @0x612be4/bf4/c04/c14. **Plateau
+  86.6%** (branch-A byte-perfect; residuals = the frame is 0x24 not my 0x14, the
+  cross-branch SetRect-tail CSE the target did NOT do, and the rectSrc==0 corner-spill
+  schedule — all optimizer-version artifacts, not logic errors; 131/148 instrs faithful).
+- **TWO small-leaf scheduling plateaus that resist clean source:** (1) `StepC`'s
+  `if(m_480==0)return;` early-out — MSVC 5.0 /O2 ALWAYS tail-merges the bare-`ret`
+  early-out into the function's shared tail `ret` (`test;je <tail>`), but the target
+  keeps a SEPARATE inline `ret` (`test;jne;ret`). No if/switch/local-temp/nested form
+  reproduces the un-merged ret (84.5%, 2 struct diffs). (2) `StepInputA`'s
+  `m_c->m_4->m_14->m_2c` null-check final deref lands in `edi` (→ a spurious push/pop
+  edi pair) where the target reuses the dead walk-cursor `ecx`; irreducible allocator
+  coin-flip (89.6%). Both are otherwise instruction-faithful.
+- **PINNED MEMBER OFFSETS (new this commit):** CPlay **+0x1a8/+0x1ac** StepInputA
+  boot one-shot latches, **+0x1b0** half-selector; CState-region **+0x160/+0x164**
+  (per-half value), **+0x168/+0x178** (per-half ptr blocks, addr passed),
+  **+0x188/+0x198** (per-half {x,y} edge feed); CPlay **+0x410** PlayCueAt per-cue
+  state obj (addr-taken), **+0x40c** last-cueId latch, **+0x480** StepC view-mode
+  discriminator (0=idle/1=ModeA/2=ModeB), **+0x4e4** StepScroll scroll-offset SINK
+  (writes +0x5c X / +0x60 Y); CDrawSurface **+0x10/+0x14** scroll origin, **+0x5c→+0x40
+  .{x,y}** geom feed. CGameRegistry **+0x68** the OnRegion0 message-post sink.
+- **UNLOCKED:** all CPlay per-frame sub-steps now have bodies + a caller. The dedicated
+  NEXT target is **StepWorldB @0xd12b0 (725 B, world/camera step — deferred)**; below
+  it the per-ENTITY update layer (g_entityList @0x645574) walked inside the world-draw
+  blit. The OnRegion enter/leave sub-steps @0xd88f0/0xd8960, the StepC mode helpers
+  @0xd8dc0/0xd8ed0, the input probe/dispatch @0x13ef90/0x141400, and the cue renderers
+  @0x115440/0x115520 are all named with callers.
+
 ### THE IN-GAME PER-FRAME HEART — CPlay::Render (new unit `cplay` — faithful CARCASS, ~23% structural-aligned plateau; objdiff fuzzy rolls up 0.0% — a scoring artifact, see below)
 - **THE HEADLINE: the in-game per-frame loop is mapped end to end.** New TU
   `src/Gruntz/CPlay.{cpp,h}`. `CPlay::Render @0xc8cf0` (3092 B, vtable slot +0x14,

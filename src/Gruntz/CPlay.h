@@ -84,8 +84,14 @@ struct CDrawSurface {
     void PushView(void *view, void *renderer);  // @0x15dc90 (thiscall, 2 args)
     void PreStep();                             // @0x28d3 -> 0xcedf0
     void PostStep();                            // @0x3783 -> 0xcee10
-    char p0[0x5c];
-    struct M5c { char p0[0x84]; int m_84; int m_88; } *m_5c;  // +0x5c camera geom
+    char p0[0x10];
+    int   m_10;     // +0x10  scroll origin X (read by StepScroll)
+    int   m_14;     // +0x14  scroll origin Y (read by StepScroll)
+    char p18[0x5c - 0x18];
+    // +0x5c -> a geom block: StepScroll reads (m_5c+0x40).{m_0,m_4}; the world
+    // blit reads (m_5c).{m_84,m_88}.
+    struct M5c { char p0[0x40]; int m_40_0; int m_40_4;
+                 char p48[0x84 - 0x48]; int m_84; int m_88; } *m_5c;  // +0x5c camera geom
 };
 
 // m_c (the view/anim sub-object holder).
@@ -166,7 +172,18 @@ public:
     char    m_pad10[0x150 - 0x10];
     int     m_150;      // +0x150 BeginFrameClear arg
     int     m_154;      // +0x154 BeginFrameClear arg
-    char    m_pad158[0x1a8 - 0x158];
+    char    m_pad158[0x160 - 0x158];
+    // +0x160..+0x1a4 a per-axis scroll/input state block StepInputA walks: two
+    // mirrored halves (first @+0x160/+0x168/+0x188, second @+0x164/+0x178/+0x198).
+    int     m_160;      // +0x160 first-half toggle/value
+    int     m_164;      // +0x164 second-half toggle/value
+    char    m_168[0x178 - 0x168];   // +0x168 first-half ptr block (addr passed)
+    char    m_178[0x188 - 0x178];   // +0x178 second-half ptr block (addr passed)
+    struct  Edge { int m_0; int m_4; };
+    Edge    m_188;      // +0x188 first-half {x,y} feed
+    char    m_pad190[0x198 - 0x190];
+    Edge    m_198;      // +0x198 second-half {x,y} feed
+    char    m_pad1a0[0x1a8 - 0x1a0];
 };
 
 // ===========================================================================
@@ -184,21 +201,32 @@ public:
 
     // CPlay's own per-frame helper methods (the 0xd0000-range thunks Render
     // dispatches to with `mov ecx,esi`). External no-body -> reloc-masked.
-    void StepInputA();                          // 0x259a -> 0xd11e0
+    int  StepInputA();                          // 0x259a -> 0xd11e0  (THIS TU)
     void StepWorldB();                          // 0x434a -> 0xd12b0
     void ViewPreStep(void *view);               // 0x28d3 -> 0xcedf0  (on m_c->m_24)
     void ViewPostStep(void *view);              // 0x3783 -> 0xcee10
-    void PlayCueAt(int z, int wParam, int a, int r, int g, int b, int flag); // 0x1e4c -> 0xd1890
+    // PlayCueAt @0xd1890 (8 args, ret 0x20): (cueId,a2,a3,a4,a5,a6,a7,rectSrc)
+    void PlayCueAt(int cueId, int a2, int a3, int a4, int a5, int a6, int a7,
+                   int rectSrc);                // 0x1e4c -> 0xd1890  (THIS TU)
     void PostHud(int wParam);                   // 0x1519 -> 0xd0b30
     void MarkerBegin(int now);                  // 0x2e2d -> 0xd0a60
-    void StepC();                               // 0x1da7 -> 0xd8d90
+    void StepC();                               // 0x1da7 -> 0xd8d90  (THIS TU)
     int  GetAmbientId();                        // 0x1df2 -> 0xda200
-    void StepScroll();                          // 0x3850 -> 0xd1ac0
-    void OnRegion1();                           // 0x3792 -> 0xd8aa0
-    void OnRegion2(int z);                      // 0x3a85 -> 0xd8a00
-    void OnRegion3(int z);                      // 0x3904 -> 0xd8b20
-    void OnRegion4(int z);                      // 0x3e45 -> 0xd8bc0
+    void StepScroll();                          // 0x3850 -> 0xd1ac0  (THIS TU)
+    int  OnRegion1(int z);                      // 0x3792 -> 0xd8aa0  (THIS TU)
+    int  OnRegion2(int z);                      // 0x3a85 -> 0xd8a00  (THIS TU)
+    int  OnRegion3(int z);                      // 0x3904 -> 0xd8b20  (THIS TU)
+    int  OnRegion4(int z);                      // 0x3e45 -> 0xd8bc0  (THIS TU)
     void OnRegion5();                           // 0x3797 -> 0xcf770
+
+    // --- leaf sub-helpers the THIS-TU functions call (external, reloc-masked) ---
+    void StepC_ModeA(int z);                    // 0xd8dc0 (thiscall, 1 arg) StepC m_480==1
+    void StepC_ModeB(int z);                    // 0xd8ed0 (thiscall, 1 arg) StepC else
+    void RegionEnter();                         // 0xd88f0 (thiscall, no arg) OnRegion on-enter
+    void RegionLeave();                         // 0xd8960 (thiscall, no arg) OnRegion on-leave
+    // StepInputA's two engine callees (free fns):
+    // int  Eng_InputProbe(stdcall, a,b,edge-ptr,axis-ptr,0x10) @0x13ef90
+    // void Eng_InputDispatch(cdecl, 0,0,probe-result)          @0x141400
     void MarkerEnd(int now);                    // 0x2cc0 -> 0x1170b0  (m_2e4 begin marker)
     void GutsStep();                            // 0x21b7 -> 0xfe6b0   (m_2dc step)
     void FrameTimerBegin(int now);              // 0x3710 -> 0x9bca0   (m_3f4 begin)
@@ -215,7 +243,10 @@ public:
     void SnapWalk();                            // 0x3a1c -> 0x455f0
 
     // ---- CPlay-specific members (offsets pinned by the @0xc8cf0 disasm) ----
-    char  m_pad1a8[0x2dc - 0x1a8];
+    int   m_1a8;        // +0x1a8  StepInputA latch-1 (one-shot)
+    int   m_1ac;        // +0x1ac  StepInputA latch-2 (one-shot)
+    int   m_1b0;        // +0x1b0  StepInputA half-selector
+    char  m_pad1b4[0x2dc - 0x1b4];
     struct M2dc { char p0[0x10c]; int m_10c; char p[0x550-0x110];
                   int m_550, m_554; char q[0x574-0x558]; int m_574; } *m_2dc;  // +0x2dc subsystem
     void *m_2e0;        // +0x2e0  marker push sink
@@ -234,8 +265,8 @@ public:
     void *m_3f4;        // +0x3f4  frame-marker/timeline object (+0x30..0x4c reset block)
     int   m_3f8, m_3fc, m_400, m_404;   // +0x3f8  AMBIENT-cue 64-bit timer + interval + hi
     int   m_408;        // +0x408  AMBIENT-cue toggle
-    int   m_40c;        // +0x40c  AMBIENT-cue wParam base
-    char  m_pad410[0x414 - 0x410];
+    int   m_40c;        // +0x40c  PlayCueAt last-wParam latch (de-dupe gate)
+    char  m_410[0x414 - 0x410];   // +0x410  PlayCueAt cue-state object (addr taken)
     int   m_414;        // +0x414  per-frame "drew" flag (cleared at entry)
     char  m_pad418[0x430 - 0x418];
     int   m_430, m_434, m_438, m_43c;   // +0x430  scroll-region-1 timer
@@ -246,10 +277,14 @@ public:
     int   m_474;        // +0x474  alt-input-draw gate
     int   m_478;        // +0x478  scroll-region-3 gate
     int   m_47c;        // +0x47c  scroll-region-4 gate
-    char  m_pad480[0x4a0 - 0x480];
+    int   m_480;        // +0x480  StepC/OnRegion0 view-mode discriminator (0/1/2)
+    char  m_pad484[0x4a0 - 0x484];
     int   m_4a0, m_4a4, m_4a8, m_4ac;   // +0x4a0  snapshot 64-bit base + duration
     int   m_4b0;        // +0x4b0  snapshot ACTIVE latch
-    char  m_pad4b4[0x4ec - 0x4b4];
+    char  m_pad4b4[0x4e4 - 0x4b4];
+    struct M4e4 { char p0[0x5c]; int m_5c; int m_60; }
+         *m_4e4;        // +0x4e4  StepScroll's scroll-offset sink (writes +0x5c/+0x60)
+    char  m_pad4e8[0x4ec - 0x4e8];
     int   m_4ec;        // +0x4ec  hard early-out gate
     char  m_pad4f0[0x4f4 - 0x4f0];
     int   m_4f4;        // +0x4f4  win/lose banner gate

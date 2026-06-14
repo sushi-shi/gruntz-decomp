@@ -76,8 +76,16 @@ public:
 };
 extern int MapLookup(void *map, void *key, void *&out);   // @0x1b8760 CMapPtrToPtr::Lookup
 
-// ---- Unmatched engine callees (the larger direct-call RVAs). External no-body
-//      so the `call rel32` reloc-masks; shapes picked to reproduce the pushes. --
+// ---- The global CButeMgr text-config tree (the @0x6453d8 singleton). Modeled as
+//      a minimal class so PlayCueAt's `ecx=0x6453d8; call GetInt` reloc-masks
+//      against the already-matched ?GetInt@CButeMgr@@QAEHPAD0@Z (butemgr unit). --
+class CButeMgr {
+public:
+    int GetInt(char *tag, char *key);   // @0x171af0 (thiscall ret 8)
+};
+#define g_buteText ((CButeMgr *)0x6453d8)
+
+// ---- StepInputA / PlayCueAt leaf engine callees (free fns / reloc-masked). ----
 extern "C" {
     void  Eng_SurfaceFlush(void *surf, int z);                // 0x13e850 (begin, 0)
     void  Eng_BeginScene(void *surf, int z);                  // 0x13e760
@@ -89,7 +97,22 @@ extern "C" {
     void *Eng_FindSound(void *snd, const char *name);         // 0x138730
     void  Eng_StopSound(void *snd, int flag);                 // 0x139030
     void  Eng_FrameTimerStep(void *t, int now);               // 0x13f460
+    // --- StepInputA @0xd11e0 ---
+    int   __stdcall Eng_InputProbe(void *a, void *b, void *axis, void *edge, int n); // 0x13ef90
+    void  Eng_InputDispatch(int z0, int z1, int probe);       // 0x141400 (cdecl, 3)
+    // --- OnRegion3/4 leaf cues ---
+    void  Eng_RegionCueA(int a, int b, int c, int d, int e);  // 0xec1c0 (cdecl, 5)
+    // --- PlayCueAt @0xd1890 cue renderers (cdecl, 9 args each) ---
+    void  Eng_CueRenderTop(void *cueObj, void *cueState, RECT *r,
+                           int a2, int one, int a4, int a5, int a6, int a7); // 0x115440
+    void  Eng_CueRenderDef(void *cueObj, void *cueState, RECT *r,
+                           int a2, int one, int a4, int a5, int a6, int a7); // 0x115520
 }
+
+// A reg->m_68 sink that OnRegion4 posts to (thiscall, 2 args, ret 8). @0x7c2e0.
+struct CRegSink { void Post(int a, int b); };
+// PlayCueAt's per-cue de-dupe object at this+0x410 (thiscall compare, ret 4). @0x1bedde
+struct CCueState { int Probe(int wParam); };
 
 // ===========================================================================
 // CPlay::Render  @0xc8cf0  (vtable slot +0x14)
@@ -139,7 +162,7 @@ int CPlay::Render()
                 m_3fc = 0;
             }
             if (m_408 != 0)
-                PlayCueAt(0, 0x8128, 0x78, 0, 0xff, 0xff, 1);  // @0x1e4c cue
+                PlayCueAt(0x8128, 0x78, 0, 0xff, 0xff, 0, 1, 0);  // @0x1e4c cue
         }
 
         if (m_c->m_4->m_14 == 0)
@@ -296,7 +319,7 @@ int CPlay::Render()
                 m_3fc = 0;
             }
             if (m_408 != 0)
-                PlayCueAt(0, 0x8129, 0x78, 0, 0xff, 0xff, 1);  // @0x1e4c
+                PlayCueAt(0x8129, 0x78, 0, 0xff, 0xff, 0, 1, 0);  // @0x1e4c
         }
 
         MarkerBegin((int)g_645584);                  // @0x2e2d
@@ -314,7 +337,7 @@ int CPlay::Render()
         }
         if (m_474 != 0) {                            // region-2 (+0x440)
             unsigned int e = g_645588 - (unsigned)m_440;
-            if (e >= (unsigned)m_448) OnRegion1();   // @0x3792
+            if (e >= (unsigned)m_448) OnRegion1((int)g_645588);  // @0x3792
         }
         if (m_478 != 0) {                            // region-3 (+0x450)
             unsigned int e = g_645588 - (unsigned)m_450;
@@ -346,7 +369,7 @@ alt2:
             m_c->m_c->Present((int)m_c->m_4->m_14, (int)m_c->m_4->m_18);  // present
             GutsStep();                                    // @0x21b7
             if (m_2dc->m_550 == 0 && m_2dc->m_554 == 0)
-                PlayCueAt(0, 0x812c, 0x78, 0, 0xff, 0xff, 1);  // @0x1e4c win/lose
+                PlayCueAt(0x812c, 0x78, 0, 0xff, 0xff, 0, 1, 0);  // @0x1e4c win/lose
             FrameTimerEnd(1, 0);                           // @0x27a2
         } else {
             // ---- the active short frame (@0xc9701): entity step + cues ----
@@ -356,7 +379,7 @@ alt2:
                 m_c->m_c->Present((int)m_c->m_4->m_14, (int)m_c->m_4->m_18);   // present
                 GutsStep();                                     // @0x21b7
                 Eng_FrameTimerStep(m_2dc, 0x32);                // @0x13f460
-                PlayCueAt(0, 0x78, 0, 0xff, 0xff, 0, 1);        // @0x1e4c
+                PlayCueAt(m_40c, 0x78, 0, 0xff, 0xff, 0, 1, 0); // @0x1e4c (cueId=m_40c)
                 FrameTimerEnd(1, 0);                            // @0x27a2
             }
             if (m_348 == 0) {
@@ -384,4 +407,177 @@ alt2:
         Eng_SurfaceFlush(m_c->m_4->m_10->m_2c, 0);         // @0x13e850
     }
     return 1;                                        // @0xc98ec draw tail
+}
+
+// ===========================================================================
+// CPlay::StepC  @0xd8d90  (30 B, thiscall, void) - the menu/overlay-frame view
+// sub-step. A 3-way switch on the view-mode discriminator m_480: 0 = idle (no
+// view yet, bail), 1 = mode-A sub-step, 2(+) = mode-B sub-step. MSVC hoists the
+// shared `push 4` out of the if/else (both helpers take the same constant).
+// ===========================================================================
+void CPlay::StepC()
+{
+    int mode = m_480;
+    if (mode == 0)
+        return;
+    if (mode == 1)
+        StepC_ModeA(4);
+    else
+        StepC_ModeB(4);
+}
+
+// ===========================================================================
+// The four screen-region scroll one-shots @0xd8a00/0xd8aa0/0xd8b20/0xd8bc0.
+// Each: thiscall(int z), set its region-active gate to bool(z), call the shared
+// enter/leave sub-step, (re)arm its 64-bit countdown timer (interval 0x7530 ms,
+// lo = g_645588, hi = 0), and return 1. They share ONE shape; OnRegion2 also
+// pins the view discriminator m_480, OnRegion3/4 fire an extra cue on enter/leave.
+// ===========================================================================
+int CPlay::OnRegion2(int z)         // @0xd8a00  (region-0 / gate m_470, timer +0x430)
+{
+    if (z != 0) { m_470 = 1; RegionEnter(); m_480 = 1; }
+    else        { m_470 = 0; RegionLeave(); m_480 = 2; }
+    m_438 = 0x7530;
+    m_43c = 0;
+    *(unsigned __int64 *)&m_430 = g_645588;   // 64-bit store: lo=g_645588, hi=0
+    return 1;
+}
+
+int CPlay::OnRegion1(int z)         // @0xd8aa0  (region-1 / gate m_474, timer +0x440)
+{
+    if (z != 0) { m_474 = 1; RegionEnter(); }
+    else        { m_474 = 0; RegionLeave(); }
+    m_448 = 0x7530;
+    m_44c = 0;
+    *(unsigned __int64 *)&m_440 = g_645588;   // 64-bit store: lo=g_645588, hi=0
+    return 1;
+}
+
+int CPlay::OnRegion3(int z)         // @0xd8b20  (region-2 / gate m_478, timer +0x450)
+{
+    if (z != 0) {
+        m_478 = 1;
+        RegionEnter();
+        Eng_RegionCueA(0x7530, 6, 6, 0, 0x2d);
+    } else {
+        m_478 = 0;
+        RegionLeave();
+    }
+    m_458 = 0x7530;
+    m_45c = 0;
+    *(unsigned __int64 *)&m_450 = g_645588;   // 64-bit store: lo=g_645588, hi=0
+    return 1;
+}
+
+int CPlay::OnRegion4(int z)         // @0xd8bc0  (region-3 / gate m_47c, timer +0x460)
+{
+    if (z != 0) {
+        m_47c = 1;
+        RegionEnter();
+    } else {
+        m_47c = 0;
+        RegionLeave();
+        ((CRegSink *)g_64556c->m_68)->Post(-1, 0);   // reg->m_68->Post(0xffffffff, 0)
+    }
+    m_468 = 0x7530;
+    m_46c = 0;
+    *(unsigned __int64 *)&m_460 = g_645588;   // 64-bit store: lo=g_645588, hi=0
+    return 1;
+}
+
+// ===========================================================================
+// CPlay::StepScroll  @0xd1ac0  (79 B, thiscall, void) - per-frame scroll-offset
+// recompute. Reads the draw-surface (m_c->m_24) scroll origin (+0x10/+0x14) and
+// its geom block (+0x5c -> +0x40.{x,y}), adds the BeginFrameClear extents
+// (m_150/m_154), aligns each axis DOWN to a 0x20 boundary (+0x10 bias) and
+// stores the result into the scroll-offset sink m_4e4 (+0x5c X, +0x60 Y).
+// ===========================================================================
+void CPlay::StepScroll()
+{
+    CDrawSurface *v = m_c->m_24;
+    int *geom = (int *)((char *)v->m_5c + 0x40);     // edx = (m_5c+0x40)
+
+    int y = m_154 + (geom[1] - v->m_14);             // edi=m_154 held; eax=[edx+4]-m_14; +=edi
+    int x = geom[0] + (m_150 - v->m_10);             // esi=[edx] held; edi=m_150-m_10; +=esi
+
+    y = (y & ~0x1f) + 0x10;                           // align down 0x20 (and al,0xe0); + 0x10
+    x = (x & ~0x1f) + 0x10;                           // align down 0x20 (and edi,~0x1f); + 0x10
+
+    m_4e4->m_5c = x;
+    m_4e4->m_60 = y;
+}
+
+// ===========================================================================
+// CPlay::StepInputA  @0xd11e0  (155 B, thiscall, int) - per-frame input poll.
+// Two boot-time one-shot latches (m_1a8/m_1ac fire on the first two frames),
+// then a per-frame edge/axis probe over one of two mirrored half-blocks selected
+// by m_1b0. Probes the draw-surface (m_c->m_4->m_14->m_2c); if absent returns 0.
+// On a hit it dispatches the probed control. Returns 1.
+// ===========================================================================
+int CPlay::StepInputA()
+{
+    if (m_1a8 == 0) { m_1a8 = 1; return 1; }
+    if (m_1ac == 0) { m_1ac = 1; return 1; }
+
+    int   axisVal;
+    Edge *edge;
+    void *halfPtr;
+    if (m_1b0 == 0) { axisVal = m_160; edge = &m_188; halfPtr = m_168; }
+    else            { axisVal = m_164; edge = &m_198; halfPtr = m_178; }
+
+    // null-check the draw surface m_c->m_4->m_14->m_2c (walks through the this reg).
+    void *probeTarget = ((void **)m_c->m_4->m_14)[0xb];   // [+0x2c] = index 0xb
+    if (probeTarget == 0)
+        return 0;
+
+    int r = Eng_InputProbe((void *)edge->m_0, (void *)edge->m_4,
+                           (void *)axisVal, halfPtr, 0x10);
+    if (r != 0)
+        Eng_InputDispatch(0, 0, r);
+    return 1;
+}
+
+// ===========================================================================
+// CPlay::PlayCueAt  @0xd1890  (442 B, thiscall, ret 0x20 = 8 args) - the ambient/
+// positional on-screen text-cue. Args: (cueId, a2, a3, a4, a5, a6, a7, rectSrc).
+// De-dupes via the per-cue state object this+0x410 (skip if the same cueId is
+// already showing AND its Probe says still-live). Builds the cue RECT from the
+// font text-margins (CButeMgr GetInt "Font"/"Text{Left,Top,Right,Bottom}Edge")
+// applied to either the caller's rect (rectSrc != 0) or the active viewport
+// (this->m_c->m_24+0x10). a3 selects the Top vs Default cue renderer.
+// ===========================================================================
+void CPlay::PlayCueAt(int cueId, int a2, int a3, int a4, int a5,
+                      int a6, int a7, int rectSrc)
+{
+    RECT rect;
+
+    if (cueId != m_40c) {
+        if (((CCueState *)&m_410)->Probe(cueId) == 0)
+            return;                          // still-live other cue -> skip
+        m_40c = cueId;
+    }
+
+    if (rectSrc != 0) {
+        int *src = (int *)rectSrc;
+        int bottom = src[3] - g_buteText->GetInt((char *)0x60c818, (char *)0x612c14);
+        int right  = src[2] - g_buteText->GetInt((char *)0x60c818, (char *)0x612c04);
+        int top    = src[1] + g_buteText->GetInt((char *)0x60c818, (char *)0x612bf4);
+        int left   = src[0] + g_buteText->GetInt((char *)0x60c818, (char *)0x612be4);
+        SetRect(&rect, left, top, right, bottom);
+    } else {
+        // the viewport rect lives at m_c->m_24 + 0x10; that ptr (edx) does not
+        // survive the GetInt calls, so all 4 corners are read up front.
+        int *vp = (int *)((char *)m_c->m_24 + 0x10);
+        int l = vp[0], t = vp[1], r = vp[2], b = vp[3];
+        int bottom = b - g_buteText->GetInt((char *)0x60c818, (char *)0x612c14);
+        int right  = r - g_buteText->GetInt((char *)0x60c818, (char *)0x612c04);
+        int top    = t + g_buteText->GetInt((char *)0x60c818, (char *)0x612bf4);
+        int left   = l + g_buteText->GetInt((char *)0x60c818, (char *)0x612be4);
+        SetRect(&rect, left, top, right, bottom);
+    }
+
+    if (a3 != 0)
+        Eng_CueRenderTop(m_c, &m_410, &rect, a2, 1, a4, a5, a6, a7);   // @0x115440
+    else
+        Eng_CueRenderDef(m_c, &m_410, &rect, a2, 1, a4, a5, a6, a7);   // @0x115520
 }
