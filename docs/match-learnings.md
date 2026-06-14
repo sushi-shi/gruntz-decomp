@@ -81,6 +81,50 @@ fast-moving scratchpad. Newest at top within each section.
   callers of `IsGruntzCDInAnyDrive`/`GetGruntzDriveLetter`, and the `sprintf`
   @0x11f890 call surface.
 
+### WWD header validators (unit `wwdfile` — IsValidWwd + CheckHeader byte-exact)
+- `WwdFile::IsValidWwd` @0x160530 (293 B, __stdcall `ret 8`) and
+  `WwdFile::CheckHeader` @0x160660 (299 B, __stdcall `ret 8`) BOTH byte-exact
+  (96.635% fuzzy / 0% "exact" — every non-matching byte is a reloc-masked call
+  operand; verified instruction-identical vs `dump_target.py`). Args: `(const
+  char* name, void* headerBuf)`; full-width-eax `int` return (1/0), NOT bool.
+- **Both open a file by NAME and validate the 0x5F4 (1524-byte) header**: null-guard
+  `name` then `headerBuf` (early `xor eax,eax; ret 8`, BEFORE the stream object is
+  constructed → no dtor on those paths), construct a stack-local engine **binary
+  file stream**, `Open(name, 0, 0)` (returns NONZERO on success — reversed sense),
+  `Read(buf, 0x5F4)` and require `== 0x5F4`, then require the header **signature
+  (first u32 == sizeof(WwdHeader)) `<= 0x5F4`** (`mov eax,[buf]; cmp eax,0x5f4;
+  jbe valid`). No magic-string/CRC/memcmp — the ONLY checks are read-length==0x5F4
+  and firstU32<=0x5F4. WWD has no ASCII magic; the "signature" is the self-size u32.
+- **IsValidWwd reads straight into the caller buffer**; **CheckHeader reads into a
+  PRIVATE `char header[0x5F4]` stack buffer then `strcpy`s it out to the caller**
+  (`repnz scasb; rep movsd; rep movsb` = inline strlen+copy at /O2/Oi). The stack
+  frame is `sub esp,0x604` = `0x5F4` (header buf) + `0x10` (the 16-byte stream obj).
+  IsValidWwd's frame is just `sub esp,0x10` = the stream object alone.
+- **The stack-local stream object forces a C++ EH frame → `/GX` on the unit**
+  (same tell as winapi/gruntzapp/gameapp: `push -1; push FuncInfo; push fs:0`, a
+  `.text$x` unwind funclet `lea ecx,[ebp-N]; jmp dtor` + `mov eax,FuncInfo; jmp
+  ___CxxFrameHandler`, and a `mov [esp+N],-1` EH-state write before each dtor). The
+  dtor (Close) inlines at EVERY post-construction exit; model it as a real
+  stack-local C++ object with a declared (external, unmatched) ctor/dtor.
+- **Engine binary file stream class** (16 bytes; ctor @0x1befd7, dtor/Close
+  @0x1bf121, `Open` @0x1bf200 `ret 0xc`, `Read` @0x1bf328 `ret 8`): layout
+  vtable@+0, **HANDLE@+0x4** (CreateFileA result; -1 = closed), open-flag@+0x8,
+  **CString filename@+0xc** (MFC-ish; sub-ctor 0x1b9b93 shares the global empty-
+  string @0x65162c). Open() builds the path via a CString, CreateFileA, stores the
+  HANDLE@+4; dtor CloseHandles if HANDLE!=-1. Declared the class with **unmatched
+  external** ctor/dtor/Open/Read — their `call rel32` displacements are reloc-masked
+  in objdiff, so the validators are byte-exact even though the stream class name I
+  picked (`WwdInputStream`) differs from the engine's. (This is why a call-heavy fn
+  plateaus at ~96.6% not ~99%+: 8 reloc-bearing calls in ~120 bytes.)
+- **Declaring an unmatched callee as an external class method** (no body) is the
+  clean way to emit a reloc-masked engine call from a C++ stack object — you get
+  the ctor/dtor scheduling + EH frame for free, and objdiff masks the call name.
+- UNLOCKED: anchors the WWD load entry points — `CGameLevel::LoadWwd` @0x15d280
+  (the `cmp firstDword,0x5f4` + 0x17d-dword header copy caller) and the
+  `CRezDir::Load` path now have these two header-validator leaves in place; the
+  engine binary file-stream class (ctor 0x1befd7 / Open 0x1bf200 / Read 0x1bf328 /
+  Close 0x1bf121) is now mapped for any future TU that does file I/O.
+
 ### zlib (DONE — 51 fns byte-exact)
 - 1.0.4, statically linked, locked flags `/O2 /MT` (cdecl). The REZ entry payloads
   are raw deflate → `_inflate*`/`_uncompress` are the live decompressors.

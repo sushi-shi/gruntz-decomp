@@ -78,6 +78,12 @@ rva,name,unit
 # algorithm/structure byte-faithful; residual is an MSVC5 register-allocation
 # choice (ebp<->edx for dest/destLen). See src/Wwd/WwdFile.cpp header.
 0x160790,_WwdFile_InflateMainBlock@12,wwdfile
+# IsValidWwd/CheckHeader: open a file by name, read the 0x5F4 WWD header, require
+# read==0x5F4 && firstU32(signature)<=0x5F4. __stdcall (ret 8). Byte-exact
+# (stream ctor/dtor/Open/Read calls are reloc-masked engine fns). /GX for the EH
+# frame around the stack-local file stream. See src/Wwd/WwdFile.cpp.
+0x160530,?WwdFile_IsValidWwd@@YGHPBDPAX@Z,wwdfile
+0x160660,?WwdFile_CheckHeader@@YGHPBDPAX@Z,wwdfile
 # --- engine constructors (self-located via RTTI vftables) -------------------
 # MSVC-mangled thiscall ctor names (??0<Class>@@QAE@XZ). The vftable store is a
 # DIR32 relocation; objdiff compares the code bytes (reloc target named

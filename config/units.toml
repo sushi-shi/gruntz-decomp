@@ -130,10 +130,14 @@ source = "src/Gruntz/TileTriggerLogic.cpp"
 status = "matched"
 
 # --- WWD level loader (src/Wwd) ---------------------------------------------
+# IsValidWwd/CheckHeader construct a stack-local engine file stream whose dtor
+# (Close) runs on unwind -> they carry a C++ EH frame (__CxxFrameHandler +
+# FuncInfo), so this TU is built with C++ EH enabled (/GX).
 [[unit]]
 unit = "wwdfile"
 source = "src/Wwd/WwdFile.cpp"
 status = "wip"
+cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
 
 # --- Registry/config wrapper (src/Utils) ------------------------------------
 [[unit]]
