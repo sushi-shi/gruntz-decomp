@@ -417,3 +417,17 @@ rva,name,class,prototype,kind,source,confidence
 0x022e60,LoadCheatConfig,,[reads Cheatz/NumCheatz/Cheat%i + ExpMonth/ExpYear cheat-code config],free,string-xref,med
 0x082990,GetWorldDisplayName,,"[returns world display name ('Gruntz in Space'/'Honey, I Shrunk the Gruntz!'/'Rocky Roadz'/...); 121B table lookup]",free,string-xref,med
 0x018830,LoadBootyCheatState,,[STATEZ_BOOTY/BootyCheatz/Cheat%i + GRUNTZ_WANDGRUNT sprite setup],free,string-xref,low
+#
+# --- string-xref pass, batch 2: asset/tuning loaders & level validators ---
+0x0df050,CProjectile::LoadProjectileSprites,CProjectile,[loads GRUNTZ_<type>_PROJECTILE sprites + *ProjectileTimePerTile tuning (boomerang/gunhat/nerfgun/rock/welder/wingz); CProjectile TU (CProjectile::CProjectile @0x0dec60 abuts)],method,string-xref,med
+0x102250,LoadStatusBarTabSprites,,[GAME_STATUSBAR_TABZ_* (game/gruntz/multiplayer tabs) + INGAMEICONZ chipz; CSBI status-bar TU (CSBI_RectOnly @0x101fa0)],method,string-xref,med
+0x0b0140,LoadRollingBallHazardSprites,,[LEVEL_ROLLINGBALL_* + GAME_WATER/Hazardz hazard sprites; CRollingBall TU (CRollingBall::CRollingBall @0x0af820)],method,string-xref,med
+0x110c10,LoadPyramidBridgeSprites,,[GAME_*PYRAMIDZ + LEVEL_*BRIDGE sprites; CTileTriggerLogic region (CTileTriggerLogic ctor @0x1107f0)],method,string-xref,med
+0x025020,LoadBattlezMapConfig,,[Battlez random-map setup: toolz/toyz names + BrickzChance/DefenderChance/EasyDifficulty probability attrs; UnknownClassArrays region @0x024f80],method,string-xref,med
+0x05d210,LoadGruntTuningConstants,,[reads grunt timing/transparency attrs: ConversionTime/DeathTouchTime/EntranceSafeTime/GruntGhostTransparencyOn/SafeFlashTime; CUserLogic region],method,string-xref,med
+0x04dd50,LoadGruntTypeTable,,"[grunt-type roster (BABYWALKERGRUNT..YOYOGRUNT, ~36) + GAME_*LOOP powerup loop sprites + Conversion/DeathTouch tuning; CGrunt region]",method,string-xref,med
+0x0597a0,LoadGruntCombatAnimations,,[GRUNTZ_NORMALGRUNT_BLOCK*/IMPACT* + spring-grunt anims + GAME_CONVERSIONHIT/DEATHTOUCHHIT; CUserLogic region],method,string-xref,med
+0x068880,LoadWingzGruntSprites,,[GRUNTZ_WINGZGRUNT_* directional idle/walk/item sprites; CUserLogic region],method,string-xref,med
+0x050ce0,LoadVehicleGruntSprites,,[toy/vehicle grunt subset: BABYWALKER/GOKART/JACKINTHEBOX/JUMPROPE/POGOSTICK/SQUEAKTOY/YOYO grunts; CGrunt region],method,string-xref,med
+0x06c130,WireTileSwitchLogic,,"['No switch/trigger logic found for plate/switch at: x=%d, y=%d' + GAME_SECRETSWITCH/CrumbleTileDelay; level switch/trigger wiring; CUserLogic region]",method,string-xref,med
+0x0d2dd0,ValidateLevelTiles,,"[level-load validator emitting 'Bad <brickz/hold|multi|once-only|secret|time|toggle|up-down switch/trigger/pressure plate> at: x=%d, y=%d' diagnostics across all tile/switch/trigger types]",method,string-xref,med
