@@ -105,6 +105,8 @@ rva,name,unit
 0x00b160,?SetDefaults@@YAXPAX@Z,advancedoptions
 0x00b1b0,?LoadOptions@@YAXPAXPAVRegistryHelper@Utils@@@Z,advancedoptions
 0x00b270,?SaveOptions@@YAXPAXPAVRegistryHelper@Utils@@@Z,advancedoptions
+0x080a20,?InitializeGameManager@CGruntzApp@@QAEPAVCGameMgr@WAP32@@XZ,gruntzapp
+0x080c70,?ErrorDialogProc@CGruntzApp@@SGHPAXIIJ@Z,gruntzapp
 0x1189c0,?FileExists@WinAPI@Utils@@YAHPAD@Z,winapi
 0x13dfe0,?ActiveWait@WinAPI@Utils@@YAXI@Z,winapi
 0x01fd50,?IsGruntzCDInAnyDrive@WinAPI@Utils@@YAHXZ,winapi

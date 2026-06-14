@@ -143,6 +143,20 @@ unit = "advancedoptions"
 source = "src/Gruntz/AdvancedOptions.cpp"
 status = "matched"
 
+# --- Gruntz application object (src/Gruntz) ---------------------------------
+# InitializeGameManager (@0x080a20) does `new WAP32::CGameMgr` whose throwing
+# ctor sits under a C++ exception frame (__CxxFrameHandler + FuncInfo), so this
+# TU is built with C++ EH enabled (/GX). ErrorDialogProc (@0x080c70) is a static
+# __stdcall dialog proc and carries the EH cost as zero extra code.
+# 2/2 byte-exact (reloc-masked operands only: operator-new/ctor/EH-FuncInfo/IAT/
+# global addrs; objdiff scores ~99.2-99.4% fuzzy / 0% "exact" purely on reloc
+# NAMES - verified byte-identical vs dump_target.py + llvm-objdump -dr).
+[[unit]]
+unit = "gruntzapp"
+source = "src/Gruntz/GruntzApp.cpp"
+status = "matched"
+cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+
 # --- Win32 helper free functions (src/Utils) --------------------------------
 # GetGruntzDriveLetter has a C++ exception frame (__CxxFrameHandler + FuncInfo)
 # around its stack-local RegistryHelper, whose destructor (Close) runs on unwind

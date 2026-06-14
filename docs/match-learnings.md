@@ -128,6 +128,49 @@ fast-moving scratchpad. Newest at top within each section.
   @0xb110 (SetValueDword), `SaveOptions` @0xb270, `SetDefaults` @0xb160,
   `AdvancedOptionsDialogProc` @0xafb0 (the dialog TU).
 
+### CGruntzApp app object (unit `gruntzapp` — 2/2 byte-exact, reloc-masked plateau)
+- New TU `src/Gruntz/GruntzApp.cpp`; `class CGruntzApp : public CGameApp`
+  (`#include "../Wap32/Wap32.h"`). Both methods byte-exact modulo reloc-masked
+  operands; objdiff scores them ~99.2–99.4% fuzzy / 0% "exact" purely from the
+  reloc *names* (operator-new/ctor/EH-FuncInfo/IAT/global addrs) — verified
+  byte-identical against `dump_target.py` + `llvm-objdump -dr` on the base obj.
+- **`InitializeGameManager` @0x080a20 (90 B) = `return new WAP32::CGameMgr;`** —
+  NOT a member-store-then-return as the tomalla guess suggested; the disasm has NO
+  `mov [this+N],eax`. It is `operator new(0xa30)` (`??2@YAPAXI@Z`) + a *throwing*
+  ctor (`??0CGameMgr@WAP32@@QAE@XZ`, reached via an incremental-link thunk) under
+  a **C++ EH frame** (`push -1; push FuncInfo; push fs:0`), with the EH state slot
+  at `[esp+0xc]` set to 0 before the ctor and to -1… (actually the dual-exit just
+  restores fs:0). The `push ecx` at entry is MSVC reserving **one dword of locals**
+  for the new pointer / EH-tracked temp — `this` is never read. The throwing ctor
+  forces **`/GX`** on the TU (same tell as GetGruntzDriveLetter: a stack/temp
+  object with a dtor under EH ⇒ `__CxxFrameHandler` + FuncInfo). Manager size =
+  **0xa30 bytes** (pinned by the `push 0xa30` to operator new); model `CGameMgr`
+  as a forward class with a `char[0xa30]` body + a declared ctor — full layout not
+  needed for the new+ctor+return shape.
+- **`ErrorDialogProc` @0x080c70 (85 B) is a `static __stdcall` member**
+  (`?ErrorDialogProc@CGruntzApp@@SGHPAXIIJ@Z`, `ret 0x10`) — the `SG` (static
+  __stdcall) mangling, NOT `QAG`/`AAG`; body reads no `this`. Same WM-message
+  ladder as AdvancedOptions: `sub eax,0x110; je INITDIALOG; dec eax; jne default`
+  with the **WM_INITDIALOG case body at the function tail** (reached by forward
+  `je`). It **stores hWnd into a file-scope `static HWND` (binary @0x64557c)
+  UNCONDITIONALLY** right after the `sub` (before the switch dispatch) — write the
+  `g_errorHwnd = hWnd;` assignment as the first statement so it schedules before
+  the switch. WM_COMMAND: `if (wParam==1 || wParam==2) EndDialog(hWnd, 0); return
+  1;` (IDOK and IDCANCEL share one EndDialog(,0) path — `cmp 1;je; cmp 2;je`).
+  WM_INITDIALOG: `SetDlgItemTextA(hWnd, 0x40d, g_errorText); return 1;` where the
+  error text is a **`push imm` of the buffer ADDRESS** (binary @0x644ea0, `68 ..`
+  not `ff 35 ..`) ⇒ a file-scope `static char g_errorText[]` (address-of), not a
+  `char*` global.
+- CGruntzApp LAYOUT facts: confirmed `: public CGameApp` (base ends @0x254);
+  **neither matched fn touches a CGruntzApp instance field** — InitializeGameManager
+  returns the manager rather than storing it (so the "manager-pointer offset" is
+  NOT pinned by these two fns; a *caller* like Run/InitInstance does the store),
+  and ErrorDialogProc is static. No CGruntzApp-specific members needed yet.
+- UNLOCKED: the callers that store the manager + the error-dialog launcher —
+  `CGruntzApp::Run`/`InitInstance` and `WinMain @0x11c860` now have these two
+  callees anchored; the manager-pointer member offset will fall out of whichever
+  caller does `m_xxx = InitializeGameManager()`.
+
 ### AdvancedOptions dialog (unit `advancedoptions` — DONE, 5/5 byte-exact)
 - All five byte-exact modulo reloc-masked operands (commit pending). They are the
   first *consumers* of RegistryHelper from a higher-level TU — confirms the whole
