@@ -7,7 +7,7 @@
  * Gruntz assets live in Gruntz.REZ (main) + GRUNTZ.VRZ (video/secondary). The
  * archive is the Monolith "RezMgr" format; its banner string is embedded verbatim:
  *   "RezMgr Version 1 Copyright (C) 1995 MONOLITH INC."
- * (mined from the editor binaries, build/editor-strings/*.ascii.txt; the same
+ * (mined from the editor binaries' *.ascii.txt dumps in build/editor-strings; the same
  * RezMgr code is shared between the game's RezSync/CRezDir loader and the editor.)
  *
  * VERSION-INDEPENDENT: the on-disk archive layout is a stable Monolith format,
