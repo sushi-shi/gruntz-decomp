@@ -17,6 +17,55 @@ fast-moving scratchpad. Newest at top within each section.
   -o - --format json-pretty`. Roll-up: `scripts/rebuild.py`.
 
 ## Subsystem notes
+### CGameApp::RunMessageLoop — the Win32 game pump (extended `gameapp` — BYTE-EXACT, 100% fuzzy)
+- Extended `src/Wap32/GameApp.cpp` + `Wap32.h`. `?RunMessageLoop@CGameApp@@UAEHXZ`
+  @0x13d910 (159 B, **CGameApp vtable slot +0x18**, the slot WinMain dispatches to
+  via `call [vtbl+0x18]`). **BYTE-EXACT**: 65/65 instructions equal, exactly **4
+  diffs, all `DIFF_ARG_MISMATCH` on reloc-masked DIR32 IAT operands**
+  (`mov edi,[TranslateMessage]`/`mov esi,[PeekMessageA]`/`mov ebx,[DispatchMessageA]`
+  /`call [TranslateAcceleratorA]`); report.json scores it 100.000%. No new unit, no
+  flag change (`gameapp` stays /GX); the 9 prior gameapp fns + gamewnd + the
+  gruntzapp fns (which include Wap32.h) all held (gameapp fuzzy 99.056%, gamewnd
+  99.757%; CloseResources/InitializeAccelerators/ReportError still 100%).
+- **It is `PeekMessageA(PM_REMOVE)`, NOT `GetMessageA`** — the reloc table is ground
+  truth: @0x13d92c→TranslateMessage(0x6c4428), @0x13d933→**PeekMessageA**(0x6c43c4),
+  @0x13d93a→DispatchMessageA(0x6c43c0), @0x13d972→TranslateAcceleratorA(0x6c445c).
+  The WinMain report's "GetMessageA @0x6c43c4" hint was WRONG (it decoded the same
+  IAT slot as GetMessage); the 5-arg push shape (`push 1;push 0;push 0;lea &msg;
+  push 0;push &msg`) = `PeekMessageA(&msg,0,0,0,PM_REMOVE)`, a 5-arg peek-pump, not
+  the 4-arg blocking GetMessage. **Always trust the reloc symbol/arg-count over the
+  decoder's guessed import name.**
+- **Loop SHAPE = drain-then-idle, NOT a blocking pump:** `hwnd=(HWND)m_4->m_4; if
+  (!hwnd) return 0; for(;;){ if(PeekMessage){ do{ if(msg.message==0x12/*WM_QUIT*/)
+  return 1; if(m_10 && msg.hwnd==hwnd) TranslateAcceleratorA(hwnd,m_10,&msg);
+  TranslateMessage(&msg); DispatchMessageA(&msg); }while(PeekMessage); } idle(); }`.
+  The `for(;;){ if(Peek){ do{...}while(Peek);} idle;}` (outer peek gating an inner
+  do-while peek, idle on empty) reproduces the exact two-peek CFG (LOOP_TOP peek
+  `je idle`; tail peek `jne process`; `jmp LOOP_TOP` after idle).
+- **The accel gate is `m_10 != 0 && msg.hwnd == hwnd`, and the accel call's return
+  is IGNORED** (the prompt's "skip Translate/Dispatch when nonzero" is wrong — the
+  bytes fall straight through from TranslateAcceleratorA into TranslateMessage with
+  no test of its result). msg.hwnd (MSG+0x00) is compared against the cached HWND in
+  `ebp`; WM_QUIT is `cmp [msg.message],0x12` (MSG+0x04).
+- **The idle is `VirtualUnknownMethod09()` = CGameApp vtbl slot +0x20** (`mov ecx,
+  [this]; mov edx,[ecx]; call [edx+0x20]`). RunMessageLoop took the existing slot
+  +0x18 placeholder (was `VirtualUnknownMethod07`); renaming +0x18 to `RunMessageLoop`
+  and keeping +0x20 as the idle virtual kept the 16-slot vtable order intact (verified
+  no slot shift — all sibling fns held). **The HWND is reached via `m_4->m_4`**
+  (CGameApp+0x4 = the CGameWnd, its +0x4 = the OS HWND), confirming the CGameWnd m_4
+  layout. `this` is spilled to a stack slot at entry (`mov [esp+4],ecx`, reloaded as
+  `[esp+0x10]`) — write it as a plain method (no `this` local needed; MSVC spills it).
+- Return type = `int` (full `eax`: 0 on no-window, 1 on WM_QUIT), no-arg `__thiscall`
+  → bare `ret` both exits → mangles `?RunMessageLoop@CGameApp@@UAEHXZ` (U=virtual,
+  H=int, XZ=void). The `MSG` struct (28 B: hwnd/message/wParam/lParam/time/pt.x/pt.y)
+  + the 4 USER32 `__stdcall` dllimports went into Wap32.h's existing import block.
+- **UNLOCKED:** the main message loop is now matched end-to-end from WinMain
+  (`WinMain → call[vtbl+0x18] → RunMessageLoop`). The **idle virtual CGameApp slot
+  +0x20** (`VirtualUnknownMethod09`, the per-frame game-tick the pump calls on an
+  empty queue) is now a named, caller-anchored target; the CGameWnd m_4→HWND chain
+  and the USER32 PeekMessage/Translate/Dispatch/TranslateAccelerator IAT slots
+  (0x6c43c4/0x6c4428/0x6c43c0/0x6c445c) are pinned.
+
 ### WinMain program entry (unit `winmain` — BYTE-EXACT under reloc-masking, 98.97% fuzzy)
 - New TU `src/Gruntz/WinMain.cpp`. The WINAPI entry `_WinMain@16` @0x11c860
   (807 B). All **243 instructions instruction-count-equal with 0 opcode and 0

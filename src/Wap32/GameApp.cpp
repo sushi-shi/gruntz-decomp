@@ -89,6 +89,39 @@ void CGameApp::ReportError(WPARAM wParam, LPARAM lParam)
 }
 
 // -------------------------------------------------------------------------
+// CGameApp::RunMessageLoop  @ RVA 0x13d910 (159 B) - the main Win32 pump.
+// vtbl slot +0x18 (WinMain dispatches here). Reads the OS HWND off m_4->m_4;
+// if there is no window, return 0. Otherwise the classic peek/process/idle
+// pump: PeekMessageA(PM_REMOVE) drains all pending messages (WM_QUIT exits
+// with 1); when m_10 (HACCEL) is set AND the message targets our window, run
+// TranslateAcceleratorA (return ignored); always TranslateMessage +
+// DispatchMessageA; when the queue is empty, call the idle virtual
+// (vtbl +0x20) and loop.
+// -------------------------------------------------------------------------
+int CGameApp::RunMessageLoop()
+{
+    MSG msg;
+
+    HWND hwnd = (HWND)m_4->m_4;
+    if (!hwnd)
+        return 0;
+
+    for (;;) {
+        if (PeekMessageA(&msg, 0, 0, 0, 1)) {
+            do {
+                if (msg.message == 0x12 /*WM_QUIT*/)
+                    return 1;
+                if (m_10 && msg.hwnd == hwnd)
+                    TranslateAcceleratorA(hwnd, m_10, &msg);
+                TranslateMessage(&msg);
+                DispatchMessageA(&msg);
+            } while (PeekMessageA(&msg, 0, 0, 0, 1));
+        }
+        VirtualUnknownMethod09();   // idle virtual (vtbl +0x20)
+    }
+}
+
+// -------------------------------------------------------------------------
 // CGameApp::InitializeDefaultWindowClass  @ RVA 0x13d9b0 (160 B) - byte-exact.
 // Fills the embedded WNDCLASSA (m_wc @ +0x1e8) and loads its icon/cursor.
 // -------------------------------------------------------------------------

@@ -59,7 +59,28 @@ __declspec(dllimport) BOOL    __stdcall ShowWindow(HWND hWnd, int nCmdShow);
 __declspec(dllimport) HMENU   __stdcall LoadMenuA(HINSTANCE hInstance, LPCSTR lpMenuName);
 __declspec(dllimport) int     __stdcall GetSystemMetrics(int nIndex);
 __declspec(dllimport) short   __stdcall RegisterClassA(const WNDCLASSA *lpWndClass);
+__declspec(dllimport) BOOL    __stdcall PeekMessageA(struct tagMSG *lpMsg, HWND hWnd,
+                                                     UINT wMsgFilterMin, UINT wMsgFilterMax,
+                                                     UINT wRemoveMsg);
+__declspec(dllimport) int     __stdcall TranslateAcceleratorA(HWND hWnd, HACCEL hAccTable,
+                                                              struct tagMSG *lpMsg);
+__declspec(dllimport) BOOL    __stdcall TranslateMessage(const struct tagMSG *lpMsg);
+__declspec(dllimport) LRESULT __stdcall DispatchMessageA(const struct tagMSG *lpMsg);
 }
+
+// MSG (28 bytes). RunMessageLoop reads msg.hwnd (+0x00) for the accel-table
+// HWND gate and msg.message (+0x04) for the WM_QUIT(0x12) test; the rest are
+// passed by address to PeekMessageA/Translate*/DispatchMessageA. Offsets are
+// load-bearing (the loop indexes [&msg+0x00] and [&msg+0x04]).
+typedef struct tagMSG {
+    HWND   hwnd;       // +0x00
+    UINT   message;    // +0x04
+    WPARAM wParam;     // +0x08
+    LPARAM lParam;     // +0x0c
+    DWORD  time;       // +0x10
+    int    pt_x;       // +0x14  (POINT.x)
+    int    pt_y;       // +0x18  (POINT.y)
+} MSG;
 
 // CreateWindowExA's 12 arguments, packed into one params struct (CGameWnd's
 // caller fills this and passes its address to CreateAndShow). Fields are stored
@@ -198,9 +219,9 @@ public:
     virtual void VirtualUnknownMethod04() {}                              // +0x0c
     virtual void CloseResources();                                       // +0x10  0x13d8c0
     virtual void VirtualUnknownMethod06() {}                              // +0x14
-    virtual void VirtualUnknownMethod07() {}                              // +0x18
+    virtual int  RunMessageLoop();                                       // +0x18  0x13d910
     virtual void ReportError(WPARAM wParam, LPARAM lParam);              // +0x1c  0x13dcb0
-    virtual void VirtualUnknownMethod09() {}                             // +0x20
+    virtual void VirtualUnknownMethod09() {}                             // +0x20  the idle virtual
     virtual void FreeGameManager() {}                                    // +0x24
     virtual void VirtualUnknownMethod11() {}                             // +0x28
     virtual BOOL InitializeAccelerators(LPCSTR lpTable);                 // +0x2c  0x13dc20

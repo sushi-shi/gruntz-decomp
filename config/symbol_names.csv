@@ -114,6 +114,7 @@ rva,name,unit
 0x13d5d0,?VirtualUnknownMethod02@CGameApp@@UAEHPAUGameInfo@@PAUtagWNDCLASSA@@PAUtagCREATESTRUCTA@@@Z,gameapp
 0x13d7b0,?VirtualUnknownMethod03@CGameApp@@UAEHPAXPAD11HHH@Z,gameapp
 0x13da50,?InitializeDefaultCreateStruct@CGameApp@@UAEXXZ,gameapp
+0x13d910,?RunMessageLoop@CGameApp@@UAEHXZ,gameapp
 0x13cf20,?CreateAndShow@CGameWnd@@QAEHPAUCGameWndCreateParams@@PAX@Z,gamewnd
 0x1005d0,??0CStatusBarItem@@QAE@XZ,statusbaritem
 0x101fa0,??0CSBI_RectOnly@@QAE@XZ,sbi_rectonly
