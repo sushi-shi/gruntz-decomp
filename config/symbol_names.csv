@@ -168,3 +168,20 @@ rva,name,unit
 0x144110,?LoadBmp@CFileImage@@QAEPAXPAD0@Z,image
 0x145110,?LoadPcx@CFileImage@@QAEPAXPAD0@Z,image
 0x145cd0,?LoadPid@CFileImage@@QAEPAXPAD0PAX@Z,image
+
+# CMapMgr level/map manager (src/Gruntz). Self-located via RTTI vftable
+# ??_7CMapMgr@@6B@ @0x5ea3b4 (6 virtual slots). 7/9 BYTE-EXACT (reloc-masked
+# operands only): ctor/dtor + the slot-0 Reset cleanup, plus the two embedded
+# growable-array sub-objects (CMapArrayA @+0x30 / CMapArrayB @+0x3c: ctor + dtor
+# each). The two free-list builders Allocate@CMapArrayA @0x09e740 /
+# Allocate@CMapArrayB @0x09e860 are NOT byte-exact (~70%/64% MSVC5 reg-alloc +
+# strength-reduction plateau; bodies kept in MapMgr.cpp to document the element
+# strides 0x24/0x0c which are the load-bearing layout fact) - intentionally NOT
+# claimed here. See src/Gruntz/MapMgr.cpp.
+0x09e940,??0CMapMgr@@QAE@XZ,mapmgr
+0x09e9e0,??1CMapMgr@@QAE@XZ,mapmgr
+0x09ec30,?Reset@CMapMgr@@UAEXXZ,mapmgr
+0x09e700,??0CMapArrayA@@QAE@XZ,mapmgr
+0x09e7e0,??1CMapArrayA@@QAE@XZ,mapmgr
+0x09e820,??0CMapArrayB@@QAE@XZ,mapmgr
+0x09e900,??1CMapArrayB@@QAE@XZ,mapmgr

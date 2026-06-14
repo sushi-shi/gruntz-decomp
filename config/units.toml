@@ -219,6 +219,27 @@ source = "src/Gruntz/GruntzApp.cpp"
 status = "matched"
 cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
 
+# --- CMapMgr level/map manager (src/Gruntz) ---------------------------------
+# The engine CMapMgr (self-located via its RTTI vftable ??_7CMapMgr@@6B@
+# @0x5ea3b4, 6 slots): ctor @0x09e940 + dtor @0x09e9e0 + the slot-0 Reset cleanup
+# @0x09ec30, plus the two embedded growable-array sub-objects it owns
+# (CMapArrayA @+0x30 / CMapArrayB @+0x3c). The ctor constructs the two array
+# members then zeroes/seeds the scalar bookkeeping; the dtor restores the vftable,
+# calls Reset, then the member destructors run on unwind. The member sub-objects
+# with destructors put a C++ EH frame around the ctor/dtor (__CxxFrameHandler +
+# FuncInfo) -> built with /GX; engine code -> /O2.
+# 7/7 claimed fns BYTE-EXACT (reloc-masked operands only): CMapMgr ctor/dtor/Reset
+# + CMapArrayA ctor/dtor + CMapArrayB ctor/dtor. The two free-list builders
+# Allocate@CMapArrayA @0x09e740 / Allocate@CMapArrayB @0x09e860 are an MSVC5
+# reg-alloc + strength-reduction plateau (~70%/64%, all offsets/strides correct) -
+# bodies kept in MapMgr.cpp to document the element strides 0x24/0x0c but NOT
+# claimed in symbol_names.csv. See docs/match-learnings.md.
+[[unit]]
+unit = "mapmgr"
+source = "src/Gruntz/MapMgr.cpp"
+status = "wip"
+cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+
 # --- Win32 helper free functions (src/Utils) --------------------------------
 # GetGruntzDriveLetter has a C++ exception frame (__CxxFrameHandler + FuncInfo)
 # around its stack-local RegistryHelper, whose destructor (Close) runs on unwind

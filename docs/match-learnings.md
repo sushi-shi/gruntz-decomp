@@ -374,6 +374,70 @@ fast-moving scratchpad. Newest at top within each section.
   engine binary file-stream class (ctor 0x1befd7 / Open 0x1bf200 / Read 0x1bf328 /
   Close 0x1bf121) is now mapped for any future TU that does file I/O.
 
+### CMapMgr level/map manager (unit `mapmgr` — 7/7 byte-exact; 2 Allocate deferred)
+- New TU `src/Gruntz/MapMgr.cpp` (+ `.h`). The engine **CMapMgr** (the level/map
+  manager), self-located via its RTTI vftable `??_7CMapMgr@@6B@` @0x5ea3b4. Built
+  `/O2 /MT /GX` (engine code; the member sub-objects with dtors put a C++ EH frame
+  around the ctor/dtor). 7 fns byte-exact (verified equal instr counts + ZERO
+  non-reloc structural diffs; the 98–99% fuzzy = reloc-masked operands only:
+  FuncInfo `$L`, `fs:[__except_list]`, the vftable, the operator-new/delete calls,
+  and the sub-object ctor/dtor + Reset call targets).
+- **CMapMgr LAYOUT (≥0x60 B), pinned from the ctor (@0x09e940) + dtor (@0x09e9e0)
+  + slot-0 Reset (@0x09ec30):** vftable@+0 (0x5ea3b4, **6 slots**: slot0=Reset
+  @0x09ec30, slot1 @0x09f7f0, slot2 @0x09f840, slot3 @0x09f9a0, slot4 @0x09eca0,
+  slot5 @0x4853f0 — a shared/base method); **m_4@+4 / m_8@+8** = two heap ptrs the
+  Reset `operator delete`s; +0xc/+0x10/+0x18/+0x1c = 0; **a 0x0c-byte array
+  sub-object @+0x30 (CMapArrayA)** and **another @+0x3c (CMapArrayB)**; +0x4c=0,
+  **+0x50=-1**, +0x58=0, **+0x5c=1**.
+- **The dtor is non-trivial: it restores the vftable, calls the slot-0 virtual
+  Reset INLINE (`call ?Reset` direct), THEN the two member sub-object dtors run on
+  unwind.** Reset itself frees m_4/m_8 and resets the two arrays — so the arrays are
+  destroyed TWICE (once by Reset, once by the dtor's member-teardown), which is safe
+  because each array dtor frees-then-zeroes (idempotent: the 2nd call sees a null
+  ptr and no-ops). Reproduced by: `~CMapMgr(){ Reset(); }` with A/B as real member
+  objects that have dtors + `Reset()` calling `m_colA.~CMapArrayA(); m_colB.~...()`
+  explicitly. objdiff mislabels my direct `call ?Reset` as "vector_deleting_
+  destructor" — it is the same `call rel32`, byte-exact.
+- **The two embedded arrays are DISTINCT 0x0c-byte classes with different heap-ptr
+  offsets:** CMapArrayA holds its block at **+0x04** (ctor zeroes +4,+0,+8 in that
+  order; dtor frees +4), element stride **0x24** (next@+0x14, prev@+0x18);
+  CMapArrayB holds its block at **+0x00** (ctor zeroes +0,+4,+8; dtor frees +0),
+  element stride **0x0c** (data@+0, prev@+4, next@+8). Both ctors are 100% byte-
+  exact; both dtors 99.6% (the one MapFree call reloc-masked). Modeled `operator
+  new`/`delete` as external `extern "C"` no-body (0x1b9b46 / 0x1b9b82) so the
+  `push len; call; add esp,4` / `push p; call; add esp,4` shapes fall out reloc-
+  masked (the standard external-callee idiom).
+- **vftable emitted in-TU via the CGameWnd idiom**: declared CMapMgr with all 6
+  virtual slots (slot0 Reset matched; slots 1–5 are out-of-line empty stubs, not in
+  symbol_names.csv) so `cl` materializes `??_7CMapMgr@@6B@` in this object and the
+  ctor's `mov [esi],OFFSET vftable` reloc-masks against it.
+- **Allocate@CMapArrayA @0x09e740 / Allocate@CMapArrayB @0x09e860 DEFERRED (~70% /
+  ~64%, NOT claimed in symbol_names.csv).** Both are doubly-linked free-list
+  builders (`block=op_new(count*stride); m_block=block; first.prev=0; for each e:
+  e.prev = (e==first)?0:e-1; e.next=e+1; last.next=0;`) — every offset/stride/value
+  /branch is correct, but the residue is a **pervasive MSVC5 register-allocation +
+  strength-reduction divergence**: the TARGET strength-reduces the loop induction
+  onto `eax = &elem.prev` (computing the elem base as `eax-stride+...` and indexing
+  the prev/next stores off eax) and uses NO held-zero register (`test reg,reg` +
+  immediate `mov dword,0` stores), whereas our (compiler-chosen) codegen keeps the
+  element pointer in ecx and caches 0 in ebx (`cmp reg,ebx` + `mov [..],ebx`). Also
+  the alloc-fail path: ColA's target returns the null block ptr directly (no `xor
+  eax,eax` — reuse the loaded null, like FileExists) while ColB's emits `xor
+  eax,eax` (it already has a zero reg) — so `return (int)block;` vs `return 0;` is
+  per-function. **Four source forms (raw-offset cursor walking the prev field,
+  element-struct pointer walk, a cached `m_block` local, ptr-cast indexing) ALL
+  normalized to the identical ecx-relative codegen** — MSVC's strength-reduction
+  picks the induction register from the loop data-flow, and no index-expression
+  rewrite flips it. Entropy-class (same family as the CRezDir-ctor 78% and
+  MakeRezPath 92% plateaus); deferred — the strides + link layout, the deliverable,
+  are fully recovered. A future worker could revisit with a different opt level or
+  by forging the exact loop shape.
+- UNLOCKED: the CMapMgr vftable is now laid out (6 slots), so any caller that
+  dispatches through it is anchored; the +0x30/+0x3c embedded-array classes
+  (ctor/dtor/Allocate @0x09e7xx/0x09e8xx) and the slot-0 Reset cleanup are mapped;
+  vtable slots 1–5 (0x09f7f0 / 0x09f840 / 0x09f9a0 / 0x09eca0 / 0x4853f0) are the
+  next CMapMgr methods for a follow-up worker.
+
 ### zlib (DONE — 51 fns byte-exact)
 - 1.0.4, statically linked, locked flags `/O2 /MT` (cdecl). The REZ entry payloads
   are raw deflate → `_inflate*`/`_uncompress` are the live decompressors.
