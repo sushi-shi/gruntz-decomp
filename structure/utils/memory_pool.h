@@ -56,7 +56,7 @@ namespace Utils
 // CGruntzMgr::memory_pool uses (see ../game/cgruntzmgr.h). The template above is
 // never instantiated in these comprehension TUs, so clang emits no record layout
 // for it; this is a plain struct mirror of its 0x10-byte layout (same field set,
-// element-type independent) so gen_structs emits a "MemoryPool_Pair" record.
+// element-type independent) so `gruntz structs` emits a "MemoryPool_Pair" record.
 // @approx tomalla 1.0.1.77 (offsets version-independent).
 struct MemoryPool_Pair
 {

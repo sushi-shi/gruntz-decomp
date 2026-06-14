@@ -7,7 +7,7 @@
  *
  * Layout ported from tomalla (@approx tomalla 1.0.1.77; base layout). Has graduated
  * into src/Gruntz/GruntzApp.cpp; this comprehension restatement exists only so the
- * class lays out standalone under gen_structs (gen_structs prefers the src/
+ * class lays out standalone under `gruntz structs` (`gruntz structs` prefers the src/
  * definition on overlap). Neither matched method touches an instance field, so no
  * CGruntzApp-specific members are modeled.
  */
