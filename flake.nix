@@ -179,13 +179,19 @@
         ninja
 
         llvm            # llvm-pdbutil
-        clang-tools     # clangd
-        llvmPackages.clang-unwrapped # clang DRIVER for gen_structs/gen_labels.
-                             # MUST be UNWRAPPED: the nix cc-wrapper injects host
-                             # (x86_64-linux) flags that break --target=i686-pc-
-                             # windows-msvc (verified: wrapped clang yields 0 structs).
-                             # Reached via $GRUNTZ_CLANG so it never clashes with
-                             # the wrapped clang clangd may pull in.
+        # clang-unwrapped provides the clang DRIVER (gen_structs/gen_labels, via
+        # $GRUNTZ_CLANG) AND clangd / clang-format / clang-tidy. It MUST be the
+        # UNWRAPPED build: the nix cc-wrapper injects host (x86_64-linux) gcc/glibc
+        # include paths that shadow our /imsvc MSVC headers under
+        # --target=i686-pc-windows-msvc. Verified two ways:
+        #   - wrapped clang  -> gen_structs emits 0 structs;
+        #   - wrapped clangd -> <string.h> resolves to glibc -> gnu/stubs-32.h
+        #     (32-bit multilib stub) "file not found".
+        # So we deliberately do NOT pull in `clang-tools` (whose clangd is the
+        # wrapped one with exactly that bug); clang-unwrapped supplies clangd +
+        # clang-format + clang-tidy directly, and gen_structs reaches its driver
+        # via $GRUNTZ_CLANG.
+        llvmPackages.clang-unwrapped
 
         ripgrep
         file
