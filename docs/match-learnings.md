@@ -822,6 +822,65 @@ fast-moving scratchpad. Newest at top within each section.
   engine binary file-stream class (ctor 0x1befd7 / Open 0x1bf200 / Read 0x1bf328 /
   Close 0x1bf121) is now mapped for any future TU that does file I/O.
 
+### WWD plane reader + level-load driver (unit `wwdfile` ReadPlane 99.19%; unit `gamelevel` LoadWwd carcass ~56%)
+- **`WwdFile::ReadPlane` @0x15d8d0 (195 B, `__thiscall ret 0xc`) — 99.19% fuzzy,
+  byte-exact modulo 11 reloc-masked operand bytes + ONE 6-byte 2-instruction MSVC5
+  scheduling swap** (an entropy-class residue per doctrine). Mangled
+  `?ReadPlane@CGameLevelPlanes@@QAEPAVCPlane@@PAX00@Z`. Body: `CPlane* p = new
+  CPlane(this->m_field0c, this->m_planeCount, 0)` (operator new(0x158) under a C++
+  EH frame); `if (!p->Read(planeData, blockBase, &this->m_planeCtx)) { if(p)
+  p->dtor(1); return 0; }`; `this->m_planes.SetAtGrow(this->m_planeCount, p)`; if
+  `p->m_flags & 1` (MAIN) cache `m_mainPlane=p; m_mainIndex=m_planeCount-1`; return p.
+- **THE load-bearing trick: the `new`d engine class MUST be padded to its REAL size**
+  so `operator new` pushes the right constant. CPlane is 0x158 (344) B — a thin shell
+  emitted `push 0xc` (sizeof the stub) and desynced everything from the alloc onward;
+  padding the shell to `[0x158]` flipped it to `push 0x158` and the whole body fell
+  into place. Model unmatched engine classes you `new` at FULL size, not minimal.
+- **Vtable-slot virtuals reproduce `mov eax,[this]; call [eax+slot]` for free**:
+  declare N dummy virtuals so the real method lands at the right vtable offset
+  (CPlane's block reader is slot 10 = +0x28, the scalar-deleting dtor is slot 1 =
+  +0x4). Calling `p->Read(...)` / `p->dtor(1)` then emits the exact indirect calls,
+  reloc-masked. Same pattern works for CGameLevel's own vtable (LoadWwd is slot 0x38,
+  the pre-load `Reset` is slot 0x44 = call `[eax+0x44]` at entry → 17 placeholder
+  virtuals before Reset).
+- **The one residue MSVC won't yield on**: target stores `m_mainPlane=p` BEFORE
+  loading `m_planeCount` for the `-1`; the rebuild always schedules the member load
+  first (independent addresses, overlaps the store). Tried single-stmt, split
+  `=count; -=1`, explicit local — all keep load-first. 6 bytes, identical logic =
+  documented plateau.
+- **MFC `CArray::SetAtGrow` @0x5b5822 (`__thiscall ret 8`)**: `m_data@+0x4`,
+  `m_size@+0x8`; grows (`SetSize(index+1,-1)` @0x5b5653) if `index>=m_size` then
+  `m_data[index]=value`. CGameLevel's plane CArray sits @+0x34 so `m_data@+0x38`,
+  `m_size@+0x3c` == the plane COUNT (one field, two roles). Image-set CArray @+0x48.
+- **`CGameLevel::LoadWwd` @0x15d280 (633 B, `__thiscall ret 0x4`, vtable slot 0x38)
+  — CARCASS ~56%** (unit `gamelevel`, /O2 /GX, `src/Gruntz/GameLevel.cpp`). FULL
+  faithful control flow + member offsets recovered: `Reset()` (vtbl +0x44) → `if
+  (*(u32*)hdr > 0x5F4) return 0` → `m_header(+0xE0) = *hdr` (rep movs 0x17d dwords =
+  1524 B) → if `hdr->flags & 2` (COMPRESS): `operator new(mainBlockLength +
+  wwdSignature + 0x40)`, `WwdFile_InflateMainBlock(hdr, buf, size)`, free-on-fail
+  (the buffer is tracked by the C++ EH state so it unwinds → /GX) → `strcpy(m_levelName
+  +0x6C, hdr->levelName)`; `m_flags(+8)=hdr->flags`; `m_checksum(+0xAC)=hdr->checksum`
+  → plane loop `for i<numPlanes` cursor `block+planesOffset` stride 0xA0 calling
+  `ReadPlane(cursor, block, &m_planeCtx)` → image-set loop on `tileDescriptionsOffset`
+  (`ReadImageSet`@0x15d820 factory → vtbl +0x24 stride advance → `m_imageSets.SetAtGrow`)
+  → per-plane float coord scaling (`fild startX/startY; if !(plane->flags&1) fmul
+  plane->m_scaleX/Y(+0x18/+0x1c); fstp plane->m_scaledX/Y(+0x10/+0x14); RecomputePlaneCoords`
+  @0x161c90) over the main plane (+0x5C) then every plane skipping m_mainIndex(+0x60).
+- **Why LoadWwd stays a carcass, not a plateau**: an MSVC5 register-allocation
+  divergence the source can't steer — the TARGET keeps `this` in **ebp** and the
+  header/block pointer in **ebx** (callee-saved, lives across the inflate calls),
+  while the rebuild assigns `this`→ebx and spills differently (frame `sub esp,0x8`
+  vs the target's `sub esp,0xc` with `hdr` spilled to `[esp+0x20]`). The swap
+  cascades through nearly every instruction → low fuzzy despite identical logic.
+  Kept the faithful source + the symbol_names row (objdiff pairs/tracks it) but the
+  unit is `wip` and the function is NOT claimed byte-exact.
+- UNLOCKED: the WWD level-load path is now end-to-end in source — ReadPlane is the
+  per-plane fan-out into the plane sub-readers (the tile/imageset/object readers
+  0x55e130/0x562010/0x5615a0 are the CPlane::Read internals), and LoadWwd is the
+  orchestrator. NEXT dedicated target: **`WwdFile::ReadPlaneObjects` @0x162af0
+  (2054 B)** — the per-object record loop (WwdObjectRecord 0x11C). The plane
+  sub-readers + CImageSet factory variants are the other newly-anchored callees.
+
 ### CMapMgr level/map manager (unit `mapmgr` — 7/7 byte-exact; 2 Allocate deferred)
 - New TU `src/Gruntz/MapMgr.cpp` (+ `.h`). The engine **CMapMgr** (the level/map
   manager), self-located via its RTTI vftable `??_7CMapMgr@@6B@` @0x5ea3b4. Built

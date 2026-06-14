@@ -139,6 +139,21 @@ source = "src/Wwd/WwdFile.cpp"
 status = "wip"
 cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
 
+# --- CGameLevel WWD level-load orchestrator (src/Gruntz) --------------------
+# CGameLevel::LoadWwd @0x15d280 (vtable slot 0x38): validates the WWD header,
+# copies the 1524-byte header, optionally inflates the compressed main block
+# (operator new + WwdFile::InflateMainBlock, tracked by a C++ EH state so the
+# buffer frees on unwind -> /GX), then loops the planes calling WwdFile::ReadPlane
+# @0x15d8d0 and the image-set descriptors, and finally recomputes the scaled start
+# coords. CPlane / CImageSet / ReadImageSet / RecomputePlaneCoords / ReadPlane /
+# InflateMainBlock / operator new/delete / SetAtGrow are reloc-masked engine calls.
+# Faithful carcass (driven toward byte-exact). /O2 engine code.
+[[unit]]
+unit = "gamelevel"
+source = "src/Gruntz/GameLevel.cpp"
+status = "wip"
+cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+
 # --- Engine file-stream class (src/Io) --------------------------------------
 # CFileIO - the KERNEL32 file-I/O wrapper (MFC CFile work-alike) that gates ALL
 # engine file I/O (RezMgr, WwdFile, save/load). The leaf methods wrap CreateFileA

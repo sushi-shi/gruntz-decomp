@@ -4,6 +4,9 @@
 //   WwdFile::IsValidWwd       @ RVA 0x160530 (293 B, __stdcall ret 8) - BYTE-EXACT
 //   WwdFile::CheckHeader      @ RVA 0x160660 (299 B, __stdcall ret 8) - BYTE-EXACT
 //   WwdFile::InflateMainBlock @ RVA 0x160790 (~88.7% fuzzy, entropy plateau)
+//   WwdFile::ReadPlane        @ RVA 0x15d8d0 (195 B, __thiscall ret 0xc) - 99.19%
+//                               (byte-exact modulo 11 reloc-masked operand bytes
+//                                + a 6-byte 2-instruction MSVC5 scheduling swap)
 //
 // IsValidWwd / CheckHeader open a file by name, read the 1524-byte (0x5F4) WWD
 // header, and validate it: the read must return exactly 0x5F4 bytes and the
@@ -83,6 +86,40 @@ int __stdcall WwdFile_CheckHeader(const char* name, void* headerOut)
 
     strcpy((char*)headerOut, header);        // inline strlen + rep movs
     return 1;
+}
+
+// ---------------------------------------------------------------------------
+// WwdFile::ReadPlane  @ RVA 0x15d8d0 (195 B, __thiscall ret 0xc).
+// Build one plane: `new CPlane(this->m_field0c, this->m_planeCount, 0)` (operator
+// new(0x158) under the C++ EH frame), then invoke the plane's block reader
+// (vtable +0x28) on (planeData, blockBase, &this->m_planeCtx). On reader failure,
+// delete the plane (scalar-deleting dtor, vtable +0x4) and return 0. On success,
+// append the plane to m_planes (CArray::SetAtGrow @0x5b5822) at index
+// m_planeCount, and if it is the MAIN plane (m_flags bit0) cache it as m_mainPlane
+// with m_mainIndex = m_planeCount - 1. Returns the new plane.
+//
+// The new CPlane and its virtuals are UNMATCHED engine code -> reloc-masked calls.
+// ---------------------------------------------------------------------------
+CPlane* CGameLevelPlanes::ReadPlane(void* planeData, void* blockBase, void* /*unused*/)
+{
+    CPlane* plane = new CPlane(m_field0c, m_planeCount, 0);
+
+    if (plane->Read(planeData, blockBase, &m_planeCtx) == 0)
+    {
+        if (plane)
+            plane->dtor(1);                       // scalar-deleting dtor (vtable +0x4)
+        return 0;
+    }
+
+    ((CPlanePtrArray*)&m_planes)->SetAtGrow(m_planeCount, plane);
+
+    if (plane->m_flags & 1)                       // MAIN plane
+    {
+        m_mainPlane = plane;
+        m_mainIndex = m_planeCount - 1;
+    }
+
+    return plane;
 }
 
 int __stdcall WwdFile_InflateMainBlock(WwdHeader* src, Bytef* dest, unsigned int destLen)

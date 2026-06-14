@@ -84,6 +84,22 @@ rva,name,unit
 # frame around the stack-local file stream. See src/Wwd/WwdFile.cpp.
 0x160530,?WwdFile_IsValidWwd@@YGHPBDPAX@Z,wwdfile
 0x160660,?WwdFile_CheckHeader@@YGHPBDPAX@Z,wwdfile
+# ReadPlane @0x15d8d0 (__thiscall ret 0xc): new CPlane(m_field0c,m_planeCount,0);
+# call its block reader (vtable +0x28); on failure delete it (vtable +0x4) + return
+# 0; else CArray::SetAtGrow(m_planeCount,plane) and cache the MAIN plane. The new
+# CPlane + its virtuals + operator new + SetAtGrow are reloc-masked engine calls.
+0x15d8d0,?ReadPlane@CGameLevelPlanes@@QAEPAVCPlane@@PAX00@Z,wwdfile
+# --- CGameLevel WWD level-load orchestrator (src/Gruntz) --------------------
+# LoadWwd @0x15d280 (__thiscall ret 0x4, vtable slot 0x38): validate header,
+# copy 1524 B, inflate (if COMPRESS), loop planes (-> ReadPlane @0x15d8d0), loop
+# image-set descriptors, recompute scaled coords. CARCASS ~56% (full faithful
+# control flow + member offsets; the residue is an MSVC5 register-allocation
+# divergence -- the target keeps `this` in ebp / the header+block in ebx, the
+# rebuild swaps them, which cascades). Unit `gamelevel` is `wip` (NOT in the
+# matched pass set); the row is kept so objdiff pairs/tracks the carcass. The
+# engine callees (CPlane/CImageSet/ReadImageSet/RecomputePlaneCoords/
+# InflateMainBlock/operator new+delete/SetAtGrow) are reloc-masked. See GameLevel.cpp.
+0x15d280,?LoadWwd@CGameLevel@@QAEHPAUWwdHeader@@@Z,gamelevel
 # --- CFileIO: the engine KERNEL32 file-I/O wrapper (MFC CFile work-alike) -----
 # Gates ALL engine file I/O (RezMgr, WwdFile, save/load). ctor/dtor build a
 # CString member (NAFXCW calls, reloc-masked); leaf methods wrap CreateFileA/
