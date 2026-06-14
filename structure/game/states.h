@@ -8,14 +8,14 @@
  * concrete state is a screen/mode of the game (splash, menu, gameplay, etc.).
  *
  * Provenance: ALL names from RTTI (mangled names kept). The only layout note we
- * have is a tomalla @todo for CPlay (see below). Otherwise name-only / @todo.
+ * have is a tomalla (unrecovered) for CPlay (see below). Otherwise name-only stubs.
  */
 
 /*
  * CState — base state class.
  * .?AVCState@@
  */
-class CState { /* .?AVCState@@ */ };  //@todo layout
+class CState { /* .?AVCState@@ */ };  //(unrecovered) layout
 
 /* --- front-end / non-gameplay states --- */
 class CSplashState  { /* .?AVCSplashState@@ */ };   // STATEZ_SPLASH
@@ -29,12 +29,12 @@ class CDemo         { /* .?AVCDemo@@ */ };           // demo playback
 /*
  * CPlay — single-player gameplay state.
  * .?AVCPlay@@
- * tomalla @todo note (refs/tomalla-gruntz/gruntz/cstate.h):
+ * tomalla (unrecovered) note (refs/tomalla-gruntz/gruntz/cstate.h):
  *   CPlay + 0x3f4 -> pointer to unknown struct
  *     + 0x38 -> int: starting game time to measure stats from (in ms)
  * Offsets are tomalla's (1.0.1.77), unverified for v1.0.
  */
-class CPlay { /* .?AVCPlay@@ */ };  //@todo layout (see note above)
+class CPlay { /* .?AVCPlay@@ */ };  //(unrecovered) layout (see note above)
 
 class CMulti           { /* .?AVCMulti@@ */ };            // STATEZ_MULTI (multiplayer)
 class CBootyState      { /* .?AVCBootyState@@ */ };       // STATEZ_BOOTY (end-of-level booty)

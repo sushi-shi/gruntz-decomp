@@ -6,13 +6,13 @@ over `src/` and the vendored sources - parsed against the project's real
 **MSVC 5.0 / MFC 4.2 / DirectX 6** headers.
 
 It runs **alongside** the matching build and does not touch it. The Wine
-MSVC 5.0 build (`configure.py` -> `build.ninja` -> `scripts/cc_wrap.py`) remains
+MSVC 5.0 build (`configure.py` -> `build.ninja` -> `scripts/gruntz/build/cc_wrap.py`) remains
 the **sole verdict on correctness**; clangd is only a *reader* of the code.
 
 ## The wrinkle: clangd can't use the real compiler
 
 The matching build compiles each unit with **MSVC 5.0's `CL.EXE` run under Wine**
-(via `scripts/cc_wrap.py`). clangd is clang-based and cannot invoke that wrapper.
+(via `scripts/gruntz/build/cc_wrap.py`). clangd is clang-based and cannot invoke that wrapper.
 So we maintain a **separate** compilation database, in **clang-cl driver form**,
 that points clang at the toolchain's MSVC/MFC/DirectX headers and asks it to
 *emulate* MSVC 5.0. clang reads those headers as plain files - **no Wine and no
@@ -20,15 +20,18 @@ that points clang at the toolchain's MSVC/MFC/DirectX headers and asks it to
 
 MSVC 5.0 == `cl 11.00` == `_MSC_VER 1100`, hence `-fms-compatibility-version=11.00`.
 
-## Two separate compilation databases (they do not collide)
+## The compilation database
 
-| DB                                   | Producer        | Form               | Consumer                    |
-| ------------------------------------ | --------------- | ------------------ | --------------------------- |
-| `./compile_commands.json` (repo root)| `configure.py`  | `cl` under Wine    | the matching build / objdiff|
-| `build/clangd/compile_commands.json` | `gen_clangd.py` | `clang-cl` (clang) | clangd (this tooling)        |
+There is one `compile_commands.json`, in **clang-cl** form, for the clang-based
+tools:
 
-The committed `.clangd` points clangd at `build/clangd/` precisely so it never
-picks up the build's own repo-root DB.
+| DB                                   | Producer                | Form               | Consumer                          |
+| ------------------------------------ | ----------------------- | ------------------ | --------------------------------- |
+| `build/clangd/compile_commands.json` | `gruntz/init/clangd.py` | `clang-cl` (clang) | clangd, ghidra_metadata_generate, clangd_query |
+
+The matching build itself needs no compdb (`configure.py` emits only `build.ninja`
++ the objdiff project; ninja tracks deps). The committed `.clangd` points clangd
+at `build/clangd/`.
 
 ## Usage
 
@@ -38,7 +41,7 @@ picks up the build's own repo-root DB.
    nix develop .#build      # exports MSVC_DIR and DXSDK_DIR
    ```
 
-   `gen_clangd.py` also works **outside** the dev shell - if the env vars are
+   `scripts/gruntz/init/clangd.py` also works **outside** the dev shell - if the env vars are
    absent it falls back to `nix build .#gruntz-toolchain` and reads the include
    dirs out of the result path.
 
@@ -46,7 +49,7 @@ picks up the build's own repo-root DB.
    grows a new unit):
 
    ```sh
-   python3 scripts/gen_clangd.py
+   python3 scripts/gruntz/init/clangd.py
    ```
 
    It prints the resolved include dirs and the exact per-unit clang-cl flag line.
@@ -68,7 +71,7 @@ A successful run ends with `All checks completed, 0 errors`.
 
 ## How it is wired
 
-- **`scripts/gen_clangd.py`** - reads `config/units.toml` (read-only) and writes
+- **`scripts/gruntz/init/clangd.py`** - reads `config/units.toml` (read-only) and writes
   `build/clangd/compile_commands.json` (git-ignored; `build/` is in
   `.gitignore`). One clang-cl entry per unit:
 
@@ -105,6 +108,6 @@ A successful run ends with `All checks completed, 0 errors`.
   `<windows.h>` / `<ddraw.h>`, so they parse cleanly (`0 errors`). The real test
   of the MFC/DX header parse comes once the reconstructed `src/` actually
   `#include`s those toolchain headers. Tune the `.clangd` `Suppress` list then.
-- **Re-run `gen_clangd.py` after adding a unit** to `config/units.toml`; the DB
+- **Re-run `gruntz clangd` after adding a unit** to `config/units.toml`; the DB
   is not regenerated automatically (unlike the build's, which `configure.py`
   emits).

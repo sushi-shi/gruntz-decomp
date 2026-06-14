@@ -1,7 +1,7 @@
 # Compiler / linker fingerprinting for GRUNTZ.EXE
 
 Goal: identify the EXACT MSVC cl.exe / link.exe build + service pack used to
-build `binaries/retail_en/GRUNTZ.EXE`, so a byte-matching decompilation can be
+build `GRUNTZ.EXE` (`$GRUNTZ_EXE`, flake-fetched), so a byte-matching decompilation can be
 compiled with the same toolchain.
 
 Date: 2026-06-13. All claims below are tagged [CONFIRMED] (verified locally or

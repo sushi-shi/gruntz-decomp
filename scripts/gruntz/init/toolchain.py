@@ -3,12 +3,11 @@
 setup-toolchain.py - set up the Wine environment so `wine cl.exe` builds against
 our MSVC 5.0 SP3 toolchain (the byte-match toolchain for the Gruntz decompilation).
 
-Adapted from srp-survarium/vostok's scripts/setup-toolchain.py, with these
-differences for our (older, simpler) environment:
-  * MSVC *5.0* (VS97 + SP3), not VS2008. VC++ 5.0 BUNDLES the Win32 API
+Sets up the Wine prefix for our (older, simpler) toolchain:
+  * MSVC *5.0* (VS97 + SP3). VC++ 5.0 BUNDLES the Win32 API
     headers/libs in VC/INCLUDE + VC/LIB (merged into msvc/include + msvc/lib by
-    the toolchain build), so there is NO separate Windows SDK to wire (vostok
-    needed WinSDK 6.0A). Only the DirectX 6 SDK (dx/) is layered on top.
+    the toolchain build), so there is NO separate Windows SDK to wire. Only the
+    DirectX 6 SDK (dx/) is layered on top.
   * No vcproj2ninja / .sln / target-side generation - we have no project tree
     yet; the base/recompile side starts as hand-compiled `.cpp -> .obj` fed to
     objdiff. (When a real source tree exists, re-add a graph step here.)

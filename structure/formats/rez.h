@@ -7,7 +7,7 @@
  * Gruntz assets live in Gruntz.REZ (main) + GRUNTZ.VRZ (video/secondary). The
  * archive is the Monolith "RezMgr" format; its banner string is embedded verbatim:
  *   "RezMgr Version 1 Copyright (C) 1995 MONOLITH INC."
- * (mined from the editor binaries, build/editor-strings/*.ascii.txt; the same
+ * (mined from the editor binaries' *.ascii.txt dumps in build/editor-strings; the same
  * RezMgr code is shared between the game's RezSync/CRezDir loader and the editor.)
  *
  * VERSION-INDEPENDENT: the on-disk archive layout is a stable Monolith format,
@@ -24,14 +24,14 @@
  * STAT (it stat's the name via 0x18c780 and returns whether the entry's attribute
  * dword has the directory bit 0x4000) — NOT an in-memory binary search; the
  * sorted-dir invariant is enforced by CRezDir::Load's recursive walk instead.
- * Exact on-disk byte offsets/widths and header layout are NOT recovered — @todo.
+ * Exact on-disk byte offsets/widths and header layout are NOT recovered — not recovered.
  *
  * CONTAINER OFFSETS — CONFIRMED (was @unconfirmed). Reversed byte-exact from the
  * Gruntz RezMgr code, not from OpenClaw (Gruntz's container differs from CLAW
  * REZ). Pinned by the in-memory node ctors @0x13c540/@0x13c940 (operator-new
  * sizes 0x24 / 0x38) and the directory walk Load @0x13a0f0 / FindEntry @0x13c080.
  * See src/Rez/RezMgr.{h,cpp} for the byte-matched source; the IN-MEMORY tree-node
- * layouts (NOT the on-disk record layout, still @todo) are:
+ * layouts (NOT the on-disk record layout, still unrecovered) are:
  *
  *   CRezItmBase (16 B) — shared node base; ctor @0x13c4e0:
  *     +0x00 vtable (base @0x5ef768)   +0x0c parent pointer
@@ -54,45 +54,42 @@
  *   in tomalla's notes operate on different node classes.
  *
  * On-disk record FIELD SET (Type/Name/Size/ID/offset/date) + the sorted-dir /
- * recursive-tree BEHAVIOUR remain as below; the on-disk byte offsets are @todo.
+ * recursive-tree BEHAVIOUR remain as below; the on-disk byte offsets are unrecovered.
  *
- * See ../managers/rezsync.h for the RezSync / CRezDir loader classes (the in-memory
- * directory tree built from this on-disk format).
+ * See src/Rez/RezMgr.{h,cpp} for the RezSync / CRezDir loader classes (the in-memory
+ * directory tree built from this on-disk format; CRezDir/CRezItm/CRezItmBase have
+ * graduated there).
  */
-
-#undef UNICODE
-#undef _UNICODE
-#include <afxwin.h>
 
 /* FOURCC resource type tag (4 ASCII chars), e.g. the archive's per-entry "Type". */
 typedef char RezFourCC[4];
 
 /*
  * RezDirEntry — one directory entry within a REZ/VRZ archive.
- * @size: unknown @todo (offsets/widths/string encoding not confirmed)
  *
  * The directory is kept SORTED (by Name and/or Type+ID) so the loader can binary-
  * search it; an unsorted directory triggers "CRezDir::Load Failed! (File is not
  * sorted!)".
+ *
+ * The on-disk byte offsets/widths/string encoding are NOT confirmed; only the
+ * field SET {Type, Name, Size, ID} is known. Modeled here as a flat sequential
+ * reference struct (NOT a byte-layout source). `name` is an MFC CString in the
+ * loader, modeled as a 4-byte pointer placeholder so the header parses without
+ * <afxwin.h>. (The payload offset/position within the archive is not surfaced as
+ * an editor label, so it is unmodeled.)
  */
 struct RezDirEntry
 {
-    //@offset: ? @todo
     RezFourCC type;   // "Type" — FOURCC resource-type tag (4 chars)
-    //@offset: ? @todo
-    CString   name;   // "Rez Name" — entry name (on disk: fixed/var-len char buffer)
-    //@offset: ? @todo
+    void     *name;   // "Rez Name" — entry name (MFC CString ptr; layout placeholder)
     int       size;   // "Size" — payload byte length
-    //@offset: ? @todo
     int       id;     // "ID" — numeric resource id ("ID = %i")
-    //@todo: also expected on disk: offset/position of the payload within the
-    //       archive (not surfaced as an editor label, so unmodeled here).
 };
 
 /*
  * Resource keys (the %s-formatted namespaces resolved through the directory):
  *   GRUNTZ_<type>, IMAGEZ_%s, ANIZ_%s, SOUNDZ_%s, VOICES_%s, POWERUPZ_%s, …
- * (see STRINGS_ANALYSIS.md / ../managers/rezsync.h). Companion editor files seen
+ * (see STRINGS_ANALYSIS.md / src/Rez/RezMgr.h). Companion editor files seen
  * alongside .REZ: .PID, .RID, .WWD, .PCX, "FIXUP.WTF".
  */
 

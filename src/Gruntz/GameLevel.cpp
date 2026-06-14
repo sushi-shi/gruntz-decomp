@@ -35,6 +35,8 @@
 
 #include <string.h>  // strcpy
 
+// @address: 0x15d280
+// @size:    0x279
 int CGameLevel::LoadWwd(WwdHeader* hdr)
 {
     Reset();                                  // vtable +0x44

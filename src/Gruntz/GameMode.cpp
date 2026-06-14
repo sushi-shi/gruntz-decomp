@@ -36,6 +36,8 @@
 // scalar members in source-declaration order, seeding four time/budget fields to
 // 0x40. NO embedded sub-object ctors and NO EH frame (plain /O2 - the ctor uses
 // eax=this, edx=0x40, ecx=0 held registers).
+// @address: 0x08c750
+// @size:    0xa9
 CState::CState()
 {
     m_4 = 0;
@@ -71,19 +73,28 @@ CState::CState()
     m_154 = 0;
 }
 
-// CState::~CState()  @0x8c710 (36 B, ret 4): the slot-0 scalar-deleting dtor
-// `??_G`. Restore the vftable, chain the WAP32 base cleanup (@0xfa150, thiscall),
-// then (if the low bit of the hidden flags arg is set) `operator delete(this)`.
-// The dtor body is defined INLINE in the header so MSVC folds it into the synth
-// `??_G` thunk (the target inlines it; see GameMode.h).
+// CState::~CState()  - the slot-0 scalar-deleting dtor `??_G`. Restore the
+// vftable, chain the WAP32 base cleanup (@0xfa150, thiscall), then (if the low
+// bit of the hidden flags arg is set) `operator delete(this)`. The dtor body is
+// defined INLINE in the header so MSVC folds it into the synth `??_G` thunk (the
+// target inlines it; see GameMode.h). clang's AST mangles the inline dtor as the
+// plain `??1`, so pin the deleting-dtor symbol explicitly here.
+//
+// @address: 0x08c710
+// @symbol:  ??_GCState@@UAEPAXI@Z
+// @size:    0x24
 
 // CState::Update()  @0x8c4b0 (6 B, slot 4 / +0x10): the base default = return 1.
+// @address: 0x08c4b0
+// @size:    0x6
 int CState::Update()
 {
     return 1;
 }
 
 // CState::Render()  @0x8c4d0 (6 B, slot 5 / +0x14): the base default = return 1.
+// @address: 0x08c4d0
+// @size:    0x6
 int CState::Render()
 {
     return 1;
@@ -100,24 +111,32 @@ void CState::Vfunc3() {}
 // ===========================================================================
 
 // CPlay::Update()  @0x8c910 (6 B): the PLAY state's ID = 3.
+// @address: 0x08c910
+// @size:    0x6
 int CPlay::Update()
 {
     return 3;
 }
 
 // CMenuState::Update()  @0x8ce10 (6 B): the MENU state's ID = 5.
+// @address: 0x08ce10
+// @size:    0x6
 int CMenuState::Update()
 {
     return 5;
 }
 
 // CCreditsState::Update()  @0x8d590 (6 B): the CREDITS state's ID = 8.
+// @address: 0x08d590
+// @size:    0x6
 int CCreditsState::Update()
 {
     return 8;
 }
 
 // CBootyState::Update()  @0x8d3f0 (6 B): the BOOTY state's ID = 0xa.
+// @address: 0x08d3f0
+// @size:    0x6
 int CBootyState::Update()
 {
     return 0xa;

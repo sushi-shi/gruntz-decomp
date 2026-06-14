@@ -166,15 +166,15 @@ fast-moving scratchpad. Newest at top within each section.
 
 ## How the loop runs (orchestrator + matcher contract)
 - Matchers run **sequentially in the main worktree** (the `build/` tree —
-  delinkable EXE, ghidra DB, toolchain — is gitignored, so git worktrees can't
+  retail EXE copy, ghidra DB, toolchain — is gitignored, so git worktrees can't
   build; and `symbol_names.csv`/`units.toml`/the wine prefix/`build/` are shared).
 - Each matcher = one TU = **its own atomic commit** (adds only its own files) +
   `git push`. After each, the orchestrator refreshes the comprehension DB
   (`build/ghidra-named`) when the matcher pinned new names/types, so the next
   matcher stands on prior work ("shoulders of giants"), then re-runs
-  `scripts/gen_match_queue.py` to refill `docs/match-queue.md`.
+  `scripts/analysis/gen_match_queue.py` to refill `docs/match-queue.md`.
 - Per-function asm diff: `objdiff-cli diff -p build/objdiff -u <unit> <mangled-sym>
-  -o - --format json-pretty`. Roll-up: `scripts/rebuild.py`.
+  -o - --format json-pretty`. Roll-up: `gruntz build`.
 
 ## Subsystem notes
 ### THE GAME-STATE HIERARCHY — CState + the per-frame Update/Render (new unit `gamemode` — 8/8 BYTE-EXACT under reloc-masking, 99.84% fuzzy)

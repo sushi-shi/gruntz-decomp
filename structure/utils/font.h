@@ -6,43 +6,30 @@
  * CGruntzMgr holds the four as statics (font_large/medium/small/tiny; see
  * ../game/cgruntzmgr.h) and builds them in CGruntzMgr::InitializeFonts().
  *
- * LAYOUT + .fnt FILE FORMAT PORTED FROM tomalla (refs/tomalla-gruntz/gruntz/font.h
- * + font.cpp). @approx tomalla 1.0.1.77 — field OFFSETS and the on-disk .fnt
- * layout are version-independent. Function addresses (Font::Font/AllocateMemory/
- * FreeMemory/LoadFont) are 1.0.1.77 and are deferred to the re-anchor (not here).
- *
- * Provenance: not in RTTI; "Font" is a tomalla-invented name for a real binary
- * class with matched fields and a fully reconstructed loader.
+ * Layout + the .fnt on-disk format ported from tomalla (@approx tomalla 1.0.1.77;
+ * offsets version-independent). Not in RTTI; "Font" is a tomalla-invented name for
+ * a real binary class with matched fields and a fully reconstructed loader.
  *
  * .fnt on-disk format (little-endian, read via MFC CArchive):
- *
- *   struct FntFile {           // the whole file
- *     uint32_t lettersCount;   // @0x0
- *     Letter   letters[lettersCount];
- *   };
- *   struct Letter {
- *     uint32_t width;          // @0x0
- *     uint32_t height;         // @0x4
- *     uint8_t  pixelData[width*height];  // @0x8  (1 byte/pixel, palette index)
- *   };
+ *   FntFile { uint32 lettersCount; Letter letters[lettersCount]; }
+ *   Letter  { uint32 width; uint32 height; uint8 pixelData[width*height]; }
  *
  * @bug (faithfully noted by tomalla): the loader does no bounds-checking on the
  * archive reads (a corrupt/short file will crash); the leading `>>` may throw.
+ *
+ * Size 0x14.  (CString in LoadFont's real signature is an MFC type, modeled here
+ * as an opaque pointer so the header parses without <afxwin.h>; it carries no
+ * layout weight.)
  */
-
-#undef UNICODE
-#undef _UNICODE
-#include <afxwin.h>   /* CString, CArchive, CFile */
 
 class Font
 {
 public:
-    //@size: 0x14   @approx tomalla 1.0.1.77 (offsets version-independent)
     Font();
     ~Font();
 
     void FreeMemory();
-    bool LoadFont(CString szFileName);
+    bool LoadFont(void *szFileName /* MFC CString by value in the binary */);
 
 private:
     bool AllocateMemory(int lettersCount);
@@ -54,17 +41,11 @@ private:
         int height;
     };
 
-    //@offset: 0
-    bool m_isMemoryAllocated;
-    //@offset: 4
-    int m_lettersCount;
-    //@offset: 8
-    char** m_pPixelData;     // [m_lettersCount] glyph pixel rows (1 byte/pixel)
-    //@offset: c
-    Size* m_pLettersSize;    // [m_lettersCount] glyph {width,height}
-    //@offset: 10
-    int m_fontHeight;        // max glyph height across all letters
-    // (total 0x14)
-};
+    bool   m_isMemoryAllocated; // +0x00  (1 byte; 3 bytes pad to the next dword)
+    int    m_lettersCount;      // +0x04
+    char **m_pPixelData;        // +0x08  [m_lettersCount] glyph pixel rows
+    Size  *m_pLettersSize;      // +0x0c  [m_lettersCount] glyph {width,height}
+    int    m_fontHeight;        // +0x10  max glyph height across all letters
+};                              // 0x14 bytes
 
 #endif /* UTILS_FONT_H */

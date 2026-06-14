@@ -157,8 +157,12 @@ static CGruntzApp *g_pApp;        // 0x651600
 static HINSTANCE   g_hInstance;   // 0x651618
 
 // ---------------------------------------------------------------------------
-// WinMain  @ RVA 0x11c860 (807 B). extern "C" int WINAPI WinMain(...) -> the
-// linker symbol is `_WinMain@16` (NOT C++ mangled).
+// WinMain - extern "C" int WINAPI WinMain(...) -> the linker symbol is
+// `_WinMain@16` (NOT C++ mangled).
+//
+// @address: 0x11c860
+// @symbol:  _WinMain@16
+// @size:    0x327
 // ---------------------------------------------------------------------------
 extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
                               LPSTR lpCmdLine, int nShowCmd)

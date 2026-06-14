@@ -37,6 +37,8 @@ extern "C" int   _stricmp(const char *a, const char *b); // 0x11fdf0
 // branch re-tests `ext != 0` (the target's `test esi; je default` per case) and
 // forwards (name,a2,a3); a matched ext returns its loader's result directly.
 // ---------------------------------------------------------------------------
+// @address: 0x175a90
+// @size:    0xee
 int CImage::LoadFromRez(char *name, void *a2, void *a3)
 {
     char *ext = strrchr(name, '.');
@@ -60,6 +62,8 @@ int CImage::LoadFromRez(char *name, void *a2, void *a3)
 // Read the file; if the read count != length, free + return 0. Else decode and
 // return the decoder's result. The CFileIO dtor + buffer free run on every exit.
 // ---------------------------------------------------------------------------
+// @address: 0x144110
+// @size:    0x156
 void *CFileImage::LoadBmp(char *name, char *path)
 {
     CFileIO file;
@@ -89,6 +93,8 @@ void *CFileImage::LoadBmp(char *name, char *path)
 // CFileImage::LoadPcx  @ 0x145110 (342 B, thiscall ret 8).
 // Byte-identical to LoadBmp except for the per-format decode helper (DecodePcx).
 // ---------------------------------------------------------------------------
+// @address: 0x145110
+// @size:    0x156
 void *CFileImage::LoadPcx(char *name, char *path)
 {
     CFileIO file;
@@ -120,6 +126,8 @@ void *CFileImage::LoadPcx(char *name, char *path)
 // buffer for whatever GetLength() returns and only null-checks the allocation;
 // (2) the decoder takes a fourth pass-through arg (a3). ret 0xc (this+name+path+a3).
 // ---------------------------------------------------------------------------
+// @address: 0x145cd0
+// @size:    0x130
 void *CFileImage::LoadPid(char *name, char *path, void *a3)
 {
     CFileIO file;

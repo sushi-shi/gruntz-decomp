@@ -5,15 +5,16 @@
  * HUD / status-bar widget hierarchy — the CSBI_* ("status-bar item") family plus
  * the in-game HUD elements (icons, text, level timer).
  *
- * Provenance: ALL names from RTTI (mangled names kept). Name-only / @todo.
- * Corroborating: GAME_STATUSBAR_TABZ_* keys; the profiler line
+ * Provenance: ALL names from RTTI (mangled names kept). Name-only stubs (no layout
+ * recovered). Corroborating: GAME_STATUSBAR_TABZ_* keys; the profiler line
  * "Input=…, …, StatusBar=…, Flip=…" (STRINGS_ANALYSIS.md §5, §10).
  *
- * CGruntPowerupSprite is grouped under sprites.h (per-grunt overlay), not here.
+ * NOTE: CStatusBarItem (the base of the SBI_* family) has GRADUATED into
+ * src/Gruntz/StatusBarItem.h (matched layout, size 0x2c); it is intentionally NOT
+ * re-declared here. CGruntPowerupSprite is grouped under sprites.h.
  */
 
-/* --- status-bar item base & visual primitives --- */
-class CStatusBarItem   { /* .?AVCStatusBarItem@@ */ };
+/* --- status-bar item visual primitives (CStatusBarItem subclasses) --- */
 class CSBI_Image       { /* .?AVCSBI_Image@@ */ };
 class CSBI_ImageSet    { /* .?AVCSBI_ImageSet@@ */ };
 class CSBI_ImageSetAni { /* .?AVCSBI_ImageSetAni@@ */ };

@@ -66,6 +66,8 @@ static const double s_doubleZero = 0.0;
 // (m_tokType == expectType). On mismatch it reports a formatting error (with the
 // current line m_lineNo) and returns false; else true.
 // ---------------------------------------------------------------------------
+// @address: 0x170710
+// @size:    0x3b
 bool CButeMgr::ScanToken(int expectType)
 {
     if (!Parse())
@@ -84,6 +86,8 @@ bool CButeMgr::ScanToken(int expectType)
 // hit return *(int*)rec->pValue, on type mismatch report + fall through, on any
 // miss return def.
 // ---------------------------------------------------------------------------
+// @address: 0x171aa0
+// @size:    0x50
 int CButeMgr::GetIntDef(char *tag, char *key, int def)
 {
     void *grp = Tree()->Find(tag);
@@ -103,6 +107,8 @@ int CButeMgr::GetIntDef(char *tag, char *key, int def)
 // type-0 getter, no default: returns 0x80000000 on any miss (and reports the
 // specific failure - type mismatch / symbol-not-found / invalid-tag).
 // ---------------------------------------------------------------------------
+// @address: 0x171af0
+// @size:    0x86
 int CButeMgr::GetInt(char *tag, char *key)
 {
     void *grp = Tree()->Find(tag);
@@ -126,6 +132,8 @@ int CButeMgr::GetInt(char *tag, char *key)
 // type-1 (dword) getter with default. The type check is `if (--type == 0)` i.e.
 // type == 1 (the disasm `mov ecx,[eax]; dec ecx; je`).
 // ---------------------------------------------------------------------------
+// @address: 0x1721e0
+// @size:    0x5a
 DWORD CButeMgr::GetDwordDef(char *tag, char *key, DWORD def)
 {
     void *grp = Tree()->Find(tag);
@@ -146,6 +154,8 @@ DWORD CButeMgr::GetDwordDef(char *tag, char *key, DWORD def)
 // CButeMgr::GetDword  @ 0x172240 (125 B, ret 8).
 // type-1 getter, no default: returns 0 on any miss.
 // ---------------------------------------------------------------------------
+// @address: 0x172240
+// @size:    0x7d
 DWORD CButeMgr::GetDword(char *tag, char *key)
 {
     void *grp = Tree()->Find(tag);
@@ -172,6 +182,8 @@ DWORD CButeMgr::GetDword(char *tag, char *key)
 // when type==0, `fld` the float when type==3, else report + return 0.0f. Returns
 // in st(0) (an x87 float return).
 // ---------------------------------------------------------------------------
+// @address: 0x172730
+// @size:    0x9a
 float CButeMgr::GetFloat(char *tag, char *key)
 {
     void *grp = Tree()->Find(tag);
@@ -200,6 +212,8 @@ float CButeMgr::GetFloat(char *tag, char *key)
 // `fld qword` when type==2, else report + return 0.0. (The disasm tests with
 // `sub ecx,0; je` then `sub ecx,2; je` -> the type==0 and type==2 branches.)
 // ---------------------------------------------------------------------------
+// @address: 0x172c40
+// @size:    0x9b
 double CButeMgr::GetDouble(char *tag, char *key)
 {
     void *grp = Tree()->Find(tag);
@@ -227,6 +241,8 @@ double CButeMgr::GetDouble(char *tag, char *key)
 // type-4 (string) getter with default: returns rec->pValue (the char*) on a
 // type-4 hit, reports a type mismatch otherwise, returns def on any miss.
 // ---------------------------------------------------------------------------
+// @address: 0x173180
+// @size:    0x4e
 char *CButeMgr::GetStringDef(char *tag, char *key, char *def)
 {
     void *grp = Tree()->Find(tag);
@@ -248,6 +264,8 @@ char *CButeMgr::GetStringDef(char *tag, char *key, char *def)
 // function-local static CString (MFC magic-static: one-shot guarded ctor +
 // atexit-registered dtor) returned by address on every error path.
 // ---------------------------------------------------------------------------
+// @address: 0x1731d0
+// @size:    0xb6
 char *CButeMgr::GetString(char *tag, char *key)
 {
     static AfxString s_empty("");
@@ -277,6 +295,8 @@ char *CButeMgr::GetString(char *tag, char *key)
 // inserts it under the tag name; finally ScanToken(3) consumes the value. The new
 // node lives under a C++ EH frame (freed on unwind if the ctor throws) -> /GX.
 // ---------------------------------------------------------------------------
+// @address: 0x1711b0
+// @size:    0xf5
 bool CButeMgr::ParseTagLine()
 {
     if (!ScanToken(4))
@@ -308,6 +328,8 @@ bool CButeMgr::ParseTagLine()
 // buffer, advance the lexer (ButeLex_NextChar), and recurse for nested groups.
 // Reports "Bad symbol encountered" (with m_lineNo) on the error class.
 // ---------------------------------------------------------------------------
+// @address: 0x1704c0
+// @size:    0x1e3
 bool CButeMgr::Parse()
 {
     int kind = 0x11;

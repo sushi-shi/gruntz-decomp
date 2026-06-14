@@ -28,10 +28,13 @@
 #include "FileStream.h"
 
 // ---------------------------------------------------------------------------
-// CFileIO::CFileIO()  @ 0x1befd7 (64 B).
+// CFileIO::CFileIO()
 // Two-phase MFC construction: base CObject vtable, the CString member's ctor,
 // m_handle = -1 (INVALID_HANDLE_VALUE), then the final CFileIO vtable; m_open
 // stays 0. The CString ctor under EH installs the unwind frame.
+//
+// @address: 0x1befd7
+// @size:    0x40
 // ---------------------------------------------------------------------------
 CFileIO::CFileIO()
 {
@@ -40,9 +43,20 @@ CFileIO::CFileIO()
 }
 
 // ---------------------------------------------------------------------------
-// CFileIO::~CFileIO()  @ 0x1bf121 (78 B).
+// CFileIO::`scalar deleting destructor' (compiler-generated thunk; no body).
+//
+// @address: 0x1bf017
+// @size:    0x1c
+// @symbol:  ??_GCFileIO@@UAEPAXI@Z
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// CFileIO::~CFileIO()
 // Closes the handle if we own one (m_handle != -1 && m_open), then the CString
 // member dtor runs and the vtable is restored to base on unwind.
+//
+// @address: 0x1bf121
+// @size:    0x4e
 // ---------------------------------------------------------------------------
 CFileIO::~CFileIO()
 {
@@ -51,10 +65,13 @@ CFileIO::~CFileIO()
 }
 
 // ---------------------------------------------------------------------------
-// CFileIO::CFileIO(HANDLE)  @ 0x1bf033 (68 B).
+// CFileIO::CFileIO(HANDLE)
 // Adopts an existing OS handle: m_open = 0 (we did NOT open it), m_handle = h.
 // Same two-phase vtable + CString-member construction + EH frame as the default
 // ctor. Used by the handle-duplicating clone path (engine fn @0x1bf16f).
+//
+// @address: 0x1bf033
+// @size:    0x44
 // ---------------------------------------------------------------------------
 CFileIO::CFileIO(HANDLE hFile)
 {
@@ -63,9 +80,12 @@ CFileIO::CFileIO(HANDLE hFile)
 }
 
 // ---------------------------------------------------------------------------
-// CFileIO::Read  @ 0x1bf328 (58 B, ret 8).
+// CFileIO::Read
 // ReadFile(m_handle, buf, n, &n, NULL); throws on failure; returns count read.
 // nCount==0 short-circuits to 0 before touching the handle.
+//
+// @address: 0x1bf328
+// @size:    0x3a
 // ---------------------------------------------------------------------------
 unsigned int CFileIO::Read(void *lpBuf, unsigned int nCount)
 {
@@ -81,10 +101,13 @@ unsigned int CFileIO::Read(void *lpBuf, unsigned int nCount)
 }
 
 // ---------------------------------------------------------------------------
-// CFileIO::Write  @ 0x1bf362 (75 B, ret 8).
+// CFileIO::Write
 // WriteFile(m_handle, buf, n, &n, NULL); throws OS error on failure, and a
 // generic "disk full"/short-write error if fewer than n bytes were written.
 // nCount==0 short-circuits (no-op).
+//
+// @address: 0x1bf362
+// @size:    0x4b
 // ---------------------------------------------------------------------------
 void CFileIO::Write(const void *lpBuf, unsigned int nCount)
 {
@@ -101,8 +124,11 @@ void CFileIO::Write(const void *lpBuf, unsigned int nCount)
 }
 
 // ---------------------------------------------------------------------------
-// CFileIO::Seek  @ 0x1bf3ad (47 B, ret 8).
+// CFileIO::Seek
 // SetFilePointer(m_handle, off, NULL, from); throws on -1; returns new pos.
+//
+// @address: 0x1bf3ad
+// @size:    0x2f
 // ---------------------------------------------------------------------------
 LONG CFileIO::Seek(LONG lOff, int nFrom)
 {
@@ -113,9 +139,12 @@ LONG CFileIO::Seek(LONG lOff, int nFrom)
 }
 
 // ---------------------------------------------------------------------------
-// CFileIO::GetPosition  @ 0x1bf3dc (41 B, ret).
+// CFileIO::GetPosition
 // SetFilePointer(m_handle, 0, NULL, FILE_CURRENT); throws on -1; returns the
 // current file position.
+//
+// @address: 0x1bf3dc
+// @size:    0x29
 // ---------------------------------------------------------------------------
 LONG CFileIO::GetPosition()
 {
@@ -126,9 +155,12 @@ LONG CFileIO::GetPosition()
 }
 
 // ---------------------------------------------------------------------------
-// CFileIO::Close  @ 0x1bf426 (65 B, ret).
+// CFileIO::Close
 // CloseHandle(m_handle) if open; reset m_handle = -1, m_open = 0, empty m_name;
 // then throw the OS error if CloseHandle failed.
+//
+// @address: 0x1bf426
+// @size:    0x41
 // ---------------------------------------------------------------------------
 void CFileIO::Close()
 {
@@ -144,12 +176,6 @@ void CFileIO::Close()
         AfxThrowOsError((LONG)GetLastError(), 0);
 }
 
-// ---------------------------------------------------------------------------
-// CFileIO::Open  @ 0x1bf200 (296 B, ret c).
-// CreateFileA() with MFC nOpenFlags -> access/share/disposition translation;
-// stores the HANDLE; on failure fills the CFileException* (pError) if non-null
-// and returns FALSE. Returns nonzero on success.
-// ---------------------------------------------------------------------------
 // The CFileException the failure path fills in: m_cause@+0x8, m_lOsError@+0xc,
 // m_strFileName (CString)@+0x10. The os-error -> exception-cause mapper is the
 // NAFXCW static helper at 0x1c1a71 (external no-body callee, reloc-masked).
@@ -168,6 +194,15 @@ struct SecurityAttributes {
     BOOL   bInheritHandle;      // +0x08
 };
 
+// ---------------------------------------------------------------------------
+// CFileIO::Open
+// CreateFileA() with MFC nOpenFlags -> access/share/disposition translation;
+// stores the HANDLE; on failure fills the CFileException* (pError) if non-null
+// and returns FALSE. Returns nonzero on success.
+//
+// @address: 0x1bf200
+// @size:    0x128
+// ---------------------------------------------------------------------------
 BOOL CFileIO::Open(const char *lpszFileName, unsigned int nOpenFlags, void *pError)
 {
     char szPath[0x104];  // MAX_PATH (260) - frame is 0x110 with the SA local

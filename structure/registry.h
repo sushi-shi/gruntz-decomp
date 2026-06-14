@@ -7,24 +7,24 @@
  * Gruntz reads/writes its options at HKLM\Software\Monolith Productions\Gruntz\1.0
  * (RegQueryValueExA reads; tomalla's Utils::RegistryHelper shows the key is opened
  * with RegCreateKeyExA — i.e. CREATE-or-open, not read-only — and values are also
- * written back via SetValueDword. See STRINGS_ANALYSIS.md §2 and
- * ../structure/utils/registry_helper.h).
+ * written back via SetValueDword. See STRINGS_ANALYSIS.md §2 and the graduated
+ * src/Utils/RegistryHelper.h).
  * Each value-name below maps 1:1 to a CGruntzMgr / options field. The raw
  * registry value-name string is kept verbatim in a comment; the C++ field name
  * is a normalized version of it.
  *
  * Where the per-CGruntzMgr field type is actually known (tomalla's reconstruction
- * stores most of these as `int` flags), it is used; otherwise the type is a guess
- * marked @todo. We do NOT know the on-disk value types for certain — most read
- * via GetValueDword (DWORD) per Utils::RegistryHelper.
+ * stores most of these as `int` flags), it is used; otherwise the type is a guess.
+ * We do NOT know the on-disk value types for certain — most read via
+ * GetValueDword (DWORD) per Utils::RegistryHelper.
  *
- * This struct is a SCAFFOLD grouping of the value-names; it is not asserted to
- * match any single object's layout in the binary.
+ * This struct is a SCAFFOLD grouping of the value-names; it is NOT asserted to
+ * match any single object's layout in the binary (no offsets are claimed). The
+ * string fields are MFC CString in the binary, modeled here as a 4-byte pointer
+ * placeholder so the header parses without <afxwin.h>.
  */
 
-#undef UNICODE
-#undef _UNICODE
-#include <afxwin.h>  /* CString, DWORD */
+typedef void *CfgCString;
 
 struct GruntzRegistryConfig
 {
@@ -62,12 +62,12 @@ struct GruntzRegistryConfig
     int  easyMode;              // "Easy Mode"     (default 0)
     int  checkpointPrompts;     // "Checkpoint Prompts"   (default 1)
     int  enableCheatzfile;      // "Enable Cheatzfile"   (gates CHEATZ.TXT)
-    CString playerName;         // "Player Name"
-    CString gameName;           // "Game Name"
+    CfgCString playerName;         // "Player Name"
+    CfgCString gameName;           // "Game Name"
     int  defaultMaxGruntz;      // "DefaultMaxGruntz"
 
     /* --- Install / session bookkeeping --- */
-    CString cdRomDrive;         // "CdRom Drive"   (cached CD drive letter, string)
+    CfgCString cdRomDrive;         // "CdRom Drive"   (cached CD drive letter, string)
     int  numRuns;               // "Num Runs"      (times the game has been launched)
     int  numMovies;             // "Num Movies"    (intro/movie playback counter)
 
@@ -75,8 +75,8 @@ struct GruntzRegistryConfig
      * --- Per-save / last-used (INDEXED slots) ---
      * These value-names contain a %d/%i — they are read/written per slot index,
      * so they are not single scalar fields. Represented here only as a record of
-     * the value-name patterns; the real storage is per-slot arrays. @todo array
-     * sizing / slot count unknown.
+     * the value-name patterns; the real storage is per-slot arrays (array sizing /
+     * slot count unknown).
      */
     // "LastMap"
     // "LastMultiMap"

@@ -23,6 +23,9 @@ static int g_sharedFlag;                 // @0x648ce0
 // CNetMgr::OnMultiOptions  @ 0x0badd0  (__thiscall, ret).
 // Reentrancy-guarded fire of the MULTI_OPTIONZ command. Clears m_584, dispatches
 // (return value ignored), then clears the shared flag.
+//
+// @address: 0x0badd0
+// @size:    0x43
 // ---------------------------------------------------------------------------
 void CNetMgr::OnMultiOptions()
 {
@@ -40,6 +43,9 @@ void CNetMgr::OnMultiOptions()
 // CNetMgr::OnMultiPause  @ 0x0bad40  (__thiscall, ret).
 // Reentrancy-guarded fire of MULTI_PAUSE. When the dispatch returns 0x4cc,
 // forwards WM_COMMAND(0x80d7, m_1c) to the engine window.
+//
+// @address: 0x0bad40
+// @size:    0x6c
 // ---------------------------------------------------------------------------
 void CNetMgr::OnMultiPause()
 {
@@ -63,6 +69,9 @@ void CNetMgr::OnMultiPause()
 // Per-instance reentrancy-guarded fire of MULTI_OUTOFSYNC. Switches on the
 // dispatch result: 0x4cc -> the same WM_COMMAND(0x80d7, m_1c) as Pause;
 // 0x4cd -> nothing; otherwise -> WM_COMMAND(0x8023, 0).
+//
+// @address: 0x0bae40
+// @size:    0x84
 // ---------------------------------------------------------------------------
 void CNetMgr::OnOutOfSync()
 {
@@ -97,6 +106,9 @@ void CNetMgr::OnOutOfSync()
 // (each a stack CString temp), writes m_5a4 under "_CmdDelay" and m_5a8 under
 // "_Resend"; the "_DynCmdDelay" temp is built but its write is elided here. The
 // three temporaries' dtors run under the C++ EH frame (=> /GX).
+//
+// @address: 0x0b85a0
+// @size:    0xd2
 // ---------------------------------------------------------------------------
 void CNetMgr::ApplyCmdDelayDefaults()
 {

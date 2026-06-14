@@ -62,10 +62,13 @@ static Utils::RegistryHelper g_registryHelper;
 static HINSTANCE             g_hInstance;
 
 // ---------------------------------------------------------------------------
-// SaveOption  @ RVA 0x00b110 (50 B).
+// SaveOption
 // Reads checkbox `controlId`'s state and writes it as a REG_DWORD value.
 // __cdecl free function (ends in `ret`). pRegistryHelper->SetValueDword is
 // __thiscall (this in ECX).
+//
+// @address: 0xb110
+// @size:    0x32
 // ---------------------------------------------------------------------------
 void SaveOption(HWND hWnd, Utils::RegistryHelper *pRegistryHelper,
                 char *szValueName, DWORD controlId)
@@ -77,10 +80,13 @@ void SaveOption(HWND hWnd, Utils::RegistryHelper *pRegistryHelper,
 }
 
 // ---------------------------------------------------------------------------
-// SetDefaults  @ RVA 0x00b160 (55 B).
+// SetDefaults
 // Unchecks all five "Disable ..." checkboxes. MSVC5 caches the CheckDlgButton
 // IAT slot in EDI (one `mov edi,ds:[__imp]; call edi` reused 4x for the four
 // `BST_UNCHECKED` calls).
+//
+// @address: 0xb160
+// @size:    0x37
 // ---------------------------------------------------------------------------
 void SetDefaults(HWND hWnd)
 {
@@ -91,10 +97,13 @@ void SetDefaults(HWND hWnd)
 }
 
 // ---------------------------------------------------------------------------
-// LoadOptions  @ RVA 0x00b1b0 (144 B).
+// LoadOptions
 // Reads the five flags from the registry (default 0) and reflects them into the
 // checkboxes. GetValueDword is __thiscall; CheckDlgButton's IAT slot is cached
 // in EBX. Note the source loads pRegistryHelper into ESI and hWnd into EDI.
+//
+// @address: 0xb1b0
+// @size:    0x90
 // ---------------------------------------------------------------------------
 void LoadOptions(HWND hWnd, Utils::RegistryHelper *pRegistryHelper)
 {
@@ -113,10 +122,13 @@ void LoadOptions(HWND hWnd, Utils::RegistryHelper *pRegistryHelper)
 }
 
 // ---------------------------------------------------------------------------
-// SaveOptions  @ RVA 0x00b270 (117 B).
+// SaveOptions
 // Persists all five checkboxes via SaveOption. SaveOption is reached through an
 // incremental-link thunk (call rel32 -> jmp -> body); the IAT-less 5x call
 // pattern with `add esp,0x10` after each is the __cdecl 4-arg call cleanup.
+//
+// @address: 0xb270
+// @size:    0x75
 // ---------------------------------------------------------------------------
 void SaveOptions(HWND hWnd, Utils::RegistryHelper *pRegistryHelper)
 {
@@ -130,11 +142,14 @@ void SaveOptions(HWND hWnd, Utils::RegistryHelper *pRegistryHelper)
 }
 
 // ---------------------------------------------------------------------------
-// AdvancedOptionsDialogProc  @ RVA 0x00afb0 (264 B).
+// AdvancedOptionsDialogProc
 // INT_PTR CALLBACK (__stdcall, `ret 0x10`). On WM_INITDIALOG it (re)opens the
 // HKLM config key, loads the options, and activates the dialog window (setting
 // its icon and restoring it if iconic). WM_COMMAND handles OK (save+close),
 // Cancel (close), and the "Defaults" button.
+//
+// @address: 0xafb0
+// @size:    0x108
 // ---------------------------------------------------------------------------
 INT_PTR __stdcall AdvancedOptionsDialogProc(HWND hWnd, UINT message,
                                             WPARAM wParam, LPARAM lParam)
