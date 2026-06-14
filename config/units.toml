@@ -153,6 +153,22 @@ source = "src/Io/FileStream.cpp"
 status = "matched"
 cflags = ["/nologo", "/c", "/O1", "/MT", "/GX"]
 
+# --- RezMgr archive container (src/Rez) -------------------------------------
+# The Monolith "RezMgr Version 1" archive directory-tree classes: CRezItm (leaf
+# resource/file node, 0x24 B) + CRezDir (subdirectory node, 0x38 B) ctors pin the
+# container layouts (previously @unconfirmed in structure/formats/rez.h, now
+# CONFIRMED). 3 BYTE-EXACT: CRezItm ctor @0x13c540, FindEntry @0x13c080 (a stat,
+# NOT a binary search), CRezDirNode::Load @0x13a0f0 (recursive walk + "File is
+# not sorted!" assert). CRezDir ctor @0x13c940 PLATEAUS at 78% on an MSVC5
+# constant-scheduling residue (all 14 stores correct; see RezMgr.cpp). OpenSub
+# @0x13b0c0 (568 B, a 3rd distinct node layout + heavy EH/CString/virtual
+# entropy) DEFERRED. /GX kept for the future OpenSub EH frame; /O2 engine code.
+[[unit]]
+unit = "rezmgr"
+source = "src/Rez/RezMgr.cpp"
+status = "wip"
+cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+
 # --- Registry/config wrapper (src/Utils) ------------------------------------
 [[unit]]
 unit = "registryhelper"

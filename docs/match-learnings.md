@@ -17,6 +17,73 @@ fast-moving scratchpad. Newest at top within each section.
   -o - --format json-pretty`. Roll-up: `scripts/rebuild.py`.
 
 ## Subsystem notes
+### RezMgr archive container (unit `rezmgr` — 3 byte-exact + 1 plateau; OpenSub deferred)
+- New TU `src/Rez/RezMgr.cpp` (+ `.h`). The Monolith "RezMgr Version 1" in-memory
+  directory-tree node classes. CONFIRMED the long-@unconfirmed container offsets
+  (updated `structure/formats/rez.h`). Built `/O2 /MT /GX` (engine code, not MFC;
+  /GX reserved for the deferred OpenSub EH frame — adding /GX did not affect the
+  4 fns here, which carry no EH).
+- **THREE "CRezDir"-labeled functions are actually THREE DIFFERENT classes** — the
+  load-bearing discovery. tomalla's notes call Load/OpenSub/FindEntry/ctor all
+  `CRezDir`, but the field OFFSETS conflict, proving distinct layouts:
+  - the **0x38 CRezDir ctor** (@0x13c940) uses +0x10/+0x1c as an embedded child
+    collection's two vtables (0x5ef7c8), +0x14/+0x18 head/tail;
+  - **Load's node** (@0x13a0f0) uses +0x10 as a payload SIZE, +0x18 as the archive-
+    source ptr, +0x48 as the loaded buffer / already-loaded gate, +0x38 as ITS
+    child collection;
+  - **OpenSub's node** (@0x13b0c0) uses +0x10 as a list-append target AND +0x1c as
+    a child COUNT (`[ebx+0x1c]++`) — directly conflicting with the ctor's vtable
+    store at +0x1c. ⇒ model each fn on its own faithful struct; names are
+    placeholders, only offsets+bytes are load-bearing. Did NOT force them onto one
+    class (would mis-place fields and break the green ctors).
+- **CONFIRMED layouts** (the headline deliverable):
+  - `CRezItmBase` (16 B, base ctor @0x13c4e0): vtbl@+0 (base 0x5ef768), parent@+0xc.
+  - `CRezItm : CRezItmBase` (**0x24 = 36 B**, ctor @0x13c540): vtbl@+0 (derived
+    0x5ef788), +0x10=0, +0x14=0, +0x20=-1 (id/handle unset). **BYTE-EXACT 99.23%.**
+  - `CRezDir : CRezItmBase` (**0x38 = 56 B**, ctor @0x13c940): vtbl@+0 (0x5ef7a8),
+    embedded child-collection two-vtbl @+0x10/+0x1c (0x5ef7c8) + head@+0x14/tail@
+    +0x18 = 0, +0x20/+0x24/+0x28/+0x34=0, +0x2c=RezMgr back-ptr (ctor arg2), +0x30=1.
+- **CRezDir ctor PLATEAU (78.45%)**: all 14 member stores hit the correct offsets
+  with the correct values, but MSVC5 schedules the +0x10/+0x1c vtbl stores and the
+  +0x14/+0x18 zero stores in a different (still-correct) order than the target and
+  materializes the vtbl constant before the zero (target: `xor eax,eax` then `mov
+  ecx,vtbl`; mine: the reverse → vtbl lands in eax, zero/arg2 reg-alloc cascades).
+  NO source lever flips it: tried 6 store orderings, a shared `void* v` local, and
+  an **embedded RezColl sub-object** (the sub-object emitted an OUT-OF-LINE ctor
+  `call` + its own EH frame → 15%, far worse — so the engine inlines the collection
+  init, do NOT model it as a member with a ctor). Entropy-class; left per doctrine.
+  objdiff's edit-distance penalizes the mid-function reordering heavily, hence 78%
+  not high-90s — but every store is correct + the vtbl operands are reloc-masked.
+- **`FindEntry` (@0x13c080) is a filesystem STAT, NOT a binary search** (tomalla's
+  v0.77 label is wrong; bytes are ground truth). It builds a 0x24-byte WIN32-find
+  record on the stack via `0x18c780` (FindFirstFileA/GetDriveTypeA/file-times),
+  returns 0 on failure, else `(*(int*)(rec+6) & 0x4000)==0x4000` — whether the
+  entry's attribute dword has the **directory bit 0x4000**. `this` is never read.
+  **BYTE-EXACT 99.74%** (only the stat-helper call is reloc-masked).
+- **`Load` (@0x13a0f0) BYTE-EXACT 99.57%**: `if (m_buf/*+0x48*/) return 1;`
+  validate `m_src->m_8 != 0 && (unsigned)m_src->m_1c <= 1` else push the assert
+  string + `RezAssertFail` + return 0; if `m_size/*+0x10*/ > 0` alloc the buffer
+  and **virtually read via a 3rd-slot vtable call** `m_src->m_stream->[vtbl+8]
+  (off, 0, size, buf)`; if childFlag, iterate the +0x38 child collection
+  (`First()`/`Next()`, both **__thiscall** engine helpers 0x184ae0/0x1848b0) and
+  recurse `Load(1)` into each `node->m_14` (a sub-dir node ptr). Modeling the two
+  iterators as **__thiscall member fns** (collection/node in ecx) reproduced the
+  `lea ecx,[esi+0x38]; call` / `mov ecx,esi; call` shapes; declaring them
+  `extern "C"` (cdecl) instead emitted `push;call;add esp,4` (wrong). The 3rd-slot
+  read = a polymorphic stream class with the read at vtable index 2 (`virtual v0;
+  virtual v1; virtual ReadAt(...)` → `mov edx,[ecx]; call [edx+8]`).
+- **OpenSub (@0x13b0c0, 568 B) DEFERRED**: a 3rd distinct node layout (count@+0x1c,
+  list-append@+0x10, gate@+0x40, name-buf@+0x64, max-dims@+0x54..+0x60), plus a C++
+  EH frame, inline CString strlen+strcpy of the lookup name, the embedded list-
+  append helper (0x1851e0, __thiscall on dir+0x10), two-slot virtual dispatch on
+  the allocated child (`new CRezDir(0x38)` dir-branch / `new CRezItm(0x24)` file-
+  branch — both call the ctors above), a 0xA8-byte item-header parse feeding the
+  running max-dims, and two large external tail calls (0x13b300 recursive FS walk,
+  0x13a580 item-record). >512 B of high entropy; per the prompt's "don't sacrifice
+  a green fn", left for a dedicated worker — the container layouts it would confirm
+  are already pinned by the two ctors. (Its dir/file branches DO confirm the new
+  sizes 0x38/0x24 and that it calls ctor #2 / ctor #1 — consistent with the above.)
+
 ### CFileIO — engine KERNEL32 file-stream class (unit `filestream`; 9/10 byte-exact)
 - New TU `src/Io/FileStream.cpp` (+ `FileStream.h`). This is the MFC **CFile**
   work-alike that gates ALL engine file I/O (RezMgr, WwdFile, save/load). The

@@ -134,3 +134,19 @@ rva,name,unit
 0x13dfe0,?ActiveWait@WinAPI@Utils@@YAXI@Z,winapi
 0x01fd50,?IsGruntzCDInAnyDrive@WinAPI@Utils@@YAHXZ,winapi
 0x01ffe0,?GetGruntzDriveLetter@WinAPI@Utils@@YADXZ,winapi
+# --- RezMgr archive container: CRezItm leaf / CRezDir subdir nodes ----------
+# The Monolith "RezMgr Version 1" directory-tree classes. The ctors pin the
+# container layouts (CRezItm 0x24 B, CRezDir 0x38 B); both call the shared base
+# ctor CRezItmBase @0x13c4e0 (base vtbl @0x5ef768 + parent @+0xc) then store the
+# derived vtbl (CRezItm @0x5ef788, CRezDir @0x5ef7a8) - two-phase, reloc-masked.
+# FindEntry stats a name into a 0x24 find-record and returns whether it's a dir
+# (attr bit 0x4000). /GX for the EH frame in OpenSub. See src/Rez/RezMgr.cpp.
+0x13c540,??0CRezItm@@QAE@PAX@Z,rezmgr
+0x13c940,??0CRezDir@@QAE@PAX0@Z,rezmgr
+0x13c080,?FindEntry@CRezDir@@QAEHPAD@Z,rezmgr
+# Load: recursive dir parse on the walked dir node (its layout differs from the
+# 0x38 CRezDir built by the allocator - +0x10 size / +0x18 source ptr / +0x48
+# buffer-gate). Pushes the "File is not sorted!" assert on a bad source; reads
+# the payload via the source stream's slot-2 virtual; recurses Load(1) into each
+# child sub-dir. See src/Rez/RezMgr.cpp.
+0x13a0f0,?Load@CRezDirNode@@QAEHH@Z,rezmgr
