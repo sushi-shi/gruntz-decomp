@@ -10,7 +10,7 @@
     };
 
     vostok-delinker-src = {
-      url = "github:srp-survarium/vostok-delinker/5118e2a36d9ab3797094259db8311cae11e0770d";
+      url = "github:srp-survarium/vostok-delinker/8be29fb601874880de51bf221b3b3159772c26af";
       flake = false;
     };
   };
