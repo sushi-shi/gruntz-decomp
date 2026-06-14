@@ -12,12 +12,12 @@ Usage (inside nix develop .#build):
     python3 scripts/dump_target.py CGameApp::CloseResources
     python3 scripts/dump_target.py --no-disasm 0x13d8c0      # bytes+relocs only
 """
-import sys, struct, csv, subprocess, shutil
+import os, sys, struct, csv, subprocess, shutil
 from pathlib import Path
 
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
             Path(__file__).resolve().parent)
-EXE = REPO / "binaries/retail_en/GRUNTZ.EXE"
+EXE = Path(os.environ.get("GRUNTZ_EXE") or REPO / "build/exe/GRUNTZ.delinkable.EXE")
 FUNCS = REPO / "build/ghidra/exports/functions.csv"
 SYMS = REPO / "build/ghidra/exports/symbols.csv"
 IMAGEBASE = 0x400000

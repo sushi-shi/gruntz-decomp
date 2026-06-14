@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 """gruntz.py - the single entry point for the Gruntz matching pipeline.
 
-One command instead of a remembered chain of configure.py / ninja / objdiff-cli /
-gen_*/delink/synth/apply. Run inside the Nix dev shell:
+Run inside the Nix dev shell:
 
     nix develop .#build --command python3 gruntz.py build
-    nix develop        --command python3 gruntz.py status
+    nix develop         --command python3 gruntz.py status
 
 Subcommands
 -----------
@@ -43,17 +42,18 @@ import sys
 import tomllib
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parent
-SCRIPTS = REPO / "scripts"
-PKG = SCRIPTS / "gruntz"          # the pipeline package (grouped by area)
-BUILD = PKG / "build"             # cc_wrap, labels, structs, synth_pdb, delink, ...
-GHIDRA = PKG / "ghidra"           # apply (the comprehension-DB enrichment)
-INIT = PKG / "init"               # environment setup
-MANIFEST = REPO / "config" / "units.toml"
-OBJDIFF_DIR = REPO / "build" / "objdiff"
-TARGET_DIR = OBJDIFF_DIR / "target"
-REPORT = OBJDIFF_DIR / "report.json"
-GEN_NAMES = REPO / "build" / "gen" / "symbol_names.csv"
+REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
+            Path(__file__).resolve().parent.parent)
+SCRIPTS            = REPO / "scripts"
+PKG                = SCRIPTS / "gruntz"       # the pipeline package (grouped by area)
+BUILD              = PKG / "build"            # cc_wrap, labels, structs, synth_pdb, delink, ...
+GHIDRA             = PKG / "ghidra"           # apply (the comprehension-DB enrichment)
+INIT               = PKG / "init"             # environment setup
+MANIFEST           = REPO / "config" / "units.toml"
+OBJDIFF_DIR        = REPO / "build" / "objdiff"
+TARGET_DIR         = OBJDIFF_DIR / "target"
+REPORT             = OBJDIFF_DIR / "report.json"
+GEN_NAMES          = REPO / "build" / "gen" / "symbol_names.csv"
 GHIDRA_PROJECT_DIR = REPO / "build" / "ghidra-named"
 
 

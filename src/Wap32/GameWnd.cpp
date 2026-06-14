@@ -2,7 +2,14 @@
 // Matched: ??0CGameWnd@@QAE@XZ @ RVA 0x13cf00 (byte-exact).
 #include "Wap32.h"
 
+// -------------------------------------------------------------------------
+// CGameWnd::CGameWnd()
+// Zeroes the OS window handle (m_4) and owner-state field (m_c) after the
+// base/vftable construction.
+//
 // @address: 0x13cf00
+// @size:    0x11
+// -------------------------------------------------------------------------
 CGameWnd::CGameWnd()
 {
     m_4 = 0;
@@ -14,13 +21,15 @@ CGameWnd::CGameWnd()
 static CGameWnd *s_activeWnd;
 
 // -------------------------------------------------------------------------
-// CGameWnd::CreateAndShow  @ RVA 0x13cf20 (143 B) - byte-exact.
+// CGameWnd::CreateAndShow
 // Creates the OS window from the caller's CreateWindowExA params struct,
 // installs this object as the active-window singleton, then ShowWindow(SW_
 // SHOWNORMAL). Bails (returning 0) if params/owner is null or a window is
 // already active.
-// -------------------------------------------------------------------------
+//
 // @address: 0x13cf20
+// @size:    0x8f
+// -------------------------------------------------------------------------
 int CGameWnd::CreateAndShow(CGameWndCreateParams *pParams, void *pOwner)
 {
     if (!pParams)

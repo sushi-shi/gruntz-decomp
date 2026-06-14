@@ -6,13 +6,13 @@ over `src/` and the vendored sources - parsed against the project's real
 **MSVC 5.0 / MFC 4.2 / DirectX 6** headers.
 
 It runs **alongside** the matching build and does not touch it. The Wine
-MSVC 5.0 build (`configure.py` -> `build.ninja` -> `scripts/cc_wrap.py`) remains
+MSVC 5.0 build (`configure.py` -> `build.ninja` -> `scripts/gruntz/build/cc_wrap.py`) remains
 the **sole verdict on correctness**; clangd is only a *reader* of the code.
 
 ## The wrinkle: clangd can't use the real compiler
 
 The matching build compiles each unit with **MSVC 5.0's `CL.EXE` run under Wine**
-(via `scripts/cc_wrap.py`). clangd is clang-based and cannot invoke that wrapper.
+(via `scripts/gruntz/build/cc_wrap.py`). clangd is clang-based and cannot invoke that wrapper.
 So we maintain a **separate** compilation database, in **clang-cl driver form**,
 that points clang at the toolchain's MSVC/MFC/DirectX headers and asks it to
 *emulate* MSVC 5.0. clang reads those headers as plain files - **no Wine and no
@@ -46,7 +46,7 @@ picks up the build's own repo-root DB.
    grows a new unit):
 
    ```sh
-   python3 scripts/gen_clangd.py
+   python3 scripts/gruntz/init/clangd.py
    ```
 
    It prints the resolved include dirs and the exact per-unit clang-cl flag line.
@@ -68,7 +68,7 @@ A successful run ends with `All checks completed, 0 errors`.
 
 ## How it is wired
 
-- **`scripts/gen_clangd.py`** - reads `config/units.toml` (read-only) and writes
+- **`scripts/gruntz/init/clangd.py`** - reads `config/units.toml` (read-only) and writes
   `build/clangd/compile_commands.json` (git-ignored; `build/` is in
   `.gitignore`). One clang-cl entry per unit:
 

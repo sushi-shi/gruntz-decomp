@@ -27,13 +27,15 @@
 #include <string.h>  // memcpy
 
 // ---------------------------------------------------------------------------
-// WwdFile::IsValidWwd  @ RVA 0x160530 (293 B).
+// WwdFile::IsValidWwd
 // Open(name) -> Read(headerBuf, 0x5F4) -> require read == 0x5F4 and first u32
 // (the header signature) <= 0x5F4. The two null guards return BEFORE the stream
 // is constructed (no destructor on those paths); the stream's ctor runs only
 // after both guards, so its dtor unwinds the remaining exits.
-// ---------------------------------------------------------------------------
+//
 // @address: 0x160530
+// @size:    0x125
+// ---------------------------------------------------------------------------
 int __stdcall WwdFile_IsValidWwd(const char* name, void* headerBuf)
 {
     if (name == 0)
@@ -56,13 +58,15 @@ int __stdcall WwdFile_IsValidWwd(const char* name, void* headerBuf)
 }
 
 // ---------------------------------------------------------------------------
-// WwdFile::CheckHeader  @ RVA 0x160660 (299 B).
+// WwdFile::CheckHeader
 // Same validation as IsValidWwd but reads into a PRIVATE 0x5F4 stack buffer,
 // then copies the header out to the caller (an inline strlen+rep-movs copy of
 // the NUL-terminated leading bytes - the binary does `repnz scasb; rep movs`,
 // i.e. a strcpy of the header buffer into the caller's output).
-// ---------------------------------------------------------------------------
+//
 // @address: 0x160660
+// @size:    0x12b
+// ---------------------------------------------------------------------------
 int __stdcall WwdFile_CheckHeader(const char* name, void* headerOut)
 {
     char header[0x5f4];
@@ -87,7 +91,15 @@ int __stdcall WwdFile_CheckHeader(const char* name, void* headerOut)
     return 1;
 }
 
+// ---------------------------------------------------------------------------
+// WwdFile::InflateMainBlock
+// Validates the header, copies the 0x5F4-byte header prefix into dest, then
+// zlib-uncompresses the COMPRESS main block into the remainder. Returns dest on
+// success, 0 on any validation/inflate failure. (~88.7% fuzzy, entropy plateau.)
+//
 // @address: 0x160790
+// @size:    0xd2
+// ---------------------------------------------------------------------------
 int __stdcall WwdFile_InflateMainBlock(WwdHeader* src, Bytef* dest, unsigned int destLen)
 {
     uLongf outLen;

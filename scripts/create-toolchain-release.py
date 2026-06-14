@@ -12,21 +12,12 @@ Entry point:
   (fetches the VC5 ISO + SP3 + ninja, sets env vars, and runs this automatically)
 
 Output:
-  binaries/gruntz-toolchain-vc50.tar.xz
+  build/gruntz-toolchain-vc50.tar.xz
     msvc/bin/      - cl.exe, c1.exe, c2.exe, link.exe, cvtres.exe, mspdb*.dll (SP3)
     msvc/include/  - C/C++ + MFC 4.2 headers
     msvc/lib/      - LIBCMT.LIB, NAFXCW.LIB, MFC42 static libs, import libs
     dx/{Include,Lib} - DirectX 6 SDK (OPTIONAL - placeholder until DX6 located)
     ninja/ninja.exe
-
-============================================================================
-HOW THIS DIFFERS FROM vostok's create-toolchain-release.py (READ THIS)
-============================================================================
-vostok packages VS2008, whose media are MSI. Its flow is:
-  - `7z x -tUDF` the ISO, then a Wine `msiexec /a vs_setup.msi PATCH=<sp1.msp>`
-    administrative install (needs Wine + xvfb-run + wineserver babysitting),
-  - then a post-install MSP "CRT overlay" (the static CRT ships as whole files
-    inside a *different* MSP keyed by FL_<name>_<ext>_ MSI File-table names).
 
 VC++ 5.0 is PRE-MSI. The VS97 CDs are InstallShield with compressed CAB
 cabinets, and SP3 ships as a self-extracting archive of WHOLE replacement
@@ -34,12 +25,9 @@ binaries. So this script:
   - uses ONLY `7z` to extract the ISO and the CABs (NO msiexec, NO Wine, NO
     xvfb, NO wineserver_settle, NO MSI File-table key matching),
   - applies SP3 by OVERLAYING its whole files over the base VC bin/ (and any
-    lib it updates) - the SP3 equivalent of vostok's PATCH=, but a plain file
-    copy instead of an msiexec patch,
+    lib it updates)
   - verifies the SP3 marker versions: link.exe 5.10.7303 and cvtres.exe
-    5.00.1668 (the unique VS97-SP3 fingerprint from docs/compiler-detection.md),
-    analogous to vostok's "cl.exe is 15.00.30729" check.
-The reproducible-tar packaging (step 5) is carried over from vostok verbatim.
+    5.00.1668 (the unique VS97-SP3 fingerprint from docs/compiler-detection.md)
 
 The CAB extraction is unconditional `7z x` (7z handles InstallShield IS5/CAB
 and Microsoft CAB); if a particular VS97 layer turns out to be an InstallShield
@@ -83,9 +71,6 @@ def run(cmd: list, *, check: bool = True, **kwargs) -> subprocess.CompletedProce
 
 def extract_7z(src: Path, dst: Path, *, iso: bool = False) -> None:
     """7z-extract an archive (ISO/CAB/zip/SFX). `iso=True` forces -tUDF|-tISO.
-
-    Unlike vostok, there is NO msiexec here - 7z handles every VC5/SP3 layer:
-    the CD ISO (ISO9660/Joliet), the SP3 zip, and InstallShield/MSCAB cabinets.
     """
     dst.mkdir(parents=True, exist_ok=True)
     cmd = ["7z", "x", "-y", f"-o{dst}", str(src)]
@@ -135,9 +120,6 @@ def expand_all_cabs(root: Path, *, rounds: int = 3) -> None:
 
 def file_version_strings(path: Path) -> str:
     """Best-effort version read: pull printable strings from a PE.
-
-    Mirrors vostok's `strings -el cl.exe` check. Tries `strings` first, then a
-    crude in-process scan so the check still runs if `strings` is unavailable.
     """
     try:
         return subprocess.run(
@@ -264,11 +246,10 @@ def step1_vc5_base(work: Path, stage: Path) -> Path:
 # ---------------------------------------------------------------------------
 # Step 2: apply VS97 Service Pack 3 (overlay whole replacement files)
 #
-# vostok applied SP1 via `msiexec /a PATCH=` + a File-table-keyed CRT overlay.
-# VS97 SP3 is far simpler: a self-extracting archive of WHOLE files. We extract
-# it with 7z and copy each updated binary over the base. SP3 replaces the
-# versioned tools (cl/c1/c1xx/c2/link/cvtres/mspdb*); it does NOT rewrite the
-# whole tree, so we overlay onto bin/ (and lib/ for any updated libs) by name.
+# A self-extracting archive of WHOLE files. We extract it with 7z and copy
+# each updated binary over the base. SP3 replaces the versioned tools
+# (cl/c1/c1xx/c2/link/cvtres/mspdb*); it does NOT rewrite the whole tree,
+# so we overlay onto bin/ (and lib/ for any updated libs) by name.
 # ---------------------------------------------------------------------------
 
 # Tool binaries VS97 SP3 ships WHOLE and that we overlay onto msvc/bin.
@@ -375,8 +356,8 @@ def step2_apply_sp3(work: Path, stage_msvc: Path) -> None:
 def verify_sp3(stage_msvc: Path, *, fatal: bool) -> None:
     """Verify the SP3 marker versions + the FID-required static libs.
 
-    Analogous to vostok's verify_crt_sp1: the gate that stops a wrong-toolchain
-    tarball shipping silently. cvtres 5.00.1668 is the unique SP3 fingerprint.
+    The gate that stops a wrong-toolchain tarball shipping silently.
+    cvtres 5.00.1668 is the unique SP3 fingerprint.
     """
     bin_dir = stage_msvc / "bin"
     lib_dir = stage_msvc / "lib"
@@ -476,7 +457,7 @@ def step3_dxsdk(work: Path, stage: Path) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Step 4: ninja.exe (same as vostok)
+# Step 4: ninja.exe
 # ---------------------------------------------------------------------------
 
 def step4_ninja(work: Path, stage: Path) -> None:
@@ -494,7 +475,7 @@ def step4_ninja(work: Path, stage: Path) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Step 5: Package (reproducible tar - carried over from vostok verbatim)
+# Step 5: Package
 # ---------------------------------------------------------------------------
 
 def step5_package(work: Path, stage: Path, output: Path) -> None:
@@ -531,8 +512,8 @@ def step5_package(work: Path, stage: Path, output: Path) -> None:
     print(f"  SHA256: {digest}")
     print()
     print("Next steps:")
-    print(f"  1. gh release upload v1.0 {output} "
-          "--repo srp-survarium/gruntz-build-env --clobber")
+    print(f"  1. gh release upload toolchain-vc50-sp3 {output} "
+          "--repo sushi-shi/gruntz-decomp --clobber")
     print( "  2. In flake.nix, replace the gruntz-toolchain fetchurl sha256 with:")
     print(f'       sha256 = "{digest}";')
 
@@ -544,7 +525,7 @@ def step5_package(work: Path, stage: Path, output: Path) -> None:
 def main() -> None:
     output = Path(os.environ.get(
         "OUTPUT",
-        str(GRUNTZ_DIR / "binaries" / "gruntz-toolchain-vc50.tar.xz"),
+        str(GRUNTZ_DIR / "build" / "gruntz-toolchain-vc50.tar.xz"),
     ))
     work = Path(os.environ.get(
         "WORK_DIR",

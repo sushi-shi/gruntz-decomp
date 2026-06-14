@@ -7,17 +7,6 @@
 #   nix-shell scripts/create-toolchain-release.nix
 #
 # ---------------------------------------------------------------------------
-# DIFFERENCE FROM vostok's create-toolchain-release.nix
-# ---------------------------------------------------------------------------
-# vostok packages VS2008, whose media are MSI (admin-installed with `msiexec
-# /a PATCH=`). VC++ 5.0 media are NOT MSI - the VS97 CDs use InstallShield with
-# compressed CAB cabinets, and SP3 ships as a self-extracting archive of whole
-# replacement binaries. So this flow needs only `p7zip` (7z) for extraction;
-# `msitools`/`xvfb-run`/Wine-msiexec are NOT required for the extract+overlay.
-# (Wine is kept available in case a step ever needs to run a 16/32-bit unpacker,
-# but the default path is pure 7z and does not touch Wine.)
-#
-# ---------------------------------------------------------------------------
 # LOCATED MEDIA (archive.org) - see docs/toolchain-vc50-sp3.md
 # ---------------------------------------------------------------------------
 # Every sha256 below is now pinned to the real fetched media. The archive.org
@@ -90,7 +79,7 @@ let
     sha256 = "sha256-Oqd0mnJQGaT6tjoWJyT5rbzXrBIXGARnzvJc06fbTt0="; # archive.org md5 b0b541fc..., sha1 3bdcf09...
   };
 
-  # --- ninja.exe (build driver, run under Wine; same as vostok) --------------
+  # --- ninja.exe (build driver, run under Wine) --------------
   ninja-zip = pkgs.fetchurl {
     name = "ninja-win.zip";
     url = "https://github.com/ninja-build/ninja/releases/download/v1.12.1/ninja-win.zip";

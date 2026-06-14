@@ -35,7 +35,14 @@ public:
 CStatusBarItem::~CStatusBarItem() {}
 int CStatusBarItem::SbiVfunc0() { return 0; }
 
+// ---------------------------------------------------------------------------
+// CSBI_RectOnly::CSBI_RectOnly()
+// Inlines the CStatusBarItem base ctor (the dead m_8=0 store is elided), stores
+// its own vptr, then sets m_8 = 1.
+//
 // @address: 0x101fa0
+// @size:    0x1b
+// ---------------------------------------------------------------------------
 CSBI_RectOnly::CSBI_RectOnly()
 {
     m_8 = 1;

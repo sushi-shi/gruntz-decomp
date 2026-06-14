@@ -21,9 +21,7 @@ Definition/hover on an open file need no index. clang is a READER of this
 MSVC5 dialect (it parses our reconstructed src/ against the VC5/MFC/DX headers
 via build/clangd/compile_commands.json): navigation is reliable, its
 diagnostics are NOT build truth - the wine `cl` build + objdiff are. Regenerate
-the compdb with `python3 scripts/gen_clangd.py` after adding a unit.
-
-Adapted from srp-survarium/vostok scripts/clangd_query.py.
+the compdb with `python3 scripts/gruntz/init/clangd.py` after adding a unit.
 """
 
 import argparse

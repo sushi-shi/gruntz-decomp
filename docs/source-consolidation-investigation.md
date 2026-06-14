@@ -22,9 +22,9 @@ to "annotate the source, regenerate everything."
 > | `annotate_addresses.py` | one-shot `@address` migrator — **removed** after it seeded all `src/` annotations (the annotations live in `src/`) |
 > | `configure.py` | repo root (generates `build.ninja`) |
 >
-> And **`config/symbol_names.csv` no longer exists** — it is GENERATED at
+> And **`build/gen/symbol_names.csv` no longer exists** — it is GENERATED at
 > `build/gen/symbol_names.csv` by `gruntz labels`. Where the prose says
-> "`config/symbol_names.csv`", read the generated file.
+> "`build/gen/symbol_names.csv`", read the generated file.
 
 ---
 
@@ -32,11 +32,11 @@ to "annotate the source, regenerate everything."
 
 | # | Artifact | Shape | Role | Hand-maintained? |
 |---|----------|-------|------|------------------|
-| 1 | `config/symbol_names.csv` | `rva,name,unit` (100 rows) | THE byte-matched map. `synth_pdb.py` overlays it onto Ghidra's `functions.csv` → names the delinked `<unit>.c.obj` so objdiff pairs it to the base `<unit>.obj`. | **Yes** |
+| 1 | `build/gen/symbol_names.csv` | `rva,name,unit` (100 rows) | THE byte-matched map. `synth_pdb.py` overlays it onto Ghidra's `functions.csv` → names the delinked `<unit>.c.obj` so objdiff pairs it to the base `<unit>.obj`. | **Yes** |
 | 2 | `config/units.toml` | per-TU `unit,source,status,cflags` (23 units) | Build manifest. `configure.py` → `build.ninja` + `compile_commands.json` + objdiff project. | Yes (legit) |
 | 3 | `config/engine_labels.csv` | `rva,name,class,prototype,kind,source,confidence` (337 rows) | Comprehension/attribution + match-queue fuel. Harvested from tomalla + RTTI; `apply_ghidra_enrichment.py` applies names/protos to the Ghidra DB; `gen_match_queue.py` ranks it. | Partly (harvested + appended) |
 | 4 | `structure/*.h` | 39 C++ headers, `@offset`/`@vftable`/`@size`/`@rtti` annotations | Engine-wide layout/enum scaffold (231 RTTI classes; tomalla-ported + hypotheses). Comprehension only — **not compiled**. | **Yes** |
-| 5 | `scripts/apply_ghidra_enrichment.py` (`STRUCTS`/`ENUMS`, ~300 lines) | Python literals of struct fields + enums | Defines structs/enums in the Ghidra DTM and applies them as `this`-types. | **Yes** |
+| 5 | `scripts/gruntz/ghidra/apply.py` (`STRUCTS`/`ENUMS`, ~300 lines) | Python literals of struct fields + enums | Defines structs/enums in the Ghidra DTM and applies them as `this`-types. | **Yes** |
 | 6 | `src/**/*.{cpp,h}` | the actual matched C++ (19 files, 23 TUs) | Compiled by `cl` → base `<unit>.obj`. RVAs, symbols, sizes, match-% all live in **prose comments**; field layouts live in **prose comments** in the `.h`. **Zero machine-readable annotations.** | Yes (the real work) |
 
 `units.toml` (#2) is **not** duplication — it carries genuine per-TU build state
@@ -162,7 +162,7 @@ DB re-exports the `functions.csv`/`symbols.csv` that Flow 1 consumes; Flow 1's
 objdiff `%` is the arbiter that says whether an `@address`/size is right.
 
 Key properties:
-- `config/symbol_names.csv` stops being hand-written. It becomes
+- `build/gen/symbol_names.csv` stops being hand-written. It becomes
   `build/gen/symbol_names.csv`, regenerated on every `configure.py`/`ninja` run.
   The mangled `name` is **read from the base `<unit>.obj`** (the exact `cl`
   output objdiff pairs on), never hand-typed — so a name mismatch is
@@ -337,7 +337,7 @@ The Ghidra apply consumes `(src-derived labels) ∪ (remaining engine_labels)`.
    (RVA only); generate `build/gen/symbol_names.csv` by joining `@address` to the
    base-obj symbols (`/Z7` line map, or `llvm-undname` fallback); point
    `configure.py`/`delink_target.py` at the generated file; delete
-   `config/symbol_names.csv`. Regression gate: objdiff totals unchanged.
+   `build/gen/symbol_names.csv`. Regression gate: objdiff totals unchanged.
 3. **Convert `structure/` to compilable placeholder headers (no `@offset`).**
    Rewrite the tomalla `@offset`/`@todo` prose into real declarations + padding so
    clang lays them out; `gen_structs.py` then reads `src/` ∪ `structure/`
@@ -392,7 +392,7 @@ The generators only read; they add no *build* deps. The one new dependency is th
   base obj as plain COFF; the label join is clang∩nm. `/Z7` + a CV4 reader
   (`cvdump`, not in nixpkgs) remain a *documented escape hatch* only — built solely
   if a future TU exhibits a real clang↔VC5 mangling divergence.
-- **Build flag:** add `/Z7` to the base-compile rule (`scripts/cc_wrap.py` /
+- **Build flag:** add `/Z7` to the base-compile rule (`scripts/gruntz/build/cc_wrap.py` /
   `configure.py`). Codegen-neutral per `docs/linker-flags.md`, so the matching
   obj is unaffected; only the debug stream (consumed by Join A) appears.
 
@@ -425,7 +425,7 @@ plus two files that shrink to nothing.
 - **`@status`** tags (`matched`/`plateau-NN`) — informational only.
 
 **No longer touched (these were the drift sources):**
-- `config/symbol_names.csv` -> generated `build/gen/symbol_names.csv`
+- `build/gen/symbol_names.csv` -> generated `build/gen/symbol_names.csv`
 - `apply_ghidra_enrichment.py` `STRUCTS`/`ENUMS` (~300 lines) -> generated JSON
 - field offsets -> clang `-fdump-record-layouts`; **no `@offset`**
 - mangled names -> read from the base obj; **never hand-typed**
@@ -440,7 +440,7 @@ Steady state: per *matched function*, ~one `@address` line (plus the code); per
 ## 10. Verification (real toolchain, this session)
 
 Built and run inside the flake (`nix develop` / `.#build`). Generators live in
-`scripts/gen_structs.py` + `scripts/gen_labels.py`; clang reached via
+`scripts/gruntz/build/structs.py` + `scripts/gruntz/build/labels.py`; clang reached via
 `$GRUNTZ_CLANG` (the **unwrapped** clang — the cc-wrapper injects host flags that
 break `--target=i686-pc-windows-msvc`).
 
@@ -449,7 +449,7 @@ break `--target=i686-pc-windows-msvc`).
   `CRezItmBase` = `0x24/0x68/0x10` — matching the header-documented layouts.
 - **`gen_labels.py`** against the **genuine `cl` `filestream.obj`** (wine MSVC 5.0,
   built via `setup-toolchain.py --smoke` + `ninja`): reproduces **all 10**
-  `filestream` rows byte-identically to the hand-written `config/symbol_names.csv`.
+  `filestream` rows byte-identically to the hand-written `build/gen/symbol_names.csv`.
   Methods + ctors via clang `mangledName` ∩ `nm`; the destructor via the canonical
   `??1…@XZ` fallback; `??_GCFileIO@@UAEPAXI@Z` via an `@symbol` anchor.
 - **`cl` obj symbol types** confirm the design: every `cl` function is `nm` type
@@ -468,12 +468,12 @@ Three bugs were found and fixed by running in-env (not visible on paper):
 were already hand-placed); the only row needing an `@symbol` anchor was
 filestream's `??_G` thunk. **Round-trip gate passed:** regenerating
 `build/gen/symbol_names.csv` from the in-src `@address` annotations + the base
-objs is **byte-identical to all 100 rows** of the original `config/symbol_names.csv`.
+objs is **byte-identical to all 100 rows** of the original `build/gen/symbol_names.csv`.
 `configure.py` now emits a `gen_labels` ninja rule (`src @address` + base objs →
 `build/gen/symbol_names.csv`); the delink consumes that, not the hand CSV.
 
 **Full `ninja` + objdiff pipeline — verified with generated labels.**
-`scripts/rebuild.py` (`configure → gen_labels → cl base objs → delink → objdiff`)
+``gruntz build`` (`configure → gen_labels → cl base objs → delink → objdiff`)
 ran clean over all 23 units: **57/100 functions exact, 99.18% fuzzy**, with
 `filestream 6/10` matching main's baseline. Because the generated CSV is
 byte-identical to the hand CSV, objdiff totals are unchanged by construction — and
@@ -495,7 +495,7 @@ reads today.
 break-reloc'd EXE from the main checkout, delinking the retail EXE with the
 **generated** `build/gen/symbol_names.csv` produced a `target/filestream.c.obj`
 that is **byte-identical** to the one main produced from the hand-written
-`config/symbol_names.csv`:
+`build/gen/symbol_names.csv`:
 
 ```
 gen_labels (src @address + cl obj) -> build/gen/symbol_names.csv

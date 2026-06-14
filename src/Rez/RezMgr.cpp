@@ -48,11 +48,13 @@ CRezItmBase::CRezItmBase(void *parent)
 
 
 // ---------------------------------------------------------------------------
-// CRezItm::CRezItm(parent)  @ 0x13c540 (40 B, ret 4).
+// CRezItm::CRezItm(parent)
 // Base ctor (vtbl @0x5ef768 + parent), then derived vtbl @0x5ef788, m_10 = 0,
 // m_14 = 0, m_20 = -1. m_18/m_1c untouched.
-// ---------------------------------------------------------------------------
+//
 // @address: 0x13c540
+// @size:    0x28
+// ---------------------------------------------------------------------------
 CRezItm::CRezItm(void *parent) : CRezItmBase(parent)
 {
     m_10 = 0;
@@ -61,12 +63,14 @@ CRezItm::CRezItm(void *parent) : CRezItmBase(parent)
 }
 
 // ---------------------------------------------------------------------------
-// CRezDir::CRezDir(parent, rezMgr)  @ 0x13c940 (70 B, ret 8).
+// CRezDir::CRezDir(parent, rezMgr)
 // Base ctor, then: m_14=0, m_18=0, m_vtblA=m_vtblB=0x5ef7c8 (embedded child
 // collection's two vtables), m_20=m_24=m_28=m_34=0, derived vtbl @0x5ef7a8,
 // m_2c=rezMgr, m_30=1.
-// ---------------------------------------------------------------------------
+//
 // @address: 0x13c940
+// @size:    0x46
+// ---------------------------------------------------------------------------
 CRezDir::CRezDir(void *parent, void *rezMgr) : CRezItmBase(parent)
 {
     m_14 = 0;
@@ -82,14 +86,16 @@ CRezDir::CRezDir(void *parent, void *rezMgr) : CRezItmBase(parent)
 }
 
 // ---------------------------------------------------------------------------
-// CRezDir::FindEntry(char* name)  @ 0x13c080 (60 B, ret 4).
+// CRezDir::FindEntry(char* name)
 // Despite the tomalla "binary search" label, the bytes are a stat: build a
 // 0x24-byte find-record on the stack, RezStatEntry(name, &rec); on failure
 // return 0; on success return whether the entry's attribute dword (at byte +6
 // of the record) has bit 0x4000 set (i.e. the entry is a directory).
 // `this` is never read here.
-// ---------------------------------------------------------------------------
+//
 // @address: 0x13c080
+// @size:    0x3c
+// ---------------------------------------------------------------------------
 int CRezDir::FindEntry(char *name)
 {
     RezFindRec rec;
@@ -103,15 +109,17 @@ int CRezDir::FindEntry(char *name)
 static const char s_notSorted[] = "CRezDir::Load Failed! (File is not sorted!)";
 
 // ---------------------------------------------------------------------------
-// CRezDirNode::Load(childFlag)  @ 0x13a0f0 (153 B, ret 4).
+// CRezDirNode::Load(childFlag)
 // Recursive directory parse / load. If already loaded (m_buf != 0) return 1.
 // Validate the source (m_src->m_8 nonzero, m_src->m_1c <= 1) else assert "File
 // is not sorted!". If m_size > 0, allocate the payload buffer and virtually read
 // it from the source stream at (m_off, 0, m_size, buf). When childFlag is set,
 // iterate the child collection (First/Next) and recurse Load(1) into each
 // child's sub-dir node (node->m_14). Returns 1.
-// ---------------------------------------------------------------------------
+//
 // @address: 0x13a0f0
+// @size:    0x99
+// ---------------------------------------------------------------------------
 int CRezDirNode::Load(int childFlag)
 {
     if (m_buf != 0)

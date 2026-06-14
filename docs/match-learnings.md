@@ -12,9 +12,9 @@ fast-moving scratchpad. Newest at top within each section.
   `git push`. After each, the orchestrator refreshes the comprehension DB
   (`build/ghidra-named`) when the matcher pinned new names/types, so the next
   matcher stands on prior work ("shoulders of giants"), then re-runs
-  `scripts/gen_match_queue.py` to refill `docs/match-queue.md`.
+  `scripts/analysis/gen_match_queue.py` to refill `docs/match-queue.md`.
 - Per-function asm diff: `objdiff-cli diff -p build/objdiff -u <unit> <mangled-sym>
-  -o - --format json-pretty`. Roll-up: `scripts/rebuild.py`.
+  -o - --format json-pretty`. Roll-up: `gruntz build`.
 
 ## Subsystem notes
 ### RezMgr archive container (unit `rezmgr` — 3 byte-exact + 1 plateau; OpenSub deferred)

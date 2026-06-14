@@ -10,7 +10,7 @@ Inputs (all already in the repo):
   build/ghidra/exports/functions.csv - function boundaries + sizes
   build/fid/library_labels.csv     - library funcs (exclude: not engine)
   build/patch-diff/validated_changed.pkl - 52 v1.01-changed funcs (exclude)
-  binaries/retail_en/GRUNTZ.EXE    - scanned for E8 call edges (leaf-readiness)
+  $GRUNTZ_EXE (flake)              - scanned for E8 call edges (leaf-readiness)
 
 Readiness = number of an engine callee functions not yet matched/library. 0 = a
 leaf (or all callees already matched) -> match it now. We order by readiness, then
@@ -19,12 +19,12 @@ refill the queue as matches land (idempotent).
 
 Run inside nix develop: nix develop .#build --command python3 scripts/gen_match_queue.py
 """
-import struct, csv, bisect, pickle
+import os, struct, csv, bisect, pickle
 from pathlib import Path
 
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
             Path(__file__).resolve().parent)
-EXE = REPO / "binaries/retail_en/GRUNTZ.EXE"
+EXE = Path(os.environ.get("GRUNTZ_EXE") or REPO / "build/exe/GRUNTZ.delinkable.EXE")
 FUNCS = REPO / "build/ghidra/exports/functions.csv"
 LABELS = REPO / "config/engine_labels.csv"
 MATCHED = REPO / "build/gen/symbol_names.csv"   # generated (was config/symbol_names.csv)
