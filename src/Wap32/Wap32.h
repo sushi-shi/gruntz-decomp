@@ -129,9 +129,19 @@ public:
 // vtable slot 0, so a single virtual dtor reproduces `mov [ecx];push 1;call`.
 // m_4 additionally exposes a window handle (+0x4) + a guard flag (+0xc) used
 // by ReportError to post WM_CLOSE.
+//
+// The per-frame idle virtual (CGameApp::VirtualUnknownMethod09, vtbl +0x20)
+// tail-calls THIS object's vtable slot +0x10 (index 4) when the app is active -
+// the game manager's per-frame tick. So the resource exposes four more virtual
+// slots (indices 1..4); only slot +0x10 (PerFrameTick) is dispatched here, the
+// others are placeholders that keep the index of +0x10 correct.
 class CGameResource {
 public:
-    virtual ~CGameResource();
+    virtual ~CGameResource();                       // slot 0 (+0x00)
+    virtual void Wap32GameResVfunc1();              // slot 1 (+0x04)
+    virtual void Wap32GameResVfunc2();              // slot 2 (+0x08)
+    virtual void Wap32GameResVfunc3();              // slot 3 (+0x0c)
+    virtual void PerFrameTick();                    // slot 4 (+0x10)
 
     int m_4;   // +0x04  (HWND for ReportError's PostMessageA)
     int m_8;   // +0x08
@@ -221,8 +231,8 @@ public:
     virtual void VirtualUnknownMethod06() {}                              // +0x14
     virtual int  RunMessageLoop();                                       // +0x18  0x13d910
     virtual void ReportError(WPARAM wParam, LPARAM lParam);              // +0x1c  0x13dcb0
-    virtual void VirtualUnknownMethod09() {}                             // +0x20  the idle virtual
-    virtual void FreeGameManager() {}                                    // +0x24
+    virtual void VirtualUnknownMethod09();                               // +0x20  0x13dc70  the idle virtual
+    virtual void FreeGameManager();                                      // +0x24  0x13dc90
     virtual void VirtualUnknownMethod11() {}                             // +0x28
     virtual BOOL InitializeAccelerators(LPCSTR lpTable);                 // +0x2c  0x13dc20
     virtual void ShowError() {}                                          // +0x30

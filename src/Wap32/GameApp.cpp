@@ -336,11 +336,44 @@ Fail:
     return 0;
 }
 
+// -------------------------------------------------------------------------
+// CGameApp::VirtualUnknownMethod09  @ RVA 0x13dc70 (29 B) - vtbl slot +0x20.
+// The per-frame idle virtual the message pump calls on an empty queue
+// (RunMessageLoop dispatches `call [vtbl+0x20]`). When the app is active -
+// both gate words m_240 and m_244 set - it tail-calls the game manager's
+// per-frame tick (m_8->vtbl +0x10, the 5th vtable slot). The tail call emits
+// `mov ecx,[m_8]; mov eax,[ecx]; jmp [eax+0x10]` (no own epilogue needed since
+// neither gate-load disturbs a callee-saved reg).
+// -------------------------------------------------------------------------
+void CGameApp::VirtualUnknownMethod09()
+{
+    if (m_240 && m_244)
+        m_8->PerFrameTick();
+}
+
+// -------------------------------------------------------------------------
+// CGameApp::FreeGameManager  @ RVA 0x13dc90 (25 B) - vtbl slot +0x24.
+// `delete m_8; m_8 = 0;` - frees the game manager via its scalar-deleting
+// dtor (slot 0, `push 1; call [vtbl]`) and clears the slot. `this` is spilled
+// to esi at entry; the null-check skips both when m_8 is already 0.
+// -------------------------------------------------------------------------
+void CGameApp::FreeGameManager()
+{
+    if (m_8) {
+        delete m_8;
+        m_8 = 0;
+    }
+}
+
 // ~CGameApp is now inline in Wap32.h (CloseResources() + counter dec); it is
 // still emitted in this TU (the vtable's scalar-deleting dtor references it).
 
 // Out-of-line stubs so referenced symbols are emitted in this TU.
 CGameResource::~CGameResource() {}
+void CGameResource::Wap32GameResVfunc1() {}
+void CGameResource::Wap32GameResVfunc2() {}
+void CGameResource::Wap32GameResVfunc3() {}
+void CGameResource::PerFrameTick() {}
 WAP32::CGameMgr::~CGameMgr() {}
 int WAP32::CGameMgr::Run(CGameWnd *, char *) { return 0; }
 LRESULT __stdcall CGameApp::GameWindowProc(HWND, UINT, WPARAM, LPARAM) { return 0; }

@@ -81,12 +81,52 @@ static char g_errorText[0x100];   // 0x644ea0 - error message buffer
 // ---------------------------------------------------------------------------
 class CGruntzApp : public CGameApp {
 public:
+    CGruntzApp();                                     // ctor       0x080850
     virtual ~CGruntzApp();                            // vtbl +0x00  0x0808b0
+    // CGruntzApp's override of the base init virtual (CGameApp slot +0x8):
+    // forwards all 7 launch args to CGameApp::VirtualUnknownMethod03 and
+    // normalises the int result to a bool (0/1).
+    virtual int VirtualUnknownMethod03(HINSTANCE hInstance, char *szWindowName,
+                                       char *szGameIdentifier, char *szCmdLine,
+                                       int windowClassFlags, int windowWidth,
+                                       int windowHeight);                 // vtbl +0x08  0x080930
     virtual void ShowError();                         // vtbl +0x30  0x080ac0
     WAP32::CGameMgr *InitializeGameManager();
     static INT_PTR __stdcall ErrorDialogProc(HWND hWnd, UINT message,
                                              WPARAM wParam, LPARAM lParam);
 };
+
+// ---------------------------------------------------------------------------
+// CGruntzApp::CGruntzApp  @ RVA 0x080850 (18 B).
+// `??0CGruntzApp@@QAE@XZ`. Empty-bodied ctor: chains the base CGameApp ctor
+// (@0x13d590), then the compiler stores the CGruntzApp vftable (@0x5e9ab4 -
+// reloc-masked) and returns `this`. No CGruntzApp-specific field is set.
+//   push esi; mov esi,ecx; call CGameApp::CGameApp; mov [esi],&vftable;
+//   mov eax,esi; pop esi; ret
+// ---------------------------------------------------------------------------
+CGruntzApp::CGruntzApp()
+{
+}
+
+// ---------------------------------------------------------------------------
+// CGruntzApp::VirtualUnknownMethod03  @ RVA 0x080930 (49 B).
+// CGruntzApp's override of the base init virtual (CGameApp vtbl slot +0x8,
+// `?VirtualUnknownMethod03@CGruntzApp@@UAEHPAXPAD11HHH@Z`, `ret 0x1c`). It
+// re-pushes all 7 launch args in order and tail-forwards to the base
+// CGameApp::VirtualUnknownMethod03 (@0x13d7b0, `this` left in ecx untouched),
+// then normalises the int result to a bool: `!= 0` emits the
+// `neg eax; sbb eax,eax; neg eax` (0/1) idiom.
+// ---------------------------------------------------------------------------
+int CGruntzApp::VirtualUnknownMethod03(HINSTANCE hInstance, char *szWindowName,
+                                       char *szGameIdentifier, char *szCmdLine,
+                                       int windowClassFlags, int windowWidth,
+                                       int windowHeight)
+{
+    return CGameApp::VirtualUnknownMethod03(hInstance, szWindowName,
+                                            szGameIdentifier, szCmdLine,
+                                            windowClassFlags, windowWidth,
+                                            windowHeight) != 0;
+}
 
 // ---------------------------------------------------------------------------
 // CGruntzApp::~CGruntzApp  @ RVA 0x0808b0 (96 B).

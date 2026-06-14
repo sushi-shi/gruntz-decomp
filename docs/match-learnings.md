@@ -17,6 +17,62 @@ fast-moving scratchpad. Newest at top within each section.
   -o - --format json-pretty`. Roll-up: `scripts/rebuild.py`.
 
 ## Subsystem notes
+### Application-object lifecycle — CGruntzApp ctor/Init + CGameApp idle/free virtuals (extended `gruntzapp`+`gameapp` — 4/4 BYTE-EXACT under reloc-masking)
+- Closed the WinMain→app lifecycle: the `new CGruntzApp` ctor, the `[vtbl+0x8]`
+  Init it dispatches, and two CGameApp base virtuals (the per-frame idle the pump
+  calls + the game-manager free). All four byte-exact vs `dump_target.py`; the two
+  no-reloc CGameApp virtuals score **100.000%**, Init **100.000%** (lone rel32 to
+  the base masked), the ctor **99.286%** (lone DIR32 vptr operand masked). No new
+  unit, no flag change. **No regression**: gameapp fuzzy 99.086% (was 99.056% —
+  the two new byte-exact fns nudged it UP), gruntzapp 99.527%, gamewnd 99.757%,
+  winmain 98.971%; every prior matched sibling held (RunMessageLoop 99.938%,
+  CloseResources/ReportError 99.9%+, ~CGruntzApp 98.625% plateau).
+- **CGruntzApp ctor @0x80850 (`??0CGruntzApp@@QAE@XZ`, 18 B) = the canonical
+  derived-ctor shape: empty body, base-chain + vptr-store, return `this`.**
+  `push esi; mov esi,ecx; call CGameApp::CGameApp; mov [esi],&CGruntzApp_vftbl;
+  mov eax,esi; pop esi; ret`. An empty-bodied `CGruntzApp::CGruntzApp() {}` emits
+  it exactly — MSVC auto-injects the base-ctor call and the derived vptr store
+  (DIR32 to `??_7CGruntzApp@@6B@` = the @0x5e9ab4 vtable, reloc-masked). No
+  CGruntzApp-specific field is set by the ctor.
+- **CGruntzApp::Init @0x80930 = an OVERRIDE that forwards-then-bool-normalizes.**
+  It is CGruntzApp's override of CGameApp slot +0x8 (`VirtualUnknownMethod03`),
+  so it mangles `?VirtualUnknownMethod03@CGruntzApp@@UAEHPAXPAD11HHH@Z` (same name
+  as the base — overrides keep the slot). `ret 0x1c` = 7 stack args; it re-pushes
+  all 7 verbatim and tail-forwards to the **base** `CGameApp::VirtualUnknownMethod03`
+  (`this` left in ecx untouched), then `return base(...) != 0;`. **The `!= 0` is
+  the load-bearing detail: it emits the `neg eax; sbb eax,eax; neg eax` int→bool
+  (0/1) idiom** — a bare `return base(...);` would omit it. The 7-arg re-push is
+  the classic `[esp+0x18]`-walk (each push shifts esp +4, so the same `[esp+0x18]`
+  literal reads the next-lower original arg). Declaring the override with the
+  identical 7-arg signature + a qualified `CGameApp::` base call reproduces it byte
+  for byte.
+- **CGameApp::VirtualUnknownMethod09 @0x13dc70 (vtbl +0x20, 29 B) = the per-frame
+  idle, and it is a GUARDED TAIL-CALL into the game manager.** Body:
+  `if (m_240 && m_244) m_8->vtbl[+0x10]();`. The `&&` gives two `test;je tail` to a
+  shared `ret`; the active-call is a **tail jump** `mov ecx,[m_8]; mov eax,[ecx];
+  jmp [eax+0x10]` (void no-arg → no epilogue). To emit the `jmp [eax+0x10]` I
+  modeled `m_8` (a `CGameResource*`) with four extra virtual slots so index 4
+  (offset 0x10) is a real virtual (`PerFrameTick`); the placeholder slots 1..3 keep
+  the index correct. **Adding virtuals to CGameResource did NOT regress the
+  scalar-delete sites** (CloseResources `delete m_4/m_8`, FreeGameManager) — those
+  use slot 0 regardless of how many slots follow. This is the REAL game tick the
+  RunMessageLoop pump invokes on an empty queue (the +0x20 idle is now a body, not
+  a stub) — its target `m_8->+0x10` is the next per-frame target one level down.
+- **CGameApp::FreeGameManager @0x13dc90 (vtbl +0x24, 25 B) = `delete m_8; m_8=0;`**
+  via the scalar-deleting dtor (`mov eax,[m_8vtbl]; push 1; call [eax]`) under a
+  null-check, `this` spilled to esi. The existing inline `{}` stub at this slot
+  became a real body (kept the 16-slot vtable order intact). The CGameApp `m_8`
+  game-manager slot is now created (ctor), driven (idle tick), and freed
+  (FreeGameManager) — the manager lifecycle is anchored on both ends.
+- **UNLOCKED:** the CGruntzApp vtable @0x5e9ab4 now has slots 0 (dtor)/+0x8 (Init)/
+  +0x18 (Run, inherited)/+0x30 (ShowError) populated and the ctor that installs it;
+  the WinMain→ctor→Init→RunMessageLoop chain is matched end to end. The headline
+  follow-on: **CGameApp slot +0x20 (`VirtualUnknownMethod09`) tail-calls
+  `m_8->vtbl[+0x10]` — that game-manager slot is the REAL per-frame game idle/tick**
+  and is the next dedicated target one indirection down (reach it via the now-named
+  idle virtual). The two active gate words are pinned: **m_240/m_244 must BOTH be
+  set for the idle to tick** (a run/active latch pair).
+
 ### CGameApp::RunMessageLoop — the Win32 game pump (extended `gameapp` — BYTE-EXACT, 100% fuzzy)
 - Extended `src/Wap32/GameApp.cpp` + `Wap32.h`. `?RunMessageLoop@CGameApp@@UAEHXZ`
   @0x13d910 (159 B, **CGameApp vtable slot +0x18**, the slot WinMain dispatches to

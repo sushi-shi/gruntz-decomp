@@ -131,6 +131,8 @@ rva,name,unit
 0x13d7b0,?VirtualUnknownMethod03@CGameApp@@UAEHPAXPAD11HHH@Z,gameapp
 0x13da50,?InitializeDefaultCreateStruct@CGameApp@@UAEXXZ,gameapp
 0x13d910,?RunMessageLoop@CGameApp@@UAEHXZ,gameapp
+0x13dc70,?VirtualUnknownMethod09@CGameApp@@UAEXXZ,gameapp
+0x13dc90,?FreeGameManager@CGameApp@@UAEXXZ,gameapp
 0x13cf20,?CreateAndShow@CGameWnd@@QAEHPAUCGameWndCreateParams@@PAX@Z,gamewnd
 0x1005d0,??0CStatusBarItem@@QAE@XZ,statusbaritem
 0x101fa0,??0CSBI_RectOnly@@QAE@XZ,sbi_rectonly
@@ -152,6 +154,8 @@ rva,name,unit
 0x080c70,?ErrorDialogProc@CGruntzApp@@SGHPAXIIJ@Z,gruntzapp
 0x0808b0,??1CGruntzApp@@UAE@XZ,gruntzapp
 0x080ac0,?ShowError@CGruntzApp@@UAEXXZ,gruntzapp
+0x080850,??0CGruntzApp@@QAE@XZ,gruntzapp
+0x080930,?VirtualUnknownMethod03@CGruntzApp@@UAEHPAXPAD11HHH@Z,gruntzapp
 0x1189c0,?FileExists@WinAPI@Utils@@YAHPAD@Z,winapi
 0x13dfe0,?ActiveWait@WinAPI@Utils@@YAXI@Z,winapi
 0x01fd50,?IsGruntzCDInAnyDrive@WinAPI@Utils@@YAHXZ,winapi
