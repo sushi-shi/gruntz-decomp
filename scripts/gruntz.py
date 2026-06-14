@@ -51,6 +51,9 @@ SCRIPTS            = REPO / "scripts"
 PKG                = SCRIPTS / "gruntz"       # the pipeline package (grouped by area)
 BUILD              = PKG / "build"            # cc_wrap, labels, structs, synth_pdb, delink, ...
 GHIDRA             = PKG / "ghidra"           # apply (the comprehension-DB enrichment)
+GHIDRA_DRIVER      = GHIDRA / "run_enrich.py" # PyGhidra driver: import/analyze + apply + export
+GHIDRA_APPLY       = GHIDRA / "apply.py"      # enrichment GhidraScript (run under PyGhidra)
+GHIDRA_EXPORT      = GHIDRA / "export.py"     # functions.csv/symbols.csv dump GhidraScript
 INIT               = PKG / "init"             # environment setup
 MANIFEST           = REPO / "config" / "units.toml"
 OBJDIFF_DIR        = REPO / "build" / "objdiff"
@@ -58,6 +61,7 @@ TARGET_DIR         = OBJDIFF_DIR / "target"
 REPORT             = OBJDIFF_DIR / "report.json"
 GEN_NAMES          = REPO / "build" / "gen" / "symbol_names.csv"
 GHIDRA_PROJECT_DIR = REPO / "build" / "ghidra-named"
+GHIDRA_PROJECT     = "gruntz"                                          # project name (gruntz.{gpr,rep})
 GHIDRA_FUNCTIONS   = REPO / "build" / "ghidra-enrich" / "exports" / "functions.csv"  # delink input
 RETAIL_EXE         = REPO / "build" / "exe" / "GRUNTZ.EXE"             # stable copy of $GRUNTZ_EXE
 DELINKABLE_EXE     = REPO / "build" / "exe" / "GRUNTZ.delinkable.EXE"  # reloc-broken (delink input)
@@ -172,28 +176,43 @@ def cmd_ghidra_refresh(args) -> None:
 
       1. gen_structs -> build/gen/structs.json + enums.json (clang layouts of
          src/ + the converted structure/ comprehension headers)
-      2. analyzeHeadless: apply.py (names from build/gen/symbol_names.csv,
-         prototypes, struct this-types, enums -> the build/ghidra-named DB) then
+      2. PyGhidra driver (run_enrich.py): re-open the already-analyzed
+         build/ghidra-named program (--no-analyze) and run apply.py (names from
+         build/gen/symbol_names.csv, prototypes, struct this-types, enums) then
          export.py (re-dump functions.csv + symbols.csv from the enriched DB).
       3. those CSVs feed the next `build`.
     """
     cmd_structs(argparse.Namespace(tu=[]))
-    analyze = tool("ghidra-analyzeHeadless")
-    if not GHIDRA_PROJECT_DIR.exists():
-        die(f"no Ghidra project at {GHIDRA_PROJECT_DIR}")
-    run([analyze, str(GHIDRA_PROJECT_DIR), "gruntz", "-process", "GRUNTZ.EXE",
-         "-noanalysis", "-scriptPath", str(GHIDRA),
-         "-postScript", "apply.py", "-postScript", "export.py"])
+    if not GHIDRA_PROJECT_DIR.exists() or not any(GHIDRA_PROJECT_DIR.glob("*.rep")):
+        die(f"no Ghidra project at {GHIDRA_PROJECT_DIR} - run `gruntz init` first.")
+    _run_enrich(analyze=False)
     log("ghidra-refresh done: applied generated labels/structs/enums + re-exported "
         "functions.csv/symbols.csv.")
+
+
+def _run_enrich(analyze: bool) -> None:
+    """Drive the PyGhidra enrichment+export (replaces analyzeHeadless).
+
+    Runs scripts/gruntz/ghidra/run_enrich.py under THIS interpreter (sys.executable
+    is the `nix develop .#build` python that carries the pyghidra package): it boots
+    PyGhidra in-process, imports/analyzes GRUNTZ.EXE into build/ghidra-named/gruntz,
+    then runs apply.py + export.py as GhidraScripts. `analyze=True` for the first
+    import; False to re-run apply/export on the already-analyzed DB.
+    """
+    cmd = [sys.executable, str(GHIDRA_DRIVER), str(RETAIL_EXE),
+           str(GHIDRA_PROJECT_DIR), GHIDRA_PROJECT,
+           str(GHIDRA_APPLY), str(GHIDRA_EXPORT)]
+    if not analyze:
+        cmd.append("--no-analyze")
+    run(cmd)
 
 
 def _ensure_delinkable_exe() -> None:
     """Reloc-break $GRUNTZ_EXE -> build/exe/GRUNTZ.delinkable.EXE (a delink input).
 
     Pure, deterministic transform of the pinned retail EXE via reloc.py. Also keeps
-    a stable-named retail copy at build/exe/GRUNTZ.EXE so Ghidra imports a program
-    named GRUNTZ.EXE (what apply.py/export.py address via `-process`). Idempotent.
+    a stable-named retail copy at build/exe/GRUNTZ.EXE so PyGhidra imports a program
+    named GRUNTZ.EXE (the run_enrich.py import target). Idempotent.
     """
     retail = os.environ.get("GRUNTZ_EXE")
     if not retail:
@@ -221,20 +240,13 @@ def _build_ghidra_db(reimport: bool = False) -> None:
         return
     if not RETAIL_EXE.exists():
         die("no build/exe/GRUNTZ.EXE - set $GRUNTZ_EXE (run inside `nix develop .#build`).")
-    analyze = tool("ghidra-analyzeHeadless")
-    log("NOTE: apply/export are Ghidra 11.4.2 Jython; the flake's 12.0.4 may route "
-        ".py to PyGhidra and fail - see docs/orchestration.md.")
     if reimport and GHIDRA_PROJECT_DIR.exists():
         shutil.rmtree(GHIDRA_PROJECT_DIR)
     GHIDRA_PROJECT_DIR.mkdir(parents=True, exist_ok=True)
-    has_program = (any(GHIDRA_PROJECT_DIR.glob("*.gpr"))
-                   or any(GHIDRA_PROJECT_DIR.glob("*.rep")))
-    if not has_program:
-        log("Creating Ghidra DB: import + auto-analyze GRUNTZ.EXE (several minutes) ...")
-        run([analyze, str(GHIDRA_PROJECT_DIR), "gruntz", "-import", str(RETAIL_EXE)])
-    else:
-        log(f"Ghidra DB present in {GHIDRA_PROJECT_DIR} (use --reimport to rebuild).")
-    cmd_ghidra_refresh(argparse.Namespace())   # structs + apply.py + export.py
+    cmd_structs(argparse.Namespace(tu=[]))     # build/gen/structs.json+enums.json (apply.py needs them)
+    log("Building Ghidra DB via PyGhidra: import + auto-analyze GRUNTZ.EXE "
+        "(SEVERAL MINUTES on first run), then apply.py + export.py ...")
+    _run_enrich(analyze=True)   # import/analyze (if needed) + apply.py + export.py, one process
 
 
 def cmd_clangd(args) -> None:
@@ -252,15 +264,13 @@ def cmd_init(args) -> None:
       - reloc-break $GRUNTZ_EXE -> build/exe/GRUNTZ.delinkable.EXE (a delink input);
       - the Wine prefix + MSVC 5.0 toolchain registration (toolchain.py);
       - the clangd compile DB (clangd.py);
-      - the Ghidra DB: import + auto-analyze GRUNTZ.EXE -> build/ghidra-named, then
-        apply.py + export.py -> functions.csv/symbols.csv. apply.py CONSUMES the
-        tracked config/library_labels.csv; FID labels are NOT regenerated here.
+      - the Ghidra DB: PyGhidra (run_enrich.py) imports + auto-analyzes GRUNTZ.EXE
+        -> build/ghidra-named, then runs apply.py + export.py (as GhidraScripts
+        under PyGhidra) -> functions.csv/symbols.csv. apply.py CONSUMES the tracked
+        config/library_labels.csv; FID labels are NOT regenerated here.
 
     HEAVY on first run (the Ghidra analysis takes minutes); idempotent afterwards.
     --force re-inits the Wine prefix; --reimport rebuilds the Ghidra DB.
-
-    KNOWN BLOCKER: apply.py/export.py are Ghidra 11.4.2 Jython; the flake's Ghidra
-    12.0.4 routes .py to PyGhidra and breaks them. Pin 11.4.2 first.
     """
     for d in ("build/gen", "build/objdiff", "build/clangd", "build/pdb",
               "build/delink/named", "build/exe", "build/ghidra-named",

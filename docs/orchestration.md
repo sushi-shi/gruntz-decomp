@@ -177,8 +177,9 @@ prototype starts far ahead of one staring at `FUN_00482f50`.
 - **DirectX/Win32/COM calls are external** — never match the implementation (it's in
   system DLLs). The DX6 SDK (`dx/Include`) supplies the COM vtable layouts so
   `pIface->Method()` compiles to the right slot.
-- **Ghidra scripting:** use Ghidra **11.4.2** (the flake's 12.0.4 routes `.py` to
-  PyGhidra, no jpype).
+- **Ghidra scripting:** the headless enrichment/export run under **PyGhidra**
+  (Ghidra 12.0.4 + `jpype1`, both from the flake) via `scripts/gruntz/ghidra/run_enrich.py`
+  - `pyghidra.start()` + `ghidra_script(...)`, not `analyzeHeadless -postScript`.
 
 ---
 

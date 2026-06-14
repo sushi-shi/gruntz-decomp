@@ -8,9 +8,8 @@
 # `gruntz ghidra-refresh` runs apply.py (push generated names/structs/enums) then
 # this, so the re-exported CSVs reflect the latest labels and feed the next build.
 #
-# Run (Ghidra 11+ headless Jython; paired with apply.py in one analyzeHeadless):
-#   analyzeHeadless build/ghidra-named gruntz -process GRUNTZ.EXE -noanalysis \
-#       -scriptPath scripts/gruntz/ghidra -postScript apply.py -postScript export.py
+# Run as a GhidraScript under PyGhidra (CPython3 + JPype), paired with apply.py in
+# one run_enrich.py invocation (which boots PyGhidra and runs apply.py then this).
 #@category Gruntz
 import os
 

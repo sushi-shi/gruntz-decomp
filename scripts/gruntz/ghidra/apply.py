@@ -24,9 +24,11 @@
 #   config/library_labels.csv + structure/. Idempotent: re-runnable, never
 #   downgrades a better existing name, keeps prior [LABEL] plate comments.
 #
-#   Run (Ghidra 11.4.2 headless Jython):
-#     analyzeHeadless build/ghidra-named gruntz -process GRUNTZ.EXE -noanalysis \
-#         -scriptPath build/ghidra-named/scripts -postScript apply_ghidra_enrichment.py
+#   Run as a GhidraScript under PyGhidra (CPython3 + JPype), driven by
+#   scripts/gruntz/ghidra/run_enrich.py (which boots PyGhidra, imports/analyzes
+#   GRUNTZ.EXE, then runs this + export.py). Invoked via `gruntz init` /
+#   `gruntz ghidra-refresh`. The flat-API globals (currentProgram, monitor, ...)
+#   are injected by pyghidra.ghidra_script.
 #
 #   Writes build/ghidra-named/exports/enrichment_apply_report.txt
 #@category Gruntz
@@ -111,6 +113,28 @@ GRUNTZ_CAT = CategoryPath("/Gruntz")
 # canonical builtin lookups, cached
 _type_cache = {}
 
+# Ghidra built-in primitive singletons, used as a last resort when no type
+# archive (windows_vs12_32) is attached so a name like "void"/"int" still
+# resolves. On GRUNTZ.EXE the archive provides them and this never fires.
+_BUILTIN_PRIMS = None
+def _builtin_prim(name):
+    global _BUILTIN_PRIMS
+    if _BUILTIN_PRIMS is None:
+        from ghidra.program.model.data import (
+            VoidDataType, IntegerDataType, CharDataType, UnsignedIntegerDataType,
+            ShortDataType, LongDataType, FloatDataType, DoubleDataType,
+            BooleanDataType, UnsignedCharDataType, UnsignedShortDataType,
+            UnsignedLongDataType)
+        _BUILTIN_PRIMS = {
+            "void": VoidDataType.dataType, "int": IntegerDataType.dataType,
+            "char": CharDataType.dataType, "uint": UnsignedIntegerDataType.dataType,
+            "short": ShortDataType.dataType, "long": LongDataType.dataType,
+            "float": FloatDataType.dataType, "double": DoubleDataType.dataType,
+            "bool": BooleanDataType.dataType, "uchar": UnsignedCharDataType.dataType,
+            "ushort": UnsignedShortDataType.dataType, "ulong": UnsignedLongDataType.dataType,
+        }
+    return _BUILTIN_PRIMS.get(name)
+
 def _find_named(name):
     """Resolve a bare datatype name to a DataType (no pointer), or None."""
     if name in _type_cache:
@@ -122,6 +146,10 @@ def _find_named(name):
         dtm.findDataTypes(name, lst)
         if lst.size() > 0:
             dt = lst.get(0)
+    if dt is None:
+        # last resort: Ghidra's built-in primitive (so void*/int fallbacks and
+        # struct fields still resolve when no Windows type archive is attached)
+        dt = _builtin_prim(name)
     _type_cache[name] = dt
     return dt
 
@@ -148,9 +176,11 @@ PTR_FALLBACK = None  # void*
 INT_FALLBACK = None
 
 def init_fallbacks():
+    # _find_named falls back to Ghidra built-in primitives, so void/int are
+    # never None here (avoids JPype's PointerDataType(None) ambiguous overload,
+    # which Jython tolerated).
     global PTR_FALLBACK, INT_FALLBACK
-    voidt = _find_named("void")
-    PTR_FALLBACK = PointerDataType(voidt)
+    PTR_FALLBACK = PointerDataType(_find_named("void"))
     INT_FALLBACK = _find_named("int")
 
 def resolve_type(ctype):
@@ -388,8 +418,10 @@ BOGUS = [
     re.compile(r"^\?\?0__non_rtti_object@@"),
     re.compile(r"^opt_get_"), re.compile(r"^opt_set_"),
 ]
-def is_default(nm): return nm.startswith("FUN_") or nm.startswith("thunk_FUN_")
-def is_bogus(nm):   return any(p.search(nm) for p in BOGUS)
+def is_default(nm):
+    nm = str(nm)
+    return nm.startswith("FUN_") or nm.startswith("thunk_FUN_")
+def is_bogus(nm):   return any(p.search(str(nm)) for p in BOGUS)
 
 def ensure_function(addr):
     fn = fm.getFunctionAt(addr)
@@ -480,7 +512,7 @@ try:
             continue
         eng.append((rva, r[1], r[2], r[3], r[4], r[5], r[6]))
 
-    sym_rows = load_csv_rows(CSV_SYMBOL)    # rva,name,unit
+    sym_rows = load_csv_rows(CSV_SYMBOL) if os.path.exists(CSV_SYMBOL) else []  # rva,name,unit
     syms = []
     for r in sym_rows:
         if len(r) < 2: continue
@@ -525,7 +557,7 @@ try:
         if fn is None:
             n_sym_nofunc += 1
             continue
-        cur = fn.getName()
+        cur = str(fn.getName())
         if is_default(cur) or is_bogus(cur) or cur != name:
             try:
                 fn.setName(name, US); n_sym_named += 1
@@ -575,7 +607,7 @@ try:
         if ns is not None:
             try:
                 pn = fn.getParentNamespace()
-                if pn is None or pn.getName() != ns.getName():
+                if pn is None or str(pn.getName()) != str(ns.getName()):
                     fn.setParentNamespace(ns); n_ns += 1
             except Exception:
                 pass
@@ -661,12 +693,49 @@ try:
     n_structs_applied = sum(1 for (nm,(dt,ap)) in struct_dt_by_name.items() if ap)
     R("structs flagged apply-as-this: %d / %d defined" % (n_structs_applied, len(struct_dt_by_name)))
 
+    # ---- (F) backfill the leading incremental-linker JMP-thunk table ----
+    # MSVC lays a run of 5-byte `jmp target` thunks at the very start of .text
+    # (RVA 0x1000), preceded by 0xCC padding. Ghidra 12.0.4's auto-analysis
+    # disassembles these jmps but does NOT wrap the first few in Function objects
+    # (the older 11.4.2 analysis did). vostok-delinker needs a named function
+    # at-or-before EVERY .text reloc target (relocs.rs: range(..=rva).next_back()),
+    # so a reloc into an unwrapped leading thunk panics ("all function relocs to
+    # be named"). Create a function at each instruction in .text that has no
+    # containing function, up to the first already-existing function entry, so the
+    # thunk table is fully covered. (Ghidra named the wrapped ones thunk_FUN_*;
+    # the new ones get default FUN_* names, which is what the delinker needs.)
+    n_thunk_backfill = 0
+    try:
+        text_block = None
+        for blk in prog.getMemory().getBlocks():
+            if str(blk.getName()) == ".text":
+                text_block = blk
+                break
+        if text_block is not None:
+            first_fn = None
+            for f in fm.getFunctions(True):
+                first_fn = f
+                break
+            stop = first_fn.getEntryPoint() if first_fn is not None else text_block.getEnd()
+            it = listing.getInstructions(text_block.getStart(), True)
+            while it.hasNext():
+                inst = it.next()
+                ia = inst.getAddress()
+                if ia.compareTo(stop) >= 0:
+                    break
+                if fm.getFunctionContaining(ia) is None:
+                    if ensure_function(ia) is not None:
+                        n_thunk_backfill += 1
+    except Exception as e:
+        R("thunk backfill skipped: %s" % e)
+    R("leading-thunk functions backfilled: %d" % n_thunk_backfill)
+
     # ---- coverage ----
     from ghidra.program.model.data import Pointer as _Ptr
     named = 0; funn = 0; thiscall = 0; typed_this_now = 0; named_param = 0
     bare_regions = {}
     for fn in fm.getFunctions(True):
-        nm = fn.getName()
+        nm = str(fn.getName())
         frva = fn.getEntryPoint().getOffset() - IMAGE_BASE
         if nm.startswith("FUN_"):
             funn += 1
@@ -674,12 +743,12 @@ try:
             bare_regions[b] = bare_regions.get(b, 0) + 1
         else:
             named += 1
-        if fn.getCallingConventionName() == "__thiscall":
+        if str(fn.getCallingConventionName()) == "__thiscall":
             thiscall += 1
         ps = fn.getParameters()
         sawnamed = False
         for i, p in enumerate(ps):
-            pn = p.getName()
+            pn = str(p.getName()) if p.getName() is not None else ""
             if pn and not pn.startswith("param_") and not pn.startswith("in_") and pn != "this":
                 sawnamed = True
             if i == 0:
@@ -687,7 +756,7 @@ try:
                 base = d.getDataType() if isinstance(d, _Ptr) else d
                 if base is not None:
                     cp = base.getCategoryPath()
-                    if cp is not None and cp.getPath().startswith("/Gruntz"):
+                    if cp is not None and str(cp.getPath()).startswith("/Gruntz"):
                         typed_this_now += 1
         if sawnamed:
             named_param += 1
@@ -703,6 +772,9 @@ finally:
     prog.endTransaction(tx, ok)
 
 # write report
+_rep_dir = os.path.dirname(REPORT)
+if _rep_dir and not os.path.isdir(_rep_dir):
+    os.makedirs(_rep_dir)
 fh = open(REPORT, "w")
 try:
     for ln in report: fh.write(ln + "\n")
