@@ -2,48 +2,48 @@
 
 The base/recompile side of the matching loop is a **native incremental ninja
 build** generated from a single manifest. It replaces the old
-`scripts/rebuild.py` recompile-everything loop (and folds in the standalone
-`scripts/generate_objdiff_config.py`).
+recompile-everything front-end (`rebuild.py`, now removed) and folds the objdiff
+project generation into `configure.py`. `gruntz build` is the one entry point.
 
 ```
 config/units.toml  (per-TU manifest: unit, source, status, optional cflags)
         |  python3 configure.py
         v
-build.ninja  +  compile_commands.json  +  build/objdiff/objdiff.json
+build.ninja  +  build/objdiff/objdiff.json
         |  ninja
         +-- PHASE 1 (compile): each unit -> build/objdiff/base/<unit>.obj
-        |       via the `cl` rule -> scripts/cc_wrap.py -> `wine cl /c ... /Fo`
-        +-- TARGET (delink): scripts/delink_target.py
+        |       via the `cl` rule -> scripts/gruntz/build/cc_wrap.py -> `wine cl /c ... /Fo`
+        +-- TARGET (delink): scripts/gruntz/build/delink.py
         |       synth_pdb.py -> vostok-delinker -> build/objdiff/target/<unit>.c.obj
         v
 objdiff-cli report generate -p build/objdiff -o build/objdiff/report.json
         |
         v
-per-unit + roll-up match % (scripts/rebuild.py prints this; it is now a thin
+per-unit + roll-up match % (`gruntz build` prints this; it is now a thin
 wrapper around configure.py + ninja + objdiff)
 ```
 
 Everything runs inside `nix develop .#build` (exports `MSVC_DIR`, `DXSDK_DIR`,
 `WINEPREFIX`, and now `ninja` on PATH). Initialise the Wine prefix once with
-`scripts/setup-toolchain.py` if it has not been set up.
+`scripts/gruntz/init/toolchain.py` if it has not been set up.
 
 ## Quick start
 
 ```sh
-nix develop .#build --command python3 scripts/setup-toolchain.py   # once
+nix develop .#build --command python3 scripts/gruntz/init/toolchain.py   # once
 nix develop .#build --command python3 configure.py                 # manifest -> build.ninja
 nix develop .#build --command ninja                                # build (incremental)
-nix develop .#build --command python3 scripts/rebuild.py           # all of the above + match summary
+nix develop .#build --command gruntz build           # all of the above + match summary
 ```
 
-`scripts/rebuild.py` is the one-command front door (configure -> ninja ->
+``gruntz build`` is the one-command front door (configure -> ninja ->
 objdiff report -> summary). Pass ninja args after `--`, e.g.
-`python3 scripts/rebuild.py -- -j8`.
+`gruntz build -- -j8`.
 
 ## The manifest: `config/units.toml` (single source of truth)
 
 Per **translation unit** (per-TU). This is the counterpart to
-`config/symbol_names.csv`, which is per-**function** (`rva,name,unit`). Every
+`build/gen/symbol_names.csv`, which is per-**function** (`rva,name,unit`). Every
 `unit` in the manifest must line up with a `unit` value used in
 `symbol_names.csv` so the recompiled base obj pairs with the delinked target obj
 of the same name.
@@ -82,11 +82,11 @@ to need different flags; today every unit inherits the global set.
 
 ```ninja
 rule cl
-  command = python3 scripts/cc_wrap.py --out $out --src $in -- $cflags
+  command = python3 scripts/gruntz/build/cc_wrap.py --out $out --src $in -- $cflags
   description = cl $unit
 ```
 
-`scripts/cc_wrap.py` is the Linux->Wine bridge. For each TU it:
+`scripts/gruntz/build/cc_wrap.py` is the Linux->Wine bridge. For each TU it:
 
 1. resolves `CL.EXE` under `$MSVC_DIR/bin` (case-insensitive) and checks `wine`,
 2. keeps a persistent `wineserver -p` alive (so `ninja -j` parallelism does not
@@ -107,8 +107,8 @@ code, not the COFF header timestamp, which varies run to run).
 
 Each manifest unit's `source` compiles to `build/objdiff/base/<unit>.obj` via
 the `cl` rule. This is the base side fed to objdiff. Native incremental: edit a
-source, change `config/symbol_names.csv`, or add a unit, and ninja rebuilds only
-what changed.
+source (or its `// @address:` annotations), or add a unit, and ninja rebuilds
+only what changed (the label map regenerates from `src/`).
 
 ### Phase 2 — link -> candidate `.EXE` (DEFERRED)
 
@@ -130,27 +130,58 @@ implemented it will add:
 ## The target (delink) half
 
 Unchanged in spirit, just orchestrated by ninja. The `delink` rule runs
-`scripts/delink_target.py`, which:
+`scripts/gruntz/build/delink.py`, which:
 
-1. runs `scripts/synth_pdb.py` (overlay `config/symbol_names.csv` onto the
+1. runs `scripts/gruntz/build/synth_pdb.py` (overlay `build/gen/symbol_names.csv` onto the
    Ghidra `functions.csv`/`symbols.csv` -> a fabricated `gruntz_named.pdb`,
    bucket-shift 16 so un-named functions group into `seg_NNNN.cpp`),
-2. runs `vostok-delinker` on the **break_reloc_cycle'd**
-   `build/exe/GRUNTZ.delinkable.EXE` -> `build/delink/named/`,
+2. runs `vostok-delinker` on `build/exe/GRUNTZ.EXE` (the stable retail copy)
+   -> `build/delink/named/`,
 3. collects the in-scope `<unit>.c.obj` into `build/objdiff/target/`.
 
-`scripts/synth_pdb.py` and `scripts/break_reloc_cycle.py` are kept; the EXE prep
-(`break_reloc_cycle.py` -> `GRUNTZ.delinkable.EXE`) is a one-time setup step
-upstream of this build.
+`synth_pdb.py` (under `scripts/gruntz/build/`) is kept. The whole one-time local
+setup runs in `gruntz init`: a stable retail copy at `build/exe/GRUNTZ.EXE`, and
+the heavy Ghidra DB build + `functions.csv`/`symbols.csv` export (import +
+auto-analyze GRUNTZ.EXE, then `apply.py`/`export.py`). The FID library labels are
+tracked
+(`config/library_labels.csv`, so they survive `git clean`); regenerate them with
+`scripts/analysis/fid_generate.py`.
 
-The delink rule's declared outputs are the 9 `build/objdiff/target/<unit>.c.obj`
+The delink rule's declared outputs are the per-unit `build/objdiff/target/<unit>.c.obj`
 (one command, multiple outputs); its inputs are the EXE + the two Ghidra CSVs +
-`config/symbol_names.csv`, so changing the names map re-delinks.
+`build/gen/symbol_names.csv`.
+
+### What triggers a re-delink
+
+The delink is keyed on **`build/gen/symbol_names.csv`** (the EXE + Ghidra CSVs only
+change at `gruntz init`). So in the inner loop, editing a `src/` `// @address:` is
+what re-delinks: ninja regenerates the label map, which *is* the delink's input.
+The full chain a single `gruntz build` runs:
+
+```
+edit src/<unit>.cpp  (add / change a  // @address: 0x<rva>)
+  └─ gruntz build → configure.py (build.ninja) → ninja:
+       cl         rule  cc_wrap.py   → build/objdiff/base/<unit>.obj   (recompile via wine cl)
+       gen_labels rule  labels.py    → build/gen/symbol_names.csv      (rva → name → unit)
+                                        ↑ a src @address changed ⇒ the label map regenerates
+       delink     rule  delink.py    ← symbol_names.csv is a declared input, so it re-runs:
+                        synth_pdb.py    functions.csv + symbols.csv + symbol_names.csv
+                                          → build/pdb/gruntz_named.pdb
+                        vostok-delinker  GRUNTZ.EXE + the PDB → build/delink/named/
+                        collect          → build/objdiff/target/<unit>.c.obj
+       objdiff-cli report generate    → build/objdiff/report.json
+```
+
+In practice the delink re-runs on **every** `src/` edit: `gen_labels` rewrites
+`symbol_names.csv` unconditionally (fresh mtime) and the delink rule has no
+`restat` guard, so even a body-only tweak (identical labels) re-delinks. That's
+left as-is on purpose — the delink is one command emitting all units' objs in a
+single cheap pass (~one synth_pdb + one vostok-delinker over the EXE), the whole
+loop is fast, and a write-if-different + `restat` skip isn't worth the complexity.
 
 ## Pairing (objdiff)
 
-`build/objdiff/objdiff.json` (written by `configure.py:emit_objdiff`, absorbed
-from the old `generate_objdiff_config.py`) pairs, per unit:
+`build/objdiff/objdiff.json` (written by `configure.py:emit_objdiff`) pairs, per unit:
 
 - base: `./base/<unit>.obj` (cl `/O2 /MT vendor/zlib-1.0.4/<unit>.c`)
 - target: `./target/<unit>.c.obj` (delinked, named per `symbol_names.csv`)
@@ -163,25 +194,47 @@ does not exist yet is paired against an empty `dummy.obj` so it still lists at
 ## Add a translation unit
 
 1. add an `[[unit]]` block to `config/units.toml` (`unit`, `source`, `status`);
-2. add its functions (`rva,name,unit`) to `config/symbol_names.csv`;
-3. `python3 configure.py` then `ninja` (or just `python3 scripts/rebuild.py`).
+2. annotate **each** matched function in `src/` with the canonical block — a `// ----`
+   rule, a one-line description, then `@address` and `@size`, closed by another
+   rule. A real example from `src/Gruntz/SBI_RectOnly.cpp`:
+
+   ```cpp
+   // ---------------------------------------------------------------------------
+   // CSBI_RectOnly::CSBI_RectOnly()
+   // Inlines the CStatusBarItem base ctor (the dead m_8=0 store is elided),
+   // stores its own vptr, then sets m_8 = 1.
+   //
+   // @address: 0x101fa0    // retail .text RVA (VA = 0x400000 + rva)
+   // @size:    0x1b        // the function's byte_size from functions.csv
+   // ---------------------------------------------------------------------------
+   CSBI_RectOnly::CSBI_RectOnly()
+   {
+       m_8 = 1;
+   }
+   ```
+
+   `gen_labels` parses only `@address` (plus an optional `@symbol` override for the
+   rare case clang's MS mangling differs from VC5's); `@size` is documentation —
+   the human cross-check against `functions.csv`. The label map regenerates from
+   these annotations — never hand-edit the CSV;
+3. `gruntz build` (configure -> compile -> labels -> delink -> objdiff).
 
 ## Generated vs. tracked
 
-Tracked: `config/units.toml`, `config/symbol_names.csv`, `configure.py`,
-`scripts/{cc_wrap,delink_target,synth_pdb,break_reloc_cycle,rebuild,ninja_syntax}.py`.
+Tracked: `config/units.toml`, the `src/` sources (incl. their `// @address:`
+annotations), `configure.py`, and the pipeline package
+`scripts/gruntz/{build,ghidra,init}/`.
 
-Generated (git-ignored): `build.ninja`, `compile_commands.json`,
-`.ninja_log`/`.ninja_deps`, and everything under `build/` (base objs, delinked
-target objs, synth PDB, objdiff project + report).
+Generated (git-ignored): `build/gen/symbol_names.csv` (from `src/` `@address`),
+`build.ninja`, `.ninja_log`/`.ninja_deps`, and everything under `build/` (base
+objs, delinked target objs, synth PDB, the clangd compdb, the wine prefix, the
+Ghidra DB + exports, objdiff project + report).
 
 ## Current status
 
-The 9 matched zlib 1.0.4 TUs (`adler32 deflate trees inftrees infblock infcodes
-inffast infutil zutil`) build through ninja and reproduce the prior match: the
-42 named functions pair against the delinked target with adler32/zutil/infutil/
-deflate at 100% exact code, and trees/inftrees/infcodes/infblock at lower
-*exact* % but ~99-100% *fuzzy* (a reloc-naming gap — the delinked target's
-relocs reference Ghidra `DAT_*/FUN_*` names while the base references the real
-zlib symbols — not a code difference). Roll-up: 30/42 functions exact, 99.52%
-fuzzy across the 9 named units.
+zlib 1.0.4 plus a growing set of engine/Gruntz reconstructions build through ninja,
+and the generated label map drives the delink. **Run `gruntz status` for the live
+match %** (kept out of this doc so it can't go stale). Part of the exact-vs-fuzzy
+gap is a reloc-naming difference — delinked relocs reference Ghidra `DAT_*/FUN_*`
+while the base references the real symbols, not a code difference — and the rest
+are functions still in progress.

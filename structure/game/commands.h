@@ -5,7 +5,7 @@
  * Command pattern — player input/orders to gruntz, in single- and multi-player
  * variants. In MP these are presumably serialized over DirectPlay (lockstep).
  *
- * Provenance: ALL names from RTTI (mangled names kept). Name-only / @todo.
+ * Provenance: ALL names from RTTI (mangled names kept). Name-only stubs (no layout recovered).
  */
 
 class CGruntzCommand       { /* .?AVCGruntzCommand@@ */ };       // base command

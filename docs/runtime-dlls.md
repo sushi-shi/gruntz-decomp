@@ -6,7 +6,7 @@ under Wine it needs the same proprietary third-party DLLs the retail game shippe
 from, its hash/size, whether it is required vs optional, and - the key point -
 that **none of them are needed at build/link time**.
 
-Mechanism mirrors vostok's `vostok-libs`: a `gruntz-runtime` derivation
+The mechanism: a `gruntz-runtime` derivation
 (a `runCommand`) assembles the DLLs into one out dir, exposed in the `.#build`
 devShell as `$GRUNTZ_RUNTIME`. The DLLs that *do* ship on the retail CD are
 pulled straight out of the Internet Archive CD image using the same

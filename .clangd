@@ -24,6 +24,11 @@ CompileFlags:
     # the abort point. clangd's command mangler drops this flag when it comes
     # from the compdb, so it MUST live here.
     - -ferror-limit=0
+    # MSVC 5.0 predates the C++11 rule that bans `char *p = "literal";` (only
+    # *deprecated* in C++98/03). The real cl build accepts it, so clang's
+    # -Wwritable-strings ("ISO C++11 does not allow conversion from string
+    # literal to 'char *'") is a false positive against our target - silence it.
+    - -Wno-writable-strings
 
 Diagnostics:
   # The toolchain headers are reached via /imsvc (system includes), so clangd

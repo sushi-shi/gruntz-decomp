@@ -58,7 +58,7 @@ The remaining unconstrained flags (`/Gy`, `/GF`, `/Zp`) are now **pinned** by ma
 the struct-/static-table-heavy zlib TUs (trees, inftrees, deflate, infblock, infcodes,
 inffast, infutil, zutil) against GRUNTZ.EXE. **42 zlib functions are byte-exact** at
 `cl /c /O2 /MT` (the same flags adler32 needs — no extra flags required). Evidence
-below; the per-function table lives in `config/symbol_names.csv`.
+below; the per-function table lives in `build/gen/symbol_names.csv`.
 
 Byte-exactness here means: extract the function's code bytes from the delinked target
 obj and the freshly-compiled base obj, zero the 4-byte slots covered by relocations on
@@ -92,8 +92,8 @@ all, confirming this.)
 
 **Conclusion: the global compile flags are `cl /c /O2 /MT` (cdecl). No `/Gy`, `/GF`, or
 `/Zp` override is needed — `/O2` already forces COMDAT, default packing is `/Zp8`, and
-`/GF` has no effect.** `scripts/rebuild.py`'s `CL_FLAGS = ["/nologo","/c","/O2","/MT"]`
-is correct and unchanged.
+`/GF` has no effect.** The build's `CL_FLAGS = ["/nologo","/c","/O2","/MT"]`
+(`scripts/gruntz/build/cc_wrap.py`) is correct and unchanged.
 
 Artifacts: `build/zlib-cal/` (per-flag `.obj` + extracted `code_*.bin` + disasms +
 `compare-table.txt`); objdiff project `build/objdiff/adler32-only/` (target
@@ -108,5 +108,5 @@ pinned by deflate.c, `/Gy` forced-on by `/O2` (confirmed by COMDAT layout), `/GF
 unconstrained (no effect). Remaining roll-forward: the deflate front-end
 (deflate/deflateInit2_/etc.), inflate.c, and the 4 trees.c init/rare functions
 (`_tr_init`, `_tr_static_init`, `_tr_align`, `_bi_flush`) that Ghidra did not carve as
-distinct functions in the contiguous zlib region — locate via xref/byte-search and add
-rows to `config/symbol_names.csv`.
+distinct functions in the contiguous zlib region — locate via xref/byte-search and
+annotate them in `src/` with `// @address:` (which regenerates `build/gen/symbol_names.csv`).

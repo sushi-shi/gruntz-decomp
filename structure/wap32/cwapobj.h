@@ -9,32 +9,16 @@
  * are confirmed shared across Gruntz / Claw / Get Medieval (REVERSE_ENGINEERING_
  * PLAN.md §11 lists CWapX/CWapObj as shared base classes).
  *
- * Provenance: NAMES from RTTI. NO layout recovered — all @todo.
+ * Provenance: NAMES from RTTI. NO layout recovered — left as name-only stubs.
  */
 
 namespace WAP32
 {
-    /*
-     * CWapObj — WAP base object.
-     * .?AVCWapObj@@
-     */
-    class CWapObj
-    {
-    public:
-        //@size: unknown @todo
-        //@todo: vtable + fields unknown. Likely the root of the engine object tree.
-    };
+    // CWapObj — WAP base object. Likely the root of the engine object tree.
+    class CWapObj { /* .?AVCWapObj@@ */ };
 
-    /*
-     * CWapX — WAP extension / COM-ish wrapper.
-     * .?AVCWapX@@
-     */
-    class CWapX
-    {
-    public:
-        //@size: unknown @todo
-        //@todo: vtable + fields unknown.
-    };
+    // CWapX — WAP extension / COM-ish wrapper.
+    class CWapX { /* .?AVCWapX@@ */ };
 }
 
 #endif /* WAP32_CWAPOBJ_H */

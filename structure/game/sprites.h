@@ -6,7 +6,7 @@
  * or near a grunt (health bar, stamina bar, powerup icon, selection ring, held
  * toy + toy timer + wingz timer), plus the cursor-snap sprite.
  *
- * Provenance: ALL names from RTTI (mangled names kept). Name-only / @todo.
+ * Provenance: ALL names from RTTI (mangled names kept). Name-only stubs (no layout recovered).
  * (Note: HUD/status-bar widgets live in statusbar.h; these are the in-world
  * per-grunt overlays.)
  */

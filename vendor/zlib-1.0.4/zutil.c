@@ -191,6 +191,7 @@ extern voidp  calloc OF((uInt items, uInt size));
 extern void   free   OF((voidpf ptr));
 #endif
 
+// @address: 0x188410
 voidpf zcalloc (opaque, items, size)
     voidpf opaque;
     unsigned items;
@@ -200,6 +201,7 @@ voidpf zcalloc (opaque, items, size)
     return (voidpf)calloc(items, size);
 }
 
+// @address: 0x188430
 void  zcfree (opaque, ptr)
     voidpf opaque;
     voidpf ptr;

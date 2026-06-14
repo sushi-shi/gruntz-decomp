@@ -45,16 +45,25 @@ namespace Utils
         void Free(T* pData);
 
     private:
-        //@offset: 0
-        char* m_pBlock;          // the single contiguous backing block
-        //@offset: 4
-        Node* m_pNextFreeNode;   // head of the free-list
-        //@offset: 8
-        unsigned int m_nodesCount;
-        //@offset: c
-        unsigned int m_dataOffset;  // offset from Node* to its `data` (= sizeof(Node*))
-        // (total 0x10)
-    };
+        char* m_pBlock;             // +0x00  the single contiguous backing block
+        Node* m_pNextFreeNode;      // +0x04  head of the free-list
+        unsigned int m_nodesCount;  // +0x08
+        unsigned int m_dataOffset;  // +0x0c  offset from Node* to its `data`
+    };                              // 0x10 bytes
 }
+
+// MemoryPool_Pair — the concrete Utils::MemoryPool<Pair> instantiation that
+// CGruntzMgr::memory_pool uses (see ../game/cgruntzmgr.h). The template above is
+// never instantiated in these comprehension TUs, so clang emits no record layout
+// for it; this is a plain struct mirror of its 0x10-byte layout (same field set,
+// element-type independent) so gen_structs emits a "MemoryPool_Pair" record.
+// @approx tomalla 1.0.1.77 (offsets version-independent).
+struct MemoryPool_Pair
+{
+    char*        m_pBlock;        // +0x00  the single contiguous backing block
+    void*        m_pNextFreeNode; // +0x04  head of the free-list (a Node*)
+    unsigned int m_nodesCount;    // +0x08
+    unsigned int m_dataOffset;    // +0x0c  offset from Node* to its `data`
+};                                // 0x10
 
 #endif /* UTILS_MEMORY_POOL_H */

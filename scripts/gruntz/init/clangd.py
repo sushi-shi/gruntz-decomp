@@ -38,10 +38,16 @@ import sys
 import tomllib
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parent.parent
+REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
+            Path(__file__).resolve().parent)
 MANIFEST = REPO / "config" / "units.toml"
 OUT_DIR = REPO / "build" / "clangd"
 OUT_FILE = OUT_DIR / "compile_commands.json"
+# Lowercase-symlink mirrors of the toolchain include dirs (git-ignored). The
+# 1990s MSVC/MFC + DX headers are ALL-UPPERCASE on disk (STRING.H, AFXWIN.H,
+# DDRAW.H) but sources include them lowercase (<string.h>); case-sensitive Linux
+# clang can't find them otherwise. See build_lowercase_mirror.
+MIRROR_DIR = OUT_DIR / "inc-lower"
 
 # MSVC 5.0 == cl 11.00 == _MSC_VER 1100. Tell clang to emulate that compiler so
 # the ancient MFC 4.2 / CRT headers take their MSVC-version codepaths.
@@ -93,6 +99,34 @@ def resolve_include_dirs() -> tuple[Path, Path, str]:
     return msvc_inc, dx_inc, f"nix build .#gruntz-toolchain ({root})"
 
 
+def build_lowercase_mirror(real: Path, mirror: Path) -> Path:
+    """Recursive lowercase-symlink mirror of `real`, so <string.h> resolves.
+
+    Every file FOO.H under `real` gets a lowercase symlink `foo.h` (to the real,
+    ABSOLUTE path) under `mirror`, preserving (lowercased) subdir structure.
+    `/imsvc <mirror>` then resolves a lowercase `#include <string.h>` onto the
+    uppercase `STRING.H` on disk. Rebuilt only when `real` changes (a marker
+    guards it) so a toolchain bump doesn't leave dangling symlinks.
+    """
+    import shutil
+    marker = mirror.parent / (mirror.name + ".src")
+    if mirror.is_dir() and marker.is_file() and marker.read_text() == str(real):
+        return mirror
+    if mirror.exists():
+        shutil.rmtree(mirror)
+    for root, _dirs, files in os.walk(real):
+        rel = os.path.relpath(root, real)
+        low = mirror if rel == "." else mirror / rel.lower()
+        low.mkdir(parents=True, exist_ok=True)
+        for fn in files:
+            link = low / fn.lower()
+            if not link.exists():
+                link.symlink_to(os.path.join(root, fn))
+    marker.parent.mkdir(parents=True, exist_ok=True)
+    marker.write_text(str(real))
+    return mirror
+
+
 def load_units(path: Path) -> list[dict]:
     with path.open("rb") as f:
         data = tomllib.load(f)
@@ -102,12 +136,15 @@ def load_units(path: Path) -> list[dict]:
     return units
 
 
-def base_flags(msvc_inc: Path, dx_inc: Path) -> list[str]:
+def base_flags(msvc_inc: Path, dx_inc: Path,
+               msvc_low: Path, dx_low: Path) -> list[str]:
     """The clang-cl flag set shared by every unit.
 
     /imsvc marks the toolchain headers as SYSTEM includes so clangd suppresses
     diagnostics that originate inside the ancient MFC/CRT headers (we only care
-    about diagnostics in our own sources).
+    about diagnostics in our own sources). The lowercase mirrors come FIRST so a
+    lowercase `#include <string.h>` resolves; the real (uppercase) dirs follow so
+    an exact-case `#include <STRING.H>` still resolves too.
     """
     return [
         f"--target={TARGET}",
@@ -118,6 +155,8 @@ def base_flags(msvc_inc: Path, dx_inc: Path) -> list[str]:
         "-fdelayed-template-parsing",
         # Treat the old toolchain headers as system headers (diagnostics there
         # are silenced); resolves WINDOWS.H, AFX*.H, ddraw.h, etc.
+        "/imsvc", str(msvc_low),
+        "/imsvc", str(dx_low),
         "/imsvc", str(msvc_inc),
         "/imsvc", str(dx_inc),
         *DEFINES,
@@ -126,8 +165,10 @@ def base_flags(msvc_inc: Path, dx_inc: Path) -> list[str]:
 
 def main() -> None:
     msvc_inc, dx_inc, source = resolve_include_dirs()
+    msvc_low = build_lowercase_mirror(msvc_inc, MIRROR_DIR / "msvc")
+    dx_low = build_lowercase_mirror(dx_inc, MIRROR_DIR / "dx")
     units = load_units(MANIFEST)
-    shared = base_flags(msvc_inc, dx_inc)
+    shared = base_flags(msvc_inc, dx_inc, msvc_low, dx_low)
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     entries = []
@@ -151,6 +192,7 @@ def main() -> None:
     print(f"[gen_clangd] include dirs ({source}):")
     print(f"    MSVC/MFC : {msvc_inc}")
     print(f"    DirectX  : {dx_inc}")
+    print(f"    lowercase mirrors -> {MIRROR_DIR} (resolves <string.h> etc.)")
     print("[gen_clangd] clang-cl flags per unit:")
     print("    clang-cl /c <src> " + " ".join(shared))
 

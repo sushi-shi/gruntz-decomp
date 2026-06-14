@@ -5,7 +5,7 @@
  * Miscellaneous game objects that don't fit a larger theme: no-op behaviors and a
  * single-frame message object.
  *
- * Provenance: ALL names from RTTI (mangled names kept). Name-only / @todo.
+ * Provenance: ALL names from RTTI (mangled names kept). Name-only stubs (no layout recovered).
  * CDoNothing / CDoNothingNormal are likely null-behavior placeholders used by the
  * trigger/logic system (a "do nothing" action). CSingleFrameMessage is probably a
  * transient one-frame on-screen message/notification.

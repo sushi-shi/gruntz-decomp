@@ -8,7 +8,7 @@ located installation media (with archive.org hashes so they can be pinned and
 verified *without* a download), why SP3 specifically, the extraction recipe, and
 the step-by-step TODO to actually build and publish the toolchain tarball.
 
-Mechanism mirrors the vostok project (which packages VS2008): the flake
+Mechanism: the flake
 `fetchurl`s a **prebuilt** toolchain tarball from a GitHub release, and a
 separate `scripts/create-toolchain-release.{nix,py}` builds that tarball from the
 original media. KEY DIFFERENCE: VC++ 5.0 media are **InstallShield/compressed
@@ -102,7 +102,7 @@ updates)** - which is exactly what `step2_apply_sp3()` in the .py does.
 VC++ 5.0 is pre-MSI: the VS97 CDs are **InstallShield with compressed CAB
 cabinets**, and SP3 is a self-extracting whole-file archive. Everything unpacks
 with `7z` - no Wine `msiexec /a`, no admin install, no MSI File-table key
-matching (the things vostok needs for VS2008).
+matching.
 
 ```
 # 1. Extract the VC++ 5.0 CD (VS97 Disc 3)
@@ -167,10 +167,14 @@ hit-rate is low, retry with the other VC5 SP libs (caveat in funcid doc).
 
 ---
 
-## 5. Step-by-step TODO to build the tarball
+## 5. How the tarball is built (reproduce from media)
 
-Nothing below has been done yet (no large downloads performed). The flake +
-scripts are scaffolded with `pkgs.lib.fakeHash` placeholders.
+The toolchain tarball is **built, published, and pinned**: the flake's
+`gruntz-toolchain` fetches it from the GitHub release with a real `sha256`, so
+`nix develop .#build` works today. The steps below reproduce that tarball from
+the original media. The base-disc and SP3 media hashes are pinned; what remains a
+`pkgs.lib.fakeHash` placeholder is the DirectX 6 SDK (not yet located — see Open
+items) and the `ninja-zip` hash.
 
 1. **Download + pin the base disc.** Fetch the VC5 ISO and let Nix compute the
    real sha256 (it will error on the fakeHash and print "got: sha256-…"):
@@ -183,8 +187,7 @@ scripts are scaffolded with `pkgs.lib.fakeHash` placeholders.
    `scripts/create-toolchain-release.nix`.
 2. **Download + pin SP3.** Same for `vs97sp3.zip` (verify md5
    `e25a5de59a663cd0b5bd3d1089f8adc8`), set `sp3-zip` sha256.
-3. **Pin ninja.** Set the `ninja-zip` sha256 (vostok used v1.12.1
-   `ninja-win.zip`; reuse it).
+3. **Pin ninja.** Set the `ninja-zip` sha256 for v1.12.1 `ninja-win.zip`.
 4. **(Optional) Locate + pin the DirectX 6 SDK.** Not found on archive.org
    during scaffolding (see below). When found, set `DXSDK_EXE` in the .nix
    shellHook and the `dxsdk-archive` sha256; otherwise the .py writes a `dx/`
@@ -196,20 +199,21 @@ scripts are scaffolded with `pkgs.lib.fakeHash` placeholders.
    It 7z-extracts the ISO, expands cabs, locates the VC tree, overlays SP3,
    verifies `link 5.10.7303` + `cvtres 5.00.1668` + `LIBCMT.LIB`/`NAFXCW.LIB`,
    assembles `msvc/`+`dx/`+`ninja/`, and writes a reproducible
-   `binaries/gruntz-toolchain-vc50.tar.xz`, printing its sha256.
+   `build/gruntz-toolchain-vc50.tar.xz`, printing its sha256.
 6. **Publish the release** (the .py prints the exact command):
    ```
-   gh release upload v1.0 binaries/gruntz-toolchain-vc50.tar.xz \
-     --repo srp-survarium/gruntz-build-env --clobber
+   gh release upload toolchain-vc50-sp3 build/gruntz-toolchain-vc50.tar.xz \
+     --repo sushi-shi/gruntz-decomp --clobber
    ```
-7. **Set the flake hash.** Replace the `gruntz-toolchain` fetchurl's
-   `sha256 = pkgs.lib.fakeHash;` in `flake.nix` with the printed digest (and the
-   real release URL if the repo/tag differ from the placeholder). Then
-   `nix develop .#build` provides MSVC 5.0 SP3 under Wine.
+7. **Update the flake hash (only if you rebuilt the tarball).** The
+   `gruntz-toolchain` fetchurl in `flake.nix` is already pinned to the published
+   release (real URL + `sha256`). If you republish a new tarball, replace that
+   `sha256` with the printed digest. `nix develop .#build` then provides MSVC 5.0
+   SP3 under Wine.
 
 ### Reproducibility note
 
-`step5_package()` (carried over from vostok verbatim) normalises all tar
+`step5_package()` normalises all tar
 metadata (`--sort=name`, fixed `--mtime`, zeroed owner/group, `--format=gnu`), so
 the same pinned media + tooling yield a byte-identical tarball on any machine.
 
@@ -222,11 +226,10 @@ the same pinned media + tooling yield a byte-identical tarball on any machine.
   import libs + headers. Candidates to check later: an MSDN/Platform SDK disc of
   the era, or a dedicated "DirectX 6.0 SDK"/"DX6 SDK" item. Until then the `dx/`
   step is a `fakeHash`-only placeholder and the .py emits `dx/README.TODO`.
-  (vostok pulls DX from `DXSDK_Jun10.exe`; the DX6-era equivalent must be found.)
 - **Exact linker build (8034 caveat).** `docs/compiler-detection.md` flags that
   the Rich linker build 8034 is tagged "Likely Libs" and not cleanly tied to a
   single named SP installer; the cvtres 1668 match already anchors SP3. After
   building, empirically link a tiny PE with this `link.exe` and compare its Rich
   `prodID 0x13` build to 8034; if it differs, hunt for the patched linker.
-- **ninja sha256** in the .nix is a fakeHash placeholder (vostok's value was an
-  SRI nix32 hash for a different fetch; re-prefetch v1.12.1 `ninja-win.zip`).
+- **ninja sha256** in the .nix is a fakeHash placeholder (re-prefetch v1.12.1
+  `ninja-win.zip` and set it).

@@ -6,7 +6,7 @@
  * giant rocks, rolling balls, rain clouds, spotlights, UFOs, path/static hazards,
  * kitchen slime, toob spikez, brickz.
  *
- * Provenance: ALL names from RTTI (mangled names kept). Name-only / @todo.
+ * Provenance: ALL names from RTTI (mangled names kept). Name-only stubs (no layout recovered).
  * Corroborating strings: "No giant rock logic found {around|at}: x=%d, y=%d",
  * LEVEL_UFO / LEVEL_ROLLINGBALL sound keys (STRINGS_ANALYSIS.md §5, §11).
  */

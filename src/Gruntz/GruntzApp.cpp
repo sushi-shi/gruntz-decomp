@@ -65,10 +65,13 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// CGruntzApp::InitializeGameManager  @ RVA 0x080a20 (90 B).
+// CGruntzApp::InitializeGameManager
 // `return new WAP32::CGameMgr;` - operator new(0xa30) then a throwing ctor under
 // a C++ EH frame (this TU needs /GX). The push-ecx is MSVC reserving one dword
 // of locals for the new pointer / EH-tracked object; `this` is never read.
+//
+// @address: 0x80a20
+// @size:    0x5a
 // ---------------------------------------------------------------------------
 WAP32::CGameMgr *CGruntzApp::InitializeGameManager()
 {
@@ -76,12 +79,15 @@ WAP32::CGameMgr *CGruntzApp::InitializeGameManager()
 }
 
 // ---------------------------------------------------------------------------
-// CGruntzApp::ErrorDialogProc  @ RVA 0x080c70 (85 B).
+// CGruntzApp::ErrorDialogProc
 // INT_PTR CALLBACK (__stdcall, `ret 0x10`). Stashes the HWND unconditionally,
 // then: WM_INITDIALOG -> SetDlgItemTextA(hWnd, IDC_ERROR_TEXT, g_errorText);
 // WM_COMMAND with IDOK(1)/IDCANCEL(2) -> EndDialog(hWnd, 0). Returns 1 for both
 // handled cases, 0 otherwise. The switch reproduces the sub-0x110 / je / dec /
 // jne message ladder with the WM_INITDIALOG body laid out at the function tail.
+//
+// @address: 0x80c70
+// @size:    0x55
 // ---------------------------------------------------------------------------
 INT_PTR __stdcall CGruntzApp::ErrorDialogProc(HWND hWnd, UINT message,
                                               WPARAM wParam, LPARAM lParam)

@@ -6,7 +6,7 @@
  * scatter: the generic projectile base, boomerangs, bombs/time bombs, explosions,
  * and the particle system.
  *
- * Provenance: ALL names from RTTI (mangled names kept). Name-only / @todo.
+ * Provenance: ALL names from RTTI (mangled names kept). Name-only stubs (no layout recovered).
  * Corroborating: GAME_TIMEBOMB sound key (STRINGS_ANALYSIS.md §11).
  */
 

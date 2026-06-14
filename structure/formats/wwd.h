@@ -35,7 +35,11 @@
  * validate.
  */
 
-#include <stdint.h>
+/* MSVC 5.0 (1997) predates <stdint.h> (C99; MSVC added it in VS2010). This is a
+ * comprehension header, so just define the two fixed-width names it uses in terms
+ * of the native i386 types (int == long == 4 bytes under this target). */
+typedef unsigned int uint32_t;   /* 32-bit unsigned */
+typedef int          int32_t;    /* 32-bit signed   */
 
 /* -------------------------------------------------------------------------- */
 /* WWD level header — FULLY PINNED, size 1524 (0x5F4)                          */
@@ -44,44 +48,19 @@
  * The first u32 of the file == 1524 (== sizeof(WwdHeader); the "signature").
  * At file offset planesOffset (== 1524) the bytes 78 9C ... begin a zlib deflate
  * stream when flags bit1 (COMPRESS) is set; decompressed size == mainBlockLength.
+ *
+ * NOTE: WwdHeader has GRADUATED into src/Wwd/WwdFile.h (the authoritative,
+ * matched 0x5F4 layout). It is intentionally NOT re-declared here to avoid a
+ * second source of truth; the full field roster (levelName/author/rezFile/
+ * imageSet1..4/prefix1..4/numPlanes@0x2DC/planesOffset@0x2E0/...) is recorded in
+ * git history of this file. This header now carries only the structures that have
+ * not graduated: WwdPlaneHeader, PidHeader, and the flag enums.
  */
 enum WwdFlags
 {
     WWD_FLAG_USE_Z_COORDS = 1 << 0,  /* bit0 */
     WWD_FLAG_COMPRESS     = 1 << 1   /* bit1 — main block is zlib-deflated */
 };
-
-struct WwdHeader
-{                                          /* offsets in comments are bytes  */
-    uint32_t wwdSignature;            /* @0x000 (0)    == 1524 (header size)  */
-    uint32_t null0;                   /* @0x004 (4)                           */
-    uint32_t flags;                   /* @0x008 (8)    WwdFlags               */
-    uint32_t null1;                   /* @0x00C (12)                          */
-    char     levelName[64];           /* @0x010 (16)                          */
-    char     author[64];              /* @0x050 (80)                          */
-    char     birth[64];               /* @0x090 (144)                         */
-    char     rezFile[256];            /* @0x0D0 (208)  e.g. "..\CLAW.REZ"     */
-    char     imageDirectoryPath[128]; /* @0x1D0 (464)                         */
-    char     rezPalettePath[128];     /* @0x250 (592)                         */
-    int32_t  startX;                  /* @0x2D0 (720)                         */
-    int32_t  startY;                  /* @0x2D4 (724)                         */
-    uint32_t null2;                   /* @0x2D8 (728)                         */
-    uint32_t numPlanes;               /* @0x2DC (732)  loader reads [+0x2dc]  */
-    uint32_t planesOffset;            /* @0x2E0 (736)  == 1524 (main block)   */
-    uint32_t tileDescriptionsOffset;  /* @0x2E4 (740)  loader reads [+0x2e4]  */
-    uint32_t mainBlockLength;         /* @0x2E8 (744)  inflate out-size       */
-    uint32_t checksum;                /* @0x2EC (748)  loader reads [+0x2ec]  */
-    uint32_t null3;                   /* @0x2F0 (752)                         */
-    char     launchApp[128];          /* @0x2F4 (756)                         */
-    char     imageSet1[128];          /* @0x374 (884)                         */
-    char     imageSet2[128];          /* @0x3F4 (1012)                        */
-    char     imageSet3[128];          /* @0x474 (1140)                        */
-    char     imageSet4[128];          /* @0x4F4 (1268)                        */
-    char     prefix1[32];             /* @0x574 (1396)                        */
-    char     prefix2[32];             /* @0x594 (1428)                        */
-    char     prefix3[32];             /* @0x5B4 (1460)                        */
-    char     prefix4[32];             /* @0x5D4 (1492)                        */
-};  /* sizeof == 0x5F4 (1524) — PINNED (matches loader rep movs of 0x17d dwords) */
 
 /* -------------------------------------------------------------------------- */
 /* WWD plane header — size 160 (0xA0)                                          */

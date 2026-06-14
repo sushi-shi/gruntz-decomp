@@ -2,6 +2,14 @@
 // Matched: ??0CStatusBarItem@@QAE@XZ @ RVA 0x1005d0 (byte-exact).
 #include "StatusBarItem.h"
 
+// ---------------------------------------------------------------------------
+// CStatusBarItem::CStatusBarItem()
+// Out-of-line complete-object ctor: zeroes m_4/m_8/m_24/m_28 after the vftable
+// is installed.
+//
+// @address: 0x1005d0
+// @size:    0x17
+// ---------------------------------------------------------------------------
 CStatusBarItem::CStatusBarItem()
 {
     m_4  = 0;

@@ -9,29 +9,15 @@
  *   "ButeMgr:  duplicate {symbol|tag} encountered - %s"
  *   "ButeMgr:  Invalid tag specified - [%s]    Symbol not found - [%s]:%s"
  *   "ButeMgr:  Type mismatch - [%s]:%s"
- * (STRINGS_ANALYSIS.md §6). NOT in RTTI — no @rtti tag. NO layout recovered.
+ * (STRINGS_ANALYSIS.md §6). NOT in RTTI. NO layout recovered — name-only stub.
  *
  * This is a Monolith class reused from the LithTech lineage. It parses INI-like
- * "attribute" text databases:
- *   - attributez.txt / Attributez.txt  (game attribute database)
- *   - dwrects.txt                       (dword-rect table)
- * Tagged-section format ([tag] with typed key/value symbols).
+ * "attribute" text databases (attributez.txt, dwrects.txt): tagged-section format
+ * ([tag] with typed key/value symbols). Reported error codes (from strings):
+ * formatting error, bad symbol, invalid token, duplicate symbol/tag, invalid tag,
+ * symbol-not-found, type-mismatch.
  */
 
-#undef UNICODE
-#undef _UNICODE
-#include <afxwin.h>
-
-class ButeMgr
-{
-public:
-    //@size: unknown @todo
-    //@todo: Parse(path); typed getters (GetInt/GetString/GetRect/GetDword...);
-    //       symbol table keyed by [tag]:symbol. Layout unknown.
-    //
-    // Error codes it can report (from strings): formatting error, bad symbol,
-    // invalid token, duplicate symbol/tag, invalid tag, symbol-not-found,
-    // type-mismatch.
-};
+class ButeMgr { /* attribute-file parser; layout unknown */ };
 
 #endif /* MANAGERS_BUTEMGR_H */

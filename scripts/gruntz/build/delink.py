@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
-"""delink_target.py - produce the delinked, named per-unit target objects.
+"""delink.py - produce the delinked, named per-unit target objects.
 
-This is the TARGET (delink) half of the matching pipeline, factored out of the
-old scripts/rebuild.py so ninja can drive it as one rule (its declared outputs
-are the per-unit <unit>.c.obj target objects):
+This is the TARGET (delink) half of the matching pipeline, run as one ninja rule
+(its declared outputs are the per-unit <unit>.c.obj target objects):
 
-    config/symbol_names.csv  (curated rva -> name,unit)
+    build/gen/symbol_names.csv  (generated rva -> name,unit)
             |  overlay onto build/ghidra-enrich/exports/functions.csv
             v
-    scripts/synth_pdb.py     -> build/pdb/gruntz_named.{yaml,pdb}
+    scripts/gruntz/build/synth_pdb.py  -> build/pdb/gruntz_named.{yaml,pdb}
             |
             v
     vostok-delinker          -> build/delink/named/<unit>.c.obj (+ seg_*.cpp.obj)
@@ -17,10 +16,10 @@ are the per-unit <unit>.c.obj target objects):
     collect the in-scope <unit>.c.obj into <target-dir>/
 
 The base/compile half (cl /O2 /MT under wine) is a separate ninja graph driven
-by scripts/cc_wrap.py; the two are paired BY SYMBOL NAME in the objdiff project
-(configure.py), no symbol_mappings. KEEP scripts/synth_pdb.py +
-scripts/break_reloc_cycle.py - this script orchestrates them, it does not
-replace them.
+by scripts/gruntz/build/cc_wrap.py; the two are paired BY SYMBOL NAME in the
+objdiff project (configure.py), no symbol_mappings. KEEP
+scripts/gruntz/build/synth_pdb.py - this script orchestrates it, it does not
+replace it.
 
 Units to collect are taken from --unit (repeatable) so configure.py can pass
 exactly the manifest's unit set. The remaining address-bucketed seg_NNNN.cpp.obj
@@ -34,7 +33,7 @@ import sys
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-GRUNTZ_DIR = SCRIPT_DIR.parent
+GRUNTZ_DIR = next((p for p in SCRIPT_DIR.parents if (p / "flake.nix").exists()), SCRIPT_DIR)
 
 # Functions named in symbol_names.csv are attributed to their per-unit source
 # file; the un-named remainder fall into address buckets of 2**BUCKET_SHIFT
@@ -51,24 +50,17 @@ def die(msg: str) -> None:
     sys.exit(1)
 
 
-def tool(name: str, *symlinks: str) -> str:
-    """Resolve a tool: PATH first, then ./result* nix-build symlinks."""
-    found = shutil.which(name)
-    if found:
-        return found
-    for link in symlinks:
-        p = GRUNTZ_DIR / link / "bin" / name
-        if p.exists():
-            return str(p)
-    return name  # let subprocess surface the error
+def tool(name: str) -> str:
+    """Resolve a tool on PATH - the `nix develop .#build` shell provides them all."""
+    return shutil.which(name) or name  # bare name lets subprocess surface the error
 
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--exe", required=True, help="break_reloc_cycle'd delinkable EXE.")
+    ap.add_argument("--exe", required=True, help="the retail GRUNTZ.EXE.")
     ap.add_argument("--functions", required=True, help="ghidra functions.csv.")
     ap.add_argument("--symbols", required=True, help="ghidra symbols.csv.")
-    ap.add_argument("--names-map", required=True, help="config/symbol_names.csv.")
+    ap.add_argument("--names-map", required=True, help="build/gen/symbol_names.csv.")
     ap.add_argument("--pdb-dir", required=True, help="dir for the synth PDB/YAML.")
     ap.add_argument("--delink-dir", required=True, help="raw delinker output dir.")
     ap.add_argument("--target-dir", required=True,
@@ -107,7 +99,7 @@ def main() -> None:
         check=True,
     )
 
-    delinker = tool("vostok-delinker", "result")
+    delinker = tool("vostok-delinker")
     if delink_dir.exists():
         shutil.rmtree(delink_dir)
     delink_dir.mkdir(parents=True, exist_ok=True)
