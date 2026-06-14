@@ -17,6 +17,70 @@ fast-moving scratchpad. Newest at top within each section.
   -o - --format json-pretty`. Roll-up: `scripts/rebuild.py`.
 
 ## Subsystem notes
+### CNetMgr DirectPlay manager — message handlers + config writer (unit `netmgr` — 4/4 byte-exact under reloc-masking)
+- New TU `src/Net/NetMgr.{cpp,h}`. The engine **CNetMgr** (DirectPlay networking
+  manager, leaked `C:\Proj\NetMgr`). All 4 fns instruction-count-equal + **zero
+  structural diffs + zero non-reloc arg mismatches** (verified via the objdiff
+  instruction list: every mismatch carries a `relocation` or a `reloc` arg part):
+  OnMultiOptions@0x0badd0 **97.08%**, OnMultiPause@0x0bad40 **98.62%**,
+  OnOutOfSync@0x0bae40 **99.41%**, ApplyCmdDelayDefaults@0x0b85a0 **99.02%**.
+  Built `/O2 /MT /GX` (the config writer's three stack CString temps need the EH
+  frame; the 3 handlers carry no stack C++ object so /GX adds no frame to them).
+- **NO DirectPlay COM was needed for this cluster** — these are the *higher-level*
+  CNetMgr state/message methods, not the raw COM marshalling. The headline for the
+  COM-vtable worry: pick the state/accessor/setup methods first; they reach the
+  engine via plain `call`/IAT, never `call [iface+slot]`. (When a COM-vtable fn IS
+  unavoidable, model the interface as a struct whose first member is a vtable-ptr
+  to a struct of fn-ptrs padded to the used slot, so `pIface->vtbl->Method()` emits
+  `mov edx,[ecx]; call [edx+slot]` — reloc-masked. None used here.)
+- **The multiplayer dispatcher takes a CALLBACK fn-ptr as its 2nd arg (the load-
+  bearing shape).** Each handler does `MultiDispatch("MULTI_<CMD>", &Callback, 0)`
+  where the dispatcher is the engine @0x4bc250 (reached via incremental-link thunk
+  `0x4bc250`, `call rel32` reloc-masks) and the callback is a distinct engine fn
+  (@0x4bda70/0x4bd850/0x4bddd0, each ALSO via a `jmp` thunk @0x4027fc/0x40113b/
+  0x40301c — so the `push &callback` is a DIR32 reloc, masked). Model the callbacks
+  as `extern "C"` **address-taken-only no-body functions** and the dispatcher as
+  **`int __stdcall MultiDispatch(const char*, CallbackFn, int)`** — `__stdcall` is
+  required so the call site has **NO `add esp,0xc`** (the target lets the callee pop;
+  a cdecl decl emits the spurious caller-cleanup → arg-cascade). Return = a
+  WM-message id compared against `0x4cc`/`0x4cd`.
+- **OnOutOfSync's 3-way result test ⇒ `switch(r){case 0x4cc; case 0x4cd; default;}`**
+  → the `sub eax,0x4cc; je; dec eax; je; <default>` ladder (same switch-strength-
+  reduction idiom as CButeMgr's type getters). An if/else-if chain emits the wrong
+  `cmp;jne` polarity. The shared-flag store (`g_sharedFlag@0x648ce0=0`) schedules
+  *between* the `sub` and the first `je` (interleaved) — writing it as the stmt
+  right after the dispatch call reproduces that placement.
+- **PostMessage HWND chain = a 3-deep pointer walk** `((H*)((H*)m_4)->m_4)->m_4`
+  (m_4@+0x4 → +0x4 → +0x4 = the engine HWND), then `PostMessageA(hwnd, 0x111
+  /*WM_COMMAND*/, wParam, lParam)`; Pause/OutOfSync-0x4cc use `(0x80d7, m_1c)`,
+  OutOfSync-default uses `(0x8023, 0)`. PostMessageA is a **dllimport __stdcall**
+  decl → the `FF15 [IAT]` indirect form against the engine's cached USER32 slot
+  @0x6c44c8 (reloc-masked vs `[__imp__PostMessageA@16]`).
+- **The config writer reuses the already-matched `Utils::RegistryHelper` verbatim**
+  (`#include "../Utils/RegistryHelper.h"`) — the game-manager singleton @0x64556c
+  holds a `RegistryHelper*` @+0x38, and `reg->SetValueDword(name, value)` (already
+  matched @0x139460 in the `registryhelper` unit, `__thiscall ret 8`) reloc-masks
+  cleanly against the sibling unit's symbol. **A clean cross-TU reuse: call an
+  engine method already byte-matched in another unit and the `call rel32` just
+  reloc-masks** (no need to re-declare or re-match it). The value names are built
+  `m_598 + "_CmdDelay"/"_Resend"/"_DynCmdDelay"` via the AFXAPI `operator+`@0x1b9f81
+  (`__stdcall`, ret 0xc) into 3 stack CString temps; only 2 are written
+  (m_5a4 under _CmdDelay, m_5a8 under _Resend) — **the `_DynCmdDelay` temp is built
+  then discarded** (write it faithfully as a dead 3rd concat; all 3 dtors run).
+- **CNetMgr LAYOUT pinned (the deliverable):** **+0x4** m_4 (→ HWND via +0x4→+0x4);
+  **+0x1c** the WM_COMMAND wParam posted on resync; **+0x574** OnOutOfSync's
+  per-instance reentrancy guard; **+0x584** a state word cleared on handler entry;
+  **+0x598** a CString config value-name prefix; **+0x5a4/+0x5a8** the
+  _CmdDelay/_Resend command-timing values. Globals: `0x648d08` (OnMultiOptions
+  guard), `0x648d04` (OnMultiPause guard), `0x648ce0` (a shared flag cleared by all
+  three). The game-manager singleton @0x64556c has a `RegistryHelper*` @+0x38.
+- **UNLOCKED:** the CNetMgr message-handler entry points are anchored — the
+  multiplayer dispatcher @0x4bc250 + its 3 command callbacks (@0x4bda70/0x4bd850/
+  0x4bddd0) and the engine HWND-holder chain now have callers; RegistryHelper is
+  confirmed reusable cross-TU; the rest of the CNetMgr cluster (SetupSession,
+  SendChat, HandleSessionError, the DPLAYX/COM marshalling) can build on these
+  member offsets.
+
 ### CGrunt animation-resolver cluster (extended `grunt` — 5/5 logic+CFG+offsets byte-exact; Death 97.1%, Generic 94.7%, Moving 92.0%, Idle 91.4%, Battlecry 89.6%)
 - Extended `src/Gruntz/Grunt.{cpp,h}`. The 5 `CGrunt::Resolve*Animation`
   `__thiscall` methods (@0x045100 Moving / @0x0455f0 Death / @0x0457b0 generic

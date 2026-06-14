@@ -211,4 +211,8 @@ rva,name,unit
 0x0455f0,?ResolveDeathAnimation@CGrunt@@QAEHXZ,grunt
 0x0457b0,?ResolveAnimation@CGrunt@@QAEHXZ,grunt
 0x045960,?ResolveIdleAnimation@CGrunt@@QAEHXZ,grunt
-0x045b60,?ResolveBattlecryAnimation@CGrunt@@QAEHXZ,grunt
+0x045b60,?ResolveBattlecryAnimation@CGrunt@@QAEHXZ,grunt# CNetMgr DirectPlay networking manager (src/Net/NetMgr.cpp).
+0x0badd0,?OnMultiOptions@CNetMgr@@QAEXXZ,netmgr
+0x0bad40,?OnMultiPause@CNetMgr@@QAEXXZ,netmgr
+0x0bae40,?OnOutOfSync@CNetMgr@@QAEXXZ,netmgr
+0x0b85a0,?ApplyCmdDelayDefaults@CNetMgr@@QAEXXZ,netmgr

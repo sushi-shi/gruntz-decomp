@@ -298,3 +298,23 @@ status = "wip"
 # EH frame. The 7 HUD sprite creators carry no stack C++ object, so /GX does not
 # add an EH frame to them (verified - they stay byte-exact).
 cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+
+# --- CNetMgr DirectPlay networking manager (src/Net/NetMgr.cpp) -------------
+# A cluster of CNetMgr message handlers + a config writer. The three handlers
+# (OnMultiOptions@0x0badd0, OnMultiPause@0x0bad40, OnOutOfSync@0x0bae40) fire a
+# multiplayer command through the engine dispatcher (external, via incremental-
+# link thunk) under a reentrancy guard, then forward a WM_COMMAND to the engine
+# window via PostMessageA (cached USER32 IAT slot) on a matching result.
+# ApplyCmdDelayDefaults@0x0b85a0 persists command-timing config (m_5a4/m_5a8) to
+# the per-game Utils::RegistryHelper (the game-manager singleton @0x64556c +0x38)
+# via SetValueDword, building the value names with stack CString temporaries
+# (operator+) whose dtors run under a C++ EH frame -> /GX. The DirectPlay COM
+# interfaces / DPLAYX exports are external and never matched here. CNetMgr member
+# offsets pinned: +0x4 (m_4 -> HWND chain), +0x1c (resync wParam), +0x574
+# (OnOutOfSync per-instance guard), +0x584 (state word), +0x598 (CString name
+# prefix), +0x5a4/+0x5a8 (_CmdDelay/_Resend values).
+[[unit]]
+unit = "netmgr"
+source = "src/Net/NetMgr.cpp"
+status = "matched"
+cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
