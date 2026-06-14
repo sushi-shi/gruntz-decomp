@@ -65,8 +65,10 @@ struct CHudSprite {
 // ---------------------------------------------------------------------------
 struct CGruntHud {
     char m_pad0[0x5c];
-    int m_5c;       // +0x5c
-    int m_60;       // +0x60
+    int  m_5c;          // +0x5c
+    int  m_60;          // +0x60
+    char m_pad64[0x188 - 0x64];
+    int  m_188;         // +0x188  (cue arg)
 };
 
 // ---------------------------------------------------------------------------
@@ -86,13 +88,125 @@ struct CSpriteFactoryHolder {
     CSpriteFactory *m_8;    // +0x08
 };
 
+class CGruntCueSink;    // defined below (the 5-arg on-screen cue receiver)
+
 struct CGameRegistry {
     char m_pad0[0x30];
     CSpriteFactoryHolder *m_30;     // +0x30
+    char m_pad34[0x60 - 0x34];
+    CGruntCueSink *m_60;            // +0x60  (on-screen cue receiver)
+    char m_pad64[0x134 - 0x64];
+    int  m_134;                     // +0x134 (==1 => visible-bounds gate)
+    char m_pad138[0x13c - 0x138];
+    int  m_13c;                     // +0x13c (view min X)
+    int  m_140;                     // +0x140 (view min Y)
+    int  m_144;                     // +0x144 (view max X)
+    int  m_148;                     // +0x148 (view max Y)
 };
 
 // The global manager pointer at binary 0x64556c.
 extern CGameRegistry *g_pGameRegistry;  // *(CGameRegistry**)0x64556c
+
+// ===========================================================================
+// Animation-resolver cluster support (the 5 CGrunt::Resolve*Animation methods)
+// ===========================================================================
+//
+// An MFC-style CString (a single char* @+0). CGrunt stores its grunt-type name
+// in a CString member @+0x54; each resolver builds an animation key string
+//   "GRUNTZ_" + this->m_typeName + "_<CATEGORY>"
+// via the two engine global operator+ overloads, then hands the resulting char*
+// to the animator's lookup setter. Only the calls the resolvers emit are
+// modeled (external/no-body so the `call rel32` displacements reloc-mask): the
+// two operator+ overloads (@0x1b9ff5 / @0x1b9f81) and the dtor (@0x1b9cde).
+class AfxString {
+public:
+    AfxString();
+    ~AfxString();                  // @0x1b9cde  (the temp-destruction call)
+    operator const char *() const { return m_pchData; }
+    char *m_pchData;
+};
+
+// operator+(LPCTSTR, const CString&)  @0x1b9ff5  ("GRUNTZ_" + m_typeName)
+// operator+(const CString&, LPCTSTR)  @0x1b9f81  (... + "_CATEGORY")
+// AFXAPI == __stdcall: the callee pops the hidden return slot + both args
+// (ret 0xc), so there is NO `add esp` at the call site.
+AfxString __stdcall operator+(const char *lhs, const AfxString &rhs);
+AfxString __stdcall operator+(const AfxString &lhs, const char *rhs);
+
+// ---------------------------------------------------------------------------
+// CGruntAnimState - the per-grunt animation player the resolver drives (CGrunt
+// member @+0x38). The resolver feeds it the resolved animation in two steps:
+//   * SetGeometry(srcSprite) on the sub-player @+0x1a0 (engine @0x15c2d0,
+//     __thiscall ret 4) - also exposes m_1b4 (the active anim descriptor; the
+//     resolver caches m_1b4 into CGrunt::m_40 before the call, and Idle reads
+//     m_1b4->{m_c,m_10} to derive a 2nd lookup arg);
+//   * SetAnim(key) (engine @0x150540, __thiscall ret 4)  - 1-arg form, OR
+//     SetAnimEx(key, frame) (engine @0x1504d0, __thiscall ret 8) - 2-arg form
+//     (Idle only) - given the built animation-key char*.
+// All three are external/no-body (reloc-masked). m_1a0 is a raw sub-object the
+// geometry setter runs on; m_1b4 is the active-anim descriptor pointer.
+// ---------------------------------------------------------------------------
+// An animation-frame element the Idle resolver reads a sub-arg from.
+struct CAnimElem {
+    char m_pad0[0x14];
+    int  m_14;          // +0x14
+};
+
+struct CAnimDescColl {
+    char       m_pad0[0xc];
+    CAnimElem **m_c;    // +0x0c  element vector (Idle reads *m_c = first elem)
+    int        m_10;    // +0x10  element count (Idle: >0 gate)
+};
+
+class CGruntAnimSub {
+public:
+    void SetGeometry(int srcSprite);    // @0x15c2d0 (this = animState+0x1a0)
+};
+
+class CGruntAnimState {
+public:
+    void SetAnim(const char *key);              // @0x150540 (ret 4)
+    void SetAnimEx(const char *key, int frame); // @0x1504d0 (ret 8)
+
+    char           m_pad0[0x1a0];
+    CGruntAnimSub  m_1a0;       // +0x1a0  (geometry sub-player)
+    char           m_pad1a4[0x1b4 - 0x1a4];
+    CAnimDescColl *m_1b4;       // +0x1b4  active-anim descriptor
+};
+
+// The animation-set record the lookup tree (@0x6bf620, a CButeTree) returns;
+// stored into CGrunt::m_14->m_1c. m_1c holds the resolved anim-set node.
+struct CAnimLookupNode {
+    char  m_pad0[0x1c];
+    void *m_1c;         // +0x1c
+};
+
+// CButeTree::Find (@0x16d190, __thiscall ret 4) - the shared keyed lookup.
+class CAnimLookupTree {
+public:
+    void *Find(const char *key);    // @0x16d190
+};
+
+// The global animation lookup tree instance @0x6bf620.
+extern CAnimLookupTree g_animLookupTree;
+
+// A per-grunt time/seed default the Moving resolver copies into m_88 (@0x645588).
+extern int g_movingSeed;        // DAT_00645588
+
+// The engine LCG rand() (@0x11fee0, no args) the Moving/Idle/Battlecry resolvers
+// use to pick an animation index / start time.
+extern "C" int GruntRand();     // @0x11fee0
+
+// ---------------------------------------------------------------------------
+// The on-screen-cue receiver reached via g_pGameRegistry->m_60 (a __thiscall
+// @0x11b7c0, ret 0x14 = 5 stack args). The resolvers fire a 5-arg cue when the
+// grunt is on-screen (m_134 == 1 -> 4-way visible-bounds test) or unconditionally
+// otherwise. External/no-body (reloc-masked; reached via incremental-link thunk).
+// ---------------------------------------------------------------------------
+class CGruntCueSink {
+public:
+    void Cue(int a, int b, int c, int d, int e);   // @0x11b7c0 via thunk 0x33b4
+};
 
 // ---------------------------------------------------------------------------
 // CGrunt - only the members the HUD sprite creators touch. CGrunt is large;
@@ -122,9 +236,38 @@ public:
     int CreatePowerupSprite(int a); // 0x04d650 (ret 4)
     int CreateSelectedSprite();     // 0x04d730
 
-    char        m_pad0[0x10];
-    CGruntHud  *m_10;                       // +0x10
-    char        m_pad14[0x1b8 - 0x14];
+    // --- animation resolvers (this TU's targets) ---
+    int ResolveMovingAnimation();    // 0x045100
+    int ResolveDeathAnimation();     // 0x0455f0
+    int ResolveAnimation();          // 0x0457b0 (generic / "_JOY")
+    int ResolveIdleAnimation();      // 0x045960
+    int ResolveBattlecryAnimation(); // 0x045b60
+
+    char             m_pad0[0x10];
+    CGruntHud       *m_10;                  // +0x10
+    CAnimLookupNode *m_14;                  // +0x14  (anim-set lookup holder)
+    char             m_pad18[0x30 - 0x18];
+    int              m_30;                  // +0x30
+    char             m_pad34[0x38 - 0x34];
+    CGruntAnimState *m_38;                  // +0x38  (animation player)
+    char             m_pad3c[0x40 - 0x3c];
+    int              m_40;                  // +0x40  (cached m_38->m_1b4)
+    char             m_pad44[0x54 - 0x44];
+    AfxString        m_typeName;            // +0x54  (grunt-type name CString)
+    int              m_58[(0x68 - 0x58) / 4];   // +0x58  (Idle geometry sources)
+    int              m_68[(0x74 - 0x68) / 4];   // +0x68  (Battlecry geometry sources)
+    int              m_74;                  // +0x74  (generic geometry source)
+    int              m_78;                  // +0x78  (death geometry source)
+    int              m_7c;                  // +0x7c  (moving geometry source)
+    char             m_pad80[0x88 - 0x80];
+    int              m_88;                  // +0x88  (moving: = g_movingSeed)
+    int              m_8c;                  // +0x8c  (moving: = 0)
+    int              m_90;                  // +0x90  (moving: randomized time)
+    int              m_94;                  // +0x94  (moving: = 0)
+    char             m_pad98[0xa8 - 0x98];
+    int              m_a8;                  // +0xa8  (resolve gate / dirty flag)
+    int              m_ac;                  // +0xac  (cue arg)
+    char             m_padb0[0x1b8 - 0xb0];
     CHudSprite *m_selectedSprite;           // +0x1b8
     CHudSprite *m_toySprite;                // +0x1bc
     char        m_pad1c0[0x1c4 - 0x1c0];

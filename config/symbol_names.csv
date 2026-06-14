@@ -206,3 +206,9 @@ rva,name,unit
 0x04d520,?CreateWingzTimeSprite@CGrunt@@QAEHXZ,grunt
 0x04d650,?CreatePowerupSprite@CGrunt@@QAEHH@Z,grunt
 0x04d730,?CreateSelectedSprite@CGrunt@@QAEHXZ,grunt
+# CGrunt animation-resolver cluster (5 Resolve*Animation methods; same TU).
+0x045100,?ResolveMovingAnimation@CGrunt@@QAEHXZ,grunt
+0x0455f0,?ResolveDeathAnimation@CGrunt@@QAEHXZ,grunt
+0x0457b0,?ResolveAnimation@CGrunt@@QAEHXZ,grunt
+0x045960,?ResolveIdleAnimation@CGrunt@@QAEHXZ,grunt
+0x045b60,?ResolveBattlecryAnimation@CGrunt@@QAEHXZ,grunt

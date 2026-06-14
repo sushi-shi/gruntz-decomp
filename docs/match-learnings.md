@@ -17,6 +17,93 @@ fast-moving scratchpad. Newest at top within each section.
   -o - --format json-pretty`. Roll-up: `scripts/rebuild.py`.
 
 ## Subsystem notes
+### CGrunt animation-resolver cluster (extended `grunt` — 5/5 logic+CFG+offsets byte-exact; Death 97.1%, Generic 94.7%, Moving 92.0%, Idle 91.4%, Battlecry 89.6%)
+- Extended `src/Gruntz/Grunt.{cpp,h}`. The 5 `CGrunt::Resolve*Animation`
+  `__thiscall` methods (@0x045100 Moving / @0x0455f0 Death / @0x0457b0 generic
+  "_JOY" / @0x045960 Idle / @0x045b60 Battlecry). Each builds an animation-KEY
+  string **`"GRUNTZ_" + this->m_typeName + "_<CATEGORY>"`** (m_typeName is a
+  CString @CGrunt+0x54), feeds the resolved geometry source into the grunt's
+  animation player `m_38`, then does a single-char **`CButeTree::Find`** (the same
+  @0x16d190 the ButeMgr getters use, but on a DIFFERENT global tree instance
+  @0x6bf620 reached as `mov ecx,0x6bf620` not `lea ecx,[this+0x18]`) and caches
+  the result into `m_14->m_1c`. Death/generic/Idle/Battlecry also fire a 5-arg
+  on-screen "cue" gated on the grunt being inside the view rect. Category strings:
+  `_MOVING`@0x60d220 / `_DEATH`@0x60d22c / `_JOY`@0x60d234 / `_IDLE`@0x60d36c /
+  `_BATTLECRY`@0x60d374; prefix `GRUNTZ_`@0x60d28c; Find keys "B"/"C"/"E"/"A"/"F".
+- **THREE source levers, in descending impact (all three are required):**
+  1. **`AfxString` MUST have a user-declared `~AfxString()`** (the engine CString
+     dtor @0x1b9cde). The key string is built from two stack CString temporaries
+     (`"GRUNTZ_" + name` then `+ "_CAT"`); without a non-trivial dtor MSVC treats
+     them as trivially destructible and emits **NO C++ EH frame at all** (the whole
+     `fs:0` prolog/epilog + FuncInfo vanish → ~57%). Adding the dtor decl (no body,
+     reloc-masked) makes the temps get destruction calls under the EH frame → 89%.
+     (The unit therefore needs **/GX** — verified it does NOT add an EH frame to
+     the 7 sprite creators, which carry no stack C++ object, so they stay byte-
+     exact at their prior percentages.)
+  2. **The two `operator+` overloads are `AFXAPI` = `__stdcall`, NOT `__cdecl`.**
+     `CString operator+(LPCTSTR,const CString&)`@0x1b9ff5 and `operator+(const
+     CString&,LPCTSTR)`@0x1b9f81 both `ret 0xc` (callee pops the hidden struct-
+     return slot + both args). Declared plain (`__cdecl`, mangles `??H@YA…`) the
+     compiler emits a spurious **`add esp,0xc` after each call** (caller-cleanup)
+     and the stack-temp offsets cascade; `AfxString __stdcall operator+(…)` removes
+     it → **+~3-5% across all five** (Death 95→97, generic 90.9→94.7, etc.). The
+     by-value class return + the AFXAPI convention together give the exact
+     `lea &temp; push arg; push lit; push &temp; call; (no add esp)` shape.
+  3. **Visible-bounds gate ⇒ pin `int x=h->m_5c; int y=h->m_60;` locals.** The cue
+     fires only if the grunt is in the view rect: `if(g->m_134==1){ if(m_5c<g->m_144
+     && m_5c>=g->m_13c && m_60<g->m_148 && m_60>=g->m_140) cue(...);} else cue(...)`.
+     Writing the field accesses inline re-reads m_5c/m_60 each compare; the target
+     caches them in callee-saved regs (edx/edi, + ebp for m_144). Explicit `x`/`y`
+     locals force MSVC to allocate those callee-saved regs (and emit the matching
+     `push ebp`) → **+~6% on Death** (89→95). Same "pin a local to force the 4th
+     callee-saved reg" family as ButeMgr::ParseTagLine. Both cue branches pass the
+     SAME args (`m_10->m_188`, arg2, -1,-1,-1); only the GATE differs (the m_134!=1
+     else-branch is unconditional). arg2: Death=m_ac, generic=const 0x435/0x43f,
+     Idle=idx+0x431/0x43b, Battlecry=idx+0x42e/0x438.
+- **CGrunt LAYOUT pinned by the resolvers (the deliverable):** **+0x14** anim-set
+  lookup holder (`->m_1c` = resolved anim-set node); **+0x30** = old m_14->m_1c
+  (saved before Find); **+0x38** the **animation player** (`SetAnim`@0x150540 1-arg
+  `ret 4` / `SetAnimEx`@0x1504d0 2-arg `ret 8` on `this`; **`SetGeometry`@0x15c2d0
+  `ret 4` on the sub-player at player+0x1a0**; player **+0x1b4** = active-anim
+  descriptor, cached into **CGrunt+0x40** before the geometry call); **+0x54**
+  CString m_typeName; **+0x58[]** Idle geometry sources, **+0x68[]** Battlecry geo
+  sources, **+0x74** generic geo, **+0x78** death geo, **+0x7c** moving geo;
+  **+0x88/+0x8c/+0x90/+0x94** Moving-only time/seed block (`m_90 = (rand()%0x5dc1 +
+  0x1770)*10`, `m_88 = g@0x645588`, others 0); **+0xa8** the resolve gate / dirty
+  flag (`if (m_a8) return 0;` — Death latches `m_a8=1`, Moving does NOT); **+0xac**
+  the death-cue arg2. CGameRegistry (the @0x64556c singleton, already modeled):
+  **+0x60** the cue sink (`Cue`@0x11b7c0 via thunk 0x33b4, `ret 0x14` = 5 args),
+  **+0x134** the m_134==1 gate, **+0x13c/+0x140/+0x144/+0x148** the view rect
+  (minX/minY/maxX/maxY); CGruntHud **+0x188** the cue arg.
+- **Idle's unique frame-arg read:** `desc = m_38->m_1b4; elem = (desc->m_10>0)?
+  *desc->m_c:0; frame = elem->m_14;` — the field read on the possibly-NULL `elem`
+  is UNCONDITIONAL in the binary (`mov edi,[eax+0x14]` after the `xor eax,eax`
+  fall-through), so write it as the bare ternary-then-read (a faithful UB) feeding
+  `SetAnimEx(key, frame)`. Idle picks `idx = rand()%3 + 1` (1..3), Battlecry
+  `idx = rand()%3` (0..2) — note Battlecry has NO `inc`.
+- **The Moving resolver stores the time-block BEFORE the lookup; the others put
+  the geometry-setter FIRST then the string-setter** (Moving is the only one that
+  does `SetAnim` (string) before `SetGeometry`; Death/generic/Idle/Battlecry do
+  `SetGeometry` then the string call). Match the per-function order from the dump.
+- **PLATEAU residue (entropy-class, all 5):** (a) the `m_40 = m_38->m_1b4` store —
+  target schedules it AFTER the `lea this` for the geometry setter (m_1b4 in edx,
+  store after lea); mine puts m_1b4 in ecx so it stores before the lea. NO source
+  lever flips it (tried: reorder store after the call → 92.8% WORSE since the
+  target genuinely reads m_1b4 pre-call; a `geo` temp; an `anim` pointer local — no
+  effect). Pure edx/ecx allocator coin-flip, same family as the 7 creators'.
+  (b) Idle/Battlecry: the compiler hoists `idx+0xNNN` into a callee-saved reg at
+  branch-entry (mine computes it at the cue site); a `cue` local made it WORSE.
+  (c) the EH `fs:0` operands (FuncInfo/`__except_list`/`$L`) + the cascaded stack-
+  temp esp offsets are reloc/alignment, not logic. Instruction counts equal; left
+  per doctrine. objdiff "exact" = 0/12 (every call op is reloc-masked DIR32/REL32).
+- **UNLOCKED:** the CGrunt animation-resolution path is anchored — the animation
+  player methods (SetAnim@0x150540, SetAnimEx@0x1504d0, SetGeometry@0x15c2d0), the
+  global animation-set tree @0x6bf620 (a second `CButeTree::Find`@0x16d190 caller),
+  the on-screen cue sink @0x11b7c0 (registry+0x60, via thunk 0x33b4), and the
+  CString `operator+` AFXAPI pair (@0x1b9ff5/@0x1b9f81) now have callers. The
+  CGrunt member map grows by ~18 offsets (+0x14..+0xac) + the CGameRegistry view-
+  rect/cue members (+0x60, +0x134..+0x148) for the rest of the (huge) CGrunt TU.
+
 ### CGrunt HUD sprite-creator cluster (unit `grunt` — 7/7 logic byte-exact; 5 @99.3%+, 2 @~91.6% 2-arg plateau)
 - New TU `src/Gruntz/Grunt.{cpp,h}`. Seven contiguous `__thiscall` lazy HUD
   sprite creators on the engine **CGrunt** entity (@0x04d130..0x04d730:

@@ -293,4 +293,8 @@ cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
 unit = "grunt"
 source = "src/Gruntz/Grunt.cpp"
 status = "wip"
-cflags = ["/nologo", "/c", "/O2", "/MT"]
+# /GX: the animation-resolver cluster (Resolve*Animation) builds animation-key
+# strings via stack CString temporaries (operator+) whose dtors run under a C++
+# EH frame. The 7 HUD sprite creators carry no stack C++ object, so /GX does not
+# add an EH frame to them (verified - they stay byte-exact).
+cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
