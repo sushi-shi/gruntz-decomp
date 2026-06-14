@@ -172,10 +172,12 @@ edit src/<unit>.cpp  (add / change a  // @address: 0x<rva>)
        objdiff-cli report generate    → build/objdiff/report.json
 ```
 
-ninja keeps it incremental: an unrelated edit doesn't touch the label map, so the
-delink doesn't re-run. The delink is one command emitting all units' objs, so any
-label change re-delinks the whole set — cheap (~one synth_pdb + one vostok-delinker
-pass over the EXE).
+In practice the delink re-runs on **every** `src/` edit: `gen_labels` rewrites
+`symbol_names.csv` unconditionally (fresh mtime) and the delink rule has no
+`restat` guard, so even a body-only tweak (identical labels) re-delinks. That's
+left as-is on purpose — the delink is one command emitting all units' objs in a
+single cheap pass (~one synth_pdb + one vostok-delinker over the EXE), the whole
+loop is fast, and a write-if-different + `restat` skip isn't worth the complexity.
 
 ## Pairing (objdiff)
 
