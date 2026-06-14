@@ -463,3 +463,48 @@ rva,name,class,prototype,kind,source,confidence
 0x0c7090,LoadDroppedObjectEffects,,[GAME_WATER/LEVEL_DEATHSPLASH/LEVEL_DROPPEDOBJECTHIT/Particlez; CDroppedObject TU (ctor @0x0c68b0)],method,string-xref,med
 0x0dfd00,LoadProjectileEffects,,[GRUNTZ_WINGZGRUNT_PROJECTILELOOP + GAME_WATER/LEVEL_DEATHSPLASH/Particlez; CProjectile TU (ctor @0x0dec60)],method,string-xref,med
 0x0dca70,BuildAssetNamespacePrefixes,,[master ANIZ_/GRUNTZ_/IMAGEZ_/SOUNDZ_ asset-namespace prefix builder; CGruntzMgr region],free,string-xref,med
+#
+# === decomp-xref pass (Ghidra decompiler + caller/callee xrefs, not strings alone) ===
+# Each row read from build/ghidra DecompExport.py output: confirms calling
+# convention, arg count, virtual-slot identity (vfunc_N caller thunks), and the
+# this+offset member writes / .att attr reads / callee roles. Lets us name object
+# Init/LoadAttributes methods, CState-subclass virtuals, and CNetMgr config readers
+# precisely -- and EXCLUDE library/ambiguous funcs strings would have mislabeled.
+0x0fc1a0,CStaticHazard::LoadAttributes,CStaticHazard,void __thiscall(this) [reads static-hazard .att attrs into this+0x10..0x68; loads LEVEL_STATICHAZARD/GO/IDLE sprites],method,decomp-xref,high
+0x0c62e0,CDroppedObjectShadow::LoadAttributes,CDroppedObjectShadow,__thiscall(this) [reads ObjectDropperDelay + Hazardz .att attrs into this+0x58..0x94; DroppedObjectShadow],method,decomp-xref,high
+0x0e1e60,CTimeBomb::LoadAttributes,CTimeBomb,__thiscall(this) [reads TimeBombFastTime/Projectile attrs into this+0x38..0x60; loads GAME_TIMEBOMBFAST],method,decomp-xref,high
+0x041aa0,CTeleporter::LoadAttributes,CTeleporter,__thiscall(this) [reads Teleporter/Wormhole attrs into this+0x38..0x68; loads GAME_TELEPORTERCLOSE],method,decomp-xref,med
+0x069d60,LoadFreezeSpellAssets,,__thiscall(this) [reads Spellz/FreezeDelay attrs into this+0x820..0x82c; loads GRUNTZ_DEATHZ_SPARKLE/UNFREEZE freeze-spell anims],method,decomp-xref,med
+0x067f80,CGrunt::LoadEntranceConfig,,__thiscall(this) [reads EntranceSafeTime + loads GRUNTZ_ENTRANCEZ_DROP into this+0x840..0x85c; CGrunt region],method,decomp-xref,med
+0x067bd0,CGrunt::BuildEntranceAnimation,,"__thiscall(this,flags) [builds GRUNTZ_ENTRANCEZ_DROP/ONE/TWO/THREE/RESSURECT + DEATHZ_MELT entrance anims]",method,decomp-xref,med
+0x0b4640,CloudHazard::vfunc_20,,"__thiscall(this,a,b) [vtable slot 0x20; reads RainCloudFlashTime/Hazardz; loads LEVEL_CLOUDHAZARDKILL]",vfunc,decomp-xref,med
+0x0b82e0,CNetMgr::LoadServiceConfig,CNetMgr,__thiscall(this) [reads Other/Modem/Serial/TcpIp service + _CmdDelay/_Resend/_DynCmdDelay into this+0x524/0x5a4..],method,decomp-xref,high
+0x0bc460,CNetMgr::LoadTcpIpConfig,CNetMgr,__thiscall(this) [reads TcpIp _CmdDelay/_Resend/_DynCmdDelay into this+0x5a4..0x5c0],method,decomp-xref,med
+0x0b8b10,CNetMgr::LoadCmdDelayConfig,CNetMgr,__thiscall(this) [reads CMDDELAY/RESEND command-timing config into this+0x59c..0x5c0],method,decomp-xref,med
+0x0b85a0,CNetMgr::ApplyCmdDelayDefaults,CNetMgr,__thiscall(this) [_CmdDelay/_Resend into this+0x5a4/0x5a8],method,decomp-xref,med
+0x105990,UpdateRezConveyorStatusBar,,__thiscall(this) [StatusBar + ConveyorBeltHoldDelay; GAME_REZBELTRETURN/BACKUP rez-machine conveyor HUD],method,decomp-xref,med
+0x1076a0,UpdateChipGrinderStatusBar,,__thiscall(this) [StatusBar + FallingItemShredderDelay/Speed; GAME_REZGRINDING chip-grinder HUD],method,decomp-xref,med
+0x105310,UpdateGruntOvenStatusBar,,__thiscall(this) [StatusBar + GruntOvenDelay; GAME_COOKINGCOMPLETE grunt-oven HUD; this+0x204/0x220],method,decomp-xref,med
+0x0fe910,UpdateStatusBarTabHighlight,,__thiscall(this) [GAME_TABHIGHLIGHT1 tab-highlight; this+0x354],method,decomp-xref,med
+0x109bd0,UpdateWarpStoneStatusBar,,"__thiscall(this,a,b,c,d) [WarpStone/FlyTime + GAME_WARPSTONEFLY/GAME_STATUSBAR_TABZ_GAMETAB_WARP]",method,decomp-xref,med
+0x01d440,CBootyState::vfunc_1,CBootyState,"int __thiscall(this,a,b,c) [vtable slot 1; calls CState::vfunc_1; loads STATEZ_BOOTY + AREA%i, builds GRUNTPUDDLE SimpleAnimations, hides cursor]",vfunc,decomp-xref,med
+0x01f6f0,BootyState::OnActivate_vfunc8,,"__thiscall(this) [vtable slot 8 of a CState subclass; calls CState::vfunc_8; binds IMAGEZ banks to BOOTY/GRUNTZ/LEVEL, starts 'multi' music]",vfunc,decomp-xref,med
+0x01c8a0,BootyState_OnActivate2_vfunc8,,__thiscall(this) [vtable slot 8 of a CState subclass; binds IMAGEZ banks to BOOTY/GRUNTZ; this+0xc/0x1bc],vfunc,decomp-xref,med
+0x0cb800,GameLevelState::OnActivate_vfunc8,,"__thiscall(this) [vtable slot 8; calls CState::vfunc_8; binds TILEZ/IMAGEZ banks to LEVEL/GRUNTZ, kicks level load; this+0x2dc/0x470/0x474/0x510]",vfunc,decomp-xref,med
+0x013fb0,CAttract::vfunc_1,,"__thiscall(this,a,b,c) [vtable slot 1; loads STATEZ_ATTRACT + ATTRACT SOUNDZ; attract-mode state init]",vfunc,decomp-xref,med
+0x01b450,BuildBootyWalkingGruntz,,__thiscall(this) [builds NORMALGRUNT_WALK SimpleAnimations + GAME_INGAMEICONZ_/BOOTY_DIM secret-letter row over completed-area count; _atexit cleanup],method,decomp-xref,med
+0x01b690,UpdateBootyWalkingGruntz,,__thiscall(this) [per-frame walk/idle of booty gruntz; GRUNTZ_NORMALGRUNT_SOUTH_IDLE/IDLE4 + GRUNTZ_PICKUPS_<letter>; timeGetTime],method,decomp-xref,med
+0x019920,BuildGruntSprintAnimation,,__thiscall(this) [builds GRUNTZ_NORMALGRUNT_<8dir>_WALK SimpleAnimation; GAME_GRUNTSPRINT],method,decomp-xref,med
+0x01ce60,BuildBootyGruntIdleAnimation,,__thiscall(this) [GRUNTZ_WANDGRUNT/NORMALGRUNT idle + GRUNTZ_PICKUPS booty anim],method,decomp-xref,med
+0x01c070,BuildBootyPerfectAnimation,,__thiscall(this) [BOOTY_PERFECT SimpleAnimation; GAME_CYCLE100; this+0x2f8],method,decomp-xref,med
+0x019540,BuildWarpStoneGlitterAnimation,,__thiscall(this) [GAME_GLITTERGOLD/GAME_STATUSBAR_TABZ_GAMETAB_WARP glitter SimpleAnimation; DoNothing logic],method,decomp-xref,med
+0x0641b0,BuildGruntExitAnimation,,__thiscall(this) [GRUNTZ_EXITZ_ONE/TWO/THREE exit-sequence anims; this+0x1b8..0x21c],method,decomp-xref,med
+0x0218e0,LoadFontConfig,,"__thiscall(this,a,b) [reads ARIAL/TrainingFont/MessageFont + Width/Height attrs into this+0x20..0x40]",method,decomp-xref,high
+0x0090e0,LoadActionOptionsMenuBar,,__thiscall(this) [loads GAME_ACTIONOPTIONZMENUBAR + INGAMEICONZ_NORM/HIGH/GREYCHIPZ into this+0x2c..0x3c],method,decomp-xref,med
+0x0a0d80,BuildVersionString,,__thiscall(this) [formats 'Gruntz v%d.%d'/'_SPAWN_MODE_' version+mode banner; this+0xc],method,decomp-xref,med
+0x01fde0,CheckCdRomRegistry,,[reads 'Monolith Productions'/'CdRom Drive' registry for CD presence],free,decomp-xref,med
+0x03b7c0,LoadCustomWorldInfo,,[reads CUSTOM_WORLDINFO/'_Custom_' custom-world descriptor],free,decomp-xref,med
+0x107ae0,LoadMultiplayerBattlezConfig,,__thiscall(this) [reads Multiplayer/StartingGruntz/Battlez setup config],method,decomp-xref,med
+0x170750,ButeMgr::ParseAttributeFile,,__thiscall(this) [.att attribute-file parser; emits 'ButeMgr: duplicate symbol encountered'; 2 callers],method,decomp-xref,med
+0x16d9c0,GetContainerErrorString,,"__thiscall(this,code) [maps container status code -> 'Out of memory'/'Overflow'/'Null pointer argument'/...; 5 callers; Monolith container lib]",method,decomp-xref,low
+0x185000,DebugPrintf,,[DPRINTF/FILEAPPEND/STDOUT debug-log helper; called from 0x184b70],free,decomp-xref,low
