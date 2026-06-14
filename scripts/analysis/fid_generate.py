@@ -7,6 +7,17 @@ names CRT/MFC/zlib library functions from it and `gen_match_queue.py` excludes
 them. The committed CSV is canonical and survives `git clean`; regenerate only
 when the VC5 libs, GRUNTZ.EXE, or the Ghidra function boundaries change.
 
+CAUTION - the committed CSV is INTENTIONALLY tracked, not generated in `init`.
+It was produced from a **Ghidra 11.4.2** export (14,411 function starts). The
+current pipeline runs **Ghidra 12.0.4** (via PyGhidra), whose auto-analysis carves
+only ~9,607 starts - so regenerating against today's `gruntz init` export drops
+~35% of the anchored matches (1,052 of 3,012 anchored RVAs are starts 12.0.4 no
+longer finds). This is an analysis-depth regression in the Ghidra version bump, not
+an export bug, and is NOT reproducible on 12.0.4 (Aggressive Instruction Finder is
+non-deterministic and finds the wrong code). To reproduce the committed CSV you need
+an 11.4.2 export; until then, treat the tracked CSV as canonical and do NOT
+overwrite it with a 12.0.4 run.
+
 Pipeline (stages under scripts/analysis/fid/):
   1. unpack .obj members from $MSVC_DIR/lib/{LIBCMT,NAFXCW}.LIB   (llvm-ar)
   2. fid/coff_sig.py   -> build/fid/sigs.pkl       (masked per-symbol signatures)
