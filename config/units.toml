@@ -318,3 +318,19 @@ unit = "netmgr"
 source = "src/Net/NetMgr.cpp"
 status = "matched"
 cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+
+# --- WinMain program entry (src/Gruntz/WinMain.cpp) -------------------------
+# _WinMain@16 @0x11c860 - the WINAPI entry point. SEH-framed; single-instance
+# guard (FindWindowA "GruntzClass" + lobby-launch WM_COMMAND forward), self
+# FileVersion read (VERSION.DLL -> four version ints via sscanf), a startup
+# gate, `new CGruntzApp` under a C++ EH frame (/GX), the dev Advanced-Options
+# hot-key / cmd-line scan + DialogBoxParamA(AdvancedOptionsDialogProc), then the
+# app Init (vtable +0x8) and the main message loop (vtable +0x18 ->
+# CGameApp::RunMessageLoop @0x13d910 - NOT inline here). Unmatched engine
+# callees modeled as external no-body fns; the version-int / g_pApp / g_hInstance
+# globals are file-scope (reloc-masked).
+[[unit]]
+unit = "winmain"
+source = "src/Gruntz/WinMain.cpp"
+status = "matched"
+cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]

@@ -218,3 +218,6 @@ rva,name,unit
 0x0bad40,?OnMultiPause@CNetMgr@@QAEXXZ,netmgr
 0x0bae40,?OnOutOfSync@CNetMgr@@QAEXXZ,netmgr
 0x0b85a0,?ApplyCmdDelayDefaults@CNetMgr@@QAEXXZ,netmgr
+
+# WinMain program entry (src/Gruntz/WinMain.cpp).
+0x11c860,_WinMain@16,winmain

@@ -17,6 +17,82 @@ fast-moving scratchpad. Newest at top within each section.
   -o - --format json-pretty`. Roll-up: `scripts/rebuild.py`.
 
 ## Subsystem notes
+### WinMain program entry (unit `winmain` — BYTE-EXACT under reloc-masking, 98.97% fuzzy)
+- New TU `src/Gruntz/WinMain.cpp`. The WINAPI entry `_WinMain@16` @0x11c860
+  (807 B). All **243 instructions instruction-count-equal with 0 opcode and 0
+  size mismatches** (verified by diffing the objdiff instruction lists part-by-
+  part); every residual diff is a reloc-masked DIR32/REL32 operand (IAT slots,
+  the version/cmdline string globals, the engine call targets, the four version-
+  int globals), so it is byte-exact. objdiff "exact" = 0/1 (same reloc-typing
+  scoring artifact as the byte-exact `image`/`netmgr` units, which also show
+  0/N). Built **/O2 /MT /GX** (the `new CGruntzApp` under a C++ EH frame needs
+  the `fs:0` SEH/EH prolog — the target's `push -1; push &handler; mov fs:0`).
+- **The carcass / call sequence (the deliverable):** (1) `GetModuleFileNameA`
+  then the engine path-check `CheckExePath`@0x118ce0 (via thunk 0x2e6e, __cdecl
+  `(path, 2, 0)`). (2) **THE PATH-CHECK BRANCH IS INVERTED from intuition:** when
+  CheckExePath *succeeds* this is a secondary/lobby launch — `FindWindowA(
+  "GruntzClass", 0x60aac8)`, if found restore-if-iconic (`SendMessageA WM_SYSCMD
+  SC_RESTORE`) + forward a lobby `PostMessageA WM_COMMAND 0x80b7` when the cmd
+  line contains "LOBBYLAUNCH" — and **this whole branch unconditionally
+  `return 0`** (when no prior window exists it still returns 0; it does NOT fall
+  through to startup). Only when CheckExePath *fails* (the `&&` short-circuits or
+  GetModuleFileName==0) does it fall to the normal startup. Writing it as
+  `if (modlen>0 && CheckExePath(...)) { hPrev=FindWindow; if(hPrev){...} return 0; }`
+  reproduces the three `je <return0>` (hPrev==0 / cmdline==0 / LOBBYLAUNCH==0) and
+  the trailing `return 0`. (3) Normal startup: read own FileVersion via the
+  VERSION.DLL trio (GetFileVersionInfoSizeA/GetFileVersionInfoA/VerQueryValueA,
+  6-byte IAT thunks @0x18b78c/786/780) into a heap buffer (`operator new` /
+  `operator delete`), `sscanf`@0x120900 the "%d.%d.%d.%d" into four file-scope
+  ints @0x651608/60c/610/614; a `StartupGate`@0x1f9b0 (thunk 0x2f59) check; then
+  **`new CGruntzApp` (operator new(0x254) + ctor @0x80850 via thunk 0x26c1 under
+  the EH frame)** stored to g_pApp@0x651600; a `SettleDelay`@0x13dfe0 busy-wait;
+  the dev hot-key scan (3× `GetAsyncKeyState`, test bit 0x80000000) + 6× cmd-line
+  `SubstringMatch`; an optional `DialogBoxParamA(g_hInstance, "CONFIG_ADVANCED",
+  0, &AdvancedOptionsDialogProc, 0)`; then **app Init via `call [vtbl+0x8]`**
+  (7 args: hInstance, "Gruntz"×2 @0x60aac8, cmdLine, 0, CW_USEDEFAULT×2) and
+  **the message loop via `call [vtbl+0x18]`**, with `delete g_pApp` (scalar-
+  deleting dtor) on every exit. **Locals**: a 0xFE-byte module-path buffer
+  (`[esp+0x1c]`, captured by the prolog `lea eax,[esp+0xc]` *before* the 4 reg
+  pushes), the VERSION query handles/out-pointers, and the EH-state slot
+  `[esp+0x124]`; params at `[esp+0x12c]`(hInstance)/`+0x130`/`+0x134`(lpCmdLine)/
+  `+0x138`(nShowCmd).
+- **WHERE THE MAIN LOOP IS (the headline):** WinMain does NOT pump inline — it
+  dispatches to **`CGameApp::RunMessageLoop` @0x13d910 (159 B, CGameApp vtable
+  slot +0x18)** via `mov eax,[g_pApp]; mov eax,[eax]; call [eax+0x18]`. That fn
+  is the classic Win32 pump: `GetMessageA` (IAT @0x6c43c4) loop, WM_QUIT(0x12)
+  exit, accel `TranslateAcceleratorA` (@0x6c445c) gated on `app->m_4->m_4` (the
+  accel table) + the WM_*==m_4 guard, `TranslateMessage`(@0x6c4428) /
+  `DispatchMessageA`(@0x6c43c0), and on a GetMessage-returns-0 idle it calls the
+  app idle virtual `call [vtbl+0x20]` then loops. **It is the next dedicated
+  target** (RVA 0x13d910, size 159 B). The Init it calls first is CGameApp slot
+  +0x8 (@0x80930 via thunk 0x30b2).
+- **LEVERS that drove 93.8% → byte-exact:** (a) the **VERSION.DLL imports must be
+  `__stdcall`** — declared plain (cdecl) the call sites emit a spurious
+  `add esp,0x10` after VerQueryValueA (callee-cleaned in reality) and the sscanf
+  arg interleave (`mov eax,[pValue]` between the 2nd/3rd push) breaks → 93.8%;
+  __stdcall removes it → 95.9%. (b) **schedule `g_hInstance = hInstance;` AFTER
+  the `if (!g_pApp) return 0;`** (not before the new) so the hInstance load lands
+  in the g_pApp-nonnull continuation, interleaved with the `push 0x64`/SettleDelay
+  call exactly like the target → 98.3%. (c) **bind the DialogBoxParamA result to
+  a named `int` local** — `if (DialogBoxParamA(...) == 0)` inline emits
+  `cmp eax,ebp` (reusing the ebp=0 zero-reg); `int r = ...; if (r==0)` emits
+  `test eax,eax` matching the target → +0.25%. (d) **`SubstringMatch` takes
+  (haystack, needle)** — the target pushes `needle` first then `cmdline`, i.e.
+  arg1=cmdline; declaring `(needle, haystack)` swaps the two `push`es on all 7
+  call sites → fixing the order to `(cmdline, token)` → **98.97%**. (e) the
+  `new CGruntzApp` + `delete g_pApp` idioms are the standard MFC NAFXCW
+  op-new-under-EH (`op_new(0x254); store EH-state 0; if(p) ctor; ...; EH-state
+  -1; result`) and scalar-deleting-dtor (`mov edx,[p]; push 1; call [edx]`) —
+  reuse them verbatim (see `??2@YAPAXI@Z`/`??3@YAXPAX@Z`, the slot-0 dtor).
+- **UNLOCKED:** the program entry is anchored — `CGameApp::RunMessageLoop`
+  @0x13d910 (the next target) + `CGameApp::Init`@0x80930 now have a caller; the
+  CGruntzApp ctor @0x80850 (+ vtable @0x5e9ab4, slots +0x8 Init / +0x18 Run / 0
+  dtor), the startup path-check @0x118ce0, the lobby-substring helper @0x120090,
+  the resource gate @0x1f9b0, the busy-wait @0x13dfe0, and the sscanf wrapper
+  @0x120900 all have callers; the four FileVersion-int globals @0x651608..0x651614,
+  g_pApp @0x651600, and g_hInstance @0x651618 are pinned. The
+  `AdvancedOptionsDialogProc` anchor was reused as a taken address (reloc-masked).
+
 ### CNetMgr DirectPlay manager — message handlers + config writer (unit `netmgr` — 4/4 byte-exact under reloc-masking)
 - New TU `src/Net/NetMgr.{cpp,h}`. The engine **CNetMgr** (DirectPlay networking
   manager, leaked `C:\Proj\NetMgr`). All 4 fns instruction-count-equal + **zero
