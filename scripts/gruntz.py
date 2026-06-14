@@ -131,7 +131,11 @@ def cmd_build(args) -> None:
     if not GHIDRA_FUNCTIONS.exists():
         die(f"no Ghidra exports ({GHIDRA_FUNCTIONS.relative_to(REPO)}) - run `gruntz init` first.")
     ninja = tool("ninja")
-    run([ninja, *args.ninja_args])        # incremental: rebuilds only what changed
+    _start_wine_session()                 # boot Wine clean BEFORE ninja's -j fan-out
+    try:
+        run([ninja, *args.ninja_args])    # incremental: rebuilds only what changed
+    finally:
+        _kill_wine_session()              # reap this prefix's wineserver + session
 
     objdiff = tool("objdiff-cli")
     run([objdiff, "report", "generate", "-p", str(OBJDIFF_DIR), "-o", str(REPORT)],
@@ -220,6 +224,36 @@ def _ensure_retail_copy() -> None:
     RETAIL_EXE.parent.mkdir(parents=True, exist_ok=True)
     if not RETAIL_EXE.exists():
         shutil.copyfile(retail, RETAIL_EXE)
+
+
+def _start_wine_session() -> None:
+    """Boot this prefix's Wine session ONCE, stdio detached, before ninja fans out.
+
+    Every `wine cl` (via cc_wrap) shares one per-prefix wineserver. If a parallel
+    cc_wrap is the first to boot the session, the daemonised, persistent (-p)
+    session (wineserver/services.exe/...) inherits THAT cc_wrap's stdout/stderr -
+    which is ninja's capture pipe - and holds the write-end open forever, so ninja
+    never sees EOF and the build hangs at zero CPU. Booting it up front with DEVNULL
+    stdio means the parallel cc_wraps only ever *connect* to a running session.
+    """
+    if not os.environ.get("WINEPREFIX") or shutil.which("wineserver") is None:
+        return
+    n = subprocess.DEVNULL
+    subprocess.run(["wineserver", "-p"], stdin=n, stdout=n, stderr=n, check=False)
+    subprocess.run(["wineboot"], stdin=n, stdout=n, stderr=n, check=False)
+
+
+def _kill_wine_session() -> None:
+    """SIGKILL this prefix's wineserver + session after the build (`wineserver -k`).
+
+    Scoped to $WINEPREFIX, so it only reaps THIS worktree's server + leftover
+    cl.exe/winedevice/..., never another prefix's. Also clears the persistent (-p)
+    sessions that would otherwise linger for days.
+    """
+    if not os.environ.get("WINEPREFIX") or shutil.which("wineserver") is None:
+        return
+    n = subprocess.DEVNULL
+    subprocess.run(["wineserver", "-k"], stdin=n, stdout=n, stderr=n, check=False)
 
 
 def _build_ghidra_db(reimport: bool = False) -> None:

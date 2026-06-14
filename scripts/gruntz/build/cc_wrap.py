@@ -58,7 +58,12 @@ def msvc_dir() -> Path:
 
 
 def winepath_w(p: Path) -> str:
-    return subprocess.check_output(["winepath", "-w", str(p)], text=True).strip()
+    # stderr=DEVNULL is load-bearing: cc_wrap's own stderr IS ninja's capture pipe,
+    # and winepath can be the call that boots the persistent (-p) Wine session. If
+    # it inherits our stderr, the daemonised session holds ninja's pipe write-end
+    # open forever -> ninja never sees EOF and the whole build hangs at zero CPU.
+    return subprocess.check_output(["winepath", "-w", str(p)],
+                                   text=True, stderr=subprocess.DEVNULL).strip()
 
 
 def ensure_wineserver() -> None:
@@ -70,7 +75,7 @@ def ensure_wineserver() -> None:
     ws = shutil.which("wineserver")
     if ws is None:
         return
-    subprocess.run([ws, "-p"], check=False,
+    subprocess.run([ws, "-p"], check=False, stdin=subprocess.DEVNULL,
                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
@@ -136,7 +141,7 @@ def _run_cl(cmd: list, out: Path) -> tuple[str, int]:
     """
     timeout = float(os.environ.get("GRUNTZ_CL_TIMEOUT", "300"))
     with tempfile.TemporaryFile() as logf:
-        proc = subprocess.Popen(cmd, cwd=str(out.parent),
+        proc = subprocess.Popen(cmd, cwd=str(out.parent), stdin=subprocess.DEVNULL,
                                 stdout=logf, stderr=subprocess.STDOUT,
                                 start_new_session=True)
         try:
