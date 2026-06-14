@@ -451,3 +451,15 @@ rva,name,class,prototype,kind,source,confidence
 0x045270,NotifyFortUnderAttack,,['ALERT - Your Fort is under attack!' Warlordz _PANIC notify (NotifyString/NotifyTimer); CWarlord/CFortressFlag region],method,string-xref,med
 0x0dba30,BuildMusicCategoryTable,,[AMBIENT%d/INTRO%d/CURSE/MIDIZ/MONOLITH/POWERUP music+ambient sound-category keys; CGruntzMgr region],free,string-xref,med
 0x09fe50,LoadMenuStateAssets,,[MENU_ACTIVATE/CURSOR/SELECT + STATEZ_MENU + IMAGEZ/SOUNDZ menu-state asset loader],method,string-xref,med
+#
+# --- string-xref pass, batch 4: gameplay-feature loaders & state assets ---
+0x0ca200,LoadLevelByMode,,[AREA%i/CUSTOMLEVEL + GAME_BATTLEZ/GAME_MULTI + CursorSnapSprite level-mode loader; CGruntzMgr region],method,string-xref,med
+0x06eb80,LoadTeleporterGooConfig,,[GAME_TELEPORTLOOP + TimePerGoo/TimePerResource + LEVEL_ROLLINGBALL hazard tuning; CUserLogic region],method,string-xref,med
+0x018f00,ShowSecretBonusMessage,,['Secret Bonus Acquired:'/'The Secret of Secretz:' multi message display],free,string-xref,med
+0x038d20,LoadCreditzStateAssets,,[CREDITZ/MIDIZ/MONOLITH/PLAY/SOUNDZ splash/credits-state asset keys],free,string-xref,med
+0x110860,LoadBridgeMoveSprites,,[GAME_PYRAMIDMOVE + LEVEL_*BRIDGEMOVE/CRUMBLE sprites; CTileTriggerLogic TU (ctor @0x1107f0 +0x70)],method,string-xref,med
+0x07b930,LoadGruntCombatTuning,,[CombatTimeout + GAME_FLASH/GAME_LIGHTING_FLASH/LightFx grunt combat tuning; CUserLogic region],method,string-xref,med
+0x07be60,LoadGruntResurrectTuning,,[RessurectAIRadius + GAME_FLASH/LightFx resurrect/AI tuning; CUserLogic region],method,string-xref,med
+0x0c7090,LoadDroppedObjectEffects,,[GAME_WATER/LEVEL_DEATHSPLASH/LEVEL_DROPPEDOBJECTHIT/Particlez; CDroppedObject TU (ctor @0x0c68b0)],method,string-xref,med
+0x0dfd00,LoadProjectileEffects,,[GRUNTZ_WINGZGRUNT_PROJECTILELOOP + GAME_WATER/LEVEL_DEATHSPLASH/Particlez; CProjectile TU (ctor @0x0dec60)],method,string-xref,med
+0x0dca70,BuildAssetNamespacePrefixes,,[master ANIZ_/GRUNTZ_/IMAGEZ_/SOUNDZ_ asset-namespace prefix builder; CGruntzMgr region],free,string-xref,med
