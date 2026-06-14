@@ -591,3 +591,30 @@ rva,name,class,prototype,kind,source,confidence
 0x114ff0,SaveScreenshot,,"(int,RegistryHelper*,...) [reads 'Screen Dump Count' via RegistryHelper, writes Gruntz_%04i.BMP]",free,decomp-xref,high
 0x0bf1d0,BuildGruntzCrcInfo,,__thiscall(this) ['crc info for all gruntz' diagnostic string; wsprintf+rand],method,decomp-xref,low
 0x1183b0,FormatGameInfoString,,__thiscall(this) [formats 'Name: %s Type: %i Location: %s Vers...' + session time into DAT_0064ebf8],method,decomp-xref,low
+#
+# --- decomp-xref pass, batch 5: CButeMgr .att getters, CGrunt HUD sprites, dialogs ---
+0x171af0,CButeMgr::GetInt,CButeMgr,"__thiscall(this,tag,key) [type-tag 0; returns dword, 0x80000000 on miss; 117 callers -- the .att workhorse]",method,decomp-xref,high
+0x172240,CButeMgr::GetDword,CButeMgr,"__thiscall(this,tag,key) [type-tag 1; returns dword, 0 on miss]",method,decomp-xref,med
+0x172c40,CButeMgr::GetDouble,CButeMgr,"double __thiscall(this,tag,key) [type-tag 2]",method,decomp-xref,high
+0x172730,CButeMgr::GetFloat,CButeMgr,"float __thiscall(this,tag,key) [type-tag 3]",method,decomp-xref,high
+0x1731d0,CButeMgr::GetString,CButeMgr,"__thiscall(this,tag,key) [type-tag 4; returns ptr to value]",method,decomp-xref,med
+0x173770,CButeMgr::GetTypedRef_tag5,CButeMgr,"__thiscall(this,tag,key) [type-tag 5 typed-ref getter (Rect/Point/Vector/Color family)]",method,decomp-xref,low
+0x173d00,CButeMgr::GetTypedRef_tag6,CButeMgr,"__thiscall(this,tag,key) [type-tag 6 typed-ref getter]",method,decomp-xref,low
+0x174240,CButeMgr::GetTypedRef_tag7,CButeMgr,"__thiscall(this,tag,key) [type-tag 7 typed-ref getter]",method,decomp-xref,low
+0x1747c0,CButeMgr::GetTypedRef_tag8,CButeMgr,"__thiscall(this,tag,key) [type-tag 8 typed-ref getter]",method,decomp-xref,low
+0x04d130,CGrunt::CreateHealthSprite,CGrunt,__thiscall(this) [creates GruntHealthSprite -> this+0x1c4 if absent],method,decomp-xref,med
+0x04d220,CGrunt::CreateToySprite,CGrunt,__thiscall(this) [creates GruntToySprite],method,decomp-xref,med
+0x04d2f0,CGrunt::CreateStaminaSprite,CGrunt,__thiscall(this) [creates GruntStaminaSprite],method,decomp-xref,med
+0x04d3e0,CGrunt::CreateToyTimeSprite,CGrunt,__thiscall(this) [creates GruntToyTimeSprite],method,decomp-xref,med
+0x04d520,CGrunt::CreateWingzTimeSprite,CGrunt,__thiscall(this) [creates GruntWingzTimeSprite],method,decomp-xref,med
+0x04d650,CGrunt::CreatePowerupSprite,CGrunt,"__thiscall(this,a) [creates GruntPowerupSprite -> this+0x1d4]",method,decomp-xref,med
+0x04d730,CGrunt::CreateSelectedSprite,CGrunt,__thiscall(this) [creates GruntSelectedSprite -> this+0x1b8],method,decomp-xref,med
+0x08e4e0,WarpDialogProc,,"INT_PTR CALLBACK(HWND,msg,wParam) [Level %i Warp X/Y debug dialog; GetDlgItemInt/SetDlgItemInt 0x40e/0x40f]",free,decomp-xref,high
+0x020f40,LoadChatBoxSprite,,"__thiscall(this,a) [GAME_CHATBOX multiplayer chat-box sprite]",method,decomp-xref,med
+0x095090,CHelpState::LoadAssets,,__thiscall(this) [STATEZ_HELP help-state asset load],method,decomp-xref,med
+0x0997c0,LoadHelpBookSprite,,__thiscall(this) [GAME_HELPBOOK help-book sprite],method,decomp-xref,med
+0x09bb00,LoadTimerSprite,,"__thiscall(this,a,b) [GAME_TIMER countdown-timer sprite]",method,decomp-xref,med
+0x07c3d0,LoadFinishLevelSprite,,"__thiscall(this,a) [GAME_FINISHLEVEL level-complete sprite]",method,decomp-xref,med
+0x008a40,BuildLogicTypeTable,,[LogicHit/LogicAttack/LogicBump logic-type name table],free,decomp-xref,med
+0x018d30,BootyState::vfunc_9,,__thiscall(this) [vtable slot 9; BOOTY_LOOP loop-music handler],vfunc,decomp-xref,med
+0x03c0e0,BuildWorldLevelKey,,__thiscall(this) [WORLDZ_LEVEL_%i level-key builder],method,decomp-xref,med
