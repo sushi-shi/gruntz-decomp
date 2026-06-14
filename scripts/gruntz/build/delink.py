@@ -50,16 +50,9 @@ def die(msg: str) -> None:
     sys.exit(1)
 
 
-def tool(name: str, *symlinks: str) -> str:
-    """Resolve a tool: PATH first, then ./result* nix-build symlinks."""
-    found = shutil.which(name)
-    if found:
-        return found
-    for link in symlinks:
-        p = GRUNTZ_DIR / link / "bin" / name
-        if p.exists():
-            return str(p)
-    return name  # let subprocess surface the error
+def tool(name: str) -> str:
+    """Resolve a tool on PATH - the `nix develop .#build` shell provides them all."""
+    return shutil.which(name) or name  # bare name lets subprocess surface the error
 
 
 def main() -> None:
@@ -106,7 +99,7 @@ def main() -> None:
         check=True,
     )
 
-    delinker = tool("vostok-delinker", "result")
+    delinker = tool("vostok-delinker")
     if delink_dir.exists():
         shutil.rmtree(delink_dir)
     delink_dir.mkdir(parents=True, exist_ok=True)

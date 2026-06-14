@@ -24,7 +24,8 @@ source of truth, and the full `gruntz.py` design).
   Enough for analysis + **target-side delink** + objdiff.
 - `nix develop .#build` — adds the MSVC 5.0 toolchain under `wine` for the
   **base/recompile** side. The `gruntz-toolchain` tarball is packaged (fetched +
-  pinned in `flake.nix`); first entry self-builds the wine prefix via `gruntz init`.
+  pinned in `flake.nix`); run `gruntz init` once to build the local env (wine
+  prefix, clangd DB, Ghidra DB) — heavy first run, idempotent after.
 
 `GRUNTZ_EXE` is exported pointing at the Internet-Archive-fetched binary.
 

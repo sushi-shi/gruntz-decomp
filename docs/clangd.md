@@ -25,7 +25,7 @@ MSVC 5.0 == `cl 11.00` == `_MSC_VER 1100`, hence `-fms-compatibility-version=11.
 | DB                                   | Producer        | Form               | Consumer                    |
 | ------------------------------------ | --------------- | ------------------ | --------------------------- |
 | `./compile_commands.json` (repo root)| `configure.py`  | `cl` under Wine    | the matching build / objdiff|
-| `build/clangd/compile_commands.json` | `gen_clangd.py` | `clang-cl` (clang) | clangd (this tooling)        |
+| `build/clangd/compile_commands.json` | `gruntz/init/clangd.py` | `clang-cl` (clang) | clangd (this tooling)        |
 
 The committed `.clangd` points clangd at `build/clangd/` precisely so it never
 picks up the build's own repo-root DB.
@@ -38,7 +38,7 @@ picks up the build's own repo-root DB.
    nix develop .#build      # exports MSVC_DIR and DXSDK_DIR
    ```
 
-   `gen_clangd.py` also works **outside** the dev shell - if the env vars are
+   `scripts/gruntz/init/clangd.py` also works **outside** the dev shell - if the env vars are
    absent it falls back to `nix build .#gruntz-toolchain` and reads the include
    dirs out of the result path.
 
@@ -105,6 +105,6 @@ A successful run ends with `All checks completed, 0 errors`.
   `<windows.h>` / `<ddraw.h>`, so they parse cleanly (`0 errors`). The real test
   of the MFC/DX header parse comes once the reconstructed `src/` actually
   `#include`s those toolchain headers. Tune the `.clangd` `Suppress` list then.
-- **Re-run `gen_clangd.py` after adding a unit** to `config/units.toml`; the DB
+- **Re-run `gruntz clangd` after adding a unit** to `config/units.toml`; the DB
   is not regenerated automatically (unlike the build's, which `configure.py`
   emits).

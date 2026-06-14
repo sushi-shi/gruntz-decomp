@@ -21,7 +21,7 @@ original glue was never committed - so on the first regeneration, diff the resul
 against the tracked config/library_labels.csv before trusting it.
 
 Run inside `nix develop .#build`: needs $MSVC_DIR, $GRUNTZ_EXE, llvm-ar, and
-build/ghidra-enrich/exports/functions.csv (produce it with `gruntz bootstrap`).
+build/ghidra-enrich/exports/functions.csv (produce it with `gruntz init`).
 """
 import csv, os, shutil, subprocess, sys
 from pathlib import Path
@@ -58,7 +58,7 @@ def main() -> None:
     if not Path(exe).exists():
         sys.exit(f"[fid] EXE not found ({exe}) - set $GRUNTZ_EXE or run `gruntz init`.")
     if not FUNCS.exists():
-        sys.exit(f"[fid] {FUNCS} missing - run `gruntz bootstrap` first.")
+        sys.exit(f"[fid] {FUNCS} missing - run `gruntz init` first.")
     WORK.mkdir(parents=True, exist_ok=True)
 
     # 1. unpack the static libs to .obj members

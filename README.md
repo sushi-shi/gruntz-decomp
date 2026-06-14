@@ -45,9 +45,10 @@ half: Ghidra analysis, the target-side delink, and objdiff inspection.
 nix develop .#build  # adds MSVC 5.0 under Wine for the base/recompile side
 ```
 
-The VC5 toolchain is packaged (fetched + pinned in `flake.nix`); first entry
-self-builds the Wine prefix + clangd DB via `gruntz init`, then `gruntz build`
-runs the loop (compile → labels → delink → objdiff).
+The VC5 toolchain is packaged (fetched + pinned in `flake.nix`). Run `gruntz init`
+once to build the local environment — Wine prefix, clangd DB, and the Ghidra DB
+(import + analyze GRUNTZ.EXE → `functions.csv`/`symbols.csv`); heavy on first run,
+idempotent after. Then `gruntz build` runs the loop (compile → labels → delink → objdiff).
 
 ## The pipeline
 

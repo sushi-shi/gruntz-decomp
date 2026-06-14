@@ -170,8 +170,15 @@
         tar xf "$src" -C "$out" --strip-components=1
       '';
 
+      # `gruntz` as a real PATH executable so the CLI works in ANY shell (bash, fish,
+      # zsh) - a shellHook function would not survive `nix develop --command fish`.
+      gruntz-cli = pkgs.writeShellScriptBin "gruntz" ''
+        exec python3 "''${GRUNTZ_DIR:-$PWD}/scripts/gruntz.py" "$@"
+      '';
+
       # Tools common to both shells (analysis + diffing; no MSVC).
       commonTools = [
+        gruntz-cli
         rust
         objdiff
         objdiff-cli
@@ -214,7 +221,6 @@
             export GRUNTZ_DIR="$PWD"
             export GRUNTZ_EXE="${gruntz-exe}"
             export GRUNTZ_CLANG="${pkgs.llvmPackages.clang-unwrapped}/bin/clang"
-            gruntz() { python3 "$GRUNTZ_DIR/scripts/gruntz.py" "$@"; }
 
             echo "[gruntz] target EXE : $GRUNTZ_EXE"
             echo "[gruntz] tools      : vostok-delinker, objdiff(-cli), ghidra, llvm-pdbutil"
@@ -233,7 +239,6 @@
             export GRUNTZ_DIR="$PWD"
             export GRUNTZ_EXE="${gruntz-exe}"
             export GRUNTZ_CLANG="${pkgs.llvmPackages.clang-unwrapped}/bin/clang"
-            gruntz() { python3 "$GRUNTZ_DIR/scripts/gruntz.py" "$@"; }
 
             export WINEPREFIX="$GRUNTZ_DIR/build/wineprefix"   # generated state lives under build/
             export WINEDEBUG="fixme-all,err-kerberos"
@@ -250,17 +255,15 @@
             echo "[gruntz] MSVC 5.0   : $MSVC_DIR/bin/cl.exe   (run under wine)"
             echo "[gruntz] runtime    : $GRUNTZ_RUNTIME (MSS32/SMACKW32 DLLs)"
             echo "[gruntz] target EXE : $GRUNTZ_EXE"
-            echo "[gruntz] cli        : 'gruntz <cmd>' (init/build/status/labels/structs/ghidra-refresh/todo)"
-            # First entry self-builds the local environment (Wine prefix + clangd
-            # compdb) via `gruntz.py init`; idempotent, so later shells skip it.
-            if [ ! -f "$WINEPREFIX/system.reg" ] || \
-               [ ! -f "$GRUNTZ_DIR/build/clangd/compile_commands.json" ]; then
-              echo "[gruntz] init       : first entry - setting up local environment ..."
-              python3 "$GRUNTZ_DIR/scripts/gruntz.py" init \
-                || echo "[gruntz] init failed; run 'gruntz init' manually"
-            else
-              echo "[gruntz] init       : ready (run 'python3 gruntz.py init' to refresh)"
+            echo "[gruntz] cli        : 'gruntz <cmd>' (init/build/clangd/status/labels/structs/ghidra-refresh/todo)"
+            # `gruntz init` is idempotent - run it on startup. The first run builds the
+            # local env incl. the Ghidra DB (minutes); afterwards the heavy Ghidra step
+            # self-skips (exports present), so it is a fast no-op.
+            if [ ! -f "$GRUNTZ_DIR/build/ghidra-enrich/exports/functions.csv" ]; then
+              echo "[gruntz] init       : first-time setup - building the Ghidra DB (~minutes) ..."
             fi
+            python3 "$GRUNTZ_DIR/scripts/gruntz.py" init \
+              || echo "[gruntz] init       : failed - fix + re-run 'gruntz init'"
           '';
         };
       };

@@ -2,15 +2,15 @@
 
 Decompilation/preservation RE notes for a binary the project owns.
 
-**Target:** `binaries/retail_en/GRUNTZ.EXE` — Gruntz (1999, Monolith Productions),
+**Target:** `GRUNTZ.EXE` (`$GRUNTZ_EXE`, flake-fetched) — Gruntz (1999, Monolith Productions),
 PE32 x86 GUI, 2,511,872 bytes, 6 sections.
 **Toolchain:** MSVC 5.0 (PE `MajorLinker 5 / MinorLinker 10` = LINK 5.10;
 Rich header @comp.id reports C/C++ compiler build 8034 + cvtres 1668 — the VC5
 signature). `_MSC_VER` for this toolchain is 1100.
 **Linkage:** static CRT + static MFC 4.2 + statically-linked zlib 1.0.4; the rest
 is the WAP32/"zlith" engine and Gruntz game code.
-**Siblings (same toolchain, for cross-matching):** `binaries/claw_retail/CLAW.EXE`,
-`binaries/getmed_retail/MEDIEVAL.EXE`.
+**Siblings (same toolchain, for cross-matching):** `CLAW.EXE` and `MEDIEVAL.EXE`
+(also flake-fetched).
 
 Section map (`objdump -h`):
 
@@ -226,7 +226,13 @@ match code. Low priority; obtain only for naming the import stubs if desired.
 
 ## 4. Function-ID tooling — the matching plan
 
-### 4.1 Ghidra FunctionID (FidDb) — OUR ACTUAL ROUTE (must GENERATE, not ship)
+### 4.1 Ghidra FunctionID (FidDb) — ORIGINAL PLAN (superseded; see note)
+
+> **Implemented differently.** The library labels were ultimately produced by a
+> custom **masked-byte COFF-signature matcher** (`scripts/analysis/fid/`, driven by
+> `scripts/analysis/fid_generate.py`) — NOT Ghidra FID. Its output is the tracked
+> `config/library_labels.csv`. The Ghidra-FID route below is kept for context: it
+> explains why no stock MSVC-5.0 fidb exists and what a signature db must capture.
 
 **Does Ghidra ship a usable FID db for MSVC 5.0? NO.** Ghidra's bundled FID
 databases (in `ghidra-data/FunctionID`, auto-installed) are:
