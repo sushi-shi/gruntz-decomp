@@ -371,3 +371,30 @@ unit = "gamemode"
 source = "src/Gruntz/GameMode.cpp"
 status = "matched"
 cflags = ["/nologo", "/c", "/O2", "/MT"]
+
+# --- CPlay::Render in-game per-frame loop (src/Gruntz/CPlay.cpp) [WIP] -------
+# CPlay::Render @0xc8cf0 (3092 B, vtable slot +0x14) - the in-game PLAY state's
+# per-frame step+draw, the heart of the running game. A faithful CARCASS: the
+# 3-way top-level dispatch (m_4ec hard early-out / m_4f8 primary mode / the
+# m_4->m_c short path), the shared world-draw block (renderer begin/present +
+# camera blit + frame profiler + marker/guts step), and the ordered per-frame
+# subsystem calls (input poll, world/camera sub-steps, ambient-SFX + scroll-
+# region one-shot timers, HUD/overlay draw) are reconstructed. CPlay's own
+# 0xd0000-range helper methods + the unmatched engine draw/sound callees are
+# external no-body fns (reloc-masked); the frame-clock globals (g_645580/84/88,
+# the 0x6bf3c0/bc draw mirrors) + the game-manager singleton @0x64556c are
+# file-scope. /GX: the AMBIENT-init + snapshot paths carry stack CString temps
+# whose dtors run under a C++ EH frame (the target opens an fs:0 EH frame).
+# PLATEAU: the SEH prologue + the m_4ec/m_4f8 3-way dispatch + the shared
+# world-draw block match opcode-exact (~106 MATCH + ~184 reloc-masked-arg of
+# ~700 target instrs); objdiff's fuzzy rollup reports 0.0% because its GLOBAL
+# alignment desyncs at the multi-way branch (reconstructed path lengths differ
+# from the target's, so it can't re-anchor) - a scoring artifact, not a logic
+# error (read the per-instruction diff_kind histogram, not the rollup). The
+# deliverable is the faithful CARCASS (control flow + every offset + the ordered
+# per-frame call sequence); kept wip, NOT claimed as matched.
+[[unit]]
+unit = "cplay"
+source = "src/Gruntz/CPlay.cpp"
+status = "wip"
+cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]

@@ -260,3 +260,5 @@ rva,name,unit
 0x08ce10,?Update@CMenuState@@UAEHXZ,gamemode
 0x08d590,?Update@CCreditsState@@UAEHXZ,gamemode
 0x08d3f0,?Update@CBootyState@@UAEHXZ,gamemode
+# --- CPlay::Render in-game per-frame loop (unit cplay, WIP carcass) ----------
+0x0c8cf0,?Render@CPlay@@UAEHXZ,cplay

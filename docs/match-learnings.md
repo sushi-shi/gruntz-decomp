@@ -4,6 +4,98 @@ Per-function / per-subsystem insights gathered while byte-matching. Durable,
 generalizable findings graduate into `docs/matching-patterns.md`; this file is the
 fast-moving scratchpad. Newest at top within each section.
 
+### THE IN-GAME PER-FRAME HEART — CPlay::Render (new unit `cplay` — faithful CARCASS, ~23% structural-aligned plateau; objdiff fuzzy rolls up 0.0% — a scoring artifact, see below)
+- **THE HEADLINE: the in-game per-frame loop is mapped end to end.** New TU
+  `src/Gruntz/CPlay.{cpp,h}`. `CPlay::Render @0xc8cf0` (3092 B, vtable slot +0x14,
+  the slot RezMgr::PerFrameTick dispatches to for the PLAY state) is a **3-way
+  top-level dispatch** wrapped in a C++ SEH/EH frame (`/GX` — a stack CString
+  temp in the ambient-init + snapshot paths): a `this`-virtual frame-begin
+  (`vtbl[+0x7c]`), then `m_4ec` (hard early-out → return 1), then `m_4f8` (the
+  PRIMARY mode: nonzero = MAIN in-game frame; zero = the MENU/PAUSE-OVERLAY frame
+  unless `m_4->m_c != 0`, which takes a third short path). All three paths share
+  ONE world-draw block and a common `return 1` tail.
+- **THE PER-FRAME CALL SEQUENCE (the deliverable):**
+  - *entry:* `m_414 = 0` (per-frame "drew" flag, store scheduled INTO the
+    arg-setup of) `this->vtbl[+0x7c](0, m_150, m_154)` (BeginFrameClear).
+  - *MAIN (m_4f8≠0):* `StepInputA@0xd11e0` (input poll) → `StepWorldB@0xd12b0`
+    (world/camera) → `m_c->m_24->PreStep@0xcedf0` → mirror the draw clock
+    (`g_6bf3c0=g_645580; g_6bf3bc=g_645584`) → **WORLD-DRAW** → periodic
+    AMBIENT-cue timer (+0x3f8, 0x1f4 ms, toggles m_408 → PlayCueAt 0x8128) →
+    if no view (`m_c->m_4->m_14==0`) bail → frame-marker end + surface-flush
+    (`m_c->m_4->m_10->m_2c` @0x13e850) + guts step + `m_c->m_24->PostStep@0xcee10`.
+  - *MENU/OVERLAY (m_4f8==0, m_4->m_c==0):* frame-marker begin → `m_4->m_6c` step
+    → booty-region one-shot (if m_2f8==0x66, +0x328 0x2710 ms → RegCue 0x33e) →
+    StepInputA → StepC@0xd8d90 → AMBIENT level-init one-shot (if m_348==0:
+    `wsprintf "AMBIENT%d"` → PlaySound/FindSound on `m_4->m_48` → latch m_348=1) →
+    optional extra layer (m_470) → world-ready init (m_30c) → StepScroll@0xd1ac0 →
+    the **UNSIGNED frame-rate gate** (`0x12 < dt < 0xc8 ? vtbl[+0xa0] : vtbl[+0x9c]`)
+    → **WORLD-DRAW** → `m_4->m_70` input sub-step → on-screen overlay/banner
+    (m_320) → `m_4->m_5c` world-blit → snapshot/screenshot countdown (+0x4a0,
+    posts a message + CMapPtrToPtr::Lookup@0x1b8760 of the level tree) → **four
+    screen-region scroll one-shots** (+0x430/0x440/0x450/0x460, each a 64-bit
+    elapsed test firing an OnRegion handler @0xd8aa0/0xd8a00/0xd8b20/0xd8bc0).
+  - *SHORT path (m_4->m_c≠0):* StepInputA → cursor profiler (`m_c->m_20`:
+    timeGetTime×2 @0x136e20/0x137ac0) → if `m_500` paused-draw-only else the
+    `--m_510` entity-step + level cue + the same AMBIENT init → marker + PostHud
+    + surface-flush tail.
+  - **WORLD-DRAW block (verbatim 2×, @0xc8d75 / @0xc910d):** `m_c->m_8->vtbl[+0x24](0)`
+    (renderer A begin) → `m_c->m_24->PushView(m_c->m_4->m_14, m_c->m_8)@0x15dc90`
+    (thiscall on the draw-surface) → `m_c->m_c->vtbl[+0x34](m_c->m_4->m_14,
+    m_c->m_4->m_18)` (renderer B present) → `m_4->m_54->Blit(m_c->m_24->m_5c->m_84,
+    ->m_88)@0x1a7d` (camera blit) → frame profiler → marker-begin@0x1170b0 +
+    guts-step@0xfe6b0.
+- **CPlay LAYOUT pinned (extends CState from +0x1a8; the load-bearing offsets):**
+  inherited CState **+0x4** owner→CWorld (`+0x54` world-draw, `+0x48` sound mgr,
+  `+0x5c` 2nd layer, `+0x6c` frame-timer, `+0x70` input, `+0x68`→`+0x230` substep
+  gate, `+0xc` active-grunt sel), **+0xc** view holder (`+0x4`→renderer-state
+  {`+0x10`→`+0x2c` surface, `+0x14` view, `+0x18` present-target}, `+0x8`/`+0xc`
+  renderers, `+0x20` profiler timer, `+0x24` draw-surface), **+0x150/+0x154**
+  BeginFrameClear args. CPlay-own: **+0x2dc** subsystem (`+0x10c`, `+0x550/+0x554`
+  ready-gate, `+0x574`), **+0x2e0/+0x2e4** marker sinks, **+0x2f8** level-id
+  (==0x66), **+0x30c** world-ready gate, **+0x310** RECT buffer, **+0x320**
+  overlay gate, **+0x328..+0x344** booty/ambient timers, **+0x348** ambient-init
+  latch, **+0x3f4** frame-marker obj, **+0x3f8..+0x408** ambient-cue timer/toggle,
+  **+0x40c** cue wParam, **+0x414** drew-flag, **+0x430..+0x46c** four scroll-region
+  timers, **+0x470/+0x474/+0x478/+0x47c** their gates, **+0x4a0..+0x4b0** snapshot
+  timer+latch, **+0x4ec** hard early-out, **+0x4f4** win/lose banner, **+0x4f8**
+  PRIMARY mode, **+0x4fc** overlay-active, **+0x500** paused, **+0x510** countdown.
+  CGameRegistry (@0x64556c) **+0x14** dev/has-window, **+0x30**→{`+0x8` map, `+0x24`
+  rect}, **+0x60/+0x68** cue sinks, **+0x8c/+0x90** viewport, **+0x134** 1/2 mode,
+  **+0x15c** level tree.
+- **VTABLE slots Render dispatches (CPlay vtbl @0x5ea0bc, extends CState):**
+  **+0x7c** BeginFrameClear (frame-begin/clear, 3 args), **+0x9c** RenderSlow,
+  **+0xa0** RenderFast (the UNSIGNED frame-rate gate selects between them) — the
+  next per-frame targets one indirection up; + the renderer vtable slots **+0x24**
+  begin-scene / **+0x34** present (on `m_c->m_8`/`m_c->m_c`).
+- **THE PLATEAU + the scoring artifact (documented honestly):** the per-instruction
+  diff confirms the carcass is FAITHFUL — the SEH prologue, the `m_4ec`/`m_4f8`
+  3-way dispatch, the world-draw block, and ~106 instructions match opcode-exact
+  with another ~184 matching but for a reloc-masked operand. BUT objdiff's GLOBAL
+  alignment **desyncs at the m_4f8 multi-way branch** (my reconstructed paths
+  differ in instruction-length from the target's, so once alignment slips it can't
+  re-anchor across the long divergent paths) → it scores the bulk as
+  INSERT/DELETE pairs and the **fuzzy rollup reports 0.0%** (~23% of rows are
+  MATCH+ARG-only). This is the expected large-branchy-SEH-function plateau
+  (`matching-patterns.md` § entropy / large functions): a 3092-B function with
+  ~20 nested member-chain call sites and 3 top-level paths plateaus low without
+  byte-perfect path-length reconstruction. **The deliverable is the carcass
+  (control flow + every offset + the ordered call sequence), which is complete**;
+  the unit is kept `wip` and is NOT claimed as matched. *General lesson for big
+  functions: objdiff's fuzzy% is unreliable when alignment desyncs — read the
+  per-instruction `diff_kind` histogram (MATCH + DIFF_ARG_MISMATCH) directly via
+  `--format json`, not the rollup, to gauge a carcass's true fidelity.*
+- **UNLOCKED (the next per-frame subsystem targets, one indirection down/up):**
+  CPlay's own sub-steps **StepInputA@0xd11e0** (input poll), **StepWorldB@0xd12b0**
+  (world/camera), **StepC@0xd8d90**, **StepScroll@0xd1ac0**, the four
+  **OnRegion@0xd8a00/0xd8aa0/0xd8b20/0xd8bc0** scroll handlers, **PlayCueAt@0xd1890**;
+  the world-draw helpers **PushView@0x15dc90**, **camera-Blit@0x1a7d-thunk**,
+  **surface-flush@0x13e850**, **begin-scene@0x13e760**, **HUD-draw@0x163f40**; the
+  sound trio **PlaySound@0x138840 / FindSound@0x138730 / StopSound@0x139030**; the
+  marker/guts pair **@0x1170b0 / @0xfe6b0**; and the frame-rate-gated virtuals
+  **CPlay vtbl +0x9c/+0xa0** (RenderSlow/RenderFast) + the frame-begin **+0x7c**.
+  All now have a caller. The per-ENTITY layer (g_entityList @0x645574) is walked
+  inside the world-draw `m_4->m_54->Blit` (@0x1a7d) — that is the layer below.
+
 ## How the loop runs (orchestrator + matcher contract)
 - Matchers run **sequentially in the main worktree** (the `build/` tree —
   delinkable EXE, ghidra DB, toolchain — is gitignored, so git worktrees can't
