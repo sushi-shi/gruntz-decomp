@@ -123,3 +123,9 @@ status = "matched"
 unit = "tiletriggerlogic"
 source = "src/Gruntz/TileTriggerLogic.cpp"
 status = "matched"
+
+# --- WWD level loader (src/Wwd) ---------------------------------------------
+[[unit]]
+unit = "wwdfile"
+source = "src/Wwd/WwdFile.cpp"
+status = "wip"

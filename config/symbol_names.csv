@@ -72,6 +72,12 @@ rva,name,unit
 0x1860a0,_inflateSync,inflate
 # --- zlib 1.0.4 uncompr.c (one-shot inflate wrapper; sole WWD caller) -------
 0x185320,_uncompress,uncompr
+# --- WWD level loader (src/Wwd) ---------------------------------------------
+# __stdcall free fn (callee cleans 12 bytes); the engine name is
+# WwdFile::InflateMainBlock but it takes no `this`. WIP near-match (~88.7% fuzzy):
+# algorithm/structure byte-faithful; residual is an MSVC5 register-allocation
+# choice (ebp<->edx for dest/destLen). See src/Wwd/WwdFile.cpp header.
+0x160790,_WwdFile_InflateMainBlock@12,wwdfile
 # --- engine constructors (self-located via RTTI vftables) -------------------
 # MSVC-mangled thiscall ctor names (??0<Class>@@QAE@XZ). The vftable store is a
 # DIR32 relocation; objdiff compares the code bytes (reloc target named
