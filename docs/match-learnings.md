@@ -64,6 +64,47 @@ fast-moving scratchpad. Newest at top within each section.
   @0xb110 (SetValueDword), `SaveOptions` @0xb270, `SetDefaults` @0xb160,
   `AdvancedOptionsDialogProc` @0xafb0 (the dialog TU).
 
+### AdvancedOptions dialog (unit `advancedoptions` — DONE, 5/5 byte-exact)
+- All five byte-exact modulo reloc-masked operands (commit pending). They are the
+  first *consumers* of RegistryHelper from a higher-level TU — confirms the whole
+  Open/Close/Get/SetValueDword call surface links + matches end-to-end.
+- The dialog persists 5 flags under **HKLM\Software\Monolith Productions\Gruntz\1.0**.
+  The `Open` call args (right-to-left pushes, `this` in ecx) decode to
+  `Open("Monolith Productions","Gruntz","1.0", NULL/*szLastKey*/,
+  HKEY_LOCAL_MACHINE, NULL/*szSubKey→"Software"*/)`.
+- **Control-ID enum** (LOWORD of WM_COMMAND wParam; full wParam compared, not
+  LOWORD): `IDC_DISABLE_VIDEO=0x46c`, `IDC_DISABLE_AUDIO=0x46d`,
+  `IDC_DISABLE_SOUND=0x46e`, `IDC_DISABLE_MUSIC=0x46f`, `IDC_DISABLE_MOVIE=0x470`,
+  `IDC_DEFAULTS=0x426`. Std dialog cmds: `IDOK=1` (save+EndDialog(,1)),
+  `IDCANCEL=2` (EndDialog(,0)). Reg value names = the literal labels
+  ("Disable Direct Video Access", "Disable Audio", "Disable Sound",
+  "Disable Music", "Disable High Quality Movie"), mapped in that fixed order to
+  IDC_DISABLE_VIDEO..MOVIE.
+- **`switch(message)` on 0x110/0x111 → `sub eax,0x110; je; dec eax; jne`** (NOT
+  `cmp` per case). The first case body (`WM_INITDIALOG`) is laid out **at the END**
+  of the function (after the default `xor eax,eax;ret`), reached by a forward `je`.
+  Writing two separate `if(message==…)` blocks emits per-case `cmp` and inlines
+  INITDIALOG first → wrong layout (0% structural). The `switch` reproduces the
+  subtract-normalize ladder AND the tail-placement of the first case. [VERIFIED here]
+- **Two globals referenced by address are file-scope defs in the TU**:
+  `g_registryHelper` (the `Utils::RegistryHelper` instance @0x6295d8) and
+  `g_hInstance` (HINSTANCE @0x651618). A plain `static T g_x;` provides the symbol;
+  the address-load bytes (`mov ecx,OFFSET g`, `mov edx,ds:[g]`) match — the reloc
+  naming them is masked. (The global's ctor/dtor wrappers @0xaf00–0xaf90 are a
+  SEPARATE concern: af50 zeroes the instance, af90 calls Close, af70 registers af90
+  via atexit-style 0x11f490 — CRT static-init/teardown of `g_registryHelper`, NOT
+  called by any of the 5 dialog fns. Left for whatever TU owns the global's
+  init/term; the prompt's "SaveOptions calls a tiny __cdecl wrapper" turned out to
+  be SaveOption itself, reached through an incremental-link thunk.)
+- **Incremental-link thunks**: in the delinked target, intra-EXE calls go through a
+  `jmp rel32` stub in the low .text thunk region (e.g. `call 0x12c1; 12c1: jmp
+  0xb110`). objdiff shows `call thunk_FUN_0040b110` on the target side vs your direct
+  `call ?SaveOption@…`; both are `call rel32` with a masked displacement — byte-exact,
+  not a real diff. (Same for the dialog proc's calls to SaveOptions/SetDefaults/
+  LoadOptions.)
+- `IsDlgButtonChecked` returns the BST_* state directly into `SetValueDword`'s value
+  arg (no normalization) — `pReg->SetValueDword(name, IsDlgButtonChecked(hWnd,id))`.
+
 ## Matching idioms confirmed here (candidates for matching-patterns.md)
 - Member inits emit in the **optimizer's schedule order**, not declaration order
   (e.g. CGameApp stores +0x10 before +0x0c) — mirror that order in the source.

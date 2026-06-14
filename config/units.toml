@@ -135,3 +135,10 @@ status = "wip"
 unit = "registryhelper"
 source = "src/Utils/RegistryHelper.cpp"
 status = "matched"
+
+# --- Advanced Options dialog (src/Gruntz) -----------------------------------
+# 5/5 byte-exact (reloc-masked operands only; see docs/match-learnings.md).
+[[unit]]
+unit = "advancedoptions"
+source = "src/Gruntz/AdvancedOptions.cpp"
+status = "matched"
