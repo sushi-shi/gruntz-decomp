@@ -9,7 +9,7 @@
 # this, so the re-exported CSVs reflect the latest labels and feed the next build.
 #
 # Run as a GhidraScript under PyGhidra (CPython3 + JPype), paired with apply.py in
-# one run_enrich.py invocation (which boots PyGhidra and runs apply.py then this).
+# one ghidra_metadata_apply.py invocation (which boots PyGhidra and runs apply.py then this).
 #@category Gruntz
 import os
 

@@ -16,7 +16,7 @@ to "annotate the source, regenerate everything."
 > | prose name | actual path |
 > |---|---|
 > | `gen_labels.py` | `scripts/gruntz/build/labels.py` |
-> | `gen_structs.py` | `scripts/gruntz/build/structs.py` |
+> | `ghidra_metadata_generate.py` | `scripts/gruntz/build/ghidra_metadata_generate.py` |
 > | `synth_pdb.py` / `delink_target.py` / `cc_wrap.py` | `scripts/gruntz/build/{synth_pdb,delink,cc_wrap}.py` |
 > | `apply_ghidra_enrichment.py` | `scripts/gruntz/ghidra/apply.py` (+ `export.py`) |
 > | `annotate_addresses.py` | one-shot `@address` migrator — **removed** after it seeded all `src/` annotations (the annotations live in `src/`) |
@@ -133,7 +133,7 @@ Legend:  `(H)` hand-authored    `(T)` tool/generated
           - -fdump-record-layouts  -> every field offset   [no @offset]
                     |
                     v
-        gen_structs.py / gen_ghidra.py
+        ghidra_metadata_generate.py / gen_ghidra.py
                     |
        +------------+------------+
        v            v            v
@@ -144,7 +144,7 @@ Legend:  `(H)` hand-authored    `(T)` tool/generated
        +------------+------------+
                     |
                     v
-  (H) engine_labels.csv --> apply.py (run_enrich)   <-- (T) library_labels.csv
+  (H) engine_labels.csv --> apply.py (ghidra_metadata_apply)   <-- (T) library_labels.csv
       (shrinking backlog)   [headless PyGhidra, idempotent]   (FID/FLIRT)
                     |
                     v
@@ -273,7 +273,7 @@ Rules that keep clang's layout equal to retail:
 - Declare the same bases + `virtual` as retail (vptr lands at +0, base subobject
   first under MS ABI) — `src/Rez/RezMgr.h` already does (`virtual ~CRezItmBase()`).
 - A wrong-sized placeholder is self-catching: it throws off `sizeof` and the next
-  field's offset, which breaks the byte-match. `gen_structs.py` also asserts
+  field's offset, which breaks the byte-match. `ghidra_metadata_generate.py` also asserts
   clang `sizeof` == the known object size (`operator new(0x38)` etc.).
 
 For placeholder structs (only `int`/`void*`/`char[]` + single inheritance +
@@ -295,7 +295,7 @@ build tree.
 `src/` (real bases + `virtual`, `int`/`void*`/`char[]` members, explicit padding;
 **no `@offset`/`@todo` prose layout**). They are *not* added to `units.toml` (not
 in the matching build) — they only need to **parse + lay out under clang**, so
-`gen_structs.py` can read their offsets via `-fdump-record-layouts` exactly like
+`ghidra_metadata_generate.py` can read their offsets via `-fdump-record-layouts` exactly like
 `src/`. This makes `structure/` and `src/` one uniform grammar and one extractor.
 
 `structure/` still serves as the comprehension source for classes **not yet
@@ -314,7 +314,7 @@ gross errors.
 
 Regardless of when classes graduate, **`apply_ghidra_enrichment.py`'s
 `STRUCTS`/`ENUMS` literals are deleted** and replaced by a read of generated
-JSON. `gen_structs.py` reads the union of `src/**/*.h` (matched, authoritative)
+JSON. `ghidra_metadata_generate.py` reads the union of `src/**/*.h` (matched, authoritative)
 and the converted `structure/*.h` (unmatched comprehension), with `src/` winning
 any overlap. That removes the third `RegistryHelper`-style copy.
 
@@ -327,7 +327,7 @@ The Ghidra apply consumes `(src-derived labels) ∪ (remaining engine_labels)`.
 
 ## 6. Migration plan (ranked, each step independently shippable)
 
-1. **`gen_structs.py` (clang layouts → JSON), de-Python `apply_ghidra_enrichment.py`.**
+1. **`ghidra_metadata_generate.py` (clang layouts → JSON), de-Python `apply_ghidra_enrichment.py`.**
    Convert the 56 `STRUCTS`/`ENUMS` literals into compilable placeholder headers
    (the matched ones already exist in `src/`; the rest become converted
    `structure/` headers), read field offsets via `clang -fdump-record-layouts`,
@@ -340,11 +340,11 @@ The Ghidra apply consumes `(src-derived labels) ∪ (remaining engine_labels)`.
    `build/gen/symbol_names.csv`. Regression gate: objdiff totals unchanged.
 3. **Convert `structure/` to compilable placeholder headers (no `@offset`).**
    Rewrite the tomalla `@offset`/`@todo` prose into real declarations + padding so
-   clang lays them out; `gen_structs.py` then reads `src/` ∪ `structure/`
+   clang lays them out; `ghidra_metadata_generate.py` then reads `src/` ∪ `structure/`
    uniformly (`src/` wins overlaps), resolving `RegistryHelper`-style
    disagreements in favor of the compiled `src/` reading.
 4. **Graduate matched classes out of `structure/`.** When a class is in `src/`,
-   delete its `structure/` header. `gen_structs.py` prefers `src/`, so this only
+   delete its `structure/` header. `ghidra_metadata_generate.py` prefers `src/`, so this only
    removes dead copies; `structure/` shrinks toward empty.
 5. **Trim `engine_labels.csv` to backlog-only** (drop rows now covered by
    annotated `src/`); make the Ghidra apply union the two sources.
@@ -440,11 +440,11 @@ Steady state: per *matched function*, ~one `@address` line (plus the code); per
 ## 10. Verification (real toolchain, this session)
 
 Built and run inside the flake (`nix develop` / `.#build`). Generators live in
-`scripts/gruntz/build/structs.py` + `scripts/gruntz/build/labels.py`; clang reached via
+`scripts/gruntz/build/ghidra_metadata_generate.py` + `scripts/gruntz/build/labels.py`; clang reached via
 `$GRUNTZ_CLANG` (the **unwrapped** clang — the cc-wrapper injects host flags that
 break `--target=i686-pc-windows-msvc`).
 
-- **`gen_structs.py`** on real `src/Io/FileStream.cpp` + `src/Rez/RezMgr.cpp`:
+- **`ghidra_metadata_generate.py`** on real `src/Io/FileStream.cpp` + `src/Rez/RezMgr.cpp`:
   `CFileIO` = `size 0x10, m_handle@4, m_open@8, m_name@12`; `CRezItm`/`CRezDir`/
   `CRezItmBase` = `0x24/0x68/0x10` — matching the header-documented layouts.
 - **`gen_labels.py`** against the **genuine `cl` `filestream.obj`** (wine MSVC 5.0,
@@ -480,7 +480,7 @@ byte-identical to the hand CSV, objdiff totals are unchanged by construction —
 the live run confirms it. Wine prefix initialised at `build/wineprefix`.
 
 **Part 2 (Ghidra enrichment).** `apply_ghidra_enrichment.py` is refactored to
-read `build/gen/structs.json` + `enums.json` (from `gen_structs.py`) and
+read `build/gen/structs.json` + `enums.json` (from `ghidra_metadata_generate.py`) and
 `build/gen/symbol_names.csv`, *preferring* generated definitions and falling back
 to its hardcoded `STRUCTS`/`ENUMS` only for comprehension classes whose
 `structure/` header is not yet compilable — the graduate-on-match path; the
@@ -488,7 +488,7 @@ fallback shrinks to zero as `structure/` is converted (§5). Running the headles
 apply was **not** executed this session (it would mutate the main checkout's
 Ghidra DB; needs an isolated project copy). Converting the 39 `structure/` headers
 to the compilable placeholder style is the remaining incremental work — the
-mechanism is identical to the already-verified `src/` headers `gen_structs.py`
+mechanism is identical to the already-verified `src/` headers `ghidra_metadata_generate.py`
 reads today.
 
 **Full fake-PDB loop — verified end-to-end.** Reusing the Ghidra exports +
@@ -508,4 +508,4 @@ match result (main's baseline: `filestream` 6/10 exact, 98.29% fuzzy). So the
 generated labels are a proven drop-in for the hand CSV across the whole Part-1
 pipeline. (The Ghidra *enrichment* side — Part 2, `apply_ghidra_enrichment.py`
 reading generated JSON — is the remaining piece; the struct/enum JSON is already
-generated by `gen_structs.py`.)
+generated by `ghidra_metadata_generate.py`.)

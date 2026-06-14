@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""run_enrich.py - PyGhidra driver for the Gruntz enrichment + export.
+"""ghidra_metadata_apply.py - PyGhidra driver for the Gruntz enrichment + export.
 
 Replaces the old `analyzeHeadless ... -postScript apply.py -postScript export.py`
 invocation. On the flake's Ghidra 12.0.4, `analyzeHeadless` routes `.py` scripts
@@ -11,7 +11,7 @@ GhidraScripts under the PyGhidraScriptProvider (so they get `currentProgram`,
 
 Run it with the dev shell's `python3` (the one carrying the `pyghidra` package):
 
-    python3 run_enrich.py <exe> <proj_location> <proj_name> <apply.py> <export.py> [--no-analyze]
+    python3 ghidra_metadata_apply.py <exe> <proj_location> <proj_name> <apply.py> <export.py> [--no-analyze]
 
 - <proj_location>/<proj_name>.{gpr,rep} is the project (non-nested layout, to
   match the existing build/ghidra-named/gruntz.{gpr,rep}).
@@ -66,14 +66,14 @@ def main() -> int:
         # dumps functions.csv/symbols.csv from the enriched DB. Each runs as a
         # GhidraScript with currentProgram=program.
         for script in (apply_s, export_s):
-            print(f"[run_enrich] running {Path(script).name} ...", flush=True)
+            print(f"[ghidra_metadata_apply] running {Path(script).name} ...", flush=True)
             pyghidra.ghidra_script(script, project, program=program)
     finally:
         GhidraScriptUtil.releaseBundleHostReference()
         gproject.save(program)
         gproject.close()
 
-    print("[run_enrich] done.", flush=True)
+    print("[ghidra_metadata_apply] done.", flush=True)
     return 0
 
 

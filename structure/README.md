@@ -27,7 +27,7 @@ These headers are now **compilable placeholder C++** (the same style as `src/**`
 real bases + `virtual`, `int`/`void*`/`char[]` placeholder members, and explicit
 `char _padNN[K]` for unknown gaps. There are **no `@offset`/`@size`/`@vftable`
 annotations** — a class's *compilable declaration is its layout*, and
-`scripts/gen_structs.py` derives every field offset by running clang
+`scripts/ghidra_metadata_generate.py` derives every field offset by running clang
 `-fdump-record-layouts` over `src/**` ∪ `structure/**` (with `src/` winning any
 overlap). Each header parses standalone under the MSVC-5.0 clang target
 (`--target=i686-pc-windows-msvc -fms-extensions -fms-compatibility-version=1100`).
@@ -73,7 +73,7 @@ and its `structure/` header is deleted. Already graduated (no longer here):
 (→ `src/Gruntz/GruntzApp.cpp`), `Utils::RegistryHelper` (→ `src/Utils/`),
 `CRezDir`/`CRezItm`/`CRezItmBase` (→ `src/Rez/RezMgr.h`), `WwdHeader`
 (→ `src/Wwd/WwdFile.h`), and the `CStatusBarItem` / `CTileTriggerLogic` stubs
-(→ `src/Gruntz/`). `gen_structs.py` reads those from `src/`.
+(→ `src/Gruntz/`). `ghidra_metadata_generate.py` reads those from `src/`.
 
 (See also `docs/editor-notes.md` for the editor-only MFC classes that are
 deliberately NOT modeled here, and the editor<->game data-model evidence.)

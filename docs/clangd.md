@@ -27,7 +27,7 @@ tools:
 
 | DB                                   | Producer                | Form               | Consumer                          |
 | ------------------------------------ | ----------------------- | ------------------ | --------------------------------- |
-| `build/clangd/compile_commands.json` | `gruntz/init/clangd.py` | `clang-cl` (clang) | clangd, gen_structs, clangd_query |
+| `build/clangd/compile_commands.json` | `gruntz/init/clangd.py` | `clang-cl` (clang) | clangd, ghidra_metadata_generate, clangd_query |
 
 The matching build itself needs no compdb (`configure.py` emits only `build.ninja`
 + the objdiff project; ninja tracks deps). The committed `.clangd` points clangd

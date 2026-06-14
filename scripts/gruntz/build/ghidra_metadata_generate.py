@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""gen_structs.py - derive Ghidra struct + enum definitions from the source.
+"""ghidra_metadata_generate.py - derive Ghidra struct + enum definitions from the source.
 
 The single source of truth for a class layout is its *compilable* declaration in
 `src/**/*.h` (matched, authoritative) and the converted `structure/**/*.h`
@@ -67,7 +67,7 @@ _BUILTIN_RE = re.compile(r"^(__|_GUID$|type_info$)")
 
 
 def log(msg):
-    print(f"[gen_structs] {msg}", file=sys.stderr)
+    print(f"[ghidra_metadata_generate] {msg}", file=sys.stderr)
 
 
 def split_field(decl):
@@ -205,7 +205,7 @@ def compdb_entries(path):
 def header_units(globs):
     """Wrap each .h under `globs` (dirs or globs) in a one-line .cpp TU.
 
-    gen_structs needs C++ TUs (a bare .h parses as C and `extern "C"` fails), and
+    ghidra_metadata_generate needs C++ TUs (a bare .h parses as C and `extern "C"` fails), and
     a single combined TU clashes on the placeholder MFC types each comprehension
     header defines locally - so each header gets its OWN wrapper .cpp, processed
     as a separate clang invocation. Returns (wrapper_cpp, MS_FLAGS, header) triples.

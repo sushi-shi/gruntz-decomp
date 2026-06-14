@@ -179,17 +179,17 @@
         ninja
 
         llvm            # llvm-pdbutil
-        # clang-unwrapped provides the clang DRIVER (gen_structs/gen_labels, via
+        # clang-unwrapped provides the clang DRIVER (ghidra_metadata_generate/gen_labels, via
         # $GRUNTZ_CLANG) AND clangd / clang-format / clang-tidy. It MUST be the
         # UNWRAPPED build: the nix cc-wrapper injects host (x86_64-linux) gcc/glibc
         # include paths that shadow our /imsvc MSVC headers under
         # --target=i686-pc-windows-msvc. Verified two ways:
-        #   - wrapped clang  -> gen_structs emits 0 structs;
+        #   - wrapped clang  -> ghidra_metadata_generate emits 0 structs;
         #   - wrapped clangd -> <string.h> resolves to glibc -> gnu/stubs-32.h
         #     (32-bit multilib stub) "file not found".
         # So we deliberately do NOT pull in `clang-tools` (whose clangd is the
         # wrapped one with exactly that bug); clang-unwrapped supplies clangd +
-        # clang-format + clang-tidy directly, and gen_structs reaches its driver
+        # clang-format + clang-tidy directly, and ghidra_metadata_generate reaches its driver
         # via $GRUNTZ_CLANG.
         llvmPackages.clang-unwrapped
 
@@ -218,7 +218,7 @@
 
             echo "[gruntz] target EXE : $GRUNTZ_EXE"
             echo "[gruntz] tools      : vostok-delinker, objdiff(-cli), ghidra, llvm-pdbutil"
-            echo "[gruntz] clang      : $GRUNTZ_CLANG (unwrapped; gen_structs/gen_labels)"
+            echo "[gruntz] clang      : $GRUNTZ_CLANG (unwrapped; ghidra_metadata_generate/gen_labels)"
             echo "[gruntz] cli        : 'gruntz <cmd>' (status/labels/structs/ghidra-refresh/todo)"
             echo "[gruntz] base/MSVC  : 'nix develop .#build' for 'gruntz build'/'init' (VC5 + wine)"
             if [ ! -f "$GRUNTZ_DIR/build/clangd/compile_commands.json" ]; then
@@ -260,7 +260,7 @@
             echo "[gruntz] target EXE : $GRUNTZ_EXE"
             echo "[gruntz] cli        : 'gruntz <cmd>' (init/build/clangd/status/labels/structs/ghidra-refresh/todo)"
             # `gruntz init` is idempotent - run it on startup (set GRUNTZ_SKIP_INIT=1
-            # to skip, e.g. when you only need clang/gen_structs and not the Ghidra DB).
+            # to skip, e.g. when you only need clang/ghidra_metadata_generate and not the Ghidra DB).
             # First run builds the local env incl. the Ghidra DB (minutes); afterwards
             # the heavy Ghidra step self-skips (exports present), so it is a fast no-op.
             if [ -n "$GRUNTZ_SKIP_INIT" ]; then
