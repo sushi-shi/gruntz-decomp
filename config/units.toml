@@ -108,6 +108,11 @@ status = "matched"
 unit = "gameapp"
 source = "src/Wap32/GameApp.cpp"
 status = "matched"
+# InitializeGameWindow (@0x13db60) does `new CGameWnd` whose ctor sits under a
+# C++ exception frame (__CxxFrameHandler + FuncInfo), so this TU is built with
+# C++ EH enabled (/GX). The other CGameApp methods carry the EH cost as zero
+# extra code (verified non-regressing).
+cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
 
 [[unit]]
 unit = "statusbaritem"

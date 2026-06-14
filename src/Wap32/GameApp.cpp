@@ -99,6 +99,21 @@ void CGameApp::InitializeDefaultWindowClass()
     m_wc.lpszClassName = m_160;
 }
 
+// -------------------------------------------------------------------------
+// CGameApp::InitializeGameWindow  @ RVA 0x13db60 (87 B) - byte-exact.
+// `return new CGameWnd;` - operator new(0x10) then the CGameWnd ctor under a
+// C++ EH frame (so this TU is built with /GX). The push-ecx at entry is MSVC
+// reserving one dword of locals for the new pointer / EH-tracked object;
+// `this` (the CGameApp) is never touched - this is the CGameWnd-allocation
+// analog of CGruntzApp::InitializeGameManager, and it sits in the CGameApp
+// address cluster, so it belongs to CGameApp (not CGruntzApp; uses no
+// game-app-specific >=0x254 fields).
+// -------------------------------------------------------------------------
+CGameWnd *CGameApp::InitializeGameWindow()
+{
+    return new CGameWnd;
+}
+
 CGameApp::~CGameApp() {}
 int CGameApp::Wap32GameAppVfunc0() { return 0; }
 

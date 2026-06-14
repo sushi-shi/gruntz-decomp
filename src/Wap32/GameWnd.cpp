@@ -8,6 +8,42 @@ CGameWnd::CGameWnd()
     m_c = 0;
 }
 
+// File-scope active-window singleton (binary: CGameWnd* @ 0x653c68). Set by
+// CreateAndShow; read by GameWindowProc to dispatch messages to this object.
+static CGameWnd *s_activeWnd;
+
+// -------------------------------------------------------------------------
+// CGameWnd::CreateAndShow  @ RVA 0x13cf20 (143 B) - byte-exact.
+// Creates the OS window from the caller's CreateWindowExA params struct,
+// installs this object as the active-window singleton, then ShowWindow(SW_
+// SHOWNORMAL). Bails (returning 0) if params/owner is null or a window is
+// already active.
+// -------------------------------------------------------------------------
+int CGameWnd::CreateAndShow(CGameWndCreateParams *pParams, void *pOwner)
+{
+    if (!pParams)
+        return (int)pParams;
+    if (!pOwner)
+        return 0;
+    if (s_activeWnd)
+        return 0;
+
+    m_8 = pOwner;
+    s_activeWnd = this;
+    m_c = 0;
+
+    m_4 = CreateWindowExA(pParams->dwExStyle, pParams->lpClassName,
+                          pParams->lpWindowName, pParams->dwStyle,
+                          pParams->X, pParams->Y, pParams->nWidth,
+                          pParams->nHeight, pParams->hWndParent,
+                          pParams->hMenu, pParams->hInstance, pParams->lpParam);
+    if (!m_4)
+        return 0;
+
+    ShowWindow(m_4, 1 /*SW_SHOWNORMAL*/);
+    return 1;
+}
+
 // Out-of-line stubs so the vftable (??_7CGameWnd@@6B@) is emitted in this TU.
 // Not matched / not in symbol_names.csv; present only to anchor the vftable
 // relocation that the ctor stores.

@@ -94,6 +94,49 @@ fast-moving scratchpad. Newest at top within each section.
   (`structure/formats/`). `imageSet` is a length-prefixed string, then a `sound`
   string. RezMgr container offsets still @unconfirmed (blocks `CRezDir::Load`).
 
+### Wap32 / CGameWnd::CreateAndShow + CGameApp::InitializeGameWindow (window glue)
+- `CGameWnd::CreateAndShow` @0x13cf20 (143 B, __thiscall `ret 8`) byte-exact
+  (99.83% fuzzy; only the singleton-global + 2 IAT relocs masked). Signature is
+  `int CreateAndShow(CGameWndCreateParams *pParams, void *pOwner)`: bails (→0) if
+  pParams/pOwner null **or** a window is already active, then `m_8=pOwner;
+  s_activeWnd=this; m_c=0;` → `CreateWindowExA(12 args)` → store HWND in **m_4
+  (+0x04)** → if null return 0 → `ShowWindow(hwnd, 1)` → return 1.
+- **CGameWnd HWND member = +0x04 (m_4)**; m_8 (+0x08) = owner ptr; m_c (+0x0c) =
+  guard (re-zeroed here). The ctor's `m_4=0` is the same HWND slot.
+- **Active-window singleton = file-scope `static CGameWnd*` @ binary 0x653c68**
+  (DAT_00653c68) — DISTINCT from the CGameApp instance counter @0x653c6c. Read by
+  CreateAndShow (reject if already set) AND by GameWindowProc (dispatch target).
+- **12-arg `CreateWindowExA` from a params struct = struct-field-push idiom.** The
+  binary loads `[eax+0], [eax+4], … [eax+0x2c]` in ASCENDING order, each pushed
+  immediately. MSVC pushes the call's args **right-to-left**, so the FIRST-loaded
+  field (`[eax+0]`) is the LAST/rightmost CreateWindowExA arg (`lpParam`) and
+  `[eax+0x2c]` is the first arg (`dwExStyle`). ⇒ declare the params struct in
+  **REVERSE CreateWindowExA-arg order** (lpParam@+0 … dwExStyle@+0x2c) and call
+  `CreateWindowExA(p->dwExStyle, …, p->lpParam)` normally; the ascending-offset
+  push sequence falls out. (Natural-order struct loads +0x2c first → 97.6%; the
+  reverse-order struct → 99.8%.) **GOTCHA: a header-only struct reorder does NOT
+  retrigger the .cpp's recompile in this ninja setup — `rm` the unit's
+  base/current .obj (or touch the .cpp) before rebuild or you'll diff stale code.**
+- `CGameApp::InitializeGameWindow` @0x13db60 (87 B, `ret`) = **`return new
+  CGameWnd;`** — the CGameWnd-allocation analog of CGruntzApp::InitializeGameManager
+  (`new CGameMgr`). `operator new(0x10)` (sizeof CGameWnd) + CGameWnd ctor under a
+  C++ EH frame (`push -1; push FuncInfo; push fs:0`); `push ecx` reserves one local
+  dword for the new ptr / EH temp; **`this` (the CGameApp) is never read**, uses no
+  ≥0x254 fields. **Class decision: it's a CGameApp member** (sits in the 0x13dxxx
+  CGameApp cluster; builds a CGameWnd, no game-app-specific fields) → extend
+  `gameapp`, NOT gruntzapp. Throwing ctor forces **`/GX`** on the gameapp unit;
+  adding `/GX` did NOT regress the 3 already-100% gameapp fns (CloseResources/
+  InitializeAccelerators/ReportError stayed exact) — same zero-cost-EH result as
+  winapi/gruntzapp. 99.79% fuzzy (FuncInfo/`fs:0`/operator-new relocs masked; the
+  `??0CGameWnd` ctor call resolves directly).
+- **GameWindowProc @0x13cff0 SKIPPED — 860 B** (far over the ~400 B budget). It's a
+  static __stdcall `ret 0x10` wndproc: reads the s_activeWnd singleton, on null →
+  DefWindowProcA; else `[ecx]`-vtable dispatch via a triple sub-normalize switch
+  ladder (0x1..0xf with a `jmp [eax*4+table]` jump-table @0x53d34c, 0x10/0x1c/0x111
+  ranges, and 0x200..0x206 via tables @0x53d360/0x53d374) → each case calls a
+  CGameWnd vfunc (`[vptr+0x0c..0x54]`); default → DefWindowProcA. Needs ~20 CGameWnd
+  virtual slots + 3 jump tables; deferred to a dedicated worker.
+
 ### Wap32 / CGameApp (DONE — ctor + 4 methods; unit `gameapp`)
 - Matched `??0CGameApp@@QAE@XZ` (ctor) + `?CloseResources@…XXZ` @0x13d8c0,
   `?InitializeAccelerators@…HPBD@Z` @0x13dc20, `?ReportError@…XIJ@Z` @0x13dcb0,

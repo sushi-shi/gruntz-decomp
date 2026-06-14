@@ -50,7 +50,34 @@ __declspec(dllimport) BOOL    __stdcall PostMessageA(HWND hWnd, UINT Msg, WPARAM
 __declspec(dllimport) HCURSOR __stdcall LoadCursorA(HINSTANCE hInstance, LPCSTR lpCursorName);
 __declspec(dllimport) HICON   __stdcall LoadIconA(HINSTANCE hInstance, LPCSTR lpIconName);
 __declspec(dllimport) HGDIOBJ __stdcall GetStockObject(int i);
+__declspec(dllimport) HWND    __stdcall CreateWindowExA(DWORD dwExStyle, LPCSTR lpClassName,
+                                                        LPCSTR lpWindowName, DWORD dwStyle,
+                                                        int X, int Y, int nWidth, int nHeight,
+                                                        HWND hWndParent, HMENU hMenu,
+                                                        HINSTANCE hInstance, void *lpParam);
+__declspec(dllimport) BOOL    __stdcall ShowWindow(HWND hWnd, int nCmdShow);
 }
+
+// CreateWindowExA's 12 arguments, packed into one params struct (CGameWnd's
+// caller fills this and passes its address to CreateAndShow). Fields are stored
+// in REVERSE CreateWindowExA-arg order: the binary loads [eax+0] first (the
+// first stdcall push = the LAST/rightmost arg, lpParam) up through [eax+0x2c]
+// (dwExStyle). Reading them in this declared order reproduces the exact
+// interleaved load/push idiom.
+struct CGameWndCreateParams {
+    void     *lpParam;       // +0x00
+    HINSTANCE hInstance;     // +0x04
+    HMENU     hMenu;         // +0x08
+    HWND      hWndParent;    // +0x0c
+    int       nHeight;       // +0x10
+    int       nWidth;        // +0x14
+    int       Y;             // +0x18
+    int       X;             // +0x1c
+    DWORD     dwStyle;       // +0x20
+    LPCSTR    lpWindowName;  // +0x24
+    LPCSTR    lpClassName;   // +0x28
+    DWORD     dwExStyle;     // +0x2c
+};
 
 // ---------------------------------------------------------------------------
 // CGameWnd - WAP32 window wrapper.
@@ -63,9 +90,14 @@ public:
     virtual ~CGameWnd();
     virtual int Wap32GameWndVfunc0();
 
-    int  m_4;   // +0x04  zeroed by ctor
-    int  m_8;   // +0x08  (not touched by ctor)
-    int  m_c;   // +0x0c  zeroed by ctor
+    // Creates the OS window from a 12-field params struct (CreateWindowExA),
+    // registers this object as the active window singleton, then ShowWindow.
+    // Returns nonzero on success.  RVA 0x13cf20.
+    int CreateAndShow(CGameWndCreateParams *pParams, void *pOwner);
+
+    HWND m_4;   // +0x04  HWND (set by CreateAndShow / zeroed by ctor)
+    void *m_8;  // +0x08  owner pointer (set by CreateAndShow; not touched by ctor)
+    int  m_c;   // +0x0c  guard flag (zeroed by ctor and by CreateAndShow)
 };
 
 // Minimal polymorphic resource objects whose pointers live in CGameApp::m_4 /
@@ -99,6 +131,10 @@ public:
     BOOL InitializeAccelerators(LPCSTR lpTable);  // 0x13dc20
     void ReportError(WPARAM wParam, LPARAM lParam); // 0x13dcb0
     void InitializeDefaultWindowClass();          // 0x13d9b0
+
+    // Allocates a CGameWnd (operator new + ctor under a C++ EH frame) and
+    // returns it; `this` is never touched.  RVA 0x13db60.
+    CGameWnd *InitializeGameWindow();
 
     // Static window procedure stored into m_wc.lpfnWndProc (RVA 0x13cff0).
     static LRESULT __stdcall GameWindowProc(HWND, UINT, WPARAM, LPARAM);
