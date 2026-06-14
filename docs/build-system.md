@@ -9,7 +9,7 @@ project generation into `configure.py`. `gruntz build` is the one entry point.
 config/units.toml  (per-TU manifest: unit, source, status, optional cflags)
         |  python3 configure.py
         v
-build.ninja  +  compile_commands.json  +  build/objdiff/objdiff.json
+build.ninja  +  build/objdiff/objdiff.json
         |  ninja
         +-- PHASE 1 (compile): each unit -> build/objdiff/base/<unit>.obj
         |       via the `cl` rule -> scripts/gruntz/build/cc_wrap.py -> `wine cl /c ... /Fo`
@@ -147,7 +147,7 @@ one-time local setup runs in `gruntz init`: the EXE prep
 (`config/library_labels.csv`, so they survive `git clean`); regenerate them with
 `scripts/analysis/fid_generate.py`.
 
-The delink rule's declared outputs are the 9 `build/objdiff/target/<unit>.c.obj`
+The delink rule's declared outputs are the per-unit `build/objdiff/target/<unit>.c.obj`
 (one command, multiple outputs); its inputs are the EXE + the two Ghidra CSVs +
 `build/gen/symbol_names.csv`, so changing the names map re-delinks.
 
@@ -177,9 +177,9 @@ annotations), `configure.py`, and the pipeline package
 `scripts/gruntz/{build,ghidra,init}/`.
 
 Generated (git-ignored): `build/gen/symbol_names.csv` (from `src/` `@address`),
-`build.ninja`, `compile_commands.json`, `.ninja_log`/`.ninja_deps`, and everything
-under `build/` (base objs, delinked target objs, synth PDB, the wine prefix,
-objdiff project + report).
+`build.ninja`, `.ninja_log`/`.ninja_deps`, and everything under `build/` (base
+objs, delinked target objs, synth PDB, the clangd compdb, the wine prefix, the
+Ghidra DB + exports, objdiff project + report).
 
 ## Current status
 

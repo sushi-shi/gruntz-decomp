@@ -33,7 +33,7 @@ to "annotate the source, regenerate everything."
 | # | Artifact | Shape | Role | Hand-maintained? |
 |---|----------|-------|------|------------------|
 | 1 | `build/gen/symbol_names.csv` | `rva,name,unit` (100 rows) | THE byte-matched map. `synth_pdb.py` overlays it onto Ghidra's `functions.csv` → names the delinked `<unit>.c.obj` so objdiff pairs it to the base `<unit>.obj`. | **Yes** |
-| 2 | `config/units.toml` | per-TU `unit,source,status,cflags` (23 units) | Build manifest. `configure.py` → `build.ninja` + `compile_commands.json` + objdiff project. | Yes (legit) |
+| 2 | `config/units.toml` | per-TU `unit,source,status,cflags` (23 units) | Build manifest. `configure.py` → `build.ninja` + objdiff project. | Yes (legit) |
 | 3 | `config/engine_labels.csv` | `rva,name,class,prototype,kind,source,confidence` (337 rows) | Comprehension/attribution + match-queue fuel. Harvested from tomalla + RTTI; `apply_ghidra_enrichment.py` applies names/protos to the Ghidra DB; `gen_match_queue.py` ranks it. | Partly (harvested + appended) |
 | 4 | `structure/*.h` | 39 C++ headers, `@offset`/`@vftable`/`@size`/`@rtti` annotations | Engine-wide layout/enum scaffold (231 RTTI classes; tomalla-ported + hypotheses). Comprehension only — **not compiled**. | **Yes** |
 | 5 | `scripts/gruntz/ghidra/apply.py` (`STRUCTS`/`ENUMS`, ~300 lines) | Python literals of struct fields + enums | Defines structs/enums in the Ghidra DTM and applies them as `this`-types. | **Yes** |
@@ -144,8 +144,8 @@ Legend:  `(H)` hand-authored    `(T)` tool/generated
        +------------+------------+
                     |
                     v
-  (H) engine_labels.csv --> apply_ghidra_enrichment.py <-- (T) library_labels.csv
-      (shrinking backlog)   [headless Jython, idempotent]     (FID/FLIRT)
+  (H) engine_labels.csv --> apply.py (run_enrich)   <-- (T) library_labels.csv
+      (shrinking backlog)   [headless PyGhidra, idempotent]   (FID/FLIRT)
                     |
                     v
         (T) enriched Ghidra DB
