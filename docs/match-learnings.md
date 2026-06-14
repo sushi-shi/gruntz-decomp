@@ -922,6 +922,72 @@ fast-moving scratchpad. Newest at top within each section.
   @0xb110 (SetValueDword), `SaveOptions` @0xb270, `SetDefaults` @0xb160,
   `AdvancedOptionsDialogProc` @0xafb0 (the dialog TU).
 
+### CGruntzApp dtor + ShowError (extended `gruntzapp` — 4/4 byte-exact, reloc-masked)
+- Added `??1CGruntzApp@@UAE@XZ` @0x0808b0 (**98.62%**, 24/24 instrs, 0 non-reloc
+  mismatches) and `?ShowError@CGruntzApp@@UAEXXZ` @0x080ac0 (**99.46%**, 89/89,
+  0 non-reloc). Both byte-exact modulo reloc-masking. The 2 prior gruntzapp fns
+  did NOT regress; the matched gameapp unit did NOT regress (verified by stash:
+  VirtualUnknownMethod02 stayed 97.22%, the ctor 99.00%).
+- **THE MANAGER-POINTER OFFSET (the headline) = CGameApp+0x8, freed by
+  CloseResources, NOT by the dtor.** The dtor delegates ALL teardown to
+  `CGameApp::CloseResources`@0x13d8c0, which `delete`s `m_8`@+0x8 (the game
+  MANAGER, scalar-deleting dtor via `mov eax,[ecx];push 1;call [eax]`) and
+  `m_4`@+0x4 (the window). So the manager ptr is a BASE CGameApp field (+0x8),
+  confirming the earlier note that no CGruntzApp-specific manager member exists —
+  the store happens in VirtualUnknownMethod02 (`m_8 = InitializeGameManager()`),
+  already modeled. **No new CGruntzApp instance member.**
+- **The dtor IS virtual (`UAE`, `ret`)** — CGameApp went fully virtual, so the
+  override mangles `??1CGruntzApp@@UAE@XZ`. Two-phase EH-framed teardown:
+  (1) restore CGruntzApp vftable (0x5e9ab4); (2) run own body = `CloseResources()`
+  (devirtualized in a dtor → `CGameApp::CloseResources`@0x13d8c0, reached via a
+  DOUBLE incremental-link thunk 0x1b8b→0x80980→0x13d8c0, REL32-masked); (3)
+  restore CGameApp base vftable (0x5e9b0c); (4) the **base `~CGameApp` is INLINED**
+  → a SECOND `call CloseResources`@0x13d8c0 + the inline `dec [g_count@0x653c6c]`.
+  ⇒ CloseResources is called TWICE (once per class level's dtor body) — real
+  engine code, not a bug.
+- **THE LEVER: `~CGameApp` must be INLINE-defined in the shared header** so the
+  cross-TU `~CGruntzApp` inlines it (engine had `~CGameApp(){ CloseResources();
+  --s_count; }` inline in CGameApp.h). The matched gameapp had modeled it as an
+  empty out-of-line `CGameApp::~CGameApp(){}` (never diffed, so it didn't matter
+  there) — CORRECTED to the real inline body in Wap32.h. The instance counter
+  @0x653c6c was promoted from GameApp.cpp's file-local `static s_gameAppCount` to
+  a shared `extern int g_gameAppInstanceCount` (declared in Wap32.h, defined in
+  GameApp.cpp) so the inline `~CGameApp` in GruntzApp.cpp's TU resolves it; the
+  rename is reloc-masked → the gameapp ctor/Method02 that reference it stayed
+  byte-exact. (Removing the out-of-line `~CGameApp(){}` is required — an inline
+  body + an out-of-line def is a redefinition.)
+- **ShowError (`UAEXXZ`, `ret`, the +0x30 vtable override of the empty
+  `CGameApp::ShowError`@0x080db0=`ret`):** builds the error string into the
+  file-scope buffer `g_errorText`@0x644ea0 (`char[0x100]`) then pops the ERROR
+  dialog. Algorithm: `id = m_24c ?: 0x8009` (+0x24c error id, default 0x8009);
+  `detailVal = m_250` (+0x250); `detail[0]=0; if(detailVal>0) sprintf(detail,
+  "(%i)",detailVal)`; `if(LoadStringA(m_c,id,buf,0xfa)<=0 &&
+  LoadStringA(m_c,0x8009,buf,0xfa)<=0) strcpy(buf,"Unable to continue game.")`;
+  `strcat(buf,detail)`; `while(ShowCursor(TRUE)<0);`; `DialogBoxParamA(m_c,
+  "ERROR",0,&ErrorDialogProc,0)`. strcpy/strcat emit INLINE (`repne scasb` strlen
+  + `rep movs`). LoadStringA/ShowCursor/DialogBoxParamA are `__declspec(dllimport)
+  __stdcall` → `FF15 [IAT]` indirect (reloc-masked); the ErrorDialogProc address
+  is taken (`push imm` of its incremental-link thunk 0x4033c8). m_c (hInstance,
+  +0xc) is the 1st arg to all three USER32 calls. Strings: `"(%i)"`@0x60fa38,
+  `"Unable to continue game."`@0x60fa18, `"ERROR"`@0x60fa10.
+- **TWO source levers for ShowError (both load-bearing, both NO-RELOC diffs until
+  fixed):** (1) **read BOTH error members up front** (`int id=m_24c; int
+  detailVal=m_250;` before the id-default) — the optimiser hoists the m_250 load
+  into eax above the `test esi; jne; mov esi,0x8009` id-default and keeps it live
+  across it; reading m_250 lazily (inline at the `if`) emitted a DIFF_DELETE/
+  INSERT pair (the load floated below the default). (2) **the detail buffer must
+  be `char[0x20]`** to get the target's `sub esp,0x20` frame with the buffer at
+  `[esp+0xc]` (referenced as `lea [esp+0x10]` post-push for sprintf, `lea
+  [esp+0xc]` for the strcat strlen). `[0x10]`→`sub esp,0x10`, `[0x14]`→`0x14`;
+  the frame tracks the buffer size 1:1 here, so 0x20 is required even though only
+  0x14 bytes (0xc..0x1f) are usable above the 0xc-byte spill gap.
+- UNLOCKED: the CGruntzApp object lifecycle is anchored end-to-end (ctor@0x80850,
+  dtor@0x808b0, InitializeGameManager@0x80a20, ShowError@0x80ac0, ErrorDialogProc
+  @0x80c70). `CGameApp::CloseResources`@0x13d8c0 now has a 2nd (dtor) caller; the
+  game-manager pointer is pinned at CGameApp+0x8. The CGameApp vtable's
+  scalar-deleting dtor `??_GCGameApp` + `??1CGameApp` now carry their real bodies
+  (CloseResources + counter dec) for any future vtable/dtor-chain match.
+
 ### CGruntzApp app object (unit `gruntzapp` — 2/2 byte-exact, reloc-masked plateau)
 - New TU `src/Gruntz/GruntzApp.cpp`; `class CGruntzApp : public CGameApp`
   (`#include "../Wap32/Wap32.h"`). Both methods byte-exact modulo reloc-masked

@@ -1,26 +1,39 @@
 // GruntzApp.cpp - Gruntz application object (CGruntzApp, the game's CGameApp
-// subclass; C:\Proj\Gruntz). Two methods byte-matched here:
+// subclass; C:\Proj\Gruntz). Methods byte-matched here:
 //
 //   CGruntzApp::InitializeGameManager @ RVA 0x080a20 (90 B) - allocates and
 //       constructs the game manager (operator new + ctor under a C++ EH frame)
 //       and returns it.
 //   CGruntzApp::ErrorDialogProc       @ RVA 0x080c70 (85 B) - INT_PTR CALLBACK
 //       (__stdcall) dialog proc that shows an error string and closes on OK/Cancel.
+//   CGruntzApp::~CGruntzApp           @ RVA 0x0808b0 (96 B) - virtual dtor; runs
+//       CloseResources() then chains the (inlined) base ~CGameApp.
+//   CGruntzApp::ShowError             @ RVA 0x080ac0 (243 B) - virtual override;
+//       builds the error string (LoadStringA / fallback literal + "(%i)" detail),
+//       forces the cursor visible, then DialogBoxParamA(.., ErrorDialogProc, ..).
 //
 // Only offsets / control IDs / code bytes are load-bearing; class and field
 // names are placeholders.
 #include "../Wap32/Wap32.h"
+#include <stdio.h>   // engine sprintf @0x11f890 (reloc-masked)
+#include <string.h>  // inline strlen/strcpy/strcat (rep movs/scas)
 
 // ---------------------------------------------------------------------------
-// Minimal Win32 surface (USER32 dialog API). We deliberately do NOT pull in
+// Minimal Win32 surface (USER32 API). We deliberately do NOT pull in
 // <windows.h> - keep the visible symbol SET small (the compiler hashes it;
 // entropy follows header churn). Reproduces the FF15 [IAT] direct-call form.
 // ---------------------------------------------------------------------------
 typedef int INT_PTR;
+typedef INT_PTR (__stdcall *DLGPROC)(HWND, UINT, WPARAM, LPARAM);
 
 extern "C" {
 __declspec(dllimport) BOOL __stdcall EndDialog(HWND hDlg, INT_PTR nResult);
 __declspec(dllimport) BOOL __stdcall SetDlgItemTextA(HWND hDlg, int nIDDlgItem, LPCSTR lpString);
+__declspec(dllimport) int __stdcall LoadStringA(HINSTANCE hInstance, UINT uID, char *lpBuffer, int cchBufferMax);
+__declspec(dllimport) int __stdcall ShowCursor(BOOL bShow);
+__declspec(dllimport) INT_PTR __stdcall DialogBoxParamA(HINSTANCE hInstance, LPCSTR lpTemplateName,
+                                                        HWND hWndParent, DLGPROC lpDialogFunc,
+                                                        LPARAM dwInitParam);
 }
 
 #define WM_INITDIALOG 0x0110
@@ -28,6 +41,9 @@ __declspec(dllimport) BOOL __stdcall SetDlgItemTextA(HWND hDlg, int nIDDlgItem, 
 
 // The control ID of the static text field that displays the error message.
 #define IDC_ERROR_TEXT 0x40d
+
+// Default resource string id used when the requested error id is 0 / missing.
+#define IDS_DEFAULT_ERROR 0x8009
 
 // ---------------------------------------------------------------------------
 // The game manager. CGruntzApp::InitializeGameManager allocates 0x0a30 bytes
@@ -45,24 +61,90 @@ private:
 };
 }
 
-// File-scope globals referenced by ErrorDialogProc (binary: HWND @ 0x64557c and
-// the error-text buffer @ 0x644ea0). The relocs that name them are masked in
-// objdiff; only the address-load / address-immediate bytes are load-bearing.
+// File-scope globals referenced by ErrorDialogProc / ShowError (binary: HWND @
+// 0x64557c and the error-text buffer @ 0x644ea0). The relocs that name them are
+// masked in objdiff; only the address-load / address-immediate bytes are
+// load-bearing.
 static HWND g_errorHwnd;          // 0x64557c - last dialog HWND
-static char g_errorText[1];       // 0x644ea0 - error message buffer (push imm)
+static char g_errorText[0x100];   // 0x644ea0 - error message buffer
+// (g_gameAppInstanceCount @0x653c6c is declared in Wap32.h, defined in
+// GameApp.cpp; ~CGruntzApp's inlined base ~CGameApp decrements it.)
 
 // ---------------------------------------------------------------------------
 // CGruntzApp - the game's CGameApp subclass. Its own fields begin after the
-// base (CGameApp ends at 0x254). Neither matched method touches an instance
-// field (InitializeGameManager returns the manager rather than storing it; the
-// error proc is static), so no CGruntzApp-specific members are needed yet.
+// base (CGameApp ends at 0x254). The matched methods touch only BASE CGameApp
+// fields: ShowError reads m_c (hInstance @+0xc), m_24c (error message id @+0x24c)
+// and m_250 (error detail value @+0x250); the dtor / InitializeGameManager touch
+// no CGruntzApp-specific field. The game-manager pointer the engine deletes is
+// CGameApp::m_8 (@+0x8) - freed by CloseResources, not by this dtor directly. So
+// no CGruntzApp-specific members are needed yet.
 // ---------------------------------------------------------------------------
 class CGruntzApp : public CGameApp {
 public:
+    virtual ~CGruntzApp();                            // vtbl +0x00  0x0808b0
+    virtual void ShowError();                         // vtbl +0x30  0x080ac0
     WAP32::CGameMgr *InitializeGameManager();
     static INT_PTR __stdcall ErrorDialogProc(HWND hWnd, UINT message,
                                              WPARAM wParam, LPARAM lParam);
 };
+
+// ---------------------------------------------------------------------------
+// CGruntzApp::~CGruntzApp  @ RVA 0x0808b0 (96 B).
+// Virtual dtor (`??1CGruntzApp@@UAE@XZ`, `ret`). Two-phase teardown under a C++
+// EH frame: restore the CGruntzApp vftable, run this class's own body
+// (CloseResources(), devirtualized to CGameApp::CloseResources @0x13d8c0), then
+// the base subobject ~CGameApp runs - inlined here (CloseResources() again +
+// the instance-counter decrement @0x653c6c) with the base vftable restored. So
+// CloseResources is called TWICE (once by each level's body) - that is the real
+// engine code, and CloseResources is what actually `delete`s the game manager
+// (CGameApp::m_8 @+0x8). No game-manager-pointer member lives on CGruntzApp.
+// ---------------------------------------------------------------------------
+CGruntzApp::~CGruntzApp()
+{
+    CloseResources();
+}
+
+// ---------------------------------------------------------------------------
+// CGruntzApp::ShowError  @ RVA 0x080ac0 (243 B).
+// Virtual override (`?ShowError@CGruntzApp@@UAEXXZ`, `ret`). Builds the error
+// message into g_errorText then shows the ERROR dialog:
+//   id = m_24c ? m_24c : IDS_DEFAULT_ERROR;     // +0x24c, default 0x8009
+//   detail[0] = 0; if (m_250 > 0) sprintf(detail, "(%i)", m_250);  // +0x250
+//   if (LoadStringA(m_c, id, g_errorText, 0xfa) <= 0 &&
+//       LoadStringA(m_c, 0x8009, g_errorText, 0xfa) <= 0)
+//       strcpy(g_errorText, "Unable to continue game.");
+//   strcat(g_errorText, detail);
+//   while (ShowCursor(TRUE) < 0) ;              // force the cursor visible
+//   DialogBoxParamA(m_c, "ERROR", 0, ErrorDialogProc, 0);
+// LoadStringA/ShowCursor/DialogBoxParamA are FF15 [IAT] indirect calls; the
+// ErrorDialogProc address is taken (push imm of its incremental-link thunk).
+// strcpy/strcat are emitted inline (repnz scas / rep movs).
+// ---------------------------------------------------------------------------
+void CGruntzApp::ShowError()
+{
+    // The two error fields are read up front (the optimiser hoists the m_250
+    // load above the id-default branch, keeping it live in eax across it).
+    int id = m_24c;
+    int detailVal = m_250;
+    if (id == 0)
+        id = IDS_DEFAULT_ERROR;
+
+    char detail[0x20];
+    detail[0] = 0;
+    if (detailVal > 0)
+        sprintf(detail, "(%i)", detailVal);
+
+    if (LoadStringA(m_c, id, g_errorText, 0xfa) <= 0 &&
+        LoadStringA(m_c, IDS_DEFAULT_ERROR, g_errorText, 0xfa) <= 0)
+        strcpy(g_errorText, "Unable to continue game.");
+
+    strcat(g_errorText, detail);
+
+    while (ShowCursor(1) < 0)
+        ;
+
+    DialogBoxParamA(m_c, "ERROR", 0, &CGruntzApp::ErrorDialogProc, 0);
+}
 
 // ---------------------------------------------------------------------------
 // CGruntzApp::InitializeGameManager  @ RVA 0x080a20 (90 B).

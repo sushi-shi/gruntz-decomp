@@ -17,8 +17,10 @@ public:
 };
 }
 
-// File-scope instance counter (binary: global int @ 0x653c6c, bumped per ctor).
-static int s_gameAppCount;
+// Instance counter (binary: global int @ 0x653c6c, bumped per ctor). Shared
+// (declared in Wap32.h) so the inline ~CGameApp - which CGruntzApp's dtor
+// inlines in another TU - resolves it; the reloc name is masked in objdiff.
+int g_gameAppInstanceCount;
 
 CGameApp::CGameApp()
 {
@@ -30,7 +32,7 @@ CGameApp::CGameApp()
     m_248 = 0;
     m_24c = 0;
     m_250 = 0;
-    s_gameAppCount++;
+    g_gameAppInstanceCount++;
 }
 
 // -------------------------------------------------------------------------
@@ -237,7 +239,7 @@ int CGameApp::VirtualUnknownMethod02(GameInfo *pGameInfo, WNDCLASSA *pWndClass,
 {
     HINSTANCE hInst;
 
-    if (s_gameAppCount > 1)
+    if (g_gameAppInstanceCount > 1)
         goto Fail;
     if (!pGameInfo || pGameInfo->size != 0x1d4)
         goto Fail;
@@ -301,7 +303,8 @@ Fail:
     return 0;
 }
 
-CGameApp::~CGameApp() {}
+// ~CGameApp is now inline in Wap32.h (CloseResources() + counter dec); it is
+// still emitted in this TU (the vtable's scalar-deleting dtor references it).
 
 // Out-of-line stubs so referenced symbols are emitted in this TU.
 CGameResource::~CGameResource() {}

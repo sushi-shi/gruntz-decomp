@@ -171,10 +171,20 @@ struct GameInfo {
 //   so the WHOLE class is virtual with the tomalla slot order; matched methods
 //   keep their bodies (virtual mangles `U`, not `Q`).
 // ---------------------------------------------------------------------------
+// CGameApp instance counter (binary: global int @ 0x653c6c). Bumped by the
+// ctor, decremented by ~CGameApp. Shared across the gameapp / gruntzapp TUs so
+// the inline ~CGameApp below (which CGruntzApp's dtor inlines) resolves it; the
+// reloc that names it is masked in objdiff (only the load/store bytes matter).
+extern int g_gameAppInstanceCount;
+
 class CGameApp {
 public:
     CGameApp();
-    virtual ~CGameApp();                                   // vtbl +0x00
+    // ~CGameApp is INLINE in the engine header: it tears down the engine
+    // resources then decrements the instance counter. The body must be visible
+    // here so CGruntzApp's cross-TU dtor inlines it (CloseResources() call +
+    // counter dec under the base-subobject teardown). vtbl +0x00.
+    virtual ~CGameApp() { CloseResources(); --g_gameAppInstanceCount; }
 
     // The class's own dispatch surface (this TU matches 02/03 + the two
     // InitializeDefault* + the resource/error helpers); unmatched slots are
