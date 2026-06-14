@@ -142,6 +142,21 @@ prototype starts far ahead of one staring at `FUN_00482f50`.
      thunk + `E8` callers. See `runtime-dlls.md`.
 4. **String/format xrefs** — functions referencing distinctive literals (leaked
    `C:\Proj\` paths, format/debug strings, WWD/REZ tokens) → name/attribute.
+   Tooled: `scripts/string_xref_labels.py` recovers the per-function string set
+   (scans `.text` for 4-byte LE string-VA immediates over the Ghidra function
+   boundaries — no disassembler needed) and ranks bare `FUN_` funcs by taxonomy
+   distinctiveness. Seeded the 66 `source=string-xref` rows in `engine_labels.csv`
+   (DX error formatters that self-ID their module string, the WWD object factory,
+   sprite/asset loaders, foundry/level logic).
+   **Verify against the decompiler** before trusting a string-only guess:
+   `scripts/ghidra_decomp_export.py` (read-only, run on a *copy* of the named DB)
+   dumps the Ghidra decompiler C + caller/callee xrefs for a target list, exposing
+   calling convention, arg count, virtual-slot identity (`vfunc_N` callers), and
+   `this+offset` member writes / `.att` reads. This produced the 94
+   `source=decomp-xref` rows (object `LoadAttributes`, `CState`-subclass virtuals,
+   `CNetMgr` config, `CGrunt` anim resolvers) and caught library/CRT funcs strings
+   would have mislabeled (CRT `_heapwalk`, the C++ Tools error handler). ~315
+   string-bearing bare funcs remain — feed the next tier through both tools.
 5. **Contiguity** — once a TU's anchor is found, its address neighbors are the same
    TU. (NB: blind data/call-graph clustering does NOT work here — boundaries come
    from labels, not graph analysis. See the TU-clustering note.)

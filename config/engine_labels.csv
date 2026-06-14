@@ -384,3 +384,266 @@ rva,name,class,prototype,kind,source,confidence
 0x185320,_uncompress,,"int uncompress(Bytef* dest, uLongf* destLen, const Bytef* source, uLong sourceLen)  [one-shot inflate wrapper; calls inflate @0x585be0; sole caller is WwdFile::InflateMainBlock @0x560790. zlib 1.0.4 uncompr.c]",free,rez-trace,high
 0x185be0,_inflate,,"int inflate(z_streamp z, int f)  [zlib inflate() state machine; drives inflate_blocks @0x5875a0 (matched _inflate_blocks @0x1875a0). zlib 1.0.4 inflate.c]",free,rez-trace,high
 0x185ab0,_inflateReset,,"int inflateReset(z_streamp z)  [zlib inflateInit/Reset; calls _inflate_blocks_new @0x587530 (matched). zlib 1.0.4 inflate.c]",free,rez-trace,med
+#
+# === string-xref pass (Ghidra function boundaries x binary string refs) ===
+# Each function below directly loads (push/mov imm32) the listed .rdata string
+# literals; role inferred from the WAP32/Gruntz string taxonomy (docs/strings-
+# analysis.md) + address contiguity to known anchors. Names are INFERRED
+# (source=string-xref): high = self-identifying / unambiguous role; med = role
+# certain, exact identity/class inferred. Reproducible: scripts/string_xref_labels.py.
+0x141400,CDirectDrawMgr::GetErrorString,CDirectDrawMgr,"[maps DDERR_*/HRESULT -> symbol + human description; self-IDs module 'DirectDrawMgr'; uses WAP32 reporter fmt '%s, line %i: %s (%i) - %s'; same DDrawMgr TU as DirectDrawCreate caller @0x141dc0]",method,string-xref,high
+0x133590,DirectInputMgr2::GetErrorString,DirectInputMgr2,[maps DIERR_* -> symbol + description; self-IDs 'DirectInputMgr2'; same DinMgr2 TU as DirectInputCreateA caller @0x132ce0],method,string-xref,high
+0x138150,DirectSoundMgr::GetErrorString,DirectSoundMgr,[maps DSERR_* -> symbol + description; self-IDs 'DirectSoundMgr'; same Dsndmgr TU as DirectSoundCreate caller @0x136550],method,string-xref,high
+0x00a3b0,CreateGameObjectByName,,[WWD object factory: dispatches on object type-name string (ActionArea/AmbientSound/AniCycle/Boomerang/Brickz/CheckpointTrigger/CoveredPowerup/... full WAP object roster) to construct the matching CWap* object; abuts CActionArea::CActionArea @0x07da0],free,string-xref,high
+0x08ff30,CGruntzMgr::BuildMoviePath,CGruntzMgr,[formats cutscene path '%c:\Movies\%s' over Gruntz0..8.vob/Logo.vob; CGruntzMgr TU (GetGruntzDriveLetter @0x08fa70 abuts)],method,string-xref,high
+0x0f8f30,BuildSoundFontPath,,[formats Miles/DLS soundfont path '%c:\MUSIC\Gruntz.SF2' / 'Gruntz4.SF2'],free,string-xref,high
+0x065e80,LoadPickupSprites,,[registers GRUNTZ_PICKUPS_* sprite namespace (59 pickup keys)],free,string-xref,med
+0x07c620,LoadPowerupIconSprites,,[loads GAME_INGAMEICONZ_POWERUPZ_* powerup HUD icons; reads CoveredTimeBombTime],free,string-xref,med
+0x060150,LoadGruntDeathAnimations,,[GRUNTZ_DEATHZ_* death/exit animation sprite loader; CUserLogic region],free,string-xref,med
+0x048470,CGrunt::BuildAnimationKey,CGrunt,[assembles GRUNTZ_<type>_<dir>_<action> sprite-namespace keys; CGrunt TU (CGrunt::CGrunt @0x047a10)],method,string-xref,med
+0x0d0120,LoadCursorSprites,,[GAME_CURSORZ_* tool/toy cursor-sprite loader (35 cursor keys + NORMCHIPZ)],free,string-xref,med
+0x0e2400,BuildToolToyColorKey,,[builds <COLOR>TOOL/<COLOR>TOY ownership-tint keys across 17 colors],free,string-xref,med
+0x0dc060,LoadLevelEffectSprites,,[loads GAME_*/LEVEL_* hazard + GRUNTZ_DEATHZ_* effect sprites/sounds; CGruntzMgr region],free,string-xref,med
+0x0d65d0,LoadWarlordSprites,,[WARLORDZ_NAPOLEAN/PATTON/VIKING boss sprite loader],free,string-xref,med
+0x0a11d0,LoadAreaLevelTable,,[references AREA1..AREA8 + level/world keys; big map/level load dispatch; CMapMgr region (~CMapMgr @0x09e9e0)],method,string-xref,med
+0x093d40,BuildLevelRezPath,,[formats AREA%i_WORLDZ/LEVEL%i/TRAINING%i/'custom\' level resource keys; RezMgr path TU (MakeRezPath @0x091670)],free,string-xref,med
+0x0dbc80,BuildWorldLevelPath,,[formats 'WORLDZ\LEVEL%i'/'WORLDZ\TRAINING%i'; BATTLEZ_/MULTI_ mode prefixes; CGruntzMgr region],free,string-xref,med
+0x0c20a0,CMultiStartDlg::InitPlayerSlots,CMultiStartDlg,"[multiplayer setup: Human / Computer(easy|normal|difficult), CustomMultiMap/LastMultiMap; CMultiStartDlg TU @0x0c1750]",method,string-xref,med
+0x0e44e0,BuildLevelTitleString,,[formats 'Questz: Stage %d of %s' / 'Battlez: %s' / Custom level titles],free,string-xref,med
+0x01ed30,DrawBattleStats,,[renders BATTLE STATZ panel labels: Gruntz:/Killz:/Cursez:/Fortz:/Powerupz:],free,string-xref,med
+0x018740,GetEndLevelStatLabels,,[Coinz:/Deathz:/Powerupz:/Secretz:/Survivorz:/Time:/Toolz:/Toyz: end-of-level results labels],free,string-xref,med
+0x01c210,CheckWarpLetterBonus,,[BOOTY_BOOM/BOOTY_WARP + 'Collect all four WARP letterz...' secret-bonus messages],free,string-xref,med
+0x01c9d0,ShowLevelCompleteMessage,,['Level Completed!'/'World Completed!' + WARP-letterz cheat-unlock messages],free,string-xref,med
+0x022e60,LoadCheatConfig,,[reads Cheatz/NumCheatz/Cheat%i + ExpMonth/ExpYear cheat-code config],free,string-xref,med
+0x082990,GetWorldDisplayName,,"[returns world display name ('Gruntz in Space'/'Honey, I Shrunk the Gruntz!'/'Rocky Roadz'/...); 121B table lookup]",free,string-xref,med
+0x018830,LoadBootyCheatState,,[STATEZ_BOOTY/BootyCheatz/Cheat%i + GRUNTZ_WANDGRUNT sprite setup],free,string-xref,low
+#
+# --- string-xref pass, batch 2: asset/tuning loaders & level validators ---
+0x0df050,CProjectile::LoadProjectileSprites,CProjectile,[loads GRUNTZ_<type>_PROJECTILE sprites + *ProjectileTimePerTile tuning (boomerang/gunhat/nerfgun/rock/welder/wingz); CProjectile TU (CProjectile::CProjectile @0x0dec60 abuts)],method,string-xref,med
+0x102250,LoadStatusBarTabSprites,,[GAME_STATUSBAR_TABZ_* (game/gruntz/multiplayer tabs) + INGAMEICONZ chipz; CSBI status-bar TU (CSBI_RectOnly @0x101fa0)],method,string-xref,med
+0x0b0140,LoadRollingBallHazardSprites,,[LEVEL_ROLLINGBALL_* + GAME_WATER/Hazardz hazard sprites; CRollingBall TU (CRollingBall::CRollingBall @0x0af820)],method,string-xref,med
+0x110c10,LoadPyramidBridgeSprites,,[GAME_*PYRAMIDZ + LEVEL_*BRIDGE sprites; CTileTriggerLogic region (CTileTriggerLogic ctor @0x1107f0)],method,string-xref,med
+0x025020,LoadBattlezMapConfig,,[Battlez random-map setup: toolz/toyz names + BrickzChance/DefenderChance/EasyDifficulty probability attrs; UnknownClassArrays region @0x024f80],method,string-xref,med
+0x05d210,LoadGruntTuningConstants,,[reads grunt timing/transparency attrs: ConversionTime/DeathTouchTime/EntranceSafeTime/GruntGhostTransparencyOn/SafeFlashTime; CUserLogic region],method,string-xref,med
+0x04dd50,LoadGruntTypeTable,,"[grunt-type roster (BABYWALKERGRUNT..YOYOGRUNT, ~36) + GAME_*LOOP powerup loop sprites + Conversion/DeathTouch tuning; CGrunt region]",method,string-xref,med
+0x0597a0,LoadGruntCombatAnimations,,[GRUNTZ_NORMALGRUNT_BLOCK*/IMPACT* + spring-grunt anims + GAME_CONVERSIONHIT/DEATHTOUCHHIT; CUserLogic region],method,string-xref,med
+0x068880,LoadWingzGruntSprites,,[GRUNTZ_WINGZGRUNT_* directional idle/walk/item sprites; CUserLogic region],method,string-xref,med
+0x050ce0,LoadVehicleGruntSprites,,[toy/vehicle grunt subset: BABYWALKER/GOKART/JACKINTHEBOX/JUMPROPE/POGOSTICK/SQUEAKTOY/YOYO grunts; CGrunt region],method,string-xref,med
+0x06c130,WireTileSwitchLogic,,"['No switch/trigger logic found for plate/switch at: x=%d, y=%d' + GAME_SECRETSWITCH/CrumbleTileDelay; level switch/trigger wiring; CUserLogic region]",method,string-xref,med
+0x0d2dd0,ValidateLevelTiles,,"[level-load validator emitting 'Bad <brickz/hold|multi|once-only|secret|time|toggle|up-down switch/trigger/pressure plate> at: x=%d, y=%d' diagnostics across all tile/switch/trigger types]",method,string-xref,med
+#
+# --- string-xref pass, batch 3: gameplay/asset loaders, MP & save UI ---
+0x0b3160,CKitchenSlime::LoadSprites,CKitchenSlime,[LEVEL_KITCHENSLIME_<dir> sprites + KitchenSlimeTimePerTile tuning; CKitchenSlime TU (CKitchenSlime::CKitchenSlime @0x0b23a0 abuts)],method,string-xref,med
+0x0b78b0,CNetMgr::SetupMultiplayerServices,CNetMgr,[MULTI_HOSTSERVICES/MULTI_JOINSERVICES + 'Game Name'/'Player Name'/'Service' lobby fields; CNetMgr TU (CNetMgr::CNetMgr @0x0b6000)],method,string-xref,med
+0x01e720,BuildPowerupIconKeys,,[assembles GAME_INGAMEICONZ_ + POWERUPZ_* HUD icon keys (sibling of LoadPowerupIconSprites @0x07c620)],free,string-xref,med
+0x01a040,LoadGruntEffectSprites,,[GAME_CYCLE100/EXPLOSION/GRUNTBOMBSPRINT/GRUNTFLEX/GRUNTTWITCH + INGAMEICONZ effect sprites],free,string-xref,med
+0x0fdc00,LoadBattlezItemConfig,,[toolz/toyz names + BrickzPercent/BrickzChance probabilities; Battlez map-item config (sibling of LoadBattlezMapConfig @0x025020)],free,string-xref,med
+0x0dc6d0,BuildGruntTypeNameTable,,[grunt-type name roster BABYWALKERGRUNT..YOYOGRUNT (~36); CGruntzMgr asset-key region],free,string-xref,med
+0x0dd540,BuildSpriteImageKeyTable,,[GRUNTZ_*/IMAGEZ_* per-grunt sprite/image namespace key table; CGruntzMgr asset-key region],free,string-xref,med
+0x0ddaa0,BuildAnizKeyTable,,[ANIZ_*/GRUNTZ_* animation namespace key table; CGruntzMgr asset-key region],free,string-xref,med
+0x057100,LoadGruntAbilityTuning,,[FreezeRadius/HealthRadius ability radii + GAME_ATTACK/FLASH/LIGHTING + LEVEL_ROLLINGBALL effect sprites; CUserLogic region],method,string-xref,med
+0x075e90,LoadTerrainTileSprites,,[GAME_/LEVEL_ DIRT/GAUNTLETBRICK/HIDDENITEM/WATER/ROCKBREAK destructible-terrain sprites; CUserLogic region],method,string-xref,med
+0x0e2980,LookupToolToyColorKey,,[<COLOR>TOOL/<COLOR>TOY ownership-tint lookup (17 colors); sibling of BuildToolToyColorKey @0x0e2400],free,string-xref,med
+0x105e40,LoadRezMachineConfig,,[Rez-machine (grunt foundry) tuning: GAME_REZMACHINE/REZBELTDROP/REZBELTRETRACT + Left/RightMachine*Delay attrs],method,string-xref,med
+0x106bb0,LoadChipMachineConfig,,[chip-foundry tuning: GAME_CHIPFALLOUT/CHIPLAND + FallingItem*/NextItem* timing attrs],method,string-xref,med
+0x0f9ea0,LoadGameAssetNamespaces,,"[loads GAME_ANIZ/IMAGEZ/SOUNDZ asset namespaces over AREA%i; builds 'Alpha Version, Build %i, Monolith Productions Inc.' banner]",free,string-xref,med
+0x0e3f40,DrawSaveGameMenu,,[save-slot UI: 'Saved Game #%i'/'(Empty)' + GAME_DELETE/INFO/OVERWRITE + 'ERROR - Cannot Save Game.'],method,string-xref,med
+0x045270,NotifyFortUnderAttack,,['ALERT - Your Fort is under attack!' Warlordz _PANIC notify (NotifyString/NotifyTimer); CWarlord/CFortressFlag region],method,string-xref,med
+0x0dba30,BuildMusicCategoryTable,,[AMBIENT%d/INTRO%d/CURSE/MIDIZ/MONOLITH/POWERUP music+ambient sound-category keys; CGruntzMgr region],free,string-xref,med
+0x09fe50,LoadMenuStateAssets,,[MENU_ACTIVATE/CURSOR/SELECT + STATEZ_MENU + IMAGEZ/SOUNDZ menu-state asset loader],method,string-xref,med
+#
+# --- string-xref pass, batch 4: gameplay-feature loaders & state assets ---
+0x0ca200,LoadLevelByMode,,[AREA%i/CUSTOMLEVEL + GAME_BATTLEZ/GAME_MULTI + CursorSnapSprite level-mode loader; CGruntzMgr region],method,string-xref,med
+0x06eb80,LoadTeleporterGooConfig,,[GAME_TELEPORTLOOP + TimePerGoo/TimePerResource + LEVEL_ROLLINGBALL hazard tuning; CUserLogic region],method,string-xref,med
+0x018f00,ShowSecretBonusMessage,,['Secret Bonus Acquired:'/'The Secret of Secretz:' multi message display],free,string-xref,med
+0x038d20,LoadCreditzStateAssets,,[CREDITZ/MIDIZ/MONOLITH/PLAY/SOUNDZ splash/credits-state asset keys],free,string-xref,med
+0x110860,LoadBridgeMoveSprites,,[GAME_PYRAMIDMOVE + LEVEL_*BRIDGEMOVE/CRUMBLE sprites; CTileTriggerLogic TU (ctor @0x1107f0 +0x70)],method,string-xref,med
+0x07b930,LoadGruntCombatTuning,,[CombatTimeout + GAME_FLASH/GAME_LIGHTING_FLASH/LightFx grunt combat tuning; CUserLogic region],method,string-xref,med
+0x07be60,LoadGruntResurrectTuning,,[RessurectAIRadius + GAME_FLASH/LightFx resurrect/AI tuning; CUserLogic region],method,string-xref,med
+0x0c7090,LoadDroppedObjectEffects,,[GAME_WATER/LEVEL_DEATHSPLASH/LEVEL_DROPPEDOBJECTHIT/Particlez; CDroppedObject TU (ctor @0x0c68b0)],method,string-xref,med
+0x0dfd00,LoadProjectileEffects,,[GRUNTZ_WINGZGRUNT_PROJECTILELOOP + GAME_WATER/LEVEL_DEATHSPLASH/Particlez; CProjectile TU (ctor @0x0dec60)],method,string-xref,med
+0x0dca70,BuildAssetNamespacePrefixes,,[master ANIZ_/GRUNTZ_/IMAGEZ_/SOUNDZ_ asset-namespace prefix builder; CGruntzMgr region],free,string-xref,med
+#
+# === decomp-xref pass (Ghidra decompiler + caller/callee xrefs, not strings alone) ===
+# Each row read from build/ghidra DecompExport.py output: confirms calling
+# convention, arg count, virtual-slot identity (vfunc_N caller thunks), and the
+# this+offset member writes / .att attr reads / callee roles. Lets us name object
+# Init/LoadAttributes methods, CState-subclass virtuals, and CNetMgr config readers
+# precisely -- and EXCLUDE library/ambiguous funcs strings would have mislabeled.
+0x0fc1a0,CStaticHazard::LoadAttributes,CStaticHazard,void __thiscall(this) [reads static-hazard .att attrs into this+0x10..0x68; loads LEVEL_STATICHAZARD/GO/IDLE sprites],method,decomp-xref,high
+0x0c62e0,CDroppedObjectShadow::LoadAttributes,CDroppedObjectShadow,__thiscall(this) [reads ObjectDropperDelay + Hazardz .att attrs into this+0x58..0x94; DroppedObjectShadow],method,decomp-xref,high
+0x0e1e60,CTimeBomb::LoadAttributes,CTimeBomb,__thiscall(this) [reads TimeBombFastTime/Projectile attrs into this+0x38..0x60; loads GAME_TIMEBOMBFAST],method,decomp-xref,high
+0x041aa0,CTeleporter::LoadAttributes,CTeleporter,__thiscall(this) [reads Teleporter/Wormhole attrs into this+0x38..0x68; loads GAME_TELEPORTERCLOSE],method,decomp-xref,med
+0x069d60,LoadFreezeSpellAssets,,__thiscall(this) [reads Spellz/FreezeDelay attrs into this+0x820..0x82c; loads GRUNTZ_DEATHZ_SPARKLE/UNFREEZE freeze-spell anims],method,decomp-xref,med
+0x067f80,CGrunt::LoadEntranceConfig,,__thiscall(this) [reads EntranceSafeTime + loads GRUNTZ_ENTRANCEZ_DROP into this+0x840..0x85c; CGrunt region],method,decomp-xref,med
+0x067bd0,CGrunt::BuildEntranceAnimation,,"__thiscall(this,flags) [builds GRUNTZ_ENTRANCEZ_DROP/ONE/TWO/THREE/RESSURECT + DEATHZ_MELT entrance anims]",method,decomp-xref,med
+0x0b4640,CloudHazard::vfunc_20,,"__thiscall(this,a,b) [vtable slot 0x20; reads RainCloudFlashTime/Hazardz; loads LEVEL_CLOUDHAZARDKILL]",vfunc,decomp-xref,med
+0x0b82e0,CNetMgr::LoadServiceConfig,CNetMgr,__thiscall(this) [reads Other/Modem/Serial/TcpIp service + _CmdDelay/_Resend/_DynCmdDelay into this+0x524/0x5a4..],method,decomp-xref,high
+0x0bc460,CNetMgr::LoadTcpIpConfig,CNetMgr,__thiscall(this) [reads TcpIp _CmdDelay/_Resend/_DynCmdDelay into this+0x5a4..0x5c0],method,decomp-xref,med
+0x0b8b10,CNetMgr::LoadCmdDelayConfig,CNetMgr,__thiscall(this) [reads CMDDELAY/RESEND command-timing config into this+0x59c..0x5c0],method,decomp-xref,med
+0x0b85a0,CNetMgr::ApplyCmdDelayDefaults,CNetMgr,__thiscall(this) [_CmdDelay/_Resend into this+0x5a4/0x5a8],method,decomp-xref,med
+0x105990,UpdateRezConveyorStatusBar,,__thiscall(this) [StatusBar + ConveyorBeltHoldDelay; GAME_REZBELTRETURN/BACKUP rez-machine conveyor HUD],method,decomp-xref,med
+0x1076a0,UpdateChipGrinderStatusBar,,__thiscall(this) [StatusBar + FallingItemShredderDelay/Speed; GAME_REZGRINDING chip-grinder HUD],method,decomp-xref,med
+0x105310,UpdateGruntOvenStatusBar,,__thiscall(this) [StatusBar + GruntOvenDelay; GAME_COOKINGCOMPLETE grunt-oven HUD; this+0x204/0x220],method,decomp-xref,med
+0x0fe910,UpdateStatusBarTabHighlight,,__thiscall(this) [GAME_TABHIGHLIGHT1 tab-highlight; this+0x354],method,decomp-xref,med
+0x109bd0,UpdateWarpStoneStatusBar,,"__thiscall(this,a,b,c,d) [WarpStone/FlyTime + GAME_WARPSTONEFLY/GAME_STATUSBAR_TABZ_GAMETAB_WARP]",method,decomp-xref,med
+0x01d440,CBootyState::vfunc_1,CBootyState,"int __thiscall(this,a,b,c) [vtable slot 1; calls CState::vfunc_1; loads STATEZ_BOOTY + AREA%i, builds GRUNTPUDDLE SimpleAnimations, hides cursor]",vfunc,decomp-xref,med
+0x01f6f0,BootyState::OnActivate_vfunc8,,"__thiscall(this) [vtable slot 8 of a CState subclass; calls CState::vfunc_8; binds IMAGEZ banks to BOOTY/GRUNTZ/LEVEL, starts 'multi' music]",vfunc,decomp-xref,med
+0x01c8a0,BootyState_OnActivate2_vfunc8,,__thiscall(this) [vtable slot 8 of a CState subclass; binds IMAGEZ banks to BOOTY/GRUNTZ; this+0xc/0x1bc],vfunc,decomp-xref,med
+0x0cb800,GameLevelState::OnActivate_vfunc8,,"__thiscall(this) [vtable slot 8; calls CState::vfunc_8; binds TILEZ/IMAGEZ banks to LEVEL/GRUNTZ, kicks level load; this+0x2dc/0x470/0x474/0x510]",vfunc,decomp-xref,med
+0x013fb0,CAttract::vfunc_1,,"__thiscall(this,a,b,c) [vtable slot 1; loads STATEZ_ATTRACT + ATTRACT SOUNDZ; attract-mode state init]",vfunc,decomp-xref,med
+0x01b450,BuildBootyWalkingGruntz,,__thiscall(this) [builds NORMALGRUNT_WALK SimpleAnimations + GAME_INGAMEICONZ_/BOOTY_DIM secret-letter row over completed-area count; _atexit cleanup],method,decomp-xref,med
+0x01b690,UpdateBootyWalkingGruntz,,__thiscall(this) [per-frame walk/idle of booty gruntz; GRUNTZ_NORMALGRUNT_SOUTH_IDLE/IDLE4 + GRUNTZ_PICKUPS_<letter>; timeGetTime],method,decomp-xref,med
+0x019920,BuildGruntSprintAnimation,,__thiscall(this) [builds GRUNTZ_NORMALGRUNT_<8dir>_WALK SimpleAnimation; GAME_GRUNTSPRINT],method,decomp-xref,med
+0x01ce60,BuildBootyGruntIdleAnimation,,__thiscall(this) [GRUNTZ_WANDGRUNT/NORMALGRUNT idle + GRUNTZ_PICKUPS booty anim],method,decomp-xref,med
+0x01c070,BuildBootyPerfectAnimation,,__thiscall(this) [BOOTY_PERFECT SimpleAnimation; GAME_CYCLE100; this+0x2f8],method,decomp-xref,med
+0x019540,BuildWarpStoneGlitterAnimation,,__thiscall(this) [GAME_GLITTERGOLD/GAME_STATUSBAR_TABZ_GAMETAB_WARP glitter SimpleAnimation; DoNothing logic],method,decomp-xref,med
+0x0641b0,BuildGruntExitAnimation,,__thiscall(this) [GRUNTZ_EXITZ_ONE/TWO/THREE exit-sequence anims; this+0x1b8..0x21c],method,decomp-xref,med
+0x0218e0,LoadFontConfig,,"__thiscall(this,a,b) [reads ARIAL/TrainingFont/MessageFont + Width/Height attrs into this+0x20..0x40]",method,decomp-xref,high
+0x0090e0,LoadActionOptionsMenuBar,,__thiscall(this) [loads GAME_ACTIONOPTIONZMENUBAR + INGAMEICONZ_NORM/HIGH/GREYCHIPZ into this+0x2c..0x3c],method,decomp-xref,med
+0x0a0d80,BuildVersionString,,__thiscall(this) [formats 'Gruntz v%d.%d'/'_SPAWN_MODE_' version+mode banner; this+0xc],method,decomp-xref,med
+0x01fde0,CheckCdRomRegistry,,[reads 'Monolith Productions'/'CdRom Drive' registry for CD presence],free,decomp-xref,med
+0x03b7c0,LoadCustomWorldInfo,,[reads CUSTOM_WORLDINFO/'_Custom_' custom-world descriptor],free,decomp-xref,med
+0x107ae0,LoadMultiplayerBattlezConfig,,__thiscall(this) [reads Multiplayer/StartingGruntz/Battlez setup config],method,decomp-xref,med
+0x170750,ButeMgr::ParseAttributeFile,,__thiscall(this) [.att attribute-file parser; emits 'ButeMgr: duplicate symbol encountered'; 2 callers],method,decomp-xref,med
+0x16d9c0,GetContainerErrorString,,"__thiscall(this,code) [maps container status code -> 'Out of memory'/'Overflow'/'Null pointer argument'/...; 5 callers; Monolith container lib]",method,decomp-xref,low
+0x185000,DebugPrintf,,[DPRINTF/FILEAPPEND/STDOUT debug-log helper; called from 0x184b70],free,decomp-xref,low
+#
+# --- decomp-xref pass, batch 2: NetMgr/objects/states/status-bar (read from decompiler) ---
+0x0bca50,CNetMgr::HandleSessionError,CNetMgr,__thiscall(this) [DirectPlay session-end messages: 'game session has been terminated'/'removed from the game'/'game is closed'/'already full'/version-mismatch; this+0x524..0x5bc],method,decomp-xref,med
+0x0b7b10,CNetMgr::SetupSession,CNetMgr,[Player_Name/Game_Name/'Multiplayer Gruntz' DirectPlay session create/join],method,decomp-xref,med
+0x0b9750,CNetMgr::SendChat,CNetMgr,"__thiscall(this,a,b,c) [GAME_CHAT multiplayer chat msg; this+0x528..0x580]",method,decomp-xref,med
+0x0b8cf0,CNetMgr::ApplyServiceConfig,CNetMgr,"__thiscall(this,a) [writes service config this+0x524/0x578/0x5a4/0x5bc/0x5c0 (CNetMgr config region)]",method,decomp-xref,low
+0x0412c0,CWormhole::LoadAttributes,CWormhole,__thiscall(this) [GAME_WORMHOLE/GAME_TELEPORTEROPEN sprites + attrs into this+0x14..0x68],method,decomp-xref,med
+0x0411f0,CWormhole::LoadColors,CWormhole,__thiscall(this) [SecretColor/SingleUseColor/NormalColor + Wormhole tint into this+0x10],method,decomp-xref,med
+0x044c00,CWarlord::LoadAttributes,CWarlord,__thiscall(this) [Warlordz/PanicRadius attrs into this+0x88..0x94],method,decomp-xref,med
+0x044d10,CWarlord::LoadAttributes2,CWarlord,__thiscall(this) [Warlordz/PanicRadius variant (this+0x88..0x94)],method,decomp-xref,med
+0x0fc0b0,CStaticHazard::LoadAttributes2,CStaticHazard,__thiscall(this) [LEVEL_STATICHAZARDGO/IDLE sprites + attrs into this+0x10..0x60 (sibling of 0x0fc1a0)],method,decomp-xref,med
+0x0810f0,CBrickz::LoadAttributes,CBrickz,"__thiscall(this,a,b) [Brickz/Brown/Black brick color+type setup; this+0x78/0x90]",method,decomp-xref,med
+0x03f5f0,HandleFortConquered,,__thiscall(this) [Battlez fort capture: 'was conquered by' + Explosion/GAME_EXPLOSION3; this+0x54/0x58],method,decomp-xref,med
+0x063db0,LoadVehicleGruntAnimations,,__thiscall(this) [GRUNTZ_GOKARTGRUNT/BIGWHEELGRUNT vehicle-grunt anim setup; many this+offsets],method,decomp-xref,med
+0x057890,BuildGruntLoseItemAnimation,,__thiscall(this) [SingleAnimation GRUNTZ_<type>_LOSEITEM; this+0x10..0x1e4],method,decomp-xref,med
+0x0a0a30,CAttract::vfunc_6,CAttract,__thiscall(this) [vtable slot 6; STATEZ_ATTRACT/TITLE_%d/BrightnessPercent attract-mode virtual],vfunc,decomp-xref,med
+0x0a03f0,CAttract::LoadTitleConfig,CAttract,"__thiscall(this,a) [reads BrightnessPercent + TITLE_%d title-screen config; this+0x2c]",method,decomp-xref,med
+0x039570,InitAttractTitle,,__thiscall(this) [STATEZ_ATTRACT title fade-in; BrightnessPercent/TITLE_%d; this+0x2c/0x208],method,decomp-xref,med
+0x0f9780,CSplashState::LoadSounds,CSplashState,__thiscall(this) [STATEZ_SPLASH SOUNDZ load; this+0x2c],method,decomp-xref,med
+0x0387c0,LoadInputDeviceConfig,,"__thiscall(this,a,b) [Keyboard/Joystick_1..4 DinMgr2 input-device config; this+0x14]",method,decomp-xref,med
+0x0e9600,BuildStatzTabStatusBar,,__thiscall(this) [GAME_STATUSBAR_TABZ_STATZTAB_TAB statz-tab sprite set into this+0x0c..0x44],method,decomp-xref,med
+0x0ea1f0,BuildMultiplayerTabStatusBar,,__thiscall(this) [GAME_STATUSBAR_TABZ_MULTIPLAYERTAB/STATZTAB_SEL tab sprites into this+0x0c..0x48],method,decomp-xref,med
+0x0d1710,LoadSBITextEdges,,"__thiscall(this,a) [TextTop/Bottom/Left/RightEdge status-bar-item text rect; this+0x510]",method,decomp-xref,med
+0x0d1890,LoadSBITextEdges2,,__thiscall(this) [TextTop/Bottom/Left/RightEdge variant; this+0x40c],method,decomp-xref,med
+0x090d10,LoadMonologoSprite,,__thiscall(this) [GAME_MONOLITH/MONOLITH splash-logo sprite; this+0x2c/0x30],method,decomp-xref,med
+0x092420,LoadSaveMessageSprite,,__thiscall(this) [GAME_SAVE/GAME_SAVEMSG save-feedback sprite; this+0x44],method,decomp-xref,med
+0x07b440,BuildRockBreakParticles,,"__thiscall(this,...) [Particlez/LEVEL_ROCKBREAK rock-break particle effect; this+0x22c]",method,decomp-xref,med
+0x0f8970,SFManager::SelectBestDevice,,"[SFMAN32.DLL SoundFont manager: enumerates devices, picks best by rating ('Best Device number is %d')]",free,decomp-xref,med
+0x0cf770,DrawDebugStats,,[debug overlay: 'Fps: %i'/'Objs: %i'/'Pos: %i %i'],free,decomp-xref,low
+0x090550,LaunchPortalExe,,['Monolith Productions'/Portal/portal_exe external-portal launcher],free,decomp-xref,low
+#
+# --- decomp-xref pass, batch 3: CGrunt anim resolvers, object/effect & state loaders ---
+0x045100,CGrunt::ResolveMovingAnimation,CGrunt,__thiscall(this) [resolves GRUNTZ_<type>_MOVING sprite -> this],method,decomp-xref,med
+0x0455f0,CGrunt::ResolveDeathAnimation,CGrunt,__thiscall(this) [resolves GRUNTZ_<type>_DEATH sprite],method,decomp-xref,med
+0x045960,CGrunt::ResolveIdleAnimation,CGrunt,__thiscall(this) [resolves GRUNTZ_<type>_IDLE sprite],method,decomp-xref,med
+0x045b60,CGrunt::ResolveBattlecryAnimation,CGrunt,__thiscall(this) [resolves GRUNTZ_<type>_BATTLECRY sprite],method,decomp-xref,med
+0x0457b0,CGrunt::ResolveAnimation,CGrunt,__thiscall(this) [generic GRUNTZ_<type>_<cat> sprite resolver],method,decomp-xref,low
+0x062e10,CGrunt::LoadIdleConfig,CGrunt,"__thiscall(this,a,b,c) [reads Grunt/IdleDelay attrs]",method,decomp-xref,med
+0x0633e0,CGrunt::LoadDefenderConfig,CGrunt,__thiscall(this) [reads Grunt/PlayerDefenderRadius attr],method,decomp-xref,med
+0x065630,LoadBombGruntRunConfig,,"__thiscall(this,a,b) [BOMBGRUNT RunningTimePerTile attr]",method,decomp-xref,med
+0x068520,LoadBombGruntRunConfig2,,__thiscall(this) [BOMBGRUNT RunningTimePerTile (variant)],method,decomp-xref,low
+0x11afb0,LoadGruntSpawnConfig,,__thiscall(this) [GruntPercent/GruntPriority Battlez spawn config],method,decomp-xref,med
+0x061cb0,Projectile::vfunc_9,,__thiscall(this) [vtable slot 9; Boomerang/Projectile/TimeBomb + AttackDowntime weapon config],vfunc,decomp-xref,med
+0x03fed0,CWormhole::LoadEntranceColor,CWormhole,__thiscall(this) [Wormhole EntranceColor tint],method,decomp-xref,med
+0x044f80,BuildFortSplashParticles,,__thiscall(this) [Particlez/LEVEL_FORTSPLASH fort-splash effect],method,decomp-xref,med
+0x1122a0,BuildRockBreakInGameText,,__thiscall(this) [Particlez/LEVEL_ROCKBREAK + InGameText],method,decomp-xref,med
+0x078960,LoadCameraSprite,,__thiscall(this) [GAME_CAMERASPRITE / DoNothing camera sprite],method,decomp-xref,med
+0x07a3f0,LoadToyBoxIcon,,__thiscall(this) [InGameIcon/GAME_TOYBOX toybox HUD icon],method,decomp-xref,med
+0x07b330,LoadExplosionSprites,,[GAME_EXPLOSION%d/Explosion sprite set],method,decomp-xref,med
+0x0db600,LoadActionTileSprites,,"__thiscall(this,a) [ACTION/TILEZ action-tile sprite load]",method,decomp-xref,med
+0x039160,CAttract::vfunc_10,CAttract,__thiscall(this) [vtable slot 0x0a; STATEZ_ATTRACT/TITLE attract virtual],vfunc,decomp-xref,med
+0x0391d0,LoadCreditzAssets,,__thiscall(this) [CREDITZ/MONOLITH credits-state assets],method,decomp-xref,med
+0x039dc0,LoadCreditzAssets2,,__thiscall(this) [MONOLITH/CREDITZ credits-state assets (variant)],method,decomp-xref,low
+0x036f30,LoadVideoResolutionConfig,,[reads Video Resolution '800x600'/'1024x768' display config],free,decomp-xref,med
+0x0370a0,SaveVideoResolutionConfig,,[writes Video Resolution '800x600'/'1024x768' display config],free,decomp-xref,med
+0x0de420,LoadLevelPreviewScreen,,__thiscall(this) [PREVIEW_%i/_SCREENZ_%s level-preview screen + GAME_TELEPORTEROPEN],method,decomp-xref,med
+0x0e4b60,SaveGameFile,,"__thiscall(this,a) ['Gruntz.sav' save-game file write]",method,decomp-xref,med
+0x01ec20,GetWarlordName,,[returns warlord name NAPOLEAN/PATTON/VIKING by index],free,decomp-xref,med
+0x0dd340,BuildWarlordNameTable,,[WARLORDZ_NAPOLEAN/PATTON/VIKING namespace table],free,decomp-xref,low
+0x0dd050,BuildGruntNamespaceList,,[NORMALGRUNT/DEATHZ/ENTRANCEZ/EXITZ/GRUNTPUDDLE/PICKUPS/BOMBGRUNT base namespace list],free,decomp-xref,low
+#
+# --- decomp-xref pass, batch 4: object/level resource loaders, machine HUDs, util ---
+0x09a510,LoadObjectImageResources,,"__thiscall(this,a) [enumerates object map, builds OBJECTZ_/IMAGEZ_%s keys, loads image banks via CObList]",method,decomp-xref,med
+0x09a910,LoadObjectSoundResources,,"__thiscall(this,a) [OBJECTZ_/SOUNDZ_%s object sound-bank enumerator]",method,decomp-xref,med
+0x09ac20,LoadObjectAnimResources,,"__thiscall(this,a) [OBJECTZ_/ANIZ_%s object animation enumerator]",method,decomp-xref,med
+0x065a60,LoadWandGruntItemConfig,,__thiscall(this) [WANDGRUNT ItemDowntime/HealthLoss attrs],method,decomp-xref,med
+0x0612a0,LoadGruntDecayConfig,,__thiscall(this) [Grunt DecayTime attr],method,decomp-xref,med
+0x061570,LoadGruntDecayConfig2,,__thiscall(this) [Grunt DecayTime (variant)],method,decomp-xref,low
+0x06a060,LoadGruntMovingDeathConfig,,__thiscall(this) [Grunt MovingDeathTime attr],method,decomp-xref,med
+0x0d12b0,LoadScrollSpeedOptions,,__thiscall(this) [Optionz Min/MaxScrollSpeed display options],method,decomp-xref,med
+0x0cffe0,LoadImageBanks_vfunc29,,bool __thiscall(this) [vtable slot 0x1d; loads GRUNTZ + second image bank into this+0x30/0x34],vfunc,decomp-xref,med
+0x0a09a0,LoadStateImages_vfunc8,,__thiscall(this) [vtable slot 8; loads IMAGEZ bank],vfunc,decomp-xref,med
+0x0db6c0,LoadLevelSounds,,"__thiscall(this,a) [LEVEL/SOUNDZ level sound-bank load]",method,decomp-xref,med
+0x0db7e0,LoadLevelImages,,"__thiscall(this,a) [LEVEL/IMAGEZ level image-bank load]",method,decomp-xref,med
+0x106660,UpdateRezMachineSnoozeStatusBar,,__thiscall(this) [StatusBar + LeftMachineSnoozingDelay],method,decomp-xref,med
+0x107590,UpdateFallingItemStatusBar,,"__thiscall(this,a,b,c) [StatusBar + FallingItemDelay]",method,decomp-xref,med
+0x107a10,UpdateRezMachineWakeStatusBar,,__thiscall(this) [StatusBar + LeftMachineWakingDelay],method,decomp-xref,med
+0x10b320,UpdateDestructButtonStatusBar,,__thiscall(this) [StatusBar + DestructButtonWarningDelay],method,decomp-xref,med
+0x10bc30,UpdateDestructButtonStatusBar2,,"__thiscall(this,a) [StatusBar + DestructButtonWarningDelay (variant)]",method,decomp-xref,low
+0x112a50,BuildStatzTabSmall_vfunc1,,"__thiscall(this,...) [vtable slot 1; copies 0x18-dword rect into this+0x2c.., BehindCandy + GAME_STATUSBAR_TABZ_STATZTAB_SMA]",vfunc,decomp-xref,med
+0x114ff0,SaveScreenshot,,"(int,RegistryHelper*,...) [reads 'Screen Dump Count' via RegistryHelper, writes Gruntz_%04i.BMP]",free,decomp-xref,high
+0x0bf1d0,BuildGruntzCrcInfo,,__thiscall(this) ['crc info for all gruntz' diagnostic string; wsprintf+rand],method,decomp-xref,low
+0x1183b0,FormatGameInfoString,,__thiscall(this) [formats 'Name: %s Type: %i Location: %s Vers...' + session time into DAT_0064ebf8],method,decomp-xref,low
+#
+# --- decomp-xref pass, batch 5: CButeMgr .att getters, CGrunt HUD sprites, dialogs ---
+0x171af0,CButeMgr::GetInt,CButeMgr,"__thiscall(this,tag,key) [type-tag 0; returns dword, 0x80000000 on miss; 117 callers -- the .att workhorse]",method,decomp-xref,high
+0x172240,CButeMgr::GetDword,CButeMgr,"__thiscall(this,tag,key) [type-tag 1; returns dword, 0 on miss]",method,decomp-xref,med
+0x172c40,CButeMgr::GetDouble,CButeMgr,"double __thiscall(this,tag,key) [type-tag 2]",method,decomp-xref,high
+0x172730,CButeMgr::GetFloat,CButeMgr,"float __thiscall(this,tag,key) [type-tag 3]",method,decomp-xref,high
+0x1731d0,CButeMgr::GetString,CButeMgr,"__thiscall(this,tag,key) [type-tag 4; returns ptr to value]",method,decomp-xref,med
+0x173770,CButeMgr::GetTypedRef_tag5,CButeMgr,"__thiscall(this,tag,key) [type-tag 5 typed-ref getter (Rect/Point/Vector/Color family)]",method,decomp-xref,low
+0x173d00,CButeMgr::GetTypedRef_tag6,CButeMgr,"__thiscall(this,tag,key) [type-tag 6 typed-ref getter]",method,decomp-xref,low
+0x174240,CButeMgr::GetTypedRef_tag7,CButeMgr,"__thiscall(this,tag,key) [type-tag 7 typed-ref getter]",method,decomp-xref,low
+0x1747c0,CButeMgr::GetTypedRef_tag8,CButeMgr,"__thiscall(this,tag,key) [type-tag 8 typed-ref getter]",method,decomp-xref,low
+0x04d130,CGrunt::CreateHealthSprite,CGrunt,__thiscall(this) [creates GruntHealthSprite -> this+0x1c4 if absent],method,decomp-xref,med
+0x04d220,CGrunt::CreateToySprite,CGrunt,__thiscall(this) [creates GruntToySprite],method,decomp-xref,med
+0x04d2f0,CGrunt::CreateStaminaSprite,CGrunt,__thiscall(this) [creates GruntStaminaSprite],method,decomp-xref,med
+0x04d3e0,CGrunt::CreateToyTimeSprite,CGrunt,__thiscall(this) [creates GruntToyTimeSprite],method,decomp-xref,med
+0x04d520,CGrunt::CreateWingzTimeSprite,CGrunt,__thiscall(this) [creates GruntWingzTimeSprite],method,decomp-xref,med
+0x04d650,CGrunt::CreatePowerupSprite,CGrunt,"__thiscall(this,a) [creates GruntPowerupSprite -> this+0x1d4]",method,decomp-xref,med
+0x04d730,CGrunt::CreateSelectedSprite,CGrunt,__thiscall(this) [creates GruntSelectedSprite -> this+0x1b8],method,decomp-xref,med
+0x08e4e0,WarpDialogProc,,"INT_PTR CALLBACK(HWND,msg,wParam) [Level %i Warp X/Y debug dialog; GetDlgItemInt/SetDlgItemInt 0x40e/0x40f]",free,decomp-xref,high
+0x020f40,LoadChatBoxSprite,,"__thiscall(this,a) [GAME_CHATBOX multiplayer chat-box sprite]",method,decomp-xref,med
+0x095090,CHelpState::LoadAssets,,__thiscall(this) [STATEZ_HELP help-state asset load],method,decomp-xref,med
+0x0997c0,LoadHelpBookSprite,,__thiscall(this) [GAME_HELPBOOK help-book sprite],method,decomp-xref,med
+0x09bb00,LoadTimerSprite,,"__thiscall(this,a,b) [GAME_TIMER countdown-timer sprite]",method,decomp-xref,med
+0x07c3d0,LoadFinishLevelSprite,,"__thiscall(this,a) [GAME_FINISHLEVEL level-complete sprite]",method,decomp-xref,med
+0x008a40,BuildLogicTypeTable,,[LogicHit/LogicAttack/LogicBump logic-type name table],free,decomp-xref,med
+0x018d30,BootyState::vfunc_9,,__thiscall(this) [vtable slot 9; BOOTY_LOOP loop-music handler],vfunc,decomp-xref,med
+0x03c0e0,BuildWorldLevelKey,,__thiscall(this) [WORLDZ_LEVEL_%i level-key builder],method,decomp-xref,med
+#
+# --- decomp-xref pass, batch 6: CButeMgr getters+parser, CSBI sprites, MULTI_* ---
+0x171aa0,CButeMgr::GetIntDef,CButeMgr,"__thiscall(this,tag,key,def) [type-tag 0; returns def on miss/mismatch; 94 callers (object LoadAttributes)]",method,decomp-xref,high
+0x1721e0,CButeMgr::GetDwordDef,CButeMgr,"__thiscall(this,tag,key,def) [type-tag 1; returns def on miss; 104 callers]",method,decomp-xref,high
+0x173180,CButeMgr::GetStringDef,CButeMgr,"__thiscall(this,tag,key,def) [type-tag 4; returns def on miss]",method,decomp-xref,med
+0x1704c0,CButeMgr::Parse,CButeMgr,__thiscall(this) [recursive-descent .att parser; 'ButeMgr: %d : Bad symbol encountered'],method,decomp-xref,high
+0x1711b0,CButeMgr::ParseTagLine,CButeMgr,__thiscall(this) [reads a tag=value line; 'ButeMgr: duplicate tag encountered'],method,decomp-xref,med
+0x170710,CButeMgr::ScanToken,CButeMgr,"__thiscall(this,a) [lexer token scan; 'ButeMgr: %d : A formatting error']",method,decomp-xref,med
+0x0e2d10,LoadGruntzPalette,,"bool __thiscall(this,a,name) [builds GRUNTZ_PALETTEZ_%s key, looks up + applies palette]",method,decomp-xref,med
+0x11c210,BuildVoiceSoundList,,__thiscall(this) [VOICES_%s/VOICES_%s_%s voice-sound CObList],method,decomp-xref,med
+0x0c16b0,BuildNamedGruntTable,,[Beefy/Serra/Jebediah... named-grunt roster],free,decomp-xref,med
+0x0bad40,CNetMgr::OnMultiPause,CNetMgr,__thiscall(this) [MULTI_PAUSE],method,decomp-xref,med
+0x0badd0,CNetMgr::OnMultiOptions,CNetMgr,__thiscall(this) [MULTI_OPTIONZ],method,decomp-xref,med
+0x0bae40,CNetMgr::OnOutOfSync,CNetMgr,__thiscall(this) [MULTI_OUTOFSYNC],method,decomp-xref,med
+0x0bc110,CNetMgr::OnDropPlayer,CNetMgr,__thiscall(this) [MULTI_DROPPLAYER],method,decomp-xref,med
+0x0ba620,LoadMenuSelectSprite,,"__thiscall(this,a) [GAME_MENUS_SELECT]",method,decomp-xref,med
+0x0d7440,LoadLoadingBarSprite,,__thiscall(this) [GAME_LOADINGBAR],method,decomp-xref,med
+0x0e8a70,BuildResourceTabStatusBar,,__thiscall(this) [GAME_STATUSBAR_TABZ_RESOURCETAB],method,decomp-xref,med
+0x0e9850,BuildStatzTabSmallSprite,,__thiscall(this) [GAME_STATUSBAR_TABZ_STATZTAB_SMA],method,decomp-xref,med
+0x0fe6b0,LoadMainStatusBarSprite,,__thiscall(this) [GAME_STATUSBAR_MAINBAR],method,decomp-xref,med
+0x0ffb20,LoadDestructButtonSprite,,"__thiscall(this,a) [GAME_DESTRUCT self-destruct button]",method,decomp-xref,med
+0x102180,BuildGameTabResumeButton,,"__thiscall(this,a) [GAME_STATUSBAR_TABZ_GAMETAB_RESUME]",method,decomp-xref,med
+0x102200,BuildGameTabPauseButton,,__thiscall(this) [GAME_STATUSBAR_TABZ_GAMETAB_PAUSE],method,decomp-xref,med
+0x104e60,LoadStatzTabToggleSprite,,"__thiscall(this,a,b) [GAME_STATZTABTOGGLE]",method,decomp-xref,med
+0x1055b0,LoadGooCookingSprite,,"__thiscall(this,a) [GAME_GOOCOOKING1 grunt-oven cooking]",method,decomp-xref,med
+0x110570,LoadSwitchDownSprite,,__thiscall(this) [GAME_SWITCHDOWN tile-switch],method,decomp-xref,med
+0x1106b0,LoadSwitchUpSprite,,__thiscall(this) [GAME_SWITCHUP tile-switch],method,decomp-xref,med
+0x0cbcc0,StatusBarItem::vfunc_12,,"__thiscall(this,a,b) [vtable slot 0x0c; GAME_TABHIGHLIGHT1 tab draw/update]",vfunc,decomp-xref,med
+0x0ce660,StatusBarItem::vfunc_16,,"__thiscall(this,a,b,c) [vtable slot 0x10; GAME_TABHIGHLIGHT1]",vfunc,decomp-xref,med
