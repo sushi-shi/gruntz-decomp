@@ -430,7 +430,7 @@ plus two files that shrink to nothing.
 - field offsets -> clang `-fdump-record-layouts`; **no `@offset`**
 - mangled names -> read from the base obj; **never hand-typed**
 - matched-function rows in `engine_labels.csv` -> derived from `src/`
-- `build/fid/library_labels.csv` -> already tool-generated (FLIRT/FID)
+- `config/library_labels.csv` -> tracked FID output (regen: `scripts/analysis/fid_generate.py`)
 
 Steady state: per *matched function*, ~one `@address` line (plus the code); per
 *class*, zero offset bookkeeping — the declaration carries it.

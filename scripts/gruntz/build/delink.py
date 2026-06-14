@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
-"""delink_target.py - produce the delinked, named per-unit target objects.
+"""delink.py - produce the delinked, named per-unit target objects.
 
-This is the TARGET (delink) half of the matching pipeline, factored out of the
-old scripts/rebuild.py so ninja can drive it as one rule (its declared outputs
-are the per-unit <unit>.c.obj target objects):
+This is the TARGET (delink) half of the matching pipeline, run as one ninja rule
+(its declared outputs are the per-unit <unit>.c.obj target objects):
 
-    config/symbol_names.csv  (curated rva -> name,unit)
+    build/gen/symbol_names.csv  (generated rva -> name,unit)
             |  overlay onto build/ghidra-enrich/exports/functions.csv
             v
-    scripts/synth_pdb.py     -> build/pdb/gruntz_named.{yaml,pdb}
+    scripts/gruntz/build/synth_pdb.py  -> build/pdb/gruntz_named.{yaml,pdb}
             |
             v
     vostok-delinker          -> build/delink/named/<unit>.c.obj (+ seg_*.cpp.obj)
@@ -17,10 +16,10 @@ are the per-unit <unit>.c.obj target objects):
     collect the in-scope <unit>.c.obj into <target-dir>/
 
 The base/compile half (cl /O2 /MT under wine) is a separate ninja graph driven
-by scripts/cc_wrap.py; the two are paired BY SYMBOL NAME in the objdiff project
-(configure.py), no symbol_mappings. KEEP scripts/synth_pdb.py +
-scripts/break_reloc_cycle.py - this script orchestrates them, it does not
-replace them.
+by scripts/gruntz/build/cc_wrap.py; the two are paired BY SYMBOL NAME in the
+objdiff project (configure.py), no symbol_mappings. KEEP
+scripts/gruntz/build/synth_pdb.py + scripts/gruntz/build/reloc.py - this script
+orchestrates them, it does not replace them.
 
 Units to collect are taken from --unit (repeatable) so configure.py can pass
 exactly the manifest's unit set. The remaining address-bucketed seg_NNNN.cpp.obj
@@ -68,7 +67,7 @@ def main() -> None:
     ap.add_argument("--exe", required=True, help="break_reloc_cycle'd delinkable EXE.")
     ap.add_argument("--functions", required=True, help="ghidra functions.csv.")
     ap.add_argument("--symbols", required=True, help="ghidra symbols.csv.")
-    ap.add_argument("--names-map", required=True, help="config/symbol_names.csv.")
+    ap.add_argument("--names-map", required=True, help="build/gen/symbol_names.csv.")
     ap.add_argument("--pdb-dir", required=True, help="dir for the synth PDB/YAML.")
     ap.add_argument("--delink-dir", required=True, help="raw delinker output dir.")
     ap.add_argument("--target-dir", required=True,

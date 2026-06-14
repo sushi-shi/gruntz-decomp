@@ -5,11 +5,11 @@ Single source of truth: config/units.toml (per-TU). This script reads it and
 emits, from one manifest:
 
   * build.ninja            - the native incremental build graph (Linux ninja
-                             driving `wine cl` via scripts/cc_wrap.py).
+                             driving `wine cl` via scripts/gruntz/build/cc_wrap.py).
   * compile_commands.json  - for clangd / tooling (reader only).
   * build/objdiff/objdiff.json - the objdiff project pairing each recompiled
                              base obj against its delinked target obj BY SYMBOL
-                             NAME (absorbs the old scripts/generate_objdiff_config.py).
+                             NAME.
 
 Two graph phases (see docs/build-system.md):
   1. compile -> .obj   - IMPLEMENTED. Each manifest unit's source compiles to
@@ -18,15 +18,16 @@ Two graph phases (see docs/build-system.md):
                          marks where whole-binary verification will go later.
 
 The TARGET (delink) half is orchestrated as a ninja `delink` rule that runs
-scripts/delink_target.py (synth_pdb -> vostok-delinker -> collect <unit>.c.obj).
+scripts/gruntz/build/delink.py (synth_pdb -> vostok-delinker -> collect <unit>.c.obj).
 
 Run inside `nix develop .#build`:
     python3 configure.py        # regenerate build.ninja + the two JSONs
     ninja                       # build the base objs + delink the target
     objdiff-cli report generate -p build/objdiff -o build/objdiff/report.json
 
-Add a TU: add an [[unit]] block to config/units.toml (+ its functions to
-config/symbol_names.csv), then re-run configure.py and ninja.
+Add a TU: add an [[unit]] block to config/units.toml and annotate each function
+in its src/ file with a `// @address:` comment (build/gen/symbol_names.csv is
+regenerated from those), then re-run configure.py and ninja.
 """
 
 import argparse
@@ -198,8 +199,7 @@ def emit_ninja(manifest: dict, out: Path) -> None:
         w.newline()
 
         # LABELS: regenerate build/gen/symbol_names.csv from the src @address
-        # annotations + the base objs (clang mangledName INTERSECT nm). This is
-        # the generated replacement for the hand-maintained config/symbol_names.csv.
+        # annotations + the base objs (clang mangledName INTERSECT nm).
         w.comment("=== LABELS: src @address + base objs -> symbol_names.csv ===")
         labels_args = " ".join(
             f"--tu {u['source']} --obj {BASE_DIR}/{u['unit']}.obj" for u in units)

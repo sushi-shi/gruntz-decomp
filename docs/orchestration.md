@@ -7,7 +7,7 @@ idioms), `build-system.md` (the loop), `zlib-matching.md` (compile flags),
 `linker-flags.md` (the deferred whole-binary link phase), `runtime-dlls.md`
 (imports + the DX label seed). Data: `build/gen/symbol_names.csv` (matched set),
 `config/engine_labels.csv` (labels), `config/units.toml` (build manifest),
-`build/fid/library_labels.csv` (exclusions).
+`config/library_labels.csv` (exclusions).
 
 ---
 
@@ -16,7 +16,7 @@ idioms), `build-system.md` (the loop), `zlib-matching.md` (compile flags),
 - **Excluded (never match):** ~1,743 library (CRT `LIBCMT` / MFC `NAFXCW` / zlib,
   FID-labeled) + ~1,269 LOW generic stubs ≈ **3,012 (~21% count / ~15% bytes)**.
   Byte-matched-by-construction or trivial. Filter these out via
-  `build/fid/library_labels.csv` before dispatching anything.
+  `config/library_labels.csv` before dispatching anything.
 - **Real target:** ~11,400 engine+game functions (~85% of bytes).
 - **Effort is wildly non-uniform (the central planning fact):** median function
   is **11 bytes**; ~10k functions are ≤32 B (a cheap tail); but

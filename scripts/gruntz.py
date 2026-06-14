@@ -8,7 +8,7 @@ Run inside the Nix dev shell:
 
 Subcommands
 -----------
-  build [--source P ...] [-- <ninja args>]
+  build [-- <ninja args>]
         Compile -> derive labels -> delink -> objdiff, and print the match
         summary. The heavy lifting is ninja's incremental dependency graph
         (configure.py emits it from config/units.toml):
@@ -19,16 +19,19 @@ Subcommands
                 --delink(synth_pdb -> vostok-delinker)--> target/<unit>.c.obj
             base vs target --objdiff--> report.json
 
-        `--source` force-builds those TUs' base objs first (fail-fast on compile
-        errors); ninja then re-runs only the affected edges. symbol_names.csv is
-        REGENERATED every build from the src `@address` annotations, so renamed
-        symbols re-mangle and removed ones drop automatically - no stale rows.
+        symbol_names.csv is REGENERATED every build from the src `@address`
+        annotations, so renamed symbols re-mangle and removed ones drop
+        automatically - no stale rows.
 
   labels        Just (re)generate build/gen/symbol_names.csv from src @address.
   structs       Just (re)generate build/gen/structs.json + enums.json (clang).
   ghidra-refresh  Apply generated names/structs/enums to the Ghidra DB and
                   re-export functions.csv/symbols.csv (the Part-2 loop that feeds
                   the delink). See the docstring on cmd_ghidra_refresh.
+  init          Idempotent local-env setup: dirs + configure + delinkable EXE +
+                wine prefix + clangd compdb.
+  bootstrap     One-time heavy: build the Ghidra DB (import+analyze GRUNTZ.EXE),
+                enrich, and export functions.csv/symbols.csv. See cmd_bootstrap.
   status        Print the last objdiff match summary (no rebuild).
   todo          List obj symbols that lack an @address (matching worklist).
 """
@@ -55,6 +58,10 @@ TARGET_DIR         = OBJDIFF_DIR / "target"
 REPORT             = OBJDIFF_DIR / "report.json"
 GEN_NAMES          = REPO / "build" / "gen" / "symbol_names.csv"
 GHIDRA_PROJECT_DIR = REPO / "build" / "ghidra-named"
+RETAIL_EXE         = REPO / "build" / "exe" / "GRUNTZ.EXE"             # stable copy of $GRUNTZ_EXE
+DELINKABLE_EXE     = REPO / "build" / "exe" / "GRUNTZ.delinkable.EXE"  # reloc-broken (delink input)
+CONFIGURE          = REPO / "configure.py"
+RELOC              = BUILD / "reloc.py"
 
 
 def log(msg: str) -> None:
@@ -86,14 +93,6 @@ def run(cmd: list, **kw) -> subprocess.CompletedProcess:
 def units() -> list[dict]:
     with MANIFEST.open("rb") as f:
         return tomllib.load(f).get("unit", [])
-
-
-def unit_of_source(src: str) -> str | None:
-    s = src.lstrip("./")
-    for u in units():
-        if u["source"].lstrip("./") == s or Path(u["source"]).name == Path(s).name:
-            return u["unit"]
-    return None
 
 
 # --- summary ---------------------------------------------------------------
@@ -133,24 +132,12 @@ def summarize(report: dict) -> None:
 def cmd_build(args) -> None:
     run([sys.executable, str(REPO / "configure.py")])
     ninja = tool("ninja")
-    # --source forces a rebuild of those TUs. ninja has no --force flag, so we
-    # clean their outputs (ninja's native "force": a missing output is rebuilt);
-    # ninja then re-runs only the affected edges (obj -> gen_labels -> delink ->
-    # objdiff). Unlike `touch`, this doesn't churn source-file mtimes. Normally
-    # you don't need --source at all: editing a source already makes ninja
-    # rebuild it on the next `build`.
-    force_objs = []
-    for s in args.source:
-        u = unit_of_source(s)
-        if u is None or not (REPO / s).exists():
-            die(f"--source {s}: not a unit source in {MANIFEST}")
-        force_objs.append(f"build/objdiff/base/{u}.obj")
-    if force_objs:
-        run([ninja, "-t", "clean", *force_objs])   # force: drop outputs
     run([ninja, *args.ninja_args])        # incremental: rebuilds only what changed
+
     objdiff = tool("objdiff-cli", "result-1", "result")
     run([objdiff, "report", "generate", "-p", str(OBJDIFF_DIR), "-o", str(REPORT)],
         stdout=subprocess.DEVNULL)
+
     summarize(json.loads(REPORT.read_text()))
 
 
@@ -204,30 +191,98 @@ def cmd_ghidra_refresh(args) -> None:
         "functions.csv/symbols.csv.")
 
 
+def _ensure_delinkable_exe() -> None:
+    """Reloc-break $GRUNTZ_EXE -> build/exe/GRUNTZ.delinkable.EXE (a delink input).
+
+    Pure, deterministic transform of the pinned retail EXE via reloc.py. Also keeps
+    a stable-named retail copy at build/exe/GRUNTZ.EXE so Ghidra imports a program
+    named GRUNTZ.EXE (what apply.py/export.py address via `-process`). Idempotent.
+    """
+    retail = os.environ.get("GRUNTZ_EXE")
+    if not retail:
+        log("GRUNTZ_EXE unset - skipping delinkable-EXE prep (run inside nix develop).")
+        return
+    RETAIL_EXE.parent.mkdir(parents=True, exist_ok=True)
+    if not RETAIL_EXE.exists():
+        shutil.copyfile(retail, RETAIL_EXE)
+    if not DELINKABLE_EXE.exists():
+        run([sys.executable, str(RELOC), "--in-exe", str(RETAIL_EXE),
+             "--out-exe", str(DELINKABLE_EXE)])
+
+
+def cmd_bootstrap(args) -> None:
+    """One-time heavy foundation: build the Ghidra DB from scratch, then enrich+export.
+
+    `gruntz build` consumes upstream inputs that nothing else regenerates - the
+    delinkable EXE and the Ghidra functions.csv/symbols.csv. This produces them:
+
+      1. ensure dirs + the delinkable EXE (reloc.py over $GRUNTZ_EXE);
+      2. analyzeHeadless -import build/exe/GRUNTZ.EXE  (PE auto-analysis incl. RTTI)
+         -> build/ghidra-named  (skipped if present; --reimport forces a rebuild);
+      3. ghidra-refresh: structs/enums + apply.py (engine_labels.csv +
+         config/library_labels.csv + generated layouts) -> export.py
+         -> build/ghidra-enrich/exports/{functions,symbols}.csv.
+
+    HEAVY + one-time (Ghidra analysis takes minutes); idempotent on re-run.
+
+    KNOWN BLOCKER: apply.py/export.py are Ghidra 11.4.2 Jython; the flake's Ghidra
+    12.0.4 routes .py to PyGhidra and breaks them (see docs/orchestration.md). Pin
+    11.4.2 - or port the scripts to 12 - before this runs clean.
+    """
+    for d in ("build/exe", "build/ghidra-named", "build/ghidra-enrich/exports",
+              "build/gen", "build/pdb", "build/delink/named", "build/objdiff"):
+        (REPO / d).mkdir(parents=True, exist_ok=True)
+    _ensure_delinkable_exe()
+    if not RETAIL_EXE.exists():
+        die("no build/exe/GRUNTZ.EXE - set $GRUNTZ_EXE (run inside `nix develop .#build`).")
+    analyze = tool("analyzeHeadless", "result", "result-1")
+    log("NOTE: apply/export are Ghidra 11.4.2 Jython; the flake's 12.0.4 may route "
+        ".py to PyGhidra and fail - see docs/orchestration.md.")
+    if args.reimport and GHIDRA_PROJECT_DIR.exists():
+        shutil.rmtree(GHIDRA_PROJECT_DIR)
+    GHIDRA_PROJECT_DIR.mkdir(parents=True, exist_ok=True)
+    has_program = (any(GHIDRA_PROJECT_DIR.glob("*.gpr"))
+                   or any(GHIDRA_PROJECT_DIR.glob("*.rep")))
+    if not has_program:
+        log("Creating Ghidra DB: import + auto-analyze GRUNTZ.EXE (several minutes) ...")
+        run([analyze, str(GHIDRA_PROJECT_DIR), "gruntz", "-import", str(RETAIL_EXE)])
+    else:
+        log(f"Ghidra DB already present in {GHIDRA_PROJECT_DIR} (use --reimport to rebuild).")
+    cmd_ghidra_refresh(argparse.Namespace())   # structs + apply.py + export.py
+    log("bootstrap complete: Ghidra DB built/enriched; functions.csv/symbols.csv exported.")
+
+
 def cmd_init(args) -> None:
     """Idempotent local-environment setup. Run inside `nix develop .#build`.
 
       - create the git-ignored build dirs;
+      - generate build.ninja + compile_commands.json + objdiff.json (configure.py);
+      - reloc-break $GRUNTZ_EXE -> build/exe/GRUNTZ.delinkable.EXE (a delink input);
       - initialise the Wine prefix + register the MSVC 5.0 toolchain
         (scripts/gruntz/init/toolchain.py; skips re-init when already set up);
-      - (re)generate the clangd compile database (scripts/gruntz/init/clangd.py),
-        which gen_structs + the editor read.
+      - (re)generate the clangd compile database (scripts/gruntz/init/clangd.py).
 
-    The flake's `.#build` shellHook calls this on first entry, so the environment
-    self-builds once and subsequent shells are instant. Re-running is safe.
+    Fast + idempotent; the flake's `.#build` shellHook calls it on first entry. The
+    heavy, one-time Ghidra DB build is NOT done here - run `gruntz bootstrap` once
+    (init prints a reminder while build/ghidra-named is absent).
     """
     for d in ("build/gen", "build/objdiff", "build/clangd", "build/pdb",
-              "build/delink/named"):
+              "build/delink/named", "build/exe", "build/ghidra-enrich/exports"):
         (REPO / d).mkdir(parents=True, exist_ok=True)
+    run([sys.executable, str(CONFIGURE)])            # build.ninja + compile_commands + objdiff.json
+    _ensure_delinkable_exe()                         # reloc.py over $GRUNTZ_EXE (cheap, idempotent)
     if not os.environ.get("MSVC_DIR"):
         log("MSVC_DIR unset - run inside `nix develop .#build` for the wine/cl + "
-            "clangd setup. Created build dirs only.")
+            "clangd setup. Did dirs + configure + delinkable EXE only.")
         return
     tc = [sys.executable, str(INIT / "toolchain.py")]
     if args.force:
         tc.append("--force")
     run(tc)                                          # wine prefix + registry (idempotent)
     run([sys.executable, str(INIT / "clangd.py")])   # clangd compile database
+    if not GHIDRA_PROJECT_DIR.exists():
+        log("Ghidra DB absent (build/ghidra-named) - run `gruntz bootstrap` once to "
+            "create functions.csv/symbols.csv (import + analyze GRUNTZ.EXE).")
     log("init complete (idempotent).")
 
 
@@ -282,8 +337,6 @@ def main() -> None:
     sub = ap.add_subparsers(dest="cmd", required=True)
 
     b = sub.add_parser("build", help="compile -> labels -> delink -> objdiff")
-    b.add_argument("--source", action="append", default=[],
-                   help="force-build this TU first (repeatable); omit = all.")
     b.add_argument("ninja_args", nargs=argparse.REMAINDER,
                    help="extra ninja args after `--` (e.g. -j8).")
     b.set_defaults(func=cmd_build)
@@ -297,9 +350,12 @@ def main() -> None:
 
     sub.add_parser("ghidra-refresh", help="apply generated data to Ghidra + re-export"
                    ).set_defaults(func=cmd_ghidra_refresh)
-    i = sub.add_parser("init", help="idempotent local-env setup (wine prefix + clangd compdb)")
+    i = sub.add_parser("init", help="idempotent local-env setup (dirs/configure/EXE/wine/clangd)")
     i.add_argument("--force", action="store_true", help="re-init the wine prefix")
     i.set_defaults(func=cmd_init)
+    bs = sub.add_parser("bootstrap", help="one-time: build the Ghidra DB + export CSVs")
+    bs.add_argument("--reimport", action="store_true", help="rebuild the Ghidra DB from scratch")
+    bs.set_defaults(func=cmd_bootstrap)
     sub.add_parser("status", help="print the last objdiff summary"
                    ).set_defaults(func=cmd_status)
     sub.add_parser("todo", help="obj symbols lacking an @address (worklist)"

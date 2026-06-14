@@ -139,10 +139,12 @@ Unchanged in spirit, just orchestrated by ninja. The `delink` rule runs
    `build/exe/GRUNTZ.delinkable.EXE` -> `build/delink/named/`,
 3. collects the in-scope `<unit>.c.obj` into `build/objdiff/target/`.
 
-`synth_pdb.py` and `reloc.py` (under `scripts/gruntz/build/`) are kept; the EXE
-prep (`reloc.py` -> `GRUNTZ.delinkable.EXE`) and the Ghidra `functions.csv`/
-`symbols.csv` export are one-time setup steps **upstream** of this build (not yet
-wired into `gruntz`; see `gruntz ghidra-refresh`).
+`synth_pdb.py` and `reloc.py` (under `scripts/gruntz/build/`) are kept. The EXE
+prep (`reloc.py` -> `GRUNTZ.delinkable.EXE`) now runs in `gruntz init`; the heavy,
+one-time Ghidra DB build + `functions.csv`/`symbols.csv` export run in
+`gruntz bootstrap` (import + auto-analyze GRUNTZ.EXE, then `apply.py`/`export.py`).
+The FID library labels are tracked (`config/library_labels.csv`, so they survive
+`git clean`); regenerate them with `scripts/analysis/fid_generate.py`.
 
 The delink rule's declared outputs are the 9 `build/objdiff/target/<unit>.c.obj`
 (one command, multiple outputs); its inputs are the EXE + the two Ghidra CSVs +

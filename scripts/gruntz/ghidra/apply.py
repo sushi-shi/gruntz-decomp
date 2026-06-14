@@ -3,7 +3,7 @@
 #
 #   Extends (does NOT clobber) the prior name+plate enrichment with:
 #     1. FUNCTION NAMES   - engine_labels.csv (incl. +37 import-caller rows),
-#                           build/fid/library_labels.csv (HIGH/MED/AMBIG),
+#                           config/library_labels.csv (HIGH/MED/AMBIG),
 #                           config/symbol_names.csv (zlib + ctors).
 #                           Functions are created when Ghidra has none at the RVA.
 #     2. PROTOTYPES + PARAM NAMES - parsed from engine_labels' `prototype` field
@@ -23,7 +23,7 @@
 #                           defined in the DTM.
 #
 #   Reproducible from config/engine_labels.csv + config/symbol_names.csv +
-#   build/fid/library_labels.csv + structure/. Idempotent: re-runnable, never
+#   config/library_labels.csv + structure/. Idempotent: re-runnable, never
 #   downgrades a better existing name, keeps prior [LABEL] plate comments.
 #
 #   Run (Ghidra 11.4.2 headless Jython):
@@ -60,7 +60,7 @@ CSV_ENGINE = ROOT + "/config/engine_labels.csv"
 CSV_SYMBOL   = ROOT + "/build/gen/symbol_names.csv"
 STRUCTS_JSON = ROOT + "/build/gen/structs.json"
 ENUMS_JSON   = ROOT + "/build/gen/enums.json"
-CSV_FID    = ROOT + "/build/fid/library_labels.csv"
+CSV_FID    = ROOT + "/config/library_labels.csv"   # tracked FID output (survives `git clean`)
 REPORT     = ROOT + "/build/ghidra-named/exports/enrichment_apply_report.txt"
 
 prog     = currentProgram
@@ -822,7 +822,7 @@ try:
         except Exception: continue
         syms.append((rva, r[1]))
 
-    fid_rows = load_csv_rows(CSV_FID)       # rva,name,lib,confidence,source
+    fid_rows = load_csv_rows(CSV_FID) if os.path.exists(CSV_FID) else []  # rva,name,lib,confidence,source
     fids = []
     for r in fid_rows:
         if len(r) < 4: continue
