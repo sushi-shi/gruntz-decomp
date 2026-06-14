@@ -26,8 +26,10 @@ Usage (normally only emitted into build.ninja by configure.py):
 import argparse
 import os
 import shutil
+import signal
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -100,22 +102,55 @@ def main() -> None:
     if out.exists():
         out.unlink()
 
+    # Quieten Wine's fixme spam unless the caller wants it (smaller logs, less
+    # overhead under `ninja -j`); an explicit WINEDEBUG still wins.
+    os.environ.setdefault("WINEDEBUG", "fixme-all,err-kerberos")
     ensure_wineserver()
 
     src_w = winepath_w(src)
     out_w = winepath_w(out)
     cmd = ["wine", str(cl), *flags, f"/Fo{out_w}", src_w]
 
-    r = subprocess.run(cmd, cwd=str(out.parent), text=True, capture_output=True)
+    output, rc = _run_cl(cmd, out)
 
     # Wine prints unrelated noise; the real success signal is the produced .obj.
     if not out.exists():
         sys.stderr.write(f"[cc_wrap] FAILED to compile {src.name} -> {out}\n")
-        tail = "\n".join((r.stdout + r.stderr).strip().splitlines()[-12:])
+        tail = "\n".join(output.strip().splitlines()[-12:])
         sys.stderr.write(tail + "\n")
-        sys.exit(r.returncode or 1)
+        sys.exit(rc or 1)
 
     sys.exit(0)
+
+
+def _run_cl(cmd: list, out: Path) -> tuple[str, int]:
+    """Run `wine cl` and return (combined output, returncode), hang-proof.
+
+    Wine intermittently leaves a cl.exe grandchild (mspdbsrv/conhost/...) in a
+    finished-but-never-reaped state that keeps the inherited stdio open. With a
+    capture PIPE that wedges the parent forever waiting for EOF even though the
+    .obj is already written - the build "hangs" at zero CPU for many minutes. So
+    send wine's output to a temp FILE (no pipe to block on), run wine in its own
+    process group, and bound the wait with a timeout: on a stall, SIGKILL our wine
+    launcher group and trust the produced .obj as the real success signal.
+    """
+    timeout = float(os.environ.get("GRUNTZ_CL_TIMEOUT", "300"))
+    with tempfile.TemporaryFile() as logf:
+        proc = subprocess.Popen(cmd, cwd=str(out.parent),
+                                stdout=logf, stderr=subprocess.STDOUT,
+                                start_new_session=True)
+        try:
+            proc.wait(timeout=timeout)
+            rc = proc.returncode
+        except subprocess.TimeoutExpired:
+            try:
+                os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+            except (ProcessLookupError, PermissionError):
+                pass
+            proc.wait()
+            rc = 0 if out.exists() else 1
+        logf.seek(0)
+        return logf.read().decode("utf-8", "replace"), rc
 
 
 if __name__ == "__main__":
