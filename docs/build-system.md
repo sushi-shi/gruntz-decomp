@@ -149,7 +149,33 @@ tracked
 
 The delink rule's declared outputs are the per-unit `build/objdiff/target/<unit>.c.obj`
 (one command, multiple outputs); its inputs are the EXE + the two Ghidra CSVs +
-`build/gen/symbol_names.csv`, so changing the names map re-delinks.
+`build/gen/symbol_names.csv`.
+
+### What triggers a re-delink
+
+The delink is keyed on **`build/gen/symbol_names.csv`** (the EXE + Ghidra CSVs only
+change at `gruntz init`). So in the inner loop, editing a `src/` `// @address:` is
+what re-delinks: ninja regenerates the label map, which *is* the delink's input.
+The full chain a single `gruntz build` runs:
+
+```
+edit src/<unit>.cpp  (add / change a  // @address: 0x<rva>)
+  └─ gruntz build → configure.py (build.ninja) → ninja:
+       cl         rule  cc_wrap.py   → build/objdiff/base/<unit>.obj   (recompile via wine cl)
+       gen_labels rule  labels.py    → build/gen/symbol_names.csv      (rva → name → unit)
+                                        ↑ a src @address changed ⇒ the label map regenerates
+       delink     rule  delink.py    ← symbol_names.csv is a declared input, so it re-runs:
+                        synth_pdb.py    functions.csv + symbols.csv + symbol_names.csv
+                                          → build/pdb/gruntz_named.pdb
+                        vostok-delinker  GRUNTZ.EXE + the PDB → build/delink/named/
+                        collect          → build/objdiff/target/<unit>.c.obj
+       objdiff-cli report generate    → build/objdiff/report.json
+```
+
+ninja keeps it incremental: an unrelated edit doesn't touch the label map, so the
+delink doesn't re-run. The delink is one command emitting all units' objs, so any
+label change re-delinks the whole set — cheap (~one synth_pdb + one vostok-delinker
+pass over the EXE).
 
 ## Pairing (objdiff)
 

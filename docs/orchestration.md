@@ -160,9 +160,19 @@ prototype starts far ahead of one staring at `FUN_00482f50`.
    `// @address: 0x<rva>` and `// @size: 0x<bytes>`, closed by another rule (worked
    example in `build-system.md` "Add a translation unit"). Only `@address` is
    parsed; `@size` is the human cross-check against `functions.csv`.
-4. `nix develop .#build --command gruntz build`; read objdiff.
-5. Iterate the source to **byte-exact**, using `matching-patterns.md` for the
-   codegen idioms. Locked flags `/O2 /MT` — do not recalibrate.
+4. **`nix develop .#build --command gruntz build` — this ONE command IS the inner
+   loop.** It does everything, incrementally: `configure.py` regenerates
+   `build.ninja`, then ninja recompiles the base obj (`cl`), regenerates the label
+   map from your `@address` (`gen_labels`), re-delinks the target obj
+   (`delink` → synth_pdb → vostok-delinker), and `objdiff` rescores. You never run
+   configure / ninja / delink / objdiff by hand. (What re-delinks and the exact
+   chain: build-system.md "What triggers a re-delink".)
+5. **Read the per-unit match %** (`gruntz status` reprints the last report without
+   rebuilding). Then iterate: edit `src/` → `gruntz build` → read → repeat until
+   **byte-exact**. Use `matching-patterns.md` for the codegen idioms; locked flags
+   `/O2 /MT` — do not recalibrate. A vtable/global-store function tops out at
+   ~99.5% *fuzzy*, not 100% *exact* (the reloc-typing artifact, §6) — that's
+   matched; confirm by direct byte-compare and move on, don't chase it (§2a).
 6. Navigate with `scripts/analysis/clangd_query.py def|refs|hover|symbol`.
 
 ---
