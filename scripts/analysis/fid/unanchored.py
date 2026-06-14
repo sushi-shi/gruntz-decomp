@@ -90,7 +90,9 @@ def main():
     for off,lst in found.items():
         rva=off+trva
         names=off_names[off]
-        rep=sorted(lst,key=lambda x:(0 if len(name_offs[x[0]])==1 else 1,-x[2],-x[3]))[0]
+        # name (x[0]) is the final tiebreaker so identical-body collisions resolve
+        # deterministically, independent of .lib member ingest order.
+        rep=sorted(lst,key=lambda x:(0 if len(name_offs[x[0]])==1 else 1,-x[2],-x[3],x[0]))[0]
         nm,lib,tl,nf,mem=rep
         name_n=len(name_offs[nm])
         ambiguous=(len(names)>1 or name_n>1)

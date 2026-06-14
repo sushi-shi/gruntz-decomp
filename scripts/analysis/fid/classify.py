@@ -32,6 +32,14 @@ MIN_FIXED  = 6     # minimum fixed (non-wildcard) bytes to attempt
 HIGH_LEN   = 16    # trimmed-length floor for HIGH
 HIGH_FIXED = 10    # fixed-byte floor for HIGH
 
+def _zlib_units(toml_path):
+    """Unit stems whose source is a vendored zlib TU (per config/units.toml)."""
+    import tomllib
+    with open(toml_path,'rb') as f:
+        data=tomllib.load(f)
+    return {u['unit'] for u in data.get('unit',[])
+            if str(u.get('source','')).startswith('vendor/zlib')}
+
 def main():
     sigs_pkl,exe,funcs_csv,out_csv = sys.argv[1:5]
     text,trva,base=pe_text(exe)
@@ -91,10 +99,12 @@ def main():
         off=rva-trva; room=next_start[off]-off; fs=func_size.get(rva,0)
         names=rva_names[rva]
         # representative: prefer a name that is itself unique (claims only this rva),
-        # then longest trimmed length, then most fixed bytes.
+        # then longest trimmed length, then most fixed bytes, then the name itself
+        # (final tiebreaker so identical-body collisions resolve deterministically,
+        # independent of .lib member ingest order).
         def keyf(s):
             uniq = (len(name_rvas[s['name']])==1)
-            return (0 if uniq else 1, -s['tlen'], -s['nfixed'])
+            return (0 if uniq else 1, -s['tlen'], -s['nfixed'], s['name'])
         rep=sorted(lst,key=keyf)[0]
         name,lib=rep['name'],rep['lib']
         name_n=len(name_rvas[name])
@@ -138,12 +148,17 @@ def main():
     deliv = out_csv.rsplit('/',1)[0] + '/library_labels.csv'
     with open(deliv,'w',newline='') as f:
         w=csv.writer(f); w.writerow(['rva','name','lib','confidence'])
-        # zlib (already hand-matched) for completeness, if present
+        # zlib (already hand-matched) for completeness, if present. Only label rows
+        # whose unit is an actual vendored-zlib TU -- symbol_names.csv now also
+        # carries engine/game units (CFileIO, dialog procs, ...) that are NOT zlib.
         try:
+            zlib_units=_zlib_units('config/units.toml')
             for line in open('build/gen/symbol_names.csv'):
                 line=line.strip()
                 if line.startswith('0x'):
                     rva_s,name,unit=line.split(',')[:3]
+                    if unit not in zlib_units:
+                        continue
                     w.writerow([f'0x{int(rva_s,16):06x}',name,'zlib','HIGH'])
         except Exception: pass
         for r in rows:
