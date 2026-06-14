@@ -276,3 +276,21 @@ unit = "winapi"
 source = "src/Utils/WinAPI.cpp"
 status = "matched"
 cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+
+# --- CGrunt HUD sprite-creator cluster (src/Gruntz/Grunt.cpp) ---------------
+# Seven contiguous __thiscall HUD sprite creators on the engine CGrunt entity
+# (@0x04d130..0x04d730). Each lazily builds one HUD sprite via the global sprite
+# factory (*0x64556c -> +0x30 -> +0x8, __thiscall @0x1597b0) from the sprite's
+# class-name string + HUD-geometry values off this->m_10 (+0x5c / +0x60-N), runs
+# its init virtual (slot 0x10), and registers it into the grunt's sprite
+# collection (sprite->m_7c->m_18 . Add*). No stack C++ object / no EH frame here
+# -> plain /O2 /MT (no /GX). Sprite member slots pinned: selected@+0x1b8,
+# toy@+0x1bc, health@+0x1c4, stamina@+0x1c8, toyTime@+0x1cc, wingzTime@+0x1d0,
+# powerup@+0x1d4. The factory + the four Add* registrars are reached via
+# incremental-link thunks -> declared external/no-body so the call rel32
+# displacements reloc-mask.
+[[unit]]
+unit = "grunt"
+source = "src/Gruntz/Grunt.cpp"
+status = "wip"
+cflags = ["/nologo", "/c", "/O2", "/MT"]

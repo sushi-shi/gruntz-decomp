@@ -197,3 +197,12 @@ rva,name,unit
 0x1731d0,?GetString@CButeMgr@@QAEPADPAD0@Z,butemgr
 0x1711b0,?ParseTagLine@CButeMgr@@QAE_NXZ,butemgr
 0x1704c0,?Parse@CButeMgr@@QAE_NXZ,butemgr
+
+# --- CGrunt HUD sprite-creator cluster (unit grunt) -------------------------
+0x04d130,?CreateHealthSprite@CGrunt@@QAEHXZ,grunt
+0x04d220,?CreateToySprite@CGrunt@@QAEHXZ,grunt
+0x04d2f0,?CreateStaminaSprite@CGrunt@@QAEHXZ,grunt
+0x04d3e0,?CreateToyTimeSprite@CGrunt@@QAEHXZ,grunt
+0x04d520,?CreateWingzTimeSprite@CGrunt@@QAEHXZ,grunt
+0x04d650,?CreatePowerupSprite@CGrunt@@QAEHH@Z,grunt
+0x04d730,?CreateSelectedSprite@CGrunt@@QAEHXZ,grunt

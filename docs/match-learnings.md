@@ -17,6 +17,76 @@ fast-moving scratchpad. Newest at top within each section.
   -o - --format json-pretty`. Roll-up: `scripts/rebuild.py`.
 
 ## Subsystem notes
+### CGrunt HUD sprite-creator cluster (unit `grunt` — 7/7 logic byte-exact; 5 @99.3%+, 2 @~91.6% 2-arg plateau)
+- New TU `src/Gruntz/Grunt.{cpp,h}`. Seven contiguous `__thiscall` lazy HUD
+  sprite creators on the engine **CGrunt** entity (@0x04d130..0x04d730:
+  CreateHealth/Toy/Stamina/ToyTime/WingzTime/Powerup/Selected). All 7 are
+  instruction-count-equal + structurally byte-exact; the residue is purely a
+  register-allocation/scheduling coin-flip in the ~6-instr Add-call setup. Built
+  plain **`/O2 /MT`** (NO /GX — no stack C++ object / no EH frame in any of them).
+- **The creators DON'T `new` the sprite class** — the tomalla/decomp-xref labels
+  ("creates GruntHealthSprite") are misleading. Each calls a **global HUD sprite
+  FACTORY** `@0x1597b0` (`__thiscall`, `ret 0x18` = 6 stack args) reached via
+  `(*(void**)0x64556c)->m_30->m_8` and passes the sprite **class-NAME string**
+  (`"GruntHealthSprite"` etc., literal .rodata) + a hint int + two HUD-geometry
+  values off `this->m_10` (`m_10->m_5c`, and `m_10->m_60` optionally **minus a
+  per-sprite constant**: Health/Toy −0x19, Stamina/ToyTime −0x20, WingzTime −0x26,
+  Powerup/Selected −0). The factory allocates+constructs the named sprite
+  internally. So you need NEITHER the sprite ctor (@0x011ef0 etc.) NOR the sprite
+  class layout — only the factory call shape + `sprite->m_7c` chain. The C arg
+  order is `factory(0, m_5c, m_60[-N], hint, nameStr, 0x40003)` (push order is the
+  reverse; 6 stack args, factory-`this` loaded into ecx LAST).
+- **Shared shape**: gate (`if (slot || <stat-gate>) return 0;` — Health needs
+  `m_3ec>0`, Stamina `m_3f0!=0x64`, ToyTime `m_3f4!=0`, WingzTime `m_238 && m_3f8`;
+  Toy/Powerup/Selected gate only on the slot), build via factory → store into the
+  CGrunt slot, run the sprite's init virtual `sprite->m_7c->[0x10](sprite)`, then
+  **register** into `sprite->m_7c->m_18` (a registrar) via an Add*; on register
+  FAIL: `registrar->m_38->m_8 |= 0x10000;` null the slot; `return 0;` else 1.
+  ToyTime/WingzTime ALSO pre-clear sibling sprite slots (the same
+  `((rec*)sprite)->m_8 |= 0x10000; slot=0;` shape on m_1c8/m_1d0 / m_1cc).
+- **CGrunt sprite-pointer member offsets pinned (the deliverable):** selected
+  **+0x1b8**, toy **+0x1bc**, health **+0x1c4**, stamina **+0x1c8**, toyTime
+  **+0x1cc**, wingzTime **+0x1d0**, powerup **+0x1d4**; the HUD geometry source
+  **+0x10** (→+0x5c/+0x60); the two Add* args **+0x1ec / +0x1f0**; the per-sprite
+  stat/gate words **+0x238 (wingz gate), +0x3ec (health), +0x3f0 (stamina),
+  +0x3f4 (toyTime), +0x3f8 (wingzTime)**.
+- **THE LEVER for the 3-arg Add (the headline codegen finding):** the registrar
+  `this` is `sprite->m_7c->m_18`, reused on the failure path (held in edi across
+  the call) — so it MUST be a `reg` LOCAL (a fully-inline `sprite->m_7c->m_18->...`
+  twice recomputes the `[+0x18]` load post-call → 77%). BUT the target computes the
+  `[eax+0x18]` registrar load **interleaved between the arg pushes** (push c; push
+  b; `mov edi,[eax+0x18]`; load a; push a), keeping `sprite->m_7c` **in eax**
+  (in-place reuse of the reloaded-sprite reg). Writing `reg = sprite->m_7c->m_18;`
+  directly puts m_7c in ECX and schedules the registrar AFTER all args (95.8%).
+  Introducing an explicit intermediate **`CSpriteInner *inner = sprite->m_7c;
+  CSpriteRegistrar *reg = inner->m_18;`** flips MSVC to the eax-in-place +
+  interleaved schedule → **99.3%**. (Same family as ButeMgr's "pin a temp to steer
+  the register/schedule"; here a *pointer-chain split* into a named intermediate is
+  the lever.) Lone residue on the 3-arg fns = which of edx/ecx temporarily holds
+  arg c vs arg b — push ORDER + VALUES byte-identical, only the temp reg-field
+  differs; explicit `int c=..;int b=..;` temps did NOT flip it (pure allocator
+  coin-flip, entropy-class).
+- **2-arg Add (Toy/Selected) PLATEAU ~91.6%:** with ONLY two args there isn't a
+  third arg to pin the schedule, so MSVC hoists arg a (m_1ec) into a reg BEFORE the
+  registrar (target loads it AFTER) and puts m_7c in ecx not eax. Here the `inner`
+  temp makes it WORSE (90.7%); the plain `reg = sprite->m_7c->m_18;` is best
+  (91.6%). Six source forms (inner, sprite-local, preload-b, explicit a/b temps,
+  full-inline, plain) normalize to one of two valid schedules; no lever flips the
+  2-arg ordering. Logic/offsets/CFG byte-exact; left per doctrine. **Takeaway: the
+  optimal register-chain lever is ARG-COUNT-dependent — the `inner`-split helps the
+  3-arg shape but hurts the 2-arg shape; pick per-function, don't apply uniformly.**
+- The factory (@0x1597b0) + the four Add* registrars (@0x07f0d0 3-arg /@0x07f920
+  2-arg /@0x080380 3-arg(Powerup) /@0x07e9c0 2-arg) are reached via incremental-
+  link **thunks** (the low-RVA `jmp` stubs at 0x2342/0x3f71/0x2c20/0x207c → real
+  @0x7xxxx); modeled as external no-body methods so the `call rel32` reloc-masks
+  (objdiff shows them as `thunk_FUN_*` vs my mangled name — benign).
+- UNLOCKED: the HUD sprite-creation path is anchored — the global sprite factory
+  `@0x1597b0` (`CSpriteFactory::CreateSprite`, reached via `*0x64556c->+0x30->+0x8`)
+  and the 4 sprite-registrar Add* methods (@0x07f0d0/0x07f920/0x080380/0x07e9c0,
+  on `sprite->m_7c->m_18`) now have callers in place; the 7 CGrunt sprite-pointer
+  slots + the HUD-geometry member (+0x10→+0x5c/+0x60) are pinned for the rest of
+  the (huge) CGrunt TU. `0x64556c` = the global game registry/manager pointer.
+
 ### CButeMgr .att/.bute attribute config-parser (unit `butemgr` — 11/11 byte-exact; 2 documented entropy residues)
 - New TU `src/Bute/ButeMgr.{cpp,h}`. The engine **CButeMgr** — the attribute layer
   the WHOLE game reads entity stats through (GetInt alone has 117 callers, GetIntDef
