@@ -17,6 +17,74 @@ fast-moving scratchpad. Newest at top within each section.
   -o - --format json-pretty`. Roll-up: `scripts/rebuild.py`.
 
 ## Subsystem notes
+### CFileIO — engine KERNEL32 file-stream class (unit `filestream`; 9/10 byte-exact)
+- New TU `src/Io/FileStream.cpp` (+ `FileStream.h`). This is the MFC **CFile**
+  work-alike that gates ALL engine file I/O (RezMgr, WwdFile, save/load). The
+  `WwdInputStream` placeholder matcher #8 declared as an external class IS this
+  class — now reconstructed in full. Class name = **CFileIO** (per engine_labels).
+- **LAYOUT (16 bytes, `: public CObject`)**: vtable@+0x00 (implicit, two-phase),
+  **HANDLE m_handle@+0x04** (-1=closed), **int m_open@+0x08** (1 = we own the
+  handle), **CString m_name@+0x0c**. `m_name` is an MFC **CString** (a single
+  `char*` @+0; ctor/dtor/Empty/`operator=` are NAFXCW calls 0x1b9b93/0x1b9cde/
+  0x1b9c69/0x1b9e74) — modeled as a minimal external `AfxString` class (no
+  bodies + an inline `operator const char*` returning m_pchData) so its calls
+  are reloc-masked. Do NOT declare an explicit vtable member: `virtual ~CFileIO`
+  already puts the vptr @+0; an explicit `void* m_vtbl` shifts every field by 4.
+- **BUILT WITH `/O1` (optimize for SIZE), NOT the locked `/O2`** — THE load-bearing
+  discovery. This is MFC-derived (CFile) code and MFC shipped /O1. /O2 (favor
+  speed) plateaus these fns at 60s–80s%; /O1 takes them byte-exact. The two tells
+  of /O1 vs /O2, observable in the TARGET: (1) **push memory operands directly**
+  (`push [ecx+4]`) instead of pre-loading to a reg (`mov eax,[ecx+4]; push eax`);
+  (2) **keep ebp frames for functions that take the address of a local/param**
+  (Read/Write/Open get `push ebp;mov ebp,esp`+`[ebp+N]`) — /O2 omits the frame and
+  uses esp-relative even for escaped locals. Seek/GetPosition have NO address-taken
+  locals → frameless under BOTH (so a global `/Oy-` is WRONG: it would force a
+  frame on Seek too). Per-function frame ⇒ it's an opt-LEVEL choice, not /Oy.
+- **Address-of-LOCAL forces the frame at /O1; `&param` may not.** Write went
+  frameless when its out-param reused the `nCount` *parameter* slot, but got the
+  frame (matching target) once written with a **separate `DWORD nWritten;` local**
+  passed as `&nWritten` — MSVC still folds it into the param slot, but the local
+  *declaration* tips the frame heuristic. Read's frame falls out of `&nCount`
+  reused as the out-param under /O1.
+- **The CString member ⇒ the ctor/dtor carry an MFC5 EH frame** (`mov eax,OFFSET
+  FuncInfo; call __EH_prolog @0x121000; push ecx;push esi; mov [ebp-0x10],this;
+  …; mov [ebp-4],ehstate; … mov fs:0,ecx; leave`). To reproduce it you MUST give
+  CFileIO a **polymorphic base `CObject`** (inline-empty ctor/dtor) so you get the
+  **two-phase vtable** stores (base `0x5e8cb4` then derived `0x5ed15c`, both masked)
+  AND `m_open = 0` in the ctor body (target zeroes +8). A standalone polymorphic
+  class gives ONE vtable + no EH frame (43% plateau) — the base + the dtor-bearing
+  member together produce the exact ctor/dtor bytes (98.6%/98.8% = masked relocs).
+- **Two clean bonus matches in the cluster**: the **adopt-handle ctor**
+  `CFileIO(HANDLE)` @0x1bf033 (`??0CFileIO@@QAE@PAX@Z`, `m_open=0; m_handle=h;`)
+  and the **scalar-deleting dtor** `??_GCFileIO` @0x1bf017 (`call ~CFileIO; if
+  (flag&1) operator delete(this); return this;` — the standard `delete` idiom).
+- **`CFile::Open` (0x1bf200, `ret 0xc`) = the MFC nOpenFlags→Win32 translator**:
+  `nOpenFlags &= 0xFFFF7FFF`; `switch(f&3)`→GENERIC_READ/WRITE/both; `switch(f&0x70)`
+  →share 0/1/2/3 (default = lpszFileName, an MFC quirk); a stack `SECURITY_ATTRIBUTES
+  {nLength=0xc, NULL, bInheritHandle=!(f&0x80)}`; disposition = `f&0x1000 ?
+  (f&0x2000?OPEN_ALWAYS:CREATE_ALWAYS) : OPEN_EXISTING`; CreateFileA(name,acc,share,
+  &sa,disp,0x80,0); on -1 fill the `CFileException* pError` (m_lOsError@+0xc,
+  m_cause@+0x8 via the os→cause mapper 0x1c1a71, m_strFileName@+0x10) if non-null,
+  return 0; else store handle+`m_open=1`, return 1. **szPath buffer = `char[0x104]`**
+  (MAX_PATH) so the frame is exactly `sub esp,0x110` (0x104 buf + 0xc SA). The path
+  is canonicalized by `AfxFullPath` @0x1bf8f8 (GetFullPathNameA + long-name fixup),
+  reloc-masked. PLATEAU 95.5%: a single MSVC layout coin-flip on the share switch —
+  which of {`case 0x40`, `default`} bodies is the cmp-ladder fall-through (`cmp
+  0x40;jne default` vs `cmp 0x40;je body`). All bodies + control flow + the merge
+  are byte-identical; source reordering (default first/last/mid, pre-init) does NOT
+  flip the polarity — entropy-class, left per doctrine.
+- **objdiff "exact" undercounts**: shows `6/10` because the masked vtable/IAT/
+  __EH_prolog/CString-call operands are DIR32-vs-REL32 on differently-named symbols
+  (the documented ~99.5%-fuzzy-but-byte-exact idiom); 9 fns verified instruction-
+  identical vs `dump_target.py` + `llvm-objdump -dr` on the delinked obj.
+- UNLOCKED: every engine file-I/O caller is now verifiable — `WwdFile::IsValidWwd/
+  CheckHeader` (their `WwdInputStream` stub is literally this CFileIO), `RezMgr`/
+  `CRezDir::Load`/`RezSync::Init` (the 0x1bfxxx CreateFileA cluster), `Image::
+  LoadFromRez` (.PID open), and the save/load path. The CFile clone @0x1bf16f
+  (DuplicateHandle into a `new CFileIO(-1)`) and Write/Seek/Open's 3 throw helpers
+  (0x1c18b7 AfxThrowOsError, 0x1c199c AfxThrowFileError, 0x1c1a71 os→cause) are now
+  anchored callees.
+
 ### Utils::WinAPI (Win32 helper TU — unit `winapi`; 4/4 driven to byte-exact)
 - New TU `src/Utils/WinAPI.cpp`. `FileExists` @0x1189c0, `ActiveWait` @0x13dfe0,
   `IsGruntzCDInAnyDrive` @0x1fd50 are 100% (reloc/IAT/thunk-masked only);

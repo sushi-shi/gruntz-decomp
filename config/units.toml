@@ -139,6 +139,20 @@ source = "src/Wwd/WwdFile.cpp"
 status = "wip"
 cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
 
+# --- Engine file-stream class (src/Io) --------------------------------------
+# CFileIO - the KERNEL32 file-I/O wrapper (MFC CFile work-alike) that gates ALL
+# engine file I/O (RezMgr, WwdFile, save/load). The leaf methods wrap CreateFileA
+# /ReadFile/WriteFile/SetFilePointer/CloseHandle; the ctor/dtor construct a
+# CString member + carry a C++ EH frame (__CxxFrameHandler + FuncInfo) -> /GX.
+# Built with /O1 (optimize for SIZE), NOT the locked /O2: this is MFC-derived
+# code (CFile) and MFC was shipped /O1 - it pushes memory operands directly and
+# keeps ebp frames for address-taken locals, which /O2 (favor speed) does not.
+[[unit]]
+unit = "filestream"
+source = "src/Io/FileStream.cpp"
+status = "matched"
+cflags = ["/nologo", "/c", "/O1", "/MT", "/GX"]
+
 # --- Registry/config wrapper (src/Utils) ------------------------------------
 [[unit]]
 unit = "registryhelper"

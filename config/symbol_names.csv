@@ -84,6 +84,21 @@ rva,name,unit
 # frame around the stack-local file stream. See src/Wwd/WwdFile.cpp.
 0x160530,?WwdFile_IsValidWwd@@YGHPBDPAX@Z,wwdfile
 0x160660,?WwdFile_CheckHeader@@YGHPBDPAX@Z,wwdfile
+# --- CFileIO: the engine KERNEL32 file-I/O wrapper (MFC CFile work-alike) -----
+# Gates ALL engine file I/O (RezMgr, WwdFile, save/load). ctor/dtor build a
+# CString member (NAFXCW calls, reloc-masked); leaf methods wrap CreateFileA/
+# ReadFile/WriteFile/SetFilePointer/CloseHandle via the IAT. /GX for the EH
+# frame around the CString member. See src/Io/FileStream.cpp.
+0x1befd7,??0CFileIO@@QAE@XZ,filestream
+0x1bf017,??_GCFileIO@@UAEPAXI@Z,filestream
+0x1bf033,??0CFileIO@@QAE@PAX@Z,filestream
+0x1bf121,??1CFileIO@@UAE@XZ,filestream
+0x1bf200,?Open@CFileIO@@QAEHPBDIPAX@Z,filestream
+0x1bf328,?Read@CFileIO@@QAEIPAXI@Z,filestream
+0x1bf362,?Write@CFileIO@@QAEXPBXI@Z,filestream
+0x1bf3ad,?Seek@CFileIO@@QAEJJH@Z,filestream
+0x1bf3dc,?GetPosition@CFileIO@@QAEJXZ,filestream
+0x1bf426,?Close@CFileIO@@QAEXXZ,filestream
 # --- engine constructors (self-located via RTTI vftables) -------------------
 # MSVC-mangled thiscall ctor names (??0<Class>@@QAE@XZ). The vftable store is a
 # DIR32 relocation; objdiff compares the code bytes (reloc target named
