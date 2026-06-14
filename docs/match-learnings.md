@@ -328,6 +328,77 @@ fast-moving scratchpad. Newest at top within each section.
 - UNLOCKED: `GameWindowProc` @0x13cff0 (`?GameWindowProc@CGameApp@@SGJPAXIIJ@Z`,
   static __stdcall) now anchored in the TU; its body is in-scope.
 
+### Wap32 / CGameApp Init orchestration (extended gameapp — +3 methods)
+- Added `?VirtualUnknownMethod03@…UAEHPAXPAD11HHH@Z` @0x13d7b0 (BYTE-EXACT 100%),
+  `?InitializeDefaultCreateStruct@…UAEXXZ` @0x13da50 (99.15%, 1 scheduling residue),
+  `?VirtualUnknownMethod02@…UAEHPAUGameInfo@@PAUtagWNDCLASSA@@PAUtagCREATESTRUCTA@@@Z`
+  @0x13d5d0 (97.28%, register-alloc residue). The 6 prior methods stayed exact.
+- **The whole CGameApp had to become a full VIRTUAL class (tomalla vtable order).**
+  0x13d5d0 dispatches the other methods via the vtable (`call [vptr+0x2c/0x34/0x38/
+  0x3c/0x40]` = InitializeAccelerators/InitializeGameWindow/InitializeGameManager/
+  InitializeDefaultWindowClass/InitializeDefaultCreateStruct), so they MUST sit at
+  the binary's slot indices. Declared all 16 vtable slots in tomalla order (empty
+  inline stubs for the unmatched ones) ⇒ matched-method manglings flip **`Q`→`U`**
+  (`?CloseResources@CGameApp@@QAEXXZ` → `…UAEXXZ` etc.); update symbol_names.csv to
+  the `U` form. Method BODIES are byte-identical virtual-vs-nonvirtual, so the 6
+  greens stayed exact. **This also flips CGruntzApp::InitializeGameManager Q→U**
+  (it now overrides a virtual base method) — its gruntzapp row must change to
+  `?InitializeGameManager@CGruntzApp@@UAEPAVCGameMgr@WAP32@@XZ` (a CORRECTION, the
+  old `Q` was technically wrong; body byte-identical, stays 99.79%). Base return
+  type must be covariant: `WAP32::CGameMgr*` (forward-declared in Wap32.h, full def
+  in GameApp.cpp — keeps GruntzApp.cpp's own `WAP32::CGameMgr` def, separate TUs).
+- **CONFIRMED tomalla's `GameInfo` (0x1d4 B) + embedded layout** (now in Wap32.h):
+  CGameApp embeds `GameInfo m_gameInfo@+0x14`, `WNDCLASSA m_wc@+0x1e8`,
+  `CREATESTRUCTA m_createStruct@+0x210`. GameInfo: size@+0(=0x1d4), windowClassFlags
+  @+4 (an **int**, NOT char — read full-dword `mov eax,[..]` with no `movsx`; the
+  `D`→`H` mangling), hInstance@+8, szCmdLine[0x80]@+0xc, szGameIdentifier[0x40]@+0x8c,
+  szWindowName[0x40]@+0xcc, szWindowClassName[0x80]@+0x14c, windowWidth@+0x1cc,
+  windowHeight@+0x1d0. ⇒ the old flat `m_a0`(+0xa0)=szGameIdentifier,
+  `m_18`(+0x18)=windowClassFlags, `m_160`(+0x160)=szWindowClassName were SUB-FIELDS
+  of m_gameInfo; +0xe0=szWindowName, +0x1e0/+0x1e4=width/height are new exposures.
+- **03 (the param→struct builder):** `if(!hInstance) return 0;` then build a stack
+  `GameInfo gi` (memset→`rep stos` 0x75 dwords), fill fields, conditionally
+  `strcpy` the 3 names (inline `rep movs` at /O2/Oi), `return Method02(&gi,0,0)`.
+  The vcall target = vtable slot +0x4 (Method02) ⇒ a `this->Method02(...)` virtual
+  call. windowClassFlags must be `int` (see above) for byte-exact.
+- **InitializeDefaultCreateStruct idiom wins (DialogFrame style):** the windowed
+  branch picks `style = (DialogFrame) ? 0xCA0000 : 0xCF0000` with exStyle 0x40000;
+  fullscreen = 0x80080000 / 0x40008. **Write it as `style=0xCF0000; if(flags&2)
+  style=0xCA0000;` (default-then-conditional-override), NOT a 2-way `if/else` select**
+  — the two constants differ by one bit (0x50000) so an `if/else` folds to a
+  BRANCHLESS `neg/sbb/and 0x50000; add 0xca0000` (14%); the default-override emits
+  the target's `mov 0xcf0000; je; mov 0xca0000` branch (78%→99%). Assign `style`
+  BEFORE `exStyle` inside the branch to match the `mov ecx;mov edx` store order.
+- **x and y (CW_USEDEFAULT/0) must be TWO separate locals**, both set in one
+  `if/else` — a single shared local folds the 0x80000000-vs-0 select to the same
+  branchless `neg/sbb/and 0x80000000` (target uses a branch: value lands in a
+  callee-saved reg for x + a stack slot for y; 14%→78%).
+- **Method02 (Run/Init orchestration, 97.28% PLATEAU):** validate count(<=1)+
+  GameInfo.size==0x1d4 + (if pWndClass) its lpszClassName non-empty; `m_244=1;
+  m_248=m_24c=m_250=0;` copy `*pGameInfo→m_gameInfo` (`rep movs`); resolve
+  m_hInstance from gameInfo.hInstance ?: pWndClass->hInstance ?: pCreateStruct->
+  hInstance (else fail) — write as ONE chained `&&` so the fails share the exit;
+  `if(!szWindowClassName[0]) sprintf(…,"%sClass",szGameIdentifier);` +
+  `if(!szWindowName[0]) sprintf(…,"%s",…)` (engine sprintf @0x11f890); copy/
+  default the WNDCLASSA (vtbl +0x3c) and CREATESTRUCTA (vtbl +0x40); RegisterClassA;
+  InitializeAccelerators (vtbl +0x2c); `m_4=InitializeGameWindow()` (vtbl +0x34),
+  `CreateAndShow(&m_createStruct,this)` else `delete m_4`; `m_8=InitializeGameManager()`
+  (vtbl +0x38), `m_8->Run(m_4,&szCmdLine)` (mgr vtbl +0x4) else `delete m_8`. All
+  validation `return 0`s → one `goto Fail;` shared epilogue (separate-`return 0`
+  nests create an extra epilogue). PLATEAU = the conditional `pCreateStruct->
+  hInstance` fallback: MSVC keeps pCreateStruct in callee-saved **esi** across the
+  sprintf/Init calls (reloading it per branch) where the target loads it fresh into
+  **eax** (dead immediately) + once into esi for the copy — a pure reg-alloc
+  coin-flip; 165=165 instructions, logic/layout/CFG byte-identical, only the
+  pCreateStruct home register + one reload differ. Tried 4 source forms (chained-&&,
+  nested-if, split-if, temp-ptr) — all 94.7–97.3%, none flips it. Entropy-class.
+- All vtable/IAT/string-literal/engine-sprintf operands are reloc-masked → the
+  99% scores are byte-exact-modulo-relocs per the standard idiom.
+- UNLOCKED: the CGameApp vtable is now fully laid out (16 slots), so any caller
+  that dispatches through it (`WinMain`/`CGruntzApp::InitInstance`) is anchored;
+  `GameInfo`/`CREATESTRUCTA`/`WNDCLASSA` member offsets are pinned for the rest of
+  the app-init path; the game-manager `Run` (mgr vtbl +0x4) entry is mapped.
+
 ### Utils::RegistryHelper (config subsystem — unit `registryhelper`; 4 matched, more open)
 - Matched byte-exact (commit 76c2483): `GetValueString` @0x1394a0, `GetValueDword`
   @0x1395d0, `Close` @0x139330, `GetRegistryKey` @0x139650 (static __stdcall).

@@ -56,6 +56,9 @@ __declspec(dllimport) HWND    __stdcall CreateWindowExA(DWORD dwExStyle, LPCSTR 
                                                         HWND hWndParent, HMENU hMenu,
                                                         HINSTANCE hInstance, void *lpParam);
 __declspec(dllimport) BOOL    __stdcall ShowWindow(HWND hWnd, int nCmdShow);
+__declspec(dllimport) HMENU   __stdcall LoadMenuA(HINSTANCE hInstance, LPCSTR lpMenuName);
+__declspec(dllimport) int     __stdcall GetSystemMetrics(int nIndex);
+__declspec(dllimport) short   __stdcall RegisterClassA(const WNDCLASSA *lpWndClass);
 }
 
 // CreateWindowExA's 12 arguments, packed into one params struct (CGameWnd's
@@ -114,42 +117,99 @@ public:
     int m_c;   // +0x0c  guard flag
 };
 
+// CGameMgr - the game manager allocated by CGameApp::InitializeGameManager
+// (the engine puts it in namespace WAP32). VirtualUnknownMethod02 starts it
+// with Run(pGameWnd, szCmdLine) (vtable +0x4) and `delete`s it (scalar-deleting
+// dtor @ vtable slot 0) on failure. Forward-declared here so the
+// InitializeGameManager return type is covariant with CGruntzApp's override;
+// the full definition lives in the TU that uses it.
+namespace WAP32 { class CGameMgr; }
+
+// CREATESTRUCTA layout (the 12 fields CreateWindowEx receives), embedded in
+// CGameApp at +0x210 (m_createStruct); InitializeDefaultCreateStruct fills it.
+typedef struct tagCREATESTRUCTA {
+    void *    lpCreateParams; // +0x00
+    HINSTANCE hInstance;      // +0x04
+    HMENU     hMenu;          // +0x08
+    HWND      hwndParent;     // +0x0c
+    int       cy;             // +0x10
+    int       cx;             // +0x14
+    int       y;              // +0x18
+    int       x;              // +0x1c
+    long      style;          // +0x20
+    LPCSTR    lpszName;       // +0x24
+    LPCSTR    lpszClass;      // +0x28
+    DWORD     dwExStyle;      // +0x2c
+} CREATESTRUCTA;             // 0x30 bytes
+
+// GameInfo - the 0x1d4-byte window/launch descriptor. Embedded in CGameApp at
+// +0x14 (m_gameInfo); VirtualUnknownMethod03 builds one on the stack and hands
+// it to VirtualUnknownMethod02, which copies it into the member and uses it to
+// register the class + create the window.
+struct GameInfo {
+    int       size;                // +0x000  == sizeof(GameInfo) == 0x1d4
+    int       windowClassFlags;    // +0x004  bit1=Windowed, bit2=DialogFrame
+    HINSTANCE hInstance;           // +0x008
+    char      szCmdLine[0x80];     // +0x00c
+    char      szGameIdentifier[0x40]; // +0x08c  (cursor/icon/menu resource name)
+    char      szWindowName[0x40];  // +0x0cc
+    char      _pad10c[0x40];       // +0x10c
+    char      szWindowClassName[0x80]; // +0x14c
+    int       windowWidth;         // +0x1cc
+    int       windowHeight;        // +0x1d0
+};                                 // 0x1d4 bytes
+
 // ---------------------------------------------------------------------------
 // CGameApp - WAP32 application object.
 //   vftable @0x5e9b0c. ctor (RVA 0x13d590, 60 bytes) zeroes a handful of
 //   fields then bumps a file-scope instance counter at 0x653c6c.
 //   The ctor schedule emits the +0x10 store BEFORE the +0x0c store, which the
 //   source mirrors (m_10 initialised before m_c).
+//
+//   The dispatch methods (VirtualUnknownMethod02/03, InitializeDefaultCreate-
+//   Struct) call the other CGameApp methods through the vtable (call [vptr+N]),
+//   so the WHOLE class is virtual with the tomalla slot order; matched methods
+//   keep their bodies (virtual mangles `U`, not `Q`).
 // ---------------------------------------------------------------------------
 class CGameApp {
 public:
     CGameApp();
-    virtual ~CGameApp();
-    virtual int Wap32GameAppVfunc0();
+    virtual ~CGameApp();                                   // vtbl +0x00
 
-    void CloseResources();                       // 0x13d8c0
-    BOOL InitializeAccelerators(LPCSTR lpTable);  // 0x13dc20
-    void ReportError(WPARAM wParam, LPARAM lParam); // 0x13dcb0
-    void InitializeDefaultWindowClass();          // 0x13d9b0
-
-    // Allocates a CGameWnd (operator new + ctor under a C++ EH frame) and
-    // returns it; `this` is never touched.  RVA 0x13db60.
-    CGameWnd *InitializeGameWindow();
+    // The class's own dispatch surface (this TU matches 02/03 + the two
+    // InitializeDefault* + the resource/error helpers); unmatched slots are
+    // inline stubs so the vtable indices land on the binary's layout.
+    virtual int VirtualUnknownMethod02(GameInfo *pGameInfo, WNDCLASSA *pWndClass,
+                                       CREATESTRUCTA *pCreateStruct);     // +0x04  0x13d5d0
+    virtual int VirtualUnknownMethod03(HINSTANCE hInstance, char *szWindowName,
+                                       char *szGameIdentifier, char *szCmdLine,
+                                       int windowClassFlags, int windowWidth,
+                                       int windowHeight);                  // +0x08  0x13d7b0
+    virtual void VirtualUnknownMethod04() {}                              // +0x0c
+    virtual void CloseResources();                                       // +0x10  0x13d8c0
+    virtual void VirtualUnknownMethod06() {}                              // +0x14
+    virtual void VirtualUnknownMethod07() {}                              // +0x18
+    virtual void ReportError(WPARAM wParam, LPARAM lParam);              // +0x1c  0x13dcb0
+    virtual void VirtualUnknownMethod09() {}                             // +0x20
+    virtual void FreeGameManager() {}                                    // +0x24
+    virtual void VirtualUnknownMethod11() {}                             // +0x28
+    virtual BOOL InitializeAccelerators(LPCSTR lpTable);                 // +0x2c  0x13dc20
+    virtual void ShowError() {}                                          // +0x30
+    virtual CGameWnd *InitializeGameWindow();                            // +0x34  0x13db60
+    virtual WAP32::CGameMgr *InitializeGameManager() { return 0; }       // +0x38
+    virtual void InitializeDefaultWindowClass();                        // +0x3c  0x13d9b0
+    virtual void InitializeDefaultCreateStruct();                       // +0x40  0x13da50
 
     // Static window procedure stored into m_wc.lpfnWndProc (RVA 0x13cff0).
     static LRESULT __stdcall GameWindowProc(HWND, UINT, WPARAM, LPARAM);
 
-    CGameResource *m_4;  // +0x04  deleted by CloseResources
-    CGameResource *m_8;  // +0x08  deleted by CloseResources
+    CGameResource *m_4;  // +0x04  deleted by CloseResources (the CGameWnd)
+    CGameResource *m_8;  // +0x08  deleted by CloseResources (the CGameMgr)
     HINSTANCE m_c;       // +0x0c  hInstance
     HACCEL m_10;         // +0x10  accelerator table
-    char m_pad14[0x18 - 0x14];
-    char m_18;           // +0x18  flag byte (bit 0x1: use system arrow cursor)
-    char m_pad19[0xa0 - 0x19];
-    char m_a0[0x160 - 0xa0]; // +0xa0  cursor/icon resource name buffer
-    char m_160[0x1e8 - 0x160]; // +0x160 window class name buffer
+    GameInfo m_gameInfo; // +0x14  (0x1d4 bytes; szGameIdentifier @ +0xa0 etc.)
     WNDCLASSA m_wc;      // +0x1e8  registered window class
-    char m_pad210[0x240 - 0x210];
+    CREATESTRUCTA m_createStruct; // +0x210  the CreateWindowEx parameters
     int  m_240;          // +0x240
     int  m_244;          // +0x244
     int  m_248;          // +0x248  error-reported guard

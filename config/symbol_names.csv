@@ -105,12 +105,15 @@ rva,name,unit
 # differently on each side - see report).
 0x13cf00,??0CGameWnd@@QAE@XZ,gamewnd
 0x13d590,??0CGameApp@@QAE@XZ,gameapp
-# --- CGameApp methods (this cluster) ----------------------------------------
-0x13d8c0,?CloseResources@CGameApp@@QAEXXZ,gameapp
-0x13dc20,?InitializeAccelerators@CGameApp@@QAEHPBD@Z,gameapp
-0x13dcb0,?ReportError@CGameApp@@QAEXIJ@Z,gameapp
-0x13d9b0,?InitializeDefaultWindowClass@CGameApp@@QAEXXZ,gameapp
-0x13db60,?InitializeGameWindow@CGameApp@@QAEPAVCGameWnd@@XZ,gameapp
+# --- CGameApp methods (this cluster; now virtual -> `U` mangling) ------------
+0x13d8c0,?CloseResources@CGameApp@@UAEXXZ,gameapp
+0x13dc20,?InitializeAccelerators@CGameApp@@UAEHPBD@Z,gameapp
+0x13dcb0,?ReportError@CGameApp@@UAEXIJ@Z,gameapp
+0x13d9b0,?InitializeDefaultWindowClass@CGameApp@@UAEXXZ,gameapp
+0x13db60,?InitializeGameWindow@CGameApp@@UAEPAVCGameWnd@@XZ,gameapp
+0x13d5d0,?VirtualUnknownMethod02@CGameApp@@UAEHPAUGameInfo@@PAUtagWNDCLASSA@@PAUtagCREATESTRUCTA@@@Z,gameapp
+0x13d7b0,?VirtualUnknownMethod03@CGameApp@@UAEHPAXPAD11HHH@Z,gameapp
+0x13da50,?InitializeDefaultCreateStruct@CGameApp@@UAEXXZ,gameapp
 0x13cf20,?CreateAndShow@CGameWnd@@QAEHPAUCGameWndCreateParams@@PAX@Z,gamewnd
 0x1005d0,??0CStatusBarItem@@QAE@XZ,statusbaritem
 0x101fa0,??0CSBI_RectOnly@@QAE@XZ,sbi_rectonly
@@ -128,7 +131,7 @@ rva,name,unit
 0x00b160,?SetDefaults@@YAXPAX@Z,advancedoptions
 0x00b1b0,?LoadOptions@@YAXPAXPAVRegistryHelper@Utils@@@Z,advancedoptions
 0x00b270,?SaveOptions@@YAXPAXPAVRegistryHelper@Utils@@@Z,advancedoptions
-0x080a20,?InitializeGameManager@CGruntzApp@@QAEPAVCGameMgr@WAP32@@XZ,gruntzapp
+0x080a20,?InitializeGameManager@CGruntzApp@@UAEPAVCGameMgr@WAP32@@XZ,gruntzapp
 0x080c70,?ErrorDialogProc@CGruntzApp@@SGHPAXIIJ@Z,gruntzapp
 0x1189c0,?FileExists@WinAPI@Utils@@YAHPAD@Z,winapi
 0x13dfe0,?ActiveWait@WinAPI@Utils@@YAXI@Z,winapi
