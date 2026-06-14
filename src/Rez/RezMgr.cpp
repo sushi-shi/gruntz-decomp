@@ -9,6 +9,7 @@
 //   CRezDirNode::Load(childFlag)    @ 0x13a0f0  (153 B, thiscall ret 4)  BYTE-EXACT  - recursive dir parse
 //   RezMgr::MakeImageKey(...)       @ 0x13e5d0  (177 B, thiscall ret 0xc) BYTE-EXACT  - ext-dispatch image load (.BMP/.PCX/.PID)
 //   RezMgr::MakeRezPath()           @ 0x091670  (684 B, thiscall ret)    PLATEAU 92% - archive-path builder (EH/CString entropy)
+//   RezMgr::PerFrameTick()          @ 0x08b740  (301 B, virtual vtbl+0x10) BYTE-EXACT - THE per-frame game tick (heart of the loop)
 //
 // Both ctors share the base ctor CRezItmBase::CRezItmBase @0x13c4e0 (stores the
 // base vtable @0x5ef768 and the parent pointer @+0xc), then overwrite the vtable
@@ -252,5 +253,102 @@ int RezMgr::MakeRezPath()
         ReportError(0x800b, 0x43e);
         return 0;
     }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// The per-frame global frame-clock / interval-timer state (file-scope ints,
+// reloc-masked; see RezMgr.h). UpdateClock (@0x13ddc0) writes g_now/g_frameDelta;
+// the tick reads them, clamps the delta and advances the per-second timers.
+// ---------------------------------------------------------------------------
+static int g_now;          // 0x653c70  (UpdateClock sets it; tick re-uses)
+static int g_frameDelta;   // 0x653c74  (ms since previous frame)
+
+static int g_lastNow;      // 0x645580
+static int g_lastDelta;    // 0x645584  (frame delta, clamped to <= 0x64)
+static int g_accumMs;      // 0x645588  (running accumulated frame time)
+static int g_frameTicks;   // 0x64558c  (per-frame counter)
+static int g_timer32;      // 0x645590  (seed 0x32 ms)
+static int g_timer100;     // 0x645594  (seed 0x64 ms)
+static int g_timer200;     // 0x645598  (seed 0xc8 ms)
+static int g_timer400;     // 0x64559c  (seed 0x190 ms)
+static int g_timer500;     // 0x6455a0  (seed 0x1f4 ms)
+
+// ---------------------------------------------------------------------------
+// RezMgr::PerFrameTick()  @ 0x8b740 (301 B, virtual, vtable slot +0x10, ret).
+// THE per-frame game tick: the engine's idle (CGameApp slot +0x20) tail-calls
+// this every frame on an empty message queue.
+//
+//   if (m_mode == 0) return 0;          // nothing to drive yet
+//   UpdateClock();                       // advance g_now / g_frameDelta
+//   int r = m_mode->Update();            // step the active game-state (slot +0x10)
+//   if (r != 0x11) {                     // 0x11 = a state that suppresses timing
+//       // clamp this frame's delta to <= 0x64 ms and accumulate
+//       int dt = g_frameDelta;
+//       g_lastNow = g_now;  g_lastDelta = dt;
+//       if (dt > 0x64) { dt = 0x64; g_lastDelta = 0x64; }
+//       g_accumMs += dt;
+//       // five interval countdown timers: reseed when expired, else subtract dt
+//       <timer32/100/200/400/500>
+//       g_frameTicks++;
+//   }
+//   if (m_renderGate != 0) return 0;     // render suppressed this frame
+//   m_mode->Render();                    // post-step (slot +0x14)
+//   return 1;
+//
+// Each countdown timer t loads its current value (or its SEED when it has hit
+// 0), and either zeroes (delta has run it out) or subtracts the clamped delta:
+//   v = (g_tN == 0) ? SEED : g_tN;
+//   if (dt >= v) g_tN = 0; else g_tN = v - dt;
+// The disasm reseeds in a register (mov ecx,SEED) without storing, so the
+// reseed value is only visible through the subtract/zero - reproduce with the
+// ternary feeding the compare directly.
+//
+// STATUS: BYTE-EXACT under reloc-masking (98.70% fuzzy). All 92 instructions are
+// opcode+ModRM-identical vs dump_target.py 0x8b740; the only 24 diffs are
+// reloc-masked address operands (the `call UpdateClock` REL32 + the 23 DIR32 to
+// the frame-clock globals below).
+// LEVER: the frame-delta clamp and the timer compares are UNSIGNED. `dt`/`v` MUST
+// be `unsigned int` so the target's `jbe` (dt>0x64 clamp) and `jb` (dt>=v timer
+// test) fall out; `int` emits signed `jle`/`jl` (94.78%). g_frameDelta is a
+// timeGetTime() delta (genuinely unsigned ms).
+// ---------------------------------------------------------------------------
+int RezMgr::PerFrameTick()
+{
+    if (m_mode == 0)
+        return 0;
+
+    UpdateClock();
+
+    int r = m_mode->Update();
+    if (r != 0x11) {
+        unsigned int dt = g_frameDelta;
+        g_lastNow = g_now;
+        g_lastDelta = dt;
+        if (dt > 0x64) {
+            dt = 0x64;
+            g_lastDelta = 0x64;
+        }
+        g_accumMs += dt;
+
+        unsigned int v;
+        v = (g_timer32 == 0) ? 0x32 : g_timer32;
+        if (dt >= v) g_timer32 = 0; else g_timer32 = v - dt;
+        v = (g_timer100 == 0) ? 0x64 : g_timer100;
+        if (dt >= v) g_timer100 = 0; else g_timer100 = v - dt;
+        v = (g_timer200 == 0) ? 0xc8 : g_timer200;
+        if (dt >= v) g_timer200 = 0; else g_timer200 = v - dt;
+        v = (g_timer400 == 0) ? 0x190 : g_timer400;
+        if (dt >= v) g_timer400 = 0; else g_timer400 = v - dt;
+        v = (g_timer500 == 0) ? 0x1f4 : g_timer500;
+        if (dt >= v) g_timer500 = 0; else g_timer500 = v - dt;
+
+        g_frameTicks++;
+    }
+
+    if (m_renderGate != 0)
+        return 0;
+
+    m_mode->Render();
     return 1;
 }

@@ -17,6 +17,104 @@ fast-moving scratchpad. Newest at top within each section.
   -o - --format json-pretty`. Roll-up: `scripts/rebuild.py`.
 
 ## Subsystem notes
+### THE PER-FRAME GAME TICK — CGruntzMgr::PerFrameTick (extended `rezmgr` — BYTE-EXACT under reloc-masking, 98.70% fuzzy)
+- **THE HEADLINE: the heart of the game loop is matched byte-exact.** The chain is
+  closed end to end: `WinMain → new CGruntzApp → VirtualUnknownMethod02 stores
+  m_8 = InitializeGameManager() → RunMessageLoop → CGameApp idle (+0x20) tail-calls
+  m_8->vtbl[+0x10]` = **`RezMgr::PerFrameTick` @0x8b740 (301 B, vtable slot +0x10
+  / index 4)**. Added `?PerFrameTick@RezMgr@@UAEHXZ` (U=virtual, AE=thiscall,
+  H=int, XZ=void) to the existing **`rezmgr`** unit (the manager IS the
+  CGruntzMgr/RezMgr class — confirmed below). **BYTE-EXACT**: all 92 instructions
+  opcode+ModRM-identical vs `dump_target.py`; the only 24 diffs are reloc-masked
+  address operands (1 REL32 `call UpdateClock` + 23 DIR32 against the global
+  frame-clock state). objdiff fuzzy 98.70%. **No regression**: every prior rezmgr
+  green held EXACTLY (CRezItm 99.23, CRezDir-ctor 78.45 plateau, FindEntry 99.74,
+  Load 99.57, MakeImageKey 99.32, MakeRezPath 91.87); rezmgr unit fuzzy rose to
+  95.25%.
+- **The tick body (the deliverable):**
+  ```
+  if (m_mode == 0) return 0;                 // m_2c = active CGameMode*; null => no-op
+  UpdateClock();                             // @0x13ddc0 (also vtbl slot +0x38): writes g_now/g_frameDelta
+  int r = m_mode->vtbl[+0x10]();             // CGameMode::Update (slot 4) -> a status int
+  if (r != 0x11) {                           // 0x11 = a state that SUPPRESSES timing (paused/no-advance)
+      unsigned dt = g_frameDelta;            // clamp this frame's delta
+      g_lastNow = g_now;  g_lastDelta = dt;
+      if (dt > 0x64) { dt = 0x64; g_lastDelta = 0x64; }   // UNSIGNED clamp (jbe)
+      g_accumMs += dt;
+      // 5 interval countdown timers (seeds 0x32/0x64/0xc8/0x190/0x1f4 ms):
+      for each (g_tN, SEED): v = (g_tN==0)?SEED:g_tN; if (dt>=v) g_tN=0; else g_tN=v-dt;  // UNSIGNED (jb)
+      g_frameTicks++;
+  }
+  if (m_renderGate != 0) return 0;           // m_b0 != 0 => render suppressed this frame
+  m_mode->vtbl[+0x14]();                     // CGameMode::Render (slot 5)
+  return 1;
+  ```
+- **THE LONE LEVER (94.78% → 98.70% = byte-exact): the frame-delta + timer
+  comparisons are UNSIGNED.** The target uses `jbe` for the `dt > 0x64` clamp and
+  `jb` for each `dt >= v` timer test. Declaring `dt`/`v` as `int` emits signed
+  `jle`/`jl` (94.78%); declaring them **`unsigned int`** flips both to `jbe`/`jb`
+  → byte-exact. (g_frameDelta is a `timeGetTime()` delta — genuinely unsigned ms.)
+  Everything else in the prior matcher's source draft was already correct: the
+  `m_mode==0` early-return, the `r != 0x11` gate, the `(g_tN==0)?SEED:g_tN` ternary
+  feeding the compare directly (the disasm reseeds in a reg via `mov ecx,SEED`
+  without storing — only the subtract/zero is visible), and the `m_renderGate`
+  gate before Render.
+- **The per-frame subsystem the tick drives = `m_mode` @ RezMgr+0x2c, a polymorphic
+  `CGameMode*`.** Each frame it calls TWO of m_mode's virtuals: **slot +0x10
+  (index 4) = Update() → int**, and **slot +0x14 (index 5) = Render()/post-step
+  (void)**. Modeled CGameMode with 4 placeholder slots 0..3 + Update@+0x10 +
+  Render@+0x14 so the `mov eax,[ecx]; call [eax+0x10]` / `call [edx+0x14]` indirect
+  shapes fall out (reloc-masked). **THIS IS THE NEXT LAYER**: `CGameMode::Update`
+  and `::Render` are the real per-frame game-state step/draw — the dedicated
+  targets one indirection down. `m_mode` is set by a *caller* (a SetGameMode /
+  state-transition method on the manager), not the ctor (ctor zeroes +0x2c).
+- **The global frame-clock state the tick maintains (file-scope, reloc-masked):**
+  `0x653c70 g_now` / `0x653c74 g_frameDelta` (written by `UpdateClock`@0x13ddc0);
+  `0x645580 g_lastNow` / `0x645584 g_lastDelta` (clamped ≤0x64) / `0x645588
+  g_accumMs` (running accumulated ms) / `0x64558c g_frameTicks` (frame counter) /
+  `0x645590..0x6455a0` the five interval countdown timers (seeds
+  0x32/0x64/0xc8/0x190/0x1f4 ms). These are a per-second/interval timing wheel the
+  rest of the engine polls.
+- **THE MANAGER CLASS IS CGruntzMgr/RezMgr (the rezmgr unit) — confirmed by the
+  ctor.** `InitializeGameManager`@0x80a20 does `operator new(0xa30)` + ctor via
+  incremental-link thunk `0x31bb` (`jmp 0x83030`). **The manager ctor @0x83030
+  (438 B)** stores **vftable RVA = VA 0x5e9b64** (`mov [esi],0x5e9b64`) and
+  constructs the embedded CString members at +0xec/+0xf0 (= the m_pathA/m_pathB
+  matcher #12 pinned) and sets +0xf4=1 (inGameDir), +0xf8=0 (haveRez), +0xfc=0
+  (haveMoviez) — IDENTICAL to the rezmgr `RezMgr` layout. So extending `rezmgr`
+  (not a new `gruntzmgr` unit) was correct; the tick links into the existing class.
+- **THE MANAGER VTABLE @ VA 0x5e9b64 (RVA 0x1e9b64, incremental-link thunked
+  slots) — pinned for the next matcher:** slot +0x00 dtor (→thunk→0x83330),
+  +0x04 (→0x83450), +0x08 (→0x855e0), +0x0c (→0x83300), **+0x10 PerFrameTick
+  (→thunk 0x1c7b→0x8b740) ✓ MATCHED**, +0x14 (LAB_0x31e3), +0x2c FUN_0x13dd50
+  (84B), +0x30 FUN_0x13ddb0 (9B), +0x34 (→0x85560), **+0x38 UpdateClock
+  FUN_0x13ddc0 (170B, also called directly by the tick)**, +0x3c (→0x85580),
+  +0x50 (→0x85480), +0x54 (→0x82430), +0x58 (→0x9f840), +0x5c (→0x9f9a0). The
+  vtable is wide (≥0x60); most slots are incremental-link `jmp` thunks.
+- **THE MANAGER CTOR @0x83030 — FULL MAP for the next matcher (NOT yet built; a
+  store-order-entropy carcass, deferred to keep this commit atomic + green):** EH
+  frame (`/GX`, the embedded-member ctors are EH-tracked, states 0→4). Sequence:
+  (1) base ctor `call 0x13dd10` (53B; the WAP32 base — sets base vtbl 0x5e9b8c
+  @+0, +0x10=+0x14=1, +0x4/8/c/1c=0, then calls 0x13de70 + 0x13dea0); (2) embedded
+  member **AfxString @+0xc8** (ctor 0x1b9b93, the CString default-ctor =
+  `m_pchData=*_afxEmptyString`); (3) embedded object **@+0xd8** (ctor 0x1b4f0b,
+  0x14-byte class, vtbl 0x5ec2dc, +0x4/8/c/0x10=0); (4) **AfxString m_pathA @+0xec**
+  + **m_pathB @+0xf0** (both ctor 0x1b9b93); (5) build a **0x238-byte sub-object
+  @+0x150** via `FUN_0051f5a0(&sub, 0x238, 4, 0x402a7c, 0x401465)` (111B, 5 args);
+  (6) `mov [esi],0x5e9b64` (the manager vftable store); (7) **56 scalar member
+  stores** (edi=0 / ebx=1 / consts) — notably +0x10=+0x14=1 (re-set over base),
+  +0x88=0x10, +0xb8=1, +0xcc=0x1e, +0xf4=1 (inGameDir), +0x100=+0x104=+0x10c=+0x110=1,
+  +0x138=3, everything else 0. The store ORDER is MSVC source-declaration order
+  (the entropy class — see the CRezDir ctor @78% in this same unit); a faithful
+  carcass would plateau ~60-80%, so it's documented-not-built here.
+- **UNLOCKED (the next layer of game logic):** the per-frame game-state step+draw
+  is now anchored — **`CGameMode::Update` (m_mode vtbl +0x10) and `::Render` (+0x14)
+  are the dedicated next targets** (the real game simulation per frame). The
+  manager vtable @0x5e9b64 + the manager ctor @0x83030 (full layout map above) +
+  `UpdateClock`@0x13ddc0 + the frame-clock globals (0x653c70/74, 0x645580..6455a0)
+  are all pinned. `m_mode`@+0x2c (active mode) and `m_renderGate`@+0xb0 are the two
+  per-frame control words.
+
 ### Application-object lifecycle — CGruntzApp ctor/Init + CGameApp idle/free virtuals (extended `gruntzapp`+`gameapp` — 4/4 BYTE-EXACT under reloc-masking)
 - Closed the WinMain→app lifecycle: the `new CGruntzApp` ctor, the `[vtbl+0x8]`
   Init it dispatches, and two CGameApp base virtuals (the per-frame idle the pump

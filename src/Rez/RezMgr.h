@@ -265,22 +265,72 @@ extern "C" int RezFileExists(const char *szPath);   // 0x1189c0
 extern int g_rezLowDetail;   // 0x6455d4
 
 // ---------------------------------------------------------------------------
-// RezMgr - the archive manager that owns the CRezDir tree and resolves resource
-// keys / archive paths. (Engine label: CGruntzMgr; names are placeholders, only
-// the offsets + code bytes are load-bearing.) The two builders here pin:
-//   +0xec  m_pathA   : a CString scratch buffer (the assembled archive path #1)
-//   +0xf0  m_pathB   : a CString scratch buffer (the assembled archive path #2)
+// CGameMode - the active game-state/mode object the manager drives once per
+// frame (RezMgr+0x2c). It is polymorphic; the per-frame tick calls TWO of its
+// virtuals: slot +0x10 (index 4) = Update() -> a frame-delta/status int, and
+// slot +0x14 (index 5) = Render()/PostUpdate() (void). The placeholder slots
+// 0..3 keep the slot indices correct; modeled external/no-body so the
+// `mov eax,[ecx]; call [eax+0x10]` / `call [edx+0x14]` indirect-virtual call
+// shapes fall out, reloc-masked.
+// ---------------------------------------------------------------------------
+class CGameMode {
+public:
+    virtual void v0();                 // +0x00
+    virtual void v1();                 // +0x04
+    virtual void v2();                 // +0x08
+    virtual void v3();                 // +0x0c
+    virtual int  Update();             // +0x10  (slot 4) - per-frame state step
+    virtual void Render();             // +0x14  (slot 5) - per-frame post-step
+};
+
+// ---------------------------------------------------------------------------
+// The per-frame global frame-clock state the tick + the clock-update helper
+// (RezMgr::UpdateClock @0x13ddc0) maintain. File-scope ints (reloc-masked):
+//   0x653c70 g_now        : last timeGetTime() sample
+//   0x653c74 g_frameDelta : ms elapsed since the previous frame
+// and the per-second frame-timing accumulators the tick advances:
+//   0x645580 g_lastNow    0x645584 g_lastDelta (clamped <= 0x64)
+//   0x645588 g_accumMs    : running accumulated frame-time
+//   0x64558c g_frameTicks : per-frame tick counter
+//   0x645590..0x6455a0    : five interval countdown timers (seeds
+//                           0x32/0x64/0xc8/0x190/0x1f4 ms), each decremented
+//                           by the clamped delta and reseeded when it expires.
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// RezMgr - the engine game manager (CGameApp::m_8, the WAP32 CGameMgr; engine
+// label CGruntzMgr - names are placeholders, only offsets + code bytes are
+// load-bearing). Allocated 0xa30 bytes and constructed via the ctor @0x83030;
+// the per-frame idle (CGameApp slot +0x20) tail-calls this object's vtable slot
+// +0x10 = PerFrameTick() @0x8b740 every frame (BYTE-EXACT, the heart of the game
+// loop). Its vftable is @ VA 0x5e9b64 (slot 0 dtor / +0x10 PerFrameTick @0x8b740 /
+// +0x14 .. / +0x38 UpdateClock @0x13ddc0). The ctor @0x83030 (438 B; new 0xa30 in
+// InitializeGameManager @0x80a20) installs that vftable + the +0xec/+0xf0 path
+// CStrings + the +0x150 sub-object - see docs/match-learnings.md for its full map
+// (deferred; store-order entropy). Pinned members:
+//   +0x2c  m_mode      : the active CGameMode* the tick drives (null => no-op)
+//   +0xb0  m_renderGate: when nonzero the tick SKIPS the post-step Render()
+//   +0xec  m_pathA     : a CString scratch buffer (assembled archive path #1)
+//   +0xf0  m_pathB     : a CString scratch buffer (assembled archive path #2)
 //   +0xf4  m_inGameDir : 1 if the CD drive letter == the current dir's drive
 //   +0xf8  m_haveRez   : the Gruntz.REZ / DATA-path archive was found
 //   +0xfc  m_haveMoviez: the MOVIEZ-path archive was found
-// MakeImageKey dispatches a resource load by file extension to the BMP/PCX/PID
-// loaders (members @0x144110 / 0x145110 / 0x145cd0). MakeRezPath assembles the
-// candidate archive paths and probes them with FileExists.
+// It is polymorphic (vptr @+0). MakeImageKey dispatches a resource load by file
+// extension to the BMP/PCX/PID loaders; MakeRezPath assembles candidate archive
+// paths and probes them with FileExists.
 // ---------------------------------------------------------------------------
 class RezMgr {
 public:
+    // The per-frame game tick (vtable slot +0x10 / index 4) @0x8b740.
+    virtual int  PerFrameTick();
+
     int  MakeImageKey(void *arg1, char *name, void *arg3);   // 0x13e5d0
     int  MakeRezPath();                                      // 0x091670
+
+    // The frame-clock advance helper (a non-virtual member, @0x13ddc0; also
+    // installed at vtable slot +0x38). External/no-body so its direct call is
+    // reloc-masked.
+    void UpdateClock();                        // 0x13ddc0
 
     // The extension-dispatch image loaders (external, reloc-masked).
     int  LoadBmp(void *a, void *b);            // 0x144110 (ret 8)
@@ -291,7 +341,12 @@ public:
     char GetGruntzDriveLetter();               // 0x8fa70 (ret)
     void ReportError(int msgId, int code);     // 0x8dc60 (ret 8)
 
-    char       m_pad0[0xec];   // +0x00..+0xeb
+    // --- layout (vptr occupies +0x00) ---------------------------------------
+    char       m_pad4[0x2c - 0x04];   // +0x04..+0x2b
+    CGameMode *m_mode;                // +0x2c  (active game-mode driven per frame)
+    char       m_pad30[0xb0 - 0x30];  // +0x30..+0xaf
+    int        m_renderGate;          // +0xb0  (nonzero => skip the post-step)
+    char       m_padb4[0xec - 0xb4];  // +0xb4..+0xeb
     AfxString  m_pathA;        // +0xec  (CString)
     AfxString  m_pathB;        // +0xf0  (CString)
     int        m_inGameDir;    // +0xf4

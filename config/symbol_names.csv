@@ -182,6 +182,12 @@ rva,name,unit
 # with FileExists. See src/Rez/RezMgr.cpp.
 0x13e5d0,?MakeImageKey@RezMgr@@QAEHPAXPAD0@Z,rezmgr
 0x091670,?MakeRezPath@RezMgr@@QAEHXZ,rezmgr
+# THE per-frame game tick (CGruntzMgr vtable slot +0x10, index 4) @0x8b740: the
+# heart of the game loop. The engine idle (CGameApp slot +0x20) tail-calls this
+# every frame. Drives the active CGameMode (m_2c->Update slot+0x10 -> int; if
+# !=0x11 advance the global frame-clock + 5 interval timers; m_b0 gate -> skip;
+# else m_2c->Render slot+0x14). See src/Rez/RezMgr.cpp.
+0x08b740,?PerFrameTick@RezMgr@@UAEHXZ,rezmgr
 
 # Image resolution path (src/Image). LoadFromRez is the file-extension dispatcher
 # (strrchr('.') + stricmp ladder .BMP/.PCX/.RID/.PID -> sibling loaders/default);
