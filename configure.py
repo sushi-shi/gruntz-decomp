@@ -31,6 +31,7 @@ config/symbol_names.csv), then re-run configure.py and ninja.
 
 import argparse
 import json
+import re
 import struct
 import sys
 import tomllib
@@ -38,6 +39,40 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parent
 MANIFEST = REPO / "config" / "units.toml"
+
+# Quoted local includes only (we don't track system/<...> includes - the MSVC
+# headers don't change between builds).
+_INCLUDE_RE = re.compile(r'^[ \t]*#[ \t]*include[ \t]*"([^"]+)"', re.M)
+
+
+def local_headers(source: str) -> list:
+    """Transitive set of repo-local headers a TU `#include "..."`s (repo-relative).
+
+    ninja's `cl` rule lists only the .cpp as input, so without these as implicit
+    deps a header-only edit (e.g. a struct-offset fix in a shared .h) does NOT
+    rebuild the dependent .obj - the matcher then diffs STALE code (a real trap;
+    see docs/match-learnings.md). We resolve quoted includes relative to each
+    file's own dir and emit the dependents so ninja rebuilds exactly the affected
+    units (not a coarse all-units rebuild)."""
+    seen: set[str] = set()
+    stack = [Path(source)]
+    while stack:
+        rel = stack.pop()
+        path = REPO / rel
+        try:
+            text = path.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        for inc in _INCLUDE_RE.findall(text):
+            try:
+                hrel = (path.parent / inc).resolve().relative_to(REPO)
+            except ValueError:
+                continue  # outside the repo (e.g. ../../usr) - skip
+            key = str(hrel)
+            if (REPO / hrel).exists() and key not in seen:
+                seen.add(key)
+                stack.append(hrel)
+    return sorted(seen)
 
 # scripts/ holds the vendored ninja_syntax helper; make it importable whether
 # configure.py is run from the repo root or elsewhere.
@@ -153,7 +188,8 @@ def emit_ninja(manifest: dict, out: Path) -> None:
             if u["cflags"] != global_cflags:
                 variables["cflags"] = " ".join(u["cflags"])
             w.build(obj, "cl", inputs=u["source"],
-                    implicit=[CC_WRAP], variables=variables)
+                    implicit=[CC_WRAP] + local_headers(u["source"]),
+                    variables=variables)
         w.newline()
 
         # TARGET (delink) half: one rule produces all in-scope <unit>.c.obj.
