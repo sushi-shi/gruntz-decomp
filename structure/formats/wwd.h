@@ -35,7 +35,11 @@
  * validate.
  */
 
-#include <stdint.h>
+/* MSVC 5.0 (1997) predates <stdint.h> (C99; MSVC added it in VS2010). This is a
+ * comprehension header, so just define the two fixed-width names it uses in terms
+ * of the native i386 types (int == long == 4 bytes under this target). */
+typedef unsigned int uint32_t;   /* 32-bit unsigned */
+typedef int          int32_t;    /* 32-bit signed   */
 
 /* -------------------------------------------------------------------------- */
 /* WWD level header — FULLY PINNED, size 1524 (0x5F4)                          */
