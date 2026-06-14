@@ -84,6 +84,64 @@ fast-moving scratchpad. Newest at top within each section.
   are already pinned by the two ctors. (Its dir/file branches DO confirm the new
   sizes 0x38/0x24 and that it calls ctor #2 / ctor #1 — consistent with the above.)
 
+### RezMgr path/key builders (extended `rezmgr` — +1 byte-exact, +1 documented plateau)
+- Added `?MakeImageKey@RezMgr@@QAEHPAXPAD0@Z` @0x13e5d0 (**BYTE-EXACT**, 177/177
+  bytes, 0 raw mismatches after trimming the 12 trailing-nop pad — verified via
+  `llvm-objdump` byte-compare, not just the 99.32% fuzzy) and
+  `?MakeRezPath@RezMgr@@QAEHXZ` @0x091670 (**PLATEAU 91.87%**, EH/CString
+  entropy). The class is the engine's **CGruntzMgr** (engine_labels), modeled as
+  `class RezMgr` here (names are placeholders); these two fns own the
+  archive-path / image-key building. The 4 prior rezmgr fns did NOT regress.
+- **`MakeImageKey(arg1, name, arg3)` is an extension DISPATCHER, not a key
+  concatenator** (the tomalla "key builder" label is loose): `ext =
+  strrchr(name,'.')` (engine `_strrchr` @0x120680), then a `stricmp` (engine
+  `_stricmp` @0x11fdf0, 0==match) `else-if` ladder on **`.BMP`@0x61a0e4 →
+  `.PCX`@0x61a0dc → `.PID`@0x61a0d4** (that is the in-code order; the prompt's
+  label listed them PCX/BMP/PID). Each match hands off to a __thiscall loader
+  (`LoadBmp`@0x144110 / `LoadPcx`@0x145110 both `ret 8` (arg1,name);
+  `LoadPid`@0x145cd0 `ret 0xc` (arg1,name,arg3)). Returns 1 on no-ext / no-match
+  / loader-success; returns 0 only when an ext matched but its loader returned 0.
+  The source shape `if (ext && stricmp(ext,X)==0) { if(!Load(...)) return 0; }
+  else if ...; return 1;` reproduces the per-branch **re-test of `ext != 0`**
+  (`test esi; je commonRet1`) and the shared `mov eax,1` tail; the `return 0`
+  reuses the dead loader-result reg (no `xor eax`). The searched string is the
+  **2nd** arg (`mov ebx,[esp+0xc]` after one push), not the 1st.
+- **`MakeRezPath()` layout facts** (RezMgr/CGruntzMgr): **`+0xec` CString
+  m_pathA** (assembled archive path #1), **`+0xf0` CString m_pathB** (path #2),
+  **`+0xf4` m_inGameDir** (= `GetGruntzDriveLetter()@0x8fa70 == cwd[0]`), **`+0xf8`
+  m_haveRez**, **`+0xfc` m_haveMoviez**. Algorithm: `GetCurrentDirectoryA(0xff,
+  cwd)` (→0 on fail); `m_inGameDir = drive==cwd[0]`; **main REZ**: `found=1`
+  default, `Format(&m_pathA,"%s\\%s",cwd,"Gruntz.REZ")`, if `!FileExists` then
+  if `drive` retry `"%c:\\DATA\\%s"` (set m_haveRez=1) else `found=0`; **FEC**:
+  build `"Gruntz.FEC"`@0x611044 + `"GruntzLo.FEC"`@0x611034, COW-copy-pick
+  `fec = g_lowDetail ? Lo : Hi` (CString copy-ctor @0x1b9ba3), `Format(&m_pathB,
+  "%s\\%s",cwd,fec)`, retry `fecHi` when `!m_inGameDir && !FileExists && !g_low`,
+  then `"%c:\\MOVIEZ\\%s"`@0x611024 when not yet found && drive (set m_haveMoviez);
+  if `!found` `ReportError(0x800b,0x43e)@0x8dc60` + return 0 else return 1. The
+  **low-detail/front-end-class global @0x6455d4** gates Lo-vs-Hi FEC. CString
+  helpers: ctor(lit) @0x1b9d4c, copy-ctor @0x1b9ba3, dtor @0x1b9cde, and the
+  cdecl `Format(CString*,fmt,...)` wrapper @0x1b2cf5 (defers to @0x1b2a4f).
+  FileExists = `0x1189c0` (the winapi one, via incremental-link thunk).
+- **`found` flag defaults to 1, set to 0 on failure** (NOT 0-then-set-1): the
+  target `mov $1,[esp_flag]` early then `mov [esp_flag],0` only on the
+  not-found tail — writing `found=0` first then 5 conditional `=1`s cascades the
+  branch polarity and the flag's init (`je`↔`jne`); the default-1 form took
+  87%→92%. (Same default-then-override idiom as InitializeDefaultCreateStruct.)
+- **PLATEAU residue = a single MSVC5 EH-state-tracking write.** The target
+  advances the C++ EH state to 0 inline (`mov [esp+ehstate],ebp`) **right before
+  the first CString::Format**, just after the `m_haveRez=0` store; my build emits
+  the same `m_haveRez=0` (`mov [esi+0xf8],ebp`) but OMITS that one inline
+  EH-state write, shifting alignment by one instr and cascading objdiff's
+  edit-distance (the rest re-syncs — it's a pure off-by-one). This is the MSVC5
+  EH-state scheduling over four overlapping CString live ranges; no source lever
+  reproduces a single funclet state-write without forging the exact funclet
+  table. Entropy-class; left per doctrine with the full logic in place.
+- UNLOCKED: the archive-resolution entry is now mapped — the BMP/PCX/PID image
+  loaders (@0x144110/0x145110/0x145cd0) and `Image::LoadFromRez`@0x175a90 (a .PID
+  consumer) have MakeImageKey as their dispatcher anchor; the CGruntzMgr archive
+  path members (+0xec..+0xfc) + `GetGruntzDriveLetter`/`ReportError` call surface
+  are pinned for the rest of the CGruntzMgr cluster.
+
 ### CFileIO — engine KERNEL32 file-stream class (unit `filestream`; 9/10 byte-exact)
 - New TU `src/Io/FileStream.cpp` (+ `FileStream.h`). This is the MFC **CFile**
   work-alike that gates ALL engine file I/O (RezMgr, WwdFile, save/load). The

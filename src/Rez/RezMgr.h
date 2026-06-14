@@ -79,6 +79,19 @@ struct RezNode;
 // 0x184e00 - the engine assert/trace sink: prints/logs the message string.
 extern "C" void RezAssertFail(const char *msg);     // 0x184e00
 
+// CRT-ish string helpers used by the RezMgr path/key builders (external,
+// no-body so their call displacements are reloc-masked).
+//   0x120680  strrchr(s, ch)   - find LAST occurrence of ch (used to find the
+//                                file extension dot).
+//   0x11fdf0  stricmp(a, b)    - case-insensitive compare, 0 on match.
+extern "C" char *RezStrrchr(const char *s, int ch);          // 0x120680
+extern "C" int   RezStricmp(const char *a, const char *b);   // 0x11fdf0
+
+// Win32 import used by MakeRezPath (minimal dllimport so the FF15 [IAT] call
+// shape falls out; do NOT pull in <windows.h>).
+extern "C" __declspec(dllimport) unsigned long __stdcall
+GetCurrentDirectoryA(unsigned long nBufferLength, char *lpBuffer);
+
 // ---------------------------------------------------------------------------
 // CRezItmBase - the shared node base (vtable @0x5ef768, parent ptr @+0xc).
 // Polymorphic so the vptr lands at +0x00 and the two-phase vtable stores fall
@@ -216,6 +229,74 @@ struct RezNode {
     RezNode *Next();    // 0x1848b0
     char         m_pad0[0x14];
     CRezDirNode *m_14;  // +0x14  (sub-dir node; Load recurses on it)
+};
+
+// ---------------------------------------------------------------------------
+// AfxString - the minimal MFC CString model (a single char* m_pchData @+0; an
+// `operator const char*` returning it). Ctor/copy/dtor/Format are external
+// engine NAFXCW helpers (reloc-masked):
+//   0x1b9d4c  CString::CString(const char*)   (__thiscall, ret 4)
+//   0x1b9ba3  CString::CString(const CString&)(__thiscall, ret 4; refcount/COW)
+//   0x1b9cde  CString::~CString()             (__thiscall, ret)
+//   0x1b2cf5  Format(CString*, const char* fmt, ...)  (__cdecl, the CString
+//             ref-arg as the first stack param) - the engine's CString::Format
+//             wrapper that defers to the v-formatter @0x1b2a4f.
+// Modeled so the path builder's CString churn is reloc-masked.
+// ---------------------------------------------------------------------------
+class AfxString {
+public:
+    AfxString(const char *s);          // 0x1b9d4c
+    AfxString(const AfxString &o);     // 0x1b9ba3
+    ~AfxString();                      // 0x1b9cde
+    operator const char *() const { return m_pchData; }
+    char *m_pchData;                   // +0x00
+};
+
+// Format(dst, fmt, ...) - the file-scope cdecl CString-format wrapper @0x1b2cf5
+// (takes the destination CString by address as its first stack arg).
+extern "C" void RezFormat(AfxString *dst, const char *fmt, ...);   // 0x1b2cf5
+
+// FileExists(szPath) - the Win32 OF_EXIST probe @0x1189c0 (Utils::WinAPI). Used
+// to test each candidate archive path. Returns nonzero if the file exists.
+extern "C" int RezFileExists(const char *szPath);   // 0x1189c0
+
+// A runtime "low-detail / front-end-class" selector global (binary @0x6455d4):
+// when nonzero the FEC archive lookup uses the GruntzLo.FEC variant path.
+extern int g_rezLowDetail;   // 0x6455d4
+
+// ---------------------------------------------------------------------------
+// RezMgr - the archive manager that owns the CRezDir tree and resolves resource
+// keys / archive paths. (Engine label: CGruntzMgr; names are placeholders, only
+// the offsets + code bytes are load-bearing.) The two builders here pin:
+//   +0xec  m_pathA   : a CString scratch buffer (the assembled archive path #1)
+//   +0xf0  m_pathB   : a CString scratch buffer (the assembled archive path #2)
+//   +0xf4  m_inGameDir : 1 if the CD drive letter == the current dir's drive
+//   +0xf8  m_haveRez   : the Gruntz.REZ / DATA-path archive was found
+//   +0xfc  m_haveMoviez: the MOVIEZ-path archive was found
+// MakeImageKey dispatches a resource load by file extension to the BMP/PCX/PID
+// loaders (members @0x144110 / 0x145110 / 0x145cd0). MakeRezPath assembles the
+// candidate archive paths and probes them with FileExists.
+// ---------------------------------------------------------------------------
+class RezMgr {
+public:
+    int  MakeImageKey(void *arg1, char *name, void *arg3);   // 0x13e5d0
+    int  MakeRezPath();                                      // 0x091670
+
+    // The extension-dispatch image loaders (external, reloc-masked).
+    int  LoadBmp(void *a, void *b);            // 0x144110 (ret 8)
+    int  LoadPcx(void *a, void *b);            // 0x145110 (ret 8)
+    int  LoadPid(void *a, void *b, void *c);   // 0x145cd0 (ret 0xc)
+
+    // CD/install helpers on the manager (external, reloc-masked).
+    char GetGruntzDriveLetter();               // 0x8fa70 (ret)
+    void ReportError(int msgId, int code);     // 0x8dc60 (ret 8)
+
+    char       m_pad0[0xec];   // +0x00..+0xeb
+    AfxString  m_pathA;        // +0xec  (CString)
+    AfxString  m_pathB;        // +0xf0  (CString)
+    int        m_inGameDir;    // +0xf4
+    int        m_haveRez;      // +0xf8
+    int        m_haveMoviez;   // +0xfc
 };
 
 #endif // SRC_REZ_REZMGR_H

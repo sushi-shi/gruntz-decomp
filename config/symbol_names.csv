@@ -153,3 +153,9 @@ rva,name,unit
 # the payload via the source stream's slot-2 virtual; recurses Load(1) into each
 # child sub-dir. See src/Rez/RezMgr.cpp.
 0x13a0f0,?Load@CRezDirNode@@QAEHH@Z,rezmgr
+# RezMgr path/key string builders (engine label CGruntzMgr). MakeImageKey
+# dispatches an image load by file extension (.BMP/.PCX/.PID) to the BMP/PCX/PID
+# loaders. MakeRezPath assembles the candidate archive paths and probes them
+# with FileExists. See src/Rez/RezMgr.cpp.
+0x13e5d0,?MakeImageKey@RezMgr@@QAEHPAXPAD0@Z,rezmgr
+0x091670,?MakeRezPath@RezMgr@@QAEHXZ,rezmgr

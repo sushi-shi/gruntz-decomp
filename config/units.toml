@@ -160,9 +160,12 @@ cflags = ["/nologo", "/c", "/O1", "/MT", "/GX"]
 # CONFIRMED). 3 BYTE-EXACT: CRezItm ctor @0x13c540, FindEntry @0x13c080 (a stat,
 # NOT a binary search), CRezDirNode::Load @0x13a0f0 (recursive walk + "File is
 # not sorted!" assert). CRezDir ctor @0x13c940 PLATEAUS at 78% on an MSVC5
-# constant-scheduling residue (all 14 stores correct; see RezMgr.cpp). OpenSub
-# @0x13b0c0 (568 B, a 3rd distinct node layout + heavy EH/CString/virtual
-# entropy) DEFERRED. /GX kept for the future OpenSub EH frame; /O2 engine code.
+# constant-scheduling residue (all 14 stores correct; see RezMgr.cpp). Extended
+# with the RezMgr/CGruntzMgr path/key builders: MakeImageKey @0x13e5d0 BYTE-EXACT
+# (ext-dispatch .BMP/.PCX/.PID image load) and MakeRezPath @0x091670 PLATEAU ~92%
+# (archive-path builder; a single MSVC5 EH-state write over 4 CString live ranges
+# - see RezMgr.cpp/docs). OpenSub @0x13b0c0 (568 B, a 3rd distinct node layout +
+# heavy EH/CString/virtual entropy) DEFERRED. /GX for the EH frames; /O2 engine.
 [[unit]]
 unit = "rezmgr"
 source = "src/Rez/RezMgr.cpp"
