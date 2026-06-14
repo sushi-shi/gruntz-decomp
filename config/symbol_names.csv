@@ -95,4 +95,8 @@ rva,name,unit
 0x1394a0,?GetValueString@RegistryHelper@Utils@@QAEPADPAD0PAI0@Z,registryhelper
 0x1395d0,?GetValueDword@RegistryHelper@Utils@@QAEKPADK@Z,registryhelper
 0x139330,?Close@RegistryHelper@Utils@@QAEXXZ,registryhelper
-0x139650,?GetRegistryKey@RegistryHelper@Utils@@SGHPAXPADPAPAX@Z,registryhelper
+0x139650,?GetRegistryKey@RegistryHelper@Utils@@QAEHPAXPADPAPAX@Z,registryhelper
+0x139210,?Open@RegistryHelper@Utils@@QAEHPAD000PAX0@Z,registryhelper
+0x139370,?InitializeLastKey@RegistryHelper@Utils@@QAEHPAD@Z,registryhelper
+0x1393b0,?SetValueString@RegistryHelper@Utils@@QAEHPAD0@Z,registryhelper
+0x139460,?SetValueDword@RegistryHelper@Utils@@QAEHPADK@Z,registryhelper
