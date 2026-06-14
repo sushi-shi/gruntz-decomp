@@ -215,6 +215,11 @@
             echo "[gruntz] clang      : $GRUNTZ_CLANG (unwrapped; gen_structs/gen_labels)"
             echo "[gruntz] cli        : 'gruntz <cmd>' (status/labels/structs/ghidra-refresh/todo)"
             echo "[gruntz] base/MSVC  : 'nix develop .#build' for 'gruntz build'/'init' (VC5 + wine)"
+            if [ ! -f "$GRUNTZ_DIR/build/clangd/compile_commands.json" ]; then
+              echo "[gruntz] clangd     : generating LSP compile DB (first entry) ..."
+              python3 "$GRUNTZ_DIR/scripts/gruntz.py" clangd \
+                || echo "[gruntz] clangd     : failed - run 'gruntz clangd'"
+            fi
           '';
         };
 

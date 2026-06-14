@@ -20,15 +20,18 @@ that points clang at the toolchain's MSVC/MFC/DirectX headers and asks it to
 
 MSVC 5.0 == `cl 11.00` == `_MSC_VER 1100`, hence `-fms-compatibility-version=11.00`.
 
-## Two separate compilation databases (they do not collide)
+## The compilation database
 
-| DB                                   | Producer        | Form               | Consumer                    |
-| ------------------------------------ | --------------- | ------------------ | --------------------------- |
-| `./compile_commands.json` (repo root)| `configure.py`  | `cl` under Wine    | the matching build / objdiff|
-| `build/clangd/compile_commands.json` | `gruntz/init/clangd.py` | `clang-cl` (clang) | clangd (this tooling)        |
+There is one `compile_commands.json`, in **clang-cl** form, for the clang-based
+tools:
 
-The committed `.clangd` points clangd at `build/clangd/` precisely so it never
-picks up the build's own repo-root DB.
+| DB                                   | Producer                | Form               | Consumer                          |
+| ------------------------------------ | ----------------------- | ------------------ | --------------------------------- |
+| `build/clangd/compile_commands.json` | `gruntz/init/clangd.py` | `clang-cl` (clang) | clangd, gen_structs, clangd_query |
+
+The matching build itself needs no compdb (`configure.py` emits only `build.ninja`
++ the objdiff project; ninja tracks deps). The committed `.clangd` points clangd
+at `build/clangd/`.
 
 ## Usage
 
