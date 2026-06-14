@@ -431,3 +431,23 @@ rva,name,class,prototype,kind,source,confidence
 0x050ce0,LoadVehicleGruntSprites,,[toy/vehicle grunt subset: BABYWALKER/GOKART/JACKINTHEBOX/JUMPROPE/POGOSTICK/SQUEAKTOY/YOYO grunts; CGrunt region],method,string-xref,med
 0x06c130,WireTileSwitchLogic,,"['No switch/trigger logic found for plate/switch at: x=%d, y=%d' + GAME_SECRETSWITCH/CrumbleTileDelay; level switch/trigger wiring; CUserLogic region]",method,string-xref,med
 0x0d2dd0,ValidateLevelTiles,,"[level-load validator emitting 'Bad <brickz/hold|multi|once-only|secret|time|toggle|up-down switch/trigger/pressure plate> at: x=%d, y=%d' diagnostics across all tile/switch/trigger types]",method,string-xref,med
+#
+# --- string-xref pass, batch 3: gameplay/asset loaders, MP & save UI ---
+0x0b3160,CKitchenSlime::LoadSprites,CKitchenSlime,[LEVEL_KITCHENSLIME_<dir> sprites + KitchenSlimeTimePerTile tuning; CKitchenSlime TU (CKitchenSlime::CKitchenSlime @0x0b23a0 abuts)],method,string-xref,med
+0x0b78b0,CNetMgr::SetupMultiplayerServices,CNetMgr,[MULTI_HOSTSERVICES/MULTI_JOINSERVICES + 'Game Name'/'Player Name'/'Service' lobby fields; CNetMgr TU (CNetMgr::CNetMgr @0x0b6000)],method,string-xref,med
+0x01e720,BuildPowerupIconKeys,,[assembles GAME_INGAMEICONZ_ + POWERUPZ_* HUD icon keys (sibling of LoadPowerupIconSprites @0x07c620)],free,string-xref,med
+0x01a040,LoadGruntEffectSprites,,[GAME_CYCLE100/EXPLOSION/GRUNTBOMBSPRINT/GRUNTFLEX/GRUNTTWITCH + INGAMEICONZ effect sprites],free,string-xref,med
+0x0fdc00,LoadBattlezItemConfig,,[toolz/toyz names + BrickzPercent/BrickzChance probabilities; Battlez map-item config (sibling of LoadBattlezMapConfig @0x025020)],free,string-xref,med
+0x0dc6d0,BuildGruntTypeNameTable,,[grunt-type name roster BABYWALKERGRUNT..YOYOGRUNT (~36); CGruntzMgr asset-key region],free,string-xref,med
+0x0dd540,BuildSpriteImageKeyTable,,[GRUNTZ_*/IMAGEZ_* per-grunt sprite/image namespace key table; CGruntzMgr asset-key region],free,string-xref,med
+0x0ddaa0,BuildAnizKeyTable,,[ANIZ_*/GRUNTZ_* animation namespace key table; CGruntzMgr asset-key region],free,string-xref,med
+0x057100,LoadGruntAbilityTuning,,[FreezeRadius/HealthRadius ability radii + GAME_ATTACK/FLASH/LIGHTING + LEVEL_ROLLINGBALL effect sprites; CUserLogic region],method,string-xref,med
+0x075e90,LoadTerrainTileSprites,,[GAME_/LEVEL_ DIRT/GAUNTLETBRICK/HIDDENITEM/WATER/ROCKBREAK destructible-terrain sprites; CUserLogic region],method,string-xref,med
+0x0e2980,LookupToolToyColorKey,,[<COLOR>TOOL/<COLOR>TOY ownership-tint lookup (17 colors); sibling of BuildToolToyColorKey @0x0e2400],free,string-xref,med
+0x105e40,LoadRezMachineConfig,,[Rez-machine (grunt foundry) tuning: GAME_REZMACHINE/REZBELTDROP/REZBELTRETRACT + Left/RightMachine*Delay attrs],method,string-xref,med
+0x106bb0,LoadChipMachineConfig,,[chip-foundry tuning: GAME_CHIPFALLOUT/CHIPLAND + FallingItem*/NextItem* timing attrs],method,string-xref,med
+0x0f9ea0,LoadGameAssetNamespaces,,"[loads GAME_ANIZ/IMAGEZ/SOUNDZ asset namespaces over AREA%i; builds 'Alpha Version, Build %i, Monolith Productions Inc.' banner]",free,string-xref,med
+0x0e3f40,DrawSaveGameMenu,,[save-slot UI: 'Saved Game #%i'/'(Empty)' + GAME_DELETE/INFO/OVERWRITE + 'ERROR - Cannot Save Game.'],method,string-xref,med
+0x045270,NotifyFortUnderAttack,,['ALERT - Your Fort is under attack!' Warlordz _PANIC notify (NotifyString/NotifyTimer); CWarlord/CFortressFlag region],method,string-xref,med
+0x0dba30,BuildMusicCategoryTable,,[AMBIENT%d/INTRO%d/CURSE/MIDIZ/MONOLITH/POWERUP music+ambient sound-category keys; CGruntzMgr region],free,string-xref,med
+0x09fe50,LoadMenuStateAssets,,[MENU_ACTIVATE/CURSOR/SELECT + STATEZ_MENU + IMAGEZ/SOUNDZ menu-state asset loader],method,string-xref,med
