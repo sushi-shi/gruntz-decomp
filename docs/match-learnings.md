@@ -42,6 +42,20 @@ fast-moving scratchpad. Newest at top within each section.
 - UNLOCKED: `GameWindowProc` @0x13cff0 (`?GameWindowProc@CGameApp@@SGJPAXIIJ@Z`,
   static __stdcall) now anchored in the TU; its body is in-scope.
 
+### Utils::RegistryHelper (config subsystem — unit `registryhelper`; 4 matched, more open)
+- Matched byte-exact (commit 76c2483): `GetValueString` @0x1394a0, `GetValueDword`
+  @0x1395d0, `Close` @0x139330, `GetRegistryKey` @0x139650 (static __stdcall).
+- Layout pinned: `+0x00` open/result gate (tested before queries; Close zeroes it);
+  `+0x08/+0x0c/+0x10/+0x14` a chain of nested HKEYs opened along the key path
+  (Close RegCloseKey's all, skipping +0x14 when == +0x18); `+0x18` the deepest/open
+  HKEY that the getters operate on.
+- Still open in `0x139xxx` (same `this`/header — EXTEND the TU, don't start new):
+  `Open` @0x139210 (4 key-name args + base HKEY + subkey → builds the chain via
+  GetRegistryKey), `InitializeLastKey` @0x139370, the `RegSetValueExA` writers
+  (SetValueDword/SetValueString), and a likely `GetValueBool`.
+- UNLOCKED (deps now matched): `LoadOptions` @0xb1b0, `SaveOptions` @0xb270,
+  `SaveOption` @0xb110 (all take `RegistryHelper*`).
+
 ## Matching idioms confirmed here (candidates for matching-patterns.md)
 - Member inits emit in the **optimizer's schedule order**, not declaration order
   (e.g. CGameApp stores +0x10 before +0x0c) — mirror that order in the source.
@@ -61,6 +75,20 @@ fast-moving scratchpad. Newest at top within each section.
   symbol SET small (the compiler hashes it; entropy follows header churn).
 - **`rep stosd` of N dwords** = a zero-init of an N-dword struct (e.g. WNDCLASSA =
   10 dwords); reproduce with an N-iteration `int*` zero loop.
+- **Calling-convention pick by `ret N`**: `ret` (c3) = __cdecl/void-arg or thiscall
+  no-args; `ret N` = callee-cleanup (__stdcall/__thiscall) with N bytes of stack
+  args. A `static` member with `ret N` is `static … __stdcall` (mangles `@@SG…`);
+  default `static` is __cdecl (`@@SA…`, `ret`) — match the `ret` to choose.
+- **Same dllimport called N× in one body** → MSVC5 caches the IAT slot in a reg
+  once (`mov edi,ds:[__imp]; call edi`), not N× `ff15 [IAT]`. Free if you just
+  call the function N times.
+- **`RegFn(...) == 0` bool return** → `neg eax; sbb eax,eax; inc eax`; write
+  `return Fn(...) == 0;`.
+- **`strcpy`+re-strlen** at `/O2 /Oi` inlines to `rep movsd/movsb` then a strlen
+  scan — no `call _strcpy`; write the plain `strcpy(dst,src); n = strlen(dst);`.
+- **Statement order is scheduled faithfully**: a store emitted *between* an arg
+  push and its `call` must be written *before* the call statement in source
+  (reordering it after the call shifts a byte).
 
 ## Blocked / deferred
 - (none yet — populate as matchers hit walls)
