@@ -49,12 +49,20 @@ fast-moving scratchpad. Newest at top within each section.
   `+0x08/+0x0c/+0x10/+0x14` a chain of nested HKEYs opened along the key path
   (Close RegCloseKey's all, skipping +0x14 when == +0x18); `+0x18` the deepest/open
   HKEY that the getters operate on.
-- Still open in `0x139xxx` (same `this`/header — EXTEND the TU, don't start new):
-  `Open` @0x139210 (4 key-name args + base HKEY + subkey → builds the chain via
-  GetRegistryKey), `InitializeLastKey` @0x139370, the `RegSetValueExA` writers
-  (SetValueDword/SetValueString), and a likely `GetValueBool`.
-- UNLOCKED (deps now matched): `LoadOptions` @0xb1b0, `SaveOptions` @0xb270,
-  `SaveOption` @0xb110 (all take `RegistryHelper*`).
+- **FULLY MATCHED 8/8** (commit 4a3600d adds `Open` @0x139210, `InitializeLastKey`
+  @0x139370, `SetValueString` @0x1393b0, `SetValueDword` @0x139460). Layout adds:
+  `+0x04` base HKEY (saved by Open), `+0x1c` char[0x100] (szKeyName2),
+  `+0x11c` char[0x100] (szLastKey); min size ≥0x21c.
+- `GetRegistryKey` @0x139650 is **__thiscall** (`?…@@QAEH…`), NOT static __stdcall —
+  even though its body never reads `this`/ecx (all args off stack, `ret 0xc`). Tell
+  is caller-side: callers emit a redundant `mov ecx,this` before each call;
+  declaring it static drops that and regresses every caller. (A thiscall that
+  ignores `this` == static-stdcall in the *callee* bytes, but callers differ.)
+- NOTE: `0x1396f0/0x139710/0x1397a0` are a DIFFERENT class (vtable@+0x1c), not
+  RegistryHelper. No `GetValueBool` exists in the cluster.
+- UNLOCKED & verifiable now: `LoadOptions` @0xb1b0 (5× GetValueDword), `SaveOption`
+  @0xb110 (SetValueDword), `SaveOptions` @0xb270, `SetDefaults` @0xb160,
+  `AdvancedOptionsDialogProc` @0xafb0 (the dialog TU).
 
 ## Matching idioms confirmed here (candidates for matching-patterns.md)
 - Member inits emit in the **optimizer's schedule order**, not declaration order
@@ -89,6 +97,15 @@ fast-moving scratchpad. Newest at top within each section.
 - **Statement order is scheduled faithfully**: a store emitted *between* an arg
   push and its `call` must be written *before* the call statement in source
   (reordering it after the call shifts a byte).
+- **Local-array (string literal) declaration POSITION drives scheduling**: declare
+  `char s[]="Software";` *just before its use*, not at function top — top
+  declaration scheduled the `.data`/`.rdata` 3-load copy idiom early and broke ~15%.
+- **`static __stdcall` vs `__thiscall`-ignoring-this**: identical callee bytes; the
+  ONLY difference is the caller's `mov ecx`. Decide by the caller, not the callee —
+  if callers set ecx, it's a (possibly this-ignoring) thiscall member.
+- **Invert a null-check to get `jne`**: writing the null/early path FIRST
+  (`if(!p){...} else ...`) emits `test;jne`; the `!=0` on a call result emits the
+  `neg/sbb/neg` 0/1 normalize.
 
 ## Blocked / deferred
 - (none yet — populate as matchers hit walls)
