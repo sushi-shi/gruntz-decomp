@@ -37,9 +37,12 @@
 #include "RezMgr.h"
 
 // ---------------------------------------------------------------------------
-// CRezItmBase::CRezItmBase(parent)  @ 0x13c4e0 (18 B).
-//   mov [this] = base vtbl (0x5ef768); mov [this+0xc] = parent.
-// Out-of-line so the derived ctors emit a `call` to it.
+// CRezItmBase::CRezItmBase(parent)
+//   mov [this] = base vtbl (0x5ef768); mov [this+0xc] = parent. Out-of-line so
+//   the derived ctors emit a `call` to it.
+//
+// @address: 0x13c4e0
+// @size:    0x12
 // ---------------------------------------------------------------------------
 CRezItmBase::CRezItmBase(void *parent)
 {
