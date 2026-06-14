@@ -159,3 +159,12 @@ rva,name,unit
 # with FileExists. See src/Rez/RezMgr.cpp.
 0x13e5d0,?MakeImageKey@RezMgr@@QAEHPAXPAD0@Z,rezmgr
 0x091670,?MakeRezPath@RezMgr@@QAEHXZ,rezmgr
+
+# Image resolution path (src/Image). LoadFromRez is the file-extension dispatcher
+# (strrchr('.') + stricmp ladder .BMP/.PCX/.RID/.PID -> sibling loaders/default);
+# CFileImage::Load{Bmp,Pcx,Pid} are the file-backed format consumers (CFileIO
+# Open/GetLength/operator new/Read/decode/free). See src/Image/Image.cpp.
+0x175a90,?LoadFromRez@CImage@@QAEHPADPAX1@Z,image
+0x144110,?LoadBmp@CFileImage@@QAEPAXPAD0@Z,image
+0x145110,?LoadPcx@CFileImage@@QAEPAXPAD0@Z,image
+0x145cd0,?LoadPid@CFileImage@@QAEPAXPAD0PAX@Z,image

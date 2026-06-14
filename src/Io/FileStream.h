@@ -104,6 +104,9 @@ public:
     void  Write(const void *lpBuf, unsigned int nCount);
     LONG  Seek(LONG lOff, int nFrom);
     LONG  GetPosition();
+    // GetLength @0x1bf505: virtual Seek-to-end/restore. Declared (no body here)
+    // so external callers (CFileImage) emit a reloc-masked `call rel32` to it.
+    unsigned int GetLength();
     void  Close();
 
     // The vtable pointer at +0x00 is implicit (virtual ~CFileIO()); do NOT

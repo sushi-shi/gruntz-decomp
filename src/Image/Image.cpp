@@ -1,0 +1,143 @@
+// Image.cpp - the engine's REZ -> image resolution path.
+//
+// Functions matched in this TU (RVAs in GRUNTZ.EXE):
+//   CImage::LoadFromRez       @ 0x175a90  (238 B, thiscall ret 0xc)  - ext dispatcher
+//   CFileImage::LoadBmp       @ 0x144110  (342 B, thiscall ret 8)    - .BMP file loader
+//   CFileImage::LoadPcx       @ 0x145110  (342 B, thiscall ret 8)    - .PCX file loader
+//   CFileImage::LoadPid       @ 0x145cd0  (304 B, thiscall ret 0xc)  - .PID file loader
+//
+// LoadFromRez is the file-extension DISPATCHER (the same idiom as
+// RezMgr::MakeImageKey @0x13e5d0): take ext = strrchr(name,'.'), then a stricmp
+// ladder on ".BMP"/".PCX"/".RID"/".PID", forwarding (name,a2,a3) verbatim to the
+// matching sibling loader; no/unknown extension -> the default loader. The four
+// extension literals are reloc-masked file-scope string globals; strrchr/stricmp
+// are the engine's CRT helpers (0x120680 / 0x11fdf0), called reloc-masked.
+//
+// CFileImage::Load{Bmp,Pcx,Pid} are the actual file consumers: construct a stack
+// CFileIO, Open(path,0,0), GetLength(), `operator new` a buffer, Read it, hand it
+// to a per-format decode helper, free the buffer, return the decoder's result.
+// They reuse the already-matched CFileIO class (Open/Read/GetLength/ctor/dtor are
+// reloc-masked engine calls) and the global operator new/delete. The CFileIO
+// stack object carries a dtor -> a C++ EH frame -> this TU builds with /GX.
+#include "Image.h"
+
+// The four file-extension literals (reloc-masked .rdata globals). Declared at
+// file scope so each `push OFFSET` matches the binary's direct-address push.
+static const char s_extBmp[] = ".BMP";   // @0x61a0e4
+static const char s_extPcx[] = ".PCX";   // @0x61a0dc
+static const char s_extRid[] = ".RID";   // @0x624278
+static const char s_extPid[] = ".PID";   // @0x61a0d4
+
+extern "C" char *strrchr(const char *s, int c);          // 0x120680
+extern "C" int   _stricmp(const char *a, const char *b); // 0x11fdf0
+
+// ---------------------------------------------------------------------------
+// CImage::LoadFromRez  @ 0x175a90 (238 B, thiscall ret 0xc).
+// ext = strrchr(name,'.'); dispatch on .BMP/.PCX/.RID/.PID, else default. Each
+// branch re-tests `ext != 0` (the target's `test esi; je default` per case) and
+// forwards (name,a2,a3); a matched ext returns its loader's result directly.
+// ---------------------------------------------------------------------------
+int CImage::LoadFromRez(char *name, void *a2, void *a3)
+{
+    char *ext = strrchr(name, '.');
+
+    if (ext && _stricmp(ext, s_extBmp) == 0)
+        return LoadBmp(name, a2, a3);
+    else if (ext && _stricmp(ext, s_extPcx) == 0)
+        return LoadPcx(name, a2, a3);
+    else if (ext && _stricmp(ext, s_extRid) == 0)
+        return LoadRid(name, a2, a3);
+    else if (ext && _stricmp(ext, s_extPid) == 0)
+        return LoadPid(name, a2, a3);
+
+    return LoadDefault(name, a2, a3);
+}
+
+// ---------------------------------------------------------------------------
+// CFileImage::LoadBmp  @ 0x144110 (342 B, thiscall ret 8).
+// Open the file named by `path`; on failure return 0. GetLength(); if the length
+// is zero return 0. `operator new` a buffer of that size; if it fails return 0.
+// Read the file; if the read count != length, free + return 0. Else decode and
+// return the decoder's result. The CFileIO dtor + buffer free run on every exit.
+// ---------------------------------------------------------------------------
+void *CFileImage::LoadBmp(char *name, char *path)
+{
+    CFileIO file;
+
+    if (!file.Open(path, 0, 0))
+        return 0;
+
+    unsigned int len = file.GetLength();
+    if (len == 0)
+        return 0;
+
+    void *buf = operator new(len);
+    if (!buf)
+        return 0;
+
+    if (file.Read(buf, len) != len) {
+        operator delete(buf);
+        return 0;
+    }
+
+    void *result = DecodeBmp(name, buf, len);
+    operator delete(buf);
+    return result;
+}
+
+// ---------------------------------------------------------------------------
+// CFileImage::LoadPcx  @ 0x145110 (342 B, thiscall ret 8).
+// Byte-identical to LoadBmp except for the per-format decode helper (DecodePcx).
+// ---------------------------------------------------------------------------
+void *CFileImage::LoadPcx(char *name, char *path)
+{
+    CFileIO file;
+
+    if (!file.Open(path, 0, 0))
+        return 0;
+
+    unsigned int len = file.GetLength();
+    if (len == 0)
+        return 0;
+
+    void *buf = operator new(len);
+    if (!buf)
+        return 0;
+
+    if (file.Read(buf, len) != len) {
+        operator delete(buf);
+        return 0;
+    }
+
+    void *result = DecodePcx(name, buf, len);
+    operator delete(buf);
+    return result;
+}
+
+// ---------------------------------------------------------------------------
+// CFileImage::LoadPid  @ 0x145cd0 (304 B, thiscall ret 0xc).
+// Like LoadBmp/LoadPcx, but: (1) it does NOT guard length==0 - it allocates the
+// buffer for whatever GetLength() returns and only null-checks the allocation;
+// (2) the decoder takes a fourth pass-through arg (a3). ret 0xc (this+name+path+a3).
+// ---------------------------------------------------------------------------
+void *CFileImage::LoadPid(char *name, char *path, void *a3)
+{
+    CFileIO file;
+
+    if (!file.Open(path, 0, 0))
+        return 0;
+
+    unsigned int len = file.GetLength();
+    void *buf = operator new(len);
+    if (!buf)
+        return 0;
+
+    if (file.Read(buf, len) != len) {
+        operator delete(buf);
+        return 0;
+    }
+
+    void *result = DecodePid(name, buf, len, a3);
+    operator delete(buf);
+    return result;
+}

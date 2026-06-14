@@ -142,6 +142,62 @@ fast-moving scratchpad. Newest at top within each section.
   path members (+0xec..+0xfc) + `GetGruntzDriveLetter`/`ReportError` call surface
   are pinned for the rest of the CGruntzMgr cluster.
 
+### Image resolution path (unit `image` — 4/4 BYTE-EXACT)
+- New TU `src/Image/Image.cpp` (+ `.h`). The REZ→image load path. All 4 fns
+  byte-exact (verified **0 non-reloc mismatches**, instruction counts equal:
+  97/106/106/95; fuzzy 99.3–99.95%, residue = reloc-masked operands only).
+- **`Image::LoadFromRez` @0x175a90 (238 B, __thiscall ret 0xc) = a SECOND ext
+  dispatcher, NOT a RezMgr resolver** (the tomalla "resolves a .PID via RezMgr"
+  label is wrong — the bytes have NO RezMgr/CFileIO call, only strrchr+stricmp).
+  Modeled as `CImage::LoadFromRez(char* name, void* a2, void* a3)`. Same idiom as
+  `MakeImageKey`: `ext = strrchr(name,'.')` (engine `_strrchr`@0x120680), then a
+  `_stricmp`@0x11fdf0 ladder on **`.BMP`@0x61a0e4 → `.PCX`@0x61a0dc →
+  `.RID`@0x624278 → `.PID`@0x61a0d4** (note the **4th extension `.RID`@0x624278**
+  — a new string, not in MakeImageKey's 3-way ladder), forwarding **(name,a2,a3)
+  verbatim** to one of FIVE sibling __thiscall loaders (all `ret 0xc`):
+  LoadBmp@0x175e40 / LoadPcx@0x176190 / LoadRid@0x176310 / LoadPid@0x1766a0 /
+  LoadDefault@0x1767d0 (no/unknown ext). Source shape
+  `if(ext && stricmp(ext,X)==0) return LoadX(...); else if ...; return Default(...)`
+  reproduces the per-branch **re-test of `ext != 0`** (`test esi; je default`) and
+  the tail-call shape exactly. The 5 siblings declared external/no-body (reloc-
+  masked). Sizes for a future Image-loader worker: 435/294/294/294/100 B.
+- **The prompt's loaders @0x144110/0x145110/0x145cd0 are a DIFFERENT class from
+  the dispatcher** — they `mov ebx,ecx` and run on a file-backed image class
+  (modeled `CFileImage`), NOT the CImage that owns LoadFromRez (whose siblings are
+  0x175e40…). Two image classes; names are placeholders, layout-free here (these
+  3 fns touch no `this` fields — `this` is only the decode-helper receiver).
+- **`CFileImage::LoadBmp`@0x144110 / `LoadPcx`@0x145110 (342 B, ret 8) are the
+  SAME function** (byte-identical save the FuncInfo reloc + the decode-helper call
+  target): `CFileIO f; if(!f.Open(path,0,0)) return 0; len=f.GetLength(); if(!len)
+  return 0; buf=operator new(len); if(!buf) return 0; if(f.Read(buf,len)!=len)
+  {delete buf; return 0;} r=DecodeX(name,buf,len); delete buf; return r;`. The
+  CFileIO stack object's dtor runs on EVERY exit (inlined Close under a C++ EH
+  frame ⇒ **/GX**). **`name`(arg1)→the decode key; `path`(arg2)→the file opened**
+  (Open reads arg2, Decode reads arg1) — two distinct args even though LoadFromRez
+  passes the same string to both slots.
+- **`CFileImage::LoadPid`@0x145cd0 (304 B, ret 0xc) is the same but (1) OMITS the
+  `len==0` guard** — it `operator new(len)`s unconditionally and only null-checks
+  the allocation (so write LoadPid WITHOUT the `if(len==0) return 0;`); **(2) the
+  decoder takes a 4th pass-through arg** `DecodePid(name,buf,len,a3)` (`ret 0xc`).
+  Decoder sizes (deferred, big loops): DecodeBmp@0x143fc0=322 B, DecodePcx@0x144ee0
+  =**549 B**, DecodePid@0x145b10=437 B — the actual format parsers, for a dedicated
+  worker. Declared external/no-body here (reloc-masked).
+- **Reused the already-matched CFileIO class verbatim** (`#include "../Io/
+  FileStream.h"`); added one external no-body decl `CFileIO::GetLength()`@0x1bf505
+  (the virtual-Seek-to-end length probe) to FileStream.h so CFileImage's call to it
+  reloc-masks (FileStream.cpp doesn't call it, so no body needed — the clean way to
+  expose an unmatched engine method to a sibling TU). The global `operator new`
+  @0x1b9b46 (MFC NAFXCW new-handler loop) / `operator delete`@0x1b9b82 link as
+  `??2@YAPAXI@Z`/`??3@YAXPAX@Z`; plain `new`/`delete` would add a null-check/ctor —
+  use the explicit `operator new(len)` / `operator delete(buf)` *function* forms to
+  get the bare `push len; call ??2; add esp,4` shape.
+- UNLOCKED: the image-format decode cluster is now anchored — the 3 decoders
+  (0x143fc0/0x144ee0/0x145b10) and the 5 CImage siblings (0x175e40/0x176190/
+  0x176310/0x1766a0/0x1767d0) have their dispatchers/wrappers in place; `.RID`
+  @0x624278 is a newly-identified 4th image extension. The CFileIO file-I/O path
+  is confirmed end-to-end through a higher-level consumer (Open/GetLength/Read all
+  link + match from CFileImage).
+
 ### CFileIO — engine KERNEL32 file-stream class (unit `filestream`; 9/10 byte-exact)
 - New TU `src/Io/FileStream.cpp` (+ `FileStream.h`). This is the MFC **CFile**
   work-alike that gates ALL engine file I/O (RezMgr, WwdFile, save/load). The

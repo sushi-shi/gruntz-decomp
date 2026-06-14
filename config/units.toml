@@ -172,6 +172,26 @@ source = "src/Rez/RezMgr.cpp"
 status = "wip"
 cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
 
+# --- Image resolution path (src/Image) --------------------------------------
+# The REZ -> image load path. CImage::LoadFromRez @0x175a90 is the file-extension
+# DISPATCHER (strrchr('.') + a stricmp ladder on .BMP/.PCX/.RID/.PID, forwarding
+# (name,a2,a3) to one of five sibling __thiscall loaders, else a default) - the
+# same idiom as RezMgr::MakeImageKey. The four extension literals are reloc-masked
+# file-scope globals; strrchr/stricmp are the engine CRT helpers. The five sibling
+# loaders are external/no-body (reloc-masked calls). CFileImage::Load{Bmp,Pcx,Pid}
+# (@0x144110/0x145110/0x145cd0) are the file-backed format consumers: stack CFileIO
+# Open/GetLength/`operator new`/Read/decode/free. The CFileIO stack object's dtor
+# carries a C++ EH frame -> /GX; engine code -> /O2.
+# 4/4 BYTE-EXACT (verified 0 non-reloc mismatches over 97/106/106/95 instrs each;
+# fuzzy 99.3-99.95%, residue = reloc-masked operands: the 4 ext-string globals,
+# strrchr/stricmp/operator new/delete/CFileIO calls, and the 5 sibling/3 decoder
+# call targets - the standard "reloc-masked but byte-exact" idiom).
+[[unit]]
+unit = "image"
+source = "src/Image/Image.cpp"
+status = "matched"
+cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+
 # --- Registry/config wrapper (src/Utils) ------------------------------------
 [[unit]]
 unit = "registryhelper"
