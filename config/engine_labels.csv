@@ -538,3 +538,33 @@ rva,name,class,prototype,kind,source,confidence
 0x0f8970,SFManager::SelectBestDevice,,"[SFMAN32.DLL SoundFont manager: enumerates devices, picks best by rating ('Best Device number is %d')]",free,decomp-xref,med
 0x0cf770,DrawDebugStats,,[debug overlay: 'Fps: %i'/'Objs: %i'/'Pos: %i %i'],free,decomp-xref,low
 0x090550,LaunchPortalExe,,['Monolith Productions'/Portal/portal_exe external-portal launcher],free,decomp-xref,low
+#
+# --- decomp-xref pass, batch 3: CGrunt anim resolvers, object/effect & state loaders ---
+0x045100,CGrunt::ResolveMovingAnimation,CGrunt,__thiscall(this) [resolves GRUNTZ_<type>_MOVING sprite -> this],method,decomp-xref,med
+0x0455f0,CGrunt::ResolveDeathAnimation,CGrunt,__thiscall(this) [resolves GRUNTZ_<type>_DEATH sprite],method,decomp-xref,med
+0x045960,CGrunt::ResolveIdleAnimation,CGrunt,__thiscall(this) [resolves GRUNTZ_<type>_IDLE sprite],method,decomp-xref,med
+0x045b60,CGrunt::ResolveBattlecryAnimation,CGrunt,__thiscall(this) [resolves GRUNTZ_<type>_BATTLECRY sprite],method,decomp-xref,med
+0x0457b0,CGrunt::ResolveAnimation,CGrunt,__thiscall(this) [generic GRUNTZ_<type>_<cat> sprite resolver],method,decomp-xref,low
+0x062e10,CGrunt::LoadIdleConfig,CGrunt,"__thiscall(this,a,b,c) [reads Grunt/IdleDelay attrs]",method,decomp-xref,med
+0x0633e0,CGrunt::LoadDefenderConfig,CGrunt,__thiscall(this) [reads Grunt/PlayerDefenderRadius attr],method,decomp-xref,med
+0x065630,LoadBombGruntRunConfig,,"__thiscall(this,a,b) [BOMBGRUNT RunningTimePerTile attr]",method,decomp-xref,med
+0x068520,LoadBombGruntRunConfig2,,__thiscall(this) [BOMBGRUNT RunningTimePerTile (variant)],method,decomp-xref,low
+0x11afb0,LoadGruntSpawnConfig,,__thiscall(this) [GruntPercent/GruntPriority Battlez spawn config],method,decomp-xref,med
+0x061cb0,Projectile::vfunc_9,,__thiscall(this) [vtable slot 9; Boomerang/Projectile/TimeBomb + AttackDowntime weapon config],vfunc,decomp-xref,med
+0x03fed0,CWormhole::LoadEntranceColor,CWormhole,__thiscall(this) [Wormhole EntranceColor tint],method,decomp-xref,med
+0x044f80,BuildFortSplashParticles,,__thiscall(this) [Particlez/LEVEL_FORTSPLASH fort-splash effect],method,decomp-xref,med
+0x1122a0,BuildRockBreakInGameText,,__thiscall(this) [Particlez/LEVEL_ROCKBREAK + InGameText],method,decomp-xref,med
+0x078960,LoadCameraSprite,,__thiscall(this) [GAME_CAMERASPRITE / DoNothing camera sprite],method,decomp-xref,med
+0x07a3f0,LoadToyBoxIcon,,__thiscall(this) [InGameIcon/GAME_TOYBOX toybox HUD icon],method,decomp-xref,med
+0x07b330,LoadExplosionSprites,,[GAME_EXPLOSION%d/Explosion sprite set],method,decomp-xref,med
+0x0db600,LoadActionTileSprites,,"__thiscall(this,a) [ACTION/TILEZ action-tile sprite load]",method,decomp-xref,med
+0x039160,CAttract::vfunc_10,CAttract,__thiscall(this) [vtable slot 0x0a; STATEZ_ATTRACT/TITLE attract virtual],vfunc,decomp-xref,med
+0x0391d0,LoadCreditzAssets,,__thiscall(this) [CREDITZ/MONOLITH credits-state assets],method,decomp-xref,med
+0x039dc0,LoadCreditzAssets2,,__thiscall(this) [MONOLITH/CREDITZ credits-state assets (variant)],method,decomp-xref,low
+0x036f30,LoadVideoResolutionConfig,,[reads Video Resolution '800x600'/'1024x768' display config],free,decomp-xref,med
+0x0370a0,SaveVideoResolutionConfig,,[writes Video Resolution '800x600'/'1024x768' display config],free,decomp-xref,med
+0x0de420,LoadLevelPreviewScreen,,__thiscall(this) [PREVIEW_%i/_SCREENZ_%s level-preview screen + GAME_TELEPORTEROPEN],method,decomp-xref,med
+0x0e4b60,SaveGameFile,,"__thiscall(this,a) ['Gruntz.sav' save-game file write]",method,decomp-xref,med
+0x01ec20,GetWarlordName,,[returns warlord name NAPOLEAN/PATTON/VIKING by index],free,decomp-xref,med
+0x0dd340,BuildWarlordNameTable,,[WARLORDZ_NAPOLEAN/PATTON/VIKING namespace table],free,decomp-xref,low
+0x0dd050,BuildGruntNamespaceList,,[NORMALGRUNT/DEATHZ/ENTRANCEZ/EXITZ/GRUNTPUDDLE/PICKUPS/BOMBGRUNT base namespace list],free,decomp-xref,low
