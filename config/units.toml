@@ -626,6 +626,36 @@ source = "src/Gruntz/SpriteLoaders.cpp"
 status = "wip"
 cflags = ["/nologo", "/c", "/O2", "/MT"]
 
+# --- Logic-type registrar (src/Gruntz/LogicTypeTable.cpp) --------------------
+# BuildLogicTypeTable @0x8a40 (200 B, __stdcall ret 4 - the builder object is the
+# single explicit stack arg, read into esi; NOT a __thiscall) - a one-shot
+# registrar that ensures three built-in tile-logic types are present. For each of
+# "LogicHit"/"LogicAttack"/"LogicBump" it looks the key up in the registry's
+# string-keyed table (the matched lookup helper @0x1b8008, external, addressed at
+# (obj->m_c->m_14)+0x10) and, if absent, calls the registry's virtual registrar
+# (vtable slot +0x24) with (factoryFn, key, 2). The three factory callbacks are
+# engine .text routines we do not match (the target's LAB_0056e4c0/d0/e0), declared
+# external/no-body so their pushed addresses emit reloc-masked DIR32 relocations;
+# the three key string literals match by value. Plain /O2 /MT (no /GX): scalar leaf.
+# THE LEVERS: (1) re-read obj->m_c->m_14 at BOTH the lookup and register sites of
+# each block (the target does NOT cache the registry pointer across them); (2) give
+# each of the three blocks its OWN `found` local (separate {} scopes) - the target
+# uses a distinct stack slot per block ([esp+4] for block 1, [esp+0xc] for 2&3),
+# which a single reused `found` would collapse to one slot.
+# BYTE-EXACT BODY, PLATEAU (objdiff strict-exact 0/1, ~88% fuzzy): the whole body -
+# all three lookup/register blocks, the (obj->m_c->m_14)+0x10 map addressing, the
+# [vtbl+0x24] registrar vcalls with (factoryFn,key,2), and the per-block slots -
+# is opcode-identical to the target (the base obj's 8 trailing bytes are COMDAT
+# alignment nops). The SOLE residue is the same MSVC5 scheduling coin-flip seen in
+# spriteloaders: the target SINKS each block's lookup-out-param zero-init store
+# (`mov [&found],0`) past the lea/push of &found, while our cl HOISTS it before -
+# the same instructions, permuted (byte-content identical). Kept wip (not strict-exact).
+[[unit]]
+unit = "logictypetable"
+source = "src/Gruntz/LogicTypeTable.cpp"
+status = "wip"
+cflags = ["/nologo", "/c", "/O2", "/MT"]
+
 # --- UnknownRemus leaf methods (src/Gruntz/UnknownRemus.cpp) -----------------
 # Five plain /O2 /MT leaves of the tomalla-named class UnknownRemus (its vtable
 # slot 0x38 is CGameLevel::LoadWwd, so this is a CGameLevel-family object). All
