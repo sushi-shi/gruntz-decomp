@@ -6,8 +6,8 @@ into byte-exact src/. This picks WHAT to match next: middle-small, leaf-first.
 
 Inputs (all already in the repo):
   config/engine_labels.csv         - labeled engine funcs (names/classes/protos)
-  config/symbol_names.csv          - the byte-MATCHED set (exclude: already done)
-  build/ghidra/exports/functions.csv - function boundaries + sizes
+  build/gen/symbol_names.csv       - the byte-MATCHED set (exclude: already done)
+  build/ghidra-enrich/exports/functions.csv - function boundaries + sizes
   config/library_labels.csv        - library funcs (exclude: not engine)
   build/patch-diff/validated_changed.pkl - 52 v1.01-changed funcs (exclude)
   $GRUNTZ_EXE (flake)              - scanned for E8 call edges (leaf-readiness)
@@ -25,7 +25,7 @@ from pathlib import Path
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
             Path(__file__).resolve().parent)
 EXE = Path(os.environ.get("GRUNTZ_EXE") or REPO / "build/exe/GRUNTZ.EXE")
-FUNCS = REPO / "build/ghidra/exports/functions.csv"
+FUNCS = REPO / "build/ghidra-enrich/exports/functions.csv"
 LABELS = REPO / "config/engine_labels.csv"
 MATCHED = REPO / "build/gen/symbol_names.csv"   # generated (was config/symbol_names.csv)
 FID = REPO / "config/library_labels.csv"

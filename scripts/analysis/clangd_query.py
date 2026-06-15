@@ -52,8 +52,15 @@ class Clangd:
         self._request("initialize", {
             "processId": os.getpid(),
             "rootUri": ROOT.as_uri(),
-            # workDoneProgress lets clangd report background-index progress
-            "capabilities": {"window": {"workDoneProgress": True}},
+            "capabilities": {
+                # workDoneProgress lets clangd report background-index progress
+                "window": {"workDoneProgress": True},
+                # ask for hierarchical DocumentSymbol[] (full body `range` +
+                # document-scoped) rather than the flat SymbolInformation[]
+                # (name-only ranges, leaks header symbols) - see document_symbols.
+                "textDocument": {"documentSymbol": {
+                    "hierarchicalDocumentSymbolSupport": True}},
+            },
         })
         self._notify("initialized", {})
 
@@ -122,6 +129,15 @@ class Clangd:
             "uri": path.as_uri(), "languageId": "cpp", "version": 1,
             "text": path.read_text(errors="replace"),
         }})
+
+    def document_symbols(self, path: Path) -> list:
+        """Hierarchical DocumentSymbol[] for a file: each node has a full-body
+        `range` (incl. the `{...}`), a name-only `selectionRange`, and nested
+        `children`. Used to recover per-function source extents for fingerprints.
+        """
+        self.open_file(path)
+        return self._request("textDocument/documentSymbol", {
+            "textDocument": {"uri": path.as_uri()}}) or []
 
     def close(self) -> None:
         try:
@@ -196,7 +212,7 @@ def main() -> None:
     # falls back to a generic command and every query silently degrades.
     if not CDB.is_file():
         sys.exit("[clangd-query] build/clangd/compile_commands.json not found - "
-                 "run `python3 scripts/gen_clangd.py` (inside `nix develop .#build`)")
+                 "run `gruntz clangd` (inside `nix develop .#build`)")
 
     lsp = Clangd()
     try:

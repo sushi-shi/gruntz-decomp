@@ -143,6 +143,23 @@ def cmd_build(args) -> None:
 
     summarize(json.loads(REPORT.read_text()))
 
+    # Non-fatal extras: refresh per-function source fingerprints (so regression
+    # checks can tell an edited function from a collateral drop), rewrite the
+    # README score block (3 metrics vs the full engine), and print regressions
+    # vs the committed best-% baseline. See scripts/match_status.py +
+    # docs/match-status.md. None of these gate the build.
+    scripts = REPO / "scripts"
+    if (REPO / "build" / "clangd" / "compile_commands.json").is_file():
+        subprocess.run([sys.executable, str(scripts / "func_fingerprints.py")],
+                       cwd=str(REPO))
+    subprocess.run([sys.executable, str(scripts / "match_status.py"),
+                    "--report", str(REPORT), "summary", "--write-readme"],
+                   cwd=str(REPO), stdout=subprocess.DEVNULL)
+    if (REPO / "config" / "match_baseline.tsv").is_file():
+        log("regressions vs baseline ...")
+        subprocess.run([sys.executable, str(scripts / "match_status.py"),
+                        "--report", str(REPORT), "check"], cwd=str(REPO))
+
 
 def cmd_labels(args) -> None:
     """Regenerate build/gen/symbol_names.csv from src @address + base objs."""

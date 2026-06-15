@@ -97,7 +97,7 @@ source diff, (2) entropy, (3) wrong toolchain SP/version (we target VC5 SP3 —
   Cheap, fans out wide, grows the partition and the roadmap. **Dispatch labelers
   first/broadly to map the territory.**
 - **Matcher** — byte-matches a function: writes `src/<Module>/<TU>.cpp` (+ headers),
-  runs the `rebuild.py` (ninja→objdiff) loop to byte-exact. Expensive, deep,
+  runs the `gruntz build` (cl→labels→delink→objdiff) loop to byte-exact. Expensive, deep,
   one function/TU at a time. **Dispatch matchers on *labeled* targets** (so the
   worker knows the function's identity + prototype before reading it),
   prioritized by Section 2.
