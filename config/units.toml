@@ -433,3 +433,71 @@ unit = "font"
 source = "src/Font/Font.cpp"
 status = "wip"
 cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+
+# --- Font-setup path: InitializeFonts (src/Gruntz/Fonts.cpp) ----------------
+# InitializeFonts @0x115810 (163 B) - a one-shot free function that loads the
+# four global bitmap Font instances (large/medium/small/tiny .fnt) via the matched
+# Font::LoadFont (@0x179830, font unit), each from a by-value CString temp built
+# from the .fnt literal. Gated by a load-once flag @0x64eb14 (returns 1 if already
+# set); a 0 LoadFont result aborts the chain. The four global Font objects
+# (@0x64eac0/eae8/eb00/ea58) + the flag + the .fnt literals (@0x6152c4/b4/a8/9c)
+# are addressed by fixed VA (reloc-masked).
+# BYTE-EXACT under reloc-masking (99.04% fuzzy): size 163 = target, 42 MATCH + 10
+# reloc-masked-arg of 52 instrs, ZERO structural diffs. The whole body (the
+# already-loaded `jne <shared-tail>`, the per-font in-place CString construction +
+# Font::LoadFont call + test/jne early-out routed to the shared `pop ecx; ret`, the
+# immediate `mov [flag],1`, and the shared `mov eax,1; pop ecx; ret` tail) is
+# opcode-exact.
+# THE LEVER (the by-value CString MUST construct in the outgoing arg slot, not a
+# copied temp): Font.h's CString needed a user-declared COPY CTOR
+# (??0CString@@QAE@ABV0@@Z) added - without it MSVC5 makes CString trivially
+# copyable, so it builds a NAMED temp, bit-copies it into the arg, and the CALLER
+# destroys the temp (a spurious ??1CString + neg/sbb/inc bool-normalize -> ~7%).
+# With the copy ctor MSVC5 must construct the arg in place (push ecx; mov ecx,esp;
+# mov [esp+4],esp; push str; call ctor) and the CALLEE (LoadFont, ret 4) owns +
+# destroys it - no caller dtor. GENERAL RULE: to make a by-value class arg
+# construct-in-place (callee-destroys), give the class a non-trivial (user-
+# declared) copy ctor; a trivially-copyable class is bit-copied + caller-destroyed.
+# THE OTHER LEVER: plain /O2 /MT (NO /GX). The callee owns the CString so the
+# caller has no temp to unwind - the target carries no fs:0 EH frame. Adding /GX
+# DEGRADES this fn (it forces a per-temp cleanup-cookie slot + breaks the shared
+# tail/immediate-flag-store -> 90.94%); without /GX the body is byte-exact.
+[[unit]]
+unit = "fonts"
+source = "src/Gruntz/Fonts.cpp"
+status = "matched"
+cflags = ["/nologo", "/c", "/O2", "/MT"]
+
+# --- Font-setup path: LoadFontConfig (src/Gruntz/FontConfig.cpp) -------------
+# CFontConfig::LoadFontConfig @0x218e0 (511 B, __thiscall ret 8) - builds three
+# GDI HFONTs (the ARIAL UI font fixed 12x8 bold; the TrainingFont; the MessageFont)
+# via CreateFontA (GDI32 IAT @0x6c3ebc, cached in edi + called indirectly 6x). The
+# Training/Message face names + width/height are read from the global CButeMgr
+# "Font" config group (@0x6453d8) through the matched GetStringDef/GetIntDef getters
+# (butemgr unit), defaulting to the ARIAL face + per-font default dims; each
+# CreateFontA has a fallback retry (NULL face / alt default dims) on failure. The
+# three HFONTs are stored at this+0x38/0x3c/0x40; the two ctor args at this+0x24/
+# 0x28. /GX: the ARIAL default-face CString temp (passed by address to GetStringDef
+# as both face lookups' default) is destroyed at the tail under a C++ EH frame (the
+# target opens an fs:0 EH frame: push -1 / push handler / mov fs:0,esp). CreateFontA
+# is a __stdcall dllimport; the CButeMgr getters / CString ctor+dtor are external/
+# reloc-masked.
+# BYTE-EXACT body, PLATEAU 90.85% fuzzy: 128 MATCH + 54 reloc-masked-arg of ~190
+# instrs; the deliverable (the 6 CreateFontA calls with their exact 14-arg shapes +
+# the GetStringDef/GetIntDef config reads + the +0x20..0x40 member stores + the EH
+# prologue/epilogue + the tail ??1CString dtor) is opcode-exact. The 15
+# structurally-misaligned rows are ALL from ONE optimizer-scheduling difference:
+# MSVC5 HOISTS the ARIAL default-face CString construction into the prologue
+# (independent of source declaration position - moving the `CString arial(...)`
+# decl later does NOT defer it), while the target builds it just-in-time before the
+# TrainingFont GetStringDef. That single hoist desyncs objdiff's global alignment
+# (a block of INSERTs at the top + DELETEs at the original site) and adds one stack
+# slot (the tail `add esp,0x10` vs target `add esp,0xc` + ~5 esp-relative operand
+# shifts) - the same insns, an irreducible MSVC5 schedule coin-flip, not a logic
+# error. GetStringDef is modeled returning a CString* (->m_pchData = the face char*,
+# the target's `mov eax,[eax]` deref); the ARIAL CString default is passed by addr.
+[[unit]]
+unit = "fontconfig"
+source = "src/Gruntz/FontConfig.cpp"
+status = "wip"
+cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]

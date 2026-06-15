@@ -53,7 +53,9 @@ class CFileException;            // PAVCFileException@@ - pointer only, opaque.
 
 class CString {
 public:
-    ~CString();                  // ??1CString@@QAE@XZ  @0x1b9cde
+    CString(const char *s);      // ??0CString@@QAE@PBD@Z  @0x1b9d4c
+    CString(const CString &o);   // ??0CString@@QAE@ABV0@@Z @0x1b9ba3 (refcount/COW)
+    ~CString();                  // ??1CString@@QAE@XZ     @0x1b9cde
     char *m_pchData;             // +0x00
 };
 
