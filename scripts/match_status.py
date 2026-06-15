@@ -143,7 +143,7 @@ def write_readme(block: str) -> None:
         README.write_text(text[:i] + "\n" + block + "\n" + text[i:])
 
 sys.path.insert(0, str(REPO / "scripts"))
-from func_fingerprints import cpp_hash, load_cache as load_fp_cache  # noqa: E402
+from func_fingerprints import CACHE as FP_CACHE, cpp_hash, load_cache as load_fp_cache  # noqa: E402
 
 
 # --------------------------------------------------------------------------- #
@@ -363,6 +363,19 @@ def cmd_check(args) -> int:
     if not base_funcs:
         sys.exit("no baseline yet - seed it: scripts/match_status.py update")
     fp, _ = fingerprinter()
+
+    # HONESTY GUARD: the baseline stores per-function fingerprints, but if the
+    # clangd cache is missing/stale fp() degrades to the unit's whole-.cpp hash
+    # for every function in that unit. That makes every baseline row look TOUCHED
+    # (fp mismatch) and SILENTLY HIDES real regressions. Warn loudly so a green
+    # "no regressions" is never mistaken for a real all-clear. Refresh with
+    # `gruntz build` (runs func_fingerprints) or `scripts/func_fingerprints.py`.
+    if not FP_CACHE.is_file():
+        print("WARNING: func-fingerprint cache absent "
+              f"({FP_CACHE.relative_to(REPO)}) - regression gate is DEGRADED to "
+              "whole-.cpp hashing; edited units mask ALL their functions as "
+              "TOUCHED, so regressions there are NOT flagged. Build the cache: "
+              "scripts/func_fingerprints.py", file=sys.stderr)
 
     buckets: dict[str, list] = {}
     for kind, unit, fn, pct, best in classify(cur, base_funcs, fp):
