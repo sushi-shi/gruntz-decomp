@@ -15,7 +15,7 @@ advancedoptions	5	5
 butemgr	11	8
 cplay	9	4
 deflate	6	6
-dialogs	4	3
+dialogs	4	4
 filestream	10	9
 font	4	2
 fontconfig	1	0
@@ -45,7 +45,7 @@ tiletriggerlogic	1	1
 trees	17	17
 uncompr	1	1
 winapi	4	3
-winmain	1	0
+winmain	1	1
 wwdfile	4	1
 zutil	2	2
 # [functions]	unit	function	best_pct	cur_pct	tries	src_hash
@@ -70,7 +70,7 @@ cplay	?OnRegion1@CPlay@@QAEHH@Z	100.0000	100.0000	1	b28d12d82892
 cplay	?OnRegion2@CPlay@@QAEHH@Z	100.0000	100.0000	1	d7aba437e508
 cplay	?OnRegion3@CPlay@@QAEHH@Z	100.0000	100.0000	1	9630a3b7d9c5
 cplay	?OnRegion4@CPlay@@QAEHH@Z	100.0000	100.0000	1	c6224fc37fd6
-cplay	?PlayCueAt@CPlay@@QAEXHHHHHHHH@Z	86.6993	86.6993	1	635d71da3212
+cplay	?PlayCueAt@CPlay@@QAEXHHHHHHHH@Z	87.5385	87.5385	2	3f45e096b172
 cplay	?Render@CPlay@@UAEHXZ	0.0000	0.0000	1	edbaeac282dd
 cplay	?StepC@CPlay@@QAEXXZ	85.4545	85.4545	1	8558c24efc54
 cplay	?StepInputA@CPlay@@QAEHXZ	89.8077	89.8077	1	31396ea65f4b
@@ -84,7 +84,7 @@ deflate	_read_buf	100.0000	100.0000	1	b66aa815658a
 dialogs	??0CBattlezDlg@@QAE@HPAVCWnd@@@Z	100.0000	100.0000	1	3b6ed9e8c17a
 dialogs	??0CBattlezDlgColors@@QAE@HHHPAVCWnd@@@Z	100.0000	100.0000	1	2a7221b0bead
 dialogs	??0CBattlezDlgCustom@@QAE@PAVCWnd@@@Z	100.0000	100.0000	1	93468f59a8f3
-dialogs	??0CMultiStartDlg@@QAE@HPAVCWnd@@@Z	96.0294	96.0294	1	16653f7b8dc4
+dialogs	??0CMultiStartDlg@@QAE@HPAVCWnd@@@Z	100.0000	100.0000	1	16653f7b8dc4
 filestream	??0CFileIO@@QAE@PAX@Z	100.0000	100.0000	1	7e74e5908d69
 filestream	??0CFileIO@@QAE@XZ	100.0000	100.0000	1	7e74e5908d69
 filestream	??1CFileIO@@UAE@XZ	100.0000	100.0000	1	dd4a1b039104
@@ -100,7 +100,7 @@ font	?AllocateMemory@Font@@QAEHH@Z	92.1429	92.1429	1	99414908efdb
 font	?FreeMemory@Font@@QAEXXZ	100.0000	100.0000	1	747de49130c0
 font	?LoadFont@Font@@QAEHVCString@@@Z	99.9242	99.9242	1	0c5fc1e64daa
 fontconfig	?LoadFontConfig@CFontConfig@@QAEHHH@Z	99.9735	99.9735	1	316f94fae03a
-fonts	?InitializeFonts@@YAHXZ	76.3461	76.3461	1	831c4f57cca2
+fonts	?InitializeFonts@@YAHXZ	77.3077	77.3077	1	831c4f57cca2
 gameapp	??0CGameApp@@QAE@XZ	100.0000	100.0000	2	71e69631f323
 gameapp	?CloseResources@CGameApp@@UAEXXZ	100.0000	100.0000	1	bafd9bf2aa0e
 gameapp	?FreeGameManager@CGameApp@@UAEXXZ	100.0000	100.0000	1	42fd10763438
@@ -195,7 +195,7 @@ registryhelper	?InitializeLastKey@RegistryHelper@Utils@@QAEHPAD@Z	100.0000	100.0
 registryhelper	?Open@RegistryHelper@Utils@@QAEHPAD000PAX0@Z	100.0000	100.0000	1	501c0036b277
 registryhelper	?SetValueDword@RegistryHelper@Utils@@QAEHPADK@Z	100.0000	100.0000	1	5573acb12c4a
 registryhelper	?SetValueString@RegistryHelper@Utils@@QAEHPAD0@Z	100.0000	100.0000	1	010e2a6410d1
-rezmgr	??0CRezDir@@QAE@PAX0@Z	78.9091	78.9091	1	3e4443eaa464
+rezmgr	??0CRezDir@@QAE@PAX0@Z	78.9091	78.9091	2	ec6c3586ded1
 rezmgr	??0CRezItm@@QAE@PAX@Z	100.0000	100.0000	1	e16047686783
 rezmgr	??0CRezItmBase@@QAE@PAX@Z	100.0000	100.0000	1	5da729c68d12
 rezmgr	?FindEntry@CRezDir@@QAEHPAD@Z	100.0000	100.0000	1	0354c6e449e7
@@ -228,7 +228,7 @@ winapi	?ActiveWait@WinAPI@Utils@@YAXI@Z	100.0000	100.0000	1	9a0562d46410
 winapi	?FileExists@WinAPI@Utils@@YAHPAD@Z	100.0000	100.0000	1	3e0d9cdd452b
 winapi	?GetGruntzDriveLetter@WinAPI@Utils@@YADXZ	98.4234	98.4234	1	f6c8bd6b46cd
 winapi	?IsGruntzCDInAnyDrive@WinAPI@Utils@@YAHXZ	100.0000	100.0000	1	7f0003761b25
-winmain	_WinMain@16	99.7531	99.7531	1	0a97de3e03b6
+winmain	_WinMain@16	100.0000	100.0000	2	226ad1be50fa
 wwdfile	?ReadPlane@CGameLevelPlanes@@QAEPAVCPlane@@PAX00@Z	99.5362	99.5362	1	7e3f25116428
 wwdfile	?WwdFile_CheckHeader@@YGHPBDPAX@Z	99.9872	99.9872	1	dcc408cb9dd9
 wwdfile	?WwdFile_IsValidWwd@@YGHPBDPAX@Z	100.0000	100.0000	1	d1c3540f2b07

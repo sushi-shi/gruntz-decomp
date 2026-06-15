@@ -177,7 +177,7 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         CheckExePath(szModulePath, 2, 0) != 0) {
         // 2. Single-instance guard: locate the prior window and, if present,
         //    restore it / forward a lobby-launch WM_COMMAND.
-        HWND hPrev = FindWindowA("GruntzClass", (LPCSTR)0x60aac8);
+        HWND hPrev = FindWindowA("GruntzClass", "Gruntz");
         if (hPrev != 0) {
             if (IsIconic(hPrev))
                 SendMessageA(hPrev, WM_SYSCOMMAND, SC_RESTORE, 0);
@@ -195,9 +195,9 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         GetFileVersionInfoA(szModulePath, 0, dwSize, pInfo);
         void *pValue;
         UINT  uLen;
-        VerQueryValueA(pInfo, (LPSTR)0x615690 /*"\StringFileInfo\040904B0\FileVersion"*/,
+        VerQueryValueA(pInfo, (LPSTR)"\\StringFileInfo\\040904B0\\FileVersion",
                        &pValue, &uLen);
-        VersionScan((const char *)pValue, (const char *)0x61567c /*"%d.%d.%d.%d"*/,
+        VersionScan((const char *)pValue, "%d, %d, %d, %d",
                     &g_version0, &g_version1, &g_version2, &g_version3);
         operator delete(pInfo);
     }
@@ -227,18 +227,18 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         bAdvanced = 1;
 
     if (lpCmdLine != 0) {
-        if (SubstringMatch(lpCmdLine, (LPCSTR)0x615670) != 0) bAdvanced = 1; // "advanced"
-        if (SubstringMatch(lpCmdLine, (LPCSTR)0x615664) != 0) bAdvanced = 1; // "optionz"
-        if (SubstringMatch(lpCmdLine, (LPCSTR)0x615658) != 0) bAdvanced = 1; // "ADVANCED"
-        if (SubstringMatch(lpCmdLine, (LPCSTR)0x611a10) != 0) bAdvanced = 1; // "OPTIONZ"
-        if (SubstringMatch(lpCmdLine, (LPCSTR)0x615654) != 0) bAdvanced = 1; // (token)
-        if (SubstringMatch(lpCmdLine, (LPCSTR)0x615650) != 0) bAdvanced = 1; // (token)
+        if (SubstringMatch(lpCmdLine, "advanced") != 0) bAdvanced = 1;
+        if (SubstringMatch(lpCmdLine, "optionz") != 0) bAdvanced = 1;
+        if (SubstringMatch(lpCmdLine, "ADVANCED") != 0) bAdvanced = 1;
+        if (SubstringMatch(lpCmdLine, "OPTIONZ") != 0) bAdvanced = 1;
+        if (SubstringMatch(lpCmdLine, "ADV") != 0) bAdvanced = 1;
+        if (SubstringMatch(lpCmdLine, "adv") != 0) bAdvanced = 1;
     }
 
     // 3e. If requested, run the Advanced Options modal; on it returning 0 (the
     //     "do not launch the game" result) tear the app down and exit.
     if (bAdvanced != 0) {
-        int nDlgResult = DialogBoxParamA(g_hInstance, (LPCSTR)0x61563c /*"CONFIG_ADVANCED"*/,
+        int nDlgResult = DialogBoxParamA(g_hInstance, "CONFIG_ADVANCED",
                                          0, (void *)&AdvancedOptionsDialogProc, 0);
         if (nDlgResult == 0) {
             if (g_pApp != 0)
@@ -250,7 +250,7 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
     // 3f. Init the app: Init(hInstance, "Gruntz", "Gruntz", cmdLine, 0,
     //     CW_USEDEFAULT, CW_USEDEFAULT). On failure tear down + return 0.
-    if (g_pApp->Init(hInstance, (LPCSTR)0x60aac8, (LPCSTR)0x60aac8, lpCmdLine,
+    if (g_pApp->Init(hInstance, "Gruntz", "Gruntz", lpCmdLine,
                      0, CW_USEDEFAULT, CW_USEDEFAULT) == 0) {
         if (g_pApp != 0)
             delete g_pApp;

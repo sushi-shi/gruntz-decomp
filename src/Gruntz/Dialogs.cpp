@@ -16,8 +16,12 @@
 
 // The global CGameRegistry (@0x64556c) CMultiStartDlg's ctor snapshots: it copies
 // g_gameReg->m_2c into the file-scope sink g_64bd5c (both reloc-masked DIR32).
-#define g_gameReg (*(int **)0x64556c)
-#define g_64bd5c  (*(int *)0x64bd5c)
+// Named externs so the DIR32 loads reloc-match the engine; @data names the
+// delinked target DATA symbol (RVA = VA - 0x400000).
+// @data: 0x24556c
+extern int *g_gameReg;   // the CGameRegistry pointer stored at VA 0x64556c
+// @data: 0x24bd5c
+extern int g_64bd5c;     // the file-scope int sink at VA 0x64bd5c
 
 // ---------------------------------------------------------------------------
 // CBattlezDlg::CBattlezDlg @0x14b30  (vftable @0x5e8bac)

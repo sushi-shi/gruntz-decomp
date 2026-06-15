@@ -83,7 +83,9 @@ class CButeMgr {
 public:
     int GetInt(char *tag, char *key);   // @0x171af0 (thiscall ret 8)
 };
-#define g_buteText ((CButeMgr *)0x6453d8)
+// @data: 0x2453d8
+extern CButeMgr g_buteMgr;
+#define g_buteText (&g_buteMgr)
 
 // ---- StepInputA / PlayCueAt leaf engine callees (free fns / reloc-masked). ----
 extern "C" {
@@ -577,20 +579,20 @@ void CPlay::PlayCueAt(int cueId, int a2, int a3, int a4, int a5,
 
     if (rectSrc != 0) {
         int *src = (int *)rectSrc;
-        int bottom = src[3] - g_buteText->GetInt((char *)0x60c818, (char *)0x612c14);
-        int right  = src[2] - g_buteText->GetInt((char *)0x60c818, (char *)0x612c04);
-        int top    = src[1] + g_buteText->GetInt((char *)0x60c818, (char *)0x612bf4);
-        int left   = src[0] + g_buteText->GetInt((char *)0x60c818, (char *)0x612be4);
+        int bottom = src[3] - g_buteText->GetInt("Font", "TextBottomEdge");
+        int right  = src[2] - g_buteText->GetInt("Font", "TextRightEdge");
+        int top    = src[1] + g_buteText->GetInt("Font", "TextTopEdge");
+        int left   = src[0] + g_buteText->GetInt("Font", "TextLeftEdge");
         SetRect(&rect, left, top, right, bottom);
     } else {
         // the viewport rect lives at m_c->m_24 + 0x10; that ptr (edx) does not
         // survive the GetInt calls, so all 4 corners are read up front.
         int *vp = (int *)((char *)m_c->m_24 + 0x10);
         int l = vp[0], t = vp[1], r = vp[2], b = vp[3];
-        int bottom = b - g_buteText->GetInt((char *)0x60c818, (char *)0x612c14);
-        int right  = r - g_buteText->GetInt((char *)0x60c818, (char *)0x612c04);
-        int top    = t + g_buteText->GetInt((char *)0x60c818, (char *)0x612bf4);
-        int left   = l + g_buteText->GetInt((char *)0x60c818, (char *)0x612be4);
+        int bottom = b - g_buteText->GetInt("Font", "TextBottomEdge");
+        int right  = r - g_buteText->GetInt("Font", "TextRightEdge");
+        int top    = t + g_buteText->GetInt("Font", "TextTopEdge");
+        int left   = l + g_buteText->GetInt("Font", "TextLeftEdge");
         SetRect(&rect, left, top, right, bottom);
     }
 

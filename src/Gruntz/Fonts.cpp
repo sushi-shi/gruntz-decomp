@@ -18,16 +18,21 @@
 // The four global Font instances + the load-once flag + the four .fnt file-name
 // literals, addressed by fixed VA so the loads reloc-mask against the matched
 // Font::LoadFont (@0x179830) and the CString literal-ctor (@0x1b9d4c).
-#define g_loadedFlag (*(int *)0x64eb14)
-#define g_largeFont  (*(Font *)0x64eac0)
-#define g_mediumFont (*(Font *)0x64eae8)
-#define g_smallFont  (*(Font *)0x64eb00)
-#define g_tinyFont   (*(Font *)0x64ea58)
+// @data: 0x24eb14
+extern int g_loadedFlag;
+// @data: 0x24eac0
+extern Font g_largeFont;
+// @data: 0x24eae8
+extern Font g_mediumFont;
+// @data: 0x24eb00
+extern Font g_smallFont;
+// @data: 0x24ea58
+extern Font g_tinyFont;
 
-#define s_large_fnt  ((const char *)0x6152c4)   // "large.fnt"
-#define s_medium_fnt ((const char *)0x6152b4)   // "medium.fnt"
-#define s_small_fnt  ((const char *)0x6152a8)   // "small.fnt"
-#define s_tiny_fnt   ((const char *)0x61529c)   // "tiny.fnt"
+#define s_large_fnt  "large.fnt"
+#define s_medium_fnt "medium.fnt"
+#define s_small_fnt  "small.fnt"
+#define s_tiny_fnt   "tiny.fnt"
 
 // ---------------------------------------------------------------------------
 // InitializeFonts @0x115810

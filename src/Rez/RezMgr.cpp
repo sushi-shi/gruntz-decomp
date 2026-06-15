@@ -68,10 +68,16 @@ CRezItm::CRezItm(void *parent) : CRezItmBase(parent)
     m_20 = -1;
 }
 
+// The embedded child-collection vftable both CRezDir sub-objects install (a
+// vftable in .rdata @0x5ef7c8; modeled as a labeled datum so taking its address
+// reloc-matches the engine instead of a bare 0x5ef7c8 immediate).
+// @data: 0x1ef7c8
+extern int g_rezDirChildVtbl;
+
 // ---------------------------------------------------------------------------
 // CRezDir::CRezDir(parent, rezMgr)
-// Base ctor, then: m_14=0, m_18=0, m_vtblA=m_vtblB=0x5ef7c8 (embedded child
-// collection's two vtables), m_20=m_24=m_28=m_34=0, derived vtbl @0x5ef7a8,
+// Base ctor, then: m_14=0, m_18=0, m_vtblA=m_vtblB=&g_rezDirChildVtbl (embedded
+// child collection's two vtables), m_20=m_24=m_28=m_34=0, derived vtbl @0x5ef7a8,
 // m_2c=rezMgr, m_30=1.
 //
 // @address: 0x13c940
@@ -81,8 +87,8 @@ CRezDir::CRezDir(void *parent, void *rezMgr) : CRezItmBase(parent)
 {
     m_14 = 0;
     m_18 = 0;
-    m_vtblA = (void *)0x5ef7c8;
-    m_vtblB = (void *)0x5ef7c8;
+    m_vtblA = (void *)&g_rezDirChildVtbl;
+    m_vtblB = (void *)&g_rezDirChildVtbl;
     m_20 = 0;
     m_24 = 0;
     m_28 = 0;

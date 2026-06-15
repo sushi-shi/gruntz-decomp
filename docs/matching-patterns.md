@@ -149,6 +149,53 @@ initializers in your source** to match the emitted schedule rather than the
 struct layout. *Proven: `CGameApp::CGameApp` @ 0x13d590 — source initializes
 `m_10` before `m_c`.*
 
+## [VERIFIED] Data references — strings, globals, statics, consts (NEVER `(T*)0xADDR`)
+
+Any reference to a fixed data address — a string literal, a global/static object,
+a read-only constant, a vftable — is an absolute **DIR32** relocation against a
+*named* data symbol. A `(T*)0xADDR` cast compiles to a bare `push 0xADDR` /
+`mov reg, 0xADDR` **immediate with no relocation**, so it can never match the
+engine's relocated operand (it caps the function below 100%). Recover the real
+construct instead:
+
+- **String** — write the C string literal (`GetInt("Font", "TextLeftEdge")`, not
+  `(char*)0x60c818`). The build labels the target string with cl.exe's pooled
+  `??_C@_0…` mangling — derived as an *oracle* from the base objects' own `??_C@`
+  symbols (`coff_oracle.py`/`synth_pdb`, no checksum reimplementation) — so it
+  matches by name. VC5 (no `/GF`) puts string literals in `.data`; passing a
+  literal to a `char*` parameter is fine under MSVC 5.
+
+- **Global / static / const / vtable** — declare a named `extern` with a
+  `// @data: 0xRVA` comment on the line ABOVE it (RVA = VA − 0x400000), then use
+  the name:
+
+      // @data: 0x2453d8
+      extern CButeMgr g_buteMgr;          // VA 0x6453d8
+      #define g_bute (&g_buteMgr)
+
+  `labels.py` runs clang on the declaration to get the exact MS-ABI mangled name
+  (`?g_buteMgr@@3VCButeMgr@@A` for C++, `_name` for `extern "C"`) — type-aware so
+  it matches cl.exe by construction — authority-checks it against the base obj's
+  symbols (including undefined externs), writes a `data` row to `symbol_names.csv`,
+  and `synth_pdb` names the delinked target DATA symbol to match. `apply.py` also
+  applies it as a Ghidra label (Ghidra demangles it for a readable DB). `// @data`
+  is DISTINCT from `// @address` (functions) so a non-matched global / clang
+  temp can't steal a function's address. A const adds the qualifier
+  (`extern const T …`); a vftable you can't class-model is labeled as a datum and
+  referenced by address (`extern int g_fooVtbl; … = (void*)&g_fooVtbl;`).
+  *Proven: g_buteMgr @0x6453d8, g_gameReg, the Font globals, CRezDir child vtable.*
+
+This relies on the delinker emitting **DIR32** (not REL32) for absolute operands
+— see PR `srp-survarium/vostok-delinker#11` (the gruntz flake pins that commit);
+calls/jumps stay REL32.
+
+**Value constants** (flag bits, IDs, sizes, Win32 constants) are NOT addresses —
+a magic number compiles to identical bytes whether named or not, so matching is
+unaffected. Still, name the ones whose meaning is clear (`HKEY_LOCAL_MACHINE`,
+`KEY_ALL_ACCESS`, flag bits, ms intervals) for a faithful, readable decomp; leave
+genuinely opaque game IDs as raw hex (a short `/* */` note if inferable). The
+original authors did not sprinkle magic numbers everywhere.
+
 ## [VERIFIED] Bulk zero of a contiguous region ⇒ `rep stosd`
 
 A large contiguous run of zeroed members (an embedded array/buffer) compiles to
