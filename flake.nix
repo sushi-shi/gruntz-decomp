@@ -10,7 +10,10 @@
     };
 
     vostok-delinker-src = {
-      url = "github:srp-survarium/vostok-delinker/8be29fb601874880de51bf221b3b3159772c26af";
+      # PR srp-survarium/vostok-delinker#11 (fix/absolute-data-relocs): emit DIR32
+      # for absolute data/code refs, keep REL32 for branches. Pinned to the branch
+      # commit until it lands on master.
+      url = "github:srp-survarium/vostok-delinker/8a42a0ba6f6b90651d62d1911eb97b80a5faa149";
       flake = false;
     };
   };

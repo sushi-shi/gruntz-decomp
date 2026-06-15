@@ -95,7 +95,11 @@ def main() -> None:
          "--out-yaml", str(named_yaml),
          "--out-pdb", str(named_pdb),
          "--bucket-shift", str(BUCKET_SHIFT),
-         "--names-map", str(names)],
+         "--names-map", str(names),
+         # cl.exe base objs: oracle for MSVC ??_C@ string-pool names. The build
+         # DAG runs base compile -> gen_labels -> symbol_names.csv -> delink, so
+         # they exist here (apply_string_names degrades gracefully if not).
+         "--base-dir", str(target_dir.parent / "base")],
         check=True,
     )
 

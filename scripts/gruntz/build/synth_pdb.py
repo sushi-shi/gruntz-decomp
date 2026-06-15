@@ -450,6 +450,35 @@ def patch_symbol_records_stream(pdb_path, target_stream_index):
     return off, cur
 
 
+def apply_string_names(rdata_syms, data_syms, exe_path, base_dir):
+    """Rename string-constant data symbols to their MSVC ??_C@... pool names.
+
+    Ghidra labels string literals `DAT_<addr>` / `s_<text>_<addr>`; cl.exe names
+    them `??_C@_0<len>@<crc>@<text>@` (a 16-bit checksum on VC5 we do not try to
+    recompute). The base objects ARE cl.exe output, so their ??_C@ symbols give
+    the exact name for each literal's bytes - we read each candidate symbol's
+    bytes from the EXE and look the name up there. Mutates the lists in place;
+    returns the count renamed.
+    """
+    from coff_oracle import Exe, build_string_map
+    from pathlib import Path
+
+    str_map = build_string_map(Path(base_dir))   # {string bytes -> ??_C@ name}
+    if not str_map:
+        return 0
+    exe = Exe(Path(exe_path))
+    n = 0
+    for syms in (rdata_syms, data_syms):
+        for i, (rva, name) in enumerate(syms):
+            if name.startswith("??_C@"):
+                continue
+            cs = exe.cstring(rva + exe.base)
+            if cs and cs in str_map:
+                syms[i] = (rva, str_map[cs])
+                n += 1
+    return n
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--exe", required=True,
@@ -474,6 +503,11 @@ def main():
                          "symbol and groups them into a per-unit <unit>.c.obj (requires "
                          "--bucket-shift>0). The optional @size column synthesizes a "
                          "function record for any matched RVA absent from functions.csv.")
+    ap.add_argument("--base-dir",
+                    help="dir of cl.exe-compiled base objects (build/objdiff/base). "
+                         "Their ??_C@... string-pool symbols are used as an oracle to "
+                         "rename string constants from Ghidra's DAT_/s_ placeholders to "
+                         "the exact MSVC mangling, so source string literals match.")
     args = ap.parse_args()
 
     read_sections(args.exe)
@@ -484,6 +518,10 @@ def main():
     names_map = read_names_map(args.names_map)
     funcs = read_functions(args.functions, names_map)
     rdata_syms, data_syms = read_data_symbols(args.symbols)
+    if args.base_dir:
+        nstr = apply_string_names(rdata_syms, data_syms, args.exe, args.base_dir)
+        print("[synth_pdb] renamed %d string constant(s) to MSVC ??_C@ names" % nstr,
+              file=sys.stderr)
     print("[synth_pdb] functions: %d  rdata: %d  data: %d  named: %d"
           % (len(funcs), len(rdata_syms), len(data_syms), len(names_map)),
           file=sys.stderr)

@@ -41,15 +41,17 @@ public:
 };
 #define g_bute ((CButeMgr *)0x6453d8)
 
-// The font config-string literals (the "Font" tag-group + per-font keys).
-#define s_Font               ((char *)0x60c818)        // "Font"
-#define s_ARIAL              ((const char *)0x60c830)  // "ARIAL"
-#define s_TrainingFont       ((char *)0x60c820)
-#define s_TrainingFontWidth  ((char *)0x60c800)
-#define s_TrainingFontHeight ((char *)0x60c7e8)
-#define s_MessageFont        ((char *)0x60c7d8)
-#define s_MessageFontWidth   ((char *)0x60c7c4)
-#define s_MessageFontHeight  ((char *)0x60c7ac)
+// The font config strings - the original source literals (the "Font" tag-group
+// + per-font keys). objdiff matches these relocations by value against the
+// target's .data string constants.
+#define s_Font               "Font"
+#define s_ARIAL              "ARIAL"
+#define s_TrainingFont       "TrainingFont"
+#define s_TrainingFontWidth  "TrainingFontWidth"
+#define s_TrainingFontHeight "TrainingFontHeight"
+#define s_MessageFont        "MessageFont"
+#define s_MessageFontWidth   "MessageFontWidth"
+#define s_MessageFontHeight  "MessageFontHeight"
 
 // ---------------------------------------------------------------------------
 // The font-config object the method operates on. Only the load-bearing member
