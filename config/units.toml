@@ -598,3 +598,30 @@ unit = "unknownhagrid"
 source = "src/Gruntz/UnknownHagrid.cpp"
 status = "matched"
 cflags = ["/nologo", "/c", "/O2", "/MT"]
+
+# --- UnknownDraco leaf cleanup method (src/Gruntz/UnknownDraco.cpp) -----------
+# One plain /O2 /MT leaf of the tomalla-named ddrawmgr sub-manager UnknownDraco.
+# VirtualMethodUnknown1C @0x158ac0 is a destruct/reset hook: for each owned child
+# pointer at +0x10/+0x14/+0x18, if non-null it dispatches the child's scalar-
+# deleting destructor (vtbl +0x4, arg 1) then nulls the slot. NO SEH frame, NO
+# relocations - touches only member offsets and the children's own vtables.
+[[unit]]
+unit = "unknowndraco"
+source = "src/Gruntz/UnknownDraco.cpp"
+status = "matched"
+cflags = ["/nologo", "/c", "/O2", "/MT"]
+
+# --- UnknownHermiona leaf broadcast methods (src/Gruntz/UnknownHermiona.cpp) --
+# Two plain /O2 /MT leaves of the tomalla-named ddrawmgr sub-manager
+# UnknownHermiona. Each walks the intrusive singly-linked list anchored at +0x14
+# (node next-ptr @0, child object @8), dispatching one of the child's sibling
+# virtuals with the three forwarded args, then dispatches the object's own +0x2c
+# virtual with two of them. Differ only in the per-node child slot. NO SEH frame,
+# NO relocations - touch only the +0x14 anchor, node offsets, and vtables:
+#   VirtualMethodUnknown30 @0x159cf0 - per node child +0x34, then self +0x2c
+#   VirtualMethodUnknown34 @0x159d40 - per node child +0x38, then self +0x2c
+[[unit]]
+unit = "unknownhermiona"
+source = "src/Gruntz/UnknownHermiona.cpp"
+status = "wip"
+cflags = ["/nologo", "/c", "/O2", "/MT"]
