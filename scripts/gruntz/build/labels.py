@@ -18,7 +18,11 @@ derived (docs/source-consolidation-investigation.md, §4 / step 2):
          not contractually VC5 - the nm membership check is what makes it safe.)
   5. unit comes from config/units.toml via the source path.
 
-Output: build/gen/symbol_names.csv  (rva,name,unit) - drop-in for synth_pdb.
+Output: build/gen/symbol_names.csv  (rva,name,unit,size) - drop-in for synth_pdb.
+The `size` column is the `// @size: 0xNN` byte extent from the same comment block
+(empty if absent); synth_pdb uses it as the authoritative boundary for matched
+functions Ghidra's auto-analysis never recovered, so a single build is
+self-contained (no ghidra-refresh round-trip needed to delink them).
 
 Without --obj the authority check is skipped (candidate names emitted with a
 WARN) - useful for inspecting clang's mangling against config/symbol_names.csv
@@ -43,6 +47,7 @@ MS_FLAGS = [f"--target={TARGET}", f"-fms-compatibility-version={MSC_COMPAT}",
 
 ADDR_RE = re.compile(r"@address:\s*(0x[0-9a-fA-F]+)")
 SYM_RE = re.compile(r"@symbol:\s*(\S+)")
+SIZE_RE = re.compile(r"@size:\s*(0x[0-9a-fA-F]+|\d+)")
 FUNC_KINDS = {"FunctionDecl", "CXXMethodDecl", "CXXConstructorDecl",
               "CXXDestructorDecl", "CXXConversionDecl"}
 
@@ -90,11 +95,13 @@ def collect_defs(ast, want=FUNC_KINDS):
 
 
 def scan_annotations(text):
-    """Return [(rva, line, symbol_override_or_None)].
+    """Return [(rva, line, symbol_override_or_None, size_or_None)].
 
-    `@address` and an optional `@symbol` associate only when they share the same
-    contiguous `//` comment block (so one block's @symbol never leaks onto the
-    next block's @address across an intervening code line).
+    `@address` and the optional `@symbol`/`@size` associate only when they share
+    the same contiguous `//` comment block (so one block's @symbol/@size never
+    leaks onto the next block's @address across an intervening code line). `@size`
+    is the exact byte extent of the matched function (the authoritative boundary
+    the synth-PDB falls back on for functions Ghidra never recovered as objects).
     """
     out = []
     lines = text.splitlines()
@@ -107,6 +114,7 @@ def scan_annotations(text):
         j = i
         block_addrs = []
         block_sym = None
+        block_size = None
         while j < n and lines[j].lstrip().startswith("//"):
             ma = ADDR_RE.search(lines[j])
             if ma:
@@ -114,9 +122,13 @@ def scan_annotations(text):
             ms = SYM_RE.search(lines[j])
             if ms:
                 block_sym = ms.group(1)
+            mz = SIZE_RE.search(lines[j])
+            if mz:
+                s = mz.group(1)
+                block_size = int(s, 16) if s.lower().startswith("0x") else int(s)
             j += 1
         for rva, ln in block_addrs:
-            out.append((rva, ln, block_sym))
+            out.append((rva, ln, block_sym, block_size))
         i = j
     return out
 
@@ -193,7 +205,7 @@ def main():
     if not args.unit and Path(args.units_toml).exists():
         unit_map = units_from_toml(args.units_toml)
 
-    rows = []          # (rva, name, unit)
+    rows = []          # (rva, name, unit, size)
     misses = []        # (rva, candidate, unit, reason)
     for i, tu in enumerate(args.tu):
         text = Path(tu).read_text()
@@ -218,7 +230,7 @@ def main():
         addrs = scan_annotations(text)
         obj_syms = nm_symbols(args.obj[i], args.nm) if i < len(args.obj) else None
 
-        for rva, line, override in addrs:
+        for rva, line, override, size in addrs:
             # nearest definition strictly below the @address comment line
             cand = next((mn for (mn, dl) in defs if dl >= line), None)
             name = override or cand
@@ -226,20 +238,20 @@ def main():
                 misses.append((rva, None, unit, "no definition below @address"))
                 continue
             if obj_syms is None:                  # no authority check (inspection)
-                rows.append((rva, name, unit))
+                rows.append((rva, name, unit, size))
                 continue
             if name in obj_syms:                  # clang candidate confirmed
-                rows.append((rva, name, unit))
+                rows.append((rva, name, unit, size))
                 continue
             if override:                          # trust explicit @symbol
-                rows.append((rva, name, unit))
+                rows.append((rva, name, unit, size))
                 continue
             # clang's AST mangledName misses the destructor (it emits the
             # `??_D vbase dtor` variant, not the real `??1`). Resolve the canonical
             # `??1<class>@@...@XZ` directly from the obj's code symbols.
             resolved = plain_dtor_symbol(name, obj_syms)
             if resolved:
-                rows.append((rva, resolved, unit))
+                rows.append((rva, resolved, unit, size))
             else:
                 misses.append((rva, name, unit, "candidate not in base obj"))
 
@@ -247,9 +259,14 @@ def main():
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     with out.open("w") as f:
-        f.write("rva,name,unit\n")
-        for rva, name, unit in rows:
-            f.write(f"0x{rva:06x},{name},{unit}\n")
+        # `size` is the @size byte extent (hex), the authoritative boundary the
+        # synth-PDB uses for matched functions Ghidra's auto-analysis never
+        # recovered as objects (so a single build is self-contained). Empty when
+        # a row carries no @size (then the existing functions.csv boundary wins).
+        f.write("rva,name,unit,size\n")
+        for rva, name, unit, size in rows:
+            size_s = f"0x{size:x}" if size else ""
+            f.write(f"0x{rva:06x},{name},{unit},{size_s}\n")
     log(f"wrote {len(rows)} label(s) -> {out}")
     for rva, cand, unit, why in misses:
         log(f"  MISS 0x{rva:x} [{unit}] {why}" + (f" (cand {cand})" if cand else ""))

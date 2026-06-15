@@ -91,39 +91,58 @@ def sanitize_name(name: str) -> str:
 
 
 def read_names_map(path):
-    """Read the curated RVA -> (symbol name, source unit) overlay.
+    """Read the curated RVA -> (symbol name, source unit, size) overlay.
 
-    The CSV has columns ``rva,name,unit`` (rva hex, e.g. ``0x1882d0``). This is
-    the human-grown mapping at the heart of the matching loop: it renames the
+    The CSV has columns ``rva,name,unit[,size]`` (rva hex, e.g. ``0x1882d0``;
+    size hex from the src ``// @size:`` annotation, possibly empty). This is the
+    human-grown mapping at the heart of the matching loop: it renames the
     delinker's address-named ``FUN_<rva>`` placeholders to the real source
     symbols (``_adler32``) and records WHICH translation unit each belongs to,
     so the delinker can emit one ``<unit>.c.obj`` per source TU instead of
-    address-bucketed segs. Returns ``{rva: (name, unit)}``; empty if no path.
+    address-bucketed segs. The optional ``size`` is the authoritative byte extent
+    used to SYNTHESIZE a function record for a matched RVA that Ghidra's
+    auto-analysis never recovered as an object (so it is absent from
+    functions.csv) - this keeps a single build self-contained.
+
+    Returns ``{rva: (name, unit, size)}`` (size is an int, 0 when absent/empty);
+    backward-tolerant of a 3-column ``rva,name,unit`` CSV. Empty if no path.
     """
     overlay = {}
     if not path:
         return overlay
     with open(path, newline="") as f:
         # Drop full-line '#' comments before the header so DictReader binds the
-        # real 'rva,name,unit' columns (the CSV is documented with a comment
-        # preamble).
+        # real 'rva,name,unit[,size]' columns (the CSV is documented with a
+        # comment preamble).
         lines = [ln for ln in f if not ln.lstrip().startswith("#")]
     for row in csv.DictReader(lines):
         rva_s = (row.get("rva") or "").strip()
         if not rva_s:
             continue
-        overlay[int(rva_s, 16)] = (row["name"].strip(), row["unit"].strip())
+        size_s = (row.get("size") or "").strip()       # absent in 3-col CSVs
+        size = int(size_s, 0) if size_s else 0
+        overlay[int(rva_s, 16)] = (row["name"].strip(), row["unit"].strip(), size)
     return overlay
 
 
 def read_functions(path, names_map=None):
     """Yield (rva, size, name) for .text functions with size > 0.
 
-    If ``names_map`` (``{rva: (name, unit)}``) supplies an entry for an RVA, its
-    curated name overrides the Ghidra ``FUN_<rva>`` placeholder.
+    If ``names_map`` (``{rva: (name, unit, size)}``) supplies an entry for an
+    RVA, its curated name overrides the Ghidra ``FUN_<rva>`` placeholder.
+
+    A matched function that Ghidra's auto-analysis never recovered as an object
+    (e.g. a vtable-slot-only target with no direct ``call``) is ABSENT from
+    functions.csv, so the delinker would never emit it. For any names-map RVA
+    not present here we SYNTHESIZE a record from the curated ``@size`` boundary,
+    making a single build self-contained (no ghidra-refresh round-trip). The
+    Ghidra boundary always wins for RVAs already in functions.csv - ``@size`` is
+    purely the fallback for the missing ones, so the functions that already work
+    stay byte-identical.
     """
     names_map = names_map or {}
     out = []
+    seen = set()
     with open(path, newline="") as f:
         reader = csv.DictReader(f)
         for row in reader:
@@ -137,6 +156,26 @@ def read_functions(path, names_map=None):
             if rva in names_map:
                 name = names_map[rva][0]
             out.append((rva, size, name))
+            seen.add(rva)
+
+    synth = 0
+    for rva, (name, _unit, size) in sorted(names_map.items()):
+        if rva in seen:
+            continue
+        if not (TEXT_BASE <= rva < TEXT_END):
+            continue
+        if size <= 0:
+            print("[synth_pdb] WARN: 0x%x %r absent from functions.csv and has "
+                  "no @size - cannot synthesize a boundary; skipping." % (rva, name),
+                  file=sys.stderr)
+            continue
+        out.append((rva, size, name))
+        seen.add(rva)
+        synth += 1
+    if synth:
+        print("[synth_pdb] synthesized %d function record(s) from @size for "
+              "matched RVAs absent from functions.csv" % synth, file=sys.stderr)
+    out.sort()
     return out
 
 
@@ -420,9 +459,11 @@ def main():
     ap.add_argument("--yaml-only", action="store_true",
                     help="emit YAML and stop (skip yaml2pdb + patch).")
     ap.add_argument("--names-map",
-                    help="curated RVA->name,unit overlay CSV (config/symbol_names.csv): "
-                         "renames matched FUN_<rva> to the source symbol and groups "
-                         "them into a per-unit <unit>.c.obj (requires --bucket-shift>0).")
+                    help="curated RVA->name,unit[,size] overlay CSV (build/gen/"
+                         "symbol_names.csv): renames matched FUN_<rva> to the source "
+                         "symbol and groups them into a per-unit <unit>.c.obj (requires "
+                         "--bucket-shift>0). The optional @size column synthesizes a "
+                         "function record for any matched RVA absent from functions.csv.")
     args = ap.parse_args()
 
     read_sections(args.exe)
