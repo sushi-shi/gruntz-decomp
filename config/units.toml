@@ -544,3 +544,21 @@ cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
 unit = "gametext"
 source = "src/Gruntz/GameText.cpp"
 status = "matched"
+
+# --- CWormhole color resolver (src/Gruntz/Wormhole.cpp) ---------------------
+# CWormhole::LoadColors @0x411f0 (160 B, __thiscall void) - the wormhole world
+# teleport node's one-time color-attribute resolver. Maps the wormhole kind
+# (state +0x124: 2 SECRET / 1 SINGLE-USE / else NORMAL) to a color id read once
+# from the global CButeMgr "Wormhole" config group (@0x6453d8) via the matched
+# GetIntDef getter (butemgr unit, @0x171aa0): SecretColor/SingleUseColor/
+# NormalColor with defaults 1/2/4. The id is cached in state +0x128, then used to
+# index the game-registry color table (g_gameReg @0x64556c -> [+0x78] ->
+# [m_128*4+0x14]) and stamp three draw fields (+0x4c colorEntry, +0x50=7, +0x58=1).
+# The three "Wormhole" config strings + g_buteMgr + g_gameReg are reloc-masked
+# (the strings/globals are matched by value/name). Plain /O2 /MT (no /GX): a
+# scalar leaf, no stack C++ object / EH frame.
+[[unit]]
+unit = "wormhole"
+source = "src/Gruntz/Wormhole.cpp"
+status = "matched"
+cflags = ["/nologo", "/c", "/O2", "/MT"]
