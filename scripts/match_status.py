@@ -245,6 +245,41 @@ def load_report(path: Path):
     return rep.get("measures", {}), funcs, umeas
 
 
+def func_code_sizes() -> dict[tuple[str, str], int]:
+    """{(unit, mangled_name): byte_size} for the matched set.
+
+    Joins build/gen/symbol_names.csv (rva,name,unit - the generated label map) to
+    build/ghidra-enrich/exports/functions.csv (entry_rva,byte_size). Used to
+    code-weight the per-function best-ever churn for the `Fuzzy Max` column so it
+    is directly comparable to the (code-weighted) `Fuzzy` column."""
+    import csv
+    names = REPO / "build" / "gen" / "symbol_names.csv"
+    funcs_csv = REPO / "build" / "ghidra-enrich" / "exports" / "functions.csv"
+    size_by_rva: dict[int, int] = {}
+    if funcs_csv.is_file():
+        with funcs_csv.open() as f:
+            for r in csv.DictReader(f):
+                try:
+                    size_by_rva[int(r["entry_rva"], 16)] = int(r["byte_size"])
+                except (ValueError, KeyError):
+                    pass
+    out: dict[tuple[str, str], int] = {}
+    if names.is_file():
+        for line in names.read_text().splitlines():
+            line = line.strip()
+            if not line or line.startswith("#") or line.startswith("rva"):
+                continue
+            p = line.split(",")
+            if len(p) < 3:
+                continue
+            try:
+                rva = int(p[0], 16)
+            except ValueError:
+                continue
+            out[(p[2], p[1])] = size_by_rva.get(rva, 0)   # (unit, name) -> size
+    return out
+
+
 # --------------------------------------------------------------------------- #
 # baseline file I/O                                                           #
 # --------------------------------------------------------------------------- #
@@ -564,22 +599,26 @@ def render_report(overall, mods, started_fzw, started_code) -> str:
     rows = []
     for mod in sorted(mods, key=lambda k: -mods[k]["tf"]):
         a = mods[mod]
+        fz = (a["fzw"] / a["tc"] if a["tc"] else 0.0)   # fzw is already %*bytes
+        fzmax = fz + (a.get("cw", 0.0) / a["tc"] if a["tc"] else 0.0)
         rows.append([
             f"`{mod}`", f"{a['units']}",
             f"{a['mf']:,} / {a['tf']:,} ({_pct(a['mf'], a['tf']):.1f}%)",
-            f"{(a['fzw'] / a['tc'] if a['tc'] else 0):.1f}%",  # fzw is already %*bytes
-            f"{_pct(a['mc'], a['tc']):.1f}%",
+            f"{fz:.1f}%",
+            f"{fzmax:.1f}%",
         ])
     if eng:
         un_fn = max(0, tot_fn - started_fn)
         rows.append(["`(unmatched)`", "—", f"0 / {un_fn:,} (0.0%)", "0.0%", "0.0%"])
     table = _md_table(
-        ["Module", "Units", "Functions exact", "Fuzzy", "Code matched"], "lrrrr", rows)
+        ["Module", "Units", "Functions exact", "Fuzzy", "Fuzzy Max"], "lrrrr", rows)
 
     # fuzzy_weighted is already sum(percent * bytes); divide by bytes for the
     # weighted percent - do NOT _pct it (that would multiply by 100 again).
     overall_fuzzy = started_fzw / tot_code if tot_code else 0.0
     started_fuzzy = started_fzw / started_code if started_code else 0.0
+    overall_cw = sum(a.get("cw", 0.0) for a in mods.values())
+    overall_fuzzy_max = overall_fuzzy + (overall_cw / tot_code if tot_code else 0.0)
     block = [
         RM_START,
         "## Match status",
@@ -589,13 +628,14 @@ def render_report(overall, mods, started_fzw, started_code) -> str:
         "commits to spot regressions._",
         "",
         f"**Overall (vs {scope}): {matched_fn:,} / {tot_fn:,} functions exact "
-        f"({_pct(matched_fn, tot_fn):.2f}%) &middot; {_pct(matched_code, tot_code):.2f}% "
-        f"code matched &middot; {overall_fuzzy:.2f}% fuzzy.**",
+        f"({_pct(matched_fn, tot_fn):.2f}%) &middot; {overall_fuzzy:.2f}% fuzzy "
+        f"&middot; {overall_fuzzy_max:.2f}% fuzzy max.**",
         "",
         "_Totals are vs the whole engine = every in-`.text` non-thunk function "
         "minus FID-identified CRT/MFC library code; the bulk we have not started "
         "is the `(unmatched)` row. `Fuzzy` = code-weighted partial credit (how "
-        "close); `Code matched` = byte-exact only._",
+        "close); `Fuzzy Max` = the same with every function at its best-ever fuzzy% "
+        "- a gap above `Fuzzy` is entropy churn since the last `update`._",
         "",
         f"_Started units alone: {matched_fn:,}/{started_fn:,} fns exact, "
         f"{started_fuzzy:.2f}% fuzzy over {started_code:,} of {tot_code:,} engine "
@@ -609,8 +649,26 @@ def render_report(overall, mods, started_fzw, started_code) -> str:
 
 def cmd_summary(args) -> int:
     manifest = load_units()
-    overall, _, umeas = load_report(Path(args.report))
+    overall, funcs, umeas = load_report(Path(args.report))
     mods, units, started_fzw, started_code = collect_modules(manifest, umeas)
+    # Per-module best-ever churn (code-weighted), for the `Fuzzy Max` column:
+    # sum (best_ever - current) * bytes over functions now below their peak. Added
+    # to Fuzzy gives Fuzzy Max; Fuzzy Max > Fuzzy means entropy churn since the
+    # last `update`. Zero gap = no churn.
+    sizes = func_code_sizes()
+    base = load_baseline()
+    for a in mods.values():
+        a["cw"] = 0.0
+    for (unit, fn), cur in funcs.items():
+        b = base.get((unit, fn))
+        if not b:
+            continue
+        churn = b["best"] - cur
+        if churn <= EPS:
+            continue
+        mod = manifest.get(unit, {}).get("module", "?")
+        if mod in mods:
+            mods[mod]["cw"] += churn * sizes.get((unit, fn), 0)
 
     if args.json:
         eng = engine_universe()
