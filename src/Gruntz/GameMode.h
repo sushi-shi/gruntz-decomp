@@ -48,6 +48,117 @@ struct CGameModeBase {
 // auto-synthesized `??3@YAXPAX@Z` in the `??_G` thunk - no explicit decl needed.)
 
 // ---------------------------------------------------------------------------
+// Sub-object layouts the concrete Render overrides (CCreditsState::Render
+// @0x391d0, CMenuState::Render @0xa0750) walk - only the offsets they read are
+// modeled; field names are placeholders. Unmatched engine callees are external
+// no-body fns (reloc-masked); the global per-frame entity set + the cached
+// USER32/engine globals (the frame clock, the version-RECT) are file-scope.
+// ---------------------------------------------------------------------------
+#ifndef GAMEMODE_WIN32
+#define GAMEMODE_WIN32
+extern "C" __declspec(dllimport)
+    int __stdcall PostMessageA(void *hwnd, unsigned msg, unsigned wp, long lp);
+#endif
+
+// A per-frame entity (g_entityList element). Render iterates it (slot +0x10 =
+// Update) and the message scans test its flag word m_2ac.
+struct CGMEntity {
+    virtual void Gv0(); virtual void Gv1(); virtual void Gv2(); virtual void Gv3();
+    virtual void Update();        // slot 4 (+0x10) - per-entity per-frame step
+    char m_pad4[0x2ac - 0x4];
+    int  m_2ac;                   // +0x2ac flag word (scanned with a bit mask)
+};
+
+// The per-frame entity set: count @+0x4, element-ptr array @+0x8. The global
+// @0x645574 is a POINTER to this structure (the Render loops load it first:
+// `mov reg,[0x645574]; mov cnt,[reg+4]; elems = reg+8`).
+struct CGMEntityList {
+    void     *m_0;                // +0x00
+    int       m_count;            // +0x04
+    CGMEntity *m_elems[1];        // +0x08 (the entity-ptr array)
+};
+extern "C" CGMEntityList *g_645574;       // 0x645574 (a pointer to the list)
+
+// The input/anim sub-object the credits poll reaches (m_c->m_4->m_10->m_2c->m_8).
+// Its slot +0x60 is a fn-ptr the object is passed to as the explicit STACK arg
+// (NOT in ecx) and the CALLEE cleans the stack (no `add esp,4` at the call site)
+// -> __stdcall: `mov ecx,[obj]; push obj; call [ecx+0x60]`.
+struct CGMInputVtbl;
+struct CGMInputObj { CGMInputVtbl *vtbl; };           // +0x00 vtable ptr
+struct CGMInputVtbl {
+    char m_pad0[0x60];
+    int (__stdcall *Poll)(CGMInputObj *self);         // +0x60
+};
+
+// The owner back-ptr (CState+0x4) the Render path dereferences. +0x4->+0x4 = the
+// OS HWND (PostMessageA target); +0x8 a sub-object (m_244 cleared); +0x14 a view
+// gate; +0x48 the sound manager; the credits "post & bail" is m_4->Post(...).
+struct CGMSound {
+    void Play(const char *name, int z);   // 0x138840 (thiscall, 2 args)
+    int  Find(const char *name);          // 0x138730 (thiscall, 1 arg -> ptr)
+};
+struct CGMSoundEntry { int Query(); };    // 0x138f60 (thiscall, no arg -> int)
+struct CGMOwner {
+    void Post(unsigned a, unsigned b);    // 0x8dc60 (thiscall, 2 args)
+    char p0[0x4];                         // +0x00
+    struct M4 { char p0[0x4]; void *m_4; } *m_4;   // +0x04 -> +0x04 = HWND
+    struct M8 { char p0[0x244]; int m_244; } *m_8; // +0x08 -> +0x244 latch
+    char p0c[0x14 - 0x0c];
+    void *m_14;                           // +0x14 view gate (0 -> skip FX)
+    char p18[0x48 - 0x18];
+    CGMSound *m_48;                       // +0x48 sound manager
+};
+
+// The cursor/anim object reached via m_c->m_28->m_2c (credits only). Callee-
+// cleaned (no `add esp,4` at the call site) -> __stdcall.
+extern "C" void __stdcall GM_SimpleAnim(int z);       // 0x136e20 (stdcall, 1 arg)
+
+// The view/draw holder (CState+0xc). The credits input poll reaches
+// m_c->m_4->m_10->m_2c->m_8 (the input obj); the draw block walks
+// m_c->m_4->{m_10->m_2c (Draw this), m_14 (blit this), m_18 (blit arg)}.
+struct CGMBlitTarget { void Blit(int arg); };         // 0x1564   (thiscall)
+struct CGMView {
+    char p0[0x4];                     // +0x00
+    struct M4 {
+        char p0[0x10];
+        struct M10 {
+            char p0[0x2c];
+            struct M2c {              // +0x2c the draw target (also holds the input obj)
+                char p0[0x8];
+                CGMInputObj *m_8;     // +0x08 input obj (credits poll source)
+                void Draw(int z);     // 0x13e850 (thiscall on this M2c)
+            } *m_2c;
+        } *m_10;                      // +0x10
+        CGMBlitTarget *m_14;          // +0x14 blit this
+        void          *m_18;          // +0x18 blit arg
+    } *m_4;                           // +0x04
+    char p8[0x28 - 0x8];
+    struct M28 { char p0[0x2c]; int m_2c; } *m_28;    // +0x28 cursor/anim gate
+};
+
+// The CMenuState UI object (m_1b4): each entity-flag scan fires a distinct no-arg
+// method on it; the tail steps it (one arg = g_645584) + draws the version RECT.
+struct CGMMenuUI {
+    void OnFlag80000000();   // 0x182d40
+    void OnFlag40000000();   // 0x182d20
+    void OnFlag20000000();   // 0x183150
+    void OnFlag10000000();   // 0x183130
+    void OnFlag00000003();   // 0x182d60
+    int  OnFlag00000100();   // 0x182d80 (-> int)
+    void Step(unsigned dt);  // 0x182c70 (1 arg)
+    void Pre();              // 0x182cb0 (no arg)
+    void Post();             // 0x182ce0 (no arg)
+};
+// The version-string RECT source globals (4 ints copied to a stack RECT by value).
+struct CGMVerRect { int a, b, c, d; };
+extern "C" CGMVerRect g_645cc8;          // 0x645cc8 (the 4-int source @c8/cc/d0/d4)
+extern "C" unsigned int g_645584;        // 0x645584 (last-frame delta, fed to Step)
+
+// The two cue/sound-name string constants the credits one-shot FX reference.
+extern "C" char g_60ce90[];              // 0x60ce90 "CREDITZ" (PlaySound name)
+extern "C" char g_60ce74[];              // 0x60ce74 "MONOLITH" (FindSound name)
+
+// ---------------------------------------------------------------------------
 // CState - the base game-state class (vftable @0x5ea21c). Polymorphic so the
 // vptr lands at +0x00 and the two-phase vtable store falls out.
 //
@@ -130,14 +241,46 @@ public:
     virtual int Update();           // @0x8c910  return 3;  (vtable @0x5ea0bc slot 4)
 };
 
+// CMenuState - the front-end menu state (vftable @0x5e9e84). Render @0xa0750
+// (464 B) drives the per-frame menu: a per-entity Update pass, then six
+// entity-flag scans each firing a distinct method on the menu UI object m_1b4,
+// then the UI step + the on-screen version-string RECT draw.
 class CMenuState : public CState {
 public:
     virtual int Update();           // @0x8ce10  return 5;  (vtable @0x5e9e84 slot 4)
+    virtual int Render();           // @0xa0750  the per-frame menu draw (this TU)
+
+    // CMenuState's own methods (the rel32 thunks Render dispatches to with
+    // `mov ecx,this`). External no-body -> reloc-masked.
+    void DrawVersion(CGMVerRect r); // 0x1cda -> 0xa0d80 (this, RECT by value)
+
+    char  m_pad1a8[0x1b4 - 0x1a8];
+    CGMMenuUI *m_1b4;               // +0x1b4 the menu UI object the scans drive
 };
 
+// CCreditsState - the credits state (vftable @0x5e9c64). Render @0x391d0 (380 B)
+// is the canonical Render spine: input poll -> input-virtual bail -> cursor anim
+// -> per-entity Update loop -> message scan -> two sub-steps -> draw -> two
+// latched one-shot FX.
 class CCreditsState : public CState {
 public:
     virtual int Update();           // @0x8d590  return 8;  (vtable @0x5e9c64 slot 4)
+    virtual int Render();           // @0x391d0  the per-frame credits draw (this TU)
+    // slots 6,7 anchor the vftable so the input virtual lands at slot 8 (+0x20).
+    virtual void Cv6(); virtual void Cv7();
+    virtual int  InputVirtual();    // slot 8 (+0x20) - polled each frame
+
+    // CCreditsState's own sub-steps (the rel32 thunks Render dispatches to with
+    // `mov ecx,this`). External no-body -> reloc-masked.
+    void Sub1();                    // 0x1352 -> 0x39c60
+    void Sub2();                    // 0x141a -> 0x396f0
+    void Sub3();                    // 0x3d41 -> 0x39dc0
+
+    // --- CCreditsState members the Render path pins (placeholders) ---
+    char m_pad1a8[0x1b4 - 0x1a8];
+    int  m_1b4;                     // +0x1b4 one-shot FX latch
+    char m_pad1b8[0x1c4 - 0x1b8];
+    int  m_1c4;                     // +0x1c4 conditional-FX gate
 };
 
 class CBootyState : public CState {
