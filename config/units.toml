@@ -626,6 +626,33 @@ source = "src/Gruntz/SpriteLoaders.cpp"
 status = "wip"
 cflags = ["/nologo", "/c", "/O2", "/MT"]
 
+# --- Input-device-name lookup (src/Gruntz/InputDeviceConfig.cpp) -------------
+# LoadInputDeviceConfig @0x387c0 (192 B, __thiscall returning a CString by value
+# -> ret 8) - maps the configured device id (this->m_14) to its display name via a
+# dense 5-way jump table on (m_14 - 1): "Keyboard"/"Joystick 1".."Joystick 4",
+# starting from the "None" default (out-of-range keeps "None"). Returns the name by
+# value (copy-constructed into the caller's hidden return buffer); the local
+# default-name CString is destroyed at the tail under a C++ EH frame -> /GX. The
+# 6 device-name string literals match by value; the CString ctor/copy-ctor/dtor/
+# operator= (NAFXCW) are external/reloc-masked.
+# FAITHFUL CARCASS (objdiff strict-exact 0/1): the EH prologue (push -1/funcinfo/
+# fs:0), the "None" default-ctor, the 5-way dense jump table with all five device-
+# name literal pushes, the converged operator=, the return copy-ctor into the
+# caller's hidden buffer, the tail ~CString + EH-epilogue/ret 8 ALL match opcode-
+# for-opcode. RESIDUE: the target carries an extra EH-state-guarded conditional
+# cleanup of a SECOND CString temporary (mov eax,[esp+0x20]; test; je; ~CString
+# @0x1ba24c) in the operator= return path, and pins the returned/cleaned-up CString
+# in stack slot [esp+4] vs the "None" default at [esp+8] - i.e. the original built
+# the result as a distinct temporary that our single-`name` model collapses. Pinned
+# the ret-8 ABI (the lone explicit stack arg beside the hidden return buffer) and
+# all six string literals. Kept wip; reproducing the two-temporary MFC operator=
+# cleanup is the remaining work.
+[[unit]]
+unit = "inputdeviceconfig"
+source = "src/Gruntz/InputDeviceConfig.cpp"
+status = "wip"
+cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+
 # --- Logic-type registrar (src/Gruntz/LogicTypeTable.cpp) --------------------
 # BuildLogicTypeTable @0x8a40 (200 B, __stdcall ret 4 - the builder object is the
 # single explicit stack arg, read into esi; NOT a __thiscall) - a one-shot
