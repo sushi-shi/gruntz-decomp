@@ -129,6 +129,17 @@ unit = "tiletriggerlogic"
 source = "src/Gruntz/TileTriggerLogic.cpp"
 status = "matched"
 
+# --- MFC battle/multiplayer setup dialogs (src/Gruntz) ----------------------
+# The CDialog-subclass ctors (CBattlezDlg/Custom/Colors + CMultiStartDlg). Three
+# of the four construct embedded MFC C++ members (CString/CObList) under an fs:0
+# EH frame, so this TU is built /GX (CBattlezDlgColors carries no embedded member
+# and so emits no frame even under /GX - verified non-regressing).
+[[unit]]
+unit = "dialogs"
+source = "src/Gruntz/Dialogs.cpp"
+status = "matched"
+cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+
 # --- WWD level loader (src/Wwd) ---------------------------------------------
 # IsValidWwd/CheckHeader construct a stack-local engine file stream whose dtor
 # (Close) runs on unwind -> they carry a C++ EH frame (__CxxFrameHandler +
