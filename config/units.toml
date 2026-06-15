@@ -563,6 +563,36 @@ source = "src/Gruntz/Wormhole.cpp"
 status = "matched"
 cflags = ["/nologo", "/c", "/O2", "/MT"]
 
+# --- Video-resolution config pair (src/Gruntz/VideoConfig.cpp) ---------------
+# LoadVideoResolutionConfig @0x36f30 + SaveVideoResolutionConfig @0x370a0 - the
+# options-dialog combo<->global bridge for the selected screen resolution. Both
+# wrap the combo HWND via MFC CWnd::FromHandle (static __stdcall, @0x1bb23a) and
+# drive it as a CSliderCtrl (SetRange __thiscall, @0x11e0f9), exchange the selection
+# via SendMessageA to the wrapped HWND at CWnd+0x1c (msg 0x405 push / 0x400 read),
+# then rebuild a "Video Resolution (WxH)" caption on the IDC_RESCAPTION (0x52d)
+# static text: a 64-byte stack buffer seeded with the "Video Resolution " literal
+# (.data dword/word copy + rep-stosd zero-fill) then strcat'd (inline repnz-scasb/
+# rep-movs intrinsic) with one of "(640x480)"/"(800x600)"/"(1024x768)" chosen by
+# the global mode g_videoResolutionMode @0x60ccc4. Plain /O2 /MT (no /GX): scalar
+# leaves, no stack C++ object / EH frame. The GetDlgItem/SendMessageA/SetWindowTextA
+# imports + the FromHandle/SetRange calls + the mode global are reloc-masked; the
+# caption/suffix string literals match by value.
+# BYTE-EXACT BODY, PLATEAU (objdiff strict-exact 0/2, ~94% fuzzy): the whole body -
+# the 4 null guards, the FromHandle/SetRange/SendMessage chain, the 64-byte
+# aggregate-init, the dec-eax suffix ladder, and the inline strcat + SetWindowTextA
+# tail - is opcode-identical to the target (verified 0 non-reloc body diffs after
+# normalizing the ebp push/pop position; the base obj's trailing bytes are COMDAT
+# alignment nops, not body). The SOLE residue is an MSVC5 deferred-callee-save
+# coin-flip: the target DEFERS `push ebp` (ebp's only def is the strcat length
+# `mov ebp,ecx`) past the four early-return guards to just before the rep-stosd and
+# pops it first on the success tail, while our cl saves ebp eagerly in the prologue
+# - same instructions, a shrink-wrap scheduling difference. Kept wip (not strict-exact).
+[[unit]]
+unit = "videoconfig"
+source = "src/Gruntz/VideoConfig.cpp"
+status = "wip"
+cflags = ["/nologo", "/c", "/O2", "/MT"]
+
 # --- UnknownRemus leaf methods (src/Gruntz/UnknownRemus.cpp) -----------------
 # Five plain /O2 /MT leaves of the tomalla-named class UnknownRemus (its vtable
 # slot 0x38 is CGameLevel::LoadWwd, so this is a CGameLevel-family object). All
