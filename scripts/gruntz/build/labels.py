@@ -94,7 +94,7 @@ def collect_defs(ast, want=FUNC_KINDS):
     return out
 
 
-def scan_annotations(text):
+def scan_annotations(text, tu="<source>"):
     """Return [(rva, line, symbol_override_or_None, size_or_None)].
 
     `@address` and the optional `@symbol`/`@size` associate only when they share
@@ -102,6 +102,14 @@ def scan_annotations(text):
     leaks onto the next block's @address across an intervening code line). `@size`
     is the exact byte extent of the matched function (the authoritative boundary
     the synth-PDB falls back on for functions Ghidra never recovered as objects).
+
+    One block describes ONE function. `@address` is required to emit anything (it
+    is the trigger); `@size` stays optional (Ghidra's recovered boundary is used
+    when it is absent). But a `@size`/`@symbol` is only meaningful attached to a
+    single `@address`, so these otherwise-silent ambiguities are HARD ERRORS:
+      * two conflicting `@size` (or `@symbol`) in one block - which one wins?
+      * a `@size`/`@symbol` in a block with zero or several `@address` - whom does
+        it describe? (zero = silently dropped; several = silently mis-applied)
     """
     out = []
     lines = text.splitlines()
@@ -113,20 +121,33 @@ def scan_annotations(text):
             continue
         j = i
         block_addrs = []
-        block_sym = None
-        block_size = None
+        block_sym = block_size = None
+        sym_line = size_line = None
         while j < n and lines[j].lstrip().startswith("//"):
             ma = ADDR_RE.search(lines[j])
             if ma:
                 block_addrs.append((int(ma.group(1), 16), j + 1))
             ms = SYM_RE.search(lines[j])
             if ms:
-                block_sym = ms.group(1)
+                if block_sym is not None and block_sym != ms.group(1):
+                    sys.exit(f"{tu}:{j + 1}: conflicting @symbol in one comment block "
+                             f"({block_sym!r} then {ms.group(1)!r}); one block = one function")
+                block_sym, sym_line = ms.group(1), j + 1
             mz = SIZE_RE.search(lines[j])
             if mz:
                 s = mz.group(1)
-                block_size = int(s, 16) if s.lower().startswith("0x") else int(s)
+                sz = int(s, 16) if s.lower().startswith("0x") else int(s)
+                if block_size is not None and block_size != sz:
+                    sys.exit(f"{tu}:{j + 1}: conflicting @size in one comment block "
+                             f"({block_size} then {sz}); one block = one function")
+                block_size, size_line = sz, j + 1
             j += 1
+        if (block_size is not None or block_sym is not None) and len(block_addrs) != 1:
+            what = " and ".join(w for w, v in (("@size", block_size), ("@symbol", block_sym))
+                                if v is not None)
+            sys.exit(f"{tu}:{size_line or sym_line}: {what} in a comment block with "
+                     f"{len(block_addrs)} @address - it must attach to exactly one "
+                     f"@address (one block = one function)")
         for rva, ln in block_addrs:
             out.append((rva, ln, block_sym, block_size))
         i = j
@@ -227,7 +248,7 @@ def main():
             continue
         defs = [(mn, off2line(off)) for (mn, off) in collect_defs(ast)]
         defs.sort(key=lambda d: d[1])
-        addrs = scan_annotations(text)
+        addrs = scan_annotations(text, tu)
         obj_syms = nm_symbols(args.obj[i], args.nm) if i < len(args.obj) else None
 
         for rva, line, override, size in addrs:
