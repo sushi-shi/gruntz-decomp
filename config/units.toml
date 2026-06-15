@@ -501,3 +501,30 @@ unit = "fontconfig"
 source = "src/Gruntz/FontConfig.cpp"
 status = "wip"
 cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+
+# --- GameText: small name/string lookup + table-init leaves (src/Gruntz) -----
+# All 4 BYTE-EXACT under reloc-masking (every residual diff is a reloc-masked
+# string-literal/table/ctor-call operand; objdiff strict-exact reads 0/4 - the
+# same reloc-typing scoring artifact as winmain/image/netmgr):
+#   _$E1  @0x82990 (the g_worldName[8] static array initializer; tomalla's
+#         "GetWorldDisplayName") - seeds the 8 world display names (Rocky Roadz /
+#         Gruntziclez / Trouble in the Tropicz / High on Sweetz / High Rollerz /
+#         Honey, I Shrunk the Gruntz! / The Miniature Masterz / Gruntz in Space).
+#   _$E4  @0x18740 (the g_statLabel[8] static array initializer; tomalla's
+#         "GetEndLevelStatLabels") - seeds the 8 end-of-level stat labels (Time: /
+#         Survivorz: / Deathz: / Toolz: / Toyz: / Powerupz: / Coinz: / Secretz:).
+#   GetWarlordName @0x1ec20 (__stdcall, CString-by-value, 4-entry jump table) -
+#         boss name by id (0 KING / 1 NAPOLEAN / 2 PATTON / 3 VIKING, default "").
+#   CContainerErr::CContainerErr @0x16d9c0 (__thiscall, ret 4) - the Monolith
+#         container-library exception ctor: stores (custom-or-default) message at
+#         +0x4, vtable @0x5f04cc at +0x0, then lazily seeds an 8-entry static
+#         message table (Out of memory / Data structure is invalid / Overflow /
+#         No such file, handle or object / Out of range / Target alrready exisits
+#         / Null pointer argument / Bad argument value).
+# The two seeders are in fact the compiler-generated array static initializers
+# (MSVC local `_$E` thunks), pinned to their RVAs via @symbol. /O2 engine code
+# (no stack C++ dtor -> no /GX).
+[[unit]]
+unit = "gametext"
+source = "src/Gruntz/GameText.cpp"
+status = "matched"
