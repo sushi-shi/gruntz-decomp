@@ -155,6 +155,16 @@ def read_functions(path, names_map=None):
                 continue
             if rva in names_map:
                 name = names_map[rva][0]
+                at_size = names_map[rva][2]
+                # Ghidra's recovered boundary wins for RVAs already in
+                # functions.csv (keeps the working set byte-identical), but if the
+                # curated @size disagrees, one of the two is wrong - surface it so
+                # a bad boundary isn't silently delinked.
+                if at_size and at_size != size:
+                    print("[synth_pdb] WARN: 0x%x %r boundary mismatch - "
+                          "functions.csv=%d B, @size=%d B; using functions.csv "
+                          "(Ghidra wins). Check the @size or the recovered boundary."
+                          % (rva, name, size, at_size), file=sys.stderr)
             out.append((rva, size, name))
             seen.add(rva)
 
