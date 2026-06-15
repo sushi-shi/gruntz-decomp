@@ -59,6 +59,33 @@ def main() -> int:
     GhidraScriptUtil.acquireBundleHostReference()
     try:
         if analyze:
+            # Enable the Aggressive Instruction Finder before analyzeAll. It is OFF
+            # by default; default auto-analysis (on both Ghidra 11.4.2 and 12.0.4)
+            # carves only ~9,176 .text functions and leaves real code in
+            # unreferenced gaps undisassembled. AIF disassembles those gaps,
+            # recovering ~+130 genuine .text functions (verified: every one lands
+            # inside .text, none in .data; ~83 are >=16-byte bodies, ~35 are 5-byte
+            # incremental-linker jmp thunks) that apply.py's CSV seeding does NOT
+            # cover. These become new matchable-function candidates. The other
+            # analyzers (RTTI/Switch/Shared-Return/Function-ID/Demangler) are
+            # already enabled by default and recover nothing extra; the vtable-only
+            # methods (RunMessageLoop, CState/CPlay stubs, ...) are unreachable by
+            # ANY analyzer and are seeded explicitly by apply.py from
+            # symbol_names/engine_labels/library_labels instead.
+            #
+            # COST: AIF roughly 4x's the Ghidra analysis phase - measured on
+            # GRUNTZ.EXE at 77s (default) -> 281s (+AIF), i.e. +~204s / ~3.4 min.
+            # That cost is paid ONLY here, on the `analyze` path (`gruntz init` /
+            # `gruntz init --reimport`), which is one-time/idempotent. The per-edit
+            # `gruntz build` loop never re-runs Ghidra analysis, so it is unaffected.
+            from ghidra.program.model.listing import Program
+            opts = program.getOptions(Program.ANALYSIS_PROPERTIES)
+            tx = program.startTransaction("enable-aggressive-instruction-finder")
+            try:
+                opts.setBoolean("Aggressive Instruction Finder", True)
+            finally:
+                program.endTransaction(tx, True)
+
             flat = FlatProgramAPI(program)
             _analyze_program(flat, program)  # only analyzes if not yet analyzed
 
