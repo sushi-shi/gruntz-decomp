@@ -625,3 +625,34 @@ unit = "unknownhermiona"
 source = "src/Gruntz/UnknownHermiona.cpp"
 status = "wip"
 cflags = ["/nologo", "/c", "/O2", "/MT"]
+
+# --- UnknownAlbus leaf factory methods (src/Gruntz/UnknownAlbus.cpp) ----------
+# Two plain /O2 /MT factories of the tomalla-named ddrawmgr sub-manager
+# UnknownAlbus. Each allocates a 0x14-byte worker (operator new @0x1b9b46), inline-
+# constructs it (seed fields from the parent + stamp the foreign worker vftable
+# 0x5f02d8), calls one of the worker's sibling virtuals forwarding (arg1,arg3),
+# then on success stores the worker into the CMapStringToOb at +0x10 under `key`
+# (arg2) via operator[] and returns it, or on failure runs the worker's scalar-
+# deleting dtor (vtbl +0x4) and returns 0. NO SEH frame; relocs are the reloc-
+# masked new / operator[] calls + the DIR32 worker-vftable store:
+#   VirtualMethodUnknown28 @0x165990 - worker virt +0x28
+#   VirtualMethodUnknown2C @0x165a10 - worker virt +0x2c
+# (sibling VirtualMethodUnknown1C @0x165b90 map-teardown deferred: /GX EH frame.)
+[[unit]]
+unit = "unknownalbus"
+source = "src/Gruntz/UnknownAlbus.cpp"
+status = "wip"
+cflags = ["/nologo", "/c", "/O2", "/MT"]
+
+# --- UnknownSeverus leaf method (src/Gruntz/UnknownSeverus.cpp) ---------------
+# One plain /O2 /MT leaf of the tomalla-named ddrawmgr sub-manager UnknownSeverus.
+# VirtualMethodUnknown54 @0x156ec0 is a keyed remove-and-destroy on the
+# CMapStringToOb at +0x10: Lookup(key,&val); if found RemoveKey(key) and run the
+# value's scalar-deleting dtor (vtbl +0x4, arg 1). NO SEH frame; relocs are the
+# reloc-masked Lookup / RemoveKey thunk calls. (sibling VirtualMethodUnknown58
+# @0x165210 map-teardown deferred: /GX EH frame.)
+[[unit]]
+unit = "unknownseverus"
+source = "src/Gruntz/UnknownSeverus.cpp"
+status = "wip"
+cflags = ["/nologo", "/c", "/O2", "/MT"]
