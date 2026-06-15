@@ -512,14 +512,16 @@ try:
             continue
         eng.append((rva, r[1], r[2], r[3], r[4], r[5], r[6]))
 
-    sym_rows = load_csv_rows(CSV_SYMBOL) if os.path.exists(CSV_SYMBOL) else []  # rva,name,unit
-    syms = []
+    sym_rows = load_csv_rows(CSV_SYMBOL) if os.path.exists(CSV_SYMBOL) else []  # rva,name,unit,size,kind
+    syms = []           # functions (kind=func / legacy)
+    data_syms = []      # global data (kind=data): mangled name, Ghidra demangles for display
     for r in sym_rows:
         if len(r) < 2: continue
         if r[0] == "rva": continue
         try: rva = int(r[0], 16)
         except Exception: continue
-        syms.append((rva, r[1]))
+        kind = r[4] if len(r) > 4 else "func"
+        (data_syms if kind == "data" else syms).append((rva, r[1]))
 
     fid_rows = load_csv_rows(CSV_FID) if os.path.exists(CSV_FID) else []  # rva,name,lib,confidence,source
     fids = []
@@ -564,6 +566,24 @@ try:
             except Exception:
                 pass
     R("symbol_names (zlib+ctors) reconciled: %d  (no-func: %d)" % (n_sym_named, n_sym_nofunc))
+
+    # Global DATA symbols a matched global is referenced through (labels.py @data
+    # rows). The name is the clang MS-ABI mangling (?g_foo@@3.. / _g_foo); Ghidra
+    # demangles it for a readable display while the export keeps it for matching.
+    n_data_named = 0
+    for (rva, name) in data_syms:
+        addr = toaddr(rva)
+        try:
+            prim = st.getPrimarySymbol(addr)
+            if prim is not None:
+                cur = str(prim.getName())
+                if is_default(cur) or cur != name:
+                    prim.setName(name, US); n_data_named += 1
+            else:
+                st.createLabel(addr, name, US); n_data_named += 1
+        except Exception:
+            pass
+    R("global data symbols labeled (Ghidra demangles): %d" % n_data_named)
 
     # ---- (E) engine_labels: names + namespace + plate + PROTOTYPES + this-type ----
     n_renamed = 0; n_bogus = 0; n_kept = 0; n_ns = 0; n_plate = 0
