@@ -245,6 +245,11 @@ source = "src/Gruntz/GruntzApp.cpp"
 status = "matched"
 cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
 
+[[unit]]
+unit = "gruntzwnd"
+source = "src/Gruntz/GruntzWnd.cpp"
+status = "wip"
+
 # --- CMapMgr level/map manager (src/Gruntz) ---------------------------------
 # The engine CMapMgr (self-located via its RTTI vftable ??_7CMapMgr@@6B@
 # @0x5ea3b4, 6 slots): ctor @0x09e940 + dtor @0x09e9e0 + the slot-0 Reset cleanup

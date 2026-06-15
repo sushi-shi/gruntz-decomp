@@ -22,11 +22,11 @@ Scaffold file column: where the stub lives under `structure/`.
 | Name | Kind | Source file | RTTI mangled | Known | From | Scaffold |
 |---|---|---|---|---|---|---|
 | CGruntzApp | game | C:\Proj\Gruntz | `.?AVCGruntzApp@@` | layout | rtti+tomalla | graduated: src/Gruntz/GruntzApp.cpp |
-| CGruntzWnd | game | C:\Proj\Gruntz | `.?AVCGruntzWnd@@` | layout | rtti+tomalla | game/cgruntzwnd.h |
+| CGruntzWnd | game | C:\Proj\Gruntz | `.?AVCGruntzWnd@@` | layout | rtti+tomalla | src/Gruntz/GruntzWnd.cpp (matched ctor) |
 | CGruntzMgr | game | C:\Proj\Gruntz\GruntzMgr.cpp | `.?AVCGruntzMgr@@` | layout | rtti+tomalla | game/cgruntzmgr.h |
 | CGruntzMapMgr | game | C:\Proj\Gruntz | `.?AVCGruntzMapMgr@@` | name | rtti+strings | game/mapmgr.h |
 | CMapMgr | game/wap32 | (engine) | `.?AVCMapMgr@@` | name | rtti | game/mapmgr.h |
-| CNetMgr | game | C:\Proj\NetMgr\NetMgr.cpp | `.?AVCNetMgr@@` | layout(partial) | rtti+tomalla | managers/cnetmgr.h |
+| CNetMgr | game | C:\Proj\NetMgr\NetMgr.cpp | `.?AVCNetMgr@@` | layout(partial) | rtti+tomalla | src/Net/NetMgr.h (matched) |
 | CGrunt | game | C:\Proj\Gruntz | `.?AVCGrunt@@` | fields-order | rtti+strings | game/grunt.h |
 | CGruntVoice | game | C:\Proj\Gruntz | `.?AVCGruntVoice@@` | name | rtti | game/grunt.h |
 | CGruntPuddle | game | C:\Proj\Gruntz | `.?AVCGruntPuddle@@` | name | rtti | game/grunt.h |
@@ -150,7 +150,7 @@ Scaffold file column: where the stub lives under `structure/`.
 | Name | Kind | Source file | RTTI mangled | Known | From | Scaffold |
 |---|---|---|---|---|---|---|
 | CGameApp | wap32 | (engine, shared) | `.?AVCGameApp@@` | layout | rtti+tomalla | graduated: src/Wap32/Wap32.h |
-| CGameMgr | wap32 | (engine, shared) | `.?AVCGameMgr@@` | layout | rtti+tomalla | wap32/cgamemgr.h |
+| CGameMgr | wap32 | (engine, shared) | `.?AVCGameMgr@@` | layout | rtti+tomalla | src/Net/NetMgr.h (matched) |
 | CGameWnd | wap32 | (engine, shared) | `.?AVCGameWnd@@` | layout | rtti+tomalla | graduated: src/Wap32/Wap32.h |
 | CWapObj | wap32 | (engine) | `.?AVCWapObj@@` | name | rtti | wap32/cwapobj.h |
 | CWapX | wap32 | (engine) | `.?AVCWapX@@` | name | rtti | wap32/cwapobj.h |
