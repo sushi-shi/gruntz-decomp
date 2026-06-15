@@ -579,3 +579,22 @@ unit = "unknownremus"
 source = "src/Gruntz/UnknownRemus.cpp"
 status = "wip"
 cflags = ["/nologo", "/c", "/O2", "/MT"]
+
+# --- UnknownHagrid leaf factory methods (src/Gruntz/UnknownHagrid.cpp) --------
+# Four plain /O2 /MT factories of the tomalla-named ddrawmgr sub-manager
+# UnknownHagrid. Each allocates a 0x7c-byte worker (operator new @0x1b9b46),
+# inline-constructs it (seed fields + stamp a foreign worker vftable), calls one
+# of the worker's sibling virtuals forwarding the caller's args, then on success
+# appends the worker to UnknownHagrid's CObList (+0x10) via AddHead/AddTail (a
+# trailing bool picks which) and returns it, or on failure runs the worker's
+# scalar-deleting dtor (vtbl +0x4) and returns 0. NO SEH frame; relocs are the
+# reloc-masked new / AddHead / AddTail calls + the DIR32 worker-vftable stores:
+#   VirtualMethodUnknown24 @0x156fd0 - BYTE-flag worker (vtbl 0x5efea0), virt +0x2c, always AddTail
+#   VirtualMethodUnknown28 @0x1573e0 - int-flag worker (vtbl 0x5efed0), virt +0x2c, head/tail bool
+#   VirtualMethodUnknown2C @0x157330 - int-flag worker, virt +0x30, head/tail bool
+#   VirtualMethodUnknown30 @0x157150 - int-flag worker, virt +0x34, head/tail bool
+[[unit]]
+unit = "unknownhagrid"
+source = "src/Gruntz/UnknownHagrid.cpp"
+status = "matched"
+cflags = ["/nologo", "/c", "/O2", "/MT"]
