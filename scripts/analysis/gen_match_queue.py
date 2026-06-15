@@ -91,7 +91,13 @@ if FID.exists():
         for r in csv.DictReader(f):
             try: library.add(rint(r['rva']))
             except Exception: pass
-changed = {t[0] for t in pickle.load(open(CHANGED, 'rb'))}
+# The v1.01-changed exclusion list is an optional scratch artifact (patch-diff
+# analysis); a clean tree won't have it. Skip the exclusion gracefully if absent.
+if CHANGED.exists():
+    changed = {t[0] for t in pickle.load(open(CHANGED, 'rb'))}
+else:
+    changed = set()
+    print(f"[gen_match_queue] note: {CHANGED} absent - skipping v1.01-changed exclusion")
 
 # ---- labeled candidates ----
 rows = []
