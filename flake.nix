@@ -216,15 +216,17 @@
             export GRUNTZ_EXE="${gruntz-exe}"
             export GRUNTZ_CLANG="${pkgs.llvmPackages.clang-unwrapped}/bin/clang"
 
-            echo "[gruntz] target EXE : $GRUNTZ_EXE"
-            echo "[gruntz] tools      : vostok-delinker, objdiff(-cli), ghidra, llvm-pdbutil"
-            echo "[gruntz] clang      : $GRUNTZ_CLANG (unwrapped; ghidra_metadata_generate/gen_labels)"
-            echo "[gruntz] cli        : 'gruntz <cmd>' (status/labels/structs/ghidra-refresh/todo)"
-            echo "[gruntz] base/MSVC  : 'nix develop .#build' for 'gruntz build'/'init' (VC5 + wine)"
+            # Banner -> stderr so stdout stays clean for `nix develop --command`
+            # piping (e.g. gruntz status / match_status.py ... --json | jq).
+            echo "[gruntz] target EXE : $GRUNTZ_EXE" >&2
+            echo "[gruntz] tools      : vostok-delinker, objdiff(-cli), ghidra, llvm-pdbutil" >&2
+            echo "[gruntz] clang      : $GRUNTZ_CLANG (unwrapped; ghidra_metadata_generate/gen_labels)" >&2
+            echo "[gruntz] cli        : 'gruntz <cmd>' (status/labels/structs/ghidra-refresh/todo)" >&2
+            echo "[gruntz] base/MSVC  : 'nix develop .#build' for 'gruntz build'/'init' (VC5 + wine)" >&2
             if [ ! -f "$GRUNTZ_DIR/build/clangd/compile_commands.json" ]; then
-              echo "[gruntz] clangd     : generating LSP compile DB (first entry) ..."
+              echo "[gruntz] clangd     : generating LSP compile DB (first entry) ..." >&2
               python3 "$GRUNTZ_DIR/scripts/gruntz.py" clangd \
-                || echo "[gruntz] clangd     : failed - run 'gruntz clangd'"
+                || echo "[gruntz] clangd     : failed - run 'gruntz clangd'" >&2
             fi
           '';
         };
@@ -255,22 +257,22 @@
             # These run ALONGSIDE the recompiled EXE under wine - none are needed
             # to build/link it. See docs/runtime-dlls.md.
             export GRUNTZ_RUNTIME="${gruntz-runtime}"
-            echo "[gruntz] MSVC 5.0   : $MSVC_DIR/bin/cl.exe   (run under wine)"
-            echo "[gruntz] runtime    : $GRUNTZ_RUNTIME (MSS32/SMACKW32 DLLs)"
-            echo "[gruntz] target EXE : $GRUNTZ_EXE"
-            echo "[gruntz] cli        : 'gruntz <cmd>' (init/build/clangd/status/labels/structs/ghidra-refresh/todo)"
+            echo "[gruntz] MSVC 5.0   : $MSVC_DIR/bin/cl.exe   (run under wine)" >&2
+            echo "[gruntz] runtime    : $GRUNTZ_RUNTIME (MSS32/SMACKW32 DLLs)" >&2
+            echo "[gruntz] target EXE : $GRUNTZ_EXE" >&2
+            echo "[gruntz] cli        : 'gruntz <cmd>' (init/build/clangd/status/labels/structs/ghidra-refresh/todo)" >&2
             # `gruntz init` is idempotent - run it on startup (set GRUNTZ_SKIP_INIT=1
             # to skip, e.g. when you only need clang/ghidra_metadata_generate and not the Ghidra DB).
             # First run builds the local env incl. the Ghidra DB (minutes); afterwards
             # the heavy Ghidra step self-skips (exports present), so it is a fast no-op.
             if [ -n "$GRUNTZ_SKIP_INIT" ]; then
-              echo "[gruntz] init       : skipped (GRUNTZ_SKIP_INIT set)"
+              echo "[gruntz] init       : skipped (GRUNTZ_SKIP_INIT set)" >&2
             else
               if [ ! -f "$GRUNTZ_DIR/build/ghidra-enrich/exports/functions.csv" ]; then
-                echo "[gruntz] init       : first-time setup - building the Ghidra DB (~minutes) ..."
+                echo "[gruntz] init       : first-time setup - building the Ghidra DB (~minutes) ..." >&2
               fi
               python3 "$GRUNTZ_DIR/scripts/gruntz.py" init \
-                || echo "[gruntz] init       : failed - fix + re-run 'gruntz init'"
+                || echo "[gruntz] init       : failed - fix + re-run 'gruntz init'" >&2
             fi
           '';
         };
