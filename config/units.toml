@@ -398,3 +398,38 @@ unit = "cplay"
 source = "src/Gruntz/CPlay.cpp"
 status = "wip"
 cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+
+# --- Font bitmap-font subsystem (src/Font/Font.cpp) -------------------------
+# The engine's text/glyph Font class. A Font owns two parallel per-letter
+# tables: m_glyphs[] (+0xc, 8-B {width,height} metric records) and m_surfaces[]
+# (+0x8, void*[] decoded pixel buffers, width*height bytes each), with m_count
+# (+0x4) glyphs, a m_ready flag (+0x0) and m_maxHeight line-height (+0x10).
+# Matched the resource lifecycle:
+#   Font::Font     @0x179700 (16 B)  - BYTE-EXACT 100%   (empty ctor).
+#   FreeMemory     @0x1797b0 (113 B) - BYTE-EXACT 99.62% (free every glyph
+#                                      surface + both tables; all residuals are
+#                                      reloc-masked call/jump targets).
+#   LoadFont       @0x179830 (433 B) - BYTE-EXACT 99.67% (CFile/CArchive read of
+#                                      the glyph count + metric table + each
+#                                      glyph's pixel surface + the line-height
+#                                      compute; the only residual is a 4-B
+#                                      allocator stack-slot placement that shifts
+#                                      ~6 esp-relative operands - same insns).
+#   AllocateMemory @0x179720 (135 B) - PLATEAU 92.14% (alloc+zero both tables;
+#                                      logic byte-identical, 46/46 insns - the
+#                                      sole diff is the zero-init loop's
+#                                      register-colouring of two equal `0`
+#                                      constants vs one, an irreducible MSVC
+#                                      allocator coin-flip).
+# /GX: LoadFont's stack CFile/CArchive/CString objects' dtors run under a C++ EH
+# frame (the target opens an fs:0 SEH/EH frame). The NAFXCW MFC callees (operator
+# new/delete @0x1b9b46/0x1b9b82, CFile::CFile/Open/Close/~CFile, CArchive::ctor/
+# Read/Close/~CArchive/FillBuffer, CString::~CString) are external/no-body so
+# their call displacements reloc-mask. CArchive's inlined operator>> reads the
+# load-bearing m_lpBufCur/m_lpBufMax window @ CArchive+0x24/+0x28. Kept wip
+# (AllocateMemory is a register-colour plateau, not byte-exact).
+[[unit]]
+unit = "font"
+source = "src/Font/Font.cpp"
+status = "wip"
+cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
