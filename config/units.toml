@@ -562,3 +562,20 @@ unit = "wormhole"
 source = "src/Gruntz/Wormhole.cpp"
 status = "matched"
 cflags = ["/nologo", "/c", "/O2", "/MT"]
+
+# --- UnknownRemus leaf methods (src/Gruntz/UnknownRemus.cpp) -----------------
+# Five plain /O2 /MT leaves of the tomalla-named class UnknownRemus (its vtable
+# slot 0x38 is CGameLevel::LoadWwd, so this is a CGameLevel-family object). All
+# touch only member offsets, a 4-int arg record copied to +0x10, the shared
+# +0xb0..+0xdc "default parameters" block, and sibling virtuals via the object's
+# own vtable - NO SEH frame, NO string/global relocations:
+#   VirtualMethodUnknown30 @0x15d0d0 - copy *coords -> +0x10, stamp block, ret 1
+#   VirtualMethodUnknown34 @0x15d030 - zero/decrement +0x10 record, stamp, ret 1
+#   VirtualMethodUnknown24 @0x15cf70 - copy + stamp + dispatch vtable +0x38
+#   VirtualMethodUnknown28 @0x15ceb0 - copy + stamp + dispatch vtable +0x3c
+#   VirtualMethodUnknown2C @0x15cdf0 - copy + stamp + dispatch vtable +0x40
+[[unit]]
+unit = "unknownremus"
+source = "src/Gruntz/UnknownRemus.cpp"
+status = "wip"
+cflags = ["/nologo", "/c", "/O2", "/MT"]
