@@ -50,9 +50,16 @@ regenerated incrementally — only TUs whose `.cpp` content hash changed get
 re-parsed. `gruntz build` refreshes it before `check`. A function clangd can't
 resolve (a compiler-generated `` `scalar deleting dtor' ``, a WIP unit, a name
 clangd spells differently) simply gets no entry, and `match_status` falls back to
-the unit's whole-`.cpp` hash for it — coarser but always available (e.g. in a
-fresh worktree with no clangd compile DB). Current coverage: ~99/102 functions
-fingerprinted, the rest on the safe fallback.
+a **fallback-tagged** whole-`.cpp` hash (`cpp:<sha>`) for it — coarser but always
+available (e.g. in a fresh worktree with no clangd compile DB).
+
+The tag matters: a fallback fingerprint is *unknown*, not a real source change, so
+`check`/`update` only treat a fingerprint difference as an edit when **both** sides
+are real (non-fallback). That's what keeps a stale/absent cache from silently
+re-labelling every regression as TOUCHED and passing the gate. When a whole unit's
+cache is stale/absent, `check` still gates each function against `best` and prints a
+loud `DEGRADED` warning (to stderr and the summary) naming the units to refresh —
+the gate degrades *visibly*, never silently.
 
 ## The baseline file
 

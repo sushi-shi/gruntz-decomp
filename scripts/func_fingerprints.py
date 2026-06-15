@@ -232,36 +232,39 @@ def regenerate(force_all: bool = False, verbose: bool = False) -> int:
                 new_funcs[k] = v
 
     if todo:
+        # record cpp-hashes for stale units up front, so they're cached even if we
+        # don't fingerprint them (and don't get re-parsed every run).
+        for unit in todo:
+            new_units[unit] = {"cpp_hash": cur_cpp[unit], "source": manifest[unit]}
         allm: set = set()
         for u in todo:
             allm |= umang.get(u, set())
-        m2q = demangle_map(allm)
 
-        sys.path.insert(0, str(REPO / "scripts" / "analysis"))
-        from clangd_query import Clangd  # heavy; only when something is stale
-        lsp = Clangd()
-        try:
-            for unit in todo:
-                source = manifest[unit]
-                new_units[unit] = {"cpp_hash": cur_cpp[unit], "source": source}
-                path = (REPO / source).resolve()
-                if not path.is_file():
-                    continue
-                chosen = body_ranges(lsp.document_symbols(path))
-                lines = path.read_text(errors="replace").splitlines()
-                qhash = {q: _hash_ranges(lines, rs) for q, rs in chosen.items()}
-                n = 0
-                for m in umang.get(unit, set()):
-                    q = m2q.get(m) if m.startswith("?") else next(
-                        (c for c in _candidates(m) if c in qhash), None)
-                    if q and q in qhash:
-                        new_funcs[(unit, m)] = qhash[q]
-                        n += 1
-                if verbose:
-                    print(f"  {unit}: {n}/{len(umang.get(unit, set()))} fingerprinted "
-                          f"({len(chosen)} defs in clangd)")
-        finally:
-            lsp.close()
+        if allm:  # nothing to map (no build/gen/symbol_names.csv yet) -> skip clangd
+            m2q = demangle_map(allm)
+            sys.path.insert(0, str(REPO / "scripts" / "analysis"))
+            from clangd_query import Clangd  # heavy; only when there are names to map
+            lsp = Clangd()
+            try:
+                for unit in todo:
+                    path = (REPO / manifest[unit]).resolve()
+                    if not path.is_file():
+                        continue
+                    chosen = body_ranges(lsp.document_symbols(path))
+                    lines = path.read_text(errors="replace").splitlines()
+                    qhash = {q: _hash_ranges(lines, rs) for q, rs in chosen.items()}
+                    n = 0
+                    for m in umang.get(unit, set()):
+                        q = m2q.get(m) if m.startswith("?") else next(
+                            (c for c in _candidates(m) if c in qhash), None)
+                        if q and q in qhash:
+                            new_funcs[(unit, m)] = qhash[q]
+                            n += 1
+                    if verbose:
+                        print(f"  {unit}: {n}/{len(umang.get(unit, set()))} fingerprinted "
+                              f"({len(chosen)} defs in clangd)")
+            finally:
+                lsp.close()
 
     write_cache(new_units, new_funcs)
     print(f"func fingerprints: {len(new_funcs)} functions  "
