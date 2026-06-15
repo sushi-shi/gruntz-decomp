@@ -46,6 +46,7 @@ MS_FLAGS = [f"--target={TARGET}", f"-fms-compatibility-version={MSC_COMPAT}",
             "-fms-extensions"]
 
 ADDR_RE = re.compile(r"@address:\s*(0x[0-9a-fA-F]+)")
+DATA_RE = re.compile(r"@data:\s*(0x[0-9a-fA-F]+)")
 SYM_RE = re.compile(r"@symbol:\s*(\S+)")
 SIZE_RE = re.compile(r"@size:\s*(0x[0-9a-fA-F]+|\d+)")
 FUNC_KINDS = {"FunctionDecl", "CXXMethodDecl", "CXXConstructorDecl",
@@ -94,14 +95,38 @@ def collect_defs(ast, want=FUNC_KINDS):
     return out
 
 
-def scan_annotations(text):
-    """Return [(rva, line, symbol_override_or_None, size_or_None)].
+def collect_vars(ast):
+    """Yield (mangledName, offset) for global VARIABLE declarations.
 
-    `@address` and the optional `@symbol`/`@size` associate only when they share
-    the same contiguous `//` comment block (so one block's @symbol/@size never
-    leaks onto the next block's @address across an intervening code line). `@size`
-    is the exact byte extent of the matched function (the authoritative boundary
-    the synth-PDB falls back on for functions Ghidra never recovered as objects).
+    A file-scope / `extern` variable carries a linkage `mangledName`
+    (`?g_foo@@3...` for C++, `_g_foo` for `extern "C"`); function locals do not,
+    so they are excluded naturally. Used to label the DATA symbol that a matched
+    global is referenced through, the data analogue of a function definition.
+    """
+    out = []
+
+    def visit(node):
+        if isinstance(node, dict):
+            if (node.get("kind") == "VarDecl" and "mangledName" in node
+                    and not node.get("isImplicit")):
+                loc = node.get("loc") or {}
+                off = loc.get("offset")
+                if off is not None:
+                    out.append((node["mangledName"], off))
+            for c in node.get("inner", []) or []:
+                visit(c)
+    visit(ast)
+    return out
+
+
+def scan_annotations(text):
+    """Return [(rva, line, symbol_override_or_None, size_or_None, kind)].
+
+    `@address` (a matched FUNCTION) and `@data` (the DATA symbol a matched global
+    is referenced through) are kept distinct: `@address` binds only to function
+    definitions, `@data` only to variable declarations, so a non-matched global
+    or a clang-internal var can never steal a function's `@address`. The optional
+    `@symbol`/`@size` associate only within the same contiguous `//` block.
     """
     out = []
     lines = text.splitlines()
@@ -112,13 +137,16 @@ def scan_annotations(text):
             i += 1
             continue
         j = i
-        block_addrs = []
+        block_addrs = []          # (rva, line, kind)
         block_sym = None
         block_size = None
         while j < n and lines[j].lstrip().startswith("//"):
             ma = ADDR_RE.search(lines[j])
             if ma:
-                block_addrs.append((int(ma.group(1), 16), j + 1))
+                block_addrs.append((int(ma.group(1), 16), j + 1, "func"))
+            md = DATA_RE.search(lines[j])
+            if md:
+                block_addrs.append((int(md.group(1), 16), j + 1, "data"))
             ms = SYM_RE.search(lines[j])
             if ms:
                 block_sym = ms.group(1)
@@ -127,8 +155,8 @@ def scan_annotations(text):
                 s = mz.group(1)
                 block_size = int(s, 16) if s.lower().startswith("0x") else int(s)
             j += 1
-        for rva, ln in block_addrs:
-            out.append((rva, ln, block_sym, block_size))
+        for rva, ln, kind in block_addrs:
+            out.append((rva, ln, block_sym, block_size, kind))
         i = j
     return out
 
@@ -148,6 +176,22 @@ def nm_symbols(obj, nm="llvm-nm"):
     for line in res.stdout.splitlines():
         parts = line.split()
         if len(parts) >= 2 and len(parts[-2]) == 1 and parts[-2] in "TtWw":
+            syms.add(parts[-1])
+    return syms
+
+
+def nm_all_symbols(obj, nm="llvm-nm"):
+    """Every symbol name in the obj, defined or undefined.
+
+    A matched global is only *referenced* in the base obj (declared `extern`),
+    so its mangled name appears as an undefined (`U`) external - the data
+    authority check accepts those alongside defined data symbols.
+    """
+    res = subprocess.run([nm, obj], capture_output=True, text=True)
+    syms = set()
+    for line in res.stdout.splitlines():
+        parts = line.split()
+        if parts:
             syms.add(parts[-1])
     return syms
 
@@ -225,33 +269,45 @@ def main():
         except json.JSONDecodeError:
             log(f"ERROR {tu}: clang produced no JSON AST\n{res.stderr[:400]}")
             continue
-        defs = [(mn, off2line(off)) for (mn, off) in collect_defs(ast)]
-        defs.sort(key=lambda d: d[1])
+        # @address binds to a function DEFINITION, @data to a global variable
+        # DECLARATION - separate candidate pools so the two never cross-steal.
+        func_defs = [(off2line(off), mn) for (mn, off) in collect_defs(ast)]
+        func_defs.sort(key=lambda d: d[0])
+        var_defs = [(off2line(off), mn) for (mn, off) in collect_vars(ast)]
+        var_defs.sort(key=lambda d: d[0])
         addrs = scan_annotations(text)
-        obj_syms = nm_symbols(args.obj[i], args.nm) if i < len(args.obj) else None
+        have_obj = i < len(args.obj)
+        obj_syms = nm_symbols(args.obj[i], args.nm) if have_obj else None
+        all_syms = nm_all_symbols(args.obj[i], args.nm) if have_obj else None
 
-        for rva, line, override, size in addrs:
-            # nearest definition strictly below the @address comment line
-            cand = next((mn for (mn, dl) in defs if dl >= line), None)
+        for rva, line, override, size, ann_kind in addrs:
+            pool = var_defs if ann_kind == "data" else func_defs
+            cand = next((mn for (dl, mn) in pool if dl >= line), None)
             name = override or cand
             if name is None:
-                misses.append((rva, None, unit, "no definition below @address"))
+                misses.append((rva, None, unit, f"no {ann_kind} below @ comment"))
+                continue
+            if ann_kind == "data":                # data: any symbol (incl. undefined U)
+                if obj_syms is None or override or name in all_syms:
+                    rows.append((rva, name, unit, size, "data"))
+                else:
+                    misses.append((rva, name, unit, "data candidate not in base obj"))
                 continue
             if obj_syms is None:                  # no authority check (inspection)
-                rows.append((rva, name, unit, size))
+                rows.append((rva, name, unit, size, "func"))
                 continue
             if name in obj_syms:                  # clang candidate confirmed
-                rows.append((rva, name, unit, size))
+                rows.append((rva, name, unit, size, "func"))
                 continue
             if override:                          # trust explicit @symbol
-                rows.append((rva, name, unit, size))
+                rows.append((rva, name, unit, size, "func"))
                 continue
             # clang's AST mangledName misses the destructor (it emits the
             # `??_D vbase dtor` variant, not the real `??1`). Resolve the canonical
             # `??1<class>@@...@XZ` directly from the obj's code symbols.
             resolved = plain_dtor_symbol(name, obj_syms)
             if resolved:
-                rows.append((rva, resolved, unit, size))
+                rows.append((rva, resolved, unit, size, "func"))
             else:
                 misses.append((rva, name, unit, "candidate not in base obj"))
 
@@ -263,10 +319,13 @@ def main():
         # synth-PDB uses for matched functions Ghidra's auto-analysis never
         # recovered as objects (so a single build is self-contained). Empty when
         # a row carries no @size (then the existing functions.csv boundary wins).
-        f.write("rva,name,unit,size\n")
-        for rva, name, unit, size in rows:
+        # `kind` is func (a matched function) or data (the DATA symbol a matched
+        # global is referenced through); synth_pdb routes data rows to the
+        # data-symbol table instead of synthesising a function record.
+        f.write("rva,name,unit,size,kind\n")
+        for rva, name, unit, size, kind in rows:
             size_s = f"0x{size:x}" if size else ""
-            f.write(f"0x{rva:06x},{name},{unit},{size_s}\n")
+            f.write(f"0x{rva:06x},{name},{unit},{size_s},{kind}\n")
     log(f"wrote {len(rows)} label(s) -> {out}")
     for rva, cand, unit, why in misses:
         log(f"  MISS 0x{rva:x} [{unit}] {why}" + (f" (cand {cand})" if cand else ""))

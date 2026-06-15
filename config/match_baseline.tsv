@@ -99,7 +99,7 @@ font	??0Font@@QAE@XZ	100.0000	100.0000	1	dcab5ab53e77
 font	?AllocateMemory@Font@@QAEHH@Z	92.1429	92.1429	1	99414908efdb
 font	?FreeMemory@Font@@QAEXXZ	100.0000	100.0000	1	747de49130c0
 font	?LoadFont@Font@@QAEHVCString@@@Z	99.9242	99.9242	1	0c5fc1e64daa
-fontconfig	?LoadFontConfig@CFontConfig@@QAEHHH@Z	99.7090	99.7090	1	316f94fae03a
+fontconfig	?LoadFontConfig@CFontConfig@@QAEHHH@Z	99.9735	99.9735	1	316f94fae03a
 fonts	?InitializeFonts@@YAHXZ	76.3461	76.3461	1	831c4f57cca2
 gameapp	??0CGameApp@@QAE@XZ	100.0000	100.0000	2	71e69631f323
 gameapp	?CloseResources@CGameApp@@UAEXXZ	100.0000	100.0000	1	bafd9bf2aa0e

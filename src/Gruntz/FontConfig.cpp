@@ -39,7 +39,12 @@ public:
     int         GetIntDef(char *tag, char *key, int def);            // @0x171aa0
     ButeString *GetStringDef(char *tag, char *key, ButeString *def); // @0x173180
 };
-#define g_bute ((CButeMgr *)0x6453d8)
+// The global CButeMgr instance @0x6453d8 (the ctor stores the bute config tree
+// here). Declared as a named extern so the `mov ecx, offset g_buteMgr` loads
+// reloc-match the engine; @address names the delinked target DATA symbol.
+// @data: 0x2453d8
+extern CButeMgr g_buteMgr;
+#define g_bute (&g_buteMgr)
 
 // The font config strings - the original source literals (the "Font" tag-group
 // + per-font keys). objdiff matches these relocations by value against the

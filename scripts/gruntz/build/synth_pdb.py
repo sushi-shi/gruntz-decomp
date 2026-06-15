@@ -104,16 +104,17 @@ def read_names_map(path):
     auto-analysis never recovered as an object (so it is absent from
     functions.csv) - this keeps a single build self-contained.
 
-    Returns ``{rva: (name, unit, size)}`` (size is an int, 0 when absent/empty);
-    backward-tolerant of a 3-column ``rva,name,unit`` CSV. Empty if no path.
+    Returns ``{rva: (name, unit, size, kind)}`` (size is an int, 0 when
+    absent/empty; kind is ``"func"`` or ``"data"``, defaulting to ``"func"`` for
+    older rows). Backward-tolerant of a 3/4-column CSV. Empty if no path.
     """
     overlay = {}
     if not path:
         return overlay
     with open(path, newline="") as f:
         # Drop full-line '#' comments before the header so DictReader binds the
-        # real 'rva,name,unit[,size]' columns (the CSV is documented with a
-        # comment preamble).
+        # real 'rva,name,unit[,size[,kind]]' columns (the CSV is documented with
+        # a comment preamble).
         lines = [ln for ln in f if not ln.lstrip().startswith("#")]
     for row in csv.DictReader(lines):
         rva_s = (row.get("rva") or "").strip()
@@ -121,7 +122,8 @@ def read_names_map(path):
             continue
         size_s = (row.get("size") or "").strip()       # absent in 3-col CSVs
         size = int(size_s, 0) if size_s else 0
-        overlay[int(rva_s, 16)] = (row["name"].strip(), row["unit"].strip(), size)
+        kind = (row.get("kind") or "func").strip() or "func"
+        overlay[int(rva_s, 16)] = (row["name"].strip(), row["unit"].strip(), size, kind)
     return overlay
 
 
@@ -450,6 +452,33 @@ def patch_symbol_records_stream(pdb_path, target_stream_index):
     return off, cur
 
 
+def apply_named_data(rdata_syms, data_syms, data_names):
+    """Name the DATA symbols of matched globals (labels.py `data` rows).
+
+    ``data_names`` is ``{rva: mangled-name}`` - clang's MS-ABI name for a global
+    a source `extern` references (`?g_foo@@3...` / `_g_foo`), already authority-
+    checked against the base object. Overrides the Ghidra `DAT_`/`s_` placeholder
+    at that RVA (adding the symbol if Ghidra never recorded one) so the delinked
+    reference matches the recompiled one by name. Mutates the lists; returns the
+    count applied.
+    """
+    n = 0
+    for syms, lo, hi in ((rdata_syms, RDATA_BASE, RDATA_END),
+                         (data_syms, DATA_BASE, DATA_END)):
+        seen = {rva for rva, _ in syms}
+        for i, (rva, _name) in enumerate(syms):
+            if rva in data_names:
+                syms[i] = (rva, data_names[rva])
+                n += 1
+        for rva, name in data_names.items():
+            if rva not in seen and lo <= rva < hi:
+                syms.append((rva, name))
+                n += 1
+    rdata_syms.sort()
+    data_syms.sort()
+    return n
+
+
 def apply_string_names(rdata_syms, data_syms, exe_path, base_dir):
     """Rename string-constant data symbols to their MSVC ??_C@... pool names.
 
@@ -515,9 +544,17 @@ def main():
           % (TEXT_BASE, TEXT_END, RDATA_BASE, RDATA_END, DATA_BASE, DATA_END),
           file=sys.stderr)
 
-    names_map = read_names_map(args.names_map)
+    overlay = read_names_map(args.names_map)
+    # func rows drive function records (old 3-tuple shape); data rows name the
+    # global-variable DATA symbols a matched global is referenced through.
+    names_map = {rva: t[:3] for rva, t in overlay.items() if t[3] != "data"}
+    data_names = {rva: t[0] for rva, t in overlay.items() if t[3] == "data"}
     funcs = read_functions(args.functions, names_map)
     rdata_syms, data_syms = read_data_symbols(args.symbols)
+    if data_names:
+        ndat = apply_named_data(rdata_syms, data_syms, data_names)
+        print("[synth_pdb] named %d global data symbol(s) from symbol_names.csv" % ndat,
+              file=sys.stderr)
     if args.base_dir:
         nstr = apply_string_names(rdata_syms, data_syms, args.exe, args.base_dir)
         print("[synth_pdb] renamed %d string constant(s) to MSVC ??_C@ names" % nstr,
