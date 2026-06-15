@@ -593,6 +593,39 @@ source = "src/Gruntz/VideoConfig.cpp"
 status = "wip"
 cflags = ["/nologo", "/c", "/O2", "/MT"]
 
+# --- HUD sprite loaders (src/Gruntz/SpriteLoaders.cpp) -----------------------
+# Two sibling __thiscall sprite-frame cachers. Each looks a named sprite up in the
+# engine string-keyed sprite-set hash table (CSpriteHashTable::Lookup @0x1b8008,
+# external) then, for each wanted frame number N, caches the sprite's frame pointer
+# only when N is in the sprite's inclusive [m_64..m_68] valid-frame range (the
+# repeated cmp m_64,N/jg ; cmp m_68,N/jl ; mov ecx,[m_14] ; mov ecx,[ecx+off]
+# idiom), else 0:
+#   LoadTimerSprite @0x9bb00 (ret 8) - "GAME_TIMER", reached via g_gameReg @0x64556c
+#       (->+0x30 ->+0x10); caches frames 10/11 into +0x10/+0x14/+0x18/+0x1c/+0x20,
+#       bailing to 0 on the first missing frame, then stores its two args into
+#       +0x0/+0x4 and sets +0xc=1, +0x48=0.
+#   LoadLoadingBarSprite @0xd7440 (void) - "GAME_LOADINGBAR", reached via this->m_c
+#       (->+0x10); caches frames 1/2/3 into +0x4c8/+0x4c0/+0x4c4 and sets +0x4bc=1.
+# Plain /O2 /MT (no /GX): scalar leaves, no stack C++ object / EH frame. The two
+# sprite-name string literals match by value; g_gameReg is a named @data extern
+# (?g_gameReg@@3PAUCGameReg@@A, RVA 0x24556c); the Lookup call is reloc-masked.
+# BYTE-EXACT BODIES, PLATEAU (objdiff strict-exact 0/2, ~96-99% fuzzy): both bodies
+# are opcode-identical to the target after the lookup (every frame-range check, the
+# +0x64/+0x68 reads, the m_14[N] frame extraction, the early-out CFG, and the member
+# stores match; the base obj's trailing bytes are COMDAT alignment nops). The SOLE
+# residue is an MSVC5 instruction-scheduling coin-flip on the lookup out-param's
+# zero-init: the target SINKS the `mov [&spr],0` store to just after the two arg
+# pushes (lea &spr / push &spr / push name / mov [&spr],0), while our cl HOISTS it
+# before the lea - the same 2-3 instructions, permuted (byte-content identical).
+# LoadLoadingBarSprite is otherwise length-exact (65/65, 2 permuted insns);
+# LoadTimerSprite is byte-exact body (118 insns, 3 permuted; the base's 4 trailing
+# bytes are nops). Kept wip (not strict-exact).
+[[unit]]
+unit = "spriteloaders"
+source = "src/Gruntz/SpriteLoaders.cpp"
+status = "wip"
+cflags = ["/nologo", "/c", "/O2", "/MT"]
+
 # --- UnknownRemus leaf methods (src/Gruntz/UnknownRemus.cpp) -----------------
 # Five plain /O2 /MT leaves of the tomalla-named class UnknownRemus (its vtable
 # slot 0x38 is CGameLevel::LoadWwd, so this is a CGameLevel-family object). All
