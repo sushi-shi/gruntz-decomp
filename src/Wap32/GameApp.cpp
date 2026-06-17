@@ -14,8 +14,25 @@ class CGameMgr {
 public:
     virtual ~CGameMgr();
     virtual int Run(CGameWnd *pGameWnd, char *szCmdLine);
+
+    void UnknownClose();
+    void UnknownMethodInitializeTimeGlobal();
+
+    int m_4;
+    int m_8;
 };
 }
+
+extern "C" {
+__declspec(dllimport) DWORD __stdcall timeGetTime(void);
+}
+
+// @data: 0x253c70
+extern int g_wap32Now;
+// @data: 0x253c74
+extern int g_wap32FrameDelta;
+// @data: 0x253c78
+extern int g_wap32ClockReset;
 
 // Instance counter (binary: global int @ 0x653c6c, bumped per ctor). Shared
 // (declared in Wap32.h) so the inline ~CGameApp - which CGruntzApp's dtor
@@ -416,4 +433,32 @@ void CGameResource::Wap32GameResVfunc3() {}
 void CGameResource::PerFrameTick() {}
 WAP32::CGameMgr::~CGameMgr() {}
 int WAP32::CGameMgr::Run(CGameWnd *, char *) { return 0; }
+
+// -------------------------------------------------------------------------
+// CGameMgr::UnknownClose
+// Clears the two manager-owned pointers/handles.
+//
+// @address: 0x13ddb0
+// @size:    0x9
+// -------------------------------------------------------------------------
+void WAP32::CGameMgr::UnknownClose()
+{
+    m_4 = 0;
+    m_8 = 0;
+}
+
+// -------------------------------------------------------------------------
+// CGameMgr::UnknownMethodInitializeTimeGlobal
+// Seeds the frame clock from timeGetTime and clears its deltas.
+//
+// @address: 0x13dea0
+// @size:    0x18
+// -------------------------------------------------------------------------
+void WAP32::CGameMgr::UnknownMethodInitializeTimeGlobal()
+{
+    g_wap32Now = timeGetTime();
+    g_wap32FrameDelta = 0;
+    g_wap32ClockReset = 0;
+}
+
 LRESULT __stdcall CGameApp::GameWindowProc(HWND, UINT, WPARAM, LPARAM) { return 0; }

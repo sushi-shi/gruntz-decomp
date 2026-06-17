@@ -2,6 +2,12 @@
 // Matched: ??0CGameWnd@@QAE@XZ @ RVA 0x13cf00 (byte-exact).
 #include "Wap32.h"
 
+extern "C" {
+__declspec(dllimport) BOOL __stdcall IsWindow(HWND hWnd);
+__declspec(dllimport) BOOL __stdcall DestroyWindow(HWND hWnd);
+__declspec(dllimport) void __stdcall PostQuitMessage(int nExitCode);
+}
+
 // -------------------------------------------------------------------------
 // CGameWnd::CGameWnd()
 // Zeroes the OS window handle (m_4) and owner-state field (m_c) after the
@@ -53,6 +59,42 @@ int CGameWnd::CreateAndShow(CGameWndCreateParams *pParams, void *pOwner)
 
     ShowWindow(m_4, 1 /*SW_SHOWNORMAL*/);
     return 1;
+}
+
+// -------------------------------------------------------------------------
+// CGameWnd::Destroy
+// Destroys the OS window if it is still valid, clears owner/window state, and
+// clears the active-window singleton.
+//
+// @address: 0x13cfb0
+// @size:    0x39
+// -------------------------------------------------------------------------
+void CGameWnd::Destroy()
+{
+    if (m_4) {
+        if (IsWindow(m_4))
+            DestroyWindow(m_4);
+        m_4 = 0;
+    }
+    m_8 = 0;
+    s_activeWnd = 0;
+}
+
+// -------------------------------------------------------------------------
+// CGameWnd::QuitMessageLoop
+// Frees the game manager through the owning app, optionally reports the stored
+// error, then posts WM_QUIT.
+//
+// @address: 0x13d490
+// @size:    0x29
+// -------------------------------------------------------------------------
+int CGameWnd::QuitMessageLoop()
+{
+    ((CGameApp *)m_8)->FreeGameManager();
+    if (((CGameApp *)m_8)->m_248)
+        ((CGameApp *)m_8)->ShowError();
+    PostQuitMessage(0);
+    return 0;
 }
 
 // Out-of-line stubs so the vftable (??_7CGameWnd@@6B@) is emitted in this TU.

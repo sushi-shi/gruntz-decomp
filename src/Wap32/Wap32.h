@@ -118,6 +118,8 @@ public:
     // registers this object as the active window singleton, then ShowWindow.
     // Returns nonzero on success.  RVA 0x13cf20.
     int CreateAndShow(CGameWndCreateParams *pParams, void *pOwner);
+    void Destroy();
+    int QuitMessageLoop();
 
     HWND m_4;   // +0x04  HWND (set by CreateAndShow / zeroed by ctor)
     void *m_8;  // +0x08  owner pointer (set by CreateAndShow; not touched by ctor)
