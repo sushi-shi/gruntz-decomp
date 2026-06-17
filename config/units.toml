@@ -764,6 +764,17 @@ source = "src/Gruntz/UnknownAlbus.cpp"
 status = "wip"
 cflags = ["/nologo", "/c", "/O2", "/MT"]
 
+# --- UnknownClassCGruntzMgrHarryPotter root manager (src/Gruntz/HarryPotter.cpp) -
+# Two plain /O2 /MT leaves of the tomalla-named DDraw surface/page-manager root.
+# The ctor @0x155840 stamps the class vftable, clears the owned-child slots and
+# two draw-clock globals; UnknownVirtualMethod14 @0x155f00 is a readiness check
+# over the core child slots plus the first child's +0x14 virtual.
+[[unit]]
+unit = "harrypotter"
+source = "src/Gruntz/HarryPotter.cpp"
+status = "matched"
+cflags = ["/nologo", "/c", "/O2", "/MT"]
+
 # --- UnknownSeverus leaf method (src/Gruntz/UnknownSeverus.cpp) ---------------
 # One plain /O2 /MT leaf of the tomalla-named ddrawmgr sub-manager UnknownSeverus.
 # VirtualMethodUnknown54 @0x156ec0 is a keyed remove-and-destroy on the

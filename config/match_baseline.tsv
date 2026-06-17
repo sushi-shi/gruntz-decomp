@@ -28,6 +28,7 @@ gamewnd	2	2
 grunt	12	0
 gruntzapp	6	6
 gruntzwnd	1	1
+harrypotter	2	2
 image	4	4
 infblock	5	4
 infcodes	3	2
@@ -35,17 +36,28 @@ inffast	1	1
 inflate	7	6
 inftrees	6	6
 infutil	1	1
+inputdeviceconfig	1	0
+logictypetable	1	0
 mapmgr	7	7
 netmgr	4	4
 registryhelper	8	8
 rezmgr	8	6
 sbi_rectonly	1	1
+spriteloaders	2	0
 statusbaritem	1	1
 tiletriggerlogic	1	1
 trees	17	17
 uncompr	1	1
+unknownalbus	2	0
+unknowndraco	1	1
+unknownhagrid	4	4
+unknownhermiona	2	0
+unknownremus	5	4
+unknownseverus	1	0
+videoconfig	2	0
 winapi	4	3
 winmain	1	1
+wormhole	1	1
 wwdfile	4	1
 zutil	2	2
 # [functions]	unit	function	best_pct	cur_pct	tries	src_hash
@@ -149,6 +161,8 @@ gruntzapp	?InitializeGameManager@CGruntzApp@@UAEPAVCGameMgr@WAP32@@XZ	100.0000	1
 gruntzapp	?ShowError@CGruntzApp@@UAEXXZ	100.0000	100.0000	1	938d9e05f893
 gruntzapp	?VirtualUnknownMethod03@CGruntzApp@@UAEHPAXPAD11HHH@Z	100.0000	100.0000	1	ba30c02d23e1
 gruntzwnd	??0CGruntzWnd@@QAE@XZ	100.0000	100.0000	1	24692e97b144
+harrypotter	??0UnknownClassCGruntzMgrHarryPotter@@QAE@XZ	100.0000	100.0000	1	06b334901349
+harrypotter	?UnknownVirtualMethod14@UnknownClassCGruntzMgrHarryPotter@@UAEHXZ	100.0000	100.0000	1	6af0faab2a98
 image	?LoadBmp@CFileImage@@QAEPAXPAD0@Z	100.0000	100.0000	1	f6a87eb17fd3
 image	?LoadFromRez@CImage@@QAEHPADPAX1@Z	100.0000	100.0000	1	1bcc635d4ad6
 image	?LoadPcx@CFileImage@@QAEPAXPAD0@Z	100.0000	100.0000	1	0243f2706a46
@@ -176,6 +190,8 @@ inftrees	_inflate_trees_dynamic	100.0000	100.0000	1	dfefcb841088
 inftrees	_inflate_trees_fixed	100.0000	100.0000	1	0a70daff599f
 inftrees	_inflate_trees_free	100.0000	100.0000	1	f385d577afa6
 infutil	_inflate_flush	100.0000	100.0000	1	e0e7519d9f47
+inputdeviceconfig	?LoadInputDeviceConfig@CInputConfig@@QAE?AVCString@@H@Z	77.3265	77.3265	1	d4b173ecf1ed
+logictypetable	?BuildLogicTypeTable@@YGXPAUCLogicTypeBuilder@@@Z	87.9167	87.9167	1	f6bbce9cde49
 mapmgr	??0CMapArrayA@@QAE@XZ	100.0000	100.0000	1	55becda81ae0
 mapmgr	??0CMapArrayB@@QAE@XZ	100.0000	100.0000	1	1c69a2609b83
 mapmgr	??0CMapMgr@@QAE@XZ	100.0000	100.0000	1	49d04a5843e7
@@ -204,6 +220,8 @@ rezmgr	?MakeImageKey@RezMgr@@QAEHPAXPAD0@Z	100.0000	100.0000	1	bd2762401467
 rezmgr	?MakeRezPath@RezMgr@@QAEHXZ	92.7923	92.7923	1	360c98ec5e9f
 rezmgr	?PerFrameTick@RezMgr@@UAEHXZ	100.0000	100.0000	1	f1239b18879f
 sbi_rectonly	??0CSBI_RectOnly@@QAE@XZ	100.0000	100.0000	1	d5db89c8b98b
+spriteloaders	?LoadLoadingBarSprite@CLoadingBar@@QAEHXZ	95.8064	95.8064	1	fbc7a7742202
+spriteloaders	?LoadTimerSprite@CTimer@@QAEHHH@Z	96.5217	96.5217	1	ea8f9fb552e2
 statusbaritem	??0CStatusBarItem@@QAE@XZ	100.0000	100.0000	1	a7de9ec031f8
 tiletriggerlogic	??0CTileTriggerLogic@@QAE@XZ	100.0000	100.0000	1	07b200136809
 trees	__tr_flush_block	100.0000	100.0000	1	54a1b09eba2f
@@ -224,11 +242,29 @@ trees	_send_all_trees	100.0000	100.0000	1	4943fa3be295
 trees	_send_tree	100.0000	100.0000	1	0a0643654ea9
 trees	_set_data_type	100.0000	100.0000	1	167de8f88841
 uncompr	_uncompress	100.0000	100.0000	1	b40cccad8cc9
+unknownalbus	?VirtualMethodUnknown28@UnknownAlbus@@QAEPAXHPBDH@Z	99.7391	99.7391	1	9762694d5813
+unknownalbus	?VirtualMethodUnknown2C@UnknownAlbus@@QAEPAXHPBDH@Z	99.7391	99.7391	1	869459ccc7a0
+unknowndraco	?VirtualMethodUnknown1C@UnknownDraco@@QAEXXZ	100.0000	100.0000	1	840f1ef71d28
+unknownhagrid	?VirtualMethodUnknown24@UnknownHagrid@@QAEPAXHHH@Z	100.0000	100.0000	1	3298613bc423
+unknownhagrid	?VirtualMethodUnknown28@UnknownHagrid@@QAEPAXHHHH@Z	100.0000	100.0000	1	ff5748a1e60e
+unknownhagrid	?VirtualMethodUnknown2C@UnknownHagrid@@QAEPAXHHHHH@Z	100.0000	100.0000	1	97a6e822b422
+unknownhagrid	?VirtualMethodUnknown30@UnknownHagrid@@QAEPAXHHHHH@Z	100.0000	100.0000	1	4684610caffe
+unknownhermiona	?VirtualMethodUnknown30@UnknownHermiona@@QAEXHHH@Z	89.0909	89.0909	1	47b59a6c6006
+unknownhermiona	?VirtualMethodUnknown34@UnknownHermiona@@QAEXHHH@Z	89.0909	89.0909	1	b6550b6554ca
+unknownremus	?VirtualMethodUnknown24@UnknownRemus@@QAEHHPAURemusCoords@@@Z	100.0000	100.0000	1	21cd7b709c25
+unknownremus	?VirtualMethodUnknown28@UnknownRemus@@QAEHHPAURemusCoords@@@Z	100.0000	100.0000	1	a6af0bad4f03
+unknownremus	?VirtualMethodUnknown2C@UnknownRemus@@QAEHHPAURemusCoords@@@Z	100.0000	100.0000	1	c3a5e7a14f03
+unknownremus	?VirtualMethodUnknown30@UnknownRemus@@QAEHPAURemusCoords@@@Z	100.0000	100.0000	1	a1d83a06d5be
+unknownremus	?VirtualMethodUnknown34@UnknownRemus@@QAEHHH@Z	84.2800	84.2800	1	37195897818c
+unknownseverus	?VirtualMethodUnknown54@UnknownSeverus@@QAEXPBD@Z	77.5185	77.5185	1	2315ff0cd841
+videoconfig	?LoadVideoResolutionConfig@@YAXPAXHH@Z	97.2737	97.2737	1	ac8e36fd7fa6
+videoconfig	?SaveVideoResolutionConfig@@YAXPAX0@Z	88.8148	88.8148	1	3fa52db69011
 winapi	?ActiveWait@WinAPI@Utils@@YAXI@Z	100.0000	100.0000	1	9a0562d46410
 winapi	?FileExists@WinAPI@Utils@@YAHPAD@Z	100.0000	100.0000	1	3e0d9cdd452b
 winapi	?GetGruntzDriveLetter@WinAPI@Utils@@YADXZ	98.4234	98.4234	1	f6c8bd6b46cd
 winapi	?IsGruntzCDInAnyDrive@WinAPI@Utils@@YAHXZ	100.0000	100.0000	1	7f0003761b25
 winmain	_WinMain@16	100.0000	100.0000	2	226ad1be50fa
+wormhole	?LoadColors@CWormhole@@QAEXXZ	100.0000	100.0000	1	ca9d8c1fe720
 wwdfile	?ReadPlane@CGameLevelPlanes@@QAEPAVCPlane@@PAX00@Z	99.5362	99.5362	1	7e3f25116428
 wwdfile	?WwdFile_CheckHeader@@YGHPBDPAX@Z	99.9872	99.9872	1	dcc408cb9dd9
 wwdfile	?WwdFile_IsValidWwd@@YGHPBDPAX@Z	100.0000	100.0000	1	d1c3540f2b07
