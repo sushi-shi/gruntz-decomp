@@ -647,3 +647,95 @@ rva,name,class,prototype,kind,source,confidence
 0x1106b0,LoadSwitchUpSprite,,__thiscall(this) [GAME_SWITCHUP tile-switch],method,decomp-xref,med
 0x0cbcc0,StatusBarItem::vfunc_12,,"__thiscall(this,a,b) [vtable slot 0x0c; GAME_TABHIGHLIGHT1 tab draw/update]",vfunc,decomp-xref,med
 0x0ce660,StatusBarItem::vfunc_16,,"__thiscall(this,a,b,c) [vtable slot 0x10; GAME_TABHIGHLIGHT1]",vfunc,decomp-xref,med
+#
+# ---- leaf-label campaign 2025-06-17 (call-xref: functions whose callees are all matched) ----
+# Found by scripts/analysis/find_leaf_labels_v3.py; each function has 0 unmatched engine
+# callees. Attribution by: callee module, vptr stores, string refs, address contiguity.
+#
+# CGameMgr / CGruntzMgr per-frame update area (module=gameapp/gruntzapp):
+0x0855a0,CGameMgrDerived::scalar_deleting_destructor,CGameMgrDerived,"void* __thiscall(this,flags) [dtor: stores vtable 0x5e9b8c, calls CGameMgr::UnknownClose @0x13ddb0, then scalar-deletes if flags&1. In CGruntzMgr neighborhood (adjacent to CGruntzMgr::UnknownClose @0x0855e0). Scalar-deleting dtor of a CGameMgr subclass]",dtor,call-xref,med
+0x08f620,CGruntzMgr::PerFrameTick,CGruntzMgr,"void __thiscall(this) [per-frame tick: checks m_state @+0x2c (calls state->vtbl+0x10, skips if ==0x11), calls CGameMgr::UnknownMethodInitializeTimeGlobal @0x13dea0, checks m_30 @+0x30, if set calls timeGetTime and stores to g_drawClock globals @0x6bf3c0/bc, then copies g_653c70/74 to g_645580/584 frame counters. Core CGruntzMgr per-frame update method]",method,call-xref,high
+0x08f6a0,CGruntzMgr::VirtualUnknownMethod06,CGruntzMgr,"bool __thiscall(this,bool) [virtual slot? calls self->vtbl+0x0c, then checks m_state @+0x2c/0x14/0x48; calls 0x138900 (DirectSound) on success. CGruntzMgr per-frame sub-update, called just after PerFrameTick @0x08f620]",method,call-xref,med
+#
+# Font lifecycle (module=fonts):
+0x1158f0,FreeAllFonts,,"bool FreeAllFonts() [frees all four global bitmap fonts (g_largeFont @0x64eac0, g_mediumFont @0x64eae8, g_smallFont @0x64eb00, g_tinyFont @0x64ea58) via Font::FreeMemory @0x1797b0. Counterpart to CGruntzMgr::InitializeFonts @0x115810. Returns 1]",free,call-xref,high
+#
+# WWD level validation (module=wwdfile or gamelevel):
+0x03b470,WwdFile::ValidateMainBlock,WwdFile,"int WwdFile::ValidateMainBlock(void* header) [SEH-framed: checks version fields at header-8; accesses g_gameReg @0x64556c->+0x30->+0x24; calls WwdFile::CheckHeader @0x160660; validates numeric-string fields; calls atoi at 0x11ffb0. WWD main-block format/version validator in the CGameLevel::LoadWwd chain]",method,call-xref,med
+#
+# CGrunt config reader (module=grunt):
+0x048400,CGrunt::ReadConfigFromButeMgr,CGrunt,"void __thiscall(this) [reads DwordDef from CButeMgr via GetDwordDef @0x1721e0. Adjacent to CGrunt::BuildAnimationKey @0x048470. Likely loads grunt-type tuning from .att config]",method,call-xref,med
+#
+# CNetMgr frame-rate limiter (module=netmgr):
+0x0bc070,CNetMgr::FrameRateLimit,CNetMgr,"int __thiscall(this) [frame-rate governor: calls timeGetTime, subtracts this->m_lastFrameTime+0x5e4, stores elapsed to +0x5e0. If <0x1e (30ms), calls ActiveWait(0x1f-elapsed) for 31ms total; if >0x28 (40ms) and callback flag @+0x578 set, toggles global @0x648d0c. CNetMgr per-frame rate limiter]",method,call-xref,high
+0x0bd030,CNetMgr::GetMaxPlayerValue,CNetMgr,"int __thiscall(this) [iterates 4 player entries at this+0x5f0, finds maximum value. If m_528 non-null reads from [m_528]; else reads from the chained player struct at this+0x4+0x37c. CNetMgr peer-max tracking, likely for frame-sync latency]",method,call-xref,med
+0x0bd0b0,CNetMgr::CheckVersionAndReport,CNetMgr,"void __thiscall(this,void* remoteVersionInfo) [compares version fields at 0x60fa70/0x60fa74 with arg's version fields; on mismatch sets m_570=1 and emits 'This version is not the same as the...' (@0x6120f4) string via PostMessageA(WM_COMMAND 0x111,0x8023) to parent HWND; sleeps 250ms. CNetMgr multiplayer version mismatch handler]",method,call-xref,high
+0x0bcf20,CNetMgr::EnsureFileIOAvailable,CNetMgr,"void __thiscall(this) [no vptr store; pure call-xref to CFileIO ctor at 0x1befd7. Constructs CFileIO at this+0x124. In CNetMgr neighborhood. CNetMgr sub-object lazy construction]",method,call-xref,low
+0x0bd000,CNetMgr::CallMethod_0bd000,CNetMgr,"void __thiscall(this) [calls two subroutines with args 0x421; neighborhood with other CNetMgr methods. CNetMgr internal helper]",method,call-xref,low
+0x0bd180,CNetMgr::CallMethod_0bd180,CNetMgr,"void __thiscall(this) [no vptr store; call-xref only to CFileIO ctor. In CNetMgr neighborhood. CNetMgr internal helper]",method,call-xref,low
+#
+# CNetMgr ReportError shim area (module=netmgr, contiguous with CNetMgr::ReportError @0x1776a0):
+0x178e20,CNetMgr::ReportError_thunk0,CNetMgr,"__thiscall(this,...) [shim/wrapper forwarding to CNetMgr::ReportError @0x1776a0. Stack arg handle. CNetMgr error-logging dispatcher]",method,call-xref,med
+0x178e90,CNetMgr::ReportError_thunk1,CNetMgr,"__thiscall(this,...) [shim/wrapper forwarding to CNetMgr::ReportError @0x1776a0]",method,call-xref,med
+0x178eb0,CNetMgr::ReportError_thunk2,CNetMgr,"__thiscall(this,...) [shim/wrapper forwarding to CNetMgr::ReportError @0x1776a0]",method,call-xref,med
+0x178ef0,CNetMgr::ReportError_thunk3,CNetMgr,"__thiscall(this,...) [shim/wrapper forwarding to CNetMgr::ReportError @0x1776a0]",method,call-xref,med
+0x178fc0,CNetMgr::ReportError_thunk4,CNetMgr,"__thiscall(this,...) [shim/wrapper forwarding to CNetMgr::ReportError @0x1776a0]",method,call-xref,med
+0x179090,CNetMgr::ReportError_thunk5,CNetMgr,"__thiscall(this,...) [shim/wrapper forwarding to CNetMgr::ReportError @0x1776a0]",method,call-xref,med
+0x179130,CNetMgr::ReportError_thunk6,CNetMgr,"__thiscall(this,...) [shim/wrapper forwarding to CNetMgr::ReportError @0x1776a0]",method,call-xref,med
+#
+# CDirectDrawMgr error-reporting wrappers (module=ddrawmgr):
+0x08dd80,CDirectDrawMgr::ErrorThunk_08dd80,CDirectDrawMgr,"__thiscall(this,...) [forwarding wrapper calling CDirectDrawMgr::GetErrorString @0x141400. Error-logging dispatcher in DDrawMgr TU]",method,call-xref,med
+0x08ddd0,CDirectDrawMgr::ErrorThunk_08ddd0,CDirectDrawMgr,"__thiscall(this,...) [forwarding wrapper calling CDirectDrawMgr::GetErrorString @0x141400]",method,call-xref,med
+#
+# CFileIO utility wrappers (module=filestream):
+0x0bd3e0,CFileIO::OpenFileRetry,CFileIO,"bool CFileIO::OpenFileRetry(char* name) [retries file open: closes then reopens global CFileIO @0x646778 with mode 1. File-open resilience helper]",method,call-xref,med
+0x0e5550,CFileIO::OpenAndDeleteFile,CFileIO,"int CFileIO::OpenAndDeleteFile(...) [SEH-framed: constructs CFileIO, opens file at arg+0x35, on success closes then calls CFile::Remove(DeleteFileA) @0x1bf559. Temp-file cleanup helper]",method,call-xref,med
+0x0e5700,CFileIO::OpenAndCloseFile,CFileIO,"int CFileIO::OpenAndCloseFile(...) [SEH-framed: constructs CFileIO, opens file at arg+0x35, on success closes immediately, returns 1. File existence/openability check]",method,call-xref,med
+0x08fea0,CGruntzMgr::InitCFileIOMember,CGruntzMgr,"void __thiscall(this) [SEH-framed ctor-initializer for CGruntzMgr: constructs CFileIO at this+0x124 and another object at this+0x138; zeroes scalar fields. Adjacent to CGruntzMgr::BuildMoviePath @0x08ff30. CGruntzMgr file-stream sub-object initialization]",method,call-xref,med
+#
+# DinMgr2/DsndMgr/DDrawMgr error-string callers (reporting helpers):
+0x134fb0,DirectInputMgr2::ErrorThunk_134fb0,DirectInputMgr2,"[stub calling DirectInputMgr2::GetErrorString @0x133590]",method,call-xref,med
+0x134eb0,DirectInputMgr2::ErrorThunk_134eb0,DirectInputMgr2,"[stub calling DirectInputMgr2::GetErrorString @0x133590]",method,call-xref,med
+0x134ef0,DirectInputMgr2::ErrorThunk_134ef0,DirectInputMgr2,"[stub calling DirectInputMgr2::GetErrorString @0x133590]",method,call-xref,med
+0x132f80,DirectInputMgr2::ErrorThunk_132f80,DirectInputMgr2,"[stub calling DirectInputMgr2::GetErrorString @0x133590]",method,call-xref,med
+0x134f30,DirectInputMgr2::ErrorThunk_134f30,DirectInputMgr2,"[stub calling DirectInputMgr2::GetErrorString @0x133590]",method,call-xref,med
+0x134cb0,DirectInputMgr2::ErrorThunk_134cb0,DirectInputMgr2,"[stub calling DirectInputMgr2::GetErrorString @0x133590]",method,call-xref,med
+0x135310,DirectSoundMgr::ErrorThunk_135310,DirectSoundMgr,"[stub calling DirectSoundMgr::GetErrorString @0x138150]",method,call-xref,med
+0x1355f0,DirectSoundMgr::ErrorThunk_1355f0,DirectSoundMgr,"[stub calling DirectSoundMgr::GetErrorString @0x138150]",method,call-xref,med
+0x1357f0,DirectSoundMgr::ErrorThunk_1357f0,DirectSoundMgr,"[stub calling DirectSoundMgr::GetErrorString @0x138150]",method,call-xref,med
+0x135a70,DirectSoundMgr::ErrorThunk_135a70,DirectSoundMgr,"[stub calling DirectSoundMgr::GetErrorString @0x138150]",method,call-xref,med
+0x135a20,DirectSoundMgr::ErrorThunk_135a20,DirectSoundMgr,"[stub calling DirectSoundMgr::GetErrorString @0x138150]",method,call-xref,med
+0x1353f0,DirectSoundMgr::ErrorThunk_1353f0,DirectSoundMgr,"[stub calling DirectSoundMgr::GetErrorString @0x138150]",method,call-xref,med
+0x135440,DirectSoundMgr::ErrorThunk_135440,DirectSoundMgr,"[stub calling DirectSoundMgr::GetErrorString @0x138150]",method,call-xref,med
+0x135ac0,DirectSoundMgr::ErrorThunk_135ac0,DirectSoundMgr,"[stub calling DirectSoundMgr::GetErrorString @0x138150]",method,call-xref,med
+0x1359c0,DirectSoundMgr::ErrorThunk_1359c0,DirectSoundMgr,"[stub calling DirectSoundMgr::GetErrorString @0x138150]",method,call-xref,med
+0x135740,DirectSoundMgr::ErrorThunk_135740,DirectSoundMgr,"[stub calling DirectSoundMgr::GetErrorString @0x138150]",method,call-xref,med
+0x1365f0,DirectSoundMgr::ErrorThunk_1365f0,DirectSoundMgr,"[stub calling DirectSoundMgr::GetErrorString @0x138150]",method,call-xref,med
+0x135560,DirectSoundMgr::ErrorThunk_135560,DirectSoundMgr,"[stub calling DirectSoundMgr::GetErrorString @0x138150]",method,call-xref,med
+0x135880,DirectSoundMgr::ErrorThunk_135880,DirectSoundMgr,"[stub calling DirectSoundMgr::GetErrorString @0x138150]",method,call-xref,med
+0x135380,DirectSoundMgr::ErrorThunk_135380,DirectSoundMgr,"[stub calling DirectSoundMgr::GetErrorString @0x138150]",method,call-xref,med
+0x1351d0,DirectSoundMgr::ErrorThunk_1351d0,DirectSoundMgr,"[stub calling DirectSoundMgr::GetErrorString @0x138150]",method,call-xref,med
+0x135f40,DirectSoundMgr::ErrorThunk_135f40,DirectSoundMgr,"[stub calling DirectSoundMgr::GetErrorString @0x138150]",method,call-xref,med
+0x137260,DirectSoundMgr::ErrorThunk_137260,DirectSoundMgr,"[stub calling DirectSoundMgr::GetErrorString @0x138150]",method,call-xref,med
+0x13e690,CDirectDrawMgr::ErrorThunk_13e690,CDirectDrawMgr,"[stub calling CDirectDrawMgr::GetErrorString @0x141400]",method,call-xref,med
+0x13eaa0,CDirectDrawMgr::ErrorThunk_13eaa0,CDirectDrawMgr,"[stub calling CDirectDrawMgr::GetErrorString @0x141400]",method,call-xref,med
+0x13fa60,CDirectDrawMgr::ErrorThunk_13fa60,CDirectDrawMgr,"[stub calling CDirectDrawMgr::GetErrorString @0x141400]",method,call-xref,med
+0x147c30,CDirectDrawMgr::ErrorThunk_147c30,CDirectDrawMgr,"[stub calling CDirectDrawMgr::GetErrorString @0x141400]",method,call-xref,med
+0x147390,CDirectDrawMgr::ErrorThunk_147390,CDirectDrawMgr,"[stub calling CDirectDrawMgr::GetErrorString @0x141400]",method,call-xref,med
+0x147cd0,CDirectDrawMgr::ErrorThunk_147cd0,CDirectDrawMgr,"[stub calling CDirectDrawMgr::GetErrorString @0x141400]",method,call-xref,med
+0x13e6d0,CDirectDrawMgr::ErrorThunk_13e6d0,CDirectDrawMgr,"[stub calling CDirectDrawMgr::GetErrorString @0x141400]",method,call-xref,med
+0x13ef90,CDirectDrawMgr::ErrorThunk_13ef90,CDirectDrawMgr,"[stub calling CDirectDrawMgr::GetErrorString @0x141400]",method,call-xref,med
+0x13ee60,CDirectDrawMgr::ErrorThunk_13ee60,CDirectDrawMgr,"[stub calling CDirectDrawMgr::GetErrorString @0x141400]",method,call-xref,med
+0x13e850,CDirectDrawMgr::ErrorThunk_13e850,CDirectDrawMgr,"[stub calling CDirectDrawMgr::GetErrorString @0x141400]",method,call-xref,med
+0x13eef0,CDirectDrawMgr::ErrorThunk_13eef0,CDirectDrawMgr,"[stub calling CDirectDrawMgr::GetErrorString @0x141400]",method,call-xref,med
+0x13e140,CDirectDrawMgr::ErrorThunk_13e140,CDirectDrawMgr,"[stub calling CDirectDrawMgr::GetErrorString @0x141400]",method,call-xref,med
+#
+# UnknownSeverus constructor (module=unknownseverus):
+0x156e10,UnknownCGruntzMgrHogwarts::Constructor_156e10,UnknownCGruntzMgrHogwarts,"void __thiscall(this) [SEH-framed ctor: stores initial vtable 0x5efd28, calls UnknownSeverus::VirtualMethodUnknown1C @0x154ac0, constructs [this+0x10], sets +0x04=0xffffffff, +0x08=0, +0x0c=0, stores final vtable 0x5e8cb4. Ctor in the Severus/Hogwarts constructor chain]",ctor,call-xref,med
+0x157630,UnknownCGruntzMgrLucius::Constructor_157630,UnknownCGruntzMgrLucius,"void __thiscall(this) [SEH-framed ctor: stores initial vtable 0x5efdc0, calls UnknownHermiona::VirtualMethodUnknown1C @0x1591e0, constructs sub-objects at +0x48/+0x2c/+0x10, sets scalar fields, stores final vtable 0x5e8cb4. Ctor in the Lucius/Hermiona constructor chain]",ctor,call-xref,med
+0x157720,UnknownSirius::VirtualMethod_157720,UnknownSirius,"void __thiscall(this) [calls UnknownSeverus::VirtualMethodUnknown58 @0x165210. In the Severus/Sirius neighborhood. Sirius virtual method]",vfunc,call-xref,med
+0x1611e0,UnknownRemus::Constructor_1611e0,UnknownRemus,"void __thiscall(this) [SEH-framed ctor: stores initial vtable 0x5f0150, calls UnknownRemus::VirtualMethodUnknown1C @0x15d1f0, constructs sub-objects at +0x48/+0x34/+0x20, sets scalar fields, stores final vtable 0x5e8cb4. Ctor in the Remus/CGameLevel constructor chain]",ctor,call-xref,med
+#
+# zlib trees.c initialization (module=trees):
+0x188440,_tr_init,,"int _tr_init(z_streamp deflate) [trees.c initialization: calls the static-table init subroutine @0x1884c0, then _init_block @0x1886b0; sets up internal state fields including block pointers +0xa70/+0x97c/+0xb0c, static-table refs +0xb14/+0xb20/+0xb2c, and word/dword defaults +0x16b0/+0x16b4/+0x16ac. zlib 1.0.4 trees.c: tr_init]. Called from _deflate_init 0x186d30 (matched, deflate unit)",free,call-xref,high
+0x1884c0,_ct_init,,"void _ct_init(void) [zlib trees.c static-table init subroutine. Called from _tr_init @0x188440. Initializes length/distance code tables + frequency-count arrays. Loops over 0x1c (28) length codes and 0x1e (30) distance codes building statically-defined frequency tables. zlib 1.0.4 trees.c]",free,call-xref,med
