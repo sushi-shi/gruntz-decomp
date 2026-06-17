@@ -35,57 +35,57 @@ platform = "win32"
 [[unit]]
 unit = "adler32"
 source = "vendor/zlib-1.0.4/adler32.c"
-status = "matched"
+status = "wip"
 
 [[unit]]
 unit = "deflate"
 source = "vendor/zlib-1.0.4/deflate.c"
-status = "matched"
+status = "wip"
 
 [[unit]]
 unit = "trees"
 source = "vendor/zlib-1.0.4/trees.c"
-status = "matched"
+status = "wip"
 
 [[unit]]
 unit = "inftrees"
 source = "vendor/zlib-1.0.4/inftrees.c"
-status = "matched"
+status = "wip"
 
 [[unit]]
 unit = "infblock"
 source = "vendor/zlib-1.0.4/infblock.c"
-status = "matched"
+status = "wip"
 
 [[unit]]
 unit = "infcodes"
 source = "vendor/zlib-1.0.4/infcodes.c"
-status = "matched"
+status = "wip"
 
 [[unit]]
 unit = "inffast"
 source = "vendor/zlib-1.0.4/inffast.c"
-status = "matched"
+status = "wip"
 
 [[unit]]
 unit = "infutil"
 source = "vendor/zlib-1.0.4/infutil.c"
-status = "matched"
+status = "wip"
 
 [[unit]]
 unit = "zutil"
 source = "vendor/zlib-1.0.4/zutil.c"
-status = "matched"
+status = "wip"
 
 [[unit]]
 unit = "inflate"
 source = "vendor/zlib-1.0.4/inflate.c"
-status = "matched"
+status = "wip"
 
 [[unit]]
 unit = "uncompr"
 source = "vendor/zlib-1.0.4/uncompr.c"
-status = "matched"
+status = "wip"
 
 # --- engine constructors (src/) ---------------------------------------------
 # First byte-matched ENGINE (non-library) code: small self-contained ctors that
@@ -102,12 +102,12 @@ status = "matched"
 [[unit]]
 unit = "gamewnd"
 source = "src/Wap32/GameWnd.cpp"
-status = "matched"
+status = "wip"
 
 [[unit]]
 unit = "gameapp"
 source = "src/Wap32/GameApp.cpp"
-status = "matched"
+status = "wip"
 # InitializeGameWindow (@0x13db60) does `new CGameWnd` whose ctor sits under a
 # C++ exception frame (__CxxFrameHandler + FuncInfo), so this TU is built with
 # C++ EH enabled (/GX). The other CGameApp methods carry the EH cost as zero
@@ -117,17 +117,17 @@ cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
 [[unit]]
 unit = "statusbaritem"
 source = "src/Gruntz/StatusBarItem.cpp"
-status = "matched"
+status = "wip"
 
 [[unit]]
 unit = "sbi_rectonly"
 source = "src/Gruntz/SBI_RectOnly.cpp"
-status = "matched"
+status = "wip"
 
 [[unit]]
 unit = "tiletriggerlogic"
 source = "src/Gruntz/TileTriggerLogic.cpp"
-status = "matched"
+status = "wip"
 
 # --- MFC battle/multiplayer setup dialogs (src/Gruntz) ----------------------
 # The CDialog-subclass ctors (CBattlezDlg/Custom/Colors + CMultiStartDlg). Three
@@ -137,7 +137,7 @@ status = "matched"
 [[unit]]
 unit = "dialogs"
 source = "src/Gruntz/Dialogs.cpp"
-status = "matched"
+status = "wip"
 cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
 
 # --- WWD level loader (src/Wwd) ---------------------------------------------
@@ -176,7 +176,7 @@ cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
 [[unit]]
 unit = "filestream"
 source = "src/Io/FileStream.cpp"
-status = "matched"
+status = "wip"
 cflags = ["/nologo", "/c", "/O1", "/MT", "/GX"]
 
 # --- RezMgr archive container (src/Rez) -------------------------------------
@@ -215,21 +215,21 @@ cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
 [[unit]]
 unit = "image"
 source = "src/Image/Image.cpp"
-status = "matched"
+status = "wip"
 cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
 
 # --- Registry/config wrapper (src/Utils) ------------------------------------
 [[unit]]
 unit = "registryhelper"
 source = "src/Utils/RegistryHelper.cpp"
-status = "matched"
+status = "wip"
 
 # --- Advanced Options dialog (src/Gruntz) -----------------------------------
 # 5/5 byte-exact (reloc-masked operands only; see docs/match-learnings.md).
 [[unit]]
 unit = "advancedoptions"
 source = "src/Gruntz/AdvancedOptions.cpp"
-status = "matched"
+status = "wip"
 
 # --- Gruntz application object (src/Gruntz) ---------------------------------
 # InitializeGameManager (@0x080a20) does `new WAP32::CGameMgr` whose throwing
@@ -242,7 +242,7 @@ status = "matched"
 [[unit]]
 unit = "gruntzapp"
 source = "src/Gruntz/GruntzApp.cpp"
-status = "matched"
+status = "wip"
 cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
 
 [[unit]]
@@ -305,7 +305,7 @@ cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
 [[unit]]
 unit = "winapi"
 source = "src/Utils/WinAPI.cpp"
-status = "matched"
+status = "wip"
 cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
 
 # --- CGrunt HUD sprite-creator cluster (src/Gruntz/Grunt.cpp) ---------------
@@ -347,7 +347,7 @@ cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
 [[unit]]
 unit = "netmgr"
 source = "src/Net/NetMgr.cpp"
-status = "matched"
+status = "wip"
 cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
 
 # --- WinMain program entry (src/Gruntz/WinMain.cpp) -------------------------
@@ -363,7 +363,7 @@ cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
 [[unit]]
 unit = "winmain"
 source = "src/Gruntz/WinMain.cpp"
-status = "matched"
+status = "wip"
 cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
 
 # --- CState game-state hierarchy (src/Gruntz/GameMode.cpp) ------------------
@@ -385,7 +385,7 @@ cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
 [[unit]]
 unit = "gamemode"
 source = "src/Gruntz/GameMode.cpp"
-status = "matched"
+status = "wip"
 cflags = ["/nologo", "/c", "/O2", "/MT"]
 
 # --- CPlay::Render in-game per-frame loop (src/Gruntz/CPlay.cpp) [WIP] -------
@@ -481,7 +481,7 @@ cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
 [[unit]]
 unit = "fonts"
 source = "src/Gruntz/Fonts.cpp"
-status = "matched"
+status = "wip"
 cflags = ["/nologo", "/c", "/O2", "/MT"]
 
 # --- Font-setup path: LoadFontConfig (src/Gruntz/FontConfig.cpp) -------------
@@ -543,7 +543,7 @@ cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
 [[unit]]
 unit = "gametext"
 source = "src/Gruntz/GameText.cpp"
-status = "matched"
+status = "wip"
 
 # --- CWormhole color resolver (src/Gruntz/Wormhole.cpp) ---------------------
 # CWormhole::LoadColors @0x411f0 (160 B, __thiscall void) - the wormhole world
@@ -560,7 +560,7 @@ status = "matched"
 [[unit]]
 unit = "wormhole"
 source = "src/Gruntz/Wormhole.cpp"
-status = "matched"
+status = "wip"
 cflags = ["/nologo", "/c", "/O2", "/MT"]
 
 # --- Video-resolution config pair (src/Gruntz/VideoConfig.cpp) ---------------
@@ -683,22 +683,23 @@ source = "src/Gruntz/LogicTypeTable.cpp"
 status = "wip"
 cflags = ["/nologo", "/c", "/O2", "/MT"]
 
-# --- UnknownRemus leaf methods (src/Gruntz/UnknownRemus.cpp) -----------------
-# Five plain /O2 /MT leaves of the tomalla-named class UnknownRemus (its vtable
-# slot 0x38 is CGameLevel::LoadWwd, so this is a CGameLevel-family object). All
-# touch only member offsets, a 4-int arg record copied to +0x10, the shared
-# +0xb0..+0xdc "default parameters" block, and sibling virtuals via the object's
-# own vtable - NO SEH frame, NO string/global relocations:
-#   VirtualMethodUnknown30 @0x15d0d0 - copy *coords -> +0x10, stamp block, ret 1
-#   VirtualMethodUnknown34 @0x15d030 - zero/decrement +0x10 record, stamp, ret 1
-#   VirtualMethodUnknown24 @0x15cf70 - copy + stamp + dispatch vtable +0x38
-#   VirtualMethodUnknown28 @0x15ceb0 - copy + stamp + dispatch vtable +0x3c
-#   VirtualMethodUnknown2C @0x15cdf0 - copy + stamp + dispatch vtable +0x40
+# --- UnknownRemus (CGameLevel) methods (src/Gruntz/UnknownRemus.cpp) -----------
+# The tomalla-named class UnknownRemus (vtable slot 0x38 = CGameLevel::LoadWwd).
+# 8/11 byte-exact (+ 1 pre-existing plateau at 84.28%) under /O2 /MT /GX (the
+# VirtualMethodUnknown40 and ctor carry C++ EH frames for CFileIO / embedded
+# CByteArray sub-object destructors). Members per CGameLevel layout:
+#   +0x04 arg2  +0x08 arg3  +0x0c arg1  +0x10 coords  +0x20 CCDWordArray(0x14)
+#   +0x34 ptrArrayA  +0x48 ptrArrayB  +0x5c mainPlane  +0x60 mainIndex
+#   +0x64 +0x68 =0x40  +0x6c levelName[64]  +0xac checksum
+#   +0xb0..+0xdc param block  +0xe0 m_header[381] (WwdHeader work buffer)
+#   Ctor @0x15ccd0 (ret 0xc, 56.25% - structural: two-phase vtable + SEH frame).
+#   Unknown14/30/24/28/2C/1C/20/44: 100%.  Unknown34: 84.28% (pre-existing).
+#   Unknown40 @0x15d500: 80.24% (SEH scheduling entropy - CFileIO ret 4).
 [[unit]]
 unit = "unknownremus"
 source = "src/Gruntz/UnknownRemus.cpp"
 status = "wip"
-cflags = ["/nologo", "/c", "/O2", "/MT"]
+cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
 
 # --- UnknownHagrid leaf factory methods (src/Gruntz/UnknownHagrid.cpp) --------
 # Four plain /O2 /MT factories of the tomalla-named ddrawmgr sub-manager
@@ -716,7 +717,7 @@ cflags = ["/nologo", "/c", "/O2", "/MT"]
 [[unit]]
 unit = "unknownhagrid"
 source = "src/Gruntz/UnknownHagrid.cpp"
-status = "matched"
+status = "wip"
 cflags = ["/nologo", "/c", "/O2", "/MT"]
 
 # --- UnknownDraco leaf cleanup method (src/Gruntz/UnknownDraco.cpp) -----------
@@ -728,7 +729,7 @@ cflags = ["/nologo", "/c", "/O2", "/MT"]
 [[unit]]
 unit = "unknowndraco"
 source = "src/Gruntz/UnknownDraco.cpp"
-status = "matched"
+status = "wip"
 cflags = ["/nologo", "/c", "/O2", "/MT"]
 
 # --- UnknownHermiona leaf broadcast methods (src/Gruntz/UnknownHermiona.cpp) --
@@ -757,12 +758,12 @@ cflags = ["/nologo", "/c", "/O2", "/MT"]
 # masked new / operator[] calls + the DIR32 worker-vftable store:
 #   VirtualMethodUnknown28 @0x165990 - worker virt +0x28
 #   VirtualMethodUnknown2C @0x165a10 - worker virt +0x2c
-# (sibling VirtualMethodUnknown1C @0x165b90 map-teardown deferred: /GX EH frame.)
+# VirtualMethodUnknown1C @0x165b90 now in-flight (needs /GX for CString EH frame).
 [[unit]]
 unit = "unknownalbus"
 source = "src/Gruntz/UnknownAlbus.cpp"
 status = "wip"
-cflags = ["/nologo", "/c", "/O2", "/MT"]
+cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
 
 # --- UnknownClassCGruntzMgrHarryPotter root manager (src/Gruntz/HarryPotter.cpp) -
 # Two plain /O2 /MT leaves of the tomalla-named DDraw surface/page-manager root.
@@ -772,7 +773,7 @@ cflags = ["/nologo", "/c", "/O2", "/MT"]
 [[unit]]
 unit = "harrypotter"
 source = "src/Gruntz/HarryPotter.cpp"
-status = "matched"
+status = "wip"
 cflags = ["/nologo", "/c", "/O2", "/MT"]
 
 # --- UnknownSeverus surface/page-map manager (src/Gruntz/UnknownSeverus.cpp) ---
@@ -787,3 +788,197 @@ unit = "unknownseverus"
 source = "src/Gruntz/UnknownSeverus.cpp"
 status = "wip"
 cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+
+# --- DirectSoundMgr error-string mapper (src/Dsndmgr) --------------------
+# DirectSoundMgr::GetErrorString @0x138150 maps DSERR_* HRESULTs to symbol
+# names and outputs via the configured reporting channels.
+[[unit]]
+unit = "dsndmgr"
+source = "src/Dsndmgr/Dsndmgr.cpp"
+status = "wip"
+cflags = ["/nologo", "/c", "/O2", "/MT"]
+
+# --- DirectInputMgr2 error-string mapper (src/DinMgr) ---------------------
+# DirectInputMgr2::GetErrorString @0x133590 maps DIERR_* HRESULTs to symbol
+# names + descriptions.
+[[unit]]
+unit = "dinmgr2"
+source = "src/DinMgr/DinMgr2.cpp"
+status = "wip"
+cflags = ["/nologo", "/c", "/O2", "/MT"]
+
+# --- CDirectDrawMgr error-string mapper (src/DDrawMgr) --------------------
+# CDirectDrawMgr::GetErrorString @0x141400 maps DDERR_* HRESULTs to symbol
+# names + descriptions (2101 B, the largest).
+[[unit]]
+unit = "ddrawmgr"
+source = "src/DDrawMgr/DDrawMgr.cpp"
+status = "wip"
+cflags = ["/nologo", "/c", "/O2", "/MT"]
+
+# --- Level effect sprite preloader (src/Gruntz) ----------------------------
+# LoadLevelEffectSprites @0x0dc060 (1307 B, __thiscall) - loads 30 hazard/deathz/
+# effect sprites from the sprite-manager's CMapStringToOb and stamps their
+# frame-duration field at +0x18. Plain /O2 /MT: scalar leaf, no EH frame.
+[[unit]]
+unit = "leveleffectsprites"
+source = "src/Gruntz/LoadLevelEffectSprites.cpp"
+status = "wip"
+cflags = ["/nologo", "/c", "/O2", "/MT"]
+
+# --- Battlez random-map setup (src/Gruntz) ---------------------------------
+# LoadBattlezMapConfig @0x025020 (2436 B, __thiscall ret c) - Battlez config
+# reader: loads ~20 DwordDef/IntDef values from the "Battlez" bute group,
+# walks three level-object spawn lists, applies difficulty-based time scaling,
+# and computes cumulative item-probability sums. Plain /O2 /MT.
+[[unit]]
+unit = "battlezmapconfig"
+source = "src/Gruntz/LoadBattlezMapConfig.cpp"
+status = "wip"
+cflags = ["/nologo", "/c", "/O2", "/MT"]
+
+# --- SFMAN32.DLL SoundFont device selector (src/SFManager) ----------------
+# SelectBestDevice @0x0f8970 loads SFMAN32.DLL, enumerates SoundFont devices,
+# rates each one, and returns the best index.
+[[unit]]
+unit = "sfmanager"
+source = "src/SFManager/SFManager.cpp"
+status = "wip"
+cflags = ["/nologo", "/c", "/O2", "/MT"]
+
+# --- CGruntzCommand family (src/Gruntz/Commands.cpp) ------------------------
+# Command-pattern base + leaf classes: CGruntzCommand (vftable @0x5e9674),
+# CGruntzSingleCommand (vftable @0x5e9634), CGruntzMultiCommand (vftable
+# @0x5e96b4). 5 small leaves: default+copy ctors + scalar-deleting dtor for
+# the base, two pool-checking factories for the deriveds. Plain /O2 /MT: all
+# five have no stack C++ object / EH frame; the pool-handler tail calls and
+# operator new calls are reloc-masked.
+[[unit]]
+unit = "commands"
+source = "src/Gruntz/Commands.cpp"
+status = "wip"
+cflags = ["/nologo", "/c", "/O2", "/MT"]
+
+# --- CTileTriggerSwitchLogic (src/Gruntz/TileTriggerSwitchLogic.cpp) --------
+# A tile-trigger "switch" class with a linked list: ctor @0x110430 zeroes
+# m_block + seeds m_20; RemoveByKey @0x116320 searches+deletes from the list.
+# Plain /O2 /MT: scalar leaves, no stack C++ object / EH frame.
+[[unit]]
+unit = "tileswitchlogic"
+source = "src/Gruntz/TileTriggerSwitchLogic.cpp"
+status = "wip"
+cflags = ["/nologo", "/c", "/O2", "/MT"]
+
+# --- UnknownCGruntzMgrLucius surface-manager base (src/Gruntz/UnknownLucius.cpp) --
+# Tomalla-named DDraw surface-family shared base (Hogwarts -> Lucius). Ctor
+# @0x156cb0 seeds the three fields; the scalar-deleting dtor @0x1574d0 calls
+# VirtualMethodUnknown1C (may throw -> /GX), resets fields, and chains base.
+[[unit]]
+unit = "unknownlucius"
+source = "src/Gruntz/UnknownLucius.cpp"
+status = "wip"
+cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+
+# --- UnknownFilch standalone class (src/Gruntz/UnknownFilch.cpp) ------------
+# Tomalla-named standalone in the ddrawmgr family: owns 2x CPtrList + 1x
+# CPtrArray. SEH-framed ctor @0x141cc0 constructs the three MFC containers
+# (EH frame advances as each completes) then zeroes the scalar fields.
+[[unit]]
+unit = "unknownfilch"
+source = "src/Gruntz/UnknownFilch.cpp"
+status = "wip"
+cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+
+# --- UnknownClassArrays nested config bundle (src/Gruntz/UnknownClassArrays.cpp) --
+# Tomalla-derived nested class inside CGruntzMgr (GruntzMgr.cpp). SEH-framed
+# ctor @0x024dc0 constructs 4 MFC containers (2x CPtrArray + 2x CDWordArray)
+# then seeds ~40 scalar config fields; FreeArrays @0x025ca0 returns elements
+# to the global free list and releases the MFC storage via SetSize(0,-1).
+[[unit]]
+unit = "unknownclassarrays"
+source = "src/Gruntz/UnknownClassArrays.cpp"
+status = "wip"
+cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+
+# --- UnknownMinerva map-teardown + readiness (src/Gruntz/UnknownMinerva.cpp) ---
+# ClearUnknownMap @0x157bc0 iterates the CMapStringToOb and destructs each
+# entry via its scalar-deleting dtor then calls RemoveAll; the local CString
+# key forces a C++ EH frame -> /GX. VirtualMethodUnknown14 @0x157530 checks
+# the two post-map fields for readiness (plain /O2 /MT leaf, no overhead).
+[[unit]]
+unit = "unknownminerva"
+source = "src/Gruntz/UnknownMinerva.cpp"
+status = "wip"
+cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+
+# --- UnknownSalazar lookup-table computation (src/Gruntz/UnknownSalazar.cpp) --
+# getLookupTableValue @0x1350b0 (static/global leaf) maps an input through a
+# two-branch special-case ladder then a computed formula using pow/acos/ftol.
+# Plain /O2 /MT: scalar leaf, no stack C++ object / EH frame.
+[[unit]]
+unit = "unknownsalazar"
+source = "src/Gruntz/UnknownSalazar.cpp"
+status = "wip"
+cflags = ["/nologo", "/c", "/O2", "/MT"]
+
+# --- UnknownPettigrew readiness predicate (src/Gruntz/UnknownPettigrew.cpp) ---
+# VirtualMethodUnknown14 @0x1577a0 is a standard readiness predicate: checks
+# the parent handle (+0x0c) and status word (+0x04) for the baseline pattern
+# shared by several Lucius-derived managers. Plain /O2 /MT: no SEH, no relocs.
+[[unit]]
+unit = "unknownpettigrew"
+source = "src/Gruntz/UnknownPettigrew.cpp"
+status = "wip"
+cflags = ["/nologo", "/c", "/O2", "/MT"]
+
+# --- UnknownSirius state ID + factory (src/Gruntz/UnknownSirius.cpp) ----------
+# VirtualMethodUnknown20 @0x1576f0 returns constant 0x13 (19).
+# VirtualMethodUnknown24 @0x1652c0 allocates a 0x17c worker, stamps the foreign
+# vftable 0x5efb80, dispatches +0x24, stores into the map via operator[], or
+# runs scalar-deleting dtor on failure. Plain /O2 /MT: no SEH frame.
+[[unit]]
+unit = "unknownsirius"
+source = "src/Gruntz/UnknownSirius.cpp"
+status = "wip"
+cflags = ["/nologo", "/c", "/O2", "/MT"]
+
+# --- Named-grunt string table (src/Gruntz/GruntNames.cpp) --------------------
+# BuildNamedGruntTable @0x0c16b0: assigns four grunt-leader name strings ("Beefy",
+# "REDITZ", "Serra", "Jebediah") to global AfxString objects. Plain /O2 /MT.
+[[unit]]
+unit = "gruntnames"
+source = "src/Gruntz/GruntNames.cpp"
+status = "wip"
+
+# --- Action-options menu-bar sprite loader (src/Gruntz/ActionOptions.cpp) -----
+# LoadActionOptionsMenuBar @0x0090e0: loads four menu-bar sprites from the
+# game-registry sprite cache. Plain /O2 /MT.
+[[unit]]
+unit = "actionoptions"
+source = "src/Gruntz/ActionOptions.cpp"
+status = "wip"
+
+# --- Destruct-button status-bar update (src/Gruntz/StatusBarUpdate.cpp) -------
+# UpdateDestructButtonStatusBar @0x10b320: two-phase timer-driven counter for
+# the destruct-button warning. Plain /O2 /MT.
+[[unit]]
+unit = "statusbarupdate"
+source = "src/Gruntz/StatusBarUpdate.cpp"
+status = "wip"
+
+# --- Powerup-icon key builder (src/Gruntz/PowerupIcons.cpp) ------------------
+# BuildPowerupIconKeys @0x01e720: maps a powerup/tool/toy ID to its sprite name
+# via a 64-entry switch. Plain /O2 /MT.
+[[unit]]
+unit = "powerupicons"
+source = "src/Gruntz/PowerupIcons.cpp"
+status = "wip"
+
+# --- Legacy Module Finder (src/Utils/LegacyFindModule.cpp) --------------------
+# LegacyFindModule @0x118f60: toolhelp32-based module enumeration helper.
+# Dynamically resolves CreateToolhelp32Snapshot etc. from KERNEL32.DLL.
+# Plain /O2 /MT (no /GX): scalar leaf, no stack C++ object / EH frame.
+[[unit]]
+unit = "legacyfindmodule"
+source = "src/Utils/LegacyFindModule.cpp"
+status = "wip"

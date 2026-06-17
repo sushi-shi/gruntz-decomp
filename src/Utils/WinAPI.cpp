@@ -25,6 +25,7 @@ extern "C" {
 __declspec(dllimport) HFILE __stdcall OpenFile(LPCSTR lpFileName, OFSTRUCT *lpReOpenBuff, UINT uStyle);
 __declspec(dllimport) UINT  __stdcall GetDriveTypeA(LPCSTR lpRootPathName);
 __declspec(dllimport) DWORD __stdcall timeGetTime(void);
+__declspec(dllimport) DWORD __stdcall GetCurrentDirectoryA(DWORD nBufferLength, LPSTR lpBuffer);
 }
 
 namespace Utils {
@@ -76,6 +77,60 @@ int IsGruntzCDInAnyDrive()
 {
     char letter = GetGruntzDriveLetter();
     return letter != 0;
+}
+
+// -------------------------------------------------------------------------
+// CheckCdRomRegistry  @0x01fde0 (0x189 B) - scans the registry for the
+// Gruntz CD-ROM drive letter, then falls back to checking the current
+// directory and scanning drives A..Z. Returns the drive letter (char), or
+// 0 if none found. Simpler than GetGruntzDriveLetter -- does NOT check for
+// \GAME\GRUNTZ.EXE. The RegistryHelper destructor (calls Close) is the
+// only cleanup; no explicit Close() call in this function.
+//
+// @address: 0x01fde0
+// @size:    0x189
+// -------------------------------------------------------------------------
+char CheckCdRomRegistry()
+{
+    Utils::RegistryHelper reg;
+    char letter = 0;
+    char value[0x20];
+    unsigned int valueSize;
+
+    if (reg.Open("Monolith Productions", "Gruntz", "1.0", 0,
+                 (HKEY)0x80000002 /*HKEY_LOCAL_MACHINE*/, 0)) {
+        valueSize = 0x1e;
+        value[0] = 0;
+        if (reg.GetValueString("CdRom Drive", value, &valueSize, 0)) {
+            if ((signed char)value[0] > 0x14) {
+                char drivePath[0x100];
+                sprintf(drivePath, "%c:\\", value[0]);
+                if (GetDriveTypeA(drivePath) == 5 /*DRIVE_CDROM*/)
+                    return value[0];
+            }
+        }
+    }
+
+    // Fall back: check the current working directory's drive.
+    {
+        char curDir[0x100];
+        GetCurrentDirectoryA(0xFF, curDir);
+        curDir[3] = 0;  // trim to "X:\"
+        if (GetDriveTypeA(curDir) == 5 /*DRIVE_CDROM*/) {
+            return curDir[0];
+        }
+    }
+
+    // Scan all drives A..Z for a CD-ROM.
+    for (letter = 'A'; letter <= 'Z'; letter++) {
+        char drivePath2[0x100];
+        sprintf(drivePath2, "%c:\\", letter);
+        if (GetDriveTypeA(drivePath2) == 5 /*DRIVE_CDROM*/) {
+            return letter;
+        }
+    }
+
+    return 0;
 }
 
 // File-scope cache of the discovered Gruntz CD drive letter (binary: byte

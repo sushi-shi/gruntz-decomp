@@ -22,9 +22,10 @@ CGameWnd::CGameWnd()
     m_c = 0;
 }
 
-// File-scope active-window singleton (binary: CGameWnd* @ 0x653c68). Set by
-// CreateAndShow; read by GameWindowProc to dispatch messages to this object.
-static CGameWnd *s_activeWnd;
+// active-window singleton (binary: CGameWnd* @ 0x653c68). Set by CreateAndShow;
+// read by GameWindowProc to dispatch messages to this object. Declared non-static
+// so the Gruntz-side CGameWnd ctor/dtor (in GruntzWnd.cpp) can reference it.
+CGameWnd *s_activeWnd;
 
 // -------------------------------------------------------------------------
 // CGameWnd::CreateAndShow
@@ -97,8 +98,7 @@ int CGameWnd::QuitMessageLoop()
     return 0;
 }
 
-// Out-of-line stubs so the vftable (??_7CGameWnd@@6B@) is emitted in this TU.
-// Not matched / not in symbol_names.csv; present only to anchor the vftable
-// relocation that the ctor stores.
-CGameWnd::~CGameWnd() {}
+// Out-of-line stub so the vftable (??_7CGameWnd@@6B@) is emitted in this TU.
+// Not matched / not in symbol_names.csv; present only to anchor the vftable.
+// ~CGameWnd is now inline in Wap32.h (the inline body anchors the vtable slot).
 int CGameWnd::Wap32GameWndVfunc0() { return 0; }

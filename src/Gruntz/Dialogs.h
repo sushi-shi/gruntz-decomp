@@ -10,6 +10,7 @@
 //   CBattlezDlgCustom  Battlez custom-rules dialog.  vftable @0x5e8ee4
 //   CBattlezDlgColors  Battlez team-colors dialog.   vftable @0x5e8d94
 //   CMultiStartDlg     Multiplayer start dialog.     vftable @0x5ea8ec
+//   CCheckpointDlg     Checkpoint dialog.            vftable @0x5e9504
 //
 // Field names are placeholders (m_<hexoffset>); only the OFFSETS + the code
 // bytes are load-bearing (campaign doctrine). Each subclass is reconstructed
@@ -115,6 +116,15 @@ public:
     int     m_6c;       // +0x6c  (= 0)
     CString m_70;       // +0x70  (default CString)
     CObList m_74;       // +0x74  (CObList(0xa))
+};
+
+// ---------------------------------------------------------------------------
+// CCheckpointDlg @ ctor 0x234a0 (vftable @0x5e9504, __thiscall ret 4 = 1 arg).
+//   base CDialog(0xcd, pParent); no additional data members touched.
+// ---------------------------------------------------------------------------
+class CCheckpointDlg : public CDialog {
+public:
+    CCheckpointDlg(CWnd *pParent);
 };
 
 #endif // SRC_GRUNTZ_DIALOGS_H

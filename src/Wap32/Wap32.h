@@ -59,6 +59,7 @@ __declspec(dllimport) BOOL    __stdcall ShowWindow(HWND hWnd, int nCmdShow);
 __declspec(dllimport) HMENU   __stdcall LoadMenuA(HINSTANCE hInstance, LPCSTR lpMenuName);
 __declspec(dllimport) int     __stdcall GetSystemMetrics(int nIndex);
 __declspec(dllimport) short   __stdcall RegisterClassA(const WNDCLASSA *lpWndClass);
+__declspec(dllimport) LRESULT __stdcall DefWindowProcA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
 __declspec(dllimport) BOOL    __stdcall PeekMessageA(struct tagMSG *lpMsg, HWND hWnd,
                                                      UINT wMsgFilterMin, UINT wMsgFilterMax,
                                                      UINT wRemoveMsg);
@@ -103,6 +104,11 @@ struct CGameWndCreateParams {
     DWORD     dwExStyle;     // +0x2c
 };
 
+// The active-window singleton (binary @0x653c68). Set by CreateAndShow, cleared
+// by Destroy, and also reset by the Gruntz-side ctor/dtor pair.
+class CGameWnd;
+extern CGameWnd *s_activeWnd;
+
 // ---------------------------------------------------------------------------
 // CGameWnd - WAP32 window wrapper.
 //   vftable @0x5ea344. ctor (RVA 0x13cf00, 17 bytes) zeroes m_4 (+0x04) and
@@ -111,7 +117,7 @@ struct CGameWndCreateParams {
 class CGameWnd {
 public:
     CGameWnd();
-    virtual ~CGameWnd();
+    virtual ~CGameWnd() { Destroy(); s_activeWnd = 0; }
     virtual int Wap32GameWndVfunc0();
 
     // Creates the OS window from a 12-field params struct (CreateWindowExA),
@@ -228,14 +234,14 @@ public:
                                        char *szGameIdentifier, char *szCmdLine,
                                        int windowClassFlags, int windowWidth,
                                        int windowHeight);                  // +0x08  0x13d7b0
-    virtual void VirtualUnknownMethod04() {}                              // +0x0c
+    virtual int  VirtualUnknownMethod04(CREATESTRUCTA *lpcs) { return 0; }  // +0x0c  WinProc: WM_CREATE
     virtual void CloseResources();                                       // +0x10  0x13d8c0
-    virtual void VirtualUnknownMethod06() {}                              // +0x14
+    virtual int  VirtualUnknownMethod06(UINT hi, UINT lo) { return 0; }  // +0x14  WinProc: WM_DESTROY / HIWORD/LOWORD(lParam)
     virtual int  RunMessageLoop();                                       // +0x18  0x13d910
     virtual void ReportError(WPARAM wParam, LPARAM lParam);              // +0x1c  0x13dcb0
     virtual void VirtualUnknownMethod09();                               // +0x20  0x13dc70  the idle virtual
     virtual void FreeGameManager();                                      // +0x24  0x13dc90
-    virtual void VirtualUnknownMethod11() {}                             // +0x28
+    virtual int  VirtualUnknownMethod11(WPARAM wParam, LPARAM lParam) { return 0; } // +0x28  WinProc: key/command dispatch
     virtual BOOL InitializeAccelerators(LPCSTR lpTable);                 // +0x2c  0x13dc20
     virtual void ShowError() {}                                          // +0x30
     virtual CGameWnd *InitializeGameWindow();                            // +0x34  0x13db60

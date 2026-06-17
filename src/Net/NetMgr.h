@@ -31,7 +31,14 @@ typedef int            BOOL;
 extern "C" {
 __declspec(dllimport) BOOL __stdcall PostMessageA(HWND hWnd, UINT Msg,
                                                   WPARAM wParam, LPARAM lParam);
+__declspec(dllimport) void __stdcall OutputDebugStringA(const char *lpOutputString);
+__declspec(dllimport) int  __stdcall MessageBoxA(void *hWnd, const char *lpText,
+                                                  const char *lpCaption, unsigned int uType);
+__declspec(dllimport) BOOL __stdcall MessageBeep(unsigned int uType);
 }
+
+// The engine's string formatting function (__cdecl: caller pops the args).
+extern "C" int __cdecl EngFormat(char *dest, const char *fmt, ...);
 
 // ---------------------------------------------------------------------------
 // AfxString - the minimal MFC CString model (a single char* @+0). The config
@@ -109,6 +116,7 @@ public:
     void OnMultiPause();                // @0x0bad40
     void OnOutOfSync();                 // @0x0bae40
     void ApplyCmdDelayDefaults();       // @0x0b85a0
+    void ReportError(const char *file, int line, long hr);  // @0x1776a0
 
     char       m_pad0[4];              // +0x000
     void      *m_4;                     // +0x004

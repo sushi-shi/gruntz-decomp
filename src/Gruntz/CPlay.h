@@ -193,6 +193,7 @@ public:
 // ===========================================================================
 class CPlay : public CState {
 public:
+    CPlay();                        // @0x8c9d0  the constructor (THIS TU)
     virtual int  Update();          // @0x8c910  return 3;  (matched in `gamemode`)
     virtual int  Render();          // @0xc8cf0  THE per-frame heart (this TU)
 

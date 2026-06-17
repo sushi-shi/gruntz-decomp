@@ -31,12 +31,41 @@
 // --- MFC placeholders (only the call symbols + the 0x10 map offset matter) -----
 class CObject;
 
+// POSITION is the opaque MFC iteration handle.  Use the native integer form so
+// `int pos` variables from the ternary guard initialiser pass cleanly to
+// GetNextAssoc's POSITION & parameter without a type mismatch; the reloc-masked
+// call site is identical and the null/-1 sentinel values compile to the same
+// `test reg,reg` / `cmp reg,-1` comparisons a pointer typedef would produce.
+typedef int POSITION;
+
+// CString (4-byte char* wrapper). Only the default ctor + dtor are needed (used
+// as GetNextAssoc's key output, then destroyed). The class body is minimal so
+// the compiler generates plain out-of-line ctor/dtor calls and an SEH scope
+// table around the iteration.
+class CString {
+public:
+    CString();          // @0x1b9b93
+    ~CString();         // @0x1b9cde
+    char *m_pchData;    // +0x00
+};
+
 // CMapStringToOb lives at UnknownAlbus+0x10. operator[] is an out-of-line NAFXCW
 // thunk (reloc-masked rel32 call); declared with the exact MFC signature so clang
-// mangles it to ??ACMapStringToOb@@QAEAAPAVCObject@@PBD@Z .
+// mangles it to the MFC-canonical name. The internal layout fields (vptr through
+// m_nCount) are modeled so `m_10.m_nCount` accesses parent+0x1c, matching the
+// retail `mov eax,[edi+0x1c]` for the guard condition.
 class CMapStringToOb {
 public:
-    CObject *&operator[](const char *key);      // @0x1b804c
+    CObject *&operator[](const char *key);                                  // @0x1b804c
+    void GetNextAssoc(POSITION &rNextPosition, CString &rKey,
+                      CObject *&rValue) const;                              // @0x1b8116
+    void RemoveAll();                                                       // @0x1b7ea0
+
+    // Simulated internal layout (all offsets relative to +0x10 of parent):
+    void     *m_vptr;              // +0x00  CObject vptr
+    unsigned  m_nHashTableSize;    // +0x04
+    void    **m_pHashTable;        // +0x08
+    int       m_nCount;            // +0x0c
 };
 
 // The worker virtual interface. Slots laid out so the dispatched methods land at
@@ -70,6 +99,14 @@ struct AlbusWorkerObj : public AlbusWorker {
 // @data: 0x1f02d8
 extern void *g_albusWorkerVtbl;     // VA 0x5f02d8
 
+// Minimal polymorphic stub for the CObject-derived values stored in the map.
+// Only the scalar-deleting destructor (+0x04) is load-bearing.
+class AlbusMapValue {
+public:
+    virtual void Dummy();               // +0x00
+    virtual int  ScalarDtor(int flag);  // +0x04
+};
+
 // ---------------------------------------------------------------------------
 // UnknownAlbus - only the load-bearing offsets are modeled: m_0c (parent handle,
 // copied into the worker), m_1c (a CMapStringToOb-internal field of map1 also
@@ -82,6 +119,8 @@ public:
     int   VirtualMethodUnknown14();
     void *VirtualMethodUnknown28(int a1, const char *key, int a3);
     void *VirtualMethodUnknown2C(int a1, const char *key, int a3);
+    void  VirtualMethodUnknown1C();
+    int   VirtualMethodUnknown20();
 
     void          *m_vptr;                  // +0x00
     int            m_04;                     // +0x04  initialized to -1 when inactive
@@ -189,4 +228,45 @@ void *UnknownAlbus::VirtualMethodUnknown2C(int a1, const char *key, int a3)
     }
     m_10[key] = (CObject *)w;
     return w;
+}
+
+// ---------------------------------------------------------------------------
+// UnknownAlbus::VirtualMethodUnknown20  @0x157600  (__thiscall, ret 0)
+// Constant state id.
+// ---------------------------------------------------------------------------
+// @address: 0x157600
+// @size:    0x6
+int UnknownAlbus::VirtualMethodUnknown20()
+{
+    return 0x10;
+}
+
+// ---------------------------------------------------------------------------
+// UnknownAlbus::VirtualMethodUnknown1C  @0x165b90  (__thiscall, ret 0)
+// Map teardown: iterate all entries in m_10 via GetNextAssoc, destroying each
+// CObject* value via its scalar-deleting destructor (vtbl +0x4 arg 1), then
+// RemoveAll the map and clear the m_64 counter.
+//
+// Carries a /GX EH frame for the local CString key (destructor must fire on
+// unwind through the iteration loop). Uses the guard variable (gated on the
+// CMapStringToOb internal m_nCount) as the POSITION for GetNextAssoc; the
+// compiler folds the `(m_nCount != 0) ? -1 : 0` initialisation into the
+// `neg; sbb` mask-and-store idiom ahead of the CString ctor call.
+// ---------------------------------------------------------------------------
+// @address: 0x165b90
+// @size:    0xa9
+void UnknownAlbus::VirtualMethodUnknown1C()
+{
+    CObject *val = 0;
+    int pos = (m_10.m_nCount != 0) ? -1 : 0;
+    CString key;
+    if (*(volatile int *)&pos != 0) {
+        do {
+            m_10.GetNextAssoc(pos, key, val);
+            if (val != 0)
+                ((AlbusMapValue *)val)->ScalarDtor(1);
+        } while (*(volatile int *)&pos != 0);
+    }
+    m_10.RemoveAll();
+    *(int *)((char *)this + 0x64) = 0;
 }

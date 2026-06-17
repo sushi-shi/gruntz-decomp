@@ -74,6 +74,16 @@ public:
     ~CString();             // @0x1b9cde
     void Format(const char *, ...);   // @0x1b2cf5
 };
+
+// ---- CByteArray (MFC collection, sizeof=0x34) used by the CPlay ctor. ----
+// The function at 0x11f5a0 is CByteArray::SetSize (EH-class-aware element
+// construction for the MFC collection framework with tracked ctor/dtor).
+class CByteArray {
+public:
+    CByteArray();           // @0x1b4f0b
+    ~CByteArray();          // @0x1b4f3e
+    void SetSize(int nNewSize, int nGrowBy);  // @0x11f5a0 (thiscall, 2 args)
+};
 extern int MapLookup(void *map, void *key, void *&out);   // @0x1b8760 CMapPtrToPtr::Lookup
 
 // ---- The global CButeMgr text-config tree (the @0x6453d8 singleton). Modeled as
@@ -600,4 +610,168 @@ void CPlay::PlayCueAt(int cueId, int a2, int a3, int a4, int a5,
         Eng_CueRenderTop(m_c, &m_410, &rect, a2, 1, a4, a5, a6, a7);   // @0x115440
     else
         Eng_CueRenderDef(m_c, &m_410, &rect, a2, 1, a4, a5, a6, a7);   // @0x115520
+}
+
+// ===========================================================================
+// CPlay::CPlay  @0x08c9d0  (701 B, thiscall ret) - the in-game PLAY state
+// constructor. EH-framed (/GX): the CString + CByteArray embedded member
+// constructors run under a C++ EH frame so a half-built object unwinds
+// cleanly if a later member ctor throws.
+//
+// The base CState::CState() is inlined here (vftable + member zeroes) so
+// there is no extrinsic call to the CState ctor. The full sequence:
+//   1. EH prologue (push -1 / handler / fs:0)
+//   2. CState vftable @0x5ea21c + zero all CState member fields
+//   3. Construct CString @+0x1b4
+//   4. CPlay member zeroes + construct CByteArray @+0x370
+//   5. Construct+SetSize(0x14,4) CByteArray @+0x3a4
+//   6. Construct CString @+0x410
+//   7. Zero CPlay members + construct CByteArray @+0x488
+//   8. Change vftable to CPlay vftable @0x5ea0bc
+//   9. Remaining CPlay field initializations
+// ===========================================================================
+// @address: 0x08c9d0
+// @size:    0x2bd
+// ---------------------------------------------------------------------------
+CPlay::CPlay()
+{
+    // ---- CState initialization (inlined - vftable + member zeroes) ----
+    // The first dword is the vtable pointer. CState vtable is 0x5ea21c.
+    *(void **)this = (void *)0x5ea21c;
+
+    m_4   = 0;
+    m_8   = 0;
+    m_c   = 0;
+
+    // Zero CState member fields at padding offsets the original ctor
+    // targeted (these are real fields in the original class, modeled as
+    // padding in CPlay.h; the constructor touches them explicitly).
+    ((int *)this)[0x28 / 4] = 0;   // +0x28
+    ((int *)this)[0x2c / 4] = 0;   // +0x2c
+    ((int *)this)[0x14 / 4] = 0;   // +0x14
+    ((int *)this)[0x18 / 4] = 0;   // +0x18
+    ((int *)this)[0x38 / 4] = 0;   // +0x38
+    ((int *)this)[0x3c / 4] = 0;   // +0x3c
+    *(char *)((int *)this + 0x4c / 4) = 0;  // +0x4c (byte)
+    ((int *)this)[0x24 / 4] = 0;   // +0x24
+
+    // CState's +0x160..+0x1a4 field block: zeroed with +0x170/0x174/0x180/0x184=0x40.
+    // All accessed as raw offsets since CPlay.h's padding may not name each slot.
+    *(int *)((char *)this + 0x160) = 0;
+    *(int *)((char *)this + 0x164) = 0;
+    *(int *)((char *)this + 0x168) = 0;
+    *(int *)((char *)this + 0x16c) = 0;
+    *(int *)((char *)this + 0x170) = 0x40;
+    *(int *)((char *)this + 0x174) = 0x40;
+    *(int *)((char *)this + 0x178) = 0;
+    *(int *)((char *)this + 0x17c) = 0;
+    *(int *)((char *)this + 0x180) = 0x40;
+    *(int *)((char *)this + 0x184) = 0x40;
+    *(int *)((char *)this + 0x188) = 0;
+    *(int *)((char *)this + 0x18c) = 0;
+    *(int *)((char *)this + 0x190) = 0;
+    *(int *)((char *)this + 0x194) = 0;
+    *(int *)((char *)this + 0x198) = 0;
+    *(int *)((char *)this + 0x19c) = 0;
+    *(int *)((char *)this + 0x1a0) = 0;
+    *(int *)((char *)this + 0x1a4) = 0;
+    *(int *)((char *)this + 0x150) = 0;
+    *(int *)((char *)this + 0x154) = 0;
+
+    // ---- CPlay sub-object: CString @+0x1b4 ----
+    {
+        CString *s = (CString *)((char *)this + 0x1b4);
+        s->CString::CString();
+    }
+
+    *(int *)((char *)this + 0x328) = 0;
+    *(int *)((char *)this + 0x32c) = 0;
+    *(int *)((char *)this + 0x330) = 0;
+    *(int *)((char *)this + 0x334) = 0;
+    *(int *)((char *)this + 0x338) = 0;
+    *(int *)((char *)this + 0x33c) = 0;
+    *(int *)((char *)this + 0x340) = 0;
+    *(int *)((char *)this + 0x344) = 0;
+    *(int *)((char *)this + 0x350) = 0;
+    *(int *)((char *)this + 0x358) = 0;
+
+    // ---- CPlay sub-object: CByteArray @+0x370 ----
+    {
+        CByteArray *ba = (CByteArray *)((char *)this + 0x370);
+        ba->CByteArray::CByteArray();
+    }
+    *(int *)((char *)this + 0x354) = 0;
+    *(int *)((char *)this + 0x35c) = 0;
+
+    // ---- CPlay sub-object: CByteArray @+0x3a4 (SetSize 0x14, 4) ----
+    {
+        CByteArray *ba = (CByteArray *)((char *)this + 0x3a4);
+        ba->CByteArray::CByteArray();
+        ba->SetSize(0x14, 4);
+    }
+
+    *(int *)((char *)this + 0x3f8) = 0;
+    *(int *)((char *)this + 0x3fc) = 0;
+    *(int *)((char *)this + 0x400) = 0;
+    *(int *)((char *)this + 0x404) = 0;
+
+    // ---- CPlay sub-object: CString @+0x410 ----
+    {
+        CString *s = (CString *)((char *)this + 0x410);
+        s->CString::CString();
+    }
+
+    *(int *)((char *)this + 0x430) = 0;
+    *(int *)((char *)this + 0x434) = 0;
+    *(int *)((char *)this + 0x438) = 0;
+    *(int *)((char *)this + 0x43c) = 0;
+    *(int *)((char *)this + 0x440) = 0;
+    *(int *)((char *)this + 0x444) = 0;
+    *(int *)((char *)this + 0x448) = 0;
+    *(int *)((char *)this + 0x44c) = 0;
+    *(int *)((char *)this + 0x450) = 0;
+    *(int *)((char *)this + 0x454) = 0;
+    *(int *)((char *)this + 0x458) = 0;
+    *(int *)((char *)this + 0x45c) = 0;
+    *(int *)((char *)this + 0x460) = 0;
+    *(int *)((char *)this + 0x464) = 0;
+    *(int *)((char *)this + 0x468) = 0;
+    *(int *)((char *)this + 0x46c) = 0;
+
+    // ---- CPlay sub-object: CByteArray @+0x488 ----
+    {
+        CByteArray *ba = (CByteArray *)((char *)this + 0x488);
+        ba->CByteArray::CByteArray();
+    }
+
+    // ---- Change vftable to CPlay @0x5ea0bc, final zeroes ----
+    *(void **)this = (void *)0x5ea0bc;
+
+    *(int *)((char *)this + 0x1bc) = 0;
+    *(int *)((char *)this + 0x1c0) = 0;
+    *(int *)((char *)this + 0x1c8) = 0;
+    *(int *)((char *)this + 0x2e0) = 0;
+    *(int *)((char *)this + 0x3f4) = 0;
+    *(int *)((char *)this + 0x2dc) = 0;
+    *(int *)((char *)this + 0x2e4) = 0;
+    *(int *)((char *)this + 0x4cc) = 0;
+    *(int *)((char *)this + 0x4e4) = 0;
+    *(int *)((char *)this + 0x2f0) = 0;
+    *(int *)((char *)this + 0x2d0) = 0;
+    *(int *)((char *)this + 0x2d4) = 0;
+    *(int *)((char *)this + 0x2f4) = 0;
+    *(int *)((char *)this + 0x2f8) = -1; // 0xffffffff
+    *(int *)((char *)this + 0x320) = 0;
+    *(int *)((char *)this + 0x4d4) = 0;
+    *(int *)((char *)this + 0x4b0) = 0;
+    *(int *)((char *)this + 0x348) = 1;
+    *(int *)((char *)this + 0x510) = 0;
+    *(int *)((char *)this + 0x518) = 0;
+    *(int *)((char *)this + 0x30c) = 0;
+    *(int *)((char *)this + 0x2e8) = 0;
+    *(int *)((char *)this + 0x4f0) = 0;
+    *(int *)((char *)this + 0x368) = 0;
+    *(int *)((char *)this + 0x36c) = 0;
+    *(int *)((char *)this + 0x2ec) = 0;
+    *(int *)((char *)this + 0x504) = 0;
 }

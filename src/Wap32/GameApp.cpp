@@ -461,4 +461,96 @@ void WAP32::CGameMgr::UnknownMethodInitializeTimeGlobal()
     g_wap32ClockReset = 0;
 }
 
-LRESULT __stdcall CGameApp::GameWindowProc(HWND, UINT, WPARAM, LPARAM) { return 0; }
+// ---------------------------------------------------------------------------
+// Vtable-dispatch struct for GameWindowProc. g_pGameApp is always NULL in the
+// retail build — this dispatch is dead code; only arg counts matter.
+// ---------------------------------------------------------------------------
+struct GameAppDispatch {
+    virtual ~GameAppDispatch() = 0;
+    virtual int PreCheck(int p1, int p2, int p3) = 0;
+    virtual int Vfn02() = 0;
+    virtual int OnCreate(void *lpcs) = 0;
+    virtual int OnClose() = 0;
+    virtual int OnDestroy(int hi, int lo) = 0;
+    virtual int OnMove(int hi, int lo, int wp) = 0;
+    virtual int OnMsg7() = 0;
+    virtual int OnKeyDown(int lp, int wp) = 0;
+    virtual int OnKeyUp(int lp, int wp) = 0;
+    virtual int OnChar(int lp, int wp) = 0;
+    virtual int OnDeadChar(int lp, int wp) = 0;
+    virtual int OnActivateApp(int lp, int wp) = 0;
+    virtual int OnMsgD() = 0;
+    virtual int OnMouseMove(int hi, int lo, int wp) = 0;
+    virtual int OnLBtnUp(int hi, int lo, int wp) = 0;
+    virtual int OnLBtnDown(int hi, int lo, int wp) = 0;
+    virtual int OnLBtnDblClk(int hi, int lo, int wp) = 0;
+    virtual int OnRBtnDown(int hi, int lo, int wp) = 0;
+    virtual int OnRBtnUp(int hi, int lo, int wp) = 0;
+    virtual int OnRBtnDblClk(int hi, int lo, int wp) = 0;
+    virtual int OnCommand(int lp, int wp) = 0;
+};
+
+// @data: 0x653c68
+extern GameAppDispatch *g_pGameApp;
+
+#define LO(lp)  ((unsigned)(lp) & 0xffffu)
+#define HI(lp)  ((unsigned)(lp) >> 16)
+
+// ---------------------------------------------------------------------------
+// CGameApp::GameWindowProc — static __stdcall window procedure.
+//
+// @address: 0x13cff0
+// @size:    0x35a
+// ---------------------------------------------------------------------------
+LRESULT __stdcall CGameApp::GameWindowProc(HWND hwnd, UINT msg,
+                                           WPARAM wParam, LPARAM lParam)
+{
+    GameAppDispatch *pApp = g_pGameApp;
+    if (!pApp)
+        return DefWindowProcA(hwnd, msg, wParam, lParam);
+    if (pApp->PreCheck((int)lParam, (int)wParam, (int)msg))
+        return 0;
+
+    if (msg == 1 && pApp->OnCreate((void *)lParam))
+        return 0;
+    if (msg == 2 && pApp->OnDestroy(HI(lParam), LO(lParam)))
+        return 0;
+    if (msg == 3 && pApp->OnMove(HI(lParam), LO(lParam), (int)wParam))
+        return 0;
+    if (msg == 4 && pApp->OnMsgD())
+        return 0;
+    if (msg == 5 && pApp->OnMsg7())
+        return 0;
+    if (msg == 15 && pApp->OnMsg7())
+        return 0;
+    if (msg == 16 && pApp->OnClose())
+        return 0;
+    if (msg == 28 && pApp->OnActivateApp((int)lParam, (int)wParam))
+        return 0;
+    if (msg == 256 && pApp->OnKeyDown((int)lParam, (int)wParam))
+        return 0;
+    if (msg == 257 && pApp->OnKeyUp((int)lParam, (int)wParam))
+        return 0;
+    if (msg == 258 && pApp->OnChar((int)lParam, (int)wParam))
+        return 0;
+    if (msg == 259 && pApp->OnDeadChar((int)lParam, (int)wParam))
+        return 0;
+    if ((msg == 260 || msg == 273) && pApp->OnCommand((int)lParam, (int)wParam))
+        return 0;
+    if (msg == 512 && pApp->OnMouseMove(HI(lParam), LO(lParam), (int)wParam))
+        return 0;
+    if (msg == 513 && pApp->OnLBtnDown(HI(lParam), LO(lParam), (int)wParam))
+        return 0;
+    if (msg == 514 && pApp->OnLBtnUp(HI(lParam), LO(lParam), (int)wParam))
+        return 0;
+    if (msg == 515 && pApp->OnLBtnDblClk(HI(lParam), LO(lParam), (int)wParam))
+        return 0;
+    if (msg == 516 && pApp->OnRBtnDown(HI(lParam), LO(lParam), (int)wParam))
+        return 0;
+    if (msg == 517 && pApp->OnRBtnUp(HI(lParam), LO(lParam), (int)wParam))
+        return 0;
+    if (msg == 518 && pApp->OnRBtnDblClk(HI(lParam), LO(lParam), (int)wParam))
+        return 0;
+
+    return DefWindowProcA(hwnd, msg, wParam, lParam);
+}

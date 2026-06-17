@@ -383,3 +383,36 @@ int RezMgr::PerFrameTick()
     m_mode->Render();
     return 1;
 }
+
+// ---------------------------------------------------------------------------
+// The owning app object's ReportError virtual (vtable slot +0x1c / index 7).
+// Forward a (msgId, code) error report through the manager's back-pointer to
+// the app's error dialog. Declared as a minimal virtual interface here so the
+// vtable dispatch produces `mov eax,[ecx]; call [eax+0x1c]` (reloc-masked).
+// ---------------------------------------------------------------------------
+struct RezMgrAppTarget {
+    virtual void v0();
+    virtual void v1();
+    virtual void v2();
+    virtual void v3();
+    virtual void v4();
+    virtual void v5();
+    virtual void v6();
+    virtual void ReportError(int msgId, int code);   // +0x1c (slot 7)
+};
+
+// ---------------------------------------------------------------------------
+// RezMgr::ReportError  @ 0x08dc60 (25 bytes)
+// Forwards the error report to the owning CGameApp through its vtable, if the
+// back-pointer (m_8) is non-null.
+//
+// @address: 0x08dc60
+// @size:    0x19
+// ---------------------------------------------------------------------------
+void RezMgr::ReportError(int msgId, int code)
+{
+    void *app = *(void **)((char *)this + 0x08);
+    if (app == 0)
+        return;
+    ((RezMgrAppTarget *)app)->ReportError(msgId, code);
+}

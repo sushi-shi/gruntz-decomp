@@ -33,6 +33,7 @@ class UnknownDraco {
 public:
     int  VirtualMethodUnknown14();
     void VirtualMethodUnknown1C();
+    int  VirtualMethodUnknown20();
 
     void       *m_vptr;     // +0x00 (vptr; not touched here)
     char        m_pad04[0x10 - 0x04];
@@ -81,4 +82,15 @@ void UnknownDraco::VirtualMethodUnknown1C()
         m_18->ScalarDtor(1);
         m_18 = 0;
     }
+}
+
+// ---------------------------------------------------------------------------
+// UnknownDraco::VirtualMethodUnknown20  @0x1574a0  (__thiscall, ret 0)
+// Returns constant 0x0f (15).
+// ---------------------------------------------------------------------------
+// @address: 0x1574a0
+// @size:    0x6
+int UnknownDraco::VirtualMethodUnknown20()
+{
+    return 0x0f;
 }

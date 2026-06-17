@@ -202,7 +202,7 @@ def read_data_symbols(path):
     with open(path, newline="") as f:
         reader = csv.DictReader(f)
         for row in reader:
-            addr = row["address_rva"]
+            addr = row.get("rva") or row.get("address_rva") or ""
             if addr.startswith("0x-"):
                 continue  # imported / negative pseudo-RVA
             rva = int(addr, 16)

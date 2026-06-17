@@ -32,6 +32,20 @@ public:
     char m_data[0x14];
 };
 
+// POSITION is the opaque MFC iteration handle.  Native int form so the ternary
+// guard initialiser passes cleanly to GetNextAssoc's POSITION & parameter; the
+// reloc-masked call site is identical.
+typedef int POSITION;
+
+// CString (4-byte char* wrapper). Only the default ctor + dtor are needed;
+// GetNextAssoc writes the key output into it.
+class CString {
+public:
+    CString();          // @0x1b9b93
+    ~CString();         // @0x1b9cde
+    char *m_pchData;    // +0x00
+};
+
 inline void *operator new(unsigned int, void *p) { return p; }
 
 // The looked-up value: only the scalar-deleting destructor slot (+0x04) is load-
@@ -47,9 +61,18 @@ public:
 // so clang mangles them to ?Lookup@CMapStringToOb@@... / ?RemoveKey@CMapStringToOb@@... .
 class CMapStringToOb {
 public:
-    int Lookup(const char *key, CObject *&rValue) const;    // @0x1b8008
-    CObject *&operator[](const char *key);                  // @0x1b804c
-    int RemoveKey(const char *key);                         // @0x1b80ae
+    int Lookup(const char *key, CObject *&rValue) const;                // @0x1b8008
+    CObject *&operator[](const char *key);                              // @0x1b804c
+    int RemoveKey(const char *key);                                     // @0x1b80ae
+    void GetNextAssoc(POSITION &rNextPosition, CString &rKey,
+                      CObject *&rValue) const;                          // @0x1b8116
+    void RemoveAll();                                                   // @0x1b7ea0
+
+    // Simulated internal layout (all offsets relative to +0x10 of parent):
+    void     *m_vptr;              // +0x00  CObject vptr
+    unsigned  m_nHashTableSize;    // +0x04
+    void    **m_pHashTable;        // +0x08
+    int       m_nCount;            // +0x0c
 };
 
 class UnknownSeverusVtableView {
@@ -141,6 +164,7 @@ public:
     int  VirtualMethodUnknown40(int a1, const char *key, int a3, int a4);
     void VirtualMethodUnknown50(SeverusWorkerObj *worker);
     void VirtualMethodUnknown54(const char *key);
+    void VirtualMethodUnknown58();
 
     void          *m_vptr;                  // +0x00
     int            m_04;                     // +0x04  initialized to -1 when inactive
@@ -392,4 +416,31 @@ void UnknownSeverus::VirtualMethodUnknown54(const char *key)
         m_10.RemoveKey(key);
         ((SeverusValue *)val)->ScalarDtor(1);
     }
+}
+
+// ---------------------------------------------------------------------------
+// UnknownSeverus::VirtualMethodUnknown58  @0x165210  (__thiscall, ret 0)
+// Map teardown: iterate all entries in m_10 via GetNextAssoc, destroying each
+// CObject* value via its scalar-deleting destructor (vtbl +0x4 arg 1), then
+// RemoveAll the map. Same pattern as UnknownAlbus::VirtualMethodUnknown1C but
+// without the final m_64 clear (that field does not exist in this class).
+//
+// Carries a /GX EH frame for the local CString key (destructor must fire on
+// unwind through the iteration loop).
+// ---------------------------------------------------------------------------
+// @address: 0x165210
+// @size:    0xa2
+void UnknownSeverus::VirtualMethodUnknown58()
+{
+    CObject *val = 0;
+    int pos = (m_10.m_nCount != 0) ? -1 : 0;
+    CString key;
+    if (*(volatile int *)&pos != 0) {
+        do {
+            m_10.GetNextAssoc(pos, key, val);
+            if (val != 0)
+                ((SeverusValue *)val)->ScalarDtor(1);
+        } while (pos != 0);
+    }
+    m_10.RemoveAll();
 }
