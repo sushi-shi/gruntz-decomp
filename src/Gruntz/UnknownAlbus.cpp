@@ -79,11 +79,13 @@ extern void *g_albusWorkerVtbl;     // VA 0x5f02d8
 // ---------------------------------------------------------------------------
 class UnknownAlbus {
 public:
+    int   VirtualMethodUnknown14();
     void *VirtualMethodUnknown28(int a1, const char *key, int a3);
     void *VirtualMethodUnknown2C(int a1, const char *key, int a3);
 
     void          *m_vptr;                  // +0x00
-    char           m_pad04[0x0c - 0x04];    // +0x04..0x0b
+    int            m_04;                     // +0x04  initialized to -1 when inactive
+    char           m_pad08[0x0c - 0x08];    // +0x08..0x0b
     int            m_0c;                     // +0x0c  parent HarryPotter handle
     CMapStringToOb m_10;                     // +0x10  m_unknownMap1 (0x10..0x2b)
 };
@@ -97,6 +99,24 @@ static inline int AlbusReadField1c(const UnknownAlbus *p)
 
 // Stamps the worker's foreign vftable into its first dword (manual vptr store).
 static inline void StampAlbusWorkerVtbl(AlbusWorkerObj *w) { *(void **)w = &g_albusWorkerVtbl; }
+
+// ---------------------------------------------------------------------------
+// UnknownAlbus::VirtualMethodUnknown14  @0x156cd0  (__thiscall, ret 0)
+// Reports ready when the parent/root handle is present and the base status word
+// is no longer the inactive -1 sentinel.
+// ---------------------------------------------------------------------------
+// @address: 0x156cd0
+// @size:    0x16
+int UnknownAlbus::VirtualMethodUnknown14()
+{
+    if (m_0c == 0)
+        goto fail;
+    if (m_04 != -1)
+        return 1;
+
+fail:
+    return 0;
+}
 
 // Inline worker constructor. New's the raw 0x14 block; on success seeds the fields
 // THROUGH the allocation register and returns it, else returns 0. Defined inline so

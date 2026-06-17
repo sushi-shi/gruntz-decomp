@@ -67,9 +67,12 @@ public:
     int  VirtualMethodUnknown2C(int arg1, RemusCoords *coords);
     int  VirtualMethodUnknown34(int arg0, int arg1);
     int  VirtualMethodUnknown30(RemusCoords *coords);
+    int  VirtualMethodUnknown14();
 
     // --- members ------------------------------------------------------------
-    char        m_pad04[0x10 - 0x04];   // +0x04..0x0f (vptr occupies +0x00)
+    int         m_04;                   // +0x04  initialized to -1 when inactive
+    char        m_pad08[0x0c - 0x08];   // +0x08..0x0b
+    int         m_0c;                   // +0x0c  parent/root handle
     RemusCoords m_10;                   // +0x10  coordinate/extent record (4 ints)
     char        m_pad20[0xb0 - 0x20];   // +0x20..0xaf
     int         m_b0;                   // +0xb0  = 500
@@ -102,6 +105,25 @@ static inline void StampParamBlock(UnknownRemus *o)
     o->m_d4 = 1920;
     o->m_d8 = 768;
     o->m_dc = 576;
+}
+
+// ---------------------------------------------------------------------------
+// UnknownRemus::VirtualMethodUnknown14  @0x161190  (__thiscall, ret 0)
+// Remus adds a +0x10 sentinel check before the common parent/status predicate.
+// ---------------------------------------------------------------------------
+// @address: 0x161190
+// @size:    0x1f
+int UnknownRemus::VirtualMethodUnknown14()
+{
+    if (m_10.m_0 == (int)0x80000000)
+        goto fail;
+    if (m_0c == 0)
+        goto fail;
+    if (m_04 != -1)
+        return 1;
+
+fail:
+    return 0;
 }
 
 // ---------------------------------------------------------------------------

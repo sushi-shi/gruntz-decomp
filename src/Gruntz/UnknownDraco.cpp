@@ -31,6 +31,7 @@ public:
 // ---------------------------------------------------------------------------
 class UnknownDraco {
 public:
+    int  VirtualMethodUnknown14();
     void VirtualMethodUnknown1C();
 
     void       *m_vptr;     // +0x00 (vptr; not touched here)
@@ -39,6 +40,25 @@ public:
     DracoChild *m_14;       // +0x14
     DracoChild *m_18;       // +0x18
 };
+
+// ---------------------------------------------------------------------------
+// UnknownDraco::VirtualMethodUnknown14  @0x157480  (__thiscall, ret 0)
+// Ready when all three owned child pointers are populated.
+// ---------------------------------------------------------------------------
+// @address: 0x157480
+// @size:    0x1e
+int UnknownDraco::VirtualMethodUnknown14()
+{
+    if (m_14 == 0)
+        goto fail;
+    if (m_18 == 0)
+        goto fail;
+    if (m_10 != 0)
+        return 1;
+
+fail:
+    return 0;
+}
 
 // ---------------------------------------------------------------------------
 // UnknownDraco::VirtualMethodUnknown1C  @0x158ac0  (__thiscall, ret 0)

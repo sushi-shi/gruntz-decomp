@@ -118,13 +118,15 @@ extern void *g_hagridWorkerVtblB;   // VA 0x5efed0  (int-flag worker)
 // ---------------------------------------------------------------------------
 class UnknownHagrid {
 public:
+    int   VirtualMethodUnknown14();
     void *VirtualMethodUnknown24(int a1, int a2, int a3);
     void *VirtualMethodUnknown28(int a1, int a2, int a3, int addHead);
     void *VirtualMethodUnknown2C(int a1, int a2, int a3, int a4, int addHead);
     void *VirtualMethodUnknown30(int a1, int a2, int a3, int a4, int addHead);
 
     void  *m_vptr;                  // +0x00 (vptr; not stamped by these methods)
-    char   m_pad04[0x0c - 0x04];    // +0x04..0x0b
+    int    m_04;                    // +0x04  initialized to -1 when inactive
+    char   m_pad08[0x0c - 0x08];    // +0x08..0x0b
     int    m_pHarryPotter;          // +0x0c  (UnknownCGruntzMgrLucius+0xc)
     CObList m_10;                   // +0x10  worker list (CObList)
 };
@@ -132,6 +134,23 @@ public:
 // Stamps the worker's foreign vftable into its first dword (manual vptr store).
 static inline void StampWorkerVtblB(HagridWorkerB *w) { *(void **)w = &g_hagridWorkerVtblB; }
 static inline void StampWorkerVtblA(HagridWorkerA *w) { *(void **)w = &g_hagridWorkerVtblA; }
+
+// ---------------------------------------------------------------------------
+// UnknownHagrid::VirtualMethodUnknown14  @0x156f00  (__thiscall, ret 0)
+// Same base readiness predicate used by several Lucius-derived managers.
+// ---------------------------------------------------------------------------
+// @address: 0x156f00
+// @size:    0x16
+int UnknownHagrid::VirtualMethodUnknown14()
+{
+    if (m_pHarryPotter == 0)
+        goto fail;
+    if (m_04 != -1)
+        return 1;
+
+fail:
+    return 0;
+}
 
 // Inline worker constructors. Each new's the raw block, and on success seeds the
 // fields THROUGH the allocation register and returns it; the null path returns 0.

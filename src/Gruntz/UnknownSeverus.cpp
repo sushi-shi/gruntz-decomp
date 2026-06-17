@@ -49,12 +49,32 @@ public:
 // ---------------------------------------------------------------------------
 class UnknownSeverus {
 public:
+    int  VirtualMethodUnknown14();
     void VirtualMethodUnknown54(const char *key);
 
     void          *m_vptr;                  // +0x00
-    char           m_pad04[0x10 - 0x04];    // +0x04..0x0f
+    int            m_04;                     // +0x04  initialized to -1 when inactive
+    char           m_pad08[0x0c - 0x08];    // +0x08..0x0b
+    int            m_0c;                     // +0x0c  parent/root handle
     CMapStringToOb m_10;                     // +0x10  m_unknownMap
 };
+
+// ---------------------------------------------------------------------------
+// UnknownSeverus::VirtualMethodUnknown14  @0x1576d0  (__thiscall, ret 0)
+// Same base readiness predicate used by several Lucius-derived managers.
+// ---------------------------------------------------------------------------
+// @address: 0x1576d0
+// @size:    0x16
+int UnknownSeverus::VirtualMethodUnknown14()
+{
+    if (m_0c == 0)
+        goto fail;
+    if (m_04 != -1)
+        return 1;
+
+fail:
+    return 0;
+}
 
 // ---------------------------------------------------------------------------
 // UnknownSeverus::VirtualMethodUnknown54  @0x156ec0  (__thiscall, ret 0x4)

@@ -55,6 +55,7 @@ struct HermionaNode {
 // ---------------------------------------------------------------------------
 class UnknownHermiona {
 public:
+    int  VirtualMethodUnknown14();
     void VirtualMethodUnknown30(int a1, int a2, int a3);
     void VirtualMethodUnknown34(int a1, int a2, int a3);
 
@@ -72,9 +73,29 @@ public:
     virtual void Slot28();              // +0x28
     virtual void Vfunc2C(int a1, int a2);   // +0x2c  post-broadcast self virtual
 
-    char          m_pad04[0x14 - 0x04]; // +0x04..0x13 (vptr at +0x00)
+    int           m_04;                 // +0x04  initialized to -1 when inactive
+    char          m_pad08[0x0c - 0x08]; // +0x08..0x0b
+    int           m_0c;                 // +0x0c  parent/root handle
+    char          m_pad10[0x14 - 0x10]; // +0x10..0x13
     HermionaNode *m_14;                 // +0x14  intrusive-list head
 };
+
+// ---------------------------------------------------------------------------
+// UnknownHermiona::VirtualMethodUnknown14  @0x1575e0  (__thiscall, ret 0)
+// Same base readiness predicate used by several Lucius-derived managers.
+// ---------------------------------------------------------------------------
+// @address: 0x1575e0
+// @size:    0x16
+int UnknownHermiona::VirtualMethodUnknown14()
+{
+    if (m_0c == 0)
+        goto fail;
+    if (m_04 != -1)
+        return 1;
+
+fail:
+    return 0;
+}
 
 // Walks the +0x14 list, calling child->Vfunc34(a1,a2,a3) per node, then the
 // object's own +0x2c virtual with (a2,a3). Written out in full below rather than
