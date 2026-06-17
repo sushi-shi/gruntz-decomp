@@ -775,15 +775,15 @@ source = "src/Gruntz/HarryPotter.cpp"
 status = "matched"
 cflags = ["/nologo", "/c", "/O2", "/MT"]
 
-# --- UnknownSeverus leaf method (src/Gruntz/UnknownSeverus.cpp) ---------------
-# One plain /O2 /MT leaf of the tomalla-named ddrawmgr sub-manager UnknownSeverus.
-# VirtualMethodUnknown54 @0x156ec0 is a keyed remove-and-destroy on the
-# CMapStringToOb at +0x10: Lookup(key,&val); if found RemoveKey(key) and run the
-# value's scalar-deleting dtor (vtbl +0x4, arg 1). NO SEH frame; relocs are the
-# reloc-masked Lookup / RemoveKey thunk calls. (sibling VirtualMethodUnknown58
-# @0x165210 map-teardown deferred: /GX EH frame.)
+# --- UnknownSeverus surface/page-map manager (src/Gruntz/UnknownSeverus.cpp) ---
+# Tomalla-named DDraw surface-family sub-manager. 9/14 exact: readiness/state
+# leaves, scratch/counter reset leaves, four worker-forwarding leaves, and the
+# remove/destroy helper. Four keyed worker factories are faithful WIP carcasses:
+# Lookup(key,&worker), allocate/init a 0x6c worker with CByteArray at +0x10 if
+# missing, operator[] insert, then dispatch worker slots +0x2c/+0x30/+0x34/+0x38.
+# /GX is enabled for the factory EH personality; no broad header surface.
 [[unit]]
 unit = "unknownseverus"
 source = "src/Gruntz/UnknownSeverus.cpp"
 status = "wip"
-cflags = ["/nologo", "/c", "/O2", "/MT"]
+cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]

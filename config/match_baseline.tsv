@@ -53,7 +53,7 @@ unknowndraco	2	2
 unknownhagrid	5	5
 unknownhermiona	3	1
 unknownremus	6	5
-unknownseverus	2	1
+unknownseverus	14	9
 videoconfig	2	0
 winapi	4	3
 winmain	1	1
@@ -262,6 +262,18 @@ unknownremus	?VirtualMethodUnknown2C@UnknownRemus@@QAEHHPAURemusCoords@@@Z	100.0
 unknownremus	?VirtualMethodUnknown30@UnknownRemus@@QAEHPAURemusCoords@@@Z	100.0000	100.0000	1	a1d83a06d5be
 unknownremus	?VirtualMethodUnknown34@UnknownRemus@@QAEHHH@Z	84.2800	84.2800	1	37195897818c
 unknownseverus	?VirtualMethodUnknown14@UnknownSeverus@@QAEHXZ	100.0000	100.0000	1	015500c928aa
+unknownseverus	?VirtualMethodUnknown18@UnknownSeverus@@QAEHXZ	100.0000	100.0000	1	8ba2457a2d37
+unknownseverus	?VirtualMethodUnknown1C@UnknownSeverus@@QAEXXZ	100.0000	100.0000	1	cde38cbdd2b2
+unknownseverus	?VirtualMethodUnknown20@UnknownSeverus@@QAEHXZ	100.0000	100.0000	1	2d63f7c6415c
+unknownseverus	?VirtualMethodUnknown24@UnknownSeverus@@QAEHHHPBDHH@Z	54.5930	54.5930	1	aefde04e42d5
+unknownseverus	?VirtualMethodUnknown28@UnknownSeverus@@QAEHHHPAVSeverusWorker@@HH@Z	100.0000	100.0000	1	aa50910907e1
+unknownseverus	?VirtualMethodUnknown2C@UnknownSeverus@@QAEHHHPAVSeverusWorker@@HH@Z	100.0000	100.0000	1	dcf85660537e
+unknownseverus	?VirtualMethodUnknown30@UnknownSeverus@@QAEHHHPBDHH@Z	54.5930	54.5930	1	9796141f3207
+unknownseverus	?VirtualMethodUnknown34@UnknownSeverus@@QAEHHPAVSeverusWorker@@HH@Z	100.0000	100.0000	1	ac881bbb7221
+unknownseverus	?VirtualMethodUnknown38@UnknownSeverus@@QAEHHPBDHH@Z	53.5238	53.5238	1	5b2f6c135040
+unknownseverus	?VirtualMethodUnknown3C@UnknownSeverus@@QAEHHPAVSeverusWorker@@HH@Z	100.0000	100.0000	1	41c202759450
+unknownseverus	?VirtualMethodUnknown40@UnknownSeverus@@QAEHHPBDHH@Z	53.5238	53.5238	1	27803d28fd23
+unknownseverus	?VirtualMethodUnknown50@UnknownSeverus@@QAEXPAUSeverusWorkerObj@@@Z	100.0000	100.0000	1	31723941791f
 unknownseverus	?VirtualMethodUnknown54@UnknownSeverus@@QAEXPBD@Z	77.5185	77.5185	1	2315ff0cd841
 videoconfig	?LoadVideoResolutionConfig@@YAXPAXHH@Z	97.2737	97.2737	1	ac8e36fd7fa6
 videoconfig	?SaveVideoResolutionConfig@@YAXPAX0@Z	88.8148	88.8148	1	3fa52db69011

@@ -4,6 +4,32 @@ Per-function / per-subsystem insights gathered while byte-matching. Durable,
 generalizable findings graduate into `docs/matching-patterns.md`; this file is the
 fast-moving scratchpad. Newest at top within each section.
 
+### UnknownSeverus surface/page-map manager — 8 new exact leaves + 4 factory carcasses (extended `unknownseverus`; 9/14 exact)
+- **THE HEADLINE:** `UnknownSeverus` now has 14 real bodies in one TU. New exact
+  leaves: `VirtualMethodUnknown18@0x154aa0` (clears `g_6bf318[25]`, seeds first
+  dword to 100), `Unknown1C@0x154ac0` (calls this-vtbl `+0x58`, clears
+  `g_6bf37c/g_6bf380`), `Unknown20@0x156de0` (returns `0x12`), the four worker
+  forwarders `Unknown28/2C/34/3C @0x154f60/154f40/154f20/154f00`, and
+  `Unknown50@0x155280` (RemoveKey on worker key at `worker+0x24`, then scalar
+  deleting dtor). Existing `Unknown14@0x1576d0` and `Unknown54@0x156ec0` remain at
+  their previous bests. The four keyed factories `Unknown24/30/38/40` are WIP
+  carcasses around 53-55%: map lookup at `this+0x10`, allocate a 0x6c worker,
+  initialize base/derived vtable data (`0x5efc30` -> `0x5efbe8`), call worker
+  `+0x24` init, insert with `CMapStringToOb::operator[]`, then dispatch worker
+  slots `+0x2c/+0x30/+0x34/+0x38`.
+- **LOAD-BEARING MODELING LESSON:** do **not** put virtual declarations on the
+  reconstructed owner class when it already models the vptr as an explicit
+  `m_vptr` field. Doing so inserts a compiler vptr and shifts all member offsets
+  by 4 (`m_0c` became `+0x10`, `m_10` became `+0x14`), regressing exact leaves.
+  For a single owner-vtable call, use a separate vtable-view helper cast; keep the
+  data-layout class non-polymorphic.
+- **Worker construction note:** the target factories carry a C++ EH frame around
+  worker construction because of the `CByteArray` member at `+0x10`. A real
+  constructor/base-member model reproduced the broad idea but scored worse
+  (~40%); the manual store/placement-construction form is the better carcass for
+  now (~53-55%). The likely missing lever is the original class hierarchy's exact
+  inline base/derived ctor emission without emitting local compiler vtables.
+
 ### CPlay per-frame SUB-STEPS — the 4 screen-region one-shots BYTE-EXACT + 4 carcass leaves (extended `cplay`; 4/8 byte-exact under reloc-masking)
 - **THE HEADLINE: the four screen-region scroll one-shots `CPlay::OnRegion0..3`
   (the carcass's OnRegion2/1/3/4) are BYTE-EXACT** (`?OnRegion{1,2,3,4}@CPlay@@QAEHH@Z`,
