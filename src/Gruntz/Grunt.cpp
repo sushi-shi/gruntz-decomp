@@ -492,3 +492,25 @@ int CGrunt::CreateSelectedSprite()
     }
     return 1;
 }
+
+// The "TimePerTile" ButeMgr key string (binary @0x60d414).
+// @data: 0x60d414
+static const char s_TimePerTile[] = "TimePerTile";
+
+// ---------------------------------------------------------------------------
+// CGrunt::ReadConfigFromButeMgr @ 0x048400 (void, thiscall)
+// Reads the TimePerTile tuning config from CButeMgr for this grunt's type.
+// Applies a special-case halving for grunt kind 55 (0x37).
+// ---------------------------------------------------------------------------
+// @address: 0x048400
+// @size:    0x47
+void CGrunt::ReadConfigFromButeMgr()
+{
+    m_18c = 0;
+    m_418 = 0;
+
+    m_41c = g_buteMgr.GetDwordDef(m_1c0, s_TimePerTile, 1000);
+
+    if (m_258 == 0x37)
+        m_41c >>= 1;
+}

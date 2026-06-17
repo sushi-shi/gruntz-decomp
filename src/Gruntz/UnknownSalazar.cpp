@@ -1,15 +1,15 @@
-// UnknownSalazar.cpp - getLookupTableValue of the tomalla-named class
-// UnknownSalazar. A framed leaf that maps an input value through a two-part
+// UnknownSalazar.cpp - getLookupTableValue and initializeUnknownLookupTable
+// of the tomalla-named class UnknownSalazar.
+//
+// getLookupTableValue is a framed leaf that maps an input value through a two-part
 // branch (100->0, 0->-10000) then a chain of arithmetic: value / A, B / that,
 // pow(C, result), acos of that, acos of D, ratio, negate, multiply by A,
 // convert to int. The double constants A/B/C/D are global engine globals at
 // the .rdata addresses below; the CRT helpers _CIpow (pow), _CIacos (acos),
 // and __ftol (double->int) are reloc-masked LIB/CRT calls.
 //
-// getLookupTableValue appears to be a static member function of UnknownSalazar
-// (no this pointer used, just one int arg in [ebp+8]). Plain /O2 /MT leaf:
-// NO SEH, the only relocs are the four double-constant DIR64 loads and the
-// three rel32 CRT calls.
+// initializeUnknownLookupTable fills a 100-element static int table with
+// getLookupTableValue results for indices 0..99.
 //
 // Field names are placeholders; only OFFSETS + emitted code bytes are load-
 // bearing (campaign doctrine).
@@ -31,9 +31,15 @@ extern "C" double _CIpow(double, double);
 extern "C" double _CIacos(double);
 extern "C" long __ftol(double);
 
+// The lookup table buffer (binary @0x653ab8, 100 ints). Written by
+// initializeUnknownLookupTable with getLookupTableValue results.
+// @data: 0x653ab8
+static int g_salazarLookupTable[100];
+
 class UnknownSalazar {
 public:
     static int getLookupTableValue(int value);
+    static void initializeUnknownLookupTable();
 };
 
 // ---------------------------------------------------------------------------
@@ -59,4 +65,17 @@ int UnknownSalazar::getLookupTableValue(int value)
     double ratio = n / d;
 
     return (int)(-g_salazarConstA * ratio);
+}
+
+// ---------------------------------------------------------------------------
+// UnknownSalazar::initializeUnknownLookupTable  @0x1351a0  (static, void)
+// Fills the 100-element static lookup table at 0x653ab8 with
+// getLookupTableValue(i) for i = 0..99. Plain /O2 /MT leaf: no SEH frame.
+// ---------------------------------------------------------------------------
+// @address: 0x1351a0
+// @size:    0x23
+void UnknownSalazar::initializeUnknownLookupTable()
+{
+    for (int i = 0; i < 100; i++)
+        g_salazarLookupTable[i] = getLookupTableValue(i);
 }

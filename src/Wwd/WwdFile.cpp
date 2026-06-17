@@ -1,12 +1,10 @@
 // WwdFile.cpp - Gruntz WWD level-file loader (Monolith-faithful reconstruction).
 //
 // Functions matched in this TU:
-//   WwdFile::IsValidWwd       @ RVA 0x160530 (293 B, __stdcall ret 8) - BYTE-EXACT
-//   WwdFile::CheckHeader      @ RVA 0x160660 (299 B, __stdcall ret 8) - BYTE-EXACT
-//   WwdFile::InflateMainBlock @ RVA 0x160790 (~88.7% fuzzy, entropy plateau)
-//   WwdFile::ReadPlane        @ RVA 0x15d8d0 (195 B, __thiscall ret 0xc) - 99.19%
-//                               (byte-exact modulo 11 reloc-masked operand bytes
-//                                + a 6-byte 2-instruction MSVC5 scheduling swap)
+//   WwdFile::IsValidWwd           @ RVA 0x160530 (293 B, __stdcall ret 8) - BYTE-EXACT
+//   WwdFile::CheckHeader          @ RVA 0x160660 (299 B, __stdcall ret 8) - BYTE-EXACT
+//   WwdFile::InflateMainBlock     @ RVA 0x160790 (~88.7% fuzzy, entropy plateau)
+//   WwdFile::ValidateMainBlock    @ RVA 0x03b470 (314 B, __stdcall ret 4) - target
 //
 // IsValidWwd / CheckHeader open a file by name, read the 1524-byte (0x5F4) WWD
 // header, and validate it: the read must return exactly 0x5F4 bytes and the
@@ -22,12 +20,44 @@
 // stream's ctor/dtor/Open/Read are unmatched engine functions, but their call
 // bytes are reloc-masked in objdiff, so the validators are still byte-exact.
 //
+// ValidateMainBlock takes an AfxString (MFC CString) by value, whose destructor
+// runs on the return path, so MSVC emits the same C++ EH frame. It calls
+// CheckHeader into a local buffer, scans the header for a digit string, parses
+// it as a version number, and returns the result (or -1 on any failure).
+//
 // __stdcall (callee cleans 8 bytes; ret 0x8 in the binary): each takes two
 // pointer args and uses callee-cleanup, so they reconstruct as __stdcall free
 // functions. Returns are full-width eax (1 / 0), i.e. `int`, not bool.
+// ValidateMainBlock takes 1 arg (by-value CString, 4-byte pointer) and is
+// __stdcall ret 4 (callee cleans 4 bytes).
 #include "WwdFile.h"
 
-#include <string.h>  // memcpy
+#include <string.h>  // memcpy, strcpy
+
+// ---------------------------------------------------------------------------
+// Minimal AfxString (MFC CString) for the by-value parameter in
+// ValidateMainBlock. The engine destructor (@0x1b9cde) is external/no-body so
+// its call displacement reloc-masks. The ctor / copy-ctor / operator= are not
+// needed in the callee (the caller builds the CString; the callee only destroys
+// it on the return path).
+// ---------------------------------------------------------------------------
+class AfxString {
+public:
+    ~AfxString();                      // @0x1b9cde (engine external)
+    operator const char *() const { return m_pchData; }
+    char *m_pchData;
+};
+
+// The global game registry pointer (binary @0x64556c, reloc-masked GPR32 load).
+// Used to verify the engine is initialised before reading the WWD file.
+// @data: 0x64556c
+extern void *g_pGameRegistry_64556c;
+
+// CRT atoi() helper (LIBCMT @0x11ffb0, reloc-masked rel32 call).
+extern "C" int __cdecl atoi(const char *str);
+
+// CheckHeader - declared in WwdFile.h.
+int __stdcall WwdFile_CheckHeader(const char *name, void *headerOut);
 
 // ---------------------------------------------------------------------------
 // WwdFile::IsValidWwd
@@ -95,43 +125,6 @@ int __stdcall WwdFile_CheckHeader(const char* name, void* headerOut)
 }
 
 // ---------------------------------------------------------------------------
-// CGameLevelPlanes::ReadPlane (__thiscall ret 0xc).
-// Build one plane: `new CPlane(this->m_field0c, this->m_planeCount, 0)` (operator
-// new(0x158) under the C++ EH frame), then invoke the plane's block reader
-// (vtable +0x28) on (planeData, blockBase, &this->m_planeCtx). On reader failure,
-// delete the plane (scalar-deleting dtor, vtable +0x4) and return 0. On success,
-// append the plane to m_planes (CArray::SetAtGrow @0x5b5822) at index
-// m_planeCount, and if it is the MAIN plane (m_flags bit0) cache it as m_mainPlane
-// with m_mainIndex = m_planeCount - 1. Returns the new plane.
-//
-// The new CPlane and its virtuals are UNMATCHED engine code -> reloc-masked calls.
-//
-// @address: 0x15d8d0
-// @size:    0xc3
-// ---------------------------------------------------------------------------
-CPlane* CGameLevelPlanes::ReadPlane(void* planeData, void* blockBase, void* /*unused*/)
-{
-    CPlane* plane = new CPlane(m_field0c, m_planeCount, 0);
-
-    if (plane->Read(planeData, blockBase, &m_planeCtx) == 0)
-    {
-        if (plane)
-            plane->dtor(1);                       // scalar-deleting dtor (vtable +0x4)
-        return 0;
-    }
-
-    ((CPlanePtrArray*)&m_planes)->SetAtGrow(m_planeCount, plane);
-
-    if (plane->m_flags & 1)                       // MAIN plane
-    {
-        m_mainPlane = plane;
-        m_mainIndex = m_planeCount - 1;
-    }
-
-    return plane;
-}
-
-// ---------------------------------------------------------------------------
 // WwdFile::InflateMainBlock
 // Validates the header, copies the 0x5F4-byte header prefix into dest, then
 // zlib-uncompresses the COMPRESS main block into the remainder. Returns dest on
@@ -165,4 +158,51 @@ int __stdcall WwdFile_InflateMainBlock(WwdHeader* src, Bytef* dest, unsigned int
         return 0;
 
     return outLen == src->mainBlockLength ? (int)dest : 0;
+}
+
+// ---------------------------------------------------------------------------
+// WwdFile::ValidateMainBlock @0x03b470 (314B, __stdcall ret 4)
+// Validates a WWD file by name (passed as an MFC CString / AfxString by value)
+// and extracts a version number from the header. Returns the parsed version
+// integer on success, -1 on any failure (empty name, uninitialised engine,
+// file not found / invalid, no version digit found).
+//
+// The by-value CString parameter has a destructor that must run on every exit
+// path, so MSVC emits a C++ EH frame (__CxxFrameHandler + FuncInfo, the fs:0
+// registration + `push -1; push handler`): this TU is built with /GX.
+// ---------------------------------------------------------------------------
+// @address: 0x03b470
+// @size:    0x13a
+int __stdcall WwdFile_ValidateMainBlock(AfxString name)
+{
+    // Gate 1: the name CString must be non-empty (nDataLength != 0).
+    // The CString internal header is at m_pchData[-8] for nDataLength.
+    if (*(int *)((const char *)name - 8) == 0)
+        return -1;
+
+    // Gate 2: the engine must be initialised (registry + indirect sub-field).
+    void *reg = *(void **)0x64556c;
+    void *r30 = reg == 0 ? 0 : *(void **)((char *)reg + 0x30);
+    if (r30 == 0 || *(void **)((char *)r30 + 0x24) == 0)
+        return -1;
+
+    // Read the WWD header into a local buffer via CheckHeader.
+    // CheckHeader strcpy's only the short NUL-terminated prefix (the header
+    // starts with 0xF4 0x05 0x00 ...), so only a few bytes are written.
+    char headerBuf[0x100];
+    if (WwdFile_CheckHeader((const char *)name, headerBuf) == 0)
+        return -1;
+
+    // Scan for the first digit sequence in the header, parse it as a decimal
+    // version number. Skip non-digit characters (everything up to the first
+    // NUL), then call atoi on the first digit found.
+    const char *p = headerBuf;
+    while (*p) {
+        if (*p >= '0' && *p <= '9')
+            return atoi(p);
+        ++p;
+    }
+
+    // No digit found in the header.
+    return -1;
 }
