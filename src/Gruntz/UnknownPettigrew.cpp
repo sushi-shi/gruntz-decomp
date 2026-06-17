@@ -36,3 +36,15 @@ int UnknownPettigrew::VirtualMethodUnknown14()
 fail:
     return 0;
 }
+
+// ---------------------------------------------------------------------------
+// UnknownPettigrew::VirtualMethodUnknown18  @0x157ae0  (__thiscall, ret 0)
+// Clears the parent map then zeroes a member field.
+// ---------------------------------------------------------------------------
+// @address: 0x157ae0
+// @size:    0x11
+void UnknownPettigrew::VirtualMethodUnknown18()
+{
+    ((class UnknownMinerva *)this)->ClearUnknownMap();
+    m_0c = 0;
+}
