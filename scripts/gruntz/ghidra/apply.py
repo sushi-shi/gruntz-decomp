@@ -2,28 +2,24 @@
 # apply_ghidra_enrichment.py - maximal comprehension enrichment for build/ghidra-named.
 #
 #   Extends (does NOT clobber) the prior name+plate enrichment with:
-#     1. FUNCTION NAMES   - build/gen/symbol_names.csv (generated from src @address;
-#                           wins over engine_labels.csv), engine_labels.csv
-#                           (incl. +37 import-caller rows), config/library_labels.csv
-#                           (HIGH/MED/AMBIG).
+#     1. FUNCTION NAMES   - build/gen/symbol_names.csv (src-derived matched
+#                           symbols) and config/library_labels.csv
+#                           (HIGH/MED/AMBIG). engine_labels.csv is advisory only.
 #                           Functions are created when Ghidra has none at the RVA.
-#     2. PROTOTYPES + PARAM NAMES - parsed from engine_labels' `prototype` field
-#                           (tomalla rows). Sets return type, params (name+type),
-#                           and calling convention (__thiscall members / __cdecl
-#                           free funcs / __stdcall callbacks). Win32 types resolve
-#                           against the windows_vs12_32 archive already in the DTM;
-#                           custom struct types resolve against the structs defined
-#                           below; anything unresolved falls back to void*/int.
+#     2. PROTOTYPES + PARAM NAMES - source-derived prototypes are the intended
+#                           authority. engine_labels.csv prototypes are kept as
+#                           advisory comments and do not update function
+#                           signatures.
 #     3. STRUCTS (field names @ offsets) - from build/gen/structs.json (clang record
-#                           layouts over src/ + structure/), defined in the DTM and
-#                           APPLIED as the `this` (param-0) type on every method of
-#                           that class (so member access decodes as this->m_health).
+#                           layouts over src/ + structure/), defined in the DTM for
+#                           source-derived/manual signatures to reference.
 #     4. ENUMS            - from build/gen/enums.json (clang over structure/),
 #                           defined in the DTM.
 #
-#   Reproducible from build/gen/symbol_names.csv + config/engine_labels.csv +
-#   config/library_labels.csv + structure/. Idempotent: re-runnable, never
-#   downgrades a better existing name, keeps prior [LABEL] plate comments.
+#   Reproducible from build/gen/symbol_names.csv + generated JSON +
+#   config/library_labels.csv. config/engine_labels.csv is optional advisory
+#   extension metadata: it may seed candidate functions/comments when present,
+#   but source-derived symbols keep canonical naming/type authority.
 #
 #   Run as a GhidraScript under PyGhidra (CPython3 + JPype), driven by
 #   scripts/gruntz/ghidra/ghidra_metadata_apply.py (which boots PyGhidra, imports/analyzes
@@ -441,6 +437,14 @@ def ensure_function(addr):
         fn = None
     return fn
 
+def append_plate_once(addr, marker, text):
+    """Append a plate comment when this exact advisory/source marker is absent."""
+    old = listing.getComment(PLATE, addr) or ""
+    if marker in old:
+        return False
+    listing.setComment(addr, PLATE, (old + "\n" if old else "") + text)
+    return True
+
 # leaf-name -> struct DataType for this-type application
 def class_struct(cls):
     if not cls:
@@ -501,7 +505,7 @@ try:
     R("enums: %d generated (from structure/ via clang)" % len(gen_enums_list))
 
     # ---- (C) load CSVs ----
-    eng_rows = load_csv_rows(CSV_ENGINE)   # rva,name,class,prototype,kind,source,confidence
+    eng_rows = load_csv_rows(CSV_ENGINE) if os.path.exists(CSV_ENGINE) else []  # rva,name,class,prototype,kind,source,confidence
     # filter to data rows (7 cols, header skipped by content)
     eng = []
     for r in eng_rows:
@@ -538,7 +542,10 @@ try:
         except Exception: continue
         fids.append((rva, r[1], r[2], r[3]))
 
-    # ---- (D) FID + source-derived names (source labels win over engine_labels) ----
+    # ---- (D) FID/library + source-owned symbol names ----
+    source_func_rvas = src_func_rvas
+    source_data_rvas = set(rva for (rva, _name) in data_syms)
+
     n_fid_named = 0; n_fid_skip_low = 0; n_fid_nofunc = 0
     for (rva, name, lib, conf) in fids:
         if conf == "LOW":
@@ -558,7 +565,7 @@ try:
     R("FID/library funcs named (HIGH/MED/AMBIG): %d  (LOW skipped: %d, no-func: %d)" %
       (n_fid_named, n_fid_skip_low, n_fid_nofunc))
 
-    n_sym_named = 0; n_sym_nofunc = 0
+    n_sym_named = 0; n_sym_nofunc = 0; n_sym_kept = 0
     for (rva, name) in syms:
         addr = toaddr(rva)
         fn = ensure_function(addr)
@@ -571,7 +578,10 @@ try:
                 fn.setName(name, US); n_sym_named += 1
             except Exception:
                 pass
-    R("symbol_names (src @address) reconciled: %d  (no-func: %d)" % (n_sym_named, n_sym_nofunc))
+        else:
+            n_sym_kept += 1
+    R("source function symbols applied: renamed/reconciled=%d kept=%d no-func=%d total=%d" %
+      (n_sym_named, n_sym_kept, n_sym_nofunc, len(syms)))
 
     # Global DATA symbols a matched global is referenced through (labels.py @data
     # rows). The name is the clang MS-ABI mangling (?g_foo@@3.. / _g_foo); Ghidra
@@ -589,21 +599,22 @@ try:
                 st.createLabel(addr, name, US); n_data_named += 1
         except Exception:
             pass
-    R("global data symbols labeled (Ghidra demangles): %d" % n_data_named)
+    R("source global data symbols applied: labeled=%d total=%d" %
+      (n_data_named, len(data_syms)))
 
-    # ---- (E) engine_labels: names + namespace + plate + PROTOTYPES + this-type ----
-    n_renamed = 0; n_bogus = 0; n_kept = 0; n_ns = 0; n_plate = 0
-    n_nofunc = 0; n_created = 0; n_src_skipped = 0
-    n_proto = 0; n_proto_fail = 0
-    n_this_applied = 0
-    this_methods_by_class = {}
-    proto_examples = []
+    # ---- (E) engine_labels advisory comments only ----
+    #
+    # engine_labels.csv is useful backlog/extension metadata, but it is optional
+    # and is not an authority for canonical names, namespaces, prototypes, or
+    # this-types. Source-owned RVAs from symbol_names.csv keep precedence.
+    # Engine rows may still seed a candidate Function object and advisory plate
+    # comment; nothing should depend on this file existing.
+    n_engine_adv_plate = 0; n_engine_adv_existing = 0
+    n_engine_adv_source_overlap = 0; n_engine_adv_non_source = 0
+    n_engine_adv_nofunc = 0; n_engine_adv_created = 0; n_engine_adv_import = 0
+    engine_examples = []
 
     for (rva, name, cls, proto, kind, source, conf) in eng:
-        if rva in src_func_rvas:
-            n_src_skipped += 1
-            continue
-
         addr = toaddr(rva)
         fn = fm.getFunctionAt(addr)
         if fn is None:
@@ -611,117 +622,50 @@ try:
         if fn is None:
             fn = ensure_function(addr)
             if fn is not None:
-                n_created += 1
-        if fn is None:
-            n_nofunc += 1
-            continue
-
-        leaf = name.split("::")[-1] if name else ""
-        cur = fn.getName()
-
-        # name action (skip if no leaf, e.g. import-caller rows)
-        if leaf:
-            if is_default(cur):
-                try: fn.setName(leaf, US); n_renamed += 1
-                except Exception:
-                    try: fn.setName("%s_%06x" % (leaf, rva), US); n_renamed += 1
-                    except Exception: pass
-            elif is_bogus(cur):
-                try: fn.setName(leaf, US); n_bogus += 1
-                except Exception: pass
+                n_engine_adv_created += 1
             else:
-                n_kept += 1
+                n_engine_adv_nofunc += 1
 
-        # namespace
-        ns = get_class_ns(cls)
-        if ns is not None:
-            try:
-                pn = fn.getParentNamespace()
-                if pn is None or str(pn.getName()) != str(ns.getName()):
-                    fn.setParentNamespace(ns); n_ns += 1
-            except Exception:
-                pass
-
-        # plate comment (provenance) - keep prior, append if new
-        if kind == "import-caller":
-            plate = "[LABEL %s/%s] import-caller; class=%s; %s" % (source, conf, (cls or "?"), name or "")
+        is_source_owned = rva in source_func_rvas or rva in source_data_rvas
+        if is_source_owned:
+            n_engine_adv_source_overlap += 1
         else:
-            plate = "[LABEL %s/%s] %s" % (source, conf, (proto if proto else name))
-        old = listing.getComment(PLATE, addr) or ""
-        if "[LABEL " not in old:
-            listing.setComment(addr, PLATE, (old + "\n" if old else "") + plate)
-            n_plate += 1
+            n_engine_adv_non_source += 1
+        if kind == "import-caller":
+            n_engine_adv_import += 1
 
-        # ---- PROTOTYPE application (tomalla rows with a real signature) ----
-        applied_proto = False
-        if proto and source == "tomalla" and not proto.startswith("vftable slot"):
-            parsed = parse_prototype(proto, kind)
-            if parsed is not None:
-                ret_ct, cc, params, is_member = parsed
-                try:
-                    ret_dt = resolve_type(ret_ct)
-                    retparam = ReturnParameterImpl(ret_dt, prog)
-                    pis = []
-                    # this-type for member functions
-                    member_cls = cls if cls else (name.rsplit("::",1)[0] if "::" in name else None)
-                    if cc == CC_THISCALL:
-                        cdt = class_struct(member_cls)
-                        if cdt is not None:
-                            this_t = PointerDataType(cdt)
-                            pis.append(ParameterImpl("this", this_t, prog))
-                            this_methods_by_class[member_cls] = this_methods_by_class.get(member_cls,0)+1
-                            n_this_applied += 1
-                    for (pct, pname) in params:
-                        pdt = resolve_type(pct)
-                        if pname is None:
-                            pname = None
-                        pis.append(ParameterImpl(pname, pdt, prog))
-                    fn.setCallingConvention(cc)
-                    fn.updateFunction(cc, retparam, pis,
-                                      FunctionUpdateType.DYNAMIC_STORAGE_FORMAL_PARAMS,
-                                      True, US)
-                    n_proto += 1; applied_proto = True
-                    if len(proto_examples) < 15:
-                        proto_examples.append("0x%06x %s [%s]" % (rva, clean_proto(proto), cc))
-                except Exception as e:
-                    n_proto_fail += 1
+        # Advisory plate comment (provenance) - keep prior, append if new. These
+        # intentionally do not rename the function, move it into a namespace, or
+        # update its prototype/this-type.
+        if kind == "import-caller":
+            detail = "import-caller; class=%s; %s" % ((cls or "?"), name or "")
+        else:
+            detail = proto if proto else name
+        marker = "[ENGINE-LABEL %06x]" % rva
+        scope = "source-overlap" if is_source_owned else "advisory"
+        plate = "%s %s/%s/%s %s" % (marker, source, conf, scope, detail)
+        try:
+            if append_plate_once(addr, marker, plate):
+                n_engine_adv_plate += 1
+                if len(engine_examples) < 10:
+                    engine_examples.append("0x%06x %s" % (rva, detail))
+            else:
+                n_engine_adv_existing += 1
+        except Exception:
+            pass
 
-        # ---- this-type for member funcs WITHOUT a full tomalla proto ----
-        if (not applied_proto) and cls:
-            cdt = class_struct(cls)
-            if cdt is not None and kind in ("ctor","dtor","method","vfunc"):
-                try:
-                    this_t = PointerDataType(cdt)
-                    # Rebuild formal params under __thiscall: typed `this` first,
-                    # then the existing EXPLICIT (non-auto) params preserved.
-                    new_params = [ParameterImpl("this", this_t, prog)]
-                    for p in fn.getParameters():
-                        if p.isAutoParameter():
-                            continue  # the old auto-`this` is replaced by ours
-                        new_params.append(
-                            ParameterImpl(p.getName(), p.getDataType(), prog))
-                    retparam = ReturnParameterImpl(fn.getReturnType(), prog)
-                    fn.updateFunction(CC_THISCALL, retparam, new_params,
-                                      FunctionUpdateType.DYNAMIC_STORAGE_FORMAL_PARAMS,
-                                      True, US)
-                    this_methods_by_class[cls] = this_methods_by_class.get(cls,0)+1
-                    n_this_applied += 1
-                except Exception:
-                    pass
+    R("engine_labels advisory rows: total=%d non-source=%d source-overlap=%d import-callers=%d created-func=%d no-func=%d" %
+      (len(eng), n_engine_adv_non_source, n_engine_adv_source_overlap,
+       n_engine_adv_import, n_engine_adv_created, n_engine_adv_nofunc))
+    R("engine_labels advisory plates: added=%d already-present=%d canonical-updates=0" %
+      (n_engine_adv_plate, n_engine_adv_existing))
+    for e in engine_examples:
+        R("    advisory: " + e)
 
-    R("engine_labels: renamed=%d bogus-overwrote=%d kept=%d ns-set=%d plate-added=%d created-func=%d no-func=%d src-skipped=%d"
-      % (n_renamed, n_bogus, n_kept, n_ns, n_plate, n_created, n_nofunc, n_src_skipped))
-    R("prototypes applied (typed sig+params): %d  (failed: %d)" % (n_proto, n_proto_fail))
-    for e in proto_examples: R("    proto: " + e)
-    R("this-type (struct*) applications: %d  across %d classes" %
-      (n_this_applied, len(this_methods_by_class)))
-    applied_struct_names = sorted(this_methods_by_class.keys())
-    for c in applied_struct_names:
-        R("    this->%s : %d methods" % (c, this_methods_by_class[c]))
-
-    # struct apply tally
+    # struct availability tally
     n_structs_applied = sum(1 for (nm,(dt,ap)) in struct_dt_by_name.items() if ap)
-    R("structs flagged apply-as-this: %d / %d defined" % (n_structs_applied, len(struct_dt_by_name)))
+    R("structs available for source/manual signatures: %d / %d defined" %
+      (n_structs_applied, len(struct_dt_by_name)))
 
     # ---- (F) backfill the leading incremental-linker JMP-thunk table ----
     # MSVC lays a run of 5-byte `jmp target` thunks at the very start of .text
