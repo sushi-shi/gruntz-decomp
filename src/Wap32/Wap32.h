@@ -127,6 +127,11 @@ public:
     void Destroy();
     int QuitMessageLoop();
 
+    // Additional CGameWnd helper methods.
+    void SetAppField(int wParam, int lParam);   // 0x13d470
+    int  DestroyWindowSelf();                    // 0x13d4c0
+    int  DrainMessages(int filter, int count);   // 0x13d4e0
+
     HWND m_4;   // +0x04  HWND (set by CreateAndShow / zeroed by ctor)
     void *m_8;  // +0x08  owner pointer (set by CreateAndShow; not touched by ctor)
     int  m_c;   // +0x0c  guard flag (zeroed by ctor and by CreateAndShow)

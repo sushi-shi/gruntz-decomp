@@ -102,3 +102,35 @@ int CGameWnd::QuitMessageLoop()
 // Not matched / not in symbol_names.csv; present only to anchor the vftable.
 // ~CGameWnd is now inline in Wap32.h (the inline body anchors the vtable slot).
 int CGameWnd::Wap32GameWndVfunc0() { return 0; }
+
+// -------------------------------------------------------------------------
+// CGameWnd::SetAppField  @0x13d470 (18 B) - store wParam to owner->m_240
+// -------------------------------------------------------------------------
+void CGameWnd::SetAppField(int wParam, int lParam)
+{
+    ((CGameApp *)m_8)->m_240 = wParam;
+}
+
+// -------------------------------------------------------------------------
+// CGameWnd::DestroyWindowSelf  @0x13d4c0 (30 B)
+// -------------------------------------------------------------------------
+int CGameWnd::DestroyWindowSelf()
+{
+    if (m_c == 0) { m_c = 1; DestroyWindow(m_4); }
+    return 1;
+}
+
+// -------------------------------------------------------------------------
+// CGameWnd::DrainMessages  @0x13d4e0 (67 B)
+// -------------------------------------------------------------------------
+int CGameWnd::DrainMessages(int filter, int count)
+{
+    int drained = 0;
+    if (count > 0) {
+        MSG msg;
+        while (PeekMessageA(&msg, m_4, filter, filter, 1)) {
+            if (++drained >= count) break;
+        }
+    }
+    return drained;
+}
