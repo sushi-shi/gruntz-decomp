@@ -63,3 +63,14 @@ int InitializeFonts()
     }
     return 1;
 }
+
+// @address: 0x1158f0
+// @size:    0x2e
+int FreeFontsMemory()
+{
+    g_largeFont.FreeMemory();
+    g_mediumFont.FreeMemory();
+    g_smallFont.FreeMemory();
+    g_tinyFont.FreeMemory();
+    return 1;
+}

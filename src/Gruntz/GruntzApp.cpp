@@ -91,6 +91,8 @@ public:
                                        int windowClassFlags, int windowWidth,
                                        int windowHeight);                 // vtbl +0x08  0x080930
     virtual void ShowError();                         // vtbl +0x30  0x080ac0
+    virtual int VirtualUnknownMethod04(int a, int b, int c);  // @0x080aa0
+    void ShowMessage(char *msg, HWND hParent);       // @0x080c00
     WAP32::CGameMgr *InitializeGameManager();
     static INT_PTR __stdcall ErrorDialogProc(HWND hWnd, UINT message,
                                              WPARAM wParam, LPARAM lParam);
@@ -243,4 +245,26 @@ INT_PTR __stdcall CGruntzApp::ErrorDialogProc(HWND hWnd, UINT message,
     }
 
     return 0;
+
 }
+
+// @address: 0x080c00
+// @size:    0x48
+extern "C" INT_PTR __stdcall MsgDialogProc(HWND, UINT, WPARAM, LPARAM);
+void CGruntzApp::ShowMessage(char *msg, HWND hParent)
+{
+    strcpy(g_errorText, msg);
+    DialogBoxParamA(m_c, "MESSAGE", hParent, &MsgDialogProc, 0);
+}
+
+// @address: 0x080aa0
+// @size:    0x5
+int CGruntzApp::VirtualUnknownMethod04(int a, int b, int c)
+{
+    return 0;
+}
+
+struct U10O { U10O(); };
+// @address: 0x0809a0
+// @size:    0x57
+void *CreateU10O() { U10O *p = new U10O; return p; }

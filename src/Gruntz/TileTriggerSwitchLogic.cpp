@@ -70,3 +70,14 @@ int CTileTriggerSwitchLogic::RemoveByKey(int key1, int key2)
 
     return 0;
 }
+
+// @address: 0x110820
+// @size:    0x23
+int CTileTriggerSwitchLogic::FindIndexByKey(int key)
+{
+    for (int i = 0; i < 24; i++) {
+        if (m_block[i] == key)
+            return 1;
+    }
+    return 0;
+}

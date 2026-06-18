@@ -15,6 +15,7 @@ class CTileTriggerSwitchLogic {
 public:
     CTileTriggerSwitchLogic();
     int RemoveByKey(int key1, int key2);
+    int FindIndexByKey(int key);
 
     // +0x00 vptr (implicit)
     int   m_04;                        // +0x04  list head (owner) / key (data obj)
