@@ -730,9 +730,7 @@ cflags = ["/nologo", "/c", "/O2", "/MT"]
 unit = "unknowndraco"
 source = "src/Gruntz/UnknownDraco.cpp"
 status = "wip"
-cflags = ["/nologo", "/c", "/O2", "/MT"]
-
-# --- UnknownHermiona leaf broadcast methods (src/Gruntz/UnknownHermiona.cpp) --
+cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
 # Two plain /O2 /MT leaves of the tomalla-named ddrawmgr sub-manager
 # UnknownHermiona. Each walks the intrusive singly-linked list anchored at +0x14
 # (node next-ptr @0, child object @8), dispatching one of the child's sibling
