@@ -117,6 +117,13 @@ public:
     void OnOutOfSync();                 // @0x0bae40
     void ApplyCmdDelayDefaults();       // @0x0b85a0
     void ReportError(const char *file, int line, long hr);  // @0x1776a0
+    int  OnDisconnectPlayer(int index);     // @0x0bac90
+    int  OnSendPing();                      // @0x0bad00
+    int  OnBuildCmd(void *data);            // @0x0baf00
+    int  OnUpdateEntry(void *src);          // @0x0baff0
+    int  OnWriteConfig1();                  // @0x0bb0b0
+    int  OnWriteConfig2();                  // @0x0bb120
+    int  OnSendChat(const char *msg, int a2, int a3, int a4); // @0x0bb190
 
     char       m_pad0[4];              // +0x000
     void      *m_4;                     // +0x004
@@ -124,7 +131,9 @@ public:
     int        m_1c;                    // +0x01c
     char       m_pad20[0x574 - 0x20];
     int        m_574;                   // +0x574
-    char       m_pad578[0x584 - 0x578];
+    char       m_pad578[0x580 - 0x578];
+    int        m_580;                   // +0x580  ping/keepalive flag
+    char       m_pad582[0x584 - 0x582];
     int        m_584;                   // +0x584
     char       m_pad588[0x598 - 0x588];
     AfxString  m_598;                   // +0x598

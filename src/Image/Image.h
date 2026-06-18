@@ -22,16 +22,12 @@
 
 // ---------------------------------------------------------------------------
 // CImage - the image-resolution dispatcher.
-// LoadFromRez is __thiscall, ret 0xc (this + name + two opaque pass-through
-// args). It forwards (name, a2, a3) verbatim to the matching format loader.
-// The five sibling loaders are external/no-body so their calls reloc-mask.
 // ---------------------------------------------------------------------------
 class CImage {
 public:
     int LoadFromRez(char *name, void *a2, void *a3);
 
-    // The five per-extension loaders (external; bodies live elsewhere). All
-    // __thiscall, ret 0xc, taking the same (name, a2, a3) triple.
+    // Five per-extension loaders (external; bodies live elsewhere).
     int LoadBmp(char *name, void *a2, void *a3);
     int LoadPcx(char *name, void *a2, void *a3);
     int LoadRid(char *name, void *a2, void *a3);
@@ -40,22 +36,93 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// CFileImage - the file-backed format loaders (the REZ payload consumers).
-// Each constructs a stack CFileIO, opens the file named by its second arg,
-// reads GetLength() bytes into an `operator new` buffer, then calls a per-format
-// decode helper on `this` and returns the decoder's result; the buffer is freed
-// and the stream closed on every exit. The decode helpers are external/no-body.
+// CFileImage - the file-backed format loaders.
+// Internal helpers (all __thiscall on CFileImage) listed here to define the
+// call signature; they are implemented in Image.cpp. The three Decode*
+// methods remain external (their bodies live in another TU) so objdiff
+// reloc-masks the call from LoadBmp/LoadPcx/LoadPid.
 // ---------------------------------------------------------------------------
 class CFileImage {
 public:
+    // Public loaders (matched).
     void *LoadBmp(char *name, char *path);             // @0x144110, ret 8
     void *LoadPcx(char *name, char *path);             // @0x145110, ret 8
     void *LoadPid(char *name, char *path, void *a3);   // @0x145cd0, ret 0xc
 
-    // Per-format decoders (external; reloc-masked). __thiscall on CFileImage.
+    // Per-format decoders (EXTERNAL - defined in a sibling TU).  Keep as
+    // no-body declarations so the calls from LoadBmp/LoadPcx/LoadPid produce
+    // external-symbol relocs matching the delinked target.
     void *DecodeBmp(char *name, void *buf, unsigned int size);
     void *DecodePcx(char *name, void *buf, unsigned int size);
     void *DecodePid(char *name, void *buf, unsigned int size, void *a3);
+
+    // ---- Vtable / external helpers called from the internal decoders ----------
+    // These are declared as CFileImage members (i.e. __thiscall with this in
+    // ecx) but are DEFINED in other TUs (DDrawMgr, Wap32, etc.).  Keeping them
+    // here ensures the compiler emits `mov ecx, this; call xxx` for each call.
+    int FUN_0053e0d0(void *a1, int a2, int a3, int a4, void *a5);
+    int FUN_0053ece0(void *a1);
+    int FUN_0053eb40(void *a1);
+    int FUN_0053faa0(void *a1, int a2, void *a3);
+    int FUN_00540aa0(void *a1);
+    int FUN_00540c50(void *a1);
+
+    // ---- Internal helpers (the 17 FUN_ functions in the cluster) ----------
+    // These are __thiscall on CFileImage.  Field offsets are accessed
+    // via pointer arithmetic in Image.cpp (no struct fields in the header).
+
+    // @0x543cf0, ret 0x10 (4 stack args + this).
+    int CreateDibFromData(void *data, void *a2, int a3, int a4);
+
+    // @0x543e60, ret 0xc (3 stack args + this, EH).
+    void *LoadRaw(char *name, char *path, void *a3);
+
+    // @0x543fc0, ret 0xc.
+    int DecodeBmpSurface(void *data, int a2, int a3);
+
+    // @0x544270, ret 0xc.
+    int CreateDibSurface(int width, int height);
+
+    // @0x544350, ret 0xc.
+    int DecodeImage(char *name, void *buf, unsigned int size);
+
+    // @0x5443b0, ret 0xc (EH).
+    int DecodeImage8(char *name, void *buf, unsigned int size);
+
+    // @0x544640, ret 0xc (EH).
+    int DecodeImage16(char *name, void *buf, unsigned int size);
+
+    // @0x544900, ret 0xc (EH).
+    int DecodeImage24(char *name, void *buf, unsigned int size);
+
+    // @0x544b30, ret 0x10.
+    int DecodePidImage(void *data, int a2, int a3, int a4);
+
+    // @0x544d80, ret 0xc.
+    int DecodePidImage2(void *data, int a2, int a3);
+
+    // @0x544ee0, ret 0xc.
+    int DecodePcxImage(void *data, int a2, int a3);
+
+    // @0x545270, ret 0x10.
+    int RleDecompress8(unsigned char *dst, unsigned char *src,
+                       int rowBytes, int height);
+
+    // @0x5453f0, ret 0x10.
+    int RleDecompress24(unsigned char *dst, unsigned char *src,
+                        int rowBytes, int height);
+
+    // @0x5457a0, ret 0x14.
+    int DecodePcxData(void *data, int a2, int a3, int a4, int a5);
+
+    // @0x5459d0, ret 0x10 (EH).
+    int DecodePcxEx(char *name, char *path, void *a3, void *a4);
+
+    // @0x545b10, ret 0x10.
+    int DecodePidImageEx(void *data, int a2, int a3, int a4);
 };
+
+// IsPowerOfTwo is a freestanding helper (no ecx/this). @0x545e00.
+int IsPowerOfTwo(unsigned int value);
 
 #endif // SRC_IMAGE_IMAGE_H

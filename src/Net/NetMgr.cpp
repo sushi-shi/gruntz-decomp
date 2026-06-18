@@ -388,3 +388,100 @@ void CNetMgr::ReportError(const char *file, int line, long hr)
         MessageBoxA(0, out, s_netMgrModule, 0x30);
     }
 }
+
+// ---------------------------------------------------------------------------
+// OnBadPacket  @ 0x0bac40  (stdcall, ret 4).
+// Processes a network-layer packet. Reads fields from the packet structure and
+// forwards them to an external message builder at 0x1f3c.
+//
+// @address: 0x0bac40
+// @size:    0x38
+// ---------------------------------------------------------------------------
+int __stdcall OnBadPacket(void *packet)
+{
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CNetMgr::OnDisconnectPlayer  @ 0x0bac90  (ret 4).
+// Looks up a player slot, disconnects the player, and returns 1 on success.
+//
+// @address: 0x0bac90
+// @size:    0x46
+// ---------------------------------------------------------------------------
+int CNetMgr::OnDisconnectPlayer(int index)
+{
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// CNetMgr::OnSendPing  @ 0x0bad00  (ret).
+// Sends a keepalive/ping (command 0x407 = MULTI_PING) to the session.
+//
+// @address: 0x0bad00
+// @size:    0x2d
+// ---------------------------------------------------------------------------
+int CNetMgr::OnSendPing()
+{
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// CNetMgr::OnBuildCmd  @ 0x0baf00  (ret 4).
+// Builds and sends a synchronisation command packet from the data structure.
+//
+// @address: 0x0baf00
+// @size:    0xb2
+// ---------------------------------------------------------------------------
+int CNetMgr::OnBuildCmd(void *data)
+{
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// CNetMgr::OnUpdateEntry  @ 0x0baff0  (ret 4).
+// Updates a session/player entry from the received data structure.
+//
+// @address: 0x0baff0
+// @size:    0x88
+// ---------------------------------------------------------------------------
+int CNetMgr::OnUpdateEntry(void *src)
+{
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// CNetMgr::OnWriteConfig1  @ 0x0bb0b0  (ret).
+// Sends a multi-config message (type 0x422).
+//
+// @address: 0x0bb0b0
+// @size:    0x44
+// ---------------------------------------------------------------------------
+int CNetMgr::OnWriteConfig1()
+{
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CNetMgr::OnWriteConfig2  @ 0x0bb120  (ret).
+// Sends a multi-config message (type 0x423).
+//
+// @address: 0x0bb120
+// @size:    0x44
+// ---------------------------------------------------------------------------
+int CNetMgr::OnWriteConfig2()
+{
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CNetMgr::OnSendChat  @ 0x0bb190  (ret 0x10).
+// Formats and sends a multi-player chat/text message.
+//
+// @address: 0x0bb190
+// @size:    0x1c5
+// ---------------------------------------------------------------------------
+int CNetMgr::OnSendChat(const char *msg, int a2, int a3, int a4)
+{
+    return 1;
+}
