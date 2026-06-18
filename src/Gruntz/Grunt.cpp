@@ -5,6 +5,12 @@
 // carry a C++ EH frame; /GX does NOT add an EH frame to the 7 creators - they
 // stay byte-exact at their original percentages).
 //
+// Global CButeMgr singleton (for ReadConfigFromButeMgr).
+struct CButeMgr {
+    int GetDwordDef(const char *tag, const char *key, int def);
+};
+extern CButeMgr g_buteMgr;
+
 // HUD sprite-creator cluster (7/7 logic byte-exact; 5 at 99.3%+ = reloc-masked +
 // a 2-instr edx/ecx register coin-flip, 2 at ~91.6% = the 2-arg Add* register-
 // alloc/scheduling plateau - see below):
@@ -506,11 +512,12 @@ static const char s_TimePerTile[] = "TimePerTile";
 // @size:    0x47
 void CGrunt::ReadConfigFromButeMgr()
 {
-    m_18c = 0;
-    m_418 = 0;
+    *(int *)((char *)this + 0x18c) = 0;
+    *(int *)((char *)this + 0x418) = 0;
 
-    m_41c = g_buteMgr.GetDwordDef(m_1c0, s_TimePerTile, 1000);
+    *(int *)((char *)this + 0x41c) = g_buteMgr.GetDwordDef(
+        *(char **)((char *)this + 0x1c0), s_TimePerTile, 1000);
 
-    if (m_258 == 0x37)
-        m_41c >>= 1;
+    if (*(int *)((char *)this + 0x258) == 0x37)
+        *(int *)((char *)this + 0x41c) >>= 1;
 }

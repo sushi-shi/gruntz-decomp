@@ -104,6 +104,7 @@ public:
     void  Write(const void *lpBuf, unsigned int nCount);
     LONG  Seek(LONG lOff, int nFrom);
     LONG  GetPosition();
+    LONG  GetLength();
     void  Close();
 
     // The vtable pointer at +0x00 is implicit (virtual ~CFileIO()); do NOT

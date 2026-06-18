@@ -10,9 +10,15 @@
 // code bytes are load-bearing (campaign doctrine).
 // ---------------------------------------------------------------------------
 
+class UnknownMinerva {
+public:
+    void ClearUnknownMap();
+};
+
 class UnknownPettigrew {
 public:
     int VirtualMethodUnknown14();
+    void VirtualMethodUnknown18();
 
     void *m_vptr;               // +0x00
     int   m_04;                 // +0x04  -1 when inactive
