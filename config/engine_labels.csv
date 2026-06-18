@@ -1,9 +1,10 @@
 # engine_labels.csv - engine function LABEL registry (attribution + names).
 #
-# Distinct from config/symbol_names.csv (the byte-MATCHED set that drives src/).
+# Distinct from build/gen/symbol_names.csv (generated from src/ @address).
+# This file is backlog-only; src/ wins and rows covered by src/ are removed.
 # These are LABELS: real names + classes + prototypes attributed to v1.0.0.76
 # engine functions from two sources. They graduate into symbol_names.csv + src/
-# only when actually byte-matched. Used to grow the partition + guide matching
+# only through src/ @address annotations when actually byte-matched. Used to grow the partition + guide matching
 # and applied into build/ghidra-named (the comprehension DB) for readable decomp.
 #
 # Sources:
@@ -98,7 +99,6 @@ rva,name,class,prototype,kind,source,confidence
 0x083450,RezSync::Init,RezSync,"bool RezSync::Init()  [mounts GRUNTZ.VRZ/ZZZ/XXX via CRezDir::OpenSub @0x53b0c0, constructs RezSync @0x57d8f0; xrefs 'GRUNTZ.VRZ'@0x60fcb8 'RezSync'@0x60fc70. CORRECTS prior rtti-vptr label CGruntzMapMgr::CGruntzMapMgr (misattribution: this has SEH + 0x428 frame + archive-open logic, not a ctor). CAVEAT: one of the 52 v1.01-CHANGED funcs; tomalla annotation is v0.77 - reverse from v0.76 before matching.]",method,rez-trace,high
 0x0855e0,CGruntzMgr::UnknownClose,CGruntzMgr,void CGruntzMgr::UnknownClose(),method,tomalla,high
 0x085d10,CGruntzMapMgr::~CGruntzMapMgr,CGruntzMapMgr,CGruntzMapMgr::~CGruntzMapMgr(void),dtor,rtti-vptr,high
-0x08c710,CState::~CState,CState,CState::~CState(void),dtor,rtti-vtable,high
 0x08c9d0,CPlay::CPlay,CPlay,CPlay::CPlay(void),ctor,rtti-vptr,med
 0x08d5e0,CCreditsState::~CCreditsState,CCreditsState,CCreditsState::~CCreditsState(void),dtor,rtti-vptr,med
 0x08dc60,CGruntzMgr::ReportError,CGruntzMgr,"void CGruntzMgr::ReportError(int errorMessageId, int errorCode)",method,tomalla,high
@@ -114,8 +114,6 @@ rva,name,class,prototype,kind,source,confidence
 0x099110,CInGameText::CInGameText,CInGameText,CInGameText::CInGameText(void),ctor,rtti-vptr,med
 0x09b8b0,CLevelTime::CLevelTime,CLevelTime,CLevelTime::CLevelTime(void),ctor,rtti-vptr,med
 0x09cf00,CLightFx::CLightFx,CLightFx,CLightFx::CLightFx(void),ctor,rtti-vptr,med
-0x09e940,CMapMgr::CMapMgr,CMapMgr,CMapMgr::CMapMgr(void),ctor,rtti-vptr,high
-0x09e9e0,CMapMgr::~CMapMgr,CMapMgr,CMapMgr::~CMapMgr(void),dtor,rtti-vptr,high
 0x0a9e00,CDoNothingNormal::CDoNothingNormal,CDoNothingNormal,CDoNothingNormal::CDoNothingNormal(void),ctor,rtti-vptr,high
 0x0aad20,CAniCycle::CAniCycle,CAniCycle,CAniCycle::CAniCycle(void),ctor,rtti-vptr,med
 0x0ab310,CSingleFrameMessage::CSingleFrameMessage,CSingleFrameMessage,CSingleFrameMessage::CSingleFrameMessage(void),ctor,rtti-vptr,med
@@ -151,7 +149,6 @@ rva,name,class,prototype,kind,source,confidence
 0x0fb7a0,CStaticHazard::CStaticHazard,CStaticHazard,CStaticHazard::CStaticHazard(void),ctor,rtti-vptr,med
 0x0ffde0,CSBI_RectOnly::~CSBI_RectOnly,CSBI_RectOnly,CSBI_RectOnly::~CSBI_RectOnly(void),dtor,rtti-vptr,med
 0x101580,CSBI_ImageSet::CSBI_ImageSet,CSBI_ImageSet,CSBI_ImageSet::CSBI_ImageSet(void),ctor,rtti-vptr,med
-0x101fa0,CSBI_RectOnly::CSBI_RectOnly,CSBI_RectOnly,CSBI_RectOnly::CSBI_RectOnly(void),ctor,rtti-vptr,high
 0x105070,CSBI_SideTab::~CSBI_SideTab,CSBI_SideTab,CSBI_SideTab::~CSBI_SideTab(void),dtor,rtti-vptr,high
 0x10a340,CSBI_Image::~CSBI_Image,CSBI_Image,CSBI_Image::~CSBI_Image(void),dtor,rtti-vptr,med
 0x10c230,CStatusBarSprite::CStatusBarSprite,CStatusBarSprite,CStatusBarSprite::CStatusBarSprite(void),ctor,rtti-vptr,med
@@ -176,15 +173,12 @@ rva,name,class,prototype,kind,source,confidence
 0x1127f0,CCheckpointTriggerSwitchLogic::CCheckpointTriggerSwitchLogic,CCheckpointTriggerSwitchLogic,CCheckpointTriggerSwitchLogic::CCheckpointTriggerSwitchLogic(void)  [ghidra-existing-name: ??0CMetaFileDC@@QAE@XZ],ctor,rtti-vptr,high
 0x112820,CGruntzApp::vector_deleting_destructor,CGruntzApp,vftable slot 0 (vector deleting destructor),dtor,tomalla,high
 0x1145c0,CToobSpikez::CToobSpikez,CToobSpikez,CToobSpikez::CToobSpikez(void),ctor,rtti-vptr,med
-0x115810,CGruntzMgr::InitializeFonts,CGruntzMgr,bool CGruntzMgr::InitializeFonts(),method,tomalla,high
 0x115f60,CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_115f60,CTileTriggerSwitchLogic,CTileTriggerSwitchLogic::CTileTriggerSwitchLogic(void),ctor,rtti-vptr,high
 0x116320,CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_116320,CTileTriggerSwitchLogic,CTileTriggerSwitchLogic::CTileTriggerSwitchLogic(void),ctor,rtti-vptr,high
-0x1189c0,Utils::WinAPI::FileExists,Utils::WinAPI,bool Utils::WinAPI::FileExists(char* szPath),method,tomalla,high
 0x118ce0,Utils::WinAPI::LegacyAreProcessesRunning,Utils::WinAPI,"bool Utils::WinAPI::LegacyAreProcessesRunning(char* szDescriptor, int minCount, HANDLE* pOutProcessHandle)",method,tomalla,high
 0x118f60,LegacyFindModule,,"bool LegacyFindModule(DWORD processId, DWORD moduleId, PMODULEENTRY32 pOutFoundModuleEntry, DWORD moduleEntrySize)",free,tomalla,high
 0x1198a0,CGruntVoice::CGruntVoice,CGruntVoice,CGruntVoice::CGruntVoice(void),ctor,rtti-vptr,med
 0x119b50,CVoiceTrigger::CVoiceTrigger_119b50,CVoiceTrigger,CVoiceTrigger::CVoiceTrigger(void),ctor,rtti-vptr,med
-0x11c860,WinMain,,"int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)",free,tomalla,high
 0x11f900,,,,import-caller,"import:FindFirstFileA",low
 0x12abf0,,,,import-caller,"import:WriteFile",low
 0x12d230,,,,import-caller,"import:WriteFile",low
@@ -200,82 +194,33 @@ rva,name,class,prototype,kind,source,confidence
 0x136550,,DirectSoundMgr,,import-caller,"import:DSOUND.dll!#1",high
 0x1376d0,UnknownVoldemort::UnknownVoldemort,UnknownVoldemort,UnknownVoldemort::UnknownVoldemort(),ctor,tomalla,high
 0x1376f0,UnknownVoldemort::~UnknownVoldemort,UnknownVoldemort,UnknownVoldemort::~UnknownVoldemort(),dtor,tomalla,high
-0x139210,Utils::RegistryHelper::Open,Utils::RegistryHelper,"bool Utils::RegistryHelper::Open(char* szKeyName1, char* szKeyName2, char* szKeyName3, char* szKeyName4, HKEY hKey, char* szSubKey)",method,tomalla,high
-0x139330,Utils::RegistryHelper::Close,Utils::RegistryHelper,void Utils::RegistryHelper::Close(),method,tomalla,high
-0x139370,Utils::RegistryHelper::InitializeLastKey,Utils::RegistryHelper,bool Utils::RegistryHelper::InitializeLastKey(char* szLastKey),method,tomalla,high
-0x1393b0,,,,import-caller,"import:RegSetValueExA",med
-0x139460,,,,import-caller,"import:RegSetValueExA",med
-0x1394a0,Utils::RegistryHelper::GetValueString,Utils::RegistryHelper,"char* Utils::RegistryHelper::GetValueString(char* szValueName, char* szValueBuffer, unsigned int* pValueBufferSize, char* szDefault)",method,tomalla,high
-0x1395d0,Utils::RegistryHelper::GetValueDword,Utils::RegistryHelper,"DWORD Utils::RegistryHelper::GetValueDword(char* szValueName, DWORD valueDefault)",method,tomalla,high
-0x139650,Utils::RegistryHelper::GetRegistryKey,Utils::RegistryHelper,"bool Utils::RegistryHelper::GetRegistryKey(HKEY hKey, char* szSubKey, PHKEY phKeyResult)",method,tomalla,high
-0x13cf00,WAP32::CGameWnd::CGameWnd,WAP32::CGameWnd,WAP32::CGameWnd::CGameWnd(),ctor,tomalla,high
-0x13cf20,WAP32::CGameWnd::CreateAndShow,WAP32::CGameWnd,"bool WAP32::CGameWnd::CreateAndShow(CREATESTRUCTA* pCreateStruct, WAP32::CGameApp* pGameApp)",method,tomalla,high
-0x13cfb0,WAP32::CGameWnd::Destroy,WAP32::CGameWnd,void WAP32::CGameWnd::Destroy(),method,tomalla,high
 0x13cff0,WAP32::CGameApp::GameWindowProc,WAP32::CGameApp,"LRESULT CALLBACK WAP32::CGameApp::GameWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)",method,tomalla,high
-0x13d490,WAP32::CGameWnd::QuitMessageLoop,WAP32::CGameWnd,void WAP32::CGameWnd::QuitMessageLoop(),method,tomalla,high
-0x13d590,WAP32::CGameApp::CGameApp,WAP32::CGameApp,WAP32::CGameApp::CGameApp(),ctor,tomalla,high
-0x13d5d0,WAP32::CGameApp::VirtualUnknownMethod02,WAP32::CGameApp,"bool WAP32::CGameApp::VirtualUnknownMethod02(GameInfo* pGameInfo, WNDCLASSA* pWndClass, CREATESTRUCTA* pCreateStruct)",method,tomalla,high
-0x13d7b0,WAP32::CGameApp::VirtualUnknownMethod03,WAP32::CGameApp,"bool WAP32::CGameApp::VirtualUnknownMethod03(HINSTANCE hInstance, char* szWindowName, char* szGameIdentifier, char* szCmdLine, char windowClassFlags, int windowWidth, int windowHeight)",method,tomalla,high
-0x13d8c0,WAP32::CGameApp::CloseResources,WAP32::CGameApp,void WAP32::CGameApp::CloseResources(),method,tomalla,high
-0x13d9b0,WAP32::CGameApp::InitializeDefaultWindowClass,WAP32::CGameApp,void WAP32::CGameApp::InitializeDefaultWindowClass(),method,tomalla,high
-0x13da50,WAP32::CGameApp::InitializeDefaultCreateStruct,WAP32::CGameApp,void WAP32::CGameApp::InitializeDefaultCreateStruct(),method,tomalla,high
-0x13db60,CGruntzApp::InitializeGameWindow,CGruntzApp,WAP32::CGameWnd* CGruntzApp::InitializeGameWindow()  [ICF-folded: WAP32::CGameApp::InitializeGameWindow],method,tomalla,med
 0x13dbc0,WAP32::CGameApp::InitializeGameManager,WAP32::CGameApp,WAP32::CGameMgr* WAP32::CGameApp::InitializeGameManager(),method,tomalla,high
-0x13dc20,WAP32::CGameApp::InitializeAccelerators,WAP32::CGameApp,bool WAP32::CGameApp::InitializeAccelerators(char* szGameIdentifier),method,tomalla,high
-0x13dc90,WAP32::CGameApp::FreeGameManager,WAP32::CGameApp,void WAP32::CGameApp::FreeGameManager(),method,tomalla,high
-0x13dcb0,WAP32::CGameApp::ReportError,WAP32::CGameApp,"void WAP32::CGameApp::ReportError(int errorMessageId, int errorCode)",method,tomalla,high
 0x13dd10,WAP32::CGameMgr::CGameMgr,WAP32::CGameMgr,WAP32::CGameMgr::CGameMgr(),ctor,tomalla,high
 0x13dd50,WAP32::CGameMgr::UnknownVirtualMethod1,WAP32::CGameMgr,"bool WAP32::CGameMgr::UnknownVirtualMethod1(WAP32::CGameWnd* pGameWnd, char* szCmdLine)",vfunc,tomalla,high
-0x13ddb0,WAP32::CGameMgr::UnknownClose,WAP32::CGameMgr,void WAP32::CGameMgr::UnknownClose(),method,tomalla,high
-0x13dea0,WAP32::CGameMgr::UnknownMethodInitializeTimeGlobal,WAP32::CGameMgr,void WAP32::CGameMgr::UnknownMethodInitializeTimeGlobal(),method,tomalla,high
-0x13dfe0,Utils::WinAPI::ActiveWait,Utils::WinAPI,void Utils::WinAPI::ActiveWait(unsigned int milliseconds),method,tomalla,high
 0x141cc0,UnknownFilch::UnknownFilch,UnknownFilch,UnknownFilch::UnknownFilch(),ctor,tomalla,high
 0x141dc0,,CDirectDrawMgr,,import-caller,"import:DirectDrawCreate",high
 0x152650,UnknownPettigrew::VirtualMethodUnknown1C,UnknownPettigrew,void UnknownPettigrew::VirtualMethodUnknown1C(),vfunc,tomalla,high
-0x154aa0,UnknownSeverus::VirtualMethodUnknown18,UnknownSeverus,bool UnknownSeverus::VirtualMethodUnknown18(),vfunc,tomalla,high
-0x154ac0,UnknownSeverus::VirtualMethodUnknown1C,UnknownSeverus,void UnknownSeverus::VirtualMethodUnknown1C(),vfunc,tomalla,high
-0x154ae0,UnknownSeverus::VirtualMethodUnknown38,UnknownSeverus,void UnknownSeverus::VirtualMethodUnknown38(),vfunc,tomalla,high
-0x154be0,UnknownSeverus::VirtualMethodUnknown40,UnknownSeverus,void UnknownSeverus::VirtualMethodUnknown40(),vfunc,tomalla,high
-0x154ce0,UnknownSeverus::VirtualMethodUnknown30,UnknownSeverus,void UnknownSeverus::VirtualMethodUnknown30(),vfunc,tomalla,high
-0x154df0,UnknownSeverus::VirtualMethodUnknown24,UnknownSeverus,void UnknownSeverus::VirtualMethodUnknown24(),vfunc,tomalla,high
-0x154f00,UnknownSeverus::VirtualMethodUnknown3C,UnknownSeverus,void UnknownSeverus::VirtualMethodUnknown3C(),vfunc,tomalla,high
-0x154f20,UnknownSeverus::VirtualMethodUnknown34,UnknownSeverus,void UnknownSeverus::VirtualMethodUnknown34(),vfunc,tomalla,high
-0x154f40,UnknownSeverus::VirtualMethodUnknown2C,UnknownSeverus,void UnknownSeverus::VirtualMethodUnknown2C(),vfunc,tomalla,high
-0x154f60,UnknownSeverus::VirtualMethodUnknown28,UnknownSeverus,void UnknownSeverus::VirtualMethodUnknown28(),vfunc,tomalla,high
 0x154f80,UnknownSeverus::VirtualMethodUnknown48,UnknownSeverus,void UnknownSeverus::VirtualMethodUnknown48(),vfunc,tomalla,high
 0x155160,UnknownSeverus::VirtualMethodUnknown4C,UnknownSeverus,void UnknownSeverus::VirtualMethodUnknown4C(),vfunc,tomalla,high
-0x155280,UnknownSeverus::VirtualMethodUnknown50,UnknownSeverus,void UnknownSeverus::VirtualMethodUnknown50(),vfunc,tomalla,high
 0x155720,UnknownCGruntzMgrLucius::~UnknownCGruntzMgrLucius,UnknownCGruntzMgrLucius,UnknownCGruntzMgrLucius::~UnknownCGruntzMgrLucius(),dtor,tomalla,high
-0x155840,UnknownClassCGruntzMgrHarryPotter::UnknownClassCGruntzMgrHarryPotter,UnknownClassCGruntzMgrHarryPotter,UnknownClassCGruntzMgrHarryPotter::UnknownClassCGruntzMgrHarryPotter(),ctor,tomalla,high
 0x1558b0,UnknownClassCGruntzMgrHarryPotter::~UnknownClassCGruntzMgrHarryPotter,UnknownClassCGruntzMgrHarryPotter,UnknownClassCGruntzMgrHarryPotter::~UnknownClassCGruntzMgrHarryPotter(),dtor,tomalla,high
 0x155900,UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod18,UnknownClassCGruntzMgrHarryPotter,"bool UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod18(HWND hWnd, int unknown1, int unknown2, int unknown3, int flagsUnknown)",vfunc,tomalla,high
 0x155e20,UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod1C,UnknownClassCGruntzMgrHarryPotter,void UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod1C(),vfunc,tomalla,high
-0x155f00,UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod14,UnknownClassCGruntzMgrHarryPotter,void UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod14(),vfunc,tomalla,high
 0x156cb0,UnknownCGruntzMgrLucius::UnknownCGruntzMgrLucius,UnknownCGruntzMgrLucius,"UnknownCGruntzMgrLucius::UnknownCGruntzMgrLucius(UnknownClassCGruntzMgrHarryPotter* pUnknownHarryPotter, int unknown2, int unknown3) : UnknownCGruntzMgrHogwarts(unknown2)",ctor,tomalla,high
-0x156cd0,UnknownAlbus::VirtualMethodUnknown14,UnknownAlbus,void UnknownAlbus::VirtualMethodUnknown14(),vfunc,tomalla,high
-0x156de0,UnknownSeverus::VirtualMethodUnknown20,UnknownSeverus,void UnknownSeverus::VirtualMethodUnknown20(),vfunc,tomalla,high
 0x156df0,UnknownSeverus::~UnknownSeverus,UnknownSeverus,UnknownSeverus::~UnknownSeverus(),dtor,tomalla,high
 0x156e80,UnknownSeverus::VirtualMethodUnknown44,UnknownSeverus,void UnknownSeverus::VirtualMethodUnknown44(),vfunc,tomalla,high
-0x156ec0,UnknownSeverus::VirtualMethodUnknown54,UnknownSeverus,void UnknownSeverus::VirtualMethodUnknown54(),vfunc,tomalla,high
-0x156f00,UnknownHagrid::VirtualMethodUnknown14,UnknownHagrid,void UnknownHagrid::VirtualMethodUnknown14(),vfunc,tomalla,high
 0x156f20,UnknownHagrid::VirtualMethodUnknown20,UnknownHagrid,void UnknownHagrid::VirtualMethodUnknown20(),vfunc,tomalla,high
 0x156f50,UnknownHagrid::~UnknownHagrid,UnknownHagrid,UnknownHagrid::~UnknownHagrid(),dtor,tomalla,high
 0x156fc0,UnknownHagrid::VirtualMethodUnknown18,UnknownHagrid,bool UnknownHagrid::VirtualMethodUnknown18(),vfunc,tomalla,high
-0x156fd0,UnknownHagrid::VirtualMethodUnknown24,UnknownHagrid,void UnknownHagrid::VirtualMethodUnknown24(),vfunc,tomalla,high
-0x157150,UnknownHagrid::VirtualMethodUnknown30,UnknownHagrid,void UnknownHagrid::VirtualMethodUnknown30(),vfunc,tomalla,high
-0x157330,UnknownHagrid::VirtualMethodUnknown2C,UnknownHagrid,void UnknownHagrid::VirtualMethodUnknown2C(),vfunc,tomalla,high
-0x1573e0,UnknownHagrid::VirtualMethodUnknown28,UnknownHagrid,void UnknownHagrid::VirtualMethodUnknown28(),vfunc,tomalla,high
-0x157480,UnknownDraco::VirtualMethodUnknown14,UnknownDraco,void UnknownDraco::VirtualMethodUnknown14(),vfunc,tomalla,high
 0x1574a0,UnknownDraco::VirtualMethodUnknown20,UnknownDraco,void UnknownDraco::VirtualMethodUnknown20(),vfunc,tomalla,high
 0x1574b0,UnknownDraco::~UnknownDraco,UnknownDraco,UnknownDraco::~UnknownDraco(),dtor,tomalla,high
 0x1574d0,UnknownCGruntzMgrLucius::VirtualMethodUnknown14,UnknownCGruntzMgrLucius,void UnknownCGruntzMgrLucius::VirtualMethodUnknown14(),vfunc,tomalla,high
 0x157530,UnknownMinerva::VirtualMethodUnknown14,UnknownMinerva,void UnknownMinerva::VirtualMethodUnknown14(),vfunc,tomalla,high
 0x157550,UnknownMinerva::~UnknownMinerva,UnknownMinerva,UnknownMinerva::~UnknownMinerva(),dtor,tomalla,high
-0x1575e0,UnknownHermiona::VirtualMethodUnknown14,UnknownHermiona,void UnknownHermiona::VirtualMethodUnknown14(),vfunc,tomalla,high
 0x157600,UnknownAlbus::VirtualMethodUnknown20,UnknownAlbus,void UnknownAlbus::VirtualMethodUnknown20()  [ICF-folded: UnknownHermiona::VirtualMethodUnknown20],vfunc,tomalla,med
 0x157610,UnknownAlbus::~UnknownAlbus,UnknownAlbus,UnknownAlbus::~UnknownAlbus()  [ICF-folded: UnknownHermiona::~UnknownHermiona],dtor,tomalla,med
 0x1576c0,UnknownCGruntzMgrLucius::VirtualMethodUnknown1C,UnknownCGruntzMgrLucius,"void UnknownCGruntzMgrLucius::VirtualMethodUnknown1C()  [ICF-folded: UnknownAlbus::VirtualMethodUnknown18, UnknownHermiona::VirtualMethodUnknown18]",vfunc,tomalla,med
-0x1576d0,UnknownSeverus::VirtualMethodUnknown14,UnknownSeverus,void UnknownSeverus::VirtualMethodUnknown14()  [ICF-folded: UnknownSirius::VirtualMethodUnknown14],vfunc,tomalla,med
 0x1576f0,UnknownSirius::VirtualMethodUnknown20,UnknownSirius,void UnknownSirius::VirtualMethodUnknown20(),vfunc,tomalla,high
 0x157700,UnknownSirius::~UnknownSirius,UnknownSirius,UnknownSirius::~UnknownSirius(),dtor,tomalla,high
 0x157790,UnknownCGruntzMgrLucius::VirtualMethodUnknown20,UnknownCGruntzMgrLucius,void UnknownCGruntzMgrLucius::VirtualMethodUnknown20()  [ICF-folded: UnknownSirius::VirtualMethodUnknown18],vfunc,tomalla,med
@@ -284,27 +229,17 @@ rva,name,class,prototype,kind,source,confidence
 0x157ae0,UnknownPettigrew::VirtualMethodUnknown18,UnknownPettigrew,bool UnknownPettigrew::VirtualMethodUnknown18()  [ICF-folded: UnknownMinerva::VirtualMethodUnknown1C],vfunc,tomalla,med
 0x157bc0,UnknownMinerva::ClearUnknownMap,UnknownMinerva,void UnknownMinerva::ClearUnknownMap(),method,tomalla,high
 0x1588f0,UnknownDraco::VirtualMethodUnknown24,UnknownDraco,void UnknownDraco::VirtualMethodUnknown24(),vfunc,tomalla,high
-0x158ac0,UnknownDraco::VirtualMethodUnknown1C,UnknownDraco,void UnknownDraco::VirtualMethodUnknown1C(),vfunc,tomalla,high
 0x1591e0,UnknownHermiona::VirtualMethodUnknown1C,UnknownHermiona,void UnknownHermiona::VirtualMethodUnknown1C(),vfunc,tomalla,high
 0x1591f0,UnknownHermiona::VirtualMethodUnknown3C,UnknownHermiona,void UnknownHermiona::VirtualMethodUnknown3C(),vfunc,tomalla,high
 0x159a70,UnknownHermiona::VirtualMethodUnknown24,UnknownHermiona,void UnknownHermiona::VirtualMethodUnknown24(),vfunc,tomalla,high
 0x159c90,UnknownHermiona::VirtualMethodUnknown28,UnknownHermiona,void UnknownHermiona::VirtualMethodUnknown28(),vfunc,tomalla,high
 0x159cc0,UnknownHermiona::VirtualMethodUnknown2C,UnknownHermiona,void UnknownHermiona::VirtualMethodUnknown2C(),vfunc,tomalla,high
-0x159cf0,UnknownHermiona::VirtualMethodUnknown30,UnknownHermiona,void UnknownHermiona::VirtualMethodUnknown30(),vfunc,tomalla,high
-0x159d40,UnknownHermiona::VirtualMethodUnknown34,UnknownHermiona,void UnknownHermiona::VirtualMethodUnknown34(),vfunc,tomalla,high
 0x159d90,UnknownHermiona::VirtualMethodUnknown38,UnknownHermiona,void UnknownHermiona::VirtualMethodUnknown38(),vfunc,tomalla,high
 0x15ccd0,UnknownRemus::UnknownRemus,UnknownRemus,"UnknownRemus::UnknownRemus(UnknownClassCGruntzMgrHarryPotter* pUnknownHarryPotter, int unknown2, int unknown3) : UnknownCGruntzMgrLucius(pUnknownHarryPotter, unknown2, unknown3)",ctor,tomalla,high
-0x15cdf0,UnknownRemus::VirtualMethodUnknown2C,UnknownRemus,void UnknownRemus::VirtualMethodUnknown2C(),vfunc,tomalla,high
-0x15ceb0,UnknownRemus::VirtualMethodUnknown28,UnknownRemus,void UnknownRemus::VirtualMethodUnknown28(),vfunc,tomalla,high
-0x15cf70,UnknownRemus::VirtualMethodUnknown24,UnknownRemus,void UnknownRemus::VirtualMethodUnknown24(),vfunc,tomalla,high
-0x15d030,UnknownRemus::VirtualMethodUnknown34,UnknownRemus,void UnknownRemus::VirtualMethodUnknown34(),vfunc,tomalla,high
-0x15d0d0,UnknownRemus::VirtualMethodUnknown30,UnknownRemus,void UnknownRemus::VirtualMethodUnknown30(),vfunc,tomalla,high
 0x15d1f0,UnknownRemus::VirtualMethodUnknown1C,UnknownRemus,void UnknownRemus::VirtualMethodUnknown1C(),vfunc,tomalla,high
-0x15d280,CGameLevel::LoadWwd,CGameLevel,"int CGameLevel::LoadWwd(WwdFile* pWwd)  [tomalla: UnknownRemus::VirtualMethodUnknown38 -> UnknownRemus IS CGameLevel; LoadWwd is vtable slot 0x38]",vfunc,rez-trace,high
 0x15d500,UnknownRemus::VirtualMethodUnknown40,UnknownRemus,void UnknownRemus::VirtualMethodUnknown40(),vfunc,tomalla,high
 0x15d630,UnknownRemus::VirtualMethodUnknown3C,UnknownRemus,void UnknownRemus::VirtualMethodUnknown3C(),vfunc,tomalla,high
 0x15d680,UnknownRemus::VirtualMethodUnknown44,UnknownRemus,void UnknownRemus::VirtualMethodUnknown44(),vfunc,tomalla,high
-0x161190,UnknownRemus::VirtualMethodUnknown14,UnknownRemus,void UnknownRemus::VirtualMethodUnknown14(),vfunc,tomalla,high
 0x1611b0,UnknownRemus::VirtualMethodUnknown20,UnknownRemus,void UnknownRemus::VirtualMethodUnknown20(),vfunc,tomalla,high
 0x1611c0,UnknownRemus::~UnknownRemus,UnknownRemus,UnknownRemus::~UnknownRemus(),dtor,tomalla,high
 0x163bf0,UnknownHagrid::VirtualMethodUnknown34,UnknownHagrid,void UnknownHagrid::VirtualMethodUnknown34(),vfunc,tomalla,high
@@ -312,25 +247,14 @@ rva,name,class,prototype,kind,source,confidence
 0x165210,UnknownSeverus::VirtualMethodUnknown58,UnknownSeverus,void UnknownSeverus::VirtualMethodUnknown58()  [ICF-folded: UnknownSirius::VirtualMethodUnknown1C],vfunc,tomalla,med
 0x1652c0,UnknownSirius::VirtualMethodUnknown24,UnknownSirius,void UnknownSirius::VirtualMethodUnknown24(),vfunc,tomalla,high
 0x1658c0,UnknownAlbus::VirtualMethodUnknown24,UnknownAlbus,void UnknownAlbus::VirtualMethodUnknown24(),vfunc,tomalla,high
-0x165990,UnknownAlbus::VirtualMethodUnknown28,UnknownAlbus,void UnknownAlbus::VirtualMethodUnknown28(),vfunc,tomalla,high
-0x165a10,UnknownAlbus::VirtualMethodUnknown2C,UnknownAlbus,void UnknownAlbus::VirtualMethodUnknown2C(),vfunc,tomalla,high
 0x165a90,UnknownAlbus::VirtualMethodUnknown30,UnknownAlbus,void UnknownAlbus::VirtualMethodUnknown30(),vfunc,tomalla,high
 0x165b90,UnknownAlbus::VirtualMethodUnknown1C,UnknownAlbus,void UnknownAlbus::VirtualMethodUnknown1C(),vfunc,tomalla,high
 0x1776a0,CNetMgr::ReportError,CNetMgr,"void CNetMgr::ReportError(char* szFile, int lineNumber, HRESULT hResult, HWND hWnd)",method,tomalla,high
 0x1780b0,,CNetMgr,,import-caller,"import:DPLAYX.dll!#1",high
 0x178280,,CNetMgr,,import-caller,"import:DPLAYX.dll!#2",high
 0x1782d0,,CNetMgr,,import-caller,"import:DPLAYX.dll!#1",high
-0x179700,Font::Font,Font,Font::Font(),ctor,tomalla,high
-0x179720,Font::AllocateMemory,Font,bool Font::AllocateMemory(int lettersCount),method,tomalla,high
-0x1797b0,Font::FreeMemory,Font,void Font::FreeMemory(),method,tomalla,high
-0x179830,Font::LoadFont,Font,bool Font::LoadFont(CString szFileName),method,tomalla,high
 0x17c040,,CDirectDrawMgr,,import-caller,"import:DirectDrawCreate",high
 0x18c780,,,,import-caller,"import:FindFirstFileA",low
-0x1bf200,CFileIO::Open,CFileIO,"void* CFileIO::Open(...)  [wraps CreateFileA, IAT 0x6c4058; rez-trace fileio]",method,rez-trace,high
-0x1bf328,CFileIO::Read,CFileIO,"int CFileIO::Read(void* buf, unsigned int n)  [wraps ReadFile, IAT 0x6c405c; pulls the 1524-byte WWD header; rez-trace fileio]",method,rez-trace,high
-0x1bf362,CFileIO::Write,CFileIO,"int CFileIO::Write(...)  [wraps WriteFile, IAT 0x6c4060; save path, not on load chain; rez-trace fileio]",method,rez-trace,med
-0x1bf3ad,CFileIO::Seek,CFileIO,"int CFileIO::Seek(...)  [wraps SetFilePointer, IAT 0x6c4064; rez-trace fileio]",method,rez-trace,med
-0x1bf3dc,CFileIO::Seek2,CFileIO,"int CFileIO::Seek2(...)  [wraps SetFilePointer sibling; rez-trace fileio]",method,rez-trace,med
 0x1bf702,,,,import-caller,"import:RegQueryValueExA",med
 0x1bf8f8,,,,import-caller,"import:FindFirstFileA",low
 0x1c152f,,,,import-caller,"import:GetFileSize",low
@@ -355,21 +279,11 @@ rva,name,class,prototype,kind,source,confidence
 #  rows are enriched/corrected in place above; not repeated here.)
 #
 # RezMgr archive layer (unit=rezmgr):
-0x13a0f0,CRezDir::Load,CRezDir,"int CRezDir::Load(...)  [recursive dir parse; pushes assert 'CRezDir::Load Failed! (File is not sorted!)'@0x61a070; recurses self @0x53a0f0; sorted-dir/binary-search invariant. @unconfirmed container offsets]",method,rez-trace,high
 0x13b0c0,CRezDir::OpenSub,CRezDir,"void* CRezDir::OpenSub(char* name)  [name lookup via CRezDir::FindEntry @0x53c080; dir branch allocs 0x38 CRezDir (ctor @0x53c940), file branch 0x24 CRezItm (ctor @0x53c540); called by RezSync::Init for VRZ/ZZZ/XXX]",method,rez-trace,high
-0x13c080,CRezDir::FindEntry,CRezDir,"void* CRezDir::FindEntry(char* name)  [binary search over the sorted dir; called by OpenSub @0x53b0c0]",method,rez-trace,med
-0x13c540,CRezItm::CRezItm,CRezItm,"CRezItm::CRezItm(...)  [0x24-byte (36) leaf-resource (file) node ctor; from the file branch of OpenSub]",ctor,rez-trace,med
-0x13c940,CRezDir::CRezDir,CRezDir,"CRezDir::CRezDir(...)  [0x38-byte (56) subdirectory node ctor; from the dir branch of OpenSub]",ctor,rez-trace,med
-0x091670,RezMgr::MakeRezPath,RezMgr,"char* RezMgr::MakeRezPath(...)  [builds archive path from 'Gruntz.REZ'@0x60c674 + prefix@0x60c66c ('%s\\%s'); CreateFileA-wrapper region]",method,rez-trace,med
-0x13e5d0,RezMgr::MakeImageKey,RezMgr,"char* RezMgr::MakeImageKey(...)  [appends '.'+ext '.PCX'@0x61a0dc/'.BMP'@0x61a0e4/'.PID'@0x61a0d4; image resource key builder]",method,rez-trace,med
 # (0x1fa12 is INSIDE StartUpPrompt @0x01f9b0 (already labeled) - a 'Gruntz.REZ' string
 #  xref site, not a function start; not added as a separate row.)
 #
 # WWD level deserialization (unit=wwd):
-0x160790,WwdFile::InflateMainBlock,WwdFile,"int WwdFile::InflateMainBlock(...)  [planesOffset[+0x2e0]<=0x5f4; test flags[+8],0x2 (COMPRESS); mainBlockLength[+0x2e8]; calls uncompress @0x585320 (out+planesOffset,in+planesOffset). zlib bridge for WWD.]",method,rez-trace,high
-0x160530,WwdFile::IsValidWwd,WwdFile,"bool WwdFile::IsValidWwd(...)  [opens (CreateFileA-wrapper @0x5bf200), reads 1524 B (ReadFile-wrapper @0x5bf328), require read==0x5f4 && firstDword<=0x5f4. WWD header-size signature probe.]",method,rez-trace,high
-0x160660,WwdFile::CheckHeader,WwdFile,"bool WwdFile::CheckHeader(...)  [second 0x5f4-checking validator adjacent to IsValidWwd @0x560530]",method,rez-trace,med
-0x15d8d0,WwdFile::ReadPlane,WwdFile,"int WwdFile::ReadPlane(...)  [per-plane reader dispatched from LoadWwd @0x55d280; 0xa0=160-byte plane stride; fans out to tile/imageset/object sub-readers (0x55e130,0x562010,0x5615a0,...)]",method,rez-trace,med
 0x162af0,WwdFile::ReadPlaneObjects,WwdFile,"int WwdFile::ReadPlaneObjects(...)  [advances source ptr by 0x11c (284 = fixed object record) via lea[esi+0x11c]+rep movs; then 4 length-prefixed strings name/logic/imageSet/sound]",method,rez-trace,high
 # (0x1635xx WwdFile::ValidateMapTile - the map-tile bounds checker using format
 #  'Plane %s: Bad map tile value (%i) at %i,%i'@0x61ab36 (sprintf @0x51f890) - lives
@@ -377,7 +291,6 @@ rva,name,class,prototype,kind,source,confidence
 #  cannot be labeled by RVA until boundary recovery carves it. NOT added.)
 #
 # PID image deserialization (unit=image):
-0x175a90,Image::LoadFromRez,Image,"Image* Image::LoadFromRez(char* name)  [resolves a .PID@0x61a0d4 by name via RezMgr then decodes; PidFile.cpp load chain]",method,rez-trace,med
 0x148940,,,,rez-trace,"second '.PID' xref; image-format dispatch consumer (entry not pinned)",low
 #
 # zlib chain leaves (unit=zlib; uncompress/inflate to be byte-MATCHED in Phase 2):
@@ -481,7 +394,6 @@ rva,name,class,prototype,kind,source,confidence
 0x0b82e0,CNetMgr::LoadServiceConfig,CNetMgr,__thiscall(this) [reads Other/Modem/Serial/TcpIp service + _CmdDelay/_Resend/_DynCmdDelay into this+0x524/0x5a4..],method,decomp-xref,high
 0x0bc460,CNetMgr::LoadTcpIpConfig,CNetMgr,__thiscall(this) [reads TcpIp _CmdDelay/_Resend/_DynCmdDelay into this+0x5a4..0x5c0],method,decomp-xref,med
 0x0b8b10,CNetMgr::LoadCmdDelayConfig,CNetMgr,__thiscall(this) [reads CMDDELAY/RESEND command-timing config into this+0x59c..0x5c0],method,decomp-xref,med
-0x0b85a0,CNetMgr::ApplyCmdDelayDefaults,CNetMgr,__thiscall(this) [_CmdDelay/_Resend into this+0x5a4/0x5a8],method,decomp-xref,med
 0x105990,UpdateRezConveyorStatusBar,,__thiscall(this) [StatusBar + ConveyorBeltHoldDelay; GAME_REZBELTRETURN/BACKUP rez-machine conveyor HUD],method,decomp-xref,med
 0x1076a0,UpdateChipGrinderStatusBar,,__thiscall(this) [StatusBar + FallingItemShredderDelay/Speed; GAME_REZGRINDING chip-grinder HUD],method,decomp-xref,med
 0x105310,UpdateGruntOvenStatusBar,,__thiscall(this) [StatusBar + GruntOvenDelay; GAME_COOKINGCOMPLETE grunt-oven HUD; this+0x204/0x220],method,decomp-xref,med
@@ -506,7 +418,6 @@ rva,name,class,prototype,kind,source,confidence
 0x03b7c0,LoadCustomWorldInfo,,[reads CUSTOM_WORLDINFO/'_Custom_' custom-world descriptor],free,decomp-xref,med
 0x107ae0,LoadMultiplayerBattlezConfig,,__thiscall(this) [reads Multiplayer/StartingGruntz/Battlez setup config],method,decomp-xref,med
 0x170750,ButeMgr::ParseAttributeFile,,__thiscall(this) [.att attribute-file parser; emits 'ButeMgr: duplicate symbol encountered'; 2 callers],method,decomp-xref,med
-0x16d9c0,GetContainerErrorString,,"__thiscall(this,code) [maps container status code -> 'Out of memory'/'Overflow'/'Null pointer argument'/...; 5 callers; Monolith container lib]",method,decomp-xref,low
 0x185000,DebugPrintf,,[DPRINTF/FILEAPPEND/STDOUT debug-log helper; called from 0x184b70],free,decomp-xref,low
 #
 # --- decomp-xref pass, batch 2: NetMgr/objects/states/status-bar (read from decompiler) ---
@@ -531,7 +442,6 @@ rva,name,class,prototype,kind,source,confidence
 0x0e9600,BuildStatzTabStatusBar,,__thiscall(this) [GAME_STATUSBAR_TABZ_STATZTAB_TAB statz-tab sprite set into this+0x0c..0x44],method,decomp-xref,med
 0x0ea1f0,BuildMultiplayerTabStatusBar,,__thiscall(this) [GAME_STATUSBAR_TABZ_MULTIPLAYERTAB/STATZTAB_SEL tab sprites into this+0x0c..0x48],method,decomp-xref,med
 0x0d1710,LoadSBITextEdges,,"__thiscall(this,a) [TextTop/Bottom/Left/RightEdge status-bar-item text rect; this+0x510]",method,decomp-xref,med
-0x0d1890,LoadSBITextEdges2,,__thiscall(this) [TextTop/Bottom/Left/RightEdge variant; this+0x40c],method,decomp-xref,med
 0x090d10,LoadMonologoSprite,,__thiscall(this) [GAME_MONOLITH/MONOLITH splash-logo sprite; this+0x2c/0x30],method,decomp-xref,med
 0x092420,LoadSaveMessageSprite,,__thiscall(this) [GAME_SAVE/GAME_SAVEMSG save-feedback sprite; this+0x44],method,decomp-xref,med
 0x07b440,BuildRockBreakParticles,,"__thiscall(this,...) [Particlez/LEVEL_ROCKBREAK rock-break particle effect; this+0x22c]",method,decomp-xref,med
@@ -540,11 +450,6 @@ rva,name,class,prototype,kind,source,confidence
 0x090550,LaunchPortalExe,,['Monolith Productions'/Portal/portal_exe external-portal launcher],free,decomp-xref,low
 #
 # --- decomp-xref pass, batch 3: CGrunt anim resolvers, object/effect & state loaders ---
-0x045100,CGrunt::ResolveMovingAnimation,CGrunt,__thiscall(this) [resolves GRUNTZ_<type>_MOVING sprite -> this],method,decomp-xref,med
-0x0455f0,CGrunt::ResolveDeathAnimation,CGrunt,__thiscall(this) [resolves GRUNTZ_<type>_DEATH sprite],method,decomp-xref,med
-0x045960,CGrunt::ResolveIdleAnimation,CGrunt,__thiscall(this) [resolves GRUNTZ_<type>_IDLE sprite],method,decomp-xref,med
-0x045b60,CGrunt::ResolveBattlecryAnimation,CGrunt,__thiscall(this) [resolves GRUNTZ_<type>_BATTLECRY sprite],method,decomp-xref,med
-0x0457b0,CGrunt::ResolveAnimation,CGrunt,__thiscall(this) [generic GRUNTZ_<type>_<cat> sprite resolver],method,decomp-xref,low
 0x062e10,CGrunt::LoadIdleConfig,CGrunt,"__thiscall(this,a,b,c) [reads Grunt/IdleDelay attrs]",method,decomp-xref,med
 0x0633e0,CGrunt::LoadDefenderConfig,CGrunt,__thiscall(this) [reads Grunt/PlayerDefenderRadius attr],method,decomp-xref,med
 0x065630,LoadBombGruntRunConfig,,"__thiscall(this,a,b) [BOMBGRUNT RunningTimePerTile attr]",method,decomp-xref,med
@@ -559,7 +464,6 @@ rva,name,class,prototype,kind,source,confidence
 0x07b330,LoadExplosionSprites,,[GAME_EXPLOSION%d/Explosion sprite set],method,decomp-xref,med
 0x0db600,LoadActionTileSprites,,"__thiscall(this,a) [ACTION/TILEZ action-tile sprite load]",method,decomp-xref,med
 0x039160,CAttract::vfunc_10,CAttract,__thiscall(this) [vtable slot 0x0a; STATEZ_ATTRACT/TITLE attract virtual],vfunc,decomp-xref,med
-0x0391d0,LoadCreditzAssets,,__thiscall(this) [CREDITZ/MONOLITH credits-state assets],method,decomp-xref,med
 0x039dc0,LoadCreditzAssets2,,__thiscall(this) [MONOLITH/CREDITZ credits-state assets (variant)],method,decomp-xref,low
 0x036f30,LoadVideoResolutionConfig,,[reads Video Resolution '800x600'/'1024x768' display config],free,decomp-xref,med
 0x0370a0,SaveVideoResolutionConfig,,[writes Video Resolution '800x600'/'1024x768' display config],free,decomp-xref,med
@@ -593,22 +497,10 @@ rva,name,class,prototype,kind,source,confidence
 0x1183b0,FormatGameInfoString,,__thiscall(this) [formats 'Name: %s Type: %i Location: %s Vers...' + session time into DAT_0064ebf8],method,decomp-xref,low
 #
 # --- decomp-xref pass, batch 5: CButeMgr .att getters, CGrunt HUD sprites, dialogs ---
-0x171af0,CButeMgr::GetInt,CButeMgr,"__thiscall(this,tag,key) [type-tag 0; returns dword, 0x80000000 on miss; 117 callers -- the .att workhorse]",method,decomp-xref,high
-0x172240,CButeMgr::GetDword,CButeMgr,"__thiscall(this,tag,key) [type-tag 1; returns dword, 0 on miss]",method,decomp-xref,med
-0x172c40,CButeMgr::GetDouble,CButeMgr,"double __thiscall(this,tag,key) [type-tag 2]",method,decomp-xref,high
-0x172730,CButeMgr::GetFloat,CButeMgr,"float __thiscall(this,tag,key) [type-tag 3]",method,decomp-xref,high
-0x1731d0,CButeMgr::GetString,CButeMgr,"__thiscall(this,tag,key) [type-tag 4; returns ptr to value]",method,decomp-xref,med
 0x173770,CButeMgr::GetTypedRef_tag5,CButeMgr,"__thiscall(this,tag,key) [type-tag 5 typed-ref getter (Rect/Point/Vector/Color family)]",method,decomp-xref,low
 0x173d00,CButeMgr::GetTypedRef_tag6,CButeMgr,"__thiscall(this,tag,key) [type-tag 6 typed-ref getter]",method,decomp-xref,low
 0x174240,CButeMgr::GetTypedRef_tag7,CButeMgr,"__thiscall(this,tag,key) [type-tag 7 typed-ref getter]",method,decomp-xref,low
 0x1747c0,CButeMgr::GetTypedRef_tag8,CButeMgr,"__thiscall(this,tag,key) [type-tag 8 typed-ref getter]",method,decomp-xref,low
-0x04d130,CGrunt::CreateHealthSprite,CGrunt,__thiscall(this) [creates GruntHealthSprite -> this+0x1c4 if absent],method,decomp-xref,med
-0x04d220,CGrunt::CreateToySprite,CGrunt,__thiscall(this) [creates GruntToySprite],method,decomp-xref,med
-0x04d2f0,CGrunt::CreateStaminaSprite,CGrunt,__thiscall(this) [creates GruntStaminaSprite],method,decomp-xref,med
-0x04d3e0,CGrunt::CreateToyTimeSprite,CGrunt,__thiscall(this) [creates GruntToyTimeSprite],method,decomp-xref,med
-0x04d520,CGrunt::CreateWingzTimeSprite,CGrunt,__thiscall(this) [creates GruntWingzTimeSprite],method,decomp-xref,med
-0x04d650,CGrunt::CreatePowerupSprite,CGrunt,"__thiscall(this,a) [creates GruntPowerupSprite -> this+0x1d4]",method,decomp-xref,med
-0x04d730,CGrunt::CreateSelectedSprite,CGrunt,__thiscall(this) [creates GruntSelectedSprite -> this+0x1b8],method,decomp-xref,med
 0x08e4e0,WarpDialogProc,,"INT_PTR CALLBACK(HWND,msg,wParam) [Level %i Warp X/Y debug dialog; GetDlgItemInt/SetDlgItemInt 0x40e/0x40f]",free,decomp-xref,high
 0x020f40,LoadChatBoxSprite,,"__thiscall(this,a) [GAME_CHATBOX multiplayer chat-box sprite]",method,decomp-xref,med
 0x095090,CHelpState::LoadAssets,,__thiscall(this) [STATEZ_HELP help-state asset load],method,decomp-xref,med
@@ -620,18 +512,9 @@ rva,name,class,prototype,kind,source,confidence
 0x03c0e0,BuildWorldLevelKey,,__thiscall(this) [WORLDZ_LEVEL_%i level-key builder],method,decomp-xref,med
 #
 # --- decomp-xref pass, batch 6: CButeMgr getters+parser, CSBI sprites, MULTI_* ---
-0x171aa0,CButeMgr::GetIntDef,CButeMgr,"__thiscall(this,tag,key,def) [type-tag 0; returns def on miss/mismatch; 94 callers (object LoadAttributes)]",method,decomp-xref,high
-0x1721e0,CButeMgr::GetDwordDef,CButeMgr,"__thiscall(this,tag,key,def) [type-tag 1; returns def on miss; 104 callers]",method,decomp-xref,high
-0x173180,CButeMgr::GetStringDef,CButeMgr,"__thiscall(this,tag,key,def) [type-tag 4; returns def on miss]",method,decomp-xref,med
-0x1704c0,CButeMgr::Parse,CButeMgr,__thiscall(this) [recursive-descent .att parser; 'ButeMgr: %d : Bad symbol encountered'],method,decomp-xref,high
-0x1711b0,CButeMgr::ParseTagLine,CButeMgr,__thiscall(this) [reads a tag=value line; 'ButeMgr: duplicate tag encountered'],method,decomp-xref,med
-0x170710,CButeMgr::ScanToken,CButeMgr,"__thiscall(this,a) [lexer token scan; 'ButeMgr: %d : A formatting error']",method,decomp-xref,med
 0x0e2d10,LoadGruntzPalette,,"bool __thiscall(this,a,name) [builds GRUNTZ_PALETTEZ_%s key, looks up + applies palette]",method,decomp-xref,med
 0x11c210,BuildVoiceSoundList,,__thiscall(this) [VOICES_%s/VOICES_%s_%s voice-sound CObList],method,decomp-xref,med
 0x0c16b0,BuildNamedGruntTable,,[Beefy/Serra/Jebediah... named-grunt roster],free,decomp-xref,med
-0x0bad40,CNetMgr::OnMultiPause,CNetMgr,__thiscall(this) [MULTI_PAUSE],method,decomp-xref,med
-0x0badd0,CNetMgr::OnMultiOptions,CNetMgr,__thiscall(this) [MULTI_OPTIONZ],method,decomp-xref,med
-0x0bae40,CNetMgr::OnOutOfSync,CNetMgr,__thiscall(this) [MULTI_OUTOFSYNC],method,decomp-xref,med
 0x0bc110,CNetMgr::OnDropPlayer,CNetMgr,__thiscall(this) [MULTI_DROPPLAYER],method,decomp-xref,med
 0x0ba620,LoadMenuSelectSprite,,"__thiscall(this,a) [GAME_MENUS_SELECT]",method,decomp-xref,med
 0x0d7440,LoadLoadingBarSprite,,__thiscall(this) [GAME_LOADINGBAR],method,decomp-xref,med
