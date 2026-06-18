@@ -707,6 +707,85 @@ int __stdcall WaitForKeyOrTimeout(int vKey, int timeoutMs)
     return 1;
 }
 
+// =========================================================================
+// RezMgr virtual-table forwarding stubs. Each reads m_mode (+0x2c),
+// dispatches through its vtable at a fixed slot, forwarding stack args.
+// =========================================================================
+
+// @address: 0x08d9d0
+// @size:    0x1e
+int RezMgr::ForwardSlot2c(int a, int b)
+{
+    if (!m_mode) return 0;
+    void **vt = *(void ***)m_mode;
+    return ((int (*)(void *, int, int))vt[0x0b])(m_mode, a, b);
+}
+
+// @address: 0x08da00
+// @size:    0x1e
+int RezMgr::ForwardSlot30(int a, int b)
+{
+    if (!m_mode) return 0;
+    void **vt = *(void ***)m_mode;
+    return ((int (*)(void *, int, int))vt[0x0c])(m_mode, a, b);
+}
+
+// @address: 0x08da30
+// @size:    0x1e
+int RezMgr::ForwardSlot34(int a, int b)
+{
+    if (!m_mode) return 0;
+    void **vt = *(void ***)m_mode;
+    return ((int (*)(void *, int, int))vt[0x0d])(m_mode, a, b);
+}
+
+// @address: 0x08da60
+// @size:    0x23
+int RezMgr::ForwardSlot38(int a, int b, int c)
+{
+    if (!m_mode) return 0;
+    void **vt = *(void ***)m_mode;
+    return ((int (*)(void *, int, int, int))vt[0x0e])(m_mode, a, b, c);
+}
+
+// @address: 0x08daa0
+// @size:    0x23
+int RezMgr::ForwardSlot3c(int a, int b, int c)
+{
+    if (!m_mode) return 0;
+    void **vt = *(void ***)m_mode;
+    return ((int (*)(void *, int, int, int))vt[0x0f])(m_mode, a, b, c);
+}
+
+// @address: 0x08dae0
+// @size:    0x23
+int RezMgr::ForwardSlot40(int a, int b, int c)
+{
+    if (!m_mode) return 0;
+    void **vt = *(void ***)m_mode;
+    return ((int (*)(void *, int, int, int))vt[0x10])(m_mode, a, b, c);
+}
+
+// @address: 0x08db20
+// @size:    0x23
+int RezMgr::ForwardSlot44(int a, int b, int c)
+{
+    if (!m_mode) return 0;
+    void **vt = *(void ***)m_mode;
+    return ((int (*)(void *, int, int, int))vt[0x11])(m_mode, a, b, c);
+}
+
+// @address: 0x08db60
+// @size:    0x23
+int RezMgr::ForwardSlot48(int a, int b, int c)
+{
+    if (!m_mode) return 0;
+    void **vt = *(void ***)m_mode;
+    return ((int (*)(void *, int, int, int))vt[0x12])(m_mode, a, b, c);
+}
+
+// @address: 0x08dba0
+// @size:    0x23
 int RezMgr::ForwardSlot4c(int a, int b, int c)
 {
     if (!m_mode) return 0;
@@ -714,6 +793,8 @@ int RezMgr::ForwardSlot4c(int a, int b, int c)
     return ((int (*)(void *, int, int, int))vt[0x13])(m_mode, a, b, c);
 }
 
+// @address: 0x08dbe0
+// @size:    0x23
 int RezMgr::ForwardSlot50(int a, int b, int c)
 {
     if (!m_mode) return 0;
@@ -721,14 +802,24 @@ int RezMgr::ForwardSlot50(int a, int b, int c)
     return ((int (*)(void *, int, int, int))vt[0x14])(m_mode, a, b, c);
 }
 
+// @address: 0x08e470
+// @size:    0x50
 int RezMgr::HandleDebugPosition()
 {
-    if (!m_mode) return 0;
-    int s = m_mode->Update();
-    if (s == 3) {
-        extern int g_debugFlag;
-        if (g_debugFlag == 1)
-            PostMessageA(0, 0x111, 0x805c, 0);
+    int r = 0;
+    // The function at 0x090260 (reached via the thunk @0x2bb7) is
+    // HandleDebugPosition's dialog helper. Declared as a RezMgr method
+    // so the call site uses `mov ecx,this; push args; call`.
+    if (m_mode && m_mode->Update() == 3) {
+        // We call CheckDbgVal which will be at RVA 0x090260 (matched below).
+        // The call site bytes differ from the target (target goes through
+        // the 0x2bb7 thunk), but objdiff reloc-masks the E8 rel32.
+        r = CheckDbgVal("DEBUG_POSITION", 0x402d0b, 1);
+        if (r == 1) {
+            void *owner = *(void **)((char *)this + 4);
+            void *hwnd  = *(void **)((char *)owner + 4);
+            PostMessageA(hwnd, 0x111, 0x805c, 0);
+        }
     }
-    return s != 0 ? 0 : 1;
+    return r != 0;
 }

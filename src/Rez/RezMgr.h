@@ -347,9 +347,18 @@ public:
     void ReportError(int msgId, int code);     // 0x8dc60 (ret 8)
 
     // Forwarding methods that dispatch through the active game-mode vtable.
-    int  ForwardSlot4c(int a, int b, int c);           // 0x08dba0
-    int  ForwardSlot50(int a, int b, int c);           // 0x08dbe0
+    int  ForwardSlot2c(int a, int b);                  // 0x08d9d0  (slot 0x2b/11)
+    int  ForwardSlot30(int a, int b);                  // 0x08da00  (slot 0x30/12)
+    int  ForwardSlot34(int a, int b);                  // 0x08da30  (slot 0x34/13)
+    int  ForwardSlot38(int a, int b, int c);           // 0x08da60  (slot 0x38/14)
+    int  ForwardSlot3c(int a, int b, int c);           // 0x08daa0  (slot 0x3c/15)
+    int  ForwardSlot40(int a, int b, int c);           // 0x08dae0  (slot 0x40/16)
+    int  ForwardSlot44(int a, int b, int c);           // 0x08db20  (slot 0x44/17)
+    int  ForwardSlot48(int a, int b, int c);           // 0x08db60  (slot 0x48/18)
+    int  ForwardSlot4c(int a, int b, int c);           // 0x08dba0  (slot 0x4c/19)
+    int  ForwardSlot50(int a, int b, int c);           // 0x08dbe0  (slot 0x50/20)
     int  HandleDebugPosition();                        // 0x08e470
+    int  CheckDbgVal(const char *key, int defVal, int flag);  // 0x090260
 
     // --- layout (vptr occupies +0x00) ---------------------------------------
     char       m_pad4[0x2c - 0x04];   // +0x04..+0x2b
