@@ -2,9 +2,11 @@
 # apply_ghidra_enrichment.py - maximal comprehension enrichment for build/ghidra-named.
 #
 #   Extends (does NOT clobber) the prior name+plate enrichment with:
-#     1. FUNCTION NAMES   - engine_labels.csv (incl. +37 import-caller rows),
-#                           config/library_labels.csv (HIGH/MED/AMBIG),
-#                           config/symbol_names.csv (zlib + ctors).
+#     1. FUNCTION NAMES   - build/gen/symbol_names.csv (generated from src @address;
+#                           wins over engine_labels.csv), engine_labels.csv
+#                           (incl. +37 import-caller rows), config/library_labels.csv
+#                           (HIGH/MED/AMBIG), then stable fallback names for every
+#                           remaining default FUN_.
 #                           Functions are created when Ghidra has none at the RVA.
 #     2. PROTOTYPES + PARAM NAMES - parsed from engine_labels' `prototype` field
 #                           (tomalla rows). Sets return type, params (name+type),
@@ -20,7 +22,7 @@
 #     4. ENUMS            - from build/gen/enums.json (clang over structure/),
 #                           defined in the DTM.
 #
-#   Reproducible from config/engine_labels.csv + config/symbol_names.csv +
+#   Reproducible from build/gen/symbol_names.csv + config/engine_labels.csv +
 #   config/library_labels.csv + structure/. Idempotent: re-runnable, never
 #   downgrades a better existing name, keeps prior [LABEL] plate comments.
 #
@@ -418,9 +420,15 @@ BOGUS = [
     re.compile(r"^\?\?0__non_rtti_object@@"),
     re.compile(r"^opt_get_"), re.compile(r"^opt_set_"),
 ]
+PLACEHOLDER_NAME_RE = re.compile(r"^(?:thunk_)?function_[0-9a-fA-F]{6}$")
+AUTO_SIG_PREFIX = "[AUTO-SIG]"
+
+def is_placeholder(nm):
+    return PLACEHOLDER_NAME_RE.match(str(nm)) is not None
+
 def is_default(nm):
     nm = str(nm)
-    return nm.startswith("FUN_") or nm.startswith("thunk_FUN_")
+    return nm.startswith("FUN_") or nm.startswith("thunk_FUN_") or is_placeholder(nm)
 def is_bogus(nm):   return any(p.search(str(nm)) for p in BOGUS)
 
 def ensure_function(addr):
@@ -439,6 +447,59 @@ def ensure_function(addr):
     except Exception:
         fn = None
     return fn
+
+def function_rva(fn):
+    return fn.getEntryPoint().getOffset() - IMAGE_BASE
+
+def fallback_function_name(fn, rva):
+    prefix = "thunk_function_" if str(fn.getName()).startswith("thunk_") else "function_"
+    return "%s%06x" % (prefix, rva)
+
+def param_display(p):
+    try:
+        typ = str(p.getDataType())
+    except Exception:
+        typ = "?"
+    try:
+        name = str(p.getName())
+    except Exception:
+        name = ""
+    return ("%s %s" % (typ, name)).strip()
+
+def auto_signature_line(fn):
+    try:
+        ret = str(fn.getReturnType())
+    except Exception:
+        ret = "?"
+    try:
+        cc = str(fn.getCallingConventionName())
+    except Exception:
+        cc = "?"
+    params = []
+    try:
+        for p in fn.getParameters():
+            disp = param_display(p)
+            if disp:
+                params.append(disp)
+    except Exception:
+        pass
+    args = ", ".join(params) if params else "void"
+    try:
+        size = fn.getBody().getNumAddresses()
+    except Exception:
+        size = 0
+    return "%s name=%s; returns=%s; cc=%s; args=(%s); size=0x%x" % (
+        AUTO_SIG_PREFIX, str(fn.getName()), ret, cc, args, size)
+
+def upsert_auto_sig_comment(addr, line):
+    old = listing.getComment(PLATE, addr) or ""
+    kept = [x for x in old.splitlines() if not x.startswith(AUTO_SIG_PREFIX)]
+    kept.append(line)
+    new = "\n".join(x for x in kept if x)
+    if new != old:
+        listing.setComment(addr, PLATE, new)
+        return True
+    return False
 
 # leaf-name -> struct DataType for this-type application
 def class_struct(cls):
@@ -514,6 +575,7 @@ try:
 
     sym_rows = load_csv_rows(CSV_SYMBOL) if os.path.exists(CSV_SYMBOL) else []  # rva,name,unit,size,kind
     syms = []           # functions (kind=func / legacy)
+    src_func_rvas = set()
     data_syms = []      # global data (kind=data): mangled name, Ghidra demangles for display
     for r in sym_rows:
         if len(r) < 2: continue
@@ -521,7 +583,11 @@ try:
         try: rva = int(r[0], 16)
         except Exception: continue
         kind = r[4] if len(r) > 4 else "func"
-        (data_syms if kind == "data" else syms).append((rva, r[1]))
+        if kind == "data":
+            data_syms.append((rva, r[1]))
+        else:
+            syms.append((rva, r[1]))
+            src_func_rvas.add(rva)
 
     fid_rows = load_csv_rows(CSV_FID) if os.path.exists(CSV_FID) else []  # rva,name,lib,confidence,source
     fids = []
@@ -532,7 +598,7 @@ try:
         except Exception: continue
         fids.append((rva, r[1], r[2], r[3]))
 
-    # ---- (D) FID + zlib names (apply first; engine_labels overrides where overlapping) ----
+    # ---- (D) FID + source-derived names (source labels win over engine_labels) ----
     n_fid_named = 0; n_fid_skip_low = 0; n_fid_nofunc = 0
     for (rva, name, lib, conf) in fids:
         if conf == "LOW":
@@ -565,7 +631,7 @@ try:
                 fn.setName(name, US); n_sym_named += 1
             except Exception:
                 pass
-    R("symbol_names (zlib+ctors) reconciled: %d  (no-func: %d)" % (n_sym_named, n_sym_nofunc))
+    R("symbol_names (src @address) reconciled: %d  (no-func: %d)" % (n_sym_named, n_sym_nofunc))
 
     # Global DATA symbols a matched global is referenced through (labels.py @data
     # rows). The name is the clang MS-ABI mangling (?g_foo@@3.. / _g_foo); Ghidra
@@ -587,13 +653,17 @@ try:
 
     # ---- (E) engine_labels: names + namespace + plate + PROTOTYPES + this-type ----
     n_renamed = 0; n_bogus = 0; n_kept = 0; n_ns = 0; n_plate = 0
-    n_nofunc = 0; n_created = 0
+    n_nofunc = 0; n_created = 0; n_src_skipped = 0
     n_proto = 0; n_proto_fail = 0
     n_this_applied = 0
     this_methods_by_class = {}
     proto_examples = []
 
     for (rva, name, cls, proto, kind, source, conf) in eng:
+        if rva in src_func_rvas:
+            n_src_skipped += 1
+            continue
+
         addr = toaddr(rva)
         fn = fm.getFunctionAt(addr)
         if fn is None:
@@ -699,8 +769,8 @@ try:
                 except Exception:
                     pass
 
-    R("engine_labels: renamed=%d bogus-overwrote=%d kept=%d ns-set=%d plate-added=%d created-func=%d no-func=%d"
-      % (n_renamed, n_bogus, n_kept, n_ns, n_plate, n_created, n_nofunc))
+    R("engine_labels: renamed=%d bogus-overwrote=%d kept=%d ns-set=%d plate-added=%d created-func=%d no-func=%d src-skipped=%d"
+      % (n_renamed, n_bogus, n_kept, n_ns, n_plate, n_created, n_nofunc, n_src_skipped))
     R("prototypes applied (typed sig+params): %d  (failed: %d)" % (n_proto, n_proto_fail))
     for e in proto_examples: R("    proto: " + e)
     R("this-type (struct*) applications: %d  across %d classes" %
@@ -749,6 +819,33 @@ try:
     except Exception as e:
         R("thunk backfill skipped: %s" % e)
     R("leading-thunk functions backfilled: %d" % n_thunk_backfill)
+
+    # ---- (G) blanket fallback labels + signature comments ----
+    # Give every still-default function a stable, rva-derived placeholder so the
+    # Ghidra DB is fully navigable. These names remain default-like: is_default()
+    # recognizes them so future src/FID/engine labels can overwrite them.
+    n_auto_named = 0; n_auto_name_fail = 0; n_auto_sig = 0
+    for fn in fm.getFunctions(True):
+        addr = fn.getEntryPoint()
+        if addr is None or not addr.isMemoryAddress():
+            continue
+        rva = function_rva(fn)
+        cur = str(fn.getName())
+        if is_default(cur):
+            new_name = fallback_function_name(fn, rva)
+            if cur != new_name:
+                try:
+                    fn.setName(new_name, US)
+                    n_auto_named += 1
+                except Exception:
+                    n_auto_name_fail += 1
+        try:
+            if upsert_auto_sig_comment(addr, auto_signature_line(fn)):
+                n_auto_sig += 1
+        except Exception:
+            pass
+    R("auto fallback labels: named=%d failed=%d signature-comments=%d" %
+      (n_auto_named, n_auto_name_fail, n_auto_sig))
 
     # ---- coverage ----
     from ghidra.program.model.data import Pointer as _Ptr
