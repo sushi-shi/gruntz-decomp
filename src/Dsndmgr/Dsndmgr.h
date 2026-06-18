@@ -1,6 +1,5 @@
-// Dsndmgr.h - the engine DirectSoundMgr - reconstruction for
-// DirectSoundMgr::GetErrorString and DirectSound ErrorThunk methods.
-// The ErrorThunks wrap IDirectSoundBuffer vtable calls with error reporting.
+// Dsndmgr.h - DirectSoundMgr + CGMSound + ring-buffer classes.
+// Matches the unnamed FUN_ functions in the 0x135000-0x13a000 region.
 #ifndef DSNDMGR_H
 #define DSNDMGR_H
 
@@ -13,6 +12,11 @@ typedef unsigned long  DWORD;
 typedef unsigned long  ULONG;
 typedef int            BOOL;
 typedef long           LONG;
+typedef unsigned char  BYTE;
+typedef unsigned short WORD;
+typedef void *         HANDLE;
+typedef void *         HRSRC;
+typedef void *         HMODULE;
 #define NULL 0
 #define FALSE 0
 #define TRUE 1
@@ -23,6 +27,10 @@ __declspec(dllimport) void __stdcall OutputDebugStringA(const char *lpOutputStri
 __declspec(dllimport) int  __stdcall MessageBoxA(void *hWnd, const char *lpText,
                                                   const char *lpCaption, unsigned int uType);
 __declspec(dllimport) BOOL __stdcall MessageBeep(unsigned int uType);
+__declspec(dllimport) HRSRC __stdcall FindResourceA(HMODULE, const char *, const char *);
+__declspec(dllimport) HRSRC __stdcall LoadResource(HMODULE, HRSRC);
+__declspec(dllimport) void * __stdcall LockResource(HRSRC);
+__declspec(dllimport) DWORD __stdcall timeGetTime();
 }
 
 // The engine's string formatting function (__cdecl: caller pops the args).
@@ -98,23 +106,72 @@ public:
     void GetErrorString(const char *file, int line, HRESULT hr);
 
     // ErrorThunks - IDirectSoundBuffer vtable wrappers
-    BOOL ErrorThunk_135380();
+    BOOL ErrorThunk_135310();
+    BOOL ErrorThunk_135340();
+    void ErrorThunk_135380();
     BOOL ErrorThunk_1353f0();
     BOOL ErrorThunk_135440();
-    BOOL ErrorThunk_135560();
+    void ErrorThunk_135510(int);
+    BOOL ErrorThunk_135560(LONG);
+    BOOL ErrorThunk_1355c0(int);
     BOOL ErrorThunk_1355f0();
-    BOOL ErrorThunk_135740();
+    int  ErrorThunk_135640();
+    void *ErrorThunk_135660(int, int, int, int);
+    BOOL ErrorThunk_135740(LONG);
+    BOOL ErrorThunk_1357a0(int);
     BOOL ErrorThunk_1357f0();
-    BOOL ErrorThunk_135880();
-    BOOL ErrorThunk_1359c0();
-    BOOL ErrorThunk_135a20();
-    BOOL ErrorThunk_135a70();
-    BOOL ErrorThunk_135ac0();
+    BOOL ErrorThunk_135880(DWORD);
+    BOOL ErrorThunk_135920(int);
+    void ErrorThunk_1359a0();
+    BOOL ErrorThunk_1359c0(void*, DWORD, void*, DWORD);
+    BOOL ErrorThunk_135a20(DWORD*, DWORD*);
+    BOOL ErrorThunk_135a70(DWORD);
+    BOOL ErrorThunk_135ac0(void*, DWORD, DWORD*);
     // Complex ErrorThunks (constructor-like / multi-step)
     void ErrorThunk_1351d0(int, int);
-    BOOL ErrorThunk_135f40();
-    BOOL ErrorThunk_1365f0();
+    BOOL ErrorThunk_135f40(DWORD, DWORD, void**, DWORD*, void**, DWORD*, DWORD);
+    BOOL ErrorThunk_1365f0(void*);
     HRESULT ErrorThunk_137260();
 };
+
+// ===========================================================================
+// Sound format / WAV header utilities
+// ===========================================================================
+struct WAVEFORMATEX {
+    WORD  wFormatTag;
+    WORD  nChannels;
+    DWORD nSamplesPerSec;
+    DWORD nAvgBytesPerSec;
+    WORD  nBlockAlign;
+    WORD  wBitsPerSample;
+    WORD  cbSize;
+};
+
+// ===========================================================================
+// External function declarations (other TUs)
+// ===========================================================================
+extern "C" int __cdecl UnknownSalazar_computeScaleFactor(int value);
+
+// ===========================================================================
+// Miles Sound System AIL import declarations
+// ===========================================================================
+extern "C" {
+__declspec(dllimport) void __stdcall AIL_startup(void);
+__declspec(dllimport) int  __stdcall AIL_midiOutOpen(int *handle);
+__declspec(dllimport) void __stdcall AIL_shutdown(void);
+__declspec(dllimport) void __stdcall AIL_set_XMIDI_master_volume(int, int);
+__declspec(dllimport) int  __stdcall AIL_XMIDI_master_volume(int);
+__declspec(dllimport) void * __stdcall AIL_allocate_sequence_handle(int);
+__declspec(dllimport) void __stdcall AIL_release_sequence_handle(void *);
+__declspec(dllimport) int  __stdcall AIL_init_sequence(void *, void *, int);
+__declspec(dllimport) void __stdcall AIL_start_sequence(void *);
+__declspec(dllimport) void __stdcall AIL_set_sequence_loop_count(void *, int);
+__declspec(dllimport) void __stdcall AIL_end_sequence(void *);
+__declspec(dllimport) void __stdcall AIL_stop_sequence(void *);
+__declspec(dllimport) void __stdcall AIL_resume_sequence(void *);
+__declspec(dllimport) int  __stdcall AIL_sequence_status(void *);
+__declspec(dllimport) void __stdcall AIL_set_sequence_tempo(void *, int, int);
+__declspec(dllimport) void __stdcall AIL_set_sequence_volume(void *, int, int);
+}
 
 #endif // DSNDMGR_H
