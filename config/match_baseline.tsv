@@ -20,11 +20,11 @@ filestream	10	9
 font	4	2
 fontconfig	1	0
 fonts	1	0
-gameapp	12	10
+gameapp	14	12
 gamelevel	1	0
 gamemode	10	9
 gametext	4	2
-gamewnd	2	2
+gamewnd	4	4
 grunt	12	0
 gruntzapp	6	6
 gruntzwnd	1	1
@@ -122,6 +122,8 @@ gameapp	?InitializeDefaultWindowClass@CGameApp@@UAEXXZ	100.0000	100.0000	1	e90a0
 gameapp	?InitializeGameWindow@CGameApp@@UAEPAVCGameWnd@@XZ	100.0000	100.0000	1	cfcbc4f9a28c
 gameapp	?ReportError@CGameApp@@UAEXIJ@Z	100.0000	100.0000	1	9cb4a43ebd55
 gameapp	?RunMessageLoop@CGameApp@@UAEHXZ	100.0000	100.0000	1	5359d57087b6
+gameapp	?UnknownClose@CGameMgr@WAP32@@QAEXXZ	100.0000	100.0000	1	1fb474db1c5e
+gameapp	?UnknownMethodInitializeTimeGlobal@CGameMgr@WAP32@@QAEXXZ	100.0000	100.0000	1	e8d3215ecf21
 gameapp	?VirtualUnknownMethod02@CGameApp@@UAEHPAUGameInfo@@PAUtagWNDCLASSA@@PAUtagCREATESTRUCTA@@@Z	97.3765	97.3765	2	59d7501af663
 gameapp	?VirtualUnknownMethod03@CGameApp@@UAEHPAXPAD11HHH@Z	100.0000	100.0000	1	c4a9b0d8ddb4
 gameapp	?VirtualUnknownMethod09@CGameApp@@UAEXXZ	100.0000	100.0000	1	3667ac9382e9
@@ -142,6 +144,8 @@ gametext	_$E1	100.0000	100.0000	1	cpp:a7f73c40eefc
 gametext	_$E4	100.0000	100.0000	1	cpp:a7f73c40eefc
 gamewnd	??0CGameWnd@@QAE@XZ	100.0000	100.0000	1	f1f2a334b766
 gamewnd	?CreateAndShow@CGameWnd@@QAEHPAUCGameWndCreateParams@@PAX@Z	100.0000	100.0000	1	ed537a6359fb
+gamewnd	?Destroy@CGameWnd@@QAEXXZ	100.0000	100.0000	1	acea2f3d0e2e
+gamewnd	?QuitMessageLoop@CGameWnd@@QAEHXZ	100.0000	100.0000	1	39a271ee8b8b
 grunt	?CreateHealthSprite@CGrunt@@QAEHXZ	99.6552	99.6552	1	9e57fc348c5e
 grunt	?CreatePowerupSprite@CGrunt@@QAEHH@Z	99.6296	99.6296	1	1f97fb10f729
 grunt	?CreateSelectedSprite@CGrunt@@QAEHXZ	91.9231	91.9231	1	b126a504f830

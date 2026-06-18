@@ -4,6 +4,23 @@ Per-function / per-subsystem insights gathered while byte-matching. Durable,
 generalizable findings graduate into `docs/matching-patterns.md`; this file is the
 fast-moving scratchpad. Newest at top within each section.
 
+### WAP32 window/manager leaves — GameWnd now 4/4 exact + 2 CGameMgr clock leaves
+- **THE HEADLINE:** `CGameWnd::Destroy@0x13cfb0` and
+  `CGameWnd::QuitMessageLoop@0x13d490` are byte-exact, making `gamewnd` 4/4.
+  `Destroy` checks `IsWindow(m_4)` before `DestroyWindow(m_4)`, clears `m_4`,
+  clears owner `m_8`, and clears the active-window singleton. `QuitMessageLoop`
+  calls owner app vslot `+0x24` (`FreeGameManager`), tests `CGameApp+0x248`,
+  optionally calls vslot `+0x30` (`ShowError`), then `PostQuitMessage(0)` and
+  returns 0.
+- **SOURCE-SHAPE LEVER:** do not cache `CGameApp *app = (CGameApp*)m_8` in
+  `QuitMessageLoop`; MSVC keeps the cached app pointer in `esi`, but the target
+  keeps `this` in `esi` and reloads `[esi+0x8]` before the second app access.
+  Writing the casts inline reproduces the target's register schedule.
+- **CGameMgr leaves:** `WAP32::CGameMgr::UnknownClose@0x13ddb0` clears `+0x4/+0x8`;
+  `UnknownMethodInitializeTimeGlobal@0x13dea0` stores `timeGetTime()` into
+  `g_653c70` and clears `g_653c74/g_653c78`. Use named `@data` externs for those
+  clock globals when referenced outside their original static TU.
+
 ### UnknownSeverus surface/page-map manager — 8 new exact leaves + 4 factory carcasses (extended `unknownseverus`; 9/14 exact)
 - **THE HEADLINE:** `UnknownSeverus` now has 14 real bodies in one TU. New exact
   leaves: `VirtualMethodUnknown18@0x154aa0` (clears `g_6bf318[25]`, seeds first
