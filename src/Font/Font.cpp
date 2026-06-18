@@ -827,6 +827,15 @@ int FECFile::Open(CString const &fileName)
     m_opened = 1;
 
     // Read 3-byte magic "FEC"
+    int val140 = 0;
+    void *ioVtable5 = 0;
+    int seekResult = 0;
+    struct CSInit *cs = 0;
+    int entryCount = 0;
+    int i;
+    void *ioVtable3 = 0;
+    void *ioVtable4 = 0;
+    int wordAt11e = 0;
     char magic[4];
     void *ioVtable2 = *(void **)m_ioInterface;
     if (((int (__stdcall *)(void *, int, void *))((void **)ioVtable2)[0xf])(&m_ioInterface, 3, magic) != 3)
@@ -835,7 +844,7 @@ int FECFile::Open(CString const &fileName)
         goto fail;
 
     // Read 12-byte header
-    void *ioVtable3 = *(void **)m_ioInterface;
+    ioVtable3 = *(void **)m_ioInterface;
     if (((int (__stdcall *)(void *, int, void *))((void **)ioVtable3)[0xf])(&m_ioInterface, 12, m_header) != 12)
         goto fail;
 
@@ -843,25 +852,25 @@ int FECFile::Open(CString const &fileName)
     // (these are debug printfs)
 
     // Read 0x10c bytes of directory data
-    void *ioVtable4 = *(void **)m_ioInterface;
+    ioVtable4 = *(void **)m_ioInterface;
     if (((int (__stdcall *)(void *, int, void *))((void **)ioVtable4)[0xf])(&m_ioInterface, 0x10c, m_data) != 0x10c)
         goto fail;
 
     // Seek to beginning of file data
-    int wordAt11e = *(unsigned short *)((char *)this + 0x11e);
-    void *ioVtable5 = *(void **)m_ioInterface;
-    int seekResult = ((int (__stdcall *)(void *, int, int))((void **)ioVtable5)[0xc])(&m_ioInterface, 1, wordAt11e - 0x2b8);
+    wordAt11e = *(unsigned short *)((char *)this + 0x11e);
+    ioVtable5 = *(void **)m_ioInterface;
+    seekResult = ((int (__stdcall *)(void *, int, int))((void **)ioVtable5)[0xc])(&m_ioInterface, 1, wordAt11e - 0x2b8);
     if (seekResult != wordAt11e - 0x19d)
         goto fail;
 
     // Initialise CS
-    struct CSInit *cs = (struct CSInit *)(m_data + 0x120);
-    int val140 = m_field140;
+    cs = (struct CSInit *)(m_data + 0x120);
+    val140 = m_field140;
     ((void (*)(int, int))((void **)cs)[0])(val140, seekResult);
 
     // Read directory entries
-    int entryCount = m_numFiles;
-    for (int i = 1; i < entryCount; i++) {
+    entryCount = m_numFiles;
+    for (i = 1; i < entryCount; i++) {
         int *entryBase = (int *)((char *)m_data + 0x120);
         // Each entry: read size via seek...
         void *ioVtable6 = *(void **)m_ioInterface;
@@ -886,7 +895,7 @@ int FECFile::Open(CString const &fileName)
             goto fail;
 
         // Re-init CS
-        ((void (*)(int, int))((void **)cs)[0])(cs[8], seekSz2);
+        ((void (*)(int, int))((void **)cs)[0])(*(int *)((char *)cs + 8), seekSz2);
     }
 
     return 1;

@@ -264,10 +264,12 @@ public:
     int    m_field120;           // +0x120
     short  m_field11e;           // +0x11e  (word, at +0x11e in the block)
     // I/O interface (8 bytes: vtable ptr + field128)
-    int    m_ioVtable;           // +0x124  (vtable pointer for I/O)
+    int    m_ioInterface;        // +0x124  (I/O object - vtable pointer + fields)
     int    m_ioField128;         // +0x128
     int    m_pad12c[2];          // +0x12c (8 bytes padding)
     int    m_field134;           // +0x134
+    // m_field140 at +0x140, inside the embedded CDWordArray m_nameMap (at m_nSize)
+    int    m_field140;           // +0x140
     // CDWordArray (embedded, 0x14 bytes = 20 bytes)
     CDWordArray m_nameMap;       // +0x138  (embedded CDWordArray, 20 bytes)
 };
