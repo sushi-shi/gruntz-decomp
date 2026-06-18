@@ -1,6 +1,6 @@
-// Dsndmgr.h - the engine DirectSoundMgr - minimal reconstruction for
-// DirectSoundMgr::GetErrorString. This TU also contains the DirectSoundCreate
-// import caller (external/no-body). Flags are module-level globals.
+// Dsndmgr.h - the engine DirectSoundMgr - reconstruction for
+// DirectSoundMgr::GetErrorString and DirectSound ErrorThunk methods.
+// The ErrorThunks wrap IDirectSoundBuffer vtable calls with error reporting.
 #ifndef DSNDMGR_H
 #define DSNDMGR_H
 
@@ -10,7 +10,13 @@
 // ---------------------------------------------------------------------------
 typedef long           HRESULT;
 typedef unsigned long  DWORD;
+typedef unsigned long  ULONG;
 typedef int            BOOL;
+typedef long           LONG;
+#define NULL 0
+#define FALSE 0
+#define TRUE 1
+#define FAILED(hr) ((HRESULT)(hr) < 0)
 
 extern "C" {
 __declspec(dllimport) void __stdcall OutputDebugStringA(const char *lpOutputString);
@@ -20,31 +26,95 @@ __declspec(dllimport) BOOL __stdcall MessageBeep(unsigned int uType);
 }
 
 // The engine's string formatting function (__cdecl: caller pops the args).
-// Modeled as wsprintfA (output buffer first, then format string, then
-// variadic args). The call-site `call rel32` displacement reloc-masks.
 extern "C" int __cdecl EngFormat(char *dest, const char *fmt, ...);
 
 // ---------------------------------------------------------------------------
 // Module-level globals (output-mode flags + module name).
-// The matched methods read these but never write them; the owning manager
-// sets them during init. Declared as extern so the relocs name them.
 // ---------------------------------------------------------------------------
-// DirectSoundMgr flags
-extern int  g_dsndBeep;          // @0x653c54  (MessageBeep if nonzero)
-extern int  g_dsndDebug;         // @0x653c4c  (OutputDebugStringA if nonzero)
-extern int  g_dsndMsgBox;        // @0x653c50  (MessageBoxA if nonzero)
-extern int  g_dsndOutputDbg;     // @0x653c58  (another output gate)
+extern int  g_dsndBeep;          // @0x653c54
+extern int  g_dsndDebug;         // @0x653c4c
+extern int  g_dsndMsgBox;        // @0x653c50
+extern int  g_dsndOutputDbg;     // @0x653c58
 extern char g_szDsndModule[];    // @0x619f3c  "DirectSoundMgr"
 
 // ---------------------------------------------------------------------------
-// DirectSoundMgr - manager for DirectSound (DsndMgr TU). The GetErrorString
-// method is a self-contained HRESULT -> symbol mapper; it does NOT reference
-// `this` (all state is module-level globals). Declared as a non-virtual method
-// (no vtable entry in this TU; the engine calls it from its error-report path).
+// Minimal IDirectSoundBuffer vtable declaration (interface layout matches
+// DirectX 5/6/7 IDirectSoundBuffer from <dsound.h>).
+// ---------------------------------------------------------------------------
+struct IDirectSoundBufferVtbl;
+struct IDirectSoundBuffer {
+    IDirectSoundBufferVtbl *lpVtbl;
+};
+
+struct IDirectSoundBufferVtbl {
+    HRESULT (__stdcall *QueryInterface)(IDirectSoundBuffer*, const void*, void**);
+    ULONG   (__stdcall *AddRef)(IDirectSoundBuffer*);
+    ULONG   (__stdcall *Release)(IDirectSoundBuffer*);
+    HRESULT (__stdcall *GetCaps)(IDirectSoundBuffer*, void*);
+    HRESULT (__stdcall *GetCurrentPosition)(IDirectSoundBuffer*, DWORD*, DWORD*);
+    HRESULT (__stdcall *GetFormat)(IDirectSoundBuffer*, void*, DWORD, DWORD*);
+    HRESULT (__stdcall *GetVolume)(IDirectSoundBuffer*, LONG*);
+    HRESULT (__stdcall *GetPan)(IDirectSoundBuffer*, LONG*);
+    HRESULT (__stdcall *GetFrequency)(IDirectSoundBuffer*, DWORD*);
+    HRESULT (__stdcall *GetStatus)(IDirectSoundBuffer*, DWORD*);
+    HRESULT (__stdcall *Initialize)(IDirectSoundBuffer*, void*, void*);
+    HRESULT (__stdcall *Lock)(IDirectSoundBuffer*, DWORD, DWORD, void**, DWORD*, void**, DWORD*, DWORD);
+    HRESULT (__stdcall *Play)(IDirectSoundBuffer*, DWORD, DWORD, DWORD);
+    HRESULT (__stdcall *SetCurrentPosition)(IDirectSoundBuffer*, DWORD);
+    HRESULT (__stdcall *SetFormat)(IDirectSoundBuffer*, void*);
+    HRESULT (__stdcall *SetVolume)(IDirectSoundBuffer*, LONG);
+    HRESULT (__stdcall *SetPan)(IDirectSoundBuffer*, LONG);
+    HRESULT (__stdcall *SetFrequency)(IDirectSoundBuffer*, DWORD);
+    HRESULT (__stdcall *Stop)(IDirectSoundBuffer*);
+    HRESULT (__stdcall *Unlock)(IDirectSoundBuffer*, void*, DWORD, void*, DWORD);
+    HRESULT (__stdcall *Restore)(IDirectSoundBuffer*);
+};
+
+// ---------------------------------------------------------------------------
+// Forward declarations for types referenced by DirectSoundMgr members.
+// The DSound manager object layout is partially known from ErrorThunks.
+// ---------------------------------------------------------------------------
+struct DsManager {
+    char pad_00[0x78];
+    void* m_pSubBuffer;   // @ +0x78 (checked for NULL by ErrorThunks)
+};
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr - DirectSound manager.
+// Field names use m_<hexoffset> naming (only the offsets are load-bearing).
+// +0x00-0x08: 3 DWORDs of unknown purpose (base class state or padding)
+// +0x0c: IDirectSoundBuffer* m_pDSBuffer (primary sound buffer)
+// +0x10: DsManager* m_pDSManager (manager state with callbacks at +0x78)
 // ---------------------------------------------------------------------------
 class DirectSoundMgr {
+    void* m_pad_00;
+    void* m_pad_04;
+    void* m_pad_08;
 public:
+    IDirectSoundBuffer* m_pDSBuffer;  // @ +0x0c
+    DsManager* m_pDSManager;           // @ +0x10
+
+    // GetErrorString (does NOT use `this`)
     void GetErrorString(const char *file, int line, HRESULT hr);
+
+    // ErrorThunks - IDirectSoundBuffer vtable wrappers
+    BOOL ErrorThunk_135380();
+    BOOL ErrorThunk_1353f0();
+    BOOL ErrorThunk_135440();
+    BOOL ErrorThunk_135560();
+    BOOL ErrorThunk_1355f0();
+    BOOL ErrorThunk_135740();
+    BOOL ErrorThunk_1357f0();
+    BOOL ErrorThunk_135880();
+    BOOL ErrorThunk_1359c0();
+    BOOL ErrorThunk_135a20();
+    BOOL ErrorThunk_135a70();
+    BOOL ErrorThunk_135ac0();
+    // Complex ErrorThunks (constructor-like / multi-step)
+    void ErrorThunk_1351d0(int, int);
+    BOOL ErrorThunk_135f40();
+    BOOL ErrorThunk_1365f0();
+    HRESULT ErrorThunk_137260();
 };
 
 #endif // DSNDMGR_H

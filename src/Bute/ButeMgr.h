@@ -9,18 +9,22 @@
 // getter/parser bodies (scripts/dump_target.py):
 //
 //   +0x08  m_lineNo  : int     - current source line (the `%d` in error msgs).
+//   +0x10  m_errBuf  : CString - error-message buffer (used by ReportError).
+//   +0x14  m_pErrCb  : void*   - error callback (ReportError calls through it).
 //   +0x18  m_tree    : the parsed store root (CButeTree). The getters do
-//                      `lea ecx,[this+0x18]; Find(tag)` to get the tag-group,
-//                      then `Find(key)` on it to get the typed value record.
+//                        `lea ecx,[this+0x18]; Find(tag)` to get the tag-group,
+//                        then `Find(key)` on it to get the typed value record.
 //   +0x44  m_pNode   : void*   - last-created store node (set by ParseTagLine).
 //   +0xa4  m_pText   : ptr to a CString-ish text accumulator; the parser appends
-//                      the current char at +0xc inside it (CString::operator+=).
+//                        the current char at +0xc inside it (CString::operator+=).
 //   +0xa8  m_curChar : char    - the lexer's current character.
 //   +0xaa  m_tokType : short   - the token type returned by the tokenizer.
 //   +0xae  m_token[] : char    - the current token text buffer (indexed by the
-//                      file-scope token-length counter).
+//                        file-scope token-length counter).
 //   +0x100 m_tagName : CString - the active tag name (ParseTagLine copies the
-//                      token buffer here).
+//                        token buffer here).
+//   +0x104 m_curTag  : CString - the current tag being processed (used by
+//                        ParseAttributeFile as the tree Insertion key).
 //   +0x10c m_10c     : char    - parser flag byte.
 //   +0x10d m_10d     : char    - "skip duplicate-tag check" flag byte.
 #ifndef SRC_BUTE_BUTEMGR_H
@@ -46,6 +50,21 @@ typedef unsigned long DWORD;
 struct CButeValue {
     int   type;     // +0x00
     void *pValue;   // +0x04
+
+    // Value constructors (allocate storage and store value).
+    // Each returns `this` (for chaining). The 4-byte variants are three identical
+    // overloads (int/DWORD/float all take 4 bytes on stack).
+    CButeValue *SetInt(int type, int val);
+    CButeValue *SetDword(int type, unsigned long val);
+    CButeValue *SetFloat(int type, float val);
+    CButeValue *SetDouble(int type, double val);
+
+    // Copy the stored value from another CButeValue (dispatches on this->type).
+    void Assign(CButeValue *other);
+
+    // Free the stored value (type-dependent: calls CString dtor for type 0 values,
+    // plain delete for all others).
+    void Free();
 };
 
 class CButeTree {
@@ -117,10 +136,21 @@ private:
 extern "C" int atexit(void (*func)(void));
 
 // ---------------------------------------------------------------------------
+// Minimal class for the engine helper object embedded at this+0x14.
+// The error callback & a cleanup pair operate on it.
+// ---------------------------------------------------------------------------
+class CButeMgrHelper {
+public:
+    void FuncA();  // @0x169be0  (engine __thiscall, no body)
+    void FuncB();  // @0x169d70  (engine __thiscall, no body)
+};
+
+// ---------------------------------------------------------------------------
 // CButeMgr - the attribute manager.
 // ---------------------------------------------------------------------------
 class CButeMgr {
 public:
+    // --- Getters ---
     int   GetIntDef(char *tag, char *key, int def);
     int   GetInt(char *tag, char *key);
     DWORD GetDwordDef(char *tag, char *key, DWORD def);
@@ -130,9 +160,29 @@ public:
     char *GetStringDef(char *tag, char *key, char *def);
     char *GetString(char *tag, char *key);
 
+    // --- Parser/lexer members ---
     bool  ScanToken(int expectType);
     bool  ParseTagLine();
     bool  Parse();
+
+    // --- Attribute-file parser (the big one) ---
+    bool  ParseAttributeFile();
+
+    // --- Body/block parsers (internal helpers) ---
+    bool  ParseBody();           // ParseAttributeFile loop until tokType 1|2|4
+    bool  ParseAttributeBlock(); // Read tag=value lines under a section
+
+    // --- Error helper ---
+    void  ReportError(const char *fmt, ...);  // member variant (for body impl)
+
+    // --- Key existence ---
+    bool  IsKey(char *tag, char *key);
+
+    // --- Callback trampoline ---
+    void *InvokeCallback(void *(*fn)(CButeMgr *));
+
+    // --- Sub-object cleanup ---
+    void  ClearHelper();
 
     // Lexer sub-helpers (engine functions, reloc-masked external/no-body).
     // PeekClass classifies the current char (returns a token-class word);
@@ -147,26 +197,30 @@ public:
     // offset so its `this` resolves to `this+0x18` -> `lea ecx,[esi+0x18]`).
     CButeTree *Tree() { return reinterpret_cast<CButeTree *>(m_treeRaw); }
 
-    char  m_pad00[0x8];        // +0x00
-    int   m_lineNo;            // +0x08
-    char  m_pad0c[0x18 - 0xc]; // +0x0c
-    char  m_treeRaw[0x44 - 0x18];  // +0x18  the CButeTree store root
-    void *m_pNode;             // +0x44
-    char  m_pad48[0xa4 - 0x48];// +0x48
-    void *m_pText;             // +0xa4
-    char  m_curChar;           // +0xa8
-    char  m_pada9;             // +0xa9
-    short m_tokType;           // +0xaa
-    char  m_padac[0xae - 0xac];// +0xac
-    char  m_token[0x100 - 0xae];// +0xae
-    AfxString m_tagName;       // +0x100
-    char  m_pad104[0x10c - 0x104];// +0x104
-    char  m_10c;               // +0x10c
-    char  m_10d;               // +0x10d
+    // Some attribute-file-read helpers reach the +0x48 sub-tree:
+    CButeTree *SubTree() { return reinterpret_cast<CButeTree *>(m_subTreeRaw); }
+
+    char  m_pad00[0x8];            // +0x00
+    int   m_lineNo;                // +0x08
+    char  m_pad0c[0x10 - 0xc];    // +0x0c
+    char  m_errBuf[0x14 - 0x10];  // +0x10  CString buffer (ReportError)
+    void *m_pErrCb;               // +0x14  error callback
+    char  m_treeRaw[0x44 - 0x18]; // +0x18  the CButeTree store root
+    void *m_pNode;                // +0x44
+    char  m_subTreeRaw[0xa4 - 0x48]; // +0x48  another CButeTree (for ParseAttributeBlock)
+    void *m_pText;                // +0xa4
+    char  m_curChar;              // +0xa8
+    char  m_pada9;                // +0xa9
+    short m_tokType;              // +0xaa
+    char  m_padac[0xae - 0xac];   // +0xac
+    char  m_token[0x100 - 0xae];  // +0xae
+    AfxString m_tagName;          // +0x100
+    AfxString m_curTag;           // +0x104  current tag key during ParseAttributeFile
+    char  m_10c;                  // +0x10c
+    char  m_10d;                  // +0x10d
 };
 
-// The variadic error reporter (@0x1706c0, __cdecl): ReportError(this, fmt, ...).
-// Reloc-masked; modeled external/no-body.
-int CButeMgr_ReportError(CButeMgr *self, const char *fmt, ...);
+// The variadic error reporter free function (the real mangled entry point at 0x1706c0).
+int __cdecl CButeMgr_ReportError(CButeMgr *self, const char *fmt, ...);
 
 #endif // SRC_BUTE_BUTEMGR_H

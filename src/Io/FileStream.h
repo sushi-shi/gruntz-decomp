@@ -104,9 +104,6 @@ public:
     void  Write(const void *lpBuf, unsigned int nCount);
     LONG  Seek(LONG lOff, int nFrom);
     LONG  GetPosition();
-    // GetLength @0x1bf505: virtual Seek-to-end/restore. Declared (no body here)
-    // so external callers (CFileImage) emit a reloc-masked `call rel32` to it.
-    unsigned int GetLength();
     void  Close();
 
     // The vtable pointer at +0x00 is implicit (virtual ~CFileIO()); do NOT
@@ -114,6 +111,11 @@ public:
     HANDLE       m_handle;   // +0x04
     int          m_open;     // +0x08
     AfxString    m_name;     // +0x0c
+
+    // Match-queue CFileIO functions (all via call-xref).
+    int OpenAndDeleteFile(void *pObj);          // @ 0x0e5550  (154 B)
+    int OpenAndCloseFile(void *pObj);           // @ 0x0e5700  (158 B)
+    int OpenFileRetry(const char *lpszFileName); // @ 0x0bd3e0  (52 B)
 };
 
 #endif // SRC_IO_FILESTREAM_H

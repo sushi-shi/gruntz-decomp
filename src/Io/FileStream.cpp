@@ -260,3 +260,83 @@ BOOL CFileIO::Open(const char *lpszFileName, unsigned int nOpenFlags, void *pErr
     m_open = 1;
     return 1;
 }
+
+// ---------------------------------------------------------------------------
+// CFile::Remove thunk — MFC NAFXCW static method at 0x1bf559. Declared
+// as a free function so MSVC's MFC headers don't clash with the name CFile.
+// Not static (the NAFXCW library provides the definition). The `call rel32`
+// displacement is reloc-masked in objdiff.
+// ---------------------------------------------------------------------------
+void __stdcall CFileRemove(const char *lpszFileName);
+
+// ---------------------------------------------------------------------------
+// Global temp CFileIO used by OpenFileRetry for retry-createfile pattern.
+// In the binary this lives at 0x646778; its default ctor runs during CRT init.
+// ---------------------------------------------------------------------------
+static CFileIO g_deviceFileIO;
+
+// ---------------------------------------------------------------------------
+// CFileIO::OpenFileRetry
+// Opens file with modeCreate (0x1000): CREATE_ALWAYS, closes, then re-opens
+// in write-only mode (0x1). Returns the second Open result (nonzero on
+// success). The global g_deviceFileIO is used (not `this`).
+//
+// @address: 0x0bd3e0
+// @size:    0x34
+// ---------------------------------------------------------------------------
+int CFileIO::OpenFileRetry(const char *lpszFileName)
+{
+    g_deviceFileIO.Open(lpszFileName, 0x1000, 0);
+    g_deviceFileIO.Close();
+    return g_deviceFileIO.Open(lpszFileName, 1, 0);
+}
+
+// ---------------------------------------------------------------------------
+// CFileIO::OpenAndDeleteFile
+// Opens the file with flags 0 (modeRead), closes if successful, then deletes
+// it. Zeros the first dword of pObj (a flag/pointer field) and returns 1.
+// The filename is read from pObj + 0x35 (an embedded char buffer).
+// pObj == 0 early-returns 0.
+//
+// @address: 0x0e5550
+// @size:    0x9a
+// ---------------------------------------------------------------------------
+int CFileIO::OpenAndDeleteFile(void *pObj)
+{
+    if (pObj == 0)
+        return 0;
+
+    char *pszName = (char *)pObj + 0x35;
+    CFileIO f;
+    if (f.Open(pszName, 0, 0)) {
+        f.Close();
+        CFileRemove(pszName);
+    }
+    *(int *)pObj = 0;
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CFileIO::OpenAndCloseFile
+// Opens the file and closes it. Returns 1 on success, 0 on failure.
+// Only proceeds if pObj is non-null and its first byte has bit 0 set.
+// The filename is read from pObj + 0x35 (an embedded char buffer).
+//
+// @address: 0x0e5700
+// @size:    0x9e
+// ---------------------------------------------------------------------------
+int CFileIO::OpenAndCloseFile(void *pObj)
+{
+    if (pObj == 0)
+        return 0;
+    if ((*(unsigned char *)pObj & 1) == 0)
+        return 0;
+
+    CFileIO f;
+    char *pszName = (char *)pObj + 0x35;
+    if (f.Open(pszName, 0, 0)) {
+        f.Close();
+        return 1;
+    }
+    return 0;
+}

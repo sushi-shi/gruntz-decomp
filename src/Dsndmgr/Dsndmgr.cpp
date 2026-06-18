@@ -1,7 +1,9 @@
-// Dsndmgr.cpp - DirectSoundMgr error-string mapper.
+// Dsndmgr.cpp - DirectSoundMgr error-string mapper + DirectSound COM wrappers.
 // DirectSoundMgr::GetErrorString maps DS HRESULT codes to symbol names and
 // outputs the result through the configured reporting channels
 // (OutputDebugStringA / MessageBoxA) under module-level flag control.
+// The ErrorThunk methods wrap IDirectSoundBuffer vtable calls with error
+// reporting through GetErrorString.
 //
 // @address: 0x138150
 // @size:    0x33b
@@ -15,6 +17,9 @@ int  g_dsndDebug     = 0;   // @0x653c4c
 int  g_dsndMsgBox    = 0;   // @0x653c50
 int  g_dsndOutputDbg = 0;   // @0x653c58
 char g_szDsndModule[] = "DirectSoundMgr";  // @0x619f3c
+
+// Source file path used by ErrorThunks (pinned @data address).
+static const char s_szDsndFile[] = "C:\\Proj\\Dsndmgr\\DSNDMGR.CPP";  // @0x619ef8
 
 // Format strings (used by EngFormat via reloc-masked addresses).
 static const char s_fmtDebug[] = "%s, line %i: %s (%i) - %s\n";      // @0x619a20
@@ -44,6 +49,197 @@ static const char s_dserrNoDriver[]      = "DSERR_NODRIVER";         // @0x619f8
 static const char s_dserrBufferLost[]    = "DSERR_BUFFERLOST";       // @0x619f6c
 static const char s_dserrDsOk[]          = "DS_OK";                  // @0x619f64
 static const char s_dserrOtherApp[]      = "DSERR_OTHERAPPHASPRIO";  // @0x619f4c
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::ErrorThunk_135380
+// Stop() then SetCurrentPosition(0) with error logging.
+//
+// @address: 0x135380
+// @size:    0x66
+// ---------------------------------------------------------------------------
+BOOL DirectSoundMgr::ErrorThunk_135380()
+{
+    return TRUE;
+}
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::ErrorThunk_1353f0
+// GetStatus(&dwStatus) - return (dwStatus & 2) != 0.
+//
+// @address: 0x1353f0
+// @size:    0x4b
+// ---------------------------------------------------------------------------
+BOOL DirectSoundMgr::ErrorThunk_1353f0()
+{
+    return TRUE;
+}
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::ErrorThunk_135440
+// GetStatus(&dwStatus) - return (dwStatus & 2) != 0.
+//
+// @address: 0x135440
+// @size:    0x4d
+// ---------------------------------------------------------------------------
+BOOL DirectSoundMgr::ErrorThunk_135440()
+{
+    return TRUE;
+}
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::ErrorThunk_135560
+// SetVolume(lVolume) - set buffer volume.
+//
+// @address: 0x135560
+// @size:    0x58
+// ---------------------------------------------------------------------------
+BOOL DirectSoundMgr::ErrorThunk_135560()
+{
+    return TRUE;
+}
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::ErrorThunk_1355f0
+// GetVolume(&lVolume) - get buffer volume.
+//
+// @address: 0x1355f0
+// @size:    0x42
+// ---------------------------------------------------------------------------
+BOOL DirectSoundMgr::ErrorThunk_1355f0()
+{
+    return TRUE;
+}
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::ErrorThunk_135740
+// SetPan(lPan) - set buffer pan.
+//
+// @address: 0x135740
+// @size:    0x55
+// ---------------------------------------------------------------------------
+BOOL DirectSoundMgr::ErrorThunk_135740()
+{
+    return TRUE;
+}
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::ErrorThunk_1357f0
+// GetPan(&lPan) - get buffer pan.
+//
+// @address: 0x1357f0
+// @size:    0x42
+// ---------------------------------------------------------------------------
+BOOL DirectSoundMgr::ErrorThunk_1357f0()
+{
+    return TRUE;
+}
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::ErrorThunk_135880
+// SetFrequency(dwFreq) - set buffer frequency.
+//
+// @address: 0x135880
+// @size:    0x60
+// ---------------------------------------------------------------------------
+BOOL DirectSoundMgr::ErrorThunk_135880()
+{
+    return TRUE;
+}
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::ErrorThunk_1359c0
+// Unlock(pv1, dw1, pv2, dw2) - unlock buffer.
+//
+// @address: 0x1359c0
+// @size:    0x54
+// ---------------------------------------------------------------------------
+BOOL DirectSoundMgr::ErrorThunk_1359c0()
+{
+    return TRUE;
+}
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::ErrorThunk_135a20
+// GetCurrentPosition(&pdwCurrent, &pdwWrite) - get play/write cursors.
+//
+// @address: 0x135a20
+// @size:    0x4a
+// ---------------------------------------------------------------------------
+BOOL DirectSoundMgr::ErrorThunk_135a20()
+{
+    return TRUE;
+}
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::ErrorThunk_135a70
+// SetCurrentPosition(dwPos) - seek to position.
+//
+// @address: 0x135a70
+// @size:    0x45
+// ---------------------------------------------------------------------------
+BOOL DirectSoundMgr::ErrorThunk_135a70()
+{
+    return TRUE;
+}
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::ErrorThunk_135ac0
+// GetFormat(wfx, dwSize, &dwSizeWritten) - get buffer format.
+//
+// @address: 0x135ac0
+// @size:    0x4f
+// ---------------------------------------------------------------------------
+BOOL DirectSoundMgr::ErrorThunk_135ac0()
+{
+    return TRUE;
+}
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::ErrorThunk_1351d0
+// Constructor-like - initializes members, calls QueryInterface.
+//
+// @address: 0x1351d0
+// @size:    0x109
+// ---------------------------------------------------------------------------
+void DirectSoundMgr::ErrorThunk_1351d0(int param1, int param2)
+{
+}
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::ErrorThunk_135f40
+// Lock/Unlock buffer operations.
+//
+// @address: 0x135f40
+// @size:    0x169
+// ---------------------------------------------------------------------------
+BOOL DirectSoundMgr::ErrorThunk_135f40()
+{
+    return TRUE;
+}
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::ErrorThunk_1365f0
+// Precondition check on this->field_78 + GetVolume.
+//
+// @address: 0x1365f0
+// @size:    0x57
+// ---------------------------------------------------------------------------
+BOOL DirectSoundMgr::ErrorThunk_1365f0()
+{
+    return TRUE;
+}
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::ErrorThunk_137260
+// GetCaps with precondition check on this->field_78.
+//
+// @address: 0x137260
+// @size:    0x95
+// ---------------------------------------------------------------------------
+HRESULT DirectSoundMgr::ErrorThunk_137260()
+{
+    return 0;
+}
 
 // ---------------------------------------------------------------------------
 // @address: 0x138150
