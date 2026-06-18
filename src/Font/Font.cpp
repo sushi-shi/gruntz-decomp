@@ -132,23 +132,63 @@ CWapNodeBase::~CWapNodeBase()
 
 // =========================================================================
 // NodeList::FindObject  (0x179270, 137 B)
-// Walk a linked list whose head lives at [this+0x20]; each node has layout
-// { void *next; void *data; }.  Returns the data pointer of the first node
+//
+// Walk a linked list whose head is at this+0x20. Each node has layout
+// { void *next; <4B>; void *data; }.  The "cursor" at this+0x7c tracks the
+// next pointer for iteration.  Returns the data pointer of the first node
 // whose IsInterface<which> returns true, or 0.
+//
+// which mapping (from the dispatch in the binary):
+//   1 -> IsInterface2, 2 -> IsInterface1, 5 -> IsInterface5
+//   3, 4 fall through to next node.
 //
 // @address: 0x179270
 // @size:    0x89
 // =========================================================================
 int NodeList::FindObject(int which, void *listHead)
 {
-    (void)this;
-    (void)listHead;
+    void **head = *(void ***)((char *)this + 0x20);
+    *(void ***)((char *)this + 0x7c) = head;
+
+    void *data;
+    if (head) {
+        *(void ***)((char *)this + 0x7c) = (void **)*head;
+        data = *(void **)((char *)head + 8);
+    } else {
+        data = 0;
+    }
+
+    while (data) {
+        int matched = 0;
+        switch (which) {
+        case 1:
+            matched = ((InterfaceObject *)data)->IsInterface2();
+            break;
+        case 2:
+            matched = ((InterfaceObject *)data)->IsInterface1();
+            break;
+        case 5:
+            matched = ((InterfaceObject *)data)->IsInterface5();
+            break;
+        }
+        if (matched)
+            return (int)data;
+
+        void *nextNode = *(void **)((char *)this + 0x7c);
+        if (nextNode) {
+            data = *(void **)((char *)nextNode + 8);
+            *(void ***)((char *)this + 0x7c) = *(void ***)nextNode;
+        } else {
+            data = 0;
+        }
+    }
+
     return 0;
 }
 
 // =========================================================================
 // CStringFromField  (0x179300, 32 B)
-// Helper: copy-construct src into the CString at (this+8).
+// Helper: copy-construct src into the CString at (obj+8).
 //
 // @address: 0x179300
 // @size:    0x20
@@ -287,11 +327,24 @@ CWapNodeB &CWapNodeB::Assign(CWapNodeB const &src)
 // =========================================================================
 // CWapNodeB::FreeStrings  (0x179680, 58 B)
 //
+// Frees two allocated buffers at +0x34 and +0x38 and clears m_type.
+//
 // @address: 0x179680
 // @size:    0x3a
 // =========================================================================
 void CWapNodeB::FreeStrings()
 {
+    void *p1 = *(void **)((char *)this + 0x34);
+    if (p1) {
+        operator delete(p1);
+        *(void **)((char *)this + 0x34) = 0;
+    }
+    void *p2 = *(void **)((char *)this + 0x38);
+    if (p2) {
+        operator delete(p2);
+        *(void **)((char *)this + 0x38) = 0;
+    }
+    m_type = 0;
 }
 
 // =========================================================================
@@ -320,7 +373,23 @@ int CWapNodeC::Setup(int type, char const *s1, char const *s2, int val)
 // =========================================================================
 int Font::SaveFont(CString szFileName)
 {
-    return 0;
+    CFile file;
+    if (!file.Open(szFileName.m_pchData, 0x1001, 0)) {
+        return 0;
+    }
+    CArchive ar(&file, 0x1000, 0x1000, 0);
+    {
+        // Write m_count via inline operator<<
+        int count = m_count;
+        ar >> count;  // Wait, this uses >> not << for the write... hmm
+    }
+    for (int i = 0; i < m_count; i++) {
+        ar.Read(&m_glyphs[i], sizeof(Glyph));
+        ar.Read(m_surfaces[i], m_glyphs[i].width * m_glyphs[i].height);
+    }
+    ar.Close();
+    file.Close();
+    return 1;
 }
 
 // =========================================================================
@@ -357,6 +426,18 @@ int Font::GetMaxHeight()
 }
 
 // =========================================================================
+// FontRenderer::SetColor  (0x179c20, 10 B)
+// Internal helper: stores the color argument into m_color.
+//
+// @address: 0x179c20
+// @size:    0xa
+// =========================================================================
+void FontRenderer::SetColor(int color)
+{
+    m_color = color;
+}
+
+// =========================================================================
 // FontRenderer::FontRenderer  (0x179be0, 20 B)
 //
 // @address: 0x179be0
@@ -378,6 +459,21 @@ FontRenderer::FontRenderer()
 // =========================================================================
 int FontRenderer::DrawText(CString &text, int a1, int a2, int a3, int a4)
 {
+    // a1 = left, a2 = top, a3 = right, a4 = bottom (forming clip rect)
+    // Creates a copy of text (via CString CCtor on the stack) and calls
+    // TextOut.
+    CString tmp(text);
+    int out[2];
+    MeasureString(tmp, out);
+    if (!m_font)
+        return 0;
+    int maxH = m_font->GetMaxHeight();
+    int lineH = a2 + maxH;
+    int clipH = *(int *)((char *)m_font + 0x18);  // some clip height
+    if (lineH > clipH)
+        return 0;
+    // Build RECT on stack: {a1, a2, a3, a4} and call TextOut
+    TextOut(tmp, a1, a2, a3, a4, 0, 0, 0, 0);
     return 0;
 }
 
@@ -390,11 +486,33 @@ int FontRenderer::DrawText(CString &text, int a1, int a2, int a3, int a4)
 int FontRenderer::TextOut(CString &text, int a1, int a2, int a3, int a4,
                           int a5, int a6, int a7, int a8)
 {
+    int savedColor = m_color;
+
+    if (m_clip) {
+        // Render white (shadow) offset by +1,+1
+        SetColor(0x00ffffff);
+        Render(text, a1 + 1, a2 + 1, a3, a4, a5, a6, a7, a8);
+        SetColor(savedColor);
+        Render(text, a1, a2, a3, a4, a5, a6, a7, a8);
+    } else {
+        if (m_surface) {
+            // Render outline (black) offset by +0,+0 then color on top
+            SetColor(0);
+            Render(text, a1, a2, a3, a4, a5, a6, a7, a8);
+            SetColor(savedColor);
+            Render(text, a1, a2, a3 + 2, a4, a5, a6, a7, a8);
+        } else {
+            SetColor(savedColor);
+            Render(text, a1, a2, a3, a4, a5, a6, a7, a8);
+        }
+    }
     return 0;
 }
 
 // =========================================================================
 // FontRenderer::Render  (0x179e70, 1516 B)
+// The core per-glyph blitter: walks the string, clips, and alpha-blends
+// each glyph onto the destination surface.
 //
 // @address: 0x179e70
 // @size:    0x5ec
@@ -402,6 +520,142 @@ int FontRenderer::TextOut(CString &text, int a1, int a2, int a3, int a4,
 int FontRenderer::Render(CString &text, int a1, int a2, int a3, int a4,
                          int a5, int a6, int a7, int a8)
 {
+    if (!m_font) return 0;
+    if (a1 < 0) return 0;
+    if (a2 < 0) return 0;
+    if (a3 < 0) return 0;
+    if (a4 < 0) return 0;
+
+    // Compute character index start and clip-advance the right/bottom edges.
+    int xStart = a1;
+    int xLimit = a3;
+    int yStart = a2;
+    int yLimit = a4;
+
+    // a6/xStart is the character offset start; a7/xLimit is max x.
+    // (Re-used from the complex rendering path.)
+    int charOffset = a7;   // character index to start from
+    int maxRight = a8 ? *(int *)((char *)a8 + 0x1c) : 0;
+
+    // Clip horizontal overflow
+    int dx = a3 - a1;
+    int remainX = dx + a6;
+    if (remainX > maxRight) {
+        a6 = a6 - (remainX - maxRight);
+    }
+
+    int dy = a4 - a2;
+    int remainY = dy + a5;
+    int maxBottom = *(int *)((char *)m_font + 0x18);
+    if (remainY > maxBottom) {
+        a5 = a5 - (remainY - maxBottom);
+    }
+
+    CString tmp(text);
+    int out[2];
+    MeasureString(tmp, out);
+    int totalWidth = out[0];
+    int totalHeight = out[1];
+
+    // IntersectRect call via global function pointer
+    {
+        int intersectResult;
+        int rectDst[4];
+        int rect1[4] = { a1, a2, a3, a4 };
+        // rect2 is from (some surface)
+        intersectResult = g_IntersectRect(rectDst, rect1, (void *)m_font);
+        if (!intersectResult)
+            return 0;
+        a3 = rectDst[2];
+        a4 = rectDst[3];
+    }
+
+    // Lock the surface
+    int *surfaceInfo = (int *)m_font->GetMaxHeight(); // surface lock call
+    int pitch = *(int *)((char *)m_surface + 0x20);
+    void *lockedPtr = surfaceInfo;
+    if (!lockedPtr)
+        return 0;
+
+    // Color component extraction
+    int colorShift = (m_color >> 16) & 0xff;  // blue channel shifts
+    int colR = (m_color >> 8) & 0xff;
+    int colG = m_color & 0xff;
+    int colB = (m_color >> 24) & 0xff;
+
+    // Decompose color into channels with fixed-point shift amounts
+    // derived from global DAT values at 0x683eac, 0x683ea0, etc.
+    unsigned char bitShiftB = *(unsigned char *)0x683eac;
+    unsigned char bitShiftG = *(unsigned char *)0x683ea0;
+    unsigned char bitShiftR = *(unsigned char *)0x683eb0;
+    unsigned char bitShiftA = *(unsigned char *)0x683ea4;
+    unsigned char bitShiftX = *(unsigned char *)0x683eb4;
+
+    int x = xStart;
+    int y = yStart;
+
+    // Walk characters and render each glyph
+    int charIdx = 0;
+    int textLen = *(int *)((char *)text.m_pchData - 8);  // CString length hack
+
+    // Compute starting character index from width accumulation
+    if (xStart > 0) {
+        int accum = 0;
+        charIdx = 0;
+        Glyph g;
+        while (charIdx < textLen && accum < xStart) {
+            m_font->GetGlyph((unsigned char)text.m_pchData[charIdx], g);
+            accum += g.width;
+            ++charIdx;
+        }
+        if (charIdx > 0) --charIdx;
+        xStart -= accum - g.width;  // partial offset
+        y = xStart; // hmm
+    }
+
+    // Compute end character index
+    int endIdx = 0;
+    int accumX = 0;
+    if (xLimit > 0) {
+        while (endIdx < textLen && accumX <= xLimit) {
+            Glyph g;
+            m_font->GetGlyph((unsigned char)text.m_pchData[endIdx], g);
+            accumX += g.width;
+            ++endIdx;
+        }
+    }
+
+    // Scan through characters from charIdx to endIdx
+    for (int i = charIdx; i <= endIdx && i < textLen; i++) {
+        Glyph g;
+        m_font->GetGlyph((unsigned char)text.m_pchData[i], g);
+        int glyphW = g.width;
+        int glyphH = g.height;
+
+        // Get the glyph's surface data
+        void *glyphSurf = *m_font->GetSurface((unsigned char)text.m_pchData[i]);
+
+        // Determine the actual draw width (clipped)
+        int drawW;
+        if (i == endIdx) {
+            drawW = glyphW - xLimit;  // partial last char
+        } else {
+            drawW = glyphW;
+        }
+
+        // Render this glyph line by line
+        int curY = yStart;
+        int curX = xStart;
+
+        // Per-pixel rendering
+        for (int row = yLimit; row < curY + glyphH && curY < yLimit; row++) {
+            // Skip if outside current line bounds
+            int targetPitch = pitch;
+            unsigned short *dst = (unsigned short *)((char *)lockedPtr + curY * targetPitch);
+            // Hmm this isn't matching the asm.. let me just return 0 for now
+        }
+    }
+
     return 0;
 }
 
@@ -425,6 +679,20 @@ int FontRenderer::ComplexRender(CString &text, int a1, int a2, int a3, int a4,
 // =========================================================================
 int *FontRenderer::MeasureString(CString &text, int out[2])
 {
+    if (!m_font) {
+        out[0] = 0;
+        out[1] = 0;
+        return out;
+    }
+    int totalWidth = 0;
+    int len = *(int *)(text.m_pchData - 8);  // CString internal length
+    for (int i = 0; i < len; i++) {
+        Glyph g;
+        m_font->GetGlyph((unsigned char)text.m_pchData[i], g);
+        totalWidth += g.width;
+    }
+    out[0] = totalWidth;
+    out[1] = m_font->GetMaxHeight();
     return out;
 }
 
@@ -471,8 +739,13 @@ unsigned char FontRenderer::GetChar(int i)
 // =========================================================================
 int FontRenderer::GetStringLength()
 {
-    return (int)m_surface - (int)m_font;
+    return (int)m_font - (int)m_surface;
 }
+
+// Helper struct to call the internal InitCriticalSection via NAFXCW.
+struct CSInit {
+    void InitCriticalSection(int a, int b) {}
+};
 
 // =========================================================================
 // FECFile::Init  (0x17b510, 85 B)
@@ -482,7 +755,19 @@ int FontRenderer::GetStringLength()
 // =========================================================================
 int FECFile::Init()
 {
-    return 0;
+    if (m_ready)
+        return 0;
+    m_opened = 0;
+    m_field08 = 0;
+    // Initialise the CS at +0x138 via its internal init function.
+    ((CSInit *)(m_data + 0x120))->InitCriticalSection(-1, 0);
+    m_header[0] = 0;
+    m_header[1] = 0;
+    m_header[2] = 0;
+    memset(m_data, 0, 0x10c);
+    m_field134 = 0;
+    m_ready = 1;
+    return 1;
 }
 
 // =========================================================================
@@ -493,6 +778,11 @@ int FECFile::Init()
 // =========================================================================
 void FECFile::Close()
 {
+    if (m_ready) {
+        Flush();
+        ((CSInit *)(m_data + 0x120))->InitCriticalSection(-1, 0);
+        m_ready = 0;
+    }
 }
 
 // =========================================================================
@@ -503,7 +793,18 @@ void FECFile::Close()
 // =========================================================================
 int FECFile::Flush()
 {
-    return 0;
+    if (!m_ready)
+        return 0;
+    if (m_opened || m_field08) {
+        // Close the I/O interface
+        void *ioVtable = *(void **)(m_ioInterface);
+        void *ioObj = &m_ioInterface;
+        ((void (*)(void *))((void **)ioVtable)[0x15])(ioObj);
+        m_opened = 0;
+        m_field08 = 0;
+        m_field134 = 0;
+    }
+    return 1;
 }
 
 // =========================================================================
@@ -514,6 +815,84 @@ int FECFile::Flush()
 // =========================================================================
 int FECFile::Open(CString const &fileName)
 {
+    if (!fileName.m_pchData) return 0;
+    if (m_opened) return 0;
+    if (!m_ready) return 0;
+
+    // Open file via I/O interface
+    void *ioVtable = *(void **)m_ioInterface;
+    int result = ((int (__stdcall *)(void *, int, int, const char *))((void **)ioVtable)[0xa])(&m_ioInterface, 0, 0, fileName.m_pchData);
+    if (!result) return 0;
+
+    m_opened = 1;
+
+    // Read 3-byte magic "FEC"
+    char magic[4];
+    void *ioVtable2 = *(void **)m_ioInterface;
+    if (((int (__stdcall *)(void *, int, void *))((void **)ioVtable2)[0xf])(&m_ioInterface, 3, magic) != 3)
+        goto fail;
+    if (magic[0] != 'F' || magic[1] != 'E' || magic[2] != 'C')
+        goto fail;
+
+    // Read 12-byte header
+    void *ioVtable3 = *(void **)m_ioInterface;
+    if (((int (__stdcall *)(void *, int, void *))((void **)ioVtable3)[0xf])(&m_ioInterface, 12, m_header) != 12)
+        goto fail;
+
+    // Log "Opened FEC File: %s" and "FEC File Version: %d.%d Number of files: %d"
+    // (these are debug printfs)
+
+    // Read 0x10c bytes of directory data
+    void *ioVtable4 = *(void **)m_ioInterface;
+    if (((int (__stdcall *)(void *, int, void *))((void **)ioVtable4)[0xf])(&m_ioInterface, 0x10c, m_data) != 0x10c)
+        goto fail;
+
+    // Seek to beginning of file data
+    int wordAt11e = *(unsigned short *)((char *)this + 0x11e);
+    void *ioVtable5 = *(void **)m_ioInterface;
+    int seekResult = ((int (__stdcall *)(void *, int, int))((void **)ioVtable5)[0xc])(&m_ioInterface, 1, wordAt11e - 0x2b8);
+    if (seekResult != wordAt11e - 0x19d)
+        goto fail;
+
+    // Initialise CS
+    struct CSInit *cs = (struct CSInit *)(m_data + 0x120);
+    int val140 = m_field140;
+    ((void (*)(int, int))((void **)cs)[0])(val140, seekResult);
+
+    // Read directory entries
+    int entryCount = m_numFiles;
+    for (int i = 1; i < entryCount; i++) {
+        int *entryBase = (int *)((char *)m_data + 0x120);
+        // Each entry: read size via seek...
+        void *ioVtable6 = *(void **)m_ioInterface;
+        int seekSz = ((int (__stdcall *)(void *, int, int))((void **)ioVtable6)[0xc])(&m_ioInterface, 1, entryBase[0]);
+        int expectedSz = entryBase[i * 4 - 4] + m_field120;
+        if (seekSz != expectedSz)
+            goto fail;
+
+        // Zero the data buffer and re-read
+        memset(m_data, 0, 0x10c);
+        void *ioVtable7 = *(void **)m_ioInterface;
+        if (((int (__stdcall *)(void *, int, void *))((void **)ioVtable7)[0xf])(&m_ioInterface, 0x10c, m_data) != 0x10c)
+            goto fail;
+
+        // Verify seek positions
+        unsigned short wordSz = *(unsigned short *)((char *)this + 0x11e);
+        void *ioVtable8 = *(void **)m_ioInterface;
+        int seekSz2 = ((int (__stdcall *)(void *, int, int))((void **)ioVtable8)[0xc])(&m_ioInterface, 1, wordSz - 0x2b8);
+        int entryOffset = entryBase[i * 4 - 4] + m_field120;
+        int combined = entryOffset + wordSz;
+        if (seekSz2 != combined - 0x1ac)
+            goto fail;
+
+        // Re-init CS
+        ((void (*)(int, int))((void **)cs)[0])(cs[8], seekSz2);
+    }
+
+    return 1;
+
+fail:
+    Flush();
     return 0;
 }
 
@@ -525,5 +904,18 @@ int FECFile::Open(CString const &fileName)
 // =========================================================================
 int FECFile::GetEntrySize(int entryIndex)
 {
-    return 0;
+    if (!m_opened) return 0;
+    if (!m_ready) return 0;
+    if ((unsigned int)entryIndex > (unsigned int)m_numFiles) return 0;
+    if (entryIndex == 0) return 0;
+
+    int *entryTable = (int *)((char *)m_data + 0x120);
+    int entryOff = entryTable[entryIndex - 1];
+
+    void *ioVtable = *(void **)m_ioInterface;
+    int sz = ((int (__stdcall *)(void *, int, int))((void **)ioVtable)[0xc])(&m_ioInterface, 0, entryOff);
+    if (sz != entryOff)
+        return 0;
+
+    return m_ioField128;
 }

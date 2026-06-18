@@ -10,6 +10,13 @@
 #include "Dsndmgr.h"
 #include <string.h>
 
+// Forward declaration of UnknownSalazar class and its static method.
+// (Defined in UnknownSalazar.cpp, @0x135110).
+class UnknownSalazar {
+public:
+    static int computeScaleFactor(int value);
+};
+
 // ---------------------------------------------------------------------------
 // Module-level globals  (pinned @data addresses in the TU).
 // ---------------------------------------------------------------------------
@@ -255,7 +262,7 @@ int DirectSoundMgr::ErrorThunk_135640()
     if (!m_pDSManager || !m_pDSManager->m_pSubBuffer)
         return 0;
     int vol = ErrorThunk_1355f0();
-    return UnknownSalazar_computeScaleFactor(vol);
+    return UnknownSalazar::computeScaleFactor(vol);
 }
 
 // ---------------------------------------------------------------------------

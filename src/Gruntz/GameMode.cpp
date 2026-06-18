@@ -116,6 +116,13 @@ void CState::Vfunc3() {}
 // The concrete states - each overrides Update() to return its state-ID tag.
 // ===========================================================================
 
+// CMenuState::~CMenuState()  @0x8ce60 (85 B): EH-framed complete-object dtor.
+// @address: 0x08ce60
+// @size:    0x55
+CMenuState::~CMenuState()
+{
+}
+
 // CPlay::Update()  @0x8c910 (6 B): the PLAY state's ID = 3.
 // @address: 0x08c910
 // @size:    0x6

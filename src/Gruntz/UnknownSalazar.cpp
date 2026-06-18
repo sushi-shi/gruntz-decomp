@@ -38,7 +38,7 @@ extern "C" long __ftol(double);
 // The lookup table buffer (binary @0x653ab8, 100 ints). Written by
 // initializeUnknownLookupTable with getLookupTableValue results.
 // @data: 0x653ab8
-static int g_salazarLookupTable[100];
+int g_salazarLookupTable[100];
 
 class UnknownSalazar {
 public:

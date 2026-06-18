@@ -53,6 +53,7 @@ class CFileException;            // PAVCFileException@@ - pointer only, opaque.
 
 class CString {
 public:
+    CString();                   // ??0CString@@QAE@XZ     @0x1b9b93
     CString(const char *s);      // ??0CString@@QAE@PBD@Z  @0x1b9d4c
     CString(const CString &o);   // ??0CString@@QAE@ABV0@@Z @0x1b9ba3 (refcount/COW)
     ~CString();                  // ??1CString@@QAE@XZ     @0x1b9cde
@@ -80,8 +81,9 @@ public:
     ~CArchive();                                       // ??1CArchive@@QAE@XZ  @0x1c6fc4
 
     unsigned int Read(void *lpBuf, unsigned int nMax); // ?Read@...           @0x1c705a
+    void Write(const void *lpBuf, unsigned int nMax);  // ?Write@...          @0x1c7168
     void Close();                                      // ?Close@...          @0x1c704c
-    void FillBuffer(unsigned int nBytesNeeded);        // ?FillBuffer@...      @0x1c7272
+    void FillBuffer(unsigned int nBytesNeeded);        // ?FillBuffer@...     @0x1c7272
 
     // The buffered-read window. Inlined operator>> reads straight from here;
     // the offsets are load-bearing (the EXE's NAFXCW layout, not afx.h's).
@@ -98,6 +100,17 @@ public:
         if (m_lpBufCur + sizeof(int) > m_lpBufMax)
             FillBuffer(sizeof(int) - (unsigned int)(m_lpBufMax - m_lpBufCur));
         i = *(int *)m_lpBufCur;
+        m_lpBufCur += sizeof(int);
+        return *this;
+    }
+
+    // Inlined integer insertion (MFC's _AFX_INLINE operator<<). Tops up the
+    // buffer when fewer than 4 bytes remain, then writes a DWORD and advances.
+    CArchive &operator<<(int i)
+    {
+        if (m_lpBufCur + sizeof(int) > m_lpBufMax)
+            FillBuffer(sizeof(int) - (unsigned int)(m_lpBufMax - m_lpBufCur));
+        *(int *)m_lpBufCur = i;
         m_lpBufCur += sizeof(int);
         return *this;
     }
@@ -137,6 +150,23 @@ public:
 };
 
 // ---------------------------------------------------------------------------
+// CDWordArray (MFC) - partial declaration sufficient for the methods used
+// in the FECFile code.  The linker resolves against nafxcw.lib.
+// ---------------------------------------------------------------------------
+struct CDWordArray {
+    // Methods (non-virtual; resolved via direct NAFXCW call)
+    void SetSize(int nNewSize, int nGrowBy);
+    void SetAtGrow(int nIndex, unsigned long newElement);
+
+    // Fields
+    void *m_pVtable;       // +0x00
+    int  *m_pData;          // +0x04
+    int   m_nSize;          // +0x08
+    int   m_nMaxSize;       // +0x0c
+    int   m_nGrowBy;        // +0x10
+};
+
+// ---------------------------------------------------------------------------
 // FontRenderer - a stateful rendering shim wrapping a Font*. FontRenderer
 // carries an optional destination surface pointer, clip rectangle, and a
 // text colour. The matched functions below live in the same TU.
@@ -146,6 +176,9 @@ public:
     // The default ctor zeros m_font, sets m_color to 0x00ffffff, and
     // clears the two pointer fields.
     FontRenderer();                          // @0x179be0
+
+    // Colour setter used by TextOut.
+    void SetColor(int color);                // @0x179c20
 
     // Measure a CString: returns {totalWidth, maxHeight} in the 2-int block.
     int *MeasureString(CString &text, int out[2]);  // @0x17ac50 (ret 8)
@@ -178,7 +211,39 @@ public:
 // FECFile — lightweight handler for Monolith's FEC archive format (opened
 // via an indirect virtual I/O interface).  All 5 matched methods below live
 // in the Font TU.
+//
+// The I/O interface is an opaque object at +0x124 with a vtable pointer.
+// The CDWordArray lives at +0x138 (embedded, 0x14 bytes).
 // ---------------------------------------------------------------------------
+
+// I/O interface vtable layout for the opaque object embedded in FECFile.
+// Only the methods actually called are declared; the padding-zero methods
+// keep the vtable slots aligned.
+struct IOFace {
+    virtual int m00() = 0;  // +0x00
+    virtual int m01() = 0;  // +0x04
+    virtual int m02() = 0;  // +0x08
+    virtual int m03() = 0;  // +0x0c
+    virtual int m04() = 0;  // +0x10
+    virtual int m05() = 0;  // +0x14
+    virtual int m06() = 0;  // +0x18
+    virtual int m07() = 0;  // +0x1c
+    virtual int m08() = 0;  // +0x20
+    virtual int m09() = 0;  // +0x24
+    virtual int Open(const char *pszFileName, int nOpenFlags, int nMode) = 0; // +0x28 (slot 10)
+    virtual int m0b() = 0;  // +0x2c
+    virtual int Seek(int lOff, int nFrom) = 0; // +0x30 (slot 12)
+    virtual int m0d() = 0;  // +0x34
+    virtual int m0e() = 0;  // +0x38
+    virtual int Read(void *lpBuf, int nCount) = 0; // +0x3c (slot 15)
+    virtual int m10() = 0;  // +0x40
+    virtual int m11() = 0;  // +0x44
+    virtual int m12() = 0;  // +0x48
+    virtual int m13() = 0;  // +0x4c
+    virtual int m14() = 0;  // +0x50
+    virtual int Close() = 0; // +0x54 (slot 21)
+};
+
 class FECFile {
 public:
     int  Init();                             // @0x17b510
@@ -198,12 +263,13 @@ public:
     unsigned char m_data[0x10c]; // +0x18  (268 B, read from the file)
     int    m_field120;           // +0x120
     short  m_field11e;           // +0x11e  (word, at +0x11e in the block)
-    int    m_ioInterface;        // +0x124  (vtable pointer for I/O)
+    // I/O interface (8 bytes: vtable ptr + field128)
+    int    m_ioVtable;           // +0x124  (vtable pointer for I/O)
     int    m_ioField128;         // +0x128
+    int    m_pad12c[2];          // +0x12c (8 bytes padding)
     int    m_field134;           // +0x134
-    int    m_csPlaceholder;      // +0x138  (˜critical section cookie)
-    int    m_field13c;           // +0x13c
-    int    m_field140;           // +0x140
+    // CDWordArray (embedded, 0x14 bytes = 20 bytes)
+    CDWordArray m_nameMap;       // +0x138  (embedded CDWordArray, 20 bytes)
 };
 
 // ---------------------------------------------------------------------------

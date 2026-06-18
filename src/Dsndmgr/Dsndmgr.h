@@ -45,6 +45,9 @@ extern int  g_dsndMsgBox;        // @0x653c50
 extern int  g_dsndOutputDbg;     // @0x653c58
 extern char g_szDsndModule[];    // @0x619f3c  "DirectSoundMgr"
 
+// Salazar lookup table (defined in UnknownSalazar.cpp, @0x653ab8).
+extern int g_salazarLookupTable[100];
+
 // ---------------------------------------------------------------------------
 // Minimal IDirectSoundBuffer vtable declaration (interface layout matches
 // DirectX 5/6/7 IDirectSoundBuffer from <dsound.h>).
@@ -146,11 +149,6 @@ struct WAVEFORMATEX {
     WORD  wBitsPerSample;
     WORD  cbSize;
 };
-
-// ===========================================================================
-// External function declarations (other TUs)
-// ===========================================================================
-extern "C" int __cdecl UnknownSalazar_computeScaleFactor(int value);
 
 // ===========================================================================
 // Miles Sound System AIL import declarations

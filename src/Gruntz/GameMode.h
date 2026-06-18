@@ -247,6 +247,7 @@ public:
 // then the UI step + the on-screen version-string RECT draw.
 class CMenuState : public CState {
 public:
+    virtual ~CMenuState();
     virtual int Update();           // @0x8ce10  return 5;  (vtable @0x5e9e84 slot 4)
     virtual int Render();           // @0xa0750  the per-frame menu draw (this TU)
 
