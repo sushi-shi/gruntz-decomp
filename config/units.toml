@@ -986,3 +986,45 @@ unit = "unknownworkerfuncs"
 source = "src/Gruntz/UnknownWorkerFuncs.cpp"
 status = "wip"
 cflags = ["/nologo", "/c", "/O2", "/MT"]
+
+# --- Cheat config loaders + booty state manager (src/Gruntz/CheatConfig.cpp) ---
+# Three cheat config/booty functions + ShowMonolithDanceMessage. All carry CString
+# temporaries under EH frames -> /GX. CButeMgr getters + CString ctors/dtors are
+# external/reloc-masked.
+[[unit]]
+unit = "cheatconfig"
+source = "src/Gruntz/CheatConfig.cpp"
+status = "wip"
+cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+
+# --- Cheat code handler (src/Gruntz/CheatCodes.cpp) ---------------------------
+# ProcessCheatCode @0x862f0 (15706 B, __thiscall ret 8) - the main cheat code
+# message handler. Giant switch/if-else chain over wParam IDs. /GX for the EH
+# frame the target opens.
+[[unit]]
+unit = "cheatcodes"
+source = "src/Gruntz/CheatCodes.cpp"
+status = "wip"
+cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+
+# --- Save-game UI functions (src/Gruntz/SaveGame.cpp) -------------------------
+# Three contiguous save-game functions in the 0x0e3e80..0x0e4cc0 range:
+# SetSaveSlotText @0xe3e80, DrawSaveGameMenu @0xe3f40, SaveGameFile @0xe4b60
+# (CSaveGameInfo::SaveGameFile).  /GX because SaveGameFile opens a C++ EH frame
+# (stack CString path builder in the save-file writer).
+[[unit]]
+unit = "savegame"
+source = "src/Gruntz/SaveGame.cpp"
+status = "wip"
+cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+
+# --- CGruntzApp save-game orchestrator (src/Gruntz/GruntzAppSave.cpp) ---------
+# CGruntzApp::SaveGame @0x92530 (380 B) - SEH-framed quick-save orchestrator.
+# Checks preconditions (game mode == 3, save-flag bitmap), writes the save file,
+# and shows success/failure messages ("Game Quicksaved successfully." /
+# "ERROR - Cannot Save Game.").  /GX for the stack CString in the error path.
+[[unit]]
+unit = "gruntzappsav"
+source = "src/Gruntz/GruntzAppSave.cpp"
+status = "wip"
+cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
