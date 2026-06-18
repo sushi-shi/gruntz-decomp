@@ -143,6 +143,16 @@ extern int g_severusCounterA;           // VA 0x6bf37c
 // @data: 0x2bf380
 extern int g_severusCounterB;           // VA 0x6bf380
 
+// --- Additional vtable pointers for leaf classes ----------------------------
+// @data: 0x1e8cb4
+extern void *g_severusVtbl_5e8cb4;      // VA 0x5e8cb4
+// @data: 0x1efbc0
+extern void *g_severusVtbl_5efbc0;      // VA 0x5efbc0
+// @data: 0x1efcc8
+extern void *g_severusVtbl_5efcc8;      // VA 0x5efcc8
+// @data: 0x1efd28
+extern void *g_severusVtbl_5efd28;      // VA 0x5efd28
+
 // ---------------------------------------------------------------------------
 // UnknownSeverus - only the load-bearing offset is modeled: the CMapStringToOb at
 // +0x10. The matched method occupies a lower vtable slot (slot number not load-
@@ -165,6 +175,8 @@ public:
     void VirtualMethodUnknown50(SeverusWorkerObj *worker);
     void VirtualMethodUnknown54(const char *key);
     void VirtualMethodUnknown58();
+    void MapTeardown_1552b0();
+    int  StringCopy_155810(const char *src);
 
     void          *m_vptr;                  // +0x00
     int            m_04;                     // +0x04  initialized to -1 when inactive
@@ -443,4 +455,85 @@ void UnknownSeverus::VirtualMethodUnknown58()
         } while (pos != 0);
     }
     m_10.RemoveAll();
+}
+
+// ---------------------------------------------------------------------------
+// SeverusWorker leaf init 0x1549d0  (41B)
+// Stamps vtable 0x5efbc0 and fills fields: +0x0c=0, +0x20=0x80000000,
+// +0x38=-1, +0x5c=0x80000000, +0x64=0x80000000, +0x3c=0, +0x40=0.
+// ---------------------------------------------------------------------------
+// @address: 0x1549d0
+// @size:    0x29
+void __fastcall SeverusWorkerInit_1549d0(void *p)
+{
+    char *b = (char *)p;
+    int c = 0x80000000;
+    *(int *)(b + 0x0c) = 0;
+    *(int *)(b + 0x20) = c;
+    *(int *)(b + 0x38) = -1;
+    *(void **)p = &g_severusVtbl_5efbc0;
+    *(int *)(b + 0x5c) = c;
+    *(int *)(b + 0x64) = c;
+    *(int *)(b + 0x3c) = 0;
+    *(int *)(b + 0x40) = 0;
+}
+
+// ---------------------------------------------------------------------------
+// SeverusBase stamp 0x154a50  (35B)
+// Stamps vtable 0x5e8cb4 and fills base fields: +0x5c=0x80000000,
+// +0x20=0x80000000, +0x38=-1, +0x04=-1, +0x08=0, +0x0c=0.
+// ---------------------------------------------------------------------------
+// @address: 0x154a50
+// @size:    0x23
+void __fastcall SeverusBaseInit_154a50(void *p)
+{
+    int *pi = (int *)p;
+    int c = 0x80000000;
+    pi[23] = c;     // +0x5c
+    pi[8] = c;      // +0x20
+    c = -1;
+    pi[14] = c;     // +0x38
+    pi[1] = c;      // +0x04
+    c = 0;
+    *(void **)p = &g_severusVtbl_5e8cb4;
+    pi[2] = c;      // +0x08
+    pi[3] = c;      // +0x0c
+}
+
+extern "C" char *_strncpy(char *, const char *, unsigned int);
+
+// ---------------------------------------------------------------------------
+// Map teardown leaf 0x1552b0  (162B, SEH)
+// Iterates m_10 via GetNextAssoc, destroys each CObject* value via
+// scalar-deleting dtor (vtbl+0x4 arg 1), then RemoveAll.
+// ---------------------------------------------------------------------------
+// @address: 0x1552b0
+// @size:    0xa2
+void UnknownSeverus::MapTeardown_1552b0()
+{
+    CObject *val = 0;
+    int pos = (m_10.m_nCount != 0) ? -1 : 0;
+    CString key;
+    if (*(volatile int *)&pos != 0) {
+        do {
+            m_10.GetNextAssoc(pos, key, val);
+            if (val != 0)
+                ((SeverusValue *)val)->ScalarDtor(1);
+        } while (pos != 0);
+    }
+    m_10.RemoveAll();
+}
+
+// ---------------------------------------------------------------------------
+// String copy leaf 0x155810  (35B)
+// Copies at most 0x3F bytes from src into this+0x24, null-terminates at
+// this+0x63, returns 1.
+// ---------------------------------------------------------------------------
+// @address: 0x155810
+// @size:    0x23
+int UnknownSeverus::StringCopy_155810(const char *src)
+{
+    _strncpy((char *)this + 0x24, src, 0x3f);
+    *((char *)this + 0x63) = 0;
+    return 1;
 }

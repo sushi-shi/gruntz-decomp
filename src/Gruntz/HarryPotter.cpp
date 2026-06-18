@@ -6,7 +6,15 @@
 // Names are tomalla placeholders. Offsets, store order, vtable slots, and global
 // addresses are load-bearing for matching.
 
+#include <stddef.h>
 typedef void *HWND;
+typedef long intptr_t;
+
+class UnknownCGruntzMgrLuciusChild {
+public:
+    int m_10;
+    int m_14;
+};
 
 class UnknownCGruntzMgrLucius {
 public:
@@ -16,6 +24,9 @@ public:
     virtual void Slot0C();
     virtual void Slot10();
     virtual int  Vfunc14();
+
+    void *m_04;
+    UnknownCGruntzMgrLuciusChild *m_10;
 };
 
 class UnknownClassCGruntzMgrHarryPotter {
@@ -28,7 +39,7 @@ public:
     virtual void UnknownVirtualMethod1C();
     virtual void UnknownVirtualMethod20();
     virtual int UnknownVirtualMethod24(int x, int y, int flags);
-    virtual void UnknownVirtualMethod28();
+    virtual void UnknownVirtualMethod28(void *hWnd);
     virtual int UnknownVirtualMethod2C(int unknown);
     virtual int UnknownVirtualMethod30(int width, int height,
                                         int bpp, int flagsUnknown,
@@ -188,6 +199,15 @@ int UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod18(
     return 0;
 }
 
+// Helper structs for __thiscall external functions.
+struct MinervaInner { void Free(); };
+struct VoldemortObj { void Free(); };
+struct MinervaMgr   { void ClearMap(); };
+extern void __cdecl RelayHwnd(void *hWnd);
+extern int __stdcall CreateChildSurface(int x, int y, int flags);
+struct RemusCoordsHelper { int SetCoords(int x, int y); };
+typedef int (__cdecl *HP_Callback)(void *, void *, int, int, int);
+
 // ---------------------------------------------------------------------------
 // UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod20()
 // Frees context — cleans up the Voldemort surface and the Minerva map.
@@ -197,7 +217,14 @@ int UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod18(
 // ---------------------------------------------------------------------------
 void UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod20()
 {
-    // FIXME: placeholder
+    if (m_28 != 0) {
+        void *inner = *(void **)((char *)m_28 + 0x2c);
+        if (inner != 0)
+            ((MinervaInner *)inner)->Free();
+        ((MinervaMgr *)m_28)->ClearMap();
+    }
+    if (m_20 != 0)
+        ((VoldemortObj *)m_20)->Free();
 }
 
 // ---------------------------------------------------------------------------
@@ -210,7 +237,15 @@ void UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod20()
 int UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod24(
     int x, int y, int flags)
 {
-    // FIXME: placeholder
+    UnknownCGruntzMgrLuciusChild *child = m_04->m_10;
+    if (child->m_10 != x || child->m_14 != y) {
+        if (CreateChildSurface(x, y, flags) == 0)
+            return 0;
+    }
+    if (m_24 != 0) {
+        if (((RemusCoordsHelper *)m_24)->SetCoords(x, y) == 0)
+            return 0;
+    }
     return 1;
 }
 
@@ -221,9 +256,9 @@ int UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod24(
 // @address: 0x155f50
 // @size:    0x10
 // ---------------------------------------------------------------------------
-void UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod28()
+void UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod28(void *hWnd)
 {
-    // FIXME: placeholder
+    RelayHwnd(hWnd);
 }
 
 // ---------------------------------------------------------------------------
@@ -270,5 +305,5 @@ int UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod38(
         return 0;
     if (!m_3c)
         return 0;
-    return 1;
+    return ((HP_Callback)(intptr_t)m_3c)(this, arg1, arg2, arg3, arg4) != 0;
 }
