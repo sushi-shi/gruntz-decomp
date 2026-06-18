@@ -100,6 +100,7 @@ GetCurrentDirectoryA(unsigned long nBufferLength, char *lpBuffer);
 class CRezItmBase {
 public:
     CRezItmBase(void *parent);
+    CRezItmBase();                      // default (null parent) @0x13c520
     virtual ~CRezItmBase() {}
 
     void  *m_4;        // +0x04
@@ -113,7 +114,7 @@ public:
 class CRezItm : public CRezItmBase {
 public:
     CRezItm(void *parent);
-    virtual ~CRezItm() {}
+    virtual ~CRezItm();                 // @0x13c590
 
     int   m_10;   // +0x10  (= 0)
     int   m_14;   // +0x14  (= 0)
@@ -129,9 +130,11 @@ public:
 class CRezDir : public CRezItmBase {
 public:
     CRezDir(void *parent, void *rezMgr);
-    virtual ~CRezDir() {}
+    virtual ~CRezDir();                 // @0x13c9b0
 
     int   FindEntry(char *name);        // 0x13c080
+    int   ParentOp();                   // 0x13c050
+    void  InsertNode(void *node);       // 0x13c210
     // OpenSub (@0x13b0c0, 568 B) is NOT matched in this TU - see RezMgr.cpp note.
 
     // --- ctor-initialized embedded child collection (+0x10..+0x34) ---
@@ -209,6 +212,8 @@ struct RezColl {
 class CRezDirNode {
 public:
     int Load(int childFlag);            // 0x13a0f0
+    int Open();                         // 0x13c8a0
+    int Check();                        // 0x13c8f0
 
     void   *m_0;        // +0x00 (vtable / base, not touched by Load)
     void   *m_4;        // +0x04
@@ -340,6 +345,11 @@ public:
     // CD/install helpers on the manager (external, reloc-masked).
     char GetGruntzDriveLetter();               // 0x8fa70 (ret)
     void ReportError(int msgId, int code);     // 0x8dc60 (ret 8)
+
+    // Forwarding methods that dispatch through the active game-mode vtable.
+    int  ForwardSlot4c(int a, int b, int c);           // 0x08dba0
+    int  ForwardSlot50(int a, int b, int c);           // 0x08dbe0
+    int  HandleDebugPosition();                        // 0x08e470
 
     // --- layout (vptr occupies +0x00) ---------------------------------------
     char       m_pad4[0x2c - 0x04];   // +0x04..+0x2b

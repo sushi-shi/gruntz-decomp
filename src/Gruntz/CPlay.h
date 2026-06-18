@@ -164,6 +164,7 @@ public:
     virtual void Vslot26();
     virtual void RenderSlow();   // slot 39 (+0x9c)
     virtual void RenderFast();   // slot 40 (+0xa0)
+    int  SetBeginClearParams(int, int, int);   // 0x08c970
 
     // --- the CState scalar members the ctor pins (only the ones used here) ---
     void   *m_4;        // +0x04  owner back-ptr (-> CWorld)

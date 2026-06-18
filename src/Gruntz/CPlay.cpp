@@ -775,3 +775,18 @@ CPlay::CPlay()
     *(int *)((char *)this + 0x2ec) = 0;
     *(int *)((char *)this + 0x504) = 0;
 }
+
+
+// =========================================================================
+// CState::SetBeginClearParams  @0x08c970
+// Stores the two BeginFrameClear arguments and returns 1.
+//
+// @address: 0x08c970
+// @size:    0x1c
+// =========================================================================
+int CState::SetBeginClearParams(int unused, int arg2, int arg3)
+{
+    m_150 = arg2;
+    m_154 = arg3;
+    return 1;
+}

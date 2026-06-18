@@ -416,3 +416,319 @@ void RezMgr::ReportError(int msgId, int code)
         return;
     ((RezMgrAppTarget *)app)->ReportError(msgId, code);
 }
+
+// =========================================================================
+// NEW ADDITIONS (all matched unnamed FUN_ leaf functions)
+// =========================================================================
+
+#include <string.h>
+
+extern "C" __declspec(dllimport) unsigned long __stdcall timeGetTime(void);
+extern "C" void free(void *);
+extern "C" __declspec(dllimport) short __stdcall GetAsyncKeyState(int vKey);
+extern "C" __declspec(dllimport) int __stdcall PostMessageA(void *hWnd, unsigned Msg, unsigned wParam, long lParam);
+
+extern "C" void *RezAlloc2(void *a, void *b);
+extern "C" void *RezAlloc1(void *a);
+struct RezCtorA { void Construct(); };
+struct RezCtorB { void Construct(); };
+struct RezDirCallbacks {
+    void Prep(int flag);
+    int Store(void *a, int b, int c);
+};
+struct RezBucketArray { void *GetAt(unsigned index); };
+struct RezNodeList { void Insert(void *node); };
+struct RezCollection {
+    void Init(int hint);
+    void Cleanup(void *arg);
+    void Remove(void *node);
+};
+extern "C" int RezFileSeek(void *fp, int off, int origin);
+extern "C" int RezFileRead(void *fp, void *buf, unsigned len, int unused);
+extern "C" int RezFileRead2(void *fp, void *buf, unsigned len, int unused);
+extern "C" int RezFileCheck(void *fp);
+struct RezProbeCallbacks { int Probe(int arg); };
+struct RezRefCallbacks { int DecRef(int arg); };
+extern "C" void *RezOpenFile(const char *path, int mode);
+struct RezNodeFree { void FreeItm(int node); };
+
+struct RezHashTbl { unsigned m_divisor; };
+struct RezStrHashA : RezHashTbl {
+    int HashStr(const char *s);
+    void *FindStr(const char *key, int mode);
+};
+struct RezStrHashB : RezHashTbl {
+    int HashStr(const char *s);
+    void *FindStr(const char *key, int mode);
+};
+struct RezIntHash : RezHashTbl {
+    int HashInt(int val);
+    void *FindInt(int key);
+};
+
+class CRezNamedStream : public CRezItmBase {
+public:
+    CRezNamedStream(void *parent, const char *name, void *backPtr);
+    virtual ~CRezNamedStream();
+    int StreamRead(void *a, void *b, unsigned size, int d);
+    int StreamRead2(void *a, void *b, unsigned size, int d);
+    void Check();
+    void Open();
+    void Close();
+    void CloseAll();
+    char *m_name;
+    void *m_subObj;
+    void *m_backPtr;
+};
+
+CRezItmBase::CRezItmBase() { m_parent = 0; }
+
+void *RezFactory2(void *a, void *b)
+{
+    void *obj = RezAlloc2(a, b);
+    ((RezCtorA *)obj)->Construct();
+    return obj;
+}
+
+void *RezFactory1(void *a)
+{
+    void *obj = RezAlloc1(a);
+    ((RezCtorB *)obj)->Construct();
+    return obj;
+}
+
+int CRezDir::ParentOp()
+{
+    if (m_parent == 0) return 0;
+    ((RezDirCallbacks *)this)->Prep(0);
+    return ((RezDirCallbacks *)this)->Store(m_name, 1, 0);
+}
+
+void CRezDir::InsertNode(void *node)
+{
+    if (node == 0) return;
+    ((RezNodeList *)((char *)this + 0x80))->Insert((char *)node + 0x1c);
+}
+
+int RezStrHashA::HashStr(const char *s)
+{
+    if (s == 0) return 0;
+    unsigned len = 0;
+    if (*s != 0) { do { len++; s++; } while (*s != 0); }
+    return (int)(len % m_divisor);
+}
+
+void *RezStrHashA::FindStr(const char *key, int mode)
+{
+    if (key == 0) return 0;
+    void *node = ((RezBucketArray *)this)->GetAt((unsigned)HashStr(key));
+    if (node == 0) return 0;
+    if (mode == 0) {
+        while (node) {
+            void *data = *(void **)((char *)node + 0x14);
+            if (RezStricmp(*(const char **)data, key) == 0) return data;
+            node = *(void **)((char *)node + 0x04);
+        }
+    } else {
+        while (node) {
+            void *data = *(void **)((char *)node + 0x14);
+            const char *a = *(const char **)data;
+            const char *b = key;
+            int diff = 0;
+            while (*a && *b) { if (*a++ != *b++) { diff = 1; break; } }
+            if (!diff && *a == *b) return data;
+            node = *(void **)((char *)node + 0x04);
+        }
+    }
+    return 0;
+}
+
+int RezStrHashB::HashStr(const char *s)
+{
+    if (s == 0) return 0;
+    unsigned len = 0;
+    if (*s != 0) { do { len++; s++; } while (*s != 0); }
+    return (int)(len % m_divisor);
+}
+
+void *RezStrHashB::FindStr(const char *key, int mode)
+{
+    if (key == 0) return 0;
+    void *node = ((RezBucketArray *)this)->GetAt((unsigned)HashStr(key));
+    if (node == 0) return 0;
+    if (mode == 0) {
+        while (node) {
+            void *data = *(void **)((char *)node + 0x14);
+            if (RezStricmp(*(const char **)data, key) == 0) return data;
+            node = *(void **)((char *)node + 0x04);
+        }
+    } else {
+        while (node) {
+            void *data = *(void **)((char *)node + 0x14);
+            const char *a = *(const char **)data;
+            const char *b = key;
+            int diff = 0;
+            while (*a && *b) { if (*a++ != *b++) { diff = 1; break; } }
+            if (!diff && *a == *b) return data;
+            node = *(void **)((char *)node + 0x04);
+        }
+    }
+    return 0;
+}
+
+int RezIntHash::HashInt(int val) { return (int)((unsigned)val % m_divisor); }
+
+void *RezIntHash::FindInt(int key)
+{
+    void *node = ((RezBucketArray *)this)->GetAt((unsigned)HashInt(key));
+    while (node) {
+        void *data = *(void **)((char *)node + 0x14);
+        if (data && *(int *)data == key) return data;
+        node = *(void **)((char *)node + 0x04);
+    }
+    return 0;
+}
+
+CRezItm::~CRezItm()
+{
+    if (m_10) ((RezNodeFree *)this)->FreeItm(m_10);
+    if (m_14) RezFree((void *)m_14);
+}
+
+int CRezDirNode::Open()
+{
+    *(int *)((char *)this + 0x20) = -1;
+    if (m_size == 0) return 0;
+    return ((RezProbeCallbacks *)this)->Probe((int)m_size) ? 1 : 0;
+}
+
+int CRezDirNode::Check()
+{
+    *(int *)((char *)this + 0x20) = -1;
+    if (m_size == 0) return 0;
+    int r = RezFileCheck((void *)m_size);
+    if (r == -1) { int (**v)(void *) = (int (**)(void *))this; r = v[4](this); }
+    return r >= 0 ? 1 : 0;
+}
+
+CRezDir::~CRezDir()
+{
+    while (m_14) { int *n = *(int **)((char *)m_14 + 4); delete (CRezItmBase *)m_14; m_14 = (int)n; }
+    while (m_20) { int *n = *(int **)((char *)m_20 + 4); delete (CRezItmBase *)m_20; m_20 = (int)n; }
+}
+
+CRezNamedStream::CRezNamedStream(void *parent, const char *name, void *backPtr)
+    : CRezItmBase(parent)
+{
+    m_name = _strdup(name);
+    m_backPtr = backPtr;
+    m_subObj = 0;
+    ((RezCollection *)((char *)this + 0x34))->Init(0);
+}
+
+CRezNamedStream::~CRezNamedStream()
+{
+    Close();
+    if (m_name) free(m_name);
+    ((RezCollection *)((char *)this + 0x34))->Cleanup(0);
+}
+
+int CRezNamedStream::StreamRead(void *a, void *b, unsigned size, int d)
+{
+    if (!m_subObj) Open();
+    if (!m_subObj) return 0;
+    int *off = (int *)((char *)m_subObj + 0x20);
+    int t = (int)b;
+    if (*off != t) { if (!RezFileSeek(m_subObj, t, 0)) return 0; *off = t; }
+    int n = RezFileRead(m_subObj, a, size, 0);
+    if (n > 0) *off += n;
+    return n;
+}
+
+int CRezNamedStream::StreamRead2(void *a, void *b, unsigned size, int d)
+{
+    if (!m_subObj) Open();
+    if (!m_subObj) return 0;
+    int *off = (int *)((char *)m_subObj + 0x20);
+    int t = (int)b;
+    if (*off != t) { if (!RezFileSeek(m_subObj, t, 0)) return 0; *off = t; }
+    int n = RezFileRead2(m_subObj, a, size, 0);
+    if (n > 0) *off += n;
+    return n;
+}
+
+void CRezNamedStream::Check() { if (m_subObj) ((RezProbeCallbacks *)m_subObj)->Probe(0); }
+
+void CRezNamedStream::Open()
+{
+    if (m_subObj) return;
+    void *h = RezOpenFile(m_name, 0);
+    if (h) { m_subObj = h; ((RezCtorA *)h)->Construct(); }
+}
+
+void CRezNamedStream::Close()
+{
+    if (!m_subObj) return;
+    if (!((RezRefCallbacks *)m_subObj)->DecRef(0)) {
+        ((RezCollection *)((char *)this + 0x34))->Remove(m_subObj);
+        m_subObj = 0;
+    }
+}
+
+void CRezNamedStream::CloseAll() { while (m_subObj) Close(); }
+
+void RezMgr::UpdateClock()
+{
+    unsigned now = timeGetTime();
+    g_frameDelta = (int)(now - (unsigned)g_now);
+    g_now = (int)now;
+}
+
+static void RezSpinWait(unsigned ms)
+{
+    unsigned start = timeGetTime();
+    while ((int)(timeGetTime() - start) < (int)ms) ;
+}
+
+int __stdcall WaitForKeyOrTimeout(int vKey, int timeoutMs)
+{
+    if (timeoutMs == 0) {
+        while (!(GetAsyncKeyState(vKey) & 0x8000)) ;
+        while (GetAsyncKeyState(vKey) & 0x8000) ;
+        return 1;
+    }
+    unsigned start = timeGetTime();
+    while (!(GetAsyncKeyState(vKey) & 0x8000)) {
+        if ((int)(timeGetTime() - start) >= timeoutMs) return 0;
+    }
+    while (GetAsyncKeyState(vKey) & 0x8000) {
+        if ((int)(timeGetTime() - start) >= timeoutMs) return 1;
+    }
+    return 1;
+}
+
+int RezMgr::ForwardSlot4c(int a, int b, int c)
+{
+    if (!m_mode) return 0;
+    void **vt = *(void ***)m_mode;
+    return ((int (*)(void *, int, int, int))vt[0x13])(m_mode, a, b, c);
+}
+
+int RezMgr::ForwardSlot50(int a, int b, int c)
+{
+    if (!m_mode) return 0;
+    void **vt = *(void ***)m_mode;
+    return ((int (*)(void *, int, int, int))vt[0x14])(m_mode, a, b, c);
+}
+
+int RezMgr::HandleDebugPosition()
+{
+    if (!m_mode) return 0;
+    int s = m_mode->Update();
+    if (s == 3) {
+        extern int g_debugFlag;
+        if (g_debugFlag == 1)
+            PostMessageA(0, 0x111, 0x805c, 0);
+    }
+    return s != 0 ? 0 : 1;
+}
