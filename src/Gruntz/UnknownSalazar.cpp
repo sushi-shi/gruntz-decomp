@@ -1,5 +1,5 @@
-// UnknownSalazar.cpp - getLookupTableValue and initializeUnknownLookupTable
-// of the tomalla-named class UnknownSalazar.
+// UnknownSalazar.cpp - getLookupTableValue and initializeUnknownLookupTable,
+// plus computeScaleFactor, of the tomalla-named class UnknownSalazar.
 //
 // getLookupTableValue is a framed leaf that maps an input value through a two-part
 // branch (100->0, 0->-10000) then a chain of arithmetic: value / A, B / that,
@@ -10,6 +10,9 @@
 //
 // initializeUnknownLookupTable fills a 100-element static int table with
 // getLookupTableValue results for indices 0..99.
+//
+// computeScaleFactor maps an int through: value/100 -> sqrt -> mul/sub chain
+// -> ftol or negate+ftol based on sign.
 //
 // Field names are placeholders; only OFFSETS + emitted code bytes are load-
 // bearing (campaign doctrine).
@@ -29,6 +32,7 @@ extern double g_salazarConstD;      // 0x5ef6b0  divisor under acos denominator
 // Declared as extern "C" so the calls resolve to _CIpow / _CIacos.
 extern "C" double _CIpow(double, double);
 extern "C" double _CIacos(double);
+extern "C" double _CIsqrt(double);
 extern "C" long __ftol(double);
 
 // The lookup table buffer (binary @0x653ab8, 100 ints). Written by
@@ -40,6 +44,7 @@ class UnknownSalazar {
 public:
     static int getLookupTableValue(int value);
     static void initializeUnknownLookupTable();
+    static int computeScaleFactor(int value);
 };
 
 // ---------------------------------------------------------------------------
@@ -78,4 +83,34 @@ void UnknownSalazar::initializeUnknownLookupTable()
 {
     for (int i = 0; i < 100; i++)
         g_salazarLookupTable[i] = getLookupTableValue(i);
+}
+
+// ---------------------------------------------------------------------------
+// UnknownSalazar::computeScaleFactor  @0x135110  (static, ret 4)
+// Computes: A - A*(B - sqrt(-value/100 / C)) with sign-based negation.
+// Special case: value == 0 -> return 100.
+// Returns __ftol(result) for value<0, __ftol(-result) for value>=0.
+// ---------------------------------------------------------------------------
+// @address: 0x135110
+// @size:    0x8e
+int UnknownSalazar::computeScaleFactor(int value)
+{
+    if (value == 0)
+        return 100;
+
+    int scaled = value / 100;
+    double t;
+    if (value < 0) {
+        t = (double)(-scaled);
+    } else {
+        t = (double)(scaled);
+    }
+
+    double result = g_salazarConstA - g_salazarConstA
+                    * (g_salazarConstB - _CIsqrt(-t / g_salazarConstC));
+
+    if (value < 0)
+        return __ftol(result);
+    else
+        return __ftol(-result);
 }
