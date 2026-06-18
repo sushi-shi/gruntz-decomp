@@ -1,9 +1,6 @@
 // DinMgr2.cpp - DirectInputMgr2 error-string mapper.
 // Maps DI HRESULT codes to symbol names + descriptions, outputs via the
 // configured reporting channels (OutputDebugStringA / MessageBoxA).
-//
-// @address: 0x133590
-// @size:    0x5b3
 #include "DinMgr2.h"
 #include <string.h>
 
@@ -63,7 +60,7 @@ static const char s_descOldDIVersion[]       = "The application requires a newer
 
 // ---------------------------------------------------------------------------
 // @address: 0x133590
-// @size:    0x5b3
+// @size:    0x5be
 // ---------------------------------------------------------------------------
 void DirectInputMgr2::GetErrorString(const char *file, int line, long hr)
 {

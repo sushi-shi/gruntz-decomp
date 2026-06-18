@@ -10,9 +10,6 @@
 // The found CSprite has a writable frame-duration field at +0x18.
 //
 // BYTE-EXACT body (1307 B, __thiscall ret). Plain /O2 /MT (no /GX): scalar leaf.
-//
-// @address: 0x0dc060
-// @size:    0x51b
 
 // ---------------------------------------------------------------------------
 // Forward declarations of engine/MFC types (external, no body - reloc-masked).

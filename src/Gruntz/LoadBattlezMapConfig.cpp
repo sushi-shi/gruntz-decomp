@@ -5,10 +5,6 @@
 // applies difficulty-based scaling (Easy/Normal/Hard), and seeds the random item
 // distribution (ToolzPercent / ToyzPercent / BrickzPercent + item-name
 // probabilities).
-//
-// @address: 0x025020
-// @size:    0x981
-
 extern "C" long __ftol(double d);         // 0x11f570
 struct CButeMgr;
 extern CButeMgr g_buteMgr;                // @0x6453d8
@@ -102,7 +98,7 @@ public:
 };
 
 // @address: 0x025020
-// @size:    0x981
+// @size:    0x984
 int CBattlezMapConfig::LoadBattlezMapConfig(ParentObj *parent, int someInt, int difficulty)
 {
     m_48 = 0;

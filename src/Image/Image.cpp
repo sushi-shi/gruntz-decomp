@@ -375,7 +375,7 @@ int CFileImage::DecodeImage24(char *name, void *buf, unsigned int size)
 // CFileImage::DecodePidImage  @ 0x544b30 (592 B, thiscall ret 0x10)
 // ===========================================================================
 // @address: 0x144b30
-// @size:    0x24d
+// @size:    0x250
 int CFileImage::DecodePidImage(void *dataBuf, int a2, int a3, int a4)
 {
     if (!dataBuf)
@@ -604,7 +604,7 @@ int CFileImage::RleDecompress8(unsigned char *dst, unsigned char *src,
 // 24-bit RLE decompressor — three planes.
 // ===========================================================================
 // @address: 0x1453f0
-// @size:    0x3a0
+// @size:    0x3ac
 int CFileImage::RleDecompress24(unsigned char *dst, unsigned char *src,
                                  int rowBytes, int height)
 {

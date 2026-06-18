@@ -238,7 +238,7 @@ int UnknownRemus::VirtualMethodUnknown30(DWORD_PTR *coords)
 // RESIDUE (~84%): one independent store scheduling difference.
 // ---------------------------------------------------------------------------
 // @address: 0x15d030
-// @size:    0x8f
+// @size:    0x92
 int UnknownRemus::VirtualMethodUnknown34(int arg0, int arg1)
 {
     m_10.m_0 = 0;

@@ -188,7 +188,7 @@ void UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod1C()
 // Uses SEH to properly clean up partial allocations on failure.
 //
 // @address: 0x155900
-// @size:    0x515
+// @size:    0x519
 // ---------------------------------------------------------------------------
 int UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod18(
     HWND hWnd, int width, int height, int bpp, int flagsUnknown)

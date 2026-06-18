@@ -500,7 +500,7 @@ extern GameAppDispatch *g_pGameApp;
 // CGameApp::GameWindowProc — static __stdcall window procedure.
 //
 // @address: 0x13cff0
-// @size:    0x35a
+// @size:    0x35c
 // ---------------------------------------------------------------------------
 LRESULT __stdcall CGameApp::GameWindowProc(HWND hwnd, UINT msg,
                                            WPARAM wParam, LPARAM lParam)

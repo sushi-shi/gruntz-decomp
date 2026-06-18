@@ -3,9 +3,6 @@
 // the configured reporting channels. The largest GetErrorString in the
 // codebase (2101 B), with a dense jump table for the 0x88760230..0x8876023d
 // range.
-//
-// @address: 0x141400
-// @size:    0x835
 #include "DDrawMgr.h"
 #include <string.h>
 

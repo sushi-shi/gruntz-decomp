@@ -4,11 +4,13 @@
 // (OutputDebugStringA / MessageBoxA) under module-level flag control.
 // The ErrorThunk methods wrap IDirectSoundBuffer vtable calls with error
 // reporting through GetErrorString.
-//
-// @address: 0x138150
-// @size:    0x33b
 #include "Dsndmgr.h"
 #include <string.h>
+
+class UnknownSalazar {
+public:
+    static int computeScaleFactor(int value);
+};
 
 // ---------------------------------------------------------------------------
 // Module-level globals  (pinned @data addresses in the TU).
@@ -255,7 +257,7 @@ int DirectSoundMgr::ErrorThunk_135640()
     if (!m_pDSManager || !m_pDSManager->m_pSubBuffer)
         return 0;
     int vol = ErrorThunk_1355f0();
-    return UnknownSalazar_computeScaleFactor(vol);
+    return UnknownSalazar::computeScaleFactor(vol);
 }
 
 // ---------------------------------------------------------------------------

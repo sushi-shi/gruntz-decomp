@@ -1,9 +1,6 @@
 // SFManager.cpp - SFMAN32.DLL SoundFont manager wrapper.
 // SelectBestDevice enumerates SoundFont devices and picks the best one
 // using a rating heuristic. This is a free C function (not a method).
-//
-// @address: 0x0f8970
-// @size:    0x3b4
 #include "SFManager.h"
 #include <string.h>
 

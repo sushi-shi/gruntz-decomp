@@ -21,7 +21,7 @@ ddrawmgr	1	0
 deflate	6	6
 dialogs	6	5
 dinmgr2	1	0
-dsndmgr	17	0
+dsndmgr	26	0
 filestream	13	9
 font	35	7
 fontconfig	1	0
@@ -63,6 +63,7 @@ trees	17	17
 uncompr	1	1
 unknownalbus	5	3
 unknownclassarrays	2	0
+unknowndraco	23	1
 unknownfilch	1	0
 unknownhagrid	8	7
 unknownhermiona	7	5
@@ -144,20 +145,29 @@ dialogs	??0CMultiStartDlg@@QAE@HPAVCWnd@@@Z	100.0000	100.0000	1	16653f7b8dc4
 dialogs	?WarpDialogProc@@YGHKIKJ@Z	66.4545	66.4545	1	510b71e8fd15
 dinmgr2	?GetErrorString@DirectInputMgr2@@QAEXPBDHJ@Z	86.9571	86.9571	1	6ad31c02b328
 dsndmgr	?ErrorThunk_1351d0@DirectSoundMgr@@QAEXHH@Z	0.9804	0.9804	1	637190c00201
-dsndmgr	?ErrorThunk_135380@DirectSoundMgr@@QAEHXZ	4.7619	4.7619	1	bf518abbe641
-dsndmgr	?ErrorThunk_1353f0@DirectSoundMgr@@QAEHXZ	5.7353	5.7353	1	576c93af3166
-dsndmgr	?ErrorThunk_135440@DirectSoundMgr@@QAEHXZ	5.7353	5.7353	1	d1c5eb618932
-dsndmgr	?ErrorThunk_135560@DirectSoundMgr@@QAEHXZ	2.5806	2.5806	1	a1f6194c4e0b
-dsndmgr	?ErrorThunk_1355f0@DirectSoundMgr@@QAEHXZ	4.8276	4.8276	1	ad581b09a033
-dsndmgr	?ErrorThunk_135740@DirectSoundMgr@@QAEHXZ	2.5806	2.5806	1	7f8993c53818
-dsndmgr	?ErrorThunk_1357f0@DirectSoundMgr@@QAEHXZ	4.8276	4.8276	1	fdd4e90cda54
-dsndmgr	?ErrorThunk_135880@DirectSoundMgr@@QAEHXZ	1.9512	1.9512	1	adebd53f7bfc
-dsndmgr	?ErrorThunk_1359c0@DirectSoundMgr@@QAEHXZ	2.5806	2.5806	1	3e133f14cdb0
-dsndmgr	?ErrorThunk_135a20@DirectSoundMgr@@QAEHXZ	2.9630	2.9630	1	b06db15e9a72
-dsndmgr	?ErrorThunk_135a70@DirectSoundMgr@@QAEHXZ	3.2000	3.2000	1	184f3f1587b7
-dsndmgr	?ErrorThunk_135ac0@DirectSoundMgr@@QAEHXZ	2.7586	2.7586	1	e7bb88558811
-dsndmgr	?ErrorThunk_135f40@DirectSoundMgr@@QAEHXZ	0.5442	0.5442	1	9819331e1583
-dsndmgr	?ErrorThunk_1365f0@DirectSoundMgr@@QAEHXZ	3.8889	3.8889	1	f6e8105795b8
+dsndmgr	?ErrorThunk_135310@DirectSoundMgr@@QAEHXZ	45.5294	45.5294	1	cdf4df78d447
+dsndmgr	?ErrorThunk_135340@DirectSoundMgr@@QAEHXZ	0.0000	0.0000	1	13a9c5a8b9a2
+dsndmgr	?ErrorThunk_135380@DirectSoundMgr@@QAEXXZ	56.9524	56.9524	1	ce44324299a0
+dsndmgr	?ErrorThunk_1353f0@DirectSoundMgr@@QAEHXZ	35.8235	35.8235	2	f8ff1537ea92
+dsndmgr	?ErrorThunk_135440@DirectSoundMgr@@QAEHXZ	39.9118	39.9118	2	b28ec178b7c8
+dsndmgr	?ErrorThunk_135510@DirectSoundMgr@@QAEXH@Z	85.7143	85.7143	1	d4fbdeb9514a
+dsndmgr	?ErrorThunk_135560@DirectSoundMgr@@QAEHJ@Z	40.5161	40.5161	1	f58d031d1af3
+dsndmgr	?ErrorThunk_1355c0@DirectSoundMgr@@QAEHH@Z	29.0909	29.0909	1	59308208c1dd
+dsndmgr	?ErrorThunk_1355f0@DirectSoundMgr@@QAEHXZ	42.1724	42.1724	2	c71faa1eb476
+dsndmgr	?ErrorThunk_135640@DirectSoundMgr@@QAEHXZ	40.0000	40.0000	1	fdc8ffaba568
+dsndmgr	?ErrorThunk_135660@DirectSoundMgr@@QAEPAXHHHH@Z	6.7051	6.7051	1	d50a66b31501
+dsndmgr	?ErrorThunk_135740@DirectSoundMgr@@QAEHJ@Z	40.5161	40.5161	1	dc29053e1acb
+dsndmgr	?ErrorThunk_1357a0@DirectSoundMgr@@QAEHH@Z	36.9048	36.9048	1	87dbf7b41936
+dsndmgr	?ErrorThunk_1357f0@DirectSoundMgr@@QAEHXZ	42.1724	42.1724	2	263b4ba45c0c
+dsndmgr	?ErrorThunk_135880@DirectSoundMgr@@QAEHK@Z	48.4878	48.4878	1	900d411897b4
+dsndmgr	?ErrorThunk_135920@DirectSoundMgr@@QAEHH@Z	0.0000	0.0000	1	d9f797993aad
+dsndmgr	?ErrorThunk_1359a0@DirectSoundMgr@@QAEXXZ	15.5556	15.5556	1	e94a46344b7c
+dsndmgr	?ErrorThunk_1359c0@DirectSoundMgr@@QAEHPAXK0K@Z	42.5484	42.5484	1	c58bb893ad6d
+dsndmgr	?ErrorThunk_135a20@DirectSoundMgr@@QAEHPAK0@Z	34.1111	34.1111	1	ed8b77da7a28
+dsndmgr	?ErrorThunk_135a70@DirectSoundMgr@@QAEHK@Z	29.0400	29.0400	1	deecf9988ff1
+dsndmgr	?ErrorThunk_135ac0@DirectSoundMgr@@QAEHPAXKPAK@Z	38.6207	38.6207	1	4aa7f32572c1
+dsndmgr	?ErrorThunk_135f40@DirectSoundMgr@@QAEHKKPAPAXPAK01K@Z	27.0068	27.0068	1	260c53163b90
+dsndmgr	?ErrorThunk_1365f0@DirectSoundMgr@@QAEHPAX@Z	46.1667	46.1667	1	4783d3f7bc24
 dsndmgr	?ErrorThunk_137260@DirectSoundMgr@@QAEJXZ	3.8776	3.8776	1	073ba28e7f29
 dsndmgr	?GetErrorString@DirectSoundMgr@@QAEXPBDHJ@Z	11.2183	11.2183	1	c2b1c9d5a791
 filestream	??0CFileIO@@QAE@PAX@Z	100.0000	100.0000	1	7e74e5908d69
@@ -260,7 +270,7 @@ grunt	?ResolveIdleAnimation@CGrunt@@QAEHXZ	92.0598	92.0598	1	80069af761ea
 grunt	?ResolveMovingAnimation@CGrunt@@QAEHXZ	92.8816	92.8816	1	d7f2647a6fc5
 gruntnames	?BuildNamedGruntTable@@YAXXZ	5.3846	5.3846	1	b871ac7b8ce7
 gruntzapp	??1CGruntzApp@@UAE@XZ	100.0000	100.0000	1	343e31a07503
-gruntzapp	?CreateU10O@@YAPAXXZ	99.9583	99.9583	1	cpp:8a8a7def5007
+gruntzapp	?CreateU10O@@YAPAXXZ	99.9583	99.9583	1	11f3da5fb901
 gruntzapp	?ErrorDialogProc@CGruntzApp@@SGHPAXIIJ@Z	100.0000	100.0000	2	32a4e7a4341e
 gruntzapp	?InitializeGameManager@CGruntzApp@@UAEPAVCGameMgr@WAP32@@XZ	100.0000	100.0000	1	f49c6a0453b1
 gruntzapp	?ShowError@CGruntzApp@@UAEXXZ	100.0000	100.0000	1	938d9e05f893
@@ -405,6 +415,29 @@ unknownalbus	?VirtualMethodUnknown28@UnknownAlbus@@QAEPAXHPBDH@Z	99.7391	99.7391
 unknownalbus	?VirtualMethodUnknown2C@UnknownAlbus@@QAEPAXHPBDH@Z	99.7391	99.7391	1	869459ccc7a0
 unknownclassarrays	??0UnknownClassArrays@@QAE@XZ	64.9189	64.9189	1	b17b4eae185e
 unknownclassarrays	?FreeArrays@UnknownClassArrays@@QAEXXZ	71.6786	71.6786	1	d71606202f61
+unknowndraco	?Constructor_158680@UnknownDraco@@QAEXXZ	35.0952	35.0952	1	1941d696ee79
+unknowndraco	?Func_1583c0@UnknownDraco@@QAEHPBD@Z	43.0143	43.0143	1	a4f851bde81a
+unknowndraco	?Func_1584a0@UnknownDraco@@QAEHH@Z	68.4000	68.4000	1	3f5d46bb01d8
+unknowndraco	?Func_1584f0@UnknownDraco@@QAEHHH@Z	26.6800	26.6800	1	dd932026df6e
+unknowndraco	?Func_158570@UnknownDraco@@QAEPAVCString@@PAV2@H@Z	41.0000	41.0000	1	d2556ee149df
+unknowndraco	?Func_1586e0@UnknownDraco@@QAEHH@Z	80.4762	80.4762	1	47703aba018d
+unknowndraco	?Func_158720@UnknownDraco@@QAEHH@Z	80.4762	80.4762	1	006b36fd8401
+unknowndraco	?Func_158760@UnknownDraco@@QAEHH@Z	32.4054	32.4054	1	c4bfc675d500
+unknowndraco	?Func_1587c0@UnknownDraco@@QAEXXZ	69.2857	69.2857	1	3594f5872945
+unknowndraco	?Func_1587f0@UnknownDraco@@QAEHHHHH@Z	8.9062	8.9062	1	8550552eb5d5
+unknowndraco	?Func_158b40@UnknownDraco@@QAEHHH@Z	78.8235	78.8235	1	5bddb5926efc
+unknowndraco	?Func_158b90@UnknownDraco@@QAEXXZ	24.2941	24.2941	1	bc021da65c1e
+unknowndraco	?Func_158bc0@UnknownDraco@@QAEHXZ	100.0000	100.0000	1	12388151f183
+unknowndraco	?Func_158bf0@UnknownDraco@@QAEHHHH@Z	71.2424	71.2424	1	84f5fc7be8ef
+unknowndraco	?Func_158c70@UnknownDraco@@QAEHPAVDracoChild@@@Z	73.3333	73.3333	1	ed9872d1560c
+unknowndraco	?Func_158cb0@UnknownDraco@@QAEHHH@Z	30.8085	30.8085	1	442d45aecd29
+unknowndraco	?Func_158d20@UnknownDraco@@QAEHXZ	81.8182	81.8182	1	76471a980692
+unknowndraco	?Func_158d50@UnknownDraco@@QAEXH@Z	54.3529	54.3529	1	aaac578c33bb
+unknowndraco	?Func_158dc0@UnknownDraco@@QAEHXZ	38.0536	38.0536	1	f398c9c743ab
+unknowndraco	?Func_158e40@UnknownDraco@@QAEHXZ	74.7180	74.7180	1	b6d8e681c888
+unknowndraco	?Func_158e90@UnknownDraco@@QAEHXZ	41.4706	41.4706	1	9acd48e51fa4
+unknowndraco	?Func_158ee0@UnknownDraco@@QAEHXZ	41.4706	41.4706	1	b5bcf1eadd00
+unknowndraco	?VirtualMethodUnknown24@UnknownDraco@@QAEHHHHH@Z	60.7547	60.7547	1	942775191595
 unknownfilch	??0UnknownFilch@@QAE@XZ	99.8000	99.8000	1	8f60af6e42e5
 unknownhagrid	?VirtualMethodUnknown14@UnknownHagrid@@QAEHXZ	100.0000	100.0000	1	46aa08dd47fb
 unknownhagrid	?VirtualMethodUnknown1C@UnknownHagrid@@QAEXXZ	100.0000	100.0000	1	5eb7cd6b05f8
