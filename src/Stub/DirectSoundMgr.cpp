@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // DirectSoundMgr.cpp - engine-label stubs for DirectSoundMgr.
 
 class DirectSoundMgr {

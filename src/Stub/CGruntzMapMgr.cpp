@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CGruntzMapMgr.cpp - engine-label stubs for CGruntzMapMgr.
 
 class CGruntzMapMgr {

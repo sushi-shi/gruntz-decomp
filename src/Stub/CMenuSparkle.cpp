@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CMenuSparkle.cpp - engine-label stubs for CMenuSparkle.
 
 class CMenuSparkle {

@@ -1,7 +1,7 @@
 // StatusBarItem.cpp - Gruntz CStatusBarItem (C:\Proj\Gruntz).
 // The constructor is matched byte-exact.
-#include "StatusBarItem.h"
-#include "../rva.h"
+#include <Gruntz/StatusBarItem.h>
+#include <rva.h>
 
 // ---------------------------------------------------------------------------
 // CStatusBarItem::CStatusBarItem()

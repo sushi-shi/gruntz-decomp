@@ -70,8 +70,8 @@
 // grunt's sprite collection (sprite->m_7c->m_18 . Add*(args)). On a failed
 // register: OR 0x10000 into the registrar's m_38->m_8 flag word, null the slot,
 // return 0; else return 1.
-#include "Grunt.h"
-#include "../rva.h"
+#include <Gruntz/Grunt.h>
+#include <rva.h>
 
 // The sprite class-name string the factory is asked to build, per creator. These
 // are literal .rodata strings in the binary (the reloc-masked DIR32 operand).

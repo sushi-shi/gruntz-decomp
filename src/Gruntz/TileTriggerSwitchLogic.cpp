@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // TileTriggerSwitchLogic.cpp - Gruntz CTileTriggerSwitchLogic (C:\Proj\Gruntz).
 // CTileTriggerSwitchLogic is a tile-trigger "switch" class that manages a linked
 // list (anchor at +0x04) of owned sibling CTileTriggerSwitchLogic objects.  The
@@ -7,7 +7,7 @@
 // backlog stub.
 // Field names are placeholders (m_<hexoffset>); only the OFFSETS + the emitted
 // code bytes are load-bearing (campaign doctrine).
-#include "TileTriggerSwitchLogic.h"
+#include <Gruntz/TileTriggerSwitchLogic.h>
 
 // ---------------------------------------------------------------------------
 // CTileTriggerSwitchLogic::CTileTriggerSwitchLogic()

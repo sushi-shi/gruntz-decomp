@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CBehindCandy.cpp - engine-label stubs for CBehindCandy.
 
 class CBehindCandy {

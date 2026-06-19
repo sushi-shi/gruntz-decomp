@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CSBI_Image.cpp - engine-label stubs for CSBI_Image.
 
 class CSBI_Image {

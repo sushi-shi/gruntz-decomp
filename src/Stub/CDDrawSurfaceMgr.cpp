@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CDDrawSurfaceMgr.cpp - engine-label stubs for CDDrawSurfaceMgr.
 
 class CDDrawSurfaceMgr {

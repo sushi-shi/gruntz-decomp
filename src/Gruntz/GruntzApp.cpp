@@ -13,8 +13,8 @@
 //
 // Only offsets / control IDs / code bytes are load-bearing; class and field
 // names are placeholders.
-#include "../Wap32/Wap32.h"
-#include "../rva.h"
+#include <Wap32/Wap32.h>
+#include <rva.h>
 #include <stdio.h>   // engine sprintf (reloc-masked)
 #include <string.h>  // inline strlen/strcpy/strcat (rep movs/scas)
 

@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CCoveredPowerupLogic.cpp - engine-label stubs for CCoveredPowerupLogic.
 
 class CCoveredPowerupLogic {

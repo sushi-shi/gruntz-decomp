@@ -3,8 +3,8 @@
 // These are the human-readable name/label tables the UI reads. Recovered from
 // dump_target.py (real bytes + relocs). The string literals become file-scope
 // .rdata consts (reloc-masked); only the per-fn code bytes are load-bearing.
-#include "GameText.h"
-#include "../rva.h"
+#include <Gruntz/GameText.h>
+#include <rva.h>
 
 // ---------------------------------------------------------------------------
 // The two name tables are file-scope arrays of CString with brace-initializers.

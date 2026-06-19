@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CFrontCandyAni.cpp - engine-label stubs for CFrontCandyAni.
 
 class CFrontCandyAni {

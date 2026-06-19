@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CTileExclusiveTriggerSwitchLogic.cpp - engine-label stubs for CTileExclusiveTriggerSwitchLogic.
 
 class CTileExclusiveTriggerSwitchLogic {

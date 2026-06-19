@@ -19,8 +19,8 @@
 // They reuse the already-matched CFileIO class (Open/Read/GetLength/ctor/dtor are
 // reloc-masked engine calls) and the global operator new/delete. The CFileIO
 // stack object carries a dtor -> a C++ EH frame -> this TU builds with /GX.
-#include "Image.h"
-#include "../rva.h"
+#include <Image/Image.h>
+#include <rva.h>
 
 // The four file-extension literals (reloc-masked .rdata globals). Declared at
 // file scope so each `push OFFSET` matches the binary's direct-address push.

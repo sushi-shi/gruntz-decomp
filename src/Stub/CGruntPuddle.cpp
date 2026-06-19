@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CGruntPuddle.cpp - engine-label stubs for CGruntPuddle.
 
 class CGruntPuddle {

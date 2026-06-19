@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // SBI_RectOnly.cpp - Gruntz CSBI_RectOnly (C:\Proj\Gruntz).
 // The constructor is matched byte-exact.
 //

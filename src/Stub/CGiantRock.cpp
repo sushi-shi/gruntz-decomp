@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CGiantRock.cpp - engine-label stubs for CGiantRock.
 
 class CGiantRock {

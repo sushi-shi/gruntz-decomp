@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CDDrawSubMgrLeaf.cpp - VirtualMethodUnknown14/18 of the tomalla-named class
 // CDDrawSubMgrLeaf (a CDirectDrawMgr surface/page sub-manager in the "Harry
 // Potter" family). VirtualMethodUnknown14 is a standard readiness predicate

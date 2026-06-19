@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CVoiceTrigger.cpp - engine-label stubs for CVoiceTrigger.
 
 class CVoiceTrigger {

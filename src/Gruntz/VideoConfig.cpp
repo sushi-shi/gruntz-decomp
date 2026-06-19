@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // VideoConfig.cpp - the video-resolution combo-box config pair on the Gruntz
 // options/setup dialog (C:\Proj\Gruntz). Both functions translate between the
 // global selected-resolution mode (g_videoResolutionMode: 1=640x480,

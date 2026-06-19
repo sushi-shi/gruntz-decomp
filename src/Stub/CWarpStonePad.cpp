@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CWarpStonePad.cpp - engine-label stubs for CWarpStonePad.
 
 class CWarpStonePad {

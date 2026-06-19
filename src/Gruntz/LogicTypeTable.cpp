@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // LogicTypeTable.cpp - CLogicTypeBuilder::BuildLogicTypeTable. A one-shot
 // registrar that ensures three built-in tile-logic
 // types ("LogicHit", "LogicAttack", "LogicBump") are present in the engine's

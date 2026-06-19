@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CDDrawWorkerList.cpp - four leaf factory methods of the tomalla-named class
 // CDDrawWorkerList (a CDirectDrawMgr surface/page sub-manager in the ddrawmgr
 // "Harry Potter" family; see structure/managers/ddrawmgr_surface_family.h).

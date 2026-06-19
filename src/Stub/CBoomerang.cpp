@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CBoomerang.cpp - engine-label stubs for CBoomerang.
 
 class CBoomerang {

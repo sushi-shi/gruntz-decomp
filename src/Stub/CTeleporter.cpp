@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CTeleporter.cpp - engine-label stubs for CTeleporter.
 
 class CTeleporter {

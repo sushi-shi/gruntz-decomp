@@ -16,7 +16,7 @@
 // CGameMgr -> GameApp, CMultiStartDlg -> Dialogs); src/Stub/ shrinks toward empty
 // as classes are reconstructed.
 
-#include "../rva.h"   // RVA()/RVAU() label macros the included stub files use
+#include <rva.h>   // RVA()/RVAU() label macros the included stub files use
 
 #include "ImplementedLabels.cpp"
 #include "Backlog.cpp"

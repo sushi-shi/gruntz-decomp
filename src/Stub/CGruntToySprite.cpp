@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CGruntToySprite.cpp - engine-label stubs for CGruntToySprite.
 
 class CGruntToySprite {

@@ -160,6 +160,9 @@ def base_flags(msvc_inc: Path, dx_inc: Path,
         "/imsvc", str(dx_low),
         "/imsvc", str(msvc_inc),
         "/imsvc", str(dx_inc),
+        # our own reconstructed headers (mirror src/ under include/) - NOT /imsvc, so
+        # diagnostics in our code still surface; resolves `#include <Module/Foo.h>`.
+        "/I", str(REPO / "include"),
         *DEFINES,
     ]
 

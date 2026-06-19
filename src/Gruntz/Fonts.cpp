@@ -13,8 +13,8 @@
 // callee (Font::LoadFont takes it by value), so InitializeFonts has no temp to
 // unwind and emits no exception frame.
 // ---------------------------------------------------------------------------
-#include "../Font/Font.h"
-#include "../rva.h"
+#include <Font/Font.h>
+#include <rva.h>
 
 // The four global Font instances + the load-once flag + the four .fnt file-name
 // literals, addressed by fixed VA so the loads reloc-mask against the matched

@@ -13,7 +13,7 @@
 #ifndef SRC_GRUNTZ_GAMELEVEL_H
 #define SRC_GRUNTZ_GAMELEVEL_H
 
-#include "../Wwd/WwdFile.h"   // CPlane, WwdHeader, operator new, uncompress
+#include <Wwd/WwdFile.h>   // CPlane, WwdHeader, operator new, uncompress
 
 // ---------------------------------------------------------------------------
 // MFC-style growable pointer array (CArray<void*>). m_data@+0x4, m_size@+0x8

@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CGuardPoint.cpp - engine-label stubs for CGuardPoint.
 
 class CGuardPoint {

@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CSingleAnimation.cpp - engine-label stubs for CSingleAnimation.
 
 class CSingleAnimation {

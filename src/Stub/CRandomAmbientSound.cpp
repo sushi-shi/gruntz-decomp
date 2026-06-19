@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CRandomAmbientSound.cpp - engine-label stubs for CRandomAmbientSound.
 
 class CRandomAmbientSound {

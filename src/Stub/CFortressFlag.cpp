@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CFortressFlag.cpp - engine-label stubs for CFortressFlag.
 
 class CFortressFlag {

@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CSplashState.cpp - engine-label stubs for CSplashState.
 
 class CSplashState {

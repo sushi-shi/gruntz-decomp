@@ -32,8 +32,8 @@
 // i.e. slot +0x10 is the "which state am I" query, NOT the simulation step. The
 // real per-frame step+draw is slot +0x14 (Render), overridden by each concrete
 // state (carcassed in the long comment at the bottom of this file).
-#include "GameMode.h"
-#include "../rva.h"
+#include <Gruntz/GameMode.h>
+#include <rva.h>
 
 // ===========================================================================
 // CState - the base game-state class.

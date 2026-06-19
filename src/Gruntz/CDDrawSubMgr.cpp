@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // UnknownLucius.cpp - tomalla-named DDraw surface/page-manager shared base
 // (CDDrawSubMgr).  This is the polymorphic base for the 10 sub-
 // managers (Draco, Hermiona, Hagrid, etc.).  Two functions:

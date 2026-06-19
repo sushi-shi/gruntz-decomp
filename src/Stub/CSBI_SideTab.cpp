@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CSBI_SideTab.cpp - engine-label stubs for CSBI_SideTab.
 
 class CSBI_SideTab {

@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CDDrawPtrCollections.cpp - tomalla-named standalone class in the ddrawmgr surface/page
 // manager "Harry Potter" family.  CDDrawPtrCollections (0x948 B, NO vtable) owns two
 // CPtrList (+0x47c / +0x498) and one CPtrArray (+0x4b4).  The ctor

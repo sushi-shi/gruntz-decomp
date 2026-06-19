@@ -25,8 +25,8 @@
 // __stdcall (callee cleans 8 bytes; ret 0x8 in the binary): each takes two
 // pointer args and uses callee-cleanup, so they reconstruct as __stdcall free
 // functions. Returns are full-width eax (1 / 0), i.e. `int`, not bool.
-#include "WwdFile.h"
-#include "../rva.h"
+#include <Wwd/WwdFile.h>
+#include <rva.h>
 
 #include <string.h>  // memcpy
 

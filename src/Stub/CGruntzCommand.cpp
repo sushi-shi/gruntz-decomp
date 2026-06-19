@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CGruntzCommand.cpp - engine-label stubs for CGruntzCommand.
 
 class CGruntzCommand {

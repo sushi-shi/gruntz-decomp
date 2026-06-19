@@ -37,8 +37,8 @@
 // (valid) ecx-relative codegen - no source lever flips the induction register.
 // Entropy-class; left per the campaign doctrine (the strides + link layout, the
 // deliverable here, are fully recovered).
-#include "MapMgr.h"
-#include "../rva.h"
+#include <Gruntz/MapMgr.h>
+#include <rva.h>
 
 // ===========================================================================
 // CMapArrayA (embedded at CMapMgr+0x30; element stride 0x24).

@@ -10,8 +10,8 @@
 // a reentrancy flag, and (Pause/OutOfSync) forward a WM_COMMAND to the engine
 // window via PostMessageA when the dispatch result matches. ApplyCmdDelayDefaults
 // persists the command-timing config (m_5a4/m_5a8) to the game's RegistryHelper.
-#include "NetMgr.h"
-#include "../rva.h"
+#include <Net/NetMgr.h>
+#include <rva.h>
 
 CGameMgr *g_pGameMgr;
 

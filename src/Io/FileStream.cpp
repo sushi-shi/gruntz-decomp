@@ -25,8 +25,8 @@
 // (CFile) code; MFC ships /O1, which pushes memory operands directly and keeps
 // ebp frames for address-taken locals (Read/Write/Open) - behaviors /O2 (favor
 // speed) drops. /O2 plateaus these in the 60s-80s%; /O1 takes them byte-exact.
-#include "FileStream.h"
-#include "../rva.h"
+#include <Io/FileStream.h>
+#include <rva.h>
 
 // ---------------------------------------------------------------------------
 // CFileIO::CFileIO()

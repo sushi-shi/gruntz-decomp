@@ -65,8 +65,8 @@
 // (push-view, surface-flush, camera blit, HUD).
 // ============================================================================
 
-#include "CPlay.h"
-#include "../rva.h"
+#include <Gruntz/CPlay.h>
+#include <rva.h>
 
 // ---- MFC primitives reused verbatim from the engine (reloc-masked). ----
 class CString {

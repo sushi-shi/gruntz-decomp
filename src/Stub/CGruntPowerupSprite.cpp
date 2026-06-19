@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CGruntPowerupSprite.cpp - engine-label stubs for CGruntPowerupSprite.
 
 class CGruntPowerupSprite {
