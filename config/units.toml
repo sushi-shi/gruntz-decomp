@@ -249,38 +249,33 @@ source = "src/Gruntz/LogicTypeTable.cpp"
 flags = "base"
 
 [[unit]]
-unit = "unknownremus"
-source = "src/Gruntz/UnknownRemus.cpp"
+unit = "cddrawworkerlist"
+source = "src/Gruntz/CDDrawWorkerList.cpp"
 flags = "base"
 
 [[unit]]
-unit = "unknownhagrid"
-source = "src/Gruntz/UnknownHagrid.cpp"
+unit = "cddrawsubmgrdraco"
+source = "src/Gruntz/CDDrawSubMgrDraco.cpp"
 flags = "base"
 
 [[unit]]
-unit = "unknowndraco"
-source = "src/Gruntz/UnknownDraco.cpp"
+unit = "cddrawchildgroup"
+source = "src/Gruntz/CDDrawChildGroup.cpp"
 flags = "base"
 
 [[unit]]
-unit = "unknownhermiona"
-source = "src/Gruntz/UnknownHermiona.cpp"
+unit = "cddrawworkermapsmall"
+source = "src/Gruntz/CDDrawWorkerMapSmall.cpp"
 flags = "base"
 
 [[unit]]
-unit = "unknownalbus"
-source = "src/Gruntz/UnknownAlbus.cpp"
+unit = "cddrawsurfacemgr"
+source = "src/Gruntz/CDDrawSurfaceMgr.cpp"
 flags = "base"
 
 [[unit]]
-unit = "harrypotter"
-source = "src/Gruntz/HarryPotter.cpp"
-flags = "base"
-
-[[unit]]
-unit = "unknownseverus"
-source = "src/Gruntz/UnknownSeverus.cpp"
+unit = "cddrawworkerregistry"
+source = "src/Gruntz/CDDrawWorkerRegistry.cpp"
 flags = "eh"
 
 [[unit]]
@@ -294,26 +289,26 @@ source = "src/Gruntz/UnknownSalazar.cpp"
 flags = "base"
 
 [[unit]]
-unit = "unknownpettigrew"
-source = "src/Gruntz/UnknownPettigrew.cpp"
+unit = "cddrawsubmgrleaf"
+source = "src/Gruntz/CDDrawSubMgrLeaf.cpp"
 flags = "base"
 
 [[unit]]
-unit = "unknownsirius"
-source = "src/Gruntz/UnknownSirius.cpp"
+unit = "cddrawworkercache"
+source = "src/Gruntz/CDDrawWorkerCache.cpp"
 flags = "base"
 
 [[unit]]
-unit = "unknownworkerfuncs"
-source = "src/Gruntz/UnknownWorkerFuncs.cpp"
+unit = "cddrawworkers"
+source = "src/Gruntz/CDDrawWorkers.cpp"
 flags = "base"
 
 [[unit]]
-unit = "unknownlucius"
-source = "src/Gruntz/UnknownLucius.cpp"
+unit = "cddrawsubmgr"
+source = "src/Gruntz/CDDrawSubMgr.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "unknownfilch"
-source = "src/Gruntz/UnknownFilch.cpp"
+unit = "cddrawptrcollections"
+source = "src/Gruntz/CDDrawPtrCollections.cpp"
 flags = "eh"

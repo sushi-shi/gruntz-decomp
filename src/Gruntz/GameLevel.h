@@ -50,6 +50,11 @@ public:
     virtual int GetStride();  // +0x24  record byte length (cursor advance)
 };
 
+// The 4-int coordinate/extent record stored at CGameLevel+0x10, passed by pointer
+// to the merged CDDrawLevelData load methods. Defined in GameLevel.cpp; only the
+// pointer type appears in the class declarations so a forward decl suffices here.
+struct RemusCoords;
+
 // ---------------------------------------------------------------------------
 // CGameLevel - the level container. Member offsets pinned from LoadWwd:
 //   +0x00 vtable           (slot 0x44 = the pre-load reset, slot 0x38 = LoadWwd)
@@ -69,20 +74,45 @@ class CGameLevel
 public:
     // The vtable: LoadWwd is slot 0x38 (index 14) and the pre-load reset is slot
     // 0x44 (index 17). We declare enough virtuals so `Reset` lands at offset 0x44.
-    // All but Reset are external engine virtuals never called from this TU.
+    // Several slots carry signatures the merged CDDrawLevelData methods dispatch
+    // through (Vfunc1C @+0x1c fail/reset hook; Vfunc38/3C/40 the load variants);
+    // the rest are external engine virtuals never called from this TU.
     virtual void v00(); virtual void v04(); virtual void v08(); virtual void v0c();
-    virtual void v10(); virtual void v14(); virtual void v18(); virtual void v1c();
+    virtual void v10(); virtual void v14(); virtual void v18();
+    virtual void Vfunc1C();             // +0x1c  fail/reset hook
     virtual void v20(); virtual void v24(); virtual void v28(); virtual void v2c();
     virtual void v30(); virtual void v34();
     // slot 0x38 (index 14) is LoadWwd itself; we keep it non-virtual below and let
-    // these placeholders carry the slot numbering for Reset's offset.
-    virtual void v38(); virtual void v3c(); virtual void v40();
+    // these dispatched-variant virtuals carry the slot numbering for Reset's offset.
+    virtual int  Vfunc38(int arg1);     // +0x38  variant for VirtualMethodUnknown24
+    virtual int  Vfunc3C(int arg1);     // +0x3c  variant for VirtualMethodUnknown28
+    virtual int  Vfunc40(int arg1);     // +0x40  variant for VirtualMethodUnknown2C
     // Pre-load reset (vtable slot 0x44 / index 17) - external engine virtual.
     virtual void Reset();
 
     // LoadWwd @0x15d280 (__thiscall ret 0x4, vtable slot 0x38). Returns 1 on
     // success, 0 on failure.
     int LoadWwd(WwdHeader* hdr);
+
+    // --- merged from CDDrawLevelData (UnknownRemus): the matched leaves --------
+    // Declared non-virtual (like LoadWwd) so the out-of-line defs in GameLevel.cpp
+    // compile; their bodies are what we match, not their slot numbers. RemusCoords
+    // is the file-scope coordinate record forward-declared above.
+    int  VirtualMethodUnknown24(int arg1, RemusCoords *coords);
+    int  VirtualMethodUnknown28(int arg1, RemusCoords *coords);
+    int  VirtualMethodUnknown2C(int arg1, RemusCoords *coords);
+    int  VirtualMethodUnknown34(int arg0, int arg1);
+    int  VirtualMethodUnknown30(RemusCoords *coords);
+    int  VirtualMethodUnknown14();
+    int  VirtualMethodUnknown1C();
+    void VirtualMethodUnknown44();
+    int  VirtualMethodUnknown20();
+
+    // Engine-label backlog stubs (merged from UnknownRemus).
+    void Stub_15d500();
+    void Stub_15d630();
+    void Stub_1611c0();
+    void Stub_1611e0();
 
 private:
     // The per-plane reader (WwdFile::ReadPlane @0x15d8d0). Same body as the one in

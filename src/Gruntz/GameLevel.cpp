@@ -34,7 +34,67 @@
 #include "GameLevel.h"
 #include "../rva.h"
 
-#include <string.h>  // strcpy
+#include <string.h>  // strcpy, memset
+
+// ===========================================================================
+// The CDDrawLevelData/Remus methods, merged in here as CGameLevel.
+//
+// CGameLevel is the same class the engine handles via the obfuscated name
+// CDDrawLevelData (its vtable slot 0x38 is CGameLevel::LoadWwd). The methods
+// below were reconstructed as CDDrawLevelData::* and are moved here VERBATIM
+// onto CGameLevel. Where a method touches a member that GameLevel.h's CGameLevel
+// does NOT already expose at the exact offset (the +0x10 coordinate record, the
+// +0x38/+0x4c child-pointer arrays and their +0x3c/+0x50 counts, +0x04, +0x0c,
+// the +0xb0..+0xdc default-parameter block, the +0xe0 WwdHeader buffer), the
+// access is written as a raw offset cast on `this` so codegen is byte-identical
+// regardless of GameLevel.h member naming.
+//
+// The class carries a 4-int coordinate/extent record at +0x10 and a shared
+// "default parameters" block at +0xb0..+0xdc that several methods stamp with the
+// same constants (also written by the ctor @0x15ccd0):
+//     +0xb0 = 500  +0xb4 = 250  +0xb8 = 1000 +0xbc = 1000
+//     +0xc0 = 250  +0xc4 = 125  +0xc8 = 1600 +0xcc = 1200
+//     +0xd0 = 2560 +0xd4 = 1920 +0xd8 = 768  +0xdc = 576
+// ===========================================================================
+
+// The 4-int coordinate/extent record at CGameLevel+0x10.
+struct RemusCoords {
+    int m_0;
+    int m_4;
+    int m_8;
+    int m_c;
+};
+
+// External CDWordArray::SetSize (reloc-masked NAFXCW engine call).
+struct CDWordArray {
+    void SetSize(int nNewSize, int nGrowBy);
+};
+
+// UnknownChild - placeholder for whatever class lives in the pointer arrays
+// at +0x38 and +0x4c. Only vtable slot 4 (+0x04, virtual Release(1)) is used.
+class UnknownChild {
+public:
+    virtual void Dummy();
+    virtual void Release(int arg);
+};
+
+// Stamps the shared +0xb0..+0xdc "default parameters" block. Defined inline so it
+// folds into each method exactly as the retail compiler emitted the block inline.
+static inline void StampParamBlock(CGameLevel *o)
+{
+    *(int*)((char*)o + 0xb0) = 500;
+    *(int*)((char*)o + 0xb4) = 250;
+    *(int*)((char*)o + 0xb8) = 1000;
+    *(int*)((char*)o + 0xbc) = 1000;
+    *(int*)((char*)o + 0xc0) = 250;
+    *(int*)((char*)o + 0xc4) = 125;
+    *(int*)((char*)o + 0xc8) = 1600;
+    *(int*)((char*)o + 0xcc) = 1200;
+    *(int*)((char*)o + 0xd0) = 2560;
+    *(int*)((char*)o + 0xd4) = 1920;
+    *(int*)((char*)o + 0xd8) = 768;
+    *(int*)((char*)o + 0xdc) = 576;
+}
 
 RVA(0x15d280, 0x279)
 int CGameLevel::LoadWwd(WwdHeader* hdr)
@@ -162,4 +222,222 @@ fail:
     if (ehAlloc != 0)
         operator delete(ehAlloc);
     return 0;
+}
+
+// ===========================================================================
+// Merged CDDrawLevelData leaves (now CGameLevel). All are plain /O2 /MT leaves:
+// NO SEH frame, NO string/global relocations (dumps report "Relocations: none") -
+// they only touch member offsets (written as raw casts on `this`), an argument
+// struct, and sibling virtuals via the object's own vtable.
+//
+// The three 184-byte siblings (Unknown24/28/2C) are identical except for which
+// sibling virtual they dispatch to: vtable +0x38 / +0x3c / +0x40 respectively.
+// Each loads the +0x10 record from a caller struct, stamps the param block, then
+// calls that sibling virtual with arg1; on a 0 result it invokes the +0x1c
+// virtual (a "fail/reset" hook) and returns 0, else returns 1.
+// ===========================================================================
+
+// ---------------------------------------------------------------------------
+// CGameLevel::VirtualMethodUnknown14  @0x161190  (__thiscall, ret 0)
+// Remus adds a +0x10 sentinel check before the common parent/status predicate.
+RVA(0x161190, 0x1f)
+int CGameLevel::VirtualMethodUnknown14()
+{
+    if (*(int*)((char*)this + 0x10) == (int)0x80000000)
+        goto fail;
+    if (*(int*)((char*)this + 0x0c) == 0)
+        goto fail;
+    if (*(int*)((char*)this + 0x04) != -1)
+        return 1;
+
+fail:
+    return 0;
+}
+
+
+// ---------------------------------------------------------------------------
+// CGameLevel::VirtualMethodUnknown34  @0x15d030  (__thiscall, ret 8)
+// Zeroes the first two ints of the +0x10 record, stores (arg0-1)/(arg1-1) into
+// the last two, stamps the param block, returns 1.
+//
+// RESIDUE (~84%, NOT a logic/offset/type/CFG error): byte-for-byte identical to
+// the target EXCEPT the position of one instruction - the immediate store
+// `mov dword ptr [ecx+0xb0], 0x1f4`. The retail compiler schedules it mid-block
+// (after +0xbc, before +0xb4); here MSVC hoists the same store to the earliest
+// free slot (right after `mov eax,[esp+4]`, before `dec eax`). Same bytes, same
+// register allocation everywhere else. This is the documented store-scheduling
+// entropy (matching-patterns.md "optimizer reorders field stores"): an
+// independent immediate-to-memory store has no register dependency to pin it, so
+// MSVC floats it freely. Every source ordering tried either kept this single
+// slip or regressed the eax(0x3e8)/edx(0xfa) allocation (b8,bc,b0,b4 order ->
+// ~75%); calling the param block before the +0x10 writes moves the whole block
+// ahead (wrong). Logic + offsets + CFG are exact, so this is left as the plateau.
+RVA(0x15d030, 0x8f)
+int CGameLevel::VirtualMethodUnknown34(int arg0, int arg1)
+{
+    *(int*)((char*)this + 0x10) = 0;
+    *(int*)((char*)this + 0x14) = 0;
+    *(int*)((char*)this + 0x18) = arg0 - 1;
+    *(int*)((char*)this + 0x1c) = arg1 - 1;
+    StampParamBlock(this);
+    return 1;
+}
+
+
+
+
+// -------------------------------------------------------------------------
+// Engine-label backlog stubs (merged from UnknownRemus).
+// -------------------------------------------------------------------------
+
+
+// @confidence: high
+// @source: tomalla
+// @stub
+RVA(0x15d500, 0x127)
+void CGameLevel::Stub_15d500() {}
+
+// @confidence: high
+// @source: tomalla
+// @stub
+RVA(0x15d630, 0x41)
+void CGameLevel::Stub_15d630() {}
+
+
+
+// @confidence: high
+// @source: tomalla
+// @stub
+RVA(0x1611c0, 0x1e)
+void CGameLevel::Stub_1611c0() {}
+
+// @confidence: med
+// @source: call-xref
+// @stub
+RVA(0x1611e0, 0x82)
+void CGameLevel::Stub_1611e0() {}
+
+
+
+
+
+
+// ---------------------------------------------------------------------------
+// CGameLevel::VirtualMethodUnknown1C  @0x15d1f0  (__thiscall)
+// Like Unknown44 plus resets the sentinel and zeroes the WwdHeader buffer.
+// ---------------------------------------------------------------------------
+RVA(0x15d1f0, 0x87)
+int CGameLevel::VirtualMethodUnknown1C()
+{
+    int i;
+    for (i = 0; i < *(int*)((char*)this + 0x3c); i++) {
+        UnknownChild *child = (UnknownChild *)(*(void***)((char*)this + 0x38))[i];
+        if (child)
+            child->Release(1);
+    }
+    ((CDWordArray *)((char *)this + 0x34))->SetSize(0, -1);
+    for (i = 0; i < *(int*)((char*)this + 0x50); i++) {
+        UnknownChild *child = (UnknownChild *)(*(void***)((char*)this + 0x4c))[i];
+        if (child)
+            child->Release(1);
+    }
+    ((CDWordArray *)((char *)this + 0x48))->SetSize(0, -1);
+    *(int*)((char*)this + 0x10) = (int)0x80000000;
+    *(int*)((char*)this + 0x5c) = 0;
+    *(int*)((char*)this + 0x60) = -1;
+    memset((char*)this + 0xe0, 0, 1524);
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// CGameLevel::VirtualMethodUnknown44  @0x15d680  (__thiscall)
+// Releases all child pointers, resets both CDWordArrays, clears members.
+// ---------------------------------------------------------------------------
+RVA(0x15d680, 0x71)
+void CGameLevel::VirtualMethodUnknown44()
+{
+    int i;
+    for (i = 0; i < *(int*)((char*)this + 0x3c); i++) {
+        UnknownChild *child = (UnknownChild *)(*(void***)((char*)this + 0x38))[i];
+        if (child)
+            child->Release(1);
+    }
+    ((CDWordArray *)((char *)this + 0x34))->SetSize(0, -1);
+    for (i = 0; i < *(int*)((char*)this + 0x50); i++) {
+        UnknownChild *child = (UnknownChild *)(*(void***)((char*)this + 0x4c))[i];
+        if (child)
+            child->Release(1);
+    }
+    ((CDWordArray *)((char *)this + 0x48))->SetSize(0, -1);
+    *(int*)((char*)this + 0x5c) = 0;
+    *(int*)((char*)this + 0x60) = -1;
+}
+
+// ---------------------------------------------------------------------------
+// CGameLevel::VirtualMethodUnknown20  @0x1611b0  (__thiscall)
+// Returns constant 0x19 (25) — a type-tag or enum identifier.
+// ---------------------------------------------------------------------------
+RVA(0x1611b0, 0x6)
+int CGameLevel::VirtualMethodUnknown20()
+{
+    return 0x19;
+}
+
+// --- restored: matching's RemusCoords sibling definitions (do not drop) ---
+// ---------------------------------------------------------------------------
+// CGameLevel::VirtualMethodUnknown2C  @0x15cdf0  (__thiscall, ret 8)
+// As Unknown24 but dispatches the +0x40 sibling virtual.
+RVA(0x15cdf0, 0xb8)
+int CGameLevel::VirtualMethodUnknown2C(int arg1, RemusCoords *coords)
+{
+    *(RemusCoords*)((char*)this + 0x10) = *coords;
+    StampParamBlock(this);
+    if (Vfunc40(arg1) == 0) {
+        Vfunc1C();
+        return 0;
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CGameLevel::VirtualMethodUnknown28  @0x15ceb0  (__thiscall, ret 8)
+// As Unknown24 but dispatches the +0x3c sibling virtual.
+RVA(0x15ceb0, 0xb8)
+int CGameLevel::VirtualMethodUnknown28(int arg1, RemusCoords *coords)
+{
+    *(RemusCoords*)((char*)this + 0x10) = *coords;
+    StampParamBlock(this);
+    if (Vfunc3C(arg1) == 0) {
+        Vfunc1C();
+        return 0;
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CGameLevel::VirtualMethodUnknown24  @0x15cf70  (__thiscall, ret 8)
+// Loads the +0x10 record from *coords, stamps the param block, then dispatches
+// the +0x38 sibling virtual with arg1. On a 0 result it runs the +0x1c hook and
+// returns 0; otherwise returns 1.
+RVA(0x15cf70, 0xb8)
+int CGameLevel::VirtualMethodUnknown24(int arg1, RemusCoords *coords)
+{
+    *(RemusCoords*)((char*)this + 0x10) = *coords;
+    StampParamBlock(this);
+    if (Vfunc38(arg1) == 0) {
+        Vfunc1C();
+        return 0;
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CGameLevel::VirtualMethodUnknown30  @0x15d0d0  (__thiscall, ret 4)
+// Loads the +0x10 record from *coords, stamps the param block, returns 1.
+RVA(0x15d0d0, 0x99)
+int CGameLevel::VirtualMethodUnknown30(RemusCoords *coords)
+{
+    *(RemusCoords*)((char*)this + 0x10) = *coords;
+    StampParamBlock(this);
+    return 1;
 }
