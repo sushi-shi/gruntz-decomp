@@ -55,25 +55,13 @@ __declspec(dllimport) DWORD __stdcall GetLastError(void);
 // External NAFXCW helpers, modeled with NO body so their `call rel32`
 // displacements are reloc-masked in objdiff (the "external no-body callee"
 // idiom). Calling-convention/arg-shape pinned from the disasm.
-//   - AfxString: a 4-byte CString (single char* @+0). Its ctor/dtor/Empty/
+//   - CString: a 4-byte CString (single char* @+0). Its ctor/dtor/Empty/
 //     operator= are the engine's CString helpers.
 //   - ThrowOsError(lOsError, pszName): CFileException::ThrowOsError.
 //   - ThrowGenericError(cause, lOsError, pszName): the 3-arg throw.
 //   - AfxFullPath(dst, src): the long-path canonicalizer.
 // ---------------------------------------------------------------------------
-class AfxString {
-public:
-    AfxString();
-    ~AfxString();
-    void Empty();
-    const AfxString &operator=(const char *src);
-    // MFC's CString -> LPCTSTR conversion is inline (just returns m_pchData),
-    // so passing m_name where a const char* is expected compiles to a plain
-    // [this+0xc] load with no call.
-    operator const char *() const { return m_pchData; }
-private:
-    char *m_pchData;
-};
+#include <Gruntz/CString.h>
 
 extern "C" void __stdcall AfxThrowOsError(LONG lOsError, LPCSTR lpszName);
 extern "C" void __stdcall AfxThrowFileError(int cause, LONG lOsError, LPCSTR lpszName);
@@ -112,7 +100,7 @@ public:
     // declare it as an explicit member or it shifts every field by 4.
     HANDLE       m_handle;   // +0x04
     int          m_open;     // +0x08
-    AfxString    m_name;     // +0x0c
+    CString    m_name;     // +0x0c
 
     // Engine-label backlog stubs.
     void Stub_0bd3e0();

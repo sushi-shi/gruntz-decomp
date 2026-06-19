@@ -235,7 +235,7 @@ struct RezNode {
 };
 
 // ---------------------------------------------------------------------------
-// AfxString - the minimal MFC CString model (a single char* m_pchData @+0; an
+// CString - the minimal MFC CString model (a single char* m_pchData @+0; an
 // `operator const char*` returning it). Ctor/copy/dtor/Format are external
 // engine NAFXCW helpers (reloc-masked):
 //   CString::CString(const char*)
@@ -245,18 +245,11 @@ struct RezNode {
 //             wrapper that defers to the v-formatter.
 // Modeled so the path builder's CString churn is reloc-masked.
 // ---------------------------------------------------------------------------
-class AfxString {
-public:
-    AfxString(const char *s);
-    AfxString(const AfxString &o);
-    ~AfxString();
-    operator const char *() const { return m_pchData; }
-    char *m_pchData;                   // +0x00
-};
+#include <Gruntz/CString.h>
 
 // Format(dst, fmt, ...) - the file-scope cdecl CString-format wrapper
 // (takes the destination CString by address as its first stack arg).
-extern "C" void RezFormat(AfxString *dst, const char *fmt, ...);
+extern "C" void RezFormat(CString *dst, const char *fmt, ...);
 
 // FileExists(szPath) - the Win32 OF_EXIST probe (Utils::WinAPI). Used
 // to test each candidate archive path. Returns nonzero if the file exists.
@@ -356,8 +349,8 @@ public:
     char       m_pad30[0xb0 - 0x30];  // +0x30..+0xaf
     int        m_renderGate;          // +0xb0  (nonzero => skip the post-step)
     char       m_padb4[0xec - 0xb4];  // +0xb4..+0xeb
-    AfxString  m_pathA;        // +0xec  (CString)
-    AfxString  m_pathB;        // +0xf0  (CString)
+    CString  m_pathA;        // +0xec  (CString)
+    CString  m_pathB;        // +0xf0  (CString)
     int        m_inGameDir;    // +0xf4
     int        m_haveRez;      // +0xf8
     int        m_haveMoviez;   // +0xfc

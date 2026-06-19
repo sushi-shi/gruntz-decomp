@@ -118,20 +118,14 @@ extern CGameRegistry *g_pGameRegistry;
 // to the animator's lookup setter. Only the calls the resolvers emit are
 // modeled (external/no-body so the `call rel32` displacements reloc-mask): the
 // two operator+ overloads and the dtor.
-class AfxString {
-public:
-    AfxString();
-    ~AfxString();                  // (the temp-destruction call)
-    operator const char *() const { return m_pchData; }
-    char *m_pchData;
-};
+#include <Gruntz/CString.h>
 
 // operator+(LPCTSTR, const CString&)  ("GRUNTZ_" + m_typeName)
 // operator+(const CString&, LPCTSTR)  (... + "_CATEGORY")
 // AFXAPI == __stdcall: the callee pops the hidden return slot + both args
 // (ret 0xc), so there is NO `add esp` at the call site.
-AfxString __stdcall operator+(const char *lhs, const AfxString &rhs);
-AfxString __stdcall operator+(const AfxString &lhs, const char *rhs);
+CString __stdcall operator+(const char *lhs, const CString &rhs);
+CString __stdcall operator+(const CString &lhs, const char *rhs);
 
 // ---------------------------------------------------------------------------
 // CGruntAnimState - the per-grunt animation player the resolver drives (CGrunt
@@ -255,7 +249,7 @@ public:
     char             m_pad3c[0x40 - 0x3c];
     int              m_40;                  // +0x40  (cached m_38->m_1b4)
     char             m_pad44[0x54 - 0x44];
-    AfxString        m_typeName;            // +0x54  (grunt-type name CString)
+    CString        m_typeName;            // +0x54  (grunt-type name CString)
     int              m_58[(0x68 - 0x58) / 4];   // +0x58  (Idle geometry sources)
     int              m_68[(0x74 - 0x68) / 4];   // +0x68  (Battlecry geometry sources)
     int              m_74;                  // +0x74  (generic geometry source)

@@ -31,7 +31,7 @@
 //   * operator+ is AFXAPI = __stdcall (ret 0xc, callee-pops the hidden return
 //     slot + both args) - declaring it plain __cdecl emits a bogus `add esp,0xc`
 //     at each call site (caller-cleanup). +~4% across all 5.
-//   * AfxString needs a user-declared ~AfxString() so
+//   * CString needs a user-declared ~CString() so
 //     the two key-string temporaries get destruction calls under the C++ EH frame
 //     - without it MSVC emits NO EH frame at all (the temps look trivially
 //     destructible). This is what produced the fs:0 prolog/epilog. ~57%->89%.
@@ -510,7 +510,7 @@ RVA(0x067f80, 0x313)
 void CGrunt::LoadEntranceConfig() {}
 
 // The global CButeMgr config singleton + the tuning key ReadConfigFromButeMgr
-// reads. Minimal local decl (the full ButeMgr.h redefines AfxString, already
+// reads. Minimal local decl (the full ButeMgr.h redefines CString, already
 // pulled in by this TU), with only the typed getter the function calls.
 class CButeMgr {
 public:

@@ -40,9 +40,7 @@
 // cleaned, NO `add esp,4` at the call site), so it is modeled as a method on a
 // tiny helper whose `this` is the CState object - that emits `mov ecx,this; call
 // rel32` (reloc-masked) with no stack cleanup, matching the target.
-struct CGameModeBase {
-    void BaseCleanup();   // (thiscall, no-body -> reloc-masked call)
-};
+#include <Gruntz/GameModeBase.h>
 // (The scalar-deleting dtor's `operator delete` is reached via MSVC's
 // auto-synthesized `??3@YAXPAX@Z` in the `??_G` thunk - no explicit decl needed.)
 
