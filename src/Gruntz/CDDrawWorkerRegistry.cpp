@@ -55,21 +55,7 @@ public:
 // CMapStringToOb lives at CDDrawWorkerRegistry+0x10. Lookup/RemoveKey are out-of-line
 // NAFXCW thunks (reloc-masked rel32 calls); declared with the exact MFC signatures
 // so clang mangles them to the MFC-canonical names.
-class CMapStringToOb {
-public:
-    int Lookup(const char *key, CObject *&rValue) const;
-    CObject *&operator[](const char *key);
-    int RemoveKey(const char *key);
-    void GetNextAssoc(POSITION &rNextPosition, CString &rKey,
-                      CObject *&rValue) const;
-    void RemoveAll();
-
-    // Simulated internal layout (all offsets relative to +0x10 of parent):
-    void     *m_vptr;              // +0x00  CObject vptr
-    unsigned  m_nHashTableSize;    // +0x04
-    void    **m_pHashTable;        // +0x08
-    int       m_nCount;            // +0x0c
-};
+#include <Gruntz/CMapStringToOb.h>
 
 class UnknownSeverusVtableView {
 public:

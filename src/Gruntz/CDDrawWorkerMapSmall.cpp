@@ -36,10 +36,7 @@ class CObject;
 // CMapStringToOb lives at CDDrawWorkerMapSmall+0x10. operator[] is an out-of-line NAFXCW
 // thunk (reloc-masked rel32 call); declared with the exact MFC signature so clang
 // mangles it to the MFC-canonical name.
-class CMapStringToOb {
-public:
-    CObject *&operator[](const char *key);
-};
+#include <Gruntz/CMapStringToOb.h>
 
 // The worker virtual interface. Slots laid out so the dispatched methods land at
 // the byte offsets the target uses: +0x04 scalar-deleting dtor, +0x28/+0x2c the
@@ -258,19 +255,6 @@ typedef int POSITION;
 // so clang mangles them to the MFC-canonical names. The internal layout fields
 // (vptr through m_nCount) are modeled so `m_10.m_nCount` accesses parent+0x1c,
 // matching the retail `mov eax,[edi+0x1c]` for the guard condition.
-class CMapStringToObTeardown {
-public:
-    CObject *&operator[](const char *key);
-    void GetNextAssoc(POSITION &rNextPosition, CString &rKey,
-                      CObject *&rValue) const;
-    void RemoveAll();
-
-    // Simulated internal layout (all offsets relative to +0x10 of parent):
-    void     *m_vptr;              // +0x00  CObject vptr
-    unsigned  m_nHashTableSize;    // +0x04
-    void    **m_pHashTable;        // +0x08
-    int       m_nCount;            // +0x0c
-};
 
 // Minimal polymorphic stub for the CObject-derived values stored in the map.
 // Only the scalar-deleting destructor (+0x04) is load-bearing.
@@ -290,7 +274,7 @@ public:
     int                    m_04;                     // +0x04
     char                   m_pad08[0x0c - 0x08];     // +0x08..0x0b
     int                    m_0c;                      // +0x0c
-    CMapStringToObTeardown m_10;                      // +0x10  m_unknownMap1 (0x10..0x2b)
+    CMapStringToOb m_10;                      // +0x10  m_unknownMap1 (0x10..0x2b)
 };
 
 // ---------------------------------------------------------------------------
