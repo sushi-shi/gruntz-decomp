@@ -1,10 +1,10 @@
 #include "../rva.h"
-// UnknownMinerva.cpp - engine-label stubs for UnknownMinerva.
+// CDDrawMapHolder.cpp - engine-label stubs for CDDrawMapHolder.
 
-class UnknownMinerva {
+class CDDrawMapHolder {
 public:
     void VirtualMethodUnknown14();
-    ~UnknownMinerva();
+    ~CDDrawMapHolder();
     void ClearUnknownMap();
 };
 
@@ -12,16 +12,16 @@ public:
 // @source: tomalla
 // @stub
 RVA(0x157530, 0x17)
-void UnknownMinerva::VirtualMethodUnknown14() {}
+void CDDrawMapHolder::VirtualMethodUnknown14() {}
 
 // @confidence: high
 // @source: tomalla
 // @stub
 RVA(0x157550, 0x1e)
-UnknownMinerva::~UnknownMinerva() {}
+CDDrawMapHolder::~CDDrawMapHolder() {}
 
 // @confidence: high
 // @source: tomalla
 // @stub
 RVA(0x157bc0, 0xa2)
-void UnknownMinerva::ClearUnknownMap() {}
+void CDDrawMapHolder::ClearUnknownMap() {}

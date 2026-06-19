@@ -1,10 +1,10 @@
 #include "../rva.h"
 #include <string.h>
-// UnknownRemus.cpp - five leaf methods of the tomalla-named class UnknownRemus
-// (src/Stub/ metadata: vtable slot 0x38 == CGameLevel::LoadWwd, so UnknownRemus is
+// CDDrawLevelData.cpp - five leaf methods of the tomalla-named class CDDrawLevelData
+// (src/Stub/ metadata: vtable slot 0x38 == CGameLevel::LoadWwd, so CDDrawLevelData is
 // the obfuscated handle for a CGameLevel-family object; modeled here as
-// UnknownRemus so clang's MS mangling reproduces the target symbols
-// ?VirtualMethodUnknown24@UnknownRemus@@... that synth_pdb names the delinked
+// CDDrawLevelData so clang's MS mangling reproduces the target symbols
+// ?VirtualMethodUnknown24@CDDrawLevelData@@... that synth_pdb names the delinked
 // targets). All five are plain /O2 /MT leaves: NO SEH frame, NO string/global
 // relocations (the dumps report "Relocations: none") - they only touch member
 // offsets, an argument struct, and sibling virtuals via the object's own vtable.
@@ -25,7 +25,7 @@
 // virtual (a "fail/reset" hook) and returns 0, else returns 1.
 // ---------------------------------------------------------------------------
 
-// The 4-int coordinate/extent record copied into UnknownRemus+0x10.
+// The 4-int coordinate/extent record copied into CDDrawLevelData+0x10.
 struct RemusCoords {
     int m_0;
     int m_4;
@@ -47,7 +47,7 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// UnknownRemus - only the load-bearing vtable slots + member offsets are modeled.
+// CDDrawLevelData - only the load-bearing vtable slots + member offsets are modeled.
 // The vtable must place the dispatched siblings at exactly these byte offsets:
 //   +0x1c (slot 7)  fail/reset hook        +0x38 (slot 14) variant for Unknown24
 //   +0x3c (slot 15) variant for Unknown28  +0x40 (slot 16) variant for Unknown2C
@@ -55,7 +55,7 @@ public:
 // five matched methods themselves occupy other (lower) slots; their bodies are
 // what we match, not their slot numbers, so they are placed last.
 // ---------------------------------------------------------------------------
-class UnknownRemus {
+class CDDrawLevelData {
 public:
     // --- vtable padding to land the dispatched siblings at the right offsets ---
     virtual void Slot00();              // +0x00
@@ -135,7 +135,7 @@ public:
 
 // Stamps the shared +0xb0..+0xdc "default parameters" block. Defined inline so it
 // folds into each method exactly as the retail compiler emitted the block inline.
-static inline void StampParamBlock(UnknownRemus *o)
+static inline void StampParamBlock(CDDrawLevelData *o)
 {
     o->m_b0 = 500;
     o->m_b4 = 250;
@@ -152,10 +152,10 @@ static inline void StampParamBlock(UnknownRemus *o)
 }
 
 // ---------------------------------------------------------------------------
-// UnknownRemus::VirtualMethodUnknown14  @0x161190  (__thiscall, ret 0)
+// CDDrawLevelData::VirtualMethodUnknown14  @0x161190  (__thiscall, ret 0)
 // Remus adds a +0x10 sentinel check before the common parent/status predicate.
 RVA(0x161190, 0x1f)
-int UnknownRemus::VirtualMethodUnknown14()
+int CDDrawLevelData::VirtualMethodUnknown14()
 {
     if (m_10.m_0 == (int)0x80000000)
         goto fail;
@@ -169,7 +169,7 @@ fail:
 }
 
 // ---------------------------------------------------------------------------
-// UnknownRemus::VirtualMethodUnknown34  @0x15d030  (__thiscall, ret 8)
+// CDDrawLevelData::VirtualMethodUnknown34  @0x15d030  (__thiscall, ret 8)
 // Zeroes the first two ints of the +0x10 record, stores (arg0-1)/(arg1-1) into
 // the last two, stamps the param block, returns 1.
 //
@@ -186,7 +186,7 @@ fail:
 // ~75%); calling the param block before the +0x10 writes moves the whole block
 // ahead (wrong). Logic + offsets + CFG are exact, so this is left as the plateau.
 RVA(0x15d030, 0x8f)
-int UnknownRemus::VirtualMethodUnknown34(int arg0, int arg1)
+int CDDrawLevelData::VirtualMethodUnknown34(int arg0, int arg1)
 {
     m_10.m_0 = 0;
     m_10.m_4 = 0;
@@ -204,32 +204,32 @@ int UnknownRemus::VirtualMethodUnknown34(int arg0, int arg1)
 // @source: tomalla
 // @stub
 RVA(0x15d500, 0x127)
-void UnknownRemus::Stub_15d500() {}
+void CDDrawLevelData::Stub_15d500() {}
 
 // @confidence: high
 // @source: tomalla
 // @stub
 RVA(0x15d630, 0x41)
-void UnknownRemus::Stub_15d630() {}
+void CDDrawLevelData::Stub_15d630() {}
 
 // @confidence: high
 // @source: tomalla
 // @stub
 RVA(0x1611c0, 0x1e)
-void UnknownRemus::Stub_1611c0() {}
+void CDDrawLevelData::Stub_1611c0() {}
 
 // @confidence: med
 // @source: call-xref
 // @stub
 RVA(0x1611e0, 0x82)
-void UnknownRemus::Stub_1611e0() {}
+void CDDrawLevelData::Stub_1611e0() {}
 
 // ---------------------------------------------------------------------------
-// UnknownRemus::VirtualMethodUnknown1C  @0x15d1f0  (__thiscall)
+// CDDrawLevelData::VirtualMethodUnknown1C  @0x15d1f0  (__thiscall)
 // Like Unknown44 plus resets the sentinel and zeroes the WwdHeader buffer.
 // ---------------------------------------------------------------------------
 RVA(0x15d1f0, 0x87)
-int UnknownRemus::VirtualMethodUnknown1C()
+int CDDrawLevelData::VirtualMethodUnknown1C()
 {
     int i;
     for (i = 0; i < m_3c; i++) {
@@ -252,11 +252,11 @@ int UnknownRemus::VirtualMethodUnknown1C()
 }
 
 // ---------------------------------------------------------------------------
-// UnknownRemus::VirtualMethodUnknown44  @0x15d680  (__thiscall)
+// CDDrawLevelData::VirtualMethodUnknown44  @0x15d680  (__thiscall)
 // Releases all child pointers, resets both CDWordArrays, clears members.
 // ---------------------------------------------------------------------------
 RVA(0x15d680, 0x71)
-void UnknownRemus::VirtualMethodUnknown44()
+void CDDrawLevelData::VirtualMethodUnknown44()
 {
     int i;
     for (i = 0; i < m_3c; i++) {
@@ -276,21 +276,21 @@ void UnknownRemus::VirtualMethodUnknown44()
 }
 
 // ---------------------------------------------------------------------------
-// UnknownRemus::VirtualMethodUnknown20  @0x1611b0  (__thiscall)
+// CDDrawLevelData::VirtualMethodUnknown20  @0x1611b0  (__thiscall)
 // Returns constant 0x19 (25) — a type-tag or enum identifier.
 // ---------------------------------------------------------------------------
 RVA(0x1611b0, 0x6)
-int UnknownRemus::VirtualMethodUnknown20()
+int CDDrawLevelData::VirtualMethodUnknown20()
 {
     return 0x19;
 }
 
 // --- restored: matching's RemusCoords sibling definitions (do not drop) ---
 // ---------------------------------------------------------------------------
-// UnknownRemus::VirtualMethodUnknown2C  @0x15cdf0  (__thiscall, ret 8)
+// CDDrawLevelData::VirtualMethodUnknown2C  @0x15cdf0  (__thiscall, ret 8)
 // As Unknown24 but dispatches the +0x40 sibling virtual.
 RVA(0x15cdf0, 0xb8)
-int UnknownRemus::VirtualMethodUnknown2C(int arg1, RemusCoords *coords)
+int CDDrawLevelData::VirtualMethodUnknown2C(int arg1, RemusCoords *coords)
 {
     m_10 = *coords;
     StampParamBlock(this);
@@ -302,10 +302,10 @@ int UnknownRemus::VirtualMethodUnknown2C(int arg1, RemusCoords *coords)
 }
 
 // ---------------------------------------------------------------------------
-// UnknownRemus::VirtualMethodUnknown28  @0x15ceb0  (__thiscall, ret 8)
+// CDDrawLevelData::VirtualMethodUnknown28  @0x15ceb0  (__thiscall, ret 8)
 // As Unknown24 but dispatches the +0x3c sibling virtual.
 RVA(0x15ceb0, 0xb8)
-int UnknownRemus::VirtualMethodUnknown28(int arg1, RemusCoords *coords)
+int CDDrawLevelData::VirtualMethodUnknown28(int arg1, RemusCoords *coords)
 {
     m_10 = *coords;
     StampParamBlock(this);
@@ -317,12 +317,12 @@ int UnknownRemus::VirtualMethodUnknown28(int arg1, RemusCoords *coords)
 }
 
 // ---------------------------------------------------------------------------
-// UnknownRemus::VirtualMethodUnknown24  @0x15cf70  (__thiscall, ret 8)
+// CDDrawLevelData::VirtualMethodUnknown24  @0x15cf70  (__thiscall, ret 8)
 // Loads the +0x10 record from *coords, stamps the param block, then dispatches
 // the +0x38 sibling virtual with arg1. On a 0 result it runs the +0x1c hook and
 // returns 0; otherwise returns 1.
 RVA(0x15cf70, 0xb8)
-int UnknownRemus::VirtualMethodUnknown24(int arg1, RemusCoords *coords)
+int CDDrawLevelData::VirtualMethodUnknown24(int arg1, RemusCoords *coords)
 {
     m_10 = *coords;
     StampParamBlock(this);
@@ -334,10 +334,10 @@ int UnknownRemus::VirtualMethodUnknown24(int arg1, RemusCoords *coords)
 }
 
 // ---------------------------------------------------------------------------
-// UnknownRemus::VirtualMethodUnknown30  @0x15d0d0  (__thiscall, ret 4)
+// CDDrawLevelData::VirtualMethodUnknown30  @0x15d0d0  (__thiscall, ret 4)
 // Loads the +0x10 record from *coords, stamps the param block, returns 1.
 RVA(0x15d0d0, 0x99)
-int UnknownRemus::VirtualMethodUnknown30(RemusCoords *coords)
+int CDDrawLevelData::VirtualMethodUnknown30(RemusCoords *coords)
 {
     m_10 = *coords;
     StampParamBlock(this);

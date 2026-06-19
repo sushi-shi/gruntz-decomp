@@ -1,7 +1,7 @@
 #include "../rva.h"
-// UnknownClassCGruntzMgrHarryPotter.cpp - engine-label stubs for UnknownClassCGruntzMgrHarryPotter.
+// CDDrawSurfaceMgr.cpp - engine-label stubs for CDDrawSurfaceMgr.
 
-class UnknownClassCGruntzMgrHarryPotter {
+class CDDrawSurfaceMgr {
 public:
     void UnknownVirtualMethod18();
 };
@@ -10,4 +10,4 @@ public:
 // @source: tomalla
 // @stub
 RVA(0x155900, 0x519)
-void UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod18() {}
+void CDDrawSurfaceMgr::UnknownVirtualMethod18() {}

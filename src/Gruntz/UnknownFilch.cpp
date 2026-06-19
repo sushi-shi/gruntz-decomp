@@ -1,6 +1,6 @@
 #include "../rva.h"
-// UnknownFilch.cpp - tomalla-named standalone class in the ddrawmgr surface/page
-// manager "Harry Potter" family.  UnknownFilch (0x948 B, NO vtable) owns two
+// CDDrawPtrCollections.cpp - tomalla-named standalone class in the ddrawmgr surface/page
+// manager "Harry Potter" family.  CDDrawPtrCollections (0x948 B, NO vtable) owns two
 // CPtrList (+0x47c / +0x498) and one CPtrArray (+0x4b4).  The ctor @0x141cc0
 // constructs the three MFC containers with the given block sizes (both lists 0xa),
 // clears the scalar fields, and carries a C++ EH frame (/GX) to unwind the
@@ -27,14 +27,14 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// UnknownFilch — reconstructed Ctor ONLY.  The class has no vtable (the
+// CDDrawPtrCollections — reconstructed Ctor ONLY.  The class has no vtable (the
 // default ctor doesn't stamp one).  Fields from the structure layout in
 // structure/managers/ddrawmgr_surface_family.h; only the offsets the ctor
 // touches are modeled below.
 // ---------------------------------------------------------------------------
-class UnknownFilch {
+class CDDrawPtrCollections {
 public:
-    UnknownFilch();
+    CDDrawPtrCollections();
 
     int        fieldUnknown000;              // +0x00  — zeroed in ctor
     int        fieldUnknown004;              // +0x04  — zeroed in ctor
@@ -52,7 +52,7 @@ public:
 };                                          // 0x948
 
 // ---------------------------------------------------------------------------
-// UnknownFilch::UnknownFilch  @0x141cc0
+// CDDrawPtrCollections::CDDrawPtrCollections  @0x141cc0
 // Constructs the two CPtrLists with block size 0xa and the CPtrArray, then
 // zeroes all the scalar fields the ctor touches.  /GX: the three MFC container
 // ctors may throw, so the compiler emits a C++ EH frame (fs:0) whose try level
@@ -60,7 +60,7 @@ public:
 // at [esp+0x18]=0 after list1, [esp+0x14]=1 after list2).
 // ---------------------------------------------------------------------------
 RVA(0x141cc0, 0x84)
-UnknownFilch::UnknownFilch()
+CDDrawPtrCollections::CDDrawPtrCollections()
     : m_unknownPtrList1(0xa)
     , m_unknownPtrList2(0xa)
     , m_unknownPtrArray()

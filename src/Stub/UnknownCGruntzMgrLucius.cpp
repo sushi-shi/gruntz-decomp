@@ -1,10 +1,10 @@
 #include "../rva.h"
-// UnknownCGruntzMgrLucius.cpp - engine-label stubs for UnknownCGruntzMgrLucius.
+// CDDrawSubMgr.cpp - engine-label stubs for CDDrawSubMgr.
 
-class UnknownCGruntzMgrLucius {
+class CDDrawSubMgr {
 public:
-    ~UnknownCGruntzMgrLucius();
-    UnknownCGruntzMgrLucius();
+    ~CDDrawSubMgr();
+    CDDrawSubMgr();
     void VirtualMethodUnknown14();
     void Constructor_157630();
     void VirtualMethodUnknown1C();
@@ -15,22 +15,22 @@ public:
 // @source: tomalla
 // @stub
 RVA(0x155720, 0x1e)
-UnknownCGruntzMgrLucius::~UnknownCGruntzMgrLucius() {}
+CDDrawSubMgr::~CDDrawSubMgr() {}
 
 // @confidence: med
 // @source: call-xref
 // @stub
 RVA(0x157630, 0x82)
-void UnknownCGruntzMgrLucius::Constructor_157630() {}
+void CDDrawSubMgr::Constructor_157630() {}
 
 // @confidence: med
 // @source: tomalla
 // @stub
 RVA(0x1576c0, 0x6)
-void UnknownCGruntzMgrLucius::VirtualMethodUnknown1C() {}
+void CDDrawSubMgr::VirtualMethodUnknown1C() {}
 
 // @confidence: med
 // @source: tomalla
 // @stub
 RVA(0x157790, 0x6)
-void UnknownCGruntzMgrLucius::VirtualMethodUnknown20() {}
+void CDDrawSubMgr::VirtualMethodUnknown20() {}

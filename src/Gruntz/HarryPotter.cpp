@@ -1,6 +1,6 @@
 #include "../rva.h"
 // HarryPotter.cpp - root object of the tomalla-named DDraw surface/page-manager
-// family. UnknownClassCGruntzMgrHarryPotter is the owner stored off CGruntzMgr
+// family. CDDrawSurfaceMgr is the owner stored off CGruntzMgr
 // +0x30; it holds one child manager pointer per slot and a pair of global draw
 // clock mirrors reset by the ctor.
 //
@@ -16,7 +16,7 @@ public:
     int m_14;
 };
 
-class UnknownCGruntzMgrLucius {
+class CDDrawSubMgr {
 public:
     virtual void Slot00();
     virtual void Slot04();
@@ -29,10 +29,10 @@ public:
     UnknownCGruntzMgrLuciusChild *m_10;
 };
 
-class UnknownClassCGruntzMgrHarryPotter {
+class CDDrawSurfaceMgr {
 public:
-    UnknownClassCGruntzMgrHarryPotter();
-    virtual ~UnknownClassCGruntzMgrHarryPotter();
+    CDDrawSurfaceMgr();
+    virtual ~CDDrawSurfaceMgr();
     virtual int UnknownVirtualMethod14();
     virtual int UnknownVirtualMethod18(HWND hWnd, int width, int height,
                                        int bpp, int flagsUnknown);
@@ -50,15 +50,15 @@ public:
     virtual int UnknownVirtualMethod38(void *arg1, int arg2, int arg3,
                                         int arg4);
 
-    UnknownCGruntzMgrLucius *m_04;      // +0x04  Draco
-    UnknownCGruntzMgrLucius *m_08;      // +0x08  Hermiona
-    UnknownCGruntzMgrLucius *m_0c;      // +0x0c  Hagrid
-    UnknownCGruntzMgrLucius *m_10;      // +0x10  Severus
-    UnknownCGruntzMgrLucius *m_14;      // +0x14  Sirius
-    UnknownCGruntzMgrLucius *m_18;      // +0x18  Albus
+    CDDrawSubMgr *m_04;      // +0x04  Draco
+    CDDrawSubMgr *m_08;      // +0x08  Hermiona
+    CDDrawSubMgr *m_0c;      // +0x0c  Hagrid
+    CDDrawSubMgr *m_10;      // +0x10  Severus
+    CDDrawSubMgr *m_14;      // +0x14  Sirius
+    CDDrawSubMgr *m_18;      // +0x18  Albus
     void                    *m_1c;      // +0x1c  Filch
     void                    *m_20;      // +0x20  Voldemort
-    UnknownCGruntzMgrLucius *m_24;      // +0x24  Remus
+    CDDrawSubMgr *m_24;      // +0x24  Remus
     void                    *m_28;      // +0x28  Minerva
     void                    *m_2c;      // +0x2c  Pettigrew
     HWND                     m_hWnd;    // +0x30
@@ -73,11 +73,11 @@ DATA(0x2bf3bc)
 extern "C" unsigned int g_6bf3bc;       // VA 0x6bf3bc  draw-delta mirror
 
 // ---------------------------------------------------------------------------
-// UnknownClassCGruntzMgrHarryPotter::UnknownClassCGruntzMgrHarryPotter()
+// CDDrawSurfaceMgr::CDDrawSurfaceMgr()
 // Stamps the vftable, clears every owned-child pointer except hwnd (+0x30), clears
 // flags/bookkeeping at +0x34/+0x38/+0x3c, then resets the two draw-clock globals.
 RVA(0x155840, 0x41)
-UnknownClassCGruntzMgrHarryPotter::UnknownClassCGruntzMgrHarryPotter()
+CDDrawSurfaceMgr::CDDrawSurfaceMgr()
 {
     m_04 = 0;
     m_08 = 0;
@@ -98,13 +98,13 @@ UnknownClassCGruntzMgrHarryPotter::UnknownClassCGruntzMgrHarryPotter()
 }
 
 // ---------------------------------------------------------------------------
-// UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod14()
+// CDDrawSurfaceMgr::UnknownVirtualMethod14()
 // Returns whether the core child managers are present and the first child accepts
 // its +0x14 virtual readiness check.
 RVA(0x155f00, 0x41)
-int UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod14()
+int CDDrawSurfaceMgr::UnknownVirtualMethod14()
 {
-    UnknownCGruntzMgrLucius *first = m_04;
+    CDDrawSubMgr *first = m_04;
 
     if (first == 0)
         goto fail;
@@ -135,10 +135,10 @@ struct RemusCoordsHelper { int SetCoords(int x, int y); };
 typedef int (__cdecl *HP_Callback)(void *, void *, int, int, int);
 
 // ---------------------------------------------------------------------------
-// UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod20()
+// CDDrawSurfaceMgr::UnknownVirtualMethod20()
 // Frees context — cleans up the Voldemort surface and the Minerva map.
 RVA(0x155fc0, 0x2e)
-void UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod20()
+void CDDrawSurfaceMgr::UnknownVirtualMethod20()
 {
     if (m_28 != 0) {
         void *inner = *(void **)((char *)m_28 + 0x2c);
@@ -151,10 +151,10 @@ void UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod20()
 }
 
 // ---------------------------------------------------------------------------
-// UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod24()
+// CDDrawSurfaceMgr::UnknownVirtualMethod24()
 // Validates/sets surface dimensions.
 RVA(0x155f60, 0x56)
-int UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod24(
+int CDDrawSurfaceMgr::UnknownVirtualMethod24(
     int x, int y, int flags)
 {
     UnknownCGruntzMgrLuciusChild *child = m_04->m_10;
@@ -170,20 +170,20 @@ int UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod24(
 }
 
 // ---------------------------------------------------------------------------
-// UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod28()
+// CDDrawSurfaceMgr::UnknownVirtualMethod28()
 // Relays the hWnd argument to an external manager function.
 RVA(0x155f50, 0x10)
-void UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod28(void *hWnd)
+void CDDrawSurfaceMgr::UnknownVirtualMethod28(void *hWnd)
 {
     RelayHwnd(hWnd);
 }
 
 // ---------------------------------------------------------------------------
-// UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod38()
+// CDDrawSurfaceMgr::UnknownVirtualMethod38()
 // Dispatches arguments through the m_3c callback function pointer,
 // returning 1 on success / 0 on failure.
 RVA(0x156a90, 0x3a)
-int UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod38(
+int CDDrawSurfaceMgr::UnknownVirtualMethod38(
     void *arg1, int arg2, int arg3, int arg4)
 {
     if (!arg1)
@@ -195,12 +195,12 @@ int UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod38(
 
 // Out-of-line stubs so the vftable is emitted in this TU. They are not claimed
 // as matched in symbol_names.csv.
-UnknownClassCGruntzMgrHarryPotter::~UnknownClassCGruntzMgrHarryPotter() {}
-int UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod18(
+CDDrawSurfaceMgr::~CDDrawSurfaceMgr() {}
+int CDDrawSurfaceMgr::UnknownVirtualMethod18(
     HWND, int, int, int, int) { return 0; }
-void UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod1C() {}
-int UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod2C(int) { return 0; }
-int UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod30(
+void CDDrawSurfaceMgr::UnknownVirtualMethod1C() {}
+int CDDrawSurfaceMgr::UnknownVirtualMethod2C(int) { return 0; }
+int CDDrawSurfaceMgr::UnknownVirtualMethod30(
     int, int, int, int, void *) { return 0; }
-int UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod34(
+int CDDrawSurfaceMgr::UnknownVirtualMethod34(
     int, int, int, int, void *) { return 0; }
