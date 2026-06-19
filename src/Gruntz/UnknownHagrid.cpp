@@ -16,7 +16,7 @@
 // int). Both worker layouts are otherwise identical and both carry a scalar-
 // deleting destructor at vtable slot +0x4 (the delinker tags slot +0x4 of each as
 // ??_G__non_rtti_object, the MFC delete-this thunk). The vftables are foreign
-// engine data, referenced here as named `// @data:` DIR32 externs and stamped
+// engine data, referenced here as named `DATA(...)` DIR32 externs and stamped
 // manually into the raw heap block; the worker classes are modeled as polymorphic
 // (virtuals at the right slots) ONLY so `worker->Vfunc(...)` lowers to the exact
 // `mov eax,[obj]; call [eax+slot]` __thiscall dispatch - their virtuals are never
