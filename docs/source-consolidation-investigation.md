@@ -35,8 +35,9 @@ to "annotate the source, regenerate everything."
 > functions from **LLVM IR** (`@llvm.global.annotations` pairs the mangled symbol
 > DIRECTLY with the annotation — no join). `DATA` still uses the AST VarDecl
 > (clang drops an `extern`'s annotation from IR). The `llvm-nm` authority check
-> below is unchanged. The vendored zlib C TUs still use the `// @address:`
-> comments (their static/K&R functions are dropped from IR when unused). See
+> below is unchanged. The vendored zlib C TUs keep PRISTINE source; their
+> rva→symbol map lives in `config/zlib_labels.csv` (emitted directly — their
+> static/K&R functions drop from IR when unused). See
 > `docs/build-system.md` ("Adding a unit") and `scripts/gruntz/build/labels.py`.
 
 ---

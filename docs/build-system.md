@@ -224,7 +224,8 @@ does not exist yet is paired against an empty `dummy.obj` so it still lists at
    pairs the mangled symbol DIRECTLY with the annotation — no positional join);
    `DATA` from the clang AST (an `extern`'s annotation is dropped from IR). The
    label map regenerates from these annotations — never hand-edit the CSV. (The
-   vendored zlib C TUs still use the older `// @address:` comments; see
+   vendored zlib C TUs keep PRISTINE source — no labels in it; their rva→symbol
+   map is the static `config/zlib_labels.csv`, emitted directly. See
    `docs/zlib-matching.md`.)
 3. `gruntz build` (configure -> compile -> labels -> delink -> objdiff).
 

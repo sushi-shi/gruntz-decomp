@@ -48,7 +48,6 @@ struct internal_state {
 };
 
 
-// @address: 0x185a10
 int inflateReset(z)
 z_streamp z;
 {
@@ -65,7 +64,6 @@ z_streamp z;
 }
 
 
-// @address: 0x185a60
 int inflateEnd(z)
 z_streamp z;
 {
@@ -82,7 +80,6 @@ z_streamp z;
 }
 
 
-// @address: 0x185ab0
 int inflateInit2_(z, w, version, stream_size)
 z_streamp z;
 int w;
@@ -140,7 +137,6 @@ int stream_size;
 }
 
 
-// @address: 0x185bc0
 int inflateInit_(z, version, stream_size)
 z_streamp z;
 const char *version;
@@ -153,7 +149,6 @@ int stream_size;
 #define NEEDBYTE {if(z->avail_in==0)return r;r=Z_OK;}
 #define NEXTBYTE (z->avail_in--,z->total_in++,*z->next_in++)
 
-// @address: 0x185be0
 int inflate(z, f)
 z_streamp z;
 int f;
@@ -276,7 +271,6 @@ int f;
 }
 
 
-// @address: 0x186010
 int inflateSetDictionary(z, dictionary, dictLength)
 z_streamp z;
 const Bytef *dictionary;
@@ -301,7 +295,6 @@ uInt  dictLength;
 }
 
 
-// @address: 0x1860a0
 int inflateSync(z)
 z_streamp z;
 {

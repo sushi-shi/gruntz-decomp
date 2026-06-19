@@ -43,11 +43,13 @@ cannot hang an RVA() attribute, so it is pinned with a self-contained comment
 `// @rva-symbol: <mangled> <rva> [<size>]` (read in every TU - the name is given
 verbatim, so no join and no IR).
 
-LEGACY PATH: the vendored zlib C TUs (vendor/zlib-1.0.4/*.c) still use the old
-`// @address:` comments + an AST positional join. They are mostly `static`
-(`local`) K&R functions, which clang DROPS from IR when unused - so IR extraction
-would silently lose their labels (the same class of drop as the `extern` @data
-case). A TU is routed to the legacy path iff it carries NO src/rva.h macro.
+VENDORED PATH: vendored C TUs (vendor/zlib-1.0.4/*.c) keep their source PRISTINE -
+no labels in the source at all. They are mostly `static`/`local` K&R functions
+that clang DROPS from IR when unused, so neither attributes nor a source join can
+carry their labels. Instead their rva->symbol map lives in config/zlib_labels.csv
+(a static table - the retail binary never changes - generated once) and is emitted
+directly, authority-checked against the base obj: no source parsing, no positional
+join. A TU is routed to the config path iff it carries NO src/rva.h macro.
 
 Output: build/gen/symbol_names.csv  (rva,name,unit,size,kind) - for synth_pdb.
 `kind` is func or data; `size` is the RVA size (hex) or empty.
@@ -94,13 +96,8 @@ ANN_SYM_RE = re.compile(r"^symbol:(\S+)$")
 # come from IR for these). A TU with none falls back to the legacy comment path.
 MACRO_RE = re.compile(r"\b(?:RVA|DATA|SYMBOL)\s*\(")
 
-# --- legacy `// @address:` comment path (vendored zlib C TUs; module docstring)
-LEGACY_ADDR_RE = re.compile(r"@address:\s*(0x[0-9a-fA-F]+)")
-LEGACY_DATA_RE = re.compile(r"@data:\s*(0x[0-9a-fA-F]+)")
-LEGACY_SYM_RE = re.compile(r"@symbol:\s*(\S+)")
-LEGACY_SIZE_RE = re.compile(r"@size:\s*(0x[0-9a-fA-F]+|\d+)")
-FUNC_KINDS = {"FunctionDecl", "CXXMethodDecl", "CXXConstructorDecl",
-              "CXXDestructorDecl", "CXXConversionDecl"}
+# Static rva->symbol table for vendored C TUs whose source carries no labels.
+LABEL_CONFIG = REPO / "config/zlib_labels.csv"
 
 
 def log(msg):
@@ -337,72 +334,41 @@ def data_labels(text, ast):
     return out
 
 
-# --- legacy comment path (vendored zlib C TUs; see the module docstring) ------
-def collect_defs(ast, main_file):
-    """[(mangledName, offset)] for every main-file function DEFINITION (a decl
-    with a CompoundStmt body). Main-file-only: a header inline def's offset would
-    otherwise be misread against the .cpp line index and steal a nearby @address.
-    """
-    main_real = os.path.realpath(main_file)
-    out = []
-    state = {"in_main": True}
-
-    def update_file(node):
-        for loc in (node.get("loc"), (node.get("range") or {}).get("begin")):
-            if isinstance(loc, dict) and loc.get("file") is not None:
-                state["in_main"] = os.path.realpath(loc["file"]) == main_real
-
-    def visit(node):
-        if isinstance(node, dict):
-            update_file(node)
-            if (state["in_main"] and node.get("kind") in FUNC_KINDS
-                    and "mangledName" in node and not node.get("isImplicit")):
-                inner = node.get("inner") or []
-                has_body = any(isinstance(c, dict) and c.get("kind") == "CompoundStmt"
-                               for c in inner)
-                loc = node.get("loc") or {}
-                off = loc.get("offset")
-                if has_body and off is not None:
-                    out.append((node["mangledName"], off))
-            for c in node.get("inner", []) or []:
-                visit(c)
-    visit(ast)
-    return out
+# --- static config path (vendored C TUs with pristine source; see docstring) --
+def load_label_config(path):
+    """unit -> [(rva, name, size, kind)] from the static rva->symbol table
+    (config/zlib_labels.csv): the labels for vendored C TUs whose source carries
+    no annotations. Generated once (the retail binary never changes)."""
+    import csv
+    cfg = {}
+    if not Path(path).exists():
+        return cfg
+    with open(path) as f:
+        for r in csv.reader(f):
+            if not r or r[0].strip() in ("", "rva") or r[0].lstrip().startswith("#"):
+                continue
+            try:
+                rva = int(r[0], 16)
+            except ValueError:
+                continue
+            unit = r[2] if len(r) > 2 else ""
+            size = int(r[3], 16) if len(r) > 3 and r[3] else None
+            kind = r[4] if len(r) > 4 and r[4] else "func"
+            cfg.setdefault(unit, []).append((rva, r[1], size, kind))
+    return cfg
 
 
-def scan_legacy(text):
-    """[(rva, line, override, size, kind)] for `// @address:`/`// @data:` blocks."""
-    out = []
-    lines = text.splitlines()
-    n = len(lines)
-    i = 0
-    while i < n:
-        if not lines[i].lstrip().startswith("//"):
-            i += 1
-            continue
-        j = i
-        block_addrs = []
-        block_sym = None
-        block_size = None
-        while j < n and lines[j].lstrip().startswith("//"):
-            ma = LEGACY_ADDR_RE.search(lines[j])
-            if ma:
-                block_addrs.append((int(ma.group(1), 16), j + 1, "func"))
-            md = LEGACY_DATA_RE.search(lines[j])
-            if md:
-                block_addrs.append((int(md.group(1), 16), j + 1, "data"))
-            ms = LEGACY_SYM_RE.search(lines[j])
-            if ms:
-                block_sym = ms.group(1)
-            mz = LEGACY_SIZE_RE.search(lines[j])
-            if mz:
-                s = mz.group(1)
-                block_size = int(s, 16) if s.lower().startswith("0x") else int(s)
-            j += 1
-        for rva, ln, kind in block_addrs:
-            out.append((rva, ln, block_sym, block_size, kind))
-        i = j
-    return out
+def config_tu(unit, entries, obj_syms, all_syms, rows, misses, addr_sites):
+    """Emit symbol_names rows for a vendored C TU straight from the static config
+    table, authority-checked against the base obj. No source parse, no join."""
+    for rva, name, size, kind in entries:
+        if kind != "data":
+            addr_sites.setdefault(rva, []).append((unit, name))
+        pool = all_syms if kind == "data" else obj_syms
+        if obj_syms is None or name in pool:
+            rows.append((rva, name, unit, size, kind))
+        else:
+            misses.append((rva, name, unit, "config candidate not in base obj"))
 
 
 def nm_symbols(obj, nm="llvm-nm"):
@@ -468,41 +434,6 @@ def units_from_toml(path):
     return {u["source"]: u["unit"] for u in data.get("unit", [])}
 
 
-def legacy_tu(args, tu, unit, text, obj_syms, all_syms, rows, misses, addr_sites,
-              cl_flags=None):
-    """Comment path for a TU with no src/rva.h macros (the vendored zlib C TUs):
-    `// @address:`/`// @data:` comments + the AST positional join."""
-    off2line = line_index(text)
-    ast = clang_ast(args.clang, tu, args.flag, cl_flags)
-    if ast is None:
-        return
-    func_defs = sorted((off2line(off), mn) for (mn, off) in collect_defs(ast, tu))
-    var_defs = sorted((off2line(off), mn) for (mn, off) in collect_vars(ast))
-    for rva, line, override, size, ann_kind in scan_legacy(text):
-        if ann_kind != "data":
-            addr_sites.setdefault(rva, []).append((tu, "legacy"))
-        pool = var_defs if ann_kind == "data" else func_defs
-        cand = next((mn for (dl, mn) in pool if dl >= line), None)
-        name = override or cand
-        if name is None:
-            misses.append((rva, None, unit, f"no {ann_kind} below @ comment"))
-            continue
-        if ann_kind == "data":
-            if obj_syms is None or override or name in all_syms:
-                rows.append((rva, name, unit, None, "data"))
-            else:
-                misses.append((rva, name, unit, "data candidate not in base obj"))
-            continue
-        if obj_syms is None or name in obj_syms or override:
-            rows.append((rva, name, unit, size, "func"))
-            continue
-        resolved = plain_dtor_symbol(name, obj_syms)
-        if resolved:
-            rows.append((rva, resolved, unit, size, "func"))
-        else:
-            misses.append((rva, name, unit, "candidate not in base obj"))
-
-
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--clang", default=os.environ.get("GRUNTZ_CLANG") or "clang")
@@ -527,6 +458,7 @@ def main():
         unit_map = units_from_toml(args.units_toml)
 
     compdb = load_compdb(args.compdb) if args.compdb else {}
+    label_config = load_label_config(LABEL_CONFIG)
 
     rows = []          # (rva, name, unit, size, kind)
     misses = []        # (rva, candidate, unit, reason)
@@ -554,13 +486,13 @@ def main():
         all_syms = nm_all_symbols(args.obj[i], args.nm) if have_obj else None
         cl_flags = compdb.get(os.path.realpath(tu))
 
-        # A TU with no src/rva.h macro uses the legacy `// @address:` comments +
-        # AST positional join. This is the vendored zlib C path (its static/K&R
-        # functions are dropped from IR when unused, so attributes can't carry
-        # their labels); src/ is fully migrated to the macros above.
+        # A TU with no src/rva.h macro is a vendored C TU with pristine source;
+        # its rva->symbol map comes from config/zlib_labels.csv (static, emitted
+        # directly - no parse, no join). zlib's static/K&R functions drop from IR
+        # when unused, so labels can't live in the source; src/ uses the macros.
         if not MACRO_RE.search(text):
-            legacy_tu(args, tu, unit, text, obj_syms, all_syms, rows, misses,
-                      addr_sites, cl_flags)
+            config_tu(unit, label_config.get(unit, []), obj_syms, all_syms,
+                      rows, misses, addr_sites)
             continue
 
         # --- functions / SYMBOL via LLVM IR (mangled symbol paired directly) ---
