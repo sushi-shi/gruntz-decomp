@@ -1,9 +1,8 @@
 // WinMain.cpp - Gruntz program entry point (C:\Proj\Gruntz).
 //
-//   _WinMain@16  @ RVA 0x11c860 (807 B) - the WINAPI entry. SEH-framed
-//       (push -1; push &handler@0x5df5de; mov fs:0). Allocates a 0x10c-byte
-//       frame and drives the whole startup:
-//         1. GetModuleFileNameA -> engine path-check (CheckExePath @0x118ce0);
+//   _WinMain@16 - the WINAPI entry. SEH-framed (push -1; push &handler;
+//       mov fs:0). Allocates a 0x10c-byte frame and drives the whole startup:
+//         1. GetModuleFileNameA -> engine path-check (CheckExePath);
 //         2. single-instance guard (FindWindowA "GruntzClass"); if a prior
 //            instance exists: restore it if iconic, forward a lobby-launch
 //            WM_COMMAND if the cmd line contains "LOBBYLAUNCH", then return 0;
@@ -15,7 +14,7 @@
 //            (app->Run, vtable +0x18), and tear it down.
 //
 // THE MAIN MESSAGE LOOP itself is NOT inline here: WinMain reaches it via the
-// app's run virtual (vtable slot +0x18 -> CGameApp::RunMessageLoop @0x13d910,
+// app's run virtual (vtable slot +0x18 -> CGameApp::RunMessageLoop,
 // 159 B - a GetMessageA / TranslateAcceleratorA / TranslateMessage /
 // DispatchMessageA pump with an idle vtable callback `[vtbl+0x20]`). That pump
 // is the next dedicated target; here we only emit the dispatching
@@ -69,48 +68,46 @@ __declspec(dllimport) int     __stdcall DialogBoxParamA(HINSTANCE hInstance, LPC
 // ---------------------------------------------------------------------------
 // Engine callees (unmatched; modeled as external no-body functions so the
 // `call rel32` / `push &fn` reloc is masked - only the call/push bytes matter).
-// The reloc-masked literal addresses (e.g. 0x60aac8 = the "Gruntz" string,
-// 0x615670.. = the cmd-line tokens) are passed as casted absolute pointers;
-// objdiff masks the DIR32 operand.
+// The reloc-masked literal addresses (the "Gruntz" string, the cmd-line tokens)
+// are passed as casted absolute pointers; objdiff masks the DIR32 operand.
 // ---------------------------------------------------------------------------
 extern "C" {
-// CheckExePath @0x118ce0 (reached via incremental-link thunk 0x2e6e). Validates
+// CheckExePath (reached via an incremental-link thunk). Validates
 // the module path; __cdecl 3 args (path, count, reserved); returns nonzero to
 // proceed to the single-instance check.
 int CheckExePath(char *pszPath, int nCount, void *pReserved);
 
-// SubstringMatch @0x120090 (a strstr-class helper). Returns nonzero when
+// SubstringMatch (a strstr-class helper). Returns nonzero when
 // `pszNeedle` occurs in `pszHaystack`. __cdecl 2 args (haystack first, then
 // needle - the target's push order). Used for the LOBBYLAUNCH check and the
 // "advanced"/"optionz" cmd-line scans.
 int SubstringMatch(LPCSTR pszHaystack, LPCSTR pszNeedle);
 
-// StartupGate @0x1f9b0 (reached via thunk 0x2f59). __cdecl 1 arg; runs the
+// StartupGate (reached via a thunk). __cdecl 1 arg; runs the
 // resource/CD/launch validation, returns nonzero to proceed.
 int StartupGate(int nReserved);
 
-// SettleDelay @0x13dfe0 - a GetTickCount busy-wait used as a brief settle delay
+// SettleDelay - a GetTickCount busy-wait used as a brief settle delay
 // before the hot-key sample. __cdecl 1 arg (ms).
 int SettleDelay(int nMs);
 
-// VersionScan @0x120900 - an sscanf wrapper (parses "%d.%d.%d.%d" into the four
+// VersionScan - an sscanf wrapper (parses "%d.%d.%d.%d" into the four
 // version ints). __cdecl variadic.
 int VersionScan(const char *pszVersion, const char *pszFormat, ...);
 
-// VERSION.DLL imports (6-byte `jmp [IAT]` thunks at 0x18b78c/786/780); __stdcall
-// (callee-cleaned, no `add esp` at the call site).
-DWORD __stdcall GetFileVersionInfoSizeA(LPSTR lptstrFilename, DWORD *lpdwHandle);                     // 0x18b78c
-int   __stdcall GetFileVersionInfoA(LPSTR lptstrFilename, DWORD dwHandle, DWORD dwLen, void *lpData); // 0x18b786
-int   __stdcall VerQueryValueA(const void *pBlock, LPSTR lpSubBlock, void **lplpBuffer, UINT *puLen); // 0x18b780
+// VERSION.DLL imports (6-byte `jmp [IAT]` thunks); __stdcall (callee-cleaned, no
+// `add esp` at the call site).
+DWORD __stdcall GetFileVersionInfoSizeA(LPSTR lptstrFilename, DWORD *lpdwHandle);
+int   __stdcall GetFileVersionInfoA(LPSTR lptstrFilename, DWORD dwHandle, DWORD dwLen, void *lpData);
+int   __stdcall VerQueryValueA(const void *pBlock, LPSTR lpSubBlock, void **lplpBuffer, UINT *puLen);
 }
 
-// The MFC global allocator / deallocator (NAFXCW @0x1b9b46 / @0x1b9b82); used as
+// The MFC global allocator / deallocator (NAFXCW); used as
 // the explicit operator-function forms for the FileVersion query buffer (the
 // `new CGruntzApp` further down uses the implicit new+ctor form).
 
-// The Advanced Options modal dialog proc (matched, unit advancedoptions; the
-// C++ symbol ?AdvancedOptionsDialogProc@@YGHPAXIIJ@Z). Its address is taken for
-// DialogBoxParamA (reloc-masked via thunk 0x401b3b).
+// The Advanced Options modal dialog proc (matched, unit advancedoptions). Its
+// address is taken for DialogBoxParamA (reloc-masked via a thunk).
 int __stdcall AdvancedOptionsDialogProc(HWND, UINT, WPARAM, LPARAM);
 
 // ---------------------------------------------------------------------------
@@ -118,12 +115,12 @@ int __stdcall AdvancedOptionsDialogProc(HWND, UINT, WPARAM, LPARAM);
 // members WinMain touches are the vtable: Init / RunMessageLoop / the
 // scalar-deleting dtor are all virtual dispatches (`call [vtbl+N]`), so a class
 // with an opaque 0x254-byte body + the used virtual slots suffices. The ctor
-// (@0x80850, reached via thunk 0x26c1) and the virtuals are UNMATCHED but their
+// (reached via a thunk) and the virtuals are UNMATCHED but their
 // calls are reloc-masked, so the call bytes are still byte-exact. The vtable
 // layout follows CGameApp (see src/Wap32/Wap32.h):
 //   slot 0  (+0x00) ~CGruntzApp  -> `delete g_pApp` (scalar-deleting dtor)
 //   slot 2  (+0x08) Init(hInst,name,ident,cmd,flags,w,h)
-//   slot 6  (+0x18) RunMessageLoop()  -> the message pump @0x13d910
+//   slot 6  (+0x18) RunMessageLoop()  -> the message pump
 // ---------------------------------------------------------------------------
 class CGruntzApp {
 public:
@@ -143,19 +140,19 @@ private:
 // ---------------------------------------------------------------------------
 // File-scope globals (the relocs that name them are masked in objdiff; only the
 // address-load bytes are load-bearing).
-//   g_version0..3   @0x651608/60c/610/614 - the parsed FileVersion components
+//   g_version0..3   - the parsed FileVersion components
 //       (order matches the "%d.%d.%d.%d" out-params left-to-right).
-//   g_pApp          @0x651600 - the CGruntzApp* (constructed on the normal path,
+//   g_pApp          - the CGruntzApp* (constructed on the normal path,
 //       `delete`d on every exit of that path).
-//   g_hInstance     @0x651618 - this module's HINSTANCE (shared with
+//   g_hInstance     - this module's HINSTANCE (shared with
 //       AdvancedOptions.cpp, which reads it for LoadIconA).
 // ---------------------------------------------------------------------------
-static int        g_version0;     // 0x651608  (1st %d)
-static int        g_version1;     // 0x65160c  (2nd %d)
-static int        g_version2;     // 0x651610  (3rd %d)
-static int        g_version3;     // 0x651614  (4th %d)
-static CGruntzApp *g_pApp;        // 0x651600
-static HINSTANCE   g_hInstance;   // 0x651618
+static int        g_version0;     // 1st %d
+static int        g_version1;     // 2nd %d
+static int        g_version2;     // 3rd %d
+static int        g_version3;     // 4th %d
+static CGruntzApp *g_pApp;
+static HINSTANCE   g_hInstance;
 
 // ---------------------------------------------------------------------------
 // WinMain - extern "C" int WINAPI WinMain(...) -> the linker symbol is
@@ -216,7 +213,7 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     //     scheduled here (the target interleaves it with the settle-delay call).
     g_hInstance = hInstance;
     int bAdvanced = 0;
-    SettleDelay(0x64);   // 0x13dfe0 busy-wait, ~100ms
+    SettleDelay(0x64);   // busy-wait, ~100ms
     if ((short)GetAsyncKeyState(VK_CONTROL) & 0x80000000)
         bAdvanced = 1;
     if ((short)GetAsyncKeyState(VK_SHIFT) & 0x80000000)

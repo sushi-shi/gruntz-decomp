@@ -1,4 +1,4 @@
-// CPlay.cpp - CPlay::Render @0xc8cf0 (3092 B): the in-game PLAY state's per-frame
+// CPlay.cpp - CPlay::Render: the in-game PLAY state's per-frame
 // step+draw, the heart of the running game. CARCASS reconstruction: the control
 // flow, the CPlay/CState/CGameRegistry member offsets, and the ordered per-frame
 // call sequence are faithful; field/callee names are placeholders and unmatched
@@ -16,7 +16,7 @@
 //   m_414 = 0;                                    // per-frame "drew" flag
 //   if (m_4ec) return 1;                          // hard early-out
 //
-//   if (m_4f8) {                  // ---- MAIN in-game frame (@0xc8d44) ----
+//   if (m_4f8) {                  // ---- MAIN in-game frame ----
 //       StepInputA(); StepWorldB(); ViewPreStep(m_c->m_24);
 //       g_6bf3c0=g_645580; g_6bf3bc=g_645584;     // mirror the draw clock
 //       DRAW_WORLD();                             // shared world-draw block
@@ -25,7 +25,7 @@
 //       if (m_c->m_4->m_14 == 0) return 1;        // no view -> bail
 //       FrameTimerEnd; DrawSurfaceFlush; GutsStepX; ViewPostStep; return 1;
 //   } else if (m_4->m_c==0 && !(reg->m_134!=2 && m_4fc)) {
-//                                 // ---- MENU/PAUSE-OVERLAY frame (@0xc8f52) ----
+//                                 // ---- MENU/PAUSE-OVERLAY frame ----
 //       FrameTimerBegin(now); Eng_FrameTimerStep(m_4->m_6c,0);
 //       if (m_2f8==0x66) <booty-region one-shot +0x328 0x2710ms -> RegCue 0x33e>;
 //       StepInputA(); StepC();
@@ -41,8 +41,8 @@
 //       WorldBlit(g_645584);
 //       if (m_c->m_4->m_14==0) return 1;
 //       if (m_4b0) SnapshotStep();                // screenshot countdown +0x4a0
-//       <four scroll-region one-shots @0x430/0x440/0x450/0x460>; return 1;
-//   } else {                      // ---- m_4->m_c != 0 short path (@0xc96b7) ----
+//       <four scroll-region one-shots at +0x430/+0x440/+0x450/+0x460>; return 1;
+//   } else {                      // ---- m_4->m_c != 0 short path ----
 //       StepInputA();
 //       if (m_c->m_4->m_14==0) return 1;
 //       <cursor profiler m_c->m_20: timeGetTime x2>;
@@ -51,18 +51,18 @@
 //       MarkerBegin(now); PostHud(0); DrawSurfaceFlushTail(); return 1;
 //   }
 //
-// THE SHARED WORLD-DRAW BLOCK (verbatim @0xc8d75 and @0xc910d):
+// THE SHARED WORLD-DRAW BLOCK (verbatim across both world-draw sites):
 //   m_c->m_8->vtbl[+0x24](0);                     // renderer A: begin scene
-//   Eng_PushView(m_c->m_24, m_c->m_4->m_14, m_c->m_8);             // @0x15dc90
+//   Eng_PushView(m_c->m_24, m_c->m_4->m_14, m_c->m_8);
 //   m_c->m_c->vtbl[+0x34](m_c->m_4->m_14, m_c->m_4->m_18);          // present
-//   WorldBlit(m_c->m_24->m_5c->m_84, ->m_88) on m_4->m_54;          // @0x1a7d
+//   WorldBlit(m_c->m_24->m_5c->m_84, ->m_88) on m_4->m_54;
 //   if (m_c->m_20) { t=timeGetTime(); profiler(m_c->m_20,t) x2; }   // frame profiler
 //   MarkerBegin(g_645584); GutsStep();                             // marker + guts
 //
-// The per-ENTITY layer is one indirection down: g_entityList @0x645574 is walked
-// by the world object (m_4->m_54) inside the reloc-masked @0x1a7d call. The
-// next targets are CPlay's own sub-steps (0xd0000-range) + the world-draw helpers
-// (0x15dc90 push-view, 0x13e850 surface-flush, 0x1a7d camera blit, 0x163f40 HUD).
+// The per-ENTITY layer is one indirection down: g_entityList is walked
+// by the world object (m_4->m_54) inside the reloc-masked camera-blit call. The
+// next targets are CPlay's own sub-steps + the world-draw helpers
+// (push-view, surface-flush, camera blit, HUD).
 // ============================================================================
 
 #include "CPlay.h"
@@ -71,18 +71,18 @@
 // ---- MFC primitives reused verbatim from the engine (reloc-masked). ----
 class CString {
 public:
-    CString();              // @0x1b9b93
-    ~CString();             // @0x1b9cde
-    void Format(const char *, ...);   // @0x1b2cf5
+    CString();
+    ~CString();
+    void Format(const char *, ...);
 };
-extern int MapLookup(void *map, void *key, void *&out);   // @0x1b8760 CMapPtrToPtr::Lookup
+extern int MapLookup(void *map, void *key, void *&out);   // CMapPtrToPtr::Lookup
 
-// ---- The global CButeMgr text-config tree (the @0x6453d8 singleton). Modeled as
-//      a minimal class so PlayCueAt's `ecx=0x6453d8; call GetInt` reloc-masks
-//      against the already-matched ?GetInt@CButeMgr@@QAEHPAD0@Z (butemgr unit). --
+// ---- The global CButeMgr text-config tree (the singleton). Modeled as
+//      a minimal class so PlayCueAt's `mov ecx,<singleton>; call GetInt`
+//      reloc-masks against the already-matched GetInt (butemgr unit). --
 class CButeMgr {
 public:
-    int GetInt(char *tag, char *key);   // @0x171af0 (thiscall ret 8)
+    int GetInt(char *tag, char *key);
 };
 DATA(0x2453d8)
 extern CButeMgr g_buteMgr;
@@ -90,35 +90,35 @@ extern CButeMgr g_buteMgr;
 
 // ---- StepInputA / PlayCueAt leaf engine callees (free fns / reloc-masked). ----
 extern "C" {
-    void  Eng_SurfaceFlush(void *surf, int z);                // 0x13e850 (begin, 0)
-    void  Eng_BeginScene(void *surf, int z);                  // 0x13e760
-    void  Eng_Profiler1(void *timer, unsigned long t);        // 0x136e20
-    void  Eng_Profiler2(void *timer, unsigned long t);        // 0x137ac0
-    void  Eng_HudDraw(void *hud, RECT *r, int c);             // 0x163f40
-    void  Eng_HudFlush(void *hud);                            // 0x163370
-    int   Eng_PlaySound(void *snd, const char *name, int flag); // 0x138840
-    void *Eng_FindSound(void *snd, const char *name);         // 0x138730
-    void  Eng_StopSound(void *snd, int flag);                 // 0x139030
-    void  Eng_FrameTimerStep(void *t, int now);               // 0x13f460
-    // --- StepInputA @0xd11e0 ---
-    int   __stdcall Eng_InputProbe(void *a, void *b, void *axis, void *edge, int n); // 0x13ef90
-    void  Eng_InputDispatch(int z0, int z1, int probe);       // 0x141400 (cdecl, 3)
+    void  Eng_SurfaceFlush(void *surf, int z);                // (begin, 0)
+    void  Eng_BeginScene(void *surf, int z);
+    void  Eng_Profiler1(void *timer, unsigned long t);
+    void  Eng_Profiler2(void *timer, unsigned long t);
+    void  Eng_HudDraw(void *hud, RECT *r, int c);
+    void  Eng_HudFlush(void *hud);
+    int   Eng_PlaySound(void *snd, const char *name, int flag);
+    void *Eng_FindSound(void *snd, const char *name);
+    void  Eng_StopSound(void *snd, int flag);
+    void  Eng_FrameTimerStep(void *t, int now);
+    // --- StepInputA ---
+    int   __stdcall Eng_InputProbe(void *a, void *b, void *axis, void *edge, int n);
+    void  Eng_InputDispatch(int z0, int z1, int probe);       // (cdecl, 3)
     // --- OnRegion3/4 leaf cues ---
-    void  Eng_RegionCueA(int a, int b, int c, int d, int e);  // 0xec1c0 (cdecl, 5)
-    // --- PlayCueAt @0xd1890 cue renderers (cdecl, 9 args each) ---
+    void  Eng_RegionCueA(int a, int b, int c, int d, int e);  // (cdecl, 5)
+    // --- PlayCueAt cue renderers (cdecl, 9 args each) ---
     void  Eng_CueRenderTop(void *cueObj, void *cueState, RECT *r,
-                           int a2, int one, int a4, int a5, int a6, int a7); // 0x115440
+                           int a2, int one, int a4, int a5, int a6, int a7);
     void  Eng_CueRenderDef(void *cueObj, void *cueState, RECT *r,
-                           int a2, int one, int a4, int a5, int a6, int a7); // 0x115520
+                           int a2, int one, int a4, int a5, int a6, int a7);
 }
 
-// A reg->m_68 sink that OnRegion4 posts to (thiscall, 2 args, ret 8). @0x7c2e0.
+// A reg->m_68 sink that OnRegion4 posts to.
 struct CRegSink { void Post(int a, int b); };
-// PlayCueAt's per-cue de-dupe object at this+0x410 (thiscall compare, ret 4). @0x1bedde
+// PlayCueAt's per-cue de-dupe object at this+0x410.
 struct CCueState { int Probe(int wParam); };
 
 // ===========================================================================
-// CPlay::Render  @0xc8cf0  (vtable slot +0x14)
+// CPlay::Render  (vtable slot +0x14)
 // ===========================================================================
 RVA(0x0c8cf0, 0xc14)
 int CPlay::Render()
@@ -129,31 +129,31 @@ int CPlay::Render()
     BeginFrameClear(0, m_150, m_154);     // this->vtbl[+0x7c](0, m_150, m_154)
 
     if (m_4ec != 0)
-        return 1;                         // @0xc8d2c hard early-out
+        return 1;                         // hard early-out
 
     if (m_4f8 != 0) {
         // =================================================================
-        // ---- MAIN in-game frame (@0xc8d44) ----
+        // ---- MAIN in-game frame ----
         // =================================================================
-        StepInputA();                     // @0x259a poll/sim sub-step A
-        StepWorldB();                     // @0x434a world/camera sub-step B
-        m_c->m_24->PreStep();             // @0x28d3 on m_c->m_24 (view pre-step)
+        StepInputA();                     // poll/sim sub-step A
+        StepWorldB();                     // world/camera sub-step B
+        m_c->m_24->PreStep();             // on m_c->m_24 (view pre-step)
 
         g_6bf3c0 = g_645580;              // mirror the draw clock
         g_6bf3bc = g_645584;
 
-        // --- shared world-draw block #1 (@0xc8d75) ---
+        // --- shared world-draw block #1 ---
         m_c->m_8->BeginScene(0);                     // m_c->m_8->vtbl[+0x24](0)
-        m_c->m_24->PushView(m_c->m_4->m_14, m_c->m_8);   // @0x15dc90 (thiscall on m_24)
+        m_c->m_24->PushView(m_c->m_4->m_14, m_c->m_8);   // (thiscall on m_24)
         m_c->m_c->Present((int)m_c->m_4->m_14, (int)m_c->m_4->m_18);  // vtbl[+0x34]
-        m_4w()->m_54->Blit(m_c->m_24->m_5c->m_84, m_c->m_24->m_5c->m_88);  // @0x1a7d
+        m_4w()->m_54->Blit(m_c->m_24->m_5c->m_84, m_c->m_24->m_5c->m_88);
         if (m_c->m_20 != 0) {                        // frame profiler
             unsigned long t = timeGetTime();
             Eng_Profiler1(m_c->m_20, t);
             Eng_Profiler2(m_c->m_20, t);
         }
-        MarkerBegin((int)g_645584);                  // @0x2cc0 m_2e4 begin-marker
-        GutsStep();                                  // @0x21b7 m_2dc step
+        MarkerBegin((int)g_645584);                  // m_2e4 begin-marker
+        GutsStep();                                  // m_2dc step
 
         // --- periodic AMBIENT-cue timer (+0x3f8, 0x1f4 ms; toggles m_408) ---
         {
@@ -166,43 +166,43 @@ int CPlay::Render()
                 m_3fc = 0;
             }
             if (m_408 != 0)
-                PlayCueAt(0x8128, 0x78, 0, 0xff, 0xff, 0, 1, 0);  // @0x1e4c cue
+                PlayCueAt(0x8128, 0x78, 0, 0xff, 0xff, 0, 1, 0);  // cue
         }
 
         if (m_c->m_4->m_14 == 0)
-            return 1;                                // @0xc8ea1 no view -> bail
+            return 1;                                // no view -> bail
 
-        FrameTimerBegin((int)g_645584);              // @0x3710 m_3f4 begin
+        FrameTimerBegin((int)g_645584);              // m_3f4 begin
         FrameTimerEnd(0, (int)g_645584);             // wait: end takes (this,flag)
-        Eng_SurfaceFlush(m_c->m_4->m_10->m_2c, 0);         // @0x13e850 surface flush
-        // GutsStepX(m_470, m_2dc, reg) -> the post-draw step @0x2356 (modeled via
+        Eng_SurfaceFlush(m_c->m_4->m_10->m_2c, 0);         // surface flush
+        // GutsStepX(m_470, m_2dc, reg) -> the post-draw step (modeled via
         // the same external; here as the marker/guts step):
-        GutsStep();                                  // @0x2356 (post-draw guts)
-        m_c->m_24->PostStep();                       // @0x3783 on m_c->m_24
-        return 1;                                    // @0xc8f26 -> draw tail
+        GutsStep();                                  // (post-draw guts)
+        m_c->m_24->PostStep();                       // on m_c->m_24
+        return 1;                                    // -> draw tail
     }
 
     // m_4f8 == 0
     if (((CWorld *)m_4)->m_c != 0)
-        goto alt2;                                   // @0xc8f31
+        goto alt2;
     {
         CGameRegistry *reg = g_64556c;
         if (reg->m_134 != 2 && m_4fc != 0)
-            goto alt2;                               // @0xc8f4c
+            goto alt2;
     }
 
     // =================================================================
-    // ---- MENU / PAUSE-OVERLAY frame (@0xc8f52) ----
+    // ---- MENU / PAUSE-OVERLAY frame ----
     // =================================================================
     {
         CWorld *w = (CWorld *)m_4;
-        FrameTimerBegin((int)g_645584);              // @0x3710 m_3f4 begin
-        Eng_FrameTimerStep(w->m_6c, 0);              // @0x20b3 m_4->m_6c step
+        FrameTimerBegin((int)g_645584);              // m_3f4 begin
+        Eng_FrameTimerStep(w->m_6c, 0);              // m_4->m_6c step
 
         if (m_2f8 == 0x66) {                         // booty-region one-shot
             unsigned int elapsed = g_645588 - (unsigned)m_328;
             if (elapsed >= (unsigned)m_330) {
-                RegCue(g_64556c->m_60, 0x33e);       // @0x39f4 reg->m_60 cue
+                RegCue(g_64556c->m_60, 0x33e);       // reg->m_60 cue
                 m_330 = 0x2710;
                 m_334 = 0;
                 m_328 = (int)g_645588;
@@ -210,41 +210,41 @@ int CPlay::Render()
             }
         }
 
-        StepInputA();                                // @0x259a
-        StepC();                                     // @0x1da7
+        StepInputA();
+        StepC();
 
         // --- AMBIENT level-init one-shot (+0x348) ---
         if (m_348 == 0) {
             unsigned int elapsed = g_645588 - (unsigned)m_338;
             if (elapsed >= (unsigned)m_340) {
-                int id = GetAmbientId();             // @0x1df2
+                int id = GetAmbientId();
                 CString name; (void)name;            // [esp+0x10] CString temp (/GX)
                 char buf[0x80];
-                wsprintfA(buf, "AMBIENT%d", id);     // s_AMBIENT%d @0x610888
+                wsprintfA(buf, "AMBIENT%d", id);     // s_AMBIENT%d
                 if (g_64556c->m_14 != 0) {
-                    Eng_PlaySound(w->m_48, buf, 1);  // @0x138840
+                    Eng_PlaySound(w->m_48, buf, 1);
                 } else {
                     void *out = 0;
-                    void *snd = Eng_FindSound(w->m_48, buf);  // @0x138730
+                    void *snd = Eng_FindSound(w->m_48, buf);
                     if (snd != 0) out = snd;
-                    if (out != 0) Eng_StopSound(out, 1);      // @0x139030
+                    if (out != 0) Eng_StopSound(out, 1);
                 }
                 m_348 = 1;
             }
         }
 
         if (m_470 != 0) {                            // extra HUD/overlay layer
-            Eng_BeginScene(m_c->m_4->m_10->m_2c, 0);       // @0x13e760
-            GutsStepB();                             // @0x125d m_2dc
+            Eng_BeginScene(m_c->m_4->m_10->m_2c, 0);
+            GutsStepB();                             // m_2dc
         }
 
         if (m_30c == 0) {                            // world-ready init
             if (w->m_68->m_230 != 0)
-                WorldSubstep();                      // @0x1398
-            StepWorldB();                            // @0x434a
+                WorldSubstep();
+            StepWorldB();
         }
 
-        StepScroll();                                // @0x3850
+        StepScroll();
 
         // per-frame timing gate (UNSIGNED clamp: 0x12 < dt < 0xc8):
         {
@@ -255,27 +255,27 @@ int CPlay::Render()
                 RenderSlow();                        // call [edx+0x9c]
         }
 
-        // --- shared world-draw block #2 (@0xc910d) ---
-        m_c->m_24->PushView(m_c->m_4->m_14, m_c->m_8); // @0x15dc90
+        // --- shared world-draw block #2 ---
+        m_c->m_24->PushView(m_c->m_4->m_14, m_c->m_8);
         m_c->m_c->Present((int)m_c->m_4->m_14, (int)m_c->m_4->m_18);// present
         if (m_474 != 0) {
-            StepC();                                 // @0x1ae6 alt-input draw
+            StepC();                                 // alt-input draw
         } else {
             m_c->m_24->PushView(m_c->m_4->m_14, m_c->m_8);
             m_c->m_c->Present((int)m_c->m_4->m_14, (int)m_c->m_4->m_18);
         }
-        MarkerBegin((int)g_645584);                  // @0x2cc0
-        GutsStep();                                  // @0x21b7
-        InputSubStep(w->m_70);                       // @0x3562 m_4->m_70
+        MarkerBegin((int)g_645584);
+        GutsStep();
+        InputSubStep(w->m_70);                       // m_4->m_70
 
         if (m_320 != 0 && m_2dc->m_10c != 5) {       // on-screen overlay/banner
-            Overlay1(0, (int)g_645584);              // @0x1fa0
-            Overlay2(m_c, 0);                        // @0x14dd
+            Overlay1(0, (int)g_645584);
+            Overlay2(m_c, 0);
         }
 
-        WorldBlit((int)g_645584);                    // @0x441c on m_4->m_5c (thiscall)
+        WorldBlit((int)g_645584);                    // on m_4->m_5c (thiscall)
         if (m_c->m_4->m_14 == 0)
-            return 1;                                // @0xc927d
+            return 1;
 
         // --- snapshot/screenshot countdown (+0x4a0/+0x4a8) ---
         if (m_4b0 != 0) {
@@ -284,33 +284,33 @@ int CPlay::Render()
             if ((int)dur >= 0) {
                 // duration elapsed: post a message + reset the marker block + walk.
                 if (m_2dc->m_574 != 0)
-                    SnapPostMessage(5);              // @0x18e3 reg->m_68 (5)
+                    SnapPostMessage(5);              // reg->m_68 (5)
                 else
                     SnapPostMessage(g_644c54);
                 // reset the m_3f4 marker block (+0x30..0x4c):
                 FrameTimerEnd(0, 0);
-                GutsStepC();                         // @0x14ba m_2dc
+                GutsStepC();                         // m_2dc
                 m_4b0 = 0;
-                // walk the level tree (CMapPtrToPtr::Lookup @0x1b8760):
+                // walk the level tree (CMapPtrToPtr::Lookup):
                 if (g_64556c->m_15c != 0) {
                     void *out = 0;
                     MapLookup(g_64556c->m_30->m_8, g_64556c->m_15c, out);
-                    if (out != 0) SnapWalk();        // @0x3a1c
+                    if (out != 0) SnapWalk();
                 }
             } else {
                 // not yet: build a CString temp, CopyRect the viewport, HudDraw.
                 CString tmp; (void)tmp;              // [esp+0x10] CString temp
-                tmp.Format("%s", "");                // @0x1b2cf5 (s @0x60bdd4)
-                CopyRect(&m_310, (const RECT *)g_64556c->m_30->m_24);  // @0x6c44bc
-                Eng_HudDraw(g_64556c->m_30, &m_310, 1);                // @0x31d9
+                tmp.Format("%s", "");
+                CopyRect(&m_310, (const RECT *)g_64556c->m_30->m_24);
+                Eng_HudDraw(g_64556c->m_30, &m_310, 1);
             }
-            // (CString temp dtor @0x1b9cde runs here under the EH frame)
+            // (CString temp dtor runs here under the EH frame)
         }
 
-        // --- the four scroll-region one-shots (@0x430/0x440/0x450/0x460) ---
-        FrameTimerEnd(0, m_3f4 != 0);                // @0x27a2 / @0x2bfd reset
-        OnRegion5();                                 // @0x3797 -> 0xcf770
-        Eng_FrameTimerStep(w->m_68, 0);              // @0x2b85 m_4->m_68
+        // --- the four scroll-region one-shots (+0x430/+0x440/+0x450/+0x460) ---
+        FrameTimerEnd(0, m_3f4 != 0);                // reset
+        OnRegion5();
+        Eng_FrameTimerStep(w->m_68, 0);              // m_4->m_68
 
         if (m_4f4 != 0 && m_2dc->m_550 == 0 && m_2dc->m_554 == 0) {
             // win/lose banner timer (+0x3f8 again, 0x1f4 ms):
@@ -323,44 +323,44 @@ int CPlay::Render()
                 m_3fc = 0;
             }
             if (m_408 != 0)
-                PlayCueAt(0x8129, 0x78, 0, 0xff, 0xff, 0, 1, 0);  // @0x1e4c
+                PlayCueAt(0x8129, 0x78, 0, 0xff, 0xff, 0, 1, 0);
         }
 
-        MarkerBegin((int)g_645584);                  // @0x2e2d
-        PostHud(0);                                  // @0x1519
+        MarkerBegin((int)g_645584);
+        PostHud(0);
         if (m_30c != 0) {                            // optional HUD overlay draw
-            Eng_HudDraw(m_c->m_4->m_10->m_2c, &m_310, 0xff);  // @0x163f40 (this=m_4->m_10->m_2c)
+            Eng_HudDraw(m_c->m_4->m_10->m_2c, &m_310, 0xff);  // (this=m_4->m_10->m_2c)
         }
-        Eng_SurfaceFlush(m_c->m_4->m_10->m_2c, 0);         // @0x13e850
+        Eng_SurfaceFlush(m_c->m_4->m_10->m_2c, 0);
 
-        // --- the four screen-region scroll one-shots (@0x95b2..0x96b2): each is
+        // --- the four screen-region scroll one-shots: each is
         // a 64-bit "inside region" elapsed test that fires its OnRegion handler. ---
         if (m_470 != 0) {                            // region-1 (+0x430)
             unsigned int e = g_645588 - (unsigned)m_430;
-            if (e >= (unsigned)m_438) OnRegion2((int)g_645588);  // @0x3a85
+            if (e >= (unsigned)m_438) OnRegion2((int)g_645588);
         }
         if (m_474 != 0) {                            // region-2 (+0x440)
             unsigned int e = g_645588 - (unsigned)m_440;
-            if (e >= (unsigned)m_448) OnRegion1((int)g_645588);  // @0x3792
+            if (e >= (unsigned)m_448) OnRegion1((int)g_645588);
         }
         if (m_478 != 0) {                            // region-3 (+0x450)
             unsigned int e = g_645588 - (unsigned)m_450;
-            if (e >= (unsigned)m_458) OnRegion3((int)g_645588);  // @0x3904
+            if (e >= (unsigned)m_458) OnRegion3((int)g_645588);
         }
         if (m_47c != 0) {                            // region-4 (+0x460)
             unsigned int e = g_645588 - (unsigned)m_460;
-            if (e >= (unsigned)m_468) OnRegion4((int)g_645588);  // @0x3e45
+            if (e >= (unsigned)m_468) OnRegion4((int)g_645588);
         }
         return 1;                                    // -> draw tail
     }
 
 alt2:
     // =================================================================
-    // ---- the m_4->m_c != 0 short path (@0xc96b7) ----
+    // ---- the m_4->m_c != 0 short path ----
     // =================================================================
-    StepInputA();                                    // @0x259a
+    StepInputA();
     if (m_c->m_4->m_14 == 0)
-        return 1;                                    // @0xc96cb
+        return 1;
     {
         if (m_c->m_20 != 0) {                        // cursor/frame profiler
             unsigned long t = timeGetTime();
@@ -368,23 +368,23 @@ alt2:
             Eng_Profiler2(m_c->m_20, t);
         }
         if (m_500 != 0) {
-            // ---- the paused frame (@0xc984c): draw-only ----
-            m_c->m_24->PushView(m_c->m_4->m_14, m_c->m_8);   // @0x15dc90
+            // ---- the paused frame: draw-only ----
+            m_c->m_24->PushView(m_c->m_4->m_14, m_c->m_8);
             m_c->m_c->Present((int)m_c->m_4->m_14, (int)m_c->m_4->m_18);  // present
-            GutsStep();                                    // @0x21b7
+            GutsStep();
             if (m_2dc->m_550 == 0 && m_2dc->m_554 == 0)
-                PlayCueAt(0x812c, 0x78, 0, 0xff, 0xff, 0, 1, 0);  // @0x1e4c win/lose
-            FrameTimerEnd(1, 0);                           // @0x27a2
+                PlayCueAt(0x812c, 0x78, 0, 0xff, 0xff, 0, 1, 0);  // win/lose
+            FrameTimerEnd(1, 0);
         } else {
-            // ---- the active short frame (@0xc9701): entity step + cues ----
+            // ---- the active short frame: entity step + cues ----
             if (m_510 > 0) {
                 m_510 = m_510 - 1;
-                m_c->m_24->PushView(m_c->m_4->m_14, m_c->m_8);    // @0x15dc90
+                m_c->m_24->PushView(m_c->m_4->m_14, m_c->m_8);
                 m_c->m_c->Present((int)m_c->m_4->m_14, (int)m_c->m_4->m_18);   // present
-                GutsStep();                                     // @0x21b7
-                Eng_FrameTimerStep(m_2dc, 0x32);                // @0x13f460
-                PlayCueAt(m_40c, 0x78, 0, 0xff, 0xff, 0, 1, 0); // @0x1e4c (cueId=m_40c)
-                FrameTimerEnd(1, 0);                            // @0x27a2
+                GutsStep();
+                Eng_FrameTimerStep(m_2dc, 0x32);
+                PlayCueAt(m_40c, 0x78, 0, 0xff, 0xff, 0, 1, 0); // (cueId=m_40c)
+                FrameTimerEnd(1, 0);
             }
             if (m_348 == 0) {
                 // the same AMBIENT level-init one-shot (+0x348):
@@ -406,15 +406,15 @@ alt2:
                 }
             }
         }
-        MarkerBegin((int)g_645584);                  // @0x2e2d
-        PostHud(0);                                  // @0x1519
-        Eng_SurfaceFlush(m_c->m_4->m_10->m_2c, 0);         // @0x13e850
+        MarkerBegin((int)g_645584);
+        PostHud(0);
+        Eng_SurfaceFlush(m_c->m_4->m_10->m_2c, 0);
     }
-    return 1;                                        // @0xc98ec draw tail
+    return 1;                                        // draw tail
 }
 
 // ===========================================================================
-// CPlay::StepC  @0xd8d90  (30 B, thiscall, void) - the menu/overlay-frame view
+// CPlay::StepC - the menu/overlay-frame view
 // sub-step. A 3-way switch on the view-mode discriminator m_480: 0 = idle (no
 // view yet, bail), 1 = mode-A sub-step, 2(+) = mode-B sub-step. MSVC hoists the
 // shared `push 4` out of the if/else (both helpers take the same constant).
@@ -432,14 +432,14 @@ void CPlay::StepC()
 }
 
 // ===========================================================================
-// The four screen-region scroll one-shots @0xd8a00/0xd8aa0/0xd8b20/0xd8bc0.
+// The four screen-region scroll one-shots.
 // Each: thiscall(int z), set its region-active gate to bool(z), call the shared
 // enter/leave sub-step, (re)arm its 64-bit countdown timer (interval 0x7530 ms,
 // lo = g_645588, hi = 0), and return 1. They share ONE shape; OnRegion2 also
 // pins the view discriminator m_480, OnRegion3/4 fire an extra cue on enter/leave.
 // ===========================================================================
 RVA(0x0d8a00, 0x73)
-int CPlay::OnRegion2(int z)         // @0xd8a00  (region-0 / gate m_470, timer +0x430)
+int CPlay::OnRegion2(int z)         // (region-0 / gate m_470, timer +0x430)
 {
     if (z != 0) { m_470 = 1; RegionEnter(); m_480 = 1; }
     else        { m_470 = 0; RegionLeave(); m_480 = 2; }
@@ -450,7 +450,7 @@ int CPlay::OnRegion2(int z)         // @0xd8a00  (region-0 / gate m_470, timer +
 }
 
 RVA(0x0d8aa0, 0x5f)
-int CPlay::OnRegion1(int z)         // @0xd8aa0  (region-1 / gate m_474, timer +0x440)
+int CPlay::OnRegion1(int z)         // (region-1 / gate m_474, timer +0x440)
 {
     if (z != 0) { m_474 = 1; RegionEnter(); }
     else        { m_474 = 0; RegionLeave(); }
@@ -461,7 +461,7 @@ int CPlay::OnRegion1(int z)         // @0xd8aa0  (region-1 / gate m_474, timer +
 }
 
 RVA(0x0d8b20, 0x74)
-int CPlay::OnRegion3(int z)         // @0xd8b20  (region-2 / gate m_478, timer +0x450)
+int CPlay::OnRegion3(int z)         // (region-2 / gate m_478, timer +0x450)
 {
     if (z != 0) {
         m_478 = 1;
@@ -478,7 +478,7 @@ int CPlay::OnRegion3(int z)         // @0xd8b20  (region-2 / gate m_478, timer +
 }
 
 RVA(0x0d8bc0, 0x71)
-int CPlay::OnRegion4(int z)         // @0xd8bc0  (region-3 / gate m_47c, timer +0x460)
+int CPlay::OnRegion4(int z)         // (region-3 / gate m_47c, timer +0x460)
 {
     if (z != 0) {
         m_47c = 1;
@@ -495,7 +495,7 @@ int CPlay::OnRegion4(int z)         // @0xd8bc0  (region-3 / gate m_47c, timer +
 }
 
 // ===========================================================================
-// CPlay::StepScroll  @0xd1ac0  (79 B, thiscall, void) - per-frame scroll-offset
+// CPlay::StepScroll - per-frame scroll-offset
 // recompute. Reads the draw-surface (m_c->m_24) scroll origin (+0x10/+0x14) and
 // its geom block (+0x5c -> +0x40.{x,y}), adds the BeginFrameClear extents
 // (m_150/m_154), aligns each axis DOWN to a 0x20 boundary (+0x10 bias) and
@@ -518,7 +518,7 @@ void CPlay::StepScroll()
 }
 
 // ===========================================================================
-// CPlay::StepInputA  @0xd11e0  (155 B, thiscall, int) - per-frame input poll.
+// CPlay::StepInputA - per-frame input poll.
 // Two boot-time one-shot latches (m_1a8/m_1ac fire on the first two frames),
 // then a per-frame edge/axis probe over one of two mirrored half-blocks selected
 // by m_1b0. Probes the draw-surface (m_c->m_4->m_14->m_2c); if absent returns 0.
@@ -549,7 +549,7 @@ int CPlay::StepInputA()
 }
 
 // ===========================================================================
-// CPlay::PlayCueAt  @0xd1890  (442 B, thiscall, ret 0x20 = 8 args) - the ambient/
+// CPlay::PlayCueAt - the ambient/
 // positional on-screen text-cue. Args: (cueId, a2, a3, a4, a5, a6, a7, rectSrc).
 // De-dupes via the per-cue state object this+0x410 (skip if the same cueId is
 // already showing AND its Probe says still-live). Builds the cue RECT from the
@@ -589,9 +589,9 @@ void CPlay::PlayCueAt(int cueId, int a2, int a3, int a4, int a5,
     }
 
     if (a3 != 0)
-        Eng_CueRenderTop(m_c, &m_410, &rect, a2, 1, a4, a5, a6, a7);   // @0x115440
+        Eng_CueRenderTop(m_c, &m_410, &rect, a2, 1, a4, a5, a6, a7);
     else
-        Eng_CueRenderDef(m_c, &m_410, &rect, a2, 1, a4, a5, a6, a7);   // @0x115520
+        Eng_CueRenderDef(m_c, &m_410, &rect, a2, 1, a4, a5, a6, a7);
 }
 
 // -------------------------------------------------------------------------
@@ -604,7 +604,7 @@ RVA(0x08c9d0, 0x2bd)
 void CPlay::Stub_08c9d0() {}
 
 // =========================================================================
-// CState::SetBeginClearParams  @0x08c970
+// CState::SetBeginClearParams
 // Stores the two BeginFrameClear arguments and returns 1.
 //
 RVA(0x8c970, 0x1c)

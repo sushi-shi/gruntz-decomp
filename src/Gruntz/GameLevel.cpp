@@ -1,7 +1,7 @@
 // GameLevel.cpp - CGameLevel::LoadWwd, the WWD level-load orchestrator.
 //
 // Functions in this TU:
-//   CGameLevel::LoadWwd  @ RVA 0x15d280 (633 B, __thiscall ret 0x4, vtable 0x38)
+//   CGameLevel::LoadWwd  (vtable slot 0x38)
 //
 // LoadWwd is the level-load driver. Faithful reconstruction (carcass driven toward
 // byte-exact; see header for the member layout). Flow, straight off the bytes:
@@ -51,7 +51,7 @@
 //
 // The class carries a 4-int coordinate/extent record at +0x10 and a shared
 // "default parameters" block at +0xb0..+0xdc that several methods stamp with the
-// same constants (also written by the ctor @0x15ccd0):
+// same constants (also written by the ctor):
 //     +0xb0 = 500  +0xb4 = 250  +0xb8 = 1000 +0xbc = 1000
 //     +0xc0 = 250  +0xc4 = 125  +0xc8 = 1600 +0xcc = 1200
 //     +0xd0 = 2560 +0xd4 = 1920 +0xd8 = 768  +0xdc = 576
@@ -238,7 +238,6 @@ fail:
 // ===========================================================================
 
 // ---------------------------------------------------------------------------
-// CGameLevel::VirtualMethodUnknown14  @0x161190  (__thiscall, ret 0)
 // Remus adds a +0x10 sentinel check before the common parent/status predicate.
 RVA(0x161190, 0x1f)
 int CGameLevel::VirtualMethodUnknown14()
@@ -256,7 +255,6 @@ fail:
 
 
 // ---------------------------------------------------------------------------
-// CGameLevel::VirtualMethodUnknown34  @0x15d030  (__thiscall, ret 8)
 // Zeroes the first two ints of the +0x10 record, stores (arg0-1)/(arg1-1) into
 // the last two, stamps the param block, returns 1.
 //
@@ -323,7 +321,6 @@ void CGameLevel::Stub_1611e0() {}
 
 
 // ---------------------------------------------------------------------------
-// CGameLevel::VirtualMethodUnknown1C  @0x15d1f0  (__thiscall)
 // Like Unknown44 plus resets the sentinel and zeroes the WwdHeader buffer.
 // ---------------------------------------------------------------------------
 RVA(0x15d1f0, 0x87)
@@ -350,7 +347,6 @@ int CGameLevel::VirtualMethodUnknown1C()
 }
 
 // ---------------------------------------------------------------------------
-// CGameLevel::VirtualMethodUnknown44  @0x15d680  (__thiscall)
 // Releases all child pointers, resets both CDWordArrays, clears members.
 // ---------------------------------------------------------------------------
 RVA(0x15d680, 0x71)
@@ -374,7 +370,6 @@ void CGameLevel::VirtualMethodUnknown44()
 }
 
 // ---------------------------------------------------------------------------
-// CGameLevel::VirtualMethodUnknown20  @0x1611b0  (__thiscall)
 // Returns constant 0x19 (25) — a type-tag or enum identifier.
 // ---------------------------------------------------------------------------
 RVA(0x1611b0, 0x6)
@@ -385,7 +380,6 @@ int CGameLevel::VirtualMethodUnknown20()
 
 // --- restored: matching's RemusCoords sibling definitions (do not drop) ---
 // ---------------------------------------------------------------------------
-// CGameLevel::VirtualMethodUnknown2C  @0x15cdf0  (__thiscall, ret 8)
 // As Unknown24 but dispatches the +0x40 sibling virtual.
 RVA(0x15cdf0, 0xb8)
 int CGameLevel::VirtualMethodUnknown2C(int arg1, RemusCoords *coords)
@@ -400,7 +394,6 @@ int CGameLevel::VirtualMethodUnknown2C(int arg1, RemusCoords *coords)
 }
 
 // ---------------------------------------------------------------------------
-// CGameLevel::VirtualMethodUnknown28  @0x15ceb0  (__thiscall, ret 8)
 // As Unknown24 but dispatches the +0x3c sibling virtual.
 RVA(0x15ceb0, 0xb8)
 int CGameLevel::VirtualMethodUnknown28(int arg1, RemusCoords *coords)
@@ -415,7 +408,6 @@ int CGameLevel::VirtualMethodUnknown28(int arg1, RemusCoords *coords)
 }
 
 // ---------------------------------------------------------------------------
-// CGameLevel::VirtualMethodUnknown24  @0x15cf70  (__thiscall, ret 8)
 // Loads the +0x10 record from *coords, stamps the param block, then dispatches
 // the +0x38 sibling virtual with arg1. On a 0 result it runs the +0x1c hook and
 // returns 0; otherwise returns 1.
@@ -432,7 +424,6 @@ int CGameLevel::VirtualMethodUnknown24(int arg1, RemusCoords *coords)
 }
 
 // ---------------------------------------------------------------------------
-// CGameLevel::VirtualMethodUnknown30  @0x15d0d0  (__thiscall, ret 4)
 // Loads the +0x10 record from *coords, stamps the param block, returns 1.
 RVA(0x15d0d0, 0x99)
 int CGameLevel::VirtualMethodUnknown30(RemusCoords *coords)

@@ -1,9 +1,9 @@
 // Fonts.cpp - InitializeFonts, the one-shot bitmap-font loader.
 //
-//   InitializeFonts @0x115810 (163 B) - a free function that loads the four
+//   InitializeFonts - a free function that loads the four
 //     global bitmap Font instances (large/medium/small/tiny .fnt) via the matched
-//     Font::LoadFont (@0x179830, font unit), each from a by-value CString temp
-//     built from the .fnt literal. Gated by a load-once flag @0x64eb14 (returns 1
+//     Font::LoadFont (font unit), each from a by-value CString temp
+//     built from the .fnt literal. Gated by a load-once flag (returns 1
 //     immediately if set); a 0 LoadFont result aborts the chain (returns the 0).
 //     Once all four load, the flag is latched and 1 returned.
 //
@@ -18,7 +18,7 @@
 
 // The four global Font instances + the load-once flag + the four .fnt file-name
 // literals, addressed by fixed VA so the loads reloc-mask against the matched
-// Font::LoadFont (@0x179830) and the CString literal-ctor (@0x1b9d4c).
+// Font::LoadFont and the CString literal-ctor.
 DATA(0x24eb14)
 extern int g_loadedFlag;
 DATA(0x24eac0)
@@ -36,7 +36,6 @@ extern Font g_tinyFont;
 #define s_tiny_fnt   "tiny.fnt"
 
 // ---------------------------------------------------------------------------
-// InitializeFonts @0x115810
 // One-shot load of the four bitmap fonts. Each Font::LoadFont takes a CString by
 // value (a stack temp constructed from the literal); a 0 return aborts the load
 // (returns the 0 the failed LoadFont left in eax). Once all four load, the flag

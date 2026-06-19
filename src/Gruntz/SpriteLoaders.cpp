@@ -3,16 +3,16 @@
 // out of the engine's string-keyed sprite-set hash table and cache individual
 // animation frames off it (C:\Proj\Gruntz). Both share the same idiom:
 //   1. look the sprite up by class-name string through the matched sprite-set
-//      hash table (CSpriteHashTable::Lookup @0x1b8008, __thiscall, external);
+//      hash table (CSpriteHashTable::Lookup, external);
 //   2. for each wanted frame number N, extract the frame pointer from the
 //      sprite's frame table ONLY when N lies inside the sprite's valid frame
 //      range [m_firstFrame(+0x64) .. m_lastFrame(+0x68)], else cache 0.
 //
-//   LoadTimerSprite      @0x9bb00 (281 B, __thiscall ret 8) - the in-game TIMER
+//   LoadTimerSprite      - the in-game TIMER
 //       sprite ("GAME_TIMER"); looked up through the game-manager singleton
-//       g_gameReg @0x64556c (->+0x30 ->+0x10). Caches frames 10/11 and bails to
+//       g_gameReg (->+0x30 ->+0x10). Caches frames 10/11 and bails to
 //       0 if any required frame is missing.
-//   LoadLoadingBarSprite @0xd7440 (173 B, __thiscall void) - the loading-screen
+//   LoadLoadingBarSprite - the loading-screen
 //       progress-bar sprite ("GAME_LOADINGBAR"); looked up through this->m_c
 //       (->+0x10). Caches frames 1/2/3 and a loaded flag.
 //
@@ -26,13 +26,13 @@
 // ---------------------------------------------------------------------------
 // The engine string-keyed sprite-set hash table. Lookup() hashes the class-name
 // key, finds the entry, and writes the found sprite pointer through *ppOut
-// (returning a found-flag). Modeled minimally so the `ecx=<map>; call 0x1b8008`
+// (returning a found-flag). Modeled minimally so the `ecx=<map>; call <helper>`
 // shape reloc-masks against the matched lookup helper.
 // ---------------------------------------------------------------------------
 struct CSprite;
 class CSpriteHashTable {
 public:
-    int Lookup(char *szName, CSprite **ppOut);   // @0x1b8008 (__thiscall ret 8)
+    int Lookup(char *szName, CSprite **ppOut);
 };
 
 // The engine sprite (animation) object. Only the load-bearing members are
@@ -70,7 +70,7 @@ DATA(0x24556c)
 extern CGameReg *g_gameReg;
 
 // ---------------------------------------------------------------------------
-// CLoadingBar::LoadLoadingBarSprite  @0xd7440  (__thiscall void)
+// CLoadingBar::LoadLoadingBarSprite
 // ---------------------------------------------------------------------------
 class CLoadingBar {
 public:
@@ -101,7 +101,7 @@ int CLoadingBar::LoadLoadingBarSprite()
 }
 
 // ---------------------------------------------------------------------------
-// CTimer::LoadTimerSprite  @0x9bb00  (__thiscall ret 8)
+// CTimer::LoadTimerSprite
 // ---------------------------------------------------------------------------
 class CTimer {
 public:

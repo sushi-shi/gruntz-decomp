@@ -1,5 +1,5 @@
 // TileTriggerLogic.cpp - Gruntz CTileTriggerLogic (C:\Proj\Gruntz).
-// Matched: ??0CTileTriggerLogic@@QAE@XZ @ RVA 0x1107f0 (byte-exact).
+// The constructor is matched byte-exact.
 #include "TileTriggerLogic.h"
 #include "../rva.h"
 
@@ -17,6 +17,6 @@ CTileTriggerLogic::CTileTriggerLogic()
     m_1c = 0;
 }
 
-// Out-of-line stubs anchor ??_7CTileTriggerLogic@@6B@ in this TU (not matched).
+// Out-of-line stubs anchor the CTileTriggerLogic vftable in this TU (not matched).
 CTileTriggerLogic::~CTileTriggerLogic() {}
 int CTileTriggerLogic::TileLogicVfunc0() { return 0; }

@@ -1,6 +1,6 @@
 #include "../rva.h"
 // UnknownWorkerFuncs.cpp - flat struct implementations of unnamed leaf
-// functions in the Draco/Lucius region (0x157000-0x15a000).
+// functions in the Draco/Lucius region.
 //
 // Each struct avoids base-class virtual-inheritance so MSVC5 can resolve
 // member-field references. Field offsets match the target EXACTLY.
@@ -17,7 +17,7 @@ struct HelperHost {
 };
 
 // =========================================================================
-// CDDrawWorkerA (BYTE-flag, 0x7c bytes): Vfunc @0x157110
+// CDDrawWorkerA (BYTE-flag, 0x7c bytes)
 // =========================================================================
 struct CDDrawWorkerA {
     void Init();
@@ -44,8 +44,6 @@ struct CDDrawWorkerA {
 };
 
 // ---------------------------------------------------------------------------
-// CDDrawWorkerA::Vfunc2C  @0x157110
-// ---------------------------------------------------------------------------
 RVA(0x157110, 0x20)
 int CDDrawWorkerA::Vfunc2C(int a1, int a2, int a3)
 {
@@ -56,7 +54,7 @@ int CDDrawWorkerA::Vfunc2C(int a1, int a2, int a3)
 }
 
 // =========================================================================
-// CDDrawWorkerB (int-flag, 0x7c bytes): Vfuncs @0x1572f0/0x157280
+// CDDrawWorkerB (int-flag, 0x7c bytes)
 // =========================================================================
 struct CDDrawWorkerB {
     void Init();
@@ -84,8 +82,6 @@ struct CDDrawWorkerB {
 };
 
 // ---------------------------------------------------------------------------
-// CDDrawWorkerB::Vfunc2C  @0x1572f0
-// ---------------------------------------------------------------------------
 RVA(0x1572f0, 0x20)
 int CDDrawWorkerB::Vfunc2C(int a1, int a2, int a3)
 {
@@ -95,8 +91,6 @@ int CDDrawWorkerB::Vfunc2C(int a1, int a2, int a3)
     return h->Helper_164790(a1, a2);
 }
 
-// ---------------------------------------------------------------------------
-// CDDrawWorkerB::Vfunc34  @0x157280
 // ---------------------------------------------------------------------------
 RVA(0x157280, 0x30)
 int CDDrawWorkerB::Vfunc34(int a1, int a2, int a3, int a4)

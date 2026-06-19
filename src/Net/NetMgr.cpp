@@ -1,9 +1,9 @@
 // NetMgr.cpp - CNetMgr (DirectPlay networking manager) handlers + config writer.
 // Matched methods:
-//   CNetMgr::OnMultiOptions       @ RVA 0x0badd0 (67 B)
-//   CNetMgr::OnMultiPause         @ RVA 0x0bad40 (108 B)
-//   CNetMgr::OnOutOfSync          @ RVA 0x0bae40 (132 B)
-//   CNetMgr::ApplyCmdDelayDefaults@ RVA 0x0b85a0 (210 B)
+//   CNetMgr::OnMultiOptions
+//   CNetMgr::OnMultiPause
+//   CNetMgr::OnOutOfSync
+//   CNetMgr::ApplyCmdDelayDefaults
 //
 // The three message handlers fire a multiplayer command through the engine
 // dispatcher (MultiDispatch, external, via incremental-link thunk), guarded by
@@ -13,15 +13,15 @@
 #include "NetMgr.h"
 #include "../rva.h"
 
-CGameMgr *g_pGameMgr;                     // @0x64556c
+CGameMgr *g_pGameMgr;
 
 // File-scope reentrancy guards.
-static int g_optionzGuard;               // @0x648d08
-static int g_pauseGuard;                 // @0x648d04
-static int g_sharedFlag;                 // @0x648ce0
+static int g_optionzGuard;
+static int g_pauseGuard;
+static int g_sharedFlag;
 
 // ---------------------------------------------------------------------------
-// CNetMgr::OnMultiOptions  @ 0x0badd0  (__thiscall, ret).
+// CNetMgr::OnMultiOptions
 // Reentrancy-guarded fire of the MULTI_OPTIONZ command. Clears m_584, dispatches
 // (return value ignored), then clears the shared flag.
 RVA(0x0badd0, 0x43)
@@ -38,7 +38,7 @@ void CNetMgr::OnMultiOptions()
 }
 
 // ---------------------------------------------------------------------------
-// CNetMgr::OnMultiPause  @ 0x0bad40  (__thiscall, ret).
+// CNetMgr::OnMultiPause
 // Reentrancy-guarded fire of MULTI_PAUSE. When the dispatch returns 0x4cc,
 // forwards WM_COMMAND(0x80d7, m_1c) to the engine window.
 RVA(0x0bad40, 0x6c)
@@ -60,7 +60,7 @@ void CNetMgr::OnMultiPause()
 }
 
 // ---------------------------------------------------------------------------
-// CNetMgr::OnOutOfSync  @ 0x0bae40  (__thiscall, ret).
+// CNetMgr::OnOutOfSync
 // Per-instance reentrancy-guarded fire of MULTI_OUTOFSYNC. Switches on the
 // dispatch result: 0x4cc -> the same WM_COMMAND(0x80d7, m_1c) as Pause;
 // 0x4cd -> nothing; otherwise -> WM_COMMAND(0x8023, 0).
@@ -92,7 +92,7 @@ void CNetMgr::OnOutOfSync()
 }
 
 // ---------------------------------------------------------------------------
-// CNetMgr::ApplyCmdDelayDefaults  @ 0x0b85a0  (__thiscall, ret; C++ EH frame).
+// CNetMgr::ApplyCmdDelayDefaults  (C++ EH frame).
 // Persists the command-timing config to the game RegistryHelper (the singleton's
 // +0x38 member). Builds three value-name strings "m_598 + _Suffix" via operator+
 // (each a stack CString temp), writes m_5a4 under "_CmdDelay" and m_5a8 under

@@ -1,10 +1,10 @@
 // WwdFile.cpp - Gruntz WWD level-file loader (Monolith-faithful reconstruction).
 //
 // Functions matched in this TU:
-//   WwdFile::IsValidWwd       @ RVA 0x160530 (293 B, __stdcall ret 8) - BYTE-EXACT
-//   WwdFile::CheckHeader      @ RVA 0x160660 (299 B, __stdcall ret 8) - BYTE-EXACT
-//   WwdFile::InflateMainBlock @ RVA 0x160790 (~88.7% fuzzy, entropy plateau)
-//   WwdFile::ReadPlane        @ RVA 0x15d8d0 (195 B, __thiscall ret 0xc) - 99.19%
+//   WwdFile::IsValidWwd       - BYTE-EXACT
+//   WwdFile::CheckHeader      - BYTE-EXACT
+//   WwdFile::InflateMainBlock - ~88.7% fuzzy, entropy plateau
+//   WwdFile::ReadPlane        - 99.19%
 //                               (byte-exact modulo 11 reloc-masked operand bytes
 //                                + a 6-byte 2-instruction MSVC5 scheduling swap)
 //
@@ -15,8 +15,8 @@
 // stack buffer and then copies that header out to the caller (inline strcpy-like
 // rep movs of the NUL-terminated... actually a header byte-copy of strlen+1).
 //
-// Both construct an engine binary-file stream on the stack (ctor @0x1befd7, dtor
-// @0x1bf121, Open @0x1bf200, Read @0x1bf328). The stack object has a non-trivial
+// Both construct an engine binary-file stream on the stack (ctor, dtor, Open,
+// Read). The stack object has a non-trivial
 // destructor, so MSVC emits a C++ EH frame (__CxxFrameHandler + FuncInfo, the
 // fs:0 registration + `push -1; push handler`): this TU is built with /GX. The
 // stream's ctor/dtor/Open/Read are unmatched engine functions, but their call
@@ -95,7 +95,7 @@ int __stdcall WwdFile_CheckHeader(const char* name, void* headerOut)
 // new(0x158) under the C++ EH frame), then invoke the plane's block reader
 // (vtable +0x28) on (planeData, blockBase, &this->m_planeCtx). On reader failure,
 // delete the plane (scalar-deleting dtor, vtable +0x4) and return 0. On success,
-// append the plane to m_planes (CArray::SetAtGrow @0x5b5822) at index
+// append the plane to m_planes (CArray::SetAtGrow) at index
 // m_planeCount, and if it is the MAIN plane (m_flags bit0) cache it as m_mainPlane
 // with m_mainIndex = m_planeCount - 1. Returns the new plane.
 //

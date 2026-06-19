@@ -1,17 +1,17 @@
 // FileStream.cpp - CFileIO, the engine's KERNEL32 file-I/O wrapper (MFC CFile
 // work-alike). This class gates ALL engine file I/O (RezMgr, WwdFile, save/load).
 //
-// Functions matched in this TU (RVAs in GRUNTZ.EXE); 9/10 BYTE-EXACT:
-//   CFileIO::CFileIO()            @ 0x1befd7  (64 B,  thiscall ret)    - ctor
-//   CFileIO::CFileIO(HANDLE)      @ 0x1bf033  (68 B,  thiscall ret 4)  - adopt-handle ctor
-//   CFileIO::`scalar deleting dtor` @ 0x1bf017 (28 B, thiscall ret 4)  - ??_G
-//   CFileIO::~CFileIO()           @ 0x1bf121  (78 B,  thiscall ret)    - dtor
-//   CFileIO::Read                 @ 0x1bf328  (58 B,  thiscall ret 8)  - ReadFile
-//   CFileIO::Write                @ 0x1bf362  (75 B,  thiscall ret 8)  - WriteFile
-//   CFileIO::Seek                 @ 0x1bf3ad  (47 B,  thiscall ret 8)  - SetFilePointer
-//   CFileIO::GetPosition         @ 0x1bf3dc  (41 B,  thiscall ret)    - SetFilePointer
-//   CFileIO::Close                @ 0x1bf426  (65 B,  thiscall ret)    - CloseHandle
-//   CFileIO::Open                 @ 0x1bf200  (296 B, thiscall ret c)  - CreateFileA
+// Functions matched in this TU; 9/10 BYTE-EXACT:
+//   CFileIO::CFileIO()              - ctor
+//   CFileIO::CFileIO(HANDLE)        - adopt-handle ctor
+//   CFileIO::`scalar deleting dtor`
+//   CFileIO::~CFileIO()             - dtor
+//   CFileIO::Read                   - ReadFile
+//   CFileIO::Write                  - WriteFile
+//   CFileIO::Seek                   - SetFilePointer
+//   CFileIO::GetPosition            - SetFilePointer
+//   CFileIO::Close                  - CloseHandle
+//   CFileIO::Open                   - CreateFileA
 //                                   (95.5%: one share-switch case-body layout
 //                                    coin-flip remains; logic/control-flow exact)
 //
@@ -60,7 +60,7 @@ CFileIO::~CFileIO()
 // CFileIO::CFileIO(HANDLE)
 // Adopts an existing OS handle: m_open = 0 (we did NOT open it), m_handle = h.
 // Same two-phase vtable + CString-member construction + EH frame as the default
-// ctor. Used by the handle-duplicating clone path (engine fn @0x1bf16f).
+// ctor. Used by the handle-duplicating clone path (engine fn).
 RVA(0x1bf033, 0x44)
 CFileIO::CFileIO(HANDLE hFile)
 {
@@ -152,7 +152,7 @@ void CFileIO::Close()
 
 // The CFileException the failure path fills in: m_cause@+0x8, m_lOsError@+0xc,
 // m_strFileName (CString)@+0x10. The os-error -> exception-cause mapper is the
-// NAFXCW static helper at 0x1c1a71 (external no-body callee, reloc-masked).
+// NAFXCW static helper (external no-body callee, reloc-masked).
 struct CFileExceptionLite {
     char      pad0[8];   // +0x00  (CObject vtable + base)
     int       m_cause;   // +0x08

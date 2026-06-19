@@ -1,17 +1,17 @@
 // Image.cpp - the engine's REZ -> image resolution path.
 //
-// Functions matched in this TU (RVAs in GRUNTZ.EXE):
-//   CImage::LoadFromRez       @ 0x175a90  (238 B, thiscall ret 0xc)  - ext dispatcher
-//   CFileImage::LoadBmp       @ 0x144110  (342 B, thiscall ret 8)    - .BMP file loader
-//   CFileImage::LoadPcx       @ 0x145110  (342 B, thiscall ret 8)    - .PCX file loader
-//   CFileImage::LoadPid       @ 0x145cd0  (304 B, thiscall ret 0xc)  - .PID file loader
+// Functions matched in this TU:
+//   CImage::LoadFromRez  - ext dispatcher
+//   CFileImage::LoadBmp  - .BMP file loader
+//   CFileImage::LoadPcx  - .PCX file loader
+//   CFileImage::LoadPid  - .PID file loader
 //
 // LoadFromRez is the file-extension DISPATCHER (the same idiom as
-// RezMgr::MakeImageKey @0x13e5d0): take ext = strrchr(name,'.'), then a stricmp
+// RezMgr::MakeImageKey): take ext = strrchr(name,'.'), then a stricmp
 // ladder on ".BMP"/".PCX"/".RID"/".PID", forwarding (name,a2,a3) verbatim to the
 // matching sibling loader; no/unknown extension -> the default loader. The four
 // extension literals are reloc-masked file-scope string globals; strrchr/stricmp
-// are the engine's CRT helpers (0x120680 / 0x11fdf0), called reloc-masked.
+// are the engine's CRT helpers, called reloc-masked.
 //
 // CFileImage::Load{Bmp,Pcx,Pid} are the actual file consumers: construct a stack
 // CFileIO, Open(path,0,0), GetLength(), `operator new` a buffer, Read it, hand it
@@ -24,16 +24,16 @@
 
 // The four file-extension literals (reloc-masked .rdata globals). Declared at
 // file scope so each `push OFFSET` matches the binary's direct-address push.
-static const char s_extBmp[] = ".BMP";   // @0x61a0e4
-static const char s_extPcx[] = ".PCX";   // @0x61a0dc
-static const char s_extRid[] = ".RID";   // @0x624278
-static const char s_extPid[] = ".PID";   // @0x61a0d4
+static const char s_extBmp[] = ".BMP";
+static const char s_extPcx[] = ".PCX";
+static const char s_extRid[] = ".RID";
+static const char s_extPid[] = ".PID";
 
-extern "C" char *strrchr(const char *s, int c);          // 0x120680
-extern "C" int   _stricmp(const char *a, const char *b); // 0x11fdf0
+extern "C" char *strrchr(const char *s, int c);
+extern "C" int   _stricmp(const char *a, const char *b);
 
 // ---------------------------------------------------------------------------
-// CImage::LoadFromRez  @ 0x175a90 (238 B, thiscall ret 0xc).
+// CImage::LoadFromRez
 // ext = strrchr(name,'.'); dispatch on .BMP/.PCX/.RID/.PID, else default. Each
 // branch re-tests `ext != 0` (the target's `test esi; je default` per case) and
 // forwards (name,a2,a3); a matched ext returns its loader's result directly.
@@ -55,7 +55,7 @@ int CImage::LoadFromRez(char *name, void *a2, void *a3)
 }
 
 // ---------------------------------------------------------------------------
-// CFileImage::LoadBmp  @ 0x144110 (342 B, thiscall ret 8).
+// CFileImage::LoadBmp
 // Open the file named by `path`; on failure return 0. GetLength(); if the length
 // is zero return 0. `operator new` a buffer of that size; if it fails return 0.
 // Read the file; if the read count != length, free + return 0. Else decode and
@@ -87,7 +87,7 @@ void *CFileImage::LoadBmp(char *name, char *path)
 }
 
 // ---------------------------------------------------------------------------
-// CFileImage::LoadPcx  @ 0x145110 (342 B, thiscall ret 8).
+// CFileImage::LoadPcx
 // Byte-identical to LoadBmp except for the per-format decode helper (DecodePcx).
 RVA(0x145110, 0x156)
 void *CFileImage::LoadPcx(char *name, char *path)
@@ -116,10 +116,10 @@ void *CFileImage::LoadPcx(char *name, char *path)
 }
 
 // ---------------------------------------------------------------------------
-// CFileImage::LoadPid  @ 0x145cd0 (304 B, thiscall ret 0xc).
+// CFileImage::LoadPid
 // Like LoadBmp/LoadPcx, but: (1) it does NOT guard length==0 - it allocates the
 // buffer for whatever GetLength() returns and only null-checks the allocation;
-// (2) the decoder takes a fourth pass-through arg (a3). ret 0xc (this+name+path+a3).
+// (2) the decoder takes a fourth pass-through arg (a3).
 RVA(0x145cd0, 0x130)
 void *CFileImage::LoadPid(char *name, char *path, void *a3)
 {
@@ -144,7 +144,7 @@ void *CFileImage::LoadPid(char *name, char *path, void *a3)
 }
 
 // ===========================================================================
-// CFileImage::DecodePcxEx  @ 0x5459d0 (309 B, thiscall ret 0x10, EH)
+// CFileImage::DecodePcxEx
 //
 // Opens a PCX file, reads data, calls DecodePcxData.
 // ===========================================================================

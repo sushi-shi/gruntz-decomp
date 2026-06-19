@@ -1,6 +1,6 @@
 // Grunt.cpp - the engine's CGrunt entity. Two byte-matched clusters: the 7
-// contiguous HUD sprite creators (@0x04d130..0x04d730) and the 5 animation
-// resolvers (@0x045100..0x045b60). Names are placeholders; only offsets + code
+// contiguous HUD sprite creators and the 5 animation
+// resolvers. Names are placeholders; only offsets + code
 // bytes are load-bearing. Built /O2 /MT /GX (the resolvers' CString temporaries
 // carry a C++ EH frame; /GX does NOT add an EH frame to the 7 creators - they
 // stay byte-exact at their original percentages).
@@ -8,30 +8,30 @@
 // HUD sprite-creator cluster (7/7 logic byte-exact; 5 at 99.3%+ = reloc-masked +
 // a 2-instr edx/ecx register coin-flip, 2 at ~91.6% = the 2-arg Add* register-
 // alloc/scheduling plateau - see below):
-//   CGrunt::CreateHealthSprite()      @ 0x04d130 (181 B, thiscall ret)   99.31%
-//   CGrunt::CreateToySprite()         @ 0x04d220 (156 B, thiscall ret)   91.70%  (2-arg plateau)
-//   CGrunt::CreateStaminaSprite()     @ 0x04d2f0 (180 B, thiscall ret)   99.30%
-//   CGrunt::CreateToyTimeSprite()     @ 0x04d3e0 (245 B, thiscall ret)   99.44%
-//   CGrunt::CreateWingzTimeSprite()   @ 0x04d520 (227 B, thiscall ret)   99.41%
-//   CGrunt::CreatePowerupSprite(int)  @ 0x04d650 (161 B, thiscall ret 4) 99.26%
-//   CGrunt::CreateSelectedSprite()    @ 0x04d730 (150 B, thiscall ret)   91.54%  (2-arg plateau)
+//   CGrunt::CreateHealthSprite()      99.31%
+//   CGrunt::CreateToySprite()         91.70%  (2-arg plateau)
+//   CGrunt::CreateStaminaSprite()     99.30%
+//   CGrunt::CreateToyTimeSprite()     99.44%
+//   CGrunt::CreateWingzTimeSprite()   99.41%
+//   CGrunt::CreatePowerupSprite(int)  99.26%
+//   CGrunt::CreateSelectedSprite()    91.54%  (2-arg plateau)
 //
 // Animation-resolver cluster (5/5 logic + CFG + member-offsets byte-exact; equal
 // instruction counts; residue = reloc-masked EH/CString/call operands + an
 // edx/ecx coin-flip on the `m_40 = m_38->m_1b4` store that no source lever flips,
 // plus, for Idle/Battlecry, the compiler hoisting `idx+0xNNN` into a callee-saved
 // reg early - all entropy-class):
-//   CGrunt::ResolveMovingAnimation()    @ 0x045100 (274 B, thiscall ret)   91.97%
-//   CGrunt::ResolveDeathAnimation()     @ 0x0455f0 (347 B, thiscall ret)   97.08%
-//   CGrunt::ResolveAnimation()          @ 0x0457b0 (332 B, thiscall ret)   94.71%
-//   CGrunt::ResolveIdleAnimation()      @ 0x045960 (385 B, thiscall ret)   91.38%
-//   CGrunt::ResolveBattlecryAnimation() @ 0x045b60 (353 B, thiscall ret)   89.58%
+//   CGrunt::ResolveMovingAnimation()    91.97%
+//   CGrunt::ResolveDeathAnimation()     97.08%
+//   CGrunt::ResolveAnimation()          94.71%
+//   CGrunt::ResolveIdleAnimation()      91.38%
+//   CGrunt::ResolveBattlecryAnimation() 89.58%
 //
 // Resolver levers (the load-bearing source forms):
 //   * operator+ is AFXAPI = __stdcall (ret 0xc, callee-pops the hidden return
 //     slot + both args) - declaring it plain __cdecl emits a bogus `add esp,0xc`
 //     at each call site (caller-cleanup). +~4% across all 5.
-//   * AfxString needs a user-declared ~AfxString() (the engine dtor @0x1b9cde) so
+//   * AfxString needs a user-declared ~AfxString() so
 //     the two key-string temporaries get destruction calls under the C++ EH frame
 //     - without it MSVC emits NO EH frame at all (the temps look trivially
 //     destructible). This is what produced the fs:0 prolog/epilog. ~57%->89%.
@@ -63,7 +63,7 @@
 //
 // Shared shape: bail (return 0) if the target sprite slot is already populated
 // (and, for several, if a stat/flags gate is unset); else ask the global HUD
-// sprite factory (*0x64556c -> +0x30 -> +0x8, __thiscall @0x1597b0) to build a
+// sprite factory (the global registry ptr -> +0x30 -> +0x8, __thiscall) to build a
 // named sprite from its class-name string + two HUD-geometry values derived from
 // this->m_10 (+0x5c, and +0x60 optionally minus a per-sprite constant); store
 // the sprite into the slot; run its slot-0x10 init virtual; register it into the
@@ -83,7 +83,7 @@ static const char s_GruntWingzTimeSprite[]  = "GruntWingzTimeSprite";
 static const char s_GruntPowerupSprite[]    = "GruntPowerupSprite";
 static const char s_GruntSelectedSprite[]   = "GruntSelectedSprite";
 
-// The global manager pointer at binary 0x64556c (reloc-masked).
+// The global manager pointer (reloc-masked).
 CGameRegistry *g_pGameRegistry;
 
 // ---------------------------------------------------------------------------
@@ -93,16 +93,16 @@ CGameRegistry *g_pGameRegistry;
 // (via the two engine global operator+ overloads -> a pair of stack CString
 // temporaries with dtors -> the unit needs /GX for the C++ EH frame), feeds the
 // resolved geometry source into the grunt's animation player (m_38), then looks
-// the key up in the global animation tree (@0x6bf620, CButeTree::Find) and
+// the key up in the global animation tree (CButeTree::Find) and
 // caches the result into m_14->m_1c. Several also fire a 5-arg on-screen "cue"
 // (via g_pGameRegistry->m_60) gated on the grunt being inside the visible view
 // rect (registry m_134==1 -> a 4-way bounds test).
 //
-//   CGrunt::ResolveMovingAnimation()    @0x045100 ("_MOVING", key "B")
-//   CGrunt::ResolveDeathAnimation()     @0x0455f0 ("_DEATH",  key "C")
-//   CGrunt::ResolveAnimation()          @0x0457b0 ("_JOY",    key "E")
-//   CGrunt::ResolveIdleAnimation()      @0x045960 ("_IDLE",   key "A")
-//   CGrunt::ResolveBattlecryAnimation() @0x045b60 ("_BATTLECRY", key "F")
+//   CGrunt::ResolveMovingAnimation()    ("_MOVING", key "B")
+//   CGrunt::ResolveDeathAnimation()     ("_DEATH",  key "C")
+//   CGrunt::ResolveAnimation()          ("_JOY",    key "E")
+//   CGrunt::ResolveIdleAnimation()      ("_IDLE",   key "A")
+//   CGrunt::ResolveBattlecryAnimation() ("_BATTLECRY", key "F")
 //
 // The category suffix strings + the single-char tree keys are literal .rodata
 // (reloc-masked DIR32 operands). The geometry source member differs per category
@@ -120,13 +120,13 @@ static const char s_keyE[]       = "E";
 static const char s_keyA[]       = "A";
 static const char s_keyF[]       = "F";
 
-// The global animation lookup tree @0x6bf620 (a CButeTree) + the rand seed
-// default @0x645588 (reloc-masked).
+// The global animation lookup tree (a CButeTree) + the rand seed
+// default (reloc-masked).
 CAnimLookupTree g_animLookupTree;
 int  g_movingSeed;
 
 // ---------------------------------------------------------------------------
-// CGrunt::ResolveMovingAnimation()  @ 0x045100
+// CGrunt::ResolveMovingAnimation()
 // Gate: m_a8 == 0 (else return 0). Feed key "GRUNTZ_<type>_MOVING" + geometry
 // m_7c into the player; look up tree key "B"; then randomize the move-start time
 // (m_90 = (rand()%0x5dc1 + 0x1770)*10) and seed m_88/m_8c/m_94.
@@ -152,7 +152,7 @@ int CGrunt::ResolveMovingAnimation()
 }
 
 // ---------------------------------------------------------------------------
-// CGrunt::ResolveDeathAnimation()  @ 0x0455f0
+// CGrunt::ResolveDeathAnimation()
 // Gate: m_a8 == 0 (else return 0); then latch m_a8 = 1. Fire the on-screen cue
 // (arg2 = m_ac), feed geometry m_78 then key "GRUNTZ_<type>_DEATH", look up "C".
 RVA(0x0455f0, 0x15b)
@@ -184,7 +184,7 @@ int CGrunt::ResolveDeathAnimation()
 }
 
 // ---------------------------------------------------------------------------
-// CGrunt::ResolveAnimation()  @ 0x0457b0  (generic "_JOY")
+// CGrunt::ResolveAnimation()  (generic "_JOY")
 // Gate: m_a8 == 0 (else return 0). The cue arg2 is a fixed constant (0x435 when
 // on-screen / 0x43f otherwise). Geometry m_74; key "GRUNTZ_<type>_JOY"; look "E".
 RVA(0x0457b0, 0x14c)
@@ -215,7 +215,7 @@ int CGrunt::ResolveAnimation()
 }
 
 // ---------------------------------------------------------------------------
-// CGrunt::ResolveIdleAnimation()  @ 0x045960
+// CGrunt::ResolveIdleAnimation()
 // Gate: m_a8 == 0 (else return 0). Pick idx = rand()%3 + 1 (1..3); cue arg2 =
 // idx+0x431 / idx+0x43b; geometry m_58[idx]; then read the active-anim
 // descriptor's first element's m_14 as a 2nd lookup arg (SetAnimEx); key
@@ -254,7 +254,7 @@ int CGrunt::ResolveIdleAnimation()
 }
 
 // ---------------------------------------------------------------------------
-// CGrunt::ResolveBattlecryAnimation()  @ 0x045b60
+// CGrunt::ResolveBattlecryAnimation()
 // Gate: m_a8 == 0 (else return 0). Pick idx = rand()%3 (0..2); cue arg2 =
 // idx+0x42e / idx+0x438; geometry m_68[idx]; key "GRUNTZ_<type>_BATTLECRY";
 // look up "F".
@@ -288,7 +288,7 @@ int CGrunt::ResolveBattlecryAnimation()
 }
 
 // ---------------------------------------------------------------------------
-// CGrunt::CreateHealthSprite()  @ 0x04d130
+// CGrunt::CreateHealthSprite()
 // Gate: m_healthSprite unset AND m_3ec > 0. geoB = m_60 - 0x19; hint 0xdbba0.
 // Register via AddA(m_1ec, m_1f0, m_3ec).
 RVA(0x04d130, 0xb5)
@@ -312,7 +312,7 @@ int CGrunt::CreateHealthSprite()
 }
 
 // ---------------------------------------------------------------------------
-// CGrunt::CreateToySprite()  @ 0x04d220
+// CGrunt::CreateToySprite()
 // Gate: m_toySprite unset. geoB = m_60 - 0x19; hint 0xdbba0.
 // Register via AddB(m_1ec, m_1f0).
 RVA(0x04d220, 0x9c)
@@ -335,7 +335,7 @@ int CGrunt::CreateToySprite()
 }
 
 // ---------------------------------------------------------------------------
-// CGrunt::CreateStaminaSprite()  @ 0x04d2f0
+// CGrunt::CreateStaminaSprite()
 // Gate: m_staminaSprite unset AND m_3f0 != 0x64. geoB = m_60 - 0x20; hint 0xdbba0.
 // Register via AddA(m_1ec, m_1f0, m_3f0).
 RVA(0x04d2f0, 0xb4)
@@ -359,7 +359,7 @@ int CGrunt::CreateStaminaSprite()
 }
 
 // ---------------------------------------------------------------------------
-// CGrunt::CreateToyTimeSprite()  @ 0x04d3e0
+// CGrunt::CreateToyTimeSprite()
 // Gate: m_toyTimeSprite unset AND m_3f4 != 0. First clears the stamina sprite
 // (m_1c8) and wingz-time sprite (m_1d0) if set (OR 0x10000 into their record's
 // +0x8, null the slot). geoB = m_60 - 0x20; hint 0xdbba0.
@@ -394,7 +394,7 @@ int CGrunt::CreateToyTimeSprite()
 }
 
 // ---------------------------------------------------------------------------
-// CGrunt::CreateWingzTimeSprite()  @ 0x04d520
+// CGrunt::CreateWingzTimeSprite()
 // Gate: m_wingzTimeSprite unset AND m_238 != 0 AND m_3f8 != 0. Clears the
 // toy-time sprite (m_1cc) if set. geoB = m_60 - 0x26; hint 0xdbba0.
 // Register via AddA(m_1ec, m_1f0, m_3f8).
@@ -424,7 +424,7 @@ int CGrunt::CreateWingzTimeSprite()
 }
 
 // ---------------------------------------------------------------------------
-// CGrunt::CreatePowerupSprite(int a)  @ 0x04d650  (ret 4)
+// CGrunt::CreatePowerupSprite(int a)
 // Gate: m_powerupSprite unset. geoB = m_60 (no offset); hint 0x15.
 // Register via AddC(m_1ec, m_1f0, a).
 RVA(0x04d650, 0xa1)
@@ -448,7 +448,7 @@ int CGrunt::CreatePowerupSprite(int a)
 }
 
 // ---------------------------------------------------------------------------
-// CGrunt::CreateSelectedSprite()  @ 0x04d730
+// CGrunt::CreateSelectedSprite()
 // Gate: m_selectedSprite unset. geoB = m_60 (no offset); hint 0x14.
 // Register via AddD(m_1ec, m_1f0).
 RVA(0x04d730, 0x96)
@@ -514,13 +514,13 @@ void CGrunt::LoadEntranceConfig() {}
 // pulled in by this TU), with only the typed getter the function calls.
 class CButeMgr {
 public:
-    unsigned long GetDwordDef(char *tag, char *key, unsigned long def);  // 0x1721e0
+    unsigned long GetDwordDef(char *tag, char *key, unsigned long def);
 };
 extern CButeMgr g_buteMgr;
 static char s_TimePerTile[] = "TimePerTile";
 
 // ---------------------------------------------------------------------------
-// CGrunt::ReadConfigFromButeMgr @ 0x048400 (void, thiscall)
+// CGrunt::ReadConfigFromButeMgr
 // Reads the TimePerTile tuning config from CButeMgr for this grunt's type.
 // Applies a special-case halving for grunt kind 55 (0x37).
 // ---------------------------------------------------------------------------

@@ -1,18 +1,18 @@
 #include "../rva.h"
-// Wormhole.cpp - CWormhole::LoadColors @0x411f0 (160 B, __thiscall void) - the
+// Wormhole.cpp - CWormhole::LoadColors - the
 // wormhole's one-time color-attribute resolver. A CWormhole is a world teleport
-// node (RTTI .?AVCWormhole@@, structure/game/world_objects.h); it owns a state
+// node (RTTI CWormhole, structure/game/world_objects.h); it owns a state
 // sub-object at this+0x10 that carries the wormhole kind discriminator (+0x124)
 // and a lazily-resolved color id (+0x128).
 //
 // The method maps the wormhole kind (m_124 == 2 SECRET / == 1 SINGLE-USE /
 // else NORMAL) to a color id read once from the global CButeMgr "Wormhole"
-// config group (@0x6453d8) via the matched GetIntDef getter (butemgr unit):
+// config group via the matched GetIntDef getter (butemgr unit):
 //     2  -> GetIntDef("Wormhole", "SecretColor",    1)
 //     1  -> GetIntDef("Wormhole", "SingleUseColor", 2)
 //   else -> GetIntDef("Wormhole", "NormalColor",    4)
 // The lookup is cached in m_128 (done only while m_128 == 0). It then indexes the
-// game registry's color table (g_gameReg @0x64556c -> [+0x78] -> [m_128*4 + 0x14])
+// game registry's color table (g_gameReg -> [+0x78] -> [m_128*4 + 0x14])
 // and stamps three draw fields on the state object: m_4c = colorEntry, m_50 = 7,
 // m_58 = 1.
 //
@@ -25,19 +25,19 @@
 // so all three default-color branches converge on one GetIntDef call.
 // ---------------------------------------------------------------------------
 
-// The global CButeMgr text-config tree (the @0x6453d8 singleton). Modeled as a
-// minimal class so the `ecx=0x6453d8; call GetIntDef` shape reloc-masks against
-// the already-matched ?GetIntDef@CButeMgr@@QAEHPAD0H@Z (butemgr unit, @0x171aa0).
+// The global CButeMgr text-config tree (the singleton). Modeled as a
+// minimal class so the `ecx=&g_buteMgr; call GetIntDef` shape reloc-masks against
+// the already-matched CButeMgr::GetIntDef (butemgr unit).
 class CButeMgr {
 public:
-    int GetIntDef(char *tag, char *key, int def);   // @0x171aa0 (thiscall ret c)
+    int GetIntDef(char *tag, char *key, int def);
 };
 DATA(0x2453d8)
 extern CButeMgr g_buteMgr;
 
-// The global game-registry pointer (an int* at VA 0x64556c). Its +0x78 slot is a
+// The global game-registry pointer (an int*). Its +0x78 slot is a
 // pointer to the color table; the wormhole color id (m_128) indexes it at
-// [m_128*4 + 0x14]. Declared int* to match ?g_gameReg@@3PAHA (the target's reloc).
+// [m_128*4 + 0x14]. Declared int* to match g_gameReg (the target's reloc).
 DATA(0x24556c)
 extern int *g_gameReg;
 
@@ -67,7 +67,7 @@ struct CWormholeState {
 // this+0x10. Only the load-bearing member is reconstructed.
 class CWormhole {
 public:
-    void LoadColors();   // @0x411f0 (__thiscall void)
+    void LoadColors();
 
     char            m_pad00[0x10];
     CWormholeState *m_10;        // +0x10  the wormhole state/draw sub-object
@@ -79,7 +79,7 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// CWormhole::LoadColors  @0x411f0
+// CWormhole::LoadColors
 RVA(0x411f0, 0xa0)
 void CWormhole::LoadColors()
 {

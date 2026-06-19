@@ -5,11 +5,11 @@
 // scalar members its ctor touches.
 //
 // THE HIERARCHY (RTTI-derived names; ImageBase 0x400000):
-//   CDialog            MFC base.  ??0CDialog@@QAE@IPAVCWnd@@@Z @0x1ba8e9 (NAFXCW)
-//   CBattlezDlg        Battlez (host/setup) dialog.  vftable @0x5e8bac
-//   CBattlezDlgCustom  Battlez custom-rules dialog.  vftable @0x5e8ee4
-//   CBattlezDlgColors  Battlez team-colors dialog.   vftable @0x5e8d94
-//   CMultiStartDlg     Multiplayer start dialog.     vftable @0x5ea8ec
+//   CDialog            MFC base.
+//   CBattlezDlg        Battlez (host/setup) dialog.
+//   CBattlezDlgCustom  Battlez custom-rules dialog.
+//   CBattlezDlgColors  Battlez team-colors dialog.
+//   CMultiStartDlg     Multiplayer start dialog.
 //
 // Field names are placeholders (m_<hexoffset>); only the OFFSETS + the code
 // bytes are load-bearing (campaign doctrine). Each subclass is reconstructed
@@ -25,26 +25,26 @@
 // never matched here (their `call rel32` displacements reloc-mask in objdiff).
 // ---------------------------------------------------------------------------
 
-// CWnd - referenced ONLY as the `CWnd*` 2nd arg of the CDialog ctor (so the
-// base ctor mangles ??0CDialog@@QAE@IPAVCWnd@@@Z). Opaque; never dereferenced.
+// CWnd - referenced ONLY as the `CWnd*` 2nd arg of the CDialog ctor.
+// Opaque; never dereferenced.
 class CWnd;
 
 // CString - the MFC string. Only its default ctor is touched (the embedded
-// string members the dialog ctors construct in place). ??0CString@@QAE@XZ
-// @0x1b9b93 (NAFXCW): m_pchData = *_afxEmptyString.
+// string members the dialog ctors construct in place).
+// m_pchData = *_afxEmptyString.
 class CString {
 public:
-    CString();              // ??0CString@@QAE@XZ  @0x1b9b93
-    ~CString();             // ??1CString@@QAE@XZ  @0x1b9cde (drives the EH unwind state)
+    CString();
+    ~CString();             // (drives the EH unwind state)
     char *m_pchData;        // +0x00
 };
 
 // CObList - the MFC object list. Only the block-size ctor is touched (the
 // embedded list CMultiStartDlg constructs with nBlockSize=0xa).
-// ??0CObList@@QAE@H@Z @0x1b5d04 (NAFXCW). 0x1c bytes (vptr + 5 scalar fields).
+// 0x1c bytes (vptr + 5 scalar fields).
 class CObList {
 public:
-    CObList(int nBlockSize);    // ??0CObList@@QAE@H@Z  @0x1b5d04
+    CObList(int nBlockSize);
     char m_body[0x1c];          // (incl. the implicit vptr at +0x00)
 };
 
@@ -55,13 +55,13 @@ public:
 // the offsets the disasm pins (+0x5c upward).
 class CDialog {
 public:
-    CDialog(unsigned int nIDTemplate, CWnd *pParent);   // ??0CDialog@@QAE@IPAVCWnd@@@Z @0x1ba8e9
+    CDialog(unsigned int nIDTemplate, CWnd *pParent);
     virtual ~CDialog();                                 // (gives CDialog its vptr @+0x00)
     char m_body[0x5c - 4];                              // pad to 0x5c (vptr occupies +0x00)
 };
 
 // ---------------------------------------------------------------------------
-// CBattlezDlg @ ctor 0x14b30 (vftable @0x5e8bac, __thiscall ret 8 = 2 args).
+// CBattlezDlg
 //   base CDialog(0xc0, pParent); m_5c = a0; CString @+0x6c; m_68 = 0.
 // ---------------------------------------------------------------------------
 class CBattlezDlg : public CDialog {
@@ -75,7 +75,7 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// CBattlezDlgCustom @ ctor 0x18030 (vftable @0x5e8ee4, __thiscall ret 4 = 1 arg).
+// CBattlezDlgCustom
 //   base CDialog(0xc3, pParent); CString @+0x5c.
 // ---------------------------------------------------------------------------
 class CBattlezDlgCustom : public CDialog {
@@ -86,8 +86,7 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// CBattlezDlgColors @ ctor 0x17930 (vftable @0x5e8d94, __thiscall ret 0x10 = 4 args,
-// NO EH frame - no embedded C++ object).
+// CBattlezDlgColors (NO EH frame - no embedded C++ object).
 //   base CDialog(0xc2, pParent); m_5c = a0; m_60 = a1; m_64 = 0; m_68 = a2.
 // ---------------------------------------------------------------------------
 class CBattlezDlgColors : public CDialog {
@@ -101,7 +100,7 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// CMultiStartDlg @ ctor 0xc1750 (vftable @0x5ea8ec, __thiscall ret 8 = 2 args).
+// CMultiStartDlg
 //   base CDialog(0xc5, pParent); m_5c = a0; m_60 = 0; m_6c = 0;
 //   CString @+0x70; CObList(0xa) @+0x74; then g_64bd5c = g_gameReg->m_2c.
 // ---------------------------------------------------------------------------
@@ -110,7 +109,7 @@ public:
     CMultiStartDlg(int a0, CWnd *pParent);
 
     // Engine-label backlog stub (non-virtual placeholder; vtable-neutral).
-    void InitPlayerSlots();         // @0xc20a0
+    void InitPlayerSlots();
 
     int     m_5c;       // +0x5c  (= a0)
     int     m_60;       // +0x60  (= 0)
@@ -123,7 +122,7 @@ public:
 // CCheckpointDlg - trivial CDialog (resource 0xcd); ctor only.
 class CCheckpointDlg : public CDialog {
 public:
-    CCheckpointDlg(CWnd *pParent);   // @0x0234a0
+    CCheckpointDlg(CWnd *pParent);
 };
 
 #endif // SRC_GRUNTZ_DIALOGS_H

@@ -6,7 +6,7 @@
 
 // ---------------------------------------------------------------------------
 // CTileTriggerLogic
-//   vftable @0x5eaea4. size 0x9c. ctor (RVA 0x1107f0, 28 bytes):
+//   vftable. size 0x9c. ctor:
 //     mov edx,this; vptr@0; rep stosl zeroes 24 dwords (96 bytes) starting at
 //     +0x3c (m_block); then m_1c (+0x1c) = 0 (reusing the zero in eax, emitted
 //     AFTER the rep stosl -> the m_block array is initialised before m_1c).

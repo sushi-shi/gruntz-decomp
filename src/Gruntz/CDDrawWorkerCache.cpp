@@ -3,13 +3,13 @@
 // (a CDirectDrawMgr surface/page sub-manager in the "Harry Potter" family).
 // VirtualMethodUnknown20 is a constant state-ID stub returning 0x13 (19).
 // VirtualMethodUnknown24 is a factory: allocates a 0x17c-byte worker object,
-// seeds it from parent fields, stamps the foreign vftable 0x5efb80, calls the
+// seeds it from parent fields, stamps the foreign vftable, calls the
 // worker's vtable+0x24 virtual with (arg1, arg3), on failure destroys the
 // worker and returns 0, on success stores the worker into the CMapStringToOb
 // at +0x10 under `key` (arg2) and returns it.
 //
 // Both are plain /O2 /MT leaves: NO SEH frame. The factory has reloc-masked
-// rel32 calls (operator new @0x1b9b46 / CMapStringToOb::operator[] @0x1b804c)
+// rel32 calls (operator new / CMapStringToOb::operator[])
 // and a DIR32 store for the foreign worker vftable.
 //
 // The worker is modeled as polymorphic (virtuals at the right slots) ONLY so
@@ -30,7 +30,7 @@ class CObject;
 // NAFXCW thunk (reloc-masked rel32 call).
 class CMapStringToOb {
 public:
-    CObject *&operator[](const char *key);      // @0x1b804c
+    CObject *&operator[](const char *key);
 };
 
 // The worker virtual interface. Slots laid out so the dispatched method lands
@@ -66,7 +66,7 @@ struct SiriusWorkerObj : public SiriusWorker {
 
 // The foreign worker vftable, referenced as DIR32 data (RVA = VA-0x400000).
 DATA(0x1efb80)
-extern void *g_siriusWorkerVtbl;   // VA 0x5efb80
+extern void *g_siriusWorkerVtbl;
 
 static inline void StampSiriusVtbl(SiriusWorkerObj *w) { *(void **)w = &g_siriusWorkerVtbl; }
 
@@ -94,7 +94,6 @@ static inline int SiriusReadField1c(const CDDrawWorkerCache *p)
 }
 
 // ---------------------------------------------------------------------------
-// CDDrawWorkerCache::VirtualMethodUnknown20  @0x1576f0  (__thiscall, ret 0)
 // Constant state ID: returns 0x13 (19).
 // ---------------------------------------------------------------------------
 RVA(0x1576f0, 0x6)
@@ -131,7 +130,6 @@ static inline SiriusWorkerObj *MakeSiriusWorker(const CDDrawWorkerCache *parent)
 }
 
 // ---------------------------------------------------------------------------
-// CDDrawWorkerCache::VirtualMethodUnknown24  @0x1652c0  (__thiscall, ret 0xc)
 // Allocate + construct a 0x17c-byte worker, call its +0x24 virtual with
 // (arg1, arg3). On success store it into the map under `key` and return it;
 // on failure run its scalar-deleting dtor and return 0.

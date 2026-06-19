@@ -1,5 +1,5 @@
 // GameWnd.cpp - WAP32 CGameWnd (Brian Goble's engine).
-// Matched: ??0CGameWnd@@QAE@XZ @ RVA 0x13cf00 (byte-exact).
+// Matched: CGameWnd::CGameWnd (byte-exact).
 #include "Wap32.h"
 #include "../rva.h"
 
@@ -20,7 +20,7 @@ CGameWnd::CGameWnd()
     m_c = 0;
 }
 
-// File-scope active-window singleton (binary: CGameWnd* @ 0x653c68). Set by
+// File-scope active-window singleton. Set by
 // CreateAndShow; read by GameWindowProc to dispatch messages to this object.
 static CGameWnd *s_activeWnd;
 
@@ -86,7 +86,7 @@ int CGameWnd::QuitMessageLoop()
     return 0;
 }
 
-// Out-of-line stubs so the vftable (??_7CGameWnd@@6B@) is emitted in this TU.
+// Out-of-line stubs so the vftable is emitted in this TU.
 // Not matched / not in symbol_names.csv; present only to anchor the vftable
 // relocation that the ctor stores.
 CGameWnd::~CGameWnd() {}

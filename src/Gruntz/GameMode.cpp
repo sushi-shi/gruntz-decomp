@@ -3,17 +3,17 @@
 // only offsets + code bytes are load-bearing.
 //
 // Functions matched in this TU (RVAs in GRUNTZ.EXE):
-//   CState::CState()         @0x8c750 (169 B, thiscall)        99.86% - ctor (scalar zero/seed)
-//   CState::~CState() (??_G) @0x8c710 (36  B, thiscall ret 4)  98.75% - slot-0 scalar-deleting dtor
-//   CState::Update()         @0x8c4b0 (6   B, thiscall)       100.00% - slot 4  return 1;
-//   CState::Render()         @0x8c4d0 (6   B, thiscall)       100.00% - slot 5  return 1;
-//   CPlay::Update()          @0x8c910 (6   B, thiscall)       100.00% - return 3;
-//   CMenuState::Update()     @0x8ce10 (6   B, thiscall)       100.00% - return 5;
-//   CCreditsState::Update()  @0x8d590 (6   B, thiscall)       100.00% - return 8;
-//   CBootyState::Update()    @0x8d3f0 (6   B, thiscall)       100.00% - return 0xa;
-//   CMenuState::Render()     @0xa0750 (464 B, thiscall) BYTE-EXACT 99.43% (all
+//   CState::CState()          99.86% - ctor (scalar zero/seed)
+//   CState::~CState() (??_G)  98.75% - slot-0 scalar-deleting dtor
+//   CState::Update()         100.00% - slot 4  return 1;
+//   CState::Render()         100.00% - slot 5  return 1;
+//   CPlay::Update()          100.00% - return 3;
+//   CMenuState::Update()     100.00% - return 5;
+//   CCreditsState::Update()  100.00% - return 8;
+//   CBootyState::Update()    100.00% - return 0xa;
+//   CMenuState::Render()     BYTE-EXACT 99.43% (all
 //       residuals reloc-masked) - the front-end per-frame menu draw.
-//   CCreditsState::Render()  @0x391d0 (380 B, thiscall) 97.17% plateau - the
+//   CCreditsState::Render()  97.17% plateau - the
 //       per-frame credits draw (residuals: reloc-masked operands + one register
 //       coin-flip in the cursor-anim chain + the wParam select's mov-vs-push
 //       codegen form; see the body comments).
@@ -21,7 +21,7 @@
 // vtable DIR32 store; the dtor's three are vtable DIR32 + base-cleanup REL32 +
 // op-delete REL32 (instruction sequences are byte-identical vs dump_target.py).
 //
-// TWO LEVERS: (1) the base cleanup (@0xfa150) is __thiscall - modeled as a method
+// TWO LEVERS: (1) the base cleanup is __thiscall - modeled as a method
 // on a helper struct so the dtor tail-call emits NO `add esp,4`. (2) define the
 // dtor body INLINE in the header so MSVC folds the vtable-restore + base cleanup
 // directly into the synthesized `??_G` (the target inlines, not `call ??1`).
@@ -39,7 +39,7 @@
 // CState - the base game-state class.
 // ===========================================================================
 
-// CState::CState()  @0x8c750 (169 B): store the vftable, then zero a flat list of
+// CState::CState(): store the vftable, then zero a flat list of
 // scalar members in source-declaration order, seeding four time/budget fields to
 // 0x40. NO embedded sub-object ctors and NO EH frame (plain /O2 - the ctor uses
 // eax=this, edx=0x40, ecx=0 held registers).
@@ -80,21 +80,21 @@ CState::CState()
 }
 
 // CState::~CState()  - the slot-0 scalar-deleting dtor `??_G`. Restore the
-// vftable, chain the WAP32 base cleanup (@0xfa150, thiscall), then (if the low
+// vftable, chain the WAP32 base cleanup, then (if the low
 // bit of the hidden flags arg is set) `operator delete(this)`. The dtor body is
 // defined INLINE in the header so MSVC folds it into the synth `??_G` thunk (the
 // target inlines it; see GameMode.h). This thunk has no source body, so it cannot
 // carry an RVA() attribute - pin the deleting-dtor symbol by mangled name here.
 // @rva-symbol: ??_GCState@@UAEPAXI@Z 0x08c710 0x24
 
-// CState::Update()  @0x8c4b0 (6 B, slot 4 / +0x10): the base default = return 1.
+// CState::Update()  (slot 4 / +0x10): the base default = return 1.
 RVA(0x08c4b0, 0x6)
 int CState::Update()
 {
     return 1;
 }
 
-// CState::Render()  @0x8c4d0 (6 B, slot 5 / +0x14): the base default = return 1.
+// CState::Render()  (slot 5 / +0x14): the base default = return 1.
 RVA(0x08c4d0, 0x6)
 int CState::Render()
 {
@@ -111,28 +111,28 @@ void CState::Vfunc3() {}
 // The concrete states - each overrides Update() to return its state-ID tag.
 // ===========================================================================
 
-// CPlay::Update()  @0x8c910 (6 B): the PLAY state's ID = 3.
+// CPlay::Update(): the PLAY state's ID = 3.
 RVA(0x08c910, 0x6)
 int CPlay::Update()
 {
     return 3;
 }
 
-// CMenuState::Update()  @0x8ce10 (6 B): the MENU state's ID = 5.
+// CMenuState::Update(): the MENU state's ID = 5.
 RVA(0x08ce10, 0x6)
 int CMenuState::Update()
 {
     return 5;
 }
 
-// CCreditsState::Update()  @0x8d590 (6 B): the CREDITS state's ID = 8.
+// CCreditsState::Update(): the CREDITS state's ID = 8.
 RVA(0x08d590, 0x6)
 int CCreditsState::Update()
 {
     return 8;
 }
 
-// CBootyState::Update()  @0x8d3f0 (6 B): the BOOTY state's ID = 0xa.
+// CBootyState::Update(): the BOOTY state's ID = 0xa.
 RVA(0x08d3f0, 0x6)
 int CBootyState::Update()
 {
@@ -144,7 +144,7 @@ int CBootyState::Update()
 // step+draw. Plain /O2 /MT: neither carries a stack C++ object / EH frame.
 // ===========================================================================
 
-// CCreditsState::Render()  @0x391d0 (380 B): the canonical Render spine.
+// CCreditsState::Render(): the canonical Render spine.
 //   1. INPUT POLL: i = m_c->m_4->m_10->m_2c->m_8; if (i && i->vtbl[+0x60](i))
 //      skip the input-virtual; else
 //   2. INPUT VIRTUAL: if (this->vtbl[+0x20]()) { m_4->Post(0x8006,0xfa0); return 0; }
@@ -221,7 +221,7 @@ int CCreditsState::Render()
     return 1;
 }
 
-// CMenuState::Render()  @0xa0750 (464 B): the front-end per-frame menu draw.
+// CMenuState::Render(): the front-end per-frame menu draw.
 //   1. ENTITY UPDATE LOOP: for each e in g_entityList: e->Update();
 //   2. SIX entity-flag scans (masks 0x80000000/0x40000000/0x20000000/0x10000000/
 //      0x3 (byte)/0x100): the FIRST scan that finds a flagged entity fires the
@@ -271,15 +271,15 @@ tail:
 // 8 (+0x20); InputVirtual (slot 8) is the per-frame input poll the Render does an
 // indirect `this->vtbl[+0x20]()` to (its body is irrelevant to the Render match -
 // only the indirect call site is). These are out-of-line so the CCreditsState
-// vtable @0x5e9c64 resolves; they are NOT byte-matched targets.
+// vtable resolves; they are NOT byte-matched targets.
 void CCreditsState::Cv6() {}
 void CCreditsState::Cv7() {}
 int  CCreditsState::InputVirtual() { return 0; }
 
 // ===========================================================================
 // REMAINING Render overrides (slot +0x14) NOT matched here (deferred targets):
-//   CBootyState::Render @0x1c210 (1205 B) - the bonus-state per-frame draw.
-//   CPlay::Render       @0xc8cf0 (3092 B) - the in-game per-frame heart (the
+//   CBootyState::Render - the bonus-state per-frame draw.
+//   CPlay::Render       - the in-game per-frame heart (the
 //       carcass is reconstructed in the `cplay` WIP unit, src/Gruntz/CPlay.cpp).
 // Both follow the same spine the two matched Renders above show (per-entity
 // Update loop over g_645574 -> entity-flag message scans -> draw/UI step),
@@ -289,7 +289,7 @@ int  CCreditsState::InputVirtual() { return 0; }
 // owner back-ptr -> +0x4->+0x4 = HWND), +0xc (the view/input sub-object holder),
 // +0x24 (a state-discriminator: ==5 selects WM 0x8023 vs 0x8027), and the
 // subclass FX state at +0x1b4 (CCreditsState one-shot-FX latch / CMenuState UI
-// object) + +0x1c4 (CCreditsState conditional-FX gate). The global @0x645574 is a
+// object) + +0x1c4 (CCreditsState conditional-FX gate). The global is a
 // POINTER to the per-frame entity list (count@+4, elem-ptr array@+8) that every
 // state Render iterates (e->vtbl[+0x10] = per-entity Update; e->m_2ac = flags).
 

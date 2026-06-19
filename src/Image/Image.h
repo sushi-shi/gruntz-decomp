@@ -48,10 +48,10 @@ public:
 // ---------------------------------------------------------------------------
 class CFileImage {
 public:
-    void *LoadBmp(char *name, char *path);             // @0x144110, ret 8
-    void *LoadPcx(char *name, char *path);             // @0x145110, ret 8
-    void *LoadPid(char *name, char *path, void *a3);   // @0x145cd0, ret 0xc
-    int   DecodePcxEx(char *name, char *path, void *a3, void *a4);  // @0x1459d0
+    void *LoadBmp(char *name, char *path);
+    void *LoadPcx(char *name, char *path);
+    void *LoadPid(char *name, char *path, void *a3);
+    int   DecodePcxEx(char *name, char *path, void *a3, void *a4);
 
     // Per-format decoders (external; reloc-masked). __thiscall on CFileImage.
     void *DecodeBmp(char *name, void *buf, unsigned int size);

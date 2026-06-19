@@ -36,7 +36,7 @@ char GetGruntzDriveLetter();
 // -------------------------------------------------------------------------
 // FileExists
 // Tests a path via OpenFile(OF_EXIST). Returns false for a null/empty path.
-// (Re-emitted again @ RVA 0x1fd70 in this TU, same bytes.)
+// (Re-emitted again elsewhere in this TU, same bytes.)
 RVA(0x1189c0, 0x45)
 int FileExists(char *szPath)
 {
@@ -70,9 +70,9 @@ int IsGruntzCDInAnyDrive()
     return letter != 0;
 }
 
-// File-scope cache of the discovered Gruntz CD drive letter (binary: byte
-// @0x62b25c). Zero = not yet probed / not found. Once a drive is found the
-// letter is memoised so later calls return it without re-scanning.
+// File-scope cache of the discovered Gruntz CD drive letter. Zero = not yet
+// probed / not found. Once a drive is found the letter is memoised so later
+// calls return it without re-scanning.
 static char s_cdDriveLetter;
 
 // -------------------------------------------------------------------------

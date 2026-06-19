@@ -1,5 +1,5 @@
 // StatusBarItem.cpp - Gruntz CStatusBarItem (C:\Proj\Gruntz).
-// Matched: ??0CStatusBarItem@@QAE@XZ @ RVA 0x1005d0 (byte-exact).
+// The constructor is matched byte-exact.
 #include "StatusBarItem.h"
 #include "../rva.h"
 
@@ -16,6 +16,6 @@ CStatusBarItem::CStatusBarItem()
     m_28 = 0;
 }
 
-// Out-of-line stubs anchor ??_7CStatusBarItem@@6B@ in this TU (not matched).
+// Out-of-line stubs anchor the CStatusBarItem vftable in this TU (not matched).
 CStatusBarItem::~CStatusBarItem() {}
 int CStatusBarItem::SbiVfunc0() { return 0; }

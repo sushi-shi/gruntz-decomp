@@ -1,15 +1,15 @@
 #include "../rva.h"
 // VideoConfig.cpp - the video-resolution combo-box config pair on the Gruntz
 // options/setup dialog (C:\Proj\Gruntz). Both functions translate between the
-// global selected-resolution mode (g_videoResolutionMode @0x60ccc4: 1=640x480,
+// global selected-resolution mode (g_videoResolutionMode: 1=640x480,
 // 2=800x600, 3=1024x768) and a UI combo-box + a "current resolution" static
 // text control whose caption is built as "Video Resolution " + the resolution
 // suffix string.
 //
-//   LoadVideoResolutionConfig @0x36f30 (276 B, __cdecl) - push the radio/combo
+//   LoadVideoResolutionConfig - push the radio/combo
 //       state into the dialog via CWnd::FromHandle + CSliderCtrl::SetRange, then
 //       refresh the "Video Resolution (WxH)" caption.
-//   SaveVideoResolutionConfig @0x370a0 (241 B, __cdecl) - read the combo's
+//   SaveVideoResolutionConfig - read the combo's
 //       current selection back into the mode global, then refresh the caption.
 //
 // Only offsets / control IDs / code bytes are load-bearing; names are placeholders.
@@ -48,7 +48,7 @@ char *__cdecl strcat(char *dest, const char *src);
 #define IDC_RESCAPTION 0x52d        // the "current resolution" static text ctrl
 
 // ---------------------------------------------------------------------------
-// The global selected-resolution discriminator (an int at VA 0x60ccc4). Save
+// The global selected-resolution discriminator (an int). Save
 // stores SendMessage(...,0x400,...)'s return (the combo's current selection)
 // here; Load reads it to pick the resolution suffix string. The reloc that
 // names it is masked in objdiff; only the address-load bytes are load-bearing.
@@ -59,26 +59,25 @@ extern int g_videoResolutionMode;
 // ---------------------------------------------------------------------------
 // MFC controls reached by call-rel32 (external/no-body so the call displacements
 // reloc-mask). The combo is wrapped through MFC's CWnd::FromHandle (a static
-// __stdcall permanent/temporary-map lookup that returns a CWnd*; the delinked
-// target names it ?FromHandle@CWnd@@SGPAV1@PAUHWND__@@@Z), then driven as a
-// CSliderCtrl: SetRange (?SetRange@CSliderCtrl@@QAEXHHH@Z, __thiscall) seeds the
+// __stdcall permanent/temporary-map lookup that returns a CWnd*), then driven as a
+// CSliderCtrl: SetRange (__thiscall) seeds the
 // (min,max,redraw) range, and the engine 0x405/0x400 messages are exchanged with
 // the wrapped HWND held at CWnd+0x1c (m_hWnd).
 // ---------------------------------------------------------------------------
 struct HWND__;          // the strong HWND tag MFC's signature mangles in
 class CWnd {
 public:
-    static CWnd *__stdcall FromHandle(HWND__ *hWnd);   // @0x1bb23a
+    static CWnd *__stdcall FromHandle(HWND__ *hWnd);
     char m_pad00[0x1c];
     HWND m_hWnd;        // +0x1c  the wrapped window handle
 };
 class CSliderCtrl : public CWnd {
 public:
-    void SetRange(int nMin, int nMax, int bRedraw);    // @0x11e0f9 (__thiscall)
+    void SetRange(int nMin, int nMax, int bRedraw);
 };
 
 // ---------------------------------------------------------------------------
-// LoadVideoResolutionConfig  @0x36f30
+// LoadVideoResolutionConfig
 // hDlg            - the owning dialog.
 // nIDCombo        - control ID of the resolution combo (resolved via GetDlgItem).
 // nSel            - the selection index to push into the combo / option control.
@@ -117,7 +116,7 @@ void LoadVideoResolutionConfig(HWND hDlg, int nIDCombo, int nSel)
 }
 
 // ---------------------------------------------------------------------------
-// SaveVideoResolutionConfig  @0x370a0
+// SaveVideoResolutionConfig
 // hDlg     - the owning dialog (for IDC_RESCAPTION).
 // hCombo   - the resolution combo HWND.
 // Reads the combo's current selection (engine msg 0x400 -> the wrapped child),

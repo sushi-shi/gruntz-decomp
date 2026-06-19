@@ -1,8 +1,8 @@
-// CPlay.h - the in-game PLAY state (vftable @0x5ea0bc, RTTI .?AVCPlay@@), the
-// concrete CState subclass whose Render() (vtable slot +0x14, @0xc8cf0) is the
+// CPlay.h - the in-game PLAY state, the
+// concrete CState subclass whose Render() (vtable slot +0x14) is the
 // per-frame heart of the running game: input -> per-entity step -> draw -> the
 // HUD/scroll/FX overlays. See GameMode.{h,cpp} for the state hierarchy this
-// extends (CState base vftable @0x5ea21c) and RezMgr::PerFrameTick @0x8b740 (the
+// extends (CState base) and RezMgr::PerFrameTick (the
 // caller of m_mode->Render(), matched in `rezmgr`).
 //
 // CARCASS doctrine: only the member OFFSETS and the per-frame call/branch
@@ -21,8 +21,7 @@
 
 // ---------------------------------------------------------------------------
 // Win32 RECT + the USER32/WINMM imports CPlay::Render uses (reached via the
-// cached IAT slots 0x6c44b8 SetRect / 0x6c44bc CopyRect / 0x6c44c0 wsprintfA /
-// 0x6c4650 timeGetTime).
+// cached IAT slots: SetRect / CopyRect / wsprintfA / timeGetTime).
 // ---------------------------------------------------------------------------
 struct RECT { long left, top, right, bottom; };
 
@@ -34,7 +33,7 @@ extern "C" {
 }
 
 // ===========================================================================
-// CGameRegistry - the global game-manager singleton (the object at *0x64556c).
+// CGameRegistry - the global game-manager singleton (the object at *g_64556c).
 // Only the offsets CPlay::Render reads are modeled.
 // ===========================================================================
 struct CGameRegistry {
@@ -81,9 +80,9 @@ struct CRenderer {
 // the ViewPreStep/PostStep sub-steps). Its +0x5c holds the camera geometry the
 // world blit reads (+0x84 / +0x88).
 struct CDrawSurface {
-    void PushView(void *view, void *renderer);  // @0x15dc90 (thiscall, 2 args)
-    void PreStep();                             // @0x28d3 -> 0xcedf0
-    void PostStep();                            // @0x3783 -> 0xcee10
+    void PushView(void *view, void *renderer);
+    void PreStep();
+    void PostStep();
     char p0[0x10];
     int   m_10;     // +0x10  scroll origin X (read by StepScroll)
     int   m_14;     // +0x14  scroll origin Y (read by StepScroll)
@@ -110,9 +109,9 @@ struct CView {
     CDrawSurface *m_24;         // +0x24  the draw-surface (PushView / Pre/PostStep)
 };
 
-// The world/level draw object at m_4->m_54 (the camera blit thiscall @0x1a7d).
+// The world/level draw object at m_4->m_54 (the camera blit thiscall).
 struct CWorldDraw {
-    void Blit(int a, int b);    // @0x1a7d (thiscall, 2 args)
+    void Blit(int a, int b);
 };
 
 // m_4 (the CState owner back-ptr -> the world/level object).
@@ -122,21 +121,21 @@ struct CWorld {
     char p10[0x48 - 0x10];
     void *m_48;                 // +0x48  the sound manager (PlaySound/FindSound/StopSound)
     char p4c[0x54 - 0x4c];
-    CWorldDraw *m_54;           // +0x54  the world/level draw object (camera blit @0x1a7d)
-    void *m_5c;                 // +0x5c  a 2nd world layer (@0x441c)
+    CWorldDraw *m_54;           // +0x54  the world/level draw object (camera blit)
+    void *m_5c;                 // +0x5c  a 2nd world layer
     char p60[0x68 - 0x60];
     struct M68 { char p0[0x230]; void *m_230; } *m_68;  // +0x68  -> +0x230 substep gate
     void *m_6c;                 // +0x6c  a frame-timer object (Eng_FrameTimerStep)
-    void *m_70;                 // +0x70  an input sub-object (@0x3562)
+    void *m_70;                 // +0x70  an input sub-object
 };
 
 // ===========================================================================
 // CState (base) - reproduced self-contained with a padded virtual interface so
-// CPlay's vtable matches @0x5ea0bc and the high-slot indirect calls emit. The
-// scalar members the Render reads are at the offsets the ctor (@0x8c750) pins.
+// CPlay's vtable matches and the high-slot indirect calls emit. The
+// scalar members the Render reads are at the offsets the ctor pins.
 // (Mirrors GameMode.h; kept local to isolate this WIP TU from the matched one.)
 // ===========================================================================
-struct CGameModeBase { void BaseCleanup(); };   // 0xfa150 (thiscall, no-body)
+struct CGameModeBase { void BaseCleanup(); };
 
 class CState {
 public:
@@ -166,7 +165,7 @@ public:
     virtual void RenderFast();   // slot 40 (+0xa0)
 
     // Non-virtual leaf: seeds the begin-clear params.
-    int SetBeginClearParams(int unused, int arg2, int arg3);  // @0x08c970
+    int SetBeginClearParams(int unused, int arg2, int arg3);
 
     // --- the CState scalar members the ctor pins (only the ones used here) ---
     void   *m_4;        // +0x04  owner back-ptr (-> CWorld)
@@ -192,60 +191,60 @@ public:
 // ===========================================================================
 // CPlay - the in-game PLAY state. Extends CState from +0x1a8. The per-frame
 // Render reads a large block of CPlay-specific members (camera/scroll rects,
-// message latches, per-region one-shot FX gates). Offsets pinned by @0xc8cf0.
+// message latches, per-region one-shot FX gates). Offsets pinned by Render.
 // ===========================================================================
 class CPlay : public CState {
 public:
-    virtual int  Update();          // @0x8c910  return 3;  (matched in `gamemode`)
-    virtual int  Render();          // @0xc8cf0  THE per-frame heart (this TU)
+    virtual int  Update();          // return 3;  (matched in `gamemode`)
+    virtual int  Render();          // THE per-frame heart (this TU)
 
     // typed views of the inherited CState owner back-ptr (+0x4):
     CWorld *m_4w() { return (CWorld *)m_4; }
 
-    // CPlay's own per-frame helper methods (the 0xd0000-range thunks Render
-    // dispatches to with `mov ecx,esi`). External no-body -> reloc-masked.
-    int  StepInputA();                          // 0x259a -> 0xd11e0  (THIS TU)
-    void StepWorldB();                          // 0x434a -> 0xd12b0
-    void ViewPreStep(void *view);               // 0x28d3 -> 0xcedf0  (on m_c->m_24)
-    void ViewPostStep(void *view);              // 0x3783 -> 0xcee10
-    // PlayCueAt @0xd1890 (8 args, ret 0x20): (cueId,a2,a3,a4,a5,a6,a7,rectSrc)
+    // CPlay's own per-frame helper methods (the thunks Render dispatches to
+    // with `mov ecx,esi`). External no-body -> reloc-masked.
+    int  StepInputA();                          // (THIS TU)
+    void StepWorldB();
+    void ViewPreStep(void *view);               // (on m_c->m_24)
+    void ViewPostStep(void *view);
+    // PlayCueAt: (cueId,a2,a3,a4,a5,a6,a7,rectSrc)
     void PlayCueAt(int cueId, int a2, int a3, int a4, int a5, int a6, int a7,
-                   int rectSrc);                // 0x1e4c -> 0xd1890  (THIS TU)
-    void PostHud(int wParam);                   // 0x1519 -> 0xd0b30
-    void MarkerBegin(int now);                  // 0x2e2d -> 0xd0a60
-    void StepC();                               // 0x1da7 -> 0xd8d90  (THIS TU)
-    int  GetAmbientId();                        // 0x1df2 -> 0xda200
-    void StepScroll();                          // 0x3850 -> 0xd1ac0  (THIS TU)
-    int  OnRegion1(int z);                      // 0x3792 -> 0xd8aa0  (THIS TU)
-    int  OnRegion2(int z);                      // 0x3a85 -> 0xd8a00  (THIS TU)
-    int  OnRegion3(int z);                      // 0x3904 -> 0xd8b20  (THIS TU)
-    int  OnRegion4(int z);                      // 0x3e45 -> 0xd8bc0  (THIS TU)
-    void OnRegion5();                           // 0x3797 -> 0xcf770
+                   int rectSrc);                // (THIS TU)
+    void PostHud(int wParam);
+    void MarkerBegin(int now);
+    void StepC();                               // (THIS TU)
+    int  GetAmbientId();
+    void StepScroll();                          // (THIS TU)
+    int  OnRegion1(int z);                      // (THIS TU)
+    int  OnRegion2(int z);                      // (THIS TU)
+    int  OnRegion3(int z);                      // (THIS TU)
+    int  OnRegion4(int z);                      // (THIS TU)
+    void OnRegion5();
 
     // --- leaf sub-helpers the THIS-TU functions call (external, reloc-masked) ---
-    void StepC_ModeA(int z);                    // 0xd8dc0 (thiscall, 1 arg) StepC m_480==1
-    void StepC_ModeB(int z);                    // 0xd8ed0 (thiscall, 1 arg) StepC else
-    void RegionEnter();                         // 0xd88f0 (thiscall, no arg) OnRegion on-enter
-    void RegionLeave();                         // 0xd8960 (thiscall, no arg) OnRegion on-leave
+    void StepC_ModeA(int z);                    // (thiscall, 1 arg) StepC m_480==1
+    void StepC_ModeB(int z);                    // (thiscall, 1 arg) StepC else
+    void RegionEnter();                         // (thiscall, no arg) OnRegion on-enter
+    void RegionLeave();                         // (thiscall, no arg) OnRegion on-leave
     // StepInputA's two engine callees (free fns):
-    // int  Eng_InputProbe(stdcall, a,b,edge-ptr,axis-ptr,0x10) @0x13ef90
-    // void Eng_InputDispatch(cdecl, 0,0,probe-result)          @0x141400
-    void MarkerEnd(int now);                    // 0x2cc0 -> 0x1170b0  (m_2e4 begin marker)
-    void GutsStep();                            // 0x21b7 -> 0xfe6b0   (m_2dc step)
-    void FrameTimerBegin(int now);              // 0x3710 -> 0x9bca0   (m_3f4 begin)
-    void FrameTimerEnd(int flag, int now);      // 0x27a2 -> 0x9bfa0   (m_3f4 end)
-    void SnapPostMessage(int wParam);           // 0x18e3 -> 0x7a510
-    void GutsStepB();                           // 0x125d -> 0x100cb0
-    void GutsStepC();                           // 0x14ba -> 0x10bb90
-    void WorldSubstep();                        // 0x1398 -> 0x788d0
-    void Overlay1(int now, int z);              // 0x1fa0 -> 0xa3460
-    void Overlay2(void *a, int z);              // 0x14dd -> 0xa3820
-    void WorldBlit(int now);                    // 0x441c -> 0x21d80   (m_4->m_5c)
-    void InputSubStep(void *in);                // 0x3562 -> 0x82030   (m_4->m_70)
-    void RegCue(void *sink, int wParam);        // 0x39f4 -> 0x11b3b0  (reg->m_60)
-    void SnapWalk();                            // 0x3a1c -> 0x455f0
+    // int  Eng_InputProbe(stdcall, a,b,edge-ptr,axis-ptr,0x10)
+    // void Eng_InputDispatch(cdecl, 0,0,probe-result)
+    void MarkerEnd(int now);                    // (m_2e4 begin marker)
+    void GutsStep();                            // (m_2dc step)
+    void FrameTimerBegin(int now);              // (m_3f4 begin)
+    void FrameTimerEnd(int flag, int now);      // (m_3f4 end)
+    void SnapPostMessage(int wParam);
+    void GutsStepB();
+    void GutsStepC();
+    void WorldSubstep();
+    void Overlay1(int now, int z);
+    void Overlay2(void *a, int z);
+    void WorldBlit(int now);                    // (m_4->m_5c)
+    void InputSubStep(void *in);                // (m_4->m_70)
+    void RegCue(void *sink, int wParam);        // (reg->m_60)
+    void SnapWalk();
 
-    // ---- CPlay-specific members (offsets pinned by the @0xc8cf0 disasm) ----
+    // ---- CPlay-specific members (offsets pinned by the Render disasm) ----
     int   m_1a8;        // +0x1a8  StepInputA latch-1 (one-shot)
     int   m_1ac;        // +0x1ac  StepInputA latch-2 (one-shot)
     int   m_1b0;        // +0x1b0  StepInputA half-selector
@@ -305,13 +304,13 @@ public:
 // The frame-clock + singleton globals CPlay::Render reads each frame.
 // ===========================================================================
 extern "C" {
-    extern unsigned int    g_645580;   // 0x645580  g_lastNow  (-> mirror 0x6bf3c0)
-    extern unsigned int    g_645584;   // 0x645584  g_lastDelta
-    extern unsigned int    g_645588;   // 0x645588  g_accumMs (the running game clock)
-    extern CGameRegistry  *g_64556c;   // 0x64556c  the singleton ptr
-    extern int             g_644c54;   // 0x644c54  a default cue/message wParam
-    extern unsigned int    g_6bf3c0;   // 0x6bf3c0  draw-clock mirror
-    extern unsigned int    g_6bf3bc;   // 0x6bf3bc  draw-delta mirror
+    extern unsigned int    g_645580;   // g_lastNow  (-> mirror g_6bf3c0)
+    extern unsigned int    g_645584;   // g_lastDelta
+    extern unsigned int    g_645588;   // g_accumMs (the running game clock)
+    extern CGameRegistry  *g_64556c;   // the singleton ptr
+    extern int             g_644c54;   // a default cue/message wParam
+    extern unsigned int    g_6bf3c0;   // draw-clock mirror
+    extern unsigned int    g_6bf3bc;   // draw-delta mirror
 }
 
 #endif // SRC_GRUNTZ_CPLAY_H

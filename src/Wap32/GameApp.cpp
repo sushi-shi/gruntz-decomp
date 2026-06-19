@@ -1,6 +1,6 @@
 // GameApp.cpp - WAP32 CGameApp (Brian Goble's engine).
-// Matched: ??0CGameApp@@QAE@XZ @ RVA 0x13d590 (byte-exact code; the instance
-// counter at 0x653c6c is a file-scope global here - same store sequence, the
+// Matched: CGameApp::CGameApp (byte-exact code; the instance
+// counter is a file-scope global here - same store sequence, the
 // reloc just names a different symbol than the Ghidra DAT_ at that address).
 #include "Wap32.h"
 #include "../rva.h"
@@ -18,7 +18,7 @@ extern int g_wap32FrameDelta;
 DATA(0x253c78)
 extern int g_wap32ClockReset;
 
-// Instance counter (binary: global int @ 0x653c6c, bumped per ctor). Shared
+// Instance counter (bumped per ctor). Shared
 // (declared in Wap32.h) so the inline ~CGameApp - which CGruntzApp's dtor
 // inlines in another TU - resolves it; the reloc name is masked in objdiff.
 int g_gameAppInstanceCount;
@@ -26,7 +26,7 @@ int g_gameAppInstanceCount;
 // -------------------------------------------------------------------------
 // CGameApp::CGameApp()
 // Zeroes the resource/window/manager pointers and the error-state fields,
-// then bumps the file-scope instance counter (binary global @ 0x653c6c).
+// then bumps the file-scope instance counter.
 RVA(0x13d590, 0x3c)
 CGameApp::CGameApp()
 {

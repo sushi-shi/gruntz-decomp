@@ -4,15 +4,15 @@
 // binary font file through the MFC CFile/CArchive I/O stack.
 //
 // Matched leaf methods (the font-resource lifecycle):
-//   Font::Font          @0x179700 (16 B)  - the empty ctor (all four members 0).
-//   Font::AllocateMemory@0x179720 (135 B) - (re)allocate the two parallel tables
-//                                            for `count` glyphs, zero them.
-//   Font::FreeMemory    @0x1797b0 (113 B) - free every glyph surface + both
-//                                            tables and reset to the empty state.
-//   Font::LoadFont      @0x179830 (433 B) - open the font file, read the glyph
-//                                            count + metric table via a CArchive,
-//                                            decode each glyph's pixel surface,
-//                                            and compute the line-height.
+//   Font::Font           - the empty ctor (all four members 0).
+//   Font::AllocateMemory - (re)allocate the two parallel tables
+//                          for `count` glyphs, zero them.
+//   Font::FreeMemory     - free every glyph surface + both
+//                          tables and reset to the empty state.
+//   Font::LoadFont       - open the font file, read the glyph
+//                          count + metric table via a CArchive,
+//                          decode each glyph's pixel surface,
+//                          and compute the line-height.
 //
 // Built /O2 /MT /GX: LoadFont holds stack CFile/CArchive/CString objects whose
 // destructors run under a C++ EH frame (the target opens an fs:0 SEH/EH frame:
@@ -156,7 +156,7 @@ int Font::LoadFont(CString szFileName)
 }
 
 // =========================================================================
-// IsInterface1  (0x1794b0, 33 B)
+// IsInterface1
 //
 RVA(0x1794b0, 0x21)
 int InterfaceObject::IsInterface1()
@@ -167,7 +167,7 @@ int InterfaceObject::IsInterface1()
 }
 
 // =========================================================================
-// IsInterface2  (0x1794e0, 33 B)
+// IsInterface2
 //
 RVA(0x1794e0, 0x21)
 int InterfaceObject::IsInterface2()
@@ -178,7 +178,7 @@ int InterfaceObject::IsInterface2()
 }
 
 // =========================================================================
-// IsInterface3  (0x179510, 33 B)
+// IsInterface3
 //
 RVA(0x179510, 0x21)
 int InterfaceObject::IsInterface3()
@@ -189,7 +189,7 @@ int InterfaceObject::IsInterface3()
 }
 
 // =========================================================================
-// IsInterface4  (0x179540, 33 B)
+// IsInterface4
 //
 RVA(0x179540, 0x21)
 int InterfaceObject::IsInterface4()
@@ -200,7 +200,7 @@ int InterfaceObject::IsInterface4()
 }
 
 // =========================================================================
-// IsInterface5  (0x179570, 33 B)
+// IsInterface5
 //
 RVA(0x179570, 0x21)
 int InterfaceObject::IsInterface5()
@@ -211,7 +211,7 @@ int InterfaceObject::IsInterface5()
 }
 
 // =========================================================================
-// CWapNodeB::FreeStrings  (0x179680, 58 B)
+// CWapNodeB::FreeStrings
 //
 // Frees two allocated buffers at +0x34 and +0x38 and clears m_type.
 //
@@ -232,7 +232,7 @@ void CWapNodeB::FreeStrings()
 }
 
 // =========================================================================
-// Font::GetSurface  (0x179b60, 18 B)
+// Font::GetSurface
 //
 RVA(0x179b60, 0x12)
 void **Font::GetSurface(unsigned char c)
@@ -241,7 +241,7 @@ void **Font::GetSurface(unsigned char c)
 }
 
 // =========================================================================
-// Font::GetGlyph  (0x179b80, 34 B)
+// Font::GetGlyph
 //
 RVA(0x179b80, 0x22)
 void Font::GetGlyph(unsigned char c, Glyph &out)
@@ -250,7 +250,7 @@ void Font::GetGlyph(unsigned char c, Glyph &out)
 }
 
 // =========================================================================
-// Font::GetMaxHeight  (0x179bd0, 4 B)
+// Font::GetMaxHeight
 //
 RVA(0x179bd0, 0x4)
 int Font::GetMaxHeight()
@@ -259,7 +259,7 @@ int Font::GetMaxHeight()
 }
 
 // =========================================================================
-// FontRenderer::FontRenderer  (0x179be0, 20 B)
+// FontRenderer::FontRenderer
 //
 RVA(0x179be0, 0x14)
 FontRenderer::FontRenderer()
@@ -271,7 +271,7 @@ FontRenderer::FontRenderer()
 }
 
 // =========================================================================
-// FontRenderer::SetColor  (0x179c20, 10 B)
+// FontRenderer::SetColor
 // Internal helper: stores the color argument into m_color.
 //
 RVA(0x179c20, 0xa)
@@ -281,7 +281,7 @@ void FontRenderer::SetColor(int color)
 }
 
 // =========================================================================
-// FontRenderer::GetChar  (0x17b4f0, 12 B)
+// FontRenderer::GetChar
 //
 RVA(0x17b4f0, 0xc)
 unsigned char FontRenderer::GetChar(int i)
