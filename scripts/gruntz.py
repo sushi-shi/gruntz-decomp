@@ -130,6 +130,9 @@ def cmd_build(args) -> None:
     _ensure_retail_copy()                             # cheap, idempotent (stable retail copy)
     if not GHIDRA_FUNCTIONS.exists():
         die(f"no Ghidra exports ({GHIDRA_FUNCTIONS.relative_to(REPO)}) - run `gruntz init` first.")
+    # Gate: the src/Stub @stub backlog is skipped by labels.py (engine_label_stubs),
+    # so this is the only check on its address uniqueness + format. Fail fast.
+    run([sys.executable, str(REPO / "scripts" / "verify_stub_labels.py")])
     ninja = tool("ninja")
     _start_wine_session()                 # boot Wine clean BEFORE ninja's -j fan-out
     try:
