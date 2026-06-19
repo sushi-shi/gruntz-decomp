@@ -129,7 +129,7 @@ def _unescape_ir_cstr(s):
     out = bytearray()
     i = 0
     while i < len(s):
-        if s[i] == "\\" and i + 2 < len(s) + 1 and s[i + 1:i + 3] and \
+        if s[i] == "\\" and len(s) - i >= 3 and \
                 all(c in "0123456789abcdefABCDEF" for c in s[i + 1:i + 3]):
             out.append(int(s[i + 1:i + 3], 16))
             i += 3
@@ -252,19 +252,29 @@ def func_labels_from_ir(ir):
 
 
 # --- DATA via AST (extern annotations are dropped from IR) ------------------
-def collect_vars(ast):
-    """[(mangledName, offset)] for global VARIABLE declarations.
+def collect_vars(ast, main_file):
+    """[(mangledName, offset)] for global VARIABLE declarations in main_file.
 
     A file-scope / `extern` variable carries a linkage mangledName
     (`?g_foo@@3...`, `_g_foo` for `extern "C"`); function locals do not, so they
-    are excluded naturally.
+    are excluded naturally. Main-file-only (like collect_defs): a header-declared
+    global's offset is into the header, so without this guard it could be misread
+    against the .cpp line index and a `DATA()` could bind to the wrong VarDecl.
     """
+    main_real = os.path.realpath(main_file)
     out = []
+    state = {"in_main": True}
+
+    def update_file(node):
+        for loc in (node.get("loc"), (node.get("range") or {}).get("begin")):
+            if isinstance(loc, dict) and loc.get("file") is not None:
+                state["in_main"] = os.path.realpath(loc["file"]) == main_real
 
     def visit(node):
         if isinstance(node, dict):
-            if (node.get("kind") == "VarDecl" and "mangledName" in node
-                    and not node.get("isImplicit")):
+            update_file(node)
+            if (state["in_main"] and node.get("kind") == "VarDecl"
+                    and "mangledName" in node and not node.get("isImplicit")):
                 loc = node.get("loc") or {}
                 off = loc.get("offset")
                 if off is not None:
@@ -314,13 +324,13 @@ def load_compdb(path):
     return out
 
 
-def data_labels(text, ast):
+def data_labels(text, ast, main_file):
     """[(rva, mangledName)] for each DATA(0x..) macro bound to the AST VarDecl
     just below it (by line). The variable pool and macro sites never cross with
     functions, so a non-matched global cannot steal a function's address.
     """
     off2line = line_index(text)
-    var_defs = sorted((off2line(off), mn) for (mn, off) in collect_vars(ast))
+    var_defs = sorted((off2line(off), mn) for (mn, off) in collect_vars(ast, main_file))
     out = []
     line_no = 1
     for m in re.finditer(r"[^\n]*\n", text):
@@ -538,7 +548,7 @@ def main():
         if DATA_MACRO_RE.search(text):
             ast = clang_ast(args.clang, tu, args.flag, cl_flags)
             if ast is not None:
-                for rva, cand in data_labels(text, ast):
+                for rva, cand in data_labels(text, ast, tu):
                     if cand is None:
                         misses.append((rva, None, unit, "no VarDecl below DATA()"))
                         continue
@@ -560,6 +570,24 @@ def main():
         return 1
 
     rows.sort()
+    # DATA dedup: the same `extern` declared in N TUs emits N rows for one rva.
+    # The function dup-guard (addr_sites) deliberately doesn't track data, and
+    # synth_pdb keys by rva (last wins), so collapse to one data row per rva
+    # (keeping the last, matching synth_pdb). If two declarations give one rva
+    # DIFFERENT mangled names, they disagree on the global's type - surface it.
+    last_data, data_names, out_rows = {}, {}, []
+    for row in rows:
+        if row[4] == "data":
+            data_names.setdefault(row[0], set()).add(row[1])
+            last_data[row[0]] = row     # rows are sorted -> keeps the last per rva
+        else:
+            out_rows.append(row)
+    for rva, names in sorted(data_names.items()):
+        if len(names) > 1:
+            log(f"WARN data 0x{rva:06x}: conflicting names {sorted(names)} - kept the last")
+    out_rows.extend(last_data.values())
+    out_rows.sort()
+    rows = out_rows
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     with out.open("w") as f:

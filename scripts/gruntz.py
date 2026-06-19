@@ -453,7 +453,7 @@ def cmd_clean(args) -> None:
     # not save registry branch ... No such file or directory") and lingers as a
     # stale server that flakes the next fresh build's first compiles.
     _kill_wine_session()
-    targets = [REPO / "build", REPO / "build.ninja",
+    targets = [REPO / "build", REPO / "build.ninja", REPO / ".ninja_lock",
                REPO / ".ninja_log", REPO / ".ninja_deps", *sorted(REPO.glob("*.obj"))]
     removed = 0
     for t in targets:
