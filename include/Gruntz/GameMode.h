@@ -163,15 +163,11 @@ extern "C" char g_60ce74[];              // "MONOLITH" (FindSound name)
 #include <Gruntz/CState.h>
 
 // ---------------------------------------------------------------------------
-// The concrete states. Each overrides Update() to return its own state-ID tag
-// (the 6-byte stub) - that is the only override modeled here for the leaf match
-// (their own vtables carry the heavy
-// Render overrides, matched/carcassed separately).
+// The concrete leaf states. Each overrides Update() to return its own state-ID
+// tag (the 6-byte stub) - the only override modeled here for the leaf match
+// (their own vtables carry the heavy Render overrides, matched/carcassed
+// separately). The in-game PLAY state CPlay lives in its own <Gruntz/CPlay.h>.
 // ---------------------------------------------------------------------------
-class CPlay : public CState {
-public:
-    virtual int Update();           // return 3;  (slot 4)
-};
 
 // CMenuState - the front-end menu state. Render
 // (464 B) drives the per-frame menu: a per-entity Update pass, then six
