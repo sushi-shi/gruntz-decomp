@@ -6,7 +6,7 @@ recompile-everything front-end (`rebuild.py`, now removed) and folds the objdiff
 project generation into `configure.py`. `gruntz build` is the one entry point.
 
 ```
-config/units.toml  (per-TU manifest: unit, source, status, optional cflags)
+config/units.toml  (per-TU manifest: unit, source, flags profile)
         |  python3 configure.py
         v
 build.ninja  +  build/objdiff/objdiff.json
@@ -50,21 +50,25 @@ of the same name.
 
 ```toml
 [build]
-cflags   = ["/nologo", "/c", "/O2", "/MT"]   # the locked global flags
-compiler = "msvc5.0"                          # -> objdiff scratch
+compiler = "msvc5.0"                # -> objdiff scratch
 platform = "win32"
+
+[flags]                             # named flag profiles (full flag sets)
+base = ["/nologo", "/c", "/O2", "/MT"]         # the locked global default
+eh   = ["/nologo", "/c", "/O2", "/MT", "/GX"]  # + C++ exception-handling frame
+mfc  = ["/nologo", "/c", "/O1", "/MT", "/GX"]  # MFC-derived /O1 (favor size) + /GX
 
 [[unit]]
 unit   = "adler32"                  # stem; obj is <unit>.obj, target <unit>.c.obj
 source = "vendor/zlib-1.0.4/adler32.c"
-status = "matched"                  # "matched" | "wip"
-# cflags = [...]                    # OPTIONAL per-unit override (defaults to [build].cflags)
+flags  = "base"                     # required: names a [flags] profile
 ```
 
-`configure.py` validates the manifest (required `unit`/`source`, unique units),
-defaults `status` to `wip` and `cflags` to the global locked set.
+`configure.py` validates the manifest (required `unit`/`source`/`flags`, unique
+units, a known `flags` profile) and resolves each unit's flags from the named
+`[flags]` profile.
 
-### Locked global flags
+### The locked `base` flags
 
 `cl /c /O2 /MT` (cdecl). Calibrated against the zlib TUs (see
 `docs/zlib-matching.md`):
@@ -73,8 +77,15 @@ defaults `status` to `wip` and `cflags` to the global locked set.
 - default struct packing is `/Zp8`, which matches (so no `/Zp` override).
 - `/GF` has no observable effect on these TUs (so it is left off).
 
-The per-unit `cflags` override mechanism exists for **future** TUs that turn out
-to need different flags; today every unit inherits the global set.
+### Flag profiles (`[flags]`)
+
+There is no implicit global flag set: every `[[unit]]` names a `[flags]` profile
+explicitly (`flags = "base"`). The profiles are the full flag sets. Most TUs use
+`base`; the only deviations so far are a C++ exception-handling frame (`eh` =
+`base` + `/GX`) and, for MFC-derived code, optimizing for size (`mfc` = `/O1` +
+`/GX`). Add a new profile to `[flags]` when a future TU needs a combination not
+yet covered. (`base`, the first profile, doubles as `build.ninja`'s `$cflags`
+default — a generation detail; the manifest still names it on every unit.)
 
 ## The `cl` rule (wine compiler wrapper)
 
@@ -193,7 +204,8 @@ does not exist yet is paired against an empty `dummy.obj` so it still lists at
 
 ## Add a translation unit
 
-1. add an `[[unit]]` block to `config/units.toml` (`unit`, `source`, `status`);
+1. add an `[[unit]]` block to `config/units.toml` (`unit`, `source`, and a
+   `flags` profile — `base` unless the TU needs `/GX`/`/O1`);
 2. `#include "../rva.h"` and annotate **each** matched function with an `RVA()`
    macro (`src/rva.h`) directly above the definition, after the description. A
    real example from `src/Gruntz/SBI_RectOnly.cpp`:

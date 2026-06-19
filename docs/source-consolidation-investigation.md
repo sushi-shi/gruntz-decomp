@@ -47,15 +47,15 @@ to "annotate the source, regenerate everything."
 | # | Artifact | Shape | Role | Hand-maintained? |
 |---|----------|-------|------|------------------|
 | 1 | `build/gen/symbol_names.csv` | `rva,name,unit` (100 rows) | THE byte-matched map. `synth_pdb.py` overlays it onto Ghidra's `functions.csv` → names the delinked `<unit>.c.obj` so objdiff pairs it to the base `<unit>.obj`. | **Yes** |
-| 2 | `config/units.toml` | per-TU `unit,source,status,cflags` (23 units) | Build manifest. `configure.py` → `build.ninja` + objdiff project. | Yes (legit) |
+| 2 | `config/units.toml` | per-TU `unit,source,flags` profile (23 units) | Build manifest. `configure.py` → `build.ninja` + objdiff project. | Yes (legit) |
 | 3 | `src/` | `@stub` metadata plus empty function bodies for unresolved labels | Comprehension/attribution + match-queue fuel. Harvested from tomalla + RTTI; `apply_ghidra_enrichment.py` applies names/protos to the Ghidra DB; `gen_match_queue.py` ranks it. | Partly (harvested + appended) |
 | 4 | `structure/*.h` | 39 C++ headers, `@offset`/`@vftable`/`@size`/`@rtti` annotations | Engine-wide layout/enum scaffold (231 RTTI classes; tomalla-ported + hypotheses). Comprehension only — **not compiled**. | **Yes** |
 | 5 | `scripts/gruntz/ghidra/apply.py` (`STRUCTS`/`ENUMS`, ~300 lines) | Python literals of struct fields + enums | Defines structs/enums in the Ghidra DTM and applies them as `this`-types. | **Yes** |
 | 6 | `src/**/*.{cpp,h}` | the actual matched C++ (19 files, 23 TUs) | Compiled by `cl` → base `<unit>.obj`. RVAs, symbols, sizes, match-% all live in **prose comments**; field layouts live in **prose comments** in the `.h`. **Zero machine-readable annotations.** | Yes (the real work) |
 
 `units.toml` (#2) is **not** duplication — it carries genuine per-TU build state
-(`status`, and the load-bearing `/O1` vs `/O2` `cflags` override, e.g. FileStream
-needs `/O1`). It stays. Everything else overlaps.
+(the load-bearing per-TU flag selection — e.g. FileStream's `/O1` vs the global
+`/O2`, via the `[flags]` profile it names). It stays. Everything else overlaps.
 
 ---
 

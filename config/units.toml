@@ -1,799 +1,284 @@
 # units.toml - the per-translation-unit build manifest (single source of truth).
 #
-# This file is per-TU; it is the counterpart to config/symbol_names.csv, which
+# This file is per-TU; it is the counterpart to build/gen/symbol_names.csv, which
 # is per-FUNCTION (rva,name,unit). Every `unit` here MUST line up with a `unit`
 # value used in symbol_names.csv so the recompiled base object pairs with the
 # delinked target object of the same name. configure.py reads this manifest and
-# emits build.ninja + compile_commands.json + the objdiff project JSON.
+# emits build.ninja + the objdiff project JSON.
 #
-# [build] holds the global locked toolchain configuration.
-#   cflags  - the calibrated VC5 flag set (docs/zlib-matching.md): cl /c /O2 /MT
-#             (cdecl). NO /Gy/GF/Zp override: /Gy is implied by /O2, default
-#             packing /Zp8 matches, /GF has no effect. A unit MAY override this
-#             with its own `cflags` for a FUTURE TU that needs different flags.
-#   compiler/platform - passed through to the objdiff scratch block.
+# [build]  - global toolchain config: compiler/platform pass through to the
+#            objdiff scratch block.
+# [flags]  - named flag profiles (full flag sets); EVERY [[unit]] selects one via
+#            `flags = "<name>"`. `base` is the locked VC5 default (cl /c /O2 /MT,
+#            cdecl; see docs/zlib-matching.md); `eh` adds the C++ exception-
+#            handling frame (/GX); `mfc` is the MFC-derived /O1 (favor size) + /GX.
+# [[unit]] - one TU: `unit` (stem; obj is <unit>.obj, target <unit>.c.obj; must
+#            match symbol_names.csv's unit column), `source` (repo-relative path),
+#            and `flags` (a [flags] profile name).
 #
-# [[unit]] - one per translation unit:
-#   unit    - stem (no extension); the obj is <unit>.obj, the target is
-#             <unit>.c.obj. Must match symbol_names.csv's `unit` column.
-#   source  - source path, relative to the repo root.
-#   status  - "matched" (byte-exact, in the pass set) or "wip" (in progress).
-#   cflags  - OPTIONAL per-unit flag override (defaults to [build].cflags).
-#
-# Add a TU: add an [[unit]] block here (+ its functions to symbol_names.csv),
-# then re-run `python3 configure.py` and `ninja`.
+# Add a TU: add an [[unit]] block here (+ its functions to symbol_names.csv), then
+# re-run `python3 configure.py` and `ninja`.
 
 [build]
-cflags = ["/nologo", "/c", "/O2", "/MT"]
 compiler = "msvc5.0"
 platform = "win32"
 
-# --- zlib 1.0.4 (vendor/zlib-1.0.4) -----------------------------------------
-# 9 matched TUs; 42 functions byte-exact at the locked flags. See
-# docs/zlib-matching.md and config/symbol_names.csv.
+[flags]
+base = ["/nologo", "/c", "/O2", "/MT"]
+eh   = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+mfc  = ["/nologo", "/c", "/O1", "/MT", "/GX"]
 
 [[unit]]
 unit = "adler32"
 source = "vendor/zlib-1.0.4/adler32.c"
-status = "matched"
+flags = "base"
 
 [[unit]]
 unit = "deflate"
 source = "vendor/zlib-1.0.4/deflate.c"
-status = "matched"
+flags = "base"
 
 [[unit]]
 unit = "trees"
 source = "vendor/zlib-1.0.4/trees.c"
-status = "matched"
+flags = "base"
 
 [[unit]]
 unit = "inftrees"
 source = "vendor/zlib-1.0.4/inftrees.c"
-status = "matched"
+flags = "base"
 
 [[unit]]
 unit = "infblock"
 source = "vendor/zlib-1.0.4/infblock.c"
-status = "matched"
+flags = "base"
 
 [[unit]]
 unit = "infcodes"
 source = "vendor/zlib-1.0.4/infcodes.c"
-status = "matched"
+flags = "base"
 
 [[unit]]
 unit = "inffast"
 source = "vendor/zlib-1.0.4/inffast.c"
-status = "matched"
+flags = "base"
 
 [[unit]]
 unit = "infutil"
 source = "vendor/zlib-1.0.4/infutil.c"
-status = "matched"
+flags = "base"
 
 [[unit]]
 unit = "zutil"
 source = "vendor/zlib-1.0.4/zutil.c"
-status = "matched"
+flags = "base"
 
 [[unit]]
 unit = "inflate"
 source = "vendor/zlib-1.0.4/inflate.c"
-status = "matched"
+flags = "base"
 
 [[unit]]
 unit = "uncompr"
 source = "vendor/zlib-1.0.4/uncompr.c"
-status = "matched"
-
-# --- engine constructors (src/) ---------------------------------------------
-# First byte-matched ENGINE (non-library) code: small self-contained ctors that
-# store a vftable then zero/seed members. Each ctor's matched field offsets ARE
-# the confirmed v0.76 class layout. These are C++ TUs compiled at the same
-# locked /O2 /MT flags; symbols are MSVC-mangled ctor names (see
-# config/symbol_names.csv). Self-located via RTTI vftables (NOT tomalla v0.77
-# addresses).
-
-# Headers live next to their sources (src/Wap32, src/Gruntz); MSVC resolves
-# #include "x.h" relative to the including source file, so no /I flag and the
-# locked global /O2 /MT set is used unchanged.
+flags = "base"
 
 [[unit]]
 unit = "gamewnd"
 source = "src/Wap32/GameWnd.cpp"
-status = "matched"
+flags = "base"
 
 [[unit]]
 unit = "gameapp"
 source = "src/Wap32/GameApp.cpp"
-status = "matched"
-# InitializeGameWindow (@0x13db60) does `new CGameWnd` whose ctor sits under a
-# C++ exception frame (__CxxFrameHandler + FuncInfo), so this TU is built with
-# C++ EH enabled (/GX). The other CGameApp methods carry the EH cost as zero
-# extra code (verified non-regressing).
-cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+flags = "eh"
 
 [[unit]]
 unit = "statusbaritem"
 source = "src/Gruntz/StatusBarItem.cpp"
-status = "matched"
+flags = "base"
 
 [[unit]]
 unit = "sbi_rectonly"
 source = "src/Gruntz/SBI_RectOnly.cpp"
-status = "matched"
+flags = "base"
 
 [[unit]]
 unit = "tiletriggerlogic"
 source = "src/Gruntz/TileTriggerLogic.cpp"
-status = "matched"
+flags = "base"
 
-# --- MFC battle/multiplayer setup dialogs (src/Gruntz) ----------------------
-# The CDialog-subclass ctors (CBattlezDlg/Custom/Colors + CMultiStartDlg). Three
-# of the four construct embedded MFC C++ members (CString/CObList) under an fs:0
-# EH frame, so this TU is built /GX (CBattlezDlgColors carries no embedded member
-# and so emits no frame even under /GX - verified non-regressing).
 [[unit]]
 unit = "dialogs"
 source = "src/Gruntz/Dialogs.cpp"
-status = "matched"
-cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+flags = "eh"
 
-# --- WWD level loader (src/Wwd) ---------------------------------------------
-# IsValidWwd/CheckHeader construct a stack-local engine file stream whose dtor
-# (Close) runs on unwind -> they carry a C++ EH frame (__CxxFrameHandler +
-# FuncInfo), so this TU is built with C++ EH enabled (/GX).
 [[unit]]
 unit = "wwdfile"
 source = "src/Wwd/WwdFile.cpp"
-status = "wip"
-cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+flags = "eh"
 
-# --- CGameLevel WWD level-load orchestrator (src/Gruntz) --------------------
-# CGameLevel::LoadWwd @0x15d280 (vtable slot 0x38): validates the WWD header,
-# copies the 1524-byte header, optionally inflates the compressed main block
-# (operator new + WwdFile::InflateMainBlock, tracked by a C++ EH state so the
-# buffer frees on unwind -> /GX), then loops the planes calling WwdFile::ReadPlane
-# @0x15d8d0 and the image-set descriptors, and finally recomputes the scaled start
-# coords. CPlane / CImageSet / ReadImageSet / RecomputePlaneCoords / ReadPlane /
-# InflateMainBlock / operator new/delete / SetAtGrow are reloc-masked engine calls.
-# Faithful carcass (driven toward byte-exact). /O2 engine code.
 [[unit]]
 unit = "gamelevel"
 source = "src/Gruntz/GameLevel.cpp"
-status = "wip"
-cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+flags = "eh"
 
-# --- Engine file-stream class (src/Io) --------------------------------------
-# CFileIO - the KERNEL32 file-I/O wrapper (MFC CFile work-alike) that gates ALL
-# engine file I/O (RezMgr, WwdFile, save/load). The leaf methods wrap CreateFileA
-# /ReadFile/WriteFile/SetFilePointer/CloseHandle; the ctor/dtor construct a
-# CString member + carry a C++ EH frame (__CxxFrameHandler + FuncInfo) -> /GX.
-# Built with /O1 (optimize for SIZE), NOT the locked /O2: this is MFC-derived
-# code (CFile) and MFC was shipped /O1 - it pushes memory operands directly and
-# keeps ebp frames for address-taken locals, which /O2 (favor speed) does not.
 [[unit]]
 unit = "filestream"
 source = "src/Io/FileStream.cpp"
-status = "matched"
-cflags = ["/nologo", "/c", "/O1", "/MT", "/GX"]
+flags = "mfc"
 
-# --- RezMgr archive container (src/Rez) -------------------------------------
-# The Monolith "RezMgr Version 1" archive directory-tree classes: CRezItm (leaf
-# resource/file node, 0x24 B) + CRezDir (subdirectory node, 0x38 B) ctors pin the
-# container layouts (previously @unconfirmed in structure/formats/rez.h, now
-# CONFIRMED). 3 BYTE-EXACT: CRezItm ctor @0x13c540, FindEntry @0x13c080 (a stat,
-# NOT a binary search), CRezDirNode::Load @0x13a0f0 (recursive walk + "File is
-# not sorted!" assert). CRezDir ctor @0x13c940 PLATEAUS at 78% on an MSVC5
-# constant-scheduling residue (all 14 stores correct; see RezMgr.cpp). Extended
-# with the RezMgr/CGruntzMgr path/key builders: MakeImageKey @0x13e5d0 BYTE-EXACT
-# (ext-dispatch .BMP/.PCX/.PID image load) and MakeRezPath @0x091670 PLATEAU ~92%
-# (archive-path builder; a single MSVC5 EH-state write over 4 CString live ranges
-# - see RezMgr.cpp/docs). OpenSub @0x13b0c0 (568 B, a 3rd distinct node layout +
-# heavy EH/CString/virtual entropy) DEFERRED. /GX for the EH frames; /O2 engine.
 [[unit]]
 unit = "rezmgr"
 source = "src/Rez/RezMgr.cpp"
-status = "wip"
-cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+flags = "eh"
 
-# --- Image resolution path (src/Image) --------------------------------------
-# The REZ -> image load path. CImage::LoadFromRez @0x175a90 is the file-extension
-# DISPATCHER (strrchr('.') + a stricmp ladder on .BMP/.PCX/.RID/.PID, forwarding
-# (name,a2,a3) to one of five sibling __thiscall loaders, else a default) - the
-# same idiom as RezMgr::MakeImageKey. The four extension literals are reloc-masked
-# file-scope globals; strrchr/stricmp are the engine CRT helpers. The five sibling
-# loaders are external/no-body (reloc-masked calls). CFileImage::Load{Bmp,Pcx,Pid}
-# (@0x144110/0x145110/0x145cd0) are the file-backed format consumers: stack CFileIO
-# Open/GetLength/`operator new`/Read/decode/free. The CFileIO stack object's dtor
-# carries a C++ EH frame -> /GX; engine code -> /O2.
-# 4/4 BYTE-EXACT (verified 0 non-reloc mismatches over 97/106/106/95 instrs each;
-# fuzzy 99.3-99.95%, residue = reloc-masked operands: the 4 ext-string globals,
-# strrchr/stricmp/operator new/delete/CFileIO calls, and the 5 sibling/3 decoder
-# call targets - the standard "reloc-masked but byte-exact" idiom).
 [[unit]]
 unit = "image"
 source = "src/Image/Image.cpp"
-status = "matched"
-cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+flags = "eh"
 
-# --- Registry/config wrapper (src/Utils) ------------------------------------
 [[unit]]
 unit = "registryhelper"
 source = "src/Utils/RegistryHelper.cpp"
-status = "matched"
+flags = "base"
 
-# --- Advanced Options dialog (src/Gruntz) -----------------------------------
-# 5/5 byte-exact (reloc-masked operands only; see docs/match-learnings.md).
 [[unit]]
 unit = "advancedoptions"
 source = "src/Gruntz/AdvancedOptions.cpp"
-status = "matched"
+flags = "base"
 
-# --- Gruntz application object (src/Gruntz) ---------------------------------
-# InitializeGameManager (@0x080a20) does `new WAP32::CGameMgr` whose throwing
-# ctor sits under a C++ exception frame (__CxxFrameHandler + FuncInfo), so this
-# TU is built with C++ EH enabled (/GX). ErrorDialogProc (@0x080c70) is a static
-# __stdcall dialog proc and carries the EH cost as zero extra code.
-# 2/2 byte-exact (reloc-masked operands only: operator-new/ctor/EH-FuncInfo/IAT/
-# global addrs; objdiff scores ~99.2-99.4% fuzzy / 0% "exact" purely on reloc
-# NAMES - verified byte-identical vs dump_target.py + llvm-objdump -dr).
 [[unit]]
 unit = "gruntzapp"
 source = "src/Gruntz/GruntzApp.cpp"
-status = "matched"
-cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+flags = "eh"
 
 [[unit]]
 unit = "gruntzwnd"
 source = "src/Gruntz/GruntzWnd.cpp"
-status = "wip"
+flags = "base"
 
-# --- CMapMgr level/map manager (src/Gruntz) ---------------------------------
-# The engine CMapMgr (self-located via its RTTI vftable ??_7CMapMgr@@6B@
-# @0x5ea3b4, 6 slots): ctor @0x09e940 + dtor @0x09e9e0 + the slot-0 Reset cleanup
-# @0x09ec30, plus the two embedded growable-array sub-objects it owns
-# (CMapArrayA @+0x30 / CMapArrayB @+0x3c). The ctor constructs the two array
-# members then zeroes/seeds the scalar bookkeeping; the dtor restores the vftable,
-# calls Reset, then the member destructors run on unwind. The member sub-objects
-# with destructors put a C++ EH frame around the ctor/dtor (__CxxFrameHandler +
-# FuncInfo) -> built with /GX; engine code -> /O2.
-# 7/7 claimed fns BYTE-EXACT (reloc-masked operands only): CMapMgr ctor/dtor/Reset
-# + CMapArrayA ctor/dtor + CMapArrayB ctor/dtor. The two free-list builders
-# Allocate@CMapArrayA @0x09e740 / Allocate@CMapArrayB @0x09e860 are an MSVC5
-# reg-alloc + strength-reduction plateau (~70%/64%, all offsets/strides correct) -
-# bodies kept in MapMgr.cpp to document the element strides 0x24/0x0c but NOT
-# claimed in symbol_names.csv. See docs/match-learnings.md.
 [[unit]]
 unit = "mapmgr"
 source = "src/Gruntz/MapMgr.cpp"
-status = "wip"
-cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+flags = "eh"
 
-# --- CButeMgr .att/.bute attribute config-parser (src/Bute) -----------------
-# The attribute layer the whole game reads entity stats through: a two-level
-# keyed store (tag-group -> key -> typed value record) populated by a recursive-
-# descent lexer/parser over the .att text and queried by a family of typed
-# getters (GetInt/GetDword/GetFloat/GetDouble/GetString + their *Def variants).
-# All getters funnel through one __thiscall find-by-key helper (CButeTree::Find
-# @0x16d190): outer Find(tag) on m_tree (+0x18) yields the tag sub-tree, inner
-# Find(key) yields the typed value record { int type; void* pValue; }. ParseTagLine
-# allocates a store node + copies the tag CString under a C++ EH frame -> /GX;
-# engine code -> /O2 (the getters use args-in-regs/no-ebp-frames, the /O2 tell,
-# NOT the /O1 push-memory-operand MFC shape).
-# 11/11 driven byte-exact modulo reloc-masked operands (the Find/Insert/ReportError
-# /CString/operator-new/lex-helper calls, the 6 ButeMgr format-string literals, the
-# float/double-zero + node-vtable/descriptor globals, the g_tokenLen counter, the
-# Parse jump table, and the C++ EH FuncInfo/fs:0). Verified equal instruction counts
-# + 0 non-reloc body mismatches vs dump_target.py / llvm-objdump -dr. Two documented
-# entropy residues: GetString @0x1731d0 (98.0% - a tag/key ebx<->edi reg-alloc
-# coin-flip perturbed by the magic-static block) and ParseTagLine @0x1711b0 (96.9% -
-# one MSVC5 EH-epilogue `test al,al; setne al` bool-return normalization); both have
-# logic/layout/CFG byte-exact. See docs/match-learnings.md.
 [[unit]]
 unit = "butemgr"
 source = "src/Bute/ButeMgr.cpp"
-status = "wip"
-cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+flags = "eh"
 
-# --- Win32 helper free functions (src/Utils) --------------------------------
-# GetGruntzDriveLetter has a C++ exception frame (__CxxFrameHandler + FuncInfo)
-# around its stack-local RegistryHelper, whose destructor (Close) runs on unwind
-# -> this TU was built with C++ EH enabled (/GX). The other three helpers carry
-# the EH cost as zero extra code.
 [[unit]]
 unit = "winapi"
 source = "src/Utils/WinAPI.cpp"
-status = "matched"
-cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+flags = "eh"
 
-# --- CGrunt HUD sprite-creator cluster (src/Gruntz/Grunt.cpp) ---------------
-# Seven contiguous __thiscall HUD sprite creators on the engine CGrunt entity
-# (@0x04d130..0x04d730). Each lazily builds one HUD sprite via the global sprite
-# factory (*0x64556c -> +0x30 -> +0x8, __thiscall @0x1597b0) from the sprite's
-# class-name string + HUD-geometry values off this->m_10 (+0x5c / +0x60-N), runs
-# its init virtual (slot 0x10), and registers it into the grunt's sprite
-# collection (sprite->m_7c->m_18 . Add*). No stack C++ object / no EH frame here
-# -> plain /O2 /MT (no /GX). Sprite member slots pinned: selected@+0x1b8,
-# toy@+0x1bc, health@+0x1c4, stamina@+0x1c8, toyTime@+0x1cc, wingzTime@+0x1d0,
-# powerup@+0x1d4. The factory + the four Add* registrars are reached via
-# incremental-link thunks -> declared external/no-body so the call rel32
-# displacements reloc-mask.
 [[unit]]
 unit = "grunt"
 source = "src/Gruntz/Grunt.cpp"
-status = "wip"
-# /GX: the animation-resolver cluster (Resolve*Animation) builds animation-key
-# strings via stack CString temporaries (operator+) whose dtors run under a C++
-# EH frame. The 7 HUD sprite creators carry no stack C++ object, so /GX does not
-# add an EH frame to them (verified - they stay byte-exact).
-cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+flags = "eh"
 
-# --- Materialized @stub backlog --------------------------------------------
-# Empty source bodies for labeled RVAs whose real class/location is not confirmed
-# yet. Confirmed class-scoped stubs live beside their real src/ classes; the
-# remaining src/Stub/ backlog is aggregated here as one compact TU and compiled
-# like the rest of src.
 [[unit]]
 unit = "engine_label_stubs"
 source = "src/Stub/All.cpp"
-status = "wip"
+flags = "base"
 
-# --- CNetMgr DirectPlay networking manager (src/Net/NetMgr.cpp) -------------
-# A cluster of CNetMgr message handlers + a config writer. The three handlers
-# (OnMultiOptions@0x0badd0, OnMultiPause@0x0bad40, OnOutOfSync@0x0bae40) fire a
-# multiplayer command through the engine dispatcher (external, via incremental-
-# link thunk) under a reentrancy guard, then forward a WM_COMMAND to the engine
-# window via PostMessageA (cached USER32 IAT slot) on a matching result.
-# ApplyCmdDelayDefaults@0x0b85a0 persists command-timing config (m_5a4/m_5a8) to
-# the per-game Utils::RegistryHelper (the game-manager singleton @0x64556c +0x38)
-# via SetValueDword, building the value names with stack CString temporaries
-# (operator+) whose dtors run under a C++ EH frame -> /GX. The DirectPlay COM
-# interfaces / DPLAYX exports are external and never matched here. CNetMgr member
-# offsets pinned: +0x4 (m_4 -> HWND chain), +0x1c (resync wParam), +0x574
-# (OnOutOfSync per-instance guard), +0x584 (state word), +0x598 (CString name
-# prefix), +0x5a4/+0x5a8 (_CmdDelay/_Resend values).
 [[unit]]
 unit = "netmgr"
 source = "src/Net/NetMgr.cpp"
-status = "matched"
-cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+flags = "eh"
 
-# --- WinMain program entry (src/Gruntz/WinMain.cpp) -------------------------
-# _WinMain@16 @0x11c860 - the WINAPI entry point. SEH-framed; single-instance
-# guard (FindWindowA "GruntzClass" + lobby-launch WM_COMMAND forward), self
-# FileVersion read (VERSION.DLL -> four version ints via sscanf), a startup
-# gate, `new CGruntzApp` under a C++ EH frame (/GX), the dev Advanced-Options
-# hot-key / cmd-line scan + DialogBoxParamA(AdvancedOptionsDialogProc), then the
-# app Init (vtable +0x8) and the main message loop (vtable +0x18 ->
-# CGameApp::RunMessageLoop @0x13d910 - NOT inline here). Unmatched engine
-# callees modeled as external no-body fns; the version-int / g_pApp / g_hInstance
-# globals are file-scope (reloc-masked).
 [[unit]]
 unit = "winmain"
 source = "src/Gruntz/WinMain.cpp"
-status = "matched"
-cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+flags = "eh"
 
-# --- CState game-state hierarchy (src/Gruntz/GameMode.cpp) ------------------
-# The polymorphic game-state ("mode") classes the per-frame tick drives. RezMgr::
-# PerFrameTick (matched, `rezmgr`) holds the active state at RezMgr+0x2c (m_mode)
-# and each frame calls m_mode->vtbl[+0x10] (Update -> a state-ID int, gated on
-# != 0x11) and m_mode->vtbl[+0x14] (Render -> the per-frame step+draw). Base
-# CState (vftable @0x5ea21c, derives from a WAP32 base @0xfa150); concrete states
-# CPlay/CMenuState/CCreditsState/CBootyState (their own vftables @0x5ea0bc/
-# 0x5e9e84/0x5e9c64/0x5e9cec). THE FINDING: each Update() (slot +0x10) is a 6-byte
-# stub returning the state's ID tag (1/3/5/8/0xa) - NOT the simulation; the real
-# per-frame step+draw is Render() (slot +0x14). Matched leaves: CState ctor
-# @0x8c750, CState dtor @0x8c710, CState::Update/Render @0x8c4b0/@0x8c4d0 (both
-# `return 1;`), and the four concrete Update ID-stubs. The heavy Render overrides
-# (CCreditsState @0x391d0 380B, CMenuState @0xa0750 464B, CBootyState @0x1c210
-# 1205B, CPlay @0xc8cf0 3092B) are carcassed/mapped in the .cpp - next targets.
-# Plain /O2 /MT (no /GX): all matched fns are scalar - no stack C++ object / EH
-# frame. The base dtor + operator delete are external no-body fns (reloc-masked).
 [[unit]]
 unit = "gamemode"
 source = "src/Gruntz/GameMode.cpp"
-status = "matched"
-cflags = ["/nologo", "/c", "/O2", "/MT"]
+flags = "base"
 
-# --- CPlay::Render in-game per-frame loop (src/Gruntz/CPlay.cpp) [WIP] -------
-# CPlay::Render @0xc8cf0 (3092 B, vtable slot +0x14) - the in-game PLAY state's
-# per-frame step+draw, the heart of the running game. A faithful CARCASS: the
-# 3-way top-level dispatch (m_4ec hard early-out / m_4f8 primary mode / the
-# m_4->m_c short path), the shared world-draw block (renderer begin/present +
-# camera blit + frame profiler + marker/guts step), and the ordered per-frame
-# subsystem calls (input poll, world/camera sub-steps, ambient-SFX + scroll-
-# region one-shot timers, HUD/overlay draw) are reconstructed. CPlay's own
-# 0xd0000-range helper methods + the unmatched engine draw/sound callees are
-# external no-body fns (reloc-masked); the frame-clock globals (g_645580/84/88,
-# the 0x6bf3c0/bc draw mirrors) + the game-manager singleton @0x64556c are
-# file-scope. /GX: the AMBIENT-init + snapshot paths carry stack CString temps
-# whose dtors run under a C++ EH frame (the target opens an fs:0 EH frame).
-# PLATEAU: the SEH prologue + the m_4ec/m_4f8 3-way dispatch + the shared
-# world-draw block match opcode-exact (~106 MATCH + ~184 reloc-masked-arg of
-# ~700 target instrs); objdiff's fuzzy rollup reports 0.0% because its GLOBAL
-# alignment desyncs at the multi-way branch (reconstructed path lengths differ
-# from the target's, so it can't re-anchor) - a scoring artifact, not a logic
-# error (read the per-instruction diff_kind histogram, not the rollup). The
-# deliverable is the faithful CARCASS (control flow + every offset + the ordered
-# per-frame call sequence); kept wip, NOT claimed as matched.
 [[unit]]
 unit = "cplay"
 source = "src/Gruntz/CPlay.cpp"
-status = "wip"
-cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+flags = "eh"
 
-# --- Font bitmap-font subsystem (src/Font/Font.cpp) -------------------------
-# The engine's text/glyph Font class. A Font owns two parallel per-letter
-# tables: m_glyphs[] (+0xc, 8-B {width,height} metric records) and m_surfaces[]
-# (+0x8, void*[] decoded pixel buffers, width*height bytes each), with m_count
-# (+0x4) glyphs, a m_ready flag (+0x0) and m_maxHeight line-height (+0x10).
-# Matched the resource lifecycle:
-#   Font::Font     @0x179700 (16 B)  - BYTE-EXACT 100%   (empty ctor).
-#   FreeMemory     @0x1797b0 (113 B) - BYTE-EXACT 99.62% (free every glyph
-#                                      surface + both tables; all residuals are
-#                                      reloc-masked call/jump targets).
-#   LoadFont       @0x179830 (433 B) - BYTE-EXACT 99.67% (CFile/CArchive read of
-#                                      the glyph count + metric table + each
-#                                      glyph's pixel surface + the line-height
-#                                      compute; the only residual is a 4-B
-#                                      allocator stack-slot placement that shifts
-#                                      ~6 esp-relative operands - same insns).
-#   AllocateMemory @0x179720 (135 B) - PLATEAU 92.14% (alloc+zero both tables;
-#                                      logic byte-identical, 46/46 insns - the
-#                                      sole diff is the zero-init loop's
-#                                      register-colouring of two equal `0`
-#                                      constants vs one, an irreducible MSVC
-#                                      allocator coin-flip).
-# /GX: LoadFont's stack CFile/CArchive/CString objects' dtors run under a C++ EH
-# frame (the target opens an fs:0 SEH/EH frame). The NAFXCW MFC callees (operator
-# new/delete @0x1b9b46/0x1b9b82, CFile::CFile/Open/Close/~CFile, CArchive::ctor/
-# Read/Close/~CArchive/FillBuffer, CString::~CString) are external/no-body so
-# their call displacements reloc-mask. CArchive's inlined operator>> reads the
-# load-bearing m_lpBufCur/m_lpBufMax window @ CArchive+0x24/+0x28. Kept wip
-# (AllocateMemory is a register-colour plateau, not byte-exact).
 [[unit]]
 unit = "font"
 source = "src/Font/Font.cpp"
-status = "wip"
-cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+flags = "eh"
 
-# --- Font-setup path: InitializeFonts (src/Gruntz/Fonts.cpp) ----------------
-# InitializeFonts @0x115810 (163 B) - a one-shot free function that loads the
-# four global bitmap Font instances (large/medium/small/tiny .fnt) via the matched
-# Font::LoadFont (@0x179830, font unit), each from a by-value CString temp built
-# from the .fnt literal. Gated by a load-once flag @0x64eb14 (returns 1 if already
-# set); a 0 LoadFont result aborts the chain. The four global Font objects
-# (@0x64eac0/eae8/eb00/ea58) + the flag + the .fnt literals (@0x6152c4/b4/a8/9c)
-# are addressed by fixed VA (reloc-masked).
-# BYTE-EXACT under reloc-masking (99.04% fuzzy): size 163 = target, 42 MATCH + 10
-# reloc-masked-arg of 52 instrs, ZERO structural diffs. The whole body (the
-# already-loaded `jne <shared-tail>`, the per-font in-place CString construction +
-# Font::LoadFont call + test/jne early-out routed to the shared `pop ecx; ret`, the
-# immediate `mov [flag],1`, and the shared `mov eax,1; pop ecx; ret` tail) is
-# opcode-exact.
-# THE LEVER (the by-value CString MUST construct in the outgoing arg slot, not a
-# copied temp): Font.h's CString needed a user-declared COPY CTOR
-# (??0CString@@QAE@ABV0@@Z) added - without it MSVC5 makes CString trivially
-# copyable, so it builds a NAMED temp, bit-copies it into the arg, and the CALLER
-# destroys the temp (a spurious ??1CString + neg/sbb/inc bool-normalize -> ~7%).
-# With the copy ctor MSVC5 must construct the arg in place (push ecx; mov ecx,esp;
-# mov [esp+4],esp; push str; call ctor) and the CALLEE (LoadFont, ret 4) owns +
-# destroys it - no caller dtor. GENERAL RULE: to make a by-value class arg
-# construct-in-place (callee-destroys), give the class a non-trivial (user-
-# declared) copy ctor; a trivially-copyable class is bit-copied + caller-destroyed.
-# THE OTHER LEVER: plain /O2 /MT (NO /GX). The callee owns the CString so the
-# caller has no temp to unwind - the target carries no fs:0 EH frame. Adding /GX
-# DEGRADES this fn (it forces a per-temp cleanup-cookie slot + breaks the shared
-# tail/immediate-flag-store -> 90.94%); without /GX the body is byte-exact.
 [[unit]]
 unit = "fonts"
 source = "src/Gruntz/Fonts.cpp"
-status = "matched"
-cflags = ["/nologo", "/c", "/O2", "/MT"]
+flags = "base"
 
-# --- Font-setup path: LoadFontConfig (src/Gruntz/FontConfig.cpp) -------------
-# CFontConfig::LoadFontConfig @0x218e0 (511 B, __thiscall ret 8) - builds three
-# GDI HFONTs (the ARIAL UI font fixed 12x8 bold; the TrainingFont; the MessageFont)
-# via CreateFontA (GDI32 IAT @0x6c3ebc, cached in edi + called indirectly 6x). The
-# Training/Message face names + width/height are read from the global CButeMgr
-# "Font" config group (@0x6453d8) through the matched GetStringDef/GetIntDef getters
-# (butemgr unit), defaulting to the ARIAL face + per-font default dims; each
-# CreateFontA has a fallback retry (NULL face / alt default dims) on failure. The
-# three HFONTs are stored at this+0x38/0x3c/0x40; the two ctor args at this+0x24/
-# 0x28. /GX: the ARIAL default-face CString temp (passed by address to GetStringDef
-# as both face lookups' default) is destroyed at the tail under a C++ EH frame (the
-# target opens an fs:0 EH frame: push -1 / push handler / mov fs:0,esp). CreateFontA
-# is a __stdcall dllimport; the CButeMgr getters / CString ctor+dtor are external/
-# reloc-masked.
-# BYTE-EXACT body, PLATEAU 90.85% fuzzy: 128 MATCH + 54 reloc-masked-arg of ~190
-# instrs; the deliverable (the 6 CreateFontA calls with their exact 14-arg shapes +
-# the GetStringDef/GetIntDef config reads + the +0x20..0x40 member stores + the EH
-# prologue/epilogue + the tail ??1CString dtor) is opcode-exact. The 15
-# structurally-misaligned rows are ALL from ONE optimizer-scheduling difference:
-# MSVC5 HOISTS the ARIAL default-face CString construction into the prologue
-# (independent of source declaration position - moving the `CString arial(...)`
-# decl later does NOT defer it), while the target builds it just-in-time before the
-# TrainingFont GetStringDef. That single hoist desyncs objdiff's global alignment
-# (a block of INSERTs at the top + DELETEs at the original site) and adds one stack
-# slot (the tail `add esp,0x10` vs target `add esp,0xc` + ~5 esp-relative operand
-# shifts) - the same insns, an irreducible MSVC5 schedule coin-flip, not a logic
-# error. GetStringDef is modeled returning a CString* (->m_pchData = the face char*,
-# the target's `mov eax,[eax]` deref); the ARIAL CString default is passed by addr.
 [[unit]]
 unit = "fontconfig"
 source = "src/Gruntz/FontConfig.cpp"
-status = "wip"
-cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+flags = "eh"
 
-# --- GameText: small name/string lookup + table-init leaves (src/Gruntz) -----
-# All 4 BYTE-EXACT under reloc-masking (every residual diff is a reloc-masked
-# string-literal/table/ctor-call operand; objdiff strict-exact reads 0/4 - the
-# same reloc-typing scoring artifact as winmain/image/netmgr):
-#   _$E1  @0x82990 (the g_worldName[8] static array initializer; tomalla's
-#         "GetWorldDisplayName") - seeds the 8 world display names (Rocky Roadz /
-#         Gruntziclez / Trouble in the Tropicz / High on Sweetz / High Rollerz /
-#         Honey, I Shrunk the Gruntz! / The Miniature Masterz / Gruntz in Space).
-#   _$E4  @0x18740 (the g_statLabel[8] static array initializer; tomalla's
-#         "GetEndLevelStatLabels") - seeds the 8 end-of-level stat labels (Time: /
-#         Survivorz: / Deathz: / Toolz: / Toyz: / Powerupz: / Coinz: / Secretz:).
-#   GetWarlordName @0x1ec20 (__stdcall, CString-by-value, 4-entry jump table) -
-#         boss name by id (0 KING / 1 NAPOLEAN / 2 PATTON / 3 VIKING, default "").
-#   CContainerErr::CContainerErr @0x16d9c0 (__thiscall, ret 4) - the Monolith
-#         container-library exception ctor: stores (custom-or-default) message at
-#         +0x4, vtable @0x5f04cc at +0x0, then lazily seeds an 8-entry static
-#         message table (Out of memory / Data structure is invalid / Overflow /
-#         No such file, handle or object / Out of range / Target alrready exisits
-#         / Null pointer argument / Bad argument value).
-# The two seeders are in fact the compiler-generated array static initializers
-# (MSVC local `_$E` thunks), pinned to their RVAs via @symbol. /O2 engine code
-# (no stack C++ dtor -> no /GX).
 [[unit]]
 unit = "gametext"
 source = "src/Gruntz/GameText.cpp"
-status = "matched"
+flags = "base"
 
-# --- CWormhole color resolver (src/Gruntz/Wormhole.cpp) ---------------------
-# CWormhole::LoadColors @0x411f0 (160 B, __thiscall void) - the wormhole world
-# teleport node's one-time color-attribute resolver. Maps the wormhole kind
-# (state +0x124: 2 SECRET / 1 SINGLE-USE / else NORMAL) to a color id read once
-# from the global CButeMgr "Wormhole" config group (@0x6453d8) via the matched
-# GetIntDef getter (butemgr unit, @0x171aa0): SecretColor/SingleUseColor/
-# NormalColor with defaults 1/2/4. The id is cached in state +0x128, then used to
-# index the game-registry color table (g_gameReg @0x64556c -> [+0x78] ->
-# [m_128*4+0x14]) and stamp three draw fields (+0x4c colorEntry, +0x50=7, +0x58=1).
-# The three "Wormhole" config strings + g_buteMgr + g_gameReg are reloc-masked
-# (the strings/globals are matched by value/name). Plain /O2 /MT (no /GX): a
-# scalar leaf, no stack C++ object / EH frame.
 [[unit]]
 unit = "wormhole"
 source = "src/Gruntz/Wormhole.cpp"
-status = "matched"
-cflags = ["/nologo", "/c", "/O2", "/MT"]
+flags = "base"
 
-# --- Video-resolution config pair (src/Gruntz/VideoConfig.cpp) ---------------
-# LoadVideoResolutionConfig @0x36f30 + SaveVideoResolutionConfig @0x370a0 - the
-# options-dialog combo<->global bridge for the selected screen resolution. Both
-# wrap the combo HWND via MFC CWnd::FromHandle (static __stdcall, @0x1bb23a) and
-# drive it as a CSliderCtrl (SetRange __thiscall, @0x11e0f9), exchange the selection
-# via SendMessageA to the wrapped HWND at CWnd+0x1c (msg 0x405 push / 0x400 read),
-# then rebuild a "Video Resolution (WxH)" caption on the IDC_RESCAPTION (0x52d)
-# static text: a 64-byte stack buffer seeded with the "Video Resolution " literal
-# (.data dword/word copy + rep-stosd zero-fill) then strcat'd (inline repnz-scasb/
-# rep-movs intrinsic) with one of "(640x480)"/"(800x600)"/"(1024x768)" chosen by
-# the global mode g_videoResolutionMode @0x60ccc4. Plain /O2 /MT (no /GX): scalar
-# leaves, no stack C++ object / EH frame. The GetDlgItem/SendMessageA/SetWindowTextA
-# imports + the FromHandle/SetRange calls + the mode global are reloc-masked; the
-# caption/suffix string literals match by value.
-# BYTE-EXACT BODY, PLATEAU (objdiff strict-exact 0/2, ~94% fuzzy): the whole body -
-# the 4 null guards, the FromHandle/SetRange/SendMessage chain, the 64-byte
-# aggregate-init, the dec-eax suffix ladder, and the inline strcat + SetWindowTextA
-# tail - is opcode-identical to the target (verified 0 non-reloc body diffs after
-# normalizing the ebp push/pop position; the base obj's trailing bytes are COMDAT
-# alignment nops, not body). The SOLE residue is an MSVC5 deferred-callee-save
-# coin-flip: the target DEFERS `push ebp` (ebp's only def is the strcat length
-# `mov ebp,ecx`) past the four early-return guards to just before the rep-stosd and
-# pops it first on the success tail, while our cl saves ebp eagerly in the prologue
-# - same instructions, a shrink-wrap scheduling difference. Kept wip (not strict-exact).
 [[unit]]
 unit = "videoconfig"
 source = "src/Gruntz/VideoConfig.cpp"
-status = "wip"
-cflags = ["/nologo", "/c", "/O2", "/MT"]
+flags = "base"
 
-# --- HUD sprite loaders (src/Gruntz/SpriteLoaders.cpp) -----------------------
-# Two sibling __thiscall sprite-frame cachers. Each looks a named sprite up in the
-# engine string-keyed sprite-set hash table (CSpriteHashTable::Lookup @0x1b8008,
-# external) then, for each wanted frame number N, caches the sprite's frame pointer
-# only when N is in the sprite's inclusive [m_64..m_68] valid-frame range (the
-# repeated cmp m_64,N/jg ; cmp m_68,N/jl ; mov ecx,[m_14] ; mov ecx,[ecx+off]
-# idiom), else 0:
-#   LoadTimerSprite @0x9bb00 (ret 8) - "GAME_TIMER", reached via g_gameReg @0x64556c
-#       (->+0x30 ->+0x10); caches frames 10/11 into +0x10/+0x14/+0x18/+0x1c/+0x20,
-#       bailing to 0 on the first missing frame, then stores its two args into
-#       +0x0/+0x4 and sets +0xc=1, +0x48=0.
-#   LoadLoadingBarSprite @0xd7440 (void) - "GAME_LOADINGBAR", reached via this->m_c
-#       (->+0x10); caches frames 1/2/3 into +0x4c8/+0x4c0/+0x4c4 and sets +0x4bc=1.
-# Plain /O2 /MT (no /GX): scalar leaves, no stack C++ object / EH frame. The two
-# sprite-name string literals match by value; g_gameReg is a named @data extern
-# (?g_gameReg@@3PAUCGameReg@@A, RVA 0x24556c); the Lookup call is reloc-masked.
-# BYTE-EXACT BODIES, PLATEAU (objdiff strict-exact 0/2, ~96-99% fuzzy): both bodies
-# are opcode-identical to the target after the lookup (every frame-range check, the
-# +0x64/+0x68 reads, the m_14[N] frame extraction, the early-out CFG, and the member
-# stores match; the base obj's trailing bytes are COMDAT alignment nops). The SOLE
-# residue is an MSVC5 instruction-scheduling coin-flip on the lookup out-param's
-# zero-init: the target SINKS the `mov [&spr],0` store to just after the two arg
-# pushes (lea &spr / push &spr / push name / mov [&spr],0), while our cl HOISTS it
-# before the lea - the same 2-3 instructions, permuted (byte-content identical).
-# LoadLoadingBarSprite is otherwise length-exact (65/65, 2 permuted insns);
-# LoadTimerSprite is byte-exact body (118 insns, 3 permuted; the base's 4 trailing
-# bytes are nops). Kept wip (not strict-exact).
 [[unit]]
 unit = "spriteloaders"
 source = "src/Gruntz/SpriteLoaders.cpp"
-status = "wip"
-cflags = ["/nologo", "/c", "/O2", "/MT"]
+flags = "base"
 
-# --- Input-device-name lookup (src/Gruntz/InputDeviceConfig.cpp) -------------
-# LoadInputDeviceConfig @0x387c0 (192 B, __thiscall returning a CString by value
-# -> ret 8) - maps the configured device id (this->m_14) to its display name via a
-# dense 5-way jump table on (m_14 - 1): "Keyboard"/"Joystick 1".."Joystick 4",
-# starting from the "None" default (out-of-range keeps "None"). Returns the name by
-# value (copy-constructed into the caller's hidden return buffer); the local
-# default-name CString is destroyed at the tail under a C++ EH frame -> /GX. The
-# 6 device-name string literals match by value; the CString ctor/copy-ctor/dtor/
-# operator= (NAFXCW) are external/reloc-masked.
-# FAITHFUL CARCASS (objdiff strict-exact 0/1): the EH prologue (push -1/funcinfo/
-# fs:0), the "None" default-ctor, the 5-way dense jump table with all five device-
-# name literal pushes, the converged operator=, the return copy-ctor into the
-# caller's hidden buffer, the tail ~CString + EH-epilogue/ret 8 ALL match opcode-
-# for-opcode. RESIDUE: the target carries an extra EH-state-guarded conditional
-# cleanup of a SECOND CString temporary (mov eax,[esp+0x20]; test; je; ~CString
-# @0x1ba24c) in the operator= return path, and pins the returned/cleaned-up CString
-# in stack slot [esp+4] vs the "None" default at [esp+8] - i.e. the original built
-# the result as a distinct temporary that our single-`name` model collapses. Pinned
-# the ret-8 ABI (the lone explicit stack arg beside the hidden return buffer) and
-# all six string literals. Kept wip; reproducing the two-temporary MFC operator=
-# cleanup is the remaining work.
 [[unit]]
 unit = "inputdeviceconfig"
 source = "src/Gruntz/InputDeviceConfig.cpp"
-status = "wip"
-cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+flags = "eh"
 
-# --- Logic-type registrar (src/Gruntz/LogicTypeTable.cpp) --------------------
-# BuildLogicTypeTable @0x8a40 (200 B, __stdcall ret 4 - the builder object is the
-# single explicit stack arg, read into esi; NOT a __thiscall) - a one-shot
-# registrar that ensures three built-in tile-logic types are present. For each of
-# "LogicHit"/"LogicAttack"/"LogicBump" it looks the key up in the registry's
-# string-keyed table (the matched lookup helper @0x1b8008, external, addressed at
-# (obj->m_c->m_14)+0x10) and, if absent, calls the registry's virtual registrar
-# (vtable slot +0x24) with (factoryFn, key, 2). The three factory callbacks are
-# engine .text routines we do not match (the target's LAB_0056e4c0/d0/e0), declared
-# external/no-body so their pushed addresses emit reloc-masked DIR32 relocations;
-# the three key string literals match by value. Plain /O2 /MT (no /GX): scalar leaf.
-# THE LEVERS: (1) re-read obj->m_c->m_14 at BOTH the lookup and register sites of
-# each block (the target does NOT cache the registry pointer across them); (2) give
-# each of the three blocks its OWN `found` local (separate {} scopes) - the target
-# uses a distinct stack slot per block ([esp+4] for block 1, [esp+0xc] for 2&3),
-# which a single reused `found` would collapse to one slot.
-# BYTE-EXACT BODY, PLATEAU (objdiff strict-exact 0/1, ~88% fuzzy): the whole body -
-# all three lookup/register blocks, the (obj->m_c->m_14)+0x10 map addressing, the
-# [vtbl+0x24] registrar vcalls with (factoryFn,key,2), and the per-block slots -
-# is opcode-identical to the target (the base obj's 8 trailing bytes are COMDAT
-# alignment nops). The SOLE residue is the same MSVC5 scheduling coin-flip seen in
-# spriteloaders: the target SINKS each block's lookup-out-param zero-init store
-# (`mov [&found],0`) past the lea/push of &found, while our cl HOISTS it before -
-# the same instructions, permuted (byte-content identical). Kept wip (not strict-exact).
 [[unit]]
 unit = "logictypetable"
 source = "src/Gruntz/LogicTypeTable.cpp"
-status = "wip"
-cflags = ["/nologo", "/c", "/O2", "/MT"]
+flags = "base"
 
-# --- UnknownRemus leaf methods (src/Gruntz/UnknownRemus.cpp) -----------------
-# Five plain /O2 /MT leaves of the tomalla-named class UnknownRemus (its vtable
-# slot 0x38 is CGameLevel::LoadWwd, so this is a CGameLevel-family object). All
-# touch only member offsets, a 4-int arg record copied to +0x10, the shared
-# +0xb0..+0xdc "default parameters" block, and sibling virtuals via the object's
-# own vtable - NO SEH frame, NO string/global relocations:
-#   VirtualMethodUnknown30 @0x15d0d0 - copy *coords -> +0x10, stamp block, ret 1
-#   VirtualMethodUnknown34 @0x15d030 - zero/decrement +0x10 record, stamp, ret 1
-#   VirtualMethodUnknown24 @0x15cf70 - copy + stamp + dispatch vtable +0x38
-#   VirtualMethodUnknown28 @0x15ceb0 - copy + stamp + dispatch vtable +0x3c
-#   VirtualMethodUnknown2C @0x15cdf0 - copy + stamp + dispatch vtable +0x40
 [[unit]]
 unit = "unknownremus"
 source = "src/Gruntz/UnknownRemus.cpp"
-status = "wip"
-cflags = ["/nologo", "/c", "/O2", "/MT"]
+flags = "base"
 
-# --- UnknownHagrid leaf factory methods (src/Gruntz/UnknownHagrid.cpp) --------
-# Four plain /O2 /MT factories of the tomalla-named ddrawmgr sub-manager
-# UnknownHagrid. Each allocates a 0x7c-byte worker (operator new @0x1b9b46),
-# inline-constructs it (seed fields + stamp a foreign worker vftable), calls one
-# of the worker's sibling virtuals forwarding the caller's args, then on success
-# appends the worker to UnknownHagrid's CObList (+0x10) via AddHead/AddTail (a
-# trailing bool picks which) and returns it, or on failure runs the worker's
-# scalar-deleting dtor (vtbl +0x4) and returns 0. NO SEH frame; relocs are the
-# reloc-masked new / AddHead / AddTail calls + the DIR32 worker-vftable stores:
-#   VirtualMethodUnknown24 @0x156fd0 - BYTE-flag worker (vtbl 0x5efea0), virt +0x2c, always AddTail
-#   VirtualMethodUnknown28 @0x1573e0 - int-flag worker (vtbl 0x5efed0), virt +0x2c, head/tail bool
-#   VirtualMethodUnknown2C @0x157330 - int-flag worker, virt +0x30, head/tail bool
-#   VirtualMethodUnknown30 @0x157150 - int-flag worker, virt +0x34, head/tail bool
 [[unit]]
 unit = "unknownhagrid"
 source = "src/Gruntz/UnknownHagrid.cpp"
-status = "matched"
-cflags = ["/nologo", "/c", "/O2", "/MT"]
+flags = "base"
 
-# --- UnknownDraco leaf cleanup method (src/Gruntz/UnknownDraco.cpp) -----------
-# One plain /O2 /MT leaf of the tomalla-named ddrawmgr sub-manager UnknownDraco.
-# VirtualMethodUnknown1C @0x158ac0 is a destruct/reset hook: for each owned child
-# pointer at +0x10/+0x14/+0x18, if non-null it dispatches the child's scalar-
-# deleting destructor (vtbl +0x4, arg 1) then nulls the slot. NO SEH frame, NO
-# relocations - touches only member offsets and the children's own vtables.
 [[unit]]
 unit = "unknowndraco"
 source = "src/Gruntz/UnknownDraco.cpp"
-status = "matched"
-cflags = ["/nologo", "/c", "/O2", "/MT"]
+flags = "base"
 
-# --- UnknownHermiona leaf broadcast methods (src/Gruntz/UnknownHermiona.cpp) --
-# Two plain /O2 /MT leaves of the tomalla-named ddrawmgr sub-manager
-# UnknownHermiona. Each walks the intrusive singly-linked list anchored at +0x14
-# (node next-ptr @0, child object @8), dispatching one of the child's sibling
-# virtuals with the three forwarded args, then dispatches the object's own +0x2c
-# virtual with two of them. Differ only in the per-node child slot. NO SEH frame,
-# NO relocations - touch only the +0x14 anchor, node offsets, and vtables:
-#   VirtualMethodUnknown30 @0x159cf0 - per node child +0x34, then self +0x2c
-#   VirtualMethodUnknown34 @0x159d40 - per node child +0x38, then self +0x2c
 [[unit]]
 unit = "unknownhermiona"
 source = "src/Gruntz/UnknownHermiona.cpp"
-status = "wip"
-cflags = ["/nologo", "/c", "/O2", "/MT"]
+flags = "base"
 
-# --- UnknownAlbus leaf factory methods (src/Gruntz/UnknownAlbus.cpp) ----------
-# Two plain /O2 /MT factories of the tomalla-named ddrawmgr sub-manager
-# UnknownAlbus. Each allocates a 0x14-byte worker (operator new @0x1b9b46), inline-
-# constructs it (seed fields from the parent + stamp the foreign worker vftable
-# 0x5f02d8), calls one of the worker's sibling virtuals forwarding (arg1,arg3),
-# then on success stores the worker into the CMapStringToOb at +0x10 under `key`
-# (arg2) via operator[] and returns it, or on failure runs the worker's scalar-
-# deleting dtor (vtbl +0x4) and returns 0. NO SEH frame; relocs are the reloc-
-# masked new / operator[] calls + the DIR32 worker-vftable store:
-#   VirtualMethodUnknown28 @0x165990 - worker virt +0x28
-#   VirtualMethodUnknown2C @0x165a10 - worker virt +0x2c
-# (sibling VirtualMethodUnknown1C @0x165b90 map-teardown deferred: /GX EH frame.)
 [[unit]]
 unit = "unknownalbus"
 source = "src/Gruntz/UnknownAlbus.cpp"
-status = "wip"
-cflags = ["/nologo", "/c", "/O2", "/MT"]
+flags = "base"
 
-# --- UnknownClassCGruntzMgrHarryPotter root manager (src/Gruntz/HarryPotter.cpp) -
-# Two plain /O2 /MT leaves of the tomalla-named DDraw surface/page-manager root.
-# The ctor @0x155840 stamps the class vftable, clears the owned-child slots and
-# two draw-clock globals; UnknownVirtualMethod14 @0x155f00 is a readiness check
-# over the core child slots plus the first child's +0x14 virtual.
 [[unit]]
 unit = "harrypotter"
 source = "src/Gruntz/HarryPotter.cpp"
-status = "matched"
-cflags = ["/nologo", "/c", "/O2", "/MT"]
+flags = "base"
 
-# --- UnknownSeverus surface/page-map manager (src/Gruntz/UnknownSeverus.cpp) ---
-# Tomalla-named DDraw surface-family sub-manager. 9/14 exact: readiness/state
-# leaves, scratch/counter reset leaves, four worker-forwarding leaves, and the
-# remove/destroy helper. Four keyed worker factories are faithful WIP carcasses:
-# Lookup(key,&worker), allocate/init a 0x6c worker with CByteArray at +0x10 if
-# missing, operator[] insert, then dispatch worker slots +0x2c/+0x30/+0x34/+0x38.
-# /GX is enabled for the factory EH personality; no broad header surface.
 [[unit]]
 unit = "unknownseverus"
 source = "src/Gruntz/UnknownSeverus.cpp"
-status = "wip"
-cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+flags = "eh"

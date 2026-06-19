@@ -113,22 +113,28 @@ PDB_DIR = "build/pdb"                # synth PDB/YAML
 def load_manifest(path: Path) -> dict:
     with path.open("rb") as f:
         data = tomllib.load(f)
-    build = data.get("build", {})
-    if "cflags" not in build:
-        raise SystemExit(f"{path}: [build].cflags is required")
+    # Named flag profiles ([flags] table): EVERY [[unit]] selects one with
+    # `flags = "<name>"`. The profiles ARE the full flag sets - there is no
+    # separate global default to inherit, so each TU's flag choice is explicit.
+    profiles = data.get("flags", {})
+    if not profiles:
+        raise SystemExit(f"{path}: [flags] must define at least one profile")
     units = data.get("unit", [])
     if not units:
         raise SystemExit(f"{path}: no [[unit]] entries")
     seen = set()
     for u in units:
-        for key in ("unit", "source"):
+        for key in ("unit", "source", "flags"):
             if key not in u:
                 raise SystemExit(f"{path}: a [[unit]] is missing '{key}'")
         if u["unit"] in seen:
             raise SystemExit(f"{path}: duplicate unit '{u['unit']}'")
         seen.add(u["unit"])
-        u.setdefault("status", "wip")
-        u.setdefault("cflags", build["cflags"])  # per-unit override or global
+        if u["flags"] not in profiles:
+            raise SystemExit(f"{path}: unit '{u['unit']}' references unknown "
+                             f"flags profile '{u['flags']}' "
+                             f"(defined: {sorted(profiles)})")
+        u["cflags"] = profiles[u["flags"]]
     return data
 
 
@@ -160,7 +166,10 @@ def emit_link_phase(w: ninja_syntax.Writer) -> None:
 def emit_ninja(manifest: dict, out: Path) -> None:
     build = manifest["build"]
     units = manifest["unit"]
-    global_cflags = build["cflags"]
+    # build.ninja's global $cflags default = the first [flags] profile; a unit's
+    # edge overrides it only when its resolved flags differ. Generation detail -
+    # every unit names its profile explicitly in the manifest.
+    global_cflags = next(iter(manifest["flags"].values()))
 
     with out.open("w", encoding="utf-8") as f:
         w = ninja_syntax.Writer(f)
@@ -195,7 +204,8 @@ def emit_ninja(manifest: dict, out: Path) -> None:
             obj = f"{BASE_DIR}/{u['unit']}.obj"
             base_objs.append(obj)
             variables = {"unit": u["unit"]}
-            # Per-unit cflags override (defaults to the global locked flags).
+            # The unit's resolved [flags] profile; emit a per-edge override only
+            # when it differs from build.ninja's global $cflags default.
             if u["cflags"] != global_cflags:
                 variables["cflags"] = " ".join(u["cflags"])
             w.build(obj, "cl", inputs=u["source"],
