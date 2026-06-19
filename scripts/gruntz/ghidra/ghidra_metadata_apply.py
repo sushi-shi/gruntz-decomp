@@ -31,10 +31,11 @@ def main() -> int:
     if "--no-analyze" in args:
         analyze = False
         args = [a for a in args if a != "--no-analyze"]
-    if len(args) < 5:
+    if len(args) < 4:
         print(__doc__)
         return 2
-    exe, proj_loc, proj_name, apply_s, export_s = args[:5]
+    exe, proj_loc, proj_name = args[:3]
+    scripts = args[3:]          # one or more GhidraScripts, run in order
 
     pyghidra.start()
 
@@ -89,10 +90,10 @@ def main() -> int:
             flat = FlatProgramAPI(program)
             _analyze_program(flat, program)  # only analyzes if not yet analyzed
 
-        # apply.py mutates the DB (names/prototypes/structs/enums); export.py then
-        # dumps functions.csv/symbols.csv from the enriched DB. Each runs as a
-        # GhidraScript with currentProgram=program.
-        for script in (apply_s, export_s):
+        # Each script runs as a GhidraScript with currentProgram=program, in order
+        # (e.g. apply.py mutates the DB then export.py dumps the CSVs; or a single
+        # export_user.py that reads the DB for `gruntz capture`).
+        for script in scripts:
             print(f"[ghidra_metadata_apply] running {Path(script).name} ...", flush=True)
             pyghidra.ghidra_script(script, project, program=program)
     finally:

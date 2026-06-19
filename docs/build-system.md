@@ -180,6 +180,24 @@ nothing important lives only in the `.gpr` blob — it is all reproducible:
   `apply.py` injects them as named stack variables (they surface in the on-demand
   decompiler). The harvest runs before every `apply.py` (in `_ghidra_metadata_apply`).
 
+### Round-trip: capturing human edits (`gruntz capture`)
+
+The generated enrichment is the forward direction (`src/` → Ghidra). The back
+direction persists HUMAN work so it survives a clean rebuild (which wipes the
+`.gpr`). After renaming functions, writing comments, or naming/typing stack locals
+in the Ghidra GUI (and saving), run **`gruntz capture`**: `export_user.py` extracts
+exactly those human edits into the TRACKED **`config/user_annotations.json`**, which
+`apply.py` re-applies LAST on every refresh/init.
+
+Human vs generated is told apart by provenance: `apply.py` applies everything it
+generates as `SourceType.ANALYSIS` and human edits use `SourceType.USER_DEFINED`
+(the GUI's default), so a `USER_DEFINED` function symbol or stack variable is a human
+edit. Comments have no `SourceType`, so `apply.py` snapshots the generated comments
+to `build/gen/applied_comments.json` and the capture takes the set difference. The
+generated sections skip a function/slot already owned by a `USER_DEFINED` name, so a
+refresh never clobbers an un-captured edit. Commit `config/user_annotations.json` to
+share/persist the edits.
+
 ### What triggers a re-delink
 
 The delink is keyed on **`build/gen/symbol_names.csv`** (the EXE + Ghidra CSVs only
