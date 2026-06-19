@@ -1,9 +1,9 @@
 #include "../rva.h"
-// UnknownDraco.cpp - one leaf cleanup method of the tomalla-named ddrawmgr
-// sub-manager UnknownDraco (a CDirectDrawMgr surface/page sub-manager in the
+// CDDrawSubMgrDraco.cpp - one leaf cleanup method of the tomalla-named ddrawmgr
+// sub-manager CDDrawSubMgrDraco (a CDirectDrawMgr surface/page sub-manager in the
 // "Harry Potter" family; see structure/managers/ddrawmgr_surface_family.h).
 //
-// UnknownDraco carries three owned-child pointers at +0x10/+0x14/+0x18 (the three
+// CDDrawSubMgrDraco carries three owned-child pointers at +0x10/+0x14/+0x18 (the three
 // int fields fieldUnknown10/14/18 of the layout). VirtualMethodUnknown1C is a
 // destruct/reset hook: for each of the three pointers, if non-null it dispatches
 // the child's scalar-deleting destructor (vtable slot +0x4, delete-flag arg 1)
@@ -26,11 +26,11 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// UnknownDraco - only the load-bearing offsets are modeled: three owned-child
+// CDDrawSubMgrDraco - only the load-bearing offsets are modeled: three owned-child
 // pointers at +0x10/+0x14/+0x18. The matched method occupies a lower vtable slot
 // (its slot number is not load-bearing, only its body is matched), placed last.
 // ---------------------------------------------------------------------------
-class UnknownDraco {
+class CDDrawSubMgrDraco {
 public:
     int  VirtualMethodUnknown14();
     void VirtualMethodUnknown1C();
@@ -48,10 +48,10 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// UnknownDraco::VirtualMethodUnknown14  @0x157480  (__thiscall, ret 0)
+// CDDrawSubMgrDraco::VirtualMethodUnknown14  @0x157480  (__thiscall, ret 0)
 // Ready when all three owned child pointers are populated.
 RVA(0x157480, 0x1e)
-int UnknownDraco::VirtualMethodUnknown14()
+int CDDrawSubMgrDraco::VirtualMethodUnknown14()
 {
     if (m_14 == 0)
         goto fail;
@@ -65,11 +65,11 @@ fail:
 }
 
 // ---------------------------------------------------------------------------
-// UnknownDraco::VirtualMethodUnknown1C  @0x158ac0  (__thiscall, ret 0)
+// CDDrawSubMgrDraco::VirtualMethodUnknown1C  @0x158ac0  (__thiscall, ret 0)
 // For each owned child at +0x10/+0x14/+0x18: if non-null, run its scalar-deleting
 // destructor (vtbl +0x4, arg 1) and null the slot.
 RVA(0x158ac0, 0x44)
-void UnknownDraco::VirtualMethodUnknown1C()
+void CDDrawSubMgrDraco::VirtualMethodUnknown1C()
 {
     if (m_10 != 0) {
         m_10->ScalarDtor(1);
@@ -92,16 +92,16 @@ void UnknownDraco::VirtualMethodUnknown1C()
 // @source: tomalla
 // @stub
 RVA(0x1574a0, 0x6)
-void UnknownDraco::Stub_1574a0() {}
+void CDDrawSubMgrDraco::Stub_1574a0() {}
 
 // @confidence: high
 // @source: tomalla
 // @stub
 RVA(0x1574b0, 0x1e)
-void UnknownDraco::Stub_1574b0() {}
+void CDDrawSubMgrDraco::Stub_1574b0() {}
 
 // @confidence: high
 // @source: tomalla
 // @stub
 RVA(0x1588f0, 0x1c5)
-void UnknownDraco::Stub_1588f0() {}
+void CDDrawSubMgrDraco::Stub_1588f0() {}

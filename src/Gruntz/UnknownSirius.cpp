@@ -1,5 +1,5 @@
 #include "../rva.h"
-// UnknownSirius.cpp - leaf methods of the tomalla-named class UnknownSirius
+// CDDrawWorkerCache.cpp - leaf methods of the tomalla-named class CDDrawWorkerCache
 // (a CDirectDrawMgr surface/page sub-manager in the "Harry Potter" family).
 // VirtualMethodUnknown20 is a constant state-ID stub returning 0x13 (19).
 // VirtualMethodUnknown24 is a factory: allocates a 0x17c-byte worker object,
@@ -26,7 +26,7 @@
 
 class CObject;
 
-// CMapStringToOb lives at UnknownSirius+0x10. operator[] is an out-of-line
+// CMapStringToOb lives at CDDrawWorkerCache+0x10. operator[] is an out-of-line
 // NAFXCW thunk (reloc-masked rel32 call).
 class CMapStringToOb {
 public:
@@ -71,10 +71,10 @@ extern void *g_siriusWorkerVtbl;   // VA 0x5efb80
 static inline void StampSiriusVtbl(SiriusWorkerObj *w) { *(void **)w = &g_siriusWorkerVtbl; }
 
 // ---------------------------------------------------------------------------
-// UnknownSirius - the CMapStringToOb at +0x10, and the parent fields copied
+// CDDrawWorkerCache - the CMapStringToOb at +0x10, and the parent fields copied
 // into the worker (m_0c, m_1c from inside the map's internal area).
 // ---------------------------------------------------------------------------
-class UnknownSirius {
+class CDDrawWorkerCache {
 public:
     int   VirtualMethodUnknown20();
     void *VirtualMethodUnknown24(int a1, const char *key, int a3);
@@ -88,24 +88,24 @@ public:
 
 // Read field at +0x1c from the parent (inside the CMapStringToOb), used to
 // seed worker->m_04.
-static inline int SiriusReadField1c(const UnknownSirius *p)
+static inline int SiriusReadField1c(const CDDrawWorkerCache *p)
 {
     return *(const int *)((const char *)p + 0x1c);
 }
 
 // ---------------------------------------------------------------------------
-// UnknownSirius::VirtualMethodUnknown20  @0x1576f0  (__thiscall, ret 0)
+// CDDrawWorkerCache::VirtualMethodUnknown20  @0x1576f0  (__thiscall, ret 0)
 // Constant state ID: returns 0x13 (19).
 // ---------------------------------------------------------------------------
 RVA(0x1576f0, 0x6)
-int UnknownSirius::VirtualMethodUnknown20()
+int CDDrawWorkerCache::VirtualMethodUnknown20()
 {
     return 0x13;
 }
 
 // Inline worker constructor. New's the raw 0x17c block; on success seeds
 // the fields in the exact order the target writes them.
-static inline SiriusWorkerObj *MakeSiriusWorker(const UnknownSirius *parent)
+static inline SiriusWorkerObj *MakeSiriusWorker(const CDDrawWorkerCache *parent)
 {
     SiriusWorkerObj *raw = (SiriusWorkerObj *)operator new(sizeof(SiriusWorkerObj));
     SiriusWorkerObj *w;
@@ -131,7 +131,7 @@ static inline SiriusWorkerObj *MakeSiriusWorker(const UnknownSirius *parent)
 }
 
 // ---------------------------------------------------------------------------
-// UnknownSirius::VirtualMethodUnknown24  @0x1652c0  (__thiscall, ret 0xc)
+// CDDrawWorkerCache::VirtualMethodUnknown24  @0x1652c0  (__thiscall, ret 0xc)
 // Allocate + construct a 0x17c-byte worker, call its +0x24 virtual with
 // (arg1, arg3). On success store it into the map under `key` and return it;
 // on failure run its scalar-deleting dtor and return 0.
@@ -140,7 +140,7 @@ static inline SiriusWorkerObj *MakeSiriusWorker(const UnknownSirius *parent)
 // the target asm (the NAFXCW operator new practically never fails).
 // ---------------------------------------------------------------------------
 RVA(0x1652c0, 0x92)
-void *UnknownSirius::VirtualMethodUnknown24(int a1, const char *key, int a3)
+void *CDDrawWorkerCache::VirtualMethodUnknown24(int a1, const char *key, int a3)
 {
     SiriusWorkerObj *w = MakeSiriusWorker(this);
 

@@ -1,11 +1,11 @@
 #include "../rva.h"
-// UnknownPettigrew.cpp - engine-label stubs for UnknownPettigrew.
+// CDDrawSubMgrLeaf.cpp - engine-label stubs for CDDrawSubMgrLeaf.
 
-class UnknownPettigrew {
+class CDDrawSubMgrLeaf {
 public:
     void VirtualMethodUnknown1C();
     void VirtualMethodUnknown14();
-    ~UnknownPettigrew();
+    ~CDDrawSubMgrLeaf();
     void VirtualMethodUnknown18();
 };
 
@@ -13,10 +13,10 @@ public:
 // @source: tomalla
 // @stub
 RVA(0x152650, 0x5)
-void UnknownPettigrew::VirtualMethodUnknown1C() {}
+void CDDrawSubMgrLeaf::VirtualMethodUnknown1C() {}
 
 // @confidence: high
 // @source: tomalla
 // @stub
 RVA(0x1577c0, 0x1e)
-UnknownPettigrew::~UnknownPettigrew() {}
+CDDrawSubMgrLeaf::~CDDrawSubMgrLeaf() {}

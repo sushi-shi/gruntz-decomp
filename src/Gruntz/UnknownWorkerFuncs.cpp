@@ -7,8 +7,8 @@
 // __thiscall via member function definitions.
 // Plain /O2 /MT (/GX for SEH frames where local CString dtors are needed).
 //
-// Only the three reconstructed Vfunc leaves (WorkerA::Vfunc2C, WorkerB::Vfunc2C,
-// WorkerB::Vfunc34) are matched here; Init/Vfunc30 remain on the backlog.
+// Only the three reconstructed Vfunc leaves (CDDrawWorkerA::Vfunc2C, CDDrawWorkerB::Vfunc2C,
+// CDDrawWorkerB::Vfunc34) are matched here; Init/Vfunc30 remain on the backlog.
 // ---------------------------------------------------------------------------
 
 struct HelperHost {
@@ -17,9 +17,9 @@ struct HelperHost {
 };
 
 // =========================================================================
-// WorkerA (BYTE-flag, 0x7c bytes): Vfunc @0x157110
+// CDDrawWorkerA (BYTE-flag, 0x7c bytes): Vfunc @0x157110
 // =========================================================================
-struct WorkerA {
+struct CDDrawWorkerA {
     void Init();
     int  Vfunc2C(int a1, int a2, int a3);
 
@@ -44,10 +44,10 @@ struct WorkerA {
 };
 
 // ---------------------------------------------------------------------------
-// WorkerA::Vfunc2C  @0x157110
+// CDDrawWorkerA::Vfunc2C  @0x157110
 // ---------------------------------------------------------------------------
 RVA(0x157110, 0x20)
-int WorkerA::Vfunc2C(int a1, int a2, int a3)
+int CDDrawWorkerA::Vfunc2C(int a1, int a2, int a3)
 {
     HelperHost *h = (HelperHost *)this;
     m_78 = (char)a3;
@@ -56,9 +56,9 @@ int WorkerA::Vfunc2C(int a1, int a2, int a3)
 }
 
 // =========================================================================
-// WorkerB (int-flag, 0x7c bytes): Vfuncs @0x1572f0/0x157280
+// CDDrawWorkerB (int-flag, 0x7c bytes): Vfuncs @0x1572f0/0x157280
 // =========================================================================
-struct WorkerB {
+struct CDDrawWorkerB {
     void Init();
     int  Vfunc2C(int a1, int a2, int a3);
     int  Vfunc30(int a1, int a2, int a3, int a4);
@@ -84,10 +84,10 @@ struct WorkerB {
 };
 
 // ---------------------------------------------------------------------------
-// WorkerB::Vfunc2C  @0x1572f0
+// CDDrawWorkerB::Vfunc2C  @0x1572f0
 // ---------------------------------------------------------------------------
 RVA(0x1572f0, 0x20)
-int WorkerB::Vfunc2C(int a1, int a2, int a3)
+int CDDrawWorkerB::Vfunc2C(int a1, int a2, int a3)
 {
     HelperHost *h = (HelperHost *)this;
     m_78 = a3;
@@ -96,10 +96,10 @@ int WorkerB::Vfunc2C(int a1, int a2, int a3)
 }
 
 // ---------------------------------------------------------------------------
-// WorkerB::Vfunc34  @0x157280
+// CDDrawWorkerB::Vfunc34  @0x157280
 // ---------------------------------------------------------------------------
 RVA(0x157280, 0x30)
-int WorkerB::Vfunc34(int a1, int a2, int a3, int a4)
+int CDDrawWorkerB::Vfunc34(int a1, int a2, int a3, int a4)
 {
     HelperHost *h = (HelperHost *)this;
     h->Helper_166040(a3, a4);

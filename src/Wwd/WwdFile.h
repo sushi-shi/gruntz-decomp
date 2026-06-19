@@ -98,7 +98,7 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// CGameLevel - the level-load orchestrator (a.k.a. UnknownRemus). ReadPlane is a
+// CGameLevel - the level-load orchestrator (a.k.a. CDDrawLevelData). ReadPlane is a
 // __thiscall member on it. Only the members ReadPlane touches are pinned here
 // (the rest of the class is reconstructed in src/Gruntz/GameLevel.{cpp,h}):
 //   +0x0C m_field0c   - 1st CPlane ctor arg (the owning context the planes share)

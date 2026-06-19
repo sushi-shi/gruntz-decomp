@@ -1,7 +1,7 @@
 #include "../rva.h"
-// UnknownCGruntzMgrHogwarts.cpp - engine-label stubs for UnknownCGruntzMgrHogwarts.
+// CDDrawSubMgrBase.cpp - engine-label stubs for CDDrawSubMgrBase.
 
-class UnknownCGruntzMgrHogwarts {
+class CDDrawSubMgrBase {
 public:
     void Constructor_156e10();
 };
@@ -10,4 +10,4 @@ public:
 // @source: call-xref
 // @stub
 RVA(0x156e10, 0x68)
-void UnknownCGruntzMgrHogwarts::Constructor_156e10() {}
+void CDDrawSubMgrBase::Constructor_156e10() {}

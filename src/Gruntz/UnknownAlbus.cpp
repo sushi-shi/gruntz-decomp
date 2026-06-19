@@ -1,9 +1,9 @@
 #include "../rva.h"
-// UnknownAlbus.cpp - leaf factory methods of the tomalla-named ddrawmgr surface-
-// family sub-manager UnknownAlbus (a CDirectDrawMgr surface/page sub-manager in
+// CDDrawWorkerMapSmall.cpp - leaf factory methods of the tomalla-named ddrawmgr surface-
+// family sub-manager CDDrawWorkerMapSmall (a CDirectDrawMgr surface/page sub-manager in
 // the "Harry Potter" family; see structure/managers/ddrawmgr_surface_family.h).
 //
-// UnknownAlbus owns a CMapStringToOb at +0x10 (m_unknownMap1) keyed by const char*
+// CDDrawWorkerMapSmall owns a CMapStringToOb at +0x10 (m_unknownMap1) keyed by const char*
 // strings. Unknown28/2C share ONE factory shape: allocate a 0x14-byte "worker" with
 // the global operator new (??2@YAPAXI@Z @0x1b9b46), inline-construct it (seed its
 // fields from the parent + stamp the foreign worker vftable 0x5f02d8), then call one
@@ -22,7 +22,7 @@
 // virtuals are never defined, so no vtable is emitted in this TU - the real vtable
 // is the foreign engine datum stamped manually into the heap block.
 //
-// SIBLING DEFERRED: UnknownAlbus::VirtualMethodUnknown1C @0x165b90 (169 B) is the
+// SIBLING DEFERRED: CDDrawWorkerMapSmall::VirtualMethodUnknown1C @0x165b90 (169 B) is the
 // map-teardown counterpart; it carries a C++ EH frame (a stack CString iteration
 // key with a destructor) and a subtle GetNextAssoc loop with a per-iteration
 // stack-layout shift. Deferred to its own pass to keep this factory TU /O2 /MT and
@@ -33,7 +33,7 @@
 // --- MFC placeholders (only the call symbols + the 0x10 map offset matter) -----
 class CObject;
 
-// CMapStringToOb lives at UnknownAlbus+0x10. operator[] is an out-of-line NAFXCW
+// CMapStringToOb lives at CDDrawWorkerMapSmall+0x10. operator[] is an out-of-line NAFXCW
 // thunk (reloc-masked rel32 call); declared with the exact MFC signature so clang
 // mangles it to ??ACMapStringToOb@@QAEAAPAVCObject@@PBD@Z .
 class CMapStringToOb {
@@ -73,13 +73,13 @@ DATA(0x1f02d8)
 extern void *g_albusWorkerVtbl;     // VA 0x5f02d8
 
 // ---------------------------------------------------------------------------
-// UnknownAlbus - only the load-bearing offsets are modeled: m_0c (parent handle,
+// CDDrawWorkerMapSmall - only the load-bearing offsets are modeled: m_0c (parent handle,
 // copied into the worker), m_1c (a CMapStringToOb-internal field of map1 also
 // copied into the worker), and the CMapStringToOb at +0x10. The matched methods
 // occupy lower vtable slots (slot numbers not load-bearing, only bodies), placed
 // last.
 // ---------------------------------------------------------------------------
-class UnknownAlbus {
+class CDDrawWorkerMapSmall {
 public:
     int   VirtualMethodUnknown14();
     void *VirtualMethodUnknown28(int a1, const char *key, int a3);
@@ -101,7 +101,7 @@ public:
 
 // CMapStringToOb internal field at parent+0x1c (seeds worker->m_04). Read off the
 // parent so it reloc-frees as `mov ecx,[edi+0x1c]`.
-static inline int AlbusReadField1c(const UnknownAlbus *p)
+static inline int AlbusReadField1c(const CDDrawWorkerMapSmall *p)
 {
     return *(const int *)((const char *)p + 0x1c);
 }
@@ -110,11 +110,11 @@ static inline int AlbusReadField1c(const UnknownAlbus *p)
 static inline void StampAlbusWorkerVtbl(AlbusWorkerObj *w) { *(void **)w = &g_albusWorkerVtbl; }
 
 // ---------------------------------------------------------------------------
-// UnknownAlbus::VirtualMethodUnknown14  @0x156cd0  (__thiscall, ret 0)
+// CDDrawWorkerMapSmall::VirtualMethodUnknown14  @0x156cd0  (__thiscall, ret 0)
 // Reports ready when the parent/root handle is present and the base status word
 // is no longer the inactive -1 sentinel.
 RVA(0x156cd0, 0x16)
-int UnknownAlbus::VirtualMethodUnknown14()
+int CDDrawWorkerMapSmall::VirtualMethodUnknown14()
 {
     if (m_0c == 0)
         goto fail;
@@ -142,7 +142,7 @@ fail:
 // equally-live, so the allocator's choice is name-/order-independent here. Every
 // source ordering of the two reads and the two stores produced the identical pairing;
 // no source lever flips it. All 42 other instructions + both ret paths byte-exact.
-static inline AlbusWorkerObj *MakeAlbusWorker(const UnknownAlbus *parent)
+static inline AlbusWorkerObj *MakeAlbusWorker(const CDDrawWorkerMapSmall *parent)
 {
     AlbusWorkerObj *raw = (AlbusWorkerObj *)operator new(sizeof(AlbusWorkerObj));
     AlbusWorkerObj *w;
@@ -161,12 +161,12 @@ static inline AlbusWorkerObj *MakeAlbusWorker(const UnknownAlbus *parent)
 }
 
 // ---------------------------------------------------------------------------
-// UnknownAlbus::VirtualMethodUnknown28  @0x165990  (__thiscall, ret 0xc)
+// CDDrawWorkerMapSmall::VirtualMethodUnknown28  @0x165990  (__thiscall, ret 0xc)
 // Allocate + construct a worker, call its +0x28 virtual with (arg1, arg3). On
 // success store it into the map under `key` and return it; on failure run its
 // scalar-deleting dtor and return 0.
 RVA(0x165990, 0x77)
-void *UnknownAlbus::VirtualMethodUnknown28(int a1, const char *key, int a3)
+void *CDDrawWorkerMapSmall::VirtualMethodUnknown28(int a1, const char *key, int a3)
 {
     AlbusWorkerObj *w = MakeAlbusWorker(this);
     if (w->Vfunc28(a1, a3) == 0) {
@@ -179,10 +179,10 @@ void *UnknownAlbus::VirtualMethodUnknown28(int a1, const char *key, int a3)
 }
 
 // ---------------------------------------------------------------------------
-// UnknownAlbus::VirtualMethodUnknown2C  @0x165a10  (__thiscall, ret 0xc)
+// CDDrawWorkerMapSmall::VirtualMethodUnknown2C  @0x165a10  (__thiscall, ret 0xc)
 // As Unknown28 but dispatches the worker's +0x2c virtual.
 RVA(0x165a10, 0x77)
-void *UnknownAlbus::VirtualMethodUnknown2C(int a1, const char *key, int a3)
+void *CDDrawWorkerMapSmall::VirtualMethodUnknown2C(int a1, const char *key, int a3)
 {
     AlbusWorkerObj *w = MakeAlbusWorker(this);
     if (w->Vfunc2C(a1, a3) == 0) {
@@ -195,11 +195,11 @@ void *UnknownAlbus::VirtualMethodUnknown2C(int a1, const char *key, int a3)
 }
 
 // ---------------------------------------------------------------------------
-// UnknownAlbus::VirtualMethodUnknown20  @0x157600  (__thiscall, ret 0)
+// CDDrawWorkerMapSmall::VirtualMethodUnknown20  @0x157600  (__thiscall, ret 0)
 // Constant state id.
 // ---------------------------------------------------------------------------
 RVA(0x157600, 0x6)
-int UnknownAlbus::VirtualMethodUnknown20()
+int CDDrawWorkerMapSmall::VirtualMethodUnknown20()
 {
     return 0x10;
 }
@@ -211,28 +211,28 @@ int UnknownAlbus::VirtualMethodUnknown20()
 // @source: tomalla
 // @stub
 RVA(0x157610, 0x1e)
-void UnknownAlbus::Stub_157610() {}
+void CDDrawWorkerMapSmall::Stub_157610() {}
 
 // @confidence: high
 // @source: tomalla
 // @stub
 RVA(0x1658c0, 0xcc)
-void UnknownAlbus::Stub_1658c0() {}
+void CDDrawWorkerMapSmall::Stub_1658c0() {}
 
 // @confidence: high
 // @source: tomalla
 // @stub
 RVA(0x165a90, 0xf4)
-void UnknownAlbus::Stub_165a90() {}
+void CDDrawWorkerMapSmall::Stub_165a90() {}
 
 // @confidence: high
 // @source: tomalla
 // @stub
 RVA(0x165b90, 0xa9)
-void UnknownAlbus::Stub_165b90() {}
+void CDDrawWorkerMapSmall::Stub_165b90() {}
 
 // ---------------------------------------------------------------------------
-// WIP (DO NOT ENABLE AS-IS): reconstructed UnknownAlbus::VirtualMethodUnknown1C @0x165b90
+// WIP (DO NOT ENABLE AS-IS): reconstructed CDDrawWorkerMapSmall::VirtualMethodUnknown1C @0x165b90
 // reaches ~82% objdiff here; the EH-frame register/layout schedule is TU-context
 // dependent (it reached 100% only in its original TU layout). Kept for future reuse:
 // re-enable, remove Stub_165b90, and reconcile this TU's symbol/layout context.
@@ -289,7 +289,7 @@ public:
     virtual int  ScalarDtor(int flag);  // +0x04
 };
 
-// UnknownAlbus surface used by the teardown - same load-bearing offsets as the
+// CDDrawWorkerMapSmall surface used by the teardown - same load-bearing offsets as the
 // active class above, with the m_10 map typed for the teardown signatures.
 class UnknownAlbusTeardown {
 public:
@@ -303,7 +303,7 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// UnknownAlbus::VirtualMethodUnknown1C  @0x165b90  (__thiscall, ret 0)
+// CDDrawWorkerMapSmall::VirtualMethodUnknown1C  @0x165b90  (__thiscall, ret 0)
 // Map teardown: iterate all entries in m_10 via GetNextAssoc, destroying each
 // CObject* value via its scalar-deleting destructor (vtbl +0x4 arg 1), then
 // RemoveAll the map and clear the m_64 counter.

@@ -1,6 +1,6 @@
 #include "../rva.h"
-// UnknownPettigrew.cpp - VirtualMethodUnknown14/18 of the tomalla-named class
-// UnknownPettigrew (a CDirectDrawMgr surface/page sub-manager in the "Harry
+// CDDrawSubMgrLeaf.cpp - VirtualMethodUnknown14/18 of the tomalla-named class
+// CDDrawSubMgrLeaf (a CDirectDrawMgr surface/page sub-manager in the "Harry
 // Potter" family). VirtualMethodUnknown14 is a standard readiness predicate
 // shared by several Lucius-derived managers: reports ready (1) when the
 // parent/root handle at +0x0c is present and the base status word at +0x04 is
@@ -11,12 +11,12 @@
 // code bytes are load-bearing (campaign doctrine).
 // ---------------------------------------------------------------------------
 
-class UnknownMinerva {
+class CDDrawMapHolder {
 public:
     void ClearUnknownMap();
 };
 
-class UnknownPettigrew {
+class CDDrawSubMgrLeaf {
 public:
     int VirtualMethodUnknown14();
     void VirtualMethodUnknown18();
@@ -28,11 +28,11 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// UnknownPettigrew::VirtualMethodUnknown14  @0x1577a0  (__thiscall, ret 0)
+// CDDrawSubMgrLeaf::VirtualMethodUnknown14  @0x1577a0  (__thiscall, ret 0)
 // Ready when the parent handle is present and the status word is not -1.
 // ---------------------------------------------------------------------------
 RVA(0x1577a0, 0x16)
-int UnknownPettigrew::VirtualMethodUnknown14()
+int CDDrawSubMgrLeaf::VirtualMethodUnknown14()
 {
     if (m_0c == 0)
         goto fail;
@@ -44,12 +44,12 @@ fail:
 }
 
 // ---------------------------------------------------------------------------
-// UnknownPettigrew::VirtualMethodUnknown18  @0x157ae0  (__thiscall, ret 0)
+// CDDrawSubMgrLeaf::VirtualMethodUnknown18  @0x157ae0  (__thiscall, ret 0)
 // Clears the parent map then zeroes a member field.
 // ---------------------------------------------------------------------------
 RVA(0x157ae0, 0x11)
-void UnknownPettigrew::VirtualMethodUnknown18()
+void CDDrawSubMgrLeaf::VirtualMethodUnknown18()
 {
-    ((class UnknownMinerva *)this)->ClearUnknownMap();
+    ((class CDDrawMapHolder *)this)->ClearUnknownMap();
     m_0c = 0;
 }

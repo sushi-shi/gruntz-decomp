@@ -1,10 +1,10 @@
 #include "../rva.h"
-// UnknownSirius.cpp - engine-label stubs for UnknownSirius.
+// CDDrawWorkerCache.cpp - engine-label stubs for CDDrawWorkerCache.
 
-class UnknownSirius {
+class CDDrawWorkerCache {
 public:
     void VirtualMethodUnknown20();
-    ~UnknownSirius();
+    ~CDDrawWorkerCache();
     void VirtualMethod_157720();
     void VirtualMethodUnknown24();
 };
@@ -13,10 +13,10 @@ public:
 // @source: tomalla
 // @stub
 RVA(0x157700, 0x1e)
-UnknownSirius::~UnknownSirius() {}
+CDDrawWorkerCache::~CDDrawWorkerCache() {}
 
 // @confidence: med
 // @source: call-xref
 // @stub
 RVA(0x157720, 0x68)
-void UnknownSirius::VirtualMethod_157720() {}
+void CDDrawWorkerCache::VirtualMethod_157720() {}
