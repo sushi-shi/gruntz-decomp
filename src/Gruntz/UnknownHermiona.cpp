@@ -78,6 +78,14 @@ public:
     int           m_0c;                 // +0x0c  parent/root handle
     char          m_pad10[0x14 - 0x10]; // +0x10..0x13
     HermionaNode *m_14;                 // +0x14  intrusive-list head
+
+    // Engine-label backlog stubs.
+    void Stub_1591e0();
+    void Stub_1591f0();
+    void Stub_159a70();
+    void Stub_159c90();
+    void Stub_159cc0();
+    void Stub_159d90();
 };
 
 // ---------------------------------------------------------------------------
@@ -150,3 +158,48 @@ void UnknownHermiona::VirtualMethodUnknown34(int a1, int a2, int a3)
     }
     Vfunc2C(a2, a3);
 }
+
+// -------------------------------------------------------------------------
+// Engine-label backlog stubs.
+// -------------------------------------------------------------------------
+// @confidence: high
+// @source: tomalla
+// @address: 0x1591e0
+// @size:    0x5
+// @stub
+void UnknownHermiona::Stub_1591e0() {}
+
+// @confidence: high
+// @source: tomalla
+// @address: 0x1591f0
+// @size:    0x54
+// @stub
+void UnknownHermiona::Stub_1591f0() {}
+
+// @confidence: high
+// @source: tomalla
+// @address: 0x159a70
+// @size:    0x200
+// @stub
+void UnknownHermiona::Stub_159a70() {}
+
+// @confidence: high
+// @source: tomalla
+// @address: 0x159c90
+// @size:    0x23
+// @stub
+void UnknownHermiona::Stub_159c90() {}
+
+// @confidence: high
+// @source: tomalla
+// @address: 0x159cc0
+// @size:    0x2a
+// @stub
+void UnknownHermiona::Stub_159cc0() {}
+
+// @confidence: high
+// @source: tomalla
+// @address: 0x159d90
+// @size:    0x1c
+// @stub
+void UnknownHermiona::Stub_159d90() {}

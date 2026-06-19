@@ -964,7 +964,7 @@ fast-moving scratchpad. Newest at top within each section.
   bytes, 0 raw mismatches after trimming the 12 trailing-nop pad — verified via
   `llvm-objdump` byte-compare, not just the 99.32% fuzzy) and
   `?MakeRezPath@RezMgr@@QAEHXZ` @0x091670 (**PLATEAU 91.87%**, EH/CString
-  entropy). The class is the engine's **CGruntzMgr** (engine_labels), modeled as
+  entropy). The class is the engine's **CGruntzMgr** (`@stub` metadata under src/Stub/), modeled as
   `class RezMgr` here (names are placeholders); these two fns own the
   archive-path / image-key building. The 4 prior rezmgr fns did NOT regress.
 - **`MakeImageKey(arg1, name, arg3)` is an extension DISPATCHER, not a key
@@ -1077,7 +1077,7 @@ fast-moving scratchpad. Newest at top within each section.
 - New TU `src/Io/FileStream.cpp` (+ `FileStream.h`). This is the MFC **CFile**
   work-alike that gates ALL engine file I/O (RezMgr, WwdFile, save/load). The
   `WwdInputStream` placeholder matcher #8 declared as an external class IS this
-  class — now reconstructed in full. Class name = **CFileIO** (per engine_labels).
+  class — now reconstructed in full. Class name = **CFileIO** (per `@stub` metadata under src/Stub/).
 - **LAYOUT (16 bytes, `: public CObject`)**: vtable@+0x00 (implicit, two-phase),
   **HANDLE m_handle@+0x04** (-1=closed), **int m_open@+0x08** (1 = we own the
   handle), **CString m_name@+0x0c**. `m_name` is an MFC **CString** (a single

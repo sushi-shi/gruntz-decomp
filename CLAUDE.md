@@ -62,3 +62,11 @@ Gotchas baked in from reading the delinker source:
 - Keep `README.md` and the relevant `docs/` (esp. `build-system.md`) current when
   the build/diff flow, tools, or paths change.
 - `flake.lock` is committed; `.gitignore` already excludes generated outputs.
+- **`src/Stub/` is the labeled-but-unmatched backlog** (aggregated by `All.cpp`).
+  Its stubs compile, but objdiff does **not** diff them and their `@address` is
+  **not** verified against the binary — `All.cpp` only `#include`s them, so
+  `labels.py` never reads their `@address` (it scans each TU's own text). They
+  are documentary placeholders: don't trust a `src/Stub/` address as
+  binary-checked, and the `engine_label_stubs` unit's 100% means nothing. The
+  goal is to **move each stub into its real class's TU**, where it gets delinked
+  and diffed (the matched-TU backlog stubs already are). See `src/Stub/All.cpp`.

@@ -6,23 +6,6 @@
 #include <string.h>
 #include <stdio.h>
 
-// The game manager (engine namespace WAP32). Only the two vtable slots that
-// VirtualUnknownMethod02 dispatches through are needed: the scalar-deleting
-// dtor (slot 0, for `delete`) and Run (slot +0x4).
-namespace WAP32 {
-class CGameMgr {
-public:
-    virtual ~CGameMgr();
-    virtual int Run(CGameWnd *pGameWnd, char *szCmdLine);
-
-    void UnknownClose();
-    void UnknownMethodInitializeTimeGlobal();
-
-    int m_4;
-    int m_8;
-};
-}
-
 extern "C" {
 __declspec(dllimport) DWORD __stdcall timeGetTime(void);
 }
@@ -462,3 +445,38 @@ void WAP32::CGameMgr::UnknownMethodInitializeTimeGlobal()
 }
 
 LRESULT __stdcall CGameApp::GameWindowProc(HWND, UINT, WPARAM, LPARAM) { return 0; }
+
+// -------------------------------------------------------------------------
+// Engine-label backlog stubs.
+// -------------------------------------------------------------------------
+// @confidence: high
+// @source: tomalla
+// @address: 0x13dd10
+// @size:    0x35
+// @stub
+void WAP32::CGameMgr::Stub_13dd10() {}
+
+// @confidence: high
+// @source: tomalla
+// @address: 0x13dd50
+// @size:    0x54
+// @stub
+void WAP32::CGameMgr::Stub_13dd50() {}
+
+// @confidence: high
+// @source: tomalla
+// @address: 0x133380
+// @size:    0x24
+// @stub
+void WAP32::CGameMgr::vector_deleting_destructor() {}
+
+// -------------------------------------------------------------------------
+// Engine-label backlog stubs.
+// -------------------------------------------------------------------------
+
+// @confidence: high
+// @source: tomalla
+// @address: 0x080dd0
+// @size:    0x32
+// @stub
+void CGameApp::Stub_080dd0() {}

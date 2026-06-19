@@ -141,5 +141,15 @@ found:
     return s_cdDriveLetter;
 }
 
+
+// -------------------------------------------------------------------------
+// Engine-label backlog stubs.
+// -------------------------------------------------------------------------
+// @confidence: high
+// @source: tomalla
+// @address: 0x118ce0
+// @size:    0x1f5
+// @stub
+void Stub_118ce0() {}
 } // namespace WinAPI
 } // namespace Utils

@@ -109,6 +109,9 @@ class CMultiStartDlg : public CDialog {
 public:
     CMultiStartDlg(int a0, CWnd *pParent);
 
+    // Engine-label backlog stub (non-virtual placeholder; vtable-neutral).
+    void InitPlayerSlots();         // @0xc20a0
+
     int     m_5c;       // +0x5c  (= a0)
     int     m_60;       // +0x60  (= 0)
     char    m_pad64[8]; // +0x64

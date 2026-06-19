@@ -383,3 +383,13 @@ int RezMgr::PerFrameTick()
     m_mode->Render();
     return 1;
 }
+
+// -------------------------------------------------------------------------
+// Engine-label backlog stubs.
+// -------------------------------------------------------------------------
+// @confidence: high
+// @source: rez-trace
+// @address: 0x13b0c0
+// @size:    0x238
+// @stub
+void CRezDir::Stub_13b0c0() {}

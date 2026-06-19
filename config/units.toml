@@ -330,6 +330,16 @@ status = "wip"
 # add an EH frame to them (verified - they stay byte-exact).
 cflags = ["/nologo", "/c", "/O2", "/MT", "/GX"]
 
+# --- Materialized @stub backlog --------------------------------------------
+# Empty source bodies for labeled RVAs whose real class/location is not confirmed
+# yet. Confirmed class-scoped stubs live beside their real src/ classes; the
+# remaining src/Stub/ backlog is aggregated here as one compact TU and compiled
+# like the rest of src.
+[[unit]]
+unit = "engine_label_stubs"
+source = "src/Stub/All.cpp"
+status = "wip"
+
 # --- CNetMgr DirectPlay networking manager (src/Net/NetMgr.cpp) -------------
 # A cluster of CNetMgr message handlers + a config writer. The three handlers
 # (OnMultiOptions@0x0badd0, OnMultiPause@0x0bad40, OnOutOfSync@0x0bae40) fire a

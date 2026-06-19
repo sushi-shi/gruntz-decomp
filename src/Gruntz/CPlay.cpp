@@ -601,3 +601,13 @@ void CPlay::PlayCueAt(int cueId, int a2, int a3, int a4, int a5,
     else
         Eng_CueRenderDef(m_c, &m_410, &rect, a2, 1, a4, a5, a6, a7);   // @0x115520
 }
+
+// -------------------------------------------------------------------------
+// Engine-label backlog stubs.
+// -------------------------------------------------------------------------
+// @confidence: med
+// @source: rtti-vptr
+// @address: 0x08c9d0
+// @size:    0x2bd
+// @stub
+void CPlay::Stub_08c9d0() {}

@@ -39,6 +39,11 @@ public:
     DracoChild *m_10;       // +0x10
     DracoChild *m_14;       // +0x14
     DracoChild *m_18;       // +0x18
+
+    // Engine-label backlog stubs.
+    void Stub_1574a0();
+    void Stub_1574b0();
+    void Stub_1588f0();
 };
 
 // ---------------------------------------------------------------------------
@@ -82,3 +87,27 @@ void UnknownDraco::VirtualMethodUnknown1C()
         m_18 = 0;
     }
 }
+
+// -------------------------------------------------------------------------
+// Engine-label backlog stubs.
+// -------------------------------------------------------------------------
+// @confidence: high
+// @source: tomalla
+// @address: 0x1574a0
+// @size:    0x6
+// @stub
+void UnknownDraco::Stub_1574a0() {}
+
+// @confidence: high
+// @source: tomalla
+// @address: 0x1574b0
+// @size:    0x1e
+// @stub
+void UnknownDraco::Stub_1574b0() {}
+
+// @confidence: high
+// @source: tomalla
+// @address: 0x1588f0
+// @size:    0x1c5
+// @stub
+void UnknownDraco::Stub_1588f0() {}

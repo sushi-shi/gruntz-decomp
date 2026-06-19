@@ -276,6 +276,11 @@ public:
     void Sub2();                    // 0x141a -> 0x396f0
     void Sub3();                    // 0x3d41 -> 0x39dc0
 
+    // Engine-label backlog stub: the scalar-deleting dtor @0x8d5e0. A
+    // non-virtual placeholder so the carefully-built vftable (slots 4..8) is
+    // unchanged; the real ??1/??_G is not matched here.
+    void Stub_08d5e0();
+
     // --- CCreditsState members the Render path pins (placeholders) ---
     char m_pad1a8[0x1b4 - 0x1a8];
     int  m_1b4;                     // +0x1b4 one-shot FX latch
@@ -286,6 +291,9 @@ public:
 class CBootyState : public CState {
 public:
     virtual int Update();           // @0x8d3f0  return 0xa; (vtable @0x5e9cec slot 4)
+
+    // Engine-label backlog stub (non-virtual placeholder; vtable-neutral).
+    void vfunc_1();                 // @0x1d440
 };
 
 #endif // SRC_GRUNTZ_GAMEMODE_H

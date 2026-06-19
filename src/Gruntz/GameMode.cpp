@@ -303,3 +303,20 @@ int  CCreditsState::InputVirtual() { return 0; }
 // object) + +0x1c4 (CCreditsState conditional-FX gate). The global @0x645574 is a
 // POINTER to the per-frame entity list (count@+4, elem-ptr array@+8) that every
 // state Render iterates (e->vtbl[+0x10] = per-entity Update; e->m_2ac = flags).
+
+// -------------------------------------------------------------------------
+// Engine-label backlog stubs (relocated from src/Stub/ - own this class here).
+// -------------------------------------------------------------------------
+// @confidence: med
+// @source: decomp-xref
+// @address: 0x01d440
+// @size:    0xd7d
+// @stub
+void CBootyState::vfunc_1() {}
+
+// @confidence: med
+// @source: rtti-vptr
+// @address: 0x08d5e0
+// @size:    0x8b
+// @stub
+void CCreditsState::Stub_08d5e0() {}

@@ -72,3 +72,13 @@ CMultiStartDlg::CMultiStartDlg(int a0, CWnd *pParent)
     m_60 = 0;
     g_64bd5c = g_gameReg[0x2c / 4];
 }
+
+// -------------------------------------------------------------------------
+// Engine-label backlog stub (relocated from src/Stub/ - own this class here).
+// -------------------------------------------------------------------------
+// @confidence: med
+// @source: string-xref
+// @address: 0x0c20a0
+// @size:    0x45a
+// @stub
+void CMultiStartDlg::InitPlayerSlots() {}

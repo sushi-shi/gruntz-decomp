@@ -2,12 +2,11 @@
 # apply_ghidra_enrichment.py - maximal comprehension enrichment for build/ghidra-named.
 #
 #   Extends (does NOT clobber) the prior name+plate enrichment with:
-#     1. FUNCTION NAMES   - build/gen/symbol_names.csv (generated from src @address;
-#                           wins over engine_labels.csv), engine_labels.csv
-#                           (incl. +37 import-caller rows), config/library_labels.csv
-#                           (HIGH/MED/AMBIG).
+#     1. FUNCTION NAMES   - src/**/*.cpp source stub metadata (incl. import-caller rows),
+#                           config/library_labels.csv (HIGH/MED/AMBIG),
+#                           config/symbol_names.csv (zlib + ctors).
 #                           Functions are created when Ghidra has none at the RVA.
-#     2. PROTOTYPES + PARAM NAMES - parsed from engine_labels' `prototype` field
+#     2. PROTOTYPES + PARAM NAMES - parsed from source stub `prototype` metadata
 #                           (tomalla rows). Sets return type, params (name+type),
 #                           and calling convention (__thiscall members / __cdecl
 #                           free funcs / __stdcall callbacks). Win32 types resolve
@@ -21,7 +20,7 @@
 #     4. ENUMS            - from build/gen/enums.json (clang over structure/),
 #                           defined in the DTM.
 #
-#   Reproducible from build/gen/symbol_names.csv + config/engine_labels.csv +
+#   Reproducible from src/**/*.cpp @stub metadata + config/symbol_names.csv +
 #   config/library_labels.csv + structure/. Idempotent: re-runnable, never
 #   downgrades a better existing name, keeps prior [LABEL] plate comments.
 #
@@ -33,6 +32,7 @@
 #
 #   Writes build/ghidra-named/exports/enrichment_apply_report.txt
 #@category Gruntz
+import json
 import re
 from ghidra.program.model.symbol import SourceType
 from ghidra.program.model.listing import CodeUnit, GhidraClass, CommentType
@@ -50,7 +50,7 @@ IMAGE_BASE = 0x400000
 
 import os
 ROOT = os.environ.get("GRUNTZ_DIR", "/home/sheep/Projects/gruntz")
-CSV_ENGINE = ROOT + "/config/engine_labels.csv"
+STUB_LABEL_ROOT = ROOT + "/src"
 # This script is STATELESS - no embedded layouts/enums. All data comes from these
 # generated files (+ the config CSVs):
 #   build/gen/symbol_names.csv  <- gen_labels.py   (rva -> mangled name, unit)
@@ -104,6 +104,41 @@ def load_csv_rows(path):
             rows.append(parts)
     finally:
         fh.close()
+    return rows
+
+def load_stub_label_rows(path):
+    rows = []
+    marker = "// engine-label:"
+    if os.path.isdir(path):
+        files = []
+        for base, _dirs, names in os.walk(path):
+            for name in names:
+                if name.endswith(".cpp"):
+                    files.append(os.path.join(base, name))
+        files.sort()
+    else:
+        files = [path]
+    for file_path in files:
+        fh = open(file_path)
+        try:
+            for line in fh:
+                if marker not in line:
+                    continue
+                try:
+                    row = json.loads(line.split(marker, 1)[1].strip())
+                except Exception:
+                    continue
+                rows.append((
+                    row.get("rva", ""),
+                    row.get("name", ""),
+                    row.get("class", ""),
+                    row.get("prototype", ""),
+                    row.get("kind", ""),
+                    row.get("source", ""),
+                    row.get("confidence", ""),
+                ))
+        finally:
+            fh.close()
     return rows
 
 # =====================================================================
@@ -500,9 +535,8 @@ try:
         n_enums += 1
     R("enums: %d generated (from structure/ via clang)" % len(gen_enums_list))
 
-    # ---- (C) load CSVs ----
-    eng_rows = load_csv_rows(CSV_ENGINE)   # rva,name,class,prototype,kind,source,confidence
-    # filter to data rows (7 cols, header skipped by content)
+    # ---- (C) load metadata ----
+    eng_rows = load_stub_label_rows(STUB_LABEL_ROOT)   # rva,name,class,prototype,kind,source,confidence
     eng = []
     for r in eng_rows:
         if len(r) < 7: continue
@@ -515,7 +549,6 @@ try:
 
     sym_rows = load_csv_rows(CSV_SYMBOL) if os.path.exists(CSV_SYMBOL) else []  # rva,name,unit,size,kind
     syms = []           # functions (kind=func / legacy)
-    src_func_rvas = set()
     data_syms = []      # global data (kind=data): mangled name, Ghidra demangles for display
     for r in sym_rows:
         if len(r) < 2: continue
@@ -523,11 +556,7 @@ try:
         try: rva = int(r[0], 16)
         except Exception: continue
         kind = r[4] if len(r) > 4 else "func"
-        if kind == "data":
-            data_syms.append((rva, r[1]))
-        else:
-            syms.append((rva, r[1]))
-            src_func_rvas.add(rva)
+        (data_syms if kind == "data" else syms).append((rva, r[1]))
 
     fid_rows = load_csv_rows(CSV_FID) if os.path.exists(CSV_FID) else []  # rva,name,lib,confidence,source
     fids = []
@@ -538,7 +567,7 @@ try:
         except Exception: continue
         fids.append((rva, r[1], r[2], r[3]))
 
-    # ---- (D) FID + source-derived names (source labels win over engine_labels) ----
+    # ---- (D) FID + zlib names (apply first; source stub labels override where overlapping) ----
     n_fid_named = 0; n_fid_skip_low = 0; n_fid_nofunc = 0
     for (rva, name, lib, conf) in fids:
         if conf == "LOW":
@@ -571,7 +600,7 @@ try:
                 fn.setName(name, US); n_sym_named += 1
             except Exception:
                 pass
-    R("symbol_names (src @address) reconciled: %d  (no-func: %d)" % (n_sym_named, n_sym_nofunc))
+    R("symbol_names (zlib+ctors) reconciled: %d  (no-func: %d)" % (n_sym_named, n_sym_nofunc))
 
     # Global DATA symbols a matched global is referenced through (labels.py @data
     # rows). The name is the clang MS-ABI mangling (?g_foo@@3.. / _g_foo); Ghidra
@@ -591,19 +620,15 @@ try:
             pass
     R("global data symbols labeled (Ghidra demangles): %d" % n_data_named)
 
-    # ---- (E) engine_labels: names + namespace + plate + PROTOTYPES + this-type ----
+    # ---- (E) source stub labels: names + namespace + plate + PROTOTYPES + this-type ----
     n_renamed = 0; n_bogus = 0; n_kept = 0; n_ns = 0; n_plate = 0
-    n_nofunc = 0; n_created = 0; n_src_skipped = 0
+    n_nofunc = 0; n_created = 0
     n_proto = 0; n_proto_fail = 0
     n_this_applied = 0
     this_methods_by_class = {}
     proto_examples = []
 
     for (rva, name, cls, proto, kind, source, conf) in eng:
-        if rva in src_func_rvas:
-            n_src_skipped += 1
-            continue
-
         addr = toaddr(rva)
         fn = fm.getFunctionAt(addr)
         if fn is None:
@@ -709,8 +734,8 @@ try:
                 except Exception:
                     pass
 
-    R("engine_labels: renamed=%d bogus-overwrote=%d kept=%d ns-set=%d plate-added=%d created-func=%d no-func=%d src-skipped=%d"
-      % (n_renamed, n_bogus, n_kept, n_ns, n_plate, n_created, n_nofunc, n_src_skipped))
+    R("source stub labels: renamed=%d bogus-overwrote=%d kept=%d ns-set=%d plate-added=%d created-func=%d no-func=%d"
+      % (n_renamed, n_bogus, n_kept, n_ns, n_plate, n_created, n_nofunc))
     R("prototypes applied (typed sig+params): %d  (failed: %d)" % (n_proto, n_proto_fail))
     for e in proto_examples: R("    proto: " + e)
     R("this-type (struct*) applications: %d  across %d classes" %

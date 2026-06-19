@@ -129,6 +129,13 @@ public:
     char   m_pad08[0x0c - 0x08];    // +0x08..0x0b
     int    m_pHarryPotter;          // +0x0c  (UnknownCGruntzMgrLucius+0xc)
     CObList m_10;                   // +0x10  worker list (CObList)
+
+    // Engine-label backlog stubs.
+    void Stub_156f20();
+    void Stub_156f50();
+    void Stub_156fc0();
+    void Stub_163bf0();
+    void Stub_163c60();
 };
 
 // Stamps the worker's foreign vftable into its first dword (manual vptr store).
@@ -290,3 +297,41 @@ void *UnknownHagrid::VirtualMethodUnknown30(int a1, int a2, int a3, int a4, int 
         m_10.AddTail((CObject *)w);
     return w;
 }
+
+// -------------------------------------------------------------------------
+// Engine-label backlog stubs.
+// -------------------------------------------------------------------------
+// @confidence: high
+// @source: tomalla
+// @address: 0x156f20
+// @size:    0x6
+// @stub
+void UnknownHagrid::Stub_156f20() {}
+
+// @confidence: high
+// @source: tomalla
+// @address: 0x156f50
+// @size:    0x68
+// @stub
+void UnknownHagrid::Stub_156f50() {}
+
+// @confidence: high
+// @source: tomalla
+// @address: 0x156fc0
+// @size:    0x6
+// @stub
+void UnknownHagrid::Stub_156fc0() {}
+
+// @confidence: high
+// @source: tomalla
+// @address: 0x163bf0
+// @size:    0x6d
+// @stub
+void UnknownHagrid::Stub_163bf0() {}
+
+// @confidence: high
+// @source: tomalla
+// @address: 0x163c60
+// @size:    0x2c
+// @stub
+void UnknownHagrid::Stub_163c60() {}

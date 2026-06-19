@@ -70,6 +70,11 @@ public:
 
     char            m_pad00[0x10];
     CWormholeState *m_10;        // +0x10  the wormhole state/draw sub-object
+
+    // Engine-label backlog stubs.
+    void Stub_03fc70();
+    void Stub_03fed0();
+    void Stub_0412c0();
 };
 
 // ---------------------------------------------------------------------------
@@ -107,3 +112,27 @@ void CWormhole::LoadColors()
     s->m_50 = 7;
     s->m_4c = colorEntry;
 }
+
+// -------------------------------------------------------------------------
+// Engine-label backlog stubs.
+// -------------------------------------------------------------------------
+// @confidence: med
+// @source: rtti-vptr
+// @address: 0x03fc70
+// @size:    0x1db
+// @stub
+void CWormhole::Stub_03fc70() {}
+
+// @confidence: med
+// @source: decomp-xref
+// @address: 0x03fed0
+// @size:    0xa9
+// @stub
+void CWormhole::Stub_03fed0() {}
+
+// @confidence: med
+// @source: decomp-xref
+// @address: 0x0412c0
+// @size:    0x63
+// @stub
+void CWormhole::Stub_0412c0() {}
