@@ -94,11 +94,6 @@ source = "src/Wap32/GameApp.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "statusbaritem"
-source = "src/Gruntz/StatusBarItem.cpp"
-flags = "base"
-
-[[unit]]
 unit = "sbi_rectonly"
 source = "src/Gruntz/SBI_RectOnly.cpp"
 flags = "base"

@@ -55,7 +55,6 @@ registryhelper	8	8
 rezmgr	10	6
 sbi_rectonly	2	1
 spriteloaders	2	0
-statusbaritem	1	1
 tileswitchlogic	2	0
 tiletriggerlogic	1	1
 trees	17	17
@@ -765,11 +764,10 @@ rezmgr	?MakeImageKey@RezMgr@@QAEHPAXPAD0@Z	100.0000	100.0000	2	c7c8e77f0a0e
 rezmgr	?MakeRezPath@RezMgr@@QAEHXZ	92.7923	92.7923	3	dfbc26c1beef
 rezmgr	?PerFrameTick@RezMgr@@UAEHXZ	100.0000	100.0000	2	ceb4a179e52b
 rezmgr	?Stub_13b0c0@CRezDir@@QAEXXZ	0.2139	0.2139	1	34a9ea0f6ebf
-sbi_rectonly	??0CSBI_RectOnly@@QAE@XZ	100.0000	100.0000	3	4fb2a63163cf
-sbi_rectonly	?Stub_0ffde0@CSBI_RectOnly@@QAEXXZ	0.2119	0.2119	2	4cd4a6033657
+sbi_rectonly	??0CSBI_RectOnly@@QAE@XZ	100.0000	100.0000	4	93eacaa6d856
+sbi_rectonly	?Stub_0ffde0@CSBI_RectOnly@@QAEXXZ	0.2119	0.2119	3	b1064f8a97e6
 spriteloaders	?LoadLoadingBarSprite@CLoadingBar@@QAEHXZ	95.8064	95.8064	3	fbc7a7742202
 spriteloaders	?LoadTimerSprite@CTimer@@QAEHHH@Z	96.5217	96.5217	3	ea8f9fb552e2
-statusbaritem	??0CStatusBarItem@@QAE@XZ	100.0000	100.0000	2	c1f37a1c5d22
 tileswitchlogic	??0CTileTriggerSwitchLogic@@QAE@XZ	90.7273	90.7273	1	b2b57f6b22d4
 tileswitchlogic	?FindIndexByKey@CTileTriggerSwitchLogic@@QAEHH@Z	99.9231	99.9231	1	d93f0b5ccc4d
 tiletriggerlogic	??0CTileTriggerLogic@@QAE@XZ	100.0000	100.0000	2	ac86faf71828
