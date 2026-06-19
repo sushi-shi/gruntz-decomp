@@ -36,13 +36,7 @@ class CObject;
 // thunks (reloc-masked rel32 calls); declared with the exact MFC signatures so
 // clang mangles them to the MFC-canonical names.
 // RemoveAll / RemoveAt are called by VirtualMethodUnknown1C and Unknown34.
-class CObList {
-public:
-    __POSITION *AddHead(CObject *newElement);
-    __POSITION *AddTail(CObject *newElement);
-    void RemoveAll();
-    void RemoveAt(__POSITION *position);
-};
+#include <Gruntz/CObList.h>
 
 // The worker virtual interface. Slots are laid out so the dispatched methods land
 // at the byte offsets the target uses:
