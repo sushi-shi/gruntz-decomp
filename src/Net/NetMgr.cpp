@@ -103,9 +103,9 @@ void CNetMgr::ApplyCmdDelayDefaults()
 {
     Utils::RegistryHelper *reg = g_pGameMgr->m_38;
 
-    AfxString cmdDelayName  = m_598 + "_CmdDelay";
-    AfxString resendName    = m_598 + "_Resend";
-    AfxString dynCmdName    = m_598 + "_DynCmdDelay";
+    CString cmdDelayName  = m_598 + "_CmdDelay";
+    CString resendName    = m_598 + "_Resend";
+    CString dynCmdName    = m_598 + "_DynCmdDelay";
 
     reg->SetValueDword((char *)(const char *)cmdDelayName, m_5a4);
     reg->SetValueDword((char *)(const char *)resendName, m_5a8);

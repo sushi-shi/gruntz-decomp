@@ -117,15 +117,7 @@ extern "C" void AfxString_AppendChar(void *pStr, char c);
 //   - the literal-ctor (CString::CString(const char*)) used by the
 //     one-shot default-string init in GetString.
 // ---------------------------------------------------------------------------
-class AfxString {
-public:
-    AfxString();
-    AfxString(const char *src);
-    const AfxString &operator=(const char *src);
-    operator const char *() const { return m_pchData; }
-private:
-    char *m_pchData;
-};
+#include <incs/CString.h>
 
 // CRT helpers (minimal external decls; reloc-masked engine CRT thunks).
 extern "C" int atexit(void (*func)(void));
@@ -177,7 +169,7 @@ public:
     short m_tokType;           // +0xaa
     char  m_padac[0xae - 0xac];// +0xac
     char  m_token[0x100 - 0xae];// +0xae
-    AfxString m_tagName;       // +0x100
+    CString m_tagName;       // +0x100
     char  m_pad104[0x10c - 0x104];// +0x104
     char  m_10c;               // +0x10c
     char  m_10d;               // +0x10d

@@ -13,17 +13,12 @@
 #define SRC_GRUNTZ_GAMETEXT_H
 
 // ---------------------------------------------------------------------------
-// AfxString - the engine's MFC-style CString (a single char* @+0). Only the
+// CString - the engine's MFC-style CString (a single char* @+0). Only the
 // const-char* ctor (CString::CString(const char*), NAFXCW) is used by
 // these leaves; declared with NO body so the `call rel32` displacement is
 // reloc-masked in objdiff.
 // ---------------------------------------------------------------------------
-class AfxString {
-public:
-    AfxString(const char *src);
-private:
-    char *m_pchData;
-};
+#include <incs/CString.h>
 
 // ---------------------------------------------------------------------------
 // CContainerErr - the Monolith container-library exception object (the class

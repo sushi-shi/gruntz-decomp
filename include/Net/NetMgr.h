@@ -34,7 +34,7 @@ __declspec(dllimport) BOOL __stdcall PostMessageA(HWND hWnd, UINT Msg,
 }
 
 // ---------------------------------------------------------------------------
-// AfxString - the minimal MFC CString model (a single char* @+0). The config
+// CString - the minimal MFC CString model (a single char* @+0). The config
 // writer builds value-name strings "m_section + _Suffix" via the engine global
 // operator+ overload (AFXAPI == __stdcall) and destroys the temporaries via
 // the engine CString dtor. Both are external/no-body so their `call rel32`
@@ -42,15 +42,9 @@ __declspec(dllimport) BOOL __stdcall PostMessageA(HWND hWnd, UINT Msg,
 //   operator+(const CString&, LPCTSTR)  (AFXAPI)
 //   CString::~CString()                 (__thiscall)
 // ---------------------------------------------------------------------------
-class AfxString {
-public:
-    AfxString();
-    ~AfxString();
-    operator const char *() const { return m_pchData; }
-    char *m_pchData;
-};
+#include <incs/CString.h>
 
-AfxString __stdcall operator+(const AfxString &lhs, const char *rhs);
+CString __stdcall operator+(const CString &lhs, const char *rhs);
 
 // ---------------------------------------------------------------------------
 // The game-manager singleton - only its +0x38 RegistryHelper is
@@ -119,7 +113,7 @@ public:
     char       m_pad578[0x584 - 0x578];
     int        m_584;                   // +0x584
     char       m_pad588[0x598 - 0x588];
-    AfxString  m_598;                   // +0x598
+    CString  m_598;                   // +0x598
     char       m_pad59c[0x5a4 - 0x59c];
     DWORD      m_5a4;                   // +0x5a4
     DWORD      m_5a8;                   // +0x5a8

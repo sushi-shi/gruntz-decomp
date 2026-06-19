@@ -251,7 +251,7 @@ char *CButeMgr::GetStringDef(char *tag, char *key, char *def)
 RVA(0x1731d0, 0xb6)
 char *CButeMgr::GetString(char *tag, char *key)
 {
-    static AfxString s_empty("");
+    static CString s_empty("");
 
     void *grp = Tree()->Find(tag);
     if (grp) {

@@ -157,7 +157,7 @@ struct CFileExceptionLite {
     char      pad0[8];   // +0x00  (CObject vtable + base)
     int       m_cause;   // +0x08
     LONG      m_lOsError;// +0x0c
-    AfxString m_strFileName; // +0x10
+    CString m_strFileName; // +0x10
 };
 extern "C" int __stdcall AfxOsErrorToException(LONG lOsError);
 

@@ -23,14 +23,7 @@
 // dtor (drives the C++ EH unwind state). Their bodies are external/no-body so the
 // call displacements reloc-mask against the matched NAFXCW routines.
 // ---------------------------------------------------------------------------
-class CString {
-public:
-    CString(const char *psz);
-    CString(const CString &o);
-    ~CString();
-    const CString &operator=(const char *psz);
-    char *m_pchData;                   // +0x00
-};
+#include <incs/CString.h>
 
 // ---------------------------------------------------------------------------
 // CInputConfig - the input-device option holder. Only the device-id discriminator

@@ -221,7 +221,7 @@ int RezMgr::MakeRezPath()
 
     // --- main archive: cwd\Gruntz.REZ, fall back to <drive>:\DATA\Gruntz.REZ ---
     {
-        AfxString rez(s_rezName);
+        CString rez(s_rezName);
         m_haveRez = 0;
         RezFormat(&m_pathA, s_join, cwd, (const char *)rez);
         if (!RezFileExists(m_pathA)) {
@@ -238,9 +238,9 @@ int RezMgr::MakeRezPath()
     }
 
     // --- front-end archive: cwd\<FEC>, then <drive>:\MOVIEZ\<FEC> ---
-    AfxString fecHi(s_fecName);
-    AfxString fecLo(s_fecLoName);
-    AfxString fec(g_rezLowDetail ? fecLo : fecHi);
+    CString fecHi(s_fecName);
+    CString fecLo(s_fecLoName);
+    CString fec(g_rezLowDetail ? fecLo : fecHi);
 
     m_haveMoviez = 0;
     int movFound = 0;

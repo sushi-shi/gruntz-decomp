@@ -23,7 +23,7 @@
 // GetWorldDisplayName (the g_worldName[] array initializer).
 SYMBOL(_$E1)
 RVA(0x82990, 0x79)
-static AfxString g_worldName[8] = {
+static CString g_worldName[8] = {
     "Rocky Roadz",
     "Gruntziclez",
     "Trouble in the Tropicz",
@@ -42,7 +42,7 @@ static AfxString g_worldName[8] = {
 // GetEndLevelStatLabels (the g_statLabel[] array initializer).
 SYMBOL(_$E4)
 RVA(0x18740, 0x79)
-static AfxString g_statLabel[8] = {
+static CString g_statLabel[8] = {
     "Time:",
     "Survivorz:",
     "Deathz:",
@@ -58,7 +58,7 @@ static AfxString g_statLabel[8] = {
 // id, via a 4-entry jump table:
 //   0 -> "KING"  1 -> "NAPOLEAN"  2 -> "PATTON"  3 -> "VIKING"  default -> "".
 RVA(0x1ec20, 0x8d)
-AfxString __stdcall GetWarlordName(int id)
+CString __stdcall GetWarlordName(int id)
 {
     // The target reserves and zero-inits one dead stack dword (`push ecx; mov
     // [esp+4],0; ...; pop ecx`) that no path reads - an MSVC5 return-slot/NRV
@@ -67,11 +67,11 @@ AfxString __stdcall GetWarlordName(int id)
     // the cmp, matching the target's `mov [esp+4],0`).
     volatile int slot = 0;
     switch (id) {
-    case 0:  return AfxString("KING");
-    case 1:  return AfxString("NAPOLEAN");
-    case 2:  return AfxString("PATTON");
-    case 3:  return AfxString("VIKING");
-    default: return AfxString("");
+    case 0:  return CString("KING");
+    case 1:  return CString("NAPOLEAN");
+    case 2:  return CString("PATTON");
+    case 3:  return CString("VIKING");
+    default: return CString("");
     }
 }
 
