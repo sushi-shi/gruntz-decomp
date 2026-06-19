@@ -21,6 +21,7 @@ became authoritative.)
 """
 from __future__ import annotations
 
+import csv
 import re
 import sys
 from collections import defaultdict
@@ -117,6 +118,34 @@ def main() -> int:
     for addr, sites in sorted(by_address.items()):
         if len(sites) > 1:
             errors.append(f"duplicate @address {addr}: " + ", ".join(sites))
+
+    # Cross-check: a stub address must NOT also be a MATCHED function - else it's
+    # a stale stub duplicating reconstructed code (and labels.py skips the stub
+    # unit, so its own dup-guard can't see it). "Matched" = an RVA()/RVAU() macro
+    # NOT in a `// @stub` block, or a row in config/zlib_labels.csv.
+    matched = {}
+    for path in sorted(SRC.rglob("*.cpp")):
+        lines = path.read_text().splitlines()
+        for k, ln in enumerate(lines):
+            for mm in list(RVA_RE.finditer(ln)) + list(RVAU_RE.finditer(ln)):
+                if any(lines[x].strip() == "// @stub" for x in range(max(0, k - 4), k)):
+                    continue  # this RVA belongs to a stub, not a matched function
+                try:
+                    matched.setdefault(norm_addr(mm.group(1)), f"{path.relative_to(REPO)}:{k + 1}")
+                except ValueError:
+                    pass
+    zlib_cfg = REPO / "config" / "zlib_labels.csv"
+    if zlib_cfg.exists():
+        for r in csv.reader(zlib_cfg.open()):
+            if r and r[0].startswith("0x"):
+                try:
+                    matched.setdefault(norm_addr(r[0]), f"config/zlib_labels.csv ({r[1]})")
+                except ValueError:
+                    pass
+    for addr, sites in sorted(by_address.items()):
+        if addr in matched:
+            errors.append(f"stub @address {addr} ({sites[0]}) duplicates a MATCHED "
+                          f"function at {matched[addr]} - prune the stale stub")
 
     if errors:
         for err in errors:

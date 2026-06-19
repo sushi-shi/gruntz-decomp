@@ -184,9 +184,6 @@ void Stub_12d880();
 void Stub_1315d0();
 void Stub_148940();
 void DebugPrintf();
-void _uncompress();
-void _inflateReset();
-void _inflate();
 void _tr_init();
 void _ct_init();
 void Stub_18c780();
@@ -1183,24 +1180,6 @@ void ButeMgr::ParseAttributeFile() {}
 // @stub
 RVA(0x185000, 0x1a6)
 void EngineLabelBacklog::DebugPrintf() {}
-
-// @confidence: high
-// @source: rez-trace
-// @stub
-RVA(0x185320, 0x8d)
-void EngineLabelBacklog::_uncompress() {}
-
-// @confidence: med
-// @source: rez-trace
-// @stub
-RVA(0x185ab0, 0x10e)
-void EngineLabelBacklog::_inflateReset() {}
-
-// @confidence: high
-// @source: rez-trace
-// @stub
-RVA(0x185be0, 0x3ed)
-void EngineLabelBacklog::_inflate() {}
 
 // @confidence: high
 // @source: call-xref
