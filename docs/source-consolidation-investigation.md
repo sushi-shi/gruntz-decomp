@@ -25,6 +25,19 @@ to "annotate the source, regenerate everything."
 > And **`build/gen/symbol_names.csv` no longer exists** — it is GENERATED at
 > `build/gen/symbol_names.csv` by `gruntz labels`. Where the prose says
 > "`build/gen/symbol_names.csv`", read the generated file.
+>
+> **The label JOIN has since changed (LLVM-IR migration).** The prose below
+> describes the original mechanism: a `// @address:` comment + a POSITIONAL join
+> (the comment binds to the nearest clang-AST definition below it by line). That
+> positional join was fragile (a header inline def could steal a nearby address).
+> Today matched code/data carries its address as a clang `annotate` ATTRIBUTE
+> (`RVA()`/`DATA()`/`SYMBOL()` macros in `src/rva.h`), and `labels.py` reads
+> functions from **LLVM IR** (`@llvm.global.annotations` pairs the mangled symbol
+> DIRECTLY with the annotation — no join). `DATA` still uses the AST VarDecl
+> (clang drops an `extern`'s annotation from IR). The `llvm-nm` authority check
+> below is unchanged. The vendored zlib C TUs still use the `// @address:`
+> comments (their static/K&R functions are dropped from IR when unused). See
+> `docs/build-system.md` ("Adding a unit") and `scripts/gruntz/build/labels.py`.
 
 ---
 

@@ -8,8 +8,9 @@ objects matching the retail `GRUNTZ.EXE`, verified with **objdiff**.
 **Current stage: the matching loop runs.** `src/` holds the reconstructed C++
 and is the single source of truth; **`scripts/gruntz.py`** drives everything
 (`gruntz build` = compile base objs under wine `cl` → generate
-`build/gen/symbol_names.csv` from `src/` `// @address:` comments → synth fake PDB
-→ delink the retail EXE → objdiff). ~57/100 functions byte-exact across 23 TUs.
+`build/gen/symbol_names.csv` from `src/` `RVA()`/`DATA()` annotation macros
+(`src/rva.h`, read from LLVM IR) → synth fake PDB → delink the retail EXE →
+objdiff). ~57/100 functions byte-exact across 23 TUs.
 The pipeline package is `scripts/gruntz/{build,ghidra,init}/`; one-shot analysis
 tools live in `scripts/analysis/`.
 
@@ -63,10 +64,11 @@ Gotchas baked in from reading the delinker source:
   the build/diff flow, tools, or paths change.
 - `flake.lock` is committed; `.gitignore` already excludes generated outputs.
 - **`src/Stub/` is the labeled-but-unmatched backlog** (aggregated by `All.cpp`).
-  Its stubs compile, but objdiff does **not** diff them and their `@address` is
-  **not** verified against the binary — `All.cpp` only `#include`s them, so
-  `labels.py` never reads their `@address` (it scans each TU's own text). They
-  are documentary placeholders: don't trust a `src/Stub/` address as
-  binary-checked, and the `engine_label_stubs` unit's 100% means nothing. The
-  goal is to **move each stub into its real class's TU**, where it gets delinked
-  and diffed (the matched-TU backlog stubs already are). See `src/Stub/All.cpp`.
+  Its stubs compile, but objdiff does **not** diff them and their `RVA()` is
+  **not** verified against the binary — `All.cpp` `#include`s them, so their
+  annotations DO appear in `All.cpp`'s IR, but `labels.py` **skips the
+  `engine_label_stubs` unit** so they never reach `symbol_names.csv`. They are
+  documentary placeholders: don't trust a `src/Stub/` address as binary-checked,
+  and the `engine_label_stubs` unit's 100% means nothing. The goal is to **move
+  each stub into its real class's TU**, where it gets delinked and diffed (the
+  matched-TU backlog stubs already are). See `src/Stub/All.cpp`.

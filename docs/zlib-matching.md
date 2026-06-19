@@ -109,4 +109,8 @@ unconstrained (no effect). Remaining roll-forward: the deflate front-end
 (deflate/deflateInit2_/etc.), inflate.c, and the 4 trees.c init/rare functions
 (`_tr_init`, `_tr_static_init`, `_tr_align`, `_bi_flush`) that Ghidra did not carve as
 distinct functions in the contiguous zlib region — locate via xref/byte-search and
-annotate them in `src/` with `// @address:` (which regenerates `build/gen/symbol_names.csv`).
+annotate them with `// @address:` comments. The vendored zlib C TUs keep the older
+`// @address:` comment convention (NOT the `src/rva.h` `RVA()` macros that `src/` uses):
+their static/K&R functions are dropped from IR when unused, so `labels.py` reads them
+via the legacy AST positional join, not LLVM IR. This still regenerates
+`build/gen/symbol_names.csv`.

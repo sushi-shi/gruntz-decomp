@@ -38,6 +38,17 @@ How the map is built per TU:
 
   4. unit comes from config/units.toml via the source path.
 
+A compiler-generated thunk with no source body (a `??_G` scalar-deleting dtor)
+cannot hang an RVA() attribute, so it is pinned with a self-contained comment
+`// @rva-symbol: <mangled> <rva> [<size>]` (read in every TU - the name is given
+verbatim, so no join and no IR).
+
+LEGACY PATH: the vendored zlib C TUs (vendor/zlib-1.0.4/*.c) still use the old
+`// @address:` comments + an AST positional join. They are mostly `static`
+(`local`) K&R functions, which clang DROPS from IR when unused - so IR extraction
+would silently lose their labels (the same class of drop as the `extern` @data
+case). A TU is routed to the legacy path iff it carries NO src/rva.h macro.
+
 Output: build/gen/symbol_names.csv  (rva,name,unit,size,kind) - for synth_pdb.
 `kind` is func or data; `size` is the RVA size (hex) or empty.
 
@@ -83,8 +94,7 @@ ANN_SYM_RE = re.compile(r"^symbol:(\S+)$")
 # come from IR for these). A TU with none falls back to the legacy comment path.
 MACRO_RE = re.compile(r"\b(?:RVA|DATA|SYMBOL)\s*\(")
 
-# --- legacy `// @address:` comment fallback (un-migrated TUs only) -----------
-# Removed once every TU uses the src/rva.h macros (build stays green mid-roll).
+# --- legacy `// @address:` comment path (vendored zlib C TUs; module docstring)
 LEGACY_ADDR_RE = re.compile(r"@address:\s*(0x[0-9a-fA-F]+)")
 LEGACY_DATA_RE = re.compile(r"@data:\s*(0x[0-9a-fA-F]+)")
 LEGACY_SYM_RE = re.compile(r"@symbol:\s*(\S+)")
@@ -327,7 +337,7 @@ def data_labels(text, ast):
     return out
 
 
-# --- legacy comment path (un-migrated TUs; removed at end of migration) ------
+# --- legacy comment path (vendored zlib C TUs; see the module docstring) ------
 def collect_defs(ast, main_file):
     """[(mangledName, offset)] for every main-file function DEFINITION (a decl
     with a CompoundStmt body). Main-file-only: a header inline def's offset would
@@ -460,8 +470,8 @@ def units_from_toml(path):
 
 def legacy_tu(args, tu, unit, text, obj_syms, all_syms, rows, misses, addr_sites,
               cl_flags=None):
-    """OLD comment path for a not-yet-migrated TU: `// @address:`/`// @data:`
-    comments + the AST positional join. Removed when the migration completes."""
+    """Comment path for a TU with no src/rva.h macros (the vendored zlib C TUs):
+    `// @address:`/`// @data:` comments + the AST positional join."""
     off2line = line_index(text)
     ast = clang_ast(args.clang, tu, args.flag, cl_flags)
     if ast is None:
@@ -544,9 +554,10 @@ def main():
         all_syms = nm_all_symbols(args.obj[i], args.nm) if have_obj else None
         cl_flags = compdb.get(os.path.realpath(tu))
 
-        # A TU that still uses the legacy `// @address:` comments (no src/rva.h
-        # macros) goes through the old AST positional join. Removed once every TU
-        # is migrated (then this whole branch + scan_legacy/collect_defs go away).
+        # A TU with no src/rva.h macro uses the legacy `// @address:` comments +
+        # AST positional join. This is the vendored zlib C path (its static/K&R
+        # functions are dropped from IR when unused, so attributes can't carry
+        # their labels); src/ is fully migrated to the macros above.
         if not MACRO_RE.search(text):
             legacy_tu(args, tu, unit, text, obj_syms, all_syms, rows, misses,
                       addr_sites, cl_flags)

@@ -94,7 +94,7 @@ def read_names_map(path):
     """Read the curated RVA -> (symbol name, source unit, size) overlay.
 
     The CSV has columns ``rva,name,unit[,size]`` (rva hex, e.g. ``0x1882d0``;
-    size hex from the src ``// @size:`` annotation, possibly empty). This is the
+    size hex from the src ``RVA(addr, size)`` annotation, possibly empty). This is the
     human-grown mapping at the heart of the matching loop: it renames the
     delinker's address-named ``FUN_<rva>`` placeholders to the real source
     symbols (``_adler32``) and records WHICH translation unit each belongs to,

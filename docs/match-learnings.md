@@ -18,7 +18,7 @@ fast-moving scratchpad. Newest at top within each section.
   Writing the casts inline reproduces the target's register schedule.
 - **CGameMgr leaves:** `WAP32::CGameMgr::UnknownClose@0x13ddb0` clears `+0x4/+0x8`;
   `UnknownMethodInitializeTimeGlobal@0x13dea0` stores `timeGetTime()` into
-  `g_653c70` and clears `g_653c74/g_653c78`. Use named `@data` externs for those
+  `g_653c70` and clears `g_653c74/g_653c78`. Use named `DATA()` externs for those
   clock globals when referenced outside their original static TU.
 
 ### UnknownSeverus surface/page-map manager — 8 new exact leaves + 4 factory carcasses (extended `unknownseverus`; 9/14 exact)
