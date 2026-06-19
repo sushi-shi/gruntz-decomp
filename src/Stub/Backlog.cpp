@@ -1,7 +1,6 @@
 #include "../rva.h"
 // Backlog.cpp - engine-label stubs without a class attribution.
 
-
 // Folded engine-label stubs with a known owning class.
 class BootyState { public:
     void vfunc_9();
@@ -1096,7 +1095,6 @@ void EngineLabelBacklog::BuildStatzTabSmall_vfunc1() {}
 // @stub
 RVA(0x114ff0, 0x1b3)
 void EngineLabelBacklog::SaveScreenshot() {}
-
 
 // @confidence: low
 // @source: decomp-xref

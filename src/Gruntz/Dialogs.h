@@ -120,7 +120,7 @@ public:
     CObList m_74;       // +0x74  (CObList(0xa))
 };
 
-// CCheckpointDlg - trivial CDialog (resource 0xcd); ctor only (matching-xai sweep).
+// CCheckpointDlg - trivial CDialog (resource 0xcd); ctor only.
 class CCheckpointDlg : public CDialog {
 public:
     CCheckpointDlg(CWnd *pParent);   // @0x0234a0

@@ -63,12 +63,6 @@ int InitializeFonts()
     return 1;
 }
 
-
-// ---------------------------------------------------------------------------
-// Functions extracted from the matching-xai sweep (verified >=90%% objdiff,
-// class placement cross-checked via vtable + .text adjacency).
-// ---------------------------------------------------------------------------
-
 RVA(0x1158f0, 0x2e)
 int FreeFontsMemory()
 {

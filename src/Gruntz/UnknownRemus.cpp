@@ -84,7 +84,7 @@ public:
     int  VirtualMethodUnknown30(RemusCoords *coords);
     int  VirtualMethodUnknown14();
 
-    // --- matched leaves moved out of the backlog (matching-xai sweep) -------
+    // --- matched leaves moved out of the backlog -------
     int  VirtualMethodUnknown1C();
     void VirtualMethodUnknown44();
     int  VirtualMethodUnknown20();
@@ -168,7 +168,6 @@ fail:
     return 0;
 }
 
-
 // ---------------------------------------------------------------------------
 // UnknownRemus::VirtualMethodUnknown34  @0x15d030  (__thiscall, ret 8)
 // Zeroes the first two ints of the +0x10 record, stores (arg0-1)/(arg1-1) into
@@ -197,13 +196,9 @@ int UnknownRemus::VirtualMethodUnknown34(int arg0, int arg1)
     return 1;
 }
 
-
-
-
 // -------------------------------------------------------------------------
 // Engine-label backlog stubs.
 // -------------------------------------------------------------------------
-
 
 // @confidence: high
 // @source: tomalla
@@ -217,8 +212,6 @@ void UnknownRemus::Stub_15d500() {}
 RVA(0x15d630, 0x41)
 void UnknownRemus::Stub_15d630() {}
 
-
-
 // @confidence: high
 // @source: tomalla
 // @stub
@@ -230,11 +223,6 @@ void UnknownRemus::Stub_1611c0() {}
 // @stub
 RVA(0x1611e0, 0x82)
 void UnknownRemus::Stub_1611e0() {}
-
-
-
-
-
 
 // ---------------------------------------------------------------------------
 // UnknownRemus::VirtualMethodUnknown1C  @0x15d1f0  (__thiscall)

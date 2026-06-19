@@ -479,7 +479,6 @@ int CGrunt::CreateSelectedSprite()
 RVA(0x047a10, 0x770)
 void CGrunt::Stub_047a10() {}
 
-
 // @confidence: med
 // @source: string-xref
 // @stub
@@ -510,7 +509,6 @@ void CGrunt::BuildEntranceAnimation() {}
 RVA(0x067f80, 0x313)
 void CGrunt::LoadEntranceConfig() {}
 
-
 // The global CButeMgr config singleton + the tuning key ReadConfigFromButeMgr
 // reads. Minimal local decl (the full ButeMgr.h redefines AfxString, already
 // pulled in by this TU), with only the typed getter the function calls.
@@ -521,10 +519,6 @@ public:
 extern CButeMgr g_buteMgr;
 static char s_TimePerTile[] = "TimePerTile";
 
-// ---------------------------------------------------------------------------
-// Functions extracted from the matching-xai sweep (verified >=90%% objdiff,
-// class placement cross-checked via vtable + .text adjacency).
-// ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 // CGrunt::ReadConfigFromButeMgr @ 0x048400 (void, thiscall)
 // Reads the TimePerTile tuning config from CButeMgr for this grunt's type.

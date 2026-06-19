@@ -148,7 +148,7 @@ public:
     bool  ParseTagLine();
     bool  Parse();
 
-    // Callback trampoline + sub-object cleanup (matching-xai sweep).
+    // Callback trampoline + sub-object cleanup.
     void *InvokeCallback(void *(*fn)(CButeMgr *));
     void  ClearHelper();
 

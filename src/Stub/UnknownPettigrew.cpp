@@ -15,7 +15,6 @@ public:
 RVA(0x152650, 0x5)
 void UnknownPettigrew::VirtualMethodUnknown1C() {}
 
-
 // @confidence: high
 // @source: tomalla
 // @stub

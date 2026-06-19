@@ -17,8 +17,6 @@ public:
 RVA(0x155720, 0x1e)
 UnknownCGruntzMgrLucius::~UnknownCGruntzMgrLucius() {}
 
-
-
 // @confidence: med
 // @source: call-xref
 // @stub

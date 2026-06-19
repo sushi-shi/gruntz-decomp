@@ -8,7 +8,6 @@ public:
     void CTileTriggerSwitchLogic_116320();
 };
 
-
 // @confidence: high
 // @source: rtti-vptr
 // @stub

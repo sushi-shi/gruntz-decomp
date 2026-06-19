@@ -236,7 +236,7 @@ public:
     int CreatePowerupSprite(int a); // 0x04d650 (ret 4)
     int CreateSelectedSprite();     // 0x04d730
 
-    void ReadConfigFromButeMgr();   // 0x048400 (matching-xai sweep)
+    void ReadConfigFromButeMgr();   // 0x048400
 
     // --- animation resolvers (this TU's targets) ---
     int ResolveMovingAnimation();    // 0x045100

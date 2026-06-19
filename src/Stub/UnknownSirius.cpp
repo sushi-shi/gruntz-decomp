@@ -9,7 +9,6 @@ public:
     void VirtualMethodUnknown24();
 };
 
-
 // @confidence: high
 // @source: tomalla
 // @stub

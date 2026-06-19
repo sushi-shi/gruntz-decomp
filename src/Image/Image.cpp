@@ -143,11 +143,6 @@ void *CFileImage::LoadPid(char *name, char *path, void *a3)
     return result;
 }
 
-
-// ---------------------------------------------------------------------------
-// Functions extracted from the matching-xai sweep (verified >=90%% objdiff,
-// class placement cross-checked via vtable + .text adjacency).
-// ---------------------------------------------------------------------------
 // ===========================================================================
 // CFileImage::DecodePcxEx  @ 0x5459d0 (309 B, thiscall ret 0x10, EH)
 //

@@ -123,7 +123,7 @@ public:
     void FreeMemory();                        // @0x1797b0
     int LoadFont(CString szFileName);        // @0x179830  (ret 4; by-value arg)
 
-    // Accessors matched in this module cluster (matching-xai sweep).
+    // Accessors matched in this module cluster.
     void **GetSurface(unsigned char c);      // @0x179b60
     void GetGlyph(unsigned char c, Glyph &out); // @0x179b80
     int GetMaxHeight();                      // @0x179bd0

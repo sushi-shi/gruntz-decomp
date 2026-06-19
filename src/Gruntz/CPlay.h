@@ -165,7 +165,7 @@ public:
     virtual void RenderSlow();   // slot 39 (+0x9c)
     virtual void RenderFast();   // slot 40 (+0xa0)
 
-    // Non-virtual leaf (matching-xai sweep): seeds the begin-clear params.
+    // Non-virtual leaf: seeds the begin-clear params.
     int SetBeginClearParams(int unused, int arg2, int arg3);  // @0x08c970
 
     // --- the CState scalar members the ctor pins (only the ones used here) ---

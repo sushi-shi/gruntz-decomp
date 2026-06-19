@@ -15,7 +15,6 @@ public:
 RVA(0x1350b0, 0x5d)
 void UnknownSalazar::getLookupTableValue() {}
 
-
 // @confidence: high
 // @source: tomalla
 // @stub

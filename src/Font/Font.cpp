@@ -155,11 +155,6 @@ int Font::LoadFont(CString szFileName)
     return 1;
 }
 
-
-// ---------------------------------------------------------------------------
-// Functions extracted from the matching-xai sweep (verified >=90%% objdiff,
-// class placement cross-checked via vtable + .text adjacency).
-// ---------------------------------------------------------------------------
 // =========================================================================
 // IsInterface1  (0x1794b0, 33 B)
 //

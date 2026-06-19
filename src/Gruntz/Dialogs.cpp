@@ -75,11 +75,6 @@ CMultiStartDlg::CMultiStartDlg(int a0, CWnd *pParent)
 RVA(0x0c20a0, 0x45a)
 void CMultiStartDlg::InitPlayerSlots() {}
 
-
-// ---------------------------------------------------------------------------
-// Functions extracted from the matching-xai sweep (verified >=90%% objdiff,
-// class placement cross-checked via vtable + .text adjacency).
-// ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 // CCheckpointDlg::CCheckpointDlg @0x234a0  (vftable @0x5e9504)
 // ---------------------------------------------------------------------------
