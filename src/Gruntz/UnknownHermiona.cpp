@@ -1,10 +1,10 @@
 #include "../rva.h"
-// UnknownHermiona.cpp - six leaf methods of the tomalla-named ddrawmgr
-// sub-manager UnknownHermiona (a CDirectDrawMgr surface/page sub-manager in the
+// CDDrawChildGroup.cpp - six leaf methods of the tomalla-named ddrawmgr
+// sub-manager CDDrawChildGroup (a CDirectDrawMgr surface/page sub-manager in the
 // "Harry Potter" family; see structure/managers/ddrawmgr_surface_family.h).
 //
 // All six share ONE shape: walk an intrusive singly-linked list anchored at
-// UnknownHermiona+0x14 (each node's first dword is the next-node pointer, and
+// CDDrawChildGroup+0x14 (each node's first dword is the next-node pointer, and
 // node+0x8 holds a child object), dispatching one of the child's sibling virtuals
 // with a varying number of forwarded args. Some methods also dispatch the
 // object's OWN +0x2c virtual after the walk.
@@ -62,13 +62,13 @@ struct HermionaNode {
 };
 
 // ---------------------------------------------------------------------------
-// UnknownHermiona - only the load-bearing offsets are modeled: the +0x14 list
+// CDDrawChildGroup - only the load-bearing offsets are modeled: the +0x14 list
 // anchor and the vtable slots used by leaf methods.  The matched methods
 // occupy lower vtable slots (slot numbers not load-bearing, only bodies), so
 // they are placed first; the slot sequence from +0x1c through +0x3c is
 // padded around the real virtuals so each lands at the correct offset.
 // ---------------------------------------------------------------------------
-class UnknownHermiona {
+class CDDrawChildGroup {
 public:
     int  VirtualMethodUnknown14();
     void VirtualMethodUnknown30(int a1, int a2, int a3);
@@ -104,10 +104,10 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// UnknownHermiona::VirtualMethodUnknown14  @0x1575e0  (__thiscall, ret 0)
+// CDDrawChildGroup::VirtualMethodUnknown14  @0x1575e0  (__thiscall, ret 0)
 // Same base readiness predicate used by several Lucius-derived managers.
 RVA(0x1575e0, 0x16)
-int UnknownHermiona::VirtualMethodUnknown14()
+int CDDrawChildGroup::VirtualMethodUnknown14()
 {
     if (m_0c == 0)
         goto fail;
@@ -119,23 +119,23 @@ fail:
 }
 
 // ---------------------------------------------------------------------------
-// UnknownHermiona::VirtualMethodUnknown1C  @0x1591e0  (__thiscall, ret 0)
+// CDDrawChildGroup::VirtualMethodUnknown1C  @0x1591e0  (__thiscall, ret 0)
 // 5-byte thunk: tail-calls the object's own virtual at vtable slot +0x3c.
 RVA(0x1591e0, 0x5)
-void UnknownHermiona::VirtualMethodUnknown1C()
+void CDDrawChildGroup::VirtualMethodUnknown1C()
 {
     this->Slot3C();
 }
 
 // ---------------------------------------------------------------------------
-// UnknownHermiona::VirtualMethodUnknown28  @0x159c90  (__thiscall, ret 4)
+// CDDrawChildGroup::VirtualMethodUnknown28  @0x159c90  (__thiscall, ret 4)
 // Walk the +0x14 list dispatching child->Slot2C(a1) per node. No post-loop
 // dispatch.
 //
 // RESIDUE: same loop-advance scheduling plateau as Unknown30/34 — see comment
 // below for details.
 RVA(0x159c90, 0x23)
-void UnknownHermiona::VirtualMethodUnknown28(int a1)
+void CDDrawChildGroup::VirtualMethodUnknown28(int a1)
 {
     HermionaNode *n = m_14;
     if (n != 0) {
@@ -148,11 +148,11 @@ void UnknownHermiona::VirtualMethodUnknown28(int a1)
 }
 
 // ---------------------------------------------------------------------------
-// UnknownHermiona::VirtualMethodUnknown2C  @0x159cc0  (__thiscall, ret 8)
+// CDDrawChildGroup::VirtualMethodUnknown2C  @0x159cc0  (__thiscall, ret 8)
 // Walk the +0x14 list dispatching child->Slot30(a1,a2) per node. No post-loop
 // dispatch.
 RVA(0x159cc0, 0x2a)
-void UnknownHermiona::VirtualMethodUnknown2C(int a1, int a2)
+void CDDrawChildGroup::VirtualMethodUnknown2C(int a1, int a2)
 {
     HermionaNode *n = m_14;
     if (n != 0) {
@@ -182,11 +182,11 @@ void UnknownHermiona::VirtualMethodUnknown2C(int a1, int a2)
 // plateau - both methods share it identically.
 
 // ---------------------------------------------------------------------------
-// UnknownHermiona::VirtualMethodUnknown30  @0x159cf0  (__thiscall, ret 0xc)
+// CDDrawChildGroup::VirtualMethodUnknown30  @0x159cf0  (__thiscall, ret 0xc)
 // For each node in the +0x14 list, dispatch child +0x34 with (a1,a2,a3); then
 // dispatch this->+0x2c with (a2,a3).
 RVA(0x159cf0, 0x42)
-void UnknownHermiona::VirtualMethodUnknown30(int a1, int a2, int a3)
+void CDDrawChildGroup::VirtualMethodUnknown30(int a1, int a2, int a3)
 {
     HermionaNode *n = m_14;
     if (n != 0) {
@@ -199,10 +199,10 @@ void UnknownHermiona::VirtualMethodUnknown30(int a1, int a2, int a3)
 }
 
 // ---------------------------------------------------------------------------
-// UnknownHermiona::VirtualMethodUnknown34  @0x159d40  (__thiscall, ret 0xc)
+// CDDrawChildGroup::VirtualMethodUnknown34  @0x159d40  (__thiscall, ret 0xc)
 // As Unknown30 but the loop dispatches child +0x38.
 RVA(0x159d40, 0x42)
-void UnknownHermiona::VirtualMethodUnknown34(int a1, int a2, int a3)
+void CDDrawChildGroup::VirtualMethodUnknown34(int a1, int a2, int a3)
 {
     HermionaNode *n = m_14;
     if (n != 0) {
@@ -215,11 +215,11 @@ void UnknownHermiona::VirtualMethodUnknown34(int a1, int a2, int a3)
 }
 
 // ---------------------------------------------------------------------------
-// UnknownHermiona::VirtualMethodUnknown38  @0x159d90  (__thiscall, ret 0)
+// CDDrawChildGroup::VirtualMethodUnknown38  @0x159d90  (__thiscall, ret 0)
 // Walk the +0x14 list setting each child's field at +0xd8 to -1. No vtable
 // dispatch, no stack args.
 RVA(0x159d90, 0x1c)
-void UnknownHermiona::VirtualMethodUnknown38()
+void CDDrawChildGroup::VirtualMethodUnknown38()
 {
     HermionaNode *n = m_14;
     if (n != 0) {
@@ -238,10 +238,10 @@ void UnknownHermiona::VirtualMethodUnknown38()
 // @source: tomalla
 // @stub
 RVA(0x1591f0, 0x54)
-void UnknownHermiona::Stub_1591f0() {}
+void CDDrawChildGroup::Stub_1591f0() {}
 
 // @confidence: high
 // @source: tomalla
 // @stub
 RVA(0x159a70, 0x200)
-void UnknownHermiona::Stub_159a70() {}
+void CDDrawChildGroup::Stub_159a70() {}

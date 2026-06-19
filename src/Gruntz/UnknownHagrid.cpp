@@ -1,6 +1,6 @@
 #include "../rva.h"
-// UnknownHagrid.cpp - four leaf factory methods of the tomalla-named class
-// UnknownHagrid (a CDirectDrawMgr surface/page sub-manager in the ddrawmgr
+// CDDrawWorkerList.cpp - four leaf factory methods of the tomalla-named class
+// CDDrawWorkerList (a CDirectDrawMgr surface/page sub-manager in the ddrawmgr
 // "Harry Potter" family; see structure/managers/ddrawmgr_surface_family.h).
 //
 // All four share ONE shape: allocate a 0x7c-byte "worker" object with the global
@@ -8,7 +8,7 @@
 // fields + stamp its vftable), then call one of the worker's own sibling virtuals
 // forwarding the caller's args. On a 0 result the worker is destroyed via its
 // scalar-deleting destructor (vtable +0x4, arg 1) and the method returns 0; on a
-// nonzero result the worker is appended to UnknownHagrid's CObList (+0x10) - either
+// nonzero result the worker is appended to CDDrawWorkerList's CObList (+0x10) - either
 // AddHead or AddTail, selected by a trailing bool arg - and the worker is returned.
 //
 // Two distinct worker vftables appear: 0x5efea0 (used by Unknown24, whose +0x78
@@ -32,7 +32,7 @@
 struct __POSITION;
 class CObject;
 
-// CObList lives at UnknownHagrid+0x10. AddHead/AddTail are out-of-line NAFXCW
+// CObList lives at CDDrawWorkerList+0x10. AddHead/AddTail are out-of-line NAFXCW
 // thunks (reloc-masked rel32 calls); declared with the exact MFC signatures so
 // clang mangles them to ?AddHead@CObList@@... / ?AddTail@CObList@@... .
 // RemoveAll / RemoveAt are called by VirtualMethodUnknown1C and Unknown34.
@@ -74,7 +74,7 @@ public:
 struct HagridWorkerB : public HagridWorker {
     int   m_04;     // +0x04
     int   m_08;     // +0x08
-    int   m_0c;     // +0x0c  = parent UnknownHagrid::m_pHarryPotter (+0xc)
+    int   m_0c;     // +0x0c  = parent CDDrawWorkerList::m_pHarryPotter (+0xc)
     char  _pad10[0x20 - 0x10];
     int   m_20;     // +0x20  = 0x80000000
     char  _pad24[0x38 - 0x24];
@@ -142,12 +142,12 @@ struct WorkNode {
 };
 
 // ---------------------------------------------------------------------------
-// UnknownHagrid - only the load-bearing offsets are modeled: m_pHarryPotter at
+// CDDrawWorkerList - only the load-bearing offsets are modeled: m_pHarryPotter at
 // +0x0c (copied into the worker) and the CObList at +0x10. The four factory
 // methods occupy lower vtable slots (their slot numbers are not load-bearing;
 // only their bodies are matched), so they are placed last.
 // ---------------------------------------------------------------------------
-class UnknownHagrid {
+class CDDrawWorkerList {
 public:
     int   VirtualMethodUnknown14();
     void  VirtualMethodUnknown1C();
@@ -161,7 +161,7 @@ public:
     void  *m_vptr;                  // +0x00 (vptr; not stamped by these methods)
     int    m_04;                    // +0x04  initialized to -1 when inactive
     char   m_pad08[0x0c - 0x08];    // +0x08..0x0b
-    int    m_pHarryPotter;          // +0x0c  (UnknownCGruntzMgrLucius+0xc)
+    int    m_pHarryPotter;          // +0x0c  (CDDrawSubMgr+0xc)
     CObList m_10;                   // +0x10  worker list (CObList)
 
     // Engine-label backlog stubs.
@@ -174,10 +174,10 @@ static inline void StampWorkerVtblB(HagridWorkerB *w) { *(void **)w = &g_hagridW
 static inline void StampWorkerVtblA(HagridWorkerA *w) { *(void **)w = &g_hagridWorkerVtblA; }
 
 // ---------------------------------------------------------------------------
-// UnknownHagrid::VirtualMethodUnknown14  @0x156f00  (__thiscall, ret 0)
+// CDDrawWorkerList::VirtualMethodUnknown14  @0x156f00  (__thiscall, ret 0)
 // Same base readiness predicate used by several Lucius-derived managers.
 RVA(0x156f00, 0x16)
-int UnknownHagrid::VirtualMethodUnknown14()
+int CDDrawWorkerList::VirtualMethodUnknown14()
 {
     if (m_pHarryPotter == 0)
         goto fail;
@@ -194,7 +194,7 @@ fail:
 // via eax, commit to esi only at the merge" register schedule. The parent's
 // m_pHarryPotter is read INSIDE the init (after the null check), not passed as a
 // pre-evaluated argument, so its load is not hoisted above the new call.
-static inline HagridWorkerB *MakeWorkerB(const UnknownHagrid *parent)
+static inline HagridWorkerB *MakeWorkerB(const CDDrawWorkerList *parent)
 {
     HagridWorkerB *raw = (HagridWorkerB *)operator new(sizeof(HagridWorkerB));
     HagridWorkerB *w;
@@ -218,7 +218,7 @@ static inline HagridWorkerB *MakeWorkerB(const UnknownHagrid *parent)
     return w;
 }
 
-static inline HagridWorkerA *MakeWorkerA(const UnknownHagrid *parent)
+static inline HagridWorkerA *MakeWorkerA(const CDDrawWorkerList *parent)
 {
     HagridWorkerA *raw = (HagridWorkerA *)operator new(sizeof(HagridWorkerA));
     HagridWorkerA *w;
@@ -243,12 +243,12 @@ static inline HagridWorkerA *MakeWorkerA(const UnknownHagrid *parent)
 }
 
 // ---------------------------------------------------------------------------
-// UnknownHagrid::VirtualMethodUnknown24  @0x156fd0  (__thiscall, ret 0xc)
+// CDDrawWorkerList::VirtualMethodUnknown24  @0x156fd0  (__thiscall, ret 0xc)
 // Allocates a BYTE-flag worker (vftable 0x5efea0), constructs it, calls its +0x2c
 // virtual with (a1,a2,a3). On success appends it to the list (AddTail) and returns
 // it; on failure destroys it and returns 0.
 RVA(0x156fd0, 0x8b)
-void *UnknownHagrid::VirtualMethodUnknown24(int a1, int a2, int a3)
+void *CDDrawWorkerList::VirtualMethodUnknown24(int a1, int a2, int a3)
 {
     HagridWorkerA *w = MakeWorkerA(this);
     if (w->Vfunc2C(a1, a2, a3) == 0) {
@@ -261,11 +261,11 @@ void *UnknownHagrid::VirtualMethodUnknown24(int a1, int a2, int a3)
 }
 
 // ---------------------------------------------------------------------------
-// UnknownHagrid::VirtualMethodUnknown28  @0x1573e0  (__thiscall, ret 0x10)
+// CDDrawWorkerList::VirtualMethodUnknown28  @0x1573e0  (__thiscall, ret 0x10)
 // As Unknown24 but the int-flag worker (vftable 0x5efed0); on success the trailing
 // bool selects AddHead vs AddTail.
 RVA(0x1573e0, 0xa0)
-void *UnknownHagrid::VirtualMethodUnknown28(int a1, int a2, int a3, int addHead)
+void *CDDrawWorkerList::VirtualMethodUnknown28(int a1, int a2, int a3, int addHead)
 {
     HagridWorkerB *w = MakeWorkerB(this);
     if (w->Vfunc2C(a1, a2, a3) == 0) {
@@ -281,11 +281,11 @@ void *UnknownHagrid::VirtualMethodUnknown28(int a1, int a2, int a3, int addHead)
 }
 
 // ---------------------------------------------------------------------------
-// UnknownHagrid::VirtualMethodUnknown2C  @0x157330  (__thiscall, ret 0x14)
+// CDDrawWorkerList::VirtualMethodUnknown2C  @0x157330  (__thiscall, ret 0x14)
 // Int-flag worker; calls the worker's +0x30 virtual with (a1,a2,a3,a4); trailing
 // bool selects AddHead vs AddTail.
 RVA(0x157330, 0xa5)
-void *UnknownHagrid::VirtualMethodUnknown2C(int a1, int a2, int a3, int a4, int addHead)
+void *CDDrawWorkerList::VirtualMethodUnknown2C(int a1, int a2, int a3, int a4, int addHead)
 {
     HagridWorkerB *w = MakeWorkerB(this);
     if (w->Vfunc30(a1, a2, a3, a4) == 0) {
@@ -301,10 +301,10 @@ void *UnknownHagrid::VirtualMethodUnknown2C(int a1, int a2, int a3, int a4, int 
 }
 
 // ---------------------------------------------------------------------------
-// UnknownHagrid::VirtualMethodUnknown30  @0x157150  (__thiscall, ret 0x14)
+// CDDrawWorkerList::VirtualMethodUnknown30  @0x157150  (__thiscall, ret 0x14)
 // As Unknown2C but dispatches the worker's +0x34 virtual.
 RVA(0x157150, 0xa5)
-void *UnknownHagrid::VirtualMethodUnknown30(int a1, int a2, int a3, int a4, int addHead)
+void *CDDrawWorkerList::VirtualMethodUnknown30(int a1, int a2, int a3, int a4, int addHead)
 {
     HagridWorkerB *w = MakeWorkerB(this);
     if (w->Vfunc34(a1, a2, a3, a4) == 0) {
@@ -323,13 +323,13 @@ void *UnknownHagrid::VirtualMethodUnknown30(int a1, int a2, int a3, int a4, int 
 // Engine-label backlog stubs.
 // -------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-// UnknownHagrid::VirtualMethodUnknown1C  @0x163c60  (__thiscall, ret 0)
+// CDDrawWorkerList::VirtualMethodUnknown1C  @0x163c60  (__thiscall, ret 0)
 // Walks the work-node list at m_pHarryPotter+0x04 (= this+0x14 in the MFC
 // CObList's internal head pointer, offset +0x04 from the CObList base due to
 // the inherited vptr).  Destroys each node's child if present, then clears
 // the list.
 RVA(0x163c60, 0x2c)
-void UnknownHagrid::VirtualMethodUnknown1C()
+void CDDrawWorkerList::VirtualMethodUnknown1C()
 {
     struct HLayout { char _pad[0x14]; WorkNode *m_head; };
     WorkNode *pNode = ((HLayout *)this)->m_head;
@@ -343,16 +343,16 @@ void UnknownHagrid::VirtualMethodUnknown1C()
 }
 
 // ---------------------------------------------------------------------------
-// UnknownHagrid::VirtualMethodUnknown20  @0x156f20  (__thiscall, ret 0)
+// CDDrawWorkerList::VirtualMethodUnknown20  @0x156f20  (__thiscall, ret 0)
 // Returns constant 0x11 (17).
 RVA(0x156f20, 0x6)
-int UnknownHagrid::VirtualMethodUnknown20()
+int CDDrawWorkerList::VirtualMethodUnknown20()
 {
     return 0x11;
 }
 
 // ---------------------------------------------------------------------------
-// UnknownHagrid::VirtualMethodUnknown34  @0x163bf0  (__thiscall, ret 8)
+// CDDrawWorkerList::VirtualMethodUnknown34  @0x163bf0  (__thiscall, ret 8)
 // Walks the work-node list at this+0x14. For each node: calls the child's
 // +0x28 virtual (passing a1, a2), decrements child->m_74, and conditionally
 // removes the node from the CObList + destroys the child.
@@ -362,7 +362,7 @@ int UnknownHagrid::VirtualMethodUnknown20()
 //    OR child->m_74 <= 0                          → free
 //    Otherwise                                     → skip, keep node
 RVA(0x163bf0, 0x6d)
-void UnknownHagrid::VirtualMethodUnknown34(int a1, int a2)
+void CDDrawWorkerList::VirtualMethodUnknown34(int a1, int a2)
 {
     struct HLayout { char _pad[0x14]; WorkNode *m_head; };
     WorkNode *pNode = ((HLayout *)this)->m_head;
@@ -387,10 +387,10 @@ void UnknownHagrid::VirtualMethodUnknown34(int a1, int a2)
 // @source: tomalla
 // @stub
 RVA(0x156f50, 0x68)
-void UnknownHagrid::Stub_156f50() {}
+void CDDrawWorkerList::Stub_156f50() {}
 
 // @confidence: high
 // @source: tomalla
 // @stub
 RVA(0x156fc0, 0x6)
-void UnknownHagrid::Stub_156fc0() {}
+void CDDrawWorkerList::Stub_156fc0() {}

@@ -1,6 +1,6 @@
 #include "../rva.h"
 // UnknownLucius.cpp - tomalla-named DDraw surface/page-manager shared base
-// (UnknownCGruntzMgrLucius).  This is the polymorphic base for the 10 sub-
+// (CDDrawSubMgr).  This is the polymorphic base for the 10 sub-
 // managers (Draco, Hermiona, Hagrid, etc.).  Two functions:
 //   ctor  @0x156cb0 (32 B)  - seeds the three fields + stamps vtable.
 //   dtor  @0x1574d0 (91 B)  - SEH-framed: calls VirtualMethodUnknown1C
@@ -13,53 +13,53 @@
 // Forward-declare the family manager (root) stored at CGruntzMgr+0x30.
 // Full definition lives in HarryPotter.cpp (HarryPotter unit) and in
 // structure/managers/ddrawmgr_surface_family.h.
-class UnknownClassCGruntzMgrHarryPotter;
+class CDDrawSurfaceMgr;
 
 // The vtable address for Lucius (0x5efc30) and for CObject (0x5e8cb4) are used
 // in the dtor vtable chain, emitted automatically by the compiler.
-class UnknownCGruntzMgrHogwarts {
+class CDDrawSubMgrBase {
 public:
-    UnknownCGruntzMgrHogwarts() {}
-    UnknownCGruntzMgrHogwarts(int x) { m_fieldBaseUnknown = x; }
-    virtual ~UnknownCGruntzMgrHogwarts() {}
+    CDDrawSubMgrBase() {}
+    CDDrawSubMgrBase(int x) { m_fieldBaseUnknown = x; }
+    virtual ~CDDrawSubMgrBase() {}
     int m_fieldBaseUnknown;   // +0x04
 };
 
-class UnknownCGruntzMgrLucius : public UnknownCGruntzMgrHogwarts {
+class CDDrawSubMgr : public CDDrawSubMgrBase {
 public:
-    UnknownCGruntzMgrLucius(UnknownClassCGruntzMgrHarryPotter *pHarryPotter,
+    CDDrawSubMgr(CDDrawSurfaceMgr *pHarryPotter,
                             int unknown2, int unknown3);
-    virtual ~UnknownCGruntzMgrLucius();
+    virtual ~CDDrawSubMgr();
     virtual void VirtualMethodUnknown14();
     virtual int  VirtualMethodUnknown18();
-    virtual void VirtualMethodUnknown1C();  // cleanup — defined in UnknownDraco.cpp
+    virtual void VirtualMethodUnknown1C();  // cleanup — defined in CDDrawSubMgrDraco.cpp
     virtual void VirtualMethodUnknown20();
 
     int  fieldUnknown8;                          // +0x08
-    UnknownClassCGruntzMgrHarryPotter *m_pHarryPotter;  // +0x0c
+    CDDrawSurfaceMgr *m_pHarryPotter;  // +0x0c
 };
 
 // operator delete (used indirectly via VirtualMethodUnknown1C; may throw -> /GX).
 void operator delete(void *);
 
 // ---------------------------------------------------------------------------
-// UnknownCGruntzMgrLucius::UnknownCGruntzMgrLucius  @0x156cb0
+// CDDrawSubMgr::CDDrawSubMgr  @0x156cb0
 // Chains the Hogwarts(int) base ctor (inlined: this+0x04 = unknown2), stamps
 // the Lucius vtable (compiler-generated), then seeds the remaining fields.
 // __thiscall with 3 explicit args (ret 0xc).
 // ---------------------------------------------------------------------------
 RVA(0x156cb0, 0x20)
-UnknownCGruntzMgrLucius::UnknownCGruntzMgrLucius(
-    UnknownClassCGruntzMgrHarryPotter *pHarryPotter,
+CDDrawSubMgr::CDDrawSubMgr(
+    CDDrawSurfaceMgr *pHarryPotter,
     int unknown2, int unknown3)
-    : UnknownCGruntzMgrHogwarts(unknown2)
+    : CDDrawSubMgrBase(unknown2)
 {
     fieldUnknown8 = unknown3;
     m_pHarryPotter = pHarryPotter;
 }
 
 // ---------------------------------------------------------------------------
-// UnknownCGruntzMgrLucius::~UnknownCGruntzMgrLucius  @0x1574d0
+// CDDrawSubMgr::~CDDrawSubMgr  @0x1574d0
 // Scalar-deleting destructor.  Under /GX the compiler emits a C++ EH frame
 // (push -1 / handler info / fs:0) around the body because VirtualMethod-
 // Unknown1C may throw (it calls operator delete).  After the body runs, the
@@ -67,7 +67,7 @@ UnknownCGruntzMgrLucius::UnknownCGruntzMgrLucius(
 // through the base destructors.
 // ---------------------------------------------------------------------------
 RVA(0x1574d0, 0x5b)
-UnknownCGruntzMgrLucius::~UnknownCGruntzMgrLucius()
+CDDrawSubMgr::~CDDrawSubMgr()
 {
     VirtualMethodUnknown1C();
     m_fieldBaseUnknown = -1;
@@ -76,6 +76,6 @@ UnknownCGruntzMgrLucius::~UnknownCGruntzMgrLucius()
 }
 
 // Out-of-line stubs for unmatched virtuals (anchors the vtable in this TU).
-void UnknownCGruntzMgrLucius::VirtualMethodUnknown14() {}
-int  UnknownCGruntzMgrLucius::VirtualMethodUnknown18() { return 0; }
-void UnknownCGruntzMgrLucius::VirtualMethodUnknown20() {}
+void CDDrawSubMgr::VirtualMethodUnknown14() {}
+int  CDDrawSubMgr::VirtualMethodUnknown18() { return 0; }
+void CDDrawSubMgr::VirtualMethodUnknown20() {}

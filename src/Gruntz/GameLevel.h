@@ -1,4 +1,4 @@
-// GameLevel.h - CGameLevel, the WWD level-load orchestrator (a.k.a. UnknownRemus).
+// GameLevel.h - CGameLevel, the WWD level-load orchestrator (a.k.a. CDDrawLevelData).
 //
 // LoadWwd @0x15d280 is vtable slot 0x38 on this class. It validates the in-memory
 // WWD header, copies the 1524-byte (0x17d-dword) header into the level object,
