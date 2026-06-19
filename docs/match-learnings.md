@@ -1171,7 +1171,7 @@ fast-moving scratchpad. Newest at top within each section.
   `RegistryHelper(){m_0=0;}` and `~RegistryHelper(){Close();}`. The stack-local
   `reg` makes MSVC emit a **C++ EH frame** (`__CxxFrameHandler` + FuncInfo, the
   `fs:0` registration + `push -1; push handler`), so this TU must build with
-  **`/GX`** (per-unit `cflags` override — the global locked set has no /GX). Adding
+  **`/GX`** (the `eh` flags profile — the global locked set has no /GX). Adding
   /GX took GetGruntzDriveLetter 73%→94%; the ctor fixed the early `reg.m_0=0`
   scheduling (it inlines at the object's scope-entry, exactly where the binary
   zeroes it) and the dtor (Close) inlines at each `return` with the
