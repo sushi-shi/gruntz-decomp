@@ -135,7 +135,7 @@ struct CWorld {
 // scalar members the Render reads are at the offsets the ctor pins.
 // (Mirrors GameMode.h; kept local to isolate this WIP TU from the matched one.)
 // ===========================================================================
-struct CGameModeBase { void BaseCleanup(); };
+#include <Gruntz/GameModeBase.h>
 
 class CState {
 public:

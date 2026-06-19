@@ -165,6 +165,14 @@ prototype starts far ahead of one staring at `FUN_00482f50`.
 
 ## 5. The matching workflow (put this in every matcher prompt)
 
+> **The goal is to recover the original source the developers wrote — one class,
+> one header, included where it's used — NOT to chase a match %.** A high % on a
+> per-TU reconstruction that re-declares a class inline (a different shape in each
+> TU) is a means, not the end: the real code had a single definition. So prefer
+> the true class/signature even when consolidating temporarily dips the score —
+> the % is recovered by re-matching against the correct shared header. (Headers
+> live under `include/<Module>/`, mirroring `src/`; angle-bracket includes.)
+
 1. Locate the target's RVA; confirm it's a real function start.
 2. Add/extend the unit in `config/units.toml` with its `src/<Module>/<TU>.cpp`
    source. (`build/gen/symbol_names.csv`, the matched set, is generated from the
