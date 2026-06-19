@@ -7,7 +7,6 @@
 //   CState::~CState() (??_G)  98.75% - slot-0 scalar-deleting dtor
 //   CState::Update()         100.00% - slot 4  return 1;
 //   CState::Render()         100.00% - slot 5  return 1;
-//   CPlay::Update()          100.00% - return 3;
 //   CMenuState::Update()     100.00% - return 5;
 //   CCreditsState::Update()  100.00% - return 8;
 //   CBootyState::Update()    100.00% - return 0xa;
@@ -111,12 +110,7 @@ void CState::Vfunc3() {}
 // The concrete states - each overrides Update() to return its state-ID tag.
 // ===========================================================================
 
-// CPlay::Update(): the PLAY state's ID = 3.
-RVA(0x08c910, 0x6)
-int CPlay::Update()
-{
-    return 3;
-}
+// (CPlay::Update lives with the rest of CPlay in src/Gruntz/CPlay.cpp.)
 
 // CMenuState::Update(): the MENU state's ID = 5.
 RVA(0x08ce10, 0x6)

@@ -147,7 +147,7 @@ struct Edge { int m_0; int m_4; };
 // ===========================================================================
 class CPlay : public CState {
 public:
-    virtual int  Update();          // return 3;  (matched in `gamemode`)
+    virtual int  Update();          // return 3;  (slot 4)
     virtual int  Render();          // THE per-frame heart (this TU)
 
     // typed views of the inherited CState owner back-ptr (+0x4):

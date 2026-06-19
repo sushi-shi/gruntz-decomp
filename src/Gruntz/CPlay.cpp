@@ -109,6 +109,13 @@ struct CRegSink { void Post(int a, int b); };
 // PlayCueAt's per-cue de-dupe object at this+0x410.
 struct CCueState { int Probe(int wParam); };
 
+// CPlay::Update() (slot 4): the PLAY state's ID = 3.
+RVA(0x08c910, 0x6)
+int CPlay::Update()
+{
+    return 3;
+}
+
 // ===========================================================================
 // CPlay::Render  (vtable slot +0x14)
 // ===========================================================================

@@ -24,7 +24,7 @@ cddrawworkerlist	10	7
 cddrawworkermapsmall	8	2
 cddrawworkerregistry	21	12
 cddrawworkers	3	3
-cplay	11	5
+cplay	12	6
 deflate	6	6
 dialogs	6	5
 engine_label_stubs	376	0
@@ -34,7 +34,7 @@ fontconfig	1	0
 fonts	2	1
 gameapp	18	12
 gamelevel	14	8
-gamemode	12	9
+gamemode	11	8
 gametext	4	2
 gamewnd	4	4
 grunt	19	0
@@ -171,9 +171,10 @@ cplay	?PlayCueAt@CPlay@@QAEXHHHHHHHH@Z	87.5385	87.5385	4	814e79c06ae2
 cplay	?Render@CPlay@@UAEHXZ	0.0000	0.0000	3	bca603bf6e6b
 cplay	?SetBeginClearParams@CState@@QAEHHHH@Z	100.0000	100.0000	1	547f61043c4d
 cplay	?StepC@CPlay@@QAEXXZ	85.4545	85.4545	2	95cc335622ff
-cplay	?StepInputA@CPlay@@QAEHXZ	89.8077	89.8077	2	00344b5647aa
+cplay	?StepInputA@CPlay@@QAEHXZ	89.8077	89.8077	3	3fa632f69525
 cplay	?StepScroll@CPlay@@QAEXXZ	78.2069	78.2069	2	be68ce6317d7
 cplay	?Stub_08c9d0@CPlay@@QAEXXZ	0.7407	0.7407	1	dd82507c1529
+cplay	?Update@CPlay@@UAEHXZ	100.0000	100.0000	1	a4170f6167c9
 deflate	_deflate_fast	100.0000	100.0000	1	3de2151b888f
 deflate	_deflate_slow	100.0000	100.0000	1	963869a51c2d
 deflate	_deflate_stored	100.0000	100.0000	1	f3d8403d157d
@@ -635,7 +636,6 @@ gamemode	?Stub_08d5e0@CCreditsState@@QAEXXZ	3.0303	3.0303	1	963eeafd9b32
 gamemode	?Update@CBootyState@@UAEHXZ	100.0000	100.0000	2	68bb4145e7d3
 gamemode	?Update@CCreditsState@@UAEHXZ	100.0000	100.0000	2	5a269318611a
 gamemode	?Update@CMenuState@@UAEHXZ	100.0000	100.0000	2	c5c23fd1a6f1
-gamemode	?Update@CPlay@@UAEHXZ	100.0000	100.0000	2	a4170f6167c9
 gamemode	?Update@CState@@UAEHXZ	100.0000	100.0000	2	0f7eed762ecb
 gamemode	?vfunc_1@CBootyState@@QAEXXZ	0.0417	0.0417	1	85989d2cbda0
 gametext	??0CContainerErr@@QAE@PBD@Z	99.7368	99.7368	2	6bfb22f0582e
