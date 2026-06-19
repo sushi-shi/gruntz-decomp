@@ -88,6 +88,13 @@ public:
     char           m_pad08[0x0c - 0x08];    // +0x08..0x0b
     int            m_0c;                     // +0x0c  parent HarryPotter handle
     CMapStringToOb m_10;                     // +0x10  m_unknownMap1 (0x10..0x2b)
+
+    // Engine-label backlog stubs.
+    void Stub_157600();
+    void Stub_157610();
+    void Stub_1658c0();
+    void Stub_165a90();
+    void Stub_165b90();
 };
 
 // CMapStringToOb internal field at parent+0x1c (seeds worker->m_04). Read off the
@@ -190,3 +197,41 @@ void *UnknownAlbus::VirtualMethodUnknown2C(int a1, const char *key, int a3)
     m_10[key] = (CObject *)w;
     return w;
 }
+
+// -------------------------------------------------------------------------
+// Engine-label backlog stubs.
+// -------------------------------------------------------------------------
+// @confidence: med
+// @source: tomalla
+// @address: 0x157600
+// @size:    0x6
+// @stub
+void UnknownAlbus::Stub_157600() {}
+
+// @confidence: med
+// @source: tomalla
+// @address: 0x157610
+// @size:    0x1e
+// @stub
+void UnknownAlbus::Stub_157610() {}
+
+// @confidence: high
+// @source: tomalla
+// @address: 0x1658c0
+// @size:    0xcc
+// @stub
+void UnknownAlbus::Stub_1658c0() {}
+
+// @confidence: high
+// @source: tomalla
+// @address: 0x165a90
+// @size:    0xf4
+// @stub
+void UnknownAlbus::Stub_165a90() {}
+
+// @confidence: high
+// @source: tomalla
+// @address: 0x165b90
+// @size:    0xa9
+// @stub
+void UnknownAlbus::Stub_165b90() {}

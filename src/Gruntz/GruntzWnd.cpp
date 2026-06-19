@@ -11,6 +11,9 @@ public:
     CGruntzWnd();
     virtual ~CGruntzWnd();
     virtual int Wap32GameWndVfunc0();
+
+    // Engine-label backlog stubs.
+    void Stub_094670();
 };
 
 // @address: 0x94640
@@ -21,3 +24,13 @@ CGruntzWnd::CGruntzWnd() {}
 // not matched / not @address-annotated.
 CGruntzWnd::~CGruntzWnd() {}
 int CGruntzWnd::Wap32GameWndVfunc0() { return 0; }
+
+// -------------------------------------------------------------------------
+// Engine-label backlog stubs.
+// -------------------------------------------------------------------------
+// @confidence: high
+// @source: tomalla
+// @address: 0x094670
+// @size:    0x1e
+// @stub
+void CGruntzWnd::Stub_094670() {}

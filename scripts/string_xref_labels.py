@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# string_xref_labels.py - string-xref labeling aid for config/engine_labels.csv.
+# string_xref_labels.py - string-xref labeling aid for source @stub metadata.
 #
 # Mechanically recovers, for every Ghidra-recognised function, the .rdata/.data
 # string literals it directly references (an immediate 4-byte LE VA equal to a
@@ -9,9 +9,9 @@
 # loads every GRUNTZ_PICKUPS_* key is a pickup-sprite loader; one that self-IDs
 # 'DirectDrawMgr' + every DDERR_* is the DDraw error formatter; etc.
 #
-# This is the reproducible extraction half of the "string-xref" rows in
-# config/engine_labels.csv. The name/confidence judgment is human (the script
-# only surfaces ranked candidates).
+# This is the reproducible extraction half of the "string-xref" @stub metadata.
+# The name/confidence judgment is human (the script only surfaces
+# ranked candidates).
 #
 # Inputs : binaries/retail_en/GRUNTZ.EXE  (v1.0 EN, md5 81c7f648...)
 #          build/ghidra-named/exports/functions.csv  (Ghidra function boundaries)

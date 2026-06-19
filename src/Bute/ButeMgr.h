@@ -163,6 +163,12 @@ public:
     char  m_pad104[0x10c - 0x104];// +0x104
     char  m_10c;               // +0x10c
     char  m_10d;               // +0x10d
+
+    // Engine-label backlog stubs.
+    void Stub_173770();
+    void Stub_173d00();
+    void Stub_174240();
+    void Stub_1747c0();
 };
 
 // The variadic error reporter (@0x1706c0, __cdecl): ReportError(this, fmt, ...).

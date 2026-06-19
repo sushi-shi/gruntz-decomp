@@ -260,3 +260,27 @@ BOOL CFileIO::Open(const char *lpszFileName, unsigned int nOpenFlags, void *pErr
     m_open = 1;
     return 1;
 }
+
+// -------------------------------------------------------------------------
+// Engine-label backlog stubs.
+// -------------------------------------------------------------------------
+// @confidence: med
+// @source: call-xref
+// @address: 0x0bd3e0
+// @size:    0x34
+// @stub
+void CFileIO::Stub_0bd3e0() {}
+
+// @confidence: med
+// @source: call-xref
+// @address: 0x0e5550
+// @size:    0x9a
+// @stub
+void CFileIO::Stub_0e5550() {}
+
+// @confidence: med
+// @source: call-xref
+// @address: 0x0e5700
+// @size:    0x9e
+// @stub
+void CFileIO::Stub_0e5700() {}

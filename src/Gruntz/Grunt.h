@@ -286,6 +286,15 @@ public:
     int         m_3f0;                      // +0x3f0
     int         m_3f4;                      // +0x3f4
     int         m_3f8;                      // +0x3f8
+
+    // Engine-label backlog stubs.
+    void Stub_047a10();
+    void Stub_048400();
+    void Stub_048470();
+    void Stub_062e10();
+    void Stub_0633e0();
+    void BuildEntranceAnimation();
+    void LoadEntranceConfig();
 };
 
 #endif // SRC_GRUNTZ_GRUNT_H

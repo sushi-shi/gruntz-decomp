@@ -65,13 +65,13 @@ def main() -> int:
             # unreferenced gaps undisassembled. AIF disassembles those gaps,
             # recovering ~+130 genuine .text functions (verified: every one lands
             # inside .text, none in .data; ~83 are >=16-byte bodies, ~35 are 5-byte
-            # incremental-linker jmp thunks) that apply.py's CSV seeding does NOT
+            # incremental-linker jmp thunks) that apply.py's metadata seeding does NOT
             # cover. These become new matchable-function candidates. The other
             # analyzers (RTTI/Switch/Shared-Return/Function-ID/Demangler) are
             # already enabled by default and recover nothing extra; the vtable-only
             # methods (RunMessageLoop, CState/CPlay stubs, ...) are unreachable by
             # ANY analyzer and are seeded explicitly by apply.py from
-            # symbol_names/engine_labels/library_labels instead.
+            # symbol_names/source stub labels/library_labels instead.
             #
             # COST: AIF roughly 4x's the Ghidra analysis phase - measured on
             # GRUNTZ.EXE at 77s (default) -> 281s (+AIF), i.e. +~204s / ~3.4 min.

@@ -1,5 +1,5 @@
 // UnknownRemus.cpp - five leaf methods of the tomalla-named class UnknownRemus
-// (engine_labels.csv: vtable slot 0x38 == CGameLevel::LoadWwd, so UnknownRemus is
+// (src/Stub/ metadata: vtable slot 0x38 == CGameLevel::LoadWwd, so UnknownRemus is
 // the obfuscated handle for a CGameLevel-family object; modeled here as
 // UnknownRemus so clang's MS mangling reproduces the target symbols
 // ?VirtualMethodUnknown24@UnknownRemus@@... that synth_pdb names the delinked
@@ -87,6 +87,15 @@ public:
     int         m_d4;                   // +0xd4  = 1920
     int         m_d8;                   // +0xd8  = 768
     int         m_dc;                   // +0xdc  = 576
+
+    // Engine-label backlog stubs.
+    void Stub_15d1f0();
+    void Stub_15d500();
+    void Stub_15d630();
+    void Stub_15d680();
+    void Stub_1611b0();
+    void Stub_1611c0();
+    void Stub_1611e0();
 };
 
 // Stamps the shared +0xb0..+0xdc "default parameters" block. Defined inline so it
@@ -221,3 +230,56 @@ int UnknownRemus::VirtualMethodUnknown2C(int arg1, RemusCoords *coords)
     }
     return 1;
 }
+
+// -------------------------------------------------------------------------
+// Engine-label backlog stubs.
+// -------------------------------------------------------------------------
+
+// @confidence: high
+// @source: tomalla
+// @address: 0x15d1f0
+// @size:    0x87
+// @stub
+void UnknownRemus::Stub_15d1f0() {}
+
+// @confidence: high
+// @source: tomalla
+// @address: 0x15d500
+// @size:    0x127
+// @stub
+void UnknownRemus::Stub_15d500() {}
+
+// @confidence: high
+// @source: tomalla
+// @address: 0x15d630
+// @size:    0x41
+// @stub
+void UnknownRemus::Stub_15d630() {}
+
+// @confidence: high
+// @source: tomalla
+// @address: 0x15d680
+// @size:    0x71
+// @stub
+void UnknownRemus::Stub_15d680() {}
+
+// @confidence: high
+// @source: tomalla
+// @address: 0x1611b0
+// @size:    0x6
+// @stub
+void UnknownRemus::Stub_1611b0() {}
+
+// @confidence: high
+// @source: tomalla
+// @address: 0x1611c0
+// @size:    0x1e
+// @stub
+void UnknownRemus::Stub_1611c0() {}
+
+// @confidence: med
+// @source: call-xref
+// @address: 0x1611e0
+// @size:    0x82
+// @stub
+void UnknownRemus::Stub_1611e0() {}

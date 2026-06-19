@@ -123,6 +123,36 @@ public:
     char       m_pad59c[0x5a4 - 0x59c];
     DWORD      m_5a4;                   // +0x5a4
     DWORD      m_5a8;                   // +0x5a8
+
+    // Engine-label backlog stubs.
+    void Stub_0b5460();
+    void Stub_0b6000();
+    void Stub_0b78b0();
+    void Stub_0b7b10();
+    void Stub_0b82e0();
+    void Stub_0b8b10();
+    void Stub_0b8cf0();
+    void Stub_0b9750();
+    void Stub_0bc070();
+    void Stub_0bc110();
+    void Stub_0bc460();
+    void Stub_0bca50();
+    void Stub_0bcf20();
+    void Stub_0bd000();
+    void Stub_0bd030();
+    void Stub_0bd0b0();
+    void Stub_0bd180();
+    void Stub_1776a0();
+    void Stub_1780b0();
+    void Stub_178280();
+    void Stub_1782d0();
+    void Stub_178e20();
+    void Stub_178e90();
+    void Stub_178eb0();
+    void Stub_178ef0();
+    void Stub_178fc0();
+    void Stub_179090();
+    void Stub_179130();
 };
 
 // The HWND chain the message handlers walk: m_4 -> +0x4 -> +0x4 (the HWND).

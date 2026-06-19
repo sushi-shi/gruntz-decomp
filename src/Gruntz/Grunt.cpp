@@ -492,3 +492,55 @@ int CGrunt::CreateSelectedSprite()
     }
     return 1;
 }
+
+// -------------------------------------------------------------------------
+// Engine-label backlog stubs.
+// -------------------------------------------------------------------------
+// @confidence: med
+// @source: rtti-vptr
+// @address: 0x047a10
+// @size:    0x770
+// @stub
+void CGrunt::Stub_047a10() {}
+
+// @confidence: high
+// @source: tomalla
+// @address: 0x048400
+// @size:    0x47
+// @stub
+void CGrunt::Stub_048400() {}
+
+// @confidence: med
+// @source: string-xref
+// @address: 0x048470
+// @size:    0x131b
+// @stub
+void CGrunt::Stub_048470() {}
+
+// @confidence: med
+// @source: decomp-xref
+// @address: 0x062e10
+// @size:    0x47e
+// @stub
+void CGrunt::Stub_062e10() {}
+
+// @confidence: med
+// @source: decomp-xref
+// @address: 0x0633e0
+// @size:    0x2ca
+// @stub
+void CGrunt::Stub_0633e0() {}
+
+// @confidence: med
+// @source: decomp-xref
+// @address: 0x067bd0
+// @size:    0x2ef
+// @stub
+void CGrunt::BuildEntranceAnimation() {}
+
+// @confidence: med
+// @source: decomp-xref
+// @address: 0x067f80
+// @size:    0x313
+// @stub
+void CGrunt::LoadEntranceConfig() {}

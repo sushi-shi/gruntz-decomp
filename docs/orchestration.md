@@ -6,7 +6,7 @@ facts so dispatch is effective. Companion docs: `matching-patterns.md` (codegen
 idioms), `build-system.md` (the loop), `zlib-matching.md` (compile flags),
 `linker-flags.md` (the deferred whole-binary link phase), `runtime-dlls.md`
 (imports + the DX label seed). Data: `build/gen/symbol_names.csv` (matched set),
-`config/engine_labels.csv` (labels), `config/units.toml` (build manifest),
+`src/` (`@stub` metadata), `config/units.toml` (build manifest),
 `config/library_labels.csv` (exclusions).
 
 ---
@@ -92,8 +92,8 @@ source diff, (2) entropy, (3) wrong toolchain SP/version (we target VC5 SP3 —
 ## 3. Two worker types — label broadly, then match deeply
 
 - **Labeler** — attributes a function to its class/TU and names it, *without*
-  necessarily byte-matching. Sources (Section 4). Output: rows in
-  `config/engine_labels.csv` + names applied to the `build/ghidra-named` DB.
+  necessarily byte-matching. Sources (Section 4). Output: `@stub` metadata in
+  `src/` + names applied to the `build/ghidra-named` DB.
   Cheap, fans out wide, grows the partition and the roadmap. **Dispatch labelers
   first/broadly to map the territory.**
 - **Matcher** — byte-matches a function: writes `src/<Module>/<TU>.cpp` (+ headers),
@@ -145,7 +145,7 @@ prototype starts far ahead of one staring at `FUN_00482f50`.
    Tooled: `scripts/string_xref_labels.py` recovers the per-function string set
    (scans `.text` for 4-byte LE string-VA immediates over the Ghidra function
    boundaries — no disassembler needed) and ranks bare `FUN_` funcs by taxonomy
-   distinctiveness. Seeded the 66 `source=string-xref` rows in `engine_labels.csv`
+   distinctiveness. Seeded the 66 `source=string-xref` rows in `src/Stub/`
    (DX error formatters that self-ID their module string, the WWD object factory,
    sprite/asset loaders, foundry/level logic).
    **Verify against the decompiler** before trusting a string-only guess:
@@ -229,7 +229,7 @@ prototype starts far ahead of one staring at `FUN_00482f50`.
 
 ## 8. Definition of done
 
-- **Labeled** = attributed to class/TU + named in `config/engine_labels.csv`.
+- **Labeled** = attributed to class/TU + named with `@stub` metadata in `src/`.
 - **Matched** = objdiff byte-exact (reloc-masked); the ~99.5%-fuzzy reloc-typing
   cases confirmed by direct byte-compare. Graduates from a label into `src/`
   (with its `// @address:`) + `config/units.toml`; `build/gen/symbol_names.csv`

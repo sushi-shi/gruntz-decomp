@@ -121,3 +121,202 @@ void CNetMgr::ApplyCmdDelayDefaults()
     reg->SetValueDword((char *)(const char *)cmdDelayName, m_5a4);
     reg->SetValueDword((char *)(const char *)resendName, m_5a8);
 }
+
+// -------------------------------------------------------------------------
+// Engine-label backlog stubs.
+// -------------------------------------------------------------------------
+// @confidence: high
+// @source: rtti-vptr
+// @address: 0x0b5460
+// @size:    0x914
+// @stub
+void CNetMgr::Stub_0b5460() {}
+
+// @confidence: high
+// @source: rtti-vptr
+// @address: 0x0b6000
+// @size:    0x6d
+// @stub
+void CNetMgr::Stub_0b6000() {}
+
+// @confidence: med
+// @source: string-xref
+// @address: 0x0b78b0
+// @size:    0x17f
+// @stub
+void CNetMgr::Stub_0b78b0() {}
+
+// @confidence: med
+// @source: decomp-xref
+// @address: 0x0b7b10
+// @size:    0x27c
+// @stub
+void CNetMgr::Stub_0b7b10() {}
+
+// @confidence: high
+// @source: decomp-xref
+// @address: 0x0b82e0
+// @size:    0x230
+// @stub
+void CNetMgr::Stub_0b82e0() {}
+
+// @confidence: med
+// @source: decomp-xref
+// @address: 0x0b8b10
+// @size:    0x175
+// @stub
+void CNetMgr::Stub_0b8b10() {}
+
+// @confidence: low
+// @source: decomp-xref
+// @address: 0x0b8cf0
+// @size:    0x23b
+// @stub
+void CNetMgr::Stub_0b8cf0() {}
+
+// @confidence: med
+// @source: decomp-xref
+// @address: 0x0b9750
+// @size:    0x74e
+// @stub
+void CNetMgr::Stub_0b9750() {}
+
+// @confidence: high
+// @source: call-xref
+// @address: 0x0bc070
+// @size:    0x73
+// @stub
+void CNetMgr::Stub_0bc070() {}
+
+// @confidence: med
+// @source: decomp-xref
+// @address: 0x0bc110
+// @size:    0xf6
+// @stub
+void CNetMgr::Stub_0bc110() {}
+
+// @confidence: med
+// @source: decomp-xref
+// @address: 0x0bc460
+// @size:    0x24e
+// @stub
+void CNetMgr::Stub_0bc460() {}
+
+// @confidence: med
+// @source: decomp-xref
+// @address: 0x0bca50
+// @size:    0x155
+// @stub
+void CNetMgr::Stub_0bca50() {}
+
+// @confidence: low
+// @source: call-xref
+// @address: 0x0bcf20
+// @size:    0xaf
+// @stub
+void CNetMgr::Stub_0bcf20() {}
+
+// @confidence: low
+// @source: call-xref
+// @address: 0x0bd000
+// @size:    0x19
+// @stub
+void CNetMgr::Stub_0bd000() {}
+
+// @confidence: med
+// @source: call-xref
+// @address: 0x0bd030
+// @size:    0x5d
+// @stub
+void CNetMgr::Stub_0bd030() {}
+
+// @confidence: high
+// @source: call-xref
+// @address: 0x0bd0b0
+// @size:    0x9a
+// @stub
+void CNetMgr::Stub_0bd0b0() {}
+
+// @confidence: low
+// @source: call-xref
+// @address: 0x0bd180
+// @size:    0x66
+// @stub
+void CNetMgr::Stub_0bd180() {}
+
+// @confidence: high
+// @source: tomalla
+// @address: 0x1776a0
+// @size:    0xa01
+// @stub
+void CNetMgr::Stub_1776a0() {}
+
+// @confidence: high
+// @source: import:DPLAYX.dll!#1
+// @address: 0x1780b0
+// @size:    0xbb
+// @stub
+void CNetMgr::Stub_1780b0() {}
+
+// @confidence: high
+// @source: import:DPLAYX.dll!#2
+// @address: 0x178280
+// @size:    0x43
+// @stub
+void CNetMgr::Stub_178280() {}
+
+// @confidence: high
+// @source: import:DPLAYX.dll!#1
+// @address: 0x1782d0
+// @size:    0x86
+// @stub
+void CNetMgr::Stub_1782d0() {}
+
+// @confidence: med
+// @source: call-xref
+// @address: 0x178e20
+// @size:    0x33
+// @stub
+void CNetMgr::Stub_178e20() {}
+
+// @confidence: med
+// @source: call-xref
+// @address: 0x178e90
+// @size:    0x20
+// @stub
+void CNetMgr::Stub_178e90() {}
+
+// @confidence: med
+// @source: call-xref
+// @address: 0x178eb0
+// @size:    0x3f
+// @stub
+void CNetMgr::Stub_178eb0() {}
+
+// @confidence: med
+// @source: call-xref
+// @address: 0x178ef0
+// @size:    0x5c
+// @stub
+void CNetMgr::Stub_178ef0() {}
+
+// @confidence: med
+// @source: call-xref
+// @address: 0x178fc0
+// @size:    0x44
+// @stub
+void CNetMgr::Stub_178fc0() {}
+
+// @confidence: med
+// @source: call-xref
+// @address: 0x179090
+// @size:    0x4c
+// @stub
+void CNetMgr::Stub_179090() {}
+
+// @confidence: med
+// @source: call-xref
+// @address: 0x179130
+// @size:    0x5d
+// @stub
+void CNetMgr::Stub_179130() {}

@@ -124,6 +124,7 @@ public:
     HWND m_4;   // +0x04  HWND (set by CreateAndShow / zeroed by ctor)
     void *m_8;  // +0x08  owner pointer (set by CreateAndShow; not touched by ctor)
     int  m_c;   // +0x0c  guard flag (zeroed by ctor and by CreateAndShow)
+
 };
 
 // Minimal polymorphic resource objects whose pointers live in CGameApp::m_4 /
@@ -153,10 +154,29 @@ public:
 // CGameMgr - the game manager allocated by CGameApp::InitializeGameManager
 // (the engine puts it in namespace WAP32). VirtualUnknownMethod02 starts it
 // with Run(pGameWnd, szCmdLine) (vtable +0x4) and `delete`s it (scalar-deleting
-// dtor @ vtable slot 0) on failure. Forward-declared here so the
-// InitializeGameManager return type is covariant with CGruntzApp's override;
-// the full definition lives in the TU that uses it.
-namespace WAP32 { class CGameMgr; }
+// dtor @ vtable slot 0) on failure.
+namespace WAP32 {
+class CGameMgr {
+public:
+    CGameMgr();
+    virtual ~CGameMgr();
+    virtual int Run(CGameWnd *pGameWnd, char *szCmdLine);
+
+    void UnknownClose();
+    void UnknownMethodInitializeTimeGlobal();
+
+    int m_4;
+    int m_8;
+
+    // Engine-label backlog stubs.
+    void Stub_13dd10();
+    void Stub_13dd50();
+    void vector_deleting_destructor();  // @0x133380 vftable slot 0
+
+private:
+    char m_pad0c[0xa30 - 0x0c];
+};
+}
 
 // CREATESTRUCTA layout (the 12 fields CreateWindowEx receives), embedded in
 // CGameApp at +0x210 (m_createStruct); InitializeDefaultCreateStruct fills it.
@@ -258,6 +278,10 @@ public:
     int  m_248;          // +0x248  error-reported guard
     int  m_24c;          // +0x24c  error code
     int  m_250;          // +0x250  error detail
+
+    // Engine-label backlog stubs.
+
+    void Stub_080dd0();
 };
 
 #endif // WAP32_H

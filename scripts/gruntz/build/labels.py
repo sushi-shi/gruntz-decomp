@@ -67,21 +67,37 @@ def line_index(text):
     return lambda off: bisect.bisect_right(starts, off)
 
 
-def collect_defs(ast, want=FUNC_KINDS):
-    """Yield (mangledName, offset) for every function DEFINITION (has a body).
+def collect_defs(ast, main_file, want=FUNC_KINDS):
+    """Yield (mangledName, offset) for every function DEFINITION (has a body)
+    that lives in `main_file`.
 
     A definition's AST node has a CompoundStmt among its children. We take the
     node's loc.offset (the name location) to place it against @address comments.
+
+    Only main-file definitions are returned: a node's loc.offset is a byte
+    offset into *its own* file, so an inline definition pulled in from a header
+    (e.g. `virtual void ShowError() {}`) would otherwise have its header offset
+    misread against the .cpp's line index and could steal a nearby @address.
+    `state["in_main"]` tracks the current file as the AST is walked in source
+    order (clang stamps `file` onto a loc/range only when it changes).
     """
+    main_real = os.path.realpath(main_file)
     out = []
+    state = {"in_main": True}
+
+    def update_file(node):
+        for loc in (node.get("loc"), (node.get("range") or {}).get("begin")):
+            if isinstance(loc, dict) and loc.get("file") is not None:
+                state["in_main"] = os.path.realpath(loc["file"]) == main_real
 
     def visit(node):
         if isinstance(node, dict):
+            update_file(node)
             # Skip compiler-synthesised members (implicit copy/default ctors of
             # helper structs) - clang gives them an implicit CompoundStmt body
             # that would otherwise be mistaken for a real source definition.
-            if (node.get("kind") in want and "mangledName" in node
-                    and not node.get("isImplicit")):
+            if (state["in_main"] and node.get("kind") in want
+                    and "mangledName" in node and not node.get("isImplicit")):
                 inner = node.get("inner") or []
                 has_body = any(isinstance(c, dict) and c.get("kind") == "CompoundStmt"
                                for c in inner)
@@ -251,6 +267,7 @@ def main():
 
     rows = []          # (rva, name, unit, size)
     misses = []        # (rva, candidate, unit, reason)
+    addr_sites = {}    # rva -> [(tu, line)] for every @address, to catch dups
     for i, tu in enumerate(args.tu):
         text = Path(tu).read_text()
         off2line = line_index(text)
@@ -271,7 +288,7 @@ def main():
             continue
         # @address binds to a function DEFINITION, @data to a global variable
         # DECLARATION - separate candidate pools so the two never cross-steal.
-        func_defs = [(off2line(off), mn) for (mn, off) in collect_defs(ast)]
+        func_defs = [(off2line(off), mn) for (mn, off) in collect_defs(ast, tu)]
         func_defs.sort(key=lambda d: d[0])
         var_defs = [(off2line(off), mn) for (mn, off) in collect_vars(ast)]
         var_defs.sort(key=lambda d: d[0])
@@ -281,6 +298,8 @@ def main():
         all_syms = nm_all_symbols(args.obj[i], args.nm) if have_obj else None
 
         for rva, line, override, size, ann_kind in addrs:
+            if ann_kind != "data":
+                addr_sites.setdefault(rva, []).append((tu, line))
             pool = var_defs if ann_kind == "data" else func_defs
             cand = next((mn for (dl, mn) in pool if dl >= line), None)
             name = override or cand
@@ -311,6 +330,17 @@ def main():
             else:
                 misses.append((rva, name, unit, "candidate not in base obj"))
 
+    # A function @address identifies exactly one function: the same rva labeled
+    # twice (within or across units) is always a mistake - fail the build loudly
+    # rather than silently let one row win.
+    dup_addrs = {rva: sites for rva, sites in addr_sites.items() if len(sites) > 1}
+    if dup_addrs:
+        for rva, sites in sorted(dup_addrs.items()):
+            where = ", ".join(f"{tu}:{ln}" for tu, ln in sites)
+            log(f"ERROR duplicate @address 0x{rva:06x}: {where}")
+        log(f"{len(dup_addrs)} duplicate @address label(s); refusing to write {args.out}")
+        return 1
+
     rows.sort()
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -329,7 +359,8 @@ def main():
     log(f"wrote {len(rows)} label(s) -> {out}")
     for rva, cand, unit, why in misses:
         log(f"  MISS 0x{rva:x} [{unit}] {why}" + (f" (cand {cand})" if cand else ""))
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

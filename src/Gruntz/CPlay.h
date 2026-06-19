@@ -293,6 +293,9 @@ public:
     int   m_500;        // +0x500  paused/no-step flag
     char  m_pad504[0x510 - 0x504];
     int   m_510;        // +0x510  per-frame countdown
+
+    // Engine-label backlog stubs.
+    void Stub_08c9d0();
 };
 
 // ===========================================================================

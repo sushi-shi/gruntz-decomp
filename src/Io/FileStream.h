@@ -114,6 +114,11 @@ public:
     HANDLE       m_handle;   // +0x04
     int          m_open;     // +0x08
     AfxString    m_name;     // +0x0c
+
+    // Engine-label backlog stubs.
+    void Stub_0bd3e0();
+    void Stub_0e5550();
+    void Stub_0e5700();
 };
 
 #endif // SRC_IO_FILESTREAM_H

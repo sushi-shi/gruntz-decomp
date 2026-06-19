@@ -30,6 +30,9 @@ class CSBI_RectOnly : public CStatusBarItem {
 public:
     CSBI_RectOnly();
     virtual int SbiVfunc0();
+
+    // Engine-label backlog stubs.
+    void Stub_0ffde0();
 };
 
 CStatusBarItem::~CStatusBarItem() {}
@@ -49,3 +52,13 @@ CSBI_RectOnly::CSBI_RectOnly()
 }
 
 int CSBI_RectOnly::SbiVfunc0() { return 1; }
+
+// -------------------------------------------------------------------------
+// Engine-label backlog stubs.
+// -------------------------------------------------------------------------
+// @confidence: med
+// @source: rtti-vptr
+// @address: 0x0ffde0
+// @size:    0x5b1
+// @stub
+void CSBI_RectOnly::Stub_0ffde0() {}

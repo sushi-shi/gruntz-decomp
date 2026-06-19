@@ -5,7 +5,7 @@ The autonomous matching campaign grinds labeled-but-unmatched engine functions
 into byte-exact src/. This picks WHAT to match next: middle-small, leaf-first.
 
 Inputs (all already in the repo):
-  config/engine_labels.csv         - labeled engine funcs (names/classes/protos)
+  src/**/*.cpp                     - @stub / source label metadata
   build/gen/symbol_names.csv       - the byte-MATCHED set (exclude: already done)
   build/ghidra-enrich/exports/functions.csv - function boundaries + sizes
   config/library_labels.csv        - library funcs (exclude: not engine)
@@ -19,14 +19,14 @@ refill the queue as matches land (idempotent).
 
 Run inside nix develop: nix develop .#build --command python3 scripts/gen_match_queue.py
 """
-import os, struct, csv, bisect, pickle
+import os, struct, csv, bisect, pickle, json
 from pathlib import Path
 
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
             Path(__file__).resolve().parent)
 EXE = Path(os.environ.get("GRUNTZ_EXE") or REPO / "build/exe/GRUNTZ.EXE")
 FUNCS = REPO / "build/ghidra-enrich/exports/functions.csv"
-LABELS = REPO / "config/engine_labels.csv"
+STUB_LABELS = REPO / "src"
 MATCHED = REPO / "build/gen/symbol_names.csv"   # generated (was config/symbol_names.csv)
 FID = REPO / "config/library_labels.csv"
 CHANGED = REPO / "build/patch-diff/validated_changed.pkl"
@@ -34,6 +34,21 @@ OUT = REPO / "docs/match-queue.md"
 
 def rint(s):
     return int(s, 16) if isinstance(s, str) else int(s)
+
+def load_stub_labels(path):
+    rows = []
+    marker = "// engine-label:"
+    files = sorted(path.rglob("*.cpp")) if path.is_dir() else [path]
+    for file in files:
+        with open(file) as f:
+            for line in f:
+                if marker not in line:
+                    continue
+                try:
+                    rows.append(json.loads(line.split(marker, 1)[1].strip()))
+                except Exception:
+                    continue
+    return rows
 
 # ---- PE sections (for rva->file offset on E8 scan) ----
 d = EXE.read_bytes()
@@ -101,11 +116,10 @@ else:
 
 # ---- labeled candidates ----
 rows = []
-with open(LABELS) as f:
-    for r in csv.DictReader((l for l in f if not l.startswith('#'))):
-        try: rva = rint(r['rva'])
-        except Exception: continue
-        rows.append((rva, r))
+for r in load_stub_labels(STUB_LABELS):
+    try: rva = rint(r['rva'])
+    except Exception: continue
+    rows.append((rva, r))
 
 queue = []
 for rva, r in rows:

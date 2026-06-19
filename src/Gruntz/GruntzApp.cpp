@@ -46,20 +46,11 @@ __declspec(dllimport) INT_PTR __stdcall DialogBoxParamA(HINSTANCE hInstance, LPC
 #define IDS_DEFAULT_ERROR 0x8009
 
 // ---------------------------------------------------------------------------
-// The game manager. CGruntzApp::InitializeGameManager allocates 0x0a30 bytes
-// (operator new) then runs its (throwing) constructor under a C++ EH frame.
-// We only need the new+ctor shape, not the full layout, so a forward class with
-// an opaque body of the right size suffices. The ctor is UNMATCHED but the call
+// The game manager. CGruntzApp::InitializeGameManager allocates the complete
+// WAP32::CGameMgr size (0x0a30 bytes; definition in Wap32.h) then runs its
+// throwing constructor under a C++ EH frame. The ctor is UNMATCHED but the call
 // is reloc-masked, so the call bytes are still byte-exact.
 // ---------------------------------------------------------------------------
-namespace WAP32 {
-class CGameMgr {
-public:
-    CGameMgr();
-private:
-    char m_pad[0xa30];
-};
-}
 
 // File-scope globals referenced by ErrorDialogProc / ShowError (binary: HWND @
 // 0x64557c and the error-text buffer @ 0x644ea0). The relocs that name them are
@@ -94,6 +85,9 @@ public:
     WAP32::CGameMgr *InitializeGameManager();
     static INT_PTR __stdcall ErrorDialogProc(HWND hWnd, UINT message,
                                              WPARAM wParam, LPARAM lParam);
+
+    // Engine-label backlog stubs.
+    void Stub_112820();
 };
 
 // ---------------------------------------------------------------------------
@@ -244,3 +238,13 @@ INT_PTR __stdcall CGruntzApp::ErrorDialogProc(HWND hWnd, UINT message,
 
     return 0;
 }
+
+// -------------------------------------------------------------------------
+// Engine-label backlog stubs.
+// -------------------------------------------------------------------------
+// @confidence: high
+// @source: tomalla
+// @address: 0x112820
+// @size:    0xc
+// @stub
+void CGruntzApp::Stub_112820() {}

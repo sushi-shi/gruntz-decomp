@@ -147,6 +147,13 @@ public:
     char           m_pad08[0x0c - 0x08];    // +0x08..0x0b
     int            m_0c;                     // +0x0c  parent/root handle
     CMapStringToOb m_10;                     // +0x10  m_unknownMap
+
+    // Engine-label backlog stubs.
+    void Stub_154f80();
+    void Stub_155160();
+    void Stub_156df0();
+    void Stub_156e80();
+    void Stub_165210();
 };
 
 static inline int SeverusReadField1c(const UnknownSeverus *p)
@@ -393,3 +400,41 @@ void UnknownSeverus::VirtualMethodUnknown54(const char *key)
         ((SeverusValue *)val)->ScalarDtor(1);
     }
 }
+
+// -------------------------------------------------------------------------
+// Engine-label backlog stubs.
+// -------------------------------------------------------------------------
+// @confidence: high
+// @source: tomalla
+// @address: 0x154f80
+// @size:    0x1d5
+// @stub
+void UnknownSeverus::Stub_154f80() {}
+
+// @confidence: high
+// @source: tomalla
+// @address: 0x155160
+// @size:    0x11e
+// @stub
+void UnknownSeverus::Stub_155160() {}
+
+// @confidence: high
+// @source: tomalla
+// @address: 0x156df0
+// @size:    0x1e
+// @stub
+void UnknownSeverus::Stub_156df0() {}
+
+// @confidence: high
+// @source: tomalla
+// @address: 0x156e80
+// @size:    0x38
+// @stub
+void UnknownSeverus::Stub_156e80() {}
+
+// @confidence: med
+// @source: tomalla
+// @address: 0x165210
+// @size:    0xa2
+// @stub
+void UnknownSeverus::Stub_165210() {}

@@ -387,3 +387,34 @@ bool CButeMgr::Parse()
         }
     }
 }
+
+// -------------------------------------------------------------------------
+// Engine-label backlog stubs.
+// -------------------------------------------------------------------------
+// @confidence: low
+// @source: decomp-xref
+// @address: 0x173770
+// @size:    0xc6
+// @stub
+void CButeMgr::Stub_173770() {}
+
+// @confidence: low
+// @source: decomp-xref
+// @address: 0x173d00
+// @size:    0xbb
+// @stub
+void CButeMgr::Stub_173d00() {}
+
+// @confidence: low
+// @source: decomp-xref
+// @address: 0x174240
+// @size:    0xe3
+// @stub
+void CButeMgr::Stub_174240() {}
+
+// @confidence: low
+// @source: decomp-xref
+// @address: 0x1747c0
+// @size:    0xcf
+// @stub
+void CButeMgr::Stub_1747c0() {}

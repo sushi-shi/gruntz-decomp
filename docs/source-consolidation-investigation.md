@@ -34,7 +34,7 @@ to "annotate the source, regenerate everything."
 |---|----------|-------|------|------------------|
 | 1 | `build/gen/symbol_names.csv` | `rva,name,unit` (100 rows) | THE byte-matched map. `synth_pdb.py` overlays it onto Ghidra's `functions.csv` → names the delinked `<unit>.c.obj` so objdiff pairs it to the base `<unit>.obj`. | **Yes** |
 | 2 | `config/units.toml` | per-TU `unit,source,status,cflags` (23 units) | Build manifest. `configure.py` → `build.ninja` + objdiff project. | Yes (legit) |
-| 3 | `config/engine_labels.csv` | `rva,name,class,prototype,kind,source,confidence` (337 rows) | Comprehension/attribution + match-queue fuel. Harvested from tomalla + RTTI; `apply_ghidra_enrichment.py` applies names/protos to the Ghidra DB; `gen_match_queue.py` ranks it. | Partly (harvested + appended) |
+| 3 | `src/` | `@stub` metadata plus empty function bodies for unresolved labels | Comprehension/attribution + match-queue fuel. Harvested from tomalla + RTTI; `apply_ghidra_enrichment.py` applies names/protos to the Ghidra DB; `gen_match_queue.py` ranks it. | Partly (harvested + appended) |
 | 4 | `structure/*.h` | 39 C++ headers, `@offset`/`@vftable`/`@size`/`@rtti` annotations | Engine-wide layout/enum scaffold (231 RTTI classes; tomalla-ported + hypotheses). Comprehension only — **not compiled**. | **Yes** |
 | 5 | `scripts/gruntz/ghidra/apply.py` (`STRUCTS`/`ENUMS`, ~300 lines) | Python literals of struct fields + enums | Defines structs/enums in the Ghidra DTM and applies them as `this`-types. | **Yes** |
 | 6 | `src/**/*.{cpp,h}` | the actual matched C++ (19 files, 23 TUs) | Compiled by `cl` → base `<unit>.obj`. RVAs, symbols, sizes, match-% all live in **prose comments**; field layouts live in **prose comments** in the `.h`. **Zero machine-readable annotations.** | Yes (the real work) |
@@ -48,7 +48,7 @@ needs `/O1`). It stays. Everything else overlaps.
 ## 2. The duplication, measured
 
 - **#1 ↔ #3 ↔ #6:** 46 of the 100 `symbol_names.csv` RVAs also appear in
-  `engine_labels.csv`, and *all* of them are also described in prose at the top
+  `src/Stub/`, and *all* of them are also described in prose at the top
   of their `src/` file. So a matched function's `(rva, name, class, prototype)`
   lives in **three** places.
 - **#4 ↔ #5:** `apply_ghidra_enrichment.py` hardcodes **56 struct entries** that
@@ -144,7 +144,7 @@ Legend:  `(H)` hand-authored    `(T)` tool/generated
        +------------+------------+
                     |
                     v
-  (H) engine_labels.csv --> apply.py (ghidra_metadata_apply)   <-- (T) library_labels.csv
+  (H) src/Stub/ --> apply.py (ghidra_metadata_apply)   <-- (T) library_labels.csv
       (shrinking backlog)   [headless PyGhidra, idempotent]   (FID/FLIRT)
                     |
                     v
@@ -318,10 +318,10 @@ JSON. `ghidra_metadata_generate.py` reads the union of `src/**/*.h` (matched, au
 and the converted `structure/*.h` (unmatched comprehension), with `src/` winning
 any overlap. That removes the third `RegistryHelper`-style copy.
 
-`engine_labels.csv` (#3) stays as the **backlog/staging** file for functions not
+`src/Stub/` (#3) stays as the **backlog/staging** file for functions not
 yet in `src/` (it legitimately describes code that has no source body yet). As a
-function graduates into annotated `src/`, its row leaves `engine_labels.csv`.
-The Ghidra apply consumes `(src-derived labels) ∪ (remaining engine_labels)`.
+function graduates into annotated `src/`, its row leaves `src/Stub/`.
+The Ghidra apply consumes `@stub` metadata from real source files plus the remaining unresolved `src/Stub/` tree.
 
 ---
 
@@ -346,7 +346,7 @@ The Ghidra apply consumes `(src-derived labels) ∪ (remaining engine_labels)`.
 4. **Graduate matched classes out of `structure/`.** When a class is in `src/`,
    delete its `structure/` header. `ghidra_metadata_generate.py` prefers `src/`, so this only
    removes dead copies; `structure/` shrinks toward empty.
-5. **Trim `engine_labels.csv` to backlog-only** (drop rows now covered by
+5. **Trim `src/Stub/` to backlog-only** (drop rows now covered by
    annotated `src/`); make the Ghidra apply union the two sources.
 
 After step 2 the user's headline ask is met: regenerate labels from `src/` and
@@ -417,7 +417,7 @@ plus two files that shrink to nothing.
 | What | Where | Empties when |
 |---|---|---|
 | Comprehension class layouts | `structure/**` (now compilable) | every class has graduated into `src/` |
-| Unsourced-function backlog | `config/engine_labels.csv` | every function has a `src/` body |
+| Unsourced-function backlog | `src/Stub/` | every function has a `src/` body |
 
 **Occasional / optional:**
 - **`@symbol`** override — only for compiler-generated thunks (`??_G`/`??_E`/`??_7`)
@@ -429,7 +429,7 @@ plus two files that shrink to nothing.
 - `apply_ghidra_enrichment.py` `STRUCTS`/`ENUMS` (~300 lines) -> generated JSON
 - field offsets -> clang `-fdump-record-layouts`; **no `@offset`**
 - mangled names -> read from the base obj; **never hand-typed**
-- matched-function rows in `engine_labels.csv` -> derived from `src/`
+- matched-function rows in `src/Stub/` -> derived from `src/`
 - `config/library_labels.csv` -> tracked FID output (regen: `scripts/analysis/fid_generate.py`)
 
 Steady state: per *matched function*, ~one `@address` line (plus the code); per
