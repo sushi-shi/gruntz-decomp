@@ -62,3 +62,13 @@ int InitializeFonts()
     }
     return 1;
 }
+
+RVA(0x1158f0, 0x2e)
+int FreeFontsMemory()
+{
+    g_largeFont.FreeMemory();
+    g_mediumFont.FreeMemory();
+    g_smallFont.FreeMemory();
+    g_tinyFont.FreeMemory();
+    return 1;
+}

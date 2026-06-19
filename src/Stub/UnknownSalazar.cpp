@@ -18,12 +18,6 @@ void UnknownSalazar::getLookupTableValue() {}
 // @confidence: high
 // @source: tomalla
 // @stub
-RVA(0x1351a0, 0x23)
-void UnknownSalazar::initializeUnknownLookupTable() {}
-
-// @confidence: high
-// @source: tomalla
-// @stub
 RVA(0x136440, 0x74)
 UnknownSalazar::UnknownSalazar() {}
 

@@ -1,4 +1,5 @@
 #include "../rva.h"
+#include <string.h>
 // UnknownRemus.cpp - five leaf methods of the tomalla-named class UnknownRemus
 // (src/Stub/ metadata: vtable slot 0x38 == CGameLevel::LoadWwd, so UnknownRemus is
 // the obfuscated handle for a CGameLevel-family object; modeled here as
@@ -30,6 +31,19 @@ struct RemusCoords {
     int m_4;
     int m_8;
     int m_c;
+};
+
+// External CDWordArray::SetSize (reloc-masked NAFXCW engine call).
+struct CDWordArray {
+    void SetSize(int nNewSize, int nGrowBy);
+};
+
+// UnknownChild - placeholder for whatever class lives in the pointer arrays
+// at +0x38 and +0x4c. Only vtable slot 4 (+0x04, virtual Release(1)) is used.
+class UnknownChild {
+public:
+    virtual void Dummy();
+    virtual void Release(int arg);
 };
 
 // ---------------------------------------------------------------------------
@@ -70,12 +84,31 @@ public:
     int  VirtualMethodUnknown30(RemusCoords *coords);
     int  VirtualMethodUnknown14();
 
+    // --- matched leaves moved out of the backlog -------
+    int  VirtualMethodUnknown1C();
+    void VirtualMethodUnknown44();
+    int  VirtualMethodUnknown20();
+
     // --- members ------------------------------------------------------------
     int         m_04;                   // +0x04  initialized to -1 when inactive
     char        m_pad08[0x0c - 0x08];   // +0x08..0x0b
     int         m_0c;                   // +0x0c  parent/root handle
     RemusCoords m_10;                   // +0x10  coordinate/extent record (4 ints)
-    char        m_pad20[0xb0 - 0x20];   // +0x20..0xaf
+    char        m_pad20[0x14];          // +0x20..0x33
+    char        m_pad34[0x04];          // +0x34..0x37  (CDWordArray vtable)
+    void **     m_38;                   // +0x38  child pointer array
+    int         m_3c;                   // +0x3c  count
+    char        m_pad40[0x48 - 0x40];   // +0x40..0x47
+    char        m_pad48[0x04];          // +0x48..0x4b  (CDWordArray vtable)
+    void **     m_4c;                   // +0x4c  child pointer array
+    int         m_50;                   // +0x50  count
+    char        m_pad54[0x5c - 0x54];   // +0x54..0x5b
+    int         m_5c;                   // +0x5c  main-plane ptr (set to 0)
+    int         m_60;                   // +0x60  main-plane index (set to -1)
+    int         m_64;                   // +0x64
+    int         m_68;                   // +0x68
+    char        m_pad6c[0xac - 0x6c];   // +0x6c..0xab
+    int         m_ac;                   // +0xac
     int         m_b0;                   // +0xb0  = 500
     int         m_b4;                   // +0xb4  = 250
     int         m_b8;                   // +0xb8  = 1000
@@ -88,6 +121,7 @@ public:
     int         m_d4;                   // +0xd4  = 1920
     int         m_d8;                   // +0xd8  = 768
     int         m_dc;                   // +0xdc  = 576
+    int         m_header[381];          // +0xe0  WwdHeader work buffer (1524 B)
 
     // Engine-label backlog stubs.
     void Stub_15d1f0();
@@ -135,17 +169,6 @@ fail:
 }
 
 // ---------------------------------------------------------------------------
-// UnknownRemus::VirtualMethodUnknown30  @0x15d0d0  (__thiscall, ret 4)
-// Loads the +0x10 record from *coords, stamps the param block, returns 1.
-RVA(0x15d0d0, 0x99)
-int UnknownRemus::VirtualMethodUnknown30(RemusCoords *coords)
-{
-    m_10 = *coords;
-    StampParamBlock(this);
-    return 1;
-}
-
-// ---------------------------------------------------------------------------
 // UnknownRemus::VirtualMethodUnknown34  @0x15d030  (__thiscall, ret 8)
 // Zeroes the first two ints of the +0x10 record, stores (arg0-1)/(arg1-1) into
 // the last two, stamps the param block, returns 1.
@@ -173,17 +196,105 @@ int UnknownRemus::VirtualMethodUnknown34(int arg0, int arg1)
     return 1;
 }
 
+// -------------------------------------------------------------------------
+// Engine-label backlog stubs.
+// -------------------------------------------------------------------------
+
+// @confidence: high
+// @source: tomalla
+// @stub
+RVA(0x15d500, 0x127)
+void UnknownRemus::Stub_15d500() {}
+
+// @confidence: high
+// @source: tomalla
+// @stub
+RVA(0x15d630, 0x41)
+void UnknownRemus::Stub_15d630() {}
+
+// @confidence: high
+// @source: tomalla
+// @stub
+RVA(0x1611c0, 0x1e)
+void UnknownRemus::Stub_1611c0() {}
+
+// @confidence: med
+// @source: call-xref
+// @stub
+RVA(0x1611e0, 0x82)
+void UnknownRemus::Stub_1611e0() {}
+
 // ---------------------------------------------------------------------------
-// UnknownRemus::VirtualMethodUnknown24  @0x15cf70  (__thiscall, ret 8)
-// Loads the +0x10 record from *coords, stamps the param block, then dispatches
-// the +0x38 sibling virtual with arg1. On a 0 result it runs the +0x1c hook and
-// returns 0; otherwise returns 1.
-RVA(0x15cf70, 0xb8)
-int UnknownRemus::VirtualMethodUnknown24(int arg1, RemusCoords *coords)
+// UnknownRemus::VirtualMethodUnknown1C  @0x15d1f0  (__thiscall)
+// Like Unknown44 plus resets the sentinel and zeroes the WwdHeader buffer.
+// ---------------------------------------------------------------------------
+RVA(0x15d1f0, 0x87)
+int UnknownRemus::VirtualMethodUnknown1C()
+{
+    int i;
+    for (i = 0; i < m_3c; i++) {
+        UnknownChild *child = (UnknownChild *)m_38[i];
+        if (child)
+            child->Release(1);
+    }
+    ((CDWordArray *)((char *)this + 0x34))->SetSize(0, -1);
+    for (i = 0; i < m_50; i++) {
+        UnknownChild *child = (UnknownChild *)m_4c[i];
+        if (child)
+            child->Release(1);
+    }
+    ((CDWordArray *)((char *)this + 0x48))->SetSize(0, -1);
+    m_10.m_0 = (int)0x80000000;
+    m_5c = 0;
+    m_60 = -1;
+    memset(m_header, 0, sizeof(m_header));
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// UnknownRemus::VirtualMethodUnknown44  @0x15d680  (__thiscall)
+// Releases all child pointers, resets both CDWordArrays, clears members.
+// ---------------------------------------------------------------------------
+RVA(0x15d680, 0x71)
+void UnknownRemus::VirtualMethodUnknown44()
+{
+    int i;
+    for (i = 0; i < m_3c; i++) {
+        UnknownChild *child = (UnknownChild *)m_38[i];
+        if (child)
+            child->Release(1);
+    }
+    ((CDWordArray *)((char *)this + 0x34))->SetSize(0, -1);
+    for (i = 0; i < m_50; i++) {
+        UnknownChild *child = (UnknownChild *)m_4c[i];
+        if (child)
+            child->Release(1);
+    }
+    ((CDWordArray *)((char *)this + 0x48))->SetSize(0, -1);
+    m_5c = 0;
+    m_60 = -1;
+}
+
+// ---------------------------------------------------------------------------
+// UnknownRemus::VirtualMethodUnknown20  @0x1611b0  (__thiscall)
+// Returns constant 0x19 (25) — a type-tag or enum identifier.
+// ---------------------------------------------------------------------------
+RVA(0x1611b0, 0x6)
+int UnknownRemus::VirtualMethodUnknown20()
+{
+    return 0x19;
+}
+
+// --- restored: matching's RemusCoords sibling definitions (do not drop) ---
+// ---------------------------------------------------------------------------
+// UnknownRemus::VirtualMethodUnknown2C  @0x15cdf0  (__thiscall, ret 8)
+// As Unknown24 but dispatches the +0x40 sibling virtual.
+RVA(0x15cdf0, 0xb8)
+int UnknownRemus::VirtualMethodUnknown2C(int arg1, RemusCoords *coords)
 {
     m_10 = *coords;
     StampParamBlock(this);
-    if (Vfunc38(arg1) == 0) {
+    if (Vfunc40(arg1) == 0) {
         Vfunc1C();
         return 0;
     }
@@ -206,62 +317,29 @@ int UnknownRemus::VirtualMethodUnknown28(int arg1, RemusCoords *coords)
 }
 
 // ---------------------------------------------------------------------------
-// UnknownRemus::VirtualMethodUnknown2C  @0x15cdf0  (__thiscall, ret 8)
-// As Unknown24 but dispatches the +0x40 sibling virtual.
-RVA(0x15cdf0, 0xb8)
-int UnknownRemus::VirtualMethodUnknown2C(int arg1, RemusCoords *coords)
+// UnknownRemus::VirtualMethodUnknown24  @0x15cf70  (__thiscall, ret 8)
+// Loads the +0x10 record from *coords, stamps the param block, then dispatches
+// the +0x38 sibling virtual with arg1. On a 0 result it runs the +0x1c hook and
+// returns 0; otherwise returns 1.
+RVA(0x15cf70, 0xb8)
+int UnknownRemus::VirtualMethodUnknown24(int arg1, RemusCoords *coords)
 {
     m_10 = *coords;
     StampParamBlock(this);
-    if (Vfunc40(arg1) == 0) {
+    if (Vfunc38(arg1) == 0) {
         Vfunc1C();
         return 0;
     }
     return 1;
 }
 
-// -------------------------------------------------------------------------
-// Engine-label backlog stubs.
-// -------------------------------------------------------------------------
-
-// @confidence: high
-// @source: tomalla
-// @stub
-RVA(0x15d1f0, 0x87)
-void UnknownRemus::Stub_15d1f0() {}
-
-// @confidence: high
-// @source: tomalla
-// @stub
-RVA(0x15d500, 0x127)
-void UnknownRemus::Stub_15d500() {}
-
-// @confidence: high
-// @source: tomalla
-// @stub
-RVA(0x15d630, 0x41)
-void UnknownRemus::Stub_15d630() {}
-
-// @confidence: high
-// @source: tomalla
-// @stub
-RVA(0x15d680, 0x71)
-void UnknownRemus::Stub_15d680() {}
-
-// @confidence: high
-// @source: tomalla
-// @stub
-RVA(0x1611b0, 0x6)
-void UnknownRemus::Stub_1611b0() {}
-
-// @confidence: high
-// @source: tomalla
-// @stub
-RVA(0x1611c0, 0x1e)
-void UnknownRemus::Stub_1611c0() {}
-
-// @confidence: med
-// @source: call-xref
-// @stub
-RVA(0x1611e0, 0x82)
-void UnknownRemus::Stub_1611e0() {}
+// ---------------------------------------------------------------------------
+// UnknownRemus::VirtualMethodUnknown30  @0x15d0d0  (__thiscall, ret 4)
+// Loads the +0x10 record from *coords, stamps the param block, returns 1.
+RVA(0x15d0d0, 0x99)
+int UnknownRemus::VirtualMethodUnknown30(RemusCoords *coords)
+{
+    m_10 = *coords;
+    StampParamBlock(this);
+    return 1;
+}

@@ -17,18 +17,6 @@ public:
 RVA(0x155720, 0x1e)
 UnknownCGruntzMgrLucius::~UnknownCGruntzMgrLucius() {}
 
-// @confidence: high
-// @source: tomalla
-// @stub
-RVA(0x156cb0, 0x20)
-UnknownCGruntzMgrLucius::UnknownCGruntzMgrLucius() {}
-
-// @confidence: high
-// @source: tomalla
-// @stub
-RVA(0x1574d0, 0x5b)
-void UnknownCGruntzMgrLucius::VirtualMethodUnknown14() {}
-
 // @confidence: med
 // @source: call-xref
 // @stub

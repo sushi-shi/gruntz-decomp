@@ -282,3 +282,38 @@ flags = "base"
 unit = "unknownseverus"
 source = "src/Gruntz/UnknownSeverus.cpp"
 flags = "eh"
+
+[[unit]]
+unit = "tileswitchlogic"
+source = "src/Gruntz/TileTriggerSwitchLogic.cpp"
+flags = "base"
+
+[[unit]]
+unit = "unknownsalazar"
+source = "src/Gruntz/UnknownSalazar.cpp"
+flags = "base"
+
+[[unit]]
+unit = "unknownpettigrew"
+source = "src/Gruntz/UnknownPettigrew.cpp"
+flags = "base"
+
+[[unit]]
+unit = "unknownsirius"
+source = "src/Gruntz/UnknownSirius.cpp"
+flags = "base"
+
+[[unit]]
+unit = "unknownworkerfuncs"
+source = "src/Gruntz/UnknownWorkerFuncs.cpp"
+flags = "base"
+
+[[unit]]
+unit = "unknownlucius"
+source = "src/Gruntz/UnknownLucius.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "unknownfilch"
+source = "src/Gruntz/UnknownFilch.cpp"
+flags = "eh"

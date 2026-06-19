@@ -74,3 +74,12 @@ CMultiStartDlg::CMultiStartDlg(int a0, CWnd *pParent)
 // @stub
 RVA(0x0c20a0, 0x45a)
 void CMultiStartDlg::InitPlayerSlots() {}
+
+// ---------------------------------------------------------------------------
+// CCheckpointDlg::CCheckpointDlg @0x234a0  (vftable @0x5e9504)
+// ---------------------------------------------------------------------------
+RVA(0x234a0, 0x1e)
+CCheckpointDlg::CCheckpointDlg(CWnd *pParent)
+    : CDialog(0xcd, pParent)
+{
+}

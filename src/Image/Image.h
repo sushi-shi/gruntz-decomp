@@ -51,11 +51,13 @@ public:
     void *LoadBmp(char *name, char *path);             // @0x144110, ret 8
     void *LoadPcx(char *name, char *path);             // @0x145110, ret 8
     void *LoadPid(char *name, char *path, void *a3);   // @0x145cd0, ret 0xc
+    int   DecodePcxEx(char *name, char *path, void *a3, void *a4);  // @0x1459d0
 
     // Per-format decoders (external; reloc-masked). __thiscall on CFileImage.
     void *DecodeBmp(char *name, void *buf, unsigned int size);
     void *DecodePcx(char *name, void *buf, unsigned int size);
     void *DecodePid(char *name, void *buf, unsigned int size, void *a3);
+    int   DecodePcxData(void *name, int buf, int len, int a3, int a4);  // external
 };
 
 #endif // SRC_IMAGE_IMAGE_H

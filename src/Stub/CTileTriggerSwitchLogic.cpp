@@ -11,12 +11,6 @@ public:
 // @confidence: high
 // @source: rtti-vptr
 // @stub
-RVA(0x110430, 0x1c)
-void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_110430() {}
-
-// @confidence: high
-// @source: rtti-vptr
-// @stub
 RVA(0x115f60, 0x2de)
 void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_115f60() {}
 

@@ -393,3 +393,100 @@ void CButeMgr::Stub_174240() {}
 // @stub
 RVA(0x1747c0, 0xcf)
 void CButeMgr::Stub_1747c0() {}
+
+// ===========================================================================
+// CButeMgr::InvokeCallback  @ 0x171550 (17 B, ret 4).
+// ===========================================================================
+// Simple trampoline: takes a function pointer, calls it with `this`, returns `this`.
+RVA(0x171550, 0x11)
+void *CButeMgr::InvokeCallback(void *(*fn)(CButeMgr *))
+{
+    fn(this);
+    return this;
+}
+
+// ===========================================================================
+// CButeMgr::ClearHelper  @ 0x171a40 (20 B, ret).
+// ===========================================================================
+// Calls two cleanup methods on the engine helper object at this+0x14.
+RVA(0x171a40, 0x14)
+void CButeMgr::ClearHelper()
+{
+    CButeMgrHelper *h = (CButeMgrHelper *)((char *)this + 0x14);
+    h->FuncA();
+    h->FuncB();
+}
+
+// ===========================================================================
+// CButeValue::SetDword  @ 0x172000 (49 B, ret 8).
+// ===========================================================================
+// Allocates 4-byte storage, stores the value, sets the type field.
+// Returns `this` (or NULL on alloc failure, though the target code always
+// returns `this` with pValue reset to NULL).
+RVA(0x172000, 0x31)
+CButeValue *CButeValue::SetDword(int type, unsigned long val)
+{
+    this->type = type;
+    unsigned long *p = new unsigned long;
+    if (p) {
+        *p = val;
+        this->pValue = p;
+    } else {
+        this->pValue = 0;
+    }
+    return this;
+}
+
+// ===========================================================================
+// CButeValue::SetFloat  @ 0x172680 (49 B, ret 8).
+// ===========================================================================
+// Allocates 4-byte float storage, stores the value.
+RVA(0x172680, 0x31)
+CButeValue *CButeValue::SetFloat(int type, float val)
+{
+    this->type = type;
+    float *p = new float;
+    if (p) {
+        *p = val;
+        this->pValue = p;
+    } else {
+        this->pValue = 0;
+    }
+    return this;
+}
+
+// ===========================================================================
+// CButeValue::SetInt  @ 0x172b90 (49 B, ret 8).
+// ===========================================================================
+// Allocates 4-byte int storage, stores the value.
+RVA(0x172b90, 0x31)
+CButeValue *CButeValue::SetInt(int type, int val)
+{
+    this->type = type;
+    int *p = new int;
+    if (p) {
+        *p = val;
+        this->pValue = p;
+    } else {
+        this->pValue = 0;
+    }
+    return this;
+}
+
+// ===========================================================================
+// CButeValue::SetDouble  @ 0x173140 (56 B, ret c).
+// ===========================================================================
+// Allocates 8-byte double storage, stores the value.  Returns `this`.
+RVA(0x173140, 0x38)
+CButeValue *CButeValue::SetDouble(int type, double val)
+{
+    this->type = type;
+    double *p = new double;
+    if (p) {
+        *p = val;
+        this->pValue = p;
+    } else {
+        this->pValue = 0;
+    }
+    return this;
+}

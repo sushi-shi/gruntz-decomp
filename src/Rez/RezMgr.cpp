@@ -50,7 +50,6 @@ CRezItmBase::CRezItmBase(void *parent)
     m_parent = parent;
 }
 
-
 // ---------------------------------------------------------------------------
 // CRezItm::CRezItm(parent)
 // Base ctor (vtbl @0x5ef768 + parent), then derived vtbl @0x5ef788, m_10 = 0,

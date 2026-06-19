@@ -142,3 +142,31 @@ void *CFileImage::LoadPid(char *name, char *path, void *a3)
     operator delete(buf);
     return result;
 }
+
+// ===========================================================================
+// CFileImage::DecodePcxEx  @ 0x5459d0 (309 B, thiscall ret 0x10, EH)
+//
+// Opens a PCX file, reads data, calls DecodePcxData.
+// ===========================================================================
+RVA(0x1459d0, 0x135)
+int CFileImage::DecodePcxEx(char *name, char *path, void *a3, void *a4)
+{
+    CFileIO file;
+
+    if (!file.Open(path, 0, 0))
+        return 0;
+
+    unsigned int len = file.GetLength();
+    void *buf = operator new(len);
+    if (!buf)
+        return 0;
+
+    if (file.Read(buf, len) != len) {
+        operator delete(buf);
+        return 0;
+    }
+
+    int result = DecodePcxData((void *)name, (int)buf, (int)len, (int)a3, (int)a4);
+    operator delete(buf);
+    return result;
+}
