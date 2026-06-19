@@ -30,7 +30,13 @@ Files and units were renamed to match (e.g. `UnknownHagrid.cpp`/`unknownhagrid` 
 existing `gamelevel` unit as `CGameLevel` (its methods now live in `GameLevel.cpp`,
 using raw `this`-offset casts so the bytes are identical).
 
-Not renamed: `UnknownSalazar` / `UnknownVoldemort` — they are **Dsndmgr** helpers,
-not this family (move pending). Still a follow-up: the method-level mislabeling
+`UnknownSalazar` / `UnknownVoldemort` are **Dsndmgr** (DirectSoundMgr) helpers,
+not this family: the matched Salazar unit was moved to the new `src/Dsndmgr/`
+module dir; the Salazar/Voldemort backlog stubs stay in `src/Stub/` (the backlog,
+next to the `DirectSoundMgr` stub — Voldemort has no matched code yet). Renaming
+them off the HP codenames is an optional follow-up (Salazar builds a sound
+volume/attenuation lookup table; Voldemort's role is not yet identified).
+
+Still a follow-up: the method-level mislabeling
 (some real vtables — e.g. the `0x1efd00` MI vtable — carry methods tagged under
 several codenames; see the investigation doc).
