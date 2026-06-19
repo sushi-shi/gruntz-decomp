@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CExitTrigger.cpp - engine-label stubs for CExitTrigger.
 
 class CExitTrigger {

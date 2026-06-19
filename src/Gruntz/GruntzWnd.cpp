@@ -4,8 +4,8 @@
 // (The full SEH-framed ~CGruntzWnd + the vector-deleting dtor
 // are not matched here - the out-of-line virtual stubs below only exist to emit
 // the vftable that the ctor stores.)
-#include "../Wap32/Wap32.h"
-#include "../rva.h"
+#include <Wap32/Wap32.h>
+#include <rva.h>
 
 class CGruntzWnd : public CGameWnd {
 public:

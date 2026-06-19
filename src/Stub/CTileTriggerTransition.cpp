@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CTileTriggerTransition.cpp - engine-label stubs for CTileTriggerTransition.
 
 class CTileTriggerTransition {

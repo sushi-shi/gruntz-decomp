@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CAmbientSound.cpp - engine-label stubs for CAmbientSound.
 
 class CAmbientSound {

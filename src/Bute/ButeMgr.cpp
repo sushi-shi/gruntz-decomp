@@ -27,8 +27,8 @@
 // tokenizer helpers + the tree Find/Insert + the node ctor are external/no-body
 // engine calls (reloc-masked). ParseTagLine constructs a store node + carries a
 // C++ EH frame (the CString copy + the node ctor under unwind) -> /GX.
-#include "ButeMgr.h"
-#include "../rva.h"
+#include <Bute/ButeMgr.h>
+#include <rva.h>
 
 // Global operator new (engine NAFXCW); external/no-body so the
 // `push 0x2c; call ??2; add esp,4` shape falls out reloc-masked.

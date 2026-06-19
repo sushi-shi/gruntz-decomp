@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CAmbientPosSound.cpp - engine-label stubs for CAmbientPosSound.
 
 class CAmbientPosSound {

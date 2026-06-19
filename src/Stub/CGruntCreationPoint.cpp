@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CGruntCreationPoint.cpp - engine-label stubs for CGruntCreationPoint.
 
 class CGruntCreationPoint {

@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CObjectDropper.cpp - engine-label stubs for CObjectDropper.
 
 class CObjectDropper {

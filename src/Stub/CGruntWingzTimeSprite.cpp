@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CGruntWingzTimeSprite.cpp - engine-label stubs for CGruntWingzTimeSprite.
 
 class CGruntWingzTimeSprite {

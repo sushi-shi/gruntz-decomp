@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CActionArea.cpp - engine-label stubs for CActionArea.
 
 class CActionArea {

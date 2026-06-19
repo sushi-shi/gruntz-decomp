@@ -18,7 +18,7 @@
 #ifndef SRC_IMAGE_IMAGE_H
 #define SRC_IMAGE_IMAGE_H
 
-#include "../Io/FileStream.h"
+#include <Io/FileStream.h>
 
 // ---------------------------------------------------------------------------
 // CImage - the image-resolution dispatcher.

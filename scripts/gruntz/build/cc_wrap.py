@@ -114,7 +114,11 @@ def main() -> None:
 
     src_w = winepath_w(src)
     out_w = winepath_w(out)
-    cmd = ["wine", str(cl), *flags, f"/Fo{out_w}", src_w]
+    # Repo-local headers live under include/ (mirrors src/); put it on cl's search
+    # path so `#include <Module/Foo.h>` resolves (winepath so cl sees it).
+    repo = next((p for p in src.parents if (p / "flake.nix").exists()), None)
+    inc_flags = [f"/I{winepath_w(repo / 'include')}"] if repo and (repo / "include").is_dir() else []
+    cmd = ["wine", str(cl), *inc_flags, *flags, f"/Fo{out_w}", src_w]
 
     output, rc = _run_cl(cmd, out)
 

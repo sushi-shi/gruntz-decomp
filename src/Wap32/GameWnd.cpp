@@ -1,7 +1,7 @@
 // GameWnd.cpp - WAP32 CGameWnd (Brian Goble's engine).
 // Matched: CGameWnd::CGameWnd (byte-exact).
-#include "Wap32.h"
-#include "../rva.h"
+#include <Wap32/Wap32.h>
+#include <rva.h>
 
 extern "C" {
 __declspec(dllimport) BOOL __stdcall IsWindow(HWND hWnd);

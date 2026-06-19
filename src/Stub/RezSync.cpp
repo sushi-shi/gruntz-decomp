@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // RezSync.cpp - engine-label stubs for RezSync.
 
 class RezSync {

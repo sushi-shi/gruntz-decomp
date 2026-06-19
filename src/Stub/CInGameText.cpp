@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CInGameText.cpp - engine-label stubs for CInGameText.
 
 class CInGameText {

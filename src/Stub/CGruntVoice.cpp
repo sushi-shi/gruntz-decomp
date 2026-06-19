@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CGruntVoice.cpp - engine-label stubs for CGruntVoice.
 
 class CGruntVoice {

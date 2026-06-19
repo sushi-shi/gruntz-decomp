@@ -1,4 +1,4 @@
-#include "../../rva.h"
+#include <rva.h>
 // WwdFile.cpp - engine-label stubs for WwdFile.
 
 class WwdFile {

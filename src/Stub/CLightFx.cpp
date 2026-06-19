@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CLightFx.cpp - engine-label stubs for CLightFx.
 
 class CLightFx {

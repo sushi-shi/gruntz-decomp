@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CPathHazard.cpp - engine-label stubs for CPathHazard.
 
 class CPathHazard {

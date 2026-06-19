@@ -37,8 +37,8 @@
 // EH/CString/virtual entropy; deferred to a dedicated worker per the prompt's
 // "don't sacrifice a green fn" guidance. The container layouts it would confirm
 // are already pinned by the two ctors below.
-#include "RezMgr.h"
-#include "../rva.h"
+#include <Rez/RezMgr.h>
+#include <rva.h>
 
 // ---------------------------------------------------------------------------
 // CRezItmBase::CRezItmBase(parent)

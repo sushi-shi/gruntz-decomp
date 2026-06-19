@@ -2,8 +2,8 @@
 // ADVAPI32!Reg*). Matched leaf methods:
 //   GetValueString
 //   GetValueDword
-#include "RegistryHelper.h"
-#include "../rva.h"
+#include <Utils/RegistryHelper.h>
+#include <rva.h>
 #include <string.h>
 
 namespace Utils {

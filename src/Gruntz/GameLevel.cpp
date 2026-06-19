@@ -31,8 +31,8 @@
 //
 // CPlane / CImageSet / the per-plane reader / ReadImageSet / RecomputePlaneCoords /
 // InflateMainBlock / operator new/delete / SetAtGrow are reloc-masked calls.
-#include "GameLevel.h"
-#include "../rva.h"
+#include <Gruntz/GameLevel.h>
+#include <rva.h>
 
 #include <string.h>  // strcpy, memset
 

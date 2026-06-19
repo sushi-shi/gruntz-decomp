@@ -19,8 +19,8 @@
 // `push -1; push &handler; mov fs:0`). The NAFXCW callees (operator new/delete,
 // CFile::*, CArchive::*, CString::~CString) are external/no-body so their
 // `call rel32` displacements reloc-mask in objdiff.
-#include "Font.h"
-#include "../rva.h"
+#include <Font/Font.h>
+#include <rva.h>
 #include <string.h>   // memcmp (InterfaceObject::IsInterfaceX)
 
 // GUIDs for DirectDraw-style interface checks (InterfaceObject::IsInterfaceX).

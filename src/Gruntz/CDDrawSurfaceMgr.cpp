@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // HarryPotter.cpp - root object of the tomalla-named DDraw surface/page-manager
 // family. CDDrawSurfaceMgr is the owner stored off CGruntzMgr
 // +0x30; it holds one child manager pointer per slot and a pair of global draw

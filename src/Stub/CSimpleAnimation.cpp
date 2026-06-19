@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CSimpleAnimation.cpp - engine-label stubs for CSimpleAnimation.
 
 class CSimpleAnimation {

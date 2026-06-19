@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CGruntStaminaSprite.cpp - engine-label stubs for CGruntStaminaSprite.
 
 class CGruntStaminaSprite {

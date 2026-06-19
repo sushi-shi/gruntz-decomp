@@ -51,13 +51,7 @@ void operator delete(void *p);
 // ---------------------------------------------------------------------------
 class CFileException;            // pointer only, opaque.
 
-class CString {
-public:
-    CString(const char *s);
-    CString(const CString &o);
-    ~CString();
-    char *m_pchData;             // +0x00
-};
+#include <incs/CString.h>
 
 class CFile {
 public:

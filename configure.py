@@ -43,9 +43,10 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent
 MANIFEST = REPO / "config" / "units.toml"
 
-# Quoted local includes only (we don't track system/<...> includes - the MSVC
-# headers don't change between builds).
-_INCLUDE_RE = re.compile(r'^[ \t]*#[ \t]*include[ \t]*"([^"]+)"', re.M)
+# Local includes - both quoted (`"All-aggregated.cpp"`, same-dir) and angle-bracket
+# (`<Module/Foo.h>`, resolved against the include/ tree). System `<string.h>` etc.
+# resolve to nothing under the repo and are skipped (the MSVC headers don't change).
+_INCLUDE_RE = re.compile(r'^[ \t]*#[ \t]*include[ \t]*[<"]([^>"]+)[>"]', re.M)
 
 
 def local_headers(source: str) -> list:
@@ -67,14 +68,18 @@ def local_headers(source: str) -> list:
         except OSError:
             continue
         for inc in _INCLUDE_RE.findall(text):
-            try:
-                hrel = (path.parent / inc).resolve().relative_to(REPO)
-            except ValueError:
-                continue  # outside the repo (e.g. ../../usr) - skip
-            key = str(hrel)
-            if (REPO / hrel).exists() and key not in seen:
-                seen.add(key)
-                stack.append(hrel)
+            # quoted same-dir first (e.g. All.cpp's `"CFoo.cpp"`), then the include/ tree
+            for base in (path.parent, REPO / "include"):
+                try:
+                    hrel = (base / inc).resolve().relative_to(REPO)
+                except ValueError:
+                    continue  # outside the repo (e.g. ../../usr) - skip
+                if (REPO / hrel).exists():
+                    key = str(hrel)
+                    if key not in seen:
+                        seen.add(key)
+                        stack.append(hrel)
+                    break
     return sorted(seen)
 
 # scripts/gruntz/build/ holds the build-pipeline modules incl. the vendored

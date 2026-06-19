@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CDDrawWorkerCache.cpp - leaf methods of the tomalla-named class CDDrawWorkerCache
 // (a CDirectDrawMgr surface/page sub-manager in the "Harry Potter" family).
 // VirtualMethodUnknown20 is a constant state-ID stub returning 0x13 (19).

@@ -14,7 +14,7 @@
 #ifndef NET_NETMGR_H
 #define NET_NETMGR_H
 
-#include "../Utils/RegistryHelper.h"
+#include <Utils/RegistryHelper.h>
 
 // ---------------------------------------------------------------------------
 // Minimal Win32 surface (no <windows.h> - keep the visible symbol set small;

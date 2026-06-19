@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CDroppedObject.cpp - engine-label stubs for CDroppedObject.
 
 class CDroppedObject {

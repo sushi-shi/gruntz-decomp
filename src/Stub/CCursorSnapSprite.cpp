@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CCursorSnapSprite.cpp - engine-label stubs for CCursorSnapSprite.
 
 class CCursorSnapSprite {

@@ -2,8 +2,8 @@
 // Matched: CGameApp::CGameApp (byte-exact code; the instance
 // counter is a file-scope global here - same store sequence, the
 // reloc just names a different symbol than the Ghidra DAT_ at that address).
-#include "Wap32.h"
-#include "../rva.h"
+#include <Wap32/Wap32.h>
+#include <rva.h>
 #include <string.h>
 #include <stdio.h>
 

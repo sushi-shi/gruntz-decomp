@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CRainCloud.cpp - engine-label stubs for CRainCloud.
 
 class CRainCloud {

@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CSpotLight.cpp - engine-label stubs for CSpotLight.
 
 class CSpotLight {

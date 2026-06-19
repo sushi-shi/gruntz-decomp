@@ -25,8 +25,8 @@
 // bytes are load-bearing; class and field names are placeholders. Unmatched
 // engine callees are modeled as external no-body functions so their `call` /
 // `push &fn` relocs are masked in objdiff.
-#include "../Wap32/Wap32.h"
-#include "../rva.h"
+#include <Wap32/Wap32.h>
+#include <rva.h>
 
 // ---------------------------------------------------------------------------
 // Minimal Win32 surface (USER32 / KERNEL32). We deliberately do NOT pull in

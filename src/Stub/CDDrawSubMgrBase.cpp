@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CDDrawSubMgrBase.cpp - engine-label stubs for CDDrawSubMgrBase.
 
 class CDDrawSubMgrBase {

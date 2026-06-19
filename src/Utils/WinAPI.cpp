@@ -5,8 +5,8 @@
 // __stdcall block reproduces the FF15 [IAT] direct-call form and keeps the
 // visible symbol set small (entropy follows header churn; see
 // docs/matching-patterns.md).
-#include "RegistryHelper.h"
-#include "../rva.h"
+#include <Utils/RegistryHelper.h>
+#include <rva.h>
 #include <string.h>
 #include <stdio.h>
 

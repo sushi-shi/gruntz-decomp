@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CDirectDrawMgr.cpp - engine-label stubs for CDirectDrawMgr.
 
 class CDirectDrawMgr {

@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CSecretTeleporterTrigger.cpp - engine-label stubs for CSecretTeleporterTrigger.
 
 class CSecretTeleporterTrigger {

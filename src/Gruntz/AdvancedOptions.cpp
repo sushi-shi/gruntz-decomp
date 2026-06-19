@@ -11,8 +11,8 @@
 //   SaveOptions               - 5x SaveOption
 //
 // Only offsets / control IDs / code bytes are load-bearing; names are placeholders.
-#include "../Utils/RegistryHelper.h"
-#include "../rva.h"
+#include <Utils/RegistryHelper.h>
+#include <rva.h>
 
 // ---------------------------------------------------------------------------
 // Minimal Win32 surface (USER32 dialog API). We deliberately do NOT pull in

@@ -16,8 +16,8 @@
 // Training and Message face lookups) is destroyed at the tail under a C++ EH frame
 // (the target opens an fs:0 EH frame: push -1 / push handler / mov fs:0,esp).
 // ---------------------------------------------------------------------------
-#include "../Font/Font.h"
-#include "../rva.h"
+#include <Font/Font.h>
+#include <rva.h>
 
 // CreateFontA - the GDI32 14-arg HFONT creator, reached through its IAT slot
 // (the target caches it in edi and calls it indirectly six times).

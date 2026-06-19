@@ -1,7 +1,7 @@
 // TileTriggerLogic.cpp - Gruntz CTileTriggerLogic (C:\Proj\Gruntz).
 // The constructor is matched byte-exact.
-#include "TileTriggerLogic.h"
-#include "../rva.h"
+#include <Gruntz/TileTriggerLogic.h>
+#include <rva.h>
 
 // ---------------------------------------------------------------------------
 // CTileTriggerLogic::CTileTriggerLogic()

@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CGruntStartingPoint.cpp - engine-label stubs for CGruntStartingPoint.
 
 class CGruntStartingPoint {

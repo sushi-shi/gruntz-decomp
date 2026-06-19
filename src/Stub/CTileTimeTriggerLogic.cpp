@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CTileTimeTriggerLogic.cpp - engine-label stubs for CTileTimeTriggerLogic.
 
 class CTileTimeTriggerLogic {

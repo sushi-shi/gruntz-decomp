@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // UnknownClassInCGruntzMgr.cpp - engine-label stubs for UnknownClassInCGruntzMgr.
 
 class UnknownClassInCGruntzMgr {

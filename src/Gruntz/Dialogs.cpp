@@ -12,8 +12,8 @@
 // Field names are placeholders (m_<hexoffset>); only the OFFSETS + the code bytes
 // are load-bearing (campaign doctrine).
 // ---------------------------------------------------------------------------
-#include "Dialogs.h"
-#include "../rva.h"
+#include <Gruntz/Dialogs.h>
+#include <rva.h>
 
 // The global CGameRegistry CMultiStartDlg's ctor snapshots: it copies
 // g_gameReg->m_2c into the file-scope sink g_64bd5c (both reloc-masked DIR32).

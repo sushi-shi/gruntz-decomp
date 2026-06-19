@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // DirectInputMgr2.cpp - engine-label stubs for DirectInputMgr2.
 
 class DirectInputMgr2 {

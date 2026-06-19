@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CExplosion.cpp - engine-label stubs for CExplosion.
 
 class CExplosion {

@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CTileTrigger.cpp - engine-label stubs for CTileTrigger.
 
 class CTileTrigger {

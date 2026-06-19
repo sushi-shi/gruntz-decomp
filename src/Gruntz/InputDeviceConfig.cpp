@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // InputDeviceConfig.cpp - CInputConfig::LoadInputDeviceConfig - maps the configured input
 // device id (this->m_14) to its display name (C:\Proj\Gruntz). Starts from the
 // "None" default and, via a dense 5-way jump table on (m_14 - 1), overwrites it

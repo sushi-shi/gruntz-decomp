@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CKitchenSlime.cpp - engine-label stubs for CKitchenSlime.
 
 class CKitchenSlime {

@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CSecretLevelTrigger.cpp - engine-label stubs for CSecretLevelTrigger.
 
 class CSecretLevelTrigger {

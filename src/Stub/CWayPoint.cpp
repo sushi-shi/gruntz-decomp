@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CWayPoint.cpp - engine-label stubs for CWayPoint.
 
 class CWayPoint {
