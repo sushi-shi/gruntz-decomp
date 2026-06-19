@@ -512,10 +512,7 @@ void CGrunt::LoadEntranceConfig() {}
 // The global CButeMgr config singleton + the tuning key ReadConfigFromButeMgr
 // reads. Minimal local decl (the full ButeMgr.h redefines CString, already
 // pulled in by this TU), with only the typed getter the function calls.
-class CButeMgr {
-public:
-    unsigned long GetDwordDef(char *tag, char *key, unsigned long def);
-};
+#include <Bute/ButeMgr.h>
 extern CButeMgr g_buteMgr;
 static char s_TimePerTile[] = "TimePerTile";
 

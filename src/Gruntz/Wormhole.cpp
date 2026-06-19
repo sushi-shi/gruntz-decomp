@@ -28,10 +28,7 @@
 // The global CButeMgr text-config tree (the singleton). Modeled as a
 // minimal class so the `ecx=&g_buteMgr; call GetIntDef` shape reloc-masks against
 // the already-matched CButeMgr::GetIntDef (butemgr unit).
-class CButeMgr {
-public:
-    int GetIntDef(char *tag, char *key, int def);
-};
+#include <Bute/ButeMgr.h>
 DATA(0x2453d8)
 extern CButeMgr g_buteMgr;
 
