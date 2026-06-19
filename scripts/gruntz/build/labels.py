@@ -75,11 +75,6 @@ MSC_COMPAT = "1100"
 MS_FLAGS = [f"--target={TARGET}", f"-fms-compatibility-version={MSC_COMPAT}",
             "-fms-extensions"]
 
-# The aggregate src/Stub/All.cpp TU: a documentary backlog of empty {} stubs
-# #included from the per-class stub files. Its annotations are NOT delinked (see
-# the loop in main + src/Stub/All.cpp's header comment).
-STUB_AGGREGATE_UNIT = "engine_label_stubs"
-
 # DATA(0x...) macro invocation - scanned from source text (IR drops extern
 # annotations). The address is bound to the AST VarDecl below it.
 DATA_MACRO_RE = re.compile(r"\bDATA\s*\(\s*(0x[0-9a-fA-F]+)\s*\)")
@@ -480,16 +475,6 @@ def main():
         else:
             rel = str(Path(tu))
             unit = unit_map.get(rel) or unit_map.get("./" + rel) or Path(tu).stem
-
-        # src/Stub/All.cpp (`engine_label_stubs`) #includes the per-class stub
-        # files, which now carry RVA()/DATA() macros - so the included annotations
-        # WOULD surface in All.cpp's IR and get delinked against GRUNTZ.EXE. That
-        # backlog is DOCUMENTARY (empty {} bodies; verify_stub_labels.py owns its
-        # metadata), not binary-verified, so it must NOT produce symbol_names rows.
-        # Skip the whole unit to preserve the documentary-backlog semantics (see
-        # the header comment in src/Stub/All.cpp).
-        if unit == STUB_AGGREGATE_UNIT:
-            continue
 
         have_obj = i < len(args.obj)
         obj_syms = nm_symbols(args.obj[i], args.nm) if have_obj else None

@@ -1,24 +1,20 @@
 // All.cpp - aggregate TU for the src/Stub/ @stub backlog.
 //
-// These are LABELED-BUT-UNMATCHED placeholders (empty `{}` bodies). They are
-// compiled so the symbols exist and the TU stays valid, but objdiff does NOT
-// diff them and their RVA() is NOT delink-verified against GRUNTZ.EXE.
-// Why: this file #includes the per-class stubs, so their RVA() annotations DO
-// surface in All.cpp's LLVM IR - but labels.py SKIPS the `engine_label_stubs`
-// unit (this TU) entirely, so none of those annotations reach
-// build/gen/symbol_names.csv and none are delinked. Consequences:
-//   * the `engine_label_stubs` objdiff unit shows a trivial 100% with 0 funcs;
-//   * RVA()/@stub here are DOCUMENTARY only (verify_stub_labels.py + the
-//     "vs full engine" comprehension denominator), not load-bearing for matching;
-//   * the labels.py duplicate-RVA guard does NOT cover anything here.
+// These are LABELED-BUT-UNMATCHED functions (empty `{}` bodies, each with a real
+// RVA()+size). This file #includes the per-class stubs, so their RVA()
+// annotations surface in All.cpp's LLVM IR; labels.py reads them like any unit ->
+// build/gen/symbol_names.csv -> the delinker carves the retail bytes at each RVA
+// -> objdiff diffs them. So the `engine_label_stubs` objdiff unit lists all of
+// them (initially ~0%), they ARE binary-verified (delinked against GRUNTZ.EXE),
+// they count in the started-units denominator like any unmatched function, and
+// they are covered by the labels.py duplicate-RVA guard + verify_stub_labels.py's
+// stub-vs-matched cross-check.
 //
-// The plan is to MOVE each stub into its real class's TU (as already done for
-// CGrunt -> Grunt, CBootyState/CCreditsState -> GameMode, CGameMgr -> GameApp,
-// CMultiStartDlg -> Dialogs). Once a stub lives in a real (non-skipped) TU,
-// labels.py reads its RVA() from IR -> symbol_names row -> delink -> objdiff
-// diffs it (initially ~0%, so it surfaces in the matching worklist). src/Stub/
-// shrinks toward empty as classes are reconstructed; do not treat anything here
-// as binary-verified.
+// This unit IS the matching worklist for the backlog: pick a stub off it in
+// objdiff and reconstruct it. The plan is to MOVE each stub into its real class's
+// TU (as already done for CGrunt -> Grunt, CBootyState/CCreditsState -> GameMode,
+// CGameMgr -> GameApp, CMultiStartDlg -> Dialogs); src/Stub/ shrinks toward empty
+// as classes are reconstructed.
 
 #include "../rva.h"   // RVA()/RVAU() label macros the included stub files use
 

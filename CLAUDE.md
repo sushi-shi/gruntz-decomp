@@ -63,12 +63,10 @@ Gotchas baked in from reading the delinker source:
 - Keep `README.md` and the relevant `docs/` (esp. `build-system.md`) current when
   the build/diff flow, tools, or paths change.
 - `flake.lock` is committed; `.gitignore` already excludes generated outputs.
-- **`src/Stub/` is the labeled-but-unmatched backlog** (aggregated by `All.cpp`).
-  Its stubs compile, but objdiff does **not** diff them and their `RVA()` is
-  **not** verified against the binary — `All.cpp` `#include`s them, so their
-  annotations DO appear in `All.cpp`'s IR, but `labels.py` **skips the
-  `engine_label_stubs` unit** so they never reach `symbol_names.csv`. They are
-  documentary placeholders: don't trust a `src/Stub/` address as binary-checked,
-  and the `engine_label_stubs` unit's 100% means nothing. The goal is to **move
-  each stub into its real class's TU**, where it gets delinked and diffed (the
-  matched-TU backlog stubs already are). See `src/Stub/All.cpp`.
+- **`src/Stub/` is the labeled-but-unmatched backlog** (the `engine_label_stubs`
+  unit, aggregated by `All.cpp`). These stubs ARE delinked and diffed like any
+  unit — they show in objdiff (initially ~0%) as the matching worklist, count in
+  the started-units denominator, and are covered by the duplicate-RVA guard +
+  `verify_stub_labels.py`'s stub-vs-matched cross-check. The goal is to **move
+  each stub into its real class's TU** and reconstruct it there; `src/Stub/`
+  shrinks toward empty. See `src/Stub/All.cpp`.
