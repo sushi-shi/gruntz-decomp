@@ -15,11 +15,11 @@ advancedoptions	5	5
 butemgr	21	10
 cddrawchildgroup	9	5
 cddrawptrcollections	1	0
-cddrawsubmgr	2	2
+cddrawsubmgr	7	2
 cddrawsubmgrdraco	5	2
-cddrawsubmgrleaf	2	1
-cddrawsurfacemgr	6	5
-cddrawworkercache	2	1
+cddrawsubmgrleaf	7	1
+cddrawsurfacemgr	7	5
+cddrawworkercache	4	1
 cddrawworkerlist	10	7
 cddrawworkermapsmall	8	2
 cddrawworkerregistry	21	12
@@ -27,7 +27,7 @@ cddrawworkers	3	3
 cplay	12	6
 deflate	6	6
 dialogs	6	5
-engine_label_stubs	376	0
+engine_label_stubs	358	0
 filestream	13	9
 font	16	8
 fontconfig	1	0
@@ -55,11 +55,11 @@ registryhelper	8	8
 rezmgr	10	6
 sbi_rectonly	2	1
 spriteloaders	2	0
-tileswitchlogic	2	0
+tileswitchlogic	4	0
 tiletriggerlogic	1	1
 trees	17	17
 uncompr	1	1
-unknownsalazar	1	0
+unknownsalazar	4	0
 videoconfig	2	0
 winapi	5	3
 winmain	1	1
@@ -104,23 +104,36 @@ cddrawchildgroup	?VirtualMethodUnknown30@CDDrawChildGroup@@QAEXHHH@Z	89.0909	89.
 cddrawchildgroup	?VirtualMethodUnknown34@CDDrawChildGroup@@QAEXHHH@Z	89.0909	89.0909	2	82b22c8990c0
 cddrawchildgroup	?VirtualMethodUnknown38@CDDrawChildGroup@@UAEXXZ	100.0000	100.0000	2	c150e3830429
 cddrawptrcollections	??0CDDrawPtrCollections@@QAE@XZ	99.8000	99.8000	2	c56442ee2d29
-cddrawsubmgr	??0CDDrawSubMgr@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	100.0000	100.0000	2	4bb3aa6b6058
-cddrawsubmgr	??1CDDrawSubMgr@@UAE@XZ	100.0000	100.0000	2	83622d757abd
+cddrawsubmgr	??0CDDrawSubMgr@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	100.0000	100.0000	3	dbc5193ce321
+cddrawsubmgr	??1CDDrawSubMgr@@UAE@XZ	100.0000	100.0000	3	9cee978011f0
+cddrawsubmgr	?Constructor_156e10@CDDrawSubMgrBase@@QAEXXZ	4.1667	4.1667	1	aeb34164a32d
+cddrawsubmgr	?Constructor_157630@CDDrawSubMgr@@QAEXXZ	3.3333	3.3333	1	bb2d5d937132
+cddrawsubmgr	?Stub_155720@CDDrawSubMgr@@QAEXXZ	3.6364	3.6364	1	c04e8836f78e
+cddrawsubmgr	?VirtualMethodUnknown1C@CDDrawSubMgr@@UAEXXZ	50.0000	50.0000	1	f7fca72d6daa
+cddrawsubmgr	?VirtualMethodUnknown20@CDDrawSubMgr@@UAEXXZ	50.0000	50.0000	1	482623da6708
 cddrawsubmgrdraco	?Stub_1574a0@CDDrawSubMgrDraco@@QAEXXZ	50.0000	50.0000	2	ce5bd842436f
 cddrawsubmgrdraco	?Stub_1574b0@CDDrawSubMgrDraco@@QAEXXZ	3.6364	3.6364	2	519ee5f1bf6d
 cddrawsubmgrdraco	?Stub_1588f0@CDDrawSubMgrDraco@@QAEXXZ	0.2516	0.2516	2	4d840e4e73c4
 cddrawsubmgrdraco	?VirtualMethodUnknown14@CDDrawSubMgrDraco@@QAEHXZ	100.0000	100.0000	2	67f368f51ead
 cddrawsubmgrdraco	?VirtualMethodUnknown1C@CDDrawSubMgrDraco@@QAEXXZ	100.0000	100.0000	2	06e87455ab9d
-cddrawsubmgrleaf	?VirtualMethodUnknown14@CDDrawSubMgrLeaf@@QAEHXZ	100.0000	100.0000	2	5ed80596d785
-cddrawsubmgrleaf	?VirtualMethodUnknown18@CDDrawSubMgrLeaf@@QAEXXZ	99.8333	99.8333	2	d270a13af803
-cddrawsurfacemgr	??0CDDrawSurfaceMgr@@QAE@XZ	100.0000	100.0000	2	29bba56f906d
-cddrawsurfacemgr	?UnknownVirtualMethod14@CDDrawSurfaceMgr@@UAEHXZ	100.0000	100.0000	2	d6f1b47de35a
-cddrawsurfacemgr	?UnknownVirtualMethod20@CDDrawSurfaceMgr@@UAEXXZ	100.0000	100.0000	2	4b612ce4db8d
-cddrawsurfacemgr	?UnknownVirtualMethod24@CDDrawSurfaceMgr@@UAEHHHH@Z	97.8250	97.8250	2	929807d21a59
-cddrawsurfacemgr	?UnknownVirtualMethod28@CDDrawSurfaceMgr@@UAEXPAX@Z	100.0000	100.0000	2	63e5c6644b93
-cddrawsurfacemgr	?UnknownVirtualMethod38@CDDrawSurfaceMgr@@UAEHPAXHHH@Z	100.0000	100.0000	2	b478634e4ea0
+cddrawsubmgrleaf	??1CDDrawMapHolder@@QAE@XZ	3.6364	3.6364	1	af5f58544d95
+cddrawsubmgrleaf	??1CDDrawSubMgrLeaf@@QAE@XZ	3.6364	3.6364	1	9540d393147c
+cddrawsubmgrleaf	?ClearUnknownMap@CDDrawMapHolder@@QAEXXZ	2.0408	2.0408	1	8ab8115141e9
+cddrawsubmgrleaf	?VirtualMethodUnknown14@CDDrawMapHolder@@QAEXXZ	10.0000	10.0000	1	8cd9bfb8b09a
+cddrawsubmgrleaf	?VirtualMethodUnknown14@CDDrawSubMgrLeaf@@QAEHXZ	100.0000	100.0000	3	a0715b6fe63b
+cddrawsubmgrleaf	?VirtualMethodUnknown18@CDDrawSubMgrLeaf@@QAEXXZ	99.8333	99.8333	3	337dae99d7ce
+cddrawsubmgrleaf	?VirtualMethodUnknown1C@CDDrawSubMgrLeaf@@QAEXXZ	40.0000	40.0000	1	95214a52d005
+cddrawsurfacemgr	??0CDDrawSurfaceMgr@@QAE@XZ	100.0000	100.0000	3	3471970b457e
+cddrawsurfacemgr	?UnknownVirtualMethod14@CDDrawSurfaceMgr@@UAEHXZ	100.0000	100.0000	3	82d37218daaf
+cddrawsurfacemgr	?UnknownVirtualMethod18@CDDrawSurfaceMgr@@QAEXXZ	0.0998	0.0998	1	5cedeab634ac
+cddrawsurfacemgr	?UnknownVirtualMethod20@CDDrawSurfaceMgr@@UAEXXZ	100.0000	100.0000	3	0f1ff3d05146
+cddrawsurfacemgr	?UnknownVirtualMethod24@CDDrawSurfaceMgr@@UAEHHHH@Z	97.8250	97.8250	3	665e82f7081d
+cddrawsurfacemgr	?UnknownVirtualMethod28@CDDrawSurfaceMgr@@UAEXPAX@Z	100.0000	100.0000	3	7084eaae3492
+cddrawsurfacemgr	?UnknownVirtualMethod38@CDDrawSurfaceMgr@@UAEHPAXHHH@Z	100.0000	100.0000	3	f917da84a798
+cddrawworkercache	??1CDDrawWorkerCache@@QAE@XZ	3.6364	3.6364	1	a9f005cbda58
 cddrawworkercache	?VirtualMethodUnknown20@CDDrawWorkerCache@@QAEHXZ	100.0000	100.0000	3	d27eebbd90ee
 cddrawworkercache	?VirtualMethodUnknown24@CDDrawWorkerCache@@QAEPAXHPBDH@Z	99.7857	99.7857	3	709bd0952f04
+cddrawworkercache	?VirtualMethod_157720@CDDrawWorkerCache@@QAEXXZ	4.1667	4.1667	1	bcf27991ce78
 cddrawworkerlist	?Stub_156f50@CDDrawWorkerList@@QAEXXZ	4.1667	4.1667	3	0c4727dc726c
 cddrawworkerlist	?Stub_156fc0@CDDrawWorkerList@@QAEXXZ	50.0000	50.0000	3	c8759f4cad30
 cddrawworkerlist	?VirtualMethodUnknown14@CDDrawWorkerList@@QAEHXZ	100.0000	100.0000	3	28c6dec46423
@@ -168,7 +181,7 @@ cplay	?OnRegion2@CPlay@@QAEHH@Z	100.0000	100.0000	3	f9c7ec71c7c6
 cplay	?OnRegion3@CPlay@@QAEHH@Z	100.0000	100.0000	3	2fbb821d735c
 cplay	?OnRegion4@CPlay@@QAEHH@Z	100.0000	100.0000	3	c42e7ee6802f
 cplay	?PlayCueAt@CPlay@@QAEXHHHHHHHH@Z	87.5385	87.5385	4	814e79c06ae2
-cplay	?Render@CPlay@@UAEHXZ	0.0000	0.0000	3	bca603bf6e6b
+cplay	?Render@CPlay@@UAEHXZ	0.0000	0.0000	4	0480625fc334
 cplay	?SetBeginClearParams@CState@@QAEHHHH@Z	100.0000	100.0000	1	547f61043c4d
 cplay	?StepC@CPlay@@QAEXXZ	85.4545	85.4545	2	95cc335622ff
 cplay	?StepInputA@CPlay@@QAEHXZ	89.8077	89.8077	3	3fa632f69525
@@ -263,12 +276,7 @@ engine_label_stubs	??0CWarpStonePad@@QAE@XZ	1.2871	1.2871	1	cpp:45e65336d4b5
 engine_label_stubs	??0CWayPoint@@QAE@XZ	0.7273	0.7273	1	cpp:45e65336d4b5
 engine_label_stubs	??0UnknownClassArrays@@QAE@XZ	2.6892	2.6892	1	cpp:45e65336d4b5
 engine_label_stubs	??0UnknownClassInCGruntzMgr@@QAE@XZ	3.0435	3.0435	1	cpp:45e65336d4b5
-engine_label_stubs	??0UnknownSalazar@@QAE@XZ	4.3750	4.3750	1	cpp:45e65336d4b5
 engine_label_stubs	??0UnknownVoldemort@@QAE@XZ	14.0000	14.0000	1	cpp:45e65336d4b5
-engine_label_stubs	??1CDDrawMapHolder@@QAE@XZ	3.6364	3.6364	1	cpp:45e65336d4b5
-engine_label_stubs	??1CDDrawSubMgr@@QAE@XZ	3.6364	3.6364	1	cpp:45e65336d4b5
-engine_label_stubs	??1CDDrawSubMgrLeaf@@QAE@XZ	3.6364	3.6364	1	cpp:45e65336d4b5
-engine_label_stubs	??1CDDrawWorkerCache@@QAE@XZ	3.6364	3.6364	1	cpp:45e65336d4b5
 engine_label_stubs	??1CGruntzCommand@@QAE@XZ	3.3333	3.3333	1	cpp:45e65336d4b5
 engine_label_stubs	??1CGruntzMapMgr@@QAE@XZ	2.0833	2.0833	1	cpp:45e65336d4b5
 engine_label_stubs	??1CGruntzMgr@@QAE@XZ	2.5000	2.5000	1	cpp:45e65336d4b5
@@ -277,7 +285,6 @@ engine_label_stubs	??1CSBI_Image@@QAE@XZ	0.1126	0.1126	1	cpp:45e65336d4b5
 engine_label_stubs	??1CSBI_SideTab@@QAE@XZ	0.9804	0.9804	1	cpp:45e65336d4b5
 engine_label_stubs	??1UnknownClassArrays@@QAE@XZ	3.5714	3.5714	1	cpp:45e65336d4b5
 engine_label_stubs	??1UnknownClassInCGruntzMgr@@QAE@XZ	4.5455	4.5455	1	cpp:45e65336d4b5
-engine_label_stubs	??1UnknownSalazar@@QAE@XZ	3.6364	3.6364	1	cpp:45e65336d4b5
 engine_label_stubs	??1UnknownVoldemort@@QAE@XZ	3.6364	3.6364	1	cpp:45e65336d4b5
 engine_label_stubs	?BootyState_OnActivate2_vfunc8@EngineLabelBacklog@@YAXXZ	1.0753	1.0753	1	cpp:45e65336d4b5
 engine_label_stubs	?BuildAnizKeyTable@EngineLabelBacklog@@YAXXZ	0.2210	0.2210	1	cpp:45e65336d4b5
@@ -326,8 +333,6 @@ engine_label_stubs	?CProjectile_0126e0@CProjectile@@QAEXXZ	0.9434	0.9434	1	cpp:4
 engine_label_stubs	?CProjectile_0dec60@CProjectile@@QAEXXZ	0.2532	0.2532	1	cpp:45e65336d4b5
 engine_label_stubs	?CSecretLevelTrigger_010b20@CSecretLevelTrigger@@QAEXXZ	5.0000	5.0000	1	cpp:45e65336d4b5
 engine_label_stubs	?CSecretLevelTrigger_0424b0@CSecretLevelTrigger@@QAEXXZ	0.3390	0.3390	1	cpp:45e65336d4b5
-engine_label_stubs	?CTileTriggerSwitchLogic_115f60@CTileTriggerSwitchLogic@@QAEXXZ	0.2198	0.2198	1	cpp:45e65336d4b5
-engine_label_stubs	?CTileTriggerSwitchLogic_116320@CTileTriggerSwitchLogic@@QAEXXZ	0.9302	0.9302	1	cpp:45e65336d4b5
 engine_label_stubs	?CTileTrigger_011160@CTileTrigger@@QAEXXZ	5.0000	5.0000	1	cpp:45e65336d4b5
 engine_label_stubs	?CTileTrigger_10e220@CTileTrigger@@QAEXXZ	0.3704	0.3704	1	cpp:45e65336d4b5
 engine_label_stubs	?CUserLogic_0138d0@CUserLogic@@QAEXXZ	5.0000	5.0000	1	cpp:45e65336d4b5
@@ -336,9 +341,6 @@ engine_label_stubs	?CVoiceTrigger_013470@CVoiceTrigger@@QAEXXZ	5.0000	5.0000	1	c
 engine_label_stubs	?CVoiceTrigger_119b50@CVoiceTrigger@@QAEXXZ	0.3333	0.3333	1	cpp:45e65336d4b5
 engine_label_stubs	?CheckCdRomRegistry@EngineLabelBacklog@@YAXXZ	0.9524	0.9524	1	cpp:45e65336d4b5
 engine_label_stubs	?CheckWarpLetterBonus@EngineLabelBacklog@@YAXXZ	0.2849	0.2849	1	cpp:45e65336d4b5
-engine_label_stubs	?ClearUnknownMap@CDDrawMapHolder@@QAEXXZ	2.0408	2.0408	1	cpp:45e65336d4b5
-engine_label_stubs	?Constructor_156e10@CDDrawSubMgrBase@@QAEXXZ	4.1667	4.1667	1	cpp:45e65336d4b5
-engine_label_stubs	?Constructor_157630@CDDrawSubMgr@@QAEXXZ	3.3333	3.3333	1	cpp:45e65336d4b5
 engine_label_stubs	?CreateGameObjectByName@EngineLabelBacklog@@YAXXZ	0.1996	0.1996	1	cpp:45e65336d4b5
 engine_label_stubs	?DebugPrintf@EngineLabelBacklog@@YAXXZ	0.8696	0.8696	1	cpp:45e65336d4b5
 engine_label_stubs	?DrawBattleStats@EngineLabelBacklog@@YAXXZ	0.2445	0.2445	1	cpp:45e65336d4b5
@@ -528,7 +530,6 @@ engine_label_stubs	?Stub_1d4fbd@EngineLabelBacklog@@YAXXZ	0.9524	0.9524	1	cpp:45
 engine_label_stubs	?Stub_1d5029@EngineLabelBacklog@@YAXXZ	0.4494	0.4494	1	cpp:45e65336d4b5
 engine_label_stubs	?Stub_1d513b@EngineLabelBacklog@@YAXXZ	0.3571	0.3571	1	cpp:45e65336d4b5
 engine_label_stubs	?UnknownClose@CGruntzMgr@@QAEXXZ	0.2915	0.2915	1	cpp:45e65336d4b5
-engine_label_stubs	?UnknownVirtualMethod18@CDDrawSurfaceMgr@@QAEXXZ	0.0998	0.0998	1	cpp:45e65336d4b5
 engine_label_stubs	?UpdateBootyWalkingGruntz@EngineLabelBacklog@@YAXXZ	0.1898	0.1898	1	cpp:45e65336d4b5
 engine_label_stubs	?UpdateChipGrinderStatusBar@EngineLabelBacklog@@YAXXZ	0.7299	0.7299	1	cpp:45e65336d4b5
 engine_label_stubs	?UpdateDestructButtonStatusBar2@EngineLabelBacklog@@YAXXZ	1.4286	1.4286	1	cpp:45e65336d4b5
@@ -542,17 +543,11 @@ engine_label_stubs	?UpdateStatusBarTabHighlight@EngineLabelBacklog@@YAXXZ	0.0440
 engine_label_stubs	?UpdateWarpStoneStatusBar@EngineLabelBacklog@@YAXXZ	0.2857	0.2857	1	cpp:45e65336d4b5
 engine_label_stubs	?ValidateLevelTiles@EngineLabelBacklog@@YAXXZ	0.0424	0.0424	1	cpp:45e65336d4b5
 engine_label_stubs	?ValidateMainBlock@WwdFile@@QAEXXZ	1.3333	1.3333	1	cpp:45e65336d4b5
-engine_label_stubs	?VirtualMethodUnknown14@CDDrawMapHolder@@QAEXXZ	10.0000	10.0000	1	cpp:45e65336d4b5
-engine_label_stubs	?VirtualMethodUnknown1C@CDDrawSubMgr@@QAEXXZ	50.0000	50.0000	1	cpp:45e65336d4b5
-engine_label_stubs	?VirtualMethodUnknown1C@CDDrawSubMgrLeaf@@QAEXXZ	40.0000	40.0000	1	cpp:45e65336d4b5
-engine_label_stubs	?VirtualMethodUnknown20@CDDrawSubMgr@@QAEXXZ	50.0000	50.0000	1	cpp:45e65336d4b5
-engine_label_stubs	?VirtualMethod_157720@CDDrawWorkerCache@@QAEXXZ	4.1667	4.1667	1	cpp:45e65336d4b5
 engine_label_stubs	?VirtualUnknownMethod06@CGruntzMgr@@QAEXXZ	0.8163	0.8163	1	cpp:45e65336d4b5
 engine_label_stubs	?WarpDialogProc@EngineLabelBacklog@@YAXXZ	0.3306	0.3306	1	cpp:45e65336d4b5
 engine_label_stubs	?WireTileSwitchLogic@EngineLabelBacklog@@YAXXZ	0.0411	0.0411	1	cpp:45e65336d4b5
 engine_label_stubs	?_ct_init@EngineLabelBacklog@@YAXXZ	0.6329	0.6329	1	cpp:45e65336d4b5
 engine_label_stubs	?_tr_init@EngineLabelBacklog@@YAXXZ	5.0000	5.0000	1	cpp:45e65336d4b5
-engine_label_stubs	?getLookupTableValue@UnknownSalazar@@QAEXXZ	3.7037	3.7037	1	cpp:45e65336d4b5
 engine_label_stubs	?scalar_deleting_destructor@CGameMgrDerived@@QAEXXZ	3.3333	3.3333	1	cpp:45e65336d4b5
 engine_label_stubs	?vector_deleting_destructor@CGruntzMgr@@QAEXXZ	3.6364	3.6364	1	cpp:45e65336d4b5
 engine_label_stubs	?vfunc_10@CAttract@@QAEXXZ	1.8182	1.8182	1	cpp:45e65336d4b5
@@ -665,16 +660,16 @@ grunt	?Stub_047a10@CGrunt@@QAEXXZ	0.0990	0.0990	1	1754cd64e546
 grunt	?Stub_048470@CGrunt@@QAEXXZ	0.0311	0.0311	1	946ff41dc5e8
 grunt	?Stub_062e10@CGrunt@@QAEXXZ	0.1238	0.1238	1	25ed6016336b
 grunt	?Stub_0633e0@CGrunt@@QAEXXZ	0.5208	0.5208	1	5c1b3dddfd8d
-gruntzapp	??0CGruntzApp@@QAE@XZ	100.0000	100.0000	3	899a98516a19
-gruntzapp	??1CGruntzApp@@UAE@XZ	100.0000	100.0000	3	2fbe2a79f7d1
-gruntzapp	?CreateU10O@@YAPAXXZ	99.9583	99.9583	2	aa37b1ac1b9f
-gruntzapp	?ErrorDialogProc@CGruntzApp@@SGHPAXIIJ@Z	100.0000	100.0000	3	daffde78dcc9
-gruntzapp	?InitializeGameManager@CGruntzApp@@UAEPAVCGameMgr@WAP32@@XZ	100.0000	100.0000	3	89b7d8405ccd
-gruntzapp	?ShowError@CGruntzApp@@UAEXXZ	100.0000	100.0000	3	938d9e05f893
-gruntzapp	?ShowMessage@CGruntzApp@@QAEXPADPAX@Z	100.0000	100.0000	2	e0e8b07c5320
-gruntzapp	?Stub_112820@CGruntzApp@@QAEXXZ	20.0000	20.0000	2	1383b6802e00
-gruntzapp	?VirtualUnknownMethod03@CGruntzApp@@UAEHPAXPAD11HHH@Z	100.0000	100.0000	3	22c1ca6725e5
-gruntzapp	?VirtualUnknownMethod04@CGruntzApp@@UAEHHHH@Z	100.0000	100.0000	2	d2154887d136
+gruntzapp	??0CGruntzApp@@QAE@XZ	100.0000	100.0000	4	6563943e0276
+gruntzapp	??1CGruntzApp@@UAE@XZ	100.0000	100.0000	4	53178ef9599d
+gruntzapp	?CreateU10O@@YAPAXXZ	99.9583	99.9583	3	a309ad1fcc54
+gruntzapp	?ErrorDialogProc@CGruntzApp@@SGHPAXIIJ@Z	100.0000	100.0000	4	7735c2bf8143
+gruntzapp	?InitializeGameManager@CGruntzApp@@UAEPAVCGameMgr@WAP32@@XZ	100.0000	100.0000	4	ce781f0af619
+gruntzapp	?ShowError@CGruntzApp@@UAEXXZ	100.0000	100.0000	4	72a450acc475
+gruntzapp	?ShowMessage@CGruntzApp@@QAEXPADPAX@Z	100.0000	100.0000	3	de692a8cac94
+gruntzapp	?Stub_112820@CGruntzApp@@QAEXXZ	20.0000	20.0000	3	9a5c043a5cea
+gruntzapp	?VirtualUnknownMethod03@CGruntzApp@@UAEHPAXPAD11HHH@Z	100.0000	100.0000	4	eef18bc9d3d6
+gruntzapp	?VirtualUnknownMethod04@CGruntzApp@@UAEHHHH@Z	100.0000	100.0000	3	4edc46fb2fb4
 gruntzwnd	??0CGruntzWnd@@QAE@XZ	100.0000	100.0000	3	a9429f711100
 gruntzwnd	?Stub_094670@CGruntzWnd@@QAEXXZ	3.6364	3.6364	2	aa9f5f8160d2
 image	?DecodePcxEx@CFileImage@@QAEHPAD0PAX1@Z	100.0000	100.0000	1	1d85aa6255a5
@@ -769,6 +764,8 @@ sbi_rectonly	?Stub_0ffde0@CSBI_RectOnly@@QAEXXZ	0.2119	0.2119	3	b1064f8a97e6
 spriteloaders	?LoadLoadingBarSprite@CLoadingBar@@QAEHXZ	95.8064	95.8064	3	fbc7a7742202
 spriteloaders	?LoadTimerSprite@CTimer@@QAEHHH@Z	96.5217	96.5217	3	ea8f9fb552e2
 tileswitchlogic	??0CTileTriggerSwitchLogic@@QAE@XZ	90.7273	90.7273	1	b2b57f6b22d4
+tileswitchlogic	?CTileTriggerSwitchLogic_115f60@CTileTriggerSwitchLogic@@QAEXXZ	0.2198	0.2198	1	355d1ee38d67
+tileswitchlogic	?CTileTriggerSwitchLogic_116320@CTileTriggerSwitchLogic@@QAEXXZ	0.9302	0.9302	1	2570b6cf18cd
 tileswitchlogic	?FindIndexByKey@CTileTriggerSwitchLogic@@QAEHH@Z	99.9231	99.9231	1	d93f0b5ccc4d
 tiletriggerlogic	??0CTileTriggerLogic@@QAE@XZ	100.0000	100.0000	2	ac86faf71828
 trees	__tr_flush_block	100.0000	100.0000	1	54a1b09eba2f
@@ -789,7 +786,10 @@ trees	_send_all_trees	100.0000	100.0000	1	4943fa3be295
 trees	_send_tree	100.0000	100.0000	1	0a0643654ea9
 trees	_set_data_type	100.0000	100.0000	1	167de8f88841
 uncompr	_uncompress	100.0000	100.0000	1	b40cccad8cc9
-unknownsalazar	?initializeUnknownLookupTable@UnknownSalazar@@SAXXZ	96.0000	96.0000	2	d662350850ad
+unknownsalazar	??0UnknownSalazar@@QAE@XZ	4.3750	4.3750	1	8e0676435134
+unknownsalazar	??1UnknownSalazar@@QAE@XZ	3.6364	3.6364	1	1faa5650f10c
+unknownsalazar	?getLookupTableValue@UnknownSalazar@@SAHH@Z	7.4074	7.4074	1	af4f0eb80d4c
+unknownsalazar	?initializeUnknownLookupTable@UnknownSalazar@@SAXXZ	96.0000	96.0000	3	f17e344e2cb8
 videoconfig	?LoadVideoResolutionConfig@@YAXPAXHH@Z	97.2737	97.2737	3	ac8e36fd7fa6
 videoconfig	?SaveVideoResolutionConfig@@YAXPAX0@Z	88.8148	88.8148	3	3fa52db69011
 winapi	?ActiveWait@WinAPI@Utils@@YAXI@Z	100.0000	100.0000	3	9a0562d46410
@@ -797,7 +797,7 @@ winapi	?FileExists@WinAPI@Utils@@YAHPAD@Z	100.0000	100.0000	3	3e0d9cdd452b
 winapi	?GetGruntzDriveLetter@WinAPI@Utils@@YADXZ	98.4234	98.4234	3	f6c8bd6b46cd
 winapi	?IsGruntzCDInAnyDrive@WinAPI@Utils@@YAHXZ	100.0000	100.0000	3	7f0003761b25
 winapi	?Stub_118ce0@WinAPI@Utils@@YAXXZ	0.6494	0.6494	2	3c27bbc35bd7
-winmain	_WinMain@16	100.0000	100.0000	2	226ad1be50fa
+winmain	_WinMain@16	100.0000	100.0000	3	5d9a842ad48a
 wormhole	?LoadColors@CWormhole@@QAEXXZ	100.0000	100.0000	4	56c16dc50e0c
 wormhole	?Stub_03fc70@CWormhole@@QAEXXZ	0.3333	0.3333	3	c7b5e7bdbb59
 wormhole	?Stub_03fed0@CWormhole@@QAEXXZ	0.6349	0.6349	3	2e7d63db5f77

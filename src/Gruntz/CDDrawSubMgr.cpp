@@ -23,6 +23,9 @@ public:
     CDDrawSubMgrBase(int x) { m_fieldBaseUnknown = x; }
     virtual ~CDDrawSubMgrBase() {}
     int m_fieldBaseUnknown;   // +0x04
+
+    // Engine-label backlog stubs.
+    void Constructor_156e10();
 };
 
 class CDDrawSubMgr : public CDDrawSubMgrBase {
@@ -34,6 +37,10 @@ public:
     virtual int  VirtualMethodUnknown18();
     virtual void VirtualMethodUnknown1C();  // cleanup — defined in CDDrawSubMgrDraco.cpp
     virtual void VirtualMethodUnknown20();
+
+    // Engine-label backlog stubs.
+    void Constructor_157630();
+    void Stub_155720();
 
     int  fieldUnknown8;                          // +0x08
     CDDrawSurfaceMgr *m_pHarryPotter;  // +0x0c
@@ -77,4 +84,40 @@ CDDrawSubMgr::~CDDrawSubMgr()
 // Out-of-line stubs for unmatched virtuals (anchors the vtable in this TU).
 void CDDrawSubMgr::VirtualMethodUnknown14() {}
 int  CDDrawSubMgr::VirtualMethodUnknown18() { return 0; }
+
+// Engine-label backlog stubs (moved from src/Stub/CDDrawSubMgr.cpp).
+// VirtualMethodUnknown20 is the vtable anchor above; carry its backlog RVA here.
+// @confidence: med
+// @source: tomalla
+// @stub
+RVA(0x157790, 0x6)
 void CDDrawSubMgr::VirtualMethodUnknown20() {}
+
+// 0x155720 was labeled ~CDDrawSubMgr in the backlog, but the real (virtual) dtor
+// is 0x1574d0 above (??1...@UAE, matched); 0x155720 is a distinct retail function
+// of unknown identity - keep it in the worklist under a neutral name.
+// @confidence: low
+// @source: rtti-vptr
+// @stub
+RVA(0x155720, 0x1e)
+void CDDrawSubMgr::Stub_155720() {}
+
+// @confidence: med
+// @source: call-xref
+// @stub
+RVA(0x157630, 0x82)
+void CDDrawSubMgr::Constructor_157630() {}
+
+// @confidence: med
+// @source: tomalla
+// @stub
+RVA(0x1576c0, 0x6)
+void CDDrawSubMgr::VirtualMethodUnknown1C() {}
+
+// Engine-label backlog stubs (moved from src/Stub/CDDrawSubMgrBase.cpp).
+
+// @confidence: med
+// @source: call-xref
+// @stub
+RVA(0x156e10, 0x68)
+void CDDrawSubMgrBase::Constructor_156e10() {}

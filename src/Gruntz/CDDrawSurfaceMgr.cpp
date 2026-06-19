@@ -50,6 +50,9 @@ public:
     virtual int UnknownVirtualMethod38(void *arg1, int arg2, int arg3,
                                         int arg4);
 
+    // Engine-label backlog stubs.
+    void UnknownVirtualMethod18();
+
     CDDrawSubMgr *m_04;      // +0x04  Draco
     CDDrawSubMgr *m_08;      // +0x08  Hermiona
     CDDrawSubMgr *m_0c;      // +0x0c  Hagrid
@@ -204,3 +207,11 @@ int CDDrawSurfaceMgr::UnknownVirtualMethod30(
     int, int, int, int, void *) { return 0; }
 int CDDrawSurfaceMgr::UnknownVirtualMethod34(
     int, int, int, int, void *) { return 0; }
+
+// Engine-label backlog stubs (moved from src/Stub/CDDrawSurfaceMgr.cpp).
+
+// @confidence: high
+// @source: tomalla
+// @stub
+RVA(0x155900, 0x519)
+void CDDrawSurfaceMgr::UnknownVirtualMethod18() {}
