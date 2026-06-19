@@ -34,6 +34,8 @@ Subcommands
   clangd        (Re)generate the clangd compile DB (editor; after adding a unit).
   status        Print the last objdiff match summary (no rebuild).
   todo          List obj symbols that lack an @address (matching worklist).
+  clean         Nuke build/ + stray root artifacts (build.ninja/*.obj/.ninja_*)
+                for a from-scratch init + build. HEAVY re-init (wine + Ghidra DB).
 """
 
 import argparse
@@ -130,6 +132,9 @@ def cmd_build(args) -> None:
     _ensure_retail_copy()                             # cheap, idempotent (stable retail copy)
     if not GHIDRA_FUNCTIONS.exists():
         die(f"no Ghidra exports ({GHIDRA_FUNCTIONS.relative_to(REPO)}) - run `gruntz init` first.")
+    # Gate: the src/Stub @stub backlog is skipped by labels.py (engine_label_stubs),
+    # so this is the only check on its address uniqueness + format. Fail fast.
+    run([sys.executable, str(REPO / "scripts" / "verify_stub_labels.py")])
     ninja = tool("ninja")
     _start_wine_session()                 # boot Wine clean BEFORE ninja's -j fan-out
     try:
@@ -168,8 +173,12 @@ def cmd_labels(args) -> None:
     tu_obj = []
     for u in units():
         tu_obj += ["--tu", u["source"], "--obj", f"build/objdiff/base/{u['unit']}.obj"]
-    run([sys.executable, str(BUILD / "labels.py"),
-         "--clang", clang, "--nm", nm, *tu_obj, "--out", str(GEN_NAMES)])
+    compdb = REPO / "build" / "clangd" / "compile_commands.json"
+    cmd = [sys.executable, str(BUILD / "labels.py"),
+           "--clang", clang, "--nm", nm, *tu_obj, "--out", str(GEN_NAMES)]
+    if compdb.is_file():
+        cmd += ["--compdb", str(compdb)]
+    run(cmd)
 
 
 def cmd_structs(args) -> None:
@@ -301,6 +310,37 @@ def cmd_clangd(args) -> None:
     run([sys.executable, str(INIT / "clangd.py")])
 
 
+def _ghidra_warm() -> bool:
+    """True if the Ghidra export already has a function at every labeled RVA, i.e.
+    the warmup has run. Keeps cmd_init's warmup IDEMPOTENT so the build-shell hook's
+    startup `gruntz init` stays light on an already-warmed checkout (only a cold DB
+    triggers the heavy build->refresh->build)."""
+    if not (GEN_NAMES.exists() and GHIDRA_FUNCTIONS.exists()):
+        return False
+    import csv
+
+    def rint(s):
+        s = str(s).strip()
+        return int(s, 16) if s.lower().startswith("0x") else int(s)
+
+    want = set()
+    for r in csv.reader(GEN_NAMES.open()):
+        if len(r) >= 5 and r[0].startswith("0x") and r[4] == "func":
+            try:
+                want.add(rint(r[0]))
+            except ValueError:
+                pass
+    if not want:
+        return False
+    have = set()
+    for r in csv.DictReader(GHIDRA_FUNCTIONS.open()):
+        try:
+            have.add(rint(r["entry_rva"]))
+        except Exception:
+            pass
+    return want <= have
+
+
 def cmd_init(args) -> None:
     """One-time FULL local setup for this checkout. Run inside `nix develop .#build`.
 
@@ -316,8 +356,15 @@ def cmd_init(args) -> None:
         under PyGhidra) -> functions.csv/symbols.csv. apply.py CONSUMES the tracked
         config/library_labels.csv; FID labels are NOT regenerated here.
 
-    HEAVY on first run (the Ghidra analysis takes minutes); idempotent afterwards.
-    --force re-inits the Wine prefix; --reimport rebuilds the Ghidra DB.
+    Then WARMS the Ghidra DB (unless --no-warmup): build -> ghidra-refresh ->
+    build. The cold DB carves only FID/auto-analysis functions; the warmup runs
+    one build to produce symbol_names.csv, refreshes Ghidra so a function exists
+    at each labeled RVA, and re-exports - so `gruntz build` and the "vs full
+    engine" metric are reproducible (not dependent on accumulated DB state).
+
+    HEAVY on first run (Ghidra analysis + two builds take a while); idempotent
+    afterwards. --force re-inits the Wine prefix; --reimport rebuilds the Ghidra
+    DB; --no-warmup leaves the DB cold.
     """
     for d in ("build/gen", "build/objdiff", "build/clangd", "build/pdb",
               "build/delink/named", "build/exe", "build/ghidra-named",
@@ -334,8 +381,25 @@ def cmd_init(args) -> None:
         tc.append("--force")
     run(tc)                                          # wine prefix + registry (idempotent)
     run([sys.executable, str(INIT / "clangd.py")])   # clangd compile database
-    _build_ghidra_db(reimport=args.reimport)         # Ghidra DB + functions.csv/symbols.csv
-    log("init complete (idempotent).")
+    _build_ghidra_db(reimport=args.reimport)         # Ghidra DB + functions.csv/symbols.csv (cold)
+    if args.no_warmup:
+        log("init complete (cold; --no-warmup): the Ghidra DB has only FID + "
+            "auto-analysis functions. Run `build` then `ghidra-refresh` to warm it.")
+        return
+    if _ghidra_warm():
+        log("init complete (Ghidra DB already warm).")
+        return
+    # Warm the Ghidra DB. A cold init carves only FID/auto-analysis functions -
+    # the labeled RVAs in symbol_names.csv don't exist yet (build/labels hasn't
+    # run). So: build (compile + labels -> symbol_names.csv), ghidra-refresh
+    # (apply.py CREATES a function at each labeled RVA + re-exports the warm
+    # functions.csv), build again (the delink + the "vs full engine" metric now
+    # read the warm exports). This is the reproducible warm state.
+    log("init warmup: build -> ghidra-refresh -> build ...")
+    cmd_build(argparse.Namespace(ninja_args=[]))
+    cmd_ghidra_refresh(argparse.Namespace())
+    cmd_build(argparse.Namespace(ninja_args=[]))
+    log("init complete (warmed).")
 
 
 def cmd_status(args) -> None:
@@ -378,6 +442,28 @@ def cmd_todo(args) -> None:
     log(f"{total} obj symbol(s) without an @address (worklist).")
 
 
+def cmd_clean(args) -> None:
+    """Nuke build/ + stray root build artifacts so `gruntz init && gruntz build`
+    rebuilds from scratch. Touches nothing under src/, config/, or the AI tooling
+    dirs (.claude/.codex/.agents). NOTE: this also removes build/ref, the wine
+    prefix, and the Ghidra DB, so the next `gruntz init` is a HEAVY first run."""
+    import shutil
+    # Reap this prefix's wineserver BEFORE deleting build/wineprefix: a server
+    # left running against a deleted prefix errors saving its registry ("could
+    # not save registry branch ... No such file or directory") and lingers as a
+    # stale server that flakes the next fresh build's first compiles.
+    _kill_wine_session()
+    targets = [REPO / "build", REPO / "build.ninja", REPO / ".ninja_lock",
+               REPO / ".ninja_log", REPO / ".ninja_deps", *sorted(REPO.glob("*.obj"))]
+    removed = 0
+    for t in targets:
+        if t.is_dir():
+            shutil.rmtree(t); removed += 1; log(f"removed {t.relative_to(REPO)}/")
+        elif t.exists():
+            t.unlink(); removed += 1; log(f"removed {t.relative_to(REPO)}")
+    log(f"clean: removed {removed} path(s). Next: `gruntz init` then `gruntz build`.")
+
+
 def _clang() -> str:
     import os
     return os.environ.get("GRUNTZ_CLANG") or tool("clang")
@@ -405,6 +491,8 @@ def main() -> None:
     i = sub.add_parser("init", help="one-time FULL local setup (dirs/configure/EXE/wine/clangd/Ghidra DB)")
     i.add_argument("--force", action="store_true", help="re-init the wine prefix")
     i.add_argument("--reimport", action="store_true", help="rebuild the Ghidra DB from scratch")
+    i.add_argument("--no-warmup", action="store_true",
+                   help="skip the build->ghidra-refresh->build warmup (leave the Ghidra DB cold)")
     i.set_defaults(func=cmd_init)
     sub.add_parser("clangd", help="(re)generate the clangd compile DB (editor)"
                    ).set_defaults(func=cmd_clangd)
@@ -412,6 +500,8 @@ def main() -> None:
                    ).set_defaults(func=cmd_status)
     sub.add_parser("todo", help="obj symbols lacking an @address (worklist)"
                    ).set_defaults(func=cmd_todo)
+    sub.add_parser("clean", help="nuke build/ + stray artifacts (HEAVY re-init after)"
+                   ).set_defaults(func=cmd_clean)
 
     args = ap.parse_args()
     if getattr(args, "ninja_args", None) and args.ninja_args[:1] == ["--"]:

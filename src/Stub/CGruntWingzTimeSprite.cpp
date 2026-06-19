@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CGruntWingzTimeSprite.cpp - engine-label stubs for CGruntWingzTimeSprite.
 
 class CGruntWingzTimeSprite {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: high
 // @source: rtti-vptr
-// @address: 0x07fcc0
-// @size:    0xa0
 // @stub
+RVA(0x07fcc0, 0xa0)
 CGruntWingzTimeSprite::CGruntWingzTimeSprite() {}

@@ -13,21 +13,20 @@
 // are load-bearing (campaign doctrine).
 // ---------------------------------------------------------------------------
 #include "Dialogs.h"
+#include "../rva.h"
 
 // The global CGameRegistry (@0x64556c) CMultiStartDlg's ctor snapshots: it copies
 // g_gameReg->m_2c into the file-scope sink g_64bd5c (both reloc-masked DIR32).
 // Named externs so the DIR32 loads reloc-match the engine; @data names the
 // delinked target DATA symbol (RVA = VA - 0x400000).
-// @data: 0x24556c
+DATA(0x24556c)
 extern int *g_gameReg;   // the CGameRegistry pointer stored at VA 0x64556c
-// @data: 0x24bd5c
+DATA(0x24bd5c)
 extern int g_64bd5c;     // the file-scope int sink at VA 0x64bd5c
 
 // ---------------------------------------------------------------------------
 // CBattlezDlg::CBattlezDlg @0x14b30  (vftable @0x5e8bac)
-// ---------------------------------------------------------------------------
-// @address: 0x14b30
-// @size:    0x64
+RVA(0x14b30, 0x64)
 CBattlezDlg::CBattlezDlg(int a0, CWnd *pParent)
     : CDialog(0xc0, pParent)
 {
@@ -37,9 +36,7 @@ CBattlezDlg::CBattlezDlg(int a0, CWnd *pParent)
 
 // ---------------------------------------------------------------------------
 // CBattlezDlgCustom::CBattlezDlgCustom @0x18030  (vftable @0x5e8ee4)
-// ---------------------------------------------------------------------------
-// @address: 0x18030
-// @size:    0x56
+RVA(0x18030, 0x56)
 CBattlezDlgCustom::CBattlezDlgCustom(CWnd *pParent)
     : CDialog(0xc3, pParent)
 {
@@ -47,9 +44,7 @@ CBattlezDlgCustom::CBattlezDlgCustom(CWnd *pParent)
 
 // ---------------------------------------------------------------------------
 // CBattlezDlgColors::CBattlezDlgColors @0x17930  (vftable @0x5e8d94)
-// ---------------------------------------------------------------------------
-// @address: 0x17930
-// @size:    0x3a
+RVA(0x17930, 0x3a)
 CBattlezDlgColors::CBattlezDlgColors(int a0, int a1, int a2, CWnd *pParent)
     : CDialog(0xc2, pParent)
 {
@@ -61,9 +56,7 @@ CBattlezDlgColors::CBattlezDlgColors(int a0, int a1, int a2, CWnd *pParent)
 
 // ---------------------------------------------------------------------------
 // CMultiStartDlg::CMultiStartDlg @0xc1750  (vftable @0x5ea8ec)
-// ---------------------------------------------------------------------------
-// @address: 0xc1750
-// @size:    0x88
+RVA(0xc1750, 0x88)
 CMultiStartDlg::CMultiStartDlg(int a0, CWnd *pParent)
     : CDialog(0xc5, pParent), m_74(0xa)
 {
@@ -78,7 +71,6 @@ CMultiStartDlg::CMultiStartDlg(int a0, CWnd *pParent)
 // -------------------------------------------------------------------------
 // @confidence: med
 // @source: string-xref
-// @address: 0x0c20a0
-// @size:    0x45a
 // @stub
+RVA(0x0c20a0, 0x45a)
 void CMultiStartDlg::InitPlayerSlots() {}

@@ -1,6 +1,7 @@
 // GameWnd.cpp - WAP32 CGameWnd (Brian Goble's engine).
 // Matched: ??0CGameWnd@@QAE@XZ @ RVA 0x13cf00 (byte-exact).
 #include "Wap32.h"
+#include "../rva.h"
 
 extern "C" {
 __declspec(dllimport) BOOL __stdcall IsWindow(HWND hWnd);
@@ -12,10 +13,7 @@ __declspec(dllimport) void __stdcall PostQuitMessage(int nExitCode);
 // CGameWnd::CGameWnd()
 // Zeroes the OS window handle (m_4) and owner-state field (m_c) after the
 // base/vftable construction.
-//
-// @address: 0x13cf00
-// @size:    0x11
-// -------------------------------------------------------------------------
+RVA(0x13cf00, 0x11)
 CGameWnd::CGameWnd()
 {
     m_4 = 0;
@@ -32,10 +30,7 @@ static CGameWnd *s_activeWnd;
 // installs this object as the active-window singleton, then ShowWindow(SW_
 // SHOWNORMAL). Bails (returning 0) if params/owner is null or a window is
 // already active.
-//
-// @address: 0x13cf20
-// @size:    0x8f
-// -------------------------------------------------------------------------
+RVA(0x13cf20, 0x8f)
 int CGameWnd::CreateAndShow(CGameWndCreateParams *pParams, void *pOwner)
 {
     if (!pParams)
@@ -65,10 +60,7 @@ int CGameWnd::CreateAndShow(CGameWndCreateParams *pParams, void *pOwner)
 // CGameWnd::Destroy
 // Destroys the OS window if it is still valid, clears owner/window state, and
 // clears the active-window singleton.
-//
-// @address: 0x13cfb0
-// @size:    0x39
-// -------------------------------------------------------------------------
+RVA(0x13cfb0, 0x39)
 void CGameWnd::Destroy()
 {
     if (m_4) {
@@ -84,10 +76,7 @@ void CGameWnd::Destroy()
 // CGameWnd::QuitMessageLoop
 // Frees the game manager through the owning app, optionally reports the stored
 // error, then posts WM_QUIT.
-//
-// @address: 0x13d490
-// @size:    0x29
-// -------------------------------------------------------------------------
+RVA(0x13d490, 0x29)
 int CGameWnd::QuitMessageLoop()
 {
     ((CGameApp *)m_8)->FreeGameManager();

@@ -6,6 +6,7 @@
 // visible symbol set small (entropy follows header churn; see
 // docs/matching-patterns.md).
 #include "RegistryHelper.h"
+#include "../rva.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -36,10 +37,7 @@ char GetGruntzDriveLetter();
 // FileExists
 // Tests a path via OpenFile(OF_EXIST). Returns false for a null/empty path.
 // (Re-emitted again @ RVA 0x1fd70 in this TU, same bytes.)
-//
-// @address: 0x1189c0
-// @size:    0x45
-// -------------------------------------------------------------------------
+RVA(0x1189c0, 0x45)
 int FileExists(char *szPath)
 {
     OFSTRUCT of;
@@ -54,10 +52,7 @@ int FileExists(char *szPath)
 // -------------------------------------------------------------------------
 // ActiveWait
 // Busy-waits ~milliseconds using timeGetTime (no Sleep; spins).
-//
-// @address: 0x13dfe0
-// @size:    0x21
-// -------------------------------------------------------------------------
+RVA(0x13dfe0, 0x21)
 void ActiveWait(unsigned int milliseconds)
 {
     DWORD target = timeGetTime() + milliseconds;
@@ -68,10 +63,7 @@ void ActiveWait(unsigned int milliseconds)
 // -------------------------------------------------------------------------
 // IsGruntzCDInAnyDrive
 // True iff a CD drive holding the Gruntz disc was found.
-//
-// @address: 0x1fd50
-// @size:    0xf
-// -------------------------------------------------------------------------
+RVA(0x1fd50, 0xf)
 int IsGruntzCDInAnyDrive()
 {
     char letter = GetGruntzDriveLetter();
@@ -93,10 +85,7 @@ static char s_cdDriveLetter;
 //   2. otherwise scan drives A..Z for a CD-ROM holding that marker file.
 // Returns the letter (0 if none). The local RegistryHelper's destructor
 // (Close) runs at scope exit -> the C++ EH frame.
-//
-// @address: 0x1ffe0
-// @size:    0x192
-// -------------------------------------------------------------------------
+RVA(0x1ffe0, 0x192)
 char GetGruntzDriveLetter()
 {
     if (s_cdDriveLetter == 0) {
@@ -147,9 +136,8 @@ found:
 // -------------------------------------------------------------------------
 // @confidence: high
 // @source: tomalla
-// @address: 0x118ce0
-// @size:    0x1f5
 // @stub
+RVA(0x118ce0, 0x1f5)
 void Stub_118ce0() {}
 } // namespace WinAPI
 } // namespace Utils

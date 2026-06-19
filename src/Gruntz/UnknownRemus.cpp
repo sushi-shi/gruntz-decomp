@@ -1,3 +1,4 @@
+#include "../rva.h"
 // UnknownRemus.cpp - five leaf methods of the tomalla-named class UnknownRemus
 // (src/Stub/ metadata: vtable slot 0x38 == CGameLevel::LoadWwd, so UnknownRemus is
 // the obfuscated handle for a CGameLevel-family object; modeled here as
@@ -119,9 +120,7 @@ static inline void StampParamBlock(UnknownRemus *o)
 // ---------------------------------------------------------------------------
 // UnknownRemus::VirtualMethodUnknown14  @0x161190  (__thiscall, ret 0)
 // Remus adds a +0x10 sentinel check before the common parent/status predicate.
-// ---------------------------------------------------------------------------
-// @address: 0x161190
-// @size:    0x1f
+RVA(0x161190, 0x1f)
 int UnknownRemus::VirtualMethodUnknown14()
 {
     if (m_10.m_0 == (int)0x80000000)
@@ -138,9 +137,7 @@ fail:
 // ---------------------------------------------------------------------------
 // UnknownRemus::VirtualMethodUnknown30  @0x15d0d0  (__thiscall, ret 4)
 // Loads the +0x10 record from *coords, stamps the param block, returns 1.
-// ---------------------------------------------------------------------------
-// @address: 0x15d0d0
-// @size:    0x99
+RVA(0x15d0d0, 0x99)
 int UnknownRemus::VirtualMethodUnknown30(RemusCoords *coords)
 {
     m_10 = *coords;
@@ -165,9 +162,7 @@ int UnknownRemus::VirtualMethodUnknown30(RemusCoords *coords)
 // slip or regressed the eax(0x3e8)/edx(0xfa) allocation (b8,bc,b0,b4 order ->
 // ~75%); calling the param block before the +0x10 writes moves the whole block
 // ahead (wrong). Logic + offsets + CFG are exact, so this is left as the plateau.
-// ---------------------------------------------------------------------------
-// @address: 0x15d030
-// @size:    0x8f
+RVA(0x15d030, 0x8f)
 int UnknownRemus::VirtualMethodUnknown34(int arg0, int arg1)
 {
     m_10.m_0 = 0;
@@ -183,9 +178,7 @@ int UnknownRemus::VirtualMethodUnknown34(int arg0, int arg1)
 // Loads the +0x10 record from *coords, stamps the param block, then dispatches
 // the +0x38 sibling virtual with arg1. On a 0 result it runs the +0x1c hook and
 // returns 0; otherwise returns 1.
-// ---------------------------------------------------------------------------
-// @address: 0x15cf70
-// @size:    0xb8
+RVA(0x15cf70, 0xb8)
 int UnknownRemus::VirtualMethodUnknown24(int arg1, RemusCoords *coords)
 {
     m_10 = *coords;
@@ -200,9 +193,7 @@ int UnknownRemus::VirtualMethodUnknown24(int arg1, RemusCoords *coords)
 // ---------------------------------------------------------------------------
 // UnknownRemus::VirtualMethodUnknown28  @0x15ceb0  (__thiscall, ret 8)
 // As Unknown24 but dispatches the +0x3c sibling virtual.
-// ---------------------------------------------------------------------------
-// @address: 0x15ceb0
-// @size:    0xb8
+RVA(0x15ceb0, 0xb8)
 int UnknownRemus::VirtualMethodUnknown28(int arg1, RemusCoords *coords)
 {
     m_10 = *coords;
@@ -217,9 +208,7 @@ int UnknownRemus::VirtualMethodUnknown28(int arg1, RemusCoords *coords)
 // ---------------------------------------------------------------------------
 // UnknownRemus::VirtualMethodUnknown2C  @0x15cdf0  (__thiscall, ret 8)
 // As Unknown24 but dispatches the +0x40 sibling virtual.
-// ---------------------------------------------------------------------------
-// @address: 0x15cdf0
-// @size:    0xb8
+RVA(0x15cdf0, 0xb8)
 int UnknownRemus::VirtualMethodUnknown2C(int arg1, RemusCoords *coords)
 {
     m_10 = *coords;
@@ -237,49 +226,42 @@ int UnknownRemus::VirtualMethodUnknown2C(int arg1, RemusCoords *coords)
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x15d1f0
-// @size:    0x87
 // @stub
+RVA(0x15d1f0, 0x87)
 void UnknownRemus::Stub_15d1f0() {}
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x15d500
-// @size:    0x127
 // @stub
+RVA(0x15d500, 0x127)
 void UnknownRemus::Stub_15d500() {}
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x15d630
-// @size:    0x41
 // @stub
+RVA(0x15d630, 0x41)
 void UnknownRemus::Stub_15d630() {}
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x15d680
-// @size:    0x71
 // @stub
+RVA(0x15d680, 0x71)
 void UnknownRemus::Stub_15d680() {}
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x1611b0
-// @size:    0x6
 // @stub
+RVA(0x1611b0, 0x6)
 void UnknownRemus::Stub_1611b0() {}
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x1611c0
-// @size:    0x1e
 // @stub
+RVA(0x1611c0, 0x1e)
 void UnknownRemus::Stub_1611c0() {}
 
 // @confidence: med
 // @source: call-xref
-// @address: 0x1611e0
-// @size:    0x82
 // @stub
+RVA(0x1611e0, 0x82)
 void UnknownRemus::Stub_1611e0() {}

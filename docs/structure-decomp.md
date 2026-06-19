@@ -9,7 +9,8 @@ are authoritatively defined in `src/`.
 ## Per-header method
 1. Pick the next header (leaf-first = fewest remaining labeled functions / smallest bytes).
 2. Match its classes' labeled functions to byte-exact in a new/existing `src/` TU
-   using the **`@address`/`@size`** format (see `MATCHING-CAMPAIGN.md` / `docs/match-learnings.md`).
+   using the **`RVA(addr, size)`** macro (`src/rva.h`; see `docs/build-system.md`
+   "Add a translation unit" / `docs/match-learnings.md`).
 3. Verify coverage empirically: `gruntz structs` before/after — the header is
    deletable iff removing it drops **no** struct from `build/gen/structs.json`
    (namespaced `WAP32::X` dups of a `src/` `X` are acceptable drops).

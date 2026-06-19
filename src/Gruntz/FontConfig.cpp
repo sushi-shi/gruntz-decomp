@@ -17,6 +17,7 @@
 // (the target opens an fs:0 EH frame: push -1 / push handler / mov fs:0,esp).
 // ---------------------------------------------------------------------------
 #include "../Font/Font.h"
+#include "../rva.h"
 
 // CreateFontA - the GDI32 14-arg HFONT creator, reached through its IAT slot
 // @0x6c3ebc (the target caches it in edi and calls it indirectly six times).
@@ -42,7 +43,7 @@ public:
 // The global CButeMgr instance @0x6453d8 (the ctor stores the bute config tree
 // here). Declared as a named extern so the `mov ecx, offset g_buteMgr` loads
 // reloc-match the engine; @address names the delinked target DATA symbol.
-// @data: 0x2453d8
+DATA(0x2453d8)
 extern CButeMgr g_buteMgr;
 #define g_bute (&g_buteMgr)
 
@@ -80,9 +81,7 @@ public:
 
 // ---------------------------------------------------------------------------
 // CFontConfig::LoadFontConfig @0x218e0
-// ---------------------------------------------------------------------------
-// @address: 0x218e0
-// @size:    0x1ff
+RVA(0x218e0, 0x1ff)
 int CFontConfig::LoadFontConfig(int a1, int a2)
 {
     m_24 = a1;

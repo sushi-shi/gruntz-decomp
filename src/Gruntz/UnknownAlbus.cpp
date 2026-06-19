@@ -1,3 +1,4 @@
+#include "../rva.h"
 // UnknownAlbus.cpp - leaf factory methods of the tomalla-named ddrawmgr surface-
 // family sub-manager UnknownAlbus (a CDirectDrawMgr surface/page sub-manager in
 // the "Harry Potter" family; see structure/managers/ddrawmgr_surface_family.h).
@@ -67,7 +68,7 @@ struct AlbusWorkerObj : public AlbusWorker {
 };              // 0x14
 
 // The foreign worker vftable, referenced as DIR32 data (RVA = VA-0x400000).
-// @data: 0x1f02d8
+DATA(0x1f02d8)
 extern void *g_albusWorkerVtbl;     // VA 0x5f02d8
 
 // ---------------------------------------------------------------------------
@@ -111,9 +112,7 @@ static inline void StampAlbusWorkerVtbl(AlbusWorkerObj *w) { *(void **)w = &g_al
 // UnknownAlbus::VirtualMethodUnknown14  @0x156cd0  (__thiscall, ret 0)
 // Reports ready when the parent/root handle is present and the base status word
 // is no longer the inactive -1 sentinel.
-// ---------------------------------------------------------------------------
-// @address: 0x156cd0
-// @size:    0x16
+RVA(0x156cd0, 0x16)
 int UnknownAlbus::VirtualMethodUnknown14()
 {
     if (m_0c == 0)
@@ -165,9 +164,7 @@ static inline AlbusWorkerObj *MakeAlbusWorker(const UnknownAlbus *parent)
 // Allocate + construct a worker, call its +0x28 virtual with (arg1, arg3). On
 // success store it into the map under `key` and return it; on failure run its
 // scalar-deleting dtor and return 0.
-// ---------------------------------------------------------------------------
-// @address: 0x165990
-// @size:    0x77
+RVA(0x165990, 0x77)
 void *UnknownAlbus::VirtualMethodUnknown28(int a1, const char *key, int a3)
 {
     AlbusWorkerObj *w = MakeAlbusWorker(this);
@@ -183,9 +180,7 @@ void *UnknownAlbus::VirtualMethodUnknown28(int a1, const char *key, int a3)
 // ---------------------------------------------------------------------------
 // UnknownAlbus::VirtualMethodUnknown2C  @0x165a10  (__thiscall, ret 0xc)
 // As Unknown28 but dispatches the worker's +0x2c virtual.
-// ---------------------------------------------------------------------------
-// @address: 0x165a10
-// @size:    0x77
+RVA(0x165a10, 0x77)
 void *UnknownAlbus::VirtualMethodUnknown2C(int a1, const char *key, int a3)
 {
     AlbusWorkerObj *w = MakeAlbusWorker(this);
@@ -203,35 +198,30 @@ void *UnknownAlbus::VirtualMethodUnknown2C(int a1, const char *key, int a3)
 // -------------------------------------------------------------------------
 // @confidence: med
 // @source: tomalla
-// @address: 0x157600
-// @size:    0x6
 // @stub
+RVA(0x157600, 0x6)
 void UnknownAlbus::Stub_157600() {}
 
 // @confidence: med
 // @source: tomalla
-// @address: 0x157610
-// @size:    0x1e
 // @stub
+RVA(0x157610, 0x1e)
 void UnknownAlbus::Stub_157610() {}
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x1658c0
-// @size:    0xcc
 // @stub
+RVA(0x1658c0, 0xcc)
 void UnknownAlbus::Stub_1658c0() {}
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x165a90
-// @size:    0xf4
 // @stub
+RVA(0x165a90, 0xf4)
 void UnknownAlbus::Stub_165a90() {}
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x165b90
-// @size:    0xa9
 // @stub
+RVA(0x165b90, 0xa9)
 void UnknownAlbus::Stub_165b90() {}

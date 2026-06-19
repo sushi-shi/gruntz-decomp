@@ -1,3 +1,4 @@
+#include "../rva.h"
 // Wormhole.cpp - CWormhole::LoadColors @0x411f0 (160 B, __thiscall void) - the
 // wormhole's one-time color-attribute resolver. A CWormhole is a world teleport
 // node (RTTI .?AVCWormhole@@, structure/game/world_objects.h); it owns a state
@@ -31,13 +32,13 @@ class CButeMgr {
 public:
     int GetIntDef(char *tag, char *key, int def);   // @0x171aa0 (thiscall ret c)
 };
-// @data: 0x2453d8
+DATA(0x2453d8)
 extern CButeMgr g_buteMgr;
 
 // The global game-registry pointer (an int* at VA 0x64556c). Its +0x78 slot is a
 // pointer to the color table; the wormhole color id (m_128) indexes it at
 // [m_128*4 + 0x14]. Declared int* to match ?g_gameReg@@3PAHA (the target's reloc).
-// @data: 0x24556c
+DATA(0x24556c)
 extern int *g_gameReg;
 
 // The "Wormhole" config group + the three color keys (the original source string
@@ -79,9 +80,7 @@ public:
 
 // ---------------------------------------------------------------------------
 // CWormhole::LoadColors  @0x411f0
-// ---------------------------------------------------------------------------
-// @address: 0x411f0
-// @size:    0xa0
+RVA(0x411f0, 0xa0)
 void CWormhole::LoadColors()
 {
     // NB: m_10 is re-dereferenced through `this` (held in esi) on every access -
@@ -118,21 +117,18 @@ void CWormhole::LoadColors()
 // -------------------------------------------------------------------------
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x03fc70
-// @size:    0x1db
 // @stub
+RVA(0x03fc70, 0x1db)
 void CWormhole::Stub_03fc70() {}
 
 // @confidence: med
 // @source: decomp-xref
-// @address: 0x03fed0
-// @size:    0xa9
 // @stub
+RVA(0x03fed0, 0xa9)
 void CWormhole::Stub_03fed0() {}
 
 // @confidence: med
 // @source: decomp-xref
-// @address: 0x0412c0
-// @size:    0x63
 // @stub
+RVA(0x0412c0, 0x63)
 void CWormhole::Stub_0412c0() {}

@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CParticlez.cpp - engine-label stubs for CParticlez.
 
 class CParticlez {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x046ad0
-// @size:    0x15e
 // @stub
+RVA(0x046ad0, 0x15e)
 CParticlez::CParticlez() {}

@@ -595,7 +595,6 @@ int deflateCopy (dest, source)
  * allocating a large strm->next_in buffer and copying from it.
  * (See also flush_pending()).
  */
-// @address: 0x186d30
 local int read_buf(strm, buf, size)
     z_streamp strm;
     charf *buf;
@@ -659,7 +658,6 @@ local void lm_init (s)
 /* For 80x86 and 680x0, an optimized version will be provided in match.asm or
  * match.S. The code will be functionally equivalent.
  */
-// @address: 0x187000
 local uInt longest_match(s, cur_match)
     deflate_state *s;
     IPos cur_match;                             /* current match */
@@ -837,7 +835,6 @@ local void check_match(s, start, match, length)
  *    performed for at least two bytes (required for the zip translate_eol
  *    option -- not supported here).
  */
-// @address: 0x186c00
 local void fill_window(s)
     deflate_state *s;
 {
@@ -956,7 +953,6 @@ local void fill_window(s)
  * only for the level=0 compression option.
  * NOTE: this function should be optimized to avoid extra copying.
  */
-// @address: 0x186af0
 local block_state deflate_stored(s, flush)
     deflate_state *s;
     int flush;
@@ -1001,7 +997,6 @@ local block_state deflate_stored(s, flush)
  * new strings in the dictionary only for unmatched strings or for short
  * matches. It is used only for the fast compression options.
  */
-// @address: 0x186db0
 local block_state deflate_fast(s, flush)
     deflate_state *s;
     int flush;
@@ -1095,7 +1090,6 @@ local block_state deflate_fast(s, flush)
  * evaluation for matches: a match is finally adopted only if there is
  * no better match at the next window position.
  */
-// @address: 0x187170
 local block_state deflate_slow(s, flush)
     deflate_state *s;
     int flush;

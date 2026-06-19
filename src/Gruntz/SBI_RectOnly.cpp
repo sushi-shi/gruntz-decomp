@@ -1,3 +1,4 @@
+#include "../rva.h"
 // SBI_RectOnly.cpp - Gruntz CSBI_RectOnly (C:\Proj\Gruntz).
 // Matched: ??0CSBI_RectOnly@@QAE@XZ @ RVA 0x101fa0 (byte-exact).
 //
@@ -42,10 +43,7 @@ int CStatusBarItem::SbiVfunc0() { return 0; }
 // CSBI_RectOnly::CSBI_RectOnly()
 // Inlines the CStatusBarItem base ctor (the dead m_8=0 store is elided), stores
 // its own vptr, then sets m_8 = 1.
-//
-// @address: 0x101fa0
-// @size:    0x1b
-// ---------------------------------------------------------------------------
+RVA(0x101fa0, 0x1b)
 CSBI_RectOnly::CSBI_RectOnly()
 {
     m_8 = 1;
@@ -58,7 +56,6 @@ int CSBI_RectOnly::SbiVfunc0() { return 1; }
 // -------------------------------------------------------------------------
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x0ffde0
-// @size:    0x5b1
 // @stub
+RVA(0x0ffde0, 0x5b1)
 void CSBI_RectOnly::Stub_0ffde0() {}

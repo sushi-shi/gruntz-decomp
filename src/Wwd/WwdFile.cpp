@@ -26,6 +26,7 @@
 // pointer args and uses callee-cleanup, so they reconstruct as __stdcall free
 // functions. Returns are full-width eax (1 / 0), i.e. `int`, not bool.
 #include "WwdFile.h"
+#include "../rva.h"
 
 #include <string.h>  // memcpy
 
@@ -35,10 +36,7 @@
 // (the header signature) <= 0x5F4. The two null guards return BEFORE the stream
 // is constructed (no destructor on those paths); the stream's ctor runs only
 // after both guards, so its dtor unwinds the remaining exits.
-//
-// @address: 0x160530
-// @size:    0x125
-// ---------------------------------------------------------------------------
+RVA(0x160530, 0x125)
 int __stdcall WwdFile_IsValidWwd(const char* name, void* headerBuf)
 {
     if (name == 0)
@@ -66,10 +64,7 @@ int __stdcall WwdFile_IsValidWwd(const char* name, void* headerBuf)
 // then copies the header out to the caller (an inline strlen+rep-movs copy of
 // the NUL-terminated leading bytes - the binary does `repnz scasb; rep movs`,
 // i.e. a strcpy of the header buffer into the caller's output).
-//
-// @address: 0x160660
-// @size:    0x12b
-// ---------------------------------------------------------------------------
+RVA(0x160660, 0x12b)
 int __stdcall WwdFile_CheckHeader(const char* name, void* headerOut)
 {
     char header[0x5f4];
@@ -105,10 +100,7 @@ int __stdcall WwdFile_CheckHeader(const char* name, void* headerOut)
 // with m_mainIndex = m_planeCount - 1. Returns the new plane.
 //
 // The new CPlane and its virtuals are UNMATCHED engine code -> reloc-masked calls.
-//
-// @address: 0x15d8d0
-// @size:    0xc3
-// ---------------------------------------------------------------------------
+RVA(0x15d8d0, 0xc3)
 CPlane* CGameLevelPlanes::ReadPlane(void* planeData, void* blockBase, void* /*unused*/)
 {
     CPlane* plane = new CPlane(m_field0c, m_planeCount, 0);
@@ -136,10 +128,7 @@ CPlane* CGameLevelPlanes::ReadPlane(void* planeData, void* blockBase, void* /*un
 // Validates the header, copies the 0x5F4-byte header prefix into dest, then
 // zlib-uncompresses the COMPRESS main block into the remainder. Returns dest on
 // success, 0 on any validation/inflate failure. (~88.7% fuzzy, entropy plateau.)
-//
-// @address: 0x160790
-// @size:    0xd2
-// ---------------------------------------------------------------------------
+RVA(0x160790, 0xd2)
 int __stdcall WwdFile_InflateMainBlock(WwdHeader* src, Bytef* dest, unsigned int destLen)
 {
     uLongf outLen;

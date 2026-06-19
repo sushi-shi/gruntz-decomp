@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CInGameText.cpp - engine-label stubs for CInGameText.
 
 class CInGameText {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x099110
-// @size:    0x215
 // @stub
+RVA(0x099110, 0x215)
 CInGameText::CInGameText() {}

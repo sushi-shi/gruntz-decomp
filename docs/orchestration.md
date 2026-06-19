@@ -168,17 +168,17 @@ prototype starts far ahead of one staring at `FUN_00482f50`.
 1. Locate the target's RVA; confirm it's a real function start.
 2. Add/extend the unit in `config/units.toml` with its `src/<Module>/<TU>.cpp`
    source. (`build/gen/symbol_names.csv`, the matched set, is generated from the
-   `// @address:` comments in `src/` — don't hand-edit it.)
+   `RVA()`/`DATA()` annotation macros in `src/` — don't hand-edit it.)
 3. Write the source: reconstruct the class(es)/struct(s) (offsets are load-bearing;
-   names are placeholders) and the function body. Annotate **each** function with
-   the canonical block — a `// ----` rule, a one-line description, then
-   `// @address: 0x<rva>` and `// @size: 0x<bytes>`, closed by another rule (worked
-   example in `build-system.md` "Add a translation unit"). Only `@address` is
-   parsed; `@size` is the human cross-check against `functions.csv`.
+   names are placeholders) and the function body. `#include "../rva.h"` and annotate
+   **each** function with an `RVA(0x<rva>, 0x<size>)` macro on the line directly
+   above the definition (worked example in `build-system.md` "Add a translation
+   unit"). `labels.py` reads it from LLVM IR (the mangled symbol is paired directly
+   with the annotation — no positional join).
 4. **`nix develop .#build --command gruntz build` — this ONE command IS the inner
    loop.** It does everything, incrementally: `configure.py` regenerates
    `build.ninja`, then ninja recompiles the base obj (`cl`), regenerates the label
-   map from your `@address` (`gen_labels`), re-delinks the target obj
+   map from your `RVA()` macros (`gen_labels`), re-delinks the target obj
    (`delink` → synth_pdb → vostok-delinker), and `objdiff` rescores. You never run
    configure / ninja / delink / objdiff by hand. (What re-delinks and the exact
    chain: build-system.md "What triggers a re-delink".)
@@ -232,7 +232,7 @@ prototype starts far ahead of one staring at `FUN_00482f50`.
 - **Labeled** = attributed to class/TU + named with `@stub` metadata in `src/`.
 - **Matched** = objdiff byte-exact (reloc-masked); the ~99.5%-fuzzy reloc-typing
   cases confirmed by direct byte-compare. Graduates from a label into `src/`
-  (with its `// @address:`) + `config/units.toml`; `build/gen/symbol_names.csv`
+  (with its `RVA()` macro) + `config/units.toml`; `build/gen/symbol_names.csv`
   is regenerated from those. **For the entropy tail**
   (§2a), a stable high-90s function with no identifiable source diff counts as
   *done* — annotate it green-enough; the residual is compiler entropy, not a bug.

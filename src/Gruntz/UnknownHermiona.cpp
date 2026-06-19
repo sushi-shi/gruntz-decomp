@@ -1,3 +1,4 @@
+#include "../rva.h"
 // UnknownHermiona.cpp - two leaf broadcast methods of the tomalla-named ddrawmgr
 // sub-manager UnknownHermiona (a CDirectDrawMgr surface/page sub-manager in the
 // "Harry Potter" family; see structure/managers/ddrawmgr_surface_family.h).
@@ -91,9 +92,7 @@ public:
 // ---------------------------------------------------------------------------
 // UnknownHermiona::VirtualMethodUnknown14  @0x1575e0  (__thiscall, ret 0)
 // Same base readiness predicate used by several Lucius-derived managers.
-// ---------------------------------------------------------------------------
-// @address: 0x1575e0
-// @size:    0x16
+RVA(0x1575e0, 0x16)
 int UnknownHermiona::VirtualMethodUnknown14()
 {
     if (m_0c == 0)
@@ -126,9 +125,7 @@ fail:
 // UnknownHermiona::VirtualMethodUnknown30  @0x159cf0  (__thiscall, ret 0xc)
 // For each node in the +0x14 list, dispatch child +0x34 with (a1,a2,a3); then
 // dispatch this->+0x2c with (a2,a3).
-// ---------------------------------------------------------------------------
-// @address: 0x159cf0
-// @size:    0x42
+RVA(0x159cf0, 0x42)
 void UnknownHermiona::VirtualMethodUnknown30(int a1, int a2, int a3)
 {
     HermionaNode *n = m_14;
@@ -144,9 +141,7 @@ void UnknownHermiona::VirtualMethodUnknown30(int a1, int a2, int a3)
 // ---------------------------------------------------------------------------
 // UnknownHermiona::VirtualMethodUnknown34  @0x159d40  (__thiscall, ret 0xc)
 // As Unknown30 but the loop dispatches child +0x38.
-// ---------------------------------------------------------------------------
-// @address: 0x159d40
-// @size:    0x42
+RVA(0x159d40, 0x42)
 void UnknownHermiona::VirtualMethodUnknown34(int a1, int a2, int a3)
 {
     HermionaNode *n = m_14;
@@ -164,42 +159,36 @@ void UnknownHermiona::VirtualMethodUnknown34(int a1, int a2, int a3)
 // -------------------------------------------------------------------------
 // @confidence: high
 // @source: tomalla
-// @address: 0x1591e0
-// @size:    0x5
 // @stub
+RVA(0x1591e0, 0x5)
 void UnknownHermiona::Stub_1591e0() {}
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x1591f0
-// @size:    0x54
 // @stub
+RVA(0x1591f0, 0x54)
 void UnknownHermiona::Stub_1591f0() {}
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x159a70
-// @size:    0x200
 // @stub
+RVA(0x159a70, 0x200)
 void UnknownHermiona::Stub_159a70() {}
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x159c90
-// @size:    0x23
 // @stub
+RVA(0x159c90, 0x23)
 void UnknownHermiona::Stub_159c90() {}
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x159cc0
-// @size:    0x2a
 // @stub
+RVA(0x159cc0, 0x2a)
 void UnknownHermiona::Stub_159cc0() {}
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x159d90
-// @size:    0x1c
 // @stub
+RVA(0x159d90, 0x1c)
 void UnknownHermiona::Stub_159d90() {}

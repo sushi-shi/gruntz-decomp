@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CGruntSelectedSprite.cpp - engine-label stubs for CGruntSelectedSprite.
 
 class CGruntSelectedSprite {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x07e3e0
-// @size:    0x178
 // @stub
+RVA(0x07e3e0, 0x178)
 CGruntSelectedSprite::CGruntSelectedSprite() {}

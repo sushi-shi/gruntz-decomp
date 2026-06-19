@@ -71,6 +71,7 @@
 // register: OR 0x10000 into the registrar's m_38->m_8 flag word, null the slot,
 // return 0; else return 1.
 #include "Grunt.h"
+#include "../rva.h"
 
 // The sprite class-name string the factory is asked to build, per creator. These
 // are literal .rodata strings in the binary (the reloc-masked DIR32 operand).
@@ -129,9 +130,7 @@ int  g_movingSeed;
 // Gate: m_a8 == 0 (else return 0). Feed key "GRUNTZ_<type>_MOVING" + geometry
 // m_7c into the player; look up tree key "B"; then randomize the move-start time
 // (m_90 = (rand()%0x5dc1 + 0x1770)*10) and seed m_88/m_8c/m_94.
-// ---------------------------------------------------------------------------
-// @address: 0x045100
-// @size:    0x112
+RVA(0x045100, 0x112)
 int CGrunt::ResolveMovingAnimation()
 {
     if (m_a8 != 0)
@@ -156,9 +155,7 @@ int CGrunt::ResolveMovingAnimation()
 // CGrunt::ResolveDeathAnimation()  @ 0x0455f0
 // Gate: m_a8 == 0 (else return 0); then latch m_a8 = 1. Fire the on-screen cue
 // (arg2 = m_ac), feed geometry m_78 then key "GRUNTZ_<type>_DEATH", look up "C".
-// ---------------------------------------------------------------------------
-// @address: 0x0455f0
-// @size:    0x15b
+RVA(0x0455f0, 0x15b)
 int CGrunt::ResolveDeathAnimation()
 {
     if (m_a8 != 0)
@@ -190,9 +187,7 @@ int CGrunt::ResolveDeathAnimation()
 // CGrunt::ResolveAnimation()  @ 0x0457b0  (generic "_JOY")
 // Gate: m_a8 == 0 (else return 0). The cue arg2 is a fixed constant (0x435 when
 // on-screen / 0x43f otherwise). Geometry m_74; key "GRUNTZ_<type>_JOY"; look "E".
-// ---------------------------------------------------------------------------
-// @address: 0x0457b0
-// @size:    0x14c
+RVA(0x0457b0, 0x14c)
 int CGrunt::ResolveAnimation()
 {
     if (m_a8 != 0)
@@ -225,9 +220,7 @@ int CGrunt::ResolveAnimation()
 // idx+0x431 / idx+0x43b; geometry m_58[idx]; then read the active-anim
 // descriptor's first element's m_14 as a 2nd lookup arg (SetAnimEx); key
 // "GRUNTZ_<type>_IDLE"; look up "A".
-// ---------------------------------------------------------------------------
-// @address: 0x045960
-// @size:    0x181
+RVA(0x045960, 0x181)
 int CGrunt::ResolveIdleAnimation()
 {
     if (m_a8 != 0)
@@ -265,9 +258,7 @@ int CGrunt::ResolveIdleAnimation()
 // Gate: m_a8 == 0 (else return 0). Pick idx = rand()%3 (0..2); cue arg2 =
 // idx+0x42e / idx+0x438; geometry m_68[idx]; key "GRUNTZ_<type>_BATTLECRY";
 // look up "F".
-// ---------------------------------------------------------------------------
-// @address: 0x045b60
-// @size:    0x161
+RVA(0x045b60, 0x161)
 int CGrunt::ResolveBattlecryAnimation()
 {
     if (m_a8 != 0)
@@ -300,9 +291,7 @@ int CGrunt::ResolveBattlecryAnimation()
 // CGrunt::CreateHealthSprite()  @ 0x04d130
 // Gate: m_healthSprite unset AND m_3ec > 0. geoB = m_60 - 0x19; hint 0xdbba0.
 // Register via AddA(m_1ec, m_1f0, m_3ec).
-// ---------------------------------------------------------------------------
-// @address: 0x04d130
-// @size:    0xb5
+RVA(0x04d130, 0xb5)
 int CGrunt::CreateHealthSprite()
 {
     if (m_healthSprite || m_3ec <= 0)
@@ -326,9 +315,7 @@ int CGrunt::CreateHealthSprite()
 // CGrunt::CreateToySprite()  @ 0x04d220
 // Gate: m_toySprite unset. geoB = m_60 - 0x19; hint 0xdbba0.
 // Register via AddB(m_1ec, m_1f0).
-// ---------------------------------------------------------------------------
-// @address: 0x04d220
-// @size:    0x9c
+RVA(0x04d220, 0x9c)
 int CGrunt::CreateToySprite()
 {
     if (m_toySprite)
@@ -351,9 +338,7 @@ int CGrunt::CreateToySprite()
 // CGrunt::CreateStaminaSprite()  @ 0x04d2f0
 // Gate: m_staminaSprite unset AND m_3f0 != 0x64. geoB = m_60 - 0x20; hint 0xdbba0.
 // Register via AddA(m_1ec, m_1f0, m_3f0).
-// ---------------------------------------------------------------------------
-// @address: 0x04d2f0
-// @size:    0xb4
+RVA(0x04d2f0, 0xb4)
 int CGrunt::CreateStaminaSprite()
 {
     if (m_staminaSprite || m_3f0 == 0x64)
@@ -379,9 +364,7 @@ int CGrunt::CreateStaminaSprite()
 // (m_1c8) and wingz-time sprite (m_1d0) if set (OR 0x10000 into their record's
 // +0x8, null the slot). geoB = m_60 - 0x20; hint 0xdbba0.
 // Register via AddA(m_1ec, m_1f0, m_3f4).
-// ---------------------------------------------------------------------------
-// @address: 0x04d3e0
-// @size:    0xf5
+RVA(0x04d3e0, 0xf5)
 int CGrunt::CreateToyTimeSprite()
 {
     if (m_toyTimeSprite || m_3f4 == 0)
@@ -415,9 +398,7 @@ int CGrunt::CreateToyTimeSprite()
 // Gate: m_wingzTimeSprite unset AND m_238 != 0 AND m_3f8 != 0. Clears the
 // toy-time sprite (m_1cc) if set. geoB = m_60 - 0x26; hint 0xdbba0.
 // Register via AddA(m_1ec, m_1f0, m_3f8).
-// ---------------------------------------------------------------------------
-// @address: 0x04d520
-// @size:    0xe3
+RVA(0x04d520, 0xe3)
 int CGrunt::CreateWingzTimeSprite()
 {
     if (m_wingzTimeSprite || m_238 == 0 || m_3f8 == 0)
@@ -446,9 +427,7 @@ int CGrunt::CreateWingzTimeSprite()
 // CGrunt::CreatePowerupSprite(int a)  @ 0x04d650  (ret 4)
 // Gate: m_powerupSprite unset. geoB = m_60 (no offset); hint 0x15.
 // Register via AddC(m_1ec, m_1f0, a).
-// ---------------------------------------------------------------------------
-// @address: 0x04d650
-// @size:    0xa1
+RVA(0x04d650, 0xa1)
 int CGrunt::CreatePowerupSprite(int a)
 {
     if (m_powerupSprite)
@@ -472,9 +451,7 @@ int CGrunt::CreatePowerupSprite(int a)
 // CGrunt::CreateSelectedSprite()  @ 0x04d730
 // Gate: m_selectedSprite unset. geoB = m_60 (no offset); hint 0x14.
 // Register via AddD(m_1ec, m_1f0).
-// ---------------------------------------------------------------------------
-// @address: 0x04d730
-// @size:    0x96
+RVA(0x04d730, 0x96)
 int CGrunt::CreateSelectedSprite()
 {
     if (m_selectedSprite)
@@ -498,49 +475,42 @@ int CGrunt::CreateSelectedSprite()
 // -------------------------------------------------------------------------
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x047a10
-// @size:    0x770
 // @stub
+RVA(0x047a10, 0x770)
 void CGrunt::Stub_047a10() {}
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x048400
-// @size:    0x47
 // @stub
+RVA(0x048400, 0x47)
 void CGrunt::Stub_048400() {}
 
 // @confidence: med
 // @source: string-xref
-// @address: 0x048470
-// @size:    0x131b
 // @stub
+RVA(0x048470, 0x131b)
 void CGrunt::Stub_048470() {}
 
 // @confidence: med
 // @source: decomp-xref
-// @address: 0x062e10
-// @size:    0x47e
 // @stub
+RVA(0x062e10, 0x47e)
 void CGrunt::Stub_062e10() {}
 
 // @confidence: med
 // @source: decomp-xref
-// @address: 0x0633e0
-// @size:    0x2ca
 // @stub
+RVA(0x0633e0, 0x2ca)
 void CGrunt::Stub_0633e0() {}
 
 // @confidence: med
 // @source: decomp-xref
-// @address: 0x067bd0
-// @size:    0x2ef
 // @stub
+RVA(0x067bd0, 0x2ef)
 void CGrunt::BuildEntranceAnimation() {}
 
 // @confidence: med
 // @source: decomp-xref
-// @address: 0x067f80
-// @size:    0x313
 // @stub
+RVA(0x067f80, 0x313)
 void CGrunt::LoadEntranceConfig() {}

@@ -1,3 +1,4 @@
+#include "../rva.h"
 // SpriteLoaders.cpp - two sibling HUD/UI sprite loaders that pull a named sprite
 // out of the engine's string-keyed sprite-set hash table and cache individual
 // animation frames off it (C:\Proj\Gruntz). Both share the same idiom:
@@ -65,7 +66,7 @@ struct CGameReg {
     char     m_pad00[0x30];
     CResMgr *m_30;                  // +0x30
 };
-// @data: 0x24556c
+DATA(0x24556c)
 extern CGameReg *g_gameReg;
 
 // ---------------------------------------------------------------------------
@@ -84,8 +85,7 @@ public:
     int           *m_4c8;           // +0x4c8 frame 1
 };
 
-// @address: 0xd7440
-// @size:    0xad
+RVA(0xd7440, 0xad)
 int CLoadingBar::LoadLoadingBarSprite()
 {
     CSprite *spr = 0;
@@ -120,8 +120,7 @@ public:
     int   m_48;      // +0x48
 };
 
-// @address: 0x9bb00
-// @size:    0x119
+RVA(0x9bb00, 0x119)
 int CTimer::LoadTimerSprite(int a, int b)
 {
     CSprite *spr = 0;

@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CAniCycle.cpp - engine-label stubs for CAniCycle.
 
 class CAniCycle {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x0aad20
-// @size:    0x15c
 // @stub
+RVA(0x0aad20, 0x15c)
 CAniCycle::CAniCycle() {}

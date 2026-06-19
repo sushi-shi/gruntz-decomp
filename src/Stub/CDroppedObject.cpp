@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CDroppedObject.cpp - engine-label stubs for CDroppedObject.
 
 class CDroppedObject {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x0c68b0
-// @size:    0x1f5
 // @stub
+RVA(0x0c68b0, 0x1f5)
 CDroppedObject::CDroppedObject() {}

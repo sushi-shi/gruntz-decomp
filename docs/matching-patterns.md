@@ -166,10 +166,10 @@ construct instead:
   literal to a `char*` parameter is fine under MSVC 5.
 
 - **Global / static / const / vtable** — declare a named `extern` with a
-  `// @data: 0xRVA` comment on the line ABOVE it (RVA = VA − 0x400000), then use
-  the name:
+  `DATA(0xRVA)` macro (`src/rva.h`) on the line ABOVE it (RVA = VA − 0x400000),
+  then use the name:
 
-      // @data: 0x2453d8
+      DATA(0x2453d8)
       extern CButeMgr g_buteMgr;          // VA 0x6453d8
       #define g_bute (&g_buteMgr)
 
@@ -178,9 +178,11 @@ construct instead:
   it matches cl.exe by construction — authority-checks it against the base obj's
   symbols (including undefined externs), writes a `data` row to `symbol_names.csv`,
   and `synth_pdb` names the delinked target DATA symbol to match. `apply.py` also
-  applies it as a Ghidra label (Ghidra demangles it for a readable DB). `// @data`
-  is DISTINCT from `// @address` (functions) so a non-matched global / clang
-  temp can't steal a function's address. A const adds the qualifier
+  applies it as a Ghidra label (Ghidra demangles it for a readable DB). `DATA` is
+  bound to the AST VarDecl (an `extern`'s annotation is dropped from IR, so unlike
+  `RVA` it can't ride `@llvm.global.annotations`) and is DISTINCT from `RVA`
+  (functions) so a non-matched global / clang temp can't steal a function's
+  address. A const adds the qualifier
   (`extern const T …`); a vftable you can't class-model is labeled as a datum and
   referenced by address (`extern int g_fooVtbl; … = (void*)&g_fooVtbl;`).
   *Proven: g_buteMgr @0x6453d8, g_gameReg, the Font globals, CRezDir child vtable.*

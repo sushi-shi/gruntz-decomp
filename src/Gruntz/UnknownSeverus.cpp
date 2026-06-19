@@ -1,3 +1,4 @@
+#include "../rva.h"
 // UnknownSeverus.cpp - leaf method(s) of the tomalla-named ddrawmgr surface-family
 // sub-manager UnknownSeverus (a CDirectDrawMgr surface/page sub-manager in the
 // "Harry Potter" family; see structure/managers/ddrawmgr_surface_family.h).
@@ -108,16 +109,16 @@ struct SeverusWorkerObj : public SeverusWorker {
     int        m_68;                    // +0x68  0
 };                                      // 0x6c
 
-// @data: 0x1efc30
+DATA(0x1efc30)
 extern void *g_severusWorkerBaseVtbl;   // VA 0x5efc30
-// @data: 0x1efbe8
+DATA(0x1efbe8)
 extern void *g_severusWorkerVtbl;       // VA 0x5efbe8
 
-// @data: 0x2bf318
+DATA(0x2bf318)
 extern int g_severusScratch[25];        // VA 0x6bf318
-// @data: 0x2bf37c
+DATA(0x2bf37c)
 extern int g_severusCounterA;           // VA 0x6bf37c
-// @data: 0x2bf380
+DATA(0x2bf380)
 extern int g_severusCounterB;           // VA 0x6bf380
 
 // ---------------------------------------------------------------------------
@@ -206,9 +207,7 @@ static inline SeverusWorkerObj *FindOrCreateWorker(UnknownSeverus *parent, const
 // ---------------------------------------------------------------------------
 // UnknownSeverus::VirtualMethodUnknown18  @0x154aa0  (__thiscall, ret 0)
 // Clears the 25-dword scratch table and seeds the first entry to 100.
-// ---------------------------------------------------------------------------
-// @address: 0x154aa0
-// @size:    0x20
+RVA(0x154aa0, 0x20)
 int UnknownSeverus::VirtualMethodUnknown18()
 {
     for (int i = 0; i < 25; ++i)
@@ -220,9 +219,7 @@ int UnknownSeverus::VirtualMethodUnknown18()
 // ---------------------------------------------------------------------------
 // UnknownSeverus::VirtualMethodUnknown1C  @0x154ac0  (__thiscall, ret 0)
 // Runs the +0x58 hook, then clears the two counters.
-// ---------------------------------------------------------------------------
-// @address: 0x154ac0
-// @size:    0x12
+RVA(0x154ac0, 0x12)
 void UnknownSeverus::VirtualMethodUnknown1C()
 {
     ((UnknownSeverusVtableView *)this)->Slot58();
@@ -233,9 +230,7 @@ void UnknownSeverus::VirtualMethodUnknown1C()
 // ---------------------------------------------------------------------------
 // UnknownSeverus::VirtualMethodUnknown38  @0x154ae0  (__thiscall, ret 0x10)
 // Finds or creates the keyed worker, then forwards to worker slot +0x38.
-// ---------------------------------------------------------------------------
-// @address: 0x154ae0
-// @size:    0xfc
+RVA(0x154ae0, 0xfc)
 int UnknownSeverus::VirtualMethodUnknown38(int a1, const char *key, int a3, int a4)
 {
     SeverusWorkerObj *worker = FindOrCreateWorker(this, key);
@@ -247,9 +242,7 @@ int UnknownSeverus::VirtualMethodUnknown38(int a1, const char *key, int a3, int 
 // ---------------------------------------------------------------------------
 // UnknownSeverus::VirtualMethodUnknown40  @0x154be0  (__thiscall, ret 0x10)
 // Finds or creates the keyed worker, then forwards to worker slot +0x34.
-// ---------------------------------------------------------------------------
-// @address: 0x154be0
-// @size:    0xfc
+RVA(0x154be0, 0xfc)
 int UnknownSeverus::VirtualMethodUnknown40(int a1, const char *key, int a3, int a4)
 {
     SeverusWorkerObj *worker = FindOrCreateWorker(this, key);
@@ -261,9 +254,7 @@ int UnknownSeverus::VirtualMethodUnknown40(int a1, const char *key, int a3, int 
 // ---------------------------------------------------------------------------
 // UnknownSeverus::VirtualMethodUnknown30  @0x154ce0  (__thiscall, ret 0x14)
 // Finds or creates the keyed worker, then forwards to worker slot +0x30.
-// ---------------------------------------------------------------------------
-// @address: 0x154ce0
-// @size:    0x101
+RVA(0x154ce0, 0x101)
 int UnknownSeverus::VirtualMethodUnknown30(int a1, int a2, const char *key, int a4, int a5)
 {
     SeverusWorkerObj *worker = FindOrCreateWorker(this, key);
@@ -275,9 +266,7 @@ int UnknownSeverus::VirtualMethodUnknown30(int a1, int a2, const char *key, int 
 // ---------------------------------------------------------------------------
 // UnknownSeverus::VirtualMethodUnknown24  @0x154df0  (__thiscall, ret 0x14)
 // Finds or creates the keyed worker, then forwards to worker slot +0x2c.
-// ---------------------------------------------------------------------------
-// @address: 0x154df0
-// @size:    0x101
+RVA(0x154df0, 0x101)
 int UnknownSeverus::VirtualMethodUnknown24(int a1, int a2, const char *key, int a4, int a5)
 {
     SeverusWorkerObj *worker = FindOrCreateWorker(this, key);
@@ -289,9 +278,7 @@ int UnknownSeverus::VirtualMethodUnknown24(int a1, int a2, const char *key, int 
 // ---------------------------------------------------------------------------
 // UnknownSeverus::VirtualMethodUnknown3C  @0x154f00  (__thiscall, ret 0x10)
 // Thin forwarder to worker slot +0x34.
-// ---------------------------------------------------------------------------
-// @address: 0x154f00
-// @size:    0x1b
+RVA(0x154f00, 0x1b)
 int UnknownSeverus::VirtualMethodUnknown3C(int a1, SeverusWorker *worker, int a3, int a4)
 {
     return worker->Vfunc34(a1, a3, a4);
@@ -300,9 +287,7 @@ int UnknownSeverus::VirtualMethodUnknown3C(int a1, SeverusWorker *worker, int a3
 // ---------------------------------------------------------------------------
 // UnknownSeverus::VirtualMethodUnknown34  @0x154f20  (__thiscall, ret 0x10)
 // Thin forwarder to worker slot +0x38.
-// ---------------------------------------------------------------------------
-// @address: 0x154f20
-// @size:    0x1b
+RVA(0x154f20, 0x1b)
 int UnknownSeverus::VirtualMethodUnknown34(int a1, SeverusWorker *worker, int a3, int a4)
 {
     return worker->Vfunc38(a1, a3, a4);
@@ -311,9 +296,7 @@ int UnknownSeverus::VirtualMethodUnknown34(int a1, SeverusWorker *worker, int a3
 // ---------------------------------------------------------------------------
 // UnknownSeverus::VirtualMethodUnknown2C  @0x154f40  (__thiscall, ret 0x14)
 // Thin forwarder to worker slot +0x30.
-// ---------------------------------------------------------------------------
-// @address: 0x154f40
-// @size:    0x20
+RVA(0x154f40, 0x20)
 int UnknownSeverus::VirtualMethodUnknown2C(int a1, int a2, SeverusWorker *worker, int a4, int a5)
 {
     return worker->Vfunc30(a1, a2, a4, a5);
@@ -322,9 +305,7 @@ int UnknownSeverus::VirtualMethodUnknown2C(int a1, int a2, SeverusWorker *worker
 // ---------------------------------------------------------------------------
 // UnknownSeverus::VirtualMethodUnknown28  @0x154f60  (__thiscall, ret 0x14)
 // Thin forwarder to worker slot +0x2c.
-// ---------------------------------------------------------------------------
-// @address: 0x154f60
-// @size:    0x20
+RVA(0x154f60, 0x20)
 int UnknownSeverus::VirtualMethodUnknown28(int a1, int a2, SeverusWorker *worker, int a4, int a5)
 {
     return worker->Vfunc2C(a1, a2, a4, a5);
@@ -333,9 +314,7 @@ int UnknownSeverus::VirtualMethodUnknown28(int a1, int a2, SeverusWorker *worker
 // ---------------------------------------------------------------------------
 // UnknownSeverus::VirtualMethodUnknown50  @0x155280  (__thiscall, ret 0x4)
 // Removes a non-null worker from the map by its key at +0x24, then destroys it.
-// ---------------------------------------------------------------------------
-// @address: 0x155280
-// @size:    0x22
+RVA(0x155280, 0x22)
 void UnknownSeverus::VirtualMethodUnknown50(SeverusWorkerObj *worker)
 {
     if (worker != 0) {
@@ -347,9 +326,7 @@ void UnknownSeverus::VirtualMethodUnknown50(SeverusWorkerObj *worker)
 // ---------------------------------------------------------------------------
 // UnknownSeverus::VirtualMethodUnknown20  @0x156de0  (__thiscall, ret 0)
 // Constant state id.
-// ---------------------------------------------------------------------------
-// @address: 0x156de0
-// @size:    0x6
+RVA(0x156de0, 0x6)
 int UnknownSeverus::VirtualMethodUnknown20()
 {
     return 0x12;
@@ -358,9 +335,7 @@ int UnknownSeverus::VirtualMethodUnknown20()
 // ---------------------------------------------------------------------------
 // UnknownSeverus::VirtualMethodUnknown14  @0x1576d0  (__thiscall, ret 0)
 // Same base readiness predicate used by several Lucius-derived managers.
-// ---------------------------------------------------------------------------
-// @address: 0x1576d0
-// @size:    0x16
+RVA(0x1576d0, 0x16)
 int UnknownSeverus::VirtualMethodUnknown14()
 {
     if (m_0c == 0)
@@ -389,9 +364,7 @@ fail:
 // Every source form tried (if(Lookup(...)) / if(...!=0) / captured `int found` /
 // volatile val) produced the identical schedule; the surrounding symbol-set is what
 // re-rolls the allocation, so no in-function lever flips it. Left as the plateau.
-// ---------------------------------------------------------------------------
-// @address: 0x156ec0
-// @size:    0x40
+RVA(0x156ec0, 0x40)
 void UnknownSeverus::VirtualMethodUnknown54(const char *key)
 {
     CObject *val = 0;
@@ -406,35 +379,30 @@ void UnknownSeverus::VirtualMethodUnknown54(const char *key)
 // -------------------------------------------------------------------------
 // @confidence: high
 // @source: tomalla
-// @address: 0x154f80
-// @size:    0x1d5
 // @stub
+RVA(0x154f80, 0x1d5)
 void UnknownSeverus::Stub_154f80() {}
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x155160
-// @size:    0x11e
 // @stub
+RVA(0x155160, 0x11e)
 void UnknownSeverus::Stub_155160() {}
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x156df0
-// @size:    0x1e
 // @stub
+RVA(0x156df0, 0x1e)
 void UnknownSeverus::Stub_156df0() {}
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x156e80
-// @size:    0x38
 // @stub
+RVA(0x156e80, 0x38)
 void UnknownSeverus::Stub_156e80() {}
 
 // @confidence: med
 // @source: tomalla
-// @address: 0x165210
-// @size:    0xa2
 // @stub
+RVA(0x165210, 0xa2)
 void UnknownSeverus::Stub_165210() {}

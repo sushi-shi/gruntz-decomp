@@ -1,3 +1,4 @@
+#include "../rva.h"
 // VideoConfig.cpp - the video-resolution combo-box config pair on the Gruntz
 // options/setup dialog (C:\Proj\Gruntz). Both functions translate between the
 // global selected-resolution mode (g_videoResolutionMode @0x60ccc4: 1=640x480,
@@ -52,7 +53,7 @@ char *__cdecl strcat(char *dest, const char *src);
 // here; Load reads it to pick the resolution suffix string. The reloc that
 // names it is masked in objdiff; only the address-load bytes are load-bearing.
 // ---------------------------------------------------------------------------
-// @data: 0x20ccc4
+DATA(0x20ccc4)
 extern int g_videoResolutionMode;
 
 // ---------------------------------------------------------------------------
@@ -84,10 +85,7 @@ public:
 // Resolves the engine option-control wrapper, seeds its range (1,3,1), forwards
 // nSel to the wrapped child (msg 0x405), then rebuilds the "Video Resolution
 // (WxH)" caption on the IDC_RESCAPTION static text from the global mode.
-//
-// @address: 0x36f30
-// @size:    0x114
-// ---------------------------------------------------------------------------
+RVA(0x36f30, 0x114)
 void LoadVideoResolutionConfig(HWND hDlg, int nIDCombo, int nSel)
 {
     if (!hDlg)
@@ -124,10 +122,7 @@ void LoadVideoResolutionConfig(HWND hDlg, int nIDCombo, int nSel)
 // hCombo   - the resolution combo HWND.
 // Reads the combo's current selection (engine msg 0x400 -> the wrapped child),
 // stores it into the global mode, then rebuilds the caption (same tail as Load).
-//
-// @address: 0x370a0
-// @size:    0xf1
-// ---------------------------------------------------------------------------
+RVA(0x370a0, 0xf1)
 void SaveVideoResolutionConfig(HWND hDlg, HWND hCombo)
 {
     CWnd *pCtrl = CWnd::FromHandle((HWND__ *)hCombo);

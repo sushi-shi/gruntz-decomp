@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CFortressFlag.cpp - engine-label stubs for CFortressFlag.
 
 class CFortressFlag {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x045d30
-// @size:    0x203
 // @stub
+RVA(0x045d30, 0x203)
 CFortressFlag::CFortressFlag() {}

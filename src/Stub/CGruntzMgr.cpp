@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CGruntzMgr.cpp - engine-label stubs for CGruntzMgr.
 
 class CGruntzMgr {
@@ -17,77 +18,66 @@ public:
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x083030
-// @size:    0x1b6
 // @stub
+RVA(0x083030, 0x1b6)
 CGruntzMgr::CGruntzMgr() {}
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x083330
-// @size:    0x1e
 // @stub
+RVA(0x083330, 0x1e)
 void CGruntzMgr::vector_deleting_destructor() {}
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x083360
-// @size:    0xb2
 // @stub
+RVA(0x083360, 0xb2)
 CGruntzMgr::~CGruntzMgr() {}
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x0855e0
-// @size:    0x448
 // @stub
+RVA(0x0855e0, 0x448)
 void CGruntzMgr::UnknownClose() {}
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x08dc60
-// @size:    0x19
 // @stub
+RVA(0x08dc60, 0x19)
 void CGruntzMgr::ReportError() {}
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x08eca0
-// @size:    0x164
 // @stub
+RVA(0x08eca0, 0x164)
 void CGruntzMgr::InitializeLobbyConnectionSettings() {}
 
 // @confidence: high
 // @source: call-xref
-// @address: 0x08f620
-// @size:    0x51
 // @stub
+RVA(0x08f620, 0x51)
 void CGruntzMgr::PerFrameTick() {}
 
 // @confidence: med
 // @source: call-xref
-// @address: 0x08f6a0
-// @size:    0x7d
 // @stub
+RVA(0x08f6a0, 0x7d)
 void CGruntzMgr::VirtualUnknownMethod06() {}
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x08fa70
-// @size:    0x2c
 // @stub
+RVA(0x08fa70, 0x2c)
 void CGruntzMgr::GetGruntzDriveLetter() {}
 
 // @confidence: med
 // @source: call-xref
-// @address: 0x08fea0
-// @size:    0x6d
 // @stub
+RVA(0x08fea0, 0x6d)
 void CGruntzMgr::InitCFileIOMember() {}
 
 // @confidence: high
 // @source: string-xref
-// @address: 0x08ff30
-// @size:    0x1ca
 // @stub
+RVA(0x08ff30, 0x1ca)
 void CGruntzMgr::BuildMoviePath() {}

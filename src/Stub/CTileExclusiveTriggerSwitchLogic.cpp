@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CTileExclusiveTriggerSwitchLogic.cpp - engine-label stubs for CTileExclusiveTriggerSwitchLogic.
 
 class CTileExclusiveTriggerSwitchLogic {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: high
 // @source: rtti-vptr
-// @address: 0x112050
-// @size:    0x12
 // @stub
+RVA(0x112050, 0x12)
 CTileExclusiveTriggerSwitchLogic::CTileExclusiveTriggerSwitchLogic() {}

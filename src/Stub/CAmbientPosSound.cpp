@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CAmbientPosSound.cpp - engine-label stubs for CAmbientPosSound.
 
 class CAmbientPosSound {
@@ -8,14 +9,12 @@ public:
 
 // @confidence: high
 // @source: rtti-vptr
-// @address: 0x00b850
-// @size:    0x83
 // @stub
+RVA(0x00b850, 0x83)
 void CAmbientPosSound::Stub_00b850() {}
 
 // @confidence: high
 // @source: rtti-vptr
-// @address: 0x00b960
-// @size:    0x80
 // @stub
+RVA(0x00b960, 0x80)
 void CAmbientPosSound::Stub_00b960() {}

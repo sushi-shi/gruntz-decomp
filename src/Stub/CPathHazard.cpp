@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CPathHazard.cpp - engine-label stubs for CPathHazard.
 
 class CPathHazard {
@@ -8,14 +9,12 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x013170
-// @size:    0x7b
 // @stub
+RVA(0x013170, 0x7b)
 void CPathHazard::CPathHazard_013170() {}
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x0b35a0
-// @size:    0x401
 // @stub
+RVA(0x0b35a0, 0x401)
 void CPathHazard::CPathHazard_0b35a0() {}

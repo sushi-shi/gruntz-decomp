@@ -1,3 +1,4 @@
+#include "../rva.h"
 // UnknownDraco.cpp - one leaf cleanup method of the tomalla-named ddrawmgr
 // sub-manager UnknownDraco (a CDirectDrawMgr surface/page sub-manager in the
 // "Harry Potter" family; see structure/managers/ddrawmgr_surface_family.h).
@@ -49,9 +50,7 @@ public:
 // ---------------------------------------------------------------------------
 // UnknownDraco::VirtualMethodUnknown14  @0x157480  (__thiscall, ret 0)
 // Ready when all three owned child pointers are populated.
-// ---------------------------------------------------------------------------
-// @address: 0x157480
-// @size:    0x1e
+RVA(0x157480, 0x1e)
 int UnknownDraco::VirtualMethodUnknown14()
 {
     if (m_14 == 0)
@@ -69,9 +68,7 @@ fail:
 // UnknownDraco::VirtualMethodUnknown1C  @0x158ac0  (__thiscall, ret 0)
 // For each owned child at +0x10/+0x14/+0x18: if non-null, run its scalar-deleting
 // destructor (vtbl +0x4, arg 1) and null the slot.
-// ---------------------------------------------------------------------------
-// @address: 0x158ac0
-// @size:    0x44
+RVA(0x158ac0, 0x44)
 void UnknownDraco::VirtualMethodUnknown1C()
 {
     if (m_10 != 0) {
@@ -93,21 +90,18 @@ void UnknownDraco::VirtualMethodUnknown1C()
 // -------------------------------------------------------------------------
 // @confidence: high
 // @source: tomalla
-// @address: 0x1574a0
-// @size:    0x6
 // @stub
+RVA(0x1574a0, 0x6)
 void UnknownDraco::Stub_1574a0() {}
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x1574b0
-// @size:    0x1e
 // @stub
+RVA(0x1574b0, 0x1e)
 void UnknownDraco::Stub_1574b0() {}
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x1588f0
-// @size:    0x1c5
 // @stub
+RVA(0x1588f0, 0x1c5)
 void UnknownDraco::Stub_1588f0() {}

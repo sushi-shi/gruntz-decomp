@@ -56,7 +56,6 @@ struct inflate_codes_state {
 };
 
 
-// @address: 0x18aaf0
 inflate_codes_statef *inflate_codes_new(bl, bd, tl, td, z)
 uInt bl, bd;
 inflate_huft *tl;
@@ -79,7 +78,6 @@ z_streamp z;
 }
 
 
-// @address: 0x18ab30
 int inflate_codes(s, z, r)
 inflate_blocks_statef *s;
 z_streamp z;
@@ -240,7 +238,6 @@ int r;
 }
 
 
-// @address: 0x18b2e0
 void inflate_codes_free(c, z)
 inflate_codes_statef *c;
 z_streamp z;

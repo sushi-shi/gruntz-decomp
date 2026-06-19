@@ -15,6 +15,7 @@
 // Only offsets / control IDs / code bytes are load-bearing; class and field
 // names are placeholders.
 #include "../Wap32/Wap32.h"
+#include "../rva.h"
 #include <stdio.h>   // engine sprintf @0x11f890 (reloc-masked)
 #include <string.h>  // inline strlen/strcpy/strcat (rep movs/scas)
 
@@ -97,10 +98,7 @@ public:
 // reloc-masked) and returns `this`. No CGruntzApp-specific field is set.
 //   push esi; mov esi,ecx; call CGameApp::CGameApp; mov [esi],&vftable;
 //   mov eax,esi; pop esi; ret
-//
-// @address: 0x80850
-// @size:    0x12
-// ---------------------------------------------------------------------------
+RVA(0x80850, 0x12)
 CGruntzApp::CGruntzApp()
 {
 }
@@ -113,10 +111,7 @@ CGruntzApp::CGruntzApp()
 // CGameApp::VirtualUnknownMethod03 (@0x13d7b0, `this` left in ecx untouched),
 // then normalises the int result to a bool: `!= 0` emits the
 // `neg eax; sbb eax,eax; neg eax` (0/1) idiom.
-//
-// @address: 0x80930
-// @size:    0x31
-// ---------------------------------------------------------------------------
+RVA(0x80930, 0x31)
 int CGruntzApp::VirtualUnknownMethod03(HINSTANCE hInstance, char *szWindowName,
                                        char *szGameIdentifier, char *szCmdLine,
                                        int windowClassFlags, int windowWidth,
@@ -138,10 +133,7 @@ int CGruntzApp::VirtualUnknownMethod03(HINSTANCE hInstance, char *szWindowName,
 // CloseResources is called TWICE (once by each level's body) - that is the real
 // engine code, and CloseResources is what actually `delete`s the game manager
 // (CGameApp::m_8 @+0x8). No game-manager-pointer member lives on CGruntzApp.
-//
-// @address: 0x808b0
-// @size:    0x60
-// ---------------------------------------------------------------------------
+RVA(0x808b0, 0x60)
 CGruntzApp::~CGruntzApp()
 {
     CloseResources();
@@ -162,10 +154,7 @@ CGruntzApp::~CGruntzApp()
 // LoadStringA/ShowCursor/DialogBoxParamA are FF15 [IAT] indirect calls; the
 // ErrorDialogProc address is taken (push imm of its incremental-link thunk).
 // strcpy/strcat are emitted inline (repnz scas / rep movs).
-//
-// @address: 0x80ac0
-// @size:    0xf3
-// ---------------------------------------------------------------------------
+RVA(0x80ac0, 0xf3)
 void CGruntzApp::ShowError()
 {
     // The two error fields are read up front (the optimiser hoists the m_250
@@ -197,10 +186,7 @@ void CGruntzApp::ShowError()
 // `return new WAP32::CGameMgr;` - operator new(0xa30) then a throwing ctor under
 // a C++ EH frame (this TU needs /GX). The push-ecx is MSVC reserving one dword
 // of locals for the new pointer / EH-tracked object; `this` is never read.
-//
-// @address: 0x80a20
-// @size:    0x5a
-// ---------------------------------------------------------------------------
+RVA(0x80a20, 0x5a)
 WAP32::CGameMgr *CGruntzApp::InitializeGameManager()
 {
     return new WAP32::CGameMgr;
@@ -213,11 +199,8 @@ WAP32::CGameMgr *CGruntzApp::InitializeGameManager()
 // WM_COMMAND with IDOK(1)/IDCANCEL(2) -> EndDialog(hWnd, 0). Returns 1 for both
 // handled cases, 0 otherwise. The switch reproduces the sub-0x110 / je / dec /
 // jne message ladder with the WM_INITDIALOG body laid out at the function tail.
-//
-// @address: 0x80c70
-// @symbol:  ?ErrorDialogProc@CGruntzApp@@SGHPAXIIJ@Z
-// @size:    0x55
-// ---------------------------------------------------------------------------
+SYMBOL(?ErrorDialogProc@CGruntzApp@@SGHPAXIIJ@Z)
+RVA(0x80c70, 0x55)
 INT_PTR __stdcall CGruntzApp::ErrorDialogProc(HWND hWnd, UINT message,
                                               WPARAM wParam, LPARAM lParam)
 {
@@ -244,7 +227,6 @@ INT_PTR __stdcall CGruntzApp::ErrorDialogProc(HWND hWnd, UINT message,
 // -------------------------------------------------------------------------
 // @confidence: high
 // @source: tomalla
-// @address: 0x112820
-// @size:    0xc
 // @stub
+RVA(0x112820, 0xc)
 void CGruntzApp::Stub_112820() {}

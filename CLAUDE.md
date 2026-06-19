@@ -8,8 +8,9 @@ objects matching the retail `GRUNTZ.EXE`, verified with **objdiff**.
 **Current stage: the matching loop runs.** `src/` holds the reconstructed C++
 and is the single source of truth; **`scripts/gruntz.py`** drives everything
 (`gruntz build` = compile base objs under wine `cl` → generate
-`build/gen/symbol_names.csv` from `src/` `// @address:` comments → synth fake PDB
-→ delink the retail EXE → objdiff). ~57/100 functions byte-exact across 23 TUs.
+`build/gen/symbol_names.csv` from `src/` `RVA()`/`DATA()` annotation macros
+(`src/rva.h`, read from LLVM IR) → synth fake PDB → delink the retail EXE →
+objdiff). ~57/100 functions byte-exact across 23 TUs.
 The pipeline package is `scripts/gruntz/{build,ghidra,init}/`; one-shot analysis
 tools live in `scripts/analysis/`.
 
@@ -25,7 +26,8 @@ source of truth, and the full `gruntz.py` design).
 - `nix develop .#build` — adds the MSVC 5.0 toolchain under `wine` for the
   **base/recompile** side. The `gruntz-toolchain` tarball is packaged (fetched +
   pinned in `flake.nix`); run `gruntz init` once to build the local env (wine
-  prefix, clangd DB, Ghidra DB) — heavy first run, idempotent after.
+  prefix, clangd DB, Ghidra DB) — a few minutes on a cold run, fast/idempotent
+  after (see the build-speed note under Conventions).
 
 `GRUNTZ_EXE` is exported pointing at the Internet-Archive-fetched binary.
 
@@ -62,11 +64,16 @@ Gotchas baked in from reading the delinker source:
 - Keep `README.md` and the relevant `docs/` (esp. `build-system.md`) current when
   the build/diff flow, tools, or paths change.
 - `flake.lock` is committed; `.gitignore` already excludes generated outputs.
-- **`src/Stub/` is the labeled-but-unmatched backlog** (aggregated by `All.cpp`).
-  Its stubs compile, but objdiff does **not** diff them and their `@address` is
-  **not** verified against the binary — `All.cpp` only `#include`s them, so
-  `labels.py` never reads their `@address` (it scans each TU's own text). They
-  are documentary placeholders: don't trust a `src/Stub/` address as
-  binary-checked, and the `engine_label_stubs` unit's 100% means nothing. The
-  goal is to **move each stub into its real class's TU**, where it gets delinked
-  and diffed (the matched-TU backlog stubs already are). See `src/Stub/All.cpp`.
+- **Builds are FAST — don't engineer around build time.** A full from-scratch
+  `gruntz clean && gruntz init` (cold Ghidra import+analyze, wine re-init, full
+  recompile, warmup) is ~2–3 min; back-to-back `clean → init` x2 is ~5 min;
+  `gruntz build` (incremental) is faster. Just run them in the foreground and
+  verify changes with a real build — don't background out of fear, avoid clean
+  builds, or skip verification.
+- **`src/Stub/` is the labeled-but-unmatched backlog** (the `engine_label_stubs`
+  unit, aggregated by `All.cpp`). These stubs ARE delinked and diffed like any
+  unit — they show in objdiff (initially ~0%) as the matching worklist, count in
+  the started-units denominator, and are covered by the duplicate-RVA guard +
+  `verify_stub_labels.py`'s stub-vs-matched cross-check. The goal is to **move
+  each stub into its real class's TU** and reconstruct it there; `src/Stub/`
+  shrinks toward empty. See `src/Stub/All.cpp`.

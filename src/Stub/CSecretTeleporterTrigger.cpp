@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CSecretTeleporterTrigger.cpp - engine-label stubs for CSecretTeleporterTrigger.
 
 class CSecretTeleporterTrigger {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x041e90
-// @size:    0x1ac
 // @stub
+RVA(0x041e90, 0x1ac)
 CSecretTeleporterTrigger::CSecretTeleporterTrigger() {}

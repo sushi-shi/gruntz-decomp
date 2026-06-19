@@ -1,3 +1,4 @@
+#include "../rva.h"
 // LogicTypeTable.cpp - CLogicTypeBuilder::BuildLogicTypeTable @0x8a40 (200 B,
 // __thiscall ret 4). A one-shot registrar that ensures three built-in tile-logic
 // types ("LogicHit", "LogicAttack", "LogicBump") are present in the engine's
@@ -81,10 +82,7 @@ struct CLogicTypeBuilder {
 // and the register call - the target does NOT cache it across the two (it reloads
 // `mov edx,[esi+0xc]; mov ecx,[edx+0x14]` at each site), so the lookup expression
 // is repeated rather than hoisted into a local.
-//
-// @address: 0x8a40
-// @size:    0xc8
-// ---------------------------------------------------------------------------
+RVA(0x8a40, 0xc8)
 void __stdcall BuildLogicTypeTable(CLogicTypeBuilder *obj)
 {
     {

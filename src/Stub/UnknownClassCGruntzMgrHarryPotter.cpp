@@ -1,3 +1,4 @@
+#include "../rva.h"
 // UnknownClassCGruntzMgrHarryPotter.cpp - engine-label stubs for UnknownClassCGruntzMgrHarryPotter.
 
 class UnknownClassCGruntzMgrHarryPotter {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x155900
-// @size:    0x519
 // @stub
+RVA(0x155900, 0x519)
 void UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod18() {}

@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CLevelTime.cpp - engine-label stubs for CLevelTime.
 
 class CLevelTime {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x09b8b0
-// @size:    0x18f
 // @stub
+RVA(0x09b8b0, 0x18f)
 CLevelTime::CLevelTime() {}

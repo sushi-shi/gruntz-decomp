@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CBrickz.cpp - engine-label stubs for CBrickz.
 
 class CBrickz {
@@ -8,14 +9,12 @@ public:
 
 // @confidence: med
 // @source: decomp-xref
-// @address: 0x0810f0
-// @size:    0x8b4
 // @stub
+RVA(0x0810f0, 0x8b4)
 void CBrickz::LoadAttributes() {}
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x10e800
-// @size:    0x17d
 // @stub
+RVA(0x10e800, 0x17d)
 CBrickz::CBrickz() {}

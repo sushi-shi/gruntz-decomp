@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CGruntToySprite.cpp - engine-label stubs for CGruntToySprite.
 
 class CGruntToySprite {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x07f350
-// @size:    0x16a
 // @stub
+RVA(0x07f350, 0x16a)
 CGruntToySprite::CGruntToySprite() {}

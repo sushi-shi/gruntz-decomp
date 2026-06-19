@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CTileTriggerSwitch.cpp - engine-label stubs for CTileTriggerSwitch.
 
 class CTileTriggerSwitch {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x10dc40
-// @size:    0x154
 // @stub
+RVA(0x10dc40, 0x154)
 CTileTriggerSwitch::CTileTriggerSwitch() {}

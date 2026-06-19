@@ -95,7 +95,6 @@ local uInt cpdext[30] = { /* Extra bits for distance codes */
   uInt inflate_hufts;
 #endif
 
-// @address: 0x18a390
 local int huft_build(b, n, s, d, e, t, m, zs)
 uIntf *b;               /* code lengths in bits (all assumed <= BMAX) */
 uInt n;                 /* number of codes (assumed <= N_MAX) */
@@ -299,7 +298,6 @@ z_streamp zs;           /* for zalloc function */
 }
 
 
-// @address: 0x18a330
 int inflate_trees_bits(c, bb, tb, z)
 uIntf *c;               /* 19 code lengths */
 uIntf *bb;              /* bits tree desired/actual depth */
@@ -321,7 +319,6 @@ z_streamp z;            /* for zfree function */
 }
 
 
-// @address: 0x18a850
 int inflate_trees_dynamic(nl, nd, c, bl, bd, tl, td, z)
 uInt nl;                /* number of literal/length codes */
 uInt nd;                /* number of distance codes */
@@ -382,7 +379,6 @@ local inflate_huft *fixed_tl;
 local inflate_huft *fixed_td;
 
 
-// @address: 0x18aa90
 local voidpf falloc(q, n, s)
 voidpf q;       /* opaque pointer */
 uInt n;         /* number of items */
@@ -395,7 +391,6 @@ uInt s;         /* size of item */
 }
 
 
-// @address: 0x18a940
 int inflate_trees_fixed(bl, bd, tl, td)
 uIntf *bl;               /* literal desired/actual bit depth */
 uIntf *bd;               /* distance desired/actual bit depth */
@@ -445,7 +440,6 @@ inflate_huft * FAR *td;  /* distance tree result */
 }
 
 
-// @address: 0x18aab0
 int inflate_trees_free(t, z)
 inflate_huft *t;        /* table to free */
 z_streamp z;            /* for zfree function */

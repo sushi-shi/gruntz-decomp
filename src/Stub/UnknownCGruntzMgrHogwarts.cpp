@@ -1,3 +1,4 @@
+#include "../rva.h"
 // UnknownCGruntzMgrHogwarts.cpp - engine-label stubs for UnknownCGruntzMgrHogwarts.
 
 class UnknownCGruntzMgrHogwarts {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: med
 // @source: call-xref
-// @address: 0x156e10
-// @size:    0x68
 // @stub
+RVA(0x156e10, 0x68)
 void UnknownCGruntzMgrHogwarts::Constructor_156e10() {}

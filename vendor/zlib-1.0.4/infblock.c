@@ -61,7 +61,6 @@ local uInt border[] = { /* Order of the bit length code lengths */
  */
 
 
-// @address: 0x187490
 void inflate_blocks_reset(s, z, c)
 inflate_blocks_statef *s;
 z_streamp z;
@@ -87,7 +86,6 @@ uLongf *c;
 }
 
 
-// @address: 0x187530
 inflate_blocks_statef *inflate_blocks_new(z, c, w)
 z_streamp z;
 check_func c;
@@ -115,7 +113,6 @@ uInt w;
 #ifdef DEBUG
   extern uInt inflate_hufts;
 #endif
-// @address: 0x1875a0
 int inflate_blocks(s, z, r)
 inflate_blocks_statef *s;
 z_streamp z;
@@ -382,7 +379,6 @@ int r;
 }
 
 
-// @address: 0x188250
 int inflate_blocks_free(s, z, c)
 inflate_blocks_statef *s;
 z_streamp z;
@@ -396,7 +392,6 @@ uLongf *c;
 }
 
 
-// @address: 0x188290
 void inflate_set_dictionary(s, d, n)
 inflate_blocks_statef *s;
 const Bytef *d;

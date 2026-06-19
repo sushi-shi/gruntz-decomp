@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CGruntzMultiCommand.cpp - engine-label stubs for CGruntzMultiCommand.
 
 class CGruntzMultiCommand {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: high
 // @source: rtti-vptr
-// @address: 0x024360
-// @size:    0x2b
 // @stub
+RVA(0x024360, 0x2b)
 CGruntzMultiCommand::CGruntzMultiCommand() {}

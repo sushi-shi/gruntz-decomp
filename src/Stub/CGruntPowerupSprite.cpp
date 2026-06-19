@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CGruntPowerupSprite.cpp - engine-label stubs for CGruntPowerupSprite.
 
 class CGruntPowerupSprite {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x07fdb0
-// @size:    0x166
 // @stub
+RVA(0x07fdb0, 0x166)
 CGruntPowerupSprite::CGruntPowerupSprite() {}

@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CDoNothing.cpp - engine-label stubs for CDoNothing.
 
 class CDoNothing {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x0ac1d0
-// @size:    0x1a5
 // @stub
+RVA(0x0ac1d0, 0x1a5)
 CDoNothing::CDoNothing() {}

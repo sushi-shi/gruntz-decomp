@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CExitTrigger.cpp - engine-label stubs for CExitTrigger.
 
 class CExitTrigger {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x03ecf0
-// @size:    0x292
 // @stub
+RVA(0x03ecf0, 0x292)
 CExitTrigger::CExitTrigger() {}

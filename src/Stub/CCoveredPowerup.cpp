@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CCoveredPowerup.cpp - engine-label stubs for CCoveredPowerup.
 
 class CCoveredPowerup {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: high
 // @source: rtti-vptr
-// @address: 0x10fac0
-// @size:    0x19
 // @stub
+RVA(0x10fac0, 0x19)
 CCoveredPowerup::CCoveredPowerup() {}

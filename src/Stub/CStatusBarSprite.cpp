@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CStatusBarSprite.cpp - engine-label stubs for CStatusBarSprite.
 
 class CStatusBarSprite {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x10c230
-// @size:    0x178
 // @stub
+RVA(0x10c230, 0x178)
 CStatusBarSprite::CStatusBarSprite() {}

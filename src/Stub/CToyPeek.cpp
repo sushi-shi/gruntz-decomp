@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CToyPeek.cpp - engine-label stubs for CToyPeek.
 
 class CToyPeek {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x098140
-// @size:    0x18e
 // @stub
+RVA(0x098140, 0x18e)
 CToyPeek::CToyPeek() {}

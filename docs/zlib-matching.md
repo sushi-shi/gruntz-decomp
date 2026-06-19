@@ -109,4 +109,9 @@ unconstrained (no effect). Remaining roll-forward: the deflate front-end
 (deflate/deflateInit2_/etc.), inflate.c, and the 4 trees.c init/rare functions
 (`_tr_init`, `_tr_static_init`, `_tr_align`, `_bi_flush`) that Ghidra did not carve as
 distinct functions in the contiguous zlib region — locate via xref/byte-search and
-annotate them in `src/` with `// @address:` (which regenerates `build/gen/symbol_names.csv`).
+add their `rva,name,unit` rows to `config/zlib_labels.csv`. The vendored zlib C source
+stays PRISTINE — no labels in it at all (NOT the `src/rva.h` `RVA()` macros that `src/`
+uses): their static/K&R functions are dropped from IR when unused, so labels can't ride
+attributes/IR. `labels.py` emits each zlib unit's rows straight from that static config
+(authority-checked against the base obj — no source parse, no positional join), which
+regenerates `build/gen/symbol_names.csv`.

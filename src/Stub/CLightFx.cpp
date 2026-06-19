@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CLightFx.cpp - engine-label stubs for CLightFx.
 
 class CLightFx {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x09cf00
-// @size:    0x1a5
 // @stub
+RVA(0x09cf00, 0x1a5)
 CLightFx::CLightFx() {}

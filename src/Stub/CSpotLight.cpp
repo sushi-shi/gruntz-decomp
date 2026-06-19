@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CSpotLight.cpp - engine-label stubs for CSpotLight.
 
 class CSpotLight {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x0b1200
-// @size:    0x2cb
 // @stub
+RVA(0x0b1200, 0x2cb)
 CSpotLight::CSpotLight() {}

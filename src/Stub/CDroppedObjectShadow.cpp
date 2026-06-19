@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CDroppedObjectShadow.cpp - engine-label stubs for CDroppedObjectShadow.
 
 class CDroppedObjectShadow {
@@ -8,14 +9,12 @@ public:
 
 // @confidence: high
 // @source: decomp-xref
-// @address: 0x0c62e0
-// @size:    0x2dd
 // @stub
+RVA(0x0c62e0, 0x2dd)
 void CDroppedObjectShadow::LoadAttributes() {}
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x0c7490
-// @size:    0x1a6
 // @stub
+RVA(0x0c7490, 0x1a6)
 CDroppedObjectShadow::CDroppedObjectShadow() {}

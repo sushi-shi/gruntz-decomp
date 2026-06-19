@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CWayPoint.cpp - engine-label stubs for CWayPoint.
 
 class CWayPoint {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x0ae3f0
-// @size:    0x18f
 // @stub
+RVA(0x0ae3f0, 0x18f)
 CWayPoint::CWayPoint() {}

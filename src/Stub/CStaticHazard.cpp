@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CStaticHazard.cpp - engine-label stubs for CStaticHazard.
 
 class CStaticHazard {
@@ -9,21 +10,18 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x0fb7a0
-// @size:    0x2d4
 // @stub
+RVA(0x0fb7a0, 0x2d4)
 CStaticHazard::CStaticHazard() {}
 
 // @confidence: med
 // @source: decomp-xref
-// @address: 0x0fc0b0
-// @size:    0xb2
 // @stub
+RVA(0x0fc0b0, 0xb2)
 void CStaticHazard::LoadAttributes2() {}
 
 // @confidence: high
 // @source: decomp-xref
-// @address: 0x0fc1a0
-// @size:    0x33b
 // @stub
+RVA(0x0fc1a0, 0x33b)
 void CStaticHazard::LoadAttributes() {}

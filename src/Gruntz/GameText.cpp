@@ -4,6 +4,7 @@
 // dump_target.py (real bytes + relocs). The string literals become file-scope
 // .rdata consts (reloc-masked); only the per-fn code bytes are load-bearing.
 #include "GameText.h"
+#include "../rva.h"
 
 // ---------------------------------------------------------------------------
 // The two name tables are file-scope arrays of CString with brace-initializers.
@@ -20,9 +21,8 @@
 //   / "Gruntz in Space".
 // ---------------------------------------------------------------------------
 // GetWorldDisplayName (the g_worldName[] array initializer) @ 0x82990 (121 B).
-// @address: 0x82990
-// @symbol:  _$E1
-// @size:    0x79
+SYMBOL(_$E1)
+RVA(0x82990, 0x79)
 static AfxString g_worldName[8] = {
     "Rocky Roadz",
     "Gruntziclez",
@@ -40,9 +40,8 @@ static AfxString g_worldName[8] = {
 //   / "Coinz:" / "Secretz:".
 // ---------------------------------------------------------------------------
 // GetEndLevelStatLabels (the g_statLabel[] array initializer) @ 0x18740 (121 B).
-// @address: 0x18740
-// @symbol:  _$E4
-// @size:    0x79
+SYMBOL(_$E4)
+RVA(0x18740, 0x79)
 static AfxString g_statLabel[8] = {
     "Time:",
     "Survivorz:",
@@ -58,9 +57,7 @@ static AfxString g_statLabel[8] = {
 // GetWarlordName  @ 0x1ec20 (141 B, __cdecl, returns CString by value, ret 8) -
 // the boss/warlord display name by id, via a 4-entry jump table:
 //   0 -> "KING"  1 -> "NAPOLEAN"  2 -> "PATTON"  3 -> "VIKING"  default -> "".
-// ---------------------------------------------------------------------------
-// @address: 0x1ec20
-// @size:    0x8d
+RVA(0x1ec20, 0x8d)
 AfxString __stdcall GetWarlordName(int id)
 {
     // The target reserves and zero-inits one dead stack dword (`push ecx; mov
@@ -102,8 +99,7 @@ static char *g_errMsg_Exists;   // 0x6bf458
 static char *g_errMsg_NullArg;  // 0x6bf454
 static char *g_errMsg_BadArg;   // 0x6bf45c
 
-// @address: 0x16d9c0
-// @size:    0x75
+RVA(0x16d9c0, 0x75)
 CContainerErr::CContainerErr(const char *msg)
 {
     m_msg  = msg ? msg : g_defaultErrMsg;  // +0x04 stored first

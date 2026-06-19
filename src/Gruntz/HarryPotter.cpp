@@ -1,3 +1,4 @@
+#include "../rva.h"
 // HarryPotter.cpp - root object of the tomalla-named DDraw surface/page-manager
 // family. UnknownClassCGruntzMgrHarryPotter is the owner stored off CGruntzMgr
 // +0x30; it holds one child manager pointer per slot and a pair of global draw
@@ -44,19 +45,16 @@ public:
     int                      m_3c;      // +0x3c
 };
 
-// @data: 0x2bf3c0
+DATA(0x2bf3c0)
 extern "C" unsigned int g_6bf3c0;       // VA 0x6bf3c0  draw-clock mirror
-// @data: 0x2bf3bc
+DATA(0x2bf3bc)
 extern "C" unsigned int g_6bf3bc;       // VA 0x6bf3bc  draw-delta mirror
 
 // ---------------------------------------------------------------------------
 // UnknownClassCGruntzMgrHarryPotter::UnknownClassCGruntzMgrHarryPotter()
 // Stamps the vftable, clears every owned-child pointer except hwnd (+0x30), clears
 // flags/bookkeeping at +0x34/+0x38/+0x3c, then resets the two draw-clock globals.
-//
-// @address: 0x155840
-// @size:    0x41
-// ---------------------------------------------------------------------------
+RVA(0x155840, 0x41)
 UnknownClassCGruntzMgrHarryPotter::UnknownClassCGruntzMgrHarryPotter()
 {
     m_04 = 0;
@@ -81,10 +79,7 @@ UnknownClassCGruntzMgrHarryPotter::UnknownClassCGruntzMgrHarryPotter()
 // UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod14()
 // Returns whether the core child managers are present and the first child accepts
 // its +0x14 virtual readiness check.
-//
-// @address: 0x155f00
-// @size:    0x41
-// ---------------------------------------------------------------------------
+RVA(0x155f00, 0x41)
 int UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod14()
 {
     UnknownCGruntzMgrLucius *first = m_04;

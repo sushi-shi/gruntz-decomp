@@ -107,7 +107,7 @@ code, not the COFF header timestamp, which varies run to run).
 
 Each manifest unit's `source` compiles to `build/objdiff/base/<unit>.obj` via
 the `cl` rule. This is the base side fed to objdiff. Native incremental: edit a
-source (or its `// @address:` annotations), or add a unit, and ninja rebuilds
+source (or its `RVA()`/`DATA()` annotations), or add a unit, and ninja rebuilds
 only what changed (the label map regenerates from `src/`).
 
 ### Phase 2 — link -> candidate `.EXE` (DEFERRED)
@@ -154,16 +154,16 @@ The delink rule's declared outputs are the per-unit `build/objdiff/target/<unit>
 ### What triggers a re-delink
 
 The delink is keyed on **`build/gen/symbol_names.csv`** (the EXE + Ghidra CSVs only
-change at `gruntz init`). So in the inner loop, editing a `src/` `// @address:` is
+change at `gruntz init`). So in the inner loop, editing a `src/` `RVA()` macro is
 what re-delinks: ninja regenerates the label map, which *is* the delink's input.
 The full chain a single `gruntz build` runs:
 
 ```
-edit src/<unit>.cpp  (add / change a  // @address: 0x<rva>)
+edit src/<unit>.cpp  (add / change an  RVA(0x<rva>, 0x<size>))
   └─ gruntz build → configure.py (build.ninja) → ninja:
        cl         rule  cc_wrap.py   → build/objdiff/base/<unit>.obj   (recompile via wine cl)
        gen_labels rule  labels.py    → build/gen/symbol_names.csv      (rva → name → unit)
-                                        ↑ a src @address changed ⇒ the label map regenerates
+                                        ↑ a src RVA() changed ⇒ the label map regenerates (via LLVM IR)
        delink     rule  delink.py    ← symbol_names.csv is a declared input, so it re-runs:
                         synth_pdb.py    functions.csv + symbols.csv + symbol_names.csv
                                           → build/pdb/gruntz_named.pdb
@@ -194,38 +194,48 @@ does not exist yet is paired against an empty `dummy.obj` so it still lists at
 ## Add a translation unit
 
 1. add an `[[unit]]` block to `config/units.toml` (`unit`, `source`, `status`);
-2. annotate **each** matched function in `src/` with the canonical block — a `// ----`
-   rule, a one-line description, then `@address` and `@size`, closed by another
-   rule. A real example from `src/Gruntz/SBI_RectOnly.cpp`:
+2. `#include "../rva.h"` and annotate **each** matched function with an `RVA()`
+   macro (`src/rva.h`) directly above the definition, after the description. A
+   real example from `src/Gruntz/SBI_RectOnly.cpp`:
 
    ```cpp
    // ---------------------------------------------------------------------------
    // CSBI_RectOnly::CSBI_RectOnly()
    // Inlines the CStatusBarItem base ctor (the dead m_8=0 store is elided),
    // stores its own vptr, then sets m_8 = 1.
-   //
-   // @address: 0x101fa0    // retail .text RVA (VA = 0x400000 + rva)
-   // @size:    0x1b        // the function's byte_size from functions.csv
-   // ---------------------------------------------------------------------------
+   RVA(0x101fa0, 0x1b)   // retail .text RVA (VA = 0x400000 + rva), byte size
    CSBI_RectOnly::CSBI_RectOnly()
    {
        m_8 = 1;
    }
    ```
 
-   `gen_labels` parses only `@address` (plus an optional `@symbol` override for the
-   rare case clang's MS mangling differs from VC5's); `@size` is documentation —
-   the human cross-check against `functions.csv`. The label map regenerates from
-   these annotations — never hand-edit the CSV;
+   The macros (`src/rva.h`, compiled to nothing under MSVC 5.0 — it predates
+   `__attribute__` and C99 variadic macros, so each macro is FIXED-arity):
+   - `RVA(addr, size)` / `RVAU(addr)` — a matched function (sized / unsized);
+   - `SYMBOL(mangled)` — an explicit mangled-name override for the rare case
+     clang's MS mangling differs from VC5's;
+   - `DATA(addr)` — on an `extern` decl of a matched global (the DATA symbol it
+     is referenced through);
+   - `// @rva-symbol: <mangled> <rva> [<size>]` — a comment for a thunk with no
+     source body (a `??_G` deleting dtor) that can't hold an attribute.
+
+   `labels.py` reads `RVA`/`SYMBOL` from **LLVM IR** (`@llvm.global.annotations`
+   pairs the mangled symbol DIRECTLY with the annotation — no positional join);
+   `DATA` from the clang AST (an `extern`'s annotation is dropped from IR). The
+   label map regenerates from these annotations — never hand-edit the CSV. (The
+   vendored zlib C TUs keep PRISTINE source — no labels in it; their rva→symbol
+   map is the static `config/zlib_labels.csv`, emitted directly. See
+   `docs/zlib-matching.md`.)
 3. `gruntz build` (configure -> compile -> labels -> delink -> objdiff).
 
 ## Generated vs. tracked
 
-Tracked: `config/units.toml`, the `src/` sources (incl. their `// @address:`
-annotations), `configure.py`, and the pipeline package
+Tracked: `config/units.toml`, the `src/` sources (incl. their `RVA()`/`DATA()`
+annotation macros and `src/rva.h`), `configure.py`, and the pipeline package
 `scripts/gruntz/{build,ghidra,init}/`.
 
-Generated (git-ignored): `build/gen/symbol_names.csv` (from `src/` `@address`),
+Generated (git-ignored): `build/gen/symbol_names.csv` (from `src/` `RVA()`),
 `build.ninja`, `.ninja_log`/`.ninja_deps`, and everything under `build/` (base
 objs, delinked target objs, synth PDB, the clangd compdb, the wine prefix, the
 Ghidra DB + exports, objdiff project + report).

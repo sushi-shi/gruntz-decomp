@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CRandomAmbientSound.cpp - engine-label stubs for CRandomAmbientSound.
 
 class CRandomAmbientSound {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: high
 // @source: rtti-vptr
-// @address: 0x00bb60
-// @size:    0x9b
 // @stub
+RVA(0x00bb60, 0x9b)
 CRandomAmbientSound::~CRandomAmbientSound() {}

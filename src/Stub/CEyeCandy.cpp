@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CEyeCandy.cpp - engine-label stubs for CEyeCandy.
 
 class CEyeCandy {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x0ac620
-// @size:    0x1cf
 // @stub
+RVA(0x0ac620, 0x1cf)
 CEyeCandy::CEyeCandy() {}

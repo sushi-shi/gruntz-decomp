@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CBehindCandyAni.cpp - engine-label stubs for CBehindCandyAni.
 
 class CBehindCandyAni {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x0ad540
-// @size:    0x1f0
 // @stub
+RVA(0x0ad540, 0x1f0)
 CBehindCandyAni::CBehindCandyAni() {}

@@ -32,11 +32,11 @@
 // CPlane / CImageSet / the per-plane reader / ReadImageSet / RecomputePlaneCoords /
 // InflateMainBlock / operator new/delete / SetAtGrow are reloc-masked calls.
 #include "GameLevel.h"
+#include "../rva.h"
 
 #include <string.h>  // strcpy
 
-// @address: 0x15d280
-// @size:    0x279
+RVA(0x15d280, 0x279)
 int CGameLevel::LoadWwd(WwdHeader* hdr)
 {
     Reset();                                  // vtable +0x44

@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CSplashState.cpp - engine-label stubs for CSplashState.
 
 class CSplashState {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: med
 // @source: decomp-xref
-// @address: 0x0f9780
-// @size:    0x8c
 // @stub
+RVA(0x0f9780, 0x8c)
 void CSplashState::LoadSounds() {}

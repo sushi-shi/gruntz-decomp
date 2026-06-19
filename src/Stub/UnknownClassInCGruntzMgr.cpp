@@ -1,3 +1,4 @@
+#include "../rva.h"
 // UnknownClassInCGruntzMgr.cpp - engine-label stubs for UnknownClassInCGruntzMgr.
 
 class UnknownClassInCGruntzMgr {
@@ -8,14 +9,12 @@ public:
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x083260
-// @size:    0x57
 // @stub
+RVA(0x083260, 0x57)
 UnknownClassInCGruntzMgr::~UnknownClassInCGruntzMgr() {}
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x0da790
-// @size:    0xb0
 // @stub
+RVA(0x0da790, 0xb0)
 UnknownClassInCGruntzMgr::UnknownClassInCGruntzMgr() {}
