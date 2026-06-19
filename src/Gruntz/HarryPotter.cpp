@@ -8,6 +8,13 @@
 // addresses are load-bearing for matching.
 
 typedef void *HWND;
+typedef long intptr_t;
+
+class UnknownCGruntzMgrLuciusChild {
+public:
+    int m_10;
+    int m_14;
+};
 
 class UnknownCGruntzMgrLucius {
 public:
@@ -17,6 +24,9 @@ public:
     virtual void Slot0C();
     virtual void Slot10();
     virtual int  Vfunc14();
+
+    void *m_04;
+    UnknownCGruntzMgrLuciusChild *m_10;
 };
 
 class UnknownClassCGruntzMgrHarryPotter {
@@ -27,6 +37,18 @@ public:
     virtual int UnknownVirtualMethod18(HWND hWnd, int width, int height,
                                        int bpp, int flagsUnknown);
     virtual void UnknownVirtualMethod1C();
+    virtual void UnknownVirtualMethod20();
+    virtual int UnknownVirtualMethod24(int x, int y, int flags);
+    virtual void UnknownVirtualMethod28(void *hWnd);
+    virtual int UnknownVirtualMethod2C(int unknown);
+    virtual int UnknownVirtualMethod30(int width, int height,
+                                        int bpp, int flagsUnknown,
+                                        void *callback);
+    virtual int UnknownVirtualMethod34(int width, int height,
+                                        int bpp, int flagsUnknown,
+                                        void *callback);
+    virtual int UnknownVirtualMethod38(void *arg1, int arg2, int arg3,
+                                        int arg4);
 
     UnknownCGruntzMgrLucius *m_04;      // +0x04  Draco
     UnknownCGruntzMgrLucius *m_08;      // +0x08  Hermiona
@@ -103,9 +125,82 @@ fail:
     return 0;
 }
 
+// Helper structs for __thiscall external functions.
+struct MinervaInner { void Free(); };
+struct VoldemortObj { void Free(); };
+struct MinervaMgr   { void ClearMap(); };
+extern void __cdecl RelayHwnd(void *hWnd);
+extern int __stdcall CreateChildSurface(int x, int y, int flags);
+struct RemusCoordsHelper { int SetCoords(int x, int y); };
+typedef int (__cdecl *HP_Callback)(void *, void *, int, int, int);
+
+// ---------------------------------------------------------------------------
+// UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod20()
+// Frees context — cleans up the Voldemort surface and the Minerva map.
+RVA(0x155fc0, 0x2e)
+void UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod20()
+{
+    if (m_28 != 0) {
+        void *inner = *(void **)((char *)m_28 + 0x2c);
+        if (inner != 0)
+            ((MinervaInner *)inner)->Free();
+        ((MinervaMgr *)m_28)->ClearMap();
+    }
+    if (m_20 != 0)
+        ((VoldemortObj *)m_20)->Free();
+}
+
+// ---------------------------------------------------------------------------
+// UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod24()
+// Validates/sets surface dimensions.
+RVA(0x155f60, 0x56)
+int UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod24(
+    int x, int y, int flags)
+{
+    UnknownCGruntzMgrLuciusChild *child = m_04->m_10;
+    if (child->m_10 != x || child->m_14 != y) {
+        if (CreateChildSurface(x, y, flags) == 0)
+            return 0;
+    }
+    if (m_24 != 0) {
+        if (((RemusCoordsHelper *)m_24)->SetCoords(x, y) == 0)
+            return 0;
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod28()
+// Relays the hWnd argument to an external manager function.
+RVA(0x155f50, 0x10)
+void UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod28(void *hWnd)
+{
+    RelayHwnd(hWnd);
+}
+
+// ---------------------------------------------------------------------------
+// UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod38()
+// Dispatches arguments through the m_3c callback function pointer,
+// returning 1 on success / 0 on failure.
+RVA(0x156a90, 0x3a)
+int UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod38(
+    void *arg1, int arg2, int arg3, int arg4)
+{
+    if (!arg1)
+        return 0;
+    if (!m_3c)
+        return 0;
+    return ((HP_Callback)(intptr_t)m_3c)(this, arg1, arg2, arg3, arg4) != 0;
+}
+
 // Out-of-line stubs so the vftable is emitted in this TU. They are not claimed
 // as matched in symbol_names.csv.
 UnknownClassCGruntzMgrHarryPotter::~UnknownClassCGruntzMgrHarryPotter() {}
 int UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod18(
     HWND, int, int, int, int) { return 0; }
 void UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod1C() {}
+int UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod2C(int) { return 0; }
+int UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod30(
+    int, int, int, int, void *) { return 0; }
+int UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod34(
+    int, int, int, int, void *) { return 0; }

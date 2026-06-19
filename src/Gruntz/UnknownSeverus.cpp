@@ -33,6 +33,20 @@ public:
     char m_data[0x14];
 };
 
+// POSITION is the opaque MFC iteration handle.  Native int form so the ternary
+// guard initialiser passes cleanly to GetNextAssoc's POSITION & parameter; the
+// reloc-masked call site is identical.
+typedef int POSITION;
+
+// CString (4-byte char* wrapper). Only the default ctor + dtor are needed;
+// GetNextAssoc writes the key output into it.
+class CString {
+public:
+    CString();          // @0x1b9b93
+    ~CString();         // @0x1b9cde
+    char *m_pchData;    // +0x00
+};
+
 inline void *operator new(unsigned int, void *p) { return p; }
 
 // The looked-up value: only the scalar-deleting destructor slot (+0x04) is load-
@@ -48,9 +62,18 @@ public:
 // so clang mangles them to ?Lookup@CMapStringToOb@@... / ?RemoveKey@CMapStringToOb@@... .
 class CMapStringToOb {
 public:
-    int Lookup(const char *key, CObject *&rValue) const;    // @0x1b8008
-    CObject *&operator[](const char *key);                  // @0x1b804c
-    int RemoveKey(const char *key);                         // @0x1b80ae
+    int Lookup(const char *key, CObject *&rValue) const;                // @0x1b8008
+    CObject *&operator[](const char *key);                              // @0x1b804c
+    int RemoveKey(const char *key);                                     // @0x1b80ae
+    void GetNextAssoc(POSITION &rNextPosition, CString &rKey,
+                      CObject *&rValue) const;                          // @0x1b8116
+    void RemoveAll();                                                   // @0x1b7ea0
+
+    // Simulated internal layout (all offsets relative to +0x10 of parent):
+    void     *m_vptr;              // +0x00  CObject vptr
+    unsigned  m_nHashTableSize;    // +0x04
+    void    **m_pHashTable;        // +0x08
+    int       m_nCount;            // +0x0c
 };
 
 class UnknownSeverusVtableView {
@@ -142,6 +165,9 @@ public:
     int  VirtualMethodUnknown40(int a1, const char *key, int a3, int a4);
     void VirtualMethodUnknown50(SeverusWorkerObj *worker);
     void VirtualMethodUnknown54(const char *key);
+    void VirtualMethodUnknown58();
+    void MapTeardown_1552b0();
+    int  StringCopy_155810(const char *src);
 
     void          *m_vptr;                  // +0x00
     int            m_04;                     // +0x04  initialized to -1 when inactive
@@ -154,7 +180,6 @@ public:
     void Stub_155160();
     void Stub_156df0();
     void Stub_156e80();
-    void Stub_165210();
 };
 
 static inline int SeverusReadField1c(const UnknownSeverus *p)
@@ -374,6 +399,65 @@ void UnknownSeverus::VirtualMethodUnknown54(const char *key)
     }
 }
 
+// ---------------------------------------------------------------------------
+// UnknownSeverus::VirtualMethodUnknown58  @0x165210  (__thiscall, ret 0)
+// Map teardown: iterate all entries in m_10 via GetNextAssoc, destroying each
+// CObject* value via its scalar-deleting destructor (vtbl +0x4 arg 1), then
+// RemoveAll the map. Same pattern as UnknownAlbus::VirtualMethodUnknown1C but
+// without the final m_64 clear (that field does not exist in this class).
+//
+// Carries a /GX EH frame for the local CString key (destructor must fire on
+// unwind through the iteration loop).
+RVA(0x165210, 0xa2)
+void UnknownSeverus::VirtualMethodUnknown58()
+{
+    CObject *val = 0;
+    int pos = (m_10.m_nCount != 0) ? -1 : 0;
+    CString key;
+    if (*(volatile int *)&pos != 0) {
+        do {
+            m_10.GetNextAssoc(pos, key, val);
+            if (val != 0)
+                ((SeverusValue *)val)->ScalarDtor(1);
+        } while (pos != 0);
+    }
+    m_10.RemoveAll();
+}
+
+extern "C" char *_strncpy(char *, const char *, unsigned int);
+
+// ---------------------------------------------------------------------------
+// Map teardown leaf 0x1552b0  (162B, SEH)
+// Iterates m_10 via GetNextAssoc, destroys each CObject* value via
+// scalar-deleting dtor (vtbl+0x4 arg 1), then RemoveAll.
+RVA(0x1552b0, 0xa2)
+void UnknownSeverus::MapTeardown_1552b0()
+{
+    CObject *val = 0;
+    int pos = (m_10.m_nCount != 0) ? -1 : 0;
+    CString key;
+    if (*(volatile int *)&pos != 0) {
+        do {
+            m_10.GetNextAssoc(pos, key, val);
+            if (val != 0)
+                ((SeverusValue *)val)->ScalarDtor(1);
+        } while (pos != 0);
+    }
+    m_10.RemoveAll();
+}
+
+// ---------------------------------------------------------------------------
+// String copy leaf 0x155810  (35B)
+// Copies at most 0x3F bytes from src into this+0x24, null-terminates at
+// this+0x63, returns 1.
+RVA(0x155810, 0x23)
+int UnknownSeverus::StringCopy_155810(const char *src)
+{
+    _strncpy((char *)this + 0x24, src, 0x3f);
+    *((char *)this + 0x63) = 0;
+    return 1;
+}
+
 // -------------------------------------------------------------------------
 // Engine-label backlog stubs.
 // -------------------------------------------------------------------------
@@ -400,9 +484,3 @@ void UnknownSeverus::Stub_156df0() {}
 // @stub
 RVA(0x156e80, 0x38)
 void UnknownSeverus::Stub_156e80() {}
-
-// @confidence: med
-// @source: tomalla
-// @stub
-RVA(0x165210, 0xa2)
-void UnknownSeverus::Stub_165210() {}

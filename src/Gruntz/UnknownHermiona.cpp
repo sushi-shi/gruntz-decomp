@@ -1,14 +1,21 @@
 #include "../rva.h"
-// UnknownHermiona.cpp - two leaf broadcast methods of the tomalla-named ddrawmgr
+// UnknownHermiona.cpp - six leaf methods of the tomalla-named ddrawmgr
 // sub-manager UnknownHermiona (a CDirectDrawMgr surface/page sub-manager in the
 // "Harry Potter" family; see structure/managers/ddrawmgr_surface_family.h).
 //
-// Both methods share ONE shape: walk an intrusive singly-linked list anchored at
+// All six share ONE shape: walk an intrusive singly-linked list anchored at
 // UnknownHermiona+0x14 (each node's first dword is the next-node pointer, and
 // node+0x8 holds a child object), dispatching one of the child's sibling virtuals
-// with the method's three forwarded args; after the walk, dispatch the object's
-// OWN +0x2c virtual with two of those args. The two methods differ only in which
-// child virtual the loop calls: +0x34 (Unknown30) vs +0x38 (Unknown34).
+// with a varying number of forwarded args. Some methods also dispatch the
+// object's OWN +0x2c virtual after the walk.
+//
+// The children are:
+//   +0x1c -> tail-call thunk to the object's own +0x3c virtual (no list walk)
+//   +0x28 -> per-node child Slot2C(a1)                            [1 arg]
+//   +0x2c -> per-node child Slot30(a1,a2)                          [2 args]
+//   +0x30 -> per-node child Vfunc34(a1,a2,a3), then this->Vfunc2C  [3 args]
+//   +0x34 -> per-node child Vfunc38(a1,a2,a3), then this->Vfunc2C  [3 args]
+//   +0x38 -> per-node child field_0xd8 = -1 (no vtable dispatch)   [0 args]
 //
 // Plain /O2 /MT leaves: NO SEH frame, NO relocations - they touch only the +0x14
 // list anchor, the node next/object offsets, and sibling/child vtables. Field
@@ -21,7 +28,8 @@
 // ---------------------------------------------------------------------------
 
 // The child object dispatched per list node. Slots laid out so the broadcast
-// virtuals land at +0x34 / +0x38. Declarations only - never defined.
+// virtuals land at +0x34 / +0x38, with +0x2c and +0x30 used by other methods.
+// Declarations only - never defined.
 class HermionaChild {
 public:
     virtual void Slot00();                              // +0x00
@@ -35,10 +43,15 @@ public:
     virtual void Slot20();                              // +0x20
     virtual void Slot24();                              // +0x24
     virtual void Slot28();                              // +0x28
-    virtual void Slot2C();                              // +0x2c
-    virtual void Slot30();                              // +0x30
+    virtual void Slot2C(int a1);                       // +0x2c
+    virtual void Slot30(int a1, int a2);               // +0x30
     virtual void Vfunc34(int a1, int a2, int a3);       // +0x34
     virtual void Vfunc38(int a1, int a2, int a3);       // +0x38
+
+    // Data member used by VirtualMethodUnknown38 (write to +0xd8).
+    // vtable pointer at +0x00 (4 B); pad from +0x04 to +0xd7.
+    char m_pad04[0xd8 - 4];
+    int  m_d8;                                          // +0xd8
 };
 
 // One node of the intrusive list at +0x14: next pointer @0, child object @8.
@@ -50,9 +63,10 @@ struct HermionaNode {
 
 // ---------------------------------------------------------------------------
 // UnknownHermiona - only the load-bearing offsets are modeled: the +0x14 list
-// anchor and the object's own +0x2c "post-broadcast" virtual. The matched methods
-// occupy lower vtable slots (slot numbers not load-bearing, only bodies), so they
-// are placed first; the +0x2c slot is padded to land exactly.
+// anchor and the vtable slots used by leaf methods.  The matched methods
+// occupy lower vtable slots (slot numbers not load-bearing, only bodies), so
+// they are placed first; the slot sequence from +0x1c through +0x3c is
+// padded around the real virtuals so each lands at the correct offset.
 // ---------------------------------------------------------------------------
 class UnknownHermiona {
 public:
@@ -60,19 +74,23 @@ public:
     void VirtualMethodUnknown30(int a1, int a2, int a3);
     void VirtualMethodUnknown34(int a1, int a2, int a3);
 
-    // --- vtable padding so the post-broadcast self-virtual lands at +0x2c ---
-    virtual void Slot00();              // +0x00
-    virtual void Slot04();              // +0x04
-    virtual void Slot08();              // +0x08
-    virtual void Slot0C();              // +0x0c
-    virtual void Slot10();              // +0x10
-    virtual void Slot14();              // +0x14
-    virtual void Slot18();              // +0x18
-    virtual void Slot1C();              // +0x1c
-    virtual void Slot20();              // +0x20
-    virtual void Slot24();              // +0x24
-    virtual void Slot28();              // +0x28
-    virtual void Vfunc2C(int a1, int a2);   // +0x2c  post-broadcast self virtual
+    // --- vtable padding so the leaf virtuals land at their target slots ---
+    virtual void Slot00();                  // +0x00
+    virtual void Slot04();                  // +0x04
+    virtual void Slot08();                  // +0x08
+    virtual void Slot0C();                  // +0x0c
+    virtual void Slot10();                  // +0x10
+    virtual void Slot14();                  // +0x14
+    virtual void Slot18();                  // +0x18
+    virtual void VirtualMethodUnknown1C();  // +0x1c  thunk -> +0x3c
+    virtual void Slot20();                  // +0x20
+    virtual void Slot24();                  // +0x24
+    virtual void VirtualMethodUnknown28(int a1);      // +0x28
+    virtual void VirtualMethodUnknown2C(int a1, int a2);  // +0x2c
+    virtual void Slot30();                  // +0x30
+    virtual void Slot34();                  // +0x34
+    virtual void VirtualMethodUnknown38();  // +0x38
+    virtual void Slot3C();                  // +0x3c  (referenced by +0x1c thunk)
 
     int           m_04;                 // +0x04  initialized to -1 when inactive
     char          m_pad08[0x0c - 0x08]; // +0x08..0x0b
@@ -81,12 +99,8 @@ public:
     HermionaNode *m_14;                 // +0x14  intrusive-list head
 
     // Engine-label backlog stubs.
-    void Stub_1591e0();
     void Stub_1591f0();
     void Stub_159a70();
-    void Stub_159c90();
-    void Stub_159cc0();
-    void Stub_159d90();
 };
 
 // ---------------------------------------------------------------------------
@@ -102,6 +116,52 @@ int UnknownHermiona::VirtualMethodUnknown14()
 
 fail:
     return 0;
+}
+
+// ---------------------------------------------------------------------------
+// UnknownHermiona::VirtualMethodUnknown1C  @0x1591e0  (__thiscall, ret 0)
+// 5-byte thunk: tail-calls the object's own virtual at vtable slot +0x3c.
+RVA(0x1591e0, 0x5)
+void UnknownHermiona::VirtualMethodUnknown1C()
+{
+    this->Slot3C();
+}
+
+// ---------------------------------------------------------------------------
+// UnknownHermiona::VirtualMethodUnknown28  @0x159c90  (__thiscall, ret 4)
+// Walk the +0x14 list dispatching child->Slot2C(a1) per node. No post-loop
+// dispatch.
+//
+// RESIDUE: same loop-advance scheduling plateau as Unknown30/34 — see comment
+// below for details.
+RVA(0x159c90, 0x23)
+void UnknownHermiona::VirtualMethodUnknown28(int a1)
+{
+    HermionaNode *n = m_14;
+    if (n != 0) {
+        do {
+            HermionaNode *cur = n;
+            n = n->m_next;
+            cur->m_obj->Slot2C(a1);
+        } while (n != 0);
+    }
+}
+
+// ---------------------------------------------------------------------------
+// UnknownHermiona::VirtualMethodUnknown2C  @0x159cc0  (__thiscall, ret 8)
+// Walk the +0x14 list dispatching child->Slot30(a1,a2) per node. No post-loop
+// dispatch.
+RVA(0x159cc0, 0x2a)
+void UnknownHermiona::VirtualMethodUnknown2C(int a1, int a2)
+{
+    HermionaNode *n = m_14;
+    if (n != 0) {
+        do {
+            HermionaNode *cur = n;
+            n = n->m_next;
+            cur->m_obj->Slot30(a1, a2);
+        } while (n != 0);
+    }
 }
 
 // Walks the +0x14 list, calling child->Vfunc34(a1,a2,a3) per node, then the
@@ -135,7 +195,7 @@ void UnknownHermiona::VirtualMethodUnknown30(int a1, int a2, int a3)
             n = n->m_next;
         } while (n != 0);
     }
-    Vfunc2C(a2, a3);
+    VirtualMethodUnknown2C(a2, a3);
 }
 
 // ---------------------------------------------------------------------------
@@ -151,18 +211,29 @@ void UnknownHermiona::VirtualMethodUnknown34(int a1, int a2, int a3)
             n = n->m_next;
         } while (n != 0);
     }
-    Vfunc2C(a2, a3);
+    VirtualMethodUnknown2C(a2, a3);
+}
+
+// ---------------------------------------------------------------------------
+// UnknownHermiona::VirtualMethodUnknown38  @0x159d90  (__thiscall, ret 0)
+// Walk the +0x14 list setting each child's field at +0xd8 to -1. No vtable
+// dispatch, no stack args.
+RVA(0x159d90, 0x1c)
+void UnknownHermiona::VirtualMethodUnknown38()
+{
+    HermionaNode *n = m_14;
+    if (n != 0) {
+        do {
+            HermionaNode *cur = n;
+            n = n->m_next;
+            cur->m_obj->m_d8 = -1;
+        } while (n != 0);
+    }
 }
 
 // -------------------------------------------------------------------------
 // Engine-label backlog stubs.
 // -------------------------------------------------------------------------
-// @confidence: high
-// @source: tomalla
-// @stub
-RVA(0x1591e0, 0x5)
-void UnknownHermiona::Stub_1591e0() {}
-
 // @confidence: high
 // @source: tomalla
 // @stub
@@ -174,21 +245,3 @@ void UnknownHermiona::Stub_1591f0() {}
 // @stub
 RVA(0x159a70, 0x200)
 void UnknownHermiona::Stub_159a70() {}
-
-// @confidence: high
-// @source: tomalla
-// @stub
-RVA(0x159c90, 0x23)
-void UnknownHermiona::Stub_159c90() {}
-
-// @confidence: high
-// @source: tomalla
-// @stub
-RVA(0x159cc0, 0x2a)
-void UnknownHermiona::Stub_159cc0() {}
-
-// @confidence: high
-// @source: tomalla
-// @stub
-RVA(0x159d90, 0x1c)
-void UnknownHermiona::Stub_159d90() {}

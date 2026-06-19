@@ -83,6 +83,10 @@ public:
                                        int windowClassFlags, int windowWidth,
                                        int windowHeight);                 // vtbl +0x08  0x080930
     virtual void ShowError();                         // vtbl +0x30  0x080ac0
+    // Another base-init virtual override; just returns 0.
+    virtual int VirtualUnknownMethod04(int a, int b, int c);  // 0x080aa0
+    // Shows the MESSAGE dialog with an arbitrary message string.
+    void ShowMessage(char *msg, HWND hParent);                // 0x080c00
     WAP32::CGameMgr *InitializeGameManager();
     static INT_PTR __stdcall ErrorDialogProc(HWND hWnd, UINT message,
                                              WPARAM wParam, LPARAM lParam);
@@ -220,6 +224,42 @@ INT_PTR __stdcall CGruntzApp::ErrorDialogProc(HWND hWnd, UINT message,
     }
 
     return 0;
+}
+
+// ---------------------------------------------------------------------------
+// CGruntzApp::VirtualUnknownMethod04
+// Another base-init virtual override; the body just returns 0 (`xor eax,eax`).
+RVA(0x80aa0, 0x5)
+int CGruntzApp::VirtualUnknownMethod04(int a, int b, int c)
+{
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// CGruntzApp::ShowMessage
+// Copies the message into the shared g_errorText buffer (inline strcpy) then
+// shows the MESSAGE dialog (DialogBoxParamA, FF15 [IAT]) with MsgDialogProc -
+// the dialog proc lives in another TU, so it is taken via an extern thunk.
+extern "C" INT_PTR __stdcall MsgDialogProc(HWND, UINT, WPARAM, LPARAM);
+RVA(0x80c00, 0x48)
+void CGruntzApp::ShowMessage(char *msg, HWND hParent)
+{
+    strcpy(g_errorText, msg);
+    DialogBoxParamA(m_c, "MESSAGE", hParent, &MsgDialogProc, 0);
+}
+
+// ---------------------------------------------------------------------------
+// CreateU10O
+// Free function `void *CreateU10O()` (`?CreateU10O@@YAPAXXZ`): `return new U10O;`
+// - operator new(sizeof(U10O)) then a throwing ctor under a C++ EH frame, then
+// returns the raw pointer. Only the new+ctor shape is load-bearing; a forward
+// class with a declared ctor suffices to give `new U10O` a size + ctor call.
+struct U10O { U10O(); };
+RVA(0x809a0, 0x57)
+void *CreateU10O()
+{
+    U10O *p = new U10O;
+    return p;
 }
 
 // -------------------------------------------------------------------------

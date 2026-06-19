@@ -360,6 +360,34 @@ int RezMgr::PerFrameTick()
     return 1;
 }
 
+// Win32 import the debug-position probe posts its WM_COMMAND through (minimal
+// dllimport so the FF15 [IAT] call shape falls out; do NOT pull in <windows.h>).
+extern "C" __declspec(dllimport) int __stdcall
+PostMessageA(void *hWnd, unsigned Msg, unsigned wParam, long lParam);
+
+// ---------------------------------------------------------------------------
+// RezMgr::HandleDebugPosition()  @ 0x08e470 (0x50 B).
+// When the active mode's per-frame state step reports 3, look up the
+// "DEBUG_POSITION" debug value (via the external CheckDbgVal helper, reached at
+// the call site through the 0x2bb7 thunk @0x090260); if it is set, fetch the
+// owning window handle (this+4 -> owner, owner+4 -> hwnd) and post it a
+// WM_COMMAND (0x111) with command id 0x805c. Returns nonzero iff the lookup
+// reported a hit. The CheckDbgVal call's E8 rel32 is reloc-masked by objdiff.
+RVA(0x08e470, 0x50)
+int RezMgr::HandleDebugPosition()
+{
+    int r = 0;
+    if (m_mode && m_mode->Update() == 3) {
+        r = CheckDbgVal("DEBUG_POSITION", 0x402d0b, 1);
+        if (r == 1) {
+            void *owner = *(void **)((char *)this + 4);
+            void *hwnd  = *(void **)((char *)owner + 4);
+            PostMessageA(hwnd, 0x111, 0x805c, 0);
+        }
+    }
+    return r != 0;
+}
+
 // -------------------------------------------------------------------------
 // Engine-label backlog stubs.
 // -------------------------------------------------------------------------

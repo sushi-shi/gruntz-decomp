@@ -344,6 +344,13 @@ public:
     char GetGruntzDriveLetter();               // 0x8fa70 (ret)
     void ReportError(int msgId, int code);     // 0x8dc60 (ret 8)
 
+    // The debug-position keyboard probe: when the active mode reports state 3,
+    // looks up the "DEBUG_POSITION" debug value and (if set) posts a WM_COMMAND
+    // to the owning window. CheckDbgVal is the external (reloc-masked) debug-value
+    // lookup helper its call site dispatches to.
+    int  HandleDebugPosition();                               // 0x08e470
+    int  CheckDbgVal(const char *key, int defVal, int flag);  // 0x090260
+
     // --- layout (vptr occupies +0x00) ---------------------------------------
     char       m_pad4[0x2c - 0x04];   // +0x04..+0x2b
     CGameMode *m_mode;                // +0x2c  (active game-mode driven per frame)
