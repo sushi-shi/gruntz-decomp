@@ -54,14 +54,28 @@ Stub reconciliation: each ported function that previously existed as an `@stub`
 - **`CGameWnd` deleting-dtor thunk** (gruntzwnd): the model modelled it as a second
   `CGruntzWnd::~CGruntzWnd`, which conflicts with the existing dtor.
 
-### Deferred — verified ≥90% but need engine/win32 scaffolding imported into the
-existing curated TUs (a clean follow-up; placement already verified above):
-- `unknownhermiona` (4), `unknownhagrid` (3), `unknownalbus` (2) — share the
-  `CMapStringToOb` / `CString` / node-list "DDraw surface family" scaffolding.
-- `harrypotter` (4) — `CreateChildSurface`, Lucius child layout, `RelayHwnd`.
-- `unknownseverus` (2: `MapTeardown`, `StringCopy`) — `CMapStringToOb` iteration, `_strncpy`.
-- `gruntzapp` (3) — `U10O` type + the win32 message-dialog path.
-- `rezmgr` (1: `HandleDebugPosition`) — `PostMessageA` / `CheckDbgVal`.
+### Deferred set — now matched in the stacked follow-up (this branch)
 
-These are the matching worklist's next pickups; their RVAs and class placement are
-already confirmed, so reconstruction only needs the supporting type declarations.
+The functions deferred from the first pass were reconstructed by importing the
+engine/win32 scaffolding their curated TUs lacked (done surgically, per-unit, so
+each TU's existing curated functions kept their exact bodies — never replaced with
+matching-xai's lower-% "residue" versions). **19 newly matched ≥90%, no regressions:**
+
+- `unknownhermiona` (4: 1C/28/2C/38) — all 100%
+- `unknownhagrid` (3: 20/34/1C) — 100/95/100%
+- `unknownseverus` (3: MapTeardown/StringCopy/58) — all 100%
+- `harrypotter` (4: 20/24/28/38) — 100/98/100/100%
+- `gruntzapp` (3: CreateU10O/VirtualUnknownMethod04/ShowMessage) — all 100%
+- `unknownalbus` (1: VirtualMethodUnknown20) — 100%
+- `rezmgr` (1: HandleDebugPosition) — 93%
+
+Empty `Stub_*` placeholders the matched functions replaced were pruned; backlog
+stubs at other RVAs were preserved.
+
+### Still WIP (preserved, not counted)
+- `unknownalbus::VirtualMethodUnknown1C` (0x165b90) — reaches only ~82% here; its
+  EH-frame register/layout schedule is TU-context-dependent (matching-xai matched
+  it 100% only in its own TU layout). Kept as a `Stub_165b90` for an honest backlog
+  tally, with the full reconstruction preserved beside it in a `#if 0` block for a
+  future pickup (re-enable + reconcile this TU's symbol/layout context).
+- `rezmgr::ReportError` (0x08dc60) — 77% against matching's `RezMgr` layout; stays a stub.
