@@ -393,6 +393,11 @@ def cmd_clean(args) -> None:
     dirs (.claude/.codex/.agents). NOTE: this also removes build/ref, the wine
     prefix, and the Ghidra DB, so the next `gruntz init` is a HEAVY first run."""
     import shutil
+    # Reap this prefix's wineserver BEFORE deleting build/wineprefix: a server
+    # left running against a deleted prefix errors saving its registry ("could
+    # not save registry branch ... No such file or directory") and lingers as a
+    # stale server that flakes the next fresh build's first compiles.
+    _kill_wine_session()
     targets = [REPO / "build", REPO / "build.ninja",
                REPO / ".ninja_log", REPO / ".ninja_deps", *sorted(REPO.glob("*.obj"))]
     removed = 0
