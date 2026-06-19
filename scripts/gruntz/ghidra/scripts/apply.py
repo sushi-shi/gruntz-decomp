@@ -80,6 +80,32 @@ def R(s):
 def toaddr(rva):
     return space.getAddress(IMAGE_BASE + rva)
 
+
+def demangle_apply(addr, mangled):
+    """Demangle `mangled` and apply the readable name + namespace + signature at
+    addr. Returns True on success.
+
+    Ghidra's Demangler runs as an ANALYSIS pass over imported/auto-named symbols;
+    a name set programmatically as USER_DEFINED after analysis is treated as a
+    literal and never demangled (so a FID label like `??1CString@@QAE@XZ` would
+    otherwise show verbatim with Ghidra's __fastcall guess). We DEMOTE any existing
+    USER_DEFINED name to DEFAULT (else the demangler refuses to override it), then
+    DemanglerCmd applies the real name (CString::~CString), class namespace, and
+    __thiscall(void) signature. Names that aren't mangled (zlib `_adler32`) just
+    fail here; the caller restores the literal on a False return."""
+    try:
+        from ghidra.app.cmd.label import DemanglerCmd
+        from ghidra.util.task import TaskMonitor
+        prim = st.getPrimarySymbol(addr)
+        if prim is not None and prim.getSource() == US:
+            try:
+                prim.setName(None, SourceType.DEFAULT)  # let the demangler win
+            except Exception:
+                pass
+        return bool(DemanglerCmd(addr, mangled).applyTo(prog, TaskMonitor.DUMMY))
+    except Exception:
+        return False
+
 # =====================================================================
 # 0. CSV loader (respects quoted prototype field)
 # =====================================================================
@@ -534,7 +560,9 @@ try:
         fids.append((rva, r[1], r[2], r[3]))
 
     # ---- (D) FID + zlib names (apply first; source stub labels override where overlapping) ----
-    n_fid_named = 0; n_fid_skip_low = 0; n_fid_nofunc = 0
+    # Each mangled name is DEMANGLED + applied (readable name + namespace +
+    # signature), falling back to the literal name when it isn't manglable (zlib).
+    n_fid_named = 0; n_fid_skip_low = 0; n_fid_nofunc = 0; n_fid_demangled = 0
     for (rva, name, lib, conf) in fids:
         if conf == "LOW":
             n_fid_skip_low += 1
@@ -544,16 +572,22 @@ try:
         if fn is None:
             n_fid_nofunc += 1
             continue
-        cur = fn.getName()
-        if is_default(cur) or is_bogus(cur):
-            try:
-                fn.setName(name, US); n_fid_named += 1
-            except Exception:
-                pass
-    R("FID/library funcs named (HIGH/MED/AMBIG): %d  (LOW skipped: %d, no-func: %d)" %
-      (n_fid_named, n_fid_skip_low, n_fid_nofunc))
+        cur = str(fn.getName())
+        # name it when unnamed/bogus OR still showing a mangled string (a prior
+        # run set the raw name); a successful demangle leaves a readable name with
+        # no '?'/'@', so the next run skips it (idempotent).
+        if is_default(cur) or is_bogus(cur) or "?" in cur or "@" in cur:
+            if demangle_apply(addr, name):
+                n_fid_named += 1; n_fid_demangled += 1
+            else:
+                try:
+                    fn.setName(name, US); n_fid_named += 1
+                except Exception:
+                    pass
+    R("FID/library funcs named (HIGH/MED/AMBIG): %d  (%d demangled, LOW skipped: %d, no-func: %d)" %
+      (n_fid_named, n_fid_demangled, n_fid_skip_low, n_fid_nofunc))
 
-    n_sym_named = 0; n_sym_nofunc = 0
+    n_sym_named = 0; n_sym_nofunc = 0; n_sym_demangled = 0
     for (rva, name) in syms:
         addr = toaddr(rva)
         fn = ensure_function(addr)
@@ -561,12 +595,16 @@ try:
             n_sym_nofunc += 1
             continue
         cur = str(fn.getName())
-        if is_default(cur) or is_bogus(cur) or cur != name:
-            try:
-                fn.setName(name, US); n_sym_named += 1
-            except Exception:
-                pass
-    R("symbol_names (zlib+ctors) reconciled: %d  (no-func: %d)" % (n_sym_named, n_sym_nofunc))
+        if is_default(cur) or is_bogus(cur) or "?" in cur or "@" in cur:
+            if demangle_apply(addr, name):
+                n_sym_named += 1; n_sym_demangled += 1
+            else:
+                try:
+                    fn.setName(name, US); n_sym_named += 1
+                except Exception:
+                    pass
+    R("symbol_names (zlib+ctors) reconciled: %d  (%d demangled, no-func: %d)"
+      % (n_sym_named, n_sym_demangled, n_sym_nofunc))
 
     # Global DATA symbols a matched global is referenced through (labels.py @data
     # rows). The name is the clang MS-ABI mangling (?g_foo@@3.. / _g_foo); Ghidra
