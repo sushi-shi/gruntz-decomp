@@ -82,27 +82,14 @@ struct CSpriteFactory {
     CHudSprite *CreateSprite(int kind, int geoB, int geoA,
                              int hint, const char *name, int flags);
 };
-
-struct CSpriteFactoryHolder {
-    char m_pad0[0x8];
-    CSpriteFactory *m_8;    // +0x08
-};
+// CSpriteFactoryHolder (the registry +0x30 holder) lives in <Gruntz/CGameRegistry.h>.
 
 class CGruntCueSink;    // defined below (the 5-arg on-screen cue receiver)
 
-struct CGameRegistry {
-    char m_pad0[0x30];
-    CSpriteFactoryHolder *m_30;     // +0x30
-    char m_pad34[0x60 - 0x34];
-    CGruntCueSink *m_60;            // +0x60  (on-screen cue receiver)
-    char m_pad64[0x134 - 0x64];
-    int  m_134;                     // +0x134 (==1 => visible-bounds gate)
-    char m_pad138[0x13c - 0x138];
-    int  m_13c;                     // +0x13c (view min X)
-    int  m_140;                     // +0x140 (view min Y)
-    int  m_144;                     // +0x144 (view max X)
-    int  m_148;                     // +0x148 (view max Y)
-};
+// CGameRegistry - the shared global singleton (*g_pGameRegistry). The CGrunt
+// resolvers below read the visible-bounds gate (m_134, m_13c..m_148) and fire
+// m_60->Cue.
+#include <Gruntz/CGameRegistry.h>
 
 // The global manager pointer.
 extern CGameRegistry *g_pGameRegistry;

@@ -32,32 +32,9 @@ extern "C" {
     int  __cdecl  wsprintfA(char *, const char *, ...);
 }
 
-// ===========================================================================
-// CGameRegistry - the global game-manager singleton (the object at *g_64556c).
-// Only the offsets CPlay::Render reads are modeled.
-// ===========================================================================
-struct CGameRegistry {
-    char m_pad0[0x14];
-    int   m_14;         // +0x14  has-window / dev flag (gates rect-update calls)
-    char m_pad18[0x30 - 0x18];
-    struct RegMap {     // the +0x30 resource/map holder
-        char p0[0x8];
-        void *m_8;      // +0x08  a CMapPtrToPtr*
-        char p10[0x24 - 0x10];
-        struct Rect4 { int a, b, c, d; } m_24[2];   // +0x24  a rect (CopyRect source)
-    } *m_30;            // +0x30
-    char m_pad34[0x60 - 0x34];
-    void *m_60;         // +0x60  cue sink A
-    char m_pad64[0x68 - 0x64];
-    void *m_68;         // +0x68  cue sink B (message poster)
-    char m_pad6c[0x8c - 0x6c];
-    int   m_8c;         // +0x8c  viewport X
-    int   m_90;         // +0x90  viewport Y
-    char m_pad94[0x134 - 0x94];
-    int   m_134;        // +0x134 1/2 mode discriminator (==2 selects the alt path)
-    char m_pad138[0x15c - 0x138];
-    void *m_15c;        // +0x15c level/entity-tree holder
-};
+// CGameRegistry - the global game-manager singleton (*g_64556c), shared via
+// <Gruntz/CGameRegistry.h> with the CGrunt resolvers in Grunt.h.
+#include <Gruntz/CGameRegistry.h>
 
 // ===========================================================================
 // Sub-object layouts CPlay::Render walks through (only the offsets it reads).
