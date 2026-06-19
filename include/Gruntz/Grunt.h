@@ -118,7 +118,7 @@ extern CGameRegistry *g_pGameRegistry;
 // to the animator's lookup setter. Only the calls the resolvers emit are
 // modeled (external/no-body so the `call rel32` displacements reloc-mask): the
 // two operator+ overloads and the dtor.
-#include <incs/CString.h>
+#include <Gruntz/CString.h>
 
 // operator+(LPCTSTR, const CString&)  ("GRUNTZ_" + m_typeName)
 // operator+(const CString&, LPCTSTR)  (... + "_CATEGORY")

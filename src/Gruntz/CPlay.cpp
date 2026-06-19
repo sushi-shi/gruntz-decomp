@@ -69,7 +69,7 @@
 #include <rva.h>
 
 // ---- MFC primitives reused verbatim from the engine (reloc-masked). ----
-#include <incs/CString.h>
+#include <Gruntz/CString.h>
 extern int MapLookup(void *map, void *key, void *&out);   // CMapPtrToPtr::Lookup
 
 // ---- The global CButeMgr text-config tree (the singleton). Modeled as

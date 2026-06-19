@@ -4,8 +4,8 @@
 // the exact mangled symbol + arg shape are load-bearing. One header, #included
 // wherever a TU uses CString, instead of re-declaring it inline in every TU.
 // (Some TUs previously called this placeholder "AfxString"; same NAFXCW class.)
-#ifndef GRUNTZ_INCS_CSTRING_H
-#define GRUNTZ_INCS_CSTRING_H
+#ifndef GRUNTZ_GRUNTZ_CSTRING_H
+#define GRUNTZ_GRUNTZ_CSTRING_H
 
 class CString {
 public:
@@ -22,4 +22,4 @@ public:
     char *m_pchData;             // +0x00
 };
 
-#endif  // GRUNTZ_INCS_CSTRING_H
+#endif  // GRUNTZ_GRUNTZ_CSTRING_H

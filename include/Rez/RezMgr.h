@@ -245,7 +245,7 @@ struct RezNode {
 //             wrapper that defers to the v-formatter.
 // Modeled so the path builder's CString churn is reloc-masked.
 // ---------------------------------------------------------------------------
-#include <incs/CString.h>
+#include <Gruntz/CString.h>
 
 // Format(dst, fmt, ...) - the file-scope cdecl CString-format wrapper
 // (takes the destination CString by address as its first stack arg).

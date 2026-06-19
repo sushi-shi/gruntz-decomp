@@ -40,7 +40,7 @@ typedef int POSITION;
 
 // CString (4-byte char* wrapper). Only the default ctor + dtor are needed;
 // GetNextAssoc writes the key output into it.
-#include <incs/CString.h>
+#include <Gruntz/CString.h>
 
 inline void *operator new(unsigned int, void *p) { return p; }
 

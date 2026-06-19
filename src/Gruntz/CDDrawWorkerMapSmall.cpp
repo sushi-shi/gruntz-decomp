@@ -251,7 +251,7 @@ typedef int POSITION;
 // as GetNextAssoc's key output, then destroyed). The class body is minimal so
 // the compiler generates plain out-of-line ctor/dtor calls and an SEH scope
 // table around the iteration.
-#include <incs/CString.h>
+#include <Gruntz/CString.h>
 
 // CMapStringToOb extended for the teardown: GetNextAssoc/RemoveAll are out-of-line
 // NAFXCW thunks (reloc-masked rel32 calls); declared with the exact MFC signatures

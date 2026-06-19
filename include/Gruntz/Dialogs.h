@@ -32,7 +32,7 @@ class CWnd;
 // CString - the MFC string. Only its default ctor is touched (the embedded
 // string members the dialog ctors construct in place).
 // m_pchData = *_afxEmptyString.
-#include <incs/CString.h>
+#include <Gruntz/CString.h>
 
 // CObList - the MFC object list. Only the block-size ctor is touched (the
 // embedded list CMultiStartDlg constructs with nBlockSize=0xa).

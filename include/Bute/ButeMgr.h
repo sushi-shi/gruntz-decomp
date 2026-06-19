@@ -117,7 +117,7 @@ extern "C" void AfxString_AppendChar(void *pStr, char c);
 //   - the literal-ctor (CString::CString(const char*)) used by the
 //     one-shot default-string init in GetString.
 // ---------------------------------------------------------------------------
-#include <incs/CString.h>
+#include <Gruntz/CString.h>
 
 // CRT helpers (minimal external decls; reloc-masked engine CRT thunks).
 extern "C" int atexit(void (*func)(void));

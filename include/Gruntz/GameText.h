@@ -18,7 +18,7 @@
 // these leaves; declared with NO body so the `call rel32` displacement is
 // reloc-masked in objdiff.
 // ---------------------------------------------------------------------------
-#include <incs/CString.h>
+#include <Gruntz/CString.h>
 
 // ---------------------------------------------------------------------------
 // CContainerErr - the Monolith container-library exception object (the class

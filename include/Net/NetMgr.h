@@ -42,7 +42,7 @@ __declspec(dllimport) BOOL __stdcall PostMessageA(HWND hWnd, UINT Msg,
 //   operator+(const CString&, LPCTSTR)  (AFXAPI)
 //   CString::~CString()                 (__thiscall)
 // ---------------------------------------------------------------------------
-#include <incs/CString.h>
+#include <Gruntz/CString.h>
 
 CString __stdcall operator+(const CString &lhs, const char *rhs);
 

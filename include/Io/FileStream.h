@@ -61,7 +61,7 @@ __declspec(dllimport) DWORD __stdcall GetLastError(void);
 //   - ThrowGenericError(cause, lOsError, pszName): the 3-arg throw.
 //   - AfxFullPath(dst, src): the long-path canonicalizer.
 // ---------------------------------------------------------------------------
-#include <incs/CString.h>
+#include <Gruntz/CString.h>
 
 extern "C" void __stdcall AfxThrowOsError(LONG lOsError, LPCSTR lpszName);
 extern "C" void __stdcall AfxThrowFileError(int cause, LONG lOsError, LPCSTR lpszName);
