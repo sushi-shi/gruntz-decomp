@@ -34,6 +34,8 @@ Subcommands
   clangd        (Re)generate the clangd compile DB (editor; after adding a unit).
   status        Print the last objdiff match summary (no rebuild).
   todo          List obj symbols that lack an @address (matching worklist).
+  clean         Nuke build/ + stray root artifacts (build.ninja/*.obj/.ninja_*)
+                for a from-scratch init + build. HEAVY re-init (wine + Ghidra DB).
 """
 
 import argparse
@@ -385,6 +387,23 @@ def cmd_todo(args) -> None:
     log(f"{total} obj symbol(s) without an @address (worklist).")
 
 
+def cmd_clean(args) -> None:
+    """Nuke build/ + stray root build artifacts so `gruntz init && gruntz build`
+    rebuilds from scratch. Touches nothing under src/, config/, or the AI tooling
+    dirs (.claude/.codex/.agents). NOTE: this also removes build/ref, the wine
+    prefix, and the Ghidra DB, so the next `gruntz init` is a HEAVY first run."""
+    import shutil
+    targets = [REPO / "build", REPO / "build.ninja",
+               REPO / ".ninja_log", REPO / ".ninja_deps", *sorted(REPO.glob("*.obj"))]
+    removed = 0
+    for t in targets:
+        if t.is_dir():
+            shutil.rmtree(t); removed += 1; log(f"removed {t.relative_to(REPO)}/")
+        elif t.exists():
+            t.unlink(); removed += 1; log(f"removed {t.relative_to(REPO)}")
+    log(f"clean: removed {removed} path(s). Next: `gruntz init` then `gruntz build`.")
+
+
 def _clang() -> str:
     import os
     return os.environ.get("GRUNTZ_CLANG") or tool("clang")
@@ -419,6 +438,8 @@ def main() -> None:
                    ).set_defaults(func=cmd_status)
     sub.add_parser("todo", help="obj symbols lacking an @address (worklist)"
                    ).set_defaults(func=cmd_todo)
+    sub.add_parser("clean", help="nuke build/ + stray artifacts (HEAVY re-init after)"
+                   ).set_defaults(func=cmd_clean)
 
     args = ap.parse_args()
     if getattr(args, "ninja_args", None) and args.ninja_args[:1] == ["--"]:
