@@ -19,6 +19,10 @@ class UnknownSalazar {
 public:
     static int getLookupTableValue(int value);   // still a stub
     static void initializeUnknownLookupTable();
+
+    // Engine-label backlog stubs.
+    UnknownSalazar();
+    ~UnknownSalazar();
 };
 
 // ---------------------------------------------------------------------------
@@ -32,3 +36,26 @@ void UnknownSalazar::initializeUnknownLookupTable()
     for (int i = 0; i < 100; i++)
         g_salazarLookupTable[i] = getLookupTableValue(i);
 }
+
+// Engine-label backlog stubs (moved from src/Stub/UnknownSalazar.cpp).
+// getLookupTableValue is already declared above as `static int (int)`, so the
+// moved body matches that signature (the stub's local `void ()` form was a
+// per-TU placeholder for the same RVA).
+
+// @confidence: high
+// @source: tomalla
+// @stub
+RVA(0x1350b0, 0x5d)
+int UnknownSalazar::getLookupTableValue(int) { return 0; }
+
+// @confidence: high
+// @source: tomalla
+// @stub
+RVA(0x136440, 0x74)
+UnknownSalazar::UnknownSalazar() {}
+
+// @confidence: high
+// @source: tomalla
+// @stub
+RVA(0x1364c0, 0x1e)
+UnknownSalazar::~UnknownSalazar() {}
