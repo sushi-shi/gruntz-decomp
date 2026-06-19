@@ -35,10 +35,13 @@ class CObject;
 // CObList lives at UnknownHagrid+0x10. AddHead/AddTail are out-of-line NAFXCW
 // thunks (reloc-masked rel32 calls); declared with the exact MFC signatures so
 // clang mangles them to ?AddHead@CObList@@... / ?AddTail@CObList@@... .
+// RemoveAll / RemoveAt are called by VirtualMethodUnknown1C and Unknown34.
 class CObList {
 public:
     __POSITION *AddHead(CObject *newElement);
     __POSITION *AddTail(CObject *newElement);
+    void RemoveAll();
+    void RemoveAt(__POSITION *position);
 };
 
 // The worker virtual interface. Slots are laid out so the dispatched methods land
@@ -111,6 +114,33 @@ extern void *g_hagridWorkerVtblA;   // VA 0x5efea0  (BYTE-flag worker)
 DATA(0x1efed0)
 extern void *g_hagridWorkerVtblB;   // VA 0x5efed0  (int-flag worker)
 
+// The child type used in the work-node linked-list at +0x14.
+// Virtual slot +0x28 (Vfunc28) is dispatched in Unknown34; +0x74 is a
+// reference count. Slot layout matches the child class in the engine.
+class HagridChild {
+public:
+    virtual void Slot00();
+    virtual int  ScalarDtor(int flag);          // +0x04
+    virtual void Slot08();
+    virtual void Slot0C();
+    virtual void Slot10();
+    virtual void Slot14();
+    virtual void Slot18();
+    virtual void Slot1C();
+    virtual void Slot20();
+    virtual void Slot24();
+    virtual int  Vfunc28(int a1, int a2);       // +0x28
+    char _pad04[0x74 - 0x04];                   // +0x04..+0x73
+    int  m_74;                                  // +0x74  reference count
+};
+
+// Work nodes (CObList CNode-shaped: +0x00 = next, +0x08 = child pointer).
+struct WorkNode {
+    WorkNode  *m_next;     // +0x00
+    int        m_discard;  // +0x04  (not accessed; prev ptr or padding)
+    HagridChild *m_child;  // +0x08
+};
+
 // ---------------------------------------------------------------------------
 // UnknownHagrid - only the load-bearing offsets are modeled: m_pHarryPotter at
 // +0x0c (copied into the worker) and the CObList at +0x10. The four factory
@@ -120,10 +150,13 @@ extern void *g_hagridWorkerVtblB;   // VA 0x5efed0  (int-flag worker)
 class UnknownHagrid {
 public:
     int   VirtualMethodUnknown14();
+    void  VirtualMethodUnknown1C();
+    int   VirtualMethodUnknown20();
     void *VirtualMethodUnknown24(int a1, int a2, int a3);
     void *VirtualMethodUnknown28(int a1, int a2, int a3, int addHead);
     void *VirtualMethodUnknown2C(int a1, int a2, int a3, int a4, int addHead);
     void *VirtualMethodUnknown30(int a1, int a2, int a3, int a4, int addHead);
+    void  VirtualMethodUnknown34(int a1, int a2);
 
     void  *m_vptr;                  // +0x00 (vptr; not stamped by these methods)
     int    m_04;                    // +0x04  initialized to -1 when inactive
@@ -132,11 +165,8 @@ public:
     CObList m_10;                   // +0x10  worker list (CObList)
 
     // Engine-label backlog stubs.
-    void Stub_156f20();
     void Stub_156f50();
     void Stub_156fc0();
-    void Stub_163bf0();
-    void Stub_163c60();
 };
 
 // Stamps the worker's foreign vftable into its first dword (manual vptr store).
@@ -292,11 +322,66 @@ void *UnknownHagrid::VirtualMethodUnknown30(int a1, int a2, int a3, int a4, int 
 // -------------------------------------------------------------------------
 // Engine-label backlog stubs.
 // -------------------------------------------------------------------------
-// @confidence: high
-// @source: tomalla
-// @stub
+// ---------------------------------------------------------------------------
+// UnknownHagrid::VirtualMethodUnknown1C  @0x163c60  (__thiscall, ret 0)
+// Walks the work-node list at m_pHarryPotter+0x04 (= this+0x14 in the MFC
+// CObList's internal head pointer, offset +0x04 from the CObList base due to
+// the inherited vptr).  Destroys each node's child if present, then clears
+// the list.
+RVA(0x163c60, 0x2c)
+void UnknownHagrid::VirtualMethodUnknown1C()
+{
+    struct HLayout { char _pad[0x14]; WorkNode *m_head; };
+    WorkNode *pNode = ((HLayout *)this)->m_head;
+    while (pNode) {
+        WorkNode *pCurrent = pNode;
+        pNode = pNode->m_next;
+        if (pCurrent->m_child)
+            pCurrent->m_child->ScalarDtor(1);
+    }
+    m_10.RemoveAll();
+}
+
+// ---------------------------------------------------------------------------
+// UnknownHagrid::VirtualMethodUnknown20  @0x156f20  (__thiscall, ret 0)
+// Returns constant 0x11 (17).
 RVA(0x156f20, 0x6)
-void UnknownHagrid::Stub_156f20() {}
+int UnknownHagrid::VirtualMethodUnknown20()
+{
+    return 0x11;
+}
+
+// ---------------------------------------------------------------------------
+// UnknownHagrid::VirtualMethodUnknown34  @0x163bf0  (__thiscall, ret 8)
+// Walks the work-node list at this+0x14. For each node: calls the child's
+// +0x28 virtual (passing a1, a2), decrements child->m_74, and conditionally
+// removes the node from the CObList + destroys the child.
+//
+// The remove-or-skip decision:
+//    (a2 != 0 && (a2->field08 & 0x20000) == 0)  → always free
+//    OR child->m_74 <= 0                          → free
+//    Otherwise                                     → skip, keep node
+RVA(0x163bf0, 0x6d)
+void UnknownHagrid::VirtualMethodUnknown34(int a1, int a2)
+{
+    struct HLayout { char _pad[0x14]; WorkNode *m_head; };
+    WorkNode *pNode = ((HLayout *)this)->m_head;
+    while (pNode) {
+        WorkNode *pCurrent = pNode;
+        HagridChild *child = pCurrent->m_child;
+        pNode = pNode->m_next;
+        child->Vfunc28(a1, a2);
+        child->m_74--;
+        if ((*(int *)((char *)a2 + 0x2c) != 0
+             && (*(int *)((char *)a2 + 0x08) & 0x20000) == 0)
+            || child->m_74 <= 0)
+        {
+            m_10.RemoveAt((__POSITION *)pCurrent);
+            if (child)
+                child->ScalarDtor(1);
+        }
+    }
+}
 
 // @confidence: high
 // @source: tomalla
@@ -309,15 +394,3 @@ void UnknownHagrid::Stub_156f50() {}
 // @stub
 RVA(0x156fc0, 0x6)
 void UnknownHagrid::Stub_156fc0() {}
-
-// @confidence: high
-// @source: tomalla
-// @stub
-RVA(0x163bf0, 0x6d)
-void UnknownHagrid::Stub_163bf0() {}
-
-// @confidence: high
-// @source: tomalla
-// @stub
-RVA(0x163c60, 0x2c)
-void UnknownHagrid::Stub_163c60() {}

@@ -27,9 +27,9 @@ gamemode	12	9
 gametext	4	2
 gamewnd	4	4
 grunt	19	0
-gruntzapp	7	6
+gruntzapp	10	8
 gruntzwnd	2	1
-harrypotter	2	2
+harrypotter	6	5
 image	5	5
 infblock	5	4
 infcodes	3	2
@@ -42,7 +42,7 @@ logictypetable	1	0
 mapmgr	7	7
 netmgr	32	4
 registryhelper	8	8
-rezmgr	9	6
+rezmgr	10	6
 sbi_rectonly	2	1
 spriteloaders	2	0
 statusbaritem	1	1
@@ -50,16 +50,16 @@ tileswitchlogic	2	0
 tiletriggerlogic	1	1
 trees	17	17
 uncompr	1	1
-unknownalbus	8	1
+unknownalbus	8	2
 unknowndraco	5	2
 unknownfilch	1	0
-unknownhagrid	10	5
-unknownhermiona	9	1
+unknownhagrid	10	7
+unknownhermiona	9	5
 unknownlucius	2	2
 unknownpettigrew	2	1
 unknownremus	13	8
 unknownsalazar	1	0
-unknownseverus	19	9
+unknownseverus	21	12
 unknownsirius	2	1
 unknownworkerfuncs	3	3
 videoconfig	2	0
@@ -587,15 +587,22 @@ grunt	?Stub_062e10@CGrunt@@QAEXXZ	0.1238	0.1238	1	25ed6016336b
 grunt	?Stub_0633e0@CGrunt@@QAEXXZ	0.5208	0.5208	1	5c1b3dddfd8d
 gruntzapp	??0CGruntzApp@@QAE@XZ	100.0000	100.0000	2	6563943e0276
 gruntzapp	??1CGruntzApp@@UAE@XZ	100.0000	100.0000	2	53178ef9599d
+gruntzapp	?CreateU10O@@YAPAXXZ	99.9583	99.9583	1	a309ad1fcc54
 gruntzapp	?ErrorDialogProc@CGruntzApp@@SGHPAXIIJ@Z	100.0000	100.0000	2	f9409ba47949
 gruntzapp	?InitializeGameManager@CGruntzApp@@UAEPAVCGameMgr@WAP32@@XZ	100.0000	100.0000	2	ce781f0af619
 gruntzapp	?ShowError@CGruntzApp@@UAEXXZ	100.0000	100.0000	2	72a450acc475
+gruntzapp	?ShowMessage@CGruntzApp@@QAEXPADPAX@Z	100.0000	100.0000	1	de692a8cac94
 gruntzapp	?Stub_112820@CGruntzApp@@QAEXXZ	20.0000	20.0000	1	9a5c043a5cea
 gruntzapp	?VirtualUnknownMethod03@CGruntzApp@@UAEHPAXPAD11HHH@Z	100.0000	100.0000	2	1f89caaaf455
+gruntzapp	?VirtualUnknownMethod04@CGruntzApp@@UAEHHHH@Z	100.0000	100.0000	1	4edc46fb2fb4
 gruntzwnd	??0CGruntzWnd@@QAE@XZ	100.0000	100.0000	2	4862d21d0785
 gruntzwnd	?Stub_094670@CGruntzWnd@@QAEXXZ	3.6364	3.6364	1	c87b0e867d2f
 harrypotter	??0UnknownClassCGruntzMgrHarryPotter@@QAE@XZ	100.0000	100.0000	2	38a15eddff74
 harrypotter	?UnknownVirtualMethod14@UnknownClassCGruntzMgrHarryPotter@@UAEHXZ	100.0000	100.0000	2	4cc18d015fba
+harrypotter	?UnknownVirtualMethod20@UnknownClassCGruntzMgrHarryPotter@@UAEXXZ	100.0000	100.0000	1	038f852bac5b
+harrypotter	?UnknownVirtualMethod24@UnknownClassCGruntzMgrHarryPotter@@UAEHHHH@Z	97.8250	97.8250	1	3361e41440ae
+harrypotter	?UnknownVirtualMethod28@UnknownClassCGruntzMgrHarryPotter@@UAEXPAX@Z	100.0000	100.0000	1	f6b2d43a8c0c
+harrypotter	?UnknownVirtualMethod38@UnknownClassCGruntzMgrHarryPotter@@UAEHPAXHHH@Z	100.0000	100.0000	1	63195ce5d6c4
 image	?DecodePcxEx@CFileImage@@QAEHPAD0PAX1@Z	100.0000	100.0000	1	1d85aa6255a5
 image	?LoadBmp@CFileImage@@QAEPAXPAD0@Z	100.0000	100.0000	2	544080bd5f94
 image	?LoadFromRez@CImage@@QAEHPADPAX1@Z	100.0000	100.0000	2	6ddad075270d
@@ -677,6 +684,7 @@ rezmgr	??0CRezDir@@QAE@PAX0@Z	78.9091	78.9091	3	58036851850b
 rezmgr	??0CRezItm@@QAE@PAX@Z	100.0000	100.0000	2	09a5a21b55f2
 rezmgr	??0CRezItmBase@@QAE@PAX@Z	100.0000	100.0000	2	5c97ae825121
 rezmgr	?FindEntry@CRezDir@@QAEHPAD@Z	100.0000	100.0000	2	60b2d1507285
+rezmgr	?HandleDebugPosition@RezMgr@@QAEHXZ	93.1667	93.1667	1	131d2f21fc35
 rezmgr	?Load@CRezDirNode@@QAEHH@Z	100.0000	100.0000	2	4fa7c31c5c4e
 rezmgr	?MakeImageKey@RezMgr@@QAEHPAXPAD0@Z	100.0000	100.0000	2	c7c8e77f0a0e
 rezmgr	?MakeRezPath@RezMgr@@QAEHXZ	92.7923	92.7923	2	c82168211044
@@ -708,12 +716,12 @@ trees	_send_all_trees	100.0000	100.0000	1	4943fa3be295
 trees	_send_tree	100.0000	100.0000	1	0a0643654ea9
 trees	_set_data_type	100.0000	100.0000	1	167de8f88841
 uncompr	_uncompress	100.0000	100.0000	1	b40cccad8cc9
-unknownalbus	?Stub_157600@UnknownAlbus@@QAEXXZ	50.0000	50.0000	1	d0614a185ee6
 unknownalbus	?Stub_157610@UnknownAlbus@@QAEXXZ	3.6364	3.6364	1	026783963751
 unknownalbus	?Stub_1658c0@UnknownAlbus@@QAEXXZ	0.4598	0.4598	1	241f83a4a29a
 unknownalbus	?Stub_165a90@UnknownAlbus@@QAEXXZ	0.3846	0.3846	1	5ddb7ae7b90c
 unknownalbus	?Stub_165b90@UnknownAlbus@@QAEXXZ	2.0000	2.0000	1	9e4c2c5c6926
 unknownalbus	?VirtualMethodUnknown14@UnknownAlbus@@QAEHXZ	100.0000	100.0000	2	1490271b4408
+unknownalbus	?VirtualMethodUnknown20@UnknownAlbus@@QAEHXZ	100.0000	100.0000	1	ff474d3b8ff7
 unknownalbus	?VirtualMethodUnknown28@UnknownAlbus@@QAEPAXHPBDH@Z	99.7391	99.7391	2	aa50a1bc8847
 unknownalbus	?VirtualMethodUnknown2C@UnknownAlbus@@QAEPAXHPBDH@Z	99.7391	99.7391	2	31163911376a
 unknowndraco	?Stub_1574a0@UnknownDraco@@QAEXXZ	50.0000	50.0000	1	0f80f4f3e644
@@ -722,25 +730,25 @@ unknowndraco	?Stub_1588f0@UnknownDraco@@QAEXXZ	0.2516	0.2516	1	39112927a106
 unknowndraco	?VirtualMethodUnknown14@UnknownDraco@@QAEHXZ	100.0000	100.0000	2	3afce7b55b9d
 unknowndraco	?VirtualMethodUnknown1C@UnknownDraco@@QAEXXZ	100.0000	100.0000	2	d25a8460dcd7
 unknownfilch	??0UnknownFilch@@QAE@XZ	99.8000	99.8000	1	af07c075afcc
-unknownhagrid	?Stub_156f20@UnknownHagrid@@QAEXXZ	50.0000	50.0000	1	4a283b3f6d89
 unknownhagrid	?Stub_156f50@UnknownHagrid@@QAEXXZ	4.1667	4.1667	1	377aa49ba416
 unknownhagrid	?Stub_156fc0@UnknownHagrid@@QAEXXZ	50.0000	50.0000	1	523890ee5fbf
-unknownhagrid	?Stub_163bf0@UnknownHagrid@@QAEXXZ	0.8163	0.8163	1	f67ac66e1b8e
-unknownhagrid	?Stub_163c60@UnknownHagrid@@QAEXXZ	4.7619	4.7619	1	2c715e37fe4e
 unknownhagrid	?VirtualMethodUnknown14@UnknownHagrid@@QAEHXZ	100.0000	100.0000	2	b1f45bf1ed15
+unknownhagrid	?VirtualMethodUnknown1C@UnknownHagrid@@QAEXXZ	100.0000	100.0000	1	8a34ca46b383
+unknownhagrid	?VirtualMethodUnknown20@UnknownHagrid@@QAEHXZ	100.0000	100.0000	1	2fe5541db93d
 unknownhagrid	?VirtualMethodUnknown24@UnknownHagrid@@QAEPAXHHH@Z	100.0000	100.0000	2	782d9901e7c7
 unknownhagrid	?VirtualMethodUnknown28@UnknownHagrid@@QAEPAXHHHH@Z	100.0000	100.0000	2	1db755218056
 unknownhagrid	?VirtualMethodUnknown2C@UnknownHagrid@@QAEPAXHHHHH@Z	100.0000	100.0000	2	ddbacf5dbc92
 unknownhagrid	?VirtualMethodUnknown30@UnknownHagrid@@QAEPAXHHHHH@Z	100.0000	100.0000	2	e21691236b64
-unknownhermiona	?Stub_1591e0@UnknownHermiona@@QAEXXZ	20.0000	20.0000	1	049bd7a13eaf
+unknownhagrid	?VirtualMethodUnknown34@UnknownHagrid@@QAEXHH@Z	95.2857	95.2857	1	94854f43a161
 unknownhermiona	?Stub_1591f0@UnknownHermiona@@QAEXXZ	2.9412	2.9412	1	902f8086f779
 unknownhermiona	?Stub_159a70@UnknownHermiona@@QAEXXZ	0.2367	0.2367	1	993fe356a078
-unknownhermiona	?Stub_159c90@UnknownHermiona@@QAEXXZ	2.3529	2.3529	1	98c2c59b5915
-unknownhermiona	?Stub_159cc0@UnknownHermiona@@QAEXXZ	1.9048	1.9048	1	9bbe444071b3
-unknownhermiona	?Stub_159d90@UnknownHermiona@@QAEXXZ	9.0909	9.0909	1	10b270c28bda
 unknownhermiona	?VirtualMethodUnknown14@UnknownHermiona@@QAEHXZ	100.0000	100.0000	2	444f64d93aa4
-unknownhermiona	?VirtualMethodUnknown30@UnknownHermiona@@QAEXHHH@Z	89.0909	89.0909	2	635e3c215e02
-unknownhermiona	?VirtualMethodUnknown34@UnknownHermiona@@QAEXHHH@Z	89.0909	89.0909	2	2bee78e043a3
+unknownhermiona	?VirtualMethodUnknown1C@UnknownHermiona@@UAEXXZ	100.0000	100.0000	1	07aa314c5f7d
+unknownhermiona	?VirtualMethodUnknown28@UnknownHermiona@@UAEXH@Z	100.0000	100.0000	1	f6df28c6762f
+unknownhermiona	?VirtualMethodUnknown2C@UnknownHermiona@@UAEXHH@Z	100.0000	100.0000	1	2bec02114fc4
+unknownhermiona	?VirtualMethodUnknown30@UnknownHermiona@@QAEXHHH@Z	89.0909	89.0909	3	49844edbe8f3
+unknownhermiona	?VirtualMethodUnknown34@UnknownHermiona@@QAEXHHH@Z	89.0909	89.0909	3	84c1e1762bde
+unknownhermiona	?VirtualMethodUnknown38@UnknownHermiona@@UAEXXZ	100.0000	100.0000	1	18c70a35c788
 unknownlucius	??0UnknownCGruntzMgrLucius@@QAE@PAVUnknownClassCGruntzMgrHarryPotter@@HH@Z	100.0000	100.0000	1	3dd278640057
 unknownlucius	??1UnknownCGruntzMgrLucius@@UAE@XZ	100.0000	100.0000	1	3c277a2e9241
 unknownpettigrew	?VirtualMethodUnknown14@UnknownPettigrew@@QAEHXZ	100.0000	100.0000	1	e1caf3952ece
@@ -759,11 +767,12 @@ unknownremus	?VirtualMethodUnknown30@UnknownRemus@@QAEHPAURemusCoords@@@Z	100.00
 unknownremus	?VirtualMethodUnknown34@UnknownRemus@@QAEHHH@Z	84.2800	84.2800	2	5a9c5bda0729
 unknownremus	?VirtualMethodUnknown44@UnknownRemus@@QAEXXZ	100.0000	100.0000	1	dcfa907fedd4
 unknownsalazar	?initializeUnknownLookupTable@UnknownSalazar@@SAXXZ	96.0000	96.0000	1	f17e344e2cb8
+unknownseverus	?MapTeardown_1552b0@UnknownSeverus@@QAEXXZ	100.0000	100.0000	1	cb4a5bbf9f58
+unknownseverus	?StringCopy_155810@UnknownSeverus@@QAEHPBD@Z	100.0000	100.0000	1	75243186a122
 unknownseverus	?Stub_154f80@UnknownSeverus@@QAEXXZ	0.2564	0.2564	1	01ffcb94af5c
 unknownseverus	?Stub_155160@UnknownSeverus@@QAEXXZ	0.3604	0.3604	1	d0813892e130
 unknownseverus	?Stub_156df0@UnknownSeverus@@QAEXXZ	3.6364	3.6364	1	51cd0be68179
 unknownseverus	?Stub_156e80@UnknownSeverus@@QAEXXZ	1.9048	1.9048	1	b2f6e75a0f83
-unknownseverus	?Stub_165210@UnknownSeverus@@QAEXXZ	2.0408	2.0408	1	a6eff2f31fec
 unknownseverus	?VirtualMethodUnknown14@UnknownSeverus@@QAEHXZ	100.0000	100.0000	2	5bd1c3c9f921
 unknownseverus	?VirtualMethodUnknown18@UnknownSeverus@@QAEHXZ	100.0000	100.0000	2	2c13f38e6fe3
 unknownseverus	?VirtualMethodUnknown1C@UnknownSeverus@@QAEXXZ	100.0000	100.0000	2	174f670a8bfd
@@ -778,6 +787,7 @@ unknownseverus	?VirtualMethodUnknown3C@UnknownSeverus@@QAEHHPAVSeverusWorker@@HH
 unknownseverus	?VirtualMethodUnknown40@UnknownSeverus@@QAEHHPBDHH@Z	53.5238	53.5238	2	4f23d52f9b51
 unknownseverus	?VirtualMethodUnknown50@UnknownSeverus@@QAEXPAUSeverusWorkerObj@@@Z	100.0000	100.0000	2	cdcfe4a13c91
 unknownseverus	?VirtualMethodUnknown54@UnknownSeverus@@QAEXPBD@Z	77.5185	77.5185	2	e712cbe9c9ee
+unknownseverus	?VirtualMethodUnknown58@UnknownSeverus@@QAEXXZ	100.0000	100.0000	1	620bc4aefa87
 unknownsirius	?VirtualMethodUnknown20@UnknownSirius@@QAEHXZ	100.0000	100.0000	1	2a5b2c129bdc
 unknownsirius	?VirtualMethodUnknown24@UnknownSirius@@QAEPAXHPBDH@Z	99.7857	99.7857	1	3b7107b38131
 unknownworkerfuncs	?Vfunc2C@WorkerA@@QAEHHHH@Z	100.0000	100.0000	1	91040657e3e8
