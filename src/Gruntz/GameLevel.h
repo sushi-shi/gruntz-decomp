@@ -1,9 +1,9 @@
 // GameLevel.h - CGameLevel, the WWD level-load orchestrator (a.k.a. CDDrawLevelData).
 //
-// LoadWwd @0x15d280 is vtable slot 0x38 on this class. It validates the in-memory
+// LoadWwd is vtable slot 0x38 on this class. It validates the in-memory
 // WWD header, copies the 1524-byte (0x17d-dword) header into the level object,
 // optionally inflates the compressed main block, then walks the planes (calling
-// WwdFile::ReadPlane @0x15d8d0 per plane) and the image-set descriptors before
+// WwdFile::ReadPlane per plane) and the image-set descriptors before
 // computing the scaled start coordinates on the main plane.
 //
 // Only the members LoadWwd touches are pinned. The on-disk WWD layout is in
@@ -17,7 +17,7 @@
 
 // ---------------------------------------------------------------------------
 // MFC-style growable pointer array (CArray<void*>). m_data@+0x4, m_size@+0x8
-// relative to the array sub-object. SetAtGrow @0x5b5822 grows + stores; the
+// relative to the array sub-object. SetAtGrow grows + stores; the
 // element factories return their stride which advances the read cursor.
 // ---------------------------------------------------------------------------
 struct CLevelPtrArray
@@ -25,13 +25,13 @@ struct CLevelPtrArray
     void* m_pad0;     // +0x00
     void* m_data;     // +0x04
     int   m_size;     // +0x08
-    void SetAtGrow(int index, void* value);  // @0x5b5822
+    void SetAtGrow(int index, void* value);
 };
 
 // ---------------------------------------------------------------------------
 // CImageSet - the per-plane image-set descriptor the level builds from the WWD
 // tile-description block. UNMATCHED engine class; modeled as an external shell.
-// The factory (CGameLevel::ReadImageSet @0x15d820) switches on the record kind
+// The factory (CGameLevel::ReadImageSet) switches on the record kind
 // and `operator new`s one of three 0x18-byte variants; vtable +0x24 returns the
 // record stride (the cursor advance).
 // ---------------------------------------------------------------------------
@@ -90,7 +90,7 @@ public:
     // Pre-load reset (vtable slot 0x44 / index 17) - external engine virtual.
     virtual void Reset();
 
-    // LoadWwd @0x15d280 (__thiscall ret 0x4, vtable slot 0x38). Returns 1 on
+    // LoadWwd (vtable slot 0x38). Returns 1 on
     // success, 0 on failure.
     int LoadWwd(WwdHeader* hdr);
 
@@ -115,15 +115,15 @@ public:
     void Stub_1611e0();
 
 private:
-    // The per-plane reader (WwdFile::ReadPlane @0x15d8d0). Same body as the one in
+    // The per-plane reader (WwdFile::ReadPlane). Same body as the one in
     // the wwdfile TU; declared here so the call resolves (its definition lives in
     // src/Wwd/WwdFile.cpp via CGameLevelPlanes::ReadPlane). External to this TU.
     CPlane* ReadPlane(void* planeData, void* blockBase, void* unused);
 
-    // The image-set factory (CGameLevel::ReadImageSet @0x15d820) - external.
+    // The image-set factory (CGameLevel::ReadImageSet) - external.
     CImageSet* ReadImageSet(void* record);
 
-    // Plane coord-recompute helper (@0x561c90, vtable-less) - external.
+    // Plane coord-recompute helper (vtable-less) - external.
     void RecomputePlaneCoords(CPlane* plane);
 
     // vptr is implicit at +0x00 (4 bytes); pad to +0x08.

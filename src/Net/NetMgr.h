@@ -39,21 +39,21 @@ __declspec(dllimport) BOOL __stdcall PostMessageA(HWND hWnd, UINT Msg,
 // operator+ overload (AFXAPI == __stdcall) and destroys the temporaries via
 // the engine CString dtor. Both are external/no-body so their `call rel32`
 // displacements reloc-mask.
-//   0x1b9f81  operator+(const CString&, LPCTSTR)  (AFXAPI, ret 0xc)
-//   0x1b9cde  CString::~CString()                 (__thiscall, ret)
+//   operator+(const CString&, LPCTSTR)  (AFXAPI)
+//   CString::~CString()                 (__thiscall)
 // ---------------------------------------------------------------------------
 class AfxString {
 public:
     AfxString();
-    ~AfxString();                       // @0x1b9cde
+    ~AfxString();
     operator const char *() const { return m_pchData; }
     char *m_pchData;
 };
 
-AfxString __stdcall operator+(const AfxString &lhs, const char *rhs); // @0x1b9f81
+AfxString __stdcall operator+(const AfxString &lhs, const char *rhs);
 
 // ---------------------------------------------------------------------------
-// The game-manager singleton (@0x64556c) - only its +0x38 RegistryHelper is
+// The game-manager singleton - only its +0x38 RegistryHelper is
 // touched here (the config persistence target). Modeled as a tiny struct with
 // the member at the right offset.
 // ---------------------------------------------------------------------------
@@ -62,15 +62,15 @@ struct CGameMgr {
     Utils::RegistryHelper *m_38;        // +0x38  the per-game registry config writer
 };
 
-extern CGameMgr *g_pGameMgr;            // @0x64556c
+extern CGameMgr *g_pGameMgr;
 
 // ---------------------------------------------------------------------------
-// The multiplayer command dispatcher (engine @0x4bc250, reached through an
+// The multiplayer command dispatcher (reached through an
 // incremental-link thunk so its `call rel32` reloc-masks). __stdcall (cleans
 // its own args - the call site has no `add esp`). Args: the command-name
 // string, a per-command CALLBACK function pointer, and a flag; returns the
 // dispatched message id. Each handler passes a distinct callback (the engine
-// @0x4bda70/0x4bd850/0x4bddd0 routines, also via incremental-link thunks so the
+// routines, also via incremental-link thunks so the
 // `push &callback` reloc-masks); modeled as external no-body functions whose
 // address is taken.
 // ---------------------------------------------------------------------------
@@ -78,16 +78,16 @@ typedef void (*MultiCallbackFn)();
 extern "C" int __stdcall MultiDispatch(const char *cmd, MultiCallbackFn cb, int flag);
 
 // Per-command callbacks (address-taken only; bodies are external/no-body).
-extern "C" void MultiOptionzCallback();    // @0x4bda70 (via thunk 0x4027fc)
-extern "C" void MultiPauseCallback();      // @0x4bd850 (via thunk 0x40113b)
-extern "C" void MultiOutOfSyncCallback();  // @0x4bddd0 (via thunk 0x40301c)
+extern "C" void MultiOptionzCallback();
+extern "C" void MultiPauseCallback();
+extern "C" void MultiOutOfSyncCallback();
 
 // ---------------------------------------------------------------------------
 // Reentrancy guards (file-scope globals).
-//   g_optionzGuard  @0x648d08   (OnMultiOptions)
-//   g_pauseGuard    @0x648d04   (OnMultiPause)
-//   g_outOfSyncGuard@0x648d04 ... no: OnOutOfSync uses a per-this flag @+0x574
-//   g_sharedFlag    @0x648ce0   (cleared by all three)
+//   g_optionzGuard   (OnMultiOptions)
+//   g_pauseGuard     (OnMultiPause)
+//   OnOutOfSync uses a per-this flag at +0x574 (not a shared guard global)
+//   g_sharedFlag     (cleared by all three)
 // ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
@@ -105,10 +105,10 @@ extern "C" void MultiOutOfSyncCallback();  // @0x4bddd0 (via thunk 0x40301c)
 // ---------------------------------------------------------------------------
 class CNetMgr {
 public:
-    void OnMultiOptions();              // @0x0badd0
-    void OnMultiPause();                // @0x0bad40
-    void OnOutOfSync();                 // @0x0bae40
-    void ApplyCmdDelayDefaults();       // @0x0b85a0
+    void OnMultiOptions();
+    void OnMultiPause();
+    void OnOutOfSync();
+    void ApplyCmdDelayDefaults();
 
     char       m_pad0[4];              // +0x000
     void      *m_4;                     // +0x004

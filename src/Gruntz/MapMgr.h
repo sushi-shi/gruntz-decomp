@@ -1,14 +1,14 @@
 // MapMgr.h - the engine's CMapMgr (the level/map manager), self-located via its
-// RTTI vftable (??_7CMapMgr@@6B@ @ 0x5ea3b4). Field names are placeholders
+// RTTI vftable. Field names are placeholders
 // (m_<hexoffset>); ONLY the OFFSETS + code bytes are load-bearing (campaign
-// doctrine). The layout below is CONFIRMED from the ctor (@0x09e940), the dtor
-// (@0x09e9e0) and the slot-0 cleanup/reset method (@0x09ec30).
+// doctrine). The layout below is CONFIRMED from the ctor, the dtor
+// and the slot-0 cleanup/reset method.
 //
 // ---------------------------------------------------------------------------
-// CMapMgr (>= 0x60 bytes). vftable @0x5ea3b4 (6 virtual slots; see below). The
+// CMapMgr (>= 0x60 bytes). vftable (6 virtual slots; see below). The
 // ctor runs two embedded sub-object ctors (the two small growable arrays at
 // +0x30 and +0x3c), then zeroes/seeds the scalar members:
-//   +0x00  m_vtbl   : vftable pointer (0x5ea3b4).
+//   +0x00  m_vtbl   : vftable pointer.
 //   +0x04  m_4      : 0   (a heap pointer; slot-0 Reset `operator delete`s it).
 //   +0x08  m_8      : 0   (a heap pointer; slot-0 Reset `operator delete`s it).
 //   +0x0c  m_c      : 0
@@ -23,19 +23,18 @@
 //   +0x58  m_58     : 0
 //   +0x5c  m_5c     : 1
 //
-// CMapMgr vftable (6 slots @0x5ea3b4): slot0=Reset @0x09ec30 (the cleanup the
-// dtor calls inline), slot1 @0x09f7f0, slot2 @0x09f840, slot3 @0x09f9a0,
-// slot4 @0x09eca0 (701 B), slot5 @0x4853f0 (a shared/base method). Slots 1..5
+// CMapMgr vftable (6 slots): slot0=Reset (the cleanup the dtor calls inline),
+// slots 1..4 are local methods, slot5 is a shared/base method. Slots 1..5
 // are out-of-line empty stubs here, present only to anchor the vftable
 // relocation that the ctor stores (the CGameWnd vftable-in-TU idiom).
 #ifndef SRC_GRUNTZ_MAPMGR_H
 #define SRC_GRUNTZ_MAPMGR_H
 
-// Raw heap alloc/free the arrays link in (engine NAFXCW: 0x1b9b46 alloc(size)
-// returns a pointer; 0x1b9b82 free(ptr)). __cdecl, args on the stack. Modeled
-// external/no-body so the `call rel32` displacements are reloc-masked.
-extern "C" void *MapAlloc(unsigned int size);   // 0x1b9b46
-extern "C" void  MapFree(void *p);               // 0x1b9b82
+// Raw heap alloc/free the arrays link in (engine NAFXCW: alloc(size) returns a
+// pointer; free(ptr)). __cdecl, args on the stack. Modeled external/no-body so
+// the `call rel32` displacements are reloc-masked.
+extern "C" void *MapAlloc(unsigned int size);
+extern "C" void  MapFree(void *p);
 
 // ---------------------------------------------------------------------------
 // CMapArrayA - a small growable array embedded in CMapMgr at +0x30 (0x0c bytes).
@@ -48,9 +47,9 @@ extern "C" void  MapFree(void *p);               // 0x1b9b82
 // ---------------------------------------------------------------------------
 class CMapArrayA {
 public:
-    CMapArrayA();           // 0x09e700
-    ~CMapArrayA();          // 0x09e7e0
-    int Allocate(unsigned int count);   // 0x09e740 (ret 4)
+    CMapArrayA();
+    ~CMapArrayA();
+    int Allocate(unsigned int count);
 
     void    *m_block;   // +0x00
     void    *m_0;       // +0x04  (the heap block the dtor frees)
@@ -68,9 +67,9 @@ public:
 // ---------------------------------------------------------------------------
 class CMapArrayB {
 public:
-    CMapArrayB();           // 0x09e820
-    ~CMapArrayB();          // 0x09e900
-    int Allocate(unsigned int count);   // 0x09e860 (ret 4)
+    CMapArrayB();
+    ~CMapArrayB();
+    int Allocate(unsigned int count);
 
     void    *m_0;       // +0x00  (the heap block the dtor frees)
     void    *m_block;   // +0x04
@@ -78,22 +77,22 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// CMapMgr - the level/map manager (vftable @0x5ea3b4, 6 slots). Polymorphic so
+// CMapMgr - the level/map manager (vftable, 6 slots). Polymorphic so
 // the vptr lands at +0x00 and the two-phase vtable store falls out.
 // ---------------------------------------------------------------------------
 class CMapMgr {
 public:
-    CMapMgr();              // 0x09e940
-    ~CMapMgr();             // 0x09e9e0
+    CMapMgr();
+    ~CMapMgr();
 
-    // The six virtual slots. Slot 0 (Reset) is matched (@0x09ec30); the dtor
+    // The six virtual slots. Slot 0 (Reset) is matched; the dtor
     // calls it inline. Slots 1..5 are out-of-line stubs that anchor the vftable.
-    virtual void Reset();           // slot 0 @0x09ec30
-    virtual void Vfunc1();          // slot 1 @0x09f7f0
-    virtual void Vfunc2();          // slot 2 @0x09f840
-    virtual void Vfunc3();          // slot 3 @0x09f9a0
-    virtual void Vfunc4();          // slot 4 @0x09eca0
-    virtual void Vfunc5();          // slot 5 @0x4853f0
+    virtual void Reset();           // slot 0
+    virtual void Vfunc1();          // slot 1
+    virtual void Vfunc2();          // slot 2
+    virtual void Vfunc3();          // slot 3
+    virtual void Vfunc4();          // slot 4
+    virtual void Vfunc5();          // slot 5
 
     void    *m_4;       // +0x04  (heap ptr; Reset frees it)
     void    *m_8;       // +0x08  (heap ptr; Reset frees it)

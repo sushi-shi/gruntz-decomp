@@ -19,10 +19,10 @@
 #define SRC_FONT_FONT_H
 
 // ---------------------------------------------------------------------------
-// Global operator new / delete (the NAFXCW heap, engine @0x1b9b46 / @0x1b9b82).
+// Global operator new / delete (the NAFXCW heap).
 // External / no-body so their `call rel32` displacements reloc-mask in objdiff.
-//   ??2@YAPAXI@Z  operator new(unsigned int)
-//   ??3@YAXPAX@Z  operator delete(void*)
+//   operator new(unsigned int)
+//   operator delete(void*)
 // ---------------------------------------------------------------------------
 void *operator new(unsigned int n);
 void operator delete(void *p);
@@ -33,7 +33,7 @@ void operator delete(void *p);
 //
 //   CString  - a single char* @+0 (the MFC string). Only its destructor is
 //              touched here (the by-value szFileName arg + the throwaway temp
-//              the file-name normalizer builds), the NAFXCW dtor @0x1b9cde.
+//              the file-name normalizer builds), the NAFXCW dtor.
 //   CFile    - the MFC binary file. Default-constructed on the stack, opened,
 //              closed, destroyed. NO field of it is accessed inline, so only the
 //              method symbols/calling-convention are load-bearing; its size just
@@ -49,23 +49,23 @@ void operator delete(void *p);
 // All of these resolve to NAFXCW (the statically linked MFC) - their bodies are
 // never matched here; only the exact mangled symbol + arg shape matter.
 // ---------------------------------------------------------------------------
-class CFileException;            // PAVCFileException@@ - pointer only, opaque.
+class CFileException;            // pointer only, opaque.
 
 class CString {
 public:
-    CString(const char *s);      // ??0CString@@QAE@PBD@Z  @0x1b9d4c
-    CString(const CString &o);   // ??0CString@@QAE@ABV0@@Z @0x1b9ba3 (refcount/COW)
-    ~CString();                  // ??1CString@@QAE@XZ     @0x1b9cde
+    CString(const char *s);
+    CString(const CString &o);
+    ~CString();
     char *m_pchData;             // +0x00
 };
 
 class CFile {
 public:
-    CFile();                                 // ??0CFile@@QAE@XZ            @0x1befd7
-    virtual ~CFile();                        // ??1CFile@@UAE@XZ            @0x1bf121
+    CFile();
+    virtual ~CFile();
     virtual int Open(const char *lpszFileName, unsigned int nOpenFlags,
-                     CFileException *pError);// ?Open@CFile@@UAEHPBD...     @0x1bf200
-    virtual void Close();                    // ?Close@CFile@@UAEXXZ        @0x1bf426
+                     CFileException *pError);
+    virtual void Close();
 
     // CFile carries a vtable (the virtuals above) + several scalar fields; no
     // field is touched inline, so a conservative padded body just reserves the
@@ -75,13 +75,12 @@ public:
 
 class CArchive {
 public:
-    // ??0CArchive@@QAE@PAVCFile@@IHPAX@Z  @0x1c6ee8
     CArchive(CFile *pFile, unsigned int nMode, int nBufSize, void *lpBuf);
-    ~CArchive();                                       // ??1CArchive@@QAE@XZ  @0x1c6fc4
+    ~CArchive();
 
-    unsigned int Read(void *lpBuf, unsigned int nMax); // ?Read@...           @0x1c705a
-    void Close();                                      // ?Close@...          @0x1c704c
-    void FillBuffer(unsigned int nBytesNeeded);        // ?FillBuffer@...      @0x1c7272
+    unsigned int Read(void *lpBuf, unsigned int nMax);
+    void Close();
+    void FillBuffer(unsigned int nBytesNeeded);
 
     // The buffered-read window. Inlined operator>> reads straight from here;
     // the offsets are load-bearing (the EXE's NAFXCW layout, not afx.h's).
@@ -118,15 +117,15 @@ struct Glyph {
 // ---------------------------------------------------------------------------
 class Font {
 public:
-    Font();                                  // @0x179700
-    int AllocateMemory(int count);           // @0x179720  (ret 4)
-    void FreeMemory();                        // @0x1797b0
-    int LoadFont(CString szFileName);        // @0x179830  (ret 4; by-value arg)
+    Font();
+    int AllocateMemory(int count);
+    void FreeMemory();
+    int LoadFont(CString szFileName);
 
     // Accessors matched in this module cluster.
-    void **GetSurface(unsigned char c);      // @0x179b60
-    void GetGlyph(unsigned char c, Glyph &out); // @0x179b80
-    int GetMaxHeight();                      // @0x179bd0
+    void **GetSurface(unsigned char c);
+    void GetGlyph(unsigned char c, Glyph &out);
+    int GetMaxHeight();
 
     int    m_ready;              // +0x00
     int    m_count;             // +0x04
@@ -142,9 +141,9 @@ public:
 // ---------------------------------------------------------------------------
 class FontRenderer {
 public:
-    FontRenderer();                          // @0x179be0
-    void SetColor(int color);                // @0x179c20
-    unsigned char GetChar(int i);            // @0x17b4f0 (ret 4)
+    FontRenderer();
+    void SetColor(int color);
+    unsigned char GetChar(int i);
 
     Font *m_font;       // +0x00  (Font* to render with)
     int   m_color;      // +0x04  (packed colour, default 0x00ffffff)
@@ -162,7 +161,7 @@ struct CWapNodeBase {
 
 struct CWapNodeB : CWapNodeBase {
     virtual ~CWapNodeB();
-    void FreeStrings();                      // @0x179680
+    void FreeStrings();
 
     int     m_type;                 // +0x04
     char    m_pad08[0x28];          // +0x08..+0x2f
@@ -175,11 +174,11 @@ struct CWapNodeB : CWapNodeBase {
 // +0x04. The IsInterfaceX methods check whether that GUID matches a known iid.
 struct InterfaceObject {
     const void *iid;                // +0x04 (after vtable/first field)
-    int IsInterface1();   // @0x1794b0
-    int IsInterface2();   // @0x1794e0
-    int IsInterface3();   // @0x179510
-    int IsInterface4();   // @0x179540
-    int IsInterface5();   // @0x179570
+    int IsInterface1();
+    int IsInterface2();
+    int IsInterface3();
+    int IsInterface4();
+    int IsInterface5();
 };
 
 #endif // SRC_FONT_FONT_H

@@ -68,9 +68,9 @@ public:
 };
 
 DATA(0x2bf3c0)
-extern "C" unsigned int g_6bf3c0;       // VA 0x6bf3c0  draw-clock mirror
+extern "C" unsigned int g_6bf3c0;       // draw-clock mirror
 DATA(0x2bf3bc)
-extern "C" unsigned int g_6bf3bc;       // VA 0x6bf3bc  draw-delta mirror
+extern "C" unsigned int g_6bf3bc;       // draw-delta mirror
 
 // ---------------------------------------------------------------------------
 // CDDrawSurfaceMgr::CDDrawSurfaceMgr()

@@ -28,7 +28,6 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// CDDrawSubMgrLeaf::VirtualMethodUnknown14  @0x1577a0  (__thiscall, ret 0)
 // Ready when the parent handle is present and the status word is not -1.
 // ---------------------------------------------------------------------------
 RVA(0x1577a0, 0x16)
@@ -44,7 +43,6 @@ fail:
 }
 
 // ---------------------------------------------------------------------------
-// CDDrawSubMgrLeaf::VirtualMethodUnknown18  @0x157ae0  (__thiscall, ret 0)
 // Clears the parent map then zeroes a member field.
 // ---------------------------------------------------------------------------
 RVA(0x157ae0, 0x11)

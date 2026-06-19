@@ -104,7 +104,6 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// CDDrawChildGroup::VirtualMethodUnknown14  @0x1575e0  (__thiscall, ret 0)
 // Same base readiness predicate used by several Lucius-derived managers.
 RVA(0x1575e0, 0x16)
 int CDDrawChildGroup::VirtualMethodUnknown14()
@@ -119,8 +118,7 @@ fail:
 }
 
 // ---------------------------------------------------------------------------
-// CDDrawChildGroup::VirtualMethodUnknown1C  @0x1591e0  (__thiscall, ret 0)
-// 5-byte thunk: tail-calls the object's own virtual at vtable slot +0x3c.
+// Thunk: tail-calls the object's own virtual at vtable slot +0x3c.
 RVA(0x1591e0, 0x5)
 void CDDrawChildGroup::VirtualMethodUnknown1C()
 {
@@ -128,7 +126,6 @@ void CDDrawChildGroup::VirtualMethodUnknown1C()
 }
 
 // ---------------------------------------------------------------------------
-// CDDrawChildGroup::VirtualMethodUnknown28  @0x159c90  (__thiscall, ret 4)
 // Walk the +0x14 list dispatching child->Slot2C(a1) per node. No post-loop
 // dispatch.
 //
@@ -148,7 +145,6 @@ void CDDrawChildGroup::VirtualMethodUnknown28(int a1)
 }
 
 // ---------------------------------------------------------------------------
-// CDDrawChildGroup::VirtualMethodUnknown2C  @0x159cc0  (__thiscall, ret 8)
 // Walk the +0x14 list dispatching child->Slot30(a1,a2) per node. No post-loop
 // dispatch.
 RVA(0x159cc0, 0x2a)
@@ -182,7 +178,6 @@ void CDDrawChildGroup::VirtualMethodUnknown2C(int a1, int a2)
 // plateau - both methods share it identically.
 
 // ---------------------------------------------------------------------------
-// CDDrawChildGroup::VirtualMethodUnknown30  @0x159cf0  (__thiscall, ret 0xc)
 // For each node in the +0x14 list, dispatch child +0x34 with (a1,a2,a3); then
 // dispatch this->+0x2c with (a2,a3).
 RVA(0x159cf0, 0x42)
@@ -199,7 +194,6 @@ void CDDrawChildGroup::VirtualMethodUnknown30(int a1, int a2, int a3)
 }
 
 // ---------------------------------------------------------------------------
-// CDDrawChildGroup::VirtualMethodUnknown34  @0x159d40  (__thiscall, ret 0xc)
 // As Unknown30 but the loop dispatches child +0x38.
 RVA(0x159d40, 0x42)
 void CDDrawChildGroup::VirtualMethodUnknown34(int a1, int a2, int a3)
@@ -215,7 +209,6 @@ void CDDrawChildGroup::VirtualMethodUnknown34(int a1, int a2, int a3)
 }
 
 // ---------------------------------------------------------------------------
-// CDDrawChildGroup::VirtualMethodUnknown38  @0x159d90  (__thiscall, ret 0)
 // Walk the +0x14 list setting each child's field at +0xd8 to -1. No vtable
 // dispatch, no stack args.
 RVA(0x159d90, 0x1c)

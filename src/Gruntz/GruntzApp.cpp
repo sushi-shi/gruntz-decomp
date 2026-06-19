@@ -1,22 +1,21 @@
 // GruntzApp.cpp - Gruntz application object (CGruntzApp, the game's CGameApp
 // subclass; C:\Proj\Gruntz). Methods byte-matched here:
 //
-//   CGruntzApp::InitializeGameManager @ RVA 0x080a20 (90 B) - allocates and
-//       constructs the game manager (operator new + ctor under a C++ EH frame)
-//       and returns it.
-//   CGruntzApp::ErrorDialogProc       @ RVA 0x080c70 (85 B) - INT_PTR CALLBACK
-//       (__stdcall) dialog proc that shows an error string and closes on OK/Cancel.
-//   CGruntzApp::~CGruntzApp           @ RVA 0x0808b0 (96 B) - virtual dtor; runs
-//       CloseResources() then chains the (inlined) base ~CGameApp.
-//   CGruntzApp::ShowError             @ RVA 0x080ac0 (243 B) - virtual override;
-//       builds the error string (LoadStringA / fallback literal + "(%i)" detail),
-//       forces the cursor visible, then DialogBoxParamA(.., ErrorDialogProc, ..).
+//   CGruntzApp::InitializeGameManager - allocates and constructs the game
+//       manager (operator new + ctor under a C++ EH frame) and returns it.
+//   CGruntzApp::ErrorDialogProc - INT_PTR CALLBACK (__stdcall) dialog proc that
+//       shows an error string and closes on OK/Cancel.
+//   CGruntzApp::~CGruntzApp - virtual dtor; runs CloseResources() then chains the
+//       (inlined) base ~CGameApp.
+//   CGruntzApp::ShowError - virtual override; builds the error string (LoadStringA
+//       / fallback literal + "(%i)" detail), forces the cursor visible, then
+//       DialogBoxParamA(.., ErrorDialogProc, ..).
 //
 // Only offsets / control IDs / code bytes are load-bearing; class and field
 // names are placeholders.
 #include "../Wap32/Wap32.h"
 #include "../rva.h"
-#include <stdio.h>   // engine sprintf @0x11f890 (reloc-masked)
+#include <stdio.h>   // engine sprintf (reloc-masked)
 #include <string.h>  // inline strlen/strcpy/strcat (rep movs/scas)
 
 // ---------------------------------------------------------------------------
@@ -53,13 +52,12 @@ __declspec(dllimport) INT_PTR __stdcall DialogBoxParamA(HINSTANCE hInstance, LPC
 // is reloc-masked, so the call bytes are still byte-exact.
 // ---------------------------------------------------------------------------
 
-// File-scope globals referenced by ErrorDialogProc / ShowError (binary: HWND @
-// 0x64557c and the error-text buffer @ 0x644ea0). The relocs that name them are
-// masked in objdiff; only the address-load / address-immediate bytes are
-// load-bearing.
-static HWND g_errorHwnd;          // 0x64557c - last dialog HWND
-static char g_errorText[0x100];   // 0x644ea0 - error message buffer
-// (g_gameAppInstanceCount @0x653c6c is declared in Wap32.h, defined in
+// File-scope globals referenced by ErrorDialogProc / ShowError (an HWND and the
+// error-text buffer). The relocs that name them are masked in objdiff; only the
+// address-load / address-immediate bytes are load-bearing.
+static HWND g_errorHwnd;          // last dialog HWND
+static char g_errorText[0x100];   // error message buffer
+// (g_gameAppInstanceCount is declared in Wap32.h, defined in
 // GameApp.cpp; ~CGruntzApp's inlined base ~CGameApp decrements it.)
 
 // ---------------------------------------------------------------------------
@@ -73,20 +71,20 @@ static char g_errorText[0x100];   // 0x644ea0 - error message buffer
 // ---------------------------------------------------------------------------
 class CGruntzApp : public CGameApp {
 public:
-    CGruntzApp();                                     // ctor       0x080850
-    virtual ~CGruntzApp();                            // vtbl +0x00  0x0808b0
+    CGruntzApp();                                     // ctor
+    virtual ~CGruntzApp();                            // vtbl +0x00
     // CGruntzApp's override of the base init virtual (CGameApp slot +0x8):
     // forwards all 7 launch args to CGameApp::VirtualUnknownMethod03 and
     // normalises the int result to a bool (0/1).
     virtual int VirtualUnknownMethod03(HINSTANCE hInstance, char *szWindowName,
                                        char *szGameIdentifier, char *szCmdLine,
                                        int windowClassFlags, int windowWidth,
-                                       int windowHeight);                 // vtbl +0x08  0x080930
-    virtual void ShowError();                         // vtbl +0x30  0x080ac0
+                                       int windowHeight);                 // vtbl +0x08
+    virtual void ShowError();                         // vtbl +0x30
     // Another base-init virtual override; just returns 0.
-    virtual int VirtualUnknownMethod04(int a, int b, int c);  // 0x080aa0
+    virtual int VirtualUnknownMethod04(int a, int b, int c);
     // Shows the MESSAGE dialog with an arbitrary message string.
-    void ShowMessage(char *msg, HWND hParent);                // 0x080c00
+    void ShowMessage(char *msg, HWND hParent);
     WAP32::CGameMgr *InitializeGameManager();
     static INT_PTR __stdcall ErrorDialogProc(HWND hWnd, UINT message,
                                              WPARAM wParam, LPARAM lParam);
@@ -97,9 +95,9 @@ public:
 
 // ---------------------------------------------------------------------------
 // CGruntzApp::CGruntzApp
-// `??0CGruntzApp@@QAE@XZ`. Empty-bodied ctor: chains the base CGameApp ctor
-// (@0x13d590), then the compiler stores the CGruntzApp vftable (@0x5e9ab4 -
-// reloc-masked) and returns `this`. No CGruntzApp-specific field is set.
+// Empty-bodied ctor: chains the base CGameApp ctor, then the compiler stores the
+// CGruntzApp vftable (reloc-masked) and returns `this`. No CGruntzApp-specific
+// field is set.
 //   push esi; mov esi,ecx; call CGameApp::CGameApp; mov [esi],&vftable;
 //   mov eax,esi; pop esi; ret
 RVA(0x80850, 0x12)
@@ -109,10 +107,9 @@ CGruntzApp::CGruntzApp()
 
 // ---------------------------------------------------------------------------
 // CGruntzApp::VirtualUnknownMethod03
-// CGruntzApp's override of the base init virtual (CGameApp vtbl slot +0x8,
-// `?VirtualUnknownMethod03@CGruntzApp@@UAEHPAXPAD11HHH@Z`, `ret 0x1c`). It
+// CGruntzApp's override of the base init virtual (CGameApp vtbl slot +0x8). It
 // re-pushes all 7 launch args in order and tail-forwards to the base
-// CGameApp::VirtualUnknownMethod03 (@0x13d7b0, `this` left in ecx untouched),
+// CGameApp::VirtualUnknownMethod03 (`this` left in ecx untouched),
 // then normalises the int result to a bool: `!= 0` emits the
 // `neg eax; sbb eax,eax; neg eax` (0/1) idiom.
 RVA(0x80930, 0x31)
@@ -129,11 +126,11 @@ int CGruntzApp::VirtualUnknownMethod03(HINSTANCE hInstance, char *szWindowName,
 
 // ---------------------------------------------------------------------------
 // CGruntzApp::~CGruntzApp
-// Virtual dtor (`??1CGruntzApp@@UAE@XZ`, `ret`). Two-phase teardown under a C++
+// Virtual dtor. Two-phase teardown under a C++
 // EH frame: restore the CGruntzApp vftable, run this class's own body
-// (CloseResources(), devirtualized to CGameApp::CloseResources @0x13d8c0), then
+// (CloseResources(), devirtualized to CGameApp::CloseResources), then
 // the base subobject ~CGameApp runs - inlined here (CloseResources() again +
-// the instance-counter decrement @0x653c6c) with the base vftable restored. So
+// the instance-counter decrement) with the base vftable restored. So
 // CloseResources is called TWICE (once by each level's body) - that is the real
 // engine code, and CloseResources is what actually `delete`s the game manager
 // (CGameApp::m_8 @+0x8). No game-manager-pointer member lives on CGruntzApp.
@@ -145,7 +142,7 @@ CGruntzApp::~CGruntzApp()
 
 // ---------------------------------------------------------------------------
 // CGruntzApp::ShowError
-// Virtual override (`?ShowError@CGruntzApp@@UAEXXZ`, `ret`). Builds the error
+// Virtual override. Builds the error
 // message into g_errorText then shows the ERROR dialog:
 //   id = m_24c ? m_24c : IDS_DEFAULT_ERROR;     // +0x24c, default 0x8009
 //   detail[0] = 0; if (m_250 > 0) sprintf(detail, "(%i)", m_250);  // +0x250
@@ -250,7 +247,7 @@ void CGruntzApp::ShowMessage(char *msg, HWND hParent)
 
 // ---------------------------------------------------------------------------
 // CreateU10O
-// Free function `void *CreateU10O()` (`?CreateU10O@@YAPAXXZ`): `return new U10O;`
+// Free function `void *CreateU10O()`: `return new U10O;`
 // - operator new(sizeof(U10O)) then a throwing ctor under a C++ EH frame, then
 // returns the raw pointer. Only the new+ctor shape is load-bearing; a forward
 // class with a declared ctor suffices to give `new U10O` a size + ctor call.

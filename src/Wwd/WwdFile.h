@@ -32,8 +32,8 @@ struct WwdHeader
 // ---------------------------------------------------------------------------
 // Engine binary file stream (16 bytes). The validators construct one on the
 // stack, Open() a file, Read() the header, then let the destructor (Close) run.
-// All four members are UNMATCHED engine functions (ctor @0x1befd7, dtor @0x1bf121,
-// Open @0x1bf200, Read @0x1bf328); their call bytes are reloc-masked in objdiff.
+// All four members are UNMATCHED engine functions (ctor, dtor, Open, Read);
+// their call bytes are reloc-masked in objdiff.
 // Layout: vtable@+0, HANDLE@+4, openFlag@+8, CString filename@+0xc.
 //   - ctor sets up the vtable + CString and leaves HANDLE = -1.
 //   - Open(name, mode, errSink) opens via CreateFileA; returns nonzero on
@@ -59,8 +59,8 @@ private:
 // ---------------------------------------------------------------------------
 // CPlane - the in-memory plane object ReadPlane constructs (one per WWD plane).
 // UNMATCHED engine class; modeled as an external shell so ReadPlane's calls to
-// it reloc-mask. Size 0x158 (344 B); ctor @0x5615a0 (__thiscall ret 0xc, three
-// args), two-phase vtable (base 0x5efc30 then derived 0x5f0270). ReadPlane uses
+// it reloc-mask. Size 0x158 (344 B); ctor with three
+// args, two-phase vtable. ReadPlane uses
 // only the vtable: slot 0xA (offset 0x28) = the plane-block reader (reads one
 // WwdPlaneHeader at 0xA0 stride + fans out to tile/imageset/object sub-readers);
 // slot 0x1 (offset 0x4) = the scalar-deleting destructor. m_flags@+0x8 carries
@@ -69,7 +69,7 @@ private:
 class CPlane
 {
 public:
-    // Construct from (a, planeIndex, c); reloc-masked engine ctor @0x5615a0.
+    // Construct from (a, planeIndex, c); reloc-masked engine ctor.
     CPlane(void* a, int planeIndex, void* c);
     // vtable: +0x28 reader(planeData, blockBase, outCtx) -> nonzero on success.
     virtual int dummy0();
@@ -103,7 +103,7 @@ public:
 // (the rest of the class is reconstructed in src/Gruntz/GameLevel.{cpp,h}):
 //   +0x0C m_field0c   - 1st CPlane ctor arg (the owning context the planes share)
 //   +0x10 m_planeCtx  - &this->m_planeCtx is the 3rd arg to CPlane::Read
-//   +0x34 m_planes    - MFC CArray<CPlane*> (SetAtGrow @0x5b5822 grows + stores)
+//   +0x34 m_planes    - MFC CArray<CPlane*> (SetAtGrow grows + stores)
 //   +0x3C m_planeCount- current plane index / count (the running loop counter)
 //   +0x5C m_mainPlane - cached pointer to the MAIN plane
 //   +0x60 m_mainIndex - index of the MAIN plane (m_planeCount - 1 at capture)
@@ -111,7 +111,7 @@ public:
 class CGameLevelPlanes
 {
 public:
-    // ReadPlane @0x15d8d0 (__thiscall ret 0xc): new CPlane; if its block reader
+    // ReadPlane: new CPlane; if its block reader
     // succeeds, append it to m_planes and record the MAIN plane; else delete it.
     CPlane* ReadPlane(void* planeData, void* blockBase, void* unused);
 
@@ -125,18 +125,18 @@ public:
     int          m_mainIndex;   // +0x60
 };
 
-// MFC CArray<CPlane*>::SetAtGrow(index, value) @0x5b5822 (__thiscall ret 8).
+// MFC CArray<CPlane*>::SetAtGrow(index, value).
 // Grows the backing store to fit `index` then stores value at [index].
 struct CPlanePtrArray
 {
     void SetAtGrow(int index, CPlane* value);
 };
 
-// Global operator new (NAFXCW new-handler loop) @0x5b9b46 / delete @0x5b9b82.
+// Global operator new (NAFXCW new-handler loop) / delete.
 extern void* operator new(unsigned int size);
 extern void operator delete(void* p);
 
-// zlib one-shot decompressor (matched, vendor/zlib-1.0.4/uncompr.c @0x185320).
+// zlib one-shot decompressor (matched, vendor/zlib-1.0.4/uncompr.c).
 extern "C" int uncompress(Bytef* dest, uLongf* destLen, const Bytef* source, uLong sourceLen);
 
 // Inflate the WWD main block (planes/tiles) in place into a caller buffer.

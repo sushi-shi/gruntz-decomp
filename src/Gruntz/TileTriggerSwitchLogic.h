@@ -1,20 +1,20 @@
 // TileTriggerSwitchLogic.h - Gruntz CTileTriggerSwitchLogic (C:\Proj\Gruntz).
 // A tile-trigger "switch" that owns a linked list of sibling objects (anchor
 // at +0x04, singly-linked nodes with next@+0x00, data@+0x08).  Matched methods:
-//   ctor          @0x110430  (28 B)  vtable + zero m_block + m_20=0
-//   FindIndexByKey@0x110820  (35 B)  linear scan of the 24-dword m_block
+//   ctor            vtable + zero m_block + m_20=0
+//   FindIndexByKey  linear scan of the 24-dword m_block
 //
 // Field names are placeholders (m_<hexoffset>); only the OFFSETS + the emitted
 // code bytes are load-bearing (campaign doctrine).
 #ifndef SRC_GRUNTZ_TILETRIGGERSWITCHLOGIC_H
 #define SRC_GRUNTZ_TILETRIGGERSWITCHLOGIC_H
 
-// vftable @0x5eae8c.  Reconstructed from the methods below; fields only
+// vftable.  Reconstructed from the methods below; fields only
 // cover the touched offsets.  Size ~0x8c (0x2c base + 0x60 m_block).
 class CTileTriggerSwitchLogic {
 public:
     CTileTriggerSwitchLogic();
-    int RemoveByKey(int key1, int key2);   // @0x116320 (still a stub)
+    int RemoveByKey(int key1, int key2);   // (still a stub)
     int FindIndexByKey(int key);
 
     // +0x00 vptr (implicit)

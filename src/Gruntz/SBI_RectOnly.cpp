@@ -1,6 +1,6 @@
 #include "../rva.h"
 // SBI_RectOnly.cpp - Gruntz CSBI_RectOnly (C:\Proj\Gruntz).
-// Matched: ??0CSBI_RectOnly@@QAE@XZ @ RVA 0x101fa0 (byte-exact).
+// The constructor is matched byte-exact.
 //
 // CSBI_RectOnly derives from CStatusBarItem. The retail ctor inlines the base
 // ctor (zeroing m_4/m_24/m_28; the base's m_8=0 store is dropped as dead
@@ -10,10 +10,10 @@
 // optimiser folds it ahead of the derived vptr store and elides the dead store)
 // -- MSVC 5.0 will not inline an out-of-line base ctor. CStatusBarItem is
 // therefore declared here with an INLINE ctor, distinct from StatusBarItem.cpp
-// (which carries the out-of-line complete-object copy matched at 0x1005d0).
+// (which carries the out-of-line complete-object copy).
 // Same class, two TUs: a quirk of MSVC 5.0 ctor emission, noted in the report.
 
-// vftable @0x5eab8c (CSBI_RectOnly), base vftable @0x5eabcc (CStatusBarItem).
+// vftable (CSBI_RectOnly), base vftable (CStatusBarItem).
 class CStatusBarItem {
 public:
     CStatusBarItem() { m_4 = 0; m_8 = 0; m_24 = 0; m_28 = 0; }

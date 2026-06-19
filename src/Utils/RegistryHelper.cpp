@@ -1,7 +1,7 @@
 // RegistryHelper.cpp - Utils::RegistryHelper value-getters (config wrapper over
 // ADVAPI32!Reg*). Matched leaf methods:
-//   GetValueString @ RVA 0x1394a0 (151 B)
-//   GetValueDword  @ RVA 0x1395d0 (80 B)
+//   GetValueString
+//   GetValueDword
 #include "RegistryHelper.h"
 #include "../rva.h"
 #include <string.h>

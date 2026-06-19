@@ -30,7 +30,7 @@ typedef unsigned long DWORD;
 
 // ---------------------------------------------------------------------------
 // CButeTree - the keyed store node. The getters/parser reach it through a single
-// __thiscall lookup helper (engine @0x16d190) that, given a key string, returns
+// __thiscall lookup helper that, given a key string, returns
 // the matching child record (or null). The store is two-level: the outer tree
 // (CButeMgr::m_tree) maps a tag name to a per-tag sub-tree; the sub-tree maps a
 // key name to a typed value record. Find() is modeled returning the record, and
@@ -40,7 +40,7 @@ typedef unsigned long DWORD;
 //   +0x04  pValue : void* - pointer to the stored value (the int/dword/float/
 //                           double sits at [pValue]; for strings the char* IS
 //                           [pValue] -- GetString returns it directly).
-// Insert (@0x16db90) adds a (key,node) pair; the node ctor (@0x16dff0) + its two
+// Insert adds a (key,node) pair; the node ctor + its two
 // vtable stores are modeled as external/no-body calls (reloc-masked).
 // ---------------------------------------------------------------------------
 struct CButeValue {
@@ -58,37 +58,37 @@ struct CButeValue {
 // it (reloc-masked __thiscall externs, no body).
 class CButeMgrHelper {
 public:
-    void FuncA();   // @0x169be0
-    void FuncB();   // @0x169d70
+    void FuncA();
+    void FuncB();
 };
 
 class CButeTree {
 public:
-    // The shared find-by-key helper (@0x16d190, __thiscall ret 4).
+    // The shared find-by-key helper (__thiscall).
     void *Find(const char *key);
-    // Insert a key/value node (@0x16db90, __thiscall).
+    // Insert a key/value node (__thiscall).
     void  Insert(const char *key, void *pNode);
 };
 
 // ---------------------------------------------------------------------------
 // CButeNode - a per-tag store node allocated by ParseTagLine (0x2c bytes). Built
-// via `new CButeNode(2, descriptor)`: the engine ctor (@0x16dff0) runs, then the
-// derived class's two vtable pointers are written inline at +0x00 / +0x08 (the
-// 0x5f051c / 0x5f0518 vtables -- a multiply-derived node with two vptrs). Modeled
+// via `new CButeNode(2, descriptor)`: the engine ctor runs, then the
+// derived class's two vtable pointers are written inline at +0x00 / +0x08
+// (a multiply-derived node with two vptrs). Modeled
 // with an external (no-body) ctor; the vtable stores are emitted by the source
 // `new` expression and are reloc-masked.
 // ---------------------------------------------------------------------------
-// The two derived vtables the node carries (@0x5f051c / @0x5f0518). External/
+// The two derived vtables the node carries. External/
 // reloc-masked file-scope addresses.
-extern void *g_nodeVtblA;   // 0x5f051c
-extern void *g_nodeVtblB;   // 0x5f0518
+extern void *g_nodeVtblA;
+extern void *g_nodeVtblB;
 
-// CButeNodeBase - the engine base subobject ctor (@0x16dff0, __thiscall(this,
+// CButeNodeBase - the engine base subobject ctor (__thiscall(this,
 // desc, n)). Declared external/no-body so the `mov ecx,this; call` __thiscall
 // shape (callee-cleanup) falls out reloc-masked.
 class CButeNodeBase {
 public:
-    CButeNodeBase(void *desc, int n);   // @0x16dff0
+    CButeNodeBase(void *desc, int n);
 };
 
 class CButeNode : public CButeNodeBase {
@@ -100,28 +100,28 @@ public:
         m_vtblA = &g_nodeVtblA;
         m_vtblB = &g_nodeVtblB;
     }
-    void *m_vtblA;       // +0x00  (0x5f051c)
+    void *m_vtblA;       // +0x00
     char  m_pad04[4];    // +0x04
-    void *m_vtblB;       // +0x08  (0x5f0518)
+    void *m_vtblB;       // +0x08
     char  m_pad0c[0x2c - 0xc]; // pad to 0x2c bytes total
 };
 
-// CString::operator+= one char (engine @0x192060). Appends to the accumulator.
+// CString::operator+= one char. Appends to the accumulator.
 extern "C" void AfxString_AppendChar(void *pStr, char c);
 
 // ---------------------------------------------------------------------------
 // CString member helper - an MFC-style CString (a single char* @+0). Only the
 // engine library calls the getters/parser actually emit are modeled, with NO
 // body so their `call rel32` displacements are reloc-masked in objdiff:
-//   - operator=  (CString::operator=, NAFXCW @0x1b9e74)
-//   - the literal-ctor (CString::CString(const char*), @0x1b9d4c) used by the
+//   - operator=  (CString::operator=, NAFXCW)
+//   - the literal-ctor (CString::CString(const char*)) used by the
 //     one-shot default-string init in GetString.
 // ---------------------------------------------------------------------------
 class AfxString {
 public:
     AfxString();
-    AfxString(const char *src);          // @0x1b9d4c
-    const AfxString &operator=(const char *src);  // @0x1b9e74
+    AfxString(const char *src);
+    const AfxString &operator=(const char *src);
     operator const char *() const { return m_pchData; }
 private:
     char *m_pchData;
@@ -156,10 +156,10 @@ public:
     // PeekClass classifies the current char (returns a token-class word);
     // ReadValue/ReadIdent scan a value/identifier token (return the next kind);
     // NextChar advances the input. All __thiscall on CButeMgr.
-    short PeekClass(int kind, char c);   // @0x170400
-    int   ReadValue(int kind, char c);   // @0x170430
-    int   ReadIdent(int kind, char c);   // @0x170460
-    void  NextChar();                    // @0x170390
+    short PeekClass(int kind, char c);
+    int   ReadValue(int kind, char c);
+    int   ReadIdent(int kind, char c);
+    void  NextChar();
 
     // Accessor for the +0x18 store tree (CButeTree is data-less; address it by
     // offset so its `this` resolves to `this+0x18` -> `lea ecx,[esi+0x18]`).
@@ -189,7 +189,7 @@ public:
     void Stub_1747c0();
 };
 
-// The variadic error reporter (@0x1706c0, __cdecl): ReportError(this, fmt, ...).
+// The variadic error reporter (__cdecl): ReportError(this, fmt, ...).
 // Reloc-masked; modeled external/no-body.
 int CButeMgr_ReportError(CButeMgr *self, const char *fmt, ...);
 

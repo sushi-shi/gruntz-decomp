@@ -56,11 +56,10 @@ __declspec(dllimport) DWORD __stdcall GetLastError(void);
 // displacements are reloc-masked in objdiff (the "external no-body callee"
 // idiom). Calling-convention/arg-shape pinned from the disasm.
 //   - AfxString: a 4-byte CString (single char* @+0). Its ctor/dtor/Empty/
-//     operator= are the engine's CString helpers (0x1b9b93/0x1b9cde/0x1b9c69/
-//     0x1b9e74).
-//   - ThrowOsError(lOsError, pszName): CFileException::ThrowOsError (0x1c18b7).
-//   - ThrowGenericError(cause, lOsError, pszName): the 3-arg throw (0x1c199c).
-//   - AfxFullPath(dst, src): the long-path canonicalizer (0x1bf8f8).
+//     operator= are the engine's CString helpers.
+//   - ThrowOsError(lOsError, pszName): CFileException::ThrowOsError.
+//   - ThrowGenericError(cause, lOsError, pszName): the 3-arg throw.
+//   - AfxFullPath(dst, src): the long-path canonicalizer.
 // ---------------------------------------------------------------------------
 class AfxString {
 public:
@@ -83,7 +82,7 @@ extern "C" void __stdcall AfxFullPath(char *lpszPathOut, const char *lpszFileNam
 // ---------------------------------------------------------------------------
 // CFileIO - the KERNEL32 file-stream wrapper.
 // ---------------------------------------------------------------------------
-// CObject - the MFC root base. Polymorphic (its own vtable @0x5e8cb4), no data
+// CObject - the MFC root base. Polymorphic (its own vtable), no data
 // members, so CFileIO's first field (m_handle) stays at +0x04. The base ctor
 // stores the CObject vtable; the CFileIO ctor then overwrites it with the
 // derived vtable (two-phase construction, both stores reloc-masked).
@@ -104,7 +103,7 @@ public:
     void  Write(const void *lpBuf, unsigned int nCount);
     LONG  Seek(LONG lOff, int nFrom);
     LONG  GetPosition();
-    // GetLength @0x1bf505: virtual Seek-to-end/restore. Declared (no body here)
+    // GetLength: virtual Seek-to-end/restore. Declared (no body here)
     // so external callers (CFileImage) emit a reloc-masked `call rel32` to it.
     unsigned int GetLength();
     void  Close();

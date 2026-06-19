@@ -5,8 +5,8 @@
 //
 // CDDrawWorkerMapSmall owns a CMapStringToOb at +0x10 (m_unknownMap1) keyed by const char*
 // strings. Unknown28/2C share ONE factory shape: allocate a 0x14-byte "worker" with
-// the global operator new (??2@YAPAXI@Z @0x1b9b46), inline-construct it (seed its
-// fields from the parent + stamp the foreign worker vftable 0x5f02d8), then call one
+// the global operator new, inline-construct it (seed its
+// fields from the parent + stamp the foreign worker vftable), then call one
 // of the worker's sibling virtuals (+0x28 for Unknown28, +0x2c for Unknown2C)
 // forwarding (arg1, arg3). On a 0 result the worker is destroyed via its scalar-
 // deleting destructor (vtable +0x4, arg 1) and 0 is returned; on a nonzero result
@@ -22,11 +22,11 @@
 // virtuals are never defined, so no vtable is emitted in this TU - the real vtable
 // is the foreign engine datum stamped manually into the heap block.
 //
-// SIBLING DEFERRED: CDDrawWorkerMapSmall::VirtualMethodUnknown1C @0x165b90 (169 B) is the
+// SIBLING DEFERRED: CDDrawWorkerMapSmall::VirtualMethodUnknown1C is the
 // map-teardown counterpart; it carries a C++ EH frame (a stack CString iteration
 // key with a destructor) and a subtle GetNextAssoc loop with a per-iteration
 // stack-layout shift. Deferred to its own pass to keep this factory TU /O2 /MT and
-// free of /GX entropy. The constant-id sibling VirtualMethodUnknown20 @0x157600 is
+// free of /GX entropy. The constant-id sibling VirtualMethodUnknown20 is
 // reconstructed below.
 // ---------------------------------------------------------------------------
 
@@ -35,10 +35,10 @@ class CObject;
 
 // CMapStringToOb lives at CDDrawWorkerMapSmall+0x10. operator[] is an out-of-line NAFXCW
 // thunk (reloc-masked rel32 call); declared with the exact MFC signature so clang
-// mangles it to ??ACMapStringToOb@@QAEAAPAVCObject@@PBD@Z .
+// mangles it to the MFC-canonical name.
 class CMapStringToOb {
 public:
-    CObject *&operator[](const char *key);      // @0x1b804c
+    CObject *&operator[](const char *key);
 };
 
 // The worker virtual interface. Slots laid out so the dispatched methods land at
@@ -70,7 +70,7 @@ struct AlbusWorkerObj : public AlbusWorker {
 
 // The foreign worker vftable, referenced as DIR32 data (RVA = VA-0x400000).
 DATA(0x1f02d8)
-extern void *g_albusWorkerVtbl;     // VA 0x5f02d8
+extern void *g_albusWorkerVtbl;
 
 // ---------------------------------------------------------------------------
 // CDDrawWorkerMapSmall - only the load-bearing offsets are modeled: m_0c (parent handle,
@@ -110,7 +110,6 @@ static inline int AlbusReadField1c(const CDDrawWorkerMapSmall *p)
 static inline void StampAlbusWorkerVtbl(AlbusWorkerObj *w) { *(void **)w = &g_albusWorkerVtbl; }
 
 // ---------------------------------------------------------------------------
-// CDDrawWorkerMapSmall::VirtualMethodUnknown14  @0x156cd0  (__thiscall, ret 0)
 // Reports ready when the parent/root handle is present and the base status word
 // is no longer the inactive -1 sentinel.
 RVA(0x156cd0, 0x16)
@@ -161,7 +160,6 @@ static inline AlbusWorkerObj *MakeAlbusWorker(const CDDrawWorkerMapSmall *parent
 }
 
 // ---------------------------------------------------------------------------
-// CDDrawWorkerMapSmall::VirtualMethodUnknown28  @0x165990  (__thiscall, ret 0xc)
 // Allocate + construct a worker, call its +0x28 virtual with (arg1, arg3). On
 // success store it into the map under `key` and return it; on failure run its
 // scalar-deleting dtor and return 0.
@@ -179,7 +177,6 @@ void *CDDrawWorkerMapSmall::VirtualMethodUnknown28(int a1, const char *key, int 
 }
 
 // ---------------------------------------------------------------------------
-// CDDrawWorkerMapSmall::VirtualMethodUnknown2C  @0x165a10  (__thiscall, ret 0xc)
 // As Unknown28 but dispatches the worker's +0x2c virtual.
 RVA(0x165a10, 0x77)
 void *CDDrawWorkerMapSmall::VirtualMethodUnknown2C(int a1, const char *key, int a3)
@@ -195,7 +192,6 @@ void *CDDrawWorkerMapSmall::VirtualMethodUnknown2C(int a1, const char *key, int 
 }
 
 // ---------------------------------------------------------------------------
-// CDDrawWorkerMapSmall::VirtualMethodUnknown20  @0x157600  (__thiscall, ret 0)
 // Constant state id.
 // ---------------------------------------------------------------------------
 RVA(0x157600, 0x6)
@@ -232,7 +228,7 @@ RVA(0x165b90, 0xa9)
 void CDDrawWorkerMapSmall::Stub_165b90() {}
 
 // ---------------------------------------------------------------------------
-// WIP (DO NOT ENABLE AS-IS): reconstructed CDDrawWorkerMapSmall::VirtualMethodUnknown1C @0x165b90
+// WIP (DO NOT ENABLE AS-IS): reconstructed CDDrawWorkerMapSmall::VirtualMethodUnknown1C
 // reaches ~82% objdiff here; the EH-frame register/layout schedule is TU-context
 // dependent (it reached 100% only in its original TU layout). Kept for future reuse:
 // re-enable, remove Stub_165b90, and reconcile this TU's symbol/layout context.
@@ -257,8 +253,8 @@ typedef int POSITION;
 // table around the iteration.
 class CString {
 public:
-    CString();          // @0x1b9b93
-    ~CString();         // @0x1b9cde
+    CString();
+    ~CString();
     char *m_pchData;    // +0x00
 };
 
@@ -269,10 +265,10 @@ public:
 // matching the retail `mov eax,[edi+0x1c]` for the guard condition.
 class CMapStringToObTeardown {
 public:
-    CObject *&operator[](const char *key);                                  // @0x1b804c
+    CObject *&operator[](const char *key);
     void GetNextAssoc(POSITION &rNextPosition, CString &rKey,
-                      CObject *&rValue) const;                              // @0x1b8116
-    void RemoveAll();                                                       // @0x1b7ea0
+                      CObject *&rValue) const;
+    void RemoveAll();
 
     // Simulated internal layout (all offsets relative to +0x10 of parent):
     void     *m_vptr;              // +0x00  CObject vptr
@@ -303,7 +299,6 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// CDDrawWorkerMapSmall::VirtualMethodUnknown1C  @0x165b90  (__thiscall, ret 0)
 // Map teardown: iterate all entries in m_10 via GetNextAssoc, destroying each
 // CObject* value via its scalar-deleting destructor (vtbl +0x4 arg 1), then
 // RemoveAll the map and clear the m_64 counter.

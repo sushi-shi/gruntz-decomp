@@ -2,9 +2,9 @@
 // UnknownLucius.cpp - tomalla-named DDraw surface/page-manager shared base
 // (CDDrawSubMgr).  This is the polymorphic base for the 10 sub-
 // managers (Draco, Hermiona, Hagrid, etc.).  Two functions:
-//   ctor  @0x156cb0 (32 B)  - seeds the three fields + stamps vtable.
-//   dtor  @0x1574d0 (91 B)  - SEH-framed: calls VirtualMethodUnknown1C
-//                              cleanup, resets fields, chains base dtor.
+//   ctor  - seeds the three fields + stamps vtable.
+//   dtor  - SEH-framed: calls VirtualMethodUnknown1C
+//           cleanup, resets fields, chains base dtor.
 //
 // Field names are tomalla placeholders; only the OFFSETS + the emitted code
 // bytes are load-bearing (campaign doctrine).
@@ -15,8 +15,8 @@
 // structure/managers/ddrawmgr_surface_family.h.
 class CDDrawSurfaceMgr;
 
-// The vtable address for Lucius (0x5efc30) and for CObject (0x5e8cb4) are used
-// in the dtor vtable chain, emitted automatically by the compiler.
+// The Lucius and CObject vtables are used in the dtor vtable chain, emitted
+// automatically by the compiler.
 class CDDrawSubMgrBase {
 public:
     CDDrawSubMgrBase() {}
@@ -43,10 +43,9 @@ public:
 void operator delete(void *);
 
 // ---------------------------------------------------------------------------
-// CDDrawSubMgr::CDDrawSubMgr  @0x156cb0
+// CDDrawSubMgr::CDDrawSubMgr
 // Chains the Hogwarts(int) base ctor (inlined: this+0x04 = unknown2), stamps
 // the Lucius vtable (compiler-generated), then seeds the remaining fields.
-// __thiscall with 3 explicit args (ret 0xc).
 // ---------------------------------------------------------------------------
 RVA(0x156cb0, 0x20)
 CDDrawSubMgr::CDDrawSubMgr(
@@ -59,11 +58,11 @@ CDDrawSubMgr::CDDrawSubMgr(
 }
 
 // ---------------------------------------------------------------------------
-// CDDrawSubMgr::~CDDrawSubMgr  @0x1574d0
+// CDDrawSubMgr::~CDDrawSubMgr
 // Scalar-deleting destructor.  Under /GX the compiler emits a C++ EH frame
 // (push -1 / handler info / fs:0) around the body because VirtualMethod-
 // Unknown1C may throw (it calls operator delete).  After the body runs, the
-// compiler changes the vtable to the base (CObject @0x5e8cb4) and chains
+// compiler changes the vtable to the base (CObject) and chains
 // through the base destructors.
 // ---------------------------------------------------------------------------
 RVA(0x1574d0, 0x5b)

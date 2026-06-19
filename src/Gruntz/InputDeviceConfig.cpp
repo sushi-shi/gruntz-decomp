@@ -1,6 +1,5 @@
 #include "../rva.h"
-// InputDeviceConfig.cpp - CInputConfig::LoadInputDeviceConfig @0x387c0 (192 B,
-// __thiscall, returns a CString by value -> ret 8) - maps the configured input
+// InputDeviceConfig.cpp - CInputConfig::LoadInputDeviceConfig - maps the configured input
 // device id (this->m_14) to its display name (C:\Proj\Gruntz). Starts from the
 // "None" default and, via a dense 5-way jump table on (m_14 - 1), overwrites it
 // with "Keyboard" / "Joystick 1" .. "Joystick 4"; an out-of-range id keeps "None".
@@ -26,10 +25,10 @@
 // ---------------------------------------------------------------------------
 class CString {
 public:
-    CString(const char *psz);          // ??0CString@@QAE@PBD@Z   @0x1b9d4c
-    CString(const CString &o);         // ??0CString@@QAE@ABV0@@Z @0x1b9ba3
-    ~CString();                        // ??1CString@@QAE@XZ      @0x1b9cde
-    const CString &operator=(const char *psz);  // ??4CString@@QAEABV0@@PBD@Z @0x1b9e74
+    CString(const char *psz);
+    CString(const CString &o);
+    ~CString();
+    const CString &operator=(const char *psz);
     char *m_pchData;                   // +0x00
 };
 
@@ -39,14 +38,14 @@ public:
 // ---------------------------------------------------------------------------
 class CInputConfig {
 public:
-    CString LoadInputDeviceConfig(int unused);   // @0x387c0 (__thiscall, ret 8)
+    CString LoadInputDeviceConfig(int unused);
 
     char m_pad00[0x14];
     int  m_14;                          // +0x14  configured device id (1..5)
 };
 
 // ---------------------------------------------------------------------------
-// CInputConfig::LoadInputDeviceConfig  @0x387c0
+// CInputConfig::LoadInputDeviceConfig
 // `unused` is the lone explicit stack arg (the ret 8 cleans the hidden CString
 // return buffer + this 4-byte arg); the body does not read it.
 RVA(0x387c0, 0xc0)

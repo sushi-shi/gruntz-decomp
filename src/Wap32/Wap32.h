@@ -105,8 +105,8 @@ struct CGameWndCreateParams {
 
 // ---------------------------------------------------------------------------
 // CGameWnd - WAP32 window wrapper.
-//   vftable @0x5ea344. ctor (RVA 0x13cf00, 17 bytes) zeroes m_4 (+0x04) and
-//   m_c (+0x0c); vptr stored first (natural single-class form).
+//   The ctor zeroes m_4 (+0x04) and m_c (+0x0c); vptr stored first (natural
+//   single-class form).
 // ---------------------------------------------------------------------------
 class CGameWnd {
 public:
@@ -116,7 +116,7 @@ public:
 
     // Creates the OS window from a 12-field params struct (CreateWindowExA),
     // registers this object as the active window singleton, then ShowWindow.
-    // Returns nonzero on success.  RVA 0x13cf20.
+    // Returns nonzero on success.
     int CreateAndShow(CGameWndCreateParams *pParams, void *pOwner);
     void Destroy();
     int QuitMessageLoop();
@@ -171,7 +171,7 @@ public:
     // Engine-label backlog stubs.
     void Stub_13dd10();
     void Stub_13dd50();
-    void vector_deleting_destructor();  // @0x133380 vftable slot 0
+    void vector_deleting_destructor();  // vftable slot 0
 
 private:
     char m_pad0c[0xa30 - 0x0c];
@@ -214,8 +214,8 @@ struct GameInfo {
 
 // ---------------------------------------------------------------------------
 // CGameApp - WAP32 application object.
-//   vftable @0x5e9b0c. ctor (RVA 0x13d590, 60 bytes) zeroes a handful of
-//   fields then bumps a file-scope instance counter at 0x653c6c.
+//   The ctor zeroes a handful of fields then bumps a file-scope instance
+//   counter.
 //   The ctor schedule emits the +0x10 store BEFORE the +0x0c store, which the
 //   source mirrors (m_10 initialised before m_c).
 //
@@ -224,7 +224,7 @@ struct GameInfo {
 //   so the WHOLE class is virtual with the tomalla slot order; matched methods
 //   keep their bodies (virtual mangles `U`, not `Q`).
 // ---------------------------------------------------------------------------
-// CGameApp instance counter (binary: global int @ 0x653c6c). Bumped by the
+// CGameApp instance counter. Bumped by the
 // ctor, decremented by ~CGameApp. Shared across the gameapp / gruntzapp TUs so
 // the inline ~CGameApp below (which CGruntzApp's dtor inlines) resolves it; the
 // reloc that names it is masked in objdiff (only the load/store bytes matter).
@@ -243,27 +243,27 @@ public:
     // InitializeDefault* + the resource/error helpers); unmatched slots are
     // inline stubs so the vtable indices land on the binary's layout.
     virtual int VirtualUnknownMethod02(GameInfo *pGameInfo, WNDCLASSA *pWndClass,
-                                       CREATESTRUCTA *pCreateStruct);     // +0x04  0x13d5d0
+                                       CREATESTRUCTA *pCreateStruct);     // +0x04
     virtual int VirtualUnknownMethod03(HINSTANCE hInstance, char *szWindowName,
                                        char *szGameIdentifier, char *szCmdLine,
                                        int windowClassFlags, int windowWidth,
-                                       int windowHeight);                  // +0x08  0x13d7b0
+                                       int windowHeight);                  // +0x08
     virtual void VirtualUnknownMethod04() {}                              // +0x0c
-    virtual void CloseResources();                                       // +0x10  0x13d8c0
+    virtual void CloseResources();                                       // +0x10
     virtual void VirtualUnknownMethod06() {}                              // +0x14
-    virtual int  RunMessageLoop();                                       // +0x18  0x13d910
-    virtual void ReportError(WPARAM wParam, LPARAM lParam);              // +0x1c  0x13dcb0
-    virtual void VirtualUnknownMethod09();                               // +0x20  0x13dc70  the idle virtual
-    virtual void FreeGameManager();                                      // +0x24  0x13dc90
+    virtual int  RunMessageLoop();                                       // +0x18
+    virtual void ReportError(WPARAM wParam, LPARAM lParam);              // +0x1c
+    virtual void VirtualUnknownMethod09();                               // +0x20  the idle virtual
+    virtual void FreeGameManager();                                      // +0x24
     virtual void VirtualUnknownMethod11() {}                             // +0x28
-    virtual BOOL InitializeAccelerators(LPCSTR lpTable);                 // +0x2c  0x13dc20
+    virtual BOOL InitializeAccelerators(LPCSTR lpTable);                 // +0x2c
     virtual void ShowError() {}                                          // +0x30
-    virtual CGameWnd *InitializeGameWindow();                            // +0x34  0x13db60
+    virtual CGameWnd *InitializeGameWindow();                            // +0x34
     virtual WAP32::CGameMgr *InitializeGameManager() { return 0; }       // +0x38
-    virtual void InitializeDefaultWindowClass();                        // +0x3c  0x13d9b0
-    virtual void InitializeDefaultCreateStruct();                       // +0x40  0x13da50
+    virtual void InitializeDefaultWindowClass();                        // +0x3c
+    virtual void InitializeDefaultCreateStruct();                       // +0x40
 
-    // Static window procedure stored into m_wc.lpfnWndProc (RVA 0x13cff0).
+    // Static window procedure stored into m_wc.lpfnWndProc.
     static LRESULT __stdcall GameWindowProc(HWND, UINT, WPARAM, LPARAM);
 
     CGameResource *m_4;  // +0x04  deleted by CloseResources (the CGameWnd)

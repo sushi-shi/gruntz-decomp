@@ -4,11 +4,11 @@
 // Utils::RegistryHelper wrapper (src/Utils/RegistryHelper.{cpp,h}, byte-matched).
 //
 // Matched (all byte-exact unless noted):
-//   AdvancedOptionsDialogProc @ RVA 0x00afb0 (264 B) - INT_PTR CALLBACK dialog proc
-//   SaveOption                @ RVA 0x00b110 ( 50 B) - one checkbox -> RegDWORD
-//   SetDefaults               @ RVA 0x00b160 ( 55 B) - clear all five checkboxes
-//   LoadOptions               @ RVA 0x00b1b0 (144 B) - 5x GetValueDword -> checkbox
-//   SaveOptions               @ RVA 0x00b270 (117 B) - 5x SaveOption
+//   AdvancedOptionsDialogProc - INT_PTR CALLBACK dialog proc
+//   SaveOption                - one checkbox -> RegDWORD
+//   SetDefaults               - clear all five checkboxes
+//   LoadOptions               - 5x GetValueDword -> checkbox
+//   SaveOptions               - 5x SaveOption
 //
 // Only offsets / control IDs / code bytes are load-bearing; names are placeholders.
 #include "../Utils/RegistryHelper.h"
@@ -57,7 +57,7 @@ __declspec(dllimport) HWND __stdcall BringWindowToTop(HWND hWnd);
 #define IDC_DISABLE_MOVIE   0x470
 #define IDC_DEFAULTS        0x426
 
-// File-scope globals (binary: data @ 0x6295d8 and @ 0x651618). The reloc that
+// File-scope globals. The reloc that
 // names them is masked in objdiff; only the address-load bytes are load-bearing.
 static Utils::RegistryHelper g_registryHelper;
 static HINSTANCE             g_hInstance;

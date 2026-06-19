@@ -48,7 +48,6 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// CDDrawSubMgrDraco::VirtualMethodUnknown14  @0x157480  (__thiscall, ret 0)
 // Ready when all three owned child pointers are populated.
 RVA(0x157480, 0x1e)
 int CDDrawSubMgrDraco::VirtualMethodUnknown14()
@@ -65,7 +64,6 @@ fail:
 }
 
 // ---------------------------------------------------------------------------
-// CDDrawSubMgrDraco::VirtualMethodUnknown1C  @0x158ac0  (__thiscall, ret 0)
 // For each owned child at +0x10/+0x14/+0x18: if non-null, run its scalar-deleting
 // destructor (vtbl +0x4, arg 1) and null the slot.
 RVA(0x158ac0, 0x44)

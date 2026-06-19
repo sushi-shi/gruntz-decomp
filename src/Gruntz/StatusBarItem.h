@@ -6,11 +6,11 @@
 
 // ---------------------------------------------------------------------------
 // CStatusBarItem - base of the SBI_* family.
-//   vftable @0x5eabcc. ctor (RVA 0x1005d0, 23 bytes) zeroes m_4 (+0x04),
+//   vftable. ctor zeroes m_4 (+0x04),
 //   m_8 (+0x08), m_24 (+0x24), m_28 (+0x28); vptr stored first.
 //
 // NOTE on the layout vs the derived CSBI_RectOnly (see SBI_RectOnly.cpp): in
-// the retail binary the *complete-object* CStatusBarItem ctor at 0x1005d0
+// the retail binary the *complete-object* CStatusBarItem ctor
 // zeroes all four fields, while when its body is folded into CSBI_RectOnly the
 // optimiser drops the dead m_8=0 store (the derived ctor overwrites m_8 with
 // 1). Both behaviours come from the SAME class; they are matched as two

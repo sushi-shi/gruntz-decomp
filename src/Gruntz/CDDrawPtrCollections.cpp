@@ -1,7 +1,7 @@
 #include "../rva.h"
 // CDDrawPtrCollections.cpp - tomalla-named standalone class in the ddrawmgr surface/page
 // manager "Harry Potter" family.  CDDrawPtrCollections (0x948 B, NO vtable) owns two
-// CPtrList (+0x47c / +0x498) and one CPtrArray (+0x4b4).  The ctor @0x141cc0
+// CPtrList (+0x47c / +0x498) and one CPtrArray (+0x4b4).  The ctor
 // constructs the three MFC containers with the given block sizes (both lists 0xa),
 // clears the scalar fields, and carries a C++ EH frame (/GX) to unwind the
 // constructed containers if a later one throws.
@@ -14,14 +14,14 @@
 // CPtrList: vptr@0 + 6 scalar fields = 0x1c.  CPtrArray: vptr@0 + 4 fields = 0x14.
 class CPtrList {
 public:
-    CPtrList(int nBlockSize);               // @0x1b4867
+    CPtrList(int nBlockSize);
     ~CPtrList();                            // (invoked on EH unwind)
     char _raw[0x1c - 4];                    // 0x1c incl vptr
 };
 
 class CPtrArray {
 public:
-    CPtrArray();                            // @0x1b4f0b
+    CPtrArray();
     ~CPtrArray();                           // (invoked on EH unwind)
     char _raw[0x14 - 4];                    // 0x14 incl vptr
 };
@@ -52,7 +52,7 @@ public:
 };                                          // 0x948
 
 // ---------------------------------------------------------------------------
-// CDDrawPtrCollections::CDDrawPtrCollections  @0x141cc0
+// CDDrawPtrCollections::CDDrawPtrCollections
 // Constructs the two CPtrLists with block size 0xa and the CPtrArray, then
 // zeroes all the scalar fields the ctor touches.  /GX: the three MFC container
 // ctors may throw, so the compiler emits a C++ EH frame (fs:0) whose try level

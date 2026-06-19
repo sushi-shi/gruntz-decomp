@@ -4,18 +4,18 @@
 // "Harry Potter" family; see structure/managers/ddrawmgr_surface_family.h).
 //
 // All four share ONE shape: allocate a 0x7c-byte "worker" object with the global
-// operator new (??2@YAPAXI@Z @0x1b9b46), inline-construct it (zero/seed its
+// operator new, inline-construct it (zero/seed its
 // fields + stamp its vftable), then call one of the worker's own sibling virtuals
 // forwarding the caller's args. On a 0 result the worker is destroyed via its
 // scalar-deleting destructor (vtable +0x4, arg 1) and the method returns 0; on a
 // nonzero result the worker is appended to CDDrawWorkerList's CObList (+0x10) - either
 // AddHead or AddTail, selected by a trailing bool arg - and the worker is returned.
 //
-// Two distinct worker vftables appear: 0x5efea0 (used by Unknown24, whose +0x78
-// flag is a BYTE) and 0x5efed0 (used by Unknown28/2C/30, whose +0x78 flag is an
-// int). Both worker layouts are otherwise identical and both carry a scalar-
+// Two distinct worker vftables appear: one used by Unknown24, whose +0x78
+// flag is a BYTE, and one used by Unknown28/2C/30, whose +0x78 flag is an
+// int. Both worker layouts are otherwise identical and both carry a scalar-
 // deleting destructor at vtable slot +0x4 (the delinker tags slot +0x4 of each as
-// ??_G__non_rtti_object, the MFC delete-this thunk). The vftables are foreign
+// the MFC delete-this thunk). The vftables are foreign
 // engine data, referenced here as named `DATA(...)` DIR32 externs and stamped
 // manually into the raw heap block; the worker classes are modeled as polymorphic
 // (virtuals at the right slots) ONLY so `worker->Vfunc(...)` lowers to the exact
@@ -34,7 +34,7 @@ class CObject;
 
 // CObList lives at CDDrawWorkerList+0x10. AddHead/AddTail are out-of-line NAFXCW
 // thunks (reloc-masked rel32 calls); declared with the exact MFC signatures so
-// clang mangles them to ?AddHead@CObList@@... / ?AddTail@CObList@@... .
+// clang mangles them to the MFC-canonical names.
 // RemoveAll / RemoveAt are called by VirtualMethodUnknown1C and Unknown34.
 class CObList {
 public:
@@ -86,7 +86,7 @@ struct HagridWorkerB : public HagridWorker {
     char  _pad60[0x64 - 0x60];
     int   m_64;     // +0x64  = 0x80000000
     char  _pad68[0x78 - 0x68];
-    int   m_78;     // +0x78  = 0 (int flag for the 0x5efed0 workers)
+    int   m_78;     // +0x78  = 0 (int flag for the int-flag workers)
 };                  // 0x7c
 
 struct HagridWorkerA : public HagridWorker {
@@ -104,15 +104,15 @@ struct HagridWorkerA : public HagridWorker {
     char  _pad60[0x64 - 0x60];
     int   m_64;     // +0x64  = 0x80000000
     char  _pad68[0x78 - 0x68];
-    char  m_78;     // +0x78  = 0 (BYTE flag for the 0x5efea0 worker)
+    char  m_78;     // +0x78  = 0 (BYTE flag for the BYTE-flag worker)
     char  _pad79[0x7c - 0x79];
 };                  // 0x7c
 
 // The two foreign worker vftables, referenced as DIR32 data (RVA = VA-0x400000).
 DATA(0x1efea0)
-extern void *g_hagridWorkerVtblA;   // VA 0x5efea0  (BYTE-flag worker)
+extern void *g_hagridWorkerVtblA;   // (BYTE-flag worker)
 DATA(0x1efed0)
-extern void *g_hagridWorkerVtblB;   // VA 0x5efed0  (int-flag worker)
+extern void *g_hagridWorkerVtblB;   // (int-flag worker)
 
 // The child type used in the work-node linked-list at +0x14.
 // Virtual slot +0x28 (Vfunc28) is dispatched in Unknown34; +0x74 is a
@@ -174,7 +174,6 @@ static inline void StampWorkerVtblB(HagridWorkerB *w) { *(void **)w = &g_hagridW
 static inline void StampWorkerVtblA(HagridWorkerA *w) { *(void **)w = &g_hagridWorkerVtblA; }
 
 // ---------------------------------------------------------------------------
-// CDDrawWorkerList::VirtualMethodUnknown14  @0x156f00  (__thiscall, ret 0)
 // Same base readiness predicate used by several Lucius-derived managers.
 RVA(0x156f00, 0x16)
 int CDDrawWorkerList::VirtualMethodUnknown14()
@@ -243,8 +242,7 @@ static inline HagridWorkerA *MakeWorkerA(const CDDrawWorkerList *parent)
 }
 
 // ---------------------------------------------------------------------------
-// CDDrawWorkerList::VirtualMethodUnknown24  @0x156fd0  (__thiscall, ret 0xc)
-// Allocates a BYTE-flag worker (vftable 0x5efea0), constructs it, calls its +0x2c
+// Allocates a BYTE-flag worker, constructs it, calls its +0x2c
 // virtual with (a1,a2,a3). On success appends it to the list (AddTail) and returns
 // it; on failure destroys it and returns 0.
 RVA(0x156fd0, 0x8b)
@@ -261,8 +259,7 @@ void *CDDrawWorkerList::VirtualMethodUnknown24(int a1, int a2, int a3)
 }
 
 // ---------------------------------------------------------------------------
-// CDDrawWorkerList::VirtualMethodUnknown28  @0x1573e0  (__thiscall, ret 0x10)
-// As Unknown24 but the int-flag worker (vftable 0x5efed0); on success the trailing
+// As Unknown24 but the int-flag worker; on success the trailing
 // bool selects AddHead vs AddTail.
 RVA(0x1573e0, 0xa0)
 void *CDDrawWorkerList::VirtualMethodUnknown28(int a1, int a2, int a3, int addHead)
@@ -281,7 +278,6 @@ void *CDDrawWorkerList::VirtualMethodUnknown28(int a1, int a2, int a3, int addHe
 }
 
 // ---------------------------------------------------------------------------
-// CDDrawWorkerList::VirtualMethodUnknown2C  @0x157330  (__thiscall, ret 0x14)
 // Int-flag worker; calls the worker's +0x30 virtual with (a1,a2,a3,a4); trailing
 // bool selects AddHead vs AddTail.
 RVA(0x157330, 0xa5)
@@ -301,7 +297,6 @@ void *CDDrawWorkerList::VirtualMethodUnknown2C(int a1, int a2, int a3, int a4, i
 }
 
 // ---------------------------------------------------------------------------
-// CDDrawWorkerList::VirtualMethodUnknown30  @0x157150  (__thiscall, ret 0x14)
 // As Unknown2C but dispatches the worker's +0x34 virtual.
 RVA(0x157150, 0xa5)
 void *CDDrawWorkerList::VirtualMethodUnknown30(int a1, int a2, int a3, int a4, int addHead)
@@ -323,7 +318,6 @@ void *CDDrawWorkerList::VirtualMethodUnknown30(int a1, int a2, int a3, int a4, i
 // Engine-label backlog stubs.
 // -------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-// CDDrawWorkerList::VirtualMethodUnknown1C  @0x163c60  (__thiscall, ret 0)
 // Walks the work-node list at m_pHarryPotter+0x04 (= this+0x14 in the MFC
 // CObList's internal head pointer, offset +0x04 from the CObList base due to
 // the inherited vptr).  Destroys each node's child if present, then clears
@@ -343,7 +337,6 @@ void CDDrawWorkerList::VirtualMethodUnknown1C()
 }
 
 // ---------------------------------------------------------------------------
-// CDDrawWorkerList::VirtualMethodUnknown20  @0x156f20  (__thiscall, ret 0)
 // Returns constant 0x11 (17).
 RVA(0x156f20, 0x6)
 int CDDrawWorkerList::VirtualMethodUnknown20()
@@ -352,7 +345,6 @@ int CDDrawWorkerList::VirtualMethodUnknown20()
 }
 
 // ---------------------------------------------------------------------------
-// CDDrawWorkerList::VirtualMethodUnknown34  @0x163bf0  (__thiscall, ret 8)
 // Walks the work-node list at this+0x14. For each node: calls the child's
 // +0x28 virtual (passing a1, a2), decrements child->m_74, and conditionally
 // removes the node from the CObList + destroys the child.

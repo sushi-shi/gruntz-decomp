@@ -1,10 +1,10 @@
 // FontConfig.cpp - CFontConfig::LoadFontConfig, the GDI HFONT setup path.
 //
-//   CFontConfig::LoadFontConfig @0x218e0 (511 B, __thiscall ret 8) - builds three
+//   CFontConfig::LoadFontConfig - builds three
 //     GDI HFONTs (the ARIAL UI font fixed at 12x8 bold; the TrainingFont; the
-//     MessageFont) via CreateFontA (GDI32 IAT @0x6c3ebc, cached in edi + called
+//     MessageFont) via CreateFontA (GDI32 IAT, cached in edi + called
 //     indirectly 6x). The Training/Message face names + width/height are read from
-//     the global CButeMgr "Font" config group (@0x6453d8) through the matched
+//     the global CButeMgr "Font" config group through the matched
 //     GetStringDef/GetIntDef getters (butemgr unit), defaulting to the ARIAL face
 //     + per-font default dims. Each CreateFontA has a fallback retry (NULL face /
 //     alternate default dims) if the first attempt fails. The three HFONTs are
@@ -20,7 +20,7 @@
 #include "../rva.h"
 
 // CreateFontA - the GDI32 14-arg HFONT creator, reached through its IAT slot
-// @0x6c3ebc (the target caches it in edi and calls it indirectly six times).
+// (the target caches it in edi and calls it indirectly six times).
 extern "C" __declspec(dllimport) void *__stdcall CreateFontA(
     int nHeight, int nWidth, int nEscapement, int nOrientation, int fnWeight,
     unsigned long fdwItalic, unsigned long fdwUnderline, unsigned long fdwStrikeOut,
@@ -28,8 +28,8 @@ extern "C" __declspec(dllimport) void *__stdcall CreateFontA(
     unsigned long fdwClipPrecision, unsigned long fdwQuality,
     unsigned long fdwPitchAndFamily, const char *lpszFace);
 
-// The global CButeMgr config tree (@0x6453d8). Modeled minimally so the
-// `ecx=0x6453d8; call GetIntDef/GetStringDef` shapes reloc-mask against the
+// The global CButeMgr config tree. Modeled minimally so the
+// `ecx=&g_buteMgr; call GetIntDef/GetStringDef` shapes reloc-mask against the
 // already-matched butemgr getters. GetStringDef returns a CString* whose +0
 // m_pchData is the face-name char* the caller dereferences (`mov eax,[eax]`); the
 // default (3rd arg) is the address of the ARIAL CString temp.
@@ -37,10 +37,10 @@ struct ButeString { char *m_pchData; };       // +0x00 the face-name char*
 
 class CButeMgr {
 public:
-    int         GetIntDef(char *tag, char *key, int def);            // @0x171aa0
-    ButeString *GetStringDef(char *tag, char *key, ButeString *def); // @0x173180
+    int         GetIntDef(char *tag, char *key, int def);
+    ButeString *GetStringDef(char *tag, char *key, ButeString *def);
 };
-// The global CButeMgr instance @0x6453d8 (the ctor stores the bute config tree
+// The global CButeMgr instance (the ctor stores the bute config tree
 // here). Declared as a named extern so the `mov ecx, offset g_buteMgr` loads
 // reloc-match the engine; @address names the delinked target DATA symbol.
 DATA(0x2453d8)
@@ -65,7 +65,7 @@ extern CButeMgr g_buteMgr;
 // ---------------------------------------------------------------------------
 class CFontConfig {
 public:
-    int LoadFontConfig(int a1, int a2);   // @0x218e0 (__thiscall ret 8)
+    int LoadFontConfig(int a1, int a2);
 
     char  m_pad00[0x20];
     int   m_20;          // +0x20  (= 0)
@@ -80,7 +80,7 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// CFontConfig::LoadFontConfig @0x218e0
+// CFontConfig::LoadFontConfig
 RVA(0x218e0, 0x1ff)
 int CFontConfig::LoadFontConfig(int a1, int a2)
 {

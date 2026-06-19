@@ -9,7 +9,7 @@
 // ---------------------------------------------------------------------------
 // The two name tables are file-scope arrays of CString with brace-initializers.
 // MSVC5 /O2 emits ONE dynamic-initializer per array - a flat run of
-// `push lit; mov ecx,&g[i]; call ??0CString@@QAE@PBD@Z` with NO placement-new
+// `push lit; mov ecx,&g[i]; call CString::CString(const char*)` with NO placement-new
 // null-check, ending in `ret` - which is EXACTLY the shape (and 0x79-byte size)
 // of the target functions tomalla guessed as "GetWorldDisplayName" /
 // "GetEndLevelStatLabels". They are in fact the compiler-generated array static
@@ -20,7 +20,7 @@
 //   / "High Rollerz" / "Honey, I Shrunk the Gruntz!" / "The Miniature Masterz"
 //   / "Gruntz in Space".
 // ---------------------------------------------------------------------------
-// GetWorldDisplayName (the g_worldName[] array initializer) @ 0x82990 (121 B).
+// GetWorldDisplayName (the g_worldName[] array initializer).
 SYMBOL(_$E1)
 RVA(0x82990, 0x79)
 static AfxString g_worldName[8] = {
@@ -39,7 +39,7 @@ static AfxString g_worldName[8] = {
 //   "Time:" / "Survivorz:" / "Deathz:" / "Toolz:" / "Toyz:" / "Powerupz:"
 //   / "Coinz:" / "Secretz:".
 // ---------------------------------------------------------------------------
-// GetEndLevelStatLabels (the g_statLabel[] array initializer) @ 0x18740 (121 B).
+// GetEndLevelStatLabels (the g_statLabel[] array initializer).
 SYMBOL(_$E4)
 RVA(0x18740, 0x79)
 static AfxString g_statLabel[8] = {
@@ -54,8 +54,8 @@ static AfxString g_statLabel[8] = {
 };
 
 // ---------------------------------------------------------------------------
-// GetWarlordName  @ 0x1ec20 (141 B, __cdecl, returns CString by value, ret 8) -
-// the boss/warlord display name by id, via a 4-entry jump table:
+// GetWarlordName - returns CString by value; the boss/warlord display name by
+// id, via a 4-entry jump table:
 //   0 -> "KING"  1 -> "NAPOLEAN"  2 -> "PATTON"  3 -> "VIKING"  default -> "".
 RVA(0x1ec20, 0x8d)
 AfxString __stdcall GetWarlordName(int id)
@@ -76,8 +76,8 @@ AfxString __stdcall GetWarlordName(int id)
 }
 
 // ---------------------------------------------------------------------------
-// CContainerErr::CContainerErr  @ 0x16d9c0 (117 B, __thiscall(this, msg),
-// ret 4) - the container-library exception ctor. Stores the (custom or default)
+// CContainerErr::CContainerErr - the container-library exception ctor (__thiscall
+// (this, msg)). Stores the (custom or default)
 // message, installs the vtable, and on FIRST construction lazily seeds the
 // static 8-entry container-error message table. The error strings (by code):
 //   "Out of memory" / "Data structure is invalid" / "Overflow" /
@@ -85,19 +85,19 @@ AfxString __stdcall GetWarlordName(int id)
 //   "Target alrready exisits" / "Null pointer argument" / "Bad argument value".
 // ---------------------------------------------------------------------------
 
-// The default message base (@0x6bf430) used when no custom message is supplied,
-// and the runtime-seeded message-table slots (@0x6bf448..0x6bf464). The 8 slots
+// The default message base used when no custom message is supplied,
+// and the runtime-seeded message-table slots. The 8 slots
 // are distinct named globals (non-contiguous in the EXE) so the source emits the
 // exact 8 `mov ds:slot,imm32` stores in the target's order. All reloc-masked.
-static char *g_defaultErrMsg;   // 0x6bf430
-static char *g_errMsg_OutOfMem; // 0x6bf464 (the lazy-init guard slot)
-static char *g_errMsg_BadData;  // 0x6bf448
-static char *g_errMsg_Overflow; // 0x6bf44c
-static char *g_errMsg_NoFile;   // 0x6bf460
-static char *g_errMsg_OutOfRng; // 0x6bf450
-static char *g_errMsg_Exists;   // 0x6bf458
-static char *g_errMsg_NullArg;  // 0x6bf454
-static char *g_errMsg_BadArg;   // 0x6bf45c
+static char *g_defaultErrMsg;
+static char *g_errMsg_OutOfMem; // the lazy-init guard slot
+static char *g_errMsg_BadData;
+static char *g_errMsg_Overflow;
+static char *g_errMsg_NoFile;
+static char *g_errMsg_OutOfRng;
+static char *g_errMsg_Exists;
+static char *g_errMsg_NullArg;
+static char *g_errMsg_BadArg;
 
 RVA(0x16d9c0, 0x75)
 CContainerErr::CContainerErr(const char *msg)

@@ -1,13 +1,13 @@
 #include "../rva.h"
-// LogicTypeTable.cpp - CLogicTypeBuilder::BuildLogicTypeTable @0x8a40 (200 B,
-// __thiscall ret 4). A one-shot registrar that ensures three built-in tile-logic
+// LogicTypeTable.cpp - CLogicTypeBuilder::BuildLogicTypeTable. A one-shot
+// registrar that ensures three built-in tile-logic
 // types ("LogicHit", "LogicAttack", "LogicBump") are present in the engine's
 // logic-type registry, lazily registering each (with its factory callback) only
 // if a lookup for that key comes back empty (C:\Proj\Gruntz).
 //
 // For each of the three keys it:
 //   1. looks the key up in the registry's string-keyed table (the matched lookup
-//      helper CLogicRegistry::Lookup @0x1b8008, __thiscall, external), addressed
+//      helper CLogicRegistry::Lookup, external), addressed
 //      at (this->m_c->m_14)+0x10;
 //   2. if the lookup result is null, calls the registry's virtual registrar
 //      (vtable slot +0x24) with (factoryFn, key, 2) to install the type.
@@ -27,9 +27,9 @@
 // like the target's LAB_0056e4c0/d0/e0 .text data references).
 // ---------------------------------------------------------------------------
 extern "C" {
-void LogicHitFactory();     // @0x16e4c0  (target LAB_0056e4c0)
-void LogicAttackFactory();  // @0x16e4d0  (target LAB_0056e4d0)
-void LogicBumpFactory();    // @0x16e4e0  (target LAB_0056e4e0)
+void LogicHitFactory();
+void LogicAttackFactory();
+void LogicBumpFactory();
 }
 
 // ---------------------------------------------------------------------------
@@ -41,7 +41,7 @@ void LogicBumpFactory();    // @0x16e4e0  (target LAB_0056e4e0)
 struct CLogicType;
 class CLogicMap {
 public:
-    int Lookup(char *szKey, CLogicType **ppOut);   // @0x1b8008 (__thiscall ret 8)
+    int Lookup(char *szKey, CLogicType **ppOut);
 };
 class CLogicRegistry {
 public:
@@ -75,8 +75,8 @@ struct CLogicTypeBuilder {
 };
 
 // ---------------------------------------------------------------------------
-// BuildLogicTypeTable  @0x8a40  (__stdcall, ret 4 - the builder object is the
-// single explicit stack arg, read into ESI; not a __thiscall).
+// BuildLogicTypeTable - __stdcall: the builder object is the
+// single explicit stack arg, read into ESI; not a __thiscall.
 //
 // Each block re-reads obj->m_c->m_14 (the registry pointer) for BOTH the lookup
 // and the register call - the target does NOT cache it across the two (it reloads
