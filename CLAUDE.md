@@ -26,7 +26,8 @@ source of truth, and the full `gruntz.py` design).
 - `nix develop .#build` — adds the MSVC 5.0 toolchain under `wine` for the
   **base/recompile** side. The `gruntz-toolchain` tarball is packaged (fetched +
   pinned in `flake.nix`); run `gruntz init` once to build the local env (wine
-  prefix, clangd DB, Ghidra DB) — heavy first run, idempotent after.
+  prefix, clangd DB, Ghidra DB) — a few minutes on a cold run, fast/idempotent
+  after (see the build-speed note under Conventions).
 
 `GRUNTZ_EXE` is exported pointing at the Internet-Archive-fetched binary.
 
@@ -63,6 +64,12 @@ Gotchas baked in from reading the delinker source:
 - Keep `README.md` and the relevant `docs/` (esp. `build-system.md`) current when
   the build/diff flow, tools, or paths change.
 - `flake.lock` is committed; `.gitignore` already excludes generated outputs.
+- **Builds are FAST — don't engineer around build time.** A full from-scratch
+  `gruntz clean && gruntz init` (cold Ghidra import+analyze, wine re-init, full
+  recompile, warmup) is ~2–3 min; back-to-back `clean → init` x2 is ~5 min;
+  `gruntz build` (incremental) is faster. Just run them in the foreground and
+  verify changes with a real build — don't background out of fear, avoid clean
+  builds, or skip verification.
 - **`src/Stub/` is the labeled-but-unmatched backlog** (the `engine_label_stubs`
   unit, aggregated by `All.cpp`). These stubs ARE delinked and diffed like any
   unit — they show in objdiff (initially ~0%) as the matching worklist, count in
