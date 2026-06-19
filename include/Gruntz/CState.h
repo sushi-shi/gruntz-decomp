@@ -21,7 +21,7 @@
 #define GRUNTZ_GRUNTZ_CSTATE_H
 #include <Gruntz/GameModeBase.h>
 
-class CView;   // +0x0c view holder; defined fully in CPlay.h, opaque elsewhere
+struct CView;  // +0x0c view holder; defined fully in CPlay.h, opaque elsewhere
 
 class CState {
 public:

@@ -300,7 +300,9 @@ int CPlay::Render()
                 // not yet: build a CString temp, CopyRect the viewport, HudDraw.
                 CString tmp; (void)tmp;              // [esp+0x10] CString temp
                 tmp.Format("%s", "");
-                CopyRect(&m_310, (const RECT *)g_64556c->m_30->m_24);
+                // m_30 is the shared CSpriteFactoryHolder; this WIP path reads it
+                // as a resource map whose +0x24 holds the CopyRect-source rect.
+                CopyRect(&m_310, (const RECT *)((char *)g_64556c->m_30 + 0x24));
                 Eng_HudDraw(g_64556c->m_30, &m_310, 1);
             }
             // (CString temp dtor runs here under the EH frame)
