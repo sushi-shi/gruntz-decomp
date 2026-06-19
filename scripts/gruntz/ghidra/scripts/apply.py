@@ -1,34 +1,32 @@
 # -*- coding: utf-8 -*-
 # apply_ghidra_enrichment.py - maximal comprehension enrichment for build/ghidra-named.
 #
-#   Extends (does NOT clobber) the prior name+plate enrichment with:
-#     1. FUNCTION NAMES   - src/**/*.cpp source stub metadata (incl. import-caller rows),
-#                           config/library_labels.csv (HIGH/MED/AMBIG),
-#                           config/symbol_names.csv (zlib + ctors).
-#                           Functions are created when Ghidra has none at the RVA.
-#     2. PROTOTYPES + PARAM NAMES - parsed from source stub `prototype` metadata
-#                           (tomalla rows). Sets return type, params (name+type),
-#                           and calling convention (__thiscall members / __cdecl
-#                           free funcs / __stdcall callbacks). Win32 types resolve
-#                           against the windows_vs12_32 archive already in the DTM;
-#                           custom struct types resolve against the structs defined
-#                           below; anything unresolved falls back to void*/int.
-#     3. STRUCTS (field names @ offsets) - from build/gen/structs.json (clang record
-#                           layouts over src/ + structure/), defined in the DTM and
-#                           APPLIED as the `this` (param-0) type on every method of
-#                           that class (so member access decodes as this->m_health).
-#     4. ENUMS            - from build/gen/enums.json (clang over structure/),
-#                           defined in the DTM.
+#   STATELESS: every fact comes from a generated, source-derived file (or the
+#   tracked config CSVs), so nothing important lives only in the .gpr blob:
+#     1. FUNCTION NAMES   - build/gen/symbol_names.csv (rva -> mangled name; from
+#                           src/ RVA() macros via labels.py) + config/library_labels.csv
+#                           (FID HIGH/MED/AMBIG). Functions are created when Ghidra
+#                           has none at the RVA.
+#     2. PROTOTYPES + PARAM NAMES - build/gen/functions.json (labels.py): per-RVA
+#                           class / return / calling convention / named params,
+#                           from the IR rva-map joined with llvm-undname + the clang
+#                           AST. Applied as a typed prototype (+ a struct* `this`).
+#     3. LOCALS           - build/gen/locals.json (harvest_locals.py): named stack
+#                           variables for BYTE-EXACT functions, read from CodeView in
+#                           a /Z7 debug build. Applied as named Ghidra stack vars.
+#     4. GLOBAL TYPES     - build/gen/globals.json (labels.py): the declared type of
+#                           each named global; laid as typed data (g_buteMgr : CButeMgr).
+#     5. STRUCTS / ENUMS  - build/gen/structs.json + enums.json (clang record layouts
+#                           over src/ + structure/), defined in the DTM; each struct
+#                           is applied as the `this` type on its class's methods.
+#   Win32/CRT types resolve against the windows_vs12_32 archive in the DTM; custom
+#   types against the generated structs; anything unresolved falls back to void*/int.
 #
-#   Reproducible from src/**/*.cpp @stub metadata + config/symbol_names.csv +
-#   config/library_labels.csv + structure/. Idempotent: re-runnable, never
-#   downgrades a better existing name, keeps prior [LABEL] plate comments.
-#
-#   Run as a GhidraScript under PyGhidra (CPython3 + JPype), driven by
-#   scripts/gruntz/ghidra/ghidra_metadata_apply.py (which boots PyGhidra, imports/analyzes
-#   GRUNTZ.EXE, then runs this + export.py). Invoked via `gruntz init` /
-#   `gruntz ghidra-refresh`. The flat-API globals (currentProgram, monitor, ...)
-#   are injected by pyghidra.ghidra_script.
+#   Idempotent: re-runnable, never downgrades a better existing name, keeps prior
+#   [LABEL] plate comments. Run as a GhidraScript under PyGhidra (CPython3 + JPype),
+#   driven by scripts/gruntz/ghidra/ghidra_metadata_apply.py; invoked via `gruntz
+#   init` / `gruntz ghidra-refresh`. Flat-API globals (currentProgram, ...) are
+#   injected by pyghidra.ghidra_script.
 #
 #   Writes build/ghidra-named/exports/enrichment_apply_report.txt
 #@category Gruntz
@@ -59,6 +57,7 @@ ROOT = os.environ.get("GRUNTZ_DIR", "/home/sheep/Projects/gruntz")
 CSV_SYMBOL   = ROOT + "/build/gen/symbol_names.csv"
 FUNCTIONS_JSON = ROOT + "/build/gen/functions.json"
 LOCALS_JSON  = ROOT + "/build/gen/locals.json"
+GLOBALS_JSON = ROOT + "/build/gen/globals.json"
 STRUCTS_JSON = ROOT + "/build/gen/structs.json"
 ENUMS_JSON   = ROOT + "/build/gen/enums.json"
 CSV_FID    = ROOT + "/config/library_labels.csv"
@@ -169,6 +168,31 @@ def load_locals_json(path):
         except Exception:
             continue
         out[rva] = d.get("locals") or []
+    return out
+
+
+def load_globals_json(path):
+    """build/gen/globals.json -> {rva: ctype-string}. labels.py records the
+    declared C/C++ type of each named global; apply.py lays typed data at the
+    address so the global decodes as its real type (e.g. g_buteMgr : CButeMgr)."""
+    if not os.path.exists(path):
+        return {}
+    fh = open(path)
+    try:
+        data = json.load(fh)
+    except Exception:
+        return {}
+    finally:
+        fh.close()
+    out = {}
+    for d in data:
+        t = (d.get("type") or "").strip()
+        if not t:
+            continue
+        try:
+            out[int(d["rva"], 16)] = t
+        except Exception:
+            pass
     return out
 
 # =====================================================================
@@ -486,6 +510,8 @@ try:
     R("function signatures loaded: %d (from build/gen/functions.json)" % len(eng))
     locals_map = load_locals_json(LOCALS_JSON)  # {rva: [local,...]} for byte-exact funcs
     R("local-variable sets loaded: %d (from build/gen/locals.json)" % len(locals_map))
+    globals_map = load_globals_json(GLOBALS_JSON)  # {rva: ctype} declared global types
+    R("global types loaded: %d (from build/gen/globals.json)" % len(globals_map))
 
     sym_rows = load_csv_rows(CSV_SYMBOL) if os.path.exists(CSV_SYMBOL) else []  # rva,name,unit,size,kind
     syms = []           # functions (kind=func / legacy)
@@ -559,6 +585,26 @@ try:
         except Exception:
             pass
     R("global data symbols labeled (Ghidra demangles): %d" % n_data_named)
+
+    # Apply each named global's DECLARED type (labels.py globals.json) so it
+    # decodes as its real type (g_buteMgr : CButeMgr, g_gameReg : CGameReg*)
+    # instead of raw bytes. resolve_type maps the C/C++ type onto the /Gruntz
+    # structs + Win32/CRT archive; CLEAR_ALL_CONFLICT_DATA overwrites the
+    # placeholder data Ghidra laid down.
+    from ghidra.program.model.data import DataUtilities
+    n_data_typed = 0
+    for rva, ctype in sorted(globals_map.items()):
+        dt = resolve_type(ctype)
+        if dt is None:
+            continue
+        try:
+            DataUtilities.createData(prog, toaddr(rva), dt, -1, False,
+                                     DataUtilities.ClearDataMode.CLEAR_ALL_CONFLICT_DATA)
+            n_data_typed += 1
+        except Exception:
+            pass
+    R("global data symbols typed (declared type applied): %d / %d"
+      % (n_data_typed, len(globals_map)))
 
     # ---- (E) function signatures: name + namespace + plate + PROTOTYPE + this-type ----
     # Each row is a structured signature from build/gen/functions.json (matched

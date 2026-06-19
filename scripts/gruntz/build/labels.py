@@ -249,13 +249,15 @@ def func_labels_from_ir(ir):
 
 # --- DATA via AST (extern annotations are dropped from IR) ------------------
 def collect_vars(ast, main_file):
-    """[(mangledName, offset)] for global VARIABLE declarations in main_file.
+    """[(mangledName, offset, qualType)] for global VARIABLE decls in main_file.
 
     A file-scope / `extern` variable carries a linkage mangledName
     (`?g_foo@@3...`, `_g_foo` for `extern "C"`); function locals do not, so they
-    are excluded naturally. Main-file-only (like collect_defs): a header-declared
-    global's offset is into the header, so without this guard it could be misread
-    against the .cpp line index and a `DATA()` could bind to the wrong VarDecl.
+    are excluded naturally. The qualType is the declared C/C++ type (e.g. "int",
+    "CGameReg *"), carried into globals.json so apply.py can type the global.
+    Main-file-only (like collect_defs): a header-declared global's offset is into
+    the header, so without this guard it could be misread against the .cpp line
+    index and a `DATA()` could bind to the wrong VarDecl.
     """
     main_real = os.path.realpath(main_file)
     out = []
@@ -274,7 +276,8 @@ def collect_vars(ast, main_file):
                 loc = node.get("loc") or {}
                 off = loc.get("offset")
                 if off is not None:
-                    out.append((node["mangledName"], off))
+                    qt = (node.get("type") or {}).get("qualType") or ""
+                    out.append((node["mangledName"], off, qt))
             for c in node.get("inner", []) or []:
                 visit(c)
     visit(ast)
@@ -321,12 +324,13 @@ def load_compdb(path):
 
 
 def data_labels(text, ast, main_file):
-    """[(rva, mangledName)] for each DATA(0x..) macro bound to the AST VarDecl
-    just below it (by line). The variable pool and macro sites never cross with
-    functions, so a non-matched global cannot steal a function's address.
+    """[(rva, mangledName, qualType)] for each DATA(0x..) macro bound to the AST
+    VarDecl just below it (by line). The variable pool and macro sites never cross
+    with functions, so a non-matched global cannot steal a function's address.
     """
     off2line = line_index(text)
-    var_defs = sorted((off2line(off), mn) for (mn, off) in collect_vars(ast, main_file))
+    var_defs = sorted((off2line(off), mn, qt)
+                      for (mn, off, qt) in collect_vars(ast, main_file))
     out = []
     line_no = 1
     for m in re.finditer(r"[^\n]*\n", text):
@@ -334,8 +338,9 @@ def data_labels(text, ast, main_file):
         dm = DATA_MACRO_RE.search(seg)
         if dm:
             rva = int(dm.group(1), 16)
-            cand = next((mn for (dl, mn) in var_defs if dl >= line_no), None)
-            out.append((rva, cand))
+            cand = next(((mn, qt) for (dl, mn, qt) in var_defs if dl >= line_no),
+                        (None, None))
+            out.append((rva, cand[0], cand[1]))
         line_no += 1
     return out
 
@@ -594,6 +599,9 @@ def main():
                          "params) for apply.py's Ghidra prototype enrichment.")
     ap.add_argument("--undname", default="llvm-undname",
                     help="MSVC name demangler for the authoritative signature.")
+    ap.add_argument("--globals-out",
+                    default=str(REPO / "build/gen/globals.json"),
+                    help="per-RVA global/static declared types for apply.py.")
     args = ap.parse_args()
 
     unit_map = {}
@@ -607,6 +615,7 @@ def main():
     misses = []        # (rva, candidate, unit, reason)
     addr_sites = {}    # rva -> [(tu, "fn")] for every function rva, to catch dups
     func_meta = {}     # rva -> {ir_sym, names} for functions.json signatures
+    global_meta = {}   # rva -> {name, type, unit} for globals.json (typed data)
     for i, tu in enumerate(args.tu):
         text = Path(tu).read_text()
         if args.unit:
@@ -682,12 +691,14 @@ def main():
 
         # --- DATA via AST (IR drops the extern's annotation) ---
         if ast is not None and DATA_MACRO_RE.search(text):
-            for rva, cand in data_labels(text, ast, tu):
+            for rva, cand, qtype in data_labels(text, ast, tu):
                 if cand is None:
                     misses.append((rva, None, unit, "no VarDecl below DATA()"))
                     continue
                 if obj_syms is None or cand in all_syms:
                     rows.append((rva, cand, unit, None, "data"))
+                    # remember the declared type so apply.py can type the global
+                    global_meta[rva] = {"name": cand, "type": qtype, "unit": unit}
                 else:
                     misses.append((rva, cand, unit,
                                    "data candidate not in base obj"))
@@ -770,6 +781,21 @@ def main():
     fout.write_text(json.dumps(functions, indent=1))
     log(f"wrote {len(functions)} function signature(s) "
         f"({n_named_params} named params) -> {fout}")
+
+    # --- globals.json: the declared C/C++ TYPE of each named global (data row),
+    # so apply.py types it in Ghidra (it already names it from symbol_names.csv).
+    globals_out = []
+    for rva, name, unit, size, kind in rows:
+        if kind != "data":
+            continue
+        gm = global_meta.get(rva) or {}
+        globals_out.append({"rva": f"0x{rva:06x}", "name": name,
+                            "type": gm.get("type") or "", "unit": unit})
+    globals_out.sort(key=lambda d: d["rva"])
+    gout = Path(args.globals_out)
+    gout.write_text(json.dumps(globals_out, indent=1))
+    n_typed = sum(1 for g in globals_out if g["type"])
+    log(f"wrote {len(globals_out)} global(s) ({n_typed} typed) -> {gout}")
     return 0
 
 
