@@ -339,6 +339,137 @@ def data_labels(text, ast, main_file):
     return out
 
 
+# --- function signatures for Ghidra prototypes (functions.json) ------------
+# llvm-undname gives the authoritative signature (return type, calling
+# convention, class, parameter TYPES) for every mangled symbol; the source AST
+# adds the parameter NAMES, which the mangling does not carry. apply.py turns
+# these into typed, named Ghidra prototypes (+ a typed `this`). This is the
+# structured replacement for the removed `// engine-label:` JSON `prototype`.
+_FUNC_DECL_KINDS = {"FunctionDecl", "CXXMethodDecl", "CXXConstructorDecl",
+                    "CXXDestructorDecl", "CXXConversionDecl"}
+
+
+def param_names_from_ast(ast, main_file):
+    """{mangledName: [param-name-or-None, ...]} for function DEFINITIONS in
+    main_file. Parameter names live only in the source, not the mangling.
+    Main-file-only (like collect_vars) so a header-inlined definition's params
+    aren't misattributed."""
+    main_real = os.path.realpath(main_file)
+    out = {}
+    state = {"in_main": True}
+
+    def update_file(node):
+        for loc in (node.get("loc"), (node.get("range") or {}).get("begin")):
+            if isinstance(loc, dict) and loc.get("file") is not None:
+                state["in_main"] = os.path.realpath(loc["file"]) == main_real
+
+    def visit(node):
+        if not isinstance(node, dict):
+            return
+        update_file(node)
+        if (state["in_main"] and node.get("kind") in _FUNC_DECL_KINDS
+                and node.get("mangledName")):
+            inner = node.get("inner") or []
+            if any(c.get("kind") == "CompoundStmt" for c in inner):   # has a body
+                out[node["mangledName"]] = [
+                    (c.get("name") or None)
+                    for c in inner if c.get("kind") == "ParmVarDecl"]
+        for c in node.get("inner") or []:
+            visit(c)
+    visit(ast)
+    return out
+
+
+def undname_map(symbols, undname="llvm-undname"):
+    """{mangled: demangled} via one llvm-undname call (stdin batch).
+
+    undname echoes each input symbol then its demangling, separated by a blank
+    line; key each block by its echoed first line.
+    """
+    syms = [s for s in dict.fromkeys(symbols) if s]
+    if not syms:
+        return {}
+    res = subprocess.run([undname], input="\n".join(syms) + "\n",
+                         capture_output=True, text=True)
+    out = {}
+    for block in res.stdout.split("\n\n"):
+        ls = block.splitlines()
+        if len(ls) >= 2:
+            out[ls[0].strip()] = ls[1].strip()
+    return out
+
+
+_CC_KW_RE = re.compile(r"__(thiscall|cdecl|stdcall|fastcall)\b")
+_ACCESS_RE = re.compile(r"^(?:public|private|protected):\s*")
+
+
+def _split_top_commas(s):
+    out, depth, cur = [], 0, ""
+    for ch in s:
+        if ch in "<([":
+            depth += 1; cur += ch
+        elif ch in ">)]":
+            depth -= 1; cur += ch
+        elif ch == "," and depth == 0:
+            out.append(cur); cur = ""
+        else:
+            cur += ch
+    if cur.strip():
+        out.append(cur)
+    return [x.strip() for x in out]
+
+
+def parse_demangled(dem):
+    """llvm-undname output -> signature dict, or None when not a usable function.
+
+    'public: int __thiscall RezMgr::MakeImageKey(void *, char *, void *)' ->
+      {qual:'RezMgr::MakeImageKey', cls:'RezMgr', kind:'method', ret:'int',
+       cc:'__thiscall', param_types:['void *','char *','void *']}
+    """
+    if not dem or "(" not in dem or ")" not in dem:
+        return None
+    m = _CC_KW_RE.search(dem)
+    if not m:
+        return None                       # no calling convention -> not a function
+    cc = "__" + m.group(1)
+    pre = _ACCESS_RE.sub("", dem[:m.start()]).strip()
+    is_static = "static" in pre.split()
+    is_virtual = "virtual" in pre.split()
+    ret = re.sub(r"\b(?:static|virtual)\b", "", pre).strip() or "void"
+    post = dem[m.end():].strip()
+    # params = the final balanced (...) group (handles operator()(...)); qual is
+    # everything before it.
+    close = post.rfind(")")
+    depth, open_idx = 0, -1
+    for i in range(close, -1, -1):
+        if post[i] == ")":
+            depth += 1
+        elif post[i] == "(":
+            depth -= 1
+            if depth == 0:
+                open_idx = i
+                break
+    if open_idx < 0:
+        return None
+    qual = post[:open_idx].strip()
+    param_types = [p for p in _split_top_commas(post[open_idx + 1:close])
+                   if p and p != "void"]
+    cls = qual.rsplit("::", 1)[0] if "::" in qual else None
+    leaf = qual.rsplit("::", 1)[-1]
+    if "~" in leaf or "destructor" in leaf or "deleting dtor" in leaf:
+        kind = "dtor"
+    elif cls and leaf == cls.rsplit("::", 1)[-1]:
+        kind = "ctor"
+    elif is_static:
+        kind = "static"
+    elif cls:
+        kind = "vfunc" if is_virtual else "method"
+    else:
+        kind = "free"
+    return {"qual": qual, "cls": cls, "kind": kind, "ret": ret, "cc": cc,
+            "param_types": param_types}
+
+
 # --- static config path (vendored C TUs with pristine source; see docstring) --
 def load_label_config(path):
     """unit -> [(rva, name, size, kind)] from the static rva->symbol table
@@ -456,6 +587,12 @@ def main():
                     help="clangd compile_commands.json for per-TU MS/include flags "
                          "(the IR emit needs system headers to resolve).")
     ap.add_argument("--out", default=str(REPO / "build/gen/symbol_names.csv"))
+    ap.add_argument("--functions-out",
+                    default=str(REPO / "build/gen/functions.json"),
+                    help="per-RVA function signatures (class, return, cc, named "
+                         "params) for apply.py's Ghidra prototype enrichment.")
+    ap.add_argument("--undname", default="llvm-undname",
+                    help="MSVC name demangler for the authoritative signature.")
     args = ap.parse_args()
 
     unit_map = {}
@@ -468,6 +605,7 @@ def main():
     rows = []          # (rva, name, unit, size, kind)
     misses = []        # (rva, candidate, unit, reason)
     addr_sites = {}    # rva -> [(tu, "fn")] for every function rva, to catch dups
+    func_meta = {}     # rva -> {ir_sym, names} for functions.json signatures
     for i, tu in enumerate(args.tu):
         text = Path(tu).read_text()
         if args.unit:
@@ -494,11 +632,20 @@ def main():
         ir = emit_ir(args.clang, tu, args.flag, cl_flags)
         if ir is None:
             continue
+        # AST: source-only signal - parameter NAMES (for functions.json) and the
+        # DATA extern join. One dump, reused by both. Keyed by clang's mangledName,
+        # which equals the IR-paired symbol (`ir_sym`), so the join is by rva below.
+        ast = clang_ast(args.clang, tu, args.flag, cl_flags)
+        ast_param_names = param_names_from_ast(ast, tu) if ast is not None else {}
         for rva, ir_sym, size, override in func_labels_from_ir(ir):
             addr_sites.setdefault(rva, []).append((tu, ir_sym))
             # The IR pairs the annotation with the function's own mangled symbol;
             # an explicit SYMBOL override wins over it when present.
             name = override or ir_sym
+            # functions.json signature is derived from the clang mangledName
+            # (ir_sym): undname gives the type/cc/class, AST the parameter names.
+            func_meta[rva] = {"ir_sym": ir_sym,
+                              "names": ast_param_names.get(ir_sym)}
             if obj_syms is None:                  # no authority check (inspection)
                 rows.append((rva, name, unit, size, "func"))
                 continue
@@ -524,24 +671,25 @@ def main():
             size = (int(size_s, 16) if size_s and size_s.lower().startswith("0x")
                     else int(size_s) if size_s else None)
             addr_sites.setdefault(rva, []).append((tu, sym))
+            # No source body -> no AST param names; undname still gives the
+            # (typed, unnamed) signature for functions.json.
+            func_meta[rva] = {"ir_sym": sym, "names": None}
             if obj_syms is None or sym in obj_syms:
                 rows.append((rva, sym, unit, size, "func"))
             else:
                 misses.append((rva, sym, unit, "@rva-symbol not in base obj"))
 
         # --- DATA via AST (IR drops the extern's annotation) ---
-        if DATA_MACRO_RE.search(text):
-            ast = clang_ast(args.clang, tu, args.flag, cl_flags)
-            if ast is not None:
-                for rva, cand in data_labels(text, ast, tu):
-                    if cand is None:
-                        misses.append((rva, None, unit, "no VarDecl below DATA()"))
-                        continue
-                    if obj_syms is None or cand in all_syms:
-                        rows.append((rva, cand, unit, None, "data"))
-                    else:
-                        misses.append((rva, cand, unit,
-                                       "data candidate not in base obj"))
+        if ast is not None and DATA_MACRO_RE.search(text):
+            for rva, cand in data_labels(text, ast, tu):
+                if cand is None:
+                    misses.append((rva, None, unit, "no VarDecl below DATA()"))
+                    continue
+                if obj_syms is None or cand in all_syms:
+                    rows.append((rva, cand, unit, None, "data"))
+                else:
+                    misses.append((rva, cand, unit,
+                                   "data candidate not in base obj"))
 
     # A function address identifies exactly one function: the same rva labeled
     # twice (within or across units) is always a mistake - fail loudly rather than
@@ -589,6 +737,38 @@ def main():
     log(f"wrote {len(rows)} label(s) -> {out}")
     for rva, cand, unit, why in misses:
         log(f"  MISS 0x{rva:x} [{unit}] {why}" + (f" (cand {cand})" if cand else ""))
+
+    # --- functions.json: per-RVA signatures for apply.py's Ghidra prototypes ---
+    # Join the final func rows (authority-checked) with their clang mangledName
+    # (func_meta) and demangle once for the authoritative signature; overlay the
+    # source AST's parameter names. Vendored/config funcs carry no source
+    # signature and are omitted.
+    func_rows = [r for r in rows if r[4] == "func" and r[0] in func_meta]
+    dem = undname_map([func_meta[r[0]]["ir_sym"] for r in func_rows], args.undname)
+    functions = []
+    n_named_params = 0
+    for rva, name, unit, size, kind in func_rows:
+        meta = func_meta[rva]
+        sig = parse_demangled(dem.get(meta["ir_sym"], ""))
+        if sig is None:
+            continue
+        names = meta["names"]
+        params = []
+        for j, ptype in enumerate(sig["param_types"]):
+            pname = names[j] if names and j < len(names) else None
+            if pname:
+                n_named_params += 1
+            params.append({"type": ptype, "name": pname})
+        functions.append({
+            "rva": f"0x{rva:06x}", "name": sig["qual"], "class": sig["cls"],
+            "kind": sig["kind"], "ret": sig["ret"], "cc": sig["cc"],
+            "params": params, "unit": unit})
+    functions.sort(key=lambda d: d["rva"])
+    fout = Path(args.functions_out)
+    fout.parent.mkdir(parents=True, exist_ok=True)
+    fout.write_text(json.dumps(functions, indent=1))
+    log(f"wrote {len(functions)} function signature(s) "
+        f"({n_named_params} named params) -> {fout}")
     return 0
 
 
