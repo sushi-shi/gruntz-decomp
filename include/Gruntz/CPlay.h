@@ -130,63 +130,15 @@ struct CWorld {
 };
 
 // ===========================================================================
-// CState (base) - reproduced self-contained with a padded virtual interface so
-// CPlay's vtable matches and the high-slot indirect calls emit. The
-// scalar members the Render reads are at the offsets the ctor pins.
-// (Mirrors GameMode.h; kept local to isolate this WIP TU from the matched one.)
+// CState (base) - the shared canonical definition (full 41-slot vftable + the
+// ctor-pinned scalar layout). CPlay's Render drives the high slots
+// (BeginFrameClear/RenderSlow/RenderFast) and reads m_c/m_4 as typed pointers.
 // ===========================================================================
-#include <Gruntz/GameModeBase.h>
+#include <Gruntz/CState.h>
 
-class CState {
-public:
-    CState();
-    virtual ~CState() { ((CGameModeBase *)this)->BaseCleanup(); }   // slot 0  (+0x00)
-    virtual void Vfunc1();   // slot 1  (+0x04)
-    virtual void Vfunc2();   // slot 2  (+0x08)
-    virtual void Vfunc3();   // slot 3  (+0x0c)
-    virtual int  Update();   // slot 4  (+0x10)
-    virtual int  Render();   // slot 5  (+0x14)
-    // slots 6..30 (+0x18..+0x78): anchor padding so the dispatched high slots
-    // land at the right byte offset.
-    virtual void Vslot06(); virtual void Vslot07(); virtual void Vslot08();
-    virtual void Vslot09(); virtual void Vslot0a(); virtual void Vslot0b();
-    virtual void Vslot0c(); virtual void Vslot0d(); virtual void Vslot0e();
-    virtual void Vslot0f(); virtual void Vslot10(); virtual void Vslot11();
-    virtual void Vslot12(); virtual void Vslot13(); virtual void Vslot14();
-    virtual void Vslot15(); virtual void Vslot16(); virtual void Vslot17();
-    virtual void Vslot18(); virtual void Vslot19(); virtual void Vslot1a();
-    virtual void Vslot1b(); virtual void Vslot1c(); virtual void Vslot1d();
-    virtual void Vslot1e();
-    virtual void BeginFrameClear(int, int, int);   // slot 31 (+0x7c)
-    virtual void Vslot20(); virtual void Vslot21(); virtual void Vslot22();
-    virtual void Vslot23(); virtual void Vslot24(); virtual void Vslot25();
-    virtual void Vslot26();
-    virtual void RenderSlow();   // slot 39 (+0x9c)
-    virtual void RenderFast();   // slot 40 (+0xa0)
-
-    // Non-virtual leaf: seeds the begin-clear params.
-    int SetBeginClearParams(int unused, int arg2, int arg3);
-
-    // --- the CState scalar members the ctor pins (only the ones used here) ---
-    void   *m_4;        // +0x04  owner back-ptr (-> CWorld)
-    int     m_8;
-    CView  *m_c;        // +0x0c  the view/anim holder
-    char    m_pad10[0x150 - 0x10];
-    int     m_150;      // +0x150 BeginFrameClear arg
-    int     m_154;      // +0x154 BeginFrameClear arg
-    char    m_pad158[0x160 - 0x158];
-    // +0x160..+0x1a4 a per-axis scroll/input state block StepInputA walks: two
-    // mirrored halves (first @+0x160/+0x168/+0x188, second @+0x164/+0x178/+0x198).
-    int     m_160;      // +0x160 first-half toggle/value
-    int     m_164;      // +0x164 second-half toggle/value
-    char    m_168[0x178 - 0x168];   // +0x168 first-half ptr block (addr passed)
-    char    m_178[0x188 - 0x178];   // +0x178 second-half ptr block (addr passed)
-    struct  Edge { int m_0; int m_4; };
-    Edge    m_188;      // +0x188 first-half {x,y} feed
-    char    m_pad190[0x198 - 0x190];
-    Edge    m_198;      // +0x198 second-half {x,y} feed
-    char    m_pad1a0[0x1a8 - 0x1a0];
-};
+// A {x,y} edge pair StepInputA overlays on the CState scroll/input block
+// (the flat ints at +0x188 first half, +0x198 second half).
+struct Edge { int m_0; int m_4; };
 
 // ===========================================================================
 // CPlay - the in-game PLAY state. Extends CState from +0x1a8. The per-frame
