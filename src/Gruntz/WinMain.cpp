@@ -110,32 +110,12 @@ int   __stdcall VerQueryValueA(const void *pBlock, LPSTR lpSubBlock, void **lplp
 // address is taken for DialogBoxParamA (reloc-masked via a thunk).
 int __stdcall AdvancedOptionsDialogProc(HWND, UINT, WPARAM, LPARAM);
 
-// ---------------------------------------------------------------------------
-// CGruntzApp - the game application object `new`'d on the normal path. The only
-// members WinMain touches are the vtable: Init / RunMessageLoop / the
-// scalar-deleting dtor are all virtual dispatches (`call [vtbl+N]`), so a class
-// with an opaque 0x254-byte body + the used virtual slots suffices. The ctor
-// (reached via a thunk) and the virtuals are UNMATCHED but their
-// calls are reloc-masked, so the call bytes are still byte-exact. The vtable
-// layout follows CGameApp (see src/Wap32/Wap32.h):
-//   slot 0  (+0x00) ~CGruntzApp  -> `delete g_pApp` (scalar-deleting dtor)
-//   slot 2  (+0x08) Init(hInst,name,ident,cmd,flags,w,h)
-//   slot 6  (+0x18) RunMessageLoop()  -> the message pump
-// ---------------------------------------------------------------------------
-class CGruntzApp {
-public:
-    CGruntzApp();
-    virtual ~CGruntzApp();                                              // slot 0 (+0x00)
-    virtual int  Vfn1();                                               // slot 1 (+0x04)
-    virtual int  Init(HINSTANCE hInstance, LPCSTR szWindowName, LPCSTR szIdent,
-                      LPSTR szCmdLine, int flags, int w, int h);        // slot 2 (+0x08)
-    virtual int  Vfn3();                                               // slot 3 (+0x0c)
-    virtual int  Vfn4();                                               // slot 4 (+0x10)
-    virtual int  Vfn5();                                               // slot 5 (+0x14)
-    virtual int  RunMessageLoop();                                     // slot 6 (+0x18)
-private:
-    char m_pad[0x254 - 4];   // total 0x254 bytes (vptr @+0 + opaque body)
-};
+// CGruntzApp - the game application object `new`'d on the normal path, defined
+// once in <Gruntz/GruntzApp.h>. WinMain touches only its vtable: slot 2
+// (VirtualUnknownMethod03, the app "Init"), slot 6 (RunMessageLoop) and the
+// scalar-deleting dtor (slot 0) - all virtual dispatches (`call [vtbl+N]`), so
+// the call bytes are byte-exact regardless of method names.
+#include <Gruntz/GruntzApp.h>
 
 // ---------------------------------------------------------------------------
 // File-scope globals (the relocs that name them are masked in objdiff; only the
@@ -245,8 +225,8 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
     // 3f. Init the app: Init(hInstance, "Gruntz", "Gruntz", cmdLine, 0,
     //     CW_USEDEFAULT, CW_USEDEFAULT). On failure tear down + return 0.
-    if (g_pApp->Init(hInstance, "Gruntz", "Gruntz", lpCmdLine,
-                     0, CW_USEDEFAULT, CW_USEDEFAULT) == 0) {
+    if (g_pApp->VirtualUnknownMethod03(hInstance, "Gruntz", "Gruntz", lpCmdLine,
+                                       0, CW_USEDEFAULT, CW_USEDEFAULT) == 0) {
         if (g_pApp != 0)
             delete g_pApp;
         g_pApp = 0;
