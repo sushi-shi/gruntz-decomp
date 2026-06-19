@@ -5,21 +5,25 @@
 #define STATUSBARITEM_H
 
 // ---------------------------------------------------------------------------
-// CStatusBarItem - base of the SBI_* family.
-//   vftable. ctor zeroes m_4 (+0x04),
-//   m_8 (+0x08), m_24 (+0x24), m_28 (+0x28); vptr stored first.
+// CStatusBarItem - base of the SBI_* family. One class, one definition.
 //
-// NOTE on the layout vs the derived CSBI_RectOnly (see SBI_RectOnly.cpp): in
-// the retail binary the *complete-object* CStatusBarItem ctor
-// zeroes all four fields, while when its body is folded into CSBI_RectOnly the
-// optimiser drops the dead m_8=0 store (the derived ctor overwrites m_8 with
-// 1). Both behaviours come from the SAME class; they are matched as two
-// separate translation units because MSVC 5.0 only emits the out-of-line ctor
-// copy when the ctor is defined out-of-line.
+// The ctor is INLINE: the derived CSBI_RectOnly ctor folds it (zeroing
+// m_4/m_24/m_28; the base's m_8=0 store is then dead, since CSBI_RectOnly sets
+// m_8=1, and the optimiser drops it). MSVC 5.0 only folds a base ctor that is
+// visible inline, so inline is the load-bearing choice the match pins.
+//
+// Retail also has a standalone complete-object ctor (one that *does* zero all
+// four fields, at its own RVA 0x1005d0): MSVC's out-of-line COMDAT copy of this
+// same inline ctor. It is NOT a second class. We leave it unmatched: MSVC 5.0
+// inlines this tiny ctor at every instantiation we can synthesize (scalar/array/
+// runtime-count new all inline or bury it), so the correct one-class source
+// cannot emit a labelable standalone ??0 to diff against it. Recovering one true
+// class is worth more than fabricating a second, out-of-line class shape to win
+// that one match - that shape is not what the developers wrote.
 // ---------------------------------------------------------------------------
 class CStatusBarItem {
 public:
-    CStatusBarItem();
+    CStatusBarItem() { m_4 = 0; m_8 = 0; m_24 = 0; m_28 = 0; }
     virtual ~CStatusBarItem();
     virtual int SbiVfunc0();
 
