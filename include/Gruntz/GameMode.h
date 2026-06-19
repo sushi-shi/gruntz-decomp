@@ -156,76 +156,11 @@ extern "C" char g_60ce90[];              // "CREDITZ" (PlaySound name)
 extern "C" char g_60ce74[];              // "MONOLITH" (FindSound name)
 
 // ---------------------------------------------------------------------------
-// CState - the base game-state class. Polymorphic so the
-// vptr lands at +0x00 and the two-phase vtable store falls out.
-//
-// The ctor stores the vftable, then zeroes a flat list of scalar
-// members and seeds four of them to 0x40:
-//   +0x04 +0x08 +0x0c +0x14 +0x18 +0x24 +0x28 +0x2c +0x38 +0x3c = 0
-//   +0x4c (byte) = 0
-//   +0x150 +0x154 +0x160 +0x164 +0x168 +0x16c = 0
-//   +0x170 = 0x40   +0x174 = 0x40
-//   +0x178 = 0      +0x17c = 0
-//   +0x180 = 0x40   +0x184 = 0x40
-//   +0x188 +0x18c +0x190 +0x194 +0x198 +0x19c +0x1a0 +0x1a4 = 0
-// (CState is at least 0x1a8 bytes; the concrete states extend it much further.)
-// ---------------------------------------------------------------------------
-class CState {
-public:
-    CState();                       // (ctor)
-    // The dtor body is defined inline so MSVC inlines the vtable-restore + base
-    // cleanup directly into the synthesized scalar-deleting dtor `??_G`
-    // (the target inlines them rather than emitting a `call ??1`).
-    virtual ~CState() { ((CGameModeBase *)this)->BaseCleanup(); }  // slot 0
-
-    // The virtual interface (24+ slots). Only the slots the per-frame tick drives
-    // (+0x10 Update, +0x14 Render) and the dtor (slot 0) carry meaning here; the
-    // intervening slots are out-of-line stubs that anchor the vftable order so
-    // Update lands at slot 4 (+0x10) and Render at slot 5 (+0x14).
-    virtual void Vfunc1();          // slot 1  (+0x04) stub
-    virtual void Vfunc2();          // slot 2  (+0x08) base dtor thunk
-    virtual void Vfunc3();          // slot 3  (+0x0c)
-    virtual int  Update();          // slot 4  (+0x10)  return 1;
-    virtual int  Render();          // slot 5  (+0x14)  return 1;
-
-    int  m_4;       // +0x04
-    int  m_8;       // +0x08
-    int  m_c;       // +0x0c
-    char m_pad10[0x14 - 0x10];      // +0x10 (not ctor-written)
-    int  m_14;      // +0x14
-    int  m_18;      // +0x18
-    char m_pad1c[0x24 - 0x1c];      // +0x1c (not ctor-written)
-    int  m_24;      // +0x24
-    int  m_28;      // +0x28
-    int  m_2c;      // +0x2c
-    char m_pad30[0x38 - 0x30];      // +0x30 (not ctor-written)
-    int  m_38;      // +0x38
-    int  m_3c;      // +0x3c
-    char m_pad40[0x4c - 0x40];      // +0x40 (not ctor-written)
-    char m_4c;      // +0x4c (byte = 0)
-    char m_pad4d[0x150 - 0x4d];     // +0x4d (not ctor-written)
-    int  m_150;     // +0x150
-    int  m_154;     // +0x154
-    char m_pad158[0x160 - 0x158];   // +0x158 (not ctor-written)
-    int  m_160;     // +0x160
-    int  m_164;     // +0x164
-    int  m_168;     // +0x168
-    int  m_16c;     // +0x16c
-    int  m_170;     // +0x170 (= 0x40)
-    int  m_174;     // +0x174 (= 0x40)
-    int  m_178;     // +0x178
-    int  m_17c;     // +0x17c
-    int  m_180;     // +0x180 (= 0x40)
-    int  m_184;     // +0x184 (= 0x40)
-    int  m_188;     // +0x188
-    int  m_18c;     // +0x18c
-    int  m_190;     // +0x190
-    int  m_194;     // +0x194
-    int  m_198;     // +0x198
-    int  m_19c;     // +0x19c
-    int  m_1a0;     // +0x1a0
-    int  m_1a4;     // +0x1a4
-};
+// CState - the base game-state class. One canonical definition, shared via
+// <Gruntz/CState.h> (full 41-slot vftable + ctor-pinned layout). The leaf states
+// below derive from it; the gamemode TU casts the owner/view members (void* m_4,
+// CView* m_c) to its own CGMOwner/CGMView reconstructions.
+#include <Gruntz/CState.h>
 
 // ---------------------------------------------------------------------------
 // The concrete states. Each overrides Update() to return its own state-ID tag
@@ -263,9 +198,8 @@ class CCreditsState : public CState {
 public:
     virtual int Update();           // return 8;  (slot 4)
     virtual int Render();           // the per-frame credits draw (this TU)
-    // slots 6,7 anchor the vftable so the input virtual lands at slot 8 (+0x20).
-    virtual void Cv6(); virtual void Cv7();
-    virtual int  InputVirtual();    // slot 8 (+0x20) - polled each frame
+    virtual int InputVirtual();     // slot 8 (+0x20) - polled each frame
+                                    // (slots 6,7 inherited from CState)
 
     // CCreditsState's own sub-steps (the rel32 thunks Render dispatches to with
     // `mov ecx,this`). External no-body -> reloc-masked.

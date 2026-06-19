@@ -267,13 +267,10 @@ tail:
     return 1;
 }
 
-// CCreditsState vtable anchors: slots 6,7 pad so the input virtual lands at slot
-// 8 (+0x20); InputVirtual (slot 8) is the per-frame input poll the Render does an
+// InputVirtual (slot 8 / +0x20) is the per-frame input poll the Render does an
 // indirect `this->vtbl[+0x20]()` to (its body is irrelevant to the Render match -
-// only the indirect call site is). These are out-of-line so the CCreditsState
-// vtable resolves; they are NOT byte-matched targets.
-void CCreditsState::Cv6() {}
-void CCreditsState::Cv7() {}
+// only the indirect call site is). Out-of-line so the CCreditsState vtable
+// resolves; NOT a byte-matched target. (Slots 6,7 are inherited from CState.)
 int  CCreditsState::InputVirtual() { return 0; }
 
 // ===========================================================================
