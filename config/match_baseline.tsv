@@ -13,6 +13,17 @@
 adler32	1	1
 advancedoptions	5	5
 butemgr	21	10
+cddrawchildgroup	9	5
+cddrawptrcollections	1	0
+cddrawsubmgr	2	2
+cddrawsubmgrdraco	5	2
+cddrawsubmgrleaf	2	1
+cddrawsurfacemgr	6	5
+cddrawworkercache	2	1
+cddrawworkerlist	10	7
+cddrawworkermapsmall	8	2
+cddrawworkerregistry	21	12
+cddrawworkers	3	3
 cplay	11	5
 deflate	6	6
 dialogs	6	5
@@ -22,14 +33,13 @@ font	16	8
 fontconfig	1	0
 fonts	2	1
 gameapp	18	12
-gamelevel	1	0
+gamelevel	14	8
 gamemode	12	9
 gametext	4	2
 gamewnd	4	4
 grunt	19	0
 gruntzapp	10	8
 gruntzwnd	2	1
-harrypotter	6	5
 image	5	5
 infblock	5	4
 infcodes	3	2
@@ -50,18 +60,7 @@ tileswitchlogic	2	0
 tiletriggerlogic	1	1
 trees	17	17
 uncompr	1	1
-unknownalbus	8	2
-unknowndraco	5	2
-unknownfilch	1	0
-unknownhagrid	10	7
-unknownhermiona	9	5
-unknownlucius	2	2
-unknownpettigrew	2	1
-unknownremus	13	8
 unknownsalazar	1	0
-unknownseverus	21	12
-unknownsirius	2	1
-unknownworkerfuncs	3	3
 videoconfig	2	0
 winapi	5	3
 winmain	1	1
@@ -96,6 +95,75 @@ butemgr	?Stub_173770@CButeMgr@@QAEXXZ	0.5333	0.5333	1	d8d61d70fc0c
 butemgr	?Stub_173d00@CButeMgr@@QAEXXZ	0.5970	0.5970	1	4dd251aba6d7
 butemgr	?Stub_174240@CButeMgr@@QAEXXZ	0.5634	0.5634	1	5290c4f91126
 butemgr	?Stub_1747c0@CButeMgr@@QAEXXZ	0.5797	0.5797	1	3ef5c30a5d4d
+cddrawchildgroup	?Stub_1591f0@CDDrawChildGroup@@QAEXXZ	2.9412	2.9412	1	26469e5e197e
+cddrawchildgroup	?Stub_159a70@CDDrawChildGroup@@QAEXXZ	0.2367	0.2367	1	6cae33d9025c
+cddrawchildgroup	?VirtualMethodUnknown14@CDDrawChildGroup@@QAEHXZ	100.0000	100.0000	1	d8d76e3ff202
+cddrawchildgroup	?VirtualMethodUnknown1C@CDDrawChildGroup@@UAEXXZ	100.0000	100.0000	1	f21872710f80
+cddrawchildgroup	?VirtualMethodUnknown28@CDDrawChildGroup@@UAEXH@Z	100.0000	100.0000	1	625f99d4ffbe
+cddrawchildgroup	?VirtualMethodUnknown2C@CDDrawChildGroup@@UAEXHH@Z	100.0000	100.0000	1	923bd9378fcc
+cddrawchildgroup	?VirtualMethodUnknown30@CDDrawChildGroup@@QAEXHHH@Z	89.0909	89.0909	1	7c1eeeb3b71c
+cddrawchildgroup	?VirtualMethodUnknown34@CDDrawChildGroup@@QAEXHHH@Z	89.0909	89.0909	1	35f972a31377
+cddrawchildgroup	?VirtualMethodUnknown38@CDDrawChildGroup@@UAEXXZ	100.0000	100.0000	1	1cf37b1feda0
+cddrawptrcollections	??0CDDrawPtrCollections@@QAE@XZ	99.8000	99.8000	1	8b6b45a99234
+cddrawsubmgr	??0CDDrawSubMgr@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	100.0000	100.0000	1	dbc5193ce321
+cddrawsubmgr	??1CDDrawSubMgr@@UAE@XZ	100.0000	100.0000	1	9cee978011f0
+cddrawsubmgrdraco	?Stub_1574a0@CDDrawSubMgrDraco@@QAEXXZ	50.0000	50.0000	1	69748196125e
+cddrawsubmgrdraco	?Stub_1574b0@CDDrawSubMgrDraco@@QAEXXZ	3.6364	3.6364	1	f05658157503
+cddrawsubmgrdraco	?Stub_1588f0@CDDrawSubMgrDraco@@QAEXXZ	0.2516	0.2516	1	7aa9c664acbc
+cddrawsubmgrdraco	?VirtualMethodUnknown14@CDDrawSubMgrDraco@@QAEHXZ	100.0000	100.0000	1	3235f20e9ea1
+cddrawsubmgrdraco	?VirtualMethodUnknown1C@CDDrawSubMgrDraco@@QAEXXZ	100.0000	100.0000	1	139a47530325
+cddrawsubmgrleaf	?VirtualMethodUnknown14@CDDrawSubMgrLeaf@@QAEHXZ	100.0000	100.0000	1	a0715b6fe63b
+cddrawsubmgrleaf	?VirtualMethodUnknown18@CDDrawSubMgrLeaf@@QAEXXZ	99.8333	99.8333	1	337dae99d7ce
+cddrawsurfacemgr	??0CDDrawSurfaceMgr@@QAE@XZ	100.0000	100.0000	1	3471970b457e
+cddrawsurfacemgr	?UnknownVirtualMethod14@CDDrawSurfaceMgr@@UAEHXZ	100.0000	100.0000	1	82d37218daaf
+cddrawsurfacemgr	?UnknownVirtualMethod20@CDDrawSurfaceMgr@@UAEXXZ	100.0000	100.0000	1	0f1ff3d05146
+cddrawsurfacemgr	?UnknownVirtualMethod24@CDDrawSurfaceMgr@@UAEHHHH@Z	97.8250	97.8250	1	665e82f7081d
+cddrawsurfacemgr	?UnknownVirtualMethod28@CDDrawSurfaceMgr@@UAEXPAX@Z	100.0000	100.0000	1	7084eaae3492
+cddrawsurfacemgr	?UnknownVirtualMethod38@CDDrawSurfaceMgr@@UAEHPAXHHH@Z	100.0000	100.0000	1	f917da84a798
+cddrawworkercache	?VirtualMethodUnknown20@CDDrawWorkerCache@@QAEHXZ	100.0000	100.0000	1	d27eebbd90ee
+cddrawworkercache	?VirtualMethodUnknown24@CDDrawWorkerCache@@QAEPAXHPBDH@Z	99.7857	99.7857	1	709bd0952f04
+cddrawworkerlist	?Stub_156f50@CDDrawWorkerList@@QAEXXZ	4.1667	4.1667	1	0c4727dc726c
+cddrawworkerlist	?Stub_156fc0@CDDrawWorkerList@@QAEXXZ	50.0000	50.0000	1	c8759f4cad30
+cddrawworkerlist	?VirtualMethodUnknown14@CDDrawWorkerList@@QAEHXZ	100.0000	100.0000	1	28c6dec46423
+cddrawworkerlist	?VirtualMethodUnknown1C@CDDrawWorkerList@@QAEXXZ	100.0000	100.0000	1	c28c2f94d45b
+cddrawworkerlist	?VirtualMethodUnknown20@CDDrawWorkerList@@QAEHXZ	100.0000	100.0000	1	3612076d336f
+cddrawworkerlist	?VirtualMethodUnknown24@CDDrawWorkerList@@QAEPAXHHH@Z	100.0000	100.0000	1	73e39575c1af
+cddrawworkerlist	?VirtualMethodUnknown28@CDDrawWorkerList@@QAEPAXHHHH@Z	100.0000	100.0000	1	b7a8f17f6d0e
+cddrawworkerlist	?VirtualMethodUnknown2C@CDDrawWorkerList@@QAEPAXHHHHH@Z	100.0000	100.0000	1	e5b3cdfd89e6
+cddrawworkerlist	?VirtualMethodUnknown30@CDDrawWorkerList@@QAEPAXHHHHH@Z	100.0000	100.0000	1	b7a3f4c79645
+cddrawworkerlist	?VirtualMethodUnknown34@CDDrawWorkerList@@QAEXHH@Z	95.2857	95.2857	1	256258591fb6
+cddrawworkermapsmall	?Stub_157610@CDDrawWorkerMapSmall@@QAEXXZ	3.6364	3.6364	1	faeb060e8e74
+cddrawworkermapsmall	?Stub_1658c0@CDDrawWorkerMapSmall@@QAEXXZ	0.4598	0.4598	1	3b3edc2c627a
+cddrawworkermapsmall	?Stub_165a90@CDDrawWorkerMapSmall@@QAEXXZ	0.3846	0.3846	1	d6029da4c6e5
+cddrawworkermapsmall	?Stub_165b90@CDDrawWorkerMapSmall@@QAEXXZ	2.0000	2.0000	1	2239e5e15b40
+cddrawworkermapsmall	?VirtualMethodUnknown14@CDDrawWorkerMapSmall@@QAEHXZ	100.0000	100.0000	1	46788db7e6e5
+cddrawworkermapsmall	?VirtualMethodUnknown20@CDDrawWorkerMapSmall@@QAEHXZ	100.0000	100.0000	1	d1fa1344cbaf
+cddrawworkermapsmall	?VirtualMethodUnknown28@CDDrawWorkerMapSmall@@QAEPAXHPBDH@Z	99.7391	99.7391	1	c457478a5ae6
+cddrawworkermapsmall	?VirtualMethodUnknown2C@CDDrawWorkerMapSmall@@QAEPAXHPBDH@Z	99.7391	99.7391	1	3cdcece38524
+cddrawworkerregistry	?MapTeardown_1552b0@CDDrawWorkerRegistry@@QAEXXZ	100.0000	100.0000	1	411afe63169f
+cddrawworkerregistry	?StringCopy_155810@CDDrawWorkerRegistry@@QAEHPBD@Z	100.0000	100.0000	1	2a34bdcb0264
+cddrawworkerregistry	?Stub_154f80@CDDrawWorkerRegistry@@QAEXXZ	0.2564	0.2564	1	b18a19d4a72c
+cddrawworkerregistry	?Stub_155160@CDDrawWorkerRegistry@@QAEXXZ	0.3604	0.3604	1	116fcebe11dc
+cddrawworkerregistry	?Stub_156df0@CDDrawWorkerRegistry@@QAEXXZ	3.6364	3.6364	1	15ee745b434f
+cddrawworkerregistry	?Stub_156e80@CDDrawWorkerRegistry@@QAEXXZ	1.9048	1.9048	1	853980ef7230
+cddrawworkerregistry	?VirtualMethodUnknown14@CDDrawWorkerRegistry@@QAEHXZ	100.0000	100.0000	1	0fb9c56badce
+cddrawworkerregistry	?VirtualMethodUnknown18@CDDrawWorkerRegistry@@QAEHXZ	100.0000	100.0000	1	0a41116b4c05
+cddrawworkerregistry	?VirtualMethodUnknown1C@CDDrawWorkerRegistry@@QAEXXZ	100.0000	100.0000	1	065de6193413
+cddrawworkerregistry	?VirtualMethodUnknown20@CDDrawWorkerRegistry@@QAEHXZ	100.0000	100.0000	1	e0cd4906647c
+cddrawworkerregistry	?VirtualMethodUnknown24@CDDrawWorkerRegistry@@QAEHHHPBDHH@Z	54.5930	54.5930	1	c0c1bdb9fb31
+cddrawworkerregistry	?VirtualMethodUnknown28@CDDrawWorkerRegistry@@QAEHHHPAVSeverusWorker@@HH@Z	100.0000	100.0000	1	ceda413ed594
+cddrawworkerregistry	?VirtualMethodUnknown2C@CDDrawWorkerRegistry@@QAEHHHPAVSeverusWorker@@HH@Z	100.0000	100.0000	1	f727cd0265be
+cddrawworkerregistry	?VirtualMethodUnknown30@CDDrawWorkerRegistry@@QAEHHHPBDHH@Z	54.5930	54.5930	1	6e50af5ad541
+cddrawworkerregistry	?VirtualMethodUnknown34@CDDrawWorkerRegistry@@QAEHHPAVSeverusWorker@@HH@Z	100.0000	100.0000	1	7f55c6d9d06f
+cddrawworkerregistry	?VirtualMethodUnknown38@CDDrawWorkerRegistry@@QAEHHPBDHH@Z	53.5238	53.5238	1	a7ea499d6c97
+cddrawworkerregistry	?VirtualMethodUnknown3C@CDDrawWorkerRegistry@@QAEHHPAVSeverusWorker@@HH@Z	100.0000	100.0000	1	cea2e8d369f6
+cddrawworkerregistry	?VirtualMethodUnknown40@CDDrawWorkerRegistry@@QAEHHPBDHH@Z	53.5238	53.5238	1	5443a44d484c
+cddrawworkerregistry	?VirtualMethodUnknown50@CDDrawWorkerRegistry@@QAEXPAUSeverusWorkerObj@@@Z	100.0000	100.0000	1	ecbb94cca5f3
+cddrawworkerregistry	?VirtualMethodUnknown54@CDDrawWorkerRegistry@@QAEXPBD@Z	77.5185	77.5185	1	8644c96aea07
+cddrawworkerregistry	?VirtualMethodUnknown58@CDDrawWorkerRegistry@@QAEXXZ	100.0000	100.0000	1	3316be7a29ff
+cddrawworkers	?Vfunc2C@CDDrawWorkerA@@QAEHHHH@Z	100.0000	100.0000	1	e80b8eaba57f
+cddrawworkers	?Vfunc2C@CDDrawWorkerB@@QAEHHHH@Z	100.0000	100.0000	1	4a7878d8351e
+cddrawworkers	?Vfunc34@CDDrawWorkerB@@QAEHHHHH@Z	100.0000	100.0000	1	c10b41306d98
 cplay	?OnRegion1@CPlay@@QAEHH@Z	100.0000	100.0000	2	9ec290bf6c91
 cplay	?OnRegion2@CPlay@@QAEHH@Z	100.0000	100.0000	2	146a45bff09d
 cplay	?OnRegion3@CPlay@@QAEHH@Z	100.0000	100.0000	2	fabb69a289ed
@@ -546,6 +614,19 @@ gameapp	?VirtualUnknownMethod03@CGameApp@@UAEHPAXPAD11HHH@Z	100.0000	100.0000	2	
 gameapp	?VirtualUnknownMethod09@CGameApp@@UAEXXZ	100.0000	100.0000	2	204905c2d57d
 gameapp	?vector_deleting_destructor@CGameMgr@WAP32@@QAEXXZ	3.3333	3.3333	1	1e8c4c5f4e94
 gamelevel	?LoadWwd@CGameLevel@@QAEHPAUWwdHeader@@@Z	56.1982	56.1982	2	5b6715723707
+gamelevel	?Stub_15d500@CGameLevel@@QAEXXZ	0.4706	0.4706	1	0f4300729e59
+gamelevel	?Stub_15d630@CGameLevel@@QAEXXZ	1.4286	1.4286	1	d4b9914fd4cc
+gamelevel	?Stub_1611c0@CGameLevel@@QAEXXZ	3.6364	3.6364	1	9f082b403ea9
+gamelevel	?Stub_1611e0@CGameLevel@@QAEXXZ	3.3333	3.3333	1	dd2b44db360a
+gamelevel	?VirtualMethodUnknown14@CGameLevel@@QAEHXZ	100.0000	100.0000	1	361fff809e4d
+gamelevel	?VirtualMethodUnknown1C@CGameLevel@@QAEHXZ	100.0000	100.0000	1	58d4c3f143b0
+gamelevel	?VirtualMethodUnknown20@CGameLevel@@QAEHXZ	100.0000	100.0000	1	a6503c19f136
+gamelevel	?VirtualMethodUnknown24@CGameLevel@@QAEHHPAURemusCoords@@@Z	100.0000	100.0000	1	e9e726b5e23e
+gamelevel	?VirtualMethodUnknown28@CGameLevel@@QAEHHPAURemusCoords@@@Z	100.0000	100.0000	1	307bc52faddc
+gamelevel	?VirtualMethodUnknown2C@CGameLevel@@QAEHHPAURemusCoords@@@Z	100.0000	100.0000	1	b29e10598434
+gamelevel	?VirtualMethodUnknown30@CGameLevel@@QAEHPAURemusCoords@@@Z	100.0000	100.0000	1	d462f235a5ef
+gamelevel	?VirtualMethodUnknown34@CGameLevel@@QAEHHH@Z	84.2800	84.2800	1	57168983bcd1
+gamelevel	?VirtualMethodUnknown44@CGameLevel@@QAEXXZ	100.0000	100.0000	1	a3527d802e77
 gamemode	??0CState@@QAE@XZ	100.0000	100.0000	2	b3ca36002e0a
 gamemode	??_GCState@@UAEPAXI@Z	100.0000	100.0000	1	cpp:2601fb2a9496
 gamemode	?Render@CCreditsState@@UAEHXZ	97.7121	97.7121	2	637a1c6a1212
@@ -597,12 +678,6 @@ gruntzapp	?VirtualUnknownMethod03@CGruntzApp@@UAEHPAXPAD11HHH@Z	100.0000	100.000
 gruntzapp	?VirtualUnknownMethod04@CGruntzApp@@UAEHHHH@Z	100.0000	100.0000	1	4edc46fb2fb4
 gruntzwnd	??0CGruntzWnd@@QAE@XZ	100.0000	100.0000	2	4862d21d0785
 gruntzwnd	?Stub_094670@CGruntzWnd@@QAEXXZ	3.6364	3.6364	1	c87b0e867d2f
-harrypotter	??0CDDrawSurfaceMgr@@QAE@XZ	100.0000	100.0000	1	3471970b457e
-harrypotter	?UnknownVirtualMethod14@CDDrawSurfaceMgr@@UAEHXZ	100.0000	100.0000	1	82d37218daaf
-harrypotter	?UnknownVirtualMethod20@CDDrawSurfaceMgr@@UAEXXZ	100.0000	100.0000	1	0f1ff3d05146
-harrypotter	?UnknownVirtualMethod24@CDDrawSurfaceMgr@@UAEHHHH@Z	97.8250	97.8250	1	665e82f7081d
-harrypotter	?UnknownVirtualMethod28@CDDrawSurfaceMgr@@UAEXPAX@Z	100.0000	100.0000	1	7084eaae3492
-harrypotter	?UnknownVirtualMethod38@CDDrawSurfaceMgr@@UAEHPAXHHH@Z	100.0000	100.0000	1	f917da84a798
 image	?DecodePcxEx@CFileImage@@QAEHPAD0PAX1@Z	100.0000	100.0000	1	1d85aa6255a5
 image	?LoadBmp@CFileImage@@QAEPAXPAD0@Z	100.0000	100.0000	2	544080bd5f94
 image	?LoadFromRez@CImage@@QAEHPADPAX1@Z	100.0000	100.0000	2	6ddad075270d
@@ -716,83 +791,7 @@ trees	_send_all_trees	100.0000	100.0000	1	4943fa3be295
 trees	_send_tree	100.0000	100.0000	1	0a0643654ea9
 trees	_set_data_type	100.0000	100.0000	1	167de8f88841
 uncompr	_uncompress	100.0000	100.0000	1	b40cccad8cc9
-unknownalbus	?Stub_157610@CDDrawWorkerMapSmall@@QAEXXZ	3.6364	3.6364	1	faeb060e8e74
-unknownalbus	?Stub_1658c0@CDDrawWorkerMapSmall@@QAEXXZ	0.4598	0.4598	1	3b3edc2c627a
-unknownalbus	?Stub_165a90@CDDrawWorkerMapSmall@@QAEXXZ	0.3846	0.3846	1	d6029da4c6e5
-unknownalbus	?Stub_165b90@CDDrawWorkerMapSmall@@QAEXXZ	2.0000	2.0000	1	2239e5e15b40
-unknownalbus	?VirtualMethodUnknown14@CDDrawWorkerMapSmall@@QAEHXZ	100.0000	100.0000	1	46788db7e6e5
-unknownalbus	?VirtualMethodUnknown20@CDDrawWorkerMapSmall@@QAEHXZ	100.0000	100.0000	1	d1fa1344cbaf
-unknownalbus	?VirtualMethodUnknown28@CDDrawWorkerMapSmall@@QAEPAXHPBDH@Z	99.7391	99.7391	1	c457478a5ae6
-unknownalbus	?VirtualMethodUnknown2C@CDDrawWorkerMapSmall@@QAEPAXHPBDH@Z	99.7391	99.7391	1	3cdcece38524
-unknowndraco	?Stub_1574a0@CDDrawSubMgrDraco@@QAEXXZ	50.0000	50.0000	1	69748196125e
-unknowndraco	?Stub_1574b0@CDDrawSubMgrDraco@@QAEXXZ	3.6364	3.6364	1	f05658157503
-unknowndraco	?Stub_1588f0@CDDrawSubMgrDraco@@QAEXXZ	0.2516	0.2516	1	7aa9c664acbc
-unknowndraco	?VirtualMethodUnknown14@CDDrawSubMgrDraco@@QAEHXZ	100.0000	100.0000	1	3235f20e9ea1
-unknowndraco	?VirtualMethodUnknown1C@CDDrawSubMgrDraco@@QAEXXZ	100.0000	100.0000	1	139a47530325
-unknownfilch	??0CDDrawPtrCollections@@QAE@XZ	99.8000	99.8000	1	8b6b45a99234
-unknownhagrid	?Stub_156f50@CDDrawWorkerList@@QAEXXZ	4.1667	4.1667	1	0c4727dc726c
-unknownhagrid	?Stub_156fc0@CDDrawWorkerList@@QAEXXZ	50.0000	50.0000	1	c8759f4cad30
-unknownhagrid	?VirtualMethodUnknown14@CDDrawWorkerList@@QAEHXZ	100.0000	100.0000	1	28c6dec46423
-unknownhagrid	?VirtualMethodUnknown1C@CDDrawWorkerList@@QAEXXZ	100.0000	100.0000	1	c28c2f94d45b
-unknownhagrid	?VirtualMethodUnknown20@CDDrawWorkerList@@QAEHXZ	100.0000	100.0000	1	3612076d336f
-unknownhagrid	?VirtualMethodUnknown24@CDDrawWorkerList@@QAEPAXHHH@Z	100.0000	100.0000	1	73e39575c1af
-unknownhagrid	?VirtualMethodUnknown28@CDDrawWorkerList@@QAEPAXHHHH@Z	100.0000	100.0000	1	b7a8f17f6d0e
-unknownhagrid	?VirtualMethodUnknown2C@CDDrawWorkerList@@QAEPAXHHHHH@Z	100.0000	100.0000	1	e5b3cdfd89e6
-unknownhagrid	?VirtualMethodUnknown30@CDDrawWorkerList@@QAEPAXHHHHH@Z	100.0000	100.0000	1	b7a3f4c79645
-unknownhagrid	?VirtualMethodUnknown34@CDDrawWorkerList@@QAEXHH@Z	95.2857	95.2857	1	256258591fb6
-unknownhermiona	?Stub_1591f0@CDDrawChildGroup@@QAEXXZ	2.9412	2.9412	1	26469e5e197e
-unknownhermiona	?Stub_159a70@CDDrawChildGroup@@QAEXXZ	0.2367	0.2367	1	6cae33d9025c
-unknownhermiona	?VirtualMethodUnknown14@CDDrawChildGroup@@QAEHXZ	100.0000	100.0000	1	d8d76e3ff202
-unknownhermiona	?VirtualMethodUnknown1C@CDDrawChildGroup@@UAEXXZ	100.0000	100.0000	1	f21872710f80
-unknownhermiona	?VirtualMethodUnknown28@CDDrawChildGroup@@UAEXH@Z	100.0000	100.0000	1	625f99d4ffbe
-unknownhermiona	?VirtualMethodUnknown2C@CDDrawChildGroup@@UAEXHH@Z	100.0000	100.0000	1	923bd9378fcc
-unknownhermiona	?VirtualMethodUnknown30@CDDrawChildGroup@@QAEXHHH@Z	89.0909	89.0909	1	7c1eeeb3b71c
-unknownhermiona	?VirtualMethodUnknown34@CDDrawChildGroup@@QAEXHHH@Z	89.0909	89.0909	1	35f972a31377
-unknownhermiona	?VirtualMethodUnknown38@CDDrawChildGroup@@UAEXXZ	100.0000	100.0000	1	1cf37b1feda0
-unknownlucius	??0CDDrawSubMgr@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	100.0000	100.0000	1	dbc5193ce321
-unknownlucius	??1CDDrawSubMgr@@UAE@XZ	100.0000	100.0000	1	9cee978011f0
-unknownpettigrew	?VirtualMethodUnknown14@CDDrawSubMgrLeaf@@QAEHXZ	100.0000	100.0000	1	a0715b6fe63b
-unknownpettigrew	?VirtualMethodUnknown18@CDDrawSubMgrLeaf@@QAEXXZ	99.8333	99.8333	1	337dae99d7ce
-unknownremus	?Stub_15d500@CDDrawLevelData@@QAEXXZ	0.4706	0.4706	1	01786eab8e83
-unknownremus	?Stub_15d630@CDDrawLevelData@@QAEXXZ	1.4286	1.4286	1	b04001741eef
-unknownremus	?Stub_1611c0@CDDrawLevelData@@QAEXXZ	3.6364	3.6364	1	2029073c47de
-unknownremus	?Stub_1611e0@CDDrawLevelData@@QAEXXZ	3.3333	3.3333	1	4df40162199f
-unknownremus	?VirtualMethodUnknown14@CDDrawLevelData@@QAEHXZ	100.0000	100.0000	1	5e37d732b38b
-unknownremus	?VirtualMethodUnknown1C@CDDrawLevelData@@QAEHXZ	100.0000	100.0000	1	b82d8d9a6b2d
-unknownremus	?VirtualMethodUnknown20@CDDrawLevelData@@QAEHXZ	100.0000	100.0000	1	2132ebae469c
-unknownremus	?VirtualMethodUnknown24@CDDrawLevelData@@QAEHHPAURemusCoords@@@Z	100.0000	100.0000	1	bebad1c6c8fa
-unknownremus	?VirtualMethodUnknown28@CDDrawLevelData@@QAEHHPAURemusCoords@@@Z	100.0000	100.0000	1	bd68e4ca2525
-unknownremus	?VirtualMethodUnknown2C@CDDrawLevelData@@QAEHHPAURemusCoords@@@Z	100.0000	100.0000	1	c9b1f1d55654
-unknownremus	?VirtualMethodUnknown30@CDDrawLevelData@@QAEHPAURemusCoords@@@Z	100.0000	100.0000	1	7dc358a49ca8
-unknownremus	?VirtualMethodUnknown34@CDDrawLevelData@@QAEHHH@Z	84.2800	84.2800	1	1e4c11aec172
-unknownremus	?VirtualMethodUnknown44@CDDrawLevelData@@QAEXXZ	100.0000	100.0000	1	85df47665d66
 unknownsalazar	?initializeUnknownLookupTable@UnknownSalazar@@SAXXZ	96.0000	96.0000	1	f17e344e2cb8
-unknownseverus	?MapTeardown_1552b0@CDDrawWorkerRegistry@@QAEXXZ	100.0000	100.0000	1	411afe63169f
-unknownseverus	?StringCopy_155810@CDDrawWorkerRegistry@@QAEHPBD@Z	100.0000	100.0000	1	2a34bdcb0264
-unknownseverus	?Stub_154f80@CDDrawWorkerRegistry@@QAEXXZ	0.2564	0.2564	1	b18a19d4a72c
-unknownseverus	?Stub_155160@CDDrawWorkerRegistry@@QAEXXZ	0.3604	0.3604	1	116fcebe11dc
-unknownseverus	?Stub_156df0@CDDrawWorkerRegistry@@QAEXXZ	3.6364	3.6364	1	15ee745b434f
-unknownseverus	?Stub_156e80@CDDrawWorkerRegistry@@QAEXXZ	1.9048	1.9048	1	853980ef7230
-unknownseverus	?VirtualMethodUnknown14@CDDrawWorkerRegistry@@QAEHXZ	100.0000	100.0000	1	0fb9c56badce
-unknownseverus	?VirtualMethodUnknown18@CDDrawWorkerRegistry@@QAEHXZ	100.0000	100.0000	1	0a41116b4c05
-unknownseverus	?VirtualMethodUnknown1C@CDDrawWorkerRegistry@@QAEXXZ	100.0000	100.0000	1	065de6193413
-unknownseverus	?VirtualMethodUnknown20@CDDrawWorkerRegistry@@QAEHXZ	100.0000	100.0000	1	e0cd4906647c
-unknownseverus	?VirtualMethodUnknown24@CDDrawWorkerRegistry@@QAEHHHPBDHH@Z	54.5930	54.5930	1	c0c1bdb9fb31
-unknownseverus	?VirtualMethodUnknown28@CDDrawWorkerRegistry@@QAEHHHPAVSeverusWorker@@HH@Z	100.0000	100.0000	1	ceda413ed594
-unknownseverus	?VirtualMethodUnknown2C@CDDrawWorkerRegistry@@QAEHHHPAVSeverusWorker@@HH@Z	100.0000	100.0000	1	f727cd0265be
-unknownseverus	?VirtualMethodUnknown30@CDDrawWorkerRegistry@@QAEHHHPBDHH@Z	54.5930	54.5930	1	6e50af5ad541
-unknownseverus	?VirtualMethodUnknown34@CDDrawWorkerRegistry@@QAEHHPAVSeverusWorker@@HH@Z	100.0000	100.0000	1	7f55c6d9d06f
-unknownseverus	?VirtualMethodUnknown38@CDDrawWorkerRegistry@@QAEHHPBDHH@Z	53.5238	53.5238	1	a7ea499d6c97
-unknownseverus	?VirtualMethodUnknown3C@CDDrawWorkerRegistry@@QAEHHPAVSeverusWorker@@HH@Z	100.0000	100.0000	1	cea2e8d369f6
-unknownseverus	?VirtualMethodUnknown40@CDDrawWorkerRegistry@@QAEHHPBDHH@Z	53.5238	53.5238	1	5443a44d484c
-unknownseverus	?VirtualMethodUnknown50@CDDrawWorkerRegistry@@QAEXPAUSeverusWorkerObj@@@Z	100.0000	100.0000	1	ecbb94cca5f3
-unknownseverus	?VirtualMethodUnknown54@CDDrawWorkerRegistry@@QAEXPBD@Z	77.5185	77.5185	1	8644c96aea07
-unknownseverus	?VirtualMethodUnknown58@CDDrawWorkerRegistry@@QAEXXZ	100.0000	100.0000	1	3316be7a29ff
-unknownsirius	?VirtualMethodUnknown20@CDDrawWorkerCache@@QAEHXZ	100.0000	100.0000	1	d27eebbd90ee
-unknownsirius	?VirtualMethodUnknown24@CDDrawWorkerCache@@QAEPAXHPBDH@Z	99.7857	99.7857	1	709bd0952f04
-unknownworkerfuncs	?Vfunc2C@CDDrawWorkerA@@QAEHHHH@Z	100.0000	100.0000	1	e80b8eaba57f
-unknownworkerfuncs	?Vfunc2C@CDDrawWorkerB@@QAEHHHH@Z	100.0000	100.0000	1	4a7878d8351e
-unknownworkerfuncs	?Vfunc34@CDDrawWorkerB@@QAEHHHHH@Z	100.0000	100.0000	1	c10b41306d98
 videoconfig	?LoadVideoResolutionConfig@@YAXPAXHH@Z	97.2737	97.2737	2	b5f87a4422b3
 videoconfig	?SaveVideoResolutionConfig@@YAXPAX0@Z	88.8148	88.8148	2	f23834318d3e
 winapi	?ActiveWait@WinAPI@Utils@@YAXI@Z	100.0000	100.0000	2	023a773a8fc4
