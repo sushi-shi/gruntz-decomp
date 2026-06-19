@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CGruntVoice.cpp - engine-label stubs for CGruntVoice.
 
 class CGruntVoice {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x1198a0
-// @size:    0x195
 // @stub
+RVA(0x1198a0, 0x195)
 CGruntVoice::CGruntVoice() {}

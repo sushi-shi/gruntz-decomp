@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CGameMgrDerived.cpp - engine-label stubs for CGameMgrDerived.
 
 class CGameMgrDerived {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x0855a0
-// @size:    0x24
 // @stub
+RVA(0x0855a0, 0x24)
 void CGameMgrDerived::scalar_deleting_destructor() {}

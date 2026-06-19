@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CActionArea.cpp - engine-label stubs for CActionArea.
 
 class CActionArea {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x007da0
-// @size:    0x17e
 // @stub
+RVA(0x007da0, 0x17e)
 CActionArea::CActionArea() {}

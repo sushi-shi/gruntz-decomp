@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CGruntzCommand.cpp - engine-label stubs for CGruntzCommand.
 
 class CGruntzCommand {
@@ -9,21 +10,18 @@ public:
 
 // @confidence: high
 // @source: rtti-vptr
-// @address: 0x0242f0
-// @size:    0x7
 // @stub
+RVA(0x0242f0, 0x7)
 void CGruntzCommand::CGruntzCommand_0242f0() {}
 
 // @confidence: high
 // @source: rtti-vtable
-// @address: 0x024330
-// @size:    0x20
 // @stub
+RVA(0x024330, 0x20)
 CGruntzCommand::~CGruntzCommand() {}
 
 // @confidence: high
 // @source: rtti-vptr
-// @address: 0x024430
-// @size:    0x7
 // @stub
+RVA(0x024430, 0x7)
 void CGruntzCommand::CGruntzCommand_024430() {}

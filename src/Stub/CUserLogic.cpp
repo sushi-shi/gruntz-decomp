@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CUserLogic.cpp - engine-label stubs for CUserLogic.
 
 class CUserLogic {
@@ -8,14 +9,12 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x0138d0
-// @size:    0x4b
 // @stub
+RVA(0x0138d0, 0x4b)
 void CUserLogic::CUserLogic_0138d0() {}
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x058cd0
-// @size:    0x195
 // @stub
+RVA(0x058cd0, 0x195)
 void CUserLogic::CUserLogic_058cd0() {}

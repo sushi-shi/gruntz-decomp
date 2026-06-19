@@ -14,19 +14,20 @@
 // unwind and emits no exception frame.
 // ---------------------------------------------------------------------------
 #include "../Font/Font.h"
+#include "../rva.h"
 
 // The four global Font instances + the load-once flag + the four .fnt file-name
 // literals, addressed by fixed VA so the loads reloc-mask against the matched
 // Font::LoadFont (@0x179830) and the CString literal-ctor (@0x1b9d4c).
-// @data: 0x24eb14
+DATA(0x24eb14)
 extern int g_loadedFlag;
-// @data: 0x24eac0
+DATA(0x24eac0)
 extern Font g_largeFont;
-// @data: 0x24eae8
+DATA(0x24eae8)
 extern Font g_mediumFont;
-// @data: 0x24eb00
+DATA(0x24eb00)
 extern Font g_smallFont;
-// @data: 0x24ea58
+DATA(0x24ea58)
 extern Font g_tinyFont;
 
 #define s_large_fnt  "large.fnt"
@@ -40,9 +41,7 @@ extern Font g_tinyFont;
 // value (a stack temp constructed from the literal); a 0 return aborts the load
 // (returns the 0 the failed LoadFont left in eax). Once all four load, the flag
 // is set + 1 returned.
-// ---------------------------------------------------------------------------
-// @address: 0x115810
-// @size:    0xa3
+RVA(0x115810, 0xa3)
 int InitializeFonts()
 {
     // The already-loaded case + the all-loaded success case share the single

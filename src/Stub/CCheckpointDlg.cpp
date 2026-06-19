@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CCheckpointDlg.cpp - engine-label stubs for CCheckpointDlg.
 
 class CCheckpointDlg {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: high
 // @source: rtti-vptr
-// @address: 0x0234a0
-// @size:    0x1e
 // @stub
+RVA(0x0234a0, 0x1e)
 CCheckpointDlg::CCheckpointDlg() {}

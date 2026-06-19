@@ -1,3 +1,4 @@
+#include "../rva.h"
 // UnknownMinerva.cpp - engine-label stubs for UnknownMinerva.
 
 class UnknownMinerva {
@@ -9,21 +10,18 @@ public:
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x157530
-// @size:    0x17
 // @stub
+RVA(0x157530, 0x17)
 void UnknownMinerva::VirtualMethodUnknown14() {}
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x157550
-// @size:    0x1e
 // @stub
+RVA(0x157550, 0x1e)
 UnknownMinerva::~UnknownMinerva() {}
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x157bc0
-// @size:    0xa2
 // @stub
+RVA(0x157bc0, 0xa2)
 void UnknownMinerva::ClearUnknownMap() {}

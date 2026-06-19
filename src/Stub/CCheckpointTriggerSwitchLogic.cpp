@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CCheckpointTriggerSwitchLogic.cpp - engine-label stubs for CCheckpointTriggerSwitchLogic.
 
 class CCheckpointTriggerSwitchLogic {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: high
 // @source: rtti-vptr
-// @address: 0x1127f0
-// @size:    0x12
 // @stub
+RVA(0x1127f0, 0x12)
 CCheckpointTriggerSwitchLogic::CCheckpointTriggerSwitchLogic() {}

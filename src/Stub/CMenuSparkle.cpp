@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CMenuSparkle.cpp - engine-label stubs for CMenuSparkle.
 
 class CMenuSparkle {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x0adbe0
-// @size:    0x178
 // @stub
+RVA(0x0adbe0, 0x178)
 CMenuSparkle::CMenuSparkle() {}

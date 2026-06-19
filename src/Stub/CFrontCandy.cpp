@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CFrontCandy.cpp - engine-label stubs for CFrontCandy.
 
 class CFrontCandy {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x0abfa0
-// @size:    0x1b6
 // @stub
+RVA(0x0abfa0, 0x1b6)
 CFrontCandy::CFrontCandy() {}

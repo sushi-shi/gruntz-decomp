@@ -1,3 +1,4 @@
+#include "../rva.h"
 // UnknownHagrid.cpp - four leaf factory methods of the tomalla-named class
 // UnknownHagrid (a CDirectDrawMgr surface/page sub-manager in the ddrawmgr
 // "Harry Potter" family; see structure/managers/ddrawmgr_surface_family.h).
@@ -105,9 +106,9 @@ struct HagridWorkerA : public HagridWorker {
 };                  // 0x7c
 
 // The two foreign worker vftables, referenced as DIR32 data (RVA = VA-0x400000).
-// @data: 0x1efea0
+DATA(0x1efea0)
 extern void *g_hagridWorkerVtblA;   // VA 0x5efea0  (BYTE-flag worker)
-// @data: 0x1efed0
+DATA(0x1efed0)
 extern void *g_hagridWorkerVtblB;   // VA 0x5efed0  (int-flag worker)
 
 // ---------------------------------------------------------------------------
@@ -145,9 +146,7 @@ static inline void StampWorkerVtblA(HagridWorkerA *w) { *(void **)w = &g_hagridW
 // ---------------------------------------------------------------------------
 // UnknownHagrid::VirtualMethodUnknown14  @0x156f00  (__thiscall, ret 0)
 // Same base readiness predicate used by several Lucius-derived managers.
-// ---------------------------------------------------------------------------
-// @address: 0x156f00
-// @size:    0x16
+RVA(0x156f00, 0x16)
 int UnknownHagrid::VirtualMethodUnknown14()
 {
     if (m_pHarryPotter == 0)
@@ -218,9 +217,7 @@ static inline HagridWorkerA *MakeWorkerA(const UnknownHagrid *parent)
 // Allocates a BYTE-flag worker (vftable 0x5efea0), constructs it, calls its +0x2c
 // virtual with (a1,a2,a3). On success appends it to the list (AddTail) and returns
 // it; on failure destroys it and returns 0.
-// ---------------------------------------------------------------------------
-// @address: 0x156fd0
-// @size:    0x8b
+RVA(0x156fd0, 0x8b)
 void *UnknownHagrid::VirtualMethodUnknown24(int a1, int a2, int a3)
 {
     HagridWorkerA *w = MakeWorkerA(this);
@@ -237,9 +234,7 @@ void *UnknownHagrid::VirtualMethodUnknown24(int a1, int a2, int a3)
 // UnknownHagrid::VirtualMethodUnknown28  @0x1573e0  (__thiscall, ret 0x10)
 // As Unknown24 but the int-flag worker (vftable 0x5efed0); on success the trailing
 // bool selects AddHead vs AddTail.
-// ---------------------------------------------------------------------------
-// @address: 0x1573e0
-// @size:    0xa0
+RVA(0x1573e0, 0xa0)
 void *UnknownHagrid::VirtualMethodUnknown28(int a1, int a2, int a3, int addHead)
 {
     HagridWorkerB *w = MakeWorkerB(this);
@@ -259,9 +254,7 @@ void *UnknownHagrid::VirtualMethodUnknown28(int a1, int a2, int a3, int addHead)
 // UnknownHagrid::VirtualMethodUnknown2C  @0x157330  (__thiscall, ret 0x14)
 // Int-flag worker; calls the worker's +0x30 virtual with (a1,a2,a3,a4); trailing
 // bool selects AddHead vs AddTail.
-// ---------------------------------------------------------------------------
-// @address: 0x157330
-// @size:    0xa5
+RVA(0x157330, 0xa5)
 void *UnknownHagrid::VirtualMethodUnknown2C(int a1, int a2, int a3, int a4, int addHead)
 {
     HagridWorkerB *w = MakeWorkerB(this);
@@ -280,9 +273,7 @@ void *UnknownHagrid::VirtualMethodUnknown2C(int a1, int a2, int a3, int a4, int 
 // ---------------------------------------------------------------------------
 // UnknownHagrid::VirtualMethodUnknown30  @0x157150  (__thiscall, ret 0x14)
 // As Unknown2C but dispatches the worker's +0x34 virtual.
-// ---------------------------------------------------------------------------
-// @address: 0x157150
-// @size:    0xa5
+RVA(0x157150, 0xa5)
 void *UnknownHagrid::VirtualMethodUnknown30(int a1, int a2, int a3, int a4, int addHead)
 {
     HagridWorkerB *w = MakeWorkerB(this);
@@ -303,35 +294,30 @@ void *UnknownHagrid::VirtualMethodUnknown30(int a1, int a2, int a3, int a4, int 
 // -------------------------------------------------------------------------
 // @confidence: high
 // @source: tomalla
-// @address: 0x156f20
-// @size:    0x6
 // @stub
+RVA(0x156f20, 0x6)
 void UnknownHagrid::Stub_156f20() {}
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x156f50
-// @size:    0x68
 // @stub
+RVA(0x156f50, 0x68)
 void UnknownHagrid::Stub_156f50() {}
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x156fc0
-// @size:    0x6
 // @stub
+RVA(0x156fc0, 0x6)
 void UnknownHagrid::Stub_156fc0() {}
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x163bf0
-// @size:    0x6d
 // @stub
+RVA(0x163bf0, 0x6d)
 void UnknownHagrid::Stub_163bf0() {}
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x163c60
-// @size:    0x2c
 // @stub
+RVA(0x163c60, 0x2c)
 void UnknownHagrid::Stub_163c60() {}

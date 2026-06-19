@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CRainCloud.cpp - engine-label stubs for CRainCloud.
 
 class CRainCloud {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: high
 // @source: rtti-vptr
-// @address: 0x0b49b0
-// @size:    0xa8
 // @stub
+RVA(0x0b49b0, 0xa8)
 CRainCloud::CRainCloud() {}

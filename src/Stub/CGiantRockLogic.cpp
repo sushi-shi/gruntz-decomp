@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CGiantRockLogic.cpp - engine-label stubs for CGiantRockLogic.
 
 class CGiantRockLogic {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: high
 // @source: rtti-vptr
-// @address: 0x112210
-// @size:    0x12
 // @stub
+RVA(0x112210, 0x12)
 CGiantRockLogic::CGiantRockLogic() {}

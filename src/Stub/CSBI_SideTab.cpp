@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CSBI_SideTab.cpp - engine-label stubs for CSBI_SideTab.
 
 class CSBI_SideTab {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: high
 // @source: rtti-vptr
-// @address: 0x105070
-// @size:    0x10e
 // @stub
+RVA(0x105070, 0x10e)
 CSBI_SideTab::~CSBI_SideTab() {}

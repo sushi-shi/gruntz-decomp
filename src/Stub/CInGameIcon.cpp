@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CInGameIcon.cpp - engine-label stubs for CInGameIcon.
 
 class CInGameIcon {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x095b10
-// @size:    0x15f0
 // @stub
+RVA(0x095b10, 0x15f0)
 CInGameIcon::CInGameIcon() {}

@@ -5,6 +5,7 @@
 // are not matched here - the out-of-line virtual stubs below only exist to emit
 // the vftable that the ctor stores.)
 #include "../Wap32/Wap32.h"
+#include "../rva.h"
 
 class CGruntzWnd : public CGameWnd {
 public:
@@ -16,8 +17,7 @@ public:
     void Stub_094670();
 };
 
-// @address: 0x94640
-// @size:    0x12
+RVA(0x94640, 0x12)
 CGruntzWnd::CGruntzWnd() {}
 
 // Out-of-line stubs so the vftable (??_7CGruntzWnd@@6B@) is emitted in this TU;
@@ -30,7 +30,6 @@ int CGruntzWnd::Wap32GameWndVfunc0() { return 0; }
 // -------------------------------------------------------------------------
 // @confidence: high
 // @source: tomalla
-// @address: 0x094670
-// @size:    0x1e
 // @stub
+RVA(0x094670, 0x1e)
 void CGruntzWnd::Stub_094670() {}

@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CGruntStaminaSprite.cpp - engine-label stubs for CGruntStaminaSprite.
 
 class CGruntStaminaSprite {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: high
 // @source: rtti-vptr
-// @address: 0x07fae0
-// @size:    0xa0
 // @stub
+RVA(0x07fae0, 0xa0)
 CGruntStaminaSprite::CGruntStaminaSprite() {}

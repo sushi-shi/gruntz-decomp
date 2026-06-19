@@ -1,3 +1,4 @@
+#include "../rva.h"
 // RezSync.cpp - engine-label stubs for RezSync.
 
 class RezSync {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: high
 // @source: rez-trace
-// @address: 0x083450
-// @size:    0x192d
 // @stub
+RVA(0x083450, 0x192d)
 void RezSync::Init() {}

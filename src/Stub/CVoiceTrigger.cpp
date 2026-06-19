@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CVoiceTrigger.cpp - engine-label stubs for CVoiceTrigger.
 
 class CVoiceTrigger {
@@ -8,14 +9,12 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x013470
-// @size:    0x4b
 // @stub
+RVA(0x013470, 0x4b)
 void CVoiceTrigger::CVoiceTrigger_013470() {}
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x119b50
-// @size:    0x1ce
 // @stub
+RVA(0x119b50, 0x1ce)
 void CVoiceTrigger::CVoiceTrigger_119b50() {}

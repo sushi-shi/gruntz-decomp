@@ -19,6 +19,8 @@
 // it surfaces in the matching worklist). src/Stub/ shrinks toward empty as
 // classes are reconstructed; do not treat anything here as binary-verified.
 
+#include "../rva.h"   // RVA()/RVAU() label macros the included stub files use
+
 #include "ImplementedLabels.cpp"
 #include "Backlog.cpp"
 #include "CActionArea.cpp"

@@ -27,6 +27,7 @@
 // engine callees are modeled as external no-body functions so their `call` /
 // `push &fn` relocs are masked in objdiff.
 #include "../Wap32/Wap32.h"
+#include "../rva.h"
 
 // ---------------------------------------------------------------------------
 // Minimal Win32 surface (USER32 / KERNEL32). We deliberately do NOT pull in
@@ -159,11 +160,8 @@ static HINSTANCE   g_hInstance;   // 0x651618
 // ---------------------------------------------------------------------------
 // WinMain - extern "C" int WINAPI WinMain(...) -> the linker symbol is
 // `_WinMain@16` (NOT C++ mangled).
-//
-// @address: 0x11c860
-// @symbol:  _WinMain@16
-// @size:    0x327
-// ---------------------------------------------------------------------------
+SYMBOL(_WinMain@16)
+RVA(0x11c860, 0x327)
 extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
                               LPSTR lpCmdLine, int nShowCmd)
 {

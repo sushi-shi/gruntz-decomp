@@ -38,14 +38,14 @@
 // Entropy-class; left per the campaign doctrine (the strides + link layout, the
 // deliverable here, are fully recovered).
 #include "MapMgr.h"
+#include "../rva.h"
 
 // ===========================================================================
 // CMapArrayA (embedded at CMapMgr+0x30; element stride 0x24).
 // ===========================================================================
 
 // CMapArrayA::CMapArrayA()  @ 0x09e700 (13 B): zero m_0(+4), m_block(+0), m_count(+8).
-// @address: 0x09e700
-// @size:    0xd
+RVA(0x09e700, 0xd)
 CMapArrayA::CMapArrayA()
 {
     m_0 = 0;
@@ -54,8 +54,7 @@ CMapArrayA::CMapArrayA()
 }
 
 // CMapArrayA::~CMapArrayA()  @ 0x09e7e0 (41 B): free m_0(+4) if set, then zero all.
-// @address: 0x09e7e0
-// @size:    0x29
+RVA(0x09e7e0, 0x29)
 CMapArrayA::~CMapArrayA()
 {
     if (m_0)
@@ -105,8 +104,7 @@ int CMapArrayA::Allocate(unsigned int count)
 // ===========================================================================
 
 // CMapArrayB::CMapArrayB()  @ 0x09e820 (13 B): zero m_0(+0), m_block(+4), m_count(+8).
-// @address: 0x09e820
-// @size:    0xd
+RVA(0x09e820, 0xd)
 CMapArrayB::CMapArrayB()
 {
     m_0 = 0;
@@ -115,8 +113,7 @@ CMapArrayB::CMapArrayB()
 }
 
 // CMapArrayB::~CMapArrayB()  @ 0x09e900 (40 B): free m_0(+0) if set, then zero all.
-// @address: 0x09e900
-// @size:    0x28
+RVA(0x09e900, 0x28)
 CMapArrayB::~CMapArrayB()
 {
     if (m_0)
@@ -168,8 +165,7 @@ int CMapArrayB::Allocate(unsigned int count)
 // CMapMgr::CMapMgr()  @ 0x09e940 (115 B). The two array members are constructed
 // first (out-of-line ctors), then the body zeroes the scalar members, stores the
 // vftable and seeds m_50=-1 / m_5c=1.
-// @address: 0x09e940
-// @size:    0x73
+RVA(0x09e940, 0x73)
 CMapMgr::CMapMgr()
 {
     m_4 = 0;
@@ -186,8 +182,7 @@ CMapMgr::CMapMgr()
 
 // CMapMgr::~CMapMgr()  @ 0x09e9e0 (93 B). Calls the slot-0 Reset (frees m_4/m_8,
 // resets the two arrays), then the two member-array destructors run automatically.
-// @address: 0x09e9e0
-// @size:    0x5d
+RVA(0x09e9e0, 0x5d)
 CMapMgr::~CMapMgr()
 {
     Reset();
@@ -196,8 +191,7 @@ CMapMgr::~CMapMgr()
 // CMapMgr::Reset()  @ 0x09ec30 (75 B, slot 0). Frees m_4 and m_8 if set, resets
 // the two embedded arrays (calls their destructors in place), then zeroes the
 // scalar bookkeeping members.
-// @address: 0x09ec30
-// @size:    0x4b
+RVA(0x09ec30, 0x4b)
 void CMapMgr::Reset()
 {
     if (m_4)

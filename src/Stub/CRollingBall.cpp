@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CRollingBall.cpp - engine-label stubs for CRollingBall.
 
 class CRollingBall {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x0af820
-// @size:    0x40d
 // @stub
+RVA(0x0af820, 0x40d)
 CRollingBall::CRollingBall() {}

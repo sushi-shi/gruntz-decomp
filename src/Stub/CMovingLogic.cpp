@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CMovingLogic.cpp - engine-label stubs for CMovingLogic.
 
 class CMovingLogic {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x013940
-// @size:    0x1e1
 // @stub
+RVA(0x013940, 0x1e1)
 CMovingLogic::CMovingLogic() {}

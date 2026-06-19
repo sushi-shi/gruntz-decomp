@@ -1,3 +1,4 @@
+#include "../rva.h"
 // UnknownFilch.cpp - engine-label stubs for UnknownFilch.
 
 class UnknownFilch {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x141cc0
-// @size:    0x84
 // @stub
+RVA(0x141cc0, 0x84)
 UnknownFilch::UnknownFilch() {}

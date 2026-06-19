@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CGruntzMapMgr.cpp - engine-label stubs for CGruntzMapMgr.
 
 class CGruntzMapMgr {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: high
 // @source: rtti-vptr
-// @address: 0x085d10
-// @size:    0xa7
 // @stub
+RVA(0x085d10, 0xa7)
 CGruntzMapMgr::~CGruntzMapMgr() {}

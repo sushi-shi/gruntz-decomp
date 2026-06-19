@@ -1,3 +1,4 @@
+#include "../rva.h"
 // UnknownSirius.cpp - engine-label stubs for UnknownSirius.
 
 class UnknownSirius {
@@ -10,28 +11,24 @@ public:
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x1576f0
-// @size:    0x6
 // @stub
+RVA(0x1576f0, 0x6)
 void UnknownSirius::VirtualMethodUnknown20() {}
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x157700
-// @size:    0x1e
 // @stub
+RVA(0x157700, 0x1e)
 UnknownSirius::~UnknownSirius() {}
 
 // @confidence: med
 // @source: call-xref
-// @address: 0x157720
-// @size:    0x68
 // @stub
+RVA(0x157720, 0x68)
 void UnknownSirius::VirtualMethod_157720() {}
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x1652c0
-// @size:    0x92
 // @stub
+RVA(0x1652c0, 0x92)
 void UnknownSirius::VirtualMethodUnknown24() {}

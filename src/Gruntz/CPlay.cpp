@@ -66,6 +66,7 @@
 // ============================================================================
 
 #include "CPlay.h"
+#include "../rva.h"
 
 // ---- MFC primitives reused verbatim from the engine (reloc-masked). ----
 class CString {
@@ -83,7 +84,7 @@ class CButeMgr {
 public:
     int GetInt(char *tag, char *key);   // @0x171af0 (thiscall ret 8)
 };
-// @data: 0x2453d8
+DATA(0x2453d8)
 extern CButeMgr g_buteMgr;
 #define g_buteText (&g_buteMgr)
 
@@ -119,8 +120,7 @@ struct CCueState { int Probe(int wParam); };
 // ===========================================================================
 // CPlay::Render  @0xc8cf0  (vtable slot +0x14)
 // ===========================================================================
-// @address: 0x0c8cf0
-// @size:    0xc14
+RVA(0x0c8cf0, 0xc14)
 int CPlay::Render()
 {
     // --- frame entry: clear the per-frame flag, then a `this`-virtual begin. ---
@@ -419,8 +419,7 @@ alt2:
 // view yet, bail), 1 = mode-A sub-step, 2(+) = mode-B sub-step. MSVC hoists the
 // shared `push 4` out of the if/else (both helpers take the same constant).
 // ===========================================================================
-// @address: 0x0d8d90
-// @size:    0x1e
+RVA(0x0d8d90, 0x1e)
 void CPlay::StepC()
 {
     int mode = m_480;
@@ -439,8 +438,7 @@ void CPlay::StepC()
 // lo = g_645588, hi = 0), and return 1. They share ONE shape; OnRegion2 also
 // pins the view discriminator m_480, OnRegion3/4 fire an extra cue on enter/leave.
 // ===========================================================================
-// @address: 0x0d8a00
-// @size:    0x73
+RVA(0x0d8a00, 0x73)
 int CPlay::OnRegion2(int z)         // @0xd8a00  (region-0 / gate m_470, timer +0x430)
 {
     if (z != 0) { m_470 = 1; RegionEnter(); m_480 = 1; }
@@ -451,8 +449,7 @@ int CPlay::OnRegion2(int z)         // @0xd8a00  (region-0 / gate m_470, timer +
     return 1;
 }
 
-// @address: 0x0d8aa0
-// @size:    0x5f
+RVA(0x0d8aa0, 0x5f)
 int CPlay::OnRegion1(int z)         // @0xd8aa0  (region-1 / gate m_474, timer +0x440)
 {
     if (z != 0) { m_474 = 1; RegionEnter(); }
@@ -463,8 +460,7 @@ int CPlay::OnRegion1(int z)         // @0xd8aa0  (region-1 / gate m_474, timer +
     return 1;
 }
 
-// @address: 0x0d8b20
-// @size:    0x74
+RVA(0x0d8b20, 0x74)
 int CPlay::OnRegion3(int z)         // @0xd8b20  (region-2 / gate m_478, timer +0x450)
 {
     if (z != 0) {
@@ -481,8 +477,7 @@ int CPlay::OnRegion3(int z)         // @0xd8b20  (region-2 / gate m_478, timer +
     return 1;
 }
 
-// @address: 0x0d8bc0
-// @size:    0x71
+RVA(0x0d8bc0, 0x71)
 int CPlay::OnRegion4(int z)         // @0xd8bc0  (region-3 / gate m_47c, timer +0x460)
 {
     if (z != 0) {
@@ -506,8 +501,7 @@ int CPlay::OnRegion4(int z)         // @0xd8bc0  (region-3 / gate m_47c, timer +
 // (m_150/m_154), aligns each axis DOWN to a 0x20 boundary (+0x10 bias) and
 // stores the result into the scroll-offset sink m_4e4 (+0x5c X, +0x60 Y).
 // ===========================================================================
-// @address: 0x0d1ac0
-// @size:    0x4f
+RVA(0x0d1ac0, 0x4f)
 void CPlay::StepScroll()
 {
     CDrawSurface *v = m_c->m_24;
@@ -530,8 +524,7 @@ void CPlay::StepScroll()
 // by m_1b0. Probes the draw-surface (m_c->m_4->m_14->m_2c); if absent returns 0.
 // On a hit it dispatches the probed control. Returns 1.
 // ===========================================================================
-// @address: 0x0d11e0
-// @size:    0x9b
+RVA(0x0d11e0, 0x9b)
 int CPlay::StepInputA()
 {
     if (m_1a8 == 0) { m_1a8 = 1; return 1; }
@@ -564,8 +557,7 @@ int CPlay::StepInputA()
 // applied to either the caller's rect (rectSrc != 0) or the active viewport
 // (this->m_c->m_24+0x10). a3 selects the Top vs Default cue renderer.
 // ===========================================================================
-// @address: 0x0d1890
-// @size:    0x1ba
+RVA(0x0d1890, 0x1ba)
 void CPlay::PlayCueAt(int cueId, int a2, int a3, int a4, int a5,
                       int a6, int a7, int rectSrc)
 {
@@ -607,7 +599,6 @@ void CPlay::PlayCueAt(int cueId, int a2, int a3, int a4, int a5,
 // -------------------------------------------------------------------------
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x08c9d0
-// @size:    0x2bd
 // @stub
+RVA(0x08c9d0, 0x2bd)
 void CPlay::Stub_08c9d0() {}

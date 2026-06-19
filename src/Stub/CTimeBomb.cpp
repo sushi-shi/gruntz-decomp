@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CTimeBomb.cpp - engine-label stubs for CTimeBomb.
 
 class CTimeBomb {
@@ -8,14 +9,12 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x0e1b90
-// @size:    0x23d
 // @stub
+RVA(0x0e1b90, 0x23d)
 CTimeBomb::CTimeBomb() {}
 
 // @confidence: high
 // @source: decomp-xref
-// @address: 0x0e1e60
-// @size:    0x1ac
 // @stub
+RVA(0x0e1e60, 0x1ac)
 void CTimeBomb::LoadAttributes() {}

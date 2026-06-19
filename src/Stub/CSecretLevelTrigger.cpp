@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CSecretLevelTrigger.cpp - engine-label stubs for CSecretLevelTrigger.
 
 class CSecretLevelTrigger {
@@ -8,14 +9,12 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x010b20
-// @size:    0x4b
 // @stub
+RVA(0x010b20, 0x4b)
 void CSecretLevelTrigger::CSecretLevelTrigger_010b20() {}
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x0424b0
-// @size:    0x1a0
 // @stub
+RVA(0x0424b0, 0x1a0)
 void CSecretLevelTrigger::CSecretLevelTrigger_0424b0() {}

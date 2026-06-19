@@ -92,6 +92,9 @@ GEN_LABELS = "scripts/gruntz/build/labels.py"
 # to the base objs (clang mangledName INTERSECT nm) - no hand-written CSV. See
 # docs/source-consolidation-investigation.md.
 GEN_NAMES = "build/gen/symbol_names.csv"
+# clangd compile DB (per-TU MS/include flags); labels.py uses it so the IR emit's
+# system-header lookup succeeds. Optional - labels.py degrades to bare MS flags.
+COMPDB = "build/clangd/compile_commands.json"
 
 # Target (delink) inputs.
 EXE = "build/exe/GRUNTZ.EXE"
@@ -201,16 +204,21 @@ def emit_ninja(manifest: dict, out: Path) -> None:
         w.newline()
 
         # LABELS: regenerate build/gen/symbol_names.csv from the src @address
-        # annotations + the base objs (clang mangledName INTERSECT nm).
-        w.comment("=== LABELS: src @address + base objs -> symbol_names.csv ===")
+        # annotations + the base objs (clang mangledName INTERSECT nm). The IR
+        # emit needs the clangd compdb's per-TU include flags so system headers
+        # resolve (-emit-llvm stops at a fatal error, unlike -ast-dump); it is an
+        # optional input (labels.py falls back to bare MS flags if absent).
+        w.comment("=== LABELS: src RVA() macros + base objs -> symbol_names.csv ===")
         labels_args = " ".join(
             f"--tu {u['source']} --obj {BASE_DIR}/{u['unit']}.obj" for u in units)
         w.rule("gen_labels",
-               command=f"{PY} {GEN_LABELS} {labels_args} --out {GEN_NAMES}",
-               description="gen_labels (src @address -> symbol_names.csv)")
+               command=f"{PY} {GEN_LABELS} {labels_args} "
+                       f"--compdb {COMPDB} --out {GEN_NAMES}",
+               description="gen_labels (src RVA() macros -> symbol_names.csv)")
+        compdb_dep = [COMPDB] if (REPO / COMPDB).exists() else []
         w.build(GEN_NAMES, "gen_labels",
                 inputs=[u["source"] for u in units] + base_objs,
-                implicit=[GEN_LABELS, "config/units.toml"])
+                implicit=[GEN_LABELS, "config/units.toml"] + compdb_dep)
         w.newline()
 
         # TARGET (delink) half: one rule produces all in-scope <unit>.c.obj.

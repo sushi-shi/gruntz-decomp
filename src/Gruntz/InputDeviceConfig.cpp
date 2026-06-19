@@ -1,3 +1,4 @@
+#include "../rva.h"
 // InputDeviceConfig.cpp - CInputConfig::LoadInputDeviceConfig @0x387c0 (192 B,
 // __thiscall, returns a CString by value -> ret 8) - maps the configured input
 // device id (this->m_14) to its display name (C:\Proj\Gruntz). Starts from the
@@ -48,10 +49,7 @@ public:
 // CInputConfig::LoadInputDeviceConfig  @0x387c0
 // `unused` is the lone explicit stack arg (the ret 8 cleans the hidden CString
 // return buffer + this 4-byte arg); the body does not read it.
-//
-// @address: 0x387c0
-// @size:    0xc0
-// ---------------------------------------------------------------------------
+RVA(0x387c0, 0xc0)
 CString CInputConfig::LoadInputDeviceConfig(int unused)
 {
     CString name("None");

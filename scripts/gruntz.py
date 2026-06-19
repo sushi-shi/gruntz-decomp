@@ -168,8 +168,12 @@ def cmd_labels(args) -> None:
     tu_obj = []
     for u in units():
         tu_obj += ["--tu", u["source"], "--obj", f"build/objdiff/base/{u['unit']}.obj"]
-    run([sys.executable, str(BUILD / "labels.py"),
-         "--clang", clang, "--nm", nm, *tu_obj, "--out", str(GEN_NAMES)])
+    compdb = REPO / "build" / "clangd" / "compile_commands.json"
+    cmd = [sys.executable, str(BUILD / "labels.py"),
+           "--clang", clang, "--nm", nm, *tu_obj, "--out", str(GEN_NAMES)]
+    if compdb.is_file():
+        cmd += ["--compdb", str(compdb)]
+    run(cmd)
 
 
 def cmd_structs(args) -> None:

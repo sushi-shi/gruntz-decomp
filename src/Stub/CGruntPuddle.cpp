@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CGruntPuddle.cpp - engine-label stubs for CGruntPuddle.
 
 class CGruntPuddle {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x040490
-// @size:    0x1ab
 // @stub
+RVA(0x040490, 0x1ab)
 CGruntPuddle::CGruntPuddle() {}

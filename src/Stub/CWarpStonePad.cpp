@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CWarpStonePad.cpp - engine-label stubs for CWarpStonePad.
 
 class CWarpStonePad {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x10d650
-// @size:    0x16c
 // @stub
+RVA(0x10d650, 0x16c)
 CWarpStonePad::CWarpStonePad() {}

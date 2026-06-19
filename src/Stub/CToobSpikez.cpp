@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CToobSpikez.cpp - engine-label stubs for CToobSpikez.
 
 class CToobSpikez {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x1145c0
-// @size:    0x18e
 // @stub
+RVA(0x1145c0, 0x18e)
 CToobSpikez::CToobSpikez() {}

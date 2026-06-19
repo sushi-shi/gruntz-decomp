@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CGruntCreationPoint.cpp - engine-label stubs for CGruntCreationPoint.
 
 class CGruntCreationPoint {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x03e520
-// @size:    0x1fd
 // @stub
+RVA(0x03e520, 0x1fd)
 CGruntCreationPoint::CGruntCreationPoint() {}

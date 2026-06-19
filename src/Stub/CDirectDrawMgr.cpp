@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CDirectDrawMgr.cpp - engine-label stubs for CDirectDrawMgr.
 
 class CDirectDrawMgr {
@@ -23,119 +24,102 @@ public:
 
 // @confidence: med
 // @source: call-xref
-// @address: 0x08dd80
-// @size:    0x31
 // @stub
+RVA(0x08dd80, 0x31)
 void CDirectDrawMgr::ErrorThunk_08dd80() {}
 
 // @confidence: med
 // @source: call-xref
-// @address: 0x08ddd0
-// @size:    0x7e
 // @stub
+RVA(0x08ddd0, 0x7e)
 void CDirectDrawMgr::ErrorThunk_08ddd0() {}
 
 // @confidence: med
 // @source: call-xref
-// @address: 0x13e140
-// @size:    0x133
 // @stub
+RVA(0x13e140, 0x133)
 void CDirectDrawMgr::ErrorThunk_13e140() {}
 
 // @confidence: med
 // @source: call-xref
-// @address: 0x13e690
-// @size:    0x35
 // @stub
+RVA(0x13e690, 0x35)
 void CDirectDrawMgr::ErrorThunk_13e690() {}
 
 // @confidence: med
 // @source: call-xref
-// @address: 0x13e6d0
-// @size:    0x88
 // @stub
+RVA(0x13e6d0, 0x88)
 void CDirectDrawMgr::ErrorThunk_13e6d0() {}
 
 // @confidence: med
 // @source: call-xref
-// @address: 0x13e850
-// @size:    0x93
 // @stub
+RVA(0x13e850, 0x93)
 void CDirectDrawMgr::ErrorThunk_13e850() {}
 
 // @confidence: med
 // @source: call-xref
-// @address: 0x13eaa0
-// @size:    0x39
 // @stub
+RVA(0x13eaa0, 0x39)
 void CDirectDrawMgr::ErrorThunk_13eaa0() {}
 
 // @confidence: med
 // @source: call-xref
-// @address: 0x13ee60
-// @size:    0x8d
 // @stub
+RVA(0x13ee60, 0x8d)
 void CDirectDrawMgr::ErrorThunk_13ee60() {}
 
 // @confidence: med
 // @source: call-xref
-// @address: 0x13eef0
-// @size:    0x98
 // @stub
+RVA(0x13eef0, 0x98)
 void CDirectDrawMgr::ErrorThunk_13eef0() {}
 
 // @confidence: med
 // @source: call-xref
-// @address: 0x13ef90
-// @size:    0x8b
 // @stub
+RVA(0x13ef90, 0x8b)
 void CDirectDrawMgr::ErrorThunk_13ef90() {}
 
 // @confidence: med
 // @source: call-xref
-// @address: 0x13fa60
-// @size:    0x40
 // @stub
+RVA(0x13fa60, 0x40)
 void CDirectDrawMgr::ErrorThunk_13fa60() {}
 
 // @confidence: high
 // @source: string-xref
-// @address: 0x141400
-// @size:    0x835
 // @stub
+RVA(0x141400, 0x835)
 void CDirectDrawMgr::GetErrorString() {}
 
 // @confidence: high
 // @source: import:DirectDrawCreate
-// @address: 0x141dc0
-// @size:    0x224
 // @stub
+RVA(0x141dc0, 0x224)
 void CDirectDrawMgr::Stub_141dc0() {}
 
 // @confidence: med
 // @source: call-xref
-// @address: 0x147390
-// @size:    0x78
 // @stub
+RVA(0x147390, 0x78)
 void CDirectDrawMgr::ErrorThunk_147390() {}
 
 // @confidence: med
 // @source: call-xref
-// @address: 0x147c30
-// @size:    0x4d
 // @stub
+RVA(0x147c30, 0x4d)
 void CDirectDrawMgr::ErrorThunk_147c30() {}
 
 // @confidence: med
 // @source: call-xref
-// @address: 0x147cd0
-// @size:    0x78
 // @stub
+RVA(0x147cd0, 0x78)
 void CDirectDrawMgr::ErrorThunk_147cd0() {}
 
 // @confidence: high
 // @source: import:DirectDrawCreate
-// @address: 0x17c040
-// @size:    0x25d
 // @stub
+RVA(0x17c040, 0x25d)
 void CDirectDrawMgr::Stub_17c040() {}

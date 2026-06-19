@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CTileTriggerTransition.cpp - engine-label stubs for CTileTriggerTransition.
 
 class CTileTriggerTransition {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x10faf0
-// @size:    0x128
 // @stub
+RVA(0x10faf0, 0x128)
 CTileTriggerTransition::CTileTriggerTransition() {}

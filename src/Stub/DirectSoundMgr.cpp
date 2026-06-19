@@ -1,3 +1,4 @@
+#include "../rva.h"
 // DirectSoundMgr.cpp - engine-label stubs for DirectSoundMgr.
 
 class DirectSoundMgr {
@@ -25,133 +26,114 @@ public:
 
 // @confidence: med
 // @source: call-xref
-// @address: 0x1351d0
-// @size:    0x109
 // @stub
+RVA(0x1351d0, 0x109)
 void DirectSoundMgr::ErrorThunk_1351d0() {}
 
 // @confidence: med
 // @source: call-xref
-// @address: 0x135310
-// @size:    0x2a
 // @stub
+RVA(0x135310, 0x2a)
 void DirectSoundMgr::ErrorThunk_135310() {}
 
 // @confidence: med
 // @source: call-xref
-// @address: 0x135380
-// @size:    0x66
 // @stub
+RVA(0x135380, 0x66)
 void DirectSoundMgr::ErrorThunk_135380() {}
 
 // @confidence: med
 // @source: call-xref
-// @address: 0x1353f0
-// @size:    0x4b
 // @stub
+RVA(0x1353f0, 0x4b)
 void DirectSoundMgr::ErrorThunk_1353f0() {}
 
 // @confidence: med
 // @source: call-xref
-// @address: 0x135440
-// @size:    0x4d
 // @stub
+RVA(0x135440, 0x4d)
 void DirectSoundMgr::ErrorThunk_135440() {}
 
 // @confidence: med
 // @source: call-xref
-// @address: 0x135560
-// @size:    0x58
 // @stub
+RVA(0x135560, 0x58)
 void DirectSoundMgr::ErrorThunk_135560() {}
 
 // @confidence: med
 // @source: call-xref
-// @address: 0x1355f0
-// @size:    0x42
 // @stub
+RVA(0x1355f0, 0x42)
 void DirectSoundMgr::ErrorThunk_1355f0() {}
 
 // @confidence: med
 // @source: call-xref
-// @address: 0x135740
-// @size:    0x55
 // @stub
+RVA(0x135740, 0x55)
 void DirectSoundMgr::ErrorThunk_135740() {}
 
 // @confidence: med
 // @source: call-xref
-// @address: 0x1357f0
-// @size:    0x42
 // @stub
+RVA(0x1357f0, 0x42)
 void DirectSoundMgr::ErrorThunk_1357f0() {}
 
 // @confidence: med
 // @source: call-xref
-// @address: 0x135880
-// @size:    0x60
 // @stub
+RVA(0x135880, 0x60)
 void DirectSoundMgr::ErrorThunk_135880() {}
 
 // @confidence: med
 // @source: call-xref
-// @address: 0x1359c0
-// @size:    0x54
 // @stub
+RVA(0x1359c0, 0x54)
 void DirectSoundMgr::ErrorThunk_1359c0() {}
 
 // @confidence: med
 // @source: call-xref
-// @address: 0x135a20
-// @size:    0x4a
 // @stub
+RVA(0x135a20, 0x4a)
 void DirectSoundMgr::ErrorThunk_135a20() {}
 
 // @confidence: med
 // @source: call-xref
-// @address: 0x135a70
-// @size:    0x45
 // @stub
+RVA(0x135a70, 0x45)
 void DirectSoundMgr::ErrorThunk_135a70() {}
 
 // @confidence: med
 // @source: call-xref
-// @address: 0x135ac0
-// @size:    0x4f
 // @stub
+RVA(0x135ac0, 0x4f)
 void DirectSoundMgr::ErrorThunk_135ac0() {}
 
 // @confidence: med
 // @source: call-xref
-// @address: 0x135f40
-// @size:    0x169
 // @stub
+RVA(0x135f40, 0x169)
 void DirectSoundMgr::ErrorThunk_135f40() {}
 
 // @confidence: high
 // @source: import:DSOUND.dll!#1
-// @address: 0x136550
-// @size:    0x8c
 // @stub
+RVA(0x136550, 0x8c)
 void DirectSoundMgr::Stub_136550() {}
 
 // @confidence: med
 // @source: call-xref
-// @address: 0x1365f0
-// @size:    0x57
 // @stub
+RVA(0x1365f0, 0x57)
 void DirectSoundMgr::ErrorThunk_1365f0() {}
 
 // @confidence: med
 // @source: call-xref
-// @address: 0x137260
-// @size:    0x95
 // @stub
+RVA(0x137260, 0x95)
 void DirectSoundMgr::ErrorThunk_137260() {}
 
 // @confidence: high
 // @source: string-xref
-// @address: 0x138150
-// @size:    0x33b
 // @stub
+RVA(0x138150, 0x33b)
 void DirectSoundMgr::GetErrorString() {}

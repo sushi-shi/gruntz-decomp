@@ -1,3 +1,4 @@
+#include "../../rva.h"
 // WwdFile.cpp - engine-label stubs for WwdFile.
 
 class WwdFile {
@@ -8,14 +9,12 @@ public:
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x03b470
-// @size:    0x13a
 // @stub
+RVA(0x03b470, 0x13a)
 void WwdFile::ValidateMainBlock() {}
 
 // @confidence: high
 // @source: rez-trace
-// @address: 0x162af0
-// @size:    0x806
 // @stub
+RVA(0x162af0, 0x806)
 void WwdFile::ReadPlaneObjects() {}

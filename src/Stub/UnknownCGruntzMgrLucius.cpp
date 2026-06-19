@@ -1,3 +1,4 @@
+#include "../rva.h"
 // UnknownCGruntzMgrLucius.cpp - engine-label stubs for UnknownCGruntzMgrLucius.
 
 class UnknownCGruntzMgrLucius {
@@ -12,42 +13,36 @@ public:
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x155720
-// @size:    0x1e
 // @stub
+RVA(0x155720, 0x1e)
 UnknownCGruntzMgrLucius::~UnknownCGruntzMgrLucius() {}
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x156cb0
-// @size:    0x20
 // @stub
+RVA(0x156cb0, 0x20)
 UnknownCGruntzMgrLucius::UnknownCGruntzMgrLucius() {}
 
 // @confidence: high
 // @source: tomalla
-// @address: 0x1574d0
-// @size:    0x5b
 // @stub
+RVA(0x1574d0, 0x5b)
 void UnknownCGruntzMgrLucius::VirtualMethodUnknown14() {}
 
 // @confidence: med
 // @source: call-xref
-// @address: 0x157630
-// @size:    0x82
 // @stub
+RVA(0x157630, 0x82)
 void UnknownCGruntzMgrLucius::Constructor_157630() {}
 
 // @confidence: med
 // @source: tomalla
-// @address: 0x1576c0
-// @size:    0x6
 // @stub
+RVA(0x1576c0, 0x6)
 void UnknownCGruntzMgrLucius::VirtualMethodUnknown1C() {}
 
 // @confidence: med
 // @source: tomalla
-// @address: 0x157790
-// @size:    0x6
 // @stub
+RVA(0x157790, 0x6)
 void UnknownCGruntzMgrLucius::VirtualMethodUnknown20() {}

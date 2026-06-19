@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CWarlord.cpp - engine-label stubs for CWarlord.
 
 class CWarlord {
@@ -9,21 +10,18 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x042d40
-// @size:    0x73e
 // @stub
+RVA(0x042d40, 0x73e)
 CWarlord::CWarlord() {}
 
 // @confidence: med
 // @source: decomp-xref
-// @address: 0x044c00
-// @size:    0xc6
 // @stub
+RVA(0x044c00, 0xc6)
 void CWarlord::LoadAttributes() {}
 
 // @confidence: med
 // @source: decomp-xref
-// @address: 0x044d10
-// @size:    0x106
 // @stub
+RVA(0x044d10, 0x106)
 void CWarlord::LoadAttributes2() {}

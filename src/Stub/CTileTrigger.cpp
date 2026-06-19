@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CTileTrigger.cpp - engine-label stubs for CTileTrigger.
 
 class CTileTrigger {
@@ -8,14 +9,12 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x011160
-// @size:    0x4b
 // @stub
+RVA(0x011160, 0x4b)
 void CTileTrigger::CTileTrigger_011160() {}
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x10e220
-// @size:    0x17d
 // @stub
+RVA(0x10e220, 0x17d)
 void CTileTrigger::CTileTrigger_10e220() {}

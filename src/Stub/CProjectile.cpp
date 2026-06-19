@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CProjectile.cpp - engine-label stubs for CProjectile.
 
 class CProjectile {
@@ -9,21 +10,18 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x0126e0
-// @size:    0x1fc
 // @stub
+RVA(0x0126e0, 0x1fc)
 void CProjectile::CProjectile_0126e0() {}
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x0dec60
-// @size:    0x255
 // @stub
+RVA(0x0dec60, 0x255)
 void CProjectile::CProjectile_0dec60() {}
 
 // @confidence: med
 // @source: string-xref
-// @address: 0x0df050
-// @size:    0x6ba
 // @stub
+RVA(0x0df050, 0x6ba)
 void CProjectile::LoadProjectileSprites() {}

@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CSingleAnimation.cpp - engine-label stubs for CSingleAnimation.
 
 class CSingleAnimation {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x0ae7f0
-// @size:    0x13d
 // @stub
+RVA(0x0ae7f0, 0x13d)
 CSingleAnimation::CSingleAnimation() {}

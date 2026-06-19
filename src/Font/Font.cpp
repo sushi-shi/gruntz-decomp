@@ -20,16 +20,14 @@
 // CFile::*, CArchive::*, CString::~CString) are external/no-body so their
 // `call rel32` displacements reloc-mask in objdiff.
 #include "Font.h"
+#include "../rva.h"
 
 // ---------------------------------------------------------------------------
 // Font::Font
 // The empty constructor: zero both table pointers and the {ready,count} pair.
 // The store order (m_surfaces, m_glyphs, m_ready, m_count) reproduces MSVC's
 // schedule (it writes +0x8/+0xc before +0x0/+0x4).
-//
-// @address: 0x179700
-// @size:    0x10
-// ---------------------------------------------------------------------------
+RVA(0x179700, 0x10)
 Font::Font()
 {
     m_surfaces = 0;
@@ -44,10 +42,7 @@ Font::Font()
 // the glyph-metric table (count*8) and zero every entry. Returns 1 on success,
 // 0 when count < 1. (No allocation-failure path is taken - operator new throws
 // / returns the buffer; the null-test on the glyph table is the source's own.)
-//
-// @address: 0x179720
-// @size:    0x87
-// ---------------------------------------------------------------------------
+RVA(0x179720, 0x87)
 int Font::AllocateMemory(int count)
 {
     FreeMemory();
@@ -75,10 +70,7 @@ int Font::AllocateMemory(int count)
 // Release everything the tables hold: each glyph's pixel surface, then the
 // surface-pointer table, then the glyph-metric table, then reset to empty. A
 // no-op when m_ready is already 0.
-//
-// @address: 0x1797b0
-// @size:    0x71
-// ---------------------------------------------------------------------------
+RVA(0x1797b0, 0x71)
 void Font::FreeMemory()
 {
     if (m_ready) {
@@ -106,10 +98,7 @@ void Font::FreeMemory()
 // bytes read straight from the archive), then compute m_maxHeight (the font
 // line-height = the tallest glyph). Returns 0 if the file fails to open, 1 once
 // the font is fully populated.
-//
-// @address: 0x179830
-// @size:    0x1b1
-// ---------------------------------------------------------------------------
+RVA(0x179830, 0x1b1)
 int Font::LoadFont(CString szFileName)
 {
     FreeMemory();

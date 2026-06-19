@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CTeleporter.cpp - engine-label stubs for CTeleporter.
 
 class CTeleporter {
@@ -8,14 +9,12 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x041020
-// @size:    0x170
 // @stub
+RVA(0x041020, 0x170)
 CTeleporter::CTeleporter() {}
 
 // @confidence: med
 // @source: decomp-xref
-// @address: 0x041aa0
-// @size:    0x312
 // @stub
+RVA(0x041aa0, 0x312)
 void CTeleporter::LoadAttributes() {}

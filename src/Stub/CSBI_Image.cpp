@@ -1,3 +1,4 @@
+#include "../rva.h"
 // CSBI_Image.cpp - engine-label stubs for CSBI_Image.
 
 class CSBI_Image {
@@ -7,7 +8,6 @@ public:
 
 // @confidence: med
 // @source: rtti-vptr
-// @address: 0x10a340
-// @size:    0xbcb
 // @stub
+RVA(0x10a340, 0xbcb)
 CSBI_Image::~CSBI_Image() {}
