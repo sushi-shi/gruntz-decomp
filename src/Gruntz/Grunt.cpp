@@ -479,11 +479,6 @@ int CGrunt::CreateSelectedSprite()
 RVA(0x047a10, 0x770)
 void CGrunt::Stub_047a10() {}
 
-// @confidence: high
-// @source: tomalla
-// @stub
-RVA(0x048400, 0x47)
-void CGrunt::Stub_048400() {}
 
 // @confidence: med
 // @source: string-xref
@@ -514,3 +509,36 @@ void CGrunt::BuildEntranceAnimation() {}
 // @stub
 RVA(0x067f80, 0x313)
 void CGrunt::LoadEntranceConfig() {}
+
+
+// The global CButeMgr config singleton + the tuning key ReadConfigFromButeMgr
+// reads. Minimal local decl (the full ButeMgr.h redefines AfxString, already
+// pulled in by this TU), with only the typed getter the function calls.
+class CButeMgr {
+public:
+    unsigned long GetDwordDef(char *tag, char *key, unsigned long def);  // 0x1721e0
+};
+extern CButeMgr g_buteMgr;
+static char s_TimePerTile[] = "TimePerTile";
+
+// ---------------------------------------------------------------------------
+// Functions extracted from the matching-xai sweep (verified >=90%% objdiff,
+// class placement cross-checked via vtable + .text adjacency).
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// CGrunt::ReadConfigFromButeMgr @ 0x048400 (void, thiscall)
+// Reads the TimePerTile tuning config from CButeMgr for this grunt's type.
+// Applies a special-case halving for grunt kind 55 (0x37).
+// ---------------------------------------------------------------------------
+RVA(0x48400, 0x47)
+void CGrunt::ReadConfigFromButeMgr()
+{
+    *(int *)((char *)this + 0x18c) = 0;
+    *(int *)((char *)this + 0x418) = 0;
+
+    *(int *)((char *)this + 0x41c) = g_buteMgr.GetDwordDef(
+        *(char **)((char *)this + 0x1c0), s_TimePerTile, 1000);
+
+    if (*(int *)((char *)this + 0x258) == 0x37)
+        *(int *)((char *)this + 0x41c) >>= 1;
+}

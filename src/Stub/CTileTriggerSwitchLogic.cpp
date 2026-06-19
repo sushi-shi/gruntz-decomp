@@ -8,11 +8,6 @@ public:
     void CTileTriggerSwitchLogic_116320();
 };
 
-// @confidence: high
-// @source: rtti-vptr
-// @stub
-RVA(0x110430, 0x1c)
-void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_110430() {}
 
 // @confidence: high
 // @source: rtti-vptr

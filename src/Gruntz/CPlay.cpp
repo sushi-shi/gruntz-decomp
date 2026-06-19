@@ -602,3 +602,20 @@ void CPlay::PlayCueAt(int cueId, int a2, int a3, int a4, int a5,
 // @stub
 RVA(0x08c9d0, 0x2bd)
 void CPlay::Stub_08c9d0() {}
+
+
+// ---------------------------------------------------------------------------
+// Functions extracted from the matching-xai sweep (verified >=90%% objdiff,
+// class placement cross-checked via vtable + .text adjacency).
+// ---------------------------------------------------------------------------
+// =========================================================================
+// CState::SetBeginClearParams  @0x08c970
+// Stores the two BeginFrameClear arguments and returns 1.
+//
+RVA(0x8c970, 0x1c)
+int CState::SetBeginClearParams(int unused, int arg2, int arg3)
+{
+    m_150 = arg2;
+    m_154 = arg3;
+    return 1;
+}

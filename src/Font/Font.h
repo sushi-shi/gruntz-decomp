@@ -123,11 +123,63 @@ public:
     void FreeMemory();                        // @0x1797b0
     int LoadFont(CString szFileName);        // @0x179830  (ret 4; by-value arg)
 
+    // Accessors matched in this module cluster (matching-xai sweep).
+    void **GetSurface(unsigned char c);      // @0x179b60
+    void GetGlyph(unsigned char c, Glyph &out); // @0x179b80
+    int GetMaxHeight();                      // @0x179bd0
+
     int    m_ready;              // +0x00
     int    m_count;             // +0x04
     void **m_surfaces;          // +0x08
     Glyph *m_glyphs;            // +0x0c
     int    m_maxHeight;         // +0x10
+};
+
+// ---------------------------------------------------------------------------
+// FontRenderer - a stateful rendering shim wrapping a Font*. Only the three
+// leaves matched here (ctor / SetColor / GetChar) are reconstructed; the other
+// render entry points stay external (no body) so their calls reloc-mask.
+// ---------------------------------------------------------------------------
+class FontRenderer {
+public:
+    FontRenderer();                          // @0x179be0
+    void SetColor(int color);                // @0x179c20
+    unsigned char GetChar(int i);            // @0x17b4f0 (ret 4)
+
+    Font *m_font;       // +0x00  (Font* to render with)
+    int   m_color;      // +0x04  (packed colour, default 0x00ffffff)
+    void *m_surface;    // +0x08  (optional dest surface pointer)
+    void *m_clip;       // +0x0c  (optional clip rect pointer)
+};
+
+// ---------------------------------------------------------------------------
+// CWapNodeB - a WAP node carrying packed data + two owned string buffers.
+// Only FreeStrings is matched here.
+// ---------------------------------------------------------------------------
+struct CWapNodeBase {
+    virtual ~CWapNodeBase();                // only the vtable matters
+};
+
+struct CWapNodeB : CWapNodeBase {
+    virtual ~CWapNodeB();
+    void FreeStrings();                      // @0x179680
+
+    int     m_type;                 // +0x04
+    char    m_pad08[0x28];          // +0x08..+0x2f
+    char   *m_srcStr1;              // +0x30
+    char    m_pad34[8];             // +0x34..+0x3b
+    char    m_rest[0x18];           // +0x3c..+0x53
+};
+
+// InterfaceObject - a minimal COM-style object that carries a GUID pointer at
+// +0x04. The IsInterfaceX methods check whether that GUID matches a known iid.
+struct InterfaceObject {
+    const void *iid;                // +0x04 (after vtable/first field)
+    int IsInterface1();   // @0x1794b0
+    int IsInterface2();   // @0x1794e0
+    int IsInterface3();   // @0x179510
+    int IsInterface4();   // @0x179540
+    int IsInterface5();   // @0x179570
 };
 
 #endif // SRC_FONT_FONT_H

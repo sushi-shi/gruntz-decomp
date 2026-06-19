@@ -46,6 +46,20 @@ typedef unsigned long DWORD;
 struct CButeValue {
     int   type;     // +0x00
     void *pValue;   // +0x04
+
+    // Value constructors: allocate storage, store the value, return `this`.
+    CButeValue *SetInt(int type, int val);
+    CButeValue *SetDword(int type, unsigned long val);
+    CButeValue *SetFloat(int type, float val);
+    CButeValue *SetDouble(int type, double val);
+};
+
+// Minimal engine helper embedded at CButeMgr+0x14; the cleanup pair operate on
+// it (reloc-masked __thiscall externs, no body).
+class CButeMgrHelper {
+public:
+    void FuncA();   // @0x169be0
+    void FuncB();   // @0x169d70
 };
 
 class CButeTree {
@@ -133,6 +147,10 @@ public:
     bool  ScanToken(int expectType);
     bool  ParseTagLine();
     bool  Parse();
+
+    // Callback trampoline + sub-object cleanup (matching-xai sweep).
+    void *InvokeCallback(void *(*fn)(CButeMgr *));
+    void  ClearHelper();
 
     // Lexer sub-helpers (engine functions, reloc-masked external/no-body).
     // PeekClass classifies the current char (returns a token-class word);
