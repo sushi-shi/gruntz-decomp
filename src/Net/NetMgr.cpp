@@ -451,11 +451,23 @@ void CNetMgr::Stub_178280() {}
 RVA(0x1782d0, 0x86)
 void CNetMgr::Stub_1782d0() {}
 
-// @confidence: med
-// @source: call-xref
-// @stub
+// ---------------------------------------------------------------------------
+// CNetMgr::RemovePlayerObj  (__thiscall).
+// Tears down one managed player object: no-op if null; otherwise self-destructs
+// it (vtable slot 1, flag 1) and - if it has a cached list position (+0x20) -
+// unlinks it from the embedded m_54 CObList. Returns 1 when an object was given.
 RVA(0x178e20, 0x33)
-void CNetMgr::Stub_178e20() {}
+int CNetMgr::RemovePlayerObj(CNetPlayerObj *obj)
+{
+    if (obj == 0)
+        return 0;
+
+    __POSITION *pos = obj->m_20;
+    obj->SelfDestruct(1);
+    if (pos != 0)
+        ((CObList *)((char *)this + 0x54))->RemoveAt(pos);
+    return 1;
+}
 
 // ---------------------------------------------------------------------------
 // CNetMgr::FindPlayerById  (pure leaf; __thiscall).
@@ -474,32 +486,88 @@ CNetPlayerEntry *CNetMgr::FindPlayerById(int id)
     return 0;
 }
 
-// @confidence: med
-// @source: call-xref
-// @stub
+// ---------------------------------------------------------------------------
+// CNetMgr::GetPlayerData  (__thiscall).
+// Thin IDirectPlay4 wrapper: fetches the per-player data blob for `id` into a
+// stack out-ptr (size probe pre-set to 4, flags 1). Returns the blob pointer on
+// success, null on any HRESULT failure (the negl/sbbl/notl/and mask form).
 RVA(0x178eb0, 0x3f)
-void CNetMgr::Stub_178eb0() {}
+void *CNetMgr::GetPlayerData(int id)
+{
+    unsigned long size;
+    void *data;
+    data = 0;
+    size = 4;
+    long hr = m_18->vtbl->GetData2(m_18, id, &data, &size, 1);
+    return hr ? 0 : data;
+}
 
-// @confidence: med
-// @source: call-xref
-// @stub
+// ---------------------------------------------------------------------------
+// CNetMgr::SetGroupData2  (__thiscall).
+// IDirectPlay4 set-data wrapper taking two CNetPlayerEntry handles whose +0x4
+// ids are forwarded (0 if null), trailed by three raw dwords; on a nonzero
+// HRESULT it routes the error through the static diagnostic reporter
+// (NetMgr.cpp:1133).
 RVA(0x178ef0, 0x5c)
-void CNetMgr::Stub_178ef0() {}
+long CNetMgr::SetGroupData2(CNetPlayerEntry *a, CNetPlayerEntry *b,
+                            int c, int d, int e)
+{
+    int ida = a ? a->m_4 : 0;
+    int idb = b ? b->m_4 : 0;
+    long hr = m_18->vtbl->SetData5(m_18, ida, idb, c, d, e);
+    if (hr)
+        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x46d, hr, 0);
+    return hr;
+}
 
-// @confidence: med
-// @source: call-xref
-// @stub
+// ---------------------------------------------------------------------------
+// CNetMgr::SetData  (__thiscall).
+// Bare IDirectPlay4 set-data wrapper: forwards five args straight through; on a
+// nonzero HRESULT routes the error through the diagnostic reporter
+// (NetMgr.cpp:1170).
 RVA(0x178fc0, 0x44)
-void CNetMgr::Stub_178fc0() {}
+long CNetMgr::SetData(int a, int b, int c, int d, int e)
+{
+    long hr = m_18->vtbl->SetData5(m_18, a, b, c, d, e);
+    if (hr)
+        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x492, hr, 0);
+    return hr;
+}
 
-// @confidence: med
-// @source: call-xref
-// @stub
+// ---------------------------------------------------------------------------
+// CNetMgr::SetGroupDataFrom  (__thiscall).
+// IDirectPlay4 set-data wrapper whose first arg is a CNetPlayerEntry handle
+// (its +0x4 id is forwarded, 0 if null) followed by a literal 0 and three raw
+// dwords; on a nonzero HRESULT routes the error through the diagnostic reporter
+// (NetMgr.cpp:1242).
 RVA(0x179090, 0x4c)
-void CNetMgr::Stub_179090() {}
+long CNetMgr::SetGroupDataFrom(CNetPlayerEntry *a, int c, int d, int e)
+{
+    int ida = a ? a->m_4 : 0;
+    long hr = m_18->vtbl->SetData5(m_18, ida, 0, c, d, e);
+    if (hr)
+        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x4da, hr, 0);
+    return hr;
+}
 
-// @confidence: med
-// @source: call-xref
-// @stub
+// ---------------------------------------------------------------------------
+// CNetMgr::EnumSessions  (__thiscall).
+// IDirectPlay4 enumeration wrapper: zero-inits the 0x28-byte descriptor `desc`,
+// stamps its dwSize, then calls the enum slot with the caller context. On a
+// nonzero HRESULT routes the error through the diagnostic reporter
+// (NetMgr.cpp:1322) and returns 0; otherwise returns 1.
 RVA(0x179130, 0x5d)
-void CNetMgr::Stub_179130() {}
+int CNetMgr::EnumSessions(void *desc, void *ctx)
+{
+    if (desc == 0)
+        return 0;
+
+    memset(desc, 0, 0x28);
+    *(int *)desc = 0x28;
+    long hr = m_18->vtbl->Enum2(m_18, desc, ctx);
+    if (hr) {
+        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x52a, hr, 0);
+        return 0;
+    }
+    return 1;
+}

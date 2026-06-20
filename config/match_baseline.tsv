@@ -60,7 +60,7 @@ inputdeviceconfig	1	0
 kitchenslime	1	0
 logictypetable	1	0
 mapmgr	7	7
-netmgr	31	8
+netmgr	31	14
 netmgrerror	1	1
 registryhelper	8	8
 rezmgr	10	6
@@ -719,16 +719,22 @@ mapmgr	??1CMapMgr@@QAE@XZ	100.0000	100.0000	2	5b358cad9904
 mapmgr	?Reset@CMapMgr@@UAEXXZ	100.0000	100.0000	2	96ea2164f0ea
 netmgr	?AnnounceVersion@CNetMgr@@QAEXH@Z	90.1000	90.1000	1	99df7850b12d
 netmgr	?ApplyCmdDelayDefaults@CNetMgr@@QAEXXZ	100.0000	100.0000	3	bd7373f72f8a
+netmgr	?EnumSessions@CNetMgr@@QAEHPAX0@Z	100.0000	100.0000	1	d7a8f6d41b15
 netmgr	?FindPlayerById@CNetMgr@@QAEPAUCNetPlayerEntry@@H@Z	87.6923	87.6923	1	3ab32af52472
 netmgr	?FrameSyncWait@CNetMgr@@QAEIXZ	70.7250	70.7250	1	c7efe8cc95dc
 netmgr	?GetMaxAckLatency@CNetMgr@@QAEIXZ	100.0000	100.0000	1	c106f124f023
+netmgr	?GetPlayerData@CNetMgr@@QAEPAXH@Z	100.0000	100.0000	1	0c08706cf888
 netmgr	?HandleVersionCheck@CNetMgr@@QAEXPAUCNetVersionMsg@@@Z	100.0000	100.0000	1	3c3eeec26b6e
 netmgr	?OnDropPlayer@CNetMgr@@QAEXXZ	100.0000	100.0000	1	3aeff4e852fe
 netmgr	?OnMultiOptions@CNetMgr@@QAEXXZ	100.0000	100.0000	2	adfe03071b8f
 netmgr	?OnMultiPause@CNetMgr@@QAEXXZ	100.0000	100.0000	2	64151f8dfb3a
 netmgr	?OnOutOfSync@CNetMgr@@QAEXXZ	100.0000	100.0000	2	62cf1e4f4cdf
+netmgr	?RemovePlayerObj@CNetMgr@@QAEHPAVCNetPlayerObj@@@Z	100.0000	100.0000	1	93455295c591
 netmgr	?ReportAckLatency@CNetMgr@@QAEXXZ	100.0000	100.0000	1	138d0dd5df3d
 netmgr	?ResetPlayerCommands@CNetMgr@@QAEHH@Z	92.7632	92.7632	1	e2c5808a32ad
+netmgr	?SetData@CNetMgr@@QAEJHHHHH@Z	100.0000	100.0000	1	21583eb47275
+netmgr	?SetGroupData2@CNetMgr@@QAEJPAUCNetPlayerEntry@@0HHH@Z	100.0000	100.0000	1	aac7b7701f61
+netmgr	?SetGroupDataFrom@CNetMgr@@QAEJPAUCNetPlayerEntry@@HHH@Z	100.0000	100.0000	1	65dfc32716ea
 netmgr	?Stub_0b5460@CNetMgr@@QAEXXZ	0.0696	0.0696	1	e38c203badd0
 netmgr	?Stub_0b6000@CNetMgr@@QAEXXZ	3.7037	3.7037	1	1992ff20e6db
 netmgr	?Stub_0b78b0@CNetMgr@@QAEXXZ	0.9346	0.9346	1	27d1d23cfed8
@@ -741,12 +747,6 @@ netmgr	?Stub_0bc460@CNetMgr@@QAEXXZ	0.6098	0.6098	1	7f569bf9f867
 netmgr	?Stub_1780b0@CNetMgr@@QAEXXZ	0.5333	0.5333	1	8cce16174436
 netmgr	?Stub_178280@CNetMgr@@QAEXXZ	1.7391	1.7391	1	960076c6dc43
 netmgr	?Stub_1782d0@CNetMgr@@QAEXXZ	0.7692	0.7692	1	3d5e6ab20d5b
-netmgr	?Stub_178e20@CNetMgr@@QAEXXZ	1.8182	1.8182	1	d73ccc988574
-netmgr	?Stub_178eb0@CNetMgr@@QAEXXZ	1.9048	1.9048	1	900c6a27e881
-netmgr	?Stub_178ef0@CNetMgr@@QAEXXZ	1.0256	1.0256	1	03dc6d8ca6e2
-netmgr	?Stub_178fc0@CNetMgr@@QAEXXZ	1.4815	1.4815	1	5ba1d15cabe5
-netmgr	?Stub_179090@CNetMgr@@QAEXXZ	1.2903	1.2903	1	ef65931c1dce
-netmgr	?Stub_179130@CNetMgr@@QAEXXZ	1.0526	1.0526	1	182a2217e439
 netmgr	?WaitForConnect@CNetMgr@@QAEHXZ	74.0809	74.0809	1	5a30ba0aa46f
 netmgrerror	?ReportError@CNetMgr@@SAXPADHJPAX@Z	100.0000	100.0000	1	8939117d3c60
 registryhelper	?Close@RegistryHelper@Utils@@QAEXXZ	100.0000	100.0000	2	3006effbcfa9

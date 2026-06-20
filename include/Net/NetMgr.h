@@ -15,6 +15,7 @@
 #define NET_NETMGR_H
 
 #include <Utils/RegistryHelper.h>
+#include <Gruntz/CObList.h>
 
 // ---------------------------------------------------------------------------
 // Minimal Win32 surface (no <windows.h> - keep the visible symbol set small;
@@ -228,6 +229,49 @@ struct CNetSubObject {
     CNetCmdQueue *m_6c;                 // +0x6c  the command-dispatch queue
 };
 
+// ---------------------------------------------------------------------------
+// The DirectPlay session interface CNetMgr keeps at +0x18 (an IDirectPlay4-shaped
+// COM object). The 0x178xxx wrapper run reaches it through its vtable: each
+// wrapper does `this->m_18->vtbl->Method(this->m_18, args...)` so the
+// `call *off(ecx)` indirect form is what retail emits (the engine never link-
+// resolves these - they are runtime COM slots). Only the slots the wrappers call
+// are pinned; everything else is opaque padding. COM convention => __stdcall with
+// the interface pointer as the first (hidden `this`) argument.
+//   +0x38 (slot 14)  Enum2     (struct*, ctx)               -> HRESULT
+//   +0x50 (slot 20)  GetData2  (id, lpData, lpSize, fl)     -> HRESULT
+//   +0x68 (slot 26)  SetData5  (a, b, c, d, e)              -> HRESULT
+// ---------------------------------------------------------------------------
+struct IDirectPlay4Z {
+    struct Vtbl {
+        char m_pad0[0x38];
+        long(__stdcall *Enum2)(IDirectPlay4Z *, void *desc, void *ctx);   // +0x38
+        char m_pad3c[0x50 - 0x3c];
+        long(__stdcall *GetData2)(IDirectPlay4Z *, int id, void *lpData,
+                                  unsigned long *lpSize, unsigned long fl); // +0x50
+        char m_pad54[0x68 - 0x54];
+        long(__stdcall *SetData5)(IDirectPlay4Z *, int a, int b, int c,
+                                  int d, int e);                          // +0x68
+    } *vtbl;
+};
+
+// ---------------------------------------------------------------------------
+// A managed player object the m_54 list holds. RemovePlayerObj (0x178e20) tears
+// one down: it calls the object's vtable slot 1 (a self-destruct/scalar-deleting
+// dtor taking a single flag arg) and then unlinks the object from the m_54
+// CObList using the cached __POSITION the object stores at +0x20. Modeled as a
+// polymorphic class so `obj->SelfDestruct(1)` emits the thiscall virtual
+// dispatch (slot 1 == +0x4); the virtual is never defined so no vtable is
+// emitted in this TU.
+// ---------------------------------------------------------------------------
+class CNetPlayerObj {
+public:
+    virtual void Slot00();              // +0x00
+    virtual void SelfDestruct(int flag); // +0x04  slot 1 (self-destruct)
+
+    char        m_pad4[0x20 - 0x4];     // +0x04
+    __POSITION *m_20;                   // +0x20  cached list position
+};
+
 class CNetMgr {
 public:
     void OnMultiOptions();
@@ -237,6 +281,22 @@ public:
     unsigned GetMaxAckLatency();
     void ReportAckLatency();
     CNetPlayerEntry *FindPlayerById(int id);
+
+    // The DirectPlay session-management wrapper run (engine CNetMgr base;
+    // ~0x178xxx). Each thin wrapper calls one IDirectPlay4 vtable slot on the
+    // m_18 interface and, on a nonzero HRESULT, routes it through the static
+    // ReportError diagnostic with this TU's __FILE__/__LINE__.
+    int   RemovePlayerObj(CNetPlayerObj *obj);         // 0x178e20
+    void *GetPlayerData(int id);                       // 0x178eb0
+    long  SetGroupData2(CNetPlayerEntry *a, CNetPlayerEntry *b,
+                        int c, int d, int e);           // 0x178ef0
+    long  SetData(int a, int b, int c, int d, int e);  // 0x178fc0
+    long  SetGroupDataFrom(CNetPlayerEntry *a, int c, int d, int e); // 0x179090
+    int   EnumSessions(void *desc, void *ctx);         // 0x179130
+
+    // The diagnostic error reporter (lives in the netmgrerror TU; static
+    // __cdecl). Declared here so the wrappers can route HRESULTs through it.
+    static void ReportError(char *file, int line, long hr, void *hWnd);
 
     // Version-check cluster (engine CNetMgr base; ~0xbd0xx). HandleVersionCheck
     // compares the host packet's version pair against the two locals and, on a
@@ -281,10 +341,15 @@ public:
 
     char       m_pad0[4];              // +0x000
     void      *m_4;                     // +0x004
-    char       m_pad8[0x1c - 0x8];
+    char       m_pad8[0x18 - 0x8];
+    IDirectPlay4Z *m_18;                // +0x018  the DirectPlay session interface
     int        m_1c;                    // +0x01c
     char       m_pad20[0x58 - 0x20];
-    CNetPlayerNode *m_58;               // +0x58  head of the player list
+    // The managed-player-object list (a by-value CObList embedded at +0x54). Its
+    // 0x1c-byte body spans +0x54..+0x70; the +0x58 head node ptr below is the
+    // CObList's own m_pHead (what FindPlayerById walks). Modeled as the head
+    // pointer here; RemovePlayerObj reaches the embedded CObList via a +0x54 cast.
+    CNetPlayerNode *m_58;               // +0x58  head of the player list (CObList m_pHead)
     char       m_pad5c[0x520 - 0x5c];
     CNetSession *m_520;                 // +0x520  the DirectPlay session sub-object
     CNetMgr   *m_524;                   // +0x524  peer net-manager (owns the player list)
