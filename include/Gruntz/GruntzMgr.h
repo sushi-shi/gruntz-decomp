@@ -28,6 +28,21 @@ struct CGruntzMgrOptions {
     char m_pad[0x238];
 };
 
+// Minimal IDirectPlayLobby-shaped COM surface used by
+// InitializeLobbyConnectionSettings: only the two vtable slots it calls are
+// needed - Release (slot 2, +0x8) and GetConnectionSettings (slot 8, +0x20,
+// called twice in the size-probe / fill-buffer idiom). The call rel32/IAT
+// displacements reloc-mask; only the slot offsets + arg shapes are load-bearing.
+struct IDirectPlayLobbyZ {
+    struct Vtbl {
+        void *slot0, *slot1;
+        long(__stdcall *Release)(IDirectPlayLobbyZ *);          // +0x08
+        void *slot3, *slot4, *slot5, *slot6, *slot7;
+        long(__stdcall *GetConnectionSettings)(IDirectPlayLobbyZ *,
+            unsigned long appId, void *lpData, unsigned long *lpdwSize); // +0x20
+    } *vtbl;
+};
+
 class CGruntzMgr : public WAP32::CGameMgr {
 public:
     CGruntzMgr();
@@ -37,6 +52,8 @@ public:
     void UnknownClose();                         // @0x0855e0 (member teardown; stubbed)
     void ReportError(WPARAM wParam, LPARAM lParam); // @0x08dc60  -> m_8->vtbl[0x1c]
     char GetGruntzDriveLetter();                 // @0x08fa70  (memoised CD letter)
+    int  InitializeLobbyConnectionSettings();    // @0x08eca0 (DirectPlay lobby connect)
+    CString BuildMoviePath(int movie);           // @0x08ff30 (per-movie path on the CD)
 
     // --- members (offsets relative to `this`; base CGameMgr occupies 0x00..0x2c) ---
     int   m_2c, m_30, m_34, m_38, m_3c, m_40, m_44, m_48, m_4c, m_50; // +0x2c..+0x50
@@ -49,8 +66,8 @@ public:
     int   m_9c, m_a0, m_a4, m_a8, m_ac, m_b0, m_b4; // +0x9c..+0xb4
     int   m_b8;                  // +0xb8  (=1 in ctor)
     int   m_bc;                  // +0xbc
-    int   m_c0;                  // +0xc0
-    int   m_c4;                  // +0xc4
+    IDirectPlayLobbyZ *m_c0;     // +0xc0  the lobby interface (Released/recreated)
+    void *m_c4;                  // +0xc4  the IDirectPlay interface from Connect
     CString m_strC8;             // +0xc8  (EH state 0)
     int   m_cc;                  // +0xcc  (=0x1e in ctor)
     char  m_d0;                  // +0xd0  cached CD drive letter

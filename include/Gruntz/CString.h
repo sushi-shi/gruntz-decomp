@@ -16,6 +16,9 @@ public:
     const CString &operator=(const char *src);
     void Empty();
     void Format(const char *fmt, ...);
+    // MFC's CString::GetLength is inline: the length lives in the CStringData
+    // header just before the buffer, i.e. ((int*)m_pchData)[-2]  (`mov [ecx-8]`).
+    int GetLength() const { return ((const int *)m_pchData)[-2]; }
     // MFC's CString -> LPCTSTR is an inline accessor (a plain [this+0] load).
     operator const char *() const { return m_pchData; }
 

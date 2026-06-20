@@ -19,8 +19,38 @@
 namespace Utils {
 namespace WinAPI {
 char GetGruntzDriveLetter();
+int  FileExists(char *szPath);
 }
 }
+
+// External DirectPlay surface used by InitializeLobbyConnectionSettings. The
+// DPLAYX export DirectPlayLobbyCreate (ordinal 4) and CNetMgr::ReportError are
+// reached as `call rel32`/[IAT] - the displacement reloc-masks, so only the
+// arg shapes are load-bearing. `m_c4` (the connection-settings buffer) is freed
+// through a small NAFXCW-style operator-delete helper (out-of-line, reloc-
+// masked); modelled as a plain free function.
+extern "C" __declspec(dllimport) long __stdcall DirectPlayLobbyCreate(
+    void *lpguidDSP, IDirectPlayLobbyZ **lplpDPL, void *pUnk,
+    void *lpData, unsigned long dwDataSize);
+
+class CNetMgr {
+public:
+    static void ReportError(char *file, int line, long hr, void *hWnd);
+};
+
+void FreeConnectionSettings(void *p);   // FUN_005b9b82 (operator delete wrapper)
+
+void *operator new(unsigned int);
+
+// KERNEL32 surface (BuildMoviePath probes the working directory). Minimal
+// __declspec(dllimport) __stdcall decl -> the FF15 [IAT] indirect call form.
+typedef unsigned long DWORD;
+extern "C" __declspec(dllimport) DWORD __stdcall GetCurrentDirectoryA(
+    DWORD nBufferLength, char *lpBuffer);
+
+// The engine's __cdecl CString-formatting helper (sprintf-style into a CString
+// destination; reloc-masked - only the call shape is load-bearing).
+extern "C" void Format(CString *dst, const char *fmt, ...);
 
 // The embedded options object's ctor/dtor are out-of-line NAFXCW-style helpers
 // (FUN_0051f5a0 / FUN_0051f640); only the call (reloc-masked) + the 0x238 size
@@ -56,6 +86,124 @@ char CGruntzMgr::GetGruntzDriveLetter()
     m_d0 = Utils::WinAPI::GetGruntzDriveLetter();
     m_d4 = 1;
     return m_d0;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::InitializeLobbyConnectionSettings  (__thiscall)
+// One-shot (guarded by m_a0) acquisition of the DirectPlay lobby connection
+// settings the game was launched with: create an IDirectPlayLobby (m_c0), then
+// pull the launch-time connection-settings blob into a freshly allocated buffer
+// (m_c4) using the classic size-probe / fill-buffer two-call idiom. Every COM /
+// DPLAYX failure routes a CNetMgr::ReportError diagnostic (with this TU's file +
+// the call-site line) through the game window. m_9c records success (1) / failure
+// (0); the result also lands in eax for the call site.
+RVA(0x08eca0, 0x164)
+int CGruntzMgr::InitializeLobbyConnectionSettings()
+{
+    if (m_a0)
+        return m_9c;
+
+    m_a0 = 1;
+    m_9c = 0;
+
+    if (m_c0) {
+        m_c0->vtbl->Release(m_c0);
+        m_c0 = 0;
+    }
+
+    long hr = DirectPlayLobbyCreate(0, &m_c0, 0, 0, 0);
+    if (hr) {
+        CNetMgr::ReportError("C:\\Proj\\Gruntz\\GruntzMgr.cpp", 0x120d, hr,
+                             ((CGameWnd *)m_4)->m_4);
+        return 0;
+    }
+    if (!m_c0)
+        return 0;
+
+    if (m_c4) {
+        FreeConnectionSettings(m_c4);
+        m_c4 = 0;
+    }
+
+    unsigned long dwSize = 0;
+    hr = m_c0->vtbl->GetConnectionSettings(m_c0, 0, 0, &dwSize);
+    if (hr != 0 && hr != (long)0x8877001e) {   // !DPERR_BUFFERTOOSMALL
+        CNetMgr::ReportError("C:\\Proj\\Gruntz\\GruntzMgr.cpp", 0x1221, hr,
+                             ((CGameWnd *)m_4)->m_4);
+        m_c0->vtbl->Release(m_c0);
+        m_c0 = 0;
+        return 0;
+    }
+
+    m_c4 = operator new(dwSize);
+    if (!m_c4) {
+        m_c0->vtbl->Release(m_c0);
+        m_c0 = 0;
+        return 0;
+    }
+
+    hr = m_c0->vtbl->GetConnectionSettings(m_c0, 0, m_c4, &dwSize);
+    if (hr) {
+        CNetMgr::ReportError("C:\\Proj\\Gruntz\\GruntzMgr.cpp", 0x1232, hr,
+                             ((CGameWnd *)m_4)->m_4);
+        m_c0->vtbl->Release(m_c0);
+        m_c0 = 0;
+        return 0;
+    }
+
+    m_9c = 1;
+    return m_9c;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::BuildMoviePath  (__thiscall; returns CString by value; /GX EH)
+// Resolves the on-disk path of a numbered intro/cutscene .vob: maps the movie
+// id to its file name, then probes first the working directory ("<cwd>\<name>")
+// and, failing that, the Movies\ folder on the Gruntz CD ("<letter>:\Movies\
+// <name>"), returning the first that exists (empty CString if neither, or for an
+// unknown id). The two CString temps + the szPath buffer give the /GX frame.
+RVA(0x08ff30, 0x1ca)
+CString CGruntzMgr::BuildMoviePath(int movie)
+{
+    CString name;
+
+    switch (movie) {
+    case -1: name = "Logo.vob";    break;
+    case 0:  name = "Gruntz0.vob"; break;
+    case 1:  name = "Gruntz1.vob"; break;
+    case 2:  name = "Gruntz2.vob"; break;
+    case 3:  name = "Gruntz3.vob"; break;
+    case 4:  name = "Gruntz4.vob"; break;
+    case 5:  name = "Gruntz5.vob"; break;
+    case 6:  name = "Gruntz6.vob"; break;
+    case 7:  name = "Gruntz7.vob"; break;
+    case 8:  name = "Gruntz8.vob"; break;
+    }
+
+    if (name.GetLength() == 0)
+        return name;                         // unknown id
+
+    CString path;
+    char szDir[256];
+
+    // First try the working directory ("<cwd>\<name>").
+    if (GetCurrentDirectoryA(0xff, szDir)) {
+        Format(&path, "%s\\%s", szDir, (const char *)name);
+        if (!Utils::WinAPI::FileExists((char *)(const char *)path))
+            path.Empty();
+    }
+
+    // Fall back to the Movies\ folder on the Gruntz CD.
+    if (path.GetLength() == 0) {
+        Format(&path, "%c:\\Movies\\%s", GetGruntzDriveLetter(), (const char *)name);
+        if (path.GetLength() == 0)
+            return path;
+    }
+
+    if (!Utils::WinAPI::FileExists((char *)(const char *)path))
+        path.Empty();
+
+    return path;
 }
 
 // CGruntzMgr::UnknownClose (@0x0855e0) is the large member-teardown method the

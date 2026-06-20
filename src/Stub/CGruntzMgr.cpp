@@ -12,11 +12,9 @@ public:
     CGruntzMgr();
     void vector_deleting_destructor();
     void UnknownClose();
-    void InitializeLobbyConnectionSettings();
     void PerFrameTick();
     void VirtualUnknownMethod06();
     void InitCFileIOMember();
-    void BuildMoviePath();
 };
 
 // @confidence: high
@@ -38,12 +36,6 @@ RVA(0x0855e0, 0x448)
 void CGruntzMgr::UnknownClose() {}
 
 // @confidence: high
-// @source: tomalla
-// @stub
-RVA(0x08eca0, 0x164)
-void CGruntzMgr::InitializeLobbyConnectionSettings() {}
-
-// @confidence: high
 // @source: call-xref
 // @stub
 RVA(0x08f620, 0x51)
@@ -60,9 +52,3 @@ void CGruntzMgr::VirtualUnknownMethod06() {}
 // @stub
 RVA(0x08fea0, 0x6d)
 void CGruntzMgr::InitCFileIOMember() {}
-
-// @confidence: high
-// @source: string-xref
-// @stub
-RVA(0x08ff30, 0x1ca)
-void CGruntzMgr::BuildMoviePath() {}
