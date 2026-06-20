@@ -24,8 +24,7 @@ signature for length/overrun accounting (it is not part of the function body).
 """
 import os, sys, struct, pickle, json, csv
 from collections import defaultdict
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import pe_text, trim_pad
+from gruntz.analysis.fid.common import pe_text, trim_pad
 
 MIN_LEN    = 8     # minimum sig length to attempt primary matching
 MIN_FIXED  = 6     # minimum fixed (non-wildcard) bytes to attempt

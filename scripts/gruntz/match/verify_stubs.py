@@ -29,7 +29,7 @@ from pathlib import Path
 
 
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
-            Path(__file__).resolve().parent.parent)
+            Path(__file__).resolve().parents[3])
 SRC = REPO / "src"
 REQUIRED_TAGS = ("confidence", "source")
 TAG_RE = re.compile(r"^\s*// @([A-Za-z_-]+):\s*(.*?)\s*$")

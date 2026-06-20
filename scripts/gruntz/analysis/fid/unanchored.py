@@ -17,8 +17,7 @@ Report newly-found (rva,name,lib) with the same HIGH/AMBIG logic.
 """
 import os,sys,struct,pickle,csv,json
 from collections import defaultdict
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import pe_text, trim_pad
+from gruntz.analysis.fid.common import pe_text, trim_pad
 
 MIN_TRIM=24
 MIN_FIXED=16

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-# ghidra_decomp_export.py - decompiler + xref dump for a list of target RVAs.
+# decomp_export.py - decompiler + xref dump for a list of target RVAs.
 #
-# The "decomp-xref" half of the labeling loop (companion to string_xref_labels.py).
+# The "decomp-xref" half of the labeling loop (companion to gruntz.analysis.string_xref).
 # String refs say WHICH data a function touches; the decompiler says what it DOES:
 # this reads, for each target, the Ghidra decompiler C output plus caller/callee
 # xrefs, exposing calling convention, arg count, virtual-slot identity (vfunc_N
@@ -15,8 +15,8 @@
 #   cp -r build/ghidra-named build/ghidra-decomp
 #   printf '0x141400\n0x0b82e0\n' > /tmp/decomp_targets.txt
 #   analyzeHeadless build/ghidra-decomp gruntz -process GRUNTZ.EXE -noanalysis \
-#       -readOnly -scriptPath build/ghidra-decomp/scripts \
-#       -postScript ghidra_decomp_export.py
+#       -readOnly -scriptPath scripts/gruntz/ghidra \
+#       -postScript decomp_export.py
 # Reads /tmp/decomp_targets.txt (one 0xRVA per line); writes /tmp/decomp_out.txt.
 # Needs Ghidra 11.4.2 (Jython); flake's default `ghidra` is 11.4.2.
 #@category Gruntz
@@ -65,4 +65,4 @@ for rva in targets:
     except Exception as e:
         w("/* decompile exception: %s */" % e)
 out.close()
-print("ghidra_decomp_export: wrote /tmp/decomp_out.txt for %d targets" % len(targets))
+print("decomp_export: wrote /tmp/decomp_out.txt for %d targets" % len(targets))

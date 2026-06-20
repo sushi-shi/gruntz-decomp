@@ -27,7 +27,7 @@ docs/link-order-investigation.md):
      + its game-side glue) and should be split.
 
 Usage:
-    python3 scripts/analysis/link_order.py \
+    python3 -m gruntz.analysis.link_order \
         --map build/exe/GRUNTZ.candidate.map --names build/gen/symbol_names.csv
 """
 

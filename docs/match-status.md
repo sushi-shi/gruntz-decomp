@@ -1,8 +1,8 @@
 # match-status — queriable matching progress & regressions
 
-`scripts/match_status.py` makes one question cheap to answer:
+`python -m gruntz.match.status` makes one question cheap to answer:
 
-> **did anything regress?** → `scripts/match_status.py check`
+> **did anything regress?** → `python -m gruntz.match.status check`
 
 It is a small, PDB-free match tracker. We have no target PDBs and only a few
 dozen units, so instead of a full database with interning + declaration records
@@ -12,7 +12,7 @@ the history store.
 ## The model
 
 objdiff already emits a fuzzy% per function in `build/objdiff/report.json`
-(`units[].functions[].fuzzy_match_percent`). `match_status.py` remembers the
+(`units[].functions[].fuzzy_match_percent`). `gruntz.match.status` remembers the
 **best-ever** fuzzy% per function in `config/match_baseline.tsv` and reports any
 function whose freshly-built fuzzy% sits below its recorded best.
 
@@ -31,7 +31,7 @@ Two ideas, a best-ever high-water mark gated by a source fingerprint:
 
 ### Per-function fingerprints (clangd)
 
-The fingerprint is **per function**, not per `.cpp`. `scripts/func_fingerprints.py`
+The fingerprint is **per function**, not per `.cpp`. `gruntz.match.fingerprints`
 asks clangd (`textDocument/documentSymbol`, hierarchical) for each function's
 source extent and hashes that range's text. Whole-`.cpp` hashing was too coarse:
 editing one function would reset the high-water mark of every *sibling* in the
@@ -94,20 +94,20 @@ so a diff shows units growing. `git diff config/match_baseline.tsv` after an
 Run inside `nix develop` (the banner goes to stderr, so `--json` pipes cleanly):
 
 ```
-scripts/match_status.py check                 # regressions vs baseline (non-fatal)
-scripts/match_status.py check --all           # also show improve/touched/new
-scripts/match_status.py check --strict         # exit 1 if regressions (CI gate)
-scripts/match_status.py status --below 99      # per-function current %, worst first
-scripts/match_status.py status --by-tries      # most-worked-on functions first
-scripts/match_status.py status --unit rezmgr   # filter by unit / --grep <name>
-scripts/match_status.py summary                # 3-metric report vs the full engine
-scripts/match_status.py summary --write-readme  # refresh the README score block
-scripts/match_status.py update                 # recompute best/cur/tries, write baseline
-scripts/match_status.py update --accept-regressions  # bless current as the new floor
-scripts/match_status.py diff <revA> [<revB>]   # what moved between two commits' baselines
-scripts/match_status.py diff HEAD~5 --all      # ... incl. TOUCHED; revB defaults to working tree
+python -m gruntz.match.status check            # regressions vs baseline (non-fatal)
+python -m gruntz.match.status check --all       # also show improve/touched/new
+python -m gruntz.match.status check --strict    # exit 1 if regressions (CI gate)
+python -m gruntz.match.status status --below 99 # per-function current %, worst first
+python -m gruntz.match.status status --by-tries # most-worked-on functions first
+python -m gruntz.match.status status --unit rezmgr  # filter by unit / --grep <name>
+python -m gruntz.match.status summary           # 3-metric report vs the full engine
+python -m gruntz.match.status summary --write-readme  # refresh the README score block
+python -m gruntz.match.status update            # recompute best/cur/tries, write baseline
+python -m gruntz.match.status update --accept-regressions  # bless current as the new floor
+python -m gruntz.match.status diff <revA> [<revB>]  # what moved between two commits' baselines
+python -m gruntz.match.status diff HEAD~5 --all # ... incl. TOUCHED; revB defaults to working tree
 
-scripts/func_fingerprints.py [--all] [-v]      # refresh the per-function cache (needs .#build)
+python -m gruntz.match.fingerprints [--all] [-v]  # refresh the per-function cache (needs .#build)
 ```
 
 `diff` reads each side from `git show <rev>:config/match_baseline.tsv` and reports
@@ -155,7 +155,7 @@ is a review signal that exits 0 by default, and `gruntz build` only prints it.
 2. `check` flags any function below its best. Either fix the regression, or —
    if the drop is intentional/uncontrollable — `update --accept-regressions` to
    set the new floor, then commit the baseline.
-3. When you land an improvement, `scripts/match_status.py update` raises the
+3. When you land an improvement, `python -m gruntz.match.status update` raises the
    recorded best and you commit `config/match_baseline.tsv` alongside the code.
    Reviewers see the % movement in the diff.
 

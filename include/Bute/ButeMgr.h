@@ -6,7 +6,7 @@
 // Minimal Monolith-faithful reconstruction sufficient to byte-match the leaf
 // getters + parser. Field names are placeholders (m_<hexoffset>); only the
 // OFFSETS + code bytes are load-bearing (campaign doctrine). Recovered from the
-// getter/parser bodies (scripts/dump_target.py):
+// getter/parser bodies (python -m gruntz.analysis.dump_target):
 //
 //   +0x08  m_lineNo  : int     - current source line (the `%d` in error msgs).
 //   +0x18  m_tree    : the parsed store root (CButeTree). The getters do

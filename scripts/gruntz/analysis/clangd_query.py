@@ -3,11 +3,11 @@
 navigation for humans and agents without an editor: where is this defined,
 who references it, what is its type.
 
-  python3 scripts/clangd_query.py symbol <fuzzy-name>           # workspace symbols
-  python3 scripts/clangd_query.py def  <file> <line> [<col>]    # definition
-  python3 scripts/clangd_query.py refs <file> <line> [<col>]    # references
-  python3 scripts/clangd_query.py hover <file> <line> [<col>]   # type/doc at point
-  python3 scripts/clangd_query.py index                         # build the background
+  python3 -m gruntz.analysis.clangd_query symbol <fuzzy-name>    # workspace symbols
+  python3 -m gruntz.analysis.clangd_query def  <file> <line> [<col>]   # definition
+  python3 -m gruntz.analysis.clangd_query refs <file> <line> [<col>]   # references
+  python3 -m gruntz.analysis.clangd_query hover <file> <line> [<col>]  # type/doc at point
+  python3 -m gruntz.analysis.clangd_query index                 # build the background
                                                                 # index, wait until done
 
 Lines/columns are 1-based (as printed by grep/editors). When <col> is omitted,

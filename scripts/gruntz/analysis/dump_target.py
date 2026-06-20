@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""dump_target.py - dump a target function for matching: bytes + disasm + relocs.
+"""gruntz.analysis.dump_target - dump a target function for matching: bytes + disasm + relocs.
 
 For a matcher: given an RVA (or a name in functions.csv/symbols.csv), print the
 function's size, raw bytes, an RVA-aligned x86 disassembly (objdump), and the
@@ -8,9 +8,9 @@ operands: vftables, globals, strings, imports). Calls (E8/E9 rel32) are shown by
 objdump with absolute RVA targets thanks to --adjust-vma.
 
 Usage (inside nix develop .#build):
-    python3 scripts/dump_target.py 0x13d8c0 [0x13dc20 ...]
-    python3 scripts/dump_target.py CGameApp::CloseResources
-    python3 scripts/dump_target.py --no-disasm 0x13d8c0      # bytes+relocs only
+    python3 -m gruntz.analysis.dump_target 0x13d8c0 [0x13dc20 ...]
+    python3 -m gruntz.analysis.dump_target CGameApp::CloseResources
+    python3 -m gruntz.analysis.dump_target --no-disasm 0x13d8c0      # bytes+relocs only
 """
 import os, sys, struct, csv, subprocess, shutil
 from pathlib import Path

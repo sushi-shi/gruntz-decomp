@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# string_xref_labels.py - string-xref labeling aid for source @stub metadata.
+# gruntz.analysis.string_xref - string-xref labeling aid for source @stub metadata.
 #
 # Mechanically recovers, for every Ghidra-recognised function, the .rdata/.data
 # string literals it directly references (an immediate 4-byte LE VA equal to a
@@ -15,11 +15,13 @@
 #
 # Inputs : binaries/retail_en/GRUNTZ.EXE  (v1.0 EN, md5 81c7f648...)
 #          build/ghidra-named/exports/functions.csv  (Ghidra function boundaries)
-# Usage  : nix develop --command python3 scripts/string_xref_labels.py [--rva 0x141400 ...]
+# Usage  : nix develop --command python3 -m gruntz.analysis.string_xref [--rva 0x141400 ...]
 #          (no args -> ranked report of bare FUN_ funcs with distinctive strings)
 import struct, csv, re, bisect, sys, os
+from pathlib import Path
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT = str(next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
+                Path(__file__).resolve().parents[3]))
 BIN  = os.path.join(ROOT, "binaries/retail_en/GRUNTZ.EXE")
 FUNCS= os.path.join(ROOT, "build/ghidra-named/exports/functions.csv")
 IMAGE_BASE = 0x400000

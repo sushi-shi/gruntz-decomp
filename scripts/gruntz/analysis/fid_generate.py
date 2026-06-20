@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""fid_generate.py - regenerate config/library_labels.csv (the FID library labels).
+"""gruntz.analysis.fid_generate - regenerate config/library_labels.csv (the FID library labels).
 
 `config/library_labels.csv` (rva,name,lib,confidence,source) is the TRACKED output
 of a custom **masked-byte COFF-signature matcher** (NOT Ghidra FID). `apply.py`
@@ -18,12 +18,12 @@ non-deterministic and finds the wrong code). To reproduce the committed CSV you 
 an 11.4.2 export; until then, treat the tracked CSV as canonical and do NOT
 overwrite it with a 12.0.4 run.
 
-Pipeline (stages under scripts/analysis/fid/):
+Pipeline (stages in the gruntz.analysis.fid subpackage):
   1. unpack .obj members from $MSVC_DIR/lib/{LIBCMT,NAFXCW}.LIB   (llvm-ar)
-  2. fid/coff_sig.py   -> build/fid/sigs.pkl       (masked per-symbol signatures)
-  3. fid/classify.py   -> build/fid/library_labels.csv  (anchored: matches at known
-                          function starts; prepends zlib from build/gen/symbol_names.csv)
-  4. fid/unanchored.py -> build/fid/offstart_matches.csv (bodies at starts Ghidra missed)
+  2. fid.coff_sig   -> build/fid/sigs.pkl       (masked per-symbol signatures)
+  3. fid.classify   -> build/fid/library_labels.csv  (anchored: matches at known
+                       function starts; prepends zlib from build/gen/symbol_names.csv)
+  4. fid.unanchored -> build/fid/offstart_matches.csv (bodies at starts Ghidra missed)
   5. merge (3)+(4) with a `source` column -> config/library_labels.csv
 
 Stages 2-4 (coff_sig/classify/unanchored) are the original matcher, verbatim. The
@@ -38,8 +38,7 @@ import csv, os, shutil, subprocess, sys
 from pathlib import Path
 
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
-            Path(__file__).resolve().parent.parent)
-FID = Path(__file__).resolve().parent / "fid"            # stage scripts
+            Path(__file__).resolve().parents[3])
 WORK = REPO / "build" / "fid"                            # scratch (gitignored)
 FUNCS = REPO / "build" / "ghidra-enrich" / "exports" / "functions.csv"
 OUT = REPO / "config" / "library_labels.csv"             # tracked, canonical
@@ -79,13 +78,15 @@ def main() -> None:
 
     # 2. extract masked signatures
     sigs = WORK / "sigs.pkl"
-    sh(sys.executable, FID / "coff_sig.py", WORK / "libcmt_objs", WORK / "nafxcw_objs", sigs, 1)
+    sh(sys.executable, "-m", "gruntz.analysis.fid.coff_sig",
+       WORK / "libcmt_objs", WORK / "nafxcw_objs", sigs, 1)
 
-    # 3. anchored matches (classify.py also writes WORK/library_labels.csv next to its out-csv)
-    sh(sys.executable, FID / "classify.py", sigs, exe, FUNCS, WORK / "matches.csv")
+    # 3. anchored matches (classify also writes WORK/library_labels.csv next to its out-csv)
+    sh(sys.executable, "-m", "gruntz.analysis.fid.classify", sigs, exe, FUNCS, WORK / "matches.csv")
 
     # 4. off-start matches (bodies Ghidra did not carve)
-    sh(sys.executable, FID / "unanchored.py", sigs, exe, FUNCS, WORK / "offstart_matches.csv")
+    sh(sys.executable, "-m", "gruntz.analysis.fid.unanchored",
+       sigs, exe, FUNCS, WORK / "offstart_matches.csv")
 
     # 5. merge with a `source` column -> config/library_labels.csv
     rows, seen = [], set()

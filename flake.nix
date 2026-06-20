@@ -165,8 +165,13 @@
 
       # `gruntz` as a real PATH executable so the CLI works in ANY shell (bash, fish,
       # zsh) - a shellHook function would not survive `nix develop --command fish`.
+      # The CLI is `python -m gruntz` (gruntz.__main__ -> gruntz.cli.main); scripts/
+      # is THE package root, put on PYTHONPATH so the package + every `python -m
+      # gruntz.<x>` child import resolves.
       gruntz-cli = pkgs.writeShellScriptBin "gruntz" ''
-        exec python3 "''${GRUNTZ_DIR:-$PWD}/scripts/gruntz.py" "$@"
+        d="''${GRUNTZ_DIR:-$PWD}"
+        export PYTHONPATH="$d/scripts''${PYTHONPATH:+:$PYTHONPATH}"
+        exec python3 -m gruntz "$@"
       '';
 
       # Wrap nvim to auto-load the in-repo editor/nvim plugin (:Gruntz), leaving the
@@ -236,9 +241,12 @@
             export GRUNTZ_DIR="$PWD"
             export GRUNTZ_EXE="${gruntz-exe}"
             export GRUNTZ_CLANG="${pkgs.llvmPackages.clang-unwrapped}/bin/clang"
+            # scripts/ is THE package root: on PYTHONPATH so `python -m gruntz` and
+            # every `python -m gruntz.<x>` (cli/match/analysis tools) import it.
+            export PYTHONPATH="$GRUNTZ_DIR/scripts''${PYTHONPATH:+:$PYTHONPATH}"
 
             # Banner -> stderr so stdout stays clean for `nix develop --command`
-            # piping (e.g. gruntz status / match_status.py ... --json | jq).
+            # piping (e.g. gruntz status / python -m gruntz.match.status ... --json | jq).
             echo "[gruntz] target EXE : $GRUNTZ_EXE" >&2
             echo "[gruntz] tools      : vostok-delinker, objdiff(-cli), ghidra, llvm-pdbutil" >&2
             echo "[gruntz] clang      : $GRUNTZ_CLANG (unwrapped; ghidra_metadata_generate/gen_labels)" >&2
@@ -247,7 +255,7 @@
             ${nvimShimHook}
             if [ ! -f "$GRUNTZ_DIR/build/clangd/compile_commands.json" ]; then
               echo "[gruntz] clangd     : generating LSP compile DB (first entry) ..." >&2
-              python3 "$GRUNTZ_DIR/scripts/gruntz.py" clangd \
+              python3 -m gruntz clangd \
                 || echo "[gruntz] clangd     : failed - run 'gruntz clangd'" >&2
             fi
           '';
@@ -262,6 +270,9 @@
             export GRUNTZ_DIR="$PWD"
             export GRUNTZ_EXE="${gruntz-exe}"
             export GRUNTZ_CLANG="${pkgs.llvmPackages.clang-unwrapped}/bin/clang"
+            # scripts/ is THE package root: on PYTHONPATH so `python -m gruntz` and
+            # every `python -m gruntz.<x>` (cli/match/analysis tools) import it.
+            export PYTHONPATH="$GRUNTZ_DIR/scripts''${PYTHONPATH:+:$PYTHONPATH}"
 
             export WINEPREFIX="$GRUNTZ_DIR/build/wineprefix"   # generated state lives under build/
             export WINEDEBUG="fixme-all,err-kerberos"
@@ -294,7 +305,7 @@
               if [ ! -f "$GRUNTZ_DIR/build/ghidra-enrich/exports/functions.csv" ]; then
                 echo "[gruntz] init       : first-time setup - building the Ghidra DB (~minutes) ..." >&2
               fi
-              python3 "$GRUNTZ_DIR/scripts/gruntz.py" init \
+              python3 -m gruntz init \
                 || echo "[gruntz] init       : failed - fix + re-run 'gruntz init'" >&2
             fi
           '';

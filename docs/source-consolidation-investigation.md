@@ -9,9 +9,10 @@ This doc maps what exists today, where it duplicates, and a concrete plan to get
 to "annotate the source, regenerate everything."
 
 > **Where the code lives now (post-reorg).** The pipeline is driven by one CLI,
-> **`gruntz.py`** (subcommands `build`, `ghidra-refresh`, `init`, `labels`,
-> `structs`, `status`, `todo`). The steps were moved into a package after the
-> prose below was written; map the conceptual names used here to:
+> **`gruntz`** = `python -m gruntz` (`scripts/gruntz/cli.py`; subcommands `build`,
+> `ghidra-refresh`, `init`, `labels`, `structs`, `status`, `todo`). The steps were
+> moved into a package after the prose below was written; map the conceptual names
+> used here to:
 >
 > | prose name | actual path |
 > |---|---|
@@ -444,7 +445,7 @@ plus two files that shrink to nothing.
 - field offsets -> clang `-fdump-record-layouts`; **no `@offset`**
 - mangled names -> read from the base obj; **never hand-typed**
 - matched-function rows in `src/Stub/` -> derived from `src/`
-- `config/library_labels.csv` -> tracked FID output (regen: `scripts/analysis/fid_generate.py`)
+- `config/library_labels.csv` -> tracked FID output (regen: `python -m gruntz.analysis.fid_generate`)
 
 Steady state: per *matched function*, ~one `@address` line (plus the code); per
 *class*, zero offset bookkeeping — the declaration carries it.

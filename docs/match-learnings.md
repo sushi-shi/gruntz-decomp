@@ -215,7 +215,7 @@ fast-moving scratchpad. Newest at top within each section.
   `git push`. After each, the orchestrator refreshes the comprehension DB
   (`build/ghidra-named`) when the matcher pinned new names/types, so the next
   matcher stands on prior work ("shoulders of giants"), then re-runs
-  `scripts/analysis/gen_match_queue.py` to refill `docs/match-queue.md`.
+  `python -m gruntz.analysis.gen_match_queue` to refill `docs/match-queue.md`.
 - Per-function asm diff: `objdiff-cli diff -p build/objdiff -u <unit> <mangled-sym>
   -o - --format json-pretty`. Roll-up: `gruntz build`.
 

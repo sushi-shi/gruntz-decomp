@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""gruntz.py - the single entry point for the Gruntz matching pipeline.
+"""gruntz.cli - the single entry point for the Gruntz matching pipeline.
 
-Run inside the Nix dev shell:
+Run inside the Nix dev shell (the `gruntz` wrapper, or `python -m gruntz`):
 
-    nix develop .#build --command python3 gruntz.py build
-    nix develop         --command python3 gruntz.py status
+    nix develop .#build --command gruntz build
+    nix develop         --command gruntz status
 
 Subcommands
 -----------
@@ -48,7 +48,7 @@ import tomllib
 from pathlib import Path
 
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
-            Path(__file__).resolve().parent.parent)
+            Path(__file__).resolve().parents[2])
 SCRIPTS            = REPO / "scripts"
 PKG                = SCRIPTS / "gruntz"       # the pipeline package (grouped by area)
 BUILD              = PKG / "build"            # cc_wrap, labels, structs, synth_pdb, delink, ...
@@ -83,8 +83,20 @@ def tool(name: str) -> str:
     return shutil.which(name) or name  # bare name lets subprocess surface a clear error
 
 
+def _pkg_env() -> dict:
+    """os.environ with scripts/ guaranteed on PYTHONPATH, so child `python -m
+    gruntz.<x>` invocations import the package even if the shell did not export it
+    (the nix shells + the `gruntz` wrapper do, but keep the CLI self-contained)."""
+    env = dict(os.environ)
+    existing = env.get("PYTHONPATH", "")
+    if str(SCRIPTS) not in existing.split(os.pathsep):
+        env["PYTHONPATH"] = os.pathsep.join(p for p in (str(SCRIPTS), existing) if p)
+    return env
+
+
 def run(cmd: list, **kw) -> subprocess.CompletedProcess:
     log("$ " + " ".join(str(c) for c in cmd))
+    kw.setdefault("env", _pkg_env())
     return subprocess.run(cmd, check=True, cwd=str(REPO), **kw)
 
 
@@ -134,7 +146,7 @@ def cmd_build(args) -> None:
         die(f"no Ghidra exports ({GHIDRA_FUNCTIONS.relative_to(REPO)}) - run `gruntz init` first.")
     # Gate: the src/Stub @stub backlog is skipped by labels.py (engine_label_stubs),
     # so this is the only check on its address uniqueness + format. Fail fast.
-    run([sys.executable, str(REPO / "scripts" / "verify_stub_labels.py")])
+    run([sys.executable, "-m", "gruntz.match.verify_stubs"])
     ninja = tool("ninja")
     _start_wine_session()                 # boot Wine clean BEFORE ninja's -j fan-out
     try:
@@ -151,19 +163,18 @@ def cmd_build(args) -> None:
     # Non-fatal extras: refresh per-function source fingerprints (so regression
     # checks can tell an edited function from a collateral drop), rewrite the
     # README score block (3 metrics vs the full engine), and print regressions
-    # vs the committed best-% baseline. See scripts/match_status.py +
+    # vs the committed best-% baseline. See gruntz.match.status +
     # docs/match-status.md. None of these gate the build.
-    scripts = REPO / "scripts"
     if (REPO / "build" / "clangd" / "compile_commands.json").is_file():
-        subprocess.run([sys.executable, str(scripts / "func_fingerprints.py")],
-                       cwd=str(REPO))
-    subprocess.run([sys.executable, str(scripts / "match_status.py"),
+        subprocess.run([sys.executable, "-m", "gruntz.match.fingerprints"],
+                       cwd=str(REPO), env=_pkg_env())
+    subprocess.run([sys.executable, "-m", "gruntz.match.status",
                     "--report", str(REPORT), "summary", "--write-readme"],
-                   cwd=str(REPO), stdout=subprocess.DEVNULL)
+                   cwd=str(REPO), stdout=subprocess.DEVNULL, env=_pkg_env())
     if (REPO / "config" / "match_baseline.tsv").is_file():
         log("regressions vs baseline ...")
-        subprocess.run([sys.executable, str(scripts / "match_status.py"),
-                        "--report", str(REPORT), "check"], cwd=str(REPO))
+        subprocess.run([sys.executable, "-m", "gruntz.match.status",
+                        "--report", str(REPORT), "check"], cwd=str(REPO), env=_pkg_env())
 
 
 def cmd_labels(args) -> None:
@@ -288,7 +299,7 @@ def _build_ghidra_db(reimport: bool = False) -> None:
 
     apply.py CONSUMES the tracked config/{engine,library}_labels.csv - FID labels are
     NOT regenerated here (the committed config/library_labels.csv is canonical;
-    regenerate it explicitly with scripts/analysis/fid_generate.py).
+    regenerate it explicitly with `python -m gruntz.analysis.fid_generate`).
     """
     if GHIDRA_FUNCTIONS.exists() and not reimport:
         log(f"Ghidra exports present ({GHIDRA_FUNCTIONS.relative_to(REPO)}); "
@@ -404,7 +415,7 @@ def cmd_init(args) -> None:
 
 def cmd_status(args) -> None:
     if not REPORT.exists():
-        die(f"no report at {REPORT}; run `gruntz.py build` first")
+        die(f"no report at {REPORT}; run `gruntz build` first")
     summarize(json.loads(REPORT.read_text()))
 
 
@@ -416,7 +427,7 @@ def cmd_todo(args) -> None:
     symbol_names.csv, i.e. candidates to locate + annotate.
     """
     if not GEN_NAMES.exists():
-        die(f"no {GEN_NAMES}; run `gruntz.py build` or `labels` first")
+        die(f"no {GEN_NAMES}; run `gruntz build` or `labels` first")
     have = set()
     for line in GEN_NAMES.read_text().splitlines():
         p = line.split(",")
@@ -470,7 +481,7 @@ def _clang() -> str:
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(prog="gruntz.py", description=__doc__,
+    ap = argparse.ArgumentParser(prog="gruntz", description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
 

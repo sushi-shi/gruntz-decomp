@@ -330,10 +330,10 @@ causes: the reloc-typing **scoring artifact** above, and **entropy** — § top.
 Use the LSP tool to read the reconstructed tree without an editor:
 
 ```
-python3 scripts/analysis/clangd_query.py def   <file> <line> [col]   # go to definition
-python3 scripts/analysis/clangd_query.py refs  <file> <line> [col]   # all references
-python3 scripts/analysis/clangd_query.py hover <file> <line> [col]   # type at point
-python3 scripts/analysis/clangd_query.py symbol <fuzzy-name>         # workspace symbols
+python3 -m gruntz.analysis.clangd_query def   <file> <line> [col]   # go to definition
+python3 -m gruntz.analysis.clangd_query refs  <file> <line> [col]   # all references
+python3 -m gruntz.analysis.clangd_query hover <file> <line> [col]   # type at point
+python3 -m gruntz.analysis.clangd_query symbol <fuzzy-name>         # workspace symbols
 ```
 
 clang is a **reader** of this MSVC5 dialect — navigation is reliable, but the
