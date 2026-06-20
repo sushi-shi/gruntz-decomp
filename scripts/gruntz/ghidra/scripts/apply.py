@@ -14,14 +14,14 @@
 #                           custom struct types resolve against the structs defined
 #                           below; anything unresolved falls back to void*/int.
 #     3. STRUCTS (field names @ offsets) - from build/gen/structs.json (clang record
-#                           layouts over src/ + structure/), defined in the DTM and
+#                           layouts over src/ + src/Stub/types/), defined in the DTM and
 #                           APPLIED as the `this` (param-0) type on every method of
 #                           that class (so member access decodes as this->m_health).
-#     4. ENUMS            - from build/gen/enums.json (clang over structure/),
+#     4. ENUMS            - from build/gen/enums.json (clang over src/Stub/types/),
 #                           defined in the DTM.
 #
 #   Reproducible from src/**/*.cpp @stub metadata + config/symbol_names.csv +
-#   config/library_labels.csv + structure/. Idempotent: re-runnable, never
+#   config/library_labels.csv + src/Stub/types/. Idempotent: re-runnable, never
 #   downgrades a better existing name, keeps prior [LABEL] plate comments.
 #
 #   Run as a GhidraScript under PyGhidra (CPython3 + JPype), driven by
@@ -54,8 +54,8 @@ STUB_LABEL_ROOT = ROOT + "/src"
 # This script is STATELESS - no embedded layouts/enums. All data comes from these
 # generated files (+ the config CSVs):
 #   build/gen/symbol_names.csv  <- gen_labels.py   (rva -> mangled name, unit)
-#   build/gen/structs.json      <- ghidra_metadata_generate.py  (clang record layouts of src/ + structure/)
-#   build/gen/enums.json        <- ghidra_metadata_generate.py  (clang over structure/)
+#   build/gen/structs.json      <- ghidra_metadata_generate.py  (clang record layouts of src/ + src/Stub/types/)
+#   build/gen/enums.json        <- ghidra_metadata_generate.py  (clang over src/Stub/types/)
 CSV_SYMBOL   = ROOT + "/build/gen/symbol_names.csv"
 STRUCTS_JSON = ROOT + "/build/gen/structs.json"
 ENUMS_JSON   = ROOT + "/build/gen/enums.json"
@@ -282,7 +282,7 @@ def resolve_type(ctype):
     return dt
 
 # =====================================================================
-# 2. STRUCT DEFINITIONS  (from structure/ ; confirmed offsets only for apply)
+# 2. STRUCT DEFINITIONS  (from src/Stub/types/ ; confirmed offsets only for apply)
 #    Each: (name, size, [(offset, fieldtype, fieldname), ...], apply_as_this)
 #    fieldtype is a C-string resolved via resolve_type at build time.
 #    A pad gap left between explicit offsets stays as undefined bytes.
@@ -320,7 +320,7 @@ def get_or_create_struct(name, size, desc, fields):
     return added
 
 # =====================================================================
-# 3. ENUM DEFINITIONS  (from structure/enums.h)
+# 3. ENUM DEFINITIONS  (from src/Stub/types/enums.h)
 #    (name, size_bytes, [(enumname, value), ...], description)
 #    For taxonomy enums with unverified values, use sequential 0..N (as in header).
 # =====================================================================
@@ -513,14 +513,14 @@ try:
     gen_names = set(s[0] for s in ghidra_metadata_generate_list)
     CUSTOM_TYPE_NAMES.update(gen_names)   # stateless: custom types = the generated structs
     effective_structs = ghidra_metadata_generate_list
-    R("structs: %d generated (from src/ + structure/ via clang)" % len(ghidra_metadata_generate_list))
+    R("structs: %d generated (from src/ + src/Stub/types/ via clang)" % len(ghidra_metadata_generate_list))
     n_structs = 0
     struct_dt_by_name = {}
     for (name, size, apply_this, desc, fields) in effective_structs:
         dt = get_or_create_struct(name, size, desc, fields)
         struct_dt_by_name[name] = (dt, apply_this)
         n_structs += 1
-    # WwdObject + RezDirEntry now come from structure/ headers via ghidra_metadata_generate (clang).
+    # WwdObject + RezDirEntry now come from src/Stub/types/ headers via ghidra_metadata_generate (clang).
 
     R("structs defined: %d" % n_structs)
 
@@ -533,7 +533,7 @@ try:
     for (name, size, desc, members) in effective_enums:
         define_enum(name, size, desc, members)
         n_enums += 1
-    R("enums: %d generated (from structure/ via clang)" % len(gen_enums_list))
+    R("enums: %d generated (from src/Stub/types/ via clang)" % len(gen_enums_list))
 
     # ---- (C) load metadata ----
     eng_rows = load_stub_label_rows(STUB_LABEL_ROOT)   # rva,name,class,prototype,kind,source,confidence

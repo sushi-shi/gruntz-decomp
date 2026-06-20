@@ -12,7 +12,7 @@
 
 // Forward-declare the family manager (root) stored at CGruntzMgr+0x30.
 // Full definition lives in HarryPotter.cpp (HarryPotter unit) and in
-// structure/managers/ddrawmgr_surface_family.h.
+// src/Stub/types/ddrawmgr_surface_family.h.
 class CDDrawSurfaceMgr;
 
 // The Lucius and CObject vtables are used in the dtor vtable chain, emitted

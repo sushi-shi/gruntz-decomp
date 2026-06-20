@@ -15,7 +15,8 @@ Columns:
   *order* only), `name` (name-only stub).
 - **From** — source-of-knowledge: `rtti`, `tomalla`, `strings`, `srcpath`.
 
-Scaffold file column: where the stub lives under `structure/`.
+Scaffold file column: where the stub lives under `src/Stub/types/` (or `graduated:`
+/ `src/ (header removed; layout in src/)` once the class is byte-matched in `src/`).
 
 ## Game-specific classes (the decomp targets)
 
@@ -23,7 +24,7 @@ Scaffold file column: where the stub lives under `structure/`.
 |---|---|---|---|---|---|---|
 | CGruntzApp | game | C:\Proj\Gruntz | `.?AVCGruntzApp@@` | layout | rtti+tomalla | graduated: src/Gruntz/GruntzApp.cpp |
 | CGruntzWnd | game | C:\Proj\Gruntz | `.?AVCGruntzWnd@@` | layout | rtti+tomalla | src/Gruntz/GruntzWnd.cpp (matched ctor) |
-| CGruntzMgr | game | C:\Proj\Gruntz\GruntzMgr.cpp | `.?AVCGruntzMgr@@` | layout | rtti+tomalla | game/cgruntzmgr.h |
+| CGruntzMgr | game | C:\Proj\Gruntz\GruntzMgr.cpp | `.?AVCGruntzMgr@@` | layout | rtti+tomalla | src/Stub/types/cgruntzmgr.h |
 | CGruntzMapMgr | game | C:\Proj\Gruntz | `.?AVCGruntzMapMgr@@` | name | rtti+strings | src/ (header removed; layout in src/) |
 | CMapMgr | game/wap32 | (engine) | `.?AVCMapMgr@@` | name | rtti | src/ (header removed; layout in src/) |
 | CNetMgr | game | C:\Proj\NetMgr\NetMgr.cpp | `.?AVCNetMgr@@` | layout(partial) | rtti+tomalla | src/Net/NetMgr.h (matched) |
@@ -198,11 +199,11 @@ deferred to the re-anchor.
 | Name | Kind | Source file | Known | From | Scaffold |
 |---|---|---|---|---|---|
 | Utils::RegistryHelper | util | C:\Proj\Gruntz (util TU?) | layout (0x21C) | tomalla | graduated: src/Utils/RegistryHelper.h |
-| Utils::MemoryPool<T> | util/template | C:\Proj\Gruntz (util TU?) | layout (0x10) | tomalla | utils/memory_pool.h |
-| Font | util | C:\Proj\Gruntz\font.cpp | layout (0x14) + .fnt format | tomalla | utils/font.h |
-| Pair | struct | C:\Proj\Gruntz | layout {int;int} | tomalla | game/cgruntzmgr.h |
-| UnknownClassArrays | nested | C:\Proj\Gruntz\GruntzMgr.cpp | layout (~0x144) | tomalla | game/cgruntzmgr.h |
-| UnknownClassInCGruntzMgr | nested | C:\Proj\Gruntz\GruntzMgr.cpp | layout (0x238) | tomalla | game/cgruntzmgr.h |
+| Utils::MemoryPool<T> | util/template | C:\Proj\Gruntz (util TU?) | layout (0x10) | tomalla | src/Stub/types/memory_pool.h |
+| Font | util | C:\Proj\Gruntz\font.cpp | layout (0x14) + .fnt format | tomalla | src/Stub/types/font.h |
+| Pair | struct | C:\Proj\Gruntz | layout {int;int} | tomalla | src/Stub/types/cgruntzmgr.h |
+| UnknownClassArrays | nested | C:\Proj\Gruntz\GruntzMgr.cpp | layout (~0x144) | tomalla | src/Stub/types/cgruntzmgr.h |
+| UnknownClassInCGruntzMgr | nested | C:\Proj\Gruntz\GruntzMgr.cpp | layout (0x238) | tomalla | src/Stub/types/cgruntzmgr.h |
 
 ## HYPOTHESIZED CDirectDrawMgr surface/page-manager family (tomalla "harry_potter")
 
@@ -213,21 +214,21 @@ confidence. `@approx tomalla 1.0.1.77`. Held in CGruntzMgr @0x30. Method address
 
 | Name (placeholder) | Size | Base | Notes | Scaffold |
 |---|---|---|---|---|
-| UnknownClassCGruntzMgrHarryPotter | 0x40 | CObject | family manager; UnknownVirtualMethod18 = 640x480x16 init | managers/ddrawmgr_surface_family.h |
-| UnknownCGruntzMgrHogwarts | 0x8 | CObject | common base | managers/ddrawmgr_surface_family.h |
-| UnknownCGruntzMgrLucius | 0x10 | …Hogwarts | shared sub-manager base | managers/ddrawmgr_surface_family.h |
-| UnknownDraco | 0x1c | …Lucius | | managers/ddrawmgr_surface_family.h |
-| UnknownHermiona | 0x6c | …Lucius | CObList + 2×CMapPtrToPtr | managers/ddrawmgr_surface_family.h |
-| UnknownHagrid | 0x2c | …Lucius | CObList | managers/ddrawmgr_surface_family.h |
-| UnknownSeverus | 0x2c | …Lucius | static DDSURFACEDESC-shaped struct | managers/ddrawmgr_surface_family.h |
-| UnknownSirius | 0x2c | …Lucius | CMapStringToOb | managers/ddrawmgr_surface_family.h |
-| UnknownAlbus | 0x68 | …Lucius | 3×CMapStringToOb | managers/ddrawmgr_surface_family.h |
-| UnknownRemus | 0x6d4 | …Lucius | resolution ladder; 3×CObArray + buffer | managers/ddrawmgr_surface_family.h |
-| UnknownMinerva | 0x38 | …Lucius | CMapStringToPtr | managers/ddrawmgr_surface_family.h |
-| UnknownPettigrew | 0x2c | …Lucius | CMapStringToPtr | managers/ddrawmgr_surface_family.h |
-| UnknownFilch | 0x948 | (none) | 2×CPtrList + CPtrArray | managers/ddrawmgr_surface_family.h |
-| UnknownSalazar | 0x94 | (vtable) | 101-entry volume→attenuation table | managers/ddrawmgr_surface_family.h |
-| UnknownVoldemort | 0x9c | UnknownSalazar | | managers/ddrawmgr_surface_family.h |
+| UnknownClassCGruntzMgrHarryPotter | 0x40 | CObject | family manager; UnknownVirtualMethod18 = 640x480x16 init | src/Stub/types/ddrawmgr_surface_family.h |
+| UnknownCGruntzMgrHogwarts | 0x8 | CObject | common base | src/Stub/types/ddrawmgr_surface_family.h |
+| UnknownCGruntzMgrLucius | 0x10 | …Hogwarts | shared sub-manager base | src/Stub/types/ddrawmgr_surface_family.h |
+| UnknownDraco | 0x1c | …Lucius | | src/Stub/types/ddrawmgr_surface_family.h |
+| UnknownHermiona | 0x6c | …Lucius | CObList + 2×CMapPtrToPtr | src/Stub/types/ddrawmgr_surface_family.h |
+| UnknownHagrid | 0x2c | …Lucius | CObList | src/Stub/types/ddrawmgr_surface_family.h |
+| UnknownSeverus | 0x2c | …Lucius | static DDSURFACEDESC-shaped struct | src/Stub/types/ddrawmgr_surface_family.h |
+| UnknownSirius | 0x2c | …Lucius | CMapStringToOb | src/Stub/types/ddrawmgr_surface_family.h |
+| UnknownAlbus | 0x68 | …Lucius | 3×CMapStringToOb | src/Stub/types/ddrawmgr_surface_family.h |
+| UnknownRemus | 0x6d4 | …Lucius | resolution ladder; 3×CObArray + buffer | src/Stub/types/ddrawmgr_surface_family.h |
+| UnknownMinerva | 0x38 | …Lucius | CMapStringToPtr | src/Stub/types/ddrawmgr_surface_family.h |
+| UnknownPettigrew | 0x2c | …Lucius | CMapStringToPtr | src/Stub/types/ddrawmgr_surface_family.h |
+| UnknownFilch | 0x948 | (none) | 2×CPtrList + CPtrArray | src/Stub/types/ddrawmgr_surface_family.h |
+| UnknownSalazar | 0x94 | (vtable) | 101-entry volume→attenuation table | src/Stub/types/ddrawmgr_surface_family.h |
+| UnknownVoldemort | 0x9c | UnknownSalazar | | src/Stub/types/ddrawmgr_surface_family.h |
 
 ## Version-independent on-disk data formats (shared editor<->game)
 
@@ -236,8 +237,8 @@ loader asserts); byte layout @todo. See docs/editor-notes.md.
 
 | Name | Kind | Source | Known | From | Scaffold |
 |---|---|---|---|---|---|
-| WwdObject | format | .WWD world file | field set + flag enums | editor strings | formats/wwd_object.h |
-| RezDirEntry | format | .REZ/.VRZ "RezMgr" archive | field set {Type,Name,Size,ID} + sorted invariant | editor strings + game assert | formats/rez.h |
+| WwdObject | format | .WWD world file | field set + flag enums | editor strings | src/Stub/types/wwd_object.h |
+| RezDirEntry | format | .REZ/.VRZ "RezMgr" archive | field set {Type,Name,Size,ID} + sorted invariant | editor strings + game assert | src/Stub/types/rez.h |
 
 ## Library link-artifacts (statically-linked MFC / CRT / COM / AFX — NOT targets)
 

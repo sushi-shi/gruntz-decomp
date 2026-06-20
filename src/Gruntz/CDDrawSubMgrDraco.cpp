@@ -1,7 +1,7 @@
 #include <rva.h>
 // CDDrawSubMgrDraco.cpp - one leaf cleanup method of the tomalla-named ddrawmgr
 // sub-manager CDDrawSubMgrDraco (a CDirectDrawMgr surface/page sub-manager in the
-// "Harry Potter" family; see structure/managers/ddrawmgr_surface_family.h).
+// "Harry Potter" family; see src/Stub/types/ddrawmgr_surface_family.h).
 //
 // CDDrawSubMgrDraco carries three owned-child pointers at +0x10/+0x14/+0x18 (the three
 // int fields fieldUnknown10/14/18 of the layout). VirtualMethodUnknown1C is a

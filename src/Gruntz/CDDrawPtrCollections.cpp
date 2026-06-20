@@ -29,7 +29,7 @@ public:
 // ---------------------------------------------------------------------------
 // CDDrawPtrCollections — reconstructed Ctor ONLY.  The class has no vtable (the
 // default ctor doesn't stamp one).  Fields from the structure layout in
-// structure/managers/ddrawmgr_surface_family.h; only the offsets the ctor
+// src/Stub/types/ddrawmgr_surface_family.h; only the offsets the ctor
 // touches are modeled below.
 // ---------------------------------------------------------------------------
 class CDDrawPtrCollections {

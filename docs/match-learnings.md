@@ -221,7 +221,7 @@ DecodeBmp@0x143fc0/DecodePcx@0x144ee0/DecodePid@0x145b10. `.RID`@0x624278 = a 4t
 **WWD (unit `wwdfile`):** header validators IsValidWwd@0x160530 / CheckHeader@0x160660
 byte-exact (validate the 0x5F4 header; first u32 == sizeof ≤ 0x5F4). ReadPlane@0x15d8d0
 99.19% (CPlane is 0x158 B). `WwdHeader 0x5F4`, `WwdPlaneHeader 0xA0`, `WwdObjectRecord 0x11C`,
-`PidHeader 0x20` (structure/formats/). **CGameLevel::LoadWwd @0x15d280 CARCASS ~56%** (unit
+`PidHeader 0x20` (src/Stub/types/). **CGameLevel::LoadWwd @0x15d280 CARCASS ~56%** (unit
 `gamelevel`; a this→ebp / hdr→ebx reg-alloc divergence the source can't steer; vtable slot
 0x38, pre-load Reset slot 0x44; m_header@+0xE0, m_flags@+8, m_checksum@+0xAC, plane CArray
 @+0x34 [m_data@+0x38/m_size@+0x3c=count], image-set CArray @+0x48, main plane idx @+0x60).

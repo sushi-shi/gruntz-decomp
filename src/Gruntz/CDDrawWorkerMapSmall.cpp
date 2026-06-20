@@ -1,7 +1,7 @@
 #include <rva.h>
 // CDDrawWorkerMapSmall.cpp - leaf factory methods of the tomalla-named ddrawmgr surface-
 // family sub-manager CDDrawWorkerMapSmall (a CDirectDrawMgr surface/page sub-manager in
-// the "Harry Potter" family; see structure/managers/ddrawmgr_surface_family.h).
+// the "Harry Potter" family; see src/Stub/types/ddrawmgr_surface_family.h).
 //
 // CDDrawWorkerMapSmall owns a CMapStringToOb at +0x10 (m_unknownMap1) keyed by const char*
 // strings. Unknown28/2C share ONE factory shape: allocate a 0x14-byte "worker" with

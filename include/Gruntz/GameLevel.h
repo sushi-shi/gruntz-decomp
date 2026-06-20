@@ -7,7 +7,7 @@
 // computing the scaled start coordinates on the main plane.
 //
 // Only the members LoadWwd touches are pinned. The on-disk WWD layout is in
-// structure/formats/wwd.h. The plane object (CPlane) + the per-plane block reader
+// src/Stub/types/wwd.h. The plane object (CPlane) + the per-plane block reader
 // + the image-set factory + the coord-recompute helper are UNMATCHED engine code,
 // modeled here as external shells so their calls reloc-mask.
 #ifndef SRC_GRUNTZ_GAMELEVEL_H

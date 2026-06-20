@@ -1,7 +1,7 @@
 #include <rva.h>
 // Wormhole.cpp - CWormhole::LoadColors - the
 // wormhole's one-time color-attribute resolver. A CWormhole is a world teleport
-// node (RTTI CWormhole, structure/game/world_objects.h); it owns a state
+// node (RTTI CWormhole); it owns a state
 // sub-object at this+0x10 that carries the wormhole kind discriminator (+0x124)
 // and a lazily-resolved color id (+0x128).
 //

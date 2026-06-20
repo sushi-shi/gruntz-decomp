@@ -1,6 +1,6 @@
 // WwdFile.h - Gruntz WWD level-file loader (Monolith-faithful reconstruction).
 //
-// On-disk WWD header layout is pinned in structure/formats/wwd.h; this header
+// On-disk WWD header layout is pinned in src/Stub/types/wwd.h; this header
 // reproduces the load-bearing fields the loaders actually touch.
 #ifndef SRC_WWD_WWDFILE_H
 #define SRC_WWD_WWDFILE_H

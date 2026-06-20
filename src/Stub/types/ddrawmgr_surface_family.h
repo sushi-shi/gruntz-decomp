@@ -12,7 +12,7 @@
  *
  * HYPOTHESIS (strength: structure/offsets HIGH, identity MEDIUM, names LOW):
  *   This family IS the CDirectDrawMgr surface/page-manager group from
- *   C:\Proj\DDrawMgr\{DDRAWMGR,DIRPAL,DIRSURF}.CPP (see ../managers/cdirectdrawmgr.h).
+ *   C:\Proj\DDrawMgr\{DDRAWMGR,DIRPAL,DIRSURF}.CPP.
  *   Evidence:
  *     - The root manager (UnknownClassCGruntzMgrHarryPotter) is stored in
  *       CGruntzMgr @0x30 (m_..._maybeSurfaceRestoreHandler) and is constructed
@@ -23,7 +23,7 @@
  *       DDSURFACEDESC-shaped struct (dwSize @0) it zeroes/sizes — classic DDraw.
  *     - UnknownRemus's ctor seeds a resolution/scaling ladder.
  *     - UnknownSalazar/UnknownVoldemort hold the 101-entry volume->attenuation
- *       lookup table (see ../enums.h GruntzVolumeAttenuation).
+ *       lookup table (see enums.h GruntzVolumeAttenuation).
  *
  * @approx tomalla 1.0.1.77 — all OFFSETS / SIZES / vtable-SLOTS / INHERITANCE below
  * are version-independent (high confidence). The compilable declarations below
