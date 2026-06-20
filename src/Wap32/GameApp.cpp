@@ -17,6 +17,11 @@ DATA(0x253c74)
 extern int g_wap32FrameDelta;
 DATA(0x253c78)
 extern int g_wap32ClockReset;
+// Two run-state timing defaults CGameMgr::Run seeds to 0x64 (100).
+DATA(0x253c7c)
+extern int g_wap32Run7c;
+DATA(0x253c80)
+extern int g_wap32Run80;
 
 // Instance counter (bumped per ctor). Shared
 // (declared in Wap32.h) so the inline ~CGameApp - which CGruntzApp's dtor
@@ -379,17 +384,74 @@ void CGameResource::Wap32GameResVfunc1() {}
 void CGameResource::Wap32GameResVfunc2() {}
 void CGameResource::Wap32GameResVfunc3() {}
 void CGameResource::PerFrameTick() {}
+// CGameMgr vtable anchors (the dtor + the three otherwise-unmatched virtuals).
 WAP32::CGameMgr::~CGameMgr() {}
-int WAP32::CGameMgr::Run(CGameWnd *, char *) { return 0; }
+void WAP32::CGameMgr::Wap32GameMgrVfunc3() {}
+void WAP32::CGameMgr::Wap32GameMgrVfunc4() {}
+void WAP32::CGameMgr::Wap32GameMgrVfunc5() {}
 
 // -------------------------------------------------------------------------
-// CGameMgr::UnknownClose
+// CGameMgr::CGameMgr()  (__thiscall, returns this in EAX; vftable @0x5e9b8c)
+// Seeds the run-state flags (m_10/m_14 = 1), zeroes the owned pointers, then
+// initialises the frame clock via the two time helpers. The optimiser hoists
+// the m_10/m_14 stores (and the InitTimeFields `reset=1` argument push) above
+// the vptr store.
+RVA(0x13dd10, 0x35)
+WAP32::CGameMgr::CGameMgr()
+{
+    m_10 = 1;
+    m_14 = 1;
+    m_4  = 0;
+    m_8  = 0;
+    m_c  = 0;
+    m_1c = 0;
+    InitTimeFields(1);
+    UnknownMethodInitializeTimeGlobal();
+}
+
+// -------------------------------------------------------------------------
+// CGameMgr::Run  (__thiscall; vtable +0x04, the engine-start entry).
+// Binds the manager to the game window (records the window + its owner app),
+// reseeds the frame clock, and primes the two run-timing globals to 100.
+// Bails (returning 0) if there is no window, or the window has no OS HWND yet.
+RVA(0x13dd50, 0x54)
+int WAP32::CGameMgr::Run(CGameWnd *pGameWnd, char *szCmdLine)
+{
+    if (!pGameWnd)
+        return 0;
+    if (!pGameWnd->m_4)
+        return 0;
+
+    m_4  = (int)pGameWnd;
+    m_8  = (int)pGameWnd->m_8;
+    m_1c = 0;
+    InitTimeFields(1);
+    UnknownMethodInitializeTimeGlobal();
+    g_wap32Run80 = 0x64;
+    g_wap32Run7c = 0x64;
+    return 1;
+}
+
+// -------------------------------------------------------------------------
+// CGameMgr::UnknownClose  (vtable +0x08)
 // Clears the two manager-owned pointers/handles.
 RVA(0x13ddb0, 0x9)
 void WAP32::CGameMgr::UnknownClose()
 {
     m_4 = 0;
     m_8 = 0;
+}
+
+// -------------------------------------------------------------------------
+// CGameMgr::InitTimeFields  (__thiscall; ctor/Run helper @0x13de70)
+// Zeroes m_20, samples the start tick into m_24, and (when reset) arms m_18.
+RVA(0x13de70, 0x23)
+void WAP32::CGameMgr::InitTimeFields(int reset)
+{
+    m_20 = 0;
+    m_24 = timeGetTime();
+    if (reset)
+        m_18 = -1;
 }
 
 // -------------------------------------------------------------------------
@@ -403,23 +465,18 @@ void WAP32::CGameMgr::UnknownMethodInitializeTimeGlobal()
     g_wap32ClockReset = 0;
 }
 
-LRESULT __stdcall CGameApp::GameWindowProc(HWND, UINT, WPARAM, LPARAM) { return 0; }
+// CGameApp::GameWindowProc (the static WNDPROC) is reconstructed in GameWnd.cpp:
+// its code lives in the CGameWnd address cluster and dispatches to the active
+// CGameWnd singleton (s_activeWnd). This TU only references it (the WNDCLASS
+// store in InitializeDefaultWindowClass).
 
 // -------------------------------------------------------------------------
 // Engine-label backlog stubs.
 // -------------------------------------------------------------------------
-// @confidence: high
-// @source: tomalla
-// @stub
-RVA(0x13dd10, 0x35)
-void WAP32::CGameMgr::Stub_13dd10() {}
-
-// @confidence: high
-// @source: tomalla
-// @stub
-RVA(0x13dd50, 0x54)
-void WAP32::CGameMgr::Stub_13dd50() {}
-
+// vector_deleting_destructor @0x133380 stores vftable 0x5ef670 and calls the
+// 0x134d50 dtor body - it is a CGruntzMgr-family scalar-deleting dtor, NOT the
+// base WAP32::CGameMgr's (whose dtor is the 0x401bb8 thunk in vtable slot 0).
+// Deferred to the CGruntzMgr reconstruction; kept as a label here.
 // @confidence: high
 // @source: tomalla
 // @stub

@@ -107,19 +107,55 @@ struct CGameWndCreateParams {
 // CGameWnd - WAP32 window wrapper.
 //   The ctor zeroes m_4 (+0x04) and m_c (+0x0c); vptr stored first (natural
 //   single-class form).
+//
+//   The class's window procedure (CGameApp::GameWindowProc, the static stored in
+//   WNDCLASS.lpfnWndProc) dispatches every Win32 message to the *active* CGameWnd
+//   singleton through this vtable: a per-message virtual handler for each WM_* the
+//   engine cares about. The handler returns nonzero "handled" => WndProc returns 0;
+//   zero "not handled" => WndProc falls through to DefWindowProcA. The full 22-slot
+//   vtable (0x00..0x54) is load-bearing: GameWindowProc's switch dispatches on the
+//   exact slot offsets (e.g. WM_MOVE -> +0x14, WM_COMMAND -> +0x54). Most handlers
+//   are out-of-line stubs here (vtable anchors); only the ones reconstructed in
+//   their own right (the ctor, QuitMessageLoop @ +0x34 = WM_DESTROY) carry bodies.
 // ---------------------------------------------------------------------------
 class CGameWnd {
 public:
     CGameWnd();
-    virtual ~CGameWnd();
-    virtual int Wap32GameWndVfunc0();
+    virtual ~CGameWnd();                                            // +0x00  idx0  dtor
+    // Pre-dispatch hook: GameWindowProc calls this for EVERY message before the
+    // switch; nonzero swallows the message (WndProc returns 0).
+    virtual int PreDispatchMessage(UINT uMsg, WPARAM wParam, LPARAM lParam); // +0x04 idx1
+    virtual int Wap32GameWndVfunc2();                              // +0x08  idx2 (unused by WndProc)
+
+    // Per-message virtual handlers (return nonzero = handled). The argument shape
+    // mirrors the Win32 message: point messages split lParam into LOWORD/HIWORD.
+    virtual int OnCreate(LPARAM lParam);                           // +0x0c  idx3  WM_CREATE
+    virtual int OnClose();                                         // +0x10  idx4  WM_CLOSE
+    virtual int OnMove(int x, int y);                             // +0x14  idx5  WM_MOVE
+    virtual int OnSize(WPARAM type, int cx, int cy);             // +0x18  idx6  WM_SIZE
+    virtual int OnPaint();                                        // +0x1c  idx7  WM_PAINT
+    virtual int OnChar(WPARAM wParam, LPARAM lParam);            // +0x20  idx8  WM_CHAR
+    virtual int OnKeyDown(WPARAM wParam, LPARAM lParam);        // +0x24  idx9  WM_KEYDOWN
+    virtual int OnKeyUp(WPARAM wParam, LPARAM lParam);          // +0x28  idx10 WM_KEYUP
+    virtual int OnSysKeyDown(WPARAM wParam, LPARAM lParam);    // +0x2c  idx11 WM_SYSKEYDOWN
+    virtual int OnActivateApp(WPARAM wParam, LPARAM lParam);   // +0x30  idx12 WM_ACTIVATEAPP
+    // +0x34 idx13: WM_DESTROY handler == QuitMessageLoop (frees the manager,
+    // optionally reports the error, posts WM_QUIT).
+    virtual int QuitMessageLoop();                              // +0x34  idx13 WM_DESTROY
+    virtual int OnLButtonDown(WPARAM keys, int x, int y);     // +0x38  idx14 WM_LBUTTONDOWN
+    virtual int OnRButtonDown(WPARAM keys, int x, int y);     // +0x3c  idx15 WM_RBUTTONDOWN
+    virtual int OnLButtonUp(WPARAM keys, int x, int y);       // +0x40  idx16 WM_LBUTTONUP
+    virtual int OnRButtonUp(WPARAM keys, int x, int y);       // +0x44  idx17 WM_RBUTTONUP
+    virtual int OnMouseMove(WPARAM keys, int x, int y);       // +0x48  idx18 WM_MOUSEMOVE
+    virtual int OnLButtonDblClk(WPARAM keys, int x, int y);   // +0x4c  idx19 WM_LBUTTONDBLCLK
+    virtual int OnRButtonDblClk(WPARAM keys, int x, int y);   // +0x50  idx20 WM_RBUTTONDBLCLK
+    virtual int OnCommand(WPARAM wParam, LPARAM lParam);       // +0x54  idx21 WM_COMMAND
 
     // Creates the OS window from a 12-field params struct (CreateWindowExA),
     // registers this object as the active window singleton, then ShowWindow.
     // Returns nonzero on success.
     int CreateAndShow(CGameWndCreateParams *pParams, void *pOwner);
     void Destroy();
-    int QuitMessageLoop();
 
     HWND m_4;   // +0x04  HWND (set by CreateAndShow / zeroed by ctor)
     void *m_8;  // +0x08  owner pointer (set by CreateAndShow; not touched by ctor)
@@ -151,30 +187,50 @@ public:
     int m_c;   // +0x0c  guard flag
 };
 
-// CGameMgr - the game manager allocated by CGameApp::InitializeGameManager
-// (the engine puts it in namespace WAP32). VirtualUnknownMethod02 starts it
+// CGameMgr - the WAP32 game manager base class (vftable ??_7CGameMgr@@6B@ @
+// 0x5e9b8c, 6 slots). The TRUE object is 0x2c bytes (CGameApp::Initialize-
+// GameManager does `new CGameMgr` => operator new(0x2c)); the ctor seeds the
+// frame clock and a couple of run-state flags. VirtualUnknownMethod02 starts it
 // with Run(pGameWnd, szCmdLine) (vtable +0x4) and `delete`s it (scalar-deleting
 // dtor @ vtable slot 0) on failure.
+//
+// NOTE: the pad is kept at 0xa30 (not 0x2c) ONLY so the mislabeled
+// `CGruntzApp::InitializeGameManager` (which really does `new CGruntzMgr`, the
+// 0xa30 derived manager, but is currently reconstructed as `new WAP32::CGameMgr`)
+// keeps its `push 0xa30` byte-match. The base class is genuinely 0x2c; the real
+// fix is to split out the derived CGruntzMgr so CGameApp::InitializeGameManager
+// (@0x13dbc0, `new CGameMgr` => push 0x2c) can match too. Until then 0x13dbc0 is
+// deferred (matching it needs sizeof==0x2c, which would regress 0x080a20).
 namespace WAP32 {
 class CGameMgr {
 public:
     CGameMgr();
-    virtual ~CGameMgr();
-    virtual int Run(CGameWnd *pGameWnd, char *szCmdLine);
+    virtual ~CGameMgr();                                       // +0x00 idx0 dtor
+    virtual int  Run(CGameWnd *pGameWnd, char *szCmdLine);    // +0x04 idx1
+    virtual void UnknownClose();                              // +0x08 idx2
+    virtual void Wap32GameMgrVfunc3();                        // +0x0c idx3
+    virtual void Wap32GameMgrVfunc4();                        // +0x10 idx4
+    virtual void Wap32GameMgrVfunc5();                        // +0x14 idx5
 
-    void UnknownClose();
-    void UnknownMethodInitializeTimeGlobal();
+    // Non-virtual ctor helpers (called directly from the ctor / Run).
+    void InitTimeFields(int reset);                           // @0x13de70
+    void UnknownMethodInitializeTimeGlobal();                 // @0x13dea0
 
-    int m_4;
-    int m_8;
+    int m_4;     // +0x04
+    int m_8;     // +0x08
+    int m_c;     // +0x0c
+    int m_10;    // +0x10  run-state flag (=1 in ctor)
+    int m_14;    // +0x14  run-state flag (=1 in ctor)
+    int m_18;    // +0x18  (=-1 by InitTimeFields when reset)
+    int m_1c;    // +0x1c
+    int m_20;    // +0x20  (cleared by InitTimeFields)
+    int m_24;    // +0x24  start tick (timeGetTime, by InitTimeFields)
 
     // Engine-label backlog stubs.
-    void Stub_13dd10();
-    void Stub_13dd50();
-    void vector_deleting_destructor();  // vftable slot 0
+    void vector_deleting_destructor();  // CGruntzMgr-family; deferred
 
 private:
-    char m_pad0c[0xa30 - 0x0c];
+    char m_pad28[0xa30 - 0x28];
 };
 }
 

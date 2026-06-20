@@ -35,11 +35,11 @@ filestream	13	9
 font	16	8
 fontconfig	1	0
 fonts	2	1
-gameapp	18	12
+gameapp	19	15
 gamelevel	14	8
 gamemode	11	8
 gametext	4	2
-gamewnd	4	4
+gamewnd	5	4
 grunt	19	0
 gruntzapp	10	8
 gruntzwnd	2	1
@@ -596,18 +596,19 @@ fontconfig	?LoadFontConfig@CFontConfig@@QAEHHH@Z	99.9735	99.9735	4	272014706148
 fonts	?FreeFontsMemory@@YAHXZ	100.0000	100.0000	3	729e497336c5
 fonts	?InitializeFonts@@YAHXZ	77.3077	77.3077	4	58f771938f33
 gameapp	??0CGameApp@@QAE@XZ	100.0000	100.0000	3	9b5fb13f2a11
+gameapp	??0CGameMgr@WAP32@@QAE@XZ	100.0000	100.0000	1	dadcd04de5b7
 gameapp	?CloseResources@CGameApp@@UAEXXZ	100.0000	100.0000	2	ad75f3c79d21
 gameapp	?FreeGameManager@CGameApp@@UAEXXZ	100.0000	100.0000	2	bf706736895a
+gameapp	?InitTimeFields@CGameMgr@WAP32@@QAEXH@Z	100.0000	100.0000	1	058effdf8030
 gameapp	?InitializeAccelerators@CGameApp@@UAEHPBD@Z	100.0000	100.0000	2	75e72951d06b
 gameapp	?InitializeDefaultCreateStruct@CGameApp@@UAEXXZ	99.1467	99.1467	2	14e36a82647f
 gameapp	?InitializeDefaultWindowClass@CGameApp@@UAEXXZ	100.0000	100.0000	2	ab6f487d6b25
 gameapp	?InitializeGameWindow@CGameApp@@UAEPAVCGameWnd@@XZ	100.0000	100.0000	2	2bd6d145f415
 gameapp	?ReportError@CGameApp@@UAEXIJ@Z	100.0000	100.0000	2	9128cfb84372
+gameapp	?Run@CGameMgr@WAP32@@UAEHPAVCGameWnd@@PAD@Z	100.0000	100.0000	1	412b30ff2496
 gameapp	?RunMessageLoop@CGameApp@@UAEHXZ	100.0000	100.0000	2	ab7354aaeac4
 gameapp	?Stub_080dd0@CGameApp@@QAEXXZ	2.5000	2.5000	1	0b572defb8ee
-gameapp	?Stub_13dd10@CGameMgr@WAP32@@QAEXXZ	5.2632	5.2632	1	e27cce07ae9a
-gameapp	?Stub_13dd50@CGameMgr@WAP32@@QAEXXZ	1.4286	1.4286	1	ead10dba8463
-gameapp	?UnknownClose@CGameMgr@WAP32@@QAEXXZ	100.0000	100.0000	2	5cd450dd571d
+gameapp	?UnknownClose@CGameMgr@WAP32@@UAEXXZ	100.0000	100.0000	1	5cd450dd571d
 gameapp	?UnknownMethodInitializeTimeGlobal@CGameMgr@WAP32@@QAEXXZ	100.0000	100.0000	2	8f57bb615cf6
 gameapp	?VirtualUnknownMethod02@CGameApp@@UAEHPAUGameInfo@@PAUtagWNDCLASSA@@PAUtagCREATESTRUCTA@@@Z	97.3765	97.3765	3	198296a529c9
 gameapp	?VirtualUnknownMethod03@CGameApp@@UAEHPAXPAD11HHH@Z	100.0000	100.0000	2	ace1ef6fbd7a
@@ -645,7 +646,8 @@ gametext	_$E4	100.0000	100.0000	1	cpp:a7f73c40eefc
 gamewnd	??0CGameWnd@@QAE@XZ	100.0000	100.0000	2	efbc4b63e527
 gamewnd	?CreateAndShow@CGameWnd@@QAEHPAUCGameWndCreateParams@@PAX@Z	100.0000	100.0000	2	62dd1036e798
 gamewnd	?Destroy@CGameWnd@@QAEXXZ	100.0000	100.0000	2	1ec9f4df456c
-gamewnd	?QuitMessageLoop@CGameWnd@@QAEHXZ	100.0000	100.0000	2	d81c3a5ceca8
+gamewnd	?GameWindowProc@CGameApp@@SGJPAXIIJ@Z	94.8343	94.8343	1	8fcd6f43be98
+gamewnd	?QuitMessageLoop@CGameWnd@@UAEHXZ	100.0000	100.0000	1	d81c3a5ceca8
 grunt	?BuildEntranceAnimation@CGrunt@@QAEXXZ	0.1843	0.1843	1	5bdc8abfbb60
 grunt	?CreateHealthSprite@CGrunt@@QAEHXZ	99.6552	99.6552	2	e030bb9694de
 grunt	?CreatePowerupSprite@CGrunt@@QAEHH@Z	99.6296	99.6296	2	71c70b5f41b5
@@ -715,12 +717,12 @@ mapmgr	??1CMapArrayB@@QAE@XZ	100.0000	100.0000	2	97b958907651
 mapmgr	??1CMapMgr@@QAE@XZ	100.0000	100.0000	2	5b358cad9904
 mapmgr	?Reset@CMapMgr@@UAEXXZ	100.0000	100.0000	2	96ea2164f0ea
 netmgr	?ApplyCmdDelayDefaults@CNetMgr@@QAEXXZ	100.0000	100.0000	3	bd7373f72f8a
-netmgr	?FindPlayerById@CNetMgr@@QAEPAUCNetPlayerEntry@@H@Z	87.6923	87.6923	1	cpp:8913a4dcf75f
-netmgr	?GetMaxAckLatency@CNetMgr@@QAEIXZ	100.0000	100.0000	1	cpp:8913a4dcf75f
+netmgr	?FindPlayerById@CNetMgr@@QAEPAUCNetPlayerEntry@@H@Z	87.6923	87.6923	1	3ab32af52472
+netmgr	?GetMaxAckLatency@CNetMgr@@QAEIXZ	100.0000	100.0000	1	c106f124f023
 netmgr	?OnMultiOptions@CNetMgr@@QAEXXZ	100.0000	100.0000	2	adfe03071b8f
 netmgr	?OnMultiPause@CNetMgr@@QAEXXZ	100.0000	100.0000	2	64151f8dfb3a
 netmgr	?OnOutOfSync@CNetMgr@@QAEXXZ	100.0000	100.0000	2	62cf1e4f4cdf
-netmgr	?ReportAckLatency@CNetMgr@@QAEXXZ	100.0000	100.0000	1	cpp:8913a4dcf75f
+netmgr	?ReportAckLatency@CNetMgr@@QAEXXZ	100.0000	100.0000	1	138d0dd5df3d
 netmgr	?Stub_0b5460@CNetMgr@@QAEXXZ	0.0696	0.0696	1	e38c203badd0
 netmgr	?Stub_0b6000@CNetMgr@@QAEXXZ	3.7037	3.7037	1	1992ff20e6db
 netmgr	?Stub_0b78b0@CNetMgr@@QAEXXZ	0.9346	0.9346	1	27d1d23cfed8
