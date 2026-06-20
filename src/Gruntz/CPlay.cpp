@@ -75,10 +75,7 @@ extern int MapLookup(void *map, void *key, void *&out);   // CMapPtrToPtr::Looku
 // ---- The global CButeMgr text-config tree (the singleton). Modeled as
 //      a minimal class so PlayCueAt's `mov ecx,<singleton>; call GetInt`
 //      reloc-masks against the already-matched GetInt (butemgr unit). --
-class CButeMgr {
-public:
-    int GetInt(char *tag, char *key);
-};
+#include <Bute/ButeMgr.h>
 DATA(0x2453d8)
 extern CButeMgr g_buteMgr;
 #define g_buteText (&g_buteMgr)

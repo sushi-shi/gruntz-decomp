@@ -133,7 +133,7 @@ public:
     DWORD GetDword(char *tag, char *key);
     float GetFloat(char *tag, char *key);
     double GetDouble(char *tag, char *key);
-    char *GetStringDef(char *tag, char *key, char *def);
+    CString *GetStringDef(char *tag, char *key, CString *def);
     char *GetString(char *tag, char *key);
 
     bool  ScanToken(int expectType);

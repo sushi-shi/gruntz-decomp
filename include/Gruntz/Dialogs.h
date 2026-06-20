@@ -37,11 +37,7 @@ class CWnd;
 // CObList - the MFC object list. Only the block-size ctor is touched (the
 // embedded list CMultiStartDlg constructs with nBlockSize=0xa).
 // 0x1c bytes (vptr + 5 scalar fields).
-class CObList {
-public:
-    CObList(int nBlockSize);
-    char m_body[0x1c];          // (incl. the implicit vptr at +0x00)
-};
+#include <Gruntz/CObList.h>
 
 // CDialog - the MFC dialog base. The subclass ctors store their OWN vptr at
 // [this] AFTER chaining this base ctor, so CDialog must be polymorphic (a

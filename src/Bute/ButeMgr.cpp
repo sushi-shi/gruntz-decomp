@@ -228,14 +228,14 @@ double CButeMgr::GetDouble(char *tag, char *key)
 // type-4 (string) getter with default: returns rec->pValue (the char*) on a
 // type-4 hit, reports a type mismatch otherwise, returns def on any miss.
 RVA(0x173180, 0x4e)
-char *CButeMgr::GetStringDef(char *tag, char *key, char *def)
+CString *CButeMgr::GetStringDef(char *tag, char *key, CString *def)
 {
     void *grp = Tree()->Find(tag);
     if (grp) {
         CButeValue *rec = (CButeValue *)((CButeTree *)grp)->Find(key);
         if (rec) {
             if (rec->type == 4)
-                return (char *)rec->pValue;
+                return (CString *)rec->pValue;
             CButeMgr_ReportError(this, s_fmtTypeMismatch, tag, key);
         }
     }

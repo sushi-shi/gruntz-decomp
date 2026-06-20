@@ -28,10 +28,7 @@ class CObject;
 
 // CMapStringToOb lives at CDDrawWorkerCache+0x10. operator[] is an out-of-line
 // NAFXCW thunk (reloc-masked rel32 call).
-class CMapStringToOb {
-public:
-    CObject *&operator[](const char *key);
-};
+#include <Gruntz/CMapStringToOb.h>
 
 // The worker virtual interface. Slots laid out so the dispatched method lands
 // at byte offset +0x24. Declarations only - never defined, so no ??_7 emitted.

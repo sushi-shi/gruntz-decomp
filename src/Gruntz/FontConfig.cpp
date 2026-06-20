@@ -33,13 +33,9 @@ extern "C" __declspec(dllimport) void *__stdcall CreateFontA(
 // already-matched butemgr getters. GetStringDef returns a CString* whose +0
 // m_pchData is the face-name char* the caller dereferences (`mov eax,[eax]`); the
 // default (3rd arg) is the address of the ARIAL CString temp.
-struct ButeString { char *m_pchData; };       // +0x00 the face-name char*
+       // +0x00 the face-name char*
 
-class CButeMgr {
-public:
-    int         GetIntDef(char *tag, char *key, int def);
-    ButeString *GetStringDef(char *tag, char *key, ButeString *def);
-};
+#include <Bute/ButeMgr.h>
 // The global CButeMgr instance (the ctor stores the bute config tree
 // here). Declared as a named extern so the `mov ecx, offset g_buteMgr` loads
 // reloc-match the engine; @address names the delinked target DATA symbol.
@@ -101,7 +97,7 @@ int CFontConfig::LoadFontConfig(int a1, int a2)
     CString arial(s_ARIAL);
 
     // --- TrainingFont (face/dims from config, default ARIAL / 14x28) --------
-    char *faceTF = g_bute->GetStringDef(s_Font, s_TrainingFont, (ButeString *)&arial)->m_pchData;
+    char *faceTF = g_bute->GetStringDef(s_Font, s_TrainingFont, (CString *)&arial)->m_pchData;
     m_trainingFont = CreateFontA(
         g_bute->GetIntDef(s_Font, s_TrainingFontHeight, 0x1c),
         g_bute->GetIntDef(s_Font, s_TrainingFontWidth, 0xe),
@@ -113,7 +109,7 @@ int CFontConfig::LoadFontConfig(int a1, int a2)
             0, 0, 0x2bc, 0, 0, 0, 1, 0, 0, 0, 0, 0);
 
     // --- MessageFont (face/dims from config, default ARIAL / 24x42) ---------
-    char *faceMF = g_bute->GetStringDef(s_Font, s_MessageFont, (ButeString *)&arial)->m_pchData;
+    char *faceMF = g_bute->GetStringDef(s_Font, s_MessageFont, (CString *)&arial)->m_pchData;
     m_messageFont = CreateFontA(
         g_bute->GetIntDef(s_Font, s_MessageFontHeight, 0x2a),
         g_bute->GetIntDef(s_Font, s_MessageFontWidth, 0x18),
