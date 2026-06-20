@@ -14,6 +14,19 @@ struct CSpriteFactoryHolder {   // the +0x30 resource/sprite-factory holder
     CSpriteFactory *m_8;        // +0x08
 };
 
+// The tile occupancy grid (*g_pGameRegistry+0x70). A flat row-table of
+// pointers (m_8); each row is an array of 0x1c-byte (7-dword) tile cells
+// indexed by tile-x. CGrunt::LoadEntranceConfig stamps the grunt's footprint
+// into the cell occupied by (m_10->m_5c>>5, m_10->m_60>>5): sets/clears bit
+// 0x20 in cell byte+3 and writes a packed (m_1ec<<8)|m_1f0 owner word into
+// cell[1]. m_c/m_10 are the grid dimensions (tile width/height bounds).
+struct CTileGrid {
+    char  m_pad0[0x8];
+    int **m_8;          // +0x08  row-pointer table (m_8[tileY] = row base; cell = (int*)m_8[tileY] + tileX*7)
+    int   m_c;          // +0x0c  width in tiles
+    int   m_10;         // +0x10  height in tiles
+};
+
 struct CGameRegistry {
     char m_pad0[0x14];
     int   m_14;         // +0x14  has-window / dev flag (gates rect-update calls)
@@ -23,7 +36,9 @@ struct CGameRegistry {
     CGruntCueSink *m_60;   // +0x60  cue sink / on-screen cue receiver (->Cue)
     char m_pad64[0x68 - 0x64];
     void *m_68;         // +0x68  cue sink B (message poster)
-    char m_pad6c[0x8c - 0x6c];
+    char m_pad6c[0x70 - 0x6c];
+    CTileGrid *m_70;    // +0x70  tile occupancy grid (LoadEntranceConfig)
+    char m_pad74[0x8c - 0x74];
     int   m_8c;         // +0x8c  viewport X
     int   m_90;         // +0x90  viewport Y
     char m_pad94[0x134 - 0x94];

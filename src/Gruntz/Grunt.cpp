@@ -487,7 +487,7 @@ void CGrunt::Stub_047a10() {}
 // @source: string-xref
 // @stub
 RVA(0x048470, 0x131b)
-void CGrunt::Stub_048470() {}
+void CGrunt::Stub_048470(int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
@@ -614,18 +614,139 @@ void CGrunt::BuildEntranceAnimation(int mode)
     }
 }
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
-RVA(0x067f80, 0x313)
-void CGrunt::LoadEntranceConfig() {}
-
-// The global CButeMgr config singleton + the tuning key ReadConfigFromButeMgr
-// reads. Minimal local decl (the full ButeMgr.h redefines CString, already
-// pulled in by this TU), with only the typed getter the function calls.
+// The global CButeMgr config singleton + the tuning keys this TU reads. Minimal
+// local decl (the full ButeMgr.h redefines CString, already pulled in by this
+// TU), with only the typed getter the functions call.
 #include <Bute/ButeMgr.h>
 extern CButeMgr g_buteMgr;
-static char s_TimePerTile[] = "TimePerTile";
+static char s_TimePerTile[]      = "TimePerTile";
+static char s_Grunt[]            = "Grunt";              // s_Grunt_0060a9ec
+static char s_EntranceSafeTime[] = "EntranceSafeTime";  // s_EntranceSafeTime_0060df98
+
+// The global running game clock (DAT_00645588) snapshotted into m_840.
+extern "C" unsigned int g_645588;
+
+// The global default geometry source the entrance geometry-state setter consumes
+// (g_defaultGeo @0x6bf3bc; defined in SpriteResource.cpp, reloc-masked here).
+extern int g_defaultGeo;
+
+// ---------------------------------------------------------------------------
+// CGrunt::LoadEntranceConfig()  @0x67f80
+// Commits the grunt to its newly resolved entrance position: arms the entrance
+// player (m_154->m_1a0 geometry-state setter), then re-stamps the grunt's
+// footprint into the global tile-occupancy grid (g_pGameRegistry->m_70): on the
+// NEW tile (m_10->m_5c>>5, m_10->m_60>>5) it reads the occupying owner word and,
+// if a *different* grunt holds it, fires the path sub-manager's contention notify;
+// clears the OLD tile (m_17c/m_180 pixel coords, -1 = none) and stamps the NEW
+// one (set occupancy bit 0x20<<24, write packed (m_1ec<<8)|m_1f0 owner), then
+// posts the wire call and records the new tile pixel coords. Marks the HUD anim
+// id dirty (m_10->m_74 = m_60 + 0x186a0; m_8 |= 0x20000), looks the DROP entrance
+// sprite-set up in the entrance player's table, and either (set found ==
+// m_154->m_1b4) fires the focused-grunt entrance cue + claims the tile + reads the
+// EntranceSafeTime config + seeds the safe-time bookkeeping, or (miss) releases the
+// tile and runs the on-released hook. Finally clears m_1e4, reloads the per-grunt
+// tuning (ReadConfigFromButeMgr), runs the two tail stubs, and when the entrance
+// sub-player is armed-but-not-running (m_28!=0 && m_20==0) runs the entrance
+// reset (Stub_062e10(1,0,0)). __thiscall, ret 0.
+//
+// ~78.8% fuzzy: CFG, every member offset, all constants, the tile-grid index math
+// (cell stride 0x1c, occupancy bit 0x20<<24, packed owner word), the config read,
+// and all six call shapes are byte-exact. Residue = the callee-saved zero-register
+// coin-flip (the original pins `0` in ebx at the if-body head and re-reads
+// grid->m_c from memory under the resulting register pressure; our build keeps the
+// zero deferred and caches the width in a free reg, cascading a 1-instruction phase
+// shift through the two grid-write blocks). Same entropy class as the 5 resolvers'
+// edx/ecx coin-flip; no source lever flips it (an explicit `int z=0;` did not pin).
+RVA(0x067f80, 0x313)
+void CGrunt::LoadEntranceConfig()
+{
+    if (m_154->m_1a0.SetGeoSourceR(g_defaultGeo) == 1) {
+        CGameRegistry *g = g_pGameRegistry;
+        CGruntHud *h = m_10;
+        CTileGrid *grid = g->m_70;
+        int tx = h->m_5c >> 5;
+        int ty = h->m_60 >> 5;
+
+        int flags;
+        if ((unsigned)tx >= (unsigned)grid->m_c || (unsigned)ty >= (unsigned)grid->m_10)
+            flags = 1;
+        else
+            flags = ((int *)grid->m_8[ty])[tx * 7];
+
+        if (flags & 0x20000000) {
+            int owner;
+            if ((unsigned)tx >= (unsigned)grid->m_c || (unsigned)ty >= (unsigned)grid->m_10)
+                owner = -1;
+            else
+                owner = ((int *)grid->m_8[ty])[tx * 7 + 1];
+            int b = (owner >> 8) & 0xff;
+            int a = owner & 0xff;
+            if (m_1ec != b || m_1f0 != a)
+                m_260->SetTile(b, a, 2, m_1ec);
+        }
+
+        // Re-stamp the occupancy grid: clear old tile, set new tile.
+        h = m_10;
+        int oldX = m_17c;
+        m_25c = 0;
+        int newPxX = h->m_5c;
+        int newPxY = h->m_60;
+        int oldTileX = oldX >> 5;
+        int oldTileY = m_180 >> 5;
+        int newTileX = newPxX >> 5;
+        int newTileY = newPxY >> 5;
+
+        if (oldX != -1 && m_180 != -1) {
+            CTileGrid *og = g_pGameRegistry->m_70;
+            ((char *)&og->m_8[oldTileY][oldTileX * 7])[3] &= ~0x20;
+            og->m_8[oldTileY][oldTileX * 7 + 1] = -1;
+        }
+        {
+            CTileGrid *ng = g_pGameRegistry->m_70;
+            ((char *)&ng->m_8[newTileY][newTileX * 7])[3] |= 0x20;
+            ng->m_8[newTileY][newTileX * 7 + 1] = (m_1ec << 8) | m_1f0;
+        }
+        m_17c = newPxX;
+        m_180 = newPxY;
+        m_260->PostWire();
+
+        h = m_10;
+        m_1fc = 1;
+        if (h->m_74 != h->m_60 + 0x186a0) {
+            h->m_74 = h->m_60 + 0x186a0;
+            h->m_8 |= 0x20000;
+        }
+
+        CEntranceAnimPlayer *p = m_154;
+        CSprite *found = 0;
+        void *cached = p->m_1b4;
+        p->m_c->m_2c->m_10map.Lookup(s_GRUNTZ_ENTRANCEZ_DROP, &found);
+        if ((void *)found == cached) {
+            if (m_1ec == g_focusedGruntSentinel)
+                g_pGameRegistry->m_60->CueA(this, 0x33f, -1, 0, -1, -1);
+            m_260->ClaimTile(m_1ec, m_1f0, 0, 0);
+            m_364 = 1;
+            m_848 = g_buteMgr.GetDwordDef(s_Grunt, s_EntranceSafeTime, 5000);
+            m_84c = 0;
+            m_840 = g_645588;
+            m_844 = 0;
+            m_858 = 0;
+            m_85c = 0;
+        } else {
+            if (m_260->ReleaseTile(m_1ec, m_1f0))
+                EntranceOnReleased();
+        }
+        m_1e4 = 0;
+        ReadConfigFromButeMgr();
+        Stub_048470(0, 0);
+        EntranceFinishWire(0, 0);
+    }
+
+    char *sub = (char *)&m_154->m_1a0;
+    if (*(int *)(sub + 0x28) == 0 || *(int *)(sub + 0x20) != 0)
+        return;
+    Stub_062e10(1, 0, 0);
+}
 
 // ---------------------------------------------------------------------------
 // CGrunt::ReadConfigFromButeMgr

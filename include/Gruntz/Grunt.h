@@ -234,6 +234,14 @@ struct CEntranceAnimDescColl {
 class CEntranceAnimSub {
 public:
     void SetGeometry(int srcSprite);    // FUN_0055c2d0 (this = player+0x1a0, ret 4)
+    // The geometry-state setter LoadEntranceConfig calls on entry; returns 1 when
+    // the player is ready (FUN_0055c360, __thiscall ret 4 = 1 stack arg). Same
+    // engine fn as SpriteResource's SetGeoSource, but the int return is used here.
+    int SetGeoSourceR(int src);         // FUN_0055c360
+    // Data-less view: the geometry sub-player's m_20/m_28 (abs CGrunt+0x154+0x1a0
+    // +0x20/+0x28) live PAST the player's own m_1b4, so they are not modeled as
+    // embedded data here (that would corrupt m_1b4's offset). LoadEntranceConfig's
+    // tail reads them via raw offsets off &player->m_1a0 instead.
 };
 
 class CEntranceAnimPlayer {
@@ -264,6 +272,22 @@ extern CEntranceAnimSrc g_entranceAnimSrc;   // DAT_006bf620
 // The "focused grunt" sentinel the on-screen flag compares m_1ec against
 // (DAT_00644c54, reloc-masked).
 extern int g_focusedGruntSentinel;      // DAT_00644c54
+
+// ---------------------------------------------------------------------------
+// The grunt's path/occupancy sub-manager (CGrunt+0x260). LoadEntranceConfig
+// drives it through four engine thunks (all external/no-body, reloc-masked):
+//   SetTile(a,b,c,d)     thunk_FUN_0046bcb0  (cell-owner mismatch notify; 4 args)
+//   ClaimTile(a,b,c,d)   thunk_FUN_0046bfd0  (claim the new tile; 4 args)
+//   ReleaseTile(a,b)     thunk_FUN_004784d0  (release on lookup miss; ret int)
+//   PostWire()           the 0-arg wire call after the grid stamp (WireTileSwitchLogic)
+// ---------------------------------------------------------------------------
+class CGruntTileMgr {
+public:
+    void SetTile(int a, int b, int c, int d);       // thunk_FUN_0046bcb0
+    void ClaimTile(int a, int b, int c, int d);     // thunk_FUN_0046bfd0
+    int  ReleaseTile(int a, int b);                 // thunk_FUN_004784d0
+    void PostWire();                                // WireTileSwitchLogic (0-arg)
+};
 
 // ---------------------------------------------------------------------------
 // CGrunt - only the members the HUD sprite creators touch. CGrunt is large;
@@ -330,7 +354,10 @@ public:
     CEntranceAnimPlayer *m_154;             // +0x154 (entrance animation player)
     char             m_pad158[0x15c - 0x158];
     int              m_15c;                 // +0x15c (= m_154->m_1b4 cache)
-    char             m_pad160[0x1b8 - 0x160];
+    char             m_pad160[0x17c - 0x160];
+    int              m_17c;                 // +0x17c (LoadEntranceConfig: last occupied tile X, pixel; -1 = none)
+    int              m_180;                 // +0x180 (LoadEntranceConfig: last occupied tile Y, pixel; -1 = none)
+    char             m_pad184[0x1b8 - 0x184];
     CHudSprite *m_selectedSprite;           // +0x1b8
     CHudSprite *m_toySprite;                // +0x1bc
     char        m_pad1c0[0x1c4 - 0x1c0];
@@ -350,22 +377,36 @@ public:
     int         m_238;                      // +0x238
     char        m_pad23c[0x25c - 0x23c];
     int         m_25c;                      // +0x25c (entrance: set to 1)
-    void       *m_260;                      // +0x260 (a sub-manager `this`, used by LoadEntranceConfig)
-    char        m_pad264[0x3ec - 0x264];
+    CGruntTileMgr *m_260;                   // +0x260 (path/occupancy sub-manager)
+    char        m_pad264[0x364 - 0x264];
+    int         m_364;                      // +0x364 (entrance: set to 1)
+    char        m_pad368[0x3ec - 0x368];
     int         m_3ec;                      // +0x3ec
     int         m_3f0;                      // +0x3f0
     int         m_3f4;                      // +0x3f4
     int         m_3f8;                      // +0x3f8
+    char        m_pad3fc[0x840 - 0x3fc];
+    int         m_840;                      // +0x840 (entrance: = g_645588 game clock, low dword)
+    int         m_844;                      // +0x844 (entrance: = 0, high dword)
+    int         m_848;                      // +0x848 (entrance: = EntranceSafeTime config)
+    int         m_84c;                      // +0x84c (entrance: = 0)
+    char        m_pad850[0x858 - 0x850];
+    int         m_858;                      // +0x858 (entrance: = 0)
+    int         m_85c;                      // +0x85c (entrance: = 0)
 
     // Engine-label backlog stubs.
     void Stub_047a10();
     void Stub_048400();
-    void Stub_048470();
+    void Stub_048470(int a, int b);         // (2-arg; called from LoadEntranceConfig tail)
     void Stub_062e10(int a, int b, int c);  // (ret 0xc) - 3-arg entrance reset
     void Stub_0633e0();
     void EntrancePrepare();                 // thunk_FUN_0044b240 (void this-method, external)
     void BuildEntranceAnimation(int mode);
     void LoadEntranceConfig();
+    // LoadEntranceConfig tail helpers (this-methods reached via incremental-link
+    // thunks; external/no-body, reloc-masked).
+    void EntranceFinishWire(int a, int b);  // thunk_FUN_00449c60 (2-arg)
+    void EntranceOnReleased();              // thunk_FUN_0044b130 (0-arg)
 };
 
 #endif // SRC_GRUNTZ_GRUNT_H

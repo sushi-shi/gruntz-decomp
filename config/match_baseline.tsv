@@ -643,7 +643,7 @@ grunt	?CreateStaminaSprite@CGrunt@@QAEHXZ	99.6491	99.6491	2	3afa0c7ba315
 grunt	?CreateToySprite@CGrunt@@QAEHXZ	92.0755	92.0755	2	529f7ea56031
 grunt	?CreateToyTimeSprite@CGrunt@@QAEHXZ	99.7222	99.7222	2	9fd7fbebd5db
 grunt	?CreateWingzTimeSprite@CGrunt@@QAEHXZ	99.7059	99.7059	2	9b949d1d419a
-grunt	?LoadEntranceConfig@CGrunt@@QAEXXZ	0.4386	0.4386	1	b7060af059dc
+grunt	?LoadEntranceConfig@CGrunt@@QAEXXZ	78.8377	78.8377	2	e2cbce36c7ba
 grunt	?ReadConfigFromButeMgr@CGrunt@@QAEXXZ	96.8421	96.8421	1	a5b46b2bd458
 grunt	?ResolveAnimation@CGrunt@@QAEHXZ	95.4210	95.4210	2	e89127feac18
 grunt	?ResolveBattlecryAnimation@CGrunt@@QAEHXZ	90.3365	90.3365	2	b3dd0076c7ce
@@ -651,7 +651,7 @@ grunt	?ResolveDeathAnimation@CGrunt@@QAEHXZ	97.8283	97.8283	2	6b0f1748e65d
 grunt	?ResolveIdleAnimation@CGrunt@@QAEHXZ	92.0598	92.0598	2	a8c5f6c43368
 grunt	?ResolveMovingAnimation@CGrunt@@QAEHXZ	92.8816	92.8816	2	ad53e1a24a3d
 grunt	?Stub_047a10@CGrunt@@QAEXXZ	0.0990	0.0990	1	1754cd64e546
-grunt	?Stub_048470@CGrunt@@QAEXXZ	0.0311	0.0311	1	946ff41dc5e8
+grunt	?Stub_048470@CGrunt@@QAEXHH@Z	0.0778	0.0778	1	daacbc0defd3
 grunt	?Stub_062e10@CGrunt@@QAEXHHH@Z	0.3096	0.3096	1	134e9683bb63
 grunt	?Stub_0633e0@CGrunt@@QAEXXZ	0.5208	0.5208	1	5c1b3dddfd8d
 gruntzapp	??0CGruntzApp@@QAE@XZ	100.0000	100.0000	4	6563943e0276
