@@ -14,12 +14,20 @@
 class CDDrawMapHolder {
 public:
     void ClearUnknownMap();
+
+    // Engine-label backlog stubs.
+    void VirtualMethodUnknown14();
+    ~CDDrawMapHolder();
 };
 
 class CDDrawSubMgrLeaf {
 public:
     int VirtualMethodUnknown14();
     void VirtualMethodUnknown18();
+
+    // Engine-label backlog stubs.
+    void VirtualMethodUnknown1C();
+    ~CDDrawSubMgrLeaf();
 
     void *m_vptr;               // +0x00
     int   m_04;                 // +0x04  -1 when inactive
@@ -51,3 +59,37 @@ void CDDrawSubMgrLeaf::VirtualMethodUnknown18()
     ((class CDDrawMapHolder *)this)->ClearUnknownMap();
     m_0c = 0;
 }
+
+// Engine-label backlog stubs (moved from src/Stub/CDDrawSubMgrLeaf.cpp).
+
+// @confidence: high
+// @source: tomalla
+// @stub
+RVA(0x152650, 0x5)
+void CDDrawSubMgrLeaf::VirtualMethodUnknown1C() {}
+
+// @confidence: high
+// @source: tomalla
+// @stub
+RVA(0x1577c0, 0x1e)
+CDDrawSubMgrLeaf::~CDDrawSubMgrLeaf() {}
+
+// Engine-label backlog stubs (moved from src/Stub/CDDrawMapHolder.cpp).
+
+// @confidence: high
+// @source: tomalla
+// @stub
+RVA(0x157530, 0x17)
+void CDDrawMapHolder::VirtualMethodUnknown14() {}
+
+// @confidence: high
+// @source: tomalla
+// @stub
+RVA(0x157550, 0x1e)
+CDDrawMapHolder::~CDDrawMapHolder() {}
+
+// @confidence: high
+// @source: tomalla
+// @stub
+RVA(0x157bc0, 0xa2)
+void CDDrawMapHolder::ClearUnknownMap() {}

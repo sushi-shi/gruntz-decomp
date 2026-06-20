@@ -60,38 +60,11 @@ static char g_errorText[0x100];   // error message buffer
 // (g_gameAppInstanceCount is declared in Wap32.h, defined in
 // GameApp.cpp; ~CGruntzApp's inlined base ~CGameApp decrements it.)
 
-// ---------------------------------------------------------------------------
-// CGruntzApp - the game's CGameApp subclass. Its own fields begin after the
-// base (CGameApp ends at 0x254). The matched methods touch only BASE CGameApp
-// fields: ShowError reads m_c (hInstance @+0xc), m_24c (error message id @+0x24c)
-// and m_250 (error detail value @+0x250); the dtor / InitializeGameManager touch
-// no CGruntzApp-specific field. The game-manager pointer the engine deletes is
-// CGameApp::m_8 (@+0x8) - freed by CloseResources, not by this dtor directly. So
-// no CGruntzApp-specific members are needed yet.
-// ---------------------------------------------------------------------------
-class CGruntzApp : public CGameApp {
-public:
-    CGruntzApp();                                     // ctor
-    virtual ~CGruntzApp();                            // vtbl +0x00
-    // CGruntzApp's override of the base init virtual (CGameApp slot +0x8):
-    // forwards all 7 launch args to CGameApp::VirtualUnknownMethod03 and
-    // normalises the int result to a bool (0/1).
-    virtual int VirtualUnknownMethod03(HINSTANCE hInstance, char *szWindowName,
-                                       char *szGameIdentifier, char *szCmdLine,
-                                       int windowClassFlags, int windowWidth,
-                                       int windowHeight);                 // vtbl +0x08
-    virtual void ShowError();                         // vtbl +0x30
-    // Another base-init virtual override; just returns 0.
-    virtual int VirtualUnknownMethod04(int a, int b, int c);
-    // Shows the MESSAGE dialog with an arbitrary message string.
-    void ShowMessage(char *msg, HWND hParent);
-    WAP32::CGameMgr *InitializeGameManager();
-    static INT_PTR __stdcall ErrorDialogProc(HWND hWnd, UINT message,
-                                             WPARAM wParam, LPARAM lParam);
-
-    // Engine-label backlog stubs.
-    void Stub_112820();
-};
+// CGruntzApp - the game's CGameApp subclass, defined once in <Gruntz/GruntzApp.h>.
+// The matched methods touch only BASE CGameApp fields: ShowError reads m_c
+// (hInstance @+0xc), m_24c (error message id @+0x24c) and m_250 (error detail
+// @+0x250); the dtor / InitializeGameManager touch no CGruntzApp-specific field.
+#include <Gruntz/GruntzApp.h>
 
 // ---------------------------------------------------------------------------
 // CGruntzApp::CGruntzApp

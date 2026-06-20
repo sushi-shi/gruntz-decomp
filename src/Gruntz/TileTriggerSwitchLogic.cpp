@@ -35,3 +35,17 @@ int CTileTriggerSwitchLogic::FindIndexByKey(int key)
     }
     return 0;
 }
+
+// Engine-label backlog stubs (moved from src/Stub/CTileTriggerSwitchLogic.cpp).
+
+// @confidence: high
+// @source: rtti-vptr
+// @stub
+RVA(0x115f60, 0x2de)
+void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_115f60() {}
+
+// @confidence: high
+// @source: rtti-vptr
+// @stub
+RVA(0x116320, 0x66)
+void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_116320() {}

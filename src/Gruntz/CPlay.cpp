@@ -109,6 +109,13 @@ struct CRegSink { void Post(int a, int b); };
 // PlayCueAt's per-cue de-dupe object at this+0x410.
 struct CCueState { int Probe(int wParam); };
 
+// CPlay::Update() (slot 4): the PLAY state's ID = 3.
+RVA(0x08c910, 0x6)
+int CPlay::Update()
+{
+    return 3;
+}
+
 // ===========================================================================
 // CPlay::Render  (vtable slot +0x14)
 // ===========================================================================
@@ -293,7 +300,9 @@ int CPlay::Render()
                 // not yet: build a CString temp, CopyRect the viewport, HudDraw.
                 CString tmp; (void)tmp;              // [esp+0x10] CString temp
                 tmp.Format("%s", "");
-                CopyRect(&m_310, (const RECT *)g_64556c->m_30->m_24);
+                // m_30 is the shared CSpriteFactoryHolder; this WIP path reads it
+                // as a resource map whose +0x24 holds the CopyRect-source rect.
+                CopyRect(&m_310, (const RECT *)((char *)g_64556c->m_30 + 0x24));
                 Eng_HudDraw(g_64556c->m_30, &m_310, 1);
             }
             // (CString temp dtor runs here under the EH frame)
@@ -525,8 +534,8 @@ int CPlay::StepInputA()
     int   axisVal;
     Edge *edge;
     void *halfPtr;
-    if (m_1b0 == 0) { axisVal = m_160; edge = &m_188; halfPtr = m_168; }
-    else            { axisVal = m_164; edge = &m_198; halfPtr = m_178; }
+    if (m_1b0 == 0) { axisVal = m_160; edge = (Edge *)&m_188; halfPtr = &m_168; }
+    else            { axisVal = m_164; edge = (Edge *)&m_198; halfPtr = &m_178; }
 
     // null-check the draw surface m_c->m_4->m_14->m_2c (walks through the this reg).
     void *probeTarget = ((void **)m_c->m_4->m_14)[0xb];   // [+0x2c] = index 0xb

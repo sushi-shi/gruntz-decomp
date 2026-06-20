@@ -76,6 +76,10 @@ public:
     int   VirtualMethodUnknown20();
     void *VirtualMethodUnknown24(int a1, const char *key, int a3);
 
+    // Engine-label backlog stubs.
+    ~CDDrawWorkerCache();
+    void VirtualMethod_157720();
+
     void          *m_vptr;                  // +0x00
     int            m_04;                    // +0x04  -1 when inactive
     char           m_pad08[0x0c - 0x08];    // +0x08..0x0b
@@ -147,3 +151,17 @@ void *CDDrawWorkerCache::VirtualMethodUnknown24(int a1, const char *key, int a3)
     m_10[key] = (CObject *)w;
     return w;
 }
+
+// Engine-label backlog stubs (moved from src/Stub/CDDrawWorkerCache.cpp).
+
+// @confidence: high
+// @source: tomalla
+// @stub
+RVA(0x157700, 0x1e)
+CDDrawWorkerCache::~CDDrawWorkerCache() {}
+
+// @confidence: med
+// @source: call-xref
+// @stub
+RVA(0x157720, 0x68)
+void CDDrawWorkerCache::VirtualMethod_157720() {}

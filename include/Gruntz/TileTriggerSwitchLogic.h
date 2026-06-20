@@ -17,6 +17,10 @@ public:
     int RemoveByKey(int key1, int key2);   // (still a stub)
     int FindIndexByKey(int key);
 
+    // Engine-label backlog stubs.
+    void CTileTriggerSwitchLogic_115f60();
+    void CTileTriggerSwitchLogic_116320();
+
     // +0x00 vptr (implicit)
     int   m_04;                        // +0x04  list head (owner) / key (data obj)
     int   m_08;                        // +0x08  (not accessed here)
