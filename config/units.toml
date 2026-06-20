@@ -269,6 +269,16 @@ source = "src/Gruntz/SpriteResource.cpp"
 flags = "base"
 
 [[unit]]
+unit = "iconloaders"
+source = "src/Gruntz/IconLoaders.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "kitchenslime"
+source = "src/Gruntz/KitchenSlime.cpp"
+flags = "base"
+
+[[unit]]
 unit = "actionoptionsmenubar"
 source = "src/Gruntz/ActionOptionsMenuBar.cpp"
 flags = "base"

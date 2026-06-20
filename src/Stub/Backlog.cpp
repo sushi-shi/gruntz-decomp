@@ -251,11 +251,7 @@ void EngineLabelBacklog::BuildBootyWalkingGruntz() {}
 RVA(0x01b690, 0x7bf)
 void EngineLabelBacklog::UpdateBootyWalkingGruntz() {}
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
-RVA(0x01c070, 0x59)
-void EngineLabelBacklog::BuildBootyPerfectAnimation() {}
+// BuildBootyPerfectAnimation @0x01c070 graduated to src/Gruntz/IconLoaders.cpp.
 
 // @confidence: med
 // @source: string-xref
@@ -503,11 +499,7 @@ void EngineLabelBacklog::LoadTeleporterGooConfig() {}
 RVA(0x075e90, 0x1329)
 void EngineLabelBacklog::LoadTerrainTileSprites() {}
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
-RVA(0x078960, 0x9b)
-void EngineLabelBacklog::LoadCameraSprite() {}
+// LoadCameraSprite @0x078960 graduated to src/Gruntz/IconLoaders.cpp.
 
 // @confidence: med
 // @source: decomp-xref
@@ -515,11 +507,7 @@ void EngineLabelBacklog::LoadCameraSprite() {}
 RVA(0x07a3f0, 0xd7)
 void EngineLabelBacklog::LoadToyBoxIcon() {}
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
-RVA(0x07b330, 0xc6)
-void EngineLabelBacklog::LoadExplosionSprites() {}
+// LoadExplosionSprites @0x07b330 graduated to src/Gruntz/IconLoaders.cpp.
 
 // @confidence: med
 // @source: decomp-xref
@@ -545,11 +533,7 @@ void EngineLabelBacklog::LoadGruntResurrectTuning() {}
 RVA(0x07c3d0, 0x1ae)
 void EngineLabelBacklog::LoadFinishLevelSprite() {}
 
-// @confidence: med
-// @source: string-xref
-// @stub
-RVA(0x07c620, 0x3c5)
-void EngineLabelBacklog::LoadPowerupIconSprites() {}
+// LoadPowerupIconSprites @0x07c620 graduated to src/Gruntz/IconLoaders.cpp.
 
 // @confidence: low
 // @source: decomp-xref
