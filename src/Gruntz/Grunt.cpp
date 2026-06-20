@@ -125,6 +125,10 @@ static const char s_keyF[]       = "F";
 CAnimLookupTree g_animLookupTree;
 int  g_movingSeed;
 
+// Entrance-animation globals (reloc-masked; see Grunt.h).
+CEntranceAnimSrc g_entranceAnimSrc;     // DAT_006bf620
+int g_focusedGruntSentinel;             // DAT_00644c54
+
 // ---------------------------------------------------------------------------
 // CGrunt::ResolveMovingAnimation()
 // Gate: m_a8 == 0 (else return 0). Feed key "GRUNTZ_<type>_MOVING" + geometry
@@ -489,7 +493,7 @@ void CGrunt::Stub_048470() {}
 // @source: decomp-xref
 // @stub
 RVA(0x062e10, 0x47e)
-void CGrunt::Stub_062e10() {}
+void CGrunt::Stub_062e10(int, int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
@@ -497,11 +501,118 @@ void CGrunt::Stub_062e10() {}
 RVA(0x0633e0, 0x2ca)
 void CGrunt::Stub_0633e0() {}
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
+// ---------------------------------------------------------------------------
+// CGrunt::BuildEntranceAnimation(int mode)   @0x67bd0
+// Selects + loads the grunt's entrance animation (the "drop in / resurrect /
+// random arrival" sequence). Latches a fresh active-anim-set node into m_14->m_1c
+// (saving the old into m_30), seeds the entrance bookkeeping (m_25c=1, m_1fc=0,
+// m_1e4=1), marks the HUD geometry dirty (m_10->m_74 = 0xcf850; m_10->m_8 |=
+// 0x20000), then picks an entrance-key string by `mode`:
+//   mode==1 : a rand()%0x1e1-bucketed arrival (ENTRANCEZ_ONE / _TWO / _THREE)
+//   mode==2 : ENTRANCEZ_DROP
+//   else    : ENTRANCEZ_RESSURECT (key) / DEATHZ_MELT (base)
+// looks that sprite-set up in the entrance player's table (m_154->m_c->m_2c map),
+// fires a 6-arg on-screen "cue" when the grunt is visible/focused, copies the base
+// "GRUNTZ_ENTRANCEZ"/"GRUNTZ_DEATHZ_MELT" key into a CString, and finally either
+// runs the entrance reset (Stub_062e10(1,0,0)) on a lookup miss, or applies the
+// resolved geometry to the player's sub-player (+0x1a0) plus the first frame.
+// /GX (the CString temp carries a C++ EH frame). __thiscall, ret 4.
+//
+// `mode`-string table (reloc-masked .rodata literals):
+static const char s_GRUNTZ_ENTRANCEZ[]           = "GRUNTZ_ENTRANCEZ";
+static const char s_GRUNTZ_ENTRANCEZ_ONE[]       = "GRUNTZ_ENTRANCEZ_ONE";
+static const char s_GRUNTZ_ENTRANCEZ_TWO[]       = "GRUNTZ_ENTRANCEZ_TWO";
+static const char s_GRUNTZ_ENTRANCEZ_THREE[]     = "GRUNTZ_ENTRANCEZ_THREE";
+static const char s_GRUNTZ_ENTRANCEZ_DROP[]      = "GRUNTZ_ENTRANCEZ_DROP";
+static const char s_GRUNTZ_ENTRANCEZ_RESSURECT[] = "GRUNTZ_ENTRANCEZ_RESSURECT";
+static const char s_GRUNTZ_DEATHZ_MELT[]         = "GRUNTZ_DEATHZ_MELT";
+
 RVA(0x067bd0, 0x2ef)
-void CGrunt::BuildEntranceAnimation() {}
+void CGrunt::BuildEntranceAnimation(int mode)
+{
+    m_30 = (int)m_14->m_1c;
+    m_14->m_1c = (void *)EntranceLookupAnimSet();
+
+    m_25c = 1;
+    m_1fc = 0;
+    m_1e4 = 1;
+    if (m_10->m_74 != 0xcf850) {
+        m_10->m_74 = 0xcf850;
+        m_10->m_8 |= 0x20000;
+    }
+
+    EntrancePrepare();                   // thunk_FUN_0044b240 (a void this-method)
+
+    CString key;
+
+    // The on-screen / focused-grunt gate: fire the cue when the grunt is inside
+    // the visible view rect, or when it is the registry's focused grunt and its
+    // m_1ec matches the focus sentinel.
+    int onScreen = 0;
+    CGameRegistry *g = g_pGameRegistry;
+    {
+        int x = m_10->m_5c;
+        int y = m_10->m_60;
+        if (x < g->m_144 && x >= g->m_13c && y < g->m_148 && y >= g->m_140) {
+            onScreen = 1;
+        } else {
+            CEntranceAnimPlayer *focus = 0;
+            int *cell = (int *)((char *)g + 0x68);
+            CEntranceAnimPlayer **slot = (CEntranceAnimPlayer **)(*cell);
+            if (((int *)slot)[0x24c / 4] == 1) {
+                int *idxObj = ((int **)slot)[0x244 / 4];
+                int *vec = (int *)idxObj[2];
+                int a = vec[0];
+                int b = vec[1];
+                int off = a * 15 + b;
+                focus = ((CEntranceAnimPlayer **)slot)[off + 0x1c / 4];
+            }
+            if (this == (CGrunt *)focus && m_1ec == g_focusedGruntSentinel)
+                onScreen = 1;
+        }
+    }
+
+    CSprite *found = 0;
+    const char *base;
+
+    if (mode == 1) {
+        int r = GruntRand() % 0x1e1;
+        if (r > 0x140) {
+            m_154->m_c->m_2c->m_10map.Lookup(s_GRUNTZ_ENTRANCEZ_ONE, &found);
+            if (onScreen)
+                g->m_60->CueA(this, 0x37a, -1, 0, -1, -1);
+            base = s_GRUNTZ_ENTRANCEZ;
+        } else if (r > 0xa0) {
+            m_154->m_c->m_2c->m_10map.Lookup(s_GRUNTZ_ENTRANCEZ_TWO, &found);
+            if (onScreen)
+                g->m_60->CueA(this, 0x37b, -1, 0, -1, -1);
+            base = s_GRUNTZ_ENTRANCEZ;
+        } else {
+            m_154->m_c->m_2c->m_10map.Lookup(s_GRUNTZ_ENTRANCEZ_THREE, &found);
+            if (onScreen)
+                g->m_60->CueA(this, 0x37c, -1, 0, -1, -1);
+            base = s_GRUNTZ_ENTRANCEZ;
+        }
+    } else if (mode == 2) {
+        m_154->m_c->m_2c->m_10map.Lookup(s_GRUNTZ_ENTRANCEZ_DROP, &found);
+        base = s_GRUNTZ_ENTRANCEZ_DROP;
+    } else {
+        m_154->m_c->m_2c->m_10map.Lookup(s_GRUNTZ_ENTRANCEZ_RESSURECT, &found);
+        base = s_GRUNTZ_DEATHZ_MELT;
+    }
+
+    key = base;
+
+    if (!found) {
+        Stub_062e10(1, 0, 0);
+    } else {
+        m_15c = (int)m_154->m_1b4;
+        m_154->m_1a0.SetGeometry((int)found);
+        CEntranceAnimDescColl *desc = m_154->m_1b4;
+        int *elem = desc->m_10 > 0 ? *desc->m_c : 0;
+        EntranceApplyFrame(key, elem[0x14 / 4]);
+    }
+}
 
 // @confidence: med
 // @source: decomp-xref

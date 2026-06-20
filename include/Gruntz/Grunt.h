@@ -64,10 +64,14 @@ struct CHudSprite {
 // m_10->m_5c and m_10->m_60 (the latter optionally minus a per-sprite constant).
 // ---------------------------------------------------------------------------
 struct CGruntHud {
-    char m_pad0[0x5c];
+    char m_pad0[0x8];
+    int  m_8;           // +0x08   (dirty-flag word; BuildEntrance |= 0x20000)
+    char m_padc[0x5c - 0xc];
     int  m_5c;          // +0x5c
     int  m_60;          // +0x60
-    char m_pad64[0x188 - 0x64];
+    char m_pad64[0x74 - 0x64];
+    int  m_74;          // +0x74   (entrance: latched anim id; cmp 0xcf850)
+    char m_pad78[0x188 - 0x78];
     int  m_188;         // +0x188  (cue arg)
 };
 
@@ -183,11 +187,83 @@ extern "C" int GruntRand();     // stub
 // ret 0x14 = 5 stack args). The resolvers fire a 5-arg cue when the
 // grunt is on-screen (m_134 == 1 -> 4-way visible-bounds test) or unconditionally
 // otherwise. External/no-body (reloc-masked; reached via incremental-link thunk).
+//
+// BuildEntranceAnimation fires a SIX-arg variant (a different cue overload, also
+// via g->m_60); modeled as a second method (CueA, ret 0x18). Both reloc-mask.
 // ---------------------------------------------------------------------------
+class CGrunt;   // fwd-declared for CueA's first arg
+
 class CGruntCueSink {
 public:
-    void Cue(int a, int b, int c, int d, int e);   // via thunk 0x33b4
+    void Cue(int a, int b, int c, int d, int e);            // via thunk 0x33b4
+    void CueA(CGrunt *g, int b, int c, int d, int e, int f); // 6-arg entrance cue (ret 0x18)
 };
+
+// ---------------------------------------------------------------------------
+// The entrance-animation sub-object @CGrunt+0x154: a per-grunt animation player.
+// BuildEntranceAnimation reaches a name->sprite-set lookup table through
+// player->m_c (a resource object) +0x2c +0x10 (the embedded map) and drives the
+// geometry sub-player @+0x1a0 with the resolved sprite. The map Lookup, the
+// geometry setter, and the frame helper are all external/no-body (reloc-masked).
+// ---------------------------------------------------------------------------
+struct CSprite;     // opaque looked-up sprite
+
+class CEntranceHashTable {
+public:
+    int Lookup(const char *szName, CSprite **ppOut);    // (ret 8)
+};
+
+struct CEntranceSpriteMgr {
+    char               m_pad0[0x10];
+    CEntranceHashTable m_10map;     // +0x10
+};
+
+struct CEntranceResMgr {
+    char                m_pad0[0x2c];
+    CEntranceSpriteMgr *m_2c;       // +0x2c
+};
+
+// The active-anim descriptor the entrance player exposes (its first element's
+// +0x14 frame number is the 2nd arg the frame helper consumes).
+struct CEntranceAnimDescColl {
+    char        m_pad0[0xc];
+    int       **m_c;        // +0x0c  element vector (first elem = *m_c)
+    int         m_10;       // +0x10  element count (>0 gate)
+};
+
+class CEntranceAnimSub {
+public:
+    void SetGeometry(int srcSprite);    // FUN_0055c2d0 (this = player+0x1a0, ret 4)
+};
+
+class CEntranceAnimPlayer {
+public:
+    char                   m_pad0[0xc];
+    CEntranceResMgr       *m_c;         // +0x0c  resource object (lookup table holder)
+    char                   m_pad10[0x1a0 - 0x10];
+    CEntranceAnimSub       m_1a0;       // +0x1a0 geometry sub-player
+    char                   m_pad1a4[0x1b4 - 0x1a4];
+    CEntranceAnimDescColl *m_1b4;       // +0x1b4 active-anim descriptor
+};
+
+// The frame helper BuildEntranceAnimation calls at the tail (FUN_005504d0):
+// __stdcall(keyStr, frameNum) - callee-pops (no `add esp` at the site). External.
+void __stdcall EntranceApplyFrame(const char *keyStr, int frameNum);
+
+// The entrance-anim-set source object (the global at DAT_006bf620). Its
+// LookupAnimSet (FUN_0056d190, __thiscall ret 0) returns the new active-anim-set
+// node that gets latched into m_14->m_1c. External/no-body (reloc-masked); the
+// `mov ecx, &g_entranceAnimSrc; call` is the load-bearing shape.
+class CEntranceAnimSrc {
+public:
+    int LookupAnimSet();                // FUN_0056d190
+};
+extern CEntranceAnimSrc g_entranceAnimSrc;   // DAT_006bf620
+#define EntranceLookupAnimSet() (g_entranceAnimSrc.LookupAnimSet())
+
+// The "focused grunt" sentinel the on-screen flag compares m_1ec against
+// (DAT_00644c54, reloc-masked).
+extern int g_focusedGruntSentinel;      // DAT_00644c54
 
 // ---------------------------------------------------------------------------
 // CGrunt - only the members the HUD sprite creators touch. CGrunt is large;
@@ -250,7 +326,11 @@ public:
     char             m_pad98[0xa8 - 0x98];
     int              m_a8;                  // +0xa8  (resolve gate / dirty flag)
     int              m_ac;                  // +0xac  (cue arg)
-    char             m_padb0[0x1b8 - 0xb0];
+    char             m_padb0[0x154 - 0xb0];
+    CEntranceAnimPlayer *m_154;             // +0x154 (entrance animation player)
+    char             m_pad158[0x15c - 0x158];
+    int              m_15c;                 // +0x15c (= m_154->m_1b4 cache)
+    char             m_pad160[0x1b8 - 0x160];
     CHudSprite *m_selectedSprite;           // +0x1b8
     CHudSprite *m_toySprite;                // +0x1bc
     char        m_pad1c0[0x1c4 - 0x1c0];
@@ -259,12 +339,19 @@ public:
     CHudSprite *m_toyTimeSprite;            // +0x1cc
     CHudSprite *m_wingzTimeSprite;          // +0x1d0
     CHudSprite *m_powerupSprite;            // +0x1d4
-    char        m_pad1d8[0x1ec - 0x1d8];
+    char        m_pad1d8[0x1e4 - 0x1d8];
+    int         m_1e4;                      // +0x1e4 (entrance: set to 1)
+    char        m_pad1e8[0x1ec - 0x1e8];
     int         m_1ec;                      // +0x1ec
     int         m_1f0;                      // +0x1f0
-    char        m_pad1f4[0x238 - 0x1f4];
+    char        m_pad1f4[0x1fc - 0x1f4];
+    int         m_1fc;                      // +0x1fc (entrance: cleared)
+    char        m_pad200[0x238 - 0x200];
     int         m_238;                      // +0x238
-    char        m_pad23c[0x3ec - 0x23c];
+    char        m_pad23c[0x25c - 0x23c];
+    int         m_25c;                      // +0x25c (entrance: set to 1)
+    void       *m_260;                      // +0x260 (a sub-manager `this`, used by LoadEntranceConfig)
+    char        m_pad264[0x3ec - 0x264];
     int         m_3ec;                      // +0x3ec
     int         m_3f0;                      // +0x3f0
     int         m_3f4;                      // +0x3f4
@@ -274,9 +361,10 @@ public:
     void Stub_047a10();
     void Stub_048400();
     void Stub_048470();
-    void Stub_062e10();
+    void Stub_062e10(int a, int b, int c);  // (ret 0xc) - 3-arg entrance reset
     void Stub_0633e0();
-    void BuildEntranceAnimation();
+    void EntrancePrepare();                 // thunk_FUN_0044b240 (void this-method, external)
+    void BuildEntranceAnimation(int mode);
     void LoadEntranceConfig();
 };
 
