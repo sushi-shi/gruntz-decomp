@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""gruntz.analysis.gen_match_queue - build docs/match-queue.md, the prioritized matching worklist.
+"""gruntz.analysis.gen_match_queue - build config/match-queue.md, the prioritized matching worklist.
 
 The autonomous matching campaign grinds labeled-but-unmatched engine functions
 into byte-exact src/. This picks WHAT to match next: middle-small, leaf-first.
@@ -30,7 +30,7 @@ STUB_LABELS = REPO / "src"
 MATCHED = REPO / "build/gen/symbol_names.csv"   # generated (was config/symbol_names.csv)
 FID = REPO / "config/library_labels.csv"
 CHANGED = REPO / "build/patch-diff/validated_changed.pkl"
-OUT = REPO / "docs/match-queue.md"
+OUT = REPO / "config/match-queue.md"
 
 def rint(s):
     return int(s, 16) if isinstance(s, str) else int(s)
