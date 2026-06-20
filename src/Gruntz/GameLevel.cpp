@@ -32,6 +32,7 @@
 // CPlane / CImageSet / the per-plane reader / ReadImageSet / RecomputePlaneCoords /
 // InflateMainBlock / operator new/delete / SetAtGrow are reloc-masked calls.
 #include <Gruntz/GameLevel.h>
+#include <Io/FileStream.h>   // CFileIO (Open/Read/GetLength/ctor/dtor reloc-masked)
 #include <rva.h>
 
 #include <string.h>  // strcpy, memset
@@ -70,6 +71,15 @@ struct CDWordArray {
     void SetSize(int nNewSize, int nGrowBy);
 };
 
+// The parse-source object VirtualMethodUnknown3C drives: BeginParse (FUN_00539960
+// @0x139960) opens/primes it and returns a handle; EndParse (FUN_005399d0
+// @0x1399d0) tears it down. Both are unmatched engine leaves taking the source as
+// `this`; declared with no body so the thiscall sites reloc-mask in objdiff.
+struct RemusParseSource {
+    int  BeginParse();
+    void EndParse();
+};
+
 // UnknownChild - placeholder for whatever class lives in the pointer arrays
 // at +0x38 and +0x4c. Only vtable slot 4 (+0x04, virtual Release(1)) is used.
 class UnknownChild {
@@ -77,6 +87,16 @@ public:
     virtual void Dummy();
     virtual void Release(int arg);
 };
+
+// The two-phase vftables. The inlined RemusBase ctor (in GameLevel.h) stamps the
+// base vftable; the derived CGameLevel ctor below stamps the derived one after the
+// three array members are constructed. Both stores are reloc-masked DIR32.
+DATA(0x1efc30)
+extern void *g_severusWorkerBaseVtbl;   // base (SeverusWorker) vftable
+DATA(0x1f0150)
+extern void *g_gameLevelVtbl;           // derived CGameLevel vftable
+
+static inline void StampLevelVtbl(CGameLevel *o) { *(void **)o = &g_gameLevelVtbl; }
 
 // Stamps the shared +0xb0..+0xdc "default parameters" block. Defined inline so it
 // folds into each method exactly as the retail compiler emitted the block inline.
@@ -94,6 +114,52 @@ static inline void StampParamBlock(CGameLevel *o)
     *(int*)((char*)o + 0xd4) = 1920;
     *(int*)((char*)o + 0xd8) = 768;
     *(int*)((char*)o + 0xdc) = 576;
+}
+
+// ===========================================================================
+// CGameLevel ("UnknownRemus") constructor. Three args (ret 0xc): they land at
+// +0x4, +0x8, +0xc. Inlined base ctor (RemusBase, in the header) stamps the
+// SeverusWorker base vftable @0x5efc30 and the args, then the three MFC arrays at
+// +0x20/+0x34/+0x48 are constructed, then the derived CGameLevel vftable @0x5f0150
+// is stamped and the +0x10 sentinel, the +0x5c/+0x60 main-plane fields, the
+// +0x64/+0x68 pair (0x40), and the shared +0xb0..+0xdc default-parameter block are
+// written. Carries the /GX EH frame because the three array members are
+// destructible.
+//
+// RESIDUE (~89%, NOT a logic/offset/type/CFG error): the body is byte-for-byte
+// identical to retail (both two-phase vptr stores, both 0x40/0xfa/0x3e8/param-block
+// constants, the EH frame, the ret 0xc, every member offset) EXCEPT two pure
+// compiler-internal scheduling choices: (1) MSVC's funcinfo EH-state numbering base
+// is shifted by one (retail tags the three array ctors 0/1/2; this build uses the
+// -1 entry state for the first, then 0/1) and (2) one immediate (0xfa) lands in a
+// different register (eax vs ecx) because `this` is reloaded for the fs:0 restore
+// one slot earlier here. Logic + all offsets + the two-phase construction + CFG +
+// the EH frame are exact; this is the documented store-scheduling / EH-state-base
+// entropy plateau (matching-patterns.md §entropy, orchestration.md §2a/§8).
+RVA(0x15ccd0, 0x118)
+CGameLevel::CGameLevel(int a1, int a2, int a3)
+    : RemusBase(a1, a2, a3)
+{
+    *(int*)((char*)this + 0x64) = 0x40;
+    *(int*)((char*)this + 0x68) = 0x40;
+    *(int*)((char*)this + 0xb4) = 250;
+    *(int*)((char*)this + 0xc0) = 250;
+    *(int*)((char*)this + 0xb8) = 1000;
+    *(int*)((char*)this + 0xbc) = 1000;
+
+    StampLevelVtbl(this);
+    *(int*)((char*)this + 0x10) = (int)0x80000000;
+    *(int*)((char*)this + 0x5c) = 0;
+    *(int*)((char*)this + 0x60) = -1;
+    *(int*)((char*)this + 0xac) = 0;
+    *(int*)((char*)this + 0xb0) = 500;
+    *(int*)((char*)this + 0xc4) = 125;
+    *(int*)((char*)this + 0xc8) = 1600;
+    *(int*)((char*)this + 0xcc) = 1200;
+    *(int*)((char*)this + 0xd0) = 2560;
+    *(int*)((char*)this + 0xd4) = 1920;
+    *(int*)((char*)this + 0xd8) = 768;
+    *(int*)((char*)this + 0xdc) = 576;
 }
 
 RVA(0x15d280, 0x279)
@@ -289,17 +355,53 @@ int CGameLevel::VirtualMethodUnknown34(int arg0, int arg1)
 // -------------------------------------------------------------------------
 
 
-// @confidence: high
-// @source: tomalla
-// @stub
+// ---------------------------------------------------------------------------
+// VirtualMethodUnknown40 (vtable +0x40): open the named file, slurp it whole into
+// a heap buffer, and hand the buffer to the +0x38 load virtual (the same slot
+// LoadWwd dispatches). Returns 1 on success, 0 on any failure. The local CFileIO
+// + the heap buffer are both freed on every exit, which is why the TU carries the
+// /GX EH frame. NOTE: the file Read's byte count is DISCARDED (no compare to the
+// length) - only the +0x38 virtual's result decides success.
 RVA(0x15d500, 0x127)
-void CGameLevel::Stub_15d500() {}
+int CGameLevel::VirtualMethodUnknown40(const char *path)
+{
+    CFileIO file;
 
-// @confidence: high
-// @source: tomalla
-// @stub
+    if (!file.Open(path, 0, 0))
+        return 0;
+
+    void *buf = operator new(file.GetLength());
+    if (!buf)
+        return 0;
+
+    file.Read(buf, file.GetLength());
+    if (Vfunc38((int)buf) == 0) {
+        operator delete(buf);
+        return 0;
+    }
+    operator delete(buf);
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// VirtualMethodUnknown3C (vtable +0x3c): drive a parse/load through `arg`. Begin
+// it (BeginParse on arg); if that fails, return 0. Else feed its handle to the
+// +0x38 load virtual and finish the parse (EndParse on arg) regardless, returning
+// the +0x38 result (1/0). BeginParse/EndParse are unmatched engine leaves on the
+// arg object (reloc-masked thiscall).
 RVA(0x15d630, 0x41)
-void CGameLevel::Stub_15d630() {}
+int CGameLevel::VirtualMethodUnknown3C(RemusParseSource *arg)
+{
+    int handle = arg->BeginParse();
+    if (handle == 0)
+        return 0;
+    if (Vfunc38(handle) == 0) {
+        arg->EndParse();
+        return 0;
+    }
+    arg->EndParse();
+    return 1;
+}
 
 
 

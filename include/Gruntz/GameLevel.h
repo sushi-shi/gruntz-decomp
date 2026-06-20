@@ -16,17 +16,24 @@
 #include <Wwd/WwdFile.h>   // CPlane, WwdHeader, operator new, uncompress
 
 // ---------------------------------------------------------------------------
-// MFC-style growable pointer array (CArray<void*>). m_data@+0x4, m_size@+0x8
-// relative to the array sub-object. SetAtGrow grows + stores; the
-// element factories return their stride which advances the read cursor.
+// MFC-style growable pointer array (CObArray/CByteArray-family, 0x14 bytes). The
+// engine's array base ctor/dtor (??0/??1CByteArray@@QAE@XZ) are out-of-line NAFXCW
+// calls; the constructor builds three of these (at +0x20/+0x34/+0x48) and their
+// destructible nature is what gives the ctor its /GX EH frame. Layout pinned from
+// LoadWwd: m_data@+0x4, m_size@+0x8 relative to the array sub-object. SetAtGrow
+// grows + stores; the element factories return their stride.
 // ---------------------------------------------------------------------------
-struct CLevelPtrArray
+struct CByteArray
 {
+    CByteArray();
+    ~CByteArray();
     void* m_pad0;     // +0x00
     void* m_data;     // +0x04
     int   m_size;     // +0x08
+    char  m_tail[0x14 - 0x0c];  // +0x0c  (full 0x14-byte MFC array footprint)
     void SetAtGrow(int index, void* value);
 };
+typedef CByteArray CLevelPtrArray;
 
 // ---------------------------------------------------------------------------
 // CImageSet - the per-plane image-set descriptor the level builds from the WWD
@@ -55,6 +62,51 @@ public:
 // pointer type appears in the class declarations so a forward decl suffices here.
 struct RemusCoords;
 
+// The parse-source object passed to VirtualMethodUnknown3C. Defined in
+// GameLevel.cpp; only the pointer type appears here so a forward decl suffices.
+struct RemusParseSource;
+
+// ---------------------------------------------------------------------------
+// RemusBase - the engine "SeverusWorker" base CGameLevel derives from. The
+// constructor (INLINE, in the header, so MSVC folds it into the derived ctor and
+// keeps the members-before-derived-vptr schedule) stamps the base vftable into
+// +0x00 and stores the three ctor args at +0x04/+0x08/+0x0c. Non-polymorphic (no
+// new vtable slots), so CGameLevel's own vptr sits at +0x00 and its virtual slots
+// are unchanged; the base merely owns the +0x04..+0x0c data the base ctor writes.
+// ---------------------------------------------------------------------------
+extern void *g_severusWorkerBaseVtbl;   // base (SeverusWorker) vftable
+
+// RemusBase is POLYMORPHIC (it owns the engine "SeverusWorker" vtable @0x5efc30):
+// its inline ctor stamps that base vftable, which is why retail keeps the base
+// vptr store live across the derived member construction before CGameLevel's ctor
+// overwrites it with the derived vtable @0x5f0150 (the classic two-phase
+// vptr-store schedule). The vtable shape (v00..Reset) lives here; CGameLevel
+// overrides the whole interface to get its own vtable, leaving slot numbering
+// (Vfunc1C@+0x1c, Vfunc38/3C/40, Reset@+0x44) unchanged.
+struct RemusBase
+{
+    virtual void v00(); virtual void v04(); virtual void v08(); virtual void v0c();
+    virtual void v10(); virtual void v14(); virtual void v18();
+    virtual void Vfunc1C();             // +0x1c  fail/reset hook
+    virtual void v20(); virtual void v24(); virtual void v28(); virtual void v2c();
+    virtual void v30(); virtual void v34();
+    virtual int  Vfunc38(int arg1);     // +0x38
+    virtual int  Vfunc3C(int arg1);     // +0x3c
+    virtual int  Vfunc40(int arg1);     // +0x40
+    virtual void Reset();               // +0x44
+
+    RemusBase(int a1, int a2, int a3)
+    {
+        *(void **)this = &g_severusWorkerBaseVtbl;
+        m_04 = a2;
+        m_flags = a3;
+        m_0c = a1;
+    }
+    int m_04;            // +0x04
+    int m_flags;         // +0x08  (== WwdHeader::flags after LoadWwd; arg3 at ctor)
+    int m_0c;            // +0x0c
+};
+
 // ---------------------------------------------------------------------------
 // CGameLevel - the level container. Member offsets pinned from LoadWwd:
 //   +0x00 vtable           (slot 0x44 = the pre-load reset, slot 0x38 = LoadWwd)
@@ -69,7 +121,7 @@ struct RemusCoords;
 //   +0xac m_checksum       = WwdHeader::checksum
 //   +0xe0 m_header         WwdHeader copy (1524 B == 0x17d dwords)
 // ---------------------------------------------------------------------------
-class CGameLevel
+class CGameLevel : public RemusBase
 {
 public:
     // The vtable: LoadWwd is slot 0x38 (index 14) and the pre-load reset is slot
@@ -90,6 +142,11 @@ public:
     // Pre-load reset (vtable slot 0x44 / index 17) - external engine virtual.
     virtual void Reset();
 
+    // Constructor: three args stored at +0x4/+0x8/+0xc; inits the array members,
+    // the +0x10 sentinel and the +0xb0.. default-parameter block. (RemusCoords/
+    // body in GameLevel.cpp.)
+    CGameLevel(int a1, int a2, int a3);
+
     // LoadWwd (vtable slot 0x38). Returns 1 on
     // success, 0 on failure.
     int LoadWwd(WwdHeader* hdr);
@@ -107,10 +164,10 @@ public:
     int  VirtualMethodUnknown1C();
     void VirtualMethodUnknown44();
     int  VirtualMethodUnknown20();
+    int  VirtualMethodUnknown40(const char *path);
+    int  VirtualMethodUnknown3C(RemusParseSource *arg);
 
     // Engine-label backlog stubs (merged from UnknownRemus).
-    void Stub_15d500();
-    void Stub_15d630();
     void Stub_1611c0();
     void Stub_1611e0();
 
@@ -126,15 +183,12 @@ private:
     // Plane coord-recompute helper (vtable-less) - external.
     void RecomputePlaneCoords(CPlane* plane);
 
-    // vptr is implicit at +0x00 (4 bytes); pad to +0x08.
-    unsigned char pad_04[0x08 - 0x04];   // +0x04
-    unsigned int  m_flags;           // +0x08
-    unsigned char pad_0c[0x10 - 0x0c];
-    unsigned char m_planeCtx[0x34 - 0x10];  // +0x10
-    CLevelPtrArray m_planes;         // +0x34  (m_size@+0x3c == m_planeCount)
-    unsigned char pad_40[0x48 - 0x40];
-    CLevelPtrArray m_imageSets;      // +0x48
-    unsigned char pad_54[0x5c - 0x54];
+    // vptr@+0x00 (implicit, CGameLevel is polymorphic); +0x04..+0x0c are the
+    // RemusBase members; the plane-read ctx begins at +0x10.
+    unsigned char m_planeCtx[0x20 - 0x10];  // +0x10  plane-read ctx (LoadWwd 3rd arg)
+    CByteArray    m_array20;         // +0x20  (built by the ctor; EH state 0)
+    CLevelPtrArray m_planes;         // +0x34  (m_size@+0x3c == m_planeCount; EH state 1)
+    CLevelPtrArray m_imageSets;      // +0x48  (EH state 2)
     CPlane*       m_mainPlane;       // +0x5C
     int           m_mainIndex;       // +0x60
     unsigned char pad_64[0x6c - 0x64];

@@ -39,7 +39,7 @@ font	16	8
 fontconfig	1	0
 fonts	2	1
 gameapp	19	15
-gamelevel	14	8
+gamelevel	15	10
 gamemode	11	8
 gametext	4	2
 gamewnd	5	4
@@ -614,9 +614,8 @@ gameapp	?VirtualUnknownMethod02@CGameApp@@UAEHPAUGameInfo@@PAUtagWNDCLASSA@@PAUt
 gameapp	?VirtualUnknownMethod03@CGameApp@@UAEHPAXPAD11HHH@Z	100.0000	100.0000	2	ace1ef6fbd7a
 gameapp	?VirtualUnknownMethod09@CGameApp@@UAEXXZ	100.0000	100.0000	2	204905c2d57d
 gameapp	?vector_deleting_destructor@CGameMgr@WAP32@@QAEXXZ	3.3333	3.3333	1	1e8c4c5f4e94
+gamelevel	??0CGameLevel@@QAE@HHH@Z	89.4717	89.4717	1	b8bccfdef930
 gamelevel	?LoadWwd@CGameLevel@@QAEHPAUWwdHeader@@@Z	56.1982	56.1982	2	5b6715723707
-gamelevel	?Stub_15d500@CGameLevel@@QAEXXZ	0.4706	0.4706	1	0f4300729e59
-gamelevel	?Stub_15d630@CGameLevel@@QAEXXZ	1.4286	1.4286	1	d4b9914fd4cc
 gamelevel	?Stub_1611c0@CGameLevel@@QAEXXZ	3.6364	3.6364	1	9f082b403ea9
 gamelevel	?Stub_1611e0@CGameLevel@@QAEXXZ	3.3333	3.3333	1	dd2b44db360a
 gamelevel	?VirtualMethodUnknown14@CGameLevel@@QAEHXZ	100.0000	100.0000	1	361fff809e4d
@@ -627,6 +626,8 @@ gamelevel	?VirtualMethodUnknown28@CGameLevel@@QAEHHPAURemusCoords@@@Z	100.0000	1
 gamelevel	?VirtualMethodUnknown2C@CGameLevel@@QAEHHPAURemusCoords@@@Z	100.0000	100.0000	1	b29e10598434
 gamelevel	?VirtualMethodUnknown30@CGameLevel@@QAEHPAURemusCoords@@@Z	100.0000	100.0000	1	d462f235a5ef
 gamelevel	?VirtualMethodUnknown34@CGameLevel@@QAEHHH@Z	84.2800	84.2800	1	57168983bcd1
+gamelevel	?VirtualMethodUnknown3C@CGameLevel@@QAEHPAURemusParseSource@@@Z	100.0000	100.0000	1	45b5d3a00cf3
+gamelevel	?VirtualMethodUnknown40@CGameLevel@@QAEHPBD@Z	100.0000	100.0000	1	e9b295f5af19
 gamelevel	?VirtualMethodUnknown44@CGameLevel@@QAEXXZ	100.0000	100.0000	1	a3527d802e77
 gamemode	??0CState@@QAE@XZ	100.0000	100.0000	2	b3ca36002e0a
 gamemode	??_GCState@@UAEPAXI@Z	100.0000	100.0000	1	cpp:2601fb2a9496
