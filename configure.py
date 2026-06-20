@@ -95,7 +95,7 @@ DELINK = "scripts/gruntz/build/delink.py"
 GEN_LABELS = "scripts/gruntz/build/labels.py"
 # The rva->name,unit map is GENERATED from src `// @address:` annotations joined
 # to the base objs (clang mangledName INTERSECT nm) - no hand-written CSV. See
-# docs/source-consolidation-investigation.md.
+# docs/build-system.md.
 GEN_NAMES = "build/gen/symbol_names.csv"
 # clangd compile DB (per-TU MS/include flags); labels.py uses it so the IR emit's
 # system-header lookup succeeds. Optional - labels.py degrades to bare MS flags.

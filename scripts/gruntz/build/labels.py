@@ -3,7 +3,7 @@
 
 Replaces the hand-maintained config/symbol_names.csv. The only manual input is
 the address annotation on each matched function/global; everything else is
-derived. See docs/source-consolidation-investigation.md and docs/build-system.md.
+derived. See docs/build-system.md.
 
 ANNOTATIONS (src/rva.h macros, compiled out under MSVC):
 

@@ -135,7 +135,7 @@ static inline void StampParamBlock(CGameLevel *o)
 // different register (eax vs ecx) because `this` is reloaded for the fs:0 restore
 // one slot earlier here. Logic + all offsets + the two-phase construction + CFG +
 // the EH frame are exact; this is the documented store-scheduling / EH-state-base
-// entropy plateau (matching-patterns.md §entropy, orchestration.md §2a/§8).
+// entropy plateau (matching-patterns.md §entropy, .claude/agents/orchestrator.md §2a/§8).
 RVA(0x15ccd0, 0x118)
 CGameLevel::CGameLevel(int a1, int a2, int a3)
     : RemusBase(a1, a2, a3)

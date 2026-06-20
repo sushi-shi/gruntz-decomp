@@ -22,7 +22,7 @@
 // zero-init store (`mov [&spr],0`) past the `lea &spr`/arg-pushes; our cl emits
 // it before. Same instruction multiset, permuted by the scheduler (reloc-masked
 // byte-diff: only those 2-3 instructions per block reorder, ~85% fuzzy). This is
-// the entropy tail (orchestration.md §2a) - source-invariant under /O2 (verified:
+// the entropy tail (.claude/agents/orchestrator.md §2a) - source-invariant under /O2 (verified:
 // block-scoped locals and an explicit `&spr` temp both reproduce the identical
 // schedule). Kept as the canonical developer shape, not strict-exact.
 

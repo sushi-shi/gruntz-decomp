@@ -19,9 +19,8 @@ tools (`analysis/`, incl. the `fid/` matcher). Run the non-pipeline tools as
 `python -m gruntz.<area>.<module>`; `scripts/` is on `PYTHONPATH` (set by the
 nix shells + the `gruntz` wrapper). Nothing importable lives outside the package.
 
-See **`docs/build-system.md`** (the build) and
-**`docs/source-consolidation-investigation.md`** (how `src/` became the single
-source of truth, and the full `gruntz` CLI design).
+See **`docs/build-system.md`** (the build, the `gruntz` CLI, and how `src/` became
+the single source of truth).
 
 ## Tools come from Nix
 

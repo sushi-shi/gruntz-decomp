@@ -8,7 +8,7 @@ The single source of truth for a class layout is its *compilable* declaration in
 are NO `@offset` annotations: clang computes every field offset from the
 declaration. This script runs clang as a *reader* and emits the JSON that
 `apply_ghidra_enrichment.py` consumes, replacing its hand-written `STRUCTS`/`ENUMS`
-literals (docs/source-consolidation-investigation.md, step 1).
+literals (docs/build-system.md, step 1).
 
 For each translation unit:
   * `clang ... -Xclang -fdump-record-layouts-complete -fsyntax-only`
