@@ -264,6 +264,11 @@ source = "src/Gruntz/SpriteLoaders.cpp"
 flags = "base"
 
 [[unit]]
+unit = "spriteresource"
+source = "src/Gruntz/SpriteResource.cpp"
+flags = "base"
+
+[[unit]]
 unit = "actionoptionsmenubar"
 source = "src/Gruntz/ActionOptionsMenuBar.cpp"
 flags = "base"
