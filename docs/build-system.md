@@ -121,22 +121,33 @@ the `cl` rule. This is the base side fed to objdiff. Native incremental: edit a
 source (or its `RVA()`/`DATA()` annotations), or add a unit, and ninja rebuilds
 only what changed (the label map regenerates from `src/`).
 
-### Phase 2 — link -> candidate `.EXE` (DEFERRED)
+### Phase 2 — link -> candidate `.EXE` (IMPLEMENTED, opt-in)
 
-**Not implemented.** Whole-binary verification (link every base `.obj` into a
-candidate `GRUNTZ.EXE` and byte-compare against the retail binary) is a marked
-placeholder in `configure.py:emit_link_phase` and a `# === PHASE 2 (DEFERRED)
-===` comment block at the bottom of the generated `build.ninja`. When
-implemented it will add:
+`gruntz link` (or `ninja candidate`) links every base `<unit>.obj` into
+`build/exe/GRUNTZ.candidate.EXE` + `.map` using the genuine VC5 `link.exe`
+(version **5.10.7303** — the linker that built retail GRUNTZ.EXE) under wine. It
+is **opt-in** (not in the default `all` target) so a normal `gruntz build` is
+unaffected.
 
-- a `link` rule running `wine link.exe` through a **response file** (`@objs.rsp`)
-  — VC5's `link` has a short command-line limit under wine, so the obj list +
-  flags must go through a response file, not argv;
-- link flags pinned by matching: `/OPT:REF` `/OPT:ICF` plus the exact link
-  **order** (COMDAT order, not source-definition order — see
-  `docs/zlib-matching.md`);
-- inputs = every base `<unit>.obj`; output = `build/exe/GRUNTZ.candidate.EXE`
-  plus a verify step diffing it against the retail EXE.
+- `configure.py:emit_link_phase` emits the `link` rule; it runs
+  `scripts/gruntz/build/link.py`, which feeds the obj list + flags through a
+  **response file** (`@…objs.rsp`) — VC5 `link` has a short argv limit under wine.
+- The reconstruction is **partial**, so link.py passes **`/FORCE`** and the EXE is
+  **not runnable**. Layout study uses `/OPT:NOREF /OPT:NOICF` to keep every COMDAT
+  in the map. The deliverable is the **`.map`** (each function's link-assigned RVA
+  + source object).
+- link.exe statically imports **`MSDIS100.DLL`** (VC5 disassembler, only used by
+  `/dump /disasm`), which the toolchain omits, so it would not load under wine.
+  `scripts/gruntz/build/msdis_stub.py` makes it resolvable (a real sourced DLL if
+  present, else a generated export-only stub — link output is identical either way)
+  and installs it into the wine prefix's 32-bit system dir.
+
+This is the tool behind **`docs/link-order-investigation.md`**: the candidate map
+cross-referenced with retail RVAs recovers the build order (intra-TU order =
+source-definition order; cross-TU order = object link order). `gruntz link
+--analyze` runs `scripts/gruntz/analysis/link_order.py` to print that report.
+Whole-binary byte-verification against retail is a later step (needs fuller
+reconstruction + the matched link order).
 
 ## The target (delink) half
 

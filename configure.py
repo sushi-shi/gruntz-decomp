@@ -16,8 +16,13 @@ emits, from one manifest:
 Two graph phases (see docs/build-system.md):
   1. compile -> .obj   - IMPLEMENTED. Each manifest unit's source compiles to
                          build/objdiff/base/<unit>.obj via the `cl` rule.
-  2. link -> .EXE      - DEFERRED. A clearly-marked placeholder (emit_link_phase)
-                         marks where whole-binary verification will go later.
+  2. link -> .EXE      - IMPLEMENTED but OPT-IN. emit_link_phase() emits a `link`
+                         rule + `candidate` phony, kept OUT of the default `all`
+                         (build only via `ninja candidate` / `gruntz link`). It
+                         links the base objs into a non-runnable candidate EXE +
+                         .map for the link-order study (intra-TU order = source
+                         order, cross-TU = object order); a normal build never
+                         links. See docs/link-order-investigation.md.
 
 The TARGET (delink) half is orchestrated as a ninja `delink` rule that runs
 scripts/gruntz/build/delink.py (synth_pdb -> vostok-delinker -> collect <unit>.c.obj).
@@ -92,6 +97,7 @@ import ninja_syntax  # noqa: E402
 PY = "python3"
 CC_WRAP = "scripts/gruntz/build/cc_wrap.py"
 DELINK = "scripts/gruntz/build/delink.py"
+LINK = "scripts/gruntz/build/link.py"
 GEN_LABELS = "scripts/gruntz/build/labels.py"
 # The rva->name,unit map is GENERATED from src `// @address:` annotations joined
 # to the base objs (clang mangledName INTERSECT nm) - no hand-written CSV. See
@@ -145,27 +151,29 @@ def load_manifest(path: Path) -> dict:
 
 
 # --- build.ninja ------------------------------------------------------------
-def emit_link_phase(w: ninja_syntax.Writer) -> None:
-    """PLACEHOLDER for graph phase 2 (link -> candidate .EXE).
+def emit_link_phase(w: ninja_syntax.Writer, base_objs: list) -> None:
+    """Graph phase 2: link the base objs -> candidate (non-runnable) .EXE + .map.
 
-    NOT IMPLEMENTED YET. Whole-binary verification (link every base .obj into a
-    candidate GRUNTZ.EXE and byte-compare against the retail binary) goes here.
-    When implemented this will add:
-      * a `link` rule running `wine link.exe` via a wrapper, fed a RESPONSE FILE
-        (@objs.rsp) - VC5's link has a short command-line limit under wine, so
-        the obj list + flags must go through a response file, not argv.
-      * link flags pinned by matching: /OPT:REF /OPT:ICF plus the exact link
-        ORDER (COMDAT order, not source order - see docs/zlib-matching.md).
-      * inputs = every base <unit>.obj; output = build/exe/GRUNTZ.candidate.EXE
-        plus a verify step diffing it against the retail EXE.
-    See docs/build-system.md "Deferred: the link phase".
+    Runs the genuine VC5 link.exe (5.10.7303) under wine via
+    scripts/gruntz/build/link.py over a @response file (VC5 link has a short argv
+    limit under wine). The reconstruction is PARTIAL, so link.py passes /FORCE and
+    the EXE does not run - the deliverable is the `.map`, which gives each
+    function's link-assigned RVA + source object. That, cross-referenced with the
+    retail RVAs, is what recovers the build order for matching (intra-TU order =
+    source-definition order; cross-TU order = object link order). See
+    docs/link-order-investigation.md and `gruntz link`.
+
+    This is an OPT-IN target (`ninja candidate`), kept OUT of the default `all` so
+    a normal `gruntz build` is unaffected. link.py manages its own wineserver.
     """
-    w.comment("=== PHASE 2 (DEFERRED): link -> candidate .EXE ===")
-    w.comment("Not implemented. Whole-binary verification will add a `link` "
-              "rule (wine link.exe via a @response file - VC5 link has a short "
-              "cmdline limit under wine), /OPT:REF /OPT:ICF + the matched link "
-              "order, fed every base <unit>.obj. See configure.py:emit_link_phase "
-              "and docs/build-system.md.")
+    w.comment("=== PHASE 2: link -> candidate .EXE + .map (opt-in: `ninja candidate`) ===")
+    cand = "build/exe/GRUNTZ.candidate.EXE"
+    w.rule("link",
+           command=f"{PY} {LINK} --out {cand} --objs-dir {BASE_DIR}",
+           description="link base objs -> candidate EXE + map")
+    w.build([cand, "build/exe/GRUNTZ.candidate.map"], "link",
+            inputs=base_objs, implicit=[LINK, "scripts/gruntz/build/msdis_stub.py"])
+    w.build("candidate", "phony", inputs=cand)
     w.newline()
 
 
@@ -307,7 +315,7 @@ def emit_ninja(manifest: dict, out: Path) -> None:
         w.default(["all"])
         w.newline()
 
-        emit_link_phase(w)
+        emit_link_phase(w, base_objs)
 
 
 # --- objdiff project (absorbs scripts/generate_objdiff_config.py) -----------

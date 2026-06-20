@@ -9,7 +9,9 @@ Audience: the **orchestrator** (agent or human) that decomposes the Gruntz
 decompilation into worker tasks. This encodes the strategy and the hard-won
 facts so dispatch is effective. Companion docs: `matching-patterns.md` (codegen
 idioms), `build-system.md` (the loop), `zlib-matching.md` (compile flags),
-`linker-flags.md` (the deferred whole-binary link phase), `runtime-dlls.md`
+`link-order-investigation.md` (TU layout + the `gruntz link` phase — **define a
+TU's functions in retail-RVA order; see §2.4**), `linker-flags.md` (link flags),
+`runtime-dlls.md`
 (imports + the DX label seed). Data: `build/gen/symbol_names.csv` (matched set),
 `src/` (`@stub` metadata), `config/units.toml` (build manifest),
 `config/library_labels.csv` (exclusions).
@@ -63,6 +65,19 @@ misleading (Pareto) — a "47% by bytes" milestone is ~455 functions, not 7,000.
    efficient than scattered functions. (This also **contains compiler-entropy
    blast radius** — see below — by keeping a TU's symbol set self-contained.)
 
+**Order the TU's functions by retail RVA.** MSVC `/O2` emits COMDATs in
+source-definition order, and that order **changes per-function codegen** (an
+earlier-defined callee gets inlined into a later caller; defined after, it
+doesn't). This is not cosmetic — **measured**: in the byte-exact `trees` TU,
+moving one small helper (`pqdownheap`) from before its callers to after them
+dropped it from **17/17 exact to 10/17** (7 functions flipped). So within a `.cpp`,
+define functions in ascending retail RVA. `gruntz link --analyze`
+(`scripts/gruntz/analysis/link_order.py`) prints the per-TU "REORDER" worklist; the zlib
+TUs are the reference (faithful order ⇒ 100%). Order only matters between functions
+that **interact** (a call/inline-candidate or a shared pooled constant): reordering
+empty `@stub`s relative to real functions is a measured no-op (`grunt`: 21.67% →
+21.67%).
+
 ---
 
 ## 2a. Entropy expectation — calibrate "done" before dispatching
@@ -82,6 +97,17 @@ Encode this in **every matcher prompt** (full detail + mitigations in
   ping-ponging ("whack-a-mole") burns workers for no net gain.
 - When a **previously-green** function regresses after an *unrelated* edit,
   suspect entropy first (revert/re-scope), not a logic bug.
+- **"Entropy" has a deterministic core: definition order.** A chunk of what reads
+  as random fluctuation is function-definition-**order coupling** — editing a
+  `.cpp` often changes the ORDER or inline-ability of its functions, which
+  *deterministically* shifts the codegen of *interacting* siblings (an inlined
+  callee, a shared pooled constant). **Measured:** moving one helper in the
+  byte-exact `trees` TU flipped 7 functions (§2.4). So before charging a miss to
+  entropy, **isolate it** — compile the function alone in a one-function TU:
+    * matches alone but fuzzy in-TU → a **neighbor/order effect**: fix the TU order
+      or the interacting preceding function (the proper fix may be the function
+      *before* it, not the one you're staring at);
+    * fuzzy alone too → a **local** problem (struct offsets, CFG) or genuine entropy.
 - This is the **same family of symbol-table sensitivity** as our reverse-engineered
   `/Od` 16-bucket name-hash — the compiler's symbol table leaking into codegen.
   Per-TU dispatch (§2.4) is the structural mitigation: keep each TU's symbol
@@ -89,7 +115,9 @@ Encode this in **every matcher prompt** (full detail + mitigations in
   inside one TU.
 
 If a logically identical function won't match, suspect in order: (1) a real
-source diff, (2) entropy, (3) wrong toolchain SP/version (we target VC5 SP3 —
+source diff, (2) a **definition-order / interacting-neighbor effect** (a missing
+or misordered caller/inline-callee in the same TU — isolate to confirm, above),
+(3) entropy, (4) wrong toolchain SP/version (we target VC5 SP3 —
 `matching-patterns.md` § "Service-pack sensitivity").
 
 ---
@@ -231,7 +259,9 @@ must STOP and report, not force the wrong class.
    **each** function with an `RVA(0x<rva>, 0x<size>)` macro on the line directly
    above the definition (worked example in `build-system.md` "Add a translation
    unit"). `labels.py` reads it from LLVM IR (the mangled symbol is paired directly
-   with the annotation — no positional join).
+   with the annotation — no positional join). **Define the functions in ascending
+   retail-RVA order in the file** (§2.4) — definition order is part of the match
+   (it drives inlining + COMDAT order), not cosmetic.
 4. **`nix develop .#build --command gruntz build` — this ONE command IS the inner
    loop.** It does everything, incrementally: `configure.py` regenerates
    `build.ninja`, then ninja recompiles the base obj (`cl`), regenerates the label
@@ -246,7 +276,11 @@ must STOP and report, not force the wrong class.
    artifacts) and use `matching-patterns.md`; locked flags `/O2 /MT` — do not
    recalibrate. Found a new idiom? Add a pattern file + an INDEX line. A vtable/global-store function tops out at
    ~99.5% *fuzzy*, not 100% *exact* (the reloc-typing artifact, §6) — that's
-   matched; confirm by direct byte-compare and move on, don't chase it (§2a).
+   matched; confirm by direct byte-compare and move on, don't chase it (§2a). If a
+   function plateaus below exact with no *local* source diff, check the function
+   **defined before it** in the TU (a stubbed/un-reconstructed or misordered
+   inline-callee can poison it) and run the §2a isolation test before charging it
+   to entropy.
 6. Navigate with `python -m gruntz.analysis.clangd_query def|refs|hover|symbol`.
 
 ---

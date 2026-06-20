@@ -61,6 +61,7 @@ GHIDRA_SCRIPTS     = GHIDRA / "scripts"       # GhidraScripts: path-only, never 
 GHIDRA_APPLY       = GHIDRA_SCRIPTS / "apply.py"   # enrichment GhidraScript (run under PyGhidra)
 GHIDRA_EXPORT      = GHIDRA_SCRIPTS / "export.py"  # functions.csv/symbols.csv dump GhidraScript
 INIT               = PKG / "init"             # environment setup
+LINK               = BUILD / "link.py"        # phase-2 VC5 link wrapper (candidate EXE + map)
 MANIFEST           = REPO / "config" / "units.toml"
 OBJDIFF_DIR        = REPO / "build" / "objdiff"
 TARGET_DIR         = OBJDIFF_DIR / "target"
@@ -431,6 +432,36 @@ def cmd_status(args) -> None:
     summarize(json.loads(REPORT.read_text()))
 
 
+def cmd_link(args) -> None:
+    """Phase 2: link the base objs into a candidate (non-runnable) GRUNTZ.EXE + map.
+
+    Runs the genuine VC5 link.exe (5.10.7303) over build/objdiff/base/*.obj with
+    /FORCE. The reconstruction is PARTIAL, so most externals are unresolved and the
+    EXE does not run - the point is the .map, which exposes each function's
+    link-assigned RVA and source object. Combined with the retail RVAs that gives
+    the build-order model (intra-TU = source order, cross-TU = object order); see
+    docs/link-order-investigation.md. Pass --order FILE to test a hypothesised
+    link order, --analyze to print the layout report afterwards.
+    """
+    run([sys.executable, str(CONFIGURE)])
+    ninja = tool("ninja")
+    _start_wine_session()
+    try:
+        run([ninja, "base"])                       # ensure base objs are current
+        cmd = [sys.executable, str(LINK)]
+        if args.order:
+            cmd += ["--order", args.order]
+        if args.opt_ref:
+            cmd += ["--opt-ref"]
+        run(cmd)
+    finally:
+        _kill_wine_session()
+    if args.analyze:
+        run([sys.executable, "-m", "gruntz.analysis.link_order",
+             "--map", str(REPO / "build" / "exe" / "GRUNTZ.candidate.map"),
+             "--names", str(GEN_NAMES)])
+
+
 def cmd_todo(args) -> None:
     """Obj symbols with no @address yet (the matching worklist) - a discovery aid.
 
@@ -521,6 +552,14 @@ def main() -> None:
                    ).set_defaults(func=cmd_clangd)
     sub.add_parser("status", help="print the last objdiff summary"
                    ).set_defaults(func=cmd_status)
+    lk = sub.add_parser("link", help="phase 2: link base objs -> candidate EXE + map "
+                        "(non-runnable; for layout/link-order study)")
+    lk.add_argument("--order", help="file listing obj stems in link order to test")
+    lk.add_argument("--opt-ref", action="store_true",
+                    help="let the linker strip/fold unreferenced COMDATs (default keeps all)")
+    lk.add_argument("--analyze", action="store_true",
+                    help="print the layout/link-order report after linking")
+    lk.set_defaults(func=cmd_link)
     sub.add_parser("todo", help="obj symbols lacking an @address (worklist)"
                    ).set_defaults(func=cmd_todo)
     sub.add_parser("clean", help="nuke build/ + stray artifacts (HEAVY re-init after)"

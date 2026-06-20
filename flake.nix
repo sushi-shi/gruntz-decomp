@@ -151,6 +151,11 @@
       # * msvc/{bin,include,lib (LIBCMT+NAFXCW static MFC)}
       # * dx/{Include,Lib} (DirectX 6 SDK)
       # * ninja/ninja.exe.
+      # msvc/bin includes MSDIS100.DLL (the VC5 disassembler link.exe imports at
+      # load) - bundled by scripts/create-toolchain-release.py from the same VS97
+      # Disc 3 ISO, alongside MSPDB50.DLL. Tarballs built before that fix lack it;
+      # scripts/gruntz/build/msdis_stub.py supplies an export-only stub fallback at
+      # link time so `gruntz link` works either way (link output is identical).
       gruntz-toolchain = pkgs.runCommand "gruntz-toolchain-vc50" {
         src = pkgs.fetchurl {
           name = "gruntz-toolchain-vc50.tar.xz";

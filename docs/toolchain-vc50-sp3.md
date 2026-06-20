@@ -112,11 +112,19 @@ matching.
 
 # 2. Locate the VC tree (the dir whose bin/ holds CL.EXE)
 #    VS97 layout: .../DevStudio/VC/{bin,include,lib}, .../DevStudio/VC/mfc/{include,lib,src}
-#      bin/    -> CL.EXE C1.EXE C1XX.EXE C2.EXE LINK.EXE CVTRES.EXE MSPDB*.DLL ...
+#      bin/    -> CL.EXE C1.EXE C1XX.EXE C2.EXE LINK.EXE CVTRES.EXE ...
 #      include/-> C/C++ headers
 #      lib/    -> LIBCMT.LIB, LIBC.LIB, MSVCRT.LIB, OLDNAMES.LIB, kernel32.lib, ...
 #      mfc/lib -> NAFXCW.LIB, NAFXCWD.LIB, MFC42.LIB (import), MFCS42.LIB, ...
 #      mfc/include -> AFX*.H, etc.
+
+# 2b. SHAREDIDE/BIN load-time DLLs (NOT under VC/bin - copy them into bin/ too)
+#    Two DLLs live in the shared IDE bin and are imported AT LOAD by the tools, so
+#    a VC/bin-only copy makes them fail under wine (status c0000135):
+#      MSPDB50.DLL   <- CL.EXE imports it  (no .obj is produced without it)
+#      MSDIS100.DLL  <- LINK.EXE imports it (the disassembler for /dump /disasm;
+#                       link.exe will not even load without it). create-toolchain-
+#                       release.py copies both from wherever rglob finds them.
 
 # 3. Apply SP3 (overlay whole replacement files onto bin/ and lib/)
 7z x -y vs97sp3.zip -o sp3/
