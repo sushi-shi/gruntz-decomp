@@ -280,6 +280,12 @@ char *CButeMgr::GetString(char *tag, char *key)
 // store node, constructs it, wires its two vtables, records it (m_pNode) and
 // inserts it under the tag name; finally ScanToken(3) consumes the value. The new
 // node lives under a C++ EH frame (freed on unwind if the ctor throws) -> /GX.
+//
+// The final return explicitly normalizes the ScanToken result (`? true : false`):
+// retail emits `test al,al; setne al` after the SEH-frame teardown. Returning the
+// bool directly (`return ScanToken(3)`) elides that normalization; the explicit
+// canonicalization reproduces the retail tail byte-for-byte (the SEH cleanup spans
+// the value, so MSVC re-canonicalizes the bool after restoring fs:[0]).
 RVA(0x1711b0, 0xf5)
 bool CButeMgr::ParseTagLine()
 {
@@ -300,7 +306,7 @@ bool CButeMgr::ParseTagLine()
         t->Insert(tok, node);
     }
 
-    return ScanToken(3);
+    return ScanToken(3) ? true : false;
 }
 
 // ---------------------------------------------------------------------------

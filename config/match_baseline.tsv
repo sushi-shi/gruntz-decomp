@@ -15,7 +15,7 @@ adler32	1	1
 advancedoptions	5	5
 appdialogs	1	1
 battlezmapconfig	1	0
-butemgr	21	12
+butemgr	21	13
 cddrawchildgroup	9	5
 cddrawptrcollections	1	0
 cddrawsubmgr	7	2
@@ -109,7 +109,7 @@ butemgr	?GetString@CButeMgr@@QAEPADPAD0@Z	99.3382	99.3382	3	b27264935d5f
 butemgr	?GetStringDef@CButeMgr@@QAEPAVCString@@PAD0PAV2@@Z	100.0000	100.0000	1	d420acf5d12d
 butemgr	?InvokeCallback@CButeMgr@@QAEPAXP6APAXPAV1@@Z@Z	100.0000	100.0000	1	f7fee8ff512f
 butemgr	?Parse@CButeMgr@@QAE_NXZ	95.0352	95.0352	2	e8b94bb75053
-butemgr	?ParseTagLine@CButeMgr@@QAE_NXZ	97.6471	97.6471	2	f3cd5d9b7f6a
+butemgr	?ParseTagLine@CButeMgr@@QAE_NXZ	100.0000	100.0000	3	8f72ec4172da
 butemgr	?ScanToken@CButeMgr@@QAE_NH@Z	100.0000	100.0000	2	5352ba5ed52d
 butemgr	?SetDouble@CButeValue@@QAEPAU1@HN@Z	92.7273	92.7273	1	358fe2fb6865
 butemgr	?SetDword@CButeValue@@QAEPAU1@HK@Z	92.0000	92.0000	1	70e7dcec29a8
