@@ -386,7 +386,7 @@ void CGameResource::Wap32GameResVfunc3() {}
 void CGameResource::PerFrameTick() {}
 // CGameMgr vtable anchors (~CGameMgr is now inline in Wap32.h; the three
 // otherwise-unmatched virtuals anchor here).
-void WAP32::CGameMgr::Wap32GameMgrVfunc3() {}
+int  WAP32::CGameMgr::Wap32GameMgrVfunc3() { return 0; }
 void WAP32::CGameMgr::Wap32GameMgrVfunc4() {}
 void WAP32::CGameMgr::Wap32GameMgrVfunc5() {}
 

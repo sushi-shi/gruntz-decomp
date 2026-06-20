@@ -213,7 +213,7 @@ public:
     virtual ~CGameMgr() { UnknownClose(); }                   // +0x00 idx0 dtor
     virtual int  Run(CGameWnd *pGameWnd, char *szCmdLine);    // +0x04 idx1
     virtual void UnknownClose();                              // +0x08 idx2
-    virtual void Wap32GameMgrVfunc3();                        // +0x0c idx3
+    virtual int  Wap32GameMgrVfunc3();                        // +0x0c idx3 (active? gate)
     virtual void Wap32GameMgrVfunc4();                        // +0x10 idx4
     virtual void Wap32GameMgrVfunc5();                        // +0x14 idx5
 

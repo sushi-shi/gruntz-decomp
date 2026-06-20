@@ -52,6 +52,22 @@ extern "C" __declspec(dllimport) DWORD __stdcall GetCurrentDirectoryA(
 // destination; reloc-masked - only the call shape is load-bearing).
 extern "C" void Format(CString *dst, const char *fmt, ...);
 
+// WINMM timeGetTime (the per-frame draw clock) - the FF15 [IAT] indirect call.
+extern "C" __declspec(dllimport) DWORD __stdcall timeGetTime(void);
+
+// The per-frame draw-clock globals PerFrameTick stamps each tick. g_wap32Now /
+// g_wap32FrameDelta are the engine's just-refreshed clock (mangled C++ globals,
+// stored into the game-side mirror g_645580/g_645584); g_6bf3c0/g_6bf3bc are the
+// draw-clock pair (extern "C" -> the _g_* C symbols). All reloc-masked DATA refs.
+extern int g_wap32Now;             // ?g_wap32Now@@3HA
+extern int g_wap32FrameDelta;      // ?g_wap32FrameDelta@@3HA
+extern "C" {
+    extern unsigned int g_645580;  // game-side now mirror (DAT_00645580)
+    extern unsigned int g_645584;  // game-side delta mirror (DAT_00645584)
+    extern unsigned int g_6bf3c0;  // draw-clock (timeGetTime stamp)
+    extern unsigned int g_6bf3bc;  // draw-clock delta (cleared)
+}
+
 // The embedded options object's ctor/dtor are out-of-line NAFXCW-style helpers
 // (FUN_0051f5a0 / FUN_0051f640); only the call (reloc-masked) + the 0x238 size
 // matter. Empty bodies suffice to give the member its destructible EH state.
@@ -86,6 +102,23 @@ char CGruntzMgr::GetGruntzDriveLetter()
     m_d0 = Utils::WinAPI::GetGruntzDriveLetter();
     m_d4 = 1;
     return m_d0;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::CheckPlayState  (__thiscall; retail FUN_0048ec50)
+// A small game-state predicate over the active state's Update() id: 0 if there
+// is no state, 1 when it reports PLAY (3), else (id == 0x11 ? 1 : 0) - i.e. true
+// for the in-game PLAY state or the paused/hold state. AdvanceFrame uses it to
+// decide whether the sound bank should keep running. (Update() is re-evaluated
+// on the second compare, matching the retail two-call codegen.)
+RVA(0x08ec50, 0x33)
+int CGruntzMgr::CheckPlayState()
+{
+    if (m_2c == 0)
+        return 0;
+    if (m_2c->Update() == 3)
+        return 1;
+    return m_2c->Update() == 0x11;
 }
 
 // -------------------------------------------------------------------------
@@ -153,6 +186,71 @@ int CGruntzMgr::InitializeLobbyConnectionSettings()
 
     m_9c = 1;
     return m_9c;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::PerFrameTick  (__thiscall; `ret`)
+// The per-frame draw-clock tick. If the active state's Update() reports the
+// "paused/hold" id (0x11) the tick is skipped; otherwise it refreshes the engine
+// clock (CGameMgr::UnknownMethodInitializeTimeGlobal), optionally re-stamps the
+// draw clock (g_6bf3c0 = timeGetTime(), g_6bf3bc = 0) when the draw gate m_30 is
+// set, and finally mirrors the freshly-refreshed engine clock into the game-side
+// pair (g_645580/g_645584).
+RVA(0x08f620, 0x51)
+void CGruntzMgr::PerFrameTick()
+{
+    if (m_2c && m_2c->Update() == 0x11)
+        return;
+
+    UnknownMethodInitializeTimeGlobal();
+
+    if (m_30) {
+        g_6bf3c0 = timeGetTime();
+        g_6bf3bc = 0;
+    }
+
+    g_645580 = g_wap32Now;
+    g_645584 = g_wap32FrameDelta;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::AdvanceFrame  (__thiscall; `ret 8`)
+// Retail Ghidra labels this ?VirtualUnknownMethod06@CGruntzMgr@@QAEXXZ (a
+// void(void) mistype), but the body reads its first arg ([esp+8]) and `ret 8`s
+// two args, so the true shape is void(int,int). The natural MS mangle of that
+// signature (?AdvanceFrame@CGruntzMgr@@QAEXHH@Z) is what the base obj emits and
+// the delinker names the target through (labels.py authority check), so no
+// SYMBOL() override is needed - the match is by SHAPE.
+// The per-frame advance gate. Bails when the owning window's "active" virtual
+// (slot 3) reports 0. On the draw path (doDraw != 0) it runs the draw tick, then
+// - unless mid-transition (m_c set) and only while a level is loaded (m_14) -
+// either keeps the sound bank running (CheckPlayState() => PLAY/paused) or stops
+// it; on the non-draw path it stops the sound bank once its inner object reports
+// idle.
+RVA(0x08f6a0, 0x7d)
+void CGruntzMgr::AdvanceFrame(int doDraw, int /*unused*/)
+{
+    if (Wap32GameMgrVfunc3() == 0)
+        return;
+
+    if (doDraw) {
+        PerFrameTick();
+        if (m_c != 0)
+            return;
+        if (m_14 == 0)
+            return;
+        if (CheckPlayState() == 0 &&
+            (m_2c == 0 || m_2c->Update() != 8))
+            return;
+        m_48->StopBank(1);
+        return;
+    }
+
+    if (m_14 == 0)
+        return;
+    if ((m_48->m_1c ? m_48->m_1c->IsBusy() : 0) == 0)
+        return;
+    m_48->StopAll();
 }
 
 // -------------------------------------------------------------------------

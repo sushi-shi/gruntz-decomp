@@ -12,8 +12,6 @@ public:
     CGruntzMgr();
     void vector_deleting_destructor();
     void UnknownClose();
-    void PerFrameTick();
-    void VirtualUnknownMethod06();
     void InitCFileIOMember();
 };
 
@@ -35,20 +33,16 @@ void CGruntzMgr::vector_deleting_destructor() {}
 RVA(0x0855e0, 0x448)
 void CGruntzMgr::UnknownClose() {}
 
-// @confidence: high
-// @source: call-xref
-// @stub
-RVA(0x08f620, 0x51)
-void CGruntzMgr::PerFrameTick() {}
-
 // @confidence: med
 // @source: call-xref
 // @stub
-RVA(0x08f6a0, 0x7d)
-void CGruntzMgr::VirtualUnknownMethod06() {}
-
-// @confidence: med
-// @source: call-xref
-// @stub
+// NOTE: this 0x8fea0 method writes a *fresh* object (stores 0 to this+0/4/8 and
+// to +0x134, constructs a CFileIO at +0x124 and CByteArray at +0x138, then
+// srand(time(0)), returning `this`) - i.e. it is a constructor whose CByteArray
+// member at +0x138 contradicts the CGruntzMgr ctor's int-3 store at +0x138, so
+// it is NOT a method on the 0xa30 CGruntzMgr layout. Kept stubbed pending the
+// true (mis-attributed) owner class. PerFrameTick (0x8f620) and the per-frame
+// advance gate (0x8f6a0, retail label VirtualUnknownMethod06) are matched in
+// src/Gruntz/GruntzMgr.cpp.
 RVA(0x08fea0, 0x6d)
 void CGruntzMgr::InitCFileIOMember() {}
