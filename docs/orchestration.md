@@ -178,12 +178,14 @@ prototype starts far ahead of one staring at `FUN_00482f50`.
 > `CStatusBarItem`'s ctor and the optimiser elides the now-dead base store) still
 > has *one* definition: the inline ctor in the header. Retail may *also* hold an
 > out-of-line COMDAT copy of that same ctor (the standalone `??0…` at its own
-> RVA). Recover the single inline ctor in the header anyway. Do **not** model a
-> second, out-of-line class shape to win that standalone match — that shape is a
-> fiction the developers never wrote. (Measured: MSVC 5.0 inlines such a tiny
-> ctor at *every* instantiation we can synthesize — scalar/array/runtime-count
-> `new` all inline or bury it — so the correct one-class source simply cannot
-> emit a labelable standalone `??0`; leave that one COMDAT unmatched.)
+> RVA). Recover the single inline ctor in the header — that is the canonical class
+> (CSBI_RectOnly folds it). MSVC 5.0 inlines such a tiny ctor at *every*
+> instantiation we can synthesize (scalar/array/runtime-count `new` all inline or
+> bury it — measured), so the canonical form cannot emit a labelable standalone
+> `??0`. To keep the standalone byte-match, use a small **stand-in TU** that does
+> NOT include the header and locally redeclares the class with an out-of-line ctor
+> purely as a labeling device (`src/Gruntz/StatusBarItem.cpp`). Frame it as the
+> tooling workaround it is — not as a second class the developers wrote.
 
 1. Locate the target's RVA; confirm it's a real function start.
 2. Add/extend the unit in `config/units.toml` with its `src/<Module>/<TU>.cpp`

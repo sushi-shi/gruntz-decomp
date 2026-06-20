@@ -55,6 +55,7 @@ registryhelper	8	8
 rezmgr	10	6
 sbi_rectonly	2	1
 spriteloaders	2	0
+statusbaritem	1	1
 tileswitchlogic	4	0
 tiletriggerlogic	1	1
 trees	17	17
@@ -763,6 +764,7 @@ sbi_rectonly	??0CSBI_RectOnly@@QAE@XZ	100.0000	100.0000	4	93eacaa6d856
 sbi_rectonly	?Stub_0ffde0@CSBI_RectOnly@@QAEXXZ	0.2119	0.2119	3	b1064f8a97e6
 spriteloaders	?LoadLoadingBarSprite@CLoadingBar@@QAEHXZ	95.8064	95.8064	3	fbc7a7742202
 spriteloaders	?LoadTimerSprite@CTimer@@QAEHHH@Z	96.5217	96.5217	3	ea8f9fb552e2
+statusbaritem	??0CStatusBarItem@@QAE@XZ	100.0000	100.0000	1	c1f37a1c5d22
 tileswitchlogic	??0CTileTriggerSwitchLogic@@QAE@XZ	90.7273	90.7273	1	b2b57f6b22d4
 tileswitchlogic	?CTileTriggerSwitchLogic_115f60@CTileTriggerSwitchLogic@@QAEXXZ	0.2198	0.2198	1	355d1ee38d67
 tileswitchlogic	?CTileTriggerSwitchLogic_116320@CTileTriggerSwitchLogic@@QAEXXZ	0.9302	0.9302	1	2570b6cf18cd
