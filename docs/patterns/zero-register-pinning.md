@@ -12,3 +12,13 @@ byte-exact, only the register choices differ. No source lever (`int z=0;`, compa
 flips) reliably forces the pinning under /O2.
 
 WALL (register allocation). Evidence: CGrunt::LoadEntranceConfig 78.8%, BuildEntranceAnimation 71%, CBattlezMapConfig::LoadConfig 88%.
+
+INVERSE case (we pin, retail does NOT): a function-local `static T s_default;` whose
+zero-init has >=4 `field = 0` stores can make MSVC pin `ebp=0` (`xor ebp,ebp` + `mov
+[field],ebp` + reuse it for `cmp ebp,eax` null tests), while the retail twin emits
+plain immediate stores (`mov [field],0`, `c7 05`) + `test eax,eax`. Decisive proof
+it is a coin-flip, not a source bug: CButeMgr::GetRef5 and GetRef8 are STRUCTURALLY
+IDENTICAL (16-byte, 4-DWORD zero-default struct) yet retail pins ebp in GetRef5
+(we match, 100%) and does NOT in GetRef8 (we pin -> 85.5%). Same struct shape, same
+ctor source, opposite retail allocation. Evidence: CButeMgr::GetRef7 84.2%, GetRef8
+85.5% (GetRef5/GetRef6 byte-exact). No init-list/assignment/reorder lever flips it.

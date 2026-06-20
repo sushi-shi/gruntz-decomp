@@ -13,6 +13,9 @@
 //   CButeMgr::GetDouble    - type 2 (or int)
 //   CButeMgr::GetStringDef - type 4, default
 //   CButeMgr::GetString    - type 4
+//   CButeMgr::GetRef5..8   - typed-reference getters (value type-tags 5..8;
+//                            return a pointer to the stored struct, or a shared
+//                            zero-default static on any miss)
 //   CButeMgr::ParseTagLine - one tag=value line
 //   CButeMgr::Parse        - the .att parser
 //
@@ -367,32 +370,109 @@ bool CButeMgr::Parse()
     }
 }
 
-// -------------------------------------------------------------------------
-// Engine-label backlog stubs.
-// -------------------------------------------------------------------------
-// @confidence: low
-// @source: decomp-xref
-// @stub
+// ---------------------------------------------------------------------------
+// CButeMgr::GetRef5 / GetRef6 / GetRef7 / GetRef8
+// The typed-reference getter family (value type-tags 5..8). Each mirrors
+// GetString: a function-local `static T s_default;` (MFC magic-static: a guard
+// byte + inline zero-init + an atexit-registered dtor thunk) is returned by
+// address on every error path, and `(T*)rec->pValue` on the matching type hit.
+// The type check is the cmp-mem `if (rec->type == N)` form (success inline, the
+// three failure blocks float to the tail as the nested-else cascade). The
+// default struct's only role is its SIZE + non-trivial dtor (-> the magic-static
+// atexit shape); its fields are zero on every miss.
+//
+// MATCH STATUS: GetRef5/GetRef6 are byte-exact (100% fuzzy). GetRef7/GetRef8 sit
+// at the INVERSE zero-register-pinning wall (84-85%): retail uses immediate zero
+// stores (`mov [field],0`) + `test eax,eax` null tests, while MSVC here pins ebp=0
+// (`xor ebp,ebp` + `mov [field],ebp` + `cmp ebp,eax`) for the >=4-field zero-init.
+// GetRef5 (also 4 fields) DOES pin ebp in retail, so this is an isolated allocator
+// coin-flip - logic/CFG/offsets are byte-exact, only the zero-materialization +
+// null-test register differ. Init-list / assignment-body / reversed-order ctor
+// forms all produce identical (ebp-pinned) MSVC codegen; no source lever flips it
+// (see docs/patterns/zero-register-pinning.md - the regalloc wall).
 RVA(0x173770, 0xc6)
-void CButeMgr::Stub_173770() {}
+CButeRef5 *CButeMgr::GetRef5(char *tag, char *key)
+{
+    static CButeRef5 s_default;
 
-// @confidence: low
-// @source: decomp-xref
-// @stub
+    void *grp = Tree()->Find(tag);
+    if (grp) {
+        CButeValue *rec = (CButeValue *)((CButeTree *)grp)->Find(key);
+        if (rec) {
+            if (rec->type == 5)
+                return (CButeRef5 *)rec->pValue;
+            CButeMgr_ReportError(this, s_fmtTypeMismatch, tag, key);
+            return &s_default;
+        }
+        CButeMgr_ReportError(this, s_fmtNotFound, tag, key);
+        return &s_default;
+    }
+    CButeMgr_ReportError(this, s_fmtInvalidTag, tag);
+    return &s_default;
+}
+
 RVA(0x173d00, 0xbb)
-void CButeMgr::Stub_173d00() {}
+CButeRef6 *CButeMgr::GetRef6(char *tag, char *key)
+{
+    static CButeRef6 s_default;
 
-// @confidence: low
-// @source: decomp-xref
-// @stub
+    void *grp = Tree()->Find(tag);
+    if (grp) {
+        CButeValue *rec = (CButeValue *)((CButeTree *)grp)->Find(key);
+        if (rec) {
+            if (rec->type == 6)
+                return (CButeRef6 *)rec->pValue;
+            CButeMgr_ReportError(this, s_fmtTypeMismatch, tag, key);
+            return &s_default;
+        }
+        CButeMgr_ReportError(this, s_fmtNotFound, tag, key);
+        return &s_default;
+    }
+    CButeMgr_ReportError(this, s_fmtInvalidTag, tag);
+    return &s_default;
+}
+
 RVA(0x174240, 0xe3)
-void CButeMgr::Stub_174240() {}
+CButeRef7 *CButeMgr::GetRef7(char *tag, char *key)
+{
+    static CButeRef7 s_default;
 
-// @confidence: low
-// @source: decomp-xref
-// @stub
+    void *grp = Tree()->Find(tag);
+    if (grp) {
+        CButeValue *rec = (CButeValue *)((CButeTree *)grp)->Find(key);
+        if (rec) {
+            if (rec->type == 7)
+                return (CButeRef7 *)rec->pValue;
+            CButeMgr_ReportError(this, s_fmtTypeMismatch, tag, key);
+            return &s_default;
+        }
+        CButeMgr_ReportError(this, s_fmtNotFound, tag, key);
+        return &s_default;
+    }
+    CButeMgr_ReportError(this, s_fmtInvalidTag, tag);
+    return &s_default;
+}
+
 RVA(0x1747c0, 0xcf)
-void CButeMgr::Stub_1747c0() {}
+CButeRef8 *CButeMgr::GetRef8(char *tag, char *key)
+{
+    static CButeRef8 s_default;
+
+    void *grp = Tree()->Find(tag);
+    if (grp) {
+        CButeValue *rec = (CButeValue *)((CButeTree *)grp)->Find(key);
+        if (rec) {
+            if (rec->type == 8)
+                return (CButeRef8 *)rec->pValue;
+            CButeMgr_ReportError(this, s_fmtTypeMismatch, tag, key);
+            return &s_default;
+        }
+        CButeMgr_ReportError(this, s_fmtNotFound, tag, key);
+        return &s_default;
+    }
+    CButeMgr_ReportError(this, s_fmtInvalidTag, tag);
+    return &s_default;
+}
 
 // ===========================================================================
 // CButeMgr::InvokeCallback

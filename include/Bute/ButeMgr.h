@@ -110,6 +110,40 @@ public:
 extern "C" void AfxString_AppendChar(void *pStr, char c);
 
 // ---------------------------------------------------------------------------
+// The typed-reference value structs (CButeMgr's GetTypedRef tag5-8 family).
+// These getters mirror GetString: a function-local `static T s_default;` is
+// returned by address on every error path, and `(T*)rec->pValue` on a type hit.
+// Each T's only load-bearing properties are its SIZE (the inline zero-init of
+// the static, one `mov [field],0` per DWORD) and that it carries a NON-TRIVIAL
+// destructor (so the magic-static emits the atexit dtor-thunk register, exactly
+// like GetString's empty CString). Field names are placeholders; the byte count
+// is recovered from the static's zero-init store list:
+//   tag5 -> 16 bytes (4 DWORDs), tag7 -> 24 bytes (6 DWORDs),
+//   tag6 ->  8 bytes (2 DWORDs), tag8 -> 16 bytes (4 DWORDs).
+// The default ctor zero-inits inline; the dtor is external/no-body so its thunk
+// + the `push thunk; call atexit` shape fall out reloc-masked.
+struct CButeRef5 {           // 16 bytes
+    CButeRef5() : a(0), b(0), c(0), d(0) {}
+    ~CButeRef5();
+    DWORD a, b, c, d;
+};
+struct CButeRef6 {           // 8 bytes
+    CButeRef6() : a(0), b(0) {}
+    ~CButeRef6();
+    DWORD a, b;
+};
+struct CButeRef7 {           // 24 bytes
+    CButeRef7() : a(0), b(0), c(0), d(0), e(0), f(0) {}
+    ~CButeRef7();
+    DWORD a, b, c, d, e, f;
+};
+struct CButeRef8 {           // 16 bytes
+    CButeRef8() : a(0), b(0), c(0), d(0) {}
+    ~CButeRef8();
+    DWORD a, b, c, d;
+};
+
+// ---------------------------------------------------------------------------
 // CString member helper - an MFC-style CString (a single char* @+0). Only the
 // engine library calls the getters/parser actually emit are modeled, with NO
 // body so their `call rel32` displacements are reloc-masked in objdiff:
@@ -174,11 +208,13 @@ public:
     char  m_10c;               // +0x10c
     char  m_10d;               // +0x10d
 
-    // Engine-label backlog stubs.
-    void Stub_173770();
-    void Stub_173d00();
-    void Stub_174240();
-    void Stub_1747c0();
+    // The typed-reference getters (tag5-8). Each returns a pointer to the typed
+    // value record's storage on a type hit, or a shared zero-default static on
+    // any miss (no tag / no key / type mismatch), reporting the specific failure.
+    CButeRef5 *GetRef5(char *tag, char *key);
+    CButeRef6 *GetRef6(char *tag, char *key);
+    CButeRef7 *GetRef7(char *tag, char *key);
+    CButeRef8 *GetRef8(char *tag, char *key);
 };
 
 // The variadic error reporter (__cdecl): ReportError(this, fmt, ...).

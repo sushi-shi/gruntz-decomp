@@ -15,7 +15,7 @@ adler32	1	1
 advancedoptions	5	5
 appdialogs	1	1
 battlezmapconfig	1	0
-butemgr	21	10
+butemgr	21	12
 cddrawchildgroup	9	5
 cddrawptrcollections	1	0
 cddrawsubmgr	7	2
@@ -101,6 +101,10 @@ butemgr	?GetDwordDef@CButeMgr@@QAEKPAD0K@Z	100.0000	100.0000	2	3496a864803c
 butemgr	?GetFloat@CButeMgr@@QAEMPAD0@Z	100.0000	100.0000	2	71287c352dc3
 butemgr	?GetInt@CButeMgr@@QAEHPAD0@Z	100.0000	100.0000	2	94a71d27c9b8
 butemgr	?GetIntDef@CButeMgr@@QAEHPAD0H@Z	100.0000	100.0000	2	bc99078154d1
+butemgr	?GetRef5@CButeMgr@@QAEPAUCButeRef5@@PAD0@Z	100.0000	100.0000	1	90e609dff7bd
+butemgr	?GetRef6@CButeMgr@@QAEPAUCButeRef6@@PAD0@Z	100.0000	100.0000	1	87adb27c249d
+butemgr	?GetRef7@CButeMgr@@QAEPAUCButeRef7@@PAD0@Z	84.1972	84.1972	1	e3592fe0c4e5
+butemgr	?GetRef8@CButeMgr@@QAEPAUCButeRef8@@PAD0@Z	85.4783	85.4783	1	7dd6eb38357e
 butemgr	?GetString@CButeMgr@@QAEPADPAD0@Z	99.3382	99.3382	3	b27264935d5f
 butemgr	?GetStringDef@CButeMgr@@QAEPAVCString@@PAD0PAV2@@Z	100.0000	100.0000	1	d420acf5d12d
 butemgr	?InvokeCallback@CButeMgr@@QAEPAXP6APAXPAV1@@Z@Z	100.0000	100.0000	1	f7fee8ff512f
@@ -111,10 +115,6 @@ butemgr	?SetDouble@CButeValue@@QAEPAU1@HN@Z	92.7273	92.7273	1	358fe2fb6865
 butemgr	?SetDword@CButeValue@@QAEPAU1@HK@Z	92.0000	92.0000	1	70e7dcec29a8
 butemgr	?SetFloat@CButeValue@@QAEPAU1@HM@Z	92.0000	92.0000	1	5a9e4b82ac74
 butemgr	?SetInt@CButeValue@@QAEPAU1@HH@Z	92.0000	92.0000	1	e9de8dccf1a3
-butemgr	?Stub_173770@CButeMgr@@QAEXXZ	0.5333	0.5333	1	d8d61d70fc0c
-butemgr	?Stub_173d00@CButeMgr@@QAEXXZ	0.5970	0.5970	1	4dd251aba6d7
-butemgr	?Stub_174240@CButeMgr@@QAEXXZ	0.5634	0.5634	1	5290c4f91126
-butemgr	?Stub_1747c0@CButeMgr@@QAEXXZ	0.5797	0.5797	1	3ef5c30a5d4d
 cddrawchildgroup	?Stub_1591f0@CDDrawChildGroup@@QAEXXZ	2.9412	2.9412	3	26469e5e197e
 cddrawchildgroup	?Stub_159a70@CDDrawChildGroup@@QAEXXZ	0.2367	0.2367	3	6cae33d9025c
 cddrawchildgroup	?VirtualMethodUnknown14@CDDrawChildGroup@@QAEHXZ	100.0000	100.0000	3	d8d76e3ff202
@@ -633,7 +633,7 @@ gamewnd	?CreateAndShow@CGameWnd@@QAEHPAUCGameWndCreateParams@@PAX@Z	100.0000	100
 gamewnd	?Destroy@CGameWnd@@QAEXXZ	100.0000	100.0000	2	1ec9f4df456c
 gamewnd	?GameWindowProc@CGameApp@@SGJPAXIIJ@Z	94.8343	94.8343	1	8fcd6f43be98
 gamewnd	?QuitMessageLoop@CGameWnd@@UAEHXZ	100.0000	100.0000	1	d81c3a5ceca8
-grunt	?BuildEntranceAnimation@CGrunt@@QAEXH@Z	71.4562	71.4562	2	b3dc27c32baf
+grunt	?BuildEntranceAnimation@CGrunt@@QAEXH@Z	71.4562	70.6037	2	b3dc27c32baf
 grunt	?CreateHealthSprite@CGrunt@@QAEHXZ	99.6552	99.6552	2	e030bb9694de
 grunt	?CreatePowerupSprite@CGrunt@@QAEHH@Z	99.6296	99.6296	2	71c70b5f41b5
 grunt	?CreateSelectedSprite@CGrunt@@QAEHXZ	91.9231	91.9231	2	5a11112c78a0
