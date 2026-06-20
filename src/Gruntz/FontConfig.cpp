@@ -16,11 +16,11 @@
 // Training and Message face lookups) is destroyed at the tail under a C++ EH frame
 // (the target opens an fs:0 EH frame: push -1 / push handler / mov fs:0,esp).
 // ---------------------------------------------------------------------------
+// <Mfc.h> brings <windows.h> GDI32: CreateFontA (the 14-arg HFONT creator; the
+// target caches it in edi and calls it indirectly six times).
+#include <Mfc.h>
 #include <Font/Font.h>
 #include <rva.h>
-
-// CreateFontA (the GDI32 14-arg HFONT creator) comes from <windows.h> (via
-// Font.h -> Mfc.h). The target caches it in edi and calls it indirectly six times.
 
 // The global CButeMgr config tree. Modeled minimally so the
 // `ecx=&g_buteMgr; call GetIntDef/GetStringDef` shapes reloc-mask against the
@@ -64,9 +64,9 @@ public:
     int   m_2c;          // +0x2c  (= 0)
     int   m_30;          // +0x30  (= 0)
     char  m_pad34[4];
-    void *m_arialFont;   // +0x38  (HFONT, the ARIAL UI font)
-    void *m_trainingFont;// +0x3c  (HFONT, the TrainingFont)
-    void *m_messageFont; // +0x40  (HFONT, the MessageFont)
+    HFONT m_arialFont;   // +0x38  (the ARIAL UI font)
+    HFONT m_trainingFont;// +0x3c  (the TrainingFont)
+    HFONT m_messageFont; // +0x40  (the MessageFont)
 };
 
 // ---------------------------------------------------------------------------
@@ -81,9 +81,9 @@ int CFontConfig::LoadFontConfig(int a1, int a2)
     m_30 = 0;
 
     // --- ARIAL UI font (fixed 12x8 bold ANSI) -------------------------------
-    m_arialFont = (void *)CreateFontA(0xc, 8, 0, 0, 0x2bc, 0, 0, 0, 1, 0, 0, 0, 0, s_ARIAL);
+    m_arialFont = CreateFontA(0xc, 8, 0, 0, 0x2bc, 0, 0, 0, 1, 0, 0, 0, 0, s_ARIAL);
     if (!m_arialFont)
-        m_arialFont = (void *)CreateFontA(0xc, 8, 0, 0, 0x2bc, 0, 0, 0, 1, 0, 0, 0, 0, s_ARIAL);
+        m_arialFont = CreateFontA(0xc, 8, 0, 0, 0x2bc, 0, 0, 0, 1, 0, 0, 0, 0, s_ARIAL);
 
     // The ARIAL default-face CString temp - constructed here (just-in-time, after
     // the first CreateFontA), passed by address as the GetStringDef default for
@@ -92,24 +92,24 @@ int CFontConfig::LoadFontConfig(int a1, int a2)
 
     // --- TrainingFont (face/dims from config, default ARIAL / 14x28) --------
     const char *faceTF = (const char *)*g_bute->GetStringDef(s_Font, s_TrainingFont, (CString *)&arial);
-    m_trainingFont = (void *)CreateFontA(
+    m_trainingFont = CreateFontA(
         g_bute->GetIntDef(s_Font, s_TrainingFontHeight, 0x1c),
         g_bute->GetIntDef(s_Font, s_TrainingFontWidth, 0xe),
         0, 0, 0x2bc, 0, 0, 0, 1, 0, 0, 0, 0, faceTF);
     if (!m_trainingFont)
-        m_trainingFont = (void *)CreateFontA(
+        m_trainingFont = CreateFontA(
             g_bute->GetIntDef(s_Font, s_TrainingFontHeight, 0x18),
             g_bute->GetIntDef(s_Font, s_TrainingFontWidth, 0x10),
             0, 0, 0x2bc, 0, 0, 0, 1, 0, 0, 0, 0, 0);
 
     // --- MessageFont (face/dims from config, default ARIAL / 24x42) ---------
     const char *faceMF = (const char *)*g_bute->GetStringDef(s_Font, s_MessageFont, (CString *)&arial);
-    m_messageFont = (void *)CreateFontA(
+    m_messageFont = CreateFontA(
         g_bute->GetIntDef(s_Font, s_MessageFontHeight, 0x2a),
         g_bute->GetIntDef(s_Font, s_MessageFontWidth, 0x18),
         0, 0, 0x2bc, 0, 0, 0, 1, 0, 0, 0, 0, faceMF);
     if (!m_messageFont)
-        m_messageFont = (void *)CreateFontA(
+        m_messageFont = CreateFontA(
             g_bute->GetIntDef(s_Font, s_MessageFontHeight, 0x2a),
             g_bute->GetIntDef(s_Font, s_MessageFontWidth, 0x18),
             0, 0, 0x2bc, 0, 0, 0, 1, 0, 0, 0, 0, 0);

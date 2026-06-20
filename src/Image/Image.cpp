@@ -21,6 +21,8 @@
 // stack object carries a dtor -> a C++ EH frame -> this TU builds with /GX.
 #include <Image/Image.h>
 #include <rva.h>
+// <string.h>: strrchr (find the ext dot) / _stricmp (the case-insensitive ext compare).
+#include <string.h>
 
 // The four file-extension literals (reloc-masked .rdata globals). Declared at
 // file scope so each `push OFFSET` matches the binary's direct-address push.
@@ -29,8 +31,6 @@ static const char s_extPcx[] = ".PCX";
 static const char s_extRid[] = ".RID";
 static const char s_extPid[] = ".PID";
 
-extern "C" char *strrchr(const char *s, int c);
-extern "C" int   _stricmp(const char *a, const char *b);
 
 // ---------------------------------------------------------------------------
 // CImage::LoadFromRez

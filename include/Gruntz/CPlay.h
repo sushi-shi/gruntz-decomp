@@ -19,11 +19,9 @@
 #ifndef SRC_GRUNTZ_CPLAY_H
 #define SRC_GRUNTZ_CPLAY_H
 
-// RECT + SetRect / CopyRect / wsprintfA come from the real <windows.h> (via Mfc.h,
-// which must precede windows.h). WINMM timeGetTime is NOT in <windows.h>.
+// <Mfc.h> brings <windows.h> (RECT, SetRect / CopyRect / wsprintfA) and the central
+// WINMM timeGetTime decl (timeGetTime is not in <windows.h> itself).
 #include <Mfc.h>
-
-extern "C" __declspec(dllimport) unsigned long __stdcall timeGetTime(void);
 
 // CGameRegistry - the global game-manager singleton (*g_64556c), shared via
 // <Gruntz/CGameRegistry.h> with the CGrunt resolvers in Grunt.h.

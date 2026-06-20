@@ -5,8 +5,8 @@
 #ifndef WAP32_H
 #define WAP32_H
 
-// Win32 surface (handle types, WNDCLASSA, MSG, USER32/GDI32 imports) comes from
-// the real <windows.h>, pulled the MFC-controlled way via <Mfc.h> (afx.h first).
+// <Mfc.h> brings <windows.h> (handle types, WNDCLASSA, MSG, USER32/GDI32 imports),
+// the MFC-controlled way (afx.h first).
 #include <Mfc.h>
 
 // CreateWindowExA's 12 arguments, packed into one params struct (CGameWnd's
@@ -169,8 +169,7 @@ private:
 };
 }
 
-// CREATESTRUCTA (m_createStruct @ CGameApp+0x210; same 0x30 layout) comes from
-// the real <windows.h>.
+// CREATESTRUCTA (m_createStruct @ CGameApp+0x210; the same 0x30 <windows.h> layout).
 
 // GameInfo - the 0x1d4-byte window/launch descriptor. Embedded in CGameApp at
 // +0x14 (m_gameInfo); VirtualUnknownMethod03 builds one on the stack and hands

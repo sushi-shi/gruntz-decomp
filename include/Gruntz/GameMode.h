@@ -51,11 +51,9 @@
 // no-body fns (reloc-masked); the global per-frame entity set + the cached
 // USER32/engine globals (the frame clock, the version-RECT) are file-scope.
 // ---------------------------------------------------------------------------
-#ifndef GAMEMODE_WIN32
-#define GAMEMODE_WIN32
-extern "C" __declspec(dllimport)
-    int __stdcall PostMessageA(void *hwnd, unsigned msg, unsigned wp, long lp);
-#endif
+// <Mfc.h> brings <windows.h> USER32: PostMessageA (the per-frame message scan posts
+// WM_COMMAND to the owner HWND; the owner's HWND member is typed HWND below).
+#include <Mfc.h>
 
 // A per-frame entity (g_entityList element). Render iterates it (slot +0x10 =
 // Update) and the message scans test its flag word m_2ac.
@@ -98,7 +96,7 @@ struct CGMSoundEntry { int Query(); };    // (thiscall, no arg -> int)
 struct CGMOwner {
     void Post(unsigned a, unsigned b);    // (thiscall, 2 args)
     char p0[0x4];                         // +0x00
-    struct M4 { char p0[0x4]; void *m_4; } *m_4;   // +0x04 -> +0x04 = HWND
+    struct M4 { char p0[0x4]; HWND m_4; } *m_4;    // +0x04 -> +0x04 = HWND
     struct M8 { char p0[0x244]; int m_244; } *m_8; // +0x08 -> +0x244 latch
     char p0c[0x14 - 0x0c];
     void *m_14;                           // +0x14 view gate (0 -> skip FX)

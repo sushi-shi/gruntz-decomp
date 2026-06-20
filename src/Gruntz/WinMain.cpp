@@ -25,20 +25,14 @@
 // bytes are load-bearing; class and field names are placeholders. Unmatched
 // engine callees are modeled as external no-body functions so their `call` /
 // `push &fn` relocs are masked in objdiff.
+// <Mfc.h> brings <windows.h> USER32/KERNEL32 (GetModuleFileNameA / FindWindowA /
+// IsIconic / SendMessageA / GetAsyncKeyState / DialogBoxParamA / PostMessageA;
+// HINSTANCE / HWND / DWORD / WPARAM / LPARAM / LPSTR / LPCSTR / UINT / BOOL / WINAPI)
+// and the WM_* / SC_RESTORE / CW_USEDEFAULT / VK_CONTROL / VK_SHIFT literals.
+#include <Mfc.h>
 #include <Wap32/Wap32.h>
 #include <rva.h>
 
-// ---------------------------------------------------------------------------
-// Minimal Win32 surface (USER32 / KERNEL32). We deliberately do NOT pull in
-// <windows.h> - keep the visible symbol SET small (the compiler hashes it;
-// entropy follows header churn - see docs/matching-patterns.md). This
-// reproduces the FF15 [IAT] direct-call form for the imports. Win32 entry
-// types (HINSTANCE / HWND / DWORD / WPARAM / LPARAM / LPCSTR / BOOL) come from
-// Wap32.h above; PostMessageA is declared there too.
-// ---------------------------------------------------------------------------
-// GetModuleFileNameA/FindWindowA/IsIconic/SendMessageA/GetAsyncKeyState/
-// DialogBoxParamA + LPSTR/UINT/WINAPI + WM_*/SC_RESTORE/CW_USEDEFAULT/VK_CONTROL/
-// VK_SHIFT all come from the real <windows.h> (via Wap32.h -> Mfc.h).
 #define VK_DOLLAR     0x24   // == VK_HOME (the developer hot-key's third key)
 
 // ---------------------------------------------------------------------------

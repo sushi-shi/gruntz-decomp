@@ -11,12 +11,11 @@
 //   SaveOptions               - 5x SaveOption
 //
 // Only offsets / control IDs / code bytes are load-bearing; names are placeholders.
+// <Mfc.h> brings <windows.h> USER32 (the dialog/window API; HWND / HINSTANCE /
+// HICON / UINT; the WM_* / BST_* / SW_* / HKEY_* literals) and INT_PTR.
+#include <Mfc.h>
 #include <Utils/RegistryHelper.h>
 #include <rva.h>
-
-// The USER32 dialog/window API, HWND/HINSTANCE/HICON/UINT, INT_PTR, and the
-// WM_*/BST_*/SW_*/HKEY_* literals all come from the real <windows.h>, pulled in
-// (the MFC-safe way) by RegistryHelper.h -> Mfc.h.
 
 // Control IDs of the five "Disable ..." checkboxes and the "Defaults" button.
 #define IDC_DISABLE_VIDEO   0x46c

@@ -14,13 +14,12 @@
 #ifndef NET_NETMGR_H
 #define NET_NETMGR_H
 
+// <Mfc.h> brings <windows.h> USER32 (PostMessageA / Sleep / GetAsyncKeyState - the
+// connect wait polls VK_ESCAPE to abort; HWND / UINT / ...) and the central WINMM
+// timeGetTime decl (the frame-sync / connect-wait clock).
+#include <Mfc.h>
 #include <Utils/RegistryHelper.h>
 #include <Gruntz/CObList.h>
-
-// PostMessageA / Sleep / GetAsyncKeyState (the connect wait polls VK_ESCAPE to
-// abort) + HWND/UINT/... come from the real <windows.h>, and WINMM's timeGetTime
-// (the frame-sync / connect-wait clock) from Mfc.h's central decl - both via
-// CObList.h -> Mfc.h, included above.
 
 // ---------------------------------------------------------------------------
 // Utils::WinAPI::ActiveWait - the engine busy-wait (?ActiveWait@WinAPI@Utils@@YAXI@Z,

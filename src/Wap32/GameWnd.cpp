@@ -1,10 +1,9 @@
 // GameWnd.cpp - WAP32 CGameWnd (Brian Goble's engine).
 // Matched: CGameWnd::CGameWnd (byte-exact).
+// <Mfc.h> brings <windows.h> USER32: IsWindow / DestroyWindow / PostQuitMessage / DefWindowProcA.
+#include <Mfc.h>
 #include <Wap32/Wap32.h>
 #include <rva.h>
-
-// IsWindow / DestroyWindow / PostQuitMessage / DefWindowProcA come from
-// <windows.h> (via Wap32.h -> Mfc.h).
 
 // -------------------------------------------------------------------------
 // CGameWnd::CGameWnd()

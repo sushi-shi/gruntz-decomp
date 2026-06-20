@@ -22,8 +22,10 @@
 // EH frame as retail.
 // ---------------------------------------------------------------------------
 
-// CObject / CByteArray / CMapStringToOb / POSITION come from real MFC (afxcoll),
-// via the CString.h / CMapStringToOb.h -> Mfc.h includes below.
+// <Mfc.h> brings real MFC afxcoll: CObject / CByteArray / CMapStringToOb / POSITION
+// (CString / CMapStringToOb signatures also via the shim includes below).
+#include <Mfc.h>
+#include <string.h>   // strncpy (the StringCopy leaf, reloc-masked)
 class CDDrawWorkerRegistry;
 
 
@@ -379,7 +381,6 @@ void CDDrawWorkerRegistry::VirtualMethodUnknown58()
     m_10.RemoveAll();
 }
 
-extern "C" char *_strncpy(char *, const char *, unsigned int);
 
 // ---------------------------------------------------------------------------
 // Map teardown leaf (SEH)
@@ -408,7 +409,7 @@ void CDDrawWorkerRegistry::MapTeardown_1552b0()
 RVA(0x155810, 0x23)
 int CDDrawWorkerRegistry::StringCopy_155810(const char *src)
 {
-    _strncpy((char *)this + 0x24, src, 0x3f);
+    strncpy((char *)this + 0x24, src, 0x3f);
     *((char *)this + 0x63) = 0;
     return 1;
 }

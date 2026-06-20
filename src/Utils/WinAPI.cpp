@@ -1,15 +1,15 @@
 // WinAPI.cpp - Utils::WinAPI free-function helpers (a thin layer over a handful
 // of KERNEL32 / WINMM imports + the registry/config wrapper). These are static
 // free functions in namespace Utils::WinAPI; only offsets + code bytes are
-// load-bearing. Win32 (KERNEL32 + WINMM timeGetTime) comes from the real
-// <windows.h> via RegistryHelper.h -> Mfc.h.
+// load-bearing.
+//
+// <Mfc.h> brings <windows.h> KERNEL32 (OpenFile / GetDriveTypeA; UINT / HFILE /
+// OFSTRUCT) and the central WINMM timeGetTime decl (the busy-wait clock).
+#include <Mfc.h>
 #include <Utils/RegistryHelper.h>
 #include <rva.h>
 #include <string.h>
 #include <stdio.h>
-
-// UINT/HFILE/OFSTRUCT + OpenFile/GetDriveTypeA come from <windows.h>, and WINMM's
-// timeGetTime from the same place, both via RegistryHelper.h -> Mfc.h.
 
 namespace Utils {
 namespace WinAPI {

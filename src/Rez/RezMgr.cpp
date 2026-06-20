@@ -360,8 +360,6 @@ int RezMgr::PerFrameTick()
     return 1;
 }
 
-// PostMessageA comes from the real <windows.h> (via RezMgr.h -> Mfc.h).
-
 // ---------------------------------------------------------------------------
 // RezMgr::HandleDebugPosition()
 // When the active mode's per-frame state step reports 3, look up the

@@ -6,10 +6,10 @@
 // members are modeled yet.
 #ifndef GRUNTZ_GRUNTZ_GRUNTZAPP_H
 #define GRUNTZ_GRUNTZ_GRUNTZAPP_H
+// <Mfc.h> brings <windows.h> (HWND / HINSTANCE / UINT / WPARAM / LPARAM) and INT_PTR
+// (the dialog proc's return type).
+#include <Mfc.h>
 #include <Wap32/Wap32.h>
-
-// HWND/HINSTANCE/UINT/WPARAM/LPARAM + INT_PTR (the dialog proc's return type)
-// come from the real <windows.h>, pulled in via Wap32.h -> Mfc.h above.
 
 class CGruntzApp : public CGameApp {
 public:

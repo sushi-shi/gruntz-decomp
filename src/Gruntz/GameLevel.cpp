@@ -31,6 +31,8 @@
 //
 // CPlane / CImageSet / the per-plane reader / ReadImageSet / RecomputePlaneCoords /
 // InflateMainBlock / operator new/delete / SetAtGrow are reloc-masked calls.
+// <Mfc.h> brings real MFC afxcoll: CDWordArray (the engine stores the pointer arrays as DWORDs).
+#include <Mfc.h>
 #include <Gruntz/GameLevel.h>
 #include <Io/FileStream.h>   // CFileIO (Open/Read/GetLength/ctor/dtor reloc-masked)
 #include <rva.h>
@@ -65,9 +67,6 @@ struct RemusCoords {
     int m_8;
     int m_c;
 };
-
-// CDWordArray (the engine stores the pointer arrays as DWORDs) comes from real
-// MFC afxcoll, via GameLevel.h -> Mfc.h.
 
 // The parse-source object VirtualMethodUnknown3C drives: BeginParse (FUN_00539960
 // @0x139960) opens/primes it and returns a handle; EndParse (FUN_005399d0
@@ -229,7 +228,7 @@ int CGameLevel::LoadWwd(WwdHeader* hdr)
                 goto fail;
             ++j;
             rec += set->GetStride();          // vtable +0x24 stride advance
-            ((CDWordArray *)&m_imageSets)->SetAtGrow((int)(j - 1), (unsigned long)set);
+            m_imageSets.SetAtGrow(j - 1, (DWORD)set);
         }
     }
 
@@ -261,7 +260,7 @@ int CGameLevel::LoadWwd(WwdHeader* hdr)
         {
             if (i2 != m_mainIndex)
             {
-                CPlane* p = (CPlane*)((void**)m_planes.GetData())[i2];
+                CPlane* p = (CPlane*)m_planes[i2];
                 if (p->m_flags & 1)
                 {
                     p->m_scaledX = (float)ox;

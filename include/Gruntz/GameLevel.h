@@ -15,13 +15,14 @@
 
 #include <Wwd/WwdFile.h>   // CPlane, WwdHeader, operator new, uncompress
 
-// The three growable arrays the ctor builds (+0x20/+0x34/+0x48) are real MFC
-// CByteArray (ctor/dtor are ??0/??1CByteArray@@; from afxcoll). The engine stores
-// pointers in them as raw DWORDs, casting to CDWordArray for SetAtGrow/SetSize and
-// reading the buffer as void** via GetData(). Layout 0x14, m_data via GetData(),
-// m_size via GetSize().
+// The ctor builds three growable MFC arrays (+0x20/+0x34/+0x48; afxcoll, layout 0x14).
+// +0x20 (m_array20) is a CByteArray; +0x34 m_planes and +0x48 m_imageSets are CDWordArray
+// (CLevelPtrArray). The retail stores the plane / image-set pointers as raw DWORDs - a
+// genuine CDWordArray, NOT a typed pointer array: a CTypedPtrArray<CPtrArray,...> drops
+// the ctor from 89.5% to 72%, so the DWORD storage (and the pointer<->DWORD casts at the
+// use sites) is the devs' real shape. SetAtGrow stores the pointer; operator[] reads it.
 #include <Mfc.h>
-typedef CByteArray CLevelPtrArray;
+typedef CDWordArray CLevelPtrArray;
 
 // ---------------------------------------------------------------------------
 // CImageSet - the per-plane image-set descriptor the level builds from the WWD

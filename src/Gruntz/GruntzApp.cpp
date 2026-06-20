@@ -13,19 +13,13 @@
 //
 // Only offsets / control IDs / code bytes are load-bearing; class and field
 // names are placeholders.
+// <Mfc.h> brings <windows.h> USER32 (EndDialog / SetDlgItemTextA / LoadStringA /
+// ShowCursor / DialogBoxParamA), INT_PTR, and the WM_INITDIALOG / WM_COMMAND ids.
+#include <Mfc.h>
 #include <Wap32/Wap32.h>
 #include <rva.h>
 #include <stdio.h>   // engine sprintf (reloc-masked)
 #include <string.h>  // inline strlen/strcpy/strcat (rep movs/scas)
-
-// ---------------------------------------------------------------------------
-// Minimal Win32 surface (USER32 API). We deliberately do NOT pull in
-// <windows.h> - keep the visible symbol SET small (the compiler hashes it;
-// entropy follows header churn). Reproduces the FF15 [IAT] direct-call form.
-// ---------------------------------------------------------------------------
-// INT_PTR/DLGPROC, EndDialog/SetDlgItemTextA/LoadStringA/ShowCursor/
-// DialogBoxParamA, and WM_INITDIALOG/WM_COMMAND come from <windows.h>
-// (via Wap32.h -> Mfc.h).
 
 // The control ID of the static text field that displays the error message.
 #define IDC_ERROR_TEXT 0x40d

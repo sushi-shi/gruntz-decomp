@@ -6,10 +6,7 @@
 #include <rva.h>
 #include <string.h>
 #include <stdio.h>
-
-extern "C" {
-__declspec(dllimport) DWORD __stdcall timeGetTime(void);
-}
+// timeGetTime (WINMM frame clock) comes from <Mfc.h>'s central decl (via <Wap32.h>).
 
 DATA(0x253c70)
 extern int g_wap32Now;
