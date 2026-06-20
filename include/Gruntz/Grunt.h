@@ -71,7 +71,12 @@ struct CGruntHud {
     int  m_60;          // +0x60
     char m_pad64[0x74 - 0x64];
     int  m_74;          // +0x74   (entrance: latched anim id; cmp 0xcf850)
-    char m_pad78[0x188 - 0x78];
+    char m_pad78[0x134 - 0x78];
+    int  m_134;         // +0x134  (arrival: view-cull mode cleared)
+    int  m_138;         // +0x138  (arrival: view-cull, cleared)
+    int  m_13c;         // +0x13c  (arrival: view-cull, cleared)
+    int  m_140;         // +0x140  (arrival: view-cull, cleared)
+    char m_pad144[0x188 - 0x144];
     int  m_188;         // +0x188  (cue arg)
 };
 
@@ -199,6 +204,12 @@ public:
     void CueA(CGrunt *g, int b, int c, int d, int e, int f); // 6-arg entrance cue (ret 0x18)
 };
 
+// The entrance-reset (Stub_062e10) cue-gate visibility helper (thunk_FUN_0046b330,
+// __cdecl(viewport, x, y) ret int): tests whether the grunt's HUD point is inside
+// the viewport rect. External/no-body (reloc-masked).
+int CueVisible(int viewport, int x, int y);
+
+
 // ---------------------------------------------------------------------------
 // The entrance-animation sub-object @CGrunt+0x154: a per-grunt animation player.
 // BuildEntranceAnimation reaches a name->sprite-set lookup table through
@@ -252,6 +263,10 @@ public:
     CEntranceAnimSub       m_1a0;       // +0x1a0 geometry sub-player
     char                   m_pad1a4[0x1b4 - 0x1a4];
     CEntranceAnimDescColl *m_1b4;       // +0x1b4 active-anim descriptor
+    char                   m_pad1b8[0x1c0 - 0x1b8];
+    int                    m_1c0;       // +0x1c0 (entrance-done flag B: 0 -> run reset)
+    char                   m_pad1c4[0x1c8 - 0x1c4];
+    int                    m_1c8;       // +0x1c8 (entrance-done flag A: nonzero -> bail)
 };
 
 // The frame helper BuildEntranceAnimation calls at the tail (FUN_005504d0):
@@ -259,15 +274,25 @@ public:
 void __stdcall EntranceApplyFrame(const char *keyStr, int frameNum);
 
 // The entrance-anim-set source object (the global at DAT_006bf620). Its
-// LookupAnimSet (FUN_0056d190, __thiscall ret 0) returns the new active-anim-set
-// node that gets latched into m_14->m_1c. External/no-body (reloc-masked); the
-// `mov ecx, &g_entranceAnimSrc; call` is the load-bearing shape.
+// LookupAnimSet (FUN_0056d190, __thiscall ret 4) takes a single-char anim key
+// and returns the new active-anim-set node that gets latched into m_14->m_1c.
+// External/no-body (reloc-masked); the `push key; mov ecx, &g_entranceAnimSrc;
+// call` is the load-bearing shape.
 class CEntranceAnimSrc {
 public:
-    int LookupAnimSet();                // FUN_0056d190
+    int LookupAnimSet(const char *key);     // FUN_0056d190 (ret 4)
 };
 extern CEntranceAnimSrc g_entranceAnimSrc;   // DAT_006bf620
-#define EntranceLookupAnimSet() (g_entranceAnimSrc.LookupAnimSet())
+#define EntranceLookupAnimSet(k) (g_entranceAnimSrc.LookupAnimSet(k))
+
+// The grunt's current-anim-name resolver (the global at DAT_006bf650). Its
+// GetNameRecord (thunk_FUN_004310f0, __thiscall ret 4) maps an anim-set node to
+// a record whose first field is the anim's name char*. External/no-body.
+class CAnimNameResolver {
+public:
+    char **GetNameRecord(void *node);       // thunk_FUN_004310f0 (ret 4)
+};
+extern CAnimNameResolver g_animNameResolver;   // DAT_006bf650
 
 // The "focused grunt" sentinel the on-screen flag compares m_1ec against
 // (DAT_00644c54, reloc-masked).
@@ -287,6 +312,15 @@ public:
     void ClaimTile(int a, int b, int c, int d);     // thunk_FUN_0046bfd0
     int  ReleaseTile(int a, int b);                 // thunk_FUN_004784d0
     void PostWire();                                // WireTileSwitchLogic (0-arg)
+    void NotifyArrival(int a, int b);               // thunk_FUN_0046da60 (2-arg)
+};
+
+// The registry focused-grunt slot the arrival gate reads: an array at
+// g_pGameRegistry+0x150, stride 0x238 (= 71*8) indexed by the grunt's m_1ec.
+// Each slot's +0x14 is a non-null gate the arrival path checks. External view.
+struct CFocusSlot {
+    char m_pad0[0x14];
+    int  m_14;          // +0x14
 };
 
 // ---------------------------------------------------------------------------
@@ -354,7 +388,9 @@ public:
     CEntranceAnimPlayer *m_154;             // +0x154 (entrance animation player)
     char             m_pad158[0x15c - 0x158];
     int              m_15c;                 // +0x15c (= m_154->m_1b4 cache)
-    char             m_pad160[0x17c - 0x160];
+    char             m_pad160[0x170 - 0x160];
+    int              m_170;                 // +0x170 (entrance-reason / movement state)
+    char             m_pad174[0x17c - 0x174];
     int              m_17c;                 // +0x17c (LoadEntranceConfig: last occupied tile X, pixel; -1 = none)
     int              m_180;                 // +0x180 (LoadEntranceConfig: last occupied tile Y, pixel; -1 = none)
     char             m_pad184[0x1b8 - 0x184];
@@ -366,26 +402,65 @@ public:
     CHudSprite *m_toyTimeSprite;            // +0x1cc
     CHudSprite *m_wingzTimeSprite;          // +0x1d0
     CHudSprite *m_powerupSprite;            // +0x1d4
-    char        m_pad1d8[0x1e4 - 0x1d8];
+    int         m_1d8;                      // +0x1d8 (entrance-arrival gate)
+    char        m_pad1dc[0x1e4 - 0x1dc];
     int         m_1e4;                      // +0x1e4 (entrance: set to 1)
     char        m_pad1e8[0x1ec - 0x1e8];
     int         m_1ec;                      // +0x1ec
     int         m_1f0;                      // +0x1f0
     char        m_pad1f4[0x1fc - 0x1f4];
     int         m_1fc;                      // +0x1fc (entrance: cleared)
-    char        m_pad200[0x238 - 0x200];
+    char        m_pad200[0x230 - 0x200];
+    int         m_230;                      // +0x230 (entrance-arrival: cleared)
+    char        m_pad234[0x238 - 0x234];
     int         m_238;                      // +0x238
-    char        m_pad23c[0x25c - 0x23c];
+    char        m_pad23c[0x244 - 0x23c];
+    int         m_244;                      // +0x244 (entrance-reset: 0 then 1 = "applied" flag)
+    int         m_248;                      // +0x248 (arrival flag word; |= 0x18040402)
+    char        m_pad24c[0x25c - 0x24c];
     int         m_25c;                      // +0x25c (entrance: set to 1)
     CGruntTileMgr *m_260;                   // +0x260 (path/occupancy sub-manager)
-    char        m_pad264[0x364 - 0x264];
+    char        m_pad264[0x2d0 - 0x264];
+    int         m_2d0;                      // +0x2d0 (arrival: = 4)
+    int         m_2d4;                      // +0x2d4 (arrival: = 0)
+    char        m_pad2d8[0x2dc - 0x2d8];
+    int         m_2dc;                      // +0x2dc (defender radius / arrival kind)
+    char        m_pad2e0[0x2f0 - 0x2e0];
+    int         m_2f0;                      // +0x2f0 (arrival: = -1)
+    int         m_2f4;                      // +0x2f4 (arrival: = -1)
+    char        m_pad2f8[0x300 - 0x2f8];
+    int         m_300;                      // +0x300 (arrival: = m_17c)
+    int         m_304;                      // +0x304 (arrival: = m_180)
+    int         m_308;                      // +0x308 (arrival: cleared)
+    int         m_30c;                      // +0x30c (arrival: cleared)
+    int         m_310;                      // +0x310 (arrival: cleared)
+    int         m_314;                      // +0x314 (arrival: cleared)
+    char        m_pad318[0x364 - 0x318];
     int         m_364;                      // +0x364 (entrance: set to 1)
-    char        m_pad368[0x3ec - 0x368];
+    char        m_pad368[0x3ac - 0x368];
+    int         m_3ac[3];                   // +0x3ac (entrance geometry sources; [0]=default, [1]/[2] variants)
+    char        m_pad3b8[0x3ec - 0x3b8];
     int         m_3ec;                      // +0x3ec
     int         m_3f0;                      // +0x3f0
     int         m_3f4;                      // +0x3f4
     int         m_3f8;                      // +0x3f8
-    char        m_pad3fc[0x840 - 0x3fc];
+    char        m_pad3fc[0x420 - 0x3fc];
+    int         m_420;                      // +0x420 (arrival-claimed latch)
+    char        m_pad424[0x43c - 0x424];
+    int         m_43c[3];                   // +0x43c (entrance-cell triple: [0]=col, [1]=row, [2]=m_444 reason)
+    char        m_pad448[0x464 - 0x448];
+    int         m_464;                      // +0x464 (entrance-reset latch flag)
+    char        m_pad468[0x474 - 0x468];
+    char        m_474[1];                   // +0x474 (entrance-cell record table; 0x68-byte stride records)
+    char        m_pad475[0x820 - 0x475];
+    int         m_820;                      // +0x820 (idle-timer: low)
+    int         m_824;                      // +0x824 (idle-timer: high)
+    int         m_828;                      // +0x828 (idle-timer: delay low)
+    int         m_82c;                      // +0x82c (idle-timer: delay high)
+    int         m_830;                      // +0x830 (idle-anchor: low)
+    int         m_834;                      // +0x834 (idle-anchor: high)
+    int         m_838;                      // +0x838 (idle-window: low = 0x3a98)
+    int         m_83c;                      // +0x83c (idle-window: high = 0)
     int         m_840;                      // +0x840 (entrance: = g_645588 game clock, low dword)
     int         m_844;                      // +0x844 (entrance: = 0, high dword)
     int         m_848;                      // +0x848 (entrance: = EntranceSafeTime config)
@@ -407,6 +482,7 @@ public:
     // thunks; external/no-body, reloc-masked).
     void EntranceFinishWire(int a, int b);  // thunk_FUN_00449c60 (2-arg)
     void EntranceOnReleased();              // thunk_FUN_0044b130 (0-arg)
+    void EntranceArrivalHook(int a, int b); // thunk_FUN_0044d060 (2-arg; arrival commit)
 };
 
 #endif // SRC_GRUNTZ_GRUNT_H

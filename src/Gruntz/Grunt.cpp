@@ -72,6 +72,7 @@
 // return 0; else return 1.
 #include <Gruntz/Grunt.h>
 #include <rva.h>
+#include <string.h>
 
 // The sprite class-name string the factory is asked to build, per creator. These
 // are literal .rodata strings in the binary (the reloc-masked DIR32 operand).
@@ -127,7 +128,32 @@ int  g_movingSeed;
 
 // Entrance-animation globals (reloc-masked; see Grunt.h).
 CEntranceAnimSrc g_entranceAnimSrc;     // DAT_006bf620
+CAnimNameResolver g_animNameResolver;   // DAT_006bf650
 int g_focusedGruntSentinel;             // DAT_00644c54
+
+// The global CButeMgr config singleton + the tuning keys this TU reads. Minimal
+// local decl (the full ButeMgr.h redefines CString, already pulled in by this
+// TU), with only the typed getter the functions call.
+#include <Bute/ButeMgr.h>
+extern CButeMgr g_buteMgr;
+static char s_TimePerTile[]      = "TimePerTile";
+static char s_Grunt[]            = "Grunt";              // s_Grunt_0060a9ec
+static char s_EntranceSafeTime[] = "EntranceSafeTime";  // s_EntranceSafeTime_0060df98
+static char s_IdleDelay[]        = "IdleDelay";          // s_IdleDelay_0060e1a0
+static char s_PlayerDefenderRadius[] = "PlayerDefenderRadius"; // s_PlayerDefenderRadius_0060e1ac
+
+// The single-char anim-set keys the entrance reads/looks-up (reloc-masked
+// .rodata; DAT_0060a454 = "A" = the idle anim key, DAT_0060d7f8 = "K" =
+// BuildEntranceAnimation's latch key).
+static const char s_animKeyA[] = "A";
+static const char s_animKeyK[] = "K";
+
+// The global running game clock (DAT_00645588) snapshotted into m_840.
+extern "C" unsigned int g_645588;
+
+// The global default geometry source the entrance geometry-state setter consumes
+// (g_defaultGeo @0x6bf3bc; defined in SpriteResource.cpp, reloc-masked here).
+extern int g_defaultGeo;
 
 // ---------------------------------------------------------------------------
 // CGrunt::ResolveMovingAnimation()
@@ -489,17 +515,235 @@ void CGrunt::Stub_047a10() {}
 RVA(0x048470, 0x131b)
 void CGrunt::Stub_048470(int, int) {}
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
-RVA(0x062e10, 0x47e)
-void CGrunt::Stub_062e10(int, int, int) {}
+// ---------------------------------------------------------------------------
+// CGrunt::ResetEntranceAnimation(int apply, int cycle, int cue)   @0x62e10
+// The shared entrance/idle-anim reset the entrance state machine (and its two
+// callers BuildEntranceAnimation + LoadEntranceConfig) run to (re)select and
+// arm the grunt's entrance animation. __thiscall, ret 0xc (/GX - the per-cell
+// key CString temp carries a C++ EH frame).
+//
+//   * clears the "applied" flag (m_244 = 0), then reverse-looks-up the current
+//     active-anim-set node's NAME and tests it against the idle key "A".
+//   * if the grunt is NOT already idle and `cycle`==0: re-anchor the idle timer
+//     (m_820.. bookkeeping) off the IdleDelay config (rand window).
+//   * else dispatches on the geometry-source array m_3ac[0..2]: a single source
+//     (m_3b0==0) re-arms it; the 2-arg branch (cycle!=0) randomly cycles among
+//     the available sources, firing a focused-grunt on-screen "cue" (consts
+//     4/5/6 by index) when `cue`!=0 and the grunt is visible.
+//   * latches a fresh active-anim-set node into m_14->m_1c (saving the old into
+//     m_30), and finally - when something was applied or `apply`!=0 - rebuilds
+//     the per-cell entrance-position key string (CString from the m_474 cell
+//     table, indexed 3*col+row by either the per-grunt triple m_43c or a preset
+//     by reason m_444) and stamps the first frame.
+static int s_entrancePreset0[3];        // DAT_00644aa0
+static int s_entrancePreset1[3];        // DAT_00644ac0
+static int s_entrancePreset2[3];        // DAT_00644ad0
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
+RVA(0x062e10, 0x47e)
+void CGrunt::Stub_062e10(int apply, int cycle, int cue)
+{
+    m_244 = 0;
+
+    int notIdle = strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), s_animKeyA) != 0;
+    int applied = 0;
+
+    if (notIdle && cycle == 0) {
+        // Re-anchor the idle timer to a randomized IdleDelay window.
+        m_15c = (int)m_154->m_1b4;
+        m_154->m_1a0.SetGeometry(m_3ac[0]);
+        m_838 = 0x3a98;
+        m_83c = 0;
+        m_830 = (int)g_645588;
+        m_834 = 0;
+        int n = (int)g_buteMgr.GetDwordDef(s_Grunt, s_IdleDelay, 0x7530) + 1;
+        m_828 = GruntRand() % n + 0x7530;
+        m_82c = 0;
+        m_820 = (int)g_645588;
+        m_824 = 0;
+        applied = 1;
+    } else if (m_3ac[1] == 0) {
+        // Single geometry source: re-arm it (no flag set).
+        m_15c = (int)m_154->m_1b4;
+        m_154->m_1a0.SetGeometry(m_3ac[0]);
+    } else if (cycle == 0) {
+        // Already on this source? nothing to do.
+        if ((void *)m_154->m_1b4 == (void *)m_3ac[0])
+            goto latch;
+        m_15c = (int)m_154->m_1b4;
+        m_154->m_1a0.SetGeometry(m_3ac[0]);
+        {
+            int d = (int)g_buteMgr.GetDwordDef(s_Grunt, s_IdleDelay, 0x7530);
+            applied = 1;
+            m_828 = GruntRand() % (d - 0x4e1f) + 0x4e20;
+            m_82c = 0;
+            m_820 = (int)g_645588;
+            m_824 = 0;
+        }
+    } else {
+        // Cycle among the available sources, with the focused-grunt cue.
+        int count = (m_3ac[2] == 0) ? 1 : 2;
+        int idx = GruntRand() % count + 1;
+        if (cue != 0) {
+            CGameRegistry *g = g_pGameRegistry;
+            g->CuePrep();
+            int focused = (m_1ec == g_focusedGruntSentinel);
+            if (focused && idx > 0x5a) {
+                if (CueVisible(g->m_30->m_24->m_5c + 0x40, m_10->m_5c, m_10->m_60))
+                    g->m_60->Cue((int)this, 4, -1, -1, -1);
+            } else if (focused || m_170 != 0) {
+                if (idx == 1) {
+                    if (CueVisible(g->m_30->m_24->m_5c + 0x40, m_10->m_5c, m_10->m_60))
+                        g->m_60->Cue((int)this, 5, -1, -1, -1);
+                } else if (idx == 2) {
+                    if (CueVisible(g->m_30->m_24->m_5c + 0x40, m_10->m_5c, m_10->m_60))
+                        g->m_60->Cue((int)this, 6, -1, -1, -1);
+                }
+            }
+        }
+        m_15c = (int)m_154->m_1b4;
+        m_154->m_1a0.SetGeometry(m_3ac[idx]);
+        m_244 = 1;
+        applied = 1;
+    }
+
+latch:
+    m_30 = (int)m_14->m_1c;
+    m_14->m_1c = (void *)EntranceLookupAnimSet(s_animKeyA);
+
+    if (!applied && apply == 0)
+        return;
+
+    // Rebuild the per-cell entrance key string + first frame. The cell is the
+    // per-grunt triple {col,row,reason}, unless a non-default entrance reason
+    // selects a preset triple.
+    int col = m_43c[0];
+    int row = m_43c[1];
+    int reason = m_43c[2];
+    if ((void *)m_154->m_1b4 != (void *)m_3ac[0]) {
+        switch (reason) {
+        case 2:
+        case 3:
+            col = s_entrancePreset0[0];
+            row = s_entrancePreset0[1];
+            break;
+        case 4:
+        case 5:
+            col = s_entrancePreset1[0];
+            row = s_entrancePreset1[1];
+            break;
+        case 6:
+        case 7:
+        case 8:
+            col = s_entrancePreset2[0];
+            row = s_entrancePreset2[1];
+            break;
+        default:
+            break;
+        }
+    }
+
+    CString key = (const char *)&m_474[(3 * col + row) * 0x68];
+
+    CEntranceAnimDescColl *desc = m_154->m_1b4;
+    int *elem = desc->m_10 > 0 ? *desc->m_c : 0;
+    EntranceApplyFrame(key, elem[0x14 / 4]);
+}
+
+// ---------------------------------------------------------------------------
+// CGrunt::ResolveEntranceArrival()   @0x633e0
+// The per-tick entrance-arrival resolver: once the grunt has settled on its
+// destination tile it commits the "arrival" (claims the tile, seeds the
+// per-grunt defender bookkeeping, clears the view-cull state on m_10) and, when
+// the entrance window has elapsed + the grunt is off-screen/unfocused, runs the
+// entrance reset (Stub_062e10). __thiscall, ret 0.
+//
+//   * if the entrance is active (m_1e4) and the grunt has not moved off its
+//     last tile (m_5c==m_17c, m_60==m_180) and that tile's high occupancy bit is
+//     clear, clear m_1e4.
+//   * arm the entrance geometry source (m_154->m_1a0.SetGeoSourceR); gate the
+//     arrival on the elapsed-time window (clock - m_830_64 >= m_838_64) and the
+//     grunt being off-screen (registry m_134 != 1) + its focus slot live.
+//   * the arrival commit: notify the tile manager, latch m_420, seed the
+//     defender block (m_300..m_314, m_2d0/2d4/2dc/2f0/2f4, m_248 |= 0x18040402),
+//     clear m_10's view-cull rect, run the arrival hook.
+//   * tail: if the entrance anim is done (m_154->m_1b4 != m_3ac[0]) run
+//     Stub_062e10(0,0,0) on the lookup-miss flags; else, when the idle window has
+//     elapsed and the geometry source is ready, run Stub_062e10(0,1,1).
 RVA(0x0633e0, 0x2ca)
-void CGrunt::Stub_0633e0() {}
+void CGrunt::Stub_0633e0()
+{
+    if (m_1e4 != 0 && m_10->m_5c == m_17c && m_10->m_60 == m_180) {
+        CGameRegistry *g = g_pGameRegistry;
+        CTileGrid *grid = g->m_70;
+        int tx = m_10->m_5c >> 5;
+        int ty = m_10->m_60 >> 5;
+        int flags;
+        if ((unsigned)tx >= (unsigned)grid->m_c || (unsigned)ty >= (unsigned)grid->m_10)
+            flags = 1;
+        else
+            flags = ((int *)grid->m_8[ty])[tx * 7];
+        if (!(flags & 0x80))
+            m_1e4 = 0;
+    }
+
+    int ready = m_154->m_1a0.SetGeoSourceR(g_defaultGeo);
+
+    if ((__int64)(unsigned)g_645588 - *(__int64 *)&m_830 >= *(__int64 *)&m_838) {
+        CGameRegistry *g = g_pGameRegistry;
+        int mode = g->m_134;
+        if (mode != 1) {
+            CFocusSlot *slot = (CFocusSlot *)((char *)g + 0x150 + m_1ec * 0x238);
+            if (slot != 0 && slot->m_14 != 0) {
+                if (m_420 == 0 && m_464 == 0 && mode == 2
+                    && g_focusedGruntSentinel == m_1ec && m_1d8 == 0) {
+                    m_260->NotifyArrival(m_1ec, m_1f0);
+                    m_464 = 1;
+                    goto tail;
+                }
+                if (mode != 2 && g_focusedGruntSentinel == m_1ec && m_1d8 == 0
+                    && m_420 != 1) {
+                    m_308 = 0;
+                    m_310 = 0;
+                    m_30c = 0;
+                    m_314 = 0;
+                    m_300 = m_17c;
+                    m_304 = m_180;
+                    m_420 = 1;
+                    int kind = m_170;
+                    switch (kind) {
+                    case 2:
+                        m_2dc = 1;
+                        break;
+                    default:
+                        m_2dc = g_buteMgr.GetIntDef(s_Grunt, s_PlayerDefenderRadius, 3) + 1;
+                        break;
+                    }
+                    m_2f0 = -1;
+                    m_2f4 = -1;
+                    m_2d0 = 4;
+                    m_2d4 = 0;
+                    m_230 = 0;
+                    m_248 |= 0x18040402;
+                    m_10->m_134 = 0;
+                    m_10->m_13c = 0;
+                    m_10->m_138 = 0;
+                    m_10->m_140 = 0;
+                    EntranceArrivalHook(0, 0);
+                }
+            }
+        }
+    }
+
+tail:
+    if ((void *)m_154->m_1b4 != (void *)m_3ac[0]) {
+        if (m_154->m_1c8 == 0 && m_154->m_1c0 != 0)
+            Stub_062e10(0, 0, 0);
+        return;
+    }
+    if ((__int64)(unsigned)g_645588 - *(__int64 *)&m_820 >= *(__int64 *)&m_828
+        && ready == 1)
+        Stub_062e10(0, 1, 1);
+}
 
 // ---------------------------------------------------------------------------
 // CGrunt::BuildEntranceAnimation(int mode)   @0x67bd0
@@ -531,7 +775,7 @@ RVA(0x067bd0, 0x2ef)
 void CGrunt::BuildEntranceAnimation(int mode)
 {
     m_30 = (int)m_14->m_1c;
-    m_14->m_1c = (void *)EntranceLookupAnimSet();
+    m_14->m_1c = (void *)EntranceLookupAnimSet(s_animKeyK);
 
     m_25c = 1;
     m_1fc = 0;
@@ -613,22 +857,6 @@ void CGrunt::BuildEntranceAnimation(int mode)
         EntranceApplyFrame(key, elem[0x14 / 4]);
     }
 }
-
-// The global CButeMgr config singleton + the tuning keys this TU reads. Minimal
-// local decl (the full ButeMgr.h redefines CString, already pulled in by this
-// TU), with only the typed getter the functions call.
-#include <Bute/ButeMgr.h>
-extern CButeMgr g_buteMgr;
-static char s_TimePerTile[]      = "TimePerTile";
-static char s_Grunt[]            = "Grunt";              // s_Grunt_0060a9ec
-static char s_EntranceSafeTime[] = "EntranceSafeTime";  // s_EntranceSafeTime_0060df98
-
-// The global running game clock (DAT_00645588) snapshotted into m_840.
-extern "C" unsigned int g_645588;
-
-// The global default geometry source the entrance geometry-state setter consumes
-// (g_defaultGeo @0x6bf3bc; defined in SpriteResource.cpp, reloc-masked here).
-extern int g_defaultGeo;
 
 // ---------------------------------------------------------------------------
 // CGrunt::LoadEntranceConfig()  @0x67f80

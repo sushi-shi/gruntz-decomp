@@ -9,9 +9,19 @@
 struct CSpriteFactory;  // +0x30 -> +0x08 factory (CreateSprite); Grunt.h completes it
 class CGruntCueSink;    // +0x60 on-screen cue receiver; Grunt.h completes it
 
+// The viewport object reached as g->m_30->m_24 (its +0x5c is the rect base the
+// on-screen cue gate's visibility helper consumes at +0x40). Used by the
+// entrance-reset (CGrunt::Stub_062e10) focused-grunt cue path.
+struct CGameViewport {
+    char m_pad0[0x5c];
+    int  m_5c;                 // +0x5c  rect/clip base (helper reads +0x40 off this)
+};
+
 struct CSpriteFactoryHolder {   // the +0x30 resource/sprite-factory holder
     char m_pad0[0x8];
     CSpriteFactory *m_8;        // +0x08
+    char m_pad0c[0x24 - 0xc];
+    CGameViewport *m_24;        // +0x24  viewport (cue-gate visibility source)
 };
 
 // The tile occupancy grid (*g_pGameRegistry+0x70). A flat row-table of
@@ -28,6 +38,10 @@ struct CTileGrid {
 };
 
 struct CGameRegistry {
+    // The entrance-reset cue-prep call (thunk_FUN_0040cd00, __thiscall ret 0): run
+    // once before the focused-grunt cue test. External/no-body (reloc-masked).
+    void CuePrep();
+
     char m_pad0[0x14];
     int   m_14;         // +0x14  has-window / dev flag (gates rect-update calls)
     char m_pad18[0x30 - 0x18];

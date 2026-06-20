@@ -635,7 +635,7 @@ gamewnd	?CreateAndShow@CGameWnd@@QAEHPAUCGameWndCreateParams@@PAX@Z	100.0000	100
 gamewnd	?Destroy@CGameWnd@@QAEXXZ	100.0000	100.0000	2	1ec9f4df456c
 gamewnd	?GameWindowProc@CGameApp@@SGJPAXIIJ@Z	94.8343	94.8343	1	8fcd6f43be98
 gamewnd	?QuitMessageLoop@CGameWnd@@UAEHXZ	100.0000	100.0000	1	d81c3a5ceca8
-grunt	?BuildEntranceAnimation@CGrunt@@QAEXH@Z	71.2489	71.2489	1	cc27aea35f79
+grunt	?BuildEntranceAnimation@CGrunt@@QAEXH@Z	71.4562	71.4562	2	b3dc27c32baf
 grunt	?CreateHealthSprite@CGrunt@@QAEHXZ	99.6552	99.6552	2	e030bb9694de
 grunt	?CreatePowerupSprite@CGrunt@@QAEHH@Z	99.6296	99.6296	2	71c70b5f41b5
 grunt	?CreateSelectedSprite@CGrunt@@QAEHXZ	91.9231	91.9231	2	5a11112c78a0
@@ -652,8 +652,8 @@ grunt	?ResolveIdleAnimation@CGrunt@@QAEHXZ	92.0598	92.0598	2	a8c5f6c43368
 grunt	?ResolveMovingAnimation@CGrunt@@QAEHXZ	92.8816	92.8816	2	ad53e1a24a3d
 grunt	?Stub_047a10@CGrunt@@QAEXXZ	0.0990	0.0990	1	1754cd64e546
 grunt	?Stub_048470@CGrunt@@QAEXHH@Z	0.0778	0.0778	1	daacbc0defd3
-grunt	?Stub_062e10@CGrunt@@QAEXHHH@Z	0.3096	0.3096	1	134e9683bb63
-grunt	?Stub_0633e0@CGrunt@@QAEXXZ	0.5208	0.5208	1	5c1b3dddfd8d
+grunt	?Stub_062e10@CGrunt@@QAEXHHH@Z	28.9443	28.9443	2	8db13679466c
+grunt	?Stub_0633e0@CGrunt@@QAEXXZ	86.4115	86.4115	2	b9d5ec9759ee
 gruntzapp	??0CGruntzApp@@QAE@XZ	100.0000	100.0000	4	6563943e0276
 gruntzapp	??1CGruntzApp@@UAE@XZ	100.0000	100.0000	4	53178ef9599d
 gruntzapp	?CreateU10O@@YAPAXXZ	99.9583	99.9583	3	a309ad1fcc54
