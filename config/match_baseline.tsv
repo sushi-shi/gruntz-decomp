@@ -33,7 +33,7 @@ deflate	6	6
 dialogs	6	5
 directinputmgr2	1	1
 directsoundmgr	1	1
-engine_label_stubs	337	0
+engine_label_stubs	330	0
 filestream	13	9
 font	16	8
 fontconfig	1	0
@@ -67,6 +67,7 @@ sbi_rectonly	2	1
 spriteloaders	2	0
 spriteresource	4	1
 statusbaritem	1	1
+statusbarupdaters	7	0
 tileswitchlogic	4	0
 tiletriggerlogic	1	1
 trees	17	17
@@ -473,9 +474,6 @@ engine_label_stubs	?LoadScrollSpeedOptions@EngineLabelBacklog@@YAXXZ	0.5000	0.50
 engine_label_stubs	?LoadSounds@CSplashState@@QAEXXZ	0.8333	0.8333	1	cpp:45e65336d4b5
 engine_label_stubs	?LoadStateImages_vfunc8@EngineLabelBacklog@@YAXXZ	2.2222	2.2222	1	cpp:45e65336d4b5
 engine_label_stubs	?LoadStatusBarTabSprites@EngineLabelBacklog@@YAXXZ	0.0445	0.0445	1	cpp:45e65336d4b5
-engine_label_stubs	?LoadStatzTabToggleSprite@EngineLabelBacklog@@YAXXZ	0.5333	0.5333	1	cpp:45e65336d4b5
-engine_label_stubs	?LoadSwitchDownSprite@EngineLabelBacklog@@YAXXZ	1.1494	1.1494	1	cpp:45e65336d4b5
-engine_label_stubs	?LoadSwitchUpSprite@EngineLabelBacklog@@YAXXZ	1.1494	1.1494	1	cpp:45e65336d4b5
 engine_label_stubs	?LoadTeleporterGooConfig@EngineLabelBacklog@@YAXXZ	0.0905	0.0905	1	cpp:45e65336d4b5
 engine_label_stubs	?LoadTerrainTileSprites@EngineLabelBacklog@@YAXXZ	0.0300	0.0300	1	cpp:45e65336d4b5
 engine_label_stubs	?LoadTitleConfig@CAttract@@QAEXXZ	0.3604	0.3604	1	cpp:45e65336d4b5
@@ -533,16 +531,12 @@ engine_label_stubs	?Stub_1d5029@EngineLabelBacklog@@YAXXZ	0.4494	0.4494	1	cpp:45
 engine_label_stubs	?Stub_1d513b@EngineLabelBacklog@@YAXXZ	0.3571	0.3571	1	cpp:45e65336d4b5
 engine_label_stubs	?UnknownClose@CGruntzMgr@@QAEXXZ	0.2915	0.2915	1	cpp:45e65336d4b5
 engine_label_stubs	?UpdateBootyWalkingGruntz@EngineLabelBacklog@@YAXXZ	0.1898	0.1898	1	cpp:45e65336d4b5
-engine_label_stubs	?UpdateChipGrinderStatusBar@EngineLabelBacklog@@YAXXZ	0.7299	0.7299	1	cpp:45e65336d4b5
 engine_label_stubs	?UpdateDestructButtonStatusBar2@EngineLabelBacklog@@YAXXZ	1.4286	1.4286	1	cpp:45e65336d4b5
-engine_label_stubs	?UpdateDestructButtonStatusBar@EngineLabelBacklog@@YAXXZ	1.1494	1.1494	1	cpp:45e65336d4b5
 engine_label_stubs	?UpdateFallingItemStatusBar@EngineLabelBacklog@@YAXXZ	0.7273	0.7273	1	cpp:45e65336d4b5
-engine_label_stubs	?UpdateGruntOvenStatusBar@EngineLabelBacklog@@YAXXZ	1.0526	1.0526	1	cpp:45e65336d4b5
 engine_label_stubs	?UpdateRezConveyorStatusBar@EngineLabelBacklog@@YAXXZ	0.3717	0.3717	1	cpp:45e65336d4b5
 engine_label_stubs	?UpdateRezMachineSnoozeStatusBar@EngineLabelBacklog@@YAXXZ	3.4483	3.4483	1	cpp:45e65336d4b5
 engine_label_stubs	?UpdateRezMachineWakeStatusBar@EngineLabelBacklog@@YAXXZ	3.2258	3.2258	1	cpp:45e65336d4b5
 engine_label_stubs	?UpdateStatusBarTabHighlight@EngineLabelBacklog@@YAXXZ	0.0440	0.0440	1	cpp:45e65336d4b5
-engine_label_stubs	?UpdateWarpStoneStatusBar@EngineLabelBacklog@@YAXXZ	0.2857	0.2857	1	cpp:45e65336d4b5
 engine_label_stubs	?ValidateLevelTiles@EngineLabelBacklog@@YAXXZ	0.0424	0.0424	1	cpp:45e65336d4b5
 engine_label_stubs	?ValidateMainBlock@WwdFile@@QAEXXZ	1.3333	1.3333	1	cpp:45e65336d4b5
 engine_label_stubs	?VirtualUnknownMethod06@CGruntzMgr@@QAEXXZ	0.8163	0.8163	1	cpp:45e65336d4b5
@@ -780,6 +774,13 @@ spriteresource	?CacheFirstFrame@CGruntSprite@@QAEXPBD@Z	89.2647	89.2647	1	f6f544
 spriteresource	?ConfigureItem@CStatusBarMgr@@QAEHHHHH@Z	100.0000	100.0000	1	7327dd63877d
 spriteresource	?CreateSprite@CSpriteFactory@@QAEPAUCSprite@@HHHHPBDH@Z	94.1176	94.1176	1	b573f919a2e1
 statusbaritem	??0CStatusBarItem@@QAE@XZ	100.0000	100.0000	1	c1f37a1c5d22
+statusbarupdaters	?LoadStatzTabToggleSprite@EngineLabelBacklog@@QAEHHH@Z	80.7867	80.7867	1	89ad8488c854
+statusbarupdaters	?LoadSwitchDownSprite@EngineLabelBacklog@@QAEXXZ	71.3448	71.3448	1	04c44141c37a
+statusbarupdaters	?LoadSwitchUpSprite@EngineLabelBacklog@@QAEXXZ	69.1034	69.1034	1	2d56eaca4b15
+statusbarupdaters	?UpdateChipGrinderStatusBar@EngineLabelBacklog@@QAEXXZ	80.7372	80.7372	1	613417be3a7e
+statusbarupdaters	?UpdateDestructButtonStatusBar@EngineLabelBacklog@@QAEXXZ	94.6667	94.6667	1	1588c61102de
+statusbarupdaters	?UpdateGruntOvenStatusBar@EngineLabelBacklog@@QAEXXZ	79.8947	79.8947	1	7154a45a76a0
+statusbarupdaters	?UpdateWarpStoneStatusBar@EngineLabelBacklog@@QAEHHHHH@Z	81.2286	81.2286	1	e24975f3265c
 tileswitchlogic	??0CTileTriggerSwitchLogic@@QAE@XZ	90.7273	90.7273	1	b2b57f6b22d4
 tileswitchlogic	?CTileTriggerSwitchLogic_115f60@CTileTriggerSwitchLogic@@QAEXXZ	0.2198	0.2198	1	355d1ee38d67
 tileswitchlogic	?CTileTriggerSwitchLogic_116320@CTileTriggerSwitchLogic@@QAEXXZ	0.9302	0.9302	1	2570b6cf18cd

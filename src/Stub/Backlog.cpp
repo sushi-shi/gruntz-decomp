@@ -928,18 +928,6 @@ void EngineLabelBacklog::LoadStatusBarTabSprites() {}
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x104e60, 0xed)
-void EngineLabelBacklog::LoadStatzTabToggleSprite() {}
-
-// @confidence: med
-// @source: decomp-xref
-// @stub
-RVA(0x105310, 0x11a)
-void EngineLabelBacklog::UpdateGruntOvenStatusBar() {}
-
-// @confidence: med
-// @source: decomp-xref
-// @stub
 RVA(0x1055b0, 0x109)
 void EngineLabelBacklog::LoadGooCookingSprite() {}
 
@@ -976,12 +964,6 @@ void EngineLabelBacklog::UpdateFallingItemStatusBar() {}
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x1076a0, 0x1f3)
-void EngineLabelBacklog::UpdateChipGrinderStatusBar() {}
-
-// @confidence: med
-// @source: decomp-xref
-// @stub
 RVA(0x107a10, 0x62)
 void EngineLabelBacklog::UpdateRezMachineWakeStatusBar() {}
 
@@ -991,35 +973,11 @@ void EngineLabelBacklog::UpdateRezMachineWakeStatusBar() {}
 RVA(0x107ae0, 0x1aa)
 void EngineLabelBacklog::LoadMultiplayerBattlezConfig() {}
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
-RVA(0x109bd0, 0x1b5)
-void EngineLabelBacklog::UpdateWarpStoneStatusBar() {}
-
-// @confidence: med
-// @source: decomp-xref
-// @stub
-RVA(0x10b320, 0x167)
-void EngineLabelBacklog::UpdateDestructButtonStatusBar() {}
-
 // @confidence: low
 // @source: decomp-xref
 // @stub
 RVA(0x10bc30, 0x78)
 void EngineLabelBacklog::UpdateDestructButtonStatusBar2() {}
-
-// @confidence: med
-// @source: decomp-xref
-// @stub
-RVA(0x110570, 0xfb)
-void EngineLabelBacklog::LoadSwitchDownSprite() {}
-
-// @confidence: med
-// @source: decomp-xref
-// @stub
-RVA(0x1106b0, 0xf4)
-void EngineLabelBacklog::LoadSwitchUpSprite() {}
 
 // @confidence: med
 // @source: string-xref

@@ -274,6 +274,11 @@ source = "src/Gruntz/IconLoaders.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "statusbarupdaters"
+source = "src/Gruntz/StatusBarUpdaters.cpp"
+flags = "base"
+
+[[unit]]
 unit = "kitchenslime"
 source = "src/Gruntz/KitchenSlime.cpp"
 flags = "base"
