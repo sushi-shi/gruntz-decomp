@@ -29,6 +29,8 @@
 #include "CBehindCandyAni.cpp"
 #include "CBoomerang.cpp"
 #include "CBrickz.cpp"
+#include "CButeTree.cpp"
+#include "GenExterns.cpp"   // generated: gruntz.analysis.gen_extern_stubs
 #include "CCheckpointTrigger.cpp"
 #include "CCheckpointTriggerSwitchLogic.cpp"
 #include "CCoveredPowerup.cpp"
