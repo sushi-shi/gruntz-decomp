@@ -706,8 +706,7 @@ local function do_build(root, args, quiet)
   local my_gen = build_gen
   local before = read_report(root)
   local unit = (select(1, symbol_at(root, 0, vim.api.nvim_win_get_cursor(0)[1])) or {}).unit
-  local cmd = { "nix", "develop", ".#build", "--command",
-                "python3", "scripts/gruntz.py", "build" }
+  local cmd = { "nix", "develop", ".#build", "--command", "gruntz", "build" }
   vim.list_extend(cmd, args or {})
   log("build" .. (quiet and " (on save)" or "") .. ": "
     .. table.concat(cmd, " ") .. "  [" .. root .. "]")

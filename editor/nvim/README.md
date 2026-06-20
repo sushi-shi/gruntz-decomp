@@ -69,8 +69,8 @@ when a stale dev shell ships an old binary.
 ## `:GruntzBuild` — build and report what moved
 
 `vB` snapshots the current `report.json`, runs the build in a terminal split
-(wrapped in the MSVC+wine shell: `nix develop .#build --command python3
-scripts/gruntz.py build`), and on success shows a **compact corner popup** with
+(wrapped in the MSVC+wine shell: `nix develop .#build --command gruntz build`),
+and on success shows a **compact corner popup** with
 the overall % change and the current unit's `before → after` deltas for the
 functions that moved (`↑`/`↓`/`+`, capped — `vs` has the full table). The popup
 never steals focus (handy when the async build lands while you're typing

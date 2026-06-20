@@ -440,12 +440,86 @@ def units_from_toml(path):
     return {u["source"]: u["unit"] for u in data.get("unit", [])}
 
 
+def write_symbol_names(rows, addr_sites, out, misses=None):
+    """Finalize + write symbol_names.csv: the cross-TU duplicate-RVA guard, the
+    DATA dedup (keep last per rva, matching synth_pdb), sort, header. Shared by the
+    per-TU emit and the --merge step so both apply the same checks."""
+    # A function address identifies exactly one function: the same rva labeled
+    # twice (within or across units) is always a mistake - fail loudly.
+    dup_addrs = {rva: sites for rva, sites in addr_sites.items() if len(sites) > 1}
+    if dup_addrs:
+        for rva, sites in sorted(dup_addrs.items()):
+            where = ", ".join(f"{a} ({b})" for a, b in sites)
+            log(f"ERROR duplicate RVA 0x{rva:06x}: {where}")
+        log(f"{len(dup_addrs)} duplicate RVA label(s); refusing to write {out}")
+        return 1
+    rows.sort()
+    # DATA dedup: the same `extern` declared in N TUs emits N rows for one rva.
+    # synth_pdb keys by rva (last wins), so collapse to one data row per rva. If
+    # two declarations give one rva DIFFERENT mangled names, surface the conflict.
+    last_data, data_names, out_rows = {}, {}, []
+    for row in rows:
+        if row[4] == "data":
+            data_names.setdefault(row[0], set()).add(row[1])
+            last_data[row[0]] = row     # rows are sorted -> keeps the last per rva
+        else:
+            out_rows.append(row)
+    for rva, names in sorted(data_names.items()):
+        if len(names) > 1:
+            log(f"WARN data 0x{rva:06x}: conflicting names {sorted(names)} - kept the last")
+    out_rows.extend(last_data.values())
+    out_rows.sort()
+    out = Path(out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    # `size` is the RVA byte extent (hex); `kind` is func or data (synth_pdb routes
+    # data rows to the data-symbol table). See the module docstring.
+    lines = ["rva,name,unit,size,kind"]
+    for rva, name, unit, size, kind in out_rows:
+        size_s = f"0x{size:x}" if size else ""
+        lines.append(f"0x{rva:06x},{name},{unit},{size_s},{kind}")
+    content = "\n".join(lines) + "\n"
+    # WRITE-IF-CHANGED: leave the file (and its mtime) untouched when the content is
+    # identical, so ninja's `restat` stops the cascade. A pure code edit recompiles
+    # the obj but does not change the labels, so this fragment/csv is byte-identical
+    # and merge -> delink -> objdiff are all skipped.
+    if not (out.exists() and out.read_text() == content):
+        out.write_text(content)
+        log(f"wrote {len(out_rows)} label(s) -> {out}")
+    else:
+        log(f"unchanged ({len(out_rows)} labels) -> {out}")
+    for rva, cand, unit, why in (misses or []):
+        log(f"  MISS 0x{rva:x} [{unit}] {why}" + (f" (cand {cand})" if cand else ""))
+    return 0
+
+
+def merge_fragments(frags, out):
+    """Combine per-TU fragment CSVs into symbol_names.csv, re-applying the cross-TU
+    duplicate-RVA guard + DATA dedup. Each fragment is a symbol_names.csv slice
+    (rva,name,unit,size,kind) emitted by one --tu run."""
+    import csv as _csv
+    rows, addr_sites = [], {}
+    for frag in frags:
+        with open(frag) as f:
+            reader = _csv.DictReader(ln for ln in f if not ln.lstrip().startswith("#"))
+            for r in reader:
+                rva = int(r["rva"], 16)
+                size = int(r["size"], 16) if r.get("size") else None
+                kind = r.get("kind") or "func"
+                rows.append((rva, r["name"], r["unit"], size, kind))
+                if kind != "data":
+                    addr_sites.setdefault(rva, []).append((r["unit"], r["name"]))
+    return write_symbol_names(rows, addr_sites, out)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--clang", default=os.environ.get("GRUNTZ_CLANG") or "clang")
     ap.add_argument("--nm", default="llvm-nm")
-    ap.add_argument("--tu", action="append", default=[], required=True,
+    ap.add_argument("--tu", action="append", default=[],
                     help="source TU(s) to read annotations from.")
+    ap.add_argument("--merge", nargs="+",
+                    help="merge mode: combine these per-TU fragment CSVs into "
+                         "--out (cross-TU dup guard + DATA dedup); no --tu needed.")
     ap.add_argument("--flag", action="append", default=[])
     ap.add_argument("--obj", action="append", default=[],
                     help="base <unit>.obj for the authority check (same order/count "
@@ -458,6 +532,11 @@ def main():
                          "(the IR emit needs system headers to resolve).")
     ap.add_argument("--out", default=str(REPO / "build/gen/symbol_names.csv"))
     args = ap.parse_args()
+
+    if args.merge:
+        return merge_fragments(args.merge, Path(args.out))
+    if not args.tu:
+        ap.error("either --tu (emit) or --merge (combine fragments) is required")
 
     unit_map = {}
     if not args.unit and Path(args.units_toml).exists():
@@ -544,53 +623,7 @@ def main():
                         misses.append((rva, cand, unit,
                                        "data candidate not in base obj"))
 
-    # A function address identifies exactly one function: the same rva labeled
-    # twice (within or across units) is always a mistake - fail loudly rather than
-    # silently let one row win.
-    dup_addrs = {rva: sites for rva, sites in addr_sites.items() if len(sites) > 1}
-    if dup_addrs:
-        for rva, sites in sorted(dup_addrs.items()):
-            where = ", ".join(f"{tu} ({sym})" for tu, sym in sites)
-            log(f"ERROR duplicate RVA 0x{rva:06x}: {where}")
-        log(f"{len(dup_addrs)} duplicate RVA label(s); refusing to write {args.out}")
-        return 1
-
-    rows.sort()
-    # DATA dedup: the same `extern` declared in N TUs emits N rows for one rva.
-    # The function dup-guard (addr_sites) deliberately doesn't track data, and
-    # synth_pdb keys by rva (last wins), so collapse to one data row per rva
-    # (keeping the last, matching synth_pdb). If two declarations give one rva
-    # DIFFERENT mangled names, they disagree on the global's type - surface it.
-    last_data, data_names, out_rows = {}, {}, []
-    for row in rows:
-        if row[4] == "data":
-            data_names.setdefault(row[0], set()).add(row[1])
-            last_data[row[0]] = row     # rows are sorted -> keeps the last per rva
-        else:
-            out_rows.append(row)
-    for rva, names in sorted(data_names.items()):
-        if len(names) > 1:
-            log(f"WARN data 0x{rva:06x}: conflicting names {sorted(names)} - kept the last")
-    out_rows.extend(last_data.values())
-    out_rows.sort()
-    rows = out_rows
-    out = Path(args.out)
-    out.parent.mkdir(parents=True, exist_ok=True)
-    with out.open("w") as f:
-        # `size` is the RVA byte extent (hex), the authoritative boundary the
-        # synth-PDB uses for matched functions Ghidra's auto-analysis never
-        # recovered as objects (empty when a row carries no size).
-        # `kind` is func (a matched function) or data (the DATA symbol a matched
-        # global is referenced through); synth_pdb routes data rows to the
-        # data-symbol table instead of synthesising a function record.
-        f.write("rva,name,unit,size,kind\n")
-        for rva, name, unit, size, kind in rows:
-            size_s = f"0x{size:x}" if size else ""
-            f.write(f"0x{rva:06x},{name},{unit},{size_s},{kind}\n")
-    log(f"wrote {len(rows)} label(s) -> {out}")
-    for rva, cand, unit, why in misses:
-        log(f"  MISS 0x{rva:x} [{unit}] {why}" + (f" (cand {cand})" if cand else ""))
-    return 0
+    return write_symbol_names(rows, addr_sites, Path(args.out), misses)
 
 
 if __name__ == "__main__":
