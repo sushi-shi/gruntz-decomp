@@ -107,6 +107,36 @@ prototype starts far ahead of one staring at `FUN_00482f50`.
 
 ---
 
+## 3a. ALWAYS write the attribution reasoning when choosing functions (MANDATORY)
+
+Before dispatching a matcher, the orchestrator MUST state, **in writing**, WHICH
+functions it is matching and WHY they belong to a specific class/TU — the evidence
+chain, named explicitly. Cite the concrete signal(s) from §4:
+
+- **RTTI vptr-store** — the ctor/dtor stores `??_7Class@@6B@` into `[this]`; give the
+  vtable RVA.
+- **`this`+offset fingerprint** — the decomp's `this+0x..` member reads/writes hit a
+  known class's established layout; name the offsets/members.
+- **tomalla name/prototype**, **string / `__FILE__` xref**, **discriminating-import
+  caller**, or **address contiguity** (a neighbor of an already-anchored TU).
+
+Required shape (this is the template):
+
+> Next: CGruntzMgr continuation. These are CGruntzMgr methods because (1) **RTTI
+> vptr-store** — the ctor stores `??_7CGruntzMgr@@6B@` (vtable `0x5e9b64`) into
+> `[this]`; (2) **`this`+offset fingerprint** on the 0xa30 layout (m_strC8 CString,
+> m_d0 drive-char, m_arrD8 CByteArray, m_options150). Picking a contiguous cluster
+> (TU-aware) and applying the patterns catalog.
+
+This is mandatory because attribution is **inference and is sometimes wrong**
+(BuildVersionString was really `CMenuState`; `0x8fea0`'s `CByteArray@+0x138`
+contradicts the CGruntzMgr ctor → not a CGruntzMgr method). Writing the evidence
+makes a bad guess catchable *before* a worker burns a dispatch, and records the
+reasoning for review. A worker that finds the attribution contradicted by the disasm
+must STOP and report, not force the wrong class.
+
+---
+
 ## 4. Label sources, ranked by leverage (for picking targets)
 
 1. **tomalla re-anchored (~250)** — real names + prototypes (mostly the bootstrap
