@@ -312,3 +312,8 @@ flags = "eh"
 unit = "cddrawptrcollections"
 source = "src/Gruntz/CDDrawPtrCollections.cpp"
 flags = "eh"
+
+[[unit]]
+unit = "cdirectdrawmgr"
+source = "src/Gruntz/CDirectDrawMgr.cpp"
+flags = "base"

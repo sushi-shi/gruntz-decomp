@@ -14,7 +14,6 @@ public:
     void ErrorThunk_13eef0();
     void ErrorThunk_13ef90();
     void ErrorThunk_13fa60();
-    void GetErrorString();
     void Stub_141dc0();
     void ErrorThunk_147390();
     void ErrorThunk_147c30();
@@ -87,12 +86,6 @@ void CDirectDrawMgr::ErrorThunk_13ef90() {}
 // @stub
 RVA(0x13fa60, 0x40)
 void CDirectDrawMgr::ErrorThunk_13fa60() {}
-
-// @confidence: high
-// @source: string-xref
-// @stub
-RVA(0x141400, 0x835)
-void CDirectDrawMgr::GetErrorString() {}
 
 // @confidence: high
 // @source: import:DirectDrawCreate
