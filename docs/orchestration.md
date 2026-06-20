@@ -179,7 +179,7 @@ must STOP and report, not force the wrong class.
    (DX error formatters that self-ID their module string, the WWD object factory,
    sprite/asset loaders, foundry/level logic).
    **Verify against the decompiler** before trusting a string-only guess:
-   `scripts/gruntz/ghidra/decomp_export.py` (read-only, run on a *copy* of the named DB)
+   `scripts/gruntz/ghidra/scripts/decomp_export.py` (read-only, run on a *copy* of the named DB)
    dumps the Ghidra decompiler C + caller/callee xrefs for a target list, exposing
    calling convention, arg count, virtual-slot identity (`vfunc_N` callers), and
    `this+offset` member writes / `.att` reads. This produced the 94

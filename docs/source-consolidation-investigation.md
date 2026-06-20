@@ -19,7 +19,7 @@ to "annotate the source, regenerate everything."
 > | `gen_labels.py` | `scripts/gruntz/build/labels.py` |
 > | `ghidra_metadata_generate.py` | `scripts/gruntz/build/ghidra_metadata_generate.py` |
 > | `synth_pdb.py` / `delink_target.py` / `cc_wrap.py` | `scripts/gruntz/build/{synth_pdb,delink,cc_wrap}.py` |
-> | `apply_ghidra_enrichment.py` | `scripts/gruntz/ghidra/apply.py` (+ `export.py`) |
+> | `apply_ghidra_enrichment.py` | `scripts/gruntz/ghidra/scripts/apply.py` (+ `export.py`) |
 > | `annotate_addresses.py` | one-shot `@address` migrator — **removed** after it seeded all `src/` annotations (the annotations live in `src/`) |
 > | `configure.py` | repo root (generates `build.ninja`) |
 >
@@ -51,7 +51,7 @@ to "annotate the source, regenerate everything."
 | 2 | `config/units.toml` | per-TU `unit,source,flags` profile (23 units) | Build manifest. `configure.py` → `build.ninja` + objdiff project. | Yes (legit) |
 | 3 | `src/` | `@stub` metadata plus empty function bodies for unresolved labels | Comprehension/attribution + match-queue fuel. Harvested from tomalla + RTTI; `apply_ghidra_enrichment.py` applies names/protos to the Ghidra DB; `gen_match_queue.py` ranks it. | Partly (harvested + appended) |
 | 4 | `structure/*.h` | 39 C++ headers, `@offset`/`@vftable`/`@size`/`@rtti` annotations | Engine-wide layout/enum scaffold (231 RTTI classes; tomalla-ported + hypotheses). Comprehension only — **not compiled**. | **Yes** |
-| 5 | `scripts/gruntz/ghidra/apply.py` (`STRUCTS`/`ENUMS`, ~300 lines) | Python literals of struct fields + enums | Defines structs/enums in the Ghidra DTM and applies them as `this`-types. | **Yes** |
+| 5 | `scripts/gruntz/ghidra/scripts/apply.py` (`STRUCTS`/`ENUMS`, ~300 lines) | Python literals of struct fields + enums | Defines structs/enums in the Ghidra DTM and applies them as `this`-types. | **Yes** |
 | 6 | `src/**/*.{cpp,h}` | the actual matched C++ (19 files, 23 TUs) | Compiled by `cl` → base `<unit>.obj`. RVAs, symbols, sizes, match-% all live in **prose comments**; field layouts live in **prose comments** in the `.h`. **Zero machine-readable annotations.** | Yes (the real work) |
 
 `units.toml` (#2) is **not** duplication — it carries genuine per-TU build state

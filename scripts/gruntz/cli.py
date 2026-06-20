@@ -52,10 +52,14 @@ REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").ex
 SCRIPTS            = REPO / "scripts"
 PKG                = SCRIPTS / "gruntz"       # the pipeline package (grouped by area)
 BUILD              = PKG / "build"            # cc_wrap, labels, structs, synth_pdb, delink, ...
-GHIDRA             = PKG / "ghidra"           # apply (the comprehension-DB enrichment)
+GHIDRA             = PKG / "ghidra"           # the PyGhidra driver (a normal runnable module)
 GHIDRA_DRIVER      = GHIDRA / "ghidra_metadata_apply.py" # PyGhidra driver: import/analyze + apply + export
-GHIDRA_APPLY       = GHIDRA / "apply.py"      # enrichment GhidraScript (run under PyGhidra)
-GHIDRA_EXPORT      = GHIDRA / "export.py"     # functions.csv/symbols.csv dump GhidraScript
+# GhidraScripts run INSIDE Ghidra (PyGhidra injects currentProgram/monitor/state);
+# they are NOT importable and NOT `python -m`-runnable — the driver passes them by
+# PATH. They live in ghidra/scripts/ (no __init__.py) so the boundary is explicit.
+GHIDRA_SCRIPTS     = GHIDRA / "scripts"       # GhidraScripts: path-only, never imported/-m'd
+GHIDRA_APPLY       = GHIDRA_SCRIPTS / "apply.py"   # enrichment GhidraScript (run under PyGhidra)
+GHIDRA_EXPORT      = GHIDRA_SCRIPTS / "export.py"  # functions.csv/symbols.csv dump GhidraScript
 INIT               = PKG / "init"             # environment setup
 MANIFEST           = REPO / "config" / "units.toml"
 OBJDIFF_DIR        = REPO / "build" / "objdiff"
