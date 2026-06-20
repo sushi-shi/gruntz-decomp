@@ -206,8 +206,10 @@ prototype starts far ahead of one staring at `FUN_00482f50`.
    chain: build-system.md "What triggers a re-delink".)
 5. **Read the per-unit match %** (`gruntz status` reprints the last report without
    rebuilding). Then iterate: edit `src/` → `gruntz build` → read → repeat until
-   **byte-exact**. Use `matching-patterns.md` for the codegen idioms; locked flags
-   `/O2 /MT` — do not recalibrate. A vtable/global-store function tops out at
+   **byte-exact**. When a diff row is stuck, grep **`docs/patterns/INDEX.md`**
+   (one file per MSVC5 /O2 codegen idiom — steerable fixes vs. walls/scoring
+   artifacts) and use `matching-patterns.md`; locked flags `/O2 /MT` — do not
+   recalibrate. Found a new idiom? Add a pattern file + an INDEX line. A vtable/global-store function tops out at
    ~99.5% *fuzzy*, not 100% *exact* (the reloc-typing artifact, §6) — that's
    matched; confirm by direct byte-compare and move on, don't chase it (§2a).
 6. Navigate with `scripts/analysis/clangd_query.py def|refs|hover|symbol`.
