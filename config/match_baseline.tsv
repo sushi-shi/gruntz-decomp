@@ -33,7 +33,7 @@ deflate	6	6
 dialogs	6	5
 directinputmgr2	1	1
 directsoundmgr	1	1
-engine_label_stubs	330	0
+engine_label_stubs	327	0
 filestream	13	9
 font	16	8
 fontconfig	1	0
@@ -46,6 +46,7 @@ gamewnd	5	4
 grunt	19	0
 gruntzapp	10	8
 gruntzcommand	3	3
+gruntzmgr	3	2
 gruntzwnd	2	1
 iconloaders	4	1
 image	5	5
@@ -299,7 +300,6 @@ engine_label_stubs	??0UnknownClassArrays@@QAE@XZ	2.6892	2.6892	1	cpp:45e65336d4b
 engine_label_stubs	??0UnknownClassInCGruntzMgr@@QAE@XZ	3.0435	3.0435	1	cpp:45e65336d4b5
 engine_label_stubs	??0UnknownVoldemort@@QAE@XZ	14.0000	14.0000	1	cpp:45e65336d4b5
 engine_label_stubs	??1CGruntzMapMgr@@QAE@XZ	2.0833	2.0833	1	cpp:45e65336d4b5
-engine_label_stubs	??1CGruntzMgr@@QAE@XZ	2.5000	2.5000	1	cpp:45e65336d4b5
 engine_label_stubs	??1CRandomAmbientSound@@QAE@XZ	0.6349	0.6349	1	cpp:45e65336d4b5
 engine_label_stubs	??1CSBI_Image@@QAE@XZ	0.1126	0.1126	1	cpp:45e65336d4b5
 engine_label_stubs	??1CSBI_SideTab@@QAE@XZ	0.9804	0.9804	1	cpp:45e65336d4b5
@@ -398,7 +398,6 @@ engine_label_stubs	?ErrorThunk_147c30@CDirectDrawMgr@@QAEXXZ	3.4483	3.4483	1	cpp
 engine_label_stubs	?ErrorThunk_147cd0@CDirectDrawMgr@@QAEXXZ	0.8333	0.8333	1	cpp:45e65336d4b5
 engine_label_stubs	?FormatGameInfoString@EngineLabelBacklog@@YAXXZ	0.5208	0.5208	1	cpp:45e65336d4b5
 engine_label_stubs	?FreeArrays@UnknownClassArrays@@QAEXXZ	1.7857	1.7857	1	cpp:45e65336d4b5
-engine_label_stubs	?GetGruntzDriveLetter@CGruntzMgr@@QAEXXZ	7.6923	7.6923	1	cpp:45e65336d4b5
 engine_label_stubs	?HandleFortConquered@EngineLabelBacklog@@YAXXZ	0.2710	0.2710	1	cpp:45e65336d4b5
 engine_label_stubs	?Init@RezSync@@QAEXXZ	0.0225	0.0225	1	cpp:45e65336d4b5
 engine_label_stubs	?InitAttractTitle@EngineLabelBacklog@@YAXXZ	0.9901	0.9901	1	cpp:45e65336d4b5
@@ -490,7 +489,6 @@ engine_label_stubs	?OnActivate_vfunc8@GameLevelState@@QAEXXZ	0.6849	0.6849	1	cpp
 engine_label_stubs	?ParseAttributeFile@ButeMgr@@QAEXXZ	0.1368	0.1368	1	cpp:45e65336d4b5
 engine_label_stubs	?PerFrameTick@CGruntzMgr@@QAEXXZ	4.3478	4.3478	1	cpp:45e65336d4b5
 engine_label_stubs	?ReadPlaneObjects@WwdFile@@QAEXXZ	0.0702	0.0702	1	cpp:45e65336d4b5
-engine_label_stubs	?ReportError@CGruntzMgr@@QAEXXZ	4.0000	4.0000	1	cpp:45e65336d4b5
 engine_label_stubs	?SaveGameFile@EngineLabelBacklog@@YAXXZ	0.3883	0.3883	1	cpp:45e65336d4b5
 engine_label_stubs	?SaveScreenshot@EngineLabelBacklog@@YAXXZ	0.6410	0.6410	1	cpp:45e65336d4b5
 engine_label_stubs	?SelectBestDevice@SFManager@@QAEXXZ	0.3937	0.3937	1	cpp:45e65336d4b5
@@ -662,7 +660,7 @@ gruntzapp	??0CGruntzApp@@QAE@XZ	100.0000	100.0000	4	6563943e0276
 gruntzapp	??1CGruntzApp@@UAE@XZ	100.0000	100.0000	4	53178ef9599d
 gruntzapp	?CreateU10O@@YAPAXXZ	99.9583	99.9583	3	a309ad1fcc54
 gruntzapp	?ErrorDialogProc@CGruntzApp@@SGHPAXIIJ@Z	100.0000	100.0000	4	7735c2bf8143
-gruntzapp	?InitializeGameManager@CGruntzApp@@UAEPAVCGameMgr@WAP32@@XZ	100.0000	100.0000	4	ce781f0af619
+gruntzapp	?InitializeGameManager@CGruntzApp@@UAEPAVCGameMgr@WAP32@@XZ	100.0000	100.0000	5	d6f34acef9d0
 gruntzapp	?ShowError@CGruntzApp@@UAEXXZ	100.0000	100.0000	4	72a450acc475
 gruntzapp	?ShowMessage@CGruntzApp@@QAEXPADPAX@Z	100.0000	100.0000	3	de692a8cac94
 gruntzapp	?Stub_112820@CGruntzApp@@QAEXXZ	20.0000	20.0000	3	9a5c043a5cea
@@ -671,6 +669,9 @@ gruntzapp	?VirtualUnknownMethod04@CGruntzApp@@UAEHHHH@Z	100.0000	100.0000	3	4edc
 gruntzcommand	??_GCGruntzCommand@@UAEPAXI@Z	100.0000	100.0000	1	cpp:c78f93a7a299
 gruntzcommand	?Allocate@CGruntzMultiCommand@@SAPAV1@XZ	100.0000	100.0000	1	6f3155967735
 gruntzcommand	?Allocate@CGruntzSingleCommand@@SAPAV1@XZ	100.0000	100.0000	1	6e8efe006ace
+gruntzmgr	??1CGruntzMgr@@UAE@XZ	89.8500	89.8500	1	9be8b66a68ef
+gruntzmgr	?GetGruntzDriveLetter@CGruntzMgr@@QAEDXZ	100.0000	100.0000	1	e9ca27ef071c
+gruntzmgr	?ReportError@CGruntzMgr@@QAEXIJ@Z	100.0000	100.0000	1	bf61e403af43
 gruntzwnd	??0CGruntzWnd@@QAE@XZ	100.0000	100.0000	4	4862d21d0785
 gruntzwnd	?Stub_094670@CGruntzWnd@@QAEXXZ	3.6364	3.6364	3	c87b0e867d2f
 iconloaders	?BuildBootyPerfectAnimation@EngineLabelBacklog@@QAEHXZ	100.0000	100.0000	1	23d2f89c013f

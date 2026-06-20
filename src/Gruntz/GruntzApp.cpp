@@ -46,11 +46,13 @@ __declspec(dllimport) INT_PTR __stdcall DialogBoxParamA(HINSTANCE hInstance, LPC
 #define IDS_DEFAULT_ERROR 0x8009
 
 // ---------------------------------------------------------------------------
-// The game manager. CGruntzApp::InitializeGameManager allocates the complete
-// WAP32::CGameMgr size (0x0a30 bytes; definition in Wap32.h) then runs its
-// throwing constructor under a C++ EH frame. The ctor is UNMATCHED but the call
-// is reloc-masked, so the call bytes are still byte-exact.
+// The game manager. CGruntzApp::InitializeGameManager allocates the derived
+// CGruntzMgr (0x0a30 bytes; definition in <Gruntz/GruntzMgr.h>) then runs its
+// throwing constructor under a C++ EH frame. `new CGruntzMgr` => operator
+// new(0xa30) + ??0CGruntzMgr@@QAE@XZ; the pointer is upcast to the base
+// WAP32::CGameMgr* the slot returns (a no-op since CGameMgr is the first base).
 // ---------------------------------------------------------------------------
+#include <Gruntz/GruntzMgr.h>
 
 // File-scope globals referenced by ErrorDialogProc / ShowError (an HWND and the
 // error-text buffer). The relocs that name them are masked in objdiff; only the
@@ -157,13 +159,15 @@ void CGruntzApp::ShowError()
 
 // ---------------------------------------------------------------------------
 // CGruntzApp::InitializeGameManager
-// `return new WAP32::CGameMgr;` - operator new(0xa30) then a throwing ctor under
-// a C++ EH frame (this TU needs /GX). The push-ecx is MSVC reserving one dword
-// of locals for the new pointer / EH-tracked object; `this` is never read.
+// `return new CGruntzMgr;` - operator new(0xa30) then the throwing CGruntzMgr
+// ctor under a C++ EH frame (this TU needs /GX). The push-ecx is MSVC reserving
+// one dword of locals for the new pointer / EH-tracked object; `this` is never
+// read. The CGruntzMgr* is returned as the base WAP32::CGameMgr* the virtual
+// slot is typed to (no-op upcast; CGameMgr is the first base).
 RVA(0x80a20, 0x5a)
 WAP32::CGameMgr *CGruntzApp::InitializeGameManager()
 {
-    return new WAP32::CGameMgr;
+    return new CGruntzMgr;
 }
 
 // ---------------------------------------------------------------------------

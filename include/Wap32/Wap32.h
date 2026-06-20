@@ -194,18 +194,23 @@ public:
 // with Run(pGameWnd, szCmdLine) (vtable +0x4) and `delete`s it (scalar-deleting
 // dtor @ vtable slot 0) on failure.
 //
-// NOTE: the pad is kept at 0xa30 (not 0x2c) ONLY so the mislabeled
-// `CGruntzApp::InitializeGameManager` (which really does `new CGruntzMgr`, the
-// 0xa30 derived manager, but is currently reconstructed as `new WAP32::CGameMgr`)
-// keeps its `push 0xa30` byte-match. The base class is genuinely 0x2c; the real
-// fix is to split out the derived CGruntzMgr so CGameApp::InitializeGameManager
-// (@0x13dbc0, `new CGameMgr` => push 0x2c) can match too. Until then 0x13dbc0 is
-// deferred (matching it needs sizeof==0x2c, which would regress 0x080a20).
+// This is the GENUINE 0x2c base. Gruntz's own game manager is the derived
+// CGruntzMgr (0xa30 bytes, its own vftable @0x5e9b64; see <Gruntz/GruntzMgr.h>):
+// CGruntzApp::InitializeGameManager (@0x080a20) does `new CGruntzMgr` =>
+// `push 0xa30`, while the engine's own CGameApp::InitializeGameManager
+// (@0x13dbc0) does `new CGameMgr` => `push 0x2c`. The two managers no longer
+// share one (padded) class - the base is its true size and the derived game
+// manager carries the 0xa30 of game state.
 namespace WAP32 {
 class CGameMgr {
 public:
     CGameMgr();
-    virtual ~CGameMgr();                                       // +0x00 idx0 dtor
+    // ~CGameMgr is INLINE: it re-stores the base vftable then runs UnknownClose
+    // (clearing the owned pointers). It must be visible here so the derived
+    // CGruntzMgr's dtor (another TU) inlines the base-subobject teardown exactly
+    // as the retail dtor does (store base vptr + devirtualized UnknownClose
+    // call) instead of emitting an out-of-line base-dtor call.
+    virtual ~CGameMgr() { UnknownClose(); }                   // +0x00 idx0 dtor
     virtual int  Run(CGameWnd *pGameWnd, char *szCmdLine);    // +0x04 idx1
     virtual void UnknownClose();                              // +0x08 idx2
     virtual void Wap32GameMgrVfunc3();                        // +0x0c idx3
@@ -226,11 +231,14 @@ public:
     int m_20;    // +0x20  (cleared by InitTimeFields)
     int m_24;    // +0x24  start tick (timeGetTime, by InitTimeFields)
 
-    // Engine-label backlog stubs.
-    void vector_deleting_destructor();  // CGruntzMgr-family; deferred
+    // Engine-label backlog stub @0x133380. NOT actually a CGameMgr method (it
+    // scalar-deletes some other class, vftable 0x5ef670) - but the retail symbol
+    // is labelled `?...@CGameMgr@WAP32@@QAEXXZ`, so the base obj must mangle it
+    // through this class. A method adds NO storage, so sizeof stays 0x2c.
+    void vector_deleting_destructor();
 
 private:
-    char m_pad28[0xa30 - 0x28];
+    char m_pad28[0x2c - 0x28];
 };
 }
 

@@ -1,17 +1,20 @@
 #include <rva.h>
-// CGruntzMgr.cpp - engine-label stubs for CGruntzMgr.
+// CGruntzMgr.cpp - engine-label stubs for the still-unmatched CGruntzMgr
+// methods. The class itself is reconstructed in src/Gruntz/GruntzMgr.cpp
+// (CGruntzMgr : public WAP32::CGameMgr, 0xa30); matched there: the dtor
+// (~CGruntzMgr), ReportError, GetGruntzDriveLetter. The remainder stay here
+// until reconstructed. The scalar-deleting destructor (0x083330) keeps its
+// explicit `vector_deleting_destructor` name here (MSVC's auto-generated
+// ??_G mangling differs from the retail label the delinker emits).
 
 class CGruntzMgr {
 public:
     CGruntzMgr();
     void vector_deleting_destructor();
-    ~CGruntzMgr();
     void UnknownClose();
-    void ReportError();
     void InitializeLobbyConnectionSettings();
     void PerFrameTick();
     void VirtualUnknownMethod06();
-    void GetGruntzDriveLetter();
     void InitCFileIOMember();
     void BuildMoviePath();
 };
@@ -31,20 +34,8 @@ void CGruntzMgr::vector_deleting_destructor() {}
 // @confidence: high
 // @source: tomalla
 // @stub
-RVA(0x083360, 0xb2)
-CGruntzMgr::~CGruntzMgr() {}
-
-// @confidence: high
-// @source: tomalla
-// @stub
 RVA(0x0855e0, 0x448)
 void CGruntzMgr::UnknownClose() {}
-
-// @confidence: high
-// @source: tomalla
-// @stub
-RVA(0x08dc60, 0x19)
-void CGruntzMgr::ReportError() {}
 
 // @confidence: high
 // @source: tomalla
@@ -63,12 +54,6 @@ void CGruntzMgr::PerFrameTick() {}
 // @stub
 RVA(0x08f6a0, 0x7d)
 void CGruntzMgr::VirtualUnknownMethod06() {}
-
-// @confidence: high
-// @source: tomalla
-// @stub
-RVA(0x08fa70, 0x2c)
-void CGruntzMgr::GetGruntzDriveLetter() {}
 
 // @confidence: med
 // @source: call-xref

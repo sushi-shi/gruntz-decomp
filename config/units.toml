@@ -164,6 +164,11 @@ source = "src/Gruntz/GruntzApp.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "gruntzmgr"
+source = "src/Gruntz/GruntzMgr.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "gruntzwnd"
 source = "src/Gruntz/GruntzWnd.cpp"
 flags = "base"

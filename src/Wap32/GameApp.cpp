@@ -384,8 +384,8 @@ void CGameResource::Wap32GameResVfunc1() {}
 void CGameResource::Wap32GameResVfunc2() {}
 void CGameResource::Wap32GameResVfunc3() {}
 void CGameResource::PerFrameTick() {}
-// CGameMgr vtable anchors (the dtor + the three otherwise-unmatched virtuals).
-WAP32::CGameMgr::~CGameMgr() {}
+// CGameMgr vtable anchors (~CGameMgr is now inline in Wap32.h; the three
+// otherwise-unmatched virtuals anchor here).
 void WAP32::CGameMgr::Wap32GameMgrVfunc3() {}
 void WAP32::CGameMgr::Wap32GameMgrVfunc4() {}
 void WAP32::CGameMgr::Wap32GameMgrVfunc5() {}
@@ -473,10 +473,12 @@ void WAP32::CGameMgr::UnknownMethodInitializeTimeGlobal()
 // -------------------------------------------------------------------------
 // Engine-label backlog stubs.
 // -------------------------------------------------------------------------
-// vector_deleting_destructor @0x133380 stores vftable 0x5ef670 and calls the
-// 0x134d50 dtor body - it is a CGruntzMgr-family scalar-deleting dtor, NOT the
-// base WAP32::CGameMgr's (whose dtor is the 0x401bb8 thunk in vtable slot 0).
-// Deferred to the CGruntzMgr reconstruction; kept as a label here.
+// 0x133380 stores vftable 0x5ef670 and calls dtor body FUN_00534d50 - the
+// scalar-deleting destructor of some OTHER engine class the delinker labelled
+// under CGameMgr@WAP32; it is NEITHER the base WAP32::CGameMgr (vftable
+// 0x5e9b8c) NOR CGruntzMgr (vftable 0x5e9b64). It is a (storage-free) method on
+// CGameMgr ONLY so MSVC mangles it to the retail symbol name; see the note on
+// the declaration in Wap32.h.
 // @confidence: high
 // @source: tomalla
 // @stub
