@@ -63,8 +63,6 @@
 #include "CGruntzCommand.cpp"
 #include "CGruntzMapMgr.cpp"
 #include "CGruntzMgr.cpp"
-#include "CGruntzMultiCommand.cpp"
-#include "CGruntzSingleCommand.cpp"
 #include "CGuardPoint.cpp"
 #include "CInGameIcon.cpp"
 #include "CInGameText.cpp"

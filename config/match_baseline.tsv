@@ -33,7 +33,7 @@ deflate	6	6
 dialogs	6	5
 directinputmgr2	1	1
 directsoundmgr	1	1
-engine_label_stubs	345	0
+engine_label_stubs	342	0
 filestream	13	9
 font	16	8
 fontconfig	1	0
@@ -45,6 +45,7 @@ gametext	4	2
 gamewnd	5	4
 grunt	19	0
 gruntzapp	10	8
+gruntzcommand	3	3
 gruntzwnd	2	1
 image	5	5
 infblock	5	4
@@ -253,8 +254,6 @@ engine_label_stubs	??0CGruntToyTimeSprite@@QAE@XZ	1.9048	1.9048	1	cpp:45e65336d4
 engine_label_stubs	??0CGruntVoice@@QAE@XZ	0.7143	0.7143	1	cpp:45e65336d4b5
 engine_label_stubs	??0CGruntWingzTimeSprite@@QAE@XZ	1.9048	1.9048	1	cpp:45e65336d4b5
 engine_label_stubs	??0CGruntzMgr@@QAE@XZ	1.4286	1.4286	1	cpp:45e65336d4b5
-engine_label_stubs	??0CGruntzMultiCommand@@QAE@XZ	13.9286	13.9286	1	cpp:45e65336d4b5
-engine_label_stubs	??0CGruntzSingleCommand@@QAE@XZ	13.9286	13.9286	1	cpp:45e65336d4b5
 engine_label_stubs	??0CGuardPoint@@QAE@XZ	0.7273	0.7273	1	cpp:45e65336d4b5
 engine_label_stubs	??0CInGameIcon@@QAE@XZ	0.0736	0.0736	1	cpp:45e65336d4b5
 engine_label_stubs	??0CInGameText@@QAE@XZ	0.5517	0.5517	1	cpp:45e65336d4b5
@@ -295,7 +294,6 @@ engine_label_stubs	??0CWayPoint@@QAE@XZ	0.7273	0.7273	1	cpp:45e65336d4b5
 engine_label_stubs	??0UnknownClassArrays@@QAE@XZ	2.6892	2.6892	1	cpp:45e65336d4b5
 engine_label_stubs	??0UnknownClassInCGruntzMgr@@QAE@XZ	3.0435	3.0435	1	cpp:45e65336d4b5
 engine_label_stubs	??0UnknownVoldemort@@QAE@XZ	14.0000	14.0000	1	cpp:45e65336d4b5
-engine_label_stubs	??1CGruntzCommand@@QAE@XZ	3.3333	3.3333	1	cpp:45e65336d4b5
 engine_label_stubs	??1CGruntzMapMgr@@QAE@XZ	2.0833	2.0833	1	cpp:45e65336d4b5
 engine_label_stubs	??1CGruntzMgr@@QAE@XZ	2.5000	2.5000	1	cpp:45e65336d4b5
 engine_label_stubs	??1CRandomAmbientSound@@QAE@XZ	0.6349	0.6349	1	cpp:45e65336d4b5
@@ -678,6 +676,9 @@ gruntzapp	?ShowMessage@CGruntzApp@@QAEXPADPAX@Z	100.0000	100.0000	3	de692a8cac94
 gruntzapp	?Stub_112820@CGruntzApp@@QAEXXZ	20.0000	20.0000	3	9a5c043a5cea
 gruntzapp	?VirtualUnknownMethod03@CGruntzApp@@UAEHPAXPAD11HHH@Z	100.0000	100.0000	4	eef18bc9d3d6
 gruntzapp	?VirtualUnknownMethod04@CGruntzApp@@UAEHHHH@Z	100.0000	100.0000	3	4edc46fb2fb4
+gruntzcommand	??_GCGruntzCommand@@UAEPAXI@Z	100.0000	100.0000	1	cpp:c78f93a7a299
+gruntzcommand	?Allocate@CGruntzMultiCommand@@SAPAV1@XZ	100.0000	100.0000	1	6f3155967735
+gruntzcommand	?Allocate@CGruntzSingleCommand@@SAPAV1@XZ	100.0000	100.0000	1	6e8efe006ace
 gruntzwnd	??0CGruntzWnd@@QAE@XZ	100.0000	100.0000	4	4862d21d0785
 gruntzwnd	?Stub_094670@CGruntzWnd@@QAEXXZ	3.6364	3.6364	3	c87b0e867d2f
 image	?DecodePcxEx@CFileImage@@QAEHPAD0PAX1@Z	100.0000	100.0000	1	1d85aa6255a5

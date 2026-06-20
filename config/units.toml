@@ -189,6 +189,11 @@ source = "src/Gruntz/Grunt.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "gruntzcommand"
+source = "src/Gruntz/GruntzCommand.cpp"
+flags = "base"
+
+[[unit]]
 unit = "engine_label_stubs"
 source = "src/Stub/All.cpp"
 flags = "base"
