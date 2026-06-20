@@ -383,15 +383,27 @@ local function show_diff(root, sym, t, b)
     return buf
   end
 
+  -- Lighter than nvim's default diff (which washes the whole CHANGED line via
+  -- DiffChange): drop that line wash and keep only the changed TOKEN, underlined
+  -- (DiffText). Added/removed lines still show (DiffAdd/DiffDelete). Scoped to
+  -- these windows via winhighlight, so your other diffs keep their look.
+  vim.api.nvim_set_hl(0, "GruntzDiffChange", {})
+  vim.api.nvim_set_hl(0, "GruntzDiffText", { underline = true })
+  local WH = "DiffChange:GruntzDiffChange,DiffText:GruntzDiffText"
+
   local tbuf, bbuf = pane("target", t), pane("base", b)
   vim.cmd(M.config.split)
   vim.api.nvim_win_set_buf(0, tbuf)
   set_winbar(vim.api.nvim_get_current_win(), "TARGET (retail)", sym.name, t.match_percent)
   vim.cmd("diffthis")
+  vim.wo[0].foldenable = false   -- show the WHOLE function, not just changed hunks
+  vim.wo[0].winhighlight = WH
   vim.cmd("rightbelow vsplit")
   vim.api.nvim_win_set_buf(0, bbuf)
   set_winbar(vim.api.nvim_get_current_win(), "BASE (recompiled)", sym.name, b.match_percent)
   vim.cmd("diffthis")
+  vim.wo[0].foldenable = false
+  vim.wo[0].winhighlight = WH
   vim.cmd("normal! gg")
 end
 
@@ -842,10 +854,21 @@ function M.load_state(buf)
   end
 end
 
-function M.complete() return { "target", "base", "diff", "status", "hints", "autobuild" } end
+--- Close every open gruntz view window (vt/vb/vd/vs/build/log).
+function M.close()
+  for _, w in ipairs(vim.api.nvim_list_wins()) do
+    if vim.api.nvim_win_is_valid(w)
+        and vim.api.nvim_buf_get_name(vim.api.nvim_win_get_buf(w)):match("^gruntz://") then
+      pcall(vim.api.nvim_win_close, w, true)
+    end
+  end
+end
+
+function M.complete() return { "target", "base", "diff", "status", "hints", "autobuild", "close" } end
 
 function M.dispatch(arg)
   if arg == "status" then return M.status() end
+  if arg == "close" then return M.close() end
   if arg == "hints" then
     M.config.hints = not M.config.hints
     save_state(project_root(0)); refresh_all_hints()
@@ -857,7 +880,7 @@ function M.dispatch(arg)
     return notify("build on save " .. (M.config.build_on_save and "ON" or "off"))
   end
   if arg == "target" or arg == "base" or arg == "diff" then return M.view(arg) end
-  return notify("usage: :Gruntz {target|base|diff|status|hints|autobuild}",
+  return notify("usage: :Gruntz {target|base|diff|status|hints|autobuild|close}",
     vim.log.levels.WARN)
 end
 
@@ -868,6 +891,7 @@ function M.attach_keymaps(buf)
     vd = function() M.view("diff") end,    -- view diff (the objdiff look)
     vs = function() M.status() end,        -- status overview
     vB = function() M.build({}) end,       -- build
+    vq = function() M.close() end,         -- close all gruntz views
   }
   for lhs, fn in pairs(maps) do
     vim.keymap.set("n", lhs, fn, { buffer = buf, silent = true, desc = "gruntz " .. lhs })

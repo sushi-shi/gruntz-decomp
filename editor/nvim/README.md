@@ -32,7 +32,13 @@ Buffer-local chords on C/C++ buffers:
 | `vd`  | **diff** — target ∣ base side-by-side (the "objdiff look")      |
 | `vs`  | **status** — match-% overview, current unit's functions listed |
 | `vB`  | **build** (`:GruntzBuild`)                                     |
+| `vq`  | **close** all open gruntz views                                |
 | `V`   | **peek** — match % + metadata (size, rva, unit) in a float     |
+
+`vt`/`vb`/`vd` keep the cursor in your source buffer (the view opens without
+stealing focus), and a new view **replaces** the previous one (so `vd` on a new
+function closes the old `vd`). The diff shows the **whole function** (folding off),
+target on the left and base on the right.
 
 - **target / base** open a reusable scratch split (`filetype=asm`, so mnemonics/
   registers/labels are syntax-highlighted); the header carries the symbol and its
