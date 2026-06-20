@@ -251,11 +251,28 @@ def emit_ninja(manifest: dict, out: Path) -> None:
                 implicit=[DELINK, "scripts/gruntz/build/synth_pdb.py"])
         w.newline()
 
+        # OBJDIFF MANIFEST: objdiff.json pairs each base obj with its target obj.
+        # Whether a unit pairs with its real <unit>.c.obj or the empty dummy.obj is
+        # decided from symbol_names.csv, which gen_labels regenerates ABOVE - so the
+        # manifest must be (re)built AFTER it, in-graph, not at configure time (when
+        # the csv can still be stale for a unit added this build). gen_labels ->
+        # gen_objdiff is the ordering that makes a new unit pair correctly in ONE
+        # build instead of two.
+        objdiff_json = f"{OBJDIFF_DIR}/objdiff.json"
+        w.comment("=== OBJDIFF: symbol_names.csv -> objdiff.json (post-labels) ===")
+        w.rule("gen_objdiff",
+               command=f"{PY} configure.py --emit-objdiff",
+               description="gen_objdiff (symbol_names.csv -> objdiff.json)")
+        w.build(objdiff_json, "gen_objdiff",
+                inputs=[GEN_NAMES],
+                implicit=["configure.py", "config/units.toml"])
+        w.newline()
+
         # Convenience aliases.
         w.comment("=== aliases ===")
         w.build("base", "phony", inputs=base_objs)
         w.build("target", "phony", inputs=target_objs)
-        w.build("all", "phony", inputs=base_objs + target_objs)
+        w.build("all", "phony", inputs=base_objs + target_objs + [objdiff_json])
         w.default(["all"])
         w.newline()
 
@@ -318,6 +335,11 @@ def emit_objdiff(manifest: dict, objdiff_dir: Path) -> None:
     base obj for every manifest unit; the delinker emits a <unit>.c.obj only for
     units that have rows in symbol_names.csv, so a unit with no named target
     functions yet is paired against the empty dummy.obj (lists at 0%).
+
+    The pairing is read from symbol_names.csv. At configure time that csv can be
+    stale (gen_labels regenerates it during ninja), so the `gen_objdiff` ninja rule
+    re-runs this AFTER gen_labels - that in-graph re-emit is what makes a unit added
+    this build pair correctly in one pass. See emit_ninja's gen_objdiff edge.
     """
     build = manifest["build"]
     objdiff_dir.mkdir(parents=True, exist_ok=True)
@@ -357,15 +379,29 @@ def emit_objdiff(manifest: dict, objdiff_dir: Path) -> None:
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--manifest", default=MANIFEST, type=Path)
+    ap.add_argument("--emit-objdiff", action="store_true",
+                    help="(re)write ONLY build/objdiff/objdiff.json from the "
+                         "current symbol_names.csv. Run by the `gen_objdiff` ninja "
+                         "rule AFTER gen_labels, so a unit added this build pairs "
+                         "with its real delinked obj in one pass.")
     args = ap.parse_args()
 
     manifest = load_manifest(args.manifest)
+
+    if args.emit_objdiff:
+        emit_objdiff(manifest, REPO / OBJDIFF_DIR)
+        print(f"[configure] wrote {OBJDIFF_DIR}/objdiff.json")
+        return
+
     n = len(manifest["unit"])
-
     emit_ninja(manifest, REPO / "build.ninja")
-    emit_objdiff(manifest, REPO / OBJDIFF_DIR)
+    # objdiff.json is NOT written here: the `gen_objdiff` ninja edge owns it and
+    # rebuilds it after gen_labels, so it always reflects the fresh symbol_names.csv
+    # (a unit added this build pairs with its real obj in one pass). Single owner =
+    # no churn. ninja creates it on the first build.
 
-    print(f"[configure] wrote build.ninja + {OBJDIFF_DIR}/objdiff.json ({n} units)")
+    print(f"[configure] wrote build.ninja ({n} units); "
+          "objdiff.json is built in-graph by the gen_objdiff edge")
     print("[configure] next: ninja   (then objdiff-cli report generate "
           f"-p {OBJDIFF_DIR} -o {OBJDIFF_DIR}/report.json)")
 
