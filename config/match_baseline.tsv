@@ -60,7 +60,7 @@ inputdeviceconfig	1	0
 kitchenslime	1	0
 logictypetable	1	0
 mapmgr	7	7
-netmgr	31	6
+netmgr	31	7
 netmgrerror	1	1
 registryhelper	8	8
 rezmgr	10	6
@@ -717,9 +717,11 @@ mapmgr	??1CMapArrayA@@QAE@XZ	100.0000	100.0000	2	485161ef3232
 mapmgr	??1CMapArrayB@@QAE@XZ	100.0000	100.0000	2	97b958907651
 mapmgr	??1CMapMgr@@QAE@XZ	100.0000	100.0000	2	5b358cad9904
 mapmgr	?Reset@CMapMgr@@UAEXXZ	100.0000	100.0000	2	96ea2164f0ea
+netmgr	?AnnounceVersion@CNetMgr@@QAEXH@Z	90.1000	90.1000	1	99df7850b12d
 netmgr	?ApplyCmdDelayDefaults@CNetMgr@@QAEXXZ	100.0000	100.0000	3	bd7373f72f8a
 netmgr	?FindPlayerById@CNetMgr@@QAEPAUCNetPlayerEntry@@H@Z	87.6923	87.6923	1	3ab32af52472
 netmgr	?GetMaxAckLatency@CNetMgr@@QAEIXZ	100.0000	100.0000	1	c106f124f023
+netmgr	?HandleVersionCheck@CNetMgr@@QAEXPAUCNetVersionMsg@@@Z	100.0000	100.0000	1	3c3eeec26b6e
 netmgr	?OnMultiOptions@CNetMgr@@QAEXXZ	100.0000	100.0000	2	adfe03071b8f
 netmgr	?OnMultiPause@CNetMgr@@QAEXXZ	100.0000	100.0000	2	64151f8dfb3a
 netmgr	?OnOutOfSync@CNetMgr@@QAEXXZ	100.0000	100.0000	2	62cf1e4f4cdf
@@ -737,8 +739,6 @@ netmgr	?Stub_0bc110@CNetMgr@@QAEXXZ	1.5873	1.5873	1	ee205d45f35f
 netmgr	?Stub_0bc460@CNetMgr@@QAEXXZ	0.6098	0.6098	1	7f569bf9f867
 netmgr	?Stub_0bca50@CNetMgr@@QAEXXZ	0.7353	0.7353	1	c2409ea76a39
 netmgr	?Stub_0bcf20@CNetMgr@@QAEXXZ	0.5263	0.5263	1	64807d212733
-netmgr	?Stub_0bd0b0@CNetMgr@@QAEXXZ	0.8696	0.8696	1	a0120f2d1b3b
-netmgr	?Stub_0bd180@CNetMgr@@QAEXXZ	1.3333	1.3333	1	7a303d37754b
 netmgr	?Stub_1780b0@CNetMgr@@QAEXXZ	0.5333	0.5333	1	8cce16174436
 netmgr	?Stub_178280@CNetMgr@@QAEXXZ	1.7391	1.7391	1	960076c6dc43
 netmgr	?Stub_1782d0@CNetMgr@@QAEXXZ	0.7692	0.7692	1	3d5e6ab20d5b

@@ -18,6 +18,7 @@
 // persists the command-timing config (m_5a4/m_5a8) to the game's RegistryHelper.
 #include <Net/NetMgr.h>
 #include <rva.h>
+#include <string.h>   // memset (inlined rep stosl for the version packet)
 
 CGameMgr *g_pGameMgr;
 
@@ -239,17 +240,62 @@ unsigned CNetMgr::GetMaxAckLatency()
     return max;
 }
 
-// @confidence: high
-// @source: call-xref
-// @stub
+// ---------------------------------------------------------------------------
+// CNetMgr::HandleVersionCheck  (__thiscall).
+// Inspects a host packet's version pair (+0x18/+0x1c) against the two engine
+// version locals. On any mismatch it latches m_570, and - if a connection was
+// already up (m_580) - reports the canned "version mismatch" diagnostic and
+// posts WM_COMMAND(0x8023) to the engine window; then fires stat 0x418 and
+// sleeps 250ms before returning.
 RVA(0x0bd0b0, 0x9a)
-void CNetMgr::Stub_0bd0b0() {}
+void CNetMgr::HandleVersionCheck(CNetVersionMsg *msg)
+{
+    if (msg == 0)
+        return;
 
-// @confidence: low
-// @source: call-xref
-// @stub
+    int mismatch = 0;
+    if (g_localVersion != msg->m_1c)
+        mismatch = 1;
+    if (g_remoteVersion != msg->m_18)
+        mismatch = 1;
+
+    if (mismatch) {
+        int wasConnected = m_580;
+        m_570 = 1;
+        if (wasConnected) {
+            ReportVersionMsg(
+                "This version is not the same as the host computer's version of the game.",
+                0);
+            void *hwnd = ((CNetHwndHolder *)((CNetHwndHolder *)m_4)->m_4)->m_4;
+            PostMessageA((HWND)hwnd, 0x111, 0x8023, 0);
+        }
+    }
+    if (mismatch) {
+        SendStatFlag(0x418, 1);
+        Sleep(0xfa);
+    }
+}
+
+// ---------------------------------------------------------------------------
+// CNetMgr::AnnounceVersion  (__thiscall).
+// Builds a 0x20-byte version-announce packet on the stack (flag byte, the
+// CButeMgr config word, g_cfgWord, stat id 0x417, and the local/remote version
+// pair) and ships it through the engine stat dispatcher as stat 0x417.
 RVA(0x0bd180, 0x66)
-void CNetMgr::Stub_0bd180() {}
+void CNetMgr::AnnounceVersion(int param)
+{
+    CNetVersionPacket packet;
+    memset(&packet, 0, sizeof(packet));
+
+    packet.m_0  |= 0x80;
+    packet.m_18  = g_remoteVersion;
+    packet.m_c   = g_cfgWord;
+    packet.m_8   = g_buteMgrField4;
+    packet.m_1c  = g_localVersion;
+    packet.m_10  = 0x417;
+
+    SendStatPacket(param, &packet, 0x20, 1);
+}
 
 // @confidence: high
 // @source: import:DPLAYX.dll!#1

@@ -10,6 +10,7 @@ WALL vs STEERABLE: `topic:codegen-idiom`/`topic:flags` = a source spelling close
 diff; `topic:wall`/`topic:scoring-artifact` = code already correct / no source form —
 stop chasing (orchestration §2a).
 
+- [Redundant `if(flag)` re-test across calls — write SIBLING blocks, not nested](redundant-sibling-guard-retest.md) — c8 — cpp:branch cpp:local | asm:test asm:jcc | topic:codegen-idiom — recompile DROPS a 2nd test reg,reg;je the target keeps, flag pinned in callee-saved esi/edi across calls, ~84%→100% on de-nesting
 - [Tiny inline ctor (bare vptr store) has no source-recoverable standalone COMDAT](comdat-inline-ctor-no-standalone.md) — c7 — cpp:ctor cpp:inline | asm:mov | topic:comdat topic:wall — 7-byte mov [this],&vftable; ret, no mov eax,ecx, no null guard
 - [Reloc-typing: vptr/global/IAT operands differ, code bytes match](reloc-typing-vptr-global.md) — c9 — cpp:ctor cpp:member | asm:mov asm:call | topic:scoring-artifact topic:tooling — ~99.5% fuzzy 0 structural diffs, ??_7/__imp__/DAT_ operand slots
 - [Multi-member ctor EH state-numbering base shifts on incomplete TU](eh-state-numbering-base.md) — c7 — cpp:ctor cpp:eh | asm:mov | topic:wall topic:eh — body byte-identical, residue in __ehfuncinfo state ids, ~89-95%
