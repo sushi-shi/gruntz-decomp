@@ -109,6 +109,16 @@ source = "src/Gruntz/TileTriggerLogic.cpp"
 flags = "base"
 
 [[unit]]
+unit = "userlogic"
+source = "src/Gruntz/UserLogic.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "userbaselink"
+source = "src/Gruntz/UserBaseLink.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "dialogs"
 source = "src/Gruntz/Dialogs.cpp"
 flags = "eh"

@@ -3,15 +3,10 @@
 
 class CVoiceTrigger {
 public:
-    void CVoiceTrigger_013470();
     void CVoiceTrigger_119b50();
 };
 
-// @confidence: med
-// @source: rtti-vptr
-// @stub
-RVA(0x013470, 0x4b)
-void CVoiceTrigger::CVoiceTrigger_013470() {}
+// CVoiceTrigger_013470 (0x013470) graduated to src/Gruntz/UserLogic.cpp.
 
 // @confidence: med
 // @source: rtti-vptr

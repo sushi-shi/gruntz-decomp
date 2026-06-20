@@ -30,7 +30,7 @@ deflate	6	6
 dialogs	6	5
 directinputmgr2	1	1
 directsoundmgr	1	1
-engine_label_stubs	355	0
+engine_label_stubs	350	0
 filestream	13	9
 font	16	8
 fontconfig	1	0
@@ -65,6 +65,8 @@ tiletriggerlogic	1	1
 trees	17	17
 uncompr	1	1
 unknownsalazar	4	0
+userbaselink	1	0
+userlogic	5	0
 videoconfig	2	0
 winapi	5	3
 winmain	1	1
@@ -331,21 +333,16 @@ engine_label_stubs	?BuildWarlordNameTable@EngineLabelBacklog@@YAXXZ	0.3200	0.320
 engine_label_stubs	?BuildWarpStoneGlitterAnimation@EngineLabelBacklog@@YAXXZ	0.9804	0.9804	1	cpp:45e65336d4b5
 engine_label_stubs	?BuildWorldLevelKey@EngineLabelBacklog@@YAXXZ	0.5714	0.5714	1	cpp:45e65336d4b5
 engine_label_stubs	?BuildWorldLevelPath@EngineLabelBacklog@@YAXXZ	0.1794	0.1794	1	cpp:45e65336d4b5
-engine_label_stubs	?CGruntHealthSprite_011ef0@CGruntHealthSprite@@QAEXXZ	5.0000	5.0000	1	cpp:45e65336d4b5
 engine_label_stubs	?CGruntHealthSprite_07eb00@CGruntHealthSprite@@QAEXXZ	0.4301	0.4301	1	cpp:45e65336d4b5
 engine_label_stubs	?CGruntzCommand_0242f0@CGruntzCommand@@QAEXXZ	50.0000	50.0000	1	cpp:45e65336d4b5
 engine_label_stubs	?CGruntzCommand_024430@CGruntzCommand@@QAEXXZ	50.0000	50.0000	1	cpp:45e65336d4b5
-engine_label_stubs	?CPathHazard_013170@CPathHazard@@QAEXXZ	3.2258	3.2258	1	cpp:45e65336d4b5
 engine_label_stubs	?CPathHazard_0b35a0@CPathHazard@@QAEXXZ	0.1504	0.1504	1	cpp:45e65336d4b5
 engine_label_stubs	?CProjectile_0126e0@CProjectile@@QAEXXZ	0.9434	0.9434	1	cpp:45e65336d4b5
 engine_label_stubs	?CProjectile_0dec60@CProjectile@@QAEXXZ	0.2532	0.2532	1	cpp:45e65336d4b5
-engine_label_stubs	?CSecretLevelTrigger_010b20@CSecretLevelTrigger@@QAEXXZ	5.0000	5.0000	1	cpp:45e65336d4b5
 engine_label_stubs	?CSecretLevelTrigger_0424b0@CSecretLevelTrigger@@QAEXXZ	0.3390	0.3390	1	cpp:45e65336d4b5
-engine_label_stubs	?CTileTrigger_011160@CTileTrigger@@QAEXXZ	5.0000	5.0000	1	cpp:45e65336d4b5
 engine_label_stubs	?CTileTrigger_10e220@CTileTrigger@@QAEXXZ	0.3704	0.3704	1	cpp:45e65336d4b5
 engine_label_stubs	?CUserLogic_0138d0@CUserLogic@@QAEXXZ	5.0000	5.0000	1	cpp:45e65336d4b5
 engine_label_stubs	?CUserLogic_058cd0@CUserLogic@@QAEXXZ	0.3571	0.3571	1	cpp:45e65336d4b5
-engine_label_stubs	?CVoiceTrigger_013470@CVoiceTrigger@@QAEXXZ	5.0000	5.0000	1	cpp:45e65336d4b5
 engine_label_stubs	?CVoiceTrigger_119b50@CVoiceTrigger@@QAEXXZ	0.3333	0.3333	1	cpp:45e65336d4b5
 engine_label_stubs	?CheckCdRomRegistry@EngineLabelBacklog@@YAXXZ	0.9524	0.9524	1	cpp:45e65336d4b5
 engine_label_stubs	?CheckWarpLetterBonus@EngineLabelBacklog@@YAXXZ	0.2849	0.2849	1	cpp:45e65336d4b5
@@ -798,6 +795,12 @@ unknownsalazar	??0UnknownSalazar@@QAE@XZ	4.3750	4.3750	1	8e0676435134
 unknownsalazar	??1UnknownSalazar@@QAE@XZ	3.6364	3.6364	1	1faa5650f10c
 unknownsalazar	?getLookupTableValue@UnknownSalazar@@SAHH@Z	7.4074	7.4074	1	af4f0eb80d4c
 unknownsalazar	?initializeUnknownLookupTable@UnknownSalazar@@SAXXZ	96.0000	96.0000	3	f17e344e2cb8
+userbaselink	??0CUserBaseLink@@QAE@XZ	4.0000	4.0000	1	adb103e590fd
+userlogic	??0CGruntHealthSprite@@QAE@XZ	95.0000	95.0000	1	07a957ec6263
+userlogic	??0CPathHazard@@QAE@XZ	96.7742	96.7742	1	1b29f86996ed
+userlogic	??0CSecretLevelTrigger@@QAE@XZ	95.0000	95.0000	1	61d1ce51dad9
+userlogic	??0CTileTrigger@@QAE@XZ	95.0000	95.0000	1	08547a4cfe4b
+userlogic	??0CVoiceTrigger@@QAE@XZ	95.0000	95.0000	1	a00b79b90cdb
 videoconfig	?LoadVideoResolutionConfig@@YAXPAXHH@Z	97.2737	97.2737	4	b5f87a4422b3
 videoconfig	?SaveVideoResolutionConfig@@YAXPAX0@Z	88.8148	88.8148	4	f23834318d3e
 winapi	?ActiveWait@WinAPI@Utils@@YAXI@Z	100.0000	100.0000	4	023a773a8fc4

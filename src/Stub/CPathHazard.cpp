@@ -3,15 +3,10 @@
 
 class CPathHazard {
 public:
-    void CPathHazard_013170();
     void CPathHazard_0b35a0();
 };
 
-// @confidence: med
-// @source: rtti-vptr
-// @stub
-RVA(0x013170, 0x7b)
-void CPathHazard::CPathHazard_013170() {}
+// CPathHazard_013170 (0x013170) graduated to src/Gruntz/UserLogic.cpp.
 
 // @confidence: med
 // @source: rtti-vptr

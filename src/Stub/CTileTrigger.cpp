@@ -3,15 +3,10 @@
 
 class CTileTrigger {
 public:
-    void CTileTrigger_011160();
     void CTileTrigger_10e220();
 };
 
-// @confidence: med
-// @source: rtti-vptr
-// @stub
-RVA(0x011160, 0x4b)
-void CTileTrigger::CTileTrigger_011160() {}
+// CTileTrigger_011160 (0x011160) graduated to src/Gruntz/UserLogic.cpp.
 
 // @confidence: med
 // @source: rtti-vptr

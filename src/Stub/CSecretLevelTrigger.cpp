@@ -3,15 +3,10 @@
 
 class CSecretLevelTrigger {
 public:
-    void CSecretLevelTrigger_010b20();
     void CSecretLevelTrigger_0424b0();
 };
 
-// @confidence: med
-// @source: rtti-vptr
-// @stub
-RVA(0x010b20, 0x4b)
-void CSecretLevelTrigger::CSecretLevelTrigger_010b20() {}
+// CSecretLevelTrigger_010b20 (0x010b20) graduated to src/Gruntz/UserLogic.cpp.
 
 // @confidence: med
 // @source: rtti-vptr
