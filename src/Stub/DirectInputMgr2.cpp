@@ -5,7 +5,6 @@ class DirectInputMgr2 {
 public:
     void Stub_132ce0();
     void ErrorThunk_132f80();
-    void GetErrorString();
     void ErrorThunk_134cb0();
     void ErrorThunk_134eb0();
     void ErrorThunk_134ef0();
@@ -24,12 +23,6 @@ void DirectInputMgr2::Stub_132ce0() {}
 // @stub
 RVA(0x132f80, 0x3d)
 void DirectInputMgr2::ErrorThunk_132f80() {}
-
-// @confidence: high
-// @source: string-xref
-// @stub
-RVA(0x133590, 0x5be)
-void DirectInputMgr2::GetErrorString() {}
 
 // @confidence: med
 // @source: call-xref

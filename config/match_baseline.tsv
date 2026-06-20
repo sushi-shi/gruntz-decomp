@@ -28,7 +28,9 @@ cdirectdrawmgr	1	0
 cplay	12	6
 deflate	6	6
 dialogs	6	5
-engine_label_stubs	357	0
+directinputmgr2	1	1
+directsoundmgr	1	1
+engine_label_stubs	355	0
 filestream	13	9
 font	16	8
 fontconfig	1	0
@@ -203,6 +205,8 @@ dialogs	??0CBattlezDlgCustom@@QAE@PAVCWnd@@@Z	100.0000	100.0000	2	e2d11a618519
 dialogs	??0CCheckpointDlg@@QAE@PAVCWnd@@@Z	100.0000	100.0000	1	ffbbed987946
 dialogs	??0CMultiStartDlg@@QAE@HPAVCWnd@@@Z	100.0000	100.0000	2	d9733b0005f7
 dialogs	?InitPlayerSlots@CMultiStartDlg@@QAEXXZ	0.1294	0.1294	1	59ab257d4f93
+directinputmgr2	?GetErrorString@DirectInputMgr2@@SAXPADHJ@Z	100.0000	100.0000	1	8408051d1157
+directsoundmgr	?GetErrorString@DirectSoundMgr@@SAXPADHJ@Z	100.0000	100.0000	1	7daa6af68b64
 engine_label_stubs	??0CActionArea@@QAE@XZ	0.7547	0.7547	1	cpp:45e65336d4b5
 engine_label_stubs	??0CAniCycle@@QAE@XZ	0.8421	0.8421	1	cpp:45e65336d4b5
 engine_label_stubs	??0CBehindCandy@@QAE@XZ	0.6838	0.6838	1	cpp:45e65336d4b5
@@ -388,8 +392,6 @@ engine_label_stubs	?ErrorThunk_147c30@CDirectDrawMgr@@QAEXXZ	3.4483	3.4483	1	cpp
 engine_label_stubs	?ErrorThunk_147cd0@CDirectDrawMgr@@QAEXXZ	0.8333	0.8333	1	cpp:45e65336d4b5
 engine_label_stubs	?FormatGameInfoString@EngineLabelBacklog@@YAXXZ	0.5208	0.5208	1	cpp:45e65336d4b5
 engine_label_stubs	?FreeArrays@UnknownClassArrays@@QAEXXZ	1.7857	1.7857	1	cpp:45e65336d4b5
-engine_label_stubs	?GetErrorString@DirectInputMgr2@@QAEXXZ	0.2045	0.2045	1	cpp:45e65336d4b5
-engine_label_stubs	?GetErrorString@DirectSoundMgr@@QAEXXZ	0.3968	0.3968	1	cpp:45e65336d4b5
 engine_label_stubs	?GetGruntzDriveLetter@CGruntzMgr@@QAEXXZ	7.6923	7.6923	1	cpp:45e65336d4b5
 engine_label_stubs	?HandleFortConquered@EngineLabelBacklog@@YAXXZ	0.2710	0.2710	1	cpp:45e65336d4b5
 engine_label_stubs	?Init@RezSync@@QAEXXZ	0.0225	0.0225	1	cpp:45e65336d4b5

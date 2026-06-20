@@ -21,7 +21,6 @@ public:
     void Stub_136550();
     void ErrorThunk_1365f0();
     void ErrorThunk_137260();
-    void GetErrorString();
 };
 
 // @confidence: med
@@ -131,9 +130,3 @@ void DirectSoundMgr::ErrorThunk_1365f0() {}
 // @stub
 RVA(0x137260, 0x95)
 void DirectSoundMgr::ErrorThunk_137260() {}
-
-// @confidence: high
-// @source: string-xref
-// @stub
-RVA(0x138150, 0x33b)
-void DirectSoundMgr::GetErrorString() {}

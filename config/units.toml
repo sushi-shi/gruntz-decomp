@@ -317,3 +317,13 @@ flags = "eh"
 unit = "cdirectdrawmgr"
 source = "src/Gruntz/CDirectDrawMgr.cpp"
 flags = "base"
+
+[[unit]]
+unit = "directinputmgr2"
+source = "src/DinMgr2/DirectInputMgr2.cpp"
+flags = "base"
+
+[[unit]]
+unit = "directsoundmgr"
+source = "src/Dsndmgr/DirectSoundMgr.cpp"
+flags = "base"
