@@ -162,33 +162,45 @@ The delink rule's declared outputs are the per-unit `build/objdiff/target/<unit>
 (one command, multiple outputs); its inputs are the EXE + the two Ghidra CSVs +
 `build/gen/symbol_names.csv`.
 
-### What triggers a re-delink
+### What triggers a re-delink (incremental label map)
 
-The delink is keyed on **`build/gen/symbol_names.csv`** (the EXE + Ghidra CSVs only
-change at `gruntz init`). So in the inner loop, editing a `src/` `RVA()` macro is
-what re-delinks: ninja regenerates the label map, which *is* the delink's input.
-The full chain a single `gruntz build` runs:
+The label map is built **per TU**: `gen_labels_one` runs `labels.py` on one
+`src/<unit>.cpp` (the expensive clang-IR pass) → a fragment
+`build/gen/labels/<unit>.csv`; a cheap `merge_labels` concatenates the fragments
+→ `build/gen/symbol_names.csv` (re-applying the cross-TU duplicate-RVA guard +
+DATA dedup). Both write **only when the content changed** (leaving the mtime
+untouched otherwise) and both edges carry `restat`, so an edit that does not
+change the labels stops the cascade right there.
+
+The full chain a single `gruntz build` runs after a `src/` edit:
 
 ```
-edit src/<unit>.cpp  (add / change an  RVA(0x<rva>, 0x<size>))
-  └─ gruntz build → configure.py (build.ninja) → ninja:
-       cl         rule  cc_wrap.py   → build/objdiff/base/<unit>.obj   (recompile via wine cl)
-       gen_labels rule  labels.py    → build/gen/symbol_names.csv      (rva → name → unit)
-                                        ↑ a src RVA() changed ⇒ the label map regenerates (via LLVM IR)
-       delink     rule  delink.py    ← symbol_names.csv is a declared input, so it re-runs:
-                        synth_pdb.py    functions.csv + symbols.csv + symbol_names.csv
-                                          → build/pdb/gruntz_named.pdb
-                        vostok-delinker  GRUNTZ.EXE + the PDB → build/delink/named/
-                        collect          → build/objdiff/target/<unit>.c.obj
-       objdiff-cli report generate    → build/objdiff/report.json
+edit src/<unit>.cpp
+  └─ gruntz build → ninja (build.ninja self-regenerates via its generator edge):
+       cl             rule  cc_wrap.py  → build/objdiff/base/<unit>.obj   (recompile via wine cl)
+       gen_labels_one rule  labels.py   → build/gen/labels/<unit>.csv     (ONLY this unit's IR)
+       merge_labels   rule  labels.py   → build/gen/symbol_names.csv      (concat + dup-guard; restat)
+       delink         rule  delink.py   ← symbol_names.csv (restat: re-runs only if it changed)
+                            synth_pdb.py + vostok-delinker → build/objdiff/target/<unit>.c.obj
+       report         rule  objdiff-cli → build/objdiff/report.json       (objs changed)
 ```
 
-In practice the delink re-runs on **every** `src/` edit: `gen_labels` rewrites
-`symbol_names.csv` unconditionally (fresh mtime) and the delink rule has no
-`restat` guard, so even a body-only tweak (identical labels) re-delinks. That's
-left as-is on purpose — the delink is one command emitting all units' objs in a
-single cheap pass (~one synth_pdb + one vostok-delinker over the EXE), the whole
-loop is fast, and a write-if-different + `restat` skip isn't worth the complexity.
+Two regimes:
+
+- **Pure code edit** (no `RVA()`/symbol change): only `cl` + `gen_labels_one`
+  run. The fragment is byte-identical → write-if-changed leaves its mtime →
+  `restat` stops `merge_labels`, so the label map, the delink, and every target
+  obj are untouched. Net work: one recompiled base obj + a fresh `report.json`.
+- **Symbol change** (add/rename a function, change an `RVA()`): the unit's
+  fragment changes → `merge_labels` rewrites `symbol_names.csv` → the delink
+  re-runs and the unit's `<unit>.c.obj` updates.
+
+This keeps a single-TU rebuild ~1s instead of re-emitting clang IR for all ~23
+TUs and re-delinking the whole EXE on every edit. `gruntz build` itself is thin:
+it ensures the wineserver is up (kept alive across builds, not killed each time),
+runs `ninja` (which builds the objs AND `report.json` in-graph), and runs the
+non-fatal feedback tail (README score block + regression check) **only when
+`report.json` actually moved** — a no-op build returns in ~0.15s.
 
 ## Pairing (objdiff)
 

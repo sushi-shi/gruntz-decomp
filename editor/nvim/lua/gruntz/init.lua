@@ -230,12 +230,18 @@ local function asm_lines(sym)
   local out = {}
   for _, i in ipairs(ins) do
     local I = i.instruction or {}
-    local off = tonumber(I.address) or 0
-    if label[off] then out[#out + 1] = label[off] .. ":" end
-    local text = I.formatted or "?"
-    local d = tonumber(I.branch_dest or "")
-    if d and label[d] then text = text:gsub(("0x%x"):format(d), label[d]) end
-    out[#out + 1] = "    " .. text
+    -- Skip objdiff's diff-alignment GAPS: empty placeholder rows (no `formatted`,
+    -- diff_kind INSERT/DELETE) it inserts so the two sides line up. They are not
+    -- real instructions on this side; rendering them as "?" is noise, and the
+    -- side-by-side diff lets Neovim do its own alignment.
+    if I.formatted then
+      local off = tonumber(I.address) or 0
+      if label[off] then out[#out + 1] = label[off] .. ":" end
+      local text = I.formatted
+      local d = tonumber(I.branch_dest or "")
+      if d and label[d] then text = text:gsub(("0x%x"):format(d), label[d]) end
+      out[#out + 1] = "    " .. text
+    end
   end
   if #out == 0 then out = { "(no instructions)" } end
   return out
@@ -377,15 +383,27 @@ local function show_diff(root, sym, t, b)
     return buf
   end
 
+  -- Lighter than nvim's default diff (which washes the whole CHANGED line via
+  -- DiffChange): drop that line wash and keep only the changed TOKEN, underlined
+  -- (DiffText). Added/removed lines still show (DiffAdd/DiffDelete). Scoped to
+  -- these windows via winhighlight, so your other diffs keep their look.
+  vim.api.nvim_set_hl(0, "GruntzDiffChange", {})
+  vim.api.nvim_set_hl(0, "GruntzDiffText", { underline = true })
+  local WH = "DiffChange:GruntzDiffChange,DiffText:GruntzDiffText"
+
   local tbuf, bbuf = pane("target", t), pane("base", b)
   vim.cmd(M.config.split)
   vim.api.nvim_win_set_buf(0, tbuf)
   set_winbar(vim.api.nvim_get_current_win(), "TARGET (retail)", sym.name, t.match_percent)
   vim.cmd("diffthis")
+  vim.wo[0].foldenable = false   -- show the WHOLE function, not just changed hunks
+  vim.wo[0].winhighlight = WH
   vim.cmd("rightbelow vsplit")
   vim.api.nvim_win_set_buf(0, bbuf)
   set_winbar(vim.api.nvim_get_current_win(), "BASE (recompiled)", sym.name, b.match_percent)
   vim.cmd("diffthis")
+  vim.wo[0].foldenable = false
+  vim.wo[0].winhighlight = WH
   vim.cmd("normal! gg")
 end
 
@@ -400,36 +418,57 @@ local function with_root(fn)
   return fn(root)
 end
 
-local function open_for(root, sym, side)
+-- Close any open asm/diff view windows so a new view REPLACES the previous one
+-- (e.g. vd on a new function closes the old vd) instead of stacking splits.
+local function close_view_windows()
+  for _, w in ipairs(vim.api.nvim_list_wins()) do
+    if vim.api.nvim_win_is_valid(w) then
+      local n = vim.api.nvim_buf_get_name(vim.api.nvim_win_get_buf(w))
+      if n:match("^gruntz://target/") or n:match("^gruntz://base/")
+          or n:match("^gruntz://diff%.") then
+        pcall(vim.api.nvim_win_close, w, true)
+      end
+    end
+  end
+end
+
+--- Render the target/base/diff view for `sym`. `src_win`: the window to return
+--- focus to (so vt/vb/vd don't move the cursor out of the source buffer).
+local function open_for(root, sym, side, src_win)
   unit_diff(root, sym.unit, sym.name, function(json)
     local t, b = pick(json, "left", sym.name), pick(json, "right", sym.name)
+    local one = (side == "target") and t or (side == "base") and b or nil
+    if side == "diff" and not (t and b) then
+      return notify(sym.name .. " not in the built objs - rebuild?", vim.log.levels.WARN)
+    end
+    if side ~= "diff" and not one then
+      return notify(sym.name .. " has no " .. side .. " obj - rebuild?", vim.log.levels.WARN)
+    end
+    close_view_windows()   -- one view at a time: replace any previous asm/diff view
     if side == "diff" then
-      if not (t and b) then
-        return notify(sym.name .. " not in the built objs - rebuild?",
-          vim.log.levels.WARN)
-      end
-      return show_diff(root, sym, t, b)
+      show_diff(root, sym, t, b)
+    else
+      local asm = asm_lines(one)
+      local lines = { ("; %s   %s   %s"):format(sym.name, side, pct(one.match_percent)) }
+      vim.list_extend(lines, asm)
+      -- stash the rendered asm so a later build can diff base prev-build -> now
+      show_split(lines, { root = root, tag = side .. "/" .. sym.name, kind = "asm",
+                          name = sym.name, unit = sym.unit, side = side, asm = asm })
     end
-    local one = (side == "target") and t or b
-    if not one then
-      return notify(sym.name .. " has no " .. side .. " obj - rebuild?",
-        vim.log.levels.WARN)
+    -- keep the cursor in the source buffer; don't jump into the opened view
+    if src_win and vim.api.nvim_win_is_valid(src_win) then
+      vim.api.nvim_set_current_win(src_win)
     end
-    local asm = asm_lines(one)
-    local lines = { ("; %s   %s   %s"):format(sym.name, side, pct(one.match_percent)) }
-    vim.list_extend(lines, asm)
-    -- stash the rendered asm so a later build can diff base prev-build -> now
-    show_split(lines, { root = root, tag = side .. "/" .. sym.name, kind = "asm",
-                        name = sym.name, unit = sym.unit, side = side, asm = asm })
   end)
 end
 
 --- :Gruntz {target|base|diff} on the function at the cursor.
 function M.view(side)
   with_root(function(root)
+    local src_win = vim.api.nvim_get_current_win()
     local sym, err = symbol_at(root, 0, vim.api.nvim_win_get_cursor(0)[1])
     if not sym then return notify(err, vim.log.levels.WARN) end
-    open_for(root, sym, side)
+    open_for(root, sym, side, src_win)
   end)
 end
 
@@ -575,7 +614,7 @@ end
 --- A compact popup summarising the build: overall + current-unit % deltas and the
 --- functions that MOVED (capped). Fades after a few seconds, never steals focus.
 --- `vs` has the full per-function table.
-local function build_popup(root, before, unit)
+local function build_popup(root, before, unit, elapsed)
   local after = read_report(root)
   if not after then return notify("build done (no report.json to compare)") end
   local b = before or { units = {} }
@@ -605,8 +644,8 @@ local function build_popup(root, before, unit)
       if #moved > 6 then lines[#lines + 1] = ("  +%d more (vs)"):format(#moved - 6) end
     end
   end
-  show_float(lines, { root = root, filetype = "asm", pos = "editor",
-                      timeout = 6000, title = " build OK " })
+  show_float(lines, { root = root, filetype = "asm", pos = "editor", timeout = 6000,
+    title = elapsed and (" build OK  %.1fs "):format(elapsed) or " build OK " })
 end
 
 -- Re-render any open asm/diff/status view buffers from fresh data, so a build
@@ -678,13 +717,13 @@ local function refresh_views(root)
   end
 end
 
-local function finish_build(root, before, unit, code)
+local function finish_build(root, before, unit, code, elapsed)
   if code ~= 0 then
     return notify("build FAILED (exit " .. code .. ")", vim.log.levels.ERROR)
   end
   invalidate(root)
   diff_cache = {}
-  build_popup(root, before, unit)
+  build_popup(root, before, unit, elapsed)
   refresh_all_hints()  -- the inline %s (and status) now reflect the new build
   refresh_views(root)  -- and any open asm/diff/status views re-render in place
 end
@@ -699,35 +738,48 @@ local build_job, build_gen, build_note = nil, 0, nil
 --- quiet=true : no log window - just a small "building ..." note that closes
 ---              into the result popup (build-on-save). Skips the redundant
 ---              init-on-shell-entry so the edit->%-update loop stays snappy.
+--- nvim launched from `nix develop .#build` already has the toolchain env, so we
+--- run `gruntz build` DIRECTLY - no per-build `nix develop` (which costs ~2.5s).
+--- Outside it we wrap in `nix develop .#build` (works, but pays that every build;
+--- launch nvim from .#build for the fast loop).
+local function in_build_env()
+  return (os.getenv("MSVC_DIR") or "") ~= "" and (os.getenv("WINEPREFIX") or "") ~= ""
+end
+
 local function do_build(root, args, quiet)
   if build_job then pcall(vim.fn.jobstop, build_job); build_job = nil end
   if build_note then pcall(build_note); build_note = nil end
   build_gen = build_gen + 1
   local my_gen = build_gen
+  local t0 = uv.hrtime()
   local before = read_report(root)
   local unit = (select(1, symbol_at(root, 0, vim.api.nvim_win_get_cursor(0)[1])) or {}).unit
-  local cmd = { "nix", "develop", ".#build", "--command",
-                "python3", "scripts/gruntz.py", "build" }
+  local direct = in_build_env()
+  local cmd = direct and { "gruntz", "build" }
+              or { "nix", "develop", ".#build", "--command", "gruntz", "build" }
   vim.list_extend(cmd, args or {})
-  log("build" .. (quiet and " (on save)" or "") .. ": "
-    .. table.concat(cmd, " ") .. "  [" .. root .. "]")
+  -- GRUNTZ_SKIP_INIT only matters for the wrapped path (it gates the shellHook's
+  -- init-on-entry); the direct path doesn't run the shellHook at all.
+  local jenv = nil
+  if not direct then jenv = { GRUNTZ_SKIP_INIT = "1" } end
+  log("build" .. (quiet and " (on save)" or "") .. (direct and " [direct]" or " [nix]")
+    .. ": " .. table.concat(cmd, " ") .. "  [" .. root .. "]")
   local function on_exit(_, code)
     vim.schedule(function()
       if my_gen ~= build_gen then return end -- superseded by a newer build
       build_job = nil
       if build_note then pcall(build_note); build_note = nil end
-      finish_build(root, before, unit, code)
+      finish_build(root, before, unit, code, (uv.hrtime() - t0) / 1e9)
     end)
   end
   if quiet then
     build_note = show_note("building " .. (unit or "...") .. " ...")
-    build_job = vim.fn.jobstart(cmd, { cwd = root, env = { GRUNTZ_SKIP_INIT = "1" },
-      on_exit = on_exit })
+    build_job = vim.fn.jobstart(cmd, { cwd = root, env = jenv, on_exit = on_exit })
   else
     vim.cmd(M.config.split)
     local buf = vim.api.nvim_create_buf(false, true)
     vim.api.nvim_win_set_buf(0, buf)
-    build_job = vim.fn.jobstart(cmd, { term = true, cwd = root, on_exit = on_exit })
+    build_job = vim.fn.jobstart(cmd, { term = true, cwd = root, env = jenv, on_exit = on_exit })
   end
 end
 
@@ -802,10 +854,21 @@ function M.load_state(buf)
   end
 end
 
-function M.complete() return { "target", "base", "diff", "status", "hints", "autobuild" } end
+--- Close every open gruntz view window (vt/vb/vd/vs/build/log).
+function M.close()
+  for _, w in ipairs(vim.api.nvim_list_wins()) do
+    if vim.api.nvim_win_is_valid(w)
+        and vim.api.nvim_buf_get_name(vim.api.nvim_win_get_buf(w)):match("^gruntz://") then
+      pcall(vim.api.nvim_win_close, w, true)
+    end
+  end
+end
+
+function M.complete() return { "target", "base", "diff", "status", "hints", "autobuild", "close" } end
 
 function M.dispatch(arg)
   if arg == "status" then return M.status() end
+  if arg == "close" then return M.close() end
   if arg == "hints" then
     M.config.hints = not M.config.hints
     save_state(project_root(0)); refresh_all_hints()
@@ -817,7 +880,7 @@ function M.dispatch(arg)
     return notify("build on save " .. (M.config.build_on_save and "ON" or "off"))
   end
   if arg == "target" or arg == "base" or arg == "diff" then return M.view(arg) end
-  return notify("usage: :Gruntz {target|base|diff|status|hints|autobuild}",
+  return notify("usage: :Gruntz {target|base|diff|status|hints|autobuild|close}",
     vim.log.levels.WARN)
 end
 
@@ -828,6 +891,7 @@ function M.attach_keymaps(buf)
     vd = function() M.view("diff") end,    -- view diff (the objdiff look)
     vs = function() M.status() end,        -- status overview
     vB = function() M.build({}) end,       -- build
+    vq = function() M.close() end,         -- close all gruntz views
   }
   for lhs, fn in pairs(maps) do
     vim.keymap.set("n", lhs, fn, { buffer = buf, silent = true, desc = "gruntz " .. lhs })

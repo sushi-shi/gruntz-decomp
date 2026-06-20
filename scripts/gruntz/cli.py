@@ -144,31 +144,39 @@ def summarize(report: dict) -> None:
 
 # --- subcommands -----------------------------------------------------------
 def cmd_build(args) -> None:
-    run([sys.executable, str(CONFIGURE)])             # regenerate build.ninja + the JSONs
+    # build.ninja regenerates itself via its `configure` generator edge whenever
+    # config/units.toml or configure.py change, so don't re-run configure every
+    # build - only bootstrap it when it doesn't exist yet (fresh tree / pre-init).
+    if not (REPO / "build.ninja").exists():
+        run([sys.executable, str(CONFIGURE)])
     _ensure_retail_copy()                             # cheap, idempotent (stable retail copy)
     if not GHIDRA_FUNCTIONS.exists():
         die(f"no Ghidra exports ({GHIDRA_FUNCTIONS.relative_to(REPO)}) - run `gruntz init` first.")
-    # Gate: the src/Stub @stub backlog is skipped by labels.py (engine_label_stubs),
-    # so this is the only check on its address uniqueness + format. Fail fast.
-    run([sys.executable, "-m", "gruntz.match.verify_stubs"])
     ninja = tool("ninja")
-    _start_wine_session()                 # boot Wine clean BEFORE ninja's -j fan-out
-    try:
-        run([ninja, *args.ninja_args])    # incremental: rebuilds only what changed
-    finally:
-        _kill_wine_session()              # reap this prefix's wineserver + session
+    # Keep ONE persistent wineserver alive for the whole dev-shell session (the
+    # `.#build` shellHook reaps it on interactive exit). The first build boots it
+    # (~1.2s); later builds find it up, so `wine cl` pays no cold-start. We no
+    # longer kill it after each build - that re-paid wineboot on every rebuild.
+    _start_wine_session()                 # ensure the session is up (cheap if already running)
 
-    objdiff = tool("objdiff-cli")
-    run([objdiff, "report", "generate", "-p", str(OBJDIFF_DIR), "-o", str(REPORT)],
-        stdout=subprocess.DEVNULL)
+    # ninja builds the objs AND report.json in-graph (only what changed). Gate the
+    # feedback tail on whether report.json actually moved: a no-op build refreshes
+    # nothing, so there is nothing to summarize/check and `gruntz build` returns
+    # near-instantly. Everything below is non-fatal reporting, not part of the build.
+    before = REPORT.stat().st_mtime if REPORT.exists() else 0
+    run([ninja, *args.ninja_args])        # incremental: rebuilds only what changed
+    if (REPORT.stat().st_mtime if REPORT.exists() else 0) == before:
+        log("up to date - nothing rebuilt.")
+        return
 
+    # Gate: the src/Stub @stub backlog is skipped by labels.py (engine_label_stubs),
+    # so this is the only check on its address uniqueness + format.
+    run([sys.executable, "-m", "gruntz.match.verify_stubs"])
     summarize(json.loads(REPORT.read_text()))
 
-    # Non-fatal extras: refresh per-function source fingerprints (so regression
-    # checks can tell an edited function from a collateral drop), rewrite the
-    # README score block (3 metrics vs the full engine), and print regressions
-    # vs the committed best-% baseline. See gruntz.match.status +
-    # docs/match-status.md. None of these gate the build.
+    # Non-fatal extras: per-function source fingerprints (so regression checks can
+    # tell an edited function from a collateral drop), the README score block, and
+    # regressions vs the committed best-% baseline. See gruntz.match.status.
     if (REPO / "build" / "clangd" / "compile_commands.json").is_file():
         subprocess.run([sys.executable, "-m", "gruntz.match.fingerprints"],
                        cwd=str(REPO), env=_pkg_env())

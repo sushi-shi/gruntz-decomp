@@ -112,6 +112,7 @@ BASE_DIR = "build/objdiff/base"      # recompiled base objs (phase 1 outputs)
 TARGET_DIR = "build/objdiff/target"  # collected delinked target objs
 DELINK_RAW = "build/delink/named"    # raw vostok-delinker output
 PDB_DIR = "build/pdb"                # synth PDB/YAML
+LABELS_DIR = "build/gen/labels"      # per-TU symbol_names.csv fragments
 
 
 # --- manifest ---------------------------------------------------------------
@@ -218,22 +219,35 @@ def emit_ninja(manifest: dict, out: Path) -> None:
                     variables=variables)
         w.newline()
 
-        # LABELS: regenerate build/gen/symbol_names.csv from the src @address
-        # annotations + the base objs (clang mangledName INTERSECT nm). The IR
-        # emit needs the clangd compdb's per-TU include flags so system headers
-        # resolve (-emit-llvm stops at a fatal error, unlike -ast-dump); it is an
-        # optional input (labels.py falls back to bare MS flags if absent).
-        w.comment("=== LABELS: src RVA() macros + base objs -> symbol_names.csv ===")
-        labels_args = " ".join(
-            f"--tu {u['source']} --obj {BASE_DIR}/{u['unit']}.obj" for u in units)
-        w.rule("gen_labels",
-               command=f"{PY} {GEN_LABELS} {labels_args} "
-                       f"--compdb {COMPDB} --out {GEN_NAMES}",
-               description="gen_labels (src RVA() macros -> symbol_names.csv)")
+        # LABELS: per-TU fragment, then a cheap merge -> symbol_names.csv.
+        # Each fragment is one TU's clang-IR pass (the expensive step), so a single
+        # edit re-emits only THAT unit's IR instead of all ~23. Both edges carry
+        # `restat` so an unchanged symbol set (a pure code edit) stops here and does
+        # NOT cascade into delink/objdiff. The IR emit needs the clangd compdb's
+        # per-TU include flags (labels.py falls back to bare MS flags if absent).
+        w.comment("=== LABELS: per-TU fragments -> merge -> symbol_names.csv ===")
+        w.rule("gen_labels_one",
+               command=f"{PY} {GEN_LABELS} --tu $src --obj $obj --unit $unit "
+                       f"--compdb {COMPDB} --out $out",
+               description="gen_labels $unit",
+               restat=True)
         compdb_dep = [COMPDB] if (REPO / COMPDB).exists() else []
-        w.build(GEN_NAMES, "gen_labels",
-                inputs=[u["source"] for u in units] + base_objs,
-                implicit=[GEN_LABELS, "config/units.toml"] + compdb_dep)
+        zlib_dep = (["config/zlib_labels.csv"]
+                    if (REPO / "config/zlib_labels.csv").exists() else [])
+        frags = []
+        for u in units:
+            frag = f"{LABELS_DIR}/{u['unit']}.csv"
+            obj = f"{BASE_DIR}/{u['unit']}.obj"
+            frags.append(frag)
+            w.build(frag, "gen_labels_one", inputs=u["source"],
+                    implicit=[obj, GEN_LABELS, "config/units.toml"]
+                             + compdb_dep + zlib_dep,
+                    variables={"src": u["source"], "obj": obj, "unit": u["unit"]})
+        w.rule("merge_labels",
+               command=f"{PY} {GEN_LABELS} --merge $in --out {GEN_NAMES}",
+               description="merge_labels -> symbol_names.csv",
+               restat=True)
+        w.build(GEN_NAMES, "merge_labels", inputs=frags, implicit=[GEN_LABELS])
         w.newline()
 
         # TARGET (delink) half: one rule produces all in-scope <unit>.c.obj.
@@ -244,7 +258,8 @@ def emit_ninja(manifest: dict, out: Path) -> None:
                         f"--symbols {SYMBOLS} --names-map {GEN_NAMES} "
                         f"--pdb-dir {PDB_DIR} --delink-dir {DELINK_RAW} "
                         f"--target-dir {TARGET_DIR} {unit_args}"),
-               description="delink GRUNTZ.EXE -> target objs")
+               description="delink GRUNTZ.EXE -> target objs",
+               restat=True)
         target_objs = [f"{TARGET_DIR}/{u['unit']}.c.obj" for u in units]
         w.build(target_objs, "delink",
                 inputs=[EXE, FUNCTIONS, SYMBOLS, GEN_NAMES],
@@ -262,17 +277,33 @@ def emit_ninja(manifest: dict, out: Path) -> None:
         w.comment("=== OBJDIFF: symbol_names.csv -> objdiff.json (post-labels) ===")
         w.rule("gen_objdiff",
                command=f"{PY} configure.py --emit-objdiff",
-               description="gen_objdiff (symbol_names.csv -> objdiff.json)")
+               description="gen_objdiff (symbol_names.csv -> objdiff.json)",
+               restat=True)
         w.build(objdiff_json, "gen_objdiff",
                 inputs=[GEN_NAMES],
                 implicit=["configure.py", "config/units.toml"])
+        w.newline()
+
+        # REPORT: the objdiff summary, in-graph so it regenerates ONLY when an obj
+        # (or the pairing) changes - not via an unconditional call every build. A
+        # pure code edit changes the edited unit's base obj -> report.json updates;
+        # a no-op build leaves it untouched, so `gruntz build` can skip its feedback
+        # tail (nothing rebuilt -> nothing to report).
+        report_json = f"{OBJDIFF_DIR}/report.json"
+        w.comment("=== REPORT: objs + pairing -> report.json (objdiff-cli) ===")
+        w.rule("report",
+               command=f"objdiff-cli report generate -p {OBJDIFF_DIR} -o {report_json}",
+               description="objdiff report -> report.json")
+        w.build(report_json, "report",
+                inputs=base_objs + target_objs + [objdiff_json])
         w.newline()
 
         # Convenience aliases.
         w.comment("=== aliases ===")
         w.build("base", "phony", inputs=base_objs)
         w.build("target", "phony", inputs=target_objs)
-        w.build("all", "phony", inputs=base_objs + target_objs + [objdiff_json])
+        w.build("all", "phony",
+                inputs=base_objs + target_objs + [objdiff_json, report_json])
         w.default(["all"])
         w.newline()
 

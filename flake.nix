@@ -277,6 +277,12 @@
             export WINEPREFIX="$GRUNTZ_DIR/build/wineprefix"   # generated state lives under build/
             export WINEDEBUG="fixme-all,err-kerberos"
             export WINEDLLOVERRIDES="mscoree,mshtml="
+            # The per-prefix wineserver is now kept alive across builds (warm `wine
+            # cl` = fast rebuilds); it is a daemon shared by every `nix develop`
+            # invocation on this prefix, so `nix develop --command` (e.g. the nvim
+            # build loop) reconnects to it. Reap it when YOU leave an INTERACTIVE
+            # shell; `gruntz clean` reaps it before removing the prefix.
+            case "$-" in *i*) trap 'wineserver -k >/dev/null 2>&1 || true' EXIT ;; esac
             export GRUNTZ_TOOLCHAIN="${gruntz-toolchain}"
             export MSVC_DIR="${gruntz-toolchain}/msvc"
             export DXSDK_DIR="${gruntz-toolchain}/dx"
