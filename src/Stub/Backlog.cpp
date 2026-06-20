@@ -30,7 +30,6 @@ class StatusBarItem { public:
 };
 
 namespace EngineLabelBacklog {
-void LoadActionOptionsMenuBar();
 void CreateGameObjectByName();
 void LoadBootyCheatState();
 void ShowSecretBonusMessage();
@@ -50,7 +49,6 @@ void StartUpPrompt();
 void Stub_01fd70();
 void LoadChatBoxSprite();
 void LoadCheatConfig();
-void LoadBattlezMapConfig();
 void LoadCreditzStateAssets();
 void InitAttractTitle();
 void LoadCreditzAssets2();
@@ -199,12 +197,6 @@ void Stub_1d5029();
 void Stub_1d513b();
 }
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
-RVA(0x0090e0, 0x100)
-void EngineLabelBacklog::LoadActionOptionsMenuBar() {}
-
 // @confidence: high
 // @source: string-xref
 // @stub
@@ -330,12 +322,6 @@ void EngineLabelBacklog::LoadChatBoxSprite() {}
 // @stub
 RVA(0x022e60, 0x1be)
 void EngineLabelBacklog::LoadCheatConfig() {}
-
-// @confidence: med
-// @source: string-xref
-// @stub
-RVA(0x025020, 0x984)
-void EngineLabelBacklog::LoadBattlezMapConfig() {}
 
 // @confidence: med
 // @source: string-xref

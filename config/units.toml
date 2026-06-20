@@ -244,6 +244,11 @@ source = "src/Gruntz/Wormhole.cpp"
 flags = "base"
 
 [[unit]]
+unit = "battlezmapconfig"
+source = "src/Gruntz/BattlezMapConfig.cpp"
+flags = "base"
+
+[[unit]]
 unit = "videoconfig"
 source = "src/Gruntz/VideoConfig.cpp"
 flags = "base"
@@ -251,6 +256,11 @@ flags = "base"
 [[unit]]
 unit = "spriteloaders"
 source = "src/Gruntz/SpriteLoaders.cpp"
+flags = "base"
+
+[[unit]]
+unit = "actionoptionsmenubar"
+source = "src/Gruntz/ActionOptionsMenuBar.cpp"
 flags = "base"
 
 [[unit]]

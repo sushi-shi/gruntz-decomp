@@ -10,9 +10,11 @@
 #   src_hash = per-function source fingerprint (editing a fn bumps tries + resets best).
 # Query: scripts/match_status.py check | status | summary | diff <revA> [<revB>]
 # [units]	unit	n_functions	matched
+actionoptionsmenubar	1	0
 adler32	1	1
 advancedoptions	5	5
 appdialogs	1	1
+battlezmapconfig	1	0
 butemgr	21	10
 cddrawchildgroup	9	5
 cddrawptrcollections	1	0
@@ -31,7 +33,7 @@ deflate	6	6
 dialogs	6	5
 directinputmgr2	1	1
 directsoundmgr	1	1
-engine_label_stubs	347	0
+engine_label_stubs	345	0
 filestream	13	9
 font	16	8
 fontconfig	1	0
@@ -77,6 +79,7 @@ wormhole	4	1
 wwdfile	4	1
 zutil	2	2
 # [functions]	unit	function	best_pct	cur_pct	tries	src_hash
+actionoptionsmenubar	?LoadAssets@CActionOptionsMenuBar@@QAEHXZ	84.8191	84.8191	1	5f3a0a8b356a
 adler32	_adler32	100.0000	100.0000	1	7d212c481a3f
 advancedoptions	?AdvancedOptionsDialogProc@@YGHPAXIIJ@Z	100.0000	100.0000	4	c4bc63fcee7f
 advancedoptions	?LoadOptions@@YAXPAXPAVRegistryHelper@Utils@@@Z	100.0000	100.0000	4	8dad6e6ac265
@@ -84,6 +87,7 @@ advancedoptions	?SaveOption@@YAXPAXPAVRegistryHelper@Utils@@PADK@Z	100.0000	100.
 advancedoptions	?SaveOptions@@YAXPAXPAVRegistryHelper@Utils@@@Z	100.0000	100.0000	4	1f7e3a09cfa8
 advancedoptions	?SetDefaults@@YAXPAX@Z	100.0000	100.0000	4	d834f2b8b5b2
 appdialogs	?WarpDialogProc@@YGHPAXIIJ@Z	100.0000	100.0000	1	85d854e20fa9
+battlezmapconfig	?LoadConfig@CBattlezMapConfig@@QAEHPAUCLevelInfo@@HH@Z	88.1767	88.1767	1	1e057f52612b
 butemgr	?ClearHelper@CButeMgr@@QAEXXZ	100.0000	100.0000	1	89327c4adcd3
 butemgr	?GetDouble@CButeMgr@@QAENPAD0@Z	100.0000	100.0000	2	92b311f163de
 butemgr	?GetDword@CButeMgr@@QAEKPAD0@Z	100.0000	100.0000	2	76b5e76c76b2
@@ -400,7 +404,6 @@ engine_label_stubs	?InitAttractTitle@EngineLabelBacklog@@YAXXZ	0.9901	0.9901	1	c
 engine_label_stubs	?InitCFileIOMember@CGruntzMgr@@QAEXXZ	3.0303	3.0303	1	cpp:45e65336d4b5
 engine_label_stubs	?InitializeLobbyConnectionSettings@CGruntzMgr@@QAEXXZ	0.7353	0.7353	1	cpp:45e65336d4b5
 engine_label_stubs	?LaunchPortalExe@EngineLabelBacklog@@YAXXZ	0.3008	0.3008	1	cpp:45e65336d4b5
-engine_label_stubs	?LoadActionOptionsMenuBar@EngineLabelBacklog@@YAXXZ	1.0638	1.0638	1	cpp:45e65336d4b5
 engine_label_stubs	?LoadActionTileSprites@EngineLabelBacklog@@YAXXZ	0.9302	0.9302	1	cpp:45e65336d4b5
 engine_label_stubs	?LoadAreaLevelTable@EngineLabelBacklog@@YAXXZ	0.0517	0.0517	1	cpp:45e65336d4b5
 engine_label_stubs	?LoadAssets@CHelpState@@QAEXXZ	0.9302	0.9302	1	cpp:45e65336d4b5
@@ -413,7 +416,6 @@ engine_label_stubs	?LoadAttributes@CTeleporter@@QAEXXZ	0.4274	0.4274	1	cpp:45e65
 engine_label_stubs	?LoadAttributes@CTimeBomb@@QAEXXZ	0.7246	0.7246	1	cpp:45e65336d4b5
 engine_label_stubs	?LoadAttributes@CWarlord@@QAEXXZ	1.5385	1.5385	1	cpp:45e65336d4b5
 engine_label_stubs	?LoadBattlezItemConfig@EngineLabelBacklog@@YAXXZ	0.1238	0.1238	1	cpp:45e65336d4b5
-engine_label_stubs	?LoadBattlezMapConfig@EngineLabelBacklog@@YAXXZ	0.0667	0.0667	1	cpp:45e65336d4b5
 engine_label_stubs	?LoadBombGruntRunConfig2@EngineLabelBacklog@@YAXXZ	0.4762	0.4762	1	cpp:45e65336d4b5
 engine_label_stubs	?LoadBombGruntRunConfig@EngineLabelBacklog@@YAXXZ	0.1569	0.1569	1	cpp:45e65336d4b5
 engine_label_stubs	?LoadBootyCheatState@EngineLabelBacklog@@YAXXZ	0.1515	0.1515	1	cpp:45e65336d4b5
