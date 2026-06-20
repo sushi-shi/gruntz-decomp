@@ -22,25 +22,11 @@
 #include <stdio.h>   // engine sprintf (reloc-masked)
 #include <string.h>  // inline strcpy (rep movs / repne scasb)
 
-// ---------------------------------------------------------------------------
-// Minimal Win32 surface. Do NOT pull in <windows.h> - keep the visible symbol
-// SET small. Only the three imports the function calls, as a
-// __declspec(dllimport) __stdcall block (reproduces the FF15 [IAT] indirect
-// call form).
-// ---------------------------------------------------------------------------
-typedef int   BOOL;
-typedef void *HWND;
-typedef const char *LPCSTR;
-typedef unsigned int UINT;
-
-extern "C" {
-__declspec(dllimport) BOOL __stdcall MessageBeep(UINT uType);
-__declspec(dllimport) int  __stdcall MessageBoxA(HWND hWnd, LPCSTR lpText,
-                                                 LPCSTR lpCaption, UINT uType);
-__declspec(dllimport) void __stdcall OutputDebugStringA(LPCSTR lpOutputString);
-}
-
-#define MB_ICONHAND 0x30   // the uType / beep code the reporter passes (0x30)
+// MessageBeep / MessageBoxA / OutputDebugStringA + BOOL/HWND/LPCSTR/UINT come
+// from the real <windows.h> (via Win32.h; pure-Win32 TU, no MFC). The reporter's
+// uType is MB_ICONEXCLAMATION (0x30); the old hand-rolled macro mislabeled that
+// value as the "hand" icon, whose real windows.h value is 0x10.
+#include <Win32.h>
 
 // Reporting-mode globals (live in .data). g_logEnabled drives the
 // OutputDebugStringA path, g_msgBoxEnabled the MessageBox path; g_beepEnabled
@@ -69,7 +55,7 @@ void DirectSoundMgr::GetErrorString(char *file, int line, long hr)
     char szLine[512];   // formatted output line
 
     if (g_beepEnabled)
-        MessageBeep(MB_ICONHAND);
+        MessageBeep(MB_ICONEXCLAMATION);
     if (!g_logEnabled && !g_msgBoxEnabled && !g_thirdEnabled)
         return;
 
@@ -109,6 +95,6 @@ void DirectSoundMgr::GetErrorString(char *file, int line, long hr)
             sprintf(szLine, "%s (%i)\n\n%s", szCode, code, szMsg);
         else
             sprintf(szLine, "%s, line %i\n\n%s (%i)\n\n%s", file, line, szCode, code, szMsg);
-        MessageBoxA((HWND)0, szLine, "DirectSoundMgr", MB_ICONHAND);
+        MessageBoxA((HWND)0, szLine, "DirectSoundMgr", MB_ICONEXCLAMATION);
     }
 }

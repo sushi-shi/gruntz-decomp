@@ -31,6 +31,8 @@
 //
 // CPlane / CImageSet / the per-plane reader / ReadImageSet / RecomputePlaneCoords /
 // InflateMainBlock / operator new/delete / SetAtGrow are reloc-masked calls.
+// <Mfc.h> brings real MFC afxcoll: CDWordArray (the engine stores the pointer arrays as DWORDs).
+#include <Mfc.h>
 #include <Gruntz/GameLevel.h>
 #include <Io/FileStream.h>   // CFileIO (Open/Read/GetLength/ctor/dtor reloc-masked)
 #include <rva.h>
@@ -64,11 +66,6 @@ struct RemusCoords {
     int m_4;
     int m_8;
     int m_c;
-};
-
-// External CDWordArray::SetSize (reloc-masked NAFXCW engine call).
-struct CDWordArray {
-    void SetSize(int nNewSize, int nGrowBy);
 };
 
 // The parse-source object VirtualMethodUnknown3C drives: BeginParse (FUN_00539960
@@ -231,7 +228,7 @@ int CGameLevel::LoadWwd(WwdHeader* hdr)
                 goto fail;
             ++j;
             rec += set->GetStride();          // vtable +0x24 stride advance
-            m_imageSets.SetAtGrow((int)(j - 1), set);
+            m_imageSets.SetAtGrow(j - 1, (DWORD)set);
         }
     }
 
@@ -259,11 +256,11 @@ int CGameLevel::LoadWwd(WwdHeader* hdr)
         int ox = m_mainPlane->m_originX;
         int oy = m_mainPlane->m_originY;
         int i2 = 0;
-        while (i2 < m_planes.m_size)          // m_planes.m_size == the plane count
+        while (i2 < m_planes.GetSize())       // GetSize() == the plane count
         {
             if (i2 != m_mainIndex)
             {
-                CPlane* p = (CPlane*)((void**)m_planes.m_data)[i2];
+                CPlane* p = (CPlane*)m_planes[i2];
                 if (p->m_flags & 1)
                 {
                     p->m_scaledX = (float)ox;

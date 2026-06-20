@@ -67,6 +67,9 @@ Gotchas baked in from reading the delinker source:
 
 - Keep `README.md` and the relevant `docs/` (esp. `build-system.md`) current when
   the build/diff flow, tools, or paths change.
+- **Win32/MFC types & functions come from the real headers** (`<Mfc.h>` for MFC TUs,
+  `<Win32.h>` for pure-Win32/DirectX) — don't hand-roll typedefs/externs. See
+  `docs/patterns/win32-import-decl-stdcall.md`.
 - `flake.lock` is committed; `.gitignore` already excludes generated outputs.
 - **Builds are FAST — don't engineer around build time.** A full from-scratch
   `gruntz clean && gruntz init` (cold Ghidra import+analyze, wine re-init, full

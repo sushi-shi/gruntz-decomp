@@ -1,13 +1,9 @@
 // GameWnd.cpp - WAP32 CGameWnd (Brian Goble's engine).
 // Matched: CGameWnd::CGameWnd (byte-exact).
+// <Mfc.h> brings <windows.h> USER32: IsWindow / DestroyWindow / PostQuitMessage / DefWindowProcA.
+#include <Mfc.h>
 #include <Wap32/Wap32.h>
 #include <rva.h>
-
-extern "C" {
-__declspec(dllimport) BOOL __stdcall IsWindow(HWND hWnd);
-__declspec(dllimport) BOOL __stdcall DestroyWindow(HWND hWnd);
-__declspec(dllimport) void __stdcall PostQuitMessage(int nExitCode);
-}
 
 // -------------------------------------------------------------------------
 // CGameWnd::CGameWnd()
@@ -86,10 +82,6 @@ int CGameWnd::QuitMessageLoop()
     return 0;
 }
 
-extern "C" {
-__declspec(dllimport) LRESULT __stdcall DefWindowProcA(HWND hWnd, UINT Msg,
-                                                       WPARAM wParam, LPARAM lParam);
-}
 
 // -------------------------------------------------------------------------
 // CGameApp::GameWindowProc - the static window procedure stored into

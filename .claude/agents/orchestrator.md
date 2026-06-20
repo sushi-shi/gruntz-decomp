@@ -311,6 +311,11 @@ must STOP and report, not force the wrong class.
 - **DirectX/Win32/COM calls are external** — never match the implementation (it's in
   system DLLs). The DX6 SDK (`dx/Include`) supplies the COM vtable layouts so
   `pIface->Method()` compiles to the right slot.
+- **Win32/MFC types & imports come from the real headers, not hand-rolled decls.**
+  Include `<Mfc.h>` (MFC TUs → `<afx.h>` → `<windows.h>`) or `<Win32.h>` (pure-Win32/DirectX
+  TUs); don't re-`typedef` `BOOL`/`HWND`/`INT_PTR`/… or re-`extern` `PostMessageA`/`timeGetTime`/…
+  The real decls keep the signature/mangling from drifting, and pulling windows.h via the
+  umbrellas is matching-neutral (PR #44). See `docs/patterns/win32-import-decl-stdcall.md`.
 - **Ghidra scripting:** the headless enrichment/export run under **PyGhidra**
   (Ghidra 12.0.4 + `jpype1`, both from the flake) via `scripts/gruntz/ghidra/ghidra_metadata_apply.py`
   - `pyghidra.start()` + `ghidra_script(...)`.

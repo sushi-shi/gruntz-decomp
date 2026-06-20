@@ -127,7 +127,7 @@ int Font::LoadFont(CString szFileName)
     FreeMemory();
 
     CFile file;
-    if (!file.Open(szFileName.m_pchData, 0, 0)) {
+    if (!file.Open((const char *)szFileName, 0, 0)) {
         return 0;
     }
 

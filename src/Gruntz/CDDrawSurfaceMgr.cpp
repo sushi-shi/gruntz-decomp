@@ -7,8 +7,9 @@
 // Names are tomalla placeholders. Offsets, store order, vtable slots, and global
 // addresses are load-bearing for matching.
 
-typedef void *HWND;
-typedef long intptr_t;
+// HWND comes from the real <windows.h> (via Win32.h; pure-Win32 TU, no MFC).
+#include <Win32.h>
+typedef long intptr_t;   // VC5 predates <stdint.h>; the one HP_Callback cast below needs it.
 
 class UnknownCGruntzMgrLuciusChild {
 public:

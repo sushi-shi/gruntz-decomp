@@ -22,21 +22,12 @@
 // EH frame as retail.
 // ---------------------------------------------------------------------------
 
-// --- MFC placeholders (only the call symbols + the 0x10 map offset matter) -----
-class CObject;
+// <Mfc.h> brings real MFC afxcoll: CObject / CByteArray / CMapStringToOb / POSITION
+// (CString / CMapStringToOb signatures also via the shim includes below).
+#include <Mfc.h>
+#include <string.h>   // strncpy (the StringCopy leaf, reloc-masked)
 class CDDrawWorkerRegistry;
 
-class CByteArray {
-public:
-    CByteArray();
-    ~CByteArray();
-    char m_data[0x14];
-};
-
-// POSITION is the opaque MFC iteration handle.  Native int form so the ternary
-// guard initialiser passes cleanly to GetNextAssoc's POSITION & parameter; the
-// reloc-masked call site is identical.
-typedef int POSITION;
 
 // CString (4-byte char* wrapper). Only the default ctor + dtor are needed;
 // GetNextAssoc writes the key output into it.
@@ -378,7 +369,7 @@ RVA(0x165210, 0xa2)
 void CDDrawWorkerRegistry::VirtualMethodUnknown58()
 {
     CObject *val = 0;
-    int pos = (m_10.m_nCount != 0) ? -1 : 0;
+    POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
     CString key;
     if (*(volatile int *)&pos != 0) {
         do {
@@ -390,7 +381,6 @@ void CDDrawWorkerRegistry::VirtualMethodUnknown58()
     m_10.RemoveAll();
 }
 
-extern "C" char *_strncpy(char *, const char *, unsigned int);
 
 // ---------------------------------------------------------------------------
 // Map teardown leaf (SEH)
@@ -400,7 +390,7 @@ RVA(0x1552b0, 0xa2)
 void CDDrawWorkerRegistry::MapTeardown_1552b0()
 {
     CObject *val = 0;
-    int pos = (m_10.m_nCount != 0) ? -1 : 0;
+    POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
     CString key;
     if (*(volatile int *)&pos != 0) {
         do {
@@ -419,7 +409,7 @@ void CDDrawWorkerRegistry::MapTeardown_1552b0()
 RVA(0x155810, 0x23)
 int CDDrawWorkerRegistry::StringCopy_155810(const char *src)
 {
-    _strncpy((char *)this + 0x24, src, 0x3f);
+    strncpy((char *)this + 0x24, src, 0x3f);
     *((char *)this + 0x63) = 0;
     return 1;
 }

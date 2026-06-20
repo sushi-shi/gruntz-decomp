@@ -360,11 +360,6 @@ int RezMgr::PerFrameTick()
     return 1;
 }
 
-// Win32 import the debug-position probe posts its WM_COMMAND through (minimal
-// dllimport so the FF15 [IAT] call shape falls out; do NOT pull in <windows.h>).
-extern "C" __declspec(dllimport) int __stdcall
-PostMessageA(void *hWnd, unsigned Msg, unsigned wParam, long lParam);
-
 // ---------------------------------------------------------------------------
 // RezMgr::HandleDebugPosition()
 // When the active mode's per-frame state step reports 3, look up the
@@ -382,7 +377,7 @@ int RezMgr::HandleDebugPosition()
         if (r == 1) {
             void *owner = *(void **)((char *)this + 4);
             void *hwnd  = *(void **)((char *)owner + 4);
-            PostMessageA(hwnd, 0x111, 0x805c, 0);
+            PostMessageA((HWND)hwnd, 0x111, 0x805c, 0);
         }
     }
     return r != 0;

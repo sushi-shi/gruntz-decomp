@@ -15,25 +15,14 @@
 
 #include <Wwd/WwdFile.h>   // CPlane, WwdHeader, operator new, uncompress
 
-// ---------------------------------------------------------------------------
-// MFC-style growable pointer array (CObArray/CByteArray-family, 0x14 bytes). The
-// engine's array base ctor/dtor (??0/??1CByteArray@@QAE@XZ) are out-of-line NAFXCW
-// calls; the constructor builds three of these (at +0x20/+0x34/+0x48) and their
-// destructible nature is what gives the ctor its /GX EH frame. Layout pinned from
-// LoadWwd: m_data@+0x4, m_size@+0x8 relative to the array sub-object. SetAtGrow
-// grows + stores; the element factories return their stride.
-// ---------------------------------------------------------------------------
-struct CByteArray
-{
-    CByteArray();
-    ~CByteArray();
-    void* m_pad0;     // +0x00
-    void* m_data;     // +0x04
-    int   m_size;     // +0x08
-    char  m_tail[0x14 - 0x0c];  // +0x0c  (full 0x14-byte MFC array footprint)
-    void SetAtGrow(int index, void* value);
-};
-typedef CByteArray CLevelPtrArray;
+// The ctor builds three growable MFC arrays (+0x20/+0x34/+0x48; afxcoll, layout 0x14).
+// +0x20 (m_array20) is a CByteArray; +0x34 m_planes and +0x48 m_imageSets are CDWordArray
+// (CLevelPtrArray). The retail stores the plane / image-set pointers as raw DWORDs - a
+// genuine CDWordArray, NOT a typed pointer array: a CTypedPtrArray<CPtrArray,...> drops
+// the ctor from 89.5% to 72%, so the DWORD storage (and the pointer<->DWORD casts at the
+// use sites) is the devs' real shape. SetAtGrow stores the pointer; operator[] reads it.
+#include <Mfc.h>
+typedef CDWordArray CLevelPtrArray;
 
 // ---------------------------------------------------------------------------
 // CImageSet - the per-plane image-set descriptor the level builds from the WWD

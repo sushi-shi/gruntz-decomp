@@ -1,28 +1,7 @@
-// CString.h - the MFC CString (statically-linked NAFXCW). Reconstructed only as
-// deeply as the byte-matches need: a single char* at +0x00; the method bodies
-// live in NAFXCW so their `call rel32` displacements reloc-mask in objdiff - only
-// the exact mangled symbol + arg shape are load-bearing. One header, #included
-// wherever a TU uses CString, instead of re-declaring it inline in every TU.
-// (Some TUs previously called this placeholder "AfxString"; same NAFXCW class.)
+// CString.h - compatibility shim: real MFC CString now comes from <Mfc.h>.
+// Kept so existing `#include <Gruntz/CString.h>` sites keep working; prefer
+// <Mfc.h> in new code. Must precede any <windows.h>/DirectX (MFC rule).
 #ifndef GRUNTZ_GRUNTZ_CSTRING_H
 #define GRUNTZ_GRUNTZ_CSTRING_H
-
-class CString {
-public:
-    CString();
-    CString(const char *s);
-    CString(const CString &o);
-    ~CString();
-    const CString &operator=(const char *src);
-    void Empty();
-    void Format(const char *fmt, ...);
-    // MFC's CString::GetLength is inline: the length lives in the CStringData
-    // header just before the buffer, i.e. ((int*)m_pchData)[-2]  (`mov [ecx-8]`).
-    int GetLength() const { return ((const int *)m_pchData)[-2]; }
-    // MFC's CString -> LPCTSTR is an inline accessor (a plain [this+0] load).
-    operator const char *() const { return m_pchData; }
-
-    char *m_pchData;             // +0x00
-};
-
+#include <Mfc.h>
 #endif  // GRUNTZ_GRUNTZ_CSTRING_H

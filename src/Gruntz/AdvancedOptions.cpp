@@ -11,43 +11,11 @@
 //   SaveOptions               - 5x SaveOption
 //
 // Only offsets / control IDs / code bytes are load-bearing; names are placeholders.
+// <Mfc.h> brings <windows.h> USER32 (the dialog/window API; HWND / HINSTANCE /
+// HICON / UINT; the WM_* / BST_* / SW_* / HKEY_* literals) and INT_PTR.
+#include <Mfc.h>
 #include <Utils/RegistryHelper.h>
 #include <rva.h>
-
-// ---------------------------------------------------------------------------
-// Minimal Win32 surface (USER32 dialog API). We deliberately do NOT pull in
-// <windows.h> - keep the visible symbol SET small (the compiler hashes it;
-// entropy follows header churn - see docs/matching-patterns.md). This
-// reproduces the FF15 [IAT] direct-call form for the imports.
-// ---------------------------------------------------------------------------
-typedef void *         HWND;
-typedef void *         HINSTANCE;
-typedef void *         HICON;
-typedef unsigned int   UINT;
-typedef int            INT_PTR;
-typedef unsigned int   WPARAM;
-typedef long           LPARAM;
-typedef long           LRESULT;
-
-extern "C" {
-__declspec(dllimport) BOOL __stdcall EndDialog(HWND hDlg, INT_PTR nResult);
-__declspec(dllimport) UINT __stdcall IsDlgButtonChecked(HWND hDlg, int nIDButton);
-__declspec(dllimport) BOOL __stdcall CheckDlgButton(HWND hDlg, int nIDButton, UINT uCheck);
-__declspec(dllimport) HICON __stdcall LoadIconA(HINSTANCE hInstance, LPCSTR lpIconName);
-__declspec(dllimport) LRESULT __stdcall SendMessageA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
-__declspec(dllimport) BOOL __stdcall IsIconic(HWND hWnd);
-__declspec(dllimport) BOOL __stdcall ShowWindow(HWND hWnd, int nCmdShow);
-__declspec(dllimport) BOOL __stdcall SetForegroundWindow(HWND hWnd);
-__declspec(dllimport) HWND __stdcall BringWindowToTop(HWND hWnd);
-}
-
-// Win32 message / constant literals (kept local; not from <windows.h>).
-#define WM_INITDIALOG 0x0110
-#define WM_COMMAND    0x0111
-#define WM_SETICON    0x0080
-#define BST_CHECKED   0x0001
-#define SW_RESTORE    9
-#define HKEY_LOCAL_MACHINE ((HKEY)0x80000002)
 
 // Control IDs of the five "Disable ..." checkboxes and the "Defaults" button.
 #define IDC_DISABLE_VIDEO   0x46c

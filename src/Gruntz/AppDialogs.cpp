@@ -14,31 +14,11 @@
 #include <rva.h>
 #include <stdio.h>   // engine sprintf (reloc-masked)
 
-// ---------------------------------------------------------------------------
-// Minimal Win32 surface. Do NOT pull in <windows.h> - keep the visible symbol
-// SET small (the compiler hashes it; entropy follows header churn; see
-// docs/matching-patterns.md). Only the USER32 dialog imports this proc calls
-// are declared, as a __declspec(dllimport) __stdcall block (this reproduces the
-// FF15 [IAT] indirect-call form).
-// ---------------------------------------------------------------------------
-typedef int            BOOL;
-typedef void          *HWND;
-typedef unsigned int   UINT;
-typedef unsigned int   WPARAM;
-typedef long           LPARAM;
-typedef int            INT_PTR;
-
-extern "C" {
-__declspec(dllimport) BOOL __stdcall EndDialog(HWND hDlg, INT_PTR nResult);
-__declspec(dllimport) UINT __stdcall GetDlgItemInt(HWND hDlg, int nIDDlgItem,
-                                                   BOOL *lpTranslated, BOOL bSigned);
-__declspec(dllimport) BOOL __stdcall SetDlgItemInt(HWND hDlg, int nIDDlgItem,
-                                                   UINT uValue, BOOL bSigned);
-__declspec(dllimport) UINT __stdcall IsDlgButtonChecked(HWND hDlg, int nIDButton);
-}
-
-#define WM_INITDIALOG 0x110
-#define WM_COMMAND    0x111
+// The USER32 dialog API (EndDialog / GetDlgItemInt / SetDlgItemInt /
+// IsDlgButtonChecked), the HWND/UINT/WPARAM/LPARAM/INT_PTR types, and the
+// WM_INITDIALOG/WM_COMMAND ids all come from the real <windows.h> (via Win32.h;
+// pure-Win32 TU, no MFC).
+#include <Win32.h>
 
 // The engine's registry/config helper (Utils::RegistryHelper) - only the one
 // method this proc calls is declared, to keep the symbol set tiny.

@@ -27,24 +27,11 @@
 #include <stdio.h>   // engine sprintf (reloc-masked)
 #include <string.h>  // inline strcpy (rep movs / repne scasb)
 
-// ---------------------------------------------------------------------------
-// Minimal Win32 surface. Do NOT pull in <windows.h> - keep the visible symbol
-// SET small. Only the two USER32 imports the function calls, as a
-// __declspec(dllimport) __stdcall block (reproduces the FF15 [IAT] indirect
-// call form).
-// ---------------------------------------------------------------------------
-typedef int   BOOL;
-typedef void *HWND;
-typedef const char *LPCSTR;
-typedef unsigned int UINT;
-
-extern "C" {
-__declspec(dllimport) BOOL __stdcall MessageBeep(UINT uType);
-__declspec(dllimport) int  __stdcall MessageBoxA(HWND hWnd, LPCSTR lpText,
-                                                 LPCSTR lpCaption, UINT uType);
-}
-
-#define MB_ICONHAND 0x30   // the uType / beep code the reporter passes (0x30)
+// MessageBeep / MessageBoxA + BOOL/HWND/LPCSTR/UINT come from the real
+// <windows.h> (via Win32.h; pure-Win32 TU, no MFC). The reporter's uType is
+// MB_ICONEXCLAMATION (0x30); the old hand-rolled macro mislabeled that value as
+// the "hand" icon, whose real windows.h value is 0x10.
+#include <Win32.h>
 
 // ---------------------------------------------------------------------------
 // Module-global state (all in .data). Unlike the DDraw/DInput/DSound siblings
@@ -84,7 +71,7 @@ void CNetMgr::ReportError(char *file, int line, long hr, void *hWnd)
     g_code = hr & 0xffff;
     g_hr   = hr;
     if (g_beepEnabled)
-        MessageBeep(MB_ICONHAND);
+        MessageBeep(MB_ICONEXCLAMATION);
 
     strcpy(g_szMsg, "Unknown Error Message");
     sprintf(g_szCode, "Unknown Error Code");
@@ -145,6 +132,6 @@ void CNetMgr::ReportError(char *file, int line, long hr, void *hWnd)
             sprintf(szLine, "%s (%i)\n\n%s", g_szCode, g_code, g_szMsg);
         else
             sprintf(szLine, "%s, line %i\n\n%s (%i)\n\n%s", file, line, g_szCode, g_code, g_szMsg);
-        MessageBoxA((HWND)hWnd, szLine, "Net Manager", MB_ICONHAND);
+        MessageBoxA((HWND)hWnd, szLine, "Net Manager", MB_ICONEXCLAMATION);
     }
 }

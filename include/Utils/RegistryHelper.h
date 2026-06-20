@@ -6,40 +6,9 @@
 #define UTILS_REGISTRYHELPER_H
 
 // ---------------------------------------------------------------------------
-// Minimal Win32 surface. We do NOT pull in <windows.h> - keep the visible
-// symbol SET small (the compiler hashes it; entropy follows header churn; see
-// docs/matching-patterns.md). Only the ADVAPI32 Reg* imports the matched
-// methods call are declared, as a __declspec(dllimport) __stdcall block (this
-// reproduces the FF15 [IAT] direct-call form).
-// ---------------------------------------------------------------------------
-typedef int            BOOL;
-typedef unsigned long  DWORD;
-typedef long           LONG;
-typedef const char *   LPCSTR;
-typedef char *         LPSTR;
-typedef void *         HANDLE;
-typedef HANDLE         HKEY;
-typedef HKEY *         PHKEY;
-typedef DWORD *        LPDWORD;
-typedef unsigned char *LPBYTE;
-
-struct _SECURITY_ATTRIBUTES;
-typedef struct _SECURITY_ATTRIBUTES *LPSECURITY_ATTRIBUTES;
-typedef DWORD REGSAM;
-
-extern "C" {
-__declspec(dllimport) LONG __stdcall RegQueryValueExA(
-    HKEY hKey, LPCSTR lpValueName, LPDWORD lpReserved,
-    LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData);
-__declspec(dllimport) LONG __stdcall RegSetValueExA(
-    HKEY hKey, LPCSTR lpValueName, DWORD Reserved,
-    DWORD dwType, const LPBYTE lpData, DWORD cbData);
-__declspec(dllimport) LONG __stdcall RegCloseKey(HKEY hKey);
-__declspec(dllimport) LONG __stdcall RegCreateKeyExA(
-    HKEY hKey, LPCSTR lpSubKey, DWORD Reserved, LPSTR lpClass,
-    DWORD dwOptions, REGSAM samDesired, LPSECURITY_ATTRIBUTES lpSecurityAttributes,
-    PHKEY phkResult, LPDWORD lpdwDisposition);
-}
+// Reg* (ADVAPI32) + HKEY/DWORD/REGSAM/... come from the real <windows.h>
+// (winreg.h), pulled the MFC-controlled way via <Mfc.h>.
+#include <Mfc.h>
 
 namespace Utils {
 

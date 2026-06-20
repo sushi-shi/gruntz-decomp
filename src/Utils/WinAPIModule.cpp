@@ -14,46 +14,20 @@
 #include <rva.h>
 #include <string.h>   // inline memcpy (rep movs)
 
-// ---------------------------------------------------------------------------
-// Minimal Win32 surface. Do NOT pull in <windows.h>. Only the KERNEL32 imports
-// this helper calls directly, as a __declspec(dllimport) __stdcall block (the
-// FF15 [IAT] form), keeping the visible symbol set small.
-// ---------------------------------------------------------------------------
-typedef int            BOOL;
-typedef unsigned long  DWORD;
-typedef const char *   LPCSTR;
-typedef void *         HANDLE;
-typedef unsigned char *LPBYTE;
-typedef void *         HMODULE;
-typedef void *         FARPROC_;
-
-extern "C" {
-__declspec(dllimport) HMODULE  __stdcall GetModuleHandleA(LPCSTR lpModuleName);
-__declspec(dllimport) FARPROC_ __stdcall GetProcAddress(HMODULE hModule, LPCSTR lpProcName);
-__declspec(dllimport) BOOL     __stdcall CloseHandle(HANDLE hObject);
-}
-
-// The ToolHelp32 module-walk entry points, resolved at runtime by name.
-struct MODULEENTRY32 {
-    DWORD  dwSize;          // +0x000
-    DWORD  th32ModuleID;    // +0x004
-    DWORD  th32ProcessID;   // +0x008
-    DWORD  GlblcntUsage;    // +0x00c
-    DWORD  ProccntUsage;    // +0x010
-    LPBYTE modBaseAddr;     // +0x014
-    DWORD  modBaseSize;     // +0x018
-    HMODULE hModule;        // +0x01c
-    char   szModule[256];   // +0x020
-    char   szExePath[260];  // +0x120  -> total 0x224
-};
+// The KERNEL32 imports (GetModuleHandleA / GetProcAddress / CloseHandle) + the
+// BOOL/DWORD/LPCSTR/HANDLE/LPBYTE/HMODULE/FARPROC types come from the real
+// <windows.h> (via Win32.h; pure-Win32 TU, no MFC). MODULEENTRY32 and
+// TH32CS_SNAPMODULE come from <tlhelp32.h> (the load-bearing 0x224 struct layout).
+// The ToolHelp32 entry points are resolved at runtime by name (legacy NT-compat),
+// so their signatures are declared below as the GetProcAddress cast targets.
+#include <Win32.h>
+#include <tlhelp32.h>
 
 typedef HANDLE (__stdcall *PFNCREATESNAPSHOT)(DWORD dwFlags, DWORD th32ProcessID);
 typedef BOOL   (__stdcall *PFNMODULEWALK)(HANDLE hSnapshot, MODULEENTRY32 *lpme);
 
 namespace Utils {
 namespace WinAPI {
-
-#define TH32CS_SNAPMODULE 0x00000008
 
 // ---------------------------------------------------------------------------
 // LegacyFindModule

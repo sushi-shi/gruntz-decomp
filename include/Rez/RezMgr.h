@@ -48,6 +48,10 @@
 #ifndef SRC_REZ_REZMGR_H
 #define SRC_REZ_REZMGR_H
 
+// <Mfc.h> brings <windows.h> KERNEL32 (GetCurrentDirectoryA, used by MakeRezPath)
+// plus CString / CObject; the engine helpers below stay minimal externs.
+#include <Mfc.h>
+
 // ---------------------------------------------------------------------------
 // External engine helpers, modeled with NO body so their `call rel32`
 // displacements are reloc-masked in objdiff (the "external no-body callee"
@@ -87,10 +91,6 @@ extern "C" void RezAssertFail(const char *msg);
 extern "C" char *RezStrrchr(const char *s, int ch);
 extern "C" int   RezStricmp(const char *a, const char *b);
 
-// Win32 import used by MakeRezPath (minimal dllimport so the FF15 [IAT] call
-// shape falls out; do NOT pull in <windows.h>).
-extern "C" __declspec(dllimport) unsigned long __stdcall
-GetCurrentDirectoryA(unsigned long nBufferLength, char *lpBuffer);
 
 // ---------------------------------------------------------------------------
 // CRezItmBase - the shared node base (parent ptr @+0xc).

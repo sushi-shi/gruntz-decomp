@@ -19,16 +19,12 @@
 // sharing-vs-duplication coin-flip, not a source bug. Kept in the truest shape
 // (multiple returns -> four Close) rather than collapsing to one Close for a
 // higher score.
+// <Mfc.h> brings <windows.h> KERNEL32 (GetDriveTypeA / GetCurrentDirectoryA; UINT /
+// LPCSTR / DWORD / LPSTR).
+#include <Mfc.h>
 #include <Utils/RegistryHelper.h>
 #include <rva.h>
 #include <stdio.h>
-
-typedef unsigned int UINT;
-
-extern "C" {
-__declspec(dllimport) UINT  __stdcall GetDriveTypeA(LPCSTR lpRootPathName);
-__declspec(dllimport) DWORD __stdcall GetCurrentDirectoryA(DWORD nBufferLength, LPSTR lpBuffer);
-}
 
 namespace Utils {
 namespace WinAPI {

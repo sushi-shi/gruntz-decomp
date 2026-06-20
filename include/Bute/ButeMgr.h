@@ -26,7 +26,9 @@
 #ifndef SRC_BUTE_BUTEMGR_H
 #define SRC_BUTE_BUTEMGR_H
 
-typedef unsigned long DWORD;
+// CString (+ CObject etc.) and the Win32 DWORD come from <Mfc.h>; pulled up here
+// so the class below can use both. (afx.h is the period-correct windows.h path.)
+#include <Gruntz/CString.h>
 
 // ---------------------------------------------------------------------------
 // CButeTree - the keyed store node. The getters/parser reach it through a single
@@ -150,8 +152,8 @@ struct CButeRef8 {           // 16 bytes
 //   - operator=  (CString::operator=, NAFXCW)
 //   - the literal-ctor (CString::CString(const char*)) used by the
 //     one-shot default-string init in GetString.
+// (CString itself comes from <Gruntz/CString.h>, included at the top.)
 // ---------------------------------------------------------------------------
-#include <Gruntz/CString.h>
 
 // CRT helpers (minimal external decls; reloc-masked engine CRT thunks).
 extern "C" int atexit(void (*func)(void));

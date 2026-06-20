@@ -14,34 +14,12 @@
 #ifndef NET_NETMGR_H
 #define NET_NETMGR_H
 
+// <Mfc.h> brings <windows.h> USER32 (PostMessageA / Sleep / GetAsyncKeyState - the
+// connect wait polls VK_ESCAPE to abort; HWND / UINT / ...) and the central WINMM
+// timeGetTime decl (the frame-sync / connect-wait clock).
+#include <Mfc.h>
 #include <Utils/RegistryHelper.h>
 #include <Gruntz/CObList.h>
-
-// ---------------------------------------------------------------------------
-// Minimal Win32 surface (no <windows.h> - keep the visible symbol set small;
-// see docs/matching-patterns.md). Only PostMessageA is needed, as a
-// __declspec(dllimport) __stdcall decl so the call site emits the FF15 [IAT]
-// indirect form against the engine's cached USER32 import slot.
-// ---------------------------------------------------------------------------
-typedef void *         HWND;
-typedef unsigned int   UINT;
-typedef unsigned int   WPARAM;
-typedef long           LPARAM;
-typedef int            BOOL;
-
-extern "C" {
-__declspec(dllimport) BOOL __stdcall PostMessageA(HWND hWnd, UINT Msg,
-                                                  WPARAM wParam, LPARAM lParam);
-// KERNEL32 Sleep - the version-mismatch handler pauses 250ms before bailing.
-// FF15 [IAT] indirect form against the engine's cached KERNEL32 import slot.
-__declspec(dllimport) void __stdcall Sleep(unsigned ms);
-// WINMM timeGetTime - the frame-sync / connect-wait clock; FF15 [IAT] indirect
-// against the engine's cached WINMM import slot (*0x6c4650).
-__declspec(dllimport) unsigned __stdcall timeGetTime(void);
-// USER32 GetAsyncKeyState - the connect wait polls VK_ESCAPE (0x1b) to abort;
-// FF15 [IAT] indirect against the cached USER32 slot (*0x6c4500).
-__declspec(dllimport) short __stdcall GetAsyncKeyState(int vKey);
-}
 
 // ---------------------------------------------------------------------------
 // Utils::WinAPI::ActiveWait - the engine busy-wait (?ActiveWait@WinAPI@Utils@@YAXI@Z,

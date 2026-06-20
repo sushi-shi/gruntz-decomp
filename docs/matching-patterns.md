@@ -64,8 +64,12 @@ ordering is *name-independent* — see § "Match by shape" below and
 real at every opt level.)
 
 **Mitigations [HEURISTIC]** (none confirmed to fully eliminate it for VC5):
-1. **Minimize header churn** — `#include` only what a TU needs; every extra
-   declaration is a potential re-roll.
+1. **Minimize *gratuitous* header churn** — `#include` what a TU needs, and for
+   Win32/MFC types & imports that means the `<Mfc.h>`/`<Win32.h>` umbrellas (bring the
+   real headers — the convention, and matching-NEUTRAL: PR #44 swapped every hand-rolled
+   Win32 typedef/extern for the umbrellas at 247/816 exact, no regressions, since afx.h
+   already pulls windows.h into MFC TUs). The re-roll risk is *extra/ad-hoc* declarations,
+   NOT the standard umbrellas — don't hand-roll Win32 typedefs/externs to "keep the set small."
 2. **Match the include order *and* the symbol SET**, not merely the symbols a
    function uses — the visible set is what the compiler hashes.
 3. Keep **declaration/definition order in headers stable** once a TU is green.

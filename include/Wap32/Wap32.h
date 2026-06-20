@@ -5,82 +5,9 @@
 #ifndef WAP32_H
 #define WAP32_H
 
-// ---------------------------------------------------------------------------
-// Minimal Win32 surface (we do NOT pull in <windows.h> to keep the visible
-// symbol SET small - the compiler hashes the visible set and entropy follows
-// header churn; see docs/matching-patterns.md). Only the few __stdcall imports
-// and the WNDCLASSA layout that the matched methods touch are declared.
-// ---------------------------------------------------------------------------
-typedef int                 BOOL;
-typedef unsigned int        UINT;
-typedef unsigned long       DWORD;
-typedef unsigned int        WPARAM;
-typedef long                LPARAM;
-typedef long                LRESULT;
-typedef const char *        LPCSTR;
-typedef void *              HANDLE;
-typedef HANDLE              HWND;
-typedef HANDLE              HINSTANCE;
-typedef HANDLE              HICON;
-typedef HANDLE              HCURSOR;
-typedef HANDLE              HBRUSH;
-typedef HANDLE              HMENU;
-typedef HANDLE              HACCEL;
-typedef HANDLE              HGDIOBJ;
-
-typedef LRESULT (__stdcall *WNDPROC)(HWND, UINT, WPARAM, LPARAM);
-
-typedef struct tagWNDCLASSA {
-    UINT      style;          // +0x00
-    WNDPROC   lpfnWndProc;    // +0x04
-    int       cbClsExtra;     // +0x08
-    int       cbWndExtra;     // +0x0c
-    HINSTANCE hInstance;      // +0x10
-    HICON     hIcon;          // +0x14
-    HCURSOR   hCursor;        // +0x18
-    HBRUSH    hbrBackground;  // +0x1c
-    LPCSTR    lpszMenuName;   // +0x20
-    LPCSTR    lpszClassName;  // +0x24
-} WNDCLASSA;                  // 0x28 bytes (10 dwords)
-
-extern "C" {
-__declspec(dllimport) BOOL    __stdcall DestroyAcceleratorTable(HACCEL hAccel);
-__declspec(dllimport) HACCEL  __stdcall LoadAcceleratorsA(HINSTANCE hInstance, LPCSTR lpTableName);
-__declspec(dllimport) BOOL    __stdcall PostMessageA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
-__declspec(dllimport) HCURSOR __stdcall LoadCursorA(HINSTANCE hInstance, LPCSTR lpCursorName);
-__declspec(dllimport) HICON   __stdcall LoadIconA(HINSTANCE hInstance, LPCSTR lpIconName);
-__declspec(dllimport) HGDIOBJ __stdcall GetStockObject(int i);
-__declspec(dllimport) HWND    __stdcall CreateWindowExA(DWORD dwExStyle, LPCSTR lpClassName,
-                                                        LPCSTR lpWindowName, DWORD dwStyle,
-                                                        int X, int Y, int nWidth, int nHeight,
-                                                        HWND hWndParent, HMENU hMenu,
-                                                        HINSTANCE hInstance, void *lpParam);
-__declspec(dllimport) BOOL    __stdcall ShowWindow(HWND hWnd, int nCmdShow);
-__declspec(dllimport) HMENU   __stdcall LoadMenuA(HINSTANCE hInstance, LPCSTR lpMenuName);
-__declspec(dllimport) int     __stdcall GetSystemMetrics(int nIndex);
-__declspec(dllimport) short   __stdcall RegisterClassA(const WNDCLASSA *lpWndClass);
-__declspec(dllimport) BOOL    __stdcall PeekMessageA(struct tagMSG *lpMsg, HWND hWnd,
-                                                     UINT wMsgFilterMin, UINT wMsgFilterMax,
-                                                     UINT wRemoveMsg);
-__declspec(dllimport) int     __stdcall TranslateAcceleratorA(HWND hWnd, HACCEL hAccTable,
-                                                              struct tagMSG *lpMsg);
-__declspec(dllimport) BOOL    __stdcall TranslateMessage(const struct tagMSG *lpMsg);
-__declspec(dllimport) LRESULT __stdcall DispatchMessageA(const struct tagMSG *lpMsg);
-}
-
-// MSG (28 bytes). RunMessageLoop reads msg.hwnd (+0x00) for the accel-table
-// HWND gate and msg.message (+0x04) for the WM_QUIT(0x12) test; the rest are
-// passed by address to PeekMessageA/Translate*/DispatchMessageA. Offsets are
-// load-bearing (the loop indexes [&msg+0x00] and [&msg+0x04]).
-typedef struct tagMSG {
-    HWND   hwnd;       // +0x00
-    UINT   message;    // +0x04
-    WPARAM wParam;     // +0x08
-    LPARAM lParam;     // +0x0c
-    DWORD  time;       // +0x10
-    int    pt_x;       // +0x14  (POINT.x)
-    int    pt_y;       // +0x18  (POINT.y)
-} MSG;
+// <Mfc.h> brings <windows.h> (handle types, WNDCLASSA, MSG, USER32/GDI32 imports),
+// the MFC-controlled way (afx.h first).
+#include <Mfc.h>
 
 // CreateWindowExA's 12 arguments, packed into one params struct (CGameWnd's
 // caller fills this and passes its address to CreateAndShow). Fields are stored
@@ -242,22 +169,7 @@ private:
 };
 }
 
-// CREATESTRUCTA layout (the 12 fields CreateWindowEx receives), embedded in
-// CGameApp at +0x210 (m_createStruct); InitializeDefaultCreateStruct fills it.
-typedef struct tagCREATESTRUCTA {
-    void *    lpCreateParams; // +0x00
-    HINSTANCE hInstance;      // +0x04
-    HMENU     hMenu;          // +0x08
-    HWND      hwndParent;     // +0x0c
-    int       cy;             // +0x10
-    int       cx;             // +0x14
-    int       y;              // +0x18
-    int       x;              // +0x1c
-    long      style;          // +0x20
-    LPCSTR    lpszName;       // +0x24
-    LPCSTR    lpszClass;      // +0x28
-    DWORD     dwExStyle;      // +0x2c
-} CREATESTRUCTA;             // 0x30 bytes
+// CREATESTRUCTA (m_createStruct @ CGameApp+0x210; the same 0x30 <windows.h> layout).
 
 // GameInfo - the 0x1d4-byte window/launch descriptor. Embedded in CGameApp at
 // +0x14 (m_gameInfo); VirtualUnknownMethod03 builds one on the stack and hands
