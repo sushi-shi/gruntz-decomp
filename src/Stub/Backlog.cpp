@@ -48,7 +48,6 @@ void BuildPowerupIconKeys();
 void DrawBattleStats();
 void StartUpPrompt();
 void Stub_01fd70();
-void CheckCdRomRegistry();
 void LoadChatBoxSprite();
 void LoadCheatConfig();
 void LoadBattlezMapConfig();
@@ -89,7 +88,6 @@ void LoadGruntCombatTuning();
 void LoadGruntResurrectTuning();
 void LoadFinishLevelSprite();
 void LoadPowerupIconSprites();
-void WarpDialogProc();
 void LaunchPortalExe();
 void LoadMonologoSprite();
 void LoadSaveMessageSprite();
@@ -172,7 +170,6 @@ void BuildStatzTabSmall_vfunc1();
 void SaveScreenshot();
 void FreeAllFonts();
 void FormatGameInfoString();
-void LegacyFindModule();
 void LoadGruntSpawnConfig();
 void BuildVoiceSoundList();
 void Stub_11f900();
@@ -321,12 +318,6 @@ void EngineLabelBacklog::StartUpPrompt() {}
 // @stub
 RVA(0x01fd70, 0x45)
 void EngineLabelBacklog::Stub_01fd70() {}
-
-// @confidence: med
-// @source: decomp-xref
-// @stub
-RVA(0x01fde0, 0x189)
-void EngineLabelBacklog::CheckCdRomRegistry() {}
 
 // @confidence: med
 // @source: decomp-xref
@@ -573,12 +564,6 @@ void EngineLabelBacklog::LoadFinishLevelSprite() {}
 // @stub
 RVA(0x07c620, 0x3c5)
 void EngineLabelBacklog::LoadPowerupIconSprites() {}
-
-// @confidence: high
-// @source: decomp-xref
-// @stub
-RVA(0x08e4e0, 0x172)
-void EngineLabelBacklog::WarpDialogProc() {}
 
 // @confidence: low
 // @source: decomp-xref
@@ -1101,12 +1086,6 @@ void EngineLabelBacklog::SaveScreenshot() {}
 // @stub
 RVA(0x1183b0, 0x211)
 void EngineLabelBacklog::FormatGameInfoString() {}
-
-// @confidence: high
-// @source: tomalla
-// @stub
-RVA(0x118f60, 0x134)
-void EngineLabelBacklog::LegacyFindModule() {}
 
 // @confidence: med
 // @source: decomp-xref
