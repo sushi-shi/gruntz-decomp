@@ -169,6 +169,24 @@
         exec python3 "''${GRUNTZ_DIR:-$PWD}/scripts/gruntz.py" "$@"
       '';
 
+      # Wrap nvim to auto-load the in-repo editor/nvim plugin (:Gruntz), leaving the
+      # user's own config intact. A wrapper SCRIPT on PATH (not a shell function)
+      # survives `nix develop --command fish`, like gruntz-cli; the real nvim is
+      # resolved before we shadow it, GRUNTZ_NVIM_WRAPPED guards nested shells, and
+      # the banner announces the change.
+      nvimShimHook = ''
+        if [ -z "''${GRUNTZ_NVIM_WRAPPED:-}" ] && command -v nvim >/dev/null 2>&1 && [ -d "$GRUNTZ_DIR/editor/nvim" ]; then
+          _gnv_real="$(command -v nvim)"
+          _gnv_bin="$GRUNTZ_DIR/build/nvim-shim"
+          mkdir -p "$_gnv_bin"
+          printf '#!/bin/sh\nexec "%s" --cmd "set rtp^=%s/editor/nvim" "$@"\n' "$_gnv_real" "$GRUNTZ_DIR" > "$_gnv_bin/nvim"
+          chmod +x "$_gnv_bin/nvim"
+          export PATH="$_gnv_bin:$PATH"
+          export GRUNTZ_NVIM_WRAPPED=1
+          echo "[gruntz] nvim       : WRAPPED -> nvim now auto-loads editor/nvim (:Gruntz, vt/vb/vd/vs/V). Plain nvim is unchanged outside this shell." >&2
+        fi
+      '';
+
       # Tools common to both shells (analysis + diffing).
       commonTools = [
         gruntz-cli
@@ -226,6 +244,7 @@
             echo "[gruntz] clang      : $GRUNTZ_CLANG (unwrapped; ghidra_metadata_generate/gen_labels)" >&2
             echo "[gruntz] cli        : 'gruntz <cmd>' (status/labels/structs/ghidra-refresh/todo)" >&2
             echo "[gruntz] base/MSVC  : 'nix develop .#build' for 'gruntz build'/'init' (VC5 + wine)" >&2
+            ${nvimShimHook}
             if [ ! -f "$GRUNTZ_DIR/build/clangd/compile_commands.json" ]; then
               echo "[gruntz] clangd     : generating LSP compile DB (first entry) ..." >&2
               python3 "$GRUNTZ_DIR/scripts/gruntz.py" clangd \
@@ -264,6 +283,7 @@
             echo "[gruntz] runtime    : $GRUNTZ_RUNTIME (MSS32/SMACKW32 DLLs)" >&2
             echo "[gruntz] target EXE : $GRUNTZ_EXE" >&2
             echo "[gruntz] cli        : 'gruntz <cmd>' (init/build/clangd/status/labels/structs/ghidra-refresh/todo)" >&2
+            ${nvimShimHook}
             # `gruntz init` is idempotent - run it on startup (set GRUNTZ_SKIP_INIT=1
             # to skip, e.g. when you only need clang/ghidra_metadata_generate and not the Ghidra DB).
             # First run builds the local env incl. the Ghidra DB (minutes); afterwards
