@@ -34,6 +34,22 @@ __declspec(dllimport) BOOL __stdcall PostMessageA(HWND hWnd, UINT Msg,
 // KERNEL32 Sleep - the version-mismatch handler pauses 250ms before bailing.
 // FF15 [IAT] indirect form against the engine's cached KERNEL32 import slot.
 __declspec(dllimport) void __stdcall Sleep(unsigned ms);
+// WINMM timeGetTime - the frame-sync / connect-wait clock; FF15 [IAT] indirect
+// against the engine's cached WINMM import slot (*0x6c4650).
+__declspec(dllimport) unsigned __stdcall timeGetTime(void);
+// USER32 GetAsyncKeyState - the connect wait polls VK_ESCAPE (0x1b) to abort;
+// FF15 [IAT] indirect against the cached USER32 slot (*0x6c4500).
+__declspec(dllimport) short __stdcall GetAsyncKeyState(int vKey);
+}
+
+// ---------------------------------------------------------------------------
+// Utils::WinAPI::ActiveWait - the engine busy-wait (?ActiveWait@WinAPI@Utils@@YAXI@Z,
+// __cdecl). Defined in another TU (Utils/WinAPI.cpp); here it is an external
+// no-body decl so the FrameSyncWait `call rel32` reloc-masks.
+namespace Utils {
+namespace WinAPI {
+void ActiveWait(unsigned int milliseconds);
+}
 }
 
 // ---------------------------------------------------------------------------
@@ -78,6 +94,11 @@ extern "C" int __stdcall MultiDispatch(const char *cmd, MultiCallbackFn cb, int 
 extern "C" void MultiOptionzCallback();
 extern "C" void MultiPauseCallback();
 extern "C" void MultiOutOfSyncCallback();
+extern "C" void MultiDropPlayerCallback();   // OnDropPlayer (MULTI_DROPPLAYER)
+
+// The pending drop's player id (-999 == none), an external engine global in
+// .data at 0x611d88 (DIR32 reloc-masked).
+extern "C" int g_dropPlayerId;    // 0x611d88
 
 // ---------------------------------------------------------------------------
 // Reentrancy guards (file-scope globals).
@@ -161,6 +182,52 @@ struct CNetPlayerNode {
     CNetPlayerEntry *m_8;               // +0x8  the payload entry
 };
 
+// ---------------------------------------------------------------------------
+// The per-player command-resend slot ResetPlayerCommands operates on. The
+// session sub-object (CNetMgr+0x520) keeps four of these in an inline array;
+// FindCmdSlot returns the one whose owning player matches. Only the fields the
+// reset reads are pinned. The three engine helpers it fires (slot methods,
+// external incremental-link thunks) clear the slot's command range.
+// ---------------------------------------------------------------------------
+struct CNetCmdSlot {
+    char  m_pad0[4];
+    int   m_4;                          // +0x4  "slot already reset" guard
+    char  m_pad8[0xc - 0x8];
+    int  *m_c;                          // +0xc  -> command-list head value
+    char  m_pad10[0x14 - 0x10];
+    int   m_14;                         // +0x14  base command sequence number
+    char  m_pad18[0x4c - 0x18];
+    int   m_4c[3];                      // +0x4c  command-range A (reset to -1)
+    int   m_58[3];                      // +0x58  command-range B (reset to -1)
+
+    void Touch();                       // c1390  latch the slot (sets +4, +8)
+    void RemoveCmd(int seq);            // c11b0  drop one queued command
+    void ResetTriple(int *p);           // c10a0  splat &-1 over three dwords
+};
+
+// The DirectPlay session sub-object at CNetMgr+0x520. Two helpers are reached
+// here (external __thiscall thunks): FindCmdSlot linear-scans the four inline
+// command slots for the one whose player id matches; ResetCmdBuffers zeroes the
+// head of each of those four slots.
+struct CNetSession {
+    CNetCmdSlot *FindCmdSlot(int playerId);   // c00a0
+    void ResetCmdBuffers();                   // c0070
+};
+
+// The command-dispatch queue hanging off the CNetMgr's m_4 sub-object at +0x6c;
+// ResetPlayerCommands fires its 2-arg dispatch helper (external thunk) for each
+// command sequence number in the reset range.
+struct CNetCmdQueue {
+    void Dispatch(int cmdHead, int seq);      // 423b40
+};
+
+// The m_4 sub-object, seen here only for its +0x6c command-dispatch queue (the
+// same object whose +0x4->+0x4 is the engine HWND - see CNetHwndHolder below).
+struct CNetSubObject {
+    char          m_pad0[0x6c];
+    CNetCmdQueue *m_6c;                 // +0x6c  the command-dispatch queue
+};
+
 class CNetMgr {
 public:
     void OnMultiOptions();
@@ -190,26 +257,65 @@ public:
     void SendStatFlag(int id, int flag);
     void SendStatPacket(int param, const void *packet, int size, int flag);
 
+    // ---- 0xbc0xx cluster ---------------------------------------------------
+    // The cluster's matched methods (defined in NetMgr.cpp).
+    unsigned FrameSyncWait();                 // 0xbc070
+    void     OnDropPlayer();                  // 0xbc110
+    int      WaitForConnect();                // 0xbca50
+    int      ResetPlayerCommands(int id);     // 0xbcf20
+
+    // External engine helpers the cluster fires through incremental-link thunks
+    // (__thiscall on `this` unless noted; bodies external/no-body so the
+    // `call rel32` reloc-masks).
+    //   SendStat3      (b9410) the 3-arg stat sender (id, value, flag)
+    //   ReportNetError (b7e30) status-bar diagnostic (string, level)
+    //   ReportStatusId (b7ec0) status-bar diagnostic by string-resource id
+    //   PollSession    (b95f0) pump the DirectPlay receive queue, no args
+    //   AckDropPlayer  (ba590) finalize a dropped player (id)
+    //   ResetCmdBuffers(c0070) zero the four per-slot command buffers, no args
+    void SendStat3(int id, unsigned value, int flag);
+    void ReportNetError(const char *msg, int level);
+    void ReportStatusId(UINT strId, int level);
+    void PollSession();
+    void AckDropPlayer(int id);
+
     char       m_pad0[4];              // +0x000
     void      *m_4;                     // +0x004
     char       m_pad8[0x1c - 0x8];
     int        m_1c;                    // +0x01c
     char       m_pad20[0x58 - 0x20];
     CNetPlayerNode *m_58;               // +0x58  head of the player list
-    char       m_pad5c[0x528 - 0x5c];
+    char       m_pad5c[0x520 - 0x5c];
+    CNetSession *m_520;                 // +0x520  the DirectPlay session sub-object
+    CNetMgr   *m_524;                   // +0x524  peer net-manager (owns the player list)
     int        m_528;                   // +0x528  branch selector
-    char       m_pad52c[0x570 - 0x52c];
+    int        m_52c;                   // +0x52c  "session terminated" flag
+    char       m_pad530[0x534 - 0x530];
+    int        m_534;                   // +0x534  host-mode flag
+    int        m_538;                   // +0x538  "removed from game" flag
+    char       m_pad53c[0x56c - 0x53c];
+    int        m_56c;                   // +0x56c  "game full" flag
     int        m_570;                   // +0x570  version-mismatch latch
     int        m_574;                   // +0x574
-    char       m_pad578[0x580 - 0x578];
+    int        m_578;                   // +0x578  sync-toggle gate
+    char       m_pad57c[0x580 - 0x57c];
     int        m_580;                   // +0x580  "connected" flag (gates report)
     int        m_584;                   // +0x584
-    char       m_pad588[0x598 - 0x588];
+    char       m_pad588[0x58c - 0x588];
+    int        m_58c;                   // +0x58c  "abort" flag set during connect-wait
+    char       m_pad590[0x598 - 0x590];
     CString  m_598;                   // +0x598
     char       m_pad59c[0x5a4 - 0x59c];
     DWORD      m_5a4;                   // +0x5a4
     DWORD      m_5a8;                   // +0x5a8
-    char       m_pad5ac[0x5f0 - 0x5ac];
+    int        m_5ac;                   // +0x5ac  "game closed" flag
+    char       m_pad5b0[0x5bc - 0x5b0];
+    int        m_5bc;                   // +0x5bc  the local player descriptor ptr
+    int        m_5c0;                   // +0x5c0  the local player id (from +0x5bc[+4])
+    char       m_pad5c4[0x5e0 - 0x5c4];
+    unsigned   m_5e0;                   // +0x5e0  last frame-sync delta
+    unsigned   m_5e4;                   // +0x5e4  last frame-sync timestamp
+    char       m_pad5e8[0x5f0 - 0x5e8];
     DWORD      m_5f0[4];                // +0x5f0  per-channel latency values
 
     // Engine-label backlog stubs.
@@ -221,11 +327,7 @@ public:
     void Stub_0b8b10();
     void Stub_0b8cf0();
     void Stub_0b9750();
-    void Stub_0bc070();
-    void Stub_0bc110();
     void Stub_0bc460();
-    void Stub_0bca50();
-    void Stub_0bcf20();
     void Stub_1780b0();
     void Stub_178280();
     void Stub_1782d0();

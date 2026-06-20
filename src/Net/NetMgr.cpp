@@ -26,6 +26,8 @@ CGameMgr *g_pGameMgr;
 static int g_optionzGuard;
 static int g_pauseGuard;
 static int g_sharedFlag;
+static int g_dropGuard;     // OnDropPlayer reentrancy guard (DAT_00648d10)
+static int g_syncToggle;    // FrameSyncWait alternating low-bit flag (DAT_00648d0c)
 
 // ---------------------------------------------------------------------------
 // CNetMgr::OnMultiOptions
@@ -169,17 +171,74 @@ void CNetMgr::Stub_0b8cf0() {}
 RVA(0x0b9750, 0x74e)
 void CNetMgr::Stub_0b9750() {}
 
-// @confidence: high
-// @source: call-xref
-// @stub
+// ---------------------------------------------------------------------------
+// CNetMgr::FrameSyncWait  (__thiscall).
+// Paces the network frame: samples timeGetTime, records the delta since the
+// last call (m_5e0) and the new stamp (m_5e4). If the frame came in under 0x1f
+// ms it busy-waits the remainder (ActiveWait) and re-stamps; otherwise, if the
+// frame ran long (> 0x28 ms) and the sync gate m_578 is set, it flips the
+// global low-bit sync toggle and returns it.
 RVA(0x0bc070, 0x73)
-void CNetMgr::Stub_0bc070() {}
+unsigned CNetMgr::FrameSyncWait()
+{
+    unsigned now   = timeGetTime();
+    unsigned delta = now - m_5e4;
+    unsigned ret   = 0;
+    m_5e0 = delta;
+    m_5e4 = now;
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
+    if (delta <= 0x1e) {
+        Utils::WinAPI::ActiveWait(0x1f - delta);
+        m_5e4 = (now - m_5e0) + 0x1f;
+        return 0;
+    }
+    if (delta > 0x28 && m_578) {
+        ret = g_syncToggle ^ 1;
+        g_syncToggle = ret;
+    }
+    return ret;
+}
+
+// ---------------------------------------------------------------------------
+// CNetMgr::OnDropPlayer  (__thiscall).
+// Reentrancy-guarded fire of the MULTI_DROPPLAYER command. Clears m_584,
+// dispatches, then switches on the result: 0x4cd just resets the command
+// buffers; 0x4ce resets and posts WM_COMMAND(0x8023) to the engine window;
+// 0x4ea reports the leaving player (stat 0x411 if still present), broadcasts
+// the drop (stat 0x410), acks it, and resets the buffers.
 RVA(0x0bc110, 0xf6)
-void CNetMgr::Stub_0bc110() {}
+void CNetMgr::OnDropPlayer()
+{
+    if (g_dropGuard)
+        return;
+
+    m_584 = 0;
+    g_dropGuard = 1;
+    int r = MultiDispatch("MULTI_DROPPLAYER", MultiDropPlayerCallback, 0);
+    g_dropGuard = 0;
+    g_sharedFlag = 0;
+
+    switch (r) {
+    case 0x4cd:
+        m_520->ResetCmdBuffers();
+        break;
+    case 0x4ce: {
+        m_520->ResetCmdBuffers();
+        void *hwnd = ((CNetHwndHolder *)((CNetHwndHolder *)m_4)->m_4)->m_4;
+        PostMessageA((HWND)hwnd, 0x111, 0x8023, 0);
+        break;
+    }
+    case 0x4ea:
+        if (g_dropPlayerId != -999) {
+            if (m_524->FindPlayerById(g_dropPlayerId))
+                SendStat3(g_dropPlayerId, 0x411, 1);
+        }
+        SendNetStat(0x410, g_dropPlayerId, 1);
+        AckDropPlayer(g_dropPlayerId);
+        m_520->ResetCmdBuffers();
+        break;
+    }
+}
 
 // @confidence: med
 // @source: decomp-xref
@@ -187,17 +246,94 @@ void CNetMgr::Stub_0bc110() {}
 RVA(0x0bc460, 0x24e)
 void CNetMgr::Stub_0bc460() {}
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
+// ---------------------------------------------------------------------------
+// CNetMgr::WaitForConnect  (__thiscall).
+// Blocks (pumping the session) until the local player is admitted to the host's
+// game or the attempt fails. Bails immediately if there is no DirectPlay
+// interface (m_524) or local player descriptor (m_5bc). Announces "connecting"
+// (stat 0x415), clears the admit flag m_58c, then loops: each pass times out at
+// 60s or on Esc (-> status 0x8022, fail), pumps the receive queue, and reports +
+// fails on any of the session-state flags (terminated / removed / closed / full
+// / version-mismatch). Returns 1 once m_58c latches (admitted), 0 on any failure.
 RVA(0x0bca50, 0x155)
-void CNetMgr::Stub_0bca50() {}
+int CNetMgr::WaitForConnect()
+{
+    if (m_524 == 0)
+        return 0;
+    if (m_5bc == 0)
+        return 0;
 
-// @confidence: low
-// @source: call-xref
-// @stub
+    SendStatFlag(0x415, 1);
+    m_58c = 0;
+    unsigned start = timeGetTime();
+    if (m_58c != 0)
+        return 1;
+
+    do {
+        unsigned now = timeGetTime();
+        if (now > start + 60000 ||
+            ((int)GetAsyncKeyState(0x1b) & 0x80000000)) {
+            ReportStatusId(0x8022, 0);
+            return 0;
+        }
+        PollSession();
+        if (m_52c) {
+            ReportNetError("The game session has been terminated.", 0);
+            return 0;
+        }
+        if (m_538) {
+            ReportNetError("You have been removed from the game by the host.", 0);
+            return 0;
+        }
+        if (m_5ac) {
+            ReportNetError("This game is closed.", 0);
+            return 0;
+        }
+        if (m_56c) {
+            ReportNetError("This game is already full.", 0);
+            return 0;
+        }
+        if (m_570) {
+            ReportNetError(
+                "This version is not the same as the host computer's version of the game.",
+                0);
+            return 0;
+        }
+    } while (m_58c == 0);
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CNetMgr::ResetPlayerCommands  (__thiscall).
+// Flushes the resend buffers for one player's command slot. No-op unless
+// connected (m_580). Looks the player's slot up in the session (m_520); if found
+// and not already reset (slot->m_4 == 0), latches it, then for each command
+// sequence number in the slot's window ([(seq0+1)..(seq0+1)+3] scaled by the
+// per-command delay m_5a4) re-dispatches the command through m_4's queue and
+// drops it from the slot. Finally clears the slot's two command ranges.
 RVA(0x0bcf20, 0xaf)
-void CNetMgr::Stub_0bcf20() {}
+int CNetMgr::ResetPlayerCommands(int id)
+{
+    if (m_580 == 0)
+        return 0;
+
+    CNetCmdSlot *slot = m_520->FindCmdSlot(id);
+    if (slot == 0)
+        return 0;
+    if (slot->m_4 != 0)
+        return 0;
+
+    slot->Touch();
+    int seq = (slot->m_14 + 1) * (int)m_5a4;
+    int end = seq + (int)m_5a4 * 3;
+    for (; seq < end; seq++) {
+        ((CNetSubObject *)m_4)->m_6c->Dispatch(*slot->m_c, seq);
+        slot->RemoveCmd(seq / (int)m_5a4);
+    }
+    slot->ResetTriple(slot->m_4c);
+    slot->ResetTriple(slot->m_58);
+    return 1;
+}
 
 // ---------------------------------------------------------------------------
 // CNetMgr::ReportAckLatency  (__thiscall).
