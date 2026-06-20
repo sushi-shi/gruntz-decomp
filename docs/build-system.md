@@ -255,6 +255,16 @@ does not exist yet is paired against an empty `dummy.obj` so it still lists at
    - `// @rva-symbol: <mangled> <rva> [<size>]` — a comment for a thunk with no
      source body (a `??_G` deleting dtor) that can't hold an attribute.
 
+   **Naming the externs a match references.** Calls/loads to engine functions or
+   globals you haven't reconstructed delink as `FUN_<rva>`/`DAT_`/`s_…`, so the
+   caller's relocs don't pair (fuzzy-not-exact). `python -m gruntz.analysis.extern_harvest`
+   recovers each one's retail address by reloc-correlation (base-obj reloc name ↔
+   the retail call target) and flags ALIASES (an address already labeled under
+   another name = our caller misnames an already-matched function → rename the
+   caller, don't stub). Stub the rest in `src/Stub/` with `RVA()` + a
+   `@confidence`/`@source`/`@stub` block, reproducing the exact mangling
+   (`SYMBOL(_name)` pins a C-linkage `_name`/`_name@N`). See CLAUDE.md Conventions.
+
    `labels.py` reads `RVA`/`SYMBOL` from **LLVM IR** (`@llvm.global.annotations`
    pairs the mangled symbol DIRECTLY with the annotation — no positional join);
    `DATA` from the clang AST (an `extern`'s annotation is dropped from IR). The

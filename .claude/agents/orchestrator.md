@@ -282,6 +282,19 @@ must STOP and report, not force the wrong class.
    inline-callee can poison it) and run the §2a isolation test before charging it
    to entropy.
 6. Navigate with `python -m gruntz.analysis.clangd_query def|refs|hover|symbol`.
+7. **Name the externs the function references.** Its `call`/data-load targets to
+   *unreconstructed* engine functions/globals are named `FUN_<rva>`/`DAT_`/`s_…`
+   by the delinker, so those relocs don't pair and the caller stays
+   **fuzzy-not-exact**. `python -m gruntz.analysis.extern_harvest` correlates each
+   matched (fuzzy-100) function's base-obj relocs (real `cl` names) with the
+   retail call target, recovering `rva → symbol` + a consensus audit. Stub each in
+   `src/Stub/` (empty body + `RVA()` + the `@confidence`/`@source: reloc-correlation`
+   /`@stub` block), reproducing the EXACT mangling (`SYMBOL(_name)` for C-linkage).
+   **Heed the ALIAS report:** an address already labeled under another name means
+   our caller MISNAMES an already-matched function → rename the *caller*, don't
+   stub (e.g. `WwdInputStream`==`CFileIO`). A caller goes exact only when its WHOLE
+   referent set is named (incl. `$S` string constants), so expect match_percent to
+   rise before the exact count does; the new stubs grow the 0% backlog (§3, §8).
 
 ---
 

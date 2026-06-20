@@ -81,3 +81,22 @@ Gotchas baked in from reading the delinker source:
   `gruntz.match.verify_stubs`' stub-vs-matched cross-check. The goal is to **move
   each stub into its real class's TU** and reconstruct it there; `src/Stub/`
   shrinks toward empty. See `src/Stub/All.cpp`.
+- **Name the externs a matched function references.** A matched function's
+  calls/data-loads to engine functions or globals we haven't reconstructed are
+  named `FUN_<rva>`/`DAT_`/`s_…` by the delinker, so those relocs don't pair and
+  the caller stays *fuzzy-not-exact*. Give each a name by **stubbing it** in
+  `src/Stub/` (empty body + `RVA(rva, size)`, the `@confidence`/`@source`/`@stub`
+  block). Recover the retail address by **reloc-correlation**:
+  `python -m gruntz.analysis.extern_harvest` pairs each matched (fuzzy-100)
+  function's base-obj reloc (the real `cl` name) with the retail call/data target
+  read from the EXE, and audits consensus (one symbol = one address). **Check the
+  ALIAS report FIRST:** if the address is already labeled under another name, our
+  caller MISNAMES an already-matched function — rename the *caller* to the
+  canonical name, do NOT add a stub. The stub must reproduce the EXACT mangling
+  (access / cc / const / struct-vs-class / return+param types); for a C-linkage
+  `_name`/`_name@N` pin it with `SYMBOL(_name)` (clang's IR drops the i386
+  underscore). A caller flips to *exact* only when its WHOLE referent set is named
+  (functions + data + the `$S` string constants): naming a `call` target raises
+  objdiff per-fn `match_percent` but not the exact-bytes count. Placeholder names
+  of the shape `Class_Method` (a free fn taking `Class*`) are usually a mis-shaped
+  method — flag, don't trust.
