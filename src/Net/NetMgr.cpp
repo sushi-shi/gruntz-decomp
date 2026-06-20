@@ -4,6 +4,12 @@
 //   CNetMgr::OnMultiPause
 //   CNetMgr::OnOutOfSync
 //   CNetMgr::ApplyCmdDelayDefaults
+//   CNetMgr::GetMaxAckLatency   - max ack-latency over the four network slots
+//   CNetMgr::ReportAckLatency   - ships that latency to the engine as stat 0x421
+//   CNetMgr::FindPlayerById     - id lookup over the m_58 player list
+//
+// (CNetMgr::ReportError, the DirectPlay HRESULT->string formatter, lives in its
+// own TU - src/Net/NetMgrReportError.cpp / the netmgrerror unit.)
 //
 // The three message handlers fire a multiplayer command through the engine
 // dispatcher (MultiDispatch, external, via incremental-link thunk), guarded by
@@ -192,17 +198,46 @@ void CNetMgr::Stub_0bca50() {}
 RVA(0x0bcf20, 0xaf)
 void CNetMgr::Stub_0bcf20() {}
 
-// @confidence: low
-// @source: call-xref
-// @stub
+// ---------------------------------------------------------------------------
+// CNetMgr::ReportAckLatency  (__thiscall).
+// Thin wrapper: samples the current worst ack latency and ships it to the
+// engine command dispatcher as stat 0x421.
 RVA(0x0bd000, 0x19)
-void CNetMgr::Stub_0bd000() {}
+void CNetMgr::ReportAckLatency()
+{
+    unsigned latency = GetMaxAckLatency();
+    SendNetStat(0x421, latency, 0);
+}
 
-// @confidence: med
-// @source: call-xref
-// @stub
+// ---------------------------------------------------------------------------
+// CNetMgr::GetMaxAckLatency  (pure leaf; __thiscall).
+// Returns the largest latency value across the four network slots. When the
+// branch selector m_528 is set the values come from the inline m_5f0[4] channel
+// array (every entry counted); otherwise they come from the four per-player
+// slots hanging off m_4 (stride 0x238), each counted only when BOTH of its
+// "slot active" gate flags (m_164, m_170) are nonzero.
 RVA(0x0bd030, 0x5d)
-void CNetMgr::Stub_0bd030() {}
+unsigned CNetMgr::GetMaxAckLatency()
+{
+    unsigned max = 0;
+
+    if (m_528 != 0) {
+        for (int i = 0; i < 4; i++) {
+            if (m_5f0[i] > max)
+                max = m_5f0[i];
+        }
+    } else {
+        CNetPlayerSlot *slot = (CNetPlayerSlot *)m_4;
+        for (int i = 0; i < 4; i++) {
+            if (slot->m_164 && slot->m_170) {
+                if (slot->m_37c > max)
+                    max = slot->m_37c;
+            }
+            slot = (CNetPlayerSlot *)((char *)slot + 0x238);
+        }
+    }
+    return max;
+}
 
 // @confidence: high
 // @source: call-xref
@@ -215,12 +250,6 @@ void CNetMgr::Stub_0bd0b0() {}
 // @stub
 RVA(0x0bd180, 0x66)
 void CNetMgr::Stub_0bd180() {}
-
-// @confidence: high
-// @source: tomalla
-// @stub
-RVA(0x1776a0, 0xa01)
-void CNetMgr::Stub_1776a0() {}
 
 // @confidence: high
 // @source: import:DPLAYX.dll!#1
@@ -246,11 +275,22 @@ void CNetMgr::Stub_1782d0() {}
 RVA(0x178e20, 0x33)
 void CNetMgr::Stub_178e20() {}
 
-// @confidence: med
-// @source: call-xref
-// @stub
+// ---------------------------------------------------------------------------
+// CNetMgr::FindPlayerById  (pure leaf; __thiscall).
+// Walks the m_58 player list and returns the first entry whose id (+0x4) equals
+// the requested id, or null if the list is empty / no entry matches.
 RVA(0x178e90, 0x20)
-void CNetMgr::Stub_178e90() {}
+CNetPlayerEntry *CNetMgr::FindPlayerById(int id)
+{
+    CNetPlayerNode *node = m_58;
+    while (node != 0) {
+        CNetPlayerEntry *entry = node->m_8;
+        node = node->m_next;
+        if (entry->m_4 == id)
+            return entry;
+    }
+    return 0;
+}
 
 // @confidence: med
 // @source: call-xref

@@ -189,6 +189,11 @@ source = "src/Net/NetMgr.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "netmgrerror"
+source = "src/Net/NetMgrReportError.cpp"
+flags = "base"
+
+[[unit]]
 unit = "winmain"
 source = "src/Gruntz/WinMain.cpp"
 flags = "eh"

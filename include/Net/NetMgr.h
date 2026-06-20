@@ -97,18 +97,56 @@ extern "C" void MultiOutOfSyncCallback();
 //   +0x5a4 m_5a4 : the _CmdDelay value persisted by ApplyCmdDelayDefaults.
 //   +0x5a8 m_5a8 : the _Resend value persisted by ApplyCmdDelayDefaults.
 // ---------------------------------------------------------------------------
+// One per-player slot in the m_4 sub-object's slot array (stride 0x238). Only
+// the three dwords GetMaxAckLatency reads are pinned: two "slot active" gate
+// flags and the slot's current latency value.
+struct CNetPlayerSlot {
+    char  m_pad0[0x164];
+    DWORD m_164;                        // +0x164  slot-active gate A
+    char  m_pad168[0x170 - 0x168];
+    DWORD m_170;                        // +0x170  slot-active gate B
+    char  m_pad174[0x37c - 0x174];
+    DWORD m_37c;                        // +0x37c  the slot's latency value
+};
+
+// A payload entry found through the m_58 player list. FindPlayerById matches on
+// the entry's +0x4 id field.
+struct CNetPlayerEntry {
+    char  m_pad0[4];
+    int   m_4;                          // +0x4  the entry's id (the lookup key)
+};
+
+// A singly-linked node in the m_58 player list: +0x0 next, +0x8 payload.
+struct CNetPlayerNode {
+    CNetPlayerNode  *m_next;            // +0x0
+    char             m_pad4[4];
+    CNetPlayerEntry *m_8;               // +0x8  the payload entry
+};
+
 class CNetMgr {
 public:
     void OnMultiOptions();
     void OnMultiPause();
     void OnOutOfSync();
     void ApplyCmdDelayDefaults();
+    unsigned GetMaxAckLatency();
+    void ReportAckLatency();
+    CNetPlayerEntry *FindPlayerById(int id);
+
+    // External per-instance command/stat dispatcher (reached through an
+    // incremental-link thunk so its `call rel32` reloc-masks; __thiscall, ecx =
+    // this). No body here - the engine routine is external.
+    void SendNetStat(int id, unsigned value, int flag);
 
     char       m_pad0[4];              // +0x000
     void      *m_4;                     // +0x004
     char       m_pad8[0x1c - 0x8];
     int        m_1c;                    // +0x01c
-    char       m_pad20[0x574 - 0x20];
+    char       m_pad20[0x58 - 0x20];
+    CNetPlayerNode *m_58;               // +0x58  head of the player list
+    char       m_pad5c[0x528 - 0x5c];
+    int        m_528;                   // +0x528  branch selector
+    char       m_pad52c[0x574 - 0x52c];
     int        m_574;                   // +0x574
     char       m_pad578[0x584 - 0x578];
     int        m_584;                   // +0x584
@@ -117,6 +155,8 @@ public:
     char       m_pad59c[0x5a4 - 0x59c];
     DWORD      m_5a4;                   // +0x5a4
     DWORD      m_5a8;                   // +0x5a8
+    char       m_pad5ac[0x5f0 - 0x5ac];
+    DWORD      m_5f0[4];                // +0x5f0  per-channel latency values
 
     // Engine-label backlog stubs.
     void Stub_0b5460();
@@ -132,16 +172,12 @@ public:
     void Stub_0bc460();
     void Stub_0bca50();
     void Stub_0bcf20();
-    void Stub_0bd000();
-    void Stub_0bd030();
     void Stub_0bd0b0();
     void Stub_0bd180();
-    void Stub_1776a0();
     void Stub_1780b0();
     void Stub_178280();
     void Stub_1782d0();
     void Stub_178e20();
-    void Stub_178e90();
     void Stub_178eb0();
     void Stub_178ef0();
     void Stub_178fc0();
