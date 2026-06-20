@@ -218,15 +218,13 @@ int InterfaceObject::IsInterface5()
 RVA(0x179680, 0x3a)
 void CWapNodeB::FreeStrings()
 {
-    void *p1 = *(void **)((char *)this + 0x34);
-    if (p1) {
-        operator delete(p1);
-        *(void **)((char *)this + 0x34) = 0;
+    if (m_buf34) {
+        operator delete(m_buf34);
+        m_buf34 = 0;
     }
-    void *p2 = *(void **)((char *)this + 0x38);
-    if (p2) {
-        operator delete(p2);
-        *(void **)((char *)this + 0x38) = 0;
+    if (m_buf38) {
+        operator delete(m_buf38);
+        m_buf38 = 0;
     }
     m_type = 0;
 }
