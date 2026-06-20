@@ -24,126 +24,126 @@ Scaffold file column: where the stub lives under `structure/`.
 | CGruntzApp | game | C:\Proj\Gruntz | `.?AVCGruntzApp@@` | layout | rtti+tomalla | graduated: src/Gruntz/GruntzApp.cpp |
 | CGruntzWnd | game | C:\Proj\Gruntz | `.?AVCGruntzWnd@@` | layout | rtti+tomalla | src/Gruntz/GruntzWnd.cpp (matched ctor) |
 | CGruntzMgr | game | C:\Proj\Gruntz\GruntzMgr.cpp | `.?AVCGruntzMgr@@` | layout | rtti+tomalla | game/cgruntzmgr.h |
-| CGruntzMapMgr | game | C:\Proj\Gruntz | `.?AVCGruntzMapMgr@@` | name | rtti+strings | game/mapmgr.h |
-| CMapMgr | game/wap32 | (engine) | `.?AVCMapMgr@@` | name | rtti | game/mapmgr.h |
+| CGruntzMapMgr | game | C:\Proj\Gruntz | `.?AVCGruntzMapMgr@@` | name | rtti+strings | src/ (header removed; layout in src/) |
+| CMapMgr | game/wap32 | (engine) | `.?AVCMapMgr@@` | name | rtti | src/ (header removed; layout in src/) |
 | CNetMgr | game | C:\Proj\NetMgr\NetMgr.cpp | `.?AVCNetMgr@@` | layout(partial) | rtti+tomalla | src/Net/NetMgr.h (matched) |
-| CGrunt | game | C:\Proj\Gruntz | `.?AVCGrunt@@` | fields-order | rtti+strings | game/grunt.h |
-| CGruntVoice | game | C:\Proj\Gruntz | `.?AVCGruntVoice@@` | name | rtti | game/grunt.h |
-| CGruntPuddle | game | C:\Proj\Gruntz | `.?AVCGruntPuddle@@` | name | rtti | game/grunt.h |
-| CGruntCreationPoint | game | C:\Proj\Gruntz | `.?AVCGruntCreationPoint@@` | name | rtti | game/grunt.h |
-| CGruntStartingPoint | game | C:\Proj\Gruntz | `.?AVCGruntStartingPoint@@` | name | rtti | game/grunt.h |
-| CUserBase | game | C:\Proj\Gruntz | `.?AVCUserBase@@` | name | rtti | game/userlogic.h |
-| CUserLogic | game | C:\Proj\Gruntz | `.?AVCUserLogic@@` | name (dispatch shape known) | rtti+strings | game/userlogic.h |
-| CState | game | C:\Proj\Gruntz | `.?AVCState@@` | name | rtti | game/states.h |
-| CSplashState | game | C:\Proj\Gruntz | `.?AVCSplashState@@` | name | rtti+strings | game/states.h |
-| CMenuState | game | C:\Proj\Gruntz | `.?AVCMenuState@@` | name | rtti+strings | game/states.h |
-| CHelpState | game | C:\Proj\Gruntz | `.?AVCHelpState@@` | name | rtti+strings | game/states.h |
-| CCreditsState | game | C:\Proj\Gruntz | `.?AVCCreditsState@@` | name | rtti+strings | game/states.h |
-| CAttract | game | C:\Proj\Gruntz | `.?AVCAttract@@` | name | rtti+strings | game/states.h |
-| CDemo | game | C:\Proj\Gruntz | `.?AVCDemo@@` | name | rtti+strings | game/states.h |
-| CPlay | game | C:\Proj\Gruntz | `.?AVCPlay@@` | name (+1 tomalla offset note) | rtti+tomalla | game/states.h |
-| CMulti | game | C:\Proj\Gruntz | `.?AVCMulti@@` | name | rtti+strings | game/states.h |
-| CBootyState | game | C:\Proj\Gruntz | `.?AVCBootyState@@` | name | rtti+strings | game/states.h |
-| CMultiBootyState | game | C:\Proj\Gruntz | `.?AVCMultiBootyState@@` | name | rtti+strings | game/states.h |
-| CTileTrigger | game | C:\Proj\Gruntz | `.?AVCTileTrigger@@` | name | rtti+strings | game/triggers.h |
+| CGrunt | game | C:\Proj\Gruntz | `.?AVCGrunt@@` | fields-order | rtti+strings | src/ (header removed; layout in src/) |
+| CGruntVoice | game | C:\Proj\Gruntz | `.?AVCGruntVoice@@` | name | rtti | src/ (header removed; layout in src/) |
+| CGruntPuddle | game | C:\Proj\Gruntz | `.?AVCGruntPuddle@@` | name | rtti | src/ (header removed; layout in src/) |
+| CGruntCreationPoint | game | C:\Proj\Gruntz | `.?AVCGruntCreationPoint@@` | name | rtti | src/ (header removed; layout in src/) |
+| CGruntStartingPoint | game | C:\Proj\Gruntz | `.?AVCGruntStartingPoint@@` | name | rtti | src/ (header removed; layout in src/) |
+| CUserBase | game | C:\Proj\Gruntz | `.?AVCUserBase@@` | name | rtti | src/ (header removed; layout in src/) |
+| CUserLogic | game | C:\Proj\Gruntz | `.?AVCUserLogic@@` | name (dispatch shape known) | rtti+strings | src/ (header removed; layout in src/) |
+| CState | game | C:\Proj\Gruntz | `.?AVCState@@` | name | rtti | src/ (header removed; layout in src/) |
+| CSplashState | game | C:\Proj\Gruntz | `.?AVCSplashState@@` | name | rtti+strings | src/ (header removed; layout in src/) |
+| CMenuState | game | C:\Proj\Gruntz | `.?AVCMenuState@@` | name | rtti+strings | src/ (header removed; layout in src/) |
+| CHelpState | game | C:\Proj\Gruntz | `.?AVCHelpState@@` | name | rtti+strings | src/ (header removed; layout in src/) |
+| CCreditsState | game | C:\Proj\Gruntz | `.?AVCCreditsState@@` | name | rtti+strings | src/ (header removed; layout in src/) |
+| CAttract | game | C:\Proj\Gruntz | `.?AVCAttract@@` | name | rtti+strings | src/ (header removed; layout in src/) |
+| CDemo | game | C:\Proj\Gruntz | `.?AVCDemo@@` | name | rtti+strings | src/ (header removed; layout in src/) |
+| CPlay | game | C:\Proj\Gruntz | `.?AVCPlay@@` | name (+1 tomalla offset note) | rtti+tomalla | src/ (header removed; layout in src/) |
+| CMulti | game | C:\Proj\Gruntz | `.?AVCMulti@@` | name | rtti+strings | src/ (header removed; layout in src/) |
+| CBootyState | game | C:\Proj\Gruntz | `.?AVCBootyState@@` | name | rtti+strings | src/ (header removed; layout in src/) |
+| CMultiBootyState | game | C:\Proj\Gruntz | `.?AVCMultiBootyState@@` | name | rtti+strings | src/ (header removed; layout in src/) |
+| CTileTrigger | game | C:\Proj\Gruntz | `.?AVCTileTrigger@@` | name | rtti+strings | src/ (header removed; layout in src/) |
 | CTileTriggerLogic | game | C:\Proj\Gruntz | `.?AVCTileTriggerLogic@@` | layout | rtti+matched | graduated: src/Gruntz/TileTriggerLogic.h |
-| CTileTriggerSwitch | game | C:\Proj\Gruntz | `.?AVCTileTriggerSwitch@@` | name | rtti+strings | game/triggers.h |
-| CTileTriggerSwitchLogic | game | C:\Proj\Gruntz | `.?AVCTileTriggerSwitchLogic@@` | name | rtti+strings | game/triggers.h |
-| CTileTriggerTransition | game | C:\Proj\Gruntz | `.?AVCTileTriggerTransition@@` | name | rtti | game/triggers.h |
-| CTileMultiTriggerSwitchLogic | game | C:\Proj\Gruntz | `.?AVCTileMultiTriggerSwitchLogic@@` | name | rtti+strings | game/triggers.h |
-| CTileExclusiveTriggerSwitchLogic | game | C:\Proj\Gruntz | `.?AVCTileExclusiveTriggerSwitchLogic@@` | name | rtti | game/triggers.h |
-| CTileTimeTriggerLogic | game | C:\Proj\Gruntz | `.?AVCTileTimeTriggerLogic@@` | name | rtti+strings | game/triggers.h |
-| CTileTimeTriggerSwitchLogic | game | C:\Proj\Gruntz | `.?AVCTileTimeTriggerSwitchLogic@@` | name | rtti+strings | game/triggers.h |
-| CTileSecretTrigger | game | C:\Proj\Gruntz | `.?AVCTileSecretTrigger@@` | name | rtti+strings | game/triggers.h |
-| CTileSecretTriggerLogic | game | C:\Proj\Gruntz | `.?AVCTileSecretTriggerLogic@@` | name | rtti+strings | game/triggers.h |
-| CTileSecretTriggerSwitchLogic | game | C:\Proj\Gruntz | `.?AVCTileSecretTriggerSwitchLogic@@` | name | rtti+strings | game/triggers.h |
-| CCheckpointTrigger | game | C:\Proj\Gruntz | `.?AVCCheckpointTrigger@@` | name | rtti | game/triggers.h |
-| CCheckpointTriggerSwitchLogic | game | C:\Proj\Gruntz | `.?AVCCheckpointTriggerSwitchLogic@@` | name | rtti | game/triggers.h |
-| CSecretLevelTrigger | game | C:\Proj\Gruntz | `.?AVCSecretLevelTrigger@@` | name | rtti | game/triggers.h |
-| CSecretTeleporterTrigger | game | C:\Proj\Gruntz | `.?AVCSecretTeleporterTrigger@@` | name | rtti | game/triggers.h |
-| CExitTrigger | game | C:\Proj\Gruntz | `.?AVCExitTrigger@@` | name | rtti | game/triggers.h |
-| CVoiceTrigger | game | C:\Proj\Gruntz | `.?AVCVoiceTrigger@@` | name | rtti | game/triggers.h |
-| CActionArea | game | C:\Proj\Gruntz | `.?AVCActionArea@@` | name | rtti | game/triggers.h |
-| CGuardPoint | game | C:\Proj\Gruntz | `.?AVCGuardPoint@@` | name | rtti | game/triggers.h |
-| CWayPoint | game | C:\Proj\Gruntz | `.?AVCWayPoint@@` | name | rtti | game/triggers.h |
-| CCoveredPowerup | game | C:\Proj\Gruntz | `.?AVCCoveredPowerup@@` | name | rtti+strings | game/triggers.h |
-| CCoveredPowerupLogic | game | C:\Proj\Gruntz | `.?AVCCoveredPowerupLogic@@` | name | rtti | game/triggers.h |
-| CMovingLogic | game | C:\Proj\Gruntz | `.?AVCMovingLogic@@` | name | rtti | game/triggers.h |
-| CGiantRock | game | C:\Proj\Gruntz | `.?AVCGiantRock@@` | name | rtti+strings | game/hazards.h |
-| CGiantRockLogic | game | C:\Proj\Gruntz | `.?AVCGiantRockLogic@@` | name | rtti+strings | game/hazards.h |
-| CRollingBall | game | C:\Proj\Gruntz | `.?AVCRollingBall@@` | name | rtti+strings | game/hazards.h |
-| CRainCloud | game | C:\Proj\Gruntz | `.?AVCRainCloud@@` | name | rtti | game/hazards.h |
-| CSpotLight | game | C:\Proj\Gruntz | `.?AVCSpotLight@@` | name | rtti | game/hazards.h |
-| CLightFx | game | C:\Proj\Gruntz | `.?AVCLightFx@@` | name | rtti | game/hazards.h |
-| CUFO | game | C:\Proj\Gruntz | `.?AVCUFO@@` | name | rtti+strings | game/hazards.h |
-| CPathHazard | game | C:\Proj\Gruntz | `.?AVCPathHazard@@` | name | rtti | game/hazards.h |
-| CStaticHazard | game | C:\Proj\Gruntz | `.?AVCStaticHazard@@` | name | rtti | game/hazards.h |
-| CKitchenSlime | game | C:\Proj\Gruntz | `.?AVCKitchenSlime@@` | name | rtti | game/hazards.h |
-| CToobSpikez | game | C:\Proj\Gruntz | `.?AVCToobSpikez@@` | name | rtti | game/hazards.h |
-| CBrickz | game | C:\Proj\Gruntz | `.?AVCBrickz@@` | name | rtti+strings | game/hazards.h |
-| CProjectile | game | C:\Proj\Gruntz | `.?AVCProjectile@@` | name | rtti | game/projectiles.h |
-| CBoomerang | game | C:\Proj\Gruntz | `.?AVCBoomerang@@` | name | rtti | game/projectiles.h |
-| CTimeBomb | game | C:\Proj\Gruntz | `.?AVCTimeBomb@@` | name | rtti+strings | game/projectiles.h |
-| CExplosion | game | C:\Proj\Gruntz | `.?AVCExplosion@@` | name | rtti | game/projectiles.h |
-| CParticlez | game | C:\Proj\Gruntz | `.?AVCParticlez@@` | name | rtti | game/projectiles.h |
-| CEyeCandy | game | C:\Proj\Gruntz | `.?AVCEyeCandy@@` | name | rtti | game/eyecandy.h |
-| CEyeCandyAni | game | C:\Proj\Gruntz | `.?AVCEyeCandyAni@@` | name | rtti | game/eyecandy.h |
-| CFrontCandy | game | C:\Proj\Gruntz | `.?AVCFrontCandy@@` | name | rtti | game/eyecandy.h |
-| CFrontCandyAni | game | C:\Proj\Gruntz | `.?AVCFrontCandyAni@@` | name | rtti | game/eyecandy.h |
-| CBehindCandy | game | C:\Proj\Gruntz | `.?AVCBehindCandy@@` | name | rtti | game/eyecandy.h |
-| CBehindCandyAni | game | C:\Proj\Gruntz | `.?AVCBehindCandyAni@@` | name | rtti | game/eyecandy.h |
-| CMenuSparkle | game | C:\Proj\Gruntz | `.?AVCMenuSparkle@@` | name | rtti | game/eyecandy.h |
-| CToyPeek | game | C:\Proj\Gruntz | `.?AVCToyPeek@@` | name | rtti | game/eyecandy.h |
-| CAniCycle | game | C:\Proj\Gruntz | `.?AVCAniCycle@@` | name | rtti | game/eyecandy.h |
-| CSimpleAnimation | game | C:\Proj\Gruntz | `.?AVCSimpleAnimation@@` | name | rtti | game/eyecandy.h |
-| CSingleAnimation | game | C:\Proj\Gruntz | `.?AVCSingleAnimation@@` | name | rtti | game/eyecandy.h |
-| CAmbientSound | game | C:\Proj\Gruntz | `.?AVCAmbientSound@@` | name | rtti+strings | game/ambient_sound.h |
-| CAmbientPosSound | game | C:\Proj\Gruntz | `.?AVCAmbientPosSound@@` | name | rtti | game/ambient_sound.h |
-| CRandomAmbientSound | game | C:\Proj\Gruntz | `.?AVCRandomAmbientSound@@` | name | rtti | game/ambient_sound.h |
+| CTileTriggerSwitch | game | C:\Proj\Gruntz | `.?AVCTileTriggerSwitch@@` | name | rtti+strings | src/ (header removed; layout in src/) |
+| CTileTriggerSwitchLogic | game | C:\Proj\Gruntz | `.?AVCTileTriggerSwitchLogic@@` | name | rtti+strings | src/ (header removed; layout in src/) |
+| CTileTriggerTransition | game | C:\Proj\Gruntz | `.?AVCTileTriggerTransition@@` | name | rtti | src/ (header removed; layout in src/) |
+| CTileMultiTriggerSwitchLogic | game | C:\Proj\Gruntz | `.?AVCTileMultiTriggerSwitchLogic@@` | name | rtti+strings | src/ (header removed; layout in src/) |
+| CTileExclusiveTriggerSwitchLogic | game | C:\Proj\Gruntz | `.?AVCTileExclusiveTriggerSwitchLogic@@` | name | rtti | src/ (header removed; layout in src/) |
+| CTileTimeTriggerLogic | game | C:\Proj\Gruntz | `.?AVCTileTimeTriggerLogic@@` | name | rtti+strings | src/ (header removed; layout in src/) |
+| CTileTimeTriggerSwitchLogic | game | C:\Proj\Gruntz | `.?AVCTileTimeTriggerSwitchLogic@@` | name | rtti+strings | src/ (header removed; layout in src/) |
+| CTileSecretTrigger | game | C:\Proj\Gruntz | `.?AVCTileSecretTrigger@@` | name | rtti+strings | src/ (header removed; layout in src/) |
+| CTileSecretTriggerLogic | game | C:\Proj\Gruntz | `.?AVCTileSecretTriggerLogic@@` | name | rtti+strings | src/ (header removed; layout in src/) |
+| CTileSecretTriggerSwitchLogic | game | C:\Proj\Gruntz | `.?AVCTileSecretTriggerSwitchLogic@@` | name | rtti+strings | src/ (header removed; layout in src/) |
+| CCheckpointTrigger | game | C:\Proj\Gruntz | `.?AVCCheckpointTrigger@@` | name | rtti | src/ (header removed; layout in src/) |
+| CCheckpointTriggerSwitchLogic | game | C:\Proj\Gruntz | `.?AVCCheckpointTriggerSwitchLogic@@` | name | rtti | src/ (header removed; layout in src/) |
+| CSecretLevelTrigger | game | C:\Proj\Gruntz | `.?AVCSecretLevelTrigger@@` | name | rtti | src/ (header removed; layout in src/) |
+| CSecretTeleporterTrigger | game | C:\Proj\Gruntz | `.?AVCSecretTeleporterTrigger@@` | name | rtti | src/ (header removed; layout in src/) |
+| CExitTrigger | game | C:\Proj\Gruntz | `.?AVCExitTrigger@@` | name | rtti | src/ (header removed; layout in src/) |
+| CVoiceTrigger | game | C:\Proj\Gruntz | `.?AVCVoiceTrigger@@` | name | rtti | src/ (header removed; layout in src/) |
+| CActionArea | game | C:\Proj\Gruntz | `.?AVCActionArea@@` | name | rtti | src/ (header removed; layout in src/) |
+| CGuardPoint | game | C:\Proj\Gruntz | `.?AVCGuardPoint@@` | name | rtti | src/ (header removed; layout in src/) |
+| CWayPoint | game | C:\Proj\Gruntz | `.?AVCWayPoint@@` | name | rtti | src/ (header removed; layout in src/) |
+| CCoveredPowerup | game | C:\Proj\Gruntz | `.?AVCCoveredPowerup@@` | name | rtti+strings | src/ (header removed; layout in src/) |
+| CCoveredPowerupLogic | game | C:\Proj\Gruntz | `.?AVCCoveredPowerupLogic@@` | name | rtti | src/ (header removed; layout in src/) |
+| CMovingLogic | game | C:\Proj\Gruntz | `.?AVCMovingLogic@@` | name | rtti | src/ (header removed; layout in src/) |
+| CGiantRock | game | C:\Proj\Gruntz | `.?AVCGiantRock@@` | name | rtti+strings | src/ (header removed; layout in src/) |
+| CGiantRockLogic | game | C:\Proj\Gruntz | `.?AVCGiantRockLogic@@` | name | rtti+strings | src/ (header removed; layout in src/) |
+| CRollingBall | game | C:\Proj\Gruntz | `.?AVCRollingBall@@` | name | rtti+strings | src/ (header removed; layout in src/) |
+| CRainCloud | game | C:\Proj\Gruntz | `.?AVCRainCloud@@` | name | rtti | src/ (header removed; layout in src/) |
+| CSpotLight | game | C:\Proj\Gruntz | `.?AVCSpotLight@@` | name | rtti | src/ (header removed; layout in src/) |
+| CLightFx | game | C:\Proj\Gruntz | `.?AVCLightFx@@` | name | rtti | src/ (header removed; layout in src/) |
+| CUFO | game | C:\Proj\Gruntz | `.?AVCUFO@@` | name | rtti+strings | src/ (header removed; layout in src/) |
+| CPathHazard | game | C:\Proj\Gruntz | `.?AVCPathHazard@@` | name | rtti | src/ (header removed; layout in src/) |
+| CStaticHazard | game | C:\Proj\Gruntz | `.?AVCStaticHazard@@` | name | rtti | src/ (header removed; layout in src/) |
+| CKitchenSlime | game | C:\Proj\Gruntz | `.?AVCKitchenSlime@@` | name | rtti | src/ (header removed; layout in src/) |
+| CToobSpikez | game | C:\Proj\Gruntz | `.?AVCToobSpikez@@` | name | rtti | src/ (header removed; layout in src/) |
+| CBrickz | game | C:\Proj\Gruntz | `.?AVCBrickz@@` | name | rtti+strings | src/ (header removed; layout in src/) |
+| CProjectile | game | C:\Proj\Gruntz | `.?AVCProjectile@@` | name | rtti | src/ (header removed; layout in src/) |
+| CBoomerang | game | C:\Proj\Gruntz | `.?AVCBoomerang@@` | name | rtti | src/ (header removed; layout in src/) |
+| CTimeBomb | game | C:\Proj\Gruntz | `.?AVCTimeBomb@@` | name | rtti+strings | src/ (header removed; layout in src/) |
+| CExplosion | game | C:\Proj\Gruntz | `.?AVCExplosion@@` | name | rtti | src/ (header removed; layout in src/) |
+| CParticlez | game | C:\Proj\Gruntz | `.?AVCParticlez@@` | name | rtti | src/ (header removed; layout in src/) |
+| CEyeCandy | game | C:\Proj\Gruntz | `.?AVCEyeCandy@@` | name | rtti | src/ (header removed; layout in src/) |
+| CEyeCandyAni | game | C:\Proj\Gruntz | `.?AVCEyeCandyAni@@` | name | rtti | src/ (header removed; layout in src/) |
+| CFrontCandy | game | C:\Proj\Gruntz | `.?AVCFrontCandy@@` | name | rtti | src/ (header removed; layout in src/) |
+| CFrontCandyAni | game | C:\Proj\Gruntz | `.?AVCFrontCandyAni@@` | name | rtti | src/ (header removed; layout in src/) |
+| CBehindCandy | game | C:\Proj\Gruntz | `.?AVCBehindCandy@@` | name | rtti | src/ (header removed; layout in src/) |
+| CBehindCandyAni | game | C:\Proj\Gruntz | `.?AVCBehindCandyAni@@` | name | rtti | src/ (header removed; layout in src/) |
+| CMenuSparkle | game | C:\Proj\Gruntz | `.?AVCMenuSparkle@@` | name | rtti | src/ (header removed; layout in src/) |
+| CToyPeek | game | C:\Proj\Gruntz | `.?AVCToyPeek@@` | name | rtti | src/ (header removed; layout in src/) |
+| CAniCycle | game | C:\Proj\Gruntz | `.?AVCAniCycle@@` | name | rtti | src/ (header removed; layout in src/) |
+| CSimpleAnimation | game | C:\Proj\Gruntz | `.?AVCSimpleAnimation@@` | name | rtti | src/ (header removed; layout in src/) |
+| CSingleAnimation | game | C:\Proj\Gruntz | `.?AVCSingleAnimation@@` | name | rtti | src/ (header removed; layout in src/) |
+| CAmbientSound | game | C:\Proj\Gruntz | `.?AVCAmbientSound@@` | name | rtti+strings | src/ (header removed; layout in src/) |
+| CAmbientPosSound | game | C:\Proj\Gruntz | `.?AVCAmbientPosSound@@` | name | rtti | src/ (header removed; layout in src/) |
+| CRandomAmbientSound | game | C:\Proj\Gruntz | `.?AVCRandomAmbientSound@@` | name | rtti | src/ (header removed; layout in src/) |
 | CStatusBarItem | game | C:\Proj\Gruntz | `.?AVCStatusBarItem@@` | layout | rtti+matched | graduated: src/Gruntz/StatusBarItem.h |
-| CSBI_Image | game | C:\Proj\Gruntz | `.?AVCSBI_Image@@` | name | rtti | game/statusbar.h |
-| CSBI_ImageSet | game | C:\Proj\Gruntz | `.?AVCSBI_ImageSet@@` | name | rtti | game/statusbar.h |
-| CSBI_ImageSetAni | game | C:\Proj\Gruntz | `.?AVCSBI_ImageSetAni@@` | name | rtti | game/statusbar.h |
-| CSBI_RectOnly | game | C:\Proj\Gruntz | `.?AVCSBI_RectOnly@@` | name | rtti | game/statusbar.h |
-| CSBI_MenuItem | game | C:\Proj\Gruntz | `.?AVCSBI_MenuItem@@` | name | rtti | game/statusbar.h |
-| CSBI_SideTab | game | C:\Proj\Gruntz | `.?AVCSBI_SideTab@@` | name | rtti | game/statusbar.h |
-| CSBI_GruntMachine | game | C:\Proj\Gruntz | `.?AVCSBI_GruntMachine@@` | name | rtti | game/statusbar.h |
-| CSBI_StatzTabArrow | game | C:\Proj\Gruntz | `.?AVCSBI_StatzTabArrow@@` | name | rtti | game/statusbar.h |
-| CSBI_StatzTabGruntBar | game | C:\Proj\Gruntz | `.?AVCSBI_StatzTabGruntBar@@` | name | rtti | game/statusbar.h |
-| CSBI_WarlordHead | game | C:\Proj\Gruntz | `.?AVCSBI_WarlordHead@@` | name | rtti | game/statusbar.h |
-| CSBI_WellGoo | game | C:\Proj\Gruntz | `.?AVCSBI_WellGoo@@` | name | rtti | game/statusbar.h |
-| CInGameIcon | game | C:\Proj\Gruntz | `.?AVCInGameIcon@@` | name | rtti | game/statusbar.h |
-| CInGameText | game | C:\Proj\Gruntz | `.?AVCInGameText@@` | name | rtti | game/statusbar.h |
-| CLevelTime | game | C:\Proj\Gruntz | `.?AVCLevelTime@@` | name | rtti | game/statusbar.h |
-| CGruntHealthSprite | game | C:\Proj\Gruntz | `.?AVCGruntHealthSprite@@` | name | rtti | game/sprites.h |
-| CGruntStaminaSprite | game | C:\Proj\Gruntz | `.?AVCGruntStaminaSprite@@` | name | rtti | game/sprites.h |
-| CGruntPowerupSprite | game | C:\Proj\Gruntz | `.?AVCGruntPowerupSprite@@` | name | rtti | game/sprites.h |
-| CGruntSelectedSprite | game | C:\Proj\Gruntz | `.?AVCGruntSelectedSprite@@` | name | rtti | game/sprites.h |
-| CGruntToySprite | game | C:\Proj\Gruntz | `.?AVCGruntToySprite@@` | name | rtti | game/sprites.h |
-| CGruntToyTimeSprite | game | C:\Proj\Gruntz | `.?AVCGruntToyTimeSprite@@` | name | rtti | game/sprites.h |
-| CGruntWingzTimeSprite | game | C:\Proj\Gruntz | `.?AVCGruntWingzTimeSprite@@` | name | rtti | game/sprites.h |
-| CCursorSnapSprite | game | C:\Proj\Gruntz | `.?AVCCursorSnapSprite@@` | name | rtti | game/sprites.h |
-| CStatusBarSprite | game | C:\Proj\Gruntz | `.?AVCStatusBarSprite@@` | name | rtti | game/sprites.h |
-| CGruntzCommand | game | C:\Proj\Gruntz | `.?AVCGruntzCommand@@` | name | rtti | game/commands.h |
-| CGruntzSingleCommand | game | C:\Proj\Gruntz | `.?AVCGruntzSingleCommand@@` | name | rtti | game/commands.h |
-| CGruntzMultiCommand | game | C:\Proj\Gruntz | `.?AVCGruntzMultiCommand@@` | name | rtti | game/commands.h |
-| CTeleporter | game | C:\Proj\Gruntz | `.?AVCTeleporter@@` | name | rtti+strings | game/world_objects.h |
-| CWormhole | game | C:\Proj\Gruntz | `.?AVCWormhole@@` | name | rtti | game/world_objects.h |
-| CWarpStonePad | game | C:\Proj\Gruntz | `.?AVCWarpStonePad@@` | name | rtti | game/world_objects.h |
-| CFortressFlag | game | C:\Proj\Gruntz | `.?AVCFortressFlag@@` | name | rtti+strings | game/world_objects.h |
-| CWarlord | game | C:\Proj\Gruntz | `.?AVCWarlord@@` | name | rtti+strings | game/world_objects.h |
-| CDroppedObject | game | C:\Proj\Gruntz | `.?AVCDroppedObject@@` | name | rtti | game/world_objects.h |
-| CDroppedObjectShadow | game | C:\Proj\Gruntz | `.?AVCDroppedObjectShadow@@` | name | rtti | game/world_objects.h |
-| CObjectDropper | game | C:\Proj\Gruntz | `.?AVCObjectDropper@@` | name | rtti | game/world_objects.h |
-| CBattlezDlg | game | C:\Proj\Gruntz | `.?AVCBattlezDlg@@` | name | rtti+strings | game/dialogs.h |
-| CBattlezDlgColors | game | C:\Proj\Gruntz | `.?AVCBattlezDlgColors@@` | name | rtti | game/dialogs.h |
-| CBattlezDlgCustom | game | C:\Proj\Gruntz | `.?AVCBattlezDlgCustom@@` | name | rtti | game/dialogs.h |
-| CMultiStartDlg | game | C:\Proj\Gruntz | `.?AVCMultiStartDlg@@` | name | rtti | game/dialogs.h |
-| CMultiHelpDlg | game | C:\Proj\Gruntz | `.?AVCMultiHelpDlg@@` | name | rtti+strings | game/dialogs.h |
-| CCheckpointDlg | game | C:\Proj\Gruntz | `.?AVCCheckpointDlg@@` | name | rtti | game/dialogs.h |
-| CDoNothing | game | C:\Proj\Gruntz | `.?AVCDoNothing@@` | name | rtti | game/misc.h |
-| CDoNothingNormal | game | C:\Proj\Gruntz | `.?AVCDoNothingNormal@@` | name | rtti | game/misc.h |
-| CSingleFrameMessage | game | C:\Proj\Gruntz | `.?AVCSingleFrameMessage@@` | name | rtti | game/misc.h |
+| CSBI_Image | game | C:\Proj\Gruntz | `.?AVCSBI_Image@@` | name | rtti | src/ (header removed; layout in src/) |
+| CSBI_ImageSet | game | C:\Proj\Gruntz | `.?AVCSBI_ImageSet@@` | name | rtti | src/ (header removed; layout in src/) |
+| CSBI_ImageSetAni | game | C:\Proj\Gruntz | `.?AVCSBI_ImageSetAni@@` | name | rtti | src/ (header removed; layout in src/) |
+| CSBI_RectOnly | game | C:\Proj\Gruntz | `.?AVCSBI_RectOnly@@` | name | rtti | src/ (header removed; layout in src/) |
+| CSBI_MenuItem | game | C:\Proj\Gruntz | `.?AVCSBI_MenuItem@@` | name | rtti | src/ (header removed; layout in src/) |
+| CSBI_SideTab | game | C:\Proj\Gruntz | `.?AVCSBI_SideTab@@` | name | rtti | src/ (header removed; layout in src/) |
+| CSBI_GruntMachine | game | C:\Proj\Gruntz | `.?AVCSBI_GruntMachine@@` | name | rtti | src/ (header removed; layout in src/) |
+| CSBI_StatzTabArrow | game | C:\Proj\Gruntz | `.?AVCSBI_StatzTabArrow@@` | name | rtti | src/ (header removed; layout in src/) |
+| CSBI_StatzTabGruntBar | game | C:\Proj\Gruntz | `.?AVCSBI_StatzTabGruntBar@@` | name | rtti | src/ (header removed; layout in src/) |
+| CSBI_WarlordHead | game | C:\Proj\Gruntz | `.?AVCSBI_WarlordHead@@` | name | rtti | src/ (header removed; layout in src/) |
+| CSBI_WellGoo | game | C:\Proj\Gruntz | `.?AVCSBI_WellGoo@@` | name | rtti | src/ (header removed; layout in src/) |
+| CInGameIcon | game | C:\Proj\Gruntz | `.?AVCInGameIcon@@` | name | rtti | src/ (header removed; layout in src/) |
+| CInGameText | game | C:\Proj\Gruntz | `.?AVCInGameText@@` | name | rtti | src/ (header removed; layout in src/) |
+| CLevelTime | game | C:\Proj\Gruntz | `.?AVCLevelTime@@` | name | rtti | src/ (header removed; layout in src/) |
+| CGruntHealthSprite | game | C:\Proj\Gruntz | `.?AVCGruntHealthSprite@@` | name | rtti | src/ (header removed; layout in src/) |
+| CGruntStaminaSprite | game | C:\Proj\Gruntz | `.?AVCGruntStaminaSprite@@` | name | rtti | src/ (header removed; layout in src/) |
+| CGruntPowerupSprite | game | C:\Proj\Gruntz | `.?AVCGruntPowerupSprite@@` | name | rtti | src/ (header removed; layout in src/) |
+| CGruntSelectedSprite | game | C:\Proj\Gruntz | `.?AVCGruntSelectedSprite@@` | name | rtti | src/ (header removed; layout in src/) |
+| CGruntToySprite | game | C:\Proj\Gruntz | `.?AVCGruntToySprite@@` | name | rtti | src/ (header removed; layout in src/) |
+| CGruntToyTimeSprite | game | C:\Proj\Gruntz | `.?AVCGruntToyTimeSprite@@` | name | rtti | src/ (header removed; layout in src/) |
+| CGruntWingzTimeSprite | game | C:\Proj\Gruntz | `.?AVCGruntWingzTimeSprite@@` | name | rtti | src/ (header removed; layout in src/) |
+| CCursorSnapSprite | game | C:\Proj\Gruntz | `.?AVCCursorSnapSprite@@` | name | rtti | src/ (header removed; layout in src/) |
+| CStatusBarSprite | game | C:\Proj\Gruntz | `.?AVCStatusBarSprite@@` | name | rtti | src/ (header removed; layout in src/) |
+| CGruntzCommand | game | C:\Proj\Gruntz | `.?AVCGruntzCommand@@` | name | rtti | src/ (header removed; layout in src/) |
+| CGruntzSingleCommand | game | C:\Proj\Gruntz | `.?AVCGruntzSingleCommand@@` | name | rtti | src/ (header removed; layout in src/) |
+| CGruntzMultiCommand | game | C:\Proj\Gruntz | `.?AVCGruntzMultiCommand@@` | name | rtti | src/ (header removed; layout in src/) |
+| CTeleporter | game | C:\Proj\Gruntz | `.?AVCTeleporter@@` | name | rtti+strings | src/ (header removed; layout in src/) |
+| CWormhole | game | C:\Proj\Gruntz | `.?AVCWormhole@@` | name | rtti | src/ (header removed; layout in src/) |
+| CWarpStonePad | game | C:\Proj\Gruntz | `.?AVCWarpStonePad@@` | name | rtti | src/ (header removed; layout in src/) |
+| CFortressFlag | game | C:\Proj\Gruntz | `.?AVCFortressFlag@@` | name | rtti+strings | src/ (header removed; layout in src/) |
+| CWarlord | game | C:\Proj\Gruntz | `.?AVCWarlord@@` | name | rtti+strings | src/ (header removed; layout in src/) |
+| CDroppedObject | game | C:\Proj\Gruntz | `.?AVCDroppedObject@@` | name | rtti | src/ (header removed; layout in src/) |
+| CDroppedObjectShadow | game | C:\Proj\Gruntz | `.?AVCDroppedObjectShadow@@` | name | rtti | src/ (header removed; layout in src/) |
+| CObjectDropper | game | C:\Proj\Gruntz | `.?AVCObjectDropper@@` | name | rtti | src/ (header removed; layout in src/) |
+| CBattlezDlg | game | C:\Proj\Gruntz | `.?AVCBattlezDlg@@` | name | rtti+strings | src/ (header removed; layout in src/) |
+| CBattlezDlgColors | game | C:\Proj\Gruntz | `.?AVCBattlezDlgColors@@` | name | rtti | src/ (header removed; layout in src/) |
+| CBattlezDlgCustom | game | C:\Proj\Gruntz | `.?AVCBattlezDlgCustom@@` | name | rtti | src/ (header removed; layout in src/) |
+| CMultiStartDlg | game | C:\Proj\Gruntz | `.?AVCMultiStartDlg@@` | name | rtti | src/ (header removed; layout in src/) |
+| CMultiHelpDlg | game | C:\Proj\Gruntz | `.?AVCMultiHelpDlg@@` | name | rtti+strings | src/ (header removed; layout in src/) |
+| CCheckpointDlg | game | C:\Proj\Gruntz | `.?AVCCheckpointDlg@@` | name | rtti | src/ (header removed; layout in src/) |
+| CDoNothing | game | C:\Proj\Gruntz | `.?AVCDoNothing@@` | name | rtti | src/ (header removed; layout in src/) |
+| CDoNothingNormal | game | C:\Proj\Gruntz | `.?AVCDoNothingNormal@@` | name | rtti | src/ (header removed; layout in src/) |
+| CSingleFrameMessage | game | C:\Proj\Gruntz | `.?AVCSingleFrameMessage@@` | name | rtti | src/ (header removed; layout in src/) |
 
 ## Engine substrate (WAP32) classes
 
@@ -152,20 +152,20 @@ Scaffold file column: where the stub lives under `structure/`.
 | CGameApp | wap32 | (engine, shared) | `.?AVCGameApp@@` | layout | rtti+tomalla | graduated: src/Wap32/Wap32.h |
 | CGameMgr | wap32 | (engine, shared) | `.?AVCGameMgr@@` | layout | rtti+tomalla | src/Net/NetMgr.h (matched) |
 | CGameWnd | wap32 | (engine, shared) | `.?AVCGameWnd@@` | layout | rtti+tomalla | graduated: src/Wap32/Wap32.h |
-| CWapObj | wap32 | (engine) | `.?AVCWapObj@@` | name | rtti | wap32/cwapobj.h |
-| CWapX | wap32 | (engine) | `.?AVCWapX@@` | name | rtti | wap32/cwapobj.h |
-| zErrHandling | wap32 | (z-runtime) | `.?AVzErrHandling@@` | name | rtti | wap32/zruntime.h |
-| zPtrColl | wap32 | (z-runtime) | `.?AVzPtrColl@@` | name | rtti | wap32/zruntime.h |
-| zPTree | wap32 | (z-runtime) | `.?AVzPTree@@` | name | rtti | wap32/zruntime.h |
-| _zvec | wap32 | (z-runtime) | `.?AV_zvec@@` | name | rtti | wap32/zruntime.h |
-| _zdvec | wap32 | (z-runtime) | `.?AV_zdvec@@` | name | rtti | wap32/zruntime.h |
+| CWapObj | wap32 | (engine) | `.?AVCWapObj@@` | name | rtti | src/ (header removed; layout in src/) |
+| CWapX | wap32 | (engine) | `.?AVCWapX@@` | name | rtti | src/ (header removed; layout in src/) |
+| zErrHandling | wap32 | (z-runtime) | `.?AVzErrHandling@@` | name | rtti | src/ (header removed; layout in src/) |
+| zPtrColl | wap32 | (z-runtime) | `.?AVzPtrColl@@` | name | rtti | src/ (header removed; layout in src/) |
+| zPTree | wap32 | (z-runtime) | `.?AVzPTree@@` | name | rtti | src/ (header removed; layout in src/) |
+| _zvec | wap32 | (z-runtime) | `.?AV_zvec@@` | name | rtti | src/ (header removed; layout in src/) |
+| _zdvec | wap32 | (z-runtime) | `.?AV_zdvec@@` | name | rtti | src/ (header removed; layout in src/) |
 
 ## Template instantiations
 
 | Name | Kind | Source file | RTTI mangled | Known | From | Scaffold |
 |---|---|---|---|---|---|---|
-| zDArray< int(CUserLogic::*)() > | template/wap32 | (z-runtime) | `.?AV?$zDArray@P8CUserLogic@@AEHXZ@@` | element type | rtti | wap32/zruntime.h + game/userlogic.h |
-| CArray<PLAYLISTINFOSTRUCT*> | template/mfc | C:\Proj\Dsndmgr | `.?AV?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@` | element type | rtti+strings | managers/directsoundmgr.h |
+| zDArray< int(CUserLogic::*)() > | template/wap32 | (z-runtime) | `.?AV?$zDArray@P8CUserLogic@@AEHXZ@@` | element type | rtti | src/ (header removed; layout in src/) + src/ (header removed; layout in src/) |
+| CArray<PLAYLISTINFOSTRUCT*> | template/mfc | C:\Proj\Dsndmgr | `.?AV?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@` | element type | rtti+strings | src/ (header removed; layout in src/) |
 
 ## Engine managers (named via strings/leaked paths, NOT in RTTI)
 
@@ -176,18 +176,18 @@ ButeMgr) are likewise name-only.
 
 | Name | Kind | Source file | Known | From | Scaffold |
 |---|---|---|---|---|---|
-| CDirectDrawMgr | manager | C:\Proj\DDrawMgr\DDRAWMGR.CPP | name | strings | managers/cdirectdrawmgr.h |
-| DirPal | manager | C:\Proj\DDrawMgr\DIRPAL.CPP | name | srcpath | managers/cdirectdrawmgr.h |
-| DirSurf | manager | C:\Proj\DDrawMgr\DIRSURF.CPP | name | srcpath | managers/cdirectdrawmgr.h |
-| DirectSoundMgr | manager | C:\Proj\Dsndmgr\DSNDMGR.CPP | name | strings | managers/directsoundmgr.h |
-| DSndMgSR | manager | C:\Proj\Dsndmgr\DSndMgSR.cpp | name | srcpath | managers/directsoundmgr.h |
-| SFManager | manager | C:\Proj\Dsndmgr | name | strings | managers/directsoundmgr.h |
-| PLAYLISTINFOSTRUCT | struct | C:\Proj\Dsndmgr | name (held in CArray) | rtti(template)+strings | managers/directsoundmgr.h |
-| DirectInputMgr2 | manager | C:\Proj\DinMgr2\DinMgr2.cpp | name | strings | managers/directinputmgr2.h |
-| InputDevice | manager | C:\Proj\DinMgr2\InputDevice.cpp | name | srcpath | managers/directinputmgr2.h |
+| CDirectDrawMgr | manager | C:\Proj\DDrawMgr\DDRAWMGR.CPP | name | strings | src/ (header removed; layout in src/) |
+| DirPal | manager | C:\Proj\DDrawMgr\DIRPAL.CPP | name | srcpath | src/ (header removed; layout in src/) |
+| DirSurf | manager | C:\Proj\DDrawMgr\DIRSURF.CPP | name | srcpath | src/ (header removed; layout in src/) |
+| DirectSoundMgr | manager | C:\Proj\Dsndmgr\DSNDMGR.CPP | name | strings | src/ (header removed; layout in src/) |
+| DSndMgSR | manager | C:\Proj\Dsndmgr\DSndMgSR.cpp | name | srcpath | src/ (header removed; layout in src/) |
+| SFManager | manager | C:\Proj\Dsndmgr | name | strings | src/ (header removed; layout in src/) |
+| PLAYLISTINFOSTRUCT | struct | C:\Proj\Dsndmgr | name (held in CArray) | rtti(template)+strings | src/ (header removed; layout in src/) |
+| DirectInputMgr2 | manager | C:\Proj\DinMgr2\DinMgr2.cpp | name | strings | src/ (header removed; layout in src/) |
+| InputDevice | manager | C:\Proj\DinMgr2\InputDevice.cpp | name | srcpath | src/ (header removed; layout in src/) |
 | RezSync | manager | (REZ/VRZ loader) | name | strings | graduated: src/Rez/RezMgr.h |
 | CRezDir | manager | (REZ/VRZ loader) | name | strings | graduated: src/Rez/RezMgr.h |
-| ButeMgr | manager | (attributez.txt/dwrects.txt) | name | strings | managers/butemgr.h |
+| ButeMgr | manager | (attributez.txt/dwrects.txt) | name | strings | src/ (header removed; layout in src/) |
 
 ## Reconstructed util classes (tomalla-derived, NOT in RTTI)
 
@@ -241,7 +241,7 @@ loader asserts); byte layout @todo. See docs/editor-notes.md.
 
 ## Library link-artifacts (statically-linked MFC / CRT / COM / AFX — NOT targets)
 
-All from RTTI; published library types; listed (as comments) in `mfc_runtime.h`.
+All from RTTI; published library types; listed (as comments) in `src/ (header removed; layout in src/)`.
 Not stubbed. **96** names (the lists below enumerate every one):
 
 MFC app/cmd: `CWinApp` `.?AVCWinApp@@`, `CWinThread` `.?AVCWinThread@@`,
