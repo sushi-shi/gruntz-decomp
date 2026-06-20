@@ -14,12 +14,12 @@
 //
 // Retail also has a standalone complete-object ctor (one that *does* zero all
 // four fields, at its own RVA 0x1005d0): MSVC's out-of-line COMDAT copy of this
-// same inline ctor. It is NOT a second class. We leave it unmatched: MSVC 5.0
-// inlines this tiny ctor at every instantiation we can synthesize (scalar/array/
-// runtime-count new all inline or bury it), so the correct one-class source
-// cannot emit a labelable standalone ??0 to diff against it. Recovering one true
-// class is worth more than fabricating a second, out-of-line class shape to win
-// that one match - that shape is not what the developers wrote.
+// same inline ctor. It is NOT a second class. MSVC 5.0 inlines this tiny ctor at
+// every instantiation we can synthesize, so the canonical inline form cannot emit
+// a labelable standalone ??0 to diff against it. To keep that byte-match,
+// src/Gruntz/StatusBarItem.cpp is a stand-in TU that locally redeclares the class
+// with an out-of-line ctor purely as a labeling device for the COMDAT - a tooling
+// workaround, not a second class the developers wrote.
 // ---------------------------------------------------------------------------
 class CStatusBarItem {
 public:
