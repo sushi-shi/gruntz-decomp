@@ -36,34 +36,10 @@
 // types (HINSTANCE / HWND / DWORD / WPARAM / LPARAM / LPCSTR / BOOL) come from
 // Wap32.h above; PostMessageA is declared there too.
 // ---------------------------------------------------------------------------
-typedef char *  LPSTR;
-typedef unsigned int UINT;
-#ifndef WINAPI
-#define WINAPI __stdcall
-#endif
-
-extern "C" {
-__declspec(dllimport) DWORD   __stdcall GetModuleFileNameA(HINSTANCE hModule, LPSTR lpFilename, DWORD nSize);
-__declspec(dllimport) HWND    __stdcall FindWindowA(LPCSTR lpClassName, LPCSTR lpWindowName);
-__declspec(dllimport) BOOL    __stdcall IsIconic(HWND hWnd);
-__declspec(dllimport) LRESULT __stdcall SendMessageA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
-__declspec(dllimport) short   __stdcall GetAsyncKeyState(int vKey);
-__declspec(dllimport) int     __stdcall DialogBoxParamA(HINSTANCE hInstance, LPCSTR lpTemplateName,
-                                                        HWND hWndParent, void *lpDialogFunc,
-                                                        LPARAM dwInitParam);
-}
-
-// Win32 message / constant literals (kept local; not from <windows.h>).
-#define WM_SYSCOMMAND 0x0112
-#define WM_COMMAND    0x0111
-#define SC_RESTORE    0xf120
-#define CW_USEDEFAULT  ((int)0x80000000)
-
-// Virtual-key codes scanned for the developer Advanced-Options hot-key:
-// 0x11 (VK_CONTROL), 0x10 (VK_SHIFT), 0x24 (VK_HOME / numeric '$').
-#define VK_CONTROL    0x11
-#define VK_SHIFT      0x10
-#define VK_DOLLAR     0x24
+// GetModuleFileNameA/FindWindowA/IsIconic/SendMessageA/GetAsyncKeyState/
+// DialogBoxParamA + LPSTR/UINT/WINAPI + WM_*/SC_RESTORE/CW_USEDEFAULT/VK_CONTROL/
+// VK_SHIFT all come from the real <windows.h> (via Wap32.h -> Mfc.h).
+#define VK_DOLLAR     0x24   // == VK_HOME (the developer hot-key's third key)
 
 // ---------------------------------------------------------------------------
 // Engine callees (unmatched; modeled as external no-body functions so the
@@ -95,11 +71,8 @@ int SettleDelay(int nMs);
 // version ints). __cdecl variadic.
 int VersionScan(const char *pszVersion, const char *pszFormat, ...);
 
-// VERSION.DLL imports (6-byte `jmp [IAT]` thunks); __stdcall (callee-cleaned, no
-// `add esp` at the call site).
-DWORD __stdcall GetFileVersionInfoSizeA(LPSTR lptstrFilename, DWORD *lpdwHandle);
-int   __stdcall GetFileVersionInfoA(LPSTR lptstrFilename, DWORD dwHandle, DWORD dwLen, void *lpData);
-int   __stdcall VerQueryValueA(const void *pBlock, LPSTR lpSubBlock, void **lplpBuffer, UINT *puLen);
+// VERSION.DLL imports (GetFileVersionInfoSizeA/GetFileVersionInfoA/VerQueryValueA)
+// come from <windows.h> (winver, pulled by afx.h/MFC).
 }
 
 // The MFC global allocator / deallocator (NAFXCW); used as
@@ -214,7 +187,7 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     //     "do not launch the game" result) tear the app down and exit.
     if (bAdvanced != 0) {
         int nDlgResult = DialogBoxParamA(g_hInstance, "CONFIG_ADVANCED",
-                                         0, (void *)&AdvancedOptionsDialogProc, 0);
+                                         0, (DLGPROC)&AdvancedOptionsDialogProc, 0);
         if (nDlgResult == 0) {
             if (g_pApp != 0)
                 delete g_pApp;

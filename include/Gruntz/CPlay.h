@@ -19,18 +19,11 @@
 #ifndef SRC_GRUNTZ_CPLAY_H
 #define SRC_GRUNTZ_CPLAY_H
 
-// ---------------------------------------------------------------------------
-// Win32 RECT + the USER32/WINMM imports CPlay::Render uses (reached via the
-// cached IAT slots: SetRect / CopyRect / wsprintfA / timeGetTime).
-// ---------------------------------------------------------------------------
-struct RECT { long left, top, right, bottom; };
+// RECT + SetRect / CopyRect / wsprintfA come from the real <windows.h> (via Mfc.h,
+// which must precede windows.h). WINMM timeGetTime is NOT in <windows.h>.
+#include <Mfc.h>
 
-extern "C" {
-    __declspec(dllimport) unsigned long __stdcall timeGetTime(void);
-    void __stdcall SetRect(RECT *, int, int, int, int);
-    void __stdcall CopyRect(RECT *, const RECT *);
-    int  __cdecl  wsprintfA(char *, const char *, ...);
-}
+extern "C" __declspec(dllimport) unsigned long __stdcall timeGetTime(void);
 
 // CGameRegistry - the global game-manager singleton (*g_64556c), shared via
 // <Gruntz/CGameRegistry.h> with the CGrunt resolvers in Grunt.h.

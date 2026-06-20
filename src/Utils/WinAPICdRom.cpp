@@ -23,12 +23,8 @@
 #include <rva.h>
 #include <stdio.h>
 
-typedef unsigned int UINT;
-
-extern "C" {
-__declspec(dllimport) UINT  __stdcall GetDriveTypeA(LPCSTR lpRootPathName);
-__declspec(dllimport) DWORD __stdcall GetCurrentDirectoryA(DWORD nBufferLength, LPSTR lpBuffer);
-}
+// UINT/LPCSTR/DWORD/LPSTR + GetDriveTypeA/GetCurrentDirectoryA come from the real
+// <windows.h>, pulled in via RegistryHelper.h -> Mfc.h above.
 
 namespace Utils {
 namespace WinAPI {

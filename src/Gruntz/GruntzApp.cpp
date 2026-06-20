@@ -23,21 +23,9 @@
 // <windows.h> - keep the visible symbol SET small (the compiler hashes it;
 // entropy follows header churn). Reproduces the FF15 [IAT] direct-call form.
 // ---------------------------------------------------------------------------
-typedef int INT_PTR;
-typedef INT_PTR (__stdcall *DLGPROC)(HWND, UINT, WPARAM, LPARAM);
-
-extern "C" {
-__declspec(dllimport) BOOL __stdcall EndDialog(HWND hDlg, INT_PTR nResult);
-__declspec(dllimport) BOOL __stdcall SetDlgItemTextA(HWND hDlg, int nIDDlgItem, LPCSTR lpString);
-__declspec(dllimport) int __stdcall LoadStringA(HINSTANCE hInstance, UINT uID, char *lpBuffer, int cchBufferMax);
-__declspec(dllimport) int __stdcall ShowCursor(BOOL bShow);
-__declspec(dllimport) INT_PTR __stdcall DialogBoxParamA(HINSTANCE hInstance, LPCSTR lpTemplateName,
-                                                        HWND hWndParent, DLGPROC lpDialogFunc,
-                                                        LPARAM dwInitParam);
-}
-
-#define WM_INITDIALOG 0x0110
-#define WM_COMMAND    0x0111
+// INT_PTR/DLGPROC, EndDialog/SetDlgItemTextA/LoadStringA/ShowCursor/
+// DialogBoxParamA, and WM_INITDIALOG/WM_COMMAND come from <windows.h>
+// (via Wap32.h -> Mfc.h).
 
 // The control ID of the static text field that displays the error message.
 #define IDC_ERROR_TEXT 0x40d
@@ -177,7 +165,8 @@ WAP32::CGameMgr *CGruntzApp::InitializeGameManager()
 // WM_COMMAND with IDOK(1)/IDCANCEL(2) -> EndDialog(hWnd, 0). Returns 1 for both
 // handled cases, 0 otherwise. The switch reproduces the sub-0x110 / je / dec /
 // jne message ladder with the WM_INITDIALOG body laid out at the function tail.
-SYMBOL(?ErrorDialogProc@CGruntzApp@@SGHPAXIIJ@Z)
+// (No SYMBOL() override: the real HWND signature mangles to PAUHWND__ identically
+// on both sides - like the sibling DialogProcs - so the natural name pairs.)
 RVA(0x80c70, 0x55)
 INT_PTR __stdcall CGruntzApp::ErrorDialogProc(HWND hWnd, UINT message,
                                               WPARAM wParam, LPARAM lParam)

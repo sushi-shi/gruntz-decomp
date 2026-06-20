@@ -15,24 +15,12 @@
 
 #include <Wwd/WwdFile.h>   // CPlane, WwdHeader, operator new, uncompress
 
-// ---------------------------------------------------------------------------
-// MFC-style growable pointer array (CObArray/CByteArray-family, 0x14 bytes). The
-// engine's array base ctor/dtor (??0/??1CByteArray@@QAE@XZ) are out-of-line NAFXCW
-// calls; the constructor builds three of these (at +0x20/+0x34/+0x48) and their
-// destructible nature is what gives the ctor its /GX EH frame. Layout pinned from
-// LoadWwd: m_data@+0x4, m_size@+0x8 relative to the array sub-object. SetAtGrow
-// grows + stores; the element factories return their stride.
-// ---------------------------------------------------------------------------
-struct CByteArray
-{
-    CByteArray();
-    ~CByteArray();
-    void* m_pad0;     // +0x00
-    void* m_data;     // +0x04
-    int   m_size;     // +0x08
-    char  m_tail[0x14 - 0x0c];  // +0x0c  (full 0x14-byte MFC array footprint)
-    void SetAtGrow(int index, void* value);
-};
+// The three growable arrays the ctor builds (+0x20/+0x34/+0x48) are real MFC
+// CByteArray (ctor/dtor are ??0/??1CByteArray@@; from afxcoll). The engine stores
+// pointers in them as raw DWORDs, casting to CDWordArray for SetAtGrow/SetSize and
+// reading the buffer as void** via GetData(). Layout 0x14, m_data via GetData(),
+// m_size via GetSize().
+#include <Mfc.h>
 typedef CByteArray CLevelPtrArray;
 
 // ---------------------------------------------------------------------------

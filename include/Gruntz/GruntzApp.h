@@ -8,9 +8,8 @@
 #define GRUNTZ_GRUNTZ_GRUNTZAPP_H
 #include <Wap32/Wap32.h>
 
-// Minimal Win32 surface (the project deliberately avoids <windows.h>); the
-// dialog proc's return type. Identical to the local typedef in GruntzApp.cpp.
-typedef int INT_PTR;
+// HWND/HINSTANCE/UINT/WPARAM/LPARAM + INT_PTR (the dialog proc's return type)
+// come from the real <windows.h>, pulled in via Wap32.h -> Mfc.h above.
 
 class CGruntzApp : public CGameApp {
 public:

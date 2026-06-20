@@ -22,21 +22,10 @@
 // EH frame as retail.
 // ---------------------------------------------------------------------------
 
-// --- MFC placeholders (only the call symbols + the 0x10 map offset matter) -----
-class CObject;
+// CObject / CByteArray / CMapStringToOb / POSITION come from real MFC (afxcoll),
+// via the CString.h / CMapStringToOb.h -> Mfc.h includes below.
 class CDDrawWorkerRegistry;
 
-class CByteArray {
-public:
-    CByteArray();
-    ~CByteArray();
-    char m_data[0x14];
-};
-
-// POSITION is the opaque MFC iteration handle.  Native int form so the ternary
-// guard initialiser passes cleanly to GetNextAssoc's POSITION & parameter; the
-// reloc-masked call site is identical.
-typedef int POSITION;
 
 // CString (4-byte char* wrapper). Only the default ctor + dtor are needed;
 // GetNextAssoc writes the key output into it.
@@ -378,7 +367,7 @@ RVA(0x165210, 0xa2)
 void CDDrawWorkerRegistry::VirtualMethodUnknown58()
 {
     CObject *val = 0;
-    int pos = (m_10.m_nCount != 0) ? -1 : 0;
+    POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
     CString key;
     if (*(volatile int *)&pos != 0) {
         do {
@@ -400,7 +389,7 @@ RVA(0x1552b0, 0xa2)
 void CDDrawWorkerRegistry::MapTeardown_1552b0()
 {
     CObject *val = 0;
-    int pos = (m_10.m_nCount != 0) ? -1 : 0;
+    POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
     CString key;
     if (*(volatile int *)&pos != 0) {
         do {

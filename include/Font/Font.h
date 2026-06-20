@@ -49,52 +49,7 @@ void operator delete(void *p);
 // All of these resolve to NAFXCW (the statically linked MFC) - their bodies are
 // never matched here; only the exact mangled symbol + arg shape matter.
 // ---------------------------------------------------------------------------
-class CFileException;            // pointer only, opaque.
-
-#include <Gruntz/CString.h>
-
-class CFile {
-public:
-    CFile();
-    virtual ~CFile();
-    virtual int Open(const char *lpszFileName, unsigned int nOpenFlags,
-                     CFileException *pError);
-    virtual void Close();
-
-    // CFile carries a vtable (the virtuals above) + several scalar fields; no
-    // field is touched inline, so a conservative padded body just reserves the
-    // stack slot. (MFC CFile is 0x14 bytes incl. the vptr.)
-    char m_body[0x14 - 4];       // (the implicit vptr occupies the first 4 B)
-};
-
-class CArchive {
-public:
-    CArchive(CFile *pFile, unsigned int nMode, int nBufSize, void *lpBuf);
-    ~CArchive();
-
-    unsigned int Read(void *lpBuf, unsigned int nMax);
-    void Close();
-    void FillBuffer(unsigned int nBytesNeeded);
-
-    // The buffered-read window. Inlined operator>> reads straight from here;
-    // the offsets are load-bearing (the EXE's NAFXCW layout, not afx.h's).
-    char  m_pad0[0x24];          // +0x00 (mode/file/buffer-base fields, opaque)
-    char *m_lpBufCur;            // +0x24
-    char *m_lpBufMax;            // +0x28
-    char  m_pad2c[0x40 - 0x2c];  // trailing fields (opaque - the real CArchive
-                                 // is wider; size is not load-bearing here)
-
-    // Inlined integer extraction (MFC's _AFX_INLINE operator>>). Tops up the
-    // buffer when fewer than 4 bytes remain, then reads a DWORD and advances.
-    CArchive &operator>>(int &i)
-    {
-        if (m_lpBufCur + sizeof(int) > m_lpBufMax)
-            FillBuffer(sizeof(int) - (unsigned int)(m_lpBufMax - m_lpBufCur));
-        i = *(int *)m_lpBufCur;
-        m_lpBufCur += sizeof(int);
-        return *this;
-    }
-};
+#include <Mfc.h>   // real MFC CString / CFile / CArchive / CFileException
 
 // ---------------------------------------------------------------------------
 // A single glyph's metric record (the m_glyphs[] element, 8 B). The pixel

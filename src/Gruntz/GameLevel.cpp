@@ -66,10 +66,8 @@ struct RemusCoords {
     int m_c;
 };
 
-// External CDWordArray::SetSize (reloc-masked NAFXCW engine call).
-struct CDWordArray {
-    void SetSize(int nNewSize, int nGrowBy);
-};
+// CDWordArray (the engine stores the pointer arrays as DWORDs) comes from real
+// MFC afxcoll, via GameLevel.h -> Mfc.h.
 
 // The parse-source object VirtualMethodUnknown3C drives: BeginParse (FUN_00539960
 // @0x139960) opens/primes it and returns a handle; EndParse (FUN_005399d0
@@ -231,7 +229,7 @@ int CGameLevel::LoadWwd(WwdHeader* hdr)
                 goto fail;
             ++j;
             rec += set->GetStride();          // vtable +0x24 stride advance
-            m_imageSets.SetAtGrow((int)(j - 1), set);
+            ((CDWordArray *)&m_imageSets)->SetAtGrow((int)(j - 1), (unsigned long)set);
         }
     }
 
@@ -259,11 +257,11 @@ int CGameLevel::LoadWwd(WwdHeader* hdr)
         int ox = m_mainPlane->m_originX;
         int oy = m_mainPlane->m_originY;
         int i2 = 0;
-        while (i2 < m_planes.m_size)          // m_planes.m_size == the plane count
+        while (i2 < m_planes.GetSize())       // GetSize() == the plane count
         {
             if (i2 != m_mainIndex)
             {
-                CPlane* p = (CPlane*)((void**)m_planes.m_data)[i2];
+                CPlane* p = (CPlane*)((void**)m_planes.GetData())[i2];
                 if (p->m_flags & 1)
                 {
                     p->m_scaledX = (float)ox;

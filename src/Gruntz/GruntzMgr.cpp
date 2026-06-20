@@ -42,18 +42,14 @@ void FreeConnectionSettings(void *p);   // FUN_005b9b82 (operator delete wrapper
 
 void *operator new(unsigned int);
 
-// KERNEL32 surface (BuildMoviePath probes the working directory). Minimal
-// __declspec(dllimport) __stdcall decl -> the FF15 [IAT] indirect call form.
-typedef unsigned long DWORD;
-extern "C" __declspec(dllimport) DWORD __stdcall GetCurrentDirectoryA(
-    DWORD nBufferLength, char *lpBuffer);
+// GetCurrentDirectoryA + DWORD come from <windows.h> (KERNEL32, via Mfc.h).
 
 // The engine's __cdecl CString-formatting helper (sprintf-style into a CString
 // destination; reloc-masked - only the call shape is load-bearing).
 extern "C" void Format(CString *dst, const char *fmt, ...);
 
-// WINMM timeGetTime (the per-frame draw clock) - the FF15 [IAT] indirect call.
-extern "C" __declspec(dllimport) DWORD __stdcall timeGetTime(void);
+// WINMM timeGetTime (the per-frame draw clock; NOT in <windows.h>) - FF15 [IAT].
+extern "C" __declspec(dllimport) unsigned long __stdcall timeGetTime(void);
 
 // The per-frame draw-clock globals PerFrameTick stamps each tick. g_wap32Now /
 // g_wap32FrameDelta are the engine's just-refreshed clock (mangled C++ globals,

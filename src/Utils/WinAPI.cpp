@@ -1,32 +1,15 @@
 // WinAPI.cpp - Utils::WinAPI free-function helpers (a thin layer over a handful
 // of KERNEL32 / WINMM imports + the registry/config wrapper). These are static
 // free functions in namespace Utils::WinAPI; only offsets + code bytes are
-// load-bearing. We do NOT pull in <windows.h> - the minimal __declspec(dllimport)
-// __stdcall block reproduces the FF15 [IAT] direct-call form and keeps the
-// visible symbol set small (entropy follows header churn; see
-// docs/matching-patterns.md).
+// load-bearing. Win32 (KERNEL32 + WINMM timeGetTime) comes from the real
+// <windows.h> via RegistryHelper.h -> Mfc.h.
 #include <Utils/RegistryHelper.h>
 #include <rva.h>
 #include <string.h>
 #include <stdio.h>
 
-typedef unsigned int UINT;
-typedef int          HFILE;
-
-struct OFSTRUCT {
-    unsigned char cBytes;
-    unsigned char fFixedDisk;
-    unsigned short nErrCode;
-    unsigned short Reserved1;
-    unsigned short Reserved2;
-    char szPathName[128];
-};
-
-extern "C" {
-__declspec(dllimport) HFILE __stdcall OpenFile(LPCSTR lpFileName, OFSTRUCT *lpReOpenBuff, UINT uStyle);
-__declspec(dllimport) UINT  __stdcall GetDriveTypeA(LPCSTR lpRootPathName);
-__declspec(dllimport) DWORD __stdcall timeGetTime(void);
-}
+// UINT/HFILE/OFSTRUCT + OpenFile/GetDriveTypeA come from <windows.h>, and WINMM's
+// timeGetTime from the same place, both via RegistryHelper.h -> Mfc.h.
 
 namespace Utils {
 namespace WinAPI {

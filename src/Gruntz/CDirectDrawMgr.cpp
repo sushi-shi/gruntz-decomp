@@ -14,24 +14,11 @@
 #include <stdio.h>   // engine sprintf (reloc-masked)
 #include <string.h>  // inline strcpy (rep movs / repne scasb)
 
-// ---------------------------------------------------------------------------
-// Minimal Win32 surface. Do NOT pull in <windows.h> - keep the visible symbol
-// SET small (the compiler hashes it; entropy follows header churn). Only the
-// two USER32 imports the function calls, as a __declspec(dllimport) __stdcall
-// block (reproduces the FF15 [IAT] indirect-call form).
-// ---------------------------------------------------------------------------
-typedef int   BOOL;
-typedef void *HWND;
-typedef const char *LPCSTR;
-typedef unsigned int UINT;
-
-extern "C" {
-__declspec(dllimport) BOOL __stdcall MessageBeep(UINT uType);
-__declspec(dllimport) int  __stdcall MessageBoxA(HWND hWnd, LPCSTR lpText,
-                                                 LPCSTR lpCaption, UINT uType);
-}
-
-#define MB_ICONHAND 0x30   // the uType / beep code the reporter passes (0x30)
+// MessageBeep / MessageBoxA + BOOL/HWND/LPCSTR/UINT come from the real
+// <windows.h> (via Win32.h; pure-Win32 TU, no MFC). The reporter's uType is
+// MB_ICONEXCLAMATION (0x30); the old hand-rolled macro mislabeled that value as
+// the "hand" icon, whose real windows.h value is 0x10.
+#include <Win32.h>
 
 // Reporting-mode globals (live in .data). g_logEnabled drives the engine logger
 // path, g_msgBoxEnabled the MessageBox path; g_beepEnabled gates the startup
@@ -62,7 +49,7 @@ void CDirectDrawMgr::GetErrorString(char *file, int line, long hr)
     char szLine[512];   // local_200 - formatted output line
 
     if (g_beepEnabled)
-        MessageBeep(MB_ICONHAND);
+        MessageBeep(MB_ICONEXCLAMATION);
     if (!g_logEnabled && !g_msgBoxEnabled && !g_thirdEnabled)
         return;
 
@@ -135,6 +122,6 @@ void CDirectDrawMgr::GetErrorString(char *file, int line, long hr)
             sprintf(szLine, "%s (%i)\n\n%s", szCode, code, szMsg);
         else
             sprintf(szLine, "%s, line %i\n\n%s (%i)\n\n%s", file, line, szCode, code, szMsg);
-        MessageBoxA((HWND)0, szLine, "DirectDrawMgr", MB_ICONHAND);
+        MessageBoxA((HWND)0, szLine, "DirectDrawMgr", MB_ICONEXCLAMATION);
     }
 }
