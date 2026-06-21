@@ -114,6 +114,11 @@ source = "src/Gruntz/UserLogic.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "gameobjectctors"
+source = "src/Gruntz/GameObjectCtors.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "userbaselink"
 source = "src/Gruntz/UserBaseLink.cpp"
 flags = "eh"
@@ -259,6 +264,11 @@ source = "src/Gruntz/BattlezMapConfig.cpp"
 flags = "base"
 
 [[unit]]
+unit = "unknownclassarrays"
+source = "src/Gruntz/UnknownClassArrays.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "videoconfig"
 source = "src/Gruntz/VideoConfig.cpp"
 flags = "base"
@@ -272,6 +282,11 @@ flags = "base"
 unit = "spriteresource"
 source = "src/Gruntz/SpriteResource.cpp"
 flags = "base"
+
+[[unit]]
+unit = "cstatusbarmgr"
+source = "src/Gruntz/CStatusBarMgr.cpp"
+flags = "eh"
 
 [[unit]]
 unit = "iconloaders"

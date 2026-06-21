@@ -152,7 +152,6 @@ namespace EngineLabelBacklog {
     void LoadDestructButtonSprite();
     void BuildGameTabResumeButton();
     void BuildGameTabPauseButton();
-    void LoadStatusBarTabSprites();
     void LoadStatzTabToggleSprite();
     void UpdateGruntOvenStatusBar();
     void LoadGooCookingSprite();
@@ -926,12 +925,6 @@ void EngineLabelBacklog::BuildGameTabResumeButton() {}
 // @stub
 RVA(0x102200, 0x37)
 void EngineLabelBacklog::BuildGameTabPauseButton() {}
-
-// @confidence: med
-// @source: string-xref
-// @stub
-RVA(0x102250, 0x1dcd)
-void EngineLabelBacklog::LoadStatusBarTabSprites() {}
 
 // @confidence: med
 // @source: decomp-xref

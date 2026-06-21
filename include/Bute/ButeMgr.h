@@ -158,6 +158,10 @@ struct CButeRef8 { // 16 bytes
 // CRT helpers (minimal external decls; reloc-masked engine CRT thunks).
 extern "C" int atexit(void (*func)(void));
 
+// The optional error callback CButeMgr::ReportError fires after formatting the
+// message (cdecl, takes the formatted C string).
+typedef void(__cdecl* ErrCallback)(const char*);
+
 // ---------------------------------------------------------------------------
 // CButeMgr - the attribute manager.
 // ---------------------------------------------------------------------------
@@ -175,6 +179,12 @@ public:
     bool ScanToken(int expectType);
     bool ParseTagLine();
     bool Parse();
+
+    // The variadic error reporter: format `fmt` + varargs into m_errStr, then
+    // fire the optional m_errCallback with the message. A variadic member is
+    // __cdecl with `this` as the hidden first stack arg (QAA mangling) - exactly
+    // the retail ABI (this pushed last at each call site).
+    int ReportError(const char* fmt, ...);
 
     // Callback trampoline + sub-object cleanup.
     void* InvokeCallback(void* (*fn)(CButeMgr*));
@@ -197,7 +207,9 @@ public:
 
     char m_pad00[0x8];            // +0x00
     int m_lineNo;                 // +0x08
-    char m_pad0c[0x18 - 0xc];     // +0x0c
+    char m_pad0c[0x10 - 0xc];     // +0x0c
+    CString m_errStr;             // +0x10  scratch the error reporter formats into
+    ErrCallback m_errCallback;    // +0x14  optional error-callback fn-ptr
     char m_treeRaw[0x44 - 0x18];  // +0x18  the CButeTree store root
     void* m_pNode;                // +0x44
     char m_pad48[0xa4 - 0x48];    // +0x48
@@ -220,9 +232,5 @@ public:
     CButeRef7* GetRef7(char* tag, char* key);
     CButeRef8* GetRef8(char* tag, char* key);
 };
-
-// The variadic error reporter (__cdecl): ReportError(this, fmt, ...).
-// Reloc-masked; modeled external/no-body.
-int CButeMgr_ReportError(CButeMgr* self, const char* fmt, ...);
 
 #endif // SRC_BUTE_BUTEMGR_H

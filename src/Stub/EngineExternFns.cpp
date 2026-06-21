@@ -32,7 +32,15 @@ extern "C" {
     // @stub
     RVA(0x1b9b46, 0x3c)
     SYMBOL(_RezAlloc)
-    int RezAlloc() {
+    void* RezAlloc(unsigned int size) {
+        return 0;
+    }
+    // @confidence: high
+    // @source: reloc-correlation (CFileImage decoders)
+    // @stub
+    RVA(0x1b9b82, 0xb)
+    SYMBOL(_RezFree)
+    int RezFree() {
         return 0;
     }
     // @confidence: med
@@ -85,13 +93,8 @@ extern "C" {
     }
 }
 
-// @confidence: high
-// @source: reloc-correlation (11 callers)
-// @stub
-RVA(0x1706c0, 0x4b)
-int CButeMgr_ReportError(class CButeMgr*, char const*, ...) {
-    return 0;
-}
+// CButeMgr_ReportError (0x1706c0) graduated to src/Bute/ButeMgr.cpp as the real
+// variadic member CButeMgr::ReportError.
 
 // @confidence: med
 // @source: reloc-correlation (1 caller)

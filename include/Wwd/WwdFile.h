@@ -148,4 +148,23 @@ int __stdcall WwdFile_IsValidWwd(const char* name, void* headerBuf);
 // header into the caller buffer. __stdcall (callee cleans 8 bytes); returns 1 / 0.
 int __stdcall WwdFile_CheckHeader(const char* name, void* headerOut);
 
+// MFC forward decl so the WwdFile members below can take CString by value
+// without pulling <Mfc.h> into every includer (the .cpp includes it).
+class CString;
+
+// ---------------------------------------------------------------------------
+// WwdFile - the WWD level-file loader namespace-class. IsValidWwd/CheckHeader/
+// InflateMainBlock are exposed above as the free `WwdFile_*` symbols the engine
+// actually emits; the two methods below carry the `@WwdFile@@` mangling.
+//   - ValidateMainBlock: a static caller-cleaned helper (Ghidra mis-derived its
+//     prototype as `void(void)`); takes a CString by value, returns an int.
+//   - ReadPlaneObjects: __thiscall, reads one object record at `src` into a new
+//     game object and returns the byte count consumed.
+// ---------------------------------------------------------------------------
+class WwdFile {
+public:
+    static int ValidateMainBlock(CString name);
+    int ReadPlaneObjects(const int* src);
+};
+
 #endif // SRC_WWD_WWDFILE_H

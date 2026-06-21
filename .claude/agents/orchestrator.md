@@ -47,6 +47,32 @@ misleading (Pareto) — a "47% by bytes" milestone is ~455 functions, not 7,000.
 > The big-first guidance in this section still governs once the leaf frontier is
 > exhausted / for deep deliberate dives. Re-run the generator to refill the queue
 > as matches land. Progress is still measured in **bytes** (§1).
+>
+> **Dispatch only genuinely-unmatched NEW leaves — filter the queue first.** The
+> generator marks a candidate "unmatched" unless it is **100%-exact**, so a function
+> already reconstructed in a real TU but sitting at a *fuzzy plateau* (jump-table /
+> reloc-typing artifacts, §6) reappears as `ready` and wastes a dispatch — *measured*:
+> `CDirectDrawMgr::GetErrorString` was already done at its 96.24% plateau yet showed
+> `ready`. Before dispatching, cross-check each candidate's RVA against the `RVA()`
+> macros already in `src/` **excluding `src/Stub/`**; if it lives in a real unit it is
+> done (or at its plateau) — skip it. A true new leaf appears only in `src/Stub/`
+> (a 0% stub to reconstruct) or nowhere yet. One-liner:
+> `grep -rlE 'RVA\(0x' src --include=*.cpp | grep -v /Stub/ | xargs grep -ohE '0x[0-9a-f]{4,6}' | sort -u`
+> gives the already-reconstructed set to subtract from the queue.
+> **Caveat:** `gen_match_queue` needs the Ghidra-named DB (built by `gruntz init`);
+> run in a plain `nix develop` shell it writes **0 candidates** and clobbers the
+> committed queue — `git checkout config/match-queue.md` to restore.
+>
+> **CURRENT MODE — breadth-first, PREFER-NEW (the default until further notice):**
+> dispatch workers at **NEW untried functions**; do **NOT** re-dispatch a function that
+> already plateaued on a documented wall (regalloc / EH-state / scheduling / jump-table /
+> reloc-typing — §2a, §6). Taking a fresh function 0%→exact (or →high-fuzzy) is worth far
+> more than squeezing a stuck one 80%→82%, and looping on walls burns workers for ~0 net
+> (measured this campaign). **Defer the "second sweep"** (re-attacking plateaus) until we
+> have more `docs/patterns/` documented and the class/TU structure better understood —
+> that's when today's walls become steerable. So when a worker reports a function stuck
+> (no local source diff; residual is a documented wall), mark it **done-enough**, record
+> the wall, and point the next worker at a NEW target — never re-queue it now.
 
 
 1. **Big-first for understanding.** Target functions >~256 B first; they hold most
@@ -59,6 +85,21 @@ misleading (Pareto) — a "47% by bytes" milestone is ~455 functions, not 7,000.
 3. **The tiny tail: batch, never deep-dive.** ≤32 B functions (accessors, thunks,
    trivial getters/setters, vtable-slot stubs) are cheap — many per worker, or
    generated from the class layout. Never spend a deep worker on a 6-byte stub.
+   **MEASURED ROI — prefer a uniform medium cluster over a partial megafunction.**
+   A coherent class of ~5–18 structurally-similar medium methods (the DX-manager
+   error-thunks: DirectSound 16/18, CDirectDraw 10/14, DirectInput 7/7; the CImage
+   loaders 5/5) goes mostly byte-EXACT once one member of the cluster cracks the
+   shared idiom — *measured* ~2,900 fully-matched bytes per ~113k matcher tokens.
+   A single megafunction is a token-sink by contrast (a 7,629 B loader → only 16.7%
+   fuzzy for 263k tokens) because a big function's register/EH allocation only
+   **converges when the body is COMPLETE** — a partial under-counts AND diverges
+   (wrong regalloc), so you pay full price for little credit. So sequence: clear the
+   uniform clusters first; defer a megafunction until its callees are matched (leaf
+   corpus eases convergence) and then reconstruct it whole in one dedicated worker,
+   not in partial slices. The error-formatter / COM-error-thunk archetype is the
+   single most reliable cluster (`GetErrorString`/`ReportError` + per-callsite
+   `__FILE__`/`__LINE__`); split a "cluster" by its `$SG __FILE__` strings — one RVA
+   range often spans several real classes (DDraw → CDDSurface/CDDPalette/CDDPageMgr).
 4. **By TU (contiguity) for locality.** Functions cluster contiguously by source
    file. Dispatch a worker per **TU / manager region** — it matches a whole
    `.cpp`'s functions together (shared headers/types, one `src/` file), far more
@@ -130,10 +171,14 @@ or misordered caller/inline-callee in the same TU — isolate to confirm, above)
   Cheap, fans out wide, grows the partition and the roadmap. **Dispatch labelers
   first/broadly to map the territory.**
 - **Matcher** — byte-matches a function: writes `src/<Module>/<TU>.cpp` (+ headers),
-  runs the `gruntz build` (cl→labels→delink→objdiff) loop to byte-exact. Expensive, deep,
-  one function/TU at a time. **Dispatch matchers on *labeled* targets** (so the
-  worker knows the function's identity + prototype before reading it),
-  prioritized by Section 2.
+  runs the `gruntz build` (cl→labels→delink→objdiff) loop to byte-exact. Expensive, deep.
+  **Dispatch matchers on *labeled* targets** (so the worker knows the function's
+  identity + prototype before reading it), prioritized by Section 2.
+  **Batch each matcher with a whole TU / contiguous cluster of related new-leaf
+  functions — not one tiny function.** A cluster shares headers/types/symbol-set, so
+  the worker amortizes the dispatch and contains the entropy blast radius (§2.4); a
+  lone 6-byte stub is never worth a deep dispatch (§2.3). Commit the batch centrally
+  (§7), never inside the worker.
 
 Labels make matching faster — a matcher handed `CGruntzMgr::Init(...)` with a
 prototype starts far ahead of one staring at `FUN_00482f50`.

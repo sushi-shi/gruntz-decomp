@@ -23,6 +23,13 @@ the TU's functions in **retail-RVA order**, put `RVA(0x.., 0x..)` / `DATA(0x..)`
 3. **Build + diff:** `nix develop .#build --command gruntz build`; read the per-function objdiff.
 4. **Iterate** on the residual. Done = 100% exact, or the reloc-masked plateau (code bytes match;
    only differently-named symbol operands differ — confirm by `llvm-objdump -dr` base vs target).
+   **When a diff row is stuck, GREP `docs/patterns/INDEX.md` FIRST** (by symptom token or tag,
+   e.g. `cpp:switch`, `asm:neg`, `topic:wall`) — most MSVC5 /O2 idioms are already cataloged with
+   a steerable source spelling; don't re-derive a fix that exists. **If you discover a genuinely-new
+   idiom** (not in INDEX), **document it: add a `docs/patterns/<name>.md` file + one INDEX line in
+   the SAME change** (schema in `docs/patterns/README.md`) — this is part of finishing the match, not
+   optional. A `topic:wall`/`topic:scoring-artifact` entry means the code is already correct (stop
+   chasing, §2a doctrine); a `topic:codegen-idiom` entry means a source spelling closes it.
 
 ## Source-writing doctrine
 
