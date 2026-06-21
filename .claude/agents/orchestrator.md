@@ -47,6 +47,21 @@ misleading (Pareto) — a "47% by bytes" milestone is ~455 functions, not 7,000.
 > The big-first guidance in this section still governs once the leaf frontier is
 > exhausted / for deep deliberate dives. Re-run the generator to refill the queue
 > as matches land. Progress is still measured in **bytes** (§1).
+>
+> **Dispatch only genuinely-unmatched NEW leaves — filter the queue first.** The
+> generator marks a candidate "unmatched" unless it is **100%-exact**, so a function
+> already reconstructed in a real TU but sitting at a *fuzzy plateau* (jump-table /
+> reloc-typing artifacts, §6) reappears as `ready` and wastes a dispatch — *measured*:
+> `CDirectDrawMgr::GetErrorString` was already done at its 96.24% plateau yet showed
+> `ready`. Before dispatching, cross-check each candidate's RVA against the `RVA()`
+> macros already in `src/` **excluding `src/Stub/`**; if it lives in a real unit it is
+> done (or at its plateau) — skip it. A true new leaf appears only in `src/Stub/`
+> (a 0% stub to reconstruct) or nowhere yet. One-liner:
+> `grep -rlE 'RVA\(0x' src --include=*.cpp | grep -v /Stub/ | xargs grep -ohE '0x[0-9a-f]{4,6}' | sort -u`
+> gives the already-reconstructed set to subtract from the queue.
+> **Caveat:** `gen_match_queue` needs the Ghidra-named DB (built by `gruntz init`);
+> run in a plain `nix develop` shell it writes **0 candidates** and clobbers the
+> committed queue — `git checkout config/match-queue.md` to restore.
 
 
 1. **Big-first for understanding.** Target functions >~256 B first; they hold most
@@ -130,10 +145,14 @@ or misordered caller/inline-callee in the same TU — isolate to confirm, above)
   Cheap, fans out wide, grows the partition and the roadmap. **Dispatch labelers
   first/broadly to map the territory.**
 - **Matcher** — byte-matches a function: writes `src/<Module>/<TU>.cpp` (+ headers),
-  runs the `gruntz build` (cl→labels→delink→objdiff) loop to byte-exact. Expensive, deep,
-  one function/TU at a time. **Dispatch matchers on *labeled* targets** (so the
-  worker knows the function's identity + prototype before reading it),
-  prioritized by Section 2.
+  runs the `gruntz build` (cl→labels→delink→objdiff) loop to byte-exact. Expensive, deep.
+  **Dispatch matchers on *labeled* targets** (so the worker knows the function's
+  identity + prototype before reading it), prioritized by Section 2.
+  **Batch each matcher with a whole TU / contiguous cluster of related new-leaf
+  functions — not one tiny function.** A cluster shares headers/types/symbol-set, so
+  the worker amortizes the dispatch and contains the entropy blast radius (§2.4); a
+  lone 6-byte stub is never worth a deep dispatch (§2.3). Commit the batch centrally
+  (§7), never inside the worker.
 
 Labels make matching faster — a matcher handed `CGruntzMgr::Init(...)` with a
 prototype starts far ahead of one staring at `FUN_00482f50`.
