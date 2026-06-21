@@ -8,13 +8,13 @@
 #ifndef GRUNTZ_WIN32_H
 #define GRUNTZ_WIN32_H
 
-#define WIN32_LEAN_AND_MEAN   // trim windows.h to the core (no OLE / RPC / etc.)
+#define WIN32_LEAN_AND_MEAN // trim windows.h to the core (no OLE / RPC / etc.)
 #include <windows.h>
 
-typedef int INT_PTR;          // VC5 predates the <basetsd.h> pointer-width aliases
+typedef int INT_PTR; // VC5 predates the <basetsd.h> pointer-width aliases
 
 // WINMM timeGetTime (frame clock); in <mmsystem.h> (modern <timeapi.h>), not in
 // <windows.h> - declared here so it isn't hand-rolled per TU.
 extern "C" __declspec(dllimport) unsigned long __stdcall timeGetTime(void);
 
-#endif  // GRUNTZ_WIN32_H
+#endif // GRUNTZ_WIN32_H

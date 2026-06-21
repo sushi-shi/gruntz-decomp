@@ -35,7 +35,7 @@
 
 // Global operator new (engine NAFXCW); external/no-body so the
 // `push 0x2c; call ??2; add esp,4` shape falls out reloc-masked.
-void *operator new(unsigned int n);
+void* operator new(unsigned int n);
 
 // The node-ctor descriptor. Reloc-masked file-scope address.
 extern int g_nodeDescriptor;
@@ -53,15 +53,15 @@ public:
 static short g_tokenLen;
 
 // Error-reporter format strings (reloc-masked file-scope literals).
-static const char s_fmtFormatError[]  = "ButeMgr (%d): A formatting error";
-static const char s_fmtBadSymbol[]    = "ButeMgr (%d): Bad symbol encountered";
-static const char s_fmtDupTag[]       = "ButeMgr: duplicate tag encountered";
+static const char s_fmtFormatError[] = "ButeMgr (%d): A formatting error";
+static const char s_fmtBadSymbol[] = "ButeMgr (%d): Bad symbol encountered";
+static const char s_fmtDupTag[] = "ButeMgr: duplicate tag encountered";
 static const char s_fmtTypeMismatch[] = "ButeMgr: Type mismatch - [%s]:%s";
-static const char s_fmtInvalidTag[]   = "ButeMgr: Invalid tag specified - ";
-static const char s_fmtNotFound[]     = "ButeMgr: Symbol not found - [%s]";
+static const char s_fmtInvalidTag[] = "ButeMgr: Invalid tag specified - ";
+static const char s_fmtNotFound[] = "ButeMgr: Symbol not found - [%s]";
 
 // Float/double zero-on-error constants (reloc-masked file-scope).
-static const float  s_floatZero  = 0.0f;
+static const float s_floatZero = 0.0f;
 static const double s_doubleZero = 0.0;
 
 // ---------------------------------------------------------------------------
@@ -70,10 +70,10 @@ static const double s_doubleZero = 0.0;
 // (m_tokType == expectType). On mismatch it reports a formatting error (with the
 // current line m_lineNo) and returns false; else true.
 RVA(0x170710, 0x3b)
-bool CButeMgr::ScanToken(int expectType)
-{
-    if (!Parse())
+bool CButeMgr::ScanToken(int expectType) {
+    if (!Parse()) {
         return false;
+    }
 
     if (m_tokType != expectType) {
         CButeMgr_ReportError(this, s_fmtFormatError, m_lineNo);
@@ -88,14 +88,14 @@ bool CButeMgr::ScanToken(int expectType)
 // hit return *(int*)rec->pValue, on type mismatch report + fall through, on any
 // miss return def.
 RVA(0x171aa0, 0x50)
-int CButeMgr::GetIntDef(char *tag, char *key, int def)
-{
-    void *grp = Tree()->Find(tag);
+int CButeMgr::GetIntDef(char* tag, char* key, int def) {
+    void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue *rec = (CButeValue *)((CButeTree *)grp)->Find(key);
+        CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
         if (rec) {
-            if (rec->type == 0)
-                return *(int *)rec->pValue;
+            if (rec->type == 0) {
+                return *(int*)rec->pValue;
+            }
             CButeMgr_ReportError(this, s_fmtTypeMismatch, tag, key);
         }
     }
@@ -107,14 +107,14 @@ int CButeMgr::GetIntDef(char *tag, char *key, int def)
 // type-0 getter, no default: returns 0x80000000 on any miss (and reports the
 // specific failure - type mismatch / symbol-not-found / invalid-tag).
 RVA(0x171af0, 0x86)
-int CButeMgr::GetInt(char *tag, char *key)
-{
-    void *grp = Tree()->Find(tag);
+int CButeMgr::GetInt(char* tag, char* key) {
+    void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue *rec = (CButeValue *)((CButeTree *)grp)->Find(key);
+        CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
         if (rec) {
-            if (rec->type == 0)
-                return *(int *)rec->pValue;
+            if (rec->type == 0) {
+                return *(int*)rec->pValue;
+            }
             CButeMgr_ReportError(this, s_fmtTypeMismatch, tag, key);
             return (int)0x80000000;
         }
@@ -130,15 +130,14 @@ int CButeMgr::GetInt(char *tag, char *key)
 // type-1 (dword) getter with default. The type check is `if (--type == 0)` i.e.
 // type == 1 (the disasm `mov ecx,[eax]; dec ecx; je`).
 RVA(0x1721e0, 0x5a)
-DWORD CButeMgr::GetDwordDef(char *tag, char *key, DWORD def)
-{
-    void *grp = Tree()->Find(tag);
+DWORD CButeMgr::GetDwordDef(char* tag, char* key, DWORD def) {
+    void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue *rec = (CButeValue *)((CButeTree *)grp)->Find(key);
+        CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
         if (rec) {
             switch (rec->type) {
-            case 1:
-                return *(DWORD *)rec->pValue;
+                case 1:
+                    return *(DWORD*)rec->pValue;
             }
             CButeMgr_ReportError(this, s_fmtTypeMismatch, tag, key);
         }
@@ -150,15 +149,14 @@ DWORD CButeMgr::GetDwordDef(char *tag, char *key, DWORD def)
 // CButeMgr::GetDword
 // type-1 getter, no default: returns 0 on any miss.
 RVA(0x172240, 0x7d)
-DWORD CButeMgr::GetDword(char *tag, char *key)
-{
-    void *grp = Tree()->Find(tag);
+DWORD CButeMgr::GetDword(char* tag, char* key) {
+    void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue *rec = (CButeValue *)((CButeTree *)grp)->Find(key);
+        CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
         if (rec) {
             switch (rec->type) {
-            case 1:
-                return *(DWORD *)rec->pValue;
+                case 1:
+                    return *(DWORD*)rec->pValue;
             }
             CButeMgr_ReportError(this, s_fmtTypeMismatch, tag, key);
             return 0;
@@ -176,17 +174,16 @@ DWORD CButeMgr::GetDword(char *tag, char *key)
 // when type==0, `fld` the float when type==3, else report + return 0.0f. Returns
 // in st(0) (an x87 float return).
 RVA(0x172730, 0x9a)
-float CButeMgr::GetFloat(char *tag, char *key)
-{
-    void *grp = Tree()->Find(tag);
+float CButeMgr::GetFloat(char* tag, char* key) {
+    void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue *rec = (CButeValue *)((CButeTree *)grp)->Find(key);
+        CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
         if (rec) {
             switch (rec->type) {
-            case 0:
-                return (float)*(int *)rec->pValue;
-            case 3:
-                return *(float *)rec->pValue;
+                case 0:
+                    return (float)*(int*)rec->pValue;
+                case 3:
+                    return *(float*)rec->pValue;
             }
             CButeMgr_ReportError(this, s_fmtTypeMismatch, tag, key);
             return s_floatZero;
@@ -204,17 +201,16 @@ float CButeMgr::GetFloat(char *tag, char *key)
 // `fld qword` when type==2, else report + return 0.0. (The disasm tests with
 // `sub ecx,0; je` then `sub ecx,2; je` -> the type==0 and type==2 branches.)
 RVA(0x172c40, 0x9b)
-double CButeMgr::GetDouble(char *tag, char *key)
-{
-    void *grp = Tree()->Find(tag);
+double CButeMgr::GetDouble(char* tag, char* key) {
+    void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue *rec = (CButeValue *)((CButeTree *)grp)->Find(key);
+        CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
         if (rec) {
             switch (rec->type) {
-            case 0:
-                return (double)*(int *)rec->pValue;
-            case 2:
-                return *(double *)rec->pValue;
+                case 0:
+                    return (double)*(int*)rec->pValue;
+                case 2:
+                    return *(double*)rec->pValue;
             }
             CButeMgr_ReportError(this, s_fmtTypeMismatch, tag, key);
             return s_doubleZero;
@@ -231,14 +227,14 @@ double CButeMgr::GetDouble(char *tag, char *key)
 // type-4 (string) getter with default: returns rec->pValue (the char*) on a
 // type-4 hit, reports a type mismatch otherwise, returns def on any miss.
 RVA(0x173180, 0x4e)
-CString *CButeMgr::GetStringDef(char *tag, char *key, CString *def)
-{
-    void *grp = Tree()->Find(tag);
+CString* CButeMgr::GetStringDef(char* tag, char* key, CString* def) {
+    void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue *rec = (CButeValue *)((CButeTree *)grp)->Find(key);
+        CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
         if (rec) {
-            if (rec->type == 4)
-                return (CString *)rec->pValue;
+            if (rec->type == 4) {
+                return (CString*)rec->pValue;
+            }
             CButeMgr_ReportError(this, s_fmtTypeMismatch, tag, key);
         }
     }
@@ -252,24 +248,24 @@ CString *CButeMgr::GetStringDef(char *tag, char *key, CString *def)
 // function-local static CString (MFC magic-static: one-shot guarded ctor +
 // atexit-registered dtor) returned by address on every error path.
 RVA(0x1731d0, 0xb6)
-char *CButeMgr::GetString(char *tag, char *key)
-{
+char* CButeMgr::GetString(char* tag, char* key) {
     static CString s_empty("");
 
-    void *grp = Tree()->Find(tag);
+    void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue *rec = (CButeValue *)((CButeTree *)grp)->Find(key);
+        CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
         if (rec) {
-            if (rec->type == 4)
-                return (char *)rec->pValue;
+            if (rec->type == 4) {
+                return (char*)rec->pValue;
+            }
             CButeMgr_ReportError(this, s_fmtTypeMismatch, tag, key);
-            return (char *)&s_empty;
+            return (char*)&s_empty;
         }
         CButeMgr_ReportError(this, s_fmtNotFound, tag, key);
-        return (char *)&s_empty;
+        return (char*)&s_empty;
     }
     CButeMgr_ReportError(this, s_fmtInvalidTag, tag);
-    return (char *)&s_empty;
+    return (char*)&s_empty;
 }
 
 // ---------------------------------------------------------------------------
@@ -287,21 +283,21 @@ char *CButeMgr::GetString(char *tag, char *key)
 // canonicalization reproduces the retail tail byte-for-byte (the SEH cleanup spans
 // the value, so MSVC re-canonicalizes the bool after restoring fs:[0]).
 RVA(0x1711b0, 0xf5)
-bool CButeMgr::ParseTagLine()
-{
-    if (!ScanToken(4))
+bool CButeMgr::ParseTagLine() {
+    if (!ScanToken(4)) {
         return false;
+    }
 
-    char *tok = m_token;
+    char* tok = m_token;
     m_tagName = tok;
 
     if (!m_10d) {
-        CButeTree *t = Tree();
+        CButeTree* t = Tree();
         if (t->Find(tok)) {
             CButeMgr_ReportError(this, s_fmtDupTag, tok);
             return false;
         }
-        CButeNode *node = new CButeNode(&g_nodeDescriptor, 2);
+        CButeNode* node = new CButeNode(&g_nodeDescriptor, 2);
         m_pNode = node;
         t->Insert(tok, node);
     }
@@ -318,60 +314,66 @@ bool CButeMgr::ParseTagLine()
 // buffer, advance the lexer (ButeLex_NextChar), and recurse for nested groups.
 // Reports "Bad symbol encountered" (with m_lineNo) on the error class.
 RVA(0x1704c0, 0x1e3)
-bool CButeMgr::Parse()
-{
+bool CButeMgr::Parse() {
     int kind = 0x11;
     g_tokenLen = 0;
 
     for (;;) {
         short cls = PeekClass(kind, m_curChar);
         switch (cls) {
-        case 0:  // bad symbol
-            CButeMgr_ReportError(this, s_fmtBadSymbol, m_lineNo);
-            return false;
+            case 0: // bad symbol
+                CButeMgr_ReportError(this, s_fmtBadSymbol, m_lineNo);
+                return false;
 
-        case 1:  // value char: scan, store to token buffer, echo, advance, loop
-            kind = ReadValue(kind, m_curChar);
-            m_token[g_tokenLen++] = m_curChar;
-            if (m_10c != 0 && m_curChar != 0)
-                ((CButeText *)((char *)m_pText + 0xc))->AppendChar(m_curChar);
-            NextChar();
-            break;
+            case 1: // value char: scan, store to token buffer, echo, advance, loop
+                kind = ReadValue(kind, m_curChar);
+                m_token[g_tokenLen++] = m_curChar;
+                if (m_10c != 0 && m_curChar != 0) {
+                    ((CButeText*)((char*)m_pText + 0xc))->AppendChar(m_curChar);
+                }
+                NextChar();
+                break;
 
-        case 2:  // value char: scan, echo only, advance, loop
-            kind = ReadValue(kind, m_curChar);
-            if (m_10c != 0 && m_curChar != 0)
-                ((CButeText *)((char *)m_pText + 0xc))->AppendChar(m_curChar);
-            NextChar();
-            break;
+            case 2: // value char: scan, echo only, advance, loop
+                kind = ReadValue(kind, m_curChar);
+                if (m_10c != 0 && m_curChar != 0) {
+                    ((CButeText*)((char*)m_pText + 0xc))->AppendChar(m_curChar);
+                }
+                NextChar();
+                break;
 
-        case 3:  // identifier: scan, store, echo, advance, recurse, terminate
-            ReadIdent(kind, m_curChar);
-            m_token[g_tokenLen++] = m_curChar;
-            if (m_10c != 0 && m_curChar != 0)
-                ((CButeText *)((char *)m_pText + 0xc))->AppendChar(m_curChar);
-            NextChar();
-            if (m_tokType == 0)
-                Parse();
-            m_token[g_tokenLen] = 0;
-            return true;
+            case 3: // identifier: scan, store, echo, advance, recurse, terminate
+                ReadIdent(kind, m_curChar);
+                m_token[g_tokenLen++] = m_curChar;
+                if (m_10c != 0 && m_curChar != 0) {
+                    ((CButeText*)((char*)m_pText + 0xc))->AppendChar(m_curChar);
+                }
+                NextChar();
+                if (m_tokType == 0) {
+                    Parse();
+                }
+                m_token[g_tokenLen] = 0;
+                return true;
 
-        case 4:  // identifier: scan, echo only, advance, recurse, terminate
-            ReadIdent(kind, m_curChar);
-            if (m_10c != 0 && m_curChar != 0)
-                ((CButeText *)((char *)m_pText + 0xc))->AppendChar(m_curChar);
-            NextChar();
-            if (m_tokType == 0)
-                Parse();
-            m_token[g_tokenLen] = 0;
-            return true;
+            case 4: // identifier: scan, echo only, advance, recurse, terminate
+                ReadIdent(kind, m_curChar);
+                if (m_10c != 0 && m_curChar != 0) {
+                    ((CButeText*)((char*)m_pText + 0xc))->AppendChar(m_curChar);
+                }
+                NextChar();
+                if (m_tokType == 0) {
+                    Parse();
+                }
+                m_token[g_tokenLen] = 0;
+                return true;
 
-        case 5:  // identifier: scan, recurse, terminate (no echo, no advance)
-            ReadIdent(kind, m_curChar);
-            if (m_tokType == 0)
-                Parse();
-            m_token[g_tokenLen] = 0;
-            return true;
+            case 5: // identifier: scan, recurse, terminate (no echo, no advance)
+                ReadIdent(kind, m_curChar);
+                if (m_tokType == 0) {
+                    Parse();
+                }
+                m_token[g_tokenLen] = 0;
+                return true;
         }
     }
 }
@@ -397,16 +399,16 @@ bool CButeMgr::Parse()
 // forms all produce identical (ebp-pinned) MSVC codegen; no source lever flips it
 // (see docs/patterns/zero-register-pinning.md - the regalloc wall).
 RVA(0x173770, 0xc6)
-CButeRef5 *CButeMgr::GetRef5(char *tag, char *key)
-{
+CButeRef5* CButeMgr::GetRef5(char* tag, char* key) {
     static CButeRef5 s_default;
 
-    void *grp = Tree()->Find(tag);
+    void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue *rec = (CButeValue *)((CButeTree *)grp)->Find(key);
+        CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
         if (rec) {
-            if (rec->type == 5)
-                return (CButeRef5 *)rec->pValue;
+            if (rec->type == 5) {
+                return (CButeRef5*)rec->pValue;
+            }
             CButeMgr_ReportError(this, s_fmtTypeMismatch, tag, key);
             return &s_default;
         }
@@ -418,16 +420,16 @@ CButeRef5 *CButeMgr::GetRef5(char *tag, char *key)
 }
 
 RVA(0x173d00, 0xbb)
-CButeRef6 *CButeMgr::GetRef6(char *tag, char *key)
-{
+CButeRef6* CButeMgr::GetRef6(char* tag, char* key) {
     static CButeRef6 s_default;
 
-    void *grp = Tree()->Find(tag);
+    void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue *rec = (CButeValue *)((CButeTree *)grp)->Find(key);
+        CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
         if (rec) {
-            if (rec->type == 6)
-                return (CButeRef6 *)rec->pValue;
+            if (rec->type == 6) {
+                return (CButeRef6*)rec->pValue;
+            }
             CButeMgr_ReportError(this, s_fmtTypeMismatch, tag, key);
             return &s_default;
         }
@@ -439,16 +441,16 @@ CButeRef6 *CButeMgr::GetRef6(char *tag, char *key)
 }
 
 RVA(0x174240, 0xe3)
-CButeRef7 *CButeMgr::GetRef7(char *tag, char *key)
-{
+CButeRef7* CButeMgr::GetRef7(char* tag, char* key) {
     static CButeRef7 s_default;
 
-    void *grp = Tree()->Find(tag);
+    void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue *rec = (CButeValue *)((CButeTree *)grp)->Find(key);
+        CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
         if (rec) {
-            if (rec->type == 7)
-                return (CButeRef7 *)rec->pValue;
+            if (rec->type == 7) {
+                return (CButeRef7*)rec->pValue;
+            }
             CButeMgr_ReportError(this, s_fmtTypeMismatch, tag, key);
             return &s_default;
         }
@@ -460,16 +462,16 @@ CButeRef7 *CButeMgr::GetRef7(char *tag, char *key)
 }
 
 RVA(0x1747c0, 0xcf)
-CButeRef8 *CButeMgr::GetRef8(char *tag, char *key)
-{
+CButeRef8* CButeMgr::GetRef8(char* tag, char* key) {
     static CButeRef8 s_default;
 
-    void *grp = Tree()->Find(tag);
+    void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue *rec = (CButeValue *)((CButeTree *)grp)->Find(key);
+        CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
         if (rec) {
-            if (rec->type == 8)
-                return (CButeRef8 *)rec->pValue;
+            if (rec->type == 8) {
+                return (CButeRef8*)rec->pValue;
+            }
             CButeMgr_ReportError(this, s_fmtTypeMismatch, tag, key);
             return &s_default;
         }
@@ -485,8 +487,7 @@ CButeRef8 *CButeMgr::GetRef8(char *tag, char *key)
 // ===========================================================================
 // Simple trampoline: takes a function pointer, calls it with `this`, returns `this`.
 RVA(0x171550, 0x11)
-void *CButeMgr::InvokeCallback(void *(*fn)(CButeMgr *))
-{
+void* CButeMgr::InvokeCallback(void* (*fn)(CButeMgr*)) {
     fn(this);
     return this;
 }
@@ -496,9 +497,8 @@ void *CButeMgr::InvokeCallback(void *(*fn)(CButeMgr *))
 // ===========================================================================
 // Calls two cleanup methods on the engine helper object at this+0x14.
 RVA(0x171a40, 0x14)
-void CButeMgr::ClearHelper()
-{
-    CButeMgrHelper *h = (CButeMgrHelper *)((char *)this + 0x14);
+void CButeMgr::ClearHelper() {
+    CButeMgrHelper* h = (CButeMgrHelper*)((char*)this + 0x14);
     h->FuncA();
     h->FuncB();
 }
@@ -510,10 +510,9 @@ void CButeMgr::ClearHelper()
 // Returns `this` (or NULL on alloc failure, though the target code always
 // returns `this` with pValue reset to NULL).
 RVA(0x172000, 0x31)
-CButeValue *CButeValue::SetDword(int type, unsigned long val)
-{
+CButeValue* CButeValue::SetDword(int type, unsigned long val) {
     this->type = type;
-    unsigned long *p = new unsigned long;
+    unsigned long* p = new unsigned long;
     if (p) {
         *p = val;
         this->pValue = p;
@@ -528,10 +527,9 @@ CButeValue *CButeValue::SetDword(int type, unsigned long val)
 // ===========================================================================
 // Allocates 4-byte float storage, stores the value.
 RVA(0x172680, 0x31)
-CButeValue *CButeValue::SetFloat(int type, float val)
-{
+CButeValue* CButeValue::SetFloat(int type, float val) {
     this->type = type;
-    float *p = new float;
+    float* p = new float;
     if (p) {
         *p = val;
         this->pValue = p;
@@ -546,10 +544,9 @@ CButeValue *CButeValue::SetFloat(int type, float val)
 // ===========================================================================
 // Allocates 4-byte int storage, stores the value.
 RVA(0x172b90, 0x31)
-CButeValue *CButeValue::SetInt(int type, int val)
-{
+CButeValue* CButeValue::SetInt(int type, int val) {
     this->type = type;
-    int *p = new int;
+    int* p = new int;
     if (p) {
         *p = val;
         this->pValue = p;
@@ -564,10 +561,9 @@ CButeValue *CButeValue::SetInt(int type, int val)
 // ===========================================================================
 // Allocates 8-byte double storage, stores the value.  Returns `this`.
 RVA(0x173140, 0x38)
-CButeValue *CButeValue::SetDouble(int type, double val)
-{
+CButeValue* CButeValue::SetDouble(int type, double val) {
     this->type = type;
-    double *p = new double;
+    double* p = new double;
     if (p) {
         *p = val;
         this->pValue = p;

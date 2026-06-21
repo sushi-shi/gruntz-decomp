@@ -29,22 +29,23 @@ public:
     void VirtualMethodUnknown1C();
     ~CDDrawSubMgrLeaf();
 
-    void *m_vptr;               // +0x00
-    int   m_04;                 // +0x04  -1 when inactive
-    char  m_pad08[0x0c-0x08];   // +0x08..0x0b
-    int   m_0c;                 // +0x0c  parent/root handle
+    void* m_vptr;              // +0x00
+    int m_04;                  // +0x04  -1 when inactive
+    char m_pad08[0x0c - 0x08]; // +0x08..0x0b
+    int m_0c;                  // +0x0c  parent/root handle
 };
 
 // ---------------------------------------------------------------------------
 // Ready when the parent handle is present and the status word is not -1.
 // ---------------------------------------------------------------------------
 RVA(0x1577a0, 0x16)
-int CDDrawSubMgrLeaf::VirtualMethodUnknown14()
-{
-    if (m_0c == 0)
+int CDDrawSubMgrLeaf::VirtualMethodUnknown14() {
+    if (m_0c == 0) {
         goto fail;
-    if (m_04 != -1)
+    }
+    if (m_04 != -1) {
         return 1;
+    }
 
 fail:
     return 0;
@@ -54,9 +55,8 @@ fail:
 // Clears the parent map then zeroes a member field.
 // ---------------------------------------------------------------------------
 RVA(0x157ae0, 0x11)
-void CDDrawSubMgrLeaf::VirtualMethodUnknown18()
-{
-    ((class CDDrawMapHolder *)this)->ClearUnknownMap();
+void CDDrawSubMgrLeaf::VirtualMethodUnknown18() {
+    ((class CDDrawMapHolder*)this)->ClearUnknownMap();
     m_0c = 0;
 }
 

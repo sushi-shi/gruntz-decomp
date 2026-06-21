@@ -40,6 +40,48 @@ nix develop .#build --command gruntz build           # all of the above + match 
 objdiff report -> summary). Pass ninja args after `--`, e.g.
 `gruntz build -- -j8`.
 
+## Formatting — the Rust-like house style
+
+The reconstructed C++ is auto-formatted with **clang-format** (from the Nix dev
+shell) to read as close to Rust as the language allows: 4-space indent, 100-col
+lines, attached braces *including on function definitions* (`int f() {`), `&`/`*`
+bound to the type (`int* p`), a hanging-close (BlockIndent) wrap with function
+*declaration* params one-per-line (call args and data arrays stay bin-packed, so
+GUID/byte tables don't explode), and braces on every control body. The full
+config — and the deliberate decompile-specific deviations — lives in the root
+**`.clang-format`**.
+
+```sh
+gruntz format          # rewrite src/ + include/ in place (~0.3s for the tree)
+gruntz format --check  # CI gate: no writes, non-zero exit if anything drifts
+```
+
+Formatting is **whitespace-only ⇒ matching-neutral**: it never changes the COFF
+bytes objdiff compares (the one parser-visible case, `> >` vs `>>` for MSVC 5.0,
+is pinned by `Standard: c++03`).
+
+**You normally never run it by hand.** A repo-tracked **pre-commit hook**
+(`.githooks/pre-commit`) formats staged `src/`+`include/` files automatically on
+each commit; both dev shells enable it on entry via
+`git config core.hooksPath .githooks` (idempotent; shared across worktrees).
+Outside the Nix shell (no `clang-format` on PATH) the hook skips with a notice
+rather than blocking the commit.
+
+Two deliberate deviations from pure rustfmt, because this is a decompile:
+- **Comment text is never reflowed** (`ReflowComments: Never`) — the ASCII
+  "carcass" diagrams and `// +0xNN` field-offset tables map source to
+  disassembly and must not be rewrapped. Trailing comments *are* column-aligned
+  (`AlignTrailingComments: Always`) so those offset columns stay tidy after the
+  surrounding code is reflowed.
+- **Includes are never reordered** (`SortIncludes: Never`). Include order here is
+  hand-tuned and interleaved with explanatory comments.
+
+**Vendored code is never formatted.** `vendor/` (e.g. `vendor/zlib-1.0.4/`) must
+stay byte-for-byte as shipped — it is part of the matching surface. It sits
+outside the `src/`+`include/` roots that `gruntz format` and the hook touch, and
+is independently guarded by `vendor/.clang-format` (`DisableFormat: true`), so
+even an editor's format-on-save leaves it alone.
+
 ## The manifest: `config/units.toml` (single source of truth)
 
 Per **translation unit** (per-TU). This is the counterpart to

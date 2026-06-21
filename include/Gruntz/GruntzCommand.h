@@ -19,14 +19,14 @@
 #define SRC_GRUNTZ_GRUNTZCOMMAND_H
 
 typedef unsigned int gz_size_t;
-void *operator new(gz_size_t);
+void* operator new(gz_size_t);
 
 // The recycle-list type each leaf allocator pulls from (a WAP32 CObList-family
 // list). Only RemoveTail() is reached (a __thiscall returning the recycled
 // node). The leaf allocator: if the list is non-empty, tail-call RemoveTail();
 // else operator new(0x14) the object + stamp its vftable.
 struct CGruntzCmdList {
-    void *RemoveTail();
+    void* RemoveTail();
 };
 
 // ---------------------------------------------------------------------------
@@ -41,14 +41,14 @@ struct CGruntzCmdList {
 // ---------------------------------------------------------------------------
 class CGruntzCommand {
 public:
-    virtual ~CGruntzCommand() {}     // slot 0 (scalar-deleting dtor)
-    virtual void Vfunc1();           // slot 1
-    virtual void Vfunc2();           // slot 2
-    virtual void Vfunc3();           // slot 3
-    virtual int  Vslot04();          // slot 4 (+0x10)  base default = return 1;
-    virtual int  Vslot05();          // slot 5 (+0x14)
-    virtual void Vslot06();          // slot 6
-    virtual void Vslot07();          // slot 7
+    virtual ~CGruntzCommand() {} // slot 0 (scalar-deleting dtor)
+    virtual void Vfunc1();       // slot 1
+    virtual void Vfunc2();       // slot 2
+    virtual void Vfunc3();       // slot 3
+    virtual int Vslot04();       // slot 4 (+0x10)  base default = return 1;
+    virtual int Vslot05();       // slot 5 (+0x14)
+    virtual void Vslot06();      // slot 6
+    virtual void Vslot07();      // slot 7
 };
 
 // ---------------------------------------------------------------------------
@@ -59,9 +59,9 @@ public:
 // ---------------------------------------------------------------------------
 class CGruntzSingleCommand : public CGruntzCommand {
 public:
-    int m_4, m_8, m_c, m_10;         // four scalar members (size -> 0x14)
-    CGruntzSingleCommand() {}        // inline empty ctor (vftable store only)
-    static CGruntzSingleCommand *Allocate();
+    int m_4, m_8, m_c, m_10;  // four scalar members (size -> 0x14)
+    CGruntzSingleCommand() {} // inline empty ctor (vftable store only)
+    static CGruntzSingleCommand* Allocate();
 };
 
 // ---------------------------------------------------------------------------
@@ -72,14 +72,14 @@ class CGruntzMultiCommand : public CGruntzCommand {
 public:
     int m_4, m_8, m_c, m_10;
     CGruntzMultiCommand() {}
-    static CGruntzMultiCommand *Allocate();
+    static CGruntzMultiCommand* Allocate();
 };
 
 // The per-class recycle lists + their non-empty gates (file-scope globals the
 // allocators test/pull from). Reloc-masked; only the addresses are load-bearing.
-extern int g_singleCmdCount;          // 0x62b5dc - non-empty gate
+extern int g_singleCmdCount;           // 0x62b5dc - non-empty gate
 extern CGruntzCmdList g_singleCmdList; // 0x62b5d0 - the recycle list (ecx for RemoveTail)
-extern int g_multiCmdCount;           // 0x62b64c
+extern int g_multiCmdCount;            // 0x62b64c
 extern CGruntzCmdList g_multiCmdList;  // 0x62b640
 
 #endif // SRC_GRUNTZ_GRUNTZCOMMAND_H

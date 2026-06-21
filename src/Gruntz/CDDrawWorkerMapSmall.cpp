@@ -43,31 +43,31 @@ class CObject;
 // two factory siblings. Declarations only - never defined, so no ??_7 emitted.
 class AlbusWorker {
 public:
-    virtual void Slot00();              // +0x00
-    virtual int  ScalarDtor(int flag);  // +0x04  scalar-deleting destructor
-    virtual void Slot08();              // +0x08
-    virtual void Slot0C();              // +0x0c
-    virtual void Slot10();              // +0x10
-    virtual void Slot14();              // +0x14
-    virtual void Slot18();              // +0x18
-    virtual void Slot1C();              // +0x1c
-    virtual void Slot20();              // +0x20
-    virtual void Slot24();              // +0x24
-    virtual int  Vfunc28(int a1, int a3);   // +0x28
-    virtual int  Vfunc2C(int a1, int a3);   // +0x2c
+    virtual void Slot00();               // +0x00
+    virtual int ScalarDtor(int flag);    // +0x04  scalar-deleting destructor
+    virtual void Slot08();               // +0x08
+    virtual void Slot0C();               // +0x0c
+    virtual void Slot10();               // +0x10
+    virtual void Slot14();               // +0x14
+    virtual void Slot18();               // +0x18
+    virtual void Slot1C();               // +0x1c
+    virtual void Slot20();               // +0x20
+    virtual void Slot24();               // +0x24
+    virtual int Vfunc28(int a1, int a3); // +0x28
+    virtual int Vfunc2C(int a1, int a3); // +0x2c
 };
 
 // The 0x14-byte worker layout. Only the seeded offsets are load-bearing.
 struct AlbusWorkerObj : public AlbusWorker {
-    int m_04;   // +0x04  = parent->m_1c (an internal field of map1)
-    int m_08;   // +0x08  = 0
-    int m_0c;   // +0x0c  = parent->m_0c (the HarryPotter handle)
-    int m_10;   // +0x10  = 0
-};              // 0x14
+    int m_04; // +0x04  = parent->m_1c (an internal field of map1)
+    int m_08; // +0x08  = 0
+    int m_0c; // +0x0c  = parent->m_0c (the HarryPotter handle)
+    int m_10; // +0x10  = 0
+}; // 0x14
 
 // The foreign worker vftable, referenced as DIR32 data (RVA = VA-0x400000).
 DATA(0x1f02d8)
-extern void *g_albusWorkerVtbl;
+extern void* g_albusWorkerVtbl;
 
 // ---------------------------------------------------------------------------
 // CDDrawWorkerMapSmall - only the load-bearing offsets are modeled: m_0c (parent handle,
@@ -78,16 +78,16 @@ extern void *g_albusWorkerVtbl;
 // ---------------------------------------------------------------------------
 class CDDrawWorkerMapSmall {
 public:
-    int   VirtualMethodUnknown14();
-    void *VirtualMethodUnknown28(int a1, const char *key, int a3);
-    void *VirtualMethodUnknown2C(int a1, const char *key, int a3);
-    int   VirtualMethodUnknown20();
+    int VirtualMethodUnknown14();
+    void* VirtualMethodUnknown28(int a1, const char* key, int a3);
+    void* VirtualMethodUnknown2C(int a1, const char* key, int a3);
+    int VirtualMethodUnknown20();
 
-    void          *m_vptr;                  // +0x00
-    int            m_04;                     // +0x04  initialized to -1 when inactive
-    char           m_pad08[0x0c - 0x08];    // +0x08..0x0b
-    int            m_0c;                     // +0x0c  parent HarryPotter handle
-    CMapStringToOb m_10;                     // +0x10  m_unknownMap1 (0x10..0x2b)
+    void* m_vptr;              // +0x00
+    int m_04;                  // +0x04  initialized to -1 when inactive
+    char m_pad08[0x0c - 0x08]; // +0x08..0x0b
+    int m_0c;                  // +0x0c  parent HarryPotter handle
+    CMapStringToOb m_10;       // +0x10  m_unknownMap1 (0x10..0x2b)
 
     // Engine-label backlog stubs.
     void Stub_157610();
@@ -98,24 +98,26 @@ public:
 
 // CMapStringToOb internal field at parent+0x1c (seeds worker->m_04). Read off the
 // parent so it reloc-frees as `mov ecx,[edi+0x1c]`.
-static inline int AlbusReadField1c(const CDDrawWorkerMapSmall *p)
-{
-    return *(const int *)((const char *)p + 0x1c);
+static inline int AlbusReadField1c(const CDDrawWorkerMapSmall* p) {
+    return *(const int*)((const char*)p + 0x1c);
 }
 
 // Stamps the worker's foreign vftable into its first dword (manual vptr store).
-static inline void StampAlbusWorkerVtbl(AlbusWorkerObj *w) { *(void **)w = &g_albusWorkerVtbl; }
+static inline void StampAlbusWorkerVtbl(AlbusWorkerObj* w) {
+    *(void**)w = &g_albusWorkerVtbl;
+}
 
 // ---------------------------------------------------------------------------
 // Reports ready when the parent/root handle is present and the base status word
 // is no longer the inactive -1 sentinel.
 RVA(0x156cd0, 0x16)
-int CDDrawWorkerMapSmall::VirtualMethodUnknown14()
-{
-    if (m_0c == 0)
+int CDDrawWorkerMapSmall::VirtualMethodUnknown14() {
+    if (m_0c == 0) {
         goto fail;
-    if (m_04 != -1)
+    }
+    if (m_04 != -1) {
         return 1;
+    }
 
 fail:
     return 0;
@@ -138,10 +140,9 @@ fail:
 // equally-live, so the allocator's choice is name-/order-independent here. Every
 // source ordering of the two reads and the two stores produced the identical pairing;
 // no source lever flips it. All 42 other instructions + both ret paths byte-exact.
-static inline AlbusWorkerObj *MakeAlbusWorker(const CDDrawWorkerMapSmall *parent)
-{
-    AlbusWorkerObj *raw = (AlbusWorkerObj *)operator new(sizeof(AlbusWorkerObj));
-    AlbusWorkerObj *w;
+static inline AlbusWorkerObj* MakeAlbusWorker(const CDDrawWorkerMapSmall* parent) {
+    AlbusWorkerObj* raw = (AlbusWorkerObj*)operator new(sizeof(AlbusWorkerObj));
+    AlbusWorkerObj* w;
     if (raw != 0) {
         int harryPotter = parent->m_0c;
         raw->m_04 = AlbusReadField1c(parent);
@@ -161,30 +162,30 @@ static inline AlbusWorkerObj *MakeAlbusWorker(const CDDrawWorkerMapSmall *parent
 // success store it into the map under `key` and return it; on failure run its
 // scalar-deleting dtor and return 0.
 RVA(0x165990, 0x77)
-void *CDDrawWorkerMapSmall::VirtualMethodUnknown28(int a1, const char *key, int a3)
-{
-    AlbusWorkerObj *w = MakeAlbusWorker(this);
+void* CDDrawWorkerMapSmall::VirtualMethodUnknown28(int a1, const char* key, int a3) {
+    AlbusWorkerObj* w = MakeAlbusWorker(this);
     if (w->Vfunc28(a1, a3) == 0) {
-        if (w != 0)
+        if (w != 0) {
             w->ScalarDtor(1);
+        }
         return 0;
     }
-    m_10[key] = (CObject *)w;
+    m_10[key] = (CObject*)w;
     return w;
 }
 
 // ---------------------------------------------------------------------------
 // As Unknown28 but dispatches the worker's +0x2c virtual.
 RVA(0x165a10, 0x77)
-void *CDDrawWorkerMapSmall::VirtualMethodUnknown2C(int a1, const char *key, int a3)
-{
-    AlbusWorkerObj *w = MakeAlbusWorker(this);
+void* CDDrawWorkerMapSmall::VirtualMethodUnknown2C(int a1, const char* key, int a3) {
+    AlbusWorkerObj* w = MakeAlbusWorker(this);
     if (w->Vfunc2C(a1, a3) == 0) {
-        if (w != 0)
+        if (w != 0) {
             w->ScalarDtor(1);
+        }
         return 0;
     }
-    m_10[key] = (CObject *)w;
+    m_10[key] = (CObject*)w;
     return w;
 }
 
@@ -192,8 +193,7 @@ void *CDDrawWorkerMapSmall::VirtualMethodUnknown2C(int a1, const char *key, int 
 // Constant state id.
 // ---------------------------------------------------------------------------
 RVA(0x157600, 0x6)
-int CDDrawWorkerMapSmall::VirtualMethodUnknown20()
-{
+int CDDrawWorkerMapSmall::VirtualMethodUnknown20() {
     return 0x10;
 }
 

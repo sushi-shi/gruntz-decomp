@@ -20,31 +20,25 @@
 // Named externs so the DIR32 loads reloc-match the engine; @data names the
 // delinked target DATA symbol (RVA = VA - 0x400000).
 DATA(0x24556c)
-extern int *g_gameReg;   // the CGameRegistry pointer (reloc-masked DATA symbol)
+extern int* g_gameReg; // the CGameRegistry pointer (reloc-masked DATA symbol)
 DATA(0x24bd5c)
-extern int g_64bd5c;     // the file-scope int sink (reloc-masked DATA symbol)
+extern int g_64bd5c; // the file-scope int sink (reloc-masked DATA symbol)
 
 // ---------------------------------------------------------------------------
 RVA(0x14b30, 0x64)
-CBattlezDlg::CBattlezDlg(int a0, CWnd *pParent)
-    : CDialog(0xc0, pParent)
-{
+CBattlezDlg::CBattlezDlg(int a0, CWnd* pParent) : CDialog(0xc0, pParent) {
     m_5c = a0;
     m_68 = 0;
 }
 
 // ---------------------------------------------------------------------------
 RVA(0x18030, 0x56)
-CBattlezDlgCustom::CBattlezDlgCustom(CWnd *pParent)
-    : CDialog(0xc3, pParent)
-{
-}
+CBattlezDlgCustom::CBattlezDlgCustom(CWnd* pParent) : CDialog(0xc3, pParent) {}
 
 // ---------------------------------------------------------------------------
 RVA(0x17930, 0x3a)
-CBattlezDlgColors::CBattlezDlgColors(int a0, int a1, int a2, CWnd *pParent)
-    : CDialog(0xc2, pParent)
-{
+CBattlezDlgColors::CBattlezDlgColors(int a0, int a1, int a2, CWnd* pParent)
+    : CDialog(0xc2, pParent) {
     m_5c = a0;
     m_60 = a1;
     m_64 = 0;
@@ -53,9 +47,7 @@ CBattlezDlgColors::CBattlezDlgColors(int a0, int a1, int a2, CWnd *pParent)
 
 // ---------------------------------------------------------------------------
 RVA(0xc1750, 0x88)
-CMultiStartDlg::CMultiStartDlg(int a0, CWnd *pParent)
-    : CDialog(0xc5, pParent), m_74(0xa)
-{
+CMultiStartDlg::CMultiStartDlg(int a0, CWnd* pParent) : CDialog(0xc5, pParent), m_74(0xa) {
     m_5c = a0;
     m_6c = 0;
     m_60 = 0;
@@ -73,7 +65,4 @@ void CMultiStartDlg::InitPlayerSlots() {}
 
 // ---------------------------------------------------------------------------
 RVA(0x234a0, 0x1e)
-CCheckpointDlg::CCheckpointDlg(CWnd *pParent)
-    : CDialog(0xcd, pParent)
-{
-}
+CCheckpointDlg::CCheckpointDlg(CWnd* pParent) : CDialog(0xcd, pParent) {}

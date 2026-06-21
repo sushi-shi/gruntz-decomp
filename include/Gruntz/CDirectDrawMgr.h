@@ -14,7 +14,7 @@ public:
     // and/or shows it in a message box. STATIC: it ignores `this` (the call sites
     // leave ECX set from a prior thiscall, but the body never reads it) and is
     // __cdecl/caller-cleaned (plain `ret`; call sites `add esp,0xc`).
-    static void GetErrorString(char *file, int line, long hr);
+    static void GetErrorString(char* file, int line, long hr);
 };
 
 #endif // GRUNTZ_CDIRECTDRAWMGR_H

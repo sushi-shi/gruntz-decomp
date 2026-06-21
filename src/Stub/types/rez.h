@@ -78,12 +78,11 @@ typedef char RezFourCC[4];
  * <afxwin.h>. (The payload offset/position within the archive is not surfaced as
  * an editor label, so it is unmodeled.)
  */
-struct RezDirEntry
-{
-    RezFourCC type;   // "Type" — FOURCC resource-type tag (4 chars)
-    void     *name;   // "Rez Name" — entry name (MFC CString ptr; layout placeholder)
-    int       size;   // "Size" — payload byte length
-    int       id;     // "ID" — numeric resource id ("ID = %i")
+struct RezDirEntry {
+    RezFourCC type; // "Type" — FOURCC resource-type tag (4 chars)
+    void* name;     // "Rez Name" — entry name (MFC CString ptr; layout placeholder)
+    int size;       // "Size" — payload byte length
+    int id;         // "ID" — numeric resource id ("ID = %i")
 };
 
 /*

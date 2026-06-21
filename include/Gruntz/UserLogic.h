@@ -41,10 +41,10 @@
 // the EH state machine live.
 // ---------------------------------------------------------------------------
 struct CUserBaseLink {
-    CUserBaseLink();          // 0x16d710 (out-of-line; can throw)
-    ~CUserBaseLink();         // out-of-line dtor (cleaned up on unwind)
-    void *m_0;                // +0x00  (the 0x5f04c8 pointer the ctor stores)
-    char  m_pad4[0x20 - 4];   // +0x04..+0x1f  -> the member spans 0x18..0x37
+    CUserBaseLink();       // 0x16d710 (out-of-line; can throw)
+    ~CUserBaseLink();      // out-of-line dtor (cleaned up on unwind)
+    void* m_0;             // +0x00  (the 0x5f04c8 pointer the ctor stores)
+    char m_pad4[0x20 - 4]; // +0x04..+0x1f  -> the member spans 0x18..0x37
 };
 
 // ---------------------------------------------------------------------------
@@ -56,8 +56,8 @@ struct CUserBaseLink {
 // +0x18".
 // ---------------------------------------------------------------------------
 struct CUserBaseAux {
-    CUserBaseAux() {}         // inline empty (no ctor call emitted)
-    ~CUserBaseAux();          // out-of-line dtor
+    CUserBaseAux() {} // inline empty (no ctor call emitted)
+    ~CUserBaseAux();  // out-of-line dtor
     int m_0;
 };
 
@@ -67,14 +67,14 @@ struct CUserBaseAux {
 // ---------------------------------------------------------------------------
 class CUserBase {
 public:
-    CUserBase() {}            // inline: vptr store + member ctors emitted at use
-    virtual ~CUserBase();     // slot 0
-    virtual int UserBaseVfunc1();   // slot 1
-    virtual int UserBaseVfunc2();   // slot 2
+    CUserBase() {}                // inline: vptr store + member ctors emitted at use
+    virtual ~CUserBase();         // slot 0
+    virtual int UserBaseVfunc1(); // slot 1
+    virtual int UserBaseVfunc2(); // slot 2
 
-    CUserBaseAux  m_aux;      // +0x04  (destructible; forces the EH frame)
-    char          m_pad8[0x18 - 0x08];
-    CUserBaseLink m_link;     // +0x18..+0x37 (ctor 0x16d710, can throw)
+    CUserBaseAux m_aux; // +0x04  (destructible; forces the EH frame)
+    char m_pad8[0x18 - 0x08];
+    CUserBaseLink m_link; // +0x18..+0x37 (ctor 0x16d710, can throw)
 };
 
 // ---------------------------------------------------------------------------
@@ -84,7 +84,7 @@ public:
 class CUserLogic : public CUserBase {
 public:
     CUserLogic() {}
-    virtual ~CUserLogic() OVERRIDE;          // slot 0 (most-derived dtor)
+    virtual ~CUserLogic() OVERRIDE; // slot 0 (most-derived dtor)
     virtual int UserLogicVfunc1();
     virtual int UserLogicVfunc2();
     virtual int UserLogicVfunc3();

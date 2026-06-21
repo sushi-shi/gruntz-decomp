@@ -5,7 +5,7 @@
 #define GRUNTZ_GRUNTZ_GAMEMODEBASE_H
 
 struct CGameModeBase {
-    void BaseCleanup();   // thiscall, no-body -> reloc-masked external call
+    void BaseCleanup(); // thiscall, no-body -> reloc-masked external call
 };
 
-#endif  // GRUNTZ_GRUNTZ_GAMEMODEBASE_H
+#endif // GRUNTZ_GRUNTZ_GAMEMODEBASE_H

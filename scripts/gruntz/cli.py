@@ -32,6 +32,10 @@ Subcommands
                 wine prefix + clangd compdb + the Ghidra DB (import+analyze
                 GRUNTZ.EXE -> functions.csv/symbols.csv). HEAVY first run.
   clangd        (Re)generate the clangd compile DB (editor; after adding a unit).
+  format [--check]
+                clang-format src/ + include/ to the Rust-like house style
+                (root .clang-format). Whitespace-only -> matching-neutral.
+                --check is the CI gate (no writes; fail if unformatted).
   status        Print the last objdiff match summary (no rebuild).
   todo          List obj symbols that lack an @address (matching worklist).
   clean         Nuke build/ + stray root artifacts (build.ninja/*.obj/.ninja_*)
@@ -334,6 +338,35 @@ def cmd_clangd(args) -> None:
     run([sys.executable, str(INIT / "clangd.py")])
 
 
+# Sources to format: src/ + include/ (not vendor/, not generated build/).
+_FMT_ROOTS    = (REPO / "src", REPO / "include")
+_FMT_SUFFIXES = (".cpp", ".h", ".cc", ".cxx", ".hpp", ".hh", ".c")
+
+
+def _fmt_files() -> list:
+    return sorted(p for root in _FMT_ROOTS if root.is_dir()
+                  for p in root.rglob("*") if p.suffix in _FMT_SUFFIXES)
+
+
+def cmd_format(args) -> None:
+    """Format src/ + include/ to the house style. `--check` is a no-write CI gate."""
+    cf = tool("clang-format")
+    files = _fmt_files()
+    if not files:
+        die("no source files found under src/ or include/")
+    if args.check:
+        log(f"checking {len(files)} file(s) (clang-format --dry-run --Werror) ...")
+        rc = subprocess.run([cf, "--style=file", "--dry-run", "--Werror", *map(str, files)],
+                            cwd=str(REPO), env=_pkg_env()).returncode
+        if rc != 0:
+            die("some files are not formatted - run `gruntz format`")
+        log(f"OK - all {len(files)} file(s) already formatted.")
+    else:
+        log(f"formatting {len(files)} file(s) in place (clang-format -i) ...")
+        run([cf, "--style=file", "-i", *map(str, files)])
+        log(f"done - {len(files)} file(s) formatted.")
+
+
 def _ghidra_warm() -> bool:
     """True if the Ghidra export already has a function at every labeled RVA, i.e.
     the warmup has run. Keeps cmd_init's warmup IDEMPOTENT so the build-shell hook's
@@ -550,6 +583,10 @@ def main() -> None:
     i.set_defaults(func=cmd_init)
     sub.add_parser("clangd", help="(re)generate the clangd compile DB (editor)"
                    ).set_defaults(func=cmd_clangd)
+    fmt = sub.add_parser("format", help="clang-format src/ + include/ to the Rust-like style")
+    fmt.add_argument("--check", action="store_true",
+                     help="CI gate: don't write, exit non-zero if anything is unformatted")
+    fmt.set_defaults(func=cmd_format)
     sub.add_parser("status", help="print the last objdiff summary"
                    ).set_defaults(func=cmd_status)
     lk = sub.add_parser("link", help="phase 2: link base objs -> candidate EXE + map "

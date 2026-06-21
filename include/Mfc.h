@@ -12,9 +12,9 @@
 #ifndef GRUNTZ_MFC_H
 #define GRUNTZ_MFC_H
 
-#define VC_EXTRALEAN          // trim MFC: no OLE / DB / sockets / DAO
-#include <afx.h>              // CObject, CString, CFile, CException, CArchive (+ windows.h)
-#include <afxcoll.h>          // CObList, CMapStringToOb, CByteArray, CPtrArray/List, ...
+#define VC_EXTRALEAN // trim MFC: no OLE / DB / sockets / DAO
+#include <afx.h>     // CObject, CString, CFile, CException, CArchive (+ windows.h)
+#include <afxcoll.h> // CObList, CMapStringToOb, CByteArray, CPtrArray/List, ...
 
 // VC5 predates the <basetsd.h> pointer-width aliases; the engine's DialogProcs
 // return INT_PTR. Defined once here (and in Win32.h) instead of scattered.
@@ -24,4 +24,4 @@ typedef int INT_PTR;
 // <timeapi.h>), which we don't pull in for one function; declared once here.
 extern "C" __declspec(dllimport) unsigned long __stdcall timeGetTime(void);
 
-#endif  // GRUNTZ_MFC_H
+#endif // GRUNTZ_MFC_H

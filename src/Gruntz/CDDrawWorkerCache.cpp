@@ -34,38 +34,40 @@ class CObject;
 // at byte offset +0x24. Declarations only - never defined, so no ??_7 emitted.
 class SiriusWorker {
 public:
-    virtual void Slot00();              // +0x00
-    virtual int  ScalarDtor(int flag);  // +0x04  scalar-deleting destructor
-    virtual void Slot08();              // +0x08
-    virtual void Slot0C();              // +0x0c
-    virtual void Slot10();              // +0x10
-    virtual void Slot14();              // +0x14
-    virtual void Slot18();              // +0x18
-    virtual void Slot1C();              // +0x1c
-    virtual void Slot20();              // +0x20
-    virtual int  Vfunc24(int a1, int a3);   // +0x24
+    virtual void Slot00();               // +0x00
+    virtual int ScalarDtor(int flag);    // +0x04  scalar-deleting destructor
+    virtual void Slot08();               // +0x08
+    virtual void Slot0C();               // +0x0c
+    virtual void Slot10();               // +0x10
+    virtual void Slot14();               // +0x14
+    virtual void Slot18();               // +0x18
+    virtual void Slot1C();               // +0x1c
+    virtual void Slot20();               // +0x20
+    virtual int Vfunc24(int a1, int a3); // +0x24
 };
 
 // The 0x17c-byte worker layout. Only the seeded offsets are load-bearing.
 struct SiriusWorkerObj : public SiriusWorker {
-    int   m_04;                     // +0x04  = parent->m_1c
-    int   m_08;                     // +0x08  = 0
-    int   m_0c;                     // +0x0c  = parent->m_0c
-    int   m_10;                     // +0x10  = 0
-    int   m_14;                     // +0x14  = 0
-    int   m_18;                     // +0x18  = 0
-    int   m_1c;                     // +0x1c  = 0
-    char  m_pad20[0x170 - 0x20];
-    int   m_170;                    // +0x170 = 0
-    int   m_174;                    // +0x174 = 0
-    int   m_178;                    // +0x178 = 0
-};  // size = 0x17c
+    int m_04; // +0x04  = parent->m_1c
+    int m_08; // +0x08  = 0
+    int m_0c; // +0x0c  = parent->m_0c
+    int m_10; // +0x10  = 0
+    int m_14; // +0x14  = 0
+    int m_18; // +0x18  = 0
+    int m_1c; // +0x1c  = 0
+    char m_pad20[0x170 - 0x20];
+    int m_170; // +0x170 = 0
+    int m_174; // +0x174 = 0
+    int m_178; // +0x178 = 0
+}; // size = 0x17c
 
 // The foreign worker vftable, referenced as DIR32 data (RVA = VA-0x400000).
 DATA(0x1efb80)
-extern void *g_siriusWorkerVtbl;
+extern void* g_siriusWorkerVtbl;
 
-static inline void StampSiriusVtbl(SiriusWorkerObj *w) { *(void **)w = &g_siriusWorkerVtbl; }
+static inline void StampSiriusVtbl(SiriusWorkerObj* w) {
+    *(void**)w = &g_siriusWorkerVtbl;
+}
 
 // ---------------------------------------------------------------------------
 // CDDrawWorkerCache - the CMapStringToOb at +0x10, and the parent fields copied
@@ -73,42 +75,39 @@ static inline void StampSiriusVtbl(SiriusWorkerObj *w) { *(void **)w = &g_sirius
 // ---------------------------------------------------------------------------
 class CDDrawWorkerCache {
 public:
-    int   VirtualMethodUnknown20();
-    void *VirtualMethodUnknown24(int a1, const char *key, int a3);
+    int VirtualMethodUnknown20();
+    void* VirtualMethodUnknown24(int a1, const char* key, int a3);
 
     // Engine-label backlog stubs.
     ~CDDrawWorkerCache();
     void VirtualMethod_157720();
 
-    void          *m_vptr;                  // +0x00
-    int            m_04;                    // +0x04  -1 when inactive
-    char           m_pad08[0x0c - 0x08];    // +0x08..0x0b
-    int            m_0c;                    // +0x0c  parent/root handle
-    CMapStringToOb m_10;                    // +0x10  map (internal field at +0x1c seeds worker->m_04)
+    void* m_vptr;              // +0x00
+    int m_04;                  // +0x04  -1 when inactive
+    char m_pad08[0x0c - 0x08]; // +0x08..0x0b
+    int m_0c;                  // +0x0c  parent/root handle
+    CMapStringToOb m_10;       // +0x10  map (internal field at +0x1c seeds worker->m_04)
 };
 
 // Read field at +0x1c from the parent (inside the CMapStringToOb), used to
 // seed worker->m_04.
-static inline int SiriusReadField1c(const CDDrawWorkerCache *p)
-{
-    return *(const int *)((const char *)p + 0x1c);
+static inline int SiriusReadField1c(const CDDrawWorkerCache* p) {
+    return *(const int*)((const char*)p + 0x1c);
 }
 
 // ---------------------------------------------------------------------------
 // Constant state ID: returns 0x13 (19).
 // ---------------------------------------------------------------------------
 RVA(0x1576f0, 0x6)
-int CDDrawWorkerCache::VirtualMethodUnknown20()
-{
+int CDDrawWorkerCache::VirtualMethodUnknown20() {
     return 0x13;
 }
 
 // Inline worker constructor. New's the raw 0x17c block; on success seeds
 // the fields in the exact order the target writes them.
-static inline SiriusWorkerObj *MakeSiriusWorker(const CDDrawWorkerCache *parent)
-{
-    SiriusWorkerObj *raw = (SiriusWorkerObj *)operator new(sizeof(SiriusWorkerObj));
-    SiriusWorkerObj *w;
+static inline SiriusWorkerObj* MakeSiriusWorker(const CDDrawWorkerCache* parent) {
+    SiriusWorkerObj* raw = (SiriusWorkerObj*)operator new(sizeof(SiriusWorkerObj));
+    SiriusWorkerObj* w;
     if (raw != 0) {
         int field1c = SiriusReadField1c(parent);
         int harryPotter = parent->m_0c;
@@ -139,16 +138,16 @@ static inline SiriusWorkerObj *MakeSiriusWorker(const CDDrawWorkerCache *parent)
 // the target asm (the NAFXCW operator new practically never fails).
 // ---------------------------------------------------------------------------
 RVA(0x1652c0, 0x92)
-void *CDDrawWorkerCache::VirtualMethodUnknown24(int a1, const char *key, int a3)
-{
-    SiriusWorkerObj *w = MakeSiriusWorker(this);
+void* CDDrawWorkerCache::VirtualMethodUnknown24(int a1, const char* key, int a3) {
+    SiriusWorkerObj* w = MakeSiriusWorker(this);
 
     if (w->Vfunc24(a1, a3) == 0) {
-        if (w != 0)
+        if (w != 0) {
             w->ScalarDtor(1);
+        }
         return 0;
     }
-    m_10[key] = (CObject *)w;
+    m_10[key] = (CObject*)w;
     return w;
 }
 

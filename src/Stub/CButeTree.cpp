@@ -13,18 +13,20 @@
 
 class CButeTree {
 public:
-    void *Find(const char *key);
-    void  Insert(const char *key, void *pNode);
+    void* Find(const char* key);
+    void Insert(const char* key, void* pNode);
 };
 
 // @confidence: high
 // @source: reloc-correlation (10 callers, unanimous)
 // @stub
 RVA(0x16d190, 0x101)
-void *CButeTree::Find(const char *) { return 0; }
+void* CButeTree::Find(const char*) {
+    return 0;
+}
 
 // @confidence: med
 // @source: reloc-correlation
 // @stub
 RVA(0x16db90, 0x206)
-void CButeTree::Insert(const char *, void *) {}
+void CButeTree::Insert(const char*, void*) {}

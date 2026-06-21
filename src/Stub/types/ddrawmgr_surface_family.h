@@ -1,7 +1,7 @@
 #ifndef MANAGERS_DDRAWMGR_SURFACE_FAMILY_H
 #define MANAGERS_DDRAWMGR_SURFACE_FAMILY_H
 
-#include <rva.h>   // OVERRIDE macro (override under clang, no-op under MSVC 5.0)
+#include <rva.h> // OVERRIDE macro (override under clang, no-op under MSVC 5.0)
 
 /*
  * ========================== HYPOTHESIS — NOT CONFIRMED ==========================
@@ -50,7 +50,7 @@
  * ================================================================================
  */
 
-typedef void *HWND;   // Win32 handle (4-byte pointer); avoid pulling <afxwin.h>.
+typedef void* HWND; // Win32 handle (4-byte pointer); avoid pulling <afxwin.h>.
 
 // ---------------------------------------------------------------------------
 // Minimal placeholder MFC base/collection types. Only their SIZES are
@@ -59,85 +59,107 @@ typedef void *HWND;   // Win32 handle (4-byte pointer); avoid pulling <afxwin.h>
 //   CObject 0x4 (vptr), CObList/CMapPtrToPtr/CMapStringToOb/CMapStringToPtr/
 //   CPtrList 0x1c, CObArray/CPtrArray 0x14. (Match the real MSVC 5.0 MFC sizes.)
 // ---------------------------------------------------------------------------
-class CObject { public: virtual ~CObject() {} };                 // 0x04 (vptr only)
-struct CObList        { void *_v; char _raw[0x1c - 4]; };        // 0x1c
-struct CObArray       { void *_v; char _raw[0x14 - 4]; };        // 0x14
-struct CPtrList       { void *_v; char _raw[0x1c - 4]; };        // 0x1c
-struct CPtrArray      { void *_v; char _raw[0x14 - 4]; };        // 0x14
-struct CMapPtrToPtr   { void *_v; char _raw[0x1c - 4]; };        // 0x1c
-struct CMapStringToOb { void *_v; char _raw[0x1c - 4]; };        // 0x1c
-struct CMapStringToPtr{ void *_v; char _raw[0x1c - 4]; };        // 0x1c
+class CObject {
+public:
+    virtual ~CObject() {}
+}; // 0x04 (vptr only)
+struct CObList {
+    void* _v;
+    char _raw[0x1c - 4];
+}; // 0x1c
+struct CObArray {
+    void* _v;
+    char _raw[0x14 - 4];
+}; // 0x14
+struct CPtrList {
+    void* _v;
+    char _raw[0x1c - 4];
+}; // 0x1c
+struct CPtrArray {
+    void* _v;
+    char _raw[0x14 - 4];
+}; // 0x14
+struct CMapPtrToPtr {
+    void* _v;
+    char _raw[0x1c - 4];
+}; // 0x1c
+struct CMapStringToOb {
+    void* _v;
+    char _raw[0x1c - 4];
+}; // 0x1c
+struct CMapStringToPtr {
+    void* _v;
+    char _raw[0x1c - 4];
+}; // 0x1c
 
-class UnknownClassCGruntzMgrHarryPotter;  // the family manager (declared below)
+class UnknownClassCGruntzMgrHarryPotter; // the family manager (declared below)
 
 /* Common base (0x8): CObject vptr @0 + one int field @4. */
-class UnknownCGruntzMgrHogwarts : public CObject
-{
+class UnknownCGruntzMgrHogwarts : public CObject {
 protected:
     UnknownCGruntzMgrHogwarts() {}
-    UnknownCGruntzMgrHogwarts(int unknown) { m_fieldBaseUnknown = unknown; }
+    UnknownCGruntzMgrHogwarts(int unknown) {
+        m_fieldBaseUnknown = unknown;
+    }
     virtual ~UnknownCGruntzMgrHogwarts() OVERRIDE {}
 
-    int m_fieldBaseUnknown;   // +0x04
+    int m_fieldBaseUnknown; // +0x04
 };
 
 /* The shared polymorphic base for the 10 surface/page sub-managers (0x10). */
-class UnknownCGruntzMgrLucius : public UnknownCGruntzMgrHogwarts
-{
+class UnknownCGruntzMgrLucius : public UnknownCGruntzMgrHogwarts {
 public:
-    UnknownCGruntzMgrLucius(UnknownClassCGruntzMgrHarryPotter *pHarryPotter,
-                            int unknown2, int unknown3);
+    UnknownCGruntzMgrLucius(
+        UnknownClassCGruntzMgrHarryPotter* pHarryPotter,
+        int unknown2,
+        int unknown3
+    );
     virtual ~UnknownCGruntzMgrLucius() OVERRIDE;
     virtual void VirtualMethodUnknown14();
     virtual bool VirtualMethodUnknown18();
     virtual void VirtualMethodUnknown1C();
     virtual void VirtualMethodUnknown20();
 
-    int fieldUnknown8;                                  // +0x08
-    UnknownClassCGruntzMgrHarryPotter *m_pUnknownHarryPotter; // +0x0c
+    int fieldUnknown8;                                        // +0x08
+    UnknownClassCGruntzMgrHarryPotter* m_pUnknownHarryPotter; // +0x0c
 };
 
-class UnknownDraco : public UnknownCGruntzMgrLucius
-{
+class UnknownDraco : public UnknownCGruntzMgrLucius {
 public:
-    UnknownDraco(UnknownClassCGruntzMgrHarryPotter *p, int u2, int u3);
+    UnknownDraco(UnknownClassCGruntzMgrHarryPotter* p, int u2, int u3);
     virtual ~UnknownDraco() OVERRIDE;
     virtual void VirtualMethodUnknown24();
     int fieldUnknown10, fieldUnknown14, fieldUnknown18; // +0x10..+0x1b
-};                                                      // 0x1c
+}; // 0x1c
 
-class UnknownHermiona : public UnknownCGruntzMgrLucius
-{
+class UnknownHermiona : public UnknownCGruntzMgrLucius {
 public:
-    UnknownHermiona(UnknownClassCGruntzMgrHarryPotter *p, int u2, int u3);
+    UnknownHermiona(UnknownClassCGruntzMgrHarryPotter* p, int u2, int u3);
     virtual ~UnknownHermiona() OVERRIDE;
-    CObList      m_unknownObList;   // +0x10
-    CMapPtrToPtr m_unknownPtrMap1;  // +0x2c
-    CMapPtrToPtr m_unknownPtrMap2;  // +0x48
+    CObList m_unknownObList;            // +0x10
+    CMapPtrToPtr m_unknownPtrMap1;      // +0x2c
+    CMapPtrToPtr m_unknownPtrMap2;      // +0x48
     int fieldUnknown64, fieldUnknown68; // +0x64..+0x6b
-};                                  // 0x6c
+}; // 0x6c
 
-class UnknownHagrid : public UnknownCGruntzMgrLucius
-{
+class UnknownHagrid : public UnknownCGruntzMgrLucius {
 public:
-    UnknownHagrid(UnknownClassCGruntzMgrHarryPotter *p, int u2, int u3);
+    UnknownHagrid(UnknownClassCGruntzMgrHarryPotter* p, int u2, int u3);
     virtual ~UnknownHagrid() OVERRIDE;
-    CObList m_unknownObList;        // +0x10
-};                                  // 0x2c
+    CObList m_unknownObList; // +0x10
+}; // 0x2c
 
 /* Holds the static DDSURFACEDESC-shaped struct — strongest DDraw evidence. */
-struct UnknownDirectDrawStructure
-{
-    unsigned long dwSize;           // +0x00 (DDSURFACEDESC is 0x6c — re-verify)
-    char _pad04[0x64 - 0x04];       // +0x04
-};                                  // 0x64
+struct UnknownDirectDrawStructure {
+    unsigned long dwSize;     // +0x00 (DDSURFACEDESC is 0x6c — re-verify)
+    char _pad04[0x64 - 0x04]; // +0x04
+}; // 0x64
 
-class UnknownSeverus : public UnknownCGruntzMgrLucius
-{
+class UnknownSeverus : public UnknownCGruntzMgrLucius {
 public:
-    UnknownSeverus(UnknownClassCGruntzMgrHarryPotter *p, int u2, int u3);
+    UnknownSeverus(UnknownClassCGruntzMgrHarryPotter* p, int u2, int u3);
     virtual ~UnknownSeverus() OVERRIDE;
-    CMapStringToOb m_unknownMap;    // +0x10  (widest sub-manager vtable, 18 slots)
+    CMapStringToOb m_unknownMap; // +0x10  (widest sub-manager vtable, 18 slots)
 
     //@address: 006c0270  (static data anchor, @approx tomalla 1.0.1.77)
     static UnknownDirectDrawStructure staticUnknownDirectDrawStructure;
@@ -145,144 +167,136 @@ public:
     static int staticUnknown1;
     //@address: 006c02d8
     static int staticUnknown2;
-};                                  // 0x2c
+}; // 0x2c
 
-class UnknownSirius : public UnknownCGruntzMgrLucius
-{
+class UnknownSirius : public UnknownCGruntzMgrLucius {
 public:
-    UnknownSirius(UnknownClassCGruntzMgrHarryPotter *p, int u2, int u3);
+    UnknownSirius(UnknownClassCGruntzMgrHarryPotter* p, int u2, int u3);
     virtual ~UnknownSirius() OVERRIDE;
-    CMapStringToOb m_unknownMap;    // +0x10
-};                                  // 0x2c
+    CMapStringToOb m_unknownMap; // +0x10
+}; // 0x2c
 
-class UnknownAlbus : public UnknownCGruntzMgrLucius
-{
+class UnknownAlbus : public UnknownCGruntzMgrLucius {
 public:
-    UnknownAlbus(UnknownClassCGruntzMgrHarryPotter *p, int u2, int u3);
+    UnknownAlbus(UnknownClassCGruntzMgrHarryPotter* p, int u2, int u3);
     virtual ~UnknownAlbus() OVERRIDE;
-    CMapStringToOb m_unknownMap1;   // +0x10
-    CMapStringToOb m_unknownMap2;   // +0x2c
-    CMapStringToOb m_unknownMap3;   // +0x48
-    int fieldUnknown64;             // +0x64
-};                                  // 0x68
+    CMapStringToOb m_unknownMap1; // +0x10
+    CMapStringToOb m_unknownMap2; // +0x2c
+    CMapStringToOb m_unknownMap3; // +0x48
+    int fieldUnknown64;           // +0x64
+}; // 0x68
 
 /* Seeds the resolution/scaling ladder in its ctor. */
-class UnknownRemus : public UnknownCGruntzMgrLucius
-{
+class UnknownRemus : public UnknownCGruntzMgrLucius {
 public:
-    UnknownRemus(UnknownClassCGruntzMgrHarryPotter *p, int u2, int u3);
+    UnknownRemus(UnknownClassCGruntzMgrHarryPotter* p, int u2, int u3);
     virtual ~UnknownRemus() OVERRIDE;
-    int      fieldUnknown10;        // +0x10
-    char     _pad14[0x20 - 0x14];   // +0x14..+0x1f
-    CObArray m_unknownObArray1;     // +0x20
-    CObArray m_unknownObArray2;     // +0x34
-    CObArray m_unknownObArray3;     // +0x48
+    int fieldUnknown10;                                                 // +0x10
+    char _pad14[0x20 - 0x14];                                           // +0x14..+0x1f
+    CObArray m_unknownObArray1;                                         // +0x20
+    CObArray m_unknownObArray2;                                         // +0x34
+    CObArray m_unknownObArray3;                                         // +0x48
     int fieldUnknown5C, fieldUnknown60, fieldUnknown64, fieldUnknown68; // +0x5c..+0x6b
-    char _pad6C[0xac - 0x6c];       // +0x6c..+0xab (unknown int block / padding)
+    char _pad6C[0xac - 0x6c]; // +0x6c..+0xab (unknown int block / padding)
     int fieldUnknownAC, fieldUnknownB0, fieldUnknownB4, fieldUnknownB8; // +0xac..
     int fieldUnknownBC, fieldUnknownC0, fieldUnknownC4, fieldUnknownC8;
     int fieldUnknownCC, fieldUnknownD0, fieldUnknownD4, fieldUnknownD8, fieldUnknownDC;
     char _unknownBuffer[0x6d4 - 0xe0]; // +0xe0  (~1.5KB scratch/scaling buffer)
-};                                  // 0x6d4
+}; // 0x6d4
 
-class UnknownMinerva : public UnknownCGruntzMgrLucius
-{
+class UnknownMinerva : public UnknownCGruntzMgrLucius {
 public:
-    UnknownMinerva(UnknownClassCGruntzMgrHarryPotter *p, int u2, int u3);
+    UnknownMinerva(UnknownClassCGruntzMgrHarryPotter* p, int u2, int u3);
     virtual ~UnknownMinerva() OVERRIDE;
     void ClearUnknownMap();
-    CMapStringToPtr m_unknownMap;   // +0x10
-    int  fieldUnknown2C;            // +0x2c
-    char _pad30[0x34 - 0x30];       // +0x30
-    int  fieldUnknown34;            // +0x34
-};                                  // 0x38
+    CMapStringToPtr m_unknownMap; // +0x10
+    int fieldUnknown2C;           // +0x2c
+    char _pad30[0x34 - 0x30];     // +0x30
+    int fieldUnknown34;           // +0x34
+}; // 0x38
 
-class UnknownPettigrew : public UnknownCGruntzMgrLucius
-{
+class UnknownPettigrew : public UnknownCGruntzMgrLucius {
 public:
-    UnknownPettigrew(UnknownClassCGruntzMgrHarryPotter *p, int u2, int u3);
+    UnknownPettigrew(UnknownClassCGruntzMgrHarryPotter* p, int u2, int u3);
     virtual ~UnknownPettigrew() OVERRIDE;
-    CMapStringToPtr m_unknownMap;   // +0x10
-};                                  // 0x2c
+    CMapStringToPtr m_unknownMap; // +0x10
+}; // 0x2c
 
 /* Standalone (NOT a Lucius subclass; no vtable). */
-class UnknownFilch
-{
+class UnknownFilch {
 public:
     UnknownFilch();
-    int fieldUnknown000, fieldUnknown004; // +0x00, +0x04
-    char _pad008[0x47c - 0x08];     // +0x08
-    CPtrList  m_unknownPtrList1;    // +0x47c
-    CPtrList  m_unknownPtrList2;    // +0x498
-    CPtrArray m_unknownPtrArray;    // +0x4b4
-    char _pad4C8[0x534 - 0x4c8];    // +0x4c8
-    int fieldUnknown534, fieldUnknown538; // +0x534, +0x538
-    char _pad53C[0x93c - 0x53c];    // +0x53c
+    int fieldUnknown000, fieldUnknown004;                  // +0x00, +0x04
+    char _pad008[0x47c - 0x08];                            // +0x08
+    CPtrList m_unknownPtrList1;                            // +0x47c
+    CPtrList m_unknownPtrList2;                            // +0x498
+    CPtrArray m_unknownPtrArray;                           // +0x4b4
+    char _pad4C8[0x534 - 0x4c8];                           // +0x4c8
+    int fieldUnknown534, fieldUnknown538;                  // +0x534, +0x538
+    char _pad53C[0x93c - 0x53c];                           // +0x53c
     int fieldUnknown93C, fieldUnknown940, fieldUnknown944; // +0x93c..+0x947
-};                                  // 0x948
+}; // 0x948
 
 /* Holds the 101-entry volume->attenuation lookup table (see ../enums.h). */
-class UnknownSalazar
-{
+class UnknownSalazar {
 public:
     UnknownSalazar();
-    virtual ~UnknownSalazar();      // vtbl @0x00
-    int  fieldUnknown04, fieldUnknown08, fieldUnknown0C, fieldUnknown10; // +0x04..+0x13
-    char _pad14[0x78 - 0x14];       // +0x14
-    int  fieldUnknown78;            // +0x78
-    char _pad7C[0x80 - 0x7c];       // +0x7c
-    int  fieldUnknown80, fieldUnknown84, fieldUnknown88, fieldUnknown8C, fieldUnknown90; // +0x80..+0x93
+    virtual ~UnknownSalazar();                                          // vtbl @0x00
+    int fieldUnknown04, fieldUnknown08, fieldUnknown0C, fieldUnknown10; // +0x04..+0x13
+    char _pad14[0x78 - 0x14];                                           // +0x14
+    int fieldUnknown78;                                                 // +0x78
+    char _pad7C[0x80 - 0x7c];                                           // +0x7c
+    int fieldUnknown80, fieldUnknown84, fieldUnknown88, fieldUnknown8C,
+        fieldUnknown90; // +0x80..+0x93
 
     // table[i] = -1000 * log2(100/i); table[0] = -10000, table[100] = 0.
     // See ../enums.h GruntzVolumeAttenuation for the full 101-value spec.
-    static int  unknownLookupTable[101];
+    static int unknownLookupTable[101];
     static void initializeUnknownLookupTable();
-    static int  getLookupTableValue(int index);
-};                                  // 0x94
+    static int getLookupTableValue(int index);
+}; // 0x94
 
-class UnknownVoldemort : public UnknownSalazar
-{
+class UnknownVoldemort : public UnknownSalazar {
 public:
     UnknownVoldemort();
     virtual ~UnknownVoldemort() OVERRIDE;
     int fieldUnknown94, fieldUnknown98; // +0x94, +0x98
-};                                  // 0x9c
+}; // 0x9c
 
 /*
  * The family manager — HYPOTHESIZED CDirectDrawMgr. Stored in CGruntzMgr @0x30.
  * Owns one of each sub-manager via 11 pointer slots @4..2c, plus hWnd + flags.
  */
-class UnknownClassCGruntzMgrHarryPotter : public CObject
-{
+class UnknownClassCGruntzMgrHarryPotter : public CObject {
 public:
     UnknownClassCGruntzMgrHarryPotter();
     virtual ~UnknownClassCGruntzMgrHarryPotter() OVERRIDE;
     virtual void UnknownVirtualMethod14();
     // (hWnd, 640, 480, 16, flags) — the display-mode init call.
-    virtual bool UnknownVirtualMethod18(HWND hWnd, int width, int height,
-                                        int bpp, int flagsUnknown);
+    virtual bool
+    UnknownVirtualMethod18(HWND hWnd, int width, int height, int bpp, int flagsUnknown);
     virtual void UnknownVirtualMethod1C();
 
     // One owned sub-manager per slot (names = tomalla placeholders).
-    UnknownCGruntzMgrLucius *fieldUnknownDraco;     // +0x04
-    UnknownCGruntzMgrLucius *fieldUnknownHermiona;  // +0x08
-    UnknownCGruntzMgrLucius *fieldUnknownHagrid;    // +0x0c
-    UnknownCGruntzMgrLucius *fieldUnknownSeverus;   // +0x10
-    UnknownCGruntzMgrLucius *fieldUnknownSirius;    // +0x14
-    UnknownCGruntzMgrLucius *fieldUnknownAlbus;     // +0x18
-    UnknownFilch            *fieldUnknownFilch;     // +0x1c
-    UnknownVoldemort        *fieldUnknownVoldemort; // +0x20
-    UnknownCGruntzMgrLucius *fieldUnknownRemus;     // +0x24
-    UnknownMinerva          *fieldUnknownMinerva;   // +0x28
-    UnknownCGruntzMgrLucius *fieldUnknownPettigrew; // +0x2c
+    UnknownCGruntzMgrLucius* fieldUnknownDraco;     // +0x04
+    UnknownCGruntzMgrLucius* fieldUnknownHermiona;  // +0x08
+    UnknownCGruntzMgrLucius* fieldUnknownHagrid;    // +0x0c
+    UnknownCGruntzMgrLucius* fieldUnknownSeverus;   // +0x10
+    UnknownCGruntzMgrLucius* fieldUnknownSirius;    // +0x14
+    UnknownCGruntzMgrLucius* fieldUnknownAlbus;     // +0x18
+    UnknownFilch* fieldUnknownFilch;                // +0x1c
+    UnknownVoldemort* fieldUnknownVoldemort;        // +0x20
+    UnknownCGruntzMgrLucius* fieldUnknownRemus;     // +0x24
+    UnknownMinerva* fieldUnknownMinerva;            // +0x28
+    UnknownCGruntzMgrLucius* fieldUnknownPettigrew; // +0x2c
     HWND m_hWnd;                                    // +0x30
-    int  m_flagsUnknown;                            // +0x34
-    int  fieldUnknown38, fieldUnknown3C;            // +0x38, +0x3c
+    int m_flagsUnknown;                             // +0x34
+    int fieldUnknown38, fieldUnknown3C;             // +0x38, +0x3c
 
     //@address: 006c0314  (static data anchors, @approx tomalla 1.0.1.77)
     static int staticUnknown1;
     //@address: 006c0318
     static int staticUnknown2;
-};                                  // 0x40
+}; // 0x40
 
 #endif /* MANAGERS_DDRAWMGR_SURFACE_FAMILY_H */

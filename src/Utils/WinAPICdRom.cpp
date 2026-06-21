@@ -27,56 +27,63 @@
 #include <stdio.h>
 
 namespace Utils {
-namespace WinAPI {
+    namespace WinAPI {
 
-// ---------------------------------------------------------------------------
-// CheckCdRomRegistry
-// Returns the drive letter of the CD-ROM holding the Gruntz disc, or 0:
-//   1. read HKLM\Software\Monolith Productions\Gruntz\1.0 value "CdRom Drive";
-//      if it names a real CD-ROM drive, use it;
-//   2. else if the current working directory is on a CD-ROM, use that drive;
-//   3. else scan drives A..Z for any CD-ROM.
-RVA(0x1fde0, 0x189)
-char CheckCdRomRegistry()
-{
-    unsigned int valueSize;
-    char value[32];
-    char drivePath[32];
-    char cwdPath[256];
-    RegistryHelper reg;
-    char letter;
-    int i;
+        // ---------------------------------------------------------------------------
+        // CheckCdRomRegistry
+        // Returns the drive letter of the CD-ROM holding the Gruntz disc, or 0:
+        //   1. read HKLM\Software\Monolith Productions\Gruntz\1.0 value "CdRom Drive";
+        //      if it names a real CD-ROM drive, use it;
+        //   2. else if the current working directory is on a CD-ROM, use that drive;
+        //   3. else scan drives A..Z for any CD-ROM.
+        RVA(0x1fde0, 0x189)
+        char CheckCdRomRegistry() {
+            unsigned int valueSize;
+            char value[32];
+            char drivePath[32];
+            char cwdPath[256];
+            RegistryHelper reg;
+            char letter;
+            int i;
 
-    if (reg.Open("Monolith Productions", "Gruntz", "1.0", 0,
-                 (HKEY)0x80000002 /*HKEY_LOCAL_MACHINE*/, 0)) {
-        valueSize = 0x1e;
-        value[0] = 0;
-        if (reg.GetValueString("CdRom Drive", value, &valueSize, 0)
-            && (signed char)value[0] > 0x14) {
-            letter = value[0];
-            sprintf(drivePath, "%c:\\", letter);
-            if (GetDriveTypeA(drivePath) == 5 /*DRIVE_CDROM*/)
+            if (reg.Open(
+                    "Monolith Productions",
+                    "Gruntz",
+                    "1.0",
+                    0,
+                    (HKEY)0x80000002 /*HKEY_LOCAL_MACHINE*/,
+                    0
+                )) {
+                valueSize = 0x1e;
+                value[0] = 0;
+                if (reg.GetValueString("CdRom Drive", value, &valueSize, 0)
+                    && (signed char)value[0] > 0x14) {
+                    letter = value[0];
+                    sprintf(drivePath, "%c:\\", letter);
+                    if (GetDriveTypeA(drivePath) == 5 /*DRIVE_CDROM*/) {
+                        return letter;
+                    }
+                }
+            }
+
+            GetCurrentDirectoryA(0xff, cwdPath);
+            cwdPath[3] = 0;
+            if (GetDriveTypeA(cwdPath) == 5 /*DRIVE_CDROM*/) {
+                letter = cwdPath[0];
                 return letter;
-        }
-    }
+            }
 
-    GetCurrentDirectoryA(0xff, cwdPath);
-    cwdPath[3] = 0;
-    if (GetDriveTypeA(cwdPath) == 5 /*DRIVE_CDROM*/) {
-        letter = cwdPath[0];
-        return letter;
-    }
-
-    letter = 'A';
-    for (i = 0; i < 26; i++) {
-        sprintf(cwdPath, "%c:\\", letter);
-        if (GetDriveTypeA(cwdPath) == 5 /*DRIVE_CDROM*/)
+            letter = 'A';
+            for (i = 0; i < 26; i++) {
+                sprintf(cwdPath, "%c:\\", letter);
+                if (GetDriveTypeA(cwdPath) == 5 /*DRIVE_CDROM*/) {
+                    return letter;
+                }
+                letter++;
+            }
+            letter = 0;
             return letter;
-        letter++;
-    }
-    letter = 0;
-    return letter;
-}
+        }
 
-} // namespace WinAPI
+    } // namespace WinAPI
 } // namespace Utils

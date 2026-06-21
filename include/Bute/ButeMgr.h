@@ -46,14 +46,14 @@
 // vtable stores are modeled as external/no-body calls (reloc-masked).
 // ---------------------------------------------------------------------------
 struct CButeValue {
-    int   type;     // +0x00
-    void *pValue;   // +0x04
+    int type;     // +0x00
+    void* pValue; // +0x04
 
     // Value constructors: allocate storage, store the value, return `this`.
-    CButeValue *SetInt(int type, int val);
-    CButeValue *SetDword(int type, unsigned long val);
-    CButeValue *SetFloat(int type, float val);
-    CButeValue *SetDouble(int type, double val);
+    CButeValue* SetInt(int type, int val);
+    CButeValue* SetDword(int type, unsigned long val);
+    CButeValue* SetFloat(int type, float val);
+    CButeValue* SetDouble(int type, double val);
 };
 
 // Minimal engine helper embedded at CButeMgr+0x14; the cleanup pair operate on
@@ -67,9 +67,9 @@ public:
 class CButeTree {
 public:
     // The shared find-by-key helper (__thiscall).
-    void *Find(const char *key);
+    void* Find(const char* key);
     // Insert a key/value node (__thiscall).
-    void  Insert(const char *key, void *pNode);
+    void Insert(const char* key, void* pNode);
 };
 
 // ---------------------------------------------------------------------------
@@ -82,15 +82,15 @@ public:
 // ---------------------------------------------------------------------------
 // The two derived vtables the node carries. External/
 // reloc-masked file-scope addresses.
-extern void *g_nodeVtblA;
-extern void *g_nodeVtblB;
+extern void* g_nodeVtblA;
+extern void* g_nodeVtblB;
 
 // CButeNodeBase - the engine base subobject ctor (__thiscall(this,
 // desc, n)). Declared external/no-body so the `mov ecx,this; call` __thiscall
 // shape (callee-cleanup) falls out reloc-masked.
 class CButeNodeBase {
 public:
-    CButeNodeBase(void *desc, int n);
+    CButeNodeBase(void* desc, int n);
 };
 
 class CButeNode : public CButeNodeBase {
@@ -98,18 +98,18 @@ public:
     // Inline derived ctor: run the engine base ctor, then write the two derived
     // vtable pointers at +0x00 / +0x08 (reproduces ParseTagLine's inline
     // `call ctor; mov [node],vtblA; mov [node+8],vtblB`).
-    CButeNode(void *desc, int n) : CButeNodeBase(desc, n) {
+    CButeNode(void* desc, int n) : CButeNodeBase(desc, n) {
         m_vtblA = &g_nodeVtblA;
         m_vtblB = &g_nodeVtblB;
     }
-    void *m_vtblA;       // +0x00
-    char  m_pad04[4];    // +0x04
-    void *m_vtblB;       // +0x08
-    char  m_pad0c[0x2c - 0xc]; // pad to 0x2c bytes total
+    void* m_vtblA;            // +0x00
+    char m_pad04[4];          // +0x04
+    void* m_vtblB;            // +0x08
+    char m_pad0c[0x2c - 0xc]; // pad to 0x2c bytes total
 };
 
 // CString::operator+= one char. Appends to the accumulator.
-extern "C" void AfxString_AppendChar(void *pStr, char c);
+extern "C" void AfxString_AppendChar(void* pStr, char c);
 
 // ---------------------------------------------------------------------------
 // The typed-reference value structs (CButeMgr's GetTypedRef tag5-8 family).
@@ -124,22 +124,22 @@ extern "C" void AfxString_AppendChar(void *pStr, char c);
 //   tag6 ->  8 bytes (2 DWORDs), tag8 -> 16 bytes (4 DWORDs).
 // The default ctor zero-inits inline; the dtor is external/no-body so its thunk
 // + the `push thunk; call atexit` shape fall out reloc-masked.
-struct CButeRef5 {           // 16 bytes
+struct CButeRef5 { // 16 bytes
     CButeRef5() : a(0), b(0), c(0), d(0) {}
     ~CButeRef5();
     DWORD a, b, c, d;
 };
-struct CButeRef6 {           // 8 bytes
+struct CButeRef6 { // 8 bytes
     CButeRef6() : a(0), b(0) {}
     ~CButeRef6();
     DWORD a, b;
 };
-struct CButeRef7 {           // 24 bytes
+struct CButeRef7 { // 24 bytes
     CButeRef7() : a(0), b(0), c(0), d(0), e(0), f(0) {}
     ~CButeRef7();
     DWORD a, b, c, d, e, f;
 };
-struct CButeRef8 {           // 16 bytes
+struct CButeRef8 { // 16 bytes
     CButeRef8() : a(0), b(0), c(0), d(0) {}
     ~CButeRef8();
     DWORD a, b, c, d;
@@ -163,64 +163,66 @@ extern "C" int atexit(void (*func)(void));
 // ---------------------------------------------------------------------------
 class CButeMgr {
 public:
-    int   GetIntDef(char *tag, char *key, int def);
-    int   GetInt(char *tag, char *key);
-    DWORD GetDwordDef(char *tag, char *key, DWORD def);
-    DWORD GetDword(char *tag, char *key);
-    float GetFloat(char *tag, char *key);
-    double GetDouble(char *tag, char *key);
-    CString *GetStringDef(char *tag, char *key, CString *def);
-    char *GetString(char *tag, char *key);
+    int GetIntDef(char* tag, char* key, int def);
+    int GetInt(char* tag, char* key);
+    DWORD GetDwordDef(char* tag, char* key, DWORD def);
+    DWORD GetDword(char* tag, char* key);
+    float GetFloat(char* tag, char* key);
+    double GetDouble(char* tag, char* key);
+    CString* GetStringDef(char* tag, char* key, CString* def);
+    char* GetString(char* tag, char* key);
 
-    bool  ScanToken(int expectType);
-    bool  ParseTagLine();
-    bool  Parse();
+    bool ScanToken(int expectType);
+    bool ParseTagLine();
+    bool Parse();
 
     // Callback trampoline + sub-object cleanup.
-    void *InvokeCallback(void *(*fn)(CButeMgr *));
-    void  ClearHelper();
+    void* InvokeCallback(void* (*fn)(CButeMgr*));
+    void ClearHelper();
 
     // Lexer sub-helpers (engine functions, reloc-masked external/no-body).
     // PeekClass classifies the current char (returns a token-class word);
     // ReadValue/ReadIdent scan a value/identifier token (return the next kind);
     // NextChar advances the input. All __thiscall on CButeMgr.
     short PeekClass(int kind, char c);
-    int   ReadValue(int kind, char c);
-    int   ReadIdent(int kind, char c);
-    void  NextChar();
+    int ReadValue(int kind, char c);
+    int ReadIdent(int kind, char c);
+    void NextChar();
 
     // Accessor for the +0x18 store tree (CButeTree is data-less; address it by
     // offset so its `this` resolves to `this+0x18` -> `lea ecx,[esi+0x18]`).
-    CButeTree *Tree() { return reinterpret_cast<CButeTree *>(m_treeRaw); }
+    CButeTree* Tree() {
+        return reinterpret_cast<CButeTree*>(m_treeRaw);
+    }
 
-    char  m_pad00[0x8];        // +0x00
-    int   m_lineNo;            // +0x08
-    char  m_pad0c[0x18 - 0xc]; // +0x0c
-    char  m_treeRaw[0x44 - 0x18];  // +0x18  the CButeTree store root
-    void *m_pNode;             // +0x44
-    char  m_pad48[0xa4 - 0x48];// +0x48
-    void *m_pText;             // +0xa4
-    char  m_curChar;           // +0xa8
-    char  m_pada9;             // +0xa9
-    short m_tokType;           // +0xaa
-    char  m_padac[0xae - 0xac];// +0xac
-    char  m_token[0x100 - 0xae];// +0xae
-    CString m_tagName;       // +0x100
-    char  m_pad104[0x10c - 0x104];// +0x104
-    char  m_10c;               // +0x10c
-    char  m_10d;               // +0x10d
+    char m_pad00[0x8];            // +0x00
+    int m_lineNo;                 // +0x08
+    char m_pad0c[0x18 - 0xc];     // +0x0c
+    char m_treeRaw[0x44 - 0x18];  // +0x18  the CButeTree store root
+    void* m_pNode;                // +0x44
+    char m_pad48[0xa4 - 0x48];    // +0x48
+    void* m_pText;                // +0xa4
+    char m_curChar;               // +0xa8
+    char m_pada9;                 // +0xa9
+    short m_tokType;              // +0xaa
+    char m_padac[0xae - 0xac];    // +0xac
+    char m_token[0x100 - 0xae];   // +0xae
+    CString m_tagName;            // +0x100
+    char m_pad104[0x10c - 0x104]; // +0x104
+    char m_10c;                   // +0x10c
+    char m_10d;                   // +0x10d
 
     // The typed-reference getters (tag5-8). Each returns a pointer to the typed
     // value record's storage on a type hit, or a shared zero-default static on
     // any miss (no tag / no key / type mismatch), reporting the specific failure.
-    CButeRef5 *GetRef5(char *tag, char *key);
-    CButeRef6 *GetRef6(char *tag, char *key);
-    CButeRef7 *GetRef7(char *tag, char *key);
-    CButeRef8 *GetRef8(char *tag, char *key);
+    CButeRef5* GetRef5(char* tag, char* key);
+    CButeRef6* GetRef6(char* tag, char* key);
+    CButeRef7* GetRef7(char* tag, char* key);
+    CButeRef8* GetRef8(char* tag, char* key);
 };
 
 // The variadic error reporter (__cdecl): ReportError(this, fmt, ...).
 // Reloc-masked; modeled external/no-body.
-int CButeMgr_ReportError(CButeMgr *self, const char *fmt, ...);
+int CButeMgr_ReportError(CButeMgr* self, const char* fmt, ...);
 
 #endif // SRC_BUTE_BUTEMGR_H

@@ -17,7 +17,7 @@
 //                       computed at the tail of LoadFont).
 #ifndef SRC_FONT_FONT_H
 #define SRC_FONT_FONT_H
-#include <rva.h>  // OVERRIDE macro (override under clang, no-op under MSVC 5.0)
+#include <rva.h> // OVERRIDE macro (override under clang, no-op under MSVC 5.0)
 
 // ---------------------------------------------------------------------------
 // Global operator new / delete (the NAFXCW heap).
@@ -25,8 +25,8 @@
 //   operator new(unsigned int)
 //   operator delete(void*)
 // ---------------------------------------------------------------------------
-void *operator new(unsigned int n);
-void operator delete(void *p);
+void* operator new(unsigned int n);
+void operator delete(void* p);
 
 // ---------------------------------------------------------------------------
 // The MFC I/O stack the font file is read through. Each class is reconstructed
@@ -50,16 +50,16 @@ void operator delete(void *p);
 // All of these resolve to NAFXCW (the statically linked MFC) - their bodies are
 // never matched here; only the exact mangled symbol + arg shape matter.
 // ---------------------------------------------------------------------------
-#include <Mfc.h>   // real MFC CString / CFile / CArchive / CFileException
+#include <Mfc.h> // real MFC CString / CFile / CArchive / CFileException
 
 // ---------------------------------------------------------------------------
 // A single glyph's metric record (the m_glyphs[] element, 8 B). The pixel
 // surface for the glyph is width*height bytes (one byte per pixel).
 // ---------------------------------------------------------------------------
 struct Glyph {
-    Glyph() {}                   // user-declared (drives the array-new shape)
-    int width;                   // +0x00
-    int height;                  // +0x04
+    Glyph() {}  // user-declared (drives the array-new shape)
+    int width;  // +0x00
+    int height; // +0x04
 };
 
 // ---------------------------------------------------------------------------
@@ -73,15 +73,15 @@ public:
     int LoadFont(CString szFileName);
 
     // Accessors matched in this module cluster.
-    void **GetSurface(unsigned char c);
-    void GetGlyph(unsigned char c, Glyph &out);
+    void** GetSurface(unsigned char c);
+    void GetGlyph(unsigned char c, Glyph& out);
     int GetMaxHeight();
 
-    int    m_ready;              // +0x00
-    int    m_count;             // +0x04
-    void **m_surfaces;          // +0x08
-    Glyph *m_glyphs;            // +0x0c
-    int    m_maxHeight;         // +0x10
+    int m_ready;       // +0x00
+    int m_count;       // +0x04
+    void** m_surfaces; // +0x08
+    Glyph* m_glyphs;   // +0x0c
+    int m_maxHeight;   // +0x10
 };
 
 // ---------------------------------------------------------------------------
@@ -95,10 +95,10 @@ public:
     void SetColor(int color);
     unsigned char GetChar(int i);
 
-    Font *m_font;       // +0x00  (Font* to render with)
-    int   m_color;      // +0x04  (packed colour, default 0x00ffffff)
-    void *m_surface;    // +0x08  (optional dest surface pointer)
-    void *m_clip;       // +0x0c  (optional clip rect pointer)
+    Font* m_font;    // +0x00  (Font* to render with)
+    int m_color;     // +0x04  (packed colour, default 0x00ffffff)
+    void* m_surface; // +0x08  (optional dest surface pointer)
+    void* m_clip;    // +0x0c  (optional clip rect pointer)
 };
 
 // ---------------------------------------------------------------------------
@@ -106,25 +106,25 @@ public:
 // Only FreeStrings is matched here.
 // ---------------------------------------------------------------------------
 struct CWapNodeBase {
-    virtual ~CWapNodeBase();                // only the vtable matters
+    virtual ~CWapNodeBase(); // only the vtable matters
 };
 
 struct CWapNodeB : CWapNodeBase {
     virtual ~CWapNodeB() OVERRIDE;
     void FreeStrings();
 
-    int     m_type;                 // +0x04
-    char    m_pad08[0x28];          // +0x08..+0x2f
-    char   *m_srcStr1;              // +0x30
-    char   *m_buf34;                // +0x34  owned buffer (FreeStrings deletes)
-    char   *m_buf38;                // +0x38  owned buffer (FreeStrings deletes)
-    char    m_rest[0x18];           // +0x3c..+0x53
+    int m_type;         // +0x04
+    char m_pad08[0x28]; // +0x08..+0x2f
+    char* m_srcStr1;    // +0x30
+    char* m_buf34;      // +0x34  owned buffer (FreeStrings deletes)
+    char* m_buf38;      // +0x38  owned buffer (FreeStrings deletes)
+    char m_rest[0x18];  // +0x3c..+0x53
 };
 
 // InterfaceObject - a minimal COM-style object that carries a GUID pointer at
 // +0x04. The IsInterfaceX methods check whether that GUID matches a known iid.
 struct InterfaceObject {
-    const void *iid;                // +0x04 (after vtable/first field)
+    const void* iid; // +0x04 (after vtable/first field)
     int IsInterface1();
     int IsInterface2();
     int IsInterface3();

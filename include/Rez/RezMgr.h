@@ -47,7 +47,7 @@
 //   +0x64  m_name  : cached lookup-name buffer (operator new'd / freed)
 #ifndef SRC_REZ_REZMGR_H
 #define SRC_REZ_REZMGR_H
-#include <rva.h>  // OVERRIDE macro (override under clang, no-op under MSVC 5.0)
+#include <rva.h> // OVERRIDE macro (override under clang, no-op under MSVC 5.0)
 
 // <Mfc.h> brings <windows.h> KERNEL32 (GetCurrentDirectoryA, used by MakeRezPath)
 // plus CString / CObject; the engine helpers below stay minimal externs.
@@ -61,15 +61,17 @@
 
 // Raw heap alloc/free the container links in (alloc(size) returns a
 // pointer; free(ptr)). __cdecl, args on the stack.
-extern "C" void *RezAlloc(unsigned int size);
-extern "C" void  RezFree(void *p);
+extern "C" void* RezAlloc(unsigned int size);
+extern "C" void RezFree(void* p);
 
 // The directory-entry "stat" reader: fills a 0x24-byte WIN32-find-style record
 // for `name`, returns 0 on success (FindFirstFileA + GetDriveTypeA + file-time
 // conversions live here). The attribute dword lives at byte +6 of the
 // record; bit 0x4000 marks a directory entry.
-struct RezFindRec { char raw[0x24]; };
-extern "C" int RezStatEntry(const char *name, RezFindRec *rec);
+struct RezFindRec {
+    char raw[0x24];
+};
+extern "C" int RezStatEntry(const char* name, RezFindRec* rec);
 
 class CRezDir;
 
@@ -82,16 +84,15 @@ class CRezDir;
 struct RezNode;
 
 // The engine assert/trace sink: prints/logs the message string.
-extern "C" void RezAssertFail(const char *msg);
+extern "C" void RezAssertFail(const char* msg);
 
 // CRT-ish string helpers used by the RezMgr path/key builders (external,
 // no-body so their call displacements are reloc-masked).
 //   strrchr(s, ch)   - find LAST occurrence of ch (used to find the
 //                      file extension dot).
 //   stricmp(a, b)    - case-insensitive compare, 0 on match.
-extern "C" char *RezStrrchr(const char *s, int ch);
-extern "C" int   RezStricmp(const char *a, const char *b);
-
+extern "C" char* RezStrrchr(const char* s, int ch);
+extern "C" int RezStricmp(const char* a, const char* b);
 
 // ---------------------------------------------------------------------------
 // CRezItmBase - the shared node base (parent ptr @+0xc).
@@ -100,12 +101,12 @@ extern "C" int   RezStricmp(const char *a, const char *b);
 // ---------------------------------------------------------------------------
 class CRezItmBase {
 public:
-    CRezItmBase(void *parent);
+    CRezItmBase(void* parent);
     virtual ~CRezItmBase() {}
 
-    void  *m_4;        // +0x04
-    void  *m_8;        // +0x08
-    void  *m_parent;   // +0x0c
+    void* m_4;      // +0x04
+    void* m_8;      // +0x08
+    void* m_parent; // +0x0c
 };
 
 // ---------------------------------------------------------------------------
@@ -113,14 +114,14 @@ public:
 // ---------------------------------------------------------------------------
 class CRezItm : public CRezItmBase {
 public:
-    CRezItm(void *parent);
+    CRezItm(void* parent);
     virtual ~CRezItm() OVERRIDE {}
 
-    int   m_10;   // +0x10  (= 0)
-    int   m_14;   // +0x14  (= 0)
-    int   m_18;   // +0x18  (set by load)
-    int   m_1c;   // +0x1c  (set by load)
-    int   m_20;   // +0x20  (= -1)
+    int m_10; // +0x10  (= 0)
+    int m_14; // +0x14  (= 0)
+    int m_18; // +0x18  (set by load)
+    int m_1c; // +0x1c  (set by load)
+    int m_20; // +0x20  (= -1)
 };
 
 // ---------------------------------------------------------------------------
@@ -129,36 +130,36 @@ public:
 // ---------------------------------------------------------------------------
 class CRezDir : public CRezItmBase {
 public:
-    CRezDir(void *parent, void *rezMgr);
+    CRezDir(void* parent, void* rezMgr);
     virtual ~CRezDir() OVERRIDE {}
 
-    int   FindEntry(char *name);
+    int FindEntry(char* name);
     // OpenSub is NOT matched in this TU - see RezMgr.cpp note.
 
     // --- ctor-initialized embedded child collection (+0x10..+0x34) ---
-    void *m_vtblA;   // +0x10  (collection vtable)
-    int   m_14;      // +0x14  (= 0, collection head)
-    int   m_18;      // +0x18  (= 0, collection tail)
-    void *m_vtblB;   // +0x1c  (collection vtable)
-    int   m_20;      // +0x20  (= 0)
-    int   m_24;      // +0x24  (= 0)
-    int   m_28;      // +0x28  (= 0)
-    void *m_2c;      // +0x2c  (= ctor arg2)
-    int   m_30;      // +0x30  (= 1)
-    int   m_34;      // +0x34  (= 0)
+    void* m_vtblA; // +0x10  (collection vtable)
+    int m_14;      // +0x14  (= 0, collection head)
+    int m_18;      // +0x18  (= 0, collection tail)
+    void* m_vtblB; // +0x1c  (collection vtable)
+    int m_20;      // +0x20  (= 0)
+    int m_24;      // +0x24  (= 0)
+    int m_28;      // +0x28  (= 0)
+    void* m_2c;    // +0x2c  (= ctor arg2)
+    int m_30;      // +0x30  (= 1)
+    int m_34;      // +0x34  (= 0)
     // --- runtime-only fields (NOT set by the ctor) ---
-    int   m_38;      // +0x38  (second collection base; Load walks &this+0x38)
-    int   m_3c;      // +0x3c
-    int   m_loaded;  // +0x40  (OpenSub gate)
-    int   m_44;      // +0x44
-    int   m_loaded2; // +0x48  (Load gate)
-    int   m_4c;      // +0x4c
-    int   m_50;      // +0x50
-    int   m_54;      // +0x54  (max width)
-    int   m_58;      // +0x58  (max height)
-    int   m_5c;      // +0x5c  (max x)
-    int   m_60;      // +0x60  (max y)
-    void *m_name;    // +0x64  (cached lookup-name buffer)
+    int m_38;      // +0x38  (second collection base; Load walks &this+0x38)
+    int m_3c;      // +0x3c
+    int m_loaded;  // +0x40  (OpenSub gate)
+    int m_44;      // +0x44
+    int m_loaded2; // +0x48  (Load gate)
+    int m_4c;      // +0x4c
+    int m_50;      // +0x50
+    int m_54;      // +0x54  (max width)
+    int m_58;      // +0x58  (max height)
+    int m_5c;      // +0x5c  (max x)
+    int m_60;      // +0x60  (max y)
+    void* m_name;  // +0x64  (cached lookup-name buffer)
 
     // Engine-label backlog stubs.
     void Stub_13b0c0();
@@ -179,7 +180,7 @@ public:
 //   +0x38  m_kids   : the child collection (First/Next iterated here)
 //   +0x48  m_buf    : the loaded payload buffer (also the "already loaded" gate)
 // ---------------------------------------------------------------------------
-class CRezDirNode;  // fwd (RezNode holds a CRezDirNode* sub-dir at +0x14)
+class CRezDirNode; // fwd (RezNode holds a CRezDirNode* sub-dir at +0x14)
 
 // A polymorphic stream object: the recursive read does
 //   ecx = src->m_stream (the object @ src+0x20)
@@ -190,23 +191,23 @@ class RezStream {
 public:
     virtual void v0() = 0;
     virtual void v1() = 0;
-    virtual int ReadAt(int off, int zero, unsigned size, void *buf) = 0;  // slot +0x08
+    virtual int ReadAt(int off, int zero, unsigned size, void* buf) = 0; // slot +0x08
 };
 
 // The archive source object that the dir node points to at +0x18. Load checks
 // m_8 (nonzero) and m_1c (<=1) and reads through the stream at +0x20.
 struct RezSrc {
-    char       m_pad0[0x08];
-    int        m_8;        // +0x08  (must be nonzero)
-    char       m_padc[0x1c - 0x0c];
-    int        m_1c;       // +0x1c  (must be <= 1)
-    RezStream *m_stream;   // +0x20  (the polymorphic read stream)
+    char m_pad0[0x08];
+    int m_8; // +0x08  (must be nonzero)
+    char m_padc[0x1c - 0x0c];
+    int m_1c;            // +0x1c  (must be <= 1)
+    RezStream* m_stream; // +0x20  (the polymorphic read stream)
 };
 
 // The child collection embedded at CRezDirNode+0x38 (First/Next iterated).
 // First() is __thiscall: returns the first child node or 0.
 struct RezColl {
-    RezNode *First();
+    RezNode* First();
     char m_pad[0x10];
 };
 
@@ -214,25 +215,25 @@ class CRezDirNode {
 public:
     int Load(int childFlag);
 
-    void   *m_0;        // +0x00 (vtable / base, not touched by Load)
-    void   *m_4;        // +0x04
-    void   *m_8;        // +0x08
-    int     m_off;      // +0x0c  (payload offset)
-    unsigned m_size;    // +0x10  (payload size)
-    void   *m_subdir;   // +0x14  (unused by Load on `this`)
-    RezSrc *m_src;      // +0x18  (archive source object)
-    char    m_pad1c[0x38 - 0x1c];
-    RezColl m_kids;     // +0x38..+0x47  (child collection, 0x10 bytes)
-    void   *m_buf;      // +0x48  (payload buffer / loaded gate)
+    void* m_0;       // +0x00 (vtable / base, not touched by Load)
+    void* m_4;       // +0x04
+    void* m_8;       // +0x08
+    int m_off;       // +0x0c  (payload offset)
+    unsigned m_size; // +0x10  (payload size)
+    void* m_subdir;  // +0x14  (unused by Load on `this`)
+    RezSrc* m_src;   // +0x18  (archive source object)
+    char m_pad1c[0x38 - 0x1c];
+    RezColl m_kids; // +0x38..+0x47  (child collection, 0x10 bytes)
+    void* m_buf;    // +0x48  (payload buffer / loaded gate)
 };
 
 // A child entry node in a CRezDirNode's collection: holds the sub-dir node ptr
 // at +0x14 that Load recurses into. Next() is __thiscall: returns the
 // next sibling node or 0.
 struct RezNode {
-    RezNode *Next();
-    char         m_pad0[0x14];
-    CRezDirNode *m_14;  // +0x14  (sub-dir node; Load recurses on it)
+    RezNode* Next();
+    char m_pad0[0x14];
+    CRezDirNode* m_14; // +0x14  (sub-dir node; Load recurses on it)
 };
 
 // ---------------------------------------------------------------------------
@@ -250,11 +251,11 @@ struct RezNode {
 
 // Format(dst, fmt, ...) - the file-scope cdecl CString-format wrapper
 // (takes the destination CString by address as its first stack arg).
-extern "C" void RezFormat(CString *dst, const char *fmt, ...);
+extern "C" void RezFormat(CString* dst, const char* fmt, ...);
 
 // FileExists(szPath) - the Win32 OF_EXIST probe (Utils::WinAPI). Used
 // to test each candidate archive path. Returns nonzero if the file exists.
-extern "C" int RezFileExists(const char *szPath);
+extern "C" int RezFileExists(const char* szPath);
 
 // A runtime "low-detail / front-end-class" selector global:
 // when nonzero the FEC archive lookup uses the GruntzLo.FEC variant path.
@@ -271,12 +272,12 @@ extern int g_rezLowDetail;
 // ---------------------------------------------------------------------------
 class CGameMode {
 public:
-    virtual void v0();                 // +0x00
-    virtual void v1();                 // +0x04
-    virtual void v2();                 // +0x08
-    virtual void v3();                 // +0x0c
-    virtual int  Update();             // +0x10  (slot 4) - per-frame state step
-    virtual void Render();             // +0x14  (slot 5) - per-frame post-step
+    virtual void v0();     // +0x00
+    virtual void v1();     // +0x04
+    virtual void v2();     // +0x08
+    virtual void v3();     // +0x0c
+    virtual int Update();  // +0x10  (slot 4) - per-frame state step
+    virtual void Render(); // +0x14  (slot 5) - per-frame post-step
 };
 
 // ---------------------------------------------------------------------------
@@ -317,15 +318,18 @@ public:
 // ---------------------------------------------------------------------------
 // The owning window holder reached at RezMgr+0x04; its +0x04 is the HWND that
 // HandleDebugPosition posts the WM_COMMAND to.
-struct RezMgrOwner { char p0[4]; HWND m_hWnd; };   // +0x04 -> +0x04 = HWND
+struct RezMgrOwner {
+    char p0[4];
+    HWND m_hWnd;
+}; // +0x04 -> +0x04 = HWND
 
 class RezMgr {
 public:
     // The per-frame game tick (vtable slot +0x10 / index 4).
-    virtual int  PerFrameTick();
+    virtual int PerFrameTick();
 
-    int  MakeImageKey(void *arg1, char *name, void *arg3);
-    int  MakeRezPath();
+    int MakeImageKey(void* arg1, char* name, void* arg3);
+    int MakeRezPath();
 
     // The frame-clock advance helper (a non-virtual member; also
     // installed at vtable slot +0x38). External/no-body so its direct call is
@@ -333,9 +337,9 @@ public:
     void UpdateClock();
 
     // The extension-dispatch image loaders (external, reloc-masked).
-    int  LoadBmp(void *a, void *b);
-    int  LoadPcx(void *a, void *b);
-    int  LoadPid(void *a, void *b, void *c);
+    int LoadBmp(void* a, void* b);
+    int LoadPcx(void* a, void* b);
+    int LoadPid(void* a, void* b, void* c);
 
     // CD/install helpers on the manager (external, reloc-masked).
     char GetGruntzDriveLetter();
@@ -345,21 +349,21 @@ public:
     // looks up the "DEBUG_POSITION" debug value and (if set) posts a WM_COMMAND
     // to the owning window. CheckDbgVal is the external (reloc-masked) debug-value
     // lookup helper its call site dispatches to.
-    int  HandleDebugPosition();
-    int  CheckDbgVal(const char *key, int defVal, int flag);
+    int HandleDebugPosition();
+    int CheckDbgVal(const char* key, int defVal, int flag);
 
     // --- layout (vptr occupies +0x00) ---------------------------------------
-    RezMgrOwner *m_4;                 // +0x04  owning window holder (m_4->m_hWnd = HWND)
-    char       m_pad8[0x2c - 0x08];   // +0x08..+0x2b
-    CGameMode *m_mode;                // +0x2c  (active game-mode driven per frame)
-    char       m_pad30[0xb0 - 0x30];  // +0x30..+0xaf
-    int        m_renderGate;          // +0xb0  (nonzero => skip the post-step)
-    char       m_padb4[0xec - 0xb4];  // +0xb4..+0xeb
-    CString  m_pathA;        // +0xec  (CString)
-    CString  m_pathB;        // +0xf0  (CString)
-    int        m_inGameDir;    // +0xf4
-    int        m_haveRez;      // +0xf8
-    int        m_haveMoviez;   // +0xfc
+    RezMgrOwner* m_4;          // +0x04  owning window holder (m_4->m_hWnd = HWND)
+    char m_pad8[0x2c - 0x08];  // +0x08..+0x2b
+    CGameMode* m_mode;         // +0x2c  (active game-mode driven per frame)
+    char m_pad30[0xb0 - 0x30]; // +0x30..+0xaf
+    int m_renderGate;          // +0xb0  (nonzero => skip the post-step)
+    char m_padb4[0xec - 0xb4]; // +0xb4..+0xeb
+    CString m_pathA;           // +0xec  (CString)
+    CString m_pathB;           // +0xf0  (CString)
+    int m_inGameDir;           // +0xf4
+    int m_haveRez;             // +0xf8
+    int m_haveMoviez;          // +0xfc
 };
 
 #endif // SRC_REZ_REZMGR_H

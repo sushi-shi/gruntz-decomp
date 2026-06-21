@@ -36,28 +36,28 @@ extern CButeMgr g_buteMgr;
 // pointer to the color table; the wormhole color id (m_128) indexes it at
 // [m_128*4 + 0x14]. Declared int* to match g_gameReg (the target's reloc).
 DATA(0x24556c)
-extern int *g_gameReg;
+extern int* g_gameReg;
 
 // The "Wormhole" config group + the three color keys (the original source string
 // literals; objdiff matches these .data relocations by value against the target).
-#define s_Wormhole       "Wormhole"
-#define s_SecretColor    "SecretColor"
+#define s_Wormhole "Wormhole"
+#define s_SecretColor "SecretColor"
 #define s_SingleUseColor "SingleUseColor"
-#define s_NormalColor    "NormalColor"
+#define s_NormalColor "NormalColor"
 
 // ---------------------------------------------------------------------------
 // The wormhole state sub-object at CWormhole+0x10. Only the load-bearing member
 // offsets the method touches are reconstructed.
 // ---------------------------------------------------------------------------
 struct CWormholeState {
-    char  m_pad00[0x4c];
-    int   m_4c;          // +0x4c  draw color entry (= colorTable[m_128*4+0x14])
-    int   m_50;          // +0x50  (= 7)
-    char  m_pad54[4];
-    int   m_58;          // +0x58  (= 1)
-    char  m_pad5c[0x124 - 0x5c];
-    int   m_124;         // +0x124 wormhole kind discriminator (2/1/other)
-    int   m_128;         // +0x128 resolved color id (cached; indexes the reg table)
+    char m_pad00[0x4c];
+    int m_4c; // +0x4c  draw color entry (= colorTable[m_128*4+0x14])
+    int m_50; // +0x50  (= 7)
+    char m_pad54[4];
+    int m_58; // +0x58  (= 1)
+    char m_pad5c[0x124 - 0x5c];
+    int m_124; // +0x124 wormhole kind discriminator (2/1/other)
+    int m_128; // +0x128 resolved color id (cached; indexes the reg table)
 };
 
 // CWormhole - the world teleport node. The state/draw sub-object pointer lives at
@@ -66,8 +66,8 @@ class CWormhole {
 public:
     void LoadColors();
 
-    char            m_pad00[0x10];
-    CWormholeState *m_10;        // +0x10  the wormhole state/draw sub-object
+    char m_pad00[0x10];
+    CWormholeState* m_10; // +0x10  the wormhole state/draw sub-object
 
     // Engine-label backlog stubs.
     void Stub_03fc70();
@@ -78,31 +78,33 @@ public:
 // ---------------------------------------------------------------------------
 // CWormhole::LoadColors
 RVA(0x411f0, 0xa0)
-void CWormhole::LoadColors()
-{
+void CWormhole::LoadColors() {
     // NB: m_10 is re-dereferenced through `this` (held in esi) on every access -
     // do NOT cache it in a local, or MSVC pins it in a 2nd callee-saved reg (edi)
     // and the schedule diverges (the target keeps only esi = this).
     if (m_10->m_124 == 2) {
         // SECRET: fixed color id 1; falls through to the shared cache/index tail.
-        if (m_10->m_128 == 0)
+        if (m_10->m_128 == 0) {
             m_10->m_128 = g_buteMgr.GetIntDef(s_Wormhole, s_SecretColor, 1);
+        }
     } else if (m_10->m_124 == 1) {
         // SINGLE-USE.
-        if (m_10->m_128 == 0)
+        if (m_10->m_128 == 0) {
             m_10->m_128 = g_buteMgr.GetIntDef(s_Wormhole, s_SingleUseColor, 2);
+        }
     } else {
         // NORMAL (default).
-        if (m_10->m_128 == 0)
+        if (m_10->m_128 == 0) {
             m_10->m_128 = g_buteMgr.GetIntDef(s_Wormhole, s_NormalColor, 4);
+        }
     }
 
     // Resolve the color-table entry for the cached id + stamp the draw fields.
     // The TAIL caches m_10 once (eax) and reuses it for the id read + all three
     // stores; g_gameReg[+0x78] is the color table, indexed at [m_128*4 + 0x14]
     // (== table[m_128 + 5]). Store order m_58 / m_50 / m_4c.
-    CWormholeState *s = m_10;
-    int *colorTable = ((int **)g_gameReg)[0x78 / 4];
+    CWormholeState* s = m_10;
+    int* colorTable = ((int**)g_gameReg)[0x78 / 4];
     int colorEntry = colorTable[s->m_128 + 0x14 / 4];
     s->m_58 = 1;
     s->m_50 = 7;

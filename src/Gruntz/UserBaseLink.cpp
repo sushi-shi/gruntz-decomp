@@ -11,9 +11,7 @@
 #include <rva.h>
 
 RVA(0x16d710, 0x76)
-CUserBaseLink::CUserBaseLink()
-{
-}
+CUserBaseLink::CUserBaseLink() {}
 
 CUserBaseLink::~CUserBaseLink() {}
 CUserBaseAux::~CUserBaseAux() {}

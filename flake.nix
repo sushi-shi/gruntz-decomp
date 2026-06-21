@@ -250,12 +250,18 @@
             # every `python -m gruntz.<x>` (cli/match/analysis tools) import it.
             export PYTHONPATH="$GRUNTZ_DIR/scripts''${PYTHONPATH:+:$PYTHONPATH}"
 
+            # Enable the repo-tracked pre-commit auto-format hook (idempotent).
+            if [ "$(git -C "$GRUNTZ_DIR" config --local core.hooksPath 2>/dev/null)" != ".githooks" ]; then
+              git -C "$GRUNTZ_DIR" config --local core.hooksPath .githooks 2>/dev/null \
+                && echo "[gruntz] hooks      : pre-commit auto-format on (core.hooksPath=.githooks)" >&2
+            fi
+
             # Banner -> stderr so stdout stays clean for `nix develop --command`
             # piping (e.g. gruntz status / python -m gruntz.match.status ... --json | jq).
             echo "[gruntz] target EXE : $GRUNTZ_EXE" >&2
             echo "[gruntz] tools      : vostok-delinker, objdiff(-cli), ghidra, llvm-pdbutil" >&2
             echo "[gruntz] clang      : $GRUNTZ_CLANG (unwrapped; ghidra_metadata_generate/gen_labels)" >&2
-            echo "[gruntz] cli        : 'gruntz <cmd>' (status/labels/structs/ghidra-refresh/todo)" >&2
+            echo "[gruntz] cli        : 'gruntz <cmd>' (status/labels/structs/format/ghidra-refresh/todo)" >&2
             echo "[gruntz] base/MSVC  : 'nix develop .#build' for 'gruntz build'/'init' (VC5 + wine)" >&2
             ${nvimShimHook}
             if [ ! -f "$GRUNTZ_DIR/build/clangd/compile_commands.json" ]; then
@@ -278,6 +284,12 @@
             # scripts/ is THE package root: on PYTHONPATH so `python -m gruntz` and
             # every `python -m gruntz.<x>` (cli/match/analysis tools) import it.
             export PYTHONPATH="$GRUNTZ_DIR/scripts''${PYTHONPATH:+:$PYTHONPATH}"
+
+            # Enable the repo-tracked pre-commit auto-format hook (idempotent).
+            if [ "$(git -C "$GRUNTZ_DIR" config --local core.hooksPath 2>/dev/null)" != ".githooks" ]; then
+              git -C "$GRUNTZ_DIR" config --local core.hooksPath .githooks 2>/dev/null \
+                && echo "[gruntz] hooks      : pre-commit auto-format on (core.hooksPath=.githooks)" >&2
+            fi
 
             export WINEPREFIX="$GRUNTZ_DIR/build/wineprefix"   # generated state lives under build/
             export WINEDEBUG="fixme-all,err-kerberos"
@@ -304,7 +316,7 @@
             echo "[gruntz] MSVC 5.0   : $MSVC_DIR/bin/cl.exe   (run under wine)" >&2
             echo "[gruntz] runtime    : $GRUNTZ_RUNTIME (MSS32/SMACKW32 DLLs)" >&2
             echo "[gruntz] target EXE : $GRUNTZ_EXE" >&2
-            echo "[gruntz] cli        : 'gruntz <cmd>' (init/build/clangd/status/labels/structs/ghidra-refresh/todo)" >&2
+            echo "[gruntz] cli        : 'gruntz <cmd>' (init/build/clangd/format/status/labels/structs/ghidra-refresh/todo)" >&2
             ${nvimShimHook}
             # `gruntz init` is idempotent - run it on startup (set GRUNTZ_SKIP_INIT=1
             # to skip, e.g. when you only need clang/ghidra_metadata_generate and not the Ghidra DB).

@@ -20,11 +20,11 @@
 #include <rva.h>
 
 namespace Utils {
-namespace WinAPI {
-char GetGruntzDriveLetter();
-int  FileExists(char *szPath);
-}
-}
+    namespace WinAPI {
+        char GetGruntzDriveLetter();
+        int FileExists(char* szPath);
+    } // namespace WinAPI
+} // namespace Utils
 
 // External DirectPlay surface used by InitializeLobbyConnectionSettings. The
 // DPLAYX export DirectPlayLobbyCreate (ordinal 4) and CNetMgr::ReportError are
@@ -33,33 +33,37 @@ int  FileExists(char *szPath);
 // through a small NAFXCW-style operator-delete helper (out-of-line, reloc-
 // masked); modelled as a plain free function.
 extern "C" __declspec(dllimport) long __stdcall DirectPlayLobbyCreate(
-    void *lpguidDSP, IDirectPlayLobbyZ **lplpDPL, void *pUnk,
-    void *lpData, unsigned long dwDataSize);
+    void* lpguidDSP,
+    IDirectPlayLobbyZ** lplpDPL,
+    void* pUnk,
+    void* lpData,
+    unsigned long dwDataSize
+);
 
 class CNetMgr {
 public:
-    static void ReportError(char *file, int line, long hr, void *hWnd);
+    static void ReportError(char* file, int line, long hr, void* hWnd);
 };
 
-void FreeConnectionSettings(void *p);   // FUN_005b9b82 (operator delete wrapper)
+void FreeConnectionSettings(void* p); // FUN_005b9b82 (operator delete wrapper)
 
-void *operator new(unsigned int);
+void* operator new(unsigned int);
 
 // The engine's __cdecl CString-formatting helper (sprintf-style into a CString
 // destination; reloc-masked - only the call shape is load-bearing).
-extern "C" void Format(CString *dst, const char *fmt, ...);
+extern "C" void Format(CString* dst, const char* fmt, ...);
 
 // The per-frame draw-clock globals PerFrameTick stamps each tick. g_wap32Now /
 // g_wap32FrameDelta are the engine's just-refreshed clock (mangled C++ globals,
 // stored into the game-side mirror g_645580/g_645584); g_6bf3c0/g_6bf3bc are the
 // draw-clock pair (extern "C" -> the _g_* C symbols). All reloc-masked DATA refs.
-extern int g_wap32Now;             // ?g_wap32Now@@3HA
-extern int g_wap32FrameDelta;      // ?g_wap32FrameDelta@@3HA
+extern int g_wap32Now;        // ?g_wap32Now@@3HA
+extern int g_wap32FrameDelta; // ?g_wap32FrameDelta@@3HA
 extern "C" {
-    extern unsigned int g_645580;  // game-side now mirror (DAT_00645580)
-    extern unsigned int g_645584;  // game-side delta mirror (DAT_00645584)
-    extern unsigned int g_6bf3c0;  // draw-clock (timeGetTime stamp)
-    extern unsigned int g_6bf3bc;  // draw-clock delta (cleared)
+    extern unsigned int g_645580; // game-side now mirror (DAT_00645580)
+    extern unsigned int g_645584; // game-side delta mirror (DAT_00645584)
+    extern unsigned int g_6bf3c0; // draw-clock (timeGetTime stamp)
+    extern unsigned int g_6bf3bc; // draw-clock delta (cleared)
 }
 
 // The embedded options object's ctor/dtor are out-of-line NAFXCW-style helpers
@@ -74,11 +78,11 @@ CGruntzMgrOptions::~CGruntzMgrOptions() {}
 // CGameMgr::m_8 pointer, via its vtable slot +0x1c (CGameApp::ReportError).
 // No-op when there is no app bound yet.
 RVA(0x08dc60, 0x19)
-void CGruntzMgr::ReportError(WPARAM wParam, LPARAM lParam)
-{
-    CGameApp *pApp = (CGameApp *)m_8;
-    if (pApp)
+void CGruntzMgr::ReportError(WPARAM wParam, LPARAM lParam) {
+    CGameApp* pApp = (CGameApp*)m_8;
+    if (pApp) {
         pApp->ReportError(wParam, lParam);
+    }
 }
 
 // -------------------------------------------------------------------------
@@ -89,10 +93,10 @@ void CGruntzMgr::ReportError(WPARAM wParam, LPARAM lParam)
 // flag. (The result is discarded by the engine on the first/uncached path - the
 // store IS the return, the cached path returns the byte.)
 RVA(0x08fa70, 0x2c)
-char CGruntzMgr::GetGruntzDriveLetter()
-{
-    if (m_d4)
+char CGruntzMgr::GetGruntzDriveLetter() {
+    if (m_d4) {
         return m_d0;
+    }
     m_d0 = Utils::WinAPI::GetGruntzDriveLetter();
     m_d4 = 1;
     return m_d0;
@@ -106,12 +110,13 @@ char CGruntzMgr::GetGruntzDriveLetter()
 // decide whether the sound bank should keep running. (Update() is re-evaluated
 // on the second compare, matching the retail two-call codegen.)
 RVA(0x08ec50, 0x33)
-int CGruntzMgr::CheckPlayState()
-{
-    if (m_2c == 0)
+int CGruntzMgr::CheckPlayState() {
+    if (m_2c == 0) {
         return 0;
-    if (m_2c->Update() == 3)
+    }
+    if (m_2c->Update() == 3) {
         return 1;
+    }
     return m_2c->Update() == 0x11;
 }
 
@@ -125,10 +130,10 @@ int CGruntzMgr::CheckPlayState()
 // the call-site line) through the game window. m_9c records success (1) / failure
 // (0); the result also lands in eax for the call site.
 RVA(0x08eca0, 0x164)
-int CGruntzMgr::InitializeLobbyConnectionSettings()
-{
-    if (m_a0)
+int CGruntzMgr::InitializeLobbyConnectionSettings() {
+    if (m_a0) {
         return m_9c;
+    }
 
     m_a0 = 1;
     m_9c = 0;
@@ -140,12 +145,12 @@ int CGruntzMgr::InitializeLobbyConnectionSettings()
 
     long hr = DirectPlayLobbyCreate(0, &m_c0, 0, 0, 0);
     if (hr) {
-        CNetMgr::ReportError("C:\\Proj\\Gruntz\\GruntzMgr.cpp", 0x120d, hr,
-                             ((CGameWnd *)m_4)->m_4);
+        CNetMgr::ReportError("C:\\Proj\\Gruntz\\GruntzMgr.cpp", 0x120d, hr, ((CGameWnd*)m_4)->m_4);
         return 0;
     }
-    if (!m_c0)
+    if (!m_c0) {
         return 0;
+    }
 
     if (m_c4) {
         FreeConnectionSettings(m_c4);
@@ -154,9 +159,8 @@ int CGruntzMgr::InitializeLobbyConnectionSettings()
 
     unsigned long dwSize = 0;
     hr = m_c0->vtbl->GetConnectionSettings(m_c0, 0, 0, &dwSize);
-    if (hr != 0 && hr != (long)0x8877001e) {   // !DPERR_BUFFERTOOSMALL
-        CNetMgr::ReportError("C:\\Proj\\Gruntz\\GruntzMgr.cpp", 0x1221, hr,
-                             ((CGameWnd *)m_4)->m_4);
+    if (hr != 0 && hr != (long)0x8877001e) { // !DPERR_BUFFERTOOSMALL
+        CNetMgr::ReportError("C:\\Proj\\Gruntz\\GruntzMgr.cpp", 0x1221, hr, ((CGameWnd*)m_4)->m_4);
         m_c0->vtbl->Release(m_c0);
         m_c0 = 0;
         return 0;
@@ -171,8 +175,7 @@ int CGruntzMgr::InitializeLobbyConnectionSettings()
 
     hr = m_c0->vtbl->GetConnectionSettings(m_c0, 0, m_c4, &dwSize);
     if (hr) {
-        CNetMgr::ReportError("C:\\Proj\\Gruntz\\GruntzMgr.cpp", 0x1232, hr,
-                             ((CGameWnd *)m_4)->m_4);
+        CNetMgr::ReportError("C:\\Proj\\Gruntz\\GruntzMgr.cpp", 0x1232, hr, ((CGameWnd*)m_4)->m_4);
         m_c0->vtbl->Release(m_c0);
         m_c0 = 0;
         return 0;
@@ -191,10 +194,10 @@ int CGruntzMgr::InitializeLobbyConnectionSettings()
 // set, and finally mirrors the freshly-refreshed engine clock into the game-side
 // pair (g_645580/g_645584).
 RVA(0x08f620, 0x51)
-void CGruntzMgr::PerFrameTick()
-{
-    if (m_2c && m_2c->Update() == 0x11)
+void CGruntzMgr::PerFrameTick() {
+    if (m_2c && m_2c->Update() == 0x11) {
         return;
+    }
 
     UnknownMethodInitializeTimeGlobal();
 
@@ -222,28 +225,32 @@ void CGruntzMgr::PerFrameTick()
 // it; on the non-draw path it stops the sound bank once its inner object reports
 // idle.
 RVA(0x08f6a0, 0x7d)
-void CGruntzMgr::AdvanceFrame(int doDraw, int /*unused*/)
-{
-    if (Wap32GameMgrVfunc3() == 0)
+void CGruntzMgr::AdvanceFrame(int doDraw, int /*unused*/) {
+    if (Wap32GameMgrVfunc3() == 0) {
         return;
+    }
 
     if (doDraw) {
         PerFrameTick();
-        if (m_c != 0)
+        if (m_c != 0) {
             return;
-        if (m_14 == 0)
+        }
+        if (m_14 == 0) {
             return;
-        if (CheckPlayState() == 0 &&
-            (m_2c == 0 || m_2c->Update() != 8))
+        }
+        if (CheckPlayState() == 0 && (m_2c == 0 || m_2c->Update() != 8)) {
             return;
+        }
         m_48->StopBank(1);
         return;
     }
 
-    if (m_14 == 0)
+    if (m_14 == 0) {
         return;
-    if ((m_48->m_1c ? m_48->m_1c->IsBusy() : 0) == 0)
+    }
+    if ((m_48->m_1c ? m_48->m_1c->IsBusy() : 0) == 0) {
         return;
+    }
     m_48->StopAll();
 }
 
@@ -255,45 +262,68 @@ void CGruntzMgr::AdvanceFrame(int doDraw, int /*unused*/)
 // <name>"), returning the first that exists (empty CString if neither, or for an
 // unknown id). The two CString temps + the szPath buffer give the /GX frame.
 RVA(0x08ff30, 0x1ca)
-CString CGruntzMgr::BuildMoviePath(int movie)
-{
+CString CGruntzMgr::BuildMoviePath(int movie) {
     CString name;
 
     switch (movie) {
-    case -1: name = "Logo.vob";    break;
-    case 0:  name = "Gruntz0.vob"; break;
-    case 1:  name = "Gruntz1.vob"; break;
-    case 2:  name = "Gruntz2.vob"; break;
-    case 3:  name = "Gruntz3.vob"; break;
-    case 4:  name = "Gruntz4.vob"; break;
-    case 5:  name = "Gruntz5.vob"; break;
-    case 6:  name = "Gruntz6.vob"; break;
-    case 7:  name = "Gruntz7.vob"; break;
-    case 8:  name = "Gruntz8.vob"; break;
+        case -1:
+            name = "Logo.vob";
+            break;
+        case 0:
+            name = "Gruntz0.vob";
+            break;
+        case 1:
+            name = "Gruntz1.vob";
+            break;
+        case 2:
+            name = "Gruntz2.vob";
+            break;
+        case 3:
+            name = "Gruntz3.vob";
+            break;
+        case 4:
+            name = "Gruntz4.vob";
+            break;
+        case 5:
+            name = "Gruntz5.vob";
+            break;
+        case 6:
+            name = "Gruntz6.vob";
+            break;
+        case 7:
+            name = "Gruntz7.vob";
+            break;
+        case 8:
+            name = "Gruntz8.vob";
+            break;
     }
 
-    if (name.GetLength() == 0)
-        return name;                         // unknown id
+    if (name.GetLength() == 0) {
+        return name; // unknown id
+    }
 
     CString path;
     char szDir[256];
 
     // First try the working directory ("<cwd>\<name>").
     if (GetCurrentDirectoryA(0xff, szDir)) {
-        Format(&path, "%s\\%s", szDir, (const char *)name);
-        if (!Utils::WinAPI::FileExists((char *)(const char *)path))
+        Format(&path, "%s\\%s", szDir, (const char*)name);
+        if (!Utils::WinAPI::FileExists((char*)(const char*)path)) {
             path.Empty();
+        }
     }
 
     // Fall back to the Movies\ folder on the Gruntz CD.
     if (path.GetLength() == 0) {
-        Format(&path, "%c:\\Movies\\%s", GetGruntzDriveLetter(), (const char *)name);
-        if (path.GetLength() == 0)
+        Format(&path, "%c:\\Movies\\%s", GetGruntzDriveLetter(), (const char*)name);
+        if (path.GetLength() == 0) {
             return path;
+        }
     }
 
-    if (!Utils::WinAPI::FileExists((char *)(const char *)path))
+    if (!Utils::WinAPI::FileExists((char*)(const char*)path)) {
         path.Empty();
+    }
 
     return path;
 }
@@ -310,7 +340,6 @@ CString CGruntzMgr::BuildMoviePath(int movie)
 // reverse-construction order) and chains the base ~CGameMgr - all under the /GX
 // C++ EH frame (per-member unwind states 4..0).
 RVA(0x083360, 0xb2)
-CGruntzMgr::~CGruntzMgr()
-{
+CGruntzMgr::~CGruntzMgr() {
     UnknownClose();
 }

@@ -12,7 +12,7 @@
 // Field names are placeholders; only the OFFSETS, the dynamic import strings,
 // and the code bytes are load-bearing (campaign doctrine).
 #include <rva.h>
-#include <string.h>   // inline memcpy (rep movs)
+#include <string.h> // inline memcpy (rep movs)
 
 // The KERNEL32 imports (GetModuleHandleA / GetProcAddress / CloseHandle) + the
 // BOOL/DWORD/LPCSTR/HANDLE/LPBYTE/HMODULE/FARPROC types come from the real
@@ -23,57 +23,61 @@
 #include <Win32.h>
 #include <tlhelp32.h>
 
-typedef HANDLE (__stdcall *PFNCREATESNAPSHOT)(DWORD dwFlags, DWORD th32ProcessID);
-typedef BOOL   (__stdcall *PFNMODULEWALK)(HANDLE hSnapshot, MODULEENTRY32 *lpme);
+typedef HANDLE(__stdcall* PFNCREATESNAPSHOT)(DWORD dwFlags, DWORD th32ProcessID);
+typedef BOOL(__stdcall* PFNMODULEWALK)(HANDLE hSnapshot, MODULEENTRY32* lpme);
 
 namespace Utils {
-namespace WinAPI {
+    namespace WinAPI {
 
-// ---------------------------------------------------------------------------
-// LegacyFindModule
-// Snapshots the module list of process th32ProcessID, finds the module whose
-// th32ModuleID equals moduleID, and copies bufSize bytes of its MODULEENTRY32
-// into outBuf. Returns nonzero iff the module was found.
-RVA(0x118f60, 0x134)
-int LegacyFindModule(DWORD th32ProcessID, DWORD moduleID, void *outBuf, DWORD bufSize)
-{
-    int found = 0;
-    MODULEENTRY32 me32 = { 0 };
+        // ---------------------------------------------------------------------------
+        // LegacyFindModule
+        // Snapshots the module list of process th32ProcessID, finds the module whose
+        // th32ModuleID equals moduleID, and copies bufSize bytes of its MODULEENTRY32
+        // into outBuf. Returns nonzero iff the module was found.
+        RVA(0x118f60, 0x134)
+        int LegacyFindModule(DWORD th32ProcessID, DWORD moduleID, void* outBuf, DWORD bufSize) {
+            int found = 0;
+            MODULEENTRY32 me32 = {0};
 
-    HMODULE k32 = GetModuleHandleA("KERNEL32.DLL");
-    if (!k32)
-        return 0;
-
-    PFNCREATESNAPSHOT pCreateSnapshot =
-        (PFNCREATESNAPSHOT)GetProcAddress(k32, "CreateToolhelp32Snapshot");
-    if (!pCreateSnapshot)
-        return 0;
-
-    PFNMODULEWALK pModuleFirst = (PFNMODULEWALK)GetProcAddress(k32, "Module32First");
-    if (!pModuleFirst)
-        return 0;
-
-    PFNMODULEWALK pModuleNext = (PFNMODULEWALK)GetProcAddress(k32, "Module32Next");
-    if (!pModuleNext)
-        return 0;
-
-    HANDLE snap = pCreateSnapshot(TH32CS_SNAPMODULE, th32ProcessID);
-    if (snap == (HANDLE)-1)
-        return 0;
-
-    me32.dwSize = sizeof(me32);
-    if (pModuleFirst(snap, &me32)) {
-        do {
-            if (me32.th32ModuleID == moduleID) {
-                memcpy(outBuf, &me32, bufSize);
-                found = 1;
+            HMODULE k32 = GetModuleHandleA("KERNEL32.DLL");
+            if (!k32) {
+                return 0;
             }
-        } while (!found && pModuleNext(snap, &me32));
-    }
 
-    CloseHandle(snap);
-    return found;
-}
+            PFNCREATESNAPSHOT pCreateSnapshot =
+                (PFNCREATESNAPSHOT)GetProcAddress(k32, "CreateToolhelp32Snapshot");
+            if (!pCreateSnapshot) {
+                return 0;
+            }
 
-} // namespace WinAPI
+            PFNMODULEWALK pModuleFirst = (PFNMODULEWALK)GetProcAddress(k32, "Module32First");
+            if (!pModuleFirst) {
+                return 0;
+            }
+
+            PFNMODULEWALK pModuleNext = (PFNMODULEWALK)GetProcAddress(k32, "Module32Next");
+            if (!pModuleNext) {
+                return 0;
+            }
+
+            HANDLE snap = pCreateSnapshot(TH32CS_SNAPMODULE, th32ProcessID);
+            if (snap == (HANDLE)-1) {
+                return 0;
+            }
+
+            me32.dwSize = sizeof(me32);
+            if (pModuleFirst(snap, &me32)) {
+                do {
+                    if (me32.th32ModuleID == moduleID) {
+                        memcpy(outBuf, &me32, bufSize);
+                        found = 1;
+                    }
+                } while (!found && pModuleNext(snap, &me32));
+            }
+
+            CloseHandle(snap);
+            return found;
+        }
+
+    } // namespace WinAPI
 } // namespace Utils

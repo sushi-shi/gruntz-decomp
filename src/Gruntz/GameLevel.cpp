@@ -34,10 +34,10 @@
 // <Mfc.h> brings real MFC afxcoll: CDWordArray (the engine stores the pointer arrays as DWORDs).
 #include <Mfc.h>
 #include <Gruntz/GameLevel.h>
-#include <Io/FileStream.h>   // CFileIO (Open/Read/GetLength/ctor/dtor reloc-masked)
+#include <Io/FileStream.h> // CFileIO (Open/Read/GetLength/ctor/dtor reloc-masked)
 #include <rva.h>
 
-#include <string.h>  // strcpy, memset
+#include <string.h> // strcpy, memset
 
 // ===========================================================================
 // The CDDrawLevelData/Remus methods, merged in here as CGameLevel.
@@ -67,7 +67,7 @@
 // @0x1399d0) tears it down. Both are unmatched engine leaves taking the source as
 // `this`; declared with no body so the thiscall sites reloc-mask in objdiff.
 struct RemusParseSource {
-    int  BeginParse();
+    int BeginParse();
     void EndParse();
 };
 
@@ -83,16 +83,17 @@ public:
 // base vftable; the derived CGameLevel ctor below stamps the derived one after the
 // three array members are constructed. Both stores are reloc-masked DIR32.
 DATA(0x1efc30)
-extern void *g_severusWorkerBaseVtbl;   // base (SeverusWorker) vftable
+extern void* g_severusWorkerBaseVtbl; // base (SeverusWorker) vftable
 DATA(0x1f0150)
-extern void *g_gameLevelVtbl;           // derived CGameLevel vftable
+extern void* g_gameLevelVtbl; // derived CGameLevel vftable
 
-static inline void StampLevelVtbl(CGameLevel *o) { *(void **)o = &g_gameLevelVtbl; }
+static inline void StampLevelVtbl(CGameLevel* o) {
+    *(void**)o = &g_gameLevelVtbl;
+}
 
 // Stamps the shared +0xb0..+0xdc "default parameters" block. Defined inline so it
 // folds into each method exactly as the retail compiler emitted the block inline.
-static inline void StampParamBlock(CGameLevel *o)
-{
+static inline void StampParamBlock(CGameLevel* o) {
     o->m_b0 = 500;
     o->m_b4 = 250;
     o->m_b8 = 1000;
@@ -128,9 +129,7 @@ static inline void StampParamBlock(CGameLevel *o)
 // the EH frame are exact; this is the documented store-scheduling / EH-state-base
 // entropy plateau (matching-patterns.md §entropy, .claude/agents/orchestrator.md §2a/§8).
 RVA(0x15ccd0, 0x118)
-CGameLevel::CGameLevel(int a1, int a2, int a3)
-    : RemusBase(a1, a2, a3)
-{
+CGameLevel::CGameLevel(int a1, int a2, int a3) : RemusBase(a1, a2, a3) {
     m_64 = 0x40;
     m_68 = 0x40;
     m_b4 = 250;
@@ -154,74 +153,68 @@ CGameLevel::CGameLevel(int a1, int a2, int a3)
 }
 
 RVA(0x15d280, 0x279)
-int CGameLevel::LoadWwd(WwdHeader* hdr)
-{
-    Reset();                                  // vtable +0x44
+int CGameLevel::LoadWwd(WwdHeader* hdr) {
+    Reset(); // vtable +0x44
 
-    if (hdr->wwdSignature > 0x5f4)            // signature must be <= 1524
+    if (hdr->wwdSignature > 0x5f4) { // signature must be <= 1524
         return 0;
+    }
 
     // Copy the 1524-byte header into the level object (rep movs 0x17d dwords).
     m_header = *hdr;
 
     char* block;
-    char* ehAlloc = 0;                        // inflate buffer tracked by the EH state
+    char* ehAlloc = 0; // inflate buffer tracked by the EH state
 
-    if (hdr->flags & 0x2)                     // COMPRESS: inflate the main block
+    if (hdr->flags & 0x2) // COMPRESS: inflate the main block
     {
-        unsigned int allocSize =
-            hdr->mainBlockLength + hdr->wwdSignature + 0x40;
+        unsigned int allocSize = hdr->mainBlockLength + hdr->wwdSignature + 0x40;
         char* buf = (char*)operator new(allocSize);
-        if (buf == 0)
+        if (buf == 0) {
             return 0;
+        }
 
-        block = (char*)WwdFile_InflateMainBlock((WwdHeader*)hdr, (Bytef*)buf,
-                                                allocSize - 0x20);
-        if (block == 0)
-        {
+        block = (char*)WwdFile_InflateMainBlock((WwdHeader*)hdr, (Bytef*)buf, allocSize - 0x20);
+        if (block == 0) {
             operator delete(buf);
             return 0;
         }
         ehAlloc = buf;
-    }
-    else
-    {
-        block = (char*)hdr;                   // uncompressed: planes follow in place
+    } else {
+        block = (char*)hdr; // uncompressed: planes follow in place
     }
 
-    strcpy(m_levelName, hdr->levelName);      // inline strlen + rep movs
+    strcpy(m_levelName, hdr->levelName); // inline strlen + rep movs
     m_flags = hdr->flags;
     m_checksum = hdr->checksum;
 
     // --- plane loop ---------------------------------------------------------
     char* cursor = block + hdr->planesOffset;
     unsigned int i = 0;
-    if (hdr->numPlanes != 0)
-    {
-        do
-        {
-            if (ReadPlane(cursor, block, &m_planeCtx) == 0)
+    if (hdr->numPlanes != 0) {
+        do {
+            if (ReadPlane(cursor, block, &m_planeCtx) == 0) {
                 goto fail;
+            }
             ++i;
-            cursor += 0xa0;                   // WwdPlaneHeader stride
+            cursor += 0xa0; // WwdPlaneHeader stride
         } while (i < hdr->numPlanes);
     }
 
     // --- image-set descriptors ---------------------------------------------
-    if (hdr->tileDescriptionsOffset != 0)
-    {
+    if (hdr->tileDescriptionsOffset != 0) {
         char* rec = block + hdr->tileDescriptionsOffset;
         // (the target re-tests the cursor against the record header before the
         // loop; the descriptor count lives in the descriptor block header.)
         unsigned int count = *(unsigned int*)(rec + 0x8);
         unsigned int j = 0;
-        while (j < count)
-        {
+        while (j < count) {
             CImageSet* set = ReadImageSet(rec + 0x20);
-            if (set == 0)
+            if (set == 0) {
                 goto fail;
+            }
             ++j;
-            rec += set->GetStride();          // vtable +0x24 stride advance
+            rec += set->GetStride(); // vtable +0x24 stride advance
             m_imageSets.SetAtGrow(j - 1, (DWORD)set);
         }
     }
@@ -234,13 +227,10 @@ int CGameLevel::LoadWwd(WwdHeader* hdr)
         int startX = hdr->startX;
         int startY = hdr->startY;
         CPlane* mp = m_mainPlane;
-        if (mp->m_flags & 1)
-        {
+        if (mp->m_flags & 1) {
             mp->m_scaledX = (float)startX;
             mp->m_scaledY = (float)startY;
-        }
-        else
-        {
+        } else {
             mp->m_scaledX = (float)startX * mp->m_scaleX;
             mp->m_scaledY = (float)startY * mp->m_scaleY;
         }
@@ -250,18 +240,14 @@ int CGameLevel::LoadWwd(WwdHeader* hdr)
         int ox = m_mainPlane->m_originX;
         int oy = m_mainPlane->m_originY;
         int i2 = 0;
-        while (i2 < m_planes.GetSize())       // GetSize() == the plane count
+        while (i2 < m_planes.GetSize()) // GetSize() == the plane count
         {
-            if (i2 != m_mainIndex)
-            {
+            if (i2 != m_mainIndex) {
                 CPlane* p = (CPlane*)m_planes[i2];
-                if (p->m_flags & 1)
-                {
+                if (p->m_flags & 1) {
                     p->m_scaledX = (float)ox;
                     p->m_scaledY = (float)oy;
-                }
-                else
-                {
+                } else {
                     p->m_scaledX = (float)ox * p->m_scaleX;
                     p->m_scaledY = (float)oy * p->m_scaleY;
                 }
@@ -271,13 +257,15 @@ int CGameLevel::LoadWwd(WwdHeader* hdr)
         }
     }
 
-    if (ehAlloc != 0)
+    if (ehAlloc != 0) {
         operator delete(ehAlloc);
+    }
     return 1;
 
 fail:
-    if (ehAlloc != 0)
+    if (ehAlloc != 0) {
         operator delete(ehAlloc);
+    }
     return 0;
 }
 
@@ -297,19 +285,20 @@ fail:
 // ---------------------------------------------------------------------------
 // Remus adds a +0x10 sentinel check before the common parent/status predicate.
 RVA(0x161190, 0x1f)
-int CGameLevel::VirtualMethodUnknown14()
-{
-    if (m_planeCtx.m_0 == (int)0x80000000)
+int CGameLevel::VirtualMethodUnknown14() {
+    if (m_planeCtx.m_0 == (int)0x80000000) {
         goto fail;
-    if (m_0c == 0)
+    }
+    if (m_0c == 0) {
         goto fail;
-    if (m_04 != -1)
+    }
+    if (m_04 != -1) {
         return 1;
+    }
 
 fail:
     return 0;
 }
-
 
 // ---------------------------------------------------------------------------
 // Zeroes the first two ints of the +0x10 record, stores (arg0-1)/(arg1-1) into
@@ -328,8 +317,7 @@ fail:
 // ~75%); calling the param block before the +0x10 writes moves the whole block
 // ahead (wrong). Logic + offsets + CFG are exact, so this is left as the plateau.
 RVA(0x15d030, 0x8f)
-int CGameLevel::VirtualMethodUnknown34(int arg0, int arg1)
-{
+int CGameLevel::VirtualMethodUnknown34(int arg0, int arg1) {
     m_planeCtx.m_0 = 0;
     m_planeCtx.m_4 = 0;
     m_planeCtx.m_8 = arg0 - 1;
@@ -338,13 +326,9 @@ int CGameLevel::VirtualMethodUnknown34(int arg0, int arg1)
     return 1;
 }
 
-
-
-
 // -------------------------------------------------------------------------
 // Engine-label backlog stubs (merged from UnknownRemus).
 // -------------------------------------------------------------------------
-
 
 // ---------------------------------------------------------------------------
 // VirtualMethodUnknown40 (vtable +0x40): open the named file, slurp it whole into
@@ -354,16 +338,17 @@ int CGameLevel::VirtualMethodUnknown34(int arg0, int arg1)
 // /GX EH frame. NOTE: the file Read's byte count is DISCARDED (no compare to the
 // length) - only the +0x38 virtual's result decides success.
 RVA(0x15d500, 0x127)
-int CGameLevel::VirtualMethodUnknown40(const char *path)
-{
+int CGameLevel::VirtualMethodUnknown40(const char* path) {
     CFileIO file;
 
-    if (!file.Open(path, 0, 0))
+    if (!file.Open(path, 0, 0)) {
         return 0;
+    }
 
-    void *buf = operator new(file.GetLength());
-    if (!buf)
+    void* buf = operator new(file.GetLength());
+    if (!buf) {
         return 0;
+    }
 
     file.Read(buf, file.GetLength());
     if (Vfunc38((int)buf) == 0) {
@@ -381,11 +366,11 @@ int CGameLevel::VirtualMethodUnknown40(const char *path)
 // the +0x38 result (1/0). BeginParse/EndParse are unmatched engine leaves on the
 // arg object (reloc-masked thiscall).
 RVA(0x15d630, 0x41)
-int CGameLevel::VirtualMethodUnknown3C(RemusParseSource *arg)
-{
+int CGameLevel::VirtualMethodUnknown3C(RemusParseSource* arg) {
     int handle = arg->BeginParse();
-    if (handle == 0)
+    if (handle == 0) {
         return 0;
+    }
     if (Vfunc38(handle) == 0) {
         arg->EndParse();
         return 0;
@@ -393,8 +378,6 @@ int CGameLevel::VirtualMethodUnknown3C(RemusParseSource *arg)
     arg->EndParse();
     return 1;
 }
-
-
 
 // @confidence: high
 // @source: tomalla
@@ -408,28 +391,24 @@ void CGameLevel::Stub_1611c0() {}
 RVA(0x1611e0, 0x82)
 void CGameLevel::Stub_1611e0() {}
 
-
-
-
-
-
 // ---------------------------------------------------------------------------
 // Like Unknown44 plus resets the sentinel and zeroes the WwdHeader buffer.
 // ---------------------------------------------------------------------------
 RVA(0x15d1f0, 0x87)
-int CGameLevel::VirtualMethodUnknown1C()
-{
+int CGameLevel::VirtualMethodUnknown1C() {
     int i;
     for (i = 0; i < m_planes.GetSize(); i++) {
-        UnknownChild *child = (UnknownChild *)m_planes.GetData()[i];
-        if (child)
+        UnknownChild* child = (UnknownChild*)m_planes.GetData()[i];
+        if (child) {
             child->Release(1);
+        }
     }
     m_planes.SetSize(0, -1);
     for (i = 0; i < m_imageSets.GetSize(); i++) {
-        UnknownChild *child = (UnknownChild *)m_imageSets.GetData()[i];
-        if (child)
+        UnknownChild* child = (UnknownChild*)m_imageSets.GetData()[i];
+        if (child) {
             child->Release(1);
+        }
     }
     m_imageSets.SetSize(0, -1);
     m_planeCtx.m_0 = (int)0x80000000;
@@ -443,19 +422,20 @@ int CGameLevel::VirtualMethodUnknown1C()
 // Releases all child pointers, resets both CDWordArrays, clears members.
 // ---------------------------------------------------------------------------
 RVA(0x15d680, 0x71)
-void CGameLevel::VirtualMethodUnknown44()
-{
+void CGameLevel::VirtualMethodUnknown44() {
     int i;
     for (i = 0; i < m_planes.GetSize(); i++) {
-        UnknownChild *child = (UnknownChild *)m_planes.GetData()[i];
-        if (child)
+        UnknownChild* child = (UnknownChild*)m_planes.GetData()[i];
+        if (child) {
             child->Release(1);
+        }
     }
     m_planes.SetSize(0, -1);
     for (i = 0; i < m_imageSets.GetSize(); i++) {
-        UnknownChild *child = (UnknownChild *)m_imageSets.GetData()[i];
-        if (child)
+        UnknownChild* child = (UnknownChild*)m_imageSets.GetData()[i];
+        if (child) {
             child->Release(1);
+        }
     }
     m_imageSets.SetSize(0, -1);
     m_mainPlane = 0;
@@ -466,8 +446,7 @@ void CGameLevel::VirtualMethodUnknown44()
 // Returns constant 0x19 (25) — a type-tag or enum identifier.
 // ---------------------------------------------------------------------------
 RVA(0x1611b0, 0x6)
-int CGameLevel::VirtualMethodUnknown20()
-{
+int CGameLevel::VirtualMethodUnknown20() {
     return 0x19;
 }
 
@@ -475,8 +454,7 @@ int CGameLevel::VirtualMethodUnknown20()
 // ---------------------------------------------------------------------------
 // As Unknown24 but dispatches the +0x40 sibling virtual.
 RVA(0x15cdf0, 0xb8)
-int CGameLevel::VirtualMethodUnknown2C(int arg1, RemusCoords *coords)
-{
+int CGameLevel::VirtualMethodUnknown2C(int arg1, RemusCoords* coords) {
     m_planeCtx = *coords;
     StampParamBlock(this);
     if (Vfunc40(arg1) == 0) {
@@ -489,8 +467,7 @@ int CGameLevel::VirtualMethodUnknown2C(int arg1, RemusCoords *coords)
 // ---------------------------------------------------------------------------
 // As Unknown24 but dispatches the +0x3c sibling virtual.
 RVA(0x15ceb0, 0xb8)
-int CGameLevel::VirtualMethodUnknown28(int arg1, RemusCoords *coords)
-{
+int CGameLevel::VirtualMethodUnknown28(int arg1, RemusCoords* coords) {
     m_planeCtx = *coords;
     StampParamBlock(this);
     if (Vfunc3C(arg1) == 0) {
@@ -505,8 +482,7 @@ int CGameLevel::VirtualMethodUnknown28(int arg1, RemusCoords *coords)
 // the +0x38 sibling virtual with arg1. On a 0 result it runs the +0x1c hook and
 // returns 0; otherwise returns 1.
 RVA(0x15cf70, 0xb8)
-int CGameLevel::VirtualMethodUnknown24(int arg1, RemusCoords *coords)
-{
+int CGameLevel::VirtualMethodUnknown24(int arg1, RemusCoords* coords) {
     m_planeCtx = *coords;
     StampParamBlock(this);
     if (Vfunc38(arg1) == 0) {
@@ -519,8 +495,7 @@ int CGameLevel::VirtualMethodUnknown24(int arg1, RemusCoords *coords)
 // ---------------------------------------------------------------------------
 // Loads the +0x10 record from *coords, stamps the param block, returns 1.
 RVA(0x15d0d0, 0x99)
-int CGameLevel::VirtualMethodUnknown30(RemusCoords *coords)
-{
+int CGameLevel::VirtualMethodUnknown30(RemusCoords* coords) {
     m_planeCtx = *coords;
     StampParamBlock(this);
     return 1;

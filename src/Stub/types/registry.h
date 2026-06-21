@@ -24,52 +24,51 @@
  * placeholder so the header parses without <afxwin.h>.
  */
 
-typedef void *CfgCString;
+typedef void* CfgCString;
 
-struct GruntzRegistryConfig
-{
+struct GruntzRegistryConfig {
     /* --- Audio (master enable flags + volumes) --- */
-    int  disableAudio;          // "Disable Audio"
-    int  disableSound;          // "Disable Sound"
-    int  disableMusic;          // "Disable Music"
-    int  disableSoundFonts;     // "Disable SoundFonts"
-    int  disableSoundEffectz;   // "Disable Sound Effectz"
-    int  ambient;               // "Ambient"   (ambient-sound enable flag)
-    int  soundVolume;           // "Sound Volume"   (default 60)
-    int  musicVolume;           // "Music Volume"   (default 100)
-    int  voiceVolume;           // "Voice Volume"   (default 80)
-    int  sound;                 // "Sound"   (enable flag)
-    int  music;                 // "Music"   (enable flag)
-    int  voice;                 // "Voice"   (enable flag)
+    int disableAudio;        // "Disable Audio"
+    int disableSound;        // "Disable Sound"
+    int disableMusic;        // "Disable Music"
+    int disableSoundFonts;   // "Disable SoundFonts"
+    int disableSoundEffectz; // "Disable Sound Effectz"
+    int ambient;             // "Ambient"   (ambient-sound enable flag)
+    int soundVolume;         // "Sound Volume"   (default 60)
+    int musicVolume;         // "Music Volume"   (default 100)
+    int voiceVolume;         // "Voice Volume"   (default 80)
+    int sound;               // "Sound"   (enable flag)
+    int music;               // "Music"   (enable flag)
+    int voice;               // "Voice"   (enable flag)
 
     /* --- Video --- */
-    int  resolution;            // "Resolution"  (default 1; decoded -> width/height)
-    int  disableDirectVideoAccess; // "Disable Direct Video Access"
-    int  disableFades;          // "Disable Fades"
-    int  disableHighQualityMovie;  // "Disable High Quality Movie"
-    int  enableEmulation;       // "Enable Emulation"
-    int  enableHiColor;         // "Enable HiColor"
-    int  enableTrueColor;       // "Enable TrueColor"
-    int  enableTriple;          // "Enable Triple"   (triple buffering)
-    int  highDetail;            // "High Detail"   (default 1)
-    int  interlaced;            // "Interlaced"    (default 0)
+    int resolution;               // "Resolution"  (default 1; decoded -> width/height)
+    int disableDirectVideoAccess; // "Disable Direct Video Access"
+    int disableFades;             // "Disable Fades"
+    int disableHighQualityMovie;  // "Disable High Quality Movie"
+    int enableEmulation;          // "Enable Emulation"
+    int enableHiColor;            // "Enable HiColor"
+    int enableTrueColor;          // "Enable TrueColor"
+    int enableTriple;             // "Enable Triple"   (triple buffering)
+    int highDetail;               // "High Detail"   (default 1)
+    int interlaced;               // "Interlaced"    (default 0)
 
     /* --- Input / scroll --- */
-    int  disableJoystick;       // "Disable Joystick"
-    int  scrollSpeed;           // "Scroll Speed"   (default 20)
+    int disableJoystick; // "Disable Joystick"
+    int scrollSpeed;     // "Scroll Speed"   (default 20)
 
     /* --- Gameplay --- */
-    int  easyMode;              // "Easy Mode"     (default 0)
-    int  checkpointPrompts;     // "Checkpoint Prompts"   (default 1)
-    int  enableCheatzfile;      // "Enable Cheatzfile"   (gates CHEATZ.TXT)
-    CfgCString playerName;         // "Player Name"
-    CfgCString gameName;           // "Game Name"
-    int  defaultMaxGruntz;      // "DefaultMaxGruntz"
+    int easyMode;          // "Easy Mode"     (default 0)
+    int checkpointPrompts; // "Checkpoint Prompts"   (default 1)
+    int enableCheatzfile;  // "Enable Cheatzfile"   (gates CHEATZ.TXT)
+    CfgCString playerName; // "Player Name"
+    CfgCString gameName;   // "Game Name"
+    int defaultMaxGruntz;  // "DefaultMaxGruntz"
 
     /* --- Install / session bookkeeping --- */
-    CfgCString cdRomDrive;         // "CdRom Drive"   (cached CD drive letter, string)
-    int  numRuns;               // "Num Runs"      (times the game has been launched)
-    int  numMovies;             // "Num Movies"    (intro/movie playback counter)
+    CfgCString cdRomDrive; // "CdRom Drive"   (cached CD drive letter, string)
+    int numRuns;           // "Num Runs"      (times the game has been launched)
+    int numMovies;         // "Num Movies"    (intro/movie playback counter)
 
     /*
      * --- Per-save / last-used (INDEXED slots) ---

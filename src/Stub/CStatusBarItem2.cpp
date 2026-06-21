@@ -13,24 +13,34 @@ public:
 // @source: reloc-correlation (1 caller)
 // @stub
 RVA(0x136270, 0x8b)
-int CStatusBarItem2::Finalize() { return 0; }
+int CStatusBarItem2::Finalize() {
+    return 0;
+}
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @stub
 RVA(0x1355c0, 0x23)
-int CStatusBarItem2::SetField0(int) { return 0; }
+int CStatusBarItem2::SetField0(int) {
+    return 0;
+}
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @stub
 RVA(0x1357a0, 0x42)
-int CStatusBarItem2::SetField1(int) { return 0; }
+int CStatusBarItem2::SetField1(int) {
+    return 0;
+}
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @stub
 RVA(0x135920, 0x80)
-int CStatusBarItem2::SetField2(int) { return 0; }
+int CStatusBarItem2::SetField2(int) {
+    return 0;
+}
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @stub
 RVA(0x135510, 0x25)
-int CStatusBarItem2::SetField3(int) { return 0; }
+int CStatusBarItem2::SetField3(int) {
+    return 0;
+}

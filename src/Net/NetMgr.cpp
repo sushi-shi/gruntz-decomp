@@ -18,26 +18,26 @@
 // persists the command-timing config (m_5a4/m_5a8) to the game's RegistryHelper.
 #include <Net/NetMgr.h>
 #include <rva.h>
-#include <string.h>   // memset (inlined rep stosl for the version packet)
+#include <string.h> // memset (inlined rep stosl for the version packet)
 
-CGameMgr *g_pGameMgr;
+CGameMgr* g_pGameMgr;
 
 // File-scope reentrancy guards.
 static int g_optionzGuard;
 static int g_pauseGuard;
 static int g_sharedFlag;
-static int g_dropGuard;     // OnDropPlayer reentrancy guard (DAT_00648d10)
-static int g_syncToggle;    // FrameSyncWait alternating low-bit flag (DAT_00648d0c)
+static int g_dropGuard;  // OnDropPlayer reentrancy guard (DAT_00648d10)
+static int g_syncToggle; // FrameSyncWait alternating low-bit flag (DAT_00648d0c)
 
 // ---------------------------------------------------------------------------
 // CNetMgr::OnMultiOptions
 // Reentrancy-guarded fire of the MULTI_OPTIONZ command. Clears m_584, dispatches
 // (return value ignored), then clears the shared flag.
 RVA(0x0badd0, 0x43)
-void CNetMgr::OnMultiOptions()
-{
-    if (g_optionzGuard)
+void CNetMgr::OnMultiOptions() {
+    if (g_optionzGuard) {
         return;
+    }
 
     m_584 = 0;
     g_optionzGuard = 1;
@@ -51,10 +51,10 @@ void CNetMgr::OnMultiOptions()
 // Reentrancy-guarded fire of MULTI_PAUSE. When the dispatch returns 0x4cc,
 // forwards WM_COMMAND(0x80d7, m_1c) to the engine window.
 RVA(0x0bad40, 0x6c)
-void CNetMgr::OnMultiPause()
-{
-    if (g_pauseGuard)
+void CNetMgr::OnMultiPause() {
+    if (g_pauseGuard) {
         return;
+    }
 
     m_584 = 0;
     g_pauseGuard = 1;
@@ -63,7 +63,7 @@ void CNetMgr::OnMultiPause()
     g_sharedFlag = 0;
 
     if (r == 0x4cc) {
-        void *hwnd = ((CNetHwndHolder *)((CNetHwndHolder *)m_4)->m_4)->m_4;
+        void* hwnd = ((CNetHwndHolder*)((CNetHwndHolder*)m_4)->m_4)->m_4;
         PostMessageA((HWND)hwnd, 0x111, 0x80d7, m_1c);
     }
 }
@@ -74,10 +74,10 @@ void CNetMgr::OnMultiPause()
 // dispatch result: 0x4cc -> the same WM_COMMAND(0x80d7, m_1c) as Pause;
 // 0x4cd -> nothing; otherwise -> WM_COMMAND(0x8023, 0).
 RVA(0x0bae40, 0x84)
-void CNetMgr::OnOutOfSync()
-{
-    if (m_574)
+void CNetMgr::OnOutOfSync() {
+    if (m_574) {
         return;
+    }
 
     m_574 = 1;
     m_584 = 0;
@@ -85,18 +85,18 @@ void CNetMgr::OnOutOfSync()
     g_sharedFlag = 0;
 
     switch (r) {
-    case 0x4cc: {
-        void *hwnd = ((CNetHwndHolder *)((CNetHwndHolder *)m_4)->m_4)->m_4;
-        PostMessageA((HWND)hwnd, 0x111, 0x80d7, m_1c);
-        break;
-    }
-    case 0x4cd:
-        break;
-    default: {
-        void *hwnd = ((CNetHwndHolder *)((CNetHwndHolder *)m_4)->m_4)->m_4;
-        PostMessageA((HWND)hwnd, 0x111, 0x8023, 0);
-        break;
-    }
+        case 0x4cc: {
+            void* hwnd = ((CNetHwndHolder*)((CNetHwndHolder*)m_4)->m_4)->m_4;
+            PostMessageA((HWND)hwnd, 0x111, 0x80d7, m_1c);
+            break;
+        }
+        case 0x4cd:
+            break;
+        default: {
+            void* hwnd = ((CNetHwndHolder*)((CNetHwndHolder*)m_4)->m_4)->m_4;
+            PostMessageA((HWND)hwnd, 0x111, 0x8023, 0);
+            break;
+        }
     }
 }
 
@@ -108,16 +108,15 @@ void CNetMgr::OnOutOfSync()
 // "_Resend"; the "_DynCmdDelay" temp is built but its write is elided here. The
 // three temporaries' dtors run under the C++ EH frame (=> /GX).
 RVA(0x0b85a0, 0xd2)
-void CNetMgr::ApplyCmdDelayDefaults()
-{
-    Utils::RegistryHelper *reg = g_pGameMgr->m_38;
+void CNetMgr::ApplyCmdDelayDefaults() {
+    Utils::RegistryHelper* reg = g_pGameMgr->m_38;
 
-    CString cmdDelayName  = m_598 + "_CmdDelay";
-    CString resendName    = m_598 + "_Resend";
-    CString dynCmdName    = m_598 + "_DynCmdDelay";
+    CString cmdDelayName = m_598 + "_CmdDelay";
+    CString resendName = m_598 + "_Resend";
+    CString dynCmdName = m_598 + "_DynCmdDelay";
 
-    reg->SetValueDword((char *)(const char *)cmdDelayName, m_5a4);
-    reg->SetValueDword((char *)(const char *)resendName, m_5a8);
+    reg->SetValueDword((char*)(const char*)cmdDelayName, m_5a4);
+    reg->SetValueDword((char*)(const char*)resendName, m_5a8);
 }
 
 // -------------------------------------------------------------------------
@@ -179,11 +178,10 @@ void CNetMgr::Stub_0b9750() {}
 // frame ran long (> 0x28 ms) and the sync gate m_578 is set, it flips the
 // global low-bit sync toggle and returns it.
 RVA(0x0bc070, 0x73)
-unsigned CNetMgr::FrameSyncWait()
-{
-    unsigned now   = timeGetTime();
+unsigned CNetMgr::FrameSyncWait() {
+    unsigned now = timeGetTime();
     unsigned delta = now - m_5e4;
-    unsigned ret   = 0;
+    unsigned ret = 0;
     m_5e0 = delta;
     m_5e4 = now;
 
@@ -207,10 +205,10 @@ unsigned CNetMgr::FrameSyncWait()
 // 0x4ea reports the leaving player (stat 0x411 if still present), broadcasts
 // the drop (stat 0x410), acks it, and resets the buffers.
 RVA(0x0bc110, 0xf6)
-void CNetMgr::OnDropPlayer()
-{
-    if (g_dropGuard)
+void CNetMgr::OnDropPlayer() {
+    if (g_dropGuard) {
         return;
+    }
 
     m_584 = 0;
     g_dropGuard = 1;
@@ -219,24 +217,25 @@ void CNetMgr::OnDropPlayer()
     g_sharedFlag = 0;
 
     switch (r) {
-    case 0x4cd:
-        m_520->ResetCmdBuffers();
-        break;
-    case 0x4ce: {
-        m_520->ResetCmdBuffers();
-        void *hwnd = ((CNetHwndHolder *)((CNetHwndHolder *)m_4)->m_4)->m_4;
-        PostMessageA((HWND)hwnd, 0x111, 0x8023, 0);
-        break;
-    }
-    case 0x4ea:
-        if (g_dropPlayerId != -999) {
-            if (m_524->FindPlayerById(g_dropPlayerId))
-                SendStat3(g_dropPlayerId, 0x411, 1);
+        case 0x4cd:
+            m_520->ResetCmdBuffers();
+            break;
+        case 0x4ce: {
+            m_520->ResetCmdBuffers();
+            void* hwnd = ((CNetHwndHolder*)((CNetHwndHolder*)m_4)->m_4)->m_4;
+            PostMessageA((HWND)hwnd, 0x111, 0x8023, 0);
+            break;
         }
-        SendNetStat(0x410, g_dropPlayerId, 1);
-        AckDropPlayer(g_dropPlayerId);
-        m_520->ResetCmdBuffers();
-        break;
+        case 0x4ea:
+            if (g_dropPlayerId != -999) {
+                if (m_524->FindPlayerById(g_dropPlayerId)) {
+                    SendStat3(g_dropPlayerId, 0x411, 1);
+                }
+            }
+            SendNetStat(0x410, g_dropPlayerId, 1);
+            AckDropPlayer(g_dropPlayerId);
+            m_520->ResetCmdBuffers();
+            break;
     }
 }
 
@@ -256,23 +255,24 @@ void CNetMgr::Stub_0bc460() {}
 // fails on any of the session-state flags (terminated / removed / closed / full
 // / version-mismatch). Returns 1 once m_58c latches (admitted), 0 on any failure.
 RVA(0x0bca50, 0x155)
-int CNetMgr::WaitForConnect()
-{
-    if (m_524 == 0)
+int CNetMgr::WaitForConnect() {
+    if (m_524 == 0) {
         return 0;
-    if (m_5bc == 0)
+    }
+    if (m_5bc == 0) {
         return 0;
+    }
 
     SendStatFlag(0x415, 1);
     m_58c = 0;
     unsigned start = timeGetTime();
-    if (m_58c != 0)
+    if (m_58c != 0) {
         return 1;
+    }
 
     do {
         unsigned now = timeGetTime();
-        if (now > start + 60000 ||
-            ((int)GetAsyncKeyState(0x1b) & 0x80000000)) {
+        if (now > start + 60000 || ((int)GetAsyncKeyState(0x1b) & 0x80000000)) {
             ReportStatusId(0x8022, 0);
             return 0;
         }
@@ -296,7 +296,8 @@ int CNetMgr::WaitForConnect()
         if (m_570) {
             ReportNetError(
                 "This version is not the same as the host computer's version of the game.",
-                0);
+                0
+            );
             return 0;
         }
     } while (m_58c == 0);
@@ -312,22 +313,24 @@ int CNetMgr::WaitForConnect()
 // per-command delay m_5a4) re-dispatches the command through m_4's queue and
 // drops it from the slot. Finally clears the slot's two command ranges.
 RVA(0x0bcf20, 0xaf)
-int CNetMgr::ResetPlayerCommands(int id)
-{
-    if (m_580 == 0)
+int CNetMgr::ResetPlayerCommands(int id) {
+    if (m_580 == 0) {
         return 0;
+    }
 
-    CNetCmdSlot *slot = m_520->FindCmdSlot(id);
-    if (slot == 0)
+    CNetCmdSlot* slot = m_520->FindCmdSlot(id);
+    if (slot == 0) {
         return 0;
-    if (slot->m_4 != 0)
+    }
+    if (slot->m_4 != 0) {
         return 0;
+    }
 
     slot->Touch();
     int seq = (slot->m_14 + 1) * (int)m_5a4;
     int end = seq + (int)m_5a4 * 3;
     for (; seq < end; seq++) {
-        ((CNetSubObject *)m_4)->m_6c->Dispatch(*slot->m_c, seq);
+        ((CNetSubObject*)m_4)->m_6c->Dispatch(*slot->m_c, seq);
         slot->RemoveCmd(seq / (int)m_5a4);
     }
     slot->ResetTriple(slot->m_4c);
@@ -340,8 +343,7 @@ int CNetMgr::ResetPlayerCommands(int id)
 // Thin wrapper: samples the current worst ack latency and ships it to the
 // engine command dispatcher as stat 0x421.
 RVA(0x0bd000, 0x19)
-void CNetMgr::ReportAckLatency()
-{
+void CNetMgr::ReportAckLatency() {
     unsigned latency = GetMaxAckLatency();
     SendNetStat(0x421, latency, 0);
 }
@@ -354,23 +356,24 @@ void CNetMgr::ReportAckLatency()
 // slots hanging off m_4 (stride 0x238), each counted only when BOTH of its
 // "slot active" gate flags (m_164, m_170) are nonzero.
 RVA(0x0bd030, 0x5d)
-unsigned CNetMgr::GetMaxAckLatency()
-{
+unsigned CNetMgr::GetMaxAckLatency() {
     unsigned max = 0;
 
     if (m_528 != 0) {
         for (int i = 0; i < 4; i++) {
-            if (m_5f0[i] > max)
+            if (m_5f0[i] > max) {
                 max = m_5f0[i];
+            }
         }
     } else {
-        CNetPlayerSlot *slot = (CNetPlayerSlot *)m_4;
+        CNetPlayerSlot* slot = (CNetPlayerSlot*)m_4;
         for (int i = 0; i < 4; i++) {
             if (slot->m_164 && slot->m_170) {
-                if (slot->m_37c > max)
+                if (slot->m_37c > max) {
                     max = slot->m_37c;
+                }
             }
-            slot = (CNetPlayerSlot *)((char *)slot + 0x238);
+            slot = (CNetPlayerSlot*)((char*)slot + 0x238);
         }
     }
     return max;
@@ -384,16 +387,18 @@ unsigned CNetMgr::GetMaxAckLatency()
 // posts WM_COMMAND(0x8023) to the engine window; then fires stat 0x418 and
 // sleeps 250ms before returning.
 RVA(0x0bd0b0, 0x9a)
-void CNetMgr::HandleVersionCheck(CNetVersionMsg *msg)
-{
-    if (msg == 0)
+void CNetMgr::HandleVersionCheck(CNetVersionMsg* msg) {
+    if (msg == 0) {
         return;
+    }
 
     int mismatch = 0;
-    if (g_localVersion != msg->m_1c)
+    if (g_localVersion != msg->m_1c) {
         mismatch = 1;
-    if (g_remoteVersion != msg->m_18)
+    }
+    if (g_remoteVersion != msg->m_18) {
         mismatch = 1;
+    }
 
     if (mismatch) {
         int wasConnected = m_580;
@@ -401,8 +406,9 @@ void CNetMgr::HandleVersionCheck(CNetVersionMsg *msg)
         if (wasConnected) {
             ReportVersionMsg(
                 "This version is not the same as the host computer's version of the game.",
-                0);
-            void *hwnd = ((CNetHwndHolder *)((CNetHwndHolder *)m_4)->m_4)->m_4;
+                0
+            );
+            void* hwnd = ((CNetHwndHolder*)((CNetHwndHolder*)m_4)->m_4)->m_4;
             PostMessageA((HWND)hwnd, 0x111, 0x8023, 0);
         }
     }
@@ -418,17 +424,16 @@ void CNetMgr::HandleVersionCheck(CNetVersionMsg *msg)
 // CButeMgr config word, g_cfgWord, stat id 0x417, and the local/remote version
 // pair) and ships it through the engine stat dispatcher as stat 0x417.
 RVA(0x0bd180, 0x66)
-void CNetMgr::AnnounceVersion(int param)
-{
+void CNetMgr::AnnounceVersion(int param) {
     CNetVersionPacket packet;
     memset(&packet, 0, sizeof(packet));
 
-    packet.m_0  |= 0x80;
-    packet.m_18  = g_remoteVersion;
-    packet.m_c   = g_cfgWord;
-    packet.m_8   = g_buteMgrField4;
-    packet.m_1c  = g_localVersion;
-    packet.m_10  = 0x417;
+    packet.m_0 |= 0x80;
+    packet.m_18 = g_remoteVersion;
+    packet.m_c = g_cfgWord;
+    packet.m_8 = g_buteMgrField4;
+    packet.m_1c = g_localVersion;
+    packet.m_10 = 0x417;
 
     SendStatPacket(param, &packet, 0x20, 1);
 }
@@ -457,15 +462,16 @@ void CNetMgr::Stub_1782d0() {}
 // it (vtable slot 1, flag 1) and - if it has a cached list position (+0x20) -
 // unlinks it from the embedded m_54 CObList. Returns 1 when an object was given.
 RVA(0x178e20, 0x33)
-int CNetMgr::RemovePlayerObj(CNetPlayerObj *obj)
-{
-    if (obj == 0)
+int CNetMgr::RemovePlayerObj(CNetPlayerObj* obj) {
+    if (obj == 0) {
         return 0;
+    }
 
-    __POSITION *pos = obj->m_20;
+    __POSITION* pos = obj->m_20;
     obj->SelfDestruct(1);
-    if (pos != 0)
-        ((CObList *)((char *)this + 0x54))->RemoveAt(pos);
+    if (pos != 0) {
+        ((CObList*)((char*)this + 0x54))->RemoveAt(pos);
+    }
     return 1;
 }
 
@@ -474,14 +480,14 @@ int CNetMgr::RemovePlayerObj(CNetPlayerObj *obj)
 // Walks the m_58 player list and returns the first entry whose id (+0x4) equals
 // the requested id, or null if the list is empty / no entry matches.
 RVA(0x178e90, 0x20)
-CNetPlayerEntry *CNetMgr::FindPlayerById(int id)
-{
-    CNetPlayerNode *node = m_58;
+CNetPlayerEntry* CNetMgr::FindPlayerById(int id) {
+    CNetPlayerNode* node = m_58;
     while (node != 0) {
-        CNetPlayerEntry *entry = node->m_8;
+        CNetPlayerEntry* entry = node->m_8;
         node = node->m_next;
-        if (entry->m_4 == id)
+        if (entry->m_4 == id) {
             return entry;
+        }
     }
     return 0;
 }
@@ -492,10 +498,9 @@ CNetPlayerEntry *CNetMgr::FindPlayerById(int id)
 // stack out-ptr (size probe pre-set to 4, flags 1). Returns the blob pointer on
 // success, null on any HRESULT failure (the negl/sbbl/notl/and mask form).
 RVA(0x178eb0, 0x3f)
-void *CNetMgr::GetPlayerData(int id)
-{
+void* CNetMgr::GetPlayerData(int id) {
     unsigned long size;
-    void *data;
+    void* data;
     data = 0;
     size = 4;
     long hr = m_18->vtbl->GetData2(m_18, id, &data, &size, 1);
@@ -509,14 +514,13 @@ void *CNetMgr::GetPlayerData(int id)
 // HRESULT it routes the error through the static diagnostic reporter
 // (NetMgr.cpp:1133).
 RVA(0x178ef0, 0x5c)
-long CNetMgr::SetGroupData2(CNetPlayerEntry *a, CNetPlayerEntry *b,
-                            int c, int d, int e)
-{
+long CNetMgr::SetGroupData2(CNetPlayerEntry* a, CNetPlayerEntry* b, int c, int d, int e) {
     int ida = a ? a->m_4 : 0;
     int idb = b ? b->m_4 : 0;
     long hr = m_18->vtbl->SetData5(m_18, ida, idb, c, d, e);
-    if (hr)
+    if (hr) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x46d, hr, 0);
+    }
     return hr;
 }
 
@@ -526,11 +530,11 @@ long CNetMgr::SetGroupData2(CNetPlayerEntry *a, CNetPlayerEntry *b,
 // nonzero HRESULT routes the error through the diagnostic reporter
 // (NetMgr.cpp:1170).
 RVA(0x178fc0, 0x44)
-long CNetMgr::SetData(int a, int b, int c, int d, int e)
-{
+long CNetMgr::SetData(int a, int b, int c, int d, int e) {
     long hr = m_18->vtbl->SetData5(m_18, a, b, c, d, e);
-    if (hr)
+    if (hr) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x492, hr, 0);
+    }
     return hr;
 }
 
@@ -541,12 +545,12 @@ long CNetMgr::SetData(int a, int b, int c, int d, int e)
 // dwords; on a nonzero HRESULT routes the error through the diagnostic reporter
 // (NetMgr.cpp:1242).
 RVA(0x179090, 0x4c)
-long CNetMgr::SetGroupDataFrom(CNetPlayerEntry *a, int c, int d, int e)
-{
+long CNetMgr::SetGroupDataFrom(CNetPlayerEntry* a, int c, int d, int e) {
     int ida = a ? a->m_4 : 0;
     long hr = m_18->vtbl->SetData5(m_18, ida, 0, c, d, e);
-    if (hr)
+    if (hr) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x4da, hr, 0);
+    }
     return hr;
 }
 
@@ -557,13 +561,13 @@ long CNetMgr::SetGroupDataFrom(CNetPlayerEntry *a, int c, int d, int e)
 // nonzero HRESULT routes the error through the diagnostic reporter
 // (NetMgr.cpp:1322) and returns 0; otherwise returns 1.
 RVA(0x179130, 0x5d)
-int CNetMgr::EnumSessions(void *desc, void *ctx)
-{
-    if (desc == 0)
+int CNetMgr::EnumSessions(void* desc, void* ctx) {
+    if (desc == 0) {
         return 0;
+    }
 
     memset(desc, 0, 0x28);
-    *(int *)desc = 0x28;
+    *(int*)desc = 0x28;
     long hr = m_18->vtbl->Enum2(m_18, desc, ctx);
     if (hr) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x52a, hr, 0);
