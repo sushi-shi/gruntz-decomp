@@ -62,6 +62,17 @@ misleading (Pareto) — a "47% by bytes" milestone is ~455 functions, not 7,000.
 > **Caveat:** `gen_match_queue` needs the Ghidra-named DB (built by `gruntz init`);
 > run in a plain `nix develop` shell it writes **0 candidates** and clobbers the
 > committed queue — `git checkout config/match-queue.md` to restore.
+>
+> **CURRENT MODE — breadth-first, PREFER-NEW (the default until further notice):**
+> dispatch workers at **NEW untried functions**; do **NOT** re-dispatch a function that
+> already plateaued on a documented wall (regalloc / EH-state / scheduling / jump-table /
+> reloc-typing — §2a, §6). Taking a fresh function 0%→exact (or →high-fuzzy) is worth far
+> more than squeezing a stuck one 80%→82%, and looping on walls burns workers for ~0 net
+> (measured this campaign). **Defer the "second sweep"** (re-attacking plateaus) until we
+> have more `docs/patterns/` documented and the class/TU structure better understood —
+> that's when today's walls become steerable. So when a worker reports a function stuck
+> (no local source diff; residual is a documented wall), mark it **done-enough**, record
+> the wall, and point the next worker at a NEW target — never re-queue it now.
 
 
 1. **Big-first for understanding.** Target functions >~256 B first; they hold most
