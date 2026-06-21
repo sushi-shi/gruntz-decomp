@@ -88,6 +88,13 @@ public:
     int LoadExplosionSprites(int geoB, int geoA, int variant, int dummy);
     int LoadCameraSprite();
     int BuildBootyPerfectAnimation();
+
+    char m_pad00[0x22c];                 // +0x000
+    CSpriteFactoryHolder *m_22c;         // +0x22c  sprite-factory holder (->m_8 = factory)
+    char m_pad230[0x23c - 0x230];        // +0x230
+    CSprite *m_23c;                      // +0x23c  cached camera sprite
+    char m_pad240[0x2f8 - 0x240];        // +0x240
+    CSprite *m_2f8;                      // +0x2f8  booty-perfect anim sprite
 };
 
 // ===========================================================================
@@ -103,11 +110,11 @@ int EngineLabelBacklog::BuildBootyPerfectAnimation()
 {
     CSprite *spr = g_gameReg->m_30->m_8->CreateSprite(
         0, (int)0xffffff7e, 0xf0, 0x64, "SimpleAnimation", 3);
-    *(CSprite **)((char *)this + 0x2f8) = spr;
+    m_2f8 = spr;
     if (!spr)
         return 0;
     spr->CacheFirstFrame("BOOTY_PERFECT");
-    (*(CSprite **)((char *)this + 0x2f8))->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    m_2f8->ApplyLookupGeometry("GAME_CYCLE100", 0);
     return 1;
 }
 
@@ -128,7 +135,7 @@ struct CCameraSpriteInit {
 RVA(0x078960, 0x9b)
 int EngineLabelBacklog::LoadCameraSprite()
 {
-    if (*(CSprite **)((char *)this + 0x23c) != 0)
+    if (m_23c != 0)
         return 0;
 
     int vx = g_gameReg->m_8c;
@@ -144,11 +151,11 @@ int EngineLabelBacklog::LoadCameraSprite()
         cx = vy - 0x28;
     }
 
-    CSpriteFactory *fac = (*(CSpriteFactoryHolder **)((char *)this + 0x22c))->m_8;
+    CSpriteFactory *fac = m_22c->m_8;
     CSprite *spr = fac->CreateSprite(0, ax, cx, 0xf4240, "DoNothing", 1);
-    *(CSprite **)((char *)this + 0x23c) = spr;
+    m_23c = spr;
     (*(void (**)(CSprite *))(*(void ***)((char *)spr + 0x7c) + 4))(spr);
-    (*(CSprite **)((char *)this + 0x23c))->CacheFirstFrame("GAME_CAMERASPRITE");
+    m_23c->CacheFirstFrame("GAME_CAMERASPRITE");
     return 1;
 }
 
@@ -163,7 +170,7 @@ int EngineLabelBacklog::LoadCameraSprite()
 RVA(0x07b330, 0xc6)
 int EngineLabelBacklog::LoadExplosionSprites(int geoB, int geoA, int variant, int dummy)
 {
-    CSpriteFactory *fac = (*(CSpriteFactoryHolder **)((char *)this + 0x22c))->m_8;
+    CSpriteFactory *fac = m_22c->m_8;
     CSprite *spr = fac->CreateSprite(0, geoB, geoA, 0, "Explosion", 0x40003);
     if (spr) {
         int v = variant;
