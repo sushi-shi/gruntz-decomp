@@ -166,7 +166,7 @@ int CFileImage::DecodePcxEx(char *name, char *path, void *a3, void *a4)
         return 0;
     }
 
-    int result = DecodePcxData((void *)name, (int)buf, (int)len, (int)a3, (int)a4);
+    int result = DecodePcxData(name, buf, len, a3, a4);
     operator delete(buf);
     return result;
 }

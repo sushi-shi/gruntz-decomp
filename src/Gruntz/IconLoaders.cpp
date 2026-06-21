@@ -55,11 +55,20 @@ extern "C" int rand(void);
 // The created sprite. CacheFirstFrame caches its first valid frame; the icon
 // loader pushes a pile of configuration ints into the +0x114..+0x130 block. The
 // per-sprite animation player @+0x38 carries ApplyLookupGeometry.
+// The CSprite "init interface" vtable embedded at CSprite+0x7c; slot +0x10 is the
+// init function the camera loader runs after CreateSprite.
+struct CSpriteVtbl {
+    void *m_slot0[4];                 // +0x00  slots 0..3
+    void (*Init)(CSprite *);          // +0x10  the init "virtual" (takes the sprite)
+};
+
 struct CSprite {
     void CacheFirstFrame(const char *name);          // CGruntSprite::CacheFirstFrame @0x150540
     int  ApplyLookupGeometry(const char *name, int applyDefault); // CGruntAnimPlayer @0x1505b0
 
-    char            m_pad0[0x114];
+    char            m_pad0[0x7c];          // +0x00
+    CSpriteVtbl    *m_7c;                  // +0x7c  init-interface vtable (slot +0x10 = Init)
+    char            m_pad80[0x114 - 0x80]; // +0x80
     int             m_114;        // +0x114
     int             m_118;        // +0x118
     int             m_11c;        // +0x11c
@@ -88,6 +97,13 @@ public:
     int LoadExplosionSprites(int geoB, int geoA, int variant, int dummy);
     int LoadCameraSprite();
     int BuildBootyPerfectAnimation();
+
+    char m_pad00[0x22c];                 // +0x000
+    CSpriteFactoryHolder *m_22c;         // +0x22c  sprite-factory holder (->m_8 = factory)
+    char m_pad230[0x23c - 0x230];        // +0x230
+    CSprite *m_23c;                      // +0x23c  cached camera sprite
+    char m_pad240[0x2f8 - 0x240];        // +0x240
+    CSprite *m_2f8;                      // +0x2f8  booty-perfect anim sprite
 };
 
 // ===========================================================================
@@ -103,11 +119,11 @@ int EngineLabelBacklog::BuildBootyPerfectAnimation()
 {
     CSprite *spr = g_gameReg->m_30->m_8->CreateSprite(
         0, (int)0xffffff7e, 0xf0, 0x64, "SimpleAnimation", 3);
-    *(CSprite **)((char *)this + 0x2f8) = spr;
+    m_2f8 = spr;
     if (!spr)
         return 0;
     spr->CacheFirstFrame("BOOTY_PERFECT");
-    (*(CSprite **)((char *)this + 0x2f8))->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    m_2f8->ApplyLookupGeometry("GAME_CYCLE100", 0);
     return 1;
 }
 
@@ -121,14 +137,10 @@ int EngineLabelBacklog::BuildBootyPerfectAnimation()
 // sprite's init virtual (vtbl slot +0x10), then caches its first frame.
 // __thiscall (this @ esi). Returns 1 on (re)creation, 0 if already present.
 
-struct CCameraSpriteInit {
-    void **m_vtbl;
-};
-
 RVA(0x078960, 0x9b)
 int EngineLabelBacklog::LoadCameraSprite()
 {
-    if (*(CSprite **)((char *)this + 0x23c) != 0)
+    if (m_23c != 0)
         return 0;
 
     int vx = g_gameReg->m_8c;
@@ -144,11 +156,11 @@ int EngineLabelBacklog::LoadCameraSprite()
         cx = vy - 0x28;
     }
 
-    CSpriteFactory *fac = (*(CSpriteFactoryHolder **)((char *)this + 0x22c))->m_8;
+    CSpriteFactory *fac = m_22c->m_8;
     CSprite *spr = fac->CreateSprite(0, ax, cx, 0xf4240, "DoNothing", 1);
-    *(CSprite **)((char *)this + 0x23c) = spr;
-    (*(void (**)(CSprite *))(*(void ***)((char *)spr + 0x7c) + 4))(spr);
-    (*(CSprite **)((char *)this + 0x23c))->CacheFirstFrame("GAME_CAMERASPRITE");
+    m_23c = spr;
+    spr->m_7c->Init(spr);
+    m_23c->CacheFirstFrame("GAME_CAMERASPRITE");
     return 1;
 }
 
@@ -163,7 +175,7 @@ int EngineLabelBacklog::LoadCameraSprite()
 RVA(0x07b330, 0xc6)
 int EngineLabelBacklog::LoadExplosionSprites(int geoB, int geoA, int variant, int dummy)
 {
-    CSpriteFactory *fac = (*(CSpriteFactoryHolder **)((char *)this + 0x22c))->m_8;
+    CSpriteFactory *fac = m_22c->m_8;
     CSprite *spr = fac->CreateSprite(0, geoB, geoA, 0, "Explosion", 0x40003);
     if (spr) {
         int v = variant;

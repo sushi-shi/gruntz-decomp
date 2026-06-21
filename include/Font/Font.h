@@ -116,7 +116,8 @@ struct CWapNodeB : CWapNodeBase {
     int     m_type;                 // +0x04
     char    m_pad08[0x28];          // +0x08..+0x2f
     char   *m_srcStr1;              // +0x30
-    char    m_pad34[8];             // +0x34..+0x3b
+    char   *m_buf34;                // +0x34  owned buffer (FreeStrings deletes)
+    char   *m_buf38;                // +0x38  owned buffer (FreeStrings deletes)
     char    m_rest[0x18];           // +0x3c..+0x53
 };
 

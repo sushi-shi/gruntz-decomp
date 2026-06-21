@@ -107,7 +107,9 @@ struct CLevelObj {
 };
 
 struct CLevelList {
-    char        m_pad00[0x14];
+    char        m_pad00[0x8];
+    CLevelList *m_8;     // +0x08  the actual object list ListGetFirst/Next walk
+    char        m_pad0c[0x14 - 0xc];
     CLevelNode *m_14;    // +0x14  list first
     char        m_pad18[0x64 - 0x18];
     CLevelNode *m_64;    // +0x64  GetNext cursor
@@ -299,9 +301,9 @@ int CBattlezMapConfig::LoadConfig(CLevelInfo *lvl, int id, int diff)
     //     coords are scaled by signed /32 (round-toward-zero) into a freelist pair.
     //     The list is re-derived (lvl->m_30->m_8) and advanced via the GetNext
     //     cursor idiom on every step. ---
-    for (CLevelObj *cur = ListGetFirst((CLevelList *)((void **)lvl->m_30)[2]);
+    for (CLevelObj *cur = ListGetFirst(lvl->m_30->m_8);
          cur != 0;
-         cur = ListGetNext((CLevelList *)((void **)lvl->m_30)[2])) {
+         cur = ListGetNext(lvl->m_30->m_8)) {
         if (cur->m_7c->m_10 == (int)(g_typeDesc1 + 5) && cur->m_124 == id) {
             CCoordPair *p = (CCoordPair *)g_freeList;
             int *slot = 0;
@@ -317,9 +319,9 @@ int CBattlezMapConfig::LoadConfig(CLevelInfo *lvl, int id, int diff)
 
     // --- loop 2: find the FIRST type-2 marker, stamp m_d0/m_d4 with its /32 coords,
     //     and stop (fall straight into loop 3). ---
-    for (CLevelObj *cur2 = ListGetFirst((CLevelList *)((void **)lvl->m_30)[2]);
+    for (CLevelObj *cur2 = ListGetFirst(lvl->m_30->m_8);
          cur2 != 0;
-         cur2 = ListGetNext((CLevelList *)((void **)lvl->m_30)[2])) {
+         cur2 = ListGetNext(lvl->m_30->m_8)) {
         if (cur2->m_7c->m_10 == (int)(g_typeDesc2 + 5) && cur2->m_124 == id) {
             m_d0 = cur2->m_5c / 32;
             m_d4 = cur2->m_60 / 32;
@@ -329,9 +331,9 @@ int CBattlezMapConfig::LoadConfig(CLevelInfo *lvl, int id, int diff)
 
     // --- loop 3: append EVERY type-3 marker to the +0xf0 array, scaled by >>5
     //     (arithmetic floor), and set bit 0x10000 in the matched object's flags. ---
-    for (CLevelObj *cur3 = ListGetFirst((CLevelList *)((void **)lvl->m_30)[2]);
+    for (CLevelObj *cur3 = ListGetFirst(lvl->m_30->m_8);
          cur3 != 0;
-         cur3 = ListGetNext((CLevelList *)((void **)lvl->m_30)[2])) {
+         cur3 = ListGetNext(lvl->m_30->m_8)) {
         if (cur3->m_7c->m_10 == (int)(g_typeDesc3 + 5) && cur3->m_124 == id) {
             CCoordPair *p = (CCoordPair *)g_freeList;
             int *slot = 0;

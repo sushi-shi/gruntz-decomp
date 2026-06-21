@@ -39,12 +39,15 @@ struct CSprite {
 // (1..4); m_5c/m_60 = per-step pixel deltas; m_134..m_140 = the on-screen tile
 // window; m_12c = a "lock direction" flag; m_7c = the level/timing object whose
 // +0xbc overrides the per-tile time.
+// The level/timing object at CSlimeLevel+0x7c; its +0xbc overrides the per-tile time.
+struct CSlimeTiming { char m_pad0[0xbc]; unsigned int m_bc; };
+
 struct CSlimeLevel {
     char m_pad0[0x5c];
     int  m_5c;            // +0x5c  step dx (pixels)
     int  m_60;            // +0x60  step dy (pixels)
     char m_pad64[0x7c - 0x64];
-    void *m_7c;           // +0x7c  level/timing object (m_7c->m_bc time override)
+    CSlimeTiming *m_7c;   // +0x7c  level/timing object (m_7c->m_bc time override)
     char m_pad80[0x124 - 0x80];
     int  m_124;           // +0x124 travel direction (1..4)
     char m_pad128[0x12c - 0x128];
@@ -185,8 +188,8 @@ void CKitchenSlime::LoadSprites()
     m_68 = (double)m_10->m_60 + m_68;
 
     unsigned int time;
-    if (*(int *)((char *)m_10->m_7c + 0xbc) != 0)
-        time = *(unsigned int *)((char *)m_10->m_7c + 0xbc);
+    if (m_10->m_7c->m_bc != 0)
+        time = m_10->m_7c->m_bc;
     else
         time = g_buteMgr.GetDwordDef("Hazardz", "KitchenSlimeTimePerTile", 1000);
 

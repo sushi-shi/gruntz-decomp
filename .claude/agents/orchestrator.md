@@ -316,6 +316,10 @@ must STOP and report, not force the wrong class.
   TUs); don't re-`typedef` `BOOL`/`HWND`/`INT_PTR`/… or re-`extern` `PostMessageA`/`timeGetTime`/…
   The real decls keep the signature/mangling from drifting, and pulling windows.h via the
   umbrellas is matching-neutral (PR #44). See `docs/patterns/win32-import-decl-stdcall.md`.
+- **The matcher owns the source-writing doctrine** — see `.claude/agents/matcher.md`
+  (almost-never-cast / model-the-real-type, real Win32/MFC headers, match-by-shape,
+  reloc-masking, no `(T*)0xADDR`). Spawn matchers against that manual; the §6 facts here are
+  orchestrator-side context to fold into the worker prompt, not a substitute for it.
 - **Ghidra scripting:** the headless enrichment/export run under **PyGhidra**
   (Ghidra 12.0.4 + `jpype1`, both from the flake) via `scripts/gruntz/ghidra/ghidra_metadata_apply.py`
   - `pyghidra.start()` + `ghidra_script(...)`.
