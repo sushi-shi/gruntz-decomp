@@ -3,7 +3,7 @@
 
 Replaces the hand-maintained config/symbol_names.csv. The only manual input is
 the address annotation on each matched function/global; everything else is
-derived. See docs/source-consolidation-investigation.md and docs/build-system.md.
+derived. See docs/build-system.md.
 
 ANNOTATIONS (src/rva.h macros, compiled out under MSVC):
 
@@ -576,12 +576,135 @@ def units_from_toml(path):
     return {u["source"]: u["unit"] for u in data.get("unit", [])}
 
 
+def write_symbol_names(rows, addr_sites, out, misses=None):
+    """Finalize + write symbol_names.csv: the cross-TU duplicate-RVA guard, the
+    DATA dedup (keep last per rva, matching synth_pdb), sort, header. Shared by the
+    per-TU emit and the --merge step so both apply the same checks."""
+    # A function address identifies exactly one function: the same rva labeled
+    # twice (within or across units) is always a mistake - fail loudly.
+    dup_addrs = {rva: sites for rva, sites in addr_sites.items() if len(sites) > 1}
+    if dup_addrs:
+        for rva, sites in sorted(dup_addrs.items()):
+            where = ", ".join(f"{a} ({b})" for a, b in sites)
+            log(f"ERROR duplicate RVA 0x{rva:06x}: {where}")
+        log(f"{len(dup_addrs)} duplicate RVA label(s); refusing to write {out}")
+        return 1
+    rows.sort()
+    # DATA dedup: the same `extern` declared in N TUs emits N rows for one rva.
+    # synth_pdb keys by rva (last wins), so collapse to one data row per rva. If
+    # two declarations give one rva DIFFERENT mangled names, surface the conflict.
+    last_data, data_names, out_rows = {}, {}, []
+    for row in rows:
+        if row[4] == "data":
+            data_names.setdefault(row[0], set()).add(row[1])
+            last_data[row[0]] = row     # rows are sorted -> keeps the last per rva
+        else:
+            out_rows.append(row)
+    for rva, names in sorted(data_names.items()):
+        if len(names) > 1:
+            log(f"WARN data 0x{rva:06x}: conflicting names {sorted(names)} - kept the last")
+    out_rows.extend(last_data.values())
+    out_rows.sort()
+    out = Path(out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    # `size` is the RVA byte extent (hex); `kind` is func or data (synth_pdb routes
+    # data rows to the data-symbol table). See the module docstring.
+    lines = ["rva,name,unit,size,kind"]
+    for rva, name, unit, size, kind in out_rows:
+        size_s = f"0x{size:x}" if size else ""
+        lines.append(f"0x{rva:06x},{name},{unit},{size_s},{kind}")
+    content = "\n".join(lines) + "\n"
+    # WRITE-IF-CHANGED: leave the file (and its mtime) untouched when the content is
+    # identical, so ninja's `restat` stops the cascade. A pure code edit recompiles
+    # the obj but does not change the labels, so this fragment/csv is byte-identical
+    # and merge -> delink -> objdiff are all skipped.
+    if not (out.exists() and out.read_text() == content):
+        out.write_text(content)
+        log(f"wrote {len(out_rows)} label(s) -> {out}")
+    else:
+        log(f"unchanged ({len(out_rows)} labels) -> {out}")
+    for rva, cand, unit, why in (misses or []):
+        log(f"  MISS 0x{rva:x} [{unit}] {why}" + (f" (cand {cand})" if cand else ""))
+    return 0
+
+
+def _write_json_if_changed(obj, path, label):
+    """Write JSON only when the content changed (mtime-stable for ninja restat)."""
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    content = json.dumps(obj, indent=1)
+    if not (path.exists() and path.read_text() == content):
+        path.write_text(content)
+        log(f"wrote {len(obj)} {label} -> {path}")
+    else:
+        log(f"unchanged ({len(obj)} {label}) -> {path}")
+
+
+def merge_json_fragments(frags, out, label, key="rva"):
+    """Combine per-TU JSON list fragments into one sorted list (last per `key`
+    wins, matching the CSV's keep-last semantics) and write it. Each fragment is a
+    functions.json/globals.json slice from one --tu run. Missing fragments are
+    tolerated (a TU may carry no funcs/globals)."""
+    by_key = {}
+    for frag in frags:
+        p = Path(frag)
+        if not p.exists():
+            continue
+        try:
+            for d in json.loads(p.read_text() or "[]"):
+                by_key[d.get(key)] = d
+        except (OSError, json.JSONDecodeError):
+            continue
+    merged = sorted(by_key.values(), key=lambda d: d.get(key) or "")
+    _write_json_if_changed(merged, out, label)
+    return merged
+
+
+def merge_fragments(frags, out, functions_frags=None, functions_out=None,
+                    globals_frags=None, globals_out=None):
+    """Combine per-TU fragment CSVs into symbol_names.csv, re-applying the cross-TU
+    duplicate-RVA guard + DATA dedup. Each fragment is a symbol_names.csv slice
+    (rva,name,unit,size,kind) emitted by one --tu run. The per-TU functions.json /
+    globals.json fragments are merged the same way (last per rva wins) so apply.py
+    sees EVERY unit's signatures/global types, not just the last TU built."""
+    import csv as _csv
+    rows, addr_sites = [], {}
+    for frag in frags:
+        with open(frag) as f:
+            reader = _csv.DictReader(ln for ln in f if not ln.lstrip().startswith("#"))
+            for r in reader:
+                rva = int(r["rva"], 16)
+                size = int(r["size"], 16) if r.get("size") else None
+                kind = r.get("kind") or "func"
+                rows.append((rva, r["name"], r["unit"], size, kind))
+                if kind != "data":
+                    addr_sites.setdefault(rva, []).append((r["unit"], r["name"]))
+    rc = write_symbol_names(rows, addr_sites, out)
+    if rc != 0:
+        return rc
+    if functions_out:
+        merge_json_fragments(functions_frags or [], functions_out,
+                             "function signature(s)")
+    if globals_out:
+        merge_json_fragments(globals_frags or [], globals_out, "global(s)")
+    return 0
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--clang", default=os.environ.get("GRUNTZ_CLANG") or "clang")
     ap.add_argument("--nm", default="llvm-nm")
-    ap.add_argument("--tu", action="append", default=[], required=True,
+    ap.add_argument("--tu", action="append", default=[],
                     help="source TU(s) to read annotations from.")
+    ap.add_argument("--merge", nargs="+",
+                    help="merge mode: combine these per-TU fragment CSVs into "
+                         "--out (cross-TU dup guard + DATA dedup); no --tu needed. "
+                         "Also merges --merge-functions/--merge-globals JSON "
+                         "fragments into --functions-out/--globals-out.")
+    ap.add_argument("--merge-functions", nargs="*", default=[],
+                    help="per-TU functions.json fragments to merge (merge mode).")
+    ap.add_argument("--merge-globals", nargs="*", default=[],
+                    help="per-TU globals.json fragments to merge (merge mode).")
     ap.add_argument("--flag", action="append", default=[])
     ap.add_argument("--obj", action="append", default=[],
                     help="base <unit>.obj for the authority check (same order/count "
@@ -603,6 +726,14 @@ def main():
                     default=str(REPO / "build/gen/globals.json"),
                     help="per-RVA global/static declared types for apply.py.")
     args = ap.parse_args()
+
+    if args.merge:
+        return merge_fragments(
+            args.merge, Path(args.out),
+            functions_frags=args.merge_functions, functions_out=args.functions_out,
+            globals_frags=args.merge_globals, globals_out=args.globals_out)
+    if not args.tu:
+        ap.error("either --tu (emit) or --merge (combine fragments) is required")
 
     unit_map = {}
     if not args.unit and Path(args.units_toml).exists():
@@ -703,55 +834,15 @@ def main():
                     misses.append((rva, cand, unit,
                                    "data candidate not in base obj"))
 
-    # A function address identifies exactly one function: the same rva labeled
-    # twice (within or across units) is always a mistake - fail loudly rather than
-    # silently let one row win.
-    dup_addrs = {rva: sites for rva, sites in addr_sites.items() if len(sites) > 1}
-    if dup_addrs:
-        for rva, sites in sorted(dup_addrs.items()):
-            where = ", ".join(f"{tu} ({sym})" for tu, sym in sites)
-            log(f"ERROR duplicate RVA 0x{rva:06x}: {where}")
-        log(f"{len(dup_addrs)} duplicate RVA label(s); refusing to write {args.out}")
-        return 1
-
-    rows.sort()
-    # DATA dedup: the same `extern` declared in N TUs emits N rows for one rva.
-    # The function dup-guard (addr_sites) deliberately doesn't track data, and
-    # synth_pdb keys by rva (last wins), so collapse to one data row per rva
-    # (keeping the last, matching synth_pdb). If two declarations give one rva
-    # DIFFERENT mangled names, they disagree on the global's type - surface it.
-    last_data, data_names, out_rows = {}, {}, []
-    for row in rows:
-        if row[4] == "data":
-            data_names.setdefault(row[0], set()).add(row[1])
-            last_data[row[0]] = row     # rows are sorted -> keeps the last per rva
-        else:
-            out_rows.append(row)
-    for rva, names in sorted(data_names.items()):
-        if len(names) > 1:
-            log(f"WARN data 0x{rva:06x}: conflicting names {sorted(names)} - kept the last")
-    out_rows.extend(last_data.values())
-    out_rows.sort()
-    rows = out_rows
-    out = Path(args.out)
-    out.parent.mkdir(parents=True, exist_ok=True)
-    with out.open("w") as f:
-        # `size` is the RVA byte extent (hex), the authoritative boundary the
-        # synth-PDB uses for matched functions Ghidra's auto-analysis never
-        # recovered as objects (empty when a row carries no size).
-        # `kind` is func (a matched function) or data (the DATA symbol a matched
-        # global is referenced through); synth_pdb routes data rows to the
-        # data-symbol table instead of synthesising a function record.
-        f.write("rva,name,unit,size,kind\n")
-        for rva, name, unit, size, kind in rows:
-            size_s = f"0x{size:x}" if size else ""
-            f.write(f"0x{rva:06x},{name},{unit},{size_s},{kind}\n")
-    log(f"wrote {len(rows)} label(s) -> {out}")
-    for rva, cand, unit, why in misses:
-        log(f"  MISS 0x{rva:x} [{unit}] {why}" + (f" (cand {cand})" if cand else ""))
+    # Finalize + write the CSV via the shared helper (cross-TU dup-RVA guard,
+    # DATA keep-last-per-rva dedup, sort, write-if-changed). It sorts `rows` in
+    # place but writes its own deduped copy, so `rows` below still holds every row.
+    rc = write_symbol_names(rows, addr_sites, Path(args.out), misses)
+    if rc != 0:
+        return rc
 
     # --- functions.json: per-RVA signatures for apply.py's Ghidra prototypes ---
-    # Join the final func rows (authority-checked) with their clang mangledName
+    # Join the func rows (authority-checked) with their clang mangledName
     # (func_meta) and demangle once for the authoritative signature; overlay the
     # source AST's parameter names. Vendored/config funcs carry no source
     # signature and are omitted.
@@ -776,26 +867,26 @@ def main():
             "kind": sig["kind"], "ret": sig["ret"], "cc": sig["cc"],
             "params": params, "unit": unit})
     functions.sort(key=lambda d: d["rva"])
-    fout = Path(args.functions_out)
-    fout.parent.mkdir(parents=True, exist_ok=True)
-    fout.write_text(json.dumps(functions, indent=1))
-    log(f"wrote {len(functions)} function signature(s) "
-        f"({n_named_params} named params) -> {fout}")
+    _write_json_if_changed(functions, args.functions_out,
+                           f"function signature(s) ({n_named_params} named params)")
 
     # --- globals.json: the declared C/C++ TYPE of each named global (data row),
     # so apply.py types it in Ghidra (it already names it from symbol_names.csv).
+    # write_symbol_names no longer mutates `rows` to dedup data, so dedup here the
+    # same way (keep last per rva) to match the rows written to the CSV.
+    last_data = {}
+    for row in rows:                      # rows is sorted in place by write_symbol_names
+        if row[4] == "data":
+            last_data[row[0]] = row       # keep last per rva = matches the written CSV
     globals_out = []
-    for rva, name, unit, size, kind in rows:
-        if kind != "data":
-            continue
+    for rva, name, unit, size, kind in sorted(last_data.values()):
         gm = global_meta.get(rva) or {}
         globals_out.append({"rva": f"0x{rva:06x}", "name": name,
                             "type": gm.get("type") or "", "unit": unit})
     globals_out.sort(key=lambda d: d["rva"])
-    gout = Path(args.globals_out)
-    gout.write_text(json.dumps(globals_out, indent=1))
     n_typed = sum(1 for g in globals_out if g["type"])
-    log(f"wrote {len(globals_out)} global(s) ({n_typed} typed) -> {gout}")
+    _write_json_if_changed(globals_out, args.globals_out,
+                           f"global(s) ({n_typed} typed)")
     return 0
 
 

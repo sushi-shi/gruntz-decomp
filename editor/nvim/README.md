@@ -32,7 +32,13 @@ Buffer-local chords on C/C++ buffers:
 | `vd`  | **diff** — target ∣ base side-by-side (the "objdiff look")      |
 | `vs`  | **status** — match-% overview, current unit's functions listed |
 | `vB`  | **build** (`:GruntzBuild`)                                     |
+| `vq`  | **close** all open gruntz views                                |
 | `V`   | **peek** — match % + metadata (size, rva, unit) in a float     |
+
+`vt`/`vb`/`vd` keep the cursor in your source buffer (the view opens without
+stealing focus), and a new view **replaces** the previous one (so `vd` on a new
+function closes the old `vd`). The diff shows the **whole function** (folding off),
+target on the left and base on the right.
 
 - **target / base** open a reusable scratch split (`filetype=asm`, so mnemonics/
   registers/labels are syntax-highlighted); the header carries the symbol and its
@@ -68,14 +74,19 @@ when a stale dev shell ships an old binary.
 
 ## `:GruntzBuild` — build and report what moved
 
-`vB` snapshots the current `report.json`, runs the build in a terminal split
-(wrapped in the MSVC+wine shell: `nix develop .#build --command python3
-scripts/gruntz.py build`), and on success shows a **compact corner popup** with
-the overall % change and the current unit's `before → after` deltas for the
-functions that moved (`↑`/`↓`/`+`, capped — `vs` has the full table). The popup
-never steals focus (handy when the async build lands while you're typing
-elsewhere) and fades after a few seconds. Extra args pass through to the build,
-e.g. `:GruntzBuild build/objdiff/base/netmgr.obj` to limit ninja to one TU.
+`vB` snapshots the current `report.json`, runs the build, and on success shows a
+**compact corner popup** with the build time, the overall % change, and the
+current unit's `before → after` deltas for the functions that moved (`↑`/`↓`/`+`,
+capped — `vs` has the full table). The popup never steals focus (handy when the
+async build lands while you're typing elsewhere) and fades after a few seconds.
+Extra args pass through to the build, e.g. `:GruntzBuild build/objdiff/base/netmgr.obj`
+to limit ninja to one TU.
+
+> **Launch nvim from `nix develop .#build` for fast builds.** The build then runs
+> `gruntz build` **directly** (~0.5–1s). Launched from the plain `nix develop`
+> shell it still works, but each build is wrapped in `nix develop .#build`, which
+> adds ~2.5s of shell-setup overhead *per build*. The plugin auto-detects which
+> shell it's in (via `$MSVC_DIR`).
 
 ### Build on save (`:Gruntz autobuild`)
 

@@ -19,11 +19,11 @@ public:
     virtual ~CStatusBarItem();
     virtual int SbiVfunc0();
 
-    int  m_4;                  // +0x04
-    int  m_8;                  // +0x08
-    char m_padc[0x24 - 0x0c];  // +0x0c..0x23
-    int  m_24;                 // +0x24
-    int  m_28;                 // +0x28
+    int m_4;                  // +0x04
+    int m_8;                  // +0x08
+    char m_padc[0x24 - 0x0c]; // +0x0c..0x23
+    int m_24;                 // +0x24
+    int m_28;                 // +0x28
 };
 
 // ---------------------------------------------------------------------------
@@ -31,14 +31,15 @@ public:
 // Out-of-line complete-object ctor: zeroes m_4/m_8/m_24/m_28 after the vftable
 // is installed. Byte-identical to the COMDAT copy of the header's inline ctor.
 RVA(0x1005d0, 0x17)
-CStatusBarItem::CStatusBarItem()
-{
-    m_4  = 0;
-    m_8  = 0;
+CStatusBarItem::CStatusBarItem() {
+    m_4 = 0;
+    m_8 = 0;
     m_24 = 0;
     m_28 = 0;
 }
 
 // Out-of-line stubs anchor the CStatusBarItem vftable in this TU (not matched).
 CStatusBarItem::~CStatusBarItem() {}
-int CStatusBarItem::SbiVfunc0() { return 0; }
+int CStatusBarItem::SbiVfunc0() {
+    return 0;
+}

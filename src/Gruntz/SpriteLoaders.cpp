@@ -32,42 +32,42 @@
 struct CSprite;
 class CSpriteHashTable {
 public:
-    int Lookup(char *szName, CSprite **ppOut);
+    int Lookup(char* szName, CSprite** ppOut);
 };
 
 // The engine sprite (animation) object. Only the load-bearing members are
 // reconstructed: a frame-pointer table at +0x14 and the inclusive valid frame
 // range [m_64 .. m_68].
 struct CSprite {
-    char   m_pad00[0x14];
-    int  **m_14;         // +0x14  frame-pointer table
-    char   m_pad18[0x64 - 0x18];
-    int    m_64;         // +0x64  first valid frame number
-    int    m_68;         // +0x68  last valid frame number
+    char m_pad00[0x14];
+    int** m_14; // +0x14  frame-pointer table
+    char m_pad18[0x64 - 0x18];
+    int m_64; // +0x64  first valid frame number
+    int m_68; // +0x68  last valid frame number
 };
 
 // The sprite manager: its name->sprite hash table is embedded at +0x10 (the
 // `add ecx,0x10` before the lookup call addresses it).
 struct CSpriteMgr {
-    char             m_pad00[0x10];
-    CSpriteHashTable m_10map;       // +0x10  the name->sprite hash table
+    char m_pad00[0x10];
+    CSpriteHashTable m_10map; // +0x10  the name->sprite hash table
 };
 
 // The intermediate resource object both loaders reach the sprite manager through:
 // its +0x10 slot points at the CSpriteMgr.
 struct CResMgr {
-    char        m_pad00[0x10];
-    CSpriteMgr *m_10;               // +0x10
+    char m_pad00[0x10];
+    CSpriteMgr* m_10; // +0x10
 };
 
 // The loading bar reaches the resource object through this->m_c.
 // The game-manager singleton (g_gameReg) reaches it through g_gameReg->m_30.
 struct CGameReg {
-    char     m_pad00[0x30];
-    CResMgr *m_30;                  // +0x30
+    char m_pad00[0x30];
+    CResMgr* m_30; // +0x30
 };
 DATA(0x24556c)
-extern CGameReg *g_gameReg;
+extern CGameReg* g_gameReg;
 
 // ---------------------------------------------------------------------------
 // CLoadingBar::LoadLoadingBarSprite
@@ -76,22 +76,22 @@ class CLoadingBar {
 public:
     int LoadLoadingBarSprite();
 
-    char           m_pad00[0xc];
-    CResMgr       *m_c;             // +0xc
-    char           m_pad10[0x4bc - 0x10];
-    int            m_4bc;           // +0x4bc loaded flag (set to 1)
-    int           *m_4c0;           // +0x4c0 frame 2
-    int           *m_4c4;           // +0x4c4 frame 3
-    int           *m_4c8;           // +0x4c8 frame 1
+    char m_pad00[0xc];
+    CResMgr* m_c; // +0xc
+    char m_pad10[0x4bc - 0x10];
+    int m_4bc;  // +0x4bc loaded flag (set to 1)
+    int* m_4c0; // +0x4c0 frame 2
+    int* m_4c4; // +0x4c4 frame 3
+    int* m_4c8; // +0x4c8 frame 1
 };
 
 RVA(0xd7440, 0xad)
-int CLoadingBar::LoadLoadingBarSprite()
-{
-    CSprite *spr = 0;
+int CLoadingBar::LoadLoadingBarSprite() {
+    CSprite* spr = 0;
     m_c->m_10->m_10map.Lookup("GAME_LOADINGBAR", &spr);
-    if (!spr)
+    if (!spr) {
         return 0;
+    }
 
     m_4c8 = (spr->m_64 <= 1 && spr->m_68 >= 1) ? spr->m_14[1] : 0;
     m_4c0 = (spr->m_64 <= 2 && spr->m_68 >= 2) ? spr->m_14[2] : 0;
@@ -107,46 +107,51 @@ class CTimer {
 public:
     int LoadTimerSprite(int a, int b);
 
-    int  *m_0;       // +0x00 frame
-    int  *m_4;       // +0x04 frame
-    int  *m_8;       // +0x08 the looked-up sprite
-    int   m_c;       // +0x0c
-    int  *m_10;      // +0x10 frame 10
-    int  *m_14;      // +0x14 frame 10
-    int  *m_18;      // +0x18 frame 10
-    int  *m_1c;      // +0x1c frame 10
-    int  *m_20;      // +0x20 frame 11
-    char  m_pad24[0x48 - 0x24];
-    int   m_48;      // +0x48
+    int* m_0;  // +0x00 frame
+    int* m_4;  // +0x04 frame
+    int* m_8;  // +0x08 the looked-up sprite
+    int m_c;   // +0x0c
+    int* m_10; // +0x10 frame 10
+    int* m_14; // +0x14 frame 10
+    int* m_18; // +0x18 frame 10
+    int* m_1c; // +0x1c frame 10
+    int* m_20; // +0x20 frame 11
+    char m_pad24[0x48 - 0x24];
+    int m_48; // +0x48
 };
 
 RVA(0x9bb00, 0x119)
-int CTimer::LoadTimerSprite(int a, int b)
-{
-    CSprite *spr = 0;
+int CTimer::LoadTimerSprite(int a, int b) {
+    CSprite* spr = 0;
     g_gameReg->m_30->m_10->m_10map.Lookup("GAME_TIMER", &spr);
-    m_8 = (int *)spr;
-    if (!spr)
+    m_8 = (int*)spr;
+    if (!spr) {
         return 0;
+    }
 
     m_10 = (spr->m_64 <= 10 && spr->m_68 >= 10) ? spr->m_14[10] : 0;
-    if (!m_10)
+    if (!m_10) {
         return 0;
+    }
     m_14 = (spr->m_64 <= 10 && spr->m_68 >= 10) ? spr->m_14[10] : 0;
-    if (!m_14)
+    if (!m_14) {
         return 0;
+    }
     m_20 = (spr->m_64 <= 11 && spr->m_68 >= 11) ? spr->m_14[11] : 0;
-    if (!m_20)
+    if (!m_20) {
         return 0;
+    }
     m_18 = (spr->m_64 <= 10 && spr->m_68 >= 10) ? spr->m_14[10] : 0;
-    if (!m_18)
+    if (!m_18) {
         return 0;
+    }
     m_1c = (spr->m_64 <= 10 && spr->m_68 >= 10) ? spr->m_14[10] : 0;
-    if (!m_1c)
+    if (!m_1c) {
         return 0;
+    }
 
-    m_0 = (int *)a;          /* the two args captured at the tail */
-    m_4 = (int *)b;
+    m_0 = (int*)a; /* the two args captured at the tail */
+    m_4 = (int*)b;
     m_c = 1;
     m_48 = 0;
     return 1;

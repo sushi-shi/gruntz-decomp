@@ -13,31 +13,13 @@
 //
 // Only offsets / control IDs / code bytes are load-bearing; class and field
 // names are placeholders.
+// <Mfc.h> brings <windows.h> USER32 (EndDialog / SetDlgItemTextA / LoadStringA /
+// ShowCursor / DialogBoxParamA), INT_PTR, and the WM_INITDIALOG / WM_COMMAND ids.
+#include <Mfc.h>
 #include <Wap32/Wap32.h>
 #include <rva.h>
-#include <stdio.h>   // engine sprintf (reloc-masked)
-#include <string.h>  // inline strlen/strcpy/strcat (rep movs/scas)
-
-// ---------------------------------------------------------------------------
-// Minimal Win32 surface (USER32 API). We deliberately do NOT pull in
-// <windows.h> - keep the visible symbol SET small (the compiler hashes it;
-// entropy follows header churn). Reproduces the FF15 [IAT] direct-call form.
-// ---------------------------------------------------------------------------
-typedef int INT_PTR;
-typedef INT_PTR (__stdcall *DLGPROC)(HWND, UINT, WPARAM, LPARAM);
-
-extern "C" {
-__declspec(dllimport) BOOL __stdcall EndDialog(HWND hDlg, INT_PTR nResult);
-__declspec(dllimport) BOOL __stdcall SetDlgItemTextA(HWND hDlg, int nIDDlgItem, LPCSTR lpString);
-__declspec(dllimport) int __stdcall LoadStringA(HINSTANCE hInstance, UINT uID, char *lpBuffer, int cchBufferMax);
-__declspec(dllimport) int __stdcall ShowCursor(BOOL bShow);
-__declspec(dllimport) INT_PTR __stdcall DialogBoxParamA(HINSTANCE hInstance, LPCSTR lpTemplateName,
-                                                        HWND hWndParent, DLGPROC lpDialogFunc,
-                                                        LPARAM dwInitParam);
-}
-
-#define WM_INITDIALOG 0x0110
-#define WM_COMMAND    0x0111
+#include <stdio.h>  // engine sprintf (reloc-masked)
+#include <string.h> // inline strlen/strcpy/strcat (rep movs/scas)
 
 // The control ID of the static text field that displays the error message.
 #define IDC_ERROR_TEXT 0x40d
@@ -57,8 +39,8 @@ __declspec(dllimport) INT_PTR __stdcall DialogBoxParamA(HINSTANCE hInstance, LPC
 // File-scope globals referenced by ErrorDialogProc / ShowError (an HWND and the
 // error-text buffer). The relocs that name them are masked in objdiff; only the
 // address-load / address-immediate bytes are load-bearing.
-static HWND g_errorHwnd;          // last dialog HWND
-static char g_errorText[0x100];   // error message buffer
+static HWND g_errorHwnd;        // last dialog HWND
+static char g_errorText[0x100]; // error message buffer
 // (g_gameAppInstanceCount is declared in Wap32.h, defined in
 // GameApp.cpp; ~CGruntzApp's inlined base ~CGameApp decrements it.)
 
@@ -76,9 +58,7 @@ static char g_errorText[0x100];   // error message buffer
 //   push esi; mov esi,ecx; call CGameApp::CGameApp; mov [esi],&vftable;
 //   mov eax,esi; pop esi; ret
 RVA(0x80850, 0x12)
-CGruntzApp::CGruntzApp()
-{
-}
+CGruntzApp::CGruntzApp() {}
 
 // ---------------------------------------------------------------------------
 // CGruntzApp::VirtualUnknownMethod03
@@ -88,15 +68,25 @@ CGruntzApp::CGruntzApp()
 // then normalises the int result to a bool: `!= 0` emits the
 // `neg eax; sbb eax,eax; neg eax` (0/1) idiom.
 RVA(0x80930, 0x31)
-int CGruntzApp::VirtualUnknownMethod03(HINSTANCE hInstance, char *szWindowName,
-                                       char *szGameIdentifier, char *szCmdLine,
-                                       int windowClassFlags, int windowWidth,
-                                       int windowHeight)
-{
-    return CGameApp::VirtualUnknownMethod03(hInstance, szWindowName,
-                                            szGameIdentifier, szCmdLine,
-                                            windowClassFlags, windowWidth,
-                                            windowHeight) != 0;
+int CGruntzApp::VirtualUnknownMethod03(
+    HINSTANCE hInstance,
+    char* szWindowName,
+    char* szGameIdentifier,
+    char* szCmdLine,
+    int windowClassFlags,
+    int windowWidth,
+    int windowHeight
+) {
+    return CGameApp::VirtualUnknownMethod03(
+               hInstance,
+               szWindowName,
+               szGameIdentifier,
+               szCmdLine,
+               windowClassFlags,
+               windowWidth,
+               windowHeight
+           )
+           != 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -110,8 +100,7 @@ int CGruntzApp::VirtualUnknownMethod03(HINSTANCE hInstance, char *szWindowName,
 // engine code, and CloseResources is what actually `delete`s the game manager
 // (CGameApp::m_8 @+0x8). No game-manager-pointer member lives on CGruntzApp.
 RVA(0x808b0, 0x60)
-CGruntzApp::~CGruntzApp()
-{
+CGruntzApp::~CGruntzApp() {
     CloseResources();
 }
 
@@ -131,23 +120,25 @@ CGruntzApp::~CGruntzApp()
 // ErrorDialogProc address is taken (push imm of its incremental-link thunk).
 // strcpy/strcat are emitted inline (repnz scas / rep movs).
 RVA(0x80ac0, 0xf3)
-void CGruntzApp::ShowError()
-{
+void CGruntzApp::ShowError() {
     // The two error fields are read up front (the optimiser hoists the m_250
     // load above the id-default branch, keeping it live in eax across it).
     int id = m_24c;
     int detailVal = m_250;
-    if (id == 0)
+    if (id == 0) {
         id = IDS_DEFAULT_ERROR;
+    }
 
     char detail[0x20];
     detail[0] = 0;
-    if (detailVal > 0)
+    if (detailVal > 0) {
         sprintf(detail, "(%i)", detailVal);
+    }
 
-    if (LoadStringA(m_c, id, g_errorText, 0xfa) <= 0 &&
-        LoadStringA(m_c, IDS_DEFAULT_ERROR, g_errorText, 0xfa) <= 0)
+    if (LoadStringA(m_c, id, g_errorText, 0xfa) <= 0
+        && LoadStringA(m_c, IDS_DEFAULT_ERROR, g_errorText, 0xfa) <= 0) {
         strcpy(g_errorText, "Unable to continue game.");
+    }
 
     strcat(g_errorText, detail);
 
@@ -165,8 +156,7 @@ void CGruntzApp::ShowError()
 // read. The CGruntzMgr* is returned as the base WAP32::CGameMgr* the virtual
 // slot is typed to (no-op upcast; CGameMgr is the first base).
 RVA(0x80a20, 0x5a)
-WAP32::CGameMgr *CGruntzApp::InitializeGameManager()
-{
+WAP32::CGameMgr* CGruntzApp::InitializeGameManager() {
     return new CGruntzMgr;
 }
 
@@ -177,24 +167,28 @@ WAP32::CGameMgr *CGruntzApp::InitializeGameManager()
 // WM_COMMAND with IDOK(1)/IDCANCEL(2) -> EndDialog(hWnd, 0). Returns 1 for both
 // handled cases, 0 otherwise. The switch reproduces the sub-0x110 / je / dec /
 // jne message ladder with the WM_INITDIALOG body laid out at the function tail.
-SYMBOL(?ErrorDialogProc@CGruntzApp@@SGHPAXIIJ@Z)
+// (No SYMBOL() override: the real HWND signature mangles to PAUHWND__ identically
+// on both sides - like the sibling DialogProcs - so the natural name pairs.)
 RVA(0x80c70, 0x55)
-INT_PTR __stdcall CGruntzApp::ErrorDialogProc(HWND hWnd, UINT message,
-                                              WPARAM wParam, LPARAM lParam)
-{
+INT_PTR __stdcall CGruntzApp::ErrorDialogProc(
+    HWND hWnd,
+    UINT message,
+    WPARAM wParam,
+    LPARAM lParam
+) {
     g_errorHwnd = hWnd;
 
     switch (message) {
-    case WM_INITDIALOG:
-        SetDlgItemTextA(hWnd, IDC_ERROR_TEXT, g_errorText);
-        return 1;
-
-    case WM_COMMAND:
-        if (wParam == 1 || wParam == 2) {   // IDOK / IDCANCEL
-            EndDialog(hWnd, 0);
+        case WM_INITDIALOG:
+            SetDlgItemTextA(hWnd, IDC_ERROR_TEXT, g_errorText);
             return 1;
-        }
-        break;
+
+        case WM_COMMAND:
+            if (wParam == 1 || wParam == 2) { // IDOK / IDCANCEL
+                EndDialog(hWnd, 0);
+                return 1;
+            }
+            break;
     }
 
     return 0;
@@ -204,8 +198,7 @@ INT_PTR __stdcall CGruntzApp::ErrorDialogProc(HWND hWnd, UINT message,
 // CGruntzApp::VirtualUnknownMethod04
 // Another base-init virtual override; the body just returns 0 (`xor eax,eax`).
 RVA(0x80aa0, 0x5)
-int CGruntzApp::VirtualUnknownMethod04(int a, int b, int c)
-{
+int CGruntzApp::VirtualUnknownMethod04(int a, int b, int c) {
     return 0;
 }
 
@@ -216,8 +209,7 @@ int CGruntzApp::VirtualUnknownMethod04(int a, int b, int c)
 // the dialog proc lives in another TU, so it is taken via an extern thunk.
 extern "C" INT_PTR __stdcall MsgDialogProc(HWND, UINT, WPARAM, LPARAM);
 RVA(0x80c00, 0x48)
-void CGruntzApp::ShowMessage(char *msg, HWND hParent)
-{
+void CGruntzApp::ShowMessage(char* msg, HWND hParent) {
     strcpy(g_errorText, msg);
     DialogBoxParamA(m_c, "MESSAGE", hParent, &MsgDialogProc, 0);
 }
@@ -228,11 +220,12 @@ void CGruntzApp::ShowMessage(char *msg, HWND hParent)
 // - operator new(sizeof(U10O)) then a throwing ctor under a C++ EH frame, then
 // returns the raw pointer. Only the new+ctor shape is load-bearing; a forward
 // class with a declared ctor suffices to give `new U10O` a size + ctor call.
-struct U10O { U10O(); };
+struct U10O {
+    U10O();
+};
 RVA(0x809a0, 0x57)
-void *CreateU10O()
-{
-    U10O *p = new U10O;
+void* CreateU10O() {
+    U10O* p = new U10O;
     return p;
 }
 

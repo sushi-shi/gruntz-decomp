@@ -112,11 +112,19 @@ matching.
 
 # 2. Locate the VC tree (the dir whose bin/ holds CL.EXE)
 #    VS97 layout: .../DevStudio/VC/{bin,include,lib}, .../DevStudio/VC/mfc/{include,lib,src}
-#      bin/    -> CL.EXE C1.EXE C1XX.EXE C2.EXE LINK.EXE CVTRES.EXE MSPDB*.DLL ...
+#      bin/    -> CL.EXE C1.EXE C1XX.EXE C2.EXE LINK.EXE CVTRES.EXE ...
 #      include/-> C/C++ headers
 #      lib/    -> LIBCMT.LIB, LIBC.LIB, MSVCRT.LIB, OLDNAMES.LIB, kernel32.lib, ...
 #      mfc/lib -> NAFXCW.LIB, NAFXCWD.LIB, MFC42.LIB (import), MFCS42.LIB, ...
 #      mfc/include -> AFX*.H, etc.
+
+# 2b. SHAREDIDE/BIN load-time DLLs (NOT under VC/bin - copy them into bin/ too)
+#    Two DLLs live in the shared IDE bin and are imported AT LOAD by the tools, so
+#    a VC/bin-only copy makes them fail under wine (status c0000135):
+#      MSPDB50.DLL   <- CL.EXE imports it  (no .obj is produced without it)
+#      MSDIS100.DLL  <- LINK.EXE imports it (the disassembler for /dump /disasm;
+#                       link.exe will not even load without it). create-toolchain-
+#                       release.py copies both from wherever rglob finds them.
 
 # 3. Apply SP3 (overlay whole replacement files onto bin/ and lib/)
 7z x -y vs97sp3.zip -o sp3/
@@ -139,8 +147,8 @@ msvc/bin/      cl.exe c1.exe c2.exe link.exe cvtres.exe mspdb*.dll ...   (SP3-ov
 msvc/include/  C/C++ + MFC 4.2 headers (mfc/include merged in)
 msvc/lib/      LIBCMT.LIB  NAFXCW.LIB  + MFC42/CRT/import libs (mfc/lib merged in)
 msvc/mfc-src/  MFC 4.2 sources (handy for matching inlined MFC bodies)
-dx/Include/    DirectX 6 SDK headers   (PLACEHOLDER - see below)
-dx/Lib/        DirectX 6 import libs   (PLACEHOLDER - see below)
+dx/Include/    DirectX 6 SDK headers
+dx/Lib/        DirectX 6 import libs
 ninja/ninja.exe
 ```
 
@@ -172,9 +180,8 @@ hit-rate is low, retry with the other VC5 SP libs (caveat in funcid doc).
 The toolchain tarball is **built, published, and pinned**: the flake's
 `gruntz-toolchain` fetches it from the GitHub release with a real `sha256`, so
 `nix develop .#build` works today. The steps below reproduce that tarball from
-the original media. The base-disc and SP3 media hashes are pinned; what remains a
-`pkgs.lib.fakeHash` placeholder is the DirectX 6 SDK (not yet located — see Open
-items) and the `ninja-zip` hash.
+the original media. The base-disc, SP3, DirectX 6 SDK, and ninja media hashes are
+all pinned in `create-toolchain-release.nix`.
 
 1. **Download + pin the base disc.** Fetch the VC5 ISO and let Nix compute the
    real sha256 (it will error on the fakeHash and print "got: sha256-…"):
@@ -188,10 +195,8 @@ items) and the `ninja-zip` hash.
 2. **Download + pin SP3.** Same for `vs97sp3.zip` (verify md5
    `e25a5de59a663cd0b5bd3d1089f8adc8`), set `sp3-zip` sha256.
 3. **Pin ninja.** Set the `ninja-zip` sha256 for v1.12.1 `ninja-win.zip`.
-4. **(Optional) Locate + pin the DirectX 6 SDK.** Not found on archive.org
-   during scaffolding (see below). When found, set `DXSDK_EXE` in the .nix
-   shellHook and the `dxsdk-archive` sha256; otherwise the .py writes a `dx/`
-   placeholder and continues.
+4. **Pin the DirectX 6 SDK.** From archive.org `directx6sdk` (`DIRECTX6_SDK.EXE`,
+   a RAR self-extractor): set the `dxsdk-archive` sha256 in the .nix.
 5. **Run the build:**
    ```
    nix-shell scripts/create-toolchain-release.nix
@@ -216,20 +221,3 @@ items) and the `ninja-zip` hash.
 `step5_package()` normalises all tar
 metadata (`--sort=name`, fixed `--mtime`, zeroed owner/group, `--format=gnu`), so
 the same pinned media + tooling yield a byte-identical tarball on any machine.
-
----
-
-## 6. Open items / flags
-
-- **DirectX 6 SDK NOT located on archive.org** during scaffolding. Gruntz imports
-  `DDRAW`/`DINPUT`/`DSOUND`/`DPLAYX` (DirectX 6 era); matching needs the DX6
-  import libs + headers. Candidates to check later: an MSDN/Platform SDK disc of
-  the era, or a dedicated "DirectX 6.0 SDK"/"DX6 SDK" item. Until then the `dx/`
-  step is a `fakeHash`-only placeholder and the .py emits `dx/README.TODO`.
-- **Exact linker build (8034 caveat).** `docs/compiler-detection.md` flags that
-  the Rich linker build 8034 is tagged "Likely Libs" and not cleanly tied to a
-  single named SP installer; the cvtres 1668 match already anchors SP3. After
-  building, empirically link a tiny PE with this `link.exe` and compare its Rich
-  `prodID 0x13` build to 8034; if it differs, hunt for the patched linker.
-- **ninja sha256** in the .nix is a fakeHash placeholder (re-prefetch v1.12.1
-  `ninja-win.zip` and set it).

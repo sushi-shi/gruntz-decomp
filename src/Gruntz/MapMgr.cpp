@@ -46,8 +46,7 @@
 
 // CMapArrayA::CMapArrayA(): zero m_0(+4), m_block(+0), m_count(+8).
 RVA(0x09e700, 0xd)
-CMapArrayA::CMapArrayA()
-{
+CMapArrayA::CMapArrayA() {
     m_0 = 0;
     m_block = 0;
     m_count = 0;
@@ -55,10 +54,10 @@ CMapArrayA::CMapArrayA()
 
 // CMapArrayA::~CMapArrayA(): free m_0(+4) if set, then zero all.
 RVA(0x09e7e0, 0x29)
-CMapArrayA::~CMapArrayA()
-{
-    if (m_0)
+CMapArrayA::~CMapArrayA() {
+    if (m_0) {
         MapFree(m_0);
+    }
     m_0 = 0;
     m_block = 0;
     m_count = 0;
@@ -69,33 +68,34 @@ CMapArrayA::~CMapArrayA()
 // prev @elem+0x18). Returns 0 on alloc failure, else 1.
 // A 0x24-byte element of CMapArrayA's block: next link @+0x14, prev link @+0x18.
 struct MapElemA {
-    char  m_pad0[0x14];
-    MapElemA *m_next;   // +0x14
-    MapElemA *m_prev;   // +0x18
-    char  m_pad1c[0x24 - 0x1c];
+    char m_pad0[0x14];
+    MapElemA* m_next; // +0x14
+    MapElemA* m_prev; // +0x18
+    char m_pad1c[0x24 - 0x1c];
 };
 
-int CMapArrayA::Allocate(unsigned int count)
-{
-    MapElemA *block = (MapElemA *)MapAlloc(count * sizeof(MapElemA));
+int CMapArrayA::Allocate(unsigned int count) {
+    MapElemA* block = (MapElemA*)MapAlloc(count * sizeof(MapElemA));
     m_0 = block;
-    if (!block)
+    if (!block) {
         return (int)block;
+    }
 
     m_block = block;
     m_count = count;
     block->m_prev = 0;
 
-    MapElemA *e = block;
+    MapElemA* e = block;
     for (unsigned int i = 0; i < m_count; ++i) {
-        if (e == (MapElemA *)m_block)
+        if (e == (MapElemA*)m_block) {
             e->m_prev = 0;
-        else
+        } else {
             e->m_prev = e - 1;
+        }
         e->m_next = e + 1;
         ++e;
     }
-    ((MapElemA *)m_block)[m_count - 1].m_next = 0;
+    ((MapElemA*)m_block)[m_count - 1].m_next = 0;
     return 1;
 }
 
@@ -105,8 +105,7 @@ int CMapArrayA::Allocate(unsigned int count)
 
 // CMapArrayB::CMapArrayB(): zero m_0(+0), m_block(+4), m_count(+8).
 RVA(0x09e820, 0xd)
-CMapArrayB::CMapArrayB()
-{
+CMapArrayB::CMapArrayB() {
     m_0 = 0;
     m_block = 0;
     m_count = 0;
@@ -114,10 +113,10 @@ CMapArrayB::CMapArrayB()
 
 // CMapArrayB::~CMapArrayB(): free m_0(+0) if set, then zero all.
 RVA(0x09e900, 0x28)
-CMapArrayB::~CMapArrayB()
-{
-    if (m_0)
+CMapArrayB::~CMapArrayB() {
+    if (m_0) {
         MapFree(m_0);
+    }
     m_0 = 0;
     m_block = 0;
     m_count = 0;
@@ -128,33 +127,34 @@ CMapArrayB::~CMapArrayB()
 // prev @elem+0x04). Returns 0 on alloc failure, else 1.
 // A 0x0c-byte element of CMapArrayB's block: data @+0x00, prev @+0x04, next @+0x08.
 struct MapElemB {
-    void     *m_0;      // +0x00
-    MapElemB *m_prev;   // +0x04
-    MapElemB *m_next;   // +0x08
+    void* m_0;        // +0x00
+    MapElemB* m_prev; // +0x04
+    MapElemB* m_next; // +0x08
 };
 
-int CMapArrayB::Allocate(unsigned int count)
-{
-    MapElemB *block = (MapElemB *)MapAlloc(count * sizeof(MapElemB));
+int CMapArrayB::Allocate(unsigned int count) {
+    MapElemB* block = (MapElemB*)MapAlloc(count * sizeof(MapElemB));
     m_0 = block;
-    if (!block)
+    if (!block) {
         return 0;
+    }
 
     m_block = block;
     m_count = count;
     block->m_prev = 0;
 
-    MapElemB *e = block;
+    MapElemB* e = block;
     for (unsigned int i = 0; i < m_count; ++i) {
-        if (e == (MapElemB *)m_block)
+        if (e == (MapElemB*)m_block) {
             e->m_prev = 0;
-        else
+        } else {
             e->m_prev = e - 1;
+        }
         e->m_0 = 0;
         e->m_next = e + 1;
         ++e;
     }
-    ((MapElemB *)m_block)[m_count - 1].m_next = 0;
+    ((MapElemB*)m_block)[m_count - 1].m_next = 0;
     return 1;
 }
 
@@ -166,8 +166,7 @@ int CMapArrayB::Allocate(unsigned int count)
 // first (out-of-line ctors), then the body zeroes the scalar members, stores the
 // vftable and seeds m_50=-1 / m_5c=1.
 RVA(0x09e940, 0x73)
-CMapMgr::CMapMgr()
-{
+CMapMgr::CMapMgr() {
     m_4 = 0;
     m_8 = 0;
     m_c = 0;
@@ -183,8 +182,7 @@ CMapMgr::CMapMgr()
 // CMapMgr::~CMapMgr(). Calls the slot-0 Reset (frees m_4/m_8,
 // resets the two arrays), then the two member-array destructors run automatically.
 RVA(0x09e9e0, 0x5d)
-CMapMgr::~CMapMgr()
-{
+CMapMgr::~CMapMgr() {
     Reset();
 }
 
@@ -192,12 +190,13 @@ CMapMgr::~CMapMgr()
 // the two embedded arrays (calls their destructors in place), then zeroes the
 // scalar bookkeeping members.
 RVA(0x09ec30, 0x4b)
-void CMapMgr::Reset()
-{
-    if (m_4)
+void CMapMgr::Reset() {
+    if (m_4) {
         MapFree(m_4);
-    if (m_8)
+    }
+    if (m_8) {
         MapFree(m_8);
+    }
 
     m_colA.~CMapArrayA();
     m_colB.~CMapArrayB();

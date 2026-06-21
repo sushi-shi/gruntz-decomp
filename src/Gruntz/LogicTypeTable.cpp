@@ -27,9 +27,9 @@
 // like the target's LAB_0056e4c0/d0/e0 .text data references).
 // ---------------------------------------------------------------------------
 extern "C" {
-void LogicHitFactory();
-void LogicAttackFactory();
-void LogicBumpFactory();
+    void LogicHitFactory();
+    void LogicAttackFactory();
+    void LogicBumpFactory();
 }
 
 // ---------------------------------------------------------------------------
@@ -41,37 +41,37 @@ void LogicBumpFactory();
 struct CLogicType;
 class CLogicMap {
 public:
-    int Lookup(char *szKey, CLogicType **ppOut);
+    int Lookup(char* szKey, CLogicType** ppOut);
 };
 class CLogicRegistry {
 public:
     // slot +0x24: install (factoryFn, key, flags) for a not-yet-present type.
-    virtual void m_00();                            // +0x00
-    virtual void m_04();                            // +0x04
-    virtual void m_08();                            // +0x08
-    virtual void m_0c();                            // +0x0c
-    virtual void m_10();                            // +0x10
-    virtual void m_14();                            // +0x14
-    virtual void m_18();                            // +0x18
-    virtual void m_1c();                            // +0x1c
-    virtual void m_20();                            // +0x20
-    virtual void RegisterType(void *factoryFn, char *szKey, int flags); // +0x24
+    virtual void m_00();                                                // +0x00
+    virtual void m_04();                                                // +0x04
+    virtual void m_08();                                                // +0x08
+    virtual void m_0c();                                                // +0x0c
+    virtual void m_10();                                                // +0x10
+    virtual void m_14();                                                // +0x14
+    virtual void m_18();                                                // +0x18
+    virtual void m_1c();                                                // +0x1c
+    virtual void m_20();                                                // +0x20
+    virtual void RegisterType(void* factoryFn, char* szKey, int flags); // +0x24
 
-    char      m_pad04[0x10 - 4];
-    CLogicMap m_10map;                              // +0x10  lookup sub-object
+    char m_pad04[0x10 - 4];
+    CLogicMap m_10map; // +0x10  lookup sub-object
 };
 
 // The intermediate object reached through this->m_c: its +0x14 slot points at the
 // logic-type registry (the Lookup map is at registry+0x10; the registrar is the
 // registry's own virtual).
 struct CLogicCtx {
-    char            m_pad00[0x14];
-    CLogicRegistry *m_14;       // +0x14  the registry (pointer)
+    char m_pad00[0x14];
+    CLogicRegistry* m_14; // +0x14  the registry (pointer)
 };
 
 struct CLogicTypeBuilder {
-    char       m_pad00[0xc];
-    CLogicCtx *m_c;                     // +0xc
+    char m_pad00[0xc];
+    CLogicCtx* m_c; // +0xc
 };
 
 // ---------------------------------------------------------------------------
@@ -83,24 +83,26 @@ struct CLogicTypeBuilder {
 // `mov edx,[esi+0xc]; mov ecx,[edx+0x14]` at each site), so the lookup expression
 // is repeated rather than hoisted into a local.
 RVA(0x8a40, 0xc8)
-void __stdcall BuildLogicTypeTable(CLogicTypeBuilder *obj)
-{
+void __stdcall BuildLogicTypeTable(CLogicTypeBuilder* obj) {
     {
-        CLogicType *found = 0;
+        CLogicType* found = 0;
         obj->m_c->m_14->m_10map.Lookup("LogicHit", &found);
-        if (!found)
-            obj->m_c->m_14->RegisterType((void *)LogicHitFactory, "LogicHit", 2);
+        if (!found) {
+            obj->m_c->m_14->RegisterType((void*)LogicHitFactory, "LogicHit", 2);
+        }
     }
     {
-        CLogicType *found = 0;
+        CLogicType* found = 0;
         obj->m_c->m_14->m_10map.Lookup("LogicAttack", &found);
-        if (!found)
-            obj->m_c->m_14->RegisterType((void *)LogicAttackFactory, "LogicAttack", 2);
+        if (!found) {
+            obj->m_c->m_14->RegisterType((void*)LogicAttackFactory, "LogicAttack", 2);
+        }
     }
     {
-        CLogicType *found = 0;
+        CLogicType* found = 0;
         obj->m_c->m_14->m_10map.Lookup("LogicBump", &found);
-        if (!found)
-            obj->m_c->m_14->RegisterType((void *)LogicBumpFactory, "LogicBump", 2);
+        if (!found) {
+            obj->m_c->m_14->RegisterType((void*)LogicBumpFactory, "LogicBump", 2);
+        }
     }
 }

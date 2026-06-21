@@ -12,7 +12,7 @@
 
 // Forward-declare the family manager (root) stored at CGruntzMgr+0x30.
 // Full definition lives in HarryPotter.cpp (HarryPotter unit) and in
-// structure/managers/ddrawmgr_surface_family.h.
+// src/Stub/types/ddrawmgr_surface_family.h.
 class CDDrawSurfaceMgr;
 
 // The Lucius and CObject vtables are used in the dtor vtable chain, emitted
@@ -20,9 +20,11 @@ class CDDrawSurfaceMgr;
 class CDDrawSubMgrBase {
 public:
     CDDrawSubMgrBase() {}
-    CDDrawSubMgrBase(int x) { m_fieldBaseUnknown = x; }
+    CDDrawSubMgrBase(int x) {
+        m_fieldBaseUnknown = x;
+    }
     virtual ~CDDrawSubMgrBase() {}
-    int m_fieldBaseUnknown;   // +0x04
+    int m_fieldBaseUnknown; // +0x04
 
     // Engine-label backlog stubs.
     void Constructor_156e10();
@@ -30,24 +32,23 @@ public:
 
 class CDDrawSubMgr : public CDDrawSubMgrBase {
 public:
-    CDDrawSubMgr(CDDrawSurfaceMgr *pHarryPotter,
-                            int unknown2, int unknown3);
-    virtual ~CDDrawSubMgr();
+    CDDrawSubMgr(CDDrawSurfaceMgr* pHarryPotter, int unknown2, int unknown3);
+    virtual ~CDDrawSubMgr() OVERRIDE;
     virtual void VirtualMethodUnknown14();
-    virtual int  VirtualMethodUnknown18();
-    virtual void VirtualMethodUnknown1C();  // cleanup — defined in CDDrawSubMgrDraco.cpp
+    virtual int VirtualMethodUnknown18();
+    virtual void VirtualMethodUnknown1C(); // cleanup — defined in CDDrawSubMgrDraco.cpp
     virtual void VirtualMethodUnknown20();
 
     // Engine-label backlog stubs.
     void Constructor_157630();
     void Stub_155720();
 
-    int  fieldUnknown8;                          // +0x08
-    CDDrawSurfaceMgr *m_pHarryPotter;  // +0x0c
+    int fieldUnknown8;                // +0x08
+    CDDrawSurfaceMgr* m_pHarryPotter; // +0x0c
 };
 
 // operator delete (used indirectly via VirtualMethodUnknown1C; may throw -> /GX).
-void operator delete(void *);
+void operator delete(void*);
 
 // ---------------------------------------------------------------------------
 // CDDrawSubMgr::CDDrawSubMgr
@@ -55,11 +56,8 @@ void operator delete(void *);
 // the Lucius vtable (compiler-generated), then seeds the remaining fields.
 // ---------------------------------------------------------------------------
 RVA(0x156cb0, 0x20)
-CDDrawSubMgr::CDDrawSubMgr(
-    CDDrawSurfaceMgr *pHarryPotter,
-    int unknown2, int unknown3)
-    : CDDrawSubMgrBase(unknown2)
-{
+CDDrawSubMgr::CDDrawSubMgr(CDDrawSurfaceMgr* pHarryPotter, int unknown2, int unknown3)
+    : CDDrawSubMgrBase(unknown2) {
     fieldUnknown8 = unknown3;
     m_pHarryPotter = pHarryPotter;
 }
@@ -73,8 +71,7 @@ CDDrawSubMgr::CDDrawSubMgr(
 // through the base destructors.
 // ---------------------------------------------------------------------------
 RVA(0x1574d0, 0x5b)
-CDDrawSubMgr::~CDDrawSubMgr()
-{
+CDDrawSubMgr::~CDDrawSubMgr() {
     VirtualMethodUnknown1C();
     m_fieldBaseUnknown = -1;
     fieldUnknown8 = 0;
@@ -83,7 +80,9 @@ CDDrawSubMgr::~CDDrawSubMgr()
 
 // Out-of-line stubs for unmatched virtuals (anchors the vtable in this TU).
 void CDDrawSubMgr::VirtualMethodUnknown14() {}
-int  CDDrawSubMgr::VirtualMethodUnknown18() { return 0; }
+int CDDrawSubMgr::VirtualMethodUnknown18() {
+    return 0;
+}
 
 // Engine-label backlog stubs (moved from src/Stub/CDDrawSubMgr.cpp).
 // VirtualMethodUnknown20 is the vtable anchor above; carry its backlog RVA here.

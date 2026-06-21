@@ -32,6 +32,10 @@ Subcommands
                 wine prefix + clangd compdb + the Ghidra DB (import+analyze
                 GRUNTZ.EXE -> functions.csv/symbols.csv). HEAVY first run.
   clangd        (Re)generate the clangd compile DB (editor; after adding a unit).
+  format [--check]
+                clang-format src/ + include/ to the Rust-like house style
+                (root .clang-format). Whitespace-only -> matching-neutral.
+                --check is the CI gate (no writes; fail if unformatted).
   status        Print the last objdiff match summary (no rebuild).
   todo          List obj symbols that lack an @address (matching worklist).
   clean         Nuke build/ + stray root artifacts (build.ninja/*.obj/.ninja_*)
@@ -61,6 +65,7 @@ GHIDRA_SCRIPTS     = GHIDRA / "scripts"       # GhidraScripts: path-only, never 
 GHIDRA_APPLY       = GHIDRA_SCRIPTS / "apply.py"   # enrichment GhidraScript (run under PyGhidra)
 GHIDRA_EXPORT      = GHIDRA_SCRIPTS / "export.py"  # functions.csv/symbols.csv dump GhidraScript
 INIT               = PKG / "init"             # environment setup
+LINK               = BUILD / "link.py"        # phase-2 VC5 link wrapper (candidate EXE + map)
 MANIFEST           = REPO / "config" / "units.toml"
 OBJDIFF_DIR        = REPO / "build" / "objdiff"
 TARGET_DIR         = OBJDIFF_DIR / "target"
@@ -144,31 +149,39 @@ def summarize(report: dict) -> None:
 
 # --- subcommands -----------------------------------------------------------
 def cmd_build(args) -> None:
-    run([sys.executable, str(CONFIGURE)])             # regenerate build.ninja + the JSONs
+    # build.ninja regenerates itself via its `configure` generator edge whenever
+    # config/units.toml or configure.py change, so don't re-run configure every
+    # build - only bootstrap it when it doesn't exist yet (fresh tree / pre-init).
+    if not (REPO / "build.ninja").exists():
+        run([sys.executable, str(CONFIGURE)])
     _ensure_retail_copy()                             # cheap, idempotent (stable retail copy)
     if not GHIDRA_FUNCTIONS.exists():
         die(f"no Ghidra exports ({GHIDRA_FUNCTIONS.relative_to(REPO)}) - run `gruntz init` first.")
-    # Gate: the src/Stub @stub backlog is skipped by labels.py (engine_label_stubs),
-    # so this is the only check on its address uniqueness + format. Fail fast.
-    run([sys.executable, "-m", "gruntz.match.verify_stubs"])
     ninja = tool("ninja")
-    _start_wine_session()                 # boot Wine clean BEFORE ninja's -j fan-out
-    try:
-        run([ninja, *args.ninja_args])    # incremental: rebuilds only what changed
-    finally:
-        _kill_wine_session()              # reap this prefix's wineserver + session
+    # Keep ONE persistent wineserver alive for the whole dev-shell session (the
+    # `.#build` shellHook reaps it on interactive exit). The first build boots it
+    # (~1.2s); later builds find it up, so `wine cl` pays no cold-start. We no
+    # longer kill it after each build - that re-paid wineboot on every rebuild.
+    _start_wine_session()                 # ensure the session is up (cheap if already running)
 
-    objdiff = tool("objdiff-cli")
-    run([objdiff, "report", "generate", "-p", str(OBJDIFF_DIR), "-o", str(REPORT)],
-        stdout=subprocess.DEVNULL)
+    # ninja builds the objs AND report.json in-graph (only what changed). Gate the
+    # feedback tail on whether report.json actually moved: a no-op build refreshes
+    # nothing, so there is nothing to summarize/check and `gruntz build` returns
+    # near-instantly. Everything below is non-fatal reporting, not part of the build.
+    before = REPORT.stat().st_mtime if REPORT.exists() else 0
+    run([ninja, *args.ninja_args])        # incremental: rebuilds only what changed
+    if (REPORT.stat().st_mtime if REPORT.exists() else 0) == before:
+        log("up to date - nothing rebuilt.")
+        return
 
+    # Gate: the src/Stub @stub backlog is skipped by labels.py (engine_label_stubs),
+    # so this is the only check on its address uniqueness + format.
+    run([sys.executable, "-m", "gruntz.match.verify_stubs"])
     summarize(json.loads(REPORT.read_text()))
 
-    # Non-fatal extras: refresh per-function source fingerprints (so regression
-    # checks can tell an edited function from a collateral drop), rewrite the
-    # README score block (3 metrics vs the full engine), and print regressions
-    # vs the committed best-% baseline. See gruntz.match.status +
-    # docs/match-status.md. None of these gate the build.
+    # Non-fatal extras: per-function source fingerprints (so regression checks can
+    # tell an edited function from a collateral drop), the README score block, and
+    # regressions vs the committed best-% baseline. See gruntz.match.status.
     if (REPO / "build" / "clangd" / "compile_commands.json").is_file():
         subprocess.run([sys.executable, "-m", "gruntz.match.fingerprints"],
                        cwd=str(REPO), env=_pkg_env())
@@ -200,16 +213,16 @@ def cmd_structs(args) -> None:
     """Regenerate build/gen/structs.json + enums.json via clang record layouts.
 
     Sources: matched src/ layouts (the clangd compdb) PLUS the converted
-    comprehension headers under structure/ (each wrapped as a .cpp TU). src/ wins
-    on overlapping names, so apply_ghidra.py's hardcoded fallback is unneeded for
-    anything covered here.
+    comprehension headers under src/Stub/types/ (each wrapped as a .cpp TU). src/
+    wins on overlapping names, so apply_ghidra.py's hardcoded fallback is unneeded
+    for anything covered here.
     """
     clang = _clang()
     cmd = [sys.executable, str(BUILD / "ghidra_metadata_generate.py"), "--clang", clang]
     for t in args.tu:
         cmd += ["--tu", t]
-    if (REPO / "structure").is_dir():
-        cmd += ["--header", "structure"]          # comprehension layouts
+    if (REPO / "src/Stub/types").is_dir():
+        cmd += ["--header", "src/Stub/types"]     # comprehension layouts
     run(cmd)
 
 
@@ -218,7 +231,7 @@ def cmd_ghidra_refresh(args) -> None:
     re-export the functions.csv/symbols.csv the delink consumes.
 
       1. ghidra_metadata_generate -> build/gen/structs.json + enums.json (clang layouts of
-         src/ + the converted structure/ comprehension headers)
+         src/ + the converted src/Stub/types/ comprehension headers)
       2. PyGhidra driver (ghidra_metadata_apply.py): re-open the already-analyzed
          build/ghidra-named program (--no-analyze) and run apply.py (names from
          build/gen/symbol_names.csv, prototypes, struct this-types, enums) then
@@ -334,6 +347,35 @@ def cmd_clangd(args) -> None:
     run([sys.executable, str(INIT / "clangd.py")])
 
 
+# Sources to format: src/ + include/ (not vendor/, not generated build/).
+_FMT_ROOTS    = (REPO / "src", REPO / "include")
+_FMT_SUFFIXES = (".cpp", ".h", ".cc", ".cxx", ".hpp", ".hh", ".c")
+
+
+def _fmt_files() -> list:
+    return sorted(p for root in _FMT_ROOTS if root.is_dir()
+                  for p in root.rglob("*") if p.suffix in _FMT_SUFFIXES)
+
+
+def cmd_format(args) -> None:
+    """Format src/ + include/ to the house style. `--check` is a no-write CI gate."""
+    cf = tool("clang-format")
+    files = _fmt_files()
+    if not files:
+        die("no source files found under src/ or include/")
+    if args.check:
+        log(f"checking {len(files)} file(s) (clang-format --dry-run --Werror) ...")
+        rc = subprocess.run([cf, "--style=file", "--dry-run", "--Werror", *map(str, files)],
+                            cwd=str(REPO), env=_pkg_env()).returncode
+        if rc != 0:
+            die("some files are not formatted - run `gruntz format`")
+        log(f"OK - all {len(files)} file(s) already formatted.")
+    else:
+        log(f"formatting {len(files)} file(s) in place (clang-format -i) ...")
+        run([cf, "--style=file", "-i", *map(str, files)])
+        log(f"done - {len(files)} file(s) formatted.")
+
+
 def _ghidra_warm() -> bool:
     """True if the Ghidra export already has a function at every labeled RVA, i.e.
     the warmup has run. Keeps cmd_init's warmup IDEMPOTENT so the build-shell hook's
@@ -432,6 +474,36 @@ def cmd_status(args) -> None:
     summarize(json.loads(REPORT.read_text()))
 
 
+def cmd_link(args) -> None:
+    """Phase 2: link the base objs into a candidate (non-runnable) GRUNTZ.EXE + map.
+
+    Runs the genuine VC5 link.exe (5.10.7303) over build/objdiff/base/*.obj with
+    /FORCE. The reconstruction is PARTIAL, so most externals are unresolved and the
+    EXE does not run - the point is the .map, which exposes each function's
+    link-assigned RVA and source object. Combined with the retail RVAs that gives
+    the build-order model (intra-TU = source order, cross-TU = object order); see
+    docs/link-order-investigation.md. Pass --order FILE to test a hypothesised
+    link order, --analyze to print the layout report afterwards.
+    """
+    run([sys.executable, str(CONFIGURE)])
+    ninja = tool("ninja")
+    _start_wine_session()
+    try:
+        run([ninja, "base"])                       # ensure base objs are current
+        cmd = [sys.executable, str(LINK)]
+        if args.order:
+            cmd += ["--order", args.order]
+        if args.opt_ref:
+            cmd += ["--opt-ref"]
+        run(cmd)
+    finally:
+        _kill_wine_session()
+    if args.analyze:
+        run([sys.executable, "-m", "gruntz.analysis.link_order",
+             "--map", str(REPO / "build" / "exe" / "GRUNTZ.candidate.map"),
+             "--names", str(GEN_NAMES)])
+
+
 def cmd_todo(args) -> None:
     """Obj symbols with no @address yet (the matching worklist) - a discovery aid.
 
@@ -520,8 +592,20 @@ def main() -> None:
     i.set_defaults(func=cmd_init)
     sub.add_parser("clangd", help="(re)generate the clangd compile DB (editor)"
                    ).set_defaults(func=cmd_clangd)
+    fmt = sub.add_parser("format", help="clang-format src/ + include/ to the Rust-like style")
+    fmt.add_argument("--check", action="store_true",
+                     help="CI gate: don't write, exit non-zero if anything is unformatted")
+    fmt.set_defaults(func=cmd_format)
     sub.add_parser("status", help="print the last objdiff summary"
                    ).set_defaults(func=cmd_status)
+    lk = sub.add_parser("link", help="phase 2: link base objs -> candidate EXE + map "
+                        "(non-runnable; for layout/link-order study)")
+    lk.add_argument("--order", help="file listing obj stems in link order to test")
+    lk.add_argument("--opt-ref", action="store_true",
+                    help="let the linker strip/fold unreferenced COMDATs (default keeps all)")
+    lk.add_argument("--analyze", action="store_true",
+                    help="print the layout/link-order report after linking")
+    lk.set_defaults(func=cmd_link)
     sub.add_parser("todo", help="obj symbols lacking an @address (worklist)"
                    ).set_defaults(func=cmd_todo)
     sub.add_parser("clean", help="nuke build/ + stray artifacts (HEAVY re-init after)"

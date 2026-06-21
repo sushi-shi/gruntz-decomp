@@ -17,7 +17,7 @@ int g_salazarLookupTable[100];
 
 class UnknownSalazar {
 public:
-    static int getLookupTableValue(int value);   // still a stub
+    static int getLookupTableValue(int value); // still a stub
     static void initializeUnknownLookupTable();
 
     // Engine-label backlog stubs.
@@ -31,10 +31,10 @@ public:
 // getLookupTableValue(i) for i = 0..99. Plain /O2 /MT leaf: no SEH frame.
 // ---------------------------------------------------------------------------
 RVA(0x1351a0, 0x23)
-void UnknownSalazar::initializeUnknownLookupTable()
-{
-    for (int i = 0; i < 100; i++)
+void UnknownSalazar::initializeUnknownLookupTable() {
+    for (int i = 0; i < 100; i++) {
         g_salazarLookupTable[i] = getLookupTableValue(i);
+    }
 }
 
 // Engine-label backlog stubs (moved from src/Stub/UnknownSalazar.cpp).
@@ -46,7 +46,9 @@ void UnknownSalazar::initializeUnknownLookupTable()
 // @source: tomalla
 // @stub
 RVA(0x1350b0, 0x5d)
-int UnknownSalazar::getLookupTableValue(int) { return 0; }
+int UnknownSalazar::getLookupTableValue(int) {
+    return 0;
+}
 
 // @confidence: high
 // @source: tomalla

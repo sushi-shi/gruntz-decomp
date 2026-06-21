@@ -32,14 +32,15 @@
 // ctor stores m_msg THEN m_vtbl (the target order); a `virtual` decl would make
 // MSVC emit the implicit vptr store at ctor entry (before m_msg) instead.
 // ---------------------------------------------------------------------------
-extern void *g_containerErrVtbl;
+extern void* g_containerErrVtbl;
 
 class CContainerErr {
 public:
-    CContainerErr(const char *msg);
+    CContainerErr(const char* msg);
+
 public:
-    void       *m_vtbl;  // +0x00  the vtable pointer
-    const char *m_msg;   // +0x04  the error message this instance carries
+    void* m_vtbl;      // +0x00  the vtable pointer
+    const char* m_msg; // +0x04  the error message this instance carries
 };
 
 #endif // SRC_GRUNTZ_GAMETEXT_H

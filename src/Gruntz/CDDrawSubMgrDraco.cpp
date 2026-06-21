@@ -1,7 +1,7 @@
 #include <rva.h>
 // CDDrawSubMgrDraco.cpp - one leaf cleanup method of the tomalla-named ddrawmgr
 // sub-manager CDDrawSubMgrDraco (a CDirectDrawMgr surface/page sub-manager in the
-// "Harry Potter" family; see structure/managers/ddrawmgr_surface_family.h).
+// "Harry Potter" family; see src/Stub/types/ddrawmgr_surface_family.h).
 //
 // CDDrawSubMgrDraco carries three owned-child pointers at +0x10/+0x14/+0x18 (the three
 // int fields fieldUnknown10/14/18 of the layout). VirtualMethodUnknown1C is a
@@ -21,8 +21,8 @@
 // is load-bearing. Declarations only - never defined, so no ??_7 is emitted here.
 class DracoChild {
 public:
-    virtual void Slot00();              // +0x00
-    virtual int  ScalarDtor(int flag);  // +0x04  scalar-deleting destructor
+    virtual void Slot00();            // +0x00
+    virtual int ScalarDtor(int flag); // +0x04  scalar-deleting destructor
 };
 
 // ---------------------------------------------------------------------------
@@ -32,14 +32,14 @@ public:
 // ---------------------------------------------------------------------------
 class CDDrawSubMgrDraco {
 public:
-    int  VirtualMethodUnknown14();
+    int VirtualMethodUnknown14();
     void VirtualMethodUnknown1C();
 
-    void       *m_vptr;     // +0x00 (vptr; not touched here)
-    char        m_pad04[0x10 - 0x04];
-    DracoChild *m_10;       // +0x10
-    DracoChild *m_14;       // +0x14
-    DracoChild *m_18;       // +0x18
+    void* m_vptr; // +0x00 (vptr; not touched here)
+    char m_pad04[0x10 - 0x04];
+    DracoChild* m_10; // +0x10
+    DracoChild* m_14; // +0x14
+    DracoChild* m_18; // +0x18
 
     // Engine-label backlog stubs.
     void Stub_1574a0();
@@ -50,14 +50,16 @@ public:
 // ---------------------------------------------------------------------------
 // Ready when all three owned child pointers are populated.
 RVA(0x157480, 0x1e)
-int CDDrawSubMgrDraco::VirtualMethodUnknown14()
-{
-    if (m_14 == 0)
+int CDDrawSubMgrDraco::VirtualMethodUnknown14() {
+    if (m_14 == 0) {
         goto fail;
-    if (m_18 == 0)
+    }
+    if (m_18 == 0) {
         goto fail;
-    if (m_10 != 0)
+    }
+    if (m_10 != 0) {
         return 1;
+    }
 
 fail:
     return 0;
@@ -67,8 +69,7 @@ fail:
 // For each owned child at +0x10/+0x14/+0x18: if non-null, run its scalar-deleting
 // destructor (vtbl +0x4, arg 1) and null the slot.
 RVA(0x158ac0, 0x44)
-void CDDrawSubMgrDraco::VirtualMethodUnknown1C()
-{
+void CDDrawSubMgrDraco::VirtualMethodUnknown1C() {
     if (m_10 != 0) {
         m_10->ScalarDtor(1);
         m_10 = 0;

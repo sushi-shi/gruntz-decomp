@@ -49,7 +49,7 @@ Concretely:
   binary is considered unlikely "without reverse-engineering the compiler."
 
 **Calibrate accordingly: a high-90s plateau is success, not failure.** Do not
-read the last few percent as "the match is wrong." (See `orchestration.md` §
+read the last few percent as "the match is wrong." (See `.claude/agents/orchestrator.md` §
 "Entropy expectation" for how this folds into progress tracking — the objdiff
 number on a near-green function is *advisory*, not a verdict.)
 
@@ -60,12 +60,16 @@ visible in a TU** — not just the symbols a function actually *uses*. This is t
 `/Od` 16-bucket name-hash (the `/Od` symbol bucketing we reconstructed): both are
 the compiler's symbol table leaking into output. (At `/O2` the stack-local
 ordering is *name-independent* — see § "Match by shape" below and
-`orchestration.md` § 6 — but the *symbol-set* sensitivity that drives entropy is
+`.claude/agents/orchestrator.md` § 6 — but the *symbol-set* sensitivity that drives entropy is
 real at every opt level.)
 
 **Mitigations [HEURISTIC]** (none confirmed to fully eliminate it for VC5):
-1. **Minimize header churn** — `#include` only what a TU needs; every extra
-   declaration is a potential re-roll.
+1. **Minimize *gratuitous* header churn** — `#include` what a TU needs, and for
+   Win32/MFC types & imports that means the `<Mfc.h>`/`<Win32.h>` umbrellas (bring the
+   real headers — the convention, and matching-NEUTRAL: PR #44 swapped every hand-rolled
+   Win32 typedef/extern for the umbrellas at 247/816 exact, no regressions, since afx.h
+   already pulls windows.h into MFC TUs). The re-roll risk is *extra/ad-hoc* declarations,
+   NOT the standard umbrellas — don't hand-roll Win32 typedefs/externs to "keep the set small."
 2. **Match the include order *and* the symbol SET**, not merely the symbols a
    function uses — the visible set is what the compiler hashes.
 3. Keep **declaration/definition order in headers stable** once a TU is green.
@@ -76,7 +80,7 @@ real at every opt level.)
    be green, annotate the green-enough one and move on — don't ping-pong.
 6. **Per-TU isolation**: group functions into their original translation units so
    an edit's blast radius stays inside one TU (this is also why we dispatch
-   matchers per-TU — `orchestration.md` § 2).
+   matchers per-TU — `.claude/agents/orchestrator.md` § 2).
 
 ## [VERIFIED+HEURISTIC] Service-pack sensitivity
 
@@ -293,7 +297,7 @@ causes: the reloc-typing **scoring artifact** above, and **entropy** — § top.
 - **Loop direction** — counting **down to zero** (`dec`/`jnz`) is common and
   cheaper than counting up; match the direction you see.
 - **Local order/count.** At `/O2` stack slots are **name-INDEPENDENT** [VERIFIED —
-  see § "Match by shape" / `orchestration.md` § 6]; do **not** rename to move a
+  see § "Match by shape" / `.claude/agents/orchestrator.md` § 6]; do **not** rename to move a
   slot. The `/O2` levers are **declaration order**, types, sizes, address-escaping
   and live-ranges — reorder *declarations* (never rename) to move slots.
 - **Short-circuit / operand order** in `&&`/`||` — swapping operands reorders the

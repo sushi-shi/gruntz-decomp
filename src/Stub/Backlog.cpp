@@ -2,200 +2,207 @@
 // Backlog.cpp - engine-label stubs without a class attribution.
 
 // Folded engine-label stubs with a known owning class.
-class BootyState { public:
+class BootyState {
+public:
     void vfunc_9();
     void OnActivate_vfunc8();
 };
-class ButeMgr { public:
+class ButeMgr {
+public:
     void ParseAttributeFile();
 };
-class CHelpState { public:
+class CHelpState {
+public:
     void LoadAssets();
 };
-class CloudHazard { public:
+class CloudHazard {
+public:
     void vfunc_20();
 };
-class GameLevelState { public:
+class GameLevelState {
+public:
     void OnActivate_vfunc8();
 };
-class Projectile { public:
+class Projectile {
+public:
     void vfunc_9();
 };
-class SFManager { public:
+class SFManager {
+public:
     void SelectBestDevice();
 };
-class StatusBarItem { public:
+class StatusBarItem {
+public:
     void vfunc_12();
     void vfunc_16();
 };
 
 namespace EngineLabelBacklog {
-void CreateGameObjectByName();
-void LoadBootyCheatState();
-void ShowSecretBonusMessage();
-void BuildWarpStoneGlitterAnimation();
-void BuildGruntSprintAnimation();
-void LoadGruntEffectSprites();
-void BuildBootyWalkingGruntz();
-void UpdateBootyWalkingGruntz();
-void BuildBootyPerfectAnimation();
-void CheckWarpLetterBonus();
-void BootyState_OnActivate2_vfunc8();
-void ShowLevelCompleteMessage();
-void BuildBootyGruntIdleAnimation();
-void BuildPowerupIconKeys();
-void DrawBattleStats();
-void StartUpPrompt();
-void Stub_01fd70();
-void LoadChatBoxSprite();
-void LoadCheatConfig();
-void LoadCreditzStateAssets();
-void InitAttractTitle();
-void LoadCreditzAssets2();
-void LoadCustomWorldInfo();
-void BuildWorldLevelKey();
-void HandleFortConquered();
-void BuildFortSplashParticles();
-void NotifyFortUnderAttack();
-void LoadGruntTypeTable();
-void LoadVehicleGruntSprites();
-void LoadGruntAbilityTuning();
-void BuildGruntLoseItemAnimation();
-void LoadGruntCombatAnimations();
-void LoadGruntTuningConstants();
-void LoadGruntDeathAnimations();
-void LoadGruntDecayConfig();
-void LoadGruntDecayConfig2();
-void LoadVehicleGruntAnimations();
-void BuildGruntExitAnimation();
-void LoadBombGruntRunConfig();
-void LoadWandGruntItemConfig();
-void LoadPickupSprites();
-void LoadBombGruntRunConfig2();
-void LoadWingzGruntSprites();
-void LoadFreezeSpellAssets();
-void LoadGruntMovingDeathConfig();
-void WireTileSwitchLogic();
-void LoadTeleporterGooConfig();
-void LoadTerrainTileSprites();
-void LoadCameraSprite();
-void LoadToyBoxIcon();
-void LoadExplosionSprites();
-void BuildRockBreakParticles();
-void LoadGruntCombatTuning();
-void LoadGruntResurrectTuning();
-void LoadFinishLevelSprite();
-void LoadPowerupIconSprites();
-void LaunchPortalExe();
-void LoadMonologoSprite();
-void LoadSaveMessageSprite();
-void BuildLevelRezPath();
-void LoadHelpBookSprite();
-void LoadObjectImageResources();
-void LoadObjectSoundResources();
-void LoadObjectAnimResources();
-void LoadMenuStateAssets();
-void LoadStateImages_vfunc8();
-void BuildVersionString();
-void LoadAreaLevelTable();
-void LoadRollingBallHazardSprites();
-void LoadMenuSelectSprite();
-void BuildGruntzCrcInfo();
-void BuildNamedGruntTable();
-void LoadDroppedObjectEffects();
-void LoadLevelByMode();
-void DrawDebugStats();
-void LoadImageBanks_vfunc29();
-void LoadCursorSprites();
-void LoadScrollSpeedOptions();
-void LoadSBITextEdges();
-void ValidateLevelTiles();
-void LoadWarlordSprites();
-void LoadActionTileSprites();
-void LoadLevelSounds();
-void LoadLevelImages();
-void BuildMusicCategoryTable();
-void BuildWorldLevelPath();
-void LoadLevelEffectSprites();
-void BuildGruntTypeNameTable();
-void BuildAssetNamespacePrefixes();
-void BuildGruntNamespaceList();
-void BuildWarlordNameTable();
-void BuildSpriteImageKeyTable();
-void BuildAnizKeyTable();
-void LoadLevelPreviewScreen();
-void LoadProjectileEffects();
-void BuildToolToyColorKey();
-void LookupToolToyColorKey();
-void LoadGruntzPalette();
-void DrawSaveGameMenu();
-void BuildLevelTitleString();
-void SaveGameFile();
-void BuildResourceTabStatusBar();
-void BuildStatzTabStatusBar();
-void BuildStatzTabSmallSprite();
-void BuildMultiplayerTabStatusBar();
-void BuildSoundFontPath();
-void Stub_0f90f0();
-void LoadGameAssetNamespaces();
-void LoadBattlezItemConfig();
-void LoadMainStatusBarSprite();
-void UpdateStatusBarTabHighlight();
-void LoadDestructButtonSprite();
-void BuildGameTabResumeButton();
-void BuildGameTabPauseButton();
-void LoadStatusBarTabSprites();
-void LoadStatzTabToggleSprite();
-void UpdateGruntOvenStatusBar();
-void LoadGooCookingSprite();
-void UpdateRezConveyorStatusBar();
-void LoadRezMachineConfig();
-void UpdateRezMachineSnoozeStatusBar();
-void LoadChipMachineConfig();
-void UpdateFallingItemStatusBar();
-void UpdateChipGrinderStatusBar();
-void UpdateRezMachineWakeStatusBar();
-void LoadMultiplayerBattlezConfig();
-void UpdateWarpStoneStatusBar();
-void UpdateDestructButtonStatusBar();
-void UpdateDestructButtonStatusBar2();
-void LoadSwitchDownSprite();
-void LoadSwitchUpSprite();
-void LoadBridgeMoveSprites();
-void LoadPyramidBridgeSprites();
-void BuildRockBreakInGameText();
-void BuildStatzTabSmall_vfunc1();
-void SaveScreenshot();
-void FreeAllFonts();
-void FormatGameInfoString();
-void LoadGruntSpawnConfig();
-void BuildVoiceSoundList();
-void Stub_11f900();
-void Stub_12abf0();
-void Stub_12d230();
-void Stub_12d460();
-void Stub_12d880();
-void Stub_1315d0();
-void Stub_148940();
-void DebugPrintf();
-void _tr_init();
-void _ct_init();
-void Stub_18c780();
-void Stub_1bf702();
-void Stub_1bf8f8();
-void Stub_1c152f();
-void Stub_1c1609();
-void Stub_1c176a();
-void Stub_1c7cb3();
-void Stub_1ccae7();
-void Stub_1ccb5c();
-void Stub_1ccbfc();
-void Stub_1d4ee3();
-void Stub_1d4f77();
-void Stub_1d4fbd();
-void Stub_1d5029();
-void Stub_1d513b();
-}
+    void CreateGameObjectByName();
+    void LoadBootyCheatState();
+    void ShowSecretBonusMessage();
+    void BuildWarpStoneGlitterAnimation();
+    void BuildGruntSprintAnimation();
+    void LoadGruntEffectSprites();
+    void BuildBootyWalkingGruntz();
+    void UpdateBootyWalkingGruntz();
+    void BuildBootyPerfectAnimation();
+    void CheckWarpLetterBonus();
+    void BootyState_OnActivate2_vfunc8();
+    void ShowLevelCompleteMessage();
+    void BuildBootyGruntIdleAnimation();
+    void BuildPowerupIconKeys();
+    void DrawBattleStats();
+    void StartUpPrompt();
+    void Stub_01fd70();
+    void LoadChatBoxSprite();
+    void LoadCheatConfig();
+    void LoadCreditzStateAssets();
+    void InitAttractTitle();
+    void LoadCreditzAssets2();
+    void LoadCustomWorldInfo();
+    void BuildWorldLevelKey();
+    void HandleFortConquered();
+    void BuildFortSplashParticles();
+    void NotifyFortUnderAttack();
+    void LoadGruntTypeTable();
+    void LoadVehicleGruntSprites();
+    void LoadGruntAbilityTuning();
+    void BuildGruntLoseItemAnimation();
+    void LoadGruntCombatAnimations();
+    void LoadGruntTuningConstants();
+    void LoadGruntDeathAnimations();
+    void LoadGruntDecayConfig();
+    void LoadGruntDecayConfig2();
+    void LoadVehicleGruntAnimations();
+    void BuildGruntExitAnimation();
+    void LoadBombGruntRunConfig();
+    void LoadWandGruntItemConfig();
+    void LoadPickupSprites();
+    void LoadBombGruntRunConfig2();
+    void LoadWingzGruntSprites();
+    void LoadFreezeSpellAssets();
+    void LoadGruntMovingDeathConfig();
+    void WireTileSwitchLogic();
+    void LoadTeleporterGooConfig();
+    void LoadTerrainTileSprites();
+    void LoadCameraSprite();
+    void LoadToyBoxIcon();
+    void LoadExplosionSprites();
+    void BuildRockBreakParticles();
+    void LoadGruntCombatTuning();
+    void LoadGruntResurrectTuning();
+    void LoadFinishLevelSprite();
+    void LoadPowerupIconSprites();
+    void LaunchPortalExe();
+    void LoadMonologoSprite();
+    void LoadSaveMessageSprite();
+    void BuildLevelRezPath();
+    void LoadHelpBookSprite();
+    void LoadObjectImageResources();
+    void LoadObjectSoundResources();
+    void LoadObjectAnimResources();
+    void LoadMenuStateAssets();
+    void LoadStateImages_vfunc8();
+    void BuildVersionString();
+    void LoadAreaLevelTable();
+    void LoadRollingBallHazardSprites();
+    void LoadMenuSelectSprite();
+    void BuildGruntzCrcInfo();
+    void BuildNamedGruntTable();
+    void LoadDroppedObjectEffects();
+    void LoadLevelByMode();
+    void DrawDebugStats();
+    void LoadImageBanks_vfunc29();
+    void LoadCursorSprites();
+    void LoadScrollSpeedOptions();
+    void LoadSBITextEdges();
+    void ValidateLevelTiles();
+    void LoadWarlordSprites();
+    void LoadActionTileSprites();
+    void LoadLevelSounds();
+    void LoadLevelImages();
+    void BuildMusicCategoryTable();
+    void BuildWorldLevelPath();
+    void LoadLevelEffectSprites();
+    void BuildGruntTypeNameTable();
+    void BuildAssetNamespacePrefixes();
+    void BuildGruntNamespaceList();
+    void BuildWarlordNameTable();
+    void BuildSpriteImageKeyTable();
+    void BuildAnizKeyTable();
+    void LoadLevelPreviewScreen();
+    void LoadProjectileEffects();
+    void BuildToolToyColorKey();
+    void LookupToolToyColorKey();
+    void LoadGruntzPalette();
+    void DrawSaveGameMenu();
+    void BuildLevelTitleString();
+    void SaveGameFile();
+    void BuildResourceTabStatusBar();
+    void BuildStatzTabStatusBar();
+    void BuildStatzTabSmallSprite();
+    void BuildMultiplayerTabStatusBar();
+    void BuildSoundFontPath();
+    void Stub_0f90f0();
+    void LoadGameAssetNamespaces();
+    void LoadBattlezItemConfig();
+    void LoadMainStatusBarSprite();
+    void UpdateStatusBarTabHighlight();
+    void LoadDestructButtonSprite();
+    void BuildGameTabResumeButton();
+    void BuildGameTabPauseButton();
+    void LoadStatzTabToggleSprite();
+    void UpdateGruntOvenStatusBar();
+    void LoadGooCookingSprite();
+    void UpdateRezConveyorStatusBar();
+    void LoadRezMachineConfig();
+    void UpdateRezMachineSnoozeStatusBar();
+    void LoadChipMachineConfig();
+    void UpdateFallingItemStatusBar();
+    void UpdateChipGrinderStatusBar();
+    void UpdateRezMachineWakeStatusBar();
+    void LoadMultiplayerBattlezConfig();
+    void UpdateWarpStoneStatusBar();
+    void UpdateDestructButtonStatusBar();
+    void UpdateDestructButtonStatusBar2();
+    void LoadSwitchDownSprite();
+    void LoadSwitchUpSprite();
+    void LoadBridgeMoveSprites();
+    void LoadPyramidBridgeSprites();
+    void BuildRockBreakInGameText();
+    void BuildStatzTabSmall_vfunc1();
+    void SaveScreenshot();
+    void FreeAllFonts();
+    void FormatGameInfoString();
+    void LoadGruntSpawnConfig();
+    void BuildVoiceSoundList();
+    void Stub_11f900();
+    void Stub_12abf0();
+    void Stub_12d230();
+    void Stub_12d460();
+    void Stub_12d880();
+    void Stub_1315d0();
+    void Stub_148940();
+    void DebugPrintf();
+    void _tr_init();
+    void _ct_init();
+    void Stub_18c780();
+    void Stub_1bf702();
+    void Stub_1bf8f8();
+    void Stub_1c152f();
+    void Stub_1c1609();
+    void Stub_1c176a();
+    void Stub_1c7cb3();
+    void Stub_1ccae7();
+    void Stub_1ccb5c();
+    void Stub_1ccbfc();
+    void Stub_1d4ee3();
+    void Stub_1d4f77();
+    void Stub_1d4fbd();
+    void Stub_1d5029();
+    void Stub_1d513b();
+} // namespace EngineLabelBacklog
 
 // @confidence: high
 // @source: string-xref
@@ -918,12 +925,6 @@ void EngineLabelBacklog::BuildGameTabResumeButton() {}
 // @stub
 RVA(0x102200, 0x37)
 void EngineLabelBacklog::BuildGameTabPauseButton() {}
-
-// @confidence: med
-// @source: string-xref
-// @stub
-RVA(0x102250, 0x1dcd)
-void EngineLabelBacklog::LoadStatusBarTabSprites() {}
 
 // @confidence: med
 // @source: decomp-xref

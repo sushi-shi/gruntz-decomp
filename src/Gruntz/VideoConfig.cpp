@@ -18,34 +18,16 @@
 // coin-flip (the target defers the ebp save past the four early-return guards;
 // our cl saves it eagerly) - see config/units.toml. Kept wip, not strict-exact.
 
-// ---------------------------------------------------------------------------
-// Minimal Win32 surface (USER32 dialog API). We deliberately do NOT pull in
-// <windows.h> - keep the visible symbol SET small (the compiler hashes it;
-// entropy follows header churn - see docs/matching-patterns.md). This
-// reproduces the FF15 [IAT] direct-call form for the imports.
-// ---------------------------------------------------------------------------
-typedef void *         HWND;
-typedef int            BOOL;
-typedef unsigned int   UINT;
-typedef unsigned int   WPARAM;
-typedef long           LPARAM;
-typedef long           LRESULT;
-typedef const char *   LPCSTR;
-
-extern "C" {
-__declspec(dllimport) HWND    __stdcall GetDlgItem(HWND hDlg, int nIDDlgItem);
-__declspec(dllimport) LRESULT __stdcall SendMessageA(HWND hWnd, UINT Msg,
-                                                     WPARAM wParam, LPARAM lParam);
-__declspec(dllimport) BOOL    __stdcall SetWindowTextA(HWND hWnd, LPCSTR lpString);
-
-// The CRT strcat - under /O2 /Oi MSVC5 expands it inline to repnz scasb (find
-// the destination's nul) + rep movs (copy the source over it), exactly the
-// suffix-append idiom in the disassembly.
-char *__cdecl strcat(char *dest, const char *src);
-}
+// The USER32 dialog API (GetDlgItem / SendMessageA / SetWindowTextA) + the
+// HWND/UINT/WPARAM/LPARAM/LRESULT/LPCSTR types come from the real <windows.h>
+// (via Win32.h; pure-Win32 TU, no MFC). strcat comes from <string.h> - under
+// /O2 /Oi MSVC5 expands it inline to repnz scasb + rep movs (the suffix-append
+// idiom in the disassembly).
+#include <Win32.h>
+#include <string.h>
 
 // Control-ID literal (kept local, not from <windows.h>).
-#define IDC_RESCAPTION 0x52d        // the "current resolution" static text ctrl
+#define IDC_RESCAPTION 0x52d // the "current resolution" static text ctrl
 
 // ---------------------------------------------------------------------------
 // The global selected-resolution discriminator (an int). Save
@@ -64,12 +46,12 @@ extern int g_videoResolutionMode;
 // (min,max,redraw) range, and the engine 0x405/0x400 messages are exchanged with
 // the wrapped HWND held at CWnd+0x1c (m_hWnd).
 // ---------------------------------------------------------------------------
-struct HWND__;          // the strong HWND tag MFC's signature mangles in
+struct HWND__; // the strong HWND tag MFC's signature mangles in
 class CWnd {
 public:
-    static CWnd *__stdcall FromHandle(HWND__ *hWnd);
+    static CWnd* __stdcall FromHandle(HWND__* hWnd);
     char m_pad00[0x1c];
-    HWND m_hWnd;        // +0x1c  the wrapped window handle
+    HWND m_hWnd; // +0x1c  the wrapped window handle
 };
 class CSliderCtrl : public CWnd {
 public:
@@ -85,32 +67,42 @@ public:
 // nSel to the wrapped child (msg 0x405), then rebuilds the "Video Resolution
 // (WxH)" caption on the IDC_RESCAPTION static text from the global mode.
 RVA(0x36f30, 0x114)
-void LoadVideoResolutionConfig(HWND hDlg, int nIDCombo, int nSel)
-{
-    if (!hDlg)
+void LoadVideoResolutionConfig(HWND hDlg, int nIDCombo, int nSel) {
+    if (!hDlg) {
         return;
+    }
 
     HWND hCombo = GetDlgItem(hDlg, nIDCombo);
-    if (!hCombo)
+    if (!hCombo) {
         return;
+    }
 
-    CSliderCtrl *pCtrl = (CSliderCtrl *)CWnd::FromHandle((HWND__ *)hCombo);
-    if (!pCtrl)
+    CSliderCtrl* pCtrl = (CSliderCtrl*)CWnd::FromHandle((HWND__*)hCombo);
+    if (!pCtrl) {
         return;
+    }
 
     pCtrl->SetRange(1, 3, 1);
     SendMessageA(pCtrl->m_hWnd, 0x405, 1, nSel);
 
     HWND hCaption = GetDlgItem(hDlg, IDC_RESCAPTION);
-    if (!hCaption)
+    if (!hCaption) {
         return;
+    }
 
     char szCaption[64] = "Video Resolution ";
     switch (g_videoResolutionMode) {
-    case 1:  strcat(szCaption, "(640x480)");  break;
-    case 2:  strcat(szCaption, "(800x600)");  break;
-    case 3:  strcat(szCaption, "(1024x768)"); break;
-    default: return;
+        case 1:
+            strcat(szCaption, "(640x480)");
+            break;
+        case 2:
+            strcat(szCaption, "(800x600)");
+            break;
+        case 3:
+            strcat(szCaption, "(1024x768)");
+            break;
+        default:
+            return;
     }
     SetWindowTextA(hCaption, szCaption);
 }
@@ -122,24 +114,32 @@ void LoadVideoResolutionConfig(HWND hDlg, int nIDCombo, int nSel)
 // Reads the combo's current selection (engine msg 0x400 -> the wrapped child),
 // stores it into the global mode, then rebuilds the caption (same tail as Load).
 RVA(0x370a0, 0xf1)
-void SaveVideoResolutionConfig(HWND hDlg, HWND hCombo)
-{
-    CWnd *pCtrl = CWnd::FromHandle((HWND__ *)hCombo);
-    if (!pCtrl)
+void SaveVideoResolutionConfig(HWND hDlg, HWND hCombo) {
+    CWnd* pCtrl = CWnd::FromHandle((HWND__*)hCombo);
+    if (!pCtrl) {
         return;
+    }
 
     g_videoResolutionMode = SendMessageA(pCtrl->m_hWnd, 0x400, 0, 0);
 
     HWND hCaption = GetDlgItem(hDlg, IDC_RESCAPTION);
-    if (!hCaption)
+    if (!hCaption) {
         return;
+    }
 
     char szCaption[64] = "Video Resolution ";
     switch (g_videoResolutionMode) {
-    case 1:  strcat(szCaption, "(640x480)");  break;
-    case 2:  strcat(szCaption, "(800x600)");  break;
-    case 3:  strcat(szCaption, "(1024x768)"); break;
-    default: return;
+        case 1:
+            strcat(szCaption, "(640x480)");
+            break;
+        case 2:
+            strcat(szCaption, "(800x600)");
+            break;
+        case 3:
+            strcat(szCaption, "(1024x768)");
+            break;
+        default:
+            return;
     }
     SetWindowTextA(hCaption, szCaption);
 }

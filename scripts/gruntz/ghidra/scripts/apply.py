@@ -17,16 +17,17 @@
 #     4. GLOBAL TYPES     - build/gen/globals.json (labels.py): the declared type of
 #                           each named global; laid as typed data (g_buteMgr : CButeMgr).
 #     5. STRUCTS / ENUMS  - build/gen/structs.json + enums.json (clang record layouts
-#                           over src/ + structure/), defined in the DTM; each struct
+#                           over src/ + src/Stub/types/), defined in the DTM; each struct
 #                           is applied as the `this` type on its class's methods.
 #   Win32/CRT types resolve against the windows_vs12_32 archive in the DTM; custom
 #   types against the generated structs; anything unresolved falls back to void*/int.
 #
 #   Idempotent: re-runnable, never downgrades a better existing name, keeps prior
 #   [LABEL] plate comments. Run as a GhidraScript under PyGhidra (CPython3 + JPype),
-#   driven by scripts/gruntz/ghidra/ghidra_metadata_apply.py; invoked via `gruntz
-#   init` / `gruntz ghidra-refresh`. Flat-API globals (currentProgram, ...) are
-#   injected by pyghidra.ghidra_script.
+#   driven by scripts/gruntz/ghidra/ghidra_metadata_apply.py (which boots PyGhidra,
+#   imports/analyzes GRUNTZ.EXE, then runs this + export.py); invoked via `gruntz
+#   init` / `gruntz ghidra-refresh`. Flat-API globals (currentProgram, monitor, ...)
+#   are injected by pyghidra.ghidra_script.
 #
 #   Writes build/ghidra-named/exports/enrichment_apply_report.txt
 #@category Gruntz
@@ -52,8 +53,10 @@ ROOT = os.environ.get("GRUNTZ_DIR", "/home/sheep/Projects/gruntz")
 # generated files (+ the config CSVs):
 #   build/gen/symbol_names.csv  <- labels.py   (rva -> mangled name, unit)
 #   build/gen/functions.json    <- labels.py   (rva -> class/return/cc/named params)
-#   build/gen/structs.json      <- ghidra_metadata_generate.py  (clang record layouts of src/ + structure/)
-#   build/gen/enums.json        <- ghidra_metadata_generate.py  (clang over structure/)
+#   build/gen/locals.json       <- harvest_locals.py  (rva -> named stack locals)
+#   build/gen/globals.json      <- labels.py   (rva -> declared global type)
+#   build/gen/structs.json      <- ghidra_metadata_generate.py  (clang record layouts of src/ + src/Stub/types/)
+#   build/gen/enums.json        <- ghidra_metadata_generate.py  (clang over src/Stub/types/)
 CSV_SYMBOL   = ROOT + "/build/gen/symbol_names.csv"
 FUNCTIONS_JSON = ROOT + "/build/gen/functions.json"
 LOCALS_JSON  = ROOT + "/build/gen/locals.json"
@@ -362,7 +365,7 @@ def resolve_type(ctype):
     return dt
 
 # =====================================================================
-# 2. STRUCT DEFINITIONS  (from structure/ ; confirmed offsets only for apply)
+# 2. STRUCT DEFINITIONS  (from src/Stub/types/ ; confirmed offsets only for apply)
 #    Each: (name, size, [(offset, fieldtype, fieldname), ...], apply_as_this)
 #    fieldtype is a C-string resolved via resolve_type at build time.
 #    A pad gap left between explicit offsets stays as undefined bytes.
@@ -400,7 +403,7 @@ def get_or_create_struct(name, size, desc, fields):
     return added
 
 # =====================================================================
-# 3. ENUM DEFINITIONS  (from structure/enums.h)
+# 3. ENUM DEFINITIONS  (from src/Stub/types/enums.h)
 #    (name, size_bytes, [(enumname, value), ...], description)
 #    For taxonomy enums with unverified values, use sequential 0..N (as in header).
 # =====================================================================
@@ -509,14 +512,14 @@ try:
     gen_names = set(s[0] for s in ghidra_metadata_generate_list)
     CUSTOM_TYPE_NAMES.update(gen_names)   # stateless: custom types = the generated structs
     effective_structs = ghidra_metadata_generate_list
-    R("structs: %d generated (from src/ + structure/ via clang)" % len(ghidra_metadata_generate_list))
+    R("structs: %d generated (from src/ + src/Stub/types/ via clang)" % len(ghidra_metadata_generate_list))
     n_structs = 0
     struct_dt_by_name = {}
     for (name, size, apply_this, desc, fields) in effective_structs:
         dt = get_or_create_struct(name, size, desc, fields)
         struct_dt_by_name[name] = (dt, apply_this)
         n_structs += 1
-    # WwdObject + RezDirEntry now come from structure/ headers via ghidra_metadata_generate (clang).
+    # WwdObject + RezDirEntry now come from src/Stub/types/ headers via ghidra_metadata_generate (clang).
 
     R("structs defined: %d" % n_structs)
 
@@ -529,7 +532,7 @@ try:
     for (name, size, desc, members) in effective_enums:
         define_enum(name, size, desc, members)
         n_enums += 1
-    R("enums: %d generated (from structure/ via clang)" % len(gen_enums_list))
+    R("enums: %d generated (from src/Stub/types/ via clang)" % len(gen_enums_list))
 
     # ---- (C) load metadata ----
     eng = load_functions_json(FUNCTIONS_JSON)   # [dict(rva,name,cls,kind,ret,cc,params)]

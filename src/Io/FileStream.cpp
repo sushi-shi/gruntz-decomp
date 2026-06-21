@@ -34,8 +34,7 @@
 // m_handle = -1 (INVALID_HANDLE_VALUE), then the final CFileIO vtable; m_open
 // stays 0. The CString ctor under EH installs the unwind frame.
 RVA(0x1befd7, 0x40)
-CFileIO::CFileIO()
-{
+CFileIO::CFileIO() {
     m_handle = (HANDLE)-1;
     m_open = 0;
 }
@@ -50,10 +49,10 @@ CFileIO::CFileIO()
 // Closes the handle if we own one (m_handle != -1 && m_open), then the CString
 // member dtor runs and the vtable is restored to base on unwind.
 RVA(0x1bf121, 0x4e)
-CFileIO::~CFileIO()
-{
-    if (m_handle != (HANDLE)-1 && m_open != 0)
+CFileIO::~CFileIO() {
+    if (m_handle != (HANDLE)-1 && m_open != 0) {
         Close();
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -62,8 +61,7 @@ CFileIO::~CFileIO()
 // Same two-phase vtable + CString-member construction + EH frame as the default
 // ctor. Used by the handle-duplicating clone path (engine fn).
 RVA(0x1bf033, 0x44)
-CFileIO::CFileIO(HANDLE hFile)
-{
+CFileIO::CFileIO(HANDLE hFile) {
     m_open = 0;
     m_handle = hFile;
 }
@@ -73,15 +71,16 @@ CFileIO::CFileIO(HANDLE hFile)
 // ReadFile(m_handle, buf, n, &n, NULL); throws on failure; returns count read.
 // nCount==0 short-circuits to 0 before touching the handle.
 RVA(0x1bf328, 0x3a)
-unsigned int CFileIO::Read(void *lpBuf, unsigned int nCount)
-{
-    if (nCount == 0)
+unsigned int CFileIO::Read(void* lpBuf, unsigned int nCount) {
+    if (nCount == 0) {
         return 0;
+    }
 
     // The lpNumberOfBytesRead out-param is &nCount (the parameter slot);
     // taking the address of a local/parameter forces an ebp frame at /O1.
-    if (!ReadFile(m_handle, lpBuf, nCount, (LPDWORD)&nCount, 0))
+    if (!ReadFile(m_handle, lpBuf, nCount, (LPDWORD)&nCount, 0)) {
         AfxThrowOsError((LONG)GetLastError(), 0);
+    }
 
     return nCount;
 }
@@ -92,29 +91,31 @@ unsigned int CFileIO::Read(void *lpBuf, unsigned int nCount)
 // generic "disk full"/short-write error if fewer than n bytes were written.
 // nCount==0 short-circuits (no-op).
 RVA(0x1bf362, 0x4b)
-void CFileIO::Write(const void *lpBuf, unsigned int nCount)
-{
+void CFileIO::Write(const void* lpBuf, unsigned int nCount) {
     DWORD nWritten;
 
-    if (nCount == 0)
+    if (nCount == 0) {
         return;
+    }
 
-    if (!WriteFile(m_handle, (LPVOID)lpBuf, nCount, &nWritten, 0))
-        AfxThrowOsError((LONG)GetLastError(), (const char *)m_name);
+    if (!WriteFile(m_handle, (LPVOID)lpBuf, nCount, &nWritten, 0)) {
+        AfxThrowOsError((LONG)GetLastError(), (const char*)m_name);
+    }
 
-    if (nWritten != nCount)
-        AfxThrowFileError(0xd /*diskFull*/, (LONG)-1, (const char *)m_name);
+    if (nWritten != nCount) {
+        AfxThrowFileError(0xd /*diskFull*/, (LONG)-1, (const char*)m_name);
+    }
 }
 
 // ---------------------------------------------------------------------------
 // CFileIO::Seek
 // SetFilePointer(m_handle, off, NULL, from); throws on -1; returns new pos.
 RVA(0x1bf3ad, 0x2f)
-LONG CFileIO::Seek(LONG lOff, int nFrom)
-{
+LONG CFileIO::Seek(LONG lOff, int nFrom) {
     LONG pos = (LONG)SetFilePointer(m_handle, lOff, 0, (DWORD)nFrom);
-    if (pos == -1)
+    if (pos == -1) {
         AfxThrowOsError((LONG)GetLastError(), 0);
+    }
     return pos;
 }
 
@@ -123,11 +124,11 @@ LONG CFileIO::Seek(LONG lOff, int nFrom)
 // SetFilePointer(m_handle, 0, NULL, FILE_CURRENT); throws on -1; returns the
 // current file position.
 RVA(0x1bf3dc, 0x29)
-LONG CFileIO::GetPosition()
-{
+LONG CFileIO::GetPosition() {
     LONG pos = (LONG)SetFilePointer(m_handle, 0, 0, 1 /*FILE_CURRENT*/);
-    if (pos == -1)
+    if (pos == -1) {
         AfxThrowOsError((LONG)GetLastError(), 0);
+    }
     return pos;
 }
 
@@ -136,36 +137,37 @@ LONG CFileIO::GetPosition()
 // CloseHandle(m_handle) if open; reset m_handle = -1, m_open = 0, empty m_name;
 // then throw the OS error if CloseHandle failed.
 RVA(0x1bf426, 0x41)
-void CFileIO::Close()
-{
+void CFileIO::Close() {
     BOOL failed = 0;
-    if (m_handle != (HANDLE)-1)
+    if (m_handle != (HANDLE)-1) {
         failed = (CloseHandle(m_handle) == 0);
+    }
 
     m_handle = (HANDLE)-1;
     m_open = 0;
     m_name.Empty();
 
-    if (failed)
+    if (failed) {
         AfxThrowOsError((LONG)GetLastError(), 0);
+    }
 }
 
 // The CFileException the failure path fills in: m_cause@+0x8, m_lOsError@+0xc,
 // m_strFileName (CString)@+0x10. The os-error -> exception-cause mapper is the
 // NAFXCW static helper (external no-body callee, reloc-masked).
 struct CFileExceptionLite {
-    char      pad0[8];   // +0x00  (CObject vtable + base)
-    int       m_cause;   // +0x08
-    LONG      m_lOsError;// +0x0c
+    char pad0[8];          // +0x00  (CObject vtable + base)
+    int m_cause;           // +0x08
+    LONG m_lOsError;       // +0x0c
     CString m_strFileName; // +0x10
 };
 extern "C" int __stdcall AfxOsErrorToException(LONG lOsError);
 
 // A minimal SECURITY_ATTRIBUTES (we don't pull in <windows.h>).
 struct SecurityAttributes {
-    DWORD  nLength;              // +0x00 (== 0xc)
-    void  *lpSecurityDescriptor;// +0x04
-    BOOL   bInheritHandle;      // +0x08
+    DWORD nLength;              // +0x00 (== 0xc)
+    void* lpSecurityDescriptor; // +0x04
+    BOOL bInheritHandle;        // +0x08
 };
 
 // ---------------------------------------------------------------------------
@@ -174,13 +176,12 @@ struct SecurityAttributes {
 // stores the HANDLE; on failure fills the CFileException* (pError) if non-null
 // and returns FALSE. Returns nonzero on success.
 RVA(0x1bf200, 0x128)
-BOOL CFileIO::Open(const char *lpszFileName, unsigned int nOpenFlags, void *pError)
-{
-    char szPath[0x104];  // MAX_PATH (260) - frame is 0x110 with the SA local
+BOOL CFileIO::Open(const char* lpszFileName, unsigned int nOpenFlags, void* pError) {
+    char szPath[0x104]; // MAX_PATH (260) - frame is 0x110 with the SA local
 
     m_open = 0;
     m_handle = (HANDLE)-1;
-    nOpenFlags &= 0xFFFF7FFF;       // clear typeText/typeBinary bit
+    nOpenFlags &= 0xFFFF7FFF; // clear typeText/typeBinary bit
     m_name.Empty();
 
     AfxFullPath(szPath, lpszFileName);
@@ -188,37 +189,53 @@ BOOL CFileIO::Open(const char *lpszFileName, unsigned int nOpenFlags, void *pErr
 
     DWORD dwAccess;
     switch (nOpenFlags & 3) {
-    case 0:  dwAccess = 0x80000000; break;  // GENERIC_READ
-    case 1:  dwAccess = 0x40000000; break;  // GENERIC_WRITE
-    case 2:  dwAccess = 0xC0000000; break;  // GENERIC_READ|GENERIC_WRITE
+        case 0:
+            dwAccess = 0x80000000;
+            break; // GENERIC_READ
+        case 1:
+            dwAccess = 0x40000000;
+            break; // GENERIC_WRITE
+        case 2:
+            dwAccess = 0xC0000000;
+            break; // GENERIC_READ|GENERIC_WRITE
     }
 
     DWORD dwShare;
     switch (nOpenFlags & 0x70) {
-    case 0x00:
-    case 0x10: dwShare = 0; break;
-    case 0x20: dwShare = 1; break;          // FILE_SHARE_READ
-    case 0x30: dwShare = 2; break;          // FILE_SHARE_WRITE
-    case 0x40: dwShare = 3; break;          // FILE_SHARE_READ|WRITE
-    default:   dwShare = (DWORD)lpszFileName; break;
+        case 0x00:
+        case 0x10:
+            dwShare = 0;
+            break;
+        case 0x20:
+            dwShare = 1;
+            break; // FILE_SHARE_READ
+        case 0x30:
+            dwShare = 2;
+            break; // FILE_SHARE_WRITE
+        case 0x40:
+            dwShare = 3;
+            break; // FILE_SHARE_READ|WRITE
+        default:
+            dwShare = (DWORD)lpszFileName;
+            break;
     }
 
     SecurityAttributes sa;
     sa.nLength = 0xc;
     sa.lpSecurityDescriptor = 0;
-    sa.bInheritHandle = ((~nOpenFlags) >> 7) & 1;  // !(nOpenFlags & modeNoInherit)
+    sa.bInheritHandle = ((~nOpenFlags) >> 7) & 1; // !(nOpenFlags & modeNoInherit)
 
     DWORD dwCreate;
-    if (nOpenFlags & 0x1000) {              // modeCreate
-        dwCreate = (nOpenFlags & 0x2000) ? 4 : 2;  // OPEN_ALWAYS : CREATE_ALWAYS
+    if (nOpenFlags & 0x1000) {                    // modeCreate
+        dwCreate = (nOpenFlags & 0x2000) ? 4 : 2; // OPEN_ALWAYS : CREATE_ALWAYS
     } else {
-        dwCreate = 3;                       // OPEN_EXISTING
+        dwCreate = 3; // OPEN_EXISTING
     }
 
-    HANDLE h = CreateFileA(lpszFileName, dwAccess, dwShare,
-                           (LPSECURITY_ATTRIBUTES)&sa, dwCreate, 0x80, 0);
+    HANDLE h =
+        CreateFileA(lpszFileName, dwAccess, dwShare, (LPSECURITY_ATTRIBUTES)&sa, dwCreate, 0x80, 0);
     if (h == (HANDLE)-1) {
-        CFileExceptionLite *pe = (CFileExceptionLite *)pError;
+        CFileExceptionLite* pe = (CFileExceptionLite*)pError;
         if (pe != 0) {
             pe->m_lOsError = (LONG)GetLastError();
             pe->m_cause = AfxOsErrorToException(pe->m_lOsError);

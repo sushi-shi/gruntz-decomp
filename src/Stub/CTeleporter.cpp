@@ -1,17 +1,13 @@
 #include <rva.h>
 // CTeleporter.cpp - engine-label stubs for CTeleporter.
+//
+// CTeleporter::CTeleporter(CGameObject*) (0x041020) graduated to
+// src/Gruntz/UserLogic.cpp.
 
 class CTeleporter {
 public:
-    CTeleporter();
     void LoadAttributes();
 };
-
-// @confidence: med
-// @source: rtti-vptr
-// @stub
-RVA(0x041020, 0x170)
-CTeleporter::CTeleporter() {}
 
 // @confidence: med
 // @source: decomp-xref

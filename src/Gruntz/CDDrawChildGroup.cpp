@@ -1,7 +1,7 @@
 #include <rva.h>
 // CDDrawChildGroup.cpp - six leaf methods of the tomalla-named ddrawmgr
 // sub-manager CDDrawChildGroup (a CDirectDrawMgr surface/page sub-manager in the
-// "Harry Potter" family; see structure/managers/ddrawmgr_surface_family.h).
+// "Harry Potter" family; see src/Stub/types/ddrawmgr_surface_family.h).
 //
 // All six share ONE shape: walk an intrusive singly-linked list anchored at
 // CDDrawChildGroup+0x14 (each node's first dword is the next-node pointer, and
@@ -32,33 +32,33 @@
 // Declarations only - never defined.
 class HermionaChild {
 public:
-    virtual void Slot00();                              // +0x00
-    virtual void Slot04();                              // +0x04
-    virtual void Slot08();                              // +0x08
-    virtual void Slot0C();                              // +0x0c
-    virtual void Slot10();                              // +0x10
-    virtual void Slot14();                              // +0x14
-    virtual void Slot18();                              // +0x18
-    virtual void Slot1C();                              // +0x1c
-    virtual void Slot20();                              // +0x20
-    virtual void Slot24();                              // +0x24
-    virtual void Slot28();                              // +0x28
-    virtual void Slot2C(int a1);                       // +0x2c
-    virtual void Slot30(int a1, int a2);               // +0x30
-    virtual void Vfunc34(int a1, int a2, int a3);       // +0x34
-    virtual void Vfunc38(int a1, int a2, int a3);       // +0x38
+    virtual void Slot00();                        // +0x00
+    virtual void Slot04();                        // +0x04
+    virtual void Slot08();                        // +0x08
+    virtual void Slot0C();                        // +0x0c
+    virtual void Slot10();                        // +0x10
+    virtual void Slot14();                        // +0x14
+    virtual void Slot18();                        // +0x18
+    virtual void Slot1C();                        // +0x1c
+    virtual void Slot20();                        // +0x20
+    virtual void Slot24();                        // +0x24
+    virtual void Slot28();                        // +0x28
+    virtual void Slot2C(int a1);                  // +0x2c
+    virtual void Slot30(int a1, int a2);          // +0x30
+    virtual void Vfunc34(int a1, int a2, int a3); // +0x34
+    virtual void Vfunc38(int a1, int a2, int a3); // +0x38
 
     // Data member used by VirtualMethodUnknown38 (write to +0xd8).
     // vtable pointer at +0x00 (4 B); pad from +0x04 to +0xd7.
     char m_pad04[0xd8 - 4];
-    int  m_d8;                                          // +0xd8
+    int m_d8; // +0xd8
 };
 
 // One node of the intrusive list at +0x14: next pointer @0, child object @8.
 struct HermionaNode {
-    HermionaNode  *m_next;          // +0x00
-    int            m_04;            // +0x04
-    HermionaChild *m_obj;           // +0x08
+    HermionaNode* m_next; // +0x00
+    int m_04;             // +0x04
+    HermionaChild* m_obj; // +0x08
 };
 
 // ---------------------------------------------------------------------------
@@ -70,33 +70,33 @@ struct HermionaNode {
 // ---------------------------------------------------------------------------
 class CDDrawChildGroup {
 public:
-    int  VirtualMethodUnknown14();
+    int VirtualMethodUnknown14();
     void VirtualMethodUnknown30(int a1, int a2, int a3);
     void VirtualMethodUnknown34(int a1, int a2, int a3);
 
     // --- vtable padding so the leaf virtuals land at their target slots ---
-    virtual void Slot00();                  // +0x00
-    virtual void Slot04();                  // +0x04
-    virtual void Slot08();                  // +0x08
-    virtual void Slot0C();                  // +0x0c
-    virtual void Slot10();                  // +0x10
-    virtual void Slot14();                  // +0x14
-    virtual void Slot18();                  // +0x18
-    virtual void VirtualMethodUnknown1C();  // +0x1c  thunk -> +0x3c
-    virtual void Slot20();                  // +0x20
-    virtual void Slot24();                  // +0x24
-    virtual void VirtualMethodUnknown28(int a1);      // +0x28
-    virtual void VirtualMethodUnknown2C(int a1, int a2);  // +0x2c
-    virtual void Slot30();                  // +0x30
-    virtual void Slot34();                  // +0x34
-    virtual void VirtualMethodUnknown38();  // +0x38
-    virtual void Slot3C();                  // +0x3c  (referenced by +0x1c thunk)
+    virtual void Slot00();                               // +0x00
+    virtual void Slot04();                               // +0x04
+    virtual void Slot08();                               // +0x08
+    virtual void Slot0C();                               // +0x0c
+    virtual void Slot10();                               // +0x10
+    virtual void Slot14();                               // +0x14
+    virtual void Slot18();                               // +0x18
+    virtual void VirtualMethodUnknown1C();               // +0x1c  thunk -> +0x3c
+    virtual void Slot20();                               // +0x20
+    virtual void Slot24();                               // +0x24
+    virtual void VirtualMethodUnknown28(int a1);         // +0x28
+    virtual void VirtualMethodUnknown2C(int a1, int a2); // +0x2c
+    virtual void Slot30();                               // +0x30
+    virtual void Slot34();                               // +0x34
+    virtual void VirtualMethodUnknown38();               // +0x38
+    virtual void Slot3C();                               // +0x3c  (referenced by +0x1c thunk)
 
-    int           m_04;                 // +0x04  initialized to -1 when inactive
-    char          m_pad08[0x0c - 0x08]; // +0x08..0x0b
-    int           m_0c;                 // +0x0c  parent/root handle
-    char          m_pad10[0x14 - 0x10]; // +0x10..0x13
-    HermionaNode *m_14;                 // +0x14  intrusive-list head
+    int m_04;                  // +0x04  initialized to -1 when inactive
+    char m_pad08[0x0c - 0x08]; // +0x08..0x0b
+    int m_0c;                  // +0x0c  parent/root handle
+    char m_pad10[0x14 - 0x10]; // +0x10..0x13
+    HermionaNode* m_14;        // +0x14  intrusive-list head
 
     // Engine-label backlog stubs.
     void Stub_1591f0();
@@ -106,12 +106,13 @@ public:
 // ---------------------------------------------------------------------------
 // Same base readiness predicate used by several Lucius-derived managers.
 RVA(0x1575e0, 0x16)
-int CDDrawChildGroup::VirtualMethodUnknown14()
-{
-    if (m_0c == 0)
+int CDDrawChildGroup::VirtualMethodUnknown14() {
+    if (m_0c == 0) {
         goto fail;
-    if (m_04 != -1)
+    }
+    if (m_04 != -1) {
         return 1;
+    }
 
 fail:
     return 0;
@@ -120,8 +121,7 @@ fail:
 // ---------------------------------------------------------------------------
 // Thunk: tail-calls the object's own virtual at vtable slot +0x3c.
 RVA(0x1591e0, 0x5)
-void CDDrawChildGroup::VirtualMethodUnknown1C()
-{
+void CDDrawChildGroup::VirtualMethodUnknown1C() {
     this->Slot3C();
 }
 
@@ -132,12 +132,11 @@ void CDDrawChildGroup::VirtualMethodUnknown1C()
 // RESIDUE: same loop-advance scheduling plateau as Unknown30/34 — see comment
 // below for details.
 RVA(0x159c90, 0x23)
-void CDDrawChildGroup::VirtualMethodUnknown28(int a1)
-{
-    HermionaNode *n = m_14;
+void CDDrawChildGroup::VirtualMethodUnknown28(int a1) {
+    HermionaNode* n = m_14;
     if (n != 0) {
         do {
-            HermionaNode *cur = n;
+            HermionaNode* cur = n;
             n = n->m_next;
             cur->m_obj->Slot2C(a1);
         } while (n != 0);
@@ -148,12 +147,11 @@ void CDDrawChildGroup::VirtualMethodUnknown28(int a1)
 // Walk the +0x14 list dispatching child->Slot30(a1,a2) per node. No post-loop
 // dispatch.
 RVA(0x159cc0, 0x2a)
-void CDDrawChildGroup::VirtualMethodUnknown2C(int a1, int a2)
-{
-    HermionaNode *n = m_14;
+void CDDrawChildGroup::VirtualMethodUnknown2C(int a1, int a2) {
+    HermionaNode* n = m_14;
     if (n != 0) {
         do {
-            HermionaNode *cur = n;
+            HermionaNode* cur = n;
             n = n->m_next;
             cur->m_obj->Slot30(a1, a2);
         } while (n != 0);
@@ -181,9 +179,8 @@ void CDDrawChildGroup::VirtualMethodUnknown2C(int a1, int a2)
 // For each node in the +0x14 list, dispatch child +0x34 with (a1,a2,a3); then
 // dispatch this->+0x2c with (a2,a3).
 RVA(0x159cf0, 0x42)
-void CDDrawChildGroup::VirtualMethodUnknown30(int a1, int a2, int a3)
-{
-    HermionaNode *n = m_14;
+void CDDrawChildGroup::VirtualMethodUnknown30(int a1, int a2, int a3) {
+    HermionaNode* n = m_14;
     if (n != 0) {
         do {
             n->m_obj->Vfunc34(a1, a2, a3);
@@ -196,9 +193,8 @@ void CDDrawChildGroup::VirtualMethodUnknown30(int a1, int a2, int a3)
 // ---------------------------------------------------------------------------
 // As Unknown30 but the loop dispatches child +0x38.
 RVA(0x159d40, 0x42)
-void CDDrawChildGroup::VirtualMethodUnknown34(int a1, int a2, int a3)
-{
-    HermionaNode *n = m_14;
+void CDDrawChildGroup::VirtualMethodUnknown34(int a1, int a2, int a3) {
+    HermionaNode* n = m_14;
     if (n != 0) {
         do {
             n->m_obj->Vfunc38(a1, a2, a3);
@@ -212,12 +208,11 @@ void CDDrawChildGroup::VirtualMethodUnknown34(int a1, int a2, int a3)
 // Walk the +0x14 list setting each child's field at +0xd8 to -1. No vtable
 // dispatch, no stack args.
 RVA(0x159d90, 0x1c)
-void CDDrawChildGroup::VirtualMethodUnknown38()
-{
-    HermionaNode *n = m_14;
+void CDDrawChildGroup::VirtualMethodUnknown38() {
+    HermionaNode* n = m_14;
     if (n != 0) {
         do {
-            HermionaNode *cur = n;
+            HermionaNode* cur = n;
             n = n->m_next;
             cur->m_obj->m_d8 = -1;
         } while (n != 0);

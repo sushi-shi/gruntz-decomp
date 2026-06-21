@@ -28,7 +28,59 @@
 #include <Wwd/WwdFile.h>
 #include <rva.h>
 
-#include <string.h>  // memcpy
+#include <Mfc.h>    // CString (ValidateMainBlock takes one by value; ReadPlaneObjects builds four)
+#include <stdlib.h> // atoi
+#include <string.h> // memcpy
+
+// ---------------------------------------------------------------------------
+// The game registry global (?g_gameReg@@3PAUCGameReg@@A @ VA 0x64556c). Only the
+// chain ValidateMainBlock walks is modeled here (m_30 -> m_24, a filename);
+// the full CGameReg layout lives in src/Gruntz/CStatusBarMgr.cpp. Offsets are the
+// only load-bearing thing (campaign doctrine), so a TU-local view is matching-neutral.
+struct WwdGameRegSlot {
+    char pad_0[0x24];
+    char* m_24; // +0x24  a WWD path / numeric-tail string CheckHeader validates
+};
+struct WwdGameReg {
+    char pad_0[0x30];
+    WwdGameRegSlot* m_30; // +0x30
+};
+DATA(0x24556c)
+extern WwdGameReg* g_gameReg;
+
+// ---------------------------------------------------------------------------
+// WwdFile::ValidateMainBlock (static, __cdecl: ignores `this`, caller-cleaned
+// `ret`; Ghidra mis-derived the void/no-arg `QAEXXZ` prototype).
+// Takes a CString BY VALUE (the callee runs its dtor on every exit). Returns -1
+// for the three reject paths, else the integer parsed from the first digit run
+// of the validated header:
+//   1. the CString must be non-empty (its length, at pszData-8, != 0);
+//   2. g_gameReg->m_30->m_24 (a filename) must be non-null;
+//   3. CheckHeader(that filename) into a 0x100 stack buffer must succeed.
+// Then skip leading non-digits and atoi() the first digit run. The CString is
+// unused beyond its non-empty check; `this` is never touched -> static.
+RVA(0x03b470, 0x13a)
+int WwdFile::ValidateMainBlock(CString name) {
+    char header[0x100];
+
+    if (name.GetLength() == 0) {
+        return -1;
+    }
+    if (g_gameReg->m_30->m_24 == 0) {
+        return -1;
+    }
+
+    if (WwdFile_CheckHeader(g_gameReg->m_30->m_24, header) == 0) {
+        return -1;
+    }
+
+    char* p = header;
+    char c = *p;
+    while (c != 0 && (c < '0' || c > '9')) {
+        c = *++p;
+    }
+    return atoi(p);
+}
 
 // ---------------------------------------------------------------------------
 // WwdFile::IsValidWwd
@@ -37,23 +89,27 @@
 // is constructed (no destructor on those paths); the stream's ctor runs only
 // after both guards, so its dtor unwinds the remaining exits.
 RVA(0x160530, 0x125)
-int __stdcall WwdFile_IsValidWwd(const char* name, void* headerBuf)
-{
-    if (name == 0)
+int __stdcall WwdFile_IsValidWwd(const char* name, void* headerBuf) {
+    if (name == 0) {
         return 0;
-    if (headerBuf == 0)
+    }
+    if (headerBuf == 0) {
         return 0;
+    }
 
     WwdInputStream stream;
 
-    if (stream.Open(name, 0, 0) == 0)        // Open returns 0 on failure
+    if (stream.Open(name, 0, 0) == 0) { // Open returns 0 on failure
         return 0;
+    }
 
-    if (stream.Read(headerBuf, 0x5f4) != 0x5f4)
+    if (stream.Read(headerBuf, 0x5f4) != 0x5f4) {
         return 0;
+    }
 
-    if (*(unsigned int*)headerBuf > 0x5f4)   // signature must be <= 1524
+    if (*(unsigned int*)headerBuf > 0x5f4) { // signature must be <= 1524
         return 0;
+    }
 
     return 1;
 }
@@ -65,27 +121,31 @@ int __stdcall WwdFile_IsValidWwd(const char* name, void* headerBuf)
 // the NUL-terminated leading bytes - the binary does `repnz scasb; rep movs`,
 // i.e. a strcpy of the header buffer into the caller's output).
 RVA(0x160660, 0x12b)
-int __stdcall WwdFile_CheckHeader(const char* name, void* headerOut)
-{
+int __stdcall WwdFile_CheckHeader(const char* name, void* headerOut) {
     char header[0x5f4];
 
-    if (name == 0)
+    if (name == 0) {
         return 0;
-    if (headerOut == 0)
+    }
+    if (headerOut == 0) {
         return 0;
+    }
 
     WwdInputStream stream;
 
-    if (stream.Open(name, 0, 0) == 0)        // Open returns 0 on failure
+    if (stream.Open(name, 0, 0) == 0) { // Open returns 0 on failure
         return 0;
+    }
 
-    if (stream.Read(header, 0x5f4) != 0x5f4)
+    if (stream.Read(header, 0x5f4) != 0x5f4) {
         return 0;
+    }
 
-    if (*(unsigned int*)header > 0x5f4)      // signature must be <= 1524
+    if (*(unsigned int*)header > 0x5f4) { // signature must be <= 1524
         return 0;
+    }
 
-    strcpy((char*)headerOut, header);        // inline strlen + rep movs
+    strcpy((char*)headerOut, header); // inline strlen + rep movs
     return 1;
 }
 
@@ -101,20 +161,19 @@ int __stdcall WwdFile_CheckHeader(const char* name, void* headerOut)
 //
 // The new CPlane and its virtuals are UNMATCHED engine code -> reloc-masked calls.
 RVA(0x15d8d0, 0xc3)
-CPlane* CGameLevelPlanes::ReadPlane(void* planeData, void* blockBase, void* /*unused*/)
-{
+CPlane* CGameLevelPlanes::ReadPlane(void* planeData, void* blockBase, void* /*unused*/) {
     CPlane* plane = new CPlane(m_field0c, m_planeCount, 0);
 
-    if (plane->Read(planeData, blockBase, &m_planeCtx) == 0)
-    {
-        if (plane)
-            plane->dtor(1);                       // scalar-deleting dtor (vtable +0x4)
+    if (plane->Read(planeData, blockBase, &m_planeCtx) == 0) {
+        if (plane) {
+            plane->dtor(1); // scalar-deleting dtor (vtable +0x4)
+        }
         return 0;
     }
 
     ((CPlanePtrArray*)&m_planes)->SetAtGrow(m_planeCount, plane);
 
-    if (plane->m_flags & 1)                       // MAIN plane
+    if (plane->m_flags & 1) // MAIN plane
     {
         m_mainPlane = plane;
         m_mainIndex = m_planeCount - 1;
@@ -129,29 +188,400 @@ CPlane* CGameLevelPlanes::ReadPlane(void* planeData, void* blockBase, void* /*un
 // zlib-uncompresses the COMPRESS main block into the remainder. Returns dest on
 // success, 0 on any validation/inflate failure. (~88.7% fuzzy, entropy plateau.)
 RVA(0x160790, 0xd2)
-int __stdcall WwdFile_InflateMainBlock(WwdHeader* src, Bytef* dest, unsigned int destLen)
-{
+int __stdcall WwdFile_InflateMainBlock(WwdHeader* src, Bytef* dest, unsigned int destLen) {
     uLongf outLen;
 
-    if (src == 0)
+    if (src == 0) {
         return 0;
-    if (dest == 0)
+    }
+    if (dest == 0) {
         return 0;
+    }
 
-    if (src->wwdSignature > 0x5f4)           // header size (== 1524)
+    if (src->wwdSignature > 0x5f4) { // header size (== 1524)
         return 0;
-    if ((src->flags & 0x2) == 0)             // require COMPRESS
+    }
+    if ((src->flags & 0x2) == 0) { // require COMPRESS
         return 0;
-    if (src->mainBlockLength == 0)
+    }
+    if (src->mainBlockLength == 0) {
         return 0;
-    if (src->mainBlockLength > destLen + src->wwdSignature)
+    }
+    if (src->mainBlockLength > destLen + src->wwdSignature) {
         return 0;
+    }
 
-    memcpy(dest, src, src->wwdSignature);     // copy the 1524-byte header prefix
+    memcpy(dest, src, src->wwdSignature); // copy the 1524-byte header prefix
     outLen = (uLongf)(destLen - src->wwdSignature);
-    if (uncompress(dest + src->wwdSignature, &outLen,
-                   (Bytef*)src + src->wwdSignature, src->mainBlockLength) != 0)
+    if (uncompress(
+            dest + src->wwdSignature,
+            &outLen,
+            (Bytef*)src + src->wwdSignature,
+            src->mainBlockLength
+        )
+        != 0) {
         return 0;
+    }
 
     return outLen == src->mainBlockLength ? (int)dest : 0;
+}
+
+// ===========================================================================
+// WwdFile::ReadPlaneObjects (__thiscall, ret 0x4; Ghidra mis-derived the
+// `QAEXXZ` void/no-arg prototype). Reads ONE object record at `src` (a pointer
+// into the inflated plane-object block) into a freshly allocated game object,
+// registers it with the level, and returns the number of source bytes consumed
+// (the caller does `src += result` to advance to the next record).
+//
+// Source record (WwdObjectRecord, wwd_object.h): a fixed 0x11C block of i32
+// fields followed by FOUR length-prefixed strings (name, logic, imageSet,
+// sound) whose lengths sit at record +0x04/+0x08/+0x0C/+0x10. ReadPlaneObjects:
+//   1. captures id (+0) and the four string lengths up front;
+//   2. `new` a 0x1DC-byte CObject-derived game object, two-phase constructs it
+//      (engine ctor + an embedded CDDrawSubMgr sub-object at +0x1A0) and stamps
+//      the two retail vtables (transitional manual stamp - those classes' vtable
+//      contents are not modeled here, so the addresses are reloc-masked DATA
+//      externs);
+//   3. copies the four trailing strings out into stack CStrings (inline
+//      rep-movs into a scratch buffer + CString(char*) ctor);
+//   4. bounds-checks the object's grid x/y against the level dims, looks the
+//      image-set name up in the level CMapStringToOb, then runs the object's
+//      vtable +0x28 "load" virtual;
+//   5. on success, applies the name/logic/imageSet strings (sprite frame cache /
+//      anim geometry / m_dc assign) and scatters ~60 trailing record fields into
+//      the object and its +0x7C sub-object via an advancing cursor;
+//   6. registers the object with the level and returns bytes-consumed.
+// Every failure path destroys the object (vtable +0x04 scalar-deleting dtor) and
+// the four CStrings under the /GX unwind frame.
+//
+// All callees (engine ctor/dtor/load virtual, CDDrawSubMgr ctor, CMapStringToOb
+// Lookup, the sprite/anim helpers, the level register) are unmatched engine code
+// modeled with no body -> reloc-masked calls.
+// ===========================================================================
+
+// The level/plane loader `this`. Only the members ReadPlaneObjects touches are
+// pinned (offsets are the load-bearing thing): m_c (the map/asset owner), and
+// m_30/m_34 (the grid extents the object x/y are range-checked against). m_c is
+// read both as the ctor's owner arg and for the image-set CMapStringToOb lookup.
+struct WwdLevelLoader {
+    char pad_0[0xc];
+    void* m_c; // +0x0C  asset/map owner (ctor arg; holds the imageset map)
+    char pad_10[0x30 - 0x10];
+    int m_30; // +0x30  grid width  (object x must be in [0, m_30))
+    int m_34; // +0x34  grid height (object y must be in [0, m_34))
+};
+
+// The +0x7C sub-object (an animation/geometry block) the load virtual creates;
+// ReadPlaneObjects scatters trailing record fields into it. Offset access only.
+struct WwdObjAnim;
+
+// The freshly allocated game object (0x1DC bytes). Polymorphic: the implicit
+// vptr sits at +0x00. ReadPlaneObjects uses two of its virtuals (the
+// scalar-deleting dtor at slot +0x04 and the "load" virtual at slot +0x28) plus
+// re-stamps the vptr to the retail vtable after the base ctor (a manual retype -
+// transitional, since the vtable contents are unmatched -> reloc-masked DATA).
+// No ctor/key function is defined here, so the compiler emits NO vtable for it.
+struct WwdGameObj {
+    virtual void* dtor0();                        // +0x00
+    virtual void* Delete(int flags);              // +0x04 scalar-deleting dtor
+    virtual void* s08();                          // +0x08
+    virtual void* s0c();                          // +0x0c
+    virtual void* s10();                          // +0x10
+    virtual void* s14();                          // +0x14
+    virtual void* s18();                          // +0x18
+    virtual void* s1c();                          // +0x1c
+    virtual void* s20();                          // +0x20
+    virtual void* s24();                          // +0x24
+    virtual int Load(int a, int b, int c, int d); // +0x28 load virtual
+
+    char pad_4[0x8 - 0x4];
+    unsigned int m_flags; // +0x008
+    char pad_c[0x40 - 0xc];
+    int m_40; // +0x040
+    char pad_44[0x64 - 0x44];
+    int m_64, m_68, m_6c, m_70; // +0x064..+0x070
+    char pad_74[0x7c - 0x74];
+    WwdObjAnim* m_7c; // +0x07C  the sub-object the load virtual builds
+    char pad_80[0xdc - 0x80];
+    CString m_dc; // +0x0DC  imageSet name (assigned)
+    char pad_e0[0xe8 - 0xe0];
+    int m_e8, m_ec; // +0x0E8, +0x0EC
+    char pad_f0[0xf8 - 0xf0];
+    int m_f8, m_fc; // +0x0F8, +0x0FC
+    char pad_100[0x114 - 0x100];
+    int m_114, m_118, m_11c, m_120, m_124, m_128; // +0x114..
+    int m_12c, m_130;
+    int m_134, m_138, m_13c, m_140, m_144, m_148, m_14c, m_150, m_154, m_158, m_15c, m_160; // rects
+    int m_164, m_168;
+    char pad_16c[0x18c - 0x16c];
+    int m_18c, m_190, m_194, m_198, m_19c; // +0x18C.. (zeroed in the ctor-stamp)
+    char pad_1a0[0x1dc - 0x1a0];           // +0x1A0 embedded CDDrawSubMgr sub-object
+};
+
+// The object's engine ctor + sprite/anim helpers are __thiscall methods on the
+// object (this in ecx). Modeled as members so the calls reloc-mask cleanly.
+struct WwdGameObjMethods {
+    void Construct(void* owner, int id, int z);        // 0x15b390  ctor, ret 0xc
+    void CacheFirstFrameAt(const char* name, int idx); // 0x1504d0  ret 0x8
+    void CacheFirstFrame(const char* name);            // 0x150540  ret 0x4
+    int ApplyLookupGeometry(const char* s, int flag);  // 0x1505b0  ret 0x8
+    void SetLogic(const char* logic);                  // 0x150610  ret 0x4
+};
+
+// CDDrawSubMgr ctor embedded at +0x1A0: (this, surfMgr, a, b). __thiscall, ret 0xc.
+struct WwdSubMgrCtor {
+    void Construct(void* surfMgr, int a, int b); // 0x156cb0
+};
+
+// The embedded sub-object's stampable view: vptr@0, then the three DWORDs
+// (+0x10/+0x14/+0x18) ReadPlaneObjects zeroes right after re-stamping its vtable.
+struct WwdObjAnimInit {
+    void* vptr; // +0x00
+    char pad_4[0x10 - 0x4];
+    int z10, z14, z18; // +0x10, +0x14, +0x18
+};
+
+// MFC CMapStringToOb::Lookup(key, &valueOut) const. __thiscall, ret 0x8.
+struct WwdStringToObMap {
+    int Lookup(const char* key, void*& out) const;
+};
+
+// Level register: append the finished object to the level. __thiscall, ret 0x4.
+struct WwdObjList {
+    void Add(WwdGameObj* obj);
+};
+
+// The two retail vtables stamped into the object and its sub-object (transitional
+// manual stamp; reloc-masked DATA externs).
+DATA(0x1f00a8)
+extern void* g_wwdObjVtbl[]; // 0x5f00a8
+DATA(0x1f0128)
+extern void* g_wwdSubVtbl[]; // 0x5f0128
+
+RVA(0x162af0, 0x806)
+int WwdFile::ReadPlaneObjects(const int* src) {
+    if (src == 0) {
+        return 0;
+    }
+
+    WwdLevelLoader* loader = (WwdLevelLoader*)this;
+
+    int id = src[0];
+    unsigned int nameLen = (unsigned int)src[1];
+    unsigned int logicLen = (unsigned int)src[2];
+    unsigned int imageSetLen = (unsigned int)src[3];
+    unsigned int soundLen = (unsigned int)src[4];
+    int x = src[5];
+    int y = src[6];
+    int z = src[7];
+    int gridIndex = src[8];
+
+    WwdGameObj* obj = (WwdGameObj*)operator new(0x1dc);
+    if (obj == 0) {
+        return 0;
+    }
+
+    ((WwdGameObjMethods*)obj)->Construct(loader->m_c, id, 0);
+
+    // Construct the embedded sub-object at +0x1A0, then re-stamp both vtables (the
+    // base ctors leave a base vtable; ReadPlaneObjects promotes both to their
+    // derived types) and zero the trailing fields the derived layout adds.
+    WwdObjAnimInit* subInit = (WwdObjAnimInit*)((char*)obj + 0x1a0);
+    ((WwdSubMgrCtor*)subInit)->Construct(loader->m_c, id, 0);
+    *(void**)subInit = &g_wwdSubVtbl;
+    subInit->z10 = 0;
+    subInit->z14 = 0;
+    subInit->z18 = 0;
+
+    *(void**)obj = &g_wwdObjVtbl;
+    obj->m_18c = -1;
+    obj->m_190 = -1;
+    obj->m_198 = 0;
+    obj->m_194 = 0;
+    obj->m_19c = 0;
+
+    // Copy the four trailing length-prefixed strings into stack CStrings. They
+    // begin right after the fixed 0x11C record.
+    const char* strCursor = (const char*)src + 0x11c;
+    char buf[0x400];
+
+    int n;
+    n = (int)nameLen;
+    if (n > 0) {
+        memcpy(buf, strCursor, n);
+        strCursor += n;
+    }
+    buf[n] = 0;
+    CString name(buf);
+
+    n = (int)logicLen;
+    if (n > 0) {
+        memcpy(buf, strCursor, n);
+        strCursor += n;
+    }
+    buf[n] = 0;
+    CString logic(buf);
+
+    n = (int)imageSetLen;
+    if (n > 0) {
+        memcpy(buf, strCursor, n);
+        strCursor += n;
+    }
+    buf[n] = 0;
+    CString imageSet(buf);
+
+    n = (int)soundLen;
+    if (n > 0) {
+        memcpy(buf, strCursor, n);
+        strCursor += n;
+    }
+    buf[n] = 0;
+    CString sound(buf);
+
+    // Grid bounds check on x/y; failure deletes the object and returns the bytes
+    // consumed so far (so the caller still advances over the bad record).
+    if (x < 0 || x >= loader->m_30 || y < 0 || y >= loader->m_34) {
+        obj->Delete(1);
+        return (int)(strCursor - (const char*)src);
+    }
+
+    // If an image set is named, require it to be present in the level map.
+    int loaded = 1;
+    if (imageSet.GetLength() != 0) {
+        void* found = 0;
+        WwdStringToObMap* map = (WwdStringToObMap*)((char*)loader->m_c + 0x14 + 0x10);
+        loaded = map->Lookup((const char*)imageSet, found);
+    }
+
+    if (!loaded) {
+        obj->Delete(1);
+        return (int)(strCursor - (const char*)src);
+    }
+
+    // Run the object's load virtual (reads the fixed record into the object).
+    if (obj->Load((int)logicLen, id, (int)strCursor, id) == 0) {
+        obj->Delete(1);
+        return 0;
+    }
+
+    obj->m_flags |= 0x40000;
+
+    WwdObjAnim* anim = obj->m_7c;
+    if (anim == 0) {
+        obj->Delete(1);
+        return 0;
+    }
+
+    int* sub = (int*)anim;
+
+    // Apply name -> sprite first-frame cache (indexed when src[?] != -1).
+    if (logic.GetLength() != 0) {
+        if (z != -1) {
+            ((WwdGameObjMethods*)obj)->CacheFirstFrameAt((const char*)logic, z);
+        } else {
+            ((WwdGameObjMethods*)obj)->CacheFirstFrame((const char*)logic);
+        }
+    }
+
+    // Apply sound -> anim geometry + logic.
+    if (sound.GetLength() != 0) {
+        ((WwdGameObjMethods*)obj)->ApplyLookupGeometry((const char*)sound, 0);
+        ((WwdGameObjMethods*)obj)->SetLogic((const char*)sound);
+    }
+
+    // Apply imageSet -> object's m_dc.
+    if (imageSet.GetLength() != 0) {
+        obj->m_dc = (const char*)imageSet;
+    }
+
+    // Scatter the trailing record fields. `p` advances through the record from
+    // its dynamic-flags field onward.
+    const int* p = &src[10]; // record +0x28 (skip addFlags @+0x24)
+
+    obj->m_flags |= (unsigned int)*p++; // dynamicFlags
+    obj->m_40 = *p++;                   // drawFlags
+    sub[0x28 / 4] = *p++;               // userFlags
+    obj->m_114 = *p++;                  // score
+    obj->m_118 = *p++;                  // points
+    obj->m_11c = *p++;                  // powerup
+    obj->m_120 = *p++;                  // damage
+    obj->m_124 = *p++;                  // smarts
+    obj->m_128 = *p++;                  // health
+    obj->m_134 = *p++;                  // moveRect.l
+    obj->m_138 = *p++;                  // moveRect.t
+    obj->m_13c = *p++;                  // moveRect.r
+    obj->m_140 = *p++;                  // moveRect.b
+    obj->m_144 = *p++;                  // hitRect.l
+    obj->m_148 = *p++;                  // hitRect.t
+    obj->m_14c = *p++;                  // hitRect.r
+    obj->m_150 = *p++;                  // hitRect.b
+    obj->m_154 = *p++;                  // attackRect.l
+    obj->m_158 = *p++;                  // attackRect.t
+    obj->m_15c = *p++;                  // attackRect.r
+    obj->m_160 = *p++;                  // attackRect.b
+    obj->m_64 = *p++;                   // clipRect.l
+    obj->m_68 = *p++;                   // clipRect.t
+    obj->m_6c = *p++;                   // clipRect.r
+    obj->m_70 = *p++;                   // clipRect.b
+
+    if (obj->m_144 == 0 && obj->m_14c == 0) {
+        obj->m_144 = (int)0x80000000;
+    }
+    if (obj->m_134 == 0 && obj->m_13c == 0) {
+        obj->m_134 = (int)0x80000000;
+    }
+    if (obj->m_64 == 0 && obj->m_6c == 0) {
+        obj->m_64 = (int)0x80000000;
+    }
+    if (obj->m_154 == 0 && obj->m_15c == 0) {
+        obj->m_154 = (int)0x80000000;
+    }
+
+    sub[0xf0 / 4] = *p++;
+    sub[0xf4 / 4] = *p++;
+    sub[0xf8 / 4] = *p++;
+    sub[0xfc / 4] = *p++;
+    sub[0x100 / 4] = *p++;
+    sub[0x104 / 4] = *p++;
+    sub[0x108 / 4] = *p++;
+    sub[0x10c / 4] = *p++;
+    sub[0x64 / 4] = *p++;
+    sub[0x68 / 4] = *p++;
+    sub[0x6c / 4] = *p++;
+    sub[0x70 / 4] = *p++;
+    sub[0x74 / 4] = *p++;
+    sub[0x78 / 4] = *p++;
+    sub[0x7c / 4] = *p++;
+    sub[0x80 / 4] = *p++;
+    sub[0x2c / 4] = *p++;
+    sub[0x34 / 4] = *p++;
+    sub[0x30 / 4] = *p++;
+    sub[0x38 / 4] = *p++;
+    obj->m_164 = *p++;
+    obj->m_168 = *p++;
+    sub[0x44 / 4] = *p++;
+    sub[0x48 / 4] = *p++;
+    sub[0xb8 / 4] = *p++;
+    sub[0xbc / 4] = *p++;
+    sub[0xc8 / 4] = *p++;
+    sub[0xcc / 4] = *p++;
+    obj->m_12c = *p++;
+    obj->m_130 = *p++;
+    sub[0x20 / 4] = *p++;
+    sub[0x24 / 4] = *p++;
+    obj->m_e8 = *p++;
+    obj->m_ec = *p++;
+
+    unsigned int w = (unsigned int)*p++;
+    if (w > 0) {
+        obj->m_f8 = (int)w;
+    }
+    unsigned int h = (unsigned int)*p++;
+    if (h > 0) {
+        obj->m_fc = (int)h;
+    }
+
+    ((WwdObjList*)((char*)loader + 0xb0))->Add(obj);
+
+    return (int)(strCursor - (const char*)src);
 }
