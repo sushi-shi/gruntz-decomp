@@ -45,6 +45,374 @@ extern "C" int g_thirdEnabled; // 0x653c58
 DATA(0x2293f4)
 extern "C" char g_emptyString[]; // 0x6293f4
 
+// The __FILE__ string every wrapper passes to GetErrorString (the DSNDMGR.CPP
+// source path, a single $SG pooled constant referenced by the whole run).
+#define DSNDMGR_FILE "C:\\Proj\\Dsndmgr\\DSNDMGR.CPP"
+
+// DSOUND.dll ordinal #1 - the DirectSound device creator. Declared WITHOUT
+// dllimport so the call is a direct `e8 rel32` to the incremental-link thunk
+// (reloc-masked), matching retail - not an `ff 15 [IAT]` indirect.
+extern "C" long __stdcall DirectSoundCreate(void* lpGuid, IDirectSoundZ** ppDS, void* pUnkOuter);
+
+// The buffer-wrapper class's retail vftable (0x5ef6b8). The ctor stamps the vptr
+// from this address directly (a reloc-masked DIR32 store) - a transitional
+// workaround while the class's virtuals aren't all matched, so the class is kept
+// non-polymorphic and the compiler emits no vtable of its own.
+DATA(0x1ef6b8)
+extern void* const g_DirectSoundMgrVtbl[];
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr ctor (__thiscall). Wraps a held IDirectSoundBuffer: stamps the
+// vptr, caches the buffer (m_0c) + owning manager (m_10), zero-inits the cached
+// caps/state, then (if a buffer was given) reads its caps into m_40 and caches
+// the initial frequency/pan/volume guarded by the matching capability bits, each
+// query reported through GetErrorString on failure.
+RVA(0x1351d0, 0x109)
+DirectSoundMgr::DirectSoundMgr(IDirectSoundBufferZ* buf, DirectSoundMgr* owner) {
+    *(void**)this = (void*)g_DirectSoundMgrVtbl;
+    m_0c = buf;
+    m_10 = owner;
+    m_14 = 0;
+    m_28 = 0;
+    m_30 = 0;
+    m_34 = 0;
+    m_38 = 0;
+    m_3c = 0;
+    if (buf == 0) {
+        return;
+    }
+
+    DSBCAPS caps;
+    caps.dwSize = 0x14;
+    if (buf->vtbl->GetCaps(buf, &caps) == 0) {
+        m_40 = caps.dwFlags;
+    } else {
+        m_40 = 0;
+    }
+
+    if ((m_40 & 0x20) == 0x20) {
+        int hr = buf->vtbl->GetFrequency(buf, (unsigned long*)&m_18) != 0;
+        if (hr) {
+            GetErrorString(DSNDMGR_FILE, 0x58, hr);
+        }
+    }
+    m_24 = m_18;
+
+    if ((m_40 & 0x40) == 0x40) {
+        int hr = buf->vtbl->GetPan(buf, &m_1c) != 0;
+        if (hr) {
+            GetErrorString(DSNDMGR_FILE, 0x60, hr);
+        }
+    } else {
+        m_1c = 0;
+    }
+
+    if ((m_40 & 0x80) == 0x80) {
+        int hr = buf->vtbl->GetVolume(buf, &m_20) != 0;
+        if (hr) {
+            GetErrorString(DSNDMGR_FILE, 0x68, hr);
+        }
+    } else {
+        m_20 = 0;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::Restore (__thiscall). Thin IDirectSoundBuffer::Restore wrapper;
+// on a nonzero HRESULT routes through GetErrorString and returns 0, else 1. The
+// HRESULT is normalized to a 0/1 bool (`!= 0`, the neg/sbb/neg idiom) and that
+// bool is what is both tested and forwarded as the reporter's hr.
+RVA(0x135310, 0x2a)
+int DirectSoundMgr::Restore() {
+    int hr = m_0c->vtbl->Restore(m_0c) != 0;
+    if (hr) {
+        GetErrorString(DSNDMGR_FILE, 0x7b, hr);
+        return 0;
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::StopAndRewind (__thiscall). Gated on the owning manager's
+// init flag; Stop() then rewind via SetCurrentPosition(0), each reported on
+// failure.
+RVA(0x135380, 0x66)
+int DirectSoundMgr::StopAndRewind() {
+    if (m_10->m_78 == 0) {
+        return 0;
+    }
+    int hr = m_0c->vtbl->Stop(m_0c) != 0;
+    if (hr) {
+        GetErrorString(DSNDMGR_FILE, 0x99, hr);
+        return 0;
+    }
+    hr = m_0c->vtbl->SetCurrentPosition(m_0c, 0) != 0;
+    if (hr) {
+        GetErrorString(DSNDMGR_FILE, 0x9e, hr);
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::IsPlaying (__thiscall). GetStatus, report on failure, return
+// the "playing" status bit.
+RVA(0x1353f0, 0x4b)
+int DirectSoundMgr::IsPlaying() {
+    if (m_10->m_78 == 0) {
+        return 0;
+    }
+    unsigned long status;
+    int hr = m_0c->vtbl->GetStatus(m_0c, &status) != 0;
+    if (hr) {
+        GetErrorString(DSNDMGR_FILE, 0xac, hr);
+        return 0;
+    }
+    return (status & 1) == 1;
+}
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::IsLooping (__thiscall). GetStatus, report on failure, return
+// the "looping" status bit.
+RVA(0x135440, 0x4d)
+int DirectSoundMgr::IsLooping() {
+    if (m_10->m_78 == 0) {
+        return 0;
+    }
+    unsigned long status;
+    int hr = m_0c->vtbl->GetStatus(m_0c, &status) != 0;
+    if (hr) {
+        GetErrorString(DSNDMGR_FILE, 0xbb, hr);
+        return 0;
+    }
+    return (status & 2) == 2;
+}
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::SetVolume (__thiscall). Gated on init + the volume capability
+// bit (m_40 & 0x80); SetVolume, report on failure.
+RVA(0x135560, 0x58)
+int DirectSoundMgr::SetVolume(long vol) {
+    if (m_10->m_78 == 0) {
+        return 0;
+    }
+    if ((m_40 & 0x80) != 0x80) {
+        return 0;
+    }
+    int hr = m_0c->vtbl->SetVolume(m_0c, vol) != 0;
+    if (hr) {
+        GetErrorString(DSNDMGR_FILE, 0xf6, hr);
+        return 0;
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::GetVolume (__thiscall). GetVolume out-param; on failure report
+// and return 0, else return the queried volume.
+RVA(0x1355f0, 0x42)
+long DirectSoundMgr::GetVolume() {
+    if (m_10->m_78 == 0) {
+        return 0;
+    }
+    long vol;
+    int hr = m_0c->vtbl->GetVolume(m_0c, &vol) != 0;
+    if (hr) {
+        GetErrorString(DSNDMGR_FILE, 0x10e, hr);
+        return 0;
+    }
+    return vol;
+}
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::SetPan (__thiscall). Gated on init + the pan capability bit
+// (m_40 & 0x40); SetPan, report on failure.
+RVA(0x135740, 0x55)
+int DirectSoundMgr::SetPan(long pan) {
+    if (m_10->m_78 == 0) {
+        return 0;
+    }
+    if ((m_40 & 0x40) != 0x40) {
+        return 0;
+    }
+    int hr = m_0c->vtbl->SetPan(m_0c, pan) != 0;
+    if (hr) {
+        GetErrorString(DSNDMGR_FILE, 0x141, hr);
+        return 0;
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::GetPan (__thiscall). GetPan out-param; on failure report and
+// return 0, else return the queried pan.
+RVA(0x1357f0, 0x42)
+long DirectSoundMgr::GetPan() {
+    if (m_10->m_78 == 0) {
+        return 0;
+    }
+    long pan;
+    int hr = m_0c->vtbl->GetPan(m_0c, &pan) != 0;
+    if (hr) {
+        GetErrorString(DSNDMGR_FILE, 0x15e, hr);
+        return 0;
+    }
+    return pan;
+}
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::SetFrequency (__thiscall). Gated on init + the frequency
+// capability bit (m_40 & 0x20); SetFrequency, report on failure (HRESULT tested
+// directly here, not normalized), and cache the value in m_24 on success.
+RVA(0x135880, 0x60)
+int DirectSoundMgr::SetFrequency(unsigned long freq) {
+    if (m_10->m_78 == 0) {
+        return 0;
+    }
+    if ((m_40 & 0x20) != 0x20) {
+        return 0;
+    }
+    long hr = m_0c->vtbl->SetFrequency(m_0c, freq);
+    if (hr) {
+        GetErrorString(DSNDMGR_FILE, 0x180, hr);
+        return 0;
+    }
+    m_24 = freq;
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::Unlock (__thiscall). Pass-through IDirectSoundBuffer::Unlock;
+// report on failure.
+RVA(0x1359c0, 0x54)
+int DirectSoundMgr::Unlock(void* p1, unsigned long n1, void* p2, unsigned long n2) {
+    if (m_10->m_78 == 0) {
+        return 0;
+    }
+    int hr = m_0c->vtbl->Unlock(m_0c, p1, n1, p2, n2) != 0;
+    if (hr) {
+        GetErrorString(DSNDMGR_FILE, 0x1bb, hr);
+        return 0;
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::GetCurrentPosition (__thiscall). Pass-through; report on
+// failure.
+RVA(0x135a20, 0x4a)
+int DirectSoundMgr::GetCurrentPosition(unsigned long* play, unsigned long* write) {
+    if (m_10->m_78 == 0) {
+        return 0;
+    }
+    int hr = m_0c->vtbl->GetCurrentPosition(m_0c, play, write) != 0;
+    if (hr) {
+        GetErrorString(DSNDMGR_FILE, 0x1c8, hr);
+        return 0;
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::SetCurrentPosition (__thiscall). Pass-through; report on
+// failure.
+RVA(0x135a70, 0x45)
+int DirectSoundMgr::SetCurrentPosition(unsigned long pos) {
+    if (m_10->m_78 == 0) {
+        return 0;
+    }
+    int hr = m_0c->vtbl->SetCurrentPosition(m_0c, pos) != 0;
+    if (hr) {
+        GetErrorString(DSNDMGR_FILE, 0x1d5, hr);
+        return 0;
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::GetFormat (__thiscall). Pass-through; report on failure.
+RVA(0x135ac0, 0x4f)
+int DirectSoundMgr::GetFormat(void* fmt, unsigned long size, unsigned long* written) {
+    if (m_10->m_78 == 0) {
+        return 0;
+    }
+    int hr = m_0c->vtbl->GetFormat(m_0c, fmt, size, written) != 0;
+    if (hr) {
+        GetErrorString(DSNDMGR_FILE, 0x1e2, hr);
+        return 0;
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::Create (__thiscall). Brings up the DirectSound device:
+// DirectSoundCreate into m_14 (its HRESULT normalized into a stored bool), then
+// SetCooperativeLevel(hwnd, level). A failed coop call is reported and the device
+// released; on success the coop params are cached (m_88/m_8c), m_7c cleared and
+// the m_78 "initialized" flag set.
+RVA(0x136550, 0x8c)
+int DirectSoundMgr::Create(void* hwnd, unsigned long level, unsigned long flags) {
+    int created = DirectSoundCreate(0, &m_14, 0) != 0;
+    if (created) {
+        return 0;
+    }
+    int hr = m_14->vtbl->SetCooperativeLevel(m_14, hwnd, level) != 0;
+    if (hr) {
+        GetErrorString(DSNDMGR_FILE, 0x3b0, hr);
+        m_14->vtbl->Release(m_14);
+        return 0;
+    }
+    m_88 = level;
+    m_8c = flags;
+    m_7c = 0;
+    m_78 = 1;
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::SetCooperativeLevel (__thiscall). Re-issues
+// IDirectSound::SetCooperativeLevel on an already-created device; caches the new
+// level in m_88. Gated on the m_78 init flag.
+RVA(0x1365f0, 0x57)
+int DirectSoundMgr::SetCooperativeLevel(void* hwnd, unsigned long level) {
+    if (m_78 == 0) {
+        return 0;
+    }
+    int hr = m_14->vtbl->SetCooperativeLevel(m_14, hwnd, level) != 0;
+    if (hr) {
+        GetErrorString(DSNDMGR_FILE, 0x3cf, hr);
+        return 0;
+    }
+    m_88 = level;
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::CreatePrimaryBuffer (__thiscall). Once the device is up
+// (m_78) and the cooperative level is exclusive-ish (m_88 == 1), lazily creates
+// the primary sound buffer into m_84 via IDirectSound::CreateSoundBuffer with a
+// stack DSBUFFERDESC (dwSize 0x14, dwFlags = m_8c | DSBCAPS_PRIMARYBUFFER).
+RVA(0x137260, 0x95)
+int DirectSoundMgr::CreatePrimaryBuffer() {
+    if (m_78 == 0) {
+        return 0;
+    }
+    if (m_88 != 1) {
+        return 0;
+    }
+    if (m_84 == 0) {
+        DSBUFFERDESC desc;
+        memset(&desc, 0, sizeof(desc));
+        desc.dwSize = 0x14;
+        desc.dwFlags = m_8c | 1;
+        int hr = m_14->vtbl->CreateSoundBuffer(m_14, &desc, (IDirectSoundZ**)&m_84, 0) != 0;
+        if (hr) {
+            GetErrorString(DSNDMGR_FILE, 0x6ab, hr);
+            return 0;
+        }
+    }
+    return 1;
+}
+
 // ---------------------------------------------------------------------------
 // DirectSoundMgr::GetErrorString
 RVA(0x138150, 0x33b)
