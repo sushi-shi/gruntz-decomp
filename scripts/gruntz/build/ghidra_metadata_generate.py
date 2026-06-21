@@ -220,12 +220,20 @@ def header_units(globs):
     if not headers:
         return []
     tmp = Path(tempfile.mkdtemp(prefix="gruntz-structwrap-"))
+    # -I include lets a comprehension header reach the repo's macro-only headers
+    # (e.g. <rva.h> for OVERRIDE) under the plain driver, without pulling MFC in -
+    # comprehension headers otherwise stay self-contained placeholders.
+    # TODO: remove this -I once every stub is matched and src/Stub/types/ is empty
+    # (the comprehension layer shrinks toward empty - see src/Stub/types/README.md);
+    # at that point nothing here needs <rva.h> and the plain driver can go back to
+    # bare MS_FLAGS.
+    flags = [*MS_FLAGS, "-I", str(REPO / "include")]
     out = []
     for i, h in enumerate(headers):
         hp = Path(h).resolve()
         w = tmp / ("%03d_%s.cpp" % (i, hp.stem))
         w.write_text('#include "%s"\n' % hp)
-        out.append((str(w), list(MS_FLAGS), h))
+        out.append((str(w), list(flags), h))
     return out
 
 
@@ -259,6 +267,11 @@ def main():
 
     structs = {}   # name -> {name,size,fields,source}; src/ wins over src/Stub/types/
     enums = {}
+    failures = []  # (source, stage, detail) - a non-zero clang rc means the unit
+                   # did NOT compile cleanly. clang's layout/AST dumps RECOVER from
+                   # errors and still emit PARTIAL output, so a failed unit would
+                   # silently contribute WRONG layouts (e.g. a class missing its
+                   # base). Refuse to emit anything until every unit is clean.
     for tu, flags, source, driver in units:
         # src/Stub/types/ is the comprehension layer (unmatched type headers), so
         # it stays LOWER priority than the authoritative matched src/ layouts even
@@ -267,8 +280,8 @@ def main():
         src_priority = 0 if ("/src/" in source or source.startswith("src/")) and not is_stub_types else 1
         lo_out, lo_err, lo_rc = run_clang(
             args.clang, flags, tu, ["-Xclang", "-fdump-record-layouts-complete"], driver)
-        if lo_rc != 0 and not lo_out:
-            log(f"WARN {source}: layout dump failed rc={lo_rc}\n{lo_err.strip()[:400]}")
+        if lo_rc != 0:
+            failures.append((source, "layout dump", f"rc={lo_rc}\n{lo_err.strip()[:600]}"))
         for name, (size, fields) in parse_record_layouts(lo_out).items():
             if _BUILTIN_RE.match(name):
                 continue
@@ -285,15 +298,27 @@ def main():
 
         ast_out, ast_err, ast_rc = run_clang(
             args.clang, flags, tu, ["-Xclang", "-ast-dump=json"], driver)
+        if ast_rc != 0:
+            failures.append((source, "ast dump", f"rc={ast_rc}\n{ast_err.strip()[:600]}"))
         if ast_out.strip():
             try:
                 tree = json.loads(ast_out)
             except json.JSONDecodeError:
                 tree = None
+                # rc==0 but unparseable JSON = a tool surprise we must not swallow.
+                if ast_rc == 0:
+                    failures.append((source, "ast json parse", ast_out[:200]))
             if tree:
                 for en in parse_enums(tree):
                     en["source"] = source
                     enums.setdefault(en["name"], en)
+
+    if failures:
+        log(f"ERROR: {len(failures)} unit(s) did not compile cleanly - refusing to "
+            f"emit partial/incorrect structs.json + enums.json:")
+        for source, stage, detail in failures:
+            log(f"  {source}: {stage} failed: {detail}")
+        raise SystemExit(1)
 
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
