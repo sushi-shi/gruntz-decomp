@@ -60,13 +60,7 @@
 //     +0xd0 = 2560 +0xd4 = 1920 +0xd8 = 768  +0xdc = 576
 // ===========================================================================
 
-// The 4-int coordinate/extent record at CGameLevel+0x10.
-struct RemusCoords {
-    int m_0;
-    int m_4;
-    int m_8;
-    int m_c;
-};
+// (RemusCoords - the 4-int coord record at +0x10 - is defined in GameLevel.h.)
 
 // The parse-source object VirtualMethodUnknown3C drives: BeginParse (FUN_00539960
 // @0x139960) opens/primes it and returns a handle; EndParse (FUN_005399d0
@@ -99,18 +93,18 @@ static inline void StampLevelVtbl(CGameLevel *o) { *(void **)o = &g_gameLevelVtb
 // folds into each method exactly as the retail compiler emitted the block inline.
 static inline void StampParamBlock(CGameLevel *o)
 {
-    *(int*)((char*)o + 0xb0) = 500;
-    *(int*)((char*)o + 0xb4) = 250;
-    *(int*)((char*)o + 0xb8) = 1000;
-    *(int*)((char*)o + 0xbc) = 1000;
-    *(int*)((char*)o + 0xc0) = 250;
-    *(int*)((char*)o + 0xc4) = 125;
-    *(int*)((char*)o + 0xc8) = 1600;
-    *(int*)((char*)o + 0xcc) = 1200;
-    *(int*)((char*)o + 0xd0) = 2560;
-    *(int*)((char*)o + 0xd4) = 1920;
-    *(int*)((char*)o + 0xd8) = 768;
-    *(int*)((char*)o + 0xdc) = 576;
+    o->m_b0 = 500;
+    o->m_b4 = 250;
+    o->m_b8 = 1000;
+    o->m_bc = 1000;
+    o->m_c0 = 250;
+    o->m_c4 = 125;
+    o->m_c8 = 1600;
+    o->m_cc = 1200;
+    o->m_d0 = 2560;
+    o->m_d4 = 1920;
+    o->m_d8 = 768;
+    o->m_dc = 576;
 }
 
 // ===========================================================================
@@ -137,26 +131,26 @@ RVA(0x15ccd0, 0x118)
 CGameLevel::CGameLevel(int a1, int a2, int a3)
     : RemusBase(a1, a2, a3)
 {
-    *(int*)((char*)this + 0x64) = 0x40;
-    *(int*)((char*)this + 0x68) = 0x40;
-    *(int*)((char*)this + 0xb4) = 250;
-    *(int*)((char*)this + 0xc0) = 250;
-    *(int*)((char*)this + 0xb8) = 1000;
-    *(int*)((char*)this + 0xbc) = 1000;
+    m_64 = 0x40;
+    m_68 = 0x40;
+    m_b4 = 250;
+    m_c0 = 250;
+    m_b8 = 1000;
+    m_bc = 1000;
 
     StampLevelVtbl(this);
-    *(int*)((char*)this + 0x10) = (int)0x80000000;
-    *(int*)((char*)this + 0x5c) = 0;
-    *(int*)((char*)this + 0x60) = -1;
-    *(int*)((char*)this + 0xac) = 0;
-    *(int*)((char*)this + 0xb0) = 500;
-    *(int*)((char*)this + 0xc4) = 125;
-    *(int*)((char*)this + 0xc8) = 1600;
-    *(int*)((char*)this + 0xcc) = 1200;
-    *(int*)((char*)this + 0xd0) = 2560;
-    *(int*)((char*)this + 0xd4) = 1920;
-    *(int*)((char*)this + 0xd8) = 768;
-    *(int*)((char*)this + 0xdc) = 576;
+    m_planeCtx.m_0 = (int)0x80000000;
+    m_mainPlane = 0;
+    m_mainIndex = -1;
+    m_checksum = 0;
+    m_b0 = 500;
+    m_c4 = 125;
+    m_c8 = 1600;
+    m_cc = 1200;
+    m_d0 = 2560;
+    m_d4 = 1920;
+    m_d8 = 768;
+    m_dc = 576;
 }
 
 RVA(0x15d280, 0x279)
@@ -305,11 +299,11 @@ fail:
 RVA(0x161190, 0x1f)
 int CGameLevel::VirtualMethodUnknown14()
 {
-    if (*(int*)((char*)this + 0x10) == (int)0x80000000)
+    if (m_planeCtx.m_0 == (int)0x80000000)
         goto fail;
-    if (*(int*)((char*)this + 0x0c) == 0)
+    if (m_0c == 0)
         goto fail;
-    if (*(int*)((char*)this + 0x04) != -1)
+    if (m_04 != -1)
         return 1;
 
 fail:
@@ -336,10 +330,10 @@ fail:
 RVA(0x15d030, 0x8f)
 int CGameLevel::VirtualMethodUnknown34(int arg0, int arg1)
 {
-    *(int*)((char*)this + 0x10) = 0;
-    *(int*)((char*)this + 0x14) = 0;
-    *(int*)((char*)this + 0x18) = arg0 - 1;
-    *(int*)((char*)this + 0x1c) = arg1 - 1;
+    m_planeCtx.m_0 = 0;
+    m_planeCtx.m_4 = 0;
+    m_planeCtx.m_8 = arg0 - 1;
+    m_planeCtx.m_c = arg1 - 1;
     StampParamBlock(this);
     return 1;
 }
@@ -426,22 +420,22 @@ RVA(0x15d1f0, 0x87)
 int CGameLevel::VirtualMethodUnknown1C()
 {
     int i;
-    for (i = 0; i < *(int*)((char*)this + 0x3c); i++) {
-        UnknownChild *child = (UnknownChild *)(*(void***)((char*)this + 0x38))[i];
+    for (i = 0; i < m_planes.GetSize(); i++) {
+        UnknownChild *child = (UnknownChild *)m_planes.GetData()[i];
         if (child)
             child->Release(1);
     }
-    ((CDWordArray *)((char *)this + 0x34))->SetSize(0, -1);
-    for (i = 0; i < *(int*)((char*)this + 0x50); i++) {
-        UnknownChild *child = (UnknownChild *)(*(void***)((char*)this + 0x4c))[i];
+    m_planes.SetSize(0, -1);
+    for (i = 0; i < m_imageSets.GetSize(); i++) {
+        UnknownChild *child = (UnknownChild *)m_imageSets.GetData()[i];
         if (child)
             child->Release(1);
     }
-    ((CDWordArray *)((char *)this + 0x48))->SetSize(0, -1);
-    *(int*)((char*)this + 0x10) = (int)0x80000000;
-    *(int*)((char*)this + 0x5c) = 0;
-    *(int*)((char*)this + 0x60) = -1;
-    memset((char*)this + 0xe0, 0, 1524);
+    m_imageSets.SetSize(0, -1);
+    m_planeCtx.m_0 = (int)0x80000000;
+    m_mainPlane = 0;
+    m_mainIndex = -1;
+    memset(&m_header, 0, 1524);
     return 0;
 }
 
@@ -452,20 +446,20 @@ RVA(0x15d680, 0x71)
 void CGameLevel::VirtualMethodUnknown44()
 {
     int i;
-    for (i = 0; i < *(int*)((char*)this + 0x3c); i++) {
-        UnknownChild *child = (UnknownChild *)(*(void***)((char*)this + 0x38))[i];
+    for (i = 0; i < m_planes.GetSize(); i++) {
+        UnknownChild *child = (UnknownChild *)m_planes.GetData()[i];
         if (child)
             child->Release(1);
     }
-    ((CDWordArray *)((char *)this + 0x34))->SetSize(0, -1);
-    for (i = 0; i < *(int*)((char*)this + 0x50); i++) {
-        UnknownChild *child = (UnknownChild *)(*(void***)((char*)this + 0x4c))[i];
+    m_planes.SetSize(0, -1);
+    for (i = 0; i < m_imageSets.GetSize(); i++) {
+        UnknownChild *child = (UnknownChild *)m_imageSets.GetData()[i];
         if (child)
             child->Release(1);
     }
-    ((CDWordArray *)((char *)this + 0x48))->SetSize(0, -1);
-    *(int*)((char*)this + 0x5c) = 0;
-    *(int*)((char*)this + 0x60) = -1;
+    m_imageSets.SetSize(0, -1);
+    m_mainPlane = 0;
+    m_mainIndex = -1;
 }
 
 // ---------------------------------------------------------------------------
@@ -483,7 +477,7 @@ int CGameLevel::VirtualMethodUnknown20()
 RVA(0x15cdf0, 0xb8)
 int CGameLevel::VirtualMethodUnknown2C(int arg1, RemusCoords *coords)
 {
-    *(RemusCoords*)((char*)this + 0x10) = *coords;
+    m_planeCtx = *coords;
     StampParamBlock(this);
     if (Vfunc40(arg1) == 0) {
         Vfunc1C();
@@ -497,7 +491,7 @@ int CGameLevel::VirtualMethodUnknown2C(int arg1, RemusCoords *coords)
 RVA(0x15ceb0, 0xb8)
 int CGameLevel::VirtualMethodUnknown28(int arg1, RemusCoords *coords)
 {
-    *(RemusCoords*)((char*)this + 0x10) = *coords;
+    m_planeCtx = *coords;
     StampParamBlock(this);
     if (Vfunc3C(arg1) == 0) {
         Vfunc1C();
@@ -513,7 +507,7 @@ int CGameLevel::VirtualMethodUnknown28(int arg1, RemusCoords *coords)
 RVA(0x15cf70, 0xb8)
 int CGameLevel::VirtualMethodUnknown24(int arg1, RemusCoords *coords)
 {
-    *(RemusCoords*)((char*)this + 0x10) = *coords;
+    m_planeCtx = *coords;
     StampParamBlock(this);
     if (Vfunc38(arg1) == 0) {
         Vfunc1C();
@@ -527,7 +521,7 @@ int CGameLevel::VirtualMethodUnknown24(int arg1, RemusCoords *coords)
 RVA(0x15d0d0, 0x99)
 int CGameLevel::VirtualMethodUnknown30(RemusCoords *coords)
 {
-    *(RemusCoords*)((char*)this + 0x10) = *coords;
+    m_planeCtx = *coords;
     StampParamBlock(this);
     return 1;
 }

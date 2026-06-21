@@ -49,7 +49,8 @@ public:
 // The 4-int coordinate/extent record stored at CGameLevel+0x10, passed by pointer
 // to the merged CDDrawLevelData load methods. Defined in GameLevel.cpp; only the
 // pointer type appears in the class declarations so a forward decl suffices here.
-struct RemusCoords;
+// The 4-int coordinate/extent record at CGameLevel+0x10 (also the plane-read ctx).
+struct RemusCoords { int m_0, m_4, m_8, m_c; };
 
 // The parse-source object passed to VirtualMethodUnknown3C. Defined in
 // GameLevel.cpp; only the pointer type appears here so a forward decl suffices.
@@ -172,18 +173,22 @@ private:
     // Plane coord-recompute helper (vtable-less) - external.
     void RecomputePlaneCoords(CPlane* plane);
 
+public:
     // vptr@+0x00 (implicit, CGameLevel is polymorphic); +0x04..+0x0c are the
-    // RemusBase members; the plane-read ctx begins at +0x10.
-    unsigned char m_planeCtx[0x20 - 0x10];  // +0x10  plane-read ctx (LoadWwd 3rd arg)
+    // RemusBase members (m_04/m_flags/m_0c); the plane-read ctx begins at +0x10.
+    RemusCoords   m_planeCtx;        // +0x10  plane-read ctx / coord record (LoadWwd 3rd arg)
     CByteArray    m_array20;         // +0x20  (built by the ctor; EH state 0)
     CLevelPtrArray m_planes;         // +0x34  (m_size@+0x3c == m_planeCount; EH state 1)
     CLevelPtrArray m_imageSets;      // +0x48  (EH state 2)
     CPlane*       m_mainPlane;       // +0x5C
     int           m_mainIndex;       // +0x60
-    unsigned char pad_64[0x6c - 0x64];
+    int           m_64;              // +0x64
+    int           m_68;              // +0x68
     char          m_levelName[0xac - 0x6c]; // +0x6C
     unsigned int  m_checksum;        // +0xAC
-    unsigned char pad_b0[0xe0 - 0xb0];
+    int           m_b0, m_b4, m_b8, m_bc;   // +0xB0  default-parameter block
+    int           m_c0, m_c4, m_c8, m_cc;   // +0xC0
+    int           m_d0, m_d4, m_d8, m_dc;   // +0xD0
     WwdHeader     m_header;          // +0xE0  (1524 B copy)
 };
 
