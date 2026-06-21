@@ -14,15 +14,26 @@ struct CGameReg {
     void* m_2c; // +0x2c
     char m_pad30[0x58 - 0x30];
     void* m_58; // +0x58
-    char m_pad5c[0x118 - 0x5c];
+    char m_pad5c[0x100 - 0x5c];
+    int m_100; // +0x100
+    char m_pad104[0x118 - 0x104];
     int m_118; // +0x118
     char m_pad11c[0x130 - 0x11c];
     int m_130; // +0x130
     int m_134; // +0x134
-    char m_pad138[0x7e8 - 0x138];
+    char m_pad138[0x378 - 0x138];
+    int m_378; // +0x378
+    char m_pad37c[0x7e8 - 0x37c];
     int m_7e8;                            // +0x7e8
+    char m_pad7ec[0xa20 - 0x7ec];
+    int m_a20; // +0xa20
     void Method92340(int state);          // __thiscall helper at RVA 0x92340
     void ReportError(unsigned int, long); // CGruntzMgr::ReportError, RVA 0x346d
+    struct GameObj510* GetActive355d();   // __thiscall accessor, RVA 0x355d
+};
+struct GameObj510 {
+    char m_pad0[0x510];
+    int m_510; // +0x510
 };
 DATA(0x64556c)
 extern CGameReg* g_gameReg;
@@ -33,11 +44,20 @@ extern "C" {
     __declspec(dllimport) int __stdcall AIL_start_sequence(int seq);
     __declspec(dllimport) int __stdcall AIL_set_sequence_loop_count(int seq, int count);
     __declspec(dllimport) int __stdcall AIL_resume_sequence(int seq);
+    __declspec(dllimport) void __stdcall AIL_startup();
+    __declspec(dllimport) int __stdcall AIL_midiOutOpen(int* driver, int dunno, int devid);
+    __declspec(dllimport) int __stdcall AIL_XMIDI_master_volume(int driver);
+    __declspec(dllimport) void __stdcall AIL_end_sequence(int seq);
+    __declspec(dllimport) void __stdcall AIL_set_sequence_tempo(int seq, int tempo, int ms);
 }
 
 // The AIL MIDI driver handle (DAT_00653c5c), 0 when no driver is open.
 DATA(0x653c5c)
 extern int g_ailMidiDriver;
+
+// Cached AIL driver handle passed to AIL_set_* (DAT_00653c64).
+DATA(0x653c64)
+extern int g_ailDriver64;
 
 // MS-CRT-style LCG RNG state shared by the timeGetTime random helpers.
 DATA(0x6c127d)
@@ -50,6 +70,10 @@ DATA(0x64c22c)
 extern char g_coinRolled; // bit0 set once this frame's coin was rolled
 DATA(0x64c26c)
 extern int g_coinValue; // the cached 0/1 result
+
+// GetDlgItem(hWnd,0x4b6) cache (DAT_00648ce0), shared by several timer wrappers.
+DATA(0x648ce0)
+extern HWND g_dlgItem_648ce0;
 
 namespace ApiCallerStubs {
 
@@ -95,10 +119,22 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:PostMessageA
-    // @stub
+    // __thiscall(code, _): on ESC/SPACE/ENTER post a 0x8023 command. Returns 1.
+    struct CmdChain_014720 {
+        int m_0;
+        CmdChain_014720* m_4; // +0x04
+    };
+    struct CmdHost_014720 {
+        int m_0;
+        CmdChain_014720* m_4; // +0x04
+        int Key(int code, int unused);
+    };
     RVA(0x014720, 0x37)
-    int winapi_014720_PostMessageA() {
-        return 0;
+    int CmdHost_014720::Key(int code, int unused) {
+        if (code == 0x20 || code == 0xd || code == 0x1b) {
+            PostMessageA(m_4->m_4->m_4, 0x111, 0x8023, 0);
+        }
+        return 1;
     }
 
     // @confidence: low
@@ -137,10 +173,13 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:SendMessageA
-    // @stub
+    // Dialog-item resolver at RVA 0x33a0 (stdcall, returns a CWnd-ish whose HWND is +0x1c).
+    WndItem* __stdcall ResolveItem_33a0(int id);
+    // __stdcall(id): clear listbox selection (0x147) of the resolved item; return +1.
     RVA(0x015d30, 0x21)
-    int winapi_015d30_SendMessageA() {
-        return 0;
+    int __stdcall winapi_015d30_SendMessageA(int id) {
+        HWND h = ResolveItem_33a0(id)->m_hwnd;
+        return SendMessageA(h, 0x147, 0, 0) + 1;
     }
 
     // @confidence: low
@@ -225,10 +264,20 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:SendMessageA
-    // @stub
+    // A dialog-host class whose GetItem(id) (RVA 0x1be27d) returns a CWnd-ish
+    // whose HWND lives at +0x1c.
+    struct DlgHost {
+        WndItem* GetItem(int id);  // thiscall, RVA 0x1be27d
+        void OnPick();             // thiscall, RVA 0x1bacc3
+        void Pick0183f0();         // thiscall, RVA 0x183f0
+    };
+    // __thiscall(): send 0x188 to item 0x516; if it returned != -1, run OnPick().
     RVA(0x0183f0, 0x2e)
-    int winapi_0183f0_SendMessageA() {
-        return 0;
+    void DlgHost::Pick0183f0() {
+        HWND h = GetItem(0x516)->m_hwnd;
+        if (SendMessageA(h, 0x188, 0, 0) != -1) {
+            OnPick();
+        }
     }
 
     // @confidence: low
@@ -413,10 +462,14 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:EnableWindow;GetDlgItem;IsDlgButtonChecked
-    // @stub
+    // __cdecl(hWnd): mirror checkbox 0x475 into m_100 + enable ctrl 0x476 by it.
     RVA(0x036d50, 0x3c)
-    int winapi_036d50_EnableWindow_GetDlgItem_IsDlgButtonChecked() {
-        return 0;
+    void winapi_036d50_EnableWindow_GetDlgItem_IsDlgButtonChecked(HWND hWnd) {
+        if (g_gameReg) {
+            int checked = IsDlgButtonChecked(hWnd, 0x475);
+            g_gameReg->m_100 = checked;
+            EnableWindow(GetDlgItem(hWnd, 0x476), checked);
+        }
     }
 
     // @confidence: low
@@ -439,10 +492,18 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:GetDlgItem;GetScrollInfo
-    // @stub
+    // __cdecl(hDlg, id): read the scroll position of dialog item `id`.
     RVA(0x036ec0, 0x41)
-    int winapi_036ec0_GetDlgItem_GetScrollInfo() {
-        return 0;
+    int winapi_036ec0_GetDlgItem_GetScrollInfo(HWND hDlg, int id) {
+        HWND h = GetDlgItem(hDlg, id);
+        if (!h) {
+            return 0;
+        }
+        SCROLLINFO si;
+        si.cbSize = 0x1c;
+        si.fMask = SIF_POS;
+        GetScrollInfo(h, SB_CTL, &si);
+        return si.nPos;
     }
 
     // @confidence: low
@@ -502,10 +563,25 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:GetDlgItem
-    // @stub
+    // __stdcall(hDlg, id, *lo, *hi): split the selected listbox item's data into
+    // two words. Returns 1 if a valid item is selected.
     RVA(0x038220, 0x73)
-    int winapi_038220_GetDlgItem() {
-        return 0;
+    int __stdcall winapi_038220_GetDlgItem(HWND hDlg, int id, int* outLo, int* outHi) {
+        HWND list = GetDlgItem(hDlg, id);
+        if (!list) {
+            return 0;
+        }
+        int sel = SendMessageA(list, 0x147, 0, 0);
+        if (sel == -1) {
+            return 0;
+        }
+        int data = SendMessageA(list, 0x150, sel, 0);
+        if (data == -1) {
+            return 0;
+        }
+        *outLo = data & 0xffff;
+        *outHi = (unsigned)data >> 0x10;
+        return 1;
     }
 
     // @confidence: low
@@ -670,10 +746,14 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:SetRect
-    // @stub
+    // __thiscall(l, t, r, b): the object IS the RECT being initialised.
+    struct RectHost_08c380 {
+        RECT m_rc;
+        void Set(int l, int t, int r, int b);
+    };
     RVA(0x08c380, 0x1e)
-    int winapi_08c380_SetRect() {
-        return 0;
+    void RectHost_08c380::Set(int l, int t, int r, int b) {
+        SetRect(&m_rc, l, t, r, b);
     }
 
     // @confidence: low
@@ -694,10 +774,57 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:MessageBoxA
-    // @stub
+    // The shared caption buffer (DAT_0060aac8) passed as the MessageBoxA title.
+    DATA(0x60aac8)
+    extern char g_msgCaption[];
+    struct Poly08 {
+        struct PolyVtbl08* m_vptr;
+    };
+    struct PolyVtbl08 {
+        void* s0[0xa];
+        void(__stdcall* Slot28)(Poly08*); // +0x28
+    };
+    struct AudioSub_08ee70 {
+        char m_pad0[0x14];
+        int m_14; // +0x14 = audio handle
+    };
+    // An audio-ish sub-object: +0x4 -> sub whose [+0x14] is a handle for Stop_158c70,
+    // +0x1c -> a Poly08* (the actual object pointer) whose vtable slot +0x28 runs.
+    struct AudioObj_08ee70 {
+        char m_pad0[4];
+        AudioSub_08ee70* m_4; // +0x04 (its [+0x14] is the audio handle)
+        char m_pad8[0x1c - 8];
+        Poly08** m_1c; // +0x1c
+    };
+    struct MsgWnd_08ee70 {
+        char m_pad0[4];
+        HWND m_4; // +0x04 -> HWND
+    };
+    struct MsgHost_08ee70 {
+        char m_pad0[4];
+        MsgWnd_08ee70* m_4; // +0x04
+        char m_pad8[0x30 - 8];
+        AudioObj_08ee70* m_30; // +0x30
+        int Show(int type, int text);
+    };
+    // Pause audio (slot 0x28), force the cursor visible, MessageBoxA, then hide it.
+    void __stdcall Stop_158c70(int handle); // RVA 0x158c70
     RVA(0x08ee70, 0x7c)
-    int winapi_08ee70_MessageBoxA() {
-        return 0;
+    int MsgHost_08ee70::Show(int type, int text) {
+        if (m_30) {
+            Stop_158c70(m_30->m_4->m_14);
+            Poly08* p = *m_30->m_1c;
+            p->m_vptr->Slot28(p);
+        }
+        int wasShown = ShowCursor(1);
+        while (ShowCursor(1) < 0) {
+        }
+        int result = MessageBoxA(m_4->m_4, (LPCSTR)text, g_msgCaption, type);
+        if (wasShown <= 0) {
+            while (ShowCursor(0) >= 0) {
+            }
+        }
+        return result;
     }
 
     // @confidence: low
@@ -770,10 +897,48 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:PostMessageA
-    // @stub
+    struct QlWnd_092710 {
+        char m_pad0[4];
+        HWND m_4; // +0x04
+    };
+    struct Sub58_092710 {
+        int Check(int* save); // thiscall, RVA 0x12f3
+    };
+    struct Sub5c_092710 {
+        void Notify(const char* msg, int a, int b); // thiscall, RVA 0x1483
+    };
+    struct Sub60_092710 {
+        void Flush(); // thiscall, RVA 0x20a4
+    };
+    struct QlHost_092710 {
+        char m_pad0[4];
+        QlWnd_092710* m_4; // +0x04
+        char m_pad8[0x58 - 8];
+        Sub58_092710* m_58; // +0x58
+        Sub5c_092710* m_5c; // +0x5c
+        Sub60_092710* m_60;  // +0x60
+        char m_pad64[0xbc - 0x64];
+        int* m_bc; // +0xbc
+        int Quickload();
+        int Fallback(); // thiscall, RVA 0x29a0
+    };
     RVA(0x092710, 0x77)
-    int winapi_092710_PostMessageA() {
-        return 0;
+    int QlHost_092710::Quickload() {
+        if (!m_58) {
+            return 0;
+        }
+        if (m_60) {
+            m_60->Flush();
+        }
+        if (m_bc && (*m_bc & 1)) {
+            if (m_58->Check(m_bc) == 0) {
+                return 1;
+            }
+            PostMessageA(m_4->m_4, 0x111, 0x807e, 0);
+            m_5c->Notify("Game Quickloaded successfully.", 0, 0x11);
+            return 1;
+        }
+        return Fallback();
     }
 
     // @confidence: low
@@ -822,10 +987,36 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:EndDialog
-    // @stub
+    DATA(0x645ca4)
+    extern int g_dlg645ca4; // DAT_00645ca4 (the active dialog HWND)
+    int __cdecl DlgFallback_215d(HWND hDlg, int wParam, int cur); // RVA 0x215d
+    void __cdecl DlgInit_2ee6(HWND hDlg, int v);                  // RVA 0x2ee6
+    // __stdcall DlgProc(hDlg, msg, wParam, lParam).
     RVA(0x09dff0, 0x8c)
-    int winapi_09dff0_EndDialog() {
-        return 0;
+    int __stdcall winapi_09dff0_EndDialog(HWND hDlg, int msg, int wParam, int lParam) {
+        switch (msg) {
+            case 0x111:
+                if (wParam == 2 || wParam == 1) {
+                    GameObj510* obj = g_gameReg->GetActive355d();
+                    if (obj) {
+                        obj->m_510 = 2;
+                    }
+                    EndDialog(hDlg, 0);
+                    return 1;
+                }
+                if (DlgFallback_215d(hDlg, wParam, g_dlg645ca4) != 0) {
+                    return 1;
+                }
+                // falls through to the shared "return 0" default
+            default:
+                return 0;
+            case 0x110: {
+                int v = (int)g_gameReg->m_58;
+                g_dlg645ca4 = v;
+                DlgInit_2ee6(hDlg, v);
+                return 1;
+            }
+        }
     }
 
     // @confidence: low
@@ -931,10 +1122,15 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:GetDlgItem;SetTimer
-    // @stub
+    void Init_42b4(HWND hWnd, void* ctx); // RVA 0x42b4 (__cdecl)
+    // __cdecl(hWnd, ctx): init, arm a 500 ms timer, cache a child control handle.
     RVA(0x0bda00, 0x3e)
-    int winapi_0bda00_GetDlgItem_SetTimer() {
-        return 0;
+    void winapi_0bda00_GetDlgItem_SetTimer(HWND hWnd, void* ctx) {
+        if (hWnd && ctx) {
+            Init_42b4(hWnd, ctx);
+            SetTimer(hWnd, 1, 0x1f4, 0);
+            g_dlgItem_648ce0 = GetDlgItem(hWnd, 0x4b6);
+        }
     }
 
     // @confidence: low
@@ -956,9 +1152,6 @@ namespace ApiCallerStubs {
     // @confidence: low
     // Init helper at RVA 0xbddb0 (__cdecl(hWnd, ctx)).
     void Init_bddb0(HWND hWnd, void* ctx);
-    // GetDlgItem(hWnd,0x4b6) cache (DAT_00648ce0).
-    DATA(0x648ce0)
-    extern HWND g_dlgItem_648ce0;
     // @source: winapi:GetDlgItem;SetTimer
     // __cdecl(hWnd, ctx): init, arm a 500 ms timer, cache a child control handle.
     RVA(0x0bdd60, 0x3e)
@@ -972,10 +1165,15 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:GetDlgItem;SetTimer
-    // @stub
+    void Init_2522(HWND hWnd, void* ctx); // RVA 0x2522 (__cdecl)
+    // __cdecl(hWnd, ctx): init, arm a 750 ms timer, cache a child control handle.
     RVA(0x0bdfe0, 0x3e)
-    int winapi_0bdfe0_GetDlgItem_SetTimer() {
-        return 0;
+    void winapi_0bdfe0_GetDlgItem_SetTimer(HWND hWnd, void* ctx) {
+        if (hWnd && ctx) {
+            Init_2522(hWnd, ctx);
+            SetTimer(hWnd, 1, 0x2ee, 0);
+            g_dlgItem_648ce0 = GetDlgItem(hWnd, 0x4b6);
+        }
     }
 
     // @confidence: low
@@ -1044,10 +1242,25 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:GetDlgItem;SetDlgItemTextA;SetTimer
-    // @stub
+    // CString-data ptr (DAT_00649618): the pending drop-in player's name; its
+    // CString length lives 8 bytes before the data.
+    DATA(0x649618)
+    extern char* g_playerName_649618;
+    int __cdecl Format_11f890(char* buf, const char* fmt, ...); // RVA 0x11f890
+    void Init_2ed7(HWND hWnd, void* ctx);                       // RVA 0x2ed7 (__cdecl)
+    // __cdecl(hWnd, ctx): show a drop-in prompt, init, arm a timer, cache a child.
     RVA(0x0be760, 0x82)
-    int winapi_0be760_GetDlgItem_SetDlgItemTextA_SetTimer() {
-        return 0;
+    void winapi_0be760_GetDlgItem_SetDlgItemTextA_SetTimer(HWND hWnd, void* ctx) {
+        if (hWnd && ctx) {
+            char buf[0x80];
+            if (*(int*)(g_playerName_649618 - 8)) {
+                Format_11f890(buf, "New Player Drop-In Request: %s", g_playerName_649618);
+                SetDlgItemTextA(hWnd, 0x44b, buf);
+            }
+            Init_2ed7(hWnd, ctx);
+            SetTimer(hWnd, 1, 0x2ee, 0);
+            g_dlgItem_648ce0 = GetDlgItem(hWnd, 0x4b6);
+        }
     }
 
     // @confidence: low
@@ -1133,10 +1346,20 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:SendMessageA
-    // @stub
+    // Item resolver at RVA 0x1753 (push slot; stdcall; returns the CWnd-ish item).
+    WndItem* __stdcall ResolveItem_1753(int slot);
+    // __thiscall host for the two near-identical wrappers below: resolve a list
+    // item, clear its selection, cache the new count in g_gameReg, then refresh.
+    struct SelHost_0c4ee0 {
+        void Update0();
+        void Update3();
+        void Refresh(); // thiscall, RVA 0x12d5
+    };
     RVA(0x0c4ee0, 0x33)
-    int winapi_0c4ee0_SendMessageA() {
-        return 0;
+    void SelHost_0c4ee0::Update0() {
+        HWND h = ResolveItem_1753(0)->m_hwnd;
+        g_gameReg->m_378 = SendMessageA(h, 0x147, 0, 0) + 1;
+        Refresh();
     }
 
     // @confidence: low
@@ -1166,10 +1389,11 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:SendMessageA
-    // @stub
     RVA(0x0c4fd0, 0x33)
-    int winapi_0c4fd0_SendMessageA() {
-        return 0;
+    void SelHost_0c4ee0::Update3() {
+        HWND h = ResolveItem_1753(3)->m_hwnd;
+        g_gameReg->m_a20 = SendMessageA(h, 0x147, 0, 0) + 1;
+        Refresh();
     }
 
     // @confidence: low
@@ -1298,10 +1522,30 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:CopyRect
-    // @stub
+    struct DrawSink_0d00a0 {
+        void Blit(int a, int b, RECT* rc, int d); // thiscall, RVA 0x3751
+    };
+    struct DrawOwner_0d00a0 {
+        char m_pad0[0x5c];
+        DrawSink_0d00a0* m_5c; // +0x5c
+    };
+    struct RectSrc_0d00a0 {
+        char m_pad0[0x24];
+        char* m_24; // +0x24 (its [+0x10] is the source RECT)
+    };
+    struct BlitHost_0d00a0 {
+        char m_pad0[4];
+        DrawOwner_0d00a0* m_4; // +0x04
+        char m_pad8[0xc - 8];
+        RectSrc_0d00a0* m_c; // +0x0c
+        void Show(int arg);
+    };
     RVA(0x0d00a0, 0x5a)
-    int winapi_0d00a0_CopyRect() {
-        return 0;
+    void BlitHost_0d00a0::Show(int arg) {
+        RECT src = *(RECT*)(m_c->m_24 + 0x10);
+        RECT dst;
+        CopyRect(&dst, &src);
+        m_4->m_5c->Blit(8, arg, &dst, 0x10);
     }
 
     // @confidence: low
@@ -1392,10 +1636,25 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:PostMessageA
-    // @stub
+    DATA(0x64c69c)
+    extern int g_flag64c69c; // DAT_0064c69c
+    struct CmdWnd_0de590 {
+        int m_0;
+        CmdWnd_0de590* m_4; // +0x04
+        void Forward();     // thiscall, RVA 0x3f62 (on this->m_4)
+    };
+    struct CmdHost_0de590 {
+        int m_0;
+        CmdWnd_0de590* m_4; // +0x04
+        void Cancel();
+    };
     RVA(0x0de590, 0x2e)
-    int winapi_0de590_PostMessageA() {
-        return 0;
+    void CmdHost_0de590::Cancel() {
+        if (g_flag64c69c) {
+            m_4->Forward();
+            return;
+        }
+        PostMessageA(m_4->m_4->m_4, 0x111, 0x8027, 0);
     }
 
     // @confidence: low
@@ -1448,9 +1707,23 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:EndDialog
-    // @stub
+    // __stdcall DlgProc(hDlg, msg, wParam, lParam): OK/Cancel end the dialog.
     RVA(0x0e3be0, 0x52)
-    int winapi_0e3be0_EndDialog() {
+    int __stdcall winapi_0e3be0_EndDialog(HWND hDlg, int msg, int wParam, int lParam) {
+        switch (msg) {
+            case 0x110:
+                return 1;
+            case 0x111:
+                if (wParam == 2) {
+                    EndDialog(hDlg, 0);
+                    return 1;
+                }
+                if (wParam == 1) {
+                    EndDialog(hDlg, 1);
+                    return 1;
+                }
+                break;
+        }
         return 0;
     }
 
@@ -1538,10 +1811,31 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:FreeLibrary
-    // @stub
+    struct MidiDrv_0f8e20 {
+        char m_pad0[0x14];
+        void(__cdecl* m_14)(short); // +0x14 function pointer member
+    };
+    DATA(0x64e0b8)
+    extern int g_midiOpen_64e0b8;
+    DATA(0x64e0b0)
+    extern MidiDrv_0f8e20* g_midiDrv_64e0b0;
+    DATA(0x64e0a4)
+    extern short g_midiPort_64e0a4;
+    DATA(0x64dd28)
+    extern short g_midiDev_64dd28;
+    DATA(0x64e0a8)
+    extern HMODULE g_midiLib_64e0a8;
+    void __cdecl MidiShutdown_3382(); // RVA 0x3382
+    // __cdecl(): tear the MIDI driver down and free its DLL.
     RVA(0x0f8e20, 0x56)
-    int winapi_0f8e20_FreeLibrary() {
-        return 0;
+    void winapi_0f8e20_FreeLibrary() {
+        if (g_midiOpen_64e0b8 && g_midiDrv_64e0b0 && g_midiPort_64e0a4) {
+            MidiShutdown_3382();
+            g_midiDrv_64e0b0->m_14(g_midiDev_64dd28);
+            FreeLibrary(g_midiLib_64e0a8);
+            g_midiLib_64e0a8 = 0;
+            g_midiOpen_64e0b8 = 0;
+        }
     }
 
     // @confidence: low
@@ -1601,10 +1895,28 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:SetRect
-    // @stub
+    void __stdcall Prep_12fd(int mode); // RVA 0x12fd
+    struct CGameWnd_fe600 {
+        int Sub3d55(); // thiscall, RVA 0x3d55 (on g_gameReg->m_2c)
+    };
+    struct RectWnd_fe600 {
+        int m_0;            // +0x00
+        char m_pad4[0x10 - 4];
+        RECT m_10;          // +0x10
+        char m_pad20[0x548 - 0x20];
+        int m_548;          // +0x548
+        int Reset();
+        void Sub194c(int v); // thiscall, RVA 0x194c
+    };
     RVA(0x0fe600, 0x49)
-    int winapi_0fe600_SetRect() {
-        return 0;
+    int RectWnd_fe600::Reset() {
+        if (!m_548 && m_0 != 2) {
+            Prep_12fd(1);
+            SetRect(&m_10, -1, -1, -1, -1);
+            Sub194c(2);
+            ((CGameWnd_fe600*)g_gameReg->m_2c)->Sub3d55();
+        }
+        return 1;
     }
 
     // @confidence: low
@@ -1650,10 +1962,29 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:OutputDebugStringA
-    // @stub
+    // __cdecl(status): trace a _heapchk() status code.
     RVA(0x118b50, 0x5b)
-    int winapi_118b50_OutputDebugStringA() {
-        return 0;
+    void winapi_118b50_OutputDebugStringA(int status) {
+        switch (status) {
+            case -3:
+                OutputDebugStringA("Heap return value: _HEAPBADBEGIN\n");
+                return;
+            case -4:
+                OutputDebugStringA("Heap return value: _HEAPBADNODE\n");
+                return;
+            case -6:
+                OutputDebugStringA("Heap return value: _HEAPBADPTR\n");
+                return;
+            case -1:
+                OutputDebugStringA("Heap return value: _HEAPEMPTY\n");
+                return;
+            case -2:
+                OutputDebugStringA("Heap return value: _HEAPOK\n");
+                return;
+            default:
+                OutputDebugStringA("Heap return value: Unknown return value!\n");
+                return;
+        }
     }
 
     // @confidence: low
@@ -1698,10 +2029,38 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:FindResourceA;LoadResource;LockResource
-    // @stub
+    struct AppModule_136a30 {
+        char m_pad0[8];
+        HINSTANCE m_8; // +0x08 = the resource module handle
+    };
+    AppModule_136a30* AppModule_1d3631(); // RVA 0x1d3631 (global accessor)
+    struct WaveHost_136a30 {
+        char m_pad0[0x78];
+        int m_78; // +0x78
+        int LoadWave(const char* name, int a, int b);
+        int Use136910(void* data, int a, int b); // thiscall, RVA 0x136910
+    };
+    // __thiscall(name, a, b): find/load/lock a WAVE resource, hand it to Use136910.
     RVA(0x136a30, 0x76)
-    int winapi_136a30_FindResourceA_LoadResource_LockResource() {
-        return 0;
+    int WaveHost_136a30::LoadWave(const char* name, int a, int b) {
+        if (!m_78) {
+            return 0;
+        }
+        HINSTANCE mod1 = AppModule_1d3631()->m_8;
+        HRSRC hRsrc = FindResourceA(mod1, name, "WAVE");
+        if (!hRsrc) {
+            return 0;
+        }
+        HINSTANCE mod2 = AppModule_1d3631()->m_8;
+        HGLOBAL hRes = LoadResource(mod2, hRsrc);
+        if (!hRes) {
+            return 0;
+        }
+        void* data = LockResource(hRes);
+        if (!data) {
+            return 0;
+        }
+        return Use136910(data, a, b);
     }
 
     // @confidence: low
@@ -1730,10 +2089,11 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: directx-wrapper-caller:calls 0x136550 (DSOUND.#1_DirectSoundCreate)
-    // @stub
+    int __stdcall PlaySound3_136550(int a, int b, int flag); // RVA 0x136550
+    // __stdcall(a, b): default the 3rd arg to 0.
     RVA(0x137720, 0x14)
-    int directx_wrapper_caller_137720_DSOUND_1_DirectSoundCreate() {
-        return 0;
+    int __stdcall directx_wrapper_caller_137720_DSOUND_1_DirectSoundCreate(int a, int b) {
+        return PlaySound3_136550(a, b, 0);
     }
 
     // @confidence: low
@@ -1786,10 +2146,30 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: thirdparty:_AIL_midiOutOpen@12;_AIL_startup@0
-    // @stub
+    // __thiscall(driver, seq, skipInit): record the AIL handles, optionally start
+    // the AIL MIDI driver. m_28 = whether the driver is usable.
+    struct AilHost_138490 {
+        char m_pad0[0x1c];
+        int m_1c; // +0x1c
+        int m_20; // +0x20
+        int m_24; // +0x24
+        int m_28; // +0x28
+        int Init(int driver, int seq, int skipInit);
+    };
     RVA(0x138490, 0x5e)
-    int thirdparty_138490_AIL_midiOutOpen_12_AIL_startup_0() {
-        return 0;
+    int AilHost_138490::Init(int driver, int seq, int skipInit) {
+        m_24 = driver;
+        m_20 = seq;
+        m_1c = 0;
+        m_28 = 1;
+        g_ailDriver64 = driver;
+        if (!skipInit) {
+            AIL_startup();
+            if (AIL_midiOutOpen(&g_ailMidiDriver, 0, -1) != 0 || g_ailMidiDriver == 0) {
+                m_28 = 0;
+            }
+        }
+        return 1;
     }
 
     // @confidence: low
@@ -1822,10 +2202,20 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: thirdparty:_AIL_XMIDI_master_volume@4
-    // @stub
+    // __cdecl(): read the XMIDI master volume and rescale 0..127 -> 0..100.
     RVA(0x1389c0, 0x47)
     int thirdparty_1389c0_AIL_XMIDI_master_volume_4() {
-        return 0;
+        if (!g_ailMidiDriver) {
+            return 0x64;
+        }
+        int v = AIL_XMIDI_master_volume(g_ailMidiDriver);
+        if (v <= 0) {
+            return 0;
+        }
+        if (v >= 0x7f) {
+            return 0x64;
+        }
+        return v * 100 / 127;
     }
 
     // @confidence: low
@@ -1862,12 +2252,15 @@ namespace ApiCallerStubs {
         int m_44; // +0x44
         int m_48; // +0x48
         int m_4c; // +0x4c
-        char m_pad50[0x58 - 0x50];
+        char m_pad50[0x54 - 0x50];
+        int m_54; // +0x54
         int m_58; // +0x58
         int Play(int cursor, int loop);
         int Resume(int restart);
         int SetLoop(int loop);
         int ResumeGate(); // the m_138f60 helper
+        int Stop();
+        int SetTempo(int tempo, int unused);
     };
 
     // @source: thirdparty:_AIL_set_sequence_loop_count@8;_AIL_start_sequence@4
@@ -1889,10 +2282,15 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: thirdparty:_AIL_end_sequence@4
-    // @stub
+    // __thiscall(): if playable, end the sequence and clear the paused flag.
     RVA(0x138e60, 0x26)
-    int thirdparty_138e60_AIL_end_sequence_4() {
-        return 0;
+    int AilSeq::Stop() {
+        if (!CanPlay()) {
+            return 0;
+        }
+        AIL_end_sequence(m_58);
+        m_44 = 0;
+        return 1;
     }
 
     // @confidence: low
@@ -1928,10 +2326,15 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: thirdparty:_AIL_set_sequence_tempo@12
-    // @stub
+    // __thiscall(tempo, ms): if playable, set the sequence tempo and cache it.
     RVA(0x138f90, 0x32)
-    int thirdparty_138f90_AIL_set_sequence_tempo_12() {
-        return 0;
+    int AilSeq::SetTempo(int tempo, int ms) {
+        if (!CanPlay()) {
+            return 0;
+        }
+        AIL_set_sequence_tempo(m_58, tempo, ms);
+        m_54 = tempo;
+        return 1;
     }
 
     // @confidence: low
@@ -1963,10 +2366,21 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:DestroyWindow
-    // @stub
+    // __thiscall(): destroy the owned window once (m_c guards re-entry).
+    struct WndHolder_13d4c0 {
+        char m_pad0[4];
+        HWND m_4; // +0x04
+        char m_pad8[0xc - 8];
+        int m_c; // +0x0c (destroyed flag)
+        int Destroy();
+    };
     RVA(0x13d4c0, 0x1e)
-    int winapi_13d4c0_DestroyWindow() {
-        return 0;
+    int WndHolder_13d4c0::Destroy() {
+        if (!m_c) {
+            m_c = 1;
+            DestroyWindow(m_4);
+        }
+        return 1;
     }
 
     // @confidence: low
@@ -2121,10 +2535,63 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:DrawTextA;SetBkMode;SetTextColor
-    // @stub
+    // A polymorphic DC source: GetDC is vtable slot 0x44 (#17), Done is slot 0x68 (#26).
+    struct DcSink_164380 {
+        virtual void v0();
+        virtual void v1();
+        virtual void v2();
+        virtual void v3();
+        virtual void v4();
+        virtual void v5();
+        virtual void v6();
+        virtual void v7();
+        virtual void v8();
+        virtual void v9();
+        virtual void v10();
+        virtual void v11();
+        virtual void v12();
+        virtual void v13();
+        virtual void v14();
+        virtual void v15();
+        virtual void v16();
+        virtual int GetDC(HDC* out); // slot 17 == vtable +0x44
+        virtual void v18();
+        virtual void v19();
+        virtual void v20();
+        virtual void v21();
+        virtual void v22();
+        virtual void v23();
+        virtual void v24();
+        virtual void v25();
+        virtual void Done(HDC dc); // slot 26 == vtable +0x68
+    };
+    struct CounterWnd_164380 {
+        char m_pad0[8];
+        DcSink_164380* m_8; // +0x08
+    };
+    struct DrawHost_164380 {
+        char m_pad0[0x2c];
+        CounterWnd_164380* m_2c; // +0x2c
+        void DrawCount(RECT* rc, int n);
+    };
+    // __thiscall(rc, n): print n centred into rc using the counter window's DC.
     RVA(0x164380, 0x98)
-    int winapi_164380_DrawTextA_SetBkMode_SetTextColor() {
-        return 0;
+    void DrawHost_164380::DrawCount(RECT* rc, int n) {
+        char buf[0x20];
+        Format_11f890(buf, "%i", n);
+        CounterWnd_164380* w = m_2c;
+        if (!w) {
+            return;
+        }
+        HDC hdc = 0;
+        w->m_8->GetDC(&hdc);
+        if (!hdc) {
+            return;
+        }
+        SetBkMode(hdc, TRANSPARENT);
+        SetTextColor(hdc, 0xffffff);
+        DrawTextA(hdc, buf, strlen(buf), rc, 0x25);
+        w->m_8->Done(hdc);
     }
 
     // @confidence: low
@@ -2161,10 +2628,10 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:DeleteCriticalSection
-    // @stub
+    // __cdecl(cs): thin wrapper over DeleteCriticalSection.
     RVA(0x16c9d0, 0xc)
-    int winapi_16c9d0_DeleteCriticalSection() {
-        return 0;
+    void winapi_16c9d0_DeleteCriticalSection(LPCRITICAL_SECTION cs) {
+        DeleteCriticalSection(cs);
     }
 
     // @confidence: low
@@ -2227,10 +2694,29 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:DeleteObject
-    // @stub
+    extern "C" void RezFree_call(void* p); // RVA 0x1b9b82 (cdecl)
+    struct GdiOwner_175c90 {
+        char m_pad0[0x428];
+        HGDIOBJ m_428; // +0x428 (a GDI object)
+        void* m_42c;   // +0x42c
+        void* m_430;   // +0x430 (a Rez-allocated buffer)
+        char m_pad434[0x458 - 0x434];
+        int m_458; // +0x458
+        void Cleanup();
+    };
+    // __thiscall(): release the cached GDI object + buffer and clear the slots.
     RVA(0x175c90, 0x45)
-    int winapi_175c90_DeleteObject() {
-        return 0;
+    void GdiOwner_175c90::Cleanup() {
+        if (m_428) {
+            DeleteObject(m_428);
+            m_428 = 0;
+        }
+        if (m_430) {
+            RezFree_call(m_430);
+            m_430 = 0;
+        }
+        m_42c = 0;
+        m_458 = 0;
     }
 
     // @confidence: low
@@ -2261,9 +2747,15 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:CreateICA;DeleteDC;GetDeviceCaps
-    // @stub
+    // __cdecl(): does the display device support a palette? (RC_PALETTE bit)
     RVA(0x1770a0, 0x3a)
     int winapi_1770a0_CreateICA_DeleteDC_GetDeviceCaps() {
+        HDC ic = CreateICA("DISPLAY", 0, 0, 0);
+        if (ic) {
+            int caps = GetDeviceCaps(ic, RASTERCAPS) & RC_PALETTE;
+            DeleteDC(ic);
+            return caps;
+        }
         return 0;
     }
 
@@ -2302,10 +2794,33 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:FindResourceA;LoadResource;LockResource
-    // @stub
+    // The resource-module handle for palette lookups (DAT_006bf6e0).
+    DATA(0x6bf6e0)
+    extern HINSTANCE g_palModule_6bf6e0;
+    struct PalHost_1775f0 {
+        int Apply(const char* name, int arg);
+        int Use176e70(void* data, int arg); // thiscall, RVA 0x176e70
+    };
+    // __thiscall(name, arg): find/load/lock a PALETTE resource, hand it on.
     RVA(0x1775f0, 0x62)
-    int winapi_1775f0_FindResourceA_LoadResource_LockResource() {
-        return 0;
+    int PalHost_1775f0::Apply(const char* name, int arg) {
+        HINSTANCE mod = g_palModule_6bf6e0;
+        if (!mod) {
+            return 0;
+        }
+        HRSRC hRsrc = FindResourceA(mod, name, "PALETTE");
+        if (!hRsrc) {
+            return 0;
+        }
+        HGLOBAL hRes = LoadResource(mod, hRsrc);
+        if (!hRes) {
+            return 0;
+        }
+        void* data = LockResource(hRes);
+        if (!data) {
+            return 0;
+        }
+        return Use176e70(data, arg);
     }
 
     // @confidence: low
@@ -2430,10 +2945,24 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:GetDC;GetSystemPaletteEntries;ReleaseDC
-    // @stub
+    struct PalCache_17cd90 {
+        char m_pad0[0x108];
+        PALETTEENTRY m_108[0x100]; // +0x108
+        void Snapshot(HWND hWnd);
+    };
+    // __thiscall(hWnd): read the system palette, then blank every entry to a
+    // reserved black so a remap can be rebuilt against it.
     RVA(0x17cd90, 0x58)
-    int winapi_17cd90_GetDC_GetSystemPaletteEntries_ReleaseDC() {
-        return 0;
+    void PalCache_17cd90::Snapshot(HWND hWnd) {
+        HDC hdc = GetDC(hWnd);
+        GetSystemPaletteEntries(hdc, 0, 0x100, m_108);
+        for (int i = 0; i < 0x100; i++) {
+            m_108[i].peRed = 0;
+            m_108[i].peBlue = 0;
+            m_108[i].peGreen = 0;
+            m_108[i].peFlags = 4;
+        }
+        ReleaseDC(hWnd, hdc);
     }
 
     // @confidence: low
@@ -2532,10 +3061,16 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:GlobalFree
-    // @stub
+    // __thiscall(): free the owned global handle at +0x00 if present.
+    struct GlobalOwner_1c09de {
+        HGLOBAL m_0; // +0x00
+        void Free();
+    };
     RVA(0x1c09de, 0xe)
-    int winapi_1c09de_GlobalFree() {
-        return 0;
+    void GlobalOwner_1c09de::Free() {
+        if (m_0) {
+            GlobalFree(m_0);
+        }
     }
 
     // @confidence: low
