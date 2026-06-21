@@ -30,6 +30,7 @@ public:
     UnknownCGruntzMgrLuciusChild *m_10;
 };
 
+struct MinervaMgr;   // defined below; m_28 points at one
 class CDDrawSurfaceMgr {
 public:
     CDDrawSurfaceMgr();
@@ -63,7 +64,7 @@ public:
     void                    *m_1c;      // +0x1c  Filch
     void                    *m_20;      // +0x20  Voldemort
     CDDrawSubMgr *m_24;      // +0x24  Remus
-    void                    *m_28;      // +0x28  Minerva
+    MinervaMgr              *m_28;      // +0x28  Minerva
     void                    *m_2c;      // +0x2c  Pettigrew
     HWND                     m_hWnd;    // +0x30
     int                      m_flags;   // +0x34
@@ -132,7 +133,11 @@ fail:
 // Helper structs for __thiscall external functions.
 struct MinervaInner { void Free(); };
 struct VoldemortObj { void Free(); };
-struct MinervaMgr   { void ClearMap(); };
+struct MinervaMgr {
+    void ClearMap();
+    char          m_pad00[0x2c];
+    MinervaInner *m_2c;            // +0x2c  inner (Free'd on context teardown)
+};
 extern void __cdecl RelayHwnd(void *hWnd);
 extern int __stdcall CreateChildSurface(int x, int y, int flags);
 struct RemusCoordsHelper { int SetCoords(int x, int y); };
@@ -145,10 +150,10 @@ RVA(0x155fc0, 0x2e)
 void CDDrawSurfaceMgr::UnknownVirtualMethod20()
 {
     if (m_28 != 0) {
-        void *inner = *(void **)((char *)m_28 + 0x2c);
+        MinervaInner *inner = m_28->m_2c;
         if (inner != 0)
-            ((MinervaInner *)inner)->Free();
-        ((MinervaMgr *)m_28)->ClearMap();
+            inner->Free();
+        m_28->ClearMap();
     }
     if (m_20 != 0)
         ((VoldemortObj *)m_20)->Free();
