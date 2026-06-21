@@ -1,4 +1,5 @@
-.claude/
+.claude/*
+!.claude/agents/
 
 # ---------------------------------------------------------------------------
 # Large / non-distributable artifacts — never committed.

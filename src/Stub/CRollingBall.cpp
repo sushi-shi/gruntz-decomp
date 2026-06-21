@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CRollingBall.cpp - engine-label stubs for CRollingBall.
 
 class CRollingBall {

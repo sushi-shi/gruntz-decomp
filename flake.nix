@@ -151,6 +151,11 @@
       # * msvc/{bin,include,lib (LIBCMT+NAFXCW static MFC)}
       # * dx/{Include,Lib} (DirectX 6 SDK)
       # * ninja/ninja.exe.
+      # msvc/bin includes MSDIS100.DLL (the VC5 disassembler link.exe imports at
+      # load) - bundled by scripts/create-toolchain-release.py from the same VS97
+      # Disc 3 ISO, alongside MSPDB50.DLL. Tarballs built before that fix lack it;
+      # scripts/gruntz/build/msdis_stub.py supplies an export-only stub fallback at
+      # link time so `gruntz link` works either way (link output is identical).
       gruntz-toolchain = pkgs.runCommand "gruntz-toolchain-vc50" {
         src = pkgs.fetchurl {
           name = "gruntz-toolchain-vc50.tar.xz";
@@ -165,8 +170,31 @@
 
       # `gruntz` as a real PATH executable so the CLI works in ANY shell (bash, fish,
       # zsh) - a shellHook function would not survive `nix develop --command fish`.
+      # The CLI is `python -m gruntz` (gruntz.__main__ -> gruntz.cli.main); scripts/
+      # is THE package root, put on PYTHONPATH so the package + every `python -m
+      # gruntz.<x>` child import resolves.
       gruntz-cli = pkgs.writeShellScriptBin "gruntz" ''
-        exec python3 "''${GRUNTZ_DIR:-$PWD}/scripts/gruntz.py" "$@"
+        d="''${GRUNTZ_DIR:-$PWD}"
+        export PYTHONPATH="$d/scripts''${PYTHONPATH:+:$PYTHONPATH}"
+        exec python3 -m gruntz "$@"
+      '';
+
+      # Wrap nvim to auto-load the in-repo editor/nvim plugin (:Gruntz), leaving the
+      # user's own config intact. A wrapper SCRIPT on PATH (not a shell function)
+      # survives `nix develop --command fish`, like gruntz-cli; the real nvim is
+      # resolved before we shadow it, GRUNTZ_NVIM_WRAPPED guards nested shells, and
+      # the banner announces the change.
+      nvimShimHook = ''
+        if [ -z "''${GRUNTZ_NVIM_WRAPPED:-}" ] && command -v nvim >/dev/null 2>&1 && [ -d "$GRUNTZ_DIR/editor/nvim" ]; then
+          _gnv_real="$(command -v nvim)"
+          _gnv_bin="$GRUNTZ_DIR/build/nvim-shim"
+          mkdir -p "$_gnv_bin"
+          printf '#!/bin/sh\nexec "%s" --cmd "set rtp^=%s/editor/nvim" "$@"\n' "$_gnv_real" "$GRUNTZ_DIR" > "$_gnv_bin/nvim"
+          chmod +x "$_gnv_bin/nvim"
+          export PATH="$_gnv_bin:$PATH"
+          export GRUNTZ_NVIM_WRAPPED=1
+          echo "[gruntz] nvim       : WRAPPED -> nvim now auto-loads editor/nvim (:Gruntz, vt/vb/vd/vs/V). Plain nvim is unchanged outside this shell." >&2
+        fi
       '';
 
       # Tools common to both shells (analysis + diffing).
@@ -218,17 +246,27 @@
             export GRUNTZ_DIR="$PWD"
             export GRUNTZ_EXE="${gruntz-exe}"
             export GRUNTZ_CLANG="${pkgs.llvmPackages.clang-unwrapped}/bin/clang"
+            # scripts/ is THE package root: on PYTHONPATH so `python -m gruntz` and
+            # every `python -m gruntz.<x>` (cli/match/analysis tools) import it.
+            export PYTHONPATH="$GRUNTZ_DIR/scripts''${PYTHONPATH:+:$PYTHONPATH}"
+
+            # Enable the repo-tracked pre-commit auto-format hook (idempotent).
+            if [ "$(git -C "$GRUNTZ_DIR" config --local core.hooksPath 2>/dev/null)" != ".githooks" ]; then
+              git -C "$GRUNTZ_DIR" config --local core.hooksPath .githooks 2>/dev/null \
+                && echo "[gruntz] hooks      : pre-commit auto-format on (core.hooksPath=.githooks)" >&2
+            fi
 
             # Banner -> stderr so stdout stays clean for `nix develop --command`
-            # piping (e.g. gruntz status / match_status.py ... --json | jq).
+            # piping (e.g. gruntz status / python -m gruntz.match.status ... --json | jq).
             echo "[gruntz] target EXE : $GRUNTZ_EXE" >&2
             echo "[gruntz] tools      : vostok-delinker, objdiff(-cli), ghidra, llvm-pdbutil" >&2
             echo "[gruntz] clang      : $GRUNTZ_CLANG (unwrapped; ghidra_metadata_generate/gen_labels)" >&2
-            echo "[gruntz] cli        : 'gruntz <cmd>' (status/labels/structs/ghidra-refresh/todo)" >&2
+            echo "[gruntz] cli        : 'gruntz <cmd>' (status/labels/structs/format/ghidra-refresh/todo)" >&2
             echo "[gruntz] base/MSVC  : 'nix develop .#build' for 'gruntz build'/'init' (VC5 + wine)" >&2
+            ${nvimShimHook}
             if [ ! -f "$GRUNTZ_DIR/build/clangd/compile_commands.json" ]; then
               echo "[gruntz] clangd     : generating LSP compile DB (first entry) ..." >&2
-              python3 "$GRUNTZ_DIR/scripts/gruntz.py" clangd \
+              python3 -m gruntz clangd \
                 || echo "[gruntz] clangd     : failed - run 'gruntz clangd'" >&2
             fi
           '';
@@ -243,10 +281,25 @@
             export GRUNTZ_DIR="$PWD"
             export GRUNTZ_EXE="${gruntz-exe}"
             export GRUNTZ_CLANG="${pkgs.llvmPackages.clang-unwrapped}/bin/clang"
+            # scripts/ is THE package root: on PYTHONPATH so `python -m gruntz` and
+            # every `python -m gruntz.<x>` (cli/match/analysis tools) import it.
+            export PYTHONPATH="$GRUNTZ_DIR/scripts''${PYTHONPATH:+:$PYTHONPATH}"
+
+            # Enable the repo-tracked pre-commit auto-format hook (idempotent).
+            if [ "$(git -C "$GRUNTZ_DIR" config --local core.hooksPath 2>/dev/null)" != ".githooks" ]; then
+              git -C "$GRUNTZ_DIR" config --local core.hooksPath .githooks 2>/dev/null \
+                && echo "[gruntz] hooks      : pre-commit auto-format on (core.hooksPath=.githooks)" >&2
+            fi
 
             export WINEPREFIX="$GRUNTZ_DIR/build/wineprefix"   # generated state lives under build/
             export WINEDEBUG="fixme-all,err-kerberos"
             export WINEDLLOVERRIDES="mscoree,mshtml="
+            # The per-prefix wineserver is now kept alive across builds (warm `wine
+            # cl` = fast rebuilds); it is a daemon shared by every `nix develop`
+            # invocation on this prefix, so `nix develop --command` (e.g. the nvim
+            # build loop) reconnects to it. Reap it when YOU leave an INTERACTIVE
+            # shell; `gruntz clean` reaps it before removing the prefix.
+            case "$-" in *i*) trap 'wineserver -k >/dev/null 2>&1 || true' EXIT ;; esac
             export GRUNTZ_TOOLCHAIN="${gruntz-toolchain}"
             export MSVC_DIR="${gruntz-toolchain}/msvc"
             export DXSDK_DIR="${gruntz-toolchain}/dx"
@@ -263,7 +316,8 @@
             echo "[gruntz] MSVC 5.0   : $MSVC_DIR/bin/cl.exe   (run under wine)" >&2
             echo "[gruntz] runtime    : $GRUNTZ_RUNTIME (MSS32/SMACKW32 DLLs)" >&2
             echo "[gruntz] target EXE : $GRUNTZ_EXE" >&2
-            echo "[gruntz] cli        : 'gruntz <cmd>' (init/build/clangd/status/labels/structs/ghidra-refresh/todo)" >&2
+            echo "[gruntz] cli        : 'gruntz <cmd>' (init/build/clangd/format/status/labels/structs/ghidra-refresh/todo)" >&2
+            ${nvimShimHook}
             # `gruntz init` is idempotent - run it on startup (set GRUNTZ_SKIP_INIT=1
             # to skip, e.g. when you only need clang/ghidra_metadata_generate and not the Ghidra DB).
             # First run builds the local env incl. the Ghidra DB (minutes); afterwards
@@ -274,7 +328,7 @@
               if [ ! -f "$GRUNTZ_DIR/build/ghidra-enrich/exports/functions.csv" ]; then
                 echo "[gruntz] init       : first-time setup - building the Ghidra DB (~minutes) ..." >&2
               fi
-              python3 "$GRUNTZ_DIR/scripts/gruntz.py" init \
+              python3 -m gruntz init \
                 || echo "[gruntz] init       : failed - fix + re-run 'gruntz init'" >&2
             fi
           '';

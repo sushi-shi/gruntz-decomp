@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CStaticHazard.cpp - engine-label stubs for CStaticHazard.
 
 class CStaticHazard {

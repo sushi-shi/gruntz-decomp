@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CMovingLogic.cpp - engine-label stubs for CMovingLogic.
 
 class CMovingLogic {

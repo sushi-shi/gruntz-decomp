@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CAttract.cpp - engine-label stubs for CAttract.
 
 class CAttract {

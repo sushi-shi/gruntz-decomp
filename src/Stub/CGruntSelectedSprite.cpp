@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CGruntSelectedSprite.cpp - engine-label stubs for CGruntSelectedSprite.
 
 class CGruntSelectedSprite {

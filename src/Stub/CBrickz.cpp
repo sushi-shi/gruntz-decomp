@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CBrickz.cpp - engine-label stubs for CBrickz.
 
 class CBrickz {

@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CSingleFrameMessage.cpp - engine-label stubs for CSingleFrameMessage.
 
 class CSingleFrameMessage {

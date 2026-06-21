@@ -1,17 +1,12 @@
-#include "../rva.h"
+#include <rva.h>
 // CGruntHealthSprite.cpp - engine-label stubs for CGruntHealthSprite.
 
 class CGruntHealthSprite {
 public:
-    void CGruntHealthSprite_011ef0();
     void CGruntHealthSprite_07eb00();
 };
 
-// @confidence: med
-// @source: rtti-vptr
-// @stub
-RVA(0x011ef0, 0x4b)
-void CGruntHealthSprite::CGruntHealthSprite_011ef0() {}
+// CGruntHealthSprite_011ef0 (0x011ef0) graduated to src/Gruntz/UserLogic.cpp.
 
 // @confidence: med
 // @source: rtti-vptr

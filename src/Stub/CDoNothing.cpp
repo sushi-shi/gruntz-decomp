@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CDoNothing.cpp - engine-label stubs for CDoNothing.
 
 class CDoNothing {

@@ -229,8 +229,8 @@ match code. Low priority; obtain only for naming the import stubs if desired.
 ### 4.1 Ghidra FunctionID (FidDb) — ORIGINAL PLAN (superseded; see note)
 
 > **Implemented differently.** The library labels were ultimately produced by a
-> custom **masked-byte COFF-signature matcher** (`scripts/analysis/fid/`, driven by
-> `scripts/analysis/fid_generate.py`) — NOT Ghidra FID. Its output is the tracked
+> custom **masked-byte COFF-signature matcher** (`scripts/gruntz/analysis/fid/`, driven by
+> `python -m gruntz.analysis.fid_generate`) — NOT Ghidra FID. Its output is the tracked
 > `config/library_labels.csv`. The Ghidra-FID route below is kept for context: it
 > explains why no stock MSVC-5.0 fidb exists and what a signature db must capture.
 

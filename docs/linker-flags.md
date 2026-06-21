@@ -63,7 +63,7 @@ Mostly relevant to the link-reproduction phase, **not** per-function matching.
     separate.
   - There is no "FOLDED" concept to track here (and `reccmp`'s `FOLDED` flag is
     moot — `reccmp` is not used in this project; we use the delink→objdiff loop —
-    see `orchestration.md`).
+    see `.claude/agents/orchestrator.md`).
 - **`/OPT:REF` (dead-strip unreferenced COMDATs/data) — [HEURISTIC, UNTESTED].**
   Separate from ICF and **not yet measured** for this binary. It removes
   unreferenced functions/data from the image; if our relinked output carries
@@ -101,7 +101,7 @@ Mostly relevant to the link-reproduction phase, **not** per-function matching.
   objdiff). The link-reproduction phase only becomes relevant when we want the
   *whole image* (correct addresses + PE layout), at which point `/ORDER:@file`
   + `/BASE` + `/INCREMENTAL:NO` + `/OPT` are the levers.
-- `reccmp` is **not** used here (see `orchestration.md` § Concurrency / Definition
+- `reccmp` is **not** used here (see `.claude/agents/orchestrator.md` § Concurrency / Definition
   of done); its address-reconciliation and `FOLDED` machinery don't apply.
 - Cross-links: compile-flag calibration → `docs/zlib-matching.md`; library/CRT/MFC
   linkage evidence → `docs/libraries-and-funcid.md`; codegen idioms →

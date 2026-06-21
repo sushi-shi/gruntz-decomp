@@ -6,17 +6,21 @@ C++ that, compiled with the original toolchain (**MSVC 5.0**), produces COFF
 objects matching the retail `GRUNTZ.EXE`, verified with **objdiff**.
 
 **Current stage: the matching loop runs.** `src/` holds the reconstructed C++
-and is the single source of truth; **`scripts/gruntz.py`** drives everything
+and is the single source of truth; the **`gruntz` CLI** (`python -m gruntz`,
+`scripts/gruntz/cli.py`) drives everything
 (`gruntz build` = compile base objs under wine `cl` → generate
 `build/gen/symbol_names.csv` from `src/` `RVA()`/`DATA()` annotation macros
 (`src/rva.h`, read from LLVM IR) → synth fake PDB → delink the retail EXE →
 objdiff). ~57/100 functions byte-exact across 23 TUs.
-The pipeline package is `scripts/gruntz/{build,ghidra,init}/`; one-shot analysis
-tools live in `scripts/analysis/`.
+`scripts/gruntz/` is THE package — ALL importable code: the pipeline
+(`{build,ghidra,init}/`, path-invoked by ninja/the CLI), the match tooling
+(`match/`: `status`, `fingerprints`, `verify_stubs`), and one-shot analysis
+tools (`analysis/`, incl. the `fid/` matcher). Run the non-pipeline tools as
+`python -m gruntz.<area>.<module>`; `scripts/` is on `PYTHONPATH` (set by the
+nix shells + the `gruntz` wrapper). Nothing importable lives outside the package.
 
-See **`docs/build-system.md`** (the build) and
-**`docs/source-consolidation-investigation.md`** (how `src/` became the single
-source of truth, and the full `gruntz.py` design).
+See **`docs/build-system.md`** (the build, the `gruntz` CLI, and how `src/` became
+the single source of truth).
 
 ## Tools come from Nix
 
@@ -63,6 +67,12 @@ Gotchas baked in from reading the delinker source:
 
 - Keep `README.md` and the relevant `docs/` (esp. `build-system.md`) current when
   the build/diff flow, tools, or paths change.
+- **Win32/MFC types & functions come from the real headers** (`<Mfc.h>` for MFC TUs,
+  `<Win32.h>` for pure-Win32/DirectX) — don't hand-roll typedefs/externs. See
+  `docs/patterns/win32-import-decl-stdcall.md`.
+- **Formatting is automated; don't hand-format.** Rust-like clang-format (root
+  `.clang-format`) via a pre-commit hook + `gruntz format`; whitespace-only, so
+  matching-neutral. **Never format `vendor/`.** Details: `docs/build-system.md`.
 - `flake.lock` is committed; `.gitignore` already excludes generated outputs.
 - **Builds are FAST — don't engineer around build time.** A full from-scratch
   `gruntz clean && gruntz init` (cold Ghidra import+analyze, wine re-init, full
@@ -74,6 +84,6 @@ Gotchas baked in from reading the delinker source:
   unit, aggregated by `All.cpp`). These stubs ARE delinked and diffed like any
   unit — they show in objdiff (initially ~0%) as the matching worklist, count in
   the started-units denominator, and are covered by the duplicate-RVA guard +
-  `verify_stub_labels.py`'s stub-vs-matched cross-check. The goal is to **move
+  `gruntz.match.verify_stubs`' stub-vs-matched cross-check. The goal is to **move
   each stub into its real class's TU** and reconstruct it there; `src/Stub/`
   shrinks toward empty. See `src/Stub/All.cpp`.

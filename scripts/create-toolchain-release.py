@@ -13,7 +13,8 @@ Entry point:
 
 Output:
   build/gruntz-toolchain-vc50.tar.xz
-    msvc/bin/      - cl.exe, c1.exe, c2.exe, link.exe, cvtres.exe, mspdb*.dll (SP3)
+    msvc/bin/      - cl.exe, c1.exe, c2.exe, link.exe, cvtres.exe, mspdb50.dll,
+                     msdis100.dll (the last two from SHAREDIDE/BIN, not VC/bin)
     msvc/include/  - C/C++ + MFC 4.2 headers
     msvc/lib/      - LIBCMT.LIB, NAFXCW.LIB, MFC42 static libs, import libs
     dx/{Include,Lib} - DirectX 6 SDK (OPTIONAL - placeholder until DX6 located)
@@ -353,6 +354,31 @@ def step2_apply_sp3(work: Path, stage_msvc: Path) -> None:
     log(f"SP3 overlay: replaced/added {replaced} file(s).")
 
 
+# ---------------------------------------------------------------------------
+# MSDIS100.DLL - the VC5 disassembler engine. The SP3 link.exe (5.10.7303)
+# imports it at LOAD time (it is in link.exe's PE import table - used by the
+# `link /dump /disasm` path), and like MSPDB50.DLL it ships under SHAREDIDE/BIN,
+# NOT VC/bin - so the VC/bin copytree in step1 misses it and link.exe then fails
+# to load under wine (c0000135). Pull it from wherever it sits across the base
+# ISO + SP3 extracts (both live under `work`) into msvc/bin. (For tarballs built
+# before this fix, scripts/gruntz/build/msdis_stub.py supplies an export-only stub
+# at link time so `gruntz link` still works - bundling the real DLL additionally
+# makes `link /dump /disasm` functional.)
+# ---------------------------------------------------------------------------
+
+def bundle_msdis(work: Path, stage_msvc: Path) -> None:
+    bin_dir = stage_msvc / "bin"
+    if any(p.name.lower() == "msdis100.dll" for p in bin_dir.glob("*")):
+        log("  MSDIS100.DLL already in msvc/bin"); return
+    src = find_named(work, "msdis100.dll")
+    if src:
+        shutil.copy2(str(src), str(bin_dir / src.name))
+        log(f"  bundled {src.name} from {src} (link.exe imports it at load)")
+    else:
+        log("WARNING: MSDIS100.DLL not found in the VC5 media - link.exe will rely "
+            "on the msdis_stub.py fallback to load under wine.")
+
+
 def verify_sp3(stage_msvc: Path, *, fatal: bool) -> None:
     """Verify the SP3 marker versions + the FID-required static libs.
 
@@ -386,6 +412,16 @@ def verify_sp3(stage_msvc: Path, *, fatal: bool) -> None:
             ok = False
     else:
         log("SP3 CHECK: cvtres.exe missing from msvc/bin"); ok = False
+
+    # link.exe's load-time MSDIS100.DLL import. Non-fatal: msdis_stub.py supplies a
+    # stub fallback at link time, so its absence does not block linking - but a
+    # complete tarball should carry the real DLL.
+    msdis = next((p for p in bin_dir.glob("*") if p.name.lower() == "msdis100.dll"), None)
+    if msdis:
+        log("MSDIS100.DLL present OK  <- link.exe load-time import")
+    else:
+        log("NOTE: MSDIS100.DLL absent from msvc/bin - link.exe will use the "
+            "msdis_stub.py fallback (linking works; `link /dump /disasm` won't).")
 
     for libname in REQUIRED_LIBS:
         found = next((p for p in lib_dir.glob("*")
@@ -543,6 +579,7 @@ def main() -> None:
     try:
         stage_msvc = step1_vc5_base(work, stage)
         step2_apply_sp3(work, stage_msvc)
+        bundle_msdis(work, stage_msvc)   # link.exe load-time import (SHAREDIDE/BIN)
         # fatal only when SP3 was supplied; without SP3 we already warned loudly.
         verify_sp3(stage_msvc, fatal=bool(os.environ.get("VS97_SP3_ZIP")
                                           or os.environ.get("VS97_SP3_ISO")))

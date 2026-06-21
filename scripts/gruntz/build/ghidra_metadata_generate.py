@@ -2,13 +2,13 @@
 """ghidra_metadata_generate.py - derive Ghidra struct + enum definitions from the source.
 
 The single source of truth for a class layout is its *compilable* declaration in
-`src/**/*.h` (matched, authoritative) and the converted `structure/**/*.h`
+`src/**/*.h` (matched, authoritative) and the converted `src/Stub/types/**/*.h`
 (unmatched comprehension) - both written in the placeholder style
 (`int`/`void*`/`char[]` members, explicit padding, real bases + `virtual`). There
 are NO `@offset` annotations: clang computes every field offset from the
 declaration. This script runs clang as a *reader* and emits the JSON that
 `apply_ghidra_enrichment.py` consumes, replacing its hand-written `STRUCTS`/`ENUMS`
-literals (docs/source-consolidation-investigation.md, step 1).
+literals (docs/build-system.md, step 1).
 
 For each translation unit:
   * `clang ... -Xclang -fdump-record-layouts-complete -fsyntax-only`
@@ -17,7 +17,7 @@ For each translation unit:
            i686-pc-windows-msvc / -fms-compatibility-version=1100 = MSVC 5.0).
   * `clang ... -Xclang -ast-dump=json -fsyntax-only`
         -> enum definitions (name + members) and, when present, the source path
-           of each record so `src/` can win over `structure/` on overlap.
+           of each record so `src/` can win over `src/Stub/types/` on overlap.
 
 Outputs (default --out-dir build/gen):
     structs.json : [{name, size, fields:[{offset,type,name}], source}]
@@ -181,8 +181,8 @@ def parse_enums(ast_json):
 def run_clang(clang, args, tu, extra, driver="plain"):
     # compdb flags are clang-cl form (/imsvc, /D...): the plain clang driver
     # treats "/imsvc" as an input file ("no such file or directory: '/imsvc'"),
-    # so those units must run in cl driver mode. The structure/ header wrappers
-    # carry clang-style MS_FLAGS and use the plain driver.
+    # so those units must run in cl driver mode. The src/Stub/types/ header
+    # wrappers carry clang-style MS_FLAGS and use the plain driver.
     pre = ["--driver-mode=cl"] if driver == "cl" else []
     cmd = [clang, *pre, *args, tu, "-fsyntax-only", *extra]
     res = subprocess.run(cmd, capture_output=True, text=True)
@@ -220,12 +220,20 @@ def header_units(globs):
     if not headers:
         return []
     tmp = Path(tempfile.mkdtemp(prefix="gruntz-structwrap-"))
+    # -I include lets a comprehension header reach the repo's macro-only headers
+    # (e.g. <rva.h> for OVERRIDE) under the plain driver, without pulling MFC in -
+    # comprehension headers otherwise stay self-contained placeholders.
+    # TODO: remove this -I once every stub is matched and src/Stub/types/ is empty
+    # (the comprehension layer shrinks toward empty - see src/Stub/types/README.md);
+    # at that point nothing here needs <rva.h> and the plain driver can go back to
+    # bare MS_FLAGS.
+    flags = [*MS_FLAGS, "-I", str(REPO / "include")]
     out = []
     for i, h in enumerate(headers):
         hp = Path(h).resolve()
         w = tmp / ("%03d_%s.cpp" % (i, hp.stem))
         w.write_text('#include "%s"\n' % hp)
-        out.append((str(w), list(MS_FLAGS), h))
+        out.append((str(w), list(flags), h))
     return out
 
 
@@ -239,14 +247,14 @@ def main():
     ap.add_argument("--flag", action="append", default=[],
                     help="extra clang flag(s) used with --tu (repeatable).")
     ap.add_argument("--header", action="append", default=[],
-                    help="comprehension header dir/glob (e.g. structure/): each .h "
+                    help="comprehension header dir/glob (e.g. src/Stub/types/): each .h "
                          "is wrapped in a one-line .cpp TU and laid out with MS flags. "
                          "Combine with --compdb/--tu; src/ wins on overlapping names.")
     ap.add_argument("--out-dir", default=str(REPO / "build/gen"))
     args = ap.parse_args()
 
     # units: (tu_path, clang_flags, source_label, driver). compdb TUs carry
-    # clang-cl flags -> "cl" driver; --tu and structure/ header wrappers carry
+    # clang-cl flags -> "cl" driver; --tu and src/Stub/types/ header wrappers carry
     # clang-style MS_FLAGS -> "plain" driver.
     units = []
     if args.tu:
@@ -257,14 +265,23 @@ def main():
     if not units:
         ap.error(f"no --tu/--header given and no compdb at {args.compdb}")
 
-    structs = {}   # name -> {name,size,fields,source}; src/ wins over structure/
+    structs = {}   # name -> {name,size,fields,source}; src/ wins over src/Stub/types/
     enums = {}
+    failures = []  # (source, stage, detail) - a non-zero clang rc means the unit
+                   # did NOT compile cleanly. clang's layout/AST dumps RECOVER from
+                   # errors and still emit PARTIAL output, so a failed unit would
+                   # silently contribute WRONG layouts (e.g. a class missing its
+                   # base). Refuse to emit anything until every unit is clean.
     for tu, flags, source, driver in units:
-        src_priority = 0 if "/src/" in source or source.startswith("src/") else 1
+        # src/Stub/types/ is the comprehension layer (unmatched type headers), so
+        # it stays LOWER priority than the authoritative matched src/ layouts even
+        # though it lives under src/ - matched src/ must win on any name overlap.
+        is_stub_types = "/src/Stub/types/" in source or source.startswith("src/Stub/types/")
+        src_priority = 0 if ("/src/" in source or source.startswith("src/")) and not is_stub_types else 1
         lo_out, lo_err, lo_rc = run_clang(
             args.clang, flags, tu, ["-Xclang", "-fdump-record-layouts-complete"], driver)
-        if lo_rc != 0 and not lo_out:
-            log(f"WARN {source}: layout dump failed rc={lo_rc}\n{lo_err.strip()[:400]}")
+        if lo_rc != 0:
+            failures.append((source, "layout dump", f"rc={lo_rc}\n{lo_err.strip()[:600]}"))
         for name, (size, fields) in parse_record_layouts(lo_out).items():
             if _BUILTIN_RE.match(name):
                 continue
@@ -281,15 +298,27 @@ def main():
 
         ast_out, ast_err, ast_rc = run_clang(
             args.clang, flags, tu, ["-Xclang", "-ast-dump=json"], driver)
+        if ast_rc != 0:
+            failures.append((source, "ast dump", f"rc={ast_rc}\n{ast_err.strip()[:600]}"))
         if ast_out.strip():
             try:
                 tree = json.loads(ast_out)
             except json.JSONDecodeError:
                 tree = None
+                # rc==0 but unparseable JSON = a tool surprise we must not swallow.
+                if ast_rc == 0:
+                    failures.append((source, "ast json parse", ast_out[:200]))
             if tree:
                 for en in parse_enums(tree):
                     en["source"] = source
                     enums.setdefault(en["name"], en)
+
+    if failures:
+        log(f"ERROR: {len(failures)} unit(s) did not compile cleanly - refusing to "
+            f"emit partial/incorrect structs.json + enums.json:")
+        for source, stage, detail in failures:
+            log(f"  {source}: {stage} failed: {detail}")
+        raise SystemExit(1)
 
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)

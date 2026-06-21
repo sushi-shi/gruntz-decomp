@@ -40,6 +40,48 @@ nix develop .#build --command gruntz build           # all of the above + match 
 objdiff report -> summary). Pass ninja args after `--`, e.g.
 `gruntz build -- -j8`.
 
+## Formatting — the Rust-like house style
+
+The reconstructed C++ is auto-formatted with **clang-format** (from the Nix dev
+shell) to read as close to Rust as the language allows: 4-space indent, 100-col
+lines, attached braces *including on function definitions* (`int f() {`), `&`/`*`
+bound to the type (`int* p`), a hanging-close (BlockIndent) wrap with function
+*declaration* params one-per-line (call args and data arrays stay bin-packed, so
+GUID/byte tables don't explode), and braces on every control body. The full
+config — and the deliberate decompile-specific deviations — lives in the root
+**`.clang-format`**.
+
+```sh
+gruntz format          # rewrite src/ + include/ in place (~0.3s for the tree)
+gruntz format --check  # CI gate: no writes, non-zero exit if anything drifts
+```
+
+Formatting is **whitespace-only ⇒ matching-neutral**: it never changes the COFF
+bytes objdiff compares (the one parser-visible case, `> >` vs `>>` for MSVC 5.0,
+is pinned by `Standard: c++03`).
+
+**You normally never run it by hand.** A repo-tracked **pre-commit hook**
+(`.githooks/pre-commit`) formats staged `src/`+`include/` files automatically on
+each commit; both dev shells enable it on entry via
+`git config core.hooksPath .githooks` (idempotent; shared across worktrees).
+Outside the Nix shell (no `clang-format` on PATH) the hook skips with a notice
+rather than blocking the commit.
+
+Two deliberate deviations from pure rustfmt, because this is a decompile:
+- **Comment text is never reflowed** (`ReflowComments: Never`) — the ASCII
+  "carcass" diagrams and `// +0xNN` field-offset tables map source to
+  disassembly and must not be rewrapped. Trailing comments *are* column-aligned
+  (`AlignTrailingComments: Always`) so those offset columns stay tidy after the
+  surrounding code is reflowed.
+- **Includes are never reordered** (`SortIncludes: Never`). Include order here is
+  hand-tuned and interleaved with explanatory comments.
+
+**Vendored code is never formatted.** `vendor/` (e.g. `vendor/zlib-1.0.4/`) must
+stay byte-for-byte as shipped — it is part of the matching surface. It sits
+outside the `src/`+`include/` roots that `gruntz format` and the hook touch, and
+is independently guarded by `vendor/.clang-format` (`DisableFormat: true`), so
+even an editor's format-on-save leaves it alone.
+
 ## The manifest: `config/units.toml` (single source of truth)
 
 Per **translation unit** (per-TU). This is the counterpart to
@@ -121,22 +163,33 @@ the `cl` rule. This is the base side fed to objdiff. Native incremental: edit a
 source (or its `RVA()`/`DATA()` annotations), or add a unit, and ninja rebuilds
 only what changed (the label map regenerates from `src/`).
 
-### Phase 2 — link -> candidate `.EXE` (DEFERRED)
+### Phase 2 — link -> candidate `.EXE` (IMPLEMENTED, opt-in)
 
-**Not implemented.** Whole-binary verification (link every base `.obj` into a
-candidate `GRUNTZ.EXE` and byte-compare against the retail binary) is a marked
-placeholder in `configure.py:emit_link_phase` and a `# === PHASE 2 (DEFERRED)
-===` comment block at the bottom of the generated `build.ninja`. When
-implemented it will add:
+`gruntz link` (or `ninja candidate`) links every base `<unit>.obj` into
+`build/exe/GRUNTZ.candidate.EXE` + `.map` using the genuine VC5 `link.exe`
+(version **5.10.7303** — the linker that built retail GRUNTZ.EXE) under wine. It
+is **opt-in** (not in the default `all` target) so a normal `gruntz build` is
+unaffected.
 
-- a `link` rule running `wine link.exe` through a **response file** (`@objs.rsp`)
-  — VC5's `link` has a short command-line limit under wine, so the obj list +
-  flags must go through a response file, not argv;
-- link flags pinned by matching: `/OPT:REF` `/OPT:ICF` plus the exact link
-  **order** (COMDAT order, not source-definition order — see
-  `docs/zlib-matching.md`);
-- inputs = every base `<unit>.obj`; output = `build/exe/GRUNTZ.candidate.EXE`
-  plus a verify step diffing it against the retail EXE.
+- `configure.py:emit_link_phase` emits the `link` rule; it runs
+  `scripts/gruntz/build/link.py`, which feeds the obj list + flags through a
+  **response file** (`@…objs.rsp`) — VC5 `link` has a short argv limit under wine.
+- The reconstruction is **partial**, so link.py passes **`/FORCE`** and the EXE is
+  **not runnable**. Layout study uses `/OPT:NOREF /OPT:NOICF` to keep every COMDAT
+  in the map. The deliverable is the **`.map`** (each function's link-assigned RVA
+  + source object).
+- link.exe statically imports **`MSDIS100.DLL`** (VC5 disassembler, only used by
+  `/dump /disasm`), which the toolchain omits, so it would not load under wine.
+  `scripts/gruntz/build/msdis_stub.py` makes it resolvable (a real sourced DLL if
+  present, else a generated export-only stub — link output is identical either way)
+  and installs it into the wine prefix's 32-bit system dir.
+
+This is the tool behind **`docs/link-order-investigation.md`**: the candidate map
+cross-referenced with retail RVAs recovers the build order (intra-TU order =
+source-definition order; cross-TU order = object link order). `gruntz link
+--analyze` runs `scripts/gruntz/analysis/link_order.py` to print that report.
+Whole-binary byte-verification against retail is a later step (needs fuller
+reconstruction + the matched link order).
 
 ## The target (delink) half
 
@@ -156,7 +209,7 @@ the heavy Ghidra DB build + `functions.csv`/`symbols.csv` export (import +
 auto-analyze GRUNTZ.EXE, then `apply.py`/`export.py`). The FID library labels are
 tracked
 (`config/library_labels.csv`, so they survive `git clean`); regenerate them with
-`scripts/analysis/fid_generate.py`.
+`python -m gruntz.analysis.fid_generate`.
 
 The delink rule's declared outputs are the per-unit `build/objdiff/target/<unit>.c.obj`
 (one command, multiple outputs); its inputs are the EXE + the two Ghidra CSVs +
@@ -172,6 +225,10 @@ nothing important lives only in the `.gpr` blob — it is all reproducible:
   rva-map with `llvm-undname` (authoritative return/cc/class/param-types) and the
   clang AST (parameter *names*). `apply.py` applies these as typed Ghidra
   prototypes (+ a struct\* `this`).
+- `build/gen/globals.json` (`labels.py`): per-RVA **declared global type** for each
+  named global (the `DATA()`-bound `extern`'s C/C++ type). `apply.py` lays typed
+  data at the address so the global decodes as its real type (e.g. `g_buteMgr :
+  CButeMgr`) instead of raw bytes.
 - `build/gen/locals.json` (`harvest_locals.py` + `codeview.py`): per-RVA **named
   local variables** for byte-exact functions only. Each src TU is compiled a second
   time with `cl /Z7` (codegen-neutral — the `.text` is byte-identical to the base
@@ -179,6 +236,9 @@ nothing important lives only in the `.gpr` blob — it is all reproducible:
   old-format MSVC 5.0 CodeView (`.debug$S`) is read for frame-relative locals.
   `apply.py` injects them as named stack variables (they surface in the on-demand
   decompiler). The harvest runs before every `apply.py` (in `_ghidra_metadata_apply`).
+- `build/gen/structs.json` + `build/gen/enums.json` (`ghidra_metadata_generate.py`):
+  clang record layouts / enums over `src/` + `src/Stub/types/`, defined in the DTM;
+  each struct is applied as the `this` type on its class's methods.
 
 ### Round-trip: capturing human edits (`gruntz capture`)
 
@@ -198,33 +258,45 @@ generated sections skip a function/slot already owned by a `USER_DEFINED` name, 
 refresh never clobbers an un-captured edit. Commit `config/user_annotations.json` to
 share/persist the edits.
 
-### What triggers a re-delink
+### What triggers a re-delink (incremental label map)
 
-The delink is keyed on **`build/gen/symbol_names.csv`** (the EXE + Ghidra CSVs only
-change at `gruntz init`). So in the inner loop, editing a `src/` `RVA()` macro is
-what re-delinks: ninja regenerates the label map, which *is* the delink's input.
-The full chain a single `gruntz build` runs:
+The label map is built **per TU**: `gen_labels_one` runs `labels.py` on one
+`src/<unit>.cpp` (the expensive clang-IR pass) → a fragment
+`build/gen/labels/<unit>.csv`; a cheap `merge_labels` concatenates the fragments
+→ `build/gen/symbol_names.csv` (re-applying the cross-TU duplicate-RVA guard +
+DATA dedup). Both write **only when the content changed** (leaving the mtime
+untouched otherwise) and both edges carry `restat`, so an edit that does not
+change the labels stops the cascade right there.
+
+The full chain a single `gruntz build` runs after a `src/` edit:
 
 ```
-edit src/<unit>.cpp  (add / change an  RVA(0x<rva>, 0x<size>))
-  └─ gruntz build → configure.py (build.ninja) → ninja:
-       cl         rule  cc_wrap.py   → build/objdiff/base/<unit>.obj   (recompile via wine cl)
-       gen_labels rule  labels.py    → build/gen/symbol_names.csv      (rva → name → unit)
-                                        ↑ a src RVA() changed ⇒ the label map regenerates (via LLVM IR)
-       delink     rule  delink.py    ← symbol_names.csv is a declared input, so it re-runs:
-                        synth_pdb.py    functions.csv + symbols.csv + symbol_names.csv
-                                          → build/pdb/gruntz_named.pdb
-                        vostok-delinker  GRUNTZ.EXE + the PDB → build/delink/named/
-                        collect          → build/objdiff/target/<unit>.c.obj
-       objdiff-cli report generate    → build/objdiff/report.json
+edit src/<unit>.cpp
+  └─ gruntz build → ninja (build.ninja self-regenerates via its generator edge):
+       cl             rule  cc_wrap.py  → build/objdiff/base/<unit>.obj   (recompile via wine cl)
+       gen_labels_one rule  labels.py   → build/gen/labels/<unit>.csv     (ONLY this unit's IR)
+       merge_labels   rule  labels.py   → build/gen/symbol_names.csv      (concat + dup-guard; restat)
+       delink         rule  delink.py   ← symbol_names.csv (restat: re-runs only if it changed)
+                            synth_pdb.py + vostok-delinker → build/objdiff/target/<unit>.c.obj
+       report         rule  objdiff-cli → build/objdiff/report.json       (objs changed)
 ```
 
-In practice the delink re-runs on **every** `src/` edit: `gen_labels` rewrites
-`symbol_names.csv` unconditionally (fresh mtime) and the delink rule has no
-`restat` guard, so even a body-only tweak (identical labels) re-delinks. That's
-left as-is on purpose — the delink is one command emitting all units' objs in a
-single cheap pass (~one synth_pdb + one vostok-delinker over the EXE), the whole
-loop is fast, and a write-if-different + `restat` skip isn't worth the complexity.
+Two regimes:
+
+- **Pure code edit** (no `RVA()`/symbol change): only `cl` + `gen_labels_one`
+  run. The fragment is byte-identical → write-if-changed leaves its mtime →
+  `restat` stops `merge_labels`, so the label map, the delink, and every target
+  obj are untouched. Net work: one recompiled base obj + a fresh `report.json`.
+- **Symbol change** (add/rename a function, change an `RVA()`): the unit's
+  fragment changes → `merge_labels` rewrites `symbol_names.csv` → the delink
+  re-runs and the unit's `<unit>.c.obj` updates.
+
+This keeps a single-TU rebuild ~1s instead of re-emitting clang IR for all ~23
+TUs and re-delinking the whole EXE on every edit. `gruntz build` itself is thin:
+it ensures the wineserver is up (kept alive across builds, not killed each time),
+runs `ninja` (which builds the objs AND `report.json` in-graph), and runs the
+non-fatal feedback tail (README score block + regression check) **only when
+`report.json` actually moved** — a no-op build returns in ~0.15s.
 
 ## Pairing (objdiff)
 
@@ -280,14 +352,37 @@ does not exist yet is paired against an empty `dummy.obj` so it still lists at
 ## Generated vs. tracked
 
 Tracked: `config/units.toml`, the `src/` sources (incl. their `RVA()`/`DATA()`
-annotation macros and `src/rva.h`), `configure.py`, and the pipeline package
-`scripts/gruntz/{build,ghidra,init}/`.
+annotation macros and `src/rva.h`), `configure.py`, and the whole `scripts/gruntz/`
+package (the pipeline `{build,ghidra,init}/`, the match tooling `match/`, and the
+analysis tools `analysis/`).
 
 Generated (git-ignored): `build/gen/symbol_names.csv` (from `src/` `RVA()`),
 `build/gen/functions.json` + `build/gen/locals.json` (Ghidra enrichment metadata),
 `build.ninja`, `.ninja_log`/`.ninja_deps`, and everything under `build/` (base
 objs, `/Z7` debug objs, delinked target objs, synth PDB, the clangd compdb, the
-wine prefix, the Ghidra DB + exports, objdiff project + report).
+wine prefix, the Ghidra DB + exports, objdiff project + report) — see the table below.
+
+## The `build/` directory
+
+ALL local, imperative state lives under `build/` (every subdir is **git-ignored**;
+`gruntz clean` nukes the lot, `gruntz init` rebuilds it). The retail EXE and the
+toolchain come from the flake; nothing here is tracked.
+
+| subdir | what it is | generated by | role in the pipeline | size class |
+|---|---|---|---|---|
+| `gen/` | the generated metadata: `symbol_names.csv` (mangled name ↔ RVA, from `src/` `RVA()`/`DATA()` via LLVM IR) plus `functions.json`/`locals.json`/`structs.json`/`enums.json`/`globals.json`/`applied_comments.json` (clang record layouts + harvested locals fed to Ghidra enrich) | `gruntz labels` / `structs` (the ninja `gen_labels` rule + `ghidra_metadata_generate.py`) | the delink's name map + Ghidra-enrich inputs | ~1 MB |
+| `objdiff/` | the diff project: `base/<unit>.obj` (wine `cl` output), `target/<unit>.c.obj` (delinked), `objdiff.json` (pairing), `report.json` (the scored result) | the ninja `cl`+`delink` rules + `objdiff-cli report generate` | the actual base-vs-target comparison `gruntz status` reads | ~2 MB |
+| `delink/` | `named/` — raw per-symbol COFF objects straight out of vostok-delinker, before they are collected into `objdiff/target/` | the ninja `delink` rule (`delink.py`) | intermediate delinker output | ~3 MB |
+| `pdb/` | the synthesized fake PDB (`gruntz_named.pdb` + its `.yaml`) — Public + Procedure + Data symbols, no section contribs | `synth_pdb.py` (inside the `delink` rule) | feeds vostok-delinker (it needs symbol+length records, which the retail EXE lacks) | ~12 MB |
+| `exe/` | `GRUNTZ.EXE` — a stable-named copy of `$GRUNTZ_EXE` | `gruntz init`/`build` (`_ensure_retail_copy`) | the delink input **and** the Ghidra import target | ~2.5 MB |
+| `clangd/` | the clangd compile DB (`compile_commands.json`) + the derived `func_fingerprints.tsv` cache | `gruntz clangd` (`init/clangd.py`) + `gruntz.match.fingerprints` | editor/LSP navigation; per-function regression fingerprints | ~4 MB |
+| `debug/` | the `/Z7`-compiled `<unit>.obj`s (debug info embedded) used only to harvest local-variable names/types | the ninja debug-compile path (`harvest_locals`) | source of `gen/locals.json` (Ghidra enrich) | ~1.5 MB |
+| `ghidra-named/` | the named Ghidra project (`gruntz.{gpr,rep}`): GRUNTZ.EXE imported, auto-analyzed, RTTI/FLIRT/leaked-name labeled, then enriched | `gruntz init` (PyGhidra import+analyze) + `ghidra-refresh` | the comprehension DB; source of the function/symbol exports | ~42 MB |
+| `ghidra-enrich/` | `exports/functions.csv` + `symbols.csv` re-dumped from the enriched DB | `apply.py`/`export.py` under PyGhidra (`ghidra-refresh`) | the two CSVs the delink consumes (function boundaries + names) | ~2 MB |
+| `wineprefix/` | the Wine prefix with the MSVC 5.0 toolchain registered | `gruntz init` (`init/toolchain.py`); `$WINEPREFIX` | hosts every `wine cl` invocation (the base-obj compiles) | ~561 MB |
+
+(Also transient: `build/fid/` — scratch for `gruntz.analysis.fid_generate`'s
+library-label regen — and root-level `build.ninja`/`.ninja_*`.)
 
 ## Current status
 

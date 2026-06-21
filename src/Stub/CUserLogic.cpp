@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CUserLogic.cpp - engine-label stubs for CUserLogic.
 
 class CUserLogic {

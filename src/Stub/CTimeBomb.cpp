@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CTimeBomb.cpp - engine-label stubs for CTimeBomb.
 
 class CTimeBomb {

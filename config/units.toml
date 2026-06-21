@@ -109,6 +109,21 @@ source = "src/Gruntz/TileTriggerLogic.cpp"
 flags = "base"
 
 [[unit]]
+unit = "userlogic"
+source = "src/Gruntz/UserLogic.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "gameobjectctors"
+source = "src/Gruntz/GameObjectCtors.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "userbaselink"
+source = "src/Gruntz/UserBaseLink.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "dialogs"
 source = "src/Gruntz/Dialogs.cpp"
 flags = "eh"
@@ -154,6 +169,11 @@ source = "src/Gruntz/GruntzApp.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "gruntzmgr"
+source = "src/Gruntz/GruntzMgr.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "gruntzwnd"
 source = "src/Gruntz/GruntzWnd.cpp"
 flags = "base"
@@ -179,6 +199,11 @@ source = "src/Gruntz/Grunt.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "gruntzcommand"
+source = "src/Gruntz/GruntzCommand.cpp"
+flags = "base"
+
+[[unit]]
 unit = "engine_label_stubs"
 source = "src/Stub/All.cpp"
 flags = "base"
@@ -187,6 +212,11 @@ flags = "base"
 unit = "netmgr"
 source = "src/Net/NetMgr.cpp"
 flags = "eh"
+
+[[unit]]
+unit = "netmgrerror"
+source = "src/Net/NetMgrReportError.cpp"
+flags = "base"
 
 [[unit]]
 unit = "winmain"
@@ -229,6 +259,16 @@ source = "src/Gruntz/Wormhole.cpp"
 flags = "base"
 
 [[unit]]
+unit = "battlezmapconfig"
+source = "src/Gruntz/BattlezMapConfig.cpp"
+flags = "base"
+
+[[unit]]
+unit = "unknownclassarrays"
+source = "src/Gruntz/UnknownClassArrays.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "videoconfig"
 source = "src/Gruntz/VideoConfig.cpp"
 flags = "base"
@@ -236,6 +276,36 @@ flags = "base"
 [[unit]]
 unit = "spriteloaders"
 source = "src/Gruntz/SpriteLoaders.cpp"
+flags = "base"
+
+[[unit]]
+unit = "spriteresource"
+source = "src/Gruntz/SpriteResource.cpp"
+flags = "base"
+
+[[unit]]
+unit = "cstatusbarmgr"
+source = "src/Gruntz/CStatusBarMgr.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "iconloaders"
+source = "src/Gruntz/IconLoaders.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "statusbarupdaters"
+source = "src/Gruntz/StatusBarUpdaters.cpp"
+flags = "base"
+
+[[unit]]
+unit = "kitchenslime"
+source = "src/Gruntz/KitchenSlime.cpp"
+flags = "base"
+
+[[unit]]
+unit = "actionoptionsmenubar"
+source = "src/Gruntz/ActionOptionsMenuBar.cpp"
 flags = "base"
 
 [[unit]]
@@ -249,36 +319,96 @@ source = "src/Gruntz/LogicTypeTable.cpp"
 flags = "base"
 
 [[unit]]
-unit = "unknownremus"
-source = "src/Gruntz/UnknownRemus.cpp"
+unit = "cddrawworkerlist"
+source = "src/Gruntz/CDDrawWorkerList.cpp"
 flags = "base"
 
 [[unit]]
-unit = "unknownhagrid"
-source = "src/Gruntz/UnknownHagrid.cpp"
+unit = "cddrawsubmgrdraco"
+source = "src/Gruntz/CDDrawSubMgrDraco.cpp"
 flags = "base"
 
 [[unit]]
-unit = "unknowndraco"
-source = "src/Gruntz/UnknownDraco.cpp"
+unit = "cddrawchildgroup"
+source = "src/Gruntz/CDDrawChildGroup.cpp"
 flags = "base"
 
 [[unit]]
-unit = "unknownhermiona"
-source = "src/Gruntz/UnknownHermiona.cpp"
+unit = "cddrawworkermapsmall"
+source = "src/Gruntz/CDDrawWorkerMapSmall.cpp"
 flags = "base"
 
 [[unit]]
-unit = "unknownalbus"
-source = "src/Gruntz/UnknownAlbus.cpp"
+unit = "cddrawsurfacemgr"
+source = "src/Gruntz/CDDrawSurfaceMgr.cpp"
 flags = "base"
 
 [[unit]]
-unit = "harrypotter"
-source = "src/Gruntz/HarryPotter.cpp"
+unit = "cddrawworkerregistry"
+source = "src/Gruntz/CDDrawWorkerRegistry.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "tileswitchlogic"
+source = "src/Gruntz/TileTriggerSwitchLogic.cpp"
 flags = "base"
 
 [[unit]]
-unit = "unknownseverus"
-source = "src/Gruntz/UnknownSeverus.cpp"
+unit = "unknownsalazar"
+source = "src/Dsndmgr/UnknownSalazar.cpp"
+flags = "base"
+
+[[unit]]
+unit = "cddrawsubmgrleaf"
+source = "src/Gruntz/CDDrawSubMgrLeaf.cpp"
+flags = "base"
+
+[[unit]]
+unit = "cddrawworkercache"
+source = "src/Gruntz/CDDrawWorkerCache.cpp"
+flags = "base"
+
+[[unit]]
+unit = "cddrawworkers"
+source = "src/Gruntz/CDDrawWorkers.cpp"
+flags = "base"
+
+[[unit]]
+unit = "cddrawsubmgr"
+source = "src/Gruntz/CDDrawSubMgr.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cddrawptrcollections"
+source = "src/Gruntz/CDDrawPtrCollections.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cdirectdrawmgr"
+source = "src/Gruntz/CDirectDrawMgr.cpp"
+flags = "base"
+
+[[unit]]
+unit = "directinputmgr2"
+source = "src/DinMgr2/DirectInputMgr2.cpp"
+flags = "base"
+
+[[unit]]
+unit = "directsoundmgr"
+source = "src/Dsndmgr/DirectSoundMgr.cpp"
+flags = "base"
+
+[[unit]]
+unit = "appdialogs"
+source = "src/Gruntz/AppDialogs.cpp"
+flags = "base"
+
+[[unit]]
+unit = "winapimodule"
+source = "src/Utils/WinAPIModule.cpp"
+flags = "base"
+
+[[unit]]
+unit = "winapicdrom"
+source = "src/Utils/WinAPICdRom.cpp"
 flags = "eh"

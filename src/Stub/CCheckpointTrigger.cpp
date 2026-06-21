@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CCheckpointTrigger.cpp - engine-label stubs for CCheckpointTrigger.
 
 class CCheckpointTrigger {

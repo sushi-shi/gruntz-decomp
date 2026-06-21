@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CStatusBarSprite.cpp - engine-label stubs for CStatusBarSprite.
 
 class CStatusBarSprite {

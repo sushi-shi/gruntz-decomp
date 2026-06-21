@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CEyeCandyAni.cpp - engine-label stubs for CEyeCandyAni.
 
 class CEyeCandyAni {

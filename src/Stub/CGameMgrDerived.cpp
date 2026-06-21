@@ -1,4 +1,4 @@
-#include "../rva.h"
+#include <rva.h>
 // CGameMgrDerived.cpp - engine-label stubs for CGameMgrDerived.
 
 class CGameMgrDerived {

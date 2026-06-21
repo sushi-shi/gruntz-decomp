@@ -16,8 +16,13 @@ emits, from one manifest:
 Two graph phases (see docs/build-system.md):
   1. compile -> .obj   - IMPLEMENTED. Each manifest unit's source compiles to
                          build/objdiff/base/<unit>.obj via the `cl` rule.
-  2. link -> .EXE      - DEFERRED. A clearly-marked placeholder (emit_link_phase)
-                         marks where whole-binary verification will go later.
+  2. link -> .EXE      - IMPLEMENTED but OPT-IN. emit_link_phase() emits a `link`
+                         rule + `candidate` phony, kept OUT of the default `all`
+                         (build only via `ninja candidate` / `gruntz link`). It
+                         links the base objs into a non-runnable candidate EXE +
+                         .map for the link-order study (intra-TU order = source
+                         order, cross-TU = object order); a normal build never
+                         links. See docs/link-order-investigation.md.
 
 The TARGET (delink) half is orchestrated as a ninja `delink` rule that runs
 scripts/gruntz/build/delink.py (synth_pdb -> vostok-delinker -> collect <unit>.c.obj).
@@ -43,9 +48,10 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent
 MANIFEST = REPO / "config" / "units.toml"
 
-# Quoted local includes only (we don't track system/<...> includes - the MSVC
-# headers don't change between builds).
-_INCLUDE_RE = re.compile(r'^[ \t]*#[ \t]*include[ \t]*"([^"]+)"', re.M)
+# Local includes - both quoted (`"All-aggregated.cpp"`, same-dir) and angle-bracket
+# (`<Module/Foo.h>`, resolved against the include/ tree). System `<string.h>` etc.
+# resolve to nothing under the repo and are skipped (the MSVC headers don't change).
+_INCLUDE_RE = re.compile(r'^[ \t]*#[ \t]*include[ \t]*[<"]([^>"]+)[>"]', re.M)
 
 
 def local_headers(source: str) -> list:
@@ -67,14 +73,18 @@ def local_headers(source: str) -> list:
         except OSError:
             continue
         for inc in _INCLUDE_RE.findall(text):
-            try:
-                hrel = (path.parent / inc).resolve().relative_to(REPO)
-            except ValueError:
-                continue  # outside the repo (e.g. ../../usr) - skip
-            key = str(hrel)
-            if (REPO / hrel).exists() and key not in seen:
-                seen.add(key)
-                stack.append(hrel)
+            # quoted same-dir first (e.g. All.cpp's `"CFoo.cpp"`), then the include/ tree
+            for base in (path.parent, REPO / "include"):
+                try:
+                    hrel = (base / inc).resolve().relative_to(REPO)
+                except ValueError:
+                    continue  # outside the repo (e.g. ../../usr) - skip
+                if (REPO / hrel).exists():
+                    key = str(hrel)
+                    if key not in seen:
+                        seen.add(key)
+                        stack.append(hrel)
+                    break
     return sorted(seen)
 
 # scripts/gruntz/build/ holds the build-pipeline modules incl. the vendored
@@ -87,11 +97,16 @@ import ninja_syntax  # noqa: E402
 PY = "python3"
 CC_WRAP = "scripts/gruntz/build/cc_wrap.py"
 DELINK = "scripts/gruntz/build/delink.py"
+LINK = "scripts/gruntz/build/link.py"
 GEN_LABELS = "scripts/gruntz/build/labels.py"
 # The rva->name,unit map is GENERATED from src `// @address:` annotations joined
 # to the base objs (clang mangledName INTERSECT nm) - no hand-written CSV. See
-# docs/source-consolidation-investigation.md.
+# docs/build-system.md.
 GEN_NAMES = "build/gen/symbol_names.csv"
+# Source-derived Ghidra enrichment metadata (labels.py), merged from per-TU
+# fragments alongside symbol_names.csv; consumed by apply.py during ghidra-refresh.
+FUNCTIONS_JSON = "build/gen/functions.json"
+GLOBALS_JSON = "build/gen/globals.json"
 # clangd compile DB (per-TU MS/include flags); labels.py uses it so the IR emit's
 # system-header lookup succeeds. Optional - labels.py degrades to bare MS flags.
 COMPDB = "build/clangd/compile_commands.json"
@@ -107,6 +122,7 @@ BASE_DIR = "build/objdiff/base"      # recompiled base objs (phase 1 outputs)
 TARGET_DIR = "build/objdiff/target"  # collected delinked target objs
 DELINK_RAW = "build/delink/named"    # raw vostok-delinker output
 PDB_DIR = "build/pdb"                # synth PDB/YAML
+LABELS_DIR = "build/gen/labels"      # per-TU symbol_names.csv fragments
 
 
 # --- manifest ---------------------------------------------------------------
@@ -139,27 +155,29 @@ def load_manifest(path: Path) -> dict:
 
 
 # --- build.ninja ------------------------------------------------------------
-def emit_link_phase(w: ninja_syntax.Writer) -> None:
-    """PLACEHOLDER for graph phase 2 (link -> candidate .EXE).
+def emit_link_phase(w: ninja_syntax.Writer, base_objs: list) -> None:
+    """Graph phase 2: link the base objs -> candidate (non-runnable) .EXE + .map.
 
-    NOT IMPLEMENTED YET. Whole-binary verification (link every base .obj into a
-    candidate GRUNTZ.EXE and byte-compare against the retail binary) goes here.
-    When implemented this will add:
-      * a `link` rule running `wine link.exe` via a wrapper, fed a RESPONSE FILE
-        (@objs.rsp) - VC5's link has a short command-line limit under wine, so
-        the obj list + flags must go through a response file, not argv.
-      * link flags pinned by matching: /OPT:REF /OPT:ICF plus the exact link
-        ORDER (COMDAT order, not source order - see docs/zlib-matching.md).
-      * inputs = every base <unit>.obj; output = build/exe/GRUNTZ.candidate.EXE
-        plus a verify step diffing it against the retail EXE.
-    See docs/build-system.md "Deferred: the link phase".
+    Runs the genuine VC5 link.exe (5.10.7303) under wine via
+    scripts/gruntz/build/link.py over a @response file (VC5 link has a short argv
+    limit under wine). The reconstruction is PARTIAL, so link.py passes /FORCE and
+    the EXE does not run - the deliverable is the `.map`, which gives each
+    function's link-assigned RVA + source object. That, cross-referenced with the
+    retail RVAs, is what recovers the build order for matching (intra-TU order =
+    source-definition order; cross-TU order = object link order). See
+    docs/link-order-investigation.md and `gruntz link`.
+
+    This is an OPT-IN target (`ninja candidate`), kept OUT of the default `all` so
+    a normal `gruntz build` is unaffected. link.py manages its own wineserver.
     """
-    w.comment("=== PHASE 2 (DEFERRED): link -> candidate .EXE ===")
-    w.comment("Not implemented. Whole-binary verification will add a `link` "
-              "rule (wine link.exe via a @response file - VC5 link has a short "
-              "cmdline limit under wine), /OPT:REF /OPT:ICF + the matched link "
-              "order, fed every base <unit>.obj. See configure.py:emit_link_phase "
-              "and docs/build-system.md.")
+    w.comment("=== PHASE 2: link -> candidate .EXE + .map (opt-in: `ninja candidate`) ===")
+    cand = "build/exe/GRUNTZ.candidate.EXE"
+    w.rule("link",
+           command=f"{PY} {LINK} --out {cand} --objs-dir {BASE_DIR}",
+           description="link base objs -> candidate EXE + map")
+    w.build([cand, "build/exe/GRUNTZ.candidate.map"], "link",
+            inputs=base_objs, implicit=[LINK, "scripts/gruntz/build/msdis_stub.py"])
+    w.build("candidate", "phony", inputs=cand)
     w.newline()
 
 
@@ -213,22 +231,53 @@ def emit_ninja(manifest: dict, out: Path) -> None:
                     variables=variables)
         w.newline()
 
-        # LABELS: regenerate build/gen/symbol_names.csv from the src @address
-        # annotations + the base objs (clang mangledName INTERSECT nm). The IR
-        # emit needs the clangd compdb's per-TU include flags so system headers
-        # resolve (-emit-llvm stops at a fatal error, unlike -ast-dump); it is an
-        # optional input (labels.py falls back to bare MS flags if absent).
-        w.comment("=== LABELS: src RVA() macros + base objs -> symbol_names.csv ===")
-        labels_args = " ".join(
-            f"--tu {u['source']} --obj {BASE_DIR}/{u['unit']}.obj" for u in units)
-        w.rule("gen_labels",
-               command=f"{PY} {GEN_LABELS} {labels_args} "
-                       f"--compdb {COMPDB} --out {GEN_NAMES}",
-               description="gen_labels (src RVA() macros -> symbol_names.csv)")
+        # LABELS: per-TU fragment, then a cheap merge -> symbol_names.csv.
+        # Each fragment is one TU's clang-IR pass (the expensive step), so a single
+        # edit re-emits only THAT unit's IR instead of all ~23. Both edges carry
+        # `restat` so an unchanged symbol set (a pure code edit) stops here and does
+        # NOT cascade into delink/objdiff. The IR emit needs the clangd compdb's
+        # per-TU include flags (labels.py falls back to bare MS flags if absent).
+        # Each TU also emits functions.json/globals.json fragments (per-RVA
+        # signatures + declared global types for apply.py's Ghidra enrichment);
+        # merge_labels combines all three so apply.py sees EVERY unit, not just the
+        # last TU built.
+        w.comment("=== LABELS: per-TU fragments -> merge -> symbol_names.csv ===")
+        w.rule("gen_labels_one",
+               command=f"{PY} {GEN_LABELS} --tu $src --obj $obj --unit $unit "
+                       f"--compdb {COMPDB} --out $csvfrag "
+                       f"--functions-out $funcfrag --globals-out $globfrag",
+               description="gen_labels $unit",
+               restat=True)
         compdb_dep = [COMPDB] if (REPO / COMPDB).exists() else []
-        w.build(GEN_NAMES, "gen_labels",
-                inputs=[u["source"] for u in units] + base_objs,
-                implicit=[GEN_LABELS, "config/units.toml"] + compdb_dep)
+        zlib_dep = (["config/zlib_labels.csv"]
+                    if (REPO / "config/zlib_labels.csv").exists() else [])
+        frags, func_frags, glob_frags = [], [], []
+        for u in units:
+            frag = f"{LABELS_DIR}/{u['unit']}.csv"
+            funcfrag = f"{LABELS_DIR}/{u['unit']}.functions.json"
+            globfrag = f"{LABELS_DIR}/{u['unit']}.globals.json"
+            obj = f"{BASE_DIR}/{u['unit']}.obj"
+            frags.append(frag)
+            func_frags.append(funcfrag)
+            glob_frags.append(globfrag)
+            w.build([frag, funcfrag, globfrag], "gen_labels_one",
+                    inputs=u["source"],
+                    implicit=[obj, GEN_LABELS, "config/units.toml"]
+                             + compdb_dep + zlib_dep,
+                    variables={"src": u["source"], "obj": obj, "unit": u["unit"],
+                               "csvfrag": frag,
+                               "funcfrag": funcfrag, "globfrag": globfrag})
+        w.rule("merge_labels",
+               command=f"{PY} {GEN_LABELS} --merge $csvfrags --out {GEN_NAMES} "
+                       f"--merge-functions $funcfrags --functions-out {FUNCTIONS_JSON} "
+                       f"--merge-globals $globfrags --globals-out {GLOBALS_JSON}",
+               description="merge_labels -> symbol_names.csv + functions/globals.json",
+               restat=True)
+        w.build([GEN_NAMES, FUNCTIONS_JSON, GLOBALS_JSON], "merge_labels",
+                inputs=frags + func_frags + glob_frags, implicit=[GEN_LABELS],
+                variables={"csvfrags": " ".join(frags),
+                           "funcfrags": " ".join(func_frags),
+                           "globfrags": " ".join(glob_frags)})
         w.newline()
 
         # TARGET (delink) half: one rule produces all in-scope <unit>.c.obj.
@@ -239,22 +288,56 @@ def emit_ninja(manifest: dict, out: Path) -> None:
                         f"--symbols {SYMBOLS} --names-map {GEN_NAMES} "
                         f"--pdb-dir {PDB_DIR} --delink-dir {DELINK_RAW} "
                         f"--target-dir {TARGET_DIR} {unit_args}"),
-               description="delink GRUNTZ.EXE -> target objs")
+               description="delink GRUNTZ.EXE -> target objs",
+               restat=True)
         target_objs = [f"{TARGET_DIR}/{u['unit']}.c.obj" for u in units]
         w.build(target_objs, "delink",
                 inputs=[EXE, FUNCTIONS, SYMBOLS, GEN_NAMES],
                 implicit=[DELINK, "scripts/gruntz/build/synth_pdb.py"])
         w.newline()
 
+        # OBJDIFF MANIFEST: objdiff.json pairs each base obj with its target obj.
+        # Whether a unit pairs with its real <unit>.c.obj or the empty dummy.obj is
+        # decided from symbol_names.csv, which gen_labels regenerates ABOVE - so the
+        # manifest must be (re)built AFTER it, in-graph, not at configure time (when
+        # the csv can still be stale for a unit added this build). gen_labels ->
+        # gen_objdiff is the ordering that makes a new unit pair correctly in ONE
+        # build instead of two.
+        objdiff_json = f"{OBJDIFF_DIR}/objdiff.json"
+        w.comment("=== OBJDIFF: symbol_names.csv -> objdiff.json (post-labels) ===")
+        w.rule("gen_objdiff",
+               command=f"{PY} configure.py --emit-objdiff",
+               description="gen_objdiff (symbol_names.csv -> objdiff.json)",
+               restat=True)
+        w.build(objdiff_json, "gen_objdiff",
+                inputs=[GEN_NAMES],
+                implicit=["configure.py", "config/units.toml"])
+        w.newline()
+
+        # REPORT: the objdiff summary, in-graph so it regenerates ONLY when an obj
+        # (or the pairing) changes - not via an unconditional call every build. A
+        # pure code edit changes the edited unit's base obj -> report.json updates;
+        # a no-op build leaves it untouched, so `gruntz build` can skip its feedback
+        # tail (nothing rebuilt -> nothing to report).
+        report_json = f"{OBJDIFF_DIR}/report.json"
+        w.comment("=== REPORT: objs + pairing -> report.json (objdiff-cli) ===")
+        w.rule("report",
+               command=f"objdiff-cli report generate -p {OBJDIFF_DIR} -o {report_json}",
+               description="objdiff report -> report.json")
+        w.build(report_json, "report",
+                inputs=base_objs + target_objs + [objdiff_json])
+        w.newline()
+
         # Convenience aliases.
         w.comment("=== aliases ===")
         w.build("base", "phony", inputs=base_objs)
         w.build("target", "phony", inputs=target_objs)
-        w.build("all", "phony", inputs=base_objs + target_objs)
+        w.build("all", "phony",
+                inputs=base_objs + target_objs + [objdiff_json, report_json])
         w.default(["all"])
         w.newline()
 
-        emit_link_phase(w)
+        emit_link_phase(w, base_objs)
 
 
 # --- objdiff project (absorbs scripts/generate_objdiff_config.py) -----------
@@ -313,6 +396,11 @@ def emit_objdiff(manifest: dict, objdiff_dir: Path) -> None:
     base obj for every manifest unit; the delinker emits a <unit>.c.obj only for
     units that have rows in symbol_names.csv, so a unit with no named target
     functions yet is paired against the empty dummy.obj (lists at 0%).
+
+    The pairing is read from symbol_names.csv. At configure time that csv can be
+    stale (gen_labels regenerates it during ninja), so the `gen_objdiff` ninja rule
+    re-runs this AFTER gen_labels - that in-graph re-emit is what makes a unit added
+    this build pair correctly in one pass. See emit_ninja's gen_objdiff edge.
     """
     build = manifest["build"]
     objdiff_dir.mkdir(parents=True, exist_ok=True)
@@ -352,15 +440,29 @@ def emit_objdiff(manifest: dict, objdiff_dir: Path) -> None:
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--manifest", default=MANIFEST, type=Path)
+    ap.add_argument("--emit-objdiff", action="store_true",
+                    help="(re)write ONLY build/objdiff/objdiff.json from the "
+                         "current symbol_names.csv. Run by the `gen_objdiff` ninja "
+                         "rule AFTER gen_labels, so a unit added this build pairs "
+                         "with its real delinked obj in one pass.")
     args = ap.parse_args()
 
     manifest = load_manifest(args.manifest)
+
+    if args.emit_objdiff:
+        emit_objdiff(manifest, REPO / OBJDIFF_DIR)
+        print(f"[configure] wrote {OBJDIFF_DIR}/objdiff.json")
+        return
+
     n = len(manifest["unit"])
-
     emit_ninja(manifest, REPO / "build.ninja")
-    emit_objdiff(manifest, REPO / OBJDIFF_DIR)
+    # objdiff.json is NOT written here: the `gen_objdiff` ninja edge owns it and
+    # rebuilds it after gen_labels, so it always reflects the fresh symbol_names.csv
+    # (a unit added this build pairs with its real obj in one pass). Single owner =
+    # no churn. ninja creates it on the first build.
 
-    print(f"[configure] wrote build.ninja + {OBJDIFF_DIR}/objdiff.json ({n} units)")
+    print(f"[configure] wrote build.ninja ({n} units); "
+          "objdiff.json is built in-graph by the gen_objdiff edge")
     print("[configure] next: ninja   (then objdiff-cli report generate "
           f"-p {OBJDIFF_DIR} -o {OBJDIFF_DIR}/report.json)")
 
