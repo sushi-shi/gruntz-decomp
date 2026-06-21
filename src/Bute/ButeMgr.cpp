@@ -77,11 +77,14 @@ extern "C" int vsprintf(char* buf, const char* fmt, char* va);
 // last).
 RVA(0x1706c0, 0x4b)
 int CButeMgr::ReportError(const char* fmt, ...) {
-    vsprintf(m_errStr.GetBuffer(0x100), fmt, (char*)(&fmt + 1));
+    va_list args;
+    va_start(args, fmt);
+    vsprintf(m_errStr.GetBuffer(0x100), fmt, args);
     m_errStr.ReleaseBuffer(-1);
     if (m_errCallback != 0) {
         m_errCallback(m_errStr.GetBuffer(0));
     }
+    va_end(args);
     return 0;
 }
 
