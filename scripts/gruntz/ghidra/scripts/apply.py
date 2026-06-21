@@ -44,7 +44,9 @@ from ghidra.program.model.address import AddressSet
 from java.util import ArrayList
 
 PLATE = CommentType.PLATE
-US = SourceType.USER_DEFINED
+US = SourceType.USER_DEFINED        # reserved for HUMAN edits (the Ghidra GUI uses it)
+GEN = SourceType.ANALYSIS           # everything apply.py generates - so the round-trip
+                                    # capture (export_user.py) can tell the two apart
 IMAGE_BASE = 0x400000
 
 import os
@@ -64,6 +66,12 @@ GLOBALS_JSON = ROOT + "/build/gen/globals.json"
 STRUCTS_JSON = ROOT + "/build/gen/structs.json"
 ENUMS_JSON   = ROOT + "/build/gen/enums.json"
 CSV_FID    = ROOT + "/config/library_labels.csv"
+# Round-trip: human edits captured from the DB by export_user.py (`gruntz capture`),
+# TRACKED in git, re-applied here LAST so they survive a clean rebuild.
+USER_ANN   = ROOT + "/config/user_annotations.json"
+# Comments have no SourceType, so apply.py snapshots the GENERATED comments here
+# (everything minus the human comments it re-applies); export_user.py diffs it.
+APPLIED_COMMENTS = ROOT + "/build/gen/applied_comments.json"
 REPORT     = ROOT + "/build/ghidra-named/exports/enrichment_apply_report.txt"
 
 prog     = currentProgram
@@ -223,6 +231,88 @@ def load_globals_json(path):
         except Exception:
             pass
     return out
+
+
+_COMMENT_KINDS = {"plate": CommentType.PLATE, "pre": CommentType.PRE,
+                  "post": CommentType.POST, "eol": CommentType.EOL,
+                  "repeatable": CommentType.REPEATABLE}
+_COMMENT_KIND_LIST = sorted(_COMMENT_KINDS.items())
+
+
+def load_user_annotations():
+    if not os.path.exists(USER_ANN):
+        return {}
+    try:
+        with open(USER_ANN) as fh:
+            return json.load(fh)
+    except Exception:
+        return {}
+
+
+def dump_comment_baseline(user_comments):
+    """Snapshot the GENERATED comments to APPLIED_COMMENTS = every comment in the DB
+    EXCEPT the human ones about to be re-applied (those are the user_annotations
+    comments). On a cold init the DB has no human comments yet; on a refresh they
+    are present but excluded here - so the baseline is the generated set either way,
+    and export_user.py captures `current - baseline` = the human comments."""
+    human = set((c.get("rva"), c.get("kind"), c.get("text")) for c in user_comments)
+    rows = []
+    it = listing.getCommentAddressIterator(prog.getMemory(), True)
+    while it.hasNext():
+        addr = it.next()
+        if not addr.isMemoryAddress():
+            continue
+        r = "0x%06x" % (addr.getOffset() - IMAGE_BASE)
+        for kind, ct in _COMMENT_KIND_LIST:
+            txt = listing.getComment(ct, addr)
+            if txt and (r, kind, txt) not in human:
+                rows.append({"rva": r, "kind": kind, "text": txt})
+    rows.sort(key=lambda d: (d["rva"], d["kind"]))
+    d = os.path.dirname(APPLIED_COMMENTS)
+    if d and not os.path.isdir(d):
+        os.makedirs(d)
+    with open(APPLIED_COMMENTS, "w") as f:
+        json.dump(rows, f)
+
+
+def apply_user_annotations(data):
+    """Re-apply human edits captured by export_user.py (`gruntz capture`) - the
+    back-direction of the round-trip. Applied LAST and as USER_DEFINED so they win
+    over the generated (ANALYSIS) enrichment and survive a clean rebuild. Returns
+    (n_names, n_comments, n_locals)."""
+    nn = nc = nl = 0
+    for d in data.get("functions", []):
+        try:
+            addr = toaddr(int(d["rva"], 16))
+            fn = fm.getFunctionAt(addr) or ensure_function(addr)
+            if fn is not None and d.get("name"):
+                fn.setName(d["name"], US); nn += 1
+        except Exception:
+            pass
+    for d in data.get("comments", []):
+        try:
+            ct = _COMMENT_KINDS.get(d.get("kind", "pre"))
+            if ct is not None and d.get("text"):
+                listing.setComment(toaddr(int(d["rva"], 16)), ct, d["text"]); nc += 1
+        except Exception:
+            pass
+    for d in data.get("locals", []):
+        try:
+            fn = fm.getFunctionAt(toaddr(int(d["rva"], 16)))
+            off, nm = d.get("offset"), d.get("name")
+            if fn is None or off is None or not nm:
+                continue
+            sf = fn.getStackFrame()
+            dt = resolve_type(d.get("type") or "") or Undefined4DataType.dataType
+            try:
+                sf.createVariable(nm, off, dt, US); nl += 1
+            except Exception:
+                v = sf.getVariableContaining(off)
+                if v is not None:
+                    v.setName(nm, US); nl += 1
+        except Exception:
+            pass
+    return (nn, nc, nl)
 
 # =====================================================================
 # 1. TYPE RESOLUTION
@@ -440,9 +530,9 @@ def get_class_ns(name):
         existing = st.getNamespace(part, parent)
         if existing is None:
             try:
-                existing = st.createClass(parent, part, US)
+                existing = st.createClass(parent, part, GEN)
             except Exception:
-                existing = st.createNameSpace(parent, part, US)
+                existing = st.createNameSpace(parent, part, GEN)
         parent = existing
     ns_cache[name] = parent
     return parent
@@ -584,7 +674,7 @@ try:
                 n_fid_named += 1; n_fid_demangled += 1
             else:
                 try:
-                    fn.setName(name, US); n_fid_named += 1
+                    fn.setName(name, GEN); n_fid_named += 1
                 except Exception:
                     pass
     R("FID/library funcs named (HIGH/MED/AMBIG): %d  (%d demangled, LOW skipped: %d, no-func: %d)" %
@@ -603,7 +693,7 @@ try:
                 n_sym_named += 1; n_sym_demangled += 1
             else:
                 try:
-                    fn.setName(name, US); n_sym_named += 1
+                    fn.setName(name, GEN); n_sym_named += 1
                 except Exception:
                     pass
     R("symbol_names (zlib+ctors) reconciled: %d  (%d demangled, no-func: %d)"
@@ -620,9 +710,9 @@ try:
             if prim is not None:
                 cur = str(prim.getName())
                 if is_default(cur) or cur != name:
-                    prim.setName(name, US); n_data_named += 1
+                    prim.setName(name, GEN); n_data_named += 1
             else:
-                st.createLabel(addr, name, US); n_data_named += 1
+                st.createLabel(addr, name, GEN); n_data_named += 1
         except Exception:
             pass
     R("global data symbols labeled (Ghidra demangles): %d" % n_data_named)
@@ -686,11 +776,13 @@ try:
         # keep the mangled name Ghidra demangles on its own.
         leaf = name.rsplit("::", 1)[-1] if name else ""
         cur = str(fn.getName())
-        if leaf and _ident.match(leaf) and cur != leaf:
+        _prim = st.getPrimarySymbol(addr)
+        _human = _prim is not None and _prim.getSource() == US   # don't clobber a rename
+        if leaf and _ident.match(leaf) and cur != leaf and not _human:
             try:
-                fn.setName(leaf, US); n_renamed += 1
+                fn.setName(leaf, GEN); n_renamed += 1
             except Exception:
-                try: fn.setName("%s_%06x" % (leaf, rva), US); n_renamed += 1
+                try: fn.setName("%s_%06x" % (leaf, rva), GEN); n_renamed += 1
                 except Exception: pass
         else:
             n_kept += 1
@@ -730,7 +822,7 @@ try:
             fn.setCallingConvention(use_cc)
             fn.updateFunction(use_cc, retparam, pis,
                               FunctionUpdateType.DYNAMIC_STORAGE_FORMAL_PARAMS,
-                              True, US)
+                              True, GEN)
             n_proto += 1; applied_proto = True
             if len(proto_examples) < 15:
                 proto_examples.append("0x%06x %s [%s]" % (rva, fmt_proto(ret, name, params), use_cc))
@@ -754,7 +846,7 @@ try:
                     retparam = ReturnParameterImpl(fn.getReturnType(), prog)
                     fn.updateFunction(CC_THISCALL, retparam, new_params,
                                       FunctionUpdateType.DYNAMIC_STORAGE_FORMAL_PARAMS,
-                                      True, US)
+                                      True, GEN)
                     this_methods_by_class[cls] = this_methods_by_class.get(cls, 0) + 1
                     n_this_applied += 1
                 except Exception:
@@ -774,16 +866,19 @@ try:
                 off, nm = L.get("offset"), L.get("name")
                 if off is None or not nm:
                     continue
+                # don't clobber a human-named slot at this offset (USER_DEFINED)
+                ev = sf.getVariableContaining(off)
+                if ev is not None and ev.getSource() == US:
+                    continue
                 try:
-                    sf.createVariable(nm, off, Undefined4DataType.dataType, US)
+                    sf.createVariable(nm, off, Undefined4DataType.dataType, GEN)
                     set_here += 1
                 except Exception:
                     # a Ghidra-inferred variable already covers this slot: just
                     # rename it (keep Ghidra's recovered type).
                     try:
-                        v = sf.getVariableContaining(off)
-                        if v is not None and not v.isParameter():
-                            v.setName(nm, US); set_here += 1
+                        if ev is not None and not ev.isParameter():
+                            ev.setName(nm, GEN); set_here += 1
                     except Exception:
                         pass
             if set_here:
@@ -878,6 +973,14 @@ try:
     R("=== dominant still-bare FUN_ regions (64KB buckets, top 15) ===")
     for (b, c) in sorted(bare_regions.items(), key=lambda kv: -kv[1])[:15]:
         R("  RVA 0x%06x-0x%06x : %5d bare FUN_" % (b, b + 0xFFFF, c))
+
+    # ---- (G) round-trip: snapshot the generated-comment baseline, then re-apply
+    #         captured human edits LAST (so they win + survive a clean rebuild) ----
+    _ua = load_user_annotations()
+    dump_comment_baseline(_ua.get("comments", []))
+    un, uc, ul = apply_user_annotations(_ua)
+    R("user annotations re-applied (config/user_annotations.json): "
+      "%d name(s), %d comment(s), %d local(s)" % (un, uc, ul))
 
     ok = True
 finally:

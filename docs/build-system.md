@@ -240,6 +240,24 @@ nothing important lives only in the `.gpr` blob — it is all reproducible:
   clang record layouts / enums over `src/` + `src/Stub/types/`, defined in the DTM;
   each struct is applied as the `this` type on its class's methods.
 
+### Round-trip: capturing human edits (`gruntz capture`)
+
+The generated enrichment is the forward direction (`src/` → Ghidra). The back
+direction persists HUMAN work so it survives a clean rebuild (which wipes the
+`.gpr`). After renaming functions, writing comments, or naming/typing stack locals
+in the Ghidra GUI (and saving), run **`gruntz capture`**: `export_user.py` extracts
+exactly those human edits into the TRACKED **`config/user_annotations.json`**, which
+`apply.py` re-applies LAST on every refresh/init.
+
+Human vs generated is told apart by provenance: `apply.py` applies everything it
+generates as `SourceType.ANALYSIS` and human edits use `SourceType.USER_DEFINED`
+(the GUI's default), so a `USER_DEFINED` function symbol or stack variable is a human
+edit. Comments have no `SourceType`, so `apply.py` snapshots the generated comments
+to `build/gen/applied_comments.json` and the capture takes the set difference. The
+generated sections skip a function/slot already owned by a `USER_DEFINED` name, so a
+refresh never clobbers an un-captured edit. Commit `config/user_annotations.json` to
+share/persist the edits.
+
 ### What triggers a re-delink (incremental label map)
 
 The label map is built **per TU**: `gen_labels_one` runs `labels.py` on one

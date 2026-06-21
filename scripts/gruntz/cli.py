@@ -64,6 +64,7 @@ GHIDRA_DRIVER      = GHIDRA / "ghidra_metadata_apply.py" # PyGhidra driver: impo
 GHIDRA_SCRIPTS     = GHIDRA / "scripts"       # GhidraScripts: path-only, never imported/-m'd
 GHIDRA_APPLY       = GHIDRA_SCRIPTS / "apply.py"   # enrichment GhidraScript (run under PyGhidra)
 GHIDRA_EXPORT      = GHIDRA_SCRIPTS / "export.py"  # functions.csv/symbols.csv dump GhidraScript
+GHIDRA_EXPORT_USER = GHIDRA_SCRIPTS / "export_user.py" # capture human edits -> config/user_annotations.json
 INIT               = PKG / "init"             # environment setup
 LINK               = BUILD / "link.py"        # phase-2 VC5 link wrapper (candidate EXE + map)
 MANIFEST           = REPO / "config" / "units.toml"
@@ -270,6 +271,27 @@ def _ghidra_metadata_apply(analyze: bool) -> None:
     if not analyze:
         cmd.append("--no-analyze")
     run(cmd)
+
+
+def cmd_capture(args) -> None:
+    """Capture human edits from the Ghidra DB into git (round-trip back-direction).
+
+    Reads build/ghidra-named (the already-analyzed/enriched program), extracts the
+    human-made annotations - renamed functions, comments, named/typed stack locals
+    (told apart from generated enrichment by SourceType.USER_DEFINED + the non-
+    [LABEL] comment marker) - and writes the TRACKED config/user_annotations.json.
+    apply.py re-applies those on every refresh, so they survive a clean rebuild.
+
+    Run this AFTER editing in Ghidra (and saving the project), then commit the
+    updated config/user_annotations.json.
+    """
+    if not GHIDRA_PROJECT_DIR.exists() or not any(GHIDRA_PROJECT_DIR.glob("*.rep")):
+        die(f"no Ghidra project at {GHIDRA_PROJECT_DIR} - run `gruntz init` first.")
+    run([sys.executable, str(GHIDRA_DRIVER), str(RETAIL_EXE),
+         str(GHIDRA_PROJECT_DIR), GHIDRA_PROJECT,
+         str(GHIDRA_EXPORT_USER), "--no-analyze"])
+    log("capture done: human edits -> config/user_annotations.json "
+        "(commit it to persist across clean rebuilds).")
 
 
 def _ensure_retail_copy() -> None:
@@ -584,6 +606,8 @@ def main() -> None:
 
     sub.add_parser("ghidra-refresh", help="apply generated data to Ghidra + re-export"
                    ).set_defaults(func=cmd_ghidra_refresh)
+    sub.add_parser("capture", help="capture human Ghidra edits -> config/user_annotations.json"
+                   ).set_defaults(func=cmd_capture)
     i = sub.add_parser("init", help="one-time FULL local setup (dirs/configure/EXE/wine/clangd/Ghidra DB)")
     i.add_argument("--force", action="store_true", help="re-init the wine prefix")
     i.add_argument("--reimport", action="store_true", help="rebuild the Ghidra DB from scratch")
