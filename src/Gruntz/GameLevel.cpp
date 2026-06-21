@@ -86,9 +86,16 @@ DATA(0x1efc30)
 extern void* g_severusWorkerBaseVtbl; // base (SeverusWorker) vftable
 DATA(0x1f0150)
 extern void* g_gameLevelVtbl; // derived CGameLevel vftable
+// The base-subobject vftable the destructor restores after the member dtors run
+// (RemusBase::~RemusBase's vptr store - a different table from the base CTOR's).
+DATA(0x1e8cb4)
+extern void* g_remusBaseDtorVtbl;
 
 static inline void StampLevelVtbl(CGameLevel* o) {
     *(void**)o = &g_gameLevelVtbl;
+}
+static inline void StampRemusBaseDtorVtbl(CGameLevel* o) {
+    *(void**)o = &g_remusBaseDtorVtbl;
 }
 
 // Stamps the shared +0xb0..+0xdc "default parameters" block. Defined inline so it
@@ -163,10 +170,20 @@ int CGameLevel::LoadWwd(WwdHeader* hdr) {
     // Copy the 1524-byte header into the level object (rep movs 0x17d dwords).
     m_header = *hdr;
 
-    char* block;
-    char* ehAlloc = 0; // inflate buffer tracked by the EH state
+    // block starts as the header itself (uncompressed planes follow in place); the
+    // COMPRESS branch overwrites it with the inflated main block. Initializing block
+    // to hdr at the top makes its live range begin at the hdr load, which is why the
+    // retail compiler pins `block` in the callee-saved register and reloads `hdr`'s
+    // own fields through a spilled pointer for the rest of the function.
+    char* block = (char*)hdr;
+    char* ehAlloc = 0; // inflate buffer freed on every exit path
 
-    if (hdr->flags & 0x2) // COMPRESS: inflate the main block
+    // The flags field is read twice (the COMPRESS test and the m_flags store); the
+    // retail compiler materializes &hdr->flags once and dereferences it both times,
+    // so model it as a cached pointer.
+    unsigned int* pflags = &hdr->flags;
+
+    if (*pflags & 0x2) // COMPRESS: inflate the main block
     {
         unsigned int allocSize = hdr->mainBlockLength + hdr->wwdSignature + 0x40;
         char* buf = (char*)operator new(allocSize);
@@ -180,13 +197,13 @@ int CGameLevel::LoadWwd(WwdHeader* hdr) {
             return 0;
         }
         ehAlloc = buf;
-    } else {
-        block = (char*)hdr; // uncompressed: planes follow in place
     }
 
     strcpy(m_levelName, hdr->levelName); // inline strlen + rep movs
-    m_flags = hdr->flags;
+    m_flags = *pflags;
     m_checksum = hdr->checksum;
+
+    int result = 0; // image-set result (the >=0 success / -1 failure sentinel)
 
     // --- plane loop ---------------------------------------------------------
     char* cursor = block + hdr->planesOffset;
@@ -202,20 +219,36 @@ int CGameLevel::LoadWwd(WwdHeader* hdr) {
     }
 
     // --- image-set descriptors ---------------------------------------------
+    // The descriptor read is its own int-returning routine (inlined here): it
+    // validates the record pointer, walks `count` descriptors appending each
+    // CImageSet, and returns the number read (or -1 on a bad pointer / failed
+    // read). count is re-read from the record header each iteration (rec is spilled).
     if (hdr->tileDescriptionsOffset != 0) {
         char* rec = block + hdr->tileDescriptionsOffset;
-        // (the target re-tests the cursor against the record header before the
-        // loop; the descriptor count lives in the descriptor block header.)
-        unsigned int count = *(unsigned int*)(rec + 0x8);
-        unsigned int j = 0;
-        while (j < count) {
-            CImageSet* set = ReadImageSet(rec + 0x20);
-            if (set == 0) {
-                goto fail;
+        char* elem = rec + 0x20;
+        if (elem == 0) {
+            result = -1;
+        } else if (rec == 0) {
+            result = -1;
+        } else {
+            int n = 0;
+            int j = 0;
+            while ((unsigned int)j < *(unsigned int*)(rec + 0x8)) {
+                CImageSet* set = ReadImageSet(elem);
+                if (set == 0) {
+                    result = -1;
+                    goto check_result;
+                }
+                ++n;
+                elem += set->GetStride(); // vtable +0x24 stride advance
+                m_imageSets.SetAtGrow(j, (DWORD)set);
+                ++j;
             }
-            ++j;
-            rec += set->GetStride(); // vtable +0x24 stride advance
-            m_imageSets.SetAtGrow(j - 1, (DWORD)set);
+            result = n;
+        }
+    check_result:
+        if (result < 0) {
+            goto fail;
         }
     }
 
@@ -379,17 +412,29 @@ int CGameLevel::VirtualMethodUnknown3C(RemusParseSource* arg) {
     return 1;
 }
 
-// @confidence: high
-// @source: tomalla
-// @stub
+// ---------------------------------------------------------------------------
+// Scalar-deleting destructor (vtable slot 1): run the destructor, then free the
+// object when bit0 of the flag is set; returns `this`. The compiler-standard thunk.
 RVA(0x1611c0, 0x1e)
-void CGameLevel::Stub_1611c0() {}
+void* CGameLevel::ScalarDtor(unsigned int flags) {
+    this->~CGameLevel(); // call ??1CGameLevel
+    if (flags & 1) {
+        operator delete(this);
+    }
+    return this;
+}
 
-// @confidence: med
-// @source: call-xref
-// @stub
+// ---------------------------------------------------------------------------
+// Destructor: stamp the derived vftable, run the level cleanup, let the three
+// array members destruct (reverse construction order), then ~RemusBase restores
+// the base subobject (resets m_04/m_flags/m_0c + the base dtor vftable). The
+// destructible array members give the /GX EH frame.
 RVA(0x1611e0, 0x82)
-void CGameLevel::Stub_1611e0() {}
+CGameLevel::~CGameLevel() {
+    StampLevelVtbl(this);     // derived vftable @0x5f0150 (dtor entry)
+    VirtualMethodUnknown1C(); // level cleanup (releases children, clears the header)
+    // m_imageSets / m_planes / m_array20 auto-destruct here; ~RemusBase follows.
+}
 
 // ---------------------------------------------------------------------------
 // Like Unknown44 plus resets the sentinel and zeroes the WwdHeader buffer.

@@ -67,6 +67,7 @@ struct RemusParseSource;
 // are unchanged; the base merely owns the +0x04..+0x0c data the base ctor writes.
 // ---------------------------------------------------------------------------
 extern void* g_severusWorkerBaseVtbl; // base (SeverusWorker) vftable
+extern void* g_remusBaseDtorVtbl;     // base vftable restored by ~RemusBase (@0x5e8cb4)
 
 // RemusBase is POLYMORPHIC (it owns the engine "SeverusWorker" vtable @0x5efc30):
 // its inline ctor stamps that base vftable, which is why retail keeps the base
@@ -100,6 +101,16 @@ struct RemusBase {
         m_04 = a2;
         m_flags = a3;
         m_0c = a1;
+    }
+    // The base-subobject destructor: resets the three base fields and restores the
+    // base-class vftable. INLINE (in the header) so it folds into ~CGameLevel after
+    // the member array dtors, exactly as the retail compiler emitted the base-dtor
+    // tail. Stamps a different table from the ctor (the dtor-vtable @0x5e8cb4).
+    ~RemusBase() {
+        m_04 = -1;
+        m_flags = 0;
+        m_0c = 0;
+        *(void**)this = &g_remusBaseDtorVtbl;
     }
     int m_04;    // +0x04
     int m_flags; // +0x08  (== WwdHeader::flags after LoadWwd; arg3 at ctor)
@@ -174,9 +185,15 @@ public:
     int VirtualMethodUnknown40(const char* path);
     int VirtualMethodUnknown3C(RemusParseSource* arg);
 
-    // Engine-label backlog stubs (merged from UnknownRemus).
-    void Stub_1611c0();
-    void Stub_1611e0();
+    // Destructor (vtable slot 1, the ~CGameLevel @0x1611e0). Stamps the derived
+    // vftable, runs the level cleanup (VirtualMethodUnknown1C), then the three array
+    // members destruct and ~RemusBase restores the base subobject. Declared so the
+    // member dtors + EH frame fall out; the body (manual vtable stamps) is in the .cpp.
+    ~CGameLevel();
+
+    // The scalar-deleting destructor (vtable slot 1 thunk @0x1611c0): calls the
+    // destructor, then operator delete(this) when bit0 of the flag is set; returns this.
+    void* ScalarDtor(unsigned int flags);
 
 private:
     // The per-plane reader (WwdFile::ReadPlane). Same body as the one in

@@ -33,9 +33,9 @@ struct CGameReg {
     char m_pad37c[0x5b0 - 0x37c];
     int m_5b0; // +0x5b0
     char m_pad5b4[0x7e8 - 0x5b4];
-    int m_7e8;                            // +0x7e8
+    int m_7e8; // +0x7e8
     char m_pad7ec[0xa20 - 0x7ec];
-    int m_a20; // +0xa20
+    int m_a20;                            // +0xa20
     void Method92340(int state);          // __thiscall helper at RVA 0x92340
     void Method3df5(int state);           // __thiscall helper at RVA 0x3df5
     void ReportError(unsigned int, long); // CGruntzMgr::ReportError, RVA 0x346d
@@ -326,9 +326,9 @@ namespace ApiCallerStubs {
     // A dialog-host class whose GetItem(id) (RVA 0x1be27d) returns a CWnd-ish
     // whose HWND lives at +0x1c.
     struct DlgHost {
-        WndItem* GetItem(int id);  // thiscall, RVA 0x1be27d
-        void OnPick();             // thiscall, RVA 0x1bacc3
-        void Pick0183f0();         // thiscall, RVA 0x183f0
+        WndItem* GetItem(int id); // thiscall, RVA 0x1be27d
+        void OnPick();            // thiscall, RVA 0x1bacc3
+        void Pick0183f0();        // thiscall, RVA 0x183f0
     };
     // __thiscall(): send 0x188 to item 0x516; if it returned != -1, run OnPick().
     RVA(0x0183f0, 0x2e)
@@ -1117,7 +1117,7 @@ namespace ApiCallerStubs {
         char m_pad8[0x58 - 8];
         Sub58_092710* m_58; // +0x58
         Sub5c_092710* m_5c; // +0x5c
-        Sub60_092710* m_60;  // +0x60
+        Sub60_092710* m_60; // +0x60
         char m_pad64[0xbc - 0x64];
         int* m_bc; // +0xbc
         int Quickload();
@@ -1251,8 +1251,14 @@ namespace ApiCallerStubs {
     // "(Empty)" fallback display string (s_(Empty)_006113e0).
     // __cdecl(hWnd, item, id3, id4, id5, id6): label item into id3, enable 4 ctrls.
     RVA(0x09e2d0, 0x84)
-    void winapi_09e2d0_SetDlgItemTextA(HWND hWnd, NameItem_09e2d0* item, int id3, int id4, int id5,
-                                       int id6) {
+    void winapi_09e2d0_SetDlgItemTextA(
+        HWND hWnd,
+        NameItem_09e2d0* item,
+        int id3,
+        int id4,
+        int id5,
+        int id6
+    ) {
         int flag;
         if (Check2694(item)) {
             SetDlgItemTextA(hWnd, id3, item->m_14);
@@ -1320,8 +1326,8 @@ namespace ApiCallerStubs {
         char m_pad0[0xc];
         DPlayHolder_0b77a0* m_c; // +0x0c
         char m_pad10[0x524 - 0x10];
-        DPlayConn_0b77a0* m_524; // +0x524
-        int m_528;               // +0x528
+        DPlayConn_0b77a0* m_524;                                // +0x524
+        int m_528;                                              // +0x528
         void Configure(char* name, int a, int b, int c, int d); // RVA 0x3445
         int Build();                                            // RVA 0x3db9
         int HostStart();                                        // RVA 0x39bd
@@ -1511,7 +1517,7 @@ namespace ApiCallerStubs {
     // Submit (RVA 0x2243) posts a chat line. Singleton at DAT_006496ac.
     struct PeerSession_0be490 {
         char m_pad0[0x52c];
-        int m_52c; // +0x52c
+        int m_52c;                                        // +0x52c
         void Submit(char* text, int a, int b, HWND ctrl); // thiscall, RVA 0x2243
     };
     DATA(0x6496ac)
@@ -1789,8 +1795,7 @@ namespace ApiCallerStubs {
             return;
         }
         int sel = SendMessageA(it->m_hwnd, 0xf0, 0, 0);
-        PlayerSlot_0c50f0* slot =
-            (PlayerSlot_0c50f0*)((char*)g_gameReg + idx * 0x238 + 0x150);
+        PlayerSlot_0c50f0* slot = (PlayerSlot_0c50f0*)((char*)g_gameReg + idx * 0x238 + 0x150);
         if (!slot) {
             return;
         }
@@ -2100,7 +2105,7 @@ namespace ApiCallerStubs {
     DATA(0x64c86c)
     extern int g_dlg64c86c; // DAT_0064c86c (the active dialog HWND)
     DATA(0x613a9c)
-    extern int g_dlgSel613a9c; // DAT_00613a9c
+    extern int g_dlgSel613a9c;                                    // DAT_00613a9c
     int __cdecl DlgFallback_1302(HWND hDlg, int wParam, int cur); // RVA 0x1302
     void __cdecl DlgInit_2e05(HWND hDlg, int v);                  // RVA 0x2e05
     // __stdcall DlgProc(hDlg, msg, wParam, lParam).
@@ -2139,8 +2144,8 @@ namespace ApiCallerStubs {
     // The gameReg->m_58 dialog helper sub-object; its M1834/M2d97 thunks live in
     // this TU. (m_58 is reused elsewhere as an int/void* gate, so cast locally.)
     struct DlgSub58_0e3a40 {
-        void M1834(char* text);          // thiscall, thunk 0x1834
-        void M2d97(int a, int caption);  // thiscall, thunk 0x2d97
+        void M1834(char* text);         // thiscall, thunk 0x1834
+        void M2d97(int a, int caption); // thiscall, thunk 0x2d97
     };
     // The SetDlgItemTextA helper (RVA 0xe4850) is reached here via thunk 0x103c.
     // __stdcall DialogProc: OK closes; Cancel runs the helper sub-object; init fills.
@@ -2224,8 +2229,14 @@ namespace ApiCallerStubs {
     // __cdecl(hWnd, item, id3, id4, id5, id6): label item into id3, then enable the
     // first two controls unconditionally and the last two only if the item is valid.
     RVA(0x0e3e80, 0x86)
-    void winapi_0e3e80_SetDlgItemTextA(HWND hWnd, NameItem_09e2d0* item, int id3, int id4, int id5,
-                                       int id6) {
+    void winapi_0e3e80_SetDlgItemTextA(
+        HWND hWnd,
+        NameItem_09e2d0* item,
+        int id3,
+        int id4,
+        int id5,
+        int id6
+    ) {
         int flag;
         if (Check2694(item)) {
             SetDlgItemTextA(hWnd, id3, item->m_14);
@@ -2423,11 +2434,11 @@ namespace ApiCallerStubs {
         int Sub3d55(); // thiscall, RVA 0x3d55 (on g_gameReg->m_2c)
     };
     struct RectWnd_fe600 {
-        int m_0;            // +0x00
+        int m_0; // +0x00
         char m_pad4[0x10 - 4];
-        RECT m_10;          // +0x10
+        RECT m_10; // +0x10
         char m_pad20[0x548 - 0x20];
-        int m_548;          // +0x548
+        int m_548; // +0x548
         int Reset();
         void Sub194c(int v); // thiscall, RVA 0x194c
     };
@@ -3078,9 +3089,9 @@ namespace ApiCallerStubs {
     // @source: winapi:FindResourceA;LoadResource;LockResource
     // The header of the locked RT_BITMAP resource (its +0xe must be 8).
     struct ResHdr_144270 {
-        int m_0;  // +0x00 (payload size; data follows at +m_0+0x400)
-        int m_4;  // +0x04
-        int m_8;  // +0x08
+        int m_0; // +0x00 (payload size; data follows at +m_0+0x400)
+        int m_4; // +0x04
+        int m_8; // +0x08
         char m_padc[0xe - 0xc];
         short m_e; // +0x0e (must be 8)
     };
@@ -3091,8 +3102,8 @@ namespace ApiCallerStubs {
         int m_18; // +0x18
         int m_1c; // +0x1c
         char m_pad20[0x78 - 0x20];
-        int m_78; // +0x78
-        int Init(int saved);            // thiscall, RVA 0x13e0a0
+        int m_78;                        // +0x78
+        int Init(int saved);             // thiscall, RVA 0x13e0a0
         void Parse(char* data, int two); // thiscall, RVA 0x13ece0
         int Load(int a, char* name, int c);
     };
@@ -3187,20 +3198,20 @@ namespace ApiCallerStubs {
         char m_pad8[0xc - 8];
         char* m_c; // +0x0c (the 0x400 source palette buffer)
         char m_pad10[0x14 - 0x10];
-        int m_14; // +0x14
-        char* m_18;  // +0x18 (lazily-allocated 0x400 working copy)
-        char m_1c;   // +0x1c
-        char m_1d;   // +0x1d
-        char m_1e;   // +0x1e
+        int m_14;   // +0x14
+        char* m_18; // +0x18 (lazily-allocated 0x400 working copy)
+        char m_1c;  // +0x1c
+        char m_1d;  // +0x1d
+        char m_1e;  // +0x1e
         char m_pad1f[0x20 - 0x1f];
-        int m_20;    // +0x20
-        int m_24;    // +0x24 (timeGetTime stamp)
-        int m_28;    // +0x28
-        int m_2c;    // +0x2c
-        int m_30;    // +0x30
-        int m_34;    // +0x34 (1 once set up)
-        void Teardown();   // thiscall, RVA 0x148250
-        void Finalize();   // thiscall, RVA 0x1480a0
+        int m_20;        // +0x20
+        int m_24;        // +0x24 (timeGetTime stamp)
+        int m_28;        // +0x28
+        int m_2c;        // +0x2c
+        int m_30;        // +0x30
+        int m_34;        // +0x34 (1 once set up)
+        void Teardown(); // thiscall, RVA 0x148250
+        void Finalize(); // thiscall, RVA 0x1480a0
         void Setup6(int a, int b, char c3, char c4, char c5, int a6);
         void Setup4(int a, int b, int a3, int a4);
     };
@@ -3594,8 +3605,8 @@ namespace ApiCallerStubs {
     int winapi_1770a0_CreateICA_DeleteDC_GetDeviceCaps(); // RVA 0x1770a0
     // __thiscall(flags, src): build a 256-entry LOGPALETTE from src and realize it.
     struct PalBuilder_176df0 {
-        HPALETTE m_0;          // +0x00
-        LOGPALETTE m_pal;      // +0x04 (palVersion/palNumEntries/palPalEntry[1])
+        HPALETTE m_0;     // +0x00
+        LOGPALETTE m_pal; // +0x04 (palVersion/palNumEntries/palPalEntry[1])
         char m_pad_entries[0x408 - (4 + 4 + 4)];
         int m_408; // +0x408
         int m_40c; // +0x40c
@@ -3668,7 +3679,12 @@ namespace ApiCallerStubs {
         int numReserved = GetDeviceCaps(dc, NUMRESERVED);
         int half = numReserved / 2;
         GetSystemPaletteEntries(dc, 0, half, m_pal.palPalEntry);
-        GetSystemPaletteEntries(dc, sizePal - half, half, &m_pal.palPalEntry[m_pal.palNumEntries - half]);
+        GetSystemPaletteEntries(
+            dc,
+            sizePal - half,
+            half,
+            &m_pal.palPalEntry[m_pal.palNumEntries - half]
+        );
         for (int i = half; i < sizePal - half; i++) {
             m_pal.palPalEntry[i].peFlags = 1;
         }
@@ -3795,14 +3811,14 @@ namespace ApiCallerStubs {
         virtual void Finish(); // slot 24 == vtable +0x60
     };
     struct CursHost_17c510 {
-        int m_0;  // +0x00
-        int m_4;  // +0x04 active flag
+        int m_0; // +0x00
+        int m_4; // +0x04 active flag
         char m_pad8[0x53c - 8];
         CursSink_17c510* m_53c; // +0x53c
         void Teardown();
-        void CloseSmacker();   // RVA 0x17c9b0
-        void Free17d6b0();     // RVA 0x17d6b0
-        void Free17cc80();     // RVA 0x17cc80
+        void CloseSmacker(); // RVA 0x17c9b0
+        void Free17d6b0();   // RVA 0x17d6b0
+        void Free17cc80();   // RVA 0x17cc80
     };
     // __thiscall(): tear the playback object down and restore the cursor.
     RVA(0x17c510, 0x5e)
@@ -3841,8 +3857,8 @@ namespace ApiCallerStubs {
     };
     struct SmkPlayer_17c570 {
         char m_pad0[4];
-        int m_4;  // +0x04 active flag
-        int m_8;  // +0x08
+        int m_4; // +0x04 active flag
+        int m_8; // +0x08
         char m_pad0c[0x10 - 0xc];
         int m_10; // +0x10 Smacker handle
         char m_pad14[0x24 - 0x14];
@@ -3853,9 +3869,9 @@ namespace ApiCallerStubs {
         char m_pad50c[0x514 - 0x50c];
         int m_514; // +0x514
         char m_pad518[0x538 - 0x518];
-        int m_538; // +0x538
-        int Begin(int a2, int useDS, int a4, int a5);   // RVA 0x17cfc0
-        void CloseSmacker();                            // RVA 0x17c9b0
+        int m_538;                                    // +0x538
+        int Begin(int a2, int useDS, int a4, int a5); // RVA 0x17cfc0
+        void CloseSmacker();                          // RVA 0x17c9b0
         int OpenLo(int src, int a2, int useDS, int a4, int a5);
         int OpenHi(int src, int a2, int useDS, int a4, int a5);
     };
@@ -4067,10 +4083,10 @@ namespace ApiCallerStubs {
     struct Region_182ab0 {
         TileSrcHost_182ab0* m_0; // +0x00
         int m_4;                 // +0x04
-        RECT m_8; // +0x08 (left/top/right/bottom = m_8/m_c/m_10/m_14)
-        int m_18; // +0x18
-        int m_1c; // +0x1c
-        int m_20; // +0x20
+        RECT m_8;                // +0x08 (left/top/right/bottom = m_8/m_c/m_10/m_14)
+        int m_18;                // +0x18
+        int m_1c;                // +0x1c
+        int m_20;                // +0x20
         char m_pad24[0x40 - 0x24];
         int m_40; // +0x40
         int Init(TileSrcHost_182ab0* src, int a, RECT* rc, int d, int e, int f);

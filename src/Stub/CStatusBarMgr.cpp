@@ -13,22 +13,22 @@ struct SBLink {
 
 // Traversal node: next at +0, item at +8.
 struct SBNode {
-    SBNode* m_0;            // next
+    SBNode* m_0; // next
     char m_pad4[4];
-    CStatusBarItem2* m_8;   // item
+    CStatusBarItem2* m_8; // item
 };
 
 // Embedded 2-pointer list head (head at +0, tail at +4).
 struct SBList {
     SBNode* m_head;
     SBNode* m_tail;
-    void Unlink(SBLink*);  // 0x1391e0 thiscall
-    void Append(SBLink*);  // 0x139110 thiscall
+    void Unlink(SBLink*); // 0x1391e0 thiscall
+    void Append(SBLink*); // 0x139110 thiscall
 };
 
 struct SBMgrOwner {
     char m_pad[0x78];
-    int m_78;  // gate
+    int m_78; // gate
 };
 
 class CStatusBarMgr {
@@ -37,15 +37,15 @@ public:
 
 private:
     char m_pad0[0x10];
-    SBMgrOwner* m_10;        // [+0x10]
+    SBMgrOwner* m_10; // [+0x10]
     char m_pad14[0x04];
-    int m_18;                // [+0x18]
-    int m_1c;                // [+0x1c]
-    int m_20;                // [+0x20]
+    int m_18; // [+0x18]
+    int m_1c; // [+0x1c]
+    int m_20; // [+0x20]
     char m_pad24[0x58 - 0x24];
-    SBList m_58;             // [+0x58] embedded list head
+    SBList m_58; // [+0x58] embedded list head
 
-    CStatusBarItem2* Create(int);  // 0x135c20 thiscall
+    CStatusBarItem2* Create(int); // 0x135c20 thiscall
 };
 
 // @confidence: med
@@ -53,23 +53,27 @@ private:
 // @stub
 RVA(0x135d70, 0x92)
 class CStatusBarItem2* CStatusBarMgr::GetItem() {
-    if (!m_10->m_78)
+    if (!m_10->m_78) {
         return 0;
+    }
     SBNode* node = m_58.m_head;
     if (node) {
         while (1) {
-            if (node->m_8->m_50 && node->m_8->Sub3f0() == 0)
+            if (node->m_8->m_50 && node->m_8->Sub3f0() == 0) {
                 break;
+            }
             node = node->m_0;
-            if (!node)
+            if (!node) {
                 break;
+            }
         }
     }
     CStatusBarItem2* found;
-    if (!node)
+    if (!node) {
         found = 0;
-    else
+    } else {
         found = node->m_8;
+    }
     if (found) {
         found->Inner560(m_20);
         found->Inner740(m_1c);
@@ -77,8 +81,9 @@ class CStatusBarItem2* CStatusBarMgr::GetItem() {
     }
     if (!found) {
         found = Create(1);
-        if (!found)
+        if (!found) {
             return found;
+        }
     }
     m_58.Unlink((SBLink*)((char*)found + 0x44));
     m_58.Append((SBLink*)((char*)found + 0x44));
