@@ -34,7 +34,7 @@
 #include "CButeMgrHelper.cpp"
 #include "CButeNodeBase.cpp"
 #include "CFileIO.cpp"
-#include "CFileImage.cpp"
+#include "CFileImageDecode.cpp"
 #include "CGMMenuUI.cpp"
 #include "CGameModeBase.cpp"
 #include "CGruntzCmdList.cpp"

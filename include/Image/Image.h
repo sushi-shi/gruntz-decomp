@@ -86,11 +86,24 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// CFileImage - the file-backed format loaders (the REZ payload consumers).
-// Each constructs a stack CFileIO, opens the file named by its second arg,
-// reads GetLength() bytes into an `operator new` buffer, then calls a per-format
-// decode helper on `this` and returns the decoder's result; the buffer is freed
-// and the stream closed on every exit. The decode helpers are external/no-body.
+// CFileImage - the file-backed format loaders (the REZ payload consumers) AND
+// their per-format pixel decoders. The Load{Bmp,Pcx,Pid} entry points construct
+// a stack CFileIO, open the file, slurp it into an `operator new` buffer and call
+// the matching per-format decoder; the buffer is freed + the stream closed on
+// every exit.
+//
+// The decoders (DecodeBmp/DecodePcx/DecodePid + the low-level DecodePcxData) are
+// reconstructed in Image.cpp. They read the format header out of `buf`, validate
+// the geometry against the destination surface fields, optionally build a
+// 256-entry RGBQUAD palette into a per-decoder file-scope buffer (from the BMP
+// in-file RGBQUADs / the PCX|PID trailing 768-byte VGA palette) and hand the
+// pixel bytes to one of the surface blitters (Blit / BlitDirect, ret 0x10/8 -
+// external no-body) which copy into the destination plane.
+//
+// Field names are placeholders (m_<hexoffset>); only the OFFSETS + code bytes are
+// load-bearing. The decoders touch the surface geometry (m_18 height, m_1c width)
+// and the palette context (m_538 bitcount, m_53c 256-entry palette, m_93c
+// have-palette flag).
 // ---------------------------------------------------------------------------
 class CFileImage {
 public:
@@ -99,11 +112,35 @@ public:
     void* LoadPid(char* name, char* path, void* a3);
     int DecodePcxEx(char* name, char* path, void* a3, void* a4);
 
-    // Per-format decoders (external; reloc-masked). __thiscall on CFileImage.
-    void* DecodeBmp(char* name, void* buf, unsigned int size);
-    void* DecodePcx(char* name, void* buf, unsigned int size);
-    void* DecodePid(char* name, void* buf, unsigned int size, void* a3);
-    int DecodePcxData(char* name, void* buf, unsigned int len, void* a3, void* a4); // external
+    // Per-format decoders (reconstructed in Image.cpp). __thiscall on CFileImage.
+    void* DecodeBmp(char* surf, void* buf, unsigned int size);
+    void* DecodePcx(char* surf, void* buf, unsigned int size);
+    void* DecodePid(char* surf, void* buf, unsigned int size, void* surf2);
+    int DecodePcxData(void* surf, int bufptr, int size, int a4, int a5);
+
+    // The surface blitters + raw run-decoders the decoders delegate to (external
+    // no-body, reloc-masked). Blit does a palette-remap copy (ret 0x10 = 4 args),
+    // BlitDirect a straight copy (ret 8 = 2 args), BlitSurf the DecodePcxData
+    // setup (ret 0x14 = 5 args); DecodeRun8/DecodeRun24 RLE-expand one plane (ret
+    // 4 = 1 arg); RunDecode1/RunDecode3 emit a decoded scanline run (ret 0x10 = 4
+    // args); FillPalette installs the transparency colour (ret 4 = 1 arg).
+    int Blit(void* src, int bitcount, void* palette, int mode);      // 0x13faa0
+    int BlitDirect(void* src, int mode);                             // 0x13ece0
+    int BlitSurf(void* surf, int width, int height, int a4, int a5); // 0x13e0d0
+    int DecodeRun8(void* dst);                                       // 0x140aa0
+    int DecodeRun24(void* dst);                                      // 0x140c50
+    int RunDecode1(void* dst, void* src, int width, int height);     // 0x145270
+    int RunDecode3(void* dst, void* src, int width, int height);     // 0x1453f0
+    void FillPalette(void* arg);                                     // 0x13eb40
+
+    // Layout. Field names are placeholders; the OFFSETS are load-bearing.
+    char m_pad00[0x18];         // +0x00
+    int m_18;                   // +0x18  height
+    int m_1c;                   // +0x1c  width
+    char m_pad20[0x538 - 0x20]; // +0x20
+    int m_538;                  // +0x538  bitcount of the palette context
+    int m_53c[0x100];           // +0x53c  256-entry palette (ends at 0x93c)
+    int m_93c;                  // +0x93c  have-palette flag
 };
 
 #endif // SRC_IMAGE_IMAGE_H

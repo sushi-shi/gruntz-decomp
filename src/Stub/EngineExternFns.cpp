@@ -35,6 +35,14 @@ extern "C" {
     int RezAlloc() {
         return 0;
     }
+    // @confidence: high
+    // @source: reloc-correlation (CFileImage decoders)
+    // @stub
+    RVA(0x1b9b82, 0xb)
+    SYMBOL(_RezFree)
+    int RezFree() {
+        return 0;
+    }
     // @confidence: med
     // @source: reloc-correlation (1 caller)
     // @stub

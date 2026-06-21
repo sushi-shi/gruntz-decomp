@@ -32,9 +32,20 @@
 // reloc-masked engine calls) and the global operator new/delete. The CFileIO
 // stack object carries a dtor -> a C++ EH frame -> this TU builds with /GX.
 #include <Image/Image.h>
+#include <Rez/RezMgr.h> // RezAlloc/RezFree - the engine allocator the decoders use
 #include <rva.h>
 // <string.h>: strrchr (find the ext dot) / _stricmp (the case-insensitive ext compare).
 #include <string.h>
+
+// Per-decoder 256-entry RGBQUAD palette buffers (file-scope BSS, reloc-masked).
+// Each decoder builds its own when the source carries an inline/trailing palette;
+// the buffer addresses are differently-named symbols in the base obj (the absolute
+// pushes/compares reloc-mask against the retail DAT_* names). Declared in their
+// retail BSS order so the layout follows the binary.
+static unsigned char s_palBmp[0x400];     // 0x6842f0
+static unsigned char s_palPcx[0x400];     // 0x6846f0
+static unsigned char s_palPidData[0x400]; // 0x684ef0 (CFileImage::DecodePid)
+static unsigned char s_palPcxData[0x400]; // 0x6852f0 (CFileImage::DecodePcxData)
 
 // The four file-extension literals (reloc-masked .rdata globals). Declared at
 // file scope so each `push OFFSET` matches the binary's direct-address push.
@@ -447,6 +458,68 @@ int CImage::LoadDefault(char* name, void* a2, void* a3) {
 }
 
 // ---------------------------------------------------------------------------
+// CFileImage::DecodeBmp
+// `buf` is a whole .BMP file (packed BITMAPFILEHEADER + BITMAPINFOHEADER). Pull
+// biWidth/biHeight/biBitCount, validate them against the destination surface's
+// geometry (m_1c/m_18) and require 8 or 24 bpp. `surf` is the palette context
+// (m_538 source bpp / m_53c palette / m_93c have-palette). When the surface bpp
+// differs from the file's, build a palette (for 8bpp: byte-reverse the BMP's
+// in-file RGBQUADs into s_palBmp; for 24bpp reuse the surface palette) and blit
+// through the remapping Blit; otherwise straight-copy via BlitDirect. The pixel
+// data starts at buf + bfOffBits. Returns 1 on a successful blit, else 0.
+RVA(0x143fc0, 0x142)
+void* CFileImage::DecodeBmp(char* surf, void* buf, unsigned int size) {
+    CFileImage* pal = (CFileImage*)surf;
+    BITMAPINFOHEADER* ih = (BITMAPINFOHEADER*)((char*)buf + 0xe);
+    int width = ih->biWidth;
+    int bitcount = ih->biBitCount;
+    int height = ih->biHeight;
+    if (m_1c != width) {
+        return 0;
+    }
+    if (m_18 != height) {
+        return 0;
+    }
+    if (bitcount != 8 && bitcount != 0x18) {
+        return 0;
+    }
+
+    int remap = 0;
+    int palBpp = pal->m_538;
+    if (palBpp != bitcount) {
+        remap = 1;
+    }
+    if (remap && palBpp == 8 && pal->m_93c == 0) {
+        return 0;
+    }
+
+    void* palette = 0;
+    if (remap) {
+        if (bitcount == 8) {
+            unsigned char* src = (unsigned char*)buf + 0x36;
+            unsigned char* d = s_palBmp;
+            do {
+                d[0] = src[2];
+                d[1] = src[1];
+                d[2] = src[0];
+                d[3] = 0;
+                src += 4;
+                d += 4;
+            } while (d < s_palBmp + 0x400);
+            palette = s_palBmp;
+        }
+    } else if (palBpp == 8 && pal->m_93c != 0) {
+        palette = pal->m_53c;
+    }
+
+    void* pixels = (char*)buf + ((BITMAPFILEHEADER*)buf)->bfOffBits;
+    if (remap) {
+        return Blit(pixels, bitcount, palette, 2) ? (void*)1 : (void*)0;
+    }
+    return BlitDirect(pixels, 2) ? (void*)1 : (void*)0;
+}
+
+// ---------------------------------------------------------------------------
 // CFileImage::LoadBmp
 // Open the file named by `path`; on failure return 0. GetLength(); if the length
 // is zero return 0. `operator new` a buffer of that size; if it fails return 0.
@@ -481,6 +554,114 @@ void* CFileImage::LoadBmp(char* name, char* path) {
 }
 
 // ---------------------------------------------------------------------------
+// CFileImage::DecodePcx
+// `buf` is a whole .PCX file (128-byte ZSoft header, pixels at +0x80). Geometry
+// comes from the window (width = Xmax-Xmin+1 @ +8/+4, height = Ymax-Ymin+1 @
+// +0xa/+6); NPlanes @ +0x41 picks 8bpp (1 plane) or 24bpp (3 planes). Validate vs
+// the destination (m_1c/m_18). When no remap is needed the planes are RLE-expanded
+// straight into the surface (DecodeRun8/DecodeRun24); when the surface bpp differs
+// the run is decoded into a scratch buffer (RunDecode1/RunDecode3) and then blit
+// through the palette (built from the PCX trailing 768-byte VGA palette for 8bpp,
+// or the surface palette for 24bpp). Returns 1 on success, 0 on failure.
+RVA(0x144ee0, 0x225)
+void* CFileImage::DecodePcx(char* surf, void* buf, unsigned int size) {
+    if (!buf) {
+        return 0;
+    }
+    CFileImage* pal = (CFileImage*)surf;
+    unsigned char* hdr = (unsigned char*)buf;
+    int width = *(short*)(hdr + 8) - *(short*)(hdr + 4) + 1;
+    int height = *(short*)(hdr + 0xa) - *(short*)(hdr + 6) + 1;
+    unsigned char planes = hdr[0x41];
+
+    int bitcount = 0;
+    if (planes == 1) {
+        bitcount = 8;
+    } else if (planes == 3) {
+        bitcount = 0x18;
+    }
+    if (bitcount == 0) {
+        return 0;
+    }
+    if (m_1c != width) {
+        return 0;
+    }
+    if (m_18 != height) {
+        return 0;
+    }
+
+    int remap = 0;
+    int palBpp = pal->m_538;
+    if (palBpp != bitcount) {
+        remap = 1;
+    }
+    if (remap && palBpp == 8 && pal->m_93c == 0) {
+        return 0;
+    }
+
+    void* palette = 0;
+    if (remap) {
+        if (bitcount == 8) {
+            unsigned char* src = (unsigned char*)buf + size - 0x300;
+            unsigned char* d = s_palPcx;
+            do {
+                d[0] = *src++;
+                d[1] = *src++;
+                d[2] = *src++;
+                d[3] = 0;
+                d += 4;
+            } while (d < s_palPcx + 0x400);
+            palette = s_palPcx;
+        } else if (palBpp == 8 && pal->m_93c != 0) {
+            palette = pal->m_53c;
+        }
+    }
+
+    unsigned char* pixels = (unsigned char*)buf + 0x80;
+    int ok;
+    void* decoded = 0;
+    if (!remap) {
+        if (bitcount == 8) {
+            ok = DecodeRun8(pixels);
+        } else {
+            ok = DecodeRun24(pixels);
+        }
+        if (!ok) {
+            return 0;
+        }
+    } else {
+        if (bitcount == 8) {
+            decoded = RezAlloc(width * height);
+            if (!decoded) {
+                return 0;
+            }
+            ok = RunDecode1(decoded, pixels, width, height);
+        } else {
+            decoded = RezAlloc(width * height * 3);
+            if (!decoded) {
+                return 0;
+            }
+            ok = RunDecode3(decoded, pixels, width, height);
+        }
+        if (!ok) {
+            RezFree(decoded);
+            return 0;
+        }
+    }
+
+    if (remap) {
+        if (!Blit(decoded, bitcount, palette, 1)) {
+            RezFree(decoded);
+            return 0;
+        }
+    }
+    if (decoded) {
+        RezFree(decoded);
+    }
+    return (void*)1;
+}
+
+// ---------------------------------------------------------------------------
 // CFileImage::LoadPcx
 // Byte-identical to LoadBmp except for the per-format decode helper (DecodePcx).
 RVA(0x145110, 0x156)
@@ -512,6 +693,100 @@ void* CFileImage::LoadPcx(char* name, char* path) {
 }
 
 // ---------------------------------------------------------------------------
+// CFileImage::DecodePid
+// `buf` is a .PID payload (libwap32 layout: flags @ +4, width @ +8, height @
+// +0xc, run data @ +0x20). Width must be 4-aligned and the geometry must match
+// the destination surface (this->m_1c / m_18). `surf` is the palette context
+// (m_538 bpp / m_53c palette / m_93c have-palette). When flags&0x80
+// (EMBEDDED_PALETTE) the trailing 768-byte VGA palette is expanded into
+// s_palPidData; otherwise the surface palette is used. The 8bpp run is expanded
+// in place (DecodeRun8) or, when the surface bpp differs, into a scratch buffer
+// (RunDecode1) and blit through the palette. flags&1 (TRANSPARENCY) installs the
+// transparent colour (surf2) via FillPalette. Returns 1 on success, 0 on failure.
+RVA(0x145b10, 0x1b5)
+void* CFileImage::DecodePid(char* surf, void* buf, unsigned int size, void* surf2) {
+    CFileImage* pal = (CFileImage*)surf;
+    unsigned char* hdr = (unsigned char*)buf;
+    int flags = *(int*)(hdr + 4);
+    int width = *(int*)(hdr + 8);
+    int height = *(int*)(hdr + 0xc);
+    unsigned char* data = hdr + 0x20;
+
+    if (width & 3) {
+        return 0;
+    }
+    if (m_1c != width) {
+        return 0;
+    }
+    if (m_18 != height) {
+        return 0;
+    }
+
+    void* palette = 0;
+    if (pal->m_93c != 0) {
+        palette = pal->m_53c;
+    }
+    int remap = 0;
+    int palBpp = pal->m_538;
+    if (palBpp != 8) {
+        remap = 1;
+    }
+
+    if (flags & 0x80) {
+        if (size <= 0x300) {
+            return 0;
+        }
+        unsigned char* src = (unsigned char*)buf + size - 0x300;
+        unsigned char* d = s_palPidData;
+        do {
+            d[0] = *src++;
+            d[1] = *src++;
+            d[2] = *src++;
+            d[3] = 0;
+            d += 4;
+        } while (d < s_palPidData + 0x400);
+        palette = s_palPidData;
+    } else if (remap) {
+        if (palette == 0) {
+            return 0;
+        }
+        if (palBpp == 8 && pal->m_93c == 0) {
+            return 0;
+        }
+    }
+
+    void* decoded = 0;
+    if (!remap) {
+        if (!DecodeRun8(data)) {
+            return 0;
+        }
+    } else {
+        decoded = RezAlloc(height * width);
+        if (!decoded) {
+            return 0;
+        }
+        if (!RunDecode1(decoded, data, width, height)) {
+            RezFree(decoded);
+            return 0;
+        }
+    }
+
+    if (remap) {
+        if (!Blit(decoded, 8, palette, 1)) {
+            RezFree(decoded);
+            return 0;
+        }
+    }
+    if (decoded) {
+        RezFree(decoded);
+    }
+    if (flags & 1) {
+        FillPalette(surf2);
+    }
+    return (void*)1;
+}
+
+// ---------------------------------------------------------------------------
 // CFileImage::LoadPid
 // Like LoadBmp/LoadPcx, but: (1) it does NOT guard length==0 - it allocates the
 // buffer for whatever GetLength() returns and only null-checks the allocation;
@@ -540,6 +815,104 @@ void* CFileImage::LoadPid(char* name, char* path, void* a3) {
     return result;
 }
 
+// ---------------------------------------------------------------------------
+// CFileImage::DecodePcxData
+// The low-level PID-ish run decoder shared by DecodePcxEx. `surf` is the source
+// header (flags @ +4, width @ +8, height @ +0xc, run data @ +0x20); a4 is a
+// control word whose high bits are toggled from flags&4 / flags&2; a5 the
+// transparency colour. Width must be 4-aligned. The destination plane is set up
+// via BlitSurf, then the run is expanded in place (DecodeRun8) or, when the
+// surface bpp differs, into a scratch buffer (RunDecode1) and blit through the
+// palette (built from the trailing 768-byte VGA palette when flags&0x80 is set,
+// else the surface palette). flags&1 (TRANSPARENCY) installs a5 via FillPalette.
+RVA(0x1457a0, 0x22c)
+int CFileImage::DecodePcxData(void* surf, int bufptr, int size, int a4, int a5) {
+    unsigned char* hdr = (unsigned char*)bufptr; // arg2: the source header pointer
+    CFileImage* dst = (CFileImage*)surf;
+    int flags = *(int*)(hdr + 4);
+    int w = *(int*)(hdr + 8);
+    int h = *(int*)(hdr + 0xc);
+    unsigned char* data = hdr + 0x20;
+
+    if (w & 3) {
+        return 0;
+    }
+    if (flags & 4) {
+        a4 = (a4 & ~0x4000) | 0x800;
+    } else if (flags & 2) {
+        a4 = a4 & ~0x800;
+    }
+
+    void* palette = 0;
+    if (dst->m_93c) {
+        palette = dst->m_53c;
+    }
+    int remap = 0;
+    int palBpp = dst->m_538;
+    if (palBpp != 8) {
+        remap = 1;
+    }
+
+    if (flags & 0x80) {
+        if ((unsigned int)size <= 0x300) {
+            return 0;
+        }
+        unsigned char* src = hdr + size - 0x300;
+        unsigned char* d = s_palPcxData;
+        do {
+            d[0] = *src++;
+            d[1] = *src++;
+            d[2] = *src++;
+            d[3] = 0;
+            d += 4;
+        } while (d < s_palPcxData + 0x400);
+        palette = s_palPcxData;
+    } else {
+        if (remap) {
+            if (palette == 0) {
+                return 0;
+            }
+            if (palBpp == 8 && dst->m_93c == 0) {
+                return 0;
+            }
+        }
+    }
+
+    if (!BlitSurf(dst, w, h, 0, a4)) {
+        return 0;
+    }
+
+    void* decoded = 0;
+    if (!remap) {
+        if (!DecodeRun8(data)) {
+            return 0;
+        }
+    } else {
+        decoded = RezAlloc(h * w);
+        if (!decoded) {
+            return 0;
+        }
+        if (!RunDecode1(decoded, data, w, h)) {
+            RezFree(decoded);
+            return 0;
+        }
+    }
+
+    if (remap) {
+        if (!Blit(decoded, 8, palette, 1)) {
+            RezFree(decoded);
+            return 0;
+        }
+    }
+    if (decoded) {
+        RezFree(decoded);
+    }
+    if (flags & 1) {
+        FillPalette((void*)a5);
+    }
+    return 1;
+}
+
 // ===========================================================================
 // CFileImage::DecodePcxEx
 //
@@ -564,7 +937,7 @@ int CFileImage::DecodePcxEx(char* name, char* path, void* a3, void* a4) {
         return 0;
     }
 
-    int result = DecodePcxData(name, buf, len, a3, a4);
+    int result = DecodePcxData(name, (int)buf, len, (int)a3, (int)a4);
     operator delete(buf);
     return result;
 }
