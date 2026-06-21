@@ -30,10 +30,10 @@ extern Font g_smallFont;
 DATA(0x24ea58)
 extern Font g_tinyFont;
 
-#define s_large_fnt  "large.fnt"
+#define s_large_fnt "large.fnt"
 #define s_medium_fnt "medium.fnt"
-#define s_small_fnt  "small.fnt"
-#define s_tiny_fnt   "tiny.fnt"
+#define s_small_fnt "small.fnt"
+#define s_tiny_fnt "tiny.fnt"
 
 // ---------------------------------------------------------------------------
 // One-shot load of the four bitmap fonts. Each Font::LoadFont takes a CString by
@@ -41,21 +41,24 @@ extern Font g_tinyFont;
 // (returns the 0 the failed LoadFont left in eax). Once all four load, the flag
 // is set + 1 returned.
 RVA(0x115810, 0xa3)
-int InitializeFonts()
-{
+int InitializeFonts() {
     // The already-loaded case + the all-loaded success case share the single
     // `return 1` tail (the target's `jne <tail>` + the immediate flag store, not
     // an eax-routed one): the flag-set lives INSIDE the not-yet-loaded block so it
     // emits `mov dword[flag],1` (eax not yet live) before the shared `mov eax,1`.
     if (!g_loadedFlag) {
-        if (!g_largeFont.LoadFont(s_large_fnt))
+        if (!g_largeFont.LoadFont(s_large_fnt)) {
             return 0;
-        if (!g_mediumFont.LoadFont(s_medium_fnt))
+        }
+        if (!g_mediumFont.LoadFont(s_medium_fnt)) {
             return 0;
-        if (!g_smallFont.LoadFont(s_small_fnt))
+        }
+        if (!g_smallFont.LoadFont(s_small_fnt)) {
             return 0;
-        if (!g_tinyFont.LoadFont(s_tiny_fnt))
+        }
+        if (!g_tinyFont.LoadFont(s_tiny_fnt)) {
             return 0;
+        }
 
         g_loadedFlag = 1;
     }
@@ -63,8 +66,7 @@ int InitializeFonts()
 }
 
 RVA(0x1158f0, 0x2e)
-int FreeFontsMemory()
-{
+int FreeFontsMemory() {
     g_largeFont.FreeMemory();
     g_mediumFont.FreeMemory();
     g_smallFont.FreeMemory();

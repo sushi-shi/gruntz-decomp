@@ -4,7 +4,7 @@
 class CNetMgr {
 public:
     void AckDropPlayer(int);
-    void ReportVersionMsg(char const *, int);
+    void ReportVersionMsg(char const*, int);
     void SendNetStat(int, unsigned int, int);
     void SendStat3(int, unsigned int, int);
     void SendStatFlag(int, int);
@@ -18,7 +18,7 @@ void CNetMgr::AckDropPlayer(int) {}
 // @source: reloc-correlation (1 caller)
 // @stub
 RVA(0x001af0, 0x5)
-void CNetMgr::ReportVersionMsg(char const *, int) {}
+void CNetMgr::ReportVersionMsg(char const*, int) {}
 // @confidence: high
 // @source: reloc-correlation (2 callers)
 // @stub

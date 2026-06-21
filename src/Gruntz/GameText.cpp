@@ -58,8 +58,7 @@ static CString g_statLabel[8] = {
 // id, via a 4-entry jump table:
 //   0 -> "KING"  1 -> "NAPOLEAN"  2 -> "PATTON"  3 -> "VIKING"  default -> "".
 RVA(0x1ec20, 0x8d)
-CString __stdcall GetWarlordName(int id)
-{
+CString __stdcall GetWarlordName(int id) {
     // The target reserves and zero-inits one dead stack dword (`push ecx; mov
     // [esp+4],0; ...; pop ecx`) that no path reads - an MSVC5 return-slot/NRV
     // bookkeeping artifact. A `volatile int = 0` reproduces it exactly (the
@@ -67,11 +66,16 @@ CString __stdcall GetWarlordName(int id)
     // the cmp, matching the target's `mov [esp+4],0`).
     volatile int slot = 0;
     switch (id) {
-    case 0:  return CString("KING");
-    case 1:  return CString("NAPOLEAN");
-    case 2:  return CString("PATTON");
-    case 3:  return CString("VIKING");
-    default: return CString("");
+        case 0:
+            return CString("KING");
+        case 1:
+            return CString("NAPOLEAN");
+        case 2:
+            return CString("PATTON");
+        case 3:
+            return CString("VIKING");
+        default:
+            return CString("");
     }
 }
 
@@ -89,30 +93,29 @@ CString __stdcall GetWarlordName(int id)
 // and the runtime-seeded message-table slots. The 8 slots
 // are distinct named globals (non-contiguous in the EXE) so the source emits the
 // exact 8 `mov ds:slot,imm32` stores in the target's order. All reloc-masked.
-static char *g_defaultErrMsg;
-static char *g_errMsg_OutOfMem; // the lazy-init guard slot
-static char *g_errMsg_BadData;
-static char *g_errMsg_Overflow;
-static char *g_errMsg_NoFile;
-static char *g_errMsg_OutOfRng;
-static char *g_errMsg_Exists;
-static char *g_errMsg_NullArg;
-static char *g_errMsg_BadArg;
+static char* g_defaultErrMsg;
+static char* g_errMsg_OutOfMem; // the lazy-init guard slot
+static char* g_errMsg_BadData;
+static char* g_errMsg_Overflow;
+static char* g_errMsg_NoFile;
+static char* g_errMsg_OutOfRng;
+static char* g_errMsg_Exists;
+static char* g_errMsg_NullArg;
+static char* g_errMsg_BadArg;
 
 RVA(0x16d9c0, 0x75)
-CContainerErr::CContainerErr(const char *msg)
-{
-    m_msg  = msg ? msg : g_defaultErrMsg;  // +0x04 stored first
-    m_vtbl = &g_containerErrVtbl;          // +0x00 vtable stored after m_msg
+CContainerErr::CContainerErr(const char* msg) {
+    m_msg = msg ? msg : g_defaultErrMsg; // +0x04 stored first
+    m_vtbl = &g_containerErrVtbl;        // +0x00 vtable stored after m_msg
 
     if (g_errMsg_OutOfMem == 0) {
         g_errMsg_OutOfMem = "Out of memory";
-        g_errMsg_BadData  = "Data structure is invalid";
+        g_errMsg_BadData = "Data structure is invalid";
         g_errMsg_Overflow = "Overflow";
-        g_errMsg_NoFile   = "No such file, handle or object";
+        g_errMsg_NoFile = "No such file, handle or object";
         g_errMsg_OutOfRng = "Out of range";
-        g_errMsg_Exists   = "Target alrready exisits";
-        g_errMsg_NullArg  = "Null pointer argument";
-        g_errMsg_BadArg   = "Bad argument value";
+        g_errMsg_Exists = "Target alrready exisits";
+        g_errMsg_NullArg = "Null pointer argument";
+        g_errMsg_BadArg = "Bad argument value";
     }
 }

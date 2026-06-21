@@ -10,7 +10,9 @@ public:
 // @source: reloc-correlation (3 callers)
 // @stub
 RVA(0x164790, 0x41)
-int HelperHost::Helper_164790(int, int) { return 0; }
+int HelperHost::Helper_164790(int, int) {
+    return 0;
+}
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @stub

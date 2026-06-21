@@ -22,7 +22,9 @@ void CGMMenuUI::OnFlag00000003() {}
 // @source: reloc-correlation (1 caller)
 // @stub
 RVA(0x182d80, 0x18)
-int CGMMenuUI::OnFlag00000100() { return 0; }
+int CGMMenuUI::OnFlag00000100() {
+    return 0;
+}
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @stub

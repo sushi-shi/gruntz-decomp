@@ -23,7 +23,9 @@ CGruntzWnd::CGruntzWnd() {}
 // Out-of-line stubs so the CGruntzWnd vftable is emitted in this TU;
 // not matched / not @address-annotated.
 CGruntzWnd::~CGruntzWnd() {}
-int CGruntzWnd::Wap32GameWndVfunc0() { return 0; }
+int CGruntzWnd::Wap32GameWndVfunc0() {
+    return 0;
+}
 
 // -------------------------------------------------------------------------
 // Engine-label backlog stubs.

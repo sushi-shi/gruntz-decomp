@@ -22,30 +22,28 @@
  * layout weight.)
  */
 
-class Font
-{
+class Font {
 public:
     Font();
     ~Font();
 
     void FreeMemory();
-    bool LoadFont(void *szFileName /* MFC CString by value in the binary */);
+    bool LoadFont(void* szFileName /* MFC CString by value in the binary */);
 
 private:
     bool AllocateMemory(int lettersCount);
 
     // Per-letter glyph dimensions (parsed straight from the .fnt Letter header).
-    struct Size
-    {
+    struct Size {
         int width;
         int height;
     };
 
-    bool   m_isMemoryAllocated; // +0x00  (1 byte; 3 bytes pad to the next dword)
-    int    m_lettersCount;      // +0x04
-    char **m_pPixelData;        // +0x08  [m_lettersCount] glyph pixel rows
-    Size  *m_pLettersSize;      // +0x0c  [m_lettersCount] glyph {width,height}
-    int    m_fontHeight;        // +0x10  max glyph height across all letters
-};                              // 0x14 bytes
+    bool m_isMemoryAllocated; // +0x00  (1 byte; 3 bytes pad to the next dword)
+    int m_lettersCount;       // +0x04
+    char** m_pPixelData;      // +0x08  [m_lettersCount] glyph pixel rows
+    Size* m_pLettersSize;     // +0x0c  [m_lettersCount] glyph {width,height}
+    int m_fontHeight;         // +0x10  max glyph height across all letters
+}; // 0x14 bytes
 
 #endif /* UTILS_FONT_H */

@@ -16,7 +16,7 @@ public:
     // ignores `this` (the call sites leave ECX set from a prior thiscall, but the
     // body never reads it) and is __cdecl/caller-cleaned (plain `ret`; call sites
     // `add esp,0xc`).
-    static void GetErrorString(char *file, int line, long hr);
+    static void GetErrorString(char* file, int line, long hr);
 };
 
 #endif // DINMGR2_DIRECTINPUTMGR2_H

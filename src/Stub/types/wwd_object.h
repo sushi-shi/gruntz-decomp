@@ -48,15 +48,14 @@
 
 // CString in the editor-grouped WwdObject view is an MFC type (a single char*);
 // modeled here as a 4-byte placeholder so the header parses without <afxwin.h>.
-typedef void *WwdCString;
+typedef void* WwdCString;
 
 /* Inclusive rectangle, {left,top,right,bottom}, as used by every object rect. */
-struct WwdRect
-{
-    int left;    // "Left:"
-    int top;     // "Top:"
-    int right;   // "Right:"
-    int bottom;  // "Bottom:"
+struct WwdRect {
+    int left;   // "Left:"
+    int top;    // "Top:"
+    int right;  // "Right:"
+    int bottom; // "Bottom:"
 };
 
 /*
@@ -70,65 +69,64 @@ struct WwdRect
  * the record. This is the load-bearing layout; the editor-grouped WwdObject below
  * is a name-rich convenience view only.
  */
-struct WwdObjectRecord
-{
-    int          id;            // @0x000  "ID"
-    unsigned int nameLength;    // @0x004  length of trailing name string
-    unsigned int logicLength;   // @0x008  length of trailing logic string
-    unsigned int imageSetLength;// @0x00C  length of trailing image-set string
-    unsigned int soundLength;   // @0x010  length of trailing sound string ("animation" in libwap32)
-    int          x;             // @0x014  "X Coord:" (pixel)
-    int          y;             // @0x018  "Y Coord:"
-    int          z;             // @0x01C  "Z Coord:"
-    int          i;             // @0x020  frame index
-    unsigned int addFlags;      // @0x024  Difficult/EyeCandy/HighDetail/...
-    unsigned int dynamicFlags;  // @0x028  "Dynamic Flags" NoHit/AlwaysActive/Safe/AutoHitDamage
-    unsigned int drawFlags;     // @0x02C  "Draw Flags" NoDraw/Mirror/Invert/Flash
-    unsigned int userFlags;     // @0x030  "User Flags"
-    int          score;         // @0x034  "Score:"
-    int          points;        // @0x038  "Points:"
-    int          powerup;       // @0x03C  "Powerup:"
-    int          damage;        // @0x040  "Damage:"
-    int          smarts;        // @0x044  "Smarts:"
-    int          health;        // @0x048  "Health:"
-    int          moveRect[4];   // @0x04C  "Move Rect"   {l,t,r,b}
-    int          hitRect[4];    // @0x05C  "Hit Rect"
-    int          attackRect[4]; // @0x06C  "Attack Rect"
-    int          clipRect[4];   // @0x07C  "Clip Rect"
-    int          userRect1[4];  // @0x08C  "User1 Rect"
-    int          userRect2[4];  // @0x09C  "User2 Rect"
-    int          userValue1;    // @0x0AC  "User 1:"
-    int          userValue2;    // @0x0B0  "User 2:"
-    int          userValue3;    // @0x0B4  "User 3:"
-    int          userValue4;    // @0x0B8  "User 4:"
-    int          userValue5;    // @0x0BC  "User 5:"
-    int          userValue6;    // @0x0C0  "User 6:"
-    int          userValue7;    // @0x0C4  "User 7:"
-    int          userValue8;    // @0x0C8  "User 8:"
-    int          minX;          // @0x0CC  "xMin:"
-    int          minY;          // @0x0D0  "yMin:"
-    int          maxX;          // @0x0D4  "xMax:"
-    int          maxY;          // @0x0D8  "yMax:"
-    int          speedX;        // @0x0DC  "Speed X:"
-    int          speedY;        // @0x0E0  "Speed Y:"
-    int          tweakX;        // @0x0E4  "xTweak"
-    int          tweakY;        // @0x0E8  "yTweak"
-    int          counter;       // @0x0EC  "Counter:"
-    int          speed;         // @0x0F0  "Speed:"
-    int          width;         // @0x0F4  "Width:"
-    int          height;        // @0x0F8  "Height:"
-    int          direction;     // @0x0FC  "Direction:"
-    int          faceDir;       // @0x100  "Face Dir:"
-    int          timeDelay;     // @0x104  "Time Delay:"
-    int          frameDelay;    // @0x108  "Frame Delay:"
-    unsigned int objectType;    // @0x10C  "Object Type" (single value)
-    unsigned int hitTypeFlags;  // @0x110  "Hit Type Flags"
-    int          moveResX;      // @0x114  "xMoveRes:"
-    int          moveResY;      // @0x118  "yMoveRes:"
+struct WwdObjectRecord {
+    int id;                      // @0x000  "ID"
+    unsigned int nameLength;     // @0x004  length of trailing name string
+    unsigned int logicLength;    // @0x008  length of trailing logic string
+    unsigned int imageSetLength; // @0x00C  length of trailing image-set string
+    unsigned int soundLength;  // @0x010  length of trailing sound string ("animation" in libwap32)
+    int x;                     // @0x014  "X Coord:" (pixel)
+    int y;                     // @0x018  "Y Coord:"
+    int z;                     // @0x01C  "Z Coord:"
+    int i;                     // @0x020  frame index
+    unsigned int addFlags;     // @0x024  Difficult/EyeCandy/HighDetail/...
+    unsigned int dynamicFlags; // @0x028  "Dynamic Flags" NoHit/AlwaysActive/Safe/AutoHitDamage
+    unsigned int drawFlags;    // @0x02C  "Draw Flags" NoDraw/Mirror/Invert/Flash
+    unsigned int userFlags;    // @0x030  "User Flags"
+    int score;                 // @0x034  "Score:"
+    int points;                // @0x038  "Points:"
+    int powerup;               // @0x03C  "Powerup:"
+    int damage;                // @0x040  "Damage:"
+    int smarts;                // @0x044  "Smarts:"
+    int health;                // @0x048  "Health:"
+    int moveRect[4];           // @0x04C  "Move Rect"   {l,t,r,b}
+    int hitRect[4];            // @0x05C  "Hit Rect"
+    int attackRect[4];         // @0x06C  "Attack Rect"
+    int clipRect[4];           // @0x07C  "Clip Rect"
+    int userRect1[4];          // @0x08C  "User1 Rect"
+    int userRect2[4];          // @0x09C  "User2 Rect"
+    int userValue1;            // @0x0AC  "User 1:"
+    int userValue2;            // @0x0B0  "User 2:"
+    int userValue3;            // @0x0B4  "User 3:"
+    int userValue4;            // @0x0B8  "User 4:"
+    int userValue5;            // @0x0BC  "User 5:"
+    int userValue6;            // @0x0C0  "User 6:"
+    int userValue7;            // @0x0C4  "User 7:"
+    int userValue8;            // @0x0C8  "User 8:"
+    int minX;                  // @0x0CC  "xMin:"
+    int minY;                  // @0x0D0  "yMin:"
+    int maxX;                  // @0x0D4  "xMax:"
+    int maxY;                  // @0x0D8  "yMax:"
+    int speedX;                // @0x0DC  "Speed X:"
+    int speedY;                // @0x0E0  "Speed Y:"
+    int tweakX;                // @0x0E4  "xTweak"
+    int tweakY;                // @0x0E8  "yTweak"
+    int counter;               // @0x0EC  "Counter:"
+    int speed;                 // @0x0F0  "Speed:"
+    int width;                 // @0x0F4  "Width:"
+    int height;                // @0x0F8  "Height:"
+    int direction;             // @0x0FC  "Direction:"
+    int faceDir;               // @0x100  "Face Dir:"
+    int timeDelay;             // @0x104  "Time Delay:"
+    int frameDelay;            // @0x108  "Frame Delay:"
+    unsigned int objectType;   // @0x10C  "Object Type" (single value)
+    unsigned int hitTypeFlags; // @0x110  "Hit Type Flags"
+    int moveResX;              // @0x114  "xMoveRes:"
+    int moveResY;              // @0x118  "yMoveRes:"
     // @0x11C (284): variable-length, length-prefixed (above), NOT NUL-terminated:
     //   char name[nameLength]; char logic[logicLength];
     //   char imageSet[imageSetLength]; char sound[soundLength];
-};  // sizeof == 0x11C (284) — PINNED
+}; // sizeof == 0x11C (284) — PINNED
 
 /*
  * WwdObject — one world-object record (editor-grouped, name-rich VIEW).
@@ -140,78 +138,79 @@ struct WwdObjectRecord
  * CObject (and every gameplay subclass: CGrunt, hazards, triggers, …) is built
  * from this record.
  */
-struct WwdObject
-{
+struct WwdObject {
     /* --- Identification (Object-Properties dialog) --- */
-    WwdCString name;        // "Name:"        object instance name (length-prefixed on disk)
-    WwdCString logic;       // "Logic:"       logic-program name (-> CUserLogic dispatch)
-    WwdCString imageSet;    // "Image Set:"   primary image-set name (length-prefixed STRING on disk, NOT an int)
-    WwdCString sound;       // trailing sound/"animation" string (length-prefixed on disk; editor omitted it)
+    WwdCString name;  // "Name:"        object instance name (length-prefixed on disk)
+    WwdCString logic; // "Logic:"       logic-program name (-> CUserLogic dispatch)
+    WwdCString
+        imageSet; // "Image Set:"   primary image-set name (length-prefixed STRING on disk, NOT an int)
+    WwdCString
+        sound; // trailing sound/"animation" string (length-prefixed on disk; editor omitted it)
 
     /* --- Attributes --- */
-    int score;           // "Score:"
-    int points;          // "Points:"      (editor exposes both Score and Points)
-    int powerup;         // "Powerup:"     (see enum Powerup)
-    int damage;          // "Damage:"
-    int smarts;          // "Smarts:"      AI level
-    int health;          // "Health:"
+    int score;   // "Score:"
+    int points;  // "Points:"      (editor exposes both Score and Points)
+    int powerup; // "Powerup:"     (see enum Powerup)
+    int damage;  // "Damage:"
+    int smarts;  // "Smarts:"      AI level
+    int health;  // "Health:"
 
     /* --- Motion / facing --- */
-    int speedX;          // "Speed X:"
-    int speedY;          // "Speed Y:"
-    int speed;           // "Speed:"       (scalar speed, distinct from Speed X/Y)
-    int faceDir;         // "Face Dir:"    (see enum Direction)
-    int direction;       // "Direction:"   movement direction (vs facing)
+    int speedX;    // "Speed X:"
+    int speedY;    // "Speed Y:"
+    int speed;     // "Speed:"       (scalar speed, distinct from Speed X/Y)
+    int faceDir;   // "Face Dir:"    (see enum Direction)
+    int direction; // "Direction:"   movement direction (vs facing)
 
     /* --- Misc values (Object-Misc-Values dialog) --- */
-    int counter;         // "Counter:"
-    int width;           // "Width:"
-    int height;          // "Height:"
-    int timeDelay;       // "Time Delay:"
-    int frameDelay;      // "Frame Delay:"
+    int counter;    // "Counter:"
+    int width;      // "Width:"
+    int height;     // "Height:"
+    int timeDelay;  // "Time Delay:"
+    int frameDelay; // "Frame Delay:"
 
     /* --- Position --- */
-    int zCoord;          // "Z Coord:"     draw/sort depth
-    int xCoord;          // "X Coord:"     pixel X
-    int yCoord;          // "Y Coord:"     pixel Y
+    int zCoord; // "Z Coord:"     draw/sort depth
+    int xCoord; // "X Coord:"     pixel X
+    int yCoord; // "Y Coord:"     pixel Y
 
     /* --- Movement bounds / tweaks (Object-Points dialog) --- */
-    int xMin;            // "xMin:" / "X Min:"
-    int xMax;            // "xMax:" / "X Max:"
-    int yMin;            // "yMin:" / "Y Min:"
-    int yMax;            // "yMax:" / "Y Max:"
-    int xMoveRes;        // "xMoveRes:"     movement resolution X
-    int yMoveRes;        // "yMoveRes:"     movement resolution Y
-    int xTweak;          // "xTweak"
-    int yTweak;          // "yTweak"
+    int xMin;     // "xMin:" / "X Min:"
+    int xMax;     // "xMax:" / "X Max:"
+    int yMin;     // "yMin:" / "Y Min:"
+    int yMax;     // "yMax:" / "Y Max:"
+    int xMoveRes; // "xMoveRes:"     movement resolution X
+    int yMoveRes; // "yMoveRes:"     movement resolution Y
+    int xTweak;   // "xTweak"
+    int yTweak;   // "yTweak"
 
     /* --- User scalars (Object-User-Values dialog) --- */
-    int userValue;       // "User Value:"
-    int user[8];         // "User 1:" .. "User 8:"  (1-based in the editor)
+    int userValue; // "User Value:"
+    int user[8];   // "User 1:" .. "User 8:"  (1-based in the editor)
 
     /* --- Rectangles (Object-Rectangles dialog) --- */
-    WwdRect hitRect;     // "Hit Rect"
-    WwdRect attackRect;  // "Attack Rect"
-    WwdRect clipRect;    // "Clip Rect"
-    WwdRect moveRect;    // "Move Rect"
-    WwdRect user1Rect;   // "User1 Rect"
-    WwdRect user2Rect;   // "User2 Rect"
+    WwdRect hitRect;    // "Hit Rect"
+    WwdRect attackRect; // "Attack Rect"
+    WwdRect clipRect;   // "Clip Rect"
+    WwdRect moveRect;   // "Move Rect"
+    WwdRect user1Rect;  // "User1 Rect"
+    WwdRect user2Rect;  // "User2 Rect"
 
     /* --- Flag words (Object-Flags / Object-Hit-Info dialogs) --- */
-    unsigned int drawFlags;     // "Draw Flags"     (see WwdDrawFlags)
-    unsigned int dynamicFlags;  // "Dynamic Flags"
-    unsigned int userFlags;     // "User Flags"
-    unsigned int hitTypeFlags;  // "Hit Type Flags" (see WwdHitTypeFlags)
-    unsigned int objectFlags;   // "Object Flags"   (see WwdObjectFlags)
-    int autoHitDamage;          // "Auto Hit Damage"
+    unsigned int drawFlags;    // "Draw Flags"     (see WwdDrawFlags)
+    unsigned int dynamicFlags; // "Dynamic Flags"
+    unsigned int userFlags;    // "User Flags"
+    unsigned int hitTypeFlags; // "Hit Type Flags" (see WwdHitTypeFlags)
+    unsigned int objectFlags;  // "Object Flags"   (see WwdObjectFlags)
+    int autoHitDamage;         // "Auto Hit Damage"
 
     /* --- Image sets / prefixes (Add-Image-Sets dialog) ---
      * NOTE: these imageSetN/prefixN belong to the WWD LEVEL HEADER (see
      * WwdHeader.imageSet1..4 / prefix1..4 in wwd.h), NOT to the per-object
      * on-disk record (WwdObjectRecord) — they are reproduced here only because the
      * editor surfaces them via an object-adjacent dialog. */
-    WwdCString imageSet1, imageSet2, imageSet3, imageSet4;  // "Image Set 1:".."4:"
-    WwdCString prefix1, prefix2, prefix3, prefix4;          // "Prefix 1:".."4:"
+    WwdCString imageSet1, imageSet2, imageSet3, imageSet4; // "Image Set 1:".."4:"
+    WwdCString prefix1, prefix2, prefix3, prefix4;         // "Prefix 1:".."4:"
 };
 
 /*
@@ -219,8 +218,7 @@ struct WwdObject
  * order. These are the WAP32-engine object flag bits (shared with WapWorld/GMEdit).
  * Bit VALUES are unverified (label order != bit order until confirmed); names verbatim.
  */
-enum WwdObjectFlags
-{
+enum WwdObjectFlags {
     WWD_OBJ_NO_HIT,          // "No Hit"
     WWD_OBJ_ALWAYS_ACTIVE,   // "Always Active"
     WWD_OBJ_SAFE,            // "Safe"
@@ -243,20 +241,19 @@ enum WwdObjectFlags
  * "Object Hit Info" dialog (the "Object Type" / "Hit Type Flags" list). Names
  * verbatim; the editor lists them twice (combo + checklist).
  */
-enum WwdHitTypeFlags
-{
-    WWD_HIT_GENERIC,   // "Generic"
-    WWD_HIT_PLAYER,    // "Player"
-    WWD_HIT_ENEMY,     // "Enemy"
-    WWD_HIT_POWERUP,   // "Powerup"
-    WWD_HIT_SHOT,      // "Shot"
-    WWD_HIT_PSHOT,     // "P-Shot"   (player shot)
-    WWD_HIT_ESHOT,     // "E-Shot"   (enemy shot)
-    WWD_HIT_SPECIAL,   // "Special"
-    WWD_HIT_USER1,     // "User 1"
-    WWD_HIT_USER2,     // "User 2"
-    WWD_HIT_USER3,     // "User 3"
-    WWD_HIT_USER4      // "User 4"
+enum WwdHitTypeFlags {
+    WWD_HIT_GENERIC, // "Generic"
+    WWD_HIT_PLAYER,  // "Player"
+    WWD_HIT_ENEMY,   // "Enemy"
+    WWD_HIT_POWERUP, // "Powerup"
+    WWD_HIT_SHOT,    // "Shot"
+    WWD_HIT_PSHOT,   // "P-Shot"   (player shot)
+    WWD_HIT_ESHOT,   // "E-Shot"   (enemy shot)
+    WWD_HIT_SPECIAL, // "Special"
+    WWD_HIT_USER1,   // "User 1"
+    WWD_HIT_USER2,   // "User 2"
+    WWD_HIT_USER3,   // "User 3"
+    WWD_HIT_USER4    // "User 4"
     // (bit positions/values unverified against the binary; label order only.)
 };
 

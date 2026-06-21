@@ -36,8 +36,12 @@
 void CGruntzCommand::Vfunc1() {}
 void CGruntzCommand::Vfunc2() {}
 void CGruntzCommand::Vfunc3() {}
-int  CGruntzCommand::Vslot04() { return 1; }
-int  CGruntzCommand::Vslot05() { return 1; }
+int CGruntzCommand::Vslot04() {
+    return 1;
+}
+int CGruntzCommand::Vslot05() {
+    return 1;
+}
 void CGruntzCommand::Vslot06() {}
 void CGruntzCommand::Vslot07() {}
 
@@ -50,10 +54,10 @@ void CGruntzCommand::Vslot07() {}
 // inline ctor, which only stamps the leaf vftable. Returns the object (or 0).
 // ---------------------------------------------------------------------------
 RVA(0x024220, 0x2b)
-CGruntzSingleCommand *CGruntzSingleCommand::Allocate()
-{
-    if (g_singleCmdCount)
-        return (CGruntzSingleCommand *)g_singleCmdList.RemoveTail();
+CGruntzSingleCommand* CGruntzSingleCommand::Allocate() {
+    if (g_singleCmdCount) {
+        return (CGruntzSingleCommand*)g_singleCmdList.RemoveTail();
+    }
     return new CGruntzSingleCommand;
 }
 
@@ -61,9 +65,9 @@ CGruntzSingleCommand *CGruntzSingleCommand::Allocate()
 // CGruntzMultiCommand::Allocate() - 0x024360. Same shape, Multi list/vftable.
 // ---------------------------------------------------------------------------
 RVA(0x024360, 0x2b)
-CGruntzMultiCommand *CGruntzMultiCommand::Allocate()
-{
-    if (g_multiCmdCount)
-        return (CGruntzMultiCommand *)g_multiCmdList.RemoveTail();
+CGruntzMultiCommand* CGruntzMultiCommand::Allocate() {
+    if (g_multiCmdCount) {
+        return (CGruntzMultiCommand*)g_multiCmdList.RemoveTail();
+    }
     return new CGruntzMultiCommand;
 }

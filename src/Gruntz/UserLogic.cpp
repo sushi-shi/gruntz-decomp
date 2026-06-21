@@ -14,21 +14,47 @@
 // Out-of-line vtable anchors. These give each class a real vftable in this TU so
 // the inline ctors emit the right vptr stores. Bodies are not matched.
 CUserBase::~CUserBase() {}
-int CUserBase::UserBaseVfunc1() { return 0; }
-int CUserBase::UserBaseVfunc2() { return 0; }
+int CUserBase::UserBaseVfunc1() {
+    return 0;
+}
+int CUserBase::UserBaseVfunc2() {
+    return 0;
+}
 
 CUserLogic::~CUserLogic() {}
-int CUserLogic::UserLogicVfunc1() { return 0; }
-int CUserLogic::UserLogicVfunc2() { return 0; }
-int CUserLogic::UserLogicVfunc3() { return 0; }
-int CUserLogic::UserLogicVfunc4() { return 0; }
-int CUserLogic::UserLogicVfunc5() { return 0; }
-int CUserLogic::UserLogicVfunc6() { return 0; }
-int CUserLogic::UserLogicVfunc7() { return 0; }
-int CUserLogic::UserLogicVfunc8() { return 0; }
-int CUserLogic::UserLogicVfunc9() { return 0; }
-int CUserLogic::UserLogicVfuncA() { return 0; }
-int CUserLogic::UserLogicVfuncB() { return 0; }
+int CUserLogic::UserLogicVfunc1() {
+    return 0;
+}
+int CUserLogic::UserLogicVfunc2() {
+    return 0;
+}
+int CUserLogic::UserLogicVfunc3() {
+    return 0;
+}
+int CUserLogic::UserLogicVfunc4() {
+    return 0;
+}
+int CUserLogic::UserLogicVfunc5() {
+    return 0;
+}
+int CUserLogic::UserLogicVfunc6() {
+    return 0;
+}
+int CUserLogic::UserLogicVfunc7() {
+    return 0;
+}
+int CUserLogic::UserLogicVfunc8() {
+    return 0;
+}
+int CUserLogic::UserLogicVfunc9() {
+    return 0;
+}
+int CUserLogic::UserLogicVfuncA() {
+    return 0;
+}
+int CUserLogic::UserLogicVfuncB() {
+    return 0;
+}
 
 // ---------------------------------------------------------------------------
 // Leaf game-object constructors.
@@ -43,28 +69,36 @@ int CUserLogic::UserLogicVfuncB() { return 0; }
 // ---------------------------------------------------------------------------
 
 class CSecretLevelTrigger : public CUserLogic {
-public: CSecretLevelTrigger(); virtual ~CSecretLevelTrigger() OVERRIDE;
+public:
+    CSecretLevelTrigger();
+    virtual ~CSecretLevelTrigger() OVERRIDE;
 };
 CSecretLevelTrigger::~CSecretLevelTrigger() {}
 RVA(0x010b20, 0x4b)
 CSecretLevelTrigger::CSecretLevelTrigger() {}
 
 class CTileTrigger : public CUserLogic {
-public: CTileTrigger(); virtual ~CTileTrigger() OVERRIDE;
+public:
+    CTileTrigger();
+    virtual ~CTileTrigger() OVERRIDE;
 };
 CTileTrigger::~CTileTrigger() {}
 RVA(0x011160, 0x4b)
 CTileTrigger::CTileTrigger() {}
 
 class CGruntHealthSprite : public CUserLogic {
-public: CGruntHealthSprite(); virtual ~CGruntHealthSprite() OVERRIDE;
+public:
+    CGruntHealthSprite();
+    virtual ~CGruntHealthSprite() OVERRIDE;
 };
 CGruntHealthSprite::~CGruntHealthSprite() {}
 RVA(0x011ef0, 0x4b)
 CGruntHealthSprite::CGruntHealthSprite() {}
 
 class CVoiceTrigger : public CUserLogic {
-public: CVoiceTrigger(); virtual ~CVoiceTrigger() OVERRIDE;
+public:
+    CVoiceTrigger();
+    virtual ~CVoiceTrigger() OVERRIDE;
 };
 CVoiceTrigger::~CVoiceTrigger() {}
 RVA(0x013470, 0x4b)
@@ -77,20 +111,19 @@ public:
     CPathHazard();
     virtual ~CPathHazard() OVERRIDE;
     char m_pad[0x108 - 0x38]; // pad CUserLogic (ends +0x38) .. +0x107
-    void *m_108;   // +0x108
-    void *m_10c;   // +0x10c
-    void *m_110;   // +0x110
-    void *m_114;   // +0x114
+    void* m_108;              // +0x108
+    void* m_10c;              // +0x10c
+    void* m_110;              // +0x110
+    void* m_114;              // +0x114
     char m_pad118[0x120 - 0x118];
-    void *m_120;   // +0x120
-    void *m_124;   // +0x124
-    void *m_128;   // +0x128
-    void *m_12c;   // +0x12c
+    void* m_120; // +0x120
+    void* m_124; // +0x124
+    void* m_128; // +0x128
+    void* m_12c; // +0x12c
 };
 CPathHazard::~CPathHazard() {}
 RVA(0x013170, 0x7b)
-CPathHazard::CPathHazard()
-{
+CPathHazard::CPathHazard() {
     // Emitted store order (all 0): +0x108, +0x110, +0x10c, +0x114, then
     // +0x120, +0x128, +0x124, +0x12c.
     m_108 = 0;

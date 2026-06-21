@@ -28,7 +28,7 @@
 #include <Wwd/WwdFile.h>
 #include <rva.h>
 
-#include <string.h>  // memcpy
+#include <string.h> // memcpy
 
 // ---------------------------------------------------------------------------
 // WwdFile::IsValidWwd
@@ -37,23 +37,27 @@
 // is constructed (no destructor on those paths); the stream's ctor runs only
 // after both guards, so its dtor unwinds the remaining exits.
 RVA(0x160530, 0x125)
-int __stdcall WwdFile_IsValidWwd(const char* name, void* headerBuf)
-{
-    if (name == 0)
+int __stdcall WwdFile_IsValidWwd(const char* name, void* headerBuf) {
+    if (name == 0) {
         return 0;
-    if (headerBuf == 0)
+    }
+    if (headerBuf == 0) {
         return 0;
+    }
 
     WwdInputStream stream;
 
-    if (stream.Open(name, 0, 0) == 0)        // Open returns 0 on failure
+    if (stream.Open(name, 0, 0) == 0) { // Open returns 0 on failure
         return 0;
+    }
 
-    if (stream.Read(headerBuf, 0x5f4) != 0x5f4)
+    if (stream.Read(headerBuf, 0x5f4) != 0x5f4) {
         return 0;
+    }
 
-    if (*(unsigned int*)headerBuf > 0x5f4)   // signature must be <= 1524
+    if (*(unsigned int*)headerBuf > 0x5f4) { // signature must be <= 1524
         return 0;
+    }
 
     return 1;
 }
@@ -65,27 +69,31 @@ int __stdcall WwdFile_IsValidWwd(const char* name, void* headerBuf)
 // the NUL-terminated leading bytes - the binary does `repnz scasb; rep movs`,
 // i.e. a strcpy of the header buffer into the caller's output).
 RVA(0x160660, 0x12b)
-int __stdcall WwdFile_CheckHeader(const char* name, void* headerOut)
-{
+int __stdcall WwdFile_CheckHeader(const char* name, void* headerOut) {
     char header[0x5f4];
 
-    if (name == 0)
+    if (name == 0) {
         return 0;
-    if (headerOut == 0)
+    }
+    if (headerOut == 0) {
         return 0;
+    }
 
     WwdInputStream stream;
 
-    if (stream.Open(name, 0, 0) == 0)        // Open returns 0 on failure
+    if (stream.Open(name, 0, 0) == 0) { // Open returns 0 on failure
         return 0;
+    }
 
-    if (stream.Read(header, 0x5f4) != 0x5f4)
+    if (stream.Read(header, 0x5f4) != 0x5f4) {
         return 0;
+    }
 
-    if (*(unsigned int*)header > 0x5f4)      // signature must be <= 1524
+    if (*(unsigned int*)header > 0x5f4) { // signature must be <= 1524
         return 0;
+    }
 
-    strcpy((char*)headerOut, header);        // inline strlen + rep movs
+    strcpy((char*)headerOut, header); // inline strlen + rep movs
     return 1;
 }
 
@@ -101,20 +109,19 @@ int __stdcall WwdFile_CheckHeader(const char* name, void* headerOut)
 //
 // The new CPlane and its virtuals are UNMATCHED engine code -> reloc-masked calls.
 RVA(0x15d8d0, 0xc3)
-CPlane* CGameLevelPlanes::ReadPlane(void* planeData, void* blockBase, void* /*unused*/)
-{
+CPlane* CGameLevelPlanes::ReadPlane(void* planeData, void* blockBase, void* /*unused*/) {
     CPlane* plane = new CPlane(m_field0c, m_planeCount, 0);
 
-    if (plane->Read(planeData, blockBase, &m_planeCtx) == 0)
-    {
-        if (plane)
-            plane->dtor(1);                       // scalar-deleting dtor (vtable +0x4)
+    if (plane->Read(planeData, blockBase, &m_planeCtx) == 0) {
+        if (plane) {
+            plane->dtor(1); // scalar-deleting dtor (vtable +0x4)
+        }
         return 0;
     }
 
     ((CPlanePtrArray*)&m_planes)->SetAtGrow(m_planeCount, plane);
 
-    if (plane->m_flags & 1)                       // MAIN plane
+    if (plane->m_flags & 1) // MAIN plane
     {
         m_mainPlane = plane;
         m_mainIndex = m_planeCount - 1;
@@ -129,29 +136,40 @@ CPlane* CGameLevelPlanes::ReadPlane(void* planeData, void* blockBase, void* /*un
 // zlib-uncompresses the COMPRESS main block into the remainder. Returns dest on
 // success, 0 on any validation/inflate failure. (~88.7% fuzzy, entropy plateau.)
 RVA(0x160790, 0xd2)
-int __stdcall WwdFile_InflateMainBlock(WwdHeader* src, Bytef* dest, unsigned int destLen)
-{
+int __stdcall WwdFile_InflateMainBlock(WwdHeader* src, Bytef* dest, unsigned int destLen) {
     uLongf outLen;
 
-    if (src == 0)
+    if (src == 0) {
         return 0;
-    if (dest == 0)
+    }
+    if (dest == 0) {
         return 0;
+    }
 
-    if (src->wwdSignature > 0x5f4)           // header size (== 1524)
+    if (src->wwdSignature > 0x5f4) { // header size (== 1524)
         return 0;
-    if ((src->flags & 0x2) == 0)             // require COMPRESS
+    }
+    if ((src->flags & 0x2) == 0) { // require COMPRESS
         return 0;
-    if (src->mainBlockLength == 0)
+    }
+    if (src->mainBlockLength == 0) {
         return 0;
-    if (src->mainBlockLength > destLen + src->wwdSignature)
+    }
+    if (src->mainBlockLength > destLen + src->wwdSignature) {
         return 0;
+    }
 
-    memcpy(dest, src, src->wwdSignature);     // copy the 1524-byte header prefix
+    memcpy(dest, src, src->wwdSignature); // copy the 1524-byte header prefix
     outLen = (uLongf)(destLen - src->wwdSignature);
-    if (uncompress(dest + src->wwdSignature, &outLen,
-                   (Bytef*)src + src->wwdSignature, src->mainBlockLength) != 0)
+    if (uncompress(
+            dest + src->wwdSignature,
+            &outLen,
+            (Bytef*)src + src->wwdSignature,
+            src->mainBlockLength
+        )
+        != 0) {
         return 0;
+    }
 
     return outLen == src->mainBlockLength ? (int)dest : 0;
 }

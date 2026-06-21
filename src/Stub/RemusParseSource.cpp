@@ -10,7 +10,9 @@ public:
 // @source: reloc-correlation (1 caller)
 // @stub
 RVA(0x139960, 0x6b)
-int RemusParseSource::BeginParse() { return 0; }
+int RemusParseSource::BeginParse() {
+    return 0;
+}
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @stub

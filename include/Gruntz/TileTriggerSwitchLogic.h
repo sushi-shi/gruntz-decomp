@@ -14,7 +14,7 @@
 class CTileTriggerSwitchLogic {
 public:
     CTileTriggerSwitchLogic();
-    int RemoveByKey(int key1, int key2);   // (still a stub)
+    int RemoveByKey(int key1, int key2); // (still a stub)
     int FindIndexByKey(int key);
 
     // Engine-label backlog stubs.
@@ -22,20 +22,20 @@ public:
     void CTileTriggerSwitchLogic_116320();
 
     // +0x00 vptr (implicit)
-    int   m_04;                        // +0x04  list head (owner) / key (data obj)
-    int   m_08;                        // +0x08  (not accessed here)
-    int   m_0c;                        // +0x0c  (not accessed here)
-    int   m_10;                        // +0x10  key2 (compared in RemoveByKey)
-    char  m_pad14[0x20 - 0x14];        // +0x14..0x1f
-    int   m_20;                        // +0x20  cleared before delete
-    char  m_pad24[0x2c - 0x24];        // +0x24..0x2b
-    int   m_block[24];                 // +0x2c..0x8b  (24 dwords, zeroed in ctor)
+    int m_04;                  // +0x04  list head (owner) / key (data obj)
+    int m_08;                  // +0x08  (not accessed here)
+    int m_0c;                  // +0x0c  (not accessed here)
+    int m_10;                  // +0x10  key2 (compared in RemoveByKey)
+    char m_pad14[0x20 - 0x14]; // +0x14..0x1f
+    int m_20;                  // +0x20  cleared before delete
+    char m_pad24[0x2c - 0x24]; // +0x24..0x2b
+    int m_block[24];           // +0x2c..0x8b  (24 dwords, zeroed in ctor)
 
     // Linked-list node: next@0x00, data@0x08.  Encapsulated inline.
     struct ListNode {
-        ListNode *m_next;    // +0x00
-        char      _pad04[4]; // +0x04
-        CTileTriggerSwitchLogic *m_data;  // +0x08
+        ListNode* m_next;                // +0x00
+        char _pad04[4];                  // +0x04
+        CTileTriggerSwitchLogic* m_data; // +0x08
     };
 };
 

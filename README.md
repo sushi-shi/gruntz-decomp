@@ -46,9 +46,12 @@ scripts/gruntz/               THE package: ALL importable code (run `python -m g
   analysis/                   one-shot analysis/discovery tools (`python -m gruntz.analysis.<x>`)
 src/                          reconstructed C++ — the single source of truth
   Stub/types/                 engine-wide comprehension type headers (shrink as matched)
+vendor/                       third-party source (zlib 1.0.4) — kept verbatim, never formatted
 config/units.toml             per-TU build manifest (configure.py -> build.ninja)
 docs/                         build system, matching notes, the consolidation design
 flake.nix                     Nix build environment (two dev shells)
+.clang-format                 the Rust-like house style (`gruntz format`)
+.githooks/pre-commit          auto-formats staged src/+include/ on commit
 CLAUDE.md                     working notes for Claude agents
 build/           (gitignored) ALL generated/fetched state: objs, fake PDB, labels,
                               clangd db, wine prefix, Ghidra exports, report …
@@ -81,6 +84,16 @@ The VC5 toolchain is packaged (fetched + pinned in `flake.nix`). Run `gruntz ini
 once to build the local environment — Wine prefix, clangd DB, and the Ghidra DB
 (import + analyze GRUNTZ.EXE → `functions.csv`/`symbols.csv`); heavy on first run,
 idempotent after. Then `gruntz build` runs the loop (compile → labels → delink → objdiff).
+
+## Formatting
+
+The reconstructed C++ follows a **Rust-like clang-format style** (root
+`.clang-format`): 4-space indent, attached braces, `int* p`, braces on every
+control body. It is **whitespace-only, so matching-neutral**. A tracked
+pre-commit hook formats staged `src/`+`include/` files automatically (enabled by
+the dev shells); run `gruntz format` to sweep the tree or `gruntz format --check`
+as a CI gate. **`vendor/` is kept verbatim and never formatted.** See
+[`docs/build-system.md`](docs/build-system.md#formatting--the-rust-like-house-style).
 
 ## The pipeline
 

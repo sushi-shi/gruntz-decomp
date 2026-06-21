@@ -38,8 +38,8 @@
 /* MSVC 5.0 (1997) predates <stdint.h> (C99; MSVC added it in VS2010). This is a
  * comprehension header, so just define the two fixed-width names it uses in terms
  * of the native i386 types (int == long == 4 bytes under this target). */
-typedef unsigned int uint32_t;   /* 32-bit unsigned */
-typedef int          int32_t;    /* 32-bit signed   */
+typedef unsigned int uint32_t; /* 32-bit unsigned */
+typedef int int32_t;           /* 32-bit signed   */
 
 /* -------------------------------------------------------------------------- */
 /* WWD level header — FULLY PINNED, size 1524 (0x5F4)                          */
@@ -56,10 +56,9 @@ typedef int          int32_t;    /* 32-bit signed   */
  * git history of this file. This header now carries only the structures that have
  * not graduated: WwdPlaneHeader, PidHeader, and the flag enums.
  */
-enum WwdFlags
-{
-    WWD_FLAG_USE_Z_COORDS = 1 << 0,  /* bit0 */
-    WWD_FLAG_COMPRESS     = 1 << 1   /* bit1 — main block is zlib-deflated */
+enum WwdFlags {
+    WWD_FLAG_USE_Z_COORDS = 1 << 0, /* bit0 */
+    WWD_FLAG_COMPRESS = 1 << 1      /* bit1 — main block is zlib-deflated */
 };
 
 /* -------------------------------------------------------------------------- */
@@ -70,34 +69,33 @@ enum WwdFlags
  * (`add esi,0xa0` in CGameLevel::LoadWwd). First u32 == 160 (the signature).
  * tile[]/imageset-names/object[] follow at the per-plane offsets below.
  */
-struct WwdPlaneHeader
-{
-    uint32_t signature;        /* @0x00 (0)   == 160 (plane header size)        */
-    uint32_t null0;            /* @0x04 (4)                                     */
-    uint32_t flags;            /* @0x08 (8)   MAIN/NO_DRAW/X_WRAP/Y_WRAP/AUTO   */
-    uint32_t null1;            /* @0x0C (12)                                    */
-    char     name[64];         /* @0x10 (16)                                    */
-    uint32_t pixelWidth;       /* @0x50 (80)                                    */
-    uint32_t pixelHeight;      /* @0x54 (84)                                    */
-    uint32_t tilePixelWidth;   /* @0x58 (88)                                    */
-    uint32_t tilePixelHeight;  /* @0x5C (92)                                    */
-    uint32_t tilesOnAxisX;     /* @0x60 (96)                                    */
-    uint32_t tilesOnAxisY;     /* @0x64 (100)                                   */
-    uint32_t null2;            /* @0x68 (104)                                   */
-    uint32_t null3;            /* @0x6C (108)                                   */
-    int32_t  movementPercentX; /* @0x70 (112)                                   */
-    int32_t  movementPercentY; /* @0x74 (116)                                   */
-    uint32_t fillColor;        /* @0x78 (120)                                   */
-    uint32_t imageSetsCount;   /* @0x7C (124)                                   */
-    uint32_t objectsCount;     /* @0x80 (128)                                   */
-    uint32_t tilesOffset;      /* @0x84 (132)  offset of tile[] within block    */
-    uint32_t imageSetsOffset;  /* @0x88 (136)  offset of imageset name list     */
-    uint32_t objectsOffset;    /* @0x8C (140)  offset of object[] within block  */
-    int32_t  coordZ;           /* @0x90 (144)                                   */
-    uint32_t null4;            /* @0x94 (148)                                   */
-    uint32_t null5;            /* @0x98 (152)                                   */
-    uint32_t null6;            /* @0x9C (156)                                   */
-};  /* sizeof == 0xA0 (160) — PINNED (matches loader plane stride add esi,0xa0) */
+struct WwdPlaneHeader {
+    uint32_t signature;       /* @0x00 (0)   == 160 (plane header size)        */
+    uint32_t null0;           /* @0x04 (4)                                     */
+    uint32_t flags;           /* @0x08 (8)   MAIN/NO_DRAW/X_WRAP/Y_WRAP/AUTO   */
+    uint32_t null1;           /* @0x0C (12)                                    */
+    char name[64];            /* @0x10 (16)                                    */
+    uint32_t pixelWidth;      /* @0x50 (80)                                    */
+    uint32_t pixelHeight;     /* @0x54 (84)                                    */
+    uint32_t tilePixelWidth;  /* @0x58 (88)                                    */
+    uint32_t tilePixelHeight; /* @0x5C (92)                                    */
+    uint32_t tilesOnAxisX;    /* @0x60 (96)                                    */
+    uint32_t tilesOnAxisY;    /* @0x64 (100)                                   */
+    uint32_t null2;           /* @0x68 (104)                                   */
+    uint32_t null3;           /* @0x6C (108)                                   */
+    int32_t movementPercentX; /* @0x70 (112)                                   */
+    int32_t movementPercentY; /* @0x74 (116)                                   */
+    uint32_t fillColor;       /* @0x78 (120)                                   */
+    uint32_t imageSetsCount;  /* @0x7C (124)                                   */
+    uint32_t objectsCount;    /* @0x80 (128)                                   */
+    uint32_t tilesOffset;     /* @0x84 (132)  offset of tile[] within block    */
+    uint32_t imageSetsOffset; /* @0x88 (136)  offset of imageset name list     */
+    uint32_t objectsOffset;   /* @0x8C (140)  offset of object[] within block  */
+    int32_t coordZ;           /* @0x90 (144)                                   */
+    uint32_t null4;           /* @0x94 (148)                                   */
+    uint32_t null5;           /* @0x98 (152)                                   */
+    uint32_t null6;           /* @0x9C (156)                                   */
+}; /* sizeof == 0xA0 (160) — PINNED (matches loader plane stride add esi,0xa0) */
 
 /*
  * Tile map: int32_t tile[tilesOnAxisX * tilesOnAxisY] at tilesOffset.
@@ -114,30 +112,28 @@ struct WwdPlaneHeader
  * indices, optionally RLE (flag bit5) and/or with an embedded 768-byte palette
  * (flag bit7) appended at end-of-file.
  */
-enum WwdPidFlags
-{
-    WAP_PID_FLAG_TRANSPARENCY     = 1 << 0,
-    WAP_PID_FLAG_VIDEO_MEMORY     = 1 << 1,   /* "VID" */
-    WAP_PID_FLAG_SYSTEM_MEMORY    = 1 << 2,   /* "SYS" */
-    WAP_PID_FLAG_MIRROR           = 1 << 3,
-    WAP_PID_FLAG_INVERT           = 1 << 4,
-    WAP_PID_FLAG_COMPRESSION      = 1 << 5,   /* "RLE" — RLE-compressed pixels */
-    WAP_PID_FLAG_LIGHTS           = 1 << 6,
-    WAP_PID_FLAG_EMBEDDED_PALETTE = 1 << 7    /* 768-byte palette at EOF       */
+enum WwdPidFlags {
+    WAP_PID_FLAG_TRANSPARENCY = 1 << 0,
+    WAP_PID_FLAG_VIDEO_MEMORY = 1 << 1,  /* "VID" */
+    WAP_PID_FLAG_SYSTEM_MEMORY = 1 << 2, /* "SYS" */
+    WAP_PID_FLAG_MIRROR = 1 << 3,
+    WAP_PID_FLAG_INVERT = 1 << 4,
+    WAP_PID_FLAG_COMPRESSION = 1 << 5, /* "RLE" — RLE-compressed pixels */
+    WAP_PID_FLAG_LIGHTS = 1 << 6,
+    WAP_PID_FLAG_EMBEDDED_PALETTE = 1 << 7 /* 768-byte palette at EOF       */
 };
 
-struct PidHeader
-{
-    uint32_t fileDesc;  /* @0x00 (0)  id / file descriptor                     */
-    uint32_t flags;     /* @0x04 (4)  WwdPidFlags                              */
-    uint32_t width;     /* @0x08 (8)                                           */
-    uint32_t height;    /* @0x0C (12)                                          */
-    int32_t  offsetX;   /* @0x10 (16) draw anchor X                            */
-    int32_t  offsetY;   /* @0x14 (20) draw anchor Y                            */
-    uint32_t unk0;      /* @0x18 (24)                                          */
-    uint32_t unk1;      /* @0x1C (28)                                          */
+struct PidHeader {
+    uint32_t fileDesc; /* @0x00 (0)  id / file descriptor                     */
+    uint32_t flags;    /* @0x04 (4)  WwdPidFlags                              */
+    uint32_t width;    /* @0x08 (8)                                           */
+    uint32_t height;   /* @0x0C (12)                                          */
+    int32_t offsetX;   /* @0x10 (16) draw anchor X                            */
+    int32_t offsetY;   /* @0x14 (20) draw anchor Y                            */
+    uint32_t unk0;     /* @0x18 (24)                                          */
+    uint32_t unk1;     /* @0x1C (28)                                          */
     /* @0x20 (32): RLE/uncompressed 8bpp pixel stream (palette indices).       */
     /* if EMBEDDED_PALETTE: 768 bytes (256 * {r,g,b}) at (fileSize-768).       */
-};  /* sizeof == 0x20 (32) — PINNED */
+}; /* sizeof == 0x20 (32) — PINNED */
 
 #endif /* FORMATS_WWD_H */

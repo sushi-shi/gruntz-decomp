@@ -28,15 +28,15 @@
 // ---------------------------------------------------------------------------
 class CImage {
 public:
-    int LoadFromRez(char *name, void *a2, void *a3);
+    int LoadFromRez(char* name, void* a2, void* a3);
 
     // The five per-extension loaders (external; bodies live elsewhere). All
     // __thiscall, ret 0xc, taking the same (name, a2, a3) triple.
-    int LoadBmp(char *name, void *a2, void *a3);
-    int LoadPcx(char *name, void *a2, void *a3);
-    int LoadRid(char *name, void *a2, void *a3);
-    int LoadPid(char *name, void *a2, void *a3);
-    int LoadDefault(char *name, void *a2, void *a3);
+    int LoadBmp(char* name, void* a2, void* a3);
+    int LoadPcx(char* name, void* a2, void* a3);
+    int LoadRid(char* name, void* a2, void* a3);
+    int LoadPid(char* name, void* a2, void* a3);
+    int LoadDefault(char* name, void* a2, void* a3);
 };
 
 // ---------------------------------------------------------------------------
@@ -48,16 +48,16 @@ public:
 // ---------------------------------------------------------------------------
 class CFileImage {
 public:
-    void *LoadBmp(char *name, char *path);
-    void *LoadPcx(char *name, char *path);
-    void *LoadPid(char *name, char *path, void *a3);
-    int   DecodePcxEx(char *name, char *path, void *a3, void *a4);
+    void* LoadBmp(char* name, char* path);
+    void* LoadPcx(char* name, char* path);
+    void* LoadPid(char* name, char* path, void* a3);
+    int DecodePcxEx(char* name, char* path, void* a3, void* a4);
 
     // Per-format decoders (external; reloc-masked). __thiscall on CFileImage.
-    void *DecodeBmp(char *name, void *buf, unsigned int size);
-    void *DecodePcx(char *name, void *buf, unsigned int size);
-    void *DecodePid(char *name, void *buf, unsigned int size, void *a3);
-    int   DecodePcxData(char *name, void *buf, unsigned int len, void *a3, void *a4);  // external
+    void* DecodeBmp(char* name, void* buf, unsigned int size);
+    void* DecodePcx(char* name, void* buf, unsigned int size);
+    void* DecodePid(char* name, void* buf, unsigned int size, void* a3);
+    int DecodePcxData(char* name, void* buf, unsigned int len, void* a3, void* a4); // external
 };
 
 #endif // SRC_IMAGE_IMAGE_H

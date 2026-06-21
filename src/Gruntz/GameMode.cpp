@@ -43,8 +43,7 @@
 // 0x40. NO embedded sub-object ctors and NO EH frame (plain /O2 - the ctor uses
 // eax=this, edx=0x40, ecx=0 held registers).
 RVA(0x08c750, 0xa9)
-CState::CState()
-{
+CState::CState() {
     m_4 = 0;
     m_8 = 0;
     m_c = 0;
@@ -88,15 +87,13 @@ CState::CState()
 
 // CState::Update()  (slot 4 / +0x10): the base default = return 1.
 RVA(0x08c4b0, 0x6)
-int CState::Update()
-{
+int CState::Update() {
     return 1;
 }
 
 // CState::Render()  (slot 5 / +0x14): the base default = return 1.
 RVA(0x08c4d0, 0x6)
-int CState::Render()
-{
+int CState::Render() {
     return 1;
 }
 
@@ -114,22 +111,19 @@ void CState::Vfunc3() {}
 
 // CMenuState::Update(): the MENU state's ID = 5.
 RVA(0x08ce10, 0x6)
-int CMenuState::Update()
-{
+int CMenuState::Update() {
     return 5;
 }
 
 // CCreditsState::Update(): the CREDITS state's ID = 8.
 RVA(0x08d590, 0x6)
-int CCreditsState::Update()
-{
+int CCreditsState::Update() {
     return 8;
 }
 
 // CBootyState::Update(): the BOOTY state's ID = 0xa.
 RVA(0x08d3f0, 0x6)
-int CBootyState::Update()
-{
+int CBootyState::Update() {
     return 0xa;
 }
 
@@ -153,29 +147,30 @@ int CBootyState::Update()
 //   9. CONDITIONAL FX (+0x1c4 gate): if (m_1c4) { s = m_4->m_48->Find("MONOLITH");
 //        if (s && !s->Query()) Sub3(); }   return 1;
 RVA(0x0391d0, 0x17c)
-int CCreditsState::Render()
-{
-    CGMInputObj *in = ((CGMView *)m_c)->m_4->m_10->m_2c->m_8;
+int CCreditsState::Render() {
+    CGMInputObj* in = ((CGMView*)m_c)->m_4->m_10->m_2c->m_8;
     if (!in || in->vtbl->Poll(in)) {
         if (!InputVirtual()) {
-            ((CGMOwner *)m_4)->Post(0x8006, 0xfa0);
+            ((CGMOwner*)m_4)->Post(0x8006, 0xfa0);
             return 0;
         }
     }
 
-    if (((CGMView *)m_c)->m_28->m_2c)
+    if (((CGMView*)m_c)->m_28->m_2c) {
         GM_SimpleAnim(-1);
+    }
 
     // per-entity Update pass
     {
-        CGMEntityList *L = g_645574;
-        for (int i = 0; i < L->m_count; i++)
+        CGMEntityList* L = g_645574;
+        for (int i = 0; i < L->m_count; i++) {
             L->m_elems[i]->Update();
+        }
     }
 
     // message scan: first flagged entity posts a WM_COMMAND
     {
-        CGMEntityList *L = g_645574;
+        CGMEntityList* L = g_645574;
         int n = L->m_count;
         for (int j = 0; j < n; j++) {
             if (L->m_elems[j]->m_2ac & 0xffffff) {
@@ -185,10 +180,11 @@ int CCreditsState::Render()
                 // target's push-per-branch is the lazy `?:` form MSVC won't emit
                 // when both arms fold to a 4-apart constant - irreducible).
                 unsigned wp = 0x8027;
-                if (m_24 == 5)
+                if (m_24 == 5) {
                     wp = 0x8023;
-                PostMessageA(((CGMOwner *)m_4)->m_4->m_4, 0x111, wp, 0);
-                ((CGMOwner *)m_4)->m_8->m_244 = 0;
+                }
+                PostMessageA(((CGMOwner*)m_4)->m_4->m_4, 0x111, wp, 0);
+                ((CGMOwner*)m_4)->m_8->m_244 = 0;
                 break;
             }
         }
@@ -198,19 +194,20 @@ int CCreditsState::Render()
     Sub2();
 
     // draw: cache m_c->m_4 (the target keeps it in esi for the three derefs).
-    CGMView::M4 *v4 = ((CGMView *)m_c)->m_4;
+    CGMView::M4* v4 = ((CGMView*)m_c)->m_4;
     v4->m_10->m_2c->Draw(0);
     v4->m_14->Blit((int)v4->m_18);
 
-    if (!m_1b4 && ((CGMOwner *)m_4)->m_14) {
-        ((CGMOwner *)m_4)->m_48->Play(g_60ce90, 1);
+    if (!m_1b4 && ((CGMOwner*)m_4)->m_14) {
+        ((CGMOwner*)m_4)->m_48->Play(g_60ce90, 1);
         m_1b4 = 1;
     }
 
     if (m_1c4) {
-        int s = ((CGMOwner *)m_4)->m_48->Find(g_60ce74);
-        if (s && !((CGMSoundEntry *)s)->Query())
+        int s = ((CGMOwner*)m_4)->m_48->Find(g_60ce74);
+        if (s && !((CGMSoundEntry*)s)->Query()) {
             Sub3();
+        }
     }
     return 1;
 }
@@ -225,34 +222,56 @@ int CCreditsState::Render()
 //   3. TAIL: m_1b4->Step(g_645584); m_1b4->Pre(); DrawVersion({g_645cc8..d4});
 //      m_1b4->Post();   return 1;
 RVA(0x0a0750, 0x1d0)
-int CMenuState::Render()
-{
-    CGMEntityList *L = g_645574;
+int CMenuState::Render() {
+    CGMEntityList* L = g_645574;
 
     // per-entity Update pass (re-reads count each iter, like the target)
-    for (int i = 0; i < L->m_count; i++)
+    for (int i = 0; i < L->m_count; i++) {
         L->m_elems[i]->Update();
+    }
 
     // six prioritized entity-flag scans, each firing a distinct UI handler
     int c;
     L = g_645574;
     int n = L->m_count;
-    for (c = 0; c < n; c++)
-        if ((unsigned)L->m_elems[c]->m_2ac & 0x80000000) { m_1b4->OnFlag80000000(); goto tail; }
-    for (c = 0; c < n; c++)
-        if ((unsigned)L->m_elems[c]->m_2ac & 0x40000000) { m_1b4->OnFlag40000000(); goto tail; }
-    for (c = 0; c < n; c++)
-        if ((unsigned)L->m_elems[c]->m_2ac & 0x20000000) { m_1b4->OnFlag20000000(); goto tail; }
-    for (c = 0; c < n; c++)
-        if ((unsigned)L->m_elems[c]->m_2ac & 0x10000000) { m_1b4->OnFlag10000000(); goto tail; }
-    for (c = 0; c < n; c++)
-        if (L->m_elems[c]->m_2ac & 0x3) { m_1b4->OnFlag00000003(); goto tail; }
-    for (c = 0; c < n; c++)
-        if (L->m_elems[c]->m_2ac & 0x100) {
-            if (!m_1b4->OnFlag00000100())
-                PostMessageA(((CGMOwner *)m_4)->m_4->m_4, 0x111, 0x8036, 0);
+    for (c = 0; c < n; c++) {
+        if ((unsigned)L->m_elems[c]->m_2ac & 0x80000000) {
+            m_1b4->OnFlag80000000();
             goto tail;
         }
+    }
+    for (c = 0; c < n; c++) {
+        if ((unsigned)L->m_elems[c]->m_2ac & 0x40000000) {
+            m_1b4->OnFlag40000000();
+            goto tail;
+        }
+    }
+    for (c = 0; c < n; c++) {
+        if ((unsigned)L->m_elems[c]->m_2ac & 0x20000000) {
+            m_1b4->OnFlag20000000();
+            goto tail;
+        }
+    }
+    for (c = 0; c < n; c++) {
+        if ((unsigned)L->m_elems[c]->m_2ac & 0x10000000) {
+            m_1b4->OnFlag10000000();
+            goto tail;
+        }
+    }
+    for (c = 0; c < n; c++) {
+        if (L->m_elems[c]->m_2ac & 0x3) {
+            m_1b4->OnFlag00000003();
+            goto tail;
+        }
+    }
+    for (c = 0; c < n; c++) {
+        if (L->m_elems[c]->m_2ac & 0x100) {
+            if (!m_1b4->OnFlag00000100()) {
+                PostMessageA(((CGMOwner*)m_4)->m_4->m_4, 0x111, 0x8036, 0);
+            }
+            goto tail;
+        }
+    }
 tail:
     m_1b4->Step(g_645584);
     m_1b4->Pre();
@@ -265,7 +284,9 @@ tail:
 // indirect `this->vtbl[+0x20]()` to (its body is irrelevant to the Render match -
 // only the indirect call site is). Out-of-line so the CCreditsState vtable
 // resolves; NOT a byte-matched target. (Slots 6,7 are inherited from CState.)
-int  CCreditsState::InputVirtual() { return 0; }
+int CCreditsState::InputVirtual() {
+    return 0;
+}
 
 // ===========================================================================
 // REMAINING Render overrides (slot +0x14) NOT matched here (deferred targets):

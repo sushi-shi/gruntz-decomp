@@ -76,16 +76,16 @@
 
 // The sprite class-name string the factory is asked to build, per creator. These
 // are literal .rodata strings in the binary (the reloc-masked DIR32 operand).
-static const char s_GruntHealthSprite[]     = "GruntHealthSprite";
-static const char s_GruntToySprite[]        = "GruntToySprite";
-static const char s_GruntStaminaSprite[]    = "GruntStaminaSprite";
-static const char s_GruntToyTimeSprite[]    = "GruntToyTimeSprite";
-static const char s_GruntWingzTimeSprite[]  = "GruntWingzTimeSprite";
-static const char s_GruntPowerupSprite[]    = "GruntPowerupSprite";
-static const char s_GruntSelectedSprite[]   = "GruntSelectedSprite";
+static const char s_GruntHealthSprite[] = "GruntHealthSprite";
+static const char s_GruntToySprite[] = "GruntToySprite";
+static const char s_GruntStaminaSprite[] = "GruntStaminaSprite";
+static const char s_GruntToyTimeSprite[] = "GruntToyTimeSprite";
+static const char s_GruntWingzTimeSprite[] = "GruntWingzTimeSprite";
+static const char s_GruntPowerupSprite[] = "GruntPowerupSprite";
+static const char s_GruntSelectedSprite[] = "GruntSelectedSprite";
 
 // The global manager pointer (reloc-masked).
-CGameRegistry *g_pGameRegistry;
+CGameRegistry* g_pGameRegistry;
 
 // ---------------------------------------------------------------------------
 // Animation-resolver cluster (the 5 CGrunt::Resolve*Animation methods, the
@@ -109,37 +109,37 @@ CGameRegistry *g_pGameRegistry;
 // (reloc-masked DIR32 operands). The geometry source member differs per category
 // (Moving m_7c, Death m_78, generic m_74, Idle m_58[idx], Battlecry m_68[idx]);
 // Idle/Battlecry pick idx via the engine LCG rand (Idle %3+1, Battlecry %3).
-static const char s_GRUNTZ_[]    = "GRUNTZ_";
-static const char s__MOVING[]    = "_MOVING";
-static const char s__DEATH[]     = "_DEATH";
-static const char s__JOY[]       = "_JOY";
-static const char s__IDLE[]      = "_IDLE";
+static const char s_GRUNTZ_[] = "GRUNTZ_";
+static const char s__MOVING[] = "_MOVING";
+static const char s__DEATH[] = "_DEATH";
+static const char s__JOY[] = "_JOY";
+static const char s__IDLE[] = "_IDLE";
 static const char s__BATTLECRY[] = "_BATTLECRY";
-static const char s_keyB[]       = "B";
-static const char s_keyC[]       = "C";
-static const char s_keyE[]       = "E";
-static const char s_keyA[]       = "A";
-static const char s_keyF[]       = "F";
+static const char s_keyB[] = "B";
+static const char s_keyC[] = "C";
+static const char s_keyE[] = "E";
+static const char s_keyA[] = "A";
+static const char s_keyF[] = "F";
 
 // The global animation lookup tree (a CButeTree) + the rand seed
 // default (reloc-masked).
 CAnimLookupTree g_animLookupTree;
-int  g_movingSeed;
+int g_movingSeed;
 
 // Entrance-animation globals (reloc-masked; see Grunt.h).
-CEntranceAnimSrc g_entranceAnimSrc;     // DAT_006bf620
-CAnimNameResolver g_animNameResolver;   // DAT_006bf650
-int g_focusedGruntSentinel;             // DAT_00644c54
+CEntranceAnimSrc g_entranceAnimSrc;   // DAT_006bf620
+CAnimNameResolver g_animNameResolver; // DAT_006bf650
+int g_focusedGruntSentinel;           // DAT_00644c54
 
 // The global CButeMgr config singleton + the tuning keys this TU reads. Minimal
 // local decl (the full ButeMgr.h redefines CString, already pulled in by this
 // TU), with only the typed getter the functions call.
 #include <Bute/ButeMgr.h>
 extern CButeMgr g_buteMgr;
-static char s_TimePerTile[]      = "TimePerTile";
-static char s_Grunt[]            = "Grunt";              // s_Grunt_0060a9ec
-static char s_EntranceSafeTime[] = "EntranceSafeTime";  // s_EntranceSafeTime_0060df98
-static char s_IdleDelay[]        = "IdleDelay";          // s_IdleDelay_0060e1a0
+static char s_TimePerTile[] = "TimePerTile";
+static char s_Grunt[] = "Grunt";                               // s_Grunt_0060a9ec
+static char s_EntranceSafeTime[] = "EntranceSafeTime";         // s_EntranceSafeTime_0060df98
+static char s_IdleDelay[] = "IdleDelay";                       // s_IdleDelay_0060e1a0
 static char s_PlayerDefenderRadius[] = "PlayerDefenderRadius"; // s_PlayerDefenderRadius_0060e1ac
 
 // The single-char anim-set keys the entrance reads/looks-up (reloc-masked
@@ -161,10 +161,10 @@ extern int g_defaultGeo;
 // m_7c into the player; look up tree key "B"; then randomize the move-start time
 // (m_90 = (rand()%0x5dc1 + 0x1770)*10) and seed m_88/m_8c/m_94.
 RVA(0x045100, 0x112)
-int CGrunt::ResolveMovingAnimation()
-{
-    if (m_a8 != 0)
+int CGrunt::ResolveMovingAnimation() {
+    if (m_a8 != 0) {
         return 0;
+    }
 
     m_38->SetAnim(s_GRUNTZ_ + m_typeName + s__MOVING);
 
@@ -186,19 +186,20 @@ int CGrunt::ResolveMovingAnimation()
 // Gate: m_a8 == 0 (else return 0); then latch m_a8 = 1. Fire the on-screen cue
 // (arg2 = m_ac), feed geometry m_78 then key "GRUNTZ_<type>_DEATH", look up "C".
 RVA(0x0455f0, 0x15b)
-int CGrunt::ResolveDeathAnimation()
-{
-    if (m_a8 != 0)
+int CGrunt::ResolveDeathAnimation() {
+    if (m_a8 != 0) {
         return 0;
+    }
     m_a8 = 1;
 
-    CGameRegistry *g = g_pGameRegistry;
+    CGameRegistry* g = g_pGameRegistry;
     if (g->m_134 == 1) {
-        CGruntHud *h = m_10;
+        CGruntHud* h = m_10;
         int x = h->m_5c;
         int y = h->m_60;
-        if (x < g->m_144 && x >= g->m_13c && y < g->m_148 && y >= g->m_140)
+        if (x < g->m_144 && x >= g->m_13c && y < g->m_148 && y >= g->m_140) {
             g->m_60->Cue(h->m_188, m_ac, -1, -1, -1);
+        }
     } else {
         g->m_60->Cue(m_10->m_188, m_ac, -1, -1, -1);
     }
@@ -218,18 +219,19 @@ int CGrunt::ResolveDeathAnimation()
 // Gate: m_a8 == 0 (else return 0). The cue arg2 is a fixed constant (0x435 when
 // on-screen / 0x43f otherwise). Geometry m_74; key "GRUNTZ_<type>_JOY"; look "E".
 RVA(0x0457b0, 0x14c)
-int CGrunt::ResolveAnimation()
-{
-    if (m_a8 != 0)
+int CGrunt::ResolveAnimation() {
+    if (m_a8 != 0) {
         return 0;
+    }
 
-    CGameRegistry *g = g_pGameRegistry;
+    CGameRegistry* g = g_pGameRegistry;
     if (g->m_134 == 1) {
-        CGruntHud *h = m_10;
+        CGruntHud* h = m_10;
         int x = h->m_5c;
         int y = h->m_60;
-        if (x < g->m_144 && x >= g->m_13c && y < g->m_148 && y >= g->m_140)
+        if (x < g->m_144 && x >= g->m_13c && y < g->m_148 && y >= g->m_140) {
             g->m_60->Cue(h->m_188, 0x435, -1, -1, -1);
+        }
     } else {
         g->m_60->Cue(m_10->m_188, 0x43f, -1, -1, -1);
     }
@@ -251,20 +253,21 @@ int CGrunt::ResolveAnimation()
 // descriptor's first element's m_14 as a 2nd lookup arg (SetAnimEx); key
 // "GRUNTZ_<type>_IDLE"; look up "A".
 RVA(0x045960, 0x181)
-int CGrunt::ResolveIdleAnimation()
-{
-    if (m_a8 != 0)
+int CGrunt::ResolveIdleAnimation() {
+    if (m_a8 != 0) {
         return 0;
+    }
 
     int idx = GruntRand() % 3 + 1;
 
-    CGameRegistry *g = g_pGameRegistry;
+    CGameRegistry* g = g_pGameRegistry;
     if (g->m_134 == 1) {
-        CGruntHud *h = m_10;
+        CGruntHud* h = m_10;
         int x = h->m_5c;
         int y = h->m_60;
-        if (x < g->m_144 && x >= g->m_13c && y < g->m_148 && y >= g->m_140)
+        if (x < g->m_144 && x >= g->m_13c && y < g->m_148 && y >= g->m_140) {
             g->m_60->Cue(h->m_188, idx + 0x431, -1, -1, -1);
+        }
     } else {
         g->m_60->Cue(m_10->m_188, idx + 0x43b, -1, -1, -1);
     }
@@ -272,8 +275,8 @@ int CGrunt::ResolveIdleAnimation()
     m_40 = (int)m_38->m_1b4;
     m_38->m_1a0.SetGeometry(m_58[idx]);
 
-    CAnimDescColl *desc = m_38->m_1b4;
-    CAnimElem *elem = desc->m_10 > 0 ? *desc->m_c : 0;
+    CAnimDescColl* desc = m_38->m_1b4;
+    CAnimElem* elem = desc->m_10 > 0 ? *desc->m_c : 0;
     int frame = elem->m_14;
 
     m_38->SetAnimEx(s_GRUNTZ_ + m_typeName + s__IDLE, frame);
@@ -289,20 +292,21 @@ int CGrunt::ResolveIdleAnimation()
 // idx+0x42e / idx+0x438; geometry m_68[idx]; key "GRUNTZ_<type>_BATTLECRY";
 // look up "F".
 RVA(0x045b60, 0x161)
-int CGrunt::ResolveBattlecryAnimation()
-{
-    if (m_a8 != 0)
+int CGrunt::ResolveBattlecryAnimation() {
+    if (m_a8 != 0) {
         return 0;
+    }
 
     int idx = GruntRand() % 3;
 
-    CGameRegistry *g = g_pGameRegistry;
+    CGameRegistry* g = g_pGameRegistry;
     if (g->m_134 == 1) {
-        CGruntHud *h = m_10;
+        CGruntHud* h = m_10;
         int x = h->m_5c;
         int y = h->m_60;
-        if (x < g->m_144 && x >= g->m_13c && y < g->m_148 && y >= g->m_140)
+        if (x < g->m_144 && x >= g->m_13c && y < g->m_148 && y >= g->m_140) {
             g->m_60->Cue(h->m_188, idx + 0x42e, -1, -1, -1);
+        }
     } else {
         g->m_60->Cue(m_10->m_188, idx + 0x438, -1, -1, -1);
     }
@@ -322,17 +326,18 @@ int CGrunt::ResolveBattlecryAnimation()
 // Gate: m_healthSprite unset AND m_3ec > 0. geoB = m_60 - 0x19; hint 0xdbba0.
 // Register via AddA(m_1ec, m_1f0, m_3ec).
 RVA(0x04d130, 0xb5)
-int CGrunt::CreateHealthSprite()
-{
-    if (m_healthSprite || m_3ec <= 0)
+int CGrunt::CreateHealthSprite() {
+    if (m_healthSprite || m_3ec <= 0) {
         return 0;
+    }
 
-    m_healthSprite = g_pGameRegistry->m_30->m_8->CreateSprite(
-        0, m_10->m_5c, m_10->m_60 - 0x19, 0xdbba0, s_GruntHealthSprite, 0x40003);
+    m_healthSprite =
+        g_pGameRegistry->m_30->m_8
+            ->CreateSprite(0, m_10->m_5c, m_10->m_60 - 0x19, 0xdbba0, s_GruntHealthSprite, 0x40003);
     m_healthSprite->m_7c->m_init(m_healthSprite);
 
-    CSpriteInner *inner = m_healthSprite->m_7c;
-    CSpriteRegistrar *reg = inner->m_18;
+    CSpriteInner* inner = m_healthSprite->m_7c;
+    CSpriteRegistrar* reg = inner->m_18;
     if (!reg->AddA(m_1ec, m_1f0, m_3ec)) {
         reg->m_38->m_8 |= 0x10000;
         m_healthSprite = 0;
@@ -346,16 +351,17 @@ int CGrunt::CreateHealthSprite()
 // Gate: m_toySprite unset. geoB = m_60 - 0x19; hint 0xdbba0.
 // Register via AddB(m_1ec, m_1f0).
 RVA(0x04d220, 0x9c)
-int CGrunt::CreateToySprite()
-{
-    if (m_toySprite)
+int CGrunt::CreateToySprite() {
+    if (m_toySprite) {
         return 0;
+    }
 
-    m_toySprite = g_pGameRegistry->m_30->m_8->CreateSprite(
-        0, m_10->m_5c, m_10->m_60 - 0x19, 0xdbba0, s_GruntToySprite, 0x40003);
+    m_toySprite =
+        g_pGameRegistry->m_30->m_8
+            ->CreateSprite(0, m_10->m_5c, m_10->m_60 - 0x19, 0xdbba0, s_GruntToySprite, 0x40003);
     m_toySprite->m_7c->m_init(m_toySprite);
 
-    CSpriteRegistrar *reg = m_toySprite->m_7c->m_18;
+    CSpriteRegistrar* reg = m_toySprite->m_7c->m_18;
     if (!reg->AddB(m_1ec, m_1f0)) {
         reg->m_38->m_8 |= 0x10000;
         m_toySprite = 0;
@@ -369,17 +375,23 @@ int CGrunt::CreateToySprite()
 // Gate: m_staminaSprite unset AND m_3f0 != 0x64. geoB = m_60 - 0x20; hint 0xdbba0.
 // Register via AddA(m_1ec, m_1f0, m_3f0).
 RVA(0x04d2f0, 0xb4)
-int CGrunt::CreateStaminaSprite()
-{
-    if (m_staminaSprite || m_3f0 == 0x64)
+int CGrunt::CreateStaminaSprite() {
+    if (m_staminaSprite || m_3f0 == 0x64) {
         return 0;
+    }
 
     m_staminaSprite = g_pGameRegistry->m_30->m_8->CreateSprite(
-        0, m_10->m_5c, m_10->m_60 - 0x20, 0xdbba0, s_GruntStaminaSprite, 0x40003);
+        0,
+        m_10->m_5c,
+        m_10->m_60 - 0x20,
+        0xdbba0,
+        s_GruntStaminaSprite,
+        0x40003
+    );
     m_staminaSprite->m_7c->m_init(m_staminaSprite);
 
-    CSpriteInner *inner = m_staminaSprite->m_7c;
-    CSpriteRegistrar *reg = inner->m_18;
+    CSpriteInner* inner = m_staminaSprite->m_7c;
+    CSpriteRegistrar* reg = inner->m_18;
     if (!reg->AddA(m_1ec, m_1f0, m_3f0)) {
         reg->m_38->m_8 |= 0x10000;
         m_staminaSprite = 0;
@@ -395,26 +407,32 @@ int CGrunt::CreateStaminaSprite()
 // +0x8, null the slot). geoB = m_60 - 0x20; hint 0xdbba0.
 // Register via AddA(m_1ec, m_1f0, m_3f4).
 RVA(0x04d3e0, 0xf5)
-int CGrunt::CreateToyTimeSprite()
-{
-    if (m_toyTimeSprite || m_3f4 == 0)
+int CGrunt::CreateToyTimeSprite() {
+    if (m_toyTimeSprite || m_3f4 == 0) {
         return 0;
+    }
 
     if (m_staminaSprite) {
-        ((CSpriteRegRecord *)m_staminaSprite)->m_8 |= 0x10000;
+        ((CSpriteRegRecord*)m_staminaSprite)->m_8 |= 0x10000;
         m_staminaSprite = 0;
     }
     if (m_wingzTimeSprite) {
-        ((CSpriteRegRecord *)m_wingzTimeSprite)->m_8 |= 0x10000;
+        ((CSpriteRegRecord*)m_wingzTimeSprite)->m_8 |= 0x10000;
         m_wingzTimeSprite = 0;
     }
 
     m_toyTimeSprite = g_pGameRegistry->m_30->m_8->CreateSprite(
-        0, m_10->m_5c, m_10->m_60 - 0x20, 0xdbba0, s_GruntToyTimeSprite, 0x40003);
+        0,
+        m_10->m_5c,
+        m_10->m_60 - 0x20,
+        0xdbba0,
+        s_GruntToyTimeSprite,
+        0x40003
+    );
     m_toyTimeSprite->m_7c->m_init(m_toyTimeSprite);
 
-    CSpriteInner *inner = m_toyTimeSprite->m_7c;
-    CSpriteRegistrar *reg = inner->m_18;
+    CSpriteInner* inner = m_toyTimeSprite->m_7c;
+    CSpriteRegistrar* reg = inner->m_18;
     if (!reg->AddA(m_1ec, m_1f0, m_3f4)) {
         reg->m_38->m_8 |= 0x10000;
         m_toyTimeSprite = 0;
@@ -429,22 +447,28 @@ int CGrunt::CreateToyTimeSprite()
 // toy-time sprite (m_1cc) if set. geoB = m_60 - 0x26; hint 0xdbba0.
 // Register via AddA(m_1ec, m_1f0, m_3f8).
 RVA(0x04d520, 0xe3)
-int CGrunt::CreateWingzTimeSprite()
-{
-    if (m_wingzTimeSprite || m_238 == 0 || m_3f8 == 0)
+int CGrunt::CreateWingzTimeSprite() {
+    if (m_wingzTimeSprite || m_238 == 0 || m_3f8 == 0) {
         return 0;
+    }
 
     if (m_toyTimeSprite) {
-        ((CSpriteRegRecord *)m_toyTimeSprite)->m_8 |= 0x10000;
+        ((CSpriteRegRecord*)m_toyTimeSprite)->m_8 |= 0x10000;
         m_toyTimeSprite = 0;
     }
 
     m_wingzTimeSprite = g_pGameRegistry->m_30->m_8->CreateSprite(
-        0, m_10->m_5c, m_10->m_60 - 0x26, 0xdbba0, s_GruntWingzTimeSprite, 0x40003);
+        0,
+        m_10->m_5c,
+        m_10->m_60 - 0x26,
+        0xdbba0,
+        s_GruntWingzTimeSprite,
+        0x40003
+    );
     m_wingzTimeSprite->m_7c->m_init(m_wingzTimeSprite);
 
-    CSpriteInner *inner = m_wingzTimeSprite->m_7c;
-    CSpriteRegistrar *reg = inner->m_18;
+    CSpriteInner* inner = m_wingzTimeSprite->m_7c;
+    CSpriteRegistrar* reg = inner->m_18;
     if (!reg->AddA(m_1ec, m_1f0, m_3f8)) {
         reg->m_38->m_8 |= 0x10000;
         m_wingzTimeSprite = 0;
@@ -458,17 +482,18 @@ int CGrunt::CreateWingzTimeSprite()
 // Gate: m_powerupSprite unset. geoB = m_60 (no offset); hint 0x15.
 // Register via AddC(m_1ec, m_1f0, a).
 RVA(0x04d650, 0xa1)
-int CGrunt::CreatePowerupSprite(int a)
-{
-    if (m_powerupSprite)
+int CGrunt::CreatePowerupSprite(int a) {
+    if (m_powerupSprite) {
         return 0;
+    }
 
-    m_powerupSprite = g_pGameRegistry->m_30->m_8->CreateSprite(
-        0, m_10->m_5c, m_10->m_60, 0x15, s_GruntPowerupSprite, 0x40003);
+    m_powerupSprite =
+        g_pGameRegistry->m_30->m_8
+            ->CreateSprite(0, m_10->m_5c, m_10->m_60, 0x15, s_GruntPowerupSprite, 0x40003);
     m_powerupSprite->m_7c->m_init(m_powerupSprite);
 
-    CSpriteInner *inner = m_powerupSprite->m_7c;
-    CSpriteRegistrar *reg = inner->m_18;
+    CSpriteInner* inner = m_powerupSprite->m_7c;
+    CSpriteRegistrar* reg = inner->m_18;
     if (!reg->AddC(m_1ec, m_1f0, a)) {
         reg->m_38->m_8 |= 0x10000;
         m_powerupSprite = 0;
@@ -482,16 +507,17 @@ int CGrunt::CreatePowerupSprite(int a)
 // Gate: m_selectedSprite unset. geoB = m_60 (no offset); hint 0x14.
 // Register via AddD(m_1ec, m_1f0).
 RVA(0x04d730, 0x96)
-int CGrunt::CreateSelectedSprite()
-{
-    if (m_selectedSprite)
+int CGrunt::CreateSelectedSprite() {
+    if (m_selectedSprite) {
         return 0;
+    }
 
-    m_selectedSprite = g_pGameRegistry->m_30->m_8->CreateSprite(
-        0, m_10->m_5c, m_10->m_60, 0x14, s_GruntSelectedSprite, 0x40003);
+    m_selectedSprite =
+        g_pGameRegistry->m_30->m_8
+            ->CreateSprite(0, m_10->m_5c, m_10->m_60, 0x14, s_GruntSelectedSprite, 0x40003);
     m_selectedSprite->m_7c->m_init(m_selectedSprite);
 
-    CSpriteRegistrar *reg = m_selectedSprite->m_7c->m_18;
+    CSpriteRegistrar* reg = m_selectedSprite->m_7c->m_18;
     if (!reg->AddD(m_1ec, m_1f0)) {
         reg->m_38->m_8 |= 0x10000;
         m_selectedSprite = 0;
@@ -535,13 +561,12 @@ void CGrunt::Stub_048470(int, int) {}
 //     the per-cell entrance-position key string (CString from the m_474 cell
 //     table, indexed 3*col+row by either the per-grunt triple m_43c or a preset
 //     by reason m_444) and stamps the first frame.
-static int s_entrancePreset0[3];        // DAT_00644aa0
-static int s_entrancePreset1[3];        // DAT_00644ac0
-static int s_entrancePreset2[3];        // DAT_00644ad0
+static int s_entrancePreset0[3]; // DAT_00644aa0
+static int s_entrancePreset1[3]; // DAT_00644ac0
+static int s_entrancePreset2[3]; // DAT_00644ad0
 
 RVA(0x062e10, 0x47e)
-void CGrunt::Stub_062e10(int apply, int cycle, int cue)
-{
+void CGrunt::Stub_062e10(int apply, int cycle, int cue) {
     m_244 = 0;
 
     int notIdle = strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), s_animKeyA) != 0;
@@ -567,8 +592,9 @@ void CGrunt::Stub_062e10(int apply, int cycle, int cue)
         m_154->m_1a0.SetGeometry(m_3ac[0]);
     } else if (cycle == 0) {
         // Already on this source? nothing to do.
-        if ((void *)m_154->m_1b4 == (void *)m_3ac[0])
+        if ((void*)m_154->m_1b4 == (void*)m_3ac[0]) {
             goto latch;
+        }
         m_15c = (int)m_154->m_1b4;
         m_154->m_1a0.SetGeometry(m_3ac[0]);
         {
@@ -584,19 +610,22 @@ void CGrunt::Stub_062e10(int apply, int cycle, int cue)
         int count = (m_3ac[2] == 0) ? 1 : 2;
         int idx = GruntRand() % count + 1;
         if (cue != 0) {
-            CGameRegistry *g = g_pGameRegistry;
+            CGameRegistry* g = g_pGameRegistry;
             g->CuePrep();
             int focused = (m_1ec == g_focusedGruntSentinel);
             if (focused && idx > 0x5a) {
-                if (CueVisible(g->m_30->m_24->m_5c + 0x40, m_10->m_5c, m_10->m_60))
+                if (CueVisible(g->m_30->m_24->m_5c + 0x40, m_10->m_5c, m_10->m_60)) {
                     g->m_60->Cue((int)this, 4, -1, -1, -1);
+                }
             } else if (focused || m_170 != 0) {
                 if (idx == 1) {
-                    if (CueVisible(g->m_30->m_24->m_5c + 0x40, m_10->m_5c, m_10->m_60))
+                    if (CueVisible(g->m_30->m_24->m_5c + 0x40, m_10->m_5c, m_10->m_60)) {
                         g->m_60->Cue((int)this, 5, -1, -1, -1);
+                    }
                 } else if (idx == 2) {
-                    if (CueVisible(g->m_30->m_24->m_5c + 0x40, m_10->m_5c, m_10->m_60))
+                    if (CueVisible(g->m_30->m_24->m_5c + 0x40, m_10->m_5c, m_10->m_60)) {
                         g->m_60->Cue((int)this, 6, -1, -1, -1);
+                    }
                 }
             }
         }
@@ -608,10 +637,11 @@ void CGrunt::Stub_062e10(int apply, int cycle, int cue)
 
 latch:
     m_30 = (int)m_14->m_1c;
-    m_14->m_1c = (void *)EntranceLookupAnimSet(s_animKeyA);
+    m_14->m_1c = (void*)EntranceLookupAnimSet(s_animKeyA);
 
-    if (!applied && apply == 0)
+    if (!applied && apply == 0) {
         return;
+    }
 
     // Rebuild the per-cell entrance key string + first frame. The cell is the
     // per-grunt triple {col,row,reason}, unless a non-default entrance reason
@@ -619,33 +649,33 @@ latch:
     int col = m_43c[0];
     int row = m_43c[1];
     int reason = m_43c[2];
-    if ((void *)m_154->m_1b4 != (void *)m_3ac[0]) {
+    if ((void*)m_154->m_1b4 != (void*)m_3ac[0]) {
         switch (reason) {
-        case 2:
-        case 3:
-            col = s_entrancePreset0[0];
-            row = s_entrancePreset0[1];
-            break;
-        case 4:
-        case 5:
-            col = s_entrancePreset1[0];
-            row = s_entrancePreset1[1];
-            break;
-        case 6:
-        case 7:
-        case 8:
-            col = s_entrancePreset2[0];
-            row = s_entrancePreset2[1];
-            break;
-        default:
-            break;
+            case 2:
+            case 3:
+                col = s_entrancePreset0[0];
+                row = s_entrancePreset0[1];
+                break;
+            case 4:
+            case 5:
+                col = s_entrancePreset1[0];
+                row = s_entrancePreset1[1];
+                break;
+            case 6:
+            case 7:
+            case 8:
+                col = s_entrancePreset2[0];
+                row = s_entrancePreset2[1];
+                break;
+            default:
+                break;
         }
     }
 
-    CString key = (const char *)&m_474[(3 * col + row) * 0x68];
+    CString key = (const char*)&m_474[(3 * col + row) * 0x68];
 
-    CEntranceAnimDescColl *desc = m_154->m_1b4;
-    int *elem = desc->m_10 > 0 ? *desc->m_c : 0;
+    CEntranceAnimDescColl* desc = m_154->m_1b4;
+    int* elem = desc->m_10 > 0 ? *desc->m_c : 0;
     EntranceApplyFrame(key, elem[0x14 / 4]);
 }
 
@@ -670,38 +700,38 @@ latch:
 //     Stub_062e10(0,0,0) on the lookup-miss flags; else, when the idle window has
 //     elapsed and the geometry source is ready, run Stub_062e10(0,1,1).
 RVA(0x0633e0, 0x2ca)
-void CGrunt::Stub_0633e0()
-{
+void CGrunt::Stub_0633e0() {
     if (m_1e4 != 0 && m_10->m_5c == m_17c && m_10->m_60 == m_180) {
-        CGameRegistry *g = g_pGameRegistry;
-        CTileGrid *grid = g->m_70;
+        CGameRegistry* g = g_pGameRegistry;
+        CTileGrid* grid = g->m_70;
         int tx = m_10->m_5c >> 5;
         int ty = m_10->m_60 >> 5;
         int flags;
-        if ((unsigned)tx >= (unsigned)grid->m_c || (unsigned)ty >= (unsigned)grid->m_10)
+        if ((unsigned)tx >= (unsigned)grid->m_c || (unsigned)ty >= (unsigned)grid->m_10) {
             flags = 1;
-        else
-            flags = ((int *)grid->m_8[ty])[tx * 7];
-        if (!(flags & 0x80))
+        } else {
+            flags = ((int*)grid->m_8[ty])[tx * 7];
+        }
+        if (!(flags & 0x80)) {
             m_1e4 = 0;
+        }
     }
 
     int ready = m_154->m_1a0.SetGeoSourceR(g_defaultGeo);
 
-    if ((__int64)(unsigned)g_645588 - *(__int64 *)&m_830 >= *(__int64 *)&m_838) {
-        CGameRegistry *g = g_pGameRegistry;
+    if ((__int64)(unsigned)g_645588 - *(__int64*)&m_830 >= *(__int64*)&m_838) {
+        CGameRegistry* g = g_pGameRegistry;
         int mode = g->m_134;
         if (mode != 1) {
-            CFocusSlot *slot = (CFocusSlot *)((char *)g + 0x150 + m_1ec * 0x238);
+            CFocusSlot* slot = (CFocusSlot*)((char*)g + 0x150 + m_1ec * 0x238);
             if (slot != 0 && slot->m_14 != 0) {
-                if (m_420 == 0 && m_464 == 0 && mode == 2
-                    && g_focusedGruntSentinel == m_1ec && m_1d8 == 0) {
+                if (m_420 == 0 && m_464 == 0 && mode == 2 && g_focusedGruntSentinel == m_1ec
+                    && m_1d8 == 0) {
                     m_260->NotifyArrival(m_1ec, m_1f0);
                     m_464 = 1;
                     goto tail;
                 }
-                if (mode != 2 && g_focusedGruntSentinel == m_1ec && m_1d8 == 0
-                    && m_420 != 1) {
+                if (mode != 2 && g_focusedGruntSentinel == m_1ec && m_1d8 == 0 && m_420 != 1) {
                     m_308 = 0;
                     m_310 = 0;
                     m_30c = 0;
@@ -711,12 +741,12 @@ void CGrunt::Stub_0633e0()
                     m_420 = 1;
                     int kind = m_170;
                     switch (kind) {
-                    case 2:
-                        m_2dc = 1;
-                        break;
-                    default:
-                        m_2dc = g_buteMgr.GetIntDef(s_Grunt, s_PlayerDefenderRadius, 3) + 1;
-                        break;
+                        case 2:
+                            m_2dc = 1;
+                            break;
+                        default:
+                            m_2dc = g_buteMgr.GetIntDef(s_Grunt, s_PlayerDefenderRadius, 3) + 1;
+                            break;
                     }
                     m_2f0 = -1;
                     m_2f4 = -1;
@@ -735,14 +765,15 @@ void CGrunt::Stub_0633e0()
     }
 
 tail:
-    if ((void *)m_154->m_1b4 != (void *)m_3ac[0]) {
-        if (m_154->m_1c8 == 0 && m_154->m_1c0 != 0)
+    if ((void*)m_154->m_1b4 != (void*)m_3ac[0]) {
+        if (m_154->m_1c8 == 0 && m_154->m_1c0 != 0) {
             Stub_062e10(0, 0, 0);
+        }
         return;
     }
-    if ((__int64)(unsigned)g_645588 - *(__int64 *)&m_820 >= *(__int64 *)&m_828
-        && ready == 1)
+    if ((__int64)(unsigned)g_645588 - *(__int64*)&m_820 >= *(__int64*)&m_828 && ready == 1) {
         Stub_062e10(0, 1, 1);
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -763,19 +794,18 @@ tail:
 // /GX (the CString temp carries a C++ EH frame). __thiscall, ret 4.
 //
 // `mode`-string table (reloc-masked .rodata literals):
-static const char s_GRUNTZ_ENTRANCEZ[]           = "GRUNTZ_ENTRANCEZ";
-static const char s_GRUNTZ_ENTRANCEZ_ONE[]       = "GRUNTZ_ENTRANCEZ_ONE";
-static const char s_GRUNTZ_ENTRANCEZ_TWO[]       = "GRUNTZ_ENTRANCEZ_TWO";
-static const char s_GRUNTZ_ENTRANCEZ_THREE[]     = "GRUNTZ_ENTRANCEZ_THREE";
-static const char s_GRUNTZ_ENTRANCEZ_DROP[]      = "GRUNTZ_ENTRANCEZ_DROP";
+static const char s_GRUNTZ_ENTRANCEZ[] = "GRUNTZ_ENTRANCEZ";
+static const char s_GRUNTZ_ENTRANCEZ_ONE[] = "GRUNTZ_ENTRANCEZ_ONE";
+static const char s_GRUNTZ_ENTRANCEZ_TWO[] = "GRUNTZ_ENTRANCEZ_TWO";
+static const char s_GRUNTZ_ENTRANCEZ_THREE[] = "GRUNTZ_ENTRANCEZ_THREE";
+static const char s_GRUNTZ_ENTRANCEZ_DROP[] = "GRUNTZ_ENTRANCEZ_DROP";
 static const char s_GRUNTZ_ENTRANCEZ_RESSURECT[] = "GRUNTZ_ENTRANCEZ_RESSURECT";
-static const char s_GRUNTZ_DEATHZ_MELT[]         = "GRUNTZ_DEATHZ_MELT";
+static const char s_GRUNTZ_DEATHZ_MELT[] = "GRUNTZ_DEATHZ_MELT";
 
 RVA(0x067bd0, 0x2ef)
-void CGrunt::BuildEntranceAnimation(int mode)
-{
+void CGrunt::BuildEntranceAnimation(int mode) {
     m_30 = (int)m_14->m_1c;
-    m_14->m_1c = (void *)EntranceLookupAnimSet(s_animKeyK);
+    m_14->m_1c = (void*)EntranceLookupAnimSet(s_animKeyK);
 
     m_25c = 1;
     m_1fc = 0;
@@ -785,7 +815,7 @@ void CGrunt::BuildEntranceAnimation(int mode)
         m_10->m_8 |= 0x20000;
     }
 
-    EntrancePrepare();                   // thunk_FUN_0044b240 (a void this-method)
+    EntrancePrepare(); // thunk_FUN_0044b240 (a void this-method)
 
     CString key;
 
@@ -793,48 +823,52 @@ void CGrunt::BuildEntranceAnimation(int mode)
     // the visible view rect, or when it is the registry's focused grunt and its
     // m_1ec matches the focus sentinel.
     int onScreen = 0;
-    CGameRegistry *g = g_pGameRegistry;
+    CGameRegistry* g = g_pGameRegistry;
     {
         int x = m_10->m_5c;
         int y = m_10->m_60;
         if (x < g->m_144 && x >= g->m_13c && y < g->m_148 && y >= g->m_140) {
             onScreen = 1;
         } else {
-            CEntranceAnimPlayer *focus = 0;
-            int *cell = (int *)((char *)g + 0x68);
-            CEntranceAnimPlayer **slot = (CEntranceAnimPlayer **)(*cell);
-            if (((int *)slot)[0x24c / 4] == 1) {
-                int *idxObj = ((int **)slot)[0x244 / 4];
-                int *vec = (int *)idxObj[2];
+            CEntranceAnimPlayer* focus = 0;
+            int* cell = (int*)((char*)g + 0x68);
+            CEntranceAnimPlayer** slot = (CEntranceAnimPlayer**)(*cell);
+            if (((int*)slot)[0x24c / 4] == 1) {
+                int* idxObj = ((int**)slot)[0x244 / 4];
+                int* vec = (int*)idxObj[2];
                 int a = vec[0];
                 int b = vec[1];
                 int off = a * 15 + b;
-                focus = ((CEntranceAnimPlayer **)slot)[off + 0x1c / 4];
+                focus = ((CEntranceAnimPlayer**)slot)[off + 0x1c / 4];
             }
-            if (this == (CGrunt *)focus && m_1ec == g_focusedGruntSentinel)
+            if (this == (CGrunt*)focus && m_1ec == g_focusedGruntSentinel) {
                 onScreen = 1;
+            }
         }
     }
 
-    CSprite *found = 0;
-    const char *base;
+    CSprite* found = 0;
+    const char* base;
 
     if (mode == 1) {
         int r = GruntRand() % 0x1e1;
         if (r > 0x140) {
             m_154->m_c->m_2c->m_10map.Lookup(s_GRUNTZ_ENTRANCEZ_ONE, &found);
-            if (onScreen)
+            if (onScreen) {
                 g->m_60->CueA(this, 0x37a, -1, 0, -1, -1);
+            }
             base = s_GRUNTZ_ENTRANCEZ;
         } else if (r > 0xa0) {
             m_154->m_c->m_2c->m_10map.Lookup(s_GRUNTZ_ENTRANCEZ_TWO, &found);
-            if (onScreen)
+            if (onScreen) {
                 g->m_60->CueA(this, 0x37b, -1, 0, -1, -1);
+            }
             base = s_GRUNTZ_ENTRANCEZ;
         } else {
             m_154->m_c->m_2c->m_10map.Lookup(s_GRUNTZ_ENTRANCEZ_THREE, &found);
-            if (onScreen)
+            if (onScreen) {
                 g->m_60->CueA(this, 0x37c, -1, 0, -1, -1);
+            }
             base = s_GRUNTZ_ENTRANCEZ;
         }
     } else if (mode == 2) {
@@ -852,8 +886,8 @@ void CGrunt::BuildEntranceAnimation(int mode)
     } else {
         m_15c = (int)m_154->m_1b4;
         m_154->m_1a0.SetGeometry((int)found);
-        CEntranceAnimDescColl *desc = m_154->m_1b4;
-        int *elem = desc->m_10 > 0 ? *desc->m_c : 0;
+        CEntranceAnimDescColl* desc = m_154->m_1b4;
+        int* elem = desc->m_10 > 0 ? *desc->m_c : 0;
         EntranceApplyFrame(key, elem[0x14 / 4]);
     }
 }
@@ -886,31 +920,33 @@ void CGrunt::BuildEntranceAnimation(int mode)
 // shift through the two grid-write blocks). Same entropy class as the 5 resolvers'
 // edx/ecx coin-flip; no source lever flips it (an explicit `int z=0;` did not pin).
 RVA(0x067f80, 0x313)
-void CGrunt::LoadEntranceConfig()
-{
+void CGrunt::LoadEntranceConfig() {
     if (m_154->m_1a0.SetGeoSourceR(g_defaultGeo) == 1) {
-        CGameRegistry *g = g_pGameRegistry;
-        CGruntHud *h = m_10;
-        CTileGrid *grid = g->m_70;
+        CGameRegistry* g = g_pGameRegistry;
+        CGruntHud* h = m_10;
+        CTileGrid* grid = g->m_70;
         int tx = h->m_5c >> 5;
         int ty = h->m_60 >> 5;
 
         int flags;
-        if ((unsigned)tx >= (unsigned)grid->m_c || (unsigned)ty >= (unsigned)grid->m_10)
+        if ((unsigned)tx >= (unsigned)grid->m_c || (unsigned)ty >= (unsigned)grid->m_10) {
             flags = 1;
-        else
-            flags = ((int *)grid->m_8[ty])[tx * 7];
+        } else {
+            flags = ((int*)grid->m_8[ty])[tx * 7];
+        }
 
         if (flags & 0x20000000) {
             int owner;
-            if ((unsigned)tx >= (unsigned)grid->m_c || (unsigned)ty >= (unsigned)grid->m_10)
+            if ((unsigned)tx >= (unsigned)grid->m_c || (unsigned)ty >= (unsigned)grid->m_10) {
                 owner = -1;
-            else
-                owner = ((int *)grid->m_8[ty])[tx * 7 + 1];
+            } else {
+                owner = ((int*)grid->m_8[ty])[tx * 7 + 1];
+            }
             int b = (owner >> 8) & 0xff;
             int a = owner & 0xff;
-            if (m_1ec != b || m_1f0 != a)
+            if (m_1ec != b || m_1f0 != a) {
                 m_260->SetTile(b, a, 2, m_1ec);
+            }
         }
 
         // Re-stamp the occupancy grid: clear old tile, set new tile.
@@ -925,13 +961,13 @@ void CGrunt::LoadEntranceConfig()
         int newTileY = newPxY >> 5;
 
         if (oldX != -1 && m_180 != -1) {
-            CTileGrid *og = g_pGameRegistry->m_70;
-            ((char *)&og->m_8[oldTileY][oldTileX * 7])[3] &= ~0x20;
+            CTileGrid* og = g_pGameRegistry->m_70;
+            ((char*)&og->m_8[oldTileY][oldTileX * 7])[3] &= ~0x20;
             og->m_8[oldTileY][oldTileX * 7 + 1] = -1;
         }
         {
-            CTileGrid *ng = g_pGameRegistry->m_70;
-            ((char *)&ng->m_8[newTileY][newTileX * 7])[3] |= 0x20;
+            CTileGrid* ng = g_pGameRegistry->m_70;
+            ((char*)&ng->m_8[newTileY][newTileX * 7])[3] |= 0x20;
             ng->m_8[newTileY][newTileX * 7 + 1] = (m_1ec << 8) | m_1f0;
         }
         m_17c = newPxX;
@@ -945,13 +981,14 @@ void CGrunt::LoadEntranceConfig()
             h->m_8 |= 0x20000;
         }
 
-        CEntranceAnimPlayer *p = m_154;
-        CSprite *found = 0;
-        void *cached = p->m_1b4;
+        CEntranceAnimPlayer* p = m_154;
+        CSprite* found = 0;
+        void* cached = p->m_1b4;
         p->m_c->m_2c->m_10map.Lookup(s_GRUNTZ_ENTRANCEZ_DROP, &found);
-        if ((void *)found == cached) {
-            if (m_1ec == g_focusedGruntSentinel)
+        if ((void*)found == cached) {
+            if (m_1ec == g_focusedGruntSentinel) {
                 g_pGameRegistry->m_60->CueA(this, 0x33f, -1, 0, -1, -1);
+            }
             m_260->ClaimTile(m_1ec, m_1f0, 0, 0);
             m_364 = 1;
             m_848 = g_buteMgr.GetDwordDef(s_Grunt, s_EntranceSafeTime, 5000);
@@ -961,8 +998,9 @@ void CGrunt::LoadEntranceConfig()
             m_858 = 0;
             m_85c = 0;
         } else {
-            if (m_260->ReleaseTile(m_1ec, m_1f0))
+            if (m_260->ReleaseTile(m_1ec, m_1f0)) {
                 EntranceOnReleased();
+            }
         }
         m_1e4 = 0;
         ReadConfigFromButeMgr();
@@ -970,9 +1008,10 @@ void CGrunt::LoadEntranceConfig()
         EntranceFinishWire(0, 0);
     }
 
-    char *sub = (char *)&m_154->m_1a0;
-    if (*(int *)(sub + 0x28) == 0 || *(int *)(sub + 0x20) != 0)
+    char* sub = (char*)&m_154->m_1a0;
+    if (*(int*)(sub + 0x28) == 0 || *(int*)(sub + 0x20) != 0) {
         return;
+    }
     Stub_062e10(1, 0, 0);
 }
 
@@ -982,14 +1021,14 @@ void CGrunt::LoadEntranceConfig()
 // Applies a special-case halving for grunt kind 55 (0x37).
 // ---------------------------------------------------------------------------
 RVA(0x48400, 0x47)
-void CGrunt::ReadConfigFromButeMgr()
-{
-    *(int *)((char *)this + 0x18c) = 0;
-    *(int *)((char *)this + 0x418) = 0;
+void CGrunt::ReadConfigFromButeMgr() {
+    *(int*)((char*)this + 0x18c) = 0;
+    *(int*)((char*)this + 0x418) = 0;
 
-    *(int *)((char *)this + 0x41c) = g_buteMgr.GetDwordDef(
-        *(char **)((char *)this + 0x1c0), s_TimePerTile, 1000);
+    *(int*)((char*)this + 0x41c) =
+        g_buteMgr.GetDwordDef(*(char**)((char*)this + 0x1c0), s_TimePerTile, 1000);
 
-    if (*(int *)((char *)this + 0x258) == 0x37)
-        *(int *)((char *)this + 0x41c) >>= 1;
+    if (*(int*)((char*)this + 0x258) == 0x37) {
+        *(int*)((char*)this + 0x41c) >>= 1;
+    }
 }

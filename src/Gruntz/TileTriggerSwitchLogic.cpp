@@ -15,10 +15,10 @@
 // (rep stosd), then clears m_20 (+0x20).
 // ---------------------------------------------------------------------------
 RVA(0x110430, 0x1c)
-CTileTriggerSwitchLogic::CTileTriggerSwitchLogic()
-{
-    for (int i = 0; i < 24; i++)
+CTileTriggerSwitchLogic::CTileTriggerSwitchLogic() {
+    for (int i = 0; i < 24; i++) {
         m_block[i] = 0;
+    }
     m_20 = 0;
 }
 
@@ -27,11 +27,11 @@ CTileTriggerSwitchLogic::CTileTriggerSwitchLogic()
 // Linear scan of the 24-dword m_block; returns 1 on a hit, 0 otherwise.
 // ---------------------------------------------------------------------------
 RVA(0x110820, 0x23)
-int CTileTriggerSwitchLogic::FindIndexByKey(int key)
-{
+int CTileTriggerSwitchLogic::FindIndexByKey(int key) {
     for (int i = 0; i < 24; i++) {
-        if (m_block[i] == key)
+        if (m_block[i] == key) {
             return 1;
+        }
     }
     return 0;
 }

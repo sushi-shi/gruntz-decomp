@@ -10,16 +10,16 @@
 //   +0x0c  m_name   : the file name (MFC CString).
 #ifndef SRC_IO_FILESTREAM_H
 #define SRC_IO_FILESTREAM_H
-#include <rva.h>  // OVERRIDE macro (override under clang, no-op under MSVC 5.0)
+#include <rva.h> // OVERRIDE macro (override under clang, no-op under MSVC 5.0)
 
-#include <Mfc.h>   // CObject, CString + <windows.h> (CreateFileA/ReadFile/...) FIRST
+#include <Mfc.h> // CObject, CString + <windows.h> (CreateFileA/ReadFile/...) FIRST
 
 // External NAFXCW error helpers (reloc-masked no-body calls). The names are
 // placeholders pending the alias pass (MFC's real exports are
 // AfxThrowFileException / CFileException::ThrowOsError / AfxFullPath).
 extern "C" void __stdcall AfxThrowOsError(LONG lOsError, LPCSTR lpszName);
 extern "C" void __stdcall AfxThrowFileError(int cause, LONG lOsError, LPCSTR lpszName);
-extern "C" void __stdcall AfxFullPath(char *lpszPathOut, const char *lpszFileName);
+extern "C" void __stdcall AfxFullPath(char* lpszPathOut, const char* lpszFileName);
 
 // ---------------------------------------------------------------------------
 // CFileIO - the KERNEL32 file-stream wrapper (CObject-derived; the base ctor
@@ -33,19 +33,19 @@ public:
     CFileIO(HANDLE hFile);
     virtual ~CFileIO() OVERRIDE;
 
-    BOOL  Open(const char *lpszFileName, unsigned int nOpenFlags, void *pError);
-    unsigned int Read(void *lpBuf, unsigned int nCount);
-    void  Write(const void *lpBuf, unsigned int nCount);
-    LONG  Seek(LONG lOff, int nFrom);
-    LONG  GetPosition();
+    BOOL Open(const char* lpszFileName, unsigned int nOpenFlags, void* pError);
+    unsigned int Read(void* lpBuf, unsigned int nCount);
+    void Write(const void* lpBuf, unsigned int nCount);
+    LONG Seek(LONG lOff, int nFrom);
+    LONG GetPosition();
     // GetLength: virtual Seek-to-end/restore. Declared (no body here) so external
     // callers (CFileImage) emit a reloc-masked `call rel32` to it.
     unsigned int GetLength();
-    void  Close();
+    void Close();
 
-    HANDLE       m_handle;   // +0x04
-    int          m_open;     // +0x08
-    CString      m_name;     // +0x0c
+    HANDLE m_handle; // +0x04
+    int m_open;      // +0x08
+    CString m_name;  // +0x0c
 
     // Engine-label backlog stubs.
     void Stub_0bd3e0();

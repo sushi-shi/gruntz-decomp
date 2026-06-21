@@ -19,16 +19,12 @@
  * real binary class with matched fields.
  */
 
-namespace Utils
-{
-    template <typename T>
-    class MemoryPool
-    {
+namespace Utils {
+    template<typename T> class MemoryPool {
     private:
-        struct Node
-        {
-            Node* pNext;   // free-list link (also data-offset base; see m_dataOffset)
-            T     data;
+        struct Node {
+            Node* pNext; // free-list link (also data-offset base; see m_dataOffset)
+            T data;
         };
 
     public:
@@ -45,12 +41,12 @@ namespace Utils
         void Free(T* pData);
 
     private:
-        char* m_pBlock;             // +0x00  the single contiguous backing block
-        Node* m_pNextFreeNode;      // +0x04  head of the free-list
-        unsigned int m_nodesCount;  // +0x08
-        unsigned int m_dataOffset;  // +0x0c  offset from Node* to its `data`
-    };                              // 0x10 bytes
-}
+        char* m_pBlock;            // +0x00  the single contiguous backing block
+        Node* m_pNextFreeNode;     // +0x04  head of the free-list
+        unsigned int m_nodesCount; // +0x08
+        unsigned int m_dataOffset; // +0x0c  offset from Node* to its `data`
+    }; // 0x10 bytes
+} // namespace Utils
 
 // MemoryPool_Pair — the concrete Utils::MemoryPool<Pair> instantiation that
 // CGruntzMgr::memory_pool uses (see ../game/cgruntzmgr.h). The template above is
@@ -58,12 +54,11 @@ namespace Utils
 // for it; this is a plain struct mirror of its 0x10-byte layout (same field set,
 // element-type independent) so `gruntz structs` emits a "MemoryPool_Pair" record.
 // @approx tomalla 1.0.1.77 (offsets version-independent).
-struct MemoryPool_Pair
-{
-    char*        m_pBlock;        // +0x00  the single contiguous backing block
-    void*        m_pNextFreeNode; // +0x04  head of the free-list (a Node*)
-    unsigned int m_nodesCount;    // +0x08
-    unsigned int m_dataOffset;    // +0x0c  offset from Node* to its `data`
-};                                // 0x10
+struct MemoryPool_Pair {
+    char* m_pBlock;            // +0x00  the single contiguous backing block
+    void* m_pNextFreeNode;     // +0x04  head of the free-list (a Node*)
+    unsigned int m_nodesCount; // +0x08
+    unsigned int m_dataOffset; // +0x0c  offset from Node* to its `data`
+}; // 0x10
 
 #endif /* UTILS_MEMORY_POOL_H */

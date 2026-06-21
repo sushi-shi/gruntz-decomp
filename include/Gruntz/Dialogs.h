@@ -46,9 +46,9 @@ class CWnd;
 // the offsets the disasm pins (+0x5c upward).
 class CDialog {
 public:
-    CDialog(unsigned int nIDTemplate, CWnd *pParent);
-    virtual ~CDialog();                                 // (gives CDialog its vptr @+0x00)
-    char m_body[0x5c - 4];                              // pad to 0x5c (vptr occupies +0x00)
+    CDialog(unsigned int nIDTemplate, CWnd* pParent);
+    virtual ~CDialog();    // (gives CDialog its vptr @+0x00)
+    char m_body[0x5c - 4]; // pad to 0x5c (vptr occupies +0x00)
 };
 
 // ---------------------------------------------------------------------------
@@ -57,12 +57,12 @@ public:
 // ---------------------------------------------------------------------------
 class CBattlezDlg : public CDialog {
 public:
-    CBattlezDlg(int a0, CWnd *pParent);
+    CBattlezDlg(int a0, CWnd* pParent);
 
-    int     m_5c;       // +0x5c  (= a0)
-    char    m_pad60[8]; // +0x60
-    int     m_68;       // +0x68  (= 0)
-    CString m_6c;       // +0x6c  (default CString)
+    int m_5c;        // +0x5c  (= a0)
+    char m_pad60[8]; // +0x60
+    int m_68;        // +0x68  (= 0)
+    CString m_6c;    // +0x6c  (default CString)
 };
 
 // ---------------------------------------------------------------------------
@@ -71,9 +71,9 @@ public:
 // ---------------------------------------------------------------------------
 class CBattlezDlgCustom : public CDialog {
 public:
-    CBattlezDlgCustom(CWnd *pParent);
+    CBattlezDlgCustom(CWnd* pParent);
 
-    CString m_5c;       // +0x5c  (default CString)
+    CString m_5c; // +0x5c  (default CString)
 };
 
 // ---------------------------------------------------------------------------
@@ -82,12 +82,12 @@ public:
 // ---------------------------------------------------------------------------
 class CBattlezDlgColors : public CDialog {
 public:
-    CBattlezDlgColors(int a0, int a1, int a2, CWnd *pParent);
+    CBattlezDlgColors(int a0, int a1, int a2, CWnd* pParent);
 
-    int m_5c;   // +0x5c  (= a0)
-    int m_60;   // +0x60  (= a1)
-    int m_64;   // +0x64  (= 0)
-    int m_68;   // +0x68  (= a2)
+    int m_5c; // +0x5c  (= a0)
+    int m_60; // +0x60  (= a1)
+    int m_64; // +0x64  (= 0)
+    int m_68; // +0x68  (= a2)
 };
 
 // ---------------------------------------------------------------------------
@@ -97,23 +97,23 @@ public:
 // ---------------------------------------------------------------------------
 class CMultiStartDlg : public CDialog {
 public:
-    CMultiStartDlg(int a0, CWnd *pParent);
+    CMultiStartDlg(int a0, CWnd* pParent);
 
     // Engine-label backlog stub (non-virtual placeholder; vtable-neutral).
     void InitPlayerSlots();
 
-    int     m_5c;       // +0x5c  (= a0)
-    int     m_60;       // +0x60  (= 0)
-    char    m_pad64[8]; // +0x64
-    int     m_6c;       // +0x6c  (= 0)
-    CString m_70;       // +0x70  (default CString)
-    CObList m_74;       // +0x74  (CObList(0xa))
+    int m_5c;        // +0x5c  (= a0)
+    int m_60;        // +0x60  (= 0)
+    char m_pad64[8]; // +0x64
+    int m_6c;        // +0x6c  (= 0)
+    CString m_70;    // +0x70  (default CString)
+    CObList m_74;    // +0x74  (CObList(0xa))
 };
 
 // CCheckpointDlg - trivial CDialog (resource 0xcd); ctor only.
 class CCheckpointDlg : public CDialog {
 public:
-    CCheckpointDlg(CWnd *pParent);
+    CCheckpointDlg(CWnd* pParent);
 };
 
 #endif // SRC_GRUNTZ_DIALOGS_H

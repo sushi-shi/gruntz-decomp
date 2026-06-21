@@ -27,7 +27,7 @@
 // already-matched butemgr getters. GetStringDef returns a CString* whose +0
 // m_pchData is the face-name char* the caller dereferences (`mov eax,[eax]`); the
 // default (3rd arg) is the address of the ARIAL CString temp.
-       // +0x00 the face-name char*
+// +0x00 the face-name char*
 
 #include <Bute/ButeMgr.h>
 // The global CButeMgr instance (the ctor stores the bute config tree
@@ -40,14 +40,14 @@ extern CButeMgr g_buteMgr;
 // The font config strings - the original source literals (the "Font" tag-group
 // + per-font keys). objdiff matches these relocations by value against the
 // target's .data string constants.
-#define s_Font               "Font"
-#define s_ARIAL              "ARIAL"
-#define s_TrainingFont       "TrainingFont"
-#define s_TrainingFontWidth  "TrainingFontWidth"
+#define s_Font "Font"
+#define s_ARIAL "ARIAL"
+#define s_TrainingFont "TrainingFont"
+#define s_TrainingFontWidth "TrainingFontWidth"
 #define s_TrainingFontHeight "TrainingFontHeight"
-#define s_MessageFont        "MessageFont"
-#define s_MessageFontWidth   "MessageFontWidth"
-#define s_MessageFontHeight  "MessageFontHeight"
+#define s_MessageFont "MessageFont"
+#define s_MessageFontWidth "MessageFontWidth"
+#define s_MessageFontHeight "MessageFontHeight"
 
 // ---------------------------------------------------------------------------
 // The font-config object the method operates on. Only the load-bearing member
@@ -57,23 +57,22 @@ class CFontConfig {
 public:
     int LoadFontConfig(int a1, int a2);
 
-    char  m_pad00[0x20];
-    int   m_20;          // +0x20  (= 0)
-    int   m_24;          // +0x24  (= a1)
-    int   m_28;          // +0x28  (= a2)
-    int   m_2c;          // +0x2c  (= 0)
-    int   m_30;          // +0x30  (= 0)
-    char  m_pad34[4];
-    HFONT m_arialFont;   // +0x38  (the ARIAL UI font)
-    HFONT m_trainingFont;// +0x3c  (the TrainingFont)
-    HFONT m_messageFont; // +0x40  (the MessageFont)
+    char m_pad00[0x20];
+    int m_20; // +0x20  (= 0)
+    int m_24; // +0x24  (= a1)
+    int m_28; // +0x28  (= a2)
+    int m_2c; // +0x2c  (= 0)
+    int m_30; // +0x30  (= 0)
+    char m_pad34[4];
+    HFONT m_arialFont;    // +0x38  (the ARIAL UI font)
+    HFONT m_trainingFont; // +0x3c  (the TrainingFont)
+    HFONT m_messageFont;  // +0x40  (the MessageFont)
 };
 
 // ---------------------------------------------------------------------------
 // CFontConfig::LoadFontConfig
 RVA(0x218e0, 0x1ff)
-int CFontConfig::LoadFontConfig(int a1, int a2)
-{
+int CFontConfig::LoadFontConfig(int a1, int a2) {
     m_24 = a1;
     m_28 = a2;
     m_20 = 0;
@@ -82,8 +81,9 @@ int CFontConfig::LoadFontConfig(int a1, int a2)
 
     // --- ARIAL UI font (fixed 12x8 bold ANSI) -------------------------------
     m_arialFont = CreateFontA(0xc, 8, 0, 0, 0x2bc, 0, 0, 0, 1, 0, 0, 0, 0, s_ARIAL);
-    if (!m_arialFont)
+    if (!m_arialFont) {
         m_arialFont = CreateFontA(0xc, 8, 0, 0, 0x2bc, 0, 0, 0, 1, 0, 0, 0, 0, s_ARIAL);
+    }
 
     // The ARIAL default-face CString temp - constructed here (just-in-time, after
     // the first CreateFontA), passed by address as the GetStringDef default for
@@ -91,28 +91,80 @@ int CFontConfig::LoadFontConfig(int a1, int a2)
     CString arial(s_ARIAL);
 
     // --- TrainingFont (face/dims from config, default ARIAL / 14x28) --------
-    const char *faceTF = (const char *)*g_bute->GetStringDef(s_Font, s_TrainingFont, (CString *)&arial);
+    const char* faceTF =
+        (const char*)*g_bute->GetStringDef(s_Font, s_TrainingFont, (CString*)&arial);
     m_trainingFont = CreateFontA(
         g_bute->GetIntDef(s_Font, s_TrainingFontHeight, 0x1c),
         g_bute->GetIntDef(s_Font, s_TrainingFontWidth, 0xe),
-        0, 0, 0x2bc, 0, 0, 0, 1, 0, 0, 0, 0, faceTF);
-    if (!m_trainingFont)
+        0,
+        0,
+        0x2bc,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        faceTF
+    );
+    if (!m_trainingFont) {
         m_trainingFont = CreateFontA(
             g_bute->GetIntDef(s_Font, s_TrainingFontHeight, 0x18),
             g_bute->GetIntDef(s_Font, s_TrainingFontWidth, 0x10),
-            0, 0, 0x2bc, 0, 0, 0, 1, 0, 0, 0, 0, 0);
+            0,
+            0,
+            0x2bc,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0
+        );
+    }
 
     // --- MessageFont (face/dims from config, default ARIAL / 24x42) ---------
-    const char *faceMF = (const char *)*g_bute->GetStringDef(s_Font, s_MessageFont, (CString *)&arial);
+    const char* faceMF =
+        (const char*)*g_bute->GetStringDef(s_Font, s_MessageFont, (CString*)&arial);
     m_messageFont = CreateFontA(
         g_bute->GetIntDef(s_Font, s_MessageFontHeight, 0x2a),
         g_bute->GetIntDef(s_Font, s_MessageFontWidth, 0x18),
-        0, 0, 0x2bc, 0, 0, 0, 1, 0, 0, 0, 0, faceMF);
-    if (!m_messageFont)
+        0,
+        0,
+        0x2bc,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        faceMF
+    );
+    if (!m_messageFont) {
         m_messageFont = CreateFontA(
             g_bute->GetIntDef(s_Font, s_MessageFontHeight, 0x2a),
             g_bute->GetIntDef(s_Font, s_MessageFontWidth, 0x18),
-            0, 0, 0x2bc, 0, 0, 0, 1, 0, 0, 0, 0, 0);
+            0,
+            0,
+            0x2bc,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0
+        );
+    }
 
     return 1;
 }

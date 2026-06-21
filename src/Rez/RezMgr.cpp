@@ -45,8 +45,7 @@
 //   mov [this] = base vtbl; mov [this+0xc] = parent. Out-of-line so
 //   the derived ctors emit a `call` to it.
 RVA(0x13c4e0, 0x12)
-CRezItmBase::CRezItmBase(void *parent)
-{
+CRezItmBase::CRezItmBase(void* parent) {
     m_parent = parent;
 }
 
@@ -55,8 +54,7 @@ CRezItmBase::CRezItmBase(void *parent)
 // Base ctor (vtbl + parent), then derived vtbl, m_10 = 0,
 // m_14 = 0, m_20 = -1. m_18/m_1c untouched.
 RVA(0x13c540, 0x28)
-CRezItm::CRezItm(void *parent) : CRezItmBase(parent)
-{
+CRezItm::CRezItm(void* parent) : CRezItmBase(parent) {
     m_10 = 0;
     m_14 = 0;
     m_20 = -1;
@@ -74,12 +72,11 @@ extern int g_rezDirChildVtbl;
 // child collection's two vtables), m_20=m_24=m_28=m_34=0, derived vtbl,
 // m_2c=rezMgr, m_30=1.
 RVA(0x13c940, 0x46)
-CRezDir::CRezDir(void *parent, void *rezMgr) : CRezItmBase(parent)
-{
+CRezDir::CRezDir(void* parent, void* rezMgr) : CRezItmBase(parent) {
     m_14 = 0;
     m_18 = 0;
-    m_vtblA = (void *)&g_rezDirChildVtbl;
-    m_vtblB = (void *)&g_rezDirChildVtbl;
+    m_vtblA = (void*)&g_rezDirChildVtbl;
+    m_vtblB = (void*)&g_rezDirChildVtbl;
     m_20 = 0;
     m_24 = 0;
     m_28 = 0;
@@ -96,12 +93,12 @@ CRezDir::CRezDir(void *parent, void *rezMgr) : CRezItmBase(parent)
 // of the record) has bit 0x4000 set (i.e. the entry is a directory).
 // `this` is never read here.
 RVA(0x13c080, 0x3c)
-int CRezDir::FindEntry(char *name)
-{
+int CRezDir::FindEntry(char* name) {
     RezFindRec rec;
-    if (RezStatEntry(name, &rec) != 0)
+    if (RezStatEntry(name, &rec) != 0) {
         return 0;
-    return (*(int *)(rec.raw + 6) & 0x4000) == 0x4000;
+    }
+    return (*(int*)(rec.raw + 6) & 0x4000) == 0x4000;
 }
 
 // The "File is not sorted!" assert message - a file-scope literal (its address
@@ -118,12 +115,12 @@ static const char s_notSorted[] = "CRezDir::Load Failed! (File is not sorted!)";
 // child's sub-dir node (node->m_14). Returns 1.
 SYMBOL(?Load@CRezDirNode@@QAEHH@Z)
 RVA(0x13a0f0, 0x99)
-int CRezDirNode::Load(int childFlag)
-{
-    if (m_buf != 0)
+int CRezDirNode::Load(int childFlag) {
+    if (m_buf != 0) {
         return 1;
+    }
 
-    RezSrc *src = m_src;
+    RezSrc* src = m_src;
     if (src->m_8 == 0 || (unsigned)src->m_1c > 1) {
         RezAssertFail(s_notSorted);
         return 0;
@@ -131,13 +128,15 @@ int CRezDirNode::Load(int childFlag)
 
     if (m_size > 0) {
         m_buf = RezAlloc(m_size);
-        if (m_buf != 0)
+        if (m_buf != 0) {
             m_src->m_stream->ReadAt(m_off, 0, m_size, m_buf);
+        }
     }
 
     if (childFlag != 0) {
-        for (RezNode *n = m_kids.First(); n != 0; n = n->Next())
+        for (RezNode* n = m_kids.First(); n != 0; n = n->Next()) {
             n->m_14->Load(1);
+        }
     }
     return 1;
 }
@@ -157,18 +156,20 @@ static const char s_extPid[] = ".PID";
 // (arg1,name,arg3)). Returns 1 unless the extension matched but its loader
 // failed (then 0); an unrecognised/absent extension also returns 1.
 RVA(0x13e5d0, 0xb1)
-int RezMgr::MakeImageKey(void *arg1, char *name, void *arg3)
-{
-    char *ext = RezStrrchr(name, '.');
+int RezMgr::MakeImageKey(void* arg1, char* name, void* arg3) {
+    char* ext = RezStrrchr(name, '.');
     if (ext && RezStricmp(ext, s_extBmp) == 0) {
-        if (!LoadBmp(arg1, name))
+        if (!LoadBmp(arg1, name)) {
             return 0;
+        }
     } else if (ext && RezStricmp(ext, s_extPcx) == 0) {
-        if (!LoadPcx(arg1, name))
+        if (!LoadPcx(arg1, name)) {
             return 0;
+        }
     } else if (ext && RezStricmp(ext, s_extPid) == 0) {
-        if (!LoadPid(arg1, name, arg3))
+        if (!LoadPid(arg1, name, arg3)) {
             return 0;
+        }
     }
     return 1;
 }
@@ -177,11 +178,11 @@ int RezMgr::MakeImageKey(void *arg1, char *name, void *arg3)
 int g_rezLowDetail;
 
 // The archive base names / path templates - file-scope literals (reloc-masked).
-static const char s_rezName[]    = "Gruntz.REZ";
-static const char s_join[]       = "%s\\%s";
-static const char s_dataPath[]   = "%c:\\DATA\\%s";
-static const char s_fecName[]    = "Gruntz.FEC";
-static const char s_fecLoName[]  = "GruntzLo.FEC";
+static const char s_rezName[] = "Gruntz.REZ";
+static const char s_join[] = "%s\\%s";
+static const char s_dataPath[] = "%c:\\DATA\\%s";
+static const char s_fecName[] = "Gruntz.FEC";
+static const char s_fecLoName[] = "GruntzLo.FEC";
 static const char s_moviezPath[] = "%c:\\MOVIEZ\\%s";
 
 // ---------------------------------------------------------------------------
@@ -208,11 +209,11 @@ static const char s_moviezPath[] = "%c:\\MOVIEZ\\%s";
 // deliverable; per the prompt's "don't sacrifice a green fn", this is left as a
 // documented plateau with the full reconstruction in place.
 RVA(0x091670, 0x2ac)
-int RezMgr::MakeRezPath()
-{
+int RezMgr::MakeRezPath() {
     char cwd[0x100];
-    if (!GetCurrentDirectoryA(0xff, cwd))
+    if (!GetCurrentDirectoryA(0xff, cwd)) {
         return 0;
+    }
 
     char drive = GetGruntzDriveLetter();
     m_inGameDir = (drive == cwd[0]);
@@ -223,14 +224,15 @@ int RezMgr::MakeRezPath()
     {
         CString rez(s_rezName);
         m_haveRez = 0;
-        RezFormat(&m_pathA, s_join, cwd, (const char *)rez);
+        RezFormat(&m_pathA, s_join, cwd, (const char*)rez);
         if (!RezFileExists(m_pathA)) {
             if (drive) {
-                RezFormat(&m_pathA, s_dataPath, drive, (const char *)rez);
-                if (RezFileExists(m_pathA))
+                RezFormat(&m_pathA, s_dataPath, drive, (const char*)rez);
+                if (RezFileExists(m_pathA)) {
                     m_haveRez = 1;
-                else
+                } else {
                     found = 0;
+                }
             } else {
                 found = 0;
             }
@@ -244,16 +246,18 @@ int RezMgr::MakeRezPath()
 
     m_haveMoviez = 0;
     int movFound = 0;
-    RezFormat(&m_pathB, s_join, cwd, (const char *)fec);
+    RezFormat(&m_pathB, s_join, cwd, (const char*)fec);
     if (!m_inGameDir && !RezFileExists(m_pathB) && !g_rezLowDetail) {
-        RezFormat(&m_pathB, s_join, cwd, (const char *)fecHi);
-        if (RezFileExists(m_pathB))
+        RezFormat(&m_pathB, s_join, cwd, (const char*)fecHi);
+        if (RezFileExists(m_pathB)) {
             movFound = 1;
+        }
     }
     if (!movFound && drive) {
-        RezFormat(&m_pathB, s_moviezPath, drive, (const char *)fec);
-        if (RezFileExists(m_pathB))
+        RezFormat(&m_pathB, s_moviezPath, drive, (const char*)fec);
+        if (RezFileExists(m_pathB)) {
             m_haveMoviez = 1;
+        }
     }
 
     if (!found) {
@@ -268,18 +272,18 @@ int RezMgr::MakeRezPath()
 // reloc-masked; see RezMgr.h). UpdateClock writes g_now/g_frameDelta;
 // the tick reads them, clamps the delta and advances the per-second timers.
 // ---------------------------------------------------------------------------
-static int g_now;          // (UpdateClock sets it; tick re-uses)
-static int g_frameDelta;   // (ms since previous frame)
+static int g_now;        // (UpdateClock sets it; tick re-uses)
+static int g_frameDelta; // (ms since previous frame)
 
 static int g_lastNow;
-static int g_lastDelta;    // (frame delta, clamped to <= 0x64)
-static int g_accumMs;      // (running accumulated frame time)
-static int g_frameTicks;   // (per-frame counter)
-static int g_timer32;      // (seed 0x32 ms)
-static int g_timer100;     // (seed 0x64 ms)
-static int g_timer200;     // (seed 0xc8 ms)
-static int g_timer400;     // (seed 0x190 ms)
-static int g_timer500;     // (seed 0x1f4 ms)
+static int g_lastDelta;  // (frame delta, clamped to <= 0x64)
+static int g_accumMs;    // (running accumulated frame time)
+static int g_frameTicks; // (per-frame counter)
+static int g_timer32;    // (seed 0x32 ms)
+static int g_timer100;   // (seed 0x64 ms)
+static int g_timer200;   // (seed 0xc8 ms)
+static int g_timer400;   // (seed 0x190 ms)
+static int g_timer500;   // (seed 0x1f4 ms)
 
 // ---------------------------------------------------------------------------
 // RezMgr::PerFrameTick()  (virtual, vtable slot +0x10).
@@ -320,10 +324,10 @@ static int g_timer500;     // (seed 0x1f4 ms)
 // test) fall out; `int` emits signed `jle`/`jl` (94.78%). g_frameDelta is a
 // timeGetTime() delta (genuinely unsigned ms).
 RVA(0x08b740, 0x12d)
-int RezMgr::PerFrameTick()
-{
-    if (m_mode == 0)
+int RezMgr::PerFrameTick() {
+    if (m_mode == 0) {
         return 0;
+    }
 
     UpdateClock();
 
@@ -340,21 +344,42 @@ int RezMgr::PerFrameTick()
 
         unsigned int v;
         v = (g_timer32 == 0) ? 0x32 : g_timer32;
-        if (dt >= v) g_timer32 = 0; else g_timer32 = v - dt;
+        if (dt >= v) {
+            g_timer32 = 0;
+        } else {
+            g_timer32 = v - dt;
+        }
         v = (g_timer100 == 0) ? 0x64 : g_timer100;
-        if (dt >= v) g_timer100 = 0; else g_timer100 = v - dt;
+        if (dt >= v) {
+            g_timer100 = 0;
+        } else {
+            g_timer100 = v - dt;
+        }
         v = (g_timer200 == 0) ? 0xc8 : g_timer200;
-        if (dt >= v) g_timer200 = 0; else g_timer200 = v - dt;
+        if (dt >= v) {
+            g_timer200 = 0;
+        } else {
+            g_timer200 = v - dt;
+        }
         v = (g_timer400 == 0) ? 0x190 : g_timer400;
-        if (dt >= v) g_timer400 = 0; else g_timer400 = v - dt;
+        if (dt >= v) {
+            g_timer400 = 0;
+        } else {
+            g_timer400 = v - dt;
+        }
         v = (g_timer500 == 0) ? 0x1f4 : g_timer500;
-        if (dt >= v) g_timer500 = 0; else g_timer500 = v - dt;
+        if (dt >= v) {
+            g_timer500 = 0;
+        } else {
+            g_timer500 = v - dt;
+        }
 
         g_frameTicks++;
     }
 
-    if (m_renderGate != 0)
+    if (m_renderGate != 0) {
         return 0;
+    }
 
     m_mode->Render();
     return 1;
@@ -369,8 +394,7 @@ int RezMgr::PerFrameTick()
 // WM_COMMAND (0x111) with command id 0x805c. Returns nonzero iff the lookup
 // reported a hit. The CheckDbgVal call's E8 rel32 is reloc-masked by objdiff.
 RVA(0x08e470, 0x50)
-int RezMgr::HandleDebugPosition()
-{
+int RezMgr::HandleDebugPosition() {
     int r = 0;
     if (m_mode && m_mode->Update() == 3) {
         r = CheckDbgVal("DEBUG_POSITION", 0x402d0b, 1);

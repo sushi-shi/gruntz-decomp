@@ -31,25 +31,24 @@ static const char s_extPcx[] = ".PCX";
 static const char s_extRid[] = ".RID";
 static const char s_extPid[] = ".PID";
 
-
 // ---------------------------------------------------------------------------
 // CImage::LoadFromRez
 // ext = strrchr(name,'.'); dispatch on .BMP/.PCX/.RID/.PID, else default. Each
 // branch re-tests `ext != 0` (the target's `test esi; je default` per case) and
 // forwards (name,a2,a3); a matched ext returns its loader's result directly.
 RVA(0x175a90, 0xee)
-int CImage::LoadFromRez(char *name, void *a2, void *a3)
-{
-    char *ext = strrchr(name, '.');
+int CImage::LoadFromRez(char* name, void* a2, void* a3) {
+    char* ext = strrchr(name, '.');
 
-    if (ext && _stricmp(ext, s_extBmp) == 0)
+    if (ext && _stricmp(ext, s_extBmp) == 0) {
         return LoadBmp(name, a2, a3);
-    else if (ext && _stricmp(ext, s_extPcx) == 0)
+    } else if (ext && _stricmp(ext, s_extPcx) == 0) {
         return LoadPcx(name, a2, a3);
-    else if (ext && _stricmp(ext, s_extRid) == 0)
+    } else if (ext && _stricmp(ext, s_extRid) == 0) {
         return LoadRid(name, a2, a3);
-    else if (ext && _stricmp(ext, s_extPid) == 0)
+    } else if (ext && _stricmp(ext, s_extPid) == 0) {
         return LoadPid(name, a2, a3);
+    }
 
     return LoadDefault(name, a2, a3);
 }
@@ -61,27 +60,29 @@ int CImage::LoadFromRez(char *name, void *a2, void *a3)
 // Read the file; if the read count != length, free + return 0. Else decode and
 // return the decoder's result. The CFileIO dtor + buffer free run on every exit.
 RVA(0x144110, 0x156)
-void *CFileImage::LoadBmp(char *name, char *path)
-{
+void* CFileImage::LoadBmp(char* name, char* path) {
     CFileIO file;
 
-    if (!file.Open(path, 0, 0))
+    if (!file.Open(path, 0, 0)) {
         return 0;
+    }
 
     unsigned int len = file.GetLength();
-    if (len == 0)
+    if (len == 0) {
         return 0;
+    }
 
-    void *buf = operator new(len);
-    if (!buf)
+    void* buf = operator new(len);
+    if (!buf) {
         return 0;
+    }
 
     if (file.Read(buf, len) != len) {
         operator delete(buf);
         return 0;
     }
 
-    void *result = DecodeBmp(name, buf, len);
+    void* result = DecodeBmp(name, buf, len);
     operator delete(buf);
     return result;
 }
@@ -90,27 +91,29 @@ void *CFileImage::LoadBmp(char *name, char *path)
 // CFileImage::LoadPcx
 // Byte-identical to LoadBmp except for the per-format decode helper (DecodePcx).
 RVA(0x145110, 0x156)
-void *CFileImage::LoadPcx(char *name, char *path)
-{
+void* CFileImage::LoadPcx(char* name, char* path) {
     CFileIO file;
 
-    if (!file.Open(path, 0, 0))
+    if (!file.Open(path, 0, 0)) {
         return 0;
+    }
 
     unsigned int len = file.GetLength();
-    if (len == 0)
+    if (len == 0) {
         return 0;
+    }
 
-    void *buf = operator new(len);
-    if (!buf)
+    void* buf = operator new(len);
+    if (!buf) {
         return 0;
+    }
 
     if (file.Read(buf, len) != len) {
         operator delete(buf);
         return 0;
     }
 
-    void *result = DecodePcx(name, buf, len);
+    void* result = DecodePcx(name, buf, len);
     operator delete(buf);
     return result;
 }
@@ -121,24 +124,25 @@ void *CFileImage::LoadPcx(char *name, char *path)
 // buffer for whatever GetLength() returns and only null-checks the allocation;
 // (2) the decoder takes a fourth pass-through arg (a3).
 RVA(0x145cd0, 0x130)
-void *CFileImage::LoadPid(char *name, char *path, void *a3)
-{
+void* CFileImage::LoadPid(char* name, char* path, void* a3) {
     CFileIO file;
 
-    if (!file.Open(path, 0, 0))
+    if (!file.Open(path, 0, 0)) {
         return 0;
+    }
 
     unsigned int len = file.GetLength();
-    void *buf = operator new(len);
-    if (!buf)
+    void* buf = operator new(len);
+    if (!buf) {
         return 0;
+    }
 
     if (file.Read(buf, len) != len) {
         operator delete(buf);
         return 0;
     }
 
-    void *result = DecodePid(name, buf, len, a3);
+    void* result = DecodePid(name, buf, len, a3);
     operator delete(buf);
     return result;
 }
@@ -149,17 +153,18 @@ void *CFileImage::LoadPid(char *name, char *path, void *a3)
 // Opens a PCX file, reads data, calls DecodePcxData.
 // ===========================================================================
 RVA(0x1459d0, 0x135)
-int CFileImage::DecodePcxEx(char *name, char *path, void *a3, void *a4)
-{
+int CFileImage::DecodePcxEx(char* name, char* path, void* a3, void* a4) {
     CFileIO file;
 
-    if (!file.Open(path, 0, 0))
+    if (!file.Open(path, 0, 0)) {
         return 0;
+    }
 
     unsigned int len = file.GetLength();
-    void *buf = operator new(len);
-    if (!buf)
+    void* buf = operator new(len);
+    if (!buf) {
         return 0;
+    }
 
     if (file.Read(buf, len) != len) {
         operator delete(buf);
