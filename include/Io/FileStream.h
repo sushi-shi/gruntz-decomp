@@ -10,6 +10,7 @@
 //   +0x0c  m_name   : the file name (MFC CString).
 #ifndef SRC_IO_FILESTREAM_H
 #define SRC_IO_FILESTREAM_H
+#include <rva.h>  // OVERRIDE macro (override under clang, no-op under MSVC 5.0)
 
 #include <Mfc.h>   // CObject, CString + <windows.h> (CreateFileA/ReadFile/...) FIRST
 
@@ -30,7 +31,7 @@ class CFileIO : public CObject {
 public:
     CFileIO();
     CFileIO(HANDLE hFile);
-    virtual ~CFileIO();
+    virtual ~CFileIO() OVERRIDE;
 
     BOOL  Open(const char *lpszFileName, unsigned int nOpenFlags, void *pError);
     unsigned int Read(void *lpBuf, unsigned int nCount);

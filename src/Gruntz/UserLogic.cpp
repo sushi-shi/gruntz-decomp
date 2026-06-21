@@ -43,28 +43,28 @@ int CUserLogic::UserLogicVfuncB() { return 0; }
 // ---------------------------------------------------------------------------
 
 class CSecretLevelTrigger : public CUserLogic {
-public: CSecretLevelTrigger(); virtual ~CSecretLevelTrigger();
+public: CSecretLevelTrigger(); virtual ~CSecretLevelTrigger() OVERRIDE;
 };
 CSecretLevelTrigger::~CSecretLevelTrigger() {}
 RVA(0x010b20, 0x4b)
 CSecretLevelTrigger::CSecretLevelTrigger() {}
 
 class CTileTrigger : public CUserLogic {
-public: CTileTrigger(); virtual ~CTileTrigger();
+public: CTileTrigger(); virtual ~CTileTrigger() OVERRIDE;
 };
 CTileTrigger::~CTileTrigger() {}
 RVA(0x011160, 0x4b)
 CTileTrigger::CTileTrigger() {}
 
 class CGruntHealthSprite : public CUserLogic {
-public: CGruntHealthSprite(); virtual ~CGruntHealthSprite();
+public: CGruntHealthSprite(); virtual ~CGruntHealthSprite() OVERRIDE;
 };
 CGruntHealthSprite::~CGruntHealthSprite() {}
 RVA(0x011ef0, 0x4b)
 CGruntHealthSprite::CGruntHealthSprite() {}
 
 class CVoiceTrigger : public CUserLogic {
-public: CVoiceTrigger(); virtual ~CVoiceTrigger();
+public: CVoiceTrigger(); virtual ~CVoiceTrigger() OVERRIDE;
 };
 CVoiceTrigger::~CVoiceTrigger() {}
 RVA(0x013470, 0x4b)
@@ -75,7 +75,7 @@ CVoiceTrigger::CVoiceTrigger() {}
 class CPathHazard : public CUserLogic {
 public:
     CPathHazard();
-    virtual ~CPathHazard();
+    virtual ~CPathHazard() OVERRIDE;
     char m_pad[0x108 - 0x38]; // pad CUserLogic (ends +0x38) .. +0x107
     void *m_108;   // +0x108
     void *m_10c;   // +0x10c

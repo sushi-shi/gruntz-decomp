@@ -17,6 +17,7 @@
 //                       computed at the tail of LoadFont).
 #ifndef SRC_FONT_FONT_H
 #define SRC_FONT_FONT_H
+#include <rva.h>  // OVERRIDE macro (override under clang, no-op under MSVC 5.0)
 
 // ---------------------------------------------------------------------------
 // Global operator new / delete (the NAFXCW heap).
@@ -109,7 +110,7 @@ struct CWapNodeBase {
 };
 
 struct CWapNodeB : CWapNodeBase {
-    virtual ~CWapNodeB();
+    virtual ~CWapNodeB() OVERRIDE;
     void FreeStrings();
 
     int     m_type;                 // +0x04

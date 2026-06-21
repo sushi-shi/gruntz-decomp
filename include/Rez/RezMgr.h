@@ -47,6 +47,7 @@
 //   +0x64  m_name  : cached lookup-name buffer (operator new'd / freed)
 #ifndef SRC_REZ_REZMGR_H
 #define SRC_REZ_REZMGR_H
+#include <rva.h>  // OVERRIDE macro (override under clang, no-op under MSVC 5.0)
 
 // <Mfc.h> brings <windows.h> KERNEL32 (GetCurrentDirectoryA, used by MakeRezPath)
 // plus CString / CObject; the engine helpers below stay minimal externs.
@@ -113,7 +114,7 @@ public:
 class CRezItm : public CRezItmBase {
 public:
     CRezItm(void *parent);
-    virtual ~CRezItm() {}
+    virtual ~CRezItm() OVERRIDE {}
 
     int   m_10;   // +0x10  (= 0)
     int   m_14;   // +0x14  (= 0)
@@ -129,7 +130,7 @@ public:
 class CRezDir : public CRezItmBase {
 public:
     CRezDir(void *parent, void *rezMgr);
-    virtual ~CRezDir() {}
+    virtual ~CRezDir() OVERRIDE {}
 
     int   FindEntry(char *name);
     // OpenSub is NOT matched in this TU - see RezMgr.cpp note.

@@ -43,12 +43,19 @@
 // (and ignored by clang there, which is exactly why DATA cannot ride the IR).
 #define DATA(addr)      __attribute__((annotate("data:" #addr)))
 
+// OVERRIDE - a compile-time-only check (emits NO code) that a method really
+// overrides a base virtual. clang enforces it (catches a wrong slot/signature in
+// the IR/label pass); MSVC 5.0 predates C++11 and has no `override`, so there it
+// compiles to nothing. Use it when modeling a matched class's vtable.
+#define OVERRIDE        override
+
 #else  // MSVC 5.0 (and any other non-clang compiler): compile the labels out.
 
 #define RVA(addr, size)
 #define RVAU(addr)
 #define SYMBOL(mangled)
 #define DATA(addr)
+#define OVERRIDE
 
 #endif
 

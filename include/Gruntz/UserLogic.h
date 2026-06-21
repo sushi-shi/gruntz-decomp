@@ -84,7 +84,7 @@ public:
 class CUserLogic : public CUserBase {
 public:
     CUserLogic() {}
-    virtual ~CUserLogic();          // slot 0 (most-derived dtor)
+    virtual ~CUserLogic() OVERRIDE;          // slot 0 (most-derived dtor)
     virtual int UserLogicVfunc1();
     virtual int UserLogicVfunc2();
     virtual int UserLogicVfunc3();
