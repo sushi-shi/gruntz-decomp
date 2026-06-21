@@ -255,6 +255,15 @@ def _ghidra_metadata_apply(analyze: bool) -> None:
     then runs apply.py + export.py as GhidraScripts. `analyze=True` for the first
     import; False to re-run apply/export on the already-analyzed DB.
     """
+    # build/gen/locals.json: CodeView locals from a /Z7 debug build of each
+    # byte-exact function (apply.py injects them as named Ghidra stack vars).
+    # Harvest before EVERY apply (cold init + refresh) so locals are always fresh;
+    # needs functions.json (the rva<-name join) from a prior `gruntz build`.
+    if (REPO / "build" / "gen" / "functions.json").exists():
+        run([sys.executable, str(BUILD / "harvest_locals.py")])
+    else:
+        log("no functions.json yet - skipping locals harvest (run `gruntz build` first)")
+
     cmd = [sys.executable, str(GHIDRA_DRIVER), str(RETAIL_EXE),
            str(GHIDRA_PROJECT_DIR), GHIDRA_PROJECT,
            str(GHIDRA_APPLY), str(GHIDRA_EXPORT)]

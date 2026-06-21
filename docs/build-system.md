@@ -215,6 +215,31 @@ The delink rule's declared outputs are the per-unit `build/objdiff/target/<unit>
 (one command, multiple outputs); its inputs are the EXE + the two Ghidra CSVs +
 `build/gen/symbol_names.csv`.
 
+### Ghidra enrichment metadata (apply.py inputs)
+
+Beyond names, the Ghidra DB is enriched from generated, source-derived metadata so
+nothing important lives only in the `.gpr` blob — it is all reproducible:
+
+- `build/gen/functions.json` (`labels.py`): per-RVA **signatures** — class, return
+  type, calling convention, and named parameters. Derived by joining the IR
+  rva-map with `llvm-undname` (authoritative return/cc/class/param-types) and the
+  clang AST (parameter *names*). `apply.py` applies these as typed Ghidra
+  prototypes (+ a struct\* `this`).
+- `build/gen/globals.json` (`labels.py`): per-RVA **declared global type** for each
+  named global (the `DATA()`-bound `extern`'s C/C++ type). `apply.py` lays typed
+  data at the address so the global decodes as its real type (e.g. `g_buteMgr :
+  CButeMgr`) instead of raw bytes.
+- `build/gen/locals.json` (`harvest_locals.py` + `codeview.py`): per-RVA **named
+  local variables** for byte-exact functions only. Each src TU is compiled a second
+  time with `cl /Z7` (codegen-neutral — the `.text` is byte-identical to the base
+  obj, so the debug objs stay OUT of the matching graph, in `build/debug/`), and the
+  old-format MSVC 5.0 CodeView (`.debug$S`) is read for frame-relative locals.
+  `apply.py` injects them as named stack variables (they surface in the on-demand
+  decompiler). The harvest runs before every `apply.py` (in `_ghidra_metadata_apply`).
+- `build/gen/structs.json` + `build/gen/enums.json` (`ghidra_metadata_generate.py`):
+  clang record layouts / enums over `src/` + `src/Stub/types/`, defined in the DTM;
+  each struct is applied as the `this` type on its class's methods.
+
 ### What triggers a re-delink (incremental label map)
 
 The label map is built **per TU**: `gen_labels_one` runs `labels.py` on one
@@ -314,9 +339,10 @@ package (the pipeline `{build,ghidra,init}/`, the match tooling `match/`, and th
 analysis tools `analysis/`).
 
 Generated (git-ignored): `build/gen/symbol_names.csv` (from `src/` `RVA()`),
+`build/gen/functions.json` + `build/gen/locals.json` (Ghidra enrichment metadata),
 `build.ninja`, `.ninja_log`/`.ninja_deps`, and everything under `build/` (base
-objs, delinked target objs, synth PDB, the clangd compdb, the wine prefix, the
-Ghidra DB + exports, objdiff project + report) — see the table below.
+objs, `/Z7` debug objs, delinked target objs, synth PDB, the clangd compdb, the
+wine prefix, the Ghidra DB + exports, objdiff project + report) — see the table below.
 
 ## The `build/` directory
 

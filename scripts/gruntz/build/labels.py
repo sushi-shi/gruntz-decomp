@@ -249,13 +249,15 @@ def func_labels_from_ir(ir):
 
 # --- DATA via AST (extern annotations are dropped from IR) ------------------
 def collect_vars(ast, main_file):
-    """[(mangledName, offset)] for global VARIABLE declarations in main_file.
+    """[(mangledName, offset, qualType)] for global VARIABLE decls in main_file.
 
     A file-scope / `extern` variable carries a linkage mangledName
     (`?g_foo@@3...`, `_g_foo` for `extern "C"`); function locals do not, so they
-    are excluded naturally. Main-file-only (like collect_defs): a header-declared
-    global's offset is into the header, so without this guard it could be misread
-    against the .cpp line index and a `DATA()` could bind to the wrong VarDecl.
+    are excluded naturally. The qualType is the declared C/C++ type (e.g. "int",
+    "CGameReg *"), carried into globals.json so apply.py can type the global.
+    Main-file-only (like collect_defs): a header-declared global's offset is into
+    the header, so without this guard it could be misread against the .cpp line
+    index and a `DATA()` could bind to the wrong VarDecl.
     """
     main_real = os.path.realpath(main_file)
     out = []
@@ -274,7 +276,8 @@ def collect_vars(ast, main_file):
                 loc = node.get("loc") or {}
                 off = loc.get("offset")
                 if off is not None:
-                    out.append((node["mangledName"], off))
+                    qt = (node.get("type") or {}).get("qualType") or ""
+                    out.append((node["mangledName"], off, qt))
             for c in node.get("inner", []) or []:
                 visit(c)
     visit(ast)
@@ -321,12 +324,13 @@ def load_compdb(path):
 
 
 def data_labels(text, ast, main_file):
-    """[(rva, mangledName)] for each DATA(0x..) macro bound to the AST VarDecl
-    just below it (by line). The variable pool and macro sites never cross with
-    functions, so a non-matched global cannot steal a function's address.
+    """[(rva, mangledName, qualType)] for each DATA(0x..) macro bound to the AST
+    VarDecl just below it (by line). The variable pool and macro sites never cross
+    with functions, so a non-matched global cannot steal a function's address.
     """
     off2line = line_index(text)
-    var_defs = sorted((off2line(off), mn) for (mn, off) in collect_vars(ast, main_file))
+    var_defs = sorted((off2line(off), mn, qt)
+                      for (mn, off, qt) in collect_vars(ast, main_file))
     out = []
     line_no = 1
     for m in re.finditer(r"[^\n]*\n", text):
@@ -334,10 +338,142 @@ def data_labels(text, ast, main_file):
         dm = DATA_MACRO_RE.search(seg)
         if dm:
             rva = int(dm.group(1), 16)
-            cand = next((mn for (dl, mn) in var_defs if dl >= line_no), None)
-            out.append((rva, cand))
+            cand = next(((mn, qt) for (dl, mn, qt) in var_defs if dl >= line_no),
+                        (None, None))
+            out.append((rva, cand[0], cand[1]))
         line_no += 1
     return out
+
+
+# --- function signatures for Ghidra prototypes (functions.json) ------------
+# llvm-undname gives the authoritative signature (return type, calling
+# convention, class, parameter TYPES) for every mangled symbol; the source AST
+# adds the parameter NAMES, which the mangling does not carry. apply.py turns
+# these into typed, named Ghidra prototypes (+ a typed `this`). This is the
+# structured replacement for the removed `// engine-label:` JSON `prototype`.
+_FUNC_DECL_KINDS = {"FunctionDecl", "CXXMethodDecl", "CXXConstructorDecl",
+                    "CXXDestructorDecl", "CXXConversionDecl"}
+
+
+def param_names_from_ast(ast, main_file):
+    """{mangledName: [param-name-or-None, ...]} for function DEFINITIONS in
+    main_file. Parameter names live only in the source, not the mangling.
+    Main-file-only (like collect_vars) so a header-inlined definition's params
+    aren't misattributed."""
+    main_real = os.path.realpath(main_file)
+    out = {}
+    state = {"in_main": True}
+
+    def update_file(node):
+        for loc in (node.get("loc"), (node.get("range") or {}).get("begin")):
+            if isinstance(loc, dict) and loc.get("file") is not None:
+                state["in_main"] = os.path.realpath(loc["file"]) == main_real
+
+    def visit(node):
+        if not isinstance(node, dict):
+            return
+        update_file(node)
+        if (state["in_main"] and node.get("kind") in _FUNC_DECL_KINDS
+                and node.get("mangledName")):
+            inner = node.get("inner") or []
+            if any(c.get("kind") == "CompoundStmt" for c in inner):   # has a body
+                out[node["mangledName"]] = [
+                    (c.get("name") or None)
+                    for c in inner if c.get("kind") == "ParmVarDecl"]
+        for c in node.get("inner") or []:
+            visit(c)
+    visit(ast)
+    return out
+
+
+def undname_map(symbols, undname="llvm-undname"):
+    """{mangled: demangled} via one llvm-undname call (stdin batch).
+
+    undname echoes each input symbol then its demangling, separated by a blank
+    line; key each block by its echoed first line.
+    """
+    syms = [s for s in dict.fromkeys(symbols) if s]
+    if not syms:
+        return {}
+    res = subprocess.run([undname], input="\n".join(syms) + "\n",
+                         capture_output=True, text=True)
+    out = {}
+    for block in res.stdout.split("\n\n"):
+        ls = block.splitlines()
+        if len(ls) >= 2:
+            out[ls[0].strip()] = ls[1].strip()
+    return out
+
+
+_CC_KW_RE = re.compile(r"__(thiscall|cdecl|stdcall|fastcall)\b")
+_ACCESS_RE = re.compile(r"^(?:public|private|protected):\s*")
+
+
+def _split_top_commas(s):
+    out, depth, cur = [], 0, ""
+    for ch in s:
+        if ch in "<([":
+            depth += 1; cur += ch
+        elif ch in ">)]":
+            depth -= 1; cur += ch
+        elif ch == "," and depth == 0:
+            out.append(cur); cur = ""
+        else:
+            cur += ch
+    if cur.strip():
+        out.append(cur)
+    return [x.strip() for x in out]
+
+
+def parse_demangled(dem):
+    """llvm-undname output -> signature dict, or None when not a usable function.
+
+    'public: int __thiscall RezMgr::MakeImageKey(void *, char *, void *)' ->
+      {qual:'RezMgr::MakeImageKey', cls:'RezMgr', kind:'method', ret:'int',
+       cc:'__thiscall', param_types:['void *','char *','void *']}
+    """
+    if not dem or "(" not in dem or ")" not in dem:
+        return None
+    m = _CC_KW_RE.search(dem)
+    if not m:
+        return None                       # no calling convention -> not a function
+    cc = "__" + m.group(1)
+    pre = _ACCESS_RE.sub("", dem[:m.start()]).strip()
+    is_static = "static" in pre.split()
+    is_virtual = "virtual" in pre.split()
+    ret = re.sub(r"\b(?:static|virtual)\b", "", pre).strip() or "void"
+    post = dem[m.end():].strip()
+    # params = the final balanced (...) group (handles operator()(...)); qual is
+    # everything before it.
+    close = post.rfind(")")
+    depth, open_idx = 0, -1
+    for i in range(close, -1, -1):
+        if post[i] == ")":
+            depth += 1
+        elif post[i] == "(":
+            depth -= 1
+            if depth == 0:
+                open_idx = i
+                break
+    if open_idx < 0:
+        return None
+    qual = post[:open_idx].strip()
+    param_types = [p for p in _split_top_commas(post[open_idx + 1:close])
+                   if p and p != "void"]
+    cls = qual.rsplit("::", 1)[0] if "::" in qual else None
+    leaf = qual.rsplit("::", 1)[-1]
+    if "~" in leaf or "destructor" in leaf or "deleting dtor" in leaf:
+        kind = "dtor"
+    elif cls and leaf == cls.rsplit("::", 1)[-1]:
+        kind = "ctor"
+    elif is_static:
+        kind = "static"
+    elif cls:
+        kind = "vfunc" if is_virtual else "method"
+    else:
+        kind = "free"
+    return {"qual": qual, "cls": cls, "kind": kind, "ret": ret, "cc": cc,
+            "param_types": param_types}
 
 
 # --- static config path (vendored C TUs with pristine source; see docstring) --
@@ -492,10 +628,45 @@ def write_symbol_names(rows, addr_sites, out, misses=None):
     return 0
 
 
-def merge_fragments(frags, out):
+def _write_json_if_changed(obj, path, label):
+    """Write JSON only when the content changed (mtime-stable for ninja restat)."""
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    content = json.dumps(obj, indent=1)
+    if not (path.exists() and path.read_text() == content):
+        path.write_text(content)
+        log(f"wrote {len(obj)} {label} -> {path}")
+    else:
+        log(f"unchanged ({len(obj)} {label}) -> {path}")
+
+
+def merge_json_fragments(frags, out, label, key="rva"):
+    """Combine per-TU JSON list fragments into one sorted list (last per `key`
+    wins, matching the CSV's keep-last semantics) and write it. Each fragment is a
+    functions.json/globals.json slice from one --tu run. Missing fragments are
+    tolerated (a TU may carry no funcs/globals)."""
+    by_key = {}
+    for frag in frags:
+        p = Path(frag)
+        if not p.exists():
+            continue
+        try:
+            for d in json.loads(p.read_text() or "[]"):
+                by_key[d.get(key)] = d
+        except (OSError, json.JSONDecodeError):
+            continue
+    merged = sorted(by_key.values(), key=lambda d: d.get(key) or "")
+    _write_json_if_changed(merged, out, label)
+    return merged
+
+
+def merge_fragments(frags, out, functions_frags=None, functions_out=None,
+                    globals_frags=None, globals_out=None):
     """Combine per-TU fragment CSVs into symbol_names.csv, re-applying the cross-TU
     duplicate-RVA guard + DATA dedup. Each fragment is a symbol_names.csv slice
-    (rva,name,unit,size,kind) emitted by one --tu run."""
+    (rva,name,unit,size,kind) emitted by one --tu run. The per-TU functions.json /
+    globals.json fragments are merged the same way (last per rva wins) so apply.py
+    sees EVERY unit's signatures/global types, not just the last TU built."""
     import csv as _csv
     rows, addr_sites = [], {}
     for frag in frags:
@@ -508,7 +679,15 @@ def merge_fragments(frags, out):
                 rows.append((rva, r["name"], r["unit"], size, kind))
                 if kind != "data":
                     addr_sites.setdefault(rva, []).append((r["unit"], r["name"]))
-    return write_symbol_names(rows, addr_sites, out)
+    rc = write_symbol_names(rows, addr_sites, out)
+    if rc != 0:
+        return rc
+    if functions_out:
+        merge_json_fragments(functions_frags or [], functions_out,
+                             "function signature(s)")
+    if globals_out:
+        merge_json_fragments(globals_frags or [], globals_out, "global(s)")
+    return 0
 
 
 def main():
@@ -519,7 +698,13 @@ def main():
                     help="source TU(s) to read annotations from.")
     ap.add_argument("--merge", nargs="+",
                     help="merge mode: combine these per-TU fragment CSVs into "
-                         "--out (cross-TU dup guard + DATA dedup); no --tu needed.")
+                         "--out (cross-TU dup guard + DATA dedup); no --tu needed. "
+                         "Also merges --merge-functions/--merge-globals JSON "
+                         "fragments into --functions-out/--globals-out.")
+    ap.add_argument("--merge-functions", nargs="*", default=[],
+                    help="per-TU functions.json fragments to merge (merge mode).")
+    ap.add_argument("--merge-globals", nargs="*", default=[],
+                    help="per-TU globals.json fragments to merge (merge mode).")
     ap.add_argument("--flag", action="append", default=[])
     ap.add_argument("--obj", action="append", default=[],
                     help="base <unit>.obj for the authority check (same order/count "
@@ -531,10 +716,22 @@ def main():
                     help="clangd compile_commands.json for per-TU MS/include flags "
                          "(the IR emit needs system headers to resolve).")
     ap.add_argument("--out", default=str(REPO / "build/gen/symbol_names.csv"))
+    ap.add_argument("--functions-out",
+                    default=str(REPO / "build/gen/functions.json"),
+                    help="per-RVA function signatures (class, return, cc, named "
+                         "params) for apply.py's Ghidra prototype enrichment.")
+    ap.add_argument("--undname", default="llvm-undname",
+                    help="MSVC name demangler for the authoritative signature.")
+    ap.add_argument("--globals-out",
+                    default=str(REPO / "build/gen/globals.json"),
+                    help="per-RVA global/static declared types for apply.py.")
     args = ap.parse_args()
 
     if args.merge:
-        return merge_fragments(args.merge, Path(args.out))
+        return merge_fragments(
+            args.merge, Path(args.out),
+            functions_frags=args.merge_functions, functions_out=args.functions_out,
+            globals_frags=args.merge_globals, globals_out=args.globals_out)
     if not args.tu:
         ap.error("either --tu (emit) or --merge (combine fragments) is required")
 
@@ -548,6 +745,8 @@ def main():
     rows = []          # (rva, name, unit, size, kind)
     misses = []        # (rva, candidate, unit, reason)
     addr_sites = {}    # rva -> [(tu, "fn")] for every function rva, to catch dups
+    func_meta = {}     # rva -> {ir_sym, names} for functions.json signatures
+    global_meta = {}   # rva -> {name, type, unit} for globals.json (typed data)
     for i, tu in enumerate(args.tu):
         text = Path(tu).read_text()
         if args.unit:
@@ -574,11 +773,20 @@ def main():
         ir = emit_ir(args.clang, tu, args.flag, cl_flags)
         if ir is None:
             continue
+        # AST: source-only signal - parameter NAMES (for functions.json) and the
+        # DATA extern join. One dump, reused by both. Keyed by clang's mangledName,
+        # which equals the IR-paired symbol (`ir_sym`), so the join is by rva below.
+        ast = clang_ast(args.clang, tu, args.flag, cl_flags)
+        ast_param_names = param_names_from_ast(ast, tu) if ast is not None else {}
         for rva, ir_sym, size, override in func_labels_from_ir(ir):
             addr_sites.setdefault(rva, []).append((tu, ir_sym))
             # The IR pairs the annotation with the function's own mangled symbol;
             # an explicit SYMBOL override wins over it when present.
             name = override or ir_sym
+            # functions.json signature is derived from the clang mangledName
+            # (ir_sym): undname gives the type/cc/class, AST the parameter names.
+            func_meta[rva] = {"ir_sym": ir_sym,
+                              "names": ast_param_names.get(ir_sym)}
             if obj_syms is None:                  # no authority check (inspection)
                 rows.append((rva, name, unit, size, "func"))
                 continue
@@ -604,26 +812,82 @@ def main():
             size = (int(size_s, 16) if size_s and size_s.lower().startswith("0x")
                     else int(size_s) if size_s else None)
             addr_sites.setdefault(rva, []).append((tu, sym))
+            # No source body -> no AST param names; undname still gives the
+            # (typed, unnamed) signature for functions.json.
+            func_meta[rva] = {"ir_sym": sym, "names": None}
             if obj_syms is None or sym in obj_syms:
                 rows.append((rva, sym, unit, size, "func"))
             else:
                 misses.append((rva, sym, unit, "@rva-symbol not in base obj"))
 
         # --- DATA via AST (IR drops the extern's annotation) ---
-        if DATA_MACRO_RE.search(text):
-            ast = clang_ast(args.clang, tu, args.flag, cl_flags)
-            if ast is not None:
-                for rva, cand in data_labels(text, ast, tu):
-                    if cand is None:
-                        misses.append((rva, None, unit, "no VarDecl below DATA()"))
-                        continue
-                    if obj_syms is None or cand in all_syms:
-                        rows.append((rva, cand, unit, None, "data"))
-                    else:
-                        misses.append((rva, cand, unit,
-                                       "data candidate not in base obj"))
+        if ast is not None and DATA_MACRO_RE.search(text):
+            for rva, cand, qtype in data_labels(text, ast, tu):
+                if cand is None:
+                    misses.append((rva, None, unit, "no VarDecl below DATA()"))
+                    continue
+                if obj_syms is None or cand in all_syms:
+                    rows.append((rva, cand, unit, None, "data"))
+                    # remember the declared type so apply.py can type the global
+                    global_meta[rva] = {"name": cand, "type": qtype, "unit": unit}
+                else:
+                    misses.append((rva, cand, unit,
+                                   "data candidate not in base obj"))
 
-    return write_symbol_names(rows, addr_sites, Path(args.out), misses)
+    # Finalize + write the CSV via the shared helper (cross-TU dup-RVA guard,
+    # DATA keep-last-per-rva dedup, sort, write-if-changed). It sorts `rows` in
+    # place but writes its own deduped copy, so `rows` below still holds every row.
+    rc = write_symbol_names(rows, addr_sites, Path(args.out), misses)
+    if rc != 0:
+        return rc
+
+    # --- functions.json: per-RVA signatures for apply.py's Ghidra prototypes ---
+    # Join the func rows (authority-checked) with their clang mangledName
+    # (func_meta) and demangle once for the authoritative signature; overlay the
+    # source AST's parameter names. Vendored/config funcs carry no source
+    # signature and are omitted.
+    func_rows = [r for r in rows if r[4] == "func" and r[0] in func_meta]
+    dem = undname_map([func_meta[r[0]]["ir_sym"] for r in func_rows], args.undname)
+    functions = []
+    n_named_params = 0
+    for rva, name, unit, size, kind in func_rows:
+        meta = func_meta[rva]
+        sig = parse_demangled(dem.get(meta["ir_sym"], ""))
+        if sig is None:
+            continue
+        names = meta["names"]
+        params = []
+        for j, ptype in enumerate(sig["param_types"]):
+            pname = names[j] if names and j < len(names) else None
+            if pname:
+                n_named_params += 1
+            params.append({"type": ptype, "name": pname})
+        functions.append({
+            "rva": f"0x{rva:06x}", "name": sig["qual"], "class": sig["cls"],
+            "kind": sig["kind"], "ret": sig["ret"], "cc": sig["cc"],
+            "params": params, "unit": unit})
+    functions.sort(key=lambda d: d["rva"])
+    _write_json_if_changed(functions, args.functions_out,
+                           f"function signature(s) ({n_named_params} named params)")
+
+    # --- globals.json: the declared C/C++ TYPE of each named global (data row),
+    # so apply.py types it in Ghidra (it already names it from symbol_names.csv).
+    # write_symbol_names no longer mutates `rows` to dedup data, so dedup here the
+    # same way (keep last per rva) to match the rows written to the CSV.
+    last_data = {}
+    for row in rows:                      # rows is sorted in place by write_symbol_names
+        if row[4] == "data":
+            last_data[row[0]] = row       # keep last per rva = matches the written CSV
+    globals_out = []
+    for rva, name, unit, size, kind in sorted(last_data.values()):
+        gm = global_meta.get(rva) or {}
+        globals_out.append({"rva": f"0x{rva:06x}", "name": name,
+                            "type": gm.get("type") or "", "unit": unit})
+    globals_out.sort(key=lambda d: d["rva"])
+    n_typed = sum(1 for g in globals_out if g["type"])
+    _write_json_if_changed(globals_out, args.globals_out,
+                           f"global(s) ({n_typed} typed)")
+    return 0
 
 
 if __name__ == "__main__":

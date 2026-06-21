@@ -103,6 +103,10 @@ GEN_LABELS = "scripts/gruntz/build/labels.py"
 # to the base objs (clang mangledName INTERSECT nm) - no hand-written CSV. See
 # docs/build-system.md.
 GEN_NAMES = "build/gen/symbol_names.csv"
+# Source-derived Ghidra enrichment metadata (labels.py), merged from per-TU
+# fragments alongside symbol_names.csv; consumed by apply.py during ghidra-refresh.
+FUNCTIONS_JSON = "build/gen/functions.json"
+GLOBALS_JSON = "build/gen/globals.json"
 # clangd compile DB (per-TU MS/include flags); labels.py uses it so the IR emit's
 # system-header lookup succeeds. Optional - labels.py degrades to bare MS flags.
 COMPDB = "build/clangd/compile_commands.json"
@@ -233,29 +237,47 @@ def emit_ninja(manifest: dict, out: Path) -> None:
         # `restat` so an unchanged symbol set (a pure code edit) stops here and does
         # NOT cascade into delink/objdiff. The IR emit needs the clangd compdb's
         # per-TU include flags (labels.py falls back to bare MS flags if absent).
+        # Each TU also emits functions.json/globals.json fragments (per-RVA
+        # signatures + declared global types for apply.py's Ghidra enrichment);
+        # merge_labels combines all three so apply.py sees EVERY unit, not just the
+        # last TU built.
         w.comment("=== LABELS: per-TU fragments -> merge -> symbol_names.csv ===")
         w.rule("gen_labels_one",
                command=f"{PY} {GEN_LABELS} --tu $src --obj $obj --unit $unit "
-                       f"--compdb {COMPDB} --out $out",
+                       f"--compdb {COMPDB} --out $csvfrag "
+                       f"--functions-out $funcfrag --globals-out $globfrag",
                description="gen_labels $unit",
                restat=True)
         compdb_dep = [COMPDB] if (REPO / COMPDB).exists() else []
         zlib_dep = (["config/zlib_labels.csv"]
                     if (REPO / "config/zlib_labels.csv").exists() else [])
-        frags = []
+        frags, func_frags, glob_frags = [], [], []
         for u in units:
             frag = f"{LABELS_DIR}/{u['unit']}.csv"
+            funcfrag = f"{LABELS_DIR}/{u['unit']}.functions.json"
+            globfrag = f"{LABELS_DIR}/{u['unit']}.globals.json"
             obj = f"{BASE_DIR}/{u['unit']}.obj"
             frags.append(frag)
-            w.build(frag, "gen_labels_one", inputs=u["source"],
+            func_frags.append(funcfrag)
+            glob_frags.append(globfrag)
+            w.build([frag, funcfrag, globfrag], "gen_labels_one",
+                    inputs=u["source"],
                     implicit=[obj, GEN_LABELS, "config/units.toml"]
                              + compdb_dep + zlib_dep,
-                    variables={"src": u["source"], "obj": obj, "unit": u["unit"]})
+                    variables={"src": u["source"], "obj": obj, "unit": u["unit"],
+                               "csvfrag": frag,
+                               "funcfrag": funcfrag, "globfrag": globfrag})
         w.rule("merge_labels",
-               command=f"{PY} {GEN_LABELS} --merge $in --out {GEN_NAMES}",
-               description="merge_labels -> symbol_names.csv",
+               command=f"{PY} {GEN_LABELS} --merge $csvfrags --out {GEN_NAMES} "
+                       f"--merge-functions $funcfrags --functions-out {FUNCTIONS_JSON} "
+                       f"--merge-globals $globfrags --globals-out {GLOBALS_JSON}",
+               description="merge_labels -> symbol_names.csv + functions/globals.json",
                restat=True)
-        w.build(GEN_NAMES, "merge_labels", inputs=frags, implicit=[GEN_LABELS])
+        w.build([GEN_NAMES, FUNCTIONS_JSON, GLOBALS_JSON], "merge_labels",
+                inputs=frags + func_frags + glob_frags, implicit=[GEN_LABELS],
+                variables={"csvfrags": " ".join(frags),
+                           "funcfrags": " ".join(func_frags),
+                           "globfrags": " ".join(glob_frags)})
         w.newline()
 
         # TARGET (delink) half: one rule produces all in-scope <unit>.c.obj.
