@@ -74,6 +74,21 @@ misleading (Pareto) — a "47% by bytes" milestone is ~455 functions, not 7,000.
 3. **The tiny tail: batch, never deep-dive.** ≤32 B functions (accessors, thunks,
    trivial getters/setters, vtable-slot stubs) are cheap — many per worker, or
    generated from the class layout. Never spend a deep worker on a 6-byte stub.
+   **MEASURED ROI — prefer a uniform medium cluster over a partial megafunction.**
+   A coherent class of ~5–18 structurally-similar medium methods (the DX-manager
+   error-thunks: DirectSound 16/18, CDirectDraw 10/14, DirectInput 7/7; the CImage
+   loaders 5/5) goes mostly byte-EXACT once one member of the cluster cracks the
+   shared idiom — *measured* ~2,900 fully-matched bytes per ~113k matcher tokens.
+   A single megafunction is a token-sink by contrast (a 7,629 B loader → only 16.7%
+   fuzzy for 263k tokens) because a big function's register/EH allocation only
+   **converges when the body is COMPLETE** — a partial under-counts AND diverges
+   (wrong regalloc), so you pay full price for little credit. So sequence: clear the
+   uniform clusters first; defer a megafunction until its callees are matched (leaf
+   corpus eases convergence) and then reconstruct it whole in one dedicated worker,
+   not in partial slices. The error-formatter / COM-error-thunk archetype is the
+   single most reliable cluster (`GetErrorString`/`ReportError` + per-callsite
+   `__FILE__`/`__LINE__`); split a "cluster" by its `$SG __FILE__` strings — one RVA
+   range often spans several real classes (DDraw → CDDSurface/CDDPalette/CDDPageMgr).
 4. **By TU (contiguity) for locality.** Functions cluster contiguously by source
    file. Dispatch a worker per **TU / manager region** — it matches a whole
    `.cpp`'s functions together (shared headers/types, one `src/` file), far more
