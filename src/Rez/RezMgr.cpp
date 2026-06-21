@@ -375,9 +375,8 @@ int RezMgr::HandleDebugPosition()
     if (m_mode && m_mode->Update() == 3) {
         r = CheckDbgVal("DEBUG_POSITION", 0x402d0b, 1);
         if (r == 1) {
-            void *owner = *(void **)((char *)this + 4);
-            void *hwnd  = *(void **)((char *)owner + 4);
-            PostMessageA((HWND)hwnd, 0x111, 0x805c, 0);
+            HWND hwnd = m_4->m_hWnd;
+            PostMessageA(hwnd, 0x111, 0x805c, 0);
         }
     }
     return r != 0;

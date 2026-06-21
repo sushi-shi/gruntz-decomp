@@ -314,6 +314,10 @@ public:
 // extension to the BMP/PCX/PID loaders; MakeRezPath assembles candidate archive
 // paths and probes them with FileExists.
 // ---------------------------------------------------------------------------
+// The owning window holder reached at RezMgr+0x04; its +0x04 is the HWND that
+// HandleDebugPosition posts the WM_COMMAND to.
+struct RezMgrOwner { char p0[4]; HWND m_hWnd; };   // +0x04 -> +0x04 = HWND
+
 class RezMgr {
 public:
     // The per-frame game tick (vtable slot +0x10 / index 4).
@@ -344,7 +348,8 @@ public:
     int  CheckDbgVal(const char *key, int defVal, int flag);
 
     // --- layout (vptr occupies +0x00) ---------------------------------------
-    char       m_pad4[0x2c - 0x04];   // +0x04..+0x2b
+    RezMgrOwner *m_4;                 // +0x04  owning window holder (m_4->m_hWnd = HWND)
+    char       m_pad8[0x2c - 0x08];   // +0x08..+0x2b
     CGameMode *m_mode;                // +0x2c  (active game-mode driven per frame)
     char       m_pad30[0xb0 - 0x30];  // +0x30..+0xaf
     int        m_renderGate;          // +0xb0  (nonzero => skip the post-step)
