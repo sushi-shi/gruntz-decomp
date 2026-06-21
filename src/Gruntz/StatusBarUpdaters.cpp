@@ -190,6 +190,12 @@ public:
     int  m_c;                       // +0x0c  tile Y
     char m_pad10[0x14 - 0x10];
     int  m_14;                      // +0x14  down(1)/up(0) flag
+    char m_pad18[0x204 - 0x18];
+    CTabWidget *m_slots[5];         // +0x204  the 5 grunt-oven tab widgets
+    char m_pad218[0x220 - 0x218];
+    CTabRec     m_tabs[5];          // +0x220  the 5 cooking tabs
+    char m_pad298[0x558 - 0x298];
+    CDestructBlock m_destruct;      // +0x558  the destruct-button block
 };
 
 // The toggle's sub-helper reached through this[idx*4 + 0x18c] (thunk_FUN_004ea170,
@@ -209,8 +215,8 @@ struct CStatzTabSub {
 RVA(0x105310, 0x11a)
 void EngineLabelBacklog::UpdateGruntOvenStatusBar()
 {
-    CTabWidget **slot = (CTabWidget **)((char *)this + 0x204);
-    CTabRec     *tab  = (CTabRec *)((char *)this + 0x220);
+    CTabWidget **slot = m_slots;
+    CTabRec     *tab  = m_tabs;
     int n = 5;
     do {
         if (tab->m_0 == 1) {
@@ -260,7 +266,7 @@ void EngineLabelBacklog::UpdateGruntOvenStatusBar()
 RVA(0x10b320, 0x167)
 void EngineLabelBacklog::UpdateDestructButtonStatusBar()
 {
-    CDestructBlock *b = (CDestructBlock *)((char *)this + 0x558);
+    CDestructBlock *b = &m_destruct;
     switch (b->m_558) {
     case 1: {
         __int64 d = (__int64)(unsigned)g_645588 - *(__int64 *)&b->m_560;
