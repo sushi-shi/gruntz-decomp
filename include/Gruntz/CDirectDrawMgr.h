@@ -39,7 +39,8 @@
 // ---------------------------------------------------------------------------
 struct IDirectDrawSurfaceZ {
     struct Vtbl {
-        long(__stdcall* QueryInterface)(IDirectDrawSurfaceZ*, const void* riid, void** out); // +0x00
+        long(__stdcall*
+                 QueryInterface)(IDirectDrawSurfaceZ*, const void* riid, void** out); // +0x00
         char m_pad4[0x14 - 0x04];
         long(__stdcall* Blt)(
             IDirectDrawSurfaceZ*,
@@ -59,7 +60,11 @@ struct IDirectDrawSurfaceZ {
             unsigned long trans
         ); // +0x1c
         char m_pad20[0x2c - 0x20];
-        long(__stdcall* Flip)(IDirectDrawSurfaceZ*, IDirectDrawSurfaceZ* target, unsigned long flags); // +0x2c
+        long(__stdcall* Flip)(
+            IDirectDrawSurfaceZ*,
+            IDirectDrawSurfaceZ* target,
+            unsigned long flags
+        ); // +0x2c
         char m_pad30[0x40 - 0x30];
         long(__stdcall* GetColorKey)(IDirectDrawSurfaceZ*, unsigned long flags, void* key); // +0x40
         char m_pad44[0x58 - 0x44];
@@ -104,12 +109,18 @@ struct IDirectDraw2Z {
             IDirectDrawPaletteZ** out,
             void* unk
         ); // +0x14
-        long(__stdcall* CreateSurface)(IDirectDraw2Z*, void* desc, IDirectDrawSurfaceZ** out, void* unk); // +0x18
+        long(__stdcall* CreateSurface)(
+            IDirectDraw2Z*,
+            void* desc,
+            IDirectDrawSurfaceZ** out,
+            void* unk
+        ); // +0x18
         char m_pad1c[0x2c - 0x1c];
         long(__stdcall* GetCaps)(IDirectDraw2Z*, void* driverCaps, void* helCaps); // +0x2c
         long(__stdcall* GetDisplayMode)(IDirectDraw2Z*, void* desc);               // +0x30
         char m_pad34[0x50 - 0x34];
-        long(__stdcall* SetCooperativeLevel)(IDirectDraw2Z*, void* hwnd, unsigned long level); // +0x50
+        long(__stdcall*
+                 SetCooperativeLevel)(IDirectDraw2Z*, void* hwnd, unsigned long level); // +0x50
         long(__stdcall* SetDisplayMode)(
             IDirectDraw2Z*,
             unsigned long w,
@@ -138,7 +149,12 @@ struct IDirectDrawPaletteZ {
             unsigned long count,
             void* entries
         ); // +0x10
-        long(__stdcall* Initialize)(IDirectDrawPaletteZ*, void* dd, unsigned long flags, void* entries); // +0x14
+        long(__stdcall* Initialize)(
+            IDirectDrawPaletteZ*,
+            void* dd,
+            unsigned long flags,
+            void* entries
+        ); // +0x14
         long(__stdcall* SetEntries)(
             IDirectDrawPaletteZ*,
             unsigned long flags,
@@ -159,7 +175,14 @@ public:
     // object already exists it reuses it, else DirectDrawCreate + QueryInterface
     // for IID_IDirectDraw2; then SetCooperativeLevel, GetCaps, an internal setup
     // pass, optional SetDisplayMode and GetDisplayMode; caches the singleton.
-    int CreateDevice(void* a1, void* hwnd, int width, int height, int bpp, unsigned long coopFlags); // 0x141dc0
+    int CreateDevice(
+        void* a1,
+        void* hwnd,
+        int width,
+        int height,
+        int bpp,
+        unsigned long coopFlags
+    ); // 0x141dc0
 
     // Diagnostic error reporter. Given a calling site's __FILE__/__LINE__ and a
     // DirectDraw HRESULT, builds a "<DDERR_NAME> (<code>) - <description>" string
@@ -169,21 +192,21 @@ public:
 
     // Internal setup helpers reached from CreateDevice (defined in other DDrawMgr
     // TUs; modeled as no-body externs so their rel32 calls are reloc-masked).
-    void SetupCaps();                                          // 0x143240
+    void SetupCaps();                                                 // 0x143240
     int SetVideoMode(int width, int height, int bpp, int a4, int a5); // 0x143c20
 
     // --- layout (only touched offsets pinned) ---------------------------------
-    IDirectDraw2Z* m_0;        // +0x00  the held IDirectDraw2 device
-    IDirectDraw2Z* m_4;        // +0x04  the raw IDirectDraw DirectDrawCreate returns
-    int m_caps[0x5f];          // +0x08  driver DDCAPS (dwSize 0x17c at +0x08)
-    int m_helCaps[0x5f];       // +0x184 HEL DDCAPS (dwSize 0x17c at +0x184)
+    IDirectDraw2Z* m_0;  // +0x00  the held IDirectDraw2 device
+    IDirectDraw2Z* m_4;  // +0x04  the raw IDirectDraw DirectDrawCreate returns
+    int m_caps[0x5f];    // +0x08  driver DDCAPS (dwSize 0x17c at +0x08)
+    int m_helCaps[0x5f]; // +0x184 HEL DDCAPS (dwSize 0x17c at +0x184)
     char m_pad300[0x534 - 0x300];
-    int m_534;                 // +0x534 caps flag (& 0x8000000)
-    int m_538;                 // +0x538 cached bpp
+    int m_534; // +0x534 caps flag (& 0x8000000)
+    int m_538; // +0x538 cached bpp
     char m_pad53c[0x93c - 0x53c];
-    int m_93c;                 // +0x93c
-    int m_940;                 // +0x940
-    int m_944;                 // +0x944 last-error stash
+    int m_93c; // +0x93c
+    int m_940; // +0x940
+    int m_944; // +0x944 last-error stash
 };
 
 // ---------------------------------------------------------------------------
@@ -209,38 +232,45 @@ public:
     virtual void v18();
     virtual int RestoreLost(); // slot 7, @0x1c
 
-    int Flip(CDDSurface* target);                                  // 0x13e850
-    int Lock(void* rect);                                          // 0x13e6d0
-    int SetPalette(CDDPalette* pal, int unused);                   // 0x13e690
-    int SetColorKey(unsigned long flags, void* key);                            // 0x13eaa0
-    int Blt(CDDSurface* src);                                                    // 0x13ee60
-    int BltEx(void* dstRect, CDDSurface* src, void* srcRect, unsigned long flags, void* fx); // 0x13eef0
-    int BltFast(unsigned long x, unsigned long y, CDDSurface* src, void* srcRect, unsigned long trans); // 0x13ef90
-    int GetColorKey();                                                          // 0x13fa60
-    int Refresh(IDirectDrawSurfaceZ* surf);                                     // 0x13e140
+    int Flip(CDDSurface* target);                    // 0x13e850
+    int Lock(void* rect);                            // 0x13e6d0
+    int SetPalette(CDDPalette* pal, int unused);     // 0x13e690
+    int SetColorKey(unsigned long flags, void* key); // 0x13eaa0
+    int Blt(CDDSurface* src);                        // 0x13ee60
+    int
+    BltEx(void* dstRect, CDDSurface* src, void* srcRect, unsigned long flags, void* fx); // 0x13eef0
+    int BltFast(
+        unsigned long x,
+        unsigned long y,
+        CDDSurface* src,
+        void* srcRect,
+        unsigned long trans
+    );                                      // 0x13ef90
+    int GetColorKey();                      // 0x13fa60
+    int Refresh(IDirectDrawSurfaceZ* surf); // 0x13e140
 
     // --- layout ---------------------------------------------------------------
     // vptr @0x00 (implicit)
     char m_pad4[0x08 - 0x04];
     IDirectDrawSurfaceZ* m_8; // +0x08  the held surface
     char m_padc[0x10 - 0x0c];
-    char m_desc[0x24];        // +0x10  DDSURFACEDESC scratch (m_18/m_1c/m_20 inside)
-    int m_34;                 // +0x34  desc lPitch field (returned by Lock)
+    char m_desc[0x24]; // +0x10  DDSURFACEDESC scratch (m_18/m_1c/m_20 inside)
+    int m_34;          // +0x34  desc lPitch field (returned by Lock)
     char m_desc2[0x64 - 0x38];
-    int m_64;                 // +0x64  pixel-format bit depth
+    int m_64; // +0x64  pixel-format bit depth
     char m_desc3[0x7c - 0x68];
-    int m_7c;                 // +0x7c  state flag (OR'd with 1)
-    long m_80[2];             // +0x80  RECT left/top (cleared)
-    int m_88;                 // +0x88  width
-    int m_8c;                 // +0x8c  height (cached)
-    int m_90;                 // +0x90  bytes-per-row * height
+    int m_7c;     // +0x7c  state flag (OR'd with 1)
+    long m_80[2]; // +0x80  RECT left/top (cleared)
+    int m_88;     // +0x88  width
+    int m_8c;     // +0x8c  height (cached)
+    int m_90;     // +0x90  bytes-per-row * height
     char m_pad94[0xa8 - 0x94];
-    int m_a8;                 // +0xa8  raw bit depth
-    int m_ac;                 // +0xac  bytes-per-row factor
-    int m_b0;                 // +0xb0  pixels-per-unit divisor
-    int m_b4;                 // +0xb4  lPitch/divisor
+    int m_a8; // +0xa8  raw bit depth
+    int m_ac; // +0xac  bytes-per-row factor
+    int m_b0; // +0xb0  pixels-per-unit divisor
+    int m_b4; // +0xb4  lPitch/divisor
     char m_padb8[0xbc - 0xb8];
-    int m_bc;                 // +0xbc  cleared
+    int m_bc; // +0xbc  cleared
 };
 
 // ---------------------------------------------------------------------------
@@ -251,14 +281,21 @@ class CDDPalette {
 public:
     int Create(IDirectDraw2Z* dd, void* entries, unsigned long flags); // 0x147390
     int GetEntries();                                                  // 0x147c30
-    int SetRange(int start, int count, unsigned char r, unsigned char g, unsigned char b, unsigned long flags); // 0x147cd0
+    int SetRange(
+        int start,
+        int count,
+        unsigned char r,
+        unsigned char g,
+        unsigned char b,
+        unsigned long flags
+    ); // 0x147cd0
 
     // --- layout ---------------------------------------------------------------
     char m_pad0[0x04 - 0x00];
     IDirectDrawPaletteZ* m_4; // +0x04  the held palette interface
     char m_pad8[0x0c - 0x08];
-    unsigned char* m_c;       // +0x0c  PALETTEENTRY cache A (0x400 bytes)
-    unsigned char* m_10;      // +0x10  PALETTEENTRY cache B (0x400 bytes)
+    unsigned char* m_c;  // +0x0c  PALETTEENTRY cache A (0x400 bytes)
+    unsigned char* m_10; // +0x10  PALETTEENTRY cache B (0x400 bytes)
 };
 
 // ---------------------------------------------------------------------------
@@ -280,32 +317,32 @@ public:
     int Init(void* window, DDModeInfo* mode, unsigned long coopFlags); // 0x17c040
 
     // Internal helpers (other DDrawMgr TUs; no-body externs => reloc-masked).
-    void HandleError();            // 0x17cc80
-    void OnModeSet(int a);         // 0x17cd90
-    int CheckMode16();             // 0x17d2b0
-    void FinishInit();             // 0x17d6b0
+    void HandleError();    // 0x17cc80
+    void OnModeSet(int a); // 0x17cd90
+    int CheckMode16();     // 0x17d2b0
+    void FinishInit();     // 0x17d6b0
 
     // --- layout (only touched offsets pinned) ---------------------------------
-    IDirectDraw2Z* m_0;           // +0x00  cached IDirectDraw2 (set last)
-    int m_4;                      // +0x04  "initialized" flag
+    IDirectDraw2Z* m_0; // +0x00  cached IDirectDraw2 (set last)
+    int m_4;            // +0x04  "initialized" flag
     char m_pad8[0x0c - 0x08];
-    int m_c;                      // +0x0c
+    int m_c; // +0x0c
     char m_pad10[0x14 - 0x10];
-    IDirectDraw2Z* m_14;          // +0x14  the QI'd IDirectDraw2
-    IDirectDraw2Z* m_18;          // +0x18  the raw IDirectDraw DirectDrawCreate returns
-    IDirectDrawSurfaceZ* m_1c;    // +0x1c  primary surface (QI'd to Surface3)
-    IDirectDrawSurfaceZ* m_20;    // +0x20  primary surface (raw)
-    int m_24;                     // +0x24
-    int m_28;                     // +0x28
-    IDirectDrawPaletteZ* m_2c;    // +0x2c  the palette
-    char m_desc[0x6c];            // +0x30  DDSURFACEDESC scratch (0x98 = a desc field)
-    char m_pad9c[0x108 - 0x9c];   // +0x9c
-    char m_108[0x510 - 0x108];    // +0x108 PALETTEENTRY init buffer (only &m_108 used)
-    int m_510;                    // +0x510
+    IDirectDraw2Z* m_14;        // +0x14  the QI'd IDirectDraw2
+    IDirectDraw2Z* m_18;        // +0x18  the raw IDirectDraw DirectDrawCreate returns
+    IDirectDrawSurfaceZ* m_1c;  // +0x1c  primary surface (QI'd to Surface3)
+    IDirectDrawSurfaceZ* m_20;  // +0x20  primary surface (raw)
+    int m_24;                   // +0x24
+    int m_28;                   // +0x28
+    IDirectDrawPaletteZ* m_2c;  // +0x2c  the palette
+    char m_desc[0x6c];          // +0x30  DDSURFACEDESC scratch (0x98 = a desc field)
+    char m_pad9c[0x108 - 0x9c]; // +0x9c
+    char m_108[0x510 - 0x108];  // +0x108 PALETTEENTRY init buffer (only &m_108 used)
+    int m_510;                  // +0x510
     char m_pad514[0x518 - 0x514];
-    int m_518;                    // +0x518  width
-    int m_51c;                    // +0x51c  height
-    int m_520;                    // +0x520  bpp
+    int m_518; // +0x518  width
+    int m_51c; // +0x51c  height
+    int m_520; // +0x520  bpp
 };
 
 #endif // GRUNTZ_CDIRECTDRAWMGR_H

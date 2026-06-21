@@ -51,24 +51,41 @@ class CStatusBarMgr;
 // to +0x34. Deleting dtor is slot 0.
 class CSbItem {
 public:
-    virtual ~CSbItem();                 // +0x00 (scalar deleting dtor)
-    virtual void v04();                 // +0x04
-    virtual void v08();                 // +0x08
-    virtual void v0c();                 // +0x0c
-    virtual void v10();                 // +0x10
-    virtual void v14();                 // +0x14
-    virtual void v18();                 // +0x18
-    virtual void v1c();                 // +0x1c
-    virtual void v20();                 // +0x20
-    virtual void v24();                 // +0x24
-    virtual void v28();                 // +0x28
-    virtual int Configure(CStatusBarMgr* mgr, int a, int b, int c, SbRect rect, const char* key,
-                          int d, int e);                       // +0x2c
-    virtual int ConfigureEx(CStatusBarMgr* mgr, int a0, SbRect rect, const char* key, int b, int c,
-                            int d, int e, int f);              // +0x34
+    virtual ~CSbItem(); // +0x00 (scalar deleting dtor)
+    virtual void v04(); // +0x04
+    virtual void v08(); // +0x08
+    virtual void v0c(); // +0x0c
+    virtual void v10(); // +0x10
+    virtual void v14(); // +0x14
+    virtual void v18(); // +0x18
+    virtual void v1c(); // +0x1c
+    virtual void v20(); // +0x20
+    virtual void v24(); // +0x24
+    virtual void v28(); // +0x28
+    virtual int Configure(
+        CStatusBarMgr* mgr,
+        int a,
+        int b,
+        int c,
+        SbRect rect,
+        const char* key,
+        int d,
+        int e
+    ); // +0x2c
+    virtual int ConfigureEx(
+        CStatusBarMgr* mgr,
+        int a0,
+        SbRect rect,
+        const char* key,
+        int b,
+        int c,
+        int d,
+        int e,
+        int f
+    ); // +0x34
 
-    int m_4;  // +0x04
-    int m_8;  // +0x08 type tag (3/4/5/6/7/8/9/0xb)
+    int m_4; // +0x04
+    int m_8; // +0x08 type tag (3/4/5/6/7/8/9/0xb)
     char pad[0x24 - 0x0c];
     int m_24; // +0x24
     int m_28; // +0x28
@@ -96,11 +113,11 @@ public:
 };
 class CSbIconSet {
 public:
-    int Probe(int a);    // thunk 0x1582 -> FUN_00479b30
-    void SetA(int v);    // thunk 0x11e5 -> FUN_004eb830
+    int Probe(int a);        // thunk 0x1582 -> FUN_00479b30
+    void SetA(int v);        // thunk 0x11e5 -> FUN_004eb830
     void SetB(int a, int b); // thunk 0x23dd -> FUN_004eb740
-    void AddRef(int v);  // thunk 0x3b98 -> FUN_004ea170
-    void AddRef0(int v); // thunk 0x1573 -> FUN_004ea0f0
+    void AddRef(int v);      // thunk 0x3b98 -> FUN_004ea170
+    void AddRef0(int v);     // thunk 0x1573 -> FUN_004ea0f0
 };
 
 // The game registry: factory at +0x68/+0x74, a per-player icon table at +0x158
@@ -145,15 +162,15 @@ public:
     int LoadTabSprites();
 
     char m_pad00[0xc];
-    void* m_c;  // +0x0c  the configure-virtual `this`
-    int m_10;   // +0x10  base x
-    int m_14;   // +0x14  base y
+    void* m_c; // +0x0c  the configure-virtual `this`
+    int m_10;  // +0x10  base x
+    int m_14;  // +0x14  base y
     char m_pad18[0x48 - 0x18];
-    CPtrList m_48;  // +0x48  Statz tab list
-    CPtrList m_64;  // +0x64  Gruntz tab list
-    CPtrList m_80;  // +0x80  Resource tab list
-    CPtrList m_9c;  // +0x9c  Multiplayer tab list
-    CPtrList m_b8;  // +0xb8  Game tab list
+    CPtrList m_48; // +0x48  Statz tab list
+    CPtrList m_64; // +0x64  Gruntz tab list
+    CPtrList m_80; // +0x80  Resource tab list
+    CPtrList m_9c; // +0x9c  Multiplayer tab list
+    CPtrList m_b8; // +0xb8  Game tab list
     char m_padd4[0x10c - 0xd4];
     int m_10c; // +0x10c  current tab selector (1..5)
 };
@@ -205,168 +222,286 @@ int CStatusBarMgr::LoadTabSprites() {
     int i;
 
     switch (m_10c) {
-    case 2: // ---- Gruntz tab ----
-        it = mk(0x34, g_vtbl_t3, 3);
-        r.left = bx + 0x18;
-        r.top = by + 0xaf;
-        r.right = bx + 0x70;
-        r.bottom = by + 0xbe;
-        if (!it->Configure(this, 0, 0x25c, 2, r, "GAME_STATUSBAR_TABZ_GRUNTZTAB_TITLETEXT", -1, 0)) {
-            if (it)
-                delete it;
-            return 0;
-        }
-        m_64.AddTail(it);
-        for (i = 0; i < 5; i++) {
-            it = mk(0x3c, g_vtbl_t4, 4);
-            r.left = bx + 0xe + i * 0x36;
-            r.top = by + 0xfe;
-            r.right = bx + 0x39 + i * 0x36;
-            r.bottom = by + 0xfe;
-            if (!it->Configure(this, i, 0x25c, 2, r, "GAME_STATUSBAR_TABZ_GRUNTZTAB_GRUNTOVEN", 0, 0)) {
-                if (it)
+        case 2: // ---- Gruntz tab ----
+            it = mk(0x34, g_vtbl_t3, 3);
+            r.left = bx + 0x18;
+            r.top = by + 0xaf;
+            r.right = bx + 0x70;
+            r.bottom = by + 0xbe;
+            if (!it->Configure(
+                    this,
+                    0,
+                    0x25c,
+                    2,
+                    r,
+                    "GAME_STATUSBAR_TABZ_GRUNTZTAB_TITLETEXT",
+                    -1,
+                    0
+                )) {
+                if (it) {
                     delete it;
+                }
                 return 0;
             }
             m_64.AddTail(it);
-        }
-        it = mk(0x34, g_vtbl_t3, 3);
-        r.left = bx + 0x4c;
-        r.top = by + 0xc8;
-        r.right = bx + 0x97;
-        r.bottom = by + 0x1cd;
-        if (!it->Configure(this, 0, 0x69, 2, r, "GAME_STATUSBAR_TABZ_GRUNTZTAB_WELL", -1, 0)) {
-            if (it)
-                delete it;
-            return 0;
-        }
-        m_64.AddTail(it);
-        it = mk(0x34, g_vtbl_t3, 3);
-        r.left = bx + 0x1e;
-        r.top = by + 0xc4;
-        r.right = bx + 0x3d;
-        r.bottom = by + 0xcd;
-        if (!it->Configure(this, 0, 0x6b, 2, r, "GAME_STATUSBAR_TABZ_GRUNTZTAB_OVENZTEXT", -1, 0)) {
-            if (it)
-                delete it;
-            return 0;
-        }
-        m_64.AddTail(it);
-        it = mk(0x34, g_vtbl_t3, 3);
-        r.left = bx + 0x68;
-        r.top = by + 0x1cf;
-        r.right = bx + 0x87;
-        r.bottom = by + 0x1d8;
-        if (!it->Configure(this, 0, 0x6c, 2, r, "GAME_STATUSBAR_TABZ_GRUNTZTAB_WELLTEXT", -1, 0)) {
-            if (it)
-                delete it;
-            return 0;
-        }
-        m_64.AddTail(it);
-        it = mk(0x6c, g_vtbl_t7, 7);
-        r.left = bx + 0x6e;
-        r.top = by + 0xf8;
-        r.right = bx + 0x81 + 0x6e;
-        r.bottom = by + 0x1b3;
-        if (!it->Configure(this, 0, 0x6a, 2, r, "GAME_STATUSBAR_TABZ_GRUNTZTAB_WELLGOO", 0, 0)) {
-            if (it)
-                delete it;
-            return 0;
-        }
-        m_64.AddTail(it);
-        return 1;
+            for (i = 0; i < 5; i++) {
+                it = mk(0x3c, g_vtbl_t4, 4);
+                r.left = bx + 0xe + i * 0x36;
+                r.top = by + 0xfe;
+                r.right = bx + 0x39 + i * 0x36;
+                r.bottom = by + 0xfe;
+                if (!it->Configure(
+                        this,
+                        i,
+                        0x25c,
+                        2,
+                        r,
+                        "GAME_STATUSBAR_TABZ_GRUNTZTAB_GRUNTOVEN",
+                        0,
+                        0
+                    )) {
+                    if (it) {
+                        delete it;
+                    }
+                    return 0;
+                }
+                m_64.AddTail(it);
+            }
+            it = mk(0x34, g_vtbl_t3, 3);
+            r.left = bx + 0x4c;
+            r.top = by + 0xc8;
+            r.right = bx + 0x97;
+            r.bottom = by + 0x1cd;
+            if (!it->Configure(this, 0, 0x69, 2, r, "GAME_STATUSBAR_TABZ_GRUNTZTAB_WELL", -1, 0)) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_64.AddTail(it);
+            it = mk(0x34, g_vtbl_t3, 3);
+            r.left = bx + 0x1e;
+            r.top = by + 0xc4;
+            r.right = bx + 0x3d;
+            r.bottom = by + 0xcd;
+            if (!it->Configure(
+                    this,
+                    0,
+                    0x6b,
+                    2,
+                    r,
+                    "GAME_STATUSBAR_TABZ_GRUNTZTAB_OVENZTEXT",
+                    -1,
+                    0
+                )) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_64.AddTail(it);
+            it = mk(0x34, g_vtbl_t3, 3);
+            r.left = bx + 0x68;
+            r.top = by + 0x1cf;
+            r.right = bx + 0x87;
+            r.bottom = by + 0x1d8;
+            if (!it->Configure(
+                    this,
+                    0,
+                    0x6c,
+                    2,
+                    r,
+                    "GAME_STATUSBAR_TABZ_GRUNTZTAB_WELLTEXT",
+                    -1,
+                    0
+                )) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_64.AddTail(it);
+            it = mk(0x6c, g_vtbl_t7, 7);
+            r.left = bx + 0x6e;
+            r.top = by + 0xf8;
+            r.right = bx + 0x81 + 0x6e;
+            r.bottom = by + 0x1b3;
+            if (!it->Configure(
+                    this,
+                    0,
+                    0x6a,
+                    2,
+                    r,
+                    "GAME_STATUSBAR_TABZ_GRUNTZTAB_WELLGOO",
+                    0,
+                    0
+                )) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_64.AddTail(it);
+            return 1;
 
-    case 3: // ---- Resource tab ----
-        it = mk(0x34, g_vtbl_t3, 3);
-        r.left = bx + 0x18;
-        r.top = by + 0xaf;
-        r.right = bx + 0x70;
-        r.bottom = by + 0xbe;
-        if (!it->Configure(this, 0, 0x25c, 3, r, "GAME_STATUSBAR_TABZ_RESOURCETAB_TITLETEXT", -1, 0)) {
-            if (it)
-                delete it;
-            return 0;
-        }
-        m_80.AddTail(it);
-        it = mk(0x34, g_vtbl_t3, 3);
-        r.left = bx;
-        r.top = by + 0x135;
-        r.right = bx + 0x9f;
-        r.bottom = by + 0x1be;
-        if (!it->Configure(this, 0, 0xc8, 3, r, "GAME_STATUSBAR_TABZ_RESOURCETAB_MAINBACKGROUND", -1, 0)) {
-            if (it)
-                delete it;
-            return 0;
-        }
-        m_80.AddTail(it);
-        it = mk(0x34, g_vtbl_t3, 3);
-        r.left = bx;
-        r.top = by + 0xfb;
-        r.right = bx + 0x9f;
-        r.bottom = by + 0x134;
-        if (!it->Configure(this, 0, 0xc9, 3, r,
-                           "GAME_STATUSBAR_TABZ_RESOURCETAB_UPPERBACKGROUND", -1, 0)) {
-            if (it)
-                delete it;
-            return 0;
-        }
-        m_80.AddTail(it);
-        it = mk(0x34, g_vtbl_t3, 3);
-        r.left = bx + 0x48;
-        r.top = by + 0xd3;
-        r.right = bx + 0x67;
-        r.bottom = by + 0xf3;
-        if (!it->Configure(this, 0, 0xca, 3, r,
-                           "GAME_STATUSBAR_TABZ_RESOURCETAB_WINDOWBACKGROUND", -1, 0)) {
-            if (it)
-                delete it;
-            return 0;
-        }
-        m_80.AddTail(it);
-        return 1;
+        case 3: // ---- Resource tab ----
+            it = mk(0x34, g_vtbl_t3, 3);
+            r.left = bx + 0x18;
+            r.top = by + 0xaf;
+            r.right = bx + 0x70;
+            r.bottom = by + 0xbe;
+            if (!it->Configure(
+                    this,
+                    0,
+                    0x25c,
+                    3,
+                    r,
+                    "GAME_STATUSBAR_TABZ_RESOURCETAB_TITLETEXT",
+                    -1,
+                    0
+                )) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_80.AddTail(it);
+            it = mk(0x34, g_vtbl_t3, 3);
+            r.left = bx;
+            r.top = by + 0x135;
+            r.right = bx + 0x9f;
+            r.bottom = by + 0x1be;
+            if (!it->Configure(
+                    this,
+                    0,
+                    0xc8,
+                    3,
+                    r,
+                    "GAME_STATUSBAR_TABZ_RESOURCETAB_MAINBACKGROUND",
+                    -1,
+                    0
+                )) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_80.AddTail(it);
+            it = mk(0x34, g_vtbl_t3, 3);
+            r.left = bx;
+            r.top = by + 0xfb;
+            r.right = bx + 0x9f;
+            r.bottom = by + 0x134;
+            if (!it->Configure(
+                    this,
+                    0,
+                    0xc9,
+                    3,
+                    r,
+                    "GAME_STATUSBAR_TABZ_RESOURCETAB_UPPERBACKGROUND",
+                    -1,
+                    0
+                )) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_80.AddTail(it);
+            it = mk(0x34, g_vtbl_t3, 3);
+            r.left = bx + 0x48;
+            r.top = by + 0xd3;
+            r.right = bx + 0x67;
+            r.bottom = by + 0xf3;
+            if (!it->Configure(
+                    this,
+                    0,
+                    0xca,
+                    3,
+                    r,
+                    "GAME_STATUSBAR_TABZ_RESOURCETAB_WINDOWBACKGROUND",
+                    -1,
+                    0
+                )) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_80.AddTail(it);
+            return 1;
 
-    case 1: // ---- Statz tab ----
-        it = mk(0x34, g_vtbl_t3, 3);
-        r.left = bx + 0x18;
-        r.top = by + 0xaf;
-        r.right = bx + 0x70;
-        r.bottom = by + 0xbe;
-        if (!it->Configure(this, 0, 0x25c, 1, r, "GAME_STATUSBAR_TABZ_STATZTAB_TITLETEXT", -1, 0)) {
-            if (it)
-                delete it;
-            return 0;
-        }
-        m_48.AddTail(it);
-        return 1;
+        case 1: // ---- Statz tab ----
+            it = mk(0x34, g_vtbl_t3, 3);
+            r.left = bx + 0x18;
+            r.top = by + 0xaf;
+            r.right = bx + 0x70;
+            r.bottom = by + 0xbe;
+            if (!it->Configure(
+                    this,
+                    0,
+                    0x25c,
+                    1,
+                    r,
+                    "GAME_STATUSBAR_TABZ_STATZTAB_TITLETEXT",
+                    -1,
+                    0
+                )) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_48.AddTail(it);
+            return 1;
 
-    case 4: // ---- Multiplayer tab ----
-        it = mk(0x34, g_vtbl_t3, 3);
-        r.left = bx + 0x18;
-        r.top = by + 0xaf;
-        r.right = bx + 0x70;
-        r.bottom = by + 0xbe;
-        if (!it->Configure(this, 0, 0x25c, 4, r,
-                           "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_TITLETEXT", -1, 0)) {
-            if (it)
-                delete it;
-            return 0;
-        }
-        m_9c.AddTail(it);
-        return 1;
+        case 4: // ---- Multiplayer tab ----
+            it = mk(0x34, g_vtbl_t3, 3);
+            r.left = bx + 0x18;
+            r.top = by + 0xaf;
+            r.right = bx + 0x70;
+            r.bottom = by + 0xbe;
+            if (!it->Configure(
+                    this,
+                    0,
+                    0x25c,
+                    4,
+                    r,
+                    "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_TITLETEXT",
+                    -1,
+                    0
+                )) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_9c.AddTail(it);
+            return 1;
 
-    case 5: // ---- Game tab ----
-        it = mk(0x34, g_vtbl_t3, 3);
-        r.left = bx + 0x18;
-        r.top = by + 0xaf;
-        r.right = bx + 0x70;
-        r.bottom = by + 0xbe;
-        if (!it->Configure(this, 0, 0x25c, 5, r, "GAME_STATUSBAR_TABZ_GAMETAB_TITLETEXT", -1, 0)) {
-            if (it)
-                delete it;
-            return 0;
-        }
-        m_b8.AddTail(it);
-        return 1;
+        case 5: // ---- Game tab ----
+            it = mk(0x34, g_vtbl_t3, 3);
+            r.left = bx + 0x18;
+            r.top = by + 0xaf;
+            r.right = bx + 0x70;
+            r.bottom = by + 0xbe;
+            if (!it->Configure(
+                    this,
+                    0,
+                    0x25c,
+                    5,
+                    r,
+                    "GAME_STATUSBAR_TABZ_GAMETAB_TITLETEXT",
+                    -1,
+                    0
+                )) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_b8.AddTail(it);
+            return 1;
     }
     return 1;
 }

@@ -47,9 +47,15 @@ struct IDirectSoundZ {
     struct Vtbl {
         char m_pad0[0x08];
         long(__stdcall* Release)(IDirectSoundZ*); // +0x08
-        long(__stdcall* CreateSoundBuffer)(IDirectSoundZ*, void* desc, IDirectSoundZ** out, void* unk); // +0x0c
+        long(__stdcall* CreateSoundBuffer)(
+            IDirectSoundZ*,
+            void* desc,
+            IDirectSoundZ** out,
+            void* unk
+        ); // +0x0c
         char m_pad10[0x18 - 0x10];
-        long(__stdcall* SetCooperativeLevel)(IDirectSoundZ*, void* hwnd, unsigned long level); // +0x18
+        long(__stdcall*
+                 SetCooperativeLevel)(IDirectSoundZ*, void* hwnd, unsigned long level); // +0x18
     }* vtbl;
 };
 
@@ -74,12 +80,21 @@ struct IDirectSoundZ {
 struct IDirectSoundBufferZ {
     struct Vtbl {
         char m_pad0[0x08];
-        long(__stdcall* Release)(IDirectSoundBufferZ*); // +0x08
+        long(__stdcall* Release)(IDirectSoundBufferZ*);             // +0x08
         long(__stdcall* GetCaps)(IDirectSoundBufferZ*, void* caps); // +0x0c
-        long(__stdcall* GetCurrentPosition)(IDirectSoundBufferZ*, unsigned long* play, unsigned long* write); // +0x10
-        long(__stdcall* GetFormat)(IDirectSoundBufferZ*, void* fmt, unsigned long size, unsigned long* written); // +0x14
-        long(__stdcall* GetVolume)(IDirectSoundBufferZ*, long* vol);  // +0x18
-        long(__stdcall* GetPan)(IDirectSoundBufferZ*, long* pan);     // +0x1c
+        long(__stdcall* GetCurrentPosition)(
+            IDirectSoundBufferZ*,
+            unsigned long* play,
+            unsigned long* write
+        ); // +0x10
+        long(__stdcall* GetFormat)(
+            IDirectSoundBufferZ*,
+            void* fmt,
+            unsigned long size,
+            unsigned long* written
+        );                                                                        // +0x14
+        long(__stdcall* GetVolume)(IDirectSoundBufferZ*, long* vol);              // +0x18
+        long(__stdcall* GetPan)(IDirectSoundBufferZ*, long* pan);                 // +0x1c
         long(__stdcall* GetFrequency)(IDirectSoundBufferZ*, unsigned long* freq); // +0x20
         long(__stdcall* GetStatus)(IDirectSoundBufferZ*, unsigned long* status);  // +0x24
         char m_pad28[0x2c - 0x28];
@@ -96,12 +111,18 @@ struct IDirectSoundBufferZ {
         char m_pad30[0x34 - 0x30];
         long(__stdcall* SetCurrentPosition)(IDirectSoundBufferZ*, unsigned long pos); // +0x34
         char m_pad38[0x3c - 0x38];
-        long(__stdcall* SetVolume)(IDirectSoundBufferZ*, long vol);    // +0x3c
-        long(__stdcall* SetPan)(IDirectSoundBufferZ*, long pan);       // +0x40
+        long(__stdcall* SetVolume)(IDirectSoundBufferZ*, long vol);              // +0x3c
+        long(__stdcall* SetPan)(IDirectSoundBufferZ*, long pan);                 // +0x40
         long(__stdcall* SetFrequency)(IDirectSoundBufferZ*, unsigned long freq); // +0x44
-        long(__stdcall* Stop)(IDirectSoundBufferZ*);                   // +0x48
-        long(__stdcall* Unlock)(IDirectSoundBufferZ*, void* p1, unsigned long n1, void* p2, unsigned long n2); // +0x4c
-        long(__stdcall* Restore)(IDirectSoundBufferZ*);                // +0x50
+        long(__stdcall* Stop)(IDirectSoundBufferZ*);                             // +0x48
+        long(__stdcall* Unlock)(
+            IDirectSoundBufferZ*,
+            void* p1,
+            unsigned long n1,
+            void* p2,
+            unsigned long n2
+        );                                              // +0x4c
+        long(__stdcall* Restore)(IDirectSoundBufferZ*); // +0x50
     }* vtbl;
 };
 
@@ -114,25 +135,29 @@ class DirectSoundMgr {
 public:
     // --- per-buffer wrappers (this = a buffer object, m_0c = the buffer) ------
     DirectSoundMgr(IDirectSoundBufferZ* buf, DirectSoundMgr* owner); // 0x1351d0 ctor
-    int Restore();                            // 0x135310  m_0c->Restore()
-    int StopAndRewind();                      // 0x135380  Stop + SetCurrentPosition(0)
-    int IsPlaying();                          // 0x1353f0  GetStatus & 1
-    int IsLooping();                          // 0x135440  GetStatus & 2
-    int SetVolume(long vol);                  // 0x135560  SetVolume (caps 0x80)
-    long GetVolume();                         // 0x1355f0  GetVolume
-    int SetPan(long pan);                     // 0x135740  SetPan (caps 0x40)
-    long GetPan();                            // 0x1357f0  GetPan
-    int SetFrequency(unsigned long freq);     // 0x135880  SetFrequency (caps 0x20)
-    int Unlock(void* p1, unsigned long n1, void* p2, unsigned long n2); // 0x1359c0
-    int GetCurrentPosition(unsigned long* play, unsigned long* write);  // 0x135a20
-    int SetCurrentPosition(unsigned long pos); // 0x135a70
+    int Restore();                                                   // 0x135310  m_0c->Restore()
+    int StopAndRewind();                  // 0x135380  Stop + SetCurrentPosition(0)
+    int IsPlaying();                      // 0x1353f0  GetStatus & 1
+    int IsLooping();                      // 0x135440  GetStatus & 2
+    int SetVolume(long vol);              // 0x135560  SetVolume (caps 0x80)
+    long GetVolume();                     // 0x1355f0  GetVolume
+    int SetPan(long pan);                 // 0x135740  SetPan (caps 0x40)
+    long GetPan();                        // 0x1357f0  GetPan
+    int SetFrequency(unsigned long freq); // 0x135880  SetFrequency (caps 0x20)
+    int Unlock(void* p1, unsigned long n1, void* p2, unsigned long n2);   // 0x1359c0
+    int GetCurrentPosition(unsigned long* play, unsigned long* write);    // 0x135a20
+    int SetCurrentPosition(unsigned long pos);                            // 0x135a70
     int GetFormat(void* fmt, unsigned long size, unsigned long* written); // 0x135ac0
-    int LockConvert(void* dst, unsigned long off, unsigned long bytes);  // 0x135f40
+    int LockConvert(void* dst, unsigned long off, unsigned long bytes);   // 0x135f40
 
     // --- device-level wrappers (this = the manager, m_14 = IDirectSound) ------
-    int Create(void* hwnd, unsigned long level, unsigned long flags); // 0x136550  DirectSoundCreate + coop
+    int Create(
+        void* hwnd,
+        unsigned long level,
+        unsigned long flags
+    );                                                        // 0x136550  DirectSoundCreate + coop
     int SetCooperativeLevel(void* hwnd, unsigned long level); // 0x1365f0
-    int CreatePrimaryBuffer();                // 0x137260  m_14->CreateSoundBuffer
+    int CreatePrimaryBuffer();                                // 0x137260  m_14->CreateSoundBuffer
 
     static void GetErrorString(char* file, int line, long hr); // 0x138150
 
@@ -147,14 +172,14 @@ public:
     unsigned long m_24;        // +0x24  cached set-frequency value
     int m_28;                  // +0x28
     char m_pad2c[0x30 - 0x2c];
-    int m_30;                  // +0x30
-    int m_34;                  // +0x34
-    int m_38;                  // +0x38
-    int m_3c;                  // +0x3c
-    unsigned long m_40;        // +0x40  buffer capability flags (0x20/0x40/0x80)
+    int m_30;           // +0x30
+    int m_34;           // +0x34
+    int m_38;           // +0x38
+    int m_3c;           // +0x3c
+    unsigned long m_40; // +0x40  buffer capability flags (0x20/0x40/0x80)
     char m_pad44[0x78 - 0x44];
-    int m_78;                  // +0x78  "initialized" flag (manager this)
-    int m_7c;                  // +0x7c
+    int m_78; // +0x78  "initialized" flag (manager this)
+    int m_7c; // +0x7c
     char m_pad80[0x84 - 0x80];
     IDirectSoundBufferZ* m_84; // +0x84  primary buffer
     int m_88;                  // +0x88  cooperative level / coop arg

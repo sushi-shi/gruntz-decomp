@@ -40,10 +40,19 @@ class CStatusBarMgr;
 
 class CSBI : public CStatusBarItem {
 public:
-    virtual int Configure(CStatusBarMgr* mgr, int a, int b, int c, SbRect rect, const char* key,
-                          int d, int e);
-    virtual int ConfigureEx(CStatusBarMgr* mgr, int a0, SbRect rect, const char* key, int b, int c,
-                            int d, int e, int f);
+    virtual int
+    Configure(CStatusBarMgr* mgr, int a, int b, int c, SbRect rect, const char* key, int d, int e);
+    virtual int ConfigureEx(
+        CStatusBarMgr* mgr,
+        int a0,
+        SbRect rect,
+        const char* key,
+        int b,
+        int c,
+        int d,
+        int e,
+        int f
+    );
 };
 
 #endif // GRUNTZ_CSTATUSBARMGR_H

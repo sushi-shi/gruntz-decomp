@@ -43,7 +43,8 @@
 // DINPUT.dll DirectInputCreateA - called via a direct `e8 rel32` to its
 // incremental-link thunk (the thunk is `jmp ds:[IAT]`); reloc-masked, like
 // DirectSoundCreate / DirectDrawCreate, not an `ff 15 [IAT]` indirect.
-extern "C" long __stdcall DirectInputCreateA(void* hinst, unsigned long version, IDirectInputZ** ppDI, void* punkOuter);
+extern "C" long __stdcall
+DirectInputCreateA(void* hinst, unsigned long version, IDirectInputZ** ppDI, void* punkOuter);
 
 // IID_IDirectInputDevice2A - a dxguid GUID constant in .rdata (0x5ef458),
 // passed to the device QueryInterface. Reloc-masked DATA() extern.

@@ -53,7 +53,8 @@ extern void __cdecl DDrawLogLine(char* line); // 0x141cb0
 
 // DDRAW.dll DirectDrawCreate - direct `e8 rel32` to the incremental-link thunk
 // (reloc-masked), like DirectSoundCreate, not an `ff 15 [IAT]` indirect.
-extern "C" long __stdcall DirectDrawCreate(void* lpGuid, IDirectDrawSurfaceZ** ppDD, void* pUnkOuter);
+extern "C" long __stdcall
+DirectDrawCreate(void* lpGuid, IDirectDrawSurfaceZ** ppDD, void* pUnkOuter);
 
 // IID_IDirectDraw2 / IID_IDirectDrawSurface3 - dxguid GUID constants in .rdata,
 // passed to QueryInterface. Reloc-masked DATA() externs.
@@ -169,7 +170,13 @@ int CDDSurface::Blt(CDDSurface* src) {
 // CDDSurface::BltEx (__thiscall, ret 0x14 => 5 args). Generic Blt with the source
 // surface conditional (src may be NULL); SURFACELOST retry.
 RVA(0x13eef0, 0x98)
-int CDDSurface::BltEx(void* dstRect, CDDSurface* src, void* srcRect, unsigned long flags, void* fx) {
+int CDDSurface::BltEx(
+    void* dstRect,
+    CDDSurface* src,
+    void* srcRect,
+    unsigned long flags,
+    void* fx
+) {
     int hr;
     if (src != 0) {
         hr = m_8->vtbl->Blt(m_8, dstRect, src->m_8, srcRect, flags, fx);
@@ -191,7 +198,13 @@ int CDDSurface::BltEx(void* dstRect, CDDSurface* src, void* srcRect, unsigned lo
 
 // CDDSurface::BltFast (__thiscall, ret 0x14 => 5 args). SURFACELOST retry.
 RVA(0x13ef90, 0x8b)
-int CDDSurface::BltFast(unsigned long x, unsigned long y, CDDSurface* src, void* srcRect, unsigned long trans) {
+int CDDSurface::BltFast(
+    unsigned long x,
+    unsigned long y,
+    CDDSurface* src,
+    void* srcRect,
+    unsigned long trans
+) {
     int hr = m_8->vtbl->BltFast(m_8, x, y, src->m_8, srcRect, trans);
     if (hr == (int)DDERR_SURFACELOST) {
         if (RestoreLost()) {
@@ -540,7 +553,14 @@ void CDirectDrawMgr::GetErrorString(char* file, int line, long hr) {
 // CDirectDrawMgr::CreateDevice (__thiscall, ret 0x18 => 6 args; arg1 unused).
 // Brings up the DirectDraw device and caches it as the singleton.
 RVA(0x141dc0, 0x224)
-int CDirectDrawMgr::CreateDevice(void* a1, void* hwnd, int width, int height, int bpp, unsigned long coopFlags) {
+int CDirectDrawMgr::CreateDevice(
+    void* a1,
+    void* hwnd,
+    int width,
+    int height,
+    int bpp,
+    unsigned long coopFlags
+) {
     m_93c = 0;
     m_940 = 0;
     IDirectDraw2Z* dd = g_DirectDraw;
@@ -673,7 +693,14 @@ int CDDPalette::GetEntries() {
 
 // CDDPalette::SetRange (__thiscall, ret 0x18 => 6 args).
 RVA(0x147cd0, 0x78)
-int CDDPalette::SetRange(int start, int count, unsigned char r, unsigned char g, unsigned char b, unsigned long flags) {
+int CDDPalette::SetRange(
+    int start,
+    int count,
+    unsigned char r,
+    unsigned char g,
+    unsigned char b,
+    unsigned long flags
+) {
     for (int i = start; i < start + count; i++) {
         m_c[i * 4 + 0] = r;
         m_c[i * 4 + 1] = g;

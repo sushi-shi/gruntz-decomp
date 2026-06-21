@@ -31,7 +31,12 @@ struct IDirectInputDeviceZ;
 struct IDirectInputZ {
     struct Vtbl {
         char m_pad0[0x0c];
-        long(__stdcall* CreateDevice)(IDirectInputZ*, const void* rguid, IDirectInputDeviceZ** outDev, void* unk); // +0x0c
+        long(__stdcall* CreateDevice)(
+            IDirectInputZ*,
+            const void* rguid,
+            IDirectInputDeviceZ** outDev,
+            void* unk
+        ); // +0x0c
         long(__stdcall* EnumDevices)(
             IDirectInputZ*,
             unsigned long devType,
@@ -53,14 +58,19 @@ struct IDirectInputZ {
 // ---------------------------------------------------------------------------
 struct IDirectInputDeviceZ {
     struct Vtbl {
-        long(__stdcall* QueryInterface)(IDirectInputDeviceZ*, const void* riid, void** out); // +0x00
+        long(__stdcall*
+                 QueryInterface)(IDirectInputDeviceZ*, const void* riid, void** out); // +0x00
         char m_pad4[0x18 - 0x04];
         long(__stdcall* SetProperty)(IDirectInputDeviceZ*, const void* rguid, void* prop); // +0x18
-        long(__stdcall* Acquire)(IDirectInputDeviceZ*); // +0x1c
+        long(__stdcall* Acquire)(IDirectInputDeviceZ*);                                    // +0x1c
         char m_pad20[0x2c - 0x20];
         long(__stdcall* SetDataFormat)(IDirectInputDeviceZ*, void* fmt); // +0x2c
         char m_pad30[0x34 - 0x30];
-        long(__stdcall* SetCooperativeLevel)(IDirectInputDeviceZ*, void* hwnd, unsigned long flags); // +0x34
+        long(__stdcall* SetCooperativeLevel)(
+            IDirectInputDeviceZ*,
+            void* hwnd,
+            unsigned long flags
+        ); // +0x34
     }* vtbl;
 };
 
@@ -76,8 +86,8 @@ public:
     int Create(void* owner, void* hinst, unsigned long flags); // 0x132ce0
 
     // Sub-initializers (defined elsewhere in DinMgr2.cpp; not yet matched).
-    int InitA(unsigned long flags); // 0x132e20
-    int InitB(unsigned long flags); // 0x132ee0
+    int InitA(unsigned long flags);                // 0x132e20
+    int InitB(unsigned long flags);                // 0x132ee0
     int EnumGameControllers(unsigned long unused); // 0x132f80  m_0->EnumDevices(4, cb, this, 1)
 
     // Diagnostic error reporter. Given the calling site's __FILE__/__LINE__ and
@@ -116,7 +126,7 @@ public:
     IDirectInputDeviceZ* m_4; // +0x004  the created device (CreateDevice out)
     IDirectInputDeviceZ* m_8; // +0x008  the QI'd device interface (slot dispatch)
     char m_padc[0x29c - 0x0c];
-    void* m_29c;              // +0x29c  cached cooperative-level HWND
+    void* m_29c; // +0x29c  cached cooperative-level HWND
 };
 
 #endif // DINMGR2_DIRECTINPUTMGR2_H
