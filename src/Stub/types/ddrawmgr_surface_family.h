@@ -1,6 +1,8 @@
 #ifndef MANAGERS_DDRAWMGR_SURFACE_FAMILY_H
 #define MANAGERS_DDRAWMGR_SURFACE_FAMILY_H
 
+#include <rva.h>   // OVERRIDE macro (override under clang, no-op under MSVC 5.0)
+
 /*
  * ========================== HYPOTHESIS — NOT CONFIRMED ==========================
  * The "DirectDraw surface / page-manager" class FAMILY.
@@ -74,7 +76,7 @@ class UnknownCGruntzMgrHogwarts : public CObject
 protected:
     UnknownCGruntzMgrHogwarts() {}
     UnknownCGruntzMgrHogwarts(int unknown) { m_fieldBaseUnknown = unknown; }
-    virtual ~UnknownCGruntzMgrHogwarts() {}
+    virtual ~UnknownCGruntzMgrHogwarts() OVERRIDE {}
 
     int m_fieldBaseUnknown;   // +0x04
 };
@@ -85,7 +87,7 @@ class UnknownCGruntzMgrLucius : public UnknownCGruntzMgrHogwarts
 public:
     UnknownCGruntzMgrLucius(UnknownClassCGruntzMgrHarryPotter *pHarryPotter,
                             int unknown2, int unknown3);
-    virtual ~UnknownCGruntzMgrLucius();
+    virtual ~UnknownCGruntzMgrLucius() OVERRIDE;
     virtual void VirtualMethodUnknown14();
     virtual bool VirtualMethodUnknown18();
     virtual void VirtualMethodUnknown1C();
@@ -99,7 +101,7 @@ class UnknownDraco : public UnknownCGruntzMgrLucius
 {
 public:
     UnknownDraco(UnknownClassCGruntzMgrHarryPotter *p, int u2, int u3);
-    virtual ~UnknownDraco();
+    virtual ~UnknownDraco() OVERRIDE;
     virtual void VirtualMethodUnknown24();
     int fieldUnknown10, fieldUnknown14, fieldUnknown18; // +0x10..+0x1b
 };                                                      // 0x1c
@@ -108,7 +110,7 @@ class UnknownHermiona : public UnknownCGruntzMgrLucius
 {
 public:
     UnknownHermiona(UnknownClassCGruntzMgrHarryPotter *p, int u2, int u3);
-    virtual ~UnknownHermiona();
+    virtual ~UnknownHermiona() OVERRIDE;
     CObList      m_unknownObList;   // +0x10
     CMapPtrToPtr m_unknownPtrMap1;  // +0x2c
     CMapPtrToPtr m_unknownPtrMap2;  // +0x48
@@ -119,7 +121,7 @@ class UnknownHagrid : public UnknownCGruntzMgrLucius
 {
 public:
     UnknownHagrid(UnknownClassCGruntzMgrHarryPotter *p, int u2, int u3);
-    virtual ~UnknownHagrid();
+    virtual ~UnknownHagrid() OVERRIDE;
     CObList m_unknownObList;        // +0x10
 };                                  // 0x2c
 
@@ -134,7 +136,7 @@ class UnknownSeverus : public UnknownCGruntzMgrLucius
 {
 public:
     UnknownSeverus(UnknownClassCGruntzMgrHarryPotter *p, int u2, int u3);
-    virtual ~UnknownSeverus();
+    virtual ~UnknownSeverus() OVERRIDE;
     CMapStringToOb m_unknownMap;    // +0x10  (widest sub-manager vtable, 18 slots)
 
     //@address: 006c0270  (static data anchor, @approx tomalla 1.0.1.77)
@@ -149,7 +151,7 @@ class UnknownSirius : public UnknownCGruntzMgrLucius
 {
 public:
     UnknownSirius(UnknownClassCGruntzMgrHarryPotter *p, int u2, int u3);
-    virtual ~UnknownSirius();
+    virtual ~UnknownSirius() OVERRIDE;
     CMapStringToOb m_unknownMap;    // +0x10
 };                                  // 0x2c
 
@@ -157,7 +159,7 @@ class UnknownAlbus : public UnknownCGruntzMgrLucius
 {
 public:
     UnknownAlbus(UnknownClassCGruntzMgrHarryPotter *p, int u2, int u3);
-    virtual ~UnknownAlbus();
+    virtual ~UnknownAlbus() OVERRIDE;
     CMapStringToOb m_unknownMap1;   // +0x10
     CMapStringToOb m_unknownMap2;   // +0x2c
     CMapStringToOb m_unknownMap3;   // +0x48
@@ -169,7 +171,7 @@ class UnknownRemus : public UnknownCGruntzMgrLucius
 {
 public:
     UnknownRemus(UnknownClassCGruntzMgrHarryPotter *p, int u2, int u3);
-    virtual ~UnknownRemus();
+    virtual ~UnknownRemus() OVERRIDE;
     int      fieldUnknown10;        // +0x10
     char     _pad14[0x20 - 0x14];   // +0x14..+0x1f
     CObArray m_unknownObArray1;     // +0x20
@@ -187,7 +189,7 @@ class UnknownMinerva : public UnknownCGruntzMgrLucius
 {
 public:
     UnknownMinerva(UnknownClassCGruntzMgrHarryPotter *p, int u2, int u3);
-    virtual ~UnknownMinerva();
+    virtual ~UnknownMinerva() OVERRIDE;
     void ClearUnknownMap();
     CMapStringToPtr m_unknownMap;   // +0x10
     int  fieldUnknown2C;            // +0x2c
@@ -199,7 +201,7 @@ class UnknownPettigrew : public UnknownCGruntzMgrLucius
 {
 public:
     UnknownPettigrew(UnknownClassCGruntzMgrHarryPotter *p, int u2, int u3);
-    virtual ~UnknownPettigrew();
+    virtual ~UnknownPettigrew() OVERRIDE;
     CMapStringToPtr m_unknownMap;   // +0x10
 };                                  // 0x2c
 
@@ -242,7 +244,7 @@ class UnknownVoldemort : public UnknownSalazar
 {
 public:
     UnknownVoldemort();
-    virtual ~UnknownVoldemort();
+    virtual ~UnknownVoldemort() OVERRIDE;
     int fieldUnknown94, fieldUnknown98; // +0x94, +0x98
 };                                  // 0x9c
 
@@ -254,7 +256,7 @@ class UnknownClassCGruntzMgrHarryPotter : public CObject
 {
 public:
     UnknownClassCGruntzMgrHarryPotter();
-    virtual ~UnknownClassCGruntzMgrHarryPotter();
+    virtual ~UnknownClassCGruntzMgrHarryPotter() OVERRIDE;
     virtual void UnknownVirtualMethod14();
     // (hWnd, 640, 480, 16, flags) — the display-mode init call.
     virtual bool UnknownVirtualMethod18(HWND hWnd, int width, int height,

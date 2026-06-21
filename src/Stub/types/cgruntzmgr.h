@@ -11,7 +11,7 @@
  * tomalla 1.0.1.77; field offsets = high confidence, most field NAMES past the
  * config block are placeholders). The named option fields (m_isVoiceEnabled,
  * m_soundVolume, m_scrollSpeed, …) and the static is_*_disabled/is_*_enabled
- * globals map 1:1 to the registry value-names (see ../registry.h).
+ * globals map 1:1 to the registry value-names (see registry.h).
  *
  * NOT yet graduated to src/. External dependencies are modeled as compilable
  * placeholders (no <afxwin.h>/<dplobby.h>): CString -> a 4-byte MgrCString;
@@ -19,9 +19,46 @@
  * placeholder structs; Utils::RegistryHelper -> a forward decl (held by pointer).
  */
 
-#include "../wap32/cgamemgr.h"           // WAP32::CGameMgr base (0x2c)
-#include "../utils/memory_pool.h"        // Utils::MemoryPool<T>  (memory_pool static)
-#include "../utils/font.h"               // Font (font_large/medium/small/tiny statics)
+#include <rva.h>                // OVERRIDE macro (override under clang, no-op under MSVC 5.0)
+#include "memory_pool.h"        // Utils::MemoryPool<T>  (memory_pool static)
+#include "font.h"               // Font (font_large/medium/small/tiny statics)
+
+// WAP32::CGameMgr base (0x2c). The authoritative layout now lives in src/
+// (<Wap32/Wap32.h>), which wins on any name overlap, so the engine's separate
+// comprehension cgamemgr.h was dropped. cgruntzmgr.h is still an ungraduated
+// comprehension header, though, and must parse STANDALONE under the struct-gen
+// plain driver (no -I include / no MFC paths) - so the base is modeled here as a
+// self-contained placeholder (same doctrine as MgrCString/CPtrArray below): the
+// polymorphic 0x2c shape CGruntzMgr derives from, carrying the five engine
+// virtuals CGruntzMgr overrides.
+namespace WAP32
+{
+    class CGameApp;
+    class CGameWnd;
+
+    class CGameMgr
+    {
+    public:
+        CGameMgr();
+        virtual ~CGameMgr();                  // vtbl +0x00 (vector deleting dtor)
+        virtual int  UnknownVirtualMethod1(CGameWnd *pGameWnd, char *szCmdLine); // +0x04
+        virtual void UnknownClose();           // +0x08
+        virtual void UnknownVirtualMethod3();  // +0x0c
+        virtual void UnknownVirtualMethod4();  // +0x10
+        virtual void UnknownVirtualMethod5();  // +0x14
+
+        CGameWnd *m_pGameWnd;        // +0x04
+        CGameApp *m_pGameApp;        // +0x08
+        int       fieldUnknown00C;   // +0x0c
+        int       m_isSoundEnabled;  // +0x10
+        int       m_isMusicEnabled;  // +0x14
+        int       fieldUnknown018;   // +0x18
+        int       fieldUnknown01C;   // +0x1c
+        int       fieldUnknown020;   // +0x20
+        int       fieldUnknown024;   // +0x24
+        char      _pad28[0x2c - 0x28]; // +0x28  (tail pad to 0x2c)
+    };
+}
 
 // CString in the binary is an MFC type (a single char*); modeled as a 4-byte
 // placeholder so the header parses without <afxwin.h>.
@@ -41,7 +78,7 @@ struct Pair
 };           // 0x08
 
 // Forward decl for the surface/page-manager family root held at @0x30
-// (HYPOTHESIZED CDirectDrawMgr — see ../managers/ddrawmgr_surface_family.h).
+// (HYPOTHESIZED CDirectDrawMgr — see ddrawmgr_surface_family.h).
 class UnknownClassCGruntzMgrHarryPotter;
 
 /*
@@ -111,12 +148,12 @@ class CGruntzMgr : public WAP32::CGameMgr
 {
 public:
     CGruntzMgr();
-    virtual ~CGruntzMgr();               // vtbl +0x00 (vector deleting dtor)
-    virtual int  UnknownVirtualMethod1(WAP32::CGameWnd *pGameWnd, char *szCmdLine); // +0x04
-    virtual void UnknownClose();          // +0x08
-    virtual void UnknownVirtualMethod3();  // +0x0c
-    virtual void UnknownVirtualMethod4();  // +0x10
-    virtual void UnknownVirtualMethod5();  // +0x14
+    virtual ~CGruntzMgr() OVERRIDE;               // vtbl +0x00 (vector deleting dtor)
+    virtual int  UnknownVirtualMethod1(WAP32::CGameWnd *pGameWnd, char *szCmdLine) OVERRIDE; // +0x04
+    virtual void UnknownClose() OVERRIDE;          // +0x08
+    virtual void UnknownVirtualMethod3() OVERRIDE;  // +0x0c
+    virtual void UnknownVirtualMethod4() OVERRIDE;  // +0x10
+    virtual void UnknownVirtualMethod5() OVERRIDE;  // +0x14
 
     void ReportError(int errorMessageId, int errorCode);
 
@@ -173,7 +210,7 @@ public:
     //@address: 0064fa18 / 0064fa40 / 0064fa58 / 0064f9b0
     static Font font_large, font_medium, font_small, font_tiny;
 
-    // --- option globals (1:1 with registry value-names; see ../registry.h) ---
+    // --- option globals (1:1 with registry value-names; see registry.h) ---
     static bool is_high_quality_movie_enabled;  // "Disable High Quality Movie" (inverted)
     static int  is_audio_disabled;               // "Disable Audio"
     static int  is_sound_disabled;               // "Disable Sound"
