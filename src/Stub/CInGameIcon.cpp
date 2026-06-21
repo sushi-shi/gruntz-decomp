@@ -3,11 +3,11 @@
 
 class CInGameIcon {
 public:
-    CInGameIcon();
+    CInGameIcon(int);
 };
 
 // @confidence: med
 // @source: rtti-vptr
 // @stub
 RVA(0x095b10, 0x15f0)
-CInGameIcon::CInGameIcon() {}
+CInGameIcon::CInGameIcon(int) {}

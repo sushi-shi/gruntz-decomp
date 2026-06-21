@@ -4,7 +4,7 @@
 // Folded engine-label stubs with a known owning class.
 class BootyState {
 public:
-    void vfunc_9();
+    void vfunc_9(int);
     void OnActivate_vfunc8();
 };
 class ButeMgr {
@@ -13,11 +13,11 @@ public:
 };
 class CHelpState {
 public:
-    void LoadAssets();
+    void LoadAssets(int, int, int);
 };
 class CloudHazard {
 public:
-    void vfunc_20();
+    void vfunc_20(int, int);
 };
 class GameLevelState {
 public:
@@ -33,175 +33,183 @@ public:
 };
 class StatusBarItem {
 public:
-    void vfunc_12();
-    void vfunc_16();
+    void vfunc_12(int, int);
+    void vfunc_16(int, int, int);
 };
 
-namespace EngineLabelBacklog {
-    void CreateGameObjectByName();
-    void LoadBootyCheatState();
-    void ShowSecretBonusMessage();
+// Fake placeholder struct for engine-label stubs the disasm shows are __thiscall
+// (they take `this` in ecx) but whose real owning class is not yet recovered.
+// Making them members surfaces the implicit `this` and the __thiscall ABI;
+// the explicit args are the N/4 from the callee's `ret N`.
+struct EngineThisStub {
     void BuildWarpStoneGlitterAnimation();
-    void BuildGruntSprintAnimation();
     void LoadGruntEffectSprites();
     void BuildBootyWalkingGruntz();
-    void UpdateBootyWalkingGruntz();
-    void BuildBootyPerfectAnimation();
     void CheckWarpLetterBonus();
     void BootyState_OnActivate2_vfunc8();
-    void ShowLevelCompleteMessage();
-    void BuildBootyGruntIdleAnimation();
-    void BuildPowerupIconKeys();
-    void DrawBattleStats();
-    void StartUpPrompt();
-    void Stub_01fd70();
-    void LoadChatBoxSprite();
-    void LoadCheatConfig();
-    void LoadCreditzStateAssets();
+    void LoadChatBoxSprite(int);
+    void LoadCreditzStateAssets(int, int, int);
     void InitAttractTitle();
     void LoadCreditzAssets2();
-    void LoadCustomWorldInfo();
-    void BuildWorldLevelKey();
-    void HandleFortConquered();
+    void BuildWorldLevelKey(int);
     void BuildFortSplashParticles();
     void NotifyFortUnderAttack();
-    void LoadGruntTypeTable();
-    void LoadVehicleGruntSprites();
-    void LoadGruntAbilityTuning();
+    void LoadGruntTypeTable(int, int, int, int);
+    void LoadGruntAbilityTuning(int);
     void BuildGruntLoseItemAnimation();
-    void LoadGruntCombatAnimations();
-    void LoadGruntTuningConstants();
-    void LoadGruntDeathAnimations();
+    void LoadGruntCombatAnimations(int, int, int, int, int, int, int, int);
+    void LoadGruntTuningConstants(int);
+    void LoadGruntDeathAnimations(int, int);
     void LoadGruntDecayConfig();
     void LoadGruntDecayConfig2();
     void LoadVehicleGruntAnimations();
     void BuildGruntExitAnimation();
-    void LoadBombGruntRunConfig();
+    void LoadBombGruntRunConfig(int, int);
     void LoadWandGruntItemConfig();
-    void LoadPickupSprites();
+    void LoadPickupSprites(int, int, int, int, int);
     void LoadBombGruntRunConfig2();
-    void LoadWingzGruntSprites();
+    void LoadWingzGruntSprites(int);
     void LoadFreezeSpellAssets();
     void LoadGruntMovingDeathConfig();
-    void WireTileSwitchLogic();
-    void LoadTeleporterGooConfig();
-    void LoadTerrainTileSprites();
-    void LoadCameraSprite();
-    void LoadToyBoxIcon();
-    void LoadExplosionSprites();
-    void BuildRockBreakParticles();
-    void LoadGruntCombatTuning();
-    void LoadGruntResurrectTuning();
-    void LoadFinishLevelSprite();
-    void LoadPowerupIconSprites();
-    void LaunchPortalExe();
+    void LoadTeleporterGooConfig(int);
+    void LoadGruntCombatTuning(int, int, int, int, int);
+    void LoadFinishLevelSprite(int);
     void LoadMonologoSprite();
     void LoadSaveMessageSprite();
-    void BuildLevelRezPath();
-    void LoadHelpBookSprite();
-    void LoadObjectImageResources();
-    void LoadObjectSoundResources();
-    void LoadObjectAnimResources();
-    void LoadMenuStateAssets();
     void LoadStateImages_vfunc8();
-    void BuildVersionString();
-    void LoadAreaLevelTable();
-    void LoadRollingBallHazardSprites();
-    void LoadMenuSelectSprite();
-    void BuildGruntzCrcInfo();
-    void BuildNamedGruntTable();
+    void BuildVersionString(int, int, int, int);
+    void LoadMenuSelectSprite(int);
     void LoadDroppedObjectEffects();
-    void LoadLevelByMode();
-    void DrawDebugStats();
     void LoadImageBanks_vfunc29();
-    void LoadCursorSprites();
+    void LoadCursorSprites(int, int);
     void LoadScrollSpeedOptions();
-    void LoadSBITextEdges();
-    void ValidateLevelTiles();
-    void LoadWarlordSprites();
-    void LoadActionTileSprites();
-    void LoadLevelSounds();
-    void LoadLevelImages();
-    void BuildMusicCategoryTable();
-    void BuildWorldLevelPath();
+    void LoadSBITextEdges(int);
+    void LoadWarlordSprites(int, int);
+    void LoadActionTileSprites(int);
+    void LoadLevelSounds(int);
+    void LoadLevelImages(int);
+    void BuildMusicCategoryTable(int);
+    void BuildWorldLevelPath(int);
     void LoadLevelEffectSprites();
-    void BuildGruntTypeNameTable();
-    void BuildAssetNamespacePrefixes();
-    void BuildGruntNamespaceList();
-    void BuildWarlordNameTable();
-    void BuildSpriteImageKeyTable();
-    void BuildAnizKeyTable();
+    void BuildGruntTypeNameTable(int, int, int, int);
+    void BuildGruntNamespaceList(int);
+    void BuildWarlordNameTable(int);
+    void BuildSpriteImageKeyTable(int);
+    void BuildAnizKeyTable(int);
     void LoadLevelPreviewScreen();
     void LoadProjectileEffects();
-    void BuildToolToyColorKey();
-    void LookupToolToyColorKey();
-    void LoadGruntzPalette();
-    void DrawSaveGameMenu();
-    void BuildLevelTitleString();
-    void SaveGameFile();
-    void BuildResourceTabStatusBar();
-    void BuildStatzTabStatusBar();
+    void BuildToolToyColorKey(int);
+    void LookupToolToyColorKey(int);
+    void LoadGruntzPalette(int, int);
+    void SaveGameFile(int);
+    void BuildResourceTabStatusBar(int, int, int, int, int, int, int, int, int, int, int);
+    void BuildStatzTabStatusBar(int, int, int, int, int, int, int, int, int, int, int, int, int);
     void BuildStatzTabSmallSprite();
-    void BuildMultiplayerTabStatusBar();
-    void BuildSoundFontPath();
-    void Stub_0f90f0();
-    void LoadGameAssetNamespaces();
-    void LoadBattlezItemConfig();
+    void BuildMultiplayerTabStatusBar(int, int, int, int, int, int, int, int, int, int, int, int);
+    void LoadGameAssetNamespaces(int, int, int);
+    void LoadBattlezItemConfig(int);
     void LoadMainStatusBarSprite();
-    void UpdateStatusBarTabHighlight();
-    void LoadDestructButtonSprite();
-    void BuildGameTabResumeButton();
+    void UpdateStatusBarTabHighlight(int, int, int);
+    void LoadDestructButtonSprite(int);
+    void BuildGameTabResumeButton(int);
     void BuildGameTabPauseButton();
-    void LoadStatzTabToggleSprite();
-    void UpdateGruntOvenStatusBar();
-    void LoadGooCookingSprite();
+    void LoadGooCookingSprite(int);
     void UpdateRezConveyorStatusBar();
     void LoadRezMachineConfig();
     void UpdateRezMachineSnoozeStatusBar();
     void LoadChipMachineConfig();
-    void UpdateFallingItemStatusBar();
-    void UpdateChipGrinderStatusBar();
+    void UpdateFallingItemStatusBar(int, int, int);
     void UpdateRezMachineWakeStatusBar();
-    void LoadMultiplayerBattlezConfig();
+    void LoadMultiplayerBattlezConfig(int);
+    void UpdateDestructButtonStatusBar2(int);
+    void BuildRockBreakInGameText();
+    void LoadGruntSpawnConfig(int, int, int, int, int);
+    void DebugPrintf();
+    void Stub_1c152f(int);
+    void Stub_1ccae7(int, int, int);
+    void Stub_1ccbfc(int, int, int, int);
+};
+
+namespace EngineLabelBacklog {
+
+    void CreateGameObjectByName();
+    void __stdcall LoadBootyCheatState(int, int, int);
+    void ShowSecretBonusMessage();
+    void BuildGruntSprintAnimation();
+    void UpdateBootyWalkingGruntz();
+    void BuildBootyPerfectAnimation();
+    void ShowLevelCompleteMessage();
+    void BuildBootyGruntIdleAnimation();
+    void __stdcall BuildPowerupIconKeys(int, int);
+    void DrawBattleStats();
+    void StartUpPrompt();
+    void Stub_01fd70();
+    void LoadCheatConfig();
+    void LoadCustomWorldInfo();
+    void HandleFortConquered();
+    void __stdcall LoadVehicleGruntSprites(int);
+    void __stdcall WireTileSwitchLogic(int, int, int);
+    void __stdcall LoadTerrainTileSprites(int, int, int, int, int, int);
+    void LoadCameraSprite();
+    void __stdcall LoadToyBoxIcon(int, int, int, int, int);
+    void LoadExplosionSprites();
+    void __stdcall BuildRockBreakParticles(int, int, int, int);
+    void __stdcall LoadGruntResurrectTuning(int, int, int);
+    void LoadPowerupIconSprites();
+    void __stdcall LaunchPortalExe(int);
+    void __stdcall BuildLevelRezPath(int, int, int, int, int);
+    void LoadHelpBookSprite();
+    void __stdcall LoadObjectImageResources(int, int);
+    void __stdcall LoadObjectSoundResources(int, int);
+    void __stdcall LoadObjectAnimResources(int, int);
+    void __stdcall LoadMenuStateAssets(int, int, int);
+    void LoadAreaLevelTable();
+    void LoadRollingBallHazardSprites();
+    void BuildGruntzCrcInfo();
+    void BuildNamedGruntTable();
+    void __stdcall LoadLevelByMode(int, int);
+    void DrawDebugStats();
+    void ValidateLevelTiles();
+    void __stdcall BuildAssetNamespacePrefixes(int, int, int, int);
+    void DrawSaveGameMenu();
+    void BuildLevelTitleString();
+    void BuildSoundFontPath();
+    void Stub_0f90f0();
+    void LoadStatzTabToggleSprite();
+    void UpdateGruntOvenStatusBar();
+    void UpdateChipGrinderStatusBar();
     void UpdateWarpStoneStatusBar();
     void UpdateDestructButtonStatusBar();
-    void UpdateDestructButtonStatusBar2();
     void LoadSwitchDownSprite();
     void LoadSwitchUpSprite();
-    void LoadBridgeMoveSprites();
+    void __stdcall LoadBridgeMoveSprites(int);
     void LoadPyramidBridgeSprites();
-    void BuildRockBreakInGameText();
-    void BuildStatzTabSmall_vfunc1();
+    void __stdcall BuildStatzTabSmall_vfunc1(int, int, int, int, int, int, int, int, int);
     void SaveScreenshot();
     void FreeAllFonts();
     void FormatGameInfoString();
-    void LoadGruntSpawnConfig();
-    void BuildVoiceSoundList();
+    void __stdcall BuildVoiceSoundList(int);
     void Stub_11f900();
     void Stub_12abf0();
     void Stub_12d230();
     void Stub_12d460();
     void Stub_12d880();
     void Stub_1315d0();
-    void Stub_148940();
-    void DebugPrintf();
+    void __stdcall Stub_148940(int, int, int, int);
     void _tr_init();
     void _ct_init();
     void Stub_18c780();
-    void Stub_1bf702();
-    void Stub_1bf8f8();
-    void Stub_1c152f();
-    void Stub_1c1609();
-    void Stub_1c176a();
+    void __stdcall Stub_1bf702(int, int);
+    void __stdcall Stub_1bf8f8(int, int);
+    void __stdcall Stub_1c1609(int, int);
+    void __stdcall Stub_1c176a(int, int);
     void Stub_1c7cb3();
-    void Stub_1ccae7();
-    void Stub_1ccb5c();
-    void Stub_1ccbfc();
+    void __stdcall Stub_1ccb5c(int, int, int);
     void Stub_1d4ee3();
-    void Stub_1d4f77();
-    void Stub_1d4fbd();
-    void Stub_1d5029();
-    void Stub_1d513b();
+    void __stdcall Stub_1d4f77(int);
+    void __stdcall Stub_1d4fbd(int, int, int);
+    void __stdcall Stub_1d5029(int, int, int, int);
+    void __stdcall Stub_1d513b(int, int, int, int);
 } // namespace EngineLabelBacklog
 
 // @confidence: high
@@ -214,13 +222,13 @@ void EngineLabelBacklog::CreateGameObjectByName() {}
 // @source: string-xref
 // @stub
 RVA(0x018830, 0x380)
-void EngineLabelBacklog::LoadBootyCheatState() {}
+void __stdcall EngineLabelBacklog::LoadBootyCheatState(int, int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x018d30, 0xcd)
-void BootyState::vfunc_9() {}
+void BootyState::vfunc_9(int) {}
 
 // @confidence: med
 // @source: string-xref
@@ -232,7 +240,7 @@ void EngineLabelBacklog::ShowSecretBonusMessage() {}
 // @source: decomp-xref
 // @stub
 RVA(0x019540, 0x12a)
-void EngineLabelBacklog::BuildWarpStoneGlitterAnimation() {}
+void EngineThisStub::BuildWarpStoneGlitterAnimation() {}
 
 // @confidence: med
 // @source: decomp-xref
@@ -244,13 +252,13 @@ void EngineLabelBacklog::BuildGruntSprintAnimation() {}
 // @source: string-xref
 // @stub
 RVA(0x01a040, 0x55e)
-void EngineLabelBacklog::LoadGruntEffectSprites() {}
+void EngineThisStub::LoadGruntEffectSprites() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x01b450, 0x1ac)
-void EngineLabelBacklog::BuildBootyWalkingGruntz() {}
+void EngineThisStub::BuildBootyWalkingGruntz() {}
 
 // @confidence: med
 // @source: decomp-xref
@@ -264,13 +272,13 @@ void EngineLabelBacklog::UpdateBootyWalkingGruntz() {}
 // @source: string-xref
 // @stub
 RVA(0x01c210, 0x4b5)
-void EngineLabelBacklog::CheckWarpLetterBonus() {}
+void EngineThisStub::CheckWarpLetterBonus() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x01c8a0, 0xec)
-void EngineLabelBacklog::BootyState_OnActivate2_vfunc8() {}
+void EngineThisStub::BootyState_OnActivate2_vfunc8() {}
 
 // @confidence: med
 // @source: string-xref
@@ -288,7 +296,7 @@ void EngineLabelBacklog::BuildBootyGruntIdleAnimation() {}
 // @source: string-xref
 // @stub
 RVA(0x01e720, 0x2fe)
-void EngineLabelBacklog::BuildPowerupIconKeys() {}
+void __stdcall EngineLabelBacklog::BuildPowerupIconKeys(int, int) {}
 
 // @confidence: med
 // @source: string-xref
@@ -318,7 +326,7 @@ void EngineLabelBacklog::Stub_01fd70() {}
 // @source: decomp-xref
 // @stub
 RVA(0x020f40, 0x188)
-void EngineLabelBacklog::LoadChatBoxSprite() {}
+void EngineThisStub::LoadChatBoxSprite(int) {}
 
 // @confidence: med
 // @source: string-xref
@@ -330,19 +338,19 @@ void EngineLabelBacklog::LoadCheatConfig() {}
 // @source: string-xref
 // @stub
 RVA(0x038d20, 0x176)
-void EngineLabelBacklog::LoadCreditzStateAssets() {}
+void EngineThisStub::LoadCreditzStateAssets(int, int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x039570, 0x122)
-void EngineLabelBacklog::InitAttractTitle() {}
+void EngineThisStub::InitAttractTitle() {}
 
 // @confidence: low
 // @source: decomp-xref
 // @stub
 RVA(0x039dc0, 0x10b)
-void EngineLabelBacklog::LoadCreditzAssets2() {}
+void EngineThisStub::LoadCreditzAssets2() {}
 
 // @confidence: med
 // @source: decomp-xref
@@ -354,7 +362,7 @@ void EngineLabelBacklog::LoadCustomWorldInfo() {}
 // @source: decomp-xref
 // @stub
 RVA(0x03c0e0, 0xfb)
-void EngineLabelBacklog::BuildWorldLevelKey() {}
+void EngineThisStub::BuildWorldLevelKey(int) {}
 
 // @confidence: med
 // @source: decomp-xref
@@ -366,67 +374,67 @@ void EngineLabelBacklog::HandleFortConquered() {}
 // @source: decomp-xref
 // @stub
 RVA(0x044f80, 0x127)
-void EngineLabelBacklog::BuildFortSplashParticles() {}
+void EngineThisStub::BuildFortSplashParticles() {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
 RVA(0x045270, 0x2a8)
-void EngineLabelBacklog::NotifyFortUnderAttack() {}
+void EngineThisStub::NotifyFortUnderAttack() {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
 RVA(0x04dd50, 0x22c0)
-void EngineLabelBacklog::LoadGruntTypeTable() {}
+void EngineThisStub::LoadGruntTypeTable(int, int, int, int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
 RVA(0x050ce0, 0x399)
-void EngineLabelBacklog::LoadVehicleGruntSprites() {}
+void __stdcall EngineLabelBacklog::LoadVehicleGruntSprites(int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
 RVA(0x057100, 0x577)
-void EngineLabelBacklog::LoadGruntAbilityTuning() {}
+void EngineThisStub::LoadGruntAbilityTuning(int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x057890, 0x19c)
-void EngineLabelBacklog::BuildGruntLoseItemAnimation() {}
+void EngineThisStub::BuildGruntLoseItemAnimation() {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
 RVA(0x0597a0, 0x1345)
-void EngineLabelBacklog::LoadGruntCombatAnimations() {}
+void EngineThisStub::LoadGruntCombatAnimations(int, int, int, int, int, int, int, int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
 RVA(0x05d210, 0x1443)
-void EngineLabelBacklog::LoadGruntTuningConstants() {}
+void EngineThisStub::LoadGruntTuningConstants(int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
 RVA(0x060150, 0xd90)
-void EngineLabelBacklog::LoadGruntDeathAnimations() {}
+void EngineThisStub::LoadGruntDeathAnimations(int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x0612a0, 0x23c)
-void EngineLabelBacklog::LoadGruntDecayConfig() {}
+void EngineThisStub::LoadGruntDecayConfig() {}
 
 // @confidence: low
 // @source: decomp-xref
 // @stub
 RVA(0x061570, 0x11d)
-void EngineLabelBacklog::LoadGruntDecayConfig2() {}
+void EngineThisStub::LoadGruntDecayConfig2() {}
 
 // @confidence: med
 // @source: decomp-xref
@@ -438,73 +446,73 @@ void Projectile::vfunc_9() {}
 // @source: decomp-xref
 // @stub
 RVA(0x063db0, 0x32f)
-void EngineLabelBacklog::LoadVehicleGruntAnimations() {}
+void EngineThisStub::LoadVehicleGruntAnimations() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x0641b0, 0x2c1)
-void EngineLabelBacklog::BuildGruntExitAnimation() {}
+void EngineThisStub::BuildGruntExitAnimation() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x065630, 0x34b)
-void EngineLabelBacklog::LoadBombGruntRunConfig() {}
+void EngineThisStub::LoadBombGruntRunConfig(int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x065a60, 0x159)
-void EngineLabelBacklog::LoadWandGruntItemConfig() {}
+void EngineThisStub::LoadWandGruntItemConfig() {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
 RVA(0x065e80, 0x12b8)
-void EngineLabelBacklog::LoadPickupSprites() {}
+void EngineThisStub::LoadPickupSprites(int, int, int, int, int) {}
 
 // @confidence: low
 // @source: decomp-xref
 // @stub
 RVA(0x068520, 0x2a2)
-void EngineLabelBacklog::LoadBombGruntRunConfig2() {}
+void EngineThisStub::LoadBombGruntRunConfig2() {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
 RVA(0x068880, 0x67c)
-void EngineLabelBacklog::LoadWingzGruntSprites() {}
+void EngineThisStub::LoadWingzGruntSprites(int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x069d60, 0x1e1)
-void EngineLabelBacklog::LoadFreezeSpellAssets() {}
+void EngineThisStub::LoadFreezeSpellAssets() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x06a060, 0x43d)
-void EngineLabelBacklog::LoadGruntMovingDeathConfig() {}
+void EngineThisStub::LoadGruntMovingDeathConfig() {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
 RVA(0x06c130, 0xd62)
-void EngineLabelBacklog::WireTileSwitchLogic() {}
+void __stdcall EngineLabelBacklog::WireTileSwitchLogic(int, int, int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
 RVA(0x06eb80, 0x5ef)
-void EngineLabelBacklog::LoadTeleporterGooConfig() {}
+void EngineThisStub::LoadTeleporterGooConfig(int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
 RVA(0x075e90, 0x1329)
-void EngineLabelBacklog::LoadTerrainTileSprites() {}
+void __stdcall EngineLabelBacklog::LoadTerrainTileSprites(int, int, int, int, int, int) {}
 
 // LoadCameraSprite @0x078960 graduated to src/Gruntz/IconLoaders.cpp.
 
@@ -512,7 +520,7 @@ void EngineLabelBacklog::LoadTerrainTileSprites() {}
 // @source: decomp-xref
 // @stub
 RVA(0x07a3f0, 0xd7)
-void EngineLabelBacklog::LoadToyBoxIcon() {}
+void __stdcall EngineLabelBacklog::LoadToyBoxIcon(int, int, int, int, int) {}
 
 // LoadExplosionSprites @0x07b330 graduated to src/Gruntz/IconLoaders.cpp.
 
@@ -520,25 +528,25 @@ void EngineLabelBacklog::LoadToyBoxIcon() {}
 // @source: decomp-xref
 // @stub
 RVA(0x07b440, 0x3f0)
-void EngineLabelBacklog::BuildRockBreakParticles() {}
+void __stdcall EngineLabelBacklog::BuildRockBreakParticles(int, int, int, int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
 RVA(0x07b930, 0x3b7)
-void EngineLabelBacklog::LoadGruntCombatTuning() {}
+void EngineThisStub::LoadGruntCombatTuning(int, int, int, int, int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
 RVA(0x07be60, 0x21e)
-void EngineLabelBacklog::LoadGruntResurrectTuning() {}
+void __stdcall EngineLabelBacklog::LoadGruntResurrectTuning(int, int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x07c3d0, 0x1ae)
-void EngineLabelBacklog::LoadFinishLevelSprite() {}
+void EngineThisStub::LoadFinishLevelSprite(int) {}
 
 // LoadPowerupIconSprites @0x07c620 graduated to src/Gruntz/IconLoaders.cpp.
 
@@ -546,31 +554,31 @@ void EngineLabelBacklog::LoadFinishLevelSprite() {}
 // @source: decomp-xref
 // @stub
 RVA(0x090550, 0x1e6)
-void EngineLabelBacklog::LaunchPortalExe() {}
+void __stdcall EngineLabelBacklog::LaunchPortalExe(int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x090d10, 0x18e)
-void EngineLabelBacklog::LoadMonologoSprite() {}
+void EngineThisStub::LoadMonologoSprite() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x092420, 0xa4)
-void EngineLabelBacklog::LoadSaveMessageSprite() {}
+void EngineThisStub::LoadSaveMessageSprite() {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
 RVA(0x093d40, 0x473)
-void EngineLabelBacklog::BuildLevelRezPath() {}
+void __stdcall EngineLabelBacklog::BuildLevelRezPath(int, int, int, int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x095090, 0x6e)
-void CHelpState::LoadAssets() {}
+void CHelpState::LoadAssets(int, int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
@@ -582,37 +590,37 @@ void EngineLabelBacklog::LoadHelpBookSprite() {}
 // @source: decomp-xref
 // @stub
 RVA(0x09a510, 0x275)
-void EngineLabelBacklog::LoadObjectImageResources() {}
+void __stdcall EngineLabelBacklog::LoadObjectImageResources(int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x09a910, 0x261)
-void EngineLabelBacklog::LoadObjectSoundResources() {}
+void __stdcall EngineLabelBacklog::LoadObjectSoundResources(int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x09ac20, 0x261)
-void EngineLabelBacklog::LoadObjectAnimResources() {}
+void __stdcall EngineLabelBacklog::LoadObjectAnimResources(int, int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
 RVA(0x09fe50, 0x343)
-void EngineLabelBacklog::LoadMenuStateAssets() {}
+void __stdcall EngineLabelBacklog::LoadMenuStateAssets(int, int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x0a09a0, 0x6a)
-void EngineLabelBacklog::LoadStateImages_vfunc8() {}
+void EngineThisStub::LoadStateImages_vfunc8() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x0a0d80, 0xd7)
-void EngineLabelBacklog::BuildVersionString() {}
+void EngineThisStub::BuildVersionString(int, int, int, int) {}
 
 // @confidence: med
 // @source: string-xref
@@ -630,13 +638,13 @@ void EngineLabelBacklog::LoadRollingBallHazardSprites() {}
 // @source: decomp-xref
 // @stub
 RVA(0x0b4640, 0x104)
-void CloudHazard::vfunc_20() {}
+void CloudHazard::vfunc_20(int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x0ba620, 0x14a)
-void EngineLabelBacklog::LoadMenuSelectSprite() {}
+void EngineThisStub::LoadMenuSelectSprite(int) {}
 
 // @confidence: low
 // @source: decomp-xref
@@ -654,13 +662,13 @@ void EngineLabelBacklog::BuildNamedGruntTable() {}
 // @source: string-xref
 // @stub
 RVA(0x0c7090, 0x21b)
-void EngineLabelBacklog::LoadDroppedObjectEffects() {}
+void EngineThisStub::LoadDroppedObjectEffects() {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
 RVA(0x0ca200, 0xe34)
-void EngineLabelBacklog::LoadLevelByMode() {}
+void __stdcall EngineLabelBacklog::LoadLevelByMode(int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
@@ -672,13 +680,13 @@ void GameLevelState::OnActivate_vfunc8() {}
 // @source: decomp-xref
 // @stub
 RVA(0x0cbcc0, 0x16da)
-void StatusBarItem::vfunc_12() {}
+void StatusBarItem::vfunc_12(int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x0ce660, 0x362)
-void StatusBarItem::vfunc_16() {}
+void StatusBarItem::vfunc_16(int, int, int) {}
 
 // @confidence: low
 // @source: decomp-xref
@@ -690,25 +698,25 @@ void EngineLabelBacklog::DrawDebugStats() {}
 // @source: decomp-xref
 // @stub
 RVA(0x0cffe0, 0x3c)
-void EngineLabelBacklog::LoadImageBanks_vfunc29() {}
+void EngineThisStub::LoadImageBanks_vfunc29() {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
 RVA(0x0d0120, 0x5d8)
-void EngineLabelBacklog::LoadCursorSprites() {}
+void EngineThisStub::LoadCursorSprites(int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x0d12b0, 0x2d5)
-void EngineLabelBacklog::LoadScrollSpeedOptions() {}
+void EngineThisStub::LoadScrollSpeedOptions() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x0d1710, 0x122)
-void EngineLabelBacklog::LoadSBITextEdges() {}
+void EngineThisStub::LoadSBITextEdges(int) {}
 
 // @confidence: med
 // @source: string-xref
@@ -720,109 +728,109 @@ void EngineLabelBacklog::ValidateLevelTiles() {}
 // @source: string-xref
 // @stub
 RVA(0x0d65d0, 0x7a4)
-void EngineLabelBacklog::LoadWarlordSprites() {}
+void EngineThisStub::LoadWarlordSprites(int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x0db600, 0x8f)
-void EngineLabelBacklog::LoadActionTileSprites() {}
+void EngineThisStub::LoadActionTileSprites(int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x0db6c0, 0x70)
-void EngineLabelBacklog::LoadLevelSounds() {}
+void EngineThisStub::LoadLevelSounds(int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x0db7e0, 0x84)
-void EngineLabelBacklog::LoadLevelImages() {}
+void EngineThisStub::LoadLevelImages(int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
 RVA(0x0dba30, 0x1ca)
-void EngineLabelBacklog::BuildMusicCategoryTable() {}
+void EngineThisStub::BuildMusicCategoryTable(int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
 RVA(0x0dbc80, 0x309)
-void EngineLabelBacklog::BuildWorldLevelPath() {}
+void EngineThisStub::BuildWorldLevelPath(int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
 RVA(0x0dc060, 0x51b)
-void EngineLabelBacklog::LoadLevelEffectSprites() {}
+void EngineThisStub::LoadLevelEffectSprites() {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
 RVA(0x0dc6d0, 0x215)
-void EngineLabelBacklog::BuildGruntTypeNameTable() {}
+void EngineThisStub::BuildGruntTypeNameTable(int, int, int, int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
 RVA(0x0dca70, 0x4a4)
-void EngineLabelBacklog::BuildAssetNamespacePrefixes() {}
+void __stdcall EngineLabelBacklog::BuildAssetNamespacePrefixes(int, int, int, int) {}
 
 // @confidence: low
 // @source: decomp-xref
 // @stub
 RVA(0x0dd050, 0x24b)
-void EngineLabelBacklog::BuildGruntNamespaceList() {}
+void EngineThisStub::BuildGruntNamespaceList(int) {}
 
 // @confidence: low
 // @source: decomp-xref
 // @stub
 RVA(0x0dd340, 0x189)
-void EngineLabelBacklog::BuildWarlordNameTable() {}
+void EngineThisStub::BuildWarlordNameTable(int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
 RVA(0x0dd540, 0x241)
-void EngineLabelBacklog::BuildSpriteImageKeyTable() {}
+void EngineThisStub::BuildSpriteImageKeyTable(int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
 RVA(0x0ddaa0, 0x228)
-void EngineLabelBacklog::BuildAnizKeyTable() {}
+void EngineThisStub::BuildAnizKeyTable(int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x0de420, 0x115)
-void EngineLabelBacklog::LoadLevelPreviewScreen() {}
+void EngineThisStub::LoadLevelPreviewScreen() {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
 RVA(0x0dfd00, 0x6f5)
-void EngineLabelBacklog::LoadProjectileEffects() {}
+void EngineThisStub::LoadProjectileEffects() {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
 RVA(0x0e2400, 0x39e)
-void EngineLabelBacklog::BuildToolToyColorKey() {}
+void EngineThisStub::BuildToolToyColorKey(int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
 RVA(0x0e2980, 0x2cd)
-void EngineLabelBacklog::LookupToolToyColorKey() {}
+void EngineThisStub::LookupToolToyColorKey(int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x0e2d10, 0xa1)
-void EngineLabelBacklog::LoadGruntzPalette() {}
+void EngineThisStub::LoadGruntzPalette(int, int) {}
 
 // @confidence: med
 // @source: string-xref
@@ -840,31 +848,34 @@ void EngineLabelBacklog::BuildLevelTitleString() {}
 // @source: decomp-xref
 // @stub
 RVA(0x0e4b60, 0x158)
-void EngineLabelBacklog::SaveGameFile() {}
+void EngineThisStub::SaveGameFile(int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x0e8a70, 0x18c)
-void EngineLabelBacklog::BuildResourceTabStatusBar() {}
+void EngineThisStub::
+    BuildResourceTabStatusBar(int, int, int, int, int, int, int, int, int, int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x0e9600, 0x18c)
-void EngineLabelBacklog::BuildStatzTabStatusBar() {}
+void EngineThisStub::
+    BuildStatzTabStatusBar(int, int, int, int, int, int, int, int, int, int, int, int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x0e9850, 0x111)
-void EngineLabelBacklog::BuildStatzTabSmallSprite() {}
+void EngineThisStub::BuildStatzTabSmallSprite() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x0ea1f0, 0x1fa)
-void EngineLabelBacklog::BuildMultiplayerTabStatusBar() {}
+void EngineThisStub::
+    BuildMultiplayerTabStatusBar(int, int, int, int, int, int, int, int, int, int, int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
@@ -888,103 +899,103 @@ void EngineLabelBacklog::Stub_0f90f0() {}
 // @source: string-xref
 // @stub
 RVA(0x0f9ea0, 0x21d)
-void EngineLabelBacklog::LoadGameAssetNamespaces() {}
+void EngineThisStub::LoadGameAssetNamespaces(int, int, int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
 RVA(0x0fdc00, 0x5c2)
-void EngineLabelBacklog::LoadBattlezItemConfig() {}
+void EngineThisStub::LoadBattlezItemConfig(int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x0fe6b0, 0x145)
-void EngineLabelBacklog::LoadMainStatusBarSprite() {}
+void EngineThisStub::LoadMainStatusBarSprite() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x0fe910, 0xb8e)
-void EngineLabelBacklog::UpdateStatusBarTabHighlight() {}
+void EngineThisStub::UpdateStatusBarTabHighlight(int, int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x0ffb20, 0x13a)
-void EngineLabelBacklog::LoadDestructButtonSprite() {}
+void EngineThisStub::LoadDestructButtonSprite(int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x102180, 0x5f)
-void EngineLabelBacklog::BuildGameTabResumeButton() {}
+void EngineThisStub::BuildGameTabResumeButton(int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x102200, 0x37)
-void EngineLabelBacklog::BuildGameTabPauseButton() {}
+void EngineThisStub::BuildGameTabPauseButton() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x1055b0, 0x109)
-void EngineLabelBacklog::LoadGooCookingSprite() {}
+void EngineThisStub::LoadGooCookingSprite(int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x105990, 0x398)
-void EngineLabelBacklog::UpdateRezConveyorStatusBar() {}
+void EngineThisStub::UpdateRezConveyorStatusBar() {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
 RVA(0x105e40, 0x62c)
-void EngineLabelBacklog::LoadRezMachineConfig() {}
+void EngineThisStub::LoadRezMachineConfig() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x106660, 0x68)
-void EngineLabelBacklog::UpdateRezMachineSnoozeStatusBar() {}
+void EngineThisStub::UpdateRezMachineSnoozeStatusBar() {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
 RVA(0x106bb0, 0x7bc)
-void EngineLabelBacklog::LoadChipMachineConfig() {}
+void EngineThisStub::LoadChipMachineConfig() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x107590, 0xc4)
-void EngineLabelBacklog::UpdateFallingItemStatusBar() {}
+void EngineThisStub::UpdateFallingItemStatusBar(int, int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x107a10, 0x62)
-void EngineLabelBacklog::UpdateRezMachineWakeStatusBar() {}
+void EngineThisStub::UpdateRezMachineWakeStatusBar() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x107ae0, 0x1aa)
-void EngineLabelBacklog::LoadMultiplayerBattlezConfig() {}
+void EngineThisStub::LoadMultiplayerBattlezConfig(int) {}
 
 // @confidence: low
 // @source: decomp-xref
 // @stub
 RVA(0x10bc30, 0x78)
-void EngineLabelBacklog::UpdateDestructButtonStatusBar2() {}
+void EngineThisStub::UpdateDestructButtonStatusBar2(int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
 RVA(0x110860, 0x25f)
-void EngineLabelBacklog::LoadBridgeMoveSprites() {}
+void __stdcall EngineLabelBacklog::LoadBridgeMoveSprites(int) {}
 
 // @confidence: med
 // @source: string-xref
@@ -996,13 +1007,14 @@ void EngineLabelBacklog::LoadPyramidBridgeSprites() {}
 // @source: decomp-xref
 // @stub
 RVA(0x1122a0, 0x241)
-void EngineLabelBacklog::BuildRockBreakInGameText() {}
+void EngineThisStub::BuildRockBreakInGameText() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x112a50, 0xdd)
-void EngineLabelBacklog::BuildStatzTabSmall_vfunc1() {}
+void __stdcall EngineLabelBacklog::
+    BuildStatzTabSmall_vfunc1(int, int, int, int, int, int, int, int, int) {}
 
 // @confidence: high
 // @source: decomp-xref
@@ -1020,13 +1032,13 @@ void EngineLabelBacklog::FormatGameInfoString() {}
 // @source: decomp-xref
 // @stub
 RVA(0x11afb0, 0x321)
-void EngineLabelBacklog::LoadGruntSpawnConfig() {}
+void EngineThisStub::LoadGruntSpawnConfig(int, int, int, int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x11c210, 0x29d)
-void EngineLabelBacklog::BuildVoiceSoundList() {}
+void __stdcall EngineLabelBacklog::BuildVoiceSoundList(int) {}
 
 // @confidence: low
 // @source: import:FindFirstFileA
@@ -1068,7 +1080,7 @@ void EngineLabelBacklog::Stub_1315d0() {}
 // @source: second '.PID' xref; image-format dispatch consumer (entry not pinned)
 // @stub
 RVA(0x148940, 0x102)
-void EngineLabelBacklog::Stub_148940() {}
+void __stdcall EngineLabelBacklog::Stub_148940(int, int, int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
@@ -1080,7 +1092,7 @@ void ButeMgr::ParseAttributeFile() {}
 // @source: decomp-xref
 // @stub
 RVA(0x185000, 0x1a6)
-void EngineLabelBacklog::DebugPrintf() {}
+void EngineThisStub::DebugPrintf() {}
 
 // @confidence: high
 // @source: call-xref
@@ -1104,31 +1116,31 @@ void EngineLabelBacklog::Stub_18c780() {}
 // @source: import:RegQueryValueExA
 // @stub
 RVA(0x1bf702, 0xac)
-void EngineLabelBacklog::Stub_1bf702() {}
+void __stdcall EngineLabelBacklog::Stub_1bf702(int, int) {}
 
 // @confidence: low
 // @source: import:FindFirstFileA
 // @stub
 RVA(0x1bf8f8, 0xd9)
-void EngineLabelBacklog::Stub_1bf8f8() {}
+void __stdcall EngineLabelBacklog::Stub_1bf8f8(int, int) {}
 
 // @confidence: low
 // @source: import:GetFileSize
 // @stub
 RVA(0x1c152f, 0xda)
-void EngineLabelBacklog::Stub_1c152f() {}
+void EngineThisStub::Stub_1c152f(int) {}
 
 // @confidence: low
 // @source: import:FindFirstFileA
 // @stub
 RVA(0x1c1609, 0xb2)
-void EngineLabelBacklog::Stub_1c1609() {}
+void __stdcall EngineLabelBacklog::Stub_1c1609(int, int) {}
 
 // @confidence: low
 // @source: import:CreateFileA
 // @stub
 RVA(0x1c176a, 0x12d)
-void EngineLabelBacklog::Stub_1c176a() {}
+void __stdcall EngineLabelBacklog::Stub_1c176a(int, int) {}
 
 // @confidence: med
 // @source: import:RegCloseKey,RegOpenKeyExA,RegQueryValueExA
@@ -1140,19 +1152,19 @@ void EngineLabelBacklog::Stub_1c7cb3() {}
 // @source: import:RegCloseKey,RegSetValueExA
 // @stub
 RVA(0x1ccae7, 0x75)
-void EngineLabelBacklog::Stub_1ccae7() {}
+void EngineThisStub::Stub_1ccae7(int, int, int) {}
 
 // @confidence: med
 // @source: import:RegCloseKey,RegSetValueExA
 // @stub
 RVA(0x1ccb5c, 0xa0)
-void EngineLabelBacklog::Stub_1ccb5c() {}
+void __stdcall EngineLabelBacklog::Stub_1ccb5c(int, int, int) {}
 
 // @confidence: med
 // @source: import:RegCloseKey,RegSetValueExA
 // @stub
 RVA(0x1ccbfc, 0xa1)
-void EngineLabelBacklog::Stub_1ccbfc() {}
+void EngineThisStub::Stub_1ccbfc(int, int, int, int) {}
 
 // @confidence: med
 // @source: import:RegOpenKeyExA
@@ -1164,22 +1176,22 @@ void EngineLabelBacklog::Stub_1d4ee3() {}
 // @source: import:RegCloseKey,RegCreateKeyExA
 // @stub
 RVA(0x1d4f77, 0x46)
-void EngineLabelBacklog::Stub_1d4f77() {}
+void __stdcall EngineLabelBacklog::Stub_1d4f77(int) {}
 
 // @confidence: med
 // @source: import:RegCloseKey,RegQueryValueExA
 // @stub
 RVA(0x1d4fbd, 0x6c)
-void EngineLabelBacklog::Stub_1d4fbd() {}
+void __stdcall EngineLabelBacklog::Stub_1d4fbd(int, int, int) {}
 
 // @confidence: med
 // @source: import:RegCloseKey
 // @stub
 RVA(0x1d5029, 0x112)
-void EngineLabelBacklog::Stub_1d5029() {}
+void __stdcall EngineLabelBacklog::Stub_1d5029(int, int, int, int) {}
 
 // @confidence: med
 // @source: import:RegCloseKey
 // @stub
 RVA(0x1d513b, 0x11b)
-void EngineLabelBacklog::Stub_1d513b() {}
+void __stdcall EngineLabelBacklog::Stub_1d513b(int, int, int, int) {}

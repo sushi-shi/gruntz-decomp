@@ -10,7 +10,7 @@
 class CGruntzMgr {
 public:
     CGruntzMgr();
-    void vector_deleting_destructor();
+    void vector_deleting_destructor(int);
     void UnknownClose();
     void InitCFileIOMember();
 };
@@ -25,7 +25,7 @@ CGruntzMgr::CGruntzMgr() {}
 // @source: tomalla
 // @stub
 RVA(0x083330, 0x1e)
-void CGruntzMgr::vector_deleting_destructor() {}
+void CGruntzMgr::vector_deleting_destructor(int) {}
 
 // @confidence: high
 // @source: tomalla

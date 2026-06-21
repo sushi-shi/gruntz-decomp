@@ -3,11 +3,11 @@
 
 class CGruntCreationPoint {
 public:
-    CGruntCreationPoint();
+    CGruntCreationPoint(int);
 };
 
 // @confidence: med
 // @source: rtti-vptr
 // @stub
 RVA(0x03e520, 0x1fd)
-CGruntCreationPoint::CGruntCreationPoint() {}
+CGruntCreationPoint::CGruntCreationPoint(int) {}

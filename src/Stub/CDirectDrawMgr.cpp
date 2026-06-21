@@ -12,7 +12,7 @@
 class CDirectDrawMgr {
 public:
     void ErrorThunk_08dd80();
-    void ErrorThunk_08ddd0();
+    void ErrorThunk_08ddd0(int);
 };
 
 // @confidence: med
@@ -25,4 +25,4 @@ void CDirectDrawMgr::ErrorThunk_08dd80() {}
 // @source: call-xref
 // @stub
 RVA(0x08ddd0, 0x7e)
-void CDirectDrawMgr::ErrorThunk_08ddd0() {}
+void CDirectDrawMgr::ErrorThunk_08ddd0(int) {}

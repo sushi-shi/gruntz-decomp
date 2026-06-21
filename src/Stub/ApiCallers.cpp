@@ -93,6 +93,133 @@ extern HWND g_dlgItem_648ce0;
 extern "C" void* RezAlloc(unsigned int size);
 
 namespace ApiCallerStubs {
+    // Fake placeholder host: these ApiCaller stubs are __thiscall (disasm shows
+    // they take `this` in ecx) but their real owning class isn't recovered yet.
+    // Membership surfaces the implicit `this` + __thiscall ABI; explicit args are
+    // the N/4 from the callee's `ret N`.
+    struct ApiThisStub {
+        int winapi_015fe0_SendMessageA(int);
+        int winapi_016cd0_InvalidateRect();
+        int winapi_016dc0_InvalidateRect();
+        int winapi_016e90_InvalidateRect();
+        int winapi_016f60_InvalidateRect();
+        int winapi_017030_GetWindow();
+        int winapi_0171b0_GetWindow_SendMessageA();
+        int winapi_022360_DrawTextA_SelectObject_SetTextColor(int, int, int, int);
+        int winapi_023090_PostMessageA(int);
+        int winapi_0267c0_IntersectRect_PtInRect();
+        int winapi_02a570_IntersectRect(int);
+        int winapi_02ab80_PtInRect(int, int, int, int);
+        int winapi_02ae00_IntersectRect(int, int);
+        int winapi_02c140_IntersectRect_PtInRect(int);
+        int winapi_02dfa0_IntersectRect(int, int, int, int);
+        int winapi_02e3a0_PtInRect(int);
+        int winapi_031ca0_IntersectRect(int);
+        int winapi_032060_IntersectRect(int);
+        int winapi_032ce0_IntersectRect(int);
+        int winapi_0396f0_SelectClipRgn_SetBkMode();
+        int winapi_04a9f0_CopyRect_OffsetRect();
+        int winapi_04d800_CopyRect(int, int, int, int, int, int, int, int, int, int, int, int);
+        int winapi_057db0_IntersectRect();
+        int winapi_064540_PostMessageA();
+        int winapi_075c60_CopyRect_SetRect(int, int, int, int, int, int);
+        int winapi_0861e0_timeGetTime();
+        int winapi_08e6c0_SendMessageA();
+        int winapi_08f340_PostMessageA();
+        int winapi_08f530_PostMessageA();
+        int winapi_090260_DialogBoxParamA(int, int, int);
+        int winapi_092f00_PostMessageA();
+        int winapi_09ea60_IntersectRect(int, int, int);
+        int winapi_0b6b40_timeGetTime_wsprintfA();
+        int winapi_0b6e90_SetRect();
+        int winapi_0bb700_GetAsyncKeyState_Sleep_timeGetTime_wsprintfA();
+        int winapi_0bba10_Sleep(int);
+        int winapi_0c46b0_KillTimer_timeGetTime_wsprintfA();
+        int winapi_0c7ec0_timeGetTime(int, int, int);
+        int winapi_0c8a10_GetCursorPos(int);
+        int winapi_0cbaf0_PostMessageA(int, int);
+        int winapi_0cdb10_PostMessageA(int, int, int);
+        int winapi_0ceae0_PostMessageA(int, int, int);
+        int winapi_0d0b30_CopyRect(int);
+        int winapi_0d5f90_SetRect(int, int, int, int);
+        int winapi_0d60b0_wsprintfA();
+        int winapi_0d7520_wsprintfA(int, int, int, int);
+        int winapi_0d8c60_SetRect();
+        int winapi_0d95f0_wsprintfA();
+        int winapi_0e6020_SetRect(int, int, int, int, int, int, int, int, int, int);
+        int winapi_0ecc90_IntersectRect();
+        int winapi_0ed9f0_PtInRect();
+        int winapi_0ee800_IntersectRect_PtInRect();
+        int winapi_0f0e20_IntersectRect_PtInRect();
+        int winapi_0f42f0_PtInRect();
+        int winapi_0f60f0_IntersectRect();
+        int winapi_0fe520_SetRect();
+        int winapi_107d00_SetRect();
+        int winapi_11b3b0_timeGetTime(int, int, int, int, int, int);
+        int winapi_136e20_timeGetTime(int);
+        int winapi_136fe0_timeGetTime(int, int, int, int, int, int);
+        int winapi_137ac0_timeGetTime(int);
+        int winapi_13f460_CopyRect(int, int);
+        int winapi_1480a0_timeGetTime();
+        int winapi_1485b0_CreateDCA_DeleteDC_GetSystemPaletteEntries();
+        int winapi_1538c0_CopyRect(int, int);
+        int winapi_153b20_CopyRect(int, int);
+        int winapi_153d90_CopyRect(int, int);
+        int winapi_153ff0_CopyRect(int, int);
+        int winapi_154270_CopyRect(int, int);
+        int winapi_1544d0_CopyRect(int, int);
+        int winapi_154750_CopyRect(int, int);
+        int winapi_168080_SetRect(int, int, int, int, int, int, int, int);
+        int winapi_174fe0_GetDC_ReleaseDC_SelectPalette(int, int, int, int);
+        int winapi_1750e0_GetDC_ReleaseDC_SelectPalette(int, int, int, int, int);
+        int winapi_1751f0_GetDC_ReleaseDC_SelectPalette(int, int, int);
+        int winapi_1752f0_GetDC_ReleaseDC_SelectPalette(int, int);
+        int winapi_1753f0_GetDC_ReleaseDC_SelectPalette(int, int);
+        int winapi_17c3f0_ShowCursor(
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int
+        );
+        int winapi_17e620_GetTickCount(int, int, int);
+        int winapi_17fe00_timeGetTime(int);
+        int winapi_1804a0_PtInRect(int);
+        int winapi_1d4a18_FreeLibrary();
+        int
+        thirdparty_138c20_AIL_allocate_sequence_handle_4_AIL_init_sequence_12_AIL_(int, int, int);
+        int directx_wrapper_caller_1644a0_DirectDrawCreate_DirectDrawEnumerateA(int, int, int);
+        int
+        thirdparty_winapi_17c790_SmackWait_4_DispatchMessageA_PeekMessageA_TranslateMessa(int, int);
+        int thirdparty_17c8e0_SmackGoto_8_SmackWait_4(int, int);
+        int thirdparty_17caa0_SmackDoFrame_4_SmackNextFrame_4_SmackToBuffer_28();
+    };
 
     // @confidence: low
     // @source: winapi:CopyRect;SetRect
@@ -200,7 +327,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetWindow;GetWindowLongA;SetWindowLongA
     // @stub
     RVA(0x014d00, 0xa68)
-    int winapi_014d00_GetWindow_GetWindowLongA_SetWindowLongA() {
+    int __stdcall winapi_014d00_GetWindow_GetWindowLongA_SetWindowLongA(int) {
         return 0;
     }
 
@@ -253,7 +380,7 @@ namespace ApiCallerStubs {
     // @source: winapi:SendMessageA
     // @stub
     RVA(0x015fe0, 0xbe)
-    int winapi_015fe0_SendMessageA() {
+    int ApiThisStub::winapi_015fe0_SendMessageA(int) {
         return 0;
     }
 
@@ -269,7 +396,7 @@ namespace ApiCallerStubs {
     // @source: winapi:InvalidateRect
     // @stub
     RVA(0x016cd0, 0x98)
-    int winapi_016cd0_InvalidateRect() {
+    int ApiThisStub::winapi_016cd0_InvalidateRect() {
         return 0;
     }
 
@@ -277,7 +404,7 @@ namespace ApiCallerStubs {
     // @source: winapi:InvalidateRect
     // @stub
     RVA(0x016dc0, 0x97)
-    int winapi_016dc0_InvalidateRect() {
+    int ApiThisStub::winapi_016dc0_InvalidateRect() {
         return 0;
     }
 
@@ -285,7 +412,7 @@ namespace ApiCallerStubs {
     // @source: winapi:InvalidateRect
     // @stub
     RVA(0x016e90, 0x98)
-    int winapi_016e90_InvalidateRect() {
+    int ApiThisStub::winapi_016e90_InvalidateRect() {
         return 0;
     }
 
@@ -293,7 +420,7 @@ namespace ApiCallerStubs {
     // @source: winapi:InvalidateRect
     // @stub
     RVA(0x016f60, 0x98)
-    int winapi_016f60_InvalidateRect() {
+    int ApiThisStub::winapi_016f60_InvalidateRect() {
         return 0;
     }
 
@@ -301,7 +428,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetWindow
     // @stub
     RVA(0x017030, 0xc1)
-    int winapi_017030_GetWindow() {
+    int ApiThisStub::winapi_017030_GetWindow() {
         return 0;
     }
 
@@ -309,7 +436,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetWindow;SendMessageA
     // @stub
     RVA(0x0171b0, 0xca)
-    int winapi_0171b0_GetWindow_SendMessageA() {
+    int ApiThisStub::winapi_0171b0_GetWindow_SendMessageA() {
         return 0;
     }
 
@@ -317,7 +444,7 @@ namespace ApiCallerStubs {
     // @source: winapi:SendMessageA
     // @stub
     RVA(0x0180e0, 0x23f)
-    int winapi_0180e0_SendMessageA() {
+    int __stdcall winapi_0180e0_SendMessageA(int) {
         return 0;
     }
 
@@ -398,7 +525,7 @@ namespace ApiCallerStubs {
     // @source: winapi:DrawTextA
     // @stub
     RVA(0x021f20, 0x162)
-    int winapi_021f20_DrawTextA() {
+    int __stdcall winapi_021f20_DrawTextA(int, int) {
         return 0;
     }
 
@@ -406,7 +533,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetAsyncKeyState;SelectObject
     // @stub
     RVA(0x022160, 0x18e)
-    int winapi_022160_GetAsyncKeyState_SelectObject() {
+    int __stdcall winapi_022160_GetAsyncKeyState_SelectObject(int, int, int) {
         return 0;
     }
 
@@ -414,7 +541,7 @@ namespace ApiCallerStubs {
     // @source: winapi:DrawTextA;SelectObject;SetTextColor
     // @stub
     RVA(0x022360, 0x2f4)
-    int winapi_022360_DrawTextA_SelectObject_SetTextColor() {
+    int ApiThisStub::winapi_022360_DrawTextA_SelectObject_SetTextColor(int, int, int, int) {
         return 0;
     }
 
@@ -422,7 +549,18 @@ namespace ApiCallerStubs {
     // @source: winapi:DrawTextA;SelectObject;SetBkColor;SetBkMode;SetTextColor
     // @stub
     RVA(0x022810, 0x22a)
-    int winapi_022810_DrawTextA_SelectObject_SetBkColor_SetBkMode_SetTextColor() {
+    int __stdcall winapi_022810_DrawTextA_SelectObject_SetBkColor_SetBkMode_SetTextColor(
+        int,
+        int,
+        int,
+        int,
+        int,
+        int,
+        int,
+        int,
+        int,
+        int
+    ) {
         return 0;
     }
 
@@ -430,7 +568,7 @@ namespace ApiCallerStubs {
     // @source: winapi:PostMessageA
     // @stub
     RVA(0x023090, 0xfc)
-    int winapi_023090_PostMessageA() {
+    int ApiThisStub::winapi_023090_PostMessageA(int) {
         return 0;
     }
 
@@ -438,7 +576,7 @@ namespace ApiCallerStubs {
     // @source: winapi:IntersectRect;PtInRect
     // @stub
     RVA(0x0267c0, 0x281d)
-    int winapi_0267c0_IntersectRect_PtInRect() {
+    int ApiThisStub::winapi_0267c0_IntersectRect_PtInRect() {
         return 0;
     }
 
@@ -446,7 +584,7 @@ namespace ApiCallerStubs {
     // @source: winapi:IntersectRect
     // @stub
     RVA(0x02a570, 0x4c6)
-    int winapi_02a570_IntersectRect() {
+    int ApiThisStub::winapi_02a570_IntersectRect(int) {
         return 0;
     }
 
@@ -454,7 +592,7 @@ namespace ApiCallerStubs {
     // @source: winapi:PtInRect
     // @stub
     RVA(0x02ab80, 0x15e)
-    int winapi_02ab80_PtInRect() {
+    int ApiThisStub::winapi_02ab80_PtInRect(int, int, int, int) {
         return 0;
     }
 
@@ -462,7 +600,7 @@ namespace ApiCallerStubs {
     // @source: winapi:IntersectRect
     // @stub
     RVA(0x02ae00, 0x42e)
-    int winapi_02ae00_IntersectRect() {
+    int ApiThisStub::winapi_02ae00_IntersectRect(int, int) {
         return 0;
     }
 
@@ -509,7 +647,7 @@ namespace ApiCallerStubs {
     // @source: winapi:IntersectRect;PtInRect
     // @stub
     RVA(0x02c140, 0x3e7)
-    int winapi_02c140_IntersectRect_PtInRect() {
+    int ApiThisStub::winapi_02c140_IntersectRect_PtInRect(int) {
         return 0;
     }
 
@@ -517,7 +655,7 @@ namespace ApiCallerStubs {
     // @source: winapi:IntersectRect
     // @stub
     RVA(0x02c690, 0xdb4)
-    int winapi_02c690_IntersectRect() {
+    int __stdcall winapi_02c690_IntersectRect(int) {
         return 0;
     }
 
@@ -525,7 +663,7 @@ namespace ApiCallerStubs {
     // @source: winapi:IntersectRect
     // @stub
     RVA(0x02dfa0, 0x325)
-    int winapi_02dfa0_IntersectRect() {
+    int ApiThisStub::winapi_02dfa0_IntersectRect(int, int, int, int) {
         return 0;
     }
 
@@ -533,7 +671,7 @@ namespace ApiCallerStubs {
     // @source: winapi:PtInRect
     // @stub
     RVA(0x02e3a0, 0x7e1)
-    int winapi_02e3a0_PtInRect() {
+    int ApiThisStub::winapi_02e3a0_PtInRect(int) {
         return 0;
     }
 
@@ -541,7 +679,7 @@ namespace ApiCallerStubs {
     // @source: winapi:IntersectRect
     // @stub
     RVA(0x031ca0, 0x2f2)
-    int winapi_031ca0_IntersectRect() {
+    int ApiThisStub::winapi_031ca0_IntersectRect(int) {
         return 0;
     }
 
@@ -549,7 +687,7 @@ namespace ApiCallerStubs {
     // @source: winapi:IntersectRect
     // @stub
     RVA(0x032060, 0x7bd)
-    int winapi_032060_IntersectRect() {
+    int ApiThisStub::winapi_032060_IntersectRect(int) {
         return 0;
     }
 
@@ -557,7 +695,7 @@ namespace ApiCallerStubs {
     // @source: winapi:IntersectRect
     // @stub
     RVA(0x032ce0, 0x448)
-    int winapi_032ce0_IntersectRect() {
+    int ApiThisStub::winapi_032ce0_IntersectRect(int) {
         return 0;
     }
 
@@ -565,7 +703,7 @@ namespace ApiCallerStubs {
     // @source: winapi:IntersectRect
     // @stub
     RVA(0x033520, 0xbc3)
-    int winapi_033520_IntersectRect() {
+    int __stdcall winapi_033520_IntersectRect(int) {
         return 0;
     }
 
@@ -661,7 +799,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetDlgItem;SendMessageA
     // @stub
     RVA(0x037ff0, 0xe7)
-    int winapi_037ff0_GetDlgItem_SendMessageA() {
+    int __stdcall winapi_037ff0_GetDlgItem_SendMessageA(int, int) {
         return 0;
     }
 
@@ -790,7 +928,7 @@ namespace ApiCallerStubs {
     // @source: winapi:SelectClipRgn;SetBkMode
     // @stub
     RVA(0x0396f0, 0x2b8)
-    int winapi_0396f0_SelectClipRgn_SetBkMode() {
+    int ApiThisStub::winapi_0396f0_SelectClipRgn_SetBkMode() {
         return 0;
     }
 
@@ -830,7 +968,7 @@ namespace ApiCallerStubs {
     // @source: winapi:CopyRect;OffsetRect
     // @stub
     RVA(0x04a9f0, 0x1aa)
-    int winapi_04a9f0_CopyRect_OffsetRect() {
+    int ApiThisStub::winapi_04a9f0_CopyRect_OffsetRect() {
         return 0;
     }
 
@@ -838,7 +976,8 @@ namespace ApiCallerStubs {
     // @source: winapi:CopyRect
     // @stub
     RVA(0x04d800, 0x423)
-    int winapi_04d800_CopyRect() {
+    int ApiThisStub::
+        winapi_04d800_CopyRect(int, int, int, int, int, int, int, int, int, int, int, int) {
         return 0;
     }
 
@@ -846,7 +985,7 @@ namespace ApiCallerStubs {
     // @source: winapi:IntersectRect
     // @stub
     RVA(0x057db0, 0x8f8)
-    int winapi_057db0_IntersectRect() {
+    int ApiThisStub::winapi_057db0_IntersectRect() {
         return 0;
     }
 
@@ -854,7 +993,7 @@ namespace ApiCallerStubs {
     // @source: winapi:PostMessageA
     // @stub
     RVA(0x064540, 0x11c)
-    int winapi_064540_PostMessageA() {
+    int ApiThisStub::winapi_064540_PostMessageA() {
         return 0;
     }
 
@@ -862,7 +1001,7 @@ namespace ApiCallerStubs {
     // @source: winapi:CopyRect;SetRect
     // @stub
     RVA(0x075c60, 0x1ba)
-    int winapi_075c60_CopyRect_SetRect() {
+    int ApiThisStub::winapi_075c60_CopyRect_SetRect(int, int, int, int, int, int) {
         return 0;
     }
 
@@ -870,7 +1009,7 @@ namespace ApiCallerStubs {
     // @source: winapi:PtInRect
     // @stub
     RVA(0x077df0, 0x13d)
-    int winapi_077df0_PtInRect() {
+    int __stdcall winapi_077df0_PtInRect(int) {
         return 0;
     }
 
@@ -878,7 +1017,7 @@ namespace ApiCallerStubs {
     // @source: winapi:SetRect
     // @stub
     RVA(0x078060, 0x18d)
-    int winapi_078060_SetRect() {
+    int __stdcall winapi_078060_SetRect(int, int, int, int, int) {
         return 0;
     }
 
@@ -886,7 +1025,7 @@ namespace ApiCallerStubs {
     // @source: winapi:timeGetTime
     // @stub
     RVA(0x0861e0, 0xc5)
-    int winapi_0861e0_timeGetTime() {
+    int ApiThisStub::winapi_0861e0_timeGetTime() {
         return 0;
     }
 
@@ -894,7 +1033,7 @@ namespace ApiCallerStubs {
     // @source: winapi:PostMessageA;wsprintfA
     // @stub
     RVA(0x0862f0, 0x3d5a)
-    int winapi_0862f0_PostMessageA_wsprintfA() {
+    int __stdcall winapi_0862f0_PostMessageA_wsprintfA(int, int, int) {
         return 0;
     }
 
@@ -939,7 +1078,7 @@ namespace ApiCallerStubs {
     // @source: winapi:SendMessageA
     // @stub
     RVA(0x08e6c0, 0x85)
-    int winapi_08e6c0_SendMessageA() {
+    int ApiThisStub::winapi_08e6c0_SendMessageA() {
         return 0;
     }
 
@@ -1002,7 +1141,7 @@ namespace ApiCallerStubs {
     // @source: winapi:CreateProcessA;RegQueryValueA
     // @stub
     RVA(0x08f120, 0x168)
-    int winapi_08f120_CreateProcessA_RegQueryValueA() {
+    int __stdcall winapi_08f120_CreateProcessA_RegQueryValueA(int) {
         return 0;
     }
 
@@ -1010,7 +1149,7 @@ namespace ApiCallerStubs {
     // @source: winapi:PostMessageA
     // @stub
     RVA(0x08f340, 0xf6)
-    int winapi_08f340_PostMessageA() {
+    int ApiThisStub::winapi_08f340_PostMessageA() {
         return 0;
     }
 
@@ -1056,7 +1195,7 @@ namespace ApiCallerStubs {
     // @source: winapi:PostMessageA
     // @stub
     RVA(0x08f530, 0xbd)
-    int winapi_08f530_PostMessageA() {
+    int ApiThisStub::winapi_08f530_PostMessageA() {
         return 0;
     }
 
@@ -1084,7 +1223,7 @@ namespace ApiCallerStubs {
     // @source: winapi:DialogBoxParamA
     // @stub
     RVA(0x090260, 0x13e)
-    int winapi_090260_DialogBoxParamA() {
+    int ApiThisStub::winapi_090260_DialogBoxParamA(int, int, int) {
         return 0;
     }
 
@@ -1092,7 +1231,7 @@ namespace ApiCallerStubs {
     // @source: winapi:CreateProcessA;wsprintfA
     // @stub
     RVA(0x090860, 0xd3)
-    int winapi_090860_CreateProcessA_wsprintfA() {
+    int __stdcall winapi_090860_CreateProcessA_wsprintfA(int, int) {
         return 0;
     }
 
@@ -1146,7 +1285,7 @@ namespace ApiCallerStubs {
     // @source: winapi:EndDialog
     // @stub
     RVA(0x092ab0, 0x20d)
-    int winapi_092ab0_EndDialog() {
+    int __stdcall winapi_092ab0_EndDialog(int, int, int, int) {
         return 0;
     }
 
@@ -1154,7 +1293,7 @@ namespace ApiCallerStubs {
     // @source: winapi:PostMessageA
     // @stub
     RVA(0x092f00, 0x1ef)
-    int winapi_092f00_PostMessageA() {
+    int ApiThisStub::winapi_092f00_PostMessageA() {
         return 0;
     }
 
@@ -1285,7 +1424,7 @@ namespace ApiCallerStubs {
     // @source: winapi:IntersectRect
     // @stub
     RVA(0x09ea60, 0x168)
-    int winapi_09ea60_IntersectRect() {
+    int ApiThisStub::winapi_09ea60_IntersectRect(int, int, int) {
         return 0;
     }
 
@@ -1293,7 +1432,7 @@ namespace ApiCallerStubs {
     // @source: winapi:timeGetTime;wsprintfA
     // @stub
     RVA(0x0b6b40, 0x29e)
-    int winapi_0b6b40_timeGetTime_wsprintfA() {
+    int ApiThisStub::winapi_0b6b40_timeGetTime_wsprintfA() {
         return 0;
     }
 
@@ -1301,7 +1440,7 @@ namespace ApiCallerStubs {
     // @source: winapi:SetRect
     // @stub
     RVA(0x0b6e90, 0x34d)
-    int winapi_0b6e90_SetRect() {
+    int ApiThisStub::winapi_0b6e90_SetRect() {
         return 0;
     }
 
@@ -1422,7 +1561,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetAsyncKeyState;Sleep;timeGetTime;wsprintfA
     // @stub
     RVA(0x0bb700, 0x265)
-    int winapi_0bb700_GetAsyncKeyState_Sleep_timeGetTime_wsprintfA() {
+    int ApiThisStub::winapi_0bb700_GetAsyncKeyState_Sleep_timeGetTime_wsprintfA() {
         return 0;
     }
 
@@ -1430,7 +1569,7 @@ namespace ApiCallerStubs {
     // @source: winapi:Sleep
     // @stub
     RVA(0x0bba10, 0x1fb)
-    int winapi_0bba10_Sleep() {
+    int ApiThisStub::winapi_0bba10_Sleep(int) {
         return 0;
     }
 
@@ -1464,7 +1603,7 @@ namespace ApiCallerStubs {
     // @source: winapi:EndDialog;KillTimer
     // @stub
     RVA(0x0bdc00, 0x10c)
-    int winapi_0bdc00_EndDialog_KillTimer() {
+    int __stdcall winapi_0bdc00_EndDialog_KillTimer(int, int, int, int) {
         return 0;
     }
 
@@ -1499,7 +1638,7 @@ namespace ApiCallerStubs {
     // @source: winapi:EndDialog;KillTimer;PostMessageA
     // @stub
     RVA(0x0be0a0, 0x1c7)
-    int winapi_0be0a0_EndDialog_KillTimer_PostMessageA() {
+    int __stdcall winapi_0be0a0_EndDialog_KillTimer_PostMessageA(int, int, int, int) {
         return 0;
     }
 
@@ -1696,7 +1835,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetFocus;SendMessageA
     // @stub
     RVA(0x0c4230, 0x38e)
-    int winapi_0c4230_GetFocus_SendMessageA() {
+    int __stdcall winapi_0c4230_GetFocus_SendMessageA(int) {
         return 0;
     }
 
@@ -1704,7 +1843,7 @@ namespace ApiCallerStubs {
     // @source: winapi:KillTimer;timeGetTime;wsprintfA
     // @stub
     RVA(0x0c46b0, 0x371)
-    int winapi_0c46b0_KillTimer_timeGetTime_wsprintfA() {
+    int ApiThisStub::winapi_0c46b0_KillTimer_timeGetTime_wsprintfA() {
         return 0;
     }
 
@@ -1819,7 +1958,7 @@ namespace ApiCallerStubs {
     // @source: winapi:timeGetTime
     // @stub
     RVA(0x0c7ec0, 0x5f5)
-    int winapi_0c7ec0_timeGetTime() {
+    int ApiThisStub::winapi_0c7ec0_timeGetTime(int, int, int) {
         return 0;
     }
 
@@ -1827,7 +1966,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetCursorPos
     // @stub
     RVA(0x0c8a10, 0x119)
-    int winapi_0c8a10_GetCursorPos() {
+    int ApiThisStub::winapi_0c8a10_GetCursorPos(int) {
         return 0;
     }
 
@@ -1835,7 +1974,7 @@ namespace ApiCallerStubs {
     // @source: winapi:PostMessageA
     // @stub
     RVA(0x0cbaf0, 0x16f)
-    int winapi_0cbaf0_PostMessageA() {
+    int ApiThisStub::winapi_0cbaf0_PostMessageA(int, int) {
         return 0;
     }
 
@@ -1843,7 +1982,7 @@ namespace ApiCallerStubs {
     // @source: winapi:PostMessageA
     // @stub
     RVA(0x0cdb10, 0x80c)
-    int winapi_0cdb10_PostMessageA() {
+    int ApiThisStub::winapi_0cdb10_PostMessageA(int, int, int) {
         return 0;
     }
 
@@ -1851,7 +1990,7 @@ namespace ApiCallerStubs {
     // @source: winapi:PostMessageA
     // @stub
     RVA(0x0ceae0, 0x268)
-    int winapi_0ceae0_PostMessageA() {
+    int ApiThisStub::winapi_0ceae0_PostMessageA(int, int, int) {
         return 0;
     }
 
@@ -1963,7 +2102,7 @@ namespace ApiCallerStubs {
     // @source: winapi:CopyRect
     // @stub
     RVA(0x0d0b30, 0x200)
-    int winapi_0d0b30_CopyRect() {
+    int ApiThisStub::winapi_0d0b30_CopyRect(int) {
         return 0;
     }
 
@@ -1971,7 +2110,7 @@ namespace ApiCallerStubs {
     // @source: winapi:SetRect
     // @stub
     RVA(0x0d5f90, 0xd7)
-    int winapi_0d5f90_SetRect() {
+    int ApiThisStub::winapi_0d5f90_SetRect(int, int, int, int) {
         return 0;
     }
 
@@ -1979,7 +2118,7 @@ namespace ApiCallerStubs {
     // @source: winapi:wsprintfA
     // @stub
     RVA(0x0d60b0, 0x2cd)
-    int winapi_0d60b0_wsprintfA() {
+    int ApiThisStub::winapi_0d60b0_wsprintfA() {
         return 0;
     }
 
@@ -2027,7 +2166,7 @@ namespace ApiCallerStubs {
     // @source: winapi:wsprintfA
     // @stub
     RVA(0x0d7520, 0x3b9)
-    int winapi_0d7520_wsprintfA() {
+    int ApiThisStub::winapi_0d7520_wsprintfA(int, int, int, int) {
         return 0;
     }
 
@@ -2035,7 +2174,7 @@ namespace ApiCallerStubs {
     // @source: winapi:SetRect
     // @stub
     RVA(0x0d8c60, 0xea)
-    int winapi_0d8c60_SetRect() {
+    int ApiThisStub::winapi_0d8c60_SetRect() {
         return 0;
     }
 
@@ -2043,7 +2182,7 @@ namespace ApiCallerStubs {
     // @source: winapi:wsprintfA
     // @stub
     RVA(0x0d95f0, 0x756)
-    int winapi_0d95f0_wsprintfA() {
+    int ApiThisStub::winapi_0d95f0_wsprintfA() {
         return 0;
     }
 
@@ -2265,7 +2404,7 @@ namespace ApiCallerStubs {
     // @source: winapi:SetRect
     // @stub
     RVA(0x0e6020, 0x288)
-    int winapi_0e6020_SetRect() {
+    int ApiThisStub::winapi_0e6020_SetRect(int, int, int, int, int, int, int, int, int, int) {
         return 0;
     }
 
@@ -2273,7 +2412,7 @@ namespace ApiCallerStubs {
     // @source: winapi:IntersectRect
     // @stub
     RVA(0x0ecc90, 0x86a)
-    int winapi_0ecc90_IntersectRect() {
+    int ApiThisStub::winapi_0ecc90_IntersectRect() {
         return 0;
     }
 
@@ -2281,7 +2420,7 @@ namespace ApiCallerStubs {
     // @source: winapi:PtInRect
     // @stub
     RVA(0x0ed9f0, 0x8dd)
-    int winapi_0ed9f0_PtInRect() {
+    int ApiThisStub::winapi_0ed9f0_PtInRect() {
         return 0;
     }
 
@@ -2289,7 +2428,7 @@ namespace ApiCallerStubs {
     // @source: winapi:IntersectRect;PtInRect
     // @stub
     RVA(0x0ee800, 0x971)
-    int winapi_0ee800_IntersectRect_PtInRect() {
+    int ApiThisStub::winapi_0ee800_IntersectRect_PtInRect() {
         return 0;
     }
 
@@ -2297,7 +2436,7 @@ namespace ApiCallerStubs {
     // @source: winapi:IntersectRect;PtInRect
     // @stub
     RVA(0x0f0e20, 0x928)
-    int winapi_0f0e20_IntersectRect_PtInRect() {
+    int ApiThisStub::winapi_0f0e20_IntersectRect_PtInRect() {
         return 0;
     }
 
@@ -2313,7 +2452,7 @@ namespace ApiCallerStubs {
     // @source: winapi:PtInRect
     // @stub
     RVA(0x0f42f0, 0x1193)
-    int winapi_0f42f0_PtInRect() {
+    int ApiThisStub::winapi_0f42f0_PtInRect() {
         return 0;
     }
 
@@ -2321,7 +2460,7 @@ namespace ApiCallerStubs {
     // @source: winapi:IntersectRect
     // @stub
     RVA(0x0f60f0, 0xb30)
-    int winapi_0f60f0_IntersectRect() {
+    int ApiThisStub::winapi_0f60f0_IntersectRect() {
         return 0;
     }
 
@@ -2423,7 +2562,7 @@ namespace ApiCallerStubs {
     // @source: winapi:SetRect
     // @stub
     RVA(0x0fe520, 0xa9)
-    int winapi_0fe520_SetRect() {
+    int ApiThisStub::winapi_0fe520_SetRect() {
         return 0;
     }
 
@@ -2457,7 +2596,7 @@ namespace ApiCallerStubs {
     // @source: winapi:SetRect
     // @stub
     RVA(0x107d00, 0x591)
-    int winapi_107d00_SetRect() {
+    int ApiThisStub::winapi_107d00_SetRect() {
         return 0;
     }
 
@@ -2546,7 +2685,7 @@ namespace ApiCallerStubs {
     // @source: winapi:timeGetTime
     // @stub
     RVA(0x11b3b0, 0x338)
-    int winapi_11b3b0_timeGetTime() {
+    int ApiThisStub::winapi_11b3b0_timeGetTime(int, int, int, int, int, int) {
         return 0;
     }
 
@@ -2554,7 +2693,7 @@ namespace ApiCallerStubs {
     // @source: winapi:timeGetTime
     // @stub
     RVA(0x11b7c0, 0x304)
-    int winapi_11b7c0_timeGetTime() {
+    int __stdcall winapi_11b7c0_timeGetTime(int, int, int, int, int) {
         return 0;
     }
 
@@ -2652,7 +2791,7 @@ namespace ApiCallerStubs {
     // @source: winapi:timeGetTime
     // @stub
     RVA(0x136e20, 0xa8)
-    int winapi_136e20_timeGetTime() {
+    int ApiThisStub::winapi_136e20_timeGetTime(int) {
         return 0;
     }
 
@@ -2660,7 +2799,7 @@ namespace ApiCallerStubs {
     // @source: winapi:timeGetTime
     // @stub
     RVA(0x136fe0, 0x7b)
-    int winapi_136fe0_timeGetTime() {
+    int ApiThisStub::winapi_136fe0_timeGetTime(int, int, int, int, int, int) {
         return 0;
     }
 
@@ -2677,7 +2816,7 @@ namespace ApiCallerStubs {
     // @source: winapi:timeGetTime
     // @stub
     RVA(0x137ac0, 0xa2)
-    int winapi_137ac0_timeGetTime() {
+    int ApiThisStub::winapi_137ac0_timeGetTime(int) {
         return 0;
     }
 
@@ -2872,7 +3011,11 @@ namespace ApiCallerStubs {
     // @source: thirdparty:_AIL_allocate_sequence_handle@4;_AIL_init_sequence@12;_AIL_release_sequence_handle@4
     // @stub
     RVA(0x138c20, 0x122)
-    int thirdparty_138c20_AIL_allocate_sequence_handle_4_AIL_init_sequence_12_AIL_() {
+    int ApiThisStub::thirdparty_138c20_AIL_allocate_sequence_handle_4_AIL_init_sequence_12_AIL_(
+        int,
+        int,
+        int
+    ) {
         return 0;
     }
 
@@ -3077,7 +3220,7 @@ namespace ApiCallerStubs {
     // @source: winapi:CopyRect
     // @stub
     RVA(0x13f460, 0x2da)
-    int winapi_13f460_CopyRect() {
+    int ApiThisStub::winapi_13f460_CopyRect(int, int) {
         return 0;
     }
 
@@ -3278,7 +3421,7 @@ namespace ApiCallerStubs {
     // @source: winapi:timeGetTime
     // @stub
     RVA(0x1480a0, 0x1a7)
-    int winapi_1480a0_timeGetTime() {
+    int ApiThisStub::winapi_1480a0_timeGetTime() {
         return 0;
     }
 
@@ -3286,7 +3429,7 @@ namespace ApiCallerStubs {
     // @source: winapi:CreateDCA;DeleteDC;GetSystemPaletteEntries
     // @stub
     RVA(0x1485b0, 0x162)
-    int winapi_1485b0_CreateDCA_DeleteDC_GetSystemPaletteEntries() {
+    int ApiThisStub::winapi_1485b0_CreateDCA_DeleteDC_GetSystemPaletteEntries() {
         return 0;
     }
 
@@ -3294,7 +3437,7 @@ namespace ApiCallerStubs {
     // @source: winapi:CopyRect
     // @stub
     RVA(0x1538c0, 0x257)
-    int winapi_1538c0_CopyRect() {
+    int ApiThisStub::winapi_1538c0_CopyRect(int, int) {
         return 0;
     }
 
@@ -3302,7 +3445,7 @@ namespace ApiCallerStubs {
     // @source: winapi:CopyRect
     // @stub
     RVA(0x153b20, 0x270)
-    int winapi_153b20_CopyRect() {
+    int ApiThisStub::winapi_153b20_CopyRect(int, int) {
         return 0;
     }
 
@@ -3310,7 +3453,7 @@ namespace ApiCallerStubs {
     // @source: winapi:CopyRect
     // @stub
     RVA(0x153d90, 0x259)
-    int winapi_153d90_CopyRect() {
+    int ApiThisStub::winapi_153d90_CopyRect(int, int) {
         return 0;
     }
 
@@ -3318,7 +3461,7 @@ namespace ApiCallerStubs {
     // @source: winapi:CopyRect
     // @stub
     RVA(0x153ff0, 0x280)
-    int winapi_153ff0_CopyRect() {
+    int ApiThisStub::winapi_153ff0_CopyRect(int, int) {
         return 0;
     }
 
@@ -3326,7 +3469,7 @@ namespace ApiCallerStubs {
     // @source: winapi:CopyRect
     // @stub
     RVA(0x154270, 0x257)
-    int winapi_154270_CopyRect() {
+    int ApiThisStub::winapi_154270_CopyRect(int, int) {
         return 0;
     }
 
@@ -3334,7 +3477,7 @@ namespace ApiCallerStubs {
     // @source: winapi:CopyRect
     // @stub
     RVA(0x1544d0, 0x275)
-    int winapi_1544d0_CopyRect() {
+    int ApiThisStub::winapi_1544d0_CopyRect(int, int) {
         return 0;
     }
 
@@ -3342,7 +3485,7 @@ namespace ApiCallerStubs {
     // @source: winapi:CopyRect
     // @stub
     RVA(0x154750, 0x275)
-    int winapi_154750_CopyRect() {
+    int ApiThisStub::winapi_154750_CopyRect(int, int) {
         return 0;
     }
 
@@ -3487,7 +3630,11 @@ namespace ApiCallerStubs {
     // @source: directx-wrapper-caller:calls 0x141dc0 (DirectDrawCreate;DirectDrawEnumerateA)
     // @stub
     RVA(0x1644a0, 0x19b)
-    int directx_wrapper_caller_1644a0_DirectDrawCreate_DirectDrawEnumerateA() {
+    int ApiThisStub::directx_wrapper_caller_1644a0_DirectDrawCreate_DirectDrawEnumerateA(
+        int,
+        int,
+        int
+    ) {
         return 0;
     }
 
@@ -3495,7 +3642,7 @@ namespace ApiCallerStubs {
     // @source: winapi:SetRect
     // @stub
     RVA(0x168080, 0x1f6)
-    int winapi_168080_SetRect() {
+    int ApiThisStub::winapi_168080_SetRect(int, int, int, int, int, int, int, int) {
         return 0;
     }
 
@@ -3535,7 +3682,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetDC;ReleaseDC;SelectPalette
     // @stub
     RVA(0x174fe0, 0xfe)
-    int winapi_174fe0_GetDC_ReleaseDC_SelectPalette() {
+    int ApiThisStub::winapi_174fe0_GetDC_ReleaseDC_SelectPalette(int, int, int, int) {
         return 0;
     }
 
@@ -3543,7 +3690,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetDC;ReleaseDC;SelectPalette
     // @stub
     RVA(0x1750e0, 0x103)
-    int winapi_1750e0_GetDC_ReleaseDC_SelectPalette() {
+    int ApiThisStub::winapi_1750e0_GetDC_ReleaseDC_SelectPalette(int, int, int, int, int) {
         return 0;
     }
 
@@ -3551,7 +3698,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetDC;ReleaseDC;SelectPalette
     // @stub
     RVA(0x1751f0, 0xf9)
-    int winapi_1751f0_GetDC_ReleaseDC_SelectPalette() {
+    int ApiThisStub::winapi_1751f0_GetDC_ReleaseDC_SelectPalette(int, int, int) {
         return 0;
     }
 
@@ -3559,7 +3706,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetDC;ReleaseDC;SelectPalette
     // @stub
     RVA(0x1752f0, 0xfc)
-    int winapi_1752f0_GetDC_ReleaseDC_SelectPalette() {
+    int ApiThisStub::winapi_1752f0_GetDC_ReleaseDC_SelectPalette(int, int) {
         return 0;
     }
 
@@ -3567,7 +3714,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetDC;ReleaseDC;SelectPalette
     // @stub
     RVA(0x1753f0, 0xf4)
-    int winapi_1753f0_GetDC_ReleaseDC_SelectPalette() {
+    int ApiThisStub::winapi_1753f0_GetDC_ReleaseDC_SelectPalette(int, int) {
         return 0;
     }
 
@@ -3751,7 +3898,7 @@ namespace ApiCallerStubs {
     // @source: winapi:SendMessageA
     // @stub
     RVA(0x178470, 0x11e)
-    int winapi_178470_SendMessageA() {
+    int __stdcall winapi_178470_SendMessageA(int, int) {
         return 0;
     }
 
@@ -3759,7 +3906,7 @@ namespace ApiCallerStubs {
     // @source: winapi:IntersectRect
     // @stub
     RVA(0x179e70, 0x5ec)
-    int winapi_179e70_IntersectRect() {
+    int __stdcall winapi_179e70_IntersectRect(int, int, int, int, int, int, int, int, int) {
         return 0;
     }
 
@@ -3767,7 +3914,7 @@ namespace ApiCallerStubs {
     // @source: directx-wrapper-caller:calls 0x17c040 (DirectDrawCreate)
     // @stub
     RVA(0x17c2a0, 0x14e)
-    int directx_wrapper_caller_17c2a0_DirectDrawCreate() {
+    int __stdcall directx_wrapper_caller_17c2a0_DirectDrawCreate(int, int) {
         return 0;
     }
 
@@ -3775,7 +3922,39 @@ namespace ApiCallerStubs {
     // @source: winapi:ShowCursor
     // @stub
     RVA(0x17c3f0, 0x11f)
-    int winapi_17c3f0_ShowCursor() {
+    int ApiThisStub::winapi_17c3f0_ShowCursor(
+        int,
+        int,
+        int,
+        int,
+        int,
+        int,
+        int,
+        int,
+        int,
+        int,
+        int,
+        int,
+        int,
+        int,
+        int,
+        int,
+        int,
+        int,
+        int,
+        int,
+        int,
+        int,
+        int,
+        int,
+        int,
+        int,
+        int,
+        int,
+        int,
+        int,
+        int
+    ) {
         return 0;
     }
 
@@ -3958,7 +4137,11 @@ namespace ApiCallerStubs {
     // @source: thirdparty,winapi:_SmackWait@4 | DispatchMessageA;PeekMessageA;TranslateMessage
     // @stub
     RVA(0x17c790, 0x14a)
-    int thirdparty_winapi_17c790_SmackWait_4_DispatchMessageA_PeekMessageA_TranslateMessa() {
+    int
+    ApiThisStub::thirdparty_winapi_17c790_SmackWait_4_DispatchMessageA_PeekMessageA_TranslateMessa(
+        int,
+        int
+    ) {
         return 0;
     }
 
@@ -3966,7 +4149,7 @@ namespace ApiCallerStubs {
     // @source: thirdparty:_SmackGoto@8;_SmackWait@4
     // @stub
     RVA(0x17c8e0, 0xca)
-    int thirdparty_17c8e0_SmackGoto_8_SmackWait_4() {
+    int ApiThisStub::thirdparty_17c8e0_SmackGoto_8_SmackWait_4(int, int) {
         return 0;
     }
 
@@ -4014,7 +4197,7 @@ namespace ApiCallerStubs {
     // @source: thirdparty:_SmackDoFrame@4;_SmackNextFrame@4;_SmackToBuffer@28
     // @stub
     RVA(0x17caa0, 0x13b)
-    int thirdparty_17caa0_SmackDoFrame_4_SmackNextFrame_4_SmackToBuffer_28() {
+    int ApiThisStub::thirdparty_17caa0_SmackDoFrame_4_SmackNextFrame_4_SmackToBuffer_28() {
         return 0;
     }
 
@@ -4044,7 +4227,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetTickCount
     // @stub
     RVA(0x17e620, 0x13b)
-    int winapi_17e620_GetTickCount() {
+    int ApiThisStub::winapi_17e620_GetTickCount(int, int, int) {
         return 0;
     }
 
@@ -4052,7 +4235,7 @@ namespace ApiCallerStubs {
     // @source: winapi:timeGetTime
     // @stub
     RVA(0x17fe00, 0x12d)
-    int winapi_17fe00_timeGetTime() {
+    int ApiThisStub::winapi_17fe00_timeGetTime(int) {
         return 0;
     }
 
@@ -4060,7 +4243,7 @@ namespace ApiCallerStubs {
     // @source: winapi:PtInRect
     // @stub
     RVA(0x1804a0, 0x182)
-    int winapi_1804a0_PtInRect() {
+    int ApiThisStub::winapi_1804a0_PtInRect(int) {
         return 0;
     }
 
@@ -4125,7 +4308,7 @@ namespace ApiCallerStubs {
     // @source: winapi:DestroyWindow;GlobalFree;GlobalUnlock
     // @stub
     RVA(0x1ba819, 0x7c)
-    int winapi_1ba819_DestroyWindow_GlobalFree_GlobalUnlock() {
+    int __stdcall winapi_1ba819_DestroyWindow_GlobalFree_GlobalUnlock(int, int, int) {
         return 0;
     }
 
@@ -4149,7 +4332,8 @@ namespace ApiCallerStubs {
     // @source: winapi:CallWindowProcA;GetPropA;RemovePropA;SetWindowLongA
     // @stub
     RVA(0x1bb31b, 0x111)
-    int winapi_1bb31b_CallWindowProcA_GetPropA_RemovePropA_SetWindowLongA() {
+    int __stdcall
+    winapi_1bb31b_CallWindowProcA_GetPropA_RemovePropA_SetWindowLongA(int, int, int, int) {
         return 0;
     }
 
@@ -4157,7 +4341,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetClassInfoA;RegisterClassA
     // @stub
     RVA(0x1bbff4, 0x93)
-    int winapi_1bbff4_GetClassInfoA_RegisterClassA() {
+    int __stdcall winapi_1bbff4_GetClassInfoA_RegisterClassA(int) {
         return 0;
     }
 
@@ -4193,7 +4377,7 @@ namespace ApiCallerStubs {
     // @source: winapi:FreeLibrary
     // @stub
     RVA(0x1d4a18, 0x3c)
-    int winapi_1d4a18_FreeLibrary() {
+    int ApiThisStub::winapi_1d4a18_FreeLibrary() {
         return 0;
     }
 

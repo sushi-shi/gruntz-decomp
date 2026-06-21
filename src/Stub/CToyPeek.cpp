@@ -3,11 +3,11 @@
 
 class CToyPeek {
 public:
-    CToyPeek();
+    CToyPeek(int);
 };
 
 // @confidence: med
 // @source: rtti-vptr
 // @stub
 RVA(0x098140, 0x18e)
-CToyPeek::CToyPeek() {}
+CToyPeek::CToyPeek(int) {}

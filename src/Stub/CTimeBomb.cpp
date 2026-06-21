@@ -3,7 +3,7 @@
 
 class CTimeBomb {
 public:
-    CTimeBomb();
+    CTimeBomb(int);
     void LoadAttributes();
 };
 
@@ -11,7 +11,7 @@ public:
 // @source: rtti-vptr
 // @stub
 RVA(0x0e1b90, 0x23d)
-CTimeBomb::CTimeBomb() {}
+CTimeBomb::CTimeBomb(int) {}
 
 // @confidence: high
 // @source: decomp-xref

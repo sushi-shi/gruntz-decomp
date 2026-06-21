@@ -3,11 +3,11 @@
 
 class CInGameText {
 public:
-    CInGameText();
+    CInGameText(int);
 };
 
 // @confidence: med
 // @source: rtti-vptr
 // @stub
 RVA(0x099110, 0x215)
-CInGameText::CInGameText() {}
+CInGameText::CInGameText(int) {}

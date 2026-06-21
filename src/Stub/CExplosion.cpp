@@ -3,11 +3,11 @@
 
 class CExplosion {
 public:
-    CExplosion();
+    CExplosion(int);
 };
 
 // @confidence: med
 // @source: rtti-vptr
 // @stub
 RVA(0x0470e0, 0x16b)
-CExplosion::CExplosion() {}
+CExplosion::CExplosion(int) {}

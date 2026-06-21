@@ -4,7 +4,7 @@
 class CDroppedObjectShadow {
 public:
     void LoadAttributes();
-    CDroppedObjectShadow();
+    CDroppedObjectShadow(int);
 };
 
 // @confidence: high
@@ -17,4 +17,4 @@ void CDroppedObjectShadow::LoadAttributes() {}
 // @source: rtti-vptr
 // @stub
 RVA(0x0c7490, 0x1a6)
-CDroppedObjectShadow::CDroppedObjectShadow() {}
+CDroppedObjectShadow::CDroppedObjectShadow(int) {}
