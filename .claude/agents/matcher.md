@@ -36,8 +36,14 @@ precise; **keep them**. For the placeholder kind, prefer, in order:
 
 - **Type the member.** `void* m_28` → `MinervaMgr* m_28` (forward-declare if defined later); then
   `((MinervaMgr*)m_28)->ClearMap()` becomes `m_28->ClearMap()`.
-- **Split a padding block into named fields.** `char m_pad34[8]` covering two owned buffers →
-  `char* m_buf34; char* m_buf38;`, killing the `*(void**)((char*)this+0x34)` offset reads.
+- **Split a padding block into named fields — *unroll the whole layout*.** `char m_pad34[8]`
+  covering two owned buffers → `char* m_buf34; char* m_buf38;`, killing the
+  `*(void**)((char*)this+0x34)` offset reads. Prefer a fully-named struct over raw
+  `*(T*)((char*)this+N)` access. (Exception: a TU may *document* deliberate offset access for
+  naming-independent codegen — an explicit, justified choice, not the default.)
+- **Unroll a manual vtable dispatch into a typed vtable struct.** `(*(void(**)(T*))(*(void***)
+  ((char*)p + 0x7c) + 4))(p)` → give `p` a typed `struct Vtbl { void* s0[4]; void (*Init)(T*); }
+  *m_7c;` and write `p->m_7c->Init(p)` — same `mov eax,[p+0x7c]; call [eax+0x10]`, no cast.
 - **Model the extern's real signature.** `Eng_InputProbe(int,int,int,void*,int)`, not all-`void*`,
   so the `(void*)`/`(int)` arg casts vanish. (extern "C" keeps the `@N` decoration when the byte
   count is unchanged; C++ externs re-mangle but are reloc-masked, so the caller still matches.)
@@ -52,11 +58,18 @@ member types **don't change a function's mangling**. It also recovers the devs' 
 **Reserve casts for reinterpretations the *binary proves* are authentic:**
 - **pointer↔DWORD storage** in a real `CDWordArray` (the engine stores `CPlane*` as raw DWORDs;
   `(CPlane*)m_planes[i]` / `(DWORD)ptr` are the devs' code).
-- **vtable-pointer stamps** — `*(void**)w = &g_xVtbl` writing an external vtable the compiler
-  won't auto-emit.
 - **fn-ptr → `void*` engine params** — `RegisterType((void*)Factory, ...)` (C++ requires the cast).
 - **an int-pair overlaid as a struct view** — `(Edge*)&m_188` where `m_188`/`m_18c` are shared
   base ints used elsewhere as ints.
+
+**Vtables are the compiler's job — model the class polymorphically where you can.** Declaring the
+real `virtual` methods makes the compiler emit `??_7Class@@6B@` and auto-stamp the vptr in the ctor;
+you write nothing. The manual `*(void**)o = &g_xVtbl` stamp (referencing the RETAIL vtable by
+address, reloc-masked `DATA()` extern) is a **transitional workaround, NOT dev code** — needed only
+while the class's vtable *contents* can't be reproduced (its virtuals aren't all matched / point into
+other TUs), where letting the compiler emit a vtable would produce a divergent one. **Don't rip it
+out prematurely** (an incomplete polymorphic class emits a wrong vtable and regresses); remove it
+when the class is fully modeled and the emitted vtable matches retail.
 
 **Verify before assuming a cast is required.** A type swap can shift codegen if it changes the
 underlying class: a typed `CTypedPtrArray<CPtrArray,…>` dropped GameLevel's ctor **89.5%→72%**,
