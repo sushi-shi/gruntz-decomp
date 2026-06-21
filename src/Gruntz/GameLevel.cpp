@@ -79,6 +79,44 @@ public:
     virtual void Release(int arg);
 };
 
+// PlaneGeom - the in-memory plane the level recomputes coords on. This is the
+// same object as CPlane (WwdFile.h), viewed at the offsets RecomputePlaneCoords
+// touches; RecomputePlaneCoords is a __thiscall taking the plane as `this` (the
+// retail call site is a bare `call` with the plane already in ecx - NO pushed
+// argument), so it is modeled as a method here per the matcher __thiscall idiom.
+// Layout (a window onto CPlane):
+//   +0x08 flags  (bit2 = wrap X, bit3 = wrap Y)
+//   +0x10/+0x14  scaledX / scaledY (float scroll origin, pre-stored by LoadWwd)
+//   +0x30/+0x34  tilesWide / tilesHigh (int wrap modulus)
+//   +0x40/+0x44  out: tile-origin X / Y     +0x48/+0x4c out: tile-extent X / Y
+//   +0x70/+0x74  viewport tiles across/down +0x78/+0x7c view-anchor X / Y
+//   +0x84/+0x88  out: integer scaledX / scaledY
+struct PlaneGeom {
+    char pad_0[0x08];
+    unsigned int flags; // +0x08
+    char pad_c[0x10 - 0x0c];
+    float scaledX; // +0x10
+    float scaledY; // +0x14
+    char pad_18[0x30 - 0x18];
+    int tilesWide; // +0x30
+    int tilesHigh; // +0x34
+    char pad_38[0x40 - 0x38];
+    int originX; // +0x40
+    int originY; // +0x44
+    int extentX; // +0x48
+    int extentY; // +0x4c
+    char pad_50[0x70 - 0x50];
+    int viewW; // +0x70
+    int viewH; // +0x74
+    int anchorX; // +0x78
+    int anchorY; // +0x7c
+    char pad_80[0x84 - 0x80];
+    int intX; // +0x84
+    int intY; // +0x88
+
+    void RecomputePlaneCoords();
+};
+
 // The two-phase vftables. The inlined RemusBase ctor (in GameLevel.h) stamps the
 // base vftable; the derived CGameLevel ctor below stamps the derived one after the
 // three array members are constructed. Both stores are reloc-masked DIR32.
@@ -90,6 +128,17 @@ extern void* g_gameLevelVtbl; // derived CGameLevel vftable
 // (RemusBase::~RemusBase's vptr store - a different table from the base CTOR's).
 DATA(0x1e8cb4)
 extern void* g_remusBaseDtorVtbl;
+
+// The three CImageSet variant vftables stamped by ReadImageSet (kind 1/2/3). Their
+// contents are UNMATCHED engine code, so the factory stamps the RETAIL tables by
+// address (reloc-masked DIR32) rather than letting the compiler emit a divergent
+// vtable. (Transitional manual-stamp workaround per matcher doctrine.)
+DATA(0x1f0198)
+extern void* g_imageSet1Vtbl; // kind 1 (0x10-byte variant)
+DATA(0x1f01e0)
+extern void* g_imageSet2Vtbl; // kind 2 (0x24-byte variant)
+DATA(0x1f0228)
+extern void* g_imageSet3Vtbl; // kind 3 (0x18-byte variant)
 
 static inline void StampLevelVtbl(CGameLevel* o) {
     *(void**)o = &g_gameLevelVtbl;
@@ -267,7 +316,7 @@ int CGameLevel::LoadWwd(WwdHeader* hdr) {
             mp->m_scaledX = (float)startX * mp->m_scaleX;
             mp->m_scaledY = (float)startY * mp->m_scaleY;
         }
-        RecomputePlaneCoords(mp);
+        ((PlaneGeom*)mp)->RecomputePlaneCoords();
 
         // Re-derive the start coords from the main plane's origin for the rest.
         int ox = m_mainPlane->m_originX;
@@ -284,7 +333,7 @@ int CGameLevel::LoadWwd(WwdHeader* hdr) {
                     p->m_scaledX = (float)ox * p->m_scaleX;
                     p->m_scaledY = (float)oy * p->m_scaleY;
                 }
-                RecomputePlaneCoords(p);
+                ((PlaneGeom*)p)->RecomputePlaneCoords();
             }
             ++i2;
         }
@@ -544,4 +593,181 @@ int CGameLevel::VirtualMethodUnknown30(RemusCoords* coords) {
     m_planeCtx = *coords;
     StampParamBlock(this);
     return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CGameLevel::ReadImageSet (image-set factory) - reads one image-set descriptor
+// from `record`. The first int of the record selects one of three variants;
+// `operator new` allocates it (0x10 / 0x24 / 0x18 bytes), the matching engine
+// vftable is stamped, and the count/cursor field at +0x04 (plus +0x14 for the
+// 0x18-byte kind) is zeroed. The variant's Parse slot (+0x14) then reads the
+// record; on a 0 result the object's Release slot (+0x04) frees it and 0 is
+// returned. The three vftables are UNMATCHED engine tables, so the stamp
+// references the retail tables by address (reloc-masked DIR32). NOTE: retail
+// invokes Parse unconditionally - even when the allocation failed and the
+// pointer is null - so the deref is written without a guard, matching the bytes.
+// The three CImageSet variants the factory allocates. Each is a non-polymorphic
+// shell whose INLINE ctor manually stamps the matching external vftable (and
+// zeroes its count/cursor fields), so `new CImageSetN` lowers to exactly the
+// retail `operator new(size); if (p) { stamp }` shape - the allocation result
+// stays in eax across the field stores, then folds into the shared merge. The
+// padding pins each size: kind 1 = 0x10, kind 2 = 0x24, kind 3 = 0x18.
+struct CImageSet1 {
+    CImageSet1() {
+        *(void**)this = &g_imageSet1Vtbl;
+        m_04 = 0;
+    }
+    void* m_vtbl; // +0x00
+    int m_04;     // +0x04
+    char pad_8[0x10 - 0x08];
+};
+struct CImageSet2 {
+    CImageSet2() {
+        *(void**)this = &g_imageSet2Vtbl;
+        m_04 = 0;
+    }
+    void* m_vtbl; // +0x00
+    int m_04;     // +0x04
+    char pad_8[0x24 - 0x08];
+};
+struct CImageSet3 {
+    CImageSet3() {
+        *(void**)this = &g_imageSet3Vtbl;
+        m_04 = 0;
+        m_14 = 0;
+    }
+    void* m_vtbl; // +0x00
+    int m_04;     // +0x04
+    char pad_8[0x14 - 0x08];
+    int m_14; // +0x14
+};
+
+RVA(0x15d820, 0xa3)
+CImageSet* CGameLevel::ReadImageSet(void* record) {
+    if (record == 0) {
+        return 0;
+    }
+    CImageSet* set;
+    switch (*(int*)record) {
+    case 1:
+        set = (CImageSet*)new CImageSet1;
+        break;
+    case 2:
+        set = (CImageSet*)new CImageSet2;
+        break;
+    case 3:
+        set = (CImageSet*)new CImageSet3;
+        break;
+    default:
+        return 0;
+    }
+
+    if (set->Parse(record) != 0) {
+        return set;
+    }
+    if (set != 0) {
+        set->Release(1);
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// PlaneGeom::RecomputePlaneCoords - recompute one plane's scaled scroll origin
+// and visible-tile extents from its (already-scaled) float coords. __thiscall
+// with `this` = the plane (ecx); reloc-masks only the float 0.0 constant and the
+// CRT __ftol helper (the (int)float casts). X and Y are computed identically:
+// wrap (flags bit set) folds the coord modulo the tile count into [0, count);
+// else it clamps to [0, count-1].
+RVA(0x161c90, 0x1e4)
+void PlaneGeom::RecomputePlaneCoords() {
+    PlaneGeom* p = this;
+    unsigned int flags = p->flags;
+    int wrapX = flags & 4;
+
+    // --- X axis: wrap/clamp scaledX into the tile grid -----------------------
+    if (wrapX) {
+        if (p->scaledX < 0.0f) {
+            do {
+                p->scaledX += (float)p->tilesWide;
+            } while (p->scaledX < 0.0f);
+        }
+        if (p->scaledX >= (float)p->tilesWide) {
+            float t = p->scaledX;
+            do {
+                t -= (float)p->tilesWide;
+            } while (t >= (float)p->tilesWide);
+            p->scaledX = t;
+        }
+    } else {
+        if (p->scaledX < 0.0f) {
+            p->scaledX = 0;
+        } else if ((float)p->tilesWide <= p->scaledX) {
+            p->scaledX = (float)(p->tilesWide - 1);
+        }
+    }
+
+    // --- Y axis: identical wrap/clamp on scaledY/tilesHigh -------------------
+    int wrapY = flags & 8;
+    if (wrapY) {
+        if (p->scaledY < 0.0f) {
+            do {
+                p->scaledY += (float)p->tilesHigh;
+            } while (p->scaledY < 0.0f);
+        }
+        if (p->scaledY >= (float)p->tilesHigh) {
+            float t = p->scaledY;
+            do {
+                t -= (float)p->tilesHigh;
+            } while (t >= (float)p->tilesHigh);
+            p->scaledY = t;
+        }
+    } else {
+        if (p->scaledY < 0.0f) {
+            p->scaledY = 0;
+        } else if ((float)p->tilesHigh <= p->scaledY) {
+            p->scaledY = (float)(p->tilesHigh - 1);
+        }
+    }
+
+    // --- snap to integer + derive the tile origin ----------------------------
+    int ix = (int)p->scaledX;
+    p->intX = ix;
+    int iy = (int)p->scaledY;
+    p->intY = iy;
+
+    int ox = ix - p->anchorX;
+    p->originX = ox;
+    if (ox < 0) {
+        if (wrapX) {
+            p->originX = p->tilesWide + ox;
+        } else {
+            p->originX = 0;
+        }
+    }
+
+    int oy = iy - p->anchorY;
+    p->originY = oy;
+    if (oy < 0) {
+        if (wrapY) {
+            p->originY = p->tilesHigh + oy;
+        } else {
+            p->originY = 0;
+        }
+    }
+
+    // --- derive the far tile extents (clamped, unless wrapping) ---------------
+    int ex = p->viewW + p->originX - 1;
+    int ey = p->viewH + p->originY - 1;
+    p->extentX = ex;
+    p->extentY = ey;
+    if (ex >= p->tilesWide && wrapX == 0) {
+        int over = ex - p->tilesWide + 1;
+        p->extentX = ex - over;
+        p->originX = p->originX - over;
+    }
+    if (ey >= p->tilesHigh && wrapY == 0) {
+        int over = ey - p->tilesHigh + 1;
+        p->extentY = ey - over;
+        p->originY = p->originY - over;
+    }
 }

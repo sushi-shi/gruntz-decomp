@@ -28,22 +28,24 @@ typedef CDWordArray CLevelPtrArray;
 // ---------------------------------------------------------------------------
 // CImageSet - the per-plane image-set descriptor the level builds from the WWD
 // tile-description block. UNMATCHED engine class; modeled as an external shell.
-// The factory (CGameLevel::ReadImageSet) switches on the record kind
-// and `operator new`s one of three 0x18-byte variants; vtable +0x24 returns the
-// record stride (the cursor advance).
+// The factory (CGameLevel::ReadImageSet) switches on the record kind (1/2/3) and
+// `operator new`s one of three variants (0x10 / 0x24 / 0x18 bytes), stamping the
+// matching external vftable (g_imageSet1/2/3Vtbl). Slot +0x14 (Parse) is then
+// invoked with the record pointer; on a 0 result slot +0x04 (Release) frees the
+// object. Slot +0x24 (GetStride) returns the record byte length (cursor advance).
 // ---------------------------------------------------------------------------
 class CImageSet {
 public:
     virtual int dummy0();
-    virtual int dummy1();    // +0x04
-    virtual int dummy2();    // +0x08
-    virtual int dummy3();    // +0x0c
-    virtual int dummy4();    // +0x10
-    virtual int dummy5();    // +0x14
-    virtual int dummy6();    // +0x18
-    virtual int dummy7();    // +0x1c
-    virtual int dummy8();    // +0x20
-    virtual int GetStride(); // +0x24  record byte length (cursor advance)
+    virtual void Release(int arg);  // +0x04  release/free hook
+    virtual int dummy2();           // +0x08
+    virtual int dummy3();           // +0x0c
+    virtual int dummy4();           // +0x10
+    virtual int Parse(void* record); // +0x14  init from the WWD record
+    virtual int dummy6();           // +0x18
+    virtual int dummy7();           // +0x1c
+    virtual int dummy8();           // +0x20
+    virtual int GetStride();        // +0x24  record byte length (cursor advance)
 };
 
 // The 4-int coordinate/extent record stored at CGameLevel+0x10, passed by pointer
@@ -203,9 +205,6 @@ private:
 
     // The image-set factory (CGameLevel::ReadImageSet) - external.
     CImageSet* ReadImageSet(void* record);
-
-    // Plane coord-recompute helper (vtable-less) - external.
-    void RecomputePlaneCoords(CPlane* plane);
 
 public:
     // vptr@+0x00 (implicit, CGameLevel is polymorphic); +0x04..+0x0c are the

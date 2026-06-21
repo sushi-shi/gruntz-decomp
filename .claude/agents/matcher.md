@@ -20,13 +20,6 @@ the TU's functions in **retail-RVA order**, put `RVA(0x.., 0x..)` / `DATA(0x..)`
    `extern_harvest`/`string_xref` for the referent set.
 2. **Reconstruct the types** (class layout from offsets/sizes; each extern's *real* signature)
    **and the bodies** (C++ that lowers to the same instruction selection + scheduling).
-0. **PREFER-NEW mode (current default):** you are dispatched at NEW untried functions.
-   If a target plateaus on a **documented wall** (regalloc / EH-state / scheduling /
-   jump-table / reloc-typing — confirm: no local source diff, residual matches a
-   `docs/patterns/` `topic:wall`/`topic:scoring-artifact` entry), **STOP, report it
-   done-enough with the wall named, and move on** — do NOT loop squeezing the last few
-   percent. The orchestrator defers the second sweep (re-attacking walls) until more
-   patterns are documented and the structure is understood; your job now is breadth.
 3. **Build + diff:** `nix develop .#build --command gruntz build`; read the per-function objdiff.
 4. **Iterate** on the residual. Done = 100% exact, or the reloc-masked plateau (code bytes match;
    only differently-named symbol operands differ — confirm by `llvm-objdump -dr` base vs target).
