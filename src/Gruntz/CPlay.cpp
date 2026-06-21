@@ -538,7 +538,7 @@ int CPlay::StepInputA()
     else            { axisVal = m_164; edge = (Edge *)&m_198; halfPtr = &m_178; }
 
     // null-check the draw surface m_c->m_4->m_14->m_2c (walks through the this reg).
-    void *probeTarget = ((void **)m_c->m_4->m_14)[0xb];   // [+0x2c] = index 0xb
+    void *probeTarget = m_c->m_4->m_14->m_2c;
     if (probeTarget == 0)
         return 0;
 

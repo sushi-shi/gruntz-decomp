@@ -67,7 +67,7 @@ struct CView {
     struct M4 {                 // +0x04  the renderer-state object
         char p0[0x10];
         struct M10 { char p0[0x2c]; void *m_2c; } *m_10;  // +0x10 -> +0x2c surface
-        void *m_14;             // +0x14  the view object (passed to PushView)
+        struct M14 { char p0[0x2c]; void *m_2c; } *m_14;  // +0x14 -> +0x2c draw surface (view obj)
         void *m_18;             // +0x18  the present target
     } *m_4;
     CRenderer *m_8;             // +0x08  renderer A
