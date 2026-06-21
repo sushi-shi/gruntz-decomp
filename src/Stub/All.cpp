@@ -40,7 +40,7 @@
 #include "CGruntzCmdList.cpp"
 #include "CGruntzSoundInnerZ.cpp"
 #include "CGruntzSoundZ.cpp"
-#include "CImageDecode.cpp"
+#include "CImageBlit.cpp"
 #include "CNetMgr.cpp"
 #include "CNetSession.cpp"
 #include "CPlay.cpp"

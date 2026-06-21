@@ -13,9 +13,9 @@
 //     info headers, builds the CImage via a decode helper and reads the pixel
 //     bytes; LoadPcx/Rid/Pid slurp the whole file into an `operator new` buffer
 //     and run a per-format decode helper; LoadDefault loads a Win32 RT_BITMAP
-//     resource and decodes it. The per-format decode helpers are themselves
-//     CImage __thiscall methods, declared external/no-body so their calls
-//     reloc-mask.
+//     resource and decodes it. The per-format decode helpers are also CImage
+//     __thiscall methods, reconstructed in Image.cpp; they share the plane
+//     allocator DecodeBmpHeader and the blitter DecodeBlit (external/no-body).
 //
 //   class CFileImage - the file-backed BMP/PCX/PID loaders that actually open a
 //     file via CFileIO, slurp its bytes into an `operator new` buffer and hand
@@ -30,7 +30,8 @@
 // CImage - the image-resolution dispatcher.
 // LoadFromRez is __thiscall, ret 0xc (this + name + two opaque pass-through
 // args). It forwards (name, a2, a3) verbatim to the matching format loader.
-// The five sibling loaders are external/no-body so their calls reloc-mask.
+// The five sibling loaders and the per-format decoders are reconstructed in
+// Image.cpp; only the shared blitter DecodeBlit stays external/no-body.
 // ---------------------------------------------------------------------------
 class CImage {
 public:
@@ -44,24 +45,44 @@ public:
     int LoadPid(char* name, void* a2, void* a3);
     int LoadDefault(char* name, void* a2, void* a3);
 
-    // Per-format decode helpers (external/no-body; reloc-masked). All __thiscall
-    // on CImage, invoked by the loaders above with the decoded header fields /
-    // raw file buffer / resource pointer. The signatures mirror the loaders'
-    // push order; names are placeholders (the FUN_* labels carry no real name).
+    // Per-format decode helpers (bodies in Image.cpp). All __thiscall on CImage,
+    // invoked by the loaders above with the decoded header fields / raw file
+    // buffer / resource pointer. Names are placeholders (the FUN_* labels carry
+    // no real name). DecodeBmpHeader is the allocator/setup: it fills the
+    // BITMAPINFOHEADER at this+0, CreateDIBSections the plane (HBITMAP @+0x428,
+    // bits @+0x42c) and operator-new's the per-row offset table @+0x430. The
+    // Pcx/Rid/Pid/Res decoders call it, then blit the decoded pixels.
     int DecodeBmpHeader(void* a2, int width, int height, int bitcount, void* a3);
     int DecodePcxData(void* buf, void* a2, void* a3);
     int DecodeRidData(void* buf, void* a2, void* a3);
     int DecodePidData(void* buf, void* a2, void* a3);
     int DecodeResData(void* buf, void* a2, void* a3);
 
-    // Layout (only the fields LoadBmp touches are named; the decode helpers fill
-    // the rest and are external). Field names are placeholders; the OFFSETS are
-    // load-bearing. m_42c is the decoded pixel plane buffer the decode helper
-    // allocates; m_444 is the aligned row stride (bytes per row).
-    char m_pad0[0x42c]; // +0x000
-    void* m_42c;        // +0x42c  decoded pixel buffer (operator new'd by helper)
-    char m_pad430[0x14];// +0x430
-    int m_444;          // +0x444  aligned row stride
+    // The shared plane blitter (FUN_00575930): a __thiscall CImage method that
+    // (re)allocates/decodes via DecodeBmpHeader then copies `src` into the plane
+    // (flat rep-movs when m_448==0, else row-by-row through the +0x430 table).
+    // External/no-body so its call reloc-masks. ret 0x18 = 6 stack args.
+    int DecodeBlit(void* src, void* a2, int width, int height, int bitcount, void* a3);
+
+    // Layout. Field names are placeholders; the OFFSETS are load-bearing. The
+    // object opens with a BITMAPINFOHEADER (this+0, biSize..biClrImportant) and a
+    // 256-entry WORD color table (this+0x28). DecodeBmpHeader fills these.
+    BITMAPINFOHEADER m_bih;       // +0x000  biSize/biWidth/biHeight/... (filled by setup)
+    unsigned short m_pal[256];    // +0x28  DIB_PAL_COLORS index table
+    char m_pad228[0x428 - 0x228]; // +0x228
+    void* m_428;                  // +0x428  HBITMAP from CreateDIBSection (the DIB section)
+    void* m_42c;                  // +0x42c  decoded pixel buffer (CreateDIBSection's bits)
+    int* m_430;                   // +0x430  per-row byte-offset table (operator new'd)
+    int m_434;                    // +0x434  0
+    int m_438;                    // +0x438  source width param (bytes/row of the source)
+    int m_43c;                    // +0x43c  abs(height): number of rows
+    int m_440;                    // +0x440  bit count
+    int m_444;                    // +0x444  aligned destination row stride (bytes per row)
+    int m_448;                    // +0x448  destination padding = m_444 - m_438
+    char m_pad44c[0x4];           // +0x44c
+    int m_450;                    // +0x450  flag (1 = transparent/RLE plane)
+    int m_454;                    // +0x454  0
+    int m_458;                    // +0x458  0
 };
 
 // ---------------------------------------------------------------------------
