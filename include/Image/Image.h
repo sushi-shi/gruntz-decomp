@@ -57,7 +57,7 @@ public:
     void *DecodeBmp(char *name, void *buf, unsigned int size);
     void *DecodePcx(char *name, void *buf, unsigned int size);
     void *DecodePid(char *name, void *buf, unsigned int size, void *a3);
-    int   DecodePcxData(void *name, int buf, int len, int a3, int a4);  // external
+    int   DecodePcxData(char *name, void *buf, unsigned int len, void *a3, void *a4);  // external
 };
 
 #endif // SRC_IMAGE_IMAGE_H
