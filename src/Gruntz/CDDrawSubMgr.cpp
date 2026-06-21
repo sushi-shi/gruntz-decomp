@@ -32,7 +32,7 @@ class CDDrawSubMgr : public CDDrawSubMgrBase {
 public:
     CDDrawSubMgr(CDDrawSurfaceMgr *pHarryPotter,
                             int unknown2, int unknown3);
-    virtual ~CDDrawSubMgr();
+    virtual ~CDDrawSubMgr() OVERRIDE;
     virtual void VirtualMethodUnknown14();
     virtual int  VirtualMethodUnknown18();
     virtual void VirtualMethodUnknown1C();  // cleanup — defined in CDDrawSubMgrDraco.cpp

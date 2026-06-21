@@ -13,6 +13,7 @@
 //   ctor/dtor their /GX C++ EH frame.
 #ifndef GRUNTZ_GRUNTZ_GRUNTZMGR_H
 #define GRUNTZ_GRUNTZ_GRUNTZMGR_H
+#include <rva.h>  // OVERRIDE macro (override under clang, no-op under MSVC 5.0)
 #include <Wap32/Wap32.h>
 #include <Gruntz/CString.h>
 #include <Gruntz/GameLevel.h>   // CByteArray
@@ -60,10 +61,10 @@ struct IDirectPlayLobbyZ {
 class CGruntzMgr : public WAP32::CGameMgr {
 public:
     CGruntzMgr();
-    virtual ~CGruntzMgr();                       // vtbl slot 0 (own vftable 0x5e9b64)
+    virtual ~CGruntzMgr() OVERRIDE;                       // vtbl slot 0 (own vftable 0x5e9b64)
 
     // Manager-owned methods reconstructed in GruntzMgr.cpp.
-    void UnknownClose();                         // @0x0855e0 (member teardown; stubbed)
+    void UnknownClose() OVERRIDE;                         // @0x0855e0 (member teardown; stubbed)
     void ReportError(WPARAM wParam, LPARAM lParam); // @0x08dc60  -> m_8->vtbl[0x1c]
     char GetGruntzDriveLetter();                 // @0x08fa70  (memoised CD letter)
     int  InitializeLobbyConnectionSettings();    // @0x08eca0 (DirectPlay lobby connect)

@@ -13,7 +13,7 @@
 class CSBI_RectOnly : public CStatusBarItem {
 public:
     CSBI_RectOnly();
-    virtual int SbiVfunc0();
+    virtual int SbiVfunc0() OVERRIDE;
 
     // Engine-label backlog stubs.
     void Stub_0ffde0();

@@ -12,6 +12,7 @@
 // modeled here as external shells so their calls reloc-mask.
 #ifndef SRC_GRUNTZ_GAMELEVEL_H
 #define SRC_GRUNTZ_GAMELEVEL_H
+#include <rva.h>  // OVERRIDE macro (override under clang, no-op under MSVC 5.0)
 
 #include <Wwd/WwdFile.h>   // CPlane, WwdHeader, operator new, uncompress
 
@@ -118,18 +119,18 @@ public:
     // Several slots carry signatures the merged CDDrawLevelData methods dispatch
     // through (Vfunc1C @+0x1c fail/reset hook; Vfunc38/3C/40 the load variants);
     // the rest are external engine virtuals never called from this TU.
-    virtual void v00(); virtual void v04(); virtual void v08(); virtual void v0c();
-    virtual void v10(); virtual void v14(); virtual void v18();
-    virtual void Vfunc1C();             // +0x1c  fail/reset hook
-    virtual void v20(); virtual void v24(); virtual void v28(); virtual void v2c();
-    virtual void v30(); virtual void v34();
+    virtual void v00() OVERRIDE; virtual void v04() OVERRIDE; virtual void v08() OVERRIDE; virtual void v0c() OVERRIDE;
+    virtual void v10() OVERRIDE; virtual void v14() OVERRIDE; virtual void v18() OVERRIDE;
+    virtual void Vfunc1C() OVERRIDE;             // +0x1c  fail/reset hook
+    virtual void v20() OVERRIDE; virtual void v24() OVERRIDE; virtual void v28() OVERRIDE; virtual void v2c() OVERRIDE;
+    virtual void v30() OVERRIDE; virtual void v34() OVERRIDE;
     // slot 0x38 (index 14) is LoadWwd itself; we keep it non-virtual below and let
     // these dispatched-variant virtuals carry the slot numbering for Reset's offset.
-    virtual int  Vfunc38(int arg1);     // +0x38  variant for VirtualMethodUnknown24
-    virtual int  Vfunc3C(int arg1);     // +0x3c  variant for VirtualMethodUnknown28
-    virtual int  Vfunc40(int arg1);     // +0x40  variant for VirtualMethodUnknown2C
+    virtual int  Vfunc38(int arg1) OVERRIDE;     // +0x38  variant for VirtualMethodUnknown24
+    virtual int  Vfunc3C(int arg1) OVERRIDE;     // +0x3c  variant for VirtualMethodUnknown28
+    virtual int  Vfunc40(int arg1) OVERRIDE;     // +0x40  variant for VirtualMethodUnknown2C
     // Pre-load reset (vtable slot 0x44 / index 17) - external engine virtual.
-    virtual void Reset();
+    virtual void Reset() OVERRIDE;
 
     // Constructor: three args stored at +0x4/+0x8/+0xc; inits the array members,
     // the +0x10 sentinel and the +0xb0.. default-parameter block. (RemusCoords/

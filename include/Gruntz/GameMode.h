@@ -34,6 +34,7 @@
 // the ctor and dtor.
 #ifndef SRC_GRUNTZ_GAMEMODE_H
 #define SRC_GRUNTZ_GAMEMODE_H
+#include <rva.h>  // OVERRIDE macro (override under clang, no-op under MSVC 5.0)
 
 // The WAP32 base cleanup CState's dtor chains to (reached via the
 // incremental-link thunk). It is a __thiscall (this in ecx, callee-
@@ -173,8 +174,8 @@ extern "C" char g_60ce74[];              // "MONOLITH" (FindSound name)
 // then the UI step + the on-screen version-string RECT draw.
 class CMenuState : public CState {
 public:
-    virtual int Update();           // return 5;  (slot 4)
-    virtual int Render();           // the per-frame menu draw (this TU)
+    virtual int Update() OVERRIDE;           // return 5;  (slot 4)
+    virtual int Render() OVERRIDE;           // the per-frame menu draw (this TU)
 
     // CMenuState's own methods (the rel32 thunks Render dispatches to with
     // `mov ecx,this`). External no-body -> reloc-masked.
@@ -190,9 +191,9 @@ public:
 // latched one-shot FX.
 class CCreditsState : public CState {
 public:
-    virtual int Update();           // return 8;  (slot 4)
-    virtual int Render();           // the per-frame credits draw (this TU)
-    virtual int InputVirtual();     // slot 8 (+0x20) - polled each frame
+    virtual int Update() OVERRIDE;           // return 8;  (slot 4)
+    virtual int Render() OVERRIDE;           // the per-frame credits draw (this TU)
+    virtual int InputVirtual() OVERRIDE;     // slot 8 (+0x20) - polled each frame
                                     // (slots 6,7 inherited from CState)
 
     // CCreditsState's own sub-steps (the rel32 thunks Render dispatches to with
@@ -215,7 +216,7 @@ public:
 
 class CBootyState : public CState {
 public:
-    virtual int Update();           // return 0xa; (slot 4)
+    virtual int Update() OVERRIDE;           // return 0xa; (slot 4)
 
     // Engine-label backlog stub (non-virtual placeholder; vtable-neutral).
     void vfunc_1();                 // stub

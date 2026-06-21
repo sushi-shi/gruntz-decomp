@@ -10,7 +10,7 @@
 class CGruntzWnd : public CGameWnd {
 public:
     CGruntzWnd();
-    virtual ~CGruntzWnd();
+    virtual ~CGruntzWnd() OVERRIDE;
     virtual int Wap32GameWndVfunc0();
 
     // Engine-label backlog stubs.

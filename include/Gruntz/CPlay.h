@@ -18,6 +18,7 @@
 // +0x7c BeginFrameClear, +0x9c/+0xa0 the per-frame "slow/fast" virtuals).
 #ifndef SRC_GRUNTZ_CPLAY_H
 #define SRC_GRUNTZ_CPLAY_H
+#include <rva.h>  // OVERRIDE macro (override under clang, no-op under MSVC 5.0)
 
 // <Mfc.h> brings <windows.h> (RECT, SetRect / CopyRect / wsprintfA) and the central
 // WINMM timeGetTime decl (timeGetTime is not in <windows.h> itself).
@@ -115,8 +116,8 @@ struct Edge { int m_0; int m_4; };
 // ===========================================================================
 class CPlay : public CState {
 public:
-    virtual int  Update();          // return 3;  (slot 4)
-    virtual int  Render();          // THE per-frame heart (this TU)
+    virtual int  Update() OVERRIDE;          // return 3;  (slot 4)
+    virtual int  Render() OVERRIDE;          // THE per-frame heart (this TU)
 
     // typed views of the inherited CState owner back-ptr (+0x4):
     CWorld *m_4w() { return (CWorld *)m_4; }
