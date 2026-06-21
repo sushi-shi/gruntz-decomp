@@ -20,6 +20,9 @@
 
 #include "ImplementedLabels.cpp"
 #include "Backlog.cpp"
+// Generated survey of the smallest unnamed real bodies (gen_unmatched). See its
+// header: these are the FUN_<va> bodies the named backlog's THUNKS point at.
+#include "Unmatched.cpp"
 #include "ApiCallers.cpp"
 #include "CActionArea.cpp"
 #include "CAmbientPosSound.cpp"
