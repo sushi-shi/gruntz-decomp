@@ -20,6 +20,7 @@
 
 #include "ImplementedLabels.cpp"
 #include "Backlog.cpp"
+#include "ApiCallers.cpp"
 #include "CActionArea.cpp"
 #include "CAmbientPosSound.cpp"
 #include "CAmbientSound.cpp"
