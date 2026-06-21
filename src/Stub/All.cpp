@@ -139,7 +139,6 @@
 #include "DirectInputMgr2.cpp"
 #include "DirectSoundMgr.cpp"
 #include "RezSync.cpp"
-#include "UnknownClassArrays.cpp"
 #include "UnknownClassInCGruntzMgr.cpp"
 #include "UnknownVoldemort.cpp"
 #include "Wwd/WwdFile.cpp"

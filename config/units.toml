@@ -259,6 +259,11 @@ source = "src/Gruntz/BattlezMapConfig.cpp"
 flags = "base"
 
 [[unit]]
+unit = "unknownclassarrays"
+source = "src/Gruntz/UnknownClassArrays.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "videoconfig"
 source = "src/Gruntz/VideoConfig.cpp"
 flags = "base"
