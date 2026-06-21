@@ -28,8 +28,11 @@ the TU's functions in **retail-RVA order**, put `RVA(0x.., 0x..)` / `DATA(0x..)`
 
 ### 1. Almost never reach for a C-style cast — model the real type instead
 
-A cast in reconstructed source is **almost always a placeholder type that should be named/typed
-properly**. Prefer, in order:
+This targets **placeholder-type and reinterpret casts** (`void*`, raw-offset, improper type) —
+those are almost always a type that should be named/typed properly. It does **not** mean strip
+explicit **numeric-conversion** casts: `(float)anInt` in float math, a deliberate `(int)`/narrowing
+— those are not placeholders, they document the int↔float/width conversion and keep the code
+precise; **keep them**. For the placeholder kind, prefer, in order:
 
 - **Type the member.** `void* m_28` → `MinervaMgr* m_28` (forward-declare if defined later); then
   `((MinervaMgr*)m_28)->ClearMap()` becomes `m_28->ClearMap()`.
