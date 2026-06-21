@@ -84,7 +84,9 @@ struct CGameObject {
     char m_pad00[0x04];
     int m_04; // +0x04
     int m_08; // +0x08
-    char m_pad0c[0x40 - 0x0c];
+    char m_pad0c[0x38 - 0x0c];
+    int m_38; // +0x38
+    char m_pad3c[0x40 - 0x3c];
     int m_40; // +0x40
     char m_pad44[0x5c - 0x44];
     int m_5c; // +0x5c

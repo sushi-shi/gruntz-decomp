@@ -142,6 +142,25 @@ public:
     int m_40; // +0x40
 };
 
+class CParticlez : public CUserLogic {
+public:
+    CParticlez(CGameObject* obj); // 0x046ad0
+    virtual ~CParticlez() OVERRIDE;
+};
+
+class CAniCycle : public CUserLogic {
+public:
+    CAniCycle(CGameObject* obj); // 0x0aad20
+    virtual ~CAniCycle() OVERRIDE;
+    int m_40; // +0x40
+};
+
+class CSingleAnimation : public CUserLogic {
+public:
+    CSingleAnimation(CGameObject* obj); // 0x0ae7f0
+    virtual ~CSingleAnimation() OVERRIDE;
+};
+
 // CPathHazard (0x13170, no-arg): same folded base schedule, then zeroes its own
 // eight pointer fields at +0x108..+0x12c.
 class CPathHazard : public CUserLogic {
@@ -267,6 +286,42 @@ CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj) : CUserLogic(obj) {
     } else {
         m_38->m_08 |= 0x10000;
     }
+}
+
+// --- CParticlez (0x046ad0), vptr 0x5e7614 ---
+CParticlez::~CParticlez() {}
+RVA(0x046ad0, 0x15e)
+CParticlez::CParticlez(CGameObject* obj) : CUserLogic(obj) {
+    m_30 = m_14->m_1c;
+    m_14->m_1c = g_buteTree.Find("A");
+    m_38->m_08 |= 0x2000002;
+    if (m_10->m_74 != 0xcf84f) {
+        m_10->m_74 = 0xcf84f;
+        m_10->m_08 |= 0x20000;
+    }
+    m_10->m_38 = 0;
+}
+
+// --- CAniCycle (0x0aad20), vptr 0x5e86a4 ---
+CAniCycle::~CAniCycle() {}
+RVA(0x0aad20, 0x15c)
+CAniCycle::CAniCycle(CGameObject* obj) : CUserLogic(obj) {
+    m_38->m_08 |= 1;
+    if (m_38->m_1b4 == 0) {
+        m_40 = m_38->m_1b4;
+        m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    }
+    m_30 = m_14->m_1c;
+    m_14->m_1c = g_buteTree.Find("A");
+}
+
+// --- CSingleAnimation (0x0ae7f0), vptr 0x5e745c ---
+CSingleAnimation::~CSingleAnimation() {}
+RVA(0x0ae7f0, 0x13d)
+CSingleAnimation::CSingleAnimation(CGameObject* obj) : CUserLogic(obj) {
+    m_38->m_08 |= 2;
+    m_30 = m_14->m_1c;
+    m_14->m_1c = g_buteTree.Find("A");
 }
 
 // --- CWarpStonePad (0x10d650), vptr 0x5e71ac ---
