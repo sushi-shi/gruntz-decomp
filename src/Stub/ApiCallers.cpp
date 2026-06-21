@@ -1726,13 +1726,7 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    // @confidence: low
-    // @source: winapi:CreateDIBSection
-    // @stub
-    RVA(0x1757c0, 0x16f)
-    int winapi_1757c0_CreateDIBSection() {
-        return 0;
-    }
+    // 0x1757c0 (CreateDIBSection) removed: already matched as CImage::DecodeBmpHeader in src/Image/Image.cpp.
 
     // @confidence: low
     // @source: winapi:DeleteObject
