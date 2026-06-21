@@ -223,6 +223,10 @@ def header_units(globs):
     # -I include lets a comprehension header reach the repo's macro-only headers
     # (e.g. <rva.h> for OVERRIDE) under the plain driver, without pulling MFC in -
     # comprehension headers otherwise stay self-contained placeholders.
+    # TODO: remove this -I once every stub is matched and src/Stub/types/ is empty
+    # (the comprehension layer shrinks toward empty - see src/Stub/types/README.md);
+    # at that point nothing here needs <rva.h> and the plain driver can go back to
+    # bare MS_FLAGS.
     flags = [*MS_FLAGS, "-I", str(REPO / "include")]
     out = []
     for i, h in enumerate(headers):
