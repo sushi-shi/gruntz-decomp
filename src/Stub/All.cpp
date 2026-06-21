@@ -21,6 +21,9 @@
 #include "ImplementedLabels.cpp"
 #include "Backlog.cpp"
 #include "ApiCallers.cpp"
+// CButeTree defines CButeTree + g_buteTree, shared by the game-object ctors
+// below (CAniCycle/CParticlez/CSingleAnimation/the sprite trio) -> include early.
+#include "CButeTree.cpp"
 #include "CActionArea.cpp"
 #include "CAmbientPosSound.cpp"
 #include "CAmbientSound.cpp"
@@ -30,7 +33,6 @@
 #include "CBehindCandyAni.cpp"
 #include "CBoomerang.cpp"
 #include "CBrickz.cpp"
-#include "CButeTree.cpp"
 // reloc-correlation extern stubs (split from GenExterns):
 #include "CButeMgrHelper.cpp"
 #include "CButeNodeBase.cpp"

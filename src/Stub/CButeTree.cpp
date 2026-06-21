@@ -17,6 +17,12 @@ public:
     void Insert(const char* key, void* pNode);
 };
 
+// The global bute store instance the game-object ctors query for their "A" node
+// (0x6bf620 -> DATA rva 0x2bf620). Shared across the Stub TU; declared here so
+// every game-object ctor's `g_buteTree.Find("A")` binds the one symbol.
+DATA(0x2bf620)
+extern CButeTree g_buteTree;
+
 // @confidence: high
 // @source: reloc-correlation (10 callers, unanimous)
 // @stub

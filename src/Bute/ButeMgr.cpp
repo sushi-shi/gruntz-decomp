@@ -64,6 +64,27 @@ static const char s_fmtNotFound[] = "ButeMgr: Symbol not found - [%s]";
 static const float s_floatZero = 0.0f;
 static const double s_doubleZero = 0.0;
 
+// CRT varargs formatter (engine NAFXCW vsprintf, reloc-masked external/no-body).
+extern "C" int vsprintf(char* buf, const char* fmt, char* va);
+
+// ---------------------------------------------------------------------------
+// CButeMgr::ReportError
+// The variadic error reporter the getters/parser funnel every failure through.
+// Formats `fmt` + the varargs into the m_errStr scratch buffer (CString
+// GetBuffer/vsprintf/ReleaseBuffer), then - if an error callback is registered -
+// fires it with the formatted message. A variadic member compiles __cdecl with
+// `this` as the hidden first stack arg (the retail ABI: callers push `this`
+// last).
+RVA(0x1706c0, 0x4b)
+int CButeMgr::ReportError(const char* fmt, ...) {
+    vsprintf(m_errStr.GetBuffer(0x100), fmt, (char*)(&fmt + 1));
+    m_errStr.ReleaseBuffer(-1);
+    if (m_errCallback != 0) {
+        m_errCallback(m_errStr.GetBuffer(0));
+    }
+    return 0;
+}
+
 // ---------------------------------------------------------------------------
 // CButeMgr::ScanToken
 // Parse() (re)lexes one token, then ScanToken verifies it is the expected type
@@ -76,7 +97,7 @@ bool CButeMgr::ScanToken(int expectType) {
     }
 
     if (m_tokType != expectType) {
-        CButeMgr_ReportError(this, s_fmtFormatError, m_lineNo);
+        ReportError(s_fmtFormatError, m_lineNo);
         return false;
     }
     return true;
@@ -96,7 +117,7 @@ int CButeMgr::GetIntDef(char* tag, char* key, int def) {
             if (rec->type == 0) {
                 return *(int*)rec->pValue;
             }
-            CButeMgr_ReportError(this, s_fmtTypeMismatch, tag, key);
+            ReportError(s_fmtTypeMismatch, tag, key);
         }
     }
     return def;
@@ -115,13 +136,13 @@ int CButeMgr::GetInt(char* tag, char* key) {
             if (rec->type == 0) {
                 return *(int*)rec->pValue;
             }
-            CButeMgr_ReportError(this, s_fmtTypeMismatch, tag, key);
+            ReportError(s_fmtTypeMismatch, tag, key);
             return (int)0x80000000;
         }
-        CButeMgr_ReportError(this, s_fmtNotFound, tag, key);
+        ReportError(s_fmtNotFound, tag, key);
         return (int)0x80000000;
     }
-    CButeMgr_ReportError(this, s_fmtInvalidTag, tag);
+    ReportError(s_fmtInvalidTag, tag);
     return (int)0x80000000;
 }
 
@@ -139,7 +160,7 @@ DWORD CButeMgr::GetDwordDef(char* tag, char* key, DWORD def) {
                 case 1:
                     return *(DWORD*)rec->pValue;
             }
-            CButeMgr_ReportError(this, s_fmtTypeMismatch, tag, key);
+            ReportError(s_fmtTypeMismatch, tag, key);
         }
     }
     return def;
@@ -158,13 +179,13 @@ DWORD CButeMgr::GetDword(char* tag, char* key) {
                 case 1:
                     return *(DWORD*)rec->pValue;
             }
-            CButeMgr_ReportError(this, s_fmtTypeMismatch, tag, key);
+            ReportError(s_fmtTypeMismatch, tag, key);
             return 0;
         }
-        CButeMgr_ReportError(this, s_fmtNotFound, tag, key);
+        ReportError(s_fmtNotFound, tag, key);
         return 0;
     }
-    CButeMgr_ReportError(this, s_fmtInvalidTag, tag);
+    ReportError(s_fmtInvalidTag, tag);
     return 0;
 }
 
@@ -185,13 +206,13 @@ float CButeMgr::GetFloat(char* tag, char* key) {
                 case 3:
                     return *(float*)rec->pValue;
             }
-            CButeMgr_ReportError(this, s_fmtTypeMismatch, tag, key);
+            ReportError(s_fmtTypeMismatch, tag, key);
             return s_floatZero;
         }
-        CButeMgr_ReportError(this, s_fmtNotFound, tag, key);
+        ReportError(s_fmtNotFound, tag, key);
         return s_floatZero;
     }
-    CButeMgr_ReportError(this, s_fmtInvalidTag, tag);
+    ReportError(s_fmtInvalidTag, tag);
     return s_floatZero;
 }
 
@@ -212,13 +233,13 @@ double CButeMgr::GetDouble(char* tag, char* key) {
                 case 2:
                     return *(double*)rec->pValue;
             }
-            CButeMgr_ReportError(this, s_fmtTypeMismatch, tag, key);
+            ReportError(s_fmtTypeMismatch, tag, key);
             return s_doubleZero;
         }
-        CButeMgr_ReportError(this, s_fmtNotFound, tag, key);
+        ReportError(s_fmtNotFound, tag, key);
         return s_doubleZero;
     }
-    CButeMgr_ReportError(this, s_fmtInvalidTag, tag);
+    ReportError(s_fmtInvalidTag, tag);
     return s_doubleZero;
 }
 
@@ -235,7 +256,7 @@ CString* CButeMgr::GetStringDef(char* tag, char* key, CString* def) {
             if (rec->type == 4) {
                 return (CString*)rec->pValue;
             }
-            CButeMgr_ReportError(this, s_fmtTypeMismatch, tag, key);
+            ReportError(s_fmtTypeMismatch, tag, key);
         }
     }
     return def;
@@ -258,13 +279,13 @@ char* CButeMgr::GetString(char* tag, char* key) {
             if (rec->type == 4) {
                 return (char*)rec->pValue;
             }
-            CButeMgr_ReportError(this, s_fmtTypeMismatch, tag, key);
+            ReportError(s_fmtTypeMismatch, tag, key);
             return (char*)&s_empty;
         }
-        CButeMgr_ReportError(this, s_fmtNotFound, tag, key);
+        ReportError(s_fmtNotFound, tag, key);
         return (char*)&s_empty;
     }
-    CButeMgr_ReportError(this, s_fmtInvalidTag, tag);
+    ReportError(s_fmtInvalidTag, tag);
     return (char*)&s_empty;
 }
 
@@ -294,7 +315,7 @@ bool CButeMgr::ParseTagLine() {
     if (!m_10d) {
         CButeTree* t = Tree();
         if (t->Find(tok)) {
-            CButeMgr_ReportError(this, s_fmtDupTag, tok);
+            ReportError(s_fmtDupTag, tok);
             return false;
         }
         CButeNode* node = new CButeNode(&g_nodeDescriptor, 2);
@@ -322,7 +343,7 @@ bool CButeMgr::Parse() {
         short cls = PeekClass(kind, m_curChar);
         switch (cls) {
             case 0: // bad symbol
-                CButeMgr_ReportError(this, s_fmtBadSymbol, m_lineNo);
+                ReportError(s_fmtBadSymbol, m_lineNo);
                 return false;
 
             case 1: // value char: scan, store to token buffer, echo, advance, loop
@@ -409,13 +430,13 @@ CButeRef5* CButeMgr::GetRef5(char* tag, char* key) {
             if (rec->type == 5) {
                 return (CButeRef5*)rec->pValue;
             }
-            CButeMgr_ReportError(this, s_fmtTypeMismatch, tag, key);
+            ReportError(s_fmtTypeMismatch, tag, key);
             return &s_default;
         }
-        CButeMgr_ReportError(this, s_fmtNotFound, tag, key);
+        ReportError(s_fmtNotFound, tag, key);
         return &s_default;
     }
-    CButeMgr_ReportError(this, s_fmtInvalidTag, tag);
+    ReportError(s_fmtInvalidTag, tag);
     return &s_default;
 }
 
@@ -430,13 +451,13 @@ CButeRef6* CButeMgr::GetRef6(char* tag, char* key) {
             if (rec->type == 6) {
                 return (CButeRef6*)rec->pValue;
             }
-            CButeMgr_ReportError(this, s_fmtTypeMismatch, tag, key);
+            ReportError(s_fmtTypeMismatch, tag, key);
             return &s_default;
         }
-        CButeMgr_ReportError(this, s_fmtNotFound, tag, key);
+        ReportError(s_fmtNotFound, tag, key);
         return &s_default;
     }
-    CButeMgr_ReportError(this, s_fmtInvalidTag, tag);
+    ReportError(s_fmtInvalidTag, tag);
     return &s_default;
 }
 
@@ -451,13 +472,13 @@ CButeRef7* CButeMgr::GetRef7(char* tag, char* key) {
             if (rec->type == 7) {
                 return (CButeRef7*)rec->pValue;
             }
-            CButeMgr_ReportError(this, s_fmtTypeMismatch, tag, key);
+            ReportError(s_fmtTypeMismatch, tag, key);
             return &s_default;
         }
-        CButeMgr_ReportError(this, s_fmtNotFound, tag, key);
+        ReportError(s_fmtNotFound, tag, key);
         return &s_default;
     }
-    CButeMgr_ReportError(this, s_fmtInvalidTag, tag);
+    ReportError(s_fmtInvalidTag, tag);
     return &s_default;
 }
 
@@ -472,13 +493,13 @@ CButeRef8* CButeMgr::GetRef8(char* tag, char* key) {
             if (rec->type == 8) {
                 return (CButeRef8*)rec->pValue;
             }
-            CButeMgr_ReportError(this, s_fmtTypeMismatch, tag, key);
+            ReportError(s_fmtTypeMismatch, tag, key);
             return &s_default;
         }
-        CButeMgr_ReportError(this, s_fmtNotFound, tag, key);
+        ReportError(s_fmtNotFound, tag, key);
         return &s_default;
     }
-    CButeMgr_ReportError(this, s_fmtInvalidTag, tag);
+    ReportError(s_fmtInvalidTag, tag);
     return &s_default;
 }
 

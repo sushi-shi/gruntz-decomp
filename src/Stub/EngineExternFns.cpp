@@ -93,13 +93,8 @@ extern "C" {
     }
 }
 
-// @confidence: high
-// @source: reloc-correlation (11 callers)
-// @stub
-RVA(0x1706c0, 0x4b)
-int CButeMgr_ReportError(class CButeMgr*, char const*, ...) {
-    return 0;
-}
+// CButeMgr_ReportError (0x1706c0) graduated to src/Bute/ButeMgr.cpp as the real
+// variadic member CButeMgr::ReportError.
 
 // @confidence: med
 // @source: reloc-correlation (1 caller)
