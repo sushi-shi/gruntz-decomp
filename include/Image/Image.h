@@ -4,12 +4,18 @@
 // byte-match their leaf methods. Field names are placeholders (m_<hexoffset>);
 // only the OFFSETS + code bytes are load-bearing (campaign doctrine).
 //
-//   class CImage  - the extension DISPATCHER class. Its LoadFromRez(name,a2,a3)
-//     does `ext = strrchr(name,'.')` then a stricmp ladder on
-//     ".BMP"/".PCX"/".RID"/".PID" and hands off (all args forwarded) to one of
-//     five sibling __thiscall loader methods (LoadBmp/LoadPcx/LoadRid/LoadPid/
-//     LoadDefault), each `ret 0xc`. The five siblings are declared external
-//     (no body) so their `call rel32` displacements are reloc-masked in objdiff.
+//   class CImage  - the extension DISPATCHER class plus its five per-extension
+//     loaders. LoadFromRez(name,a2,a3) does `ext = strrchr(name,'.')` then a
+//     stricmp ladder on ".BMP"/".PCX"/".RID"/".PID" and hands off (all args
+//     forwarded) to one of five sibling __thiscall loaders (LoadBmp/LoadPcx/
+//     LoadRid/LoadPid/LoadDefault), each `ret 0xc`. The loaders are the real
+//     file/resource consumers: LoadBmp opens a CFileIO, parses the BMP file +
+//     info headers, builds the CImage via a decode helper and reads the pixel
+//     bytes; LoadPcx/Rid/Pid slurp the whole file into an `operator new` buffer
+//     and run a per-format decode helper; LoadDefault loads a Win32 RT_BITMAP
+//     resource and decodes it. The per-format decode helpers are themselves
+//     CImage __thiscall methods, declared external/no-body so their calls
+//     reloc-mask.
 //
 //   class CFileImage - the file-backed BMP/PCX/PID loaders that actually open a
 //     file via CFileIO, slurp its bytes into an `operator new` buffer and hand
@@ -30,13 +36,32 @@ class CImage {
 public:
     int LoadFromRez(char* name, void* a2, void* a3);
 
-    // The five per-extension loaders (external; bodies live elsewhere). All
-    // __thiscall, ret 0xc, taking the same (name, a2, a3) triple.
+    // The five per-extension loaders (bodies in Image.cpp). All __thiscall,
+    // ret 0xc, taking the same (name, a2, a3) triple.
     int LoadBmp(char* name, void* a2, void* a3);
     int LoadPcx(char* name, void* a2, void* a3);
     int LoadRid(char* name, void* a2, void* a3);
     int LoadPid(char* name, void* a2, void* a3);
     int LoadDefault(char* name, void* a2, void* a3);
+
+    // Per-format decode helpers (external/no-body; reloc-masked). All __thiscall
+    // on CImage, invoked by the loaders above with the decoded header fields /
+    // raw file buffer / resource pointer. The signatures mirror the loaders'
+    // push order; names are placeholders (the FUN_* labels carry no real name).
+    int DecodeBmpHeader(void* a2, int width, int height, int bitcount, void* a3);
+    int DecodePcxData(void* buf, void* a2, void* a3);
+    int DecodeRidData(void* buf, void* a2, void* a3);
+    int DecodePidData(void* buf, void* a2, void* a3);
+    int DecodeResData(void* buf, void* a2, void* a3);
+
+    // Layout (only the fields LoadBmp touches are named; the decode helpers fill
+    // the rest and are external). Field names are placeholders; the OFFSETS are
+    // load-bearing. m_42c is the decoded pixel plane buffer the decode helper
+    // allocates; m_444 is the aligned row stride (bytes per row).
+    char m_pad0[0x42c]; // +0x000
+    void* m_42c;        // +0x42c  decoded pixel buffer (operator new'd by helper)
+    char m_pad430[0x14];// +0x430
+    int m_444;          // +0x444  aligned row stride
 };
 
 // ---------------------------------------------------------------------------

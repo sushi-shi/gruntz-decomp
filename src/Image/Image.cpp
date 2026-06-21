@@ -53,6 +53,151 @@ int CImage::LoadFromRez(char* name, void* a2, void* a3) {
     return LoadDefault(name, a2, a3);
 }
 
+// The resource module the .DEFAULT loader pulls RT_BITMAP resources from
+// (reloc-masked .data global; 0 until the engine records the instance handle).
+DATA(0x2bf6e0)
+extern "C" HINSTANCE g_hResModule; // 0x6bf6e0
+
+// ---------------------------------------------------------------------------
+// CImage::LoadBmp
+// The .BMP loader: open the file, read the 14-byte BITMAPFILEHEADER and the
+// 40-byte BITMAPINFOHEADER, hand the parsed (width, height, bitcount, a2, a3)
+// to the decode helper that allocates the CImage's pixel plane, then Seek to
+// bfOffBits and Read exactly (bitcount/8)*stride*height pixel bytes into the
+// plane. Returns 1 on a full read, 0 on any I/O / decode failure. The CFileIO
+// stack object's dtor runs on every exit -> the C++ EH frame.
+RVA(0x175e40, 0x1b3)
+int CImage::LoadBmp(char* name, void* a2, void* a3) {
+    CFileIO file;
+    BITMAPFILEHEADER fh;
+    BITMAPINFOHEADER ih;
+
+    if (!file.Open(name, 0, 0)) {
+        return 0;
+    }
+    if (file.Read(&fh, sizeof(fh)) == 0) {
+        return 0;
+    }
+    if (file.Read(&ih, sizeof(ih)) == 0) {
+        return 0;
+    }
+
+    int height = ih.biHeight;
+    int width = ih.biWidth;
+    int bitcount = ih.biBitCount & 0xffff;
+    if (!DecodeBmpHeader(a2, width, height, bitcount, a3)) {
+        return 0;
+    }
+
+    file.Seek(fh.bfOffBits, 0);
+    unsigned int size = (bitcount / 8) * m_444 * height;
+    if (file.Read(m_42c, size) != size) {
+        return 0;
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CImage::LoadPcx
+// Open the file, GetLength(); if zero return 0. `operator new` a buffer of that
+// size; if it fails return 0. Read the whole file, hand the buffer (+a2,a3) to
+// the PCX decode helper, free the buffer and return the decoder's result.
+RVA(0x176190, 0x126)
+int CImage::LoadPcx(char* name, void* a2, void* a3) {
+    CFileIO file;
+
+    if (!file.Open(name, 0, 0)) {
+        return 0;
+    }
+    unsigned int len = file.GetLength();
+    if (len == 0) {
+        return 0;
+    }
+    void* buf = operator new(len);
+    if (!buf) {
+        return 0;
+    }
+    file.Read(buf, len);
+    int result = DecodePcxData(buf, a2, a3);
+    operator delete(buf);
+    return result;
+}
+
+// ---------------------------------------------------------------------------
+// CImage::LoadRid
+// Byte-identical to LoadPcx except for the per-format decode helper (the .RID
+// reader DecodeRidData).
+RVA(0x176310, 0x126)
+int CImage::LoadRid(char* name, void* a2, void* a3) {
+    CFileIO file;
+
+    if (!file.Open(name, 0, 0)) {
+        return 0;
+    }
+    unsigned int len = file.GetLength();
+    if (len == 0) {
+        return 0;
+    }
+    void* buf = operator new(len);
+    if (!buf) {
+        return 0;
+    }
+    file.Read(buf, len);
+    int result = DecodeRidData(buf, a2, a3);
+    operator delete(buf);
+    return result;
+}
+
+// ---------------------------------------------------------------------------
+// CImage::LoadPid
+// Byte-identical to LoadPcx/LoadRid except for the .PID decode helper.
+RVA(0x1766a0, 0x126)
+int CImage::LoadPid(char* name, void* a2, void* a3) {
+    CFileIO file;
+
+    if (!file.Open(name, 0, 0)) {
+        return 0;
+    }
+    unsigned int len = file.GetLength();
+    if (len == 0) {
+        return 0;
+    }
+    void* buf = operator new(len);
+    if (!buf) {
+        return 0;
+    }
+    file.Read(buf, len);
+    int result = DecodePidData(buf, a2, a3);
+    operator delete(buf);
+    return result;
+}
+
+// ---------------------------------------------------------------------------
+// CImage::LoadDefault
+// The fallback (no/unknown extension): pull the named RT_BITMAP resource from
+// the engine's resource module and decode it in place. Returns 0 unless the
+// module handle is set and FindResource/LoadResource/LockResource all succeed.
+RVA(0x1767d0, 0x64)
+int CImage::LoadDefault(char* name, void* a2, void* a3) {
+    HINSTANCE hModule = g_hResModule;
+    if (!hModule) {
+        return 0;
+    }
+    HRSRC hRsrc = FindResourceA(hModule, name, (LPCSTR)RT_BITMAP);
+    if (!hRsrc) {
+        return 0;
+    }
+    HGLOBAL hGlobal = LoadResource(hModule, hRsrc);
+    if (!hGlobal) {
+        return 0;
+    }
+    void* data = LockResource(hGlobal);
+    if (!data) {
+        return 0;
+    }
+    return DecodeResData(data, a2, a3);
+}
+
 // ---------------------------------------------------------------------------
 // CFileImage::LoadBmp
 // Open the file named by `path`; on failure return 0. GetLength(); if the length
