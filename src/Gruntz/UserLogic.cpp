@@ -10,19 +10,17 @@
 // The one out-of-line ctor the family chains is CUserBaseLink::CUserBaseLink
 // (0x16d710, the +0x18 member); it + the EngStr/registrar externs are in
 // src/Gruntz/UserBaseLink.cpp. Functions are defined in ascending-RVA order.
+#include <Mfc.h> // RECT / CopyRect (CSingleFrameMessage centers in a bounds rect)
 #include <Gruntz/UserLogic.h>
 #include <rva.h>
 
 // ---------------------------------------------------------------------------
-// CButeTree - the engine bute store the tile-logic tails query for their "A"
-// node. g_buteTree (0x6bf620) is the global instance; Find (0x16d190) is matched
-// in src/Stub/CButeTree.cpp. Modeled minimally so `g_buteTree.Find("A")`
-// reloc-masks.
+// CButeTree (declared in <Bute/ButeMgr.h>, pulled via UserLogic.h) - the engine
+// bute store the tile-logic tails query for their "A" node. g_buteTree
+// (0x6bf620) is the global instance; Find (0x16d190) is matched in
+// src/Stub/CButeTree.cpp. Declared extern only so `g_buteTree.Find("A")`
+// reloc-masks (the Stub TU owns the DATA label).
 // ---------------------------------------------------------------------------
-class CButeTree {
-public:
-    void* Find(const char* key);
-};
 DATA(0x2bf620)
 extern CButeTree g_buteTree;
 
@@ -92,7 +90,11 @@ public:
 class CGruntHealthSprite : public CUserLogic {
 public:
     CGruntHealthSprite();
+    CGruntHealthSprite(CGameObject* obj); // 0x07eb00 (1-arg)
     virtual ~CGruntHealthSprite() OVERRIDE;
+    char m_pad40[0x5c - 0x40]; // CUserLogic ends +0x40; anchors at +0x5c
+    int m_5c;                  // +0x5c
+    int m_60;                  // +0x60
 };
 
 class CVoiceTrigger : public CUserLogic {
@@ -161,6 +163,92 @@ public:
     virtual ~CSingleAnimation() OVERRIDE;
 };
 
+// ---------------------------------------------------------------------------
+// The CGruntSprite-family leaves (1-arg ctors). Each folds the inline
+// CUserLogic(obj) base, stamps its own vptr, then runs a per-class sprite tail
+// (ApplyLookupSprite/ApplyName + ApplyLookupGeometry, the "A" bute seed, a pose
+// id force, anchor fields). m_5c/m_60 (CGruntHealthSprite/CGruntToySprite) and
+// m_40 (the geometry token cache, the rest) are leaf fields.
+// ---------------------------------------------------------------------------
+class CGruntSelectedSprite : public CUserLogic {
+public:
+    CGruntSelectedSprite(CGameObject* obj); // 0x07e3e0
+    virtual ~CGruntSelectedSprite() OVERRIDE;
+    int m_40; // +0x40
+};
+
+class CGruntToySprite : public CUserLogic {
+public:
+    CGruntToySprite(CGameObject* obj); // 0x07f350
+    virtual ~CGruntToySprite() OVERRIDE;
+    char m_pad40[0x5c - 0x40];
+    int m_5c; // +0x5c
+};
+
+class CGruntPowerupSprite : public CUserLogic {
+public:
+    CGruntPowerupSprite(CGameObject* obj); // 0x07fdb0
+    virtual ~CGruntPowerupSprite() OVERRIDE;
+    int m_40; // +0x40
+};
+
+// ---------------------------------------------------------------------------
+// The eyecandy / simple-animation leaves (1-arg ctors). They share a common
+// z-clamp tail: poll the +0x198 layer's bounds against g_buteMgr's
+// World/BigActHeight, then toggle the +0x7c sub-object's flag bits. m_40 caches
+// the geometry token where a tail reuses it.
+// ---------------------------------------------------------------------------
+class CSingleFrameMessage : public CUserLogic {
+public:
+    CSingleFrameMessage(CGameObject* obj); // 0x0ab310
+    virtual ~CSingleFrameMessage() OVERRIDE;
+};
+
+class CSimpleAnimation : public CUserLogic {
+public:
+    CSimpleAnimation(CGameObject* obj); // 0x0ab940
+    virtual ~CSimpleAnimation() OVERRIDE;
+};
+
+class CFrontCandy : public CUserLogic {
+public:
+    CFrontCandy(CGameObject* obj); // 0x0abfa0
+    virtual ~CFrontCandy() OVERRIDE;
+};
+
+class CBehindCandy : public CUserLogic {
+public:
+    CBehindCandy(CGameObject* obj); // 0x0ac3f0
+    virtual ~CBehindCandy() OVERRIDE;
+};
+
+class CEyeCandy : public CUserLogic {
+public:
+    CEyeCandy(CGameObject* obj); // 0x0ac620
+    virtual ~CEyeCandy() OVERRIDE;
+};
+
+class CFrontCandyAni : public CUserLogic {
+public:
+    CFrontCandyAni(CGameObject* obj); // 0x0acf40
+    virtual ~CFrontCandyAni() OVERRIDE;
+    int m_40; // +0x40
+};
+
+class CBehindCandyAni : public CUserLogic {
+public:
+    CBehindCandyAni(CGameObject* obj); // 0x0ad540
+    virtual ~CBehindCandyAni() OVERRIDE;
+    int m_40; // +0x40
+};
+
+class CMenuSparkle : public CUserLogic {
+public:
+    CMenuSparkle(CGameObject* obj); // 0x0adbe0
+    virtual ~CMenuSparkle() OVERRIDE;
+    int m_40; // +0x40
+};
+
 // CPathHazard (0x13170, no-arg): same folded base schedule, then zeroes its own
 // eight pointer fields at +0x108..+0x12c.
 class CPathHazard : public CUserLogic {
@@ -187,6 +275,9 @@ struct WwdGameRegAux {
     int m_3c; // +0x3c
 };
 struct WwdGameReg {
+    // Fills the passed RECT with the on-screen message bounds and returns it
+    // (0x2cb1 thunk; __thiscall). Modeled NO-body so the call reloc-masks.
+    RECT* GetMessageBounds(RECT* out);
     char m_pad00[0x7c];
     WwdGameRegAux* m_7c; // +0x7c
     char m_pad80[0x118 - 0x80];
@@ -196,6 +287,9 @@ struct WwdGameReg {
     int m_134; // +0x134
 };
 extern WwdGameReg* g_gameReg;
+
+// The CRT rand() (0x11fee0); CMenuSparkle seeds its +0x130 timer from it.
+extern "C" int rand(void);
 
 // ===========================================================================
 // Definitions in ascending-RVA order.
@@ -302,6 +396,64 @@ CParticlez::CParticlez(CGameObject* obj) : CUserLogic(obj) {
     m_10->m_38 = 0;
 }
 
+// --- CGruntSelectedSprite (0x07e3e0), vptr 0x5e7bfc ---
+CGruntSelectedSprite::~CGruntSelectedSprite() {}
+RVA(0x07e3e0, 0x178)
+CGruntSelectedSprite::CGruntSelectedSprite(CGameObject* obj) : CUserLogic(obj) {
+    m_38->ApplyName("GAME_GRUNTSELECTEDSPRITE");
+    m_40 = m_38->m_1b4;
+    m_38->ApplyLookupGeometry("GAME_GRUNTSELECTEDSPRITE", 0);
+    m_30 = m_14->m_1c;
+    m_14->m_1c = g_buteTree.Find("A");
+    if (m_10->m_74 != 0x14) {
+        m_10->m_74 = 0x14;
+        m_10->m_08 |= 0x20000;
+    }
+}
+
+// --- CGruntHealthSprite (0x07eb00), vptr 0x5e7ba4 ---
+RVA(0x07eb00, 0x170)
+CGruntHealthSprite::CGruntHealthSprite(CGameObject* obj) : CUserLogic(obj) {
+    m_38->ApplyLookupSprite("GAME_GRUNTHEALTHSPRITE", 1);
+    m_30 = m_14->m_1c;
+    m_14->m_1c = g_buteTree.Find("A");
+    m_5c = 0x64;
+    if (m_10->m_74 != 0xdbba0) {
+        m_10->m_74 = 0xdbba0;
+        m_10->m_08 |= 0x20000;
+    }
+    m_60 = -0x19;
+}
+
+// --- CGruntToySprite (0x07f350), vptr 0x5e7b4c ---
+CGruntToySprite::~CGruntToySprite() {}
+RVA(0x07f350, 0x16a)
+CGruntToySprite::CGruntToySprite(CGameObject* obj) : CUserLogic(obj) {
+    m_38->ApplyLookupSprite("GAME_STATUSBAR_TABZ_STATZTAB_SMALL", 0);
+    m_30 = m_14->m_1c;
+    m_14->m_1c = g_buteTree.Find("A");
+    m_38->m_40 |= 1;
+    if (m_10->m_74 != 0xdbba0) {
+        m_10->m_74 = 0xdbba0;
+        m_10->m_08 |= 0x20000;
+    }
+    m_5c = 0;
+}
+
+// --- CGruntPowerupSprite (0x07fdb0), vptr 0x5e76c4 ---
+CGruntPowerupSprite::~CGruntPowerupSprite() {}
+RVA(0x07fdb0, 0x166)
+CGruntPowerupSprite::CGruntPowerupSprite(CGameObject* obj) : CUserLogic(obj) {
+    m_38->ApplyName("GAME_LIGHTING_POWERUP");
+    m_40 = m_38->m_1b4;
+    m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    if (m_10->m_74 != 0x15) {
+        m_10->m_74 = 0x15;
+        m_10->m_08 |= 0x20000;
+    }
+    m_38->m_40 |= 1;
+}
+
 // --- CAniCycle (0x0aad20), vptr 0x5e86a4 ---
 CAniCycle::~CAniCycle() {}
 RVA(0x0aad20, 0x15c)
@@ -313,6 +465,167 @@ CAniCycle::CAniCycle(CGameObject* obj) : CUserLogic(obj) {
     }
     m_30 = m_14->m_1c;
     m_14->m_1c = g_buteTree.Find("A");
+}
+
+// --- CSingleFrameMessage (0x0ab310), vptr 0x5e864c ---
+// The tail asks g_gameReg for the on-screen message-bounds RECT (0x2cb1 thunk),
+// copies it into a local via the CopyRect Win32 import, then centers the object
+// (m_10->m_5c/m_60) inside it. ApplyLookupSprite takes m_38->m_04 as its flag.
+CSingleFrameMessage::~CSingleFrameMessage() {}
+RVA(0x0ab310, 0x18d)
+CSingleFrameMessage::CSingleFrameMessage(CGameObject* obj) : CUserLogic(obj) {
+    m_30 = m_14->m_1c;
+    m_14->m_1c = g_buteTree.Find("A");
+    m_10->ApplyLookupSprite("GAME_MESSAGEZ", m_38->m_04);
+    RECT bounds;
+    RECT r;
+    CopyRect(&r, g_gameReg->GetMessageBounds(&bounds));
+    m_10->m_5c = r.left + (r.right - r.left) / 2;
+    m_10->m_60 = r.top + (r.bottom - r.top) / 2;
+}
+
+// --- CSimpleAnimation (0x0ab940), vptr 0x5e8544 ---
+CSimpleAnimation::~CSimpleAnimation() {}
+RVA(0x0ab940, 0x1b8)
+CSimpleAnimation::CSimpleAnimation(CGameObject* obj) : CUserLogic(obj) {
+    m_30 = m_14->m_1c;
+    m_14->m_1c = g_buteTree.Find("A");
+    CGameObjLayer* aux = m_10->m_198;
+    if (aux != 0) {
+        if (aux->m_10 >= g_buteMgr.GetInt("World", "BigActHeight")
+            || m_10->m_198->m_14 >= g_buteMgr.GetInt("World", "BigActHeight")) {
+            if (m_10->m_7c != 0) {
+                m_10->m_7c->m_08 &= ~6;
+                m_10->m_7c->m_08 |= 1;
+                m_38->m_08 &= ~0x1000002;
+                m_38->m_08 |= 0x800000;
+            }
+        }
+    }
+}
+
+// --- CFrontCandy (0x0abfa0), vptr 0x5e84ec ---
+CFrontCandy::~CFrontCandy() {}
+RVA(0x0abfa0, 0x1b6)
+CFrontCandy::CFrontCandy(CGameObject* obj) : CUserLogic(obj) {
+    if (m_10->m_74 != 0xf4240) {
+        m_10->m_74 = 0xf4240;
+        m_10->m_08 |= 0x20000;
+    }
+    CGameObjLayer* aux = m_10->m_198;
+    if (aux != 0) {
+        if (aux->m_10 >= g_buteMgr.GetInt("World", "BigActHeight")
+            || m_10->m_198->m_14 >= g_buteMgr.GetInt("World", "BigActHeight")) {
+            if (m_10->m_7c != 0) {
+                m_10->m_7c->m_08 &= ~6;
+                m_10->m_7c->m_08 |= 1;
+                m_38->m_08 &= ~0x1000002;
+                m_38->m_08 |= 0x800000;
+            }
+        }
+    }
+}
+
+// --- CBehindCandy (0x0ac3f0), vptr 0x5e8494 ---
+CBehindCandy::~CBehindCandy() {}
+RVA(0x0ac3f0, 0x1b1)
+CBehindCandy::CBehindCandy(CGameObject* obj) : CUserLogic(obj) {
+    if (m_10->m_74 != 0) {
+        m_10->m_74 = 0;
+        m_10->m_08 |= 0x20000;
+    }
+    if (m_10->m_198 != 0) {
+        if (m_10->m_198->m_10 >= g_buteMgr.GetInt("World", "BigActHeight")
+            || m_10->m_198->m_14 >= g_buteMgr.GetInt("World", "BigActHeight")) {
+            if (m_10->m_7c != 0) {
+                m_10->m_7c->m_08 &= ~6;
+                m_10->m_7c->m_08 |= 1;
+                m_38->m_08 &= ~0x1000002;
+                m_38->m_08 |= 0x800000;
+            }
+        }
+    }
+}
+
+// --- CEyeCandy (0x0ac620), vptr 0x5e843c ---
+CEyeCandy::~CEyeCandy() {}
+RVA(0x0ac620, 0x1cf)
+CEyeCandy::CEyeCandy(CGameObject* obj) : CUserLogic(obj) {
+    CGameObject* o = m_10;
+    if (o->m_74 == 0 && o->m_198 != 0) {
+        int v = o->m_198->m_1c + o->m_60 + 0x186a0;
+        if (o->m_74 != v) {
+            o->m_74 = v;
+            o->m_08 |= 0x20000;
+        }
+    }
+    CGameObjLayer* aux = m_10->m_198;
+    if (aux != 0) {
+        if (aux->m_10 >= g_buteMgr.GetInt("World", "BigActHeight")
+            || m_10->m_198->m_14 >= g_buteMgr.GetInt("World", "BigActHeight")) {
+            if (m_10->m_7c != 0) {
+                m_10->m_7c->m_08 &= ~6;
+                m_10->m_7c->m_08 |= 1;
+                m_38->m_08 &= ~0x1000002;
+                m_38->m_08 |= 0x800000;
+            }
+        }
+    }
+}
+
+// --- CFrontCandyAni (0x0acf40), vptr 0x5e83e4 ---
+CFrontCandyAni::~CFrontCandyAni() {}
+RVA(0x0acf40, 0x16e)
+CFrontCandyAni::CFrontCandyAni(CGameObject* obj) : CUserLogic(obj) {
+    m_30 = m_14->m_1c;
+    m_14->m_1c = g_buteTree.Find("A");
+    if (m_38->m_1b4 == 0) {
+        m_40 = m_38->m_1b4;
+        m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    }
+    if (m_10->m_74 != 0xf4240) {
+        m_10->m_74 = 0xf4240;
+        m_10->m_08 |= 0x20000;
+    }
+}
+
+// --- CBehindCandyAni (0x0ad540), vptr 0x5e838c ---
+CBehindCandyAni::~CBehindCandyAni() {}
+RVA(0x0ad540, 0x1f0)
+CBehindCandyAni::CBehindCandyAni(CGameObject* obj) : CUserLogic(obj) {
+    m_30 = m_14->m_1c;
+    m_14->m_1c = g_buteTree.Find("A");
+    if (m_38->m_1b4 == 0) {
+        m_40 = m_38->m_1b4;
+        m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    }
+    if (m_10->m_74 != 0) {
+        m_10->m_74 = 0;
+        m_10->m_08 |= 0x20000;
+    }
+    if (m_10->m_198 != 0) {
+        if (m_10->m_198->m_10 >= g_buteMgr.GetInt("World", "BigActHeight")
+            || m_10->m_198->m_14 >= g_buteMgr.GetInt("World", "BigActHeight")) {
+            if (m_10->m_7c != 0) {
+                m_10->m_7c->m_08 &= ~6;
+                m_10->m_7c->m_08 |= 1;
+                m_38->m_08 &= ~0x1000002;
+                m_38->m_08 |= 0x800000;
+            }
+        }
+    }
+}
+
+// --- CMenuSparkle (0x0adbe0), vptr 0x5e82dc ---
+CMenuSparkle::~CMenuSparkle() {}
+RVA(0x0adbe0, 0x178)
+CMenuSparkle::CMenuSparkle(CGameObject* obj) : CUserLogic(obj) {
+    m_38->ApplyName("MENU_SPARKLE");
+    m_40 = m_38->m_1b4;
+    m_38->ApplyLookupGeometry("MENU_FORWARD100", 0);
+    m_30 = m_14->m_1c;
+    m_14->m_1c = g_buteTree.Find("A");
+    m_14->m_130 = rand() % 0xfa1 + 0x3e8;
 }
 
 // --- CSingleAnimation (0x0ae7f0), vptr 0x5e745c ---
