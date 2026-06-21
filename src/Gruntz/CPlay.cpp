@@ -93,7 +93,7 @@ extern "C" {
     void  Eng_StopSound(void *snd, int flag);
     void  Eng_FrameTimerStep(void *t, int now);
     // --- StepInputA ---
-    int   __stdcall Eng_InputProbe(void *a, void *b, void *axis, void *edge, int n);
+    int   __stdcall Eng_InputProbe(int a, int b, int axis, void *edge, int n);
     void  Eng_InputDispatch(int z0, int z1, int probe);       // (cdecl, 3)
     // --- OnRegion3/4 leaf cues ---
     void  Eng_RegionCueA(int a, int b, int c, int d, int e);  // (cdecl, 5)
@@ -542,8 +542,7 @@ int CPlay::StepInputA()
     if (probeTarget == 0)
         return 0;
 
-    int r = Eng_InputProbe((void *)edge->m_0, (void *)edge->m_4,
-                           (void *)axisVal, halfPtr, 0x10);
+    int r = Eng_InputProbe(edge->m_0, edge->m_4, axisVal, halfPtr, 0x10);
     if (r != 0)
         Eng_InputDispatch(0, 0, r);
     return 1;
