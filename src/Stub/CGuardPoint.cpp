@@ -3,11 +3,11 @@
 
 class CGuardPoint {
 public:
-    CGuardPoint();
+    CGuardPoint(int);
 };
 
 // @confidence: med
 // @source: rtti-vptr
 // @stub
 RVA(0x0ae5f0, 0x18f)
-CGuardPoint::CGuardPoint() {}
+CGuardPoint::CGuardPoint(int) {}

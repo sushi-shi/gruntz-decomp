@@ -3,11 +3,11 @@
 
 class CRollingBall {
 public:
-    CRollingBall();
+    CRollingBall(int);
 };
 
 // @confidence: med
 // @source: rtti-vptr
 // @stub
 RVA(0x0af820, 0x40d)
-CRollingBall::CRollingBall() {}
+CRollingBall::CRollingBall(int) {}

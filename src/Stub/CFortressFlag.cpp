@@ -3,11 +3,11 @@
 
 class CFortressFlag {
 public:
-    CFortressFlag();
+    CFortressFlag(int);
 };
 
 // @confidence: med
 // @source: rtti-vptr
 // @stub
 RVA(0x045d30, 0x203)
-CFortressFlag::CFortressFlag() {}
+CFortressFlag::CFortressFlag(int) {}

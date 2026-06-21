@@ -4,7 +4,7 @@
 class CUserLogic {
 public:
     void CUserLogic_0138d0();
-    void CUserLogic_058cd0();
+    void CUserLogic_058cd0(int);
 };
 
 // @confidence: med
@@ -17,4 +17,4 @@ void CUserLogic::CUserLogic_0138d0() {}
 // @source: rtti-vptr
 // @stub
 RVA(0x058cd0, 0x195)
-void CUserLogic::CUserLogic_058cd0() {}
+void CUserLogic::CUserLogic_058cd0(int) {}

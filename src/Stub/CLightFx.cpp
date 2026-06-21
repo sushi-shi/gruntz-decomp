@@ -3,11 +3,11 @@
 
 class CLightFx {
 public:
-    CLightFx();
+    CLightFx(int);
 };
 
 // @confidence: med
 // @source: rtti-vptr
 // @stub
 RVA(0x09cf00, 0x1a5)
-CLightFx::CLightFx() {}
+CLightFx::CLightFx(int) {}

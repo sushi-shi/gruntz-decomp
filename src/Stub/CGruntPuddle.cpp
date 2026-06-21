@@ -3,11 +3,11 @@
 
 class CGruntPuddle {
 public:
-    CGruntPuddle();
+    CGruntPuddle(int);
 };
 
 // @confidence: med
 // @source: rtti-vptr
 // @stub
 RVA(0x040490, 0x1ab)
-CGruntPuddle::CGruntPuddle() {}
+CGruntPuddle::CGruntPuddle(int) {}

@@ -3,7 +3,7 @@
 
 class CStaticHazard {
 public:
-    CStaticHazard();
+    CStaticHazard(int);
     void LoadAttributes2();
     void LoadAttributes();
 };
@@ -12,7 +12,7 @@ public:
 // @source: rtti-vptr
 // @stub
 RVA(0x0fb7a0, 0x2d4)
-CStaticHazard::CStaticHazard() {}
+CStaticHazard::CStaticHazard(int) {}
 
 // @confidence: med
 // @source: decomp-xref

@@ -3,11 +3,11 @@
 
 class CDoNothing {
 public:
-    CDoNothing();
+    CDoNothing(int);
 };
 
 // @confidence: med
 // @source: rtti-vptr
 // @stub
 RVA(0x0ac1d0, 0x1a5)
-CDoNothing::CDoNothing() {}
+CDoNothing::CDoNothing(int) {}

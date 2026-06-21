@@ -3,11 +3,11 @@
 
 class CDroppedObject {
 public:
-    CDroppedObject();
+    CDroppedObject(int);
 };
 
 // @confidence: med
 // @source: rtti-vptr
 // @stub
 RVA(0x0c68b0, 0x1f5)
-CDroppedObject::CDroppedObject() {}
+CDroppedObject::CDroppedObject(int) {}

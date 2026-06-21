@@ -3,11 +3,11 @@
 
 class CExitTrigger {
 public:
-    CExitTrigger();
+    CExitTrigger(int);
 };
 
 // @confidence: med
 // @source: rtti-vptr
 // @stub
 RVA(0x03ecf0, 0x292)
-CExitTrigger::CExitTrigger() {}
+CExitTrigger::CExitTrigger(int) {}

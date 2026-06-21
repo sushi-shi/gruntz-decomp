@@ -3,11 +3,11 @@
 
 class CGruntStartingPoint {
 public:
-    CGruntStartingPoint();
+    CGruntStartingPoint(int);
 };
 
 // @confidence: med
 // @source: rtti-vptr
 // @stub
 RVA(0x03df30, 0x161)
-CGruntStartingPoint::CGruntStartingPoint() {}
+CGruntStartingPoint::CGruntStartingPoint(int) {}

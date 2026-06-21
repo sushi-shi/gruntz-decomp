@@ -3,7 +3,7 @@
 
 class CWarlord {
 public:
-    CWarlord();
+    CWarlord(int);
     void LoadAttributes();
     void LoadAttributes2();
 };
@@ -12,7 +12,7 @@ public:
 // @source: rtti-vptr
 // @stub
 RVA(0x042d40, 0x73e)
-CWarlord::CWarlord() {}
+CWarlord::CWarlord(int) {}
 
 // @confidence: med
 // @source: decomp-xref

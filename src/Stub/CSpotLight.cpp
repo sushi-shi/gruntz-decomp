@@ -3,11 +3,11 @@
 
 class CSpotLight {
 public:
-    CSpotLight();
+    CSpotLight(int);
 };
 
 // @confidence: med
 // @source: rtti-vptr
 // @stub
 RVA(0x0b1200, 0x2cb)
-CSpotLight::CSpotLight() {}
+CSpotLight::CSpotLight(int) {}

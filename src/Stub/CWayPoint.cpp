@@ -3,11 +3,11 @@
 
 class CWayPoint {
 public:
-    CWayPoint();
+    CWayPoint(int);
 };
 
 // @confidence: med
 // @source: rtti-vptr
 // @stub
 RVA(0x0ae3f0, 0x18f)
-CWayPoint::CWayPoint() {}
+CWayPoint::CWayPoint(int) {}

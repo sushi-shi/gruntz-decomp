@@ -3,11 +3,11 @@
 
 class CLevelTime {
 public:
-    CLevelTime();
+    CLevelTime(int);
 };
 
 // @confidence: med
 // @source: rtti-vptr
 // @stub
 RVA(0x09b8b0, 0x18f)
-CLevelTime::CLevelTime() {}
+CLevelTime::CLevelTime(int) {}
