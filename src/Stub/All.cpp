@@ -136,7 +136,6 @@
 #include "CWarlord.cpp"
 #include "CWarpStonePad.cpp"
 #include "CWayPoint.cpp"
-#include "DirectInputMgr2.cpp"
 #include "DirectSoundMgr.cpp"
 #include "RezSync.cpp"
 #include "UnknownClassInCGruntzMgr.cpp"
