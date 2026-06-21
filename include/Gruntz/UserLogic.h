@@ -76,10 +76,22 @@ struct CUserBaseLink {
 // ---------------------------------------------------------------------------
 struct CGameObjAux; // the sub-object reached through CGameObject::m_7c
 
+// The +0x198 layer descriptor several eyecandy ctors poll for z-clamping (its
+// +0x10/+0x14 bounds + +0x1c base offset). Only the touched offsets are modeled.
+struct CGameObjLayer {
+    char m_pad00[0x10];
+    int m_10; // +0x10
+    int m_14; // +0x14
+    char m_pad18[0x1c - 0x18];
+    int m_1c; // +0x1c
+};
+
 struct CGameObject {
     void AddLogicHit(char* key);                        // 0x150f50
     void AddLogicAttack(char* key);                     // 0x151030
     void AddLogicBump(char* key);                       // 0x151110
+    void ApplyLookupSprite(const char* key, int flag);  // 0x1504d0
+    void ApplyName(const char* name);                   // 0x150540
     int ApplyLookupGeometry(const char* key, int flag); // 0x1505b0
     char m_pad00[0x04];
     int m_04; // +0x04
@@ -98,15 +110,30 @@ struct CGameObject {
     char m_pad80[0x164 - 0x80];
     int m_164; // +0x164
     int m_168; // +0x168
-    char m_pad16c[0x1b4 - 0x16c];
+    char m_pad16c[0x198 - 0x16c];
+    CGameObjLayer* m_198; // +0x198
+    char m_pad19c[0x1b4 - 0x19c];
     int m_1b4; // +0x1b4
 };
 
-// The +0x7c sub-object: only its +0x1c bute-node slot is touched.
+// The +0x7c sub-object: its +0x08 flags, +0x1c bute-node and +0x130 timer are
+// touched by the eyecandy/sparkle ctors.
 struct CGameObjAux {
-    char m_pad00[0x1c];
+    char m_pad00[0x08];
+    int m_08; // +0x08
+    char m_pad0c[0x1c - 0x0c];
     void* m_1c; // +0x1c
+    char m_pad20[0x130 - 0x20];
+    int m_130; // +0x130
 };
+
+// The engine bute manager the eyecandy ctors query for "World"/"BigActHeight"
+// (CButeMgr::GetInt 0x171af0). The class + its singleton g_buteMgr
+// (?g_buteMgr@@3VCButeMgr@@A, RVA 0x2453d8) live in the bute TUs; declared
+// extern only here so the `ecx=&g_buteMgr; call GetInt` shape reloc-masks
+// against the already-matched symbols (BattlezMapConfig owns the DATA label).
+#include <Bute/ButeMgr.h>
+extern CButeMgr g_buteMgr;
 
 // One-shot guard for the built-in tile-logic type registration (0x6bf674).
 extern int g_logicTypesRegistered;
