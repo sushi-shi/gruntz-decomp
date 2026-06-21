@@ -32,7 +32,7 @@ extern "C" {
     // @stub
     RVA(0x1b9b46, 0x3c)
     SYMBOL(_RezAlloc)
-    int RezAlloc() {
+    void* RezAlloc(unsigned int size) {
         return 0;
     }
     // @confidence: high
