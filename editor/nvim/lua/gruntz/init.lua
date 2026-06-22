@@ -19,6 +19,7 @@ M.config = {
   keymaps = true,             -- vt/vb (asm), vd (diff), vs (status), vB (build), V (peek)
   hints = true,               -- inline match-% virtual text after each RVA(...) line
   build_on_save = false,      -- rebuild (quietly) whenever a TU is saved
+  format_on_save = false,     -- clang-format the saved file in place (root .clang-format)
   split = "botright vsplit",  -- where asm/status views open
 }
 
@@ -164,6 +165,13 @@ end
 
 local diff_cache = {} -- key -> decoded unit diff json
 
+-- Save-time per-unit match %s from `objdiff-cli diff -u` (root -> unit -> {name -> pct}).
+-- The fast build-on-save path recompiles ONLY the edited unit and diffs it against
+-- the cached target objs, so it never regenerates the all-units report.json. These
+-- live %s overlay the (now staler) report.json for the edited unit's hints/peek; a
+-- full `:GruntzBuild` refreshes report.json and clears the overlay.
+local live_pct = {}
+
 --- The whole unit's diff json (objdiff one-shot returns the unit, not just one
 --- symbol). Cached against the two objs' mtimes. `cb(json)` on success.
 local function unit_diff(root, unit, focus, cb)
@@ -178,8 +186,9 @@ local function unit_diff(root, unit, focus, cb)
   if diff_cache[key] then return cb(diff_cache[key]) end
 
   local cmd = { "objdiff-cli", "diff", "-p", ODIR, "-u", unit,
-                "-o", "-", "--format", "json", focus }
-  log(table.concat({ "objdiff-cli diff -u", unit, focus }, " ") .. "  [" .. root .. "]")
+                "-o", "-", "--format", "json" }
+  if focus and focus ~= "" then cmd[#cmd + 1] = focus end  -- focus is optional: omit -> whole unit
+  log(table.concat({ "objdiff-cli diff -u", unit, focus or "" }, " ") .. "  [" .. root .. "]")
   vim.system(cmd, { cwd = root, text = true }, function(res)
     vim.schedule(function()
       if res.code ~= 0 then
@@ -202,6 +211,18 @@ local function pick(json, side, name)
   for _, sym in ipairs((json[side] or {}).symbols or {}) do
     if sym.name == name then return sym end
   end
+end
+
+--- {mangled_name -> match_percent} for every diffed symbol in a unit-diff json.
+--- left (target) is canonical, so it wins over right (base) for a shared name.
+local function pcts_from_diff(json)
+  local out = {}
+  for _, side in ipairs({ "right", "left" }) do
+    for _, s in ipairs((json[side] or {}).symbols or {}) do
+      if s.name and s.match_percent ~= nil then out[s.name] = s.match_percent end
+    end
+  end
+  return out
 end
 
 --- objdiff instructions -> decorated asm lines. Intra-function jump targets get
@@ -483,7 +504,8 @@ function M.peek()
     local e = (load_symbols(root) or { by_addr = {} }).by_addr[tonumber(sym.addr)] or {}
     local rep = load_report(root)
     local u = rep and rep.units[sym.unit]
-    local p = u and u.funcs[sym.name]
+    local lp = live_pct[root] and live_pct[root][sym.unit]  -- fresher than report
+    local p = (lp and lp[sym.name]) or (u and u.funcs[sym.name])
     local sz = tonumber(e.size)
 
     local lines = { sym.name, "" }
@@ -590,7 +612,9 @@ function M.hints(buf)
     local a = line:match("RVAU?%s*%(%s*(0[xX]%x+)")
     if a then
       local e = db.by_addr[tonumber(a)]
-      local p = e and rep and rep.units[e.unit] and rep.units[e.unit].funcs[e.name]
+      local lp = e and live_pct[root] and live_pct[root][e.unit]  -- fresher than report
+      local p = (lp and lp[e.name])
+        or (e and rep and rep.units[e.unit] and rep.units[e.unit].funcs[e.name])
       local txt = (not e) and "?? unknown rva"
         or p == nil and "— n/a"
         or p >= 100 and "✓ 100%"
@@ -721,6 +745,7 @@ local function finish_build(root, before, unit, code, elapsed)
   if code ~= 0 then
     return notify("build FAILED (exit " .. code .. ")", vim.log.levels.ERROR)
   end
+  live_pct[root] = nil  -- a full build refreshed report.json -> drop the per-unit overlay
   invalidate(root)
   diff_cache = {}
   build_popup(root, before, unit, elapsed)
@@ -789,12 +814,198 @@ function M.build(args)
   with_root(function(root) do_build(root, args, false) end)
 end
 
---- BufWritePost hook: when build-on-save is on, kick a quiet incremental build
---- so the inline %s update right after you save.
+-- ---------------------------------------------------- fast build-on-save ---
+-- A save recompiles ONLY the edited file's unit (one `cl`, ~0.6s) and re-diffs
+-- that unit against the cached target objs - it does NOT run delink or the
+-- all-units objdiff report (the slow, unit-count-scaling steps). The target side
+-- is fixed by the retail EXE, so a body edit can't change it; delink/report only
+-- matter when you add/move/rename a labeled function, which is what a full
+-- `:GruntzBuild` (vB) is for. Tradeoff: between full builds the overall % and
+-- OTHER units' numbers (status view) stay at the last full build; only the edited
+-- unit updates live.
+
+--- The unit a source buffer compiles into - the unit of the first RVA(...) in it.
+--- nil for a file with no matched functions yet (-> caller falls back to a full build).
+local function unit_of_buf(root, buf)
+  local db = load_symbols(root)
+  if not db then return nil end
+  for _, line in ipairs(vim.api.nvim_buf_get_lines(buf, 0, -1, false)) do
+    local a = line:match("RVAU?%s*%(%s*(0[xX]%x+)")
+    if a then
+      local e = db.by_addr[tonumber(a)]
+      if e then return e.unit end
+    end
+  end
+end
+
+--- The unit's effective %s right now: report.json overlaid by any live overlay.
+--- Used as the "before" snapshot so the popup shows what THIS save moved.
+local function effective_unit_pcts(root, unit)
+  local out = {}
+  local rep = load_report(root)
+  local u = rep and rep.units[unit]
+  if u then for fn, p in pairs(u.funcs) do out[fn] = p end end
+  local lp = live_pct[root] and live_pct[root][unit]
+  if lp then for fn, p in pairs(lp) do out[fn] = p end end
+  return out
+end
+
+--- Compact corner popup: the unit + the functions this save moved. Same shape as
+--- build_popup, but unit-scoped (no overall %, which a fast save doesn't compute).
+local function fast_build_popup(root, unit, before, now, elapsed)
+  local moved = {}
+  for fn, p in pairs(now) do
+    local was = before[fn]
+    if was == nil or p ~= was then
+      moved[#moved + 1] = { fn = fn, was = was, now = p, d = p - (was or 0) }
+    end
+  end
+  table.sort(moved, function(x, y) return x.d > y.d end)
+  local lines = {}
+  if #moved == 0 then
+    lines[1] = "(no function % changes)"
+  else
+    for i = 1, math.min(#moved, 6) do
+      local r = moved[i]
+      local arr = r.was == nil and "+" or r.d > 0 and "^" or r.d < 0 and "v" or " "
+      lines[#lines + 1] = ("  %s %s -> %-7s %s"):format(
+        arr, r.was and pct(r.was) or "  -  ", pct(r.now),
+        (r.fn:gsub("^%?+", ""):gsub("@.*$", "")))
+    end
+    if #moved > 6 then lines[#lines + 1] = ("  +%d more"):format(#moved - 6) end
+  end
+  show_float(lines, { root = root, filetype = "asm", pos = "editor", timeout = 5000,
+    title = (" %s  %.1fs "):format(unit, elapsed or 0) })
+end
+
+--- Per-unit FUZZY match %s as {name -> pct}. `-c function_reloc_diffs=none` is the
+--- exact setting `objdiff-cli report generate` uses, so these equal report.json's
+--- fuzzy_match_percent - the overlay stays consistent with report-derived hints (no
+--- jump on first save). Kept separate from unit_diff, whose STRICT diff the asm
+--- views render (so vt/vb/vd still show reloc differences). cb({}) on any failure.
+local function unit_fuzzy_pcts(root, unit, cb)
+  if vim.fn.executable("objdiff-cli") == 0 then return cb({}) end
+  local cmd = { "objdiff-cli", "diff", "-p", ODIR, "-u", unit, "-o", "-",
+                "--format", "json", "-c", "function_reloc_diffs=none" }
+  log("objdiff-cli diff -u " .. unit .. " (fuzzy %s)  [" .. root .. "]")
+  vim.system(cmd, { cwd = root, text = true }, function(res)
+    vim.schedule(function()
+      local ok, json = pcall(vim.json.decode, res.code == 0 and res.stdout or "")
+      cb(ok and type(json) == "table" and pcts_from_diff(json) or {})
+    end)
+  end)
+end
+
+--- After the scoped compile: fetch the one unit's fuzzy %s, stash them as the live
+--- overlay, re-render the edited file's hints + any open views, and pop the summary.
+local function finish_fast_build(root, unit, buf, before, elapsed)
+  diff_cache = {}  -- base obj changed; drop cached strict diffs (refresh_views re-fetches)
+  unit_fuzzy_pcts(root, unit, function(now)
+    live_pct[root] = live_pct[root] or {}
+    live_pct[root][unit] = now
+    if vim.api.nvim_buf_is_valid(buf) then M.hints(buf) end
+    refresh_views(root)  -- open vt/vb/vd for this unit re-render against the new base
+    fast_build_popup(root, unit, before, now, elapsed)
+  end)
+end
+
+--- Quietly compile JUST `unit`'s base obj (skips delink + the all-units report),
+--- then refresh that unit's %s. Shares the latest-wins job slot with do_build.
+local function do_fast_build(root, unit, buf)
+  if build_job then pcall(vim.fn.jobstop, build_job); build_job = nil end
+  if build_note then pcall(build_note); build_note = nil end
+  build_gen = build_gen + 1
+  local my_gen = build_gen
+  local t0 = uv.hrtime()
+  local before = effective_unit_pcts(root, unit)
+  local target = "build/objdiff/base/" .. unit .. ".obj"
+  local direct = in_build_env()
+  -- A specific ninja target -> ninja builds only that obj; report.json doesn't move,
+  -- so `gruntz build` skips its verify/summary tail and returns right after the cl.
+  local cmd = direct and { "gruntz", "build", target }
+              or { "nix", "develop", ".#build", "--command", "gruntz", "build", target }
+  local jenv = direct and nil or { GRUNTZ_SKIP_INIT = "1" }
+  log("save-build [" .. unit .. "]" .. (direct and " [direct]" or " [nix]")
+    .. ": " .. table.concat(cmd, " ") .. "  [" .. root .. "]")
+  build_note = show_note("building " .. unit .. " ...")
+  build_job = vim.fn.jobstart(cmd, { cwd = root, env = jenv, on_exit = function(_, code)
+    vim.schedule(function()
+      if my_gen ~= build_gen then return end  -- superseded by a newer save/build
+      build_job = nil
+      if build_note then pcall(build_note); build_note = nil end
+      if code ~= 0 then
+        return notify("save-build FAILED (exit " .. code .. ")", vim.log.levels.ERROR)
+      end
+      finish_fast_build(root, unit, buf, before, (uv.hrtime() - t0) / 1e9)
+    end)
+  end })
+end
+
+--- BufWritePost hook: when build-on-save is on, recompile the edited file's unit
+--- and update its %s live. A file with no resolvable unit yet (no RVA - a brand-new
+--- TU) falls back to a full build, which wires it into the graph (delink + report).
 function M.on_save(buf)
   if not M.config.build_on_save then return end
   local root = project_root(buf)
-  if root then do_build(root, {}, true) end
+  if not root then return end
+  local unit = unit_of_buf(root, buf)
+  if unit then do_fast_build(root, unit, buf)
+  else do_build(root, {}, true) end
+end
+
+-- ------------------------------------------------------------- format on save --
+-- `gruntz format` reformats the whole src/+include/ tree; on save we want JUST
+-- the file being worked on. Same tool (clang-format --style=file -> the root
+-- .clang-format), same scope (src/ + include/, never vendor/), so it stays
+-- whitespace-only / matching-neutral.
+
+--- Is `file` one of the units `gruntz format` would touch (under src/ or
+--- include/, not vendor/)? Keeps the on-save formatter to the project's sources.
+local function in_format_scope(root, file)
+  if not file or file == "" then return false end
+  for _, sub in ipairs({ "/src/", "/include/" }) do
+    local pfx = root .. sub
+    if file:sub(1, #pfx) == pfx then return true end
+  end
+  return false
+end
+
+--- BufWritePre hook: when format-on-save is on, clang-format the buffer in place
+--- (synchronously, before the write hits disk) so the saved file is formatted in
+--- one save. The buffer is only rewritten when formatting actually changed
+--- something, and the cursor/scroll position is preserved.
+function M.format_on_save(buf)
+  if not M.config.format_on_save then return end
+  buf = buf or vim.api.nvim_get_current_buf()
+  local root = project_root(buf)
+  if not root then return end
+  local file = vim.api.nvim_buf_get_name(buf)
+  if not in_format_scope(root, file) then return end
+  if vim.fn.executable("clang-format") == 0 then
+    return notify("clang-format not on PATH - launch nvim from `nix develop`",
+      vim.log.levels.WARN)
+  end
+
+  local cur = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+  -- --assume-filename so --style=file resolves the root .clang-format AND clang
+  -- picks the C/C++ language from the extension; piping the buffer (not the
+  -- on-disk file) formats unsaved edits too.
+  local out = vim.fn.systemlist(
+    { "clang-format", "--style=file", "--assume-filename=" .. file },
+    table.concat(cur, "\n"))
+  if vim.v.shell_error ~= 0 then
+    return notify("clang-format failed: " .. table.concat(out, " "),
+      vim.log.levels.ERROR)
+  end
+
+  if #out == #cur then            -- no-op on already-formatted files: leave the
+    local same = true             -- buffer (and its undo history) untouched
+    for i = 1, #cur do if out[i] ~= cur[i] then same = false break end end
+    if same then return end
+  end
+  local view = vim.fn.winsaveview()
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, out)
+  vim.fn.winrestview(view)
 end
 
 -- --------------------------------------------------------------- :GruntzLog --
@@ -833,7 +1044,8 @@ local function save_state(root)
   local fd = io.open(state_path(root), "w")
   if not fd then return end
   fd:write(vim.json.encode({ hints = M.config.hints,
-                             build_on_save = M.config.build_on_save }))
+                             build_on_save = M.config.build_on_save,
+                             format_on_save = M.config.format_on_save }))
   fd:close()
 end
 
@@ -851,6 +1063,7 @@ function M.load_state(buf)
   if ok and type(s) == "table" then
     if type(s.hints) == "boolean" then M.config.hints = s.hints end
     if type(s.build_on_save) == "boolean" then M.config.build_on_save = s.build_on_save end
+    if type(s.format_on_save) == "boolean" then M.config.format_on_save = s.format_on_save end
   end
 end
 
@@ -864,7 +1077,9 @@ function M.close()
   end
 end
 
-function M.complete() return { "target", "base", "diff", "status", "hints", "autobuild", "close" } end
+function M.complete()
+  return { "target", "base", "diff", "status", "hints", "autobuild", "autoformat", "close" }
+end
 
 function M.dispatch(arg)
   if arg == "status" then return M.status() end
@@ -879,8 +1094,13 @@ function M.dispatch(arg)
     save_state(project_root(0))
     return notify("build on save " .. (M.config.build_on_save and "ON" or "off"))
   end
+  if arg == "autoformat" then
+    M.config.format_on_save = not M.config.format_on_save
+    save_state(project_root(0))
+    return notify("format on save " .. (M.config.format_on_save and "ON" or "off"))
+  end
   if arg == "target" or arg == "base" or arg == "diff" then return M.view(arg) end
-  return notify("usage: :Gruntz {target|base|diff|status|hints|autobuild|close}",
+  return notify("usage: :Gruntz {target|base|diff|status|hints|autobuild|autoformat|close}",
     vim.log.levels.WARN)
 end
 

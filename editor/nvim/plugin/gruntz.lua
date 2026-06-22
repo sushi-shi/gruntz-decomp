@@ -44,6 +44,15 @@ vim.api.nvim_create_autocmd({ "BufWinEnter", "BufEnter", "BufWritePost" }, {
   callback = function(ev) gruntz.hints(ev.buf) end,
 })
 
+-- Format-on-save (off by default; `:Gruntz autoformat` toggles): clang-format the
+-- saved file in place before it hits disk, so one save writes formatted source.
+-- BufWritePre (not Post) so the formatting is part of the write, not a reload.
+vim.api.nvim_create_autocmd("BufWritePre", {
+  pattern = { "*.c", "*.cpp", "*.cc", "*.cxx", "*.h", "*.hpp", "*.hh" },
+  group = grp,
+  callback = function(ev) gruntz.format_on_save(ev.buf) end,
+})
+
 -- Build-on-save (off by default; `:Gruntz autobuild` toggles): a quiet
 -- incremental rebuild on every TU save so the inline %s update as you edit.
 vim.api.nvim_create_autocmd("BufWritePost", {

@@ -20,8 +20,8 @@ resolution never goes stale — unlike line tables.
 
 ## Interface
 
-`:Gruntz {target|base|diff|status|hints|autobuild}` (tab-completable) and
-`:GruntzBuild [args]`.
+`:Gruntz {target|base|diff|status|hints|autobuild|autoformat}` (tab-completable)
+and `:GruntzBuild [args]`.
 
 Buffer-local chords on C/C++ buffers:
 
@@ -90,19 +90,47 @@ to limit ninja to one TU.
 
 ### Build on save (`:Gruntz autobuild`)
 
-Off by default. When on, **saving any TU** (`*.c`/`*.cpp`/`*.cc`) kicks a quiet
-incremental rebuild — **no log window**, just a small `building …` corner note
-that closes into the usual result popup — so the **inline %s update right after
-you save** (and any open `vd`/`vt`/`vb`/`vs` view re-renders in place, keeping
-your cursor and scroll). The tight loop: edit a function, `:w`, watch its `%`
-move and the diff update. Enable per
-session with `:Gruntz autobuild`, or by default with `build_on_save = true` in
-`setup`. (Skips the redundant init-on-shell-entry to stay snappy.) **Rapid saves
-supersede:** a new build cancels the in-flight one (latest wins), so saving
-several times quickly doesn't queue builds or race `ninja` on `build/`.
+Off by default. When on, **saving a TU** (`*.c`/`*.cpp`/`*.cc`) recompiles **only
+that file's unit** and re-diffs it — **no log window**, just a small `building …`
+corner note that closes into a result popup — so the **inline %s update right
+after you save** (and any open `vd`/`vt`/`vb` view for that unit re-renders in
+place, keeping your cursor and scroll). The tight loop: edit a function, `:w`,
+watch its `%` move. Enable per session with `:Gruntz autobuild`, or by default
+with `build_on_save = true` in `setup`. **Rapid saves supersede:** a new save
+cancels the in-flight one (latest wins), so saving several times quickly doesn't
+queue builds or race `ninja` on `build/`.
 
-The `autobuild` and `hints` toggles are **remembered per checkout** in
-`build/gruntz-nvim.json` (gitignored), so each worktree keeps its own setting
+**Why it's fast (~0.6s, not ~3s).** A save runs `gruntz build
+build/objdiff/base/<unit>.obj` — one `cl`, scoped to the edited unit — then
+`objdiff-cli diff -u <unit>` against the **cached target objs**. It deliberately
+**skips delink and the all-units `report.json`**, the two steps whose cost scales
+with the project's unit count. That's sound because the **target side is fixed by
+the retail EXE**: a body edit can't change it, and delink/report only matter when
+you add/move/rename a *labeled* function. The overlay %s use
+`function_reloc_diffs=none`, the same setting `report generate` uses, so they
+match the report's `fuzzy_match_percent` exactly (no number jump).
+
+**Tradeoff.** Between full builds, the **overall %** and **other units'** numbers
+(the `vs` status view) stay at the last full build — only the edited unit updates
+live. Run **`vB` / `:GruntzBuild`** for the full pipeline (delink + all-units
+report + overall %); that's also what picks up a **brand-new function** you just
+added (and a save in a file with no `RVA(...)` yet falls back to a full build
+automatically, to wire the new unit into the graph).
+
+### Format on save (`:Gruntz autoformat`)
+
+Off by default. When on, **saving a source file** under `src/` or `include/`
+(`*.c`/`*.cpp`/`*.cc`/`*.cxx`/`*.h`/`*.hpp`/`*.hh`) runs `clang-format` on **just
+that file** in place before it hits disk — the same root `.clang-format` (and so
+the same whitespace-only, matching-neutral result) as the tree-wide `gruntz
+format`, but scoped to the file you're editing. It's a no-op on already-formatted
+files (the buffer and its undo history are left untouched), skips `vendor/` and
+anything outside `src/`/`include/`, and preserves your cursor/scroll. Enable per
+session with `:Gruntz autoformat`, or by default with `format_on_save = true` in
+`setup`. Needs `clang-format` on `PATH` (the dev shell provides it).
+
+The `autobuild`, `autoformat`, and `hints` toggles are **remembered per checkout**
+in `build/gruntz-nvim.json` (gitignored), so each worktree keeps its own setting
 across restarts; a remembered toggle wins over the `setup` default.
 
 ## Requirements
@@ -140,6 +168,7 @@ require("gruntz").setup({
   keymaps = true,            -- set false to bind your own
   hints = true,              -- inline match-% after each RVA(...)
   build_on_save = false,     -- rebuild quietly on every TU save
+  format_on_save = false,    -- clang-format the saved file (src/ + include/)
   split = "botright vsplit", -- where asm/status views open
 })
 ```
