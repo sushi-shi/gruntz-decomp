@@ -76,16 +76,18 @@ extern "C" int vsprintf(char* buf, const char* fmt, char* va);
 // `this` as the hidden first stack arg (the retail ABI: callers push `this`
 // last).
 RVA(0x1706c0, 0x4b)
-int CButeMgr::ReportError(const char* fmt, ...) {
+void CButeMgr::ReportError(const char* fmt, ...) {
     va_list args;
     va_start(args, fmt);
+
     vsprintf(m_errStr.GetBuffer(0x100), fmt, args);
     m_errStr.ReleaseBuffer(-1);
+
     if (m_errCallback != 0) {
         m_errCallback(m_errStr.GetBuffer(0));
     }
+
     va_end(args);
-    return 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -282,10 +284,10 @@ char* CButeMgr::GetString(char* tag, char* key) {
             if (rec->type == 4) {
                 return (char*)rec->pValue;
             }
-            ReportError(s_fmtTypeMismatch, tag, key);
+            ReportError(s_fmtTypeMismatch, key, tag);
             return (char*)&s_empty;
         }
-        ReportError(s_fmtNotFound, tag, key);
+        ReportError(s_fmtNotFound, key, tag);
         return (char*)&s_empty;
     }
     ReportError(s_fmtInvalidTag, tag);

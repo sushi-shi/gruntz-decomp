@@ -184,7 +184,7 @@ public:
     // fire the optional m_errCallback with the message. A variadic member is
     // __cdecl with `this` as the hidden first stack arg (QAA mangling) - exactly
     // the retail ABI (this pushed last at each call site).
-    int ReportError(const char* fmt, ...);
+    void ReportError(const char* fmt, ...);
 
     // Callback trampoline + sub-object cleanup.
     void* InvokeCallback(void* (*fn)(CButeMgr*));
