@@ -708,34 +708,6 @@ CToobSpikez::CToobSpikez(CGameObject* obj) : CUserLogic(obj) {
 
 
 
-// size 0x54 recovered from operator-new sites (gruntz.analysis.news)
-SIZE(CSecretLevelTrigger, 0x54);
 
 
-// size 0x54 recovered from operator-new sites (gruntz.analysis.news)
-SIZE(CTileTrigger, 0x54);
 
-// size 0x54 recovered from operator-new sites (gruntz.analysis.news)
-SIZE(CVoiceTrigger, 0x54);
-// size 0x54 from operator-new vtable attribution (gruntz.analysis.news)
-SIZE(CBehindCandy, 0x54);
-// size 0x54 from operator-new vtable attribution (gruntz.analysis.news)
-SIZE(CEyeCandy, 0x54);
-// size 0x54 from operator-new vtable attribution (gruntz.analysis.news)
-SIZE(CFrontCandy, 0x54);
-// size 0x54 from operator-new vtable attribution (gruntz.analysis.news)
-SIZE(CParticlez, 0x54);
-// size 0x54 from operator-new vtable attribution (gruntz.analysis.news)
-SIZE(CSecretTeleporterTrigger, 0x54);
-// size 0x54 from operator-new vtable attribution (gruntz.analysis.news)
-SIZE(CSimpleAnimation, 0x54);
-// size 0x54 from operator-new vtable attribution (gruntz.analysis.news)
-SIZE(CSingleAnimation, 0x54);
-// size 0x54 from operator-new vtable attribution (gruntz.analysis.news)
-SIZE(CSingleFrameMessage, 0x54);
-// size 0x54 from operator-new vtable attribution (gruntz.analysis.news)
-SIZE(CTileTriggerSwitch, 0x54);
-// size 0x54 from operator-new vtable attribution (gruntz.analysis.news)
-SIZE(CTileTriggerTransition, 0x54);
-// size 0x54 from operator-new vtable attribution (gruntz.analysis.news)
-SIZE(CWarpStonePad, 0x54);
