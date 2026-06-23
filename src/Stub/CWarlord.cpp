@@ -77,6 +77,30 @@ public:
 };
 
 // ---------------------------------------------------------------------------
+// The single-player "level done?" chain: g_gameReg->m_2c (a level/mission object)
+// -> m_3f4 (its objective tracker) -> m_4c (a non-zero "complete" flag). Reached
+// by raw offset off the shared CGameReg's void* m_2c.
+// ---------------------------------------------------------------------------
+struct CWarlordObjective {
+    char m_pad00[0x4c];
+    int m_4c; // +0x4c  completion flag (0 = still playing)
+};
+
+struct CWarlordMission {
+    char m_pad00[0x3f4];
+    CWarlordObjective* m_3f4; // +0x3f4  objective tracker
+};
+
+// ---------------------------------------------------------------------------
+// The registry's battle-event sink at g_gameReg->m_60 (engine __thiscall at
+// RVA 0x11b7c0). PostBattleEvent fires a fort battle-cry / event message.
+// ---------------------------------------------------------------------------
+class CRegBattleEvent {
+public:
+    void PostBattleEvent(int id, int event, int a, int b, int c);
+};
+
+// ---------------------------------------------------------------------------
 // The warlord's owner/state sub-object at CWarlord+0x10.
 // ---------------------------------------------------------------------------
 struct CWarlordOwner {
@@ -85,6 +109,8 @@ struct CWarlordOwner {
     int m_60; // +0x60  position y
     char m_pad64[0x124 - 0x64];
     int m_124; // +0x124  owner index
+    char m_pad128[0x188 - 0x128];
+    int m_188; // +0x188  the id passed to the registry battle-event helper
 };
 
 // ---------------------------------------------------------------------------
@@ -94,12 +120,14 @@ class CWarlord {
 public:
     CWarlord(int);
     int LoadAttributes();
-    void LoadAttributes2();
+    int LoadAttributes2();
 
     // tail helpers (engine, __thiscall).
     void NotifyFortUnderAttack();      // 0x45270
     void ResolveIdleAnimation();       // 0x45960
     void ResolveBattlecryAnimation();  // 0x45b60
+    void RaiseBattleAlert();           // 0x457b0  (panic-radius alert variant)
+    void ResolveMovingAnimation();     // 0x45100
 
     char m_pad00[0x10];
     CWarlordOwner* m_10;        // +0x10  owner/state sub-object
@@ -147,8 +175,58 @@ int CWarlord::LoadAttributes() {
     return 0;
 }
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
+// CWarlord::LoadAttributes2 - the single-player-aware variant of the per-tick
+// warlord update:
+//   1. Re-arm the geometry sub-player (same SetGeoSourceR gate); bail (0) if not
+//      ready.
+//   2. Multiplayer (g_gameReg->m_134 != 1): measure nearest-enemy distance vs the
+//      "Warlordz/PanicRadius" config (default 64); when NOT inside the radius
+//      (dist >= panic) raise the battle alert (RaiseBattleAlert), then return.
+//   3. Single-player: if the level objective isn't complete
+//      (g_gameReg->m_2c->m_3f4->m_4c == 0) resolve the moving animation and
+//      return; otherwise, past the 64-bit g_645588 cooldown window, post a fort
+//      battle event (g_gameReg->m_60->PostBattleEvent(owner->m_188, 0x436, -1,
+//      -1, -1)) and re-arm a 0x7530 cooldown stamp.
+//
+// Returns int 0 on every path (Ghidra mislabeled the return as void; the xor
+// eax,eax on each exit recovers the int-returning shape). Plain /O2 /MT leaf.
+//
+// @early-stop
+// regalloc wall (topic:regalloc, docs/patterns/zero-register-pinning.md +
+// pin-local-for-callee-saved-reg.md): structure/offsets/instruction-selection are
+// byte-exact, but retail keeps g_gameReg in edx (because it is live in BOTH the
+// multiplayer and single-player branches, freeing ecx for the thiscall `this`)
+// while cl parks it in ecx, mirror-swapping g_645588 into the other scratch reg.
+// A pure scratch ecx<->edx coin-flip - no source lever flips it (tried inline vs
+// named helper, m_2c-chain split; all no-change at the same plateau).
 RVA(0x00044d10, 0x106)
-void CWarlord::LoadAttributes2() {}
+int CWarlord::LoadAttributes2() {
+    if (m_38->m_1a0.SetGeoSourceR(g_defaultGeo) != 1) {
+        return 0;
+    }
+
+    CGameReg* reg = g_gameReg;
+    if (reg->m_134 != 1) {
+        CWarlordOwner* o = m_10;
+        int dist = (*(CRegThreatHelper**)((char*)reg + 0x68))
+                       ->NearestEnemyDist(o->m_124, o->m_5c, o->m_60);
+        if (dist >= g_buteMgr.GetIntDef(s_Warlordz, s_PanicRadius, 0x40)) {
+            RaiseBattleAlert();
+            return 0;
+        }
+    } else {
+        if (((CWarlordMission*)reg->m_2c)->m_3f4->m_4c == 0) {
+            ResolveMovingAnimation();
+            return 0;
+        }
+        if ((__int64)(unsigned)g_645588 - *(__int64*)&m_88 >= *(__int64*)&m_90) {
+            CRegBattleEvent* sink = *(CRegBattleEvent**)((char*)reg + 0x60);
+            sink->PostBattleEvent(m_10->m_188, 0x436, -1, -1, -1);
+            m_90 = 0x7530;
+            m_94 = 0;
+            m_88 = g_645588;
+            m_8c = 0;
+        }
+    }
+    return 0;
+}

@@ -438,7 +438,7 @@ engine_label_stubs	?LoadActionTileSprites@EngineThisStub@@QAEXH@Z	85.4651	85.465
 engine_label_stubs	?LoadAreaLevelTable@EngineLabelBacklog@@YAXXZ	0.0517	0.0517	1	cpp:45e65336d4b5	0xa11d0
 engine_label_stubs	?LoadAssets@CHelpState@@QAEHHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x95090
 engine_label_stubs	?LoadAttributes2@CStaticHazard@@QAEHXZ	97.8571	97.8571	1	cpp:6bf52155264d	0xfc0b0
-engine_label_stubs	?LoadAttributes2@CWarlord@@QAEXXZ	1.2346	1.2346	1	cpp:45e65336d4b5	0x44d10
+engine_label_stubs	?LoadAttributes2@CWarlord@@QAEHXZ	91.6296	91.6296	1	cpp:6bf52155264d	0x44d10
 engine_label_stubs	?LoadAttributes@CBrickz@@QAEXHH@Z	0.1490	0.1490	1	cpp:6bf52155264d	0x810f0
 engine_label_stubs	?LoadAttributes@CDroppedObjectShadow@@QAEXXZ	0.4444	0.4444	1	cpp:45e65336d4b5	0xc62e0
 engine_label_stubs	?LoadAttributes@CStaticHazard@@QAEXXZ	0.3774	0.3774	1	cpp:45e65336d4b5	0xfc1a0
