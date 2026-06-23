@@ -72,7 +72,7 @@ struct EngineThisStub {
     void BuildBootyWalkingGruntz();
     void CheckWarpLetterBonus();
     void BootyState_OnActivate2_vfunc8();
-    void LoadChatBoxSprite(int);
+    int LoadChatBoxSprite(int);
     void LoadCreditzStateAssets(int, int, int);
     void InitAttractTitle();
     void LoadCreditzAssets2();
@@ -347,11 +347,148 @@ void EngineLabelBacklog::StartUpPrompt() {}
 RVA(0x0001fd70, 0x45)
 void EngineLabelBacklog::Stub_01fd70() {}
 
-// @confidence: med
+// ---------------------------------------------------------------------------
+// EngineThisStub::LoadChatBoxSprite - looks up the "GAME_CHATBOX" sprite set in
+// the game's image registry (this->m_18->m_10->+0x10 hash sub-table, Lookup =
+// FUN_005b8008) and, if present, renders the level's chatbox frame into it and
+// stamps the level/world title text. arg1 is the level/world context: arg1->m_2c
+// is a DC-host whose +0x8 is a polymorphic DC source (GetDC = vtable slot +0x44,
+// Done = slot +0x68, both __stdcall taking the object explicitly), and
+// arg1->m_2c is non-null guarded. this->m_8 is a mode flag (==3 selects the
+// alternate frame/offset/string-id set). Only offsets / code bytes are
+// load-bearing; helpers are reloc-masked externals.
+//
+// int (BOOL) return like its loader siblings: the m_10==0 and hdc==0 guards jump
+// to the shared `mov eax,1; ret` tail (return 1), the m_2c==0 / spr==0 / frame==0
+// guards `return 0` (reused zeroed eax). A void return would tail-merge the bare
+// epilogues and drop the eax=1 tail.
+struct CChatBoxFrame {                // the looked-up "GAME_CHATBOX" sprite set
+    char m_pad00[0x14];
+    void** m_14; // +0x14  frame-entry array
+    char m_pad18[0x64 - 0x18];
+    int m_64; // +0x64  frame index (mode != 3)
+    int m_68; // +0x68  frame index (mode == 3)
+};
+struct CChatBoxHash { // embedded at CChatBoxRegistry+0x10
+    // FUN_005b8008 __thiscall; writes the found set to *out.
+    void Lookup(char* szName, void** out);
+};
+struct CChatBoxRegistry { // this->m_18->m_10 points here
+    char m_pad00[0x10];
+    CChatBoxHash m_10; // +0x10
+};
+struct CChatBoxRegRoot { // this->m_18 points here
+    char m_pad00[0x10];
+    CChatBoxRegistry* m_10; // +0x10
+};
+// arg1->m_2c->m_8: a polymorphic DC source. GetDC (slot +0x44 == #17) and Done
+// (slot +0x68 == #26) are __stdcall slots taking the object explicitly (the
+// object is pushed as the first arg, not passed in ecx).
+struct CChatBoxDcSrc {
+    struct CChatBoxDcVtbl* m_vptr;
+};
+struct CChatBoxDcVtbl {
+    void* s0[0x11];                            // slots 0..16
+    void(__stdcall* GetDC)(CChatBoxDcSrc*, HDC* out); // slot 17 == +0x44
+    void* s18[0x68 / 4 - 0x12];                // slots 18..25
+    void(__stdcall* Done)(CChatBoxDcSrc*, HDC); // slot 26 == +0x68
+};
+struct CChatBoxDcHost { // arg1->m_2c points here
+    char m_pad00[0x8];
+    CChatBoxDcSrc* m_8; // +0x08
+};
+struct CChatBoxCtx { // arg1 points here
+    char m_pad00[0x2c];
+    CChatBoxDcHost* m_2c; // +0x2c
+};
+// FUN_00553790 __stdcall: renders the chatbox frame into the looked-up set.
+void __stdcall RenderChatBoxFrame(int ctx, void* a, void* b, int z); // RVA 0x153790
+// The text-stamp host reached through this->m_14 (FUN @ RVA 0x1cd0, __thiscall).
+struct CChatBoxTextHost {
+    void StampText(HDC dc, int id, void* rect); // FUN @ 0x1cd0
+};
+// Typed view of `this`: m_0/m_4 are the two source roots whose sub-fields feed
+// the render + text-stamp, m_8 the mode flag, m_10/m_14 source pointers, m_18
+// the registry root. (EngineThisStub is the shared placeholder owner.)
+struct CChatBoxOwner {
+    char* m_0;  // +0x00
+    char* m_4;  // +0x04
+    int m_8;    // +0x08  mode (==3 selects alternate set)
+    char m_pad0c[0x10 - 0xc];
+    void* m_10; // +0x10
+    CChatBoxTextHost* m_14; // +0x14
+    CChatBoxRegRoot* m_18;  // +0x18
+};
+
+// @confidence: high
 // @source: decomp-xref
-// @stub
+// @early-stop
+// scheduling wall (docs/patterns/outparam-zeroinit-scheduling.md): logic + arg
+// order + the int(BOOL) per-site epilogues all match; residual is two store
+// hoist/sink permutations - retail SINKS the Lookup out-param `mov [&spr],0` past
+// the arg pushes (cl hoists) and SINKS the rect[1] struct store past `push &rect`
+// at a shifted esp offset (same instruction multiset, /O2-invariant), plus the
+// frame guard `mov ecx,[..]; test` vs cl's `cmp [..],0` materialization. No local
+// source diff closes these (hoisting rect[0] regressed 83->82%).
 RVA(0x00020f40, 0x188)
-void EngineThisStub::LoadChatBoxSprite(int) {}
+int EngineThisStub::LoadChatBoxSprite(int arg1) {
+    CChatBoxOwner* self = (CChatBoxOwner*)this;
+    if (!self->m_10) {
+        return 1;
+    }
+
+    CChatBoxCtx* ctx = (CChatBoxCtx*)arg1;
+    CChatBoxDcHost* host = ctx->m_2c;
+    if (!host) {
+        return 0;
+    }
+
+    void* spr = 0;
+    self->m_18->m_10->m_10.Lookup("GAME_CHATBOX", &spr);
+    if (!spr) {
+        return 0;
+    }
+
+    if (self->m_8 == 3) {
+        void* frame = ((CChatBoxFrame*)spr)->m_14[((CChatBoxFrame*)spr)->m_68];
+        if (!frame) {
+            return 0;
+        }
+        RenderChatBoxFrame(arg1, self->m_0 + 0x140, self->m_4 + 0x20, 0);
+    } else {
+        void* frame = ((CChatBoxFrame*)spr)->m_14[((CChatBoxFrame*)spr)->m_64];
+        if (!frame) {
+            return 0;
+        }
+        RenderChatBoxFrame(arg1, self->m_0 + 0xf0, self->m_4 + 0x20, 0);
+    }
+
+    HDC hdc = 0;
+    host->m_8->m_vptr->GetDC(host->m_8, &hdc);
+    if (!hdc) {
+        return 1;
+    }
+    SetBkMode(hdc, 1);
+    SetTextColor(hdc, 0);
+    SetBkColor(hdc, 0);
+
+    void* rect[4];
+    if (self->m_8 == 3) {
+        rect[0] = self->m_0 + 0x4c;
+        rect[2] = self->m_0 + 0x267;
+        rect[1] = self->m_4 + 0x2b;
+        rect[3] = self->m_4 + 0x37;
+        self->m_14->StampText(hdc, 0x21b, rect);
+    } else {
+        rect[0] = self->m_0 + 0x4c;
+        rect[2] = self->m_0 + 0x1c7;
+        rect[1] = self->m_4 + 0x2b;
+        rect[3] = self->m_4 + 0x37;
+        self->m_14->StampText(hdc, 0x17b, rect);
+    }
+    host->m_8->m_vptr->Done(host->m_8, hdc);
+    return 1;
+}
 
 // @confidence: med
 // @source: string-xref

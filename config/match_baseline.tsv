@@ -451,7 +451,7 @@ engine_label_stubs	?LoadBombGruntRunConfig2@EngineThisStub@@QAEXXZ	0.4762	0.4762
 engine_label_stubs	?LoadBombGruntRunConfig@EngineThisStub@@QAEXHH@Z	0.3922	0.3922	1	cpp:6bf52155264d	0x65630
 engine_label_stubs	?LoadBootyCheatState@EngineLabelBacklog@@YGXHHH@Z	0.3788	0.3788	1	cpp:6bf52155264d	0x18830
 engine_label_stubs	?LoadBridgeMoveSprites@EngineLabelBacklog@@YGXH@Z	0.6536	0.6536	1	cpp:6bf52155264d	0x110860
-engine_label_stubs	?LoadChatBoxSprite@EngineThisStub@@QAEXH@Z	0.7143	0.7143	1	cpp:6bf52155264d	0x20f40
+engine_label_stubs	?LoadChatBoxSprite@EngineThisStub@@QAEHH@Z	83.3714	83.3714	1	cpp:6bf52155264d	0x20f40
 engine_label_stubs	?LoadCheatConfig@EngineLabelBacklog@@YAXXZ	0.8065	0.8065	1	cpp:45e65336d4b5	0x22e60
 engine_label_stubs	?LoadChipMachineConfig@EngineThisStub@@QAEXXZ	0.2066	0.2066	1	cpp:6bf52155264d	0x106bb0
 engine_label_stubs	?LoadCreditzAssets2@EngineThisStub@@QAEXXZ	1.1364	1.1364	1	cpp:6bf52155264d	0x39dc0
