@@ -116,3 +116,4 @@
 #include "RezSync.cpp"
 #include "UnknownClassInCGruntzMgr.cpp"
 #include "UnknownVoldemort.cpp"
+#include "MallocConstructors.cpp"
