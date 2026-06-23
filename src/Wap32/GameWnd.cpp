@@ -320,3 +320,6 @@ int CGameWnd::OnRButtonDblClk(WPARAM, int, int) {
 int CGameWnd::OnCommand(WPARAM, LPARAM) {
     return 0;
 }
+
+// size 0x10 recovered from operator-new sites (gruntz.analysis.news)
+SIZE(CGameWnd, 0x10);

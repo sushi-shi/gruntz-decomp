@@ -1,10 +1,8 @@
 #include <rva.h>
 // CExitTrigger.cpp - engine-label stubs for CExitTrigger.
 
-class CExitTrigger {
-public:
-    CExitTrigger(int);
-};
+#include <Stub/CExitTrigger.h>
+
 
 // @confidence: med
 // @source: rtti-vptr

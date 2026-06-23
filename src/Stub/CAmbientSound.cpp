@@ -1,11 +1,8 @@
 #include <rva.h>
 // CAmbientSound.cpp - engine-label stubs for CAmbientSound.
 
-class CAmbientSound {
-public:
-    void Stub_00b6a0(int, int, int, int, int);
-    void Stub_00b7b0(int, int, int, int, int);
-};
+#include <Stub/CAmbientSound.h>
+
 
 // @confidence: high
 // @source: rtti-vptr

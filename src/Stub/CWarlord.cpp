@@ -1,12 +1,8 @@
 #include <rva.h>
 // CWarlord.cpp - engine-label stubs for CWarlord.
 
-class CWarlord {
-public:
-    CWarlord(int);
-    void LoadAttributes();
-    void LoadAttributes2();
-};
+#include <Stub/CWarlord.h>
+
 
 // @confidence: med
 // @source: rtti-vptr

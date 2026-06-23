@@ -1,12 +1,8 @@
 #include <rva.h>
 // CStaticHazard.cpp - engine-label stubs for CStaticHazard.
 
-class CStaticHazard {
-public:
-    CStaticHazard(int);
-    void LoadAttributes2();
-    void LoadAttributes();
-};
+#include <Stub/CStaticHazard.h>
+
 
 // @confidence: med
 // @source: rtti-vptr

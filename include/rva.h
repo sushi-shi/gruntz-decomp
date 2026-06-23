@@ -16,12 +16,23 @@
 //                         clang MS-mangling differs from the retail symbol.
 //   DATA(addr)          - on an `extern` declaration of a matched GLOBAL (the
 //                         DATA symbol it is referenced through).
+//   SIZE(type, bytes)   - at file scope right AFTER a class, assert sizeof(type)
+//                         == bytes. UNLIKE the labels above this is a REAL
+//                         compile-time check, active under BOTH clang and MSVC
+//                         5.0 (whose sizeof is the matching ground truth). clang
+//                         uses static_assert (clear diagnostic); MSVC 5.0 predates
+//                         it, so there a negative-size typedef, __LINE__-uniquified
+//                         so many SIZE()s coalesce into one TU (All.cpp) without a
+//                         clash. Emits no code -> matching-neutral. (cf. vostok's
+//                         STATIC_SIZE_ASSERT.)
 //
 // IMPORTANT - the same source is compiled by clang (the label step) AND by MSVC
 // 5.0 under wine (the base objs). MSVC 5.0 predates __attribute__, [[...]], AND
 // C99 variadic macros (__VA_ARGS__), so each macro must be FIXED-arity and must
 // compile to nothing under any non-clang compiler. Under MSVC the attributes
 // vanish, so they are purely clang-side labels and never perturb matched code.
+// (SIZE is the one deliberate exception: a real sizeof assert that IS active
+// under MSVC too - it still emits no code, so it stays matching-neutral.)
 //
 // IR caveat (MEASURED): clang only emits an annotation into
 // @llvm.global.annotations for a DEFINED global; an `extern` declaration's
@@ -49,6 +60,9 @@
 // compiles to nothing. Use it when modeling a matched class's vtable.
 #define OVERRIDE override
 
+// SIZE (see header note) - clang gets static_assert for a clear diagnostic.
+#define SIZE(type, bytes) static_assert(sizeof(type) == (bytes), "sizeof(" #type ") != " #bytes)
+
 #else // MSVC 5.0 (and any other non-clang compiler): compile the labels out.
 
 #define RVA(addr, size)
@@ -56,6 +70,13 @@
 #define SYMBOL(mangled)
 #define DATA(addr)
 #define OVERRIDE
+
+// MSVC 5.0 has no static_assert: classic negative-size typedef, name uniquified
+// by __LINE__ so aggregating many SIZE()s into one TU (All.cpp) cannot clash.
+#define GRUNTZ_SIZE_CAT_(a, b) a##b
+#define GRUNTZ_SIZE_CAT(a, b) GRUNTZ_SIZE_CAT_(a, b)
+#define SIZE(type, bytes) \
+    typedef char GRUNTZ_SIZE_CAT(gruntz_size_check_, __LINE__)[(sizeof(type) == (bytes)) ? 1 : -1]
 
 #endif
 

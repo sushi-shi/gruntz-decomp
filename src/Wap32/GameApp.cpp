@@ -513,3 +513,6 @@ void WAP32::CGameMgr::vector_deleting_destructor() {}
 // @stub
 RVA(0x080dd0, 0x32)
 void CGameApp::Stub_080dd0() {}
+
+// size 0x2c recovered from operator-new sites (gruntz.analysis.news)
+SIZE(WAP32::CGameMgr, 0x2c);

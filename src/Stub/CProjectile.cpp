@@ -1,12 +1,8 @@
 #include <rva.h>
 // CProjectile.cpp - engine-label stubs for CProjectile.
 
-class CProjectile {
-public:
-    void CProjectile_0126e0();
-    void CProjectile_0dec60(int);
-    void LoadProjectileSprites(int, int, int, int, int, int, int);
-};
+#include <Stub/CProjectile.h>
+
 
 // @confidence: med
 // @source: rtti-vptr

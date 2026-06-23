@@ -1,10 +1,8 @@
 #include <rva.h>
 // CEyeCandyAni.cpp - engine-label stubs for CEyeCandyAni.
 
-class CEyeCandyAni {
-public:
-    CEyeCandyAni(int);
-};
+#include <Stub/CEyeCandyAni.h>
+
 
 // @confidence: med
 // @source: rtti-vptr

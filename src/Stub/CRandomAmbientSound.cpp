@@ -1,10 +1,8 @@
 #include <rva.h>
 // CRandomAmbientSound.cpp - engine-label stubs for CRandomAmbientSound.
 
-class CRandomAmbientSound {
-public:
-    ~CRandomAmbientSound();
-};
+#include <Stub/CRandomAmbientSound.h>
+
 
 // @confidence: high
 // @source: rtti-vptr

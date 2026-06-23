@@ -237,3 +237,6 @@ void* CreateU10O() {
 // @stub
 RVA(0x112820, 0xc)
 void CGruntzApp::Stub_112820() {}
+
+// size 0x254 recovered from operator-new sites (gruntz.analysis.news)
+SIZE(CGruntzApp, 0x254);

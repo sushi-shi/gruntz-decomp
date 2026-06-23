@@ -1,10 +1,8 @@
 #include <rva.h>
 // CDoNothingNormal.cpp - engine-label stubs for CDoNothingNormal.
 
-class CDoNothingNormal {
-public:
-    CDoNothingNormal();
-};
+#include <Stub/CDoNothingNormal.h>
+
 
 // @confidence: high
 // @source: rtti-vptr

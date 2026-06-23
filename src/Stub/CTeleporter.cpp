@@ -4,10 +4,8 @@
 // CTeleporter::CTeleporter(CGameObject*) (0x041020) graduated to
 // src/Gruntz/UserLogic.cpp.
 
-class CTeleporter {
-public:
-    void LoadAttributes();
-};
+#include <Stub/CTeleporter.h>
+
 
 // @confidence: med
 // @source: decomp-xref

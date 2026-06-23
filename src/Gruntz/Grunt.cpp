@@ -1032,3 +1032,4 @@ void CGrunt::ReadConfigFromButeMgr() {
         *(int*)((char*)this + 0x41c) >>= 1;
     }
 }
+

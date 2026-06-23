@@ -1,10 +1,8 @@
 #include <rva.h>
 // CLevelTime.cpp - engine-label stubs for CLevelTime.
 
-class CLevelTime {
-public:
-    CLevelTime(int);
-};
+#include <Stub/CLevelTime.h>
+
 
 // @confidence: med
 // @source: rtti-vptr

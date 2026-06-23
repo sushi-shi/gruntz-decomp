@@ -1,10 +1,8 @@
 #include <rva.h>
 // CRollingBall.cpp - engine-label stubs for CRollingBall.
 
-class CRollingBall {
-public:
-    CRollingBall(int);
-};
+#include <Stub/CRollingBall.h>
+
 
 // @confidence: med
 // @source: rtti-vptr

@@ -42,3 +42,4 @@ CBoomerang::CBoomerang(int a) : CProjectileBase(a) {
     *(void**)this = &g_boomerangVtbl;
     m_154->m_08 |= 0x2000002;
 }
+

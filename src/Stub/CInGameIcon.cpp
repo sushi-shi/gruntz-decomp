@@ -1,10 +1,8 @@
 #include <rva.h>
 // CInGameIcon.cpp - engine-label stubs for CInGameIcon.
 
-class CInGameIcon {
-public:
-    CInGameIcon(int);
-};
+#include <Stub/CInGameIcon.h>
+
 
 // @confidence: med
 // @source: rtti-vptr

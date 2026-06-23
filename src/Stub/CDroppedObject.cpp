@@ -1,10 +1,8 @@
 #include <rva.h>
 // CDroppedObject.cpp - engine-label stubs for CDroppedObject.
 
-class CDroppedObject {
-public:
-    CDroppedObject(int);
-};
+#include <Stub/CDroppedObject.h>
+
 
 // @confidence: med
 // @source: rtti-vptr

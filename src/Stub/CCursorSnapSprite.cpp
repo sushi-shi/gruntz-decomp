@@ -1,10 +1,8 @@
 #include <rva.h>
 // CCursorSnapSprite.cpp - engine-label stubs for CCursorSnapSprite.
 
-class CCursorSnapSprite {
-public:
-    CCursorSnapSprite(int);
-};
+#include <Stub/CCursorSnapSprite.h>
+
 
 // @confidence: med
 // @source: rtti-vptr

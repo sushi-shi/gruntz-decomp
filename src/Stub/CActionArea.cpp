@@ -1,10 +1,8 @@
 #include <rva.h>
 // CActionArea.cpp - engine-label stubs for CActionArea.
 
-class CActionArea {
-public:
-    CActionArea(int);
-};
+#include <Stub/CActionArea.h>
+
 
 // @confidence: med
 // @source: rtti-vptr

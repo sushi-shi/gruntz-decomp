@@ -1,11 +1,7 @@
 #include <rva.h>
-// CUserLogic.cpp - engine-label stubs for CUserLogic.
-
-class CUserLogic {
-public:
-    void CUserLogic_0138d0();
-    void CUserLogic_058cd0(int);
-};
+#include <Stub/CUserLogic.h>
+// CUserLogic.cpp - engine-label stubs for CUserLogic (class def now in
+// include/Stub/CUserLogic.h: sized 0x54, inherits CUserBase).
 
 // @confidence: med
 // @source: rtti-vptr

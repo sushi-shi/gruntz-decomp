@@ -1,10 +1,8 @@
 #include <rva.h>
 // CGuardPoint.cpp - engine-label stubs for CGuardPoint.
 
-class CGuardPoint {
-public:
-    CGuardPoint(int);
-};
+#include <Stub/CGuardPoint.h>
+
 
 // @confidence: med
 // @source: rtti-vptr
