@@ -504,7 +504,7 @@ engine_label_stubs	?LoadSounds@CSplashState@@QAEHHHH@Z	100.0000	100.0000	1	cpp:6
 engine_label_stubs	?LoadStateImages_vfunc8@EngineThisStub@@QAEXXZ	2.2222	2.2222	1	cpp:6bf52155264d	0xa09a0
 engine_label_stubs	?LoadTeleporterGooConfig@EngineThisStub@@QAEXH@Z	0.2262	0.2262	1	cpp:6bf52155264d	0x6eb80
 engine_label_stubs	?LoadTerrainTileSprites@EngineLabelBacklog@@YGXHHHHHH@Z	0.0749	0.0749	1	cpp:6bf52155264d	0x75e90
-engine_label_stubs	?LoadTitleConfig@CAttract@@QAEXH@Z	0.9009	0.9009	1	cpp:6bf52155264d	0xa03f0
+engine_label_stubs	?LoadTitleConfig@CAttract@@QAEHH@Z	99.0991	99.0991	1	cpp:6bf52155264d	0xa03f0
 engine_label_stubs	?LoadToyBoxIcon@EngineLabelBacklog@@YGXHHHHH@Z	1.3889	1.3889	1	cpp:6bf52155264d	0x7a3f0
 engine_label_stubs	?LoadVehicleGruntAnimations@EngineThisStub@@QAEXXZ	0.4098	0.4098	1	cpp:6bf52155264d	0x63db0
 engine_label_stubs	?LoadVehicleGruntSprites@EngineLabelBacklog@@YGXH@Z	0.3597	0.3597	1	cpp:6bf52155264d	0x50ce0
