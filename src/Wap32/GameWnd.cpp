@@ -260,6 +260,10 @@ LRESULT __stdcall CGameApp::GameWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, 
 // relocation that the ctor stores (the full 22-slot CGameWnd vtable). The two
 // reconstructed virtuals (~CGameWnd, QuitMessageLoop) are defined above.
 CGameWnd::~CGameWnd() {}
+// Scalar-deleting dtor (??_G, slot 0): compiler-generated thunk wrapping the real
+// ~CGameWnd cleanup (zeroes a file-scope global, calls a base dtor; not reconstructed,
+// so this only NAMES the retail function). MSVC synthesizes ??_G from the dtor above.
+// @rva-symbol: ??_GCGameWnd@@UAEPAXI@Z 0x00094d80 0x2f
 int CGameWnd::PreDispatchMessage(UINT, WPARAM, LPARAM) {
     return 0;
 }

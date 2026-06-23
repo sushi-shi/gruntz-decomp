@@ -40,6 +40,10 @@ CStatusBarItem::CStatusBarItem() {
 
 // Out-of-line stubs anchor the CStatusBarItem vftable in this TU (not matched).
 CStatusBarItem::~CStatusBarItem() {}
+// Scalar-deleting dtor (??_G, slot 0): compiler-generated thunk wrapping the real
+// ~CStatusBarItem cleanup (calls one base dtor; not reconstructed, so this only NAMES
+// the retail function). MSVC synthesizes ??_G from the virtual dtor above.
+// @rva-symbol: ??_GCStatusBarItem@@UAEPAXI@Z 0x00100620 0x24
 int CStatusBarItem::SbiVfunc0() {
     return 0;
 }

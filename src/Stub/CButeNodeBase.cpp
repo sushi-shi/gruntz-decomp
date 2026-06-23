@@ -65,6 +65,17 @@ public:
     char m_pad1c[0x28 - 0x1c];
     int m_28; // +0x28
 };
+SIZE(CButeNodeBase, 0x2c); // measured: new(0x2c) -> ctor 0x16dff0; matches the layout above
+
+// CButeNodeBase scalar-deleting dtor (??_G, vtbl slot 0): restore the two vftables,
+// run the 3 sub-object dtors, then (flags & 1) -> operator delete(this), return this.
+// The ??_G thunk is compiler-generated, but this class is modeled with a MANUAL vtbl
+// pointer (the m_vtbl field + a hand store), not C++ virtuals - so MSVC emits no
+// ??_GCButeNodeBase for an @rva-symbol pin to match (it would be a MISS). Pinning it
+// would require a real `virtual ~CButeNodeBase()`, i.e. a compiler vptr at +0 that
+// collides with the manually-modeled vtbl and breaks the matched ctor layout. So the
+// dtor is documented here, not symbol-pinned; defer to a real vtable reconstruction.
+// Retail RTTI names the class zPTree; CButeNodeBase is this codebase's placeholder.
 
 // @early-stop
 // base-flags EH wall: this ctor needs a /GX EH frame (subobject construction
