@@ -35,8 +35,8 @@ cstatusbarmgr	1	0
 deflate	6	6
 dialogs	6	5
 directinputmgr2	8	8
-directsoundmgr	18	15
-engine_label_stubs	564	118
+directsoundmgr	19	16
+engine_label_stubs	563	118
 filestream	13	9
 font	16	9
 fontconfig	1	0
@@ -261,6 +261,7 @@ directsoundmgr	?GetPan@DirectSoundMgr@@QAEJXZ	100.0000	100.0000	2	b399a81fd3b1	0
 directsoundmgr	?GetVolume@DirectSoundMgr@@QAEJXZ	100.0000	100.0000	2	ed1c1d07cb08	0x1355f0
 directsoundmgr	?IsLooping@DirectSoundMgr@@QAEHXZ	99.8529	99.8529	2	ac28569a4582	0x135440
 directsoundmgr	?IsPlaying@DirectSoundMgr@@QAEHXZ	99.8529	99.8529	2	abaa70682e88	0x1353f0
+directsoundmgr	?LockConvert@DirectSoundMgr@@QAEHPAXKK@Z	100.0000	100.0000	1	808259d7aab1	0x135f40
 directsoundmgr	?Restore@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	2	911bb328c30c	0x135310
 directsoundmgr	?SetCooperativeLevel@DirectSoundMgr@@QAEHPAXK@Z	100.0000	100.0000	2	9e49714460b8	0x1365f0
 directsoundmgr	?SetCurrentPosition@DirectSoundMgr@@QAEHK@Z	100.0000	100.0000	2	25f1d5c1aa21	0x135a70
@@ -403,7 +404,6 @@ engine_label_stubs	?DrawLabel@DrawHost2_164420@ApiCallerStubs@@QAEXPAUtagRECT@@P
 engine_label_stubs	?DrawSaveGameMenu@EngineLabelBacklog@@YAXXZ	0.3436	0.3436	1	cpp:45e65336d4b5	0xe3f40
 engine_label_stubs	?EndParse@RemusParseSource@@QAEXXZ	8.3333	8.3333	1	cpp:2262ffc5f902	0x1399d0
 engine_label_stubs	?ErrorThunk_08dd80@CDirectDrawMgr@@QAEXXZ	5.0000	5.0000	1	cpp:45e65336d4b5	0x8dd80
-engine_label_stubs	?ErrorThunk_135f40@DirectSoundMgr@@QAEXHHH@Z	0.6803	0.6803	1	cpp:6bf52155264d	0x135f40
 engine_label_stubs	?Finalize@CStatusBarItem2@@QAEHXZ	95.5172	95.5172	1	cpp:2262ffc5f902	0x136270
 engine_label_stubs	?Find@CButeTree@@QAEPAXPBD@Z	1.8868	1.8868	1	cpp:0f6a941a1e75	0x16d190
 engine_label_stubs	?First@RezColl@@QAEPAURezNode@@XZ	11.1111	11.1111	1	cpp:2262ffc5f902	0x184ae0

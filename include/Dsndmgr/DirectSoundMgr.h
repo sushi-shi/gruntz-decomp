@@ -148,7 +148,7 @@ public:
     int GetCurrentPosition(unsigned long* play, unsigned long* write);    // 0x135a20
     int SetCurrentPosition(unsigned long pos);                            // 0x135a70
     int GetFormat(void* fmt, unsigned long size, unsigned long* written); // 0x135ac0
-    int LockConvert(void* dst, unsigned long off, unsigned long bytes);   // 0x135f40
+    int LockConvert(void* src, unsigned long lockBytes, unsigned long convert); // 0x135f40
 
     // --- device-level wrappers (this = the manager, m_14 = IDirectSound) ------
     int Create(

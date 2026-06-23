@@ -344,6 +344,71 @@ int DirectSoundMgr::GetFormat(void* fmt, unsigned long size, unsigned long* writ
 }
 
 // ---------------------------------------------------------------------------
+// DirectSoundMgr::LockConvert (__thiscall). Writes a source buffer (src) into
+// the held sound buffer, handling the circular wraparound via Lock's two output
+// regions (p1/n1 then p2/n2). The third arg is a "convert 16->8" flag, not a
+// size: when zero, each region is a plain byte memcpy of src; when nonzero, each
+// source 16-bit sample is downconverted to one 8-bit byte ((s + 0x8000) >> 8 -
+// signed->unsigned offset, take the high byte). Region 2's source continues at
+// src + n1. Lock failure (line 701) and Unlock failure (line 737) route through
+// GetErrorString; gated on the owning manager's init flag.
+RVA(0x00135f40, 0x169)
+int DirectSoundMgr::LockConvert(void* src, unsigned long lockBytes, unsigned long convert) {
+    if (m_10->m_78 == 0) {
+        return 0;
+    }
+
+    void* p1;
+    void* p2;
+    unsigned long n1;
+    unsigned long n2;
+    int hr = m_0c->vtbl->Lock(m_0c, 0, lockBytes, &p1, &n1, &p2, &n2, 2) != 0;
+    if (hr) {
+        GetErrorString(DSNDMGR_FILE, 0x2bd, hr);
+        return 0;
+    }
+
+    if (convert == 0) {
+        // Plain byte copy of each region.
+        if (n1 > 0) {
+            memcpy(p1, src, n1);
+        }
+        if (n2 > 0) {
+            memcpy(p2, (char*)src + n1, n2);
+        }
+    } else {
+        // 16-bit signed -> 8-bit unsigned downconversion, per region.
+        if (n1 > 0) {
+            char* d = (char*)p1;
+            short* s = (short*)src;
+            char* end = (char*)p1 + n1;
+            while (d < end) {
+                *d = (char)((unsigned int)(*s + 0x8000) >> 8);
+                ++s;
+                ++d;
+            }
+        }
+        if (n2 > 0) {
+            char* d = (char*)p2;
+            short* s = (short*)((char*)src + n1);
+            char* end = (char*)p2 + n2;
+            while (d < end) {
+                *d = (char)((unsigned int)(*s + 0x8000) >> 8);
+                ++s;
+                ++d;
+            }
+        }
+    }
+
+    hr = m_0c->vtbl->Unlock(m_0c, p1, n1, p2, n2) != 0;
+    if (hr) {
+        GetErrorString(DSNDMGR_FILE, 0x2e1, hr);
+        return 0;
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
 // DirectSoundMgr::Create (__thiscall). Brings up the DirectSound device:
 // DirectSoundCreate into m_14 (its HRESULT normalized into a stored bool), then
 // SetCooperativeLevel(hwnd, level). A failed coop call is reported and the device
