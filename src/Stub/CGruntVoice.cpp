@@ -9,5 +9,5 @@ public:
 // @confidence: med
 // @source: rtti-vptr
 // @stub
-RVA(0x1198a0, 0x195)
+RVA(0x001198a0, 0x195)
 CGruntVoice::CGruntVoice(int) {}

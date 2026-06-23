@@ -59,7 +59,7 @@ public:
 // advances as each container is constructed (the target shows try_level updates
 // at [esp+0x18]=0 after list1, [esp+0x14]=1 after list2).
 // ---------------------------------------------------------------------------
-RVA(0x141cc0, 0x84)
+RVA(0x00141cc0, 0x84)
 CDDrawPtrCollections::CDDrawPtrCollections()
     : m_unknownPtrList1(0xa), m_unknownPtrList2(0xa), m_unknownPtrArray() {
     fieldUnknown000 = 0;

@@ -36,7 +36,7 @@ namespace Utils {
         //      if it names a real CD-ROM drive, use it;
         //   2. else if the current working directory is on a CD-ROM, use that drive;
         //   3. else scan drives A..Z for any CD-ROM.
-        RVA(0x1fde0, 0x189)
+        RVA(0x0001fde0, 0x189)
         char CheckCdRomRegistry() {
             unsigned int valueSize;
             char value[32];

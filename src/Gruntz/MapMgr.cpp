@@ -45,7 +45,7 @@
 // ===========================================================================
 
 // CMapArrayA::CMapArrayA(): zero m_0(+4), m_block(+0), m_count(+8).
-RVA(0x09e700, 0xd)
+RVA(0x0009e700, 0xd)
 CMapArrayA::CMapArrayA() {
     m_0 = 0;
     m_block = 0;
@@ -53,7 +53,7 @@ CMapArrayA::CMapArrayA() {
 }
 
 // CMapArrayA::~CMapArrayA(): free m_0(+4) if set, then zero all.
-RVA(0x09e7e0, 0x29)
+RVA(0x0009e7e0, 0x29)
 CMapArrayA::~CMapArrayA() {
     if (m_0) {
         MapFree(m_0);
@@ -104,7 +104,7 @@ int CMapArrayA::Allocate(unsigned int count) {
 // ===========================================================================
 
 // CMapArrayB::CMapArrayB(): zero m_0(+0), m_block(+4), m_count(+8).
-RVA(0x09e820, 0xd)
+RVA(0x0009e820, 0xd)
 CMapArrayB::CMapArrayB() {
     m_0 = 0;
     m_block = 0;
@@ -112,7 +112,7 @@ CMapArrayB::CMapArrayB() {
 }
 
 // CMapArrayB::~CMapArrayB(): free m_0(+0) if set, then zero all.
-RVA(0x09e900, 0x28)
+RVA(0x0009e900, 0x28)
 CMapArrayB::~CMapArrayB() {
     if (m_0) {
         MapFree(m_0);
@@ -165,7 +165,7 @@ int CMapArrayB::Allocate(unsigned int count) {
 // CMapMgr::CMapMgr(). The two array members are constructed
 // first (out-of-line ctors), then the body zeroes the scalar members, stores the
 // vftable and seeds m_50=-1 / m_5c=1.
-RVA(0x09e940, 0x73)
+RVA(0x0009e940, 0x73)
 CMapMgr::CMapMgr() {
     m_4 = 0;
     m_8 = 0;
@@ -181,7 +181,7 @@ CMapMgr::CMapMgr() {
 
 // CMapMgr::~CMapMgr(). Calls the slot-0 Reset (frees m_4/m_8,
 // resets the two arrays), then the two member-array destructors run automatically.
-RVA(0x09e9e0, 0x5d)
+RVA(0x0009e9e0, 0x5d)
 CMapMgr::~CMapMgr() {
     Reset();
 }
@@ -189,7 +189,7 @@ CMapMgr::~CMapMgr() {
 // CMapMgr::Reset() (slot 0). Frees m_4 and m_8 if set, resets
 // the two embedded arrays (calls their destructors in place), then zeroes the
 // scalar bookkeeping members.
-RVA(0x09ec30, 0x4b)
+RVA(0x0009ec30, 0x4b)
 void CMapMgr::Reset() {
     if (m_4) {
         MapFree(m_4);

@@ -75,7 +75,7 @@ extern "C" int vsprintf(char* buf, const char* fmt, char* va);
 // fires it with the formatted message. A variadic member compiles __cdecl with
 // `this` as the hidden first stack arg (the retail ABI: callers push `this`
 // last).
-RVA(0x1706c0, 0x4b)
+RVA(0x001706c0, 0x4b)
 void CButeMgr::ReportError(const char* fmt, ...) {
     va_list args;
     va_start(args, fmt);
@@ -95,7 +95,7 @@ void CButeMgr::ReportError(const char* fmt, ...) {
 // Parse() (re)lexes one token, then ScanToken verifies it is the expected type
 // (m_tokType == expectType). On mismatch it reports a formatting error (with the
 // current line m_lineNo) and returns false; else true.
-RVA(0x170710, 0x3b)
+RVA(0x00170710, 0x3b)
 bool CButeMgr::ScanToken(int expectType) {
     if (!Parse()) {
         return false;
@@ -113,7 +113,7 @@ bool CButeMgr::ScanToken(int expectType) {
 // type-0 (int) getter with a caller default: Find(tag).Find(key); on a type-0
 // hit return *(int*)rec->pValue, on type mismatch report + fall through, on any
 // miss return def.
-RVA(0x171aa0, 0x50)
+RVA(0x00171aa0, 0x50)
 int CButeMgr::GetIntDef(char* tag, char* key, int def) {
     void* grp = Tree()->Find(tag);
     if (grp) {
@@ -132,7 +132,7 @@ int CButeMgr::GetIntDef(char* tag, char* key, int def) {
 // CButeMgr::GetInt
 // type-0 getter, no default: returns 0x80000000 on any miss (and reports the
 // specific failure - type mismatch / symbol-not-found / invalid-tag).
-RVA(0x171af0, 0x86)
+RVA(0x00171af0, 0x86)
 int CButeMgr::GetInt(char* tag, char* key) {
     void* grp = Tree()->Find(tag);
     if (grp) {
@@ -155,7 +155,7 @@ int CButeMgr::GetInt(char* tag, char* key) {
 // CButeMgr::GetDwordDef
 // type-1 (dword) getter with default. The type check is `if (--type == 0)` i.e.
 // type == 1 (the disasm `mov ecx,[eax]; dec ecx; je`).
-RVA(0x1721e0, 0x5a)
+RVA(0x001721e0, 0x5a)
 DWORD CButeMgr::GetDwordDef(char* tag, char* key, DWORD def) {
     void* grp = Tree()->Find(tag);
     if (grp) {
@@ -174,7 +174,7 @@ DWORD CButeMgr::GetDwordDef(char* tag, char* key, DWORD def) {
 // ---------------------------------------------------------------------------
 // CButeMgr::GetDword
 // type-1 getter, no default: returns 0 on any miss.
-RVA(0x172240, 0x7d)
+RVA(0x00172240, 0x7d)
 DWORD CButeMgr::GetDword(char* tag, char* key) {
     void* grp = Tree()->Find(tag);
     if (grp) {
@@ -199,7 +199,7 @@ DWORD CButeMgr::GetDword(char* tag, char* key) {
 // type-3 (float) getter, no default. Accepts type 0 (int) too: `fild` the int
 // when type==0, `fld` the float when type==3, else report + return 0.0f. Returns
 // in st(0) (an x87 float return).
-RVA(0x172730, 0x9a)
+RVA(0x00172730, 0x9a)
 float CButeMgr::GetFloat(char* tag, char* key) {
     void* grp = Tree()->Find(tag);
     if (grp) {
@@ -226,7 +226,7 @@ float CButeMgr::GetFloat(char* tag, char* key) {
 // type-2 (double) getter, no default. Accepts type 0 (int): `fild` when type==0,
 // `fld qword` when type==2, else report + return 0.0. (The disasm tests with
 // `sub ecx,0; je` then `sub ecx,2; je` -> the type==0 and type==2 branches.)
-RVA(0x172c40, 0x9b)
+RVA(0x00172c40, 0x9b)
 double CButeMgr::GetDouble(char* tag, char* key) {
     void* grp = Tree()->Find(tag);
     if (grp) {
@@ -252,7 +252,7 @@ double CButeMgr::GetDouble(char* tag, char* key) {
 // CButeMgr::GetStringDef
 // type-4 (string) getter with default: returns rec->pValue (the char*) on a
 // type-4 hit, reports a type mismatch otherwise, returns def on any miss.
-RVA(0x173180, 0x4e)
+RVA(0x00173180, 0x4e)
 CString* CButeMgr::GetStringDef(char* tag, char* key, CString* def) {
     void* grp = Tree()->Find(tag);
     if (grp) {
@@ -273,7 +273,7 @@ CString* CButeMgr::GetStringDef(char* tag, char* key, CString* def) {
 // specific failure and returns a shared empty CString. The empty string is a
 // function-local static CString (MFC magic-static: one-shot guarded ctor +
 // atexit-registered dtor) returned by address on every error path.
-RVA(0x1731d0, 0xb6)
+RVA(0x001731d0, 0xb6)
 char* CButeMgr::GetString(char* tag, char* key) {
     static CString s_empty("");
 
@@ -308,7 +308,7 @@ char* CButeMgr::GetString(char* tag, char* key) {
 // bool directly (`return ScanToken(3)`) elides that normalization; the explicit
 // canonicalization reproduces the retail tail byte-for-byte (the SEH cleanup spans
 // the value, so MSVC re-canonicalizes the bool after restoring fs:[0]).
-RVA(0x1711b0, 0xf5)
+RVA(0x001711b0, 0xf5)
 bool CButeMgr::ParseTagLine() {
     if (!ScanToken(4)) {
         return false;
@@ -339,7 +339,7 @@ bool CButeMgr::ParseTagLine() {
 // values/punctuation (ButeLex_ReadValue/ReadIdent), append chars to the token
 // buffer, advance the lexer (ButeLex_NextChar), and recurse for nested groups.
 // Reports "Bad symbol encountered" (with m_lineNo) on the error class.
-RVA(0x1704c0, 0x1e3)
+RVA(0x001704c0, 0x1e3)
 bool CButeMgr::Parse() {
     int kind = 0x11;
     g_tokenLen = 0;
@@ -424,7 +424,7 @@ bool CButeMgr::Parse() {
 // null-test register differ. Init-list / assignment-body / reversed-order ctor
 // forms all produce identical (ebp-pinned) MSVC codegen; no source lever flips it
 // (see docs/patterns/zero-register-pinning.md - the regalloc wall).
-RVA(0x173770, 0xc6)
+RVA(0x00173770, 0xc6)
 CButeRef5* CButeMgr::GetRef5(char* tag, char* key) {
     static CButeRef5 s_default;
 
@@ -445,7 +445,7 @@ CButeRef5* CButeMgr::GetRef5(char* tag, char* key) {
     return &s_default;
 }
 
-RVA(0x173d00, 0xbb)
+RVA(0x00173d00, 0xbb)
 CButeRef6* CButeMgr::GetRef6(char* tag, char* key) {
     static CButeRef6 s_default;
 
@@ -466,7 +466,7 @@ CButeRef6* CButeMgr::GetRef6(char* tag, char* key) {
     return &s_default;
 }
 
-RVA(0x174240, 0xe3)
+RVA(0x00174240, 0xe3)
 CButeRef7* CButeMgr::GetRef7(char* tag, char* key) {
     static CButeRef7 s_default;
 
@@ -487,7 +487,7 @@ CButeRef7* CButeMgr::GetRef7(char* tag, char* key) {
     return &s_default;
 }
 
-RVA(0x1747c0, 0xcf)
+RVA(0x001747c0, 0xcf)
 CButeRef8* CButeMgr::GetRef8(char* tag, char* key) {
     static CButeRef8 s_default;
 
@@ -512,7 +512,7 @@ CButeRef8* CButeMgr::GetRef8(char* tag, char* key) {
 // CButeMgr::InvokeCallback
 // ===========================================================================
 // Simple trampoline: takes a function pointer, calls it with `this`, returns `this`.
-RVA(0x171550, 0x11)
+RVA(0x00171550, 0x11)
 void* CButeMgr::InvokeCallback(void* (*fn)(CButeMgr*)) {
     fn(this);
     return this;
@@ -522,7 +522,7 @@ void* CButeMgr::InvokeCallback(void* (*fn)(CButeMgr*)) {
 // CButeMgr::ClearHelper
 // ===========================================================================
 // Calls two cleanup methods on the engine helper object at this+0x14.
-RVA(0x171a40, 0x14)
+RVA(0x00171a40, 0x14)
 void CButeMgr::ClearHelper() {
     CButeMgrHelper* h = (CButeMgrHelper*)((char*)this + 0x14);
     h->FuncA();
@@ -535,7 +535,7 @@ void CButeMgr::ClearHelper() {
 // Allocates 4-byte storage, stores the value, sets the type field.
 // Returns `this` (or NULL on alloc failure, though the target code always
 // returns `this` with pValue reset to NULL).
-RVA(0x172000, 0x31)
+RVA(0x00172000, 0x31)
 CButeValue* CButeValue::SetDword(int type, unsigned long val) {
     this->type = type;
     unsigned long* p = new unsigned long;
@@ -552,7 +552,7 @@ CButeValue* CButeValue::SetDword(int type, unsigned long val) {
 // CButeValue::SetFloat
 // ===========================================================================
 // Allocates 4-byte float storage, stores the value.
-RVA(0x172680, 0x31)
+RVA(0x00172680, 0x31)
 CButeValue* CButeValue::SetFloat(int type, float val) {
     this->type = type;
     float* p = new float;
@@ -569,7 +569,7 @@ CButeValue* CButeValue::SetFloat(int type, float val) {
 // CButeValue::SetInt
 // ===========================================================================
 // Allocates 4-byte int storage, stores the value.
-RVA(0x172b90, 0x31)
+RVA(0x00172b90, 0x31)
 CButeValue* CButeValue::SetInt(int type, int val) {
     this->type = type;
     int* p = new int;
@@ -586,7 +586,7 @@ CButeValue* CButeValue::SetInt(int type, int val) {
 // CButeValue::SetDouble
 // ===========================================================================
 // Allocates 8-byte double storage, stores the value.  Returns `this`.
-RVA(0x173140, 0x38)
+RVA(0x00173140, 0x38)
 CButeValue* CButeValue::SetDouble(int type, double val) {
     this->type = type;
     double* p = new double;

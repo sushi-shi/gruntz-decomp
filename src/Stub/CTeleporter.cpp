@@ -9,5 +9,5 @@
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x041aa0, 0x312)
+RVA(0x00041aa0, 0x312)
 void CTeleporter::LoadAttributes() {}

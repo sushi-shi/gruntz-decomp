@@ -7,7 +7,7 @@
 // CTileTriggerLogic::CTileTriggerLogic()
 // Zeroes the 24-dword m_block array (rep stosl) then m_1c, reusing the zero
 // register for the trailing +0x1c store.
-RVA(0x1107f0, 0x1c)
+RVA(0x001107f0, 0x1c)
 CTileTriggerLogic::CTileTriggerLogic() {
     // m_block initialised before m_1c so the optimiser emits the rep stosl
     // first and reuses the zero register for the +0x1c store afterwards.

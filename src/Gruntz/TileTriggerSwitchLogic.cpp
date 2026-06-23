@@ -14,7 +14,7 @@
 // Constructor: stamps the vtable, zeroes the 24-dword m_block at +0x2c
 // (rep stosd), then clears m_20 (+0x20).
 // ---------------------------------------------------------------------------
-RVA(0x110430, 0x1c)
+RVA(0x00110430, 0x1c)
 CTileTriggerSwitchLogic::CTileTriggerSwitchLogic() {
     for (int i = 0; i < 24; i++) {
         m_block[i] = 0;
@@ -26,7 +26,7 @@ CTileTriggerSwitchLogic::CTileTriggerSwitchLogic() {
 // CTileTriggerSwitchLogic::FindIndexByKey
 // Linear scan of the 24-dword m_block; returns 1 on a hit, 0 otherwise.
 // ---------------------------------------------------------------------------
-RVA(0x110820, 0x23)
+RVA(0x00110820, 0x23)
 int CTileTriggerSwitchLogic::FindIndexByKey(int key) {
     for (int i = 0; i < 24; i++) {
         if (m_block[i] == key) {
@@ -41,11 +41,11 @@ int CTileTriggerSwitchLogic::FindIndexByKey(int key) {
 // @confidence: high
 // @source: rtti-vptr
 // @stub
-RVA(0x115f60, 0x2de)
+RVA(0x00115f60, 0x2de)
 void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_115f60() {}
 
 // @confidence: high
 // @source: rtti-vptr
 // @stub
-RVA(0x116320, 0x66)
+RVA(0x00116320, 0x66)
 void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_116320() {}

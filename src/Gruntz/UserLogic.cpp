@@ -21,7 +21,7 @@
 // src/Stub/CButeTree.cpp. Declared extern only so `g_buteTree.Find("A")`
 // reloc-masks (the Stub TU owns the DATA label).
 // ---------------------------------------------------------------------------
-DATA(0x2bf620)
+DATA(0x002bf620)
 extern CButeTree g_buteTree;
 
 // ---------------------------------------------------------------------------
@@ -295,19 +295,19 @@ extern "C" int rand(void);
 // Definitions in ascending-RVA order.
 // ===========================================================================
 CSecretLevelTrigger::~CSecretLevelTrigger() {}
-RVA(0x010b20, 0x4b)
+RVA(0x00010b20, 0x4b)
 CSecretLevelTrigger::CSecretLevelTrigger() {}
 
 CTileTrigger::~CTileTrigger() {}
-RVA(0x011160, 0x4b)
+RVA(0x00011160, 0x4b)
 CTileTrigger::CTileTrigger() {}
 
 CGruntHealthSprite::~CGruntHealthSprite() {}
-RVA(0x011ef0, 0x4b)
+RVA(0x00011ef0, 0x4b)
 CGruntHealthSprite::CGruntHealthSprite() {}
 
 CPathHazard::~CPathHazard() {}
-RVA(0x013170, 0x7b)
+RVA(0x00013170, 0x7b)
 CPathHazard::CPathHazard() {
     m_108 = 0;
     m_110 = 0;
@@ -320,12 +320,12 @@ CPathHazard::CPathHazard() {
 }
 
 CVoiceTrigger::~CVoiceTrigger() {}
-RVA(0x013470, 0x4b)
+RVA(0x00013470, 0x4b)
 CVoiceTrigger::CVoiceTrigger() {}
 
 // --- CTeleporter (0x041020), vptr 0x5e80cc ---
 CTeleporter::~CTeleporter() {}
-RVA(0x041020, 0x170)
+RVA(0x00041020, 0x170)
 CTeleporter::CTeleporter(CGameObject* obj) : CUserLogic(obj) {
     m_58 = 0;
     m_60 = 0;
@@ -344,7 +344,7 @@ CTeleporter::CTeleporter(CGameObject* obj) : CUserLogic(obj) {
 
 // --- CSecretTeleporterTrigger (0x041e90), vptr 0x5e7564 ---
 CSecretTeleporterTrigger::~CSecretTeleporterTrigger() {}
-RVA(0x041e90, 0x1ac)
+RVA(0x00041e90, 0x1ac)
 CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj) : CUserLogic(obj) {
     if (g_gameReg->m_118 == 0 && g_gameReg->m_134 == 1) {
         m_38->m_08 |= 0x10000;
@@ -364,7 +364,7 @@ CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj) : CUserLogi
 }
 
 // --- CSecretLevelTrigger 1-arg (0x0424b0), vptr 0x5e8804 ---
-RVA(0x0424b0, 0x1a0)
+RVA(0x000424b0, 0x1a0)
 CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj) : CUserLogic(obj) {
     if (g_gameReg->m_134 == 1 && g_gameReg->m_130 == 0) {
         m_10->m_5c = (m_10->m_5c & ~0x1f) + 0x10;
@@ -384,7 +384,7 @@ CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj) : CUserLogic(obj) {
 
 // --- CParticlez (0x046ad0), vptr 0x5e7614 ---
 CParticlez::~CParticlez() {}
-RVA(0x046ad0, 0x15e)
+RVA(0x00046ad0, 0x15e)
 CParticlez::CParticlez(CGameObject* obj) : CUserLogic(obj) {
     m_30 = m_14->m_1c;
     m_14->m_1c = g_buteTree.Find("A");
@@ -398,7 +398,7 @@ CParticlez::CParticlez(CGameObject* obj) : CUserLogic(obj) {
 
 // --- CGruntSelectedSprite (0x07e3e0), vptr 0x5e7bfc ---
 CGruntSelectedSprite::~CGruntSelectedSprite() {}
-RVA(0x07e3e0, 0x178)
+RVA(0x0007e3e0, 0x178)
 CGruntSelectedSprite::CGruntSelectedSprite(CGameObject* obj) : CUserLogic(obj) {
     m_38->ApplyName("GAME_GRUNTSELECTEDSPRITE");
     m_40 = m_38->m_1b4;
@@ -412,7 +412,7 @@ CGruntSelectedSprite::CGruntSelectedSprite(CGameObject* obj) : CUserLogic(obj) {
 }
 
 // --- CGruntHealthSprite (0x07eb00), vptr 0x5e7ba4 ---
-RVA(0x07eb00, 0x170)
+RVA(0x0007eb00, 0x170)
 CGruntHealthSprite::CGruntHealthSprite(CGameObject* obj) : CUserLogic(obj) {
     m_38->ApplyLookupSprite("GAME_GRUNTHEALTHSPRITE", 1);
     m_30 = m_14->m_1c;
@@ -427,7 +427,7 @@ CGruntHealthSprite::CGruntHealthSprite(CGameObject* obj) : CUserLogic(obj) {
 
 // --- CGruntToySprite (0x07f350), vptr 0x5e7b4c ---
 CGruntToySprite::~CGruntToySprite() {}
-RVA(0x07f350, 0x16a)
+RVA(0x0007f350, 0x16a)
 CGruntToySprite::CGruntToySprite(CGameObject* obj) : CUserLogic(obj) {
     m_38->ApplyLookupSprite("GAME_STATUSBAR_TABZ_STATZTAB_SMALL", 0);
     m_30 = m_14->m_1c;
@@ -442,7 +442,7 @@ CGruntToySprite::CGruntToySprite(CGameObject* obj) : CUserLogic(obj) {
 
 // --- CGruntPowerupSprite (0x07fdb0), vptr 0x5e76c4 ---
 CGruntPowerupSprite::~CGruntPowerupSprite() {}
-RVA(0x07fdb0, 0x166)
+RVA(0x0007fdb0, 0x166)
 CGruntPowerupSprite::CGruntPowerupSprite(CGameObject* obj) : CUserLogic(obj) {
     m_38->ApplyName("GAME_LIGHTING_POWERUP");
     m_40 = m_38->m_1b4;
@@ -456,7 +456,7 @@ CGruntPowerupSprite::CGruntPowerupSprite(CGameObject* obj) : CUserLogic(obj) {
 
 // --- CAniCycle (0x0aad20), vptr 0x5e86a4 ---
 CAniCycle::~CAniCycle() {}
-RVA(0x0aad20, 0x15c)
+RVA(0x000aad20, 0x15c)
 CAniCycle::CAniCycle(CGameObject* obj) : CUserLogic(obj) {
     m_38->m_08 |= 1;
     if (m_38->m_1b4 == 0) {
@@ -472,7 +472,7 @@ CAniCycle::CAniCycle(CGameObject* obj) : CUserLogic(obj) {
 // copies it into a local via the CopyRect Win32 import, then centers the object
 // (m_10->m_5c/m_60) inside it. ApplyLookupSprite takes m_38->m_04 as its flag.
 CSingleFrameMessage::~CSingleFrameMessage() {}
-RVA(0x0ab310, 0x18d)
+RVA(0x000ab310, 0x18d)
 CSingleFrameMessage::CSingleFrameMessage(CGameObject* obj) : CUserLogic(obj) {
     m_30 = m_14->m_1c;
     m_14->m_1c = g_buteTree.Find("A");
@@ -486,7 +486,7 @@ CSingleFrameMessage::CSingleFrameMessage(CGameObject* obj) : CUserLogic(obj) {
 
 // --- CSimpleAnimation (0x0ab940), vptr 0x5e8544 ---
 CSimpleAnimation::~CSimpleAnimation() {}
-RVA(0x0ab940, 0x1b8)
+RVA(0x000ab940, 0x1b8)
 CSimpleAnimation::CSimpleAnimation(CGameObject* obj) : CUserLogic(obj) {
     m_30 = m_14->m_1c;
     m_14->m_1c = g_buteTree.Find("A");
@@ -506,7 +506,7 @@ CSimpleAnimation::CSimpleAnimation(CGameObject* obj) : CUserLogic(obj) {
 
 // --- CFrontCandy (0x0abfa0), vptr 0x5e84ec ---
 CFrontCandy::~CFrontCandy() {}
-RVA(0x0abfa0, 0x1b6)
+RVA(0x000abfa0, 0x1b6)
 CFrontCandy::CFrontCandy(CGameObject* obj) : CUserLogic(obj) {
     if (m_10->m_74 != 0xf4240) {
         m_10->m_74 = 0xf4240;
@@ -528,7 +528,7 @@ CFrontCandy::CFrontCandy(CGameObject* obj) : CUserLogic(obj) {
 
 // --- CBehindCandy (0x0ac3f0), vptr 0x5e8494 ---
 CBehindCandy::~CBehindCandy() {}
-RVA(0x0ac3f0, 0x1b1)
+RVA(0x000ac3f0, 0x1b1)
 CBehindCandy::CBehindCandy(CGameObject* obj) : CUserLogic(obj) {
     if (m_10->m_74 != 0) {
         m_10->m_74 = 0;
@@ -549,7 +549,7 @@ CBehindCandy::CBehindCandy(CGameObject* obj) : CUserLogic(obj) {
 
 // --- CEyeCandy (0x0ac620), vptr 0x5e843c ---
 CEyeCandy::~CEyeCandy() {}
-RVA(0x0ac620, 0x1cf)
+RVA(0x000ac620, 0x1cf)
 CEyeCandy::CEyeCandy(CGameObject* obj) : CUserLogic(obj) {
     CGameObject* o = m_10;
     if (o->m_74 == 0 && o->m_198 != 0) {
@@ -575,7 +575,7 @@ CEyeCandy::CEyeCandy(CGameObject* obj) : CUserLogic(obj) {
 
 // --- CFrontCandyAni (0x0acf40), vptr 0x5e83e4 ---
 CFrontCandyAni::~CFrontCandyAni() {}
-RVA(0x0acf40, 0x16e)
+RVA(0x000acf40, 0x16e)
 CFrontCandyAni::CFrontCandyAni(CGameObject* obj) : CUserLogic(obj) {
     m_30 = m_14->m_1c;
     m_14->m_1c = g_buteTree.Find("A");
@@ -591,7 +591,7 @@ CFrontCandyAni::CFrontCandyAni(CGameObject* obj) : CUserLogic(obj) {
 
 // --- CBehindCandyAni (0x0ad540), vptr 0x5e838c ---
 CBehindCandyAni::~CBehindCandyAni() {}
-RVA(0x0ad540, 0x1f0)
+RVA(0x000ad540, 0x1f0)
 CBehindCandyAni::CBehindCandyAni(CGameObject* obj) : CUserLogic(obj) {
     m_30 = m_14->m_1c;
     m_14->m_1c = g_buteTree.Find("A");
@@ -618,7 +618,7 @@ CBehindCandyAni::CBehindCandyAni(CGameObject* obj) : CUserLogic(obj) {
 
 // --- CMenuSparkle (0x0adbe0), vptr 0x5e82dc ---
 CMenuSparkle::~CMenuSparkle() {}
-RVA(0x0adbe0, 0x178)
+RVA(0x000adbe0, 0x178)
 CMenuSparkle::CMenuSparkle(CGameObject* obj) : CUserLogic(obj) {
     m_38->ApplyName("MENU_SPARKLE");
     m_40 = m_38->m_1b4;
@@ -630,7 +630,7 @@ CMenuSparkle::CMenuSparkle(CGameObject* obj) : CUserLogic(obj) {
 
 // --- CSingleAnimation (0x0ae7f0), vptr 0x5e745c ---
 CSingleAnimation::~CSingleAnimation() {}
-RVA(0x0ae7f0, 0x13d)
+RVA(0x000ae7f0, 0x13d)
 CSingleAnimation::CSingleAnimation(CGameObject* obj) : CUserLogic(obj) {
     m_38->m_08 |= 2;
     m_30 = m_14->m_1c;
@@ -639,7 +639,7 @@ CSingleAnimation::CSingleAnimation(CGameObject* obj) : CUserLogic(obj) {
 
 // --- CWarpStonePad (0x10d650), vptr 0x5e71ac ---
 CWarpStonePad::~CWarpStonePad() {}
-RVA(0x10d650, 0x16c)
+RVA(0x0010d650, 0x16c)
 CWarpStonePad::CWarpStonePad(CGameObject* obj) : CUserLogic(obj) {
     m_38->m_08 |= 2;
     m_38->m_08 |= 1;
@@ -653,7 +653,7 @@ CWarpStonePad::CWarpStonePad(CGameObject* obj) : CUserLogic(obj) {
 
 // --- CTileTriggerSwitch (0x10dc40), vptr 0x5e7f6c ---
 CTileTriggerSwitch::~CTileTriggerSwitch() {}
-RVA(0x10dc40, 0x154)
+RVA(0x0010dc40, 0x154)
 CTileTriggerSwitch::CTileTriggerSwitch(CGameObject* obj) : CUserLogic(obj) {
     m_30 = m_14->m_1c;
     m_14->m_1c = g_buteTree.Find("A");
@@ -663,7 +663,7 @@ CTileTriggerSwitch::CTileTriggerSwitch(CGameObject* obj) : CUserLogic(obj) {
 }
 
 // --- CTileTrigger 1-arg (0x10e220), vptr 0x5e7f14 ---
-RVA(0x10e220, 0x17d)
+RVA(0x0010e220, 0x17d)
 CTileTrigger::CTileTrigger(CGameObject* obj) : CUserLogic(obj) {
     m_30 = m_14->m_1c;
     m_14->m_1c = g_buteTree.Find("A");
@@ -677,7 +677,7 @@ CTileTrigger::CTileTrigger(CGameObject* obj) : CUserLogic(obj) {
 
 // --- CTileTriggerTransition (0x10faf0), vptr 0x5e7db4 ---
 CTileTriggerTransition::~CTileTriggerTransition() {}
-RVA(0x10faf0, 0x128)
+RVA(0x0010faf0, 0x128)
 CTileTriggerTransition::CTileTriggerTransition(CGameObject* obj) : CUserLogic(obj) {
     m_38->m_08 |= 0x1000000;
     if (m_10->m_74 != 0) {
@@ -688,7 +688,7 @@ CTileTriggerTransition::CTileTriggerTransition(CGameObject* obj) : CUserLogic(ob
 
 // --- CToobSpikez (0x1145c0), vptr 0x5e7774 ---
 CToobSpikez::~CToobSpikez() {}
-RVA(0x1145c0, 0x18e)
+RVA(0x001145c0, 0x18e)
 CToobSpikez::CToobSpikez(CGameObject* obj) : CUserLogic(obj) {
     m_40 = m_38->m_1b4;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 2);

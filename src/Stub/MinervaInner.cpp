@@ -8,5 +8,5 @@ public:
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @stub
-RVA(0x137a80, 0x3d)
+RVA(0x00137a80, 0x3d)
 void MinervaInner::Free() {}

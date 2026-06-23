@@ -9,5 +9,5 @@ public:
 // @confidence: med
 // @source: rtti-vptr
 // @stub
-RVA(0x10a340, 0xbcb)
+RVA(0x0010a340, 0xbcb)
 CSBI_Image::~CSBI_Image() {}

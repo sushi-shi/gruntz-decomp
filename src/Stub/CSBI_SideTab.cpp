@@ -9,5 +9,5 @@ public:
 // @confidence: high
 // @source: rtti-vptr
 // @stub
-RVA(0x105070, 0x10e)
+RVA(0x00105070, 0x10e)
 CSBI_SideTab::~CSBI_SideTab() {}

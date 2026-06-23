@@ -51,7 +51,7 @@ private:
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @stub
-RVA(0x135d70, 0x92)
+RVA(0x00135d70, 0x92)
 class CStatusBarItem2* CStatusBarMgr::GetItem() {
     if (!m_10->m_78) {
         return 0;

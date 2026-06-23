@@ -6,5 +6,5 @@
 // @confidence: med
 // @source: rtti-vptr
 // @stub
-RVA(0x007da0, 0x17e)
+RVA(0x00007da0, 0x17e)
 CActionArea::CActionArea(int) {}

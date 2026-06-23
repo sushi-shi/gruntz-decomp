@@ -8,7 +8,7 @@ public:
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @stub
-RVA(0x138f60, 0x2d)
+RVA(0x00138f60, 0x2d)
 int CGruntzSoundInnerZ::IsBusy() {
     return 0;
 }

@@ -70,7 +70,7 @@ private:
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @stub
-RVA(0x182d60, 0x16)
+RVA(0x00182d60, 0x16)
 int CGMMenuUI::OnFlag00000003() {
     if (!m_40) {
         return 0;
@@ -80,7 +80,7 @@ int CGMMenuUI::OnFlag00000003() {
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @stub
-RVA(0x182d80, 0x18)
+RVA(0x00182d80, 0x18)
 int CGMMenuUI::OnFlag00000100() {
     if (!m_40) {
         return 0;
@@ -90,7 +90,7 @@ int CGMMenuUI::OnFlag00000100() {
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @stub
-RVA(0x183130, 0x16)
+RVA(0x00183130, 0x16)
 int CGMMenuUI::OnFlag10000000() {
     if (!m_40) {
         return 0;
@@ -100,7 +100,7 @@ int CGMMenuUI::OnFlag10000000() {
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @stub
-RVA(0x183150, 0x16)
+RVA(0x00183150, 0x16)
 int CGMMenuUI::OnFlag20000000() {
     if (!m_40) {
         return 0;
@@ -110,7 +110,7 @@ int CGMMenuUI::OnFlag20000000() {
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @stub
-RVA(0x182d20, 0x16)
+RVA(0x00182d20, 0x16)
 int CGMMenuUI::OnFlag40000000() {
     if (!m_40) {
         return 0;
@@ -120,7 +120,7 @@ int CGMMenuUI::OnFlag40000000() {
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @stub
-RVA(0x182d40, 0x16)
+RVA(0x00182d40, 0x16)
 int CGMMenuUI::OnFlag80000000() {
     if (!m_40) {
         return 0;
@@ -130,7 +130,7 @@ int CGMMenuUI::OnFlag80000000() {
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @stub
-RVA(0x182ce0, 0x36)
+RVA(0x00182ce0, 0x36)
 int CGMMenuUI::Post() {
     CGMMenuSub1* s = m_0->m_4;
     s->m_10->m_2c->Flip(0);
@@ -140,7 +140,7 @@ int CGMMenuUI::Post() {
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @stub
-RVA(0x182cb0, 0x26)
+RVA(0x00182cb0, 0x26)
 int CGMMenuUI::Pre() {
     if (!m_40) {
         return 0;
@@ -154,7 +154,7 @@ int CGMMenuUI::Pre() {
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @stub
-RVA(0x182c70, 0x38)
+RVA(0x00182c70, 0x38)
 int CGMMenuUI::Step(unsigned int arg) {
     if (!m_40) {
         return 0;

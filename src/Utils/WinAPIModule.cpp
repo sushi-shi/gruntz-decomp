@@ -34,7 +34,7 @@ namespace Utils {
         // Snapshots the module list of process th32ProcessID, finds the module whose
         // th32ModuleID equals moduleID, and copies bufSize bytes of its MODULEENTRY32
         // into outBuf. Returns nonzero iff the module was found.
-        RVA(0x118f60, 0x134)
+        RVA(0x00118f60, 0x134)
         int LegacyFindModule(DWORD th32ProcessID, DWORD moduleID, void* outBuf, DWORD bufSize) {
             int found = 0;
             MODULEENTRY32 me32 = {0};

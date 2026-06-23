@@ -44,7 +44,7 @@ struct CDDrawWorkerA {
 };
 
 // ---------------------------------------------------------------------------
-RVA(0x157110, 0x20)
+RVA(0x00157110, 0x20)
 int CDDrawWorkerA::Vfunc2C(int a1, int a2, int a3) {
     HelperHost* h = (HelperHost*)this;
     m_78 = (char)a3;
@@ -81,7 +81,7 @@ struct CDDrawWorkerB {
 };
 
 // ---------------------------------------------------------------------------
-RVA(0x1572f0, 0x20)
+RVA(0x001572f0, 0x20)
 int CDDrawWorkerB::Vfunc2C(int a1, int a2, int a3) {
     HelperHost* h = (HelperHost*)this;
     m_78 = a3;
@@ -90,7 +90,7 @@ int CDDrawWorkerB::Vfunc2C(int a1, int a2, int a3) {
 }
 
 // ---------------------------------------------------------------------------
-RVA(0x157280, 0x30)
+RVA(0x00157280, 0x30)
 int CDDrawWorkerB::Vfunc34(int a1, int a2, int a3, int a4) {
     HelperHost* h = (HelperHost*)this;
     h->Helper_166040(a3, a4);

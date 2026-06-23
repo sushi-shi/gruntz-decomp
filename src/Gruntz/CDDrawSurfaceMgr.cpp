@@ -68,16 +68,16 @@ public:
     int m_3c;           // +0x3c
 };
 
-DATA(0x2bf3c0)
+DATA(0x002bf3c0)
 extern "C" unsigned int g_6bf3c0; // draw-clock mirror
-DATA(0x2bf3bc)
+DATA(0x002bf3bc)
 extern "C" unsigned int g_6bf3bc; // draw-delta mirror
 
 // ---------------------------------------------------------------------------
 // CDDrawSurfaceMgr::CDDrawSurfaceMgr()
 // Stamps the vftable, clears every owned-child pointer except hwnd (+0x30), clears
 // flags/bookkeeping at +0x34/+0x38/+0x3c, then resets the two draw-clock globals.
-RVA(0x155840, 0x41)
+RVA(0x00155840, 0x41)
 CDDrawSurfaceMgr::CDDrawSurfaceMgr() {
     m_04 = 0;
     m_08 = 0;
@@ -101,7 +101,7 @@ CDDrawSurfaceMgr::CDDrawSurfaceMgr() {
 // CDDrawSurfaceMgr::UnknownVirtualMethod14()
 // Returns whether the core child managers are present and the first child accepts
 // its +0x14 virtual readiness check.
-RVA(0x155f00, 0x41)
+RVA(0x00155f00, 0x41)
 int CDDrawSurfaceMgr::UnknownVirtualMethod14() {
     CDDrawSubMgr* first = m_04;
 
@@ -153,7 +153,7 @@ typedef int(__cdecl* HP_Callback)(void*, void*, int, int, int);
 // ---------------------------------------------------------------------------
 // CDDrawSurfaceMgr::UnknownVirtualMethod20()
 // Frees context — cleans up the Voldemort surface and the Minerva map.
-RVA(0x155fc0, 0x2e)
+RVA(0x00155fc0, 0x2e)
 void CDDrawSurfaceMgr::UnknownVirtualMethod20() {
     if (m_28 != 0) {
         MinervaInner* inner = m_28->m_2c;
@@ -170,7 +170,7 @@ void CDDrawSurfaceMgr::UnknownVirtualMethod20() {
 // ---------------------------------------------------------------------------
 // CDDrawSurfaceMgr::UnknownVirtualMethod24()
 // Validates/sets surface dimensions.
-RVA(0x155f60, 0x56)
+RVA(0x00155f60, 0x56)
 int CDDrawSurfaceMgr::UnknownVirtualMethod24(int x, int y, int flags) {
     UnknownCGruntzMgrLuciusChild* child = m_04->m_10;
     if (child->m_10 != x || child->m_14 != y) {
@@ -189,7 +189,7 @@ int CDDrawSurfaceMgr::UnknownVirtualMethod24(int x, int y, int flags) {
 // ---------------------------------------------------------------------------
 // CDDrawSurfaceMgr::UnknownVirtualMethod28()
 // Relays the hWnd argument to an external manager function.
-RVA(0x155f50, 0x10)
+RVA(0x00155f50, 0x10)
 void CDDrawSurfaceMgr::UnknownVirtualMethod28(void* hWnd) {
     RelayHwnd(hWnd);
 }
@@ -198,7 +198,7 @@ void CDDrawSurfaceMgr::UnknownVirtualMethod28(void* hWnd) {
 // CDDrawSurfaceMgr::UnknownVirtualMethod38()
 // Dispatches arguments through the m_3c callback function pointer,
 // returning 1 on success / 0 on failure.
-RVA(0x156a90, 0x3a)
+RVA(0x00156a90, 0x3a)
 int CDDrawSurfaceMgr::UnknownVirtualMethod38(void* arg1, int arg2, int arg3, int arg4) {
     if (!arg1) {
         return 0;
@@ -231,5 +231,5 @@ int CDDrawSurfaceMgr::UnknownVirtualMethod34(int, int, int, int, void*) {
 // @confidence: high
 // @source: tomalla
 // @stub
-RVA(0x155900, 0x519)
+RVA(0x00155900, 0x519)
 void CDDrawSurfaceMgr::UnknownVirtualMethod18() {}

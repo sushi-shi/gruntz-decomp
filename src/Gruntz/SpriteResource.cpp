@@ -87,7 +87,7 @@ public:
     int* m_198;     // +0x198  the first frame's pointer (or 0)
 };
 
-RVA(0x150540, 0x65)
+RVA(0x00150540, 0x65)
 void CGruntSprite::CacheFirstFrame(const char* name) {
     CSprite* spr = 0;
     m_c->m_10->m_10map.Lookup(name, &spr);
@@ -128,7 +128,7 @@ public:
     CResMgr* m_c; // +0x0c
 };
 
-RVA(0x1597b0, 0x57)
+RVA(0x001597b0, 0x57)
 CSprite*
 CSpriteFactory::CreateSprite(int kind, int geoB, int geoA, int hint, const char* name, int flags) {
     CSprite* tmpl = 0;
@@ -178,7 +178,7 @@ public:
     CStatusBarSurface* m_10; // +0x10
 };
 
-RVA(0x1360d0, 0x7c)
+RVA(0x001360d0, 0x7c)
 int CStatusBarMgr::ConfigureItem(int a0, int a1, int a2, int a3) {
     if (!m_10->m_78) {
         return 0;
@@ -224,7 +224,7 @@ public:
 };
 
 // The global default geometry source the second setter consumes.
-DATA(0x2bf3bc)
+DATA(0x002bf3bc)
 extern int g_defaultGeo; // VA 0x6bf3bc (RVA 0x2bf3bc)
 
 class CGruntAnimPlayer {
@@ -237,7 +237,7 @@ public:
     CGruntAnimSub2 m_1a0; // +0x1a0  geometry sub-player
 };
 
-RVA(0x1505b0, 0x5c)
+RVA(0x001505b0, 0x5c)
 int CGruntAnimPlayer::ApplyLookupGeometry(const char* name, int applyDefault) {
     CSprite* spr = 0;
     m_c->m_2c->m_10map.Lookup(name, &spr);

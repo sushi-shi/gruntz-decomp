@@ -9,191 +9,191 @@ Order: readiness (unmatched engine callees) → middle-small band (64–512 B) �
 
 | rva | name | class | size | status | blockers | source | conf |
 |---|---|---|---|---|---|---|---|
-| 0x1574d0 | UnknownCGruntzMgrLucius::VirtualMethodUnknown14 | UnknownCGruntzMgrLucius | 91 | ready |  | tomalla | high |
-| 0x1350b0 | UnknownSalazar::getLookupTableValue | UnknownSalazar | 93 | ready |  | tomalla | high |
-| 0x116320 | CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_116320 | CTileTriggerSwitchLogic | 102 | ready |  | rtti-vptr | high |
-| 0x163bf0 | UnknownHagrid::VirtualMethodUnknown34 | UnknownHagrid | 109 | ready |  | tomalla | high |
-| 0x15d680 | UnknownRemus::VirtualMethodUnknown44 | UnknownRemus | 113 | ready |  | tomalla | high |
-| 0x141cc0 | UnknownFilch::UnknownFilch | UnknownFilch | 132 | ready |  | tomalla | high |
-| 0x15d1f0 | UnknownRemus::VirtualMethodUnknown1C | UnknownRemus | 135 | ready |  | tomalla | high |
-| 0x1652c0 | UnknownSirius::VirtualMethodUnknown24 | UnknownSirius | 146 | ready |  | tomalla | high |
-| 0x157bc0 | UnknownMinerva::ClearUnknownMap | UnknownMinerva | 162 | ready |  | tomalla | high |
-| 0x165210 | UnknownSeverus::VirtualMethodUnknown58 | UnknownSeverus | 162 | ready |  | tomalla | med |
-| 0x165b90 | UnknownAlbus::VirtualMethodUnknown1C | UnknownAlbus | 169 | ready |  | tomalla | high |
-| 0x025ca0 | UnknownClassArrays::FreeArrays | UnknownClassArrays | 191 | ready |  | tomalla | high |
-| 0x0090e0 | LoadActionOptionsMenuBar |  | 256 | ready |  | decomp-xref | med |
-| 0x15ccd0 | UnknownRemus::UnknownRemus | UnknownRemus | 280 | ready |  | tomalla | high |
-| 0x15d500 | UnknownRemus::VirtualMethodUnknown40 | UnknownRemus | 295 | ready |  | tomalla | high |
-| 0x118f60 | LegacyFindModule |  | 308 | ready |  | tomalla | high |
-| 0x024dc0 | UnknownClassArrays::UnknownClassArrays | UnknownClassArrays | 344 | ready |  | tomalla | high |
-| 0x10b320 | UpdateDestructButtonStatusBar |  | 359 | ready |  | decomp-xref | med |
-| 0x08e4e0 | WarpDialogProc |  | 370 | ready |  | decomp-xref | high |
-| 0x01fde0 | CheckCdRomRegistry |  | 393 | ready |  | decomp-xref | med |
+| 0x001574d0 | UnknownCGruntzMgrLucius::VirtualMethodUnknown14 | UnknownCGruntzMgrLucius | 91 | ready |  | tomalla | high |
+| 0x001350b0 | UnknownSalazar::getLookupTableValue | UnknownSalazar | 93 | ready |  | tomalla | high |
+| 0x00116320 | CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_116320 | CTileTriggerSwitchLogic | 102 | ready |  | rtti-vptr | high |
+| 0x00163bf0 | UnknownHagrid::VirtualMethodUnknown34 | UnknownHagrid | 109 | ready |  | tomalla | high |
+| 0x0015d680 | UnknownRemus::VirtualMethodUnknown44 | UnknownRemus | 113 | ready |  | tomalla | high |
+| 0x00141cc0 | UnknownFilch::UnknownFilch | UnknownFilch | 132 | ready |  | tomalla | high |
+| 0x0015d1f0 | UnknownRemus::VirtualMethodUnknown1C | UnknownRemus | 135 | ready |  | tomalla | high |
+| 0x001652c0 | UnknownSirius::VirtualMethodUnknown24 | UnknownSirius | 146 | ready |  | tomalla | high |
+| 0x00157bc0 | UnknownMinerva::ClearUnknownMap | UnknownMinerva | 162 | ready |  | tomalla | high |
+| 0x00165210 | UnknownSeverus::VirtualMethodUnknown58 | UnknownSeverus | 162 | ready |  | tomalla | med |
+| 0x00165b90 | UnknownAlbus::VirtualMethodUnknown1C | UnknownAlbus | 169 | ready |  | tomalla | high |
+| 0x00025ca0 | UnknownClassArrays::FreeArrays | UnknownClassArrays | 191 | ready |  | tomalla | high |
+| 0x000090e0 | LoadActionOptionsMenuBar |  | 256 | ready |  | decomp-xref | med |
+| 0x0015ccd0 | UnknownRemus::UnknownRemus | UnknownRemus | 280 | ready |  | tomalla | high |
+| 0x0015d500 | UnknownRemus::VirtualMethodUnknown40 | UnknownRemus | 295 | ready |  | tomalla | high |
+| 0x00118f60 | LegacyFindModule |  | 308 | ready |  | tomalla | high |
+| 0x00024dc0 | UnknownClassArrays::UnknownClassArrays | UnknownClassArrays | 344 | ready |  | tomalla | high |
+| 0x0010b320 | UpdateDestructButtonStatusBar |  | 359 | ready |  | decomp-xref | med |
+| 0x0008e4e0 | WarpDialogProc |  | 370 | ready |  | decomp-xref | high |
+| 0x0001fde0 | CheckCdRomRegistry |  | 393 | ready |  | decomp-xref | med |
 
 ## READY — other sizes (36)
 
 | rva | name | class | size | status | blockers | source | conf |
 |---|---|---|---|---|---|---|---|
-| 0x1591e0 | UnknownHermiona::VirtualMethodUnknown1C | UnknownHermiona | 5 | ready |  | tomalla | high |
-| 0x156f20 | UnknownHagrid::VirtualMethodUnknown20 | UnknownHagrid | 6 | ready |  | tomalla | high |
-| 0x1574a0 | UnknownDraco::VirtualMethodUnknown20 | UnknownDraco | 6 | ready |  | tomalla | high |
-| 0x157600 | UnknownAlbus::VirtualMethodUnknown20 | UnknownAlbus | 6 | ready |  | tomalla | med |
-| 0x1576f0 | UnknownSirius::VirtualMethodUnknown20 | UnknownSirius | 6 | ready |  | tomalla | high |
-| 0x1611b0 | UnknownRemus::VirtualMethodUnknown20 | UnknownRemus | 6 | ready |  | tomalla | high |
-| 0x0242f0 | CGruntzCommand::CGruntzCommand_0242f0 | CGruntzCommand | 7 | ready |  | rtti-vptr | high |
-| 0x024430 | CGruntzCommand::CGruntzCommand_024430 | CGruntzCommand | 7 | ready |  | rtti-vptr | high |
-| 0x080cf0 | CGameApp::CGameApp | CGameApp | 18 | ready |  | rtti-vptr | high |
-| 0x094c10 | CGameWnd::CGameWnd | CGameWnd | 22 | ready |  | rtti-vptr | high |
-| 0x1577a0 | UnknownPettigrew::VirtualMethodUnknown14 | UnknownPettigrew | 22 | ready |  | tomalla | high |
-| 0x157530 | UnknownMinerva::VirtualMethodUnknown14 | UnknownMinerva | 23 | ready |  | tomalla | high |
-| 0x08dc60 | CGruntzMgr::ReportError | CGruntzMgr | 25 | ready |  | tomalla | high |
-| 0x110430 | CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_110430 | CTileTriggerSwitchLogic | 28 | ready |  | rtti-vptr | high |
-| 0x159d90 | UnknownHermiona::VirtualMethodUnknown38 | UnknownHermiona | 28 | ready |  | tomalla | high |
-| 0x0234a0 | CCheckpointDlg::CCheckpointDlg | CCheckpointDlg | 30 | ready |  | rtti-vptr | high |
-| 0x024330 | CGruntzCommand::~CGruntzCommand | CGruntzCommand | 32 | ready |  | rtti-vtable | high |
-| 0x156cb0 | UnknownCGruntzMgrLucius::UnknownCGruntzMgrLucius | UnknownCGruntzMgrLucius | 32 | ready |  | tomalla | high |
-| 0x159c90 | UnknownHermiona::VirtualMethodUnknown28 | UnknownHermiona | 35 | ready |  | tomalla | high |
-| 0x159cc0 | UnknownHermiona::VirtualMethodUnknown2C | UnknownHermiona | 42 | ready |  | tomalla | high |
-| 0x024220 | CGruntzSingleCommand::CGruntzSingleCommand | CGruntzSingleCommand | 43 | ready |  | rtti-vptr | high |
-| 0x024360 | CGruntzMultiCommand::CGruntzMultiCommand | CGruntzMultiCommand | 43 | ready |  | rtti-vptr | high |
-| 0x163c60 | UnknownHagrid::VirtualMethodUnknown1C | UnknownHagrid | 44 | ready |  | tomalla | high |
-| 0x094d80 | CGameWnd::~CGameWnd | CGameWnd | 47 | ready |  | rtti-vtable | high |
-| 0x080dd0 | CGameApp::vector_deleting_destructor | CGameApp | 50 | ready |  | tomalla | high |
-| 0x0c16b0 | BuildNamedGruntTable |  | 61 | ready |  | decomp-xref | med |
-| 0x08c9d0 | CPlay::CPlay | CPlay | 701 | ready |  | rtti-vptr | med |
-| 0x01e720 | BuildPowerupIconKeys |  | 766 | ready |  | string-xref | med |
-| 0x138150 | DirectSoundMgr::GetErrorString | DirectSoundMgr | 827 | ready |  | string-xref | high |
-| 0x13cff0 | WAP32::CGameApp::GameWindowProc | WAP32::CGameApp | 860 | ready |  | tomalla | high |
-| 0x0f8970 | SFManager::SelectBestDevice |  | 948 | ready |  | decomp-xref | med |
-| 0x0dc060 | LoadLevelEffectSprites |  | 1307 | ready |  | string-xref | med |
-| 0x133590 | DirectInputMgr2::GetErrorString | DirectInputMgr2 | 1470 | ready |  | string-xref | high |
-| 0x141400 | CDirectDrawMgr::GetErrorString | CDirectDrawMgr | 2101 | ready |  | string-xref | high |
-| 0x025020 | LoadBattlezMapConfig |  | 2436 | ready |  | string-xref | med |
-| 0x1776a0 | CNetMgr::ReportError | CNetMgr | 2561 | ready |  | tomalla | high |
+| 0x001591e0 | UnknownHermiona::VirtualMethodUnknown1C | UnknownHermiona | 5 | ready |  | tomalla | high |
+| 0x00156f20 | UnknownHagrid::VirtualMethodUnknown20 | UnknownHagrid | 6 | ready |  | tomalla | high |
+| 0x001574a0 | UnknownDraco::VirtualMethodUnknown20 | UnknownDraco | 6 | ready |  | tomalla | high |
+| 0x00157600 | UnknownAlbus::VirtualMethodUnknown20 | UnknownAlbus | 6 | ready |  | tomalla | med |
+| 0x001576f0 | UnknownSirius::VirtualMethodUnknown20 | UnknownSirius | 6 | ready |  | tomalla | high |
+| 0x001611b0 | UnknownRemus::VirtualMethodUnknown20 | UnknownRemus | 6 | ready |  | tomalla | high |
+| 0x000242f0 | CGruntzCommand::CGruntzCommand_0242f0 | CGruntzCommand | 7 | ready |  | rtti-vptr | high |
+| 0x00024430 | CGruntzCommand::CGruntzCommand_024430 | CGruntzCommand | 7 | ready |  | rtti-vptr | high |
+| 0x00080cf0 | CGameApp::CGameApp | CGameApp | 18 | ready |  | rtti-vptr | high |
+| 0x00094c10 | CGameWnd::CGameWnd | CGameWnd | 22 | ready |  | rtti-vptr | high |
+| 0x001577a0 | UnknownPettigrew::VirtualMethodUnknown14 | UnknownPettigrew | 22 | ready |  | tomalla | high |
+| 0x00157530 | UnknownMinerva::VirtualMethodUnknown14 | UnknownMinerva | 23 | ready |  | tomalla | high |
+| 0x0008dc60 | CGruntzMgr::ReportError | CGruntzMgr | 25 | ready |  | tomalla | high |
+| 0x00110430 | CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_110430 | CTileTriggerSwitchLogic | 28 | ready |  | rtti-vptr | high |
+| 0x00159d90 | UnknownHermiona::VirtualMethodUnknown38 | UnknownHermiona | 28 | ready |  | tomalla | high |
+| 0x000234a0 | CCheckpointDlg::CCheckpointDlg | CCheckpointDlg | 30 | ready |  | rtti-vptr | high |
+| 0x00024330 | CGruntzCommand::~CGruntzCommand | CGruntzCommand | 32 | ready |  | rtti-vtable | high |
+| 0x00156cb0 | UnknownCGruntzMgrLucius::UnknownCGruntzMgrLucius | UnknownCGruntzMgrLucius | 32 | ready |  | tomalla | high |
+| 0x00159c90 | UnknownHermiona::VirtualMethodUnknown28 | UnknownHermiona | 35 | ready |  | tomalla | high |
+| 0x00159cc0 | UnknownHermiona::VirtualMethodUnknown2C | UnknownHermiona | 42 | ready |  | tomalla | high |
+| 0x00024220 | CGruntzSingleCommand::CGruntzSingleCommand | CGruntzSingleCommand | 43 | ready |  | rtti-vptr | high |
+| 0x00024360 | CGruntzMultiCommand::CGruntzMultiCommand | CGruntzMultiCommand | 43 | ready |  | rtti-vptr | high |
+| 0x00163c60 | UnknownHagrid::VirtualMethodUnknown1C | UnknownHagrid | 44 | ready |  | tomalla | high |
+| 0x00094d80 | CGameWnd::~CGameWnd | CGameWnd | 47 | ready |  | rtti-vtable | high |
+| 0x00080dd0 | CGameApp::vector_deleting_destructor | CGameApp | 50 | ready |  | tomalla | high |
+| 0x000c16b0 | BuildNamedGruntTable |  | 61 | ready |  | decomp-xref | med |
+| 0x0008c9d0 | CPlay::CPlay | CPlay | 701 | ready |  | rtti-vptr | med |
+| 0x0001e720 | BuildPowerupIconKeys |  | 766 | ready |  | string-xref | med |
+| 0x00138150 | DirectSoundMgr::GetErrorString | DirectSoundMgr | 827 | ready |  | string-xref | high |
+| 0x0013cff0 | WAP32::CGameApp::GameWindowProc | WAP32::CGameApp | 860 | ready |  | tomalla | high |
+| 0x000f8970 | SFManager::SelectBestDevice |  | 948 | ready |  | decomp-xref | med |
+| 0x000dc060 | LoadLevelEffectSprites |  | 1307 | ready |  | string-xref | med |
+| 0x00133590 | DirectInputMgr2::GetErrorString | DirectInputMgr2 | 1470 | ready |  | string-xref | high |
+| 0x00141400 | CDirectDrawMgr::GetErrorString | CDirectDrawMgr | 2101 | ready |  | string-xref | high |
+| 0x00025020 | LoadBattlezMapConfig |  | 2436 | ready |  | string-xref | med |
+| 0x001776a0 | CNetMgr::ReportError | CNetMgr | 2561 | ready |  | tomalla | high |
 
 ## BLOCKED / boundary-gap (311) — unlock as deps match
 
 | rva | name | class | size | status | blockers | source | conf |
 |---|---|---|---|---|---|---|---|
-| 0x1558b0 | UnknownClassCGruntzMgrHarryPotter::~UnknownClassCGruntzMgrHarryPotter | UnknownClassCGruntzMgrHarryPotter | 70 | blk:1 | 0x155e20 | tomalla | high |
-| 0x010b20 | CSecretLevelTrigger::CSecretLevelTrigger_010b20 | CSecretLevelTrigger | 75 | blk:1 | 0x16d710 | rtti-vptr | med |
-| 0x011160 | CTileTrigger::CTileTrigger_011160 | CTileTrigger | 75 | blk:1 | 0x16d710 | rtti-vptr | med |
-| 0x011ef0 | CGruntHealthSprite::CGruntHealthSprite_011ef0 | CGruntHealthSprite | 75 | blk:1 | 0x16d710 | rtti-vptr | med |
-| 0x013470 | CVoiceTrigger::CVoiceTrigger_013470 | CVoiceTrigger | 75 | blk:1 | 0x16d710 | rtti-vptr | med |
-| 0x0138d0 | CUserLogic::CUserLogic_0138d0 | CUserLogic | 75 | blk:1 | 0x16d710 | rtti-vptr | med |
-| 0x13dd50 | WAP32::CGameMgr::UnknownVirtualMethod1 | WAP32::CGameMgr | 84 | blk:1 | 0x13de70 | tomalla | high |
-| 0x1591f0 | UnknownHermiona::VirtualMethodUnknown3C | UnknownHermiona | 84 | blk:1 | 0x1628d0 | tomalla | high |
-| 0x13dbc0 | WAP32::CGameApp::InitializeGameManager | WAP32::CGameApp | 87 | blk:1 | 0x13dd10 | tomalla | high |
-| 0x0946a0 | CGruntzWnd::~CGruntzWnd | CGruntzWnd | 95 | blk:1 | 0x001a9b | tomalla | high |
-| 0x107a10 | UpdateRezMachineWakeStatusBar |  | 98 | blk:1 | 0x001523 | decomp-xref | med |
-| 0x156f50 | UnknownHagrid::~UnknownHagrid | UnknownHagrid | 104 | blk:1 | 0x163bc0 | tomalla | high |
-| 0x0b6000 | CNetMgr::CNetMgr_0b6000 | CNetMgr | 109 | blk:1 | 0x178230 | rtti-vptr | high |
-| 0x136440 | UnknownSalazar::UnknownSalazar | UnknownSalazar | 116 | blk:1 | 0x1351a0 | tomalla | high |
-| 0x013170 | CPathHazard::CPathHazard_013170 | CPathHazard | 123 | blk:1 | 0x16d710 | rtti-vptr | med |
-| 0x024f80 | UnknownClassArrays::~UnknownClassArrays | UnknownClassArrays | 125 | blk:1 | 0x0029a5 | tomalla | high |
-| 0x00b7b0 | CAmbientSound::~CAmbientSound_00b7b0 | CAmbientSound | 128 | blk:1 | 0x003026 | rtti-vptr | high |
-| 0x00b960 | CAmbientPosSound::~CAmbientPosSound_00b960 | CAmbientPosSound | 128 | blk:1 | 0x001ded | rtti-vptr | high |
-| 0x00b6a0 | CAmbientSound::~CAmbientSound_00b6a0 | CAmbientSound | 131 | blk:1 | 0x0030fd | rtti-vptr | high |
-| 0x00b850 | CAmbientPosSound::~CAmbientPosSound_00b850 | CAmbientPosSound | 131 | blk:1 | 0x001af5 | rtti-vptr | high |
-| 0x0e2d10 | LoadGruntzPalette |  | 161 | blk:1 | 0x13bff0 | decomp-xref | med |
-| 0x0da790 | UnknownClassInCGruntzMgr::UnknownClassInCGruntzMgr | UnknownClassInCGruntzMgr | 176 | blk:1 | 0x0035c6 | tomalla | high |
-| 0x083360 | CGruntzMgr::~CGruntzMgr | CGruntzMgr | 178 | blk:1 | 0x0043c2 | tomalla | high |
-| 0x107590 | UpdateFallingItemStatusBar |  | 196 | blk:1 | 0x001cbc | decomp-xref | med |
-| 0x155e20 | UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod1C | UnknownClassCGruntzMgrHarryPotter | 209 | blk:1 | 0x141d50 | tomalla | high |
-| 0x0a0d80 | BuildVersionString |  | 215 | blk:1 | 0x001f00 | decomp-xref | med |
-| 0x105070 | CSBI_SideTab::~CSBI_SideTab | CSBI_SideTab | 270 | blk:1 | 0x0033c3 | rtti-vptr | high |
-| 0x0e9850 | BuildStatzTabSmallSprite |  | 273 | blk:1 | 0x003ebd | decomp-xref | med |
-| 0x105310 | UpdateGruntOvenStatusBar |  | 282 | blk:1 | 0x1360d0 | decomp-xref | med |
-| 0x0d1710 | LoadSBITextEdges |  | 290 | blk:1 | 0x001c5d | decomp-xref | med |
-| 0x03b7c0 | LoadCustomWorldInfo |  | 300 | blk:1 | 0x004282 | decomp-xref | med |
-| 0x0e9600 | BuildStatzTabStatusBar |  | 396 | blk:1 | 0x0021c6 | decomp-xref | med |
-| 0x185000 | DebugPrintf |  | 422 | blk:1 | 0x184c10 | decomp-xref | low |
-| 0x109bd0 | UpdateWarpStoneStatusBar |  | 437 | blk:1 | 0x1360d0 | decomp-xref | med |
-| 0x083030 | CGruntzMgr::CGruntzMgr | CGruntzMgr | 438 | blk:1 | 0x13dd10 | tomalla | high |
-| 0x013940 | CMovingLogic::CMovingLogic | CMovingLogic | 481 | blk:1 | 0x16d710 | rtti-vptr | med |
-| 0x090550 | LaunchPortalExe |  | 486 | blk:1 | 0x004282 | decomp-xref | low |
-| 0x118ce0 | Utils::WinAPI::LegacyAreProcessesRunning | Utils::WinAPI | 501 | blk:1 | 0x0024f5 | tomalla | high |
-| 0x0ea1f0 | BuildMultiplayerTabStatusBar |  | 506 | blk:1 | 0x004403 | decomp-xref | med |
-| 0x0126e0 | CProjectile::CProjectile_0126e0 | CProjectile | 508 | blk:1 | 0x16d710 | rtti-vptr | med |
-| 0x112820 | CGruntzApp::vector_deleting_destructor | CGruntzApp | 12 | blk:1 | 0x002e0f | tomalla | high |
-| 0x157ae0 | UnknownPettigrew::VirtualMethodUnknown18 | UnknownPettigrew | 17 | blk:1 | 0x157bc0 | tomalla | med |
-| 0x1376d0 | UnknownVoldemort::UnknownVoldemort | UnknownVoldemort | 32 | blk:1 | 0x136440 | tomalla | high |
-| 0x1351a0 | UnknownSalazar::initializeUnknownLookupTable | UnknownSalazar | 35 | blk:1 | 0x1350b0 | tomalla | high |
-| 0x133380 | CGameMgr::vector_deleting_destructor | CGameMgr | 36 | blk:1 | 0x134d50 | tomalla | high |
-| 0x0e0650 | CBoomerang::CBoomerang | CBoomerang | 43 | blk:1 | 0x0037d8 | rtti-vptr | high |
-| 0x08fa70 | CGruntzMgr::GetGruntzDriveLetter | CGruntzMgr | 44 | blk:1 | 0x0042be | tomalla | high |
-| 0x13dd10 | WAP32::CGameMgr::CGameMgr | WAP32::CGameMgr | 53 | blk:1 | 0x13de70 | tomalla | high |
-| 0x0cffe0 | LoadImageBanks_vfunc29 |  | 60 | blk:1 | 0x13c030 | decomp-xref | med |
-| 0x0dc6d0 | BuildGruntTypeNameTable |  | 533 | blk:1 | 0x002bc1 | string-xref | med |
-| 0x0bf1d0 | BuildGruntzCrcInfo |  | 585 | blk:1 | 0x001af0 | decomp-xref | low |
-| 0x0dd050 | BuildGruntNamespaceList |  | 587 | blk:1 | 0x002bc1 | decomp-xref | low |
-| 0x0e2980 | LookupToolToyColorKey |  | 717 | blk:1 | 0x003571 | string-xref | med |
-| 0x0d12b0 | LoadScrollSpeedOptions |  | 725 | blk:1 | 0x002e28 | decomp-xref | med |
-| 0x0b3160 | CKitchenSlime::LoadSprites | CKitchenSlime | 825 | blk:1 | 0x150540 | string-xref | med |
-| 0x06a060 | LoadGruntMovingDeathConfig |  | 1085 | blk:1 | 0x16d190 | decomp-xref | med |
-| 0x048470 | CGrunt::BuildAnimationKey | CGrunt | 4891 | blk:1 | 0x004165 | string-xref | med |
-| 0x15d630 | UnknownRemus::VirtualMethodUnknown3C | UnknownRemus | 65 | blk:2 | 0x139960 0x1399d0 | tomalla | high |
-| 0x083260 | UnknownClassInCGruntzMgr::~UnknownClassInCGruntzMgr | UnknownClassInCGruntzMgr | 87 | blk:2 | 0x001eb5 0x002824 | tomalla | high |
-| 0x0a09a0 | LoadStateImages_vfunc8 |  | 106 | blk:2 | 0x002b3f 0x13bae0 | decomp-xref | med |
-| 0x10bc30 | UpdateDestructButtonStatusBar2 |  | 120 | blk:2 | 0x0014ba 0x0020bd | decomp-xref | low |
-| 0x08d5e0 | CCreditsState::~CCreditsState | CCreditsState | 139 | blk:2 | 0x003f53 0x0043d6 | rtti-vptr | med |
-| 0x136550 | (DirectSoundMgr) | DirectSoundMgr | 140 | blk:2 | 0x138150 0x1915a8 | import:DSOUND.dll!#1 | high |
-| 0x00bb60 | CRandomAmbientSound::~CRandomAmbientSound | CRandomAmbientSound | 155 | blk:2 | 0x00190b 0x003026 | rtti-vptr | high |
-| 0x078960 | LoadCameraSprite |  | 155 | blk:2 | 0x150540 0x1597b0 | decomp-xref | med |
-| 0x092420 | LoadSaveMessageSprite |  | 164 | blk:2 | 0x002bb7 0x00417e | decomp-xref | med |
-| 0x085d10 | CGruntzMapMgr::~CGruntzMapMgr | CGruntzMapMgr | 167 | blk:2 | 0x00135c 0x001a91 | rtti-vptr | high |
-| 0x0b49b0 | CRainCloud::CRainCloud | CRainCloud | 168 | blk:2 | 0x002fc2 0x1505b0 | rtti-vptr | high |
-| 0x03fed0 | CWormhole::LoadEntranceColor | CWormhole | 169 | blk:2 | 0x001aff 0x16e7f0 | decomp-xref | med |
-| 0x173d00 | CButeMgr::GetTypedRef_tag6 | CButeMgr | 187 | blk:2 | 0x16d190 0x1706c0 | decomp-xref | low |
-| 0x07b330 | LoadExplosionSprites |  | 198 | blk:2 | 0x1505b0 0x1597b0 | decomp-xref | med |
-| 0x173770 | CButeMgr::GetTypedRef_tag5 | CButeMgr | 198 | blk:2 | 0x16d190 0x1706c0 | decomp-xref | low |
-| 0x1658c0 | UnknownAlbus::VirtualMethodUnknown24 | UnknownAlbus | 204 | blk:2 | 0x139960 0x1399d0 | tomalla | high |
-| 0x1747c0 | CButeMgr::GetTypedRef_tag8 | CButeMgr | 207 | blk:2 | 0x16d190 0x1706c0 | decomp-xref | low |
-| 0x112a50 | BuildStatzTabSmall_vfunc1 |  | 221 | blk:2 | 0x1504d0 0x1597b0 | decomp-xref | med |
-| 0x174240 | CButeMgr::GetTypedRef_tag7 | CButeMgr | 227 | blk:2 | 0x16d190 0x1706c0 | decomp-xref | low |
-| 0x104e60 | LoadStatzTabToggleSprite |  | 237 | blk:2 | 0x003b98 0x1360d0 | decomp-xref | med |
-| 0x1106b0 | LoadSwitchUpSprite |  | 244 | blk:2 | 0x0033f0 0x1360d0 | decomp-xref | med |
-| 0x165a90 | UnknownAlbus::VirtualMethodUnknown30 | UnknownAlbus | 244 | blk:2 | 0x139800 0x139960 | tomalla | high |
-| 0x03c0e0 | BuildWorldLevelKey |  | 251 | blk:2 | 0x13be40 0x160f40 | decomp-xref | med |
-| 0x110570 | LoadSwitchDownSprite |  | 251 | blk:2 | 0x0033f0 0x1360d0 | decomp-xref | med |
-| 0x0b4640 | CloudHazard::vfunc_20 |  | 260 | blk:2 | 0x002e96 0x1360d0 | decomp-xref | med |
-| 0x0a9e00 | CDoNothingNormal::CDoNothingNormal | CDoNothingNormal | 268 | blk:2 | 0x003828 0x16e4f0 | rtti-vptr | high |
-| 0x061570 | LoadGruntDecayConfig2 |  | 285 | blk:2 | 0x002a72 0x152480 | decomp-xref | low |
-| 0x155160 | UnknownSeverus::VirtualMethodUnknown4C | UnknownSeverus | 286 | blk:2 | 0x13a260 0x13a280 | tomalla | high |
-| 0x0f8f30 | BuildSoundFontPath |  | 352 | blk:2 | 0x003382 0x003d32 | string-xref | high |
-| 0x08eca0 | CGruntzMgr::InitializeLobbyConnectionSettings | CGruntzMgr | 356 | blk:2 | 0x177660 0x1776a0 | tomalla | high |
-| 0x020f40 | LoadChatBoxSprite |  | 392 | blk:2 | 0x001cd0 0x153790 | decomp-xref | med |
-| 0x0dd340 | BuildWarlordNameTable |  | 393 | blk:2 | 0x0012da 0x002bc1 | decomp-xref | low |
-| 0x090d10 | LoadMonologoSprite |  | 398 | blk:2 | 0x15d9a0 0x15dde0 | decomp-xref | med |
-| 0x07c3d0 | LoadFinishLevelSprite |  | 430 | blk:2 | 0x003a1c 0x1360d0 | decomp-xref | med |
-| 0x022e60 | LoadCheatConfig |  | 446 | blk:2 | 0x004269 0x171a60 | string-xref | med |
-| 0x1588f0 | UnknownDraco::VirtualMethodUnknown24 | UnknownDraco | 453 | blk:2 | 0x156cb0 0x158f30 | tomalla | high |
-| 0x08ff30 | CGruntzMgr::BuildMoviePath | CGruntzMgr | 458 | blk:2 | 0x004214 0x004282 | string-xref | high |
-| 0x154f80 | UnknownSeverus::VirtualMethodUnknown48 | UnknownSeverus | 469 | blk:2 | 0x13a260 0x13a280 | tomalla | high |
-| 0x1076a0 | UpdateChipGrinderStatusBar |  | 499 | blk:2 | 0x001cbc 0x1360d0 | decomp-xref | med |
-| 0x159a70 | UnknownHermiona::VirtualMethodUnknown24 | UnknownHermiona | 512 | blk:2 | 0x159e40 0x15b340 | tomalla | high |
-| 0x102200 | BuildGameTabPauseButton |  | 55 | blk:2 | 0x00125d 0x002aea | decomp-xref | med |
-| 0x156e80 | UnknownSeverus::VirtualMethodUnknown44 | UnknownSeverus | 56 | blk:2 | 0x13a230 0x13b900 | tomalla | high |
-| 0x11c210 | BuildVoiceSoundList |  | 669 | blk:2 | 0x002446 0x13bff0 | decomp-xref | med |
-| 0x0e44e0 | BuildLevelTitleString |  | 690 | blk:2 | 0x120120 0x1751f0 | string-xref | med |
-| 0x01f9b0 | StartUpPrompt |  | 722 | blk:2 | 0x002540 0x004282 | tomalla | high |
-| 0x0cf770 | DrawDebugStats |  | 862 | blk:2 | 0x002cb1 0x003067 | decomp-xref | low |
-| 0x0e2400 | BuildToolToyColorKey |  | 926 | blk:2 | 0x0010aa 0x00325b | string-xref | med |
-| 0x07c620 | LoadPowerupIconSprites |  | 965 | blk:2 | 0x150540 0x1597b0 | string-xref | med |
-| 0x0d0120 | LoadCursorSprites |  | 1496 | blk:2 | 0x0039ea 0x0039f4 | string-xref | med |
-| 0x101580 | CSBI_ImageSet::CSBI_ImageSet | CSBI_ImageSet | 2054 | blk:2 | 0x001e88 0x0022c0 | rtti-vptr | med |
-| 0x0810f0 | CBrickz::LoadAttributes | CBrickz | 2228 | blk:2 | 0x00412e 0x004228 | decomp-xref | med |
-| 0x10a340 | CSBI_Image::~CSBI_Image | CSBI_Image | 3019 | blk:2 | 0x001e88 0x0022c0 | rtti-vptr | med |
-| 0x178280 | (CNetMgr) | CNetMgr | 67 | blk:3 | 0x1776a0 0x178430 0x1937c6 | import:DPLAYX.dll!#2 | high |
-| 0x01c070 | BuildBootyPerfectAnimation |  | 89 | blk:3 | 0x150540 0x1505b0 0x1597b0 | decomp-xref | med |
-| 0x0412c0 | CWormhole::LoadAttributes | CWormhole | 99 | blk:3 | 0x150540 0x1505b0 0x16d190 | decomp-xref | med |
-| 0x106660 | UpdateRezMachineSnoozeStatusBar |  | 104 | blk:3 | 0x001523 0x00366b 0x004359 | decomp-xref | med |
-| 0x095090 | CHelpState::LoadAssets |  | 110 | blk:3 | 0x0043a9 0x13c030 0x13d4e0 | decomp-xref | med |
-| 0x0db7e0 | LoadLevelImages |  | 132 | blk:3 | 0x13bae0 0x155360 0x155550 | decomp-xref | med |
-| 0x1782d0 | (CNetMgr) | CNetMgr | 134 | blk:3 | 0x1776a0 0x178360 0x1937c0 | import:DPLAYX.dll!#1 | high |
-| 0x0db600 | LoadActionTileSprites |  | 143 | blk:3 | 0x13bae0 0x155360 0x155550 | decomp-xref | med |
-| 0x07fae0 | CGruntStaminaSprite::CGruntStaminaSprite | CGruntStaminaSprite | 160 | blk:3 | 0x003224 0x1504d0 0x16d190 | rtti-vptr | high |
-| 0x07fbd0 | CGruntToyTimeSprite::CGruntToyTimeSprite | CGruntToyTimeSprite | 160 | blk:3 | 0x003224 0x1504d0 0x16d190 | rtti-vptr | high |
-| 0x07fcc0 | CGruntWingzTimeSprite::CGruntWingzTimeSprite | CGruntWingzTimeSprite | 160 | blk:3 | 0x003224 0x1504d0 0x16d190 | rtti-vptr | high |
+| 0x001558b0 | UnknownClassCGruntzMgrHarryPotter::~UnknownClassCGruntzMgrHarryPotter | UnknownClassCGruntzMgrHarryPotter | 70 | blk:1 | 0x00155e20 | tomalla | high |
+| 0x00010b20 | CSecretLevelTrigger::CSecretLevelTrigger_010b20 | CSecretLevelTrigger | 75 | blk:1 | 0x0016d710 | rtti-vptr | med |
+| 0x00011160 | CTileTrigger::CTileTrigger_011160 | CTileTrigger | 75 | blk:1 | 0x0016d710 | rtti-vptr | med |
+| 0x00011ef0 | CGruntHealthSprite::CGruntHealthSprite_011ef0 | CGruntHealthSprite | 75 | blk:1 | 0x0016d710 | rtti-vptr | med |
+| 0x00013470 | CVoiceTrigger::CVoiceTrigger_013470 | CVoiceTrigger | 75 | blk:1 | 0x0016d710 | rtti-vptr | med |
+| 0x000138d0 | CUserLogic::CUserLogic_0138d0 | CUserLogic | 75 | blk:1 | 0x0016d710 | rtti-vptr | med |
+| 0x0013dd50 | WAP32::CGameMgr::UnknownVirtualMethod1 | WAP32::CGameMgr | 84 | blk:1 | 0x0013de70 | tomalla | high |
+| 0x001591f0 | UnknownHermiona::VirtualMethodUnknown3C | UnknownHermiona | 84 | blk:1 | 0x001628d0 | tomalla | high |
+| 0x0013dbc0 | WAP32::CGameApp::InitializeGameManager | WAP32::CGameApp | 87 | blk:1 | 0x0013dd10 | tomalla | high |
+| 0x000946a0 | CGruntzWnd::~CGruntzWnd | CGruntzWnd | 95 | blk:1 | 0x00001a9b | tomalla | high |
+| 0x00107a10 | UpdateRezMachineWakeStatusBar |  | 98 | blk:1 | 0x00001523 | decomp-xref | med |
+| 0x00156f50 | UnknownHagrid::~UnknownHagrid | UnknownHagrid | 104 | blk:1 | 0x00163bc0 | tomalla | high |
+| 0x000b6000 | CNetMgr::CNetMgr_0b6000 | CNetMgr | 109 | blk:1 | 0x00178230 | rtti-vptr | high |
+| 0x00136440 | UnknownSalazar::UnknownSalazar | UnknownSalazar | 116 | blk:1 | 0x001351a0 | tomalla | high |
+| 0x00013170 | CPathHazard::CPathHazard_013170 | CPathHazard | 123 | blk:1 | 0x0016d710 | rtti-vptr | med |
+| 0x00024f80 | UnknownClassArrays::~UnknownClassArrays | UnknownClassArrays | 125 | blk:1 | 0x000029a5 | tomalla | high |
+| 0x0000b7b0 | CAmbientSound::~CAmbientSound_00b7b0 | CAmbientSound | 128 | blk:1 | 0x00003026 | rtti-vptr | high |
+| 0x0000b960 | CAmbientPosSound::~CAmbientPosSound_00b960 | CAmbientPosSound | 128 | blk:1 | 0x00001ded | rtti-vptr | high |
+| 0x0000b6a0 | CAmbientSound::~CAmbientSound_00b6a0 | CAmbientSound | 131 | blk:1 | 0x000030fd | rtti-vptr | high |
+| 0x0000b850 | CAmbientPosSound::~CAmbientPosSound_00b850 | CAmbientPosSound | 131 | blk:1 | 0x00001af5 | rtti-vptr | high |
+| 0x000e2d10 | LoadGruntzPalette |  | 161 | blk:1 | 0x0013bff0 | decomp-xref | med |
+| 0x000da790 | UnknownClassInCGruntzMgr::UnknownClassInCGruntzMgr | UnknownClassInCGruntzMgr | 176 | blk:1 | 0x000035c6 | tomalla | high |
+| 0x00083360 | CGruntzMgr::~CGruntzMgr | CGruntzMgr | 178 | blk:1 | 0x000043c2 | tomalla | high |
+| 0x00107590 | UpdateFallingItemStatusBar |  | 196 | blk:1 | 0x00001cbc | decomp-xref | med |
+| 0x00155e20 | UnknownClassCGruntzMgrHarryPotter::UnknownVirtualMethod1C | UnknownClassCGruntzMgrHarryPotter | 209 | blk:1 | 0x00141d50 | tomalla | high |
+| 0x000a0d80 | BuildVersionString |  | 215 | blk:1 | 0x00001f00 | decomp-xref | med |
+| 0x00105070 | CSBI_SideTab::~CSBI_SideTab | CSBI_SideTab | 270 | blk:1 | 0x000033c3 | rtti-vptr | high |
+| 0x000e9850 | BuildStatzTabSmallSprite |  | 273 | blk:1 | 0x00003ebd | decomp-xref | med |
+| 0x00105310 | UpdateGruntOvenStatusBar |  | 282 | blk:1 | 0x001360d0 | decomp-xref | med |
+| 0x000d1710 | LoadSBITextEdges |  | 290 | blk:1 | 0x00001c5d | decomp-xref | med |
+| 0x0003b7c0 | LoadCustomWorldInfo |  | 300 | blk:1 | 0x00004282 | decomp-xref | med |
+| 0x000e9600 | BuildStatzTabStatusBar |  | 396 | blk:1 | 0x000021c6 | decomp-xref | med |
+| 0x00185000 | DebugPrintf |  | 422 | blk:1 | 0x00184c10 | decomp-xref | low |
+| 0x00109bd0 | UpdateWarpStoneStatusBar |  | 437 | blk:1 | 0x001360d0 | decomp-xref | med |
+| 0x00083030 | CGruntzMgr::CGruntzMgr | CGruntzMgr | 438 | blk:1 | 0x0013dd10 | tomalla | high |
+| 0x00013940 | CMovingLogic::CMovingLogic | CMovingLogic | 481 | blk:1 | 0x0016d710 | rtti-vptr | med |
+| 0x00090550 | LaunchPortalExe |  | 486 | blk:1 | 0x00004282 | decomp-xref | low |
+| 0x00118ce0 | Utils::WinAPI::LegacyAreProcessesRunning | Utils::WinAPI | 501 | blk:1 | 0x000024f5 | tomalla | high |
+| 0x000ea1f0 | BuildMultiplayerTabStatusBar |  | 506 | blk:1 | 0x00004403 | decomp-xref | med |
+| 0x000126e0 | CProjectile::CProjectile_0126e0 | CProjectile | 508 | blk:1 | 0x0016d710 | rtti-vptr | med |
+| 0x00112820 | CGruntzApp::vector_deleting_destructor | CGruntzApp | 12 | blk:1 | 0x00002e0f | tomalla | high |
+| 0x00157ae0 | UnknownPettigrew::VirtualMethodUnknown18 | UnknownPettigrew | 17 | blk:1 | 0x00157bc0 | tomalla | med |
+| 0x001376d0 | UnknownVoldemort::UnknownVoldemort | UnknownVoldemort | 32 | blk:1 | 0x00136440 | tomalla | high |
+| 0x001351a0 | UnknownSalazar::initializeUnknownLookupTable | UnknownSalazar | 35 | blk:1 | 0x001350b0 | tomalla | high |
+| 0x00133380 | CGameMgr::vector_deleting_destructor | CGameMgr | 36 | blk:1 | 0x00134d50 | tomalla | high |
+| 0x000e0650 | CBoomerang::CBoomerang | CBoomerang | 43 | blk:1 | 0x000037d8 | rtti-vptr | high |
+| 0x0008fa70 | CGruntzMgr::GetGruntzDriveLetter | CGruntzMgr | 44 | blk:1 | 0x000042be | tomalla | high |
+| 0x0013dd10 | WAP32::CGameMgr::CGameMgr | WAP32::CGameMgr | 53 | blk:1 | 0x0013de70 | tomalla | high |
+| 0x000cffe0 | LoadImageBanks_vfunc29 |  | 60 | blk:1 | 0x0013c030 | decomp-xref | med |
+| 0x000dc6d0 | BuildGruntTypeNameTable |  | 533 | blk:1 | 0x00002bc1 | string-xref | med |
+| 0x000bf1d0 | BuildGruntzCrcInfo |  | 585 | blk:1 | 0x00001af0 | decomp-xref | low |
+| 0x000dd050 | BuildGruntNamespaceList |  | 587 | blk:1 | 0x00002bc1 | decomp-xref | low |
+| 0x000e2980 | LookupToolToyColorKey |  | 717 | blk:1 | 0x00003571 | string-xref | med |
+| 0x000d12b0 | LoadScrollSpeedOptions |  | 725 | blk:1 | 0x00002e28 | decomp-xref | med |
+| 0x000b3160 | CKitchenSlime::LoadSprites | CKitchenSlime | 825 | blk:1 | 0x00150540 | string-xref | med |
+| 0x0006a060 | LoadGruntMovingDeathConfig |  | 1085 | blk:1 | 0x0016d190 | decomp-xref | med |
+| 0x00048470 | CGrunt::BuildAnimationKey | CGrunt | 4891 | blk:1 | 0x00004165 | string-xref | med |
+| 0x0015d630 | UnknownRemus::VirtualMethodUnknown3C | UnknownRemus | 65 | blk:2 | 0x00139960 0x001399d0 | tomalla | high |
+| 0x00083260 | UnknownClassInCGruntzMgr::~UnknownClassInCGruntzMgr | UnknownClassInCGruntzMgr | 87 | blk:2 | 0x00001eb5 0x00002824 | tomalla | high |
+| 0x000a09a0 | LoadStateImages_vfunc8 |  | 106 | blk:2 | 0x00002b3f 0x0013bae0 | decomp-xref | med |
+| 0x0010bc30 | UpdateDestructButtonStatusBar2 |  | 120 | blk:2 | 0x000014ba 0x000020bd | decomp-xref | low |
+| 0x0008d5e0 | CCreditsState::~CCreditsState | CCreditsState | 139 | blk:2 | 0x00003f53 0x000043d6 | rtti-vptr | med |
+| 0x00136550 | (DirectSoundMgr) | DirectSoundMgr | 140 | blk:2 | 0x00138150 0x001915a8 | import:DSOUND.dll!#1 | high |
+| 0x0000bb60 | CRandomAmbientSound::~CRandomAmbientSound | CRandomAmbientSound | 155 | blk:2 | 0x0000190b 0x00003026 | rtti-vptr | high |
+| 0x00078960 | LoadCameraSprite |  | 155 | blk:2 | 0x00150540 0x001597b0 | decomp-xref | med |
+| 0x00092420 | LoadSaveMessageSprite |  | 164 | blk:2 | 0x00002bb7 0x0000417e | decomp-xref | med |
+| 0x00085d10 | CGruntzMapMgr::~CGruntzMapMgr | CGruntzMapMgr | 167 | blk:2 | 0x0000135c 0x00001a91 | rtti-vptr | high |
+| 0x000b49b0 | CRainCloud::CRainCloud | CRainCloud | 168 | blk:2 | 0x00002fc2 0x001505b0 | rtti-vptr | high |
+| 0x0003fed0 | CWormhole::LoadEntranceColor | CWormhole | 169 | blk:2 | 0x00001aff 0x0016e7f0 | decomp-xref | med |
+| 0x00173d00 | CButeMgr::GetTypedRef_tag6 | CButeMgr | 187 | blk:2 | 0x0016d190 0x001706c0 | decomp-xref | low |
+| 0x0007b330 | LoadExplosionSprites |  | 198 | blk:2 | 0x001505b0 0x001597b0 | decomp-xref | med |
+| 0x00173770 | CButeMgr::GetTypedRef_tag5 | CButeMgr | 198 | blk:2 | 0x0016d190 0x001706c0 | decomp-xref | low |
+| 0x001658c0 | UnknownAlbus::VirtualMethodUnknown24 | UnknownAlbus | 204 | blk:2 | 0x00139960 0x001399d0 | tomalla | high |
+| 0x001747c0 | CButeMgr::GetTypedRef_tag8 | CButeMgr | 207 | blk:2 | 0x0016d190 0x001706c0 | decomp-xref | low |
+| 0x00112a50 | BuildStatzTabSmall_vfunc1 |  | 221 | blk:2 | 0x001504d0 0x001597b0 | decomp-xref | med |
+| 0x00174240 | CButeMgr::GetTypedRef_tag7 | CButeMgr | 227 | blk:2 | 0x0016d190 0x001706c0 | decomp-xref | low |
+| 0x00104e60 | LoadStatzTabToggleSprite |  | 237 | blk:2 | 0x00003b98 0x001360d0 | decomp-xref | med |
+| 0x001106b0 | LoadSwitchUpSprite |  | 244 | blk:2 | 0x000033f0 0x001360d0 | decomp-xref | med |
+| 0x00165a90 | UnknownAlbus::VirtualMethodUnknown30 | UnknownAlbus | 244 | blk:2 | 0x00139800 0x00139960 | tomalla | high |
+| 0x0003c0e0 | BuildWorldLevelKey |  | 251 | blk:2 | 0x0013be40 0x00160f40 | decomp-xref | med |
+| 0x00110570 | LoadSwitchDownSprite |  | 251 | blk:2 | 0x000033f0 0x001360d0 | decomp-xref | med |
+| 0x000b4640 | CloudHazard::vfunc_20 |  | 260 | blk:2 | 0x00002e96 0x001360d0 | decomp-xref | med |
+| 0x000a9e00 | CDoNothingNormal::CDoNothingNormal | CDoNothingNormal | 268 | blk:2 | 0x00003828 0x0016e4f0 | rtti-vptr | high |
+| 0x00061570 | LoadGruntDecayConfig2 |  | 285 | blk:2 | 0x00002a72 0x00152480 | decomp-xref | low |
+| 0x00155160 | UnknownSeverus::VirtualMethodUnknown4C | UnknownSeverus | 286 | blk:2 | 0x0013a260 0x0013a280 | tomalla | high |
+| 0x000f8f30 | BuildSoundFontPath |  | 352 | blk:2 | 0x00003382 0x00003d32 | string-xref | high |
+| 0x0008eca0 | CGruntzMgr::InitializeLobbyConnectionSettings | CGruntzMgr | 356 | blk:2 | 0x00177660 0x001776a0 | tomalla | high |
+| 0x00020f40 | LoadChatBoxSprite |  | 392 | blk:2 | 0x00001cd0 0x00153790 | decomp-xref | med |
+| 0x000dd340 | BuildWarlordNameTable |  | 393 | blk:2 | 0x000012da 0x00002bc1 | decomp-xref | low |
+| 0x00090d10 | LoadMonologoSprite |  | 398 | blk:2 | 0x0015d9a0 0x0015dde0 | decomp-xref | med |
+| 0x0007c3d0 | LoadFinishLevelSprite |  | 430 | blk:2 | 0x00003a1c 0x001360d0 | decomp-xref | med |
+| 0x00022e60 | LoadCheatConfig |  | 446 | blk:2 | 0x00004269 0x00171a60 | string-xref | med |
+| 0x001588f0 | UnknownDraco::VirtualMethodUnknown24 | UnknownDraco | 453 | blk:2 | 0x00156cb0 0x00158f30 | tomalla | high |
+| 0x0008ff30 | CGruntzMgr::BuildMoviePath | CGruntzMgr | 458 | blk:2 | 0x00004214 0x00004282 | string-xref | high |
+| 0x00154f80 | UnknownSeverus::VirtualMethodUnknown48 | UnknownSeverus | 469 | blk:2 | 0x0013a260 0x0013a280 | tomalla | high |
+| 0x001076a0 | UpdateChipGrinderStatusBar |  | 499 | blk:2 | 0x00001cbc 0x001360d0 | decomp-xref | med |
+| 0x00159a70 | UnknownHermiona::VirtualMethodUnknown24 | UnknownHermiona | 512 | blk:2 | 0x00159e40 0x0015b340 | tomalla | high |
+| 0x00102200 | BuildGameTabPauseButton |  | 55 | blk:2 | 0x0000125d 0x00002aea | decomp-xref | med |
+| 0x00156e80 | UnknownSeverus::VirtualMethodUnknown44 | UnknownSeverus | 56 | blk:2 | 0x0013a230 0x0013b900 | tomalla | high |
+| 0x0011c210 | BuildVoiceSoundList |  | 669 | blk:2 | 0x00002446 0x0013bff0 | decomp-xref | med |
+| 0x000e44e0 | BuildLevelTitleString |  | 690 | blk:2 | 0x00120120 0x001751f0 | string-xref | med |
+| 0x0001f9b0 | StartUpPrompt |  | 722 | blk:2 | 0x00002540 0x00004282 | tomalla | high |
+| 0x000cf770 | DrawDebugStats |  | 862 | blk:2 | 0x00002cb1 0x00003067 | decomp-xref | low |
+| 0x000e2400 | BuildToolToyColorKey |  | 926 | blk:2 | 0x000010aa 0x0000325b | string-xref | med |
+| 0x0007c620 | LoadPowerupIconSprites |  | 965 | blk:2 | 0x00150540 0x001597b0 | string-xref | med |
+| 0x000d0120 | LoadCursorSprites |  | 1496 | blk:2 | 0x000039ea 0x000039f4 | string-xref | med |
+| 0x00101580 | CSBI_ImageSet::CSBI_ImageSet | CSBI_ImageSet | 2054 | blk:2 | 0x00001e88 0x000022c0 | rtti-vptr | med |
+| 0x000810f0 | CBrickz::LoadAttributes | CBrickz | 2228 | blk:2 | 0x0000412e 0x00004228 | decomp-xref | med |
+| 0x0010a340 | CSBI_Image::~CSBI_Image | CSBI_Image | 3019 | blk:2 | 0x00001e88 0x000022c0 | rtti-vptr | med |
+| 0x00178280 | (CNetMgr) | CNetMgr | 67 | blk:3 | 0x001776a0 0x00178430 0x001937c6 | import:DPLAYX.dll!#2 | high |
+| 0x0001c070 | BuildBootyPerfectAnimation |  | 89 | blk:3 | 0x00150540 0x001505b0 0x001597b0 | decomp-xref | med |
+| 0x000412c0 | CWormhole::LoadAttributes | CWormhole | 99 | blk:3 | 0x00150540 0x001505b0 0x0016d190 | decomp-xref | med |
+| 0x00106660 | UpdateRezMachineSnoozeStatusBar |  | 104 | blk:3 | 0x00001523 0x0000366b 0x00004359 | decomp-xref | med |
+| 0x00095090 | CHelpState::LoadAssets |  | 110 | blk:3 | 0x000043a9 0x0013c030 0x0013d4e0 | decomp-xref | med |
+| 0x000db7e0 | LoadLevelImages |  | 132 | blk:3 | 0x0013bae0 0x00155360 0x00155550 | decomp-xref | med |
+| 0x001782d0 | (CNetMgr) | CNetMgr | 134 | blk:3 | 0x001776a0 0x00178360 0x001937c0 | import:DPLAYX.dll!#1 | high |
+| 0x000db600 | LoadActionTileSprites |  | 143 | blk:3 | 0x0013bae0 0x00155360 0x00155550 | decomp-xref | med |
+| 0x0007fae0 | CGruntStaminaSprite::CGruntStaminaSprite | CGruntStaminaSprite | 160 | blk:3 | 0x00003224 0x001504d0 0x0016d190 | rtti-vptr | high |
+| 0x0007fbd0 | CGruntToyTimeSprite::CGruntToyTimeSprite | CGruntToyTimeSprite | 160 | blk:3 | 0x00003224 0x001504d0 0x0016d190 | rtti-vptr | high |
+| 0x0007fcc0 | CGruntWingzTimeSprite::CGruntWingzTimeSprite | CGruntWingzTimeSprite | 160 | blk:3 | 0x00003224 0x001504d0 0x0016d190 | rtti-vptr | high |
 
 …and 191 more (re-run after matches land).

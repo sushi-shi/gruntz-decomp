@@ -15,12 +15,12 @@ public:
 };
 
 // Derived vftable, referenced as DIR32 data (RVA = VA - 0x400000).
-DATA(0x5eaf54)
+DATA(0x005eaf54)
 extern void* g_checkpointTrigSwitchVtbl;
 
 // @confidence: high
 // @source: rtti-vptr
-RVA(0x1127f0, 0x12)
+RVA(0x001127f0, 0x12)
 CCheckpointTriggerSwitchLogic::CCheckpointTriggerSwitchLogic() {
     *(void**)this = &g_checkpointTrigSwitchVtbl;
 }

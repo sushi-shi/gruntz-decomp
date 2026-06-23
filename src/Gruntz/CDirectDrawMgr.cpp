@@ -24,17 +24,17 @@
 #include <Win32.h>
 
 // Reporting-mode globals (live in .data).
-DATA(0x283ec0)
+DATA(0x00283ec0)
 extern "C" int g_beepEnabled; // 0x683ec0
-DATA(0x283eb8)
+DATA(0x00283eb8)
 extern "C" int g_logEnabled; // 0x683eb8
-DATA(0x283ebc)
+DATA(0x00283ebc)
 extern "C" int g_msgBoxEnabled; // 0x683ebc
-DATA(0x283ec4)
+DATA(0x00283ec4)
 extern "C" int g_thirdEnabled; // 0x683ec4
 
 // Empty mutable string in .data copied into the working buffer up front.
-DATA(0x2293f4)
+DATA(0x002293f4)
 extern "C" char g_emptyString[]; // 0x6293f4
 
 // The engine logger that consumes the formatted line (DDrawMgr-local helper).
@@ -58,18 +58,18 @@ DirectDrawCreate(void* lpGuid, IDirectDrawSurfaceZ** ppDD, void* pUnkOuter);
 
 // IID_IDirectDraw2 / IID_IDirectDrawSurface3 - dxguid GUID constants in .rdata,
 // passed to QueryInterface. Reloc-masked DATA() externs.
-DATA(0x1ef848)
+DATA(0x001ef848)
 extern const unsigned char IID_IDirectDraw2[16]; // 0x5ef848
-DATA(0x1ef888)
+DATA(0x001ef888)
 extern const unsigned char IID_IDirectDrawSurface3[16]; // 0x5ef888
 
 // operator new(size_t) - the engine allocator (reloc-masked rel32).
 void* operator new(unsigned int);
 
 // The process-wide DirectDraw object + the CDirectDrawMgr singleton (.data).
-DATA(0x283ee8)
+DATA(0x00283ee8)
 extern "C" IDirectDraw2Z* g_DirectDraw; // 0x683ee8
-DATA(0x2bed00)
+DATA(0x002bed00)
 extern "C" CDirectDrawMgr* g_DirectDrawMgr; // 0x6bed00
 
 // ===========================================================================
@@ -78,7 +78,7 @@ extern "C" CDirectDrawMgr* g_DirectDrawMgr; // 0x6bed00
 
 // CDDSurface::Lock (__thiscall). Lock(this->m_desc) with NULL rect / flags 1;
 // on SURFACELOST restore-and-retry, else report. Returns m_34 on hard fail.
-RVA(0x13e6d0, 0x88)
+RVA(0x0013e6d0, 0x88)
 int CDDSurface::Lock(void* rect) {
     int hr = m_8->vtbl->Lock(m_8, rect, m_desc, 1, 0);
     if (hr == 0) {
@@ -100,7 +100,7 @@ int CDDSurface::Lock(void* rect) {
 }
 
 // CDDSurface::SetPalette (__thiscall). m_8->SetPalette(pal->m_4).
-RVA(0x13e690, 0x35)
+RVA(0x0013e690, 0x35)
 int CDDSurface::SetPalette(CDDPalette* pal, int unused) {
     int hr = m_8->vtbl->SetPalette(m_8, pal->m_4);
     if (hr == 0) {
@@ -111,7 +111,7 @@ int CDDSurface::SetPalette(CDDPalette* pal, int unused) {
 }
 
 // CDDSurface::Flip (__thiscall). Flip(target->m_8, 1); SURFACELOST retry.
-RVA(0x13e850, 0x93)
+RVA(0x0013e850, 0x93)
 int CDDSurface::Flip(CDDSurface* target) {
     IDirectDrawSurfaceZ* tsurf = 0;
     if (target != 0) {
@@ -137,7 +137,7 @@ int CDDSurface::Flip(CDDSurface* target) {
 }
 
 // CDDSurface::SetColorKey (__thiscall). m_8->SetColorKey(flags, key).
-RVA(0x13eaa0, 0x39)
+RVA(0x0013eaa0, 0x39)
 int CDDSurface::SetColorKey(unsigned long flags, void* key) {
     int hr = m_8->vtbl->SetColorKey(m_8, flags, key);
     if (hr != 0) {
@@ -149,7 +149,7 @@ int CDDSurface::SetColorKey(unsigned long flags, void* key) {
 
 // CDDSurface::Blt (__thiscall, ret 4 => 1 arg). Blts src's RECT (src->m_80) into
 // this surface's RECT (this->m_80) with flags 0x1000000; SURFACELOST retry.
-RVA(0x13ee60, 0x8d)
+RVA(0x0013ee60, 0x8d)
 int CDDSurface::Blt(CDDSurface* src) {
     void* srcRect = src->m_80;
     void* dstRect = m_80;
@@ -169,7 +169,7 @@ int CDDSurface::Blt(CDDSurface* src) {
 
 // CDDSurface::BltEx (__thiscall, ret 0x14 => 5 args). Generic Blt with the source
 // surface conditional (src may be NULL); SURFACELOST retry.
-RVA(0x13eef0, 0x98)
+RVA(0x0013eef0, 0x98)
 int CDDSurface::BltEx(
     void* dstRect,
     CDDSurface* src,
@@ -197,7 +197,7 @@ int CDDSurface::BltEx(
 }
 
 // CDDSurface::BltFast (__thiscall, ret 0x14 => 5 args). SURFACELOST retry.
-RVA(0x13ef90, 0x8b)
+RVA(0x0013ef90, 0x8b)
 int CDDSurface::BltFast(
     unsigned long x,
     unsigned long y,
@@ -221,7 +221,7 @@ int CDDSurface::BltFast(
 
 // CDDSurface::GetColorKey (__thiscall). GetColorKey(8, &local); NOCOLORKEY is a
 // non-error returning -1; on success returns the key, on error reports + -1.
-RVA(0x13fa60, 0x40)
+RVA(0x0013fa60, 0x40)
 int CDDSurface::GetColorKey() {
     unsigned long key[2];
     long hr = m_8->vtbl->GetColorKey(m_8, 8, key);
@@ -236,7 +236,7 @@ int CDDSurface::GetColorKey() {
 
 // CDDSurface::Refresh (__thiscall, ret 4 => 1 arg). GetSurfaceDesc into the
 // scratch desc, then derive the row/pixel geometry by a bit-depth switch.
-RVA(0x13e140, 0x133)
+RVA(0x0013e140, 0x133)
 int CDDSurface::Refresh(IDirectDrawSurfaceZ* surf) {
     m_8 = surf;
     int i;
@@ -308,7 +308,7 @@ int CDDSurface::Refresh(IDirectDrawSurfaceZ* surf) {
 // ===========================================================================
 
 // CDirectDrawMgr::GetErrorString
-RVA(0x141400, 0x835)
+RVA(0x00141400, 0x835)
 void CDirectDrawMgr::GetErrorString(char* file, int line, long hr) {
     char szCode[64];  // local_340 - error-code name
     char szMsg[256];  // local_300 - description
@@ -552,7 +552,7 @@ void CDirectDrawMgr::GetErrorString(char* file, int line, long hr) {
 
 // CDirectDrawMgr::CreateDevice (__thiscall, ret 0x18 => 6 args; arg1 unused).
 // Brings up the DirectDraw device and caches it as the singleton.
-RVA(0x141dc0, 0x224)
+RVA(0x00141dc0, 0x224)
 int CDirectDrawMgr::CreateDevice(
     void* a1,
     void* hwnd,
@@ -651,7 +651,7 @@ int CDirectDrawMgr::CreateDevice(
 // CDDPalette::Create (__thiscall, ret 0xc => 3 args). Caches a copy of the
 // PALETTEENTRY array (m_c), allocates a second cache (m_10), then creates the
 // DirectDraw palette via IDirectDraw::CreatePalette into m_4.
-RVA(0x147390, 0x78)
+RVA(0x00147390, 0x78)
 int CDDPalette::Create(IDirectDraw2Z* dd, void* entries, unsigned long flags) {
     m_c = (unsigned char*)operator new(0x400);
     // Plateau note: byte-for-byte except the copy loop's SIB base/index roles
@@ -671,7 +671,7 @@ int CDDPalette::Create(IDirectDraw2Z* dd, void* entries, unsigned long flags) {
 
 // CDDPalette::GetEntries (__thiscall, ret 0 => no args). Lazily allocates the
 // readback cache (m_10), then reads all 256 entries; reports a bad HRESULT.
-RVA(0x147c30, 0x4d)
+RVA(0x00147c30, 0x4d)
 int CDDPalette::GetEntries() {
     // Lazily allocates the readback cache, then reads all 256 entries; reports a
     // bad HRESULT. Plateau note: retail's body falls off the end (no return -
@@ -692,7 +692,7 @@ int CDDPalette::GetEntries() {
 }
 
 // CDDPalette::SetRange (__thiscall, ret 0x18 => 6 args).
-RVA(0x147cd0, 0x78)
+RVA(0x00147cd0, 0x78)
 int CDDPalette::SetRange(
     int start,
     int count,
@@ -723,7 +723,7 @@ int CDDPalette::SetRange(
 // QueryInterfaces IDirectDraw2, sets the cooperative level + display mode,
 // creates the primary surface (QI'd to IDirectDrawSurface3) and, for 8bpp, a
 // palette; caches the geometry and shows the cursor.
-RVA(0x17c040, 0x25d)
+RVA(0x0017c040, 0x25d)
 int CDDPageMgr::Init(void* window, DDModeInfo* mode, unsigned long coopFlags) {
     if (m_4 != 0) {
         return 0;

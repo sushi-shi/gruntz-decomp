@@ -76,6 +76,8 @@ public:
     void PerFrameTick();                            // @0x08f620 (per-frame draw-clock tick)
     void AdvanceFrame(int doDraw, int unused);      // @0x08f6a0 (the per-frame advance gate)
     int CheckPlayState();                           // @0x08ec50 (m_2c->Update()==3||==0x11)
+    int RestoreVideoMode(int save);                 // @0x08ddd0 (re-assert 640x480; save on hit)
+    int SetVideoMode(int w, int h, int flag);       // @0x08df00 (mode-switch the display; stubbed)
 
     // --- members (offsets relative to `this`; base CGameMgr occupies 0x00..0x2c) ---
     CState* m_2c;                           // +0x2c  current game-state (Update() -> state id)
@@ -86,33 +88,33 @@ public:
     int m_7c;                                                       // +0x7c
     int m_80, m_84;                                                 // +0x80, +0x84
     int m_88;                                                       // +0x88  (=0x10 in ctor)
-    int m_8c, m_90;                                                 // +0x8c, +0x90
-    char m_pad94[0x9c - 0x94];                                      // +0x94..+0x9c gap
-    int m_9c, m_a0, m_a4, m_a8, m_ac, m_b0, m_b4;                   // +0x9c..+0xb4
-    int m_b8;                                                       // +0xb8  (=1 in ctor)
-    int m_bc;                                                       // +0xbc
-    IDirectPlayLobbyZ* m_c0;        // +0xc0  the lobby interface (Released/recreated)
-    void* m_c4;                     // +0xc4  the IDirectPlay interface from Connect
-    CString m_strC8;                // +0xc8  (EH state 0)
-    int m_cc;                       // +0xcc  (=0x1e in ctor)
-    char m_d0;                      // +0xd0  cached CD drive letter
-    char m_padD1[3];                // +0xd1
-    int m_d4;                       // +0xd4  drive-letter probed flag
-    CByteArray m_arrD8;             // +0xd8  (0x14 bytes; EH state 1)
-    CString m_strEC;                // +0xec  (EH state 2)
-    CString m_strF0;                // +0xf0  (EH state 3)
-    int m_f4;                       // +0xf4  (=1 in ctor)
-    int m_f8, m_fc;                 // +0xf8, +0xfc
-    int m_100, m_104, m_108;        // +0x100..+0x108  (m_100/m_104 =1 in ctor)
-    int m_10c, m_110;               // +0x10c, +0x110  (=1 in ctor)
-    int m_114;                      // +0x114
-    int m_118;                      // +0x118
-    char m_pad11c[0x128 - 0x11c];   // +0x11c..+0x128 gap
-    int m_128, m_12c, m_130, m_134; // +0x128..+0x134
-    int m_138;                      // +0x138  (=3 in ctor)
-    char m_pad13c[0x150 - 0x13c];   // +0x13c..+0x150 gap
-    CGruntzMgrOptions m_options150; // +0x150 (0x238 bytes; EH state 4)
-    char m_pad388[0xa30 - 0x388];   // +0x388..0xa30  remaining game state
+    int m_8c, m_90;                               // +0x8c, +0x90  live video mode (w, h)
+    int m_94, m_98;                               // +0x94, +0x98  saved/last-good mode (w, h)
+    int m_9c, m_a0, m_a4, m_a8, m_ac, m_b0, m_b4; // +0x9c..+0xb4
+    int m_b8;                                     // +0xb8  (=1 in ctor)
+    int m_bc;                                     // +0xbc
+    IDirectPlayLobbyZ* m_c0;                      // +0xc0  the lobby interface (Released/recreated)
+    void* m_c4;                                   // +0xc4  the IDirectPlay interface from Connect
+    CString m_strC8;                              // +0xc8  (EH state 0)
+    int m_cc;                                     // +0xcc  (=0x1e in ctor)
+    char m_d0;                                    // +0xd0  cached CD drive letter
+    char m_padD1[3];                              // +0xd1
+    int m_d4;                                     // +0xd4  drive-letter probed flag
+    CByteArray m_arrD8;                           // +0xd8  (0x14 bytes; EH state 1)
+    CString m_strEC;                              // +0xec  (EH state 2)
+    CString m_strF0;                              // +0xf0  (EH state 3)
+    int m_f4;                                     // +0xf4  (=1 in ctor)
+    int m_f8, m_fc;                               // +0xf8, +0xfc
+    int m_100, m_104, m_108;                      // +0x100..+0x108  (m_100/m_104 =1 in ctor)
+    int m_10c, m_110;                             // +0x10c, +0x110  (=1 in ctor)
+    int m_114;                                    // +0x114
+    int m_118;                                    // +0x118
+    char m_pad11c[0x128 - 0x11c];                 // +0x11c..+0x128 gap
+    int m_128, m_12c, m_130, m_134;               // +0x128..+0x134
+    int m_138;                                    // +0x138  (=3 in ctor)
+    char m_pad13c[0x150 - 0x13c];                 // +0x13c..+0x150 gap
+    CGruntzMgrOptions m_options150;               // +0x150 (0x238 bytes; EH state 4)
+    char m_pad388[0xa30 - 0x388];                 // +0x388..0xa30  remaining game state
 };
 
 #endif // GRUNTZ_GRUNTZ_GRUNTZMGR_H

@@ -18,19 +18,19 @@ public:
 // @confidence: high
 // @source: tomalla
 // @stub
-RVA(0x083030, 0x1b6)
+RVA(0x00083030, 0x1b6)
 CGruntzMgr::CGruntzMgr() {}
 
 // @confidence: high
 // @source: tomalla
 // @stub
-RVA(0x083330, 0x1e)
+RVA(0x00083330, 0x1e)
 void CGruntzMgr::vector_deleting_destructor(int) {}
 
 // @confidence: high
 // @source: tomalla
 // @stub
-RVA(0x0855e0, 0x448)
+RVA(0x000855e0, 0x448)
 void CGruntzMgr::UnknownClose() {}
 
 // @confidence: med
@@ -44,5 +44,5 @@ void CGruntzMgr::UnknownClose() {}
 // true (mis-attributed) owner class. PerFrameTick (0x8f620) and the per-frame
 // advance gate (0x8f6a0, retail label VirtualUnknownMethod06) are matched in
 // src/Gruntz/GruntzMgr.cpp.
-RVA(0x08fea0, 0x6d)
+RVA(0x0008fea0, 0x6d)
 void CGruntzMgr::InitCFileIOMember() {}

@@ -41,7 +41,7 @@ public:
 // CInputConfig::LoadInputDeviceConfig
 // `unused` is the lone explicit stack arg (the ret 8 cleans the hidden CString
 // return buffer + this 4-byte arg); the body does not read it.
-RVA(0x387c0, 0xc0)
+RVA(0x000387c0, 0xc0)
 CString CInputConfig::LoadInputDeviceConfig(int unused) {
     CString name("None");
     switch (m_14) {

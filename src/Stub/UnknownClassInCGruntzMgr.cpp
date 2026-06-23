@@ -10,11 +10,11 @@ public:
 // @confidence: high
 // @source: tomalla
 // @stub
-RVA(0x083260, 0x57)
+RVA(0x00083260, 0x57)
 UnknownClassInCGruntzMgr::~UnknownClassInCGruntzMgr() {}
 
 // @confidence: high
 // @source: tomalla
 // @stub
-RVA(0x0da790, 0xb0)
+RVA(0x000da790, 0xb0)
 UnknownClassInCGruntzMgr::UnknownClassInCGruntzMgr() {}

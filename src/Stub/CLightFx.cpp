@@ -6,5 +6,5 @@
 // @confidence: med
 // @source: rtti-vptr
 // @stub
-RVA(0x09cf00, 0x1a5)
+RVA(0x0009cf00, 0x1a5)
 CLightFx::CLightFx(int) {}

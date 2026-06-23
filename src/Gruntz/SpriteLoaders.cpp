@@ -66,7 +66,7 @@ struct CGameReg {
     char m_pad00[0x30];
     CResMgr* m_30; // +0x30
 };
-DATA(0x24556c)
+DATA(0x0024556c)
 extern CGameReg* g_gameReg;
 
 // ---------------------------------------------------------------------------
@@ -85,7 +85,7 @@ public:
     int* m_4c8; // +0x4c8 frame 1
 };
 
-RVA(0xd7440, 0xad)
+RVA(0x000d7440, 0xad)
 int CLoadingBar::LoadLoadingBarSprite() {
     CSprite* spr = 0;
     m_c->m_10->m_10map.Lookup("GAME_LOADINGBAR", &spr);
@@ -120,7 +120,7 @@ public:
     int m_48; // +0x48
 };
 
-RVA(0x9bb00, 0x119)
+RVA(0x0009bb00, 0x119)
 int CTimer::LoadTimerSprite(int a, int b) {
     CSprite* spr = 0;
     g_gameReg->m_30->m_10->m_10map.Lookup("GAME_TIMER", &spr);

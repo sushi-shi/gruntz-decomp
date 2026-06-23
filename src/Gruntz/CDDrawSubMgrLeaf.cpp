@@ -38,7 +38,7 @@ public:
 // ---------------------------------------------------------------------------
 // Ready when the parent handle is present and the status word is not -1.
 // ---------------------------------------------------------------------------
-RVA(0x1577a0, 0x16)
+RVA(0x001577a0, 0x16)
 int CDDrawSubMgrLeaf::VirtualMethodUnknown14() {
     if (m_0c == 0) {
         goto fail;
@@ -54,7 +54,7 @@ fail:
 // ---------------------------------------------------------------------------
 // Clears the parent map then zeroes a member field.
 // ---------------------------------------------------------------------------
-RVA(0x157ae0, 0x11)
+RVA(0x00157ae0, 0x11)
 void CDDrawSubMgrLeaf::VirtualMethodUnknown18() {
     ((class CDDrawMapHolder*)this)->ClearUnknownMap();
     m_0c = 0;
@@ -65,13 +65,13 @@ void CDDrawSubMgrLeaf::VirtualMethodUnknown18() {
 // @confidence: high
 // @source: tomalla
 // @stub
-RVA(0x152650, 0x5)
+RVA(0x00152650, 0x5)
 void CDDrawSubMgrLeaf::VirtualMethodUnknown1C() {}
 
 // @confidence: high
 // @source: tomalla
 // @stub
-RVA(0x1577c0, 0x1e)
+RVA(0x001577c0, 0x1e)
 CDDrawSubMgrLeaf::~CDDrawSubMgrLeaf() {}
 
 // Engine-label backlog stubs (moved from src/Stub/CDDrawMapHolder.cpp).
@@ -79,17 +79,17 @@ CDDrawSubMgrLeaf::~CDDrawSubMgrLeaf() {}
 // @confidence: high
 // @source: tomalla
 // @stub
-RVA(0x157530, 0x17)
+RVA(0x00157530, 0x17)
 void CDDrawMapHolder::VirtualMethodUnknown14() {}
 
 // @confidence: high
 // @source: tomalla
 // @stub
-RVA(0x157550, 0x1e)
+RVA(0x00157550, 0x1e)
 CDDrawMapHolder::~CDDrawMapHolder() {}
 
 // @confidence: high
 // @source: tomalla
 // @stub
-RVA(0x157bc0, 0xa2)
+RVA(0x00157bc0, 0xa2)
 void CDDrawMapHolder::ClearUnknownMap() {}

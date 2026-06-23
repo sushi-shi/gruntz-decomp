@@ -6,5 +6,5 @@
 // @confidence: med
 // @source: rtti-vptr
 // @stub
-RVA(0x040490, 0x1ab)
+RVA(0x00040490, 0x1ab)
 CGruntPuddle::CGruntPuddle(int) {}

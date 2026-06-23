@@ -19,15 +19,15 @@
 // The four global Font instances + the load-once flag + the four .fnt file-name
 // literals, addressed by fixed VA so the loads reloc-mask against the matched
 // Font::LoadFont and the CString literal-ctor.
-DATA(0x24eb14)
+DATA(0x0024eb14)
 extern int g_loadedFlag;
-DATA(0x24eac0)
+DATA(0x0024eac0)
 extern Font g_largeFont;
-DATA(0x24eae8)
+DATA(0x0024eae8)
 extern Font g_mediumFont;
-DATA(0x24eb00)
+DATA(0x0024eb00)
 extern Font g_smallFont;
-DATA(0x24ea58)
+DATA(0x0024ea58)
 extern Font g_tinyFont;
 
 #define s_large_fnt "large.fnt"
@@ -40,7 +40,7 @@ extern Font g_tinyFont;
 // value (a stack temp constructed from the literal); a 0 return aborts the load
 // (returns the 0 the failed LoadFont left in eax). Once all four load, the flag
 // is set + 1 returned.
-RVA(0x115810, 0xa3)
+RVA(0x00115810, 0xa3)
 int InitializeFonts() {
     // The already-loaded case + the all-loaded success case share the single
     // `return 1` tail (the target's `jne <tail>` + the immediate flag store, not
@@ -65,7 +65,7 @@ int InitializeFonts() {
     return 1;
 }
 
-RVA(0x1158f0, 0x2e)
+RVA(0x001158f0, 0x2e)
 int FreeFontsMemory() {
     g_largeFont.FreeMemory();
     g_mediumFont.FreeMemory();

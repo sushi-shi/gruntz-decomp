@@ -153,10 +153,10 @@ blocked = [q for q in queue if q not in ready]
 
 def fmt(q):
     nm = q['name'] or f"({q['class']})"
-    deps = '' if not q['blockers'] else ' '.join(f"0x{b:06x}" for b in q['blockers'][:4]) + ('…' if len(q['blockers'])>4 else '')
+    deps = '' if not q['blockers'] else ' '.join(f"0x{b:08x}" for b in q['blockers'][:4]) + ('…' if len(q['blockers'])>4 else '')
     sz = q['size'] if q['size'] is not None else '?'
     st = 'ready' if (q['nblock']==0 and q['in_text'] and q['size'] is not None) else ('gap' if not q['in_text'] or q['size'] is None else f"blk:{q['nblock']}")
-    return f"| 0x{q['rva']:06x} | {nm} | {q['class']} | {sz} | {st} | {deps} | {q['source']} | {q['conf']} |"
+    return f"| 0x{q['rva']:08x} | {nm} | {q['class']} | {sz} | {st} | {deps} | {q['source']} | {q['conf']} |"
 
 hdr = "| rva | name | class | size | status | blockers | source | conf |\n|---|---|---|---|---|---|---|---|"
 band = lambda lo, hi: [q for q in ready if (lo <= (q['size'] or 0) <= hi)]

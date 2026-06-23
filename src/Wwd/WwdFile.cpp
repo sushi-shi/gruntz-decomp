@@ -45,7 +45,7 @@ struct WwdGameReg {
     char pad_0[0x30];
     WwdGameRegSlot* m_30; // +0x30
 };
-DATA(0x24556c)
+DATA(0x0024556c)
 extern WwdGameReg* g_gameReg;
 
 // ---------------------------------------------------------------------------
@@ -59,7 +59,7 @@ extern WwdGameReg* g_gameReg;
 //   3. CheckHeader(that filename) into a 0x100 stack buffer must succeed.
 // Then skip leading non-digits and atoi() the first digit run. The CString is
 // unused beyond its non-empty check; `this` is never touched -> static.
-RVA(0x03b470, 0x13a)
+RVA(0x0003b470, 0x13a)
 int WwdFile::ValidateMainBlock(CString name) {
     char header[0x100];
 
@@ -88,7 +88,7 @@ int WwdFile::ValidateMainBlock(CString name) {
 // (the header signature) <= 0x5F4. The two null guards return BEFORE the stream
 // is constructed (no destructor on those paths); the stream's ctor runs only
 // after both guards, so its dtor unwinds the remaining exits.
-RVA(0x160530, 0x125)
+RVA(0x00160530, 0x125)
 int __stdcall WwdFile_IsValidWwd(const char* name, void* headerBuf) {
     if (name == 0) {
         return 0;
@@ -120,7 +120,7 @@ int __stdcall WwdFile_IsValidWwd(const char* name, void* headerBuf) {
 // then copies the header out to the caller (an inline strlen+rep-movs copy of
 // the NUL-terminated leading bytes - the binary does `repnz scasb; rep movs`,
 // i.e. a strcpy of the header buffer into the caller's output).
-RVA(0x160660, 0x12b)
+RVA(0x00160660, 0x12b)
 int __stdcall WwdFile_CheckHeader(const char* name, void* headerOut) {
     char header[0x5f4];
 
@@ -160,7 +160,7 @@ int __stdcall WwdFile_CheckHeader(const char* name, void* headerOut) {
 // with m_mainIndex = m_planeCount - 1. Returns the new plane.
 //
 // The new CPlane and its virtuals are UNMATCHED engine code -> reloc-masked calls.
-RVA(0x15d8d0, 0xc3)
+RVA(0x0015d8d0, 0xc3)
 CPlane* CGameLevelPlanes::ReadPlane(void* planeData, void* blockBase, void* /*unused*/) {
     CPlane* plane = new CPlane(m_field0c, m_planeCount, 0);
 
@@ -187,7 +187,7 @@ CPlane* CGameLevelPlanes::ReadPlane(void* planeData, void* blockBase, void* /*un
 // Validates the header, copies the 0x5F4-byte header prefix into dest, then
 // zlib-uncompresses the COMPRESS main block into the remainder. Returns dest on
 // success, 0 on any validation/inflate failure. (~88.7% fuzzy, entropy plateau.)
-RVA(0x160790, 0xd2)
+RVA(0x00160790, 0xd2)
 int __stdcall WwdFile_InflateMainBlock(WwdHeader* src, Bytef* dest, unsigned int destLen) {
     uLongf outLen;
 
@@ -353,12 +353,12 @@ struct WwdObjList {
 
 // The two retail vtables stamped into the object and its sub-object (transitional
 // manual stamp; reloc-masked DATA externs).
-DATA(0x1f00a8)
+DATA(0x001f00a8)
 extern void* g_wwdObjVtbl[]; // 0x5f00a8
-DATA(0x1f0128)
+DATA(0x001f0128)
 extern void* g_wwdSubVtbl[]; // 0x5f0128
 
-RVA(0x162af0, 0x806)
+RVA(0x00162af0, 0x806)
 int WwdFile::ReadPlaneObjects(const int* src) {
     if (src == 0) {
         return 0;

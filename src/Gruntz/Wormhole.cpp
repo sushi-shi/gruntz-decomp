@@ -29,13 +29,13 @@
 // minimal class so the `ecx=&g_buteMgr; call GetIntDef` shape reloc-masks against
 // the already-matched CButeMgr::GetIntDef (butemgr unit).
 #include <Bute/ButeMgr.h>
-DATA(0x2453d8)
+DATA(0x002453d8)
 extern CButeMgr g_buteMgr;
 
 // The global game-registry pointer (an int*). Its +0x78 slot is a
 // pointer to the color table; the wormhole color id (m_128) indexes it at
 // [m_128*4 + 0x14]. Declared int* to match g_gameReg (the target's reloc).
-DATA(0x24556c)
+DATA(0x0024556c)
 extern int* g_gameReg;
 
 // The "Wormhole" config group + the three color keys (the original source string
@@ -77,7 +77,7 @@ public:
 
 // ---------------------------------------------------------------------------
 // CWormhole::LoadColors
-RVA(0x411f0, 0xa0)
+RVA(0x000411f0, 0xa0)
 void CWormhole::LoadColors() {
     // NB: m_10 is re-dereferenced through `this` (held in esi) on every access -
     // do NOT cache it in a local, or MSVC pins it in a 2nd callee-saved reg (edi)
@@ -117,17 +117,17 @@ void CWormhole::LoadColors() {
 // @confidence: med
 // @source: rtti-vptr
 // @stub
-RVA(0x03fc70, 0x1db)
+RVA(0x0003fc70, 0x1db)
 void CWormhole::Stub_03fc70() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x03fed0, 0xa9)
+RVA(0x0003fed0, 0xa9)
 void CWormhole::Stub_03fed0() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x0412c0, 0x63)
+RVA(0x000412c0, 0x63)
 void CWormhole::Stub_0412c0() {}

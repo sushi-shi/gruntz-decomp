@@ -16,7 +16,7 @@ public:
 // @confidence: high
 // @source: reloc-correlation (CImage::DecodeResData + DecodeRidData)
 // @stub
-RVA(0x175930, 0xc6)
+RVA(0x00175930, 0xc6)
 int CImage::DecodeBlit(void*, void*, int, int, int, void*) {
     return 0;
 }

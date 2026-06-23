@@ -36,6 +36,12 @@
 #include <rva.h>
 // <string.h>: strrchr (find the ext dot) / _stricmp (the case-insensitive ext compare).
 #include <string.h>
+// CDDSurface (DIRSURF.CPP) is the SAME object as CFileImage here - the file-image
+// surface and the DirectDraw surface wrapper are one class viewed two ways. The
+// blitters/run-decoders are its leaf methods (named CFileImage::* to match the
+// already-matched decoder callers), but their bodies touch the rich surface
+// layout + call the CDDSurface COM thunks (Lock/SetColorKey, reloc-masked).
+#include <Gruntz/CDirectDrawMgr.h>
 
 // Per-decoder 256-entry RGBQUAD palette buffers (file-scope BSS, reloc-masked).
 // Each decoder builds its own when the source carries an inline/trailing palette;
@@ -62,7 +68,7 @@ static const char s_extPid[] = ".PID";
 // with an identity DIB_PAL_COLORS table for 8bpp, CreateDIBSections the pixel
 // plane (HBITMAP @+0x428, bits @+0x42c), and operator-new's the bottom-up
 // per-row byte-offset table (this+0x430). Returns 0 if CreateDIBSection fails.
-RVA(0x1757c0, 0x16f)
+RVA(0x001757c0, 0x16f)
 int CImage::DecodeBmpHeader(void* a2, int width, int height, int bitcount, void* a3) {
     m_434 = 0;
     m_438 = width;
@@ -110,7 +116,7 @@ int CImage::DecodeBmpHeader(void* a2, int width, int height, int bitcount, void*
 // ext = strrchr(name,'.'); dispatch on .BMP/.PCX/.RID/.PID, else default. Each
 // branch re-tests `ext != 0` (the target's `test esi; je default` per case) and
 // forwards (name,a2,a3); a matched ext returns its loader's result directly.
-RVA(0x175a90, 0xee)
+RVA(0x00175a90, 0xee)
 int CImage::LoadFromRez(char* name, void* a2, void* a3) {
     char* ext = strrchr(name, '.');
 
@@ -129,7 +135,7 @@ int CImage::LoadFromRez(char* name, void* a2, void* a3) {
 
 // The resource module the .DEFAULT loader pulls RT_BITMAP resources from
 // (reloc-masked .data global; 0 until the engine records the instance handle).
-DATA(0x2bf6e0)
+DATA(0x002bf6e0)
 extern "C" HINSTANCE g_hResModule; // 0x6bf6e0
 
 // ---------------------------------------------------------------------------
@@ -139,7 +145,7 @@ extern "C" HINSTANCE g_hResModule; // 0x6bf6e0
 // `src` at the pixel bytes (for 8bpp the 256-entry RGBQUAD palette pushes them to
 // buf+biSize+0x400, else right after the 0x28 header + the 4 RGBQUAD masks at
 // buf+0x2c) and hand it to the shared blitter.
-RVA(0x175e00, 0x3d)
+RVA(0x00175e00, 0x3d)
 int CImage::DecodeResData(void* buf, void* a2, void* a3) {
     unsigned char* hdr = (unsigned char*)buf;
     int bitcount = *(unsigned short*)(hdr + 0xe);
@@ -160,7 +166,7 @@ int CImage::DecodeResData(void* buf, void* a2, void* a3) {
 // bfOffBits and Read exactly (bitcount/8)*stride*height pixel bytes into the
 // plane. Returns 1 on a full read, 0 on any I/O / decode failure. The CFileIO
 // stack object's dtor runs on every exit -> the C++ EH frame.
-RVA(0x175e40, 0x1b3)
+RVA(0x00175e40, 0x1b3)
 int CImage::LoadBmp(char* name, void* a2, void* a3) {
     CFileIO file;
     BITMAPFILEHEADER fh;
@@ -198,7 +204,7 @@ int CImage::LoadBmp(char* name, void* a2, void* a3) {
 // DecodeBmpHeader (bitcount = NPlanes*8), then RLE-decode each scanline into a
 // scratch buffer (filled back-to-front) and emit it into the plane row, either
 // straight (1 plane) or interleaving 3 planes into RGB triples.
-RVA(0x176000, 0x18f)
+RVA(0x00176000, 0x18f)
 int CImage::DecodePcxData(void* buf, void* a2, void* a3) {
     unsigned char* hdr = (unsigned char*)buf;
     int width = *(short*)(hdr + 8) - *(short*)(hdr + 4) + 1;
@@ -260,7 +266,7 @@ int CImage::DecodePcxData(void* buf, void* a2, void* a3) {
 // Open the file, GetLength(); if zero return 0. `operator new` a buffer of that
 // size; if it fails return 0. Read the whole file, hand the buffer (+a2,a3) to
 // the PCX decode helper, free the buffer and return the decoder's result.
-RVA(0x176190, 0x126)
+RVA(0x00176190, 0x126)
 int CImage::LoadPcx(char* name, void* a2, void* a3) {
     CFileIO file;
 
@@ -286,7 +292,7 @@ int CImage::LoadPcx(char* name, void* a2, void* a3) {
 // The .RID decoder: the header at buf+8 carries (width, height) and the raw
 // 8bpp pixels begin at buf+0x20; hand them straight to the blitter. a3's low bit
 // gates the transparency flag at this+0x450 (cleared when not set).
-RVA(0x1762c0, 0x42)
+RVA(0x001762c0, 0x42)
 int CImage::DecodeRidData(void* buf, void* a2, void* a3) {
     int* hdr = (int*)((char*)buf + 8);
     int width = hdr[0];
@@ -302,7 +308,7 @@ int CImage::DecodeRidData(void* buf, void* a2, void* a3) {
 // CImage::LoadRid
 // Byte-identical to LoadPcx except for the per-format decode helper (the .RID
 // reader DecodeRidData).
-RVA(0x176310, 0x126)
+RVA(0x00176310, 0x126)
 int CImage::LoadRid(char* name, void* a2, void* a3) {
     CFileIO file;
 
@@ -334,7 +340,7 @@ int CImage::LoadRid(char* name, void* a2, void* a3) {
 //   else        -> a per-row PCX-style RLE ((c&0xc0)==0xc0 => run of `c&0x3f`).
 // flags&0x100 masks the fill colour (buf+0x18) to a low word, else it is zeroed.
 // a3's low bit gates the transparency flag at this+0x450.
-RVA(0x176440, 0x25d)
+RVA(0x00176440, 0x25d)
 int CImage::DecodePidData(void* buf, void* a2, void* a3) {
     unsigned char* src = (unsigned char*)buf + 0x20;
     int width = *(int*)((char*)buf + 8);
@@ -410,7 +416,7 @@ int CImage::DecodePidData(void* buf, void* a2, void* a3) {
 // ---------------------------------------------------------------------------
 // CImage::LoadPid
 // Byte-identical to LoadPcx/LoadRid except for the .PID decode helper.
-RVA(0x1766a0, 0x126)
+RVA(0x001766a0, 0x126)
 int CImage::LoadPid(char* name, void* a2, void* a3) {
     CFileIO file;
 
@@ -436,7 +442,7 @@ int CImage::LoadPid(char* name, void* a2, void* a3) {
 // The fallback (no/unknown extension): pull the named RT_BITMAP resource from
 // the engine's resource module and decode it in place. Returns 0 unless the
 // module handle is set and FindResource/LoadResource/LockResource all succeed.
-RVA(0x1767d0, 0x64)
+RVA(0x001767d0, 0x64)
 int CImage::LoadDefault(char* name, void* a2, void* a3) {
     HINSTANCE hModule = g_hResModule;
     if (!hModule) {
@@ -457,6 +463,143 @@ int CImage::LoadDefault(char* name, void* a2, void* a3) {
     return DecodeResData(data, a2, a3);
 }
 
+// ===========================================================================
+// CFileImage surface helpers (DIRSURF.CPP leaf methods). `this` is the same
+// object the CDDSurface wrapper holds, so the bodies view it as a CDDSurface to
+// reach the rich surface layout + the COM thunks. Named CFileImage::* to pair
+// with the matched decoder callers; placed in retail-RVA order (all below the
+// CFileImage decoders' RVAs, so they lead the CFileImage section).
+// ===========================================================================
+
+// ---------------------------------------------------------------------------
+// CFileImage::BlitSurf
+// The DecodePcxData destination setup: zero the surface's DDSURFACEDESC, stash
+// the colour-key arg (m_78), record width/height into the desc, set dwSize/
+// dwFlags, and - when a4 names a non-zero source bpp that differs from the
+// palette context's bpp (surf->m_538) - flag a colour-key blit (dwFlags|0x1000,
+// ddckCKSrcBlt dwFlags 0x20, the key colour at m_64). Then dispatch the surface's
+// own slot-8 virtual with `surf`.
+RVA(0x0013e0d0, 0x66)
+int CFileImage::BlitSurf(void* surf, int width, int height, int a4, int a5) {
+    CDDSurface* s = (CDDSurface*)this;
+    int* desc = (int*)s->m_desc;
+    for (int i = 0x1b; i != 0; i--) {
+        *desc++ = 0;
+    }
+    *(int*)(s->m_desc + 0x68) = a5; // m_78
+    *(int*)(s->m_desc + 0xc) = width;
+    *(int*)(s->m_desc + 8) = height;
+    *(int*)s->m_desc = 0x6c;    // dwSize
+    *(int*)(s->m_desc + 4) = 7; // dwFlags
+    if (a4 != 0 && a4 != ((CFileImage*)surf)->m_538) {
+        *(int*)(s->m_desc + 4) = 0x1007;
+        *(int*)(s->m_desc + 0x48) = 0x20; // m_58
+        s->m_64 = a4;
+    }
+    return s->v20(surf);
+}
+
+// ---------------------------------------------------------------------------
+// CFileImage::FillPalette
+// Installs the transparency colour. arg == -1 means "no colour key": clear the
+// have-key flag (m_bc) and pass {-1,-1}; otherwise set m_bc and set the surface
+// source colour key to {arg, arg} (DDCKEY_SRCBLT = 8).
+RVA(0x0013eb40, 0x3c)
+void CFileImage::FillPalette(void* arg) {
+    CDDSurface* s = (CDDSurface*)this;
+    unsigned long ck[2];
+    ck[0] = (unsigned long)arg;
+    ck[1] = (unsigned long)arg;
+    if ((int)arg != -1) {
+        s->m_bc = 1;
+    } else {
+        s->m_bc = 0;
+    }
+    s->SetColorKey(8, ck);
+}
+
+// ---------------------------------------------------------------------------
+// CFileImage::BlitDirect
+// Straight copy of `src` into the locked surface. Lock() returns the locked bits
+// pointer (m_34); on failure return 0. Each row of m_ac bytes is copied into the
+// row at locked + row*lPitch; mode 2 walks rows bottom-up (flipped), else top-
+// down. Unlock and return 1.
+RVA(0x0013ece0, 0xc7)
+int CFileImage::BlitDirect(void* src, int mode) {
+    CDDSurface* s = (CDDSurface*)this;
+    int locked = s->Lock(0);
+    if (locked == 0) {
+        return 0;
+    }
+    unsigned char* p = (unsigned char*)src;
+    if (mode == 2) {
+        for (int row = *(int*)(s->m_desc + 8) - 1; row >= 0; row--) {
+            unsigned char* dst = (unsigned char*)locked + row * *(int*)(s->m_desc + 0x10);
+            unsigned char* sp = p;
+            int n = s->m_ac;
+            for (int i = n; i > 0; i--) {
+                *dst++ = *sp++;
+            }
+            p += n;
+        }
+    } else {
+        for (int row = 0; row < *(int*)(s->m_desc + 8); row++) {
+            unsigned char* dst = (unsigned char*)locked + row * *(int*)(s->m_desc + 0x10);
+            unsigned char* sp = p;
+            int n = s->m_ac;
+            for (int i = n; i > 0; i--) {
+                *dst++ = *sp++;
+            }
+            p += n;
+        }
+    }
+    s->m_8->vtbl->Unlock(s->m_8, 0);
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CFileImage::Blit
+// Palette-remap copy dispatcher. Selects a specialization by (dest bpp = m_a8,
+// src bpp = bitcount). When m_a8==0 / bitcount agree on the "no remap" fast path
+// it delegates to BlitDirect; otherwise a nested switch on dest bpp (8/16/24)
+// then src bpp picks the matching Blit<dest><src> specialization. Unhandled
+// combinations return 0.
+RVA(0x0013faa0, 0x108)
+int CFileImage::Blit(void* src, int bitcount, void* palette, int mode) {
+    CDDSurface* s = (CDDSurface*)this;
+    int dest = s->m_a8;
+    if ((dest == 0) == bitcount) {
+        return BlitDirect(src, mode);
+    }
+    switch (dest) {
+        case 8:
+            switch (bitcount) {
+                case 0x10:
+                    return Blit816(src, palette, mode);
+                case 0x18:
+                    return Blit824(src, palette, mode);
+            }
+            return 0;
+        case 0x10:
+            switch (bitcount) {
+                case 8:
+                    return Blit168(src, palette, mode);
+                case 0x18:
+                    return Blit1624(src, mode);
+            }
+            return 0;
+        case 0x18:
+            switch (bitcount) {
+                case 8:
+                    return Blit248(src, palette, mode);
+                case 0x10:
+                    return Blit2416(src, mode);
+            }
+            return 0;
+    }
+    return 0;
+}
+
 // ---------------------------------------------------------------------------
 // CFileImage::DecodeBmp
 // `buf` is a whole .BMP file (packed BITMAPFILEHEADER + BITMAPINFOHEADER). Pull
@@ -467,7 +610,7 @@ int CImage::LoadDefault(char* name, void* a2, void* a3) {
 // in-file RGBQUADs into s_palBmp; for 24bpp reuse the surface palette) and blit
 // through the remapping Blit; otherwise straight-copy via BlitDirect. The pixel
 // data starts at buf + bfOffBits. Returns 1 on a successful blit, else 0.
-RVA(0x143fc0, 0x142)
+RVA(0x00143fc0, 0x142)
 void* CFileImage::DecodeBmp(char* surf, void* buf, unsigned int size) {
     CFileImage* pal = (CFileImage*)surf;
     BITMAPINFOHEADER* ih = (BITMAPINFOHEADER*)((char*)buf + 0xe);
@@ -525,7 +668,7 @@ void* CFileImage::DecodeBmp(char* surf, void* buf, unsigned int size) {
 // is zero return 0. `operator new` a buffer of that size; if it fails return 0.
 // Read the file; if the read count != length, free + return 0. Else decode and
 // return the decoder's result. The CFileIO dtor + buffer free run on every exit.
-RVA(0x144110, 0x156)
+RVA(0x00144110, 0x156)
 void* CFileImage::LoadBmp(char* name, char* path) {
     CFileIO file;
 
@@ -563,7 +706,7 @@ void* CFileImage::LoadBmp(char* name, char* path) {
 // the run is decoded into a scratch buffer (RunDecode1/RunDecode3) and then blit
 // through the palette (built from the PCX trailing 768-byte VGA palette for 8bpp,
 // or the surface palette for 24bpp). Returns 1 on success, 0 on failure.
-RVA(0x144ee0, 0x225)
+RVA(0x00144ee0, 0x225)
 void* CFileImage::DecodePcx(char* surf, void* buf, unsigned int size) {
     if (!buf) {
         return 0;
@@ -664,7 +807,7 @@ void* CFileImage::DecodePcx(char* surf, void* buf, unsigned int size) {
 // ---------------------------------------------------------------------------
 // CFileImage::LoadPcx
 // Byte-identical to LoadBmp except for the per-format decode helper (DecodePcx).
-RVA(0x145110, 0x156)
+RVA(0x00145110, 0x156)
 void* CFileImage::LoadPcx(char* name, char* path) {
     CFileIO file;
 
@@ -703,7 +846,7 @@ void* CFileImage::LoadPcx(char* name, char* path) {
 // in place (DecodeRun8) or, when the surface bpp differs, into a scratch buffer
 // (RunDecode1) and blit through the palette. flags&1 (TRANSPARENCY) installs the
 // transparent colour (surf2) via FillPalette. Returns 1 on success, 0 on failure.
-RVA(0x145b10, 0x1b5)
+RVA(0x00145b10, 0x1b5)
 void* CFileImage::DecodePid(char* surf, void* buf, unsigned int size, void* surf2) {
     CFileImage* pal = (CFileImage*)surf;
     unsigned char* hdr = (unsigned char*)buf;
@@ -791,7 +934,7 @@ void* CFileImage::DecodePid(char* surf, void* buf, unsigned int size, void* surf
 // Like LoadBmp/LoadPcx, but: (1) it does NOT guard length==0 - it allocates the
 // buffer for whatever GetLength() returns and only null-checks the allocation;
 // (2) the decoder takes a fourth pass-through arg (a3).
-RVA(0x145cd0, 0x130)
+RVA(0x00145cd0, 0x130)
 void* CFileImage::LoadPid(char* name, char* path, void* a3) {
     CFileIO file;
 
@@ -825,7 +968,7 @@ void* CFileImage::LoadPid(char* name, char* path, void* a3) {
 // surface bpp differs, into a scratch buffer (RunDecode1) and blit through the
 // palette (built from the trailing 768-byte VGA palette when flags&0x80 is set,
 // else the surface palette). flags&1 (TRANSPARENCY) installs a5 via FillPalette.
-RVA(0x1457a0, 0x22c)
+RVA(0x001457a0, 0x22c)
 int CFileImage::DecodePcxData(void* surf, int bufptr, int size, int a4, int a5) {
     unsigned char* hdr = (unsigned char*)bufptr; // arg2: the source header pointer
     CFileImage* dst = (CFileImage*)surf;
@@ -918,7 +1061,7 @@ int CFileImage::DecodePcxData(void* surf, int bufptr, int size, int a4, int a5) 
 //
 // Opens a PCX file, reads data, calls DecodePcxData.
 // ===========================================================================
-RVA(0x1459d0, 0x135)
+RVA(0x001459d0, 0x135)
 int CFileImage::DecodePcxEx(char* name, char* path, void* a3, void* a4) {
     CFileIO file;
 

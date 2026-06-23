@@ -11,5 +11,5 @@ public:
 // @confidence: med
 // @source: rtti-vptr
 // @stub
-RVA(0x119b50, 0x1ce)
+RVA(0x00119b50, 0x1ce)
 void CVoiceTrigger::CVoiceTrigger_119b50(int) {}

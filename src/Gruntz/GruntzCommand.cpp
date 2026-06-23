@@ -29,7 +29,7 @@
 // the deleting thunk from `virtual ~CGruntzCommand() {}` in the header. The
 // thunk has no source body so it cannot carry an RVA() attribute; pin the
 // deleting-dtor symbol by mangled name here.
-// @rva-symbol: ??_GCGruntzCommand@@UAEPAXI@Z 0x024330 0x20
+// @rva-symbol: ??_GCGruntzCommand@@UAEPAXI@Z 0x00024330 0x20
 
 // Out-of-line vtable anchors (slots 1..7) so the CGruntzCommand vftable is
 // emitted in this TU (the ctor/dtor reference it). Bodies are placeholders.
@@ -53,7 +53,7 @@ void CGruntzCommand::Vslot07() {}
 // node; otherwise operator new(0x14) a fresh object and (if non-null) run the
 // inline ctor, which only stamps the leaf vftable. Returns the object (or 0).
 // ---------------------------------------------------------------------------
-RVA(0x024220, 0x2b)
+RVA(0x00024220, 0x2b)
 CGruntzSingleCommand* CGruntzSingleCommand::Allocate() {
     if (g_singleCmdCount) {
         return (CGruntzSingleCommand*)g_singleCmdList.RemoveTail();
@@ -64,7 +64,7 @@ CGruntzSingleCommand* CGruntzSingleCommand::Allocate() {
 // ---------------------------------------------------------------------------
 // CGruntzMultiCommand::Allocate() - 0x024360. Same shape, Multi list/vftable.
 // ---------------------------------------------------------------------------
-RVA(0x024360, 0x2b)
+RVA(0x00024360, 0x2b)
 CGruntzMultiCommand* CGruntzMultiCommand::Allocate() {
     if (g_multiCmdCount) {
         return (CGruntzMultiCommand*)g_multiCmdList.RemoveTail();

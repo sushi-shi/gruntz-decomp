@@ -22,7 +22,7 @@
 // ---------------------------------------------------------------------------
 // GetWorldDisplayName (the g_worldName[] array initializer).
 SYMBOL(_$E1)
-RVA(0x82990, 0x79)
+RVA(0x00082990, 0x79)
 static CString g_worldName[8] = {
     "Rocky Roadz",
     "Gruntziclez",
@@ -41,7 +41,7 @@ static CString g_worldName[8] = {
 // ---------------------------------------------------------------------------
 // GetEndLevelStatLabels (the g_statLabel[] array initializer).
 SYMBOL(_$E4)
-RVA(0x18740, 0x79)
+RVA(0x00018740, 0x79)
 static CString g_statLabel[8] = {
     "Time:",
     "Survivorz:",
@@ -57,7 +57,7 @@ static CString g_statLabel[8] = {
 // GetWarlordName - returns CString by value; the boss/warlord display name by
 // id, via a 4-entry jump table:
 //   0 -> "KING"  1 -> "NAPOLEAN"  2 -> "PATTON"  3 -> "VIKING"  default -> "".
-RVA(0x1ec20, 0x8d)
+RVA(0x0001ec20, 0x8d)
 CString __stdcall GetWarlordName(int id) {
     // The target reserves and zero-inits one dead stack dword (`push ecx; mov
     // [esp+4],0; ...; pop ecx`) that no path reads - an MSVC5 return-slot/NRV
@@ -103,7 +103,7 @@ static char* g_errMsg_Exists;
 static char* g_errMsg_NullArg;
 static char* g_errMsg_BadArg;
 
-RVA(0x16d9c0, 0x75)
+RVA(0x0016d9c0, 0x75)
 CContainerErr::CContainerErr(const char* msg) {
     m_msg = msg ? msg : g_defaultErrMsg; // +0x04 stored first
     m_vtbl = &g_containerErrVtbl;        // +0x00 vtable stored after m_msg

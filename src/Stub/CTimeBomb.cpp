@@ -6,11 +6,11 @@
 // @confidence: med
 // @source: rtti-vptr
 // @stub
-RVA(0x0e1b90, 0x23d)
+RVA(0x000e1b90, 0x23d)
 CTimeBomb::CTimeBomb(int) {}
 
 // @confidence: high
 // @source: decomp-xref
 // @stub
-RVA(0x0e1e60, 0x1ac)
+RVA(0x000e1e60, 0x1ac)
 void CTimeBomb::LoadAttributes() {}

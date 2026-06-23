@@ -76,7 +76,7 @@ extern int MapLookup(void* map, void* key, void*& out); // CMapPtrToPtr::Lookup
 //      a minimal class so PlayCueAt's `mov ecx,<singleton>; call GetInt`
 //      reloc-masks against the already-matched GetInt (butemgr unit). --
 #include <Bute/ButeMgr.h>
-DATA(0x2453d8)
+DATA(0x002453d8)
 extern CButeMgr g_buteMgr;
 #define g_buteText (&g_buteMgr)
 
@@ -132,7 +132,7 @@ struct CCueState {
 };
 
 // CPlay::Update() (slot 4): the PLAY state's ID = 3.
-RVA(0x08c910, 0x6)
+RVA(0x0008c910, 0x6)
 int CPlay::Update() {
     return 3;
 }
@@ -140,7 +140,7 @@ int CPlay::Update() {
 // ===========================================================================
 // CPlay::Render  (vtable slot +0x14)
 // ===========================================================================
-RVA(0x0c8cf0, 0xc14)
+RVA(0x000c8cf0, 0xc14)
 int CPlay::Render() {
     // --- frame entry: clear the per-frame flag, then a `this`-virtual begin. ---
     // (the m_414=0 store is scheduled INTO the BeginFrameClear arg setup.)
@@ -473,7 +473,7 @@ alt2:
 // view yet, bail), 1 = mode-A sub-step, 2(+) = mode-B sub-step. MSVC hoists the
 // shared `push 4` out of the if/else (both helpers take the same constant).
 // ===========================================================================
-RVA(0x0d8d90, 0x1e)
+RVA(0x000d8d90, 0x1e)
 void CPlay::StepC() {
     int mode = m_480;
     if (mode == 0) {
@@ -493,7 +493,7 @@ void CPlay::StepC() {
 // lo = g_645588, hi = 0), and return 1. They share ONE shape; OnRegion2 also
 // pins the view discriminator m_480, OnRegion3/4 fire an extra cue on enter/leave.
 // ===========================================================================
-RVA(0x0d8a00, 0x73)
+RVA(0x000d8a00, 0x73)
 int CPlay::OnRegion2(int z) // (region-0 / gate m_470, timer +0x430)
 {
     if (z != 0) {
@@ -511,7 +511,7 @@ int CPlay::OnRegion2(int z) // (region-0 / gate m_470, timer +0x430)
     return 1;
 }
 
-RVA(0x0d8aa0, 0x5f)
+RVA(0x000d8aa0, 0x5f)
 int CPlay::OnRegion1(int z) // (region-1 / gate m_474, timer +0x440)
 {
     if (z != 0) {
@@ -527,7 +527,7 @@ int CPlay::OnRegion1(int z) // (region-1 / gate m_474, timer +0x440)
     return 1;
 }
 
-RVA(0x0d8b20, 0x74)
+RVA(0x000d8b20, 0x74)
 int CPlay::OnRegion3(int z) // (region-2 / gate m_478, timer +0x450)
 {
     if (z != 0) {
@@ -544,7 +544,7 @@ int CPlay::OnRegion3(int z) // (region-2 / gate m_478, timer +0x450)
     return 1;
 }
 
-RVA(0x0d8bc0, 0x71)
+RVA(0x000d8bc0, 0x71)
 int CPlay::OnRegion4(int z) // (region-3 / gate m_47c, timer +0x460)
 {
     if (z != 0) {
@@ -568,7 +568,7 @@ int CPlay::OnRegion4(int z) // (region-3 / gate m_47c, timer +0x460)
 // (m_150/m_154), aligns each axis DOWN to a 0x20 boundary (+0x10 bias) and
 // stores the result into the scroll-offset sink m_4e4 (+0x5c X, +0x60 Y).
 // ===========================================================================
-RVA(0x0d1ac0, 0x4f)
+RVA(0x000d1ac0, 0x4f)
 void CPlay::StepScroll() {
     CDrawSurface* v = m_c->m_24;
     int* geom = (int*)((char*)v->m_5c + 0x40); // edx = (m_5c+0x40)
@@ -590,7 +590,7 @@ void CPlay::StepScroll() {
 // by m_1b0. Probes the draw-surface (m_c->m_4->m_14->m_2c); if absent returns 0.
 // On a hit it dispatches the probed control. Returns 1.
 // ===========================================================================
-RVA(0x0d11e0, 0x9b)
+RVA(0x000d11e0, 0x9b)
 int CPlay::StepInputA() {
     if (m_1a8 == 0) {
         m_1a8 = 1;
@@ -636,7 +636,7 @@ int CPlay::StepInputA() {
 // applied to either the caller's rect (rectSrc != 0) or the active viewport
 // (this->m_c->m_24+0x10). a3 selects the Top vs Default cue renderer.
 // ===========================================================================
-RVA(0x0d1890, 0x1ba)
+RVA(0x000d1890, 0x1ba)
 void CPlay::PlayCueAt(int cueId, int a2, int a3, int a4, int a5, int a6, int a7, int rectSrc) {
     RECT rect;
 
@@ -679,14 +679,14 @@ void CPlay::PlayCueAt(int cueId, int a2, int a3, int a4, int a5, int a6, int a7,
 // @confidence: med
 // @source: rtti-vptr
 // @stub
-RVA(0x08c9d0, 0x2bd)
+RVA(0x0008c9d0, 0x2bd)
 void CPlay::Stub_08c9d0() {}
 
 // =========================================================================
 // CState::SetBeginClearParams
 // Stores the two BeginFrameClear arguments and returns 1.
 //
-RVA(0x8c970, 0x1c)
+RVA(0x0008c970, 0x1c)
 int CState::SetBeginClearParams(int unused, int arg2, int arg3) {
     m_150 = arg2;
     m_154 = arg3;

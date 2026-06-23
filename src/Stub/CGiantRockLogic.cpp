@@ -15,12 +15,12 @@ public:
 };
 
 // Derived vftable, referenced as DIR32 data (RVA = VA - 0x400000).
-DATA(0x5eaee4)
+DATA(0x005eaee4)
 extern void* g_giantRockLogicVtbl;
 
 // @confidence: high
 // @source: rtti-vptr
-RVA(0x112210, 0x12)
+RVA(0x00112210, 0x12)
 CGiantRockLogic::CGiantRockLogic() {
     *(void**)this = &g_giantRockLogicVtbl;
 }

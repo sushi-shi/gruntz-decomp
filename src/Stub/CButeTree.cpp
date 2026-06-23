@@ -20,13 +20,13 @@ public:
 // The global bute store instance the game-object ctors query for their "A" node
 // (0x6bf620 -> DATA rva 0x2bf620). Shared across the Stub TU; declared here so
 // every game-object ctor's `g_buteTree.Find("A")` binds the one symbol.
-DATA(0x2bf620)
+DATA(0x002bf620)
 extern CButeTree g_buteTree;
 
 // @confidence: high
 // @source: reloc-correlation (10 callers, unanimous)
 // @stub
-RVA(0x16d190, 0x101)
+RVA(0x0016d190, 0x101)
 void* CButeTree::Find(const char*) {
     return 0;
 }
@@ -34,5 +34,5 @@ void* CButeTree::Find(const char*) {
 // @confidence: med
 // @source: reloc-correlation
 // @stub
-RVA(0x16db90, 0x206)
+RVA(0x0016db90, 0x206)
 void CButeTree::Insert(const char*, void*) {}

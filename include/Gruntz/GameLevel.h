@@ -37,15 +37,15 @@ typedef CDWordArray CLevelPtrArray;
 class CImageSet {
 public:
     virtual int dummy0();
-    virtual void Release(int arg);  // +0x04  release/free hook
-    virtual int dummy2();           // +0x08
-    virtual int dummy3();           // +0x0c
-    virtual int dummy4();           // +0x10
+    virtual void Release(int arg);   // +0x04  release/free hook
+    virtual int dummy2();            // +0x08
+    virtual int dummy3();            // +0x0c
+    virtual int dummy4();            // +0x10
     virtual int Parse(void* record); // +0x14  init from the WWD record
-    virtual int dummy6();           // +0x18
-    virtual int dummy7();           // +0x1c
-    virtual int dummy8();           // +0x20
-    virtual int GetStride();        // +0x24  record byte length (cursor advance)
+    virtual int dummy6();            // +0x18
+    virtual int dummy7();            // +0x1c
+    virtual int dummy8();            // +0x20
+    virtual int GetStride();         // +0x24  record byte length (cursor advance)
 };
 
 // The 4-int coordinate/extent record stored at CGameLevel+0x10, passed by pointer

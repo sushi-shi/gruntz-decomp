@@ -30,7 +30,7 @@ public:
 // CStatusBarItem::CStatusBarItem()
 // Out-of-line complete-object ctor: zeroes m_4/m_8/m_24/m_28 after the vftable
 // is installed. Byte-identical to the COMDAT copy of the header's inline ctor.
-RVA(0x1005d0, 0x17)
+RVA(0x001005d0, 0x17)
 CStatusBarItem::CStatusBarItem() {
     m_4 = 0;
     m_8 = 0;

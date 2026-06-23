@@ -6,5 +6,5 @@
 // @confidence: med
 // @source: rtti-vptr
 // @stub
-RVA(0x03ecf0, 0x292)
+RVA(0x0003ecf0, 0x292)
 CExitTrigger::CExitTrigger(int) {}

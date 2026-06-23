@@ -57,22 +57,42 @@ misleading (Pareto) — a "47% by bytes" milestone is ~455 functions, not 7,000.
 > macros already in `src/` **excluding `src/Stub/`**; if it lives in a real unit it is
 > done (or at its plateau) — skip it. A true new leaf appears only in `src/Stub/`
 > (a 0% stub to reconstruct) or nowhere yet. One-liner:
-> `grep -rlE 'RVA\(0x' src --include=*.cpp | grep -v /Stub/ | xargs grep -ohE '0x[0-9a-f]{4,6}' | sort -u`
-> gives the already-reconstructed set to subtract from the queue.
+> `grep -rlE 'RVA\(0x' src --include=*.cpp | grep -v /Stub/ | xargs grep -ohE '0x[0-9a-f]{8}' | sort -u`
+> gives the already-reconstructed set to subtract from the queue. **Addresses are
+> zero-padded to 8 hex digits EVERYWHERE** — every `RVA()`/`DATA()` macro in `src/`
+> AND every RVA in `config/match-queue.md` (gen_match_queue emits `:08x`) — so the
+> set-subtraction is a direct string match: no leading-zero normalization, and the
+> `{8}` width naturally excludes the ≤4-digit RVA size arg. Keep the convention when
+> writing new labels: `RVA(0x00xxxxxx, 0x..)`, `DATA(0x00xxxxxx)`.
 > **Caveat:** `gen_match_queue` needs the Ghidra-named DB (built by `gruntz init`);
 > run in a plain `nix develop` shell it writes **0 candidates** and clobbers the
 > committed queue — `git checkout config/match-queue.md` to restore.
 >
-> **CURRENT MODE — breadth-first, PREFER-NEW (the default until further notice):**
-> dispatch workers at **NEW untried functions**; do **NOT** re-dispatch a function that
-> already plateaued on a documented wall (regalloc / EH-state / scheduling / jump-table /
-> reloc-typing — §2a, §6). Taking a fresh function 0%→exact (or →high-fuzzy) is worth far
-> more than squeezing a stuck one 80%→82%, and looping on walls burns workers for ~0 net
-> (measured this campaign). **Defer the "second sweep"** (re-attacking plateaus) until we
-> have more `docs/patterns/` documented and the class/TU structure better understood —
-> that's when today's walls become steerable. So when a worker reports a function stuck
-> (no local source diff; residual is a documented wall), mark it **done-enough**, record
-> the wall, and point the next worker at a NEW target — never re-queue it now.
+> **CURRENT MODE — breadth-first, PREFER-NEW, STOP-EARLY (the default until further
+> notice):** dispatch workers at **NEW untried functions**; do **NOT** re-dispatch a
+> function that already plateaued on a documented wall (regalloc / EH-state / scheduling /
+> jump-table / reloc-typing — §2a, §6). Taking a fresh function 0%→exact (or →high-fuzzy)
+> is worth far more than squeezing a stuck one 80%→82%, and looping on walls burns workers
+> for ~0 net (measured this campaign).
+>
+> **Tell every matcher to GIVE UP QUICKLY and accept a partial.** A logically-correct
+> function stuck at a plateau (e.g. ~70%) on a documented wall is an **acceptable, complete
+> outcome** — not a failure. The matcher should hit a wall at most twice, confirm the
+> residual is a documented wall (grep INDEX; write the one-line pattern if new), record the
+> % + wall, and move on. **A FINAL SWEEP comes later** — once we have more `docs/patterns/`
+> and better TU/class structure, a dedicated sweep re-attacks today's walls when they're
+> steerable. So **defer the "second sweep"**: when a worker reports a function stuck (no
+> local source diff; residual is a documented wall), mark it **done-enough**, record the
+> wall, and point the next worker at a NEW target — never re-queue it now. (This stop-early
+> rule is also in `.claude/agents/matcher.md` § "STOP EARLY"; put it in every matcher
+> prompt.)
+>
+> **`@early-stop` marks the parked set in source.** A method the matcher stops below 100%
+> keeps its complete body but gets an `// @early-stop` marker line above its `RVA()` (reason
+> on the next comment line — see matcher.md § "STOP EARLY"). Invariant: a reconstructed
+> method is either ~100% (unmarked) or `@early-stop`, so the **final sweep's worklist is
+> exactly `rg '@early-stop' src`** — no need to re-derive plateaus from the baseline. When
+> you accept a worker's stuck result, make sure its file carries the marker before you commit.
 
 
 1. **Big-first for understanding.** Target functions >~256 B first; they hold most
@@ -384,6 +404,33 @@ must STOP and report, not force the wrong class.
   workers' uncommitted work must not be swept in).
 - Don't run two heavy Ghidra operations on the same project concurrently; copy the
   project (`build/ghidra-<x>`) per heavy job.
+
+### COMMIT EACH MATCHER'S WORK — do not forget (MANDATORY)
+
+Matchers do **not** commit. After a matcher reports, the orchestrator's job is not
+done until its result is **committed**. The required per-matcher closeout:
+
+1. **Verify** in the foreground: `nix develop .#build --command gruntz build`
+   (builds are fast, ~2–3 min). Confirm no duplicate-RVA error, `verify_stubs`
+   passes (it runs in the build), and read `gruntz status` for the before→after %.
+2. **Format** the matcher's files only: `nix develop --command gruntz format`, then
+   **`git checkout --`** any files it reformatted that were NOT part of this
+   matcher's change (pre-existing format drift in other TUs must not be swept in —
+   the pre-commit hook skips clang-format when not in the nix shell, so drift
+   accumulates; only stage your matcher's files).
+3. **Commit** `git add` ONLY the matcher's files (never `git add -A`) with a
+   `match: <fn/TU> -> <result>` message ending in the
+   `Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>` trailer.
+   The campaign commits directly on `main` (this is the established workflow — see
+   recent `match:` commits); do NOT open a branch/PR unless the user asks.
+4. **One commit per matcher** (atomic) so a bad result is easy to revert and the
+   README progress block diffs cleanly per match.
+
+This is a standing rule: **every dispatched matcher gets verified + committed before
+moving on.** If a wave of matchers ran, commit each one's distinct files in its own
+atomic commit. (If you ever notice this was skipped, that is a process bug — fix the
+gap here.) Do **not** commit/push when the user explicitly said "don't commit"; in
+that case integrate into the working tree and say so.
 
 ---
 

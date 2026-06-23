@@ -9,10 +9,10 @@ public:
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @stub
-RVA(0x1388f0, 0xf)
+RVA(0x001388f0, 0xf)
 void CGruntzSoundZ::StopAll() {}
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @stub
-RVA(0x138900, 0x19)
+RVA(0x00138900, 0x19)
 void CGruntzSoundZ::StopBank(int) {}

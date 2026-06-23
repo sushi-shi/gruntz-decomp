@@ -19,11 +19,11 @@ public:
 // @confidence: high
 // @source: rtti-vptr
 // @stub
-RVA(0x0242f0, 0x7)
+RVA(0x000242f0, 0x7)
 void CGruntzCommand::CGruntzCommand_0242f0() {}
 
 // @confidence: high
 // @source: rtti-vptr
 // @stub
-RVA(0x024430, 0x7)
+RVA(0x00024430, 0x7)
 void CGruntzCommand::CGruntzCommand_024430() {}

@@ -105,16 +105,16 @@ struct SeverusWorkerObj : public SeverusWorker {
     int m_68; // +0x68  0
 }; // 0x6c
 
-DATA(0x1efc30)
+DATA(0x001efc30)
 extern void* g_severusWorkerBaseVtbl;
-DATA(0x1efbe8)
+DATA(0x001efbe8)
 extern void* g_severusWorkerVtbl;
 
-DATA(0x2bf318)
+DATA(0x002bf318)
 extern int g_severusScratch[25];
-DATA(0x2bf37c)
+DATA(0x002bf37c)
 extern int g_severusCounterA;
-DATA(0x2bf380)
+DATA(0x002bf380)
 extern int g_severusCounterB;
 
 // ---------------------------------------------------------------------------
@@ -206,7 +206,7 @@ static inline SeverusWorkerObj* FindOrCreateWorker(CDDrawWorkerRegistry* parent,
 
 // ---------------------------------------------------------------------------
 // Clears the 25-dword scratch table and seeds the first entry to 100.
-RVA(0x154aa0, 0x20)
+RVA(0x00154aa0, 0x20)
 int CDDrawWorkerRegistry::VirtualMethodUnknown18() {
     for (int i = 0; i < 25; ++i) {
         g_severusScratch[i] = 0;
@@ -217,7 +217,7 @@ int CDDrawWorkerRegistry::VirtualMethodUnknown18() {
 
 // ---------------------------------------------------------------------------
 // Runs the +0x58 hook, then clears the two counters.
-RVA(0x154ac0, 0x12)
+RVA(0x00154ac0, 0x12)
 void CDDrawWorkerRegistry::VirtualMethodUnknown1C() {
     ((UnknownSeverusVtableView*)this)->Slot58();
     g_severusCounterA = 0;
@@ -226,7 +226,7 @@ void CDDrawWorkerRegistry::VirtualMethodUnknown1C() {
 
 // ---------------------------------------------------------------------------
 // Finds or creates the keyed worker, then forwards to worker slot +0x38.
-RVA(0x154ae0, 0xfc)
+RVA(0x00154ae0, 0xfc)
 int CDDrawWorkerRegistry::VirtualMethodUnknown38(int a1, const char* key, int a3, int a4) {
     SeverusWorkerObj* worker = FindOrCreateWorker(this, key);
     if (worker == 0) {
@@ -237,7 +237,7 @@ int CDDrawWorkerRegistry::VirtualMethodUnknown38(int a1, const char* key, int a3
 
 // ---------------------------------------------------------------------------
 // Finds or creates the keyed worker, then forwards to worker slot +0x34.
-RVA(0x154be0, 0xfc)
+RVA(0x00154be0, 0xfc)
 int CDDrawWorkerRegistry::VirtualMethodUnknown40(int a1, const char* key, int a3, int a4) {
     SeverusWorkerObj* worker = FindOrCreateWorker(this, key);
     if (worker == 0) {
@@ -248,7 +248,7 @@ int CDDrawWorkerRegistry::VirtualMethodUnknown40(int a1, const char* key, int a3
 
 // ---------------------------------------------------------------------------
 // Finds or creates the keyed worker, then forwards to worker slot +0x30.
-RVA(0x154ce0, 0x101)
+RVA(0x00154ce0, 0x101)
 int CDDrawWorkerRegistry::VirtualMethodUnknown30(int a1, int a2, const char* key, int a4, int a5) {
     SeverusWorkerObj* worker = FindOrCreateWorker(this, key);
     if (worker == 0) {
@@ -259,7 +259,7 @@ int CDDrawWorkerRegistry::VirtualMethodUnknown30(int a1, int a2, const char* key
 
 // ---------------------------------------------------------------------------
 // Finds or creates the keyed worker, then forwards to worker slot +0x2c.
-RVA(0x154df0, 0x101)
+RVA(0x00154df0, 0x101)
 int CDDrawWorkerRegistry::VirtualMethodUnknown24(int a1, int a2, const char* key, int a4, int a5) {
     SeverusWorkerObj* worker = FindOrCreateWorker(this, key);
     if (worker == 0) {
@@ -270,21 +270,21 @@ int CDDrawWorkerRegistry::VirtualMethodUnknown24(int a1, int a2, const char* key
 
 // ---------------------------------------------------------------------------
 // Thin forwarder to worker slot +0x34.
-RVA(0x154f00, 0x1b)
+RVA(0x00154f00, 0x1b)
 int CDDrawWorkerRegistry::VirtualMethodUnknown3C(int a1, SeverusWorker* worker, int a3, int a4) {
     return worker->Vfunc34(a1, a3, a4);
 }
 
 // ---------------------------------------------------------------------------
 // Thin forwarder to worker slot +0x38.
-RVA(0x154f20, 0x1b)
+RVA(0x00154f20, 0x1b)
 int CDDrawWorkerRegistry::VirtualMethodUnknown34(int a1, SeverusWorker* worker, int a3, int a4) {
     return worker->Vfunc38(a1, a3, a4);
 }
 
 // ---------------------------------------------------------------------------
 // Thin forwarder to worker slot +0x30.
-RVA(0x154f40, 0x20)
+RVA(0x00154f40, 0x20)
 int CDDrawWorkerRegistry::VirtualMethodUnknown2C(
     int a1,
     int a2,
@@ -297,7 +297,7 @@ int CDDrawWorkerRegistry::VirtualMethodUnknown2C(
 
 // ---------------------------------------------------------------------------
 // Thin forwarder to worker slot +0x2c.
-RVA(0x154f60, 0x20)
+RVA(0x00154f60, 0x20)
 int CDDrawWorkerRegistry::VirtualMethodUnknown28(
     int a1,
     int a2,
@@ -310,7 +310,7 @@ int CDDrawWorkerRegistry::VirtualMethodUnknown28(
 
 // ---------------------------------------------------------------------------
 // Removes a non-null worker from the map by its key at +0x24, then destroys it.
-RVA(0x155280, 0x22)
+RVA(0x00155280, 0x22)
 void CDDrawWorkerRegistry::VirtualMethodUnknown50(SeverusWorkerObj* worker) {
     if (worker != 0) {
         m_10.RemoveKey((const char*)((char*)worker + 0x24));
@@ -320,14 +320,14 @@ void CDDrawWorkerRegistry::VirtualMethodUnknown50(SeverusWorkerObj* worker) {
 
 // ---------------------------------------------------------------------------
 // Constant state id.
-RVA(0x156de0, 0x6)
+RVA(0x00156de0, 0x6)
 int CDDrawWorkerRegistry::VirtualMethodUnknown20() {
     return 0x12;
 }
 
 // ---------------------------------------------------------------------------
 // Same base readiness predicate used by several Lucius-derived managers.
-RVA(0x1576d0, 0x16)
+RVA(0x001576d0, 0x16)
 int CDDrawWorkerRegistry::VirtualMethodUnknown14() {
     if (m_0c == 0) {
         goto fail;
@@ -356,7 +356,7 @@ fail:
 // Every source form tried (if(Lookup(...)) / if(...!=0) / captured `int found` /
 // volatile val) produced the identical schedule; the surrounding symbol-set is what
 // re-rolls the allocation, so no in-function lever flips it. Left as the plateau.
-RVA(0x156ec0, 0x40)
+RVA(0x00156ec0, 0x40)
 void CDDrawWorkerRegistry::VirtualMethodUnknown54(const char* key) {
     CObject* val = 0;
     if (m_10.Lookup(key, val)) {
@@ -373,7 +373,7 @@ void CDDrawWorkerRegistry::VirtualMethodUnknown54(const char* key) {
 //
 // Carries a /GX EH frame for the local CString key (destructor must fire on
 // unwind through the iteration loop).
-RVA(0x165210, 0xa2)
+RVA(0x00165210, 0xa2)
 void CDDrawWorkerRegistry::VirtualMethodUnknown58() {
     CObject* val = 0;
     POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
@@ -393,7 +393,7 @@ void CDDrawWorkerRegistry::VirtualMethodUnknown58() {
 // Map teardown leaf (SEH)
 // Iterates m_10 via GetNextAssoc, destroys each CObject* value via
 // scalar-deleting dtor (vtbl+0x4 arg 1), then RemoveAll.
-RVA(0x1552b0, 0xa2)
+RVA(0x001552b0, 0xa2)
 void CDDrawWorkerRegistry::MapTeardown_1552b0() {
     CObject* val = 0;
     POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
@@ -413,7 +413,7 @@ void CDDrawWorkerRegistry::MapTeardown_1552b0() {
 // String copy leaf
 // Copies at most 0x3F bytes from src into this+0x24, null-terminates at
 // this+0x63, returns 1.
-RVA(0x155810, 0x23)
+RVA(0x00155810, 0x23)
 int CDDrawWorkerRegistry::StringCopy_155810(const char* src) {
     strncpy((char*)this + 0x24, src, 0x3f);
     *((char*)this + 0x63) = 0;
@@ -426,23 +426,23 @@ int CDDrawWorkerRegistry::StringCopy_155810(const char* src) {
 // @confidence: high
 // @source: tomalla
 // @stub
-RVA(0x154f80, 0x1d5)
+RVA(0x00154f80, 0x1d5)
 void CDDrawWorkerRegistry::Stub_154f80() {}
 
 // @confidence: high
 // @source: tomalla
 // @stub
-RVA(0x155160, 0x11e)
+RVA(0x00155160, 0x11e)
 void CDDrawWorkerRegistry::Stub_155160() {}
 
 // @confidence: high
 // @source: tomalla
 // @stub
-RVA(0x156df0, 0x1e)
+RVA(0x00156df0, 0x1e)
 void CDDrawWorkerRegistry::Stub_156df0() {}
 
 // @confidence: high
 // @source: tomalla
 // @stub
-RVA(0x156e80, 0x38)
+RVA(0x00156e80, 0x38)
 void CDDrawWorkerRegistry::Stub_156e80() {}

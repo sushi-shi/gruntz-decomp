@@ -9,5 +9,5 @@ public:
 // @confidence: high
 // @source: tomalla
 // @stub
-RVA(0x0855a0, 0x24)
+RVA(0x000855a0, 0x24)
 void CGameMgrDerived::scalar_deleting_destructor(int) {}

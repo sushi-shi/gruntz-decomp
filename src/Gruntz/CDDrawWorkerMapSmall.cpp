@@ -66,7 +66,7 @@ struct AlbusWorkerObj : public AlbusWorker {
 }; // 0x14
 
 // The foreign worker vftable, referenced as DIR32 data (RVA = VA-0x400000).
-DATA(0x1f02d8)
+DATA(0x001f02d8)
 extern void* g_albusWorkerVtbl;
 
 // ---------------------------------------------------------------------------
@@ -110,7 +110,7 @@ static inline void StampAlbusWorkerVtbl(AlbusWorkerObj* w) {
 // ---------------------------------------------------------------------------
 // Reports ready when the parent/root handle is present and the base status word
 // is no longer the inactive -1 sentinel.
-RVA(0x156cd0, 0x16)
+RVA(0x00156cd0, 0x16)
 int CDDrawWorkerMapSmall::VirtualMethodUnknown14() {
     if (m_0c == 0) {
         goto fail;
@@ -161,7 +161,7 @@ static inline AlbusWorkerObj* MakeAlbusWorker(const CDDrawWorkerMapSmall* parent
 // Allocate + construct a worker, call its +0x28 virtual with (arg1, arg3). On
 // success store it into the map under `key` and return it; on failure run its
 // scalar-deleting dtor and return 0.
-RVA(0x165990, 0x77)
+RVA(0x00165990, 0x77)
 void* CDDrawWorkerMapSmall::VirtualMethodUnknown28(int a1, const char* key, int a3) {
     AlbusWorkerObj* w = MakeAlbusWorker(this);
     if (w->Vfunc28(a1, a3) == 0) {
@@ -176,7 +176,7 @@ void* CDDrawWorkerMapSmall::VirtualMethodUnknown28(int a1, const char* key, int 
 
 // ---------------------------------------------------------------------------
 // As Unknown28 but dispatches the worker's +0x2c virtual.
-RVA(0x165a10, 0x77)
+RVA(0x00165a10, 0x77)
 void* CDDrawWorkerMapSmall::VirtualMethodUnknown2C(int a1, const char* key, int a3) {
     AlbusWorkerObj* w = MakeAlbusWorker(this);
     if (w->Vfunc2C(a1, a3) == 0) {
@@ -192,7 +192,7 @@ void* CDDrawWorkerMapSmall::VirtualMethodUnknown2C(int a1, const char* key, int 
 // ---------------------------------------------------------------------------
 // Constant state id.
 // ---------------------------------------------------------------------------
-RVA(0x157600, 0x6)
+RVA(0x00157600, 0x6)
 int CDDrawWorkerMapSmall::VirtualMethodUnknown20() {
     return 0x10;
 }
@@ -203,25 +203,25 @@ int CDDrawWorkerMapSmall::VirtualMethodUnknown20() {
 // @confidence: med
 // @source: tomalla
 // @stub
-RVA(0x157610, 0x1e)
+RVA(0x00157610, 0x1e)
 void CDDrawWorkerMapSmall::Stub_157610() {}
 
 // @confidence: high
 // @source: tomalla
 // @stub
-RVA(0x1658c0, 0xcc)
+RVA(0x001658c0, 0xcc)
 void CDDrawWorkerMapSmall::Stub_1658c0() {}
 
 // @confidence: high
 // @source: tomalla
 // @stub
-RVA(0x165a90, 0xf4)
+RVA(0x00165a90, 0xf4)
 void CDDrawWorkerMapSmall::Stub_165a90() {}
 
 // @confidence: high
 // @source: tomalla
 // @stub
-RVA(0x165b90, 0xa9)
+RVA(0x00165b90, 0xa9)
 void CDDrawWorkerMapSmall::Stub_165b90() {}
 
 // ---------------------------------------------------------------------------

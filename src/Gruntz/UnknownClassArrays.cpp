@@ -24,12 +24,12 @@
 // The intrusive freelist head: a singly-linked list of recycled coord-pair nodes
 // (node->next at +0). Shared with CBattlezMapConfig's allocator (which pulls nodes
 // off it); FreeArrays pushes them back. Referenced as data (DIR32).
-DATA(0x245544)
+DATA(0x00245544)
 extern void* g_freeList;
 
 // The element<->node bias subtracted from a stored element pointer to recover its
 // freelist node header (the allocator hands out node + bias; recycle reverses it).
-DATA(0x24554c)
+DATA(0x0024554c)
 extern int g_freeListNodeBias;
 
 // ===========================================================================
@@ -38,7 +38,7 @@ extern int g_freeListNodeBias;
 // compiler frames the ctor and advances the EH try-level after each constructed
 // member - then seeds the scalar config block. Returns `this`.
 // ===========================================================================
-RVA(0x024dc0, 0x158)
+RVA(0x00024dc0, 0x158)
 UnknownClassArrays::UnknownClassArrays()
     // The four 0x78..0x87 fields are member-init-list initializations (NOT body
     // assignments): the /GX compiler schedules them into the array-construction
@@ -88,7 +88,7 @@ UnknownClassArrays::UnknownClassArrays()
 // auto-destructs the four arrays in reverse construction order (+0x118, +0x104,
 // +0xf0, +0xdc), lowering the try-level after each.
 // ===========================================================================
-RVA(0x024f80, 0x7d)
+RVA(0x00024f80, 0x7d)
 UnknownClassArrays::~UnknownClassArrays() {
     FreeArrays();
 }
@@ -100,7 +100,7 @@ UnknownClassArrays::~UnknownClassArrays() {
 // non-null element; loop 2 does not (the retail asymmetry). Then SetSize(0,-1)
 // empties all four arrays and m_13c is cleared.
 // ===========================================================================
-RVA(0x025ca0, 0xbf)
+RVA(0x00025ca0, 0xbf)
 void UnknownClassArrays::FreeArrays() {
     int i;
     for (i = 0; i < m_0dc.GetSize(); i++) {

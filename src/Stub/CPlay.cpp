@@ -9,10 +9,10 @@ public:
 // @confidence: high
 // @source: reloc-correlation (4 callers)
 // @stub
-RVA(0x001b9a, 0x5)
+RVA(0x00001b9a, 0x5)
 void CPlay::RegionEnter() {}
 // @confidence: high
 // @source: reloc-correlation (4 callers)
 // @stub
-RVA(0x0019f1, 0x5)
+RVA(0x000019f1, 0x5)
 void CPlay::RegionLeave() {}

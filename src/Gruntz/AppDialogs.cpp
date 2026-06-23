@@ -57,19 +57,19 @@ struct CGameReg {
     char m_pad34[0x38 - 0x34];
     Utils::RegistryHelper* m_38; // +0x38  registry helper
 };
-DATA(0x24556c)
+DATA(0x0024556c)
 extern CGameReg* g_gameReg;
 
 // File-scope sinks the IDOK path stores the two edit-field values into before
 // the (optional) registry write (reloc-masked DIR32 stores).
-DATA(0x212610)
+DATA(0x00212610)
 extern int g_warpX; // 0x612610
-DATA(0x212614)
+DATA(0x00212614)
 extern int g_warpY; // 0x612614
 
 // ---------------------------------------------------------------------------
 // WarpDialogProc - the warp-cheat dialog callback.
-RVA(0x8e4e0, 0x172)
+RVA(0x0008e4e0, 0x172)
 INT_PTR __stdcall WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     char szValue[64];
 

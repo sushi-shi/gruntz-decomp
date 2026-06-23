@@ -10,7 +10,9 @@ translation unit / function cluster and its retail RVAs. Your job: write C++ tha
 **MSVC 5.0** under wine, produces COFF **byte-identical** to retail `GRUNTZ.EXE`, verified with
 **objdiff**. You write `src/<Module>/<TU>.cpp` (+ shared headers under `include/<Module>/`), define
 the TU's functions in **retail-RVA order**, put `RVA(0x.., 0x..)` / `DATA(0x..)` above each, and
-**leave the working tree** for the orchestrator to build / measure / commit. You do NOT
+**leave the working tree** for the orchestrator to build / measure / commit. **Write every address
+zero-padded to 8 hex digits** (`RVA(0x000090e0, 0x100)`, `DATA(0x005f03bc)`) — the enforced
+convention across `src/` + `config/match-queue.md`; leave the size arg unpadded. You do NOT
 `git add`/commit, bless the baseline, or edit other TUs.
 
 ## The loop
@@ -30,6 +32,47 @@ the TU's functions in **retail-RVA order**, put `RVA(0x.., 0x..)` / `DATA(0x..)`
    the SAME change** (schema in `docs/patterns/README.md`) — this is part of finishing the match, not
    optional. A `topic:wall`/`topic:scoring-artifact` entry means the code is already correct (stop
    chasing, §2a doctrine); a `topic:codegen-idiom` entry means a source spelling closes it.
+
+## STOP EARLY — a partial match is fine; a FINAL SWEEP comes later
+
+**The campaign is in breadth-first, time-boxed mode: bank correct logic fast and MOVE ON. Do
+NOT grind.** A function that is logically correct but stuck at a plateau (e.g. ~70%) on a
+**documented wall** (regalloc choice, EH-state, scheduling, jump-table/reloc-typing, the
+optimizer-bailout-framed mode) is **good enough — accept it and stop.** A later, dedicated
+**final sweep** (run once we have more `docs/patterns/` and better TU/class structure) will
+re-attack today's walls when they're steerable; squeezing a stuck function 70%→72% now burns
+your budget for ~0 net.
+
+Concrete stopping rule, per function:
+- **Hit a wall twice with no NEW idea?** Stop. Confirm the residual is a documented wall (grep
+  INDEX; if new, write the one-line pattern), record the % + the wall in your report, and move to
+  the next target. Don't ping-pong ("whack-a-mole") between two functions that can't both be green.
+- **No local source diff and a high-90s plateau?** That's the entropy tail — success. Annotate
+  green-enough and stop (§2a).
+- **A big function (>~512 B) won't converge?** Don't half-do it (a partial under-counts AND
+  diverges its regalloc). Leave it stubbed and report it for the final sweep / a leaf-first redo.
+- **Prefer breadth:** banking three NEW functions at 100% (or even one at 100% + two at a clean
+  partial) beats one function dragged from 80%→90%. When in doubt, take the partial and pick up
+  the next NEW target — that is the higher-value use of a worker right now.
+
+Report the honest per-function % regardless; "70% on a known wall, logic correct, deferred to the
+final sweep" is a complete, acceptable outcome — not a failure.
+
+**Mark every early-stop in the source with `// @early-stop`.** When you stop a method below 100%,
+its body stays — a **complete, correct reconstruction** (this is NOT a half-written "partial"); it
+is the *byte-match* that is parked, not the logic. Record that so the method is not mistaken for a
+finished 100% match: an `// @early-stop` marker line directly above its `RVA()`, with the reason
+(the wall / blocker / what is left) on the next comment line. No `%` — the baseline tracks that.
+
+    // @early-stop
+    // regalloc wall — MSVC pins the loop counter in edi; see docs/patterns/regalloc-zero-pin.md
+    RVA(0x000457b0, 0x180)
+    int CGrunt::ResolveAnimation() { /* complete body */ }
+
+Invariant: a reconstructed method is **either ~100% (unmarked) or carries `@early-stop`** — so
+`rg '@early-stop' src` is exactly the deferred-work set the final sweep re-attacks. Distinct from
+`// @stub` (an empty/backlog body in `src/Stub/` awaiting reconstruction). It is a plain comment —
+`labels.py`/`verify_stubs` ignore it, so it never affects the build.
 
 ## Source-writing doctrine
 

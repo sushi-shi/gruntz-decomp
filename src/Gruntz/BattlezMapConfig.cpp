@@ -39,13 +39,13 @@
 // so the `ecx=&g_buteMgr; call Get*` shape reloc-masks against the already-matched
 // CButeMgr getters (butemgr unit).
 #include <Bute/ButeMgr.h>
-DATA(0x2453d8)
+DATA(0x002453d8)
 extern CButeMgr g_buteMgr;
 
 // ---- Reloc-masked engine externs --------------------------------------------
 // The 2-int-pair freelist head: a singly-linked list of recycled coord-pair nodes
 // (node->next at +0, the usable pair at +4/+8). Referenced as data (DIR32).
-DATA(0x245544)
+DATA(0x00245544)
 extern void* g_freeList;
 
 // The per-map start-coord array's SetAtGrow appender (callee-cleanup engine free
@@ -58,11 +58,11 @@ extern "C" void __stdcall SetAtGrow(int arrayHandle, void* node);
 // DIR32 reloc to the descriptor on its immediate (imm32 = &descN + 5). Modeling the
 // RHS as `(int)(&descN + 5)` reproduces that relocation byte-for-byte. The records
 // are never dereferenced - only their address rides the immediate.
-DATA(0x051510)
+DATA(0x00051510)
 extern char g_typeDesc1[];
-DATA(0x0c2640)
+DATA(0x000c2640)
 extern char g_typeDesc2[];
-DATA(0x00b620)
+DATA(0x0000b620)
 extern char g_typeDesc3[];
 
 // The C runtime PRNG (reloc-masked).
@@ -70,11 +70,11 @@ extern "C" int rand(void);
 
 // The FP scale constant the difficulty rescale multiplies by (a 4-byte float in
 // .data; fmuls reads it). Reloc-masked const datum.
-DATA(0x1e96ec)
+DATA(0x001e96ec)
 extern const float g_diffScale;
 
 // The difficulty-tier sink the rescale stamps (5 Hard / 10 Normal / 20 Easy).
-DATA(0x22b738)
+DATA(0x0022b738)
 extern int g_diffTier;
 
 // ---------------------------------------------------------------------------
@@ -274,7 +274,7 @@ public:
 // ===========================================================================
 // CBattlezMapConfig::LoadConfig
 // ===========================================================================
-RVA(0x025020, 0x984)
+RVA(0x00025020, 0x984)
 int CBattlezMapConfig::LoadConfig(CLevelInfo* lvl, int id, int diff) {
     // --- prologue: zero the scratch fields, copy the level-info handles. ---
     m_48 = 0;
