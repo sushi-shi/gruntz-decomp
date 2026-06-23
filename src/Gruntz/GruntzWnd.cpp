@@ -35,3 +35,6 @@ int CGruntzWnd::Wap32GameWndVfunc0() {
 // @stub
 RVA(0x00094670, 0x1e)
 void CGruntzWnd::Stub_094670() {}
+
+// size 0x10 recovered from operator-new sites (gruntz.analysis.news)
+SIZE(CGruntzWnd, 0x10);

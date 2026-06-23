@@ -1,11 +1,7 @@
 #include <rva.h>
 // CTimeBomb.cpp - engine-label stubs for CTimeBomb.
 
-class CTimeBomb {
-public:
-    CTimeBomb(int);
-    void LoadAttributes();
-};
+#include <Stub/CTimeBomb.h>
 
 // @confidence: med
 // @source: rtti-vptr

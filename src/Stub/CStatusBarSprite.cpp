@@ -1,10 +1,7 @@
 #include <rva.h>
 // CStatusBarSprite.cpp - engine-label stubs for CStatusBarSprite.
 
-class CStatusBarSprite {
-public:
-    CStatusBarSprite(int);
-};
+#include <Stub/CStatusBarSprite.h>
 
 // @confidence: med
 // @source: rtti-vptr

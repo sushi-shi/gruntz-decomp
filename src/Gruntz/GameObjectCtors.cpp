@@ -341,3 +341,12 @@ CUFO::CUFO(CHazardObj* obj) : CPathHazardBase(obj) {
     m_10->m_148 = 0;
     m_10->m_150 = 0;
 }
+
+// size 0x64 recovered from operator-new sites (gruntz.analysis.news)
+SIZE(CGruntStaminaSprite, 0x64);
+
+// size 0x64 recovered from operator-new sites (gruntz.analysis.news)
+SIZE(CGruntToyTimeSprite, 0x64);
+
+// size 0x64 recovered from operator-new sites (gruntz.analysis.news)
+SIZE(CGruntWingzTimeSprite, 0x64);

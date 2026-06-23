@@ -1,10 +1,7 @@
 #include <rva.h>
 // CMovingLogic.cpp - engine-label stubs for CMovingLogic.
 
-class CMovingLogic {
-public:
-    CMovingLogic();
-};
+#include <Stub/CMovingLogic.h>
 
 // @confidence: med
 // @source: rtti-vptr

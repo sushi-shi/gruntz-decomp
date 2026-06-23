@@ -1,10 +1,7 @@
 #include <rva.h>
 // CInGameText.cpp - engine-label stubs for CInGameText.
 
-class CInGameText {
-public:
-    CInGameText(int);
-};
+#include <Stub/CInGameText.h>
 
 // @confidence: med
 // @source: rtti-vptr

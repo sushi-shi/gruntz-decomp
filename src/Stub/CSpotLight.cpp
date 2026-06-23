@@ -1,10 +1,7 @@
 #include <rva.h>
 // CSpotLight.cpp - engine-label stubs for CSpotLight.
 
-class CSpotLight {
-public:
-    CSpotLight(int);
-};
+#include <Stub/CSpotLight.h>
 
 // @confidence: med
 // @source: rtti-vptr

@@ -1,10 +1,7 @@
 #include <rva.h>
 // CKitchenSlime.cpp - engine-label stubs for CKitchenSlime.
 
-class CKitchenSlime {
-public:
-    CKitchenSlime(int);
-};
+#include <Stub/CKitchenSlime.h>
 
 // @confidence: med
 // @source: rtti-vptr

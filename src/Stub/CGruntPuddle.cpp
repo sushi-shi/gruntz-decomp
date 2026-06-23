@@ -1,10 +1,7 @@
 #include <rva.h>
 // CGruntPuddle.cpp - engine-label stubs for CGruntPuddle.
 
-class CGruntPuddle {
-public:
-    CGruntPuddle(int);
-};
+#include <Stub/CGruntPuddle.h>
 
 // @confidence: med
 // @source: rtti-vptr

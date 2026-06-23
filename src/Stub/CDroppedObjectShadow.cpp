@@ -1,11 +1,7 @@
 #include <rva.h>
 // CDroppedObjectShadow.cpp - engine-label stubs for CDroppedObjectShadow.
 
-class CDroppedObjectShadow {
-public:
-    void LoadAttributes();
-    CDroppedObjectShadow(int);
-};
+#include <Stub/CDroppedObjectShadow.h>
 
 // @confidence: high
 // @source: decomp-xref

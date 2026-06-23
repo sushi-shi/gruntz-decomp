@@ -1,10 +1,7 @@
 #include <rva.h>
 // CObjectDropper.cpp - engine-label stubs for CObjectDropper.
 
-class CObjectDropper {
-public:
-    CObjectDropper(int);
-};
+#include <Stub/CObjectDropper.h>
 
 // @confidence: med
 // @source: rtti-vptr

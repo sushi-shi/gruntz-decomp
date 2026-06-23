@@ -1,11 +1,7 @@
 #include <rva.h>
 // CBrickz.cpp - engine-label stubs for CBrickz.
 
-class CBrickz {
-public:
-    void LoadAttributes(int, int);
-    CBrickz(int);
-};
+#include <Stub/CBrickz.h>
 
 // @confidence: med
 // @source: decomp-xref

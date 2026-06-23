@@ -1,10 +1,7 @@
 #include <rva.h>
 // CFortressFlag.cpp - engine-label stubs for CFortressFlag.
 
-class CFortressFlag {
-public:
-    CFortressFlag(int);
-};
+#include <Stub/CFortressFlag.h>
 
 // @confidence: med
 // @source: rtti-vptr

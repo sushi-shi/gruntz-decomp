@@ -1,10 +1,7 @@
 #include <rva.h>
 // CGruntCreationPoint.cpp - engine-label stubs for CGruntCreationPoint.
 
-class CGruntCreationPoint {
-public:
-    CGruntCreationPoint(int);
-};
+#include <Stub/CGruntCreationPoint.h>
 
 // @confidence: med
 // @source: rtti-vptr

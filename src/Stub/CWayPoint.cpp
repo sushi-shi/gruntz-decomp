@@ -1,10 +1,7 @@
 #include <rva.h>
 // CWayPoint.cpp - engine-label stubs for CWayPoint.
 
-class CWayPoint {
-public:
-    CWayPoint(int);
-};
+#include <Stub/CWayPoint.h>
 
 // @confidence: med
 // @source: rtti-vptr

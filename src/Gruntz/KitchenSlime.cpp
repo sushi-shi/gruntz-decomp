@@ -251,3 +251,5 @@ void CKitchenSlime::LoadSprites() {
     m_88 = 0;
     m_8c = 0;
 }
+// size 0x90 from operator-new vtable attribution (gruntz.analysis.news)
+SIZE(CKitchenSlime, 0x90);

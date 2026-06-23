@@ -22,3 +22,6 @@ CTileTriggerLogic::~CTileTriggerLogic() {}
 int CTileTriggerLogic::TileLogicVfunc0() {
     return 0;
 }
+
+// size 0x9c recovered from operator-new sites (gruntz.analysis.news)
+SIZE(CTileTriggerLogic, 0x9c);

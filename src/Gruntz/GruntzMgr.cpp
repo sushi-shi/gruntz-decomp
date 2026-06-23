@@ -374,3 +374,6 @@ RVA(0x00083360, 0xb2)
 CGruntzMgr::~CGruntzMgr() {
     UnknownClose();
 }
+
+// size 0xa30 recovered from operator-new sites (gruntz.analysis.news)
+SIZE(CGruntzMgr, 0xa30);

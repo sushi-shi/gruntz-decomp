@@ -1,10 +1,7 @@
 #include <rva.h>
 // CGruntStartingPoint.cpp - engine-label stubs for CGruntStartingPoint.
 
-class CGruntStartingPoint {
-public:
-    CGruntStartingPoint(int);
-};
+#include <Stub/CGruntStartingPoint.h>
 
 // @confidence: med
 // @source: rtti-vptr

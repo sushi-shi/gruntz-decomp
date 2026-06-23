@@ -71,3 +71,7 @@ CGruntzMultiCommand* CGruntzMultiCommand::Allocate() {
     }
     return new CGruntzMultiCommand;
 }
+// size 0x14 from operator-new vtable attribution (gruntz.analysis.news)
+SIZE(CGruntzMultiCommand, 0x14);
+// size 0x14 from operator-new vtable attribution (gruntz.analysis.news)
+SIZE(CGruntzSingleCommand, 0x14);

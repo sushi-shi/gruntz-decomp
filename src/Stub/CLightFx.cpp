@@ -1,10 +1,7 @@
 #include <rva.h>
 // CLightFx.cpp - engine-label stubs for CLightFx.
 
-class CLightFx {
-public:
-    CLightFx(int);
-};
+#include <Stub/CLightFx.h>
 
 // @confidence: med
 // @source: rtti-vptr

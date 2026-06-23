@@ -1,10 +1,7 @@
 #include <rva.h>
 // CCheckpointTrigger.cpp - engine-label stubs for CCheckpointTrigger.
 
-class CCheckpointTrigger {
-public:
-    CCheckpointTrigger(int);
-};
+#include <Stub/CCheckpointTrigger.h>
 
 // @confidence: med
 // @source: rtti-vptr

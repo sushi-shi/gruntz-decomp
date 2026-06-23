@@ -1,10 +1,7 @@
 #include <rva.h>
 // CDoNothing.cpp - engine-label stubs for CDoNothing.
 
-class CDoNothing {
-public:
-    CDoNothing(int);
-};
+#include <Stub/CDoNothing.h>
 
 // @confidence: med
 // @source: rtti-vptr

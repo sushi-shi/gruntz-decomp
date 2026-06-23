@@ -1,10 +1,7 @@
 #include <rva.h>
 // CToyPeek.cpp - engine-label stubs for CToyPeek.
 
-class CToyPeek {
-public:
-    CToyPeek(int);
-};
+#include <Stub/CToyPeek.h>
 
 // @confidence: med
 // @source: rtti-vptr

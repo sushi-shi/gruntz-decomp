@@ -199,6 +199,9 @@ public:
     CGameObject* m_38;    // +0x38
     CGameObjAux* m_3c;    // +0x3c
 };
+// NOTE: CUserLogic is 0x40 (proven: CPathHazard's ctor is byte-exact with this
+// size). The 0x54 a thin leaf new's is the leaf's OWN size = CUserLogic(0x40) +
+// 0x14 leaf fields - NOT evidence that CUserLogic is 0x54.
 
 // Shared 1-arg init the leaves fold in. Inline so MSVC inlines it; stores the
 // CUserLogic vptr, then the full init. Defined here (not the .cpp) because only

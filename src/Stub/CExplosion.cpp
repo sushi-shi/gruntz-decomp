@@ -1,10 +1,7 @@
 #include <rva.h>
 // CExplosion.cpp - engine-label stubs for CExplosion.
 
-class CExplosion {
-public:
-    CExplosion(int);
-};
+#include <Stub/CExplosion.h>
 
 // @confidence: med
 // @source: rtti-vptr
