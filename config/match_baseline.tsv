@@ -272,7 +272,7 @@ directsoundmgr	?Unlock@DirectSoundMgr@@QAEHPAXK0K@Z	100.0000	100.0000	2	bd0c2046
 engine_label_stubs	??0CActionArea@@QAE@H@Z	1.3208	1.3208	1	cpp:6bf52155264d	0x7da0
 engine_label_stubs	??0CBoomerang@@QAE@H@Z	97.3077	97.3077	1	cpp:6bf52155264d	0xe0650
 engine_label_stubs	??0CBrickz@@QAE@H@Z	1.2963	1.2963	1	cpp:6bf52155264d	0x10e800
-engine_label_stubs	??0CButeNodeBase@@QAE@PAXH@Z	6.2903	6.2903	1	cpp:2262ffc5f902	0x16dff0
+engine_label_stubs	??0CButeNodeBase@@QAE@PAXH@Z	59.5806	59.5806	1	cpp:2262ffc5f902	0x16dff0
 engine_label_stubs	??0CCheckpointTrigger@@QAE@H@Z	0.8434	0.8434	1	cpp:6bf52155264d	0x10ee20
 engine_label_stubs	??0CCheckpointTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	1	cpp:45e65336d4b5	0x1127f0
 engine_label_stubs	??0CCoveredPowerup@@QAE@H@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x10fac0
