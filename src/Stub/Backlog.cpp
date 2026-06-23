@@ -110,7 +110,7 @@ struct EngineThisStub {
     void LoadSBITextEdges(int);
     void LoadWarlordSprites(int, int);
     int LoadActionTileSprites(int);
-    void LoadLevelSounds(int);
+    int LoadLevelSounds(int);
     int LoadLevelImages(int);
     void BuildMusicCategoryTable(int);
     void BuildWorldLevelPath(int);
@@ -851,11 +851,64 @@ int EngineThisStub::LoadActionTileSprites(int force) {
     return 1;
 }
 
-// @confidence: med
+// ---------------------------------------------------------------------------
+// EngineThisStub::LoadLevelSounds - per-level SOUNDZ asset loader. Sibling of the
+// two tile/image loaders above; same Lookup/Register registry idiom but reaches
+// a DIFFERENT registry object embedded at this->m_c->+0x28 (not ->m_10), whose
+// Has/Register/Install are plain non-virtual __thiscall helpers (not the +0x48
+// vtable slot). If not forced (arg1==0) and the "LEVEL" set is already present,
+// bail; otherwise register the "LEVEL" namespace (key "_"), look up the level's
+// "SOUNDZ" set off this->m_28, and install it (key "_"). No severus reset here.
+// Only offsets / code bytes are load-bearing; helpers are reloc-masked externals.
+struct CSoundResRegistry {           // this->m_c->+0x28 points here
+    int Has(char* szName);                                 // FUN_004583c0 __thiscall, ret found
+    void Register(char* szName, char* szKey);              // FUN_00557c70 __thiscall
+    void Install(void* set, char* szName, char* szKey);    // FUN_00557ee0 __thiscall
+};
+struct CSoundResMgr { // this->m_c points here; +0x28 is the sound registry
+    char m_pad00[0x28];
+    CSoundResRegistry* m_28; // +0x28
+};
+struct CSoundSetSource {               // this->m_28 points here
+    void* LookupSoundSet(char* szName); // FUN_0053bae0 __thiscall, ret set ptr
+};
+
+// Typed view of `this` for this loader: m_c is the sound resource manager, m_28
+// the level's sound-set source. (EngineThisStub is the shared placeholder owner.)
+struct CSoundOwner {
+    char m_pad00[0xc];
+    CSoundResMgr* m_c; // +0x0c
+    char m_pad10[0x28 - 0x10];
+    CSoundSetSource* m_28; // +0x28
+};
+
+// @confidence: high
 // @source: decomp-xref
-// @stub
+// Byte-exact (100%). int (BOOL) return like its tile/image siblings: each guard
+// is `return 0` reusing the just-zeroed eax and the success path is `mov eax,1`,
+// reproducing retail's per-site `pop esi; ret 4` epilogues + the eax=1 tail (a
+// void return tail-merges them and never emits eax=1). Registry reached through
+// m_c->+0x28 (CSoundResRegistry) - distinct object/class from the tile loader's
+// m_c->m_10, with direct (non-virtual) Has/Register/Install helpers.
 RVA(0x000db6c0, 0x70)
-void EngineThisStub::LoadLevelSounds(int) {}
+int EngineThisStub::LoadLevelSounds(int force) {
+    CSoundOwner* self = (CSoundOwner*)this;
+    if (!self->m_c) {
+        return 0;
+    }
+    if (!force && self->m_c->m_28->Has("LEVEL")) {
+        return 1;
+    }
+
+    self->m_c->m_28->Register("LEVEL", "_");
+
+    void* sounds = self->m_28->LookupSoundSet("SOUNDZ");
+    if (!sounds) {
+        return 0;
+    }
+    self->m_c->m_28->Install(sounds, "LEVEL", "_");
+    return 1;
+}
 
 // ---------------------------------------------------------------------------
 // EngineThisStub::LoadLevelImages - per-level IMAGEZ/LEVEL asset loader. Sibling
