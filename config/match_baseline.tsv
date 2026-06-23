@@ -36,7 +36,7 @@ deflate	6	6
 dialogs	6	5
 directinputmgr2	8	8
 directsoundmgr	19	16
-engine_label_stubs	562	119
+engine_label_stubs	562	120
 filestream	13	9
 font	16	9
 fontconfig	1	0
@@ -543,6 +543,7 @@ engine_label_stubs	?Post@CRegSink@@QAEXHH@Z	40.0000	40.0000	1	cpp:2262ffc5f902	0
 engine_label_stubs	?Post@CmdHost_090220@ApiCallerStubs@@QAEXH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x90220
 engine_label_stubs	?Pre@CGMMenuUI@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x182cb0
 engine_label_stubs	?Quickload@QlHost_092710@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x92710
+engine_label_stubs	?RefreshTitle@CAttract@@QAEHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x39160
 engine_label_stubs	?RegionEnter@CPlay@@QAEXXZ	40.0000	40.0000	1	cpp:2262ffc5f902	0x1b9a
 engine_label_stubs	?RegionLeave@CPlay@@QAEXXZ	40.0000	40.0000	1	cpp:2262ffc5f902	0x19f1
 engine_label_stubs	?RelayHwnd@@YAXPAX@Z	33.3333	33.3333	1	cpp:2262ffc5f902	0x1437e0
@@ -646,7 +647,6 @@ engine_label_stubs	?thirdparty_17c8e0_SmackGoto_8_SmackWait_4@ApiThisStub@ApiCal
 engine_label_stubs	?thirdparty_17caa0_SmackDoFrame_4_SmackNextFrame_4_SmackToBuffer_28@ApiThisStub@ApiCallerStubs@@QAEHXZ	1.7391	1.7391	1	cpp:6bf52155264d	0x17caa0
 engine_label_stubs	?thirdparty_winapi_17c790_SmackWait_4_DispatchMessageA_PeekMessageA_TranslateMessa@ApiThisStub@ApiCallerStubs@@QAEHHH@Z	1.7699	1.7699	1	cpp:6bf52155264d	0x17c790
 engine_label_stubs	?vector_deleting_destructor@CGruntzMgr@@QAEXH@Z	9.0909	9.0909	1	cpp:6bf52155264d	0x83330
-engine_label_stubs	?vfunc_10@CAttract@@QAEXH@Z	4.5455	4.5455	1	cpp:6bf52155264d	0x39160
 engine_label_stubs	?vfunc_12@StatusBarItem@@QAEXHH@Z	0.0543	0.0543	1	cpp:6bf52155264d	0xcbcc0
 engine_label_stubs	?vfunc_16@StatusBarItem@@QAEXHHH@Z	0.3484	0.3484	1	cpp:6bf52155264d	0xce660
 engine_label_stubs	?vfunc_20@CloudHazard@@QAEXHH@Z	1.4085	1.4085	1	cpp:6bf52155264d	0xb4640

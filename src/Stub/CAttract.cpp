@@ -49,6 +49,7 @@ extern ShowCursorFn g_ShowCursor;
 // Source string literals (objdiff matches these .data relocations by value).
 #define s_STATEZ_ATTRACT "STATEZ_ATTRACT"
 #define s_TITLE_d "TITLE%d"
+#define s_TITLE "TITLE"
 #define s_Menu "Menu"
 #define s_BrightnessPercent "BrightnessPercent"
 #define s_SOUNDZ "SOUNDZ"
@@ -62,9 +63,22 @@ extern "C" int sprintf(char* buf, const char* fmt, ...);
 // FUN_0048ddd0, __thiscall ret 4 — the RestoreVideoMode shape, called with 0)
 // re-asserts the display mode when (re)entering the attract scene.
 // ---------------------------------------------------------------------------
+// The video-mode sub-object also carries a scene/scheduler handle at +0x48 on
+// which RefreshTitle drives a reset pair: a getter that tail-jumps a virtual
+// (engine FUN_00538920, __thiscall ret 0) and an EH-framed method (engine
+// FUN_00538530, __thiscall) — both zero-arg.
+class CAttractSceneSlot {
+public:
+    void PrimeScene();   // FUN_00538920
+    void RestoreScene(); // FUN_00538530
+};
+
 class CAttractVideo {
 public:
     int RestoreVideoMode(int save);
+
+    char m_pad00[0x48];
+    CAttractSceneSlot* m_48; // +0x48  scene/scheduler handle
 };
 
 // ---------------------------------------------------------------------------
@@ -152,7 +166,7 @@ public:
     virtual int vf_OnActivate(); // slot 3 (+0xc) — the pre-flight gate
 
     int EnterAttractMode(int a, int b, int mode);
-    void vfunc_10(int);
+    int RefreshTitle(int unused);
     int LoadTitleConfig(int mode);
     int Activate();
 
@@ -163,6 +177,7 @@ public:
 
     // engine tail helpers (__thiscall, reached via ILT thunks).
     int FadeInTitle(char* name, int a, int b, int c, int d, int e); // FUN_004fa1f0
+    int RunTitle(char* name, int a, int b, int c, int d);           // FUN_004fa350
     int BuildMenuPage(int x, int w, int h, int flag);               // FUN_004fa8f0
     void CommitStage();                                             // FUN_004a05a0
 
@@ -180,11 +195,18 @@ inline void CAttract::vf_slot0() {}
 inline void CAttract::vf_slot1() {}
 inline void CAttract::vf_slot2() {}
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
+// CAttract::RefreshTitle - re-prime the attract title scene (the unused int arg
+// is the caller's refresh code). Resets the scene slot off m_04+0x48 (PrimeScene
+// then RestoreScene), re-resolves the "STATEZ_ATTRACT" state into m_2c, runs the
+// title sequence (engine FUN_004fa350) with the bare "TITLE" tag, and returns 1.
 RVA(0x00039160, 0x46)
-void CAttract::vfunc_10(int) {}
+int CAttract::RefreshTitle(int unused) {
+    m_04->m_48->PrimeScene();
+    m_04->m_48->RestoreScene();
+    m_2c = m_08->LookupState(s_STATEZ_ATTRACT);
+    RunTitle(s_TITLE, 0, 0, 1, 0);
+    return 1;
+}
 
 // CAttract::LoadTitleConfig - configure the attract/title sequence.
 // @early-stop
