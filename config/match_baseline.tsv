@@ -36,7 +36,7 @@ deflate	6	6
 dialogs	6	5
 directinputmgr2	8	8
 directsoundmgr	18	15
-engine_label_stubs	565	111
+engine_label_stubs	565	113
 filestream	13	9
 font	16	9
 fontconfig	1	0
@@ -445,7 +445,7 @@ engine_label_stubs	?LoadAttributes@CDroppedObjectShadow@@QAEXXZ	0.4444	0.4444	1	
 engine_label_stubs	?LoadAttributes@CStaticHazard@@QAEXXZ	0.3774	0.3774	1	cpp:45e65336d4b5	0xfc1a0
 engine_label_stubs	?LoadAttributes@CTeleporter@@QAEXXZ	0.4274	0.4274	1	cpp:45e65336d4b5	0x41aa0
 engine_label_stubs	?LoadAttributes@CTimeBomb@@QAEXXZ	0.7246	0.7246	1	cpp:45e65336d4b5	0xe1e60
-engine_label_stubs	?LoadAttributes@CWarlord@@QAEXXZ	1.5385	1.5385	1	cpp:45e65336d4b5	0x44c00
+engine_label_stubs	?LoadAttributes@CWarlord@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x44c00
 engine_label_stubs	?LoadBattlezItemConfig@EngineThisStub@@QAEXH@Z	0.3096	0.3096	1	cpp:6bf52155264d	0xfdc00
 engine_label_stubs	?LoadBombGruntRunConfig2@EngineThisStub@@QAEXXZ	0.4762	0.4762	1	cpp:6bf52155264d	0x68520
 engine_label_stubs	?LoadBombGruntRunConfig@EngineThisStub@@QAEXHH@Z	0.3922	0.3922	1	cpp:6bf52155264d	0x65630
@@ -622,7 +622,7 @@ engine_label_stubs	?Update1@SelHost_0c4ee0@ApiCallerStubs@@QAEXXZ	100.0000	100.0
 engine_label_stubs	?Update3@SelHost_0c4ee0@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0xc4fd0
 engine_label_stubs	?Update@SelHost_0c4f80@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:e1535087fe94	0xc4f80
 engine_label_stubs	?UpdateBootyWalkingGruntz@EngineLabelBacklog@@YAXXZ	0.1898	0.1898	1	cpp:45e65336d4b5	0x1b690
-engine_label_stubs	?UpdateClock@RezMgr@@QAEXXZ	1.7857	1.7857	1	cpp:2262ffc5f902	0x13ddc0
+engine_label_stubs	?UpdateClock@RezMgr@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x13ddc0
 engine_label_stubs	?UpdateDestructButtonStatusBar2@EngineThisStub@@QAEXH@Z	3.5714	3.5714	1	cpp:6bf52155264d	0x10bc30
 engine_label_stubs	?UpdateFallingItemStatusBar@EngineThisStub@@QAEXHHH@Z	1.8182	1.8182	1	cpp:6bf52155264d	0x107590
 engine_label_stubs	?UpdateRezConveyorStatusBar@EngineThisStub@@QAEXXZ	0.3717	0.3717	1	cpp:6bf52155264d	0x105990
