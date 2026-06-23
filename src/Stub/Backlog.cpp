@@ -1,3 +1,5 @@
+#include <Win32.h> // ShowCursor (matching-neutral; ApiCallers.cpp in this aggregate already pulls it)
+
 #include <rva.h>
 // Backlog.cpp - engine-label stubs without a class attribution.
 
@@ -11,9 +13,31 @@ class ButeMgr {
 public:
     void ParseAttributeFile();
 };
+// The help-screen game state. LoadAssets() first chains the base-class asset
+// loader (LoadGameAssetNamespaces, reloc-masked external call) which populates
+// m_4/m_8, forces the cursor hidden, registers the "STATEZ_HELP" namespace
+// through m_8 (cached at m_2c), then pumps a fixed message burst through
+// m_4->m_4. Only offsets / code bytes are load-bearing.
+struct CHelpAssetSet {           // m_8 points here
+    void* Register(char* name); // FUN_0053c030, __thiscall, returns the registered object
+};
+struct CHelpMsgPump {          // m_4->m_4 points here
+    void Pump(int msg, int n); // FUN_0053d4e0, __thiscall message burst
+};
+struct CHelpAssetRoot { // m_4 / arg1 points here
+    char m_pad00[0x4];
+    CHelpMsgPump* m_4; // +0x4
+};
 class CHelpState {
 public:
-    void LoadAssets(int, int, int);
+    int LoadAssets(int, int, int);
+    int LoadGameAssetNamespaces(int, int, int); // base loader; reloc-masked external call
+
+    char m_pad00[0x4];
+    CHelpAssetRoot* m_4; // +0x4
+    CHelpAssetSet* m_8;  // +0x8
+    char m_pad0c[0x2c - 0xc];
+    void* m_2c; // +0x2c  the registered "STATEZ_HELP" object (0 on failure)
 };
 class CloudHazard {
 public:
@@ -574,11 +598,21 @@ void EngineThisStub::LoadSaveMessageSprite() {}
 RVA(0x00093d40, 0x473)
 void __stdcall EngineLabelBacklog::BuildLevelRezPath(int, int, int, int, int) {}
 
-// @confidence: med
 // @source: decomp-xref
-// @stub
 RVA(0x00095090, 0x6e)
-void CHelpState::LoadAssets(int, int, int) {}
+int CHelpState::LoadAssets(int a1, int a2, int a3) {
+    if (!LoadGameAssetNamespaces(a1, a2, a3)) {
+        return 0;
+    }
+    while (ShowCursor(0) >= 0)
+        ;
+    m_2c = m_8->Register("STATEZ_HELP");
+    if (!m_2c) {
+        return 0;
+    }
+    m_4->m_4->Pump(0x100, 0x40);
+    return 1;
+}
 
 // @confidence: med
 // @source: decomp-xref

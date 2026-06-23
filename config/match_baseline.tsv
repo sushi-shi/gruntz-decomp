@@ -36,7 +36,7 @@ deflate	6	6
 dialogs	6	5
 directinputmgr2	8	8
 directsoundmgr	18	15
-engine_label_stubs	565	113
+engine_label_stubs	565	114
 filestream	13	9
 font	16	9
 fontconfig	1	0
@@ -437,7 +437,7 @@ engine_label_stubs	?Load@ResLoad_144270@ApiCallerStubs@@QAEHHPADH@Z	86.9310	86.9
 engine_label_stubs	?Load@StrHost_0b7ec0@ApiCallerStubs@@QAEXHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0xb7ec0
 engine_label_stubs	?LoadActionTileSprites@EngineThisStub@@QAEXH@Z	2.3256	2.3256	1	cpp:6bf52155264d	0xdb600
 engine_label_stubs	?LoadAreaLevelTable@EngineLabelBacklog@@YAXXZ	0.0517	0.0517	1	cpp:45e65336d4b5	0xa11d0
-engine_label_stubs	?LoadAssets@CHelpState@@QAEXHHH@Z	2.3256	2.3256	1	cpp:6bf52155264d	0x95090
+engine_label_stubs	?LoadAssets@CHelpState@@QAEHHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x95090
 engine_label_stubs	?LoadAttributes2@CStaticHazard@@QAEXXZ	1.7857	1.7857	1	cpp:45e65336d4b5	0xfc0b0
 engine_label_stubs	?LoadAttributes2@CWarlord@@QAEXXZ	1.2346	1.2346	1	cpp:45e65336d4b5	0x44d10
 engine_label_stubs	?LoadAttributes@CBrickz@@QAEXHH@Z	0.1490	0.1490	1	cpp:6bf52155264d	0x810f0
