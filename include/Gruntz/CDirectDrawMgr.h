@@ -81,6 +81,7 @@ struct IDirectDrawSurfaceZ {
         long(__stdcall* SetColorKey)(IDirectDrawSurfaceZ*, unsigned long flags, void* key); // +0x74
         char m_pad78[0x7c - 0x78];
         long(__stdcall* SetPalette)(IDirectDrawSurfaceZ*, void* palette); // +0x7c
+        long(__stdcall* Unlock)(IDirectDrawSurfaceZ*, void* rect);        // +0x80
     }* vtbl;
 };
 
@@ -231,6 +232,7 @@ public:
     virtual void v14();
     virtual void v18();
     virtual int RestoreLost(); // slot 7, @0x1c
+    virtual int v20(void* a);  // slot 8, @0x20 (the surface's own blit-into-desc)
 
     int Flip(CDDSurface* target);                    // 0x13e850
     int Lock(void* rect);                            // 0x13e6d0

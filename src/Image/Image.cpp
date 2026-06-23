@@ -36,6 +36,12 @@
 #include <rva.h>
 // <string.h>: strrchr (find the ext dot) / _stricmp (the case-insensitive ext compare).
 #include <string.h>
+// CDDSurface (DIRSURF.CPP) is the SAME object as CFileImage here - the file-image
+// surface and the DirectDraw surface wrapper are one class viewed two ways. The
+// blitters/run-decoders are its leaf methods (named CFileImage::* to match the
+// already-matched decoder callers), but their bodies touch the rich surface
+// layout + call the CDDSurface COM thunks (Lock/SetColorKey, reloc-masked).
+#include <Gruntz/CDirectDrawMgr.h>
 
 // Per-decoder 256-entry RGBQUAD palette buffers (file-scope BSS, reloc-masked).
 // Each decoder builds its own when the source carries an inline/trailing palette;
@@ -455,6 +461,143 @@ int CImage::LoadDefault(char* name, void* a2, void* a3) {
         return 0;
     }
     return DecodeResData(data, a2, a3);
+}
+
+// ===========================================================================
+// CFileImage surface helpers (DIRSURF.CPP leaf methods). `this` is the same
+// object the CDDSurface wrapper holds, so the bodies view it as a CDDSurface to
+// reach the rich surface layout + the COM thunks. Named CFileImage::* to pair
+// with the matched decoder callers; placed in retail-RVA order (all below the
+// CFileImage decoders' RVAs, so they lead the CFileImage section).
+// ===========================================================================
+
+// ---------------------------------------------------------------------------
+// CFileImage::BlitSurf
+// The DecodePcxData destination setup: zero the surface's DDSURFACEDESC, stash
+// the colour-key arg (m_78), record width/height into the desc, set dwSize/
+// dwFlags, and - when a4 names a non-zero source bpp that differs from the
+// palette context's bpp (surf->m_538) - flag a colour-key blit (dwFlags|0x1000,
+// ddckCKSrcBlt dwFlags 0x20, the key colour at m_64). Then dispatch the surface's
+// own slot-8 virtual with `surf`.
+RVA(0x13e0d0, 0x66)
+int CFileImage::BlitSurf(void* surf, int width, int height, int a4, int a5) {
+    CDDSurface* s = (CDDSurface*)this;
+    int* desc = (int*)s->m_desc;
+    for (int i = 0x1b; i != 0; i--) {
+        *desc++ = 0;
+    }
+    *(int*)(s->m_desc + 0x68) = a5; // m_78
+    *(int*)(s->m_desc + 0xc) = width;
+    *(int*)(s->m_desc + 8) = height;
+    *(int*)s->m_desc = 0x6c;    // dwSize
+    *(int*)(s->m_desc + 4) = 7; // dwFlags
+    if (a4 != 0 && a4 != ((CFileImage*)surf)->m_538) {
+        *(int*)(s->m_desc + 4) = 0x1007;
+        *(int*)(s->m_desc + 0x48) = 0x20; // m_58
+        s->m_64 = a4;
+    }
+    return s->v20(surf);
+}
+
+// ---------------------------------------------------------------------------
+// CFileImage::FillPalette
+// Installs the transparency colour. arg == -1 means "no colour key": clear the
+// have-key flag (m_bc) and pass {-1,-1}; otherwise set m_bc and set the surface
+// source colour key to {arg, arg} (DDCKEY_SRCBLT = 8).
+RVA(0x13eb40, 0x3c)
+void CFileImage::FillPalette(void* arg) {
+    CDDSurface* s = (CDDSurface*)this;
+    unsigned long ck[2];
+    ck[0] = (unsigned long)arg;
+    ck[1] = (unsigned long)arg;
+    if ((int)arg != -1) {
+        s->m_bc = 1;
+    } else {
+        s->m_bc = 0;
+    }
+    s->SetColorKey(8, ck);
+}
+
+// ---------------------------------------------------------------------------
+// CFileImage::BlitDirect
+// Straight copy of `src` into the locked surface. Lock() returns the locked bits
+// pointer (m_34); on failure return 0. Each row of m_ac bytes is copied into the
+// row at locked + row*lPitch; mode 2 walks rows bottom-up (flipped), else top-
+// down. Unlock and return 1.
+RVA(0x13ece0, 0xc7)
+int CFileImage::BlitDirect(void* src, int mode) {
+    CDDSurface* s = (CDDSurface*)this;
+    int locked = s->Lock(0);
+    if (locked == 0) {
+        return 0;
+    }
+    unsigned char* p = (unsigned char*)src;
+    if (mode == 2) {
+        for (int row = *(int*)(s->m_desc + 8) - 1; row >= 0; row--) {
+            unsigned char* dst = (unsigned char*)locked + row * *(int*)(s->m_desc + 0x10);
+            unsigned char* sp = p;
+            int n = s->m_ac;
+            for (int i = n; i > 0; i--) {
+                *dst++ = *sp++;
+            }
+            p += n;
+        }
+    } else {
+        for (int row = 0; row < *(int*)(s->m_desc + 8); row++) {
+            unsigned char* dst = (unsigned char*)locked + row * *(int*)(s->m_desc + 0x10);
+            unsigned char* sp = p;
+            int n = s->m_ac;
+            for (int i = n; i > 0; i--) {
+                *dst++ = *sp++;
+            }
+            p += n;
+        }
+    }
+    s->m_8->vtbl->Unlock(s->m_8, 0);
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CFileImage::Blit
+// Palette-remap copy dispatcher. Selects a specialization by (dest bpp = m_a8,
+// src bpp = bitcount). When m_a8==0 / bitcount agree on the "no remap" fast path
+// it delegates to BlitDirect; otherwise a nested switch on dest bpp (8/16/24)
+// then src bpp picks the matching Blit<dest><src> specialization. Unhandled
+// combinations return 0.
+RVA(0x13faa0, 0x108)
+int CFileImage::Blit(void* src, int bitcount, void* palette, int mode) {
+    CDDSurface* s = (CDDSurface*)this;
+    int dest = s->m_a8;
+    if ((dest == 0) == bitcount) {
+        return BlitDirect(src, mode);
+    }
+    switch (dest) {
+        case 8:
+            switch (bitcount) {
+                case 0x10:
+                    return Blit816(src, palette, mode);
+                case 0x18:
+                    return Blit824(src, palette, mode);
+            }
+            return 0;
+        case 0x10:
+            switch (bitcount) {
+                case 8:
+                    return Blit168(src, palette, mode);
+                case 0x18:
+                    return Blit1624(src, mode);
+            }
+            return 0;
+        case 0x18:
+            switch (bitcount) {
+                case 8:
+                    return Blit248(src, palette, mode);
+                case 0x10:
+                    return Blit2416(src, mode);
+            }
+            return 0;
+    }
+    return 0;
 }
 
 // ---------------------------------------------------------------------------

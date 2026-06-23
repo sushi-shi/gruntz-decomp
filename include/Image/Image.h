@@ -133,6 +133,16 @@ public:
     int RunDecode3(void* dst, void* src, int width, int height);     // 0x1453f0
     void FillPalette(void* arg);                                     // 0x13eb40
 
+    // The per-(dest-bpp,src-bpp) blit specializations Blit dispatches to (external
+    // no-body, reloc-masked; stubbed in src/Stub). The trailing digits encode
+    // dest_src bit depths: 248 = dest 24bpp / src 8bpp, etc.
+    int Blit248(void* src, void* palette, int mode); // 0x13fe60 (ret 0xc)
+    int Blit2416(void* src, int mode);               // 0x13ff80 (ret 8)
+    int Blit1624(void* src, int mode);               // 0x13fce0 (ret 8)
+    int Blit168(void* src, void* palette, int mode); // 0x13fbb0 (ret 0xc)
+    int Blit824(void* src, void* palette, int mode); // 0x140110 (ret 0xc)
+    int Blit816(void* src, void* palette, int mode); // 0x140420 (ret 0xc)
+
     // Layout. Field names are placeholders; the OFFSETS are load-bearing.
     char m_pad00[0x18];         // +0x00
     int m_18;                   // +0x18  height
