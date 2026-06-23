@@ -63,12 +63,35 @@ Spawn a **matcher** agent (subagent_type `matcher`), **`run_in_background: true`
    into the main repo (see `[[subagent-bash-cwd-leaks-to-main]]`). Tell the
    matcher: `cd <abs worktree>` first and never operate on the repo root.
 3. Carry the standard matcher task (target RVA/name/size/file), the 8-digit
-   address convention, and the STOP-EARLY + `@early-stop` rule.
-4. Report: final per-function % + a one-line summary + the **complete
+   address convention, and the STOP-EARLY + `@early-stop` rule (marker line + reason
+   on the next line, **no percentage** — the baseline tracks %).
+4. **Forbid `gruntz format` in the worktree.** It reflows trailing-comment
+   alignment across *unrelated* clean files (measured: ~9 files swept in), which
+   you then have to discard at integration. Tell the matcher: edit only its
+   target file(s); leave formatting to the orchestrator.
+5. **Allow migrations.** A stub is often mis-attributed (measured this session:
+   `ErrorThunk_08ddd0`→`CGruntzMgr::RestoreVideoMode`, `ErrorThunk_135f40`→
+   `DirectSoundMgr::LockConvert`). If the matcher recovers the true owner, it
+   SHOULD migrate the body into the real class's TU, remove the stub, and update
+   the header — report every file touched.
+6. Report: final per-function % + a one-line summary + the **complete
    `git diff`** of its worktree changes (so integration is a clean `git apply`).
 
 Run the 3 dispatches in the background and let the harness notify you as each
 finishes.
+
+### Lane discipline (avoid same-file collisions)
+
+Two matchers editing the **same file** collide at integration (duplicate
+top-of-file class/extern decls → a build error, not a clean merge). So keep each
+multi-stub file a **single lane**: route all of `Backlog.cpp`'s targets through
+ONE slot, all of `CAttract.cpp`'s through another, etc. Cluster siblings in one
+file also share idioms — feeding the next sibling to the same lane lets the
+matcher reference the just-landed one (measured: the LoadActionTileSprites/
+LoadLevelImages/LoadLevelSounds cluster, and one sibling even *corrected* a
+prior sibling's misdiagnosed `@early-stop`). The other slots take distinct-file
+targets — prefer methods/loaders over ctors/dtors, which systematically plateau
+~60% on the `flags="base"` EH wall.
 
 ## Integration protocol (SERIAL — the heart of this doc)
 
@@ -78,14 +101,23 @@ once — main has a single `build/` and a single HEAD):
 1. **Guard:** `git -C <main> status --porcelain` must be clean before you start.
    If a matcher leaked into main (relative-path bug), `git -C <main> restore` the
    stray files first and note it.
-2. **Apply** the matcher's diff to main — `git apply` its reported diff, or
-   `cp <worktree>/<file> <main>/<file>` for a single-file stub fill. Touch only
-   that matcher's file(s).
+2. **Apply** the matcher's distinct file(s) to main. For a single-file stub fill,
+   `cp <worktree>/<file> <main>/<file>`. For a **migration** (real TU + header +
+   stub removal) copy each of those files. **Never copy the matcher's `README.md`
+   or `config/match_baseline.tsv`** — those are regenerated/blessed in main. If
+   the matcher ran `gruntz format` and swept unrelated files, copy ONLY its real
+   targets (confirm each is unchanged in main since the worktree's base:
+   `git diff --quiet <base> HEAD -- <file>`). Touch only that matcher's file(s).
 3. **Build + measure** in main: `nix develop .#build --command gruntz build`.
-   Confirm the target hit its reported %, the regression gate says *no
-   regressions*, and read the before→after exact count.
-4. **Bless** the baseline: `gruntz` status `update` (records new best% +
-   handles same-RVA symbol renames). Keep this in the same commit.
+   Confirm the target hit its reported %, and read the before→after exact count.
+4. **Bless** the baseline: `gruntz` status `update` (records new best% + handles
+   same-RVA symbol renames). Two cases need `update --accept-regressions`:
+   (a) a **migration** — the old stub symbol goes LOST at its RVA (intended
+   rename); (b) a **trivial cross-function fuzzy drift** (measured: a neighbor in
+   the same aggregate obj dropping <0.1% when you add a new function/string
+   literal — its code+relocs are unchanged, pure objdiff scoring noise). A real
+   `best%` drop on an untouched function is NOT acceptable — investigate instead.
+   Keep the bless in the same commit.
 5. **Commit** atomically: `git add` ONLY this matcher's file(s) +
    `config/match_baseline.tsv`, message `match: <fn> -> <result>` with the
    `Co-Authored-By: Claude Opus 4.8 (1M context)` trailer. One matcher = one
