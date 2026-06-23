@@ -327,6 +327,7 @@ engine_label_stubs	??1CSBI_SideTab@@QAE@XZ	0.9804	0.9804	1	cpp:45e65336d4b5	0x10
 engine_label_stubs	??1UnknownClassInCGruntzMgr@@QAE@XZ	4.5455	4.5455	1	cpp:45e65336d4b5	0x83260
 engine_label_stubs	??1UnknownVoldemort@@QAE@XZ	3.6364	3.6364	1	cpp:45e65336d4b5	0x1376f0
 engine_label_stubs	?AckDropPlayer@CNetMgr@@QAEXH@Z	40.0000	40.0000	1	cpp:2262ffc5f902	0x16d1
+engine_label_stubs	?Activate@CAttract@@QAEHXZ	99.0000	99.0000	1	cpp:6bf52155264d	0xa0a30
 engine_label_stubs	?Append@EditAppendHost_0c2ce0@ApiCallerStubs@@QAEXPAD@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xc2ce0
 engine_label_stubs	?Apply@PalHost_1775f0@ApiCallerStubs@@QAEHPBDH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x1775f0
 engine_label_stubs	?BaseCleanup@CGameModeBase@@QAEXXZ	40.0000	40.0000	1	cpp:2262ffc5f902	0x3f53
@@ -649,7 +650,6 @@ engine_label_stubs	?vfunc_12@StatusBarItem@@QAEXHH@Z	0.0543	0.0543	1	cpp:6bf5215
 engine_label_stubs	?vfunc_16@StatusBarItem@@QAEXHHH@Z	0.3484	0.3484	1	cpp:6bf52155264d	0xce660
 engine_label_stubs	?vfunc_1@CAttract@@QAEXHHH@Z	1.2821	1.2821	1	cpp:6bf52155264d	0x13fb0
 engine_label_stubs	?vfunc_20@CloudHazard@@QAEXHH@Z	1.4085	1.4085	1	cpp:6bf52155264d	0xb4640
-engine_label_stubs	?vfunc_6@CAttract@@QAEXXZ	1.0000	1.0000	1	cpp:45e65336d4b5	0xa0a30
 engine_label_stubs	?vfunc_9@BootyState@@QAEXH@Z	1.3514	1.3514	1	cpp:6bf52155264d	0x18d30
 engine_label_stubs	?vfunc_9@Projectile@@QAEXXZ	0.3891	0.3891	1	cpp:45e65336d4b5	0x61cb0
 engine_label_stubs	?winapi_00c840_CopyRect_SetRect@ApiCallerStubs@@YAHXZ	1.3084	1.3084	1	cpp:e1535087fe94	0xc840

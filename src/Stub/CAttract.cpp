@@ -95,27 +95,49 @@ struct CMenuRoot {
     CMenuPage* m_04; // +0x4  active menu page
 };
 
+// The title-brightness target's preset/reset method (engine FUN_0053e760,
+// __thiscall ret 4) called once before the fade with arg 0 — the second method
+// on the same +0x2c brightness target whose SetBrightness LoadTitleConfig drives.
+class CMenuBrightnessReset {
+public:
+    void Reset(int value);
+};
+
 // ---------------------------------------------------------------------------
-// CAttract
+// CAttract — a polymorphic engine state. The vptr sits at +0x0 (inside the
+// former m_pad00[8]); Activate() dispatches its own vtable slot 3 (+0xc) as the
+// pre-flight gate. Three placeholder virtuals (slots 0..2, empty inline, no
+// RVA) put the gate at the right index so `mov eax,[this]; call [eax+0xc]`
+// falls out reloc-masked (docs/patterns/dummy-virtual-slots.md). Member offsets
+// are preserved (vptr replaces the first 4 pad bytes; m_08 stays at +0x8).
 // ---------------------------------------------------------------------------
 class CAttract {
 public:
+    virtual void vf_slot0();
+    virtual void vf_slot1();
+    virtual void vf_slot2();
+    virtual int vf_OnActivate(); // slot 3 (+0xc) — the pre-flight gate
+
     void vfunc_1(int, int, int);
     void vfunc_10(int);
     int LoadTitleConfig(int mode);
-    void vfunc_6();
+    int Activate();
 
     // engine tail helpers (__thiscall, reached via ILT thunks).
     int FadeInTitle(char* name, int a, int b, int c, int d, int e); // FUN_004fa1f0
     int BuildMenuPage(int x, int w, int h, int flag);               // FUN_004fa8f0
     void CommitStage();                                             // FUN_004a05a0
 
-    char m_pad00[0x8];
+    char m_pad04[0x8 - 0x4];  // +0x4  (vptr occupies +0x0)
     CAttractStateMgr* m_08; // +0x8   attract state machine
     CMenuRoot* m_0c;        // +0xc   menu root
     char m_pad10[0x2c - 0x10];
     int* m_2c; // +0x2c  active attract state slot (scratch)
 };
+
+inline void CAttract::vf_slot0() {}
+inline void CAttract::vf_slot1() {}
+inline void CAttract::vf_slot2() {}
 
 // @confidence: med
 // @source: decomp-xref
@@ -171,11 +193,58 @@ int CAttract::LoadTitleConfig(int mode) {
     return 1;
 }
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
+// CAttract::Activate - virtual attract-screen (re)entry. Gates on slot-3
+// (vf_OnActivate); if it fails, returns that result. Otherwise resets the title
+// brightness target, picks a random TITLE state off the registry, resolves it
+// (m_08->LookupState), runs the title fade, sets menu brightness, transitions
+// the page (TransTitle), rebuilds the menu page, forces the cursor visible, and
+// returns 1. Mirrors LoadTitleConfig(mode != 2) sans the final CommitStage.
+// @early-stop
+// identical-return-epilogue tail-merge wall (docs/patterns/identical-return-epilogue-tailmerge.md):
+// body byte-exact; on the FadeInTitle fail path retail emits a fresh inline
+// `xor eax,eax` (return 0) while the recompile reuses the already-zero FadeInTitle
+// result in eax (bare pop/ret). Same non-steerable wall as the sibling LoadTitleConfig.
 RVA(0x000a0a30, 0x110)
-void CAttract::vfunc_6() {}
+int CAttract::Activate() {
+    char stateName[0x20];
+    char titleName[0x20];
+
+    int gate = vf_OnActivate();
+    if (gate == 0) {
+        return gate;
+    }
+
+    ((CMenuBrightnessReset*)m_0c->m_04->m_14->m_2c)->Reset(0);
+
+    int idx = *(int*)((char*)g_gameReg + 0x80) % g_attractStateCount + 1;
+    sprintf(stateName, s_STATEZ_ATTRACT);
+    sprintf(titleName, s_TITLE_d, idx);
+
+    int* saved = m_2c;
+    int* state = m_08->LookupState(stateName);
+    m_2c = state;
+    if (state == 0) {
+        return 0;
+    }
+
+    int faded = FadeInTitle(titleName, 0, 0, 1, 0, 0);
+    m_2c = saved;
+    if (faded == 0) {
+        return 0;
+    }
+
+    CMenuBrightnessTarget* tgt = m_0c->m_04->m_14->m_2c;
+    tgt->SetBrightness(g_attractButeMgr.GetIntDef(s_Menu, s_BrightnessPercent, 0x32), 0);
+    m_0c->m_04->TransTitle();
+
+    BuildMenuPage(0x50, 0x3e8, 0, 1);
+    ShowCursorFn showCursor = g_ShowCursor;
+    if (showCursor(1) < 0) {
+        do {
+        } while (showCursor(1) < 0);
+    }
+    return 1;
+}
 
 // @confidence: med
 // @source: decomp-xref
