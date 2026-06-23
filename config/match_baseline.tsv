@@ -432,7 +432,7 @@ engine_label_stubs	?Key@CmdHost_039440@ApiCallerStubs@@QAEHHH@Z	100.0000	100.000
 engine_label_stubs	?Key@CmdHost_0953f0@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x953f0
 engine_label_stubs	?LaunchPortalExe@EngineLabelBacklog@@YGXH@Z	0.7519	0.7519	1	cpp:6bf52155264d	0x90550
 engine_label_stubs	?Load@PalLoad_1479e0@ApiCallerStubs@@QAEHHPADH@Z	89.7286	89.7286	1	cpp:6bf52155264d	0x1479e0
-engine_label_stubs	?Load@ResLoad_144270@ApiCallerStubs@@QAEHHPADH@Z	86.9885	86.9885	1	cpp:6bf52155264d	0x144270
+engine_label_stubs	?Load@ResLoad_144270@ApiCallerStubs@@QAEHHPADH@Z	86.9310	86.9310	1	cpp:6bf52155264d	0x144270
 engine_label_stubs	?Load@StrHost_0b7ec0@ApiCallerStubs@@QAEXHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0xb7ec0
 engine_label_stubs	?LoadActionTileSprites@EngineThisStub@@QAEHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xdb600
 engine_label_stubs	?LoadAreaLevelTable@EngineLabelBacklog@@YAXXZ	0.0517	0.0517	1	cpp:45e65336d4b5	0xa11d0
@@ -475,7 +475,7 @@ engine_label_stubs	?LoadGruntResurrectTuning@EngineLabelBacklog@@YGXHHH@Z	0.5525
 engine_label_stubs	?LoadGruntSpawnConfig@EngineThisStub@@QAEXHHHHH@Z	0.4049	0.4049	1	cpp:6bf52155264d	0x11afb0
 engine_label_stubs	?LoadGruntTuningConstants@EngineThisStub@@QAEXH@Z	0.0646	0.0646	1	cpp:6bf52155264d	0x5d210
 engine_label_stubs	?LoadGruntTypeTable@EngineThisStub@@QAEXHHHH@Z	0.0415	0.0415	1	cpp:6bf52155264d	0x4dd50
-engine_label_stubs	?LoadGruntzPalette@EngineThisStub@@QAEXHH@Z	1.5385	1.5385	1	cpp:6bf52155264d	0xe2d10
+engine_label_stubs	?LoadGruntzPalette@EngineThisStub@@QAEHHH@Z	96.9231	96.9231	1	cpp:6bf52155264d	0xe2d10
 engine_label_stubs	?LoadHelpBookSprite@EngineLabelBacklog@@YAXXZ	0.5988	0.5988	1	cpp:45e65336d4b5	0x997c0
 engine_label_stubs	?LoadImageBanks_vfunc29@EngineThisStub@@QAEXXZ	4.0000	4.0000	1	cpp:6bf52155264d	0xcffe0
 engine_label_stubs	?LoadLevelByMode@EngineLabelBacklog@@YGXHH@Z	0.0972	0.0972	1	cpp:6bf52155264d	0xca200

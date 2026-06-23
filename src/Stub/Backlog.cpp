@@ -1,4 +1,5 @@
 #include <Win32.h> // ShowCursor (matching-neutral; ApiCallers.cpp in this aggregate already pulls it)
+#include <stdio.h> // engine sprintf (reloc-masked) - LoadGruntzPalette
 
 #include <rva.h>
 // Backlog.cpp - engine-label stubs without a class attribution.
@@ -124,7 +125,7 @@ struct EngineThisStub {
     void LoadProjectileEffects();
     void BuildToolToyColorKey(int);
     void LookupToolToyColorKey(int);
-    void LoadGruntzPalette(int, int);
+    int LoadGruntzPalette(int, int);
     void SaveGameFile(int);
     void BuildResourceTabStatusBar(int, int, int, int, int, int, int, int, int, int, int);
     void BuildStatzTabStatusBar(int, int, int, int, int, int, int, int, int, int, int, int, int);
@@ -1030,11 +1031,90 @@ void EngineThisStub::BuildToolToyColorKey(int) {}
 RVA(0x000e2980, 0x2cd)
 void EngineThisStub::LookupToolToyColorKey(int) {}
 
-// @confidence: med
+// ---------------------------------------------------------------------------
+// EngineThisStub::LoadGruntzPalette - registers a level's "GRUNTZ_PALETTEZ_<name>"
+// palette into the game's image/sprite registry. arg1 is the source registry
+// object (its FUN_0053bff0 resolves a "PAL" resource by namespaced name); arg2
+// is the level/name string spliced into the format. Reaches the destination
+// registry through this->m_4->m_18: Lookup() (FUN_005b8008, +0x10 hash sub-table)
+// probes whether the palette is already present, and virtual slot 9 (+0x24)
+// installs the resolved palette. Only offsets / code bytes are load-bearing;
+// helpers are reloc-masked externals.
+//
+// The destination registry at this->m_4->m_18 is polymorphic: a hash sub-table
+// embedded at +0x10 backs Lookup() (out-param set non-null => already present),
+// and Install (vtable slot 9) takes the resolved palette + two null args.
+struct CPaletteHashTable { // embedded at CPaletteDestRegistry+0x10
+    // FUN_005b8008 __thiscall; writes found value to *out.
+    void Lookup(char* szName, void** out);
+};
+struct CPaletteDestRegistry {
+    virtual void v0();
+    virtual void v1();
+    virtual void v2();
+    virtual void v3();
+    virtual void v4();
+    virtual void v5();
+    virtual void v6();
+    virtual void v7();
+    virtual void v8();
+    virtual int Install(void* res, int a, int b); // slot 9 (+0x24)
+    char m_pad04[0x10 - 0x4];
+    CPaletteHashTable m_10; // +0x10  hash sub-table Lookup runs on
+};
+struct CPaletteDestRoot { // this->m_4 points here; +0x18 is the dest registry
+    char m_pad00[0x18];
+    CPaletteDestRegistry* m_18; // +0x18
+};
+// arg1's source registry: FUN_0053bff0 __thiscall resolves a packed-tag resource
+// ('PAL' = 0x50414c) by namespaced name, returning the resource (0 if absent).
+struct CPaletteSource {
+    void* Resolve(char* szName, int tag); // FUN_0053bff0
+};
+
+// Typed view of `this`: m_4 is the destination registry root. (EngineThisStub is
+// the shared placeholder owner.)
+struct CPaletteOwner {
+    char m_pad00[0x4];
+    CPaletteDestRoot* m_4; // +0x04
+};
+
+// @confidence: high
 // @source: decomp-xref
-// @stub
+// int (BOOL) return: the `!arg1` and already-present guards return literal 0/1
+// (reusing the zeroed eax / `mov eax,1`), and the success path normalizes the
+// Install() return through neg/sbb/neg (`!!x`). A `void` return would tail-merge
+// the bare epilogues and drop the eax=1 tail. The "PAL" key is a packed-tag
+// immediate (0x50414c, not relocated). Lookup() runs on the +0x10 hash sub-table
+// of m_4->m_18; Install is that object's vtable slot 9.
+//
+// @early-stop
+// out-param zero-init scheduling wall (docs/patterns/outparam-zeroinit-scheduling.md):
+// the ONLY residual is retail SINKING `mov [&found],0` past the `lea &found` (lea
+// then store) while cl HOISTS it (store then lea) - identical instruction multiset,
+// one 2-instr permutation, source-invariant under /O2. Logic + all bytes otherwise
+// exact (frame 0x40, epilogues, !!x normalize all match).
 RVA(0x000e2d10, 0xa1)
-void EngineThisStub::LoadGruntzPalette(int, int) {}
+int EngineThisStub::LoadGruntzPalette(int src, int name) {
+    CPaletteOwner* self = (CPaletteOwner*)this;
+    if (!src) {
+        return 0;
+    }
+
+    void* found = 0;
+    self->m_4->m_18->m_10.Lookup((char*)name, &found);
+    if (found) {
+        return 1;
+    }
+
+    char buf[0x40];
+    sprintf(buf, "GRUNTZ_PALETTEZ_%s", (char*)name);
+    void* pal = ((CPaletteSource*)src)->Resolve(buf, 0x50414c);
+    if (!pal) {
+        return 0;
+    }
+    return self->m_4->m_18->Install(pal, 0, 0) != 0;
+}
 
 // @confidence: med
 // @source: string-xref
