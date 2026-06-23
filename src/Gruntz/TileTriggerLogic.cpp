@@ -19,6 +19,10 @@ CTileTriggerLogic::CTileTriggerLogic() {
 
 // Out-of-line stubs anchor the CTileTriggerLogic vftable in this TU (not matched).
 CTileTriggerLogic::~CTileTriggerLogic() {}
+// Scalar-deleting dtor (??_G, slot 0): a compiler-generated thunk wrapping the real
+// ~CTileTriggerLogic cleanup (0x32c bytes - substantial; not reconstructed, so this
+// only NAMES the retail function). MSVC synthesizes ??_G from the virtual dtor above.
+// @rva-symbol: ??_GCTileTriggerLogic@@UAEPAXI@Z 0x00116610 0x32c
 int CTileTriggerLogic::TileLogicVfunc0() {
     return 0;
 }
