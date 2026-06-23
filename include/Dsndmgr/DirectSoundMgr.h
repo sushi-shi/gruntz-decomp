@@ -144,10 +144,10 @@ public:
     int SetPan(long pan);                 // 0x135740  SetPan (caps 0x40)
     long GetPan();                        // 0x1357f0  GetPan
     int SetFrequency(unsigned long freq); // 0x135880  SetFrequency (caps 0x20)
-    int Unlock(void* p1, unsigned long n1, void* p2, unsigned long n2);   // 0x1359c0
-    int GetCurrentPosition(unsigned long* play, unsigned long* write);    // 0x135a20
-    int SetCurrentPosition(unsigned long pos);                            // 0x135a70
-    int GetFormat(void* fmt, unsigned long size, unsigned long* written); // 0x135ac0
+    int Unlock(void* p1, unsigned long n1, void* p2, unsigned long n2);         // 0x1359c0
+    int GetCurrentPosition(unsigned long* play, unsigned long* write);          // 0x135a20
+    int SetCurrentPosition(unsigned long pos);                                  // 0x135a70
+    int GetFormat(void* fmt, unsigned long size, unsigned long* written);       // 0x135ac0
     int LockConvert(void* src, unsigned long lockBytes, unsigned long convert); // 0x135f40
 
     // --- device-level wrappers (this = the manager, m_14 = IDirectSound) ------

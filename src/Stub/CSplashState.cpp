@@ -45,7 +45,9 @@ extern "C" char g_emptyString[]; // 0x6293f4
 // GetLength() reads nDataLength out of the CStringData header at m_pszData - 8.
 struct CString {
     char* m_pszData;
-    int GetLength() const { return ((int*)m_pszData)[-2]; }
+    int GetLength() const {
+        return ((int*)m_pszData)[-2];
+    }
 };
 
 // The global asset-root CString whose emptiness gates the load (0x64e25c).
@@ -59,9 +61,9 @@ public:
     int LoadGameAssetNamespaces(int a, int b, int c); // LoadGameAssetNamespaces
 
     char m_pad00[0x4];
-    CSplashView* m_4;   // +0x04 display/view object
+    CSplashView* m_4;     // +0x04 display/view object
     CAssetNamespace* m_8; // +0x08 named-namespace registry root
-    CSplashOwner* m_c;  // +0x0c owner (its m_28 is the sound loader)
+    CSplashOwner* m_c;    // +0x0c owner (its m_28 is the sound loader)
     char m_pad10[0x2c - 0x10];
     CAssetNamespace* m_2c; // +0x2c looked-up STATEZ_SPLASH namespace
 };

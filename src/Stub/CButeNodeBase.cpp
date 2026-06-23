@@ -26,8 +26,8 @@ class CContainerErr {
 public:
     CContainerErr(void* msg);
 
-    void* m_vtbl;  // +0x00
-    void* m_msg;   // +0x04
+    void* m_vtbl; // +0x00
+    void* m_msg;  // +0x04
 };
 
 // The two derived vtables re-stamped by the ctor. Reloc-masked file-scope
@@ -48,7 +48,7 @@ public:
     void* m_4;    // +0x04  desc
     short m_8;    // +0x08  (WORD)n
     char m_pada[2];
-    int m_c;      // +0x0c
+    int m_c; // +0x0c
 };
 
 // CButeNodeBase layout:
@@ -61,9 +61,9 @@ public:
     CButeNodeBase(void* desc, int n);
 
     CButeNodeEntry m_entry; // +0x08 (0x10 bytes -> ends at +0x18)
-    int m_18;  // +0x18
+    int m_18;               // +0x18
     char m_pad1c[0x28 - 0x1c];
-    int m_28;  // +0x28
+    int m_28; // +0x28
 };
 
 // @early-stop

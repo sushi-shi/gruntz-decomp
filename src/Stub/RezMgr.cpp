@@ -30,7 +30,7 @@ public:
 private:
     // External no-body __thiscall callees (call rel32 -> reloc-masked).
     void SpinWaitUntil(int target); // @0x13dec0  busy-waits ~target ms past now
-    void InitTimeFields(int reset);  // @0x13de70  zero m_20, sample m_24, arm m_18
+    void InitTimeFields(int reset); // @0x13de70  zero m_20, sample m_24, arm m_18
 
     char m_pad00[0x18];
     int m_18; // +0x18  smoothed frame count (m_20/2 every ~2s window)

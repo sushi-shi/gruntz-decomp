@@ -362,7 +362,7 @@ void EngineLabelBacklog::Stub_01fd70() {}
 // to the shared `mov eax,1; ret` tail (return 1), the m_2c==0 / spr==0 / frame==0
 // guards `return 0` (reused zeroed eax). A void return would tail-merge the bare
 // epilogues and drop the eax=1 tail.
-struct CChatBoxFrame {                // the looked-up "GAME_CHATBOX" sprite set
+struct CChatBoxFrame { // the looked-up "GAME_CHATBOX" sprite set
     char m_pad00[0x14];
     void** m_14; // +0x14  frame-entry array
     char m_pad18[0x64 - 0x18];
@@ -388,10 +388,10 @@ struct CChatBoxDcSrc {
     struct CChatBoxDcVtbl* m_vptr;
 };
 struct CChatBoxDcVtbl {
-    void* s0[0x11];                            // slots 0..16
+    void* s0[0x11];                                   // slots 0..16
     void(__stdcall* GetDC)(CChatBoxDcSrc*, HDC* out); // slot 17 == +0x44
-    void* s18[0x68 / 4 - 0x12];                // slots 18..25
-    void(__stdcall* Done)(CChatBoxDcSrc*, HDC); // slot 26 == +0x68
+    void* s18[0x68 / 4 - 0x12];                       // slots 18..25
+    void(__stdcall* Done)(CChatBoxDcSrc*, HDC);       // slot 26 == +0x68
 };
 struct CChatBoxDcHost { // arg1->m_2c points here
     char m_pad00[0x8];
@@ -411,11 +411,11 @@ struct CChatBoxTextHost {
 // the render + text-stamp, m_8 the mode flag, m_10/m_14 source pointers, m_18
 // the registry root. (EngineThisStub is the shared placeholder owner.)
 struct CChatBoxOwner {
-    char* m_0;  // +0x00
-    char* m_4;  // +0x04
-    int m_8;    // +0x08  mode (==3 selects alternate set)
+    char* m_0; // +0x00
+    char* m_4; // +0x04
+    int m_8;   // +0x08  mode (==3 selects alternate set)
     char m_pad0c[0x10 - 0xc];
-    void* m_10; // +0x10
+    void* m_10;             // +0x10
     CChatBoxTextHost* m_14; // +0x14
     CChatBoxRegRoot* m_18;  // +0x18
 };
@@ -518,42 +518,42 @@ void EngineLabelBacklog::LoadCheatConfig() {}
 // The "STATEZ_CREDITZ" registered object (m_2c): same Register source as
 // CHelpState (FUN_0053c030). FindSet/FindSubset/Resolve/IsLoaded below are the
 // reloc-masked __thiscall helpers off it / its sub-entries.
-struct CCreditzSubEntry {                 // a music sub-entry ("PLAY"/"MONOLITH")
-    int IsLoaded();                       // FUN_00539960 __thiscall, ret BOOL/value
+struct CCreditzSubEntry { // a music sub-entry ("PLAY"/"MONOLITH")
+    int IsLoaded();       // FUN_00539960 __thiscall, ret BOOL/value
     char m_pad00[0xc];
-    void* m_c;                            // +0x0c
+    void* m_c; // +0x0c
 };
-struct CCreditzMusicSet {                 // the looked-up "MIDIZ" set (m_2c->FindSet)
+struct CCreditzMusicSet { // the looked-up "MIDIZ" set (m_2c->FindSet)
     // FUN_0053a000 __thiscall: resolve a named sub-entry under a packed tag.
     CCreditzSubEntry* Resolve(char* szName, int tag);
 };
-struct CCreditzRegObj {                   // the registered STATEZ_CREDITZ object (m_2c)
-    void* FindSoundSet(char* szName);     // FUN_0053a230 __thiscall, ret set ptr
-    void* FindMusicSet(char* szName);     // FUN_0053bae0 __thiscall, ret set ptr
+struct CCreditzRegObj {               // the registered STATEZ_CREDITZ object (m_2c)
+    void* FindSoundSet(char* szName); // FUN_0053a230 __thiscall, ret set ptr
+    void* FindMusicSet(char* szName); // FUN_0053bae0 __thiscall, ret set ptr
 };
-struct CCreditzSoundRegistry {            // this->m_c->+0x28 (the LoadLevelSounds registry)
+struct CCreditzSoundRegistry { // this->m_c->+0x28 (the LoadLevelSounds registry)
     void Install(void* set, char* szName, char* szKey); // FUN_00557ee0 __thiscall
 };
-struct CCreditzImageRegistry {            // this->m_4->+0x48
+struct CCreditzImageRegistry { // this->m_4->+0x48
     // FUN_00538670 __thiscall: install a resolved sub-entry under a name.
     void Install3(void* res, void* host, char* szName);
 };
-struct CCreditzStateCore {                // this->m_c->m_4 (the ready/init pump)
-    int IsReady();                        // FUN_00558d20 __thiscall, ret BOOL
-    int Init(int a, int flags);           // FUN_00558cb0 __thiscall, ret BOOL
+struct CCreditzStateCore {      // this->m_c->m_4 (the ready/init pump)
+    int IsReady();              // FUN_00558d20 __thiscall, ret BOOL
+    int Init(int a, int flags); // FUN_00558cb0 __thiscall, ret BOOL
 };
-struct CCreditzImageRoot {                // this->m_4 points here; +0x48 is the registry
+struct CCreditzImageRoot { // this->m_4 points here; +0x48 is the registry
     char m_pad00[0x48];
-    CCreditzImageRegistry* m_48;          // +0x48
+    CCreditzImageRegistry* m_48; // +0x48
 };
-struct CCreditzSoundMgr {                 // this->m_c points here
+struct CCreditzSoundMgr { // this->m_c points here
     char m_pad00[0x4];
-    CCreditzStateCore* m_4;               // +0x04
+    CCreditzStateCore* m_4; // +0x04
     char m_pad08[0x28 - 0x8];
-    CCreditzSoundRegistry* m_28;          // +0x28
+    CCreditzSoundRegistry* m_28; // +0x28
 };
 struct CCreditzRegSet {                   // this->m_8 points here
-    CCreditzRegObj* Register(char* name);  // FUN_0053c030 __thiscall (CHelpState idiom)
+    CCreditzRegObj* Register(char* name); // FUN_0053c030 __thiscall (CHelpState idiom)
 };
 // Two owner methods reached at the tail, both __thiscall(this) no args:
 // the title/cursor setup (RVA 0x39a60) and the state-finish (0x439c40).
@@ -563,21 +563,21 @@ struct CCreditzRegSet {                   // this->m_8 points here
 // (EngineThisStub is the shared placeholder owner.)
 struct CCreditzOwner {
     char m_pad00[0x4];
-    CCreditzImageRoot* m_4;   // +0x04
-    CCreditzRegSet* m_8;      // +0x08
-    CCreditzSoundMgr* m_c;    // +0x0c
+    CCreditzImageRoot* m_4; // +0x04
+    CCreditzRegSet* m_8;    // +0x08
+    CCreditzSoundMgr* m_c;  // +0x0c
     char m_pad10[0x2c - 0x10];
-    CCreditzRegObj* m_2c;     // +0x2c
+    CCreditzRegObj* m_2c; // +0x2c
     char m_pad30[0x1b4 - 0x30];
-    int m_1b4;                // +0x1b4
-    int m_1b8;                // +0x1b8
-    int m_1bc;                // +0x1bc
-    int m_1c0;                // +0x1c0
-    int m_1c4;                // +0x1c4
+    int m_1b4; // +0x1b4
+    int m_1b8; // +0x1b8
+    int m_1bc; // +0x1bc
+    int m_1c0; // +0x1c0
+    int m_1c4; // +0x1c4
     char m_pad1c8[0x20c - 0x1c8];
-    int m_20c;                // +0x20c
-    void SetupTitle();        // RVA 0x39a60 __thiscall
-    int FinishState();        // RVA 0x439c40 __thiscall
+    int m_20c;                                  // +0x20c
+    void SetupTitle();                          // RVA 0x39a60 __thiscall
+    int FinishState();                          // RVA 0x439c40 __thiscall
     int LoadGameAssetNamespaces(int, int, int); // base loader; reloc-masked near call
 };
 
@@ -1150,16 +1150,16 @@ int EngineThisStub::LoadActionTileSprites(int force) {
 // bail; otherwise register the "LEVEL" namespace (key "_"), look up the level's
 // "SOUNDZ" set off this->m_28, and install it (key "_"). No severus reset here.
 // Only offsets / code bytes are load-bearing; helpers are reloc-masked externals.
-struct CSoundResRegistry {           // this->m_c->+0x28 points here
-    int Has(char* szName);                                 // FUN_004583c0 __thiscall, ret found
-    void Register(char* szName, char* szKey);              // FUN_00557c70 __thiscall
-    void Install(void* set, char* szName, char* szKey);    // FUN_00557ee0 __thiscall
+struct CSoundResRegistry {                              // this->m_c->+0x28 points here
+    int Has(char* szName);                              // FUN_004583c0 __thiscall, ret found
+    void Register(char* szName, char* szKey);           // FUN_00557c70 __thiscall
+    void Install(void* set, char* szName, char* szKey); // FUN_00557ee0 __thiscall
 };
 struct CSoundResMgr { // this->m_c points here; +0x28 is the sound registry
     char m_pad00[0x28];
     CSoundResRegistry* m_28; // +0x28
 };
-struct CSoundSetSource {               // this->m_28 points here
+struct CSoundSetSource {                // this->m_28 points here
     void* LookupSoundSet(char* szName); // FUN_0053bae0 __thiscall, ret set ptr
 };
 

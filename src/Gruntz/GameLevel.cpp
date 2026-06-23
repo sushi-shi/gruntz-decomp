@@ -106,8 +106,8 @@ struct PlaneGeom {
     int extentX; // +0x48
     int extentY; // +0x4c
     char pad_50[0x70 - 0x50];
-    int viewW; // +0x70
-    int viewH; // +0x74
+    int viewW;   // +0x70
+    int viewH;   // +0x74
     int anchorX; // +0x78
     int anchorY; // +0x7c
     char pad_80[0x84 - 0x80];
@@ -649,17 +649,17 @@ CImageSet* CGameLevel::ReadImageSet(void* record) {
     }
     CImageSet* set;
     switch (*(int*)record) {
-    case 1:
-        set = (CImageSet*)new CImageSet1;
-        break;
-    case 2:
-        set = (CImageSet*)new CImageSet2;
-        break;
-    case 3:
-        set = (CImageSet*)new CImageSet3;
-        break;
-    default:
-        return 0;
+        case 1:
+            set = (CImageSet*)new CImageSet1;
+            break;
+        case 2:
+            set = (CImageSet*)new CImageSet2;
+            break;
+        case 3:
+            set = (CImageSet*)new CImageSet3;
+            break;
+        default:
+            return 0;
     }
 
     if (set->Parse(record) != 0) {

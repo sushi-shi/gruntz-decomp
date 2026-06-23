@@ -83,7 +83,7 @@ public:
     CHazHost* m_10;     // +0x10  level/geometry host
     CHazAnimNode* m_14; // +0x14  anim-set node holder
     char m_pad18[0x30 - 0x18];
-    void* m_30;            // +0x30  previous anim-set node cache
+    void* m_30; // +0x30  previous anim-set node cache
     char m_pad34[0x38 - 0x34];
     CHazAnimPlayer* m_38; // +0x38  animation player
     char m_pad3c[0x40 - 0x3c];

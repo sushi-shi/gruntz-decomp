@@ -123,16 +123,16 @@ public:
     int LoadAttributes2();
 
     // tail helpers (engine, __thiscall).
-    void NotifyFortUnderAttack();      // 0x45270
-    void ResolveIdleAnimation();       // 0x45960
-    void ResolveBattlecryAnimation();  // 0x45b60
-    void RaiseBattleAlert();           // 0x457b0  (panic-radius alert variant)
-    void ResolveMovingAnimation();     // 0x45100
+    void NotifyFortUnderAttack();     // 0x45270
+    void ResolveIdleAnimation();      // 0x45960
+    void ResolveBattlecryAnimation(); // 0x45b60
+    void RaiseBattleAlert();          // 0x457b0  (panic-radius alert variant)
+    void ResolveMovingAnimation();    // 0x45100
 
     char m_pad00[0x10];
-    CWarlordOwner* m_10;        // +0x10  owner/state sub-object
+    CWarlordOwner* m_10; // +0x10  owner/state sub-object
     char m_pad14[0x38 - 0x14];
-    CWarlordAnimPlayer* m_38;  // +0x38  animation player
+    CWarlordAnimPlayer* m_38; // +0x38  animation player
     char m_pad3c[0x88 - 0x3c];
     int m_88; // +0x88  cooldown stamp lo (64-bit with m_8c)
     int m_8c; // +0x8c  cooldown stamp hi
