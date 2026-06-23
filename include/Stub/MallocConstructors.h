@@ -6,18 +6,6 @@
 // allocation site (SIZE()); a real RTTI name where the class wasn't defined
 // elsewhere, else a MallocCtor_<rva> placeholder (no recoverable name).
 
-// zPTree ctor @ 0x0016e9c0 (size TBD)
-class zPTree {
-public:
-    zPTree();
-};
-
-// non-RTTI ctor @ 0x0013c0c0 (size TBD)
-class MallocCtor_13c0c0 {
-public:
-    MallocCtor_13c0c0();
-};
-
 // non-RTTI ctor @ 0x0015b390, sizeof 0x1fc
 class MallocCtor_15b390 {
 public:

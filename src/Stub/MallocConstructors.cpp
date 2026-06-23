@@ -3,12 +3,6 @@
 // MallocConstructors.cpp - constructor bodies for MallocConstructors.h (RVA-labeled
 // so they delink/diff against retail).
 
-RVA(0x0016e9c0, 0x45)
-zPTree::zPTree() {}
-
-RVA(0x0013c0c0, 0x14b)
-MallocCtor_13c0c0::MallocCtor_13c0c0() {}
-
 RVA(0x0015b390, 0x128)
 MallocCtor_15b390::MallocCtor_15b390() {}
 
@@ -101,8 +95,3 @@ MallocCtor_17f530::MallocCtor_17f530() {}
 
 RVA(0x00180410, 0x19)
 MallocCtor_180410::MallocCtor_180410() {}
-
-// ctors whose class is already defined elsewhere - label them in that TU:
-//   CTileTriggerLogic::ctor @ 0x00116610
-//   CGameWnd::ctor @ 0x00094d80
-//   CStatusBarItem::ctor @ 0x00100620

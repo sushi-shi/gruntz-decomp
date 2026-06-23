@@ -29,6 +29,7 @@ LIBCSV = REPO / "config/library_labels.csv"
 VTABS = REPO / "ctor-survey/vtables.csv"
 SRC = REPO / "src"
 OPNEW = 0x1b9b46
+ODEL = 0x1b9b82                                   # operator delete (frees `this`)
 SANE = 0x40000
 LIB = set("""CWinApp CWinThread CCmdTarget CCmdUI CTestCmdUI CCommandLineInfo
 CRecentFileList CNoTrackObject CObject CWnd CFrameWnd CDialog CView CCtrlView
@@ -140,6 +141,16 @@ def main():
                 break
         return False
 
+    def calls_opdelete(rva):
+        # a scalar deleting destructor frees `this` (it ALSO returns this, so the
+        # returns-this test alone can't tell it from a ctor - operator delete can).
+        b, e = rva - trva, rva - trva + fsize.get(rva, 0)
+        for p in range(b, e - 4):
+            if 0 <= p < n - 4 and tb[p] == 0xE8 and \
+                    resolve((trva + p + 5) + struct.unpack_from("<i", tb, p + 1)[0]) == ODEL:
+                return True
+        return False
+
     def is_game_ctor(rva):
         if rva not in fsize or func_of(rva) != rva or fsize[rva] < 8:
             return None
@@ -148,7 +159,9 @@ def main():
         if cls in LIB:
             return None                          # library ctor -> drop
         if not returns_this(rva):
-            return None                          # dtor / not a ctor (returns void)
+            return None                          # base/complete dtor (returns void)
+        if calls_opdelete(rva):
+            return None                          # SCALAR DELETING DTOR (returns this but frees)
         return cls or ""                         # game ctor (RTTI class name or non-RTTI "")
 
     # ---- seed 1: alloc-adjacency call-afters ----
