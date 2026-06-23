@@ -18,7 +18,7 @@ public:
 // m_4/m_8, forces the cursor hidden, registers the "STATEZ_HELP" namespace
 // through m_8 (cached at m_2c), then pumps a fixed message burst through
 // m_4->m_4. Only offsets / code bytes are load-bearing.
-struct CHelpAssetSet {           // m_8 points here
+struct CHelpAssetSet {          // m_8 points here
     void* Register(char* name); // FUN_0053c030, __thiscall, returns the registered object
 };
 struct CHelpMsgPump {          // m_4->m_4 points here
@@ -109,9 +109,9 @@ struct EngineThisStub {
     void LoadScrollSpeedOptions();
     void LoadSBITextEdges(int);
     void LoadWarlordSprites(int, int);
-    void LoadActionTileSprites(int);
+    int LoadActionTileSprites(int);
     void LoadLevelSounds(int);
-    void LoadLevelImages(int);
+    int LoadLevelImages(int);
     void BuildMusicCategoryTable(int);
     void BuildWorldLevelPath(int);
     void LoadLevelEffectSprites();
@@ -777,8 +777,8 @@ void EngineThisStub::LoadWarlordSprites(int, int) {}
 // (FUN_00555550, returns found-flag), Register() adds a namespace
 // (FUN_00555360), and a virtual slot (index 18) installs the loaded TILEZ set.
 struct CActionResRegistry {
-    int Has(char* szName);                        // FUN_00555550 __thiscall, ret found
-    void Register(char* szName, char* szKey);     // FUN_00555360 __thiscall
+    int Has(char* szName);                    // FUN_00555550 __thiscall, ret found
+    void Register(char* szName, char* szKey); // FUN_00555360 __thiscall
     virtual void v0();
     virtual void v1();
     virtual void v2();
@@ -803,7 +803,7 @@ struct CActionResMgr { // this->m_c points here; +0x10 is the registry
     char m_pad00[0x10];
     CActionResRegistry* m_10; // +0x10
 };
-struct CTileSetSource { // this->m_28 points here
+struct CTileSetSource {                // this->m_28 points here
     void* LookupTileSet(char* szName); // FUN_0053bae0 __thiscall, ret set ptr
 };
 DATA(0x002bf37c)
@@ -819,26 +819,24 @@ struct CActionTileOwner {
     CTileSetSource* m_28; // +0x28
 };
 
-// @confidence: med
+// @confidence: high
 // @source: decomp-xref
-// @early-stop
-// Code bytes 100% byte-identical to retail (verified instr-by-instr via
-// llvm-objdump base vs target); residual is the reloc-masked plateau - every
-// referent (Has/Register/LookupTileSet engine helpers FUN_00555550/00555360/
-// 0053bae0, the +0x48 virtual install slot, the ACTION/BACK/TILEZ/"_" string
-// literals, g_severusCounterA, g_emptyString) maps to an UNNAMED FUN_/DAT_
-// placeholder on the target side, so the relocs can never pair by name -> NOT
-// exact. Same plateau as the sibling CSplashState::LoadSounds. The typed-view-
-// of-`this` (CActionTileOwner) is what steers cl to retail's edx (not esi)
-// register for the final m_c load. See docs/patterns/external-nobody-callee.md.
+// Byte-exact (100%). The real return type is int (BOOL): each guard is `return 0`
+// reusing the just-zeroed eax (no normalizing mov) and the success path is
+// `mov eax,1` - declaring the function `void` tail-merges the identical bare
+// epilogues and never emits `mov eax,1`, capping ~85%; the int return reproduces
+// retail's inline per-site epilogues + the eax=1 tail. The typed-view-of-`this`
+// (CActionTileOwner) steers cl to retail's edx (not esi) for the final m_c load.
+// (Ghidra demangled the symbol as `...QAEXH@Z` = void from the relocs; the
+// RVA-keyed delinker still pairs the int-return body at this address.)
 RVA(0x000db600, 0x8f)
-void EngineThisStub::LoadActionTileSprites(int force) {
+int EngineThisStub::LoadActionTileSprites(int force) {
     CActionTileOwner* self = (CActionTileOwner*)this;
     if (!self->m_c) {
-        return;
+        return 0;
     }
     if (!force && self->m_c->m_10->Has("ACTION")) {
-        return;
+        return 1;
     }
 
     self->m_c->m_10->Register("ACTION", g_emptyString);
@@ -847,9 +845,10 @@ void EngineThisStub::LoadActionTileSprites(int force) {
 
     void* tiles = self->m_28->LookupTileSet("TILEZ");
     if (!tiles) {
-        return;
+        return 0;
     }
     self->m_c->m_10->InstallTileSet(tiles, g_emptyString, "_");
+    return 1;
 }
 
 // @confidence: med
@@ -858,11 +857,47 @@ void EngineThisStub::LoadActionTileSprites(int force) {
 RVA(0x000db6c0, 0x70)
 void EngineThisStub::LoadLevelSounds(int) {}
 
-// @confidence: med
+// ---------------------------------------------------------------------------
+// EngineThisStub::LoadLevelImages - per-level IMAGEZ/LEVEL asset loader. Sibling
+// of LoadActionTileSprites above; same registry idiom, different namespace keys
+// ("LEVEL"/"IMAGEZ"/"_") and a SINGLE Register (no second "BACK" namespace).
+// Reaches the registry through this->m_c (->m_10): if not forced (arg1==0) and
+// "LEVEL" is already present, bail; otherwise register the "LEVEL" namespace
+// (key "_"), reset the severus counter, look up the level's "IMAGEZ" set off
+// this->m_28, and wire it in through the +0x48 virtual slot. Reuses the typed
+// view-of-`this` (CActionTileOwner) from the sibling. Only offsets / code bytes
+// are load-bearing; helpers are reloc-masked externals.
+//
+// @confidence: high
 // @source: decomp-xref
-// @stub
+// Byte-exact (100%). The real return type is int (BOOL): each guard is `return 0`
+// reusing the just-zeroed eax (no normalizing mov) and the success path is
+// `mov eax,1` - declaring the function `void` (as the sibling does) tail-merges
+// the three identical bare epilogues and never emits `mov eax,1`, capping ~82%;
+// the int return reproduces retail's inline per-site epilogues + the eax=1 tail.
+// (Ghidra demangled the symbol as `...QAEXH@Z` = void from the relocs alone; the
+// RVA-keyed delinker still pairs the int-return body at this address.)
 RVA(0x000db7e0, 0x84)
-void EngineThisStub::LoadLevelImages(int) {}
+int EngineThisStub::LoadLevelImages(int force) {
+    CActionTileOwner* self = (CActionTileOwner*)this;
+    if (!self->m_c) {
+        return 0;
+    }
+    if (!force && self->m_c->m_10->Has("LEVEL")) {
+        return 1;
+    }
+
+    self->m_c->m_10->Register("LEVEL", "_");
+    g_severusCounterA = 0;
+
+    void* images = self->m_28->LookupTileSet("IMAGEZ");
+    if (!images) {
+        return 0;
+    }
+    self->m_c->m_10->InstallTileSet(images, "LEVEL", "_");
+    g_severusCounterA = 0;
+    return 1;
+}
 
 // @confidence: med
 // @source: string-xref
