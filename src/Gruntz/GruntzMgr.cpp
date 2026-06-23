@@ -86,6 +86,37 @@ void CGruntzMgr::ReportError(WPARAM wParam, LPARAM lParam) {
 }
 
 // -------------------------------------------------------------------------
+// CGruntzMgr::RestoreVideoMode  (__thiscall; `ret 4`; retail FUN_0048ddd0)
+// Re-asserts the standard 640x480 display mode. If the live mode (m_8c x m_90)
+// is already 640x480 it is a no-op success - and when `save` is set it also
+// records the mode into the saved/last-good pair (m_94/m_98). Otherwise it
+// drives SetVideoMode(640, 480, save); on failure it surfaces a (0x8008, 0x438)
+// error and returns 0.
+// @early-stop
+// constant-CSE/copy-prop wall: retail uses immediate cmp operands + re-loads the
+// fields fresh in the save block (no constant propagation); MSVC 5.0 here either
+// hoists 0x280/0x1e0 into entry registers (direct-member compare) or copy-props
+// the known value into the m_94/m_98 store (local-copy compare). Logic is exact;
+// see docs/patterns/constant-cse-immediate-vs-hoist.md.
+RVA(0x0008ddd0, 0x7e)
+int CGruntzMgr::RestoreVideoMode(int save) {
+    int w = m_8c;
+    int h = m_90;
+    if (w == 0x280 && h == 0x1e0) {
+        if (save) {
+            m_94 = w;
+            m_98 = h;
+        }
+        return 1;
+    }
+    if (SetVideoMode(0x280, 0x1e0, save)) {
+        return 1;
+    }
+    ReportError(0x8008, 0x438);
+    return 0;
+}
+
+// -------------------------------------------------------------------------
 // CGruntzMgr::GetGruntzDriveLetter  (__thiscall)
 // Returns the CD-ROM drive letter holding the Gruntz disc, memoised in the
 // pair (m_d0 = letter, m_d4 = probed-flag): once probed, return the cached

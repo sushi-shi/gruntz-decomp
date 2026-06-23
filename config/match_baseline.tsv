@@ -36,7 +36,7 @@ deflate	6	6
 dialogs	6	5
 directinputmgr2	8	8
 directsoundmgr	18	15
-engine_label_stubs	565	115
+engine_label_stubs	564	115
 filestream	13	9
 font	16	9
 fontconfig	1	0
@@ -50,7 +50,7 @@ gamewnd	5	4
 grunt	19	0
 gruntzapp	10	8
 gruntzcommand	3	3
-gruntzmgr	8	5
+gruntzmgr	9	5
 gruntzwnd	2	1
 iconloaders	4	1
 image	23	13
@@ -403,7 +403,6 @@ engine_label_stubs	?DrawLabel@DrawHost2_164420@ApiCallerStubs@@QAEXPAUtagRECT@@P
 engine_label_stubs	?DrawSaveGameMenu@EngineLabelBacklog@@YAXXZ	0.3436	0.3436	1	cpp:45e65336d4b5	0xe3f40
 engine_label_stubs	?EndParse@RemusParseSource@@QAEXXZ	8.3333	8.3333	1	cpp:2262ffc5f902	0x1399d0
 engine_label_stubs	?ErrorThunk_08dd80@CDirectDrawMgr@@QAEXXZ	5.0000	5.0000	1	cpp:45e65336d4b5	0x8dd80
-engine_label_stubs	?ErrorThunk_08ddd0@CDirectDrawMgr@@QAEXH@Z	2.9412	2.9412	1	cpp:6bf52155264d	0x8ddd0
 engine_label_stubs	?ErrorThunk_135f40@DirectSoundMgr@@QAEXHHH@Z	0.6803	0.6803	1	cpp:6bf52155264d	0x135f40
 engine_label_stubs	?Finalize@CStatusBarItem2@@QAEHXZ	95.5172	95.5172	1	cpp:2262ffc5f902	0x136270
 engine_label_stubs	?Find@CButeTree@@QAEPAXPBD@Z	1.8868	1.8868	1	cpp:0f6a941a1e75	0x16d190
@@ -967,6 +966,7 @@ gruntzmgr	?GetGruntzDriveLetter@CGruntzMgr@@QAEDXZ	100.0000	100.0000	3	382c23c5c
 gruntzmgr	?InitializeLobbyConnectionSettings@CGruntzMgr@@QAEHXZ	99.5588	99.5588	3	69192685512f	0x8eca0
 gruntzmgr	?PerFrameTick@CGruntzMgr@@QAEXXZ	100.0000	100.0000	3	dbc31ce0c39a	0x8f620
 gruntzmgr	?ReportError@CGruntzMgr@@QAEXIJ@Z	100.0000	100.0000	3	540078744175	0x8dc60
+gruntzmgr	?RestoreVideoMode@CGruntzMgr@@QAEHH@Z	61.1471	61.1471	1	991fd91344b8	0x8ddd0
 gruntzwnd	??0CGruntzWnd@@QAE@XZ	100.0000	100.0000	5	cce3fed8f7f8	0x94640
 gruntzwnd	?Stub_094670@CGruntzWnd@@QAEXXZ	3.6364	3.6364	4	efb99feddc33	0x94670
 iconloaders	?BuildBootyPerfectAnimation@EngineLabelBacklog@@QAEHXZ	100.0000	100.0000	3	ee16f7b6695c	0x1c070
