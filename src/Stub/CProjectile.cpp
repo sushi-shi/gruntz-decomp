@@ -3,7 +3,6 @@
 
 #include <Stub/CProjectile.h>
 
-
 // @confidence: med
 // @source: rtti-vptr
 // @stub

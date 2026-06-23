@@ -3,7 +3,6 @@
 
 #include <Stub/CToyPeek.h>
 
-
 // @confidence: med
 // @source: rtti-vptr
 // @stub

@@ -3,7 +3,6 @@
 
 #include <Stub/CGuardPoint.h>
 
-
 // @confidence: med
 // @source: rtti-vptr
 // @stub

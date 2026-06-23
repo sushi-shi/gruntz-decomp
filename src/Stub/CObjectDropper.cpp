@@ -3,7 +3,6 @@
 
 #include <Stub/CObjectDropper.h>
 
-
 // @confidence: med
 // @source: rtti-vptr
 // @stub

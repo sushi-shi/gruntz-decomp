@@ -3,7 +3,6 @@
 
 #include <Stub/CExitTrigger.h>
 
-
 // @confidence: med
 // @source: rtti-vptr
 // @stub

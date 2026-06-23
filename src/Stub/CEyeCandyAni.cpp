@@ -3,7 +3,6 @@
 
 #include <Stub/CEyeCandyAni.h>
 
-
 // @confidence: med
 // @source: rtti-vptr
 // @stub

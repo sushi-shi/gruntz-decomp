@@ -3,7 +3,6 @@
 
 #include <Stub/CRandomAmbientSound.h>
 
-
 // @confidence: high
 // @source: rtti-vptr
 // @stub

@@ -3,7 +3,6 @@
 
 #include <Stub/CSpotLight.h>
 
-
 // @confidence: med
 // @source: rtti-vptr
 // @stub

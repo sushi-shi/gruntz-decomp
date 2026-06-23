@@ -3,7 +3,6 @@
 
 #include <Stub/CGruntPuddle.h>
 
-
 // @confidence: med
 // @source: rtti-vptr
 // @stub

@@ -6,7 +6,6 @@
 
 #include <Stub/CTeleporter.h>
 
-
 // @confidence: med
 // @source: decomp-xref
 // @stub

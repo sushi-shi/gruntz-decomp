@@ -3,7 +3,6 @@
 
 #include <Stub/CDroppedObject.h>
 
-
 // @confidence: med
 // @source: rtti-vptr
 // @stub

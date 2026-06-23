@@ -3,7 +3,6 @@
 
 #include <Stub/CCheckpointTrigger.h>
 
-
 // @confidence: med
 // @source: rtti-vptr
 // @stub

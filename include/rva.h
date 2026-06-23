@@ -75,7 +75,7 @@
 // by __LINE__ so aggregating many SIZE()s into one TU (All.cpp) cannot clash.
 #define GRUNTZ_SIZE_CAT_(a, b) a##b
 #define GRUNTZ_SIZE_CAT(a, b) GRUNTZ_SIZE_CAT_(a, b)
-#define SIZE(type, bytes) \
+#define SIZE(type, bytes)                                                                          \
     typedef char GRUNTZ_SIZE_CAT(gruntz_size_check_, __LINE__)[(sizeof(type) == (bytes)) ? 1 : -1]
 
 #endif

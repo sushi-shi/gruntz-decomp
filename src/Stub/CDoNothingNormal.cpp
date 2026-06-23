@@ -3,7 +3,6 @@
 
 #include <Stub/CDoNothingNormal.h>
 
-
 // @confidence: high
 // @source: rtti-vptr
 // @stub

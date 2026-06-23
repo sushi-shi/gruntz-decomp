@@ -3,7 +3,6 @@
 
 #include <Stub/CCursorSnapSprite.h>
 
-
 // @confidence: med
 // @source: rtti-vptr
 // @stub

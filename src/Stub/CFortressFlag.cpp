@@ -3,7 +3,6 @@
 
 #include <Stub/CFortressFlag.h>
 
-
 // @confidence: med
 // @source: rtti-vptr
 // @stub

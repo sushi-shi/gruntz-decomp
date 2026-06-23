@@ -3,7 +3,6 @@
 
 #include <Stub/CBrickz.h>
 
-
 // @confidence: med
 // @source: decomp-xref
 // @stub

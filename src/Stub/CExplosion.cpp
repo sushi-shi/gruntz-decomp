@@ -3,7 +3,6 @@
 
 #include <Stub/CExplosion.h>
 
-
 // @confidence: med
 // @source: rtti-vptr
 // @stub

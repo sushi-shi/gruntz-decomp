@@ -3,7 +3,6 @@
 
 #include <Stub/CDoNothing.h>
 
-
 // @confidence: med
 // @source: rtti-vptr
 // @stub

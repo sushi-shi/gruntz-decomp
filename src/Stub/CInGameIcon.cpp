@@ -3,7 +3,6 @@
 
 #include <Stub/CInGameIcon.h>
 
-
 // @confidence: med
 // @source: rtti-vptr
 // @stub

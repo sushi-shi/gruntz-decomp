@@ -3,7 +3,6 @@
 
 #include <Stub/CActionArea.h>
 
-
 // @confidence: med
 // @source: rtti-vptr
 // @stub

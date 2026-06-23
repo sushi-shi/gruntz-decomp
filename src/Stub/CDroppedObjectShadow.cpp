@@ -3,7 +3,6 @@
 
 #include <Stub/CDroppedObjectShadow.h>
 
-
 // @confidence: high
 // @source: decomp-xref
 // @stub

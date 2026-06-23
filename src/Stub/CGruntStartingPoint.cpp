@@ -3,7 +3,6 @@
 
 #include <Stub/CGruntStartingPoint.h>
 
-
 // @confidence: med
 // @source: rtti-vptr
 // @stub

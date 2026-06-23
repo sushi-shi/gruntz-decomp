@@ -49,4 +49,3 @@ void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_115f60() {}
 // @stub
 RVA(0x116320, 0x66)
 void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_116320() {}
-

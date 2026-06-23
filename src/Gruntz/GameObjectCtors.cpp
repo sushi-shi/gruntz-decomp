@@ -73,9 +73,9 @@ struct CGruntSpriteBase {
     CSpriteObj* m_10;    // +0x10
     CSpriteObjAux* m_14; // +0x14
     char m_pad18[0x30 - 0x18];
-    void* m_30;          // +0x30
+    void* m_30; // +0x30
     char m_pad34[0x38 - 0x34];
-    CSpriteObj* m_38;    // +0x38
+    CSpriteObj* m_38; // +0x38
 };
 
 class CGruntStaminaSprite : public CGruntSpriteBase {
@@ -202,11 +202,11 @@ struct CHazardObj {
 // +0x30 (the spotlight factory, for the UFO) are read.
 struct CHazardRegInner {
     char m_pad00[0x08];
-    int m_08;   // +0x08 -> the factory `this` for Spawn
+    int m_08; // +0x08 -> the factory `this` for Spawn
 };
 struct CHazardRegSub {
     char m_pad00[0x28];
-    int m_28;          // +0x28
+    int m_28; // +0x28
     char m_pad2c[0x30 - 0x2c];
     CHazardRegInner* m_30; // +0x30
 };
@@ -234,7 +234,7 @@ struct CSpotLightSub {
         void* s0[4];
         void (*Configure)(CSpotLightSub*, CSpotLight*); // slot +0x10
     };
-    Vtbl* m_vptr;             // +0x00
+    Vtbl* m_vptr; // +0x00
     char m_pad04[0x18 - 0x04];
     CSpotLightSubInner* m_18; // +0x18
 };
@@ -268,10 +268,10 @@ struct CPathHazardBase {
     ~CPathHazardBase(); // out-of-line; unwound on throw
     void* m_vptr;       // +0x00
     char m_pad04[0x10 - 0x04];
-    CHazardObj* m_10;   // +0x10  (== obj)
+    CHazardObj* m_10; // +0x10  (== obj)
     char m_pad14[0x38 - 0x14];
-    CHazardObj* m_38;   // +0x38  (== obj)
-    int m_40;           // +0x40
+    CHazardObj* m_38; // +0x38  (== obj)
+    int m_40;         // +0x40
 };
 
 class CRainCloud : public CPathHazardBase {
@@ -350,5 +350,3 @@ SIZE(CGruntToyTimeSprite, 0x64);
 
 // size 0x64 recovered from operator-new sites (gruntz.analysis.news)
 SIZE(CGruntWingzTimeSprite, 0x64);
-
-

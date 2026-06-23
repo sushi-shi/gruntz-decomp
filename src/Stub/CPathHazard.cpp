@@ -3,7 +3,6 @@
 
 #include <Stub/CPathHazard.h>
 
-
 // CPathHazard_013170 (0x013170) graduated to src/Gruntz/UserLogic.cpp.
 
 // @confidence: med

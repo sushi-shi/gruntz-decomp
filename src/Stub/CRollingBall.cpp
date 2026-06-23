@@ -3,7 +3,6 @@
 
 #include <Stub/CRollingBall.h>
 
-
 // @confidence: med
 // @source: rtti-vptr
 // @stub

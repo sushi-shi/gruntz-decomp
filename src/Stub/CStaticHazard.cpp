@@ -3,7 +3,6 @@
 
 #include <Stub/CStaticHazard.h>
 
-
 // @confidence: med
 // @source: rtti-vptr
 // @stub

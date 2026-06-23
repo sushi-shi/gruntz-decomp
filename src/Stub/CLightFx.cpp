@@ -3,7 +3,6 @@
 
 #include <Stub/CLightFx.h>
 
-
 // @confidence: med
 // @source: rtti-vptr
 // @stub

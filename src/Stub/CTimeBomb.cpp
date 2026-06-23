@@ -3,7 +3,6 @@
 
 #include <Stub/CTimeBomb.h>
 
-
 // @confidence: med
 // @source: rtti-vptr
 // @stub

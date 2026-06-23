@@ -702,12 +702,3 @@ CToobSpikez::CToobSpikez(CGameObject* obj) : CUserLogic(obj) {
         m_10->m_08 |= 0x20000;
     }
 }
-
-
-
-
-
-
-
-
-

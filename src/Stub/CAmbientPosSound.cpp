@@ -3,7 +3,6 @@
 
 #include <Stub/CAmbientPosSound.h>
 
-
 // @confidence: high
 // @source: rtti-vptr
 // @stub

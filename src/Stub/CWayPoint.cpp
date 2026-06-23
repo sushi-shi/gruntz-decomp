@@ -3,7 +3,6 @@
 
 #include <Stub/CWayPoint.h>
 
-
 // @confidence: med
 // @source: rtti-vptr
 // @stub

@@ -3,7 +3,6 @@
 
 #include <Stub/CLevelTime.h>
 
-
 // @confidence: med
 // @source: rtti-vptr
 // @stub
