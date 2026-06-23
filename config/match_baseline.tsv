@@ -36,7 +36,7 @@ deflate	6	6
 dialogs	6	5
 directinputmgr2	8	8
 directsoundmgr	18	15
-engine_label_stubs	565	114
+engine_label_stubs	565	115
 filestream	13	9
 font	16	9
 fontconfig	1	0
@@ -501,7 +501,7 @@ engine_label_stubs	?LoadRollingBallHazardSprites@EngineLabelBacklog@@YAXXZ	0.128
 engine_label_stubs	?LoadSBITextEdges@EngineThisStub@@QAEXH@Z	1.2048	1.2048	1	cpp:6bf52155264d	0xd1710
 engine_label_stubs	?LoadSaveMessageSprite@EngineThisStub@@QAEXXZ	2.2727	2.2727	1	cpp:6bf52155264d	0x92420
 engine_label_stubs	?LoadScrollSpeedOptions@EngineThisStub@@QAEXXZ	0.5000	0.5000	1	cpp:6bf52155264d	0xd12b0
-engine_label_stubs	?LoadSounds@CSplashState@@QAEXHHH@Z	2.0833	2.0833	1	cpp:6bf52155264d	0xf9780
+engine_label_stubs	?LoadSounds@CSplashState@@QAEHHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xf9780
 engine_label_stubs	?LoadStateImages_vfunc8@EngineThisStub@@QAEXXZ	2.2222	2.2222	1	cpp:6bf52155264d	0xa09a0
 engine_label_stubs	?LoadTeleporterGooConfig@EngineThisStub@@QAEXH@Z	0.2262	0.2262	1	cpp:6bf52155264d	0x6eb80
 engine_label_stubs	?LoadTerrainTileSprites@EngineLabelBacklog@@YGXHHHHHH@Z	0.0749	0.0749	1	cpp:6bf52155264d	0x75e90
