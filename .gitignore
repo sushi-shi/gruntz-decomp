@@ -51,6 +51,3 @@
 # ---------------------------------------------------------------------------
 **/__pycache__/
 *.pyc
-ctor-survey-run.txt
-news-run.txt
-ctor-survey/*.csv
