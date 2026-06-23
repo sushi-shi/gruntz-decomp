@@ -36,7 +36,7 @@ deflate	6	6
 dialogs	6	5
 directinputmgr2	8	8
 directsoundmgr	19	16
-engine_label_stubs	562	118
+engine_label_stubs	562	119
 filestream	13	9
 font	16	9
 fontconfig	1	0
@@ -404,6 +404,7 @@ engine_label_stubs	?DrawDebugStats@EngineLabelBacklog@@YAXXZ	0.3390	0.3390	1	cpp
 engine_label_stubs	?DrawLabel@DrawHost2_164420@ApiCallerStubs@@QAEXPAUtagRECT@@PAD@Z	95.0000	95.0000	1	cpp:6bf52155264d	0x164420
 engine_label_stubs	?DrawSaveGameMenu@EngineLabelBacklog@@YAXXZ	0.3436	0.3436	1	cpp:45e65336d4b5	0xe3f40
 engine_label_stubs	?EndParse@RemusParseSource@@QAEXXZ	8.3333	8.3333	1	cpp:2262ffc5f902	0x1399d0
+engine_label_stubs	?EnterAttractMode@CAttract@@QAEHHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x13fb0
 engine_label_stubs	?ErrorThunk_08dd80@CDirectDrawMgr@@QAEXXZ	5.0000	5.0000	1	cpp:45e65336d4b5	0x8dd80
 engine_label_stubs	?Finalize@CStatusBarItem2@@QAEHXZ	95.5172	95.5172	1	cpp:2262ffc5f902	0x136270
 engine_label_stubs	?Find@CButeTree@@QAEPAXPBD@Z	1.8868	1.8868	1	cpp:0f6a941a1e75	0x16d190
@@ -648,7 +649,6 @@ engine_label_stubs	?vector_deleting_destructor@CGruntzMgr@@QAEXH@Z	9.0909	9.0909
 engine_label_stubs	?vfunc_10@CAttract@@QAEXH@Z	4.5455	4.5455	1	cpp:6bf52155264d	0x39160
 engine_label_stubs	?vfunc_12@StatusBarItem@@QAEXHH@Z	0.0543	0.0543	1	cpp:6bf52155264d	0xcbcc0
 engine_label_stubs	?vfunc_16@StatusBarItem@@QAEXHHH@Z	0.3484	0.3484	1	cpp:6bf52155264d	0xce660
-engine_label_stubs	?vfunc_1@CAttract@@QAEXHHH@Z	1.2821	1.2821	1	cpp:6bf52155264d	0x13fb0
 engine_label_stubs	?vfunc_20@CloudHazard@@QAEXHH@Z	1.4085	1.4085	1	cpp:6bf52155264d	0xb4640
 engine_label_stubs	?vfunc_9@BootyState@@QAEXH@Z	1.3514	1.3514	1	cpp:6bf52155264d	0x18d30
 engine_label_stubs	?vfunc_9@Projectile@@QAEXXZ	0.3891	0.3891	1	cpp:45e65336d4b5	0x61cb0

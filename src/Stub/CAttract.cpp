@@ -51,16 +51,39 @@ extern ShowCursorFn g_ShowCursor;
 #define s_TITLE_d "TITLE%d"
 #define s_Menu "Menu"
 #define s_BrightnessPercent "BrightnessPercent"
+#define s_SOUNDZ "SOUNDZ"
+#define s_ATTRACT "ATTRACT"
+#define s_UNDERSCORE "_"
 
 extern "C" int sprintf(char* buf, const char* fmt, ...);
+
+// ---------------------------------------------------------------------------
+// The video-mode sub-object at CAttract+0x4. Its first method (engine
+// FUN_0048ddd0, __thiscall ret 4 — the RestoreVideoMode shape, called with 0)
+// re-asserts the display mode when (re)entering the attract scene.
+// ---------------------------------------------------------------------------
+class CAttractVideo {
+public:
+    int RestoreVideoMode(int save);
+};
 
 // ---------------------------------------------------------------------------
 // The attract state machine at CAttract+0x8 (engine FUN_0053c030, __thiscall
 // ret 4): resolves an attract state object from its name.
 // ---------------------------------------------------------------------------
+class CAttractState; // resolved state object (LookupState result)
+
 class CAttractStateMgr {
 public:
-    int* LookupState(char* name);
+    CAttractState* LookupState(char* name);
+};
+
+// The resolved attract state object. EnterAttractMode loads its "SOUNDZ" set
+// (engine FUN_0053a230, __thiscall ret 4), yielding an opaque sound handle that
+// is then registered on the menu page.
+class CAttractState {
+public:
+    void* LoadSoundz(char* name);
 };
 
 // ---------------------------------------------------------------------------
@@ -90,9 +113,19 @@ public:
     CMenuBrightnessHolder* m_18; // +0x18  menu  brightness holder
 };
 
+// The attract registrar at CMenuRoot+0x28: EnterAttractMode hands it the loaded
+// sound handle plus the "ATTRACT"/"_" tags (engine FUN_00557ee0, __thiscall
+// ret 0xc) so the attract page is wired into the active menu.
+class CAttractRegistrar {
+public:
+    int Register(void* sound, char* type, char* sep);
+};
+
 struct CMenuRoot {
     char m_pad00[0x4];
     CMenuPage* m_04; // +0x4  active menu page
+    char m_pad08[0x28 - 0x8];
+    CAttractRegistrar* m_28; // +0x28  attract page registrar
 };
 
 // The title-brightness target's preset/reset method (engine FUN_0053e760,
@@ -118,21 +151,29 @@ public:
     virtual void vf_slot2();
     virtual int vf_OnActivate(); // slot 3 (+0xc) — the pre-flight gate
 
-    void vfunc_1(int, int, int);
+    int EnterAttractMode(int a, int b, int mode);
     void vfunc_10(int);
     int LoadTitleConfig(int mode);
     int Activate();
+
+    // The pre-flight gate for EnterAttractMode (engine FUN_004f9ea0, non-virtual
+    // __thiscall ret 0xc, reached via ILT thunk): readies the scene from the
+    // three caller args; a zero result aborts the entry.
+    int LoadAttractScene(int a, int b, int mode); // FUN_004f9ea0
 
     // engine tail helpers (__thiscall, reached via ILT thunks).
     int FadeInTitle(char* name, int a, int b, int c, int d, int e); // FUN_004fa1f0
     int BuildMenuPage(int x, int w, int h, int flag);               // FUN_004fa8f0
     void CommitStage();                                             // FUN_004a05a0
 
-    char m_pad04[0x8 - 0x4];  // +0x4  (vptr occupies +0x0)
+    CAttractVideo* m_04;    // +0x4   video-mode sub-object (vptr occupies +0x0)
     CAttractStateMgr* m_08; // +0x8   attract state machine
     CMenuRoot* m_0c;        // +0xc   menu root
     char m_pad10[0x2c - 0x10];
-    int* m_2c; // +0x2c  active attract state slot (scratch)
+    CAttractState* m_2c; // +0x2c  active attract state slot (scratch)
+    char m_pad30[0x1b8 - 0x30];
+    int m_1b8; // +0x1b8  attract-entry flag (always cleared on entry)
+    int m_1bc; // +0x1bc  attract-active flag (clear when mode == 3, else set)
 };
 
 inline void CAttract::vf_slot0() {}
@@ -160,8 +201,8 @@ int CAttract::LoadTitleConfig(int mode) {
         sprintf(stateName, s_STATEZ_ATTRACT);
         sprintf(titleName, s_TITLE_d, idx);
 
-        int* saved = m_2c;
-        int* state = m_08->LookupState(stateName);
+        CAttractState* saved = m_2c;
+        CAttractState* state = m_08->LookupState(stateName);
         m_2c = state;
         if (state == 0) {
             return 0;
@@ -220,8 +261,8 @@ int CAttract::Activate() {
     sprintf(stateName, s_STATEZ_ATTRACT);
     sprintf(titleName, s_TITLE_d, idx);
 
-    int* saved = m_2c;
-    int* state = m_08->LookupState(stateName);
+    CAttractState* saved = m_2c;
+    CAttractState* state = m_08->LookupState(stateName);
     m_2c = state;
     if (state == 0) {
         return 0;
@@ -246,8 +287,52 @@ int CAttract::Activate() {
     return 1;
 }
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
+// CAttract::EnterAttractMode - enter (or re-enter) the attract scene.
+// Gates on LoadAttractScene(a, b, mode); on failure returns that result.
+// Otherwise hides the cursor (decrement the display count until negative),
+// re-asserts the video mode, resolves the "STATEZ_ATTRACT" state (stored into
+// m_2c), loads its "SOUNDZ" set, registers the resulting sound handle on the
+// menu page under the "ATTRACT"/"_" tags, hides the cursor again, then sets the
+// entry flags: m_1b8 is always cleared, and m_1bc is cleared when mode == 3
+// (else set to 1). Returns 1 on success, 0 on any early-out.
 RVA(0x00013fb0, 0xd5)
-void CAttract::vfunc_1(int, int, int) {}
+int CAttract::EnterAttractMode(int a, int b, int mode) {
+    if (LoadAttractScene(a, b, mode) == 0) {
+        return 0;
+    }
+
+    ShowCursorFn showCursor = g_ShowCursor;
+    if (showCursor(0) >= 0) {
+        do {
+        } while (showCursor(0) >= 0);
+    }
+
+    m_04->RestoreVideoMode(0);
+
+    CAttractState* state = m_08->LookupState(s_STATEZ_ATTRACT);
+    m_2c = state;
+    if (state == 0) {
+        return 0;
+    }
+
+    void* sound = state->LoadSoundz(s_SOUNDZ);
+    if (sound == 0) {
+        return 0;
+    }
+
+    m_0c->m_28->Register(sound, s_ATTRACT, s_UNDERSCORE);
+
+    if (showCursor(0) >= 0) {
+        do {
+        } while (showCursor(0) >= 0);
+    }
+
+    if (mode == 3) {
+        m_1bc = 0;
+        m_1b8 = 0;
+    } else {
+        m_1bc = 1;
+        m_1b8 = 0;
+    }
+    return 1;
+}
