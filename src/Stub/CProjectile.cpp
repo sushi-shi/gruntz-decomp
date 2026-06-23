@@ -1,18 +1,14 @@
 #include <rva.h>
-// CProjectile.cpp - engine-label stubs for CProjectile.
+// CProjectile.cpp - remaining engine-label stubs for CProjectile.
+//
+// The no-arg ctor (0x126e0) is reconstructed in src/Gruntz/Projectile.cpp (its
+// own EH unit). These two members are still unmatched stubs.
 
 class CProjectile {
 public:
-    void CProjectile_0126e0();
     void CProjectile_0dec60(int);
     void LoadProjectileSprites(int, int, int, int, int, int, int);
 };
-
-// @confidence: med
-// @source: rtti-vptr
-// @stub
-RVA(0x000126e0, 0x1fc)
-void CProjectile::CProjectile_0126e0() {}
 
 // @confidence: med
 // @source: rtti-vptr

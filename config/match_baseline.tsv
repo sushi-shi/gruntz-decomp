@@ -36,7 +36,7 @@ deflate	6	6
 dialogs	6	5
 directinputmgr2	8	8
 directsoundmgr	19	16
-engine_label_stubs	563	118
+engine_label_stubs	562	118
 filestream	13	9
 font	16	9
 fontconfig	1	0
@@ -66,6 +66,7 @@ logictypetable	1	0
 mapmgr	7	7
 netmgr	31	14
 netmgrerror	1	1
+projectile	1	0
 registryhelper	8	8
 rezmgr	10	6
 sbi_rectonly	2	1
@@ -379,7 +380,6 @@ engine_label_stubs	?BuildWorldLevelPath@EngineThisStub@@QAEXH@Z	0.4484	0.4484	1	
 engine_label_stubs	?CGruntzCommand_0242f0@CGruntzCommand@@QAEXXZ	50.0000	50.0000	1	cpp:45e65336d4b5	0x242f0
 engine_label_stubs	?CGruntzCommand_024430@CGruntzCommand@@QAEXXZ	50.0000	50.0000	1	cpp:45e65336d4b5	0x24430
 engine_label_stubs	?CPathHazard_0b35a0@CPathHazard@@QAEXH@Z	0.3759	0.3759	1	cpp:6bf52155264d	0xb35a0
-engine_label_stubs	?CProjectile_0126e0@CProjectile@@QAEXXZ	0.9434	0.9434	1	cpp:45e65336d4b5	0x126e0
 engine_label_stubs	?CProjectile_0dec60@CProjectile@@QAEXH@Z	0.6329	0.6329	1	cpp:6bf52155264d	0xdec60
 engine_label_stubs	?CUserLogic_0138d0@CUserLogic@@QAEXXZ	5.0000	5.0000	1	cpp:45e65336d4b5	0x138d0
 engine_label_stubs	?CUserLogic_058cd0@CUserLogic@@QAEXH@Z	0.8929	0.8929	1	cpp:6bf52155264d	0x58cd0
@@ -1061,6 +1061,7 @@ netmgr	?Stub_178280@CNetMgr@@QAEXXZ	1.7391	1.7391	2	f5e1440882db	0x178280
 netmgr	?Stub_1782d0@CNetMgr@@QAEXXZ	0.7692	0.7692	2	1f22cfc4150b	0x1782d0
 netmgr	?WaitForConnect@CNetMgr@@QAEHXZ	74.0809	74.0809	3	6fc7d79bed6d	0xbca50
 netmgrerror	?ReportError@CNetMgr@@SAXPADHJPAX@Z	100.0000	100.0000	4	be41456c928e	0x1776a0
+projectile	??0CProjectile@@QAE@XZ	99.0472	99.0472	1	4eead4695d92	0x126e0
 registryhelper	?Close@RegistryHelper@Utils@@QAEXXZ	100.0000	100.0000	4	384a98aaca34	0x139330
 registryhelper	?GetRegistryKey@RegistryHelper@Utils@@QAEHPAUHKEY__@@PADPAPAU3@@Z	100.0000	100.0000	2	3484125a1efa	0x139650
 registryhelper	?GetValueDword@RegistryHelper@Utils@@QAEKPADK@Z	100.0000	100.0000	4	8557af160863	0x1395d0
