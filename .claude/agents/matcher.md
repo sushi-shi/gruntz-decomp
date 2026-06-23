@@ -58,6 +58,22 @@ Concrete stopping rule, per function:
 Report the honest per-function % regardless; "70% on a known wall, logic correct, deferred to the
 final sweep" is a complete, acceptable outcome — not a failure.
 
+**Mark every early-stop in the source with `// @early-stop`.** When you stop a method below 100%,
+its body stays — a **complete, correct reconstruction** (this is NOT a half-written "partial"); it
+is the *byte-match* that is parked, not the logic. Record that so the method is not mistaken for a
+finished 100% match: an `// @early-stop` marker line directly above its `RVA()`, with the reason
+(the wall / blocker / what is left) on the next comment line. No `%` — the baseline tracks that.
+
+    // @early-stop
+    // regalloc wall — MSVC pins the loop counter in edi; see docs/patterns/regalloc-zero-pin.md
+    RVA(0x000457b0, 0x180)
+    int CGrunt::ResolveAnimation() { /* complete body */ }
+
+Invariant: a reconstructed method is **either ~100% (unmarked) or carries `@early-stop`** — so
+`rg '@early-stop' src` is exactly the deferred-work set the final sweep re-attacks. Distinct from
+`// @stub` (an empty/backlog body in `src/Stub/` awaiting reconstruction). It is a plain comment —
+`labels.py`/`verify_stubs` ignore it, so it never affects the build.
+
 ## Source-writing doctrine
 
 ### 1. Almost never reach for a C-style cast — model the real type instead

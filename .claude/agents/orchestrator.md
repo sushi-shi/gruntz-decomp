@@ -86,6 +86,13 @@ misleading (Pareto) — a "47% by bytes" milestone is ~455 functions, not 7,000.
 > wall, and point the next worker at a NEW target — never re-queue it now. (This stop-early
 > rule is also in `.claude/agents/matcher.md` § "STOP EARLY"; put it in every matcher
 > prompt.)
+>
+> **`@early-stop` marks the parked set in source.** A method the matcher stops below 100%
+> keeps its complete body but gets an `// @early-stop` marker line above its `RVA()` (reason
+> on the next comment line — see matcher.md § "STOP EARLY"). Invariant: a reconstructed
+> method is either ~100% (unmarked) or `@early-stop`, so the **final sweep's worklist is
+> exactly `rg '@early-stop' src`** — no need to re-derive plateaus from the baseline. When
+> you accept a worker's stuck result, make sure its file carries the marker before you commit.
 
 
 1. **Big-first for understanding.** Target functions >~256 B first; they hold most
