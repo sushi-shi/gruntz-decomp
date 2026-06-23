@@ -27,7 +27,7 @@ class CButeTree {
 public:
     void* Find(const char* key);
 };
-DATA(0x2bf620)
+DATA(0x002bf620)
 extern CButeTree g_buteTree;
 
 // ===========================================================================
@@ -103,16 +103,16 @@ public:
 };
 
 // Leaf vftables, referenced as DIR32 data.
-DATA(0x5e7a44)
+DATA(0x005e7a44)
 extern void* g_gruntStaminaSpriteVtbl;
-DATA(0x5e79ec)
+DATA(0x005e79ec)
 extern void* g_gruntToyTimeSpriteVtbl;
-DATA(0x5e77cc)
+DATA(0x005e77cc)
 extern void* g_gruntWingzTimeSpriteVtbl;
 
 // @confidence: high
 // @source: rtti-vptr
-RVA(0x07fae0, 0xa0)
+RVA(0x0007fae0, 0xa0)
 CGruntStaminaSprite::CGruntStaminaSprite(CSpriteObj* obj) : CGruntSpriteBase(obj) {
     *(void**)this = &g_gruntStaminaSpriteVtbl;
     m_38->ApplyLookupSprite("GAME_GRUNTSTAMINASPRITE", 1);
@@ -129,7 +129,7 @@ CGruntStaminaSprite::CGruntStaminaSprite(CSpriteObj* obj) : CGruntSpriteBase(obj
 
 // @confidence: high
 // @source: rtti-vptr
-RVA(0x07fbd0, 0xa0)
+RVA(0x0007fbd0, 0xa0)
 CGruntToyTimeSprite::CGruntToyTimeSprite(CSpriteObj* obj) : CGruntSpriteBase(obj) {
     *(void**)this = &g_gruntToyTimeSpriteVtbl;
     m_38->ApplyLookupSprite("GAME_GRUNTTOYTIMESPRITE", 1);
@@ -146,7 +146,7 @@ CGruntToyTimeSprite::CGruntToyTimeSprite(CSpriteObj* obj) : CGruntSpriteBase(obj
 
 // @confidence: high
 // @source: rtti-vptr
-RVA(0x07fcc0, 0xa0)
+RVA(0x0007fcc0, 0xa0)
 CGruntWingzTimeSprite::CGruntWingzTimeSprite(CSpriteObj* obj) : CGruntSpriteBase(obj) {
     *(void**)this = &g_gruntWingzTimeSpriteVtbl;
     m_38->ApplyLookupSprite("GAME_GRUNTWINGZTIMESPRITE", 1);
@@ -284,14 +284,14 @@ public:
     CUFO(CHazardObj* obj);
 };
 
-DATA(0x5e7324)
+DATA(0x005e7324)
 extern void* g_rainCloudVtbl;
-DATA(0x5e72b4)
+DATA(0x005e72b4)
 extern void* g_ufoVtbl;
 
 // @confidence: high
 // @source: rtti-vptr
-RVA(0x0b49b0, 0xa8)
+RVA(0x000b49b0, 0xa8)
 CRainCloud::CRainCloud(CHazardObj* obj) : CPathHazardBase(obj) {
     CHazardObj* o = m_10;
     *(void**)this = &g_rainCloudVtbl;
@@ -309,7 +309,7 @@ CRainCloud::CRainCloud(CHazardObj* obj) : CPathHazardBase(obj) {
 
 // @confidence: high
 // @source: rtti-vptr
-RVA(0x0b4a90, 0x145)
+RVA(0x000b4a90, 0x145)
 CUFO::CUFO(CHazardObj* obj) : CPathHazardBase(obj) {
     CHazardObj* o = m_10;
     *(void**)this = &g_ufoVtbl;

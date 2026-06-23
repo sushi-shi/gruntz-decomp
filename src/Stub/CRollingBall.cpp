@@ -9,5 +9,5 @@ public:
 // @confidence: med
 // @source: rtti-vptr
 // @stub
-RVA(0x0af820, 0x40d)
+RVA(0x000af820, 0x40d)
 CRollingBall::CRollingBall(int) {}

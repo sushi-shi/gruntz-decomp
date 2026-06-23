@@ -8,7 +8,7 @@ public:
 // @confidence: high
 // @source: reloc-correlation (5 callers)
 // @stub
-RVA(0x1bf505, 0x2d)
+RVA(0x001bf505, 0x2d)
 unsigned int CFileIO::GetLength() {
     return 0;
 }

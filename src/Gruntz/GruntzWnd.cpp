@@ -17,7 +17,7 @@ public:
     void Stub_094670();
 };
 
-RVA(0x94640, 0x12)
+RVA(0x00094640, 0x12)
 CGruntzWnd::CGruntzWnd() {}
 
 // Out-of-line stubs so the CGruntzWnd vftable is emitted in this TU;
@@ -33,5 +33,5 @@ int CGruntzWnd::Wap32GameWndVfunc0() {
 // @confidence: high
 // @source: tomalla
 // @stub
-RVA(0x094670, 0x1e)
+RVA(0x00094670, 0x1e)
 void CGruntzWnd::Stub_094670() {}

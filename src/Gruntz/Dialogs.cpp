@@ -19,24 +19,24 @@
 // g_gameReg->m_2c into the file-scope sink g_64bd5c (both reloc-masked DIR32).
 // Named externs so the DIR32 loads reloc-match the engine; @data names the
 // delinked target DATA symbol (RVA = VA - 0x400000).
-DATA(0x24556c)
+DATA(0x0024556c)
 extern int* g_gameReg; // the CGameRegistry pointer (reloc-masked DATA symbol)
-DATA(0x24bd5c)
+DATA(0x0024bd5c)
 extern int g_64bd5c; // the file-scope int sink (reloc-masked DATA symbol)
 
 // ---------------------------------------------------------------------------
-RVA(0x14b30, 0x64)
+RVA(0x00014b30, 0x64)
 CBattlezDlg::CBattlezDlg(int a0, CWnd* pParent) : CDialog(0xc0, pParent) {
     m_5c = a0;
     m_68 = 0;
 }
 
 // ---------------------------------------------------------------------------
-RVA(0x18030, 0x56)
+RVA(0x00018030, 0x56)
 CBattlezDlgCustom::CBattlezDlgCustom(CWnd* pParent) : CDialog(0xc3, pParent) {}
 
 // ---------------------------------------------------------------------------
-RVA(0x17930, 0x3a)
+RVA(0x00017930, 0x3a)
 CBattlezDlgColors::CBattlezDlgColors(int a0, int a1, int a2, CWnd* pParent)
     : CDialog(0xc2, pParent) {
     m_5c = a0;
@@ -46,7 +46,7 @@ CBattlezDlgColors::CBattlezDlgColors(int a0, int a1, int a2, CWnd* pParent)
 }
 
 // ---------------------------------------------------------------------------
-RVA(0xc1750, 0x88)
+RVA(0x000c1750, 0x88)
 CMultiStartDlg::CMultiStartDlg(int a0, CWnd* pParent) : CDialog(0xc5, pParent), m_74(0xa) {
     m_5c = a0;
     m_6c = 0;
@@ -60,9 +60,9 @@ CMultiStartDlg::CMultiStartDlg(int a0, CWnd* pParent) : CDialog(0xc5, pParent), 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x0c20a0, 0x45a)
+RVA(0x000c20a0, 0x45a)
 void CMultiStartDlg::InitPlayerSlots() {}
 
 // ---------------------------------------------------------------------------
-RVA(0x234a0, 0x1e)
+RVA(0x000234a0, 0x1e)
 CCheckpointDlg::CCheckpointDlg(CWnd* pParent) : CDialog(0xcd, pParent) {}

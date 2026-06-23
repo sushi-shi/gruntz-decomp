@@ -59,7 +59,7 @@ struct CGameReg {
     char m_pad00[0x30];
     CResMgr* m_30; // +0x30
 };
-DATA(0x24556c)
+DATA(0x0024556c)
 extern CGameReg* g_gameReg;
 
 // ---------------------------------------------------------------------------
@@ -79,7 +79,7 @@ public:
     int m_3c;      // +0x3c  loaded flag (set to 1)
 };
 
-RVA(0x90e0, 0x100)
+RVA(0x000090e0, 0x100)
 int CActionOptionsMenuBar::LoadAssets() {
     CSprite* spr = 0;
 

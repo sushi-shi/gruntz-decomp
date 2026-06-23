@@ -42,7 +42,7 @@ const unsigned char g_guid5[16] = {0x00, 0xb4, 0x23, 0xd2, 0x7d, 0x0a, 0xd1, 0x1
 // The empty constructor: zero both table pointers and the {ready,count} pair.
 // The store order (m_surfaces, m_glyphs, m_ready, m_count) reproduces MSVC's
 // schedule (it writes +0x8/+0xc before +0x0/+0x4).
-RVA(0x179700, 0x10)
+RVA(0x00179700, 0x10)
 Font::Font() {
     m_surfaces = 0;
     m_glyphs = 0;
@@ -56,7 +56,7 @@ Font::Font() {
 // the glyph-metric table (count*8) and zero every entry. Returns 1 on success,
 // 0 when count < 1. (No allocation-failure path is taken - operator new throws
 // / returns the buffer; the null-test on the glyph table is the source's own.)
-RVA(0x179720, 0x87)
+RVA(0x00179720, 0x87)
 int Font::AllocateMemory(int count) {
     FreeMemory();
 
@@ -84,7 +84,7 @@ int Font::AllocateMemory(int count) {
 // Release everything the tables hold: each glyph's pixel surface, then the
 // surface-pointer table, then the glyph-metric table, then reset to empty. A
 // no-op when m_ready is already 0.
-RVA(0x1797b0, 0x71)
+RVA(0x001797b0, 0x71)
 void Font::FreeMemory() {
     if (m_ready) {
         for (int i = 0; i < m_count; i++) {
@@ -111,7 +111,7 @@ void Font::FreeMemory() {
 // bytes read straight from the archive), then compute m_maxHeight (the font
 // line-height = the tallest glyph). Returns 0 if the file fails to open, 1 once
 // the font is fully populated.
-RVA(0x179830, 0x1b1)
+RVA(0x00179830, 0x1b1)
 int Font::LoadFont(CString szFileName) {
     FreeMemory();
 
@@ -148,7 +148,7 @@ int Font::LoadFont(CString szFileName) {
 // =========================================================================
 // IsInterface1
 //
-RVA(0x1794b0, 0x21)
+RVA(0x001794b0, 0x21)
 int InterfaceObject::IsInterface1() {
     if (!iid) {
         return 0;
@@ -159,7 +159,7 @@ int InterfaceObject::IsInterface1() {
 // =========================================================================
 // IsInterface2
 //
-RVA(0x1794e0, 0x21)
+RVA(0x001794e0, 0x21)
 int InterfaceObject::IsInterface2() {
     if (!iid) {
         return 0;
@@ -170,7 +170,7 @@ int InterfaceObject::IsInterface2() {
 // =========================================================================
 // IsInterface3
 //
-RVA(0x179510, 0x21)
+RVA(0x00179510, 0x21)
 int InterfaceObject::IsInterface3() {
     if (!iid) {
         return 0;
@@ -181,7 +181,7 @@ int InterfaceObject::IsInterface3() {
 // =========================================================================
 // IsInterface4
 //
-RVA(0x179540, 0x21)
+RVA(0x00179540, 0x21)
 int InterfaceObject::IsInterface4() {
     if (!iid) {
         return 0;
@@ -192,7 +192,7 @@ int InterfaceObject::IsInterface4() {
 // =========================================================================
 // IsInterface5
 //
-RVA(0x179570, 0x21)
+RVA(0x00179570, 0x21)
 int InterfaceObject::IsInterface5() {
     if (!iid) {
         return 0;
@@ -205,7 +205,7 @@ int InterfaceObject::IsInterface5() {
 //
 // Frees two allocated buffers at +0x34 and +0x38 and clears m_type.
 //
-RVA(0x179680, 0x3a)
+RVA(0x00179680, 0x3a)
 void CWapNodeB::FreeStrings() {
     if (m_buf34) {
         operator delete(m_buf34);
@@ -221,7 +221,7 @@ void CWapNodeB::FreeStrings() {
 // =========================================================================
 // Font::GetSurface
 //
-RVA(0x179b60, 0x12)
+RVA(0x00179b60, 0x12)
 void** Font::GetSurface(unsigned char c) {
     return &m_surfaces[c];
 }
@@ -229,7 +229,7 @@ void** Font::GetSurface(unsigned char c) {
 // =========================================================================
 // Font::GetGlyph
 //
-RVA(0x179b80, 0x22)
+RVA(0x00179b80, 0x22)
 void Font::GetGlyph(unsigned char c, Glyph& out) {
     out = m_glyphs[c];
 }
@@ -237,7 +237,7 @@ void Font::GetGlyph(unsigned char c, Glyph& out) {
 // =========================================================================
 // Font::GetMaxHeight
 //
-RVA(0x179bd0, 0x4)
+RVA(0x00179bd0, 0x4)
 int Font::GetMaxHeight() {
     return m_maxHeight;
 }
@@ -245,7 +245,7 @@ int Font::GetMaxHeight() {
 // =========================================================================
 // FontRenderer::FontRenderer
 //
-RVA(0x179be0, 0x14)
+RVA(0x00179be0, 0x14)
 FontRenderer::FontRenderer() {
     m_font = 0;
     m_color = 0x00ffffff;
@@ -257,7 +257,7 @@ FontRenderer::FontRenderer() {
 // FontRenderer::SetColor
 // Internal helper: stores the color argument into m_color.
 //
-RVA(0x179c20, 0xa)
+RVA(0x00179c20, 0xa)
 void FontRenderer::SetColor(int color) {
     m_color = color;
 }
@@ -265,7 +265,7 @@ void FontRenderer::SetColor(int color) {
 // =========================================================================
 // FontRenderer::GetChar
 //
-RVA(0x17b4f0, 0xc)
+RVA(0x0017b4f0, 0xc)
 unsigned char FontRenderer::GetChar(int i) {
     return ((unsigned char*)m_font)[i];
 }

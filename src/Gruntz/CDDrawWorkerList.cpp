@@ -103,9 +103,9 @@ struct HagridWorkerA : public HagridWorker {
 }; // 0x7c
 
 // The two foreign worker vftables, referenced as DIR32 data (RVA = VA-0x400000).
-DATA(0x1efea0)
+DATA(0x001efea0)
 extern void* g_hagridWorkerVtblA; // (BYTE-flag worker)
-DATA(0x1efed0)
+DATA(0x001efed0)
 extern void* g_hagridWorkerVtblB; // (int-flag worker)
 
 // The child type used in the work-node linked-list at +0x14.
@@ -173,7 +173,7 @@ static inline void StampWorkerVtblA(HagridWorkerA* w) {
 
 // ---------------------------------------------------------------------------
 // Same base readiness predicate used by several Lucius-derived managers.
-RVA(0x156f00, 0x16)
+RVA(0x00156f00, 0x16)
 int CDDrawWorkerList::VirtualMethodUnknown14() {
     if (m_pHarryPotter == 0) {
         goto fail;
@@ -242,7 +242,7 @@ static inline HagridWorkerA* MakeWorkerA(const CDDrawWorkerList* parent) {
 // Allocates a BYTE-flag worker, constructs it, calls its +0x2c
 // virtual with (a1,a2,a3). On success appends it to the list (AddTail) and returns
 // it; on failure destroys it and returns 0.
-RVA(0x156fd0, 0x8b)
+RVA(0x00156fd0, 0x8b)
 void* CDDrawWorkerList::VirtualMethodUnknown24(int a1, int a2, int a3) {
     HagridWorkerA* w = MakeWorkerA(this);
     if (w->Vfunc2C(a1, a2, a3) == 0) {
@@ -258,7 +258,7 @@ void* CDDrawWorkerList::VirtualMethodUnknown24(int a1, int a2, int a3) {
 // ---------------------------------------------------------------------------
 // As Unknown24 but the int-flag worker; on success the trailing
 // bool selects AddHead vs AddTail.
-RVA(0x1573e0, 0xa0)
+RVA(0x001573e0, 0xa0)
 void* CDDrawWorkerList::VirtualMethodUnknown28(int a1, int a2, int a3, int addHead) {
     HagridWorkerB* w = MakeWorkerB(this);
     if (w->Vfunc2C(a1, a2, a3) == 0) {
@@ -278,7 +278,7 @@ void* CDDrawWorkerList::VirtualMethodUnknown28(int a1, int a2, int a3, int addHe
 // ---------------------------------------------------------------------------
 // Int-flag worker; calls the worker's +0x30 virtual with (a1,a2,a3,a4); trailing
 // bool selects AddHead vs AddTail.
-RVA(0x157330, 0xa5)
+RVA(0x00157330, 0xa5)
 void* CDDrawWorkerList::VirtualMethodUnknown2C(int a1, int a2, int a3, int a4, int addHead) {
     HagridWorkerB* w = MakeWorkerB(this);
     if (w->Vfunc30(a1, a2, a3, a4) == 0) {
@@ -297,7 +297,7 @@ void* CDDrawWorkerList::VirtualMethodUnknown2C(int a1, int a2, int a3, int a4, i
 
 // ---------------------------------------------------------------------------
 // As Unknown2C but dispatches the worker's +0x34 virtual.
-RVA(0x157150, 0xa5)
+RVA(0x00157150, 0xa5)
 void* CDDrawWorkerList::VirtualMethodUnknown30(int a1, int a2, int a3, int a4, int addHead) {
     HagridWorkerB* w = MakeWorkerB(this);
     if (w->Vfunc34(a1, a2, a3, a4) == 0) {
@@ -322,7 +322,7 @@ void* CDDrawWorkerList::VirtualMethodUnknown30(int a1, int a2, int a3, int a4, i
 // CObList's internal head pointer, offset +0x04 from the CObList base due to
 // the inherited vptr).  Destroys each node's child if present, then clears
 // the list.
-RVA(0x163c60, 0x2c)
+RVA(0x00163c60, 0x2c)
 void CDDrawWorkerList::VirtualMethodUnknown1C() {
     struct HLayout {
         char _pad[0x14];
@@ -341,7 +341,7 @@ void CDDrawWorkerList::VirtualMethodUnknown1C() {
 
 // ---------------------------------------------------------------------------
 // Returns constant 0x11 (17).
-RVA(0x156f20, 0x6)
+RVA(0x00156f20, 0x6)
 int CDDrawWorkerList::VirtualMethodUnknown20() {
     return 0x11;
 }
@@ -355,7 +355,7 @@ int CDDrawWorkerList::VirtualMethodUnknown20() {
 //    (a2 != 0 && (a2->field08 & 0x20000) == 0)  → always free
 //    OR child->m_74 <= 0                          → free
 //    Otherwise                                     → skip, keep node
-RVA(0x163bf0, 0x6d)
+RVA(0x00163bf0, 0x6d)
 void CDDrawWorkerList::VirtualMethodUnknown34(int a1, int a2) {
     struct HLayout {
         char _pad[0x14];
@@ -381,11 +381,11 @@ void CDDrawWorkerList::VirtualMethodUnknown34(int a1, int a2) {
 // @confidence: high
 // @source: tomalla
 // @stub
-RVA(0x156f50, 0x68)
+RVA(0x00156f50, 0x68)
 void CDDrawWorkerList::Stub_156f50() {}
 
 // @confidence: high
 // @source: tomalla
 // @stub
-RVA(0x156fc0, 0x6)
+RVA(0x00156fc0, 0x6)
 void CDDrawWorkerList::Stub_156fc0() {}

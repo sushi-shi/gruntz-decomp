@@ -8,5 +8,5 @@ public:
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @stub
-RVA(0x137740, 0x3e)
+RVA(0x00137740, 0x3e)
 void VoldemortObj::Free() {}

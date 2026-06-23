@@ -9,5 +9,5 @@ public:
 // @confidence: med
 // @source: rtti-vptr
 // @stub
-RVA(0x013940, 0x1e1)
+RVA(0x00013940, 0x1e1)
 CMovingLogic::CMovingLogic() {}

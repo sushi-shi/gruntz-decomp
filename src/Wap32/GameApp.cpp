@@ -8,16 +8,16 @@
 #include <stdio.h>
 // timeGetTime (WINMM frame clock) comes from <Mfc.h>'s central decl (via <Wap32.h>).
 
-DATA(0x253c70)
+DATA(0x00253c70)
 extern int g_wap32Now;
-DATA(0x253c74)
+DATA(0x00253c74)
 extern int g_wap32FrameDelta;
-DATA(0x253c78)
+DATA(0x00253c78)
 extern int g_wap32ClockReset;
 // Two run-state timing defaults CGameMgr::Run seeds to 0x64 (100).
-DATA(0x253c7c)
+DATA(0x00253c7c)
 extern int g_wap32Run7c;
-DATA(0x253c80)
+DATA(0x00253c80)
 extern int g_wap32Run80;
 
 // Instance counter (bumped per ctor). Shared
@@ -29,7 +29,7 @@ int g_gameAppInstanceCount;
 // CGameApp::CGameApp()
 // Zeroes the resource/window/manager pointers and the error-state fields,
 // then bumps the file-scope instance counter.
-RVA(0x13d590, 0x3c)
+RVA(0x0013d590, 0x3c)
 CGameApp::CGameApp() {
     m_4 = 0;
     m_8 = 0;
@@ -45,7 +45,7 @@ CGameApp::CGameApp() {
 // -------------------------------------------------------------------------
 // CGameApp::CloseResources
 // Frees the accelerator table then deletes the two resource objects.
-RVA(0x13d8c0, 0x42)
+RVA(0x0013d8c0, 0x42)
 void CGameApp::CloseResources() {
     if (m_10) {
         DestroyAcceleratorTable(m_10);
@@ -64,7 +64,7 @@ void CGameApp::CloseResources() {
 // -------------------------------------------------------------------------
 // CGameApp::InitializeAccelerators
 // Reloads the accelerator table; returns whether it loaded.
-RVA(0x13dc20, 0x49)
+RVA(0x0013dc20, 0x49)
 BOOL CGameApp::InitializeAccelerators(LPCSTR lpTable) {
     if (lpTable && *lpTable) {
         if (m_10) {
@@ -80,7 +80,7 @@ BOOL CGameApp::InitializeAccelerators(LPCSTR lpTable) {
 // -------------------------------------------------------------------------
 // CGameApp::ReportError
 // Records an error once (guarded by m_248), posting WM_CLOSE to the window.
-RVA(0x13dcb0, 0x57)
+RVA(0x0013dcb0, 0x57)
 void CGameApp::ReportError(WPARAM wParam, LPARAM lParam) {
     if (m_248) {
         return;
@@ -102,7 +102,7 @@ void CGameApp::ReportError(WPARAM wParam, LPARAM lParam) {
 // (HACCEL) is set AND the message targets our window, run TranslateAcceleratorA
 // (return ignored); always TranslateMessage + DispatchMessageA; when the queue
 // is empty, call the idle virtual (vtbl +0x20) and loop.
-RVA(0x13d910, 0x9f)
+RVA(0x0013d910, 0x9f)
 int CGameApp::RunMessageLoop() {
     MSG msg;
 
@@ -131,7 +131,7 @@ int CGameApp::RunMessageLoop() {
 // -------------------------------------------------------------------------
 // CGameApp::InitializeDefaultWindowClass
 // Fills the embedded WNDCLASSA (m_wc @ +0x1e8) and loads its icon/cursor.
-RVA(0x13d9b0, 0xa0)
+RVA(0x0013d9b0, 0xa0)
 void CGameApp::InitializeDefaultWindowClass() {
     int i;
     for (i = 0; i < 10; i++) {
@@ -164,7 +164,7 @@ void CGameApp::InitializeDefaultWindowClass() {
 // analog of CGruntzApp::InitializeGameManager, and it sits in the CGameApp
 // address cluster, so it belongs to CGameApp (not CGruntzApp; uses no
 // game-app-specific >=0x254 fields).
-RVA(0x13db60, 0x57)
+RVA(0x0013db60, 0x57)
 CGameWnd* CGameApp::InitializeGameWindow() {
     return new CGameWnd;
 }
@@ -175,7 +175,7 @@ CGameWnd* CGameApp::InitializeGameWindow() {
 // hands it to VirtualUnknownMethod02 (vtable +0x4) to register+create.
 // hInstance is required (null -> 0). The three name strings are conditionally
 // strcpy'd (inline rep movs at /O2/Oi).
-RVA(0x13d7b0, 0x105)
+RVA(0x0013d7b0, 0x105)
 int CGameApp::VirtualUnknownMethod03(
     HINSTANCE hInstance,
     char* szWindowName,
@@ -216,7 +216,7 @@ int CGameApp::VirtualUnknownMethod03(
 // window geometry/style derived from the GameInfo windowClassFlags:
 //   bit1 (Windowed) -> a "Gruntz" menu, gameInfo width/height, overlapped or
 //   caption style; otherwise -> fullscreen popup at the screen metrics.
-RVA(0x13da50, 0x10b)
+RVA(0x0013da50, 0x10b)
 void CGameApp::InitializeDefaultCreateStruct() {
     int i;
     for (i = 0; i < 12; i++) {
@@ -283,7 +283,7 @@ void CGameApp::InitializeDefaultCreateStruct() {
 // The Run/Init orchestration: validate the GameInfo, copy it into the member,
 // resolve hInstance, build the class+window names, register the class, create
 // the window via CGameWnd::CreateAndShow, then bring up the game manager.
-RVA(0x13d5d0, 0x1d3)
+RVA(0x0013d5d0, 0x1d3)
 int CGameApp::VirtualUnknownMethod02(
     GameInfo* pGameInfo,
     WNDCLASSA* pWndClass,
@@ -374,7 +374,7 @@ Fail:
 // per-frame tick (m_8->vtbl +0x10, the 5th vtable slot). The tail call emits
 // `mov ecx,[m_8]; mov eax,[ecx]; jmp [eax+0x10]` (no own epilogue needed since
 // neither gate-load disturbs a callee-saved reg).
-RVA(0x13dc70, 0x1d)
+RVA(0x0013dc70, 0x1d)
 void CGameApp::VirtualUnknownMethod09() {
     if (m_240 && m_244) {
         m_8->PerFrameTick();
@@ -386,7 +386,7 @@ void CGameApp::VirtualUnknownMethod09() {
 // `delete m_8; m_8 = 0;` - frees the game manager via its scalar-deleting
 // dtor (slot 0, `push 1; call [vtbl]`) and clears the slot. `this` is spilled
 // to esi at entry; the null-check skips both when m_8 is already 0.
-RVA(0x13dc90, 0x19)
+RVA(0x0013dc90, 0x19)
 void CGameApp::FreeGameManager() {
     if (m_8) {
         delete m_8;
@@ -417,7 +417,7 @@ void WAP32::CGameMgr::Wap32GameMgrVfunc5() {}
 // initialises the frame clock via the two time helpers. The optimiser hoists
 // the m_10/m_14 stores (and the InitTimeFields `reset=1` argument push) above
 // the vptr store.
-RVA(0x13dd10, 0x35)
+RVA(0x0013dd10, 0x35)
 WAP32::CGameMgr::CGameMgr() {
     m_10 = 1;
     m_14 = 1;
@@ -434,7 +434,7 @@ WAP32::CGameMgr::CGameMgr() {
 // Binds the manager to the game window (records the window + its owner app),
 // reseeds the frame clock, and primes the two run-timing globals to 100.
 // Bails (returning 0) if there is no window, or the window has no OS HWND yet.
-RVA(0x13dd50, 0x54)
+RVA(0x0013dd50, 0x54)
 int WAP32::CGameMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     if (!pGameWnd) {
         return 0;
@@ -456,7 +456,7 @@ int WAP32::CGameMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 // -------------------------------------------------------------------------
 // CGameMgr::UnknownClose  (vtable +0x08)
 // Clears the two manager-owned pointers/handles.
-RVA(0x13ddb0, 0x9)
+RVA(0x0013ddb0, 0x9)
 void WAP32::CGameMgr::UnknownClose() {
     m_4 = 0;
     m_8 = 0;
@@ -465,7 +465,7 @@ void WAP32::CGameMgr::UnknownClose() {
 // -------------------------------------------------------------------------
 // CGameMgr::InitTimeFields  (__thiscall; ctor/Run helper @0x13de70)
 // Zeroes m_20, samples the start tick into m_24, and (when reset) arms m_18.
-RVA(0x13de70, 0x23)
+RVA(0x0013de70, 0x23)
 void WAP32::CGameMgr::InitTimeFields(int reset) {
     m_20 = 0;
     m_24 = timeGetTime();
@@ -477,7 +477,7 @@ void WAP32::CGameMgr::InitTimeFields(int reset) {
 // -------------------------------------------------------------------------
 // CGameMgr::UnknownMethodInitializeTimeGlobal
 // Seeds the frame clock from timeGetTime and clears its deltas.
-RVA(0x13dea0, 0x18)
+RVA(0x0013dea0, 0x18)
 void WAP32::CGameMgr::UnknownMethodInitializeTimeGlobal() {
     g_wap32Now = timeGetTime();
     g_wap32FrameDelta = 0;
@@ -501,7 +501,7 @@ void WAP32::CGameMgr::UnknownMethodInitializeTimeGlobal() {
 // @confidence: high
 // @source: tomalla
 // @stub
-RVA(0x133380, 0x24)
+RVA(0x00133380, 0x24)
 void WAP32::CGameMgr::vector_deleting_destructor() {}
 
 // -------------------------------------------------------------------------
@@ -511,5 +511,5 @@ void WAP32::CGameMgr::vector_deleting_destructor() {}
 // @confidence: high
 // @source: tomalla
 // @stub
-RVA(0x080dd0, 0x32)
+RVA(0x00080dd0, 0x32)
 void CGameApp::Stub_080dd0() {}

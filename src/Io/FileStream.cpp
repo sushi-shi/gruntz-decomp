@@ -33,7 +33,7 @@
 // Two-phase MFC construction: base CObject vtable, the CString member's ctor,
 // m_handle = -1 (INVALID_HANDLE_VALUE), then the final CFileIO vtable; m_open
 // stays 0. The CString ctor under EH installs the unwind frame.
-RVA(0x1befd7, 0x40)
+RVA(0x001befd7, 0x40)
 CFileIO::CFileIO() {
     m_handle = (HANDLE)-1;
     m_open = 0;
@@ -42,13 +42,13 @@ CFileIO::CFileIO() {
 // ---------------------------------------------------------------------------
 // CFileIO::`scalar deleting destructor' (compiler-generated thunk; no body, so
 // it cannot carry an RVA() attribute - pin it by mangled name directly).
-// @rva-symbol: ??_GCFileIO@@UAEPAXI@Z 0x1bf017 0x1c
+// @rva-symbol: ??_GCFileIO@@UAEPAXI@Z 0x001bf017 0x1c
 
 // ---------------------------------------------------------------------------
 // CFileIO::~CFileIO()
 // Closes the handle if we own one (m_handle != -1 && m_open), then the CString
 // member dtor runs and the vtable is restored to base on unwind.
-RVA(0x1bf121, 0x4e)
+RVA(0x001bf121, 0x4e)
 CFileIO::~CFileIO() {
     if (m_handle != (HANDLE)-1 && m_open != 0) {
         Close();
@@ -60,7 +60,7 @@ CFileIO::~CFileIO() {
 // Adopts an existing OS handle: m_open = 0 (we did NOT open it), m_handle = h.
 // Same two-phase vtable + CString-member construction + EH frame as the default
 // ctor. Used by the handle-duplicating clone path (engine fn).
-RVA(0x1bf033, 0x44)
+RVA(0x001bf033, 0x44)
 CFileIO::CFileIO(HANDLE hFile) {
     m_open = 0;
     m_handle = hFile;
@@ -70,7 +70,7 @@ CFileIO::CFileIO(HANDLE hFile) {
 // CFileIO::Read
 // ReadFile(m_handle, buf, n, &n, NULL); throws on failure; returns count read.
 // nCount==0 short-circuits to 0 before touching the handle.
-RVA(0x1bf328, 0x3a)
+RVA(0x001bf328, 0x3a)
 unsigned int CFileIO::Read(void* lpBuf, unsigned int nCount) {
     if (nCount == 0) {
         return 0;
@@ -90,7 +90,7 @@ unsigned int CFileIO::Read(void* lpBuf, unsigned int nCount) {
 // WriteFile(m_handle, buf, n, &n, NULL); throws OS error on failure, and a
 // generic "disk full"/short-write error if fewer than n bytes were written.
 // nCount==0 short-circuits (no-op).
-RVA(0x1bf362, 0x4b)
+RVA(0x001bf362, 0x4b)
 void CFileIO::Write(const void* lpBuf, unsigned int nCount) {
     DWORD nWritten;
 
@@ -110,7 +110,7 @@ void CFileIO::Write(const void* lpBuf, unsigned int nCount) {
 // ---------------------------------------------------------------------------
 // CFileIO::Seek
 // SetFilePointer(m_handle, off, NULL, from); throws on -1; returns new pos.
-RVA(0x1bf3ad, 0x2f)
+RVA(0x001bf3ad, 0x2f)
 LONG CFileIO::Seek(LONG lOff, int nFrom) {
     LONG pos = (LONG)SetFilePointer(m_handle, lOff, 0, (DWORD)nFrom);
     if (pos == -1) {
@@ -123,7 +123,7 @@ LONG CFileIO::Seek(LONG lOff, int nFrom) {
 // CFileIO::GetPosition
 // SetFilePointer(m_handle, 0, NULL, FILE_CURRENT); throws on -1; returns the
 // current file position.
-RVA(0x1bf3dc, 0x29)
+RVA(0x001bf3dc, 0x29)
 LONG CFileIO::GetPosition() {
     LONG pos = (LONG)SetFilePointer(m_handle, 0, 0, 1 /*FILE_CURRENT*/);
     if (pos == -1) {
@@ -136,7 +136,7 @@ LONG CFileIO::GetPosition() {
 // CFileIO::Close
 // CloseHandle(m_handle) if open; reset m_handle = -1, m_open = 0, empty m_name;
 // then throw the OS error if CloseHandle failed.
-RVA(0x1bf426, 0x41)
+RVA(0x001bf426, 0x41)
 void CFileIO::Close() {
     BOOL failed = 0;
     if (m_handle != (HANDLE)-1) {
@@ -175,7 +175,7 @@ struct SecurityAttributes {
 // CreateFileA() with MFC nOpenFlags -> access/share/disposition translation;
 // stores the HANDLE; on failure fills the CFileException* (pError) if non-null
 // and returns FALSE. Returns nonzero on success.
-RVA(0x1bf200, 0x128)
+RVA(0x001bf200, 0x128)
 BOOL CFileIO::Open(const char* lpszFileName, unsigned int nOpenFlags, void* pError) {
     char szPath[0x104]; // MAX_PATH (260) - frame is 0x110 with the SA local
 
@@ -255,17 +255,17 @@ BOOL CFileIO::Open(const char* lpszFileName, unsigned int nOpenFlags, void* pErr
 // @confidence: med
 // @source: call-xref
 // @stub
-RVA(0x0bd3e0, 0x34)
+RVA(0x000bd3e0, 0x34)
 void CFileIO::Stub_0bd3e0() {}
 
 // @confidence: med
 // @source: call-xref
 // @stub
-RVA(0x0e5550, 0x9a)
+RVA(0x000e5550, 0x9a)
 void CFileIO::Stub_0e5550() {}
 
 // @confidence: med
 // @source: call-xref
 // @stub
-RVA(0x0e5700, 0x9e)
+RVA(0x000e5700, 0x9e)
 void CFileIO::Stub_0e5700() {}

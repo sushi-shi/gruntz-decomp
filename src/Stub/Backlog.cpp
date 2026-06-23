@@ -215,55 +215,55 @@ namespace EngineLabelBacklog {
 // @confidence: high
 // @source: string-xref
 // @stub
-RVA(0x00a3b0, 0x6e2)
+RVA(0x0000a3b0, 0x6e2)
 void EngineLabelBacklog::CreateGameObjectByName() {}
 
 // @confidence: low
 // @source: string-xref
 // @stub
-RVA(0x018830, 0x380)
+RVA(0x00018830, 0x380)
 void __stdcall EngineLabelBacklog::LoadBootyCheatState(int, int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x018d30, 0xcd)
+RVA(0x00018d30, 0xcd)
 void BootyState::vfunc_9(int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x018f00, 0x4fb)
+RVA(0x00018f00, 0x4fb)
 void EngineLabelBacklog::ShowSecretBonusMessage() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x019540, 0x12a)
+RVA(0x00019540, 0x12a)
 void EngineThisStub::BuildWarpStoneGlitterAnimation() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x019920, 0x1c2)
+RVA(0x00019920, 0x1c2)
 void EngineLabelBacklog::BuildGruntSprintAnimation() {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x01a040, 0x55e)
+RVA(0x0001a040, 0x55e)
 void EngineThisStub::LoadGruntEffectSprites() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x01b450, 0x1ac)
+RVA(0x0001b450, 0x1ac)
 void EngineThisStub::BuildBootyWalkingGruntz() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x01b690, 0x7bf)
+RVA(0x0001b690, 0x7bf)
 void EngineLabelBacklog::UpdateBootyWalkingGruntz() {}
 
 // BuildBootyPerfectAnimation @0x01c070 graduated to src/Gruntz/IconLoaders.cpp.
@@ -271,247 +271,247 @@ void EngineLabelBacklog::UpdateBootyWalkingGruntz() {}
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x01c210, 0x4b5)
+RVA(0x0001c210, 0x4b5)
 void EngineThisStub::CheckWarpLetterBonus() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x01c8a0, 0xec)
+RVA(0x0001c8a0, 0xec)
 void EngineThisStub::BootyState_OnActivate2_vfunc8() {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x01c9d0, 0x351)
+RVA(0x0001c9d0, 0x351)
 void EngineLabelBacklog::ShowLevelCompleteMessage() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x01ce60, 0x450)
+RVA(0x0001ce60, 0x450)
 void EngineLabelBacklog::BuildBootyGruntIdleAnimation() {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x01e720, 0x2fe)
+RVA(0x0001e720, 0x2fe)
 void __stdcall EngineLabelBacklog::BuildPowerupIconKeys(int, int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x01ed30, 0x549)
+RVA(0x0001ed30, 0x549)
 void EngineLabelBacklog::DrawBattleStats() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x01f6f0, 0x10b)
+RVA(0x0001f6f0, 0x10b)
 void BootyState::OnActivate_vfunc8() {}
 
 // @confidence: high
 // @source: tomalla
 // @stub
-RVA(0x01f9b0, 0x2d2)
+RVA(0x0001f9b0, 0x2d2)
 void EngineLabelBacklog::StartUpPrompt() {}
 
 // @confidence: low
 // @source: import:OpenFile
 // @stub
-RVA(0x01fd70, 0x45)
+RVA(0x0001fd70, 0x45)
 void EngineLabelBacklog::Stub_01fd70() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x020f40, 0x188)
+RVA(0x00020f40, 0x188)
 void EngineThisStub::LoadChatBoxSprite(int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x022e60, 0x1be)
+RVA(0x00022e60, 0x1be)
 void EngineLabelBacklog::LoadCheatConfig() {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x038d20, 0x176)
+RVA(0x00038d20, 0x176)
 void EngineThisStub::LoadCreditzStateAssets(int, int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x039570, 0x122)
+RVA(0x00039570, 0x122)
 void EngineThisStub::InitAttractTitle() {}
 
 // @confidence: low
 // @source: decomp-xref
 // @stub
-RVA(0x039dc0, 0x10b)
+RVA(0x00039dc0, 0x10b)
 void EngineThisStub::LoadCreditzAssets2() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x03b7c0, 0x12c)
+RVA(0x0003b7c0, 0x12c)
 void EngineLabelBacklog::LoadCustomWorldInfo() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x03c0e0, 0xfb)
+RVA(0x0003c0e0, 0xfb)
 void EngineThisStub::BuildWorldLevelKey(int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x03f5f0, 0x526)
+RVA(0x0003f5f0, 0x526)
 void EngineLabelBacklog::HandleFortConquered() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x044f80, 0x127)
+RVA(0x00044f80, 0x127)
 void EngineThisStub::BuildFortSplashParticles() {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x045270, 0x2a8)
+RVA(0x00045270, 0x2a8)
 void EngineThisStub::NotifyFortUnderAttack() {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x04dd50, 0x22c0)
+RVA(0x0004dd50, 0x22c0)
 void EngineThisStub::LoadGruntTypeTable(int, int, int, int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x050ce0, 0x399)
+RVA(0x00050ce0, 0x399)
 void __stdcall EngineLabelBacklog::LoadVehicleGruntSprites(int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x057100, 0x577)
+RVA(0x00057100, 0x577)
 void EngineThisStub::LoadGruntAbilityTuning(int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x057890, 0x19c)
+RVA(0x00057890, 0x19c)
 void EngineThisStub::BuildGruntLoseItemAnimation() {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x0597a0, 0x1345)
+RVA(0x000597a0, 0x1345)
 void EngineThisStub::LoadGruntCombatAnimations(int, int, int, int, int, int, int, int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x05d210, 0x1443)
+RVA(0x0005d210, 0x1443)
 void EngineThisStub::LoadGruntTuningConstants(int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x060150, 0xd90)
+RVA(0x00060150, 0xd90)
 void EngineThisStub::LoadGruntDeathAnimations(int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x0612a0, 0x23c)
+RVA(0x000612a0, 0x23c)
 void EngineThisStub::LoadGruntDecayConfig() {}
 
 // @confidence: low
 // @source: decomp-xref
 // @stub
-RVA(0x061570, 0x11d)
+RVA(0x00061570, 0x11d)
 void EngineThisStub::LoadGruntDecayConfig2() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x061cb0, 0x34a)
+RVA(0x00061cb0, 0x34a)
 void Projectile::vfunc_9() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x063db0, 0x32f)
+RVA(0x00063db0, 0x32f)
 void EngineThisStub::LoadVehicleGruntAnimations() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x0641b0, 0x2c1)
+RVA(0x000641b0, 0x2c1)
 void EngineThisStub::BuildGruntExitAnimation() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x065630, 0x34b)
+RVA(0x00065630, 0x34b)
 void EngineThisStub::LoadBombGruntRunConfig(int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x065a60, 0x159)
+RVA(0x00065a60, 0x159)
 void EngineThisStub::LoadWandGruntItemConfig() {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x065e80, 0x12b8)
+RVA(0x00065e80, 0x12b8)
 void EngineThisStub::LoadPickupSprites(int, int, int, int, int) {}
 
 // @confidence: low
 // @source: decomp-xref
 // @stub
-RVA(0x068520, 0x2a2)
+RVA(0x00068520, 0x2a2)
 void EngineThisStub::LoadBombGruntRunConfig2() {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x068880, 0x67c)
+RVA(0x00068880, 0x67c)
 void EngineThisStub::LoadWingzGruntSprites(int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x069d60, 0x1e1)
+RVA(0x00069d60, 0x1e1)
 void EngineThisStub::LoadFreezeSpellAssets() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x06a060, 0x43d)
+RVA(0x0006a060, 0x43d)
 void EngineThisStub::LoadGruntMovingDeathConfig() {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x06c130, 0xd62)
+RVA(0x0006c130, 0xd62)
 void __stdcall EngineLabelBacklog::WireTileSwitchLogic(int, int, int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x06eb80, 0x5ef)
+RVA(0x0006eb80, 0x5ef)
 void EngineThisStub::LoadTeleporterGooConfig(int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x075e90, 0x1329)
+RVA(0x00075e90, 0x1329)
 void __stdcall EngineLabelBacklog::LoadTerrainTileSprites(int, int, int, int, int, int) {}
 
 // LoadCameraSprite @0x078960 graduated to src/Gruntz/IconLoaders.cpp.
@@ -519,7 +519,7 @@ void __stdcall EngineLabelBacklog::LoadTerrainTileSprites(int, int, int, int, in
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x07a3f0, 0xd7)
+RVA(0x0007a3f0, 0xd7)
 void __stdcall EngineLabelBacklog::LoadToyBoxIcon(int, int, int, int, int) {}
 
 // LoadExplosionSprites @0x07b330 graduated to src/Gruntz/IconLoaders.cpp.
@@ -527,25 +527,25 @@ void __stdcall EngineLabelBacklog::LoadToyBoxIcon(int, int, int, int, int) {}
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x07b440, 0x3f0)
+RVA(0x0007b440, 0x3f0)
 void __stdcall EngineLabelBacklog::BuildRockBreakParticles(int, int, int, int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x07b930, 0x3b7)
+RVA(0x0007b930, 0x3b7)
 void EngineThisStub::LoadGruntCombatTuning(int, int, int, int, int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x07be60, 0x21e)
+RVA(0x0007be60, 0x21e)
 void __stdcall EngineLabelBacklog::LoadGruntResurrectTuning(int, int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x07c3d0, 0x1ae)
+RVA(0x0007c3d0, 0x1ae)
 void EngineThisStub::LoadFinishLevelSprite(int) {}
 
 // LoadPowerupIconSprites @0x07c620 graduated to src/Gruntz/IconLoaders.cpp.
@@ -553,645 +553,645 @@ void EngineThisStub::LoadFinishLevelSprite(int) {}
 // @confidence: low
 // @source: decomp-xref
 // @stub
-RVA(0x090550, 0x1e6)
+RVA(0x00090550, 0x1e6)
 void __stdcall EngineLabelBacklog::LaunchPortalExe(int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x090d10, 0x18e)
+RVA(0x00090d10, 0x18e)
 void EngineThisStub::LoadMonologoSprite() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x092420, 0xa4)
+RVA(0x00092420, 0xa4)
 void EngineThisStub::LoadSaveMessageSprite() {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x093d40, 0x473)
+RVA(0x00093d40, 0x473)
 void __stdcall EngineLabelBacklog::BuildLevelRezPath(int, int, int, int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x095090, 0x6e)
+RVA(0x00095090, 0x6e)
 void CHelpState::LoadAssets(int, int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x0997c0, 0x1e7)
+RVA(0x000997c0, 0x1e7)
 void EngineLabelBacklog::LoadHelpBookSprite() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x09a510, 0x275)
+RVA(0x0009a510, 0x275)
 void __stdcall EngineLabelBacklog::LoadObjectImageResources(int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x09a910, 0x261)
+RVA(0x0009a910, 0x261)
 void __stdcall EngineLabelBacklog::LoadObjectSoundResources(int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x09ac20, 0x261)
+RVA(0x0009ac20, 0x261)
 void __stdcall EngineLabelBacklog::LoadObjectAnimResources(int, int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x09fe50, 0x343)
+RVA(0x0009fe50, 0x343)
 void __stdcall EngineLabelBacklog::LoadMenuStateAssets(int, int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x0a09a0, 0x6a)
+RVA(0x000a09a0, 0x6a)
 void EngineThisStub::LoadStateImages_vfunc8() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x0a0d80, 0xd7)
+RVA(0x000a0d80, 0xd7)
 void EngineThisStub::BuildVersionString(int, int, int, int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x0a11d0, 0x180d)
+RVA(0x000a11d0, 0x180d)
 void EngineLabelBacklog::LoadAreaLevelTable() {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x0b0140, 0xa7a)
+RVA(0x000b0140, 0xa7a)
 void EngineLabelBacklog::LoadRollingBallHazardSprites() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x0b4640, 0x104)
+RVA(0x000b4640, 0x104)
 void CloudHazard::vfunc_20(int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x0ba620, 0x14a)
+RVA(0x000ba620, 0x14a)
 void EngineThisStub::LoadMenuSelectSprite(int) {}
 
 // @confidence: low
 // @source: decomp-xref
 // @stub
-RVA(0x0bf1d0, 0x249)
+RVA(0x000bf1d0, 0x249)
 void EngineLabelBacklog::BuildGruntzCrcInfo() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x0c16b0, 0x3d)
+RVA(0x000c16b0, 0x3d)
 void EngineLabelBacklog::BuildNamedGruntTable() {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x0c7090, 0x21b)
+RVA(0x000c7090, 0x21b)
 void EngineThisStub::LoadDroppedObjectEffects() {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x0ca200, 0xe34)
+RVA(0x000ca200, 0xe34)
 void __stdcall EngineLabelBacklog::LoadLevelByMode(int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x0cb800, 0x191)
+RVA(0x000cb800, 0x191)
 void GameLevelState::OnActivate_vfunc8() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x0cbcc0, 0x16da)
+RVA(0x000cbcc0, 0x16da)
 void StatusBarItem::vfunc_12(int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x0ce660, 0x362)
+RVA(0x000ce660, 0x362)
 void StatusBarItem::vfunc_16(int, int, int) {}
 
 // @confidence: low
 // @source: decomp-xref
 // @stub
-RVA(0x0cf770, 0x35e)
+RVA(0x000cf770, 0x35e)
 void EngineLabelBacklog::DrawDebugStats() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x0cffe0, 0x3c)
+RVA(0x000cffe0, 0x3c)
 void EngineThisStub::LoadImageBanks_vfunc29() {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x0d0120, 0x5d8)
+RVA(0x000d0120, 0x5d8)
 void EngineThisStub::LoadCursorSprites(int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x0d12b0, 0x2d5)
+RVA(0x000d12b0, 0x2d5)
 void EngineThisStub::LoadScrollSpeedOptions() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x0d1710, 0x122)
+RVA(0x000d1710, 0x122)
 void EngineThisStub::LoadSBITextEdges(int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x0d2dd0, 0x1de4)
+RVA(0x000d2dd0, 0x1de4)
 void EngineLabelBacklog::ValidateLevelTiles() {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x0d65d0, 0x7a4)
+RVA(0x000d65d0, 0x7a4)
 void EngineThisStub::LoadWarlordSprites(int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x0db600, 0x8f)
+RVA(0x000db600, 0x8f)
 void EngineThisStub::LoadActionTileSprites(int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x0db6c0, 0x70)
+RVA(0x000db6c0, 0x70)
 void EngineThisStub::LoadLevelSounds(int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x0db7e0, 0x84)
+RVA(0x000db7e0, 0x84)
 void EngineThisStub::LoadLevelImages(int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x0dba30, 0x1ca)
+RVA(0x000dba30, 0x1ca)
 void EngineThisStub::BuildMusicCategoryTable(int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x0dbc80, 0x309)
+RVA(0x000dbc80, 0x309)
 void EngineThisStub::BuildWorldLevelPath(int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x0dc060, 0x51b)
+RVA(0x000dc060, 0x51b)
 void EngineThisStub::LoadLevelEffectSprites() {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x0dc6d0, 0x215)
+RVA(0x000dc6d0, 0x215)
 void EngineThisStub::BuildGruntTypeNameTable(int, int, int, int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x0dca70, 0x4a4)
+RVA(0x000dca70, 0x4a4)
 void __stdcall EngineLabelBacklog::BuildAssetNamespacePrefixes(int, int, int, int) {}
 
 // @confidence: low
 // @source: decomp-xref
 // @stub
-RVA(0x0dd050, 0x24b)
+RVA(0x000dd050, 0x24b)
 void EngineThisStub::BuildGruntNamespaceList(int) {}
 
 // @confidence: low
 // @source: decomp-xref
 // @stub
-RVA(0x0dd340, 0x189)
+RVA(0x000dd340, 0x189)
 void EngineThisStub::BuildWarlordNameTable(int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x0dd540, 0x241)
+RVA(0x000dd540, 0x241)
 void EngineThisStub::BuildSpriteImageKeyTable(int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x0ddaa0, 0x228)
+RVA(0x000ddaa0, 0x228)
 void EngineThisStub::BuildAnizKeyTable(int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x0de420, 0x115)
+RVA(0x000de420, 0x115)
 void EngineThisStub::LoadLevelPreviewScreen() {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x0dfd00, 0x6f5)
+RVA(0x000dfd00, 0x6f5)
 void EngineThisStub::LoadProjectileEffects() {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x0e2400, 0x39e)
+RVA(0x000e2400, 0x39e)
 void EngineThisStub::BuildToolToyColorKey(int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x0e2980, 0x2cd)
+RVA(0x000e2980, 0x2cd)
 void EngineThisStub::LookupToolToyColorKey(int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x0e2d10, 0xa1)
+RVA(0x000e2d10, 0xa1)
 void EngineThisStub::LoadGruntzPalette(int, int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x0e3f40, 0x3d6)
+RVA(0x000e3f40, 0x3d6)
 void EngineLabelBacklog::DrawSaveGameMenu() {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x0e44e0, 0x2b2)
+RVA(0x000e44e0, 0x2b2)
 void EngineLabelBacklog::BuildLevelTitleString() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x0e4b60, 0x158)
+RVA(0x000e4b60, 0x158)
 void EngineThisStub::SaveGameFile(int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x0e8a70, 0x18c)
+RVA(0x000e8a70, 0x18c)
 void EngineThisStub::
     BuildResourceTabStatusBar(int, int, int, int, int, int, int, int, int, int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x0e9600, 0x18c)
+RVA(0x000e9600, 0x18c)
 void EngineThisStub::
     BuildStatzTabStatusBar(int, int, int, int, int, int, int, int, int, int, int, int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x0e9850, 0x111)
+RVA(0x000e9850, 0x111)
 void EngineThisStub::BuildStatzTabSmallSprite() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x0ea1f0, 0x1fa)
+RVA(0x000ea1f0, 0x1fa)
 void EngineThisStub::
     BuildMultiplayerTabStatusBar(int, int, int, int, int, int, int, int, int, int, int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x0f8970, 0x3b4)
+RVA(0x000f8970, 0x3b4)
 void SFManager::SelectBestDevice() {}
 
 // @confidence: high
 // @source: string-xref
 // @stub
-RVA(0x0f8f30, 0x160)
+RVA(0x000f8f30, 0x160)
 void EngineLabelBacklog::BuildSoundFontPath() {}
 
 // @confidence: low
 // @source: import:OpenFile
 // @stub
-RVA(0x0f90f0, 0x45)
+RVA(0x000f90f0, 0x45)
 void EngineLabelBacklog::Stub_0f90f0() {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x0f9ea0, 0x21d)
+RVA(0x000f9ea0, 0x21d)
 void EngineThisStub::LoadGameAssetNamespaces(int, int, int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x0fdc00, 0x5c2)
+RVA(0x000fdc00, 0x5c2)
 void EngineThisStub::LoadBattlezItemConfig(int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x0fe6b0, 0x145)
+RVA(0x000fe6b0, 0x145)
 void EngineThisStub::LoadMainStatusBarSprite() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x0fe910, 0xb8e)
+RVA(0x000fe910, 0xb8e)
 void EngineThisStub::UpdateStatusBarTabHighlight(int, int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x0ffb20, 0x13a)
+RVA(0x000ffb20, 0x13a)
 void EngineThisStub::LoadDestructButtonSprite(int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x102180, 0x5f)
+RVA(0x00102180, 0x5f)
 void EngineThisStub::BuildGameTabResumeButton(int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x102200, 0x37)
+RVA(0x00102200, 0x37)
 void EngineThisStub::BuildGameTabPauseButton() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x1055b0, 0x109)
+RVA(0x001055b0, 0x109)
 void EngineThisStub::LoadGooCookingSprite(int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x105990, 0x398)
+RVA(0x00105990, 0x398)
 void EngineThisStub::UpdateRezConveyorStatusBar() {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x105e40, 0x62c)
+RVA(0x00105e40, 0x62c)
 void EngineThisStub::LoadRezMachineConfig() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x106660, 0x68)
+RVA(0x00106660, 0x68)
 void EngineThisStub::UpdateRezMachineSnoozeStatusBar() {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x106bb0, 0x7bc)
+RVA(0x00106bb0, 0x7bc)
 void EngineThisStub::LoadChipMachineConfig() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x107590, 0xc4)
+RVA(0x00107590, 0xc4)
 void EngineThisStub::UpdateFallingItemStatusBar(int, int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x107a10, 0x62)
+RVA(0x00107a10, 0x62)
 void EngineThisStub::UpdateRezMachineWakeStatusBar() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x107ae0, 0x1aa)
+RVA(0x00107ae0, 0x1aa)
 void EngineThisStub::LoadMultiplayerBattlezConfig(int) {}
 
 // @confidence: low
 // @source: decomp-xref
 // @stub
-RVA(0x10bc30, 0x78)
+RVA(0x0010bc30, 0x78)
 void EngineThisStub::UpdateDestructButtonStatusBar2(int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x110860, 0x25f)
+RVA(0x00110860, 0x25f)
 void __stdcall EngineLabelBacklog::LoadBridgeMoveSprites(int) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x110c10, 0xe3f)
+RVA(0x00110c10, 0xe3f)
 void EngineLabelBacklog::LoadPyramidBridgeSprites() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x1122a0, 0x241)
+RVA(0x001122a0, 0x241)
 void EngineThisStub::BuildRockBreakInGameText() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x112a50, 0xdd)
+RVA(0x00112a50, 0xdd)
 void __stdcall EngineLabelBacklog::
     BuildStatzTabSmall_vfunc1(int, int, int, int, int, int, int, int, int) {}
 
 // @confidence: high
 // @source: decomp-xref
 // @stub
-RVA(0x114ff0, 0x1b3)
+RVA(0x00114ff0, 0x1b3)
 void EngineLabelBacklog::SaveScreenshot() {}
 
 // @confidence: low
 // @source: decomp-xref
 // @stub
-RVA(0x1183b0, 0x211)
+RVA(0x001183b0, 0x211)
 void EngineLabelBacklog::FormatGameInfoString() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x11afb0, 0x321)
+RVA(0x0011afb0, 0x321)
 void EngineThisStub::LoadGruntSpawnConfig(int, int, int, int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x11c210, 0x29d)
+RVA(0x0011c210, 0x29d)
 void __stdcall EngineLabelBacklog::BuildVoiceSoundList(int) {}
 
 // @confidence: low
 // @source: import:FindFirstFileA
 // @stub
-RVA(0x11f900, 0x101)
+RVA(0x0011f900, 0x101)
 void EngineLabelBacklog::Stub_11f900() {}
 
 // @confidence: low
 // @source: import:WriteFile
 // @stub
-RVA(0x12abf0, 0x1d6)
+RVA(0x0012abf0, 0x1d6)
 void EngineLabelBacklog::Stub_12abf0() {}
 
 // @confidence: low
 // @source: import:WriteFile
 // @stub
-RVA(0x12d230, 0x209)
+RVA(0x0012d230, 0x209)
 void EngineLabelBacklog::Stub_12d230() {}
 
 // @confidence: low
 // @source: import:CreateFileA
 // @stub
-RVA(0x12d460, 0x351)
+RVA(0x0012d460, 0x351)
 void EngineLabelBacklog::Stub_12d460() {}
 
 // @confidence: low
 // @source: import:SetFilePointer
 // @stub
-RVA(0x12d880, 0x80)
+RVA(0x0012d880, 0x80)
 void EngineLabelBacklog::Stub_12d880() {}
 
 // @confidence: low
 // @source: import:ReadFile
 // @stub
-RVA(0x1315d0, 0x225)
+RVA(0x001315d0, 0x225)
 void EngineLabelBacklog::Stub_1315d0() {}
 
 // @confidence: low
 // @source: second '.PID' xref; image-format dispatch consumer (entry not pinned)
 // @stub
-RVA(0x148940, 0x102)
+RVA(0x00148940, 0x102)
 void __stdcall EngineLabelBacklog::Stub_148940(int, int, int, int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x170750, 0x9d8)
+RVA(0x00170750, 0x9d8)
 void ButeMgr::ParseAttributeFile() {}
 
 // @confidence: low
 // @source: decomp-xref
 // @stub
-RVA(0x185000, 0x1a6)
+RVA(0x00185000, 0x1a6)
 void EngineThisStub::DebugPrintf() {}
 
 // @confidence: high
 // @source: call-xref
 // @stub
-RVA(0x188440, 0x74)
+RVA(0x00188440, 0x74)
 void EngineLabelBacklog::_tr_init() {}
 
 // @confidence: high
 // @source: tomalla
 // @stub
-RVA(0x1884c0, 0x1ee)
+RVA(0x001884c0, 0x1ee)
 void EngineLabelBacklog::_ct_init() {}
 
 // @confidence: low
 // @source: import:FindFirstFileA
 // @stub
-RVA(0x18c780, 0x33f)
+RVA(0x0018c780, 0x33f)
 void EngineLabelBacklog::Stub_18c780() {}
 
 // @confidence: med
 // @source: import:RegQueryValueExA
 // @stub
-RVA(0x1bf702, 0xac)
+RVA(0x001bf702, 0xac)
 void __stdcall EngineLabelBacklog::Stub_1bf702(int, int) {}
 
 // @confidence: low
 // @source: import:FindFirstFileA
 // @stub
-RVA(0x1bf8f8, 0xd9)
+RVA(0x001bf8f8, 0xd9)
 void __stdcall EngineLabelBacklog::Stub_1bf8f8(int, int) {}
 
 // @confidence: low
 // @source: import:GetFileSize
 // @stub
-RVA(0x1c152f, 0xda)
+RVA(0x001c152f, 0xda)
 void EngineThisStub::Stub_1c152f(int) {}
 
 // @confidence: low
 // @source: import:FindFirstFileA
 // @stub
-RVA(0x1c1609, 0xb2)
+RVA(0x001c1609, 0xb2)
 void __stdcall EngineLabelBacklog::Stub_1c1609(int, int) {}
 
 // @confidence: low
 // @source: import:CreateFileA
 // @stub
-RVA(0x1c176a, 0x12d)
+RVA(0x001c176a, 0x12d)
 void __stdcall EngineLabelBacklog::Stub_1c176a(int, int) {}
 
 // @confidence: med
 // @source: import:RegCloseKey,RegOpenKeyExA,RegQueryValueExA
 // @stub
-RVA(0x1c7cb3, 0x177)
+RVA(0x001c7cb3, 0x177)
 void EngineLabelBacklog::Stub_1c7cb3() {}
 
 // @confidence: med
 // @source: import:RegCloseKey,RegSetValueExA
 // @stub
-RVA(0x1ccae7, 0x75)
+RVA(0x001ccae7, 0x75)
 void EngineThisStub::Stub_1ccae7(int, int, int) {}
 
 // @confidence: med
 // @source: import:RegCloseKey,RegSetValueExA
 // @stub
-RVA(0x1ccb5c, 0xa0)
+RVA(0x001ccb5c, 0xa0)
 void __stdcall EngineLabelBacklog::Stub_1ccb5c(int, int, int) {}
 
 // @confidence: med
 // @source: import:RegCloseKey,RegSetValueExA
 // @stub
-RVA(0x1ccbfc, 0xa1)
+RVA(0x001ccbfc, 0xa1)
 void EngineThisStub::Stub_1ccbfc(int, int, int, int) {}
 
 // @confidence: med
 // @source: import:RegOpenKeyExA
 // @stub
-RVA(0x1d4ee3, 0x94)
+RVA(0x001d4ee3, 0x94)
 void EngineLabelBacklog::Stub_1d4ee3() {}
 
 // @confidence: med
 // @source: import:RegCloseKey,RegCreateKeyExA
 // @stub
-RVA(0x1d4f77, 0x46)
+RVA(0x001d4f77, 0x46)
 void __stdcall EngineLabelBacklog::Stub_1d4f77(int) {}
 
 // @confidence: med
 // @source: import:RegCloseKey,RegQueryValueExA
 // @stub
-RVA(0x1d4fbd, 0x6c)
+RVA(0x001d4fbd, 0x6c)
 void __stdcall EngineLabelBacklog::Stub_1d4fbd(int, int, int) {}
 
 // @confidence: med
 // @source: import:RegCloseKey
 // @stub
-RVA(0x1d5029, 0x112)
+RVA(0x001d5029, 0x112)
 void __stdcall EngineLabelBacklog::Stub_1d5029(int, int, int, int) {}
 
 // @confidence: med
 // @source: import:RegCloseKey
 // @stub
-RVA(0x1d513b, 0x11b)
+RVA(0x001d513b, 0x11b)
 void __stdcall EngineLabelBacklog::Stub_1d513b(int, int, int, int) {}

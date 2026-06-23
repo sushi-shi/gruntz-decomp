@@ -45,7 +45,7 @@ struct GameObj510 {
     char m_pad0[0x510];
     int m_510; // +0x510
 };
-DATA(0x64556c)
+DATA(0x0064556c)
 extern CGameReg* g_gameReg;
 
 // Miles Sound System (AIL) imports - reached through the IAT (ff 15 [__imp]).
@@ -66,27 +66,27 @@ extern "C" {
 }
 
 // The AIL MIDI driver handle (DAT_00653c5c), 0 when no driver is open.
-DATA(0x653c5c)
+DATA(0x00653c5c)
 extern int g_ailMidiDriver;
 
 // Cached AIL driver handle passed to AIL_set_* (DAT_00653c64).
-DATA(0x653c64)
+DATA(0x00653c64)
 extern int g_ailDriver64;
 
 // MS-CRT-style LCG RNG state shared by the timeGetTime random helpers.
-DATA(0x6c127d)
+DATA(0x006c127d)
 extern char g_rngSeeded; // bit0 set once the generator has been seeded
-DATA(0x6c1288)
+DATA(0x006c1288)
 extern int g_rngState; // the current 32-bit LCG state
 
 // Per-frame cached random bit used by the deterministic coin-flip helper.
-DATA(0x64c22c)
+DATA(0x0064c22c)
 extern char g_coinRolled; // bit0 set once this frame's coin was rolled
-DATA(0x64c26c)
+DATA(0x0064c26c)
 extern int g_coinValue; // the cached 0/1 result
 
 // GetDlgItem(hWnd,0x4b6) cache (DAT_00648ce0), shared by several timer wrappers.
-DATA(0x648ce0)
+DATA(0x00648ce0)
 extern HWND g_dlgItem_648ce0;
 
 // The Rez heap allocator (_RezAlloc, defined in EngineExternFns.cpp).
@@ -224,7 +224,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:CopyRect;SetRect
     // @stub
-    RVA(0x00c840, 0x13d)
+    RVA(0x0000c840, 0x13d)
     int winapi_00c840_CopyRect_SetRect() {
         return 0;
     }
@@ -232,7 +232,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:timeGetTime
     // __cdecl rand(): lazily seed from timeGetTime, then advance the MS-CRT LCG.
-    RVA(0x00cd00, 0x46)
+    RVA(0x0000cd00, 0x46)
     int winapi_00cd00_timeGetTime() {
         int seed;
         if (!(g_rngSeeded & 1)) {
@@ -259,7 +259,7 @@ namespace ApiCallerStubs {
         int m_54; // +0x54 (1 once rolled)
         void Roll(int lo, int hi, int a3, int a4);
     };
-    RVA(0x00cd70, 0xe5)
+    RVA(0x0000cd70, 0xe5)
     void RngBox_00cd70::Roll(int lo, int hi, int a3, int a4) {
         int span = hi - lo + 1;
         m_40 = lo;
@@ -298,7 +298,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:PostMessageA
     // @stub
-    RVA(0x0143e0, 0xfb)
+    RVA(0x000143e0, 0xfb)
     int winapi_0143e0_PostMessageA() {
         return 0;
     }
@@ -315,7 +315,7 @@ namespace ApiCallerStubs {
         CmdChain_014720* m_4; // +0x04
         int Key(int code, int unused);
     };
-    RVA(0x014720, 0x37)
+    RVA(0x00014720, 0x37)
     int CmdHost_014720::Key(int code, int unused) {
         if (code == 0x20 || code == 0xd || code == 0x1b) {
             PostMessageA(m_4->m_4->m_4, 0x111, 0x8023, 0);
@@ -326,7 +326,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:GetWindow;GetWindowLongA;SetWindowLongA
     // @stub
-    RVA(0x014d00, 0xa68)
+    RVA(0x00014d00, 0xa68)
     int __stdcall winapi_014d00_GetWindow_GetWindowLongA_SetWindowLongA(int) {
         return 0;
     }
@@ -343,7 +343,7 @@ namespace ApiCallerStubs {
 
     // @source: winapi:SendMessageA
     // __stdcall(id, wParam): set the resolved item's listbox selection (0x14e).
-    RVA(0x015cc0, 0x23)
+    RVA(0x00015cc0, 0x23)
     int __stdcall winapi_015cc0_SendMessageA(int id, int wParam) {
         WndItem* it = ResolveItem_15ac0(id);
         return SendMessageA(it->m_hwnd, 0x14e, wParam, 0);
@@ -351,7 +351,7 @@ namespace ApiCallerStubs {
 
     // @source: winapi:SendMessageA
     // __stdcall(id): send 0x147 (clear listbox selection) to the resolved item.
-    RVA(0x015d00, 0x20)
+    RVA(0x00015d00, 0x20)
     void __stdcall winapi_015d00_SendMessageA(int id) {
         HWND h = ResolveItem_15ac0(id)->m_hwnd;
         SendMessageA(h, 0x147, 0, 0);
@@ -362,7 +362,7 @@ namespace ApiCallerStubs {
     // Dialog-item resolver at RVA 0x33a0 (stdcall, returns a CWnd-ish whose HWND is +0x1c).
     WndItem* __stdcall ResolveItem_33a0(int id);
     // __stdcall(id): clear listbox selection (0x147) of the resolved item; return +1.
-    RVA(0x015d30, 0x21)
+    RVA(0x00015d30, 0x21)
     int __stdcall winapi_015d30_SendMessageA(int id) {
         HWND h = ResolveItem_33a0(id)->m_hwnd;
         return SendMessageA(h, 0x147, 0, 0) + 1;
@@ -370,7 +370,7 @@ namespace ApiCallerStubs {
 
     // @source: winapi:SendMessageA
     // __stdcall(id, wParam): set the resolved item's listbox selection to wParam-1.
-    RVA(0x015d70, 0x24)
+    RVA(0x00015d70, 0x24)
     int __stdcall winapi_015d70_SendMessageA(int id, int wParam) {
         WndItem* it = ResolveItem_33a0(id);
         return SendMessageA(it->m_hwnd, 0x14e, wParam - 1, 0);
@@ -379,7 +379,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:SendMessageA
     // @stub
-    RVA(0x015fe0, 0xbe)
+    RVA(0x00015fe0, 0xbe)
     int ApiThisStub::winapi_015fe0_SendMessageA(int) {
         return 0;
     }
@@ -387,7 +387,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:CreateSolidBrush;FillRect;GetClientRect
     // @stub
-    RVA(0x0160f0, 0x245)
+    RVA(0x000160f0, 0x245)
     int winapi_0160f0_CreateSolidBrush_FillRect_GetClientRect() {
         return 0;
     }
@@ -395,7 +395,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:InvalidateRect
     // @stub
-    RVA(0x016cd0, 0x98)
+    RVA(0x00016cd0, 0x98)
     int ApiThisStub::winapi_016cd0_InvalidateRect() {
         return 0;
     }
@@ -403,7 +403,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:InvalidateRect
     // @stub
-    RVA(0x016dc0, 0x97)
+    RVA(0x00016dc0, 0x97)
     int ApiThisStub::winapi_016dc0_InvalidateRect() {
         return 0;
     }
@@ -411,7 +411,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:InvalidateRect
     // @stub
-    RVA(0x016e90, 0x98)
+    RVA(0x00016e90, 0x98)
     int ApiThisStub::winapi_016e90_InvalidateRect() {
         return 0;
     }
@@ -419,7 +419,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:InvalidateRect
     // @stub
-    RVA(0x016f60, 0x98)
+    RVA(0x00016f60, 0x98)
     int ApiThisStub::winapi_016f60_InvalidateRect() {
         return 0;
     }
@@ -427,7 +427,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:GetWindow
     // @stub
-    RVA(0x017030, 0xc1)
+    RVA(0x00017030, 0xc1)
     int ApiThisStub::winapi_017030_GetWindow() {
         return 0;
     }
@@ -435,7 +435,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:GetWindow;SendMessageA
     // @stub
-    RVA(0x0171b0, 0xca)
+    RVA(0x000171b0, 0xca)
     int ApiThisStub::winapi_0171b0_GetWindow_SendMessageA() {
         return 0;
     }
@@ -443,7 +443,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:SendMessageA
     // @stub
-    RVA(0x0180e0, 0x23f)
+    RVA(0x000180e0, 0x23f)
     int __stdcall winapi_0180e0_SendMessageA(int) {
         return 0;
     }
@@ -458,7 +458,7 @@ namespace ApiCallerStubs {
         void Pick0183f0();        // thiscall, RVA 0x183f0
     };
     // __thiscall(): send 0x188 to item 0x516; if it returned != -1, run OnPick().
-    RVA(0x0183f0, 0x2e)
+    RVA(0x000183f0, 0x2e)
     void DlgHost::Pick0183f0() {
         HWND h = GetItem(0x516)->m_hwnd;
         if (SendMessageA(h, 0x188, 0, 0) != -1) {
@@ -470,7 +470,7 @@ namespace ApiCallerStubs {
     // @source: winapi:timeGetTime
     // __stdcall(hi, lo): lazily-seeded LCG random in [lo,hi]. When the span is
     // empty (hi==lo-1) it coin-flips between the endpoints on bit 0x10000.
-    RVA(0x019f50, 0xb2)
+    RVA(0x00019f50, 0xb2)
     int __stdcall winapi_019f50_timeGetTime(int lo, int hi) {
         int span = hi - lo + 1;
         int seed;
@@ -500,7 +500,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:CopyRect
     // @stub
-    RVA(0x01a700, 0x6b6)
+    RVA(0x0001a700, 0x6b6)
     int winapi_01a700_CopyRect() {
         return 0;
     }
@@ -513,7 +513,7 @@ namespace ApiCallerStubs {
         int m_1b8; // +0x1b8
         int Check();
     };
-    RVA(0x01f8a0, 0x30)
+    RVA(0x0001f8a0, 0x30)
     int KeyHost_01f8a0::Check() {
         if (m_1b8 == 0xc7) {
             PostMessageA(g_gameReg->m_4->m_4, 0x111, 0x8023, 0);
@@ -524,7 +524,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:DrawTextA
     // @stub
-    RVA(0x021f20, 0x162)
+    RVA(0x00021f20, 0x162)
     int __stdcall winapi_021f20_DrawTextA(int, int) {
         return 0;
     }
@@ -532,7 +532,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:GetAsyncKeyState;SelectObject
     // @stub
-    RVA(0x022160, 0x18e)
+    RVA(0x00022160, 0x18e)
     int __stdcall winapi_022160_GetAsyncKeyState_SelectObject(int, int, int) {
         return 0;
     }
@@ -540,7 +540,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:DrawTextA;SelectObject;SetTextColor
     // @stub
-    RVA(0x022360, 0x2f4)
+    RVA(0x00022360, 0x2f4)
     int ApiThisStub::winapi_022360_DrawTextA_SelectObject_SetTextColor(int, int, int, int) {
         return 0;
     }
@@ -548,7 +548,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:DrawTextA;SelectObject;SetBkColor;SetBkMode;SetTextColor
     // @stub
-    RVA(0x022810, 0x22a)
+    RVA(0x00022810, 0x22a)
     int __stdcall winapi_022810_DrawTextA_SelectObject_SetBkColor_SetBkMode_SetTextColor(
         int,
         int,
@@ -567,7 +567,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:PostMessageA
     // @stub
-    RVA(0x023090, 0xfc)
+    RVA(0x00023090, 0xfc)
     int ApiThisStub::winapi_023090_PostMessageA(int) {
         return 0;
     }
@@ -575,7 +575,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:IntersectRect;PtInRect
     // @stub
-    RVA(0x0267c0, 0x281d)
+    RVA(0x000267c0, 0x281d)
     int ApiThisStub::winapi_0267c0_IntersectRect_PtInRect() {
         return 0;
     }
@@ -583,7 +583,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:IntersectRect
     // @stub
-    RVA(0x02a570, 0x4c6)
+    RVA(0x0002a570, 0x4c6)
     int ApiThisStub::winapi_02a570_IntersectRect(int) {
         return 0;
     }
@@ -591,7 +591,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:PtInRect
     // @stub
-    RVA(0x02ab80, 0x15e)
+    RVA(0x0002ab80, 0x15e)
     int ApiThisStub::winapi_02ab80_PtInRect(int, int, int, int) {
         return 0;
     }
@@ -599,7 +599,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:IntersectRect
     // @stub
-    RVA(0x02ae00, 0x42e)
+    RVA(0x0002ae00, 0x42e)
     int ApiThisStub::winapi_02ae00_IntersectRect(int, int) {
         return 0;
     }
@@ -618,7 +618,7 @@ namespace ApiCallerStubs {
         int m_h74;   // +0x74
         void Clip(const RECT* src);
     };
-    RVA(0x02b340, 0xaa)
+    RVA(0x0002b340, 0xaa)
     void ClipHost_02b340::Clip(const RECT* src) {
         RECT a, b;
         b.left = 0;
@@ -646,7 +646,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:IntersectRect;PtInRect
     // @stub
-    RVA(0x02c140, 0x3e7)
+    RVA(0x0002c140, 0x3e7)
     int ApiThisStub::winapi_02c140_IntersectRect_PtInRect(int) {
         return 0;
     }
@@ -654,7 +654,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:IntersectRect
     // @stub
-    RVA(0x02c690, 0xdb4)
+    RVA(0x0002c690, 0xdb4)
     int __stdcall winapi_02c690_IntersectRect(int) {
         return 0;
     }
@@ -662,7 +662,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:IntersectRect
     // @stub
-    RVA(0x02dfa0, 0x325)
+    RVA(0x0002dfa0, 0x325)
     int ApiThisStub::winapi_02dfa0_IntersectRect(int, int, int, int) {
         return 0;
     }
@@ -670,7 +670,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:PtInRect
     // @stub
-    RVA(0x02e3a0, 0x7e1)
+    RVA(0x0002e3a0, 0x7e1)
     int ApiThisStub::winapi_02e3a0_PtInRect(int) {
         return 0;
     }
@@ -678,7 +678,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:IntersectRect
     // @stub
-    RVA(0x031ca0, 0x2f2)
+    RVA(0x00031ca0, 0x2f2)
     int ApiThisStub::winapi_031ca0_IntersectRect(int) {
         return 0;
     }
@@ -686,7 +686,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:IntersectRect
     // @stub
-    RVA(0x032060, 0x7bd)
+    RVA(0x00032060, 0x7bd)
     int ApiThisStub::winapi_032060_IntersectRect(int) {
         return 0;
     }
@@ -694,7 +694,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:IntersectRect
     // @stub
-    RVA(0x032ce0, 0x448)
+    RVA(0x00032ce0, 0x448)
     int ApiThisStub::winapi_032ce0_IntersectRect(int) {
         return 0;
     }
@@ -702,7 +702,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:IntersectRect
     // @stub
-    RVA(0x033520, 0xbc3)
+    RVA(0x00033520, 0xbc3)
     int __stdcall winapi_033520_IntersectRect(int) {
         return 0;
     }
@@ -710,7 +710,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:EnableWindow;GetDlgItem;IsDlgButtonChecked
     // __cdecl(hWnd): mirror checkbox 0x46d into the game state + enable ctrl 0x470.
-    RVA(0x036d00, 0x40)
+    RVA(0x00036d00, 0x40)
     void winapi_036d00_EnableWindow_GetDlgItem_IsDlgButtonChecked(HWND hWnd) {
         if (g_gameReg) {
             int state = IsDlgButtonChecked(hWnd, 0x46d);
@@ -722,7 +722,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:EnableWindow;GetDlgItem;IsDlgButtonChecked
     // __cdecl(hWnd): mirror checkbox 0x475 into m_100 + enable ctrl 0x476 by it.
-    RVA(0x036d50, 0x3c)
+    RVA(0x00036d50, 0x3c)
     void winapi_036d50_EnableWindow_GetDlgItem_IsDlgButtonChecked(HWND hWnd) {
         if (g_gameReg) {
             int checked = IsDlgButtonChecked(hWnd, 0x475);
@@ -734,7 +734,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:EnableWindow;GetDlgItem;IsDlgButtonChecked
     // __cdecl(hWnd): mirror checkbox 0x471 into the game state + enable ctrl 0x472.
-    RVA(0x036da0, 0x40)
+    RVA(0x00036da0, 0x40)
     void winapi_036da0_EnableWindow_GetDlgItem_IsDlgButtonChecked(HWND hWnd) {
         if (g_gameReg) {
             int state = IsDlgButtonChecked(hWnd, 0x471);
@@ -746,7 +746,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:IsDlgButtonChecked
     // __cdecl: cache the checkbox state into g_gameReg->m_118.
-    RVA(0x036e10, 0x26)
+    RVA(0x00036e10, 0x26)
     void winapi_036e10_IsDlgButtonChecked(HWND hWnd) {
         if (g_gameReg) {
             g_gameReg->m_118 = IsDlgButtonChecked(hWnd, 0x455);
@@ -756,7 +756,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:GetDlgItem;GetScrollInfo
     // __cdecl(hDlg, id): read the scroll position of dialog item `id`.
-    RVA(0x036ec0, 0x41)
+    RVA(0x00036ec0, 0x41)
     int winapi_036ec0_GetDlgItem_GetScrollInfo(HWND hDlg, int id) {
         HWND h = GetDlgItem(hDlg, id);
         if (!h) {
@@ -772,7 +772,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:GetDlgItem;SetScrollInfo
     // __cdecl(hDlg, id, pos, max): set dialog item `id`'s scroll range/page/pos.
-    RVA(0x0371e0, 0x5b)
+    RVA(0x000371e0, 0x5b)
     void winapi_0371e0_GetDlgItem_SetScrollInfo(HWND hDlg, int id, int pos, int max) {
         HWND h = GetDlgItem(hDlg, id);
         if (h) {
@@ -790,7 +790,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:GetScrollInfo;SetScrollInfo
     // @stub
-    RVA(0x037260, 0x1fd)
+    RVA(0x00037260, 0x1fd)
     int winapi_037260_GetScrollInfo_SetScrollInfo() {
         return 0;
     }
@@ -798,7 +798,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:GetDlgItem;SendMessageA
     // @stub
-    RVA(0x037ff0, 0xe7)
+    RVA(0x00037ff0, 0xe7)
     int __stdcall winapi_037ff0_GetDlgItem_SendMessageA(int, int) {
         return 0;
     }
@@ -807,7 +807,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetDlgItem
     // __stdcall(hDlg, id, lo, hi): find the list item whose data == MAKELONG(lo,hi)
     // and select it. Returns 1 if found.
-    RVA(0x038150, 0x91)
+    RVA(0x00038150, 0x91)
     int __stdcall winapi_038150_GetDlgItem(HWND hDlg, int id, int lo, int hi) {
         HWND list = GetDlgItem(hDlg, id);
         if (!list) {
@@ -838,7 +838,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetDlgItem
     // __stdcall(hDlg, id, *lo, *hi): split the selected listbox item's data into
     // two words. Returns 1 if a valid item is selected.
-    RVA(0x038220, 0x73)
+    RVA(0x00038220, 0x73)
     int __stdcall winapi_038220_GetDlgItem(HWND hDlg, int id, int* outLo, int* outHi) {
         HWND list = GetDlgItem(hDlg, id);
         if (!list) {
@@ -872,7 +872,7 @@ namespace ApiCallerStubs {
         int m_24; // +0x24
         int Key(int code, int unused);
     };
-    RVA(0x039440, 0x46)
+    RVA(0x00039440, 0x46)
     int CmdHost_039440::Key(int code, int unused) {
         if (code == 0x1b || code == 0x20 || code == 0xd) {
             if (m_24 == 5) {
@@ -900,7 +900,7 @@ namespace ApiCallerStubs {
         void Activate(); // RVA 0x3d41
     };
     // @source: winapi:PostMessageA;PtInRect
-    RVA(0x0394b0, 0x86)
+    RVA(0x000394b0, 0x86)
     int ClickHost_0394b0::OnClick(int x, int unused, int y) {
         RECT rc;
         rc.left = 0;
@@ -927,7 +927,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:SelectClipRgn;SetBkMode
     // @stub
-    RVA(0x0396f0, 0x2b8)
+    RVA(0x000396f0, 0x2b8)
     int ApiThisStub::winapi_0396f0_SelectClipRgn_SetBkMode() {
         return 0;
     }
@@ -935,7 +935,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:CreateRectRgn;DrawTextA;SetRect
     // @stub
-    RVA(0x039a60, 0x179)
+    RVA(0x00039a60, 0x179)
     int winapi_039a60_CreateRectRgn_DrawTextA_SetRect() {
         return 0;
     }
@@ -943,7 +943,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:GetDlgItem;SendMessageA
     // @stub
-    RVA(0x03af90, 0x194)
+    RVA(0x0003af90, 0x194)
     int winapi_03af90_GetDlgItem_SendMessageA() {
         return 0;
     }
@@ -951,7 +951,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:GetDlgItem
     // @stub
-    RVA(0x03b1a0, 0x118)
+    RVA(0x0003b1a0, 0x118)
     int winapi_03b1a0_GetDlgItem() {
         return 0;
     }
@@ -959,7 +959,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:GetDlgItem
     // @stub
-    RVA(0x03b310, 0x10d)
+    RVA(0x0003b310, 0x10d)
     int winapi_03b310_GetDlgItem() {
         return 0;
     }
@@ -967,7 +967,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:CopyRect;OffsetRect
     // @stub
-    RVA(0x04a9f0, 0x1aa)
+    RVA(0x0004a9f0, 0x1aa)
     int ApiThisStub::winapi_04a9f0_CopyRect_OffsetRect() {
         return 0;
     }
@@ -975,7 +975,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:CopyRect
     // @stub
-    RVA(0x04d800, 0x423)
+    RVA(0x0004d800, 0x423)
     int ApiThisStub::
         winapi_04d800_CopyRect(int, int, int, int, int, int, int, int, int, int, int, int) {
         return 0;
@@ -984,7 +984,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:IntersectRect
     // @stub
-    RVA(0x057db0, 0x8f8)
+    RVA(0x00057db0, 0x8f8)
     int ApiThisStub::winapi_057db0_IntersectRect() {
         return 0;
     }
@@ -992,7 +992,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:PostMessageA
     // @stub
-    RVA(0x064540, 0x11c)
+    RVA(0x00064540, 0x11c)
     int ApiThisStub::winapi_064540_PostMessageA() {
         return 0;
     }
@@ -1000,7 +1000,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:CopyRect;SetRect
     // @stub
-    RVA(0x075c60, 0x1ba)
+    RVA(0x00075c60, 0x1ba)
     int ApiThisStub::winapi_075c60_CopyRect_SetRect(int, int, int, int, int, int) {
         return 0;
     }
@@ -1008,7 +1008,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:PtInRect
     // @stub
-    RVA(0x077df0, 0x13d)
+    RVA(0x00077df0, 0x13d)
     int __stdcall winapi_077df0_PtInRect(int) {
         return 0;
     }
@@ -1016,7 +1016,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:SetRect
     // @stub
-    RVA(0x078060, 0x18d)
+    RVA(0x00078060, 0x18d)
     int __stdcall winapi_078060_SetRect(int, int, int, int, int) {
         return 0;
     }
@@ -1024,7 +1024,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:timeGetTime
     // @stub
-    RVA(0x0861e0, 0xc5)
+    RVA(0x000861e0, 0xc5)
     int ApiThisStub::winapi_0861e0_timeGetTime() {
         return 0;
     }
@@ -1032,7 +1032,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:PostMessageA;wsprintfA
     // @stub
-    RVA(0x0862f0, 0x3d5a)
+    RVA(0x000862f0, 0x3d5a)
     int __stdcall winapi_0862f0_PostMessageA_wsprintfA(int, int, int) {
         return 0;
     }
@@ -1044,7 +1044,7 @@ namespace ApiCallerStubs {
         RECT m_rc;
         void Set(int l, int t, int r, int b);
     };
-    RVA(0x08c380, 0x1e)
+    RVA(0x0008c380, 0x1e)
     void RectHost_08c380::Set(int l, int t, int r, int b) {
         SetRect(&m_rc, l, t, r, b);
     }
@@ -1062,7 +1062,7 @@ namespace ApiCallerStubs {
         ViewObj_08e3a0* m_30; // +0x30
         void GetRect(RECT* out);
     };
-    RVA(0x08e3a0, 0x94)
+    RVA(0x0008e3a0, 0x94)
     void RectQuery_08e3a0::GetRect(RECT* out) {
         RECT local;
         SetRect(&local, 0, 0, 0x27f, 0x1df);
@@ -1077,7 +1077,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:SendMessageA
     // @stub
-    RVA(0x08e6c0, 0x85)
+    RVA(0x0008e6c0, 0x85)
     int ApiThisStub::winapi_08e6c0_SendMessageA() {
         return 0;
     }
@@ -1085,7 +1085,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:MessageBoxA
     // The shared caption buffer (DAT_0060aac8) passed as the MessageBoxA title.
-    DATA(0x60aac8)
+    DATA(0x0060aac8)
     extern char g_msgCaption[];
     struct Poly08 {
         struct PolyVtbl08* m_vptr;
@@ -1119,7 +1119,7 @@ namespace ApiCallerStubs {
     };
     // Pause audio (slot 0x28), force the cursor visible, MessageBoxA, then hide it.
     void __stdcall Stop_158c70(int handle); // RVA 0x158c70
-    RVA(0x08ee70, 0x7c)
+    RVA(0x0008ee70, 0x7c)
     int MsgHost_08ee70::Show(int type, int text) {
         if (m_30) {
             Stop_158c70(m_30->m_4->m_14);
@@ -1140,7 +1140,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:CreateProcessA;RegQueryValueA
     // @stub
-    RVA(0x08f120, 0x168)
+    RVA(0x0008f120, 0x168)
     int __stdcall winapi_08f120_CreateProcessA_RegQueryValueA(int) {
         return 0;
     }
@@ -1148,7 +1148,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:PostMessageA
     // @stub
-    RVA(0x08f340, 0xf6)
+    RVA(0x0008f340, 0xf6)
     int ApiThisStub::winapi_08f340_PostMessageA() {
         return 0;
     }
@@ -1180,7 +1180,7 @@ namespace ApiCallerStubs {
         int Notify();
     };
     // __thiscall(): if the mode is 2/3/5, reset and post a 0x8005 command. Returns 1.
-    RVA(0x08f480, 0x49)
+    RVA(0x0008f480, 0x49)
     int ModeHost_08f480::Notify() {
         int mode = m_2c->GetMode();
         if (mode == 5 || mode == 2 || mode == 3) {
@@ -1194,7 +1194,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:PostMessageA
     // @stub
-    RVA(0x08f530, 0xbd)
+    RVA(0x0008f530, 0xbd)
     int ApiThisStub::winapi_08f530_PostMessageA() {
         return 0;
     }
@@ -1211,7 +1211,7 @@ namespace ApiCallerStubs {
         WndOwner_090220* m_4; // +0x04
         void Post(int code);
     };
-    RVA(0x090220, 0x2f)
+    RVA(0x00090220, 0x2f)
     void CmdHost_090220::Post(int code) {
         if (code > 0 && code <= 0x29) {
             int v = (code == 0x29) ? 1 : code;
@@ -1222,7 +1222,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:DialogBoxParamA
     // @stub
-    RVA(0x090260, 0x13e)
+    RVA(0x00090260, 0x13e)
     int ApiThisStub::winapi_090260_DialogBoxParamA(int, int, int) {
         return 0;
     }
@@ -1230,7 +1230,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:CreateProcessA;wsprintfA
     // @stub
-    RVA(0x090860, 0xd3)
+    RVA(0x00090860, 0xd3)
     int __stdcall winapi_090860_CreateProcessA_wsprintfA(int, int) {
         return 0;
     }
@@ -1262,7 +1262,7 @@ namespace ApiCallerStubs {
         int Quickload();
         int Fallback(); // thiscall, RVA 0x29a0
     };
-    RVA(0x092710, 0x77)
+    RVA(0x00092710, 0x77)
     int QlHost_092710::Quickload() {
         if (!m_58) {
             return 0;
@@ -1284,7 +1284,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:EndDialog
     // @stub
-    RVA(0x092ab0, 0x20d)
+    RVA(0x00092ab0, 0x20d)
     int __stdcall winapi_092ab0_EndDialog(int, int, int, int) {
         return 0;
     }
@@ -1292,7 +1292,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:PostMessageA
     // @stub
-    RVA(0x092f00, 0x1ef)
+    RVA(0x00092f00, 0x1ef)
     int ApiThisStub::winapi_092f00_PostMessageA() {
         return 0;
     }
@@ -1313,7 +1313,7 @@ namespace ApiCallerStubs {
         VrSub1_094bc0* m_8; // +0x08
         int Validate();
     };
-    RVA(0x094bc0, 0x31)
+    RVA(0x00094bc0, 0x31)
     int VrHost_094bc0::Validate() {
         VrSub2_094bc0* sub = m_8->m_8;
         if (sub && sub->Ready()) {
@@ -1337,7 +1337,7 @@ namespace ApiCallerStubs {
         WndChain_0953f0* m_4; // +0x04
         int Key(int code, int unused);
     };
-    RVA(0x0953f0, 0x37)
+    RVA(0x000953f0, 0x37)
     int CmdHost_0953f0::Key(int code, int unused) {
         if (code == 0x1b || code == 0x20 || code == 0xd) {
             PostMessageA(m_4->m_4->m_4, 0x111, 0x8036, 0);
@@ -1347,12 +1347,12 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:EndDialog
-    DATA(0x645ca4)
+    DATA(0x00645ca4)
     extern int g_dlg645ca4; // DAT_00645ca4 (the active dialog HWND)
     int __cdecl DlgFallback_215d(HWND hDlg, int wParam, int cur); // RVA 0x215d
     void __cdecl DlgInit_2ee6(HWND hDlg, int v);                  // RVA 0x2ee6
     // __stdcall DlgProc(hDlg, msg, wParam, lParam).
-    RVA(0x09dff0, 0x8c)
+    RVA(0x0009dff0, 0x8c)
     int __stdcall winapi_09dff0_EndDialog(HWND hDlg, int msg, int wParam, int lParam) {
         switch (msg) {
             case 0x111:
@@ -1389,7 +1389,7 @@ namespace ApiCallerStubs {
     int __cdecl Check2694(NameItem_09e2d0* item); // RVA 0x2694
     // "(Empty)" fallback display string (s_(Empty)_006113e0).
     // __cdecl(hWnd, item, id3, id4, id5, id6): label item into id3, enable 4 ctrls.
-    RVA(0x09e2d0, 0x84)
+    RVA(0x0009e2d0, 0x84)
     void winapi_09e2d0_SetDlgItemTextA(
         HWND hWnd,
         NameItem_09e2d0* item,
@@ -1415,7 +1415,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:EndDialog;PostMessageA
     // @stub
-    RVA(0x09e390, 0x243)
+    RVA(0x0009e390, 0x243)
     int winapi_09e390_EndDialog_PostMessageA() {
         return 0;
     }
@@ -1423,7 +1423,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:IntersectRect
     // @stub
-    RVA(0x09ea60, 0x168)
+    RVA(0x0009ea60, 0x168)
     int ApiThisStub::winapi_09ea60_IntersectRect(int, int, int) {
         return 0;
     }
@@ -1431,7 +1431,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:timeGetTime;wsprintfA
     // @stub
-    RVA(0x0b6b40, 0x29e)
+    RVA(0x000b6b40, 0x29e)
     int ApiThisStub::winapi_0b6b40_timeGetTime_wsprintfA() {
         return 0;
     }
@@ -1439,7 +1439,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:SetRect
     // @stub
-    RVA(0x0b6e90, 0x34d)
+    RVA(0x000b6e90, 0x34d)
     int ApiThisStub::winapi_0b6e90_SetRect() {
         return 0;
     }
@@ -1447,9 +1447,9 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: directx-wrapper-caller:calls 0x1780b0 (DPLAYX.#1)
     // The DirectPlay application GUID (DAT_0060fab8), passed by value to Connect.
-    DATA(0x60fab8)
+    DATA(0x0060fab8)
     extern GUID g_dplayAppGuid;
-    DATA(0x648cf0)
+    DATA(0x00648cf0)
     extern int g_isHost_648cf0; // DAT_00648cf0: nonzero when hosting
     struct DPlayConn_0b77a0 {
         int Connect(int sessionFlags, GUID guid); // thiscall, RVA 0x1780b0
@@ -1475,7 +1475,7 @@ namespace ApiCallerStubs {
     };
     // __thiscall(): configure the session, build it, connect via DirectPlay using
     // the app GUID, then host- or join-start depending on g_isHost_648cf0.
-    RVA(0x0b77a0, 0xb5)
+    RVA(0x000b77a0, 0xb5)
     int DPlayHost_0b77a0::Open() {
         if (!m_524) {
             return 0;
@@ -1521,7 +1521,7 @@ namespace ApiCallerStubs {
     };
     // @source: winapi:LoadStringA
     // __thiscall(id, dest): load string `id`, defaulting to "Error", then push it.
-    RVA(0x0b7ec0, 0x7d)
+    RVA(0x000b7ec0, 0x7d)
     void StrHost_0b7ec0::Load(int id, int dest) {
         char buf[0x12a];
         if (m_4 && m_4->m_8->m_c) {
@@ -1536,7 +1536,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetWindowTextLengthA
     // __stdcall(edit, str): append `str` to an edit control, prefixing a CRLF when
     // the control is non-empty, then scroll to keep the caret in view.
-    RVA(0x0bb3e0, 0xe5)
+    RVA(0x000bb3e0, 0xe5)
     void __stdcall winapi_0bb3e0_GetWindowTextLengthA(HWND edit, char* str) {
         if (!edit || !str || !str[0]) {
             return;
@@ -1560,7 +1560,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:GetAsyncKeyState;Sleep;timeGetTime;wsprintfA
     // @stub
-    RVA(0x0bb700, 0x265)
+    RVA(0x000bb700, 0x265)
     int ApiThisStub::winapi_0bb700_GetAsyncKeyState_Sleep_timeGetTime_wsprintfA() {
         return 0;
     }
@@ -1568,7 +1568,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:Sleep
     // @stub
-    RVA(0x0bba10, 0x1fb)
+    RVA(0x000bba10, 0x1fb)
     int ApiThisStub::winapi_0bba10_Sleep(int) {
         return 0;
     }
@@ -1577,7 +1577,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetDlgItem;SetTimer
     void Init_42b4(HWND hWnd, void* ctx); // RVA 0x42b4 (__cdecl)
     // __cdecl(hWnd, ctx): init, arm a 500 ms timer, cache a child control handle.
-    RVA(0x0bda00, 0x3e)
+    RVA(0x000bda00, 0x3e)
     void winapi_0bda00_GetDlgItem_SetTimer(HWND hWnd, void* ctx) {
         if (hWnd && ctx) {
             Init_42b4(hWnd, ctx);
@@ -1590,7 +1590,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetDlgItem;SetTimer
     void Init_1924(HWND hWnd, void* ctx); // RVA 0x1924 (__cdecl)
     // __cdecl(hWnd, ctx): init, arm a 500 ms timer, cache a child control handle.
-    RVA(0x0bdb90, 0x3e)
+    RVA(0x000bdb90, 0x3e)
     void winapi_0bdb90_GetDlgItem_SetTimer(HWND hWnd, void* ctx) {
         if (hWnd && ctx) {
             Init_1924(hWnd, ctx);
@@ -1602,7 +1602,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:EndDialog;KillTimer
     // @stub
-    RVA(0x0bdc00, 0x10c)
+    RVA(0x000bdc00, 0x10c)
     int __stdcall winapi_0bdc00_EndDialog_KillTimer(int, int, int, int) {
         return 0;
     }
@@ -1612,7 +1612,7 @@ namespace ApiCallerStubs {
     void Init_bddb0(HWND hWnd, void* ctx);
     // @source: winapi:GetDlgItem;SetTimer
     // __cdecl(hWnd, ctx): init, arm a 500 ms timer, cache a child control handle.
-    RVA(0x0bdd60, 0x3e)
+    RVA(0x000bdd60, 0x3e)
     void winapi_0bdd60_GetDlgItem_SetTimer(HWND hWnd, void* ctx) {
         if (hWnd && ctx) {
             Init_bddb0(hWnd, ctx);
@@ -1625,7 +1625,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetDlgItem;SetTimer
     void Init_2522(HWND hWnd, void* ctx); // RVA 0x2522 (__cdecl)
     // __cdecl(hWnd, ctx): init, arm a 750 ms timer, cache a child control handle.
-    RVA(0x0bdfe0, 0x3e)
+    RVA(0x000bdfe0, 0x3e)
     void winapi_0bdfe0_GetDlgItem_SetTimer(HWND hWnd, void* ctx) {
         if (hWnd && ctx) {
             Init_2522(hWnd, ctx);
@@ -1637,7 +1637,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:EndDialog;KillTimer;PostMessageA
     // @stub
-    RVA(0x0be0a0, 0x1c7)
+    RVA(0x000be0a0, 0x1c7)
     int __stdcall winapi_0be0a0_EndDialog_KillTimer_PostMessageA(int, int, int, int) {
         return 0;
     }
@@ -1645,7 +1645,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:GetDlgItem;SetDlgItemTextA;SetTimer
     // @stub
-    RVA(0x0be2f0, 0xb9)
+    RVA(0x000be2f0, 0xb9)
     int winapi_0be2f0_GetDlgItem_SetDlgItemTextA_SetTimer() {
         return 0;
     }
@@ -1659,11 +1659,11 @@ namespace ApiCallerStubs {
         int m_52c;                                        // +0x52c
         void Submit(char* text, int a, int b, HWND ctrl); // thiscall, RVA 0x2243
     };
-    DATA(0x6496ac)
+    DATA(0x006496ac)
     extern PeerSession_0be490* g_peerSession; // DAT_006496ac
     extern "C" char g_emptyString[];          // 0x6293f4
     // __cdecl(hWnd, gate): read the chat-edit text and, if non-empty, submit it.
-    RVA(0x0be400, 0x6c)
+    RVA(0x000be400, 0x6c)
     void winapi_0be400_GetWindowTextA_SetWindowTextA(HWND hWnd, void* gate) {
         char buf[0x68];
         if (hWnd && gate) {
@@ -1688,11 +1688,11 @@ namespace ApiCallerStubs {
         void Stop();                       // RVA 0xb95f0
         void SetStatus(char* text, int f); // RVA 0xb7e30 (thunk 0x1af0)
     };
-    DATA(0x6487e0)
+    DATA(0x006487e0)
     extern char g_sessionFlag; // DAT_006487e0
     // @source: winapi:EndDialog;KillTimer
     // __cdecl(hWnd, session): stop the session and end the dialog appropriately.
-    RVA(0x0be490, 0x84)
+    RVA(0x000be490, 0x84)
     void winapi_0be490_EndDialog_KillTimer(HWND hWnd, SessionHost_0be490* session) {
         if (hWnd && session) {
             g_sessionFlag = 0;
@@ -1714,12 +1714,12 @@ namespace ApiCallerStubs {
     // @source: winapi:GetDlgItem;SetDlgItemTextA;SetTimer
     // CString-data ptr (DAT_00649618): the pending drop-in player's name; its
     // CString length lives 8 bytes before the data.
-    DATA(0x649618)
+    DATA(0x00649618)
     extern char* g_playerName_649618;
     int __cdecl Format_11f890(char* buf, const char* fmt, ...); // RVA 0x11f890
     void Init_2ed7(HWND hWnd, void* ctx);                       // RVA 0x2ed7 (__cdecl)
     // __cdecl(hWnd, ctx): show a drop-in prompt, init, arm a timer, cache a child.
-    RVA(0x0be760, 0x82)
+    RVA(0x000be760, 0x82)
     void winapi_0be760_GetDlgItem_SetDlgItemTextA_SetTimer(HWND hWnd, void* ctx) {
         if (hWnd && ctx) {
             char buf[0x80];
@@ -1736,7 +1736,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:GetWindow;GetWindowLongA;SetWindowLongA
     // @stub
-    RVA(0x0c1840, 0x16e)
+    RVA(0x000c1840, 0x16e)
     int winapi_0c1840_GetWindow_GetWindowLongA_SetWindowLongA() {
         return 0;
     }
@@ -1744,7 +1744,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:GetWindow;SendMessageA
     // @stub
-    RVA(0x0c1aa0, 0x2f8)
+    RVA(0x000c1aa0, 0x2f8)
     int winapi_0c1aa0_GetWindow_SendMessageA() {
         return 0;
     }
@@ -1754,7 +1754,7 @@ namespace ApiCallerStubs {
     // Item resolver at RVA 0x1753 (push slot; stdcall; returns the CWnd-ish item).
     WndItem* __stdcall ResolveItem_1753(int slot);
     // __stdcall(id, wParam): if item `id` resolves, set its selection to wParam-1.
-    RVA(0x0c2980, 0x28)
+    RVA(0x000c2980, 0x28)
     void __stdcall winapi_0c2980_SendMessageA(int id, int wParam) {
         WndItem* it = ResolveItem_1753(id);
         if (it) {
@@ -1772,7 +1772,7 @@ namespace ApiCallerStubs {
         int BaseOnInitDialog(); // RVA 0x1bac5e (CDialog::OnInitDialog)
     };
     // @source: winapi:SetTimer
-    RVA(0x0c2cb0, 0x1f)
+    RVA(0x000c2cb0, 0x1f)
     int TimerDlg_0c2cb0::OnInitDialog() {
         BaseOnInitDialog();
         SetTimer(m_1c, 1, 0x32, 0);
@@ -1787,7 +1787,7 @@ namespace ApiCallerStubs {
         WndItem* GetItem(int id); // thiscall, RVA 0x1be27d
         void Append(char* str);
     };
-    RVA(0x0c2ce0, 0xf3)
+    RVA(0x000c2ce0, 0xf3)
     void EditAppendHost_0c2ce0::Append(char* str) {
         WndItem* item = GetItem(0x511);
         HWND edit;
@@ -1818,7 +1818,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:CreateSolidBrush;FillRect;GetClientRect
     // @stub
-    RVA(0x0c2e20, 0x21d)
+    RVA(0x000c2e20, 0x21d)
     int winapi_0c2e20_CreateSolidBrush_FillRect_GetClientRect() {
         return 0;
     }
@@ -1826,7 +1826,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:SendMessageA
     // @stub
-    RVA(0x0c3e30, 0xfe)
+    RVA(0x000c3e30, 0xfe)
     int winapi_0c3e30_SendMessageA() {
         return 0;
     }
@@ -1834,7 +1834,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:GetFocus;SendMessageA
     // @stub
-    RVA(0x0c4230, 0x38e)
+    RVA(0x000c4230, 0x38e)
     int __stdcall winapi_0c4230_GetFocus_SendMessageA(int) {
         return 0;
     }
@@ -1842,7 +1842,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:KillTimer;timeGetTime;wsprintfA
     // @stub
-    RVA(0x0c46b0, 0x371)
+    RVA(0x000c46b0, 0x371)
     int ApiThisStub::winapi_0c46b0_KillTimer_timeGetTime_wsprintfA() {
         return 0;
     }
@@ -1859,7 +1859,7 @@ namespace ApiCallerStubs {
         void Update3();
         void Refresh(); // thiscall, RVA 0x12d5
     };
-    RVA(0x0c4ee0, 0x33)
+    RVA(0x000c4ee0, 0x33)
     void SelHost_0c4ee0::Update0() {
         HWND h = ResolveItem_1753(0)->m_hwnd;
         g_gameReg->m_378 = SendMessageA(h, 0x147, 0, 0) + 1;
@@ -1868,7 +1868,7 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:SendMessageA
-    RVA(0x0c4f30, 0x33)
+    RVA(0x000c4f30, 0x33)
     void SelHost_0c4ee0::Update1() {
         HWND h = ResolveItem_1753(1)->m_hwnd;
         g_gameReg->m_5b0 = SendMessageA(h, 0x147, 0, 0) + 1;
@@ -1885,7 +1885,7 @@ namespace ApiCallerStubs {
         void Refresh(); // RVA 0xc40b0
     };
     // @source: winapi:SendMessageA
-    RVA(0x0c4f80, 0x33)
+    RVA(0x000c4f80, 0x33)
     void SelHost_0c4f80::Update() {
         HWND h = ResolveItem_c27c0(2)->m_hwnd;
         g_gameReg->m_7e8 = SendMessageA(h, 0x147, 0, 0) + 1;
@@ -1894,7 +1894,7 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:SendMessageA
-    RVA(0x0c4fd0, 0x33)
+    RVA(0x000c4fd0, 0x33)
     void SelHost_0c4ee0::Update3() {
         HWND h = ResolveItem_1753(3)->m_hwnd;
         g_gameReg->m_a20 = SendMessageA(h, 0x147, 0, 0) + 1;
@@ -1913,7 +1913,7 @@ namespace ApiCallerStubs {
         char m_pad0[0x528];
         int m_528; // +0x528
     };
-    DATA(0x64bd5c)
+    DATA(0x0064bd5c)
     extern SelOwner_0c50f0* g_64bd5c;
     WndItem* __stdcall ResolveItem_1159(int idx); // RVA 0x1159
     void __stdcall Func1d70(int flag);            // RVA 0x1d70
@@ -1927,7 +1927,7 @@ namespace ApiCallerStubs {
         void Sync2c0c();      // RVA 0x2c0c
         void Sync38d2();      // RVA 0x38d2
     };
-    RVA(0x0c50f0, 0x9b)
+    RVA(0x000c50f0, 0x9b)
     void RosterHost_0c50f0::Toggle(int idx) {
         WndItem* it = ResolveItem_1159(idx);
         if (!it) {
@@ -1957,7 +1957,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:timeGetTime
     // @stub
-    RVA(0x0c7ec0, 0x5f5)
+    RVA(0x000c7ec0, 0x5f5)
     int ApiThisStub::winapi_0c7ec0_timeGetTime(int, int, int) {
         return 0;
     }
@@ -1965,7 +1965,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:GetCursorPos
     // @stub
-    RVA(0x0c8a10, 0x119)
+    RVA(0x000c8a10, 0x119)
     int ApiThisStub::winapi_0c8a10_GetCursorPos(int) {
         return 0;
     }
@@ -1973,7 +1973,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:PostMessageA
     // @stub
-    RVA(0x0cbaf0, 0x16f)
+    RVA(0x000cbaf0, 0x16f)
     int ApiThisStub::winapi_0cbaf0_PostMessageA(int, int) {
         return 0;
     }
@@ -1981,7 +1981,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:PostMessageA
     // @stub
-    RVA(0x0cdb10, 0x80c)
+    RVA(0x000cdb10, 0x80c)
     int ApiThisStub::winapi_0cdb10_PostMessageA(int, int, int) {
         return 0;
     }
@@ -1989,7 +1989,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:PostMessageA
     // @stub
-    RVA(0x0ceae0, 0x268)
+    RVA(0x000ceae0, 0x268)
     int ApiThisStub::winapi_0ceae0_PostMessageA(int, int, int) {
         return 0;
     }
@@ -2047,7 +2047,7 @@ namespace ApiCallerStubs {
         int Dispatch();
     };
     // @source: winapi:PostMessageA
-    RVA(0x0cfbd0, 0x8f)
+    RVA(0x000cfbd0, 0x8f)
     int Dispatcher_0cfbd0::Dispatch() {
         if (m_1c == 0x20) {
             m_1c0 = 1;
@@ -2090,7 +2090,7 @@ namespace ApiCallerStubs {
         RectSrc_0d00a0* m_c; // +0x0c
         void Show(int arg);
     };
-    RVA(0x0d00a0, 0x5a)
+    RVA(0x000d00a0, 0x5a)
     void BlitHost_0d00a0::Show(int arg) {
         RECT src = *(RECT*)(m_c->m_24 + 0x10);
         RECT dst;
@@ -2101,7 +2101,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:CopyRect
     // @stub
-    RVA(0x0d0b30, 0x200)
+    RVA(0x000d0b30, 0x200)
     int ApiThisStub::winapi_0d0b30_CopyRect(int) {
         return 0;
     }
@@ -2109,7 +2109,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:SetRect
     // @stub
-    RVA(0x0d5f90, 0xd7)
+    RVA(0x000d5f90, 0xd7)
     int ApiThisStub::winapi_0d5f90_SetRect(int, int, int, int) {
         return 0;
     }
@@ -2117,7 +2117,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:wsprintfA
     // @stub
-    RVA(0x0d60b0, 0x2cd)
+    RVA(0x000d60b0, 0x2cd)
     int ApiThisStub::winapi_0d60b0_wsprintfA() {
         return 0;
     }
@@ -2144,7 +2144,7 @@ namespace ApiCallerStubs {
         int m_510; // +0x510
         int Begin(int arg);
     };
-    RVA(0x0d7220, 0x7b)
+    RVA(0x000d7220, 0x7b)
     int ActionHost_0d7220::Begin(int arg) {
         if (m_500) {
             return 0;
@@ -2165,7 +2165,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:wsprintfA
     // @stub
-    RVA(0x0d7520, 0x3b9)
+    RVA(0x000d7520, 0x3b9)
     int ApiThisStub::winapi_0d7520_wsprintfA(int, int, int, int) {
         return 0;
     }
@@ -2173,7 +2173,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:SetRect
     // @stub
-    RVA(0x0d8c60, 0xea)
+    RVA(0x000d8c60, 0xea)
     int ApiThisStub::winapi_0d8c60_SetRect() {
         return 0;
     }
@@ -2181,7 +2181,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:wsprintfA
     // @stub
-    RVA(0x0d95f0, 0x756)
+    RVA(0x000d95f0, 0x756)
     int ApiThisStub::winapi_0d95f0_wsprintfA() {
         return 0;
     }
@@ -2195,7 +2195,7 @@ namespace ApiCallerStubs {
         int m_1c; // +0x1c
         int Flip();
     };
-    RVA(0x0da200, 0x9b)
+    RVA(0x000da200, 0x9b)
     int CoinHost_0da200::Flip() {
         CGameReg* gr = g_gameReg;
         if (gr->m_134 == 1 && gr->m_130 == 0) {
@@ -2218,7 +2218,7 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:PostMessageA
-    DATA(0x64c69c)
+    DATA(0x0064c69c)
     extern int g_flag64c69c; // DAT_0064c69c
     struct CmdWnd_0de590 {
         int m_0;
@@ -2230,7 +2230,7 @@ namespace ApiCallerStubs {
         CmdWnd_0de590* m_4; // +0x04
         void Cancel();
     };
-    RVA(0x0de590, 0x2e)
+    RVA(0x000de590, 0x2e)
     void CmdHost_0de590::Cancel() {
         if (g_flag64c69c) {
             m_4->Forward();
@@ -2241,14 +2241,14 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:EndDialog
-    DATA(0x64c86c)
+    DATA(0x0064c86c)
     extern int g_dlg64c86c; // DAT_0064c86c (the active dialog HWND)
-    DATA(0x613a9c)
+    DATA(0x00613a9c)
     extern int g_dlgSel613a9c;                                    // DAT_00613a9c
     int __cdecl DlgFallback_1302(HWND hDlg, int wParam, int cur); // RVA 0x1302
     void __cdecl DlgInit_2e05(HWND hDlg, int v);                  // RVA 0x2e05
     // __stdcall DlgProc(hDlg, msg, wParam, lParam).
-    RVA(0x0e35f0, 0x77)
+    RVA(0x000e35f0, 0x77)
     int __stdcall winapi_0e35f0_EndDialog(HWND hDlg, int msg, int wParam, int lParam) {
         switch (msg) {
             case 0x111:
@@ -2275,7 +2275,7 @@ namespace ApiCallerStubs {
     // SetDlgItemTextA helper defined below (RVA 0xe4850, reached via thunk 0x103c).
     void winapi_0e4850_SetDlgItemTextA(HWND hWnd, void* gate, char* item);
     // The optional info-line text shown on WM_INITDIALOG (DAT_0064c864).
-    DATA(0x64c864)
+    DATA(0x0064c864)
     extern char* g_dlgInfoText;
 
     // @confidence: low
@@ -2288,7 +2288,7 @@ namespace ApiCallerStubs {
     };
     // The SetDlgItemTextA helper (RVA 0xe4850) is reached here via thunk 0x103c.
     // __stdcall DialogProc: OK closes; Cancel runs the helper sub-object; init fills.
-    RVA(0x0e3a40, 0xb0)
+    RVA(0x000e3a40, 0xb0)
     int __stdcall winapi_0e3a40_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
         switch (msg) {
             case 0x110:
@@ -2317,7 +2317,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:EndDialog
     // __stdcall DialogProc: OK/Cancel close the dialog; WM_INITDIALOG fills a line.
-    RVA(0x0e3b20, 0x86)
+    RVA(0x000e3b20, 0x86)
     int __stdcall winapi_0e3b20_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
         switch (msg) {
             case 0x110:
@@ -2344,7 +2344,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:EndDialog
     // __stdcall DlgProc(hDlg, msg, wParam, lParam): OK/Cancel end the dialog.
-    RVA(0x0e3be0, 0x52)
+    RVA(0x000e3be0, 0x52)
     int __stdcall winapi_0e3be0_EndDialog(HWND hDlg, int msg, int wParam, int lParam) {
         switch (msg) {
             case 0x110:
@@ -2367,7 +2367,7 @@ namespace ApiCallerStubs {
     // @source: winapi:SetDlgItemTextA
     // __cdecl(hWnd, item, id3, id4, id5, id6): label item into id3, then enable the
     // first two controls unconditionally and the last two only if the item is valid.
-    RVA(0x0e3e80, 0x86)
+    RVA(0x000e3e80, 0x86)
     void winapi_0e3e80_SetDlgItemTextA(
         HWND hWnd,
         NameItem_09e2d0* item,
@@ -2393,7 +2393,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:SetDlgItemTextA
     // __cdecl: SetDlgItemTextA(hWnd, 0x40d, &item->text) when all ptrs non-null.
-    RVA(0x0e4850, 0x29)
+    RVA(0x000e4850, 0x29)
     void winapi_0e4850_SetDlgItemTextA(HWND hWnd, void* gate, char* item) {
         if (hWnd && gate && item) {
             SetDlgItemTextA(hWnd, 0x40d, item + 0x14);
@@ -2403,7 +2403,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:SetRect
     // @stub
-    RVA(0x0e6020, 0x288)
+    RVA(0x000e6020, 0x288)
     int ApiThisStub::winapi_0e6020_SetRect(int, int, int, int, int, int, int, int, int, int) {
         return 0;
     }
@@ -2411,7 +2411,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:IntersectRect
     // @stub
-    RVA(0x0ecc90, 0x86a)
+    RVA(0x000ecc90, 0x86a)
     int ApiThisStub::winapi_0ecc90_IntersectRect() {
         return 0;
     }
@@ -2419,7 +2419,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:PtInRect
     // @stub
-    RVA(0x0ed9f0, 0x8dd)
+    RVA(0x000ed9f0, 0x8dd)
     int ApiThisStub::winapi_0ed9f0_PtInRect() {
         return 0;
     }
@@ -2427,7 +2427,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:IntersectRect;PtInRect
     // @stub
-    RVA(0x0ee800, 0x971)
+    RVA(0x000ee800, 0x971)
     int ApiThisStub::winapi_0ee800_IntersectRect_PtInRect() {
         return 0;
     }
@@ -2435,7 +2435,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:IntersectRect;PtInRect
     // @stub
-    RVA(0x0f0e20, 0x928)
+    RVA(0x000f0e20, 0x928)
     int ApiThisStub::winapi_0f0e20_IntersectRect_PtInRect() {
         return 0;
     }
@@ -2443,7 +2443,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:IntersectRect
     // @stub
-    RVA(0x0f36a0, 0x78e)
+    RVA(0x000f36a0, 0x78e)
     int winapi_0f36a0_IntersectRect() {
         return 0;
     }
@@ -2451,7 +2451,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:PtInRect
     // @stub
-    RVA(0x0f42f0, 0x1193)
+    RVA(0x000f42f0, 0x1193)
     int ApiThisStub::winapi_0f42f0_PtInRect() {
         return 0;
     }
@@ -2459,7 +2459,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:IntersectRect
     // @stub
-    RVA(0x0f60f0, 0xb30)
+    RVA(0x000f60f0, 0xb30)
     int ApiThisStub::winapi_0f60f0_IntersectRect() {
         return 0;
     }
@@ -2470,19 +2470,19 @@ namespace ApiCallerStubs {
         char m_pad0[0x14];
         void(__cdecl* m_14)(short); // +0x14 function pointer member
     };
-    DATA(0x64e0b8)
+    DATA(0x0064e0b8)
     extern int g_midiOpen_64e0b8;
-    DATA(0x64e0b0)
+    DATA(0x0064e0b0)
     extern MidiDrv_0f8e20* g_midiDrv_64e0b0;
-    DATA(0x64e0a4)
+    DATA(0x0064e0a4)
     extern short g_midiPort_64e0a4;
-    DATA(0x64dd28)
+    DATA(0x0064dd28)
     extern short g_midiDev_64dd28;
-    DATA(0x64e0a8)
+    DATA(0x0064e0a8)
     extern HMODULE g_midiLib_64e0a8;
     void __cdecl MidiShutdown_3382(); // RVA 0x3382
     // __cdecl(): tear the MIDI driver down and free its DLL.
-    RVA(0x0f8e20, 0x56)
+    RVA(0x000f8e20, 0x56)
     void winapi_0f8e20_FreeLibrary() {
         if (g_midiOpen_64e0b8 && g_midiDrv_64e0b0 && g_midiPort_64e0a4) {
             MidiShutdown_3382();
@@ -2505,7 +2505,7 @@ namespace ApiCallerStubs {
         PaintWnd_0fac70* m_4; // +0x04
         int Paint();
     };
-    RVA(0x0fac70, 0x4c)
+    RVA(0x000fac70, 0x4c)
     int PaintHost_0fac70::Paint() {
         if (!m_4) {
             return 0;
@@ -2542,7 +2542,7 @@ namespace ApiCallerStubs {
     };
     // @source: winapi:SetRect
     // __thiscall: lay out the 0xa0x0x1e0 screen, validate it, else report error.
-    RVA(0x0fe460, 0x83)
+    RVA(0x000fe460, 0x83)
     int Screen_0fe460::Open() {
         if (m_548 == 0 && m_0 != 1) {
             Prep_500930(1);
@@ -2561,7 +2561,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:SetRect
     // @stub
-    RVA(0x0fe520, 0xa9)
+    RVA(0x000fe520, 0xa9)
     int ApiThisStub::winapi_0fe520_SetRect() {
         return 0;
     }
@@ -2581,7 +2581,7 @@ namespace ApiCallerStubs {
         int Reset();
         void Sub194c(int v); // thiscall, RVA 0x194c
     };
-    RVA(0x0fe600, 0x49)
+    RVA(0x000fe600, 0x49)
     int RectWnd_fe600::Reset() {
         if (!m_548 && m_0 != 2) {
             Prep_12fd(1);
@@ -2595,7 +2595,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:SetRect
     // @stub
-    RVA(0x107d00, 0x591)
+    RVA(0x00107d00, 0x591)
     int ApiThisStub::winapi_107d00_SetRect() {
         return 0;
     }
@@ -2603,7 +2603,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:SetRect
     // @stub
-    RVA(0x115300, 0xf5)
+    RVA(0x00115300, 0xf5)
     int winapi_115300_SetRect() {
         return 0;
     }
@@ -2611,7 +2611,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:CopyRect;OffsetRect
     // @stub
-    RVA(0x115930, 0x15b)
+    RVA(0x00115930, 0x15b)
     int winapi_115930_CopyRect_OffsetRect() {
         return 0;
     }
@@ -2623,7 +2623,7 @@ namespace ApiCallerStubs {
         RECT m_rc;
         RectHost_115b30* Copy(const RECT* src);
     };
-    RVA(0x115b30, 0x15)
+    RVA(0x00115b30, 0x15)
     RectHost_115b30* RectHost_115b30::Copy(const RECT* src) {
         CopyRect(&m_rc, src);
         return this;
@@ -2632,7 +2632,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:SetActiveWindow;SetFocus
     // __cdecl: activate + focus the same window.
-    RVA(0x118930, 0x15)
+    RVA(0x00118930, 0x15)
     void winapi_118930_SetActiveWindow_SetFocus(HWND hWnd) {
         SetActiveWindow(hWnd);
         SetFocus(hWnd);
@@ -2641,7 +2641,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:OutputDebugStringA
     // __cdecl(status): trace a _heapchk() status code.
-    RVA(0x118b50, 0x5b)
+    RVA(0x00118b50, 0x5b)
     void winapi_118b50_OutputDebugStringA(int status) {
         switch (status) {
             case -3:
@@ -2668,7 +2668,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:IsIconic
     // __cdecl(hWnd, msg, wParam): block screen-saver / monitor-power while not iconic.
-    RVA(0x1192d0, 0x39)
+    RVA(0x001192d0, 0x39)
     int winapi_1192d0_IsIconic(HWND hWnd, int msg, int wParam) {
         if (msg == 0x112) {
             int sc = wParam & 0xfff0;
@@ -2684,7 +2684,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:timeGetTime
     // @stub
-    RVA(0x11b3b0, 0x338)
+    RVA(0x0011b3b0, 0x338)
     int ApiThisStub::winapi_11b3b0_timeGetTime(int, int, int, int, int, int) {
         return 0;
     }
@@ -2692,7 +2692,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:timeGetTime
     // @stub
-    RVA(0x11b7c0, 0x304)
+    RVA(0x0011b7c0, 0x304)
     int __stdcall winapi_11b7c0_timeGetTime(int, int, int, int, int) {
         return 0;
     }
@@ -2700,7 +2700,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:GetLastError;HeapValidate;HeapWalk
     // @stub
-    RVA(0x1206b0, 0x1ad)
+    RVA(0x001206b0, 0x1ad)
     int winapi_1206b0_GetLastError_HeapValidate_HeapWalk() {
         return 0;
     }
@@ -2708,7 +2708,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:GetCurrentThreadId;TlsSetValue
     // @stub
-    RVA(0x123d10, 0x8c)
+    RVA(0x00123d10, 0x8c)
     int winapi_123d10_GetCurrentThreadId_TlsSetValue() {
         return 0;
     }
@@ -2727,7 +2727,7 @@ namespace ApiCallerStubs {
         int Use136910(void* data, int a, int b); // thiscall, RVA 0x136910
     };
     // __thiscall(name, a, b): find/load/lock a WAVE resource, hand it to Use136910.
-    RVA(0x136a30, 0x76)
+    RVA(0x00136a30, 0x76)
     int WaveHost_136a30::LoadWave(const char* name, int a, int b) {
         if (!m_78) {
             return 0;
@@ -2762,7 +2762,7 @@ namespace ApiCallerStubs {
         int Use136bd0(WaveProbe_136ce0* probe, void* data, int arg); // thiscall, RVA 0x136bd0
     };
     // __thiscall(probe, name, arg): if the probe is ready, find/load/lock the WAVE.
-    RVA(0x136ce0, 0x92)
+    RVA(0x00136ce0, 0x92)
     int WaveHost2_136ce0::LoadWave(WaveProbe_136ce0* probe, const char* name, int arg) {
         if (!m_78) {
             return 0;
@@ -2790,7 +2790,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:timeGetTime
     // @stub
-    RVA(0x136e20, 0xa8)
+    RVA(0x00136e20, 0xa8)
     int ApiThisStub::winapi_136e20_timeGetTime(int) {
         return 0;
     }
@@ -2798,7 +2798,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:timeGetTime
     // @stub
-    RVA(0x136fe0, 0x7b)
+    RVA(0x00136fe0, 0x7b)
     int ApiThisStub::winapi_136fe0_timeGetTime(int, int, int, int, int, int) {
         return 0;
     }
@@ -2807,7 +2807,7 @@ namespace ApiCallerStubs {
     // @source: directx-wrapper-caller:calls 0x136550 (DSOUND.#1_DirectSoundCreate)
     int __stdcall PlaySound3_136550(int a, int b, int flag); // RVA 0x136550
     // __stdcall(a, b): default the 3rd arg to 0.
-    RVA(0x137720, 0x14)
+    RVA(0x00137720, 0x14)
     int __stdcall directx_wrapper_caller_137720_DSOUND_1_DirectSoundCreate(int a, int b) {
         return PlaySound3_136550(a, b, 0);
     }
@@ -2815,7 +2815,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:timeGetTime
     // @stub
-    RVA(0x137ac0, 0xa2)
+    RVA(0x00137ac0, 0xa2)
     int ApiThisStub::winapi_137ac0_timeGetTime(int) {
         return 0;
     }
@@ -2840,7 +2840,7 @@ namespace ApiCallerStubs {
         int Tick(int timestamp);
         int Work(int a, int b); // RVA 0x137f30
     };
-    RVA(0x137e30, 0x98)
+    RVA(0x00137e30, 0x98)
     int Throttle_137e30::Tick(int timestamp) {
         if (!m_1c) {
             return 1;
@@ -2890,7 +2890,7 @@ namespace ApiCallerStubs {
         int Work(int a, int b); // RVA 0x137f30
     };
     // @source: winapi:timeGetTime
-    RVA(0x1380d0, 0x4e)
+    RVA(0x001380d0, 0x4e)
     int Timer_1380d0::Tick(int timestamp) {
         int t = (timestamp == -1) ? (int)timeGetTime() : timestamp;
         m_28 = t;
@@ -2914,7 +2914,7 @@ namespace ApiCallerStubs {
         int m_28; // +0x28
         int Init(int driver, int seq, int skipInit);
     };
-    RVA(0x138490, 0x5e)
+    RVA(0x00138490, 0x5e)
     int AilHost_138490::Init(int driver, int seq, int skipInit) {
         m_24 = driver;
         m_20 = seq;
@@ -2956,7 +2956,7 @@ namespace ApiCallerStubs {
         void Reset138530(); // thiscall, RVA 0x138530
     };
     // __thiscall(): reset, release the active sequence, reset again, shut AIL down.
-    RVA(0x1384f0, 0x3b)
+    RVA(0x001384f0, 0x3b)
     void AilMgr_1384f0::Shutdown() {
         Reset138530();
         if (m_1c) {
@@ -2972,7 +2972,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: thirdparty:_AIL_set_XMIDI_master_volume@8
     // __stdcall(volume 0..100): scale to 0..127 and push to the XMIDI driver.
-    RVA(0x138950, 0x70)
+    RVA(0x00138950, 0x70)
     int __stdcall thirdparty_138950_AIL_set_XMIDI_master_volume_8(int volume) {
         int scaled;
         if (!g_ailMidiDriver) {
@@ -2992,7 +2992,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: thirdparty:_AIL_XMIDI_master_volume@4
     // __cdecl(): read the XMIDI master volume and rescale 0..127 -> 0..100.
-    RVA(0x1389c0, 0x47)
+    RVA(0x001389c0, 0x47)
     int thirdparty_1389c0_AIL_XMIDI_master_volume_4() {
         if (!g_ailMidiDriver) {
             return 0x64;
@@ -3010,7 +3010,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: thirdparty:_AIL_allocate_sequence_handle@4;_AIL_init_sequence@12;_AIL_release_sequence_handle@4
     // @stub
-    RVA(0x138c20, 0x122)
+    RVA(0x00138c20, 0x122)
     int ApiThisStub::thirdparty_138c20_AIL_allocate_sequence_handle_4_AIL_init_sequence_12_AIL_(
         int,
         int,
@@ -3060,7 +3060,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: thirdparty:_AIL_release_sequence_handle@4
     // __thiscall(): tear down, release the AIL sequence handle + Rez buffer.
-    RVA(0x138dd0, 0x36)
+    RVA(0x00138dd0, 0x36)
     void AilSeq::ReleaseHandle() {
         Teardown();
         if (m_58) {
@@ -3075,7 +3075,7 @@ namespace ApiCallerStubs {
 
     // @source: thirdparty:_AIL_set_sequence_loop_count@8;_AIL_start_sequence@4
     // __thiscall(cursor, loop): start the sequence; if looping, clear loop count.
-    RVA(0x138e10, 0x4a)
+    RVA(0x00138e10, 0x4a)
     int AilSeq::Play(int cursor, int loop) {
         if (!CanPlay()) {
             return 0;
@@ -3093,7 +3093,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: thirdparty:_AIL_end_sequence@4
     // __thiscall(): if playable, end the sequence and clear the paused flag.
-    RVA(0x138e60, 0x26)
+    RVA(0x00138e60, 0x26)
     int AilSeq::Stop() {
         if (!CanPlay()) {
             return 0;
@@ -3106,7 +3106,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: thirdparty:_AIL_stop_sequence@4
     // __thiscall(): pause the sequence the first time, counting nested pauses.
-    RVA(0x138e90, 0x3a)
+    RVA(0x00138e90, 0x3a)
     int AilSeq::Pause() {
         if (!CanPlay()) {
             return 0;
@@ -3124,7 +3124,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: thirdparty:_AIL_resume_sequence@4
     // __thiscall(restart): count down the resume delay and re-issue the resume.
-    RVA(0x138ed0, 0x4f)
+    RVA(0x00138ed0, 0x4f)
     int AilSeq::Resume(int restart) {
         if (!CanPlay()) {
             return 0;
@@ -3147,7 +3147,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: thirdparty:_AIL_set_sequence_tempo@12
     // __thiscall(tempo, ms): if playable, set the sequence tempo and cache it.
-    RVA(0x138f90, 0x32)
+    RVA(0x00138f90, 0x32)
     int AilSeq::SetTempo(int tempo, int ms) {
         if (!CanPlay()) {
             return 0;
@@ -3160,7 +3160,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: thirdparty:_AIL_set_sequence_volume@12
     // __thiscall(volume 0..100, ms): scale to 0..127 and set the sequence volume.
-    RVA(0x138fd0, 0x5e)
+    RVA(0x00138fd0, 0x5e)
     int AilSeq::SetVolume(int volume, int ms) {
         if (!CanPlay()) {
             return 0;
@@ -3181,7 +3181,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: thirdparty:_AIL_set_sequence_loop_count@8
     // __thiscall(loop): update the cached loop flag, re-arming the driver count.
-    RVA(0x139030, 0x4c)
+    RVA(0x00139030, 0x4c)
     int AilSeq::SetLoop(int loop) {
         if (!CanPlay()) {
             return 0;
@@ -3207,7 +3207,7 @@ namespace ApiCallerStubs {
         int m_c; // +0x0c (destroyed flag)
         int Destroy();
     };
-    RVA(0x13d4c0, 0x1e)
+    RVA(0x0013d4c0, 0x1e)
     int WndHolder_13d4c0::Destroy() {
         if (!m_c) {
             m_c = 1;
@@ -3219,13 +3219,13 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:CopyRect
     // @stub
-    RVA(0x13f460, 0x2da)
+    RVA(0x0013f460, 0x2da)
     int ApiThisStub::winapi_13f460_CopyRect(int, int) {
         return 0;
     }
 
     // The app HINSTANCE used as the resource module (DAT_00683ee0).
-    DATA(0x683ee0)
+    DATA(0x00683ee0)
     extern HINSTANCE g_resModule;
 
     // @confidence: low
@@ -3253,7 +3253,7 @@ namespace ApiCallerStubs {
     // __thiscall(a, name, c): find/load/lock the named RT_BITMAP, validate its
     // header (+0xe==8), zero a 0x6c-byte block, seed the loader fields, init it,
     // then parse the payload that follows the 0x400-byte header.
-    RVA(0x144270, 0xd2)
+    RVA(0x00144270, 0xd2)
     int ResLoad_144270::Load(int a, char* name, int c) {
         HRSRC hr = FindResourceA(g_resModule, name, (LPCSTR)2);
         if (!hr) {
@@ -3292,7 +3292,7 @@ namespace ApiCallerStubs {
     };
     // __thiscall(a, name, c): load the named PALETTE resource as 256 RGB triples,
     // expand to PALETTEENTRY[256] (flags 0), and apply it.
-    RVA(0x1479e0, 0xbb)
+    RVA(0x001479e0, 0xbb)
     int PalLoad_1479e0::Load(int a, char* name, int c) {
         PALETTEENTRY pal[256];
         HRSRC hr = FindResourceA(g_resModule, name, "PALETTE");
@@ -3360,7 +3360,7 @@ namespace ApiCallerStubs {
     };
     // __thiscall(a,b,c3,c4,c5,a6): rebuild the palette snapshot, cache the params
     // (3 bytes at +0x1c), timestamp, lazily clone the source palette, then finalize.
-    RVA(0x147f30, 0xbe)
+    RVA(0x00147f30, 0xbe)
     void PalCtx_147f30::Setup6(int a, int b, char c3, char c4, char c5, int a6) {
         if (m_34) {
             Teardown();
@@ -3392,7 +3392,7 @@ namespace ApiCallerStubs {
     // @source: winapi:timeGetTime
     // __thiscall(a,b,a3,a4): same as Setup6 but stores a3 at +0x14 and uses the
     // 0x34b log line; returns void.
-    RVA(0x147ff0, 0xa9)
+    RVA(0x00147ff0, 0xa9)
     void PalCtx_147f30::Setup4(int a, int b, int a3, int a4) {
         if (m_34) {
             Teardown();
@@ -3420,7 +3420,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:timeGetTime
     // @stub
-    RVA(0x1480a0, 0x1a7)
+    RVA(0x001480a0, 0x1a7)
     int ApiThisStub::winapi_1480a0_timeGetTime() {
         return 0;
     }
@@ -3428,7 +3428,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:CreateDCA;DeleteDC;GetSystemPaletteEntries
     // @stub
-    RVA(0x1485b0, 0x162)
+    RVA(0x001485b0, 0x162)
     int ApiThisStub::winapi_1485b0_CreateDCA_DeleteDC_GetSystemPaletteEntries() {
         return 0;
     }
@@ -3436,7 +3436,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:CopyRect
     // @stub
-    RVA(0x1538c0, 0x257)
+    RVA(0x001538c0, 0x257)
     int ApiThisStub::winapi_1538c0_CopyRect(int, int) {
         return 0;
     }
@@ -3444,7 +3444,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:CopyRect
     // @stub
-    RVA(0x153b20, 0x270)
+    RVA(0x00153b20, 0x270)
     int ApiThisStub::winapi_153b20_CopyRect(int, int) {
         return 0;
     }
@@ -3452,7 +3452,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:CopyRect
     // @stub
-    RVA(0x153d90, 0x259)
+    RVA(0x00153d90, 0x259)
     int ApiThisStub::winapi_153d90_CopyRect(int, int) {
         return 0;
     }
@@ -3460,7 +3460,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:CopyRect
     // @stub
-    RVA(0x153ff0, 0x280)
+    RVA(0x00153ff0, 0x280)
     int ApiThisStub::winapi_153ff0_CopyRect(int, int) {
         return 0;
     }
@@ -3468,7 +3468,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:CopyRect
     // @stub
-    RVA(0x154270, 0x257)
+    RVA(0x00154270, 0x257)
     int ApiThisStub::winapi_154270_CopyRect(int, int) {
         return 0;
     }
@@ -3476,7 +3476,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:CopyRect
     // @stub
-    RVA(0x1544d0, 0x275)
+    RVA(0x001544d0, 0x275)
     int ApiThisStub::winapi_1544d0_CopyRect(int, int) {
         return 0;
     }
@@ -3484,7 +3484,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:CopyRect
     // @stub
-    RVA(0x154750, 0x275)
+    RVA(0x00154750, 0x275)
     int ApiThisStub::winapi_154750_CopyRect(int, int) {
         return 0;
     }
@@ -3492,12 +3492,12 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:timeGetTime
     // A second MS-CRT-style LCG, seeded lazily from timeGetTime.
-    DATA(0x6c278c)
+    DATA(0x006c278c)
     extern char g_rng2Seeded; // bit0 set once seeded
-    DATA(0x6c2798)
+    DATA(0x006c2798)
     extern int g_rng2State; // 32-bit LCG state
     // __cdecl rand(): lazily seed from timeGetTime, then advance the MS-CRT LCG.
-    RVA(0x15cbe0, 0x46)
+    RVA(0x0015cbe0, 0x46)
     int winapi_15cbe0_timeGetTime() {
         int seed;
         if (!(g_rng2Seeded & 1)) {
@@ -3524,7 +3524,7 @@ namespace ApiCallerStubs {
         void Recompute(); // RVA 0x161c90
     };
     // @source: winapi:CopyRect
-    RVA(0x161e80, 0x79)
+    RVA(0x00161e80, 0x79)
     void GeoHost_161e80::Build(RECT* pRect) {
         if (pRect->left != (LONG)0x80000000) {
             RECT local;
@@ -3582,7 +3582,7 @@ namespace ApiCallerStubs {
         void DrawCount(RECT* rc, int n);
     };
     // __thiscall(rc, n): print n centred into rc using the counter window's DC.
-    RVA(0x164380, 0x98)
+    RVA(0x00164380, 0x98)
     void DrawHost_164380::DrawCount(RECT* rc, int n) {
         char buf[0x20];
         Format_11f890(buf, "%i", n);
@@ -3609,7 +3609,7 @@ namespace ApiCallerStubs {
         void DrawLabel(RECT* rc, char* text);
     };
     // __thiscall(rc, text): print text centred into rc using the counter window's DC.
-    RVA(0x164420, 0x79)
+    RVA(0x00164420, 0x79)
     void DrawHost2_164420::DrawLabel(RECT* rc, char* text) {
         CounterWnd_164380* w = m_2c;
         if (!w) {
@@ -3629,7 +3629,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: directx-wrapper-caller:calls 0x141dc0 (DirectDrawCreate;DirectDrawEnumerateA)
     // @stub
-    RVA(0x1644a0, 0x19b)
+    RVA(0x001644a0, 0x19b)
     int ApiThisStub::directx_wrapper_caller_1644a0_DirectDrawCreate_DirectDrawEnumerateA(
         int,
         int,
@@ -3641,7 +3641,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:SetRect
     // @stub
-    RVA(0x168080, 0x1f6)
+    RVA(0x00168080, 0x1f6)
     int ApiThisStub::winapi_168080_SetRect(int, int, int, int, int, int, int, int) {
         return 0;
     }
@@ -3649,7 +3649,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:InitializeCriticalSection
     // __cdecl thunk over InitializeCriticalSection.
-    RVA(0x16c9c0, 0xc)
+    RVA(0x0016c9c0, 0xc)
     void winapi_16c9c0_InitializeCriticalSection(CRITICAL_SECTION* cs) {
         InitializeCriticalSection(cs);
     }
@@ -3657,7 +3657,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:DeleteCriticalSection
     // __cdecl(cs): thin wrapper over DeleteCriticalSection.
-    RVA(0x16c9d0, 0xc)
+    RVA(0x0016c9d0, 0xc)
     void winapi_16c9d0_DeleteCriticalSection(LPCRITICAL_SECTION cs) {
         DeleteCriticalSection(cs);
     }
@@ -3665,7 +3665,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:EnterCriticalSection
     // __cdecl thunk over EnterCriticalSection.
-    RVA(0x16c9e0, 0xc)
+    RVA(0x0016c9e0, 0xc)
     void winapi_16c9e0_EnterCriticalSection(CRITICAL_SECTION* cs) {
         EnterCriticalSection(cs);
     }
@@ -3673,7 +3673,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:LeaveCriticalSection
     // __cdecl thunk over LeaveCriticalSection.
-    RVA(0x16c9f0, 0xc)
+    RVA(0x0016c9f0, 0xc)
     void winapi_16c9f0_LeaveCriticalSection(CRITICAL_SECTION* cs) {
         LeaveCriticalSection(cs);
     }
@@ -3681,7 +3681,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:GetDC;ReleaseDC;SelectPalette
     // @stub
-    RVA(0x174fe0, 0xfe)
+    RVA(0x00174fe0, 0xfe)
     int ApiThisStub::winapi_174fe0_GetDC_ReleaseDC_SelectPalette(int, int, int, int) {
         return 0;
     }
@@ -3689,7 +3689,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:GetDC;ReleaseDC;SelectPalette
     // @stub
-    RVA(0x1750e0, 0x103)
+    RVA(0x001750e0, 0x103)
     int ApiThisStub::winapi_1750e0_GetDC_ReleaseDC_SelectPalette(int, int, int, int, int) {
         return 0;
     }
@@ -3697,7 +3697,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:GetDC;ReleaseDC;SelectPalette
     // @stub
-    RVA(0x1751f0, 0xf9)
+    RVA(0x001751f0, 0xf9)
     int ApiThisStub::winapi_1751f0_GetDC_ReleaseDC_SelectPalette(int, int, int) {
         return 0;
     }
@@ -3705,7 +3705,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:GetDC;ReleaseDC;SelectPalette
     // @stub
-    RVA(0x1752f0, 0xfc)
+    RVA(0x001752f0, 0xfc)
     int ApiThisStub::winapi_1752f0_GetDC_ReleaseDC_SelectPalette(int, int) {
         return 0;
     }
@@ -3713,7 +3713,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:GetDC;ReleaseDC;SelectPalette
     // @stub
-    RVA(0x1753f0, 0xf4)
+    RVA(0x001753f0, 0xf4)
     int ApiThisStub::winapi_1753f0_GetDC_ReleaseDC_SelectPalette(int, int) {
         return 0;
     }
@@ -3733,7 +3733,7 @@ namespace ApiCallerStubs {
         void Cleanup();
     };
     // __thiscall(): release the cached GDI object + buffer and clear the slots.
-    RVA(0x175c90, 0x45)
+    RVA(0x00175c90, 0x45)
     void GdiOwner_175c90::Cleanup() {
         if (m_428) {
             DeleteObject(m_428);
@@ -3760,7 +3760,7 @@ namespace ApiCallerStubs {
         int Build(PALETTEENTRY* src, int flags);
         void Tune1770e0(); // RVA 0x1770e0
     };
-    RVA(0x176df0, 0x71)
+    RVA(0x00176df0, 0x71)
     int PalBuilder_176df0::Build(PALETTEENTRY* src, int flags) {
         m_408 = flags;
         m_pal.palNumEntries = 0x100;
@@ -3790,7 +3790,7 @@ namespace ApiCallerStubs {
         int m_408; // +0x408
         void Run();
     };
-    RVA(0x177070, 0x22)
+    RVA(0x00177070, 0x22)
     void DeleteObjHost_177070::Run() {
         if (m_obj) {
             DeleteObject(m_obj);
@@ -3802,7 +3802,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:CreateICA;DeleteDC;GetDeviceCaps
     // __cdecl(): does the display device support a palette? (RC_PALETTE bit)
-    RVA(0x1770a0, 0x3a)
+    RVA(0x001770a0, 0x3a)
     int winapi_1770a0_CreateICA_DeleteDC_GetDeviceCaps() {
         HDC ic = CreateICA("DISPLAY", 0, 0, 0);
         if (ic) {
@@ -3818,7 +3818,7 @@ namespace ApiCallerStubs {
     void winapi_177160_CreatePalette_DeleteObject_GetDC_RealizePalette_ReleaseD(); // RVA 0x177160
     // __thiscall(): snapshot the reserved system-palette entries, marking the
     // interior animatable range PC_RESERVED (peFlags=1).
-    RVA(0x1770e0, 0x7c)
+    RVA(0x001770e0, 0x7c)
     void PalBuilder_176df0::Tune1770e0() {
         winapi_177160_CreatePalette_DeleteObject_GetDC_RealizePalette_ReleaseD();
         HDC dc = CreateDCA("DISPLAY", 0, 0, 0);
@@ -3841,7 +3841,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:CreatePalette;DeleteObject;GetDC;RealizePalette;ReleaseDC
     // __cdecl: realize an all-black 256-entry palette on the screen DC to reset it.
-    RVA(0x177160, 0x81)
+    RVA(0x00177160, 0x81)
     void winapi_177160_CreatePalette_DeleteObject_GetDC_RealizePalette_ReleaseD() {
         char buf[4 + 256 * sizeof(PALETTEENTRY)];
         LOGPALETTE* lp = (LOGPALETTE*)buf;
@@ -3866,14 +3866,14 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:FindResourceA;LoadResource;LockResource
     // The resource-module handle for palette lookups (DAT_006bf6e0).
-    DATA(0x6bf6e0)
+    DATA(0x006bf6e0)
     extern HINSTANCE g_palModule_6bf6e0;
     struct PalHost_1775f0 {
         int Apply(const char* name, int arg);
         int Use176e70(void* data, int arg); // thiscall, RVA 0x176e70
     };
     // __thiscall(name, arg): find/load/lock a PALETTE resource, hand it on.
-    RVA(0x1775f0, 0x62)
+    RVA(0x001775f0, 0x62)
     int PalHost_1775f0::Apply(const char* name, int arg) {
         HINSTANCE mod = g_palModule_6bf6e0;
         if (!mod) {
@@ -3897,7 +3897,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:SendMessageA
     // @stub
-    RVA(0x178470, 0x11e)
+    RVA(0x00178470, 0x11e)
     int __stdcall winapi_178470_SendMessageA(int, int) {
         return 0;
     }
@@ -3905,7 +3905,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:IntersectRect
     // @stub
-    RVA(0x179e70, 0x5ec)
+    RVA(0x00179e70, 0x5ec)
     int __stdcall winapi_179e70_IntersectRect(int, int, int, int, int, int, int, int, int) {
         return 0;
     }
@@ -3913,7 +3913,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: directx-wrapper-caller:calls 0x17c040 (DirectDrawCreate)
     // @stub
-    RVA(0x17c2a0, 0x14e)
+    RVA(0x0017c2a0, 0x14e)
     int __stdcall directx_wrapper_caller_17c2a0_DirectDrawCreate(int, int) {
         return 0;
     }
@@ -3921,7 +3921,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:ShowCursor
     // @stub
-    RVA(0x17c3f0, 0x11f)
+    RVA(0x0017c3f0, 0x11f)
     int ApiThisStub::winapi_17c3f0_ShowCursor(
         int,
         int,
@@ -4000,7 +4000,7 @@ namespace ApiCallerStubs {
         void Free17cc80();   // RVA 0x17cc80
     };
     // __thiscall(): tear the playback object down and restore the cursor.
-    RVA(0x17c510, 0x5e)
+    RVA(0x0017c510, 0x5e)
     void CursHost_17c510::Teardown() {
         if (!m_4) {
             return;
@@ -4056,7 +4056,7 @@ namespace ApiCallerStubs {
     };
     // __thiscall(src,a2,useDS,a4,a5): open a Smacker stream (0xfe000 flags, plus
     // 0x100000 when DirectSound is requested), begin playback, roll back on failure.
-    RVA(0x17c570, 0xc0)
+    RVA(0x0017c570, 0xc0)
     int SmkPlayer_17c570::OpenLo(int src, int a2, int useDS, int a4, int a5) {
         if (!m_4) {
             return 0;
@@ -4096,7 +4096,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: thirdparty:_SmackOpen@12;_SmackSoundUseDirectSound@4
     // __thiscall(src,a2,useDS,a4,a5): same as OpenLo but with the 0xff000 flag set.
-    RVA(0x17c630, 0xc0)
+    RVA(0x0017c630, 0xc0)
     int SmkPlayer_17c570::OpenHi(int src, int a2, int useDS, int a4, int a5) {
         if (!m_4) {
             return 0;
@@ -4136,7 +4136,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: thirdparty,winapi:_SmackWait@4 | DispatchMessageA;PeekMessageA;TranslateMessage
     // @stub
-    RVA(0x17c790, 0x14a)
+    RVA(0x0017c790, 0x14a)
     int
     ApiThisStub::thirdparty_winapi_17c790_SmackWait_4_DispatchMessageA_PeekMessageA_TranslateMessa(
         int,
@@ -4148,7 +4148,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: thirdparty:_SmackGoto@8;_SmackWait@4
     // @stub
-    RVA(0x17c8e0, 0xca)
+    RVA(0x0017c8e0, 0xca)
     int ApiThisStub::thirdparty_17c8e0_SmackGoto_8_SmackWait_4(int, int) {
         return 0;
     }
@@ -4174,7 +4174,7 @@ namespace ApiCallerStubs {
     };
     // @source: thirdparty:_SmackClose@4
     // __thiscall: shut the sub-player, close the Smacker stream, free buffers.
-    RVA(0x17c9b0, 0x5b)
+    RVA(0x0017c9b0, 0x5b)
     int SmackHost_17c9b0::Close() {
         if (!m_8) {
             return 0;
@@ -4196,7 +4196,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: thirdparty:_SmackDoFrame@4;_SmackNextFrame@4;_SmackToBuffer@28
     // @stub
-    RVA(0x17caa0, 0x13b)
+    RVA(0x0017caa0, 0x13b)
     int ApiThisStub::thirdparty_17caa0_SmackDoFrame_4_SmackNextFrame_4_SmackToBuffer_28() {
         return 0;
     }
@@ -4210,7 +4210,7 @@ namespace ApiCallerStubs {
     };
     // __thiscall(hWnd): read the system palette, then blank every entry to a
     // reserved black so a remap can be rebuilt against it.
-    RVA(0x17cd90, 0x58)
+    RVA(0x0017cd90, 0x58)
     void PalCache_17cd90::Snapshot(HWND hWnd) {
         HDC hdc = GetDC(hWnd);
         GetSystemPaletteEntries(hdc, 0, 0x100, m_108);
@@ -4226,7 +4226,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:GetTickCount
     // @stub
-    RVA(0x17e620, 0x13b)
+    RVA(0x0017e620, 0x13b)
     int ApiThisStub::winapi_17e620_GetTickCount(int, int, int) {
         return 0;
     }
@@ -4234,7 +4234,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:timeGetTime
     // @stub
-    RVA(0x17fe00, 0x12d)
+    RVA(0x0017fe00, 0x12d)
     int ApiThisStub::winapi_17fe00_timeGetTime(int) {
         return 0;
     }
@@ -4242,7 +4242,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:PtInRect
     // @stub
-    RVA(0x1804a0, 0x182)
+    RVA(0x001804a0, 0x182)
     int ApiThisStub::winapi_1804a0_PtInRect(int) {
         return 0;
     }
@@ -4274,7 +4274,7 @@ namespace ApiCallerStubs {
         int m_40; // +0x40
         int Init(TileSrcHost_182ab0* src, int a, RECT* rc, int d, int e, int f);
     };
-    RVA(0x182ab0, 0x7b)
+    RVA(0x00182ab0, 0x7b)
     int Region_182ab0::Init(TileSrcHost_182ab0* src, int a, RECT* rc, int d, int e, int f) {
         if (!src) {
             return 0;
@@ -4299,7 +4299,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:CreateDialogIndirectParamA;GetSystemMetrics;GlobalLock
     // @stub
-    RVA(0x1ba677, 0x188)
+    RVA(0x001ba677, 0x188)
     int winapi_1ba677_CreateDialogIndirectParamA_GetSystemMetrics_GlobalLock() {
         return 0;
     }
@@ -4307,7 +4307,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:DestroyWindow;GlobalFree;GlobalUnlock
     // @stub
-    RVA(0x1ba819, 0x7c)
+    RVA(0x001ba819, 0x7c)
     int __stdcall winapi_1ba819_DestroyWindow_GlobalFree_GlobalUnlock(int, int, int) {
         return 0;
     }
@@ -4315,7 +4315,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:EnableWindow;FindResourceA;IsWindowEnabled;LoadResource;LockResource
     // @stub
-    RVA(0x1ba9d2, 0x100)
+    RVA(0x001ba9d2, 0x100)
     int winapi_1ba9d2_EnableWindow_FindResourceA_IsWindowEnabled_LoadResource_() {
         return 0;
     }
@@ -4323,7 +4323,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:EnableWindow;GetActiveWindow;SetActiveWindow
     // @stub
-    RVA(0x1baaef, 0x48)
+    RVA(0x001baaef, 0x48)
     int winapi_1baaef_EnableWindow_GetActiveWindow_SetActiveWindow() {
         return 0;
     }
@@ -4331,7 +4331,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:CallWindowProcA;GetPropA;RemovePropA;SetWindowLongA
     // @stub
-    RVA(0x1bb31b, 0x111)
+    RVA(0x001bb31b, 0x111)
     int __stdcall
     winapi_1bb31b_CallWindowProcA_GetPropA_RemovePropA_SetWindowLongA(int, int, int, int) {
         return 0;
@@ -4340,7 +4340,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:GetClassInfoA;RegisterClassA
     // @stub
-    RVA(0x1bbff4, 0x93)
+    RVA(0x001bbff4, 0x93)
     int __stdcall winapi_1bbff4_GetClassInfoA_RegisterClassA(int) {
         return 0;
     }
@@ -4352,7 +4352,7 @@ namespace ApiCallerStubs {
         HMODULE m_0; // +0x00
         void Run();
     };
-    RVA(0x1bf577, 0xe)
+    RVA(0x001bf577, 0xe)
     void LibHost_1bf577::Run() {
         if (m_0) {
             FreeLibrary(m_0);
@@ -4366,7 +4366,7 @@ namespace ApiCallerStubs {
         HGLOBAL m_0; // +0x00
         void Free();
     };
-    RVA(0x1c09de, 0xe)
+    RVA(0x001c09de, 0xe)
     void GlobalOwner_1c09de::Free() {
         if (m_0) {
             GlobalFree(m_0);
@@ -4376,7 +4376,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:FreeLibrary
     // @stub
-    RVA(0x1d4a18, 0x3c)
+    RVA(0x001d4a18, 0x3c)
     int ApiThisStub::winapi_1d4a18_FreeLibrary() {
         return 0;
     }

@@ -8,5 +8,5 @@ public:
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @stub
-RVA(0x16dff0, 0x73)
+RVA(0x0016dff0, 0x73)
 CButeNodeBase::CButeNodeBase(void*, int) {}

@@ -11,17 +11,17 @@ public:
 // @confidence: med
 // @source: rtti-vptr
 // @stub
-RVA(0x042d40, 0x73e)
+RVA(0x00042d40, 0x73e)
 CWarlord::CWarlord(int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x044c00, 0xc6)
+RVA(0x00044c00, 0xc6)
 void CWarlord::LoadAttributes() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x044d10, 0x106)
+RVA(0x00044d10, 0x106)
 void CWarlord::LoadAttributes2() {}

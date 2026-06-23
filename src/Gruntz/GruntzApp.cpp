@@ -57,7 +57,7 @@ static char g_errorText[0x100]; // error message buffer
 // field is set.
 //   push esi; mov esi,ecx; call CGameApp::CGameApp; mov [esi],&vftable;
 //   mov eax,esi; pop esi; ret
-RVA(0x80850, 0x12)
+RVA(0x00080850, 0x12)
 CGruntzApp::CGruntzApp() {}
 
 // ---------------------------------------------------------------------------
@@ -67,7 +67,7 @@ CGruntzApp::CGruntzApp() {}
 // CGameApp::VirtualUnknownMethod03 (`this` left in ecx untouched),
 // then normalises the int result to a bool: `!= 0` emits the
 // `neg eax; sbb eax,eax; neg eax` (0/1) idiom.
-RVA(0x80930, 0x31)
+RVA(0x00080930, 0x31)
 int CGruntzApp::VirtualUnknownMethod03(
     HINSTANCE hInstance,
     char* szWindowName,
@@ -99,7 +99,7 @@ int CGruntzApp::VirtualUnknownMethod03(
 // CloseResources is called TWICE (once by each level's body) - that is the real
 // engine code, and CloseResources is what actually `delete`s the game manager
 // (CGameApp::m_8 @+0x8). No game-manager-pointer member lives on CGruntzApp.
-RVA(0x808b0, 0x60)
+RVA(0x000808b0, 0x60)
 CGruntzApp::~CGruntzApp() {
     CloseResources();
 }
@@ -119,7 +119,7 @@ CGruntzApp::~CGruntzApp() {
 // LoadStringA/ShowCursor/DialogBoxParamA are FF15 [IAT] indirect calls; the
 // ErrorDialogProc address is taken (push imm of its incremental-link thunk).
 // strcpy/strcat are emitted inline (repnz scas / rep movs).
-RVA(0x80ac0, 0xf3)
+RVA(0x00080ac0, 0xf3)
 void CGruntzApp::ShowError() {
     // The two error fields are read up front (the optimiser hoists the m_250
     // load above the id-default branch, keeping it live in eax across it).
@@ -155,7 +155,7 @@ void CGruntzApp::ShowError() {
 // one dword of locals for the new pointer / EH-tracked object; `this` is never
 // read. The CGruntzMgr* is returned as the base WAP32::CGameMgr* the virtual
 // slot is typed to (no-op upcast; CGameMgr is the first base).
-RVA(0x80a20, 0x5a)
+RVA(0x00080a20, 0x5a)
 WAP32::CGameMgr* CGruntzApp::InitializeGameManager() {
     return new CGruntzMgr;
 }
@@ -169,7 +169,7 @@ WAP32::CGameMgr* CGruntzApp::InitializeGameManager() {
 // jne message ladder with the WM_INITDIALOG body laid out at the function tail.
 // (No SYMBOL() override: the real HWND signature mangles to PAUHWND__ identically
 // on both sides - like the sibling DialogProcs - so the natural name pairs.)
-RVA(0x80c70, 0x55)
+RVA(0x00080c70, 0x55)
 INT_PTR __stdcall CGruntzApp::ErrorDialogProc(
     HWND hWnd,
     UINT message,
@@ -197,7 +197,7 @@ INT_PTR __stdcall CGruntzApp::ErrorDialogProc(
 // ---------------------------------------------------------------------------
 // CGruntzApp::VirtualUnknownMethod04
 // Another base-init virtual override; the body just returns 0 (`xor eax,eax`).
-RVA(0x80aa0, 0x5)
+RVA(0x00080aa0, 0x5)
 int CGruntzApp::VirtualUnknownMethod04(int a, int b, int c) {
     return 0;
 }
@@ -208,7 +208,7 @@ int CGruntzApp::VirtualUnknownMethod04(int a, int b, int c) {
 // shows the MESSAGE dialog (DialogBoxParamA, FF15 [IAT]) with MsgDialogProc -
 // the dialog proc lives in another TU, so it is taken via an extern thunk.
 extern "C" INT_PTR __stdcall MsgDialogProc(HWND, UINT, WPARAM, LPARAM);
-RVA(0x80c00, 0x48)
+RVA(0x00080c00, 0x48)
 void CGruntzApp::ShowMessage(char* msg, HWND hParent) {
     strcpy(g_errorText, msg);
     DialogBoxParamA(m_c, "MESSAGE", hParent, &MsgDialogProc, 0);
@@ -223,7 +223,7 @@ void CGruntzApp::ShowMessage(char* msg, HWND hParent) {
 struct U10O {
     U10O();
 };
-RVA(0x809a0, 0x57)
+RVA(0x000809a0, 0x57)
 void* CreateU10O() {
     U10O* p = new U10O;
     return p;
@@ -235,5 +235,5 @@ void* CreateU10O() {
 // @confidence: high
 // @source: tomalla
 // @stub
-RVA(0x112820, 0xc)
+RVA(0x00112820, 0xc)
 void CGruntzApp::Stub_112820() {}

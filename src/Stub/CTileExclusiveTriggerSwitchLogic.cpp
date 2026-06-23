@@ -16,12 +16,12 @@ public:
 };
 
 // Derived vftable, referenced as DIR32 data (RVA = VA - 0x400000).
-DATA(0x5eaecc)
+DATA(0x005eaecc)
 extern void* g_exclTrigSwitchVtbl;
 
 // @confidence: high
 // @source: rtti-vptr
-RVA(0x112050, 0x12)
+RVA(0x00112050, 0x12)
 CTileExclusiveTriggerSwitchLogic::CTileExclusiveTriggerSwitchLogic() {
     *(void**)this = &g_exclTrigSwitchVtbl;
 }

@@ -12,7 +12,7 @@
 
 // The lookup table buffer (100 ints). Written by
 // initializeUnknownLookupTable with getLookupTableValue results.
-DATA(0x653ab8)
+DATA(0x00653ab8)
 int g_salazarLookupTable[100];
 
 class UnknownSalazar {
@@ -30,7 +30,7 @@ public:
 // Fills the 100-element static lookup table with
 // getLookupTableValue(i) for i = 0..99. Plain /O2 /MT leaf: no SEH frame.
 // ---------------------------------------------------------------------------
-RVA(0x1351a0, 0x23)
+RVA(0x001351a0, 0x23)
 void UnknownSalazar::initializeUnknownLookupTable() {
     for (int i = 0; i < 100; i++) {
         g_salazarLookupTable[i] = getLookupTableValue(i);
@@ -45,7 +45,7 @@ void UnknownSalazar::initializeUnknownLookupTable() {
 // @confidence: high
 // @source: tomalla
 // @stub
-RVA(0x1350b0, 0x5d)
+RVA(0x001350b0, 0x5d)
 int UnknownSalazar::getLookupTableValue(int) {
     return 0;
 }
@@ -53,11 +53,11 @@ int UnknownSalazar::getLookupTableValue(int) {
 // @confidence: high
 // @source: tomalla
 // @stub
-RVA(0x136440, 0x74)
+RVA(0x00136440, 0x74)
 UnknownSalazar::UnknownSalazar() {}
 
 // @confidence: high
 // @source: tomalla
 // @stub
-RVA(0x1364c0, 0x1e)
+RVA(0x001364c0, 0x1e)
 UnknownSalazar::~UnknownSalazar() {}

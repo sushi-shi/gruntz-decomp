@@ -62,7 +62,7 @@ struct SiriusWorkerObj : public SiriusWorker {
 }; // size = 0x17c
 
 // The foreign worker vftable, referenced as DIR32 data (RVA = VA-0x400000).
-DATA(0x1efb80)
+DATA(0x001efb80)
 extern void* g_siriusWorkerVtbl;
 
 static inline void StampSiriusVtbl(SiriusWorkerObj* w) {
@@ -98,7 +98,7 @@ static inline int SiriusReadField1c(const CDDrawWorkerCache* p) {
 // ---------------------------------------------------------------------------
 // Constant state ID: returns 0x13 (19).
 // ---------------------------------------------------------------------------
-RVA(0x1576f0, 0x6)
+RVA(0x001576f0, 0x6)
 int CDDrawWorkerCache::VirtualMethodUnknown20() {
     return 0x13;
 }
@@ -137,7 +137,7 @@ static inline SiriusWorkerObj* MakeSiriusWorker(const CDDrawWorkerCache* parent)
 // NOTE: Vfunc24 is dispatched on the worker BEFORE the null check, matching
 // the target asm (the NAFXCW operator new practically never fails).
 // ---------------------------------------------------------------------------
-RVA(0x1652c0, 0x92)
+RVA(0x001652c0, 0x92)
 void* CDDrawWorkerCache::VirtualMethodUnknown24(int a1, const char* key, int a3) {
     SiriusWorkerObj* w = MakeSiriusWorker(this);
 
@@ -156,11 +156,11 @@ void* CDDrawWorkerCache::VirtualMethodUnknown24(int a1, const char* key, int a3)
 // @confidence: high
 // @source: tomalla
 // @stub
-RVA(0x157700, 0x1e)
+RVA(0x00157700, 0x1e)
 CDDrawWorkerCache::~CDDrawWorkerCache() {}
 
 // @confidence: med
 // @source: call-xref
 // @stub
-RVA(0x157720, 0x68)
+RVA(0x00157720, 0x68)
 void CDDrawWorkerCache::VirtualMethod_157720() {}

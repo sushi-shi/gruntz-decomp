@@ -8,5 +8,5 @@ public:
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @stub
-RVA(0x13ddc0, 0xaa)
+RVA(0x0013ddc0, 0xaa)
 void RezMgr::UpdateClock() {}

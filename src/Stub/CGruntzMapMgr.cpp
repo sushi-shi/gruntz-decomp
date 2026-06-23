@@ -9,5 +9,5 @@ public:
 // @confidence: high
 // @source: rtti-vptr
 // @stub
-RVA(0x085d10, 0xa7)
+RVA(0x00085d10, 0xa7)
 CGruntzMapMgr::~CGruntzMapMgr() {}

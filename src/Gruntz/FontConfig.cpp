@@ -33,7 +33,7 @@
 // The global CButeMgr instance (the ctor stores the bute config tree
 // here). Declared as a named extern so the `mov ecx, offset g_buteMgr` loads
 // reloc-match the engine; @address names the delinked target DATA symbol.
-DATA(0x2453d8)
+DATA(0x002453d8)
 extern CButeMgr g_buteMgr;
 #define g_bute (&g_buteMgr)
 
@@ -71,7 +71,7 @@ public:
 
 // ---------------------------------------------------------------------------
 // CFontConfig::LoadFontConfig
-RVA(0x218e0, 0x1ff)
+RVA(0x000218e0, 0x1ff)
 int CFontConfig::LoadFontConfig(int a1, int a2) {
     m_24 = a1;
     m_28 = a2;

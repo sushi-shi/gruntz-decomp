@@ -8,7 +8,7 @@ public:
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @stub
-RVA(0x184ae0, 0x24)
+RVA(0x00184ae0, 0x24)
 struct RezNode* RezColl::First() {
     return 0;
 }

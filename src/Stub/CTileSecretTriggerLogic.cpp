@@ -15,12 +15,12 @@ public:
 };
 
 // Derived vftable, referenced as DIR32 data (RVA = VA - 0x400000).
-DATA(0x5eaf14)
+DATA(0x005eaf14)
 extern void* g_secretTriggerLogicVtbl;
 
 // @confidence: high
 // @source: rtti-vptr
-RVA(0x112760, 0x12)
+RVA(0x00112760, 0x12)
 CTileSecretTriggerLogic::CTileSecretTriggerLogic() {
     *(void**)this = &g_secretTriggerLogicVtbl;
 }

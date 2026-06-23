@@ -38,32 +38,32 @@
 // (which buffer everything on the stack), the Net reporter keeps the error-code
 // name, the description, and the saved (code, hr) in fixed globals.
 // ---------------------------------------------------------------------------
-DATA(0x2bf6e8)
+DATA(0x002bf6e8)
 extern "C" int g_logEnabled; // 0x6bf6e8  - drives the format-line path
-DATA(0x2bf6ec)
+DATA(0x002bf6ec)
 extern "C" int g_msgBoxEnabled; // 0x6bf6ec  - drives the MessageBox path
-DATA(0x2bf6f0)
+DATA(0x002bf6f0)
 extern "C" int g_beepEnabled; // 0x6bf6f0  - gates the startup beep
-DATA(0x2bf6f4)
+DATA(0x002bf6f4)
 extern "C" int g_thirdEnabled; // 0x6bf6f4  - third "any output wanted" gate
 
-DATA(0x2bf6f8)
+DATA(0x002bf6f8)
 extern "C" long g_hr; // 0x6bf6f8  - the raw HRESULT, saved at entry
-DATA(0x2bf6fc)
+DATA(0x002bf6fc)
 extern "C" int g_code; // 0x6bf6fc  - hr & 0xffff (the (%i) arg)
 
-DATA(0x2bf700)
+DATA(0x002bf700)
 extern "C" char g_szCode[]; // 0x6bf700  - error-code name buffer
-DATA(0x2bf740)
+DATA(0x002bf740)
 extern "C" char g_szMsg[]; // 0x6bf740  - description buffer
 
 // Empty mutable string in .data copied into the working line up front.
-DATA(0x2293f4)
+DATA(0x002293f4)
 extern "C" char g_emptyString[]; // 0x6293f4
 
 // ---------------------------------------------------------------------------
 // CNetMgr::ReportError
-RVA(0x1776a0, 0xa01)
+RVA(0x001776a0, 0xa01)
 void CNetMgr::ReportError(char* file, int line, long hr, void* hWnd) {
     char szLine[512]; // the only stack buffer (the formatted output line)
 

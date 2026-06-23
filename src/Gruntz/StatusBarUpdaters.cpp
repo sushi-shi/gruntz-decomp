@@ -116,7 +116,7 @@ struct CGameReg {
     int m_144; // +0x144  view max X
     int m_148; // +0x148  view max Y
 };
-DATA(0x24556c)
+DATA(0x0024556c)
 extern CGameReg* g_gameReg; // the game-manager singleton
 
 // ---------------------------------------------------------------------------
@@ -224,7 +224,7 @@ struct CStatzTabSub {
 // the cooking-progress frame index from the elapsed clock / GruntOvenDelay, caps
 // at 0x1a (completion - flips m_0 to 2 and runs the COOKINGCOMPLETE advance), and
 // pushes the new frame into the widget when it changes (the +0x30 virtual).
-RVA(0x105310, 0x11a)
+RVA(0x00105310, 0x11a)
 void EngineLabelBacklog::UpdateGruntOvenStatusBar() {
     CTabWidget** slot = m_slots;
     CTabRec* tab = m_tabs;
@@ -273,7 +273,7 @@ void EngineLabelBacklog::UpdateGruntOvenStatusBar() {
 // latches state 1); each step is gated on the retrigger clock having elapsed past
 // DestructButtonWarningDelay, after which the 64-bit retrigger clock is restamped
 // and the new frame pushed into the widget (the +0x30 virtual). State 0 = idle.
-RVA(0x10b320, 0x167)
+RVA(0x0010b320, 0x167)
 void EngineLabelBacklog::UpdateDestructButtonStatusBar() {
     CDestructBlock* b = &m_destruct;
     switch (b->m_558) {
@@ -328,7 +328,7 @@ void EngineLabelBacklog::UpdateDestructButtonStatusBar() {
 // re-stamps the grinder rect-target widget (m_500) from the scroll origin. When
 // the conveyor runs out (m_508 >= 0x1c7) it stops (m_4e8 = 0). A final
 // ChipGrinderFinishStep runs while the widget is live and a step happened.
-RVA(0x1076a0, 0x1f3)
+RVA(0x001076a0, 0x1f3)
 void EngineLabelBacklog::UpdateChipGrinderStatusBar() {
     int* m = (int*)this;
     if (m[0x4e8 / 4] == 0) {
@@ -403,7 +403,7 @@ void EngineLabelBacklog::UpdateChipGrinderStatusBar() {
 // the toggle item (this[idx]+0x150), kicks the tab sub-helper when the view mode
 // is 3, runs the STATZTABTOGGLE status-bar advance, and latches the new value.
 // __thiscall ret 8. Always returns 1.
-RVA(0x104e60, 0xed)
+RVA(0x00104e60, 0xed)
 int EngineLabelBacklog::LoadStatzTabToggleSprite(int value, int idx) {
     int* m = (int*)this;
     if (m[idx + 0x114 / 4] == value) {
@@ -449,7 +449,7 @@ int EngineLabelBacklog::LoadStatzTabToggleSprite(int value, int idx) {
 // tile system, then - if the switch tile is on-screen (its pixel rect inside the
 // view bounds) and the status bar surface is live - runs the GAME_SWITCHDOWN
 // status-bar advance. Latches m_14 = 1 (down). __thiscall.
-RVA(0x110570, 0xfb)
+RVA(0x00110570, 0xfb)
 void EngineLabelBacklog::LoadSwitchDownSprite() {
     CTileGrid* g = g_gameReg->m_30->m_24->m_5c;
     int v = g->m_20[g->m_24[m_c] + m_8] + 1;
@@ -483,7 +483,7 @@ void EngineLabelBacklog::LoadSwitchDownSprite() {
 //
 // The UP mirror of LoadSwitchDownSprite: decrements the cell-state counter, runs
 // the GAME_SWITCHUP advance, and latches m_14 = 0 (up). __thiscall.
-RVA(0x1106b0, 0xf4)
+RVA(0x001106b0, 0xf4)
 void EngineLabelBacklog::LoadSwitchUpSprite() {
     CTileGrid* g = g_gameReg->m_30->m_24->m_5c;
     int v = g->m_20[g->m_24[m_c] + m_8] - 1;
@@ -521,7 +521,7 @@ void EngineLabelBacklog::LoadSwitchUpSprite() {
 // (a per-phase pixel offset off the tab base m_3c->m_10/m_14), the euclidean
 // distance to the source (srcX/srcY), and the per-axis fly velocity scaled by
 // FlyTime, then runs the GAME_WARPSTONEFLY status-bar advance. __thiscall ret 0x10.
-RVA(0x109bd0, 0x1b5)
+RVA(0x00109bd0, 0x1b5)
 int EngineLabelBacklog::UpdateWarpStoneStatusBar(int a0, int phase, int srcX, int srcY) {
     int* m = (int*)this;
     m[0x3c / 4] = a0;

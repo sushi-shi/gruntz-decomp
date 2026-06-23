@@ -9,5 +9,5 @@ public:
 // @confidence: med
 // @source: rtti-vptr
 // @stub
-RVA(0x0ac870, 0x20e)
+RVA(0x000ac870, 0x20e)
 CEyeCandyAni::CEyeCandyAni(int) {}

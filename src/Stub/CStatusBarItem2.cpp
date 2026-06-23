@@ -59,7 +59,7 @@ private:
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @stub
-RVA(0x136270, 0x8b)
+RVA(0x00136270, 0x8b)
 int CStatusBarItem2::Finalize() {
     if (!m_10->m_78) {
         return 0;
@@ -85,7 +85,7 @@ int CStatusBarItem2::Finalize() {
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @stub
-RVA(0x1355c0, 0x23)
+RVA(0x001355c0, 0x23)
 int CStatusBarItem2::SetField0(int arg) {
     if (!m_10->m_78) {
         return 0;
@@ -95,7 +95,7 @@ int CStatusBarItem2::SetField0(int arg) {
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @stub
-RVA(0x1357a0, 0x42)
+RVA(0x001357a0, 0x42)
 int CStatusBarItem2::SetField1(int arg) {
     if (!m_10->m_78) {
         return 0;
@@ -108,7 +108,7 @@ int CStatusBarItem2::SetField1(int arg) {
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @stub
-RVA(0x135920, 0x80)
+RVA(0x00135920, 0x80)
 int CStatusBarItem2::SetField2(int arg) {
     if (!m_10->m_78) {
         return 0;
@@ -128,7 +128,7 @@ int CStatusBarItem2::SetField2(int arg) {
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @stub
-RVA(0x135510, 0x25)
+RVA(0x00135510, 0x25)
 void CStatusBarItem2::SetField3(int arg) {
     if (m_10->m_78) {
         if (arg) {

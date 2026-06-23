@@ -8,7 +8,7 @@ public:
 // @confidence: high
 // @source: reloc-correlation (2 callers)
 // @stub
-RVA(0x1b4a27, 0x24)
+RVA(0x001b4a27, 0x24)
 void* CGruntzCmdList::RemoveTail() {
     return 0;
 }

@@ -44,7 +44,7 @@
 // CRezItmBase::CRezItmBase(parent)
 //   mov [this] = base vtbl; mov [this+0xc] = parent. Out-of-line so
 //   the derived ctors emit a `call` to it.
-RVA(0x13c4e0, 0x12)
+RVA(0x0013c4e0, 0x12)
 CRezItmBase::CRezItmBase(void* parent) {
     m_parent = parent;
 }
@@ -53,7 +53,7 @@ CRezItmBase::CRezItmBase(void* parent) {
 // CRezItm::CRezItm(parent)
 // Base ctor (vtbl + parent), then derived vtbl, m_10 = 0,
 // m_14 = 0, m_20 = -1. m_18/m_1c untouched.
-RVA(0x13c540, 0x28)
+RVA(0x0013c540, 0x28)
 CRezItm::CRezItm(void* parent) : CRezItmBase(parent) {
     m_10 = 0;
     m_14 = 0;
@@ -63,7 +63,7 @@ CRezItm::CRezItm(void* parent) : CRezItmBase(parent) {
 // The embedded child-collection vftable both CRezDir sub-objects install (a
 // vftable in .rdata; modeled as a labeled datum so taking its address
 // reloc-matches the engine instead of a bare immediate).
-DATA(0x1ef7c8)
+DATA(0x001ef7c8)
 extern int g_rezDirChildVtbl;
 
 // ---------------------------------------------------------------------------
@@ -71,7 +71,7 @@ extern int g_rezDirChildVtbl;
 // Base ctor, then: m_14=0, m_18=0, m_vtblA=m_vtblB=&g_rezDirChildVtbl (embedded
 // child collection's two vtables), m_20=m_24=m_28=m_34=0, derived vtbl,
 // m_2c=rezMgr, m_30=1.
-RVA(0x13c940, 0x46)
+RVA(0x0013c940, 0x46)
 CRezDir::CRezDir(void* parent, void* rezMgr) : CRezItmBase(parent) {
     m_14 = 0;
     m_18 = 0;
@@ -92,7 +92,7 @@ CRezDir::CRezDir(void* parent, void* rezMgr) : CRezItmBase(parent) {
 // return 0; on success return whether the entry's attribute dword (at byte +6
 // of the record) has bit 0x4000 set (i.e. the entry is a directory).
 // `this` is never read here.
-RVA(0x13c080, 0x3c)
+RVA(0x0013c080, 0x3c)
 int CRezDir::FindEntry(char* name) {
     RezFindRec rec;
     if (RezStatEntry(name, &rec) != 0) {
@@ -114,7 +114,7 @@ static const char s_notSorted[] = "CRezDir::Load Failed! (File is not sorted!)";
 // iterate the child collection (First/Next) and recurse Load(1) into each
 // child's sub-dir node (node->m_14). Returns 1.
 SYMBOL(?Load@CRezDirNode@@QAEHH@Z)
-RVA(0x13a0f0, 0x99)
+RVA(0x0013a0f0, 0x99)
 int CRezDirNode::Load(int childFlag) {
     if (m_buf != 0) {
         return 1;
@@ -155,7 +155,7 @@ static const char s_extPid[] = ".PID";
 // matching loader (LoadBmp/LoadPcx take (arg1,name); LoadPid takes
 // (arg1,name,arg3)). Returns 1 unless the extension matched but its loader
 // failed (then 0); an unrecognised/absent extension also returns 1.
-RVA(0x13e5d0, 0xb1)
+RVA(0x0013e5d0, 0xb1)
 int RezMgr::MakeImageKey(void* arg1, char* name, void* arg3) {
     char* ext = RezStrrchr(name, '.');
     if (ext && RezStricmp(ext, s_extBmp) == 0) {
@@ -208,7 +208,7 @@ static const char s_moviezPath[] = "%c:\\MOVIEZ\\%s";
 // state-write). MakeImageKey (the other target) is BYTE-EXACT and is the green
 // deliverable; per the prompt's "don't sacrifice a green fn", this is left as a
 // documented plateau with the full reconstruction in place.
-RVA(0x091670, 0x2ac)
+RVA(0x00091670, 0x2ac)
 int RezMgr::MakeRezPath() {
     char cwd[0x100];
     if (!GetCurrentDirectoryA(0xff, cwd)) {
@@ -323,7 +323,7 @@ static int g_timer500;   // (seed 0x1f4 ms)
 // be `unsigned int` so the target's `jbe` (dt>0x64 clamp) and `jb` (dt>=v timer
 // test) fall out; `int` emits signed `jle`/`jl` (94.78%). g_frameDelta is a
 // timeGetTime() delta (genuinely unsigned ms).
-RVA(0x08b740, 0x12d)
+RVA(0x0008b740, 0x12d)
 int RezMgr::PerFrameTick() {
     if (m_mode == 0) {
         return 0;
@@ -393,7 +393,7 @@ int RezMgr::PerFrameTick() {
 // owning window handle (this+4 -> owner, owner+4 -> hwnd) and post it a
 // WM_COMMAND (0x111) with command id 0x805c. Returns nonzero iff the lookup
 // reported a hit. The CheckDbgVal call's E8 rel32 is reloc-masked by objdiff.
-RVA(0x08e470, 0x50)
+RVA(0x0008e470, 0x50)
 int RezMgr::HandleDebugPosition() {
     int r = 0;
     if (m_mode && m_mode->Update() == 3) {
@@ -412,5 +412,5 @@ int RezMgr::HandleDebugPosition() {
 // @confidence: high
 // @source: rez-trace
 // @stub
-RVA(0x13b0c0, 0x238)
+RVA(0x0013b0c0, 0x238)
 void CRezDir::Stub_13b0c0() {}

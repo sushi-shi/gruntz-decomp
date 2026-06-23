@@ -9,5 +9,5 @@ public:
 // @confidence: med
 // @source: rtti-vptr
 // @stub
-RVA(0x098140, 0x18e)
+RVA(0x00098140, 0x18e)
 CToyPeek::CToyPeek(int) {}

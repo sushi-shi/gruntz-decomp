@@ -9,5 +9,5 @@ public:
 // @confidence: med
 // @source: rtti-vptr
 // @stub
-RVA(0x0b1200, 0x2cb)
+RVA(0x000b1200, 0x2cb)
 CSpotLight::CSpotLight(int) {}

@@ -35,70 +35,70 @@ public:
 // @confidence: high
 // @source: reloc-correlation (CFileImage::Blit dispatcher)
 // @stub
-RVA(0x13fbb0, 0x126)
+RVA(0x0013fbb0, 0x126)
 int CFileImage::Blit168(void*, void*, int) {
     return 0;
 }
 // @confidence: high
 // @source: reloc-correlation (CFileImage::Blit dispatcher)
 // @stub
-RVA(0x13fce0, 0x17f)
+RVA(0x0013fce0, 0x17f)
 int CFileImage::Blit1624(void*, int) {
     return 0;
 }
 // @confidence: high
 // @source: reloc-correlation (CFileImage::Blit dispatcher)
 // @stub
-RVA(0x13fe60, 0x11e)
+RVA(0x0013fe60, 0x11e)
 int CFileImage::Blit248(void*, void*, int) {
     return 0;
 }
 // @confidence: high
 // @source: reloc-correlation (CFileImage::Blit dispatcher)
 // @stub
-RVA(0x13ff80, 0x184)
+RVA(0x0013ff80, 0x184)
 int CFileImage::Blit2416(void*, int) {
     return 0;
 }
 // @confidence: high
 // @source: reloc-correlation (CFileImage::Blit dispatcher)
 // @stub
-RVA(0x140110, 0x30b)
+RVA(0x00140110, 0x30b)
 int CFileImage::Blit824(void*, void*, int) {
     return 0;
 }
 // @confidence: high
 // @source: reloc-correlation (CFileImage::Blit dispatcher)
 // @stub
-RVA(0x140420, 0x34f)
+RVA(0x00140420, 0x34f)
 int CFileImage::Blit816(void*, void*, int) {
     return 0;
 }
 // @confidence: high
 // @source: reloc-correlation (CFileImage decoders)
 // @stub
-RVA(0x140aa0, 0x1a3)
+RVA(0x00140aa0, 0x1a3)
 int CFileImage::DecodeRun8(void*) {
     return 0;
 }
 // @confidence: high
 // @source: reloc-correlation (CFileImage::DecodePcx)
 // @stub
-RVA(0x140c50, 0x3e2)
+RVA(0x00140c50, 0x3e2)
 int CFileImage::DecodeRun24(void*) {
     return 0;
 }
 // @confidence: high
 // @source: reloc-correlation (CFileImage decoders)
 // @stub
-RVA(0x145270, 0x17a)
+RVA(0x00145270, 0x17a)
 int CFileImage::RunDecode1(void*, void*, int, int) {
     return 0;
 }
 // @confidence: high
 // @source: reloc-correlation (CFileImage::DecodePcx)
 // @stub
-RVA(0x1453f0, 0x3ac)
+RVA(0x001453f0, 0x3ac)
 int CFileImage::RunDecode3(void*, void*, int, int) {
     return 0;
 }

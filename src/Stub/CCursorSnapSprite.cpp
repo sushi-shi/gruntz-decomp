@@ -9,5 +9,5 @@ public:
 // @confidence: med
 // @source: rtti-vptr
 // @stub
-RVA(0x03a340, 0x16e)
+RVA(0x0003a340, 0x16e)
 CCursorSnapSprite::CCursorSnapSprite(int) {}

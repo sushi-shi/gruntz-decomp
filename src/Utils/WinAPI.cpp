@@ -20,7 +20,7 @@ namespace Utils {
         // FileExists
         // Tests a path via OpenFile(OF_EXIST). Returns false for a null/empty path.
         // (Re-emitted again elsewhere in this TU, same bytes.)
-        RVA(0x1189c0, 0x45)
+        RVA(0x001189c0, 0x45)
         int FileExists(char* szPath) {
             OFSTRUCT of;
 
@@ -36,7 +36,7 @@ namespace Utils {
         // -------------------------------------------------------------------------
         // ActiveWait
         // Busy-waits ~milliseconds using timeGetTime (no Sleep; spins).
-        RVA(0x13dfe0, 0x21)
+        RVA(0x0013dfe0, 0x21)
         void ActiveWait(unsigned int milliseconds) {
             DWORD target = timeGetTime() + milliseconds;
             while (timeGetTime() < target)
@@ -46,7 +46,7 @@ namespace Utils {
         // -------------------------------------------------------------------------
         // IsGruntzCDInAnyDrive
         // True iff a CD drive holding the Gruntz disc was found.
-        RVA(0x1fd50, 0xf)
+        RVA(0x0001fd50, 0xf)
         int IsGruntzCDInAnyDrive() {
             char letter = GetGruntzDriveLetter();
             return letter != 0;
@@ -67,7 +67,7 @@ namespace Utils {
         //   2. otherwise scan drives A..Z for a CD-ROM holding that marker file.
         // Returns the letter (0 if none). The local RegistryHelper's destructor
         // (Close) runs at scope exit -> the C++ EH frame.
-        RVA(0x1ffe0, 0x192)
+        RVA(0x0001ffe0, 0x192)
         char GetGruntzDriveLetter() {
             if (s_cdDriveLetter == 0) {
                 unsigned int valueSize;
@@ -125,7 +125,7 @@ namespace Utils {
         // @confidence: high
         // @source: tomalla
         // @stub
-        RVA(0x118ce0, 0x1f5)
+        RVA(0x00118ce0, 0x1f5)
         void Stub_118ce0() {}
     } // namespace WinAPI
 } // namespace Utils

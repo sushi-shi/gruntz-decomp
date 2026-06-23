@@ -74,11 +74,11 @@ struct CGameReg {
     char m_pad0[0x70];
     CTileMap* m_70; // +0x70
 };
-DATA(0x24556c)
+DATA(0x0024556c)
 extern CGameReg* g_gameReg;
 
 // 32.0 (the per-tile-time -> per-frame-speed reciprocal numerator).
-DATA(0x1ea3e0)
+DATA(0x001ea3e0)
 extern const double g_slimeSpeedNum; // VA 0x5ea3e0
 
 class CKitchenSlime {
@@ -101,7 +101,7 @@ public:
     int m_8c;    // +0x8c  (cleared)
 };
 
-RVA(0x0b3160, 0x339)
+RVA(0x000b3160, 0x339)
 void CKitchenSlime::LoadSprites() {
     int savedDir = m_10->m_124;
 

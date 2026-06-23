@@ -120,24 +120,24 @@ struct PlaneGeom {
 // The two-phase vftables. The inlined RemusBase ctor (in GameLevel.h) stamps the
 // base vftable; the derived CGameLevel ctor below stamps the derived one after the
 // three array members are constructed. Both stores are reloc-masked DIR32.
-DATA(0x1efc30)
+DATA(0x001efc30)
 extern void* g_severusWorkerBaseVtbl; // base (SeverusWorker) vftable
-DATA(0x1f0150)
+DATA(0x001f0150)
 extern void* g_gameLevelVtbl; // derived CGameLevel vftable
 // The base-subobject vftable the destructor restores after the member dtors run
 // (RemusBase::~RemusBase's vptr store - a different table from the base CTOR's).
-DATA(0x1e8cb4)
+DATA(0x001e8cb4)
 extern void* g_remusBaseDtorVtbl;
 
 // The three CImageSet variant vftables stamped by ReadImageSet (kind 1/2/3). Their
 // contents are UNMATCHED engine code, so the factory stamps the RETAIL tables by
 // address (reloc-masked DIR32) rather than letting the compiler emit a divergent
 // vtable. (Transitional manual-stamp workaround per matcher doctrine.)
-DATA(0x1f0198)
+DATA(0x001f0198)
 extern void* g_imageSet1Vtbl; // kind 1 (0x10-byte variant)
-DATA(0x1f01e0)
+DATA(0x001f01e0)
 extern void* g_imageSet2Vtbl; // kind 2 (0x24-byte variant)
-DATA(0x1f0228)
+DATA(0x001f0228)
 extern void* g_imageSet3Vtbl; // kind 3 (0x18-byte variant)
 
 static inline void StampLevelVtbl(CGameLevel* o) {
@@ -184,7 +184,7 @@ static inline void StampParamBlock(CGameLevel* o) {
 // one slot earlier here. Logic + all offsets + the two-phase construction + CFG +
 // the EH frame are exact; this is the documented store-scheduling / EH-state-base
 // entropy plateau (matching-patterns.md §entropy, .claude/agents/orchestrator.md §2a/§8).
-RVA(0x15ccd0, 0x118)
+RVA(0x0015ccd0, 0x118)
 CGameLevel::CGameLevel(int a1, int a2, int a3) : RemusBase(a1, a2, a3) {
     m_64 = 0x40;
     m_68 = 0x40;
@@ -208,7 +208,7 @@ CGameLevel::CGameLevel(int a1, int a2, int a3) : RemusBase(a1, a2, a3) {
     m_dc = 576;
 }
 
-RVA(0x15d280, 0x279)
+RVA(0x0015d280, 0x279)
 int CGameLevel::LoadWwd(WwdHeader* hdr) {
     Reset(); // vtable +0x44
 
@@ -366,7 +366,7 @@ fail:
 
 // ---------------------------------------------------------------------------
 // Remus adds a +0x10 sentinel check before the common parent/status predicate.
-RVA(0x161190, 0x1f)
+RVA(0x00161190, 0x1f)
 int CGameLevel::VirtualMethodUnknown14() {
     if (m_planeCtx.m_0 == (int)0x80000000) {
         goto fail;
@@ -398,7 +398,7 @@ fail:
 // slip or regressed the eax(0x3e8)/edx(0xfa) allocation (b8,bc,b0,b4 order ->
 // ~75%); calling the param block before the +0x10 writes moves the whole block
 // ahead (wrong). Logic + offsets + CFG are exact, so this is left as the plateau.
-RVA(0x15d030, 0x8f)
+RVA(0x0015d030, 0x8f)
 int CGameLevel::VirtualMethodUnknown34(int arg0, int arg1) {
     m_planeCtx.m_0 = 0;
     m_planeCtx.m_4 = 0;
@@ -419,7 +419,7 @@ int CGameLevel::VirtualMethodUnknown34(int arg0, int arg1) {
 // + the heap buffer are both freed on every exit, which is why the TU carries the
 // /GX EH frame. NOTE: the file Read's byte count is DISCARDED (no compare to the
 // length) - only the +0x38 virtual's result decides success.
-RVA(0x15d500, 0x127)
+RVA(0x0015d500, 0x127)
 int CGameLevel::VirtualMethodUnknown40(const char* path) {
     CFileIO file;
 
@@ -447,7 +447,7 @@ int CGameLevel::VirtualMethodUnknown40(const char* path) {
 // +0x38 load virtual and finish the parse (EndParse on arg) regardless, returning
 // the +0x38 result (1/0). BeginParse/EndParse are unmatched engine leaves on the
 // arg object (reloc-masked thiscall).
-RVA(0x15d630, 0x41)
+RVA(0x0015d630, 0x41)
 int CGameLevel::VirtualMethodUnknown3C(RemusParseSource* arg) {
     int handle = arg->BeginParse();
     if (handle == 0) {
@@ -464,7 +464,7 @@ int CGameLevel::VirtualMethodUnknown3C(RemusParseSource* arg) {
 // ---------------------------------------------------------------------------
 // Scalar-deleting destructor (vtable slot 1): run the destructor, then free the
 // object when bit0 of the flag is set; returns `this`. The compiler-standard thunk.
-RVA(0x1611c0, 0x1e)
+RVA(0x001611c0, 0x1e)
 void* CGameLevel::ScalarDtor(unsigned int flags) {
     this->~CGameLevel(); // call ??1CGameLevel
     if (flags & 1) {
@@ -478,7 +478,7 @@ void* CGameLevel::ScalarDtor(unsigned int flags) {
 // array members destruct (reverse construction order), then ~RemusBase restores
 // the base subobject (resets m_04/m_flags/m_0c + the base dtor vftable). The
 // destructible array members give the /GX EH frame.
-RVA(0x1611e0, 0x82)
+RVA(0x001611e0, 0x82)
 CGameLevel::~CGameLevel() {
     StampLevelVtbl(this);     // derived vftable @0x5f0150 (dtor entry)
     VirtualMethodUnknown1C(); // level cleanup (releases children, clears the header)
@@ -488,7 +488,7 @@ CGameLevel::~CGameLevel() {
 // ---------------------------------------------------------------------------
 // Like Unknown44 plus resets the sentinel and zeroes the WwdHeader buffer.
 // ---------------------------------------------------------------------------
-RVA(0x15d1f0, 0x87)
+RVA(0x0015d1f0, 0x87)
 int CGameLevel::VirtualMethodUnknown1C() {
     int i;
     for (i = 0; i < m_planes.GetSize(); i++) {
@@ -515,7 +515,7 @@ int CGameLevel::VirtualMethodUnknown1C() {
 // ---------------------------------------------------------------------------
 // Releases all child pointers, resets both CDWordArrays, clears members.
 // ---------------------------------------------------------------------------
-RVA(0x15d680, 0x71)
+RVA(0x0015d680, 0x71)
 void CGameLevel::VirtualMethodUnknown44() {
     int i;
     for (i = 0; i < m_planes.GetSize(); i++) {
@@ -539,7 +539,7 @@ void CGameLevel::VirtualMethodUnknown44() {
 // ---------------------------------------------------------------------------
 // Returns constant 0x19 (25) — a type-tag or enum identifier.
 // ---------------------------------------------------------------------------
-RVA(0x1611b0, 0x6)
+RVA(0x001611b0, 0x6)
 int CGameLevel::VirtualMethodUnknown20() {
     return 0x19;
 }
@@ -547,7 +547,7 @@ int CGameLevel::VirtualMethodUnknown20() {
 // --- restored: matching's RemusCoords sibling definitions (do not drop) ---
 // ---------------------------------------------------------------------------
 // As Unknown24 but dispatches the +0x40 sibling virtual.
-RVA(0x15cdf0, 0xb8)
+RVA(0x0015cdf0, 0xb8)
 int CGameLevel::VirtualMethodUnknown2C(int arg1, RemusCoords* coords) {
     m_planeCtx = *coords;
     StampParamBlock(this);
@@ -560,7 +560,7 @@ int CGameLevel::VirtualMethodUnknown2C(int arg1, RemusCoords* coords) {
 
 // ---------------------------------------------------------------------------
 // As Unknown24 but dispatches the +0x3c sibling virtual.
-RVA(0x15ceb0, 0xb8)
+RVA(0x0015ceb0, 0xb8)
 int CGameLevel::VirtualMethodUnknown28(int arg1, RemusCoords* coords) {
     m_planeCtx = *coords;
     StampParamBlock(this);
@@ -575,7 +575,7 @@ int CGameLevel::VirtualMethodUnknown28(int arg1, RemusCoords* coords) {
 // Loads the +0x10 record from *coords, stamps the param block, then dispatches
 // the +0x38 sibling virtual with arg1. On a 0 result it runs the +0x1c hook and
 // returns 0; otherwise returns 1.
-RVA(0x15cf70, 0xb8)
+RVA(0x0015cf70, 0xb8)
 int CGameLevel::VirtualMethodUnknown24(int arg1, RemusCoords* coords) {
     m_planeCtx = *coords;
     StampParamBlock(this);
@@ -588,7 +588,7 @@ int CGameLevel::VirtualMethodUnknown24(int arg1, RemusCoords* coords) {
 
 // ---------------------------------------------------------------------------
 // Loads the +0x10 record from *coords, stamps the param block, returns 1.
-RVA(0x15d0d0, 0x99)
+RVA(0x0015d0d0, 0x99)
 int CGameLevel::VirtualMethodUnknown30(RemusCoords* coords) {
     m_planeCtx = *coords;
     StampParamBlock(this);
@@ -642,7 +642,7 @@ struct CImageSet3 {
     int m_14; // +0x14
 };
 
-RVA(0x15d820, 0xa3)
+RVA(0x0015d820, 0xa3)
 CImageSet* CGameLevel::ReadImageSet(void* record) {
     if (record == 0) {
         return 0;
@@ -678,7 +678,7 @@ CImageSet* CGameLevel::ReadImageSet(void* record) {
 // CRT __ftol helper (the (int)float casts). X and Y are computed identically:
 // wrap (flags bit set) folds the coord modulo the tile count into [0, count);
 // else it clamps to [0, count-1].
-RVA(0x161c90, 0x1e4)
+RVA(0x00161c90, 0x1e4)
 void PlaneGeom::RecomputePlaneCoords() {
     PlaneGeom* p = this;
     unsigned int flags = p->flags;

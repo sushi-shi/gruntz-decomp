@@ -28,7 +28,7 @@ int CStatusBarItem::SbiVfunc0() {
 // CSBI_RectOnly::CSBI_RectOnly()
 // Inlines the CStatusBarItem base ctor (the dead m_8=0 store is elided), stores
 // its own vptr, then sets m_8 = 1.
-RVA(0x101fa0, 0x1b)
+RVA(0x00101fa0, 0x1b)
 CSBI_RectOnly::CSBI_RectOnly() {
     m_8 = 1;
 }
@@ -43,5 +43,5 @@ int CSBI_RectOnly::SbiVfunc0() {
 // @confidence: med
 // @source: rtti-vptr
 // @stub
-RVA(0x0ffde0, 0x5b1)
+RVA(0x000ffde0, 0x5b1)
 void CSBI_RectOnly::Stub_0ffde0() {}

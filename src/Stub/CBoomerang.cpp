@@ -32,12 +32,12 @@ public:
 };
 
 // Derived vftable, referenced as DIR32 data (RVA = VA - 0x400000).
-DATA(0x5e792c)
+DATA(0x005e792c)
 extern void* g_boomerangVtbl;
 
 // @confidence: high
 // @source: rtti-vptr
-RVA(0x0e0650, 0x2b)
+RVA(0x000e0650, 0x2b)
 CBoomerang::CBoomerang(int a) : CProjectileBase(a) {
     *(void**)this = &g_boomerangVtbl;
     m_154->m_08 |= 0x2000002;

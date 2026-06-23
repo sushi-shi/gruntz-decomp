@@ -18,11 +18,11 @@ public:
 // @confidence: med
 // @source: call-xref
 // @stub
-RVA(0x08dd80, 0x31)
+RVA(0x0008dd80, 0x31)
 void CDirectDrawMgr::ErrorThunk_08dd80() {}
 
 // @confidence: med
 // @source: call-xref
 // @stub
-RVA(0x08ddd0, 0x7e)
+RVA(0x0008ddd0, 0x7e)
 void CDirectDrawMgr::ErrorThunk_08ddd0(int) {}

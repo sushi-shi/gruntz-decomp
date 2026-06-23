@@ -9,5 +9,5 @@ public:
 // @confidence: med
 // @source: rtti-vptr
 // @stub
-RVA(0x10ee20, 0x27d)
+RVA(0x0010ee20, 0x27d)
 CCheckpointTrigger::CCheckpointTrigger(int) {}

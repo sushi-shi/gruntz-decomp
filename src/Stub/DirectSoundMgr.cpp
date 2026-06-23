@@ -13,5 +13,5 @@ public:
 // @confidence: med
 // @source: call-xref
 // @stub
-RVA(0x135f40, 0x169)
+RVA(0x00135f40, 0x169)
 void DirectSoundMgr::ErrorThunk_135f40(int, int, int) {}

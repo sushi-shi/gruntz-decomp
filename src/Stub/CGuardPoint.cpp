@@ -9,5 +9,5 @@ public:
 // @confidence: med
 // @source: rtti-vptr
 // @stub
-RVA(0x0ae5f0, 0x18f)
+RVA(0x000ae5f0, 0x18f)
 CGuardPoint::CGuardPoint(int) {}

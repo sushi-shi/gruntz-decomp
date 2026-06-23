@@ -9,7 +9,7 @@
 // CGameWnd::CGameWnd()
 // Zeroes the OS window handle (m_4) and owner-state field (m_c) after the
 // base/vftable construction.
-RVA(0x13cf00, 0x11)
+RVA(0x0013cf00, 0x11)
 CGameWnd::CGameWnd() {
     m_4 = 0;
     m_c = 0;
@@ -25,7 +25,7 @@ static CGameWnd* s_activeWnd;
 // installs this object as the active-window singleton, then ShowWindow(SW_
 // SHOWNORMAL). Bails (returning 0) if params/owner is null or a window is
 // already active.
-RVA(0x13cf20, 0x8f)
+RVA(0x0013cf20, 0x8f)
 int CGameWnd::CreateAndShow(CGameWndCreateParams* pParams, void* pOwner) {
     if (!pParams) {
         return (int)pParams;
@@ -67,7 +67,7 @@ int CGameWnd::CreateAndShow(CGameWndCreateParams* pParams, void* pOwner) {
 // CGameWnd::Destroy
 // Destroys the OS window if it is still valid, clears owner/window state, and
 // clears the active-window singleton.
-RVA(0x13cfb0, 0x39)
+RVA(0x0013cfb0, 0x39)
 void CGameWnd::Destroy() {
     if (m_4) {
         if (IsWindow(m_4)) {
@@ -83,7 +83,7 @@ void CGameWnd::Destroy() {
 // CGameWnd::QuitMessageLoop
 // Frees the game manager through the owning app, optionally reports the stored
 // error, then posts WM_QUIT.
-RVA(0x13d490, 0x29)
+RVA(0x0013d490, 0x29)
 int CGameWnd::QuitMessageLoop() {
     ((CGameApp*)m_8)->FreeGameManager();
     if (((CGameApp*)m_8)->m_248) {
@@ -111,7 +111,7 @@ int CGameWnd::QuitMessageLoop() {
 //
 // Point messages (WM_MOVE / mouse) split lParam into LOWORD(x)/HIWORD(y); the
 // (int) low/high words come straight off lParam (& 0xffff / >> 16).
-RVA(0x13cff0, 0x35c)
+RVA(0x0013cff0, 0x35c)
 LRESULT __stdcall CGameApp::GameWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     CGameWnd* pWnd = s_activeWnd;
     if (!pWnd) {

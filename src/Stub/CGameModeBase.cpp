@@ -8,5 +8,5 @@ public:
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @stub
-RVA(0x003f53, 0x5)
+RVA(0x00003f53, 0x5)
 void CGameModeBase::BaseCleanup() {}

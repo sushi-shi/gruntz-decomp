@@ -16,12 +16,12 @@ public:
 };
 
 // Derived vftable, referenced as DIR32 data (RVA = VA - 0x400000).
-DATA(0x5e7e0c)
+DATA(0x005e7e0c)
 extern void* g_coveredPowerupVtbl;
 
 // @confidence: high
 // @source: rtti-vptr
-RVA(0x10fac0, 0x19)
+RVA(0x0010fac0, 0x19)
 CCoveredPowerup::CCoveredPowerup(int a) : CCoveredPowerupBase(a) {
     *(void**)this = &g_coveredPowerupVtbl;
 }

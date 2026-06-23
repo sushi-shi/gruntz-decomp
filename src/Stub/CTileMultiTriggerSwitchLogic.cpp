@@ -21,12 +21,12 @@ public:
 };
 
 // Derived vftable, referenced as DIR32 data (RVA = VA - 0x400000).
-DATA(0x5eaeb4)
+DATA(0x005eaeb4)
 extern void* g_multiTrigSwitchVtbl;
 
 // @confidence: high
 // @source: rtti-vptr
-RVA(0x111f10, 0x12)
+RVA(0x00111f10, 0x12)
 CTileMultiTriggerSwitchLogic::CTileMultiTriggerSwitchLogic() {
     *(void**)this = &g_multiTrigSwitchVtbl;
 }

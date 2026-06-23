@@ -42,7 +42,7 @@
 // scalar members in source-declaration order, seeding four time/budget fields to
 // 0x40. NO embedded sub-object ctors and NO EH frame (plain /O2 - the ctor uses
 // eax=this, edx=0x40, ecx=0 held registers).
-RVA(0x08c750, 0xa9)
+RVA(0x0008c750, 0xa9)
 CState::CState() {
     m_4 = 0;
     m_8 = 0;
@@ -83,16 +83,16 @@ CState::CState() {
 // defined INLINE in the header so MSVC folds it into the synth `??_G` thunk (the
 // target inlines it; see GameMode.h). This thunk has no source body, so it cannot
 // carry an RVA() attribute - pin the deleting-dtor symbol by mangled name here.
-// @rva-symbol: ??_GCState@@UAEPAXI@Z 0x08c710 0x24
+// @rva-symbol: ??_GCState@@UAEPAXI@Z 0x0008c710 0x24
 
 // CState::Update()  (slot 4 / +0x10): the base default = return 1.
-RVA(0x08c4b0, 0x6)
+RVA(0x0008c4b0, 0x6)
 int CState::Update() {
     return 1;
 }
 
 // CState::Render()  (slot 5 / +0x14): the base default = return 1.
-RVA(0x08c4d0, 0x6)
+RVA(0x0008c4d0, 0x6)
 int CState::Render() {
     return 1;
 }
@@ -110,19 +110,19 @@ void CState::Vfunc3() {}
 // (CPlay::Update lives with the rest of CPlay in src/Gruntz/CPlay.cpp.)
 
 // CMenuState::Update(): the MENU state's ID = 5.
-RVA(0x08ce10, 0x6)
+RVA(0x0008ce10, 0x6)
 int CMenuState::Update() {
     return 5;
 }
 
 // CCreditsState::Update(): the CREDITS state's ID = 8.
-RVA(0x08d590, 0x6)
+RVA(0x0008d590, 0x6)
 int CCreditsState::Update() {
     return 8;
 }
 
 // CBootyState::Update(): the BOOTY state's ID = 0xa.
-RVA(0x08d3f0, 0x6)
+RVA(0x0008d3f0, 0x6)
 int CBootyState::Update() {
     return 0xa;
 }
@@ -146,7 +146,7 @@ int CBootyState::Update() {
 //        m_4->m_48->Play("CREDITZ",1); m_1b4 = 1; }
 //   9. CONDITIONAL FX (+0x1c4 gate): if (m_1c4) { s = m_4->m_48->Find("MONOLITH");
 //        if (s && !s->Query()) Sub3(); }   return 1;
-RVA(0x0391d0, 0x17c)
+RVA(0x000391d0, 0x17c)
 int CCreditsState::Render() {
     CGMInputObj* in = ((CGMView*)m_c)->m_4->m_10->m_2c->m_8;
     if (!in || in->vtbl->Poll(in)) {
@@ -221,7 +221,7 @@ int CCreditsState::Render() {
 //      0x8036 before the tail.
 //   3. TAIL: m_1b4->Step(g_645584); m_1b4->Pre(); DrawVersion({g_645cc8..d4});
 //      m_1b4->Post();   return 1;
-RVA(0x0a0750, 0x1d0)
+RVA(0x000a0750, 0x1d0)
 int CMenuState::Render() {
     CGMEntityList* L = g_645574;
 
@@ -311,11 +311,11 @@ int CCreditsState::InputVirtual() {
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x01d440, 0xd7d)
+RVA(0x0001d440, 0xd7d)
 void CBootyState::vfunc_1() {}
 
 // @confidence: med
 // @source: rtti-vptr
 // @stub
-RVA(0x08d5e0, 0x8b)
+RVA(0x0008d5e0, 0x8b)
 void CCreditsState::Stub_08d5e0() {}

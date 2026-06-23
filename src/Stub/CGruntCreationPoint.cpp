@@ -9,5 +9,5 @@ public:
 // @confidence: med
 // @source: rtti-vptr
 // @stub
-RVA(0x03e520, 0x1fd)
+RVA(0x0003e520, 0x1fd)
 CGruntCreationPoint::CGruntCreationPoint(int) {}

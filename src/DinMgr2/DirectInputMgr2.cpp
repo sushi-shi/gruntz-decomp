@@ -48,7 +48,7 @@ DirectInputCreateA(void* hinst, unsigned long version, IDirectInputZ** ppDI, voi
 
 // IID_IDirectInputDevice2A - a dxguid GUID constant in .rdata (0x5ef458),
 // passed to the device QueryInterface. Reloc-masked DATA() extern.
-DATA(0x1ef458)
+DATA(0x001ef458)
 extern const unsigned char IID_IDirectInputDevice2A[16]; // 0x5ef458
 
 // The static DIEnumDevicesCallbackA the EnumDevices wrapper passes by address
@@ -59,17 +59,17 @@ extern "C" int __stdcall DinEnumDevicesCallback(const void* instance, void* ref)
 // Reporting-mode globals (live in .data). g_logEnabled drives the format-line
 // path, g_msgBoxEnabled the MessageBox path; g_beepEnabled gates the startup
 // beep, g_thirdEnabled is a third "any output wanted" gate checked at entry.
-DATA(0x253aac)
+DATA(0x00253aac)
 extern "C" int g_beepEnabled; // 0x653aac
-DATA(0x253aa4)
+DATA(0x00253aa4)
 extern "C" int g_logEnabled; // 0x653aa4
-DATA(0x253aa8)
+DATA(0x00253aa8)
 extern "C" int g_msgBoxEnabled; // 0x653aa8
-DATA(0x253ab0)
+DATA(0x00253ab0)
 extern "C" int g_thirdEnabled; // 0x653ab0
 
 // Empty mutable string in .data copied into the working buffer up front.
-DATA(0x2293f4)
+DATA(0x002293f4)
 extern "C" char g_emptyString[]; // 0x6293f4
 
 // ===========================================================================
@@ -81,7 +81,7 @@ extern "C" char g_emptyString[]; // 0x6293f4
 // failure; caches owner/hinst/flags, then runs the three sub-initializers, each
 // gated on a flags bit being CLEAR (InitA unless bit 4, InitB unless bit 2,
 // EnumGameControllers unless bit 8) and short-circuiting to 0 if a step fails.
-RVA(0x132ce0, 0xae)
+RVA(0x00132ce0, 0xae)
 int DirectInputMgr2::Create(void* owner, void* hinst, unsigned long flags) {
     if (owner == 0) {
         return 0;
@@ -119,7 +119,7 @@ int DirectInputMgr2::Create(void* owner, void* hinst, unsigned long flags) {
 // unused). When the DInput object exists, enumerates game controllers via
 // IDirectInput::EnumDevices(devType=4, callback, ref=this, flags=1); reports a
 // failed HRESULT and returns 0, else 1.
-RVA(0x132f80, 0x3d)
+RVA(0x00132f80, 0x3d)
 int DirectInputMgr2::EnumGameControllers(unsigned long) {
     IDirectInputZ* di = m_0;
     if (di == 0) {
@@ -135,7 +135,7 @@ int DirectInputMgr2::EnumGameControllers(unsigned long) {
 
 // ---------------------------------------------------------------------------
 // DirectInputMgr2::GetErrorString
-RVA(0x133590, 0x5be)
+RVA(0x00133590, 0x5be)
 void DirectInputMgr2::GetErrorString(char* file, int line, long hr) {
     char szCode[64];  // error-code name
     char szMsg[256];  // description
@@ -261,7 +261,7 @@ void DirectInputMgr2::GetErrorString(char* file, int line, long hr) {
 // cooperative-level hwnd (m_29c), creates the device via
 // IDirectInput::CreateDevice into m_4, then QueryInterfaces it to the v2 device
 // interface (m_8). Each COM failure is reported; returns whether m_8 is non-null.
-RVA(0x134cb0, 0x94)
+RVA(0x00134cb0, 0x94)
 int CInputDevice::Create(IDirectInputZ* di, const void* deviceGuid, void* hwnd) {
     if (di == 0) {
         return 0;
@@ -288,7 +288,7 @@ int CInputDevice::Create(IDirectInputZ* di, const void* deviceGuid, void* hwnd) 
 
 // CInputDevice::SetDataFormat (__thiscall, ret 4 => 1 arg). Pass-through to
 // IDirectInputDevice::SetDataFormat; report on failure.
-RVA(0x134eb0, 0x3b)
+RVA(0x00134eb0, 0x3b)
 int CInputDevice::SetDataFormat(void* fmt) {
     if (fmt == 0) {
         return 0;
@@ -304,7 +304,7 @@ int CInputDevice::SetDataFormat(void* fmt) {
 // CInputDevice::SetCooperativeLevel (__thiscall, ret 4 => 1 arg). Re-issues
 // IDirectInputDevice::SetCooperativeLevel with the cached hwnd (m_29c) and the
 // given flags; report on failure.
-RVA(0x134ef0, 0x3c)
+RVA(0x00134ef0, 0x3c)
 int CInputDevice::SetCooperativeLevel(unsigned long flags) {
     long hr = m_8->vtbl->SetCooperativeLevel(m_8, m_29c, flags);
     if (hr != 0) {
@@ -316,7 +316,7 @@ int CInputDevice::SetCooperativeLevel(unsigned long flags) {
 
 // CInputDevice::SetProperty (__thiscall, ret 8 => 2 args). Pass-through to
 // IDirectInputDevice::SetProperty; report on failure.
-RVA(0x134f30, 0x40)
+RVA(0x00134f30, 0x40)
 int CInputDevice::SetProperty(const void* rguid, void* prop) {
     if (prop == 0) {
         return 0;
@@ -331,7 +331,7 @@ int CInputDevice::SetProperty(const void* rguid, void* prop) {
 
 // CInputDevice::Acquire (__thiscall, ret 0 => no args). Pass-through to
 // IDirectInputDevice::Acquire; report on failure.
-RVA(0x134fb0, 0x29)
+RVA(0x00134fb0, 0x29)
 int CInputDevice::Acquire() {
     long hr = m_8->vtbl->Acquire(m_8);
     if (hr != 0) {

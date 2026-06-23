@@ -9,5 +9,5 @@ public:
 // @confidence: med
 // @source: rtti-vptr
 // @stub
-RVA(0x0470e0, 0x16b)
+RVA(0x000470e0, 0x16b)
 CExplosion::CExplosion(int) {}

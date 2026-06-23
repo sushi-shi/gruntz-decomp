@@ -10,11 +10,11 @@ public:
 // @confidence: high
 // @source: tomalla
 // @stub
-RVA(0x1376d0, 0x20)
+RVA(0x001376d0, 0x20)
 UnknownVoldemort::UnknownVoldemort() {}
 
 // @confidence: high
 // @source: tomalla
 // @stub
-RVA(0x1376f0, 0x1e)
+RVA(0x001376f0, 0x1e)
 UnknownVoldemort::~UnknownVoldemort() {}

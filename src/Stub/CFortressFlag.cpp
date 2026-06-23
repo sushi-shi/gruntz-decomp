@@ -9,5 +9,5 @@ public:
 // @confidence: med
 // @source: rtti-vptr
 // @stub
-RVA(0x045d30, 0x203)
+RVA(0x00045d30, 0x203)
 CFortressFlag::CFortressFlag(int) {}

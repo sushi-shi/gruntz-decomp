@@ -10,11 +10,11 @@ public:
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x0810f0, 0x8b4)
+RVA(0x000810f0, 0x8b4)
 void CBrickz::LoadAttributes(int, int) {}
 
 // @confidence: med
 // @source: rtti-vptr
 // @stub
-RVA(0x10e800, 0x17d)
+RVA(0x0010e800, 0x17d)
 CBrickz::CBrickz(int) {}

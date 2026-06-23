@@ -55,7 +55,7 @@ void operator delete(void*);
 // Chains the Hogwarts(int) base ctor (inlined: this+0x04 = unknown2), stamps
 // the Lucius vtable (compiler-generated), then seeds the remaining fields.
 // ---------------------------------------------------------------------------
-RVA(0x156cb0, 0x20)
+RVA(0x00156cb0, 0x20)
 CDDrawSubMgr::CDDrawSubMgr(CDDrawSurfaceMgr* pHarryPotter, int unknown2, int unknown3)
     : CDDrawSubMgrBase(unknown2) {
     fieldUnknown8 = unknown3;
@@ -70,7 +70,7 @@ CDDrawSubMgr::CDDrawSubMgr(CDDrawSurfaceMgr* pHarryPotter, int unknown2, int unk
 // compiler changes the vtable to the base (CObject) and chains
 // through the base destructors.
 // ---------------------------------------------------------------------------
-RVA(0x1574d0, 0x5b)
+RVA(0x001574d0, 0x5b)
 CDDrawSubMgr::~CDDrawSubMgr() {
     VirtualMethodUnknown1C();
     m_fieldBaseUnknown = -1;
@@ -89,7 +89,7 @@ int CDDrawSubMgr::VirtualMethodUnknown18() {
 // @confidence: med
 // @source: tomalla
 // @stub
-RVA(0x157790, 0x6)
+RVA(0x00157790, 0x6)
 void CDDrawSubMgr::VirtualMethodUnknown20() {}
 
 // 0x155720 was labeled ~CDDrawSubMgr in the backlog, but the real (virtual) dtor
@@ -98,19 +98,19 @@ void CDDrawSubMgr::VirtualMethodUnknown20() {}
 // @confidence: low
 // @source: rtti-vptr
 // @stub
-RVA(0x155720, 0x1e)
+RVA(0x00155720, 0x1e)
 void CDDrawSubMgr::Stub_155720() {}
 
 // @confidence: med
 // @source: call-xref
 // @stub
-RVA(0x157630, 0x82)
+RVA(0x00157630, 0x82)
 void CDDrawSubMgr::Constructor_157630() {}
 
 // @confidence: med
 // @source: tomalla
 // @stub
-RVA(0x1576c0, 0x6)
+RVA(0x001576c0, 0x6)
 void CDDrawSubMgr::VirtualMethodUnknown1C() {}
 
 // Engine-label backlog stubs (moved from src/Stub/CDDrawSubMgrBase.cpp).
@@ -118,5 +118,5 @@ void CDDrawSubMgr::VirtualMethodUnknown1C() {}
 // @confidence: med
 // @source: call-xref
 // @stub
-RVA(0x156e10, 0x68)
+RVA(0x00156e10, 0x68)
 void CDDrawSubMgrBase::Constructor_156e10() {}

@@ -77,7 +77,7 @@ CGruntzMgrOptions::~CGruntzMgrOptions() {}
 // Forwards the (id, detail) error to the owning CGameApp held in the base
 // CGameMgr::m_8 pointer, via its vtable slot +0x1c (CGameApp::ReportError).
 // No-op when there is no app bound yet.
-RVA(0x08dc60, 0x19)
+RVA(0x0008dc60, 0x19)
 void CGruntzMgr::ReportError(WPARAM wParam, LPARAM lParam) {
     CGameApp* pApp = (CGameApp*)m_8;
     if (pApp) {
@@ -92,7 +92,7 @@ void CGruntzMgr::ReportError(WPARAM wParam, LPARAM lParam) {
 // letter; otherwise call Utils::WinAPI::GetGruntzDriveLetter(), cache + set the
 // flag. (The result is discarded by the engine on the first/uncached path - the
 // store IS the return, the cached path returns the byte.)
-RVA(0x08fa70, 0x2c)
+RVA(0x0008fa70, 0x2c)
 char CGruntzMgr::GetGruntzDriveLetter() {
     if (m_d4) {
         return m_d0;
@@ -109,7 +109,7 @@ char CGruntzMgr::GetGruntzDriveLetter() {
 // for the in-game PLAY state or the paused/hold state. AdvanceFrame uses it to
 // decide whether the sound bank should keep running. (Update() is re-evaluated
 // on the second compare, matching the retail two-call codegen.)
-RVA(0x08ec50, 0x33)
+RVA(0x0008ec50, 0x33)
 int CGruntzMgr::CheckPlayState() {
     if (m_2c == 0) {
         return 0;
@@ -129,7 +129,7 @@ int CGruntzMgr::CheckPlayState() {
 // DPLAYX failure routes a CNetMgr::ReportError diagnostic (with this TU's file +
 // the call-site line) through the game window. m_9c records success (1) / failure
 // (0); the result also lands in eax for the call site.
-RVA(0x08eca0, 0x164)
+RVA(0x0008eca0, 0x164)
 int CGruntzMgr::InitializeLobbyConnectionSettings() {
     if (m_a0) {
         return m_9c;
@@ -193,7 +193,7 @@ int CGruntzMgr::InitializeLobbyConnectionSettings() {
 // draw clock (g_6bf3c0 = timeGetTime(), g_6bf3bc = 0) when the draw gate m_30 is
 // set, and finally mirrors the freshly-refreshed engine clock into the game-side
 // pair (g_645580/g_645584).
-RVA(0x08f620, 0x51)
+RVA(0x0008f620, 0x51)
 void CGruntzMgr::PerFrameTick() {
     if (m_2c && m_2c->Update() == 0x11) {
         return;
@@ -224,7 +224,7 @@ void CGruntzMgr::PerFrameTick() {
 // either keeps the sound bank running (CheckPlayState() => PLAY/paused) or stops
 // it; on the non-draw path it stops the sound bank once its inner object reports
 // idle.
-RVA(0x08f6a0, 0x7d)
+RVA(0x0008f6a0, 0x7d)
 void CGruntzMgr::AdvanceFrame(int doDraw, int /*unused*/) {
     if (Wap32GameMgrVfunc3() == 0) {
         return;
@@ -261,7 +261,7 @@ void CGruntzMgr::AdvanceFrame(int doDraw, int /*unused*/) {
 // and, failing that, the Movies\ folder on the Gruntz CD ("<letter>:\Movies\
 // <name>"), returning the first that exists (empty CString if neither, or for an
 // unknown id). The two CString temps + the szPath buffer give the /GX frame.
-RVA(0x08ff30, 0x1ca)
+RVA(0x0008ff30, 0x1ca)
 CString CGruntzMgr::BuildMoviePath(int movie) {
     CString name;
 
@@ -339,7 +339,7 @@ CString CGruntzMgr::BuildMoviePath(int movie) {
 // destructible members (m_options150, m_strF0, m_strEC, m_arrD8, m_strC8, in
 // reverse-construction order) and chains the base ~CGameMgr - all under the /GX
 // C++ EH frame (per-member unwind states 4..0).
-RVA(0x083360, 0xb2)
+RVA(0x00083360, 0xb2)
 CGruntzMgr::~CGruntzMgr() {
     UnknownClose();
 }

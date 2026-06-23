@@ -70,6 +70,8 @@ Gotchas baked in from reading the delinker source:
 - **Win32/MFC types & functions come from the real headers** (`<Mfc.h>` for MFC TUs,
   `<Win32.h>` for pure-Win32/DirectX) — don't hand-roll typedefs/externs. See
   `docs/patterns/win32-import-decl-stdcall.md`.
+- **Addresses are zero-padded to 8 hex digits** in every `RVA()`/`DATA()` macro and
+  in `config/match-queue.md` (`0x00xxxxxx`); the RVA size arg stays unpadded.
 - **Formatting is automated; don't hand-format.** Rust-like clang-format (root
   `.clang-format`) via a pre-commit hook + `gruntz format`; whitespace-only, so
   matching-neutral. **Never format `vendor/`.** Details: `docs/build-system.md`.

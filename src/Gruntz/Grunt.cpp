@@ -160,7 +160,7 @@ extern int g_defaultGeo;
 // Gate: m_a8 == 0 (else return 0). Feed key "GRUNTZ_<type>_MOVING" + geometry
 // m_7c into the player; look up tree key "B"; then randomize the move-start time
 // (m_90 = (rand()%0x5dc1 + 0x1770)*10) and seed m_88/m_8c/m_94.
-RVA(0x045100, 0x112)
+RVA(0x00045100, 0x112)
 int CGrunt::ResolveMovingAnimation() {
     if (m_a8 != 0) {
         return 0;
@@ -185,7 +185,7 @@ int CGrunt::ResolveMovingAnimation() {
 // CGrunt::ResolveDeathAnimation()
 // Gate: m_a8 == 0 (else return 0); then latch m_a8 = 1. Fire the on-screen cue
 // (arg2 = m_ac), feed geometry m_78 then key "GRUNTZ_<type>_DEATH", look up "C".
-RVA(0x0455f0, 0x15b)
+RVA(0x000455f0, 0x15b)
 int CGrunt::ResolveDeathAnimation() {
     if (m_a8 != 0) {
         return 0;
@@ -218,7 +218,7 @@ int CGrunt::ResolveDeathAnimation() {
 // CGrunt::ResolveAnimation()  (generic "_JOY")
 // Gate: m_a8 == 0 (else return 0). The cue arg2 is a fixed constant (0x435 when
 // on-screen / 0x43f otherwise). Geometry m_74; key "GRUNTZ_<type>_JOY"; look "E".
-RVA(0x0457b0, 0x14c)
+RVA(0x000457b0, 0x14c)
 int CGrunt::ResolveAnimation() {
     if (m_a8 != 0) {
         return 0;
@@ -252,7 +252,7 @@ int CGrunt::ResolveAnimation() {
 // idx+0x431 / idx+0x43b; geometry m_58[idx]; then read the active-anim
 // descriptor's first element's m_14 as a 2nd lookup arg (SetAnimEx); key
 // "GRUNTZ_<type>_IDLE"; look up "A".
-RVA(0x045960, 0x181)
+RVA(0x00045960, 0x181)
 int CGrunt::ResolveIdleAnimation() {
     if (m_a8 != 0) {
         return 0;
@@ -291,7 +291,7 @@ int CGrunt::ResolveIdleAnimation() {
 // Gate: m_a8 == 0 (else return 0). Pick idx = rand()%3 (0..2); cue arg2 =
 // idx+0x42e / idx+0x438; geometry m_68[idx]; key "GRUNTZ_<type>_BATTLECRY";
 // look up "F".
-RVA(0x045b60, 0x161)
+RVA(0x00045b60, 0x161)
 int CGrunt::ResolveBattlecryAnimation() {
     if (m_a8 != 0) {
         return 0;
@@ -325,7 +325,7 @@ int CGrunt::ResolveBattlecryAnimation() {
 // CGrunt::CreateHealthSprite()
 // Gate: m_healthSprite unset AND m_3ec > 0. geoB = m_60 - 0x19; hint 0xdbba0.
 // Register via AddA(m_1ec, m_1f0, m_3ec).
-RVA(0x04d130, 0xb5)
+RVA(0x0004d130, 0xb5)
 int CGrunt::CreateHealthSprite() {
     if (m_healthSprite || m_3ec <= 0) {
         return 0;
@@ -350,7 +350,7 @@ int CGrunt::CreateHealthSprite() {
 // CGrunt::CreateToySprite()
 // Gate: m_toySprite unset. geoB = m_60 - 0x19; hint 0xdbba0.
 // Register via AddB(m_1ec, m_1f0).
-RVA(0x04d220, 0x9c)
+RVA(0x0004d220, 0x9c)
 int CGrunt::CreateToySprite() {
     if (m_toySprite) {
         return 0;
@@ -374,7 +374,7 @@ int CGrunt::CreateToySprite() {
 // CGrunt::CreateStaminaSprite()
 // Gate: m_staminaSprite unset AND m_3f0 != 0x64. geoB = m_60 - 0x20; hint 0xdbba0.
 // Register via AddA(m_1ec, m_1f0, m_3f0).
-RVA(0x04d2f0, 0xb4)
+RVA(0x0004d2f0, 0xb4)
 int CGrunt::CreateStaminaSprite() {
     if (m_staminaSprite || m_3f0 == 0x64) {
         return 0;
@@ -406,7 +406,7 @@ int CGrunt::CreateStaminaSprite() {
 // (m_1c8) and wingz-time sprite (m_1d0) if set (OR 0x10000 into their record's
 // +0x8, null the slot). geoB = m_60 - 0x20; hint 0xdbba0.
 // Register via AddA(m_1ec, m_1f0, m_3f4).
-RVA(0x04d3e0, 0xf5)
+RVA(0x0004d3e0, 0xf5)
 int CGrunt::CreateToyTimeSprite() {
     if (m_toyTimeSprite || m_3f4 == 0) {
         return 0;
@@ -446,7 +446,7 @@ int CGrunt::CreateToyTimeSprite() {
 // Gate: m_wingzTimeSprite unset AND m_238 != 0 AND m_3f8 != 0. Clears the
 // toy-time sprite (m_1cc) if set. geoB = m_60 - 0x26; hint 0xdbba0.
 // Register via AddA(m_1ec, m_1f0, m_3f8).
-RVA(0x04d520, 0xe3)
+RVA(0x0004d520, 0xe3)
 int CGrunt::CreateWingzTimeSprite() {
     if (m_wingzTimeSprite || m_238 == 0 || m_3f8 == 0) {
         return 0;
@@ -481,7 +481,7 @@ int CGrunt::CreateWingzTimeSprite() {
 // CGrunt::CreatePowerupSprite(int a)
 // Gate: m_powerupSprite unset. geoB = m_60 (no offset); hint 0x15.
 // Register via AddC(m_1ec, m_1f0, a).
-RVA(0x04d650, 0xa1)
+RVA(0x0004d650, 0xa1)
 int CGrunt::CreatePowerupSprite(int a) {
     if (m_powerupSprite) {
         return 0;
@@ -506,7 +506,7 @@ int CGrunt::CreatePowerupSprite(int a) {
 // CGrunt::CreateSelectedSprite()
 // Gate: m_selectedSprite unset. geoB = m_60 (no offset); hint 0x14.
 // Register via AddD(m_1ec, m_1f0).
-RVA(0x04d730, 0x96)
+RVA(0x0004d730, 0x96)
 int CGrunt::CreateSelectedSprite() {
     if (m_selectedSprite) {
         return 0;
@@ -532,13 +532,13 @@ int CGrunt::CreateSelectedSprite() {
 // @confidence: med
 // @source: rtti-vptr
 // @stub
-RVA(0x047a10, 0x770)
+RVA(0x00047a10, 0x770)
 void CGrunt::Stub_047a10() {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
-RVA(0x048470, 0x131b)
+RVA(0x00048470, 0x131b)
 void CGrunt::Stub_048470(int, int) {}
 
 // ---------------------------------------------------------------------------
@@ -565,7 +565,7 @@ static int s_entrancePreset0[3]; // DAT_00644aa0
 static int s_entrancePreset1[3]; // DAT_00644ac0
 static int s_entrancePreset2[3]; // DAT_00644ad0
 
-RVA(0x062e10, 0x47e)
+RVA(0x00062e10, 0x47e)
 void CGrunt::Stub_062e10(int apply, int cycle, int cue) {
     m_244 = 0;
 
@@ -699,7 +699,7 @@ latch:
 //   * tail: if the entrance anim is done (m_154->m_1b4 != m_3ac[0]) run
 //     Stub_062e10(0,0,0) on the lookup-miss flags; else, when the idle window has
 //     elapsed and the geometry source is ready, run Stub_062e10(0,1,1).
-RVA(0x0633e0, 0x2ca)
+RVA(0x000633e0, 0x2ca)
 void CGrunt::Stub_0633e0() {
     if (m_1e4 != 0 && m_10->m_5c == m_17c && m_10->m_60 == m_180) {
         CGameRegistry* g = g_pGameRegistry;
@@ -802,7 +802,7 @@ static const char s_GRUNTZ_ENTRANCEZ_DROP[] = "GRUNTZ_ENTRANCEZ_DROP";
 static const char s_GRUNTZ_ENTRANCEZ_RESSURECT[] = "GRUNTZ_ENTRANCEZ_RESSURECT";
 static const char s_GRUNTZ_DEATHZ_MELT[] = "GRUNTZ_DEATHZ_MELT";
 
-RVA(0x067bd0, 0x2ef)
+RVA(0x00067bd0, 0x2ef)
 void CGrunt::BuildEntranceAnimation(int mode) {
     m_30 = (int)m_14->m_1c;
     m_14->m_1c = (void*)EntranceLookupAnimSet(s_animKeyK);
@@ -919,7 +919,7 @@ void CGrunt::BuildEntranceAnimation(int mode) {
 // zero deferred and caches the width in a free reg, cascading a 1-instruction phase
 // shift through the two grid-write blocks). Same entropy class as the 5 resolvers'
 // edx/ecx coin-flip; no source lever flips it (an explicit `int z=0;` did not pin).
-RVA(0x067f80, 0x313)
+RVA(0x00067f80, 0x313)
 void CGrunt::LoadEntranceConfig() {
     if (m_154->m_1a0.SetGeoSourceR(g_defaultGeo) == 1) {
         CGameRegistry* g = g_pGameRegistry;
@@ -1020,7 +1020,7 @@ void CGrunt::LoadEntranceConfig() {
 // Reads the TimePerTile tuning config from CButeMgr for this grunt's type.
 // Applies a special-case halving for grunt kind 55 (0x37).
 // ---------------------------------------------------------------------------
-RVA(0x48400, 0x47)
+RVA(0x00048400, 0x47)
 void CGrunt::ReadConfigFromButeMgr() {
     *(int*)((char*)this + 0x18c) = 0;
     *(int*)((char*)this + 0x418) = 0;

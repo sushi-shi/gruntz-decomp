@@ -31,12 +31,12 @@ public:
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @stub
-RVA(0x169be0, 0x13)
+RVA(0x00169be0, 0x13)
 void CButeMgrHelper::FuncA() {}
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @stub
-RVA(0x169d70, 0x5a)
+RVA(0x00169d70, 0x5a)
 void CButeMgrHelper::FuncB() {
     m_0 = &g_func_b_destructor;
     m_34 = 0xffffffff;

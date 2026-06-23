@@ -42,7 +42,7 @@ struct CGameReg {
     char m_pad94[0x134 - 0x94];
     int m_134; // +0x134 visible-bounds mode gate (==1)
 };
-DATA(0x24556c)
+DATA(0x0024556c)
 extern CGameReg* g_gameReg;
 
 // The attribute manager (butemgr unit), reached as the g_buteMgr singleton.
@@ -112,7 +112,7 @@ public:
 // at a fixed screen position, cache its first frame, then resolve its cycle
 // geometry. __thiscall (this @ esi). Stores the sprite at this+0x2f8.
 
-RVA(0x01c070, 0x59)
+RVA(0x0001c070, 0x59)
 int EngineLabelBacklog::BuildBootyPerfectAnimation() {
     CSprite* spr =
         g_gameReg->m_30->m_8->CreateSprite(0, (int)0xffffff7e, 0xf0, 0x64, "SimpleAnimation", 3);
@@ -135,7 +135,7 @@ int EngineLabelBacklog::BuildBootyPerfectAnimation() {
 // sprite's init virtual (vtbl slot +0x10), then caches its first frame.
 // __thiscall (this @ esi). Returns 1 on (re)creation, 0 if already present.
 
-RVA(0x078960, 0x9b)
+RVA(0x00078960, 0x9b)
 int EngineLabelBacklog::LoadCameraSprite() {
     if (m_23c != 0) {
         return 0;
@@ -170,7 +170,7 @@ int EngineLabelBacklog::LoadCameraSprite() {
 // template, resolves its geometry, and records the chosen variant index at
 // this+0x124 with the loaded flag at this+0x114. __thiscall ret 0x10 (4 args).
 
-RVA(0x07b330, 0xc6)
+RVA(0x0007b330, 0xc6)
 int EngineLabelBacklog::LoadExplosionSprites(int geoB, int geoA, int variant, int dummy) {
     CSpriteFactory* fac = m_22c->m_8;
     CSprite* spr = fac->CreateSprite(0, geoB, geoA, 0, "Explosion", 0x40003);
@@ -199,7 +199,7 @@ int EngineLabelBacklog::LoadExplosionSprites(int geoB, int geoA, int variant, in
 // runs its own CreateSprite("TimeBomb", ...) + a CoveredTimeBombTime default.
 // __thiscall-free ret 0x18 (6 args). Returns 1 on success.
 
-RVA(0x07c620, 0x3c5)
+RVA(0x0007c620, 0x3c5)
 int EngineLabelBacklog::LoadPowerupIconSprites(
     int type,
     int geoB,

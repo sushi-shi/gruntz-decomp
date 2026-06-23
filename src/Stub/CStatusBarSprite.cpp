@@ -9,5 +9,5 @@ public:
 // @confidence: med
 // @source: rtti-vptr
 // @stub
-RVA(0x10c230, 0x178)
+RVA(0x0010c230, 0x178)
 CStatusBarSprite::CStatusBarSprite(int) {}

@@ -9,5 +9,5 @@ public:
 // @confidence: high
 // @source: rtti-vptr
 // @stub
-RVA(0x00bb60, 0x9b)
+RVA(0x0000bb60, 0x9b)
 CRandomAmbientSound::~CRandomAmbientSound() {}

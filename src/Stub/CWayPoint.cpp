@@ -9,5 +9,5 @@ public:
 // @confidence: med
 // @source: rtti-vptr
 // @stub
-RVA(0x0ae3f0, 0x18f)
+RVA(0x000ae3f0, 0x18f)
 CWayPoint::CWayPoint(int) {}

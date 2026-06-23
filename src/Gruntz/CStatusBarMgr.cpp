@@ -130,28 +130,28 @@ struct CGameReg {
     char m_pad78[0x158 - 0x78];
     int m_158; // +0x158 base of the icon table
 };
-DATA(0x24556c)
+DATA(0x0024556c)
 extern CGameReg* g_gameReg; // ?g_gameReg@@3PAUCGameReg@@A @ VA 0x64556c
 
-DATA(0x244c54)
+DATA(0x00244c54)
 extern int g_curPlayer; // DAT_00644c54
 
 // The eight concrete CSBI subclass vtables (retail addresses; stamped directly).
-DATA(0x1eac0c)
+DATA(0x001eac0c)
 extern void* g_vtbl_t3[]; // 0x5eac0c (CSBI_RectOnly, tag 3)
-DATA(0x1eac4c)
+DATA(0x001eac4c)
 extern void* g_vtbl_t4[]; // 0x5eac4c (CSBI_ImageSet, tag 4)
-DATA(0x1eac94)
+DATA(0x001eac94)
 extern void* g_vtbl_t5[]; // 0x5eac94 (tag 5)
-DATA(0x1eace4)
+DATA(0x001eace4)
 extern void* g_vtbl_t6[]; // 0x5eace4 (tag 6)
-DATA(0x1eadfc)
+DATA(0x001eadfc)
 extern void* g_vtbl_t7[]; // 0x5eadfc (tag 7)
-DATA(0x1ead6c)
+DATA(0x001ead6c)
 extern void* g_vtbl_t8[]; // 0x5ead6c (tag 8)
-DATA(0x1eadbc)
+DATA(0x001eadbc)
 extern void* g_vtbl_t9[]; // 0x5eadbc (tag 9)
-DATA(0x1ead24)
+DATA(0x001ead24)
 extern void* g_vtbl_tb[]; // 0x5ead24 (tag 0xb)
 
 // ---------------------------------------------------------------------------
@@ -213,7 +213,7 @@ static CSbItem* mk(unsigned int sz, void* vtbl, int tag) {
 //
 // The configure call can throw, with the just-created item live for unwind, so
 // retail builds this under a /GX EH frame (flags = "eh").
-RVA(0x102250, 0x1dcd)
+RVA(0x00102250, 0x1dcd)
 int CStatusBarMgr::LoadTabSprites() {
     int bx = m_10; // base x
     int by = m_14; // base y

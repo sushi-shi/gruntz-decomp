@@ -49,7 +49,7 @@ public:
 
 // ---------------------------------------------------------------------------
 // Ready when all three owned child pointers are populated.
-RVA(0x157480, 0x1e)
+RVA(0x00157480, 0x1e)
 int CDDrawSubMgrDraco::VirtualMethodUnknown14() {
     if (m_14 == 0) {
         goto fail;
@@ -68,7 +68,7 @@ fail:
 // ---------------------------------------------------------------------------
 // For each owned child at +0x10/+0x14/+0x18: if non-null, run its scalar-deleting
 // destructor (vtbl +0x4, arg 1) and null the slot.
-RVA(0x158ac0, 0x44)
+RVA(0x00158ac0, 0x44)
 void CDDrawSubMgrDraco::VirtualMethodUnknown1C() {
     if (m_10 != 0) {
         m_10->ScalarDtor(1);
@@ -90,17 +90,17 @@ void CDDrawSubMgrDraco::VirtualMethodUnknown1C() {
 // @confidence: high
 // @source: tomalla
 // @stub
-RVA(0x1574a0, 0x6)
+RVA(0x001574a0, 0x6)
 void CDDrawSubMgrDraco::Stub_1574a0() {}
 
 // @confidence: high
 // @source: tomalla
 // @stub
-RVA(0x1574b0, 0x1e)
+RVA(0x001574b0, 0x1e)
 void CDDrawSubMgrDraco::Stub_1574b0() {}
 
 // @confidence: high
 // @source: tomalla
 // @stub
-RVA(0x1588f0, 0x1c5)
+RVA(0x001588f0, 0x1c5)
 void CDDrawSubMgrDraco::Stub_1588f0() {}

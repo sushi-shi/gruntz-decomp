@@ -12,23 +12,23 @@ public:
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x039160, 0x46)
+RVA(0x00039160, 0x46)
 void CAttract::vfunc_10(int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x0a03f0, 0x14b)
+RVA(0x000a03f0, 0x14b)
 void CAttract::LoadTitleConfig(int) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x0a0a30, 0x110)
+RVA(0x000a0a30, 0x110)
 void CAttract::vfunc_6() {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
-RVA(0x013fb0, 0xd5)
+RVA(0x00013fb0, 0xd5)
 void CAttract::vfunc_1(int, int, int) {}
