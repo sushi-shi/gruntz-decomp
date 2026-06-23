@@ -435,7 +435,7 @@ engine_label_stubs	?LaunchPortalExe@EngineLabelBacklog@@YGXH@Z	0.7519	0.7519	1	c
 engine_label_stubs	?Load@PalLoad_1479e0@ApiCallerStubs@@QAEHHPADH@Z	89.7286	89.7286	1	cpp:6bf52155264d	0x1479e0
 engine_label_stubs	?Load@ResLoad_144270@ApiCallerStubs@@QAEHHPADH@Z	86.9310	86.9310	1	cpp:6bf52155264d	0x144270
 engine_label_stubs	?Load@StrHost_0b7ec0@ApiCallerStubs@@QAEXHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0xb7ec0
-engine_label_stubs	?LoadActionTileSprites@EngineThisStub@@QAEXH@Z	2.3256	2.3256	1	cpp:6bf52155264d	0xdb600
+engine_label_stubs	?LoadActionTileSprites@EngineThisStub@@QAEXH@Z	85.4651	85.4651	1	cpp:6bf52155264d	0xdb600
 engine_label_stubs	?LoadAreaLevelTable@EngineLabelBacklog@@YAXXZ	0.0517	0.0517	1	cpp:45e65336d4b5	0xa11d0
 engine_label_stubs	?LoadAssets@CHelpState@@QAEHHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x95090
 engine_label_stubs	?LoadAttributes2@CStaticHazard@@QAEHXZ	97.8571	97.8571	1	cpp:6bf52155264d	0xfc0b0

@@ -764,11 +764,93 @@ void EngineLabelBacklog::ValidateLevelTiles() {}
 RVA(0x000d65d0, 0x7a4)
 void EngineThisStub::LoadWarlordSprites(int, int) {}
 
+// ---------------------------------------------------------------------------
+// EngineThisStub::LoadActionTileSprites - per-level ACTION/TILEZ asset loader.
+// Reaches the game resource registry through this->m_c (->+0x10): if not forced
+// (arg1==0) and the "ACTION" sprite set is already present, bail; otherwise
+// register the "ACTION" and "BACK" namespaces (empty-string key), reset the
+// severus tile counter, look up the level's "TILEZ" sprite set off this->m_28,
+// and wire it into the registry through a virtual slot. Only offsets / code
+// bytes are load-bearing; helpers are reloc-masked externals.
+//
+// The registry object embedded at this->m_c->m_10: Has() probes a named set
+// (FUN_00555550, returns found-flag), Register() adds a namespace
+// (FUN_00555360), and a virtual slot (index 18) installs the loaded TILEZ set.
+struct CActionResRegistry {
+    int Has(char* szName);                        // FUN_00555550 __thiscall, ret found
+    void Register(char* szName, char* szKey);     // FUN_00555360 __thiscall
+    virtual void v0();
+    virtual void v1();
+    virtual void v2();
+    virtual void v3();
+    virtual void v4();
+    virtual void v5();
+    virtual void v6();
+    virtual void v7();
+    virtual void v8();
+    virtual void v9();
+    virtual void v10();
+    virtual void v11();
+    virtual void v12();
+    virtual void v13();
+    virtual void v14();
+    virtual void v15();
+    virtual void v16();
+    virtual void v17();
+    virtual void InstallTileSet(void* set, char* empty, char* key); // slot 18 (+0x48)
+};
+struct CActionResMgr { // this->m_c points here; +0x10 is the registry
+    char m_pad00[0x10];
+    CActionResRegistry* m_10; // +0x10
+};
+struct CTileSetSource { // this->m_28 points here
+    void* LookupTileSet(char* szName); // FUN_0053bae0 __thiscall, ret set ptr
+};
+DATA(0x002bf37c)
+extern int g_severusCounterA;
+extern "C" char g_emptyString[]; // 0x6293f4
+
+// Typed view of `this` for this loader: m_c is the resource manager, m_28 the
+// level's tile-set source. (EngineThisStub is the shared placeholder owner.)
+struct CActionTileOwner {
+    char m_pad00[0xc];
+    CActionResMgr* m_c; // +0x0c
+    char m_pad10[0x28 - 0x10];
+    CTileSetSource* m_28; // +0x28
+};
+
 // @confidence: med
 // @source: decomp-xref
-// @stub
+// @early-stop
+// Code bytes 100% byte-identical to retail (verified instr-by-instr via
+// llvm-objdump base vs target); residual is the reloc-masked plateau - every
+// referent (Has/Register/LookupTileSet engine helpers FUN_00555550/00555360/
+// 0053bae0, the +0x48 virtual install slot, the ACTION/BACK/TILEZ/"_" string
+// literals, g_severusCounterA, g_emptyString) maps to an UNNAMED FUN_/DAT_
+// placeholder on the target side, so the relocs can never pair by name -> NOT
+// exact. Same plateau as the sibling CSplashState::LoadSounds. The typed-view-
+// of-`this` (CActionTileOwner) is what steers cl to retail's edx (not esi)
+// register for the final m_c load. See docs/patterns/external-nobody-callee.md.
 RVA(0x000db600, 0x8f)
-void EngineThisStub::LoadActionTileSprites(int) {}
+void EngineThisStub::LoadActionTileSprites(int force) {
+    CActionTileOwner* self = (CActionTileOwner*)this;
+    if (!self->m_c) {
+        return;
+    }
+    if (!force && self->m_c->m_10->Has("ACTION")) {
+        return;
+    }
+
+    self->m_c->m_10->Register("ACTION", g_emptyString);
+    self->m_c->m_10->Register("BACK", g_emptyString);
+    g_severusCounterA = 0;
+
+    void* tiles = self->m_28->LookupTileSet("TILEZ");
+    if (!tiles) {
+        return;
+    }
+    self->m_c->m_10->InstallTileSet(tiles, g_emptyString, "_");
+}
 
 // @confidence: med
 // @source: decomp-xref
