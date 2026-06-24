@@ -1028,7 +1028,6 @@ class ClassUnknown_68 {
 public:
     void ClassUnknown_68_0a3460();
     void ClassUnknown_68_0a3820();
-    void ClassUnknown_68_0a3b50();
 };
 class ClassUnknown_69 {
 public:

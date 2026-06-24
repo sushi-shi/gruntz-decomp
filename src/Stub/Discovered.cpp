@@ -1485,12 +1485,13 @@ RVA(0x00191c30, 0xcc)
 void ClassUnknown_67::ClassUnknown_67_191c30() {}
 
 // ---- ClassUnknown_68 ----  (recovered: CLightFxRender, src/Gruntz/CLightFxRender.cpp)
+// 0xa3b50 DrawBorder reconstructed in src/Gruntz/CLightFxRender.cpp.
+// 0xa3460 Resize / 0xa3820 ComputeRect remain for the final sweep (per-pixel
+// palette blit + idiv scale-clamp; coupled to BltEx/Lock surface layout).
 RVA(0x000a3460, 0x2f3)
 void ClassUnknown_68::ClassUnknown_68_0a3460() {}
 RVA(0x000a3820, 0x18e)
 void ClassUnknown_68::ClassUnknown_68_0a3820() {}
-RVA(0x000a3b50, 0xfa)
-void ClassUnknown_68::ClassUnknown_68_0a3b50() {}
 
 // ---- ClassUnknown_69 ----
 RVA(0x00058b60, 0x2d)

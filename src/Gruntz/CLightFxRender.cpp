@@ -19,6 +19,26 @@ struct LfxSurface {
     char m_pad2[0x8c];
     i32 m_b0;         // +0xb0 pitch
     i32 Init0(i32 a); // engine method on a freshly-alloc'd surface (FUN_0053edb0)
+    u16* Lock(i32 a); // CDirSurf::Lock (FUN_0053e6d0) -> locked pixel base
+};
+
+// The unlock interface (LfxBorderCtx::m_8): a COM-like object whose vtable slot
+// 0x20 releases the surface lock. Modeled as a typed vtable so the dispatch
+// (mov eax,[iface]; call [eax+0x80]) falls out with no cast.
+struct LfxUnlockIface {
+    struct Vtbl {
+        void* s0[0x20];
+        void(__stdcall* Unlock)(LfxUnlockIface*, i32); // slot 0x20 -> [vtbl+0x80]
+    }* vtbl;
+};
+
+// The border-draw context (DrawBorder's 2nd arg): +0x08 the unlock interface,
+// +0x2c the locked work surface (pitch / stride / Lock).
+struct LfxBorderCtx {
+    char m_pad0[0x8];
+    LfxUnlockIface* m_08; // +0x08 unlock interface
+    char m_pad0c[0x2c - 0xc];
+    LfxSurface* m_2c; // +0x2c the work surface
 };
 
 // The surface pool the manager points at (m_0c->m_1c). __thiscall Free/Alloc map
@@ -70,6 +90,26 @@ struct CGameReg {
     LfxBlitTarget* m_68;
 };
 extern CGameReg* g_gameReg;
+
+// The live screen RGB-format shift table (VA 0x683ea0..0x683eb4 = RVA 0x283ea0..):
+// per channel a right-shift (8-bit -> channel width) then a left-shift into the
+// channel's slot. B sits at bit 0, so it has no left-shift.
+// See docs/patterns/rgb-pack-variable-shift.md.
+DATA(0x00283ea0)
+extern i32 g_rUp; // red   up-shift (into position)
+DATA(0x00283ea4)
+extern i32 g_gUp; // green up-shift
+DATA(0x00283eac)
+extern i32 g_rDown; // red   down-shift (scale 8-bit -> width)
+DATA(0x00283eb0)
+extern i32 g_gDown; // green down-shift
+DATA(0x00283eb4)
+extern i32 g_bDown; // blue  down-shift
+
+// Pack an 8-bit (r,g,b) constant triple into a screen-native 16-bit pixel.
+static inline u16 Pack(i32 r, i32 g, i32 b) {
+    return (u16)(((r >> g_rDown) << g_rUp) | ((g >> g_gDown) << g_gUp) | (b >> g_bDown));
+}
 
 // ===========================================================================
 // CLightFxRender::Init  (0x0a32c0)  - bind the manager, validate, zero state.
@@ -153,6 +193,50 @@ i32 CLightFxRender::AllocSurface() {
 }
 
 // ===========================================================================
+// CLightFxRender::DrawBorder  (0x0a3b50)  - lock the ctx work surface, paint the
+// four edges of `r` with `color`, unlock. `this`/ecx is unused. The top/bottom
+// edges are contiguous word runs (left..right); the left/right edges step a
+// column down each row. The fill at each edge is the inlined u16-memset idiom.
+// ===========================================================================
+// @early-stop
+// 70% - regalloc/frame wall (zero-register-pinning family): the body is byte-
+// identical in shape and the u16-fill idiom matches exactly, but retail pins the
+// surface in ebp / base in ebx (callee-saved, live across Lock) and frames with
+// push ebx/ebp, while MSVC for this source pins surface=esi/base=eax and spills
+// `this` via `push ecx`, a 1-instr phase shift that renames registers through
+// the whole body. Logic 100% correct.
+RVA(0x000a3b50, 0xfa)
+void CLightFxRender::DrawBorder(LfxRect* r, LfxBorderCtx* ctx, i32 color) {
+    LfxSurface* surf = ctx->m_2c;
+    u16* base = surf->Lock(0);
+    if (base == 0) {
+        return;
+    }
+    i32 w = r->right - r->left + 1;
+    // Top edge.
+    u16* tp = (u16*)((char*)base + r->top * surf->m_20 + r->left * surf->m_b0);
+    for (i32 t = 0; t < w; t++) {
+        tp[t] = (u16)color;
+    }
+    // Bottom edge.
+    u16* bp = (u16*)((char*)base + r->bottom * surf->m_20 + r->left * surf->m_b0);
+    for (i32 b = 0; b < w; b++) {
+        bp[b] = (u16)color;
+    }
+    // Left / right edges (column step = m_20 per row).
+    i32 h = r->bottom - r->top + 1;
+    char* lp = (char*)base + r->left * surf->m_b0 + r->top * surf->m_20;
+    char* rp = (char*)base + r->right * surf->m_b0 + r->top * surf->m_20;
+    for (i32 v = 0; v < h; v++) {
+        *(u16*)lp = (u16)color;
+        *(u16*)rp = (u16)color;
+        lp += surf->m_20;
+        rp += surf->m_20;
+    }
+    ctx->m_08->vtbl->Unlock(ctx->m_08, 0);
+}
+
+// ===========================================================================
 // CLightFxRender::BuildShape  (0x0a3c90)  - zero the +0x4c pixel buffer, then
 // dispatch one of the 8 shape generators by (shape - 1). Any generator returning
 // nonzero (or shape <= 0) clears m_438 and returns 1; a generator returning 0
@@ -220,17 +304,138 @@ i32 CLightFxRender::BuildShape(i32 shape) {
 }
 
 // ===========================================================================
-// CLightFxRender::Shape1  (0x0a3dc0, 2143B) - a ~2KB FPU/shift shape generator
-// that fills the +0x4c buffer with computed 16-bit colors via the screen RGB
-// shift globals (0x683ea0..0x683eb4). DEFERRED to the final sweep (big, float-
-// heavy, leaf-first redo). The RVA stub binds ?Shape1@ to 0xa3dc0 so BuildShape's
-// dispatch call reloc-masks.
+// CLightFxRender::Shape1  (0x0a3dc0, 2143B) - the first of 8 shape generators.
+// Pre-computes ~22 screen-native 16-bit colors from 8-bit (R,G,B) triples via the
+// RGB shift table (Pack, see docs/patterns/rgb-pack-variable-shift.md), paints a
+// fixed icon into the +0x4c pixel buffer (direct word runs + FillSpan spans).
 // ===========================================================================
 // @early-stop
-// deferred: ~2KB 16-bit-color shape generator (FPU + RGB-shift mask), one of 8.
+// ~70% wall (docs/patterns/rgb-pack-variable-shift.md): complete, correct body -
+// the per-channel `(c>>down)<<up` packs and the FillSpan spans match in shape, but
+// the /O2 optimizer CSEs the 5 shared shift globals and fuses partial channel
+// results across the ~22 colors, scheduling them into a register/stack-slot
+// arrangement no uniform `Pack()` source reproduces byte-for-byte. Same scheduling
+// wall as Shape2..Shape8 (all ~2KB); deferred to the final sweep for a leaf-first
+// redo once the pack scheduling is steerable.
 RVA(0x000a3dc0, 0x85f)
 i32 CLightFxRender::Shape1() {
-    return 0;
+    u16* buf = m_buf;
+    i32 i;
+    u16 c00 = Pack(0x4f, 0x14, 0x01);
+    u16 c01 = Pack(0x00, 0x37, 0x00);
+    u16 c02 = Pack(0x00, 0x00, 0x13);
+    u16 c03 = Pack(0x63, 0x00, 0x00);
+    u16 c04 = Pack(0x5c, 0x0d, 0x06);
+    u16 c05 = Pack(0x10, 0x28, 0x71);
+    u16 c06 = Pack(0x26, 0x62, 0x00);
+    u16 c07 = Pack(0x00, 0x00, 0x00);
+    u16 c08 = Pack(0x20, 0x20, 0x20);
+    u16 c09 = Pack(0x78, 0x78, 0x5f);
+    u16 c10 = Pack(0x64, 0x64, 0x64);
+    u16 c11 = Pack(0xff, 0xd9, 0x00);
+    u16 c12 = Pack(0x00, 0xd2, 0x47);
+    u16 c13 = Pack(0x00, 0x00, 0xff);
+    u16 c14 = Pack(0xa1, 0x2b, 0x00);
+    u16 c15 = Pack(0x45, 0x00, 0x00);
+    u16 c16 = Pack(0x00, 0x7c, 0x00);
+    u16 c17 = Pack(0x00, 0xff, 0x45);
+    u16 c18 = Pack(0x00, 0x26, 0x26);
+    u16 c19 = Pack(0x00, 0x92, 0x2b);
+    u16 c20 = Pack(0xd7, 0xd7, 0xd7);
+    u16 c21 = Pack(0x37, 0x00, 0x00);
+    u16 c22 = Pack(0x00, 0x00, 0x37);
+    u16 c23 = Pack(0xb4, 0x30, 0x30);
+    buf[1] = c00;
+    buf[2] = c00;
+    buf[3] = c00;
+    buf[4] = c00;
+    buf[5] = c00;
+    buf[6] = c00;
+    buf[7] = c00;
+    buf[8] = c00;
+    for (i = 17; i < 37; i++) {
+        buf[i] = c00;
+    }
+    buf[90] = c00;
+    buf[195] = c00;
+    buf[196] = c00;
+    buf[199] = c00;
+    buf[301] = c00;
+    buf[9] = c00;
+    buf[10] = c00;
+    buf[11] = c00;
+    buf[12] = c00;
+    buf[13] = c00;
+    buf[14] = c00;
+    buf[15] = c00;
+    buf[16] = c00;
+    buf[91] = c03;
+    buf[197] = c03;
+    buf[198] = c03;
+    for (i = 40; i < 74; i++) {
+        buf[i] = c04;
+    }
+    for (i = 270; i < 282; i++) {
+        buf[i] = c04;
+    }
+    for (i = 104; i < 116; i++) {
+        buf[i] = c08;
+    }
+    buf[120] = c01;
+    buf[121] = c01;
+    buf[122] = c01;
+    buf[123] = c01;
+    for (i = 128; i < 140; i++) {
+        buf[i] = c08;
+    }
+    for (i = 144; i < 156; i++) {
+        buf[i] = c06;
+    }
+    buf[160] = c01;
+    buf[161] = c01;
+    buf[162] = c01;
+    buf[163] = c01;
+    for (i = 168; i < 180; i++) {
+        buf[i] = c06;
+    }
+    buf[157] = c01;
+    buf[158] = c01;
+    buf[165] = c01;
+    buf[166] = c01;
+    buf[258] = c05;
+    buf[264] = c05;
+    buf[117] = c05;
+    buf[118] = c05;
+    FillSpan(0x7d, 0x7e, c07);
+    buf[260] = c07;
+    buf[266] = c07;
+    FillSpan(0x11a, 0x11d, c09);
+    buf[257] = c09;
+    buf[259] = c09;
+    FillSpan(0x105, 0x107, c09);
+    buf[265] = c09;
+    FillSpan(0x4d, 0x54, c10);
+    FillSpan(0x11e, 0x126, c10);
+    FillSpan(0xc9, 0xd1, c11);
+    FillSpan(0xdd, 0xe0, c12);
+    FillSpan(0xf1, 0xf2, c00);
+    FillSpan(0xed, 0xee, c14);
+    FillSpan(0xff, 0x100, c14);
+    FillSpan(0xe1, 0xe4, c16);
+    FillSpan(0xe5, 0xe8, c17);
+    FillSpan(0xfb, 0xfc, c17);
+    FillSpan(0xe9, 0xec, c18);
+    FillSpan(0xfd, 0xfe, c18);
+    FillSpan(0xef, 0xf0, c19);
+    FillSpan(0xf7, 0xf8, c19);
+    FillSpan(0xd9, 0xda, c20);
+    FillSpan(0xf9, 0xfa, c20);
+    FillSpan(0xf3, 0xf6, c22);
+    FillSpan(0x12e, 0x143, c12);
+    FillSpan(0xd5, 0xd6, c23);
+    FillSpan(0xd7, 0xd8, c21);
+    FillSpan(0x5c, 0x5f, c00);
+    return 1;
 }
 
 // ===========================================================================
@@ -256,46 +461,895 @@ void CLightFxRender::FillSpan(u32 x1, u32 x2, u16 color) {
 // membership - they are the case 2/5/7/8 generators).
 // ===========================================================================
 // @early-stop
-// deferred: ~2KB shape generator (newly discovered via the BuildShape switch).
+// ~70% wall (docs/patterns/rgb-pack-variable-shift.md) - complete, correct body
+// (Pack colors + buffer stores + FillSpan spans); the /O2 CSE+scheduling of the
+// ~22 shared-global packs is the same wall as Shape1.
 RVA(0x000a4890, 0x852)
 i32 CLightFxRender::Shape2() {
-    return 0;
+    u16* buf = m_buf;
+    i32 i;
+    u16 c00 = Pack(0x89, 0x6e, 0x58);
+    u16 c01 = Pack(0xd7, 0x00, 0x00);
+    u16 c02 = Pack(0x00, 0xe5, 0xfa);
+    u16 c03 = Pack(0x10, 0x28, 0x71);
+    u16 c04 = Pack(0x26, 0x62, 0x00);
+    u16 c05 = Pack(0x00, 0x00, 0x00);
+    u16 c06 = Pack(0x20, 0x20, 0x20);
+    u16 c07 = Pack(0x49, 0x65, 0x84);
+    u16 c08 = Pack(0xff, 0xd9, 0x13);
+    u16 c09 = Pack(0x00, 0xd2, 0x47);
+    u16 c10 = Pack(0x00, 0x00, 0xff);
+    u16 c11 = Pack(0xa1, 0x2b, 0x00);
+    u16 c12 = Pack(0x45, 0x00, 0x00);
+    u16 c13 = Pack(0x00, 0x7c, 0x00);
+    u16 c14 = Pack(0x00, 0xff, 0x45);
+    u16 c15 = Pack(0x00, 0x26, 0x26);
+    u16 c16 = Pack(0x00, 0x92, 0x2b);
+    u16 c17 = Pack(0x00, 0xd7, 0xd7);
+    u16 c18 = Pack(0x37, 0x00, 0x00);
+    u16 c19 = Pack(0x00, 0x37, 0x37);
+    u16 c20 = Pack(0xb4, 0x30, 0x30);
+    u16 c21 = Pack(0xa0, 0x00, 0x00);
+    buf[1] = c21;
+    buf[2] = c21;
+    buf[3] = c21;
+    buf[4] = c21;
+    buf[5] = c21;
+    buf[6] = c21;
+    buf[7] = c21;
+    buf[8] = c21;
+    for (i = 17; i < 37; i++) {
+        buf[i] = c21;
+    }
+    buf[90] = c00;
+    buf[195] = c21;
+    buf[196] = c21;
+    buf[199] = c00;
+    buf[301] = c00;
+    buf[9] = c00;
+    buf[10] = c00;
+    buf[11] = c00;
+    buf[12] = c00;
+    buf[13] = c00;
+    buf[14] = c00;
+    buf[15] = c00;
+    buf[16] = c00;
+    buf[91] = c00;
+    buf[197] = c00;
+    buf[198] = c00;
+    for (i = 40; i < 74; i++) {
+        buf[i] = c02;
+    }
+    for (i = 270; i < 282; i++) {
+        buf[i] = c02;
+    }
+    for (i = 104; i < 116; i++) {
+        buf[i] = c06;
+    }
+    buf[120] = c10;
+    buf[121] = c10;
+    buf[122] = c10;
+    buf[123] = c10;
+    for (i = 128; i < 140; i++) {
+        buf[i] = c06;
+    }
+    for (i = 144; i < 156; i++) {
+        buf[i] = c04;
+    }
+    buf[160] = c10;
+    buf[161] = c10;
+    buf[162] = c10;
+    buf[163] = c10;
+    for (i = 168; i < 180; i++) {
+        buf[i] = c04;
+    }
+    buf[157] = c10;
+    buf[158] = c10;
+    buf[165] = c10;
+    buf[166] = c10;
+    buf[258] = c03;
+    buf[264] = c03;
+    buf[117] = c03;
+    buf[118] = c03;
+    FillSpan(0x7d, 0x7e, c05);
+    buf[260] = c05;
+    buf[266] = c05;
+    FillSpan(0x11a, 0x11d, c00);
+    buf[257] = c00;
+    buf[259] = c00;
+    FillSpan(0x105, 0x107, c00);
+    buf[265] = c00;
+    FillSpan(0x4d, 0x54, c07);
+    FillSpan(0x11e, 0x126, c07);
+    FillSpan(0xc9, 0xd1, c08);
+    FillSpan(0xdd, 0xe0, c09);
+    FillSpan(0xf1, 0xf2, c00);
+    FillSpan(0xed, 0xee, c11);
+    FillSpan(0xff, 0x100, c11);
+    FillSpan(0xe1, 0xe4, c13);
+    FillSpan(0xe5, 0xe8, c14);
+    FillSpan(0xfb, 0xfc, c14);
+    FillSpan(0xe9, 0xec, c15);
+    FillSpan(0xfd, 0xfe, c15);
+    FillSpan(0xef, 0xf0, c16);
+    FillSpan(0xf7, 0xf8, c16);
+    FillSpan(0xd9, 0xda, c17);
+    FillSpan(0xf9, 0xfa, c17);
+    FillSpan(0xf3, 0xf6, c19);
+    FillSpan(0x12e, 0x143, c09);
+    FillSpan(0xd5, 0xd6, c20);
+    FillSpan(0xd7, 0xd8, c18);
+    FillSpan(0x5c, 0x5f, c00);
+    return 1;
 }
 // @early-stop
-// deferred: ~2KB shape generator (target).
+// ~70% wall (docs/patterns/rgb-pack-variable-shift.md) - complete, correct body
+// (Pack colors + buffer stores + FillSpan spans); the /O2 CSE+scheduling of the
+// ~22 shared-global packs is the same wall as Shape1.
 RVA(0x000a5310, 0x855)
 i32 CLightFxRender::Shape3() {
-    return 0;
+    u16* buf = m_buf;
+    i32 i;
+    u16 c00 = Pack(0x4e, 0x78, 0x1c);
+    u16 c01 = Pack(0x23, 0x23, 0x23);
+    u16 c02 = Pack(0x00, 0x37, 0x00);
+    u16 c03 = Pack(0x00, 0x00, 0x0f);
+    u16 c04 = Pack(0x24, 0x00, 0x00);
+    u16 c05 = Pack(0x10, 0x28, 0x71);
+    u16 c06 = Pack(0x26, 0x62, 0x00);
+    u16 c07 = Pack(0xb4, 0x00, 0x00);
+    u16 c08 = Pack(0x00, 0x3d, 0x0b);
+    u16 c09 = Pack(0x64, 0x0c, 0x03);
+    u16 c10 = Pack(0xb0, 0x85, 0x1f);
+    u16 c11 = Pack(0x59, 0x17, 0x00);
+    u16 c12 = Pack(0xff, 0xd9, 0x13);
+    u16 c13 = Pack(0x00, 0xd2, 0x47);
+    u16 c14 = Pack(0x00, 0x00, 0xff);
+    u16 c15 = Pack(0xa1, 0x2b, 0x00);
+    u16 c16 = Pack(0x45, 0x00, 0x00);
+    u16 c17 = Pack(0x00, 0x7c, 0x00);
+    u16 c18 = Pack(0x00, 0xff, 0x45);
+    u16 c19 = Pack(0x00, 0x26, 0x26);
+    u16 c20 = Pack(0x00, 0x92, 0x2b);
+    u16 c21 = Pack(0x37, 0xd7, 0xd7);
+    u16 c22 = Pack(0x00, 0x00, 0x37);
+    u16 c23 = Pack(0x00, 0x61, 0x39);
+    u16 c24 = Pack(0x00, 0x30, 0x30);
+    buf[1] = c00;
+    buf[2] = c00;
+    buf[3] = c00;
+    buf[4] = c00;
+    buf[5] = c00;
+    buf[6] = c00;
+    buf[7] = c00;
+    buf[8] = c00;
+    for (i = 17; i < 37; i++) {
+        buf[i] = c00;
+    }
+    buf[90] = c00;
+    buf[195] = c00;
+    buf[196] = c00;
+    buf[199] = c00;
+    buf[301] = c00;
+    buf[9] = c00;
+    buf[10] = c00;
+    buf[11] = c00;
+    buf[12] = c00;
+    buf[13] = c00;
+    buf[14] = c00;
+    buf[15] = c00;
+    buf[16] = c00;
+    buf[91] = c01;
+    buf[197] = c01;
+    buf[198] = c01;
+    for (i = 40; i < 74; i++) {
+        buf[i] = c04;
+    }
+    for (i = 270; i < 282; i++) {
+        buf[i] = c04;
+    }
+    for (i = 104; i < 116; i++) {
+        buf[i] = c09;
+    }
+    buf[120] = c02;
+    buf[121] = c02;
+    buf[122] = c02;
+    buf[123] = c02;
+    for (i = 128; i < 140; i++) {
+        buf[i] = c09;
+    }
+    for (i = 144; i < 156; i++) {
+        buf[i] = c06;
+    }
+    buf[160] = c02;
+    buf[161] = c02;
+    buf[162] = c02;
+    buf[163] = c02;
+    for (i = 168; i < 180; i++) {
+        buf[i] = c06;
+    }
+    buf[157] = c02;
+    buf[158] = c02;
+    buf[165] = c02;
+    buf[166] = c02;
+    buf[258] = c05;
+    buf[264] = c05;
+    buf[117] = c05;
+    buf[118] = c05;
+    FillSpan(0x7d, 0x7e, c08);
+    buf[260] = c08;
+    buf[266] = c08;
+    FillSpan(0x11a, 0x11d, c10);
+    buf[257] = c10;
+    buf[259] = c10;
+    FillSpan(0x105, 0x107, c10);
+    buf[265] = c10;
+    FillSpan(0x4d, 0x54, c11);
+    FillSpan(0x11e, 0x126, c11);
+    FillSpan(0xc9, 0xd1, c12);
+    FillSpan(0xdd, 0xe0, c13);
+    FillSpan(0xf1, 0xf2, c00);
+    FillSpan(0xed, 0xee, c15);
+    FillSpan(0xff, 0x100, c15);
+    FillSpan(0xe1, 0xe4, c17);
+    FillSpan(0xe5, 0xe8, c18);
+    FillSpan(0xfb, 0xfc, c18);
+    FillSpan(0xe9, 0xec, c19);
+    FillSpan(0xfd, 0xfe, c19);
+    FillSpan(0xef, 0xf0, c20);
+    FillSpan(0xf7, 0xf8, c20);
+    FillSpan(0xd9, 0xda, c20);
+    FillSpan(0xf9, 0xfa, c20);
+    FillSpan(0xf3, 0xf6, c22);
+    FillSpan(0x12e, 0x143, c23);
+    FillSpan(0xd5, 0xd6, c24);
+    FillSpan(0xd7, 0xd8, c21);
+    FillSpan(0x5c, 0x5f, c00);
+    return 1;
 }
 // @early-stop
-// deferred: ~2KB shape generator (target).
+// ~70% wall (docs/patterns/rgb-pack-variable-shift.md) - complete, correct body
+// (Pack colors + buffer stores + FillSpan spans); the /O2 CSE+scheduling of the
+// ~22 shared-global packs is the same wall as Shape1.
 RVA(0x000a5d90, 0x825)
 i32 CLightFxRender::Shape4() {
-    return 0;
+    u16* buf = m_buf;
+    i32 i;
+    u16 c00 = Pack(0x00, 0xfd, 0xfd);
+    u16 c01 = Pack(0x00, 0xc1, 0xa7);
+    u16 c02 = Pack(0x47, 0x65, 0xf1);
+    u16 c03 = Pack(0x00, 0x00, 0x00);
+    u16 c04 = Pack(0x01, 0x00, 0x5e);
+    u16 c05 = Pack(0x0d, 0x20, 0xbe);
+    u16 c06 = Pack(0x00, 0x00, 0x00);
+    u16 c07 = Pack(0x45, 0x00, 0x00);
+    u16 c08 = Pack(0x00, 0x2e, 0x0d);
+    u16 c09 = Pack(0xff, 0xc5, 0xe0);
+    u16 c10 = Pack(0x00, 0xd9, 0x13);
+    u16 c11 = Pack(0x00, 0xd2, 0x47);
+    u16 c12 = Pack(0x00, 0x00, 0xff);
+    u16 c13 = Pack(0xa1, 0x2b, 0x00);
+    u16 c14 = Pack(0x00, 0x7c, 0x00);
+    u16 c15 = Pack(0x00, 0xff, 0x45);
+    u16 c16 = Pack(0x00, 0x26, 0x26);
+    u16 c17 = Pack(0xd7, 0xd7, 0xd7);
+    u16 c18 = Pack(0x37, 0x00, 0x00);
+    u16 c19 = Pack(0x00, 0x37, 0x37);
+    u16 c20 = Pack(0xb4, 0x61, 0x39);
+    u16 c21 = Pack(0x00, 0x30, 0x30);
+    u16 c22 = Pack(0xa0, 0x00, 0x00);
+    u16 c23 = Pack(0x00, 0x00, 0x00);
+    buf[1] = c22;
+    buf[2] = c22;
+    buf[3] = c22;
+    buf[4] = c22;
+    buf[5] = c22;
+    buf[6] = c22;
+    buf[7] = c22;
+    buf[8] = c22;
+    for (i = 17; i < 37; i++) {
+        buf[i] = c22;
+    }
+    buf[90] = c00;
+    buf[195] = c22;
+    buf[196] = c22;
+    buf[199] = c00;
+    buf[301] = c00;
+    buf[9] = c00;
+    buf[10] = c00;
+    buf[11] = c00;
+    buf[12] = c00;
+    buf[13] = c00;
+    buf[14] = c00;
+    buf[15] = c00;
+    buf[16] = c00;
+    buf[91] = c01;
+    buf[197] = c01;
+    buf[198] = c01;
+    for (i = 40; i < 74; i++) {
+        buf[i] = c01;
+    }
+    for (i = 270; i < 282; i++) {
+        buf[i] = c01;
+    }
+    for (i = 104; i < 116; i++) {
+        buf[i] = c01;
+    }
+    buf[120] = c01;
+    buf[121] = c01;
+    buf[122] = c01;
+    buf[123] = c01;
+    for (i = 128; i < 140; i++) {
+        buf[i] = c01;
+    }
+    for (i = 144; i < 156; i++) {
+        buf[i] = c02;
+    }
+    buf[160] = c07;
+    buf[161] = c07;
+    buf[162] = c07;
+    buf[163] = c07;
+    for (i = 168; i < 180; i++) {
+        buf[i] = c02;
+    }
+    buf[157] = c07;
+    buf[158] = c07;
+    buf[165] = c07;
+    buf[166] = c07;
+    buf[258] = c10;
+    buf[264] = c10;
+    buf[117] = c10;
+    buf[118] = c10;
+    FillSpan(0x7d, 0x7e, c06);
+    FillSpan(0x11a, 0x11d, c08);
+    buf[257] = c08;
+    buf[259] = c08;
+    FillSpan(0x105, 0x107, c08);
+    buf[265] = c08;
+    FillSpan(0x4d, 0x54, c09);
+    FillSpan(0x11e, 0x126, c09);
+    FillSpan(0xc9, 0xd1, c10);
+    FillSpan(0xdd, 0xe0, c11);
+    FillSpan(0xf1, 0xf2, c00);
+    FillSpan(0xed, 0xee, c13);
+    FillSpan(0xff, 0x100, c13);
+    FillSpan(0xe1, 0xe4, c14);
+    FillSpan(0xe5, 0xe8, c15);
+    FillSpan(0xfb, 0xfc, c15);
+    FillSpan(0xe9, 0xec, c16);
+    FillSpan(0xfd, 0xfe, c16);
+    FillSpan(0xef, 0xf0, c16);
+    FillSpan(0xf7, 0xf8, c16);
+    FillSpan(0xd9, 0xda, c17);
+    FillSpan(0xf9, 0xfa, c17);
+    FillSpan(0xf3, 0xf6, c19);
+    FillSpan(0x12e, 0x143, c20);
+    FillSpan(0xd5, 0xd6, c21);
+    FillSpan(0xd7, 0xd8, c23);
+    FillSpan(0x5c, 0x5f, c00);
+    return 1;
 }
 // @early-stop
-// deferred: ~2KB shape generator (newly discovered via the BuildShape switch).
+// ~70% wall (docs/patterns/rgb-pack-variable-shift.md) - complete, correct body
+// (Pack colors + buffer stores + FillSpan spans); the /O2 CSE+scheduling of the
+// ~22 shared-global packs is the same wall as Shape1.
 RVA(0x000a67d0, 0x864)
 i32 CLightFxRender::Shape5() {
-    return 0;
+    u16* buf = m_buf;
+    i32 i;
+    u16 c00 = Pack(0x3c, 0x0e, 0x15);
+    u16 c01 = Pack(0x68, 0x08, 0x07);
+    u16 c02 = Pack(0xf2, 0xfe, 0x9b);
+    u16 c03 = Pack(0x23, 0x7d, 0xb5);
+    u16 c04 = Pack(0x1b, 0x3c, 0x64);
+    u16 c05 = Pack(0x00, 0x00, 0x00);
+    u16 c06 = Pack(0x00, 0x00, 0x00);
+    u16 c07 = Pack(0x6e, 0x19, 0x46);
+    u16 c08 = Pack(0xfc, 0xfc, 0xfc);
+    u16 c09 = Pack(0xff, 0xd9, 0x13);
+    u16 c10 = Pack(0x00, 0xd2, 0x47);
+    u16 c11 = Pack(0x00, 0x00, 0xff);
+    u16 c12 = Pack(0xa1, 0x2b, 0x00);
+    u16 c13 = Pack(0x45, 0x00, 0x00);
+    u16 c14 = Pack(0x00, 0x7c, 0x00);
+    u16 c15 = Pack(0x00, 0xff, 0x45);
+    u16 c16 = Pack(0x00, 0x26, 0x26);
+    u16 c17 = Pack(0x00, 0x92, 0x2b);
+    u16 c18 = Pack(0xd7, 0xd7, 0xd7);
+    u16 c19 = Pack(0x37, 0x00, 0x00);
+    u16 c20 = Pack(0x00, 0x37, 0x37);
+    u16 c21 = Pack(0xb4, 0x30, 0x30);
+    u16 c22 = Pack(0xa0, 0xa0, 0x00);
+    buf[1] = c00;
+    buf[2] = c00;
+    buf[3] = c00;
+    buf[4] = c00;
+    buf[5] = c00;
+    buf[6] = c00;
+    buf[7] = c00;
+    buf[8] = c00;
+    for (i = 17; i < 37; i++) {
+        buf[i] = c00;
+    }
+    buf[90] = c00;
+    buf[195] = c00;
+    buf[196] = c00;
+    buf[199] = c00;
+    buf[301] = c00;
+    buf[9] = c00;
+    buf[10] = c00;
+    buf[11] = c00;
+    buf[12] = c00;
+    buf[13] = c00;
+    buf[14] = c00;
+    buf[15] = c00;
+    buf[16] = c00;
+    buf[91] = c01;
+    buf[197] = c01;
+    buf[198] = c01;
+    for (i = 39; i < 75; i++) {
+        buf[i] = c01;
+    }
+    for (i = 270; i < 282; i++) {
+        buf[i] = c01;
+    }
+    for (i = 102; i < 114; i++) {
+        buf[i] = c01;
+    }
+    buf[116] = c01;
+    buf[117] = c01;
+    buf[118] = c01;
+    buf[119] = c01;
+    buf[120] = c01;
+    buf[121] = c01;
+    for (i = 124; i < 138; i++) {
+        buf[i] = c01;
+    }
+    for (i = 144; i < 156; i++) {
+        buf[i] = c04;
+    }
+    buf[159] = c11;
+    buf[160] = c11;
+    buf[161] = c11;
+    buf[162] = c11;
+    buf[163] = c11;
+    for (i = 168; i < 180; i++) {
+        buf[i] = c04;
+    }
+    buf[157] = c11;
+    buf[158] = c11;
+    buf[165] = c11;
+    buf[166] = c11;
+    buf[258] = c03;
+    buf[264] = c03;
+    buf[114] = c03;
+    buf[115] = c03;
+    FillSpan(0x7a, 0x7b, c06);
+    FillSpan(0x11a, 0x11d, c07);
+    buf[257] = c07;
+    buf[259] = c07;
+    FillSpan(0x105, 0x107, c07);
+    buf[265] = c07;
+    FillSpan(0x4d, 0x54, c08);
+    FillSpan(0x11e, 0x126, c08);
+    FillSpan(0xc9, 0xd1, c09);
+    FillSpan(0xdd, 0xe0, c10);
+    FillSpan(0xf1, 0xf2, c00);
+    FillSpan(0xed, 0xee, c12);
+    FillSpan(0xff, 0x100, c12);
+    FillSpan(0xe1, 0xe4, c14);
+    FillSpan(0xe5, 0xe8, c15);
+    FillSpan(0xfb, 0xfc, c15);
+    FillSpan(0xe9, 0xec, c16);
+    FillSpan(0xfd, 0xfe, c16);
+    FillSpan(0xef, 0xf0, c17);
+    FillSpan(0xf7, 0xf8, c17);
+    FillSpan(0xd9, 0xda, c18);
+    FillSpan(0xf9, 0xfa, c18);
+    FillSpan(0xf3, 0xf6, c20);
+    FillSpan(0x12e, 0x143, c10);
+    FillSpan(0xd5, 0xd6, c21);
+    FillSpan(0xd7, 0xd8, c22);
+    FillSpan(0x5c, 0x5f, c00);
+    return 1;
 }
 // @early-stop
-// deferred: ~2KB shape generator (target).
+// ~70% wall (docs/patterns/rgb-pack-variable-shift.md) - complete, correct body
+// (Pack colors + buffer stores + FillSpan spans); the /O2 CSE+scheduling of the
+// ~22 shared-global packs is the same wall as Shape1.
 RVA(0x000a7260, 0x8c0)
 i32 CLightFxRender::Shape6() {
-    return 0;
+    u16* buf = m_buf;
+    i32 i;
+    u16 c00 = Pack(0x85, 0x73, 0x6f);
+    u16 c01 = Pack(0x28, 0x25, 0xc8);
+    u16 c02 = Pack(0xaf, 0xad, 0xc4);
+    u16 c03 = Pack(0x32, 0x99, 0xae);
+    u16 c04 = Pack(0x10, 0x77, 0x8c);
+    u16 c05 = Pack(0x35, 0x38, 0x42);
+    u16 c06 = Pack(0x4d, 0x50, 0x5a);
+    u16 c07 = Pack(0xa7, 0x83, 0x48);
+    u16 c08 = Pack(0xfb, 0xfb, 0xfb);
+    u16 c09 = Pack(0xff, 0xd9, 0x13);
+    u16 c10 = Pack(0x00, 0xd2, 0x47);
+    u16 c11 = Pack(0x00, 0x00, 0xff);
+    u16 c12 = Pack(0xa1, 0x2b, 0x00);
+    u16 c13 = Pack(0x45, 0x00, 0x00);
+    u16 c14 = Pack(0x00, 0x7c, 0x00);
+    u16 c15 = Pack(0x00, 0xff, 0x45);
+    u16 c16 = Pack(0x00, 0x26, 0x26);
+    u16 c17 = Pack(0x00, 0x92, 0x2b);
+    u16 c18 = Pack(0xd7, 0xd7, 0xd7);
+    u16 c19 = Pack(0x37, 0x00, 0x00);
+    u16 c20 = Pack(0x00, 0x37, 0x37);
+    u16 c21 = Pack(0xb4, 0x30, 0x30);
+    buf[1] = c00;
+    buf[2] = c00;
+    buf[3] = c00;
+    buf[4] = c00;
+    buf[5] = c00;
+    buf[6] = c00;
+    buf[7] = c00;
+    buf[8] = c00;
+    for (i = 17; i < 37; i++) {
+        buf[i] = c00;
+    }
+    buf[90] = c00;
+    buf[195] = c00;
+    buf[196] = c00;
+    buf[199] = c00;
+    buf[301] = c00;
+    buf[9] = c00;
+    buf[10] = c00;
+    buf[11] = c00;
+    buf[12] = c00;
+    buf[13] = c00;
+    buf[14] = c00;
+    buf[15] = c00;
+    buf[16] = c00;
+    buf[91] = c01;
+    buf[197] = c01;
+    buf[198] = c01;
+    for (i = 39; i < 75; i++) {
+        buf[i] = c02;
+    }
+    for (i = 270; i < 282; i++) {
+        buf[i] = c02;
+    }
+    for (i = 102; i < 114; i++) {
+        buf[i] = c06;
+    }
+    buf[116] = c11;
+    buf[117] = c11;
+    buf[118] = c11;
+    buf[119] = c11;
+    buf[120] = c11;
+    buf[121] = c11;
+    for (i = 124; i < 138; i++) {
+        buf[i] = c06;
+    }
+    for (i = 144; i < 156; i++) {
+        buf[i] = c04;
+    }
+    buf[159] = c11;
+    buf[160] = c11;
+    buf[161] = c11;
+    buf[162] = c11;
+    buf[163] = c11;
+    for (i = 168; i < 180; i++) {
+        buf[i] = c04;
+    }
+    buf[157] = c11;
+    buf[158] = c11;
+    buf[165] = c11;
+    buf[166] = c11;
+    buf[258] = c03;
+    buf[264] = c03;
+    buf[114] = c11;
+    buf[115] = c11;
+    buf[122] = c11;
+    buf[123] = c11;
+    buf[260] = c09;
+    buf[266] = c09;
+    FillSpan(0x11a, 0x11d, c07);
+    buf[257] = c07;
+    buf[259] = c07;
+    FillSpan(0x105, 0x107, c07);
+    buf[265] = c07;
+    FillSpan(0x4d, 0x54, c08);
+    FillSpan(0x11e, 0x126, c08);
+    FillSpan(0xc9, 0xd1, c09);
+    FillSpan(0xdd, 0xe0, c10);
+    FillSpan(0xf1, 0xf2, c00);
+    FillSpan(0xed, 0xee, c12);
+    FillSpan(0xff, 0x100, c12);
+    FillSpan(0xe1, 0xe4, c14);
+    FillSpan(0xe5, 0xe8, c15);
+    FillSpan(0xfb, 0xfc, c15);
+    FillSpan(0xe9, 0xec, c16);
+    FillSpan(0xfd, 0xfe, c16);
+    FillSpan(0xef, 0xf0, c17);
+    FillSpan(0xf7, 0xf8, c17);
+    FillSpan(0xd9, 0xda, c18);
+    FillSpan(0xf9, 0xfa, c18);
+    FillSpan(0xf3, 0xf6, c20);
+    FillSpan(0x12e, 0x143, c10);
+    FillSpan(0xd5, 0xd6, c21);
+    FillSpan(0xd7, 0xd8, c19);
+    buf[259] = c20;
+    buf[265] = c00;
+    FillSpan(0x5c, 0x5f, c00);
+    return 1;
 }
 // @early-stop
-// deferred: ~2KB shape generator (newly discovered via the BuildShape switch).
+// ~70% wall (docs/patterns/rgb-pack-variable-shift.md) - complete, correct body
+// (Pack colors + buffer stores + FillSpan spans); the /O2 CSE+scheduling of the
+// ~22 shared-global packs is the same wall as Shape1.
 RVA(0x000a7d50, 0x94f)
 i32 CLightFxRender::Shape7() {
-    return 0;
+    u16* buf = m_buf;
+    i32 i;
+    u16 c00 = Pack(0x40, 0x40, 0x00);
+    u16 c01 = Pack(0x00, 0x7a, 0x2f);
+    u16 c02 = Pack(0x68, 0x71, 0x7c);
+    u16 c03 = Pack(0x6a, 0xb9, 0xff);
+    u16 c04 = Pack(0x43, 0x85, 0x00);
+    u16 c05 = Pack(0xc3, 0xc0, 0x73);
+    u16 c06 = Pack(0x86, 0x8b, 0x7f);
+    u16 c07 = Pack(0x78, 0x78, 0x5f);
+    u16 c08 = Pack(0x81, 0x55, 0xf6);
+    u16 c09 = Pack(0xff, 0x00, 0x00);
+    u16 c10 = Pack(0x00, 0xd9, 0x00);
+    u16 c11 = Pack(0x00, 0xd2, 0x47);
+    u16 c12 = Pack(0xa1, 0x00, 0x00);
+    u16 c13 = Pack(0x00, 0x2b, 0x00);
+    u16 c14 = Pack(0x45, 0x00, 0x00);
+    u16 c15 = Pack(0x00, 0x7c, 0x00);
+    u16 c16 = Pack(0x00, 0xff, 0x45);
+    u16 c17 = Pack(0x00, 0x26, 0x26);
+    u16 c18 = Pack(0x00, 0x92, 0x2b);
+    u16 c19 = Pack(0xd7, 0xd7, 0xd7);
+    u16 c20 = Pack(0x37, 0x00, 0x00);
+    u16 c21 = Pack(0x00, 0x37, 0x37);
+    u16 c22 = Pack(0xb4, 0x61, 0x39);
+    u16 c23 = Pack(0x00, 0x30, 0x30);
+    u16 c24 = Pack(0xa0, 0xa0, 0x27);
+    u16 c25 = Pack(0x00, 0x00, 0x00);
+    buf[1] = c00;
+    buf[2] = c00;
+    buf[3] = c00;
+    buf[4] = c00;
+    buf[5] = c00;
+    buf[6] = c00;
+    buf[7] = c00;
+    buf[8] = c00;
+    for (i = 17; i < 37; i++) {
+        buf[i] = c00;
+    }
+    buf[90] = c00;
+    buf[195] = c00;
+    buf[196] = c00;
+    buf[199] = c00;
+    buf[301] = c00;
+    buf[9] = c00;
+    buf[10] = c00;
+    buf[11] = c00;
+    buf[12] = c00;
+    buf[13] = c00;
+    buf[14] = c00;
+    buf[15] = c00;
+    buf[16] = c00;
+    buf[91] = c01;
+    buf[197] = c01;
+    buf[198] = c01;
+    for (i = 39; i < 75; i++) {
+        buf[i] = c02;
+    }
+    for (i = 270; i < 282; i++) {
+        buf[i] = c02;
+    }
+    for (i = 102; i < 114; i++) {
+        buf[i] = c06;
+    }
+    buf[116] = c12;
+    buf[117] = c12;
+    buf[118] = c12;
+    buf[119] = c12;
+    buf[120] = c12;
+    buf[121] = c12;
+    for (i = 124; i < 138; i++) {
+        buf[i] = c06;
+    }
+    for (i = 144; i < 156; i++) {
+        buf[i] = c04;
+    }
+    buf[159] = c12;
+    buf[160] = c12;
+    buf[161] = c12;
+    buf[162] = c12;
+    buf[163] = c12;
+    for (i = 168; i < 180; i++) {
+        buf[i] = c04;
+    }
+    buf[157] = c12;
+    buf[158] = c12;
+    buf[165] = c12;
+    buf[166] = c12;
+    buf[258] = c03;
+    buf[264] = c03;
+    buf[114] = c12;
+    buf[115] = c12;
+    buf[122] = c12;
+    buf[123] = c12;
+    buf[260] = c10;
+    buf[266] = c10;
+    FillSpan(0x11a, 0x11d, c07);
+    buf[257] = c07;
+    buf[259] = c07;
+    FillSpan(0x105, 0x107, c07);
+    buf[265] = c07;
+    FillSpan(0x4d, 0x54, c08);
+    FillSpan(0x11e, 0x126, c08);
+    FillSpan(0xc9, 0xd1, c10);
+    FillSpan(0xdd, 0xe0, c11);
+    FillSpan(0xf1, 0xf2, c00);
+    FillSpan(0xed, 0xee, c13);
+    FillSpan(0xff, 0x100, c13);
+    FillSpan(0xe1, 0xe4, c15);
+    FillSpan(0xe5, 0xe8, c16);
+    FillSpan(0xfb, 0xfc, c16);
+    FillSpan(0xe9, 0xec, c17);
+    FillSpan(0xfd, 0xfe, c17);
+    FillSpan(0xef, 0xf0, c18);
+    FillSpan(0xf7, 0xf8, c18);
+    FillSpan(0xd9, 0xda, c19);
+    FillSpan(0xf9, 0xfa, c19);
+    FillSpan(0xf3, 0xf6, c21);
+    FillSpan(0x12e, 0x143, c22);
+    FillSpan(0xd5, 0xd6, c23);
+    FillSpan(0xd7, 0xd8, c24);
+    FillSpan(0x105, 0x106, c12);
+    buf[263] = c25;
+    buf[265] = c25;
+    FillSpan(0x5c, 0x5f, c00);
+    return 1;
 }
 // @early-stop
-// deferred: ~2KB shape generator (newly discovered via the BuildShape switch).
+// ~70% wall (docs/patterns/rgb-pack-variable-shift.md) - complete, correct body
+// (Pack colors + buffer stores + FillSpan spans); the /O2 CSE+scheduling of the
+// ~22 shared-global packs is the same wall as Shape1.
 RVA(0x000a8900, 0x926)
 i32 CLightFxRender::Shape8() {
-    return 0;
+    u16* buf = m_buf;
+    i32 i;
+    u16 c00 = Pack(0x5e, 0x5e, 0x5e);
+    u16 c01 = Pack(0x28, 0x28, 0x28);
+    u16 c02 = Pack(0x96, 0x96, 0x96);
+    u16 c03 = Pack(0x30, 0x64, 0x6f);
+    u16 c04 = Pack(0x33, 0x50, 0x57);
+    u16 c05 = Pack(0x00, 0x00, 0x00);
+    u16 c06 = Pack(0x00, 0x00, 0x00);
+    u16 c07 = Pack(0x00, 0x00, 0x00);
+    u16 c08 = Pack(0x78, 0x78, 0x5f);
+    u16 c09 = Pack(0x94, 0xa7, 0xbd);
+    u16 c10 = Pack(0xff, 0xd9, 0x13);
+    u16 c11 = Pack(0x00, 0xd2, 0x00);
+    u16 c12 = Pack(0x00, 0x00, 0x47);
+    u16 c13 = Pack(0x00, 0x00, 0xff);
+    u16 c14 = Pack(0xa1, 0x2b, 0x00);
+    u16 c15 = Pack(0x45, 0x00, 0x00);
+    u16 c16 = Pack(0x00, 0x7c, 0x00);
+    u16 c17 = Pack(0x00, 0xff, 0x45);
+    u16 c18 = Pack(0x00, 0x00, 0x26);
+    u16 c19 = Pack(0x00, 0x26, 0x00);
+    u16 c20 = Pack(0x00, 0x92, 0x2b);
+    u16 c21 = Pack(0xd7, 0xd7, 0xd7);
+    u16 c22 = Pack(0x37, 0x00, 0x00);
+    u16 c23 = Pack(0x00, 0x37, 0x37);
+    u16 c24 = Pack(0xb4, 0x61, 0x39);
+    u16 c25 = Pack(0x00, 0x30, 0x30);
+    u16 c26 = Pack(0x12, 0xa0, 0x18);
+    u16 c27 = Pack(0x00, 0x72, 0x00);
+    buf[1] = c05;
+    buf[2] = c05;
+    buf[3] = c05;
+    buf[4] = c05;
+    buf[5] = c05;
+    buf[6] = c05;
+    buf[7] = c05;
+    buf[8] = c05;
+    for (i = 17; i < 37; i++) {
+        buf[i] = c05;
+    }
+    buf[90] = c00;
+    buf[195] = c05;
+    buf[196] = c05;
+    buf[199] = c00;
+    buf[301] = c00;
+    buf[9] = c06;
+    buf[10] = c06;
+    buf[11] = c06;
+    buf[12] = c06;
+    buf[13] = c06;
+    buf[14] = c06;
+    buf[15] = c06;
+    buf[16] = c06;
+    buf[91] = c01;
+    buf[197] = c01;
+    buf[198] = c01;
+    for (i = 39; i < 75; i++) {
+        buf[i] = c01;
+    }
+    for (i = 270; i < 282; i++) {
+        buf[i] = c01;
+    }
+    for (i = 102; i < 114; i++) {
+        buf[i] = c01;
+    }
+    buf[116] = c01;
+    buf[117] = c01;
+    buf[118] = c01;
+    buf[119] = c01;
+    buf[120] = c01;
+    buf[121] = c01;
+    for (i = 124; i < 138; i++) {
+        buf[i] = c01;
+    }
+    for (i = 144; i < 156; i++) {
+        buf[i] = c04;
+    }
+    buf[159] = c18;
+    buf[160] = c18;
+    buf[161] = c18;
+    buf[162] = c18;
+    buf[163] = c18;
+    for (i = 168; i < 180; i++) {
+        buf[i] = c04;
+    }
+    buf[157] = c18;
+    buf[158] = c18;
+    buf[165] = c18;
+    buf[166] = c18;
+    buf[258] = c03;
+    buf[264] = c03;
+    buf[114] = c03;
+    buf[115] = c03;
+    buf[122] = c03;
+    buf[123] = c03;
+    buf[260] = c07;
+    buf[266] = c07;
+    FillSpan(0x11a, 0x11d, c08);
+    buf[257] = c08;
+    buf[259] = c08;
+    FillSpan(0x105, 0x107, c08);
+    buf[265] = c08;
+    FillSpan(0x4d, 0x54, c09);
+    FillSpan(0x11e, 0x126, c09);
+    FillSpan(0xc9, 0xd1, c10);
+    FillSpan(0xdd, 0xe0, c12);
+    FillSpan(0xf1, 0xf2, c00);
+    FillSpan(0xed, 0xee, c14);
+    FillSpan(0xff, 0x100, c14);
+    FillSpan(0xe1, 0xe4, c16);
+    FillSpan(0xe5, 0xe8, c17);
+    FillSpan(0xfb, 0xfc, c17);
+    FillSpan(0xe9, 0xec, c19);
+    FillSpan(0xfd, 0xfe, c19);
+    FillSpan(0xef, 0xf0, c20);
+    FillSpan(0xf7, 0xf8, c20);
+    FillSpan(0xd9, 0xda, c21);
+    FillSpan(0xf9, 0xfa, c21);
+    FillSpan(0xf3, 0xf6, c23);
+    FillSpan(0x12e, 0x143, c24);
+    FillSpan(0xd5, 0xd6, c25);
+    FillSpan(0xd7, 0xd8, c23);
+    buf[257] = c26;
+    buf[259] = c26;
+    FillSpan(0x105, 0x106, c27);
+    buf[263] = c06;
+    buf[265] = c06;
+    FillSpan(0x5c, 0x5f, c00);
+    return 1;
 }
 
 // ===========================================================================

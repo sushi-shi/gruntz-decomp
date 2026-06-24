@@ -33,14 +33,14 @@ cddrawworkers	3	3
 cdirectdrawmgr	15	9
 chatbox	16	9
 chatbox_eh	1	1
-clightfxrender	19	8
+clightfxrender	20	8
 cplay	27	8
 cstatusbarmgr	1	0
 deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	716	0
+engine_discovered	715	0
 engine_label_stubs	534	121
 filestream	13	9
 font	16	9
@@ -313,17 +313,18 @@ clightfxrender	?BuildShape@CLightFxRender@@QAEHH@Z	86.0127	86.0127	3	bd6116af145
 clightfxrender	?ClampRect@CLightFxRender@@QAEHHHPAHH@Z	88.4819	88.4819	3	93b204b71f38	0xa9660
 clightfxrender	?ClearHandle@CLightFxRender@@QAEHHHH@Z	100.0000	100.0000	3	8840c2610535	0xa9500
 clightfxrender	?Ctor@CLightFxRender@@QAEXXZ	100.0000	100.0000	1	a2222a53d107	0xa3360
+clightfxrender	?DrawBorder@CLightFxRender@@QAEXPAULfxRect@@PAULfxBorderCtx@@H@Z	70.3871	70.3871	1	8d37fd72be49	0xa3b50
 clightfxrender	?FillSpan@CLightFxRender@@QAEXIIG@Z	100.0000	100.0000	3	c55474f29497	0xa4840
 clightfxrender	?FreeSurface@CLightFxRender@@QAEXXZ	100.0000	100.0000	1	825081ce566c	0xa33a0
 clightfxrender	?Init@CLightFxRender@@QAEHPAULfxMgr@@H@Z	100.0000	100.0000	3	a92ff0cb45e2	0xa32c0
-clightfxrender	?Shape1@CLightFxRender@@QAEHXZ	0.2950	0.2950	2	5b4112a04d83	0xa3dc0
-clightfxrender	?Shape2@CLightFxRender@@QAEHXZ	0.3045	0.3045	2	f79981a18337	0xa4890
-clightfxrender	?Shape3@CLightFxRender@@QAEHXZ	0.2194	0.2194	2	7317990e38dc	0xa5310
-clightfxrender	?Shape4@CLightFxRender@@QAEHXZ	0.3089	0.3089	2	21b85563f000	0xa5d90
-clightfxrender	?Shape5@CLightFxRender@@QAEHXZ	0.2946	0.2946	2	f00c3d2eb9ae	0xa67d0
-clightfxrender	?Shape6@CLightFxRender@@QAEHXZ	0.2108	0.2108	2	56b091c04060	0xa7260
-clightfxrender	?Shape7@CLightFxRender@@QAEHXZ	0.2680	0.2680	2	6b88ff9ec55c	0xa7d50
-clightfxrender	?Shape8@CLightFxRender@@QAEHXZ	0.2722	0.2722	2	937e03c76b6f	0xa8900
+clightfxrender	?Shape1@CLightFxRender@@QAEHXZ	73.7857	73.7857	3	28f0a14bee61	0xa3dc0
+clightfxrender	?Shape2@CLightFxRender@@QAEHXZ	74.6170	74.6170	3	d987793f37a8	0xa4890
+clightfxrender	?Shape3@CLightFxRender@@QAEHXZ	72.7320	72.7320	3	ff79c57cff61	0xa5310
+clightfxrender	?Shape4@CLightFxRender@@QAEHXZ	69.8244	69.8244	3	15b5cc3a2be1	0xa5d90
+clightfxrender	?Shape5@CLightFxRender@@QAEHXZ	73.8760	73.8760	3	a7263d3c7a83	0xa67d0
+clightfxrender	?Shape6@CLightFxRender@@QAEHXZ	77.4322	77.4322	3	0a95a9e4509c	0xa7260
+clightfxrender	?Shape7@CLightFxRender@@QAEHXZ	73.3526	73.3526	3	25e90c8d4614	0xa7d50
+clightfxrender	?Shape8@CLightFxRender@@QAEHXZ	70.0243	70.0243	3	5c2f58ba0544	0xa8900
 cplay	?BeginGridWalk@CPlay@@QAEHHHHHH@Z	81.1191	81.1191	3	f4b6ff735ca4	0xd0920
 cplay	?BuildGruntTypeNameTable@CPlay@@QAEXHHHH@Z	0.7092	0.7092	2	ed7e76422e54	0xdc6d0
 cplay	?BuildHelpReveal@CPlay@@QAEHXZ	67.8125	67.8125	2	26834e076729	0xd72c0
@@ -967,7 +968,6 @@ engine_discovered	?ClassUnknown_67_191b10@ClassUnknown_67@@QAEXXZ	0.3448	0.3448	
 engine_discovered	?ClassUnknown_67_191c30@ClassUnknown_67@@QAEXXZ	1.2195	1.2195	1	a963c7685860	0x191c30
 engine_discovered	?ClassUnknown_68_0a3460@ClassUnknown_68@@QAEXXZ	0.1681	0.1681	1	815fbd276ee5	0xa3460
 engine_discovered	?ClassUnknown_68_0a3820@ClassUnknown_68@@QAEXXZ	0.2564	0.2564	1	09641df9ee29	0xa3820
-engine_discovered	?ClassUnknown_68_0a3b50@ClassUnknown_68@@QAEXXZ	0.4301	0.4301	1	f11d80543629	0xa3b50
 engine_discovered	?ClassUnknown_69_058b60@ClassUnknown_69@@QAEXXZ	2.6667	2.6667	1	78e0eaa5007e	0x58b60
 engine_discovered	?ClassUnknown_69_10d150@ClassUnknown_69@@QAEXXZ	1.1905	1.1905	1	ca7e05bc985a	0x10d150
 engine_discovered	?ClassUnknown_69_1504d0@ClassUnknown_69@@QAEXXZ	1.1429	1.1429	1	a207561dec28	0x1504d0
@@ -1887,7 +1887,7 @@ gruntzmgr	?BuildMoviePath@CGruntzMgr@@QAE?AVCString@@H@Z	88.0630	88.0630	4	edb3c
 gruntzmgr	?ChangeState_8fab0@CGruntzMgr@@QAEHH@Z	1.1236	1.1236	2	741fdee855ba	0x8fab0
 gruntzmgr	?CheckMovieFileExists@CGruntzMgr@@QAEHXZ	100.0000	100.0000	3	20fffd711758	0x90aa0
 gruntzmgr	?CheckPlayState@CGruntzMgr@@QAEHXZ	100.0000	100.0000	5	f72e02f6f831	0x8ec50
-gruntzmgr	?CheckSavedMode@CGruntzMgr@@QAEHXZ	100.0000	100.0000	3	483377930f98	0x8de70
+gruntzmgr	?CheckSavedMode@CGruntzMgr@@QAEHXZ	100.0000	100.0000	4	0ad1e1909d7f	0x8de70
 gruntzmgr	?ClearOptionsSlots@CGruntzMgr@@QAEXXZ	100.0000	100.0000	3	1ed91a406874	0x92ec0
 gruntzmgr	?ClearStateStack@CGruntzMgr@@QAEXXZ	100.0000	100.0000	3	85a3564640dc	0x90a50
 gruntzmgr	?EnterModalUI@CGruntzMgr@@QAEXH@Z	93.0159	93.0159	3	a14f93bd4e59	0x8ef10

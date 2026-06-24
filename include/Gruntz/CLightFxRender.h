@@ -46,6 +46,10 @@ struct LfxSurface;
 // the +0x68 slot the blit path reads is modeled.
 struct CGameReg;
 
+// The border-draw context (DrawBorder's 2nd arg): +0x2c is the locked DirectDraw
+// work surface (pitch/stride/Lock), +0x08 the unlock interface (vtable[0x20]).
+struct LfxBorderCtx;
+
 class CLightFxRender {
 public:
     // 0x0a32c0  Init - copy mgr fields, validate, zero the rect/state block.
@@ -58,10 +62,12 @@ public:
     i32 AllocSurface();
     // 0x0a3460  (755B) the resize/realloc path - deferred.
     i32 Resize(i32 arg1, i32 arg2);
-    // 0x0a3820  (398B) compute the effect rect from a source rect + scale.
+    // 0x0a3820  (398B) compute the centered effect rect from a source rect +
+    // the chosen scale (m_44), alloc the work surface, then draw the border.
     i32 ComputeRect(LfxRect* src);
-    // 0x0a3b50  DrawBorder - lock surface, fill 4 rect edges 16-bit, unlock.
-    void DrawBorder(LfxRect* r, u16 color);
+    // 0x0a3b50  DrawBorder - lock the ctx surface, fill the 4 rect edges with a
+    // 16-bit color, unlock. `this`/ecx is unused; ctx supplies the surface.
+    void DrawBorder(LfxRect* r, LfxBorderCtx* ctx, i32 color);
     // 0x0a3c90  BuildShape - zero the buffer, dispatch the shape generator.
     i32 BuildShape(i32 shape);
     // The 8 shape generators the switch dispatches to. Four are in this TU's
