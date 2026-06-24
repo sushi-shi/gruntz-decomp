@@ -301,7 +301,6 @@ class CKitchenSlime {
 public:
     void CKitchenSlime_013100();
     void CKitchenSlime_0b2940();
-    void CKitchenSlime_0b2ca0();
 };
 class CLightFx {
 public:

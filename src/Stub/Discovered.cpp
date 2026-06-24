@@ -440,8 +440,6 @@ RVA(0x00013100, 0x44)
 void CKitchenSlime::CKitchenSlime_013100() {}
 RVA(0x000b2940, 0x102)
 void CKitchenSlime::CKitchenSlime_0b2940() {}
-RVA(0x000b2ca0, 0x29c)
-void CKitchenSlime::CKitchenSlime_0b2ca0() {}
 
 // ---- CLightFx ----
 RVA(0x00012430, 0x44)

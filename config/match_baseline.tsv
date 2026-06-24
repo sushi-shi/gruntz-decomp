@@ -37,7 +37,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	18	17
 directsoundmgr	26	19
-engine_discovered	927	0
+engine_discovered	926	0
 engine_label_stubs	534	117
 filestream	13	9
 font	16	9
@@ -67,7 +67,7 @@ inftrees	6	6
 infutil	1	1
 ingameicon	5	2
 inputdeviceconfig	1	0
-kitchenslime	1	0
+kitchenslime	2	0
 logictypetable	1	0
 mapmgr	7	7
 netmgr	40	20
@@ -520,7 +520,6 @@ engine_discovered	?CInputDevice_134d50@CInputDevice@@QAEXXZ	4.1667	4.1667	1	1d14
 engine_discovered	?CInputDevice_134fe0@CInputDevice@@QAEXXZ	11.1111	11.1111	1	1c64f1d56222	0x134fe0
 engine_discovered	?CKitchenSlime_013100@CKitchenSlime@@QAEXXZ	5.8824	5.8824	1	74b705f9f108	0x13100
 engine_discovered	?CKitchenSlime_0b2940@CKitchenSlime@@QAEXXZ	0.5333	0.5333	1	611ebae04872	0xb2940
-engine_discovered	?CKitchenSlime_0b2ca0@CKitchenSlime@@QAEXXZ	0.4673	0.4673	1	df71a8564420	0xb2ca0
 engine_discovered	?CLightFx_012430@CLightFx@@QAEXXZ	5.8824	5.8824	1	0382b08af60c	0x12430
 engine_discovered	?CLightFx_09d520@CLightFx@@QAEXXZ	0.4938	0.4938	1	ba6a98589399	0x9d520
 engine_discovered	?CLightFx_09d770@CLightFx@@QAEXXZ	7.6923	7.6923	1	dfd64e781cd9	0x9d770
@@ -2066,7 +2065,8 @@ ingameicon	?PlaceAt@CInGameIcon@@QAEHHH@Z	71.2551	71.2551	2	058602d0454d	0x986b0
 ingameicon	?Serialize@CInGameIcon@@QAEHPAVCArchive@@HHH@Z	0.6826	0.6826	1	b1927f1743b3	0x98c90
 ingameicon	?SetField54@CInGameIcon@@QAEXH@Z	100.0000	100.0000	1	47953e78bc5c	0x99b10
 inputdeviceconfig	?LoadInputDeviceConfig@CInputConfig@@QAE?AVCString@@H@Z	77.3265	77.3265	4	cbb58c336f38	0x387c0
-kitchenslime	?LoadSprites@CKitchenSlime@@QAEXXZ	71.0000	71.0000	3	0037ec293dc9	0xb3160
+kitchenslime	?LoadSprites@CKitchenSlime@@QAEHXZ	69.1992	69.1992	1	960ebc2aba86	0xb3160
+kitchenslime	?Tick@CKitchenSlime@@QAEHXZ	94.8551	94.8551	1	3f6e7b42be52	0xb2ca0
 logictypetable	?BuildLogicTypeTable@@YGXPAUCLogicTypeBuilder@@@Z	87.9167	87.9167	6	313ac91839f7	0x8a40
 mapmgr	??0CMapArrayA@@QAE@XZ	100.0000	100.0000	4	24c52bc6b148	0x9e700
 mapmgr	??0CMapArrayB@@QAE@XZ	100.0000	100.0000	4	2cc7f69c0ba7	0x9e820
