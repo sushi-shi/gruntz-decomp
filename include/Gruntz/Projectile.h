@@ -43,7 +43,11 @@ class CMovingLogic : public CUserLogic {
 public:
     CMovingLogic();
     virtual ~CMovingLogic() OVERRIDE; // most-derived dtor (slot 0)
-    virtual int MovingLogicVfunc();   // one added slot anchors the new vftable
+    // CMovingLogic adds three virtuals over the CUserBase/CUserLogic chain; the
+    // last lands at vtable offset 0x40 (the slot ReleaseDeferred dispatches).
+    virtual int MovingLogicVfunc();  // slot 14
+    virtual int MovingLogicVfunc2(); // slot 15
+    virtual int MovingLogicVfunc3(); // slot 16 (offset 0x40)
 
     // CMovingLogic's own data begins at +0x40 (CUserLogic ends at +0x40). The
     // ctor also re-zeroes the inherited CUserLogic m_38/m_3c.
@@ -63,18 +67,79 @@ public:
     double m_110, m_118, m_120, m_128, m_130, m_138;
 };
 
+// The animation sub-object embedded in a render object at +0x1a0; its setter
+// FUN_0055c360 (0x15c360, __thiscall, 1 arg) re-targets the active animation.
+struct CProjAnim {
+    int SetAnim(unsigned mode); // 0x15c360
+};
+
+// A render object the projectile owns/points at (the +0x154 sprite/animation and
+// the +0x1fc shadow companion). Only the offsets the reconstructed methods touch
+// are modeled: +0x08 flag word, +0x40 flag word, +0x5c/+0x60 screen position,
+// +0x1a0 animation sub-object, +0x1c0/+0x1c8 state gates.
+struct CProjRenderObj {
+    char m_pad00[0x08];
+    unsigned m_08; // +0x08  flag word (|= 0x10000)
+    char m_pad0c[0x40 - 0x0c];
+    unsigned m_40; // +0x40  flag word (&= ~1)
+    char m_pad44[0x5c - 0x44];
+    int m_5c; // +0x5c  screen X
+    int m_60; // +0x60  screen Y
+    char m_pad64[0x1a0 - 0x64];
+    CProjAnim m_1a0; // +0x1a0  animation sub-object (SetAnim(g_6bf3bc))
+    char m_pad1a4[0x1c0 - 0x1a4];
+    int m_1c0; // +0x1c0
+    char m_pad1c4[0x1c8 - 0x1c4];
+    int m_1c8; // +0x1c8
+};
+
+// The CSample-like sound sample object the projectile launches (+0x200). Its
+// StopAndRewind (0x135380) is reached as an out-of-line engine method.
+struct CProjSample {
+    int StopAndRewind();                        // 0x135380 (__thiscall, 0 args)
+    int Play(int channel, int a, int b, int c); // 0x136300 (__thiscall, 4 args)
+};
+
 // ---------------------------------------------------------------------------
 // CProjectile : CMovingLogic - 18 virtuals (vftable 0x5e798c). Adds the
-// tracked-hit CObList at +0x204.
+// tracked-hit CObList at +0x204 plus the projectile's render/motion state
+// (+0x140..+0x258). Field names are placeholders; the OFFSETS + code bytes are
+// the load-bearing facts.
 // ---------------------------------------------------------------------------
 class CProjectile : public CMovingLogic {
 public:
     CProjectile();                   // 0x126e0 (no-arg)
-    virtual ~CProjectile() OVERRIDE; // most-derived dtor
+    virtual ~CProjectile() OVERRIDE; // most-derived dtor (0xdef60)
     virtual int ProjectileVfunc();   // one added slot anchors the new vftable
 
-    char m_pad140[0x204 - 0x140];
-    CObList m_204; // +0x204 (MFC block size 10)
+    void ReleaseDeferred(int arg); // 0x13c70 (fire/release the two queued callbacks; arg ignored)
+    int DetachRenderObj();         // 0xe05e0  (clear +0x154's flag, detach, gate hide)
+    void StepMotion();             // 0xe08b0  (advance the parabolic motion + render pos)
+    void ScanTargets(int impact);  // 0xe0b10  (15x15 grid hit-scan against nearby grunts)
+    int LaunchSound(const char* key); // 0xe2190 (create + play the launch CSample)
+
+    char m_pad140[0x150 - 0x140];
+    int m_150;                    // +0x150
+    CProjRenderObj* m_154;        // +0x154  primary render object
+    int m_158;                    // +0x158
+    char m_pad15c[0x170 - 0x15c]; //
+    int m_170, m_174, m_178;      // +0x170..+0x17b  (grid cell + target id)
+    int m_17c, m_180;             // +0x17c/+0x180   (last screen position)
+    char m_pad184[0x198 - 0x184]; //
+    double m_198;                 // +0x198  per-frame scale
+    double m_1a0;                 // +0x1a0  render X (double)
+    double m_1a8;                 // +0x1a8  render Y (double)
+    char m_pad1b0[0x1ec - 0x1b0]; //
+    int m_1ec, m_1f0;             // +0x1ec/+0x1f0  spawn cell key
+    char m_pad1f4[0x1fc - 0x1f4]; //
+    CProjRenderObj* m_1fc;        // +0x1fc  shadow render companion
+    CProjSample* m_200;           // +0x200  launch sound sample
+    CObList m_204;                // +0x204  tracked-hit list (block size 10)
+    int m_220, m_224;             // +0x220/+0x224  read by ScanTargets
+    char m_pad228[0x230 - 0x228]; //
+    double m_230, m_238;          // +0x230/+0x238  velocity basis
+    double m_240, m_248, m_250;   // +0x240/+0x248/+0x250  position accumulators
+    int m_258;                    // +0x258  "launched" flag
 };
 
 // Inline CMovingLogic init - folds into every leaf (and the out-of-line ctor).

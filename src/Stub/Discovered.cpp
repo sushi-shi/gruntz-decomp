@@ -586,20 +586,6 @@ void CPlay::CPlay_0d72c0() {}
 RVA(0x000d9160, 0xac)
 void CPlay::CPlay_0d9160() {}
 
-// ---- CProjectile ----
-RVA(0x00013c70, 0x47)
-void CProjectile::CProjectile_013c70() {}
-RVA(0x000def60, 0xbc)
-void CProjectile::CProjectile_0def60() {}
-RVA(0x000e05e0, 0x4e)
-void CProjectile::CProjectile_0e05e0() {}
-RVA(0x000e08b0, 0x1de)
-void CProjectile::CProjectile_0e08b0() {}
-RVA(0x000e0b10, 0x1bd)
-void CProjectile::CProjectile_0e0b10() {}
-RVA(0x000e2190, 0x83)
-void CProjectile::CProjectile_0e2190() {}
-
 // ---- CRollingBall ----
 RVA(0x00012f80, 0x44)
 void CRollingBall::CRollingBall_012f80() {}

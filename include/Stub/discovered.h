@@ -394,15 +394,6 @@ public:
     void CPlay_0d72c0();
     void CPlay_0d9160();
 };
-class CProjectile {
-public:
-    void CProjectile_013c70();
-    void CProjectile_0def60();
-    void CProjectile_0e05e0();
-    void CProjectile_0e08b0();
-    void CProjectile_0e0b10();
-    void CProjectile_0e2190();
-};
 class CRollingBall {
 public:
     void CRollingBall_012f80();
