@@ -319,6 +319,11 @@ source = "src/Bute/SymTab.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "hash"
+source = "src/Bute/Hash.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "winapi"
 source = "src/Utils/WinAPI.cpp"
 flags = "eh"

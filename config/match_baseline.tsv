@@ -47,7 +47,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	445	0
+engine_discovered	436	0
 engine_label_stubs	525	121
 filestream	13	9
 font	21	10
@@ -69,6 +69,7 @@ gruntzcommand	9	9
 gruntzmgr	51	39
 gruntzsoundz	8	7
 gruntzwnd	2	1
+hash	9	9
 iconloaders	4	1
 image	32	21
 infblock	5	4
@@ -457,16 +458,16 @@ cplay	?winapi_0cdb10_PostMessageA@CPlay@@QAEHHHH@Z	0.2946	0.2946	2	db8d57057a6f	
 cplay	?winapi_0ceae0_PostMessageA@CPlay@@QAEHHHH@Z	0.9500	0.9500	2	fb82d3f55040	0xceae0
 cplay	?winapi_0d0b30_CopyRect@CPlay@@QAEHH@Z	1.2270	1.2270	2	edf43ed7aef3	0xd0b30
 crt_streambuf	??0streambuf@@QAE@XZ	15.9167	15.9167	1	ef791f1f51c0	0x16b070
-crt_streambuf	??1streambuf@@QAE@XZ	100.0000	100.0000	1	c84dd3d90705	0x16b150
+crt_streambuf	??1streambuf@@QAE@XZ	100.0000	100.0000	2	ec449f8fc404	0x16b150
 crt_streambuf	?out_waiting@streambuf@@QBEHXZ	100.0000	100.0000	1	57d78b1417ca	0x21280
-crt_streambuf	?sbumpc@streambuf@@QAEHXZ	93.1429	93.1429	1	f30c8deb28a3	0x16cd00
-crt_streambuf	?setb@streambuf@@IAEXPAD0H@Z	100.0000	100.0000	1	93a6bec104f0	0x16b3a0
-crt_streambuf	?sync@streambuf@@QAEHXZ	100.0000	100.0000	1	4df57c060719	0x16b320
-crt_streambuf	?xsputn@streambuf@@QAEHPBDH@Z	100.0000	100.0000	1	112e0cad2af0	0x16b1d0
-crt_strstreambuf	??0strstreambuf@@QAE@PADH0@Z	100.0000	100.0000	1	69fb91a263b7	0x169160
-crt_strstreambuf	??1strstreambuf@@QAE@XZ	89.6970	89.6970	1	409f904f6431	0x169220
+crt_streambuf	?sbumpc@streambuf@@QAEHXZ	93.1429	93.1429	2	9f3e17b7a854	0x16cd00
+crt_streambuf	?setb@streambuf@@IAEXPAD0H@Z	100.0000	100.0000	2	dbebeb558020	0x16b3a0
+crt_streambuf	?sync@streambuf@@QAEHXZ	100.0000	100.0000	2	13d9462cc314	0x16b320
+crt_streambuf	?xsputn@streambuf@@QAEHPBDH@Z	100.0000	100.0000	2	78d4cb7f0189	0x16b1d0
+crt_strstreambuf	??0strstreambuf@@QAE@PADH0@Z	100.0000	100.0000	2	92da0ad44c33	0x169160
+crt_strstreambuf	??1strstreambuf@@QAE@XZ	89.6970	89.6970	2	7c53a170b574	0x169220
 crt_strstreambuf	?str@strstreambuf@@QAEPADXZ	100.0000	100.0000	1	08404bbcac2f	0x1692b0
-crt_strstreambuf	?underflow@strstreambuf@@QAEHXZ	91.7353	91.7353	1	5b157eb540b4	0x169490
+crt_strstreambuf	?underflow@strstreambuf@@QAEHXZ	91.7353	91.7353	2	b71b810269ba	0x169490
 cstatusbarmgr	?LoadTabSprites@CStatusBarMgr@@QAEHXZ	16.7383	16.7383	4	045cfeaa498f	0x102250
 deflate	_deflate_fast	100.0000	100.0000	1	3de2151b888f	0x186db0
 deflate	_deflate_slow	100.0000	100.0000	1	963869a51c2d	0x187170
@@ -716,15 +717,6 @@ engine_discovered	?ClassUnknown_126_11cf30@ClassUnknown_126@@QAEXXZ	50.0000	50.0
 engine_discovered	?ClassUnknown_127_11cee3@ClassUnknown_127@@QAEXXZ	50.0000	50.0000	1	3ec5e65654c9	0x11cee3
 engine_discovered	?ClassUnknown_128_174d70@ClassUnknown_128@@QAEXXZ	3.2258	3.2258	1	e15f9fbb040e	0x174d70
 engine_discovered	?ClassUnknown_129_016460@ClassUnknown_129@@QAEXXZ	5.5556	5.5556	1	82492c27a489	0x16460
-engine_discovered	?ClassUnknown_13_13c240@ClassUnknown_13@@QAEXXZ	2.0000	2.0000	1	499a32a1cad8	0x13c240
-engine_discovered	?ClassUnknown_13_13c270@ClassUnknown_13@@QAEXXZ	0.4255	0.4255	1	719d2fd8eff4	0x13c270
-engine_discovered	?ClassUnknown_13_13c350@ClassUnknown_13@@QAEXXZ	8.0000	8.0000	1	2fd5402626e2	0x13c350
-engine_discovered	?ClassUnknown_13_13c360@ClassUnknown_13@@QAEXXZ	1.2121	1.2121	1	4d3ec09fdc37	0x13c360
-engine_discovered	?ClassUnknown_13_13c3c0@ClassUnknown_13@@QAEXXZ	2.0000	2.0000	1	31760443637b	0x13c3c0
-engine_discovered	?ClassUnknown_13_13c3f0@ClassUnknown_13@@QAEXXZ	0.4255	0.4255	1	425bf2abcd61	0x13c3f0
-engine_discovered	?ClassUnknown_13_184a40@ClassUnknown_13@@QAEXXZ	6.2500	6.2500	1	1d84393cf411	0x184a40
-engine_discovered	?ClassUnknown_13_184ab0@ClassUnknown_13@@QAEXXZ	3.0769	3.0769	1	be5523519350	0x184ab0
-engine_discovered	?ClassUnknown_13_184b40@ClassUnknown_13@@QAEXXZ	4.0000	4.0000	1	bb4c3d2ff315	0x184b40
 engine_discovered	?ClassUnknown_14_13a000@ClassUnknown_14@@QAEXXZ	1.8182	1.8182	1	1f321aad131a	0x13a000
 engine_discovered	?ClassUnknown_15_13c520@ClassUnknown_15@@QAEXXZ	33.3333	33.3333	1	a7c9b4611b4a	0x13c520
 engine_discovered	?ClassUnknown_15_13c590@ClassUnknown_15@@QAEXXZ	3.4483	3.4483	1	a4cd19b9babe	0x13c590
@@ -1804,6 +1796,15 @@ gruntzsoundz	?StopAndFlush_138530@CGruntzSoundZ@@QAEXXZ	100.0000	100.0000	1	fc55
 gruntzsoundz	?StopCurrent_1388a0@CGruntzSoundZ@@QAEXXZ	100.0000	100.0000	1	99f267d9da6f	0x1388a0
 gruntzwnd	??0CGruntzWnd@@QAE@XZ	100.0000	100.0000	5	cce3fed8f7f8	0x94640
 gruntzwnd	?Stub_094670@CGruntzWnd@@QAEXXZ	3.6364	3.6364	4	efb99feddc33	0x94670
+hash	?FindInt@CHash@@QAEPAXI@Z	100.0000	100.0000	1	f161fc706dec	0x13c360
+hash	?HashInt@CHash@@QAEII@Z	100.0000	100.0000	1	c516bb837bca	0x13c350
+hash	?HashStr@CHash@@QAEIPBD@Z	100.0000	100.0000	1	648a12137325	0x13c240
+hash	?HashStr@CHashB@@QAEIPBD@Z	100.0000	100.0000	1	c1329bd70fea	0x13c3c0
+hash	?Lookup@CHashBase@@QAEPAUCHashEntry@@I@Z	100.0000	100.0000	1	ac8f0d26b545	0x184b40
+hash	?Remove@CHashBase@@QAEXPAUCHashEntry@@@Z	100.0000	100.0000	1	8a54ef1211a7	0x184ab0
+hash	?RemoveAll@CHashBase@@QAEXXZ	100.0000	100.0000	1	04dad41852b8	0x184a40
+hash	?Walk@CHash@@QAEPAXPBDH@Z	100.0000	100.0000	1	51b6d0275c7f	0x13c270
+hash	?Walk@CHashB@@QAEPAXPBDH@Z	100.0000	100.0000	1	12b47125ba1c	0x13c3f0
 iconloaders	?BuildBootyPerfectAnimation@EngineLabelBacklog@@QAEHXZ	100.0000	100.0000	4	ac754f563924	0x1c070
 iconloaders	?LoadCameraSprite@EngineLabelBacklog@@QAEHXZ	86.8000	86.8000	4	4ee34c31ec20	0x78960
 iconloaders	?LoadExplosionSprites@EngineLabelBacklog@@QAEHHHHH@Z	98.0727	98.0727	4	5700eabe337f	0x7b330

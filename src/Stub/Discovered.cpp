@@ -669,24 +669,8 @@ RVA(0x00016460, 0x46)
 void ClassUnknown_129::ClassUnknown_129_016460() {}
 
 // ---- ClassUnknown_13 ----
-RVA(0x0013c240, 0x29)
-void ClassUnknown_13::ClassUnknown_13_13c240() {}
-RVA(0x0013c270, 0xca)
-void ClassUnknown_13::ClassUnknown_13_13c270() {}
-RVA(0x0013c350, 0xd)
-void ClassUnknown_13::ClassUnknown_13_13c350() {}
-RVA(0x0013c360, 0x47)
-void ClassUnknown_13::ClassUnknown_13_13c360() {}
-RVA(0x0013c3c0, 0x29)
-void ClassUnknown_13::ClassUnknown_13_13c3c0() {}
-RVA(0x0013c3f0, 0xca)
-void ClassUnknown_13::ClassUnknown_13_13c3f0() {}
-RVA(0x00184a40, 0x27)
-void ClassUnknown_13::ClassUnknown_13_184a40() {}
-RVA(0x00184ab0, 0x25)
-void ClassUnknown_13::ClassUnknown_13_184ab0() {}
-RVA(0x00184b40, 0x1d)
-void ClassUnknown_13::ClassUnknown_13_184b40() {}
+// Recovered -> CHashBase / CHash / CHashB (the Bute symbol-table hash); see
+// src/Bute/Hash.cpp.
 
 // ---- ClassUnknown_14 ----
 RVA(0x0013a000, 0x37)
