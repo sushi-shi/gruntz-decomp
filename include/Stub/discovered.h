@@ -40,13 +40,6 @@ class CCheckpointTrigger {
 public:
     void CCheckpointTrigger_011480();
 };
-class CCreditsState {
-public:
-    void CCreditsState_038f00();
-    void CCreditsState_039c40();
-    void CCreditsState_039c60();
-    void CCreditsState_039d00();
-};
 class CCursorSnapSprite {
 public:
     void CCursorSnapSprite_011880();

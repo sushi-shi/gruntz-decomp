@@ -32,6 +32,7 @@
 // real per-frame step+draw is slot +0x14 (Render), overridden by each concrete
 // state (carcassed in the long comment at the bottom of this file).
 #include <Gruntz/GameMode.h>
+#include <Rez/RezMgr.h> // RezFree - the engine allocator the video-handle teardown uses
 #include <math.h>
 #include <rva.h>
 
@@ -169,6 +170,7 @@ struct CStateResView {
     CResRegistry* m_10;  // +0x10  name registry
     char m_pad14[0x28 - 0x14];
     CResLeafRegistry* m_28; // +0x28  leaf registry + pooled resource
+    CResRegistry* m_2c;     // +0x2c  third registry (credits CREDITZ release)
 };
 
 // FUN_00137a80 Free + FUN_004a0360 menu-UI pre-delete are thiscall no-arg
@@ -694,6 +696,146 @@ i32 CCreditsState::LoadCreditzStateAssets(i32 a1, i32 a2, i32 a3) {
 // @stub
 RVA(0x00039570, 0x122)
 void CCreditsState::InitAttractTitle() {}
+
+// ===========================================================================
+// CCreditsState teardown / per-frame video + flash steps (trace-discovered).
+// ===========================================================================
+
+// The video-handle (m_210) sub-object: its EH-framed destructor (0x38fc0) is a
+// __thiscall on the handle, reached by the cleanup before RezFree. Reloc-masked.
+struct CCreditsVideo {
+    void Teardown(); // FUN_00438fc0 __thiscall, no-arg (the /GX dtor)
+    void Close();    // FUN_0057c9b0 __thiscall, no-arg (SmackClose wrapper)
+};
+
+// The Smacker frame-step wrapper (FUN_0057c8e0): __stdcall(handle, frame); ret
+// nonzero while more frames remain (PTR__SmackGoto@8). Reloc-masked.
+extern "C" i32 __stdcall Eng_SmackStep(void* handle, i32 frame);
+
+// The credits draw view (m_c->m_4): m_14 the source surface holder, m_18 the dest
+// surface holder; each holds a DD surface at +0x2c. The dest surface carries the
+// Smacker frame buffer at +0x8 (the step arg) and a clip RECT at +0x1c the blit is
+// clipped to. BltFast (FUN_0053ef90) is a __thiscall on the source surface taking
+// (0, 0, destSurf, &destRect, 0x10). Reloc-masked.
+struct CCreditsSurface {
+    void BltFast(i32 x, i32 y, CCreditsSurface* dst, void* rect, i32 flags);
+    char m_pad00[0x8];
+    void* m_8; // +0x08  Smacker frame buffer (SmackStep arg)
+};
+struct CCreditsDrawHolder {
+    char m_pad00[0x1c];
+    i32 m_1c; // +0x1c  clip RECT (address taken)
+    char m_pad20[0x2c - 0x20];
+    CCreditsSurface* m_2c; // +0x2c  the DD surface
+};
+struct CCreditsDrawView {
+    char m_pad00[0x14];
+    CCreditsDrawHolder* m_14; // +0x14  source surface holder
+    CCreditsDrawHolder* m_18; // +0x18  dest surface holder
+};
+struct CCreditsDrawRoot {
+    char m_pad00[0x4];
+    CCreditsDrawView* m_4; // +0x04
+};
+
+// @confidence: high
+// @source: decomp-xref
+// CCreditsState::ReleaseResources() (0x38f00): if (m_c) free the pooled resource
+// then release the three named registries ("CREDITZ"); then tear down + RezFree
+// the video handle (m_210) and chain BaseCleanup. m_c is re-read for each access
+// (retail never caches it); the pooled-Free sits INSIDE the m_c guard.
+RVA(0x00038f00, 0x87)
+void CCreditsState::ReleaseResources() {
+    if (m_c) {
+        CPooledRes* r = ((CStateResView*)m_c)->m_28->m_2c;
+        if (r) {
+            r->Free();
+        }
+        ((CStateResView*)m_c)->m_28->Release("CREDITZ", "_");
+        ((CStateResView*)m_c)->m_10->Release("CREDITZ", "_");
+        ((CStateResView*)m_c)->m_2c->Release("CREDITZ", "_");
+    }
+    // Cache the video handle in a local so it stays pinned in edi across the
+    // Teardown call (retail reuses the same register for the RezFree push).
+    void* vh = m_210;
+    if (vh) {
+        ((CCreditsVideo*)vh)->Teardown();
+        RezFree(vh);
+        m_210 = 0;
+    }
+    ((CGameModeBase*)this)->BaseCleanup();
+}
+
+// @confidence: high
+// @source: decomp-xref
+// CCreditsState::FinishState() (0x39c40): clear the playing gate, return 1.
+RVA(0x00039c40, 0x10)
+i32 CCreditsState::FinishState() {
+    m_208 = 0;
+    return 1;
+}
+
+// @confidence: high
+// @source: decomp-xref
+// CCreditsState::StepVideo() (0x39c60): if the credits aren't playing (m_208==0)
+// return 1. Else advance the Smacker movie one frame; when the last frame is
+// reached, Close() the handle and FinishState(). Either way, if both surfaces are
+// live, blit the current frame to the dest surface. Returns the FinishState result
+// (0 unless the movie just ended).
+// @early-stop
+// scheduling coin-flip wall (~95%): 49/51 instructions byte-identical; the sole
+// residual is the BltFast `this` (src->m_2c) load scheduled one push earlier in
+// retail (between the &rect and dst->m_2c pushes) + scratch-reg rotation. Complete
+// + correct body; not source-steerable (zero-register-pinning.md family).
+RVA(0x00039c60, 0x7a)
+i32 CCreditsState::StepVideo() {
+    if (!m_208) {
+        return 1;
+    }
+    i32 ret = 0;
+    if (m_210) {
+        CCreditsDrawView* v = ((CCreditsDrawRoot*)m_c)->m_4;
+        CCreditsDrawHolder* dst = v->m_18;
+        CCreditsDrawHolder* src = v->m_14;
+        if (!Eng_SmackStep(dst->m_2c->m_8, -1)) {
+            ((CCreditsVideo*)m_210)->Close();
+            ret = FinishState();
+        }
+        if (dst && src) {
+            src->m_2c->BltFast(0, 0, dst->m_2c, &dst->m_1c, 0x10);
+        }
+    }
+    return ret;
+}
+
+// @confidence: high
+// @source: decomp-xref
+// CCreditsState::FlashColor() (0x39d00): if the flash gate (m_1c4) is set and the
+// re-roll timer (m_1bc) has expired, roll a fresh random RGB color (rand()%256 per
+// channel, packed (b<<16)|(g<<8)|r), reset the timer to 0x12c, latch it at m_1b8
+// and return it. Otherwise return the held color (0xffffff if the gate is clear).
+// @early-stop
+// byte-insert RGB pack wall (~70%): the value-correct (b<<16)|(g<<8)|r packs via
+// `mov ch,al; mov cl,bl; shl 8; or esi` in retail (g/b land in byte regs) vs two
+// `shl 8; or` here, compounded by a shrink-wrapped callee-save push (retail defers
+// push esi/edi past the two early-return guards). See docs/patterns/
+// rgb-pack-byte-insert.md + shrink-wrapped-callee-save-push.md; not steerable.
+RVA(0x00039d00, 0x8c)
+i32 CCreditsState::FlashColor() {
+    i32 color = 0xffffff;
+    if (m_1c4) {
+        if (m_1bc) {
+            return m_1b8;
+        }
+        i32 r = rand() % 256;
+        i32 g = rand() % 256;
+        i32 b = rand() % 256;
+        m_1bc = 0x12c;
+        color = (b << 16) | ((g & 0xff) << 8) | (r & 0xff);
+        m_1b8 = color;
+    }
+    return color;
+}
 
 // ===========================================================================
 // CMenuState / CBootyState teardown (the `??1` destructors + the slot-2

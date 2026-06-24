@@ -248,11 +248,27 @@ public:
     void Stub_08d5e0();
     i32 winapi_0396f0_SelectClipRgn_SetBkMode();
 
+    // ReleaseResources (0x38f00): the credits teardown - free the pooled resource,
+    // release the three named registries, tear down + RezFree the video handle,
+    // then chain BaseCleanup. FinishState (0x39c40): clear the playing gate, ret 1.
+    // StepVideo (0x39c60): advance the Smacker movie frame + blit it. FlashColor
+    // (0x39d00): re-roll a random RGB flash latch when its timer expires.
+    void ReleaseResources();
+    i32 FinishState();
+    i32 StepVideo();
+    i32 FlashColor();
+
     // --- CCreditsState members the Render path pins (placeholders) ---
     char m_pad1a8[0x1b4 - 0x1a8];
     i32 m_1b4; // +0x1b4 one-shot FX latch
-    char m_pad1b8[0x1c4 - 0x1b8];
+    i32 m_1b8; // +0x1b8 packed random RGB flash color
+    i32 m_1bc; // +0x1bc flash re-roll timer
+    char m_pad1c0[0x1c4 - 0x1c0];
     i32 m_1c4; // +0x1c4 conditional-FX gate
+    char m_pad1c8[0x208 - 0x1c8];
+    i32 m_208; // +0x208 video playing gate
+    char m_pad20c[0x210 - 0x20c];
+    void* m_210; // +0x210 Smacker video handle
 
     i32 LoadCreditzStateAssets(i32 a1, i32 a2, i32 a3);
     void InitAttractTitle();

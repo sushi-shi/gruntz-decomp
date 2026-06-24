@@ -47,15 +47,9 @@ void CCheckpointDlg::CCheckpointDlg_023570() {}
 RVA(0x00011480, 0x44)
 void CCheckpointTrigger::CCheckpointTrigger_011480() {}
 
-// ---- CCreditsState ----
-RVA(0x00038f00, 0x87)
-void CCreditsState::CCreditsState_038f00() {}
-RVA(0x00039c40, 0x10)
-void CCreditsState::CCreditsState_039c40() {}
-RVA(0x00039c60, 0x7a)
-void CCreditsState::CCreditsState_039c60() {}
-RVA(0x00039d00, 0x8c)
-void CCreditsState::CCreditsState_039d00() {}
+// ---- CCreditsState ---- all four trace-discovered methods reconstructed in
+// src/Gruntz/GameMode.cpp (the real CCreditsState TU): ReleaseResources (0x38f00),
+// FinishState (0x39c40), StepVideo (0x39c60), FlashColor (0x39d00).
 
 // ---- CCursorSnapSprite ----
 RVA(0x00011880, 0x47)

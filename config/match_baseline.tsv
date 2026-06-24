@@ -52,7 +52,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	326	0
+engine_discovered	322	0
 engine_label_stubs	519	118
 filemem	8	7
 filestream	13	9
@@ -62,7 +62,7 @@ fonts	2	1
 gameapp	19	15
 gamekeyhandler	1	0
 gamelevel	30	19
-gamemode	37	17
+gamemode	41	18
 gameobjectctors	5	0
 gametext	4	2
 gamewnd	9	8
@@ -601,10 +601,6 @@ engine_discovered	?CButeMgr_0213c0@CButeMgr@@QAEXXZ	1.1494	1.1494	1	27bb9064c61c
 engine_discovered	?CButeTree_16e070@CButeTree@@QAEXXZ	0.8000	0.8000	1	5f71bcbafe56	0x16e070
 engine_discovered	?CCheckpointDlg_023570@CCheckpointDlg@@QAEXXZ	50.0000	50.0000	1	f5567be8c30b	0x23570
 engine_discovered	?CCheckpointTrigger_011480@CCheckpointTrigger@@QAEXXZ	5.8824	5.8824	1	ea4c978419c4	0x11480
-engine_discovered	?CCreditsState_038f00@CCreditsState@@QAEXXZ	2.5000	2.5000	1	fece14c9c784	0x38f00
-engine_discovered	?CCreditsState_039c40@CCreditsState@@QAEXXZ	33.3333	33.3333	1	fcb6918c070a	0x39c40
-engine_discovered	?CCreditsState_039c60@CCreditsState@@QAEXXZ	2.0000	2.0000	1	172664bc6a2d	0x39c60
-engine_discovered	?CCreditsState_039d00@CCreditsState@@QAEXXZ	1.9231	1.9231	1	2d619844dac5	0x39d00
 engine_discovered	?CCursorSnapSprite_011880@CCursorSnapSprite@@QAEXXZ	1.1111	1.1111	1	e47994ca3ad7	0x11880
 engine_discovered	?CCursorSnapSprite_011920@CCursorSnapSprite@@QAEXXZ	5.8824	5.8824	1	42792901a93f	0x11920
 engine_discovered	?CDDPalette_1474d0@CDDPalette@@QAEXXZ	1.1429	1.1429	1	3388fbb23c05	0x1474d0
@@ -1548,6 +1544,8 @@ gamemode	?BuildVersionString@CMenuState@@QAEXHHHH@Z	1.6129	1.6129	2	cba34bc68989
 gamemode	?BuildWarpStoneGlitterAnimation@CState@@QAEXXZ	0.9804	0.9804	1	48a14ab5d217	0x19540
 gamemode	?CheckPerfectBonus@CMultiBootyState@@QAEHXZ	100.0000	100.0000	2	9fc93e05a397	0x1c0f0
 gamemode	?CheckWarpLetterBonus@CBootyState@@QAEXXZ	0.2849	0.2849	1	86e864f54e78	0x1c210
+gamemode	?FinishState@CCreditsState@@QAEHXZ	100.0000	100.0000	1	b2c3a49646dc	0x39c40
+gamemode	?FlashColor@CCreditsState@@QAEHXZ	70.4231	70.4231	1	fcd764f9eff7	0x39d00
 gamemode	?FormatHudText@CMenuState@@QAEXH@Z	0.3094	0.3094	2	639568dc3209	0x1af70
 gamemode	?FrameSlot24@CMultiBootyState@@UAEHH@Z	100.0000	100.0000	2	1df26f9626ef	0x1e570
 gamemode	?FrameSlot28@CMenuState@@UAEHH@Z	100.0000	100.0000	2	e9d8da09d7f7	0xa06d0
@@ -1558,6 +1556,7 @@ gamemode	?LoadGruntEffectSprites@CState@@QAEXXZ	0.2268	0.2268	1	4762f4e00dc7	0x1
 gamemode	?MoveLettersByDir@CMultiBootyState@@QAEXXZ	59.9241	59.9241	2	6a387478dfd5	0x19b90
 gamemode	?QueryGruntSlots@CMultiBootyState@@QAEHXZ	87.5000	87.5000	2	ba5d94c9711b	0x1ecf0
 gamemode	?ReleaseResources@CBootyState@@UAEXXZ	98.4375	98.4375	1	5b3e49874e83	0x18c90
+gamemode	?ReleaseResources@CCreditsState@@UAEXXZ	99.2500	99.2500	1	1ba39beb1650	0x38f00
 gamemode	?ReleaseResources@CMenuState@@UAEXXZ	99.4737	99.4737	1	570eecea03da	0xa02c0
 gamemode	?ReleaseResources@CMultiBootyState@@UAEXXZ	98.5000	98.5000	1	13bfa176e41c	0x1e520
 gamemode	?Render@CCreditsState@@UAEHXZ	97.7121	97.7121	5	6997299da45d	0x391d0
@@ -1565,6 +1564,7 @@ gamemode	?Render@CMenuState@@UAEHXZ	100.0000	100.0000	5	c89c91454dc8	0xa0750
 gamemode	?Render@CState@@UAEHXZ	100.0000	100.0000	5	d458185de910	0x8c4d0
 gamemode	?StartMusic@CMenuState@@QAEXXZ	94.7561	94.7561	2	7c0e029ce454	0xa05a0
 gamemode	?StepGlitterAnim@CMultiBootyState@@QAEXXZ	80.1343	80.1343	3	bc8e61e2a888	0x196c0
+gamemode	?StepVideo@CCreditsState@@QAEHXZ	95.0000	95.0000	1	e9612fee4d4c	0x39c60
 gamemode	?StopMusicChain@CMenuState@@QAEXXZ	99.7059	99.7059	1	f84633f00b69	0xa0640
 gamemode	?Stub_08d5e0@CCreditsState@@QAEXXZ	3.0303	3.0303	2	55b18b536e0d	0x8d5e0
 gamemode	?Update@CBootyState@@UAEHXZ	100.0000	100.0000	5	96557d6664de	0x8d3f0
