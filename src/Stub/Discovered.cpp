@@ -419,24 +419,6 @@ void CInGameText::CInGameText_099460() {}
 RVA(0x00099a30, 0xaa)
 void CInGameText::CInGameText_099a30() {}
 
-// ---- CInputDevice ----
-RVA(0x00133300, 0x6a)
-void CInputDevice::CInputDevice_133300() {}
-RVA(0x00133b50, 0x97)
-void CInputDevice::CInputDevice_133b50() {}
-RVA(0x00133bf0, 0x33)
-void CInputDevice::CInputDevice_133bf0() {}
-RVA(0x00133c30, 0xc9)
-void CInputDevice::CInputDevice_133c30() {}
-RVA(0x00133d00, 0x55e)
-void CInputDevice::CInputDevice_133d00() {}
-RVA(0x00134260, 0x43)
-void CInputDevice::CInputDevice_134260() {}
-RVA(0x00134d50, 0x3b)
-void CInputDevice::CInputDevice_134d50() {}
-RVA(0x00134fe0, 0x13)
-void CInputDevice::CInputDevice_134fe0() {}
-
 // ---- CKitchenSlime ----
 RVA(0x00013100, 0x44)
 void CKitchenSlime::CKitchenSlime_013100() {}

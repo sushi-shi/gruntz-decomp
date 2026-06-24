@@ -78,9 +78,24 @@ void* operator new(unsigned int);
 void operator delete(void*);
 
 // The foreign device-config vftable InitA stamps into its new'd 0x338 object
-// (@0x5ef628). Referenced as DIR32 data; we never emit this vtable.
+// (@0x5ef628). Referenced as DIR32 data; we never emit this vtable. The deleting-
+// destructor chain (0x133300) walks two base-subobject vtables in turn (@0x5ef680
+// then @0x5ef670) as it tears the object down. All three are reloc-masked DIR32.
 DATA(0x001ef628)
 extern void* g_deviceConfigVtblA; // 0x5ef628
+DATA(0x001ef680)
+extern void* g_deviceConfigVtblB; // 0x5ef680
+DATA(0x001ef670)
+extern void* g_deviceConfigVtblC; // 0x5ef670
+
+// The keyboard DIDATAFORMAT (c_dfDIKeyboard) CreateDev passes to SetDataFormat
+// (@0x590aa0, a const in .text). Pushed by address (reloc-masked DIR32 operand).
+DATA(0x00190aa0)
+extern const unsigned char g_keyboardDataFormat[]; // 0x590aa0
+
+// USER32 GetAsyncKeyState - polled across the key table by Poll (0x133d00). Loaded
+// from the IAT into a register (`mov edi,ds:__imp__GetAsyncKeyState; call edi`) and
+// reused across the run; comes from the real <windows.h> via <Win32.h>.
 
 // The config blob InitA passes to CDeviceConfigA::CreateDev (@0x5ef548), pushed
 // by address (reloc-masked DIR32 operand).
@@ -188,15 +203,15 @@ int DirectInputMgr2::InitA(unsigned long flags) {
     CDeviceConfigA* raw = (CDeviceConfigA*)operator new(sizeof(CDeviceConfigA));
     CDeviceConfigA* dev;
     if (raw != 0) {
-        raw->m_004 = 0;
-        raw->m_008 = 0;
+        raw->m_4 = 0;
+        raw->m_8 = 0;
         raw->m_29c = 0;
         raw->m_2a0 = 0;
         raw->m_2a8 = -1;
         raw->m_2ac = 0;
         raw->m_2b0 = 0;
         raw->m_vptr = &g_deviceConfigVtblA;
-        memset(raw->_pad2b4, 0, 0x80);
+        memset(raw->m_2b4, 0, 0x80);
         raw->m_334 = 0;
         dev = raw;
     } else {
@@ -358,6 +373,35 @@ void DirectInputMgr2::AddControllerArr(int a1, int a2, int a3, int a4, int a5, i
     AddController((int)buf, 6, a7);
 }
 
+// ===========================================================================
+// CInputDevice (InputDevice.cpp) - the 0x338 keyboard input device. The deleting-
+// destructor chain sits at 0x133300 (RVA order places it here, before
+// GetErrorString); the rest of its methods follow GetErrorString below.
+// ===========================================================================
+
+// CInputDevice::~CInputDevice (__thiscall). The /GX deleting-destructor chain: with
+// the EH frame live it stamps the most-derived vftable (@0x5ef628), tears the object
+// down (Teardown frees the snapshot buffer + releases the COM devices), then walks
+// the two base-subobject vftables (@0x5ef680 then @0x5ef670) re-releasing as it
+// unwinds, advancing the [esp+0x10] try-level stamp (0 / 1 / -1) after each step.
+// @early-stop
+// eh-dtor-needs-base-subobject wall (docs/patterns/eh-dtor-needs-base-subobject.md), 42.7%:
+// body content is byte-correct (3 vptr stamps @0x5ef628/0x5ef680/0x5ef670 + Teardown +
+// ReleaseDevices x2, all reloc-masked) but retail wraps it in a /GX EH frame (push -1 /
+// push handler / mov fs:0) with [esp+0x10] try-level stamps (0/1/-1) advanced after each
+// step - that frame comes from real base-subobject dtors, unreachable under the
+// manual-vptr non-polymorphic shape this class needs (its foreign vtable @0x5ef628 isn't
+// reproducible). Deferred to the final sweep.
+RVA(0x00133300, 0x6a)
+CInputDevice::~CInputDevice() {
+    m_vptr = &g_deviceConfigVtblA;
+    Teardown();
+    m_vptr = &g_deviceConfigVtblB;
+    ReleaseDevices();
+    m_vptr = &g_deviceConfigVtblC;
+    ReleaseDevices();
+}
+
 // ---------------------------------------------------------------------------
 // DirectInputMgr2::GetErrorString
 RVA(0x00133590, 0x5be)
@@ -477,10 +521,337 @@ void DirectInputMgr2::GetErrorString(char* file, int line, long hr) {
 }
 
 // ===========================================================================
-// CInputDevice (InputDevice.cpp) - the IDirectInputDevice wrapper thunks. Each
-// routes a failed HRESULT through DirectInputMgr2::GetErrorString (the InputDevice.cpp
-// $SG __FILE__) and returns a 0/1 success bool.
+// CInputDevice (InputDevice.cpp) - the 0x338 keyboard input device. CreateDev brings
+// it up (CreateDeviceWrap + SetDataFormat + SetCooperativeLevel + state buffer); the
+// thin IDirectInputDevice wrapper thunks route a failed HRESULT through
+// DirectInputMgr2::GetErrorString (the InputDevice.cpp $SG __FILE__) and return 0/1.
 // ===========================================================================
+
+// CInputDevice::CreateDev (__thiscall, ret 0x10 => 4 args). The manager's InitA
+// bring-up: validates (di, owner), runs the CreateDevice+QI wrapper, stamps the mode
+// flag, seeds the scan-code table, sets the keyboard data format + cooperative level,
+// then allocates the 0x100-byte GetDeviceState snapshot buffer (+0x2a0/+0x2a4).
+RVA(0x00133b50, 0x97)
+int CInputDevice::CreateDev(IDirectInputZ* di, const void* cfg, void* owner, unsigned long flags) {
+    if (di == 0) {
+        return 0;
+    }
+    if (owner == 0) {
+        return 0;
+    }
+    if (CreateDeviceWrap(di, cfg, owner) == 0) {
+        return 0;
+    }
+    m_334 = flags;
+    SetupKeyTable();
+    if (SetDataFormat((void*)g_keyboardDataFormat) == 0) {
+        return 0;
+    }
+    if (SetCooperativeLevel(6) == 0) {
+        return 0;
+    }
+    void* buf = operator new(0x100);
+    if (buf == 0) {
+        return 0;
+    }
+    m_2a0 = buf;
+    m_2a4 = 0x100;
+    return 1;
+}
+
+// CInputDevice::Teardown (__thiscall, no args). Frees the GetDeviceState snapshot
+// buffer (+0x2a0) then releases the COM devices (ReleaseDevices, via the 0x1342b0
+// incremental-link thunk). Driven by the destructor chain at 0x133300.
+RVA(0x00133bf0, 0x33)
+void CInputDevice::Teardown() {
+    if (m_2a0 != 0) {
+        operator delete(m_2a0);
+        m_2a0 = 0;
+        m_2a4 = 0;
+    }
+    ReleaseDevices();
+}
+
+// CInputDevice::SetupKeyTable (__thiscall, no args). Zeroes the +0x2b4 scan-code
+// table (0x20 dwords) then writes the per-mode key codes selected by the +0x334
+// keyboard/mouse flag: the movement quad at [0..3] and the action quad at [0x1c..0x1f].
+// @early-stop
+// epilogue pop-scheduling wall, 94.6%: body + both flag tests are byte-exact (the
+// pointer-local store routes index 0 so cl re-reads m_334 and reuses al=1 across both
+// `if (m_334 & 1)` tests; see docs/patterns/pointer-store-defeats-flag-cse.md). Residual
+// is only the else-branch epilogue: retail interleaves `pop edi`/`pop esi` between the
+// last two stores, cl hoists both pops to the block head - a scheduler choice no source
+// spelling steers. Deferred to the final sweep.
+RVA(0x00133c30, 0xc9)
+void CInputDevice::SetupKeyTable() {
+    unsigned long* tbl = m_2b4;
+    for (int i = 0; i < 0x20; i++) {
+        tbl[i] = 0;
+    }
+    if (m_334 & 1) {
+        tbl[0] = 0x20;
+        m_2b4[1] = 0x11;
+        m_2b4[2] = 0x12;
+        m_2b4[3] = 0x10;
+    } else {
+        tbl[0] = 0x39;
+        m_2b4[1] = 0x1d;
+        m_2b4[2] = 0x38;
+        m_2b4[3] = 0x2a;
+    }
+    if (m_334 & 1) {
+        m_2b4[0x1c] = 0x25;
+        m_2b4[0x1d] = 0x27;
+        m_2b4[0x1e] = 0x26;
+        m_2b4[0x1f] = 0x28;
+    } else {
+        m_2b4[0x1c] = 0xcb;
+        m_2b4[0x1d] = 0xcd;
+        m_2b4[0x1e] = 0xc8;
+        m_2b4[0x1f] = 0xd0;
+    }
+}
+
+// CInputDevice::Poll (__thiscall, no args). Per-frame key read. In direct mode
+// (m_334 & 1) it polls GetAsyncKeyState on the scan-code table, packing the high
+// (pressed) bit of each into the current-flags word (+0x2ac). Otherwise it samples
+// the +0x2a0 GetDeviceState snapshot (ReadState fills it; the buffer is re-read from
+// m_2a0, NOT from ReadState's return) and tests the high bit of each keyboard byte. It
+// then folds the prev (+0x2a8) vs current flags into the +0x2b0 edge word and toggles
+// the latched per-bit state.
+// 99.97% = reloc plateau: every code byte matches retail; the only residue is the
+// GetAsyncKeyState __imp__ DIR32 operand (reloc-typing scoring artifact, not a body diff).
+RVA(0x00133d00, 0x55e)
+int CInputDevice::Poll() {
+    m_2ac = 0;
+    m_2b0 = 0;
+    if ((m_334 & 1) == 0) {
+        if (ReadState() == 0) {
+            return 0;
+        }
+    }
+    if (m_334 & 1) {
+        if (GetAsyncKeyState(m_2b4[0]) & 0x80000000) {
+            m_2ac |= 1;
+        }
+        if (GetAsyncKeyState(m_2b4[1]) & 0x80000000) {
+            m_2ac |= 2;
+        }
+        if (GetAsyncKeyState(m_2b4[2]) & 0x80000000) {
+            m_2ac |= 4;
+        }
+        if (GetAsyncKeyState(m_2b4[3]) & 0x80000000) {
+            m_2ac |= 8;
+        }
+        if (GetAsyncKeyState(m_2b4[4]) & 0x80000000) {
+            m_2ac |= 0x10;
+        }
+        if (GetAsyncKeyState(m_2b4[5]) & 0x80000000) {
+            m_2ac |= 0x20;
+        }
+        if (GetAsyncKeyState(m_2b4[6]) & 0x80000000) {
+            m_2ac |= 0x40;
+        }
+        if (GetAsyncKeyState(m_2b4[7]) & 0x80000000) {
+            m_2ac |= 0x80;
+        }
+        if (GetAsyncKeyState(m_2b4[0x1c]) & 0x80000000) {
+            m_2ac |= 0x10000000;
+        }
+        if (GetAsyncKeyState(m_2b4[0x1d]) & 0x80000000) {
+            m_2ac |= 0x20000000;
+        }
+        if (GetAsyncKeyState(m_2b4[0x1e]) & 0x80000000) {
+            m_2ac |= 0x40000000;
+        }
+        if (GetAsyncKeyState(m_2b4[0x1f]) & 0x80000000) {
+            m_2ac |= 0x80000000;
+        }
+    } else {
+        unsigned char* buf = (unsigned char*)m_2a0;
+        if (buf[m_2b4[0]] & 0x80) {
+            m_2ac |= 1;
+        }
+        if (buf[m_2b4[1]] & 0x80) {
+            m_2ac |= 2;
+        }
+        if (buf[m_2b4[2]] & 0x80) {
+            m_2ac |= 4;
+        }
+        if (buf[m_2b4[3]] & 0x80) {
+            m_2ac |= 8;
+        }
+        if (buf[m_2b4[4]] & 0x80) {
+            m_2ac |= 0x10;
+        }
+        if (buf[m_2b4[5]] & 0x80) {
+            m_2ac |= 0x20;
+        }
+        if (buf[m_2b4[6]] & 0x80) {
+            m_2ac |= 0x40;
+        }
+        if (buf[m_2b4[7]] & 0x80) {
+            m_2ac |= 0x80;
+        }
+        if (buf[0xcb] & 0x80) {
+            m_2ac |= 0x10000000;
+        }
+        if (buf[0xcd] & 0x80) {
+            m_2ac |= 0x20000000;
+        }
+        if (buf[0xc8] & 0x80) {
+            m_2ac |= 0x40000000;
+        }
+        if (buf[0xd0] & 0x80) {
+            m_2ac |= 0x80000000;
+        }
+        if (buf[0x4b] & 0x80) {
+            m_2ac |= 0x10000000;
+        }
+        if (buf[0x4d] & 0x80) {
+            m_2ac |= 0x20000000;
+        }
+        if (buf[0x48] & 0x80) {
+            m_2ac |= 0x40000000;
+        }
+        if (buf[0x50] & 0x80) {
+            m_2ac |= 0x80000000;
+        }
+    }
+
+    // Edge-detection latch: m_2b0 = current snapshot; for each tracked bit, a fresh
+    // press (set in m_2b0, not yet latched in m_2a8) latches it and stays in m_2ac;
+    // a held key (already latched) is cleared from m_2ac (only the press edge counts);
+    // a released key clears the latch.
+    m_2b0 = m_2ac;
+    if (m_2b0 & 0x00000001) {
+        if (m_2a8 & 0x00000001) {
+            m_2ac &= ~0x00000001;
+        } else {
+            m_2a8 |= 0x00000001;
+        }
+    } else {
+        m_2a8 &= ~0x00000001;
+    }
+    if (m_2b0 & 0x00000002) {
+        if (m_2a8 & 0x00000002) {
+            m_2ac &= ~0x00000002;
+        } else {
+            m_2a8 |= 0x00000002;
+        }
+    } else {
+        m_2a8 &= ~0x00000002;
+    }
+    if (m_2b0 & 0x00000004) {
+        if (m_2a8 & 0x00000004) {
+            m_2ac &= ~0x00000004;
+        } else {
+            m_2a8 |= 0x00000004;
+        }
+    } else {
+        m_2a8 &= ~0x00000004;
+    }
+    if (m_2b0 & 0x00000008) {
+        if (m_2a8 & 0x00000008) {
+            m_2ac &= ~0x00000008;
+        } else {
+            m_2a8 |= 0x00000008;
+        }
+    } else {
+        m_2a8 &= ~0x00000008;
+    }
+    if (m_2b0 & 0x00000010) {
+        if (m_2a8 & 0x00000010) {
+            m_2ac &= ~0x00000010;
+        } else {
+            m_2a8 |= 0x00000010;
+        }
+    } else {
+        m_2a8 &= ~0x00000010;
+    }
+    if (m_2b0 & 0x00000020) {
+        if (m_2a8 & 0x00000020) {
+            m_2ac &= ~0x00000020;
+        } else {
+            m_2a8 |= 0x00000020;
+        }
+    } else {
+        m_2a8 &= ~0x00000020;
+    }
+    if (m_2b0 & 0x00000040) {
+        if (m_2a8 & 0x00000040) {
+            m_2ac &= ~0x00000040;
+        } else {
+            m_2a8 |= 0x00000040;
+        }
+    } else {
+        m_2a8 &= ~0x00000040;
+    }
+    if (m_2b0 & 0x00000080) {
+        if (m_2a8 & 0x00000080) {
+            m_2ac &= ~0x00000080;
+        } else {
+            m_2a8 |= 0x00000080;
+        }
+    } else {
+        m_2a8 &= ~0x00000080;
+    }
+    if (m_2b0 & 0x10000000) {
+        if (m_2a8 & 0x10000000) {
+            m_2ac &= ~0x10000000;
+        } else {
+            m_2a8 |= 0x10000000;
+        }
+    } else {
+        m_2a8 &= ~0x10000000;
+    }
+    if (m_2b0 & 0x20000000) {
+        if (m_2a8 & 0x20000000) {
+            m_2ac &= ~0x20000000;
+        } else {
+            m_2a8 |= 0x20000000;
+        }
+    } else {
+        m_2a8 &= ~0x20000000;
+    }
+    if (m_2b0 & 0x40000000) {
+        if (m_2a8 & 0x40000000) {
+            m_2ac &= ~0x40000000;
+        } else {
+            m_2a8 |= 0x40000000;
+        }
+    } else {
+        m_2a8 &= ~0x40000000;
+    }
+    if (m_2b0 & 0x80000000) {
+        if (m_2a8 & 0x80000000) {
+            m_2ac &= ~0x80000000;
+        } else {
+            m_2a8 |= 0x80000000;
+        }
+    } else {
+        m_2a8 &= ~0x80000000;
+    }
+    return 1;
+}
+
+// CInputDevice::CreateDeviceWrap (__thiscall, ret 0xc => 3 args). Validates (di,
+// hwnd), runs the CreateDevice+QI bring-up (Create), then dispatches the +0x14
+// configure virtual through the stamped foreign vtable. Returns 1 on success.
+RVA(0x00134260, 0x43)
+int CInputDevice::CreateDeviceWrap(IDirectInputZ* di, const void* guid, void* hwnd) {
+    if (di == 0) {
+        return 0;
+    }
+    if (hwnd == 0) {
+        return 0;
+    }
+    if (Create(di, guid, hwnd) == 0) {
+        return 0;
+    }
+    ((CInputDeviceVtblView*)this)->Slot14();
+    return 1;
+}
 
 // CInputDevice::Create (__thiscall, ret 0xc => 3 args). Caches the
 // cooperative-level hwnd (m_29c), creates the device via
@@ -509,6 +880,47 @@ int CInputDevice::Create(IDirectInputZ* di, const void* deviceGuid, void* hwnd) 
         return 0;
     }
     return m_8 != 0;
+}
+
+// CInputDevice::ReleaseDevices (__thiscall, no args). Unacquires + Releases the QI'd
+// device (m_8), Releases the created device (m_4), then clears the device handles +
+// the cached hwnd / state buffer pointer.
+RVA(0x00134d50, 0x3b)
+void CInputDevice::ReleaseDevices() {
+    if (m_8 != 0) {
+        Unacquire();
+        m_8->vtbl->Release(m_8);
+    }
+    if (m_4 != 0) {
+        m_4->vtbl->Release(m_4);
+    }
+    m_4 = 0;
+    m_8 = 0;
+    m_29c = 0;
+    m_2a0 = 0;
+}
+
+// CInputDevice::ReadState (__thiscall, no args). Refreshes the +0x2a0 snapshot via
+// IDirectInputDevice::GetDeviceState (slot +0x24). On DIERR_INPUTLOST/NOTACQUIRED it
+// re-Acquires and, if that succeeds, keeps the (stale) buffer; any other failure is
+// reported and yields 0. Returns the +0x2a0 buffer pointer on success. (Helper that
+// Poll calls; reloc-masked direct call from 0x133d00.)
+RVA(0x00134d90, 0x60)
+void* CInputDevice::ReadState() {
+    if (m_2a0 == 0) {
+        return 0;
+    }
+    long hr = m_8->vtbl->GetDeviceState(m_8, m_2a4, m_2a0);
+    if (hr != 0) {
+        if (hr != (long)0x8007001e && hr != (long)0x8007000c) {
+            DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x84, hr);
+            return 0;
+        }
+        if (Acquire() == 0) {
+            return 0;
+        }
+    }
+    return m_2a0;
 }
 
 // CInputDevice::SetDataFormat (__thiscall, ret 4 => 1 arg). Pass-through to
@@ -564,4 +976,12 @@ int CInputDevice::Acquire() {
         return 0;
     }
     return 1;
+}
+
+// CInputDevice::Unacquire (__thiscall, no args). IDirectInputDevice::Unacquire
+// (slot +0x20); returns whether the HRESULT was success (0).
+RVA(0x00134fe0, 0x13)
+int CInputDevice::Unacquire() {
+    long hr = m_8->vtbl->Unacquire(m_8);
+    return hr == 0;
 }

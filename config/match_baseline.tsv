@@ -35,9 +35,9 @@ cplay	18	6
 cstatusbarmgr	1	0
 deflate	6	6
 dialogs	17	7
-directinputmgr2	18	17
+directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	909	0
+engine_discovered	901	0
 engine_label_stubs	534	117
 filestream	13	9
 font	16	9
@@ -313,24 +313,33 @@ dialogs	?winapi_016dc0_InvalidateRect@CBattlezDlg@@QAEHXZ	3.1111	3.1111	1	794fff
 dialogs	?winapi_016e90_InvalidateRect@CBattlezDlg@@QAEHXZ	3.1111	3.1111	1	20bec42c49b3	0x16e90
 dialogs	?winapi_016f60_InvalidateRect@CBattlezDlg@@QAEHXZ	3.1111	3.1111	1	bbd53d7a48da	0x16f60
 dialogs	?winapi_0171b0_GetWindow_SendMessageA@CBattlezDlg@@QAEHXZ	2.2581	2.2581	1	0c3afab2629d	0x171b0
+directinputmgr2	??1CInputDevice@@QAE@XZ	42.7200	42.7200	1	fb07b92f3f3e	0x133300
 directinputmgr2	??1DirectInputMgr2@@QAE@XZ	100.0000	100.0000	1	921586318b25	0x85fc0
 directinputmgr2	?Acquire@CInputDevice@@QAEHXZ	100.0000	100.0000	2	1d114cf36c70	0x134fb0
 directinputmgr2	?AddController@DirectInputMgr2@@QAEPAXHHH@Z	100.0000	100.0000	1	97b76e64ba93	0x1331e0
 directinputmgr2	?AddControllerArr@DirectInputMgr2@@QAEXHHHHHHH@Z	100.0000	100.0000	1	030bd877f03f	0x133260
 directinputmgr2	?Create@CInputDevice@@QAEHPAUIDirectInputZ@@PBXPAX@Z	100.0000	100.0000	2	1d9268479f53	0x134cb0
 directinputmgr2	?Create@DirectInputMgr2@@QAEHPAX0K@Z	100.0000	100.0000	2	04e22e8a0177	0x132ce0
+directinputmgr2	?CreateDev@CInputDevice@@QAEHPAUIDirectInputZ@@PBXPAXK@Z	100.0000	100.0000	1	7f3b81daf3b5	0x133b50
+directinputmgr2	?CreateDeviceWrap@CInputDevice@@QAEHPAUIDirectInputZ@@PBXPAX@Z	100.0000	100.0000	1	4348688392c8	0x134260
 directinputmgr2	?EnumGameControllers@DirectInputMgr2@@QAEHK@Z	100.0000	100.0000	2	f2907219cb67	0x132f80
 directinputmgr2	?FreeDeviceList@DirectInputMgr2@@QAEXXZ	100.0000	100.0000	1	5c87f6beb61a	0x1331a0
 directinputmgr2	?GetErrorString@DirectInputMgr2@@SAXPADHJ@Z	100.0000	100.0000	4	750b1e766b8e	0x133590
-directinputmgr2	?InitA@DirectInputMgr2@@QAEHK@Z	86.5079	86.5079	1	fba05a2dbee1	0x132e20
+directinputmgr2	?InitA@DirectInputMgr2@@QAEHK@Z	86.5079	86.5079	2	3d13323f523a	0x132e20
+directinputmgr2	?Poll@CInputDevice@@QAEHXZ	99.9718	99.9718	1	6d52b1a17eaa	0x133d00
 directinputmgr2	?PollAll@DirectInputMgr2@@QAEHXZ	100.0000	100.0000	1	9816d4202857	0x133080
 directinputmgr2	?PollArrayA@DirectInputMgr2@@QAEHXZ	100.0000	100.0000	1	8ad8c42fda56	0x1330d0
 directinputmgr2	?PollArrayB@DirectInputMgr2@@QAEHXZ	100.0000	100.0000	1	00cbc1e346bb	0x133160
 directinputmgr2	?ReadAll@DirectInputMgr2@@QAEHXZ	100.0000	100.0000	1	85a045e3966a	0x133110
+directinputmgr2	?ReadState@CInputDevice@@QAEPAXXZ	100.0000	100.0000	1	0251a2eb3665	0x134d90
+directinputmgr2	?ReleaseDevices@CInputDevice@@QAEXXZ	100.0000	100.0000	1	285667cc4243	0x134d50
 directinputmgr2	?SetCooperativeLevel@CInputDevice@@QAEHK@Z	100.0000	100.0000	2	7b3b2890c6b8	0x134ef0
 directinputmgr2	?SetDataFormat@CInputDevice@@QAEHPAX@Z	100.0000	100.0000	2	82342e5354a7	0x134eb0
 directinputmgr2	?SetProperty@CInputDevice@@QAEHPBXPAX@Z	100.0000	100.0000	2	4d864d047ed8	0x134f30
+directinputmgr2	?SetupKeyTable@CInputDevice@@QAEXXZ	94.5946	94.5946	1	ae5963013118	0x133c30
 directinputmgr2	?Shutdown@DirectInputMgr2@@QAEXXZ	100.0000	100.0000	1	90c22630ece1	0x132d90
+directinputmgr2	?Teardown@CInputDevice@@QAEXXZ	100.0000	100.0000	1	4c4e8007360a	0x133bf0
+directinputmgr2	?Unacquire@CInputDevice@@QAEHXZ	100.0000	100.0000	1	94b9d45663d6	0x134fe0
 directsoundmgr	??0DirectSoundMgr@@QAE@PAUIDirectSoundBufferZ@@PAV0@@Z	100.0000	100.0000	2	af49f481a60a	0x1351d0
 directsoundmgr	??1DirectSoundMgr@@QAE@XZ	54.4483	54.4483	1	5649e2c1d49e	0x135bb0
 directsoundmgr	?CloneAndPlay@DirectSoundMgr@@QAEHJJJ@Z	99.9872	99.9872	1	5b27c8b33793	0x135660
@@ -510,14 +519,6 @@ engine_discovered	?CGuardPoint_010410@CGuardPoint@@QAEXXZ	5.8824	5.8824	1	4e3b67
 engine_discovered	?CInGameText_011dc0@CInGameText@@QAEXXZ	5.8824	5.8824	1	981463c96391	0x11dc0
 engine_discovered	?CInGameText_099460@CInGameText@@QAEXXZ	0.5333	0.5333	1	2cf0b5c3a5dc	0x99460
 engine_discovered	?CInGameText_099a30@CInGameText@@QAEXXZ	0.4762	0.4762	1	cea309c35927	0x99a30
-engine_discovered	?CInputDevice_133300@CInputDevice@@QAEXXZ	4.0000	4.0000	1	92d36e87b238	0x133300
-engine_discovered	?CInputDevice_133b50@CInputDevice@@QAEXXZ	0.7547	0.7547	1	09f9f7ccd731	0x133b50
-engine_discovered	?CInputDevice_133bf0@CInputDevice@@QAEXXZ	7.1429	7.1429	1	a9de85c6dd7a	0x133bf0
-engine_discovered	?CInputDevice_133c30@CInputDevice@@QAEXXZ	2.7027	2.7027	1	3677ecc6b71b	0x133c30
-engine_discovered	?CInputDevice_133d00@CInputDevice@@QAEXXZ	0.2817	0.2817	1	42c60e4c9c14	0x133d00
-engine_discovered	?CInputDevice_134260@CInputDevice@@QAEXXZ	1.3793	1.3793	1	32a136e6ccac	0x134260
-engine_discovered	?CInputDevice_134d50@CInputDevice@@QAEXXZ	4.1667	4.1667	1	1d14c7d4872c	0x134d50
-engine_discovered	?CInputDevice_134fe0@CInputDevice@@QAEXXZ	11.1111	11.1111	1	1c64f1d56222	0x134fe0
 engine_discovered	?CKitchenSlime_013100@CKitchenSlime@@QAEXXZ	5.8824	5.8824	1	74b705f9f108	0x13100
 engine_discovered	?CKitchenSlime_0b2940@CKitchenSlime@@QAEXXZ	0.5333	0.5333	1	611ebae04872	0xb2940
 engine_discovered	?CLightFx_012430@CLightFx@@QAEXXZ	5.8824	5.8824	1	0382b08af60c	0x12430

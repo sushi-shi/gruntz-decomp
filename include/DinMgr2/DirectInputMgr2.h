@@ -52,8 +52,11 @@ struct IDirectInputZ {
 // IDirectInputDevice (DINPUT) - the per-device interface the CInputDevice thunks
 // drive. Slots pinned to their retail vtable offsets:
 //   +0x00 (slot 0)  QueryInterface     (REFIID, LPVOID*)
+//   +0x08 (slot 2)  Release            ()
 //   +0x18 (slot 6)  SetProperty        (REFGUID, LPCDIPROPHEADER)
 //   +0x1c (slot 7)  Acquire            ()
+//   +0x20 (slot 8)  Unacquire          ()
+//   +0x24 (slot 9)  GetDeviceState     (DWORD cb, LPVOID data)
 //   +0x2c (slot 11) SetDataFormat      (LPCDIDATAFORMAT)
 //   +0x34 (slot 13) SetCooperativeLevel(HWND, DWORD)
 // ---------------------------------------------------------------------------
@@ -61,10 +64,15 @@ struct IDirectInputDeviceZ {
     struct Vtbl {
         long(__stdcall*
                  QueryInterface)(IDirectInputDeviceZ*, const void* riid, void** out); // +0x00
-        char m_pad4[0x18 - 0x04];
+        char m_pad4[0x08 - 0x04];
+        unsigned long(__stdcall* Release)(IDirectInputDeviceZ*); // +0x08 (IUnknown::Release)
+        char m_pad0c[0x18 - 0x0c];
         long(__stdcall* SetProperty)(IDirectInputDeviceZ*, const void* rguid, void* prop); // +0x18
         long(__stdcall* Acquire)(IDirectInputDeviceZ*);                                    // +0x1c
-        char m_pad20[0x2c - 0x20];
+        long(__stdcall* Unacquire)(IDirectInputDeviceZ*);                                  // +0x20
+        long(__stdcall*
+                 GetDeviceState)(IDirectInputDeviceZ*, unsigned long cb, void* data); // +0x24
+        char m_pad28[0x2c - 0x28];
         long(__stdcall* SetDataFormat)(IDirectInputDeviceZ*, void* fmt); // +0x2c
         char m_pad30[0x34 - 0x30];
         long(__stdcall* SetCooperativeLevel)(
@@ -95,28 +103,12 @@ public:
     virtual long PollB();             // +0x14  slot 5
 };
 
-// ---------------------------------------------------------------------------
-// CDeviceConfigA - the 0x338-byte device-config object InitA new's, inits inline,
-// and stamps with the foreign engine vftable @0x5ef628 before calling its own
-// Create (0x133b50, reloc-masked). Only the seeded offsets are load-bearing; the
-// vptr is stamped manually (the class is foreign, so we never emit its vtable).
-// ---------------------------------------------------------------------------
-struct CDeviceConfigA {
-    int CreateDev(IDirectInputZ* di, const void* cfg, void* owner, unsigned long flags); // 0x133b50
-
-    void* m_vptr;                // +0x000  stamped to g_deviceConfigVtblA
-    int m_004;                   // +0x004  = 0
-    int m_008;                   // +0x008  = 0
-    char _pad00c[0x29c - 0x00c]; // +0x00c..0x29b  (zeroed by the rep stos)
-    int m_29c;                   // +0x29c  = 0
-    int m_2a0;                   // +0x2a0  = 0
-    char _pad2a4[0x2a8 - 0x2a4]; // +0x2a4
-    int m_2a8;                   // +0x2a8  = -1
-    int m_2ac;                   // +0x2ac  = 0
-    int m_2b0;                   // +0x2b0  = 0
-    char _pad2b4[0x334 - 0x2b4]; // +0x2b4..0x333  (rep stos zero region, 0x20 dwords)
-    int m_334;                   // +0x334  = 0
-}; // 0x338
+// The CInputDevice class (below) IS the 0x338-byte object InitA new's, inits inline,
+// and stamps with the foreign engine vftable @0x5ef628. CDeviceConfigA is the alias
+// the manager (DinMgr2.cpp) uses for it; CreateDev (0x133b50) is CInputDevice's
+// bring-up. Forward the alias here; the manager's InitA member is typed CInputDevice*.
+class CInputDevice;
+typedef CInputDevice CDeviceConfigA;
 
 // ---------------------------------------------------------------------------
 // CDevicePtrArray - DirectInputMgr2's embedded CPtrArray (m_18). 0x14-byte MFC
@@ -224,12 +216,57 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// CInputDevice (InputDevice.cpp) - one created+QI'd DirectInput device. m_4 is
-// the device CreateDevice returns, m_8 the device QI'd to its v2 interface, m_29c
-// the cached cooperative-level HWND. Only the touched offsets are pinned.
+// CInputDevice (InputDevice.cpp) - one created+QI'd DirectInput device. It is the
+// 0x338-byte object DirectInputMgr2::InitA new's; m_4 is the device CreateDevice
+// returns, m_8 the device QI'd to its v2 interface, m_29c the cached
+// cooperative-level HWND, and +0x2a0/+0x2a4 the GetDeviceState snapshot buffer.
+// +0x2b4..+0x333 is the keyboard scan-code table (0x20 dwords) and +0x2ac/+0x2b0
+// the packed current/edge key bitflags. The vptr (+0x00) is stamped MANUALLY to a
+// foreign engine vftable @0x5ef628 (the class's virtuals live in other TUs), so the
+// only modeled virtual is the +0x14 slot the CreateDev path dispatches.
+// (The labeler split this object into CInputDevice + a "CDeviceConfigA"; the shared
+// InputDevice.cpp __FILE__ + the single `this` threaded through CreateDev->Create
+// show they are one class. Names are placeholders; offsets + code bytes load-bearing.)
 // ---------------------------------------------------------------------------
 class CInputDevice {
 public:
+    // The /GX deleting-destructor chain (0x133300): stamps the most-derived vftable,
+    // Teardown()s, then walks the two base-subobject vftables releasing as it unwinds.
+    ~CInputDevice(); // 0x133300
+
+    // CreateDev (0x133b50): the manager's InitA entry. Validates di/owner, runs the
+    // CreateDevice+QI bring-up (CreateDeviceWrap), sets the data format / cooperative
+    // level, then allocates the 0x100 GetDeviceState snapshot buffer.
+    int CreateDev(IDirectInputZ* di, const void* cfg, void* owner, unsigned long flags); // 0x133b50
+
+    // The scalar/structured destructor body (0x133bf0): frees the snapshot buffer
+    // (+0x2a0) and releases the COM devices (ReleaseDevices). Driven by the
+    // deleting-destructor chain at 0x133300.
+    void Teardown(); // 0x133bf0
+
+    // SetupKeyTable (0x133c30): seeds the +0x2b4.. scan-code table from the +0x334
+    // keyboard/mouse mode flag (the rep-stos zero then per-mode constants).
+    void SetupKeyTable(); // 0x133c30
+
+    // Poll (0x133d00): per-frame key read. When acquired+state-buffered it samples
+    // the +0x2a0 GetDeviceState snapshot; otherwise polls GetAsyncKeyState directly,
+    // packing the current/edge flags into +0x2ac/+0x2b0/+0x2a8.
+    int Poll(); // 0x133d00
+
+    // CreateDeviceWrap (0x134260): validates (di, guid), runs Create, then the +0x14
+    // virtual configure step. ret 0xc => 3 args.
+    int CreateDeviceWrap(IDirectInputZ* di, const void* guid, void* hwnd); // 0x134260
+
+    // ReleaseDevices (0x134d50): Unacquire + Release m_8, Release m_4, clear handles.
+    void ReleaseDevices(); // 0x134d50
+
+    // Unacquire (0x134fe0): IDirectInputDevice::Unacquire (slot +0x20); 0/1 bool.
+    int Unacquire(); // 0x134fe0
+
+    // ReadState (0x134d90): GetDeviceState (slot +0x24) into the +0x2a0 buffer, with
+    // a re-Acquire retry on DIERR_INPUTLOST/NOTACQUIRED. (helper, not a target here.)
+    void* ReadState(); // 0x134d90
+
     // CreateDevice(di, guid, hwnd) then QI to the v2 device interface; returns
     // whether the QI'd interface is non-null.
     int Create(IDirectInputZ* di, const void* deviceGuid, void* hwnd); // 0x134cb0
@@ -239,11 +276,34 @@ public:
     int Acquire();                                                     // 0x134fb0
 
     // --- layout ---------------------------------------------------------------
-    char m_pad0[0x04];
+    void* m_vptr;             // +0x000  stamped to g_deviceConfigVtblA (@0x5ef628)
     IDirectInputDeviceZ* m_4; // +0x004  the created device (CreateDevice out)
     IDirectInputDeviceZ* m_8; // +0x008  the QI'd device interface (slot dispatch)
     char m_padc[0x29c - 0x0c];
-    void* m_29c; // +0x29c  cached cooperative-level HWND
+    void* m_29c;               // +0x29c  cached cooperative-level HWND
+    void* m_2a0;               // +0x2a0  GetDeviceState snapshot buffer (operator new 0x100)
+    unsigned long m_2a4;       // +0x2a4  snapshot buffer size (0x100)
+    int m_2a8;                 // +0x2a8  prev packed key flags (= -1)
+    unsigned long m_2ac;       // +0x2ac  current packed key flags
+    unsigned long m_2b0;       // +0x2b0  edge (changed) packed key flags
+    unsigned long m_2b4[0x20]; // +0x2b4..0x333  scan-code table (0x20 dwords)
+    int m_334;                 // +0x334  keyboard/mouse mode flag
+};
+
+// Polymorphic VIEW over the manually-stamped foreign vtable (@0x5ef628): the
+// CreateDeviceWrap path (0x134260) dispatches the +0x14 (slot 5) virtual on `this`
+// (`mov edx,[esi]; mov ecx,esi; call [edx+0x14]`). CInputDevice itself keeps an
+// explicit m_vptr field (manual stamps in the dtor chain), so the indirect call is
+// modeled by casting `this` to this 6-virtual view; the slot-5 method body lives in
+// another TU (0x1332c0) and is never emitted here. (explicit-mvptr-no-virtuals.md +
+// dummy-virtual-slots.md: real virtuals, not a __thiscall fn-ptr.)
+struct CInputDeviceVtblView {
+    virtual void Slot00(); // +0x00
+    virtual void Slot04(); // +0x04
+    virtual void Slot08(); // +0x08
+    virtual void Slot0C(); // +0x0c
+    virtual void Slot10(); // +0x10
+    virtual void Slot14(); // +0x14  (slot 5) CreateDeviceWrap's configure dispatch
 };
 
 #endif // DINMGR2_DIRECTINPUTMGR2_H

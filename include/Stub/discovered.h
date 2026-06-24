@@ -282,17 +282,6 @@ public:
     void CInGameText_099460();
     void CInGameText_099a30();
 };
-class CInputDevice {
-public:
-    void CInputDevice_133300();
-    void CInputDevice_133b50();
-    void CInputDevice_133bf0();
-    void CInputDevice_133c30();
-    void CInputDevice_133d00();
-    void CInputDevice_134260();
-    void CInputDevice_134d50();
-    void CInputDevice_134fe0();
-};
 class CKitchenSlime {
 public:
     void CKitchenSlime_013100();
