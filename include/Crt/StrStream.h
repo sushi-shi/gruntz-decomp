@@ -24,6 +24,11 @@ void operator delete(void*);
 extern "C" void __cdecl crt_lockinit(void* pcs); // 0x16c9c0
 extern "C" void __cdecl crt_lockterm(void* pcs); // 0x16c9d0
 
+// _mtlock / _mtunlock (EnterCriticalSection / LeaveCriticalSection thunks driving
+// the streambuf/ios lock helpers). Modeled extern-only -> reloc-masked.
+extern "C" void __cdecl crt_mtlock(void* pcs);   // 0x16c9e0
+extern "C" void __cdecl crt_mtunlock(void* pcs); // 0x16c9f0
+
 // The retail vtables (referenced by absolute address from the ctors). Declared
 // as data; DATA() pins the symbol so the `mov [this], imm32` store is masked.
 DATA(0x005f042c)
@@ -35,6 +40,8 @@ extern void* const strstreambuf_vtbl[];
 // streambuf - the abstract base. Field layout from STREAMB.H (_MT build).
 // sizeof == 0x4c.
 // ---------------------------------------------------------------------------
+class ostream;
+
 class streambuf {
 public:
     streambuf();
@@ -45,6 +52,24 @@ public:
 
     i32 sync();
     i32 xsputn(const char* s, i32 n);
+
+    // streambuf::lock / unlock - take the per-object critical section iff LockFlg<0.
+    void lock() {
+        if (LockFlg < 0) {
+            crt_mtlock(&x_lock);
+        }
+    }
+    void unlock() {
+        if (LockFlg < 0) {
+            crt_mtunlock(&x_lock);
+        }
+    }
+
+    // sputc(i) - store one byte into the put area, else overflow(i). Defined
+    // out-of-line below (needs SbView for the overflow dispatch).
+    i32 sputc(i32 i);
+
+    friend class ostream;
 
 protected:
     void setb(char* b, char* eb, i32 a);
@@ -72,16 +97,20 @@ protected:
 // with an explicit m_vptr (docs/patterns/explicit-mvptr-no-virtuals.md). The
 // leading dummy slots are never called; they only place the real two at +0x1c/+0x20.
 struct SbView {
-    virtual void v0();         // 0x00 ~ / deleting dtor
-    virtual i32 sync();        // 0x04
-    virtual void* setbuf();    // 0x08
-    virtual i32 seekoff();     // 0x0c
-    virtual i32 seekpos();     // 0x10
-    virtual i32 xsputn();      // 0x14
-    virtual i32 xsgetn();      // 0x18
-    virtual i32 overflow(i32); // 0x1c (slot 7)
-    virtual i32 underflow();   // 0x20 (slot 8)
+    virtual void v0();                    // 0x00 ~ / deleting dtor
+    virtual i32 sync();                   // 0x04
+    virtual void* setbuf();               // 0x08
+    virtual i32 seekoff();                // 0x0c
+    virtual i32 seekpos();                // 0x10
+    virtual i32 xsputn(const char*, i32); // 0x14
+    virtual i32 xsgetn();                 // 0x18
+    virtual i32 overflow(i32);            // 0x1c (slot 7)
+    virtual i32 underflow();              // 0x20 (slot 8)
 };
+
+inline i32 streambuf::sputc(i32 i) {
+    return (_pptr < _epptr) ? (u8)(*_pptr++ = (char)i) : ((SbView*)this)->overflow(i);
+}
 
 // ---------------------------------------------------------------------------
 // strstreambuf : public streambuf. Field layout from STRSTREA.H.

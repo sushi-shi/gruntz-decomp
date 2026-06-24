@@ -1141,15 +1141,10 @@ void MallocCtor_16b510::MallocCtor_16b510_16a510() {}
 RVA(0x0016b720, 0xfb)
 void MallocCtor_16b510::MallocCtor_16b510_16b720() {}
 
-// ---- MallocCtor_16bfa0 ----
-RVA(0x0016ab20, 0x49)
-void MallocCtor_16bfa0::MallocCtor_16bfa0_16ab20() {}
-RVA(0x0016bd10, 0x7f)
-void MallocCtor_16bfa0::MallocCtor_16bfa0_16bd10() {}
-RVA(0x0016bd90, 0xca)
-void MallocCtor_16bfa0::MallocCtor_16bfa0_16bd90() {}
-RVA(0x00192060, 0xb5)
-void MallocCtor_16bfa0::MallocCtor_16bfa0_192060() {}
+// ---- MallocCtor_16bfa0 ---- the MSVC5 LIBCMT `ostream` member functions
+// (write/opfx/osfx/operator<<(unsigned char)) are reconstructed in
+// src/Crt/OStream.cpp (the tracer keyed off the malloc in the ostream ctor
+// 0x16bfa0, which remains in MallocConstructors.cpp).
 
 // ---- MallocCtor_17fdb0 ---- the CFader element base class (vtable 0x5f07a8) +
 // the case-"3" subtype's ~CFaderSine (0x17fdf0, vtable 0x5f0848) are reconstructed

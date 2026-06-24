@@ -814,13 +814,6 @@ public:
     void MallocCtor_16b510_16a510();
     void MallocCtor_16b510_16b720();
 };
-class MallocCtor_16bfa0 {
-public:
-    void MallocCtor_16bfa0_16ab20();
-    void MallocCtor_16bfa0_16bd10();
-    void MallocCtor_16bfa0_16bd90();
-    void MallocCtor_16bfa0_192060();
-};
 class MinervaInner {
 public:
     void MinervaInner_1366f0();

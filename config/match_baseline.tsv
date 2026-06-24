@@ -47,6 +47,7 @@ cheatmgr	4	3
 clightfxrender	20	8
 cmulti	11	7
 cplay	27	8
+crt_ostream	4	3
 crt_streambuf	7	5
 crt_strstreambuf	4	2
 cstatusbarmgr	2	1
@@ -54,7 +55,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	299	0
+engine_discovered	295	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -518,6 +519,10 @@ cplay	?Update@CPlay@@UAEHXZ	100.0000	100.0000	4	1c6efda4cb9e	0x8c910
 cplay	?winapi_0cdb10_PostMessageA@CPlay@@QAEHHHH@Z	0.2946	0.2946	2	db8d57057a6f	0xcdb10
 cplay	?winapi_0ceae0_PostMessageA@CPlay@@QAEHHHH@Z	0.9500	0.9500	2	fb82d3f55040	0xceae0
 cplay	?winapi_0d0b30_CopyRect@CPlay@@QAEHH@Z	1.2270	1.2270	2	edf43ed7aef3	0xd0b30
+crt_ostream	??6ostream@@QAEAAV0@E@Z	90.3077	90.3077	1	2e9ddcbfc58c	0x192060
+crt_ostream	?opfx@ostream@@QAEHXZ	100.0000	100.0000	1	c7d033751aea	0x16bd10
+crt_ostream	?osfx@ostream@@QAEXXZ	100.0000	100.0000	1	53782d87a169	0x16bd90
+crt_ostream	?write@ostream@@QAEAAV1@PBDH@Z	100.0000	100.0000	1	36a53b2e5b07	0x16ab20
 crt_streambuf	??0streambuf@@QAE@XZ	15.9167	15.9167	1	ef791f1f51c0	0x16b070
 crt_streambuf	??1streambuf@@QAE@XZ	100.0000	100.0000	2	ec449f8fc404	0x16b150
 crt_streambuf	?out_waiting@streambuf@@QBEHXZ	100.0000	100.0000	1	57d78b1417ca	0x21280
@@ -888,10 +893,6 @@ engine_discovered	?MallocCtor_1615a0_0311e0@MallocCtor_1615a0@@QAEXXZ	1.2121	1.2
 engine_discovered	?MallocCtor_16b510_16a410@MallocCtor_16b510@@QAEXXZ	2.0408	2.0408	1	05aec7345dd6	0x16a410
 engine_discovered	?MallocCtor_16b510_16a510@MallocCtor_16b510@@QAEXXZ	0.8163	0.8163	1	d9de152b2e2a	0x16a510
 engine_discovered	?MallocCtor_16b510_16b720@MallocCtor_16b510@@QAEXXZ	0.4167	0.4167	1	5f0a1ffbd4dc	0x16b720
-engine_discovered	?MallocCtor_16bfa0_16ab20@MallocCtor_16bfa0@@QAEXXZ	1.3793	1.3793	1	7168099d6301	0x16ab20
-engine_discovered	?MallocCtor_16bfa0_16bd10@MallocCtor_16bfa0@@QAEXXZ	2.0000	2.0000	1	40a163f42420	0x16bd10
-engine_discovered	?MallocCtor_16bfa0_16bd90@MallocCtor_16bfa0@@QAEXXZ	1.4493	1.4493	1	1c5e3db5ddfc	0x16bd90
-engine_discovered	?MallocCtor_16bfa0_192060@MallocCtor_16bfa0@@QAEXXZ	0.6154	0.6154	1	87dcf038907b	0x192060
 engine_discovered	?MinervaInner_1366f0@MinervaInner@@QAEXXZ	0.3361	0.3361	1	2a21de0ffbb9	0x1366f0
 engine_discovered	?MinervaInner_136910@MinervaInner@@QAEXXZ	0.3704	0.3704	1	436780529d10	0x136910
 engine_discovered	?NetUnattributed_11f618@NetUnattributed@@QAEXXZ	10.0000	10.0000	1	bfe6623a9a24	0x11f618
