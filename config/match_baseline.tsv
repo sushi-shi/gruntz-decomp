@@ -42,7 +42,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	563	0
+engine_discovered	556	0
 engine_label_stubs	526	121
 filestream	13	9
 font	21	10
@@ -94,6 +94,7 @@ rollingball	1	0
 savegame	18	13
 sbi_rectonly	59	23
 sbi_rectonly_eh	2	1
+shadetablecache	7	3
 sounddevice	6	4
 soundstream	5	2
 spriteloaders	9	4
@@ -740,15 +741,8 @@ engine_discovered	?ClassUnknown_27_13a310@ClassUnknown_27@@QAEXXZ	5.0000	5.0000	
 engine_discovered	?ClassUnknown_28_01f940@ClassUnknown_28@@QAEXXZ	1.3333	1.3333	1	b91ea722bf78	0x1f940
 engine_discovered	?ClassUnknown_28_158760@ClassUnknown_28@@QAEXXZ	1.0811	1.0811	1	f275e2596af6	0x158760
 engine_discovered	?ClassUnknown_29_137110@ClassUnknown_29@@QAEXXZ	1.7544	1.7544	1	00b82a2022cd	0x137110
-engine_discovered	?ClassUnknown_2_14de30@ClassUnknown_2@@QAEXXZ	11.1111	11.1111	1	95a7e9a9a3e7	0x14de30
-engine_discovered	?ClassUnknown_2_14de50@ClassUnknown_2@@QAEXXZ	3.3333	3.3333	1	9b127bf5e7d7	0x14de50
-engine_discovered	?ClassUnknown_2_14dec0@ClassUnknown_2@@QAEXXZ	33.3333	33.3333	1	3077a3534943	0x14dec0
-engine_discovered	?ClassUnknown_2_14ded0@ClassUnknown_2@@QAEXXZ	2.7027	2.7027	1	b686aee66e91	0x14ded0
-engine_discovered	?ClassUnknown_2_14eef0@ClassUnknown_2@@QAEXXZ	0.7576	0.7576	1	1b5308009b11	0x14eef0
 engine_discovered	?ClassUnknown_2_14f080@ClassUnknown_2@@QAEXXZ	0.2198	0.2198	1	2281c0263940	0x14f080
 engine_discovered	?ClassUnknown_2_14f310@ClassUnknown_2@@QAEXXZ	0.1932	0.1932	1	f0e4c9b0b6a8	0x14f310
-engine_discovered	?ClassUnknown_2_14f5b0@ClassUnknown_2@@QAEXXZ	0.4598	0.4598	1	ce92ab292cf8	0x14f5b0
-engine_discovered	?ClassUnknown_2_14fb80@ClassUnknown_2@@QAEXXZ	0.8889	0.8889	1	ec4e341be174	0x14fb80
 engine_discovered	?ClassUnknown_30_136f60@ClassUnknown_30@@QAEXXZ	0.8000	0.8000	1	7d0ef83fb39a	0x136f60
 engine_discovered	?ClassUnknown_30_1390e0@ClassUnknown_30@@QAEXXZ	3.0769	3.0769	1	e925d487d922	0x1390e0
 engine_discovered	?ClassUnknown_30_139110@ClassUnknown_30@@QAEXXZ	3.0769	3.0769	1	debf9e37937d	0x139110
@@ -2105,6 +2099,13 @@ sbi_rectonly	?UpdateStatusBarTabHighlight@CSBI_RectOnly@@QAEXHHH@Z	0.1099	0.1099
 sbi_rectonly	?winapi_107d00_SetRect@CSBI_RectOnly@@QAEHXZ	0.5155	0.5155	2	010307708fab	0x107d00
 sbi_rectonly_eh	??1CSBI_RectOnly@@QAE@XZ	43.0345	43.0345	1	f1bda9a27e1c	0x102000
 sbi_rectonly_eh	?EnsureSub@CSBI_RectOnly@@QAEHHHH@Z	100.0000	100.0000	2	de84c5225915	0x109ad0
+shadetablecache	??0CShadeTableCache@@QAE@XZ	100.0000	100.0000	1	8d165746ed6f	0x14de30
+shadetablecache	??1CShadeTableCache@@QAE@XZ	80.1333	80.1333	1	bae0631568f4	0x14de50
+shadetablecache	?AlphaTable@CShadeTableCache@@QAEPAUCShadeTable@@PAE@Z	66.4253	66.4253	1	9f2dac9e0624	0x14f5b0
+shadetablecache	?FindRemove@CShadeTableCache@@QAEXPAUCShadeTable@@@Z	91.5556	91.5556	1	2db457cacaf4	0x14fb80
+shadetablecache	?FreeNodes@CShadeTableCache@@QAEXXZ	100.0000	100.0000	1	200336a988e4	0x14ded0
+shadetablecache	?GreyTable@CShadeTableCache@@QAEPAUCShadeTable@@XZ	71.7576	71.7576	1	8913c1779ab3	0x14eef0
+shadetablecache	?Init@CShadeTableCache@@QAEHXZ	100.0000	100.0000	1	9851d1a61203	0x14dec0
 sounddevice	??1SoundDevice@@QAE@XZ	28.2353	28.2353	1	980bcd8696e1	0x136500
 sounddevice	?FreeSamples@SoundDevice@@QAEHXZ	77.4074	77.4074	2	252e2641aed3	0x136ed0
 sounddevice	?RemoveBuffer@SoundDevice@@QAEXPAUSoundBuf@@@Z	100.0000	100.0000	1	adf3276a17a2	0x136d80

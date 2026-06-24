@@ -580,15 +580,8 @@ public:
 };
 class ClassUnknown_2 {
 public:
-    void ClassUnknown_2_14de30();
-    void ClassUnknown_2_14de50();
-    void ClassUnknown_2_14dec0();
-    void ClassUnknown_2_14ded0();
-    void ClassUnknown_2_14eef0();
     void ClassUnknown_2_14f080();
     void ClassUnknown_2_14f310();
-    void ClassUnknown_2_14f5b0();
-    void ClassUnknown_2_14fb80();
 };
 class ClassUnknown_20 {
 public:

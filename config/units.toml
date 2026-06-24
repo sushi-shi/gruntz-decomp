@@ -594,3 +594,8 @@ flags = "eh"
 unit = "pyramidbridgesprites"
 source = "src/Gruntz/PyramidBridgeSprites.cpp"
 flags = "eh"
+
+[[unit]]
+unit = "shadetablecache"
+source = "src/DDrawMgr/ShadeTableCache.cpp"
+flags = "eh"

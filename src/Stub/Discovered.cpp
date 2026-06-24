@@ -807,25 +807,17 @@ void ClassUnknown_18::ClassUnknown_18_16f7f0() {}
 RVA(0x0016fc70, 0x48e)
 void ClassUnknown_19::ClassUnknown_19_16fc70() {}
 
-// ---- ClassUnknown_2 ----
-RVA(0x0014de30, 0x1a)
-void ClassUnknown_2::ClassUnknown_2_14de30() {}
-RVA(0x0014de50, 0x6b)
-void ClassUnknown_2::ClassUnknown_2_14de50() {}
-RVA(0x0014dec0, 0xc)
-void ClassUnknown_2::ClassUnknown_2_14dec0() {}
-RVA(0x0014ded0, 0x64)
-void ClassUnknown_2::ClassUnknown_2_14ded0() {}
-RVA(0x0014eef0, 0x183)
-void ClassUnknown_2::ClassUnknown_2_14eef0() {}
+// ---- ClassUnknown_2 ---- reconstructed as the DDrawMgr color/shade lookup-
+// table cache CShadeTableCache in src/DDrawMgr/ShadeTableCache.cpp (a CGruntzMgr
+// member). The ctor/dtor/Init/FreeNodes/FindRemove + two integer-loop builders
+// (GreyTable 0x14eef0, AlphaTable 0x14f5b0) are reconstructed there. The two
+// remaining builders below are large float-curve generators (__ftol + nested
+// fcom/fnstsw-clamped loops on a /GX EH frame this recompile can't emit -
+// rezalloc-placement-new-no-eh-frame.md); deferred to the final sweep.
 RVA(0x0014f080, 0x283)
 void ClassUnknown_2::ClassUnknown_2_14f080() {}
 RVA(0x0014f310, 0x297)
 void ClassUnknown_2::ClassUnknown_2_14f310() {}
-RVA(0x0014f5b0, 0x10a)
-void ClassUnknown_2::ClassUnknown_2_14f5b0() {}
-RVA(0x0014fb80, 0x68)
-void ClassUnknown_2::ClassUnknown_2_14fb80() {}
 
 // ---- ClassUnknown_20 ----
 RVA(0x0016df70, 0x22)
