@@ -1,8 +1,8 @@
-// Grunt.h - the engine's CGrunt (the player/enemy grunt entity), the HUD
-// sprite-creator cluster only. Field names are placeholders (m_<hexoffset>);
-// ONLY the OFFSETS + code bytes are load-bearing (campaign doctrine). CGrunt is
-// huge; this header models ONLY the member offsets the 7 HUD sprite creators
-// touch + the small external classes they call into.
+// Grunt.h - the engine's CGrunt (the player/enemy grunt entity). Members with a
+// recovered role carry semantic names; offsets whose role isn't yet provable keep
+// the m_<hexoffset> placeholder. ONLY the OFFSETS + code bytes are load-bearing
+// (names are codegen-neutral at /O2). CGrunt is huge; this header models the
+// member offsets the matched methods touch + the small external classes they call.
 //
 // The 7 creators (CGrunt::Create*Sprite) all share one
 // shape: bail if the target sprite slot is already populated (some also gate on
@@ -129,7 +129,7 @@ CString __stdcall operator+(const CString& lhs, const char* rhs);
 // member @+0x38). The resolver feeds it the resolved animation in two steps:
 //   * SetGeometry(srcSprite) on the sub-player @+0x1a0 (engine,
 //     __thiscall ret 4) - also exposes m_1b4 (the active anim descriptor; the
-//     resolver caches m_1b4 into CGrunt::m_40 before the call, and Idle reads
+//     resolver caches m_1b4 into CGrunt::m_activeAnimDesc before the call, and Idle reads
 //     m_1b4->{m_c,m_10} to derive a 2nd lookup arg);
 //   * SetAnim(key) (engine, __thiscall ret 4)  - 1-arg form, OR
 //     SetAnimEx(key, frame) (engine __thiscall ret 8) - 2-arg form
@@ -181,7 +181,7 @@ public:
 // The global animation lookup tree instance.
 extern CAnimLookupTree g_animLookupTree;
 
-// A per-grunt time/seed default the Moving resolver copies into m_88.
+// A per-grunt time/seed default the Moving resolver copies into m_moveSeed.
 extern i32 g_movingSeed;
 
 // The engine LCG rand() (no args) the Moving/Idle/Battlecry resolvers
@@ -304,7 +304,7 @@ public:
 };
 extern CAnimNameResolver g_animNameResolver; // DAT_006bf650
 
-// The "focused grunt" sentinel the on-screen flag compares m_1ec against
+// The "focused grunt" sentinel the on-screen flag compares m_tileOwnerHi against
 // (DAT_00644c54, reloc-masked).
 extern i32 g_focusedGruntSentinel; // DAT_00644c54
 
@@ -326,7 +326,7 @@ public:
 };
 
 // The registry focused-grunt slot the arrival gate reads: an array at
-// g_pGameRegistry+0x150, stride 0x238 (= 71*8) indexed by the grunt's m_1ec.
+// g_pGameRegistry+0x150, stride 0x238 (= 71*8) indexed by the grunt's m_tileOwnerHi.
 // Each slot's +0x14 is a non-null gate the arrival path checks. External view.
 struct CFocusSlot {
     char m_pad0[0x14];
@@ -439,12 +439,12 @@ extern i32 g_freePoolBase;    // DAT_0064554c (raw subtrahend)
 //   +0x1cc  m_toyTimeSprite    (CreateToyTimeSprite; WingzTime clears it)
 //   +0x1d0  m_wingzTimeSprite  (CreateWingzTimeSprite; ToyTime clears it)
 //   +0x1d4  m_powerupSprite    (CreatePowerupSprite)
-//   +0x1ec  m_1ec / +0x1f0 m_1f0  (Add* args)
-//   +0x238  m_238     (WingzTime gate)
-//   +0x3ec  m_3ec     (Health stat / Add arg)
-//   +0x3f0  m_3f0     (Stamina stat / gate / Add arg)
-//   +0x3f4  m_3f4     (ToyTime gate / Add arg)
-//   +0x3f8  m_3f8     (WingzTime gate / Add arg)
+//   +0x1ec  m_tileOwnerHi / +0x1f0 m_tileOwnerLo  (Add* args)
+//   +0x238  m_wingzEnabled     (WingzTime gate)
+//   +0x3ec  m_health     (Health stat / Add arg)
+//   +0x3f0  m_stamina     (Stamina stat / gate / Add arg)
+//   +0x3f4  m_toyTime     (ToyTime gate / Add arg)
+//   +0x3f8  m_wingzTime     (WingzTime gate / Add arg)
 // ---------------------------------------------------------------------------
 class CGrunt {
 public:
@@ -478,132 +478,135 @@ public:
     CGruntHud* m_10;       // +0x10
     CAnimLookupNode* m_14; // +0x14  (anim-set lookup holder)
     char m_pad18[0x30 - 0x18];
-    i32 m_30; // +0x30
+    i32 m_prevAnimSetNode; // +0x30  (saved old m_14->m_1c before re-latch)
     char m_pad34[0x38 - 0x34];
     CGruntAnimState* m_38; // +0x38  (animation player)
     char m_pad3c[0x40 - 0x3c];
-    i32 m_40; // +0x40  (cached m_38->m_1b4)
+    i32 m_activeAnimDesc; // +0x40  (cached m_38->m_1b4)
     char m_pad44[0x54 - 0x44];
-    CString m_typeName;          // +0x54  (grunt-type name CString)
-    i32 m_58[(0x68 - 0x58) / 4]; // +0x58  (Idle geometry sources)
-    i32 m_68[(0x74 - 0x68) / 4]; // +0x68  (Battlecry geometry sources)
-    i32 m_74;                    // +0x74  (generic geometry source)
-    i32 m_78;                    // +0x78  (death geometry source)
-    i32 m_7c;                    // +0x7c  (moving geometry source)
+    CString m_typeName;                       // +0x54  (grunt-type name CString)
+    i32 m_idleGeoSrc[(0x68 - 0x58) / 4];      // +0x58  (Idle geometry sources)
+    i32 m_battlecryGeoSrc[(0x74 - 0x68) / 4]; // +0x68  (Battlecry geometry sources)
+    i32 m_joyGeoSrc;                          // +0x74  (generic/_JOY geometry source)
+    i32 m_deathGeoSrc;                        // +0x78  (death geometry source)
+    i32 m_movingGeoSrc;                       // +0x7c  (moving geometry source)
     char m_pad80[0x88 - 0x80];
-    i32 m_88; // +0x88  (moving: = g_movingSeed)
-    i32 m_8c; // +0x8c  (moving: = 0)
-    i32 m_90; // +0x90  (moving: randomized time)
-    i32 m_94; // +0x94  (moving: = 0)
+    i32 m_moveSeed;      // +0x88  (moving: = g_movingSeed)
+    i32 m_moveTimeHi;    // +0x8c  (moving: = 0)
+    i32 m_moveStartTime; // +0x90  (moving: randomized time)
+    i32 m_moveSeedHi;    // +0x94  (moving: = 0)
     char m_pad98[0xa8 - 0x98];
-    i32 m_a8; // +0xa8  (resolve gate / dirty flag)
-    i32 m_ac; // +0xac  (cue arg)
+    i32 m_animResolved; // +0xa8  (resolve gate / dirty flag)
+    i32 m_deathCueArg;  // +0xac  (cue arg)
     char m_padb0[0x154 - 0xb0];
     CEntranceAnimPlayer* m_154; // +0x154 (entrance animation player)
     char m_pad158[0x15c - 0x158];
-    i32 m_15c; // +0x15c (= m_154->m_1b4 cache)
+    i32 m_prevEntranceDesc; // +0x15c (= m_154->m_1b4 cache)
     char m_pad160[0x170 - 0x160];
-    i32 m_170; // +0x170 (entrance-reason / movement state)
-    char m_pad174[0x17c - 0x174];
-    i32 m_17c; // +0x17c (LoadEntranceConfig: last occupied tile X, pixel; -1 = none)
-    i32 m_180; // +0x180 (LoadEntranceConfig: last occupied tile Y, pixel; -1 = none)
+    i32 m_entranceReason; // +0x170 (entrance-reason / movement state)
+    i32 m_entrancePxX;    // +0x174 (SetEntrancePos: committed entrance position X, pixel)
+    i32 m_entrancePxY;    // +0x178 (SetEntrancePos: committed entrance position Y, pixel)
+    i32 m_lastTilePxX;    // +0x17c (LoadEntranceConfig: last occupied tile X, pixel; -1 = none)
+    i32 m_lastTilePxY;    // +0x180 (LoadEntranceConfig: last occupied tile Y, pixel; -1 = none)
     char m_pad184[0x190 - 0x184];
-    i32 m_190; // +0x190 (anim-name loader: TOY1/TOY2 blend percent)
+    i32 m_toyBlendPct; // +0x190 (anim-name loader: TOY1/TOY2 blend percent)
     char m_pad194[0x1b8 - 0x194];
     CHudSprite* m_selectedSprite;  // +0x1b8
     CHudSprite* m_toySprite;       // +0x1bc
-    CString m_animSetName;         // +0x1c0  (anim-name loader: "GRUNTZ_"+m_1c0+...)
+    CString m_animSetName;         // +0x1c0  (anim-name loader: "GRUNTZ_"+m_animSetName+...)
     CHudSprite* m_healthSprite;    // +0x1c4
     CHudSprite* m_staminaSprite;   // +0x1c8
     CHudSprite* m_toyTimeSprite;   // +0x1cc
     CHudSprite* m_wingzTimeSprite; // +0x1d0
     CHudSprite* m_powerupSprite;   // +0x1d4
-    i32 m_1d8;                     // +0x1d8 (entrance-arrival gate)
+    i32 m_arrived;                 // +0x1d8 (entrance-arrival gate)
     char m_pad1dc[0x1e4 - 0x1dc];
-    i32 m_1e4; // +0x1e4 (entrance: set to 1)
+    i32 m_entranceActive; // +0x1e4 (entrance: set to 1)
     char m_pad1e8[0x1ec - 0x1e8];
-    i32 m_1ec; // +0x1ec
-    i32 m_1f0; // +0x1f0
+    i32 m_tileOwnerHi; // +0x1ec
+    i32 m_tileOwnerLo; // +0x1f0
     char m_pad1f4[0x1fc - 0x1f4];
-    i32 m_1fc; // +0x1fc (entrance: cleared)
-    i32 m_200; // +0x200 (grid-neighbor: column, -1 = none)
-    i32 m_204; // +0x204 (grid-neighbor: row, -1 = none)
+    i32 m_entranceCommitted; // +0x1fc (entrance: cleared)
+    i32 m_neighborCol;       // +0x200 (grid-neighbor: column, -1 = none)
+    i32 m_neighborRow;       // +0x204 (grid-neighbor: row, -1 = none)
     char m_pad208[0x21c - 0x208];
-    i32 m_21c; // +0x21c (grid-neighbor: cleared on miss)
-    i32 m_220; // +0x220 (powered-up gate; 0 = run entrance reset)
+    i32 m_neighborValid; // +0x21c (grid-neighbor: cleared on miss)
+    i32 m_poweredUp;     // +0x220 (powered-up gate; 0 = run entrance reset)
     char m_pad224[0x230 - 0x224];
     i32 m_230; // +0x230 (entrance-arrival: cleared)
     char m_pad234[0x238 - 0x234];
-    i32 m_238; // +0x238
+    i32 m_wingzEnabled; // +0x238
     char m_pad23c[0x244 - 0x23c];
-    i32 m_244; // +0x244 (entrance-reset: 0 then 1 = "applied" flag)
-    i32 m_248; // +0x248 (arrival flag word; |= 0x18040402)
-    char m_pad24c[0x25c - 0x24c];
-    i32 m_25c;            // +0x25c (entrance: set to 1)
-    CGruntTileMgr* m_260; // +0x260 (path/occupancy sub-manager)
+    i32 m_resetApplied; // +0x244 (entrance-reset: 0 then 1 = "applied" flag)
+    i32 m_arrivalFlags; // +0x248 (arrival flag word; |= 0x18040402)
+    char m_pad24c[0x258 - 0x24c];
+    i32 m_gruntKind;          // +0x258 (grunt type/kind; ==0x37 -> halve TimePerTile)
+    i32 m_entranceArmed;      // +0x25c (entrance: set to 1)
+    CGruntTileMgr* m_tileMgr; // +0x260 (path/occupancy sub-manager)
     char m_pad264[0x2d0 - 0x264];
-    i32 m_2d0; // +0x2d0 (arrival: = 4)
-    i32 m_2d4; // +0x2d4 (arrival: = 0)
+    i32 m_arrivalState; // +0x2d0 (arrival: = 4)
+    i32 m_2d4;          // +0x2d4 (arrival: = 0)
     char m_pad2d8[0x2dc - 0x2d8];
-    i32 m_2dc; // +0x2dc (defender radius / arrival kind)
+    i32 m_defenderRadius; // +0x2dc (defender radius / arrival kind)
     char m_pad2e0[0x2f0 - 0x2e0];
     i32 m_2f0; // +0x2f0 (arrival: = -1)
     i32 m_2f4; // +0x2f4 (arrival: = -1)
     char m_pad2f8[0x300 - 0x2f8];
-    i32 m_300; // +0x300 (arrival: = m_17c)
-    i32 m_304; // +0x304 (arrival: = m_180)
-    i32 m_308; // +0x308 (arrival: cleared)
-    i32 m_30c; // +0x30c (arrival: cleared)
-    i32 m_310; // +0x310 (arrival: cleared)
-    i32 m_314; // +0x314 (arrival: cleared)
+    i32 m_defenderX; // +0x300 (arrival: = m_lastTilePxX)
+    i32 m_defenderY; // +0x304 (arrival: = m_lastTilePxY)
+    i32 m_308;       // +0x308 (arrival: cleared)
+    i32 m_30c;       // +0x30c (arrival: cleared)
+    i32 m_310;       // +0x310 (arrival: cleared)
+    i32 m_314;       // +0x314 (arrival: cleared)
     char m_pad318[0x364 - 0x318];
     i32 m_364; // +0x364 (entrance: set to 1)
     char m_pad368[0x394 - 0x368];
     // The per-pose animation-name index table (LoadAnimNameTable @0x49c60 fills
     // it from "GRUNTZ_"+m_animSetName+"_<POSE>" lookups). The entrance code reads
-    // the IDLE1/2/3 slots (m_3ac/m_3b0/m_3b4) as its geometry-source triple.
-    i32 m_394;    // +0x394 (_WALK)
-    i32 m_398;    // +0x398 (_ATTACK1)
-    i32 m_39c;    // +0x39c (_ATTACK2)
-    i32 m_3a0;    // +0x3a0 (_ATTACK-IDLE)
-    i32 m_3a4;    // +0x3a4 (_STRUCK1)
-    i32 m_3a8;    // +0x3a8 (_STRUCK2)
-    i32 m_3ac[3]; // +0x3ac (_IDLE1/2/3) (entrance geometry-source triple [0..2])
-    i32 m_3b8;    // +0x3b8 (_IDLE4)
-    i32 m_3bc;    // +0x3bc (_IDLE5)
-    i32 m_3c0;    // +0x3c0 (_DEATH)
-    i32 m_3c4;    // +0x3c4 (_TOY1)
-    i32 m_3c8;    // +0x3c8 (_TOY2)
-    i32 m_3cc;    // +0x3cc (_TOY-BREAK)
-    i32 m_3d0;    // +0x3d0 (_ITEM)
-    i32 m_3d4;    // +0x3d4 (_ITEM2)
+    // the IDLE1/2/3 slots (m_poseIdle/m_3b0/m_3b4) as its geometry-source triple.
+    i32 m_poseWalk;       // +0x394 (_WALK)
+    i32 m_poseAttack1;    // +0x398 (_ATTACK1)
+    i32 m_poseAttack2;    // +0x39c (_ATTACK2)
+    i32 m_poseAttackIdle; // +0x3a0 (_ATTACK-IDLE)
+    i32 m_poseStruck1;    // +0x3a4 (_STRUCK1)
+    i32 m_poseStruck2;    // +0x3a8 (_STRUCK2)
+    i32 m_poseIdle[3];    // +0x3ac (_IDLE1/2/3) (entrance geometry-source triple [0..2])
+    i32 m_poseIdle4;      // +0x3b8 (_IDLE4)
+    i32 m_poseIdle5;      // +0x3bc (_IDLE5)
+    i32 m_poseDeath;      // +0x3c0 (_DEATH)
+    i32 m_poseToy1;       // +0x3c4 (_TOY1)
+    i32 m_poseToy2;       // +0x3c8 (_TOY2)
+    i32 m_poseToyBreak;   // +0x3cc (_TOY-BREAK)
+    i32 m_poseItem;       // +0x3d0 (_ITEM)
+    i32 m_poseItem2;      // +0x3d4 (_ITEM2)
     char m_pad3d8[0x3ec - 0x3d8];
-    i32 m_3ec; // +0x3ec
-    i32 m_3f0; // +0x3f0
-    i32 m_3f4; // +0x3f4
-    i32 m_3f8; // +0x3f8
-    char m_pad3fc[0x420 - 0x3fc];
-    i32 m_420; // +0x420 (arrival-claimed latch)
+    i32 m_health;    // +0x3ec
+    i32 m_stamina;   // +0x3f0
+    i32 m_toyTime;   // +0x3f4
+    i32 m_wingzTime; // +0x3f8
+    char m_pad3fc[0x41c - 0x3fc];
+    i32 m_timePerTile; // +0x41c (TimePerTile config; ComputeFacing time divisor; halved for kind 0x37)
+    i32 m_tileClaimed; // +0x420 (arrival-claimed latch)
     char m_pad424[0x43c - 0x424];
-    i32 m_43c[3]; // +0x43c (entrance-cell triple: [0]=col, [1]=row, [2]=m_444 reason)
+    i32 m_entranceCell[3]; // +0x43c (entrance-cell triple: [0]=col, [1]=row, [2]=m_444 reason)
     char m_pad448[0x460 - 0x448];
-    i32 m_460; // +0x460 (low-stamina off-screen cue latch)
-    i32 m_464; // +0x464 (entrance-reset latch flag)
+    i32 m_lowStaminaCued;  // +0x460 (low-stamina off-screen cue latch)
+    i32 m_arrivalNotified; // +0x464 (entrance-reset latch flag)
     char m_pad468[0x474 - 0x468];
     char m_474[1]; // +0x474 (entrance-cell record table; 0x68-byte stride records)
     char m_pad475[0x820 - 0x475];
-    i32 m_820; // +0x820 (idle-timer: low)
-    i32 m_824; // +0x824 (idle-timer: high)
-    i32 m_828; // +0x828 (idle-timer: delay low)
-    i32 m_82c; // +0x82c (idle-timer: delay high)
-    i32 m_830; // +0x830 (idle-anchor: low)
-    i32 m_834; // +0x834 (idle-anchor: high)
-    i32 m_838; // +0x838 (idle-window: low = 0x3a98)
-    i32 m_83c; // +0x83c (idle-window: high = 0)
-    i32 m_840; // +0x840 (entrance: = g_645588 game clock, low dword)
-    i32 m_844; // +0x844 (entrance: = 0, high dword)
-    i32 m_848; // +0x848 (entrance: = EntranceSafeTime config)
-    i32 m_84c; // +0x84c (entrance: = 0)
+    i32 m_idleAnchorLo;       // +0x820 (idle-timer: low)
+    i32 m_idleAnchorHi;       // +0x824 (idle-timer: high)
+    i32 m_idleDelayLo;        // +0x828 (idle-timer: delay low)
+    i32 m_idleDelayHi;        // +0x82c (idle-timer: delay high)
+    i32 m_idleTimerLo;        // +0x830 (idle-anchor: low)
+    i32 m_idleTimerHi;        // +0x834 (idle-anchor: high)
+    i32 m_idleWindowLo;       // +0x838 (idle-window: low = 0x3a98)
+    i32 m_idleWindowHi;       // +0x83c (idle-window: high = 0)
+    i32 m_entranceClockLo;    // +0x840 (entrance: = g_645588 game clock, low dword)
+    i32 m_entranceClockHi;    // +0x844 (entrance: = 0, high dword)
+    i32 m_entranceSafeTimeLo; // +0x848 (entrance: = EntranceSafeTime config)
+    i32 m_entranceSafeTimeHi; // +0x84c (entrance: = 0)
     char m_pad850[0x858 - 0x850];
     i32 m_858; // +0x858 (entrance: = 0)
     i32 m_85c; // +0x85c (entrance: = 0)
