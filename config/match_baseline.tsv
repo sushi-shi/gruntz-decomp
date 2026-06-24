@@ -45,7 +45,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	476	0
+engine_discovered	472	0
 engine_label_stubs	525	121
 filestream	13	9
 font	21	10
@@ -109,6 +109,7 @@ spriteresource	4	1
 statusbaritem	2	1
 statusbarupdaters	7	0
 streamfeeder	9	7
+symtab	4	1
 terraintileloader	1	0
 tileactionevent	5	3
 tilegridcommand	5	2
@@ -690,10 +691,6 @@ engine_discovered	?ClassUnknown_126_11cf30@ClassUnknown_126@@QAEXXZ	50.0000	50.0
 engine_discovered	?ClassUnknown_127_11cee3@ClassUnknown_127@@QAEXXZ	50.0000	50.0000	1	3ec5e65654c9	0x11cee3
 engine_discovered	?ClassUnknown_128_174d70@ClassUnknown_128@@QAEXXZ	3.2258	3.2258	1	e15f9fbb040e	0x174d70
 engine_discovered	?ClassUnknown_129_016460@ClassUnknown_129@@QAEXXZ	5.5556	5.5556	1	82492c27a489	0x16460
-engine_discovered	?ClassUnknown_12_139ee0@ClassUnknown_12@@QAEXXZ	1.0204	1.0204	1	6b73438e325d	0x139ee0
-engine_discovered	?ClassUnknown_12_13a230@ClassUnknown_12@@QAEXXZ	2.2222	2.2222	1	72dea9115620	0x13a230
-engine_discovered	?ClassUnknown_12_13bae0@ClassUnknown_12@@QAEXXZ	0.2073	0.2073	1	56ecf1ac3259	0x13bae0
-engine_discovered	?ClassUnknown_12_13be40@ClassUnknown_12@@QAEXXZ	0.2312	0.2312	1	48698ce085b0	0x13be40
 engine_discovered	?ClassUnknown_13_13c240@ClassUnknown_13@@QAEXXZ	2.0000	2.0000	1	499a32a1cad8	0x13c240
 engine_discovered	?ClassUnknown_13_13c270@ClassUnknown_13@@QAEXXZ	0.4255	0.4255	1	719d2fd8eff4	0x13c270
 engine_discovered	?ClassUnknown_13_13c350@ClassUnknown_13@@QAEXXZ	8.0000	8.0000	1	2fd5402626e2	0x13c350
@@ -2145,8 +2142,12 @@ streamfeeder	?FillBuffer@StreamFeeder@@QAEHII@Z	88.5679	88.5679	1	de778cdecdb0	0
 streamfeeder	?Pause@StreamFeeder@@QAEHXZ	100.0000	100.0000	2	52812e99cdff	0x137f00
 streamfeeder	?Resume@StreamFeeder@@QAEHXZ	100.0000	100.0000	2	c47c07137340	0x137ed0
 streamfeeder	?SeedWindow@StreamFeeder@@QAEHPAXII@Z	100.0000	100.0000	1	edea263e685a	0x137340
+symtab	??1CSymTab@@QAE@XZ	88.7245	88.7245	1	3d0073f2a05b	0x139ee0
+symtab	?FindSub@CSymTab@@QAEPAXPBD@Z	100.0000	100.0000	1	a80b960c2c89	0x13a230
+symtab	?ResolvePath@CSymTab@@QAEPAXPBD@Z	32.7876	32.7876	1	5d3e7d2e472f	0x13bae0
+symtab	?ResolveQualified@CSymTab@@QAEHPBDPAX@Z	52.0462	52.0462	1	dd4dfb34a72f	0x13be40
 terraintileloader	?Load@CTerrainTileLoader@@QAGXHHHHHH@Z	1.1273	1.1273	1	0cea279b8baf	0x75e90
-tileactionevent	?Process@CTileActionEvent@@QAEHH@Z	61.6432	61.6432	1	00a58268f6be	0x112ee0
+tileactionevent	?Process@CTileActionEvent@@QAEHH@Z	61.6432	61.6432	2	4ebb9cc58043	0x112ee0
 tileactionevent	?ResetFlag@CTileActionEvent@@QAEPAV1@XZ	100.0000	100.0000	1	08bd2f762b58	0x112d80
 tileactionevent	?Serialize@CTileActionEvent@@QAEHPAXHHH@Z	100.0000	100.0000	1	4f4986735ddf	0x113f10
 tileactionevent	?SerializeFields@CTileActionEvent@@QAEHPAX@Z	100.0000	100.0000	1	287433ed653e	0x113f60

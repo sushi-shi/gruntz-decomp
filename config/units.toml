@@ -314,6 +314,11 @@ source = "src/Bute/ButeMgr.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "symtab"
+source = "src/Bute/SymTab.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "winapi"
 source = "src/Utils/WinAPI.cpp"
 flags = "eh"

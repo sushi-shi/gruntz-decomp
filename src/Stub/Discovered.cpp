@@ -650,15 +650,9 @@ void ClassUnknown_118::ClassUnknown_118_104a00() {}
 RVA(0x001591b0, 0x19)
 void ClassUnknown_119::ClassUnknown_119_1591b0() {}
 
-// ---- ClassUnknown_12 ----
-RVA(0x00139ee0, 0x11e)
-void ClassUnknown_12::ClassUnknown_12_139ee0() {}
-RVA(0x0013a230, 0x29)
-void ClassUnknown_12::ClassUnknown_12_13a230() {}
-RVA(0x0013bae0, 0x1b9)
-void ClassUnknown_12::ClassUnknown_12_13bae0() {}
-RVA(0x0013be40, 0x1ac)
-void ClassUnknown_12::ClassUnknown_12_13be40() {}
+// ---- ClassUnknown_12 -> CSymTab (Remus/ButeMgr symbol table) ----
+// All 4 methods reconstructed in src/Bute/SymTab.cpp; class identity recovered
+// from the `zSymTab:`/ButeMgr string family + the RemusParseSource neighbours.
 
 // ---- ClassUnknown_120 ----
 RVA(0x001852e0, 0x35)

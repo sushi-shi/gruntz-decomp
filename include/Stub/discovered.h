@@ -448,13 +448,6 @@ class ClassUnknown_119 {
 public:
     void ClassUnknown_119_1591b0();
 };
-class ClassUnknown_12 {
-public:
-    void ClassUnknown_12_139ee0();
-    void ClassUnknown_12_13a230();
-    void ClassUnknown_12_13bae0();
-    void ClassUnknown_12_13be40();
-};
 class ClassUnknown_120 {
 public:
     void ClassUnknown_120_1852e0();
