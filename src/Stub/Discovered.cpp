@@ -541,14 +541,9 @@ RVA(0x00104bb0, 0x94)
 void ClassUnknown_114::ClassUnknown_114_104bb0() {}
 
 // ---- ClassUnknown_115 ----
-RVA(0x000e8c70, 0xc)
-void ClassUnknown_115::ClassUnknown_115_0e8c70() {}
-RVA(0x000e8cb0, 0xc4)
-void ClassUnknown_115::ClassUnknown_115_0e8cb0() {}
-RVA(0x000e8dc0, 0x22)
-void ClassUnknown_115::ClassUnknown_115_0e8dc0() {}
-RVA(0x00104ce0, 0x55)
-void ClassUnknown_115::ClassUnknown_115_104ce0() {}
+// RECOVERED as CSBI_GruntMachine (RTTI .?AVCSBI_GruntMachine@@, vtable 0x5eadbc),
+// a CStatusBarItem leaf. Reconstructed in src/Gruntz/SBI_GruntMachine.cpp (slots 3/5
+// + the SetFrames helper) and src/Gruntz/SBI_GruntMachineEh.cpp (the /GX destructor).
 
 // ---- ClassUnknown_116 ---- (CONFLATED by the dynamic trace; SPLIT into two
 // real owners by caller/RTTI evidence)

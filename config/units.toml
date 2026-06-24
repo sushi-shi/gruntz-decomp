@@ -169,6 +169,16 @@ source = "src/Gruntz/SBI_StatzTabGruntBarEh.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "sbi_gruntmachine"
+source = "src/Gruntz/SBI_GruntMachine.cpp"
+flags = "base"
+
+[[unit]]
+unit = "sbi_gruntmachine_eh"
+source = "src/Gruntz/SBI_GruntMachineEh.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "tiletriggerlogic"
 source = "src/Gruntz/TileTriggerLogic.cpp"
 flags = "base"

@@ -54,7 +54,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	303	0
+engine_discovered	299	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -112,6 +112,8 @@ registryhelper	8	8
 rezmgr	10	6
 rollingball	1	0
 savegame	18	13
+sbi_gruntmachine	3	2
+sbi_gruntmachine_eh	1	0
 sbi_image	1	0
 sbi_image_eh	1	0
 sbi_imageset	1	0
@@ -733,10 +735,6 @@ engine_discovered	?ClassUnknown_112_021c40@ClassUnknown_112@@QAEXXZ	20.0000	20.0
 engine_discovered	?ClassUnknown_113_114480@ClassUnknown_113@@QAEXXZ	1.1905	1.1905	1	951875b2424e	0x114480
 engine_discovered	?ClassUnknown_114_0e6380@ClassUnknown_114@@QAEXXZ	1.0989	1.0989	1	094101133810	0xe6380
 engine_discovered	?ClassUnknown_114_104bb0@ClassUnknown_114@@QAEXXZ	2.7778	2.7778	1	1d9c5ebc12df	0x104bb0
-engine_discovered	?ClassUnknown_115_0e8c70@ClassUnknown_115@@QAEXXZ	20.0000	20.0000	1	baf440aab229	0xe8c70
-engine_discovered	?ClassUnknown_115_0e8cb0@ClassUnknown_115@@QAEXXZ	1.2821	1.2821	1	f52b098935e8	0xe8cb0
-engine_discovered	?ClassUnknown_115_0e8dc0@ClassUnknown_115@@QAEXXZ	4.0000	4.0000	1	c99b4672bdac	0xe8dc0
-engine_discovered	?ClassUnknown_115_104ce0@ClassUnknown_115@@QAEXXZ	4.7619	4.7619	1	367c61736429	0x104ce0
 engine_discovered	?ClassUnknown_116_1047f0@ClassUnknown_116@@QAEXXZ	3.0303	3.0303	1	7cd339e1a88c	0x1047f0
 engine_discovered	?ClassUnknown_116_1048f0@ClassUnknown_116@@QAEXXZ	2.7027	2.7027	1	01bdfccec81f	0x1048f0
 engine_discovered	?ClassUnknown_119_1591b0@ClassUnknown_119@@QAEXXZ	14.2857	14.2857	1	fb191ddfdab1	0x1591b0
@@ -1429,7 +1427,7 @@ engine_label_stubs	_StartupGate	0.0000	0.0000	1	cpp:2262ffc5f902	0x2f59
 engine_label_stubs	_SubstringMatch	2.8986	2.8986	1	cpp:2262ffc5f902	0x120090
 engine_label_stubs	_VersionScan	8.6957	8.6957	1	cpp:2262ffc5f902	0x120900
 engstr	??1CContainerErr@@QAE@XZ	100.0000	100.0000	1	437607bea3c5	0x16da60
-engstr	?EngStr_DrawText@@YAXPAUEngStrRenderObj@@HHHHHHHH@Z	94.2857	94.2857	1	3394d3b9fa01	0x115440
+engstr	?EngStr_DrawText@@YAXPAUEngStrRenderObj@@HHHHHHHH@Z	94.2857	94.2857	2	197473bbe23e	0x115440
 engstr	?SetSize@zBitVec@@QAEHH@Z	98.7234	98.7234	1	fcee90903128	0x16e100
 filemem	??0CFileMemBase@@QAE@XZ	100.0000	100.0000	1	04d2148fb703	0x157850
 filemem	??1CFileMem@@QAE@XZ	59.2593	59.2593	1	ec8015f95309	0x157980
@@ -1983,6 +1981,10 @@ savegame	?Save@CSaveGame@@QAEHHH@Z	41.5752	41.5752	2	8dc3f3720c50	0xe4ea0
 savegame	?SetField18@CSaveGame@@QAEXH@Z	96.3333	96.3333	2	805c5816acdb	0xe5620
 savegame	?SetField1c@CSaveGame@@QAEXH@Z	100.0000	100.0000	2	a0994b0515d6	0xe5660
 savegame	?Verify@CSaveGame@@QAEHXZ	100.0000	100.0000	2	99fbc66be447	0xe50f0
+sbi_gruntmachine	?Render@CSBI_GruntMachine@@QAEHH@Z	87.3590	87.3590	1	d8c0e8492784	0xe8cb0
+sbi_gruntmachine	?Reset@CSBI_GruntMachine@@QAEXXZ	100.0000	100.0000	1	539d6616e793	0xe8c70
+sbi_gruntmachine	?SetFrames@CSBI_GruntMachine@@QAEXHH@Z	100.0000	100.0000	1	90c8ff4c6d8d	0xe8dc0
+sbi_gruntmachine_eh	??1CSBI_GruntMachine@@QAE@XZ	34.2381	34.2381	1	00ec75e74a8e	0x104ce0
 sbi_image	?SetupImage@CSBI_Image@@QAEHHPAUCImageCfgHost@@HHHHHHHHH@Z	64.7500	64.7500	2	2facdd2dfb73	0xe6c80
 sbi_image_eh	??1CSBI_Image@@QAE@XZ	42.7200	42.7200	1	b3fa0dd28c09	0x100870
 sbi_imageset	?Serialize@CSBI_ImageSet@@QAEHPAUCImageSetStream@@HHH@Z	99.1803	99.1803	2	30e578b47581	0xe74f0
