@@ -40,29 +40,28 @@
 #include <string.h> // strcpy, memset
 
 // ===========================================================================
-// The CDDrawLevelData/Remus methods, merged in here as CGameLevel.
+// The CDDrawLevelData methods, merged in here as CGameLevel.
 //
 // CGameLevel is the same class the engine handles via the obfuscated name
 // CDDrawLevelData (its vtable slot 0x38 is CGameLevel::LoadWwd). The methods
-// below were reconstructed as CDDrawLevelData::* and are moved here VERBATIM
-// onto CGameLevel. Where a method touches a member that GameLevel.h's CGameLevel
-// does NOT already expose at the exact offset (the +0x10 coordinate record, the
-// +0x38/+0x4c child-pointer arrays and their +0x3c/+0x50 counts, +0x04, +0x0c,
-// the +0xb0..+0xdc default-parameter block, the +0xe0 WwdHeader buffer), the
-// access is written as a raw offset cast on `this` so codegen is byte-identical
-// regardless of GameLevel.h member naming.
+// below were reconstructed as CDDrawLevelData::* and are moved here onto
+// CGameLevel. Each touches the level's own members through their named fields
+// (m_planeCtx@+0x10, m_planes/m_imageSets, m_owner@+0x0c, m_04@+0x04, the
+// m_b0..m_dc default-extents block, m_header@+0xe0). The per-plane / edit-state /
+// visit-context objects they dispatch into are UNMATCHED engine classes, modeled
+// as typed window structs (PlaneGeom/LevelPlane/MainPlane/LevelScroll/VisitCtx/
+// EditSink) that view the same object at the offsets each method touches.
 //
-// The class carries a 4-int coordinate/extent record at +0x10 and a shared
-// "default parameters" block at +0xb0..+0xdc that several methods stamp with the
-// same constants (also written by the ctor):
+// The shared "default extents" block at +0xb0..+0xdc is stamped with the same
+// constants by the ctor and several edit methods (StampParamBlock):
 //     +0xb0 = 500  +0xb4 = 250  +0xb8 = 1000 +0xbc = 1000
 //     +0xc0 = 250  +0xc4 = 125  +0xc8 = 1600 +0xcc = 1200
 //     +0xd0 = 2560 +0xd4 = 1920 +0xd8 = 768  +0xdc = 576
 // ===========================================================================
 
-// (RemusCoords - the 4-int coord record at +0x10 - is defined in GameLevel.h.)
+// (LevelCoordRect - the 4-int coord record at +0x10 - is defined in GameLevel.h.)
 
-// The parse-source object VirtualMethodUnknown3C drives: BeginParse (FUN_00539960
+// The parse-source object LoadFromSource drives: BeginParse (FUN_00539960
 // @0x139960) opens/primes it and returns a handle; EndParse (FUN_005399d0
 // @0x1399d0) tears it down. Both are unmatched engine leaves taking the source as
 // `this`; declared with no body so the thiscall sites reloc-mask in objdiff.
@@ -117,7 +116,7 @@ struct PlaneGeom {
     void RecomputePlaneCoords();
 };
 
-// The two-phase vftables. The inlined RemusBase ctor (in GameLevel.h) stamps the
+// The two-phase vftables. The inlined CSeverusWorker ctor (in GameLevel.h) stamps the
 // base vftable; the derived CGameLevel ctor below stamps the derived one after the
 // three array members are constructed. Both stores are reloc-masked DIR32.
 DATA(0x001efc30)
@@ -125,9 +124,9 @@ extern void* g_severusWorkerBaseVtbl; // base (SeverusWorker) vftable
 DATA(0x001f0150)
 extern void* g_gameLevelVtbl; // derived CGameLevel vftable
 // The base-subobject vftable the destructor restores after the member dtors run
-// (RemusBase::~RemusBase's vptr store - a different table from the base CTOR's).
+// (CSeverusWorker::~CSeverusWorker's vptr store - a different table from the base CTOR's).
 DATA(0x001e8cb4)
-extern void* g_remusBaseDtorVtbl;
+extern void* g_severusWorkerDtorVtbl;
 
 // The three CImageSet variant vftables stamped by ReadImageSet (kind 1/2/3). Their
 // contents are UNMATCHED engine code, so the factory stamps the RETAIL tables by
@@ -140,11 +139,20 @@ extern void* g_imageSet2Vtbl; // kind 2 (0x24-byte variant)
 DATA(0x001f0228)
 extern void* g_imageSet3Vtbl; // kind 3 (0x18-byte variant)
 
+// The "unset" sentinel the ctor writes into the coord record's min corner; the
+// readiness predicate (IsLoaded) tests for it and Unload restores it.
+static const i32 LEVEL_COORD_UNSET = (i32)0x80000000;
+
+// LookupTile's empty-cell sentinels: 0xeeeeeeee is the uninitialized-heap fill
+// (no tile placed); -1 is the explicit "clear" marker.
+static const i32 TILE_UNINIT = (i32)0xeeeeeeee;
+static const i32 TILE_CLEAR = -1;
+
 static inline void StampLevelVtbl(CGameLevel* o) {
     *(void**)o = &g_gameLevelVtbl;
 }
-static inline void StampRemusBaseDtorVtbl(CGameLevel* o) {
-    *(void**)o = &g_remusBaseDtorVtbl;
+static inline void StampSeverusWorkerDtorVtbl(CGameLevel* o) {
+    *(void**)o = &g_severusWorkerDtorVtbl;
 }
 
 // Stamps the shared +0xb0..+0xdc "default parameters" block. Defined inline so it
@@ -166,7 +174,7 @@ static inline void StampParamBlock(CGameLevel* o) {
 
 // ===========================================================================
 // CGameLevel ("UnknownRemus") constructor. Three args (ret 0xc): they land at
-// +0x4, +0x8, +0xc. Inlined base ctor (RemusBase, in the header) stamps the
+// +0x4, +0x8, +0xc. Inlined base ctor (CSeverusWorker, in the header) stamps the
 // SeverusWorker base vftable @0x5efc30 and the args, then the three MFC arrays at
 // +0x20/+0x34/+0x48 are constructed, then the derived CGameLevel vftable @0x5f0150
 // is stamped and the +0x10 sentinel, the +0x5c/+0x60 main-plane fields, the
@@ -185,16 +193,16 @@ static inline void StampParamBlock(CGameLevel* o) {
 // the EH frame are exact; this is the documented store-scheduling / EH-state-base
 // entropy plateau (matching-patterns.md §entropy, .claude/agents/orchestrator.md §2a/§8).
 RVA(0x0015ccd0, 0x118)
-CGameLevel::CGameLevel(i32 a1, i32 a2, i32 a3) : RemusBase(a1, a2, a3) {
-    m_64 = 0x40;
-    m_68 = 0x40;
+CGameLevel::CGameLevel(i32 a1, i32 a2, i32 a3) : CSeverusWorker(a1, a2, a3) {
+    m_scrollStepX = 0x40;
+    m_scrollStepY = 0x40;
     m_b4 = 250;
     m_c0 = 250;
     m_b8 = 1000;
     m_bc = 1000;
 
     StampLevelVtbl(this);
-    m_planeCtx.m_0 = (i32)0x80000000;
+    m_planeCtx.minX = LEVEL_COORD_UNSET;
     m_mainPlane = 0;
     m_mainIndex = -1;
     m_checksum = 0;
@@ -367,11 +375,11 @@ fail:
 // ---------------------------------------------------------------------------
 // Remus adds a +0x10 sentinel check before the common parent/status predicate.
 RVA(0x00161190, 0x1f)
-i32 CGameLevel::VirtualMethodUnknown14() {
-    if (m_planeCtx.m_0 == (i32)0x80000000) {
+i32 CGameLevel::IsLoaded() {
+    if (m_planeCtx.minX == LEVEL_COORD_UNSET) {
         goto fail;
     }
-    if (m_0c == 0) {
+    if (m_owner == 0) {
         goto fail;
     }
     if (m_04 != -1) {
@@ -383,8 +391,8 @@ fail:
 }
 
 // ---------------------------------------------------------------------------
-// Zeroes the first two ints of the +0x10 record, stores (arg0-1)/(arg1-1) into
-// the last two, stamps the param block, returns 1.
+// SetCoordExtents: zeroes the min corner of the +0x10 record, stores (w-1, h-1)
+// as the max corner, stamps the default-extents block, returns 1.
 //
 // RESIDUE (~84%, NOT a logic/offset/type/CFG error): byte-for-byte identical to
 // the target EXCEPT the position of one instruction - the immediate store
@@ -399,11 +407,11 @@ fail:
 // ~75%); calling the param block before the +0x10 writes moves the whole block
 // ahead (wrong). Logic + offsets + CFG are exact, so this is left as the plateau.
 RVA(0x0015d030, 0x8f)
-i32 CGameLevel::VirtualMethodUnknown34(i32 arg0, i32 arg1) {
-    m_planeCtx.m_0 = 0;
-    m_planeCtx.m_4 = 0;
-    m_planeCtx.m_8 = arg0 - 1;
-    m_planeCtx.m_c = arg1 - 1;
+i32 CGameLevel::SetCoordExtents(i32 w, i32 h) {
+    m_planeCtx.minX = 0;
+    m_planeCtx.minY = 0;
+    m_planeCtx.maxX = w - 1;
+    m_planeCtx.maxY = h - 1;
     StampParamBlock(this);
     return 1;
 }
@@ -413,14 +421,14 @@ i32 CGameLevel::VirtualMethodUnknown34(i32 arg0, i32 arg1) {
 // -------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
-// VirtualMethodUnknown40 (vtable +0x40): open the named file, slurp it whole into
-// a heap buffer, and hand the buffer to the +0x38 load virtual (the same slot
-// LoadWwd dispatches). Returns 1 on success, 0 on any failure. The local CFileIO
-// + the heap buffer are both freed on every exit, which is why the TU carries the
-// /GX EH frame. NOTE: the file Read's byte count is DISCARDED (no compare to the
-// length) - only the +0x38 virtual's result decides success.
+// LoadFromFile (vtable +0x40): open the named file, slurp it whole into a heap
+// buffer, and hand the buffer to the +0x38 load virtual (the same slot LoadWwd
+// dispatches). Returns 1 on success, 0 on any failure. The local CFileIO + the
+// heap buffer are both freed on every exit, which is why the TU carries the /GX EH
+// frame. NOTE: the file Read's byte count is DISCARDED (no compare to the length)
+// - only the +0x38 virtual's result decides success.
 RVA(0x0015d500, 0x127)
-i32 CGameLevel::VirtualMethodUnknown40(const char* path) {
+i32 CGameLevel::LoadFromFile(const char* path) {
     CFileIO file;
 
     if (!file.Open(path, 0, 0)) {
@@ -442,13 +450,13 @@ i32 CGameLevel::VirtualMethodUnknown40(const char* path) {
 }
 
 // ---------------------------------------------------------------------------
-// VirtualMethodUnknown3C (vtable +0x3c): drive a parse/load through `arg`. Begin
-// it (BeginParse on arg); if that fails, return 0. Else feed its handle to the
-// +0x38 load virtual and finish the parse (EndParse on arg) regardless, returning
-// the +0x38 result (1/0). BeginParse/EndParse are unmatched engine leaves on the
-// arg object (reloc-masked thiscall).
+// LoadFromSource (vtable +0x3c): drive a parse/load through `arg`. Begin it
+// (BeginParse on arg); if that fails, return 0. Else feed its handle to the +0x38
+// load virtual and finish the parse (EndParse on arg) regardless, returning the
+// +0x38 result (1/0). BeginParse/EndParse are unmatched engine leaves on the arg
+// object (reloc-masked thiscall).
 RVA(0x0015d630, 0x41)
-i32 CGameLevel::VirtualMethodUnknown3C(RemusParseSource* arg) {
+i32 CGameLevel::LoadFromSource(RemusParseSource* arg) {
     i32 handle = arg->BeginParse();
     if (handle == 0) {
         return 0;
@@ -475,21 +483,22 @@ void* CGameLevel::ScalarDtor(u32 flags) {
 
 // ---------------------------------------------------------------------------
 // Destructor: stamp the derived vftable, run the level cleanup, let the three
-// array members destruct (reverse construction order), then ~RemusBase restores
-// the base subobject (resets m_04/m_flags/m_0c + the base dtor vftable). The
-// destructible array members give the /GX EH frame.
+// array members destruct (reverse construction order), then ~CSeverusWorker
+// restores the base subobject (resets m_04/m_flags/m_owner + the base dtor
+// vftable). The destructible array members give the /GX EH frame.
 RVA(0x001611e0, 0x82)
 CGameLevel::~CGameLevel() {
-    StampLevelVtbl(this);     // derived vftable @0x5f0150 (dtor entry)
-    VirtualMethodUnknown1C(); // level cleanup (releases children, clears the header)
-    // m_imageSets / m_planes / m_array20 auto-destruct here; ~RemusBase follows.
+    StampLevelVtbl(this); // derived vftable @0x5f0150 (dtor entry)
+    Unload();             // level cleanup (releases children, clears the header)
+    // m_imageSets / m_planes / m_array20 auto-destruct here; ~CSeverusWorker follows.
 }
 
 // ---------------------------------------------------------------------------
-// Like Unknown44 plus resets the sentinel and zeroes the WwdHeader buffer.
+// Unload: like ReleaseChildren plus resets the coord sentinel and zeroes the
+// WwdHeader buffer.
 // ---------------------------------------------------------------------------
 RVA(0x0015d1f0, 0x87)
-i32 CGameLevel::VirtualMethodUnknown1C() {
+i32 CGameLevel::Unload() {
     i32 i;
     for (i = 0; i < m_planes.GetSize(); i++) {
         UnknownChild* child = (UnknownChild*)m_planes.GetData()[i];
@@ -505,7 +514,7 @@ i32 CGameLevel::VirtualMethodUnknown1C() {
         }
     }
     m_imageSets.SetSize(0, -1);
-    m_planeCtx.m_0 = (i32)0x80000000;
+    m_planeCtx.minX = LEVEL_COORD_UNSET;
     m_mainPlane = 0;
     m_mainIndex = -1;
     memset(&m_header, 0, 1524);
@@ -513,10 +522,11 @@ i32 CGameLevel::VirtualMethodUnknown1C() {
 }
 
 // ---------------------------------------------------------------------------
-// Releases all child pointers, resets both CDWordArrays, clears members.
+// ReleaseChildren: releases all child pointers, resets both CDWordArrays, clears
+// the main-plane fields.
 // ---------------------------------------------------------------------------
 RVA(0x0015d680, 0x71)
-void CGameLevel::VirtualMethodUnknown44() {
+void CGameLevel::ReleaseChildren() {
     i32 i;
     for (i = 0; i < m_planes.GetSize(); i++) {
         UnknownChild* child = (UnknownChild*)m_planes.GetData()[i];
@@ -537,18 +547,18 @@ void CGameLevel::VirtualMethodUnknown44() {
 }
 
 // ---------------------------------------------------------------------------
-// Returns constant 0x19 (25) — a type-tag or enum identifier.
+// GetClassId: returns the class type tag (constant 0x19 / 25).
 // ---------------------------------------------------------------------------
 RVA(0x001611b0, 0x6)
-i32 CGameLevel::VirtualMethodUnknown20() {
+i32 CGameLevel::GetClassId() {
     return 0x19;
 }
 
-// --- restored: matching's RemusCoords sibling definitions (do not drop) ---
+// --- the SetCoordsAndLoadNN sibling family (do not drop) -------------------
 // ---------------------------------------------------------------------------
-// As Unknown24 but dispatches the +0x40 sibling virtual.
+// As SetCoordsAndLoad38 but dispatches the +0x40 load virtual.
 RVA(0x0015cdf0, 0xb8)
-i32 CGameLevel::VirtualMethodUnknown2C(i32 arg1, RemusCoords* coords) {
+i32 CGameLevel::SetCoordsAndLoad40(i32 arg1, LevelCoordRect* coords) {
     m_planeCtx = *coords;
     StampParamBlock(this);
     if (Vfunc40(arg1) == 0) {
@@ -559,9 +569,9 @@ i32 CGameLevel::VirtualMethodUnknown2C(i32 arg1, RemusCoords* coords) {
 }
 
 // ---------------------------------------------------------------------------
-// As Unknown24 but dispatches the +0x3c sibling virtual.
+// As SetCoordsAndLoad38 but dispatches the +0x3c load virtual.
 RVA(0x0015ceb0, 0xb8)
-i32 CGameLevel::VirtualMethodUnknown28(i32 arg1, RemusCoords* coords) {
+i32 CGameLevel::SetCoordsAndLoad3C(i32 arg1, LevelCoordRect* coords) {
     m_planeCtx = *coords;
     StampParamBlock(this);
     if (Vfunc3C(arg1) == 0) {
@@ -573,10 +583,10 @@ i32 CGameLevel::VirtualMethodUnknown28(i32 arg1, RemusCoords* coords) {
 
 // ---------------------------------------------------------------------------
 // Loads the +0x10 record from *coords, stamps the param block, then dispatches
-// the +0x38 sibling virtual with arg1. On a 0 result it runs the +0x1c hook and
+// the +0x38 load virtual with arg1. On a 0 result it runs the +0x1c hook and
 // returns 0; otherwise returns 1.
 RVA(0x0015cf70, 0xb8)
-i32 CGameLevel::VirtualMethodUnknown24(i32 arg1, RemusCoords* coords) {
+i32 CGameLevel::SetCoordsAndLoad38(i32 arg1, LevelCoordRect* coords) {
     m_planeCtx = *coords;
     StampParamBlock(this);
     if (Vfunc38(arg1) == 0) {
@@ -587,9 +597,9 @@ i32 CGameLevel::VirtualMethodUnknown24(i32 arg1, RemusCoords* coords) {
 }
 
 // ---------------------------------------------------------------------------
-// Loads the +0x10 record from *coords, stamps the param block, returns 1.
+// SetCoords: loads the +0x10 record from *coords, stamps the param block, returns 1.
 RVA(0x0015d0d0, 0x99)
-i32 CGameLevel::VirtualMethodUnknown30(RemusCoords* coords) {
+i32 CGameLevel::SetCoords(LevelCoordRect* coords) {
     m_planeCtx = *coords;
     StampParamBlock(this);
     return 1;
@@ -801,9 +811,9 @@ struct LevelPlane {
     char pad_84[0xb4 - 0x84];
     char name[4]; // +0xb4
 
-    void Build(RemusCoords* coords); // @0x161e80 (ret 4)
-    void Sync(i32 arg);              // @0x162010 (ret 4)
-    void Refresh();                  // @0x163670 (ret)
+    void Build(LevelCoordRect* coords); // @0x161e80 (ret 4)
+    void Sync(i32 arg);                 // @0x162010 (ret 4)
+    void Refresh();                     // @0x163670 (ret)
 };
 
 // Three zero-arg __thiscall methods on the main plane the forwarders tail into.
@@ -864,10 +874,10 @@ extern i32 __stdcall ResolveLevelName(void* sink, i32 a, i32 b, i32 c);
 
 // ---------------------------------------------------------------------------
 // PointInBounds (free cdecl): tile (x, y) inside the [minX,maxX) x [minY,maxY)
-// half-open box (RemusCoords minX/minY/maxX/maxY at +0/+4/+8/+0xc). ret.
+// half-open box (LevelCoordRect minX/minY/maxX/maxY at +0/+4/+8/+0xc). ret.
 RVA(0x0006b330, 0x2a)
-i32 CGameLevel::PointInBounds(const RemusCoords* r, i32 x, i32 y) {
-    if (x < r->m_8 && x >= r->m_0 && y < r->m_c && y >= r->m_4) {
+i32 CGameLevel::PointInBounds(const LevelCoordRect* r, i32 x, i32 y) {
+    if (x < r->maxX && x >= r->minX && y < r->maxY && y >= r->minY) {
         return 1;
     }
     return 0;
@@ -898,7 +908,7 @@ i32 CGameLevel::LookupTile(i32 x, i32 y) {
     }
     mp = (LevelPlane*)m_mainPlane;
     i32 tile = mp->tileBase[mp->rowOfs[y] + x];
-    if (tile == (i32)0xeeeeeeee || tile == -1) {
+    if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
         return 0;
     }
     CImageSet* set = (CImageSet*)m_imageSets[tile & 0xffff];
@@ -933,7 +943,7 @@ void CGameLevel::MainPlaneNotify() {
 // ---------------------------------------------------------------------------
 // BuildAllPlanes: copy *coords into m_planeCtx, then Build(coords) on every plane.
 RVA(0x0015da80, 0x47)
-void CGameLevel::BuildAllPlanes(RemusCoords* coords) {
+void CGameLevel::BuildAllPlanes(LevelCoordRect* coords) {
     m_planeCtx = *coords;
     for (i32 i = 0; i < m_planes.GetSize(); i++) {
         ((LevelPlane*)m_planes[i])->Build(coords);
@@ -944,7 +954,7 @@ void CGameLevel::BuildAllPlanes(RemusCoords* coords) {
 // FindPlaneByName: case-insensitive search for the plane named `name`; null if none.
 // ---------------------------------------------------------------------------
 // ClampScroll: drive EditSwitch toward (arg1, arg2) on `target`, never moving more
-// than this level's per-axis step limits (m_64/m_68) at once. A direct call when
+// than this level's per-axis step limits (m_scrollStepX/m_scrollStepY) at once. A direct call when
 // the move is within limits or forced by the target flags / kind 7; otherwise an
 // incremental stepping loop that re-runs EditSwitch until it reaches the goal or is
 // reported blocked.
@@ -957,8 +967,8 @@ void CGameLevel::BuildAllPlanes(RemusCoords* coords) {
 RVA(0x0015de40, 0x164)
 i32 CGameLevel::ClampScroll(void* target, i32 arg1, i32 arg2, i32 arg3) {
     LevelScroll* t = (LevelScroll*)target;
-    i32 limX = m_64;
-    i32 limY = m_68;
+    i32 limX = m_scrollStepX;
+    i32 limY = m_scrollStepY;
 
     i32 dx = t->scrollX - arg1;
     if (dx < 0) {
@@ -969,7 +979,7 @@ i32 CGameLevel::ClampScroll(void* target, i32 arg1, i32 arg2, i32 arg3) {
         if (dy < 0) {
             dy = -dy;
         }
-        if (dy <= m_68) {
+        if (dy <= m_scrollStepY) {
             return EditSwitch(target, arg1, arg2, arg3);
         }
     }
