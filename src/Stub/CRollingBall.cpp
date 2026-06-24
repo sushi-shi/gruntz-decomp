@@ -7,4 +7,4 @@
 // @source: rtti-vptr
 // @stub
 RVA(0x000af820, 0x40d)
-CRollingBall::CRollingBall(int) {}
+CRollingBall::CRollingBall(i32) {}

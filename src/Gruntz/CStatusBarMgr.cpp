@@ -35,10 +35,10 @@
 //   Configure   = vtable slot +0x2c (key + rect + a handful of ints)
 //   ConfigureEx = vtable slot +0x34 (the HEAD/ARROW variant: more ints)
 struct SbRect {
-    int left;
-    int top;
-    int right;
-    int bottom;
+    i32 left;
+    i32 top;
+    i32 right;
+    i32 bottom;
 };
 
 class CStatusBarMgr;
@@ -62,35 +62,35 @@ public:
     virtual void v20(); // +0x20
     virtual void v24(); // +0x24
     virtual void v28(); // +0x28
-    virtual int Configure(
+    virtual i32 Configure(
         CStatusBarMgr* mgr,
-        int a,
-        int b,
-        int c,
+        i32 a,
+        i32 b,
+        i32 c,
         SbRect rect,
         const char* key,
-        int d,
-        int e
+        i32 d,
+        i32 e
     ); // +0x2c
-    virtual int ConfigureEx(
+    virtual i32 ConfigureEx(
         CStatusBarMgr* mgr,
-        int a0,
+        i32 a0,
         SbRect rect,
         const char* key,
-        int b,
-        int c,
-        int d,
-        int e,
-        int f
+        i32 b,
+        i32 c,
+        i32 d,
+        i32 e,
+        i32 f
     ); // +0x34
 
-    int m_4; // +0x04
-    int m_8; // +0x08 type tag (3/4/5/6/7/8/9/0xb)
+    i32 m_4; // +0x04
+    i32 m_8; // +0x08 type tag (3/4/5/6/7/8/9/0xb)
     char pad[0x24 - 0x0c];
-    int m_24; // +0x24
-    int m_28; // +0x28
-    int m_30; // +0x30
-    int m_34; // +0x34
+    i32 m_24; // +0x24
+    i32 m_28; // +0x28
+    i32 m_30; // +0x30
+    i32 m_34; // +0x34
 };
 
 // The concrete ctors (reached via thunks; __thiscall on the raw item pointer).
@@ -101,23 +101,23 @@ void __fastcall Sbi_CtorImgList(CSbItem* p);  // ??0... (thunk 0x315c)
 // The shared item helpers driven on a freshly created icon-set item.
 class CSbItemHelp {
 public:
-    void Init(int n); // FUN_00552480  @0x152480
-    void Push(int v); // FUN_00552520  @0x152520
+    void Init(i32 n); // FUN_00552480  @0x152480
+    void Push(i32 v); // FUN_00552520  @0x152520
 };
 
 // The icon/sprite factory the resource/game tabs pull chip + warpstone sprites
 // from (g_gameReg.m_74 / m_68); __thiscall on the factory.
 class CSbFactory {
 public:
-    void* GetByIndex(int idx, int z); // thunk 0x4165 -> FUN_004e23c0
+    void* GetByIndex(i32 idx, i32 z); // thunk 0x4165 -> FUN_004e23c0
 };
 class CSbIconSet {
 public:
-    int Probe(int a);        // thunk 0x1582 -> FUN_00479b30
-    void SetA(int v);        // thunk 0x11e5 -> FUN_004eb830
-    void SetB(int a, int b); // thunk 0x23dd -> FUN_004eb740
-    void AddRef(int v);      // thunk 0x3b98 -> FUN_004ea170
-    void AddRef0(int v);     // thunk 0x1573 -> FUN_004ea0f0
+    i32 Probe(i32 a);        // thunk 0x1582 -> FUN_00479b30
+    void SetA(i32 v);        // thunk 0x11e5 -> FUN_004eb830
+    void SetB(i32 a, i32 b); // thunk 0x23dd -> FUN_004eb740
+    void AddRef(i32 v);      // thunk 0x3b98 -> FUN_004ea170
+    void AddRef0(i32 v);     // thunk 0x1573 -> FUN_004ea0f0
 };
 
 // The game registry: factory at +0x68/+0x74, a per-player icon table at +0x158
@@ -128,13 +128,13 @@ struct CGameReg {
     char m_pad6c[0x74 - 0x6c];
     CSbFactory* m_74; // +0x74
     char m_pad78[0x158 - 0x78];
-    int m_158; // +0x158 base of the icon table
+    i32 m_158; // +0x158 base of the icon table
 };
 DATA(0x0024556c)
 extern CGameReg* g_gameReg; // ?g_gameReg@@3PAUCGameReg@@A @ VA 0x64556c
 
 DATA(0x00244c54)
-extern int g_curPlayer; // DAT_00644c54
+extern i32 g_curPlayer; // DAT_00644c54
 
 // The eight concrete CSBI subclass vtables (retail addresses; stamped directly).
 DATA(0x001eac0c)
@@ -159,12 +159,12 @@ extern void* g_vtbl_tb[]; // 0x5ead24 (tag 0xb)
 // ---------------------------------------------------------------------------
 class CStatusBarMgr {
 public:
-    int LoadTabSprites();
+    i32 LoadTabSprites();
 
     char m_pad00[0xc];
     void* m_c; // +0x0c  the configure-virtual `this`
-    int m_10;  // +0x10  base x
-    int m_14;  // +0x14  base y
+    i32 m_10;  // +0x10  base x
+    i32 m_14;  // +0x14  base y
     char m_pad18[0x48 - 0x18];
     CPtrList m_48; // +0x48  Statz tab list
     CPtrList m_64; // +0x64  Gruntz tab list
@@ -172,7 +172,7 @@ public:
     CPtrList m_9c; // +0x9c  Multiplayer tab list
     CPtrList m_b8; // +0xb8  Game tab list
     char m_padd4[0x10c - 0xd4];
-    int m_10c; // +0x10c  current tab selector (1..5)
+    i32 m_10c; // +0x10c  current tab selector (1..5)
 };
 
 // ===========================================================================
@@ -181,7 +181,7 @@ public:
 // new + concrete ctor + manual vtable/tag stamp (clearing m_30). The ctor and
 // vtable address vary by tag; the null-guard + ctor + stamp idiom is identical
 // at every one of the ~37 call sites.
-static CSbItem* mk(unsigned int sz, void* vtbl, int tag) {
+static CSbItem* mk(u32 sz, void* vtbl, i32 tag) {
     CSbItem* p = (CSbItem*)operator new(sz);
     if (p) {
         Sbi_CtorBase(p);
@@ -214,12 +214,12 @@ static CSbItem* mk(unsigned int sz, void* vtbl, int tag) {
 // The configure call can throw, with the just-created item live for unwind, so
 // retail builds this under a /GX EH frame (flags = "eh").
 RVA(0x00102250, 0x1dcd)
-int CStatusBarMgr::LoadTabSprites() {
-    int bx = m_10; // base x
-    int by = m_14; // base y
+i32 CStatusBarMgr::LoadTabSprites() {
+    i32 bx = m_10; // base x
+    i32 by = m_14; // base y
     CSbItem* it;
     SbRect r;
-    int i;
+    i32 i;
 
     switch (m_10c) {
         case 2: // ---- Gruntz tab ----

@@ -67,7 +67,7 @@
 // @0x1399d0) tears it down. Both are unmatched engine leaves taking the source as
 // `this`; declared with no body so the thiscall sites reloc-mask in objdiff.
 struct RemusParseSource {
-    int BeginParse();
+    i32 BeginParse();
     void EndParse();
 };
 
@@ -76,7 +76,7 @@ struct RemusParseSource {
 class UnknownChild {
 public:
     virtual void Dummy();
-    virtual void Release(int arg);
+    virtual void Release(i32 arg);
 };
 
 // PlaneGeom - the in-memory plane the level recomputes coords on. This is the
@@ -93,26 +93,26 @@ public:
 //   +0x84/+0x88  out: integer scaledX / scaledY
 struct PlaneGeom {
     char pad_0[0x08];
-    unsigned int flags; // +0x08
+    u32 flags; // +0x08
     char pad_c[0x10 - 0x0c];
     float scaledX; // +0x10
     float scaledY; // +0x14
     char pad_18[0x30 - 0x18];
-    int tilesWide; // +0x30
-    int tilesHigh; // +0x34
+    i32 tilesWide; // +0x30
+    i32 tilesHigh; // +0x34
     char pad_38[0x40 - 0x38];
-    int originX; // +0x40
-    int originY; // +0x44
-    int extentX; // +0x48
-    int extentY; // +0x4c
+    i32 originX; // +0x40
+    i32 originY; // +0x44
+    i32 extentX; // +0x48
+    i32 extentY; // +0x4c
     char pad_50[0x70 - 0x50];
-    int viewW;   // +0x70
-    int viewH;   // +0x74
-    int anchorX; // +0x78
-    int anchorY; // +0x7c
+    i32 viewW;   // +0x70
+    i32 viewH;   // +0x74
+    i32 anchorX; // +0x78
+    i32 anchorY; // +0x7c
     char pad_80[0x84 - 0x80];
-    int intX; // +0x84
-    int intY; // +0x88
+    i32 intX; // +0x84
+    i32 intY; // +0x88
 
     void RecomputePlaneCoords();
 };
@@ -185,7 +185,7 @@ static inline void StampParamBlock(CGameLevel* o) {
 // the EH frame are exact; this is the documented store-scheduling / EH-state-base
 // entropy plateau (matching-patterns.md §entropy, .claude/agents/orchestrator.md §2a/§8).
 RVA(0x0015ccd0, 0x118)
-CGameLevel::CGameLevel(int a1, int a2, int a3) : RemusBase(a1, a2, a3) {
+CGameLevel::CGameLevel(i32 a1, i32 a2, i32 a3) : RemusBase(a1, a2, a3) {
     m_64 = 0x40;
     m_68 = 0x40;
     m_b4 = 250;
@@ -194,7 +194,7 @@ CGameLevel::CGameLevel(int a1, int a2, int a3) : RemusBase(a1, a2, a3) {
     m_bc = 1000;
 
     StampLevelVtbl(this);
-    m_planeCtx.m_0 = (int)0x80000000;
+    m_planeCtx.m_0 = (i32)0x80000000;
     m_mainPlane = 0;
     m_mainIndex = -1;
     m_checksum = 0;
@@ -209,7 +209,7 @@ CGameLevel::CGameLevel(int a1, int a2, int a3) : RemusBase(a1, a2, a3) {
 }
 
 RVA(0x0015d280, 0x279)
-int CGameLevel::LoadWwd(WwdHeader* hdr) {
+i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
     Reset(); // vtable +0x44
 
     if (hdr->wwdSignature > 0x5f4) { // signature must be <= 1524
@@ -230,11 +230,11 @@ int CGameLevel::LoadWwd(WwdHeader* hdr) {
     // The flags field is read twice (the COMPRESS test and the m_flags store); the
     // retail compiler materializes &hdr->flags once and dereferences it both times,
     // so model it as a cached pointer.
-    unsigned int* pflags = &hdr->flags;
+    u32* pflags = &hdr->flags;
 
     if (*pflags & 0x2) // COMPRESS: inflate the main block
     {
-        unsigned int allocSize = hdr->mainBlockLength + hdr->wwdSignature + 0x40;
+        u32 allocSize = hdr->mainBlockLength + hdr->wwdSignature + 0x40;
         char* buf = (char*)operator new(allocSize);
         if (buf == 0) {
             return 0;
@@ -252,11 +252,11 @@ int CGameLevel::LoadWwd(WwdHeader* hdr) {
     m_flags = *pflags;
     m_checksum = hdr->checksum;
 
-    int result = 0; // image-set result (the >=0 success / -1 failure sentinel)
+    i32 result = 0; // image-set result (the >=0 success / -1 failure sentinel)
 
     // --- plane loop ---------------------------------------------------------
     char* cursor = block + hdr->planesOffset;
-    unsigned int i = 0;
+    u32 i = 0;
     if (hdr->numPlanes != 0) {
         do {
             if (ReadPlane(cursor, block, &m_planeCtx) == 0) {
@@ -280,9 +280,9 @@ int CGameLevel::LoadWwd(WwdHeader* hdr) {
         } else if (rec == 0) {
             result = -1;
         } else {
-            int n = 0;
-            int j = 0;
-            while ((unsigned int)j < *(unsigned int*)(rec + 0x8)) {
+            i32 n = 0;
+            i32 j = 0;
+            while ((u32)j < *(u32*)(rec + 0x8)) {
                 CImageSet* set = ReadImageSet(elem);
                 if (set == 0) {
                     result = -1;
@@ -306,8 +306,8 @@ int CGameLevel::LoadWwd(WwdHeader* hdr) {
     // the origin-fixed flag bit0, multiplied by the plane's parallax factors)
     // into m_scaledX/m_scaledY; then the per-plane coord recompute runs.
     {
-        int startX = hdr->startX;
-        int startY = hdr->startY;
+        i32 startX = hdr->startX;
+        i32 startY = hdr->startY;
         CPlane* mp = m_mainPlane;
         if (mp->m_flags & 1) {
             mp->m_scaledX = (float)startX;
@@ -319,9 +319,9 @@ int CGameLevel::LoadWwd(WwdHeader* hdr) {
         ((PlaneGeom*)mp)->RecomputePlaneCoords();
 
         // Re-derive the start coords from the main plane's origin for the rest.
-        int ox = m_mainPlane->m_originX;
-        int oy = m_mainPlane->m_originY;
-        int i2 = 0;
+        i32 ox = m_mainPlane->m_originX;
+        i32 oy = m_mainPlane->m_originY;
+        i32 i2 = 0;
         while (i2 < m_planes.GetSize()) // GetSize() == the plane count
         {
             if (i2 != m_mainIndex) {
@@ -367,8 +367,8 @@ fail:
 // ---------------------------------------------------------------------------
 // Remus adds a +0x10 sentinel check before the common parent/status predicate.
 RVA(0x00161190, 0x1f)
-int CGameLevel::VirtualMethodUnknown14() {
-    if (m_planeCtx.m_0 == (int)0x80000000) {
+i32 CGameLevel::VirtualMethodUnknown14() {
+    if (m_planeCtx.m_0 == (i32)0x80000000) {
         goto fail;
     }
     if (m_0c == 0) {
@@ -399,7 +399,7 @@ fail:
 // ~75%); calling the param block before the +0x10 writes moves the whole block
 // ahead (wrong). Logic + offsets + CFG are exact, so this is left as the plateau.
 RVA(0x0015d030, 0x8f)
-int CGameLevel::VirtualMethodUnknown34(int arg0, int arg1) {
+i32 CGameLevel::VirtualMethodUnknown34(i32 arg0, i32 arg1) {
     m_planeCtx.m_0 = 0;
     m_planeCtx.m_4 = 0;
     m_planeCtx.m_8 = arg0 - 1;
@@ -420,7 +420,7 @@ int CGameLevel::VirtualMethodUnknown34(int arg0, int arg1) {
 // /GX EH frame. NOTE: the file Read's byte count is DISCARDED (no compare to the
 // length) - only the +0x38 virtual's result decides success.
 RVA(0x0015d500, 0x127)
-int CGameLevel::VirtualMethodUnknown40(const char* path) {
+i32 CGameLevel::VirtualMethodUnknown40(const char* path) {
     CFileIO file;
 
     if (!file.Open(path, 0, 0)) {
@@ -433,7 +433,7 @@ int CGameLevel::VirtualMethodUnknown40(const char* path) {
     }
 
     file.Read(buf, file.GetLength());
-    if (Vfunc38((int)buf) == 0) {
+    if (Vfunc38((i32)buf) == 0) {
         operator delete(buf);
         return 0;
     }
@@ -448,8 +448,8 @@ int CGameLevel::VirtualMethodUnknown40(const char* path) {
 // the +0x38 result (1/0). BeginParse/EndParse are unmatched engine leaves on the
 // arg object (reloc-masked thiscall).
 RVA(0x0015d630, 0x41)
-int CGameLevel::VirtualMethodUnknown3C(RemusParseSource* arg) {
-    int handle = arg->BeginParse();
+i32 CGameLevel::VirtualMethodUnknown3C(RemusParseSource* arg) {
+    i32 handle = arg->BeginParse();
     if (handle == 0) {
         return 0;
     }
@@ -465,7 +465,7 @@ int CGameLevel::VirtualMethodUnknown3C(RemusParseSource* arg) {
 // Scalar-deleting destructor (vtable slot 1): run the destructor, then free the
 // object when bit0 of the flag is set; returns `this`. The compiler-standard thunk.
 RVA(0x001611c0, 0x1e)
-void* CGameLevel::ScalarDtor(unsigned int flags) {
+void* CGameLevel::ScalarDtor(u32 flags) {
     this->~CGameLevel(); // call ??1CGameLevel
     if (flags & 1) {
         operator delete(this);
@@ -489,8 +489,8 @@ CGameLevel::~CGameLevel() {
 // Like Unknown44 plus resets the sentinel and zeroes the WwdHeader buffer.
 // ---------------------------------------------------------------------------
 RVA(0x0015d1f0, 0x87)
-int CGameLevel::VirtualMethodUnknown1C() {
-    int i;
+i32 CGameLevel::VirtualMethodUnknown1C() {
+    i32 i;
     for (i = 0; i < m_planes.GetSize(); i++) {
         UnknownChild* child = (UnknownChild*)m_planes.GetData()[i];
         if (child) {
@@ -505,7 +505,7 @@ int CGameLevel::VirtualMethodUnknown1C() {
         }
     }
     m_imageSets.SetSize(0, -1);
-    m_planeCtx.m_0 = (int)0x80000000;
+    m_planeCtx.m_0 = (i32)0x80000000;
     m_mainPlane = 0;
     m_mainIndex = -1;
     memset(&m_header, 0, 1524);
@@ -517,7 +517,7 @@ int CGameLevel::VirtualMethodUnknown1C() {
 // ---------------------------------------------------------------------------
 RVA(0x0015d680, 0x71)
 void CGameLevel::VirtualMethodUnknown44() {
-    int i;
+    i32 i;
     for (i = 0; i < m_planes.GetSize(); i++) {
         UnknownChild* child = (UnknownChild*)m_planes.GetData()[i];
         if (child) {
@@ -540,7 +540,7 @@ void CGameLevel::VirtualMethodUnknown44() {
 // Returns constant 0x19 (25) — a type-tag or enum identifier.
 // ---------------------------------------------------------------------------
 RVA(0x001611b0, 0x6)
-int CGameLevel::VirtualMethodUnknown20() {
+i32 CGameLevel::VirtualMethodUnknown20() {
     return 0x19;
 }
 
@@ -548,7 +548,7 @@ int CGameLevel::VirtualMethodUnknown20() {
 // ---------------------------------------------------------------------------
 // As Unknown24 but dispatches the +0x40 sibling virtual.
 RVA(0x0015cdf0, 0xb8)
-int CGameLevel::VirtualMethodUnknown2C(int arg1, RemusCoords* coords) {
+i32 CGameLevel::VirtualMethodUnknown2C(i32 arg1, RemusCoords* coords) {
     m_planeCtx = *coords;
     StampParamBlock(this);
     if (Vfunc40(arg1) == 0) {
@@ -561,7 +561,7 @@ int CGameLevel::VirtualMethodUnknown2C(int arg1, RemusCoords* coords) {
 // ---------------------------------------------------------------------------
 // As Unknown24 but dispatches the +0x3c sibling virtual.
 RVA(0x0015ceb0, 0xb8)
-int CGameLevel::VirtualMethodUnknown28(int arg1, RemusCoords* coords) {
+i32 CGameLevel::VirtualMethodUnknown28(i32 arg1, RemusCoords* coords) {
     m_planeCtx = *coords;
     StampParamBlock(this);
     if (Vfunc3C(arg1) == 0) {
@@ -576,7 +576,7 @@ int CGameLevel::VirtualMethodUnknown28(int arg1, RemusCoords* coords) {
 // the +0x38 sibling virtual with arg1. On a 0 result it runs the +0x1c hook and
 // returns 0; otherwise returns 1.
 RVA(0x0015cf70, 0xb8)
-int CGameLevel::VirtualMethodUnknown24(int arg1, RemusCoords* coords) {
+i32 CGameLevel::VirtualMethodUnknown24(i32 arg1, RemusCoords* coords) {
     m_planeCtx = *coords;
     StampParamBlock(this);
     if (Vfunc38(arg1) == 0) {
@@ -589,7 +589,7 @@ int CGameLevel::VirtualMethodUnknown24(int arg1, RemusCoords* coords) {
 // ---------------------------------------------------------------------------
 // Loads the +0x10 record from *coords, stamps the param block, returns 1.
 RVA(0x0015d0d0, 0x99)
-int CGameLevel::VirtualMethodUnknown30(RemusCoords* coords) {
+i32 CGameLevel::VirtualMethodUnknown30(RemusCoords* coords) {
     m_planeCtx = *coords;
     StampParamBlock(this);
     return 1;
@@ -618,7 +618,7 @@ struct CImageSet1 {
         m_04 = 0;
     }
     void* m_vtbl; // +0x00
-    int m_04;     // +0x04
+    i32 m_04;     // +0x04
     char pad_8[0x10 - 0x08];
 };
 struct CImageSet2 {
@@ -627,7 +627,7 @@ struct CImageSet2 {
         m_04 = 0;
     }
     void* m_vtbl; // +0x00
-    int m_04;     // +0x04
+    i32 m_04;     // +0x04
     char pad_8[0x24 - 0x08];
 };
 struct CImageSet3 {
@@ -637,9 +637,9 @@ struct CImageSet3 {
         m_14 = 0;
     }
     void* m_vtbl; // +0x00
-    int m_04;     // +0x04
+    i32 m_04;     // +0x04
     char pad_8[0x14 - 0x08];
-    int m_14; // +0x14
+    i32 m_14; // +0x14
 };
 
 RVA(0x0015d820, 0xa3)
@@ -648,7 +648,7 @@ CImageSet* CGameLevel::ReadImageSet(void* record) {
         return 0;
     }
     CImageSet* set;
-    switch (*(int*)record) {
+    switch (*(i32*)record) {
         case 1:
             set = (CImageSet*)new CImageSet1;
             break;
@@ -681,8 +681,8 @@ CImageSet* CGameLevel::ReadImageSet(void* record) {
 RVA(0x00161c90, 0x1e4)
 void PlaneGeom::RecomputePlaneCoords() {
     PlaneGeom* p = this;
-    unsigned int flags = p->flags;
-    int wrapX = flags & 4;
+    u32 flags = p->flags;
+    i32 wrapX = flags & 4;
 
     // --- X axis: wrap/clamp scaledX into the tile grid -----------------------
     if (wrapX) {
@@ -707,7 +707,7 @@ void PlaneGeom::RecomputePlaneCoords() {
     }
 
     // --- Y axis: identical wrap/clamp on scaledY/tilesHigh -------------------
-    int wrapY = flags & 8;
+    i32 wrapY = flags & 8;
     if (wrapY) {
         if (p->scaledY < 0.0f) {
             do {
@@ -730,12 +730,12 @@ void PlaneGeom::RecomputePlaneCoords() {
     }
 
     // --- snap to integer + derive the tile origin ----------------------------
-    int ix = (int)p->scaledX;
+    i32 ix = (i32)p->scaledX;
     p->intX = ix;
-    int iy = (int)p->scaledY;
+    i32 iy = (i32)p->scaledY;
     p->intY = iy;
 
-    int ox = ix - p->anchorX;
+    i32 ox = ix - p->anchorX;
     p->originX = ox;
     if (ox < 0) {
         if (wrapX) {
@@ -745,7 +745,7 @@ void PlaneGeom::RecomputePlaneCoords() {
         }
     }
 
-    int oy = iy - p->anchorY;
+    i32 oy = iy - p->anchorY;
     p->originY = oy;
     if (oy < 0) {
         if (wrapY) {
@@ -756,17 +756,17 @@ void PlaneGeom::RecomputePlaneCoords() {
     }
 
     // --- derive the far tile extents (clamped, unless wrapping) ---------------
-    int ex = p->viewW + p->originX - 1;
-    int ey = p->viewH + p->originY - 1;
+    i32 ex = p->viewW + p->originX - 1;
+    i32 ey = p->viewH + p->originY - 1;
     p->extentX = ex;
     p->extentY = ey;
     if (ex >= p->tilesWide && wrapX == 0) {
-        int over = ex - p->tilesWide + 1;
+        i32 over = ex - p->tilesWide + 1;
         p->extentX = ex - over;
         p->originX = p->originX - over;
     }
     if (ey >= p->tilesHigh && wrapY == 0) {
-        int over = ey - p->tilesHigh + 1;
+        i32 over = ey - p->tilesHigh + 1;
         p->extentY = ey - over;
         p->originY = p->originY - over;
     }
@@ -788,33 +788,33 @@ void PlaneGeom::RecomputePlaneCoords() {
 //   +0x74 limit, +0x80 cap, +0xb4 name[].
 struct LevelPlane {
     char pad_0[0x08];
-    unsigned int flags; // +0x08
+    u32 flags; // +0x08
     char pad_c[0x20 - 0x0c];
-    int* tileBase; // +0x20
-    int* rowOfs;   // +0x24
-    int width;     // +0x28
-    int height;    // +0x2c
+    i32* tileBase; // +0x20
+    i32* rowOfs;   // +0x24
+    i32 width;     // +0x28
+    i32 height;    // +0x2c
     char pad_30[0x74 - 0x30];
-    int limit; // +0x74
+    i32 limit; // +0x74
     char pad_78[0x80 - 0x78];
-    int cap; // +0x80
+    i32 cap; // +0x80
     char pad_84[0xb4 - 0x84];
     char name[4]; // +0xb4
 
     void Build(RemusCoords* coords); // @0x161e80 (ret 4)
-    void Sync(int arg);              // @0x162010 (ret 4)
+    void Sync(i32 arg);              // @0x162010 (ret 4)
     void Refresh();                  // @0x163670 (ret)
 };
 
 // Three zero-arg __thiscall methods on the main plane the forwarders tail into.
 struct MainPlane {
-    int QueryA();  // @0x163300
-    int QueryB();  // @0x163370
+    i32 QueryA();  // @0x163300
+    i32 QueryB();  // @0x163370
     void Notify(); // @0x163420
 };
 
 // __strcmpi (CRT) - reloc-masked. Declared with no header to keep the cdecl shape.
-extern "C" int __cdecl _strcmpi(const char*, const char*);
+extern "C" i32 __cdecl _strcmpi(const char*, const char*);
 
 // LevelScroll - the scroll-state record the edit-state methods manipulate: the
 // +0x5c/+0x60 scroll x/y, +0x64/+0x68 limits, +0x08 flags and +0xe4 edit-state
@@ -823,23 +823,23 @@ extern "C" int __cdecl _strcmpi(const char*, const char*);
 // are typed differently by the level-load methods).
 struct LevelScroll {
     char pad_0[0x08];
-    unsigned int flags; // +0x08
+    u32 flags; // +0x08
     char pad_c[0x5c - 0x0c];
-    int scrollX; // +0x5c
-    int scrollY; // +0x60
-    int limitX;  // +0x64
-    int limitY;  // +0x68
+    i32 scrollX; // +0x5c
+    i32 scrollY; // +0x60
+    i32 limitX;  // +0x64
+    i32 limitY;  // +0x68
     char pad_6c[0xe4 - 0x6c];
-    int editKind; // +0xe4
+    i32 editKind; // +0xe4
 };
 
 // The edit-state sub-dispatch leaves, all __stdcall(target, a1, a2, a3) returning a
 // state-flag word (kinds 1..2 -> ScrollKindDispatch12). Reloc-masked engine leaves.
-extern "C" int __stdcall ScrollKindDispatch12(LevelScroll* lvl, int a, int b, int c); // @0x1671c0
-extern int __stdcall EditHandlerA(LevelScroll*, int, int, int);                       // @0x15e130
-extern int __stdcall EditHandlerB(LevelScroll*, int, int, int);                       // @0x15e4b0
-extern int __stdcall EditHandlerC(LevelScroll*, int, int, int);                       // @0x15e2f0
-extern int __stdcall EditHandlerD(LevelScroll*, int, int, int);                       // @0x15e5b0
+extern "C" i32 __stdcall ScrollKindDispatch12(LevelScroll* lvl, i32 a, i32 b, i32 c); // @0x1671c0
+extern i32 __stdcall EditHandlerA(LevelScroll*, i32, i32, i32);                       // @0x15e130
+extern i32 __stdcall EditHandlerB(LevelScroll*, i32, i32, i32);                       // @0x15e4b0
+extern i32 __stdcall EditHandlerC(LevelScroll*, i32, i32, i32);                       // @0x15e2f0
+extern i32 __stdcall EditHandlerD(LevelScroll*, i32, i32, i32);                       // @0x15e5b0
 
 // EditSink - the serializer `arg0` of EditDispatch: a polymorphic object whose slots
 // +0x2c (read a name into buf) and +0x30 (write buf as a name) are used.
@@ -855,18 +855,18 @@ struct EditSink {
     virtual void v20();
     virtual void v24();
     virtual void v28();
-    virtual void GetName(char* buf, int cap); // +0x2c
-    virtual void SetName(char* buf, int cap); // +0x30
+    virtual void GetName(char* buf, i32 cap); // +0x2c
+    virtual void SetName(char* buf, i32 cap); // +0x30
 };
 
 // Resolve a level/name to a tile id (returns nonzero on success). __stdcall. @0x163710
-extern int __stdcall ResolveLevelName(void* sink, int a, int b, int c);
+extern i32 __stdcall ResolveLevelName(void* sink, i32 a, i32 b, i32 c);
 
 // ---------------------------------------------------------------------------
 // PointInBounds (free cdecl): tile (x, y) inside the [minX,maxX) x [minY,maxY)
 // half-open box (RemusCoords minX/minY/maxX/maxY at +0/+4/+8/+0xc). ret.
 RVA(0x0006b330, 0x2a)
-int CGameLevel::PointInBounds(const RemusCoords* r, int x, int y) {
+i32 CGameLevel::PointInBounds(const RemusCoords* r, i32 x, i32 y) {
     if (x < r->m_8 && x >= r->m_0 && y < r->m_c && y >= r->m_4) {
         return 1;
     }
@@ -878,7 +878,7 @@ int CGameLevel::PointInBounds(const RemusCoords* r, int x, int y) {
 // its row-indexed tile map, and (when not the empty/clear sentinel) dispatch the
 // referenced image set's slot +0x20 with (0, 0). ret 8.
 RVA(0x00082600, 0x73)
-int CGameLevel::LookupTile(int x, int y) {
+i32 CGameLevel::LookupTile(i32 x, i32 y) {
     LevelPlane* mp;
     if (x < 0) {
         x = 0;
@@ -897,8 +897,8 @@ int CGameLevel::LookupTile(int x, int y) {
         }
     }
     mp = (LevelPlane*)m_mainPlane;
-    int tile = mp->tileBase[mp->rowOfs[y] + x];
-    if (tile == (int)0xeeeeeeee || tile == -1) {
+    i32 tile = mp->tileBase[mp->rowOfs[y] + x];
+    if (tile == (i32)0xeeeeeeee || tile == -1) {
         return 0;
     }
     CImageSet* set = (CImageSet*)m_imageSets[tile & 0xffff];
@@ -908,7 +908,7 @@ int CGameLevel::LookupTile(int x, int y) {
 // ---------------------------------------------------------------------------
 // Three forwarders to a method on the main plane; no-op / 0 when none.
 RVA(0x000cedf0, 0xf)
-int CGameLevel::MainPlaneQueryA() {
+i32 CGameLevel::MainPlaneQueryA() {
     if (m_mainPlane != 0) {
         return ((MainPlane*)m_mainPlane)->QueryA();
     }
@@ -916,7 +916,7 @@ int CGameLevel::MainPlaneQueryA() {
 }
 
 RVA(0x000cee10, 0xf)
-int CGameLevel::MainPlaneQueryB() {
+i32 CGameLevel::MainPlaneQueryB() {
     if (m_mainPlane != 0) {
         return ((MainPlane*)m_mainPlane)->QueryB();
     }
@@ -935,7 +935,7 @@ void CGameLevel::MainPlaneNotify() {
 RVA(0x0015da80, 0x47)
 void CGameLevel::BuildAllPlanes(RemusCoords* coords) {
     m_planeCtx = *coords;
-    for (int i = 0; i < m_planes.GetSize(); i++) {
+    for (i32 i = 0; i < m_planes.GetSize(); i++) {
         ((LevelPlane*)m_planes[i])->Build(coords);
     }
 }
@@ -955,17 +955,17 @@ void CGameLevel::BuildAllPlanes(RemusCoords* coords) {
 // assignment MSVC reproduces only for one spill order; logic + offsets + CFG are
 // exact. Deferred to the final sweep.
 RVA(0x0015de40, 0x164)
-int CGameLevel::ClampScroll(void* target, int arg1, int arg2, int arg3) {
+i32 CGameLevel::ClampScroll(void* target, i32 arg1, i32 arg2, i32 arg3) {
     LevelScroll* t = (LevelScroll*)target;
-    int limX = m_64;
-    int limY = m_68;
+    i32 limX = m_64;
+    i32 limY = m_68;
 
-    int dx = t->scrollX - arg1;
+    i32 dx = t->scrollX - arg1;
     if (dx < 0) {
         dx = -dx;
     }
     if (dx <= limX) {
-        int dy = t->scrollY - arg2;
+        i32 dy = t->scrollY - arg2;
         if (dy < 0) {
             dy = -dy;
         }
@@ -978,25 +978,25 @@ int CGameLevel::ClampScroll(void* target, int arg1, int arg2, int arg3) {
         return EditSwitch(target, arg1, arg2, arg3);
     }
 
-    int kind = t->editKind;
+    i32 kind = t->editKind;
     if (kind == 7) {
         return EditSwitch(target, arg1, arg2, arg3);
     }
 
     // --- incremental stepping toward (arg1, arg2) ---------------------------
-    int stepX = limX;
-    int goalX = arg1;
+    i32 stepX = limX;
+    i32 goalX = arg1;
     if (t->scrollX > arg1) {
         stepX = -stepX;
     }
-    int stepY = limY;
+    i32 stepY = limY;
     if (t->scrollY > arg2) {
         stepY = -stepY;
     }
 
-    int ok = 1;
+    i32 ok = 1;
     do {
-        int nx = stepX + t->scrollX;
+        i32 nx = stepX + t->scrollX;
         if (stepX > 0) {
             if (nx > goalX) {
                 nx = goalX;
@@ -1006,7 +1006,7 @@ int CGameLevel::ClampScroll(void* target, int arg1, int arg2, int arg3) {
                 nx = goalX;
             }
         }
-        int ny = stepY + t->scrollY;
+        i32 ny = stepY + t->scrollY;
         if (stepY > 0) {
             if (ny > arg2) {
                 ny = arg2;
@@ -1017,7 +1017,7 @@ int CGameLevel::ClampScroll(void* target, int arg1, int arg2, int arg3) {
             }
         }
 
-        int flags = EditSwitch(target, nx, ny, arg3);
+        i32 flags = EditSwitch(target, nx, ny, arg3);
 
         ok = 1;
         if (t->editKind == kind && (flags & 0x10000) == 0) {
@@ -1033,7 +1033,7 @@ int CGameLevel::ClampScroll(void* target, int arg1, int arg2, int arg3) {
 
 RVA(0x0015dde0, 0x5c)
 CPlane* CGameLevel::FindPlaneByName(const char* name) {
-    for (int i = 0; i < m_planes.GetSize(); i++) {
+    for (i32 i = 0; i < m_planes.GetSize(); i++) {
         LevelPlane* p = (i >= 0 && i < m_planes.GetSize()) ? (LevelPlane*)m_planes[i] : 0;
         if (_strcmpi(name, p->name) == 0) {
             return (CPlane*)p;
@@ -1057,10 +1057,10 @@ struct ObjPayload {
     virtual void v1c();
     virtual void v20();
     virtual void v24();
-    virtual void v28(int arg);  // +0x28
-    virtual void Draw(int arg); // +0x2c
+    virtual void v28(i32 arg);  // +0x28
+    virtual void Draw(i32 arg); // +0x2c
     char pad_4[0x74 - 0x04];
-    int depth; // +0x74
+    i32 depth; // +0x74
 };
 struct ObjNode {
     ObjNode* next;    // +0x00
@@ -1086,7 +1086,7 @@ struct VisitCtx {
     virtual void v1c();
     virtual void v20();
     virtual void v24();
-    virtual void Hook(int arg); // +0x28
+    virtual void Hook(i32 arg); // +0x28
     char pad_4[0x10 - 0x04];
     VisitChain m_chain; // +0x10  (head at +0x14)
 };
@@ -1103,21 +1103,21 @@ struct VisitCtx {
 // loop pins ebp/esi/ebx across calls in an order MSVC reproduces only for one spilling
 // of the chain cursor; logic + offsets + CFG are exact. Deferred to the final sweep.
 RVA(0x0015dc90, 0x141)
-void CGameLevel::VisitVisible(void* visitor, int ctx) {
+void CGameLevel::VisitVisible(void* visitor, i32 ctx) {
     VisitCtx* c = (VisitCtx*)ctx;
     VisitChain* chain = &c->m_chain;
 
     if ((m_flags & 1) && chain != 0 && (m_planes.GetSize() > 0 ? m_planes.GetData()[0] : 0) != 0) {
-        ((LevelPlane*)(m_planes.GetSize() > 0 ? m_planes.GetData()[0] : 0))->Sync((int)visitor);
+        ((LevelPlane*)(m_planes.GetSize() > 0 ? m_planes.GetData()[0] : 0))->Sync((i32)visitor);
         ObjNode* node = chain->head;
 
-        int i = 1;
+        i32 i = 1;
         if (m_planes.GetSize() > i) {
             do {
                 LevelPlane* p =
                     (i >= 0 && i < m_planes.GetSize()) ? (LevelPlane*)m_planes.GetData()[i] : 0;
-                int cap = p->cap;
-                int blocked = 0;
+                i32 cap = p->cap;
+                i32 blocked = 0;
                 while (node != 0 && blocked == 0) {
                     ObjNode* cur = node;
                     node = node->next;
@@ -1126,10 +1126,10 @@ void CGameLevel::VisitVisible(void* visitor, int ctx) {
                         node = cur;
                         blocked = 1;
                     } else {
-                        pl->Draw((int)visitor);
+                        pl->Draw((i32)visitor);
                     }
                 }
-                ((LevelPlane*)m_planes.GetData()[i])->Sync((int)visitor);
+                ((LevelPlane*)m_planes.GetData()[i])->Sync((i32)visitor);
                 ++i;
             } while (i < m_planes.GetSize());
         }
@@ -1137,24 +1137,24 @@ void CGameLevel::VisitVisible(void* visitor, int ctx) {
         while (node != 0) {
             ObjNode* cur = node;
             node = node->next;
-            cur->obj->Draw((int)visitor);
+            cur->obj->Draw((i32)visitor);
         }
         return;
     }
 
     // --- not origin-fixed: Sync planes around the main index + the ctx hook ---
-    int idx = 0;
+    i32 idx = 0;
     if (m_mainIndex >= 0) {
         do {
-            ((LevelPlane*)m_planes.GetData()[idx])->Sync((int)visitor);
+            ((LevelPlane*)m_planes.GetData()[idx])->Sync((i32)visitor);
             ++idx;
         } while (idx <= m_mainIndex);
     }
-    c->Hook((int)visitor);
-    int j = m_mainIndex + 1;
+    c->Hook((i32)visitor);
+    i32 j = m_mainIndex + 1;
     if (j < m_planes.GetSize()) {
         do {
-            ((LevelPlane*)m_planes.GetData()[j])->Sync((int)visitor);
+            ((LevelPlane*)m_planes.GetData()[j])->Sync((i32)visitor);
             ++j;
         } while (j < m_planes.GetSize());
     }
@@ -1164,7 +1164,7 @@ void CGameLevel::VisitVisible(void* visitor, int ctx) {
 // NotifyAllPlanes: Refresh() across every plane.
 RVA(0x00160f40, 0x23)
 void CGameLevel::NotifyAllPlanes() {
-    for (int i = 0; i < m_planes.GetSize(); i++) {
+    for (i32 i = 0; i < m_planes.GetSize(); i++) {
         ((LevelPlane*)m_planes[i])->Refresh();
     }
 }
@@ -1180,12 +1180,12 @@ void CGameLevel::NotifyAllPlanes() {
 // between the arg pushes (2 regs), MSVC pre-loads all three (eax/ecx/edx). See
 // docs/patterns/pin-local-for-callee-saved-reg.md. Entropy tail; deferred.
 RVA(0x00167130, 0x83)
-int __stdcall CGameLevel::ApplyScroll(CGameLevel* lvl, int a, int b, int c) {
+i32 __stdcall CGameLevel::ApplyScroll(CGameLevel* lvl, i32 a, i32 b, i32 c) {
     LevelScroll* s = (LevelScroll*)lvl;
-    int eax = 0;
-    int prevX = s->scrollX;
-    int prevY = s->scrollY;
-    int kind = s->editKind;
+    i32 eax = 0;
+    i32 prevX = s->scrollX;
+    i32 prevY = s->scrollY;
+    i32 kind = s->editKind;
 
     if (kind > 0) {
         if (kind > 2) {
@@ -1201,7 +1201,7 @@ int __stdcall CGameLevel::ApplyScroll(CGameLevel* lvl, int a, int b, int c) {
     if (eax & 0x20000) {
         eax |= 0x10000;
     }
-    unsigned int f = s->flags;
+    u32 f = s->flags;
     if (f & 0x400000) {
         eax |= 0x100000;
     }
@@ -1226,7 +1226,7 @@ int __stdcall CGameLevel::ApplyScroll(CGameLevel* lvl, int a, int b, int c) {
 // bodies are byte-exact. Not steerable from source (case-value density decides the
 // lowering) - see docs/patterns/switch-cmpje-tree-vs-jumptable.md. Deferred.
 RVA(0x00160f70, 0xfa)
-int CGameLevel::EditDispatch(void* sink, int arg1, int arg2, int arg3) {
+i32 CGameLevel::EditDispatch(void* sink, i32 arg1, i32 arg2, i32 arg3) {
     EditSink* s = (EditSink*)sink;
     if (s == 0) {
         return 0;
@@ -1264,16 +1264,16 @@ int CGameLevel::EditDispatch(void* sink, int arg1, int arg2, int arg3) {
 // and MSVC pre-loads (3 regs). docs/patterns/pin-local-for-callee-saved-reg.md.
 // Logic/offsets/CFG exact; deferred to the final sweep.
 RVA(0x0015dfb0, 0x15b)
-int CGameLevel::EditSwitch(void* target, int a1, int a2, int a3) {
+i32 CGameLevel::EditSwitch(void* target, i32 a1, i32 a2, i32 a3) {
     if (m_flags & 4) {
         return ApplyScroll((CGameLevel*)target, a1, a2, a3);
     }
 
     LevelScroll* s = (LevelScroll*)target;
-    int eax = 0;
-    int kind = s->editKind;
-    int prevX = s->scrollX;
-    int prevY = s->scrollY;
+    i32 eax = 0;
+    i32 kind = s->editKind;
+    i32 prevX = s->scrollX;
+    i32 prevY = s->scrollY;
 
     switch (kind) {
         case 1:
@@ -1319,7 +1319,7 @@ int CGameLevel::EditSwitch(void* target, int a1, int a2, int a3) {
     if (eax & 0x1820000) {
         eax |= 0x10000;
     }
-    unsigned int f = s->flags;
+    u32 f = s->flags;
     if (f & 0x400000) {
         eax |= 0x100000;
     }

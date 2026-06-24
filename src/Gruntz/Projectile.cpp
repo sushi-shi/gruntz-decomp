@@ -18,7 +18,7 @@ extern const double g_projPhase0;
 DATA(0x001eab00)
 extern const double g_projPhase1;
 DATA(0x00245584)
-extern int g_645584;
+extern i32 g_645584;
 
 // ---------------------------------------------------------------------------
 // Externs the reconstructed projectile methods reference (reloc-masked).
@@ -27,11 +27,11 @@ extern int g_645584;
 DATA(0x00245544)
 extern void* g_freeList;
 DATA(0x0024554c)
-extern int g_freeListNodeBias;
+extern i32 g_freeListNodeBias;
 
 // The draw-clock delta global passed to the render object's SetAnim on detach.
 DATA(0x002bf3bc)
-extern "C" unsigned int g_6bf3bc;
+extern "C" u32 g_6bf3bc;
 
 // The game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A). Modeled here with
 // the offsets the projectile sound/hit-scan paths touch; the DATA pin reloc-masks
@@ -44,13 +44,13 @@ struct CProjSoundCat {  // reg->m_30: the sound-category object
 };
 struct CGameReg {
     char m_pad00[0x10];
-    int m_10; // +0x10  gate (must be non-null)
+    i32 m_10; // +0x10  gate (must be non-null)
     char m_pad14[0x30 - 0x14];
     CProjSoundCat* m_30; // +0x30
     char m_pad34[0x68 - 0x34];
     void* m_68; // +0x68  the 15x15 grunt-grid base
     char m_pad6c[0x11c - 0x6c];
-    int m_11c; // +0x11c  the sound-channel param
+    i32 m_11c; // +0x11c  the sound-channel param
 };
 DATA(0x0024556c)
 extern CGameReg* g_gameReg;
@@ -62,27 +62,27 @@ extern CGameReg* g_gameReg;
 // handlers are out-of-line CGrunt methods (reloc-masked, reached via ILT thunks).
 struct CGruntOwner {
     char m_pad00[0x5c];
-    int m_5c; // +0x5c  screen X
-    int m_60; // +0x60  screen Y
+    i32 m_5c; // +0x5c  screen X
+    i32 m_60; // +0x60  screen Y
 };
 struct CGruntTarget {
-    void DeliverHit(int a, int b, int c, int d, int e, int f, int g, int h); // 0x4646b0 (ret 0x20)
-    void SelfImpact(int a, int b, int c, int d);                             // 0x4dd50  (ret 0x10)
+    void DeliverHit(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f, i32 g, i32 h); // 0x4646b0 (ret 0x20)
+    void SelfImpact(i32 a, i32 b, i32 c, i32 d);                             // 0x4dd50  (ret 0x10)
     char m_pad00[0x10];
     CGruntOwner* m_10; // +0x10
     char m_pad14[0x170 - 0x14];
-    int m_170; // +0x170
+    i32 m_170; // +0x170
     char m_pad174[0x1ec - 0x174];
-    int m_1ec, m_1f0; // +0x1ec/+0x1f0  spawn-cell key
+    i32 m_1ec, m_1f0; // +0x1ec/+0x1f0  spawn-cell key
     char m_pad1f4[0x1fc - 0x1f4];
-    int m_1fc; // +0x1fc  live-projectile slot
+    i32 m_1fc; // +0x1fc  live-projectile slot
 };
 
 // A {x, y} cell-key node recycled through the global free-list (the same 2-int
 // pair node BattlezMapConfig pulls). m_0 doubles as the free-list link.
 struct CHitKey {
-    int m_0;
-    int m_4;
+    i32 m_0;
+    i32 m_4;
 };
 
 // The map value the launch-sound lookup returns: its +0x10 sub-object owns the
@@ -97,7 +97,7 @@ struct CProjSoundEntry {
 // The CMapStringToOb the category exposes (its Lookup is the engine method
 // 0x1b8438). Embedded inside reg->m_30->m_28 at +0x10.
 struct CProjSoundMap {
-    int Lookup(const char* key, CProjSoundEntry** out); // 0x1b8438 (ret 8)
+    i32 Lookup(const char* key, CProjSoundEntry** out); // 0x1b8438 (ret 8)
 };
 struct CProjSoundInner {
     char m_pad00[0x10];
@@ -117,17 +117,17 @@ const double g_movingLogicMax = 2147483646.0;
 // this TU so the inline ctors emit their vptr stores. Bodies are not matched.
 // ---------------------------------------------------------------------------
 CMovingLogic::~CMovingLogic() {}
-int CMovingLogic::MovingLogicVfunc() {
+i32 CMovingLogic::MovingLogicVfunc() {
     return 0;
 }
-int CMovingLogic::MovingLogicVfunc2() {
+i32 CMovingLogic::MovingLogicVfunc2() {
     return 0;
 }
-int CMovingLogic::MovingLogicVfunc3() {
+i32 CMovingLogic::MovingLogicVfunc3() {
     return 0;
 }
 
-int CProjectile::ProjectileVfunc() {
+i32 CProjectile::ProjectileVfunc() {
     return 0;
 }
 
@@ -157,9 +157,9 @@ CProjectile::CProjectile() {}
 typedef void (CProjectile::*ProjCallback)();
 
 RVA(0x00013c70, 0x47)
-void CProjectile::ReleaseDeferred(int) {
+void CProjectile::ReleaseDeferred(i32) {
     if (m_04 != 0) {
-        if (m_08 != 0 && (int)m_14->m_1c == m_28) {
+        if (m_08 != 0 && (i32)m_14->m_1c == m_28) {
             (this->*(ProjCallback&)m_08)();
             m_08 = 0;
         }
@@ -211,7 +211,7 @@ CProjectile::~CProjectile() {
 // the "active but un-anchored" state) raise its hide bit. Returns 0.
 // ---------------------------------------------------------------------------
 RVA(0x000e05e0, 0x4e)
-int CProjectile::DetachRenderObj() {
+i32 CProjectile::DetachRenderObj() {
     m_154->m_40 &= ~1u;
     m_154->m_1a0.SetAnim(g_6bf3bc);
     CProjRenderObj* r = m_154;
@@ -236,7 +236,7 @@ int CProjectile::DetachRenderObj() {
 // ---------------------------------------------------------------------------
 RVA(0x000e08b0, 0x1de)
 void CProjectile::StepMotion() {
-    int impact = 0;
+    i32 impact = 0;
     if (m_258 == 0) {
         if (m_250 > g_projPhase0) {
             // launch frame: snap render objects to the muzzle, mark launched.
@@ -272,11 +272,11 @@ step:
     m_1a0 = px;
     m_1a8 = py;
     m_250 = px;
-    m_10->m_5c = (long)m_1a0;
-    m_10->m_60 = (long)m_1a8;
+    m_10->m_5c = (i32)m_1a0;
+    m_10->m_60 = (i32)m_1a8;
     if (m_1fc != 0) {
-        m_1fc->m_5c = (long)m_1a0;
-        m_1fc->m_60 = (long)m_1a8;
+        m_1fc->m_5c = (i32)m_1a0;
+        m_1fc->m_60 = (i32)m_1a8;
     }
 }
 
@@ -298,15 +298,15 @@ step:
 // symbol_names.csv). ~94%, not steerable from C source.
 // ---------------------------------------------------------------------------
 RVA(0x000e0b10, 0x1bd)
-void CProjectile::ScanTargets(int impact) {
-    int tileY = 0;                   // [esp+0x10]  outer (row) counter
-    int projXlo = m_10->m_5c - 0x10; // [esp+0x1c]  m_10 = owner CGameObject
-    int projYlo = m_10->m_60 - 0x10; // [esp+0x20]
-    int projXhi = projXlo + 0x20;    // [esp+0x24]
-    int projYhi = projYlo + 0x20;    // [esp+0x28]
-    int rowBase = 0x1c;              // [esp+0x18]  row byte stride base
-    int colOff;                      // [esp+0x14]
-    int col;                         // ebp
+void CProjectile::ScanTargets(i32 impact) {
+    i32 tileY = 0;                   // [esp+0x10]  outer (row) counter
+    i32 projXlo = m_10->m_5c - 0x10; // [esp+0x1c]  m_10 = owner CGameObject
+    i32 projYlo = m_10->m_60 - 0x10; // [esp+0x20]
+    i32 projXhi = projXlo + 0x20;    // [esp+0x24]
+    i32 projYhi = projYlo + 0x20;    // [esp+0x28]
+    i32 rowBase = 0x1c;              // [esp+0x18]  row byte stride base
+    i32 colOff;                      // [esp+0x14]
+    i32 col;                         // ebp
     do {
         col = 0;
         colOff = rowBase;
@@ -318,10 +318,10 @@ void CProjectile::ScanTargets(int impact) {
             if (g->m_1fc == 0) {
                 continue;
             }
-            int gx = g->m_10->m_5c - 7;
-            int gy = g->m_10->m_60 - 7;
-            int gxhi = gx + 0xe;
-            int gyhi = gy + 0xe;
+            i32 gx = g->m_10->m_5c - 7;
+            i32 gy = g->m_10->m_60 - 7;
+            i32 gxhi = gx + 0xe;
+            i32 gyhi = gy + 0xe;
             if (projXlo > gxhi) {
                 continue;
             }
@@ -342,8 +342,8 @@ void CProjectile::ScanTargets(int impact) {
                 return;
             }
             // already-tracked? walk the hit list for this grunt's cell key.
-            int keyX = g->m_1ec;
-            int keyY = g->m_1f0;
+            i32 keyX = g->m_1ec;
+            i32 keyY = g->m_1f0;
             for (POSITION pos = m_204.GetHeadPosition(); pos != NULL;) {
                 CHitKey* k = (CHitKey*)m_204.GetNext(pos);
                 if (k->m_0 == keyX && k->m_4 == keyY) {
@@ -383,7 +383,7 @@ void CProjectile::ScanTargets(int impact) {
 // engine functions get RVA-annotated stubs. ~44% scoring artifact, logic complete.
 // ---------------------------------------------------------------------------
 RVA(0x000e2190, 0x83)
-int CProjectile::LaunchSound(const char* key) {
+i32 CProjectile::LaunchSound(const char* key) {
     if (m_200 != 0) {
         return 0;
     }

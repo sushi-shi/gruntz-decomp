@@ -6,8 +6,8 @@
 
 class CProjectile {
 public:
-    void CProjectile_0dec60(int);
-    void LoadProjectileSprites(int, int, int, int, int, int, int);
+    void CProjectile_0dec60(i32);
+    void LoadProjectileSprites(i32, i32, i32, i32, i32, i32, i32);
     void LoadProjectileEffects();
 };
 
@@ -33,13 +33,13 @@ public:
 //     conditional m_74/pose update; rep stos 7 dwords at +0x1e0; m_1fc/m_200=0.
 // /GX EH frame (throwing CUserLogic base + CObList): EH states 1/2/3.
 RVA(0x000dec60, 0x255)
-void CProjectile::CProjectile_0dec60(int) {}
+void CProjectile::CProjectile_0dec60(i32) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
 RVA(0x000df050, 0x6ba)
-void CProjectile::LoadProjectileSprites(int, int, int, int, int, int, int) {}
+void CProjectile::LoadProjectileSprites(i32, i32, i32, i32, i32, i32, i32) {}
 
 // @confidence: med
 // @source: string-xref

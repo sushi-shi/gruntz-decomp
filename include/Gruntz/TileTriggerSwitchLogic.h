@@ -9,6 +9,8 @@
 #ifndef SRC_GRUNTZ_TILETRIGGERSWITCHLOGIC_H
 #define SRC_GRUNTZ_TILETRIGGERSWITCHLOGIC_H
 
+#include <Ints.h>
+
 // The WwdGameReg singleton (g_gameReg, RVA 0x64556c).  Only +0x30 (the active
 // game-manager pointer) is touched by the methods here; reloc-masked DIR32.
 struct WwdGameReg {
@@ -33,7 +35,7 @@ public:
     virtual void Slot24();
     virtual void Slot28();
     virtual void Slot2C();
-    virtual void Transfer(void* buf, int n); // +0x30
+    virtual void Transfer(void* buf, i32 n); // +0x30
 };
 
 // vftable.  Reconstructed from the methods below; fields only
@@ -41,7 +43,7 @@ public:
 class CTileTriggerSwitchLogic {
 public:
     CTileTriggerSwitchLogic();
-    int FindIndexByKey(int key);
+    i32 FindIndexByKey(i32 key);
 
     // CObList::RemoveAt is reached through the inherited CObList base (this == the
     // CObList; head @ +0x04).  Declared no-body, reloc-masked rel32 callee.
@@ -50,37 +52,37 @@ public:
     // Trace-discovered child-list accessors (list head @ +0x04; nodes
     // next@+0x00, data@+0x08; data objects are sibling CTileTriggerSwitchLogic
     // with keys at +0x04 / +0x10).
-    int GetFlag74();                                         // 0x115f00
-    int RemoveByKeys(int k1, int k2);                        // 0x116320
-    CTileTriggerSwitchLogic* FindChild(int k1, int k2);      // 0x116ee0
-    CTileTriggerSwitchLogic* FindByField0C(int key);         // 0x1171d0
-    int ScanNeighborhood(int x, int y);                      // 0x117ec0
-    int ValidateByType(void* obj, int type, int a3, int a4); // 0x113a90
-    int TransferFlag74(CSerialStream* s);                    // 0x117e20
-    int ApplyByType(void* obj, int type, int a3, int a4);    // 0x113d40
-    int SerializeMatrix(CSerialStream* s);                   // 0x113dd0
+    i32 GetFlag74();                                         // 0x115f00
+    i32 RemoveByKeys(i32 k1, i32 k2);                        // 0x116320
+    CTileTriggerSwitchLogic* FindChild(i32 k1, i32 k2);      // 0x116ee0
+    CTileTriggerSwitchLogic* FindByField0C(i32 key);         // 0x1171d0
+    i32 ScanNeighborhood(i32 x, i32 y);                      // 0x117ec0
+    i32 ValidateByType(void* obj, i32 type, i32 a3, i32 a4); // 0x113a90
+    i32 TransferFlag74(CSerialStream* s);                    // 0x117e20
+    i32 ApplyByType(void* obj, i32 type, i32 a3, i32 a4);    // 0x113d40
+    i32 SerializeMatrix(CSerialStream* s);                   // 0x113dd0
 
     // __thiscall validators/appliers used by ApplyByType (reloc-masked).
-    int ApplyBase(void* obj, int type, int a3, int a4);
-    int ApplyType4(void* obj);
-    int ApplyType7(void* obj);
+    i32 ApplyBase(void* obj, i32 type, i32 a3, i32 a4);
+    i32 ApplyType4(void* obj);
+    i32 ApplyType7(void* obj);
 
     // Per-cell probe (reloc-masked rel32 callee); cell is (y) + (x << 8).
-    int ProbeCell(int cell, int kind);
+    i32 ProbeCell(i32 cell, i32 kind);
 
     // Engine-label backlog stubs.
     void CTileTriggerSwitchLogic_115f60();
     void BuildRockBreakInGameText();
 
     void* m_vptr;              // +0x00  vtable (0x5eae8c, stamped in ctor)
-    int m_04;                  // +0x04  list head (owner) / key (data obj)
-    int m_08;                  // +0x08  (not accessed here)
-    int m_0c;                  // +0x0c  (not accessed here)
-    int m_10;                  // +0x10  key1 (compared in RemoveByKeys/FindChild)
+    i32 m_04;                  // +0x04  list head (owner) / key (data obj)
+    i32 m_08;                  // +0x08  (not accessed here)
+    i32 m_0c;                  // +0x0c  (not accessed here)
+    i32 m_10;                  // +0x10  key1 (compared in RemoveByKeys/FindChild)
     char m_pad14[0x20 - 0x14]; // +0x14..0x1f
-    int m_20;                  // +0x20  cleared before delete
+    i32 m_20;                  // +0x20  cleared before delete
     char m_pad24[0x2c - 0x24]; // +0x24..0x2b
-    int m_block[40];           // +0x2c..0xcb  (first 24 zeroed in ctor)
+    i32 m_block[40];           // +0x2c..0xcb  (first 24 zeroed in ctor)
 
     // Linked-list node: next@0x00, data@0x08.  Encapsulated inline.
     struct ListNode {

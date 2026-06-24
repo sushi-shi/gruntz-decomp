@@ -5,7 +5,7 @@
 // CTimeBomb : CUserLogic (RTTI). sizeof 0x68.
 class CTimeBomb : public CUserLogic {
 public:
-    CTimeBomb(int);
+    CTimeBomb(i32);
     void LoadAttributes();
     char m_size_pad[0x28]; // own region over CUserLogic (0x40)
 };

@@ -70,7 +70,7 @@
 
 // ---- MFC primitives reused verbatim from the engine (reloc-masked). ----
 #include <Gruntz/CString.h>
-extern int MapLookup(void* map, void* key, void*& out); // CMapPtrToPtr::Lookup
+extern i32 MapLookup(void* map, void* key, void*& out); // CMapPtrToPtr::Lookup
 
 // ---- The global CButeMgr text-config tree (the singleton). Modeled as
 //      a minimal class so PlayCueAt's `mov ecx,<singleton>; call GetInt`
@@ -82,60 +82,60 @@ extern CButeMgr g_buteMgr;
 
 // ---- StepInputA / PlayCueAt leaf engine callees (free fns / reloc-masked). ----
 extern "C" {
-    void Eng_SurfaceFlush(void* surf, int z); // (begin, 0)
-    void Eng_BeginScene(void* surf, int z);
-    void Eng_Profiler1(void* timer, unsigned long t);
-    void Eng_Profiler2(void* timer, unsigned long t);
-    void Eng_HudDraw(void* hud, RECT* r, int c);
+    void Eng_SurfaceFlush(void* surf, i32 z); // (begin, 0)
+    void Eng_BeginScene(void* surf, i32 z);
+    void Eng_Profiler1(void* timer, u32 t);
+    void Eng_Profiler2(void* timer, u32 t);
+    void Eng_HudDraw(void* hud, RECT* r, i32 c);
     void Eng_HudFlush(void* hud);
-    int Eng_PlaySound(void* snd, const char* name, int flag);
+    i32 Eng_PlaySound(void* snd, const char* name, i32 flag);
     void* Eng_FindSound(void* snd, const char* name);
-    void Eng_StopSound(void* snd, int flag);
-    void Eng_FrameTimerStep(void* t, int now);
+    void Eng_StopSound(void* snd, i32 flag);
+    void Eng_FrameTimerStep(void* t, i32 now);
     // --- StepInputA ---
-    int __stdcall Eng_InputProbe(int a, int b, int axis, void* edge, int n);
-    void Eng_InputDispatch(int z0, int z1, int probe); // (cdecl, 3)
+    i32 __stdcall Eng_InputProbe(i32 a, i32 b, i32 axis, void* edge, i32 n);
+    void Eng_InputDispatch(i32 z0, i32 z1, i32 probe); // (cdecl, 3)
     // --- OnRegion3/4 leaf cues ---
-    void Eng_RegionCueA(int a, int b, int c, int d, int e); // (cdecl, 5)
+    void Eng_RegionCueA(i32 a, i32 b, i32 c, i32 d, i32 e); // (cdecl, 5)
     // --- PlayCueAt cue renderers (cdecl, 9 args each) ---
     void Eng_CueRenderTop(
         void* cueObj,
         void* cueState,
         RECT* r,
-        int a2,
-        int one,
-        int a4,
-        int a5,
-        int a6,
-        int a7
+        i32 a2,
+        i32 one,
+        i32 a4,
+        i32 a5,
+        i32 a6,
+        i32 a7
     );
     void Eng_CueRenderDef(
         void* cueObj,
         void* cueState,
         RECT* r,
-        int a2,
-        int one,
-        int a4,
-        int a5,
-        int a6,
-        int a7
+        i32 a2,
+        i32 one,
+        i32 a4,
+        i32 a5,
+        i32 a6,
+        i32 a7
     );
     // BuildHelpReveal's per-strip HUD draw (0x115300, cdecl, 6 args). reloc-masked.
-    void Eng_HudStrip(void* target, void* obj, int x, int w, int one, int zero);
+    void Eng_HudStrip(void* target, void* obj, i32 x, i32 w, i32 one, i32 zero);
 }
 
 // A reg->m_68 sink that OnRegion4 posts to.
 struct CRegSink {
-    void Post(int a, int b);
+    void Post(i32 a, i32 b);
 };
 // PlayCueAt's per-cue de-dupe object at this+0x410.
 struct CCueState {
-    int Probe(int wParam);
+    i32 Probe(i32 wParam);
 };
 
 // CPlay::Update() (slot 4): the PLAY state's ID = 3.
 RVA(0x0008c910, 0x6)
-int CPlay::Update() {
+i32 CPlay::Update() {
     return 3;
 }
 
@@ -143,7 +143,7 @@ int CPlay::Update() {
 // CPlay::Render  (vtable slot +0x14)
 // ===========================================================================
 RVA(0x000c8cf0, 0xc14)
-int CPlay::Render() {
+i32 CPlay::Render() {
     // --- frame entry: clear the per-frame flag, then a `this`-virtual begin. ---
     // (the m_414=0 store is scheduled INTO the BeginFrameClear arg setup.)
     m_414 = 0;
@@ -167,24 +167,24 @@ int CPlay::Render() {
         // --- shared world-draw block #1 ---
         m_c->m_8->BeginScene(0);                                     // m_c->m_8->vtbl[+0x24](0)
         m_c->m_24->PushView(m_c->m_4->m_14, m_c->m_8);               // (thiscall on m_24)
-        m_c->m_c->Present((int)m_c->m_4->m_14, (int)m_c->m_4->m_18); // vtbl[+0x34]
+        m_c->m_c->Present((i32)m_c->m_4->m_14, (i32)m_c->m_4->m_18); // vtbl[+0x34]
         m_4w()->m_54->Blit(m_c->m_24->m_5c->m_84, m_c->m_24->m_5c->m_88);
         if (m_c->m_20 != 0) { // frame profiler
-            unsigned long t = timeGetTime();
+            u32 t = timeGetTime();
             Eng_Profiler1(m_c->m_20, t);
             Eng_Profiler2(m_c->m_20, t);
         }
-        MarkerBegin((int)g_645584); // m_2e4 begin-marker
+        MarkerBegin((i32)g_645584); // m_2e4 begin-marker
         GutsStep();                 // m_2dc step
 
         // --- periodic AMBIENT-cue timer (+0x3f8, 0x1f4 ms; toggles m_408) ---
         {
-            unsigned int elapsed = g_645588 - (unsigned)m_3f8;
-            if (elapsed >= (unsigned)m_400) {
+            u32 elapsed = g_645588 - (u32)m_3f8;
+            if (elapsed >= (u32)m_400) {
                 m_408 = (m_408 == 0);
                 m_400 = 0x1f4;
                 m_404 = 0;
-                m_3f8 = (int)g_645588;
+                m_3f8 = (i32)g_645588;
                 m_3fc = 0;
             }
             if (m_408 != 0) {
@@ -196,8 +196,8 @@ int CPlay::Render() {
             return 1; // no view -> bail
         }
 
-        FrameTimerBegin((int)g_645584);            // m_3f4 begin
-        FrameTimerEnd(0, (int)g_645584);           // wait: end takes (this,flag)
+        FrameTimerBegin((i32)g_645584);            // m_3f4 begin
+        FrameTimerEnd(0, (i32)g_645584);           // wait: end takes (this,flag)
         Eng_SurfaceFlush(m_c->m_4->m_10->m_2c, 0); // surface flush
         // GutsStepX(m_470, m_2dc, reg) -> the post-draw step (modeled via
         // the same external; here as the marker/guts step):
@@ -222,16 +222,16 @@ int CPlay::Render() {
     // =================================================================
     {
         CWorld* w = (CWorld*)m_4;
-        FrameTimerBegin((int)g_645584); // m_3f4 begin
+        FrameTimerBegin((i32)g_645584); // m_3f4 begin
         Eng_FrameTimerStep(w->m_6c, 0); // m_4->m_6c step
 
         if (m_2f8 == 0x66) { // booty-region one-shot
-            unsigned int elapsed = g_645588 - (unsigned)m_328;
-            if (elapsed >= (unsigned)m_330) {
+            u32 elapsed = g_645588 - (u32)m_328;
+            if (elapsed >= (u32)m_330) {
                 RegCue(g_64556c->m_60, 0x33e); // reg->m_60 cue
                 m_330 = 0x2710;
                 m_334 = 0;
-                m_328 = (int)g_645588;
+                m_328 = (i32)g_645588;
                 m_32c = 0;
             }
         }
@@ -241,9 +241,9 @@ int CPlay::Render() {
 
         // --- AMBIENT level-init one-shot (+0x348) ---
         if (m_348 == 0) {
-            unsigned int elapsed = g_645588 - (unsigned)m_338;
-            if (elapsed >= (unsigned)m_340) {
-                int id = GetAmbientId();
+            u32 elapsed = g_645588 - (u32)m_338;
+            if (elapsed >= (u32)m_340) {
+                i32 id = GetAmbientId();
                 CString name;
                 (void)name; // [esp+0x10] CString temp (/GX)
                 char buf[0x80];
@@ -280,7 +280,7 @@ int CPlay::Render() {
 
         // per-frame timing gate (UNSIGNED clamp: 0x12 < dt < 0xc8):
         {
-            unsigned int dt = g_645584;
+            u32 dt = g_645584;
             if (dt > 0x12 && dt < 0xc8) {
                 RenderFast(); // call [eax+0xa0]
             } else {
@@ -290,32 +290,32 @@ int CPlay::Render() {
 
         // --- shared world-draw block #2 ---
         m_c->m_24->PushView(m_c->m_4->m_14, m_c->m_8);
-        m_c->m_c->Present((int)m_c->m_4->m_14, (int)m_c->m_4->m_18); // present
+        m_c->m_c->Present((i32)m_c->m_4->m_14, (i32)m_c->m_4->m_18); // present
         if (m_474 != 0) {
             StepC(); // alt-input draw
         } else {
             m_c->m_24->PushView(m_c->m_4->m_14, m_c->m_8);
-            m_c->m_c->Present((int)m_c->m_4->m_14, (int)m_c->m_4->m_18);
+            m_c->m_c->Present((i32)m_c->m_4->m_14, (i32)m_c->m_4->m_18);
         }
-        MarkerBegin((int)g_645584);
+        MarkerBegin((i32)g_645584);
         GutsStep();
         InputSubStep(w->m_70); // m_4->m_70
 
         if (m_320 != 0 && m_2dc->m_10c != 5) { // on-screen overlay/banner
-            Overlay1(0, (int)g_645584);
+            Overlay1(0, (i32)g_645584);
             Overlay2(m_c, 0);
         }
 
-        WorldBlit((int)g_645584); // on m_4->m_5c (thiscall)
+        WorldBlit((i32)g_645584); // on m_4->m_5c (thiscall)
         if (m_c->m_4->m_14 == 0) {
             return 1;
         }
 
         // --- snapshot/screenshot countdown (+0x4a0/+0x4a8) ---
         if (m_4b0 != 0) {
-            unsigned int now = g_645588;
-            unsigned int dur = (unsigned)(m_4a8 + m_4a0) - now;
-            if ((int)dur >= 0) {
+            u32 now = g_645588;
+            u32 dur = (u32)(m_4a8 + m_4a0) - now;
+            if ((i32)dur >= 0) {
                 // duration elapsed: post a message + reset the marker block + walk.
                 if (m_2dc->m_574 != 0) {
                     SnapPostMessage(5); // reg->m_68 (5)
@@ -354,12 +354,12 @@ int CPlay::Render() {
 
         if (m_4f4 != 0 && m_2dc->m_550 == 0 && m_2dc->m_554 == 0) {
             // win/lose banner timer (+0x3f8 again, 0x1f4 ms):
-            unsigned int elapsed = g_645588 - (unsigned)m_3f8;
-            if (elapsed >= (unsigned)m_400) {
+            u32 elapsed = g_645588 - (u32)m_3f8;
+            if (elapsed >= (u32)m_400) {
                 m_408 = (m_408 == 0);
                 m_400 = 0x1f4;
                 m_404 = 0;
-                m_3f8 = (int)g_645588;
+                m_3f8 = (i32)g_645588;
                 m_3fc = 0;
             }
             if (m_408 != 0) {
@@ -367,7 +367,7 @@ int CPlay::Render() {
             }
         }
 
-        MarkerBegin((int)g_645584);
+        MarkerBegin((i32)g_645584);
         PostHud(0);
         if (m_30c != 0) {                                    // optional HUD overlay draw
             Eng_HudDraw(m_c->m_4->m_10->m_2c, &m_310, 0xff); // (this=m_4->m_10->m_2c)
@@ -377,27 +377,27 @@ int CPlay::Render() {
         // --- the four screen-region scroll one-shots: each is
         // a 64-bit "inside region" elapsed test that fires its OnRegion handler. ---
         if (m_470 != 0) { // region-1 (+0x430)
-            unsigned int e = g_645588 - (unsigned)m_430;
-            if (e >= (unsigned)m_438) {
-                OnRegion2((int)g_645588);
+            u32 e = g_645588 - (u32)m_430;
+            if (e >= (u32)m_438) {
+                OnRegion2((i32)g_645588);
             }
         }
         if (m_474 != 0) { // region-2 (+0x440)
-            unsigned int e = g_645588 - (unsigned)m_440;
-            if (e >= (unsigned)m_448) {
-                OnRegion1((int)g_645588);
+            u32 e = g_645588 - (u32)m_440;
+            if (e >= (u32)m_448) {
+                OnRegion1((i32)g_645588);
             }
         }
         if (m_478 != 0) { // region-3 (+0x450)
-            unsigned int e = g_645588 - (unsigned)m_450;
-            if (e >= (unsigned)m_458) {
-                OnRegion3((int)g_645588);
+            u32 e = g_645588 - (u32)m_450;
+            if (e >= (u32)m_458) {
+                OnRegion3((i32)g_645588);
             }
         }
         if (m_47c != 0) { // region-4 (+0x460)
-            unsigned int e = g_645588 - (unsigned)m_460;
-            if (e >= (unsigned)m_468) {
-                OnRegion4((int)g_645588);
+            u32 e = g_645588 - (u32)m_460;
+            if (e >= (u32)m_468) {
+                OnRegion4((i32)g_645588);
             }
         }
         return 1; // -> draw tail
@@ -413,14 +413,14 @@ alt2:
     }
     {
         if (m_c->m_20 != 0) { // cursor/frame profiler
-            unsigned long t = timeGetTime();
+            u32 t = timeGetTime();
             Eng_Profiler1(m_c->m_20, t);
             Eng_Profiler2(m_c->m_20, t);
         }
         if (m_500 != 0) {
             // ---- the paused frame: draw-only ----
             m_c->m_24->PushView(m_c->m_4->m_14, m_c->m_8);
-            m_c->m_c->Present((int)m_c->m_4->m_14, (int)m_c->m_4->m_18); // present
+            m_c->m_c->Present((i32)m_c->m_4->m_14, (i32)m_c->m_4->m_18); // present
             GutsStep();
             if (m_2dc->m_550 == 0 && m_2dc->m_554 == 0) {
                 PlayCueAt(0x812c, 0x78, 0, 0xff, 0xff, 0, 1, 0); // win/lose
@@ -431,7 +431,7 @@ alt2:
             if (m_510 > 0) {
                 m_510 = m_510 - 1;
                 m_c->m_24->PushView(m_c->m_4->m_14, m_c->m_8);
-                m_c->m_c->Present((int)m_c->m_4->m_14, (int)m_c->m_4->m_18); // present
+                m_c->m_c->Present((i32)m_c->m_4->m_14, (i32)m_c->m_4->m_18); // present
                 GutsStep();
                 Eng_FrameTimerStep(m_2dc, 0x32);
                 PlayCueAt(m_40c, 0x78, 0, 0xff, 0xff, 0, 1, 0); // (cueId=m_40c)
@@ -439,9 +439,9 @@ alt2:
             }
             if (m_348 == 0) {
                 // the same AMBIENT level-init one-shot (+0x348):
-                unsigned int elapsed = g_645588 - (unsigned)m_338;
-                if (elapsed >= (unsigned)m_340) {
-                    int id = GetAmbientId();
+                u32 elapsed = g_645588 - (u32)m_338;
+                if (elapsed >= (u32)m_340) {
+                    i32 id = GetAmbientId();
                     CString name;
                     (void)name;
                     char buf[0x80];
@@ -462,7 +462,7 @@ alt2:
                 }
             }
         }
-        MarkerBegin((int)g_645584);
+        MarkerBegin((i32)g_645584);
         PostHud(0);
         Eng_SurfaceFlush(m_c->m_4->m_10->m_2c, 0);
     }
@@ -477,7 +477,7 @@ alt2:
 // ===========================================================================
 RVA(0x000d8d90, 0x1e)
 void CPlay::StepC() {
-    int mode = m_480;
+    i32 mode = m_480;
     if (mode == 0) {
         return;
     }
@@ -496,7 +496,7 @@ void CPlay::StepC() {
 // pins the view discriminator m_480, OnRegion3/4 fire an extra cue on enter/leave.
 // ===========================================================================
 RVA(0x000d8a00, 0x73)
-int CPlay::OnRegion2(int z) // (region-0 / gate m_470, timer +0x430)
+i32 CPlay::OnRegion2(i32 z) // (region-0 / gate m_470, timer +0x430)
 {
     if (z != 0) {
         m_470 = 1;
@@ -509,12 +509,12 @@ int CPlay::OnRegion2(int z) // (region-0 / gate m_470, timer +0x430)
     }
     m_438 = 0x7530;
     m_43c = 0;
-    *(unsigned __int64*)&m_430 = g_645588; // 64-bit store: lo=g_645588, hi=0
+    *(u64*)&m_430 = g_645588; // 64-bit store: lo=g_645588, hi=0
     return 1;
 }
 
 RVA(0x000d8aa0, 0x5f)
-int CPlay::OnRegion1(int z) // (region-1 / gate m_474, timer +0x440)
+i32 CPlay::OnRegion1(i32 z) // (region-1 / gate m_474, timer +0x440)
 {
     if (z != 0) {
         m_474 = 1;
@@ -525,12 +525,12 @@ int CPlay::OnRegion1(int z) // (region-1 / gate m_474, timer +0x440)
     }
     m_448 = 0x7530;
     m_44c = 0;
-    *(unsigned __int64*)&m_440 = g_645588; // 64-bit store: lo=g_645588, hi=0
+    *(u64*)&m_440 = g_645588; // 64-bit store: lo=g_645588, hi=0
     return 1;
 }
 
 RVA(0x000d8b20, 0x74)
-int CPlay::OnRegion3(int z) // (region-2 / gate m_478, timer +0x450)
+i32 CPlay::OnRegion3(i32 z) // (region-2 / gate m_478, timer +0x450)
 {
     if (z != 0) {
         m_478 = 1;
@@ -542,12 +542,12 @@ int CPlay::OnRegion3(int z) // (region-2 / gate m_478, timer +0x450)
     }
     m_458 = 0x7530;
     m_45c = 0;
-    *(unsigned __int64*)&m_450 = g_645588; // 64-bit store: lo=g_645588, hi=0
+    *(u64*)&m_450 = g_645588; // 64-bit store: lo=g_645588, hi=0
     return 1;
 }
 
 RVA(0x000d8bc0, 0x71)
-int CPlay::OnRegion4(int z) // (region-3 / gate m_47c, timer +0x460)
+i32 CPlay::OnRegion4(i32 z) // (region-3 / gate m_47c, timer +0x460)
 {
     if (z != 0) {
         m_47c = 1;
@@ -559,7 +559,7 @@ int CPlay::OnRegion4(int z) // (region-3 / gate m_47c, timer +0x460)
     }
     m_468 = 0x7530;
     m_46c = 0;
-    *(unsigned __int64*)&m_460 = g_645588; // 64-bit store: lo=g_645588, hi=0
+    *(u64*)&m_460 = g_645588; // 64-bit store: lo=g_645588, hi=0
     return 1;
 }
 
@@ -573,10 +573,10 @@ int CPlay::OnRegion4(int z) // (region-3 / gate m_47c, timer +0x460)
 RVA(0x000d1ac0, 0x4f)
 void CPlay::StepScroll() {
     CDrawSurface* v = m_c->m_24;
-    int* geom = (int*)((char*)v->m_5c + 0x40); // edx = (m_5c+0x40)
+    i32* geom = (i32*)((char*)v->m_5c + 0x40); // edx = (m_5c+0x40)
 
-    int y = m_154 + (geom[1] - v->m_14); // edi=m_154 held; eax=[edx+4]-m_14; +=edi
-    int x = geom[0] + (m_150 - v->m_10); // esi=[edx] held; edi=m_150-m_10; +=esi
+    i32 y = m_154 + (geom[1] - v->m_14); // edi=m_154 held; eax=[edx+4]-m_14; +=edi
+    i32 x = geom[0] + (m_150 - v->m_10); // esi=[edx] held; edi=m_150-m_10; +=esi
 
     y = (y & ~0x1f) + 0x10; // align down 0x20 (and al,0xe0); + 0x10
     x = (x & ~0x1f) + 0x10; // align down 0x20 (and edi,~0x1f); + 0x10
@@ -593,7 +593,7 @@ void CPlay::StepScroll() {
 // On a hit it dispatches the probed control. Returns 1.
 // ===========================================================================
 RVA(0x000d11e0, 0x9b)
-int CPlay::StepInputA() {
+i32 CPlay::StepInputA() {
     if (m_1a8 == 0) {
         m_1a8 = 1;
         return 1;
@@ -603,7 +603,7 @@ int CPlay::StepInputA() {
         return 1;
     }
 
-    int axisVal;
+    i32 axisVal;
     Edge* edge;
     void* halfPtr;
     if (m_1b0 == 0) {
@@ -622,7 +622,7 @@ int CPlay::StepInputA() {
         return 0;
     }
 
-    int r = Eng_InputProbe(edge->m_0, edge->m_4, axisVal, halfPtr, 0x10);
+    i32 r = Eng_InputProbe(edge->m_0, edge->m_4, axisVal, halfPtr, 0x10);
     if (r != 0) {
         Eng_InputDispatch(0, 0, r);
     }
@@ -639,7 +639,7 @@ int CPlay::StepInputA() {
 // (this->m_c->m_24+0x10). a3 selects the Top vs Default cue renderer.
 // ===========================================================================
 RVA(0x000d1890, 0x1ba)
-void CPlay::PlayCueAt(int cueId, int a2, int a3, int a4, int a5, int a6, int a7, int rectSrc) {
+void CPlay::PlayCueAt(i32 cueId, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 rectSrc) {
     RECT rect;
 
     if (cueId != m_40c) {
@@ -650,21 +650,21 @@ void CPlay::PlayCueAt(int cueId, int a2, int a3, int a4, int a5, int a6, int a7,
     }
 
     if (rectSrc != 0) {
-        int* src = (int*)rectSrc;
-        int bottom = src[3] - g_buteText->GetInt("Font", "TextBottomEdge");
-        int right = src[2] - g_buteText->GetInt("Font", "TextRightEdge");
-        int top = src[1] + g_buteText->GetInt("Font", "TextTopEdge");
-        int left = src[0] + g_buteText->GetInt("Font", "TextLeftEdge");
+        i32* src = (i32*)rectSrc;
+        i32 bottom = src[3] - g_buteText->GetInt("Font", "TextBottomEdge");
+        i32 right = src[2] - g_buteText->GetInt("Font", "TextRightEdge");
+        i32 top = src[1] + g_buteText->GetInt("Font", "TextTopEdge");
+        i32 left = src[0] + g_buteText->GetInt("Font", "TextLeftEdge");
         SetRect(&rect, left, top, right, bottom);
     } else {
         // the viewport rect lives at m_c->m_24 + 0x10; that ptr (edx) does not
         // survive the GetInt calls, so all 4 corners are read up front.
-        int* vp = (int*)((char*)m_c->m_24 + 0x10);
-        int l = vp[0], t = vp[1], r = vp[2], b = vp[3];
-        int bottom = b - g_buteText->GetInt("Font", "TextBottomEdge");
-        int right = r - g_buteText->GetInt("Font", "TextRightEdge");
-        int top = t + g_buteText->GetInt("Font", "TextTopEdge");
-        int left = l + g_buteText->GetInt("Font", "TextLeftEdge");
+        i32* vp = (i32*)((char*)m_c->m_24 + 0x10);
+        i32 l = vp[0], t = vp[1], r = vp[2], b = vp[3];
+        i32 bottom = b - g_buteText->GetInt("Font", "TextBottomEdge");
+        i32 right = r - g_buteText->GetInt("Font", "TextRightEdge");
+        i32 top = t + g_buteText->GetInt("Font", "TextTopEdge");
+        i32 left = l + g_buteText->GetInt("Font", "TextLeftEdge");
         SetRect(&rect, left, top, right, bottom);
     }
 
@@ -694,11 +694,11 @@ void CPlay::DrawWorldFrame() {
     g_6bf3c0 = g_645580;
     g_6bf3bc = g_645584;
     m_c->m_8->BeginScene(0);           // m_c->m_8->vtbl[+0x24](0)
-    m_4w()->m_68->Step((int)g_645584); // m_4->m_68 frame-timer step
+    m_4w()->m_68->Step((i32)g_645584); // m_4->m_68 frame-timer step
     if (g_64556c->m_134 == 3) {
         g_64556c->PerFrameCue();
     }
-    m_2dc->Step((int)g_645584); // m_2dc guts step
+    m_2dc->Step((i32)g_645584); // m_2dc guts step
 }
 
 // ===========================================================================
@@ -712,25 +712,25 @@ void CPlay::DrawWorldFrame() {
 // calls byte-structure-identical; MSVC colors now/accum into ebx/ebp swapped vs
 // retail and the prologue spill schedule differs. See docs/patterns/zero-register-pinning.md.
 RVA(0x000c9cc0, 0x12e)
-int CPlay::DrawWorldFrames() {
-    int delta = (int)g_645584;
-    int steps = (int)((unsigned int)delta / 0x12); // 0x38e38e39 magic-div by 18
-    int now = (int)g_645580;
-    int accum = (int)g_645588;
-    int rem = delta - steps * 0x12;
-    int saveDelta = delta; // [esp+0x1c]
-    int saveAccum = accum; // [esp+0x20]
-    int saveNow = now;     // [esp+0x24]
+i32 CPlay::DrawWorldFrames() {
+    i32 delta = (i32)g_645584;
+    i32 steps = (i32)((u32)delta / 0x12); // 0x38e38e39 magic-div by 18
+    i32 now = (i32)g_645580;
+    i32 accum = (i32)g_645588;
+    i32 rem = delta - steps * 0x12;
+    i32 saveDelta = delta; // [esp+0x1c]
+    i32 saveAccum = accum; // [esp+0x20]
+    i32 saveNow = now;     // [esp+0x24]
     if (rem != 0) {
         steps = steps + 1;
     }
     now -= delta;
     accum -= delta;
     if (steps > 0) {
-        int last = steps - 1;
-        int i = 0;
+        i32 last = steps - 1;
+        i32 i = 0;
         do {
-            int dt = (i == last && rem != 0) ? rem : 0x12;
+            i32 dt = (i == last && rem != 0) ? rem : 0x12;
             accum += dt;
             now += dt;
             m_4w()->m_68->StepFull(now, dt, accum);
@@ -744,11 +744,11 @@ int CPlay::DrawWorldFrames() {
                 m_c->m_24->m_5c->DrawA();
             }
             m_c->m_8->BeginScene(0);
-            m_4w()->m_68->Step((int)g_645584);
+            m_4w()->m_68->Step((i32)g_645584);
             if (g_64556c->m_134 == 3) {
                 g_64556c->PerFrameCue();
             }
-            m_2dc->Step((int)g_645584);
+            m_2dc->Step((i32)g_645584);
             i++;
         } while (i < steps);
     }
@@ -764,7 +764,7 @@ int CPlay::DrawWorldFrames() {
 // +0x8 is set, then call RecomputePlaneCoords.
 // ===========================================================================
 RVA(0x000d5f00, 0x69)
-int CPlay::ResetGoals(int x, int y) {
+i32 CPlay::ResetGoals(i32 x, i32 y) {
     CWorld* w = m_4w();
     CWorld::M68* g = w->m_68;
     if (g->m_23c != 0) {
@@ -790,7 +790,7 @@ int CPlay::ResetGoals(int x, int y) {
 // 0x40) on the world input dispatcher (m_4->m_4).
 // ===========================================================================
 RVA(0x000d9160, 0xac)
-int CPlay::RegisterInputBindings() {
+i32 CPlay::RegisterInputBindings() {
     m_4w()->m_4->Bind(0x102, 0x40);
     m_4w()->m_4->Bind(0x100, 0x40);
     m_4w()->m_4->Bind(0x200, 0x40);
@@ -815,19 +815,19 @@ int CPlay::RegisterInputBindings() {
 // `push esi`/`pop esi` past the two early returns (into the m_4dc>dt block) and colors
 // idx/grid into edx/eax swapped vs MSVC here. See docs/patterns/zero-register-pinning.md.
 RVA(0x000d0a60, 0x92)
-int CPlay::StepGridWalk(int dt) {
+i32 CPlay::StepGridWalk(i32 dt) {
     if (m_4e8 == 0) {
         return 1;
     }
-    if ((unsigned int)m_4dc > (unsigned int)dt) {
+    if ((u32)m_4dc > (u32)dt) {
         m_4dc = m_4dc - dt;
         return 1;
     }
     m_4dc = m_4d8;
     m_4e0 = m_4e0 + 1;
-    int idx = m_4e0;
+    i32 idx = m_4e0;
     CFrameGrid* g = m_4cc;
-    int frame;
+    i32 frame;
     if (idx >= g->m_64 && idx <= g->m_68) {
         frame = g->m_14[idx];
     } else {
@@ -855,7 +855,7 @@ int CPlay::StepGridWalk(int dt) {
 // (xor ebx,ebx + cmp ebx,[member] null tests) and colors y into ebp (5 callee-saves),
 // MSVC here uses test/4 saves. No source lever forces it. docs/patterns/zero-register-pinning.md.
 RVA(0x000ce530, 0xe3)
-int CPlay::DispatchHudClick(int a, int x, int y) {
+i32 CPlay::DispatchHudClick(i32 a, i32 x, i32 y) {
     if (m_484 != 0) {
         return 1;
     }
@@ -870,7 +870,7 @@ int CPlay::DispatchHudClick(int a, int x, int y) {
     if (m_2dc->m_0 == 2) {
         return 1;
     }
-    int* vp = (int*)((char*)m_c->m_24 + 0x10);
+    i32* vp = (i32*)((char*)m_c->m_24 + 0x10);
     if (x >= vp[0] && x <= vp[2] && y >= vp[1] && y <= vp[3]) {
         return 1;
     }
@@ -892,7 +892,7 @@ int CPlay::DispatchHudClick(int a, int x, int y) {
 // grid-setup byte-identical; the LoadSprite retry pushes (prev,1) in the opposite
 // order and the g_64556c reload sits one slot off. docs/patterns/statement-schedule-faithful.md.
 RVA(0x000d0920, 0xfe)
-int CPlay::BeginGridWalk(int key, int index, int e8, int delay, int hasGrid) {
+i32 CPlay::BeginGridWalk(i32 key, i32 index, i32 e8, i32 delay, i32 hasGrid) {
     if (m_c == 0) {
         return 1;
     }
@@ -905,7 +905,7 @@ int CPlay::BeginGridWalk(int key, int index, int e8, int delay, int hasGrid) {
     m_4d4 = hasGrid;
     if (hasGrid != 0) {
         CWorld* w = m_4w();
-        int id = g_644c54;
+        i32 id = g_644c54;
         void* spr = w->m_74->LoadSprite(*(void**)(w->m_158 + (id * 0x47) * 8), 0);
         if (spr == 0) {
             spr = ((CWorld::CSpriteFactory*)g_64556c->m_74)->LoadSprite(spr, 1);
@@ -914,7 +914,7 @@ int CPlay::BeginGridWalk(int key, int index, int e8, int delay, int hasGrid) {
         m_4cc->SetSprite(spr);
     }
     CFrameGrid* g = m_4cc;
-    int frame;
+    i32 frame;
     if (index >= g->m_64 && index <= g->m_68) {
         frame = g->m_14[index];
     } else {
@@ -956,11 +956,11 @@ int CPlay::BeginGridWalk(int key, int index, int e8, int delay, int hasGrid) {
 // docs/patterns/nested-if-success-deepest-error-tail.md; the regalloc residual is
 // docs/patterns/zero-register-pinning.md.
 RVA(0x000d0db0, 0x347)
-int CPlay::HandleDragMove(int a, int x, int y) {
+i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
     // box corners declared (uninitialized) up front so the `goto rearm` tail
     // doesn't cross their initialization (MSVC C2362); they're filled only on
     // the box-drag path below and unused at the rearm label.
-    int left, top, right, bottom;
+    i32 left, top, right, bottom;
     if (m_4f8 != 0) {
         return 1;
     }
@@ -1030,8 +1030,8 @@ int CPlay::HandleDragMove(int a, int x, int y) {
             }
         }
         CDrawSurface* v = m_c->m_24;
-        int wx = v->m_5c->m_40_0 - v->m_10 + x;
-        int wy = v->m_5c->m_40_4 - v->m_14 + y;
+        i32 wx = v->m_5c->m_40_0 - v->m_10 + x;
+        i32 wy = v->m_5c->m_40_4 - v->m_14 + y;
         m_4w()->m_68->WorldPost(wx, wy);
         return 1;
     }
@@ -1044,22 +1044,22 @@ int CPlay::HandleDragMove(int a, int x, int y) {
     m_2dc->DragSelect(a, x, y);
     if (m_30c != 0) {
         // clamp the selection rect into [box, m_304/m_308]:
-        int lo = m_150 > left ? m_150 : left;
+        i32 lo = m_150 > left ? m_150 : left;
         m_310.left = lo;
         if (lo >= m_304) {
             m_310.left = m_304;
         }
-        int hi = m_150 < right ? m_150 : right;
+        i32 hi = m_150 < right ? m_150 : right;
         m_310.right = hi;
         if (hi > m_304) {
             m_310.right = m_304;
         }
-        int tlo = m_154 <= top ? m_154 : top;
+        i32 tlo = m_154 <= top ? m_154 : top;
         m_310.top = tlo;
         if (tlo < m_308) {
             m_310.top = m_308;
         }
-        int thi = m_154 < bottom ? m_154 : bottom;
+        i32 thi = m_154 < bottom ? m_154 : bottom;
         m_310.bottom = thi;
         if (thi > m_308) {
             m_310.bottom = m_308;
@@ -1093,7 +1093,7 @@ rearm:
 // branch merges into the trailing-cap tail via a shared landing pad the C if/else
 // can't reproduce 1:1, and the x87 fmul/fild ordering diverges. ~68%.
 RVA(0x000d72c0, 0x128)
-int CPlay::BuildHelpReveal() {
+i32 CPlay::BuildHelpReveal() {
     void* view = m_c->m_4->m_14;
     if (view == 0) {
         return 0;
@@ -1103,12 +1103,12 @@ int CPlay::BuildHelpReveal() {
         Eng_HudStrip(m_c, (void*)m_4c0, 0xe0, 0x1a6, 1, 0);
     }
 
-    int counter = m_4bc;
-    int col = (int)((float)counter * 3.7857143878936768f);
+    i32 counter = m_4bc;
+    i32 col = (i32)((float)counter * 3.7857143878936768f);
     if (counter < 0x37) {
-        int i = counter;
+        i32 i = counter;
         do {
-            int x = 0xe0 - (int)((float)i * -3.7857143878936768f);
+            i32 x = 0xe0 - (i32)((float)i * -3.7857143878936768f);
             Eng_HudStrip(m_c, (void*)m_4c0, x, 0x1a6, 1, 0);
             i++;
         } while (i < 0x37);
@@ -1135,7 +1135,7 @@ void CPlay::Stub_08c9d0() {}
 // Stores the two BeginFrameClear arguments and returns 1.
 //
 RVA(0x0008c970, 0x1c)
-int CState::SetBeginClearParams(int unused, int arg2, int arg3) {
+i32 CState::SetBeginClearParams(i32 unused, i32 arg2, i32 arg3) {
     m_150 = arg2;
     m_154 = arg3;
     return 1;
@@ -1145,7 +1145,7 @@ int CState::SetBeginClearParams(int unused, int arg2, int arg3) {
 // @source: winapi:PostMessageA
 // @stub
 RVA(0x000cdb10, 0x80c)
-int CPlay::winapi_0cdb10_PostMessageA(int, int, int) {
+i32 CPlay::winapi_0cdb10_PostMessageA(i32, i32, i32) {
     return 0;
 }
 
@@ -1153,7 +1153,7 @@ int CPlay::winapi_0cdb10_PostMessageA(int, int, int) {
 // @source: winapi:PostMessageA
 // @stub
 RVA(0x000ceae0, 0x268)
-int CPlay::winapi_0ceae0_PostMessageA(int, int, int) {
+i32 CPlay::winapi_0ceae0_PostMessageA(i32, i32, i32) {
     return 0;
 }
 
@@ -1161,7 +1161,7 @@ int CPlay::winapi_0ceae0_PostMessageA(int, int, int) {
 // @source: winapi:CopyRect
 // @stub
 RVA(0x000d0b30, 0x200)
-int CPlay::winapi_0d0b30_CopyRect(int) {
+i32 CPlay::winapi_0d0b30_CopyRect(i32) {
     return 0;
 }
 
@@ -1169,7 +1169,7 @@ int CPlay::winapi_0d0b30_CopyRect(int) {
 // @source: string-xref
 // @stub
 RVA(0x000d0120, 0x5d8)
-void CPlay::LoadCursorSprites(int, int) {}
+void CPlay::LoadCursorSprites(i32, i32) {}
 
 // @confidence: med
 // @source: decomp-xref
@@ -1181,4 +1181,4 @@ void CPlay::LoadScrollSpeedOptions() {}
 // @source: string-xref
 // @stub
 RVA(0x000dc6d0, 0x215)
-void CPlay::BuildGruntTypeNameTable(int, int, int, int) {}
+void CPlay::BuildGruntTypeNameTable(i32, i32, i32, i32) {}

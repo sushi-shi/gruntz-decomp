@@ -21,7 +21,7 @@ namespace Utils {
         // Tests a path via OpenFile(OF_EXIST). Returns false for a null/empty path.
         // (Re-emitted again elsewhere in this TU, same bytes.)
         RVA(0x001189c0, 0x45)
-        int FileExists(char* szPath) {
+        i32 FileExists(char* szPath) {
             OFSTRUCT of;
 
             if (!szPath) {
@@ -37,7 +37,7 @@ namespace Utils {
         // ActiveWait
         // Busy-waits ~milliseconds using timeGetTime (no Sleep; spins).
         RVA(0x0013dfe0, 0x21)
-        void ActiveWait(unsigned int milliseconds) {
+        void ActiveWait(u32 milliseconds) {
             DWORD target = timeGetTime() + milliseconds;
             while (timeGetTime() < target)
                 ;
@@ -47,7 +47,7 @@ namespace Utils {
         // IsGruntzCDInAnyDrive
         // True iff a CD drive holding the Gruntz disc was found.
         RVA(0x0001fd50, 0xf)
-        int IsGruntzCDInAnyDrive() {
+        i32 IsGruntzCDInAnyDrive() {
             char letter = GetGruntzDriveLetter();
             return letter != 0;
         }
@@ -70,7 +70,7 @@ namespace Utils {
         RVA(0x0001ffe0, 0x192)
         char GetGruntzDriveLetter() {
             if (s_cdDriveLetter == 0) {
-                unsigned int valueSize;
+                u32 valueSize;
                 char value[32];
                 char drivePath[32];
                 char exePath[256];
@@ -89,7 +89,7 @@ namespace Utils {
                     valueSize = 0x1e;
                     value[0] = 0;
                     if (reg.GetValueString("CdRom Drive", value, &valueSize, 0)
-                        && (signed char)value[0] > 0x14) {
+                        && (i8)value[0] > 0x14) {
                         letter = value[0];
                         sprintf(drivePath, "%c:\\", letter);
                         if (GetDriveTypeA(drivePath) == 5 /*DRIVE_CDROM*/) {

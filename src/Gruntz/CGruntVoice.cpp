@@ -33,7 +33,7 @@ CGruntVoice::~CGruntVoice() {}
 // Entry*; if its handler slot is set, look it up again and invoke the handler
 // __thiscall on `this`.
 RVA(0x00119e40, 0x102)
-void CGruntVoice::Dispatch(int coord) {
+void CGruntVoice::Dispatch(i32 coord) {
     CVActEntry* e = VActLookup(coord);
     if (e->m_fn != 0) {
         CVActEntry* e2 = VActLookup(coord);
@@ -62,13 +62,13 @@ void CGruntVoice::Dispatch(int coord) {
 // m_14 local -> 70%, m_6c hoist -> 83%); the in-order spelling at 85% is the best.
 // Deferred to the final sweep.
 RVA(0x0011a7e0, 0x6e)
-int CGruntVoice::Setup(int a0, void* sample, int a2, int a3) {
+i32 CGruntVoice::Setup(i32 a0, void* sample, i32 a2, i32 a3) {
     if (sample == 0) {
         return 0;
     }
     m_68 = a0;
     m_70 = a3;
-    m_54 = (int)sample;
+    m_54 = (i32)sample;
     m_60 = ((CVoiceSample*)sample)->ComputeDuration();
     m_64 = 0;
     m_58 = g_iconDefault;

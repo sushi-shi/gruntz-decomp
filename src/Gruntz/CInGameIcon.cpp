@@ -50,18 +50,18 @@ CInGameIcon::~CInGameIcon() {}
 // (verified by raw byte-compare). Effectively matched; deferred only for the
 // jump-table reloc-typing fix.
 RVA(0x00097680, 0xf5)
-int CInGameIcon::HandleInput() {
+i32 CInGameIcon::HandleInput() {
     CGameObject* obj = m_10;
-    int cmd = *(int*)((char*)obj + 0x124);
-    int rec;
+    i32 cmd = *(i32*)((char*)obj + 0x124);
+    i32 rec;
     if (cmd == 0x55) {
-        int key = *(int*)((char*)obj + 0x114);
-        int sub = *(int*)((char*)obj + 0x118);
+        i32 key = *(i32*)((char*)obj + 0x114);
+        i32 sub = *(i32*)((char*)obj + 0x118);
         if (sub < 0x17 || sub > 0x20) {
             return 0;
         }
-        int slot = key * 71;
-        int icon = ((int*)((char*)g_gameReg + 0x158))[slot * 2];
+        i32 slot = key * 71;
+        i32 icon = ((i32*)((char*)g_gameReg + 0x158))[slot * 2];
         if (icon < 0 || icon >= 0x11) {
             icon = 0;
         }
@@ -70,8 +70,8 @@ int CInGameIcon::HandleInput() {
             rec = g_gameReg->m_74->GetByIndex(1, 0);
         }
     } else if (cmd == 0x1e || cmd == 0x13) {
-        int icon;
-        switch (*(int*)((char*)obj + 0x130)) {
+        i32 icon;
+        switch (*(i32*)((char*)obj + 0x130)) {
             case 1:
                 icon = 0x10;
                 break;
@@ -102,9 +102,9 @@ int CInGameIcon::HandleInput() {
         return 1;
     }
     CGameObject* o = m_10;
-    *(int*)((char*)o + 0x58) = 1;
-    *(int*)((char*)o + 0x50) = 0xa;
-    *(int*)((char*)o + 0x4c) = rec;
+    *(i32*)((char*)o + 0x58) = 1;
+    *(i32*)((char*)o + 0x50) = 0xa;
+    *(i32*)((char*)o + 0x4c) = rec;
     return 1;
 }
 
@@ -115,15 +115,15 @@ int CInGameIcon::HandleInput() {
 // `[m_8[tileY] + eax + 8]=0` / `[m_8[tileY] + eax] &= ~0x40000` pair.
 static inline void ClearTileBit(CGameReg* reg, CGameObject* owner) {
     CIconTileGrid* grid = reg->m_70;
-    int tileX = owner->m_60 >> 5;
-    int tileY = owner->m_5c >> 5;
-    if ((unsigned)tileY < (unsigned)grid->m_c && (unsigned)tileX < (unsigned)grid->m_10) {
-        int rowByte = tileX * 4;
-        int cellOff = (tileY * 8 - tileY) * 4;
-        char* cell0 = (char*)*(int**)((char*)grid->m_8 + rowByte);
-        *(int*)(cell0 + cellOff + 8) = 0;
-        char* cell1 = (char*)*(int**)((char*)grid->m_8 + rowByte);
-        *(int*)(cell1 + cellOff) &= ~0x40000;
+    i32 tileX = owner->m_60 >> 5;
+    i32 tileY = owner->m_5c >> 5;
+    if ((u32)tileY < (u32)grid->m_c && (u32)tileX < (u32)grid->m_10) {
+        i32 rowByte = tileX * 4;
+        i32 cellOff = (tileY * 8 - tileY) * 4;
+        char* cell0 = (char*)*(i32**)((char*)grid->m_8 + rowByte);
+        *(i32*)(cell0 + cellOff + 8) = 0;
+        char* cell1 = (char*)*(i32**)((char*)grid->m_8 + rowByte);
+        *(i32*)(cell1 + cellOff) &= ~0x40000;
     }
 }
 
@@ -144,25 +144,25 @@ static inline void ClearTileBit(CGameReg* reg, CGameObject* owner) {
 // shared tile-clear and the bute re-seed tail are all reconstructed; MSVC's exact
 // ebx/ebp/edi allocation across the two halves is not source-steerable. Deferred.
 RVA(0x000986b0, 0x30c)
-int CInGameIcon::PlaceAt(int arg0, int arg1) {
+i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
     CGameReg* reg = g_gameReg;
-    if (reg->m_134 == 1 && arg0 != g_curPlayer && *(int*)((char*)m_10 + 0x124) != 0x55) {
+    if (reg->m_134 == 1 && arg0 != g_curPlayer && *(i32*)((char*)m_10 + 0x124) != 0x55) {
         return 0;
     }
     CGameObject* obj = m_10;
-    if (*(int*)((char*)obj + 0x124) == 0x55) {
+    if (*(i32*)((char*)obj + 0x124) == 0x55) {
         // ---- selection/preview path ----
-        int param = *(int*)((char*)obj + 0x118);
-        int matchActive = 0;
-        int flag = 1;
-        if (*(int*)((char*)obj + 0x114) == arg0) {
+        i32 param = *(i32*)((char*)obj + 0x118);
+        i32 matchActive = 0;
+        i32 flag = 1;
+        if (*(i32*)((char*)obj + 0x114) == arg0) {
             matchActive = 1;
             flag = 0;
         }
-        int sub = *(int*)((char*)obj + 0x130);
-        int idx = arg0 * 15 + arg1;
+        i32 sub = *(i32*)((char*)obj + 0x130);
+        i32 idx = arg0 * 15 + arg1;
         CIconRecord* cell = ((CIconRecord**)((char*)reg->m_68 + 0x1c))[idx];
-        int ok;
+        i32 ok;
         if (cell == 0 || cell->m_1fc == 0) {
             ok = 0;
         } else if (matchActive) {
@@ -184,16 +184,16 @@ int CInGameIcon::PlaceAt(int arg0, int arg1) {
         }
         ClearTileBit(reg, m_10);
         CGameObject* r = *(CGameObject**)((char*)this + 0x38);
-        *(int*)((char*)r + 0x8) |= 0x10000;
+        *(i32*)((char*)r + 0x8) |= 0x10000;
         return 1;
     }
 
     // ---- full place path (cmd != 0x55) ----
-    int sub = *(int*)((char*)obj + 0x130);
-    int cmd = *(int*)((char*)obj + 0x124);
-    int idx = arg0 * 15 + arg1;
+    i32 sub = *(i32*)((char*)obj + 0x130);
+    i32 cmd = *(i32*)((char*)obj + 0x124);
+    i32 idx = arg0 * 15 + arg1;
     CIconRecord* cell = ((CIconRecord**)((char*)reg->m_68 + 0x1c))[idx];
-    int ok;
+    i32 ok;
     if (cell == 0 || cell->m_1fc == 0) {
         ok = 0;
     } else {
@@ -206,7 +206,7 @@ int CInGameIcon::PlaceAt(int arg0, int arg1) {
     if (cmd == 0x14) {
         CIconRecord* placed = ((CIconRecord**)((char*)reg->m_68 + 0x1c))[idx];
         if (placed != 0) {
-            placed->m_38c = *(int*)((char*)m_10 + 0x128);
+            placed->m_38c = *(i32*)((char*)m_10 + 0x128);
             reg = g_gameReg;
         }
     }
@@ -220,13 +220,13 @@ int CInGameIcon::PlaceAt(int arg0, int arg1) {
     }
     ClearTileBit(reg, m_10);
     CGameObject* owner = *(CGameObject**)((char*)this + 0x38);
-    if (*(int*)((char*)owner + 0x120) > 0) {
-        *(int*)((char*)owner + 0x40) |= 1;
+    if (*(i32*)((char*)owner + 0x120) > 0) {
+        *(i32*)((char*)owner + 0x40) |= 1;
         void* aux = *(void**)((char*)this + 0x14);
         m_30 = *(void**)((char*)aux + 0x1c);
         *(void**)((char*)aux + 0x1c) = g_buteTree.Find(g_iconBute);
         owner = *(CGameObject**)((char*)this + 0x38);
-        m_58 = *(int*)((char*)owner + 0x120);
+        m_58 = *(i32*)((char*)owner + 0x120);
         m_5c = 0;
         m_60 = g_iconDefault;
         m_64 = 0;
@@ -234,11 +234,11 @@ int CInGameIcon::PlaceAt(int arg0, int arg1) {
     }
     CGameObject* rend = *(CGameObject**)((char*)this + 0x78);
     if (rend != 0) {
-        *(int*)((char*)rend + 0x8) |= 0x10000;
+        *(i32*)((char*)rend + 0x8) |= 0x10000;
         *(CGameObject**)((char*)this + 0x78) = 0;
     }
     CGameObject* r = *(CGameObject**)((char*)this + 0x38);
-    *(int*)((char*)r + 0x8) |= 0x10000;
+    *(i32*)((char*)r + 0x8) |= 0x10000;
     return 1;
 }
 
@@ -262,7 +262,7 @@ int CInGameIcon::PlaceAt(int arg0, int arg1) {
 // A faithful reconstruction needs the corrected boundary first; pinned no-body so
 // its RVA registers and the unit builds. See report.
 RVA(0x00098c90, 0x31f)
-int CInGameIcon::Serialize(CArchive*, int, int, int) {
+i32 CInGameIcon::Serialize(CArchive*, i32, i32, i32) {
     return 0;
 }
 
@@ -272,11 +272,11 @@ int CInGameIcon::Serialize(CArchive*, int, int, int) {
 // When v != 0, look it up in the registry's CMap (g_gameReg->m_30->m_28, Lookup
 // at +0x10) into a local, then store the located value (or 0) into +0x54.
 RVA(0x00099b10, 0x36)
-void CInGameIcon::SetField54(int v) {
+void CInGameIcon::SetField54(i32 v) {
     void* found = 0;
     if (v != 0) {
         found = 0;
         g_gameReg->m_30->m_28->m_10map.Lookup((void*)v, &found);
     }
-    m_54 = (int)found;
+    m_54 = (i32)found;
 }

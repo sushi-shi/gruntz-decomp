@@ -15,17 +15,17 @@
 // The DirectDraw work surface (this+0x10, callers pass it at +0x2c).
 struct LfxSurface {
     char m_pad[0x20];
-    int m_20; // +0x20 bytes-per-pixel / x stride
+    i32 m_20; // +0x20 bytes-per-pixel / x stride
     char m_pad2[0x8c];
-    int m_b0;         // +0xb0 pitch
-    int Init0(int a); // engine method on a freshly-alloc'd surface (FUN_0053edb0)
+    i32 m_b0;         // +0xb0 pitch
+    i32 Init0(i32 a); // engine method on a freshly-alloc'd surface (FUN_0053edb0)
 };
 
 // The surface pool the manager points at (m_0c->m_1c). __thiscall Free/Alloc map
 // to the engine routines FUN_00542160 / FUN_00542e60 (reloc-masked, no body).
 struct LfxSurfPool {
     void Free(LfxSurface* s);                                // FUN_00542160
-    LfxSurface* Alloc(int w, int h, int a3, int a4, int a5); // FUN_00542e60
+    LfxSurface* Alloc(i32 w, i32 h, i32 a3, i32 a4, i32 a5); // FUN_00542e60
 };
 
 // The surface manager (this+0xc): +0x1c holds the surface pool.
@@ -37,13 +37,13 @@ struct LfxSurfMgr {
 // The surface-info source (this+0x8): +0xc / +0x10 are the requested w / h.
 struct LfxSurfInfo {
     char m_pad[0xc];
-    int m_0c; // +0xc width
-    int m_10; // +0x10 height
+    i32 m_0c; // +0xc width
+    i32 m_10; // +0x10 height
 };
 
 // The draw context the apply-paths hand the pixel coords to (FUN_004d5f00).
 struct LfxDrawCtx {
-    void DrawAt(int px, int py); // FUN_004d5f00 (__thiscall on m_00->m_2c)
+    void DrawAt(i32 px, i32 py); // FUN_004d5f00 (__thiscall on m_00->m_2c)
 };
 
 // The render manager (this+0x00, set by Init). Init copies +0x68/+0x70/+0x30 into
@@ -61,7 +61,7 @@ struct LfxMgr {
 // A surface the global-apply path blits through (g_gameReg->m_68). The 7-arg
 // engine entry FUN_00479520 is reloc-masked (no body).
 struct LfxBlitTarget {
-    void Blit(int px, int py, int a3, int a4, int a5, int a6, int a7); // FUN_00479520
+    void Blit(i32 px, i32 py, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7); // FUN_00479520
 };
 
 // g_gameReg singleton (*0x64556c); only the +0x68 surface slot is read.
@@ -75,7 +75,7 @@ extern CGameReg* g_gameReg;
 // CLightFxRender::Init  (0x0a32c0)  - bind the manager, validate, zero state.
 // ===========================================================================
 RVA(0x000a32c0, 0x72)
-int CLightFxRender::Init(LfxMgr* mgr, int arg2) {
+i32 CLightFxRender::Init(LfxMgr* mgr, i32 arg2) {
     if (mgr == 0) {
         return 0;
     }
@@ -134,7 +134,7 @@ void CLightFxRender::FreeSurface() {
 // 99.68% - regalloc tail: the two adjacent loads info->m_0c / info->m_10 land in
 // swapped registers vs retail (edx<->eax); values + push order identical.
 RVA(0x000a33e0, 0x55)
-int CLightFxRender::AllocSurface() {
+i32 CLightFxRender::AllocSurface() {
     if (m_08 == 0) {
         return 0;
     }
@@ -163,13 +163,13 @@ int CLightFxRender::AllocSurface() {
 // reloc-masked call displacements + a 1-instr head schedule swap (lea edi before
 // mov ecx,0xfa vs retail's mov-ecx-first). Logic 100% correct.
 RVA(0x000a3c90, 0xc7)
-int CLightFxRender::BuildShape(int shape) {
+i32 CLightFxRender::BuildShape(i32 shape) {
     if (shape > 8) {
         return 0;
     }
     {
-        unsigned* p = (unsigned*)m_buf;
-        for (int i = 0; i < 0xfa; i++) {
+        u32* p = (u32*)m_buf;
+        for (i32 i = 0; i < 0xfa; i++) {
             p[i] = 0;
         }
     }
@@ -229,7 +229,7 @@ int CLightFxRender::BuildShape(int shape) {
 // @early-stop
 // deferred: ~2KB 16-bit-color shape generator (FPU + RGB-shift mask), one of 8.
 RVA(0x000a3dc0, 0x85f)
-int CLightFxRender::Shape1() {
+i32 CLightFxRender::Shape1() {
     return 0;
 }
 
@@ -237,11 +237,11 @@ int CLightFxRender::Shape1() {
 // CLightFxRender::FillSpan  (0x0a4840)  - fill a 16-bit span in the +0x4c buffer.
 // ===========================================================================
 RVA(0x000a4840, 0x32)
-void CLightFxRender::FillSpan(unsigned x1, unsigned x2, unsigned short color) {
+void CLightFxRender::FillSpan(u32 x1, u32 x2, u16 color) {
     if (x1 > x2) {
         return;
     }
-    for (unsigned i = x1; i <= x2; i++) {
+    for (u32 i = x1; i <= x2; i++) {
         m_buf[i] = color;
     }
 }
@@ -258,43 +258,43 @@ void CLightFxRender::FillSpan(unsigned x1, unsigned x2, unsigned short color) {
 // @early-stop
 // deferred: ~2KB shape generator (newly discovered via the BuildShape switch).
 RVA(0x000a4890, 0x852)
-int CLightFxRender::Shape2() {
+i32 CLightFxRender::Shape2() {
     return 0;
 }
 // @early-stop
 // deferred: ~2KB shape generator (target).
 RVA(0x000a5310, 0x855)
-int CLightFxRender::Shape3() {
+i32 CLightFxRender::Shape3() {
     return 0;
 }
 // @early-stop
 // deferred: ~2KB shape generator (target).
 RVA(0x000a5d90, 0x825)
-int CLightFxRender::Shape4() {
+i32 CLightFxRender::Shape4() {
     return 0;
 }
 // @early-stop
 // deferred: ~2KB shape generator (newly discovered via the BuildShape switch).
 RVA(0x000a67d0, 0x864)
-int CLightFxRender::Shape5() {
+i32 CLightFxRender::Shape5() {
     return 0;
 }
 // @early-stop
 // deferred: ~2KB shape generator (target).
 RVA(0x000a7260, 0x8c0)
-int CLightFxRender::Shape6() {
+i32 CLightFxRender::Shape6() {
     return 0;
 }
 // @early-stop
 // deferred: ~2KB shape generator (newly discovered via the BuildShape switch).
 RVA(0x000a7d50, 0x94f)
-int CLightFxRender::Shape7() {
+i32 CLightFxRender::Shape7() {
     return 0;
 }
 // @early-stop
 // deferred: ~2KB shape generator (newly discovered via the BuildShape switch).
 RVA(0x000a8900, 0x926)
-int CLightFxRender::Shape8() {
+i32 CLightFxRender::Shape8() {
     return 0;
 }
 
@@ -304,8 +304,8 @@ int CLightFxRender::Shape8() {
 // Always latches m_48 = 1.
 // ===========================================================================
 RVA(0x000a9480, 0x5c)
-int CLightFxRender::ApplyA(int, int x, int y) {
-    int cell[2];
+i32 CLightFxRender::ApplyA(i32, i32 x, i32 y) {
+    i32 cell[2];
     if (!ClampRect(x, y, cell, 0x20)) {
         return 0;
     }
@@ -321,7 +321,7 @@ int CLightFxRender::ApplyA(int, int x, int y) {
 // CLightFxRender::ClearHandle  (0x0a9500)
 // ===========================================================================
 RVA(0x000a9500, 0x16)
-int CLightFxRender::ClearHandle(int, int, int) {
+i32 CLightFxRender::ClearHandle(i32, i32, i32) {
     if (m_48 != 0) {
         m_48 = 0;
     }
@@ -333,8 +333,8 @@ int CLightFxRender::ClearHandle(int, int, int) {
 // blit the effect through the global g_gameReg surface (+0x68).
 // ===========================================================================
 RVA(0x000a9550, 0x5b)
-int CLightFxRender::ApplyGlobal(int, int x, int y) {
-    int cell[2];
+i32 CLightFxRender::ApplyGlobal(i32, i32 x, i32 y) {
+    i32 cell[2];
     if (!ClampRect(x, y, cell, 0x20)) {
         return 0;
     }
@@ -346,11 +346,11 @@ int CLightFxRender::ApplyGlobal(int, int x, int y) {
 // CLightFxRender::ApplyB  (0x0a95d0)  - like ApplyA, but only if m_48 is latched.
 // ===========================================================================
 RVA(0x000a95d0, 0x69)
-int CLightFxRender::ApplyB(int, int x, int y) {
+i32 CLightFxRender::ApplyB(i32, i32 x, i32 y) {
     if (m_48 == 0) {
         return 0;
     }
-    int cell[2];
+    i32 cell[2];
     if (!ClampRect(x, y, cell, 0x20)) {
         return 0;
     }
@@ -371,7 +371,7 @@ int CLightFxRender::ApplyB(int, int x, int y) {
 // is structurally byte-identical, but MSVC pins x in eax / y in esi where retail
 // pins x in edx / y in eax - a pervasive register rename through every instr.
 RVA(0x000a9660, 0xca)
-int CLightFxRender::ClampRect(int x, int y, int* out, int margin) {
+i32 CLightFxRender::ClampRect(i32 x, i32 y, i32* out, i32 margin) {
     if (x < m_24 || x > m_2c || y < m_28 || y > m_30) {
         return 0;
     }

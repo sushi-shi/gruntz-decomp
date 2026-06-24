@@ -20,11 +20,11 @@
 // CTileGridCommand classifier (RVA 0x112970, a __thiscall returning 0/-1/+1).
 class TtcElem {
 public:
-    int Classify(void* arg); // 0x112970
+    i32 Classify(void* arg); // 0x112970
     void* m_vptr;            // +0x00
     char _pad04[0x18 - 0x04];
-    int m_18;
-    int m_1c; // +0x1c  cleared before delete
+    i32 m_18;
+    i32 m_1c; // +0x1c  cleared before delete
 };
 
 // ---------------------------------------------------------------------------
@@ -51,7 +51,7 @@ void CTileTriggerContainer::DtorBase() {
 // through eax with twin ecx/esi copies and hoists arg to edx, vs our single
 // callee-saved esi direct-deref.  See docs/patterns/linked-list-walk-node-eax-rotation.md
 RVA(0x00116e60, 0x59)
-int CTileTriggerContainer::DelFromList1(void* data) {
+i32 CTileTriggerContainer::DelFromList1(void* data) {
     TtcNode* node = m_list1.m_pNodeHead;
     if (node == 0) {
         return 0;
@@ -79,13 +79,13 @@ int CTileTriggerContainer::DelFromList1(void* data) {
 // whose +0x10 == a and (b == 0 || +0x04 == b); returns the element, else NULL.
 // ---------------------------------------------------------------------------
 RVA(0x00116f20, 0x51)
-void* CTileTriggerContainer::FindInLists12(int a, int b) {
+void* CTileTriggerContainer::FindInLists12(i32 a, i32 b) {
     TtcNode* node = m_list1.m_pNodeHead;
     if (node != 0) {
         do {
             TtcNode* cur = node;
             node = node->m_next;
-            int* elem = (int*)cur->m_data;
+            i32* elem = (i32*)cur->m_data;
             if (elem[4] == a) {
                 if (b == 0) {
                     return elem;
@@ -101,7 +101,7 @@ void* CTileTriggerContainer::FindInLists12(int a, int b) {
         do {
             TtcNode* cur = node;
             node = node->m_next;
-            int* elem = (int*)cur->m_data;
+            i32* elem = (i32*)cur->m_data;
             if (elem[4] == a) {
                 if (b == 0) {
                     return elem;
@@ -127,14 +127,14 @@ void* CTileTriggerContainer::FindInLists12(int a, int b) {
 // identical; same node-eax-rotation vs callee-saved-esi shape as the siblings.
 // See docs/patterns/linked-list-walk-node-eax-rotation.md
 RVA(0x001170b0, 0x72)
-int CTileTriggerContainer::FilterList2(void* arg) {
+i32 CTileTriggerContainer::FilterList2(void* arg) {
     TtcNode* node = m_list2.m_pNodeHead;
     if (node != 0) {
         do {
             TtcNode* cur = node;
             node = node->m_next;
             TtcElem* elem = (TtcElem*)cur->m_data;
-            int r = elem->Classify(arg);
+            i32 r = elem->Classify(arg);
             if (r == 0) {
                 m_list2.RemoveAt(cur);
                 if (elem != 0) {
@@ -161,7 +161,7 @@ int CTileTriggerContainer::FilterList2(void* arg) {
 // node-eax-rotation vs callee-saved-esi shape as the siblings.
 // See docs/patterns/linked-list-walk-node-eax-rotation.md
 RVA(0x00117150, 0x53)
-int CTileTriggerContainer::MoveList1ToList2(void* data) {
+i32 CTileTriggerContainer::MoveList1ToList2(void* data) {
     TtcNode* node = m_list1.m_pNodeHead;
     if (node == 0) {
         return 0;
@@ -173,7 +173,7 @@ int CTileTriggerContainer::MoveList1ToList2(void* data) {
         if (elem == data) {
             m_list1.RemoveAt(cur);
             m_list2.AddTail(elem);
-            *((int*)elem + 14) = 0; // elem+0x38
+            *((i32*)elem + 14) = 0; // elem+0x38
             return 1;
         }
     } while (node != 0);
@@ -191,10 +191,10 @@ int CTileTriggerContainer::MoveList1ToList2(void* data) {
 // node-eax-rotation vs callee-saved-esi shape as the siblings.
 // See docs/patterns/linked-list-walk-node-eax-rotation.md
 RVA(0x00117200, 0x53)
-int CTileTriggerContainer::DelFromList3(void* data) {
+i32 CTileTriggerContainer::DelFromList3(void* data) {
     for (TtcNode* node = m_list3.m_pNodeHead; node != 0; node = node->m_next) {
-        int* elem = (int*)node->m_data;
-        if (elem == (int*)data) {
+        i32* elem = (i32*)node->m_data;
+        if (elem == (i32*)data) {
             if (elem != 0) {
                 elem[4] = 0; // elem+0x10
                 RezFree(elem);

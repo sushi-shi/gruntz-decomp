@@ -5,7 +5,7 @@
 // CWayPoint : CUserLogic (RTTI). sizeof 0x54.
 class CWayPoint : public CUserLogic {
 public:
-    CWayPoint(int);
+    CWayPoint(i32);
     char m_size_pad[0x14]; // own region over CUserLogic (0x40)
 };
 SIZE(CWayPoint, 0x54);

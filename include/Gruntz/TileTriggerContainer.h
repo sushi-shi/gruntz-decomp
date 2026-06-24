@@ -12,6 +12,8 @@
 #ifndef SRC_GRUNTZ_TILETRIGGERCONTAINER_H
 #define SRC_GRUNTZ_TILETRIGGERCONTAINER_H
 
+#include <Ints.h>
+
 // The Rez heap free (RVA 0x1b9b82, _RezFree); reloc-masked rel32 callee.
 extern "C" void RezFree(void* p);
 
@@ -40,11 +42,11 @@ public:
 
 class CTileTriggerContainer {
 public:
-    int DelFromList1(void* data);      // 0x116e60
-    void* FindInLists12(int a, int b); // 0x116f20
-    int FilterList2(void* arg);        // 0x1170b0
-    int MoveList1ToList2(void* data);  // 0x117150
-    int DelFromList3(void* data);      // 0x117200
+    i32 DelFromList1(void* data);      // 0x116e60
+    void* FindInLists12(i32 a, i32 b); // 0x116f20
+    i32 FilterList2(void* arg);        // 0x1170b0
+    i32 MoveList1ToList2(void* data);  // 0x117150
+    i32 DelFromList3(void* data);      // 0x117200
 
     // A no-arg __thiscall helper (RVA 0x116fa0) invoked by DtorBase when +0x74 is
     // set; reloc-masked rel32 callee (body still stubbed for the final sweep).

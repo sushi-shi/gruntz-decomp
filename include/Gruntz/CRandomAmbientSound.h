@@ -30,8 +30,8 @@ public:
 
 class DirectSoundMgr {
 public:
-    int StopAndRewind();                // 0x135380  (thiscall, no args)
-    int winapi_136e20_timeGetTime(int); // 0x136e20  (thiscall, 1 arg)
+    i32 StopAndRewind();                // 0x135380  (thiscall, no args)
+    i32 winapi_136e20_timeGetTime(i32); // 0x136e20  (thiscall, 1 arg)
 };
 
 // One active sound channel hanging off a list node. Polymorphic: the teardown /
@@ -39,16 +39,16 @@ public:
 // 3-arg retune at slot 3). The class + its vtable live in another TU, so it is
 // modeled as a small typed shell whose virtual calls reloc-mask by slot.
 struct CSoundChannel {
-    virtual void ScalarDtor(int flag); // slot 0  -> call [vptr]
+    virtual void ScalarDtor(i32 flag); // slot 0  -> call [vptr]
     virtual void Slot1();
     virtual void Slot2();
-    virtual void Retune(int a1, int a2, int a3); // slot 3 -> call [vptr+0xc]
+    virtual void Retune(i32 a1, i32 a2, i32 a3); // slot 3 -> call [vptr+0xc]
 
-    void Recompute(int frame); // 0x00bf10  (non-virtual, defined elsewhere)
+    void Recompute(i32 frame); // 0x00bf10  (non-virtual, defined elsewhere)
 
     DirectSoundMgr* m_04; // +0x04  DirectSound handle (StopAndRewind target)
     char m_pad08[0x14 - 0x08];
-    int m_14; // +0x14  cleared on stop/retune
+    i32 m_14; // +0x14  cleared on stop/retune
 };
 
 // MFC CPtrList node, walked raw: next at +0x00, the channel payload at +0x08.
@@ -67,8 +67,8 @@ struct CSoundChannelList {
     CSoundNode* m_tail; // +0x08
     void* m_free;       // +0x0c
     void* m_blocks;     // +0x10
-    int m_blockSize;    // +0x14
-    int m_count;        // +0x18
+    i32 m_blockSize;    // +0x14
+    i32 m_count;        // +0x18
 
     void RemoveAll();     // 0x1b48a6
     ~CSoundChannelList(); // 0x1b48c6
@@ -83,21 +83,21 @@ struct CRandomAmbientWorld {
 
 class CRandomAmbientSound {
 public:
-    int Init(void* world, void* a2); // 0x00b5e0
+    i32 Init(void* world, void* a2); // 0x00b5e0
     void Teardown();                 // 0x00b660
     void Restart(void* a1);          // 0x00bc30
     void Stop();                     // 0x00bc80
     void Resume();                   // 0x00bcf0
-    void Retune(int pan, int vol);   // 0x00bd60
+    void Retune(i32 pan, i32 vol);   // 0x00bd60
     void Deactivate();               // 0x00b620  (sibling, defined elsewhere)
     ~CRandomAmbientSound();          // 0x085ed0
 
     CRandomAmbientWorld* m_world; // +0x00
     void* m_04;                   // +0x04
     CSoundChannelList m_list;     // +0x08  head at +0x0c
-    int m_24;                     // +0x24  active flag
-    int m_28;                     // +0x28  pan
-    int m_2c;                     // +0x2c  vol
+    i32 m_24;                     // +0x24  active flag
+    i32 m_28;                     // +0x28  pan
+    i32 m_2c;                     // +0x2c  vol
 };
 
 #endif // GRUNTZ_CRANDOMAMBIENTSOUND_H

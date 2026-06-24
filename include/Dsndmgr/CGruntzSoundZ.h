@@ -15,6 +15,8 @@
 #ifndef GRUNTZ_DSNDMGR_CGRUNTZSOUNDZ_H
 #define GRUNTZ_DSNDMGR_CGRUNTZSOUNDZ_H
 
+#include <Ints.h>
+
 #include <Mfc.h> // real MFC CMapStringToOb / CObject / CString / POSITION
 
 // The inner per-bank sound object (allocated 0x60 bytes, vtable @ 0x5ef700). Only
@@ -25,36 +27,36 @@
 class CGruntzSoundInnerZ {
 public:
     virtual void Slot00();                    // +0x00
-    virtual int ScalarDtor(int flag);         // +0x04  scalar deleting dtor
+    virtual i32 ScalarDtor(i32 flag);         // +0x04  scalar deleting dtor
     virtual void Slot08();                    // +0x08
     virtual void Slot0C();                    // +0x0c
     virtual void Slot10();                    // +0x10
-    virtual int Init(int a1, int a2, int a3); // +0x14  one-time setup
+    virtual i32 Init(i32 a1, i32 a2, i32 a3); // +0x14  one-time setup
     virtual void Slot18();                    // +0x18
     virtual void Slot1C();                    // +0x1c
     virtual void Slot20();                    // +0x20
-    virtual int Play(int hDriver, int a2);    // +0x24
+    virtual i32 Play(i32 hDriver, i32 a2);    // +0x24
     virtual void Slot28();                    // +0x28
     virtual void Slot2C();                    // +0x2c
-    virtual int Stop();                       // +0x30  stop / status query
+    virtual i32 Stop();                       // +0x30  stop / status query
 };
 
 class CGruntzSoundZ : public CMapStringToOb {
 public:
     ~CGruntzSoundZ();           // body at RVA 0x086040
-    int Shutdown_1384f0();      // defined in the sibling AIL TU (RVA 0x1384f0)
+    i32 Shutdown_1384f0();      // defined in the sibling AIL TU (RVA 0x1384f0)
     void StopAndFlush_138530(); // stop current + destroy every map entry
-    CGruntzSoundInnerZ* CreateBank_138670(int a1, int a2, int a3);
+    CGruntzSoundInnerZ* CreateBank_138670(i32 a1, i32 a2, i32 a3);
     void Insert_138700(CGruntzSoundInnerZ* inner);
     CGruntzSoundInnerZ* Lookup_138730(const char* key);
-    int Play_138840(int a1, int a2);
+    i32 Play_138840(i32 a1, i32 a2);
     void StopCurrent_1388a0();
-    int IsPlaying_138920();
+    i32 IsPlaying_138920();
 
     CGruntzSoundInnerZ* m_pCurrent; // +0x1c
-    int m_digHandle;                // +0x20
-    int m_mdiHandle;                // +0x24
-    int m_enabled;                  // +0x28
+    i32 m_digHandle;                // +0x20
+    i32 m_mdiHandle;                // +0x24
+    i32 m_enabled;                  // +0x28
 };
 
 #endif // GRUNTZ_DSNDMGR_CGRUNTZSOUNDZ_H

@@ -9,12 +9,12 @@
 
 // HWND comes from the real <windows.h> (via Win32.h; pure-Win32 TU, no MFC).
 #include <Win32.h>
-typedef long intptr_t; // VC5 predates <stdint.h>; the one HP_Callback cast below needs it.
+typedef i32 intptr_t; // VC5 predates <stdint.h>; the one HP_Callback cast below needs it.
 
 class UnknownCGruntzMgrLuciusChild {
 public:
-    int m_10;
-    int m_14;
+    i32 m_10;
+    i32 m_14;
 };
 
 class CDDrawSubMgr {
@@ -24,7 +24,7 @@ public:
     virtual void Slot08();
     virtual void Slot0C();
     virtual void Slot10();
-    virtual int Vfunc14();
+    virtual i32 Vfunc14();
 
     void* m_04;
     UnknownCGruntzMgrLuciusChild* m_10;
@@ -35,18 +35,18 @@ class CDDrawSurfaceMgr {
 public:
     CDDrawSurfaceMgr();
     virtual ~CDDrawSurfaceMgr();
-    virtual int UnknownVirtualMethod14();
-    virtual int UnknownVirtualMethod18(HWND hWnd, int width, int height, int bpp, int flagsUnknown);
+    virtual i32 UnknownVirtualMethod14();
+    virtual i32 UnknownVirtualMethod18(HWND hWnd, i32 width, i32 height, i32 bpp, i32 flagsUnknown);
     virtual void UnknownVirtualMethod1C();
     virtual void UnknownVirtualMethod20();
-    virtual int UnknownVirtualMethod24(int x, int y, int flags);
+    virtual i32 UnknownVirtualMethod24(i32 x, i32 y, i32 flags);
     virtual void UnknownVirtualMethod28(void* hWnd);
-    virtual int UnknownVirtualMethod2C(int unknown);
-    virtual int
-    UnknownVirtualMethod30(int width, int height, int bpp, int flagsUnknown, void* callback);
-    virtual int
-    UnknownVirtualMethod34(int width, int height, int bpp, int flagsUnknown, void* callback);
-    virtual int UnknownVirtualMethod38(void* arg1, int arg2, int arg3, int arg4);
+    virtual i32 UnknownVirtualMethod2C(i32 unknown);
+    virtual i32
+    UnknownVirtualMethod30(i32 width, i32 height, i32 bpp, i32 flagsUnknown, void* callback);
+    virtual i32
+    UnknownVirtualMethod34(i32 width, i32 height, i32 bpp, i32 flagsUnknown, void* callback);
+    virtual i32 UnknownVirtualMethod38(void* arg1, i32 arg2, i32 arg3, i32 arg4);
 
     // Engine-label backlog stubs.
     void UnknownVirtualMethod18();
@@ -63,15 +63,15 @@ public:
     MinervaMgr* m_28;   // +0x28  Minerva
     void* m_2c;         // +0x2c  Pettigrew
     HWND m_hWnd;        // +0x30
-    int m_flags;        // +0x34
-    int m_38;           // +0x38
-    int m_3c;           // +0x3c
+    i32 m_flags;        // +0x34
+    i32 m_38;           // +0x38
+    i32 m_3c;           // +0x3c
 };
 
 DATA(0x002bf3c0)
-extern "C" unsigned int g_6bf3c0; // draw-clock mirror
+extern "C" u32 g_6bf3c0; // draw-clock mirror
 DATA(0x002bf3bc)
-extern "C" unsigned int g_6bf3bc; // draw-delta mirror
+extern "C" u32 g_6bf3bc; // draw-delta mirror
 
 // ---------------------------------------------------------------------------
 // CDDrawSurfaceMgr::CDDrawSurfaceMgr()
@@ -102,7 +102,7 @@ CDDrawSurfaceMgr::CDDrawSurfaceMgr() {
 // Returns whether the core child managers are present and the first child accepts
 // its +0x14 virtual readiness check.
 RVA(0x00155f00, 0x41)
-int CDDrawSurfaceMgr::UnknownVirtualMethod14() {
+i32 CDDrawSurfaceMgr::UnknownVirtualMethod14() {
     CDDrawSubMgr* first = m_04;
 
     if (first == 0) {
@@ -144,11 +144,11 @@ struct MinervaMgr {
     MinervaInner* m_2c; // +0x2c  inner (Free'd on context teardown)
 };
 extern void __cdecl RelayHwnd(void* hWnd);
-extern int __stdcall CreateChildSurface(int x, int y, int flags);
+extern i32 __stdcall CreateChildSurface(i32 x, i32 y, i32 flags);
 struct RemusCoordsHelper {
-    int SetCoords(int x, int y);
+    i32 SetCoords(i32 x, i32 y);
 };
-typedef int(__cdecl* HP_Callback)(void*, void*, int, int, int);
+typedef i32(__cdecl* HP_Callback)(void*, void*, i32, i32, i32);
 
 // ---------------------------------------------------------------------------
 // CDDrawSurfaceMgr::UnknownVirtualMethod20()
@@ -171,7 +171,7 @@ void CDDrawSurfaceMgr::UnknownVirtualMethod20() {
 // CDDrawSurfaceMgr::UnknownVirtualMethod24()
 // Validates/sets surface dimensions.
 RVA(0x00155f60, 0x56)
-int CDDrawSurfaceMgr::UnknownVirtualMethod24(int x, int y, int flags) {
+i32 CDDrawSurfaceMgr::UnknownVirtualMethod24(i32 x, i32 y, i32 flags) {
     UnknownCGruntzMgrLuciusChild* child = m_04->m_10;
     if (child->m_10 != x || child->m_14 != y) {
         if (CreateChildSurface(x, y, flags) == 0) {
@@ -199,7 +199,7 @@ void CDDrawSurfaceMgr::UnknownVirtualMethod28(void* hWnd) {
 // Dispatches arguments through the m_3c callback function pointer,
 // returning 1 on success / 0 on failure.
 RVA(0x00156a90, 0x3a)
-int CDDrawSurfaceMgr::UnknownVirtualMethod38(void* arg1, int arg2, int arg3, int arg4) {
+i32 CDDrawSurfaceMgr::UnknownVirtualMethod38(void* arg1, i32 arg2, i32 arg3, i32 arg4) {
     if (!arg1) {
         return 0;
     }
@@ -212,17 +212,17 @@ int CDDrawSurfaceMgr::UnknownVirtualMethod38(void* arg1, int arg2, int arg3, int
 // Out-of-line stubs so the vftable is emitted in this TU. They are not claimed
 // as matched in symbol_names.csv.
 CDDrawSurfaceMgr::~CDDrawSurfaceMgr() {}
-int CDDrawSurfaceMgr::UnknownVirtualMethod18(HWND, int, int, int, int) {
+i32 CDDrawSurfaceMgr::UnknownVirtualMethod18(HWND, i32, i32, i32, i32) {
     return 0;
 }
 void CDDrawSurfaceMgr::UnknownVirtualMethod1C() {}
-int CDDrawSurfaceMgr::UnknownVirtualMethod2C(int) {
+i32 CDDrawSurfaceMgr::UnknownVirtualMethod2C(i32) {
     return 0;
 }
-int CDDrawSurfaceMgr::UnknownVirtualMethod30(int, int, int, int, void*) {
+i32 CDDrawSurfaceMgr::UnknownVirtualMethod30(i32, i32, i32, i32, void*) {
     return 0;
 }
-int CDDrawSurfaceMgr::UnknownVirtualMethod34(int, int, int, int, void*) {
+i32 CDDrawSurfaceMgr::UnknownVirtualMethod34(i32, i32, i32, i32, void*) {
     return 0;
 }
 

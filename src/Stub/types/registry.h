@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_REGISTRY_H
 #define GRUNTZ_REGISTRY_H
 
+#include <Ints.h>
+
 /*
  * Registry-backed configuration.
  *
@@ -28,47 +30,47 @@ typedef void* CfgCString;
 
 struct GruntzRegistryConfig {
     /* --- Audio (master enable flags + volumes) --- */
-    int disableAudio;        // "Disable Audio"
-    int disableSound;        // "Disable Sound"
-    int disableMusic;        // "Disable Music"
-    int disableSoundFonts;   // "Disable SoundFonts"
-    int disableSoundEffectz; // "Disable Sound Effectz"
-    int ambient;             // "Ambient"   (ambient-sound enable flag)
-    int soundVolume;         // "Sound Volume"   (default 60)
-    int musicVolume;         // "Music Volume"   (default 100)
-    int voiceVolume;         // "Voice Volume"   (default 80)
-    int sound;               // "Sound"   (enable flag)
-    int music;               // "Music"   (enable flag)
-    int voice;               // "Voice"   (enable flag)
+    i32 disableAudio;        // "Disable Audio"
+    i32 disableSound;        // "Disable Sound"
+    i32 disableMusic;        // "Disable Music"
+    i32 disableSoundFonts;   // "Disable SoundFonts"
+    i32 disableSoundEffectz; // "Disable Sound Effectz"
+    i32 ambient;             // "Ambient"   (ambient-sound enable flag)
+    i32 soundVolume;         // "Sound Volume"   (default 60)
+    i32 musicVolume;         // "Music Volume"   (default 100)
+    i32 voiceVolume;         // "Voice Volume"   (default 80)
+    i32 sound;               // "Sound"   (enable flag)
+    i32 music;               // "Music"   (enable flag)
+    i32 voice;               // "Voice"   (enable flag)
 
     /* --- Video --- */
-    int resolution;               // "Resolution"  (default 1; decoded -> width/height)
-    int disableDirectVideoAccess; // "Disable Direct Video Access"
-    int disableFades;             // "Disable Fades"
-    int disableHighQualityMovie;  // "Disable High Quality Movie"
-    int enableEmulation;          // "Enable Emulation"
-    int enableHiColor;            // "Enable HiColor"
-    int enableTrueColor;          // "Enable TrueColor"
-    int enableTriple;             // "Enable Triple"   (triple buffering)
-    int highDetail;               // "High Detail"   (default 1)
-    int interlaced;               // "Interlaced"    (default 0)
+    i32 resolution;               // "Resolution"  (default 1; decoded -> width/height)
+    i32 disableDirectVideoAccess; // "Disable Direct Video Access"
+    i32 disableFades;             // "Disable Fades"
+    i32 disableHighQualityMovie;  // "Disable High Quality Movie"
+    i32 enableEmulation;          // "Enable Emulation"
+    i32 enableHiColor;            // "Enable HiColor"
+    i32 enableTrueColor;          // "Enable TrueColor"
+    i32 enableTriple;             // "Enable Triple"   (triple buffering)
+    i32 highDetail;               // "High Detail"   (default 1)
+    i32 interlaced;               // "Interlaced"    (default 0)
 
     /* --- Input / scroll --- */
-    int disableJoystick; // "Disable Joystick"
-    int scrollSpeed;     // "Scroll Speed"   (default 20)
+    i32 disableJoystick; // "Disable Joystick"
+    i32 scrollSpeed;     // "Scroll Speed"   (default 20)
 
     /* --- Gameplay --- */
-    int easyMode;          // "Easy Mode"     (default 0)
-    int checkpointPrompts; // "Checkpoint Prompts"   (default 1)
-    int enableCheatzfile;  // "Enable Cheatzfile"   (gates CHEATZ.TXT)
+    i32 easyMode;          // "Easy Mode"     (default 0)
+    i32 checkpointPrompts; // "Checkpoint Prompts"   (default 1)
+    i32 enableCheatzfile;  // "Enable Cheatzfile"   (gates CHEATZ.TXT)
     CfgCString playerName; // "Player Name"
     CfgCString gameName;   // "Game Name"
-    int defaultMaxGruntz;  // "DefaultMaxGruntz"
+    i32 defaultMaxGruntz;  // "DefaultMaxGruntz"
 
     /* --- Install / session bookkeeping --- */
     CfgCString cdRomDrive; // "CdRom Drive"   (cached CD drive letter, string)
-    int numRuns;           // "Num Runs"      (times the game has been launched)
-    int numMovies;         // "Num Movies"    (intro/movie playback counter)
+    i32 numRuns;           // "Num Runs"      (times the game has been launched)
+    i32 numMovies;         // "Num Movies"    (intro/movie playback counter)
 
     /*
      * --- Per-save / last-used (INDEXED slots) ---

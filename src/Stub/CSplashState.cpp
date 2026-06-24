@@ -21,14 +21,14 @@ public:
 // The sound loader the SOUNDZ namespace is handed to (reloc-masked external).
 class CSoundLoader {
 public:
-    int LoadNamespace(CAssetNamespace* ns, char* szPrefix, char* szSuffix); // FUN_00557ee0
+    i32 LoadNamespace(CAssetNamespace* ns, char* szPrefix, char* szSuffix); // FUN_00557ee0
 };
 
 // The display/view object reached through this->m_4. SetVideoMode() is the
 // 0x280x0x1e0 (640x480) display-mode setter (ErrorThunk_08ddd0, thiscall).
 class CSplashView {
 public:
-    int SetVideoMode(int bForce);
+    i32 SetVideoMode(i32 bForce);
 };
 
 // The owner that hands the loaded sound set off through its m_28 sound loader.
@@ -45,8 +45,8 @@ extern "C" char g_emptyString[]; // 0x6293f4
 // GetLength() reads nDataLength out of the CStringData header at m_pszData - 8.
 struct CString {
     char* m_pszData;
-    int GetLength() const {
-        return ((int*)m_pszData)[-2];
+    i32 GetLength() const {
+        return ((i32*)m_pszData)[-2];
     }
 };
 
@@ -56,9 +56,9 @@ extern CString g_assetRoot;
 
 class CSplashState {
 public:
-    int LoadSounds(int a, int b, int c);
+    i32 LoadSounds(i32 a, i32 b, i32 c);
 
-    int LoadGameAssetNamespaces(int a, int b, int c); // LoadGameAssetNamespaces
+    i32 LoadGameAssetNamespaces(i32 a, i32 b, i32 c); // LoadGameAssetNamespaces
 
     char m_pad00[0x4];
     CSplashView* m_4;     // +0x04 display/view object
@@ -77,7 +77,7 @@ public:
 // can never pair by name -> stuck at the documented reloc-masked plateau, NOT
 // exact. See docs/patterns/external-nobody-callee.md + reloc-typing-vptr-global.md.
 RVA(0x000f9780, 0x8c)
-int CSplashState::LoadSounds(int a, int b, int c) {
+i32 CSplashState::LoadSounds(i32 a, i32 b, i32 c) {
     if (g_assetRoot.GetLength() == 0) {
         return 0;
     }

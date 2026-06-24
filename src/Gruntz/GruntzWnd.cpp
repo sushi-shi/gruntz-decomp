@@ -11,7 +11,7 @@ class CGruntzWnd : public CGameWnd {
 public:
     CGruntzWnd();
     virtual ~CGruntzWnd() OVERRIDE;
-    virtual int Wap32GameWndVfunc0();
+    virtual i32 Wap32GameWndVfunc0();
 
     // Engine-label backlog stubs.
     void Stub_094670();
@@ -23,7 +23,7 @@ CGruntzWnd::CGruntzWnd() {}
 // Out-of-line stubs so the CGruntzWnd vftable is emitted in this TU;
 // not matched / not @address-annotated.
 CGruntzWnd::~CGruntzWnd() {}
-int CGruntzWnd::Wap32GameWndVfunc0() {
+i32 CGruntzWnd::Wap32GameWndVfunc0() {
     return 0;
 }
 

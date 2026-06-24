@@ -29,7 +29,7 @@
 // Win32-only here (the stub aggregate forbids <Mfc.h> after <windows.h>).
 class CButeMgr {
 public:
-    int GetIntDef(char* tag, char* key, int def);
+    i32 GetIntDef(char* tag, char* key, i32 def);
 };
 
 DATA(0x002453d8)
@@ -37,11 +37,11 @@ extern CButeMgr g_buteMgr;
 
 // The global default geometry source the sub-player setter consumes.
 DATA(0x002bf3bc)
-extern int g_defaultGeo;
+extern i32 g_defaultGeo;
 
 // The running game clock (low 32 bits of a 64-bit counter; the high half lives
 // in the byte after, read together as __int64 in the cooldown clamp).
-extern "C" unsigned int g_645588;
+extern "C" u32 g_645588;
 
 // The "Warlordz" config group + the "PanicRadius" key (original source string
 // literals; objdiff matches these .data relocations by value).
@@ -54,7 +54,7 @@ extern "C" unsigned int g_645588;
 // ---------------------------------------------------------------------------
 class CWarlordAnimSub {
 public:
-    int SetGeoSourceR(int src);
+    i32 SetGeoSourceR(i32 src);
 };
 
 class CWarlordAnimPlayer {
@@ -73,7 +73,7 @@ class CRegThreatHelper {
 public:
     // engine FUN_0047d1d0, __thiscall ret 0xc - nearest-enemy squared distance
     // from (x, y) over the warlord's owner index.
-    int NearestEnemyDist(int owner, int x, int y);
+    i32 NearestEnemyDist(i32 owner, i32 x, i32 y);
 };
 
 // ---------------------------------------------------------------------------
@@ -83,7 +83,7 @@ public:
 // ---------------------------------------------------------------------------
 struct CWarlordObjective {
     char m_pad00[0x4c];
-    int m_4c; // +0x4c  completion flag (0 = still playing)
+    i32 m_4c; // +0x4c  completion flag (0 = still playing)
 };
 
 struct CWarlordMission {
@@ -97,7 +97,7 @@ struct CWarlordMission {
 // ---------------------------------------------------------------------------
 class CRegBattleEvent {
 public:
-    void PostBattleEvent(int id, int event, int a, int b, int c);
+    void PostBattleEvent(i32 id, i32 event, i32 a, i32 b, i32 c);
 };
 
 // ---------------------------------------------------------------------------
@@ -105,12 +105,12 @@ public:
 // ---------------------------------------------------------------------------
 struct CWarlordOwner {
     char m_pad00[0x5c];
-    int m_5c; // +0x5c  position x
-    int m_60; // +0x60  position y
+    i32 m_5c; // +0x5c  position x
+    i32 m_60; // +0x60  position y
     char m_pad64[0x124 - 0x64];
-    int m_124; // +0x124  owner index
+    i32 m_124; // +0x124  owner index
     char m_pad128[0x188 - 0x128];
-    int m_188; // +0x188  the id passed to the registry battle-event helper
+    i32 m_188; // +0x188  the id passed to the registry battle-event helper
 };
 
 // ---------------------------------------------------------------------------
@@ -118,9 +118,9 @@ struct CWarlordOwner {
 // ---------------------------------------------------------------------------
 class CWarlord {
 public:
-    CWarlord(int);
-    int LoadAttributes();
-    int LoadAttributes2();
+    CWarlord(i32);
+    i32 LoadAttributes();
+    i32 LoadAttributes2();
 
     // tail helpers (engine, __thiscall).
     void NotifyFortUnderAttack();     // 0x45270
@@ -135,22 +135,22 @@ public:
     char m_pad14[0x38 - 0x14];
     CWarlordAnimPlayer* m_38; // +0x38  animation player
     char m_pad3c[0x88 - 0x3c];
-    int m_88; // +0x88  cooldown stamp lo (64-bit with m_8c)
-    int m_8c; // +0x8c  cooldown stamp hi
-    int m_90; // +0x90  cooldown window lo (64-bit with m_94)
-    int m_94; // +0x94  cooldown window hi
+    i32 m_88; // +0x88  cooldown stamp lo (64-bit with m_8c)
+    i32 m_8c; // +0x8c  cooldown stamp hi
+    i32 m_90; // +0x90  cooldown window lo (64-bit with m_94)
+    i32 m_94; // +0x94  cooldown window hi
 };
 
-extern "C" int rand(void);
+extern "C" i32 rand(void);
 
 // @confidence: med
 // @source: rtti-vptr
 // @stub
 RVA(0x00042d40, 0x73e)
-CWarlord::CWarlord(int) {}
+CWarlord::CWarlord(i32) {}
 
 RVA(0x00044c00, 0xc6)
-int CWarlord::LoadAttributes() {
+i32 CWarlord::LoadAttributes() {
     if (m_38->m_1a0.SetGeoSourceR(g_defaultGeo) != 1) {
         return 0;
     }
@@ -159,14 +159,14 @@ int CWarlord::LoadAttributes() {
     if (reg->m_134 != 1) {
         CWarlordOwner* o = m_10;
         CRegThreatHelper* helper = *(CRegThreatHelper**)((char*)reg + 0x68);
-        int dist = helper->NearestEnemyDist(o->m_124, o->m_5c, o->m_60);
+        i32 dist = helper->NearestEnemyDist(o->m_124, o->m_5c, o->m_60);
         if (dist < g_buteMgr.GetIntDef(s_Warlordz, s_PanicRadius, 0x40)) {
             NotifyFortUnderAttack();
             return 0;
         }
     }
 
-    if ((__int64)(unsigned)g_645588 - *(__int64*)&m_88 >= *(__int64*)&m_90) {
+    if ((i64)(u32)g_645588 - *(i64*)&m_88 >= *(i64*)&m_90) {
         if (rand() % 10 < 5) {
             ResolveIdleAnimation();
             return 0;
@@ -201,7 +201,7 @@ int CWarlord::LoadAttributes() {
 // A pure scratch ecx<->edx coin-flip - no source lever flips it (tried inline vs
 // named helper, m_2c-chain split; all no-change at the same plateau).
 RVA(0x00044d10, 0x106)
-int CWarlord::LoadAttributes2() {
+i32 CWarlord::LoadAttributes2() {
     if (m_38->m_1a0.SetGeoSourceR(g_defaultGeo) != 1) {
         return 0;
     }
@@ -209,7 +209,7 @@ int CWarlord::LoadAttributes2() {
     CGameReg* reg = g_gameReg;
     if (reg->m_134 != 1) {
         CWarlordOwner* o = m_10;
-        int dist = (*(CRegThreatHelper**)((char*)reg + 0x68))
+        i32 dist = (*(CRegThreatHelper**)((char*)reg + 0x68))
                        ->NearestEnemyDist(o->m_124, o->m_5c, o->m_60);
         if (dist >= g_buteMgr.GetIntDef(s_Warlordz, s_PanicRadius, 0x40)) {
             RaiseBattleAlert();
@@ -220,7 +220,7 @@ int CWarlord::LoadAttributes2() {
             ResolveMovingAnimation();
             return 0;
         }
-        if ((__int64)(unsigned)g_645588 - *(__int64*)&m_88 >= *(__int64*)&m_90) {
+        if ((i64)(u32)g_645588 - *(i64*)&m_88 >= *(i64*)&m_90) {
             CRegBattleEvent* sink = *(CRegBattleEvent**)((char*)reg + 0x60);
             sink->PostBattleEvent(m_10->m_188, 0x436, -1, -1, -1);
             m_90 = 0x7530;

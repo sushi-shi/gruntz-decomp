@@ -71,7 +71,7 @@ CFileIO::CFileIO(HANDLE hFile) {
 // ReadFile(m_handle, buf, n, &n, NULL); throws on failure; returns count read.
 // nCount==0 short-circuits to 0 before touching the handle.
 RVA(0x001bf328, 0x3a)
-unsigned int CFileIO::Read(void* lpBuf, unsigned int nCount) {
+u32 CFileIO::Read(void* lpBuf, u32 nCount) {
     if (nCount == 0) {
         return 0;
     }
@@ -91,7 +91,7 @@ unsigned int CFileIO::Read(void* lpBuf, unsigned int nCount) {
 // generic "disk full"/short-write error if fewer than n bytes were written.
 // nCount==0 short-circuits (no-op).
 RVA(0x001bf362, 0x4b)
-void CFileIO::Write(const void* lpBuf, unsigned int nCount) {
+void CFileIO::Write(const void* lpBuf, u32 nCount) {
     DWORD nWritten;
 
     if (nCount == 0) {
@@ -111,7 +111,7 @@ void CFileIO::Write(const void* lpBuf, unsigned int nCount) {
 // CFileIO::Seek
 // SetFilePointer(m_handle, off, NULL, from); throws on -1; returns new pos.
 RVA(0x001bf3ad, 0x2f)
-LONG CFileIO::Seek(LONG lOff, int nFrom) {
+LONG CFileIO::Seek(LONG lOff, i32 nFrom) {
     LONG pos = (LONG)SetFilePointer(m_handle, lOff, 0, (DWORD)nFrom);
     if (pos == -1) {
         AfxThrowOsError((LONG)GetLastError(), 0);
@@ -157,11 +157,11 @@ void CFileIO::Close() {
 // NAFXCW static helper (external no-body callee, reloc-masked).
 struct CFileExceptionLite {
     char pad0[8];          // +0x00  (CObject vtable + base)
-    int m_cause;           // +0x08
+    i32 m_cause;           // +0x08
     LONG m_lOsError;       // +0x0c
     CString m_strFileName; // +0x10
 };
-extern "C" int __stdcall AfxOsErrorToException(LONG lOsError);
+extern "C" i32 __stdcall AfxOsErrorToException(LONG lOsError);
 
 // A minimal SECURITY_ATTRIBUTES (we don't pull in <windows.h>).
 struct SecurityAttributes {
@@ -176,7 +176,7 @@ struct SecurityAttributes {
 // stores the HANDLE; on failure fills the CFileException* (pError) if non-null
 // and returns FALSE. Returns nonzero on success.
 RVA(0x001bf200, 0x128)
-BOOL CFileIO::Open(const char* lpszFileName, unsigned int nOpenFlags, void* pError) {
+BOOL CFileIO::Open(const char* lpszFileName, u32 nOpenFlags, void* pError) {
     char szPath[0x104]; // MAX_PATH (260) - frame is 0x110 with the SA local
 
     m_open = 0;

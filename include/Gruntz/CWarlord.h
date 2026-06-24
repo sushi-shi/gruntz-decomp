@@ -28,12 +28,12 @@
 // ---------------------------------------------------------------------------
 class CWarlordAnimSub {
 public:
-    int SetGeoSourceR(int src); // 0x15c360
+    i32 SetGeoSourceR(i32 src); // 0x15c360
 
     char m_pad00[0x20];
-    int m_20; // +0x20  state word (== 0 gates the moving-anim re-arm)
+    i32 m_20; // +0x20  state word (== 0 gates the moving-anim re-arm)
     char m_pad24[0x28 - 0x24];
-    int m_28; // +0x28  state word (!= 0 gates the moving-anim re-arm)
+    i32 m_28; // +0x28  state word (!= 0 gates the moving-anim re-arm)
 };
 
 class CWarlordAnimPlayer {
@@ -44,7 +44,7 @@ public:
 
 // The global default geometry source the re-arm consumes (DATA 0x2bf3bc).
 DATA(0x002bf3bc)
-extern int g_defaultGeo;
+extern i32 g_defaultGeo;
 
 // ---------------------------------------------------------------------------
 // CWarlord
@@ -55,11 +55,11 @@ public:
 
     // slot-4 override of an inherited CUserLogic virtual: the animation-state
     // dispatcher over the file-static table.
-    int ResolveState(int key); // 0x44640 (homed by RVA; non-virtual to keep the
+    i32 ResolveState(i32 key); // 0x44640 (homed by RVA; non-virtual to keep the
                                // dtor's vtable-stamp codegen aligned with retail)
 
     // re-arm the moving animation off the global geo source (0x44bb0).
-    int RearmMoving(); // 0x44bb0
+    i32 RearmMoving(); // 0x44bb0
 
     // engine tail helper (__thiscall), reached via the 0x45100 ILT thunk.
     void ResolveMovingAnimation(); // 0x45100

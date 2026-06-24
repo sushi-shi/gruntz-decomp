@@ -38,15 +38,15 @@
 struct CSprite;
 class CSpriteHashTable {
 public:
-    int Lookup(const char* szName, CSprite** ppOut);
+    i32 Lookup(const char* szName, CSprite** ppOut);
 };
 
 struct CSprite {
     char m_pad00[0x14];
-    int** m_14; // +0x14  frame-pointer table
+    i32** m_14; // +0x14  frame-pointer table
     char m_pad18[0x64 - 0x18];
-    int m_64; // +0x64  first valid frame number
-    int m_68; // +0x68  last valid frame number
+    i32 m_64; // +0x64  first valid frame number
+    i32 m_68; // +0x68  last valid frame number
 };
 
 // The sprite-set manager: the name->sprite hash table is embedded at +0x10.
@@ -82,9 +82,9 @@ public:
     char m_pad00[0xc];
     CResMgr* m_c; // +0x0c
     char m_pad10[0x190 - 0x10];
-    int m_190;      // +0x190  first frame number
+    i32 m_190;      // +0x190  first frame number
     CSprite* m_194; // +0x194  the looked-up sprite
-    int* m_198;     // +0x198  the first frame's pointer (or 0)
+    i32* m_198;     // +0x198  the first frame's pointer (or 0)
 };
 
 RVA(0x00150540, 0x65)
@@ -93,7 +93,7 @@ void CGruntSprite::CacheFirstFrame(const char* name) {
     m_c->m_10->m_10map.Lookup(name, &spr);
     m_194 = spr;
     if (spr) {
-        int n = spr->m_64;
+        i32 n = spr->m_64;
         m_190 = n;
         if (n >= spr->m_64 && n <= spr->m_68) {
             m_198 = spr->m_14[n];
@@ -120,9 +120,9 @@ void CGruntSprite::CacheFirstFrame(const char* name) {
 
 class CSpriteFactory {
 public:
-    CSprite* CreateSprite(int kind, int geoB, int geoA, int hint, const char* name, int flags);
+    CSprite* CreateSprite(i32 kind, i32 geoB, i32 geoA, i32 hint, const char* name, i32 flags);
     // The real allocator/ctor (external/no-body so the call reloc-masks).
-    CSprite* CreateSpriteImpl(int kind, int geoB, int geoA, int hint, CSprite* tmpl, int flags);
+    CSprite* CreateSpriteImpl(i32 kind, i32 geoB, i32 geoA, i32 hint, CSprite* tmpl, i32 flags);
 
     char m_pad00[0xc];
     CResMgr* m_c; // +0x0c
@@ -130,7 +130,7 @@ public:
 
 RVA(0x001597b0, 0x57)
 CSprite*
-CSpriteFactory::CreateSprite(int kind, int geoB, int geoA, int hint, const char* name, int flags) {
+CSpriteFactory::CreateSprite(i32 kind, i32 geoB, i32 geoA, i32 hint, const char* name, i32 flags) {
     CSprite* tmpl = 0;
     m_c->m_14->m_10map.Lookup(name, &tmpl);
     if (!tmpl) {
@@ -157,21 +157,21 @@ CSpriteFactory::CreateSprite(int kind, int geoB, int geoA, int hint, const char*
 
 struct CStatusBarSurface {
     char m_pad00[0x78];
-    int m_78; // +0x78  the live-surface gate
+    i32 m_78; // +0x78  the live-surface gate
 };
 
 class CStatusBarItem2 {
 public:
-    int SetField0(int v); // 0x1355c0  (ret 4)
-    int SetField1(int v); // 0x1357a0  (ret 4)
-    int SetField2(int v); // 0x135920  (ret 4)
-    int SetField3(int v); // 0x135510  (ret 4, result ignored)
-    int Finalize();       // 0x136270  (ret 0)
+    i32 SetField0(i32 v); // 0x1355c0  (ret 4)
+    i32 SetField1(i32 v); // 0x1357a0  (ret 4)
+    i32 SetField2(i32 v); // 0x135920  (ret 4)
+    i32 SetField3(i32 v); // 0x135510  (ret 4, result ignored)
+    i32 Finalize();       // 0x136270  (ret 0)
 };
 
 class CStatusBarMgr {
 public:
-    int ConfigureItem(int a0, int a1, int a2, int a3);
+    i32 ConfigureItem(i32 a0, i32 a1, i32 a2, i32 a3);
     CStatusBarItem2* GetItem(); // 0x135d70  (ret 0)
 
     char m_pad00[0x10];
@@ -179,7 +179,7 @@ public:
 };
 
 RVA(0x001360d0, 0x7c)
-int CStatusBarMgr::ConfigureItem(int a0, int a1, int a2, int a3) {
+i32 CStatusBarMgr::ConfigureItem(i32 a0, i32 a1, i32 a2, i32 a3) {
     if (!m_10->m_78) {
         return 0;
     }
@@ -187,7 +187,7 @@ int CStatusBarMgr::ConfigureItem(int a0, int a1, int a2, int a3) {
     if (!item) {
         return 0;
     }
-    int ok = 1;
+    i32 ok = 1;
     if (!item->SetField0(a0)) {
         ok = 0;
     }
@@ -219,17 +219,17 @@ int CStatusBarMgr::ConfigureItem(int a0, int a1, int a2, int a3) {
 // The geometry sub-player @player+0x1a0 (engine; both setters are __thiscall ret 4).
 class CGruntAnimSub2 {
 public:
-    void SetGeometry(int srcSprite); // 0x15c2d0
-    void SetGeoSource(int src);      // 0x15c360
+    void SetGeometry(i32 srcSprite); // 0x15c2d0
+    void SetGeoSource(i32 src);      // 0x15c360
 };
 
 // The global default geometry source the second setter consumes.
 DATA(0x002bf3bc)
-extern int g_defaultGeo; // VA 0x6bf3bc (RVA 0x2bf3bc)
+extern i32 g_defaultGeo; // VA 0x6bf3bc (RVA 0x2bf3bc)
 
 class CGruntAnimPlayer {
 public:
-    int ApplyLookupGeometry(const char* name, int applyDefault);
+    i32 ApplyLookupGeometry(const char* name, i32 applyDefault);
 
     char m_pad00[0xc];
     CResMgr* m_c; // +0x0c
@@ -238,13 +238,13 @@ public:
 };
 
 RVA(0x001505b0, 0x5c)
-int CGruntAnimPlayer::ApplyLookupGeometry(const char* name, int applyDefault) {
+i32 CGruntAnimPlayer::ApplyLookupGeometry(const char* name, i32 applyDefault) {
     CSprite* spr = 0;
     m_c->m_2c->m_10map.Lookup(name, &spr);
     if (!spr) {
         return 0;
     }
-    m_1a0.SetGeometry((int)spr);
+    m_1a0.SetGeometry((i32)spr);
     if (applyDefault) {
         m_1a0.SetGeoSource(g_defaultGeo);
     }

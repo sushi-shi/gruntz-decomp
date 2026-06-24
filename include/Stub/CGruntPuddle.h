@@ -5,7 +5,7 @@
 // CGruntPuddle : CUserLogic (RTTI). sizeof 0x70.
 class CGruntPuddle : public CUserLogic {
 public:
-    CGruntPuddle(int);
+    CGruntPuddle(i32);
     char m_size_pad[0x30]; // own region over CUserLogic (0x40)
 };
 SIZE(CGruntPuddle, 0x70);

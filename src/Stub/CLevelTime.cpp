@@ -7,4 +7,4 @@
 // @source: rtti-vptr
 // @stub
 RVA(0x0009b8b0, 0x18f)
-CLevelTime::CLevelTime(int) {}
+CLevelTime::CLevelTime(i32) {}

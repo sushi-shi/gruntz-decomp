@@ -16,7 +16,7 @@
 class CSbiLazySub {
 public:
     CSbiLazySub();                              // FUN_005091..  no-arg ctor
-    int Init(void* owner, int a, int b, int c); // __thiscall, ret 0x10
+    i32 Init(void* owner, i32 a, i32 b, i32 c); // __thiscall, ret 0x10
     char m_pad[0x40];
 };
 
@@ -35,7 +35,7 @@ extern void* g_vtbl_rectBase2[]; // 0x5eabcc (next base subobject)
 
 class CSBI_RectOnly {
 public:
-    int EnsureSub(int a, int b, int c);
+    i32 EnsureSub(i32 a, i32 b, i32 c);
     ~CSBI_RectOnly();
     void DtorBaseA(); // FUN_.. base-subobject teardown A
     void DtorBaseB(); // base teardown B
@@ -73,14 +73,14 @@ CSBI_RectOnly::~CSBI_RectOnly() {
 // exists; otherwise `new` a 0x40-byte CSbiLazySub, default-construct it, store it,
 // and forward the three args to its Init. /GX frames the new+ctor span.
 RVA(0x00109ad0, 0xa9)
-int CSBI_RectOnly::EnsureSub(int a, int b, int c) {
+i32 CSBI_RectOnly::EnsureSub(i32 a, i32 b, i32 c) {
     if (m_54c) {
         return 0;
     }
     CSbiLazySub* o = new CSbiLazySub();
     m_54c = o;
     if (o == 0) {
-        return (int)o; // retail returns the null pointer already in eax (no re-xor)
+        return (i32)o; // retail returns the null pointer already in eax (no re-xor)
     }
     return o->Init(this, a, b, c);
 }

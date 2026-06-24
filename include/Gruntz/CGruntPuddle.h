@@ -45,14 +45,14 @@ struct CObjList {
 // The sub-object embedded at CGameObject+0x1a0 the remove path notifies. Its one
 // method (0x15c360, __thiscall, 1 arg) is external/no-body so the call reloc-masks.
 struct CGruntPuddleSink {
-    int Notify(unsigned int ctx); // 0x15c360
+    i32 Notify(u32 ctx); // 0x15c360
 };
 
 // The global the remove path hands the sink (_g_6bf3bc; the draw-delta mirror).
 // Defined in SpriteResource.cpp/Projectile.cpp; declared extern "C" here so the
 // value-load reloc-masks against the already-matched symbol.
 DATA(0x002bf3bc)
-extern "C" unsigned int g_6bf3bc;
+extern "C" u32 g_6bf3bc;
 
 // The one-char bute key "B" (0x60d1bc) the place/set paths look up is the SAME
 // rdata as CInGameIcon.h's g_iconBute (DATA 0x0020d1bc) - reuse it (don't
@@ -71,20 +71,20 @@ class CGruntPuddle : public CUserLogic {
 public:
     virtual ~CGruntPuddle() OVERRIDE; // 0x010d10
 
-    int Place(int a0, int a1, int a2, int a3); // 0x040c30
-    int Remove();                              // 0x040d20
+    i32 Place(i32 a0, i32 a1, i32 a2, i32 a3); // 0x040c30
+    i32 Remove();                              // 0x040d20
     void SetBute(char* key);                   // 0x07d810
 
     // --- CGruntPuddle own fields (placeholders; offsets load-bearing) ---
-    int m_40; // +0x40  geometry id (m_38->m_1b4 snapshot)
+    i32 m_40; // +0x40  geometry id (m_38->m_1b4 snapshot)
     char m_pad44[0x54 - 0x44];
-    int m_54; // +0x54  tile X (m_10->m_5c >> 5)
-    int m_58; // +0x58  tile Y (m_10->m_60 >> 5)
-    int m_5c; // +0x5c
-    int m_60; // +0x60  "placed" flag
-    int m_64; // +0x64  arg3 snapshot
-    int m_68; // +0x68  arg0 snapshot
-    int m_6c; // +0x6c  arg1 snapshot
+    i32 m_54; // +0x54  tile X (m_10->m_5c >> 5)
+    i32 m_58; // +0x58  tile Y (m_10->m_60 >> 5)
+    i32 m_5c; // +0x5c
+    i32 m_60; // +0x60  "placed" flag
+    i32 m_64; // +0x64  arg3 snapshot
+    i32 m_68; // +0x68  arg0 snapshot
+    i32 m_6c; // +0x6c  arg1 snapshot
 };
 
 #endif // GRUNTZ_GRUNTZ_CGRUNTPUDDLE_H

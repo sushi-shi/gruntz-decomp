@@ -43,19 +43,19 @@ CGruntPuddle::~CGruntPuddle() {}
 // immediates, call args and branch targets match; only the a1 caching differs.
 // No init-list/assignment/reorder lever flips the allocator. Deferred.
 RVA(0x00040c30, 0xb3)
-int CGruntPuddle::Place(int a0, int a1, int a2, int a3) {
+i32 CGruntPuddle::Place(i32 a0, i32 a1, i32 a2, i32 a3) {
     CGameObject* o = m_10;
     m_54 = o->m_5c >> 5;
     m_58 = o->m_60 >> 5;
     m_64 = a3;
     m_68 = a0;
     m_6c = a1;
-    int rec = g_gameReg->m_74->GetByIndex(a1, 0);
+    i32 rec = g_gameReg->m_74->GetByIndex(a1, 0);
     CGameObject* obj = m_10;
-    *(int*)((char*)obj + 0x58) = 1;
-    *(int*)((char*)obj + 0x50) = 0xa;
-    *(int*)((char*)obj + 0x4c) = rec;
-    *(int*)((char*)m_38 + 0x40) &= ~1;
+    *(i32*)((char*)obj + 0x58) = 1;
+    *(i32*)((char*)obj + 0x50) = 0xa;
+    *(i32*)((char*)obj + 0x4c) = rec;
+    *(i32*)((char*)m_38 + 0x40) &= ~1;
     m_30 = m_14->m_1c;
     m_14->m_1c = g_buteTree.Find(g_iconBute);
     if (a1 == 0) {
@@ -88,20 +88,20 @@ int CGruntPuddle::Place(int a0, int a1, int a2, int a3) {
 // loop ordering was steered to match retail (+`next` local, ~70->71%); the ebx/edi
 // coin-flip is not source-steerable. Deferred.
 RVA(0x00040d20, 0xe3)
-int CGruntPuddle::Remove() {
+i32 CGruntPuddle::Remove() {
     if (m_60 != 0) {
         CGameReg* reg = g_gameReg;
-        int ty = m_58;
+        i32 ty = m_58;
         CIconTileGrid* grid = reg->m_70;
-        int tx = m_54;
-        int flags;
-        if ((unsigned)tx < (unsigned)grid->m_c && (unsigned)ty < (unsigned)grid->m_10) {
-            flags = ((int*)grid->m_8[ty])[tx * 7];
+        i32 tx = m_54;
+        i32 flags;
+        if ((u32)tx < (u32)grid->m_c && (u32)ty < (u32)grid->m_10) {
+            flags = ((i32*)grid->m_8[ty])[tx * 7];
         } else {
             flags = 1;
         }
         if ((flags & 0x939) != 0 || (flags & 0x2) != 0) {
-            *(int*)((char*)m_38 + 0x8) |= 0x10000;
+            *(i32*)((char*)m_38 + 0x8) |= 0x10000;
             CObjList* list = (CObjList*)g_gameReg->m_68;
             CObjListNode* node = list->m_head;
             while (node != 0) {
@@ -116,11 +116,11 @@ int CGruntPuddle::Remove() {
     }
     ((CGruntPuddleSink*)((char*)m_38 + 0x1a0))->Notify(g_6bf3bc);
     CGameObject* o = m_38;
-    if (*(int*)((char*)o + 0x1c8) != 0 && *(int*)((char*)o + 0x1c0) == 0) {
+    if (*(i32*)((char*)o + 0x1c8) != 0 && *(i32*)((char*)o + 0x1c0) == 0) {
         if (m_60 != 0) {
-            *(int*)((char*)o + 0x40) |= 1;
+            *(i32*)((char*)o + 0x40) |= 1;
         } else {
-            m_40 = *(int*)((char*)o + 0x1b4);
+            m_40 = *(i32*)((char*)o + 0x1b4);
             ((CGameObject*)o)->ApplyLookupGeometry(g_puddleSpriteKey, 0);
             m_60 = 1;
             m_5c = 0;

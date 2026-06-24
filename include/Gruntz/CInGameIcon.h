@@ -34,7 +34,7 @@
 // __thiscall) reloc-masks. The table is embedded at +0x10 of its holder, so
 // `add ecx,0x10; call Lookup` falls out.
 struct CIconMap {
-    int Lookup(void* key, void** out);
+    i32 Lookup(void* key, void** out);
 };
 struct CIconMapHolder {
     char m_pad00[0x10];
@@ -50,15 +50,15 @@ struct CGameRegMapHolder {
 // place handler clears bit 0x40000 in a cell.
 struct CIconTileGrid {
     char m_pad00[0x8];
-    int** m_8; // +0x08  row-pointer table
-    int m_c;   // +0x0c  width in tiles
-    int m_10;  // +0x10  height in tiles
+    i32** m_8; // +0x08  row-pointer table
+    i32 m_c;   // +0x0c  width in tiles
+    i32 m_10;  // +0x10  height in tiles
 };
 
 // The icon/sprite factory (g_gameReg->m_74): GetByIndex(idx, z) returns a
 // per-player icon record (thunk 0x4165 -> FUN_004e23c0, __thiscall). No body.
 struct CIconFactory {
-    int GetByIndex(int idx, int z); // 0x4165
+    i32 GetByIndex(i32 idx, i32 z); // 0x4165
 };
 
 struct CGameReg {
@@ -70,35 +70,35 @@ struct CGameReg {
     CIconTileGrid* m_70; // +0x70  tile occupancy grid
     CIconFactory* m_74;  // +0x74  icon/sprite factory (GetByIndex)
     char m_pad78[0x120 - 0x78];
-    int m_120; // +0x120  active-player count gate (Setup986b0)
+    i32 m_120; // +0x120  active-player count gate (Setup986b0)
     char m_pad124[0x134 - 0x124];
-    int m_134; // +0x134  mode discriminator (== 1)
+    i32 m_134; // +0x134  mode discriminator (== 1)
     char m_pad138[0x13c - 0x138];
-    int m_13c; // +0x13c  view min X
-    int m_140; // +0x140  view min Y
-    int m_144; // +0x144  view max X
-    int m_148; // +0x148  view max Y
+    i32 m_13c; // +0x13c  view min X
+    i32 m_140; // +0x140  view min Y
+    i32 m_144; // +0x144  view max X
+    i32 m_148; // +0x148  view max Y
     char m_pad14c[0x158 - 0x14c];
-    int m_158; // +0x158  base of the per-player icon table
+    i32 m_158; // +0x158  base of the per-player icon table
 };
 
 DATA(0x0024556c)
 extern CGameReg* g_gameReg; // ?g_gameReg@@3PAUCGameReg@@A @ VA 0x64556c
 
 DATA(0x00244c54)
-extern int g_curPlayer; // DAT_00644c54  (the current local player index)
+extern i32 g_curPlayer; // DAT_00644c54  (the current local player index)
 
 DATA(0x0021ab24)
-extern int g_inputCtx; // DAT_0061ab24  (the input/cmd-flush sink the place path posts to)
+extern i32 g_inputCtx; // DAT_0061ab24  (the input/cmd-flush sink the place path posts to)
 
 DATA(0x0020d1bc)
 extern char g_iconBute[]; // DAT_0060d1bc  (the bute key string the place path queries)
 
 DATA(0x00245588)
-extern int g_iconDefault; // DAT_00645588  (the default icon id seeded into +0x58)
+extern i32 g_iconDefault; // DAT_00645588  (the default icon id seeded into +0x58)
 
 DATA(0x00229ad0)
-extern int g_serialCounter; // DAT_00629ad0  (the serialize sequence counter)
+extern i32 g_serialCounter; // DAT_00629ad0  (the serialize sequence counter)
 
 // ---------------------------------------------------------------------------
 // CButeTree::Find on the global g_buteTree - the bute store the Setup path
@@ -108,19 +108,19 @@ extern int g_serialCounter; // DAT_00629ad0  (the serialize sequence counter)
 
 // The input/cmd sink the place handler flushes (thunk 0x25fe -> FUN_0041f940,
 // __stdcall posts a cmd packet). External/no-body (reloc-masked).
-void __stdcall Eng_PostCmd(int ctx, int a, int b, int c); // 0x41f940
+void __stdcall Eng_PostCmd(i32 ctx, i32 a, i32 b, i32 c); // 0x41f940
 
 // The icon-table per-player record reached as g_gameReg->m_68[(idx)*4 + 0x1c].
 // __thiscall LoadPickupSprites / LoadGruntTypeTable bind the icon's sprite set;
 // +0x1fc is a "configured" gate, +0x38c a posted-id slot the place handler stamps.
 // Both engine methods are external (reloc-masked, no body).
 struct CIconRecord {
-    int LoadPickupSprites(int a, int b, int c, int d, int e); // 0x3c6a
-    int LoadGruntTypeTable(int a, int b, int c, int d);       // 0x3bd9
+    i32 LoadPickupSprites(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x3c6a
+    i32 LoadGruntTypeTable(i32 a, i32 b, i32 c, i32 d);       // 0x3bd9
     char m_pad00[0x1fc];
-    int m_1fc; // +0x1fc  configured flag
+    i32 m_1fc; // +0x1fc  configured flag
     char m_pad200[0x38c - 0x200];
-    int m_38c; // +0x38c  posted command id
+    i32 m_38c; // +0x38c  posted command id
 };
 
 // ---------------------------------------------------------------------------
@@ -132,19 +132,19 @@ class CInGameIcon : public CUserLogic {
 public:
     virtual ~CInGameIcon() OVERRIDE; // 0x011d00
 
-    int HandleInput();                                  // 0x097680
-    int PlaceAt(int idx, int gridBase);                 // 0x0986b0
-    int Serialize(CArchive* ar, int tag, int a, int b); // 0x098c90
-    void SetField54(int v);                             // 0x099b10
+    i32 HandleInput();                                  // 0x097680
+    i32 PlaceAt(i32 idx, i32 gridBase);                 // 0x0986b0
+    i32 Serialize(CArchive* ar, i32 tag, i32 a, i32 b); // 0x098c90
+    void SetField54(i32 v);                             // 0x099b10
 
     // --- CInGameIcon own fields (placeholders; offsets load-bearing) ---
-    int m_40;        // +0x40  a serialized scalar (CArchive read into +0x40)
+    i32 m_40;        // +0x40  a serialized scalar (CArchive read into +0x40)
     char m_44[0x10]; // +0x44  a fixed 0x10-byte blob the serializer round-trips
-    int m_54;        // +0x54  a CMap-lookup id (SetField54 / serialize)
-    int m_58;        // +0x58  current icon id
-    int m_5c;        // +0x5c
-    int m_60;        // +0x60
-    int m_64;        // +0x64
+    i32 m_54;        // +0x54  a CMap-lookup id (SetField54 / serialize)
+    i32 m_58;        // +0x58  current icon id
+    i32 m_5c;        // +0x5c
+    i32 m_60;        // +0x60
+    i32 m_64;        // +0x64
     char m_pad68[0x78 - 0x68];
     CIconRecord* m_78; // +0x78  the bound per-player icon record
 };

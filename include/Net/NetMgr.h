@@ -14,6 +14,8 @@
 #ifndef NET_NETMGR_H
 #define NET_NETMGR_H
 
+#include <Ints.h>
+
 // <Mfc.h> brings <windows.h> USER32 (PostMessageA / Sleep / GetAsyncKeyState - the
 // connect wait polls VK_ESCAPE to abort; HWND / UINT / ...) and the central WINMM
 // timeGetTime decl (the frame-sync / connect-wait clock).
@@ -27,7 +29,7 @@
 // no-body decl so the FrameSyncWait `call rel32` reloc-masks.
 namespace Utils {
     namespace WinAPI {
-        void ActiveWait(unsigned int milliseconds);
+        void ActiveWait(u32 milliseconds);
     }
 } // namespace Utils
 
@@ -67,7 +69,7 @@ extern CGameMgr* g_pGameMgr;
 // address is taken.
 // ---------------------------------------------------------------------------
 typedef void (*MultiCallbackFn)();
-extern "C" int __stdcall MultiDispatch(const char* cmd, MultiCallbackFn cb, int flag);
+extern "C" i32 __stdcall MultiDispatch(const char* cmd, MultiCallbackFn cb, i32 flag);
 
 // Per-command callbacks (address-taken only; bodies are external/no-body).
 extern "C" void MultiOptionzCallback();
@@ -77,7 +79,7 @@ extern "C" void MultiDropPlayerCallback(); // OnDropPlayer (MULTI_DROPPLAYER)
 
 // The pending drop's player id (-999 == none), an external engine global in
 // .data at 0x611d88 (DIR32 reloc-masked).
-extern "C" int g_dropPlayerId; // 0x611d88
+extern "C" i32 g_dropPlayerId; // 0x611d88
 
 // ---------------------------------------------------------------------------
 // Reentrancy guards (file-scope globals).
@@ -94,32 +96,32 @@ extern "C" int g_dropPlayerId; // 0x611d88
 // (g_cfgWord @0x645550) plus the global CButeMgr's +0x4 word go into the
 // version-announce packet.
 // ---------------------------------------------------------------------------
-extern "C" int g_localVersion;  // 0x60fa70
-extern "C" int g_remoteVersion; // 0x60fa74
-extern "C" int g_cfgWord;       // 0x645550
-extern "C" int g_buteMgrField4; // *(g_buteMgr + 4) - the CButeMgr config word
+extern "C" i32 g_localVersion;  // 0x60fa70
+extern "C" i32 g_remoteVersion; // 0x60fa74
+extern "C" i32 g_cfgWord;       // 0x645550
+extern "C" i32 g_buteMgrField4; // *(g_buteMgr + 4) - the CButeMgr config word
 
 // The host-version packet HandleVersionCheck inspects: it carries the host's
 // version pair at +0x18 / +0x1c (compared against the two locals). Only those
 // two dwords are pinned.
 struct CNetVersionMsg {
     char m_pad0[0x18];
-    int m_18; // +0x18  host remote-version word
-    int m_1c; // +0x1c  host local-version word
+    i32 m_18; // +0x18  host remote-version word
+    i32 m_1c; // +0x1c  host local-version word
 };
 
 // The 0x20-byte version-announce packet AnnounceVersion builds on the stack and
 // ships through the engine stat dispatcher as stat 0x417. Field offsets pinned
 // by the writes; the rest is zero-filled.
 struct CNetVersionPacket {
-    unsigned char m_0; // +0x00  flag byte (bit7 set)
+    u8 m_0; // +0x00  flag byte (bit7 set)
     char m_pad1[7];
-    int m_8;  // +0x08  CButeMgr config word
-    int m_c;  // +0x0c  g_cfgWord
-    int m_10; // +0x10  stat id (0x417)
+    i32 m_8;  // +0x08  CButeMgr config word
+    i32 m_c;  // +0x0c  g_cfgWord
+    i32 m_10; // +0x10  stat id (0x417)
     char m_pad14[4];
-    int m_18; // +0x18  g_remoteVersion
-    int m_1c; // +0x1c  g_localVersion
+    i32 m_18; // +0x18  g_remoteVersion
+    i32 m_1c; // +0x1c  g_localVersion
 };
 
 // ---------------------------------------------------------------------------
@@ -151,7 +153,7 @@ struct CNetPlayerSlot {
 // the entry's +0x4 id field.
 struct CNetPlayerEntry {
     char m_pad0[4];
-    int m_4; // +0x4  the entry's id (the lookup key)
+    i32 m_4; // +0x4  the entry's id (the lookup key)
 };
 
 // A singly-linked node in the m_58 player list: +0x0 next, +0x8 payload.
@@ -170,18 +172,18 @@ struct CNetPlayerNode {
 // ---------------------------------------------------------------------------
 struct CNetCmdSlot {
     char m_pad0[4];
-    int m_4; // +0x4  "slot already reset" guard
+    i32 m_4; // +0x4  "slot already reset" guard
     char m_pad8[0xc - 0x8];
-    int* m_c; // +0xc  -> command-list head value
+    i32* m_c; // +0xc  -> command-list head value
     char m_pad10[0x14 - 0x10];
-    int m_14; // +0x14  base command sequence number
+    i32 m_14; // +0x14  base command sequence number
     char m_pad18[0x4c - 0x18];
-    int m_4c[3]; // +0x4c  command-range A (reset to -1)
-    int m_58[3]; // +0x58  command-range B (reset to -1)
+    i32 m_4c[3]; // +0x4c  command-range A (reset to -1)
+    i32 m_58[3]; // +0x58  command-range B (reset to -1)
 
     void Touch();             // c1390  latch the slot (sets +4, +8)
-    void RemoveCmd(int seq);  // c11b0  drop one queued command
-    void ResetTriple(int* p); // c10a0  splat &-1 over three dwords
+    void RemoveCmd(i32 seq);  // c11b0  drop one queued command
+    void ResetTriple(i32* p); // c10a0  splat &-1 over three dwords
 };
 
 // The DirectPlay session sub-object at CNetMgr+0x520. Two helpers are reached
@@ -189,7 +191,7 @@ struct CNetCmdSlot {
 // command slots for the one whose player id matches; ResetCmdBuffers zeroes the
 // head of each of those four slots.
 struct CNetSession {
-    CNetCmdSlot* FindCmdSlot(int playerId); // c00a0
+    CNetCmdSlot* FindCmdSlot(i32 playerId); // c00a0
     void ResetCmdBuffers();                 // c0070
 };
 
@@ -197,7 +199,7 @@ struct CNetSession {
 // ResetPlayerCommands fires its 2-arg dispatch helper (external thunk) for each
 // command sequence number in the reset range.
 struct CNetCmdQueue {
-    void Dispatch(int cmdHead, int seq); // 423b40
+    void Dispatch(i32 cmdHead, i32 seq); // 423b40
 };
 
 // The m_4 sub-object, seen here only for its +0x6c command-dispatch queue (the
@@ -222,29 +224,29 @@ struct CNetSubObject {
 struct IDirectPlay4Z {
     struct Vtbl {
         char m_pad0[0x34];
-        long(__stdcall* EnumPlayers)(
+        i32(__stdcall* EnumPlayers)(
             IDirectPlay4Z*,
             void* desc,
             void* a,
             void* callback,
             void* ctx,
             void* flags
-        );                                                             // +0x34 (slot 13)
-        long(__stdcall* Enum2)(IDirectPlay4Z*, void* desc, void* ctx); // +0x38
+        );                                                            // +0x34 (slot 13)
+        i32(__stdcall* Enum2)(IDirectPlay4Z*, void* desc, void* ctx); // +0x38
         char m_pad3c[0x50 - 0x3c];
-        long(__stdcall* GetData2)(
+        i32(__stdcall* GetData2)(
             IDirectPlay4Z*,
-            int id,
+            i32 id,
             void* lpData,
-            unsigned long* lpSize,
-            unsigned long fl
+            u32* lpSize,
+            u32 fl
         ); // +0x50
         char m_pad54[0x58 - 0x54];
-        long(__stdcall* GetPlayerData2)(IDirectPlay4Z*, void* in, void* out); // +0x58 (slot 22)
+        i32(__stdcall* GetPlayerData2)(IDirectPlay4Z*, void* in, void* out); // +0x58 (slot 22)
         char m_pad5c[0x60 - 0x5c];
-        long(__stdcall* EnumGroups)(IDirectPlay4Z*, void* desc, int flags); // +0x60 (slot 24)
+        i32(__stdcall* EnumGroups)(IDirectPlay4Z*, void* desc, i32 flags); // +0x60 (slot 24)
         char m_pad64[0x68 - 0x64];
-        long(__stdcall* SetData5)(IDirectPlay4Z*, int a, int b, int c, int d, int e); // +0x68
+        i32(__stdcall* SetData5)(IDirectPlay4Z*, i32 a, i32 b, i32 c, i32 d, i32 e); // +0x68
     }* vtbl;
 };
 
@@ -260,7 +262,7 @@ struct IDirectPlay4Z {
 class CNetPlayerObj {
 public:
     virtual void Slot00();               // +0x00
-    virtual void SelfDestruct(int flag); // +0x04  slot 1 (self-destruct)
+    virtual void SelfDestruct(i32 flag); // +0x04  slot 1 (self-destruct)
 
     char m_pad4[0x20 - 0x4]; // +0x04
     __POSITION* m_20;        // +0x20  cached list position
@@ -295,9 +297,9 @@ extern "C" void NetEnumPlayerCb();
 struct INetReleasable {
     struct Vtbl {
         char m_pad0[8];
-        long(__stdcall* Release)(INetReleasable*); // +0x08 (slot 2)
+        i32(__stdcall* Release)(INetReleasable*); // +0x08 (slot 2)
         char m_padc[0x10 - 0xc];
-        long(__stdcall* Slot10)(INetReleasable*); // +0x10 (slot 4)
+        i32(__stdcall* Slot10)(INetReleasable*); // +0x10 (slot 4)
     }* vtbl;
 };
 
@@ -307,20 +309,20 @@ public:
     void OnMultiPause();
     void OnOutOfSync();
     void ApplyCmdDelayDefaults();
-    unsigned GetMaxAckLatency();
+    u32 GetMaxAckLatency();
     void ReportAckLatency();
-    CNetPlayerEntry* FindPlayerById(int id);
+    CNetPlayerEntry* FindPlayerById(i32 id);
 
     // The DirectPlay session-management wrapper run (engine CNetMgr base;
     // ~0x178xxx). Each thin wrapper calls one IDirectPlay4 vtable slot on the
     // m_18 interface and, on a nonzero HRESULT, routes it through the static
     // ReportError diagnostic with this TU's __FILE__/__LINE__.
-    int RemovePlayerObj(CNetPlayerObj* obj);                                         // 0x178e20
-    void* GetPlayerData(int id);                                                     // 0x178eb0
-    long SetGroupData2(CNetPlayerEntry* a, CNetPlayerEntry* b, int c, int d, int e); // 0x178ef0
-    long SetData(int a, int b, int c, int d, int e);                                 // 0x178fc0
-    long SetGroupDataFrom(CNetPlayerEntry* a, int c, int d, int e);                  // 0x179090
-    int EnumSessions(void* desc, void* ctx);                                         // 0x179130
+    i32 RemovePlayerObj(CNetPlayerObj* obj);                                        // 0x178e20
+    void* GetPlayerData(i32 id);                                                    // 0x178eb0
+    i32 SetGroupData2(CNetPlayerEntry* a, CNetPlayerEntry* b, i32 c, i32 d, i32 e); // 0x178ef0
+    i32 SetData(i32 a, i32 b, i32 c, i32 d, i32 e);                                 // 0x178fc0
+    i32 SetGroupDataFrom(CNetPlayerEntry* a, i32 c, i32 d, i32 e);                  // 0x179090
+    i32 EnumSessions(void* desc, void* ctx);                                        // 0x179130
 
     // The session-list cluster (engine CNetMgr base; ~0x178xxx). The three managed
     // collections at +0x1c/+0x38/+0x54 each have a clear-loop that self-destructs
@@ -331,11 +333,11 @@ public:
     void ClearSessionList(); // 0x178c70  +0x54 list -> clear +0x84/+0x78
     // Two list-box selection readers: read the current selection's item-data and
     // latch it into a per-list field if it is in range (Win32 SendMessageA).
-    int ReadGroupSel(void* hList);  // 0x178590  -> latch into +0x70 (count +0x28)
-    int ReadPlayerSel(void* hList); // 0x178820  -> latch into +0x74 (count +0x44)
+    i32 ReadGroupSel(void* hList);  // 0x178590  -> latch into +0x70 (count +0x28)
+    i32 ReadPlayerSel(void* hList); // 0x178820  -> latch into +0x74 (count +0x44)
     // Two IDirectPlay4 enumeration wrappers: enumerate sessions/players into the
     // COM interface at +0x18 and, on a nonzero HRESULT, route it through ReportError.
-    long EnumPlayersInto(void* a, void* b); // 0x178610 (@early-stop, scheduling wall)
+    i32 EnumPlayersInto(void* a, void* b); // 0x178610 (@early-stop, scheduling wall)
 
     // Backlog (not yet reconstructed - left as @stub in NetMgr.cpp):
     //   0x178360  AddGroupNode  - operator-new'd 0x10 node (2-phase vtbl + CString
@@ -347,33 +349,33 @@ public:
 
     // The diagnostic error reporter (lives in the netmgrerror TU; static
     // __cdecl). Declared here so the wrappers can route HRESULTs through it.
-    static void ReportError(char* file, int line, long hr, void* hWnd);
+    static void ReportError(char* file, i32 line, i32 hr, void* hWnd);
 
     // Version-check cluster (engine CNetMgr base; ~0xbd0xx). HandleVersionCheck
     // compares the host packet's version pair against the two locals and, on a
     // mismatch, reports + announces; AnnounceVersion ships the version packet as
     // stat 0x417 through the engine dispatcher.
     void HandleVersionCheck(CNetVersionMsg* msg);
-    void AnnounceVersion(int param);
+    void AnnounceVersion(i32 param);
 
     // External per-instance command/stat dispatcher (reached through an
     // incremental-link thunk so its `call rel32` reloc-masks; __thiscall, ecx =
     // this). No body here - the engine routine is external.
-    void SendNetStat(int id, unsigned value, int flag);
+    void SendNetStat(i32 id, u32 value, i32 flag);
     // The version-report diagnostic (logs a message string + zero) and the two
     // stat dispatchers the version cluster fires (a 2-arg stat-id/flag form and
     // a 4-arg stat packet form). All __thiscall engine routines reached through
     // incremental-link thunks; no body here.
-    void ReportVersionMsg(const char* msg, int zero);
-    void SendStatFlag(int id, int flag);
-    void SendStatPacket(int param, const void* packet, int size, int flag);
+    void ReportVersionMsg(const char* msg, i32 zero);
+    void SendStatFlag(i32 id, i32 flag);
+    void SendStatPacket(i32 param, const void* packet, i32 size, i32 flag);
 
     // ---- 0xbc0xx cluster ---------------------------------------------------
     // The cluster's matched methods (defined in NetMgr.cpp).
-    unsigned FrameSyncWait();        // 0xbc070
+    u32 FrameSyncWait();             // 0xbc070
     void OnDropPlayer();             // 0xbc110
-    int WaitForConnect();            // 0xbca50
-    int ResetPlayerCommands(int id); // 0xbcf20
+    i32 WaitForConnect();            // 0xbca50
+    i32 ResetPlayerCommands(i32 id); // 0xbcf20
 
     // External engine helpers the cluster fires through incremental-link thunks
     // (__thiscall on `this` unless noted; bodies external/no-body so the
@@ -384,17 +386,17 @@ public:
     //   PollSession    (b95f0) pump the DirectPlay receive queue, no args
     //   AckDropPlayer  (ba590) finalize a dropped player (id)
     //   ResetCmdBuffers(c0070) zero the four per-slot command buffers, no args
-    void SendStat3(int id, unsigned value, int flag);
-    void ReportNetError(const char* msg, int level);
-    void ReportStatusId(UINT strId, int level);
+    void SendStat3(i32 id, u32 value, i32 flag);
+    void ReportNetError(const char* msg, i32 level);
+    void ReportStatusId(UINT strId, i32 level);
     void PollSession();
-    void AckDropPlayer(int id);
+    void AckDropPlayer(i32 id);
 
     char m_pad0[4]; // +0x000
     void* m_4;      // +0x004
     char m_pad8[0x18 - 0x8];
     IDirectPlay4Z* m_18; // +0x018  the DirectPlay session interface
-    int m_1c;            // +0x01c
+    i32 m_1c;            // +0x01c
     char m_pad20[0x58 - 0x20];
     // The managed-player-object list (a by-value CObList embedded at +0x54). Its
     // 0x1c-byte body spans +0x54..+0x70; the +0x58 head node ptr below is the
@@ -404,33 +406,33 @@ public:
     char m_pad5c[0x520 - 0x5c];
     CNetSession* m_520; // +0x520  the DirectPlay session sub-object
     CNetMgr* m_524;     // +0x524  peer net-manager (owns the player list)
-    int m_528;          // +0x528  branch selector
-    int m_52c;          // +0x52c  "session terminated" flag
+    i32 m_528;          // +0x528  branch selector
+    i32 m_52c;          // +0x52c  "session terminated" flag
     char m_pad530[0x534 - 0x530];
-    int m_534; // +0x534  host-mode flag
-    int m_538; // +0x538  "removed from game" flag
+    i32 m_534; // +0x534  host-mode flag
+    i32 m_538; // +0x538  "removed from game" flag
     char m_pad53c[0x56c - 0x53c];
-    int m_56c; // +0x56c  "game full" flag
-    int m_570; // +0x570  version-mismatch latch
-    int m_574; // +0x574
-    int m_578; // +0x578  sync-toggle gate
+    i32 m_56c; // +0x56c  "game full" flag
+    i32 m_570; // +0x570  version-mismatch latch
+    i32 m_574; // +0x574
+    i32 m_578; // +0x578  sync-toggle gate
     char m_pad57c[0x580 - 0x57c];
-    int m_580; // +0x580  "connected" flag (gates report)
-    int m_584; // +0x584
+    i32 m_580; // +0x580  "connected" flag (gates report)
+    i32 m_584; // +0x584
     char m_pad588[0x58c - 0x588];
-    int m_58c; // +0x58c  "abort" flag set during connect-wait
+    i32 m_58c; // +0x58c  "abort" flag set during connect-wait
     char m_pad590[0x598 - 0x590];
     CString m_598; // +0x598
     char m_pad59c[0x5a4 - 0x59c];
     DWORD m_5a4; // +0x5a4
     DWORD m_5a8; // +0x5a8
-    int m_5ac;   // +0x5ac  "game closed" flag
+    i32 m_5ac;   // +0x5ac  "game closed" flag
     char m_pad5b0[0x5bc - 0x5b0];
-    int m_5bc; // +0x5bc  the local player descriptor ptr
-    int m_5c0; // +0x5c0  the local player id (from +0x5bc[+4])
+    i32 m_5bc; // +0x5bc  the local player descriptor ptr
+    i32 m_5c0; // +0x5c0  the local player id (from +0x5bc[+4])
     char m_pad5c4[0x5e0 - 0x5c4];
-    unsigned m_5e0; // +0x5e0  last frame-sync delta
-    unsigned m_5e4; // +0x5e4  last frame-sync timestamp
+    u32 m_5e0; // +0x5e0  last frame-sync delta
+    u32 m_5e4; // +0x5e4  last frame-sync timestamp
     char m_pad5e8[0x5f0 - 0x5e8];
     DWORD m_5f0[4]; // +0x5f0  per-channel latency values
 

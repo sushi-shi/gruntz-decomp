@@ -65,7 +65,7 @@ struct CGMEntity {
     virtual void Gv3();
     virtual void Update(); // slot 4 (+0x10) - per-entity per-frame step
     char m_pad4[0x2ac - 0x4];
-    int m_2ac; // +0x2ac flag word (scanned with a bit mask)
+    i32 m_2ac; // +0x2ac flag word (scanned with a bit mask)
 };
 
 // The per-frame entity set: count @+0x4, element-ptr array @+0x8. The global
@@ -73,7 +73,7 @@ struct CGMEntity {
 // `mov reg,[0x645574]; mov cnt,[reg+4]; elems = reg+8`).
 struct CGMEntityList {
     void* m_0;             // +0x00
-    int m_count;           // +0x04
+    i32 m_count;           // +0x04
     CGMEntity* m_elems[1]; // +0x08 (the entity-ptr array)
 };
 extern "C" CGMEntityList* g_645574; // (a pointer to the list)
@@ -88,29 +88,29 @@ struct CGMInputObj {
 }; // +0x00 vtable ptr
 struct CGMInputVtbl {
     char m_pad0[0x60];
-    int(__stdcall* Poll)(CGMInputObj* self); // +0x60
+    i32(__stdcall* Poll)(CGMInputObj* self); // +0x60
 };
 
 // The owner back-ptr (CState+0x4) the Render path dereferences. +0x4->+0x4 = the
 // OS HWND (PostMessageA target); +0x8 a sub-object (m_244 cleared); +0x14 a view
 // gate; +0x48 the sound manager; the credits "post & bail" is m_4->Post(...).
 struct CGMSound {
-    void Play(const char* name, int z); // (thiscall, 2 args)
-    int Find(const char* name);         // (thiscall, 1 arg -> ptr)
+    void Play(const char* name, i32 z); // (thiscall, 2 args)
+    i32 Find(const char* name);         // (thiscall, 1 arg -> ptr)
 };
 struct CGMSoundEntry {
-    int Query();
+    i32 Query();
 }; // (thiscall, no arg -> int)
 struct CGMOwner {
-    void Post(unsigned a, unsigned b); // (thiscall, 2 args)
-    char p0[0x4];                      // +0x00
+    void Post(u32 a, u32 b); // (thiscall, 2 args)
+    char p0[0x4];            // +0x00
     struct M4 {
         char p0[0x4];
         HWND m_4;
     }* m_4; // +0x04 -> +0x04 = HWND
     struct M8 {
         char p0[0x244];
-        int m_244;
+        i32 m_244;
     }* m_8; // +0x08 -> +0x244 latch
     char p0c[0x14 - 0x0c];
     void* m_14; // +0x14 view gate (0 -> skip FX)
@@ -120,13 +120,13 @@ struct CGMOwner {
 
 // The cursor/anim object reached via m_c->m_28->m_2c (credits only). Callee-
 // cleaned (no `add esp,4` at the call site) -> __stdcall.
-extern "C" void __stdcall GM_SimpleAnim(int z); // (stdcall, 1 arg)
+extern "C" void __stdcall GM_SimpleAnim(i32 z); // (stdcall, 1 arg)
 
 // The view/draw holder (CState+0xc). The credits input poll reaches
 // m_c->m_4->m_10->m_2c->m_8 (the input obj); the draw block walks
 // m_c->m_4->{m_10->m_2c (Draw this), m_14 (blit this), m_18 (blit arg)}.
 struct CGMBlitTarget {
-    void Blit(int arg);
+    void Blit(i32 arg);
 }; // (thiscall)
 struct CGMView {
     char p0[0x4]; // +0x00
@@ -137,7 +137,7 @@ struct CGMView {
             struct M2c { // +0x2c the draw target (also holds the input obj)
                 char p0[0x8];
                 CGMInputObj* m_8; // +0x08 input obj (credits poll source)
-                void Draw(int z); // (thiscall on this M2c)
+                void Draw(i32 z); // (thiscall on this M2c)
             }* m_2c;
         }* m_10;             // +0x10
         CGMBlitTarget* m_14; // +0x14 blit this
@@ -146,7 +146,7 @@ struct CGMView {
     char p8[0x28 - 0x8];
     struct M28 {
         char p0[0x2c];
-        int m_2c;
+        i32 m_2c;
     }* m_28; // +0x28 cursor/anim gate
 };
 
@@ -158,17 +158,17 @@ struct CGMMenuUI {
     void OnFlag20000000();
     void OnFlag10000000();
     void OnFlag00000003();
-    int OnFlag00000100();   // (-> int)
-    void Step(unsigned dt); // (1 arg)
-    void Pre();             // (no arg)
-    void Post();            // (no arg)
+    i32 OnFlag00000100(); // (-> int)
+    void Step(u32 dt);    // (1 arg)
+    void Pre();           // (no arg)
+    void Post();          // (no arg)
 };
 // The version-string RECT source globals (4 ints copied to a stack RECT by value).
 struct CGMVerRect {
-    int a, b, c, d;
+    i32 a, b, c, d;
 };
-extern "C" CGMVerRect g_645cc8;   // (the 4-int source @c8/cc/d0/d4)
-extern "C" unsigned int g_645584; // (last-frame delta, fed to Step)
+extern "C" CGMVerRect g_645cc8; // (the 4-int source @c8/cc/d0/d4)
+extern "C" u32 g_645584;        // (last-frame delta, fed to Step)
 
 // The two cue/sound-name string constants the credits one-shot FX reference.
 extern "C" char g_60ce90[]; // "CREDITZ" (PlaySound name)
@@ -200,10 +200,10 @@ public:
     // the base cleanup. Defined out-of-line (GameMode.cpp) so MSVC emits a
     // distinct `??1` the `??_G` deleting dtor dispatches to.
     virtual ~CMenuState() OVERRIDE;
-    virtual int Update() OVERRIDE;             // return 5;  (slot 4)
-    virtual int Render() OVERRIDE;             // the per-frame menu draw (this TU)
+    virtual i32 Update() OVERRIDE;             // return 5;  (slot 4)
+    virtual i32 Render() OVERRIDE;             // the per-frame menu draw (this TU)
     virtual void ReleaseResources() OVERRIDE;  // slot 2 (+0x8) - menu teardown
-    virtual int FrameSlot28(int arg) OVERRIDE; // slot 10 (+0x28) - per-frame poll
+    virtual i32 FrameSlot28(i32 arg) OVERRIDE; // slot 10 (+0x28) - per-frame poll
 
     // CMenuState's own methods (the rel32 thunks Render dispatches to with
     // `mov ecx,this`). External no-body -> reloc-masked.
@@ -215,14 +215,14 @@ public:
 
     // 0x1af70 - the 960-B HUD-text formatter switch (8 cases of sprintf over the
     // game-reg clock/score fields). Deferred to the final sweep (see GameMode.cpp).
-    void FormatHudText(int sel);
+    void FormatHudText(i32 sel);
 
     char m_pad1a8[0x1b4 - 0x1a8];
     CGMMenuUI* m_1b4; // +0x1b4 the menu UI object the scans drive
-    int m_1b8;        // +0x1b8 fade/poll duration
-    int m_1bc;        // +0x1bc music sub-object / enable gate
+    i32 m_1b8;        // +0x1b8 fade/poll duration
+    i32 m_1bc;        // +0x1bc music sub-object / enable gate
 
-    void BuildVersionString(int, int, int, int);
+    void BuildVersionString(i32, i32, i32, i32);
 };
 
 // CCreditsState - the credits state. Render
@@ -231,9 +231,9 @@ public:
 // latched one-shot FX.
 class CCreditsState : public CState {
 public:
-    virtual int Update() OVERRIDE;       // return 8;  (slot 4)
-    virtual int Render() OVERRIDE;       // the per-frame credits draw (this TU)
-    virtual int InputVirtual() OVERRIDE; // slot 8 (+0x20) - polled each frame
+    virtual i32 Update() OVERRIDE;       // return 8;  (slot 4)
+    virtual i32 Render() OVERRIDE;       // the per-frame credits draw (this TU)
+    virtual i32 InputVirtual() OVERRIDE; // slot 8 (+0x20) - polled each frame
                                          // (slots 6,7 inherited from CState)
 
     // CCreditsState's own sub-steps (the rel32 thunks Render dispatches to with
@@ -246,15 +246,15 @@ public:
     // non-virtual placeholder so the carefully-built vftable (slots 4..8) is
     // unchanged; the real ??1/??_G is not matched here.
     void Stub_08d5e0();
-    int winapi_0396f0_SelectClipRgn_SetBkMode();
+    i32 winapi_0396f0_SelectClipRgn_SetBkMode();
 
     // --- CCreditsState members the Render path pins (placeholders) ---
     char m_pad1a8[0x1b4 - 0x1a8];
-    int m_1b4; // +0x1b4 one-shot FX latch
+    i32 m_1b4; // +0x1b4 one-shot FX latch
     char m_pad1b8[0x1c4 - 0x1b8];
-    int m_1c4; // +0x1c4 conditional-FX gate
+    i32 m_1c4; // +0x1c4 conditional-FX gate
 
-    int LoadCreditzStateAssets(int a1, int a2, int a3);
+    i32 LoadCreditzStateAssets(i32 a1, i32 a2, i32 a3);
     void InitAttractTitle();
 };
 
@@ -264,7 +264,7 @@ public:
     // slot-2 release (statically bound), re-stamp the CState vtable, chain the
     // base cleanup. Out-of-line so MSVC emits a distinct `??1`. See GameMode.cpp.
     virtual ~CBootyState() OVERRIDE;
-    virtual int Update() OVERRIDE;            // return 0xa; (slot 4)
+    virtual i32 Update() OVERRIDE;            // return 0xa; (slot 4)
     virtual void ReleaseResources() OVERRIDE; // slot 2 (+0x8) - booty teardown
 
     // Engine-label backlog stub (non-virtual placeholder; vtable-neutral).
@@ -287,26 +287,26 @@ public:
     // chain BaseCleanup. Out-of-line so MSVC emits a distinct `??1`.
     virtual ~CMultiBootyState() OVERRIDE;
     virtual void ReleaseResources() OVERRIDE; // slot 2 (+0x8) @0x1e520 - booty teardown
-    virtual int FrameSlot24(int arg); // slot 9 (+0x24) @0x1e570 - per-frame cue poll (ret 4)
+    virtual i32 FrameSlot24(i32 arg); // slot 9 (+0x24) @0x1e570 - per-frame cue poll (ret 4)
 
     // Non-virtual behavioral methods (the rel32 thunks dispatched with mov ecx,this).
     void StepGlitterAnim();  // 0x196c0 - the trig glitter/spawn positioner
     void MoveLettersByDir(); // 0x19b90 - the 8-direction letter walk (jump-table)
-    int CheckPerfectBonus(); // 0x1c0f0 - "BOOTY_PERFECT" cue + scroll advance
-    int QueryGruntSlots();   // 0x1ecf0 - scan 4 reg records for an empty slot
+    i32 CheckPerfectBonus(); // 0x1c0f0 - "BOOTY_PERFECT" cue + scroll advance
+    i32 QueryGruntSlots();   // 0x1ecf0 - scan 4 reg records for an empty slot
 
     // --- CMultiBootyState members (placeholders, beyond the CState layout) ---
     // The +0x1ec and +0x204 sprite-ptr arrays overlap (the two animators index the
     // same letter set from different bases) - accessed by offset in the bodies, not
     // declared as fields here. Only the directly-stored scalars are named.
     char m_pad1a8[0x1b4 - 0x1a8];
-    int m_1b4; // +0x1b4 anim-mode gate (0 = trig path, !=0 = table path)
+    i32 m_1b4; // +0x1b4 anim-mode gate (0 = trig path, !=0 = table path)
     char m_pad1b8[0x1d8 - 0x1b8];
-    int m_1d8; // +0x1d8 active letter count / index
-    int m_1dc; // +0x1dc phase accumulator (ftol result)
-    int m_1e0; // +0x1e0 step counter (advances by 5)
-    int m_1e4; // +0x1e4 scratch X (ftol)
-    int m_1e8; // +0x1e8 scratch Y (ftol)
+    i32 m_1d8; // +0x1d8 active letter count / index
+    i32 m_1dc; // +0x1dc phase accumulator (ftol result)
+    i32 m_1e0; // +0x1e0 step counter (advances by 5)
+    i32 m_1e4; // +0x1e4 scratch X (ftol)
+    i32 m_1e8; // +0x1e8 scratch Y (ftol)
     char m_pad1ec[0x1fc - 0x1ec];
     void* m_1fc; // +0x1fc the trailing/cursor letter sprite
     char m_pad200[0x2f8 - 0x200];

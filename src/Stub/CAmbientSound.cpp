@@ -7,10 +7,10 @@
 // @source: rtti-vptr
 // @stub
 RVA(0x0000b6a0, 0x83)
-void CAmbientSound::Stub_00b6a0(int, int, int, int, int) {}
+void CAmbientSound::Stub_00b6a0(i32, i32, i32, i32, i32) {}
 
 // @confidence: high
 // @source: rtti-vptr
 // @stub
 RVA(0x0000b7b0, 0x80)
-void CAmbientSound::Stub_00b7b0(int, int, int, int, int) {}
+void CAmbientSound::Stub_00b7b0(i32, i32, i32, i32, i32) {}

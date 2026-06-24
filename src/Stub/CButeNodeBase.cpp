@@ -42,13 +42,13 @@ extern void* g_buteNodeVtbl;    // 0x5e94ac -> stamped at this+0x0
 // no-body so the `mov ecx; call` __thiscall shape is reloc-masked.
 class CButeNodeEntry {
 public:
-    CButeNodeEntry(int n, void* desc);
+    CButeNodeEntry(i32 n, void* desc);
 
     void* m_vtbl; // +0x00
     void* m_4;    // +0x04  desc
-    short m_8;    // +0x08  (WORD)n
+    i16 m_8;      // +0x08  (WORD)n
     char m_pada[2];
-    int m_c; // +0x0c
+    i32 m_c; // +0x0c
 };
 
 // CButeNodeBase layout:
@@ -58,12 +58,12 @@ public:
 //   +0x28  m_28 : child link, zeroed
 class CButeNodeBase : public CContainerErr {
 public:
-    CButeNodeBase(void* desc, int n);
+    CButeNodeBase(void* desc, i32 n);
 
     CButeNodeEntry m_entry; // +0x08 (0x10 bytes -> ends at +0x18)
-    int m_18;               // +0x18
+    i32 m_18;               // +0x18
     char m_pad1c[0x28 - 0x1c];
-    int m_28; // +0x28
+    i32 m_28; // +0x28
 };
 SIZE(CButeNodeBase, 0x2c); // measured: new(0x2c) -> ctor 0x16dff0; matches the layout above
 
@@ -84,7 +84,7 @@ SIZE(CButeNodeBase, 0x2c); // measured: new(0x2c) -> ctor 0x16dff0; matches the 
 // docs/patterns/gx-frame-destructible-local.md. Defer to the final sweep / an
 // eh unit.
 RVA(0x0016dff0, 0x73)
-CButeNodeBase::CButeNodeBase(void* desc, int n)
+CButeNodeBase::CButeNodeBase(void* desc, i32 n)
     : CContainerErr(&g_buteNodeErrMsg), m_entry(n, desc) {
     m_entry.m_vtbl = &g_buteNodeSubVtbl;
     m_18 = 0;

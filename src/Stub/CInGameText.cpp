@@ -7,4 +7,4 @@
 // @source: rtti-vptr
 // @stub
 RVA(0x00099110, 0x215)
-CInGameText::CInGameText(int) {}
+CInGameText::CInGameText(i32) {}

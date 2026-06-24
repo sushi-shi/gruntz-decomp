@@ -47,11 +47,11 @@ extern CButeTree g_buteTree;
 
 // --- engine helper types (offsets load-bearing) ---------------------------
 struct CSpriteObj {
-    void ApplyLookupSprite(const char* key, int flag); // 0x1504d0 (__thiscall)
+    void ApplyLookupSprite(const char* key, i32 flag); // 0x1504d0 (__thiscall)
     char m_pad00[0x08];
-    int m_08; // +0x08
+    i32 m_08; // +0x08
     char m_pad0c[0x74 - 0x0c];
-    int m_74; // +0x74
+    i32 m_74; // +0x74
 };
 
 struct CSpriteObjAux {
@@ -82,24 +82,24 @@ class CGruntStaminaSprite : public CGruntSpriteBase {
 public:
     CGruntStaminaSprite(CSpriteObj* obj);
     char m_pad3c[0x5c - 0x3c];
-    int m_5c; // +0x5c
-    int m_60; // +0x60
+    i32 m_5c; // +0x5c
+    i32 m_60; // +0x60
 };
 
 class CGruntToyTimeSprite : public CGruntSpriteBase {
 public:
     CGruntToyTimeSprite(CSpriteObj* obj);
     char m_pad3c[0x5c - 0x3c];
-    int m_5c; // +0x5c
-    int m_60; // +0x60
+    i32 m_5c; // +0x5c
+    i32 m_60; // +0x60
 };
 
 class CGruntWingzTimeSprite : public CGruntSpriteBase {
 public:
     CGruntWingzTimeSprite(CSpriteObj* obj);
     char m_pad3c[0x5c - 0x3c];
-    int m_5c; // +0x5c
-    int m_60; // +0x60
+    i32 m_5c; // +0x5c
+    i32 m_60; // +0x60
 };
 
 // Leaf vftables, referenced as DIR32 data.
@@ -176,25 +176,25 @@ CGruntWingzTimeSprite::CGruntWingzTimeSprite(CSpriteObj* obj) : CGruntSpriteBase
 // The engine game-object the hazard ctors poke (m_10 == m_38 == obj). Only the
 // touched offsets are modeled; ApplyLookupGeometry reloc-masks (0x1505b0).
 struct CHazardObj {
-    int ApplyLookupGeometry(const char* key, int flag); // 0x1505b0 (__thiscall)
+    i32 ApplyLookupGeometry(const char* key, i32 flag); // 0x1505b0 (__thiscall)
     char m_pad00[0x08];
-    int m_08; // +0x08
+    i32 m_08; // +0x08
     char m_pad0c[0x4c - 0x0c];
-    int m_4c; // +0x4c
-    int m_50; // +0x50
-    int m_54; // +0x54
-    int m_58; // +0x58
-    int m_5c; // +0x5c
-    int m_60; // +0x60
+    i32 m_4c; // +0x4c
+    i32 m_50; // +0x50
+    i32 m_54; // +0x54
+    i32 m_58; // +0x58
+    i32 m_5c; // +0x5c
+    i32 m_60; // +0x60
     char m_pad64[0x130 - 0x64];
-    int m_130; // +0x130
+    i32 m_130; // +0x130
     char m_pad134[0x144 - 0x134];
-    int m_144; // +0x144
-    int m_148; // +0x148
-    int m_14c; // +0x14c
-    int m_150; // +0x150
+    i32 m_144; // +0x144
+    i32 m_148; // +0x148
+    i32 m_14c; // +0x14c
+    i32 m_150; // +0x150
     char m_pad154[0x1b4 - 0x154];
-    int m_1b4; // +0x1b4
+    i32 m_1b4; // +0x1b4
 };
 
 // The global game registry the hazard ctors poll; wwdfile owns the real DATA
@@ -202,11 +202,11 @@ struct CHazardObj {
 // +0x30 (the spotlight factory, for the UFO) are read.
 struct CHazardRegInner {
     char m_pad00[0x08];
-    int m_08; // +0x08 -> the factory `this` for Spawn
+    i32 m_08; // +0x08 -> the factory `this` for Spawn
 };
 struct CHazardRegSub {
     char m_pad00[0x28];
-    int m_28; // +0x28
+    i32 m_28; // +0x28
     char m_pad2c[0x30 - 0x2c];
     CHazardRegInner* m_30; // +0x30
 };
@@ -223,7 +223,7 @@ extern CHazardReg* g_gameReg;
 // (0x150540) and the +0x7c sub-object's vtable poke (slot +0x10) reloc-mask.
 struct CSpotLightSubInner {
     char m_pad00[0x98];
-    int m_98; // +0x98
+    i32 m_98; // +0x98
 };
 struct CSpotLight;
 struct CSpotLightSub {
@@ -243,20 +243,20 @@ struct CSpotLight {
     char m_pad00[0x7c];
     CSpotLightSub* m_7c; // +0x7c
     char m_pad80[0x114 - 0x80];
-    int m_114; // +0x114
-    int m_118; // +0x118
-    int m_11c; // +0x11c
-    int m_120; // +0x120
-    int m_124; // +0x124
+    i32 m_114; // +0x114
+    i32 m_118; // +0x118
+    i32 m_11c; // +0x11c
+    i32 m_120; // +0x120
+    i32 m_124; // +0x124
     char m_pad128[0x12c - 0x128];
-    int m_12c; // +0x12c
+    i32 m_12c; // +0x12c
 };
 
 // The spotlight-spawn factory (g_gameReg->m_78->m_30->m_08 is the thiscall
 // `this`; Spawn is 0x1597b0). Modeled as a method on a tiny helper so the
 // thiscall lowers cleanly and reloc-masks.
 struct CSpotLightFactory {
-    CSpotLight* Spawn(int a, int b, int c, int d, const char* e, int f); // 0x1597b0
+    CSpotLight* Spawn(i32 a, i32 b, i32 c, i32 d, const char* e, i32 f); // 0x1597b0
 };
 
 // --- out-of-line base shell (reloc-masks to CPathHazard ctor 0xb35a0) -------
@@ -271,7 +271,7 @@ struct CPathHazardBase {
     CHazardObj* m_10; // +0x10  (== obj)
     char m_pad14[0x38 - 0x14];
     CHazardObj* m_38; // +0x38  (== obj)
-    int m_40;         // +0x40
+    i32 m_40;         // +0x40
 };
 
 class CRainCloud : public CPathHazardBase {
@@ -295,7 +295,7 @@ RVA(0x000b49b0, 0xa8)
 CRainCloud::CRainCloud(CHazardObj* obj) : CPathHazardBase(obj) {
     CHazardObj* o = m_10;
     *(void**)this = &g_rainCloudVtbl;
-    int n = g_gameReg->m_78->m_28;
+    i32 n = g_gameReg->m_78->m_28;
     o->m_58 = 1;
     o->m_50 = 0x7;
     o->m_4c = n;
@@ -313,11 +313,11 @@ RVA(0x000b4a90, 0x145)
 CUFO::CUFO(CHazardObj* obj) : CPathHazardBase(obj) {
     CHazardObj* o = m_10;
     *(void**)this = &g_ufoVtbl;
-    int sx = o->m_5c;
-    int sy = o->m_60;
+    i32 sx = o->m_5c;
+    i32 sy = o->m_60;
     m_40 = m_38->m_1b4;
     m_38->ApplyLookupGeometry("LEVEL_UFO", 0);
-    for (int i = 0; i < 2; ++i) {
+    for (i32 i = 0; i < 2; ++i) {
         CSpotLight* sl = ((CSpotLightFactory*)((char*)&g_gameReg->m_78->m_30->m_08))
                              ->Spawn(0, sx, 0, 0, "SpotLight", 0x40003);
         if (sl != 0) {
@@ -330,7 +330,7 @@ CUFO::CUFO(CHazardObj* obj) : CPathHazardBase(obj) {
             sl->m_118 = i;
             sl->m_120 = m_10->m_130;
             sub->m_vptr->Configure(sub, sl);
-            sl->m_7c->m_18->m_98 = (int)m_10;
+            sl->m_7c->m_18->m_98 = (i32)m_10;
         }
     }
     m_10->m_58 = 1;

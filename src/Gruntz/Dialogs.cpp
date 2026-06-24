@@ -20,13 +20,13 @@
 // Named externs so the DIR32 loads reloc-match the engine; @data names the
 // delinked target DATA symbol (RVA = VA - 0x400000).
 DATA(0x0024556c)
-extern int* g_gameReg; // the CGameRegistry pointer (reloc-masked DATA symbol)
+extern i32* g_gameReg; // the CGameRegistry pointer (reloc-masked DATA symbol)
 DATA(0x0024bd5c)
-extern int g_64bd5c; // the file-scope int sink (reloc-masked DATA symbol)
+extern i32 g_64bd5c; // the file-scope int sink (reloc-masked DATA symbol)
 
 // ---------------------------------------------------------------------------
 RVA(0x00014b30, 0x64)
-CBattlezDlg::CBattlezDlg(int a0, CWnd* pParent) : CDialog(0xc0, pParent) {
+CBattlezDlg::CBattlezDlg(i32 a0, CWnd* pParent) : CDialog(0xc0, pParent) {
     m_5c = a0;
     m_68 = 0;
 }
@@ -37,7 +37,7 @@ CBattlezDlgCustom::CBattlezDlgCustom(CWnd* pParent) : CDialog(0xc3, pParent) {}
 
 // ---------------------------------------------------------------------------
 RVA(0x00017930, 0x3a)
-CBattlezDlgColors::CBattlezDlgColors(int a0, int a1, int a2, CWnd* pParent)
+CBattlezDlgColors::CBattlezDlgColors(i32 a0, i32 a1, i32 a2, CWnd* pParent)
     : CDialog(0xc2, pParent) {
     m_5c = a0;
     m_60 = a1;
@@ -47,7 +47,7 @@ CBattlezDlgColors::CBattlezDlgColors(int a0, int a1, int a2, CWnd* pParent)
 
 // ---------------------------------------------------------------------------
 RVA(0x000c1750, 0x88)
-CMultiStartDlg::CMultiStartDlg(int a0, CWnd* pParent) : CDialog(0xc5, pParent), m_74(0xa) {
+CMultiStartDlg::CMultiStartDlg(i32 a0, CWnd* pParent) : CDialog(0xc5, pParent), m_74(0xa) {
     m_5c = a0;
     m_6c = 0;
     m_60 = 0;
@@ -82,7 +82,7 @@ CCheckpointDlg::CCheckpointDlg(CWnd* pParent) : CDialog(0xcd, pParent) {}
 // @early-stop
 // jump-table-data scoring artifact (code byte-exact) - docs/patterns/jumptable-data-overlap.md
 RVA(0x00015ac0, 0x46)
-CWnd* CBattlezDlg::GetCtrlA(int index) {
+CWnd* CBattlezDlg::GetCtrlA(i32 index) {
     CWnd* result = 0;
     switch (index) {
         case 0:
@@ -104,7 +104,7 @@ CWnd* CBattlezDlg::GetCtrlA(int index) {
 // @early-stop
 // jump-table-data scoring artifact (code byte-exact) - docs/patterns/jumptable-data-overlap.md
 RVA(0x00015b40, 0x46)
-CWnd* CBattlezDlg::GetCtrlB(int index) {
+CWnd* CBattlezDlg::GetCtrlB(i32 index) {
     CWnd* result = 0;
     switch (index) {
         case 0:
@@ -126,7 +126,7 @@ CWnd* CBattlezDlg::GetCtrlB(int index) {
 // @early-stop
 // jump-table-data scoring artifact (code byte-exact) - docs/patterns/jumptable-data-overlap.md
 RVA(0x00015bc0, 0x46)
-CWnd* CBattlezDlg::GetCtrlC(int index) {
+CWnd* CBattlezDlg::GetCtrlC(i32 index) {
     CWnd* result = 0;
     switch (index) {
         case 0:
@@ -148,7 +148,7 @@ CWnd* CBattlezDlg::GetCtrlC(int index) {
 // @early-stop
 // jump-table-data scoring artifact (code byte-exact) - docs/patterns/jumptable-data-overlap.md
 RVA(0x00015c40, 0x46)
-CWnd* CBattlezDlg::GetCtrlD(int index) {
+CWnd* CBattlezDlg::GetCtrlD(i32 index) {
     CWnd* result = 0;
     switch (index) {
         case 0:
@@ -170,7 +170,7 @@ CWnd* CBattlezDlg::GetCtrlD(int index) {
 // SetCtrlBText - resolve control `index` via GetCtrlB (through the thunk) and
 // push `text` into it via CWnd::SetWindowTextA (both NAFXCW, reloc-masked).
 RVA(0x00015db0, 0x19)
-void CBattlezDlg::SetCtrlBText(int index, const char* text) {
+void CBattlezDlg::SetCtrlBText(i32 index, const char* text) {
     CWnd* w = GetCtrlB(index);
     w->SetWindowTextA(text);
 }
@@ -182,7 +182,7 @@ void CBattlezDlg::SetCtrlBText(int index, const char* text) {
 // @source: winapi:InvalidateRect
 // @stub
 RVA(0x00016cd0, 0x98)
-int CBattlezDlg::winapi_016cd0_InvalidateRect() {
+i32 CBattlezDlg::winapi_016cd0_InvalidateRect() {
     return 0;
 }
 
@@ -190,7 +190,7 @@ int CBattlezDlg::winapi_016cd0_InvalidateRect() {
 // @source: winapi:InvalidateRect
 // @stub
 RVA(0x00016dc0, 0x97)
-int CBattlezDlg::winapi_016dc0_InvalidateRect() {
+i32 CBattlezDlg::winapi_016dc0_InvalidateRect() {
     return 0;
 }
 
@@ -198,7 +198,7 @@ int CBattlezDlg::winapi_016dc0_InvalidateRect() {
 // @source: winapi:InvalidateRect
 // @stub
 RVA(0x00016e90, 0x98)
-int CBattlezDlg::winapi_016e90_InvalidateRect() {
+i32 CBattlezDlg::winapi_016e90_InvalidateRect() {
     return 0;
 }
 
@@ -206,7 +206,7 @@ int CBattlezDlg::winapi_016e90_InvalidateRect() {
 // @source: winapi:InvalidateRect
 // @stub
 RVA(0x00016f60, 0x98)
-int CBattlezDlg::winapi_016f60_InvalidateRect() {
+i32 CBattlezDlg::winapi_016f60_InvalidateRect() {
     return 0;
 }
 
@@ -214,7 +214,7 @@ int CBattlezDlg::winapi_016f60_InvalidateRect() {
 // @source: winapi:GetWindow;SendMessageA
 // @stub
 RVA(0x000171b0, 0xca)
-int CBattlezDlg::winapi_0171b0_GetWindow_SendMessageA() {
+i32 CBattlezDlg::winapi_0171b0_GetWindow_SendMessageA() {
     return 0;
 }
 
@@ -222,7 +222,7 @@ int CBattlezDlg::winapi_0171b0_GetWindow_SendMessageA() {
 // SetSlotValue - store `val` into the 0x158 field of slot `index` in the slot
 // array based at m_5c (0x238 bytes/slot). Returns TRUE.
 RVA(0x00017460, 0x22)
-int CBattlezDlg::SetSlotValue(int index, int val) {
-    *(int*)((char*)((CBattlezSlot*)m_5c + index) + 0x158) = val;
+i32 CBattlezDlg::SetSlotValue(i32 index, i32 val) {
+    *(i32*)((char*)((CBattlezSlot*)m_5c + index) + 0x158) = val;
     return 1;
 }

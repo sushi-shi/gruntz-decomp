@@ -48,7 +48,7 @@ class CObject;
 class HagridWorker {
 public:
     virtual void Slot00();                               // +0x00
-    virtual int ScalarDtor(int flag);                    // +0x04  scalar-deleting destructor
+    virtual i32 ScalarDtor(i32 flag);                    // +0x04  scalar-deleting destructor
     virtual void Slot08();                               // +0x08
     virtual void Slot0C();                               // +0x0c
     virtual void Slot10();                               // +0x10
@@ -58,45 +58,45 @@ public:
     virtual void Slot20();                               // +0x20
     virtual void Slot24();                               // +0x24
     virtual void Slot28();                               // +0x28
-    virtual int Vfunc2C(int a1, int a2, int a3);         // +0x2c
-    virtual int Vfunc30(int a1, int a2, int a3, int a4); // +0x30
-    virtual int Vfunc34(int a1, int a2, int a3, int a4); // +0x34
+    virtual i32 Vfunc2C(i32 a1, i32 a2, i32 a3);         // +0x2c
+    virtual i32 Vfunc30(i32 a1, i32 a2, i32 a3, i32 a4); // +0x30
+    virtual i32 Vfunc34(i32 a1, i32 a2, i32 a3, i32 a4); // +0x34
 };
 
 // The 0x7c-byte worker layouts. Only the seeded offsets are load-bearing; m_78 is
 // the one field whose store width differs between the two workers (BYTE vs int).
 struct HagridWorkerB : public HagridWorker {
-    int m_04; // +0x04
-    int m_08; // +0x08
-    int m_0c; // +0x0c  = parent CDDrawWorkerList::m_pHarryPotter (+0xc)
+    i32 m_04; // +0x04
+    i32 m_08; // +0x08
+    i32 m_0c; // +0x0c  = parent CDDrawWorkerList::m_pHarryPotter (+0xc)
     char _pad10[0x20 - 0x10];
-    int m_20; // +0x20  = 0x80000000
+    i32 m_20; // +0x20  = 0x80000000
     char _pad24[0x38 - 0x24];
-    int m_38; // +0x38  = -1
-    int m_3c; // +0x3c  = 0
-    int m_40; // +0x40  = 0
+    i32 m_38; // +0x38  = -1
+    i32 m_3c; // +0x3c  = 0
+    i32 m_40; // +0x40  = 0
     char _pad44[0x5c - 0x44];
-    int m_5c; // +0x5c  = 0x80000000
+    i32 m_5c; // +0x5c  = 0x80000000
     char _pad60[0x64 - 0x60];
-    int m_64; // +0x64  = 0x80000000
+    i32 m_64; // +0x64  = 0x80000000
     char _pad68[0x78 - 0x68];
-    int m_78; // +0x78  = 0 (int flag for the int-flag workers)
+    i32 m_78; // +0x78  = 0 (int flag for the int-flag workers)
 }; // 0x7c
 
 struct HagridWorkerA : public HagridWorker {
-    int m_04; // +0x04
-    int m_08; // +0x08
-    int m_0c; // +0x0c
+    i32 m_04; // +0x04
+    i32 m_08; // +0x08
+    i32 m_0c; // +0x0c
     char _pad10[0x20 - 0x10];
-    int m_20; // +0x20  = 0x80000000
+    i32 m_20; // +0x20  = 0x80000000
     char _pad24[0x38 - 0x24];
-    int m_38; // +0x38  = -1
-    int m_3c; // +0x3c  = 0
-    int m_40; // +0x40  = 0
+    i32 m_38; // +0x38  = -1
+    i32 m_3c; // +0x3c  = 0
+    i32 m_40; // +0x40  = 0
     char _pad44[0x5c - 0x44];
-    int m_5c; // +0x5c  = 0x80000000
+    i32 m_5c; // +0x5c  = 0x80000000
     char _pad60[0x64 - 0x60];
-    int m_64; // +0x64  = 0x80000000
+    i32 m_64; // +0x64  = 0x80000000
     char _pad68[0x78 - 0x68];
     char m_78; // +0x78  = 0 (BYTE flag for the BYTE-flag worker)
     char _pad79[0x7c - 0x79];
@@ -114,7 +114,7 @@ extern void* g_hagridWorkerVtblB; // (int-flag worker)
 class HagridChild {
 public:
     virtual void Slot00();
-    virtual int ScalarDtor(int flag); // +0x04
+    virtual i32 ScalarDtor(i32 flag); // +0x04
     virtual void Slot08();
     virtual void Slot0C();
     virtual void Slot10();
@@ -123,15 +123,15 @@ public:
     virtual void Slot1C();
     virtual void Slot20();
     virtual void Slot24();
-    virtual int Vfunc28(int a1, int a2); // +0x28
+    virtual i32 Vfunc28(i32 a1, i32 a2); // +0x28
     char _pad04[0x74 - 0x04];            // +0x04..+0x73
-    int m_74;                            // +0x74  reference count
+    i32 m_74;                            // +0x74  reference count
 };
 
 // Work nodes (CObList CNode-shaped: +0x00 = next, +0x08 = child pointer).
 struct WorkNode {
     WorkNode* m_next;     // +0x00
-    int m_discard;        // +0x04  (not accessed; prev ptr or padding)
+    i32 m_discard;        // +0x04  (not accessed; prev ptr or padding)
     HagridChild* m_child; // +0x08
 };
 
@@ -143,19 +143,19 @@ struct WorkNode {
 // ---------------------------------------------------------------------------
 class CDDrawWorkerList {
 public:
-    int VirtualMethodUnknown14();
+    i32 VirtualMethodUnknown14();
     void VirtualMethodUnknown1C();
-    int VirtualMethodUnknown20();
-    void* VirtualMethodUnknown24(int a1, int a2, int a3);
-    void* VirtualMethodUnknown28(int a1, int a2, int a3, int addHead);
-    void* VirtualMethodUnknown2C(int a1, int a2, int a3, int a4, int addHead);
-    void* VirtualMethodUnknown30(int a1, int a2, int a3, int a4, int addHead);
-    void VirtualMethodUnknown34(int a1, int a2);
+    i32 VirtualMethodUnknown20();
+    void* VirtualMethodUnknown24(i32 a1, i32 a2, i32 a3);
+    void* VirtualMethodUnknown28(i32 a1, i32 a2, i32 a3, i32 addHead);
+    void* VirtualMethodUnknown2C(i32 a1, i32 a2, i32 a3, i32 a4, i32 addHead);
+    void* VirtualMethodUnknown30(i32 a1, i32 a2, i32 a3, i32 a4, i32 addHead);
+    void VirtualMethodUnknown34(i32 a1, i32 a2);
 
     void* m_vptr;              // +0x00 (vptr; not stamped by these methods)
-    int m_04;                  // +0x04  initialized to -1 when inactive
+    i32 m_04;                  // +0x04  initialized to -1 when inactive
     char m_pad08[0x0c - 0x08]; // +0x08..0x0b
-    int m_pHarryPotter;        // +0x0c  (CDDrawSubMgr+0xc)
+    i32 m_pHarryPotter;        // +0x0c  (CDDrawSubMgr+0xc)
     CObList m_10;              // +0x10  worker list (CObList)
 
     // Engine-label backlog stubs.
@@ -174,7 +174,7 @@ static inline void StampWorkerVtblA(HagridWorkerA* w) {
 // ---------------------------------------------------------------------------
 // Same base readiness predicate used by several Lucius-derived managers.
 RVA(0x00156f00, 0x16)
-int CDDrawWorkerList::VirtualMethodUnknown14() {
+i32 CDDrawWorkerList::VirtualMethodUnknown14() {
     if (m_pHarryPotter == 0) {
         goto fail;
     }
@@ -196,14 +196,14 @@ static inline HagridWorkerB* MakeWorkerB(const CDDrawWorkerList* parent) {
     HagridWorkerB* raw = (HagridWorkerB*)operator new(sizeof(HagridWorkerB));
     HagridWorkerB* w;
     if (raw != 0) {
-        int harryPotter = parent->m_pHarryPotter;
+        i32 harryPotter = parent->m_pHarryPotter;
         raw->m_04 = 0;
         raw->m_0c = harryPotter;
         raw->m_08 = 0;
-        raw->m_20 = (int)0x80000000;
+        raw->m_20 = (i32)0x80000000;
         raw->m_38 = -1;
-        raw->m_5c = (int)0x80000000;
-        raw->m_64 = (int)0x80000000;
+        raw->m_5c = (i32)0x80000000;
+        raw->m_64 = (i32)0x80000000;
         raw->m_3c = 0;
         raw->m_40 = 0;
         StampWorkerVtblB(raw);
@@ -219,14 +219,14 @@ static inline HagridWorkerA* MakeWorkerA(const CDDrawWorkerList* parent) {
     HagridWorkerA* raw = (HagridWorkerA*)operator new(sizeof(HagridWorkerA));
     HagridWorkerA* w;
     if (raw != 0) {
-        int harryPotter = parent->m_pHarryPotter;
+        i32 harryPotter = parent->m_pHarryPotter;
         raw->m_04 = 0;
         raw->m_0c = harryPotter;
         raw->m_08 = 0;
-        raw->m_20 = (int)0x80000000;
+        raw->m_20 = (i32)0x80000000;
         raw->m_38 = -1;
-        raw->m_5c = (int)0x80000000;
-        raw->m_64 = (int)0x80000000;
+        raw->m_5c = (i32)0x80000000;
+        raw->m_64 = (i32)0x80000000;
         raw->m_3c = 0;
         raw->m_40 = 0;
         StampWorkerVtblA(raw);
@@ -243,7 +243,7 @@ static inline HagridWorkerA* MakeWorkerA(const CDDrawWorkerList* parent) {
 // virtual with (a1,a2,a3). On success appends it to the list (AddTail) and returns
 // it; on failure destroys it and returns 0.
 RVA(0x00156fd0, 0x8b)
-void* CDDrawWorkerList::VirtualMethodUnknown24(int a1, int a2, int a3) {
+void* CDDrawWorkerList::VirtualMethodUnknown24(i32 a1, i32 a2, i32 a3) {
     HagridWorkerA* w = MakeWorkerA(this);
     if (w->Vfunc2C(a1, a2, a3) == 0) {
         if (w != 0) {
@@ -259,7 +259,7 @@ void* CDDrawWorkerList::VirtualMethodUnknown24(int a1, int a2, int a3) {
 // As Unknown24 but the int-flag worker; on success the trailing
 // bool selects AddHead vs AddTail.
 RVA(0x001573e0, 0xa0)
-void* CDDrawWorkerList::VirtualMethodUnknown28(int a1, int a2, int a3, int addHead) {
+void* CDDrawWorkerList::VirtualMethodUnknown28(i32 a1, i32 a2, i32 a3, i32 addHead) {
     HagridWorkerB* w = MakeWorkerB(this);
     if (w->Vfunc2C(a1, a2, a3) == 0) {
         if (w != 0) {
@@ -279,7 +279,7 @@ void* CDDrawWorkerList::VirtualMethodUnknown28(int a1, int a2, int a3, int addHe
 // Int-flag worker; calls the worker's +0x30 virtual with (a1,a2,a3,a4); trailing
 // bool selects AddHead vs AddTail.
 RVA(0x00157330, 0xa5)
-void* CDDrawWorkerList::VirtualMethodUnknown2C(int a1, int a2, int a3, int a4, int addHead) {
+void* CDDrawWorkerList::VirtualMethodUnknown2C(i32 a1, i32 a2, i32 a3, i32 a4, i32 addHead) {
     HagridWorkerB* w = MakeWorkerB(this);
     if (w->Vfunc30(a1, a2, a3, a4) == 0) {
         if (w != 0) {
@@ -298,7 +298,7 @@ void* CDDrawWorkerList::VirtualMethodUnknown2C(int a1, int a2, int a3, int a4, i
 // ---------------------------------------------------------------------------
 // As Unknown2C but dispatches the worker's +0x34 virtual.
 RVA(0x00157150, 0xa5)
-void* CDDrawWorkerList::VirtualMethodUnknown30(int a1, int a2, int a3, int a4, int addHead) {
+void* CDDrawWorkerList::VirtualMethodUnknown30(i32 a1, i32 a2, i32 a3, i32 a4, i32 addHead) {
     HagridWorkerB* w = MakeWorkerB(this);
     if (w->Vfunc34(a1, a2, a3, a4) == 0) {
         if (w != 0) {
@@ -342,7 +342,7 @@ void CDDrawWorkerList::VirtualMethodUnknown1C() {
 // ---------------------------------------------------------------------------
 // Returns constant 0x11 (17).
 RVA(0x00156f20, 0x6)
-int CDDrawWorkerList::VirtualMethodUnknown20() {
+i32 CDDrawWorkerList::VirtualMethodUnknown20() {
     return 0x11;
 }
 
@@ -356,7 +356,7 @@ int CDDrawWorkerList::VirtualMethodUnknown20() {
 //    OR child->m_74 <= 0                          → free
 //    Otherwise                                     → skip, keep node
 RVA(0x00163bf0, 0x6d)
-void CDDrawWorkerList::VirtualMethodUnknown34(int a1, int a2) {
+void CDDrawWorkerList::VirtualMethodUnknown34(i32 a1, i32 a2) {
     struct HLayout {
         char _pad[0x14];
         WorkNode* m_head;
@@ -368,7 +368,7 @@ void CDDrawWorkerList::VirtualMethodUnknown34(int a1, int a2) {
         pNode = pNode->m_next;
         child->Vfunc28(a1, a2);
         child->m_74--;
-        if ((*(int*)((char*)a2 + 0x2c) != 0 && (*(int*)((char*)a2 + 0x08) & 0x20000) == 0)
+        if ((*(i32*)((char*)a2 + 0x2c) != 0 && (*(i32*)((char*)a2 + 0x08) & 0x20000) == 0)
             || child->m_74 <= 0) {
             m_10.RemoveAt((__POSITION*)pCurrent);
             if (child) {

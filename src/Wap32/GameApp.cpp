@@ -9,21 +9,21 @@
 // timeGetTime (WINMM frame clock) comes from <Mfc.h>'s central decl (via <Wap32.h>).
 
 DATA(0x00253c70)
-extern int g_wap32Now;
+extern i32 g_wap32Now;
 DATA(0x00253c74)
-extern int g_wap32FrameDelta;
+extern i32 g_wap32FrameDelta;
 DATA(0x00253c78)
-extern int g_wap32ClockReset;
+extern i32 g_wap32ClockReset;
 // Two run-state timing defaults CGameMgr::Run seeds to 0x64 (100).
 DATA(0x00253c7c)
-extern int g_wap32Run7c;
+extern i32 g_wap32Run7c;
 DATA(0x00253c80)
-extern int g_wap32Run80;
+extern i32 g_wap32Run80;
 
 // Instance counter (bumped per ctor). Shared
 // (declared in Wap32.h) so the inline ~CGameApp - which CGruntzApp's dtor
 // inlines in another TU - resolves it; the reloc name is masked in objdiff.
-int g_gameAppInstanceCount;
+i32 g_gameAppInstanceCount;
 
 // -------------------------------------------------------------------------
 // CGameApp::CGameApp()
@@ -90,8 +90,8 @@ void CGameApp::ReportError(WPARAM wParam, LPARAM lParam) {
         PostMessageA((HWND)m_4->m_4, 0x10 /*WM_CLOSE*/, 0, 0);
     }
     m_244 = 0;
-    m_24c = (int)wParam;
-    m_250 = (int)lParam;
+    m_24c = (i32)wParam;
+    m_250 = (i32)lParam;
 }
 
 // -------------------------------------------------------------------------
@@ -103,7 +103,7 @@ void CGameApp::ReportError(WPARAM wParam, LPARAM lParam) {
 // (return ignored); always TranslateMessage + DispatchMessageA; when the queue
 // is empty, call the idle virtual (vtbl +0x20) and loop.
 RVA(0x0013d910, 0x9f)
-int CGameApp::RunMessageLoop() {
+i32 CGameApp::RunMessageLoop() {
     MSG msg;
 
     HWND hwnd = (HWND)m_4->m_4;
@@ -133,9 +133,9 @@ int CGameApp::RunMessageLoop() {
 // Fills the embedded WNDCLASSA (m_wc @ +0x1e8) and loads its icon/cursor.
 RVA(0x0013d9b0, 0xa0)
 void CGameApp::InitializeDefaultWindowClass() {
-    int i;
+    i32 i;
     for (i = 0; i < 10; i++) {
-        ((int*)&m_wc)[i] = 0;
+        ((i32*)&m_wc)[i] = 0;
     }
 
     HCURSOR hCursor = LoadCursorA(m_c, m_gameInfo.szGameIdentifier);
@@ -176,14 +176,14 @@ CGameWnd* CGameApp::InitializeGameWindow() {
 // hInstance is required (null -> 0). The three name strings are conditionally
 // strcpy'd (inline rep movs at /O2/Oi).
 RVA(0x0013d7b0, 0x105)
-int CGameApp::VirtualUnknownMethod03(
+i32 CGameApp::VirtualUnknownMethod03(
     HINSTANCE hInstance,
     char* szWindowName,
     char* szGameIdentifier,
     char* szCmdLine,
-    int windowClassFlags,
-    int windowWidth,
-    int windowHeight
+    i32 windowClassFlags,
+    i32 windowWidth,
+    i32 windowHeight
 ) {
     GameInfo gi;
 
@@ -218,9 +218,9 @@ int CGameApp::VirtualUnknownMethod03(
 //   caption style; otherwise -> fullscreen popup at the screen metrics.
 RVA(0x0013da50, 0x10b)
 void CGameApp::InitializeDefaultCreateStruct() {
-    int i;
+    i32 i;
     for (i = 0; i < 12; i++) {
-        ((int*)&m_createStruct)[i] = 0;
+        ((i32*)&m_createStruct)[i] = 0;
     }
 
     HMENU hMenu = 0;
@@ -232,17 +232,17 @@ void CGameApp::InitializeDefaultCreateStruct() {
     // separate variables (the target materializes x in a register, y in a stack
     // slot, both assigned in one branch - a single var folds to a branchless
     // neg/sbb/and on the 0x80000000 mask).
-    int x, y;
+    i32 x, y;
     if (m_gameInfo.windowClassFlags & 1) {
-        x = (int)0x80000000;
-        y = (int)0x80000000;
+        x = (i32)0x80000000;
+        y = (i32)0x80000000;
     } else {
         x = 0;
         y = 0;
     }
 
     // Width/height: the requested size when windowed, the screen otherwise.
-    int cx, cy;
+    i32 cx, cy;
     if (m_gameInfo.windowClassFlags & 1) {
         cx = m_gameInfo.windowWidth;
         cy = m_gameInfo.windowHeight;
@@ -251,7 +251,7 @@ void CGameApp::InitializeDefaultCreateStruct() {
         cy = GetSystemMetrics(1); // SM_CYSCREEN
     }
 
-    long style;
+    i32 style;
     DWORD exStyle;
     if (m_gameInfo.windowClassFlags & 1) {
         style = 0xcf0000; // WS_OVERLAPPEDWINDOW (default)
@@ -284,7 +284,7 @@ void CGameApp::InitializeDefaultCreateStruct() {
 // resolve hInstance, build the class+window names, register the class, create
 // the window via CGameWnd::CreateAndShow, then bring up the game manager.
 RVA(0x0013d5d0, 0x1d3)
-int CGameApp::VirtualUnknownMethod02(
+i32 CGameApp::VirtualUnknownMethod02(
     GameInfo* pGameInfo,
     WNDCLASSA* pWndClass,
     CREATESTRUCTA* pCreateStruct
@@ -405,7 +405,7 @@ void CGameResource::Wap32GameResVfunc3() {}
 void CGameResource::PerFrameTick() {}
 // CGameMgr vtable anchors (~CGameMgr is now inline in Wap32.h; the three
 // otherwise-unmatched virtuals anchor here).
-int WAP32::CGameMgr::Wap32GameMgrVfunc3() {
+i32 WAP32::CGameMgr::Wap32GameMgrVfunc3() {
     return 0;
 }
 void WAP32::CGameMgr::Wap32GameMgrVfunc4() {}
@@ -435,7 +435,7 @@ WAP32::CGameMgr::CGameMgr() {
 // reseeds the frame clock, and primes the two run-timing globals to 100.
 // Bails (returning 0) if there is no window, or the window has no OS HWND yet.
 RVA(0x0013dd50, 0x54)
-int WAP32::CGameMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
+i32 WAP32::CGameMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     if (!pGameWnd) {
         return 0;
     }
@@ -443,8 +443,8 @@ int WAP32::CGameMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         return 0;
     }
 
-    m_4 = (int)pGameWnd;
-    m_8 = (int)pGameWnd->m_8;
+    m_4 = (i32)pGameWnd;
+    m_8 = (i32)pGameWnd->m_8;
     m_1c = 0;
     InitTimeFields(1);
     UnknownMethodInitializeTimeGlobal();
@@ -466,7 +466,7 @@ void WAP32::CGameMgr::UnknownClose() {
 // CGameMgr::InitTimeFields  (__thiscall; ctor/Run helper @0x13de70)
 // Zeroes m_20, samples the start tick into m_24, and (when reset) arms m_18.
 RVA(0x0013de70, 0x23)
-void WAP32::CGameMgr::InitTimeFields(int reset) {
+void WAP32::CGameMgr::InitTimeFields(i32 reset) {
     m_20 = 0;
     m_24 = timeGetTime();
     if (reset) {

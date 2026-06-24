@@ -10,14 +10,14 @@
 class CGruntzMgr {
 public:
     CGruntzMgr();
-    void vector_deleting_destructor(int);
+    void vector_deleting_destructor(i32);
     void UnknownClose();
     void InitCFileIOMember();
-    int winapi_0861e0_timeGetTime();
-    int winapi_08e6c0_SendMessageA();
-    int winapi_08f530_PostMessageA();
-    int winapi_090260_DialogBoxParamA(int, int, int);
-    int winapi_092f00_PostMessageA();
+    i32 winapi_0861e0_timeGetTime();
+    i32 winapi_08e6c0_SendMessageA();
+    i32 winapi_08f530_PostMessageA();
+    i32 winapi_090260_DialogBoxParamA(i32, i32, i32);
+    i32 winapi_092f00_PostMessageA();
     void LoadSaveMessageSprite();
 };
 
@@ -31,7 +31,7 @@ CGruntzMgr::CGruntzMgr() {}
 // @source: tomalla
 // @stub
 RVA(0x00083330, 0x1e)
-void CGruntzMgr::vector_deleting_destructor(int) {}
+void CGruntzMgr::vector_deleting_destructor(i32) {}
 
 // @confidence: high
 // @source: tomalla
@@ -57,7 +57,7 @@ void CGruntzMgr::InitCFileIOMember() {}
 // @source: winapi:timeGetTime
 // @stub
 RVA(0x000861e0, 0xc5)
-int CGruntzMgr::winapi_0861e0_timeGetTime() {
+i32 CGruntzMgr::winapi_0861e0_timeGetTime() {
     return 0;
 }
 
@@ -65,7 +65,7 @@ int CGruntzMgr::winapi_0861e0_timeGetTime() {
 // @source: winapi:SendMessageA
 // @stub
 RVA(0x0008e6c0, 0x85)
-int CGruntzMgr::winapi_08e6c0_SendMessageA() {
+i32 CGruntzMgr::winapi_08e6c0_SendMessageA() {
     return 0;
 }
 
@@ -73,7 +73,7 @@ int CGruntzMgr::winapi_08e6c0_SendMessageA() {
 // @source: winapi:PostMessageA
 // @stub
 RVA(0x0008f530, 0xbd)
-int CGruntzMgr::winapi_08f530_PostMessageA() {
+i32 CGruntzMgr::winapi_08f530_PostMessageA() {
     return 0;
 }
 
@@ -81,7 +81,7 @@ int CGruntzMgr::winapi_08f530_PostMessageA() {
 // @source: winapi:DialogBoxParamA
 // @stub
 RVA(0x00090260, 0x13e)
-int CGruntzMgr::winapi_090260_DialogBoxParamA(int, int, int) {
+i32 CGruntzMgr::winapi_090260_DialogBoxParamA(i32, i32, i32) {
     return 0;
 }
 
@@ -89,7 +89,7 @@ int CGruntzMgr::winapi_090260_DialogBoxParamA(int, int, int) {
 // @source: winapi:PostMessageA
 // @stub
 RVA(0x00092f00, 0x1ef)
-int CGruntzMgr::winapi_092f00_PostMessageA() {
+i32 CGruntzMgr::winapi_092f00_PostMessageA() {
     return 0;
 }
 

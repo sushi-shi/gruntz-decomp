@@ -18,7 +18,7 @@
 // placeholders pending the alias pass (MFC's real exports are
 // AfxThrowFileException / CFileException::ThrowOsError / AfxFullPath).
 extern "C" void __stdcall AfxThrowOsError(LONG lOsError, LPCSTR lpszName);
-extern "C" void __stdcall AfxThrowFileError(int cause, LONG lOsError, LPCSTR lpszName);
+extern "C" void __stdcall AfxThrowFileError(i32 cause, LONG lOsError, LPCSTR lpszName);
 extern "C" void __stdcall AfxFullPath(char* lpszPathOut, const char* lpszFileName);
 
 // ---------------------------------------------------------------------------
@@ -33,18 +33,18 @@ public:
     CFileIO(HANDLE hFile);
     virtual ~CFileIO() OVERRIDE;
 
-    BOOL Open(const char* lpszFileName, unsigned int nOpenFlags, void* pError);
-    unsigned int Read(void* lpBuf, unsigned int nCount);
-    void Write(const void* lpBuf, unsigned int nCount);
-    LONG Seek(LONG lOff, int nFrom);
+    BOOL Open(const char* lpszFileName, u32 nOpenFlags, void* pError);
+    u32 Read(void* lpBuf, u32 nCount);
+    void Write(const void* lpBuf, u32 nCount);
+    LONG Seek(LONG lOff, i32 nFrom);
     LONG GetPosition();
     // GetLength: virtual Seek-to-end/restore. Declared (no body here) so external
     // callers (CFileImage) emit a reloc-masked `call rel32` to it.
-    unsigned int GetLength();
+    u32 GetLength();
     void Close();
 
     HANDLE m_handle; // +0x04
-    int m_open;      // +0x08
+    i32 m_open;      // +0x08
     CString m_name;  // +0x0c
 
     // Engine-label backlog stubs.

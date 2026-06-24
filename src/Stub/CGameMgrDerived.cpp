@@ -3,11 +3,11 @@
 
 class CGameMgrDerived {
 public:
-    void scalar_deleting_destructor(int);
+    void scalar_deleting_destructor(i32);
 };
 
 // @confidence: high
 // @source: tomalla
 // @stub
 RVA(0x000855a0, 0x24)
-void CGameMgrDerived::scalar_deleting_destructor(int) {}
+void CGameMgrDerived::scalar_deleting_destructor(i32) {}

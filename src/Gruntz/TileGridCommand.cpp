@@ -33,7 +33,7 @@ void CTileGridCommand::RecordMove() {
 // block through the stream's Transfer (vtable slot 12) and returns 1.
 // ---------------------------------------------------------------------------
 RVA(0x00113ae0, 0xe8)
-int CTileGridCommand::Serialize(TgcStream* s) {
+i32 CTileGridCommand::Serialize(TgcStream* s) {
     if (s == 0) {
         return 0;
     }
@@ -52,8 +52,8 @@ int CTileGridCommand::Serialize(TgcStream* s) {
     s->Transfer(&m_34, 4);
     s->Transfer(&m_38, 4);
     s->Transfer(&m_24, 4);
-    int* p = m_grid;
-    for (int i = 0; i < 24; i++) {
+    i32* p = m_grid;
+    for (i32 i = 0; i < 24; i++) {
         s->Transfer(p, 4);
         p++;
     }

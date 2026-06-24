@@ -32,12 +32,12 @@
 // the `mov ecx,ds:g_gameReg; call <slot>` falls out as in retail. BuildLevelRezPath
 // is the __thiscall method invoked from Register() (reloc-masked no-body callee).
 struct WwdGameReg {
-    int BuildLevelRezPath(int isEmpty, int hi, int lo, int id);
+    i32 BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id);
 };
 extern WwdGameReg* g_gameReg;
 
 // _strncpy: the CRT helper the FillSlot path calls (reloc-masked).
-extern "C" char* __cdecl strncpy(char* dest, const char* src, unsigned int n);
+extern "C" char* __cdecl strncpy(char* dest, const char* src, u32 n);
 
 // The shared empty C string global (RVA 0x2293f4 / VA 0x6293f4), referenced by
 // Register's name-fallback path (reloc-masked DIR32).
@@ -46,11 +46,11 @@ extern "C" char g_emptyString[];
 // ---------------------------------------------------------------------------
 // A single 0x100-byte saved-game slot record.
 struct SaveSlot {
-    int m_type;      // +0x00  (1 = normal, 3 = ...)
-    int m_04;        // +0x04
-    int m_08;        // +0x08
-    int m_0c;        // +0x0c
-    int m_checksum;  // +0x10  (Register(this) result)
+    i32 m_type;      // +0x00  (1 = normal, 3 = ...)
+    i32 m_04;        // +0x04
+    i32 m_08;        // +0x08
+    i32 m_0c;        // +0x0c
+    i32 m_checksum;  // +0x10  (Register(this) result)
     char m_14[0x20]; // +0x14  (name, strncpy'd 0x20)
     char m_34[0xcc]; // +0x34  pad to 0x100
 };
@@ -61,33 +61,33 @@ public:
 
     void Reset();           // 0x000e4d20: Init() + m_name.Empty()
     void Init();            // 0x000e4d50: zero all 10 slots, set header field = 0x25
-    int Load();             // 0x000e4d90
-    int Save(int a, int b); // 0x000e4ea0
+    i32 Load();             // 0x000e4d90
+    i32 Save(i32 a, i32 b); // 0x000e4ea0
     void ComputeAll();      // 0x000e50a0
-    int Verify();           // 0x000e50f0
-    int FillSlot(SaveSlot* dst, const char* name, void* src); // 0x000e5130
-    int CopySlot(SaveSlot* dst, const SaveSlot* src);         // 0x000e51d0
-    int FillSlot2(SaveSlot* dst, int name, void* src);        // 0x000e5240
-    int Register(SaveSlot* slot);                             // 0x000e5390
-    int Encode(unsigned char* buf);                           // 0x000e5410
-    int Decode(unsigned char* buf);                           // 0x000e5460
-    SaveSlot* GetSlot(int i);                                 // 0x000e54b0
-    int FillSlotByIndex(int idx, int name, void* src);        // 0x000e54e0
-    void SetField18(int v);                                   // 0x000e5620
-    void SetField1c(int v);                                   // 0x000e5660
-    int CheckField20();                                       // 0x000e5690
+    i32 Verify();           // 0x000e50f0
+    i32 FillSlot(SaveSlot* dst, const char* name, void* src); // 0x000e5130
+    i32 CopySlot(SaveSlot* dst, const SaveSlot* src);         // 0x000e51d0
+    i32 FillSlot2(SaveSlot* dst, i32 name, void* src);        // 0x000e5240
+    i32 Register(SaveSlot* slot);                             // 0x000e5390
+    i32 Encode(u8* buf);                                      // 0x000e5410
+    i32 Decode(u8* buf);                                      // 0x000e5460
+    SaveSlot* GetSlot(i32 i);                                 // 0x000e54b0
+    i32 FillSlotByIndex(i32 idx, i32 name, void* src);        // 0x000e54e0
+    void SetField18(i32 v);                                   // 0x000e5620
+    void SetField1c(i32 v);                                   // 0x000e5660
+    i32 CheckField20();                                       // 0x000e5690
 
     CString m_str0; // +0x00
     CString m_name; // +0x04
     // header blob at +0x08, 0xa1c bytes; named fields overlaid below.
     char m_08[0x10];      // +0x08
-    unsigned int m_18;    // +0x18  (Init = 0x25; unsigned: SetField18 uses ja/jbe)
-    unsigned int m_1c;    // +0x1c  (unsigned: SetField1c uses jbe)
-    unsigned int m_20;    // +0x20  (magic == 0x42a check)
+    u32 m_18;             // +0x18  (Init = 0x25; unsigned: SetField18 uses ja/jbe)
+    u32 m_1c;             // +0x1c  (unsigned: SetField1c uses jbe)
+    u32 m_20;             // +0x20  (magic == 0x42a check)
     char m_24[0x51];      // +0x24  pad to +0x75
     char m_75[0x83];      // +0x75  (a name string read by Register; pad to +0xf8)
-    int m_f8;             // +0xf8
-    int m_fc;             // +0xfc
+    i32 m_f8;             // +0xf8
+    i32 m_fc;             // +0xfc
     char m_100[0x924];    // +0x100 pad to +0xa24 (end of 0xa1c-byte header)
     SaveSlot m_slots[10]; // +0xa24, 10 x 0x100
 };

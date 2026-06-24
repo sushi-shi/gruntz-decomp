@@ -21,7 +21,7 @@
 // Placement new (construct in place into the RezAlloc'd block); no allocation, so
 // it is matching-neutral - it just runs the StreamVoice ctor (0x1375b0) on the
 // raw RezAlloc result, exactly as the retail RezAlloc-then-construct does.
-inline void* operator new(unsigned int, void* p) {
+inline void* operator new(u32, void* p) {
     return p;
 }
 
@@ -47,7 +47,7 @@ struct StreamList {
 struct StreamVoiceList {
     void* m_head;
     void* m_tail;
-    void Reap(void* node, int mask); // 0x136f60
+    void Reap(void* node, i32 mask); // 0x136f60
 };
 
 // ---------------------------------------------------------------------------
@@ -73,8 +73,7 @@ SoundStream::~SoundStream() {
 // StreamVoice ctor (0x1375b0) is modelled and a real `new T` allocator path emits
 // the frame.
 RVA(0x00137780, 0x171)
-StreamVoice*
-SoundStream::CreateStreamBuffer(WaveFormatX* fmt, unsigned long bytes, int a, int b, int c) {
+StreamVoice* SoundStream::CreateStreamBuffer(WaveFormatX* fmt, u32 bytes, i32 a, i32 b, i32 c) {
     if (m_78 == 0) {
         return 0;
     }
@@ -90,9 +89,9 @@ SoundStream::CreateStreamBuffer(WaveFormatX* fmt, unsigned long bytes, int a, in
 
     WaveFormatX wf;
     wf.wFormatTag = fmt->wFormatTag;
-    *(unsigned long*)&wf.nChannels = *(unsigned long*)&fmt->nChannels;
+    *(u32*)&wf.nChannels = *(u32*)&fmt->nChannels;
     wf.nAvgBytesPerSec = fmt->nAvgBytesPerSec;
-    *(unsigned long*)&wf.nBlockAlign = *(unsigned long*)&fmt->nBlockAlign;
+    *(u32*)&wf.nBlockAlign = *(u32*)&fmt->nBlockAlign;
     wf.cbSize = fmt->cbSize;
 
     IDirectSoundBufferZ* out = 0;
@@ -103,7 +102,7 @@ SoundStream::CreateStreamBuffer(WaveFormatX* fmt, unsigned long bytes, int a, in
     desc.dwReserved = 0;
     desc.lpwfxFormat = &wf;
 
-    long hr = m_14->vtbl->CreateSoundBuffer(m_14, &desc, (IDirectSoundZ**)&out, 0) != 0;
+    i32 hr = m_14->vtbl->CreateSoundBuffer(m_14, &desc, (IDirectSoundZ**)&out, 0) != 0;
     if (hr) {
         DirectSoundMgr::GetErrorString(DSNDMGSR_FILE, 0x678, hr);
         return 0;
@@ -135,13 +134,13 @@ SoundStream::CreateStreamBuffer(WaveFormatX* fmt, unsigned long bytes, int a, in
 // docs/patterns/zero-register-pinning.md / pin-local-for-callee-saved-reg.md.
 // 90.6% on a documented regalloc wall - logic complete, deferred to the final sweep.
 RVA(0x00137900, 0xc6)
-StreamVoice* SoundStream::OpenStream(StreamSource* src, int p1, int p2, int p3, int p4, int p5) {
+StreamVoice* SoundStream::OpenStream(StreamSource* src, i32 p1, i32 p2, i32 p3, i32 p4, i32 p5) {
     if (src == 0) {
         return 0;
     }
     WaveFormatX wf;
-    unsigned long dataOff;
-    unsigned long dataLen;
+    u32 dataOff;
+    u32 dataLen;
     if (ParseWave(src, &wf, &dataOff, &dataLen) == 0) {
         return 0;
     }
@@ -151,8 +150,8 @@ StreamVoice* SoundStream::OpenStream(StreamSource* src, int p1, int p2, int p3, 
     }
     StreamFeeder* feeder = &voice->m_feeder;
     feeder->m_38 = dataOff;
-    feeder->m_3c = (unsigned long)src;
-    feeder->m_2c = (unsigned long)src;
+    feeder->m_3c = (u32)src;
+    feeder->m_2c = (u32)src;
     feeder->m_30 = 0;
     feeder->m_34 = 0;
     if (feeder->FeederStart(this, &wf, p1, p2, voice, -1) == 0) {
@@ -192,19 +191,19 @@ void SoundStream::DestroyVoice(StreamVoice* voice) {
 // control flow byte-exact; only the frame size / slot assignment differs - 98.3%,
 // the entropy tail. Logic complete, deferred to the final sweep.
 RVA(0x00137b70, 0x159)
-int SoundStream::ParseWave(
+i32 SoundStream::ParseWave(
     StreamSource* src,
     WaveFormatX* fmtBuf,
-    unsigned long* outDataOff,
-    unsigned long* outDataLen
+    u32* outDataOff,
+    u32* outDataLen
 ) {
-    int gotFmt = 0;
-    int gotData = 0;
+    i32 gotFmt = 0;
+    i32 gotData = 0;
     src->Seek(0);
 
-    unsigned long riffTag;
-    unsigned long riffSize;
-    unsigned long waveTag;
+    u32 riffTag;
+    u32 riffSize;
+    u32 waveTag;
     src->Read(&riffTag, 4, -1);
     src->Read(&riffSize, 4, -1);
     src->Read(&waveTag, 4, -1);
@@ -215,18 +214,18 @@ int SoundStream::ParseWave(
         return 0;
     }
 
-    unsigned long end = src->m_18 + riffSize - 4;
+    u32 end = src->m_18 + riffSize - 4;
     if (end > src->m_0c) {
         end = src->m_0c;
     }
     while (src->m_18 < end) {
-        unsigned long chunkId;
-        unsigned long chunkSize;
+        u32 chunkId;
+        u32 chunkSize;
         src->Read(&chunkId, 4, -1);
         src->Read(&chunkSize, 4, -1);
         if (chunkId == 0x20746d66) {
-            int next = src->m_18 + chunkSize;
-            int n = chunkSize;
+            i32 next = src->m_18 + chunkSize;
+            i32 n = chunkSize;
             if (n >= 0x12) {
                 n = 0x12;
             }

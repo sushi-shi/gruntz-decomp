@@ -7,4 +7,4 @@
 // @source: rtti-vptr
 // @stub
 RVA(0x0003ecf0, 0x292)
-CExitTrigger::CExitTrigger(int) {}
+CExitTrigger::CExitTrigger(i32) {}

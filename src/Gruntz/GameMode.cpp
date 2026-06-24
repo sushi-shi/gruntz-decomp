@@ -88,13 +88,13 @@ CState::CState() {
 
 // CState::Update()  (slot 4 / +0x10): the base default = return 1.
 RVA(0x0008c4b0, 0x6)
-int CState::Update() {
+i32 CState::Update() {
     return 1;
 }
 
 // CState::Render()  (slot 5 / +0x14): the base default = return 1.
 RVA(0x0008c4d0, 0x6)
-int CState::Render() {
+i32 CState::Render() {
     return 1;
 }
 
@@ -122,7 +122,7 @@ struct CResRegistry { // m_c->m_10  (FUN_00155360)
 // both __thiscall on the resource object (reloc-masked).
 struct CPooledRes {
     void Free();          // FUN_00137a80, no-arg
-    void TickAnim(int z); // FUN_00136e20, ret 4
+    void TickAnim(i32 z); // FUN_00136e20, ret 4
 };
 struct CResLeafRegistry { // m_c->m_28  (FUN_00157c70 + the m_2c resource)
     void Release(const char* szName, const char* szKey); // FUN_00157c70
@@ -136,7 +136,7 @@ struct CResWorkerList {    // m_c->m_c  (FUN_00163c60)
 // The flip target the slot-10 poll drives: m_c->m_4->m_10->m_2c->Flip(0), with a
 // Flush() on m_4 first (both reloc-masked __thiscall).
 struct CFlipTarget {
-    void Flip(int z); // FUN_0013e850, ret 4
+    void Flip(i32 z); // FUN_0013e850, ret 4
 };
 struct CRenderM10 {
     char m_pad00[0x2c];
@@ -182,12 +182,12 @@ void operator delete(void*);
 // m_11c the item passed to ConfigureItem, plus the Rand() / RandRange() __thiscall
 // helpers (all reloc-masked).
 struct WwdGameReg {
-    int Rand();                    // FUN_0040cd00, no-arg signed rand
-    int RandRange(int lo, int hi); // FUN_00419f50, ret 8
+    i32 Rand();                    // FUN_0040cd00, no-arg signed rand
+    i32 RandRange(i32 lo, i32 hi); // FUN_00419f50, ret 8
     char m_pad00[0x10];
-    int m_10; // +0x10  presence gate
+    i32 m_10; // +0x10  presence gate
     char m_pad14[0x11c - 0x14];
-    int m_11c; // +0x11c  configure item value
+    i32 m_11c; // +0x11c  configure item value
 };
 extern WwdGameReg* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A (reloc-masked)
 
@@ -198,7 +198,7 @@ extern WwdGameReg* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A (reloc-masked)
 // (docs/patterns/pin-local-for-callee-saved-reg.md) did NOT flip it -> the pure
 // allocator coin-flip that doc flags as the zero-register-pinning.md wall.
 RVA(0x00019cd0, 0x1df)
-void __stdcall GenMenuRandPos(int sel, int* outX, int* outY) {
+void __stdcall GenMenuRandPos(i32 sel, i32* outX, i32* outY) {
     if (!outX || !outY) {
         return;
     }
@@ -288,19 +288,19 @@ void CBootyState::ReleaseResources() {
 
 // CMenuState::Update(): the MENU state's ID = 5.
 RVA(0x0008ce10, 0x6)
-int CMenuState::Update() {
+i32 CMenuState::Update() {
     return 5;
 }
 
 // CCreditsState::Update(): the CREDITS state's ID = 8.
 RVA(0x0008d590, 0x6)
-int CCreditsState::Update() {
+i32 CCreditsState::Update() {
     return 8;
 }
 
 // CBootyState::Update(): the BOOTY state's ID = 0xa.
 RVA(0x0008d3f0, 0x6)
-int CBootyState::Update() {
+i32 CBootyState::Update() {
     return 0xa;
 }
 
@@ -324,7 +324,7 @@ int CBootyState::Update() {
 //   9. CONDITIONAL FX (+0x1c4 gate): if (m_1c4) { s = m_4->m_48->Find("MONOLITH");
 //        if (s && !s->Query()) Sub3(); }   return 1;
 RVA(0x000391d0, 0x17c)
-int CCreditsState::Render() {
+i32 CCreditsState::Render() {
     CGMInputObj* in = ((CGMView*)m_c)->m_4->m_10->m_2c->m_8;
     if (!in || in->vtbl->Poll(in)) {
         if (!InputVirtual()) {
@@ -340,7 +340,7 @@ int CCreditsState::Render() {
     // per-entity Update pass
     {
         CGMEntityList* L = g_645574;
-        for (int i = 0; i < L->m_count; i++) {
+        for (i32 i = 0; i < L->m_count; i++) {
             L->m_elems[i]->Update();
         }
     }
@@ -348,15 +348,15 @@ int CCreditsState::Render() {
     // message scan: first flagged entity posts a WM_COMMAND
     {
         CGMEntityList* L = g_645574;
-        int n = L->m_count;
-        for (int j = 0; j < n; j++) {
+        i32 n = L->m_count;
+        for (i32 j = 0; j < n; j++) {
             if (L->m_elems[j]->m_2ac & 0xffffff) {
                 // wParam = (m_24==5) ? 0x8023 : 0x8027. MSVC 5.0 /O2 branchless-
                 // collapses an inline `?:` of these (sub/neg/sbb/and 4/add); the
                 // init+conditional-override below keeps the cmp+jne branch (the
                 // target's push-per-branch is the lazy `?:` form MSVC won't emit
                 // when both arms fold to a 4-apart constant - irreducible).
-                unsigned wp = 0x8027;
+                u32 wp = 0x8027;
                 if (m_24 == 5) {
                     wp = 0x8023;
                 }
@@ -373,7 +373,7 @@ int CCreditsState::Render() {
     // draw: cache m_c->m_4 (the target keeps it in esi for the three derefs).
     CGMView::M4* v4 = ((CGMView*)m_c)->m_4;
     v4->m_10->m_2c->Draw(0);
-    v4->m_14->Blit((int)v4->m_18);
+    v4->m_14->Blit((i32)v4->m_18);
 
     if (!m_1b4 && ((CGMOwner*)m_4)->m_14) {
         ((CGMOwner*)m_4)->m_48->Play(g_60ce90, 1);
@@ -381,7 +381,7 @@ int CCreditsState::Render() {
     }
 
     if (m_1c4) {
-        int s = ((CGMOwner*)m_4)->m_48->Find(g_60ce74);
+        i32 s = ((CGMOwner*)m_4)->m_48->Find(g_60ce74);
         if (s && !((CGMSoundEntry*)s)->Query()) {
             Sub3();
         }
@@ -399,38 +399,38 @@ int CCreditsState::Render() {
 //   3. TAIL: m_1b4->Step(g_645584); m_1b4->Pre(); DrawVersion({g_645cc8..d4});
 //      m_1b4->Post();   return 1;
 RVA(0x000a0750, 0x1d0)
-int CMenuState::Render() {
+i32 CMenuState::Render() {
     CGMEntityList* L = g_645574;
 
     // per-entity Update pass (re-reads count each iter, like the target)
-    for (int i = 0; i < L->m_count; i++) {
+    for (i32 i = 0; i < L->m_count; i++) {
         L->m_elems[i]->Update();
     }
 
     // six prioritized entity-flag scans, each firing a distinct UI handler
-    int c;
+    i32 c;
     L = g_645574;
-    int n = L->m_count;
+    i32 n = L->m_count;
     for (c = 0; c < n; c++) {
-        if ((unsigned)L->m_elems[c]->m_2ac & 0x80000000) {
+        if ((u32)L->m_elems[c]->m_2ac & 0x80000000) {
             m_1b4->OnFlag80000000();
             goto tail;
         }
     }
     for (c = 0; c < n; c++) {
-        if ((unsigned)L->m_elems[c]->m_2ac & 0x40000000) {
+        if ((u32)L->m_elems[c]->m_2ac & 0x40000000) {
             m_1b4->OnFlag40000000();
             goto tail;
         }
     }
     for (c = 0; c < n; c++) {
-        if ((unsigned)L->m_elems[c]->m_2ac & 0x20000000) {
+        if ((u32)L->m_elems[c]->m_2ac & 0x20000000) {
             m_1b4->OnFlag20000000();
             goto tail;
         }
     }
     for (c = 0; c < n; c++) {
-        if ((unsigned)L->m_elems[c]->m_2ac & 0x10000000) {
+        if ((u32)L->m_elems[c]->m_2ac & 0x10000000) {
             m_1b4->OnFlag10000000();
             goto tail;
         }
@@ -461,7 +461,7 @@ tail:
 // indirect `this->vtbl[+0x20]()` to (its body is irrelevant to the Render match -
 // only the indirect call site is). Out-of-line so the CCreditsState vtable
 // resolves; NOT a byte-matched target. (Slots 6,7 are inherited from CState.)
-int CCreditsState::InputVirtual() {
+i32 CCreditsState::InputVirtual() {
     return 0;
 }
 
@@ -501,7 +501,7 @@ void CCreditsState::Stub_08d5e0() {}
 // @source: winapi:SelectClipRgn;SetBkMode
 // @stub
 RVA(0x000396f0, 0x2b8)
-int CCreditsState::winapi_0396f0_SelectClipRgn_SetBkMode() {
+i32 CCreditsState::winapi_0396f0_SelectClipRgn_SetBkMode() {
     return 0;
 }
 
@@ -537,19 +537,19 @@ void CBootyState::CheckWarpLetterBonus() {}
 // @source: decomp-xref
 // @stub
 RVA(0x000a0d80, 0xd7)
-void CMenuState::BuildVersionString(int, int, int, int) {}
+void CMenuState::BuildVersionString(i32, i32, i32, i32) {}
 
 // The "STATEZ_CREDITZ" registered object (m_2c): same Register source as
 // CHelpState (FUN_0053c030). FindSet/FindSubset/Resolve/IsLoaded below are the
 // reloc-masked __thiscall helpers off it / its sub-entries.
 struct CCreditzSubEntry { // a music sub-entry ("PLAY"/"MONOLITH")
-    int IsLoaded();       // FUN_00539960 __thiscall, ret BOOL/value
+    i32 IsLoaded();       // FUN_00539960 __thiscall, ret BOOL/value
     char m_pad00[0xc];
     void* m_c; // +0x0c
 };
 struct CCreditzMusicSet { // the looked-up "MIDIZ" set (m_2c->FindSet)
     // FUN_0053a000 __thiscall: resolve a named sub-entry under a packed tag.
-    CCreditzSubEntry* Resolve(char* szName, int tag);
+    CCreditzSubEntry* Resolve(char* szName, i32 tag);
 };
 struct CCreditzRegObj {               // the registered STATEZ_CREDITZ object (m_2c)
     void* FindSoundSet(char* szName); // FUN_0053a230 __thiscall, ret set ptr
@@ -563,8 +563,8 @@ struct CCreditzImageRegistry { // this->m_4->+0x48
     void Install3(void* res, void* host, char* szName);
 };
 struct CCreditzStateCore {      // this->m_c->m_4 (the ready/init pump)
-    int IsReady();              // FUN_00558d20 __thiscall, ret BOOL
-    int Init(int a, int flags); // FUN_00558cb0 __thiscall, ret BOOL
+    i32 IsReady();              // FUN_00558d20 __thiscall, ret BOOL
+    i32 Init(i32 a, i32 flags); // FUN_00558cb0 __thiscall, ret BOOL
 };
 struct CCreditzImageRoot { // this->m_4 points here; +0x48 is the registry
     char m_pad00[0x48];
@@ -592,16 +592,16 @@ struct CCreditzOwner {
     char m_pad10[0x2c - 0x10];
     CCreditzRegObj* m_2c; // +0x2c
     char m_pad30[0x1b4 - 0x30];
-    int m_1b4; // +0x1b4
-    int m_1b8; // +0x1b8
-    int m_1bc; // +0x1bc
-    int m_1c0; // +0x1c0
-    int m_1c4; // +0x1c4
+    i32 m_1b4; // +0x1b4
+    i32 m_1b8; // +0x1b8
+    i32 m_1bc; // +0x1bc
+    i32 m_1c0; // +0x1c0
+    i32 m_1c4; // +0x1c4
     char m_pad1c8[0x20c - 0x1c8];
-    int m_20c;                                  // +0x20c
+    i32 m_20c;                                  // +0x20c
     void SetupTitle();                          // RVA 0x39a60 __thiscall
-    int FinishState();                          // RVA 0x439c40 __thiscall
-    int LoadGameAssetNamespaces(int, int, int); // base loader; reloc-masked near call
+    i32 FinishState();                          // RVA 0x439c40 __thiscall
+    i32 LoadGameAssetNamespaces(i32, i32, i32); // base loader; reloc-masked near call
 };
 
 // @confidence: high
@@ -617,7 +617,7 @@ struct CCreditzOwner {
 // The 'IMX' music tag (0x584d49) is a non-relocated immediate. The
 // "STATEZ_CREDITZ" Register is the CHelpState::LoadAssets source (FUN_0053c030).
 RVA(0x00038d20, 0x176)
-int CCreditsState::LoadCreditzStateAssets(int a1, int a2, int a3) {
+i32 CCreditsState::LoadCreditzStateAssets(i32 a1, i32 a2, i32 a3) {
     CCreditzOwner* self = (CCreditzOwner*)this;
 
     if (!self->LoadGameAssetNamespaces(a1, a2, a3)) {
@@ -645,7 +645,7 @@ int CCreditsState::LoadCreditzStateAssets(int a1, int a2, int a3) {
     if (midiz) {
         CCreditzSubEntry* e = midiz->Resolve("PLAY", 0x584d49);
         if (e) {
-            int val = e->IsLoaded();
+            i32 val = e->IsLoaded();
             if (val) {
                 self->m_4->m_48->Install3((void*)val, e->m_c, "CREDITZ");
             }
@@ -657,7 +657,7 @@ int CCreditsState::LoadCreditzStateAssets(int a1, int a2, int a3) {
     if (midiz) {
         CCreditzSubEntry* e2 = midiz->Resolve("MONOLITH", 0x584d49);
         if (e2) {
-            int val = e2->IsLoaded();
+            i32 val = e2->IsLoaded();
             if (val) {
                 self->m_4->m_48->Install3((void*)val, e2->m_c, "MONOLITH");
             }
@@ -672,7 +672,7 @@ int CCreditsState::LoadCreditzStateAssets(int a1, int a2, int a3) {
 
     self->SetupTitle();
     self->m_20c = 2;
-    int r = self->FinishState();
+    i32 r = self->FinishState();
     self->m_1b4 = 0;
     return r;
 }
@@ -745,20 +745,20 @@ CBootyState::~CBootyState() {
 // word OR'd in on out-of-bounds, m_74 a one-shot latch, m_8 a flag word.
 struct CBootyLetter {
     char m_pad00[0x8];
-    int m_8; // +0x08 flag word
+    i32 m_8; // +0x08 flag word
     char m_pad0c[0x40 - 0xc];
-    int m_40; // +0x40 out-of-bounds flag word
+    i32 m_40; // +0x40 out-of-bounds flag word
     char m_pad44[0x5c - 0x44];
-    int m_5c; // +0x5c x
-    int m_60; // +0x60 y
+    i32 m_5c; // +0x5c x
+    i32 m_60; // +0x60 y
     char m_pad64[0x74 - 0x64];
-    int m_74; // +0x74 one-shot latch
+    i32 m_74; // +0x74 one-shot latch
 };
 
 // The packed {x,y} spawn-coordinate table the animator indexes by m_1d8 (DAT_005e8fe8;
 // the disasm reads x via [tbl] and y via [tbl+4], stride 8). The +0x1ec / +0x204 sprite
 // arrays are reached by offset off `this`.
-extern "C" int g_5e8fe8[]; // {472,101, 525,98, 474,146, 525,144, ...}
+extern "C" i32 g_5e8fe8[]; // {472,101, 525,98, 474,146, 525,144, ...}
 
 // The trig constants: deg->rad (0.017453292), a phase bias (-225.0f), and the
 // shrink curve (350.0 - step*0.002*350.0). Modeled as named extern doubles/floats so
@@ -771,9 +771,9 @@ extern "C" double g_5e93c8; // 350.0
 // The bonus state object (CMultiBootyState+0x2f8): flags @+0x8, a scroll phase @+0x5c.
 struct CBootyBonusState {
     char m_pad00[0x8];
-    int m_8; // +0x08 flags
+    i32 m_8; // +0x08 flags
     char m_pad0c[0x5c - 0xc];
-    int m_5c; // +0x5c scroll phase
+    i32 m_5c; // +0x5c scroll phase
 };
 
 // g_gameReg facet these booty pollers add: a draw object @+0x7c (a frame-ready query),
@@ -781,7 +781,7 @@ struct CBootyBonusState {
 // item @+0x11c. Read through CBootyGameReg below (an extended WwdGameReg view).
 // The draw object (g_gameReg+0x7c) the frame-ready gate runs on (__thiscall, ret 4).
 struct CBootyDrawObj {
-    int FrameReady(int z); // FUN_004fcd70
+    i32 FrameReady(i32 z); // FUN_004fcd70
 };
 struct CBootyGameReg {
     char m_pad00[0x30];
@@ -789,7 +789,7 @@ struct CBootyGameReg {
     char m_pad34[0x7c - 0x34];
     CBootyDrawObj* m_7c; // +0x7c draw object
     char m_pad80[0x11c - 0x80];
-    int m_11c; // +0x11c configured music item
+    i32 m_11c; // +0x11c configured music item
 };
 // g_gameReg is the WwdGameReg* declared above; the booty pollers read it through this
 // extended view (codegen-neutral: same pointer, same loads).
@@ -800,13 +800,13 @@ struct CBootyGameReg {
 struct CBootyFound {
     char m_pad00[0x10];
     void* m_10; // +0x10 player (ConfigureItem this)
-    int m_14;   // +0x14 last draw-clock
-    int m_18;   // +0x18 interval
+    i32 m_14;   // +0x14 last draw-clock
+    i32 m_18;   // +0x18 interval
 };
 
 // The embedded CMapStringToOb the cue lookup runs on (M28+0x10, reached by offset).
 struct CBootyLookupMap {
-    int Lookup(char* key, void** out); // FUN_005b8438 CMapStringToOb::Lookup, ret 8
+    i32 Lookup(char* key, void** out); // FUN_005b8438 CMapStringToOb::Lookup, ret 8
 };
 
 // The music host chain g_gameReg->m_30->m_28->{m_30 gate, Lookup map @+0x10}.
@@ -820,14 +820,14 @@ struct CBootyMusicHost {
 
 // The cue/player config call (FUN_005360d0 ConfigureItem, __thiscall on found+0x10).
 struct CBootyPlayer {
-    void ConfigureItem(int item, int a, int b, int c); // FUN_005360d0, ret 0x10
+    void ConfigureItem(i32 item, i32 a, i32 b, i32 c); // FUN_005360d0, ret 0x10
 };
 struct CBootyFlushView {
     void Flush(); // FUN_00558ee0
 };
 struct CBootyAnimSelf { // `this` view for the engine tail helpers (reached via thunks)
-    int FadeInTitle(char* name, int a, int b, int c, int d, int e); // FUN_004fa1f0
-    void BuildPage(int x, int w, int h, int flag);                  // FUN_004fa8f0
+    i32 FadeInTitle(char* name, i32 a, i32 b, i32 c, i32 d, i32 e); // FUN_004fa1f0
+    void BuildPage(i32 x, i32 w, i32 h, i32 flag);                  // FUN_004fa8f0
 };
 
 // ReleaseResources teardown chain: m_4 (owner) -> m_60 sub-object -> Teardown (the
@@ -842,8 +842,8 @@ struct CBootyOwnerView {
 
 // The draw-clock mirror + the reentrancy gate the booty music gate reads (declared
 // again near the menu-music helpers below; same DATA symbols, reloc-masked).
-extern "C" unsigned int g_6bf3c0; // draw-clock mirror
-extern int g_61ab20;              // DAT_0061ab20 reentrancy gate
+extern "C" u32 g_6bf3c0; // draw-clock mirror
+extern i32 g_61ab20;     // DAT_0061ab20 reentrancy gate
 
 // CMultiBootyState::StepGlitterAnim() (0x196c0): the glitter/spawn positioner. With
 // m_1b4 set it snaps the eight letter sprites to the static spawn table; otherwise it
@@ -859,9 +859,9 @@ RVA(0x000196c0, 0x1d3)
 void CMultiBootyState::StepGlitterAnim() {
     if (m_1b4) {
         if (m_1d8 >= 0) {
-            int* tbl = g_5e8fe8 + 1;                   // walks: tbl[-1]=x, tbl[0]=y; advances by 2
+            i32* tbl = g_5e8fe8 + 1;                   // walks: tbl[-1]=x, tbl[0]=y; advances by 2
             void** ap = (void**)((char*)this + 0x1ec); // walks arr1ec by 1
-            for (int i = 0; i <= m_1d8; i++) {
+            for (i32 i = 0; i <= m_1d8; i++) {
                 CBootyLetter* e = (CBootyLetter*)*ap;
                 e->m_5c = tbl[-1];
                 e = (CBootyLetter*)*ap;
@@ -880,20 +880,20 @@ void CMultiBootyState::StepGlitterAnim() {
         return;
     }
 
-    int step = m_1e0;
-    int idx = m_1d8;
+    i32 step = m_1e0;
+    i32 idx = m_1d8;
     double r = (float)m_1dc; // load (float)m_1dc first; shared across sin/cos terms
     double ang = ((float)step - g_5e93b4) * g_5e93b8;
-    m_1e4 = (int)(sin(ang) * r + (float)g_5e8fe8[idx * 2]);
-    m_1e8 = (int)(cos(ang) * r + (float)g_5e8fe8[idx * 2 + 1]);
+    m_1e4 = (i32)(sin(ang) * r + (float)g_5e8fe8[idx * 2]);
+    m_1e8 = (i32)(cos(ang) * r + (float)g_5e8fe8[idx * 2 + 1]);
     m_1e0 = step + 5;
-    m_1dc = (int)(g_5e93c8 - (float)(step + 5) * g_5e93c0 * g_5e93c8);
+    m_1dc = (i32)(g_5e93c8 - (float)(step + 5) * g_5e93c0 * g_5e93c8);
 
     // Snap the leading sprites (0..m_1d8-1) to their static table coords (pointer walk).
-    int i = 0;
+    i32 i = 0;
     void** arr1ec = (void**)((char*)this + 0x1ec);
     if (idx > 0) {
-        int* tbl = g_5e8fe8 + 1; // ecx: tbl[-1]=x, tbl[0]=y
+        i32* tbl = g_5e8fe8 + 1; // ecx: tbl[-1]=x, tbl[0]=y
         void** ap = arr1ec;      // eax
         do {
             CBootyLetter* e = (CBootyLetter*)*ap;
@@ -935,7 +935,7 @@ RVA(0x00019b90, 0xd7)
 void CMultiBootyState::MoveLettersByDir() {
     if (m_1b4) {
         void** p = (void**)((char*)this + 0x204);
-        int n = 8;
+        i32 n = 8;
         do {
             CBootyLetter* e = (CBootyLetter*)*p;
             p++;
@@ -944,10 +944,10 @@ void CMultiBootyState::MoveLettersByDir() {
         return;
     }
     void** p = (void**)((char*)this + 0x204);
-    for (int i = 0; i < 8; i++, p++) {
+    for (i32 i = 0; i < 8; i++, p++) {
         CBootyLetter* e = (CBootyLetter*)*p;
-        int x = e->m_5c;
-        int y = e->m_60;
+        i32 x = e->m_5c;
+        i32 y = e->m_60;
         if (x < 0 || x > 0x280 || y < 0 || y > 0x1e0) {
             e->m_40 |= 1;
         } else {
@@ -994,15 +994,15 @@ void CMultiBootyState::MoveLettersByDir() {
 // the "BOOTY_PERFECT" cue on the draw-clock window; past 0x302 latch the done flag
 // (m_8 |= 0x10000); otherwise advance the phase by 0xa. Returns 1.
 RVA(0x0001c0f0, 0xd5)
-int CMultiBootyState::CheckPerfectBonus() {
+i32 CMultiBootyState::CheckPerfectBonus() {
     if (!BOOTY_REG->m_7c->FrameReady(-1)) {
         return 1;
     }
     CBootyBonusState* st = (CBootyBonusState*)m_2f8;
-    int phase = st->m_5c;
-    if (phase == (int)0xffffff7e) {
+    i32 phase = st->m_5c;
+    if (phase == (i32)0xffffff7e) {
         CBootyMusicHost* host = (CBootyMusicHost*)BOOTY_REG->m_30;
-        int item = BOOTY_REG->m_11c;
+        i32 item = BOOTY_REG->m_11c;
         CBootyMusicHost::M28* m28 = host->m_28;
         if (m28->m_30 == 0) {
             void* found = 0;
@@ -1010,7 +1010,7 @@ int CMultiBootyState::CheckPerfectBonus() {
             map->Lookup("BOOTY_PERFECT", &found);
             if (found && g_61ab20 != 0) {
                 CBootyFound* p = (CBootyFound*)found;
-                if (g_6bf3c0 - (unsigned)p->m_14 >= (unsigned)p->m_18) {
+                if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
                     p->m_14 = g_6bf3c0;
                     ((CBootyPlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
                 }
@@ -1046,8 +1046,8 @@ void CMultiBootyState::ReleaseResources() {
 // title page (fade + page) then, if the menu is live, push the "BOOTY_LOOP" cue into the
 // player on the draw-clock window. Returns 1.
 RVA(0x0001e570, 0xb4)
-int CMultiBootyState::FrameSlot24(int) {
-    int ok = ((CBootyAnimSelf*)this)->FadeInTitle("multi", 0, 0, 0, 0, 1);
+i32 CMultiBootyState::FrameSlot24(i32) {
+    i32 ok = ((CBootyAnimSelf*)this)->FadeInTitle("multi", 0, 0, 0, 0, 1);
     if (!ok) {
         return ok; // eax already 0 (the FadeInTitle result) - no xor/mov re-materialize
     }
@@ -1055,7 +1055,7 @@ int CMultiBootyState::FrameSlot24(int) {
     ((CBootyAnimSelf*)this)->BuildPage(0x50, 0x3e8, 0, 1);
 
     CBootyMusicHost* host = (CBootyMusicHost*)BOOTY_REG->m_30;
-    int item = BOOTY_REG->m_11c;
+    i32 item = BOOTY_REG->m_11c;
     CBootyMusicHost::M28* m28 = host->m_28;
     if (m28->m_30 == 0) {
         void* found = 0;
@@ -1063,7 +1063,7 @@ int CMultiBootyState::FrameSlot24(int) {
         map->Lookup("BOOTY_LOOP", &found);
         if (found && g_61ab20 != 0) {
             CBootyFound* p = (CBootyFound*)found;
-            if (g_6bf3c0 - (unsigned)p->m_14 >= (unsigned)p->m_18) {
+            if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
                 p->m_14 = g_6bf3c0;
                 ((CBootyPlayer*)p->m_10)->ConfigureItem(item, 0, 0, 1);
             }
@@ -1082,13 +1082,13 @@ int CMultiBootyState::FrameSlot24(int) {
 // vs `add eax,0x238` order (counter-bump vs pointer-advance) - a /O2 scheduling coin-flip
 // (a do-while reorder reshaped the back-edge worse, so the natural for-loop form is kept).
 RVA(0x0001ecf0, 0x2a)
-int CMultiBootyState::QueryGruntSlots() {
+i32 CMultiBootyState::QueryGruntSlots() {
     char* base = (char*)g_gameReg;
-    int i = 0;
+    i32 i = 0;
     char* rec = base + 0x174;
     for (; i < 4; i++) {
-        if (*(int*)(rec + 4) != 0 && *(int*)rec == 0) {
-            return *(int*)(rec - 0x24);
+        if (*(i32*)(rec + 4) != 0 && *(i32*)rec == 0) {
+            return *(i32*)(rec - 0x24);
         }
         rec += 0x238;
     }
@@ -1112,15 +1112,15 @@ CMultiBootyState::~CMultiBootyState() {
 // gate (last @+0x14, interval @+0x18). The player has IsPlaying / Stop /
 // ConfigureItem __thiscall slots (reloc-masked externs).
 struct CMenuMusicPlayer {                           // m_1bc->m_10
-    int IsPlaying();                                // FUN_001353f0, ret value
-    void Stop(int a, int b, int c);                 // FUN_00135660, ret 0xc
-    void ConfigureItem(int a, int b, int c, int d); // FUN_001360d0, ret 0x10
+    i32 IsPlaying();                                // FUN_001353f0, ret value
+    void Stop(i32 a, i32 b, i32 c);                 // FUN_00135660, ret 0xc
+    void ConfigureItem(i32 a, i32 b, i32 c, i32 d); // FUN_001360d0, ret 0x10
 };
 struct CMenuMusic {
     char m_pad00[0x10];
     CMenuMusicPlayer* m_10; // +0x10  player
-    int m_14;               // +0x14  last draw-clock
-    int m_18;               // +0x18  interval
+    i32 m_14;               // +0x14  last draw-clock
+    i32 m_18;               // +0x18  interval
 };
 
 // CMenuState::FormatHudText(int) (0x1af70): the 960-byte HUD-text formatter - an
@@ -1134,11 +1134,11 @@ struct CMenuMusic {
 // @source: decomp-xref
 // @stub
 RVA(0x0001af70, 0x3c0)
-void CMenuState::FormatHudText(int) {}
+void CMenuState::FormatHudText(i32) {}
 
 // The draw-clock mirror + the reentrancy gate the menu music poll save/restores.
-extern "C" unsigned int g_6bf3c0; // draw-clock mirror
-extern int g_61ab20;              // DAT_0061ab20 reentrancy gate
+extern "C" u32 g_6bf3c0; // draw-clock mirror
+extern i32 g_61ab20;     // DAT_0061ab20 reentrancy gate
 
 // CMenuState::StartMusic() (0xa05a0): if the menu music + the registry gate are
 // live, push the configured item into the player on the draw-clock window, under
@@ -1151,17 +1151,17 @@ void CMenuState::StartMusic() {
     if (g_gameReg->m_10 == 0) {
         return;
     }
-    int saved = g_61ab20;
-    int flag = saved;
+    i32 saved = g_61ab20;
+    i32 flag = saved;
     if (!saved) {
         flag = 1;
         g_61ab20 = 1;
     }
-    int item = g_gameReg->m_11c;
+    i32 item = g_gameReg->m_11c;
     CMenuMusic* mus = (CMenuMusic*)m_1bc;
     if (flag) {
-        unsigned int clk = g_6bf3c0;
-        if (clk - mus->m_14 >= (unsigned)mus->m_18) {
+        u32 clk = g_6bf3c0;
+        if (clk - mus->m_14 >= (u32)mus->m_18) {
             mus->m_14 = clk;
             mus->m_10->ConfigureItem(item, 0, 0, 1);
         }
@@ -1197,10 +1197,10 @@ void CMenuState::StopMusicChain() {
 // CMenuState::FrameSlot28(int) (slot 10 / +0x28, 0xa06d0): flush + flip the menu
 // view, stamp the start clock, run the music-stop chain, then busy-wait m_1b8 ms.
 RVA(0x000a06d0, 0x5f)
-int CMenuState::FrameSlot28(int) {
+i32 CMenuState::FrameSlot28(i32) {
     ((CStateResView*)m_c)->m_4->Flush();
     ((CStateResView*)m_c)->m_4->m_10->m_2c->Flip(0);
-    unsigned int start = timeGetTime();
+    u32 start = timeGetTime();
     StopMusicChain();
     while (timeGetTime() < start + m_1b8)
         ;

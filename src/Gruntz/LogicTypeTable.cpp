@@ -41,7 +41,7 @@ extern "C" {
 struct CLogicType;
 class CLogicMap {
 public:
-    int Lookup(char* szKey, CLogicType** ppOut);
+    i32 Lookup(char* szKey, CLogicType** ppOut);
 };
 class CLogicRegistry {
 public:
@@ -55,7 +55,7 @@ public:
     virtual void m_18();                                                // +0x18
     virtual void m_1c();                                                // +0x1c
     virtual void m_20();                                                // +0x20
-    virtual void RegisterType(void* factoryFn, char* szKey, int flags); // +0x24
+    virtual void RegisterType(void* factoryFn, char* szKey, i32 flags); // +0x24
 
     char m_pad04[0x10 - 4];
     CLogicMap m_10map; // +0x10  lookup sub-object

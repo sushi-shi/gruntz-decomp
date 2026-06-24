@@ -3,11 +3,11 @@
 
 class CGruntVoice {
 public:
-    CGruntVoice(int);
+    CGruntVoice(i32);
 };
 
 // @confidence: med
 // @source: rtti-vptr
 // @stub
 RVA(0x001198a0, 0x195)
-CGruntVoice::CGruntVoice(int) {}
+CGruntVoice::CGruntVoice(i32) {}

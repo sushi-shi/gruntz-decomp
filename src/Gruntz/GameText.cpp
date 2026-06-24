@@ -58,13 +58,13 @@ static CString g_statLabel[8] = {
 // id, via a 4-entry jump table:
 //   0 -> "KING"  1 -> "NAPOLEAN"  2 -> "PATTON"  3 -> "VIKING"  default -> "".
 RVA(0x0001ec20, 0x8d)
-CString __stdcall GetWarlordName(int id) {
+CString __stdcall GetWarlordName(i32 id) {
     // The target reserves and zero-inits one dead stack dword (`push ecx; mov
     // [esp+4],0; ...; pop ecx`) that no path reads - an MSVC5 return-slot/NRV
     // bookkeeping artifact. A `volatile int = 0` reproduces it exactly (the
     // zero-init survives DCE without emitting an address-store; scheduled after
     // the cmp, matching the target's `mov [esp+4],0`).
-    volatile int slot = 0;
+    volatile i32 slot = 0;
     switch (id) {
         case 0:
             return CString("KING");

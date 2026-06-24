@@ -68,14 +68,14 @@ CGruntzApp::CGruntzApp() {}
 // then normalises the int result to a bool: `!= 0` emits the
 // `neg eax; sbb eax,eax; neg eax` (0/1) idiom.
 RVA(0x00080930, 0x31)
-int CGruntzApp::VirtualUnknownMethod03(
+i32 CGruntzApp::VirtualUnknownMethod03(
     HINSTANCE hInstance,
     char* szWindowName,
     char* szGameIdentifier,
     char* szCmdLine,
-    int windowClassFlags,
-    int windowWidth,
-    int windowHeight
+    i32 windowClassFlags,
+    i32 windowWidth,
+    i32 windowHeight
 ) {
     return CGameApp::VirtualUnknownMethod03(
                hInstance,
@@ -123,8 +123,8 @@ RVA(0x00080ac0, 0xf3)
 void CGruntzApp::ShowError() {
     // The two error fields are read up front (the optimiser hoists the m_250
     // load above the id-default branch, keeping it live in eax across it).
-    int id = m_24c;
-    int detailVal = m_250;
+    i32 id = m_24c;
+    i32 detailVal = m_250;
     if (id == 0) {
         id = IDS_DEFAULT_ERROR;
     }
@@ -198,7 +198,7 @@ INT_PTR __stdcall CGruntzApp::ErrorDialogProc(
 // CGruntzApp::VirtualUnknownMethod04
 // Another base-init virtual override; the body just returns 0 (`xor eax,eax`).
 RVA(0x00080aa0, 0x5)
-int CGruntzApp::VirtualUnknownMethod04(int a, int b, int c) {
+i32 CGruntzApp::VirtualUnknownMethod04(i32 a, i32 b, i32 c) {
     return 0;
 }
 

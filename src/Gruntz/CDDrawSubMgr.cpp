@@ -23,11 +23,11 @@ class CDDrawSurfaceMgr;
 class CDDrawSubMgrBase {
 public:
     CDDrawSubMgrBase() {}
-    CDDrawSubMgrBase(int x) {
+    CDDrawSubMgrBase(i32 x) {
         m_fieldBaseUnknown = x;
     }
     virtual ~CDDrawSubMgrBase() {}
-    int m_fieldBaseUnknown; // +0x04
+    i32 m_fieldBaseUnknown; // +0x04
 
     // Engine-label backlog stubs.
     void Constructor_156e10();
@@ -35,10 +35,10 @@ public:
 
 class CDDrawSubMgr : public CDDrawSubMgrBase {
 public:
-    CDDrawSubMgr(CDDrawSurfaceMgr* pHarryPotter, int unknown2, int unknown3);
+    CDDrawSubMgr(CDDrawSurfaceMgr* pHarryPotter, i32 unknown2, i32 unknown3);
     virtual ~CDDrawSubMgr() OVERRIDE;
     virtual void VirtualMethodUnknown14();
-    virtual int VirtualMethodUnknown18();
+    virtual i32 VirtualMethodUnknown18();
     virtual void VirtualMethodUnknown1C(); // cleanup — defined in CDDrawSubMgrDraco.cpp
     virtual void VirtualMethodUnknown20();
 
@@ -46,7 +46,7 @@ public:
     void Constructor_157630();
     void Stub_155720();
 
-    int fieldUnknown8;                // +0x08
+    i32 fieldUnknown8;                // +0x08
     CDDrawSurfaceMgr* m_pHarryPotter; // +0x0c
 };
 
@@ -80,7 +80,7 @@ public:
     virtual void v08();
     virtual void v0c();
     virtual void v10();
-    virtual int Vfunc14(); // slot 5  (@0x14): surface-ready predicate
+    virtual i32 Vfunc14(); // slot 5  (@0x14): surface-ready predicate
     virtual void v18();
     virtual void v1c();
     virtual void v20();
@@ -88,7 +88,7 @@ public:
     virtual void v28();
     virtual void v2c();
     virtual void v30();
-    virtual int Vfunc34(int a); // slot 13 (@0x34): 1-arg op
+    virtual i32 Vfunc34(i32 a); // slot 13 (@0x34): 1-arg op
     char m_pad04[0x1c - 0x04];  // +0x04 .. +0x1b
     char m_rect1c[0x2c - 0x1c]; // +0x1c  scratch RECT passed to BltFast
     CDDSurface* m_surface;      // +0x2c
@@ -98,7 +98,7 @@ public:
 class CDDrawWorkerNode {
 public:
     char m_pad00[0x34]; // +0x00 .. +0x33
-    int m_34flagAt;     // +0x34 flag word (bit1 tested)
+    i32 m_34flagAt;     // +0x34 flag word (bit1 tested)
 };
 
 // The worker manager (this for the 0x158xxx methods).  Polymorphic: its own
@@ -123,13 +123,13 @@ public:
     virtual void Vfunc3c(); // slot 15 (@0x3c): Method_159ef0 forwards here
 
     // Surface ops.
-    int Method_158b40(int arg1, int arg2);
-    int Method_158c70(CDDrawSurfacePair* dst);
-    int Method_158d20();
-    int Method_158dc0();
-    int Method_158e40();
-    int Method_158e90();
-    int Method_158ee0();
+    i32 Method_158b40(i32 arg1, i32 arg2);
+    i32 Method_158c70(CDDrawSurfacePair* dst);
+    i32 Method_158d20();
+    i32 Method_158dc0();
+    i32 Method_158e40();
+    i32 Method_158e90();
+    i32 Method_158ee0();
     void Method_159ef0();
 
     char m_pad04[0x0c - 0x04]; // +0x04 .. +0x0b
@@ -146,7 +146,7 @@ class CDDrawBlitParamSrc {
 public:
     char m_pad00[0x0c]; // +0x00 .. +0x0b
     void* m_0c;         // +0x0c -> worker node (read as [+0x34] flag, or [0]->[+0x1c])
-    int m_10;           // +0x10 count
+    i32 m_10;           // +0x10 count
     char m_pad14[0x20 - 0x14];
     float m_20; // +0x20
 };
@@ -158,16 +158,16 @@ public:
     void Setup_15c2d0(CDDrawBlitParamSrc* src);
 
     char m_pad00[0x10]; // +0x00 .. +0x0f
-    int m_10;           // +0x10
-    int m_14;           // +0x14
-    int m_18;           // +0x18
-    int m_1c;           // +0x1c
-    int m_20;           // +0x20
-    int m_24;           // +0x24
-    int m_28;           // +0x28
-    int m_2c;           // +0x2c
-    int m_30;           // +0x30
-    int m_34;           // +0x34
+    i32 m_10;           // +0x10
+    i32 m_14;           // +0x14
+    i32 m_18;           // +0x18
+    i32 m_1c;           // +0x1c
+    i32 m_20;           // +0x20
+    i32 m_24;           // +0x24
+    i32 m_28;           // +0x28
+    i32 m_2c;           // +0x2c
+    i32 m_30;           // +0x30
+    i32 m_34;           // +0x34
     float m_38;         // +0x38
 };
 
@@ -177,7 +177,7 @@ public:
 // the Lucius vtable (compiler-generated), then seeds the remaining fields.
 // ---------------------------------------------------------------------------
 RVA(0x00156cb0, 0x20)
-CDDrawSubMgr::CDDrawSubMgr(CDDrawSurfaceMgr* pHarryPotter, int unknown2, int unknown3)
+CDDrawSubMgr::CDDrawSubMgr(CDDrawSurfaceMgr* pHarryPotter, i32 unknown2, i32 unknown3)
     : CDDrawSubMgrBase(unknown2) {
     fieldUnknown8 = unknown3;
     m_pHarryPotter = pHarryPotter;
@@ -201,7 +201,7 @@ CDDrawSubMgr::~CDDrawSubMgr() {
 
 // Out-of-line stubs for unmatched virtuals (anchors the vtable in this TU).
 void CDDrawSubMgr::VirtualMethodUnknown14() {}
-int CDDrawSubMgr::VirtualMethodUnknown18() {
+i32 CDDrawSubMgr::VirtualMethodUnknown18() {
     return 0;
 }
 
@@ -250,7 +250,7 @@ void CDDrawSubMgrBase::Constructor_156e10() {}
 
 // 0x158b40: pick m_18 (arg2==2) or m_14, null-check, dispatch slot 0x34 with arg1.
 RVA(0x00158b40, 0x2c)
-int CDDrawWorkerMgr::Method_158b40(int arg1, int arg2) {
+i32 CDDrawWorkerMgr::Method_158b40(i32 arg1, i32 arg2) {
     CDDrawSurfacePair* p;
     if (arg2 == 2) {
         p = m_18;
@@ -268,7 +268,7 @@ int CDDrawWorkerMgr::Method_158b40(int arg1, int arg2) {
 
 // 0x158c70: blt dst's surface <- m_10's surface; return (hr == 0).
 RVA(0x00158c70, 0x36)
-int CDDrawWorkerMgr::Method_158c70(CDDrawSurfacePair* dst) {
+i32 CDDrawWorkerMgr::Method_158c70(CDDrawSurfacePair* dst) {
     if (!m_10) {
         return 0;
     }
@@ -280,13 +280,13 @@ int CDDrawWorkerMgr::Method_158c70(CDDrawSurfacePair* dst) {
     if (!d) {
         return 0;
     }
-    int hr = d->Blt(s);
+    i32 hr = d->Blt(s);
     return hr == 0;
 }
 
 // 0x158d20: return m_18->Vfunc14() != 0.
 RVA(0x00158d20, 0x16)
-int CDDrawWorkerMgr::Method_158d20() {
+i32 CDDrawWorkerMgr::Method_158d20() {
     if (!m_18) {
         return 0;
     }
@@ -300,15 +300,15 @@ int CDDrawWorkerMgr::Method_158d20() {
 // first-block (Blt-fall-through vs our jmp) and the esi-pop placement, a
 // regalloc/scheduling wall (see docs/patterns/zero-register-pinning.md).
 RVA(0x00158dc0, 0x7d)
-int CDDrawWorkerMgr::Method_158dc0() {
+i32 CDDrawWorkerMgr::Method_158dc0() {
     CDDrawSurfacePair* p10 = m_10;
     CDDrawSurfacePair* p14 = m_14;
-    int ok;
+    i32 ok;
     if (p10 && p10->m_surface) {
         CDDSurface* s10 = p10->m_surface;
         CDDSurface* s14 = p14->m_surface;
         if (s14) {
-            int hr = s14->Blt(s10);
+            i32 hr = s14->Blt(s10);
             ok = (hr == 0);
         } else {
             ok = 0;
@@ -335,7 +335,7 @@ int CDDrawWorkerMgr::Method_158dc0() {
     if (!a->m_surface) {
         return 0;
     }
-    int hr2 = bs->Blt(a->m_surface);
+    i32 hr2 = bs->Blt(a->m_surface);
     return hr2 == 0;
 }
 
@@ -345,7 +345,7 @@ int CDDrawWorkerMgr::Method_158dc0() {
 // scheduling (retail interleaves it before the test/sete; our cl emits it in
 // the epilogue), a scheduling coin-flip (docs/patterns/zero-register-pinning.md).
 RVA(0x00158e40, 0x4c)
-int CDDrawWorkerMgr::Method_158e40() {
+i32 CDDrawWorkerMgr::Method_158e40() {
     if (m_18 && m_18->Vfunc14()) {
         CDDrawSurfacePair* a = m_18;
         CDDrawSurfacePair* b = m_10;
@@ -360,7 +360,7 @@ int CDDrawWorkerMgr::Method_158e40() {
         if (!as) {
             return 0;
         }
-        int hr = as->Blt(bs);
+        i32 hr = as->Blt(bs);
         return hr == 0;
     }
     return 0;
@@ -368,7 +368,7 @@ int CDDrawWorkerMgr::Method_158e40() {
 
 // 0x158e90: if m_14 and m_18->Vfunc14(): BltFast(0,0,m_14 surf, &m_14[+0x1c], 0x10).
 RVA(0x00158e90, 0x47)
-int CDDrawWorkerMgr::Method_158e90() {
+i32 CDDrawWorkerMgr::Method_158e90() {
     if (!m_14) {
         return 0;
     }
@@ -386,7 +386,7 @@ int CDDrawWorkerMgr::Method_158e90() {
 
 // 0x158ee0: if m_14, m_18 and m_18->Vfunc14(): BltFast(0,0,m_18 surf,&m_18[+0x1c],0x10).
 RVA(0x00158ee0, 0x47)
-int CDDrawWorkerMgr::Method_158ee0() {
+i32 CDDrawWorkerMgr::Method_158ee0() {
     if (!m_14) {
         return 0;
     }
@@ -415,12 +415,12 @@ void CDDrawWorkerMgr::Method_159ef0() {
 // coin-flip with no source lever (docs/patterns/zero-register-pinning.md).
 RVA(0x0015c290, 0x2f)
 void CDDrawBlitParam::Init_15c290(CDDrawBlitParamSrc* src) {
-    m_10 = (int)src;
+    m_10 = (i32)src;
     m_28 = 1;
     m_14 = 0;
     m_38 = 1.0f;
     m_24 = 1;
-    m_2c = *(int*)((char*)src->m_0c + 0x34) & 0x40;
+    m_2c = *(i32*)((char*)src->m_0c + 0x34) & 0x40;
 }
 
 // 0x15c2c0: blit-param zero-reset (vtable slot 6 of the element class).
@@ -435,8 +435,8 @@ void CDDrawBlitParam::Reset_15c2c0() {
 RVA(0x0015c2d0, 0x45)
 void CDDrawBlitParam::Setup_15c2d0(CDDrawBlitParamSrc* src) {
     char* e;
-    int v;
-    m_14 = (int)src;
+    i32 v;
+    m_14 = (i32)src;
     if (!src) {
         return;
     }
@@ -446,10 +446,10 @@ void CDDrawBlitParam::Setup_15c2d0(CDDrawBlitParamSrc* src) {
     } else {
         e = 0;
     }
-    m_18 = (int)e;
+    m_18 = (i32)e;
     m_20 = 0;
     m_28 = 0;
-    v = *(int*)(e + 0x1c);
+    v = *(i32*)(e + 0x1c);
     m_30 = v;
     m_34 = v;
     {

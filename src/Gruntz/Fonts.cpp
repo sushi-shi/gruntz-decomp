@@ -20,7 +20,7 @@
 // literals, addressed by fixed VA so the loads reloc-mask against the matched
 // Font::LoadFont and the CString literal-ctor.
 DATA(0x0024eb14)
-extern int g_loadedFlag;
+extern i32 g_loadedFlag;
 DATA(0x0024eac0)
 extern Font g_largeFont;
 DATA(0x0024eae8)
@@ -41,7 +41,7 @@ extern Font g_tinyFont;
 // (returns the 0 the failed LoadFont left in eax). Once all four load, the flag
 // is set + 1 returned.
 RVA(0x00115810, 0xa3)
-int InitializeFonts() {
+i32 InitializeFonts() {
     // The already-loaded case + the all-loaded success case share the single
     // `return 1` tail (the target's `jne <tail>` + the immediate flag store, not
     // an eax-routed one): the flag-set lives INSIDE the not-yet-loaded block so it
@@ -66,7 +66,7 @@ int InitializeFonts() {
 }
 
 RVA(0x001158f0, 0x2e)
-int FreeFontsMemory() {
+i32 FreeFontsMemory() {
     g_largeFont.FreeMemory();
     g_mediumFont.FreeMemory();
     g_smallFont.FreeMemory();

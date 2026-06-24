@@ -68,30 +68,30 @@
 // DINPUT.dll DirectInputCreateA - called via a direct `e8 rel32` to its
 // incremental-link thunk (the thunk is `jmp ds:[IAT]`); reloc-masked, like
 // DirectSoundCreate / DirectDrawCreate, not an `ff 15 [IAT]` indirect.
-extern "C" long __stdcall
-DirectInputCreateA(void* hinst, unsigned long version, IDirectInputZ** ppDI, void* punkOuter);
+extern "C" i32 __stdcall
+DirectInputCreateA(void* hinst, u32 version, IDirectInputZ** ppDI, void* punkOuter);
 
 // IID_IDirectInputDevice2A - a dxguid GUID constant in .rdata (0x5ef458),
 // passed to the device QueryInterface. Reloc-masked DATA() extern.
 DATA(0x001ef458)
-extern const unsigned char IID_IDirectInputDevice2A[16]; // 0x5ef458
+extern const u8 IID_IDirectInputDevice2A[16]; // 0x5ef458
 
 // The static DIEnumDevicesCallbackA the EnumDevices wrapper passes by address
 // (0x532fc0, a separate DinMgr2.cpp callback not yet matched). Referenced only
 // by address so the `push offset` operand carries a reloc-masked DIR32.
-extern "C" int __stdcall DinEnumDevicesCallback(const void* instance, void* ref); // 0x132fc0
+extern "C" i32 __stdcall DinEnumDevicesCallback(const void* instance, void* ref); // 0x132fc0
 
 // Reporting-mode globals (live in .data). g_logEnabled drives the format-line
 // path, g_msgBoxEnabled the MessageBox path; g_beepEnabled gates the startup
 // beep, g_thirdEnabled is a third "any output wanted" gate checked at entry.
 DATA(0x00253aac)
-extern "C" int g_beepEnabled; // 0x653aac
+extern "C" i32 g_beepEnabled; // 0x653aac
 DATA(0x00253aa4)
-extern "C" int g_logEnabled; // 0x653aa4
+extern "C" i32 g_logEnabled; // 0x653aa4
 DATA(0x00253aa8)
-extern "C" int g_msgBoxEnabled; // 0x653aa8
+extern "C" i32 g_msgBoxEnabled; // 0x653aa8
 DATA(0x00253ab0)
-extern "C" int g_thirdEnabled; // 0x653ab0
+extern "C" i32 g_thirdEnabled; // 0x653ab0
 
 // Empty mutable string in .data copied into the working buffer up front.
 DATA(0x002293f4)
@@ -99,7 +99,7 @@ extern "C" char g_emptyString[]; // 0x6293f4
 
 // The engine allocator / deallocator (global operator new / delete) - reloc-
 // masked rel32 (cdecl: callers `add esp,4`). Same address every TU.
-void* operator new(unsigned int);
+void* operator new(u32);
 void operator delete(void*);
 
 // The foreign device-config vftable InitA stamps into its new'd 0x338 object
@@ -116,7 +116,7 @@ extern void* g_deviceConfigVtblC; // 0x5ef670
 // The keyboard DIDATAFORMAT (c_dfDIKeyboard) CreateDev passes to SetDataFormat
 // (@0x590aa0, a const in .text). Pushed by address (reloc-masked DIR32 operand).
 DATA(0x00190aa0)
-extern const unsigned char g_keyboardDataFormat[]; // 0x590aa0
+extern const u8 g_keyboardDataFormat[]; // 0x590aa0
 
 // USER32 GetAsyncKeyState - polled across the key table by Poll (0x133d00). Loaded
 // from the IAT into a register (`mov edi,ds:__imp__GetAsyncKeyState; call edi`) and
@@ -125,7 +125,7 @@ extern const unsigned char g_keyboardDataFormat[]; // 0x590aa0
 // The config blob InitA passes to CDeviceConfigA::CreateDev (@0x5ef548), pushed
 // by address (reloc-masked DIR32 operand).
 DATA(0x001ef548)
-extern const unsigned char g_deviceConfigA[]; // 0x5ef548
+extern const u8 g_deviceConfigA[]; // 0x5ef548
 
 // ===========================================================================
 // DirectInputMgr2 (DinMgr2.cpp) - the device manager.
@@ -148,14 +148,14 @@ DirectInputMgr2::~DirectInputMgr2() {
 // gated on a flags bit being CLEAR (InitA unless bit 4, InitB unless bit 2,
 // EnumGameControllers unless bit 8) and short-circuiting to 0 if a step fails.
 RVA(0x00132ce0, 0xae)
-int DirectInputMgr2::Create(void* owner, void* hinst, unsigned long flags) {
+i32 DirectInputMgr2::Create(void* owner, void* hinst, u32 flags) {
     if (owner == 0) {
         return 0;
     }
     if (hinst == 0) {
         return 0;
     }
-    int hr = DirectInputCreateA(hinst, DIRECTINPUT_VERSION, &m_directInput, 0);
+    i32 hr = DirectInputCreateA(hinst, DIRECTINPUT_VERSION, &m_directInput, 0);
     if (hr != 0) {
         GetErrorString(DINMGR2_FILE, 0x32, hr);
         return 0;
@@ -198,8 +198,8 @@ void DirectInputMgr2::Shutdown() {
         m_deviceA->ScalarDtor(1);
         m_deviceA = 0;
     }
-    int n = m_devices.m_size;
-    for (int i = 0; i < n; i++) {
+    i32 n = m_devices.m_size;
+    for (i32 i = 0; i < n; i++) {
         CInputDeviceBase* d = (i >= 0 && i < m_devices.m_size) ? m_devices.m_data[i] : 0;
         if (d != 0) {
             d->ScalarDtor(1);
@@ -220,7 +220,7 @@ void DirectInputMgr2::Shutdown() {
 // byte-exact, residual is the this<->0 ebx/esi swap + the rep-stos `lea edi` hoist
 // scheduling, no /O2 source lever flips it. 86.5%.
 RVA(0x00132e20, 0xb1)
-int DirectInputMgr2::InitA(unsigned long flags) {
+i32 DirectInputMgr2::InitA(u32 flags) {
     IDirectInputZ* di = m_directInput;
     if (di == 0) {
         return 0;
@@ -258,12 +258,12 @@ int DirectInputMgr2::InitA(unsigned long flags) {
 // IDirectInput::EnumDevices(devType=4, callback, ref=this, flags=1); reports a
 // failed HRESULT and returns 0, else 1.
 RVA(0x00132f80, 0x3d)
-int DirectInputMgr2::EnumGameControllers(unsigned long) {
+i32 DirectInputMgr2::EnumGameControllers(u32) {
     IDirectInputZ* di = m_directInput;
     if (di == 0) {
         return 0;
     }
-    long hr = di->vtbl->EnumDevices(
+    i32 hr = di->vtbl->EnumDevices(
         di,
         DIDEVTYPE_JOYSTICK,
         (void*)&DinEnumDevicesCallback,
@@ -281,8 +281,8 @@ int DirectInputMgr2::EnumGameControllers(unsigned long) {
 // (m_deviceA then m_deviceB, slot 4) and the m_devices array (PollArrayA); returns 1 iff none
 // of the three reported a failure.
 RVA(0x00133080, 0x4a)
-int DirectInputMgr2::PollAll() {
-    int failed = 0;
+i32 DirectInputMgr2::PollAll() {
+    i32 failed = 0;
     if (m_deviceA != 0 && m_deviceA->PollA() == 0) {
         failed = 1;
     }
@@ -298,10 +298,10 @@ int DirectInputMgr2::PollAll() {
 // DirectInputMgr2::PollArrayA (__thiscall, no args). Polls every non-null element
 // of the m_devices CPtrArray (slot 4); returns 1 iff none failed.
 RVA(0x001330d0, 0x3a)
-int DirectInputMgr2::PollArrayA() {
-    int failed = 0;
-    int n = m_devices.m_size;
-    for (int i = 0; i < n; i++) {
+i32 DirectInputMgr2::PollArrayA() {
+    i32 failed = 0;
+    i32 n = m_devices.m_size;
+    for (i32 i = 0; i < n; i++) {
         CInputDeviceBase* d = m_devices.m_data[i];
         if (d != 0 && d->PollA() == 0) {
             failed = 1;
@@ -313,8 +313,8 @@ int DirectInputMgr2::PollArrayA() {
 // DirectInputMgr2::ReadAll (__thiscall, no args). As PollAll but the array is
 // processed by PollArrayB (slot 5).
 RVA(0x00133110, 0x4a)
-int DirectInputMgr2::ReadAll() {
-    int failed = 0;
+i32 DirectInputMgr2::ReadAll() {
+    i32 failed = 0;
     if (m_deviceA != 0 && m_deviceA->PollA() == 0) {
         failed = 1;
     }
@@ -330,10 +330,10 @@ int DirectInputMgr2::ReadAll() {
 // DirectInputMgr2::PollArrayB (__thiscall, no args). As PollArrayA but dispatches
 // the array elements' slot 5 (PollB).
 RVA(0x00133160, 0x3a)
-int DirectInputMgr2::PollArrayB() {
-    int failed = 0;
-    int n = m_devices.m_size;
-    for (int i = 0; i < n; i++) {
+i32 DirectInputMgr2::PollArrayB() {
+    i32 failed = 0;
+    i32 n = m_devices.m_size;
+    for (i32 i = 0; i < n; i++) {
         CInputDeviceBase* d = m_devices.m_data[i];
         if (d != 0 && d->PollB() == 0) {
             failed = 1;
@@ -365,7 +365,7 @@ void DirectInputMgr2::FreeDeviceList() {
 // destructs+frees it and returns 0; on success appends it to the m_deviceList and
 // returns it.
 RVA(0x001331e0, 0x7c)
-void* DirectInputMgr2::AddController(int count, int a2, int a3) {
+void* DirectInputMgr2::AddController(i32 count, i32 a2, i32 a3) {
     if (count == 0) {
         return 0;
     }
@@ -393,15 +393,15 @@ void* DirectInputMgr2::AddController(int count, int a2, int a3) {
 // that copies its 7 stack dwords into a local buffer and forwards (&buf, 6, last)
 // to AddController.
 RVA(0x00133260, 0x4a)
-void DirectInputMgr2::AddControllerArr(int a1, int a2, int a3, int a4, int a5, int a6, int a7) {
-    int buf[6];
+void DirectInputMgr2::AddControllerArr(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7) {
+    i32 buf[6];
     buf[0] = a1;
     buf[1] = a2;
     buf[2] = a3;
     buf[3] = a4;
     buf[4] = a5;
     buf[5] = a6;
-    AddController((int)buf, 6, a7);
+    AddController((i32)buf, 6, a7);
 }
 
 // ===========================================================================
@@ -436,7 +436,7 @@ CInputDevice::~CInputDevice() {
 // ---------------------------------------------------------------------------
 // DirectInputMgr2::GetErrorString
 RVA(0x00133590, 0x5be)
-void DirectInputMgr2::GetErrorString(char* file, int line, long hr) {
+void DirectInputMgr2::GetErrorString(char* file, i32 line, i32 hr) {
     char szCode[64];  // error-code name
     char szMsg[256];  // description
     char szLine[512]; // formatted output line
@@ -448,65 +448,65 @@ void DirectInputMgr2::GetErrorString(char* file, int line, long hr) {
         return;
     }
 
-    int code = hr & 0xffff;
+    i32 code = hr & 0xffff;
 
     strcpy(szMsg, "Unknown Error Message");
     sprintf(szCode, "Unknown Error Code");
     strcpy(szLine, g_emptyString);
 
     switch (hr) {
-        case (int)0x80004001:
+        case (i32)0x80004001:
             strcpy(szCode, "DIERR_UNSUPPORTED");
             strcpy(szMsg, "The function called is not supported at this time.");
             break;
-        case (int)0x80004002:
+        case (i32)0x80004002:
             strcpy(szCode, "DIERR_NOINTERFACE");
             strcpy(szMsg, "The specified interface is not supported by the object.");
             break;
-        case (int)0x80004005:
+        case (i32)0x80004005:
             strcpy(szCode, "DIERR_GENERIC");
             strcpy(szMsg, "An undetermined error occured inside the DInput subsystem.");
             break;
-        case (int)0x80040154:
+        case (i32)0x80040154:
             strcpy(szCode, "DIERR_DEVICENOTREG");
             strcpy(
                 szMsg,
                 "The device or device instance or effect is not registered with DirectInput."
             );
             break;
-        case (int)0x80040200:
+        case (i32)0x80040200:
             strcpy(szCode, "DIERR_INSUFFICIENTPRIVS");
             strcpy(szMsg, "No message");
             break;
-        case (int)0x80070002:
+        case (i32)0x80070002:
             strcpy(szCode, "DIERR_NOTFOUND");
             strcpy(szMsg, "The requested object does not exist.");
             break;
-        case (int)0x80070005:
+        case (i32)0x80070005:
             strcpy(szCode, "DIERR_READONLY");
             strcpy(szMsg, "The specified property cannot be changed.");
             break;
-        case (int)0x8007000c:
+        case (i32)0x8007000c:
             strcpy(szCode, "DIERR_NOTACQUIRED");
             strcpy(szMsg, "The operation cannot be performed unless the device is acquired.");
             break;
-        case (int)0x8007000e:
+        case (i32)0x8007000e:
             strcpy(szCode, "DIERR_OUTOFMEMORY");
             strcpy(szMsg, "No message");
             break;
-        case (int)0x80070015:
+        case (i32)0x80070015:
             strcpy(szCode, "DIERR_NOTINITIALIZED");
             strcpy(szMsg, "This object has not been initialized.");
             break;
-        case (int)0x8007001e:
+        case (i32)0x8007001e:
             strcpy(szCode, "DIERR_INPUTLOST");
             strcpy(szMsg, "Access to the device has been lost.  It must be re-acquired.");
             break;
-        case (int)0x80070057:
+        case (i32)0x80070057:
             strcpy(szCode, "DIERR_INVALIDPARAM");
             strcpy(szMsg, "No message");
             break;
-        case (int)0x80070077:
+        case (i32)0x80070077:
             strcpy(szCode, "DIERR_BADDRIVERVER");
             strcpy(
                 szMsg,
@@ -514,15 +514,15 @@ void DirectInputMgr2::GetErrorString(char* file, int line, long hr) {
                 "mismatched or incomplete driver components."
             );
             break;
-        case (int)0x800700aa:
+        case (i32)0x800700aa:
             strcpy(szCode, "DIERR_ACQUIRED");
             strcpy(szMsg, "The operation cannot be performed while the device is acquired.");
             break;
-        case (int)0x8007047e:
+        case (i32)0x8007047e:
             strcpy(szCode, "DIERR_OLDDIRECTINPUTVERSION");
             strcpy(szMsg, "The application requires a newer version of DirectInput.");
             break;
-        case (int)0x800704df:
+        case (i32)0x800704df:
             strcpy(szCode, "DIERR_ALREADYINITIALIZED");
             strcpy(szMsg, "This object is already initialized.");
             break;
@@ -563,7 +563,7 @@ void DirectInputMgr2::GetErrorString(char* file, int line, long hr) {
 // flag, seeds the scan-code table, sets the keyboard data format + cooperative level,
 // then allocates the 0x100-byte GetDeviceState snapshot buffer (+0x2a0/+0x2a4).
 RVA(0x00133b50, 0x97)
-int CInputDevice::CreateDev(IDirectInputZ* di, const void* cfg, void* owner, unsigned long flags) {
+i32 CInputDevice::CreateDev(IDirectInputZ* di, const void* cfg, void* owner, u32 flags) {
     if (di == 0) {
         return 0;
     }
@@ -615,8 +615,8 @@ void CInputDevice::Teardown() {
 // spelling steers. Deferred to the final sweep.
 RVA(0x00133c30, 0xc9)
 void CInputDevice::SetupKeyTable() {
-    unsigned long* keyTable = m_keyTable;
-    for (int i = 0; i < 0x20; i++) {
+    u32* keyTable = m_keyTable;
+    for (i32 i = 0; i < 0x20; i++) {
         keyTable[i] = 0;
     }
     if (m_modeFlags & MODE_ASYNC) {
@@ -655,7 +655,7 @@ void CInputDevice::SetupKeyTable() {
 // 99.97% = reloc plateau: every code byte matches retail; the only residue is the
 // GetAsyncKeyState __imp__ DIR32 operand (reloc-typing scoring artifact, not a body diff).
 RVA(0x00133d00, 0x55e)
-int CInputDevice::Poll() {
+i32 CInputDevice::Poll() {
     m_currentKeys = 0;
     m_edgeKeys = 0;
     if ((m_modeFlags & MODE_ASYNC) == 0) {
@@ -701,7 +701,7 @@ int CInputDevice::Poll() {
             m_currentKeys |= 0x80000000;
         }
     } else {
-        unsigned char* buf = (unsigned char*)m_stateBuffer;
+        u8* buf = (u8*)m_stateBuffer;
         if (buf[m_keyTable[0]] & 0x80) {
             m_currentKeys |= 1;
         }
@@ -872,7 +872,7 @@ int CInputDevice::Poll() {
 // hwnd), runs the CreateDevice+QI bring-up (Create), then dispatches the +0x14
 // configure virtual through the stamped foreign vtable. Returns 1 on success.
 RVA(0x00134260, 0x43)
-int CInputDevice::CreateDeviceWrap(IDirectInputZ* di, const void* guid, void* hwnd) {
+i32 CInputDevice::CreateDeviceWrap(IDirectInputZ* di, const void* guid, void* hwnd) {
     if (di == 0) {
         return 0;
     }
@@ -891,7 +891,7 @@ int CInputDevice::CreateDeviceWrap(IDirectInputZ* di, const void* guid, void* hw
 // IDirectInput::CreateDevice into m_device, then QueryInterfaces it to the v2 device
 // interface (m_device2). Each COM failure is reported; returns whether m_device2 is non-null.
 RVA(0x00134cb0, 0x94)
-int CInputDevice::Create(IDirectInputZ* di, const void* deviceGuid, void* hwnd) {
+i32 CInputDevice::Create(IDirectInputZ* di, const void* deviceGuid, void* hwnd) {
     if (di == 0) {
         return 0;
     }
@@ -899,7 +899,7 @@ int CInputDevice::Create(IDirectInputZ* di, const void* deviceGuid, void* hwnd) 
         return 0;
     }
     m_hwnd = hwnd;
-    int hr = di->vtbl->CreateDevice(di, deviceGuid, &m_device, 0);
+    i32 hr = di->vtbl->CreateDevice(di, deviceGuid, &m_device, 0);
     if (hr != 0) {
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x32, hr);
         return 0;
@@ -943,9 +943,9 @@ void* CInputDevice::ReadState() {
     if (m_stateBuffer == 0) {
         return 0;
     }
-    long hr = m_device2->vtbl->GetDeviceState(m_device2, m_stateBufferSize, m_stateBuffer);
+    i32 hr = m_device2->vtbl->GetDeviceState(m_device2, m_stateBufferSize, m_stateBuffer);
     if (hr != 0) {
-        if (hr != (long)DIERR_INPUTLOST && hr != (long)DIERR_NOTACQUIRED) {
+        if (hr != (i32)DIERR_INPUTLOST && hr != (i32)DIERR_NOTACQUIRED) {
             DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x84, hr);
             return 0;
         }
@@ -959,11 +959,11 @@ void* CInputDevice::ReadState() {
 // CInputDevice::SetDataFormat (__thiscall, ret 4 => 1 arg). Pass-through to
 // IDirectInputDevice::SetDataFormat; report on failure.
 RVA(0x00134eb0, 0x3b)
-int CInputDevice::SetDataFormat(void* fmt) {
+i32 CInputDevice::SetDataFormat(void* fmt) {
     if (fmt == 0) {
         return 0;
     }
-    long hr = m_device2->vtbl->SetDataFormat(m_device2, fmt);
+    i32 hr = m_device2->vtbl->SetDataFormat(m_device2, fmt);
     if (hr != 0) {
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x108, hr);
         return 0;
@@ -975,8 +975,8 @@ int CInputDevice::SetDataFormat(void* fmt) {
 // IDirectInputDevice::SetCooperativeLevel with the cached hwnd (m_hwnd) and the
 // given flags; report on failure.
 RVA(0x00134ef0, 0x3c)
-int CInputDevice::SetCooperativeLevel(unsigned long flags) {
-    long hr = m_device2->vtbl->SetCooperativeLevel(m_device2, m_hwnd, flags);
+i32 CInputDevice::SetCooperativeLevel(u32 flags) {
+    i32 hr = m_device2->vtbl->SetCooperativeLevel(m_device2, m_hwnd, flags);
     if (hr != 0) {
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x128, hr);
         return 0;
@@ -987,11 +987,11 @@ int CInputDevice::SetCooperativeLevel(unsigned long flags) {
 // CInputDevice::SetProperty (__thiscall, ret 8 => 2 args). Pass-through to
 // IDirectInputDevice::SetProperty; report on failure.
 RVA(0x00134f30, 0x40)
-int CInputDevice::SetProperty(const void* rguid, void* prop) {
+i32 CInputDevice::SetProperty(const void* rguid, void* prop) {
     if (prop == 0) {
         return 0;
     }
-    long hr = m_device2->vtbl->SetProperty(m_device2, rguid, prop);
+    i32 hr = m_device2->vtbl->SetProperty(m_device2, rguid, prop);
     if (hr != 0) {
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x148, hr);
         return 0;
@@ -1002,8 +1002,8 @@ int CInputDevice::SetProperty(const void* rguid, void* prop) {
 // CInputDevice::Acquire (__thiscall, ret 0 => no args). Pass-through to
 // IDirectInputDevice::Acquire; report on failure.
 RVA(0x00134fb0, 0x29)
-int CInputDevice::Acquire() {
-    long hr = m_device2->vtbl->Acquire(m_device2);
+i32 CInputDevice::Acquire() {
+    i32 hr = m_device2->vtbl->Acquire(m_device2);
     if (hr != 0) {
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x17a, hr);
         return 0;
@@ -1014,7 +1014,7 @@ int CInputDevice::Acquire() {
 // CInputDevice::Unacquire (__thiscall, no args). IDirectInputDevice::Unacquire
 // (slot +0x20); returns whether the HRESULT was success (0).
 RVA(0x00134fe0, 0x13)
-int CInputDevice::Unacquire() {
-    long hr = m_device2->vtbl->Unacquire(m_device2);
+i32 CInputDevice::Unacquire() {
+    i32 hr = m_device2->vtbl->Unacquire(m_device2);
     return hr == 0;
 }

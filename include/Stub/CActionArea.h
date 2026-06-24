@@ -5,7 +5,7 @@
 // CActionArea : CUserLogic (RTTI). sizeof 0x68.
 class CActionArea : public CUserLogic {
 public:
-    CActionArea(int);
+    CActionArea(i32);
     char m_size_pad[0x28]; // own region over CUserLogic (0x40)
 };
 SIZE(CActionArea, 0x68);

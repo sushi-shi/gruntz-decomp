@@ -61,7 +61,7 @@ CWarlord::~CWarlord() {}
 // per breadth-first doctrine it is parked as a complete-intent placeholder rather
 // than half-reconstructed (a partial would under-count AND diverge its regalloc).
 RVA(0x00044640, 0x102)
-int CWarlord::ResolveState(int key) {
+i32 CWarlord::ResolveState(i32 key) {
     (void)key;
     return 0;
 }
@@ -73,7 +73,7 @@ int CWarlord::ResolveState(int key) {
 // source (result discarded). Then, if the sub's state words say it is ready to
 // move (m_28 != 0 && m_20 == 0), resolve the moving animation. Returns 0.
 RVA(0x00044bb0, 0x38)
-int CWarlord::RearmMoving() {
+i32 CWarlord::RearmMoving() {
     ((CWarlordAnimPlayer*)m_38)->m_1a0.SetGeoSourceR(g_defaultGeo);
     CWarlordAnimSub* sub = &((CWarlordAnimPlayer*)m_38)->m_1a0;
     if (sub->m_28 != 0 && sub->m_20 == 0) {

@@ -11,7 +11,7 @@ RVA(0x001107f0, 0x1c)
 CTileTriggerLogic::CTileTriggerLogic() {
     // m_block initialised before m_1c so the optimiser emits the rep stosl
     // first and reuses the zero register for the +0x1c store afterwards.
-    for (int i = 0; i < 24; i++) {
+    for (i32 i = 0; i < 24; i++) {
         m_block[i] = 0;
     }
     m_1c = 0;
@@ -23,7 +23,7 @@ CTileTriggerLogic::~CTileTriggerLogic() {}
 // ~CTileTriggerLogic cleanup (0x32c bytes - substantial; not reconstructed, so this
 // only NAMES the retail function). MSVC synthesizes ??_G from the virtual dtor above.
 // @rva-symbol: ??_GCTileTriggerLogic@@UAEPAXI@Z 0x00116610 0x32c
-int CTileTriggerLogic::TileLogicVfunc0() {
+i32 CTileTriggerLogic::TileLogicVfunc0() {
     return 0;
 }
 

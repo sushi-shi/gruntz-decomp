@@ -8,7 +8,7 @@ extern "C" {
     // @stub
     RVA(0x00002e6e, 0x5)
     SYMBOL(_CheckExePath)
-    int CheckExePath() {
+    i32 CheckExePath() {
         return 0;
     }
     // @confidence: med
@@ -16,7 +16,7 @@ extern "C" {
     // @stub
     RVA(0x00003936, 0x5)
     SYMBOL(_Eng_RegionCueA)
-    int Eng_RegionCueA() {
+    i32 Eng_RegionCueA() {
         return 0;
     }
     // @confidence: high
@@ -24,7 +24,7 @@ extern "C" {
     // @stub
     RVA(0x00003cab, 0x5)
     SYMBOL(_MultiDispatch @12)
-    int __stdcall MultiDispatch(int, int, int) {
+    i32 __stdcall MultiDispatch(i32, i32, i32) {
         return 0;
     }
     // @confidence: med
@@ -32,7 +32,7 @@ extern "C" {
     // @stub
     RVA(0x001b9b46, 0x3c)
     SYMBOL(_RezAlloc)
-    void* RezAlloc(unsigned int size) {
+    void* RezAlloc(u32 size) {
         return 0;
     }
     // @confidence: high
@@ -40,7 +40,7 @@ extern "C" {
     // @stub
     RVA(0x001b9b82, 0xb)
     SYMBOL(_RezFree)
-    int RezFree() {
+    i32 RezFree() {
         return 0;
     }
     // @confidence: med
@@ -48,7 +48,7 @@ extern "C" {
     // @stub
     RVA(0x00184e00, 0x55)
     SYMBOL(_RezAssertFail)
-    int RezAssertFail() {
+    i32 RezAssertFail() {
         return 0;
     }
     // @confidence: med
@@ -56,7 +56,7 @@ extern "C" {
     // @stub
     RVA(0x0011fdf0, 0xd0)
     SYMBOL(_RezStricmp)
-    int RezStricmp() {
+    i32 RezStricmp() {
         return 0;
     }
     // @confidence: med
@@ -64,7 +64,7 @@ extern "C" {
     // @stub
     RVA(0x00120680, 0x27)
     SYMBOL(_RezStrrchr)
-    int RezStrrchr() {
+    i32 RezStrrchr() {
         return 0;
     }
     // @confidence: med
@@ -72,7 +72,7 @@ extern "C" {
     // @stub
     RVA(0x00002f59, 0x5)
     SYMBOL(_StartupGate)
-    int StartupGate() {
+    i32 StartupGate() {
         return 0;
     }
     // @confidence: med
@@ -80,7 +80,7 @@ extern "C" {
     // @stub
     RVA(0x00120090, 0x85)
     SYMBOL(_SubstringMatch)
-    int SubstringMatch() {
+    i32 SubstringMatch() {
         return 0;
     }
     // @confidence: med
@@ -88,7 +88,7 @@ extern "C" {
     // @stub
     RVA(0x00120900, 0x42)
     SYMBOL(_VersionScan)
-    int VersionScan() {
+    i32 VersionScan() {
         return 0;
     }
 }

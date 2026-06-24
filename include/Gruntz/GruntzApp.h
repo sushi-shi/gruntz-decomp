@@ -19,18 +19,18 @@ public:
     // Override of the base init virtual (CGameApp slot +0x08): forwards all 7
     // launch args to CGameApp::VirtualUnknownMethod03 and normalises the result
     // to a bool. WinMain calls this as the app "Init".
-    virtual int VirtualUnknownMethod03(
+    virtual i32 VirtualUnknownMethod03(
         HINSTANCE hInstance,
         char* szWindowName,
         char* szGameIdentifier,
         char* szCmdLine,
-        int windowClassFlags,
-        int windowWidth,
-        int windowHeight
+        i32 windowClassFlags,
+        i32 windowWidth,
+        i32 windowHeight
     ) OVERRIDE;                        // vtbl +0x08
     virtual void ShowError() OVERRIDE; // vtbl +0x30
     // Another base-init virtual override; just returns 0.
-    virtual int VirtualUnknownMethod04(int a, int b, int c);
+    virtual i32 VirtualUnknownMethod04(i32 a, i32 b, i32 c);
     // Shows the MESSAGE dialog with an arbitrary message string.
     void ShowMessage(char* msg, HWND hParent);
     WAP32::CGameMgr* InitializeGameManager() OVERRIDE;

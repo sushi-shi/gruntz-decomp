@@ -26,6 +26,8 @@
 #ifndef SRC_BUTE_BUTEMGR_H
 #define SRC_BUTE_BUTEMGR_H
 
+#include <Ints.h>
+
 // CString (+ CObject etc.) and the Win32 DWORD come from <Mfc.h>; pulled up here
 // so the class below can use both. (afx.h is the period-correct windows.h path.)
 #include <Gruntz/CString.h>
@@ -46,14 +48,14 @@
 // vtable stores are modeled as external/no-body calls (reloc-masked).
 // ---------------------------------------------------------------------------
 struct CButeValue {
-    int type;     // +0x00
+    i32 type;     // +0x00
     void* pValue; // +0x04
 
     // Value constructors: allocate storage, store the value, return `this`.
-    CButeValue* SetInt(int type, int val);
-    CButeValue* SetDword(int type, unsigned long val);
-    CButeValue* SetFloat(int type, float val);
-    CButeValue* SetDouble(int type, double val);
+    CButeValue* SetInt(i32 type, i32 val);
+    CButeValue* SetDword(i32 type, u32 val);
+    CButeValue* SetFloat(i32 type, float val);
+    CButeValue* SetDouble(i32 type, double val);
 };
 
 // The engine helper embedded at CButeMgr+0x14 (the .bute compiler/registry
@@ -99,18 +101,18 @@ public:
 
     void* m_vptr;              // +0x00
     void* m_pSub;              // +0x04
-    int m_08;                  // +0x08
-    int m_0c;                  // +0x0c
-    int m_10;                  // +0x10
+    i32 m_08;                  // +0x08
+    i32 m_0c;                  // +0x0c
+    i32 m_10;                  // +0x10
     char m_pad14[0x1c - 0x14]; // +0x14
-    int m_1c;                  // +0x1c
-    int m_20;                  // +0x20
-    int m_24;                  // +0x24
-    int m_28;                  // +0x28
+    i32 m_1c;                  // +0x1c
+    i32 m_20;                  // +0x20
+    i32 m_24;                  // +0x24
+    i32 m_28;                  // +0x28
     char m_2c;                 // +0x2c
     char m_pad2d[0x30 - 0x2d]; // +0x2d
-    int m_30;                  // +0x30
-    int m_34;                  // +0x34
+    i32 m_30;                  // +0x30
+    i32 m_34;                  // +0x34
     CRITICAL_SECTION m_cs;     // +0x38
 };
 
@@ -122,7 +124,7 @@ public:
     void Insert(const char* key, void* pNode);
     // Apply a callback to each matching node (__thiscall: push flag/ctx/fn,
     // callee-cleanup). Reloc-masked external/no-body.
-    void Walk(void (*fn)(), void* ctx, int flag);
+    void Walk(void (*fn)(), void* ctx, i32 flag);
 };
 
 // ---------------------------------------------------------------------------
@@ -143,7 +145,7 @@ extern void* g_nodeVtblB;
 // shape (callee-cleanup) falls out reloc-masked.
 class CButeNodeBase {
 public:
-    CButeNodeBase(void* desc, int n);
+    CButeNodeBase(void* desc, i32 n);
 };
 
 class CButeNode : public CButeNodeBase {
@@ -151,7 +153,7 @@ public:
     // Inline derived ctor: run the engine base ctor, then write the two derived
     // vtable pointers at +0x00 / +0x08 (reproduces ParseTagLine's inline
     // `call ctor; mov [node],vtblA; mov [node+8],vtblB`).
-    CButeNode(void* desc, int n) : CButeNodeBase(desc, n) {
+    CButeNode(void* desc, i32 n) : CButeNodeBase(desc, n) {
         m_vtblA = &g_nodeVtblA;
         m_vtblB = &g_nodeVtblB;
     }
@@ -209,7 +211,7 @@ struct CButeRef8 { // 16 bytes
 // ---------------------------------------------------------------------------
 
 // CRT helpers (minimal external decls; reloc-masked engine CRT thunks).
-extern "C" int atexit(void (*func)(void));
+extern "C" i32 atexit(void (*func)(void));
 
 // The optional error callback CButeMgr::ReportError fires after formatting the
 // message (cdecl, takes the formatted C string).
@@ -220,8 +222,8 @@ typedef void(__cdecl* ErrCallback)(const char*);
 // ---------------------------------------------------------------------------
 class CButeMgr {
 public:
-    int GetIntDef(char* tag, char* key, int def);
-    int GetInt(char* tag, char* key);
+    i32 GetIntDef(char* tag, char* key, i32 def);
+    i32 GetInt(char* tag, char* key);
     DWORD GetDwordDef(char* tag, char* key, DWORD def);
     DWORD GetDword(char* tag, char* key);
     float GetFloat(char* tag, char* key);
@@ -229,7 +231,7 @@ public:
     CString* GetStringDef(char* tag, char* key, CString* def);
     char* GetString(char* tag, char* key);
 
-    bool ScanToken(int expectType);
+    bool ScanToken(i32 expectType);
     bool ParseTagLine();
     bool Parse();
 
@@ -247,9 +249,9 @@ public:
     // PeekClass classifies the current char (returns a token-class word);
     // ReadValue/ReadIdent scan a value/identifier token (return the next kind);
     // All __thiscall on CButeMgr.
-    short PeekClass(int kind, char c);
-    int ReadValue(int kind, char c);
-    int ReadIdent(int kind, char c);
+    i16 PeekClass(i32 kind, char c);
+    i32 ReadValue(i32 kind, char c);
+    i32 ReadIdent(i32 kind, char c);
 
     // ------------------------------------------------------------------
     // Lexer cluster (0x170330-0x170460, 0x171160-0x171a60). Recovered as
@@ -265,13 +267,13 @@ public:
     // (+0xa0), update line/position, set m_curChar (+0xa8).
     void NextChar();
     // Map a raw char to its lexer character-class index (g_charClass - 1).
-    short CharClass(char c);
+    i16 CharClass(char c);
     // Two adjacent columns of the lexer transition table (state x class):
     // PeekState classifies the current state/char; ScanState writes the token
     // type (+0xaa) and the secondary state (+0xac).
-    short PeekState(short state, char c);
-    short PeekState2(short state, char c);
-    void ScanState(short state, char c);
+    i16 PeekState(i16 state, char c);
+    i16 PeekState2(i16 state, char c);
+    void ScanState(i16 state, char c);
     // Outer tag-skip loop: re-lex until a tag/group token (1/2), or fail.
     bool SkipToTag();
     // Recursive group parser (the per-tag descent).
@@ -290,9 +292,9 @@ public:
         return reinterpret_cast<CButeTree*>(m_tree48);
     }
 
-    int m_00;                    // +0x00  source base offset
-    int m_04;                    // +0x04  current char position
-    int m_lineNo;                // +0x08
+    i32 m_00;                    // +0x00  source base offset
+    i32 m_04;                    // +0x04  current char position
+    i32 m_lineNo;                // +0x08
     char m_0c;                   // +0x0c  "count this line" flag
     char m_0d;                   // +0x0d
     char m_pad0e[0x10 - 0xe];    // +0x0e
@@ -306,8 +308,8 @@ public:
     void* m_pText;               // +0xa4
     char m_curChar;              // +0xa8
     char m_pada9;                // +0xa9
-    short m_tokType;             // +0xaa
-    short m_ac;                  // +0xac  secondary lexer state
+    i16 m_tokType;               // +0xaa
+    i16 m_ac;                    // +0xac  secondary lexer state
     char m_token[0x100 - 0xae];  // +0xae
     CString m_tagName;           // +0x100
     CString m_str104;            // +0x104  second scratch string

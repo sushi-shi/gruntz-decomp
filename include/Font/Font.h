@@ -25,7 +25,7 @@
 //   operator new(unsigned int)
 //   operator delete(void*)
 // ---------------------------------------------------------------------------
-void* operator new(unsigned int n);
+void* operator new(u32 n);
 void operator delete(void* p);
 
 // ---------------------------------------------------------------------------
@@ -58,8 +58,8 @@ void operator delete(void* p);
 // ---------------------------------------------------------------------------
 struct Glyph {
     Glyph() {}  // user-declared (drives the array-new shape)
-    int width;  // +0x00
-    int height; // +0x04
+    i32 width;  // +0x00
+    i32 height; // +0x04
 };
 
 // ---------------------------------------------------------------------------
@@ -68,20 +68,20 @@ struct Glyph {
 class Font {
 public:
     Font();
-    int AllocateMemory(int count);
+    i32 AllocateMemory(i32 count);
     void FreeMemory();
-    int LoadFont(CString szFileName);
+    i32 LoadFont(CString szFileName);
 
     // Accessors matched in this module cluster.
-    void** GetSurface(unsigned char c);
-    void GetGlyph(unsigned char c, Glyph& out);
-    int GetMaxHeight();
+    void** GetSurface(u8 c);
+    void GetGlyph(u8 c, Glyph& out);
+    i32 GetMaxHeight();
 
-    int m_ready;       // +0x00
-    int m_count;       // +0x04
+    i32 m_ready;       // +0x00
+    i32 m_count;       // +0x04
     void** m_surfaces; // +0x08
     Glyph* m_glyphs;   // +0x0c
-    int m_maxHeight;   // +0x10
+    i32 m_maxHeight;   // +0x10
 };
 
 // ---------------------------------------------------------------------------
@@ -92,11 +92,11 @@ public:
 class FontRenderer {
 public:
     FontRenderer();
-    void SetColor(int color);
-    unsigned char GetChar(int i);
+    void SetColor(i32 color);
+    u8 GetChar(i32 i);
 
     Font* m_font;    // +0x00  (Font* to render with)
-    int m_color;     // +0x04  (packed colour, default 0x00ffffff)
+    i32 m_color;     // +0x04  (packed colour, default 0x00ffffff)
     void* m_surface; // +0x08  (optional dest surface pointer)
     void* m_clip;    // +0x0c  (optional clip rect pointer)
 };
@@ -113,7 +113,7 @@ struct CWapNodeB : CWapNodeBase {
     virtual ~CWapNodeB() OVERRIDE;
     void FreeStrings();
 
-    int m_type;         // +0x04
+    i32 m_type;         // +0x04
     char m_pad08[0x28]; // +0x08..+0x2f
     char* m_srcStr1;    // +0x30
     char* m_buf34;      // +0x34  owned buffer (FreeStrings deletes)
@@ -125,11 +125,11 @@ struct CWapNodeB : CWapNodeBase {
 // +0x04. The IsInterfaceX methods check whether that GUID matches a known iid.
 struct InterfaceObject {
     const void* iid; // +0x04 (after vtable/first field)
-    int IsInterface1();
-    int IsInterface2();
-    int IsInterface3();
-    int IsInterface4();
-    int IsInterface5();
+    i32 IsInterface1();
+    i32 IsInterface2();
+    i32 IsInterface3();
+    i32 IsInterface4();
+    i32 IsInterface5();
 };
 
 #endif // SRC_FONT_FONT_H

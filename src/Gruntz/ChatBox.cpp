@@ -27,19 +27,19 @@ struct CChatNode {
     char m_padc[0x10 - 0xc];
     void* m_10; // page/context used by the lookup helpers
     char m_pad14[0x24 - 0x14];
-    int m_24; // node kind (1/2 are the matchable rows)
+    i32 m_24; // node kind (1/2 are the matchable rows)
     char m_pad28[0x64 - 0x28];
-    int m_64;
+    i32 m_64;
     char m_pad68[0x6c - 0x68];
 
     ~CChatNode();               // 0x183250 - external dtor (CString members)
     CString GetKey();           // 0x1832d0 - returns the node key by value (= m_c)
     void Detach();              // 0x183990
-    int Rebuild();              // 0x1839d0
-    int HitTest1(int x, int y); // 0x1840a0
-    int HitTest2();             // 0x1843f0
-    int HitTest3();             // 0x1844d0
-    int Measure();              // virtual, vtable slot +0x14
+    i32 Rebuild();              // 0x1839d0
+    i32 HitTest1(i32 x, i32 y); // 0x1840a0
+    i32 HitTest2();             // 0x1843f0
+    i32 HitTest3();             // 0x1844d0
+    i32 Measure();              // virtual, vtable slot +0x14
 };
 
 struct CChatCatalog;
@@ -66,17 +66,17 @@ struct CChatListNode {
 struct CChatAnim {
     void* vptr;
     char pad4[0x14 - 0x4];
-    int* m_14; // +0x14 frame table
+    i32* m_14; // +0x14 frame table
     char pad18[0x64 - 0x18];
-    int m_64; // +0x64 current frame index
-    int m_68; // +0x68 max frame
+    i32 m_64; // +0x64 current frame index
+    i32 m_68; // +0x68 max frame
 };
 
 // The key->record map (CMapWordToOb-style Lookup at 0x1b8008 / 0x1b8438). The
 // value type differs per instance (CChatAnim for the rows, CChatTimer for scroll),
 // so the out-param is generic. __thiscall.
 struct CChatMap {
-    int Lookup(void* key, void** out); // BOOL Lookup(key, value&)
+    i32 Lookup(void* key, void** out); // BOOL Lookup(key, value&)
 };
 
 // The on-screen catalog reached through CChatPage::m_10; the key->node map lives
@@ -85,14 +85,14 @@ struct CChatCatalog {
     char pad0[0x10];
     CChatMap m_10map;
     char pad14[0x64 - 0x14];
-    int m_64; // current frame/index, read straight through the lookup result
+    i32 m_64; // current frame/index, read straight through the lookup result
 };
 
 extern "C" void RezFree(void* p); // 0x1b9b82
 
 // The frame handle each row blits through (0x153790). __thiscall.
 struct CChatFrame {
-    void Blit(int a, int x, int y, int b); // 0x153790
+    void Blit(i32 a, i32 x, i32 y, i32 b); // 0x153790
 };
 
 // The font/sprite passed into Draw: anchor coords m_44/m_48 (0xeeeeeeee = "use the
@@ -103,23 +103,23 @@ struct CChatSprite {
     virtual void Vf2();
     virtual void Vf3();
     virtual void Vf4();
-    virtual int Measure(); // slot +0x14
+    virtual i32 Measure(); // slot +0x14
     char pad4[0x44 - 0x4];
-    int m_44; // +0x44 anchor x
-    int m_48; // +0x48 anchor y
+    i32 m_44; // +0x44 anchor x
+    i32 m_48; // +0x48 anchor y
 };
 
 // The horizontal-scroll edge state read by the two scroll-step methods.
 DATA(0x0061ab20)
-extern int g_scrollEnabled; // 0x61ab20
+extern i32 g_scrollEnabled; // 0x61ab20
 DATA(0x0061ab24)
-extern int g_scrollDelta; // 0x61ab24
+extern i32 g_scrollDelta; // 0x61ab24
 DATA(0x006bf3c0)
-extern int g_scrollClock; // 0x6bf3c0
+extern i32 g_scrollClock; // 0x6bf3c0
 
 // The sprite poke target hung off a scroll-timer's m_10 (0x1360d0). __thiscall.
 struct CChatPoker {
-    int Poke(int a, int b, int c, int d); // 0x1360d0
+    i32 Poke(i32 a, i32 b, i32 c, i32 d); // 0x1360d0
 };
 
 // The per-row scroll timer record the scroll-step lookups return: a sprite poke
@@ -127,8 +127,8 @@ struct CChatPoker {
 struct CChatTimer {
     char pad0[0x10];
     CChatPoker* m_10; // +0x10 sprite poke target
-    int m_14;         // +0x14 last tick the row scrolled at
-    int m_18;         // +0x18 scroll interval
+    i32 m_14;         // +0x14 last tick the row scrolled at
+    i32 m_18;         // +0x18 scroll interval
 };
 
 // The on-screen sprite roster reached via CChatPage::m_28: a key->timer map at
@@ -137,7 +137,7 @@ struct CChatRoster {
     char pad0[0x10];
     CChatMap m_10; // +0x10 key->timer map
     char pad14[0x30 - 0x14];
-    int m_30; // +0x30 busy gate
+    i32 m_30; // +0x30 busy gate
 };
 
 // ===========================================================================
@@ -195,7 +195,7 @@ void CChatBox::Clear() {
 
 // 0x182ba0 - append a node to the list; first node also becomes the active one.
 RVA(0x00182ba0, 0x35)
-int CChatBox::AddNode(void* node) {
+i32 CChatBox::AddNode(void* node) {
     if (!node) {
         return 0;
     }
@@ -213,7 +213,7 @@ int CChatBox::AddNode(void* node) {
 // is complete. ~74%.
 // 0x182be0 - find the message node whose key matches s (linear scan + strcmp).
 RVA(0x00182be0, 0x8d)
-int CChatBox::Find(const char* s) {
+i32 CChatBox::Find(const char* s) {
     CChatListNode* node = (CChatListNode*)m_24.GetHeadPosition();
     while (node) {
         CChatListNode* cur = node;
@@ -222,7 +222,7 @@ int CChatBox::Find(const char* s) {
         if (payload) {
             CString key = payload->GetKey();
             if (strcmp(key, s) == 0) {
-                return (int)payload;
+                return (i32)payload;
             }
         }
     }
@@ -231,7 +231,7 @@ int CChatBox::Find(const char* s) {
 
 // 0x182da0 - make `n` the active node (detach + rebuild it).
 RVA(0x00182da0, 0x2a)
-int CChatBox::AttachNode(void* n) {
+i32 CChatBox::AttachNode(void* n) {
     if (!n) {
         return 0;
     }
@@ -243,7 +243,7 @@ int CChatBox::AttachNode(void* n) {
 
 // 0x182dd0 - find a node by key and make it active.
 RVA(0x00182dd0, 0x19)
-int CChatBox::ReplaceNode(void* n) {
+i32 CChatBox::ReplaceNode(void* n) {
     return AttachNode((void*)Find((const char*)n));
 }
 
@@ -252,7 +252,7 @@ int CChatBox::ReplaceNode(void* n) {
 // is only the differently-named Lookup extern (0x1b8008, another TU's CMap). ~95%.
 // 0x182df0 - advance row0 to the message keyed by `key`; cache its frame state.
 RVA(0x00182df0, 0x69)
-int CChatBox::AdvanceRow0(void* key, int x, int y) {
+i32 CChatBox::AdvanceRow0(void* key, i32 x, i32 y) {
     if (!m_0) {
         return 0;
     }
@@ -275,7 +275,7 @@ int CChatBox::AdvanceRow0(void* key, int x, int y) {
 // only the differently-named Lookup extern (0x1b8008, another TU's CMap). ~95%.
 // 0x182e60 - advance row1 to the message keyed by `key`; cache its frame state.
 RVA(0x00182e60, 0x69)
-int CChatBox::AdvanceRow1(void* key, int x, int y) {
+i32 CChatBox::AdvanceRow1(void* key, i32 x, i32 y) {
     if (!m_0) {
         return 0;
     }
@@ -299,16 +299,16 @@ int CChatBox::AdvanceRow1(void* key, int x, int y) {
 // edx, whereas MSVC swaps them here; 1-register phase shift only. ~89%.
 // 0x182ed0 - per-frame advance of both rows' scroll counters & frame indices.
 RVA(0x00182ed0, 0xbc)
-int CChatBox::Step(int delta) {
+i32 CChatBox::Step(i32 delta) {
     CChatAnim* a = (CChatAnim*)m_4c;
     if (a) {
-        if ((unsigned)m_58 > (unsigned)delta) {
+        if ((u32)m_58 > (u32)delta) {
             m_58 -= delta;
         } else {
             m_58 = m_54;
-            int f = m_60 + 1;
+            i32 f = m_60 + 1;
             m_60 = f;
-            int v;
+            i32 v;
             if (f >= a->m_64 && f <= a->m_68) {
                 v = a->m_14[f];
             } else {
@@ -323,14 +323,14 @@ int CChatBox::Step(int delta) {
     }
     CChatAnim* b = (CChatAnim*)m_64;
     if (b) {
-        if ((unsigned)m_70 > (unsigned)delta) {
+        if ((u32)m_70 > (u32)delta) {
             m_70 -= delta;
             return 1;
         }
         m_70 = m_6c;
-        int f = m_78 + 1;
+        i32 f = m_78 + 1;
         m_78 = f;
-        int v;
+        i32 v;
         if (f >= b->m_64 && f <= b->m_68) {
             v = b->m_14[f];
         } else {
@@ -351,13 +351,13 @@ int CChatBox::Step(int delta) {
 // ~95%.
 // 0x182f90 - blit both rows' current frames, centered under the sprite anchor.
 RVA(0x00182f90, 0x92)
-int CChatBox::Draw(int a0, int sprite_, int arg2, int arg3) {
+i32 CChatBox::Draw(i32 a0, i32 sprite_, i32 arg2, i32 arg3) {
     CChatSprite* sprite = (CChatSprite*)sprite_;
     if (!sprite) {
         return 0;
     }
-    int anchorX, anchorY;
-    if (sprite->m_44 != (int)0xeeeeeeee) {
+    i32 anchorX, anchorY;
+    if (sprite->m_44 != (i32)0xeeeeeeee) {
         anchorY = sprite->m_48;
         anchorX = sprite->m_44;
     } else {
@@ -365,11 +365,11 @@ int CChatBox::Draw(int a0, int sprite_, int arg2, int arg3) {
         anchorX = arg2;
     }
     if (m_50) {
-        int x = -(sprite->Measure() / 2) - m_5c + anchorX;
+        i32 x = -(sprite->Measure() / 2) - m_5c + anchorX;
         ((CChatFrame*)m_50)->Blit(arg2, x, anchorY, 0);
     }
     if (m_68) {
-        int x = sprite->Measure() / 2 + m_74 + anchorX;
+        i32 x = sprite->Measure() / 2 + m_74 + anchorX;
         ((CChatFrame*)m_68)->Blit(arg2, x, anchorY, 0);
     }
     return 1;
@@ -382,7 +382,7 @@ int CChatBox::Draw(int a0, int sprite_, int arg2, int arg3) {
 // layout. Logic complete. ~63%.
 // 0x183030 - scroll row0's sprite one tick if its scroll interval has elapsed.
 RVA(0x00183030, 0x7b)
-int CChatBox::ScrollRow0() {
+i32 CChatBox::ScrollRow0() {
     if (m_44.GetLength() == 0) {
         return 0;
     }
@@ -398,10 +398,10 @@ int CChatBox::ScrollRow0() {
     if (!g_scrollEnabled) {
         return 0;
     }
-    int delta = g_scrollDelta;
-    int clock = g_scrollClock;
-    unsigned elapsed = (unsigned)clock - (unsigned)t->m_14;
-    if (elapsed < (unsigned)t->m_18) {
+    i32 delta = g_scrollDelta;
+    i32 clock = g_scrollClock;
+    u32 elapsed = (u32)clock - (u32)t->m_14;
+    if (elapsed < (u32)t->m_18) {
         return 0;
     }
     t->m_14 = clock;
@@ -414,7 +414,7 @@ int CChatBox::ScrollRow0() {
 // defers the `push edi/esi` past the empty-key guard. Logic complete. ~63%.
 // 0x1830b0 - scroll row1's sprite one tick if its scroll interval has elapsed.
 RVA(0x001830b0, 0x7b)
-int CChatBox::ScrollRow1() {
+i32 CChatBox::ScrollRow1() {
     if (m_48.GetLength() == 0) {
         return 0;
     }
@@ -430,10 +430,10 @@ int CChatBox::ScrollRow1() {
     if (!g_scrollEnabled) {
         return 0;
     }
-    int delta = g_scrollDelta;
-    int clock = g_scrollClock;
-    unsigned elapsed = (unsigned)clock - (unsigned)t->m_14;
-    if (elapsed < (unsigned)t->m_18) {
+    i32 delta = g_scrollDelta;
+    i32 clock = g_scrollClock;
+    u32 elapsed = (u32)clock - (u32)t->m_14;
+    if (elapsed < (u32)t->m_18) {
         return 0;
     }
     t->m_14 = clock;
@@ -443,7 +443,7 @@ int CChatBox::ScrollRow1() {
 
 // 0x1831a0 - forward a hit-test to the active node (slot 0x1840a0).
 RVA(0x001831a0, 0x24)
-int CChatBox::HitTest0(int x, int y) {
+i32 CChatBox::HitTest0(i32 x, i32 y) {
     CChatNode* n = (CChatNode*)m_40;
     if (!n) {
         return 0;
@@ -453,7 +453,7 @@ int CChatBox::HitTest0(int x, int y) {
 
 // 0x183210 - forward a hit-test to the active node (slot 0x1843f0).
 RVA(0x00183210, 0x16)
-int CChatBox::HitTest1() {
+i32 CChatBox::HitTest1() {
     CChatNode* n = (CChatNode*)m_40;
     if (!n) {
         return 0;
@@ -463,7 +463,7 @@ int CChatBox::HitTest1() {
 
 // 0x183230 - forward a hit-test to the active node (slot 0x1844d0).
 RVA(0x00183230, 0x16)
-int CChatBox::HitTest2() {
+i32 CChatBox::HitTest2() {
     CChatNode* n = (CChatNode*)m_40;
     if (!n) {
         return 0;

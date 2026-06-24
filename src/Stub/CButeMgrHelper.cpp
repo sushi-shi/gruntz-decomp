@@ -3,10 +3,10 @@
 // CButeMgrHelper.cpp - engine-label stubs for CButeMgrHelper (reloc-correlation).
 
 void winapi_16c9d0_DeleteCriticalSection(LPCRITICAL_SECTION cs);
-typedef void(__stdcall* CButeMgrHelper_ScalarDeletingDestructor)(int);
+typedef void(__stdcall* CButeMgrHelper_ScalarDeletingDestructor)(i32);
 
 DATA(0x006bf400)
-extern int g_func_b_ref;
+extern i32 g_func_b_ref;
 
 DATA(0x006bf3c8)
 extern CRITICAL_SECTION g_func_b_cs;
@@ -20,13 +20,13 @@ public:
     void FuncB();
 
     CButeMgrHelper_ScalarDeletingDestructor* m_0;
-    int m_4;
-    int m_8;
+    i32 m_4;
+    i32 m_8;
     char m_pad0c[0x10];
-    int m_1c;
+    i32 m_1c;
     char m_pad20[0x14];
-    int m_34;
-    int m_38;
+    i32 m_34;
+    i32 m_38;
 };
 // @confidence: med
 // @source: reloc-correlation (1 caller)

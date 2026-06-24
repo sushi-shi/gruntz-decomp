@@ -9,4 +9,4 @@
 // @source: rtti-vptr
 // @stub
 RVA(0x000b35a0, 0x401)
-void CPathHazard::CPathHazard_0b35a0(int) {}
+void CPathHazard::CPathHazard_0b35a0(i32) {}

@@ -3,12 +3,12 @@
 
 class CGruntzSoundInnerZ {
 public:
-    int IsBusy();
+    i32 IsBusy();
 };
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @stub
 RVA(0x00138f60, 0x2d)
-int CGruntzSoundInnerZ::IsBusy() {
+i32 CGruntzSoundInnerZ::IsBusy() {
     return 0;
 }

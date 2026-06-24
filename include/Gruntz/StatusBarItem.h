@@ -4,6 +4,8 @@
 #ifndef STATUSBARITEM_H
 #define STATUSBARITEM_H
 
+#include <Ints.h>
+
 // ---------------------------------------------------------------------------
 // CStatusBarItem - base of the SBI_* family. One class, one definition.
 //
@@ -30,13 +32,13 @@ public:
         m_28 = 0;
     }
     virtual ~CStatusBarItem();
-    virtual int SbiVfunc0();
+    virtual i32 SbiVfunc0();
 
-    int m_4;                  // +0x04
-    int m_8;                  // +0x08
+    i32 m_4;                  // +0x04
+    i32 m_8;                  // +0x08
     char m_padc[0x24 - 0x0c]; // +0x0c..0x23
-    int m_24;                 // +0x24
-    int m_28;                 // +0x28
+    i32 m_24;                 // +0x24
+    i32 m_28;                 // +0x28
 };
 
 #endif // STATUSBARITEM_H

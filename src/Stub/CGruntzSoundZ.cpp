@@ -4,7 +4,7 @@
 class CGruntzSoundZ {
 public:
     void StopAll();
-    void StopBank(int);
+    void StopBank(i32);
 };
 // @confidence: med
 // @source: reloc-correlation (1 caller)
@@ -15,4 +15,4 @@ void CGruntzSoundZ::StopAll() {}
 // @source: reloc-correlation (1 caller)
 // @stub
 RVA(0x00138900, 0x19)
-void CGruntzSoundZ::StopBank(int) {}
+void CGruntzSoundZ::StopBank(i32) {}

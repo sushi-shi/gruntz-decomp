@@ -5,7 +5,7 @@
 // CDroppedObject : CUserLogic (RTTI). sizeof 0x70.
 class CDroppedObject : public CUserLogic {
 public:
-    CDroppedObject(int);
+    CDroppedObject(i32);
     void LoadDroppedObjectEffects();
     char m_size_pad[0x30]; // own region over CUserLogic (0x40)
 };

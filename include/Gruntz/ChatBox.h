@@ -13,6 +13,8 @@
 #ifndef GRUNTZ_CHATBOX_H
 #define GRUNTZ_CHATBOX_H
 
+#include <Ints.h>
+
 #include <Mfc.h>
 
 // ---------------------------------------------------------------------------
@@ -37,40 +39,40 @@ public:
     void Init();                              // 0xa0280 - re-zero the rows (no list teardown)
     void Reset();                             // 0x182b30 - free the node list, re-zero the rows
     void Clear();                             // 0x182b60 - free node payloads, empty the list
-    int Find(const char* s);                  // 0x182be0 - find a node by string key
+    i32 Find(const char* s);                  // 0x182be0 - find a node by string key
     ~CChatBox();                              // 0x182bxx teardown
-    int AddNode(void* node);                  // 0x182ba0
-    int AttachNode(void* n);                  // 0x182da0
-    int ReplaceNode(void* n);                 // 0x182dd0
-    int AdvanceRow0(void* key, int x, int y); // 0x182df0
-    int AdvanceRow1(void* key, int x, int y); // 0x182e60
-    int Step(int dt);                         // 0x182ed0
-    int Draw(int a0, int sprite, int arg2, int arg3); // 0x182f90
-    int ScrollRow0();                                 // 0x183030
-    int ScrollRow1();                                 // 0x1830b0
-    int HitTest0(int x, int y);                       // 0x1831a0
-    int HitTest1();                                   // 0x183210
-    int HitTest2();                                   // 0x183230
+    i32 AddNode(void* node);                  // 0x182ba0
+    i32 AttachNode(void* n);                  // 0x182da0
+    i32 ReplaceNode(void* n);                 // 0x182dd0
+    i32 AdvanceRow0(void* key, i32 x, i32 y); // 0x182df0
+    i32 AdvanceRow1(void* key, i32 x, i32 y); // 0x182e60
+    i32 Step(i32 dt);                         // 0x182ed0
+    i32 Draw(i32 a0, i32 sprite, i32 arg2, i32 arg3); // 0x182f90
+    i32 ScrollRow0();                                 // 0x183030
+    i32 ScrollRow1();                                 // 0x1830b0
+    i32 HitTest0(i32 x, i32 y);                       // 0x1831a0
+    i32 HitTest1();                                   // 0x183210
+    i32 HitTest2();                                   // 0x183230
 
     void* m_0; // +0x00 parent/page back pointer
-    int m_4;   // +0x04
+    i32 m_4;   // +0x04
     char m_pad8[0x24 - 0x08];
     CPtrList m_24; // +0x24 message-node list (vptr+6 fields = 0x1c, head at +0x28)
     void* m_40;    // +0x40 queued/active node slot
     CString m_44;  // +0x44 row0 font/asset key
     CString m_48;  // +0x48 row1 font/asset key
     void* m_4c;    // +0x4c row0 current node
-    int m_50;      // +0x50
-    int m_54;      // +0x54
-    int m_58;      // +0x58
-    int m_5c;      // +0x5c
-    int m_60;      // +0x60
+    i32 m_50;      // +0x50
+    i32 m_54;      // +0x54
+    i32 m_58;      // +0x58
+    i32 m_5c;      // +0x5c
+    i32 m_60;      // +0x60
     void* m_64;    // +0x64 row1 current node
-    int m_68;      // +0x68
-    int m_6c;      // +0x6c
-    int m_70;      // +0x70
-    int m_74;      // +0x74
-    int m_78;      // +0x78
+    i32 m_68;      // +0x68
+    i32 m_6c;      // +0x6c
+    i32 m_70;      // +0x70
+    i32 m_74;      // +0x74
+    i32 m_78;      // +0x78
 };
 
 #endif // GRUNTZ_CHATBOX_H

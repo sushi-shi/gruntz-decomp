@@ -4,6 +4,8 @@
 #ifndef TILETRIGGERLOGIC_H
 #define TILETRIGGERLOGIC_H
 
+#include <Ints.h>
+
 // ---------------------------------------------------------------------------
 // CTileTriggerLogic
 //   vftable. size 0x9c. ctor:
@@ -15,12 +17,12 @@ class CTileTriggerLogic {
 public:
     CTileTriggerLogic();
     virtual ~CTileTriggerLogic();
-    virtual int TileLogicVfunc0();
+    virtual i32 TileLogicVfunc0();
 
-    int m_pad4[(0x1c - 0x04) / 4]; // +0x04..0x1b
-    int m_1c;                      // +0x1c  zeroed AFTER m_block
+    i32 m_pad4[(0x1c - 0x04) / 4]; // +0x04..0x1b
+    i32 m_1c;                      // +0x1c  zeroed AFTER m_block
     char m_pad20[0x3c - 0x20];     // +0x20..0x3b
-    int m_block[24];               // +0x3c..0x9b  (rep stosl, 24 dwords)
+    i32 m_block[24];               // +0x3c..0x9b  (rep stosl, 24 dwords)
 };
 
 #endif // TILETRIGGERLOGIC_H

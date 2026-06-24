@@ -13,4 +13,4 @@ void CUserLogic::CUserLogic_0138d0() {}
 // @source: rtti-vptr
 // @stub
 RVA(0x00058cd0, 0x195)
-void CUserLogic::CUserLogic_058cd0(int) {}
+void CUserLogic::CUserLogic_058cd0(i32) {}

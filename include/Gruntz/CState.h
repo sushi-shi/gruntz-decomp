@@ -19,6 +19,8 @@
 // override the few they implement.
 #ifndef GRUNTZ_GRUNTZ_CSTATE_H
 #define GRUNTZ_GRUNTZ_CSTATE_H
+
+#include <Ints.h>
 #include <Gruntz/GameModeBase.h>
 
 struct CView; // +0x0c view holder; defined fully in CPlay.h, opaque elsewhere
@@ -34,26 +36,26 @@ public:
     virtual void Vfunc1();           // slot 1
     virtual void ReleaseResources(); // slot 2  (+0x8)  resource teardown (leaf override)
     virtual void Vfunc3();           // slot 3
-    virtual int Update();            // slot 4  (+0x10)  base default = return 1;
-    virtual int Render();            // slot 5  (+0x14)  base default = return 1;
-    virtual int Vslot06();           // slot 6  (+0x18)  activation-ready poll
-    virtual int Vslot07();           // slot 7  (+0x1c)  lobby-host-ready poll
-    virtual int InputVirtual();      // slot 8  (+0x20)  per-frame input poll
-    virtual int Vslot09(int);        // slot 9  (+0x24)  notify w/ state id
-    virtual int FrameSlot28(int);    // slot 10 (+0x28)  per-frame poll (leaf override)
+    virtual i32 Update();            // slot 4  (+0x10)  base default = return 1;
+    virtual i32 Render();            // slot 5  (+0x14)  base default = return 1;
+    virtual i32 Vslot06();           // slot 6  (+0x18)  activation-ready poll
+    virtual i32 Vslot07();           // slot 7  (+0x1c)  lobby-host-ready poll
+    virtual i32 InputVirtual();      // slot 8  (+0x20)  per-frame input poll
+    virtual i32 Vslot09(i32);        // slot 9  (+0x24)  notify w/ state id
+    virtual i32 FrameSlot28(i32);    // slot 10 (+0x28)  per-frame poll (leaf override)
     // CGruntzMgr's per-state forwarders (0x8d9d0..0x8dbe0) dispatch a 2-arg or
     // 3-arg notification into these slots; the int return / arg shapes are what
     // those forwarders' push/ret-N codegen needs (vtables not diffed).
-    virtual int Vslot0b(int, int);      // slot 11 (+0x2c)
-    virtual int Vslot0c(int, int);      // slot 12 (+0x30)
-    virtual int Vslot0d(int, int);      // slot 13 (+0x34)
-    virtual int Vslot0e(int, int, int); // slot 14 (+0x38)
-    virtual int Vslot0f(int, int, int); // slot 15 (+0x3c)
-    virtual int Vslot10(int, int, int); // slot 16 (+0x40)
-    virtual int Vslot11(int, int, int); // slot 17 (+0x44)
-    virtual int Vslot12(int, int, int); // slot 18 (+0x48)
-    virtual int Vslot13(int, int, int); // slot 19 (+0x4c)
-    virtual int Vslot14(int, int, int); // slot 20 (+0x50)
+    virtual i32 Vslot0b(i32, i32);      // slot 11 (+0x2c)
+    virtual i32 Vslot0c(i32, i32);      // slot 12 (+0x30)
+    virtual i32 Vslot0d(i32, i32);      // slot 13 (+0x34)
+    virtual i32 Vslot0e(i32, i32, i32); // slot 14 (+0x38)
+    virtual i32 Vslot0f(i32, i32, i32); // slot 15 (+0x3c)
+    virtual i32 Vslot10(i32, i32, i32); // slot 16 (+0x40)
+    virtual i32 Vslot11(i32, i32, i32); // slot 17 (+0x44)
+    virtual i32 Vslot12(i32, i32, i32); // slot 18 (+0x48)
+    virtual i32 Vslot13(i32, i32, i32); // slot 19 (+0x4c)
+    virtual i32 Vslot14(i32, i32, i32); // slot 20 (+0x50)
     virtual void Vslot15();
     virtual void Vslot16();
     virtual void Vslot17();
@@ -63,8 +65,8 @@ public:
     virtual void Vslot1b();
     virtual void Vslot1c();
     virtual void Vslot1d();
-    virtual int Vslot1e(int, int);               // slot 30 (+0x78)  (a0, a2) -> handled flag
-    virtual void BeginFrameClear(int, int, int); // slot 31 (+0x7c)
+    virtual i32 Vslot1e(i32, i32);               // slot 30 (+0x78)  (a0, a2) -> handled flag
+    virtual void BeginFrameClear(i32, i32, i32); // slot 31 (+0x7c)
     virtual void Vslot20();
     virtual void Vslot21();
     virtual void Vslot22();
@@ -76,51 +78,51 @@ public:
     virtual void RenderFast(); // slot 40 (+0xa0)
 
     // Non-virtual leaf (matched): seeds the begin-clear params.
-    int SetBeginClearParams(int unused, int arg2, int arg3);
+    i32 SetBeginClearParams(i32 unused, i32 arg2, i32 arg3);
     // Non-virtual exit notification (reloc-masked; called by ExitModalUI).
-    void NotifyExit(int code);
+    void NotifyExit(i32 code);
 
     // --- scalar members, at the offsets CState::CState pins ---
     void* m_4;  // +0x04  owner back-ptr (CGMOwner / CWorld view)
-    int m_8;    // +0x08
+    i32 m_8;    // +0x08
     CView* m_c; // +0x0c  view/anim holder (CGMView / CView view)
     char m_pad10[0x14 - 0x10];
-    int m_14; // +0x14
-    int m_18; // +0x18
+    i32 m_14; // +0x14
+    i32 m_18; // +0x18
     char m_pad1c[0x24 - 0x1c];
-    int m_24; // +0x24
-    int m_28; // +0x28
-    int m_2c; // +0x2c
+    i32 m_24; // +0x24
+    i32 m_28; // +0x28
+    i32 m_2c; // +0x2c
     char m_pad30[0x38 - 0x30];
-    int m_38; // +0x38
-    int m_3c; // +0x3c
+    i32 m_38; // +0x38
+    i32 m_3c; // +0x3c
     char m_pad40[0x4c - 0x40];
     char m_4c; // +0x4c (byte)
     char m_pad4d[0x150 - 0x4d];
-    int m_150; // +0x150 BeginFrameClear arg
-    int m_154; // +0x154 BeginFrameClear arg
-    int m_158; // +0x158 drag/select snap origin X
-    int m_15c; // +0x15c drag/select snap origin Y
+    i32 m_150; // +0x150 BeginFrameClear arg
+    i32 m_154; // +0x154 BeginFrameClear arg
+    i32 m_158; // +0x158 drag/select snap origin X
+    i32 m_15c; // +0x15c drag/select snap origin Y
     // +0x160..+0x1a4: the per-axis scroll/input state block StepInputA walks
     // (two mirrored halves; four extents seeded to 0x40 by the ctor).
-    int m_160; // +0x160 first-half axis value
-    int m_164; // +0x164 second-half axis value
-    int m_168; // +0x168 first-half block (addr taken)
-    int m_16c;
-    int m_170; // +0x170 (= 0x40)
-    int m_174; // +0x174 (= 0x40)
-    int m_178; // +0x178 second-half block (addr taken)
-    int m_17c;
-    int m_180; // +0x180 (= 0x40)
-    int m_184; // +0x184 (= 0x40)
-    int m_188; // +0x188 first-half {x,y} edge feed
-    int m_18c; // +0x18c
-    int m_190;
-    int m_194;
-    int m_198; // +0x198 second-half {x,y} edge feed
-    int m_19c;
-    int m_1a0;
-    int m_1a4;
+    i32 m_160; // +0x160 first-half axis value
+    i32 m_164; // +0x164 second-half axis value
+    i32 m_168; // +0x168 first-half block (addr taken)
+    i32 m_16c;
+    i32 m_170; // +0x170 (= 0x40)
+    i32 m_174; // +0x174 (= 0x40)
+    i32 m_178; // +0x178 second-half block (addr taken)
+    i32 m_17c;
+    i32 m_180; // +0x180 (= 0x40)
+    i32 m_184; // +0x184 (= 0x40)
+    i32 m_188; // +0x188 first-half {x,y} edge feed
+    i32 m_18c; // +0x18c
+    i32 m_190;
+    i32 m_194;
+    i32 m_198; // +0x198 second-half {x,y} edge feed
+    i32 m_19c;
+    i32 m_1a0;
+    i32 m_1a4;
 
     void BuildWarpStoneGlitterAnimation();
     void LoadGruntEffectSprites();

@@ -3,11 +3,11 @@
 
 class RezSync {
 public:
-    void Init(int, int);
+    void Init(i32, i32);
 };
 
 // @confidence: high
 // @source: rez-trace
 // @stub
 RVA(0x00083450, 0x192d)
-void RezSync::Init(int, int) {}
+void RezSync::Init(i32, i32) {}

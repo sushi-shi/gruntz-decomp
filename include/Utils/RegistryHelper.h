@@ -5,6 +5,8 @@
 #ifndef UTILS_REGISTRYHELPER_H
 #define UTILS_REGISTRYHELPER_H
 
+#include <Ints.h>
+
 // ---------------------------------------------------------------------------
 // Reg* (ADVAPI32) + HKEY/DWORD/REGSAM/... come from the real <windows.h>
 // (winreg.h), pulled the MFC-controlled way via <Mfc.h>.
@@ -34,7 +36,7 @@ namespace Utils {
         ~RegistryHelper() {
             Close();
         }
-        int Open(
+        i32 Open(
             char* szKeyName1,
             char* szKeyName2,
             char* szKeyName3,
@@ -42,20 +44,20 @@ namespace Utils {
             HKEY hKey,
             char* szSubKey
         );
-        int InitializeLastKey(char* szLastKey);
+        i32 InitializeLastKey(char* szLastKey);
         char* GetValueString(
             char* szValueName,
             char* szValueBuffer,
-            unsigned int* pValueBufferSize,
+            u32* pValueBufferSize,
             char* szDefault
         );
         DWORD GetValueDword(char* szValueName, DWORD valueDefault);
-        int SetValueString(char* szValueName, char* szValue);
-        int SetValueDword(char* szValueName, DWORD value);
+        i32 SetValueString(char* szValueName, char* szValue);
+        i32 SetValueDword(char* szValueName, DWORD value);
         void Close();
-        int GetRegistryKey(HKEY hKey, char* szSubKey, PHKEY phKeyResult);
+        i32 GetRegistryKey(HKEY hKey, char* szSubKey, PHKEY phKeyResult);
 
-        int m_0;           // +0x00  open/result gate
+        i32 m_0;           // +0x00  open/result gate
         HKEY m_4;          // +0x04  base HKEY
         HKEY m_8;          // +0x08
         HKEY m_c;          // +0x0c

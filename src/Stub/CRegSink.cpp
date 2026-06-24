@@ -3,10 +3,10 @@
 
 class CRegSink {
 public:
-    void Post(int, int);
+    void Post(i32, i32);
 };
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @stub
 RVA(0x00003616, 0x5)
-void CRegSink::Post(int, int) {}
+void CRegSink::Post(i32, i32) {}

@@ -5,7 +5,7 @@
 // CInGameIcon : CUserLogic (RTTI). sizeof 0x80.
 class CInGameIcon : public CUserLogic {
 public:
-    CInGameIcon(int);
+    CInGameIcon(i32);
     char m_size_pad[0x40]; // own region over CUserLogic (0x40)
 };
 SIZE(CInGameIcon, 0x80);

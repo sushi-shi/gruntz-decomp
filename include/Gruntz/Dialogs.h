@@ -19,6 +19,8 @@
 #ifndef SRC_GRUNTZ_DIALOGS_H
 #define SRC_GRUNTZ_DIALOGS_H
 
+#include <Ints.h>
+
 // ---------------------------------------------------------------------------
 // Minimal MFC base models. Only the exact mangled symbol + the calling
 // convention/arg shape are load-bearing; the bodies live in NAFXCW and are
@@ -52,12 +54,12 @@ public:
 // the offsets the disasm pins (+0x5c upward).
 class CDialog {
 public:
-    CDialog(unsigned int nIDTemplate, CWnd* pParent);
+    CDialog(u32 nIDTemplate, CWnd* pParent);
     virtual ~CDialog(); // (gives CDialog its vptr @+0x00)
     // GetDlgItem - the NAFXCW __thiscall resolver (control ID -> child CWnd*),
     // reached by call-rel32 (external/no-body so it reloc-masks). Inherited by the
     // dialog subclasses; their accessors tail-call it on `this`.
-    CWnd* GetDlgItem(int nID) const;
+    CWnd* GetDlgItem(i32 nID) const;
     char m_body[0x5c - 4]; // pad to 0x5c (vptr occupies +0x00)
 };
 
@@ -74,29 +76,29 @@ struct CBattlezSlot {
 
 class CBattlezDlg : public CDialog {
 public:
-    CBattlezDlg(int a0, CWnd* pParent);
+    CBattlezDlg(i32 a0, CWnd* pParent);
 
-    int m_5c;        // +0x5c  (= a0; also reused as the CBattlezSlot* slot-array base)
+    i32 m_5c;        // +0x5c  (= a0; also reused as the CBattlezSlot* slot-array base)
     char m_pad60[8]; // +0x60
-    int m_68;        // +0x68  (= 0)
+    i32 m_68;        // +0x68  (= 0)
     CString m_6c;    // +0x6c  (default CString)
 
     // Control accessors: switch(index) -> GetDlgItem(constID). Four families,
     // each over a 4-entry control-ID table.
-    CWnd* GetCtrlA(int index);
-    CWnd* GetCtrlB(int index);
-    CWnd* GetCtrlC(int index);
-    CWnd* GetCtrlD(int index);
+    CWnd* GetCtrlA(i32 index);
+    CWnd* GetCtrlB(i32 index);
+    CWnd* GetCtrlC(i32 index);
+    CWnd* GetCtrlD(i32 index);
     // SetCtrlBText - GetCtrlB(index)->SetWindowTextA(text).
-    void SetCtrlBText(int index, const char* text);
+    void SetCtrlBText(i32 index, const char* text);
     // SetSlotValue - store val into slot[index].field@0x158; returns TRUE.
-    int SetSlotValue(int index, int val);
+    i32 SetSlotValue(i32 index, i32 val);
 
-    int winapi_016cd0_InvalidateRect();
-    int winapi_016dc0_InvalidateRect();
-    int winapi_016e90_InvalidateRect();
-    int winapi_016f60_InvalidateRect();
-    int winapi_0171b0_GetWindow_SendMessageA();
+    i32 winapi_016cd0_InvalidateRect();
+    i32 winapi_016dc0_InvalidateRect();
+    i32 winapi_016e90_InvalidateRect();
+    i32 winapi_016f60_InvalidateRect();
+    i32 winapi_0171b0_GetWindow_SendMessageA();
 };
 
 // ---------------------------------------------------------------------------
@@ -116,12 +118,12 @@ public:
 // ---------------------------------------------------------------------------
 class CBattlezDlgColors : public CDialog {
 public:
-    CBattlezDlgColors(int a0, int a1, int a2, CWnd* pParent);
+    CBattlezDlgColors(i32 a0, i32 a1, i32 a2, CWnd* pParent);
 
-    int m_5c; // +0x5c  (= a0)
-    int m_60; // +0x60  (= a1)
-    int m_64; // +0x64  (= 0)
-    int m_68; // +0x68  (= a2)
+    i32 m_5c; // +0x5c  (= a0)
+    i32 m_60; // +0x60  (= a1)
+    i32 m_64; // +0x64  (= 0)
+    i32 m_68; // +0x68  (= a2)
 };
 
 // ---------------------------------------------------------------------------
@@ -131,15 +133,15 @@ public:
 // ---------------------------------------------------------------------------
 class CMultiStartDlg : public CDialog {
 public:
-    CMultiStartDlg(int a0, CWnd* pParent);
+    CMultiStartDlg(i32 a0, CWnd* pParent);
 
     // Engine-label backlog stub (non-virtual placeholder; vtable-neutral).
     void InitPlayerSlots();
 
-    int m_5c;        // +0x5c  (= a0)
-    int m_60;        // +0x60  (= 0)
+    i32 m_5c;        // +0x5c  (= a0)
+    i32 m_60;        // +0x60  (= 0)
     char m_pad64[8]; // +0x64
-    int m_6c;        // +0x6c  (= 0)
+    i32 m_6c;        // +0x6c  (= 0)
     CString m_70;    // +0x70  (default CString)
     CObList m_74;    // +0x74  (CObList(0xa))
 };

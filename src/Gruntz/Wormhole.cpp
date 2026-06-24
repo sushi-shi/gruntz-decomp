@@ -36,7 +36,7 @@ extern CButeMgr g_buteMgr;
 // pointer to the color table; the wormhole color id (m_128) indexes it at
 // [m_128*4 + 0x14]. Declared int* to match g_gameReg (the target's reloc).
 DATA(0x0024556c)
-extern int* g_gameReg;
+extern i32* g_gameReg;
 
 // The "Wormhole" config group + the three color keys (the original source string
 // literals; objdiff matches these .data relocations by value against the target).
@@ -51,13 +51,13 @@ extern int* g_gameReg;
 // ---------------------------------------------------------------------------
 struct CWormholeState {
     char m_pad00[0x4c];
-    int m_4c; // +0x4c  draw color entry (= colorTable[m_128*4+0x14])
-    int m_50; // +0x50  (= 7)
+    i32 m_4c; // +0x4c  draw color entry (= colorTable[m_128*4+0x14])
+    i32 m_50; // +0x50  (= 7)
     char m_pad54[4];
-    int m_58; // +0x58  (= 1)
+    i32 m_58; // +0x58  (= 1)
     char m_pad5c[0x124 - 0x5c];
-    int m_124; // +0x124 wormhole kind discriminator (2/1/other)
-    int m_128; // +0x128 resolved color id (cached; indexes the reg table)
+    i32 m_124; // +0x124 wormhole kind discriminator (2/1/other)
+    i32 m_128; // +0x128 resolved color id (cached; indexes the reg table)
 };
 
 // CWormhole - the world teleport node. The state/draw sub-object pointer lives at
@@ -104,8 +104,8 @@ void CWormhole::LoadColors() {
     // stores; g_gameReg[+0x78] is the color table, indexed at [m_128*4 + 0x14]
     // (== table[m_128 + 5]). Store order m_58 / m_50 / m_4c.
     CWormholeState* s = m_10;
-    int* colorTable = ((int**)g_gameReg)[0x78 / 4];
-    int colorEntry = colorTable[s->m_128 + 0x14 / 4];
+    i32* colorTable = ((i32**)g_gameReg)[0x78 / 4];
+    i32 colorEntry = colorTable[s->m_128 + 0x14 / 4];
     s->m_58 = 1;
     s->m_50 = 7;
     s->m_4c = colorEntry;

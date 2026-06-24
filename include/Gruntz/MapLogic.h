@@ -40,8 +40,8 @@ struct CMapArchive {
     virtual void Slot20();
     virtual void Slot24();
     virtual void Slot28();
-    virtual int Read(void* buf, int n);  // +0x2c
-    virtual int Write(void* buf, int n); // +0x30
+    virtual i32 Read(void* buf, i32 n);  // +0x2c
+    virtual i32 Write(void* buf, i32 n); // +0x30
 };
 
 // The serializable float curve (a monotone lookup ramp in .data at VA 0x64cfb0;
@@ -54,7 +54,7 @@ extern float g_mapCurve[12]; // 0x64cfb0..0x64cfddf slice the serializer touches
 // nodes from (shared with Projectile.cpp / BattlezMapConfig.cpp). The node body
 // pointer is recovered as (slot - g_freeListNodeBias).
 extern void* g_freeList;       // ?g_freeList@@3PAXA            (VA 0x645544)
-extern int g_freeListNodeBias; // ?g_freeListNodeBias@@3HA      (VA 0x64554c)
+extern i32 g_freeListNodeBias; // ?g_freeListNodeBias@@3HA      (VA 0x64554c)
 
 // ---------------------------------------------------------------------------
 // CObArray-like MFC pointer array embedded at CMapLogic+0x7c. The CObject-derived
@@ -62,12 +62,12 @@ extern int g_freeListNodeBias; // ?g_freeListNodeBias@@3HA      (VA 0x64554c)
 // m_nGrowBy@+0x10} = 0x14 bytes. SetSize @0x1b4f75 (__thiscall, ret 8) is called
 // on it with ecx = &m_arr. Modeled with a no-body SetSize so the call reloc-masks.
 struct CMapPtrArray {
-    void SetSize(int n, int growBy); // 0x1b4f75 (__thiscall)
+    void SetSize(i32 n, i32 growBy); // 0x1b4f75 (__thiscall)
     void* m_vtbl;                    // +0x00
     void** m_pData;                  // +0x04  the pointer array body
-    int m_nSize;                     // +0x08  element count
-    int m_nMaxSize;                  // +0x0c
-    int m_nGrowBy;                   // +0x10
+    i32 m_nSize;                     // +0x08  element count
+    i32 m_nMaxSize;                  // +0x0c
+    i32 m_nGrowBy;                   // +0x10
 };
 
 // ---------------------------------------------------------------------------
@@ -84,7 +84,7 @@ public:
     // The +0x7c pointer-array serializer (0x082430) + its tear-down helper
     // (0x085480). __thiscall; both free the array's nodes back to g_freeList,
     // resize the CObArray via SetSize, and dispatch the archive read/write slots.
-    int SerializeNodes(CMapArchive* ar, int mode, int a2, int a3); // 0x082430
+    i32 SerializeNodes(CMapArchive* ar, i32 mode, i32 a2, i32 a3); // 0x082430
     void FreeNodes();                                              // 0x085480
 
     // The grid-reset cleanup the tear-down chains (0x9ec30, __thiscall, no args).
@@ -96,13 +96,13 @@ public:
     // +0x00..+0x3f). Only the touched offsets are named.
     char m_pad40[0x7c - 0x40];
     CMapPtrArray m_arr; // +0x7c  CObArray (m_pData@+0x80, m_nSize@+0x84)
-    int m_90;           // +0x90  scratch dword the node serializer streams
+    i32 m_90;           // +0x90  scratch dword the node serializer streams
 };
 
 // 0xec230: the float-curve serializer. __cdecl free function (caller-cleanup,
 // `ret`); drives the archive's read/write slots over the g_mapCurve slice keyed by
 // `mode` (7=read via +0x2c, 4=write via +0x30). Declared at namespace scope.
-int MapSerializeCurve(CMapArchive* ar, int mode); // 0x0ec230
+i32 MapSerializeCurve(CMapArchive* ar, i32 mode); // 0x0ec230
 
 // 0x9f7f0: a tiny polymorphic Visit - reads [ecx] as a vtable and calls slot +0x08
 // (mode 4) or +0x0c (mode 7) with the buffer arg, returning 1 unless the slot
@@ -110,11 +110,11 @@ int MapSerializeCurve(CMapArchive* ar, int mode); // 0x0ec230
 // first two used. The visited object's slots +0x08 / +0x0c are modeled polymorphic
 // (decls only) so `mov edx,[ecx]; push buf; call [edx+8]` falls out.
 struct CMapVisitTarget {
-    virtual int Slot00();
-    virtual int Slot04();
-    virtual int Slot08(void* buf);                  // +0x08 (mode 4)
-    virtual int Slot0C(void* buf);                  // +0x0c (mode 7)
-    int Visit(void* buf, int mode, int a2, int a3); // 0x09f7f0 (__thiscall)
+    virtual i32 Slot00();
+    virtual i32 Slot04();
+    virtual i32 Slot08(void* buf);                  // +0x08 (mode 4)
+    virtual i32 Slot0C(void* buf);                  // +0x0c (mode 7)
+    i32 Visit(void* buf, i32 mode, i32 a2, i32 a3); // 0x09f7f0 (__thiscall)
 };
 
 #endif // GRUNTZ_MAPLOGIC_H

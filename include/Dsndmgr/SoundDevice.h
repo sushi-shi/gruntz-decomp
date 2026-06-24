@@ -14,6 +14,8 @@
 #ifndef DSNDMGR_SOUNDDEVICE_H
 #define DSNDMGR_SOUNDDEVICE_H
 
+#include <Ints.h>
+
 #include <Dsndmgr/DirectSoundMgr.h>
 
 // One owned sound-buffer wrapper as the device sees it in its +0x04 collection.
@@ -28,7 +30,7 @@ struct SoundBuf {
     IDirectSoundBufferZ* m_buf0c; // +0x0c  the IDirectSoundBuffer to release
     char m_pad10[0x14 - 0x10];
 
-    int StopAndRewind();  // 0x135380  (buffer method)
+    i32 StopAndRewind();  // 0x135380  (buffer method)
     void StopAllClones(); // 0x136150  (buffer method)
 };
 
@@ -49,9 +51,9 @@ public:
     void Shutdown();                   // 0x136690  release every owned buffer, primary, device
     void RemoveBuffer(SoundBuf* node); // 0x136d80  reap voices + release + unlink one buffer
     void StopAll();                    // 0x136de0  StopAndRewind+StopAllClones over the buffer list
-    int FreeSamples(); // 0x136ed0  free + unlink every cached sample in the +0x0c list
-    int SetPrimaryFormat(void* fmt); // 0x1371a0  CreatePrimaryBuffer + primary SetFormat
-    int CreatePrimaryBuffer();       // 0x137260  (extern, defined elsewhere)
+    i32 FreeSamples(); // 0x136ed0  free + unlink every cached sample in the +0x0c list
+    i32 SetPrimaryFormat(void* fmt); // 0x1371a0  CreatePrimaryBuffer + primary SetFormat
+    i32 CreatePrimaryBuffer();       // 0x137260  (extern, defined elsewhere)
 
     // --- layout ---------------------------------------------------------------
     void* m_vtbl;        // +0x00
@@ -61,11 +63,11 @@ public:
     char m_pad10[0x14 - 0x10];
     IDirectSoundZ* m_14; // +0x14  the IDirectSound device
     char m_pad18[0x78 - 0x18];
-    int m_78; // +0x78  "initialized" flag
+    i32 m_78; // +0x78  "initialized" flag
     char m_pad7c[0x84 - 0x7c];
     IDirectSoundBufferZ* m_84; // +0x84  primary buffer
     char m_pad88[0x90 - 0x88];
-    int m_90;   // +0x90
+    i32 m_90;   // +0x90
     void* m_94; // +0x94  cached-sample list/map head
 };
 

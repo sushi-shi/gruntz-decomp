@@ -22,75 +22,75 @@ struct CGameReg {
     char m_pad30[0x58 - 0x30];
     void* m_58; // +0x58
     char m_pad5c[0x100 - 0x5c];
-    int m_100; // +0x100
+    i32 m_100; // +0x100
     char m_pad104[0x118 - 0x104];
-    int m_118; // +0x118
+    i32 m_118; // +0x118
     char m_pad11c[0x130 - 0x11c];
-    int m_130; // +0x130
-    int m_134; // +0x134
+    i32 m_130; // +0x130
+    i32 m_134; // +0x134
     char m_pad138[0x378 - 0x138];
-    int m_378; // +0x378
+    i32 m_378; // +0x378
     char m_pad37c[0x5b0 - 0x37c];
-    int m_5b0; // +0x5b0
+    i32 m_5b0; // +0x5b0
     char m_pad5b4[0x7e8 - 0x5b4];
-    int m_7e8; // +0x7e8
+    i32 m_7e8; // +0x7e8
     char m_pad7ec[0xa20 - 0x7ec];
-    int m_a20;                            // +0xa20
-    void Method92340(int state);          // __thiscall helper at RVA 0x92340
-    void Method3df5(int state);           // __thiscall helper at RVA 0x3df5
-    void ReportError(unsigned int, long); // CGruntzMgr::ReportError, RVA 0x346d
-    struct GameObj510* GetActive355d();   // __thiscall accessor, RVA 0x355d
+    i32 m_a20;                          // +0xa20
+    void Method92340(i32 state);        // __thiscall helper at RVA 0x92340
+    void Method3df5(i32 state);         // __thiscall helper at RVA 0x3df5
+    void ReportError(u32, i32);         // CGruntzMgr::ReportError, RVA 0x346d
+    struct GameObj510* GetActive355d(); // __thiscall accessor, RVA 0x355d
 };
 struct GameObj510 {
     char m_pad0[0x510];
-    int m_510; // +0x510
+    i32 m_510; // +0x510
 };
 DATA(0x0064556c)
 extern CGameReg* g_gameReg;
 
 // Miles Sound System (AIL) imports - reached through the IAT (ff 15 [__imp]).
 extern "C" {
-    __declspec(dllimport) int __stdcall AIL_set_XMIDI_master_volume(int driver, int volume);
-    __declspec(dllimport) int __stdcall AIL_start_sequence(int seq);
-    __declspec(dllimport) int __stdcall AIL_set_sequence_loop_count(int seq, int count);
-    __declspec(dllimport) int __stdcall AIL_resume_sequence(int seq);
+    __declspec(dllimport) i32 __stdcall AIL_set_XMIDI_master_volume(i32 driver, i32 volume);
+    __declspec(dllimport) i32 __stdcall AIL_start_sequence(i32 seq);
+    __declspec(dllimport) i32 __stdcall AIL_set_sequence_loop_count(i32 seq, i32 count);
+    __declspec(dllimport) i32 __stdcall AIL_resume_sequence(i32 seq);
     __declspec(dllimport) void __stdcall AIL_startup();
-    __declspec(dllimport) int __stdcall AIL_midiOutOpen(int* driver, int dunno, int devid);
-    __declspec(dllimport) int __stdcall AIL_XMIDI_master_volume(int driver);
-    __declspec(dllimport) void __stdcall AIL_end_sequence(int seq);
-    __declspec(dllimport) void __stdcall AIL_set_sequence_tempo(int seq, int tempo, int ms);
+    __declspec(dllimport) i32 __stdcall AIL_midiOutOpen(i32* driver, i32 dunno, i32 devid);
+    __declspec(dllimport) i32 __stdcall AIL_XMIDI_master_volume(i32 driver);
+    __declspec(dllimport) void __stdcall AIL_end_sequence(i32 seq);
+    __declspec(dllimport) void __stdcall AIL_set_sequence_tempo(i32 seq, i32 tempo, i32 ms);
     __declspec(dllimport) void __stdcall AIL_shutdown();
-    __declspec(dllimport) void __stdcall AIL_stop_sequence(int seq);
-    __declspec(dllimport) void __stdcall AIL_set_sequence_volume(int seq, int volume, int ms);
-    __declspec(dllimport) void __stdcall AIL_release_sequence_handle(int seq);
+    __declspec(dllimport) void __stdcall AIL_stop_sequence(i32 seq);
+    __declspec(dllimport) void __stdcall AIL_set_sequence_volume(i32 seq, i32 volume, i32 ms);
+    __declspec(dllimport) void __stdcall AIL_release_sequence_handle(i32 seq);
 }
 
 // The AIL MIDI driver handle (DAT_00653c5c), 0 when no driver is open.
 DATA(0x00653c5c)
-extern int g_ailMidiDriver;
+extern i32 g_ailMidiDriver;
 
 // Cached AIL driver handle passed to AIL_set_* (DAT_00653c64).
 DATA(0x00653c64)
-extern int g_ailDriver64;
+extern i32 g_ailDriver64;
 
 // MS-CRT-style LCG RNG state shared by the timeGetTime random helpers.
 DATA(0x006c127d)
 extern char g_rngSeeded; // bit0 set once the generator has been seeded
 DATA(0x006c1288)
-extern int g_rngState; // the current 32-bit LCG state
+extern i32 g_rngState; // the current 32-bit LCG state
 
 // Per-frame cached random bit used by the deterministic coin-flip helper.
 DATA(0x0064c22c)
 extern char g_coinRolled; // bit0 set once this frame's coin was rolled
 DATA(0x0064c26c)
-extern int g_coinValue; // the cached 0/1 result
+extern i32 g_coinValue; // the cached 0/1 result
 
 // GetDlgItem(hWnd,0x4b6) cache (DAT_00648ce0), shared by several timer wrappers.
 DATA(0x00648ce0)
 extern HWND g_dlgItem_648ce0;
 
 // The Rez heap allocator (_RezAlloc, defined in EngineExternFns.cpp).
-extern "C" void* RezAlloc(unsigned int size);
+extern "C" void* RezAlloc(u32 size);
 
 namespace ApiCallerStubs {
     // Fake placeholder host: these ApiCaller stubs are __thiscall (disasm shows
@@ -98,154 +98,171 @@ namespace ApiCallerStubs {
     // Membership surfaces the implicit `this` + __thiscall ABI; explicit args are
     // the N/4 from the callee's `ret N`.
     struct ThisStubOwnerUnknown {
-        int winapi_015fe0_SendMessageA(int);
-        int winapi_017030_GetWindow();
-        int winapi_023090_PostMessageA(int);
-        int winapi_032ce0_IntersectRect(int);
-        int winapi_04a9f0_CopyRect_OffsetRect();
-        int winapi_057db0_IntersectRect();
-        int winapi_075c60_CopyRect_SetRect(int, int, int, int, int, int);
-        int winapi_08f340_PostMessageA();
-        int winapi_0b6b40_timeGetTime_wsprintfA();
-        int winapi_0b6e90_SetRect();
-        int winapi_0bb700_GetAsyncKeyState_Sleep_timeGetTime_wsprintfA();
-        int winapi_0bba10_Sleep(int);
-        int winapi_0c46b0_KillTimer_timeGetTime_wsprintfA();
-        int winapi_0c7ec0_timeGetTime(int, int, int);
-        int winapi_0c8a10_GetCursorPos(int);
-        int winapi_0cbaf0_PostMessageA(int, int);
-        int winapi_0d5f90_SetRect(int, int, int, int);
-        int winapi_0d60b0_wsprintfA();
-        int winapi_0d7520_wsprintfA(int, int, int, int);
-        int winapi_0d8c60_SetRect();
-        int winapi_0d95f0_wsprintfA();
-        int winapi_0e6020_SetRect(int, int, int, int, int, int, int, int, int, int);
-        int winapi_0ecc90_IntersectRect();
-        int winapi_0ed9f0_PtInRect();
-        int winapi_0f0e20_IntersectRect_PtInRect();
-        int winapi_0f42f0_PtInRect();
-        int winapi_0f60f0_IntersectRect();
-        int winapi_0fe520_SetRect();
-        int winapi_11b3b0_timeGetTime(int, int, int, int, int, int);
-        int winapi_136fe0_timeGetTime(int, int, int, int, int, int);
-        int winapi_13f460_CopyRect(int, int);
-        int winapi_1480a0_timeGetTime();
-        int winapi_1485b0_CreateDCA_DeleteDC_GetSystemPaletteEntries();
-        int winapi_1538c0_CopyRect(int, int);
-        int winapi_153b20_CopyRect(int, int);
-        int winapi_153d90_CopyRect(int, int);
-        int winapi_153ff0_CopyRect(int, int);
-        int winapi_154270_CopyRect(int, int);
-        int winapi_1544d0_CopyRect(int, int);
-        int winapi_154750_CopyRect(int, int);
-        int winapi_168080_SetRect(int, int, int, int, int, int, int, int);
-        int winapi_174fe0_GetDC_ReleaseDC_SelectPalette(int, int, int, int);
-        int winapi_1750e0_GetDC_ReleaseDC_SelectPalette(int, int, int, int, int);
-        int winapi_1751f0_GetDC_ReleaseDC_SelectPalette(int, int, int);
-        int winapi_1752f0_GetDC_ReleaseDC_SelectPalette(int, int);
-        int winapi_1753f0_GetDC_ReleaseDC_SelectPalette(int, int);
-        int winapi_17c3f0_ShowCursor(
-            int,
-            int,
-            int,
-            int,
-            int,
-            int,
-            int,
-            int,
-            int,
-            int,
-            int,
-            int,
-            int,
-            int,
-            int,
-            int,
-            int,
-            int,
-            int,
-            int,
-            int,
-            int,
-            int,
-            int,
-            int,
-            int,
-            int,
-            int,
-            int,
-            int,
-            int
+        i32 winapi_015fe0_SendMessageA(i32);
+        i32 winapi_017030_GetWindow();
+        i32 winapi_023090_PostMessageA(i32);
+        i32 winapi_032ce0_IntersectRect(i32);
+        i32 winapi_04a9f0_CopyRect_OffsetRect();
+        i32 winapi_057db0_IntersectRect();
+        i32 winapi_075c60_CopyRect_SetRect(i32, i32, i32, i32, i32, i32);
+        i32 winapi_08f340_PostMessageA();
+        i32 winapi_0b6b40_timeGetTime_wsprintfA();
+        i32 winapi_0b6e90_SetRect();
+        i32 winapi_0bb700_GetAsyncKeyState_Sleep_timeGetTime_wsprintfA();
+        i32 winapi_0bba10_Sleep(i32);
+        i32 winapi_0c46b0_KillTimer_timeGetTime_wsprintfA();
+        i32 winapi_0c7ec0_timeGetTime(i32, i32, i32);
+        i32 winapi_0c8a10_GetCursorPos(i32);
+        i32 winapi_0cbaf0_PostMessageA(i32, i32);
+        i32 winapi_0d5f90_SetRect(i32, i32, i32, i32);
+        i32 winapi_0d60b0_wsprintfA();
+        i32 winapi_0d7520_wsprintfA(i32, i32, i32, i32);
+        i32 winapi_0d8c60_SetRect();
+        i32 winapi_0d95f0_wsprintfA();
+        i32 winapi_0e6020_SetRect(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32);
+        i32 winapi_0ecc90_IntersectRect();
+        i32 winapi_0ed9f0_PtInRect();
+        i32 winapi_0f0e20_IntersectRect_PtInRect();
+        i32 winapi_0f42f0_PtInRect();
+        i32 winapi_0f60f0_IntersectRect();
+        i32 winapi_0fe520_SetRect();
+        i32 winapi_11b3b0_timeGetTime(i32, i32, i32, i32, i32, i32);
+        i32 winapi_136fe0_timeGetTime(i32, i32, i32, i32, i32, i32);
+        i32 winapi_13f460_CopyRect(i32, i32);
+        i32 winapi_1480a0_timeGetTime();
+        i32 winapi_1485b0_CreateDCA_DeleteDC_GetSystemPaletteEntries();
+        i32 winapi_1538c0_CopyRect(i32, i32);
+        i32 winapi_153b20_CopyRect(i32, i32);
+        i32 winapi_153d90_CopyRect(i32, i32);
+        i32 winapi_153ff0_CopyRect(i32, i32);
+        i32 winapi_154270_CopyRect(i32, i32);
+        i32 winapi_1544d0_CopyRect(i32, i32);
+        i32 winapi_154750_CopyRect(i32, i32);
+        i32 winapi_168080_SetRect(i32, i32, i32, i32, i32, i32, i32, i32);
+        i32 winapi_174fe0_GetDC_ReleaseDC_SelectPalette(i32, i32, i32, i32);
+        i32 winapi_1750e0_GetDC_ReleaseDC_SelectPalette(i32, i32, i32, i32, i32);
+        i32 winapi_1751f0_GetDC_ReleaseDC_SelectPalette(i32, i32, i32);
+        i32 winapi_1752f0_GetDC_ReleaseDC_SelectPalette(i32, i32);
+        i32 winapi_1753f0_GetDC_ReleaseDC_SelectPalette(i32, i32);
+        i32 winapi_17c3f0_ShowCursor(
+            i32,
+            i32,
+            i32,
+            i32,
+            i32,
+            i32,
+            i32,
+            i32,
+            i32,
+            i32,
+            i32,
+            i32,
+            i32,
+            i32,
+            i32,
+            i32,
+            i32,
+            i32,
+            i32,
+            i32,
+            i32,
+            i32,
+            i32,
+            i32,
+            i32,
+            i32,
+            i32,
+            i32,
+            i32,
+            i32,
+            i32
         );
-        int winapi_17e620_GetTickCount(int, int, int);
-        int winapi_17fe00_timeGetTime(int);
-        int winapi_1804a0_PtInRect(int);
-        int winapi_1d4a18_FreeLibrary();
-        int
-        thirdparty_138c20_AIL_allocate_sequence_handle_4_AIL_init_sequence_12_AIL_(int, int, int);
-        int directx_wrapper_caller_1644a0_DirectDrawCreate_DirectDrawEnumerateA(int, int, int);
-        int
-        thirdparty_winapi_17c790_SmackWait_4_DispatchMessageA_PeekMessageA_TranslateMessa(int, int);
-        int thirdparty_17c8e0_SmackGoto_8_SmackWait_4(int, int);
-        int thirdparty_17caa0_SmackDoFrame_4_SmackNextFrame_4_SmackToBuffer_28();
+        i32 winapi_17e620_GetTickCount(i32, i32, i32);
+        i32 winapi_17fe00_timeGetTime(i32);
+        i32 winapi_1804a0_PtInRect(i32);
+        i32 winapi_1d4a18_FreeLibrary();
+        i32 thirdparty_138c20_AIL_allocate_sequence_handle_4_AIL_init_sequence_12_AIL_(
+            i32,
+            i32,
+            i32
+        );
+        i32 directx_wrapper_caller_1644a0_DirectDrawCreate_DirectDrawEnumerateA(i32, i32, i32);
+        i32 thirdparty_winapi_17c790_SmackWait_4_DispatchMessageA_PeekMessageA_TranslateMessa(
+            i32,
+            i32
+        );
+        i32 thirdparty_17c8e0_SmackGoto_8_SmackWait_4(i32, i32);
+        i32 thirdparty_17caa0_SmackDoFrame_4_SmackNextFrame_4_SmackToBuffer_28();
         void BootyState_OnActivate2_vfunc8();
-        int LoadChatBoxSprite(int arg1);
+        i32 LoadChatBoxSprite(i32 arg1);
         void LoadCreditzAssets2();
-        void BuildWorldLevelKey(int);
-        void LoadGruntAbilityTuning(int);
+        void BuildWorldLevelKey(i32);
+        void LoadGruntAbilityTuning(i32);
         void BuildGruntLoseItemAnimation();
-        void LoadGruntCombatAnimations(int, int, int, int, int, int, int, int);
-        void LoadGruntDeathAnimations(int, int);
+        void LoadGruntCombatAnimations(i32, i32, i32, i32, i32, i32, i32, i32);
+        void LoadGruntDeathAnimations(i32, i32);
         void LoadVehicleGruntAnimations();
         void BuildGruntExitAnimation();
-        void LoadBombGruntRunConfig(int, int);
-        void LoadPickupSprites(int, int, int, int, int);
+        void LoadBombGruntRunConfig(i32, i32);
+        void LoadPickupSprites(i32, i32, i32, i32, i32);
         void LoadBombGruntRunConfig2();
-        void LoadWingzGruntSprites(int);
+        void LoadWingzGruntSprites(i32);
         void LoadFreezeSpellAssets();
-        void LoadTeleporterGooConfig(int);
-        void LoadGruntCombatTuning(int, int, int, int, int);
-        void LoadFinishLevelSprite(int);
+        void LoadTeleporterGooConfig(i32);
+        void LoadGruntCombatTuning(i32, i32, i32, i32, i32);
+        void LoadFinishLevelSprite(i32);
         void LoadMonologoSprite();
         void LoadStateImages_vfunc8();
-        void LoadMenuSelectSprite(int);
+        void LoadMenuSelectSprite(i32);
         void LoadImageBanks_vfunc29();
-        void LoadSBITextEdges(int);
-        void LoadWarlordSprites(int, int);
-        int LoadActionTileSprites(int force);
-        int LoadLevelSounds(int force);
-        int LoadLevelImages(int force);
-        void BuildMusicCategoryTable(int);
-        void BuildWorldLevelPath(int);
+        void LoadSBITextEdges(i32);
+        void LoadWarlordSprites(i32, i32);
+        i32 LoadActionTileSprites(i32 force);
+        i32 LoadLevelSounds(i32 force);
+        i32 LoadLevelImages(i32 force);
+        void BuildMusicCategoryTable(i32);
+        void BuildWorldLevelPath(i32);
         void LoadLevelEffectSprites();
-        void BuildGruntNamespaceList(int);
-        void BuildWarlordNameTable(int);
-        void BuildSpriteImageKeyTable(int);
-        void BuildAnizKeyTable(int);
+        void BuildGruntNamespaceList(i32);
+        void BuildWarlordNameTable(i32);
+        void BuildSpriteImageKeyTable(i32);
+        void BuildAnizKeyTable(i32);
         void LoadLevelPreviewScreen();
-        void BuildToolToyColorKey(int);
-        void LookupToolToyColorKey(int);
-        int LoadGruntzPalette(int src, int name);
-        void BuildResourceTabStatusBar(int, int, int, int, int, int, int, int, int, int, int);
+        void BuildToolToyColorKey(i32);
+        void LookupToolToyColorKey(i32);
+        i32 LoadGruntzPalette(i32 src, i32 name);
+        void BuildResourceTabStatusBar(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32);
         void
-        BuildStatzTabStatusBar(int, int, int, int, int, int, int, int, int, int, int, int, int);
+            BuildStatzTabStatusBar(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32);
         void BuildStatzTabSmallSprite();
-        void
-        BuildMultiplayerTabStatusBar(int, int, int, int, int, int, int, int, int, int, int, int);
-        void LoadGameAssetNamespaces(int, int, int);
-        void UpdateDestructButtonStatusBar2(int);
-        void LoadGruntSpawnConfig(int, int, int, int, int);
+        void BuildMultiplayerTabStatusBar(
+            i32,
+            i32,
+            i32,
+            i32,
+            i32,
+            i32,
+            i32,
+            i32,
+            i32,
+            i32,
+            i32,
+            i32
+        );
+        void LoadGameAssetNamespaces(i32, i32, i32);
+        void UpdateDestructButtonStatusBar2(i32);
+        void LoadGruntSpawnConfig(i32, i32, i32, i32, i32);
         void DebugPrintf();
-        void Stub_1c152f(int);
-        void Stub_1ccae7(int, int, int);
-        void Stub_1ccbfc(int, int, int, int);
+        void Stub_1c152f(i32);
+        void Stub_1ccae7(i32, i32, i32);
+        void Stub_1ccbfc(i32, i32, i32, i32);
     };
 
     // @confidence: low
     // @source: winapi:CopyRect;SetRect
     // @stub
     RVA(0x0000c840, 0x13d)
-    int winapi_00c840_CopyRect_SetRect() {
+    i32 winapi_00c840_CopyRect_SetRect() {
         return 0;
     }
 
@@ -253,8 +270,8 @@ namespace ApiCallerStubs {
     // @source: winapi:timeGetTime
     // __cdecl rand(): lazily seed from timeGetTime, then advance the MS-CRT LCG.
     RVA(0x0000cd00, 0x46)
-    int winapi_00cd00_timeGetTime() {
-        int seed;
+    i32 winapi_00cd00_timeGetTime() {
+        i32 seed;
         if (!(g_rngSeeded & 1)) {
             g_rngSeeded |= 1;
             seed = timeGetTime();
@@ -271,22 +288,22 @@ namespace ApiCallerStubs {
     // LCG; coin-flip endpoints when the span is empty) and cache it + the params.
     struct RngBox_00cd70 {
         char m_pad0[0x40];
-        int m_40; // +0x40 lo
-        int m_44; // +0x44 hi
-        int m_48; // +0x48
-        int m_4c; // +0x4c
-        int m_50; // +0x50 rolled value
-        int m_54; // +0x54 (1 once rolled)
-        void Roll(int lo, int hi, int a3, int a4);
+        i32 m_40; // +0x40 lo
+        i32 m_44; // +0x44 hi
+        i32 m_48; // +0x48
+        i32 m_4c; // +0x4c
+        i32 m_50; // +0x50 rolled value
+        i32 m_54; // +0x54 (1 once rolled)
+        void Roll(i32 lo, i32 hi, i32 a3, i32 a4);
     };
     RVA(0x0000cd70, 0xe5)
-    void RngBox_00cd70::Roll(int lo, int hi, int a3, int a4) {
-        int span = hi - lo + 1;
+    void RngBox_00cd70::Roll(i32 lo, i32 hi, i32 a3, i32 a4) {
+        i32 span = hi - lo + 1;
         m_40 = lo;
         m_44 = hi;
         m_48 = a3;
         m_4c = a4;
-        int seed;
+        i32 seed;
         if (span == 0) {
             if (!(g_rngSeeded & 1)) {
                 g_rngSeeded |= 1;
@@ -319,7 +336,7 @@ namespace ApiCallerStubs {
     // @source: winapi:PostMessageA
     // @stub
     RVA(0x000143e0, 0xfb)
-    int winapi_0143e0_PostMessageA() {
+    i32 winapi_0143e0_PostMessageA() {
         return 0;
     }
 
@@ -327,16 +344,16 @@ namespace ApiCallerStubs {
     // @source: winapi:PostMessageA
     // __thiscall(code, _): on ESC/SPACE/ENTER post a 0x8023 command. Returns 1.
     struct CmdChain_014720 {
-        int m_0;
+        i32 m_0;
         CmdChain_014720* m_4; // +0x04
     };
     struct CmdHost_014720 {
-        int m_0;
+        i32 m_0;
         CmdChain_014720* m_4; // +0x04
-        int Key(int code, int unused);
+        i32 Key(i32 code, i32 unused);
     };
     RVA(0x00014720, 0x37)
-    int CmdHost_014720::Key(int code, int unused) {
+    i32 CmdHost_014720::Key(i32 code, i32 unused) {
         if (code == 0x20 || code == 0xd || code == 0x1b) {
             PostMessageA(m_4->m_4->m_4, 0x111, 0x8023, 0);
         }
@@ -347,7 +364,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetWindow;GetWindowLongA;SetWindowLongA
     // @stub
     RVA(0x00014d00, 0xa68)
-    int __stdcall winapi_014d00_GetWindow_GetWindowLongA_SetWindowLongA(int) {
+    i32 __stdcall winapi_014d00_GetWindow_GetWindowLongA_SetWindowLongA(i32) {
         return 0;
     }
 
@@ -359,12 +376,12 @@ namespace ApiCallerStubs {
         HWND m_hwnd; // +0x1c
     };
     // Dialog-item resolver at RVA 0x15ac0 (reached through the 0x1e7e jmp-thunk).
-    WndItem* __stdcall ResolveItem_15ac0(int id);
+    WndItem* __stdcall ResolveItem_15ac0(i32 id);
 
     // @source: winapi:SendMessageA
     // __stdcall(id, wParam): set the resolved item's listbox selection (0x14e).
     RVA(0x00015cc0, 0x23)
-    int __stdcall winapi_015cc0_SendMessageA(int id, int wParam) {
+    i32 __stdcall winapi_015cc0_SendMessageA(i32 id, i32 wParam) {
         WndItem* it = ResolveItem_15ac0(id);
         return SendMessageA(it->m_hwnd, 0x14e, wParam, 0);
     }
@@ -372,7 +389,7 @@ namespace ApiCallerStubs {
     // @source: winapi:SendMessageA
     // __stdcall(id): send 0x147 (clear listbox selection) to the resolved item.
     RVA(0x00015d00, 0x20)
-    void __stdcall winapi_015d00_SendMessageA(int id) {
+    void __stdcall winapi_015d00_SendMessageA(i32 id) {
         HWND h = ResolveItem_15ac0(id)->m_hwnd;
         SendMessageA(h, 0x147, 0, 0);
     }
@@ -380,10 +397,10 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:SendMessageA
     // Dialog-item resolver at RVA 0x33a0 (stdcall, returns a CWnd-ish whose HWND is +0x1c).
-    WndItem* __stdcall ResolveItem_33a0(int id);
+    WndItem* __stdcall ResolveItem_33a0(i32 id);
     // __stdcall(id): clear listbox selection (0x147) of the resolved item; return +1.
     RVA(0x00015d30, 0x21)
-    int __stdcall winapi_015d30_SendMessageA(int id) {
+    i32 __stdcall winapi_015d30_SendMessageA(i32 id) {
         HWND h = ResolveItem_33a0(id)->m_hwnd;
         return SendMessageA(h, 0x147, 0, 0) + 1;
     }
@@ -391,7 +408,7 @@ namespace ApiCallerStubs {
     // @source: winapi:SendMessageA
     // __stdcall(id, wParam): set the resolved item's listbox selection to wParam-1.
     RVA(0x00015d70, 0x24)
-    int __stdcall winapi_015d70_SendMessageA(int id, int wParam) {
+    i32 __stdcall winapi_015d70_SendMessageA(i32 id, i32 wParam) {
         WndItem* it = ResolveItem_33a0(id);
         return SendMessageA(it->m_hwnd, 0x14e, wParam - 1, 0);
     }
@@ -400,7 +417,7 @@ namespace ApiCallerStubs {
     // @source: winapi:SendMessageA
     // @stub
     RVA(0x00015fe0, 0xbe)
-    int ThisStubOwnerUnknown::winapi_015fe0_SendMessageA(int) {
+    i32 ThisStubOwnerUnknown::winapi_015fe0_SendMessageA(i32) {
         return 0;
     }
 
@@ -408,7 +425,7 @@ namespace ApiCallerStubs {
     // @source: winapi:CreateSolidBrush;FillRect;GetClientRect
     // @stub
     RVA(0x000160f0, 0x245)
-    int winapi_0160f0_CreateSolidBrush_FillRect_GetClientRect() {
+    i32 winapi_0160f0_CreateSolidBrush_FillRect_GetClientRect() {
         return 0;
     }
 
@@ -416,7 +433,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetWindow
     // @stub
     RVA(0x00017030, 0xc1)
-    int ThisStubOwnerUnknown::winapi_017030_GetWindow() {
+    i32 ThisStubOwnerUnknown::winapi_017030_GetWindow() {
         return 0;
     }
 
@@ -424,7 +441,7 @@ namespace ApiCallerStubs {
     // @source: winapi:SendMessageA
     // @stub
     RVA(0x000180e0, 0x23f)
-    int __stdcall winapi_0180e0_SendMessageA(int) {
+    i32 __stdcall winapi_0180e0_SendMessageA(i32) {
         return 0;
     }
 
@@ -433,7 +450,7 @@ namespace ApiCallerStubs {
     // A dialog-host class whose GetItem(id) (RVA 0x1be27d) returns a CWnd-ish
     // whose HWND lives at +0x1c.
     struct DlgHost {
-        WndItem* GetItem(int id); // thiscall, RVA 0x1be27d
+        WndItem* GetItem(i32 id); // thiscall, RVA 0x1be27d
         void OnPick();            // thiscall, RVA 0x1bacc3
         void Pick0183f0();        // thiscall, RVA 0x183f0
     };
@@ -451,9 +468,9 @@ namespace ApiCallerStubs {
     // __stdcall(hi, lo): lazily-seeded LCG random in [lo,hi]. When the span is
     // empty (hi==lo-1) it coin-flips between the endpoints on bit 0x10000.
     RVA(0x00019f50, 0xb2)
-    int __stdcall winapi_019f50_timeGetTime(int lo, int hi) {
-        int span = hi - lo + 1;
-        int seed;
+    i32 __stdcall winapi_019f50_timeGetTime(i32 lo, i32 hi) {
+        i32 span = hi - lo + 1;
+        i32 seed;
         if (span != 0) {
             if (!(g_rngSeeded & 1)) {
                 g_rngSeeded |= 1;
@@ -481,7 +498,7 @@ namespace ApiCallerStubs {
     // @source: winapi:CopyRect
     // @stub
     RVA(0x0001a700, 0x6b6)
-    int winapi_01a700_CopyRect() {
+    i32 winapi_01a700_CopyRect() {
         return 0;
     }
 
@@ -490,11 +507,11 @@ namespace ApiCallerStubs {
     // __thiscall(): if the cached key (m_1b8) is 0xc7, post a 0x8023 command. Returns 1.
     struct KeyHost_01f8a0 {
         char m_pad0[0x1b8];
-        int m_1b8; // +0x1b8
-        int Check();
+        i32 m_1b8; // +0x1b8
+        i32 Check();
     };
     RVA(0x0001f8a0, 0x30)
-    int KeyHost_01f8a0::Check() {
+    i32 KeyHost_01f8a0::Check() {
         if (m_1b8 == 0xc7) {
             PostMessageA(g_gameReg->m_4->m_4, 0x111, 0x8023, 0);
         }
@@ -505,7 +522,7 @@ namespace ApiCallerStubs {
     // @source: winapi:DrawTextA
     // @stub
     RVA(0x00021f20, 0x162)
-    int __stdcall winapi_021f20_DrawTextA(int, int) {
+    i32 __stdcall winapi_021f20_DrawTextA(i32, i32) {
         return 0;
     }
 
@@ -513,7 +530,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetAsyncKeyState;SelectObject
     // @stub
     RVA(0x00022160, 0x18e)
-    int __stdcall winapi_022160_GetAsyncKeyState_SelectObject(int, int, int) {
+    i32 __stdcall winapi_022160_GetAsyncKeyState_SelectObject(i32, i32, i32) {
         return 0;
     }
 
@@ -521,17 +538,17 @@ namespace ApiCallerStubs {
     // @source: winapi:DrawTextA;SelectObject;SetBkColor;SetBkMode;SetTextColor
     // @stub
     RVA(0x00022810, 0x22a)
-    int __stdcall winapi_022810_DrawTextA_SelectObject_SetBkColor_SetBkMode_SetTextColor(
-        int,
-        int,
-        int,
-        int,
-        int,
-        int,
-        int,
-        int,
-        int,
-        int
+    i32 __stdcall winapi_022810_DrawTextA_SelectObject_SetBkColor_SetBkMode_SetTextColor(
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32
     ) {
         return 0;
     }
@@ -540,7 +557,7 @@ namespace ApiCallerStubs {
     // @source: winapi:PostMessageA
     // @stub
     RVA(0x00023090, 0xfc)
-    int ThisStubOwnerUnknown::winapi_023090_PostMessageA(int) {
+    i32 ThisStubOwnerUnknown::winapi_023090_PostMessageA(i32) {
         return 0;
     }
 
@@ -550,12 +567,12 @@ namespace ApiCallerStubs {
     // (right/bottom inclusive→+1), store the clipped rect at +0x60 and its w/h.
     struct ClipHost_02b340 {
         char m_pad0[0xc];
-        int m_c;  // +0x0c
-        int m_10; // +0x10
+        i32 m_c;  // +0x0c
+        i32 m_10; // +0x10
         char m_pad14[0x60 - 0x14];
         RECT m_rc60; // +0x60
-        int m_w70;   // +0x70
-        int m_h74;   // +0x74
+        i32 m_w70;   // +0x70
+        i32 m_h74;   // +0x74
         void Clip(const RECT* src);
     };
     RVA(0x0002b340, 0xaa)
@@ -587,7 +604,7 @@ namespace ApiCallerStubs {
     // @source: winapi:IntersectRect
     // @stub
     RVA(0x0002c690, 0xdb4)
-    int __stdcall winapi_02c690_IntersectRect(int) {
+    i32 __stdcall winapi_02c690_IntersectRect(i32) {
         return 0;
     }
 
@@ -595,7 +612,7 @@ namespace ApiCallerStubs {
     // @source: winapi:IntersectRect
     // @stub
     RVA(0x00032ce0, 0x448)
-    int ThisStubOwnerUnknown::winapi_032ce0_IntersectRect(int) {
+    i32 ThisStubOwnerUnknown::winapi_032ce0_IntersectRect(i32) {
         return 0;
     }
 
@@ -603,7 +620,7 @@ namespace ApiCallerStubs {
     // @source: winapi:IntersectRect
     // @stub
     RVA(0x00033520, 0xbc3)
-    int __stdcall winapi_033520_IntersectRect(int) {
+    i32 __stdcall winapi_033520_IntersectRect(i32) {
         return 0;
     }
 
@@ -613,7 +630,7 @@ namespace ApiCallerStubs {
     RVA(0x00036d00, 0x40)
     void winapi_036d00_EnableWindow_GetDlgItem_IsDlgButtonChecked(HWND hWnd) {
         if (g_gameReg) {
-            int state = IsDlgButtonChecked(hWnd, 0x46d);
+            i32 state = IsDlgButtonChecked(hWnd, 0x46d);
             g_gameReg->Method92340(state);
             EnableWindow(GetDlgItem(hWnd, 0x470), state);
         }
@@ -625,7 +642,7 @@ namespace ApiCallerStubs {
     RVA(0x00036d50, 0x3c)
     void winapi_036d50_EnableWindow_GetDlgItem_IsDlgButtonChecked(HWND hWnd) {
         if (g_gameReg) {
-            int checked = IsDlgButtonChecked(hWnd, 0x475);
+            i32 checked = IsDlgButtonChecked(hWnd, 0x475);
             g_gameReg->m_100 = checked;
             EnableWindow(GetDlgItem(hWnd, 0x476), checked);
         }
@@ -637,7 +654,7 @@ namespace ApiCallerStubs {
     RVA(0x00036da0, 0x40)
     void winapi_036da0_EnableWindow_GetDlgItem_IsDlgButtonChecked(HWND hWnd) {
         if (g_gameReg) {
-            int state = IsDlgButtonChecked(hWnd, 0x471);
+            i32 state = IsDlgButtonChecked(hWnd, 0x471);
             g_gameReg->Method3df5(state);
             EnableWindow(GetDlgItem(hWnd, 0x472), state);
         }
@@ -657,7 +674,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetDlgItem;GetScrollInfo
     // __cdecl(hDlg, id): read the scroll position of dialog item `id`.
     RVA(0x00036ec0, 0x41)
-    int winapi_036ec0_GetDlgItem_GetScrollInfo(HWND hDlg, int id) {
+    i32 winapi_036ec0_GetDlgItem_GetScrollInfo(HWND hDlg, i32 id) {
         HWND h = GetDlgItem(hDlg, id);
         if (!h) {
             return 0;
@@ -673,7 +690,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetDlgItem;SetScrollInfo
     // __cdecl(hDlg, id, pos, max): set dialog item `id`'s scroll range/page/pos.
     RVA(0x000371e0, 0x5b)
-    void winapi_0371e0_GetDlgItem_SetScrollInfo(HWND hDlg, int id, int pos, int max) {
+    void winapi_0371e0_GetDlgItem_SetScrollInfo(HWND hDlg, i32 id, i32 pos, i32 max) {
         HWND h = GetDlgItem(hDlg, id);
         if (h) {
             SCROLLINFO si;
@@ -691,7 +708,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetScrollInfo;SetScrollInfo
     // @stub
     RVA(0x00037260, 0x1fd)
-    int winapi_037260_GetScrollInfo_SetScrollInfo() {
+    i32 winapi_037260_GetScrollInfo_SetScrollInfo() {
         return 0;
     }
 
@@ -699,7 +716,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetDlgItem;SendMessageA
     // @stub
     RVA(0x00037ff0, 0xe7)
-    int __stdcall winapi_037ff0_GetDlgItem_SendMessageA(int, int) {
+    i32 __stdcall winapi_037ff0_GetDlgItem_SendMessageA(i32, i32) {
         return 0;
     }
 
@@ -708,18 +725,18 @@ namespace ApiCallerStubs {
     // __stdcall(hDlg, id, lo, hi): find the list item whose data == MAKELONG(lo,hi)
     // and select it. Returns 1 if found.
     RVA(0x00038150, 0x91)
-    int __stdcall winapi_038150_GetDlgItem(HWND hDlg, int id, int lo, int hi) {
+    i32 __stdcall winapi_038150_GetDlgItem(HWND hDlg, i32 id, i32 lo, i32 hi) {
         HWND list = GetDlgItem(hDlg, id);
         if (!list) {
             return 0;
         }
-        int searching = 1;
-        int i = 0;
+        i32 searching = 1;
+        i32 i = 0;
         while (searching) {
-            int data = SendMessageA(list, 0x150, i, 0);
+            i32 data = SendMessageA(list, 0x150, i, 0);
             if (data != -1) {
-                int itemLo = data & 0xffff;
-                int itemHi = (unsigned)data >> 0x10;
+                i32 itemLo = data & 0xffff;
+                i32 itemHi = (u32)data >> 0x10;
                 if (itemLo == lo && itemHi == hi) {
                     if (SendMessageA(list, 0x147, 0, 0) != i) {
                         SendMessageA(list, 0x14e, i, 0);
@@ -739,21 +756,21 @@ namespace ApiCallerStubs {
     // __stdcall(hDlg, id, *lo, *hi): split the selected listbox item's data into
     // two words. Returns 1 if a valid item is selected.
     RVA(0x00038220, 0x73)
-    int __stdcall winapi_038220_GetDlgItem(HWND hDlg, int id, int* outLo, int* outHi) {
+    i32 __stdcall winapi_038220_GetDlgItem(HWND hDlg, i32 id, i32* outLo, i32* outHi) {
         HWND list = GetDlgItem(hDlg, id);
         if (!list) {
             return 0;
         }
-        int sel = SendMessageA(list, 0x147, 0, 0);
+        i32 sel = SendMessageA(list, 0x147, 0, 0);
         if (sel == -1) {
             return 0;
         }
-        int data = SendMessageA(list, 0x150, sel, 0);
+        i32 data = SendMessageA(list, 0x150, sel, 0);
         if (data == -1) {
             return 0;
         }
         *outLo = data & 0xffff;
-        *outHi = (unsigned)data >> 0x10;
+        *outHi = (u32)data >> 0x10;
         return 1;
     }
 
@@ -762,18 +779,18 @@ namespace ApiCallerStubs {
     // __thiscall(code, _): on ESC/SPACE/ENTER post a 0x8023/0x8027 command (by m_24
     // mode). Always returns 1.
     struct CmdWnd_039440 {
-        int m_0;
+        i32 m_0;
         CmdWnd_039440* m_4; // +0x04
     };
     struct CmdHost_039440 {
-        int m_0;
+        i32 m_0;
         CmdWnd_039440* m_4; // +0x04
         char m_pad8[0x24 - 8];
-        int m_24; // +0x24
-        int Key(int code, int unused);
+        i32 m_24; // +0x24
+        i32 Key(i32 code, i32 unused);
     };
     RVA(0x00039440, 0x46)
-    int CmdHost_039440::Key(int code, int unused) {
+    i32 CmdHost_039440::Key(i32 code, i32 unused) {
         if (code == 0x1b || code == 0x20 || code == 0xd) {
             if (m_24 == 5) {
                 PostMessageA(m_4->m_4->m_4, 0x111, 0x8023, 0);
@@ -795,13 +812,13 @@ namespace ApiCallerStubs {
         char m_pad0[4];
         ClickWnd_0394b0* m_4; // +0x04
         char m_pad8[0x24 - 8];
-        int m_24; // +0x24
-        int OnClick(int x, int unused, int y);
+        i32 m_24; // +0x24
+        i32 OnClick(i32 x, i32 unused, i32 y);
         void Activate(); // RVA 0x3d41
     };
     // @source: winapi:PostMessageA;PtInRect
     RVA(0x000394b0, 0x86)
-    int ClickHost_0394b0::OnClick(int x, int unused, int y) {
+    i32 ClickHost_0394b0::OnClick(i32 x, i32 unused, i32 y) {
         RECT rc;
         rc.left = 0;
         rc.top = 0;
@@ -814,7 +831,7 @@ namespace ApiCallerStubs {
             Activate();
             return 1;
         }
-        int cmd;
+        i32 cmd;
         if (m_24 == 5) {
             cmd = 0x8023;
         } else {
@@ -828,7 +845,7 @@ namespace ApiCallerStubs {
     // @source: winapi:CreateRectRgn;DrawTextA;SetRect
     // @stub
     RVA(0x00039a60, 0x179)
-    int winapi_039a60_CreateRectRgn_DrawTextA_SetRect() {
+    i32 winapi_039a60_CreateRectRgn_DrawTextA_SetRect() {
         return 0;
     }
 
@@ -836,7 +853,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetDlgItem;SendMessageA
     // @stub
     RVA(0x0003af90, 0x194)
-    int winapi_03af90_GetDlgItem_SendMessageA() {
+    i32 winapi_03af90_GetDlgItem_SendMessageA() {
         return 0;
     }
 
@@ -844,7 +861,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetDlgItem
     // @stub
     RVA(0x0003b1a0, 0x118)
-    int winapi_03b1a0_GetDlgItem() {
+    i32 winapi_03b1a0_GetDlgItem() {
         return 0;
     }
 
@@ -852,7 +869,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetDlgItem
     // @stub
     RVA(0x0003b310, 0x10d)
-    int winapi_03b310_GetDlgItem() {
+    i32 winapi_03b310_GetDlgItem() {
         return 0;
     }
 
@@ -860,7 +877,7 @@ namespace ApiCallerStubs {
     // @source: winapi:CopyRect;OffsetRect
     // @stub
     RVA(0x0004a9f0, 0x1aa)
-    int ThisStubOwnerUnknown::winapi_04a9f0_CopyRect_OffsetRect() {
+    i32 ThisStubOwnerUnknown::winapi_04a9f0_CopyRect_OffsetRect() {
         return 0;
     }
 
@@ -868,7 +885,7 @@ namespace ApiCallerStubs {
     // @source: winapi:IntersectRect
     // @stub
     RVA(0x00057db0, 0x8f8)
-    int ThisStubOwnerUnknown::winapi_057db0_IntersectRect() {
+    i32 ThisStubOwnerUnknown::winapi_057db0_IntersectRect() {
         return 0;
     }
 
@@ -876,7 +893,7 @@ namespace ApiCallerStubs {
     // @source: winapi:CopyRect;SetRect
     // @stub
     RVA(0x00075c60, 0x1ba)
-    int ThisStubOwnerUnknown::winapi_075c60_CopyRect_SetRect(int, int, int, int, int, int) {
+    i32 ThisStubOwnerUnknown::winapi_075c60_CopyRect_SetRect(i32, i32, i32, i32, i32, i32) {
         return 0;
     }
 
@@ -884,7 +901,7 @@ namespace ApiCallerStubs {
     // @source: winapi:PtInRect
     // @stub
     RVA(0x00077df0, 0x13d)
-    int __stdcall winapi_077df0_PtInRect(int) {
+    i32 __stdcall winapi_077df0_PtInRect(i32) {
         return 0;
     }
 
@@ -892,7 +909,7 @@ namespace ApiCallerStubs {
     // @source: winapi:SetRect
     // @stub
     RVA(0x00078060, 0x18d)
-    int __stdcall winapi_078060_SetRect(int, int, int, int, int) {
+    i32 __stdcall winapi_078060_SetRect(i32, i32, i32, i32, i32) {
         return 0;
     }
 
@@ -900,7 +917,7 @@ namespace ApiCallerStubs {
     // @source: winapi:PostMessageA;wsprintfA
     // @stub
     RVA(0x000862f0, 0x3d5a)
-    int __stdcall winapi_0862f0_PostMessageA_wsprintfA(int, int, int) {
+    i32 __stdcall winapi_0862f0_PostMessageA_wsprintfA(i32, i32, i32) {
         return 0;
     }
 
@@ -909,10 +926,10 @@ namespace ApiCallerStubs {
     // __thiscall(l, t, r, b): the object IS the RECT being initialised.
     struct RectHost_08c380 {
         RECT m_rc;
-        void Set(int l, int t, int r, int b);
+        void Set(i32 l, i32 t, i32 r, i32 b);
     };
     RVA(0x0008c380, 0x1e)
-    void RectHost_08c380::Set(int l, int t, int r, int b) {
+    void RectHost_08c380::Set(i32 l, i32 t, i32 r, i32 b) {
         SetRect(&m_rc, l, t, r, b);
     }
 
@@ -955,7 +972,7 @@ namespace ApiCallerStubs {
     };
     struct AudioSub_08ee70 {
         char m_pad0[0x14];
-        int m_14; // +0x14 = audio handle
+        i32 m_14; // +0x14 = audio handle
     };
     // An audio-ish sub-object: +0x4 -> sub whose [+0x14] is a handle for Stop_158c70,
     // +0x1c -> a Poly08* (the actual object pointer) whose vtable slot +0x28 runs.
@@ -974,21 +991,21 @@ namespace ApiCallerStubs {
         MsgWnd_08ee70* m_4; // +0x04
         char m_pad8[0x30 - 8];
         AudioObj_08ee70* m_30; // +0x30
-        int Show(int type, int text);
+        i32 Show(i32 type, i32 text);
     };
     // Pause audio (slot 0x28), force the cursor visible, MessageBoxA, then hide it.
-    void __stdcall Stop_158c70(int handle); // RVA 0x158c70
+    void __stdcall Stop_158c70(i32 handle); // RVA 0x158c70
     RVA(0x0008ee70, 0x7c)
-    int MsgHost_08ee70::Show(int type, int text) {
+    i32 MsgHost_08ee70::Show(i32 type, i32 text) {
         if (m_30) {
             Stop_158c70(m_30->m_4->m_14);
             Poly08* p = *m_30->m_1c;
             p->m_vptr->Slot28(p);
         }
-        int wasShown = ShowCursor(1);
+        i32 wasShown = ShowCursor(1);
         while (ShowCursor(1) < 0) {
         }
-        int result = MessageBoxA(m_4->m_4, (LPCSTR)text, g_msgCaption, type);
+        i32 result = MessageBoxA(m_4->m_4, (LPCSTR)text, g_msgCaption, type);
         if (wasShown <= 0) {
             while (ShowCursor(0) >= 0) {
             }
@@ -1000,7 +1017,7 @@ namespace ApiCallerStubs {
     // @source: winapi:CreateProcessA;RegQueryValueA
     // @stub
     RVA(0x0008f120, 0x168)
-    int __stdcall winapi_08f120_CreateProcessA_RegQueryValueA(int) {
+    i32 __stdcall winapi_08f120_CreateProcessA_RegQueryValueA(i32) {
         return 0;
     }
 
@@ -1008,7 +1025,7 @@ namespace ApiCallerStubs {
     // @source: winapi:PostMessageA
     // @stub
     RVA(0x0008f340, 0xf6)
-    int ThisStubOwnerUnknown::winapi_08f340_PostMessageA() {
+    i32 ThisStubOwnerUnknown::winapi_08f340_PostMessageA() {
         return 0;
     }
 
@@ -1020,7 +1037,7 @@ namespace ApiCallerStubs {
         virtual void v1();
         virtual void v2();
         virtual void v3();
-        virtual int GetMode(); // slot 4 == vtable +0x10
+        virtual i32 GetMode(); // slot 4 == vtable +0x10
     };
     struct WndChain_08f480 {
         char m_pad0[4];
@@ -1036,12 +1053,12 @@ namespace ApiCallerStubs {
         ModeObj_08f480* m_2c; // +0x2c
         char m_pad30[0xc8 - 0x30];
         Sub_08f480 m_c8; // +0xc8
-        int Notify();
+        i32 Notify();
     };
     // __thiscall(): if the mode is 2/3/5, reset and post a 0x8005 command. Returns 1.
     RVA(0x0008f480, 0x49)
-    int ModeHost_08f480::Notify() {
-        int mode = m_2c->GetMode();
+    i32 ModeHost_08f480::Notify() {
+        i32 mode = m_2c->GetMode();
         if (mode == 5 || mode == 2 || mode == 3) {
             m_c8.Reset();
             PostMessageA(m_4->m_4, 0x111, 0x8005, 0);
@@ -1054,18 +1071,18 @@ namespace ApiCallerStubs {
     // @source: winapi:PostMessageA
     // __thiscall(int code): clamp code into (0,0x29] and post a 0x111 command.
     struct WndOwner_090220 {
-        int m_0;
+        i32 m_0;
         HWND m_4; // +0x04 = HWND
     };
     struct CmdHost_090220 {
-        int m_0;
+        i32 m_0;
         WndOwner_090220* m_4; // +0x04
-        void Post(int code);
+        void Post(i32 code);
     };
     RVA(0x00090220, 0x2f)
-    void CmdHost_090220::Post(int code) {
+    void CmdHost_090220::Post(i32 code) {
         if (code > 0 && code <= 0x29) {
-            int v = (code == 0x29) ? 1 : code;
+            i32 v = (code == 0x29) ? 1 : code;
             PostMessageA(m_4->m_4, 0x111, 0x807f, v);
         }
     }
@@ -1074,7 +1091,7 @@ namespace ApiCallerStubs {
     // @source: winapi:CreateProcessA;wsprintfA
     // @stub
     RVA(0x00090860, 0xd3)
-    int __stdcall winapi_090860_CreateProcessA_wsprintfA(int, int) {
+    i32 __stdcall winapi_090860_CreateProcessA_wsprintfA(i32, i32) {
         return 0;
     }
 
@@ -1085,10 +1102,10 @@ namespace ApiCallerStubs {
         HWND m_4; // +0x04
     };
     struct Sub58_092710 {
-        int Check(int* save); // thiscall, RVA 0x12f3
+        i32 Check(i32* save); // thiscall, RVA 0x12f3
     };
     struct Sub5c_092710 {
-        void Notify(const char* msg, int a, int b); // thiscall, RVA 0x1483
+        void Notify(const char* msg, i32 a, i32 b); // thiscall, RVA 0x1483
     };
     struct Sub60_092710 {
         void Flush(); // thiscall, RVA 0x20a4
@@ -1101,12 +1118,12 @@ namespace ApiCallerStubs {
         Sub5c_092710* m_5c; // +0x5c
         Sub60_092710* m_60; // +0x60
         char m_pad64[0xbc - 0x64];
-        int* m_bc; // +0xbc
-        int Quickload();
-        int Fallback(); // thiscall, RVA 0x29a0
+        i32* m_bc; // +0xbc
+        i32 Quickload();
+        i32 Fallback(); // thiscall, RVA 0x29a0
     };
     RVA(0x00092710, 0x77)
-    int QlHost_092710::Quickload() {
+    i32 QlHost_092710::Quickload() {
         if (!m_58) {
             return 0;
         }
@@ -1128,7 +1145,7 @@ namespace ApiCallerStubs {
     // @source: winapi:EndDialog
     // @stub
     RVA(0x00092ab0, 0x20d)
-    int __stdcall winapi_092ab0_EndDialog(int, int, int, int) {
+    i32 __stdcall winapi_092ab0_EndDialog(i32, i32, i32, i32) {
         return 0;
     }
 
@@ -1136,7 +1153,7 @@ namespace ApiCallerStubs {
     // @source: winapi:ValidateRect
     // __thiscall(): if the sub-chain is live + ready, validate the whole window.
     struct VrSub2_094bc0 {
-        int Ready(); // thiscall, RVA 0x2441
+        i32 Ready(); // thiscall, RVA 0x2441
     };
     struct VrSub1_094bc0 {
         char m_pad0[8];
@@ -1146,10 +1163,10 @@ namespace ApiCallerStubs {
         char m_pad0[4];
         HWND m_4;           // +0x04
         VrSub1_094bc0* m_8; // +0x08
-        int Validate();
+        i32 Validate();
     };
     RVA(0x00094bc0, 0x31)
-    int VrHost_094bc0::Validate() {
+    i32 VrHost_094bc0::Validate() {
         VrSub2_094bc0* sub = m_8->m_8;
         if (sub && sub->Ready()) {
             if (m_4) {
@@ -1164,16 +1181,16 @@ namespace ApiCallerStubs {
     // @source: winapi:PostMessageA
     // __thiscall(int code, int): on ESC/SPACE/ENTER post a 0x111 command. Returns 1.
     struct WndChain_0953f0 {
-        int m_0;
+        i32 m_0;
         WndChain_0953f0* m_4; // +0x04
     };
     struct CmdHost_0953f0 {
-        int m_0;
+        i32 m_0;
         WndChain_0953f0* m_4; // +0x04
-        int Key(int code, int unused);
+        i32 Key(i32 code, i32 unused);
     };
     RVA(0x000953f0, 0x37)
-    int CmdHost_0953f0::Key(int code, int unused) {
+    i32 CmdHost_0953f0::Key(i32 code, i32 unused) {
         if (code == 0x1b || code == 0x20 || code == 0xd) {
             PostMessageA(m_4->m_4->m_4, 0x111, 0x8036, 0);
         }
@@ -1183,12 +1200,12 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:EndDialog
     DATA(0x00645ca4)
-    extern int g_dlg645ca4; // DAT_00645ca4 (the active dialog HWND)
-    int __cdecl DlgFallback_215d(HWND hDlg, int wParam, int cur); // RVA 0x215d
-    void __cdecl DlgInit_2ee6(HWND hDlg, int v);                  // RVA 0x2ee6
+    extern i32 g_dlg645ca4; // DAT_00645ca4 (the active dialog HWND)
+    i32 __cdecl DlgFallback_215d(HWND hDlg, i32 wParam, i32 cur); // RVA 0x215d
+    void __cdecl DlgInit_2ee6(HWND hDlg, i32 v);                  // RVA 0x2ee6
     // __stdcall DlgProc(hDlg, msg, wParam, lParam).
     RVA(0x0009dff0, 0x8c)
-    int __stdcall winapi_09dff0_EndDialog(HWND hDlg, int msg, int wParam, int lParam) {
+    i32 __stdcall winapi_09dff0_EndDialog(HWND hDlg, i32 msg, i32 wParam, i32 lParam) {
         switch (msg) {
             case 0x111:
                 if (wParam == 2 || wParam == 1) {
@@ -1206,7 +1223,7 @@ namespace ApiCallerStubs {
             default:
                 return 0;
             case 0x110: {
-                int v = (int)g_gameReg->m_58;
+                i32 v = (i32)g_gameReg->m_58;
                 g_dlg645ca4 = v;
                 DlgInit_2ee6(hDlg, v);
                 return 1;
@@ -1221,19 +1238,19 @@ namespace ApiCallerStubs {
         char m_pad0[0x14];
         char m_14[1]; // +0x14 (name string)
     };
-    int __cdecl Check2694(NameItem_09e2d0* item); // RVA 0x2694
+    i32 __cdecl Check2694(NameItem_09e2d0* item); // RVA 0x2694
     // "(Empty)" fallback display string (s_(Empty)_006113e0).
     // __cdecl(hWnd, item, id3, id4, id5, id6): label item into id3, enable 4 ctrls.
     RVA(0x0009e2d0, 0x84)
     void winapi_09e2d0_SetDlgItemTextA(
         HWND hWnd,
         NameItem_09e2d0* item,
-        int id3,
-        int id4,
-        int id5,
-        int id6
+        i32 id3,
+        i32 id4,
+        i32 id5,
+        i32 id6
     ) {
-        int flag;
+        i32 flag;
         if (Check2694(item)) {
             SetDlgItemTextA(hWnd, id3, item->m_14);
             flag = 1;
@@ -1251,7 +1268,7 @@ namespace ApiCallerStubs {
     // @source: winapi:EndDialog;PostMessageA
     // @stub
     RVA(0x0009e390, 0x243)
-    int winapi_09e390_EndDialog_PostMessageA() {
+    i32 winapi_09e390_EndDialog_PostMessageA() {
         return 0;
     }
 
@@ -1259,7 +1276,7 @@ namespace ApiCallerStubs {
     // @source: winapi:timeGetTime;wsprintfA
     // @stub
     RVA(0x000b6b40, 0x29e)
-    int ThisStubOwnerUnknown::winapi_0b6b40_timeGetTime_wsprintfA() {
+    i32 ThisStubOwnerUnknown::winapi_0b6b40_timeGetTime_wsprintfA() {
         return 0;
     }
 
@@ -1267,7 +1284,7 @@ namespace ApiCallerStubs {
     // @source: winapi:SetRect
     // @stub
     RVA(0x000b6e90, 0x34d)
-    int ThisStubOwnerUnknown::winapi_0b6e90_SetRect() {
+    i32 ThisStubOwnerUnknown::winapi_0b6e90_SetRect() {
         return 0;
     }
 
@@ -1277,12 +1294,12 @@ namespace ApiCallerStubs {
     DATA(0x0060fab8)
     extern GUID g_dplayAppGuid;
     DATA(0x00648cf0)
-    extern int g_isHost_648cf0; // DAT_00648cf0: nonzero when hosting
+    extern i32 g_isHost_648cf0; // DAT_00648cf0: nonzero when hosting
     struct DPlayConn_0b77a0 {
-        int Connect(int sessionFlags, GUID guid); // thiscall, RVA 0x1780b0
+        i32 Connect(i32 sessionFlags, GUID guid); // thiscall, RVA 0x1780b0
     };
     struct DPlaySub_0b77a0 {
-        void Init(int handle); // thiscall, RVA 0x158dc0
+        void Init(i32 handle); // thiscall, RVA 0x158dc0
     };
     struct DPlayHolder_0b77a0 {
         char m_pad0[4];
@@ -1293,23 +1310,23 @@ namespace ApiCallerStubs {
         DPlayHolder_0b77a0* m_c; // +0x0c
         char m_pad10[0x524 - 0x10];
         DPlayConn_0b77a0* m_524;                                // +0x524
-        int m_528;                                              // +0x528
-        void Configure(char* name, int a, int b, int c, int d); // RVA 0x3445
-        int Build();                                            // RVA 0x3db9
-        int HostStart();                                        // RVA 0x39bd
-        int JoinStart();                                        // RVA 0x2487
-        int Open();
+        i32 m_528;                                              // +0x528
+        void Configure(char* name, i32 a, i32 b, i32 c, i32 d); // RVA 0x3445
+        i32 Build();                                            // RVA 0x3db9
+        i32 HostStart();                                        // RVA 0x39bd
+        i32 JoinStart();                                        // RVA 0x2487
+        i32 Open();
     };
     // __thiscall(): configure the session, build it, connect via DirectPlay using
     // the app GUID, then host- or join-start depending on g_isHost_648cf0.
     RVA(0x000b77a0, 0xb5)
-    int DPlayHost_0b77a0::Open() {
+    i32 DPlayHost_0b77a0::Open() {
         if (!m_524) {
             return 0;
         }
         Configure("BACKGND", 0, 0, 1, 0);
         m_c->m_4->Init(0);
-        int sessionFlags = Build();
+        i32 sessionFlags = Build();
         if (!sessionFlags) {
             return 0;
         }
@@ -1343,13 +1360,13 @@ namespace ApiCallerStubs {
     struct StrHost_0b7ec0 {
         char m_pad0[4];
         AppHolder_0b7ec0* m_4;             // +0x04
-        void SetText(char* text, int arg); // RVA 0xb7e30 (thunk 0x1af0)
-        void Load(int id, int dest);
+        void SetText(char* text, i32 arg); // RVA 0xb7e30 (thunk 0x1af0)
+        void Load(i32 id, i32 dest);
     };
     // @source: winapi:LoadStringA
     // __thiscall(id, dest): load string `id`, defaulting to "Error", then push it.
     RVA(0x000b7ec0, 0x7d)
-    void StrHost_0b7ec0::Load(int id, int dest) {
+    void StrHost_0b7ec0::Load(i32 id, i32 dest) {
         char buf[0x12a];
         if (m_4 && m_4->m_8->m_c) {
             if (!LoadStringA(m_4->m_8->m_c, id, buf, 0xfa)) {
@@ -1368,7 +1385,7 @@ namespace ApiCallerStubs {
         if (!edit || !str || !str[0]) {
             return;
         }
-        int len = GetWindowTextLengthA(edit);
+        i32 len = GetWindowTextLengthA(edit);
         if (len == 0) {
             SendMessageA(edit, 0xb1, len, -1);
         } else {
@@ -1388,7 +1405,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetAsyncKeyState;Sleep;timeGetTime;wsprintfA
     // @stub
     RVA(0x000bb700, 0x265)
-    int ThisStubOwnerUnknown::winapi_0bb700_GetAsyncKeyState_Sleep_timeGetTime_wsprintfA() {
+    i32 ThisStubOwnerUnknown::winapi_0bb700_GetAsyncKeyState_Sleep_timeGetTime_wsprintfA() {
         return 0;
     }
 
@@ -1396,7 +1413,7 @@ namespace ApiCallerStubs {
     // @source: winapi:Sleep
     // @stub
     RVA(0x000bba10, 0x1fb)
-    int ThisStubOwnerUnknown::winapi_0bba10_Sleep(int) {
+    i32 ThisStubOwnerUnknown::winapi_0bba10_Sleep(i32) {
         return 0;
     }
 
@@ -1430,7 +1447,7 @@ namespace ApiCallerStubs {
     // @source: winapi:EndDialog;KillTimer
     // @stub
     RVA(0x000bdc00, 0x10c)
-    int __stdcall winapi_0bdc00_EndDialog_KillTimer(int, int, int, int) {
+    i32 __stdcall winapi_0bdc00_EndDialog_KillTimer(i32, i32, i32, i32) {
         return 0;
     }
 
@@ -1465,7 +1482,7 @@ namespace ApiCallerStubs {
     // @source: winapi:EndDialog;KillTimer;PostMessageA
     // @stub
     RVA(0x000be0a0, 0x1c7)
-    int __stdcall winapi_0be0a0_EndDialog_KillTimer_PostMessageA(int, int, int, int) {
+    i32 __stdcall winapi_0be0a0_EndDialog_KillTimer_PostMessageA(i32, i32, i32, i32) {
         return 0;
     }
 
@@ -1473,7 +1490,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetDlgItem;SetDlgItemTextA;SetTimer
     // @stub
     RVA(0x000be2f0, 0xb9)
-    int winapi_0be2f0_GetDlgItem_SetDlgItemTextA_SetTimer() {
+    i32 winapi_0be2f0_GetDlgItem_SetDlgItemTextA_SetTimer() {
         return 0;
     }
 
@@ -1483,8 +1500,8 @@ namespace ApiCallerStubs {
     // Submit (RVA 0x2243) posts a chat line. Singleton at DAT_006496ac.
     struct PeerSession_0be490 {
         char m_pad0[0x52c];
-        int m_52c;                                        // +0x52c
-        void Submit(char* text, int a, int b, HWND ctrl); // thiscall, RVA 0x2243
+        i32 m_52c;                                        // +0x52c
+        void Submit(char* text, i32 a, i32 b, HWND ctrl); // thiscall, RVA 0x2243
     };
     DATA(0x006496ac)
     extern PeerSession_0be490* g_peerSession; // DAT_006496ac
@@ -1509,11 +1526,11 @@ namespace ApiCallerStubs {
     // (reached via thunk 0x1af0). m_584 marks a normal exit; m_5c4 carries its code.
     struct SessionHost_0be490 {
         char m_pad0[0x584];
-        int m_584; // +0x584
+        i32 m_584; // +0x584
         char m_pad588[0x5c4 - 0x588];
-        int m_5c4;                         // +0x5c4
+        i32 m_5c4;                         // +0x5c4
         void Stop();                       // RVA 0xb95f0
-        void SetStatus(char* text, int f); // RVA 0xb7e30 (thunk 0x1af0)
+        void SetStatus(char* text, i32 f); // RVA 0xb7e30 (thunk 0x1af0)
     };
     DATA(0x006487e0)
     extern char g_sessionFlag; // DAT_006487e0
@@ -1543,14 +1560,14 @@ namespace ApiCallerStubs {
     // CString length lives 8 bytes before the data.
     DATA(0x00649618)
     extern char* g_playerName_649618;
-    int __cdecl Format_11f890(char* buf, const char* fmt, ...); // RVA 0x11f890
+    i32 __cdecl Format_11f890(char* buf, const char* fmt, ...); // RVA 0x11f890
     void Init_2ed7(HWND hWnd, void* ctx);                       // RVA 0x2ed7 (__cdecl)
     // __cdecl(hWnd, ctx): show a drop-in prompt, init, arm a timer, cache a child.
     RVA(0x000be760, 0x82)
     void winapi_0be760_GetDlgItem_SetDlgItemTextA_SetTimer(HWND hWnd, void* ctx) {
         if (hWnd && ctx) {
             char buf[0x80];
-            if (*(int*)(g_playerName_649618 - 8)) {
+            if (*(i32*)(g_playerName_649618 - 8)) {
                 Format_11f890(buf, "New Player Drop-In Request: %s", g_playerName_649618);
                 SetDlgItemTextA(hWnd, 0x44b, buf);
             }
@@ -1564,7 +1581,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetWindow;GetWindowLongA;SetWindowLongA
     // @stub
     RVA(0x000c1840, 0x16e)
-    int winapi_0c1840_GetWindow_GetWindowLongA_SetWindowLongA() {
+    i32 winapi_0c1840_GetWindow_GetWindowLongA_SetWindowLongA() {
         return 0;
     }
 
@@ -1572,17 +1589,17 @@ namespace ApiCallerStubs {
     // @source: winapi:GetWindow;SendMessageA
     // @stub
     RVA(0x000c1aa0, 0x2f8)
-    int winapi_0c1aa0_GetWindow_SendMessageA() {
+    i32 winapi_0c1aa0_GetWindow_SendMessageA() {
         return 0;
     }
 
     // @confidence: low
     // @source: winapi:SendMessageA
     // Item resolver at RVA 0x1753 (push slot; stdcall; returns the CWnd-ish item).
-    WndItem* __stdcall ResolveItem_1753(int slot);
+    WndItem* __stdcall ResolveItem_1753(i32 slot);
     // __stdcall(id, wParam): if item `id` resolves, set its selection to wParam-1.
     RVA(0x000c2980, 0x28)
-    void __stdcall winapi_0c2980_SendMessageA(int id, int wParam) {
+    void __stdcall winapi_0c2980_SendMessageA(i32 id, i32 wParam) {
         WndItem* it = ResolveItem_1753(id);
         if (it) {
             SendMessageA(it->m_hwnd, 0x14e, wParam - 1, 0);
@@ -1595,12 +1612,12 @@ namespace ApiCallerStubs {
     struct TimerDlg_0c2cb0 {
         char m_pad0[0x1c];
         HWND m_1c; // +0x1c
-        int OnInitDialog();
-        int BaseOnInitDialog(); // RVA 0x1bac5e (CDialog::OnInitDialog)
+        i32 OnInitDialog();
+        i32 BaseOnInitDialog(); // RVA 0x1bac5e (CDialog::OnInitDialog)
     };
     // @source: winapi:SetTimer
     RVA(0x000c2cb0, 0x1f)
-    int TimerDlg_0c2cb0::OnInitDialog() {
+    i32 TimerDlg_0c2cb0::OnInitDialog() {
         BaseOnInitDialog();
         SetTimer(m_1c, 1, 0x32, 0);
         return 1;
@@ -1611,7 +1628,7 @@ namespace ApiCallerStubs {
     // __thiscall(str): resolve dialog item 0x511, then append `str` to it the same
     // way as winapi_0bb3e0 (CRLF prefix when non-empty, scroll the caret).
     struct EditAppendHost_0c2ce0 {
-        WndItem* GetItem(int id); // thiscall, RVA 0x1be27d
+        WndItem* GetItem(i32 id); // thiscall, RVA 0x1be27d
         void Append(char* str);
     };
     RVA(0x000c2ce0, 0xf3)
@@ -1626,7 +1643,7 @@ namespace ApiCallerStubs {
         if (!edit || !str || !str[0]) {
             return;
         }
-        int len = GetWindowTextLengthA(edit);
+        i32 len = GetWindowTextLengthA(edit);
         if (len == 0) {
             SendMessageA(edit, 0xb1, len, -1);
         } else {
@@ -1646,7 +1663,7 @@ namespace ApiCallerStubs {
     // @source: winapi:CreateSolidBrush;FillRect;GetClientRect
     // @stub
     RVA(0x000c2e20, 0x21d)
-    int winapi_0c2e20_CreateSolidBrush_FillRect_GetClientRect() {
+    i32 winapi_0c2e20_CreateSolidBrush_FillRect_GetClientRect() {
         return 0;
     }
 
@@ -1654,7 +1671,7 @@ namespace ApiCallerStubs {
     // @source: winapi:SendMessageA
     // @stub
     RVA(0x000c3e30, 0xfe)
-    int winapi_0c3e30_SendMessageA() {
+    i32 winapi_0c3e30_SendMessageA() {
         return 0;
     }
 
@@ -1662,7 +1679,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetFocus;SendMessageA
     // @stub
     RVA(0x000c4230, 0x38e)
-    int __stdcall winapi_0c4230_GetFocus_SendMessageA(int) {
+    i32 __stdcall winapi_0c4230_GetFocus_SendMessageA(i32) {
         return 0;
     }
 
@@ -1670,14 +1687,14 @@ namespace ApiCallerStubs {
     // @source: winapi:KillTimer;timeGetTime;wsprintfA
     // @stub
     RVA(0x000c46b0, 0x371)
-    int ThisStubOwnerUnknown::winapi_0c46b0_KillTimer_timeGetTime_wsprintfA() {
+    i32 ThisStubOwnerUnknown::winapi_0c46b0_KillTimer_timeGetTime_wsprintfA() {
         return 0;
     }
 
     // @confidence: low
     // @source: winapi:SendMessageA
     // Item resolver at RVA 0x1753 (push slot; stdcall; returns the CWnd-ish item).
-    WndItem* __stdcall ResolveItem_1753(int slot);
+    WndItem* __stdcall ResolveItem_1753(i32 slot);
     // __thiscall host for the two near-identical wrappers below: resolve a list
     // item, clear its selection, cache the new count in g_gameReg, then refresh.
     struct SelHost_0c4ee0 {
@@ -1704,7 +1721,7 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // Item resolver at RVA 0xc27c0 (push id; stdcall; returns the CWnd-ish item).
-    WndItem* __stdcall ResolveItem_c27c0(int id);
+    WndItem* __stdcall ResolveItem_c27c0(i32 id);
     // __thiscall host for winapi_0c4f80: resolves dialog item 2, clears its
     // selection, caches the new count in g_gameReg->m_7e8, then refreshes.
     struct SelHost_0c4f80 {
@@ -1733,34 +1750,34 @@ namespace ApiCallerStubs {
     // Per-slot state array hung off the registry at +0x150 (stride 0x238).
     struct PlayerSlot_0c50f0 {
         char m_pad0[0x1c];
-        int m_1c; // +0x1c
+        i32 m_1c; // +0x1c
     };
     // The selection owner at DAT_0064bd5c; its m_528 gates the broadcast refresh.
     struct SelOwner_0c50f0 {
         char m_pad0[0x528];
-        int m_528; // +0x528
+        i32 m_528; // +0x528
     };
     DATA(0x0064bd5c)
     extern SelOwner_0c50f0* g_64bd5c;
-    WndItem* __stdcall ResolveItem_1159(int idx); // RVA 0x1159
-    void __stdcall Func1d70(int flag);            // RVA 0x1d70
+    WndItem* __stdcall ResolveItem_1159(i32 idx); // RVA 0x1159
+    void __stdcall Func1d70(i32 flag);            // RVA 0x1d70
     // __thiscall(idx): toggle slot idx's ready flag from its list item, then either
     // re-sync the whole roster or just refresh that one slot.
     void __stdcall Refresh185c(PlayerSlot_0c50f0* slot); // RVA 0x185c
     struct RosterHost_0c50f0 {
-        void Toggle(int idx);
-        void Sync16db(int v); // RVA 0x16db
+        void Toggle(i32 idx);
+        void Sync16db(i32 v); // RVA 0x16db
         void Sync227a();      // RVA 0x227a
         void Sync2c0c();      // RVA 0x2c0c
         void Sync38d2();      // RVA 0x38d2
     };
     RVA(0x000c50f0, 0x9b)
-    void RosterHost_0c50f0::Toggle(int idx) {
+    void RosterHost_0c50f0::Toggle(i32 idx) {
         WndItem* it = ResolveItem_1159(idx);
         if (!it) {
             return;
         }
-        int sel = SendMessageA(it->m_hwnd, 0xf0, 0, 0);
+        i32 sel = SendMessageA(it->m_hwnd, 0xf0, 0, 0);
         PlayerSlot_0c50f0* slot = (PlayerSlot_0c50f0*)((char*)g_gameReg + idx * 0x238 + 0x150);
         if (!slot) {
             return;
@@ -1785,7 +1802,7 @@ namespace ApiCallerStubs {
     // @source: winapi:timeGetTime
     // @stub
     RVA(0x000c7ec0, 0x5f5)
-    int ThisStubOwnerUnknown::winapi_0c7ec0_timeGetTime(int, int, int) {
+    i32 ThisStubOwnerUnknown::winapi_0c7ec0_timeGetTime(i32, i32, i32) {
         return 0;
     }
 
@@ -1793,7 +1810,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetCursorPos
     // @stub
     RVA(0x000c8a10, 0x119)
-    int ThisStubOwnerUnknown::winapi_0c8a10_GetCursorPos(int) {
+    i32 ThisStubOwnerUnknown::winapi_0c8a10_GetCursorPos(i32) {
         return 0;
     }
 
@@ -1801,7 +1818,7 @@ namespace ApiCallerStubs {
     // @source: winapi:PostMessageA
     // @stub
     RVA(0x000cbaf0, 0x16f)
-    int ThisStubOwnerUnknown::winapi_0cbaf0_PostMessageA(int, int) {
+    i32 ThisStubOwnerUnknown::winapi_0cbaf0_PostMessageA(i32, i32) {
         return 0;
     }
 
@@ -1833,7 +1850,7 @@ namespace ApiCallerStubs {
         DispNet_0cfbd0* m_54; // +0x54
         char m_pad58[0x60 - 0x58];
         DispUi_0cfbd0* m_60; // +0x60
-        void Post(int code); // RVA 0x90220
+        void Post(i32 code); // RVA 0x90220
     };
     struct DispInner_0cfbd0 {
         char m_pad0[0x2c];
@@ -1849,17 +1866,17 @@ namespace ApiCallerStubs {
         char m_pad8[0xc - 8];
         DispCtx_0cfbd0* m_c; // +0x0c
         char m_pad10[0x1c - 0x10];
-        int m_1c; // +0x1c
+        i32 m_1c; // +0x1c
         char m_pad20[0x40 - 0x20];
-        int m_40; // +0x40
+        i32 m_40; // +0x40
         char m_pad44[0x1bc - 0x44];
-        int m_1bc; // +0x1bc
-        int m_1c0; // +0x1c0
-        int Dispatch();
+        i32 m_1bc; // +0x1bc
+        i32 m_1c0; // +0x1c0
+        i32 Dispatch();
     };
     // @source: winapi:PostMessageA
     RVA(0x000cfbd0, 0x8f)
-    int Dispatcher_0cfbd0::Dispatch() {
+    i32 Dispatcher_0cfbd0::Dispatch() {
         if (m_1c == 0x20) {
             m_1c0 = 1;
             m_40 = 1;
@@ -1884,7 +1901,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:CopyRect
     struct DrawSink_0d00a0 {
-        void Blit(int a, int b, RECT* rc, int d); // thiscall, RVA 0x3751
+        void Blit(i32 a, i32 b, RECT* rc, i32 d); // thiscall, RVA 0x3751
     };
     struct DrawOwner_0d00a0 {
         char m_pad0[0x5c];
@@ -1899,10 +1916,10 @@ namespace ApiCallerStubs {
         DrawOwner_0d00a0* m_4; // +0x04
         char m_pad8[0xc - 8];
         RectSrc_0d00a0* m_c; // +0x0c
-        void Show(int arg);
+        void Show(i32 arg);
     };
     RVA(0x000d00a0, 0x5a)
-    void BlitHost_0d00a0::Show(int arg) {
+    void BlitHost_0d00a0::Show(i32 arg) {
         RECT src = *(RECT*)(m_c->m_24 + 0x10);
         RECT dst;
         CopyRect(&dst, &src);
@@ -1913,7 +1930,7 @@ namespace ApiCallerStubs {
     // @source: winapi:SetRect
     // @stub
     RVA(0x000d5f90, 0xd7)
-    int ThisStubOwnerUnknown::winapi_0d5f90_SetRect(int, int, int, int) {
+    i32 ThisStubOwnerUnknown::winapi_0d5f90_SetRect(i32, i32, i32, i32) {
         return 0;
     }
 
@@ -1921,7 +1938,7 @@ namespace ApiCallerStubs {
     // @source: winapi:wsprintfA
     // @stub
     RVA(0x000d60b0, 0x2cd)
-    int ThisStubOwnerUnknown::winapi_0d60b0_wsprintfA() {
+    i32 ThisStubOwnerUnknown::winapi_0d60b0_wsprintfA() {
         return 0;
     }
 
@@ -1929,26 +1946,26 @@ namespace ApiCallerStubs {
     // @source: winapi:PostMessageA
     // __thiscall(arg): begin an action once (m_500 guards), arm it, notify the host.
     struct ActionSub_0d7220 {
-        int Accept(int arg); // thiscall, RVA 0x1bedde (on this+0x410)
+        i32 Accept(i32 arg); // thiscall, RVA 0x1bedde (on this+0x410)
     };
     struct ActionPeer_0d7220 {
         char m_pad0[0x40];
-        int m_40; // +0x40
+        i32 m_40; // +0x40
     };
     struct ActionHost_0d7220 {
         char m_pad0[0x40c];
-        int m_40c;              // +0x40c
+        i32 m_40c;              // +0x40c
         ActionSub_0d7220 m_410; // +0x410 (empty view, 1 byte)
         char m_pad411[0x4e4 - 0x411];
         ActionPeer_0d7220* m_4e4; // +0x4e4
         char m_pad4e8[0x500 - 0x4e8];
-        int m_500; // +0x500
+        i32 m_500; // +0x500
         char m_pad504[0x510 - 0x504];
-        int m_510; // +0x510
-        int Begin(int arg);
+        i32 m_510; // +0x510
+        i32 Begin(i32 arg);
     };
     RVA(0x000d7220, 0x7b)
-    int ActionHost_0d7220::Begin(int arg) {
+    i32 ActionHost_0d7220::Begin(i32 arg) {
         if (m_500) {
             return 0;
         }
@@ -1969,7 +1986,7 @@ namespace ApiCallerStubs {
     // @source: winapi:wsprintfA
     // @stub
     RVA(0x000d7520, 0x3b9)
-    int ThisStubOwnerUnknown::winapi_0d7520_wsprintfA(int, int, int, int) {
+    i32 ThisStubOwnerUnknown::winapi_0d7520_wsprintfA(i32, i32, i32, i32) {
         return 0;
     }
 
@@ -1977,7 +1994,7 @@ namespace ApiCallerStubs {
     // @source: winapi:SetRect
     // @stub
     RVA(0x000d8c60, 0xea)
-    int ThisStubOwnerUnknown::winapi_0d8c60_SetRect() {
+    i32 ThisStubOwnerUnknown::winapi_0d8c60_SetRect() {
         return 0;
     }
 
@@ -1985,7 +2002,7 @@ namespace ApiCallerStubs {
     // @source: winapi:wsprintfA
     // @stub
     RVA(0x000d95f0, 0x756)
-    int ThisStubOwnerUnknown::winapi_0d95f0_wsprintfA() {
+    i32 ThisStubOwnerUnknown::winapi_0d95f0_wsprintfA() {
         return 0;
     }
 
@@ -1995,17 +2012,17 @@ namespace ApiCallerStubs {
     // once-per-frame random bit lazily seeded from timeGetTime.
     struct CoinHost_0da200 {
         char m_pad0[0x1c];
-        int m_1c; // +0x1c
-        int Flip();
+        i32 m_1c; // +0x1c
+        i32 Flip();
     };
     RVA(0x000da200, 0x9b)
-    int CoinHost_0da200::Flip() {
+    i32 CoinHost_0da200::Flip() {
         CGameReg* gr = g_gameReg;
         if (gr->m_134 == 1 && gr->m_130 == 0) {
             return (m_1c + 1) % 2;
         }
         if (!(g_coinRolled & 1)) {
-            int seed;
+            i32 seed;
             g_coinRolled |= 1;
             if (!(g_rngSeeded & 1)) {
                 g_rngSeeded |= 1;
@@ -2022,14 +2039,14 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:PostMessageA
     DATA(0x0064c69c)
-    extern int g_flag64c69c; // DAT_0064c69c
+    extern i32 g_flag64c69c; // DAT_0064c69c
     struct CmdWnd_0de590 {
-        int m_0;
+        i32 m_0;
         CmdWnd_0de590* m_4; // +0x04
         void Forward();     // thiscall, RVA 0x3f62 (on this->m_4)
     };
     struct CmdHost_0de590 {
-        int m_0;
+        i32 m_0;
         CmdWnd_0de590* m_4; // +0x04
         void Cancel();
     };
@@ -2045,14 +2062,14 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:EndDialog
     DATA(0x0064c86c)
-    extern int g_dlg64c86c; // DAT_0064c86c (the active dialog HWND)
+    extern i32 g_dlg64c86c; // DAT_0064c86c (the active dialog HWND)
     DATA(0x00613a9c)
-    extern int g_dlgSel613a9c;                                    // DAT_00613a9c
-    int __cdecl DlgFallback_1302(HWND hDlg, int wParam, int cur); // RVA 0x1302
-    void __cdecl DlgInit_2e05(HWND hDlg, int v);                  // RVA 0x2e05
+    extern i32 g_dlgSel613a9c;                                    // DAT_00613a9c
+    i32 __cdecl DlgFallback_1302(HWND hDlg, i32 wParam, i32 cur); // RVA 0x1302
+    void __cdecl DlgInit_2e05(HWND hDlg, i32 v);                  // RVA 0x2e05
     // __stdcall DlgProc(hDlg, msg, wParam, lParam).
     RVA(0x000e35f0, 0x77)
-    int __stdcall winapi_0e35f0_EndDialog(HWND hDlg, int msg, int wParam, int lParam) {
+    i32 __stdcall winapi_0e35f0_EndDialog(HWND hDlg, i32 msg, i32 wParam, i32 lParam) {
         switch (msg) {
             case 0x111:
                 if (wParam == 2) {
@@ -2066,7 +2083,7 @@ namespace ApiCallerStubs {
             default:
                 return 0;
             case 0x110: {
-                int v = (int)g_gameReg->m_58;
+                i32 v = (i32)g_gameReg->m_58;
                 g_dlgSel613a9c = -1;
                 g_dlg64c86c = v;
                 DlgInit_2e05(hDlg, v);
@@ -2087,12 +2104,12 @@ namespace ApiCallerStubs {
     // this TU. (m_58 is reused elsewhere as an int/void* gate, so cast locally.)
     struct DlgSub58_0e3a40 {
         void M1834(char* text);         // thiscall, thunk 0x1834
-        void M2d97(int a, int caption); // thiscall, thunk 0x2d97
+        void M2d97(i32 a, i32 caption); // thiscall, thunk 0x2d97
     };
     // The SetDlgItemTextA helper (RVA 0xe4850) is reached here via thunk 0x103c.
     // __stdcall DialogProc: OK closes; Cancel runs the helper sub-object; init fills.
     RVA(0x000e3a40, 0xb0)
-    int __stdcall winapi_0e3a40_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+    i32 __stdcall winapi_0e3a40_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
         switch (msg) {
             case 0x110:
                 if (g_dlgInfoText == 0) {
@@ -2121,7 +2138,7 @@ namespace ApiCallerStubs {
     // @source: winapi:EndDialog
     // __stdcall DialogProc: OK/Cancel close the dialog; WM_INITDIALOG fills a line.
     RVA(0x000e3b20, 0x86)
-    int __stdcall winapi_0e3b20_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+    i32 __stdcall winapi_0e3b20_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
         switch (msg) {
             case 0x110:
                 if (g_dlgInfoText == 0) {
@@ -2148,7 +2165,7 @@ namespace ApiCallerStubs {
     // @source: winapi:EndDialog
     // __stdcall DlgProc(hDlg, msg, wParam, lParam): OK/Cancel end the dialog.
     RVA(0x000e3be0, 0x52)
-    int __stdcall winapi_0e3be0_EndDialog(HWND hDlg, int msg, int wParam, int lParam) {
+    i32 __stdcall winapi_0e3be0_EndDialog(HWND hDlg, i32 msg, i32 wParam, i32 lParam) {
         switch (msg) {
             case 0x110:
                 return 1;
@@ -2174,12 +2191,12 @@ namespace ApiCallerStubs {
     void winapi_0e3e80_SetDlgItemTextA(
         HWND hWnd,
         NameItem_09e2d0* item,
-        int id3,
-        int id4,
-        int id5,
-        int id6
+        i32 id3,
+        i32 id4,
+        i32 id5,
+        i32 id6
     ) {
-        int flag;
+        i32 flag;
         if (Check2694(item)) {
             SetDlgItemTextA(hWnd, id3, item->m_14);
             flag = 1;
@@ -2207,8 +2224,8 @@ namespace ApiCallerStubs {
     // @source: winapi:SetRect
     // @stub
     RVA(0x000e6020, 0x288)
-    int
-    ThisStubOwnerUnknown::winapi_0e6020_SetRect(int, int, int, int, int, int, int, int, int, int) {
+    i32
+    ThisStubOwnerUnknown::winapi_0e6020_SetRect(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32) {
         return 0;
     }
 
@@ -2216,7 +2233,7 @@ namespace ApiCallerStubs {
     // @source: winapi:IntersectRect
     // @stub
     RVA(0x000ecc90, 0x86a)
-    int ThisStubOwnerUnknown::winapi_0ecc90_IntersectRect() {
+    i32 ThisStubOwnerUnknown::winapi_0ecc90_IntersectRect() {
         return 0;
     }
 
@@ -2224,7 +2241,7 @@ namespace ApiCallerStubs {
     // @source: winapi:PtInRect
     // @stub
     RVA(0x000ed9f0, 0x8dd)
-    int ThisStubOwnerUnknown::winapi_0ed9f0_PtInRect() {
+    i32 ThisStubOwnerUnknown::winapi_0ed9f0_PtInRect() {
         return 0;
     }
 
@@ -2232,7 +2249,7 @@ namespace ApiCallerStubs {
     // @source: winapi:IntersectRect;PtInRect
     // @stub
     RVA(0x000f0e20, 0x928)
-    int ThisStubOwnerUnknown::winapi_0f0e20_IntersectRect_PtInRect() {
+    i32 ThisStubOwnerUnknown::winapi_0f0e20_IntersectRect_PtInRect() {
         return 0;
     }
 
@@ -2240,7 +2257,7 @@ namespace ApiCallerStubs {
     // @source: winapi:IntersectRect
     // @stub
     RVA(0x000f36a0, 0x78e)
-    int winapi_0f36a0_IntersectRect() {
+    i32 winapi_0f36a0_IntersectRect() {
         return 0;
     }
 
@@ -2248,7 +2265,7 @@ namespace ApiCallerStubs {
     // @source: winapi:PtInRect
     // @stub
     RVA(0x000f42f0, 0x1193)
-    int ThisStubOwnerUnknown::winapi_0f42f0_PtInRect() {
+    i32 ThisStubOwnerUnknown::winapi_0f42f0_PtInRect() {
         return 0;
     }
 
@@ -2256,7 +2273,7 @@ namespace ApiCallerStubs {
     // @source: winapi:IntersectRect
     // @stub
     RVA(0x000f60f0, 0xb30)
-    int ThisStubOwnerUnknown::winapi_0f60f0_IntersectRect() {
+    i32 ThisStubOwnerUnknown::winapi_0f60f0_IntersectRect() {
         return 0;
     }
 
@@ -2264,16 +2281,16 @@ namespace ApiCallerStubs {
     // @source: winapi:FreeLibrary
     struct MidiDrv_0f8e20 {
         char m_pad0[0x14];
-        void(__cdecl* m_14)(short); // +0x14 function pointer member
+        void(__cdecl* m_14)(i16); // +0x14 function pointer member
     };
     DATA(0x0064e0b8)
-    extern int g_midiOpen_64e0b8;
+    extern i32 g_midiOpen_64e0b8;
     DATA(0x0064e0b0)
     extern MidiDrv_0f8e20* g_midiDrv_64e0b0;
     DATA(0x0064e0a4)
-    extern short g_midiPort_64e0a4;
+    extern i16 g_midiPort_64e0a4;
     DATA(0x0064dd28)
-    extern short g_midiDev_64dd28;
+    extern i16 g_midiDev_64dd28;
     DATA(0x0064e0a8)
     extern HMODULE g_midiLib_64e0a8;
     void __cdecl MidiShutdown_3382(); // RVA 0x3382
@@ -2299,10 +2316,10 @@ namespace ApiCallerStubs {
     struct PaintHost_0fac70 {
         char m_pad0[4];
         PaintWnd_0fac70* m_4; // +0x04
-        int Paint();
+        i32 Paint();
     };
     RVA(0x000fac70, 0x4c)
-    int PaintHost_0fac70::Paint() {
+    i32 PaintHost_0fac70::Paint() {
         if (!m_4) {
             return 0;
         }
@@ -2317,29 +2334,29 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // Free init helper at RVA 0x500930 (__stdcall(int)).
-    void __stdcall Prep_500930(int flag);
+    void __stdcall Prep_500930(i32 flag);
     // A sub-object reached via g_gameReg->m_2c whose Refresh() is at RVA 0x4d8c60.
     struct SubMgr_0fe460 {
         void Refresh(); // RVA 0x4d8c60
     };
     // The screen object this method initialises (RVA 0xfe460).
     struct Screen_0fe460 {
-        int m_0; // +0x00
+        i32 m_0; // +0x00
         char m_pad4[0x10 - 4];
         RECT m_10; // +0x10
         char m_pad20[0x10c - 0x20];
-        int m_10c; // +0x10c
+        i32 m_10c; // +0x10c
         char m_pad110[0x548 - 0x110];
-        int m_548; // +0x548
-        int Open();
-        void Resize(int n);          // RVA 0x4fe3e0
-        int Validate();              // RVA 0x4ffde0 (thunk via 0x3a08)
-        void Activate(int a, int n); // RVA 0x500d70
+        i32 m_548; // +0x548
+        i32 Open();
+        void Resize(i32 n);          // RVA 0x4fe3e0
+        i32 Validate();              // RVA 0x4ffde0 (thunk via 0x3a08)
+        void Activate(i32 a, i32 n); // RVA 0x500d70
     };
     // @source: winapi:SetRect
     // __thiscall: lay out the 0xa0x0x1e0 screen, validate it, else report error.
     RVA(0x000fe460, 0x83)
-    int Screen_0fe460::Open() {
+    i32 Screen_0fe460::Open() {
         if (m_548 == 0 && m_0 != 1) {
             Prep_500930(1);
             SetRect(&m_10, 0, 0, 0xa0, 0x1e0);
@@ -2358,27 +2375,27 @@ namespace ApiCallerStubs {
     // @source: winapi:SetRect
     // @stub
     RVA(0x000fe520, 0xa9)
-    int ThisStubOwnerUnknown::winapi_0fe520_SetRect() {
+    i32 ThisStubOwnerUnknown::winapi_0fe520_SetRect() {
         return 0;
     }
 
     // @confidence: low
     // @source: winapi:SetRect
-    void __stdcall Prep_12fd(int mode); // RVA 0x12fd
+    void __stdcall Prep_12fd(i32 mode); // RVA 0x12fd
     struct CGameWnd_fe600 {
-        int Sub3d55(); // thiscall, RVA 0x3d55 (on g_gameReg->m_2c)
+        i32 Sub3d55(); // thiscall, RVA 0x3d55 (on g_gameReg->m_2c)
     };
     struct RectWnd_fe600 {
-        int m_0; // +0x00
+        i32 m_0; // +0x00
         char m_pad4[0x10 - 4];
         RECT m_10; // +0x10
         char m_pad20[0x548 - 0x20];
-        int m_548; // +0x548
-        int Reset();
-        void Sub194c(int v); // thiscall, RVA 0x194c
+        i32 m_548; // +0x548
+        i32 Reset();
+        void Sub194c(i32 v); // thiscall, RVA 0x194c
     };
     RVA(0x000fe600, 0x49)
-    int RectWnd_fe600::Reset() {
+    i32 RectWnd_fe600::Reset() {
         if (!m_548 && m_0 != 2) {
             Prep_12fd(1);
             SetRect(&m_10, -1, -1, -1, -1);
@@ -2392,7 +2409,7 @@ namespace ApiCallerStubs {
     // @source: winapi:SetRect
     // @stub
     RVA(0x00115300, 0xf5)
-    int winapi_115300_SetRect() {
+    i32 winapi_115300_SetRect() {
         return 0;
     }
 
@@ -2400,7 +2417,7 @@ namespace ApiCallerStubs {
     // @source: winapi:CopyRect;OffsetRect
     // @stub
     RVA(0x00115930, 0x15b)
-    int winapi_115930_CopyRect_OffsetRect() {
+    i32 winapi_115930_CopyRect_OffsetRect() {
         return 0;
     }
 
@@ -2430,7 +2447,7 @@ namespace ApiCallerStubs {
     // @source: winapi:OutputDebugStringA
     // __cdecl(status): trace a _heapchk() status code.
     RVA(0x00118b50, 0x5b)
-    void winapi_118b50_OutputDebugStringA(int status) {
+    void winapi_118b50_OutputDebugStringA(i32 status) {
         switch (status) {
             case -3:
                 OutputDebugStringA("Heap return value: _HEAPBADBEGIN\n");
@@ -2457,9 +2474,9 @@ namespace ApiCallerStubs {
     // @source: winapi:IsIconic
     // __cdecl(hWnd, msg, wParam): block screen-saver / monitor-power while not iconic.
     RVA(0x001192d0, 0x39)
-    int winapi_1192d0_IsIconic(HWND hWnd, int msg, int wParam) {
+    i32 winapi_1192d0_IsIconic(HWND hWnd, i32 msg, i32 wParam) {
         if (msg == 0x112) {
-            int sc = wParam & 0xfff0;
+            i32 sc = wParam & 0xfff0;
             if (sc == 0xf140 || sc == 0xf170) {
                 if (!IsIconic(hWnd)) {
                     return 1;
@@ -2473,7 +2490,7 @@ namespace ApiCallerStubs {
     // @source: winapi:timeGetTime
     // @stub
     RVA(0x0011b3b0, 0x338)
-    int ThisStubOwnerUnknown::winapi_11b3b0_timeGetTime(int, int, int, int, int, int) {
+    i32 ThisStubOwnerUnknown::winapi_11b3b0_timeGetTime(i32, i32, i32, i32, i32, i32) {
         return 0;
     }
 
@@ -2481,7 +2498,7 @@ namespace ApiCallerStubs {
     // @source: winapi:timeGetTime
     // @stub
     RVA(0x0011b7c0, 0x304)
-    int __stdcall winapi_11b7c0_timeGetTime(int, int, int, int, int) {
+    i32 __stdcall winapi_11b7c0_timeGetTime(i32, i32, i32, i32, i32) {
         return 0;
     }
 
@@ -2489,7 +2506,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetLastError;HeapValidate;HeapWalk
     // @stub
     RVA(0x001206b0, 0x1ad)
-    int winapi_1206b0_GetLastError_HeapValidate_HeapWalk() {
+    i32 winapi_1206b0_GetLastError_HeapValidate_HeapWalk() {
         return 0;
     }
 
@@ -2497,7 +2514,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetCurrentThreadId;TlsSetValue
     // @stub
     RVA(0x00123d10, 0x8c)
-    int winapi_123d10_GetCurrentThreadId_TlsSetValue() {
+    i32 winapi_123d10_GetCurrentThreadId_TlsSetValue() {
         return 0;
     }
 
@@ -2510,13 +2527,13 @@ namespace ApiCallerStubs {
     AppModule_136a30* AppModule_1d3631(); // RVA 0x1d3631 (global accessor)
     struct WaveHost_136a30 {
         char m_pad0[0x78];
-        int m_78; // +0x78
-        int LoadWave(const char* name, int a, int b);
-        int Use136910(void* data, int a, int b); // thiscall, RVA 0x136910
+        i32 m_78; // +0x78
+        i32 LoadWave(const char* name, i32 a, i32 b);
+        i32 Use136910(void* data, i32 a, i32 b); // thiscall, RVA 0x136910
     };
     // __thiscall(name, a, b): find/load/lock a WAVE resource, hand it to Use136910.
     RVA(0x00136a30, 0x76)
-    int WaveHost_136a30::LoadWave(const char* name, int a, int b) {
+    i32 WaveHost_136a30::LoadWave(const char* name, i32 a, i32 b) {
         if (!m_78) {
             return 0;
         }
@@ -2541,17 +2558,17 @@ namespace ApiCallerStubs {
     // @source: winapi:FindResourceA;LoadResource;LockResource
     // The probe object (arg1) whose Ready (RVA 0x135440) gates loading.
     struct WaveProbe_136ce0 {
-        int Ready(); // thiscall, RVA 0x135440
+        i32 Ready(); // thiscall, RVA 0x135440
     };
     struct WaveHost2_136ce0 {
         char m_pad0[0x78];
-        int m_78; // +0x78
-        int LoadWave(WaveProbe_136ce0* probe, const char* name, int arg);
-        int Use136bd0(WaveProbe_136ce0* probe, void* data, int arg); // thiscall, RVA 0x136bd0
+        i32 m_78; // +0x78
+        i32 LoadWave(WaveProbe_136ce0* probe, const char* name, i32 arg);
+        i32 Use136bd0(WaveProbe_136ce0* probe, void* data, i32 arg); // thiscall, RVA 0x136bd0
     };
     // __thiscall(probe, name, arg): if the probe is ready, find/load/lock the WAVE.
     RVA(0x00136ce0, 0x92)
-    int WaveHost2_136ce0::LoadWave(WaveProbe_136ce0* probe, const char* name, int arg) {
+    i32 WaveHost2_136ce0::LoadWave(WaveProbe_136ce0* probe, const char* name, i32 arg) {
         if (!m_78) {
             return 0;
         }
@@ -2579,16 +2596,16 @@ namespace ApiCallerStubs {
     // @source: winapi:timeGetTime
     // @stub
     RVA(0x00136fe0, 0x7b)
-    int ThisStubOwnerUnknown::winapi_136fe0_timeGetTime(int, int, int, int, int, int) {
+    i32 ThisStubOwnerUnknown::winapi_136fe0_timeGetTime(i32, i32, i32, i32, i32, i32) {
         return 0;
     }
 
     // @confidence: low
     // @source: directx-wrapper-caller:calls 0x136550 (DSOUND.#1_DirectSoundCreate)
-    int __stdcall PlaySound3_136550(int a, int b, int flag); // RVA 0x136550
+    i32 __stdcall PlaySound3_136550(i32 a, i32 b, i32 flag); // RVA 0x136550
     // __stdcall(a, b): default the 3rd arg to 0.
     RVA(0x00137720, 0x14)
-    int __stdcall directx_wrapper_caller_137720_DSOUND_1_DirectSoundCreate(int a, int b) {
+    i32 __stdcall directx_wrapper_caller_137720_DSOUND_1_DirectSoundCreate(i32 a, i32 b) {
         return PlaySound3_136550(a, b, 0);
     }
 
@@ -2597,37 +2614,37 @@ namespace ApiCallerStubs {
     // __thiscall(timestamp): throttle to >0x64 ms since the last tick, query the
     // source (m_8), wrap localC against m_c into the window, then run the work pass.
     struct TickSource_137e30 {
-        int Read(int* outHi, int* outLo); // thiscall, RVA 0x135a20
+        i32 Read(i32* outHi, i32* outLo); // thiscall, RVA 0x135a20
     };
     struct Throttle_137e30 {
         char m_pad0[8];
         TickSource_137e30* m_8; // +0x08
-        int m_c;                // +0x0c
-        int m_10;               // +0x10
-        int m_14;               // +0x14
+        i32 m_c;                // +0x0c
+        i32 m_10;               // +0x10
+        i32 m_14;               // +0x14
         char m_pad18[0x1c - 0x18];
-        int m_1c; // +0x1c
+        i32 m_1c; // +0x1c
         char m_pad20[0x28 - 0x20];
-        int m_28; // +0x28
-        int Tick(int timestamp);
-        int Work(int a, int b); // RVA 0x137f30
+        i32 m_28; // +0x28
+        i32 Tick(i32 timestamp);
+        i32 Work(i32 a, i32 b); // RVA 0x137f30
     };
     RVA(0x00137e30, 0x98)
-    int Throttle_137e30::Tick(int timestamp) {
+    i32 Throttle_137e30::Tick(i32 timestamp) {
         if (!m_1c) {
             return 1;
         }
-        int t = (timestamp == -1) ? (int)timeGetTime() : timestamp;
-        if ((unsigned)t <= (unsigned)(m_28 + 0x64)) {
+        i32 t = (timestamp == -1) ? (i32)timeGetTime() : timestamp;
+        if ((u32)t <= (u32)(m_28 + 0x64)) {
             return 1;
         }
         m_28 = t;
-        int hi, lo;
+        i32 hi, lo;
         if (!m_8->Read(&hi, &lo)) {
             return 0;
         }
-        int v;
-        if ((unsigned)hi >= (unsigned)m_c) {
+        i32 v;
+        if ((u32)hi >= (u32)m_c) {
             if (hi == m_c) {
                 v = m_10;
             } else {
@@ -2636,7 +2653,7 @@ namespace ApiCallerStubs {
         } else {
             v = m_10 + hi - m_c;
         }
-        if ((unsigned)v >= (unsigned)m_14) {
+        if ((u32)v >= (u32)m_14) {
             return 1;
         }
         return Work(m_c, v) != 0;
@@ -2645,26 +2662,26 @@ namespace ApiCallerStubs {
     // @confidence: low
     // A device object whose Prepare(flag) lives at RVA 0x135a70.
     struct Device_1380d0 {
-        int Prepare(int flag); // RVA 0x135a70
+        i32 Prepare(i32 flag); // RVA 0x135a70
     };
     // __thiscall(timestamp) host: timestamp -1 means "now"; prep the device, then
     // run the work pass (RVA 0x137f30) over m_c/m_10. Returns whether it ran.
     struct Timer_1380d0 {
         char m_pad0[0x8];
         Device_1380d0* m_8; // +0x08
-        int m_c;            // +0x0c
-        int m_10;           // +0x10
+        i32 m_c;            // +0x0c
+        i32 m_10;           // +0x10
         char m_pad14[0x20 - 0x14];
-        int m_20; // +0x20
+        i32 m_20; // +0x20
         char m_pad24[0x28 - 0x24];
-        int m_28; // +0x28
-        int Tick(int timestamp);
-        int Work(int a, int b); // RVA 0x137f30
+        i32 m_28; // +0x28
+        i32 Tick(i32 timestamp);
+        i32 Work(i32 a, i32 b); // RVA 0x137f30
     };
     // @source: winapi:timeGetTime
     RVA(0x001380d0, 0x4e)
-    int Timer_1380d0::Tick(int timestamp) {
-        int t = (timestamp == -1) ? (int)timeGetTime() : timestamp;
+    i32 Timer_1380d0::Tick(i32 timestamp) {
+        i32 t = (timestamp == -1) ? (i32)timeGetTime() : timestamp;
         m_28 = t;
         m_c = 0;
         if (!m_8->Prepare(0)) {
@@ -2680,14 +2697,14 @@ namespace ApiCallerStubs {
     // the AIL MIDI driver. m_28 = whether the driver is usable.
     struct AilHost_138490 {
         char m_pad0[0x1c];
-        int m_1c; // +0x1c
-        int m_20; // +0x20
-        int m_24; // +0x24
-        int m_28; // +0x28
-        int Init(int driver, int seq, int skipInit);
+        i32 m_1c; // +0x1c
+        i32 m_20; // +0x20
+        i32 m_24; // +0x24
+        i32 m_28; // +0x28
+        i32 Init(i32 driver, i32 seq, i32 skipInit);
     };
     RVA(0x00138490, 0x5e)
-    int AilHost_138490::Init(int driver, int seq, int skipInit) {
+    i32 AilHost_138490::Init(i32 driver, i32 seq, i32 skipInit) {
         m_24 = driver;
         m_20 = seq;
         m_1c = 0;
@@ -2723,7 +2740,7 @@ namespace ApiCallerStubs {
     struct AilMgr_1384f0 {
         char m_pad0[0x1c];
         AilSlot_1384f0* m_1c; // +0x1c
-        int m_20;             // +0x20
+        i32 m_20;             // +0x20
         void Shutdown();
         void Reset138530(); // thiscall, RVA 0x138530
     };
@@ -2745,8 +2762,8 @@ namespace ApiCallerStubs {
     // @source: thirdparty:_AIL_set_XMIDI_master_volume@8
     // __stdcall(volume 0..100): scale to 0..127 and push to the XMIDI driver.
     RVA(0x00138950, 0x70)
-    int __stdcall thirdparty_138950_AIL_set_XMIDI_master_volume_8(int volume) {
-        int scaled;
+    i32 __stdcall thirdparty_138950_AIL_set_XMIDI_master_volume_8(i32 volume) {
+        i32 scaled;
         if (!g_ailMidiDriver) {
             return 0;
         }
@@ -2765,11 +2782,11 @@ namespace ApiCallerStubs {
     // @source: thirdparty:_AIL_XMIDI_master_volume@4
     // __cdecl(): read the XMIDI master volume and rescale 0..127 -> 0..100.
     RVA(0x001389c0, 0x47)
-    int thirdparty_1389c0_AIL_XMIDI_master_volume_4() {
+    i32 thirdparty_1389c0_AIL_XMIDI_master_volume_4() {
         if (!g_ailMidiDriver) {
             return 0x64;
         }
-        int v = AIL_XMIDI_master_volume(g_ailMidiDriver);
+        i32 v = AIL_XMIDI_master_volume(g_ailMidiDriver);
         if (v <= 0) {
             return 0;
         }
@@ -2783,8 +2800,8 @@ namespace ApiCallerStubs {
     // @source: thirdparty:_AIL_allocate_sequence_handle@4;_AIL_init_sequence@12;_AIL_release_sequence_handle@4
     // @stub
     RVA(0x00138c20, 0x122)
-    int ThisStubOwnerUnknown::
-        thirdparty_138c20_AIL_allocate_sequence_handle_4_AIL_init_sequence_12_AIL_(int, int, int) {
+    i32 ThisStubOwnerUnknown::
+        thirdparty_138c20_AIL_allocate_sequence_handle_4_AIL_init_sequence_12_AIL_(i32, i32, i32) {
         return 0;
     }
 
@@ -2801,28 +2818,28 @@ namespace ApiCallerStubs {
         virtual void v5();
         virtual void v6();
         virtual void v7();
-        virtual int CanPlay(); // slot 8 == vtable +0x20
+        virtual i32 CanPlay(); // slot 8 == vtable +0x20
         virtual void v9();
         virtual void v10();
         virtual void v11();
         virtual void Teardown(); // slot 12 == vtable +0x30
         char m_pad4[0x44 - 4];
-        int m_44; // +0x44
-        int m_48; // +0x48
-        int m_4c; // +0x4c
-        int m_50; // +0x50
-        int m_54; // +0x54
-        int m_58; // +0x58
-        int m_5c; // +0x5c
-        int Play(int cursor, int loop);
-        int Resume(int restart);
-        int SetLoop(int loop);
-        int ResumeGate(); // the m_138f60 helper
-        int Stop();
-        int SetTempo(int tempo, int unused);
+        i32 m_44; // +0x44
+        i32 m_48; // +0x48
+        i32 m_4c; // +0x4c
+        i32 m_50; // +0x50
+        i32 m_54; // +0x54
+        i32 m_58; // +0x58
+        i32 m_5c; // +0x5c
+        i32 Play(i32 cursor, i32 loop);
+        i32 Resume(i32 restart);
+        i32 SetLoop(i32 loop);
+        i32 ResumeGate(); // the m_138f60 helper
+        i32 Stop();
+        i32 SetTempo(i32 tempo, i32 unused);
         void ReleaseHandle();
-        int Pause();
-        int SetVolume(int volume, int ms);
+        i32 Pause();
+        i32 SetVolume(i32 volume, i32 ms);
     };
     extern "C" void RezFree_call(void* p); // RVA 0x1b9b82 (cdecl)
 
@@ -2845,7 +2862,7 @@ namespace ApiCallerStubs {
     // @source: thirdparty:_AIL_set_sequence_loop_count@8;_AIL_start_sequence@4
     // __thiscall(cursor, loop): start the sequence; if looping, clear loop count.
     RVA(0x00138e10, 0x4a)
-    int AilSeq::Play(int cursor, int loop) {
+    i32 AilSeq::Play(i32 cursor, i32 loop) {
         if (!CanPlay()) {
             return 0;
         }
@@ -2863,7 +2880,7 @@ namespace ApiCallerStubs {
     // @source: thirdparty:_AIL_end_sequence@4
     // __thiscall(): if playable, end the sequence and clear the paused flag.
     RVA(0x00138e60, 0x26)
-    int AilSeq::Stop() {
+    i32 AilSeq::Stop() {
         if (!CanPlay()) {
             return 0;
         }
@@ -2876,7 +2893,7 @@ namespace ApiCallerStubs {
     // @source: thirdparty:_AIL_stop_sequence@4
     // __thiscall(): pause the sequence the first time, counting nested pauses.
     RVA(0x00138e90, 0x3a)
-    int AilSeq::Pause() {
+    i32 AilSeq::Pause() {
         if (!CanPlay()) {
             return 0;
         }
@@ -2894,7 +2911,7 @@ namespace ApiCallerStubs {
     // @source: thirdparty:_AIL_resume_sequence@4
     // __thiscall(restart): count down the resume delay and re-issue the resume.
     RVA(0x00138ed0, 0x4f)
-    int AilSeq::Resume(int restart) {
+    i32 AilSeq::Resume(i32 restart) {
         if (!CanPlay()) {
             return 0;
         }
@@ -2917,7 +2934,7 @@ namespace ApiCallerStubs {
     // @source: thirdparty:_AIL_set_sequence_tempo@12
     // __thiscall(tempo, ms): if playable, set the sequence tempo and cache it.
     RVA(0x00138f90, 0x32)
-    int AilSeq::SetTempo(int tempo, int ms) {
+    i32 AilSeq::SetTempo(i32 tempo, i32 ms) {
         if (!CanPlay()) {
             return 0;
         }
@@ -2930,11 +2947,11 @@ namespace ApiCallerStubs {
     // @source: thirdparty:_AIL_set_sequence_volume@12
     // __thiscall(volume 0..100, ms): scale to 0..127 and set the sequence volume.
     RVA(0x00138fd0, 0x5e)
-    int AilSeq::SetVolume(int volume, int ms) {
+    i32 AilSeq::SetVolume(i32 volume, i32 ms) {
         if (!CanPlay()) {
             return 0;
         }
-        int scaled;
+        i32 scaled;
         if (volume <= 0) {
             scaled = 0;
         } else if (volume >= 100) {
@@ -2951,7 +2968,7 @@ namespace ApiCallerStubs {
     // @source: thirdparty:_AIL_set_sequence_loop_count@8
     // __thiscall(loop): update the cached loop flag, re-arming the driver count.
     RVA(0x00139030, 0x4c)
-    int AilSeq::SetLoop(int loop) {
+    i32 AilSeq::SetLoop(i32 loop) {
         if (!CanPlay()) {
             return 0;
         }
@@ -2973,11 +2990,11 @@ namespace ApiCallerStubs {
         char m_pad0[4];
         HWND m_4; // +0x04
         char m_pad8[0xc - 8];
-        int m_c; // +0x0c (destroyed flag)
-        int Destroy();
+        i32 m_c; // +0x0c (destroyed flag)
+        i32 Destroy();
     };
     RVA(0x0013d4c0, 0x1e)
-    int WndHolder_13d4c0::Destroy() {
+    i32 WndHolder_13d4c0::Destroy() {
         if (!m_c) {
             m_c = 1;
             DestroyWindow(m_4);
@@ -2989,7 +3006,7 @@ namespace ApiCallerStubs {
     // @source: winapi:CopyRect
     // @stub
     RVA(0x0013f460, 0x2da)
-    int ThisStubOwnerUnknown::winapi_13f460_CopyRect(int, int) {
+    i32 ThisStubOwnerUnknown::winapi_13f460_CopyRect(i32, i32) {
         return 0;
     }
 
@@ -3001,29 +3018,29 @@ namespace ApiCallerStubs {
     // @source: winapi:FindResourceA;LoadResource;LockResource
     // The header of the locked RT_BITMAP resource (its +0xe must be 8).
     struct ResHdr_144270 {
-        int m_0; // +0x00 (payload size; data follows at +m_0+0x400)
-        int m_4; // +0x04
-        int m_8; // +0x08
+        i32 m_0; // +0x00 (payload size; data follows at +m_0+0x400)
+        i32 m_4; // +0x04
+        i32 m_8; // +0x08
         char m_padc[0xe - 0xc];
-        short m_e; // +0x0e (must be 8)
+        i16 m_e; // +0x0e (must be 8)
     };
     struct ResLoad_144270 {
         char m_pad0[0x10];
-        int m_10; // +0x10 (set to 0x6c after a 0x6c-byte zero-fill)
-        int m_14; // +0x14
-        int m_18; // +0x18
-        int m_1c; // +0x1c
+        i32 m_10; // +0x10 (set to 0x6c after a 0x6c-byte zero-fill)
+        i32 m_14; // +0x14
+        i32 m_18; // +0x18
+        i32 m_1c; // +0x1c
         char m_pad20[0x78 - 0x20];
-        int m_78;                        // +0x78
-        int Init(int saved);             // thiscall, RVA 0x13e0a0
-        void Parse(char* data, int two); // thiscall, RVA 0x13ece0
-        int Load(int a, char* name, int c);
+        i32 m_78;                        // +0x78
+        i32 Init(i32 saved);             // thiscall, RVA 0x13e0a0
+        void Parse(char* data, i32 two); // thiscall, RVA 0x13ece0
+        i32 Load(i32 a, char* name, i32 c);
     };
     // __thiscall(a, name, c): find/load/lock the named RT_BITMAP, validate its
     // header (+0xe==8), zero a 0x6c-byte block, seed the loader fields, init it,
     // then parse the payload that follows the 0x400-byte header.
     RVA(0x00144270, 0xd2)
-    int ResLoad_144270::Load(int a, char* name, int c) {
+    i32 ResLoad_144270::Load(i32 a, char* name, i32 c) {
         HRSRC hr = FindResourceA(g_resModule, name, (LPCSTR)2);
         if (!hr) {
             return 0;
@@ -3036,7 +3053,7 @@ namespace ApiCallerStubs {
         if (!p) {
             return 0;
         }
-        int saved = p->m_8;
+        i32 saved = p->m_8;
         if (p->m_e != 8) {
             return 0;
         }
@@ -3056,13 +3073,13 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:FindResourceA;LoadResource;LockResource
     struct PalLoad_1479e0 {
-        int Apply(int a, PALETTEENTRY* pal, int c); // thiscall, RVA 0x147390
-        int Load(int a, char* name, int c);
+        i32 Apply(i32 a, PALETTEENTRY* pal, i32 c); // thiscall, RVA 0x147390
+        i32 Load(i32 a, char* name, i32 c);
     };
     // __thiscall(a, name, c): load the named PALETTE resource as 256 RGB triples,
     // expand to PALETTEENTRY[256] (flags 0), and apply it.
     RVA(0x001479e0, 0xbb)
-    int PalLoad_1479e0::Load(int a, char* name, int c) {
+    i32 PalLoad_1479e0::Load(i32 a, char* name, i32 c) {
         PALETTEENTRY pal[256];
         HRSRC hr = FindResourceA(g_resModule, name, "PALETTE");
         if (!hr) {
@@ -3076,7 +3093,7 @@ namespace ApiCallerStubs {
         if (!src) {
             return 0;
         }
-        for (int i = 0; i < 256; i++) {
+        for (i32 i = 0; i < 256; i++) {
             pal[i].peRed = src[0];
             pal[i].peGreen = src[1];
             pal[i].peBlue = src[2];
@@ -3093,7 +3110,7 @@ namespace ApiCallerStubs {
     struct PalSurface_147f30;
     struct PalSurfVtbl_147f30 {
         void* s0[4];
-        int(__stdcall* Snapshot)(PalSurface_147f30*, int, int, int count, void* dst); // +0x10
+        i32(__stdcall* Snapshot)(PalSurface_147f30*, i32, i32, i32 count, void* dst); // +0x10
     };
     struct PalSurface_147f30 {
         PalSurfVtbl_147f30* m_vptr;
@@ -3101,7 +3118,7 @@ namespace ApiCallerStubs {
     // The DDraw error logger (RVA 0x141400 = CDirectDrawMgr::GetErrorString) and the
     // Rez allocator backing the working-copy buffer.
     struct CDirectDrawMgr {
-        static void GetErrorString(char* file, int line, long hr);
+        static void GetErrorString(char* file, i32 line, i32 hr);
     };
     struct PalCtx_147f30;
     struct PalCtx_147f30 {
@@ -3110,31 +3127,31 @@ namespace ApiCallerStubs {
         char m_pad8[0xc - 8];
         char* m_c; // +0x0c (the 0x400 source palette buffer)
         char m_pad10[0x14 - 0x10];
-        int m_14;   // +0x14
+        i32 m_14;   // +0x14
         char* m_18; // +0x18 (lazily-allocated 0x400 working copy)
         char m_1c;  // +0x1c
         char m_1d;  // +0x1d
         char m_1e;  // +0x1e
         char m_pad1f[0x20 - 0x1f];
-        int m_20;        // +0x20
-        int m_24;        // +0x24 (timeGetTime stamp)
-        int m_28;        // +0x28
-        int m_2c;        // +0x2c
-        int m_30;        // +0x30
-        int m_34;        // +0x34 (1 once set up)
+        i32 m_20;        // +0x20
+        i32 m_24;        // +0x24 (timeGetTime stamp)
+        i32 m_28;        // +0x28
+        i32 m_2c;        // +0x2c
+        i32 m_30;        // +0x30
+        i32 m_34;        // +0x34 (1 once set up)
         void Teardown(); // thiscall, RVA 0x148250
         void Finalize(); // thiscall, RVA 0x1480a0
-        void Setup6(int a, int b, char c3, char c4, char c5, int a6);
-        void Setup4(int a, int b, int a3, int a4);
+        void Setup6(i32 a, i32 b, char c3, char c4, char c5, i32 a6);
+        void Setup4(i32 a, i32 b, i32 a3, i32 a4);
     };
     // __thiscall(a,b,c3,c4,c5,a6): rebuild the palette snapshot, cache the params
     // (3 bytes at +0x1c), timestamp, lazily clone the source palette, then finalize.
     RVA(0x00147f30, 0xbe)
-    void PalCtx_147f30::Setup6(int a, int b, char c3, char c4, char c5, int a6) {
+    void PalCtx_147f30::Setup6(i32 a, i32 b, char c3, char c4, char c5, i32 a6) {
         if (m_34) {
             Teardown();
         }
-        int err = m_4->m_vptr->Snapshot(m_4, 0, 0, 0x100, m_c);
+        i32 err = m_4->m_vptr->Snapshot(m_4, 0, 0, 0x100, m_c);
         if (err) {
             CDirectDrawMgr::GetErrorString("C:\\Proj\\DDrawMgr\\DIRPAL.CPP", 0x311, err);
         }
@@ -3150,8 +3167,8 @@ namespace ApiCallerStubs {
         if (!m_18) {
             m_18 = (char*)RezAlloc(0x400);
         }
-        for (int i = 0; i < 0x400; i += 4) {
-            *(int*)(m_18 + i) = *(int*)(m_c + i);
+        for (i32 i = 0; i < 0x400; i += 4) {
+            *(i32*)(m_18 + i) = *(i32*)(m_c + i);
         }
         m_34 = 1;
         Finalize();
@@ -3162,11 +3179,11 @@ namespace ApiCallerStubs {
     // __thiscall(a,b,a3,a4): same as Setup6 but stores a3 at +0x14 and uses the
     // 0x34b log line; returns void.
     RVA(0x00147ff0, 0xa9)
-    void PalCtx_147f30::Setup4(int a, int b, int a3, int a4) {
+    void PalCtx_147f30::Setup4(i32 a, i32 b, i32 a3, i32 a4) {
         if (m_34) {
             Teardown();
         }
-        int err = m_4->m_vptr->Snapshot(m_4, 0, 0, 0x100, m_c);
+        i32 err = m_4->m_vptr->Snapshot(m_4, 0, 0, 0x100, m_c);
         if (err) {
             CDirectDrawMgr::GetErrorString("C:\\Proj\\DDrawMgr\\DIRPAL.CPP", 0x34b, err);
         }
@@ -3179,8 +3196,8 @@ namespace ApiCallerStubs {
         if (!m_18) {
             m_18 = (char*)RezAlloc(0x400);
         }
-        for (int i = 0; i < 0x400; i += 4) {
-            *(int*)(m_18 + i) = *(int*)(m_c + i);
+        for (i32 i = 0; i < 0x400; i += 4) {
+            *(i32*)(m_18 + i) = *(i32*)(m_c + i);
         }
         m_34 = 1;
         Finalize();
@@ -3190,7 +3207,7 @@ namespace ApiCallerStubs {
     // @source: winapi:timeGetTime
     // @stub
     RVA(0x001480a0, 0x1a7)
-    int ThisStubOwnerUnknown::winapi_1480a0_timeGetTime() {
+    i32 ThisStubOwnerUnknown::winapi_1480a0_timeGetTime() {
         return 0;
     }
 
@@ -3198,7 +3215,7 @@ namespace ApiCallerStubs {
     // @source: winapi:CreateDCA;DeleteDC;GetSystemPaletteEntries
     // @stub
     RVA(0x001485b0, 0x162)
-    int ThisStubOwnerUnknown::winapi_1485b0_CreateDCA_DeleteDC_GetSystemPaletteEntries() {
+    i32 ThisStubOwnerUnknown::winapi_1485b0_CreateDCA_DeleteDC_GetSystemPaletteEntries() {
         return 0;
     }
 
@@ -3206,7 +3223,7 @@ namespace ApiCallerStubs {
     // @source: winapi:CopyRect
     // @stub
     RVA(0x001538c0, 0x257)
-    int ThisStubOwnerUnknown::winapi_1538c0_CopyRect(int, int) {
+    i32 ThisStubOwnerUnknown::winapi_1538c0_CopyRect(i32, i32) {
         return 0;
     }
 
@@ -3214,7 +3231,7 @@ namespace ApiCallerStubs {
     // @source: winapi:CopyRect
     // @stub
     RVA(0x00153b20, 0x270)
-    int ThisStubOwnerUnknown::winapi_153b20_CopyRect(int, int) {
+    i32 ThisStubOwnerUnknown::winapi_153b20_CopyRect(i32, i32) {
         return 0;
     }
 
@@ -3222,7 +3239,7 @@ namespace ApiCallerStubs {
     // @source: winapi:CopyRect
     // @stub
     RVA(0x00153d90, 0x259)
-    int ThisStubOwnerUnknown::winapi_153d90_CopyRect(int, int) {
+    i32 ThisStubOwnerUnknown::winapi_153d90_CopyRect(i32, i32) {
         return 0;
     }
 
@@ -3230,7 +3247,7 @@ namespace ApiCallerStubs {
     // @source: winapi:CopyRect
     // @stub
     RVA(0x00153ff0, 0x280)
-    int ThisStubOwnerUnknown::winapi_153ff0_CopyRect(int, int) {
+    i32 ThisStubOwnerUnknown::winapi_153ff0_CopyRect(i32, i32) {
         return 0;
     }
 
@@ -3238,7 +3255,7 @@ namespace ApiCallerStubs {
     // @source: winapi:CopyRect
     // @stub
     RVA(0x00154270, 0x257)
-    int ThisStubOwnerUnknown::winapi_154270_CopyRect(int, int) {
+    i32 ThisStubOwnerUnknown::winapi_154270_CopyRect(i32, i32) {
         return 0;
     }
 
@@ -3246,7 +3263,7 @@ namespace ApiCallerStubs {
     // @source: winapi:CopyRect
     // @stub
     RVA(0x001544d0, 0x275)
-    int ThisStubOwnerUnknown::winapi_1544d0_CopyRect(int, int) {
+    i32 ThisStubOwnerUnknown::winapi_1544d0_CopyRect(i32, i32) {
         return 0;
     }
 
@@ -3254,7 +3271,7 @@ namespace ApiCallerStubs {
     // @source: winapi:CopyRect
     // @stub
     RVA(0x00154750, 0x275)
-    int ThisStubOwnerUnknown::winapi_154750_CopyRect(int, int) {
+    i32 ThisStubOwnerUnknown::winapi_154750_CopyRect(i32, i32) {
         return 0;
     }
 
@@ -3264,11 +3281,11 @@ namespace ApiCallerStubs {
     DATA(0x006c278c)
     extern char g_rng2Seeded; // bit0 set once seeded
     DATA(0x006c2798)
-    extern int g_rng2State; // 32-bit LCG state
+    extern i32 g_rng2State; // 32-bit LCG state
     // __cdecl rand(): lazily seed from timeGetTime, then advance the MS-CRT LCG.
     RVA(0x0015cbe0, 0x46)
-    int winapi_15cbe0_timeGetTime() {
-        int seed;
+    i32 winapi_15cbe0_timeGetTime() {
+        i32 seed;
         if (!(g_rng2Seeded & 1)) {
             g_rng2Seeded |= 1;
             seed = timeGetTime();
@@ -3285,10 +3302,10 @@ namespace ApiCallerStubs {
         char m_pad0[0x50];
         RECT m_50; // +0x50 bounds
         char m_pad60[0x70 - 0x60];
-        int m_70; // +0x70 width
-        int m_74; // +0x74 height
-        int m_78; // +0x78 half-width
-        int m_7c; // +0x7c half-height
+        i32 m_70; // +0x70 width
+        i32 m_74; // +0x74 height
+        i32 m_78; // +0x78 half-width
+        i32 m_7c; // +0x7c half-height
         void Build(RECT* pRect);
         void Recompute(); // RVA 0x161c90
     };
@@ -3299,8 +3316,8 @@ namespace ApiCallerStubs {
             RECT local;
             CopyRect(&local, pRect);
             m_50 = local;
-            int width = m_50.right - m_50.left + 1;
-            int height = m_50.bottom - m_50.top + 1;
+            i32 width = m_50.right - m_50.left + 1;
+            i32 height = m_50.bottom - m_50.top + 1;
             m_70 = width;
             m_74 = height;
             m_78 = width / 2;
@@ -3330,7 +3347,7 @@ namespace ApiCallerStubs {
         virtual void v14();
         virtual void v15();
         virtual void v16();
-        virtual int GetDC(HDC* out); // slot 17 == vtable +0x44
+        virtual i32 GetDC(HDC* out); // slot 17 == vtable +0x44
         virtual void v18();
         virtual void v19();
         virtual void v20();
@@ -3348,11 +3365,11 @@ namespace ApiCallerStubs {
     struct DrawHost_164380 {
         char m_pad0[0x2c];
         CounterWnd_164380* m_2c; // +0x2c
-        void DrawCount(RECT* rc, int n);
+        void DrawCount(RECT* rc, i32 n);
     };
     // __thiscall(rc, n): print n centred into rc using the counter window's DC.
     RVA(0x00164380, 0x98)
-    void DrawHost_164380::DrawCount(RECT* rc, int n) {
+    void DrawHost_164380::DrawCount(RECT* rc, i32 n) {
         char buf[0x20];
         Format_11f890(buf, "%i", n);
         CounterWnd_164380* w = m_2c;
@@ -3399,10 +3416,10 @@ namespace ApiCallerStubs {
     // @source: directx-wrapper-caller:calls 0x141dc0 (DirectDrawCreate;DirectDrawEnumerateA)
     // @stub
     RVA(0x001644a0, 0x19b)
-    int ThisStubOwnerUnknown::directx_wrapper_caller_1644a0_DirectDrawCreate_DirectDrawEnumerateA(
-        int,
-        int,
-        int
+    i32 ThisStubOwnerUnknown::directx_wrapper_caller_1644a0_DirectDrawCreate_DirectDrawEnumerateA(
+        i32,
+        i32,
+        i32
     ) {
         return 0;
     }
@@ -3411,7 +3428,7 @@ namespace ApiCallerStubs {
     // @source: winapi:SetRect
     // @stub
     RVA(0x00168080, 0x1f6)
-    int ThisStubOwnerUnknown::winapi_168080_SetRect(int, int, int, int, int, int, int, int) {
+    i32 ThisStubOwnerUnknown::winapi_168080_SetRect(i32, i32, i32, i32, i32, i32, i32, i32) {
         return 0;
     }
 
@@ -3451,7 +3468,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetDC;ReleaseDC;SelectPalette
     // @stub
     RVA(0x00174fe0, 0xfe)
-    int ThisStubOwnerUnknown::winapi_174fe0_GetDC_ReleaseDC_SelectPalette(int, int, int, int) {
+    i32 ThisStubOwnerUnknown::winapi_174fe0_GetDC_ReleaseDC_SelectPalette(i32, i32, i32, i32) {
         return 0;
     }
 
@@ -3459,7 +3476,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetDC;ReleaseDC;SelectPalette
     // @stub
     RVA(0x001750e0, 0x103)
-    int ThisStubOwnerUnknown::winapi_1750e0_GetDC_ReleaseDC_SelectPalette(int, int, int, int, int) {
+    i32 ThisStubOwnerUnknown::winapi_1750e0_GetDC_ReleaseDC_SelectPalette(i32, i32, i32, i32, i32) {
         return 0;
     }
 
@@ -3467,7 +3484,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetDC;ReleaseDC;SelectPalette
     // @stub
     RVA(0x001751f0, 0xf9)
-    int ThisStubOwnerUnknown::winapi_1751f0_GetDC_ReleaseDC_SelectPalette(int, int, int) {
+    i32 ThisStubOwnerUnknown::winapi_1751f0_GetDC_ReleaseDC_SelectPalette(i32, i32, i32) {
         return 0;
     }
 
@@ -3475,7 +3492,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetDC;ReleaseDC;SelectPalette
     // @stub
     RVA(0x001752f0, 0xfc)
-    int ThisStubOwnerUnknown::winapi_1752f0_GetDC_ReleaseDC_SelectPalette(int, int) {
+    i32 ThisStubOwnerUnknown::winapi_1752f0_GetDC_ReleaseDC_SelectPalette(i32, i32) {
         return 0;
     }
 
@@ -3483,7 +3500,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetDC;ReleaseDC;SelectPalette
     // @stub
     RVA(0x001753f0, 0xf4)
-    int ThisStubOwnerUnknown::winapi_1753f0_GetDC_ReleaseDC_SelectPalette(int, int) {
+    i32 ThisStubOwnerUnknown::winapi_1753f0_GetDC_ReleaseDC_SelectPalette(i32, i32) {
         return 0;
     }
 
@@ -3498,7 +3515,7 @@ namespace ApiCallerStubs {
         void* m_42c;   // +0x42c
         void* m_430;   // +0x430 (a Rez-allocated buffer)
         char m_pad434[0x458 - 0x434];
-        int m_458; // +0x458
+        i32 m_458; // +0x458
         void Cleanup();
     };
     // __thiscall(): release the cached GDI object + buffer and clear the slots.
@@ -3518,25 +3535,25 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:CreatePalette
-    int winapi_1770a0_CreateICA_DeleteDC_GetDeviceCaps(); // RVA 0x1770a0
+    i32 winapi_1770a0_CreateICA_DeleteDC_GetDeviceCaps(); // RVA 0x1770a0
     // __thiscall(flags, src): build a 256-entry LOGPALETTE from src and realize it.
     struct PalBuilder_176df0 {
         HPALETTE m_0;     // +0x00
         LOGPALETTE m_pal; // +0x04 (palVersion/palNumEntries/palPalEntry[1])
         char m_pad_entries[0x408 - (4 + 4 + 4)];
-        int m_408; // +0x408
-        int m_40c; // +0x40c
-        int Build(PALETTEENTRY* src, int flags);
+        i32 m_408; // +0x408
+        i32 m_40c; // +0x40c
+        i32 Build(PALETTEENTRY* src, i32 flags);
         void Tune1770e0(); // RVA 0x1770e0
     };
     RVA(0x00176df0, 0x71)
-    int PalBuilder_176df0::Build(PALETTEENTRY* src, int flags) {
+    i32 PalBuilder_176df0::Build(PALETTEENTRY* src, i32 flags) {
         m_408 = flags;
         m_pal.palNumEntries = 0x100;
         m_pal.palVersion = 0x300;
         DWORD* s = (DWORD*)src;
         PALETTEENTRY* d = m_pal.palPalEntry;
-        int i = 0x100;
+        i32 i = 0x100;
         do {
             *(DWORD*)d = *s++;
             d->peFlags = 0;
@@ -3556,7 +3573,7 @@ namespace ApiCallerStubs {
     struct DeleteObjHost_177070 {
         HGDIOBJ m_obj; // +0x00
         char m_pad[0x408 - 4];
-        int m_408; // +0x408
+        i32 m_408; // +0x408
         void Run();
     };
     RVA(0x00177070, 0x22)
@@ -3572,10 +3589,10 @@ namespace ApiCallerStubs {
     // @source: winapi:CreateICA;DeleteDC;GetDeviceCaps
     // __cdecl(): does the display device support a palette? (RC_PALETTE bit)
     RVA(0x001770a0, 0x3a)
-    int winapi_1770a0_CreateICA_DeleteDC_GetDeviceCaps() {
+    i32 winapi_1770a0_CreateICA_DeleteDC_GetDeviceCaps() {
         HDC ic = CreateICA("DISPLAY", 0, 0, 0);
         if (ic) {
-            int caps = GetDeviceCaps(ic, RASTERCAPS) & RC_PALETTE;
+            i32 caps = GetDeviceCaps(ic, RASTERCAPS) & RC_PALETTE;
             DeleteDC(ic);
             return caps;
         }
@@ -3591,9 +3608,9 @@ namespace ApiCallerStubs {
     void PalBuilder_176df0::Tune1770e0() {
         winapi_177160_CreatePalette_DeleteObject_GetDC_RealizePalette_ReleaseD();
         HDC dc = CreateDCA("DISPLAY", 0, 0, 0);
-        int sizePal = GetDeviceCaps(dc, SIZEPALETTE);
-        int numReserved = GetDeviceCaps(dc, NUMRESERVED);
-        int half = numReserved / 2;
+        i32 sizePal = GetDeviceCaps(dc, SIZEPALETTE);
+        i32 numReserved = GetDeviceCaps(dc, NUMRESERVED);
+        i32 half = numReserved / 2;
         GetSystemPaletteEntries(dc, 0, half, m_pal.palPalEntry);
         GetSystemPaletteEntries(
             dc,
@@ -3601,7 +3618,7 @@ namespace ApiCallerStubs {
             half,
             &m_pal.palPalEntry[m_pal.palNumEntries - half]
         );
-        for (int i = half; i < sizePal - half; i++) {
+        for (i32 i = half; i < sizePal - half; i++) {
             m_pal.palPalEntry[i].peFlags = 1;
         }
         DeleteDC(dc);
@@ -3617,7 +3634,7 @@ namespace ApiCallerStubs {
         HDC hdc = GetDC(0);
         lp->palVersion = 0x300;
         lp->palNumEntries = 256;
-        for (int i = 0; i < 256; i++) {
+        for (i32 i = 0; i < 256; i++) {
             lp->palPalEntry[i].peRed = 0;
             lp->palPalEntry[i].peGreen = 0;
             lp->palPalEntry[i].peBlue = 0;
@@ -3638,12 +3655,12 @@ namespace ApiCallerStubs {
     DATA(0x006bf6e0)
     extern HINSTANCE g_palModule_6bf6e0;
     struct PalHost_1775f0 {
-        int Apply(const char* name, int arg);
-        int Use176e70(void* data, int arg); // thiscall, RVA 0x176e70
+        i32 Apply(const char* name, i32 arg);
+        i32 Use176e70(void* data, i32 arg); // thiscall, RVA 0x176e70
     };
     // __thiscall(name, arg): find/load/lock a PALETTE resource, hand it on.
     RVA(0x001775f0, 0x62)
-    int PalHost_1775f0::Apply(const char* name, int arg) {
+    i32 PalHost_1775f0::Apply(const char* name, i32 arg) {
         HINSTANCE mod = g_palModule_6bf6e0;
         if (!mod) {
             return 0;
@@ -3667,7 +3684,7 @@ namespace ApiCallerStubs {
     // @source: winapi:SendMessageA
     // @stub
     RVA(0x00178470, 0x11e)
-    int __stdcall winapi_178470_SendMessageA(int, int) {
+    i32 __stdcall winapi_178470_SendMessageA(i32, i32) {
         return 0;
     }
 
@@ -3675,7 +3692,7 @@ namespace ApiCallerStubs {
     // @source: winapi:IntersectRect
     // @stub
     RVA(0x00179e70, 0x5ec)
-    int __stdcall winapi_179e70_IntersectRect(int, int, int, int, int, int, int, int, int) {
+    i32 __stdcall winapi_179e70_IntersectRect(i32, i32, i32, i32, i32, i32, i32, i32, i32) {
         return 0;
     }
 
@@ -3683,7 +3700,7 @@ namespace ApiCallerStubs {
     // @source: directx-wrapper-caller:calls 0x17c040 (DirectDrawCreate)
     // @stub
     RVA(0x0017c2a0, 0x14e)
-    int __stdcall directx_wrapper_caller_17c2a0_DirectDrawCreate(int, int) {
+    i32 __stdcall directx_wrapper_caller_17c2a0_DirectDrawCreate(i32, i32) {
         return 0;
     }
 
@@ -3691,38 +3708,38 @@ namespace ApiCallerStubs {
     // @source: winapi:ShowCursor
     // @stub
     RVA(0x0017c3f0, 0x11f)
-    int ThisStubOwnerUnknown::winapi_17c3f0_ShowCursor(
-        int,
-        int,
-        int,
-        int,
-        int,
-        int,
-        int,
-        int,
-        int,
-        int,
-        int,
-        int,
-        int,
-        int,
-        int,
-        int,
-        int,
-        int,
-        int,
-        int,
-        int,
-        int,
-        int,
-        int,
-        int,
-        int,
-        int,
-        int,
-        int,
-        int,
-        int
+    i32 ThisStubOwnerUnknown::winapi_17c3f0_ShowCursor(
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32
     ) {
         return 0;
     }
@@ -3732,7 +3749,7 @@ namespace ApiCallerStubs {
     // A polymorphic sub: slot 24 (+0x60) finalizes, slot 1 (+0x04) deletes it.
     struct CursSink_17c510 {
         virtual void v0();
-        virtual void Destroy(int del); // slot 1 == vtable +0x04
+        virtual void Destroy(i32 del); // slot 1 == vtable +0x04
         // slots 2..23 elided as a gap so Finish lands at +0x60
         virtual void v2();
         virtual void v3();
@@ -3759,8 +3776,8 @@ namespace ApiCallerStubs {
         virtual void Finish(); // slot 24 == vtable +0x60
     };
     struct CursHost_17c510 {
-        int m_0; // +0x00
-        int m_4; // +0x04 active flag
+        i32 m_0; // +0x00
+        i32 m_4; // +0x04 active flag
         char m_pad8[0x53c - 8];
         CursSink_17c510* m_53c; // +0x53c
         void Teardown();
@@ -3793,7 +3810,7 @@ namespace ApiCallerStubs {
     // @source: thirdparty:_SmackOpen@12;_SmackSoundUseDirectSound@4
     // Smacker imports (IAT): route audio through DirectSound, then open the stream.
     extern "C" __declspec(dllimport) void __stdcall SmackSoundUseDirectSound(void* ds);
-    extern "C" __declspec(dllimport) int __stdcall SmackOpen(int src, unsigned long flags, int buf);
+    extern "C" __declspec(dllimport) i32 __stdcall SmackOpen(i32 src, u32 flags, i32 buf);
     // A releasable sub-buffer reached via manual vtable dispatch (slot +0x08).
     struct SmkBufVtbl_17c570;
     struct SmkBuf_17c570 {
@@ -3805,34 +3822,34 @@ namespace ApiCallerStubs {
     };
     struct SmkPlayer_17c570 {
         char m_pad0[4];
-        int m_4; // +0x04 active flag
-        int m_8; // +0x08
+        i32 m_4; // +0x04 active flag
+        i32 m_8; // +0x08
         char m_pad0c[0x10 - 0xc];
-        int m_10; // +0x10 Smacker handle
+        i32 m_10; // +0x10 Smacker handle
         char m_pad14[0x24 - 0x14];
         SmkBuf_17c570* m_24; // +0x24
         SmkBuf_17c570* m_28; // +0x28
         char m_pad2c[0x508 - 0x2c];
         void* m_508; // +0x508 DirectSound
         char m_pad50c[0x514 - 0x50c];
-        int m_514; // +0x514
+        i32 m_514; // +0x514
         char m_pad518[0x538 - 0x518];
-        int m_538;                                    // +0x538
-        int Begin(int a2, int useDS, int a4, int a5); // RVA 0x17cfc0
+        i32 m_538;                                    // +0x538
+        i32 Begin(i32 a2, i32 useDS, i32 a4, i32 a5); // RVA 0x17cfc0
         void CloseSmacker();                          // RVA 0x17c9b0
-        int OpenLo(int src, int a2, int useDS, int a4, int a5);
-        int OpenHi(int src, int a2, int useDS, int a4, int a5);
+        i32 OpenLo(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5);
+        i32 OpenHi(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5);
     };
     // __thiscall(src,a2,useDS,a4,a5): open a Smacker stream (0xfe000 flags, plus
     // 0x100000 when DirectSound is requested), begin playback, roll back on failure.
     RVA(0x0017c570, 0xc0)
-    int SmkPlayer_17c570::OpenLo(int src, int a2, int useDS, int a4, int a5) {
+    i32 SmkPlayer_17c570::OpenLo(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5) {
         if (!m_4) {
             return 0;
         }
         SmackSoundUseDirectSound(m_508);
         m_514 = a2;
-        unsigned long flags;
+        u32 flags;
         if (useDS == 1) {
             m_538 = useDS;
             flags = 0x100000;
@@ -3846,7 +3863,7 @@ namespace ApiCallerStubs {
             return 0;
         }
         m_8 = 1;
-        int r = Begin(a2, useDS, a4, a5);
+        i32 r = Begin(a2, useDS, a4, a5);
         if (r) {
             return r;
         }
@@ -3866,13 +3883,13 @@ namespace ApiCallerStubs {
     // @source: thirdparty:_SmackOpen@12;_SmackSoundUseDirectSound@4
     // __thiscall(src,a2,useDS,a4,a5): same as OpenLo but with the 0xff000 flag set.
     RVA(0x0017c630, 0xc0)
-    int SmkPlayer_17c570::OpenHi(int src, int a2, int useDS, int a4, int a5) {
+    i32 SmkPlayer_17c570::OpenHi(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5) {
         if (!m_4) {
             return 0;
         }
         SmackSoundUseDirectSound(m_508);
         m_514 = a2;
-        unsigned long flags;
+        u32 flags;
         if (useDS == 1) {
             flags = 0x100000;
             m_538 = useDS;
@@ -3886,7 +3903,7 @@ namespace ApiCallerStubs {
             return 0;
         }
         m_8 = 1;
-        int r = Begin(a2, useDS, a4, a5);
+        i32 r = Begin(a2, useDS, a4, a5);
         if (r) {
             return r;
         }
@@ -3906,10 +3923,10 @@ namespace ApiCallerStubs {
     // @source: thirdparty,winapi:_SmackWait@4 | DispatchMessageA;PeekMessageA;TranslateMessage
     // @stub
     RVA(0x0017c790, 0x14a)
-    int ThisStubOwnerUnknown::
+    i32 ThisStubOwnerUnknown::
         thirdparty_winapi_17c790_SmackWait_4_DispatchMessageA_PeekMessageA_TranslateMessa(
-            int,
-            int
+            i32,
+            i32
         ) {
         return 0;
     }
@@ -3918,13 +3935,13 @@ namespace ApiCallerStubs {
     // @source: thirdparty:_SmackGoto@8;_SmackWait@4
     // @stub
     RVA(0x0017c8e0, 0xca)
-    int ThisStubOwnerUnknown::thirdparty_17c8e0_SmackGoto_8_SmackWait_4(int, int) {
+    i32 ThisStubOwnerUnknown::thirdparty_17c8e0_SmackGoto_8_SmackWait_4(i32, i32) {
         return 0;
     }
 
     // @confidence: low
     // Smacker import (IAT) + the Rez allocator's free (RVA 0x1b9b82).
-    extern "C" __declspec(dllimport) unsigned long __stdcall SmackClose(int smk);
+    extern "C" __declspec(dllimport) u32 __stdcall SmackClose(i32 smk);
     extern "C" void RezFree_call(void* p); // RVA 0x1b9b82 (cdecl)
     // The embedded sub-player whose Shutdown() lives at RVA 0x17b570.
     struct SmackSub_17c9b0 {
@@ -3932,19 +3949,19 @@ namespace ApiCallerStubs {
     };
     struct SmackHost_17c9b0 {
         char m_pad0[8];
-        int m_8; // +0x08 active flag
+        i32 m_8; // +0x08 active flag
         char m_pad0c[0x10 - 0xc];
-        int m_10; // +0x10 Smacker handle
+        i32 m_10; // +0x10 Smacker handle
         char m_pad14[0x534 - 0x14];
         void* m_534; // +0x534 Rez buffer
         char m_pad538[0x540 - 0x538];
         SmackSub_17c9b0 m_540; // +0x540 sub-player
-        int Close();
+        i32 Close();
     };
     // @source: thirdparty:_SmackClose@4
     // __thiscall: shut the sub-player, close the Smacker stream, free buffers.
     RVA(0x0017c9b0, 0x5b)
-    int SmackHost_17c9b0::Close() {
+    i32 SmackHost_17c9b0::Close() {
         if (!m_8) {
             return 0;
         }
@@ -3966,7 +3983,7 @@ namespace ApiCallerStubs {
     // @source: thirdparty:_SmackDoFrame@4;_SmackNextFrame@4;_SmackToBuffer@28
     // @stub
     RVA(0x0017caa0, 0x13b)
-    int ThisStubOwnerUnknown::thirdparty_17caa0_SmackDoFrame_4_SmackNextFrame_4_SmackToBuffer_28() {
+    i32 ThisStubOwnerUnknown::thirdparty_17caa0_SmackDoFrame_4_SmackNextFrame_4_SmackToBuffer_28() {
         return 0;
     }
 
@@ -3983,7 +4000,7 @@ namespace ApiCallerStubs {
     void PalCache_17cd90::Snapshot(HWND hWnd) {
         HDC hdc = GetDC(hWnd);
         GetSystemPaletteEntries(hdc, 0, 0x100, m_108);
-        for (int i = 0; i < 0x100; i++) {
+        for (i32 i = 0; i < 0x100; i++) {
             m_108[i].peRed = 0;
             m_108[i].peBlue = 0;
             m_108[i].peGreen = 0;
@@ -3996,7 +4013,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetTickCount
     // @stub
     RVA(0x0017e620, 0x13b)
-    int ThisStubOwnerUnknown::winapi_17e620_GetTickCount(int, int, int) {
+    i32 ThisStubOwnerUnknown::winapi_17e620_GetTickCount(i32, i32, i32) {
         return 0;
     }
 
@@ -4004,7 +4021,7 @@ namespace ApiCallerStubs {
     // @source: winapi:timeGetTime
     // @stub
     RVA(0x0017fe00, 0x12d)
-    int ThisStubOwnerUnknown::winapi_17fe00_timeGetTime(int) {
+    i32 ThisStubOwnerUnknown::winapi_17fe00_timeGetTime(i32) {
         return 0;
     }
 
@@ -4012,7 +4029,7 @@ namespace ApiCallerStubs {
     // @source: winapi:PtInRect
     // @stub
     RVA(0x001804a0, 0x182)
-    int ThisStubOwnerUnknown::winapi_1804a0_PtInRect(int) {
+    i32 ThisStubOwnerUnknown::winapi_1804a0_PtInRect(i32) {
         return 0;
     }
 
@@ -4021,8 +4038,8 @@ namespace ApiCallerStubs {
     // The source object whose m_4->m_10->m_10 carries the default tile extent.
     struct TileExtent_182ab0 {
         char m_pad0[0x10];
-        int m_10; // +0x10 width
-        int m_14; // +0x14 height
+        i32 m_10; // +0x10 width
+        i32 m_14; // +0x14 height
     };
     struct TileSrc_182ab0 {
         char m_pad0[0x10];
@@ -4034,17 +4051,17 @@ namespace ApiCallerStubs {
     };
     struct Region_182ab0 {
         TileSrcHost_182ab0* m_0; // +0x00
-        int m_4;                 // +0x04
+        i32 m_4;                 // +0x04
         RECT m_8;                // +0x08 (left/top/right/bottom = m_8/m_c/m_10/m_14)
-        int m_18;                // +0x18
-        int m_1c;                // +0x1c
-        int m_20;                // +0x20
+        i32 m_18;                // +0x18
+        i32 m_1c;                // +0x1c
+        i32 m_20;                // +0x20
         char m_pad24[0x40 - 0x24];
-        int m_40; // +0x40
-        int Init(TileSrcHost_182ab0* src, int a, RECT* rc, int d, int e, int f);
+        i32 m_40; // +0x40
+        i32 Init(TileSrcHost_182ab0* src, i32 a, RECT* rc, i32 d, i32 e, i32 f);
     };
     RVA(0x00182ab0, 0x7b)
-    int Region_182ab0::Init(TileSrcHost_182ab0* src, int a, RECT* rc, int d, int e, int f) {
+    i32 Region_182ab0::Init(TileSrcHost_182ab0* src, i32 a, RECT* rc, i32 d, i32 e, i32 f) {
         if (!src) {
             return 0;
         }
@@ -4069,7 +4086,7 @@ namespace ApiCallerStubs {
     // @source: winapi:CreateDialogIndirectParamA;GetSystemMetrics;GlobalLock
     // @stub
     RVA(0x001ba677, 0x188)
-    int winapi_1ba677_CreateDialogIndirectParamA_GetSystemMetrics_GlobalLock() {
+    i32 winapi_1ba677_CreateDialogIndirectParamA_GetSystemMetrics_GlobalLock() {
         return 0;
     }
 
@@ -4077,7 +4094,7 @@ namespace ApiCallerStubs {
     // @source: winapi:DestroyWindow;GlobalFree;GlobalUnlock
     // @stub
     RVA(0x001ba819, 0x7c)
-    int __stdcall winapi_1ba819_DestroyWindow_GlobalFree_GlobalUnlock(int, int, int) {
+    i32 __stdcall winapi_1ba819_DestroyWindow_GlobalFree_GlobalUnlock(i32, i32, i32) {
         return 0;
     }
 
@@ -4085,7 +4102,7 @@ namespace ApiCallerStubs {
     // @source: winapi:EnableWindow;FindResourceA;IsWindowEnabled;LoadResource;LockResource
     // @stub
     RVA(0x001ba9d2, 0x100)
-    int winapi_1ba9d2_EnableWindow_FindResourceA_IsWindowEnabled_LoadResource_() {
+    i32 winapi_1ba9d2_EnableWindow_FindResourceA_IsWindowEnabled_LoadResource_() {
         return 0;
     }
 
@@ -4093,7 +4110,7 @@ namespace ApiCallerStubs {
     // @source: winapi:EnableWindow;GetActiveWindow;SetActiveWindow
     // @stub
     RVA(0x001baaef, 0x48)
-    int winapi_1baaef_EnableWindow_GetActiveWindow_SetActiveWindow() {
+    i32 winapi_1baaef_EnableWindow_GetActiveWindow_SetActiveWindow() {
         return 0;
     }
 
@@ -4101,8 +4118,8 @@ namespace ApiCallerStubs {
     // @source: winapi:CallWindowProcA;GetPropA;RemovePropA;SetWindowLongA
     // @stub
     RVA(0x001bb31b, 0x111)
-    int __stdcall
-    winapi_1bb31b_CallWindowProcA_GetPropA_RemovePropA_SetWindowLongA(int, int, int, int) {
+    i32 __stdcall
+    winapi_1bb31b_CallWindowProcA_GetPropA_RemovePropA_SetWindowLongA(i32, i32, i32, i32) {
         return 0;
     }
 
@@ -4110,7 +4127,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetClassInfoA;RegisterClassA
     // @stub
     RVA(0x001bbff4, 0x93)
-    int __stdcall winapi_1bbff4_GetClassInfoA_RegisterClassA(int) {
+    i32 __stdcall winapi_1bbff4_GetClassInfoA_RegisterClassA(i32) {
         return 0;
     }
 
@@ -4146,7 +4163,7 @@ namespace ApiCallerStubs {
     // @source: winapi:FreeLibrary
     // @stub
     RVA(0x001d4a18, 0x3c)
-    int ThisStubOwnerUnknown::winapi_1d4a18_FreeLibrary() {
+    i32 ThisStubOwnerUnknown::winapi_1d4a18_FreeLibrary() {
         return 0;
     }
 
@@ -4167,7 +4184,7 @@ namespace ApiCallerStubs {
     // frame guard `mov ecx,[..]; test` vs cl's `cmp [..],0` materialization. No local
     // source diff closes these (hoisting rect[0] regressed 83->82%).
     RVA(0x00020f40, 0x188)
-    int ThisStubOwnerUnknown::LoadChatBoxSprite(int arg1) {
+    i32 ThisStubOwnerUnknown::LoadChatBoxSprite(i32 arg1) {
         CChatBoxOwner* self = (CChatBoxOwner*)this;
         if (!self->m_10) {
             return 1;
@@ -4236,13 +4253,13 @@ namespace ApiCallerStubs {
     // @source: decomp-xref
     // @stub
     RVA(0x0003c0e0, 0xfb)
-    void ThisStubOwnerUnknown::BuildWorldLevelKey(int) {}
+    void ThisStubOwnerUnknown::BuildWorldLevelKey(i32) {}
 
     // @confidence: med
     // @source: string-xref
     // @stub
     RVA(0x00057100, 0x577)
-    void ThisStubOwnerUnknown::LoadGruntAbilityTuning(int) {}
+    void ThisStubOwnerUnknown::LoadGruntAbilityTuning(i32) {}
 
     // @confidence: med
     // @source: decomp-xref
@@ -4254,13 +4271,13 @@ namespace ApiCallerStubs {
     // @source: string-xref
     // @stub
     RVA(0x000597a0, 0x1345)
-    void ThisStubOwnerUnknown::LoadGruntCombatAnimations(int, int, int, int, int, int, int, int) {}
+    void ThisStubOwnerUnknown::LoadGruntCombatAnimations(i32, i32, i32, i32, i32, i32, i32, i32) {}
 
     // @confidence: med
     // @source: string-xref
     // @stub
     RVA(0x00060150, 0xd90)
-    void ThisStubOwnerUnknown::LoadGruntDeathAnimations(int, int) {}
+    void ThisStubOwnerUnknown::LoadGruntDeathAnimations(i32, i32) {}
 
     // @confidence: med
     // @source: decomp-xref
@@ -4278,13 +4295,13 @@ namespace ApiCallerStubs {
     // @source: decomp-xref
     // @stub
     RVA(0x00065630, 0x34b)
-    void ThisStubOwnerUnknown::LoadBombGruntRunConfig(int, int) {}
+    void ThisStubOwnerUnknown::LoadBombGruntRunConfig(i32, i32) {}
 
     // @confidence: med
     // @source: string-xref
     // @stub
     RVA(0x00065e80, 0x12b8)
-    void ThisStubOwnerUnknown::LoadPickupSprites(int, int, int, int, int) {}
+    void ThisStubOwnerUnknown::LoadPickupSprites(i32, i32, i32, i32, i32) {}
 
     // @confidence: low
     // @source: decomp-xref
@@ -4296,7 +4313,7 @@ namespace ApiCallerStubs {
     // @source: string-xref
     // @stub
     RVA(0x00068880, 0x67c)
-    void ThisStubOwnerUnknown::LoadWingzGruntSprites(int) {}
+    void ThisStubOwnerUnknown::LoadWingzGruntSprites(i32) {}
 
     // @confidence: med
     // @source: decomp-xref
@@ -4308,19 +4325,19 @@ namespace ApiCallerStubs {
     // @source: string-xref
     // @stub
     RVA(0x0006eb80, 0x5ef)
-    void ThisStubOwnerUnknown::LoadTeleporterGooConfig(int) {}
+    void ThisStubOwnerUnknown::LoadTeleporterGooConfig(i32) {}
 
     // @confidence: med
     // @source: string-xref
     // @stub
     RVA(0x0007b930, 0x3b7)
-    void ThisStubOwnerUnknown::LoadGruntCombatTuning(int, int, int, int, int) {}
+    void ThisStubOwnerUnknown::LoadGruntCombatTuning(i32, i32, i32, i32, i32) {}
 
     // @confidence: med
     // @source: decomp-xref
     // @stub
     RVA(0x0007c3d0, 0x1ae)
-    void ThisStubOwnerUnknown::LoadFinishLevelSprite(int) {}
+    void ThisStubOwnerUnknown::LoadFinishLevelSprite(i32) {}
 
     // @confidence: med
     // @source: decomp-xref
@@ -4338,7 +4355,7 @@ namespace ApiCallerStubs {
     // @source: decomp-xref
     // @stub
     RVA(0x000ba620, 0x14a)
-    void ThisStubOwnerUnknown::LoadMenuSelectSprite(int) {}
+    void ThisStubOwnerUnknown::LoadMenuSelectSprite(i32) {}
 
     // @confidence: med
     // @source: decomp-xref
@@ -4350,13 +4367,13 @@ namespace ApiCallerStubs {
     // @source: decomp-xref
     // @stub
     RVA(0x000d1710, 0x122)
-    void ThisStubOwnerUnknown::LoadSBITextEdges(int) {}
+    void ThisStubOwnerUnknown::LoadSBITextEdges(i32) {}
 
     // @confidence: med
     // @source: string-xref
     // @stub
     RVA(0x000d65d0, 0x7a4)
-    void ThisStubOwnerUnknown::LoadWarlordSprites(int, int) {}
+    void ThisStubOwnerUnknown::LoadWarlordSprites(i32, i32) {}
 
     // @confidence: high
     // @source: decomp-xref
@@ -4369,7 +4386,7 @@ namespace ApiCallerStubs {
     // (Ghidra demangled the symbol as `...QAEXH@Z` = void from the relocs; the
     // RVA-keyed delinker still pairs the int-return body at this address.)
     RVA(0x000db600, 0x8f)
-    int ThisStubOwnerUnknown::LoadActionTileSprites(int force) {
+    i32 ThisStubOwnerUnknown::LoadActionTileSprites(i32 force) {
         CActionTileOwner* self = (CActionTileOwner*)this;
         if (!self->m_c) {
             return 0;
@@ -4399,7 +4416,7 @@ namespace ApiCallerStubs {
     // m_c->+0x28 (CSoundResRegistry) - distinct object/class from the tile loader's
     // m_c->m_10, with direct (non-virtual) Has/Register/Install helpers.
     RVA(0x000db6c0, 0x70)
-    int ThisStubOwnerUnknown::LoadLevelSounds(int force) {
+    i32 ThisStubOwnerUnknown::LoadLevelSounds(i32 force) {
         CSoundOwner* self = (CSoundOwner*)this;
         if (!self->m_c) {
             return 0;
@@ -4439,7 +4456,7 @@ namespace ApiCallerStubs {
     // (Ghidra demangled the symbol as `...QAEXH@Z` = void from the relocs alone; the
     // RVA-keyed delinker still pairs the int-return body at this address.)
     RVA(0x000db7e0, 0x84)
-    int ThisStubOwnerUnknown::LoadLevelImages(int force) {
+    i32 ThisStubOwnerUnknown::LoadLevelImages(i32 force) {
         CActionTileOwner* self = (CActionTileOwner*)this;
         if (!self->m_c) {
             return 0;
@@ -4464,13 +4481,13 @@ namespace ApiCallerStubs {
     // @source: string-xref
     // @stub
     RVA(0x000dba30, 0x1ca)
-    void ThisStubOwnerUnknown::BuildMusicCategoryTable(int) {}
+    void ThisStubOwnerUnknown::BuildMusicCategoryTable(i32) {}
 
     // @confidence: med
     // @source: string-xref
     // @stub
     RVA(0x000dbc80, 0x309)
-    void ThisStubOwnerUnknown::BuildWorldLevelPath(int) {}
+    void ThisStubOwnerUnknown::BuildWorldLevelPath(i32) {}
 
     // @confidence: med
     // @source: string-xref
@@ -4482,25 +4499,25 @@ namespace ApiCallerStubs {
     // @source: decomp-xref
     // @stub
     RVA(0x000dd050, 0x24b)
-    void ThisStubOwnerUnknown::BuildGruntNamespaceList(int) {}
+    void ThisStubOwnerUnknown::BuildGruntNamespaceList(i32) {}
 
     // @confidence: low
     // @source: decomp-xref
     // @stub
     RVA(0x000dd340, 0x189)
-    void ThisStubOwnerUnknown::BuildWarlordNameTable(int) {}
+    void ThisStubOwnerUnknown::BuildWarlordNameTable(i32) {}
 
     // @confidence: med
     // @source: string-xref
     // @stub
     RVA(0x000dd540, 0x241)
-    void ThisStubOwnerUnknown::BuildSpriteImageKeyTable(int) {}
+    void ThisStubOwnerUnknown::BuildSpriteImageKeyTable(i32) {}
 
     // @confidence: med
     // @source: string-xref
     // @stub
     RVA(0x000ddaa0, 0x228)
-    void ThisStubOwnerUnknown::BuildAnizKeyTable(int) {}
+    void ThisStubOwnerUnknown::BuildAnizKeyTable(i32) {}
 
     // @confidence: med
     // @source: decomp-xref
@@ -4512,13 +4529,13 @@ namespace ApiCallerStubs {
     // @source: string-xref
     // @stub
     RVA(0x000e2400, 0x39e)
-    void ThisStubOwnerUnknown::BuildToolToyColorKey(int) {}
+    void ThisStubOwnerUnknown::BuildToolToyColorKey(i32) {}
 
     // @confidence: med
     // @source: string-xref
     // @stub
     RVA(0x000e2980, 0x2cd)
-    void ThisStubOwnerUnknown::LookupToolToyColorKey(int) {}
+    void ThisStubOwnerUnknown::LookupToolToyColorKey(i32) {}
 
     // @confidence: high
     // @source: decomp-xref
@@ -4536,7 +4553,7 @@ namespace ApiCallerStubs {
     // one 2-instr permutation, source-invariant under /O2. Logic + all bytes otherwise
     // exact (frame 0x40, epilogues, !!x normalize all match).
     RVA(0x000e2d10, 0xa1)
-    int ThisStubOwnerUnknown::LoadGruntzPalette(int src, int name) {
+    i32 ThisStubOwnerUnknown::LoadGruntzPalette(i32 src, i32 name) {
         CPaletteOwner* self = (CPaletteOwner*)this;
         if (!src) {
             return 0;
@@ -4562,14 +4579,14 @@ namespace ApiCallerStubs {
     // @stub
     RVA(0x000e8a70, 0x18c)
     void ThisStubOwnerUnknown::
-        BuildResourceTabStatusBar(int, int, int, int, int, int, int, int, int, int, int) {}
+        BuildResourceTabStatusBar(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32) {}
 
     // @confidence: med
     // @source: decomp-xref
     // @stub
     RVA(0x000e9600, 0x18c)
     void ThisStubOwnerUnknown::
-        BuildStatzTabStatusBar(int, int, int, int, int, int, int, int, int, int, int, int, int) {}
+        BuildStatzTabStatusBar(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32) {}
 
     // @confidence: med
     // @source: decomp-xref
@@ -4582,25 +4599,25 @@ namespace ApiCallerStubs {
     // @stub
     RVA(0x000ea1f0, 0x1fa)
     void ThisStubOwnerUnknown::
-        BuildMultiplayerTabStatusBar(int, int, int, int, int, int, int, int, int, int, int, int) {}
+        BuildMultiplayerTabStatusBar(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32) {}
 
     // @confidence: med
     // @source: string-xref
     // @stub
     RVA(0x000f9ea0, 0x21d)
-    void ThisStubOwnerUnknown::LoadGameAssetNamespaces(int, int, int) {}
+    void ThisStubOwnerUnknown::LoadGameAssetNamespaces(i32, i32, i32) {}
 
     // @confidence: low
     // @source: decomp-xref
     // @stub
     RVA(0x0010bc30, 0x78)
-    void ThisStubOwnerUnknown::UpdateDestructButtonStatusBar2(int) {}
+    void ThisStubOwnerUnknown::UpdateDestructButtonStatusBar2(i32) {}
 
     // @confidence: med
     // @source: decomp-xref
     // @stub
     RVA(0x0011afb0, 0x321)
-    void ThisStubOwnerUnknown::LoadGruntSpawnConfig(int, int, int, int, int) {}
+    void ThisStubOwnerUnknown::LoadGruntSpawnConfig(i32, i32, i32, i32, i32) {}
 
     // @confidence: low
     // @source: decomp-xref
@@ -4612,18 +4629,18 @@ namespace ApiCallerStubs {
     // @source: import:GetFileSize
     // @stub
     RVA(0x001c152f, 0xda)
-    void ThisStubOwnerUnknown::Stub_1c152f(int) {}
+    void ThisStubOwnerUnknown::Stub_1c152f(i32) {}
 
     // @confidence: med
     // @source: import:RegCloseKey,RegSetValueExA
     // @stub
     RVA(0x001ccae7, 0x75)
-    void ThisStubOwnerUnknown::Stub_1ccae7(int, int, int) {}
+    void ThisStubOwnerUnknown::Stub_1ccae7(i32, i32, i32) {}
 
     // @confidence: med
     // @source: import:RegCloseKey,RegSetValueExA
     // @stub
     RVA(0x001ccbfc, 0xa1)
-    void ThisStubOwnerUnknown::Stub_1ccbfc(int, int, int, int) {}
+    void ThisStubOwnerUnknown::Stub_1ccbfc(i32, i32, i32, i32) {}
 
 } // namespace ApiCallerStubs

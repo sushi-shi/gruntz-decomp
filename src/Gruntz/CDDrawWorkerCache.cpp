@@ -35,7 +35,7 @@ class CObject;
 class SiriusWorker {
 public:
     virtual void Slot00();               // +0x00
-    virtual int ScalarDtor(int flag);    // +0x04  scalar-deleting destructor
+    virtual i32 ScalarDtor(i32 flag);    // +0x04  scalar-deleting destructor
     virtual void Slot08();               // +0x08
     virtual void Slot0C();               // +0x0c
     virtual void Slot10();               // +0x10
@@ -43,22 +43,22 @@ public:
     virtual void Slot18();               // +0x18
     virtual void Slot1C();               // +0x1c
     virtual void Slot20();               // +0x20
-    virtual int Vfunc24(int a1, int a3); // +0x24
+    virtual i32 Vfunc24(i32 a1, i32 a3); // +0x24
 };
 
 // The 0x17c-byte worker layout. Only the seeded offsets are load-bearing.
 struct SiriusWorkerObj : public SiriusWorker {
-    int m_04; // +0x04  = parent->m_1c
-    int m_08; // +0x08  = 0
-    int m_0c; // +0x0c  = parent->m_0c
-    int m_10; // +0x10  = 0
-    int m_14; // +0x14  = 0
-    int m_18; // +0x18  = 0
-    int m_1c; // +0x1c  = 0
+    i32 m_04; // +0x04  = parent->m_1c
+    i32 m_08; // +0x08  = 0
+    i32 m_0c; // +0x0c  = parent->m_0c
+    i32 m_10; // +0x10  = 0
+    i32 m_14; // +0x14  = 0
+    i32 m_18; // +0x18  = 0
+    i32 m_1c; // +0x1c  = 0
     char m_pad20[0x170 - 0x20];
-    int m_170; // +0x170 = 0
-    int m_174; // +0x174 = 0
-    int m_178; // +0x178 = 0
+    i32 m_170; // +0x170 = 0
+    i32 m_174; // +0x174 = 0
+    i32 m_178; // +0x178 = 0
 }; // size = 0x17c
 
 // The foreign worker vftable, referenced as DIR32 data (RVA = VA-0x400000).
@@ -75,31 +75,31 @@ static inline void StampSiriusVtbl(SiriusWorkerObj* w) {
 // ---------------------------------------------------------------------------
 class CDDrawWorkerCache {
 public:
-    int VirtualMethodUnknown20();
-    void* VirtualMethodUnknown24(int a1, const char* key, int a3);
+    i32 VirtualMethodUnknown20();
+    void* VirtualMethodUnknown24(i32 a1, const char* key, i32 a3);
 
     // Engine-label backlog stubs.
     ~CDDrawWorkerCache();
     void VirtualMethod_157720();
 
     void* m_vptr;              // +0x00
-    int m_04;                  // +0x04  -1 when inactive
+    i32 m_04;                  // +0x04  -1 when inactive
     char m_pad08[0x0c - 0x08]; // +0x08..0x0b
-    int m_0c;                  // +0x0c  parent/root handle
+    i32 m_0c;                  // +0x0c  parent/root handle
     CMapStringToOb m_10;       // +0x10  map (internal field at +0x1c seeds worker->m_04)
 };
 
 // Read field at +0x1c from the parent (inside the CMapStringToOb), used to
 // seed worker->m_04.
-static inline int SiriusReadField1c(const CDDrawWorkerCache* p) {
-    return *(const int*)((const char*)p + 0x1c);
+static inline i32 SiriusReadField1c(const CDDrawWorkerCache* p) {
+    return *(const i32*)((const char*)p + 0x1c);
 }
 
 // ---------------------------------------------------------------------------
 // Constant state ID: returns 0x13 (19).
 // ---------------------------------------------------------------------------
 RVA(0x001576f0, 0x6)
-int CDDrawWorkerCache::VirtualMethodUnknown20() {
+i32 CDDrawWorkerCache::VirtualMethodUnknown20() {
     return 0x13;
 }
 
@@ -109,8 +109,8 @@ static inline SiriusWorkerObj* MakeSiriusWorker(const CDDrawWorkerCache* parent)
     SiriusWorkerObj* raw = (SiriusWorkerObj*)operator new(sizeof(SiriusWorkerObj));
     SiriusWorkerObj* w;
     if (raw != 0) {
-        int field1c = SiriusReadField1c(parent);
-        int harryPotter = parent->m_0c;
+        i32 field1c = SiriusReadField1c(parent);
+        i32 harryPotter = parent->m_0c;
         raw->m_04 = field1c;
         raw->m_08 = 0;
         raw->m_0c = harryPotter;
@@ -138,7 +138,7 @@ static inline SiriusWorkerObj* MakeSiriusWorker(const CDDrawWorkerCache* parent)
 // the target asm (the NAFXCW operator new practically never fails).
 // ---------------------------------------------------------------------------
 RVA(0x001652c0, 0x92)
-void* CDDrawWorkerCache::VirtualMethodUnknown24(int a1, const char* key, int a3) {
+void* CDDrawWorkerCache::VirtualMethodUnknown24(i32 a1, const char* key, i32 a3) {
     SiriusWorkerObj* w = MakeSiriusWorker(this);
 
     if (w->Vfunc24(a1, a3) == 0) {

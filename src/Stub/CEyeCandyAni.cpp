@@ -7,4 +7,4 @@
 // @source: rtti-vptr
 // @stub
 RVA(0x000ac870, 0x20e)
-CEyeCandyAni::CEyeCandyAni(int) {}
+CEyeCandyAni::CEyeCandyAni(i32) {}

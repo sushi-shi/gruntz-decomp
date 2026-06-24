@@ -5,6 +5,8 @@
 #ifndef WAP32_H
 #define WAP32_H
 
+#include <Ints.h>
+
 // <Mfc.h> brings <windows.h> (handle types, WNDCLASSA, MSG, USER32/GDI32 imports),
 // the MFC-controlled way (afx.h first).
 #include <Mfc.h>
@@ -20,10 +22,10 @@ struct CGameWndCreateParams {
     HINSTANCE hInstance; // +0x04
     HMENU hMenu;         // +0x08
     HWND hWndParent;     // +0x0c
-    int nHeight;         // +0x10
-    int nWidth;          // +0x14
-    int Y;               // +0x18
-    int X;               // +0x1c
+    i32 nHeight;         // +0x10
+    i32 nWidth;          // +0x14
+    i32 Y;               // +0x18
+    i32 X;               // +0x1c
     DWORD dwStyle;       // +0x20
     LPCSTR lpWindowName; // +0x24
     LPCSTR lpClassName;  // +0x28
@@ -51,42 +53,42 @@ public:
     virtual ~CGameWnd(); // +0x00  idx0  dtor
     // Pre-dispatch hook: GameWindowProc calls this for EVERY message before the
     // switch; nonzero swallows the message (WndProc returns 0).
-    virtual int PreDispatchMessage(UINT uMsg, WPARAM wParam, LPARAM lParam); // +0x04 idx1
-    virtual int Wap32GameWndVfunc2(); // +0x08  idx2 (unused by WndProc)
+    virtual i32 PreDispatchMessage(UINT uMsg, WPARAM wParam, LPARAM lParam); // +0x04 idx1
+    virtual i32 Wap32GameWndVfunc2(); // +0x08  idx2 (unused by WndProc)
 
     // Per-message virtual handlers (return nonzero = handled). The argument shape
     // mirrors the Win32 message: point messages split lParam into LOWORD/HIWORD.
-    virtual int OnCreate(LPARAM lParam);                     // +0x0c  idx3  WM_CREATE
-    virtual int OnClose();                                   // +0x10  idx4  WM_CLOSE
-    virtual int OnMove(int x, int y);                        // +0x14  idx5  WM_MOVE
-    virtual int OnSize(WPARAM type, int cx, int cy);         // +0x18  idx6  WM_SIZE
-    virtual int OnPaint();                                   // +0x1c  idx7  WM_PAINT
-    virtual int OnChar(WPARAM wParam, LPARAM lParam);        // +0x20  idx8  WM_CHAR
-    virtual int OnKeyDown(WPARAM wParam, LPARAM lParam);     // +0x24  idx9  WM_KEYDOWN
-    virtual int OnKeyUp(WPARAM wParam, LPARAM lParam);       // +0x28  idx10 WM_KEYUP
-    virtual int OnSysKeyDown(WPARAM wParam, LPARAM lParam);  // +0x2c  idx11 WM_SYSKEYDOWN
-    virtual int OnActivateApp(WPARAM wParam, LPARAM lParam); // +0x30  idx12 WM_ACTIVATEAPP
+    virtual i32 OnCreate(LPARAM lParam);                     // +0x0c  idx3  WM_CREATE
+    virtual i32 OnClose();                                   // +0x10  idx4  WM_CLOSE
+    virtual i32 OnMove(i32 x, i32 y);                        // +0x14  idx5  WM_MOVE
+    virtual i32 OnSize(WPARAM type, i32 cx, i32 cy);         // +0x18  idx6  WM_SIZE
+    virtual i32 OnPaint();                                   // +0x1c  idx7  WM_PAINT
+    virtual i32 OnChar(WPARAM wParam, LPARAM lParam);        // +0x20  idx8  WM_CHAR
+    virtual i32 OnKeyDown(WPARAM wParam, LPARAM lParam);     // +0x24  idx9  WM_KEYDOWN
+    virtual i32 OnKeyUp(WPARAM wParam, LPARAM lParam);       // +0x28  idx10 WM_KEYUP
+    virtual i32 OnSysKeyDown(WPARAM wParam, LPARAM lParam);  // +0x2c  idx11 WM_SYSKEYDOWN
+    virtual i32 OnActivateApp(WPARAM wParam, LPARAM lParam); // +0x30  idx12 WM_ACTIVATEAPP
     // +0x34 idx13: WM_DESTROY handler == QuitMessageLoop (frees the manager,
     // optionally reports the error, posts WM_QUIT).
-    virtual int QuitMessageLoop();                          // +0x34  idx13 WM_DESTROY
-    virtual int OnLButtonDown(WPARAM keys, int x, int y);   // +0x38  idx14 WM_LBUTTONDOWN
-    virtual int OnRButtonDown(WPARAM keys, int x, int y);   // +0x3c  idx15 WM_RBUTTONDOWN
-    virtual int OnLButtonUp(WPARAM keys, int x, int y);     // +0x40  idx16 WM_LBUTTONUP
-    virtual int OnRButtonUp(WPARAM keys, int x, int y);     // +0x44  idx17 WM_RBUTTONUP
-    virtual int OnMouseMove(WPARAM keys, int x, int y);     // +0x48  idx18 WM_MOUSEMOVE
-    virtual int OnLButtonDblClk(WPARAM keys, int x, int y); // +0x4c  idx19 WM_LBUTTONDBLCLK
-    virtual int OnRButtonDblClk(WPARAM keys, int x, int y); // +0x50  idx20 WM_RBUTTONDBLCLK
-    virtual int OnCommand(WPARAM wParam, LPARAM lParam);    // +0x54  idx21 WM_COMMAND
+    virtual i32 QuitMessageLoop();                          // +0x34  idx13 WM_DESTROY
+    virtual i32 OnLButtonDown(WPARAM keys, i32 x, i32 y);   // +0x38  idx14 WM_LBUTTONDOWN
+    virtual i32 OnRButtonDown(WPARAM keys, i32 x, i32 y);   // +0x3c  idx15 WM_RBUTTONDOWN
+    virtual i32 OnLButtonUp(WPARAM keys, i32 x, i32 y);     // +0x40  idx16 WM_LBUTTONUP
+    virtual i32 OnRButtonUp(WPARAM keys, i32 x, i32 y);     // +0x44  idx17 WM_RBUTTONUP
+    virtual i32 OnMouseMove(WPARAM keys, i32 x, i32 y);     // +0x48  idx18 WM_MOUSEMOVE
+    virtual i32 OnLButtonDblClk(WPARAM keys, i32 x, i32 y); // +0x4c  idx19 WM_LBUTTONDBLCLK
+    virtual i32 OnRButtonDblClk(WPARAM keys, i32 x, i32 y); // +0x50  idx20 WM_RBUTTONDBLCLK
+    virtual i32 OnCommand(WPARAM wParam, LPARAM lParam);    // +0x54  idx21 WM_COMMAND
 
     // Creates the OS window from a 12-field params struct (CreateWindowExA),
     // registers this object as the active window singleton, then ShowWindow.
     // Returns nonzero on success.
-    int CreateAndShow(CGameWndCreateParams* pParams, void* pOwner);
+    i32 CreateAndShow(CGameWndCreateParams* pParams, void* pOwner);
     void Destroy();
 
     HWND m_4;  // +0x04  HWND (set by CreateAndShow / zeroed by ctor)
     void* m_8; // +0x08  owner pointer (set by CreateAndShow; not touched by ctor)
-    int m_c;   // +0x0c  guard flag (zeroed by ctor and by CreateAndShow)
+    i32 m_c;   // +0x0c  guard flag (zeroed by ctor and by CreateAndShow)
 };
 
 // Minimal polymorphic resource objects whose pointers live in CGameApp::m_4 /
@@ -108,9 +110,9 @@ public:
     virtual void Wap32GameResVfunc3(); // slot 3 (+0x0c)
     virtual void PerFrameTick();       // slot 4 (+0x10)
 
-    int m_4; // +0x04  (HWND for ReportError's PostMessageA)
-    int m_8; // +0x08
-    int m_c; // +0x0c  guard flag
+    i32 m_4; // +0x04  (HWND for ReportError's PostMessageA)
+    i32 m_8; // +0x08
+    i32 m_c; // +0x0c  guard flag
 };
 
 // CGameMgr - the WAP32 game manager base class (vftable ??_7CGameMgr@@6B@ @
@@ -139,25 +141,25 @@ namespace WAP32 {
         virtual ~CGameMgr() {
             UnknownClose();
         } // +0x00 idx0 dtor
-        virtual int Run(CGameWnd* pGameWnd, char* szCmdLine); // +0x04 idx1
+        virtual i32 Run(CGameWnd* pGameWnd, char* szCmdLine); // +0x04 idx1
         virtual void UnknownClose();                          // +0x08 idx2
-        virtual int Wap32GameMgrVfunc3();                     // +0x0c idx3 (active? gate)
+        virtual i32 Wap32GameMgrVfunc3();                     // +0x0c idx3 (active? gate)
         virtual void Wap32GameMgrVfunc4();                    // +0x10 idx4
         virtual void Wap32GameMgrVfunc5();                    // +0x14 idx5
 
         // Non-virtual ctor helpers (called directly from the ctor / Run).
-        void InitTimeFields(int reset);           // @0x13de70
+        void InitTimeFields(i32 reset);           // @0x13de70
         void UnknownMethodInitializeTimeGlobal(); // @0x13dea0
 
-        int m_4;  // +0x04
-        int m_8;  // +0x08
-        int m_c;  // +0x0c
-        int m_10; // +0x10  run-state flag (=1 in ctor)
-        int m_14; // +0x14  run-state flag (=1 in ctor)
-        int m_18; // +0x18  (=-1 by InitTimeFields when reset)
-        int m_1c; // +0x1c
-        int m_20; // +0x20  (cleared by InitTimeFields)
-        int m_24; // +0x24  start tick (timeGetTime, by InitTimeFields)
+        i32 m_4;  // +0x04
+        i32 m_8;  // +0x08
+        i32 m_c;  // +0x0c
+        i32 m_10; // +0x10  run-state flag (=1 in ctor)
+        i32 m_14; // +0x14  run-state flag (=1 in ctor)
+        i32 m_18; // +0x18  (=-1 by InitTimeFields when reset)
+        i32 m_1c; // +0x1c
+        i32 m_20; // +0x20  (cleared by InitTimeFields)
+        i32 m_24; // +0x24  start tick (timeGetTime, by InitTimeFields)
 
         // Engine-label backlog stub @0x133380. NOT actually a CGameMgr method (it
         // scalar-deletes some other class, vftable 0x5ef670) - but the retail symbol
@@ -177,16 +179,16 @@ namespace WAP32 {
 // it to VirtualUnknownMethod02, which copies it into the member and uses it to
 // register the class + create the window.
 struct GameInfo {
-    int size;                     // +0x000  == sizeof(GameInfo) == 0x1d4
-    int windowClassFlags;         // +0x004  bit1=Windowed, bit2=DialogFrame
+    i32 size;                     // +0x000  == sizeof(GameInfo) == 0x1d4
+    i32 windowClassFlags;         // +0x004  bit1=Windowed, bit2=DialogFrame
     HINSTANCE hInstance;          // +0x008
     char szCmdLine[0x80];         // +0x00c
     char szGameIdentifier[0x40];  // +0x08c  (cursor/icon/menu resource name)
     char szWindowName[0x40];      // +0x0cc
     char _pad10c[0x40];           // +0x10c
     char szWindowClassName[0x80]; // +0x14c
-    int windowWidth;              // +0x1cc
-    int windowHeight;             // +0x1d0
+    i32 windowWidth;              // +0x1cc
+    i32 windowHeight;             // +0x1d0
 }; // 0x1d4 bytes
 
 // ---------------------------------------------------------------------------
@@ -205,7 +207,7 @@ struct GameInfo {
 // ctor, decremented by ~CGameApp. Shared across the gameapp / gruntzapp TUs so
 // the inline ~CGameApp below (which CGruntzApp's dtor inlines) resolves it; the
 // reloc that names it is masked in objdiff (only the load/store bytes matter).
-extern int g_gameAppInstanceCount;
+extern i32 g_gameAppInstanceCount;
 
 class CGameApp {
 public:
@@ -222,24 +224,24 @@ public:
     // The class's own dispatch surface (this TU matches 02/03 + the two
     // InitializeDefault* + the resource/error helpers); unmatched slots are
     // inline stubs so the vtable indices land on the binary's layout.
-    virtual int VirtualUnknownMethod02(
+    virtual i32 VirtualUnknownMethod02(
         GameInfo* pGameInfo,
         WNDCLASSA* pWndClass,
         CREATESTRUCTA* pCreateStruct
     ); // +0x04
-    virtual int VirtualUnknownMethod03(
+    virtual i32 VirtualUnknownMethod03(
         HINSTANCE hInstance,
         char* szWindowName,
         char* szGameIdentifier,
         char* szCmdLine,
-        int windowClassFlags,
-        int windowWidth,
-        int windowHeight
+        i32 windowClassFlags,
+        i32 windowWidth,
+        i32 windowHeight
     );                                                      // +0x08
     virtual void VirtualUnknownMethod04() {}                // +0x0c
     virtual void CloseResources();                          // +0x10
     virtual void VirtualUnknownMethod06() {}                // +0x14
-    virtual int RunMessageLoop();                           // +0x18
+    virtual i32 RunMessageLoop();                           // +0x18
     virtual void ReportError(WPARAM wParam, LPARAM lParam); // +0x1c
     virtual void VirtualUnknownMethod09();                  // +0x20  the idle virtual
     virtual void FreeGameManager();                         // +0x24
@@ -257,7 +259,7 @@ public:
     static LRESULT __stdcall GameWindowProc(HWND, UINT, WPARAM, LPARAM);
 
     // Non-virtual modal-screen handler (reloc-masked; ?@2b0d).
-    void RunModal(int id, HWND hwnd);
+    void RunModal(i32 id, HWND hwnd);
 
     CGameResource* m_4;           // +0x04  deleted by CloseResources (the CGameWnd)
     CGameResource* m_8;           // +0x08  deleted by CloseResources (the CGameMgr)
@@ -266,11 +268,11 @@ public:
     GameInfo m_gameInfo;          // +0x14  (0x1d4 bytes; szGameIdentifier @ +0xa0 etc.)
     WNDCLASSA m_wc;               // +0x1e8  registered window class
     CREATESTRUCTA m_createStruct; // +0x210  the CreateWindowEx parameters
-    int m_240;                    // +0x240
-    int m_244;                    // +0x244
-    int m_248;                    // +0x248  error-reported guard
-    int m_24c;                    // +0x24c  error code
-    int m_250;                    // +0x250  error detail
+    i32 m_240;                    // +0x240
+    i32 m_244;                    // +0x244
+    i32 m_248;                    // +0x248  error-reported guard
+    i32 m_24c;                    // +0x24c  error code
+    i32 m_250;                    // +0x250  error detail
 
     // Engine-label backlog stubs.
 

@@ -7,4 +7,4 @@
 // @source: rtti-vptr
 // @stub
 RVA(0x0003a340, 0x16e)
-CCursorSnapSprite::CCursorSnapSprite(int) {}
+CCursorSnapSprite::CCursorSnapSprite(i32) {}

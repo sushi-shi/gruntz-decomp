@@ -22,7 +22,7 @@
 namespace Utils {
     namespace WinAPI {
         char GetGruntzDriveLetter();
-        int FileExists(char* szPath);
+        i32 FileExists(char* szPath);
     } // namespace WinAPI
 } // namespace Utils
 
@@ -32,62 +32,62 @@ namespace Utils {
 // arg shapes are load-bearing. `m_c4` (the connection-settings buffer) is freed
 // through a small NAFXCW-style operator-delete helper (out-of-line, reloc-
 // masked); modelled as a plain free function.
-extern "C" __declspec(dllimport) long __stdcall DirectPlayLobbyCreate(
+extern "C" __declspec(dllimport) i32 __stdcall DirectPlayLobbyCreate(
     void* lpguidDSP,
     IDirectPlayLobbyZ** lplpDPL,
     void* pUnk,
     void* lpData,
-    unsigned long dwDataSize
+    u32 dwDataSize
 );
 
 class CNetMgr {
 public:
-    static void ReportError(char* file, int line, long hr, void* hWnd);
+    static void ReportError(char* file, i32 line, i32 hr, void* hWnd);
 };
 
 void FreeConnectionSettings(void* p); // FUN_005b9b82 (operator delete wrapper)
 
-void* operator new(unsigned int);
+void* operator new(u32);
 
 // -------------------------------------------------------------------------
 // Engine objects reached through CGruntzMgr's member pointers. Each engine-side
 // method is a reloc-masked __thiscall (`mov ecx,obj; call rel32`), so only the
 // layout offsets + call shapes are load-bearing; the displacements reloc-mask.
 extern "C" {
-    extern int g_61ab24; // DAT_0061ab24  (last-stored input flag mirror)
-    extern int g_64557c; // DAT_0064557c  (modal/cursor-busy gate)
+    extern i32 g_61ab24; // DAT_0061ab24  (last-stored input flag mirror)
+    extern i32 g_64557c; // DAT_0064557c  (modal/cursor-busy gate)
     // The clock/scroll/warp globals SaveState streams through the archive.
-    extern int g_629ad0; // DAT_00629ad0  (save serial counter)
-    extern int g_64558c; // DAT_0064558c
-    extern int g_645590; // DAT_00645590
-    extern int g_645594; // DAT_00645594
-    extern int g_645598; // DAT_00645598
-    extern int g_64559c; // DAT_0064559c
-    extern int g_6455a0; // DAT_006455a0
-    extern int g_6455e8; // DAT_006455e8
-    extern int g_6452a4; // DAT_006452a4
-    extern int g_6452cc; // DAT_006452cc
-    extern int g_645508; // DAT_00645508
-    extern int g_64550c; // DAT_0064550c
+    extern i32 g_629ad0; // DAT_00629ad0  (save serial counter)
+    extern i32 g_64558c; // DAT_0064558c
+    extern i32 g_645590; // DAT_00645590
+    extern i32 g_645594; // DAT_00645594
+    extern i32 g_645598; // DAT_00645598
+    extern i32 g_64559c; // DAT_0064559c
+    extern i32 g_6455a0; // DAT_006455a0
+    extern i32 g_6455e8; // DAT_006455e8
+    extern i32 g_6452a4; // DAT_006452a4
+    extern i32 g_6452cc; // DAT_006452cc
+    extern i32 g_645508; // DAT_00645508
+    extern i32 g_64550c; // DAT_0064550c
 }
-extern int g_warpX; // ?g_warpX@@3HA
-extern int g_warpY; // ?g_warpY@@3HA
+extern i32 g_warpX; // ?g_warpX@@3HA
+extern i32 g_warpY; // ?g_warpY@@3HA
 
 extern "C" {
-    extern int g_644c54; // DAT_00644c54  (active player/world index)
+    extern i32 g_644c54; // DAT_00644c54  (active player/world index)
 }
 
 // The game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A), modeled here with
 // the offsets UpdateScoreHud touches (a per-TU view; the DATA pin reloc-masks the
 // `mov eax,ds:g_gameReg` load against the already-named symbol).
 struct ScoreNotifier {          // g_gameReg->m_58
-    void Bump(int wp);          // FUN @ 0x4408 thunk (this, wp)
-    void Tick(int wp);          // FUN @ 0x1c53 thunk (this, wp)
-    void Notify(int a, int wp); // FUN @ 0x2d97 thunk (this, a, wp)
+    void Bump(i32 wp);          // FUN @ 0x4408 thunk (this, wp)
+    void Tick(i32 wp);          // FUN @ 0x1c53 thunk (this, wp)
+    void Notify(i32 a, i32 wp); // FUN @ 0x2d97 thunk (this, a, wp)
 };
 struct ScoreSub2c { // g_gameReg->m_2c
     char m_pad0[0x1c];
-    int m_1c; // +0x1c  cumulative score
+    i32 m_1c; // +0x1c  cumulative score
 };
 struct WwdGameRegZ {
     char m_pad0[0x2c];
@@ -95,7 +95,7 @@ struct WwdGameRegZ {
     char m_pad30[0x58 - 0x30];
     ScoreNotifier* m_58; // +0x58
     char m_pad5c[0x134 - 0x5c];
-    int m_134; // +0x134  active gate
+    i32 m_134; // +0x134  active gate
 };
 DATA(0x0024556c)
 extern WwdGameRegZ* g_gameReg;
@@ -104,25 +104,25 @@ extern WwdGameRegZ* g_gameReg;
 // indexed by g_644c54.
 struct WorldDeltaTables {
     char m_pad0[0x20c];
-    int m_arr20c[4]; // +0x20c..+0x21c
-    int m_arr21c[4]; // +0x21c
+    i32 m_arr20c[4]; // +0x20c..+0x21c
+    i32 m_arr21c[4]; // +0x21c
 };
 
 // The +0x7c HUD/score accumulator object.
 struct ScoreHud {
     char m_pad0[0x8];
-    int m_8; // +0x08  refresh flag
+    i32 m_8; // +0x08  refresh flag
     char m_padc[0x1c - 0xc];
-    int m_1c;                // +0x1c  accumulator A
-    int m_20;                // +0x20  accumulator B
-    void Refresh(int score); // FUN @ 0x1884 thunk (this, score)
-    void Seed(int v, int z); // FUN @ 0x1c8f thunk (this, v, z)
+    i32 m_1c;                // +0x1c  accumulator A
+    i32 m_20;                // +0x20  accumulator B
+    void Refresh(i32 score); // FUN @ 0x1884 thunk (this, score)
+    void Seed(i32 v, i32 z); // FUN @ 0x1c8f thunk (this, v, z)
 };
 
 // The +0x44 object carrying a one-shot guard at +0x124.
 struct HudGuard44 {
     char m_pad0[0x124];
-    int m_124; // +0x124
+    i32 m_124; // +0x124
 };
 
 // The archive/serializer object SaveState streams every clock/scroll/warp field
@@ -144,20 +144,20 @@ public:
     virtual void s09();
     virtual void s0a();
     virtual void s0b();
-    virtual void Serialize(void* data, int size); // slot 12 (+0x30)
+    virtual void Serialize(void* data, i32 size); // slot 12 (+0x30)
 };
 
 // The engine reaches the USER32 cursor through a stored function pointer at
 // 0x6c44c4 (`mov edi,ds:...; call edi`), not a direct IAT call; model it as a
 // typed global fn-ptr so the indirect call shape (`call reg`) falls out.
-extern "C" int(__stdcall* g_pShowCursor)(int); // PTR_ShowCursor_006c44c4
+extern "C" i32(__stdcall* g_pShowCursor)(i32); // PTR_ShowCursor_006c44c4
 
 // A free helper that flushes/forces a redraw of one map index (reloc-masked).
-void RedrawMapIndex(int idx); // FUN_00558c70
+void RedrawMapIndex(i32 idx); // FUN_00558c70
 
 // The trailing __cdecl command hook in BroadcastCmd's fan-out (reloc-masked;
 // `push a3..a0; call; add esp,0x10`).
-int CmdHook(int a, int b, int c, int d); // FUN @ 0x17da thunk
+i32 CmdHook(i32 a, i32 b, i32 c, i32 d); // FUN @ 0x17da thunk
 
 // The +0x60 timer/poll object (reloc-masked thiscall).
 struct TimerObj {
@@ -180,7 +180,7 @@ struct InputState54 {
 // each 0x64 bytes; the status id is at +0x20 (3 == "won/done").
 struct PlayStatusSlot {
     char m_pad0[0x20];
-    int m_status; // +0x20
+    i32 m_status; // +0x20
     char m_pad24[0x64 - 0x24];
 };
 // A view of the live PLAY state (a CState subclass) exposing the +0x520 status
@@ -198,8 +198,8 @@ struct SaveInfo {
     char m_pad34[0x75 - 0x34];
     char m_75[0x80]; // +0x75  level name buffer
     char m_padf5[0xf8 - 0xf5];
-    int m_f8; // +0xf8
-    int m_fc; // +0xfc
+    i32 m_f8; // +0xf8
+    i32 m_fc; // +0xfc
 };
 
 // The +0x58 manager FillSaveInfo forwards the record + source-state ptr to
@@ -211,7 +211,7 @@ struct SaveSink58 {
 // The engine's out-of-line block copy (FUN_00520340). Retail calls it here (not
 // the inlined rep-movs memcpy intrinsic); modeled as a plain __cdecl free fn so
 // the `push n; push src; push dst; call; add esp,0xc` shape falls out.
-void EngineCopy(void* dst, void* src, int n); // FUN_00520340
+void EngineCopy(void* dst, void* src, i32 n); // FUN_00520340
 
 // The modal dialog/screen handed to ExitModalUI. Run() is virtual slot 48
 // (+0xc0); the leading slots are anchors so the call lands at [vtbl+0xc0] as a
@@ -266,7 +266,7 @@ public:
     virtual void s2d();
     virtual void s2e();
     virtual void s2f();
-    virtual int Run(); // slot 48 (+0xc0)
+    virtual i32 Run(); // slot 48 (+0xc0)
 };
 
 // The +0x2dc sub-object's teardown + the active object's own finalize (both
@@ -283,12 +283,12 @@ struct CActiveObj {
 };
 
 extern "C" {
-    extern int g_6455fc; // DAT_006455fc  (round-robin options cursor)
+    extern i32 g_6455fc; // DAT_006455fc  (round-robin options cursor)
 }
 
 // The per-frame input/state object at CGruntzMgr +0x54 (reloc-masked thiscall).
 struct InputStateObj {
-    void StoreFlag(int v); // FUN_004385e0-family (this, v)
+    void StoreFlag(i32 v); // FUN_004385e0-family (this, v)
 };
 
 // One element of the 4-entry options array embedded at CGruntzMgr +0x150 (each
@@ -300,12 +300,12 @@ struct OptionsTickSub {
 };
 struct OptionsSlot {
     char m_pad0[0x14];
-    int m_14; // +0x14  arm flag
+    i32 m_14; // +0x14  arm flag
     char m_pad18[0x20 - 0x18];
-    int m_20; // +0x20  loaded flag
+    i32 m_20; // +0x20  loaded flag
     char m_pad24[0x38 - 0x24];
     OptionsTickSub m_38;                     // +0x38
-    int Command(int a, int b, int c, int d); // (this, a..d) reloc-masked
+    i32 Command(i32 a, i32 b, i32 c, i32 d); // (this, a..d) reloc-masked
 };
 
 // The downstream command sinks BroadcastCmd fans the 4-arg command out to: the
@@ -313,7 +313,7 @@ struct OptionsSlot {
 // +0x70 polymorphic object (vtbl slot 1), and the +0x7c HUD. Each returns
 // nonzero to keep broadcasting. All reloc-masked.
 struct CmdSink {
-    int Command(int a, int b, int c, int d); // (this, a..d) reloc-masked
+    i32 Command(i32 a, i32 b, i32 c, i32 d); // (this, a..d) reloc-masked
 };
 // The +0x60 controller's 0-arg tick fired before the broadcast (reloc-masked).
 struct CmdTimer60 {
@@ -324,15 +324,15 @@ struct CmdTimer60 {
 class CmdSinkV {
 public:
     virtual void s0();
-    virtual int Command(int a, int b, int c, int d); // slot 1 (+0x04)
+    virtual i32 Command(i32 a, i32 b, i32 c, i32 d); // slot 1 (+0x04)
 };
 
 // The loaded world's height/influence grid (reached via m_30->m_24->m_5c). m_20
 // is the value grid, m_24 the per-column base offset table.
 struct CHeightGrid {
     char m_pad0[0x20];
-    int* m_20; // +0x20  value grid
-    int* m_24; // +0x24  per-column base table
+    i32* m_20; // +0x20  value grid
+    i32* m_24; // +0x24  per-column base table
 };
 
 // The active world view at m_30->m_24; its +0x5c holds the height grid.
@@ -347,23 +347,23 @@ struct CWorldViewZ {
 // +0x40..+0x4c). The view's rescale notify is a reloc-masked thiscall.
 struct CWorldEdges {
     char m_pad0[0x40];
-    int m_40, m_44, m_48, m_4c; // +0x40..+0x4c
+    i32 m_40, m_44, m_48, m_4c; // +0x40..+0x4c
 };
 struct CScrollView {
     char m_pad0[0x10];
-    int m_10, m_14, m_18, m_1c; // +0x10..+0x1c  tile rect
+    i32 m_10, m_14, m_18, m_1c; // +0x10..+0x1c  tile rect
     char m_pad20[0x5c - 0x20];
     CWorldEdges* m_5c; // +0x5c
     char m_pad60[0xc8 - 0x60];
-    int m_c8, m_cc; // +0xc8/+0xcc  scale-1 extents
-    int m_d0, m_d4; // +0xd0/+0xd4  scale-2 extents
-    int m_d8, m_dc; // +0xd8/+0xdc  scale-3 extents
+    i32 m_c8, m_cc; // +0xc8/+0xcc  scale-1 extents
+    i32 m_d0, m_d4; // +0xd0/+0xd4  scale-2 extents
+    i32 m_d8, m_dc; // +0xd8/+0xdc  scale-3 extents
     void Notify();  // FUN @ 0x160ee0 (this) reloc-masked
 };
 
 // The +0x70 notify object (reloc-masked 3-arg thiscall setter).
 struct CNotify70 {
-    void Set(int row, int col, int value); // (this, row, col, value) reloc-masked
+    void Set(i32 row, i32 col, i32 value); // (this, row, col, value) reloc-masked
 };
 
 // The engine's __cdecl CString-formatting helper (sprintf-style into a CString
@@ -374,22 +374,22 @@ extern "C" void Format(CString* dst, const char* fmt, ...);
 // g_wap32FrameDelta are the engine's just-refreshed clock (mangled C++ globals,
 // stored into the game-side mirror g_645580/g_645584); g_6bf3c0/g_6bf3bc are the
 // draw-clock pair (extern "C" -> the _g_* C symbols). All reloc-masked DATA refs.
-extern int g_wap32Now;        // ?g_wap32Now@@3HA
-extern int g_wap32FrameDelta; // ?g_wap32FrameDelta@@3HA
+extern i32 g_wap32Now;        // ?g_wap32Now@@3HA
+extern i32 g_wap32FrameDelta; // ?g_wap32FrameDelta@@3HA
 extern "C" {
-    extern unsigned int g_645580; // game-side now mirror (DAT_00645580)
-    extern unsigned int g_645584; // game-side delta mirror (DAT_00645584)
-    extern unsigned int g_645588; // game-side abs clock (DAT_00645588)
-    extern unsigned int g_6bf3c0; // draw-clock (timeGetTime stamp)
-    extern unsigned int g_6bf3bc; // draw-clock delta (cleared)
+    extern u32 g_645580; // game-side now mirror (DAT_00645580)
+    extern u32 g_645584; // game-side delta mirror (DAT_00645584)
+    extern u32 g_645588; // game-side abs clock (DAT_00645588)
+    extern u32 g_6bf3c0; // draw-clock (timeGetTime stamp)
+    extern u32 g_6bf3bc; // draw-clock delta (cleared)
     // The clock/scroll-state globals ResetClockGlobals zeroes (reloc-masked).
-    extern unsigned int g_645600; // DAT_00645600
-    extern unsigned int g_6455b0; // DAT_006455b0
-    extern unsigned int g_6455a4; // DAT_006455a4
-    extern unsigned int g_6455a8; // DAT_006455a8
-    extern unsigned int g_6455ac; // DAT_006455ac
-    extern unsigned int g_6455f8; // DAT_006455f8
-    extern unsigned int g_6455f4; // DAT_006455f4
+    extern u32 g_645600; // DAT_00645600
+    extern u32 g_6455b0; // DAT_006455b0
+    extern u32 g_6455a4; // DAT_006455a4
+    extern u32 g_6455a8; // DAT_006455a8
+    extern u32 g_6455ac; // DAT_006455ac
+    extern u32 g_6455f8; // DAT_006455f8
+    extern u32 g_6455f4; // DAT_006455f4
 }
 
 // The two engine input/state singletons TickStateMgrs drives once per call
@@ -398,8 +398,8 @@ extern "C" {
 // is a second mgr (Flush @0x4385e0). Each call is a single reloc-masked
 // __thiscall, so only the one-method shape on a tiny helper is load-bearing.
 struct DirectInputMgr2 {
-    int PollAll(); // FUN_00533080
-    int Flush();   // FUN_00533110 (a second per-frame entrypoint)
+    i32 PollAll(); // FUN_00533080
+    i32 Flush();   // FUN_00533110 (a second per-frame entrypoint)
 };
 struct StateMgrBZ {
     void Flush(); // FUN_004385e0
@@ -442,9 +442,9 @@ void CGruntzMgr::ReportError(WPARAM wParam, LPARAM lParam) {
 // the known value into the m_94/m_98 store (local-copy compare). Logic is exact;
 // see docs/patterns/constant-cse-immediate-vs-hoist.md.
 RVA(0x0008ddd0, 0x7e)
-int CGruntzMgr::RestoreVideoMode(int save) {
-    int w = m_8c;
-    int h = m_90;
+i32 CGruntzMgr::RestoreVideoMode(i32 save) {
+    i32 w = m_8c;
+    i32 h = m_90;
     if (w == 0x280 && h == 0x1e0) {
         if (save) {
             m_94 = w;
@@ -484,7 +484,7 @@ char CGruntzMgr::GetGruntzDriveLetter() {
 // decide whether the sound bank should keep running. (Update() is re-evaluated
 // on the second compare, matching the retail two-call codegen.)
 RVA(0x0008ec50, 0x33)
-int CGruntzMgr::CheckPlayState() {
+i32 CGruntzMgr::CheckPlayState() {
     if (m_2c == 0) {
         return 0;
     }
@@ -504,7 +504,7 @@ int CGruntzMgr::CheckPlayState() {
 // the call-site line) through the game window. m_9c records success (1) / failure
 // (0); the result also lands in eax for the call site.
 RVA(0x0008eca0, 0x164)
-int CGruntzMgr::InitializeLobbyConnectionSettings() {
+i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
     if (m_a0) {
         return m_9c;
     }
@@ -517,7 +517,7 @@ int CGruntzMgr::InitializeLobbyConnectionSettings() {
         m_c0 = 0;
     }
 
-    long hr = DirectPlayLobbyCreate(0, &m_c0, 0, 0, 0);
+    i32 hr = DirectPlayLobbyCreate(0, &m_c0, 0, 0, 0);
     if (hr) {
         CNetMgr::ReportError("C:\\Proj\\Gruntz\\GruntzMgr.cpp", 0x120d, hr, ((CGameWnd*)m_4)->m_4);
         return 0;
@@ -531,9 +531,9 @@ int CGruntzMgr::InitializeLobbyConnectionSettings() {
         m_c4 = 0;
     }
 
-    unsigned long dwSize = 0;
+    u32 dwSize = 0;
     hr = m_c0->vtbl->GetConnectionSettings(m_c0, 0, 0, &dwSize);
-    if (hr != 0 && hr != (long)0x8877001e) { // !DPERR_BUFFERTOOSMALL
+    if (hr != 0 && hr != (i32)0x8877001e) { // !DPERR_BUFFERTOOSMALL
         CNetMgr::ReportError("C:\\Proj\\Gruntz\\GruntzMgr.cpp", 0x1221, hr, ((CGameWnd*)m_4)->m_4);
         m_c0->vtbl->Release(m_c0);
         m_c0 = 0;
@@ -599,7 +599,7 @@ void CGruntzMgr::PerFrameTick() {
 // it; on the non-draw path it stops the sound bank once its inner object reports
 // idle.
 RVA(0x0008f6a0, 0x7d)
-void CGruntzMgr::AdvanceFrame(int doDraw, int /*unused*/) {
+void CGruntzMgr::AdvanceFrame(i32 doDraw, i32 /*unused*/) {
     if (Wap32GameMgrVfunc3() == 0) {
         return;
     }
@@ -636,7 +636,7 @@ void CGruntzMgr::AdvanceFrame(int doDraw, int /*unused*/) {
 // <name>"), returning the first that exists (empty CString if neither, or for an
 // unknown id). The two CString temps + the szPath buffer give the /GX frame.
 RVA(0x0008ff30, 0x1ca)
-CString CGruntzMgr::BuildMoviePath(int movie) {
+CString CGruntzMgr::BuildMoviePath(i32 movie) {
     CString name;
 
     switch (movie) {
@@ -708,70 +708,70 @@ CString CGruntzMgr::BuildMoviePath(int movie) {
 // returning the slot's result or 0 when there is no live state. The args are
 // re-loaded fresh from the moving stack per push (the natural forwarder codegen).
 RVA(0x0008d9d0, 0x1e)
-int CGruntzMgr::NotifyState0b(int a, int b) {
+i32 CGruntzMgr::NotifyState0b(i32 a, i32 b) {
     if (m_2c) {
         return m_2c->Vslot0b(a, b);
     }
     return 0;
 }
 RVA(0x0008da00, 0x1e)
-int CGruntzMgr::NotifyState0c(int a, int b) {
+i32 CGruntzMgr::NotifyState0c(i32 a, i32 b) {
     if (m_2c) {
         return m_2c->Vslot0c(a, b);
     }
     return 0;
 }
 RVA(0x0008da30, 0x1e)
-int CGruntzMgr::NotifyState0d(int a, int b) {
+i32 CGruntzMgr::NotifyState0d(i32 a, i32 b) {
     if (m_2c) {
         return m_2c->Vslot0d(a, b);
     }
     return 0;
 }
 RVA(0x0008da60, 0x23)
-int CGruntzMgr::NotifyState0e(int a, int b, int c) {
+i32 CGruntzMgr::NotifyState0e(i32 a, i32 b, i32 c) {
     if (m_2c) {
         return m_2c->Vslot0e(a, b, c);
     }
     return 0;
 }
 RVA(0x0008daa0, 0x23)
-int CGruntzMgr::NotifyState0f(int a, int b, int c) {
+i32 CGruntzMgr::NotifyState0f(i32 a, i32 b, i32 c) {
     if (m_2c) {
         return m_2c->Vslot0f(a, b, c);
     }
     return 0;
 }
 RVA(0x0008dae0, 0x23)
-int CGruntzMgr::NotifyState10(int a, int b, int c) {
+i32 CGruntzMgr::NotifyState10(i32 a, i32 b, i32 c) {
     if (m_2c) {
         return m_2c->Vslot10(a, b, c);
     }
     return 0;
 }
 RVA(0x0008db20, 0x23)
-int CGruntzMgr::NotifyState11(int a, int b, int c) {
+i32 CGruntzMgr::NotifyState11(i32 a, i32 b, i32 c) {
     if (m_2c) {
         return m_2c->Vslot11(a, b, c);
     }
     return 0;
 }
 RVA(0x0008db60, 0x23)
-int CGruntzMgr::NotifyState12(int a, int b, int c) {
+i32 CGruntzMgr::NotifyState12(i32 a, i32 b, i32 c) {
     if (m_2c) {
         return m_2c->Vslot12(a, b, c);
     }
     return 0;
 }
 RVA(0x0008dba0, 0x23)
-int CGruntzMgr::NotifyState13(int a, int b, int c) {
+i32 CGruntzMgr::NotifyState13(i32 a, i32 b, i32 c) {
     if (m_2c) {
         return m_2c->Vslot13(a, b, c);
     }
     return 0;
 }
 RVA(0x0008dbe0, 0x23)
-int CGruntzMgr::NotifyState14(int a, int b, int c) {
+i32 CGruntzMgr::NotifyState14(i32 a, i32 b, i32 c) {
     if (m_2c) {
         return m_2c->Vslot14(a, b, c);
     }
@@ -784,7 +784,7 @@ int CGruntzMgr::NotifyState14(int a, int b, int c) {
 // it drives SetVideoMode(saved-w, saved-h, save=1), falling back to
 // RestoreVideoMode(1), and on total failure surfaces a (0x8008, 0x45e) error.
 RVA(0x0008de70, 0x61)
-int CGruntzMgr::CheckSavedMode() {
+i32 CGruntzMgr::CheckSavedMode() {
     // All success paths short-circuit to one trailing `return 1` (retail tail-
     // merges the mov eax,1; pop; ret epilogue).
     if ((m_8c == m_94 && m_90 == m_98) || SetVideoMode(m_94, m_98, 1) || RestoreVideoMode(1)) {
@@ -812,7 +812,7 @@ void CGruntzMgr::ResetClockGlobals() {
 // CGruntzMgr::SetGameClock (0x08f7b0; ret 0xc). Mirrors the three clock args into
 // the game-side now/delta/abs globals plus the draw-clock pair (reloc-masked).
 RVA(0x0008f7b0, 0x2b)
-void CGruntzMgr::SetGameClock(int now, int delta, int abs) {
+void CGruntzMgr::SetGameClock(i32 now, i32 delta, i32 abs) {
     g_645580 = now;
     g_645584 = delta;
     g_645588 = abs;
@@ -824,7 +824,7 @@ void CGruntzMgr::SetGameClock(int now, int delta, int abs) {
 // CGruntzMgr::RunFromState (0x090200; ret, no arg cleanup). Thin forwarder:
 // ChangeState_8fab0(1).
 RVA(0x00090200, 0x8)
-int CGruntzMgr::RunFromState() {
+i32 CGruntzMgr::RunFromState() {
     return ChangeState_8fab0(1);
 }
 
@@ -857,11 +857,11 @@ void CGruntzMgr::PushState(CState* s) {
 // RemoveAt()s it, and reports whether the removed top was s. The count/data are
 // read fresh off `this` (+0xe0/+0xdc); only the helper call forms &m_arrD8.
 RVA(0x000909e0, 0x46)
-int CGruntzMgr::PopTopIfMatches(CState* s) {
+i32 CGruntzMgr::PopTopIfMatches(CState* s) {
     if (!s) {
         return 0;
     }
-    int n = *(int*)((char*)this + 0xe0);
+    i32 n = *(i32*)((char*)this + 0xe0);
     if (n <= 0) {
         return 0;
     }
@@ -876,7 +876,7 @@ int CGruntzMgr::PopTopIfMatches(CState* s) {
 // (+0xe0/+0xdc) so the array base is not hoisted into a register.
 RVA(0x00090a50, 0x40)
 void CGruntzMgr::ClearStateStack() {
-    for (int i = 0; i < *(int*)((char*)this + 0xe0); i++) {
+    for (i32 i = 0; i < *(i32*)((char*)this + 0xe0); i++) {
         CState* s = (*(CState***)((char*)this + 0xdc))[i];
         if (s) {
             delete s;
@@ -889,7 +889,7 @@ void CGruntzMgr::ClearStateStack() {
 // CGruntzMgr::CheckMovieFileExists (0x090aa0; cdecl ret). Probes whether the
 // resolved movie path (m_strF0) exists on disk.
 RVA(0x00090aa0, 0x10)
-int CGruntzMgr::CheckMovieFileExists() {
+i32 CGruntzMgr::CheckMovieFileExists() {
     return Utils::WinAPI::FileExists((char*)(const char*)m_strF0);
 }
 
@@ -898,15 +898,15 @@ int CGruntzMgr::CheckMovieFileExists() {
 // m_2c->ReleaseResources-slot result (slot 7, +0x1c) only when m_2c, the
 // CGameApp (m_8), its +0x240 sub-object and !m_ac all hold; else 0.
 RVA(0x00091500, 0x42)
-int CGruntzMgr::IsLobbyHostReady() {
+i32 CGruntzMgr::IsLobbyHostReady() {
     if (m_2c == 0) {
         return 0;
     }
-    int* app = (int*)m_8;
+    i32* app = (i32*)m_8;
     if (app == 0) {
         return 0;
     }
-    if (*(int*)((char*)app + 0x240) == 0) {
+    if (*(i32*)((char*)app + 0x240) == 0) {
         return 0;
     }
     if (m_ac != 0) {
@@ -919,9 +919,9 @@ int CGruntzMgr::IsLobbyHostReady() {
 // CGruntzMgr::StoreInputState (0x091a10; ret 4). Stores v at +0x120, and when the
 // +0x60 sub-object is present mirrors it into that object's +0x2c.
 RVA(0x00091a10, 0x17)
-int CGruntzMgr::StoreInputState(int v) {
+i32 CGruntzMgr::StoreInputState(i32 v) {
     m_120 = v;
-    int* p = (int*)m_60;
+    i32* p = (i32*)m_60;
     if (p) {
         p[0x2c / 4] = v;
     }
@@ -932,7 +932,7 @@ int CGruntzMgr::StoreInputState(int v) {
 // CGruntzMgr::TickStateMgrs (0x0920b0). Drives the two engine state singletons
 // (g_645570/g_645578) once and reports success.
 RVA(0x000920b0, 0x1c)
-int CGruntzMgr::TickStateMgrs() {
+i32 CGruntzMgr::TickStateMgrs() {
     g_645570->PollAll();
     g_645578->Flush();
     return 1;
@@ -943,12 +943,12 @@ int CGruntzMgr::TickStateMgrs() {
 // Update() id matches `id`; otherwise the first stack entry whose Update() id
 // matches (or 0).
 RVA(0x00092900, 0x6e)
-CState* CGruntzMgr::FindStateById(int id) {
+CState* CGruntzMgr::FindStateById(i32 id) {
     if (m_2c && m_2c->Update() == id) {
         return m_2c;
     }
     CStateStackZ* st = (CStateStackZ*)&m_arrD8;
-    for (int i = 0; i < st->m_nSize; i++) {
+    for (i32 i = 0; i < st->m_nSize; i++) {
         CState* s = st->m_pData[i];
         if (s && s->Update() == id) {
             return s;
@@ -983,7 +983,7 @@ CState* CGruntzMgr::PickPausedThenPlayState() {
 // @source: call-xref
 // @stub
 RVA(0x0008fab0, 0x318)
-int CGruntzMgr::ChangeState_8fab0(int /*arg*/) {
+i32 CGruntzMgr::ChangeState_8fab0(i32 /*arg*/) {
     return 0;
 }
 
@@ -1026,18 +1026,18 @@ void CGruntzMgr::RecomputeViewScale() {
     float fw = (float)(view->m_18 - view->m_10 + 1);
     float fh = (float)(view->m_1c - view->m_14 + 1);
 
-    view->m_c8 = (int)(fw * 1.4f);
-    view->m_cc = (int)(fh * 1.4f);
+    view->m_c8 = (i32)(fw * 1.4f);
+    view->m_cc = (i32)(fh * 1.4f);
     view->Notify();
 
     view = (CScrollView*)m_30->m_24;
-    view->m_d0 = (int)(fw * 5.3f);
-    view->m_d4 = (int)(fh * 5.3f);
+    view->m_d0 = (i32)(fw * 5.3f);
+    view->m_d4 = (i32)(fh * 5.3f);
     view->Notify();
 
     view = (CScrollView*)m_30->m_24;
-    view->m_d8 = (int)(fw * 1.12f);
-    view->m_dc = (int)(fh * 1.12f);
+    view->m_d8 = (i32)(fw * 1.12f);
+    view->m_dc = (i32)(fh * 1.12f);
     view->Notify();
 
     CScrollView* v = (CScrollView*)m_30->m_24;
@@ -1069,7 +1069,7 @@ void CGruntzMgr::RecomputeViewScale() {
 // NOTE: the trace size was 0x124 but the real function runs to 0x15c (the cmd==4
 // tail + the bool-normalizing HUD epilogue past the under-counted Ghidra bound).
 RVA(0x00093460, 0x15c)
-int CGruntzMgr::BroadcastCmd(int a0, int cmd, int a2, int a3) {
+i32 CGruntzMgr::BroadcastCmd(i32 a0, i32 cmd, i32 a2, i32 a3) {
     if (a0 == 0) {
         return 0;
     }
@@ -1089,7 +1089,7 @@ int CGruntzMgr::BroadcastCmd(int a0, int cmd, int a2, int a3) {
     }
 
     OptionsSlot* slot = (OptionsSlot*)((char*)this + 0x150);
-    for (int i = 0; i < 4; i++) {
+    for (i32 i = 0; i < 4; i++) {
         if (slot == 0 || slot->Command(a0, cmd, a2, a3) == 0) {
             return 0;
         }
@@ -1157,7 +1157,7 @@ void CGruntzMgr::UpdateScoreHud() {
 // state block (m_114..m_13c) and the clock/scroll/warp globals - each via the
 // archive's Serialize(&field, size) slot. Returns 1.
 RVA(0x00093620, 0x254)
-int CGruntzMgr::SaveState(CSerializerZ* ar) {
+i32 CGruntzMgr::SaveState(CSerializerZ* ar) {
     if (ar == 0) {
         return 0;
     }
@@ -1217,7 +1217,7 @@ int CGruntzMgr::SaveState(CSerializerZ* ar) {
 // match; the residual is the m_134 compare landing in esi here vs retail's edi
 // (freed by the inline-strcpy rep-movs) - a pure esi<->edi naming swap.
 RVA(0x000927b0, 0xc4)
-int CGruntzMgr::FillSaveInfo(SaveInfo* dst, void* snapshot) {
+i32 CGruntzMgr::FillSaveInfo(SaveInfo* dst, void* snapshot) {
     if (dst == 0) {
         return 0;
     }
@@ -1235,7 +1235,7 @@ int CGruntzMgr::FillSaveInfo(SaveInfo* dst, void* snapshot) {
     dst->m_fc = (m_134 == 3);
     dst->m_f8 = m_130;
     ((SaveSink58*)m_58)->Store(dst, src + 0x1d0);
-    m_bc = (int)dst;
+    m_bc = (i32)dst;
     if (snapshot) {
         EngineCopy(dst->m_14, snapshot, 0x20);
     }
@@ -1260,13 +1260,13 @@ int CGruntzMgr::FillSaveInfo(SaveInfo* dst, void* snapshot) {
 // and re-reads `full`/`stopBank` off the stack, no edi push). Pure register-
 // reuse/stack-offset shift; see docs/patterns/pin-local-for-callee-saved-reg.md.
 RVA(0x0008e980, 0x11e)
-int CGruntzMgr::FinishLevel(int full, int stopBank) {
+i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
     if (m_2c && m_2c->Update() == 0x11) {
         PlayStatusSlot* base = ((CPlayStateView*)m_2c)->m_520;
         char* p = (char*)base + 0x20;
-        int done = 0;
-        for (int d = 4; d != 0; d--) {
-            if (p && *(int*)p == 3) {
+        i32 done = 0;
+        for (i32 d = 4; d != 0; d--) {
+            if (p && *(i32*)p == 3) {
                 done++;
             }
             p += 0x64;
@@ -1329,7 +1329,7 @@ int CGruntzMgr::FinishLevel(int full, int stopBank) {
 // for `this`, edi for the ptr) - a pure esi<->edi naming swap (call ff d6 vs
 // ff d7). Not steerable from source; see docs/patterns/zero-register-pinning.md.
 RVA(0x0008ef10, 0x9e)
-void CGruntzMgr::EnterModalUI(int arg) {
+void CGruntzMgr::EnterModalUI(i32 arg) {
     CGameApp* app = (CGameApp*)m_8;
     if (app == 0) {
         return;
@@ -1343,8 +1343,8 @@ void CGruntzMgr::EnterModalUI(int arg) {
         d->vtbl->Slot0a(d);
     }
 
-    int(__stdcall * show)(int) = g_pShowCursor;
-    int shown = show(1);
+    i32(__stdcall * show)(i32) = g_pShowCursor;
+    i32 shown = show(1);
     while (show(1) < 0) {
     }
 
@@ -1370,7 +1370,7 @@ void CGruntzMgr::EnterModalUI(int arg) {
 // post-switch hook, and finalizes the freshly-activated object (+0x2dc sub +
 // self). The dialog's return value is the function's result.
 RVA(0x000903f0, 0x10c)
-int CGruntzMgr::ExitModalUI(CModalDialog* dlg, int notify) {
+i32 CGruntzMgr::ExitModalUI(CModalDialog* dlg, i32 notify) {
     if (m_60) {
         ((TimerObj*)m_60)->Stop();
     }
@@ -1387,13 +1387,13 @@ int CGruntzMgr::ExitModalUI(CModalDialog* dlg, int notify) {
         d->vtbl->Slot0a(d);
     }
 
-    int(__stdcall * show)(int) = g_pShowCursor;
-    int shown = show(1);
+    i32(__stdcall * show)(i32) = g_pShowCursor;
+    i32 shown = show(1);
     while (show(1) < 0) {
     }
 
     m_ac = 1;
-    int result = dlg->Run();
+    i32 result = dlg->Run();
     g_64557c = 0;
     m_ac = 0;
     if (m_2c && notify) {
@@ -1425,7 +1425,7 @@ int CGruntzMgr::ExitModalUI(CModalDialog* dlg, int notify) {
 // (Vslot06); on either success it arms the app's resume flag (m_8->+0x244) and
 // runs the post-switch hook, returning 1. Otherwise returns 0.
 RVA(0x0008d6a0, 0xaf)
-int CGruntzMgr::SwitchToNextState() {
+i32 CGruntzMgr::SwitchToNextState() {
     if (Wap32GameMgrVfunc3() == 0) {
         return 0;
     }
@@ -1436,7 +1436,7 @@ int CGruntzMgr::SwitchToNextState() {
     if (m_2c == next) {
         return 0;
     }
-    int oldId = 0;
+    i32 oldId = 0;
     if (m_2c) {
         oldId = m_2c->Update();
         m_2c->FrameSlot28(next->Update());
@@ -1468,8 +1468,8 @@ int CGruntzMgr::SwitchToNextState() {
 // here keeps the vtbl in edi and re-reads it, so no ebx push. Logic is exact;
 // the residual is the vtbl-CSE register choice (see docs/patterns/
 // pin-local-for-callee-saved-reg.md - no clean source spelling for vtbl pinning).
-int CGruntzMgr::PassClickToPlayState(int a0, int a1, int a2) {
-    int inPlay = 0;
+i32 CGruntzMgr::PassClickToPlayState(i32 a0, i32 a1, i32 a2) {
+    i32 inPlay = 0;
     if (m_2c->Update() == 3) {
         inPlay = 1;
     }
@@ -1513,7 +1513,7 @@ void CGruntzMgr::UnloadSoundChain() {
 // when the loaded world's +0x28 sub-object is present it also mirrors the flag
 // into the g_61ab24 global; finally forwards the flag to the +0x54 input object.
 RVA(0x000919d0, 0x30)
-void CGruntzMgr::StoreInputFlag(int v) {
+void CGruntzMgr::StoreInputFlag(i32 v) {
     m_11c = v;
     if (m_30 && m_30->m_28) {
         g_61ab24 = v;
@@ -1531,11 +1531,11 @@ void CGruntzMgr::StoreInputFlag(int v) {
 RVA(0x00092ec0, 0x24)
 void CGruntzMgr::ClearOptionsSlots() {
     char* p = (char*)this + 0x174; // &m_options150[0].m_24
-    for (int i = 4; i != 0; i--) {
+    for (i32 i = 4; i != 0; i--) {
         char* elem = p - 0x24;
         if (elem) {
-            *(int*)(p - 4) = 0; // elem.m_20
-            *(int*)p = 0;       // elem.m_24
+            *(i32*)(p - 4) = 0; // elem.m_20
+            *(i32*)p = 0;       // elem.m_24
         }
         p += 0x238;
     }
@@ -1557,10 +1557,10 @@ CString CGruntzMgr::GetWorldFileName() {
 // sub-object. The loop runs i in [0, m_138]; both the count and the cursor are
 // re-read each iteration (the cursor after the reloc-masked tick).
 RVA(0x000933e0, 0x5e)
-int CGruntzMgr::AdvanceOptionsCycle() {
-    int cursor = (g_6455fc + 1) & 3;
+i32 CGruntzMgr::AdvanceOptionsCycle() {
+    i32 cursor = (g_6455fc + 1) & 3;
     g_6455fc = cursor;
-    for (int i = 0; i < m_138 + 1; i++) {
+    for (i32 i = 0; i < m_138 + 1; i++) {
         OptionsSlot* slot = (OptionsSlot*)((char*)this + 0x150 + i * 0x238);
         if (cursor == i && slot->m_14 == 0 && slot->m_20 != 0) {
             slot->m_38.Tick();
@@ -1575,9 +1575,9 @@ int CGruntzMgr::AdvanceOptionsCycle() {
 // world's height grid: idx = view->m_24[col] + row; view->m_20[idx] = value.
 // Then forwards (row, col, value) to the +0x70 notify object (reloc-masked).
 RVA(0x00111ec0, 0x37)
-void CGruntzMgr::SetCellHeight(int row, int col, int value) {
+void CGruntzMgr::SetCellHeight(i32 row, i32 col, i32 value) {
     CHeightGrid* grid = ((CWorldViewZ*)m_30->m_24)->m_5c;
-    int idx = grid->m_24[col] + row;
+    i32 idx = grid->m_24[col] + row;
     grid->m_20[idx] = value;
     ((CNotify70*)m_70)->Set(row, col, value);
 }

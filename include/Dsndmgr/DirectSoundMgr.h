@@ -14,24 +14,26 @@
 #ifndef DSNDMGR_DIRECTSOUNDMGR_H
 #define DSNDMGR_DIRECTSOUNDMGR_H
 
+#include <Ints.h>
+
 // DSBCAPS - the buffer-caps struct GetCaps fills (dwSize 0x14 in, dwFlags out).
 // The ctor reads dwFlags into m_40 and ignores the rest.
 struct DSBCAPS {
-    unsigned long dwSize;
-    unsigned long dwFlags;
-    unsigned long dwBufferBytes;
-    unsigned long dwUnlockTransferRate;
-    unsigned long dwPlayCpuOverhead;
+    u32 dwSize;
+    u32 dwFlags;
+    u32 dwBufferBytes;
+    u32 dwUnlockTransferRate;
+    u32 dwPlayCpuOverhead;
 };
 
 // DSBUFFERDESC - the 0x14-byte sound-buffer descriptor passed to
 // IDirectSound::CreateSoundBuffer (dwSize, dwFlags, dwBufferBytes, dwReserved,
 // lpwfxFormat). Only dwSize/dwFlags are stamped here; the rest is zeroed.
 struct DSBUFFERDESC {
-    unsigned long dwSize;
-    unsigned long dwFlags;
-    unsigned long dwBufferBytes;
-    unsigned long dwReserved;
+    u32 dwSize;
+    u32 dwFlags;
+    u32 dwBufferBytes;
+    u32 dwReserved;
     void* lpwfxFormat;
 };
 
@@ -46,16 +48,15 @@ struct DSBUFFERDESC {
 struct IDirectSoundZ {
     struct Vtbl {
         char m_pad0[0x08];
-        long(__stdcall* Release)(IDirectSoundZ*); // +0x08
-        long(__stdcall* CreateSoundBuffer)(
+        i32(__stdcall* Release)(IDirectSoundZ*); // +0x08
+        i32(__stdcall* CreateSoundBuffer)(
             IDirectSoundZ*,
             void* desc,
             IDirectSoundZ** out,
             void* unk
         ); // +0x0c
         char m_pad10[0x18 - 0x10];
-        long(__stdcall*
-                 SetCooperativeLevel)(IDirectSoundZ*, void* hwnd, unsigned long level); // +0x18
+        i32(__stdcall* SetCooperativeLevel)(IDirectSoundZ*, void* hwnd, u32 level); // +0x18
     }* vtbl;
 };
 
@@ -80,49 +81,37 @@ struct IDirectSoundZ {
 struct IDirectSoundBufferZ {
     struct Vtbl {
         char m_pad0[0x08];
-        long(__stdcall* Release)(IDirectSoundBufferZ*);             // +0x08
-        long(__stdcall* GetCaps)(IDirectSoundBufferZ*, void* caps); // +0x0c
-        long(__stdcall* GetCurrentPosition)(
-            IDirectSoundBufferZ*,
-            unsigned long* play,
-            unsigned long* write
-        ); // +0x10
-        long(__stdcall* GetFormat)(
-            IDirectSoundBufferZ*,
-            void* fmt,
-            unsigned long size,
-            unsigned long* written
-        );                                                                        // +0x14
-        long(__stdcall* GetVolume)(IDirectSoundBufferZ*, long* vol);              // +0x18
-        long(__stdcall* GetPan)(IDirectSoundBufferZ*, long* pan);                 // +0x1c
-        long(__stdcall* GetFrequency)(IDirectSoundBufferZ*, unsigned long* freq); // +0x20
-        long(__stdcall* GetStatus)(IDirectSoundBufferZ*, unsigned long* status);  // +0x24
+        i32(__stdcall* Release)(IDirectSoundBufferZ*);             // +0x08
+        i32(__stdcall* GetCaps)(IDirectSoundBufferZ*, void* caps); // +0x0c
+        i32(__stdcall* GetCurrentPosition)(IDirectSoundBufferZ*, u32* play,
+                                           u32* write); // +0x10
+        i32(__stdcall* GetFormat)(IDirectSoundBufferZ*, void* fmt, u32 size,
+                                  u32* written);                       // +0x14
+        i32(__stdcall* GetVolume)(IDirectSoundBufferZ*, i32* vol);     // +0x18
+        i32(__stdcall* GetPan)(IDirectSoundBufferZ*, i32* pan);        // +0x1c
+        i32(__stdcall* GetFrequency)(IDirectSoundBufferZ*, u32* freq); // +0x20
+        i32(__stdcall* GetStatus)(IDirectSoundBufferZ*, u32* status);  // +0x24
         char m_pad28[0x2c - 0x28];
-        long(__stdcall* Lock)(
+        i32(__stdcall* Lock)(
             IDirectSoundBufferZ*,
-            unsigned long off,
-            unsigned long bytes,
+            u32 off,
+            u32 bytes,
             void** p1,
-            unsigned long* n1,
+            u32* n1,
             void** p2,
-            unsigned long* n2,
-            unsigned long fl
+            u32* n2,
+            u32 fl
         ); // +0x2c
         char m_pad30[0x34 - 0x30];
-        long(__stdcall* SetCurrentPosition)(IDirectSoundBufferZ*, unsigned long pos); // +0x34
-        long(__stdcall* SetFormat)(IDirectSoundBufferZ*, void* fmt);                  // +0x38
-        long(__stdcall* SetVolume)(IDirectSoundBufferZ*, long vol);                   // +0x3c
-        long(__stdcall* SetPan)(IDirectSoundBufferZ*, long pan);                      // +0x40
-        long(__stdcall* SetFrequency)(IDirectSoundBufferZ*, unsigned long freq);      // +0x44
-        long(__stdcall* Stop)(IDirectSoundBufferZ*);                                  // +0x48
-        long(__stdcall* Unlock)(
-            IDirectSoundBufferZ*,
-            void* p1,
-            unsigned long n1,
-            void* p2,
-            unsigned long n2
-        );                                              // +0x4c
-        long(__stdcall* Restore)(IDirectSoundBufferZ*); // +0x50
+        i32(__stdcall* SetCurrentPosition)(IDirectSoundBufferZ*, u32 pos); // +0x34
+        i32(__stdcall* SetFormat)(IDirectSoundBufferZ*, void* fmt);        // +0x38
+        i32(__stdcall* SetVolume)(IDirectSoundBufferZ*, i32 vol);          // +0x3c
+        i32(__stdcall* SetPan)(IDirectSoundBufferZ*, i32 pan);             // +0x40
+        i32(__stdcall* SetFrequency)(IDirectSoundBufferZ*, u32 freq);      // +0x44
+        i32(__stdcall* Stop)(IDirectSoundBufferZ*);                        // +0x48
+        i32(__stdcall* Unlock)(IDirectSoundBufferZ*, void* p1, u32 n1, void* p2,
+                               u32 n2);                // +0x4c
+        i32(__stdcall* Restore)(IDirectSoundBufferZ*); // +0x50
     }* vtbl;
 };
 
@@ -134,7 +123,7 @@ struct IDirectSoundBufferZ {
 // ---------------------------------------------------------------------------
 class DSoundCloneBase {
 public:
-    virtual void* ScalarDtor(int flag); // +0x00 slot 0
+    virtual void* ScalarDtor(i32 flag); // +0x00 slot 0
 };
 
 // ---------------------------------------------------------------------------
@@ -146,59 +135,56 @@ class DirectSoundMgr {
 public:
     // --- per-buffer wrappers (this = a buffer object, m_0c = the buffer) ------
     DirectSoundMgr(IDirectSoundBufferZ* buf, DirectSoundMgr* owner); // 0x1351d0 ctor
-    int Restore();                                                   // 0x135310  m_0c->Restore()
-    int StopAndRewind();      // 0x135380  Stop + SetCurrentPosition(0)
-    int IsPlaying();          // 0x1353f0  GetStatus & 1
-    int IsLooping();          // 0x135440  GetStatus & 2
-    int SetVolume(long vol);  // 0x135560  SetVolume (caps 0x80)
-    long GetVolume();         // 0x1355f0  GetVolume
-    void SetField0(long idx); // 0x1355c0  SetVolume(g_volumeTable[idx]) (extern)
-    long GetVolumePercent();  // 0x135640  GetVolume -> percent (0x135110)
-    int CloneAndPlay(long key, long mode, long slot); // 0x135660  reap + spawn a voice
-    int SetPan(long pan);                             // 0x135740  SetPan (caps 0x40)
-    long GetPan();                                    // 0x1357f0  GetPan
-    int SetFrequency(unsigned long freq);             // 0x135880  SetFrequency (caps 0x20)
-    int Unlock(void* p1, unsigned long n1, void* p2, unsigned long n2);   // 0x1359c0
-    int GetCurrentPosition(unsigned long* play, unsigned long* write);    // 0x135a20
-    int SetCurrentPosition(unsigned long pos);                            // 0x135a70
-    int GetFormat(void* fmt, unsigned long size, unsigned long* written); // 0x135ac0
-    ~DirectSoundMgr();                       // 0x135bb0  destructor (frees clone list)
-    void BaseDtor();                         // 0x136260  base-subobject dtor (extern)
-    void RemoveClone(DirectSoundMgr* clone); // 0x135d20  release + unlink one clone
-    int LockConvert(void* src, unsigned long lockBytes, unsigned long convert); // 0x135f40
-    void StopAllClones();                                                       // 0x136150
+    i32 Restore();                                                   // 0x135310  m_0c->Restore()
+    i32 StopAndRewind();     // 0x135380  Stop + SetCurrentPosition(0)
+    i32 IsPlaying();         // 0x1353f0  GetStatus & 1
+    i32 IsLooping();         // 0x135440  GetStatus & 2
+    i32 SetVolume(i32 vol);  // 0x135560  SetVolume (caps 0x80)
+    i32 GetVolume();         // 0x1355f0  GetVolume
+    void SetField0(i32 idx); // 0x1355c0  SetVolume(g_volumeTable[idx]) (extern)
+    i32 GetVolumePercent();  // 0x135640  GetVolume -> percent (0x135110)
+    i32 CloneAndPlay(i32 key, i32 mode, i32 slot);    // 0x135660  reap + spawn a voice
+    i32 SetPan(i32 pan);                              // 0x135740  SetPan (caps 0x40)
+    i32 GetPan();                                     // 0x1357f0  GetPan
+    i32 SetFrequency(u32 freq);                       // 0x135880  SetFrequency (caps 0x20)
+    i32 Unlock(void* p1, u32 n1, void* p2, u32 n2);   // 0x1359c0
+    i32 GetCurrentPosition(u32* play, u32* write);    // 0x135a20
+    i32 SetCurrentPosition(u32 pos);                  // 0x135a70
+    i32 GetFormat(void* fmt, u32 size, u32* written); // 0x135ac0
+    ~DirectSoundMgr();                                // 0x135bb0  destructor (frees clone list)
+    void BaseDtor();                                  // 0x136260  base-subobject dtor (extern)
+    void RemoveClone(DirectSoundMgr* clone);          // 0x135d20  release + unlink one clone
+    i32 LockConvert(void* src, u32 lockBytes, u32 convert); // 0x135f40
+    void StopAllClones();                                   // 0x136150
 
     // --- device-level wrappers (this = the manager, m_14 = IDirectSound) ------
-    int Create(
-        void* hwnd,
-        unsigned long level,
-        unsigned long flags
-    );                                                        // 0x136550  DirectSoundCreate + coop
-    int SetCooperativeLevel(void* hwnd, unsigned long level); // 0x1365f0
-    int CreatePrimaryBuffer();                                // 0x137260  m_14->CreateSoundBuffer
+    i32 Create(void* hwnd, u32 level,
+               u32 flags);                          // 0x136550  DirectSoundCreate + coop
+    i32 SetCooperativeLevel(void* hwnd, u32 level); // 0x1365f0
+    i32 CreatePrimaryBuffer();                      // 0x137260  m_14->CreateSoundBuffer
 
-    static void GetErrorString(char* file, int line, long hr); // 0x138150
+    static void GetErrorString(char* file, i32 line, i32 hr); // 0x138150
 
     // Engine-label backlog stubs (relocated from src/Stub/ - own this class here).
-    int winapi_136e20_timeGetTime(int);
-    int winapi_137ac0_timeGetTime(int);
+    i32 winapi_136e20_timeGetTime(i32);
+    i32 winapi_137ac0_timeGetTime(i32);
 
     // --- layout ---------------------------------------------------------------
     char m_pad0[0x0c];
     IDirectSoundBufferZ* m_0c; // +0x0c  the held sound buffer (per-buffer this)
     DirectSoundMgr* m_10;      // +0x10  owning manager back-pointer (per-buffer this)
     IDirectSoundZ* m_14;       // +0x14  the DirectSound device (manager this)
-    long m_18;                 // +0x18  cached frequency
-    long m_1c;                 // +0x1c  cached pan
-    long m_20;                 // +0x20  cached volume
-    unsigned long m_24;        // +0x24  cached set-frequency value
-    int m_28;                  // +0x28
+    i32 m_18;                  // +0x18  cached frequency
+    i32 m_1c;                  // +0x1c  cached pan
+    i32 m_20;                  // +0x20  cached volume
+    u32 m_24;                  // +0x24  cached set-frequency value
+    i32 m_28;                  // +0x28
     char m_pad2c[0x30 - 0x2c];
-    int m_30;           // +0x30
-    int m_34;           // +0x34
-    int m_38;           // +0x38
-    int m_3c;           // +0x3c
-    unsigned long m_40; // +0x40  buffer capability flags (0x20/0x40/0x80)
+    i32 m_30; // +0x30
+    i32 m_34; // +0x34
+    i32 m_38; // +0x38
+    i32 m_3c; // +0x3c
+    u32 m_40; // +0x40  buffer capability flags (0x20/0x40/0x80)
     // +0x44  intrusive list-node by which a clone instance hangs in its parent's
     // clone list (next@+0x44, prev@+0x48, back-pointer to this clone @+0x4c). The
     // list-helper at 0x1391e0 unlinks the node given &m_node44; the parent walks
@@ -214,12 +200,12 @@ public:
     CloneNode* m_58_head;
     CloneNode* m_5c_tail;
     char m_pad60[0x78 - 0x60];
-    int m_78; // +0x78  "initialized" flag (manager this)
-    int m_7c; // +0x7c
+    i32 m_78; // +0x78  "initialized" flag (manager this)
+    i32 m_7c; // +0x7c
     char m_pad80[0x84 - 0x80];
     IDirectSoundBufferZ* m_84; // +0x84  primary buffer
-    int m_88;                  // +0x88  cooperative level / coop arg
-    unsigned long m_8c;        // +0x8c  buffer-desc flags
+    i32 m_88;                  // +0x88  cooperative level / coop arg
+    u32 m_8c;                  // +0x8c  buffer-desc flags
 };
 
 #endif // DSNDMGR_DIRECTSOUNDMGR_H

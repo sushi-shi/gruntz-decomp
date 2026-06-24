@@ -21,7 +21,7 @@
 // clear the pending pan/volume. Returns 1 on success, 0 on the null guard.
 // ---------------------------------------------------------------------------
 RVA(0x0000b5e0, 0x29)
-int CRandomAmbientSound::Init(void* world, void* a2) {
+i32 CRandomAmbientSound::Init(void* world, void* a2) {
     if (world == 0) {
         return 0;
     }
@@ -67,7 +67,7 @@ void CRandomAmbientSound::Restart(void* a1) {
         node = node->m_next;
         CSoundChannel* ch = cur->m_data;
         if (ch != 0) {
-            ch->Recompute((int)a1);
+            ch->Recompute((i32)a1);
         }
     }
 }
@@ -132,7 +132,7 @@ void CRandomAmbientSound::Resume() {
 // (same bytes, reordered) plus the same dead-this tail load as Resume. The
 // for-loop / store-order levers did not flip it. See zero-register-pinning.md.
 RVA(0x0000bd60, 0x4b)
-void CRandomAmbientSound::Retune(int pan, int vol) {
+void CRandomAmbientSound::Retune(i32 pan, i32 vol) {
     m_28 = pan;
     m_2c = vol;
     CSoundNode* node = m_list.m_head;

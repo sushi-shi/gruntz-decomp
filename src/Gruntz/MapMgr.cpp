@@ -74,11 +74,11 @@ struct MapElemA {
     char m_pad1c[0x24 - 0x1c];
 };
 
-int CMapArrayA::Allocate(unsigned int count) {
+i32 CMapArrayA::Allocate(u32 count) {
     MapElemA* block = (MapElemA*)MapAlloc(count * sizeof(MapElemA));
     m_0 = block;
     if (!block) {
-        return (int)block;
+        return (i32)block;
     }
 
     m_block = block;
@@ -86,7 +86,7 @@ int CMapArrayA::Allocate(unsigned int count) {
     block->m_prev = 0;
 
     MapElemA* e = block;
-    for (unsigned int i = 0; i < m_count; ++i) {
+    for (u32 i = 0; i < m_count; ++i) {
         if (e == (MapElemA*)m_block) {
             e->m_prev = 0;
         } else {
@@ -132,7 +132,7 @@ struct MapElemB {
     MapElemB* m_next; // +0x08
 };
 
-int CMapArrayB::Allocate(unsigned int count) {
+i32 CMapArrayB::Allocate(u32 count) {
     MapElemB* block = (MapElemB*)MapAlloc(count * sizeof(MapElemB));
     m_0 = block;
     if (!block) {
@@ -144,7 +144,7 @@ int CMapArrayB::Allocate(unsigned int count) {
     block->m_prev = 0;
 
     MapElemB* e = block;
-    for (unsigned int i = 0; i < m_count; ++i) {
+    for (u32 i = 0; i < m_count; ++i) {
         if (e == (MapElemB*)m_block) {
             e->m_prev = 0;
         } else {

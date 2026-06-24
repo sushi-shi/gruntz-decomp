@@ -41,7 +41,7 @@ extern char g_voiceKeyA[]; // s_A_0060a454
 // stamped into m_60. External/no-body so the call reloc-masks.
 // ---------------------------------------------------------------------------
 struct CVoiceSample {
-    int ComputeDuration(); // 0x137590 (__thiscall: (m_a8*1000)/m_3c)
+    i32 ComputeDuration(); // 0x137590 (__thiscall: (m_a8*1000)/m_3c)
 };
 
 // ---------------------------------------------------------------------------
@@ -59,25 +59,25 @@ struct CVoiceSample {
 // unnamed BSS (DATA-pinned so the loads reloc-mask).
 // ---------------------------------------------------------------------------
 struct CVActColl {
-    int Find(int coord, int z); // 0x16da80 (__thiscall ret 8)
+    i32 Find(i32 coord, i32 z); // 0x16da80 (__thiscall ret 8)
 };
 struct CVActColl2 {
-    void Insert(void* coll, void* item, int n); // 0x16d850 (__thiscall ret 0xc)
+    void Insert(void* coll, void* item, i32 n); // 0x16d850 (__thiscall ret 0xc)
 };
-extern "C" int ActAlloc(); // 0x16d990
+extern "C" i32 ActAlloc(); // 0x16d990
 
 DATA(0x002514e0)
-extern int g_vactLo;
+extern i32 g_vactLo;
 DATA(0x002514e4)
-extern int g_vactHi;
+extern i32 g_vactHi;
 DATA(0x002514e8)
 extern char* g_vactBase;
 DATA(0x002514f0)
-extern int g_vactStride;
+extern i32 g_vactStride;
 DATA(0x002514ec)
 extern struct CVActEntry* g_vactCur;
 DATA(0x002514f8)
-extern int g_vactScratch;
+extern i32 g_vactScratch;
 DATA(0x002514d8)
 extern CVActColl g_vactColl;
 DATA(0x002514dc)
@@ -104,20 +104,20 @@ class CGruntVoice : public CUserLogic {
 public:
     virtual ~CGruntVoice() OVERRIDE; // 0x119ae0
 
-    void Dispatch(int coord);                        // 0x119e40
-    int Setup(int a0, void* sample, int a2, int a3); // 0x11a7e0
+    void Dispatch(i32 coord);                        // 0x119e40
+    i32 Setup(i32 a0, void* sample, i32 a2, i32 a3); // 0x11a7e0
     void Reset();                                    // 0x11a870
 
     // --- CGruntVoice own fields (placeholders; offsets load-bearing) ---
     char m_pad40[0x54 - 0x40];
-    int m_54; // +0x54
-    int m_58; // +0x58
-    int m_5c; // +0x5c
-    int m_60; // +0x60
-    int m_64; // +0x64
-    int m_68; // +0x68
-    int m_6c; // +0x6c
-    int m_70; // +0x70
+    i32 m_54; // +0x54
+    i32 m_58; // +0x58
+    i32 m_5c; // +0x5c
+    i32 m_60; // +0x60
+    i32 m_64; // +0x64
+    i32 m_68; // +0x68
+    i32 m_6c; // +0x6c
+    i32 m_70; // +0x70
 };
 
 // The registry Entry: its first dword is a pointer-to-member-function of
@@ -129,7 +129,7 @@ struct CVActEntry {
 };
 
 // The inlined coordinate->Entry* lookup Dispatch folds in twice.
-static inline CVActEntry* VActLookup(int coord) {
+static inline CVActEntry* VActLookup(i32 coord) {
     g_vactScratch = 0;
     if (coord >= g_vactLo && coord <= g_vactHi) {
         return (CVActEntry*)(g_vactBase + (coord - g_vactLo) * g_vactStride);

@@ -22,7 +22,7 @@ public:
 
 class CDDrawSubMgrLeaf {
 public:
-    int VirtualMethodUnknown14();
+    i32 VirtualMethodUnknown14();
     void VirtualMethodUnknown18();
 
     // Engine-label backlog stubs.
@@ -30,16 +30,16 @@ public:
     ~CDDrawSubMgrLeaf();
 
     void* m_vptr;              // +0x00
-    int m_04;                  // +0x04  -1 when inactive
+    i32 m_04;                  // +0x04  -1 when inactive
     char m_pad08[0x0c - 0x08]; // +0x08..0x0b
-    int m_0c;                  // +0x0c  parent/root handle
+    i32 m_0c;                  // +0x0c  parent/root handle
 };
 
 // ---------------------------------------------------------------------------
 // Ready when the parent handle is present and the status word is not -1.
 // ---------------------------------------------------------------------------
 RVA(0x001577a0, 0x16)
-int CDDrawSubMgrLeaf::VirtualMethodUnknown14() {
+i32 CDDrawSubMgrLeaf::VirtualMethodUnknown14() {
     if (m_0c == 0) {
         goto fail;
     }

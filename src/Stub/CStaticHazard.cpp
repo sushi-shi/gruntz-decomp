@@ -27,7 +27,7 @@
 // load-bearing.
 
 // The running game clock (DAT_00645588; low 32 bits of the engine counter).
-extern "C" unsigned int g_645588;
+extern "C" u32 g_645588;
 
 // The "LEVEL_STATICHAZARDGO" / "LEVEL_STATICHAZARD" lookup keys + the "B" anim-set
 // key (original .data string literals; objdiff matches these by value).
@@ -43,19 +43,19 @@ extern "C" unsigned int g_645588;
 // ---------------------------------------------------------------------------
 struct CHazAnimElem {
     char m_pad0[0x14];
-    int m_14; // +0x14
+    i32 m_14; // +0x14
 };
 
 struct CHazAnimDescColl {
     char m_pad0[0xc];
     CHazAnimElem** m_c; // +0x0c  element vector (first elem = *m_c)
-    int m_10;           // +0x10  element count (>0 gate)
+    i32 m_10;           // +0x10  element count (>0 gate)
 };
 
 class CHazAnimPlayer {
 public:
-    int ApplyLookupGeometry(const char* name, int hint); // 0x1505b0 (ret 8)
-    void SetAnimEx(const char* key, int frame);          // 0x1504d0 (ret 8)
+    i32 ApplyLookupGeometry(const char* name, i32 hint); // 0x1505b0 (ret 8)
+    void SetAnimEx(const char* key, i32 frame);          // 0x1504d0 (ret 8)
 
     char m_pad0[0x1b4];
     CHazAnimDescColl* m_1b4; // +0x1b4  active-anim descriptor
@@ -64,7 +64,7 @@ public:
 // The host @hazard+0x10 (the level/geometry source); m_118 is the period base.
 struct CHazHost {
     char m_pad0[0x118];
-    unsigned m_118; // +0x118  period base
+    u32 m_118; // +0x118  period base
 };
 
 // The anim-set node holder @hazard+0x14; m_1c caches the resolved anim-set node.
@@ -75,8 +75,8 @@ struct CHazAnimNode {
 
 class CStaticHazard {
 public:
-    CStaticHazard(int);
-    int LoadAttributes2();
+    CStaticHazard(i32);
+    i32 LoadAttributes2();
     void LoadAttributes();
 
     char m_pad0[0x10];
@@ -89,17 +89,17 @@ public:
     char m_pad3c[0x40 - 0x3c];
     void* m_40; // +0x40  previous descriptor cache
     char m_pad44[0x54 - 0x44];
-    unsigned m_54; // +0x54  pulse epoch
-    unsigned m_58; // +0x58  active window
-    unsigned m_5c; // +0x5c  idle window
-    int m_60;      // +0x60  fired flag (set to 1)
+    u32 m_54; // +0x54  pulse epoch
+    u32 m_58; // +0x58  active window
+    u32 m_5c; // +0x5c  idle window
+    i32 m_60; // +0x60  fired flag (set to 1)
 };
 
 // @confidence: med
 // @source: rtti-vptr
 // @stub
 RVA(0x000fb7a0, 0x2d4)
-CStaticHazard::CStaticHazard(int) {}
+CStaticHazard::CStaticHazard(i32) {}
 
 // @early-stop: 97.86% - logic 100% correct, all reloc operands named. Residual is
 // a 1-instr scheduling swap: retail emits `mov [m_60],1` BEFORE reloading `m_38`
@@ -108,20 +108,20 @@ CStaticHazard::CStaticHazard(int) {}
 // so the store/load pair can't be pinned - the documented store-vs-load scheduling
 // wall (docs/patterns/statement-schedule-faithful.md). Deferred to the final sweep.
 RVA(0x000fc0b0, 0xb2)
-int CStaticHazard::LoadAttributes2() {
+i32 CStaticHazard::LoadAttributes2() {
     CGameReg* reg = g_gameReg;
     if (reg->m_118 != 0 && reg->m_134 == 1) {
         return 0;
     }
 
-    unsigned phase = g_645588 - m_54;
-    unsigned base = m_10->m_118;
+    u32 phase = g_645588 - m_54;
+    u32 base = m_10->m_118;
     if (phase <= base) {
         return 0;
     }
 
     phase -= base;
-    unsigned span = m_5c + m_58;
+    u32 span = m_5c + m_58;
     if (phase % span > m_58) {
         return 0;
     }

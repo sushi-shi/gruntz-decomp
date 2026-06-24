@@ -15,13 +15,13 @@
 // OnDrain 0x137e20) live in other TUs. Dispatch them through pointer-to-member
 // types so the calls are __thiscall (this in ecx) - a single-inheritance pmf is
 // just a 4-byte code pointer, so reinterpreting the raw vtable slot is exact.
-typedef int (StreamFeeder::*FeederVFn)();
+typedef i32 (StreamFeeder::*FeederVFn)();
 union VSlot {
     void* p;
     FeederVFn fn;
 };
 
-inline FeederVFn vslot(void* vtbl, int slot) {
+inline FeederVFn vslot(void* vtbl, i32 slot) {
     VSlot v;
     v.p = ((void**)vtbl)[slot];
     return v.fn;
@@ -29,14 +29,7 @@ inline FeederVFn vslot(void* vtbl, int slot) {
 
 // Slot 0 (0x11fec0) is the feed-into-two-regions virtual: (p1, n1, &got1, p2,
 // n2, &got2) -> int. Same pmf-via-union trick for the __thiscall convention.
-typedef int (StreamFeeder::*FeedRegionsFn)(
-    void*,
-    unsigned long,
-    unsigned long*,
-    void*,
-    unsigned long,
-    unsigned long*
-);
+typedef i32 (StreamFeeder::*FeedRegionsFn)(void*, u32, u32*, void*, u32, u32*);
 union VSlot0 {
     void* p;
     FeedRegionsFn fn;
@@ -58,11 +51,11 @@ extern void* const g_StreamFeederVtbl[];
 // StreamFeeder::SeedWindow (0x137340, __thiscall, 3 args). Arm the data window
 // (source + offset + length) over the stream, then prime via Tick(-1).
 RVA(0x00137340, 0x33)
-int StreamFeeder::SeedWindow(void* src, unsigned long off, unsigned long len) {
+i32 StreamFeeder::SeedWindow(void* src, u32 off, u32 len) {
     if (src == 0) {
         return 0;
     }
-    m_2c = (unsigned long)src;
+    m_2c = (u32)src;
     m_3c = len;
     m_38 = off;
     m_34 = off;
@@ -79,16 +72,9 @@ int StreamFeeder::SeedWindow(void* src, unsigned long off, unsigned long len) {
 // flag (m_30) is set. Each chunk is read through StreamSource::Read (0x139af0)
 // at the source back-pointer (m_2c). This is the slot-0 feed virtual's body.
 RVA(0x00137380, 0x10e)
-int StreamFeeder::CopyWindow(
-    void* dst1,
-    unsigned long n1,
-    unsigned long* got1,
-    void* dst2,
-    unsigned long n2,
-    unsigned long* got2
-) {
+i32 StreamFeeder::CopyWindow(void* dst1, u32 n1, u32* got1, void* dst2, u32 n2, u32* got2) {
     if (dst1 != 0 && n1 > 0) {
-        unsigned long want = n1;
+        u32 want = n1;
         if (m_34 + n1 > m_40) {
             want = m_40 - m_34;
         }
@@ -105,7 +91,7 @@ int StreamFeeder::CopyWindow(
         }
     }
     if (dst2 != 0 && n2 > 0) {
-        unsigned long want = n2;
+        u32 want = n2;
         if (m_34 + n2 > m_40) {
             want = m_40 - m_34;
         }
@@ -154,7 +140,7 @@ void StreamFeeder::Cleanup() {
 // (Pause if drained, then the OnDrain virtual), optionally reap the buffer from
 // the owner, and disarm.
 RVA(0x00137dc0, 0x43)
-void StreamFeeder::FeederReset(int doStop) {
+void StreamFeeder::FeederReset(i32 doStop) {
     if (m_18 != 0) {
         if (m_1c != 0) {
             Pause();
@@ -172,12 +158,12 @@ void StreamFeeder::FeederReset(int doStop) {
 // StreamFeeder::Resume (0x137ed0, __thiscall). If not already drained, resume
 // the buffer (m_8->Resume(1)) and, if it reports playing, mark drained (m_1c=1).
 RVA(0x00137ed0, 0x30)
-int StreamFeeder::Resume() {
+i32 StreamFeeder::Resume() {
     if (m_1c != 0) {
         return 1;
     }
     m_8->Resume(1);
-    int r = m_8->IsPlaying();
+    i32 r = m_8->IsPlaying();
     if (r != 0) {
         m_1c = 1;
     }
@@ -188,11 +174,11 @@ int StreamFeeder::Resume() {
 // StreamFeeder::Pause (0x137f00, __thiscall). If drained, stop+rewind the
 // buffer and clear the drained flag; else nothing.
 RVA(0x00137f00, 0x26)
-int StreamFeeder::Pause() {
+i32 StreamFeeder::Pause() {
     if (m_1c == 0) {
         return 1;
     }
-    int r = m_8->StopAndRewind();
+    i32 r = m_8->StopAndRewind();
     if (r != 0) {
         m_1c = 0;
     }
@@ -211,19 +197,19 @@ int StreamFeeder::Pause() {
 // plateau (docs/patterns/zero-register-pinning.md family). Logic complete,
 // deferred to the final sweep.
 RVA(0x00137d10, 0xab)
-int StreamFeeder::FeederStart(
+i32 StreamFeeder::FeederStart(
     FeederOwner* owner,
-    int arg2,
-    unsigned long len,
+    i32 arg2,
+    u32 len,
     void* fmt,
     void* buf,
-    int tickArg
+    i32 tickArg
 ) {
     m_10 = len;
     m_4 = owner;
-    m_14 = (unsigned long)fmt;
+    m_14 = (u32)fmt;
     m_1c = 0;
-    if (*(unsigned short*)((char*)fmt + 0xe) > 8) {
+    if (*(u16*)((char*)fmt + 0xe) > 8) {
         m_24 = 0;
     } else {
         m_24 = 0x80;
@@ -262,16 +248,16 @@ int StreamFeeder::FeederStart(
 // (docs/patterns/stack-buffer-size-drives-frame.md). Logic complete, deferred
 // to the final sweep.
 RVA(0x00137f30, 0x197)
-int StreamFeeder::FillBuffer(unsigned long writePos, unsigned long bytes) {
+i32 StreamFeeder::FillBuffer(u32 writePos, u32 bytes) {
     void* p1;
-    unsigned long n1;
+    u32 n1;
     void* p2;
-    unsigned long n2;
+    u32 n2;
     if (m_8->Lock(writePos, bytes, &p1, &n1, &p2, &n2, 0) == 0) {
         return 0;
     }
-    unsigned long got1 = 0;
-    unsigned long got2 = 0;
+    u32 got1 = 0;
+    u32 got2 = 0;
     if (m_20 == 0) {
         if ((this->*vslot0(m_vtbl))(p1, n1, &got1, p2, n2, &got2) == 0) {
             m_8->Unlock(p1, n1, p2, n2);

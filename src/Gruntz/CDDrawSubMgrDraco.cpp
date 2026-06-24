@@ -22,7 +22,7 @@
 class DracoChild {
 public:
     virtual void Slot00();            // +0x00
-    virtual int ScalarDtor(int flag); // +0x04  scalar-deleting destructor
+    virtual i32 ScalarDtor(i32 flag); // +0x04  scalar-deleting destructor
 };
 
 // ---------------------------------------------------------------------------
@@ -32,7 +32,7 @@ public:
 // ---------------------------------------------------------------------------
 class CDDrawSubMgrDraco {
 public:
-    int VirtualMethodUnknown14();
+    i32 VirtualMethodUnknown14();
     void VirtualMethodUnknown1C();
 
     void* m_vptr; // +0x00 (vptr; not touched here)
@@ -50,7 +50,7 @@ public:
 // ---------------------------------------------------------------------------
 // Ready when all three owned child pointers are populated.
 RVA(0x00157480, 0x1e)
-int CDDrawSubMgrDraco::VirtualMethodUnknown14() {
+i32 CDDrawSubMgrDraco::VirtualMethodUnknown14() {
     if (m_14 == 0) {
         goto fail;
     }

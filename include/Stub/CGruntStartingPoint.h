@@ -5,7 +5,7 @@
 // CGruntStartingPoint : CUserLogic (RTTI). sizeof 0x54.
 class CGruntStartingPoint : public CUserLogic {
 public:
-    CGruntStartingPoint(int);
+    CGruntStartingPoint(i32);
     char m_size_pad[0x14]; // own region over CUserLogic (0x40)
 };
 SIZE(CGruntStartingPoint, 0x54);

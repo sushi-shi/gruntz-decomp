@@ -7,4 +7,4 @@
 // @source: rtti-vptr
 // @stub
 RVA(0x000ac1d0, 0x1a5)
-CDoNothing::CDoNothing(int) {}
+CDoNothing::CDoNothing(i32) {}

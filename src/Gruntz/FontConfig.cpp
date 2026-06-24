@@ -54,8 +54,8 @@ extern CButeMgr g_buteMgr;
 // these (FreeNodes/Scroll delete them).
 // ---------------------------------------------------------------------------
 struct FontItem {
-    int type;     // +0x00
-    int data;     // +0x04
+    i32 type;     // +0x00
+    i32 data;     // +0x04
     CString name; // +0x08
 };
 
@@ -65,20 +65,20 @@ struct FontItem {
 // ---------------------------------------------------------------------------
 class CFontConfig : public CPtrList {
 public:
-    int LoadFontConfig(int a1, int a2);
+    i32 LoadFontConfig(i32 a1, i32 a2);
     void FreeNodes();
     void Reset();
-    int AddItem(const char* str, int type, int data);
-    void Scroll(int delta);
+    i32 AddItem(const char* str, i32 type, i32 data);
+    void Scroll(i32 delta);
     ~CFontConfig();
-    int winapi_022360_DrawTextA_SelectObject_SetTextColor(int, int, int, int);
+    i32 winapi_022360_DrawTextA_SelectObject_SetTextColor(i32, i32, i32, i32);
 
     CString m_1c;         // +0x1c  scratch string
-    unsigned int m_20;    // +0x20  running offset (unsigned: thresholds compare jb)
-    unsigned int m_24;    // +0x24  (= a1) low threshold
-    unsigned int m_28;    // +0x28  (= a2) high threshold
-    int m_2c;             // +0x2c  accumulator
-    int m_30;             // +0x30  accumulate flag
+    u32 m_20;             // +0x20  running offset (unsigned: thresholds compare jb)
+    u32 m_24;             // +0x24  (= a1) low threshold
+    u32 m_28;             // +0x28  (= a2) high threshold
+    i32 m_2c;             // +0x2c  accumulator
+    i32 m_30;             // +0x30  accumulate flag
     char m_pad34[4];      // +0x34
     HFONT m_arialFont;    // +0x38  the ARIAL UI font
     HFONT m_trainingFont; // +0x3c  the TrainingFont
@@ -88,7 +88,7 @@ public:
 // ---------------------------------------------------------------------------
 // CFontConfig::LoadFontConfig
 RVA(0x000218e0, 0x1ff)
-int CFontConfig::LoadFontConfig(int a1, int a2) {
+i32 CFontConfig::LoadFontConfig(i32 a1, i32 a2) {
     m_24 = a1;
     m_28 = a2;
     m_20 = 0;
@@ -226,7 +226,7 @@ void CFontConfig::FreeNodes() {
 // ---------------------------------------------------------------------------
 // CFontConfig::AddItem - append/prepend a new FontItem; optionally clear first.
 RVA(0x00021c60, 0xde)
-int CFontConfig::AddItem(const char* str, int type, int data) {
+i32 CFontConfig::AddItem(const char* str, i32 type, i32 data) {
     if (!str) {
         return 0;
     }
@@ -261,11 +261,11 @@ int CFontConfig::AddItem(const char* str, int type, int data) {
 // CFontConfig::Scroll - advance the running offset; drop the head FontItem when
 // the offset crosses the active threshold (m_28 above 3 items, else m_24).
 RVA(0x00021d80, 0x79)
-void CFontConfig::Scroll(int delta) {
+void CFontConfig::Scroll(i32 delta) {
     if (m_30) {
         m_2c += delta;
     }
-    int count = m_nCount;
+    i32 count = m_nCount;
     if (!count) {
         m_20 = 0;
     }
@@ -317,6 +317,6 @@ CFontConfig::~CFontConfig() {
 // @source: winapi:DrawTextA;SelectObject;SetTextColor
 // @stub
 RVA(0x00022360, 0x2f4)
-int CFontConfig::winapi_022360_DrawTextA_SelectObject_SetTextColor(int, int, int, int) {
+i32 CFontConfig::winapi_022360_DrawTextA_SelectObject_SetTextColor(i32, i32, i32, i32) {
     return 0;
 }

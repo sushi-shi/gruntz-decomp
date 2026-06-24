@@ -7,4 +7,4 @@
 // @source: rtti-vptr
 // @stub
 RVA(0x000470e0, 0x16b)
-CExplosion::CExplosion(int) {}
+CExplosion::CExplosion(i32) {}

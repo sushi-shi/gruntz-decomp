@@ -7,7 +7,7 @@
 // @source: rtti-vptr
 // @stub
 RVA(0x000e1b90, 0x23d)
-CTimeBomb::CTimeBomb(int) {}
+CTimeBomb::CTimeBomb(i32) {}
 
 // @confidence: high
 // @source: decomp-xref

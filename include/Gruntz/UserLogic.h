@@ -43,12 +43,12 @@
 // ---------------------------------------------------------------------------
 struct EngStr {
     EngStr(); // default (unused; lets the link's empty ctor stub compile)
-    EngStr(const char* s, int n);
+    EngStr(const char* s, i32 n);
     ~EngStr();
     EngStr& operator=(const EngStr& o);
     void* m_0;
-    int m_4;
-    int m_8;
+    i32 m_4;
+    i32 m_8;
     char* m_c;
 };
 
@@ -80,51 +80,51 @@ struct CGameObjAux; // the sub-object reached through CGameObject::m_7c
 // +0x10/+0x14 bounds + +0x1c base offset). Only the touched offsets are modeled.
 struct CGameObjLayer {
     char m_pad00[0x10];
-    int m_10; // +0x10
-    int m_14; // +0x14
+    i32 m_10; // +0x10
+    i32 m_14; // +0x14
     char m_pad18[0x1c - 0x18];
-    int m_1c; // +0x1c
+    i32 m_1c; // +0x1c
 };
 
 struct CGameObject {
     void AddLogicHit(char* key);                        // 0x150f50
     void AddLogicAttack(char* key);                     // 0x151030
     void AddLogicBump(char* key);                       // 0x151110
-    void ApplyLookupSprite(const char* key, int flag);  // 0x1504d0
+    void ApplyLookupSprite(const char* key, i32 flag);  // 0x1504d0
     void ApplyName(const char* name);                   // 0x150540
-    int ApplyLookupGeometry(const char* key, int flag); // 0x1505b0
+    i32 ApplyLookupGeometry(const char* key, i32 flag); // 0x1505b0
     char m_pad00[0x04];
-    int m_04; // +0x04
-    int m_08; // +0x08
+    i32 m_04; // +0x04
+    i32 m_08; // +0x08
     char m_pad0c[0x38 - 0x0c];
-    int m_38; // +0x38
+    i32 m_38; // +0x38
     char m_pad3c[0x40 - 0x3c];
-    int m_40; // +0x40
+    i32 m_40; // +0x40
     char m_pad44[0x5c - 0x44];
-    int m_5c; // +0x5c
-    int m_60; // +0x60
+    i32 m_5c; // +0x5c
+    i32 m_60; // +0x60
     char m_pad64[0x74 - 0x64];
-    int m_74; // +0x74
+    i32 m_74; // +0x74
     char m_pad78[0x7c - 0x78];
     CGameObjAux* m_7c; // +0x7c
     char m_pad80[0x164 - 0x80];
-    int m_164; // +0x164
-    int m_168; // +0x168
+    i32 m_164; // +0x164
+    i32 m_168; // +0x168
     char m_pad16c[0x198 - 0x16c];
     CGameObjLayer* m_198; // +0x198
     char m_pad19c[0x1b4 - 0x19c];
-    int m_1b4; // +0x1b4
+    i32 m_1b4; // +0x1b4
 };
 
 // The +0x7c sub-object: its +0x08 flags, +0x1c bute-node and +0x130 timer are
 // touched by the eyecandy/sparkle ctors.
 struct CGameObjAux {
     char m_pad00[0x08];
-    int m_08; // +0x08
+    i32 m_08; // +0x08
     char m_pad0c[0x1c - 0x0c];
     void* m_1c; // +0x1c
     char m_pad20[0x130 - 0x20];
-    int m_130; // +0x130
+    i32 m_130; // +0x130
 };
 
 // The engine bute manager the eyecandy ctors query for "World"/"BigActHeight"
@@ -136,7 +136,7 @@ struct CGameObjAux {
 extern CButeMgr g_buteMgr;
 
 // One-shot guard for the built-in tile-logic type registration (0x6bf674).
-extern int g_logicTypesRegistered;
+extern i32 g_logicTypesRegistered;
 
 // BuildLogicTypeTable (0x8a40, via the 0x39c2 thunk): registers the three
 // built-in logic types the first time any tile-logic object is built. It is a
@@ -153,8 +153,8 @@ class CUserBase {
 public:
     CUserBase() {}
     virtual ~CUserBase() {}       // inline: folds into leaf dtors (final base vptr store)
-    virtual int UserBaseVfunc1(); // slot 1
-    virtual int UserBaseVfunc2(); // slot 2
+    virtual i32 UserBaseVfunc1(); // slot 1
+    virtual i32 UserBaseVfunc2(); // slot 2
 };
 
 // ---------------------------------------------------------------------------
@@ -168,28 +168,28 @@ public:
     CUserLogic() {}
     CUserLogic(CGameObject* obj);
     virtual ~CUserLogic() OVERRIDE {} // inline: folds into leaf dtors (link teardown + vptr stores)
-    virtual int UserLogicVfunc1();
-    virtual int UserLogicVfunc2();
-    virtual int UserLogicVfunc3();
-    virtual int UserLogicVfunc4();
-    virtual int UserLogicVfunc5();
-    virtual int UserLogicVfunc6();
-    virtual int UserLogicVfunc7();
-    virtual int UserLogicVfunc8();
-    virtual int UserLogicVfunc9();
-    virtual int UserLogicVfuncA();
-    virtual int UserLogicVfuncB();
+    virtual i32 UserLogicVfunc1();
+    virtual i32 UserLogicVfunc2();
+    virtual i32 UserLogicVfunc3();
+    virtual i32 UserLogicVfunc4();
+    virtual i32 UserLogicVfunc5();
+    virtual i32 UserLogicVfunc6();
+    virtual i32 UserLogicVfunc7();
+    virtual i32 UserLogicVfunc8();
+    virtual i32 UserLogicVfunc9();
+    virtual i32 UserLogicVfuncA();
+    virtual i32 UserLogicVfuncB();
 
     // The shared serialize-chain helper (0x16e7f0, __thiscall ret 0x10). Run on
     // `this` by the leaf Serialize overrides. External/no-body (reloc-masked;
     // pinned in src/Stub/Discovered.cpp).
-    int SerializeChain(int a, int b, int c, int d); // 0x16e7f0
+    i32 SerializeChain(i32 a, i32 b, i32 c, i32 d); // 0x16e7f0
 
     // Copies the bound object's screen position into the out point (m_10->m_5c =
     // x, m_10->m_60 = y). 0x29a50, __thiscall ret 4.
     struct ScreenPoint {
-        int x;
-        int y;
+        i32 x;
+        i32 y;
     };
     void GetScreenPos(ScreenPoint* out); // 0x29a50
 
@@ -201,23 +201,23 @@ public:
 
     // __thiscall stub methods re-homed from src/Stub/ApiCallers.cpp; bodies in
     // src/Gruntz/UserLogic.cpp.
-    int winapi_04d800_CopyRect(int, int, int, int, int, int, int, int, int, int, int, int);
-    int winapi_064540_PostMessageA();
-    int winapi_0ee800_IntersectRect_PtInRect();
-    void LoadGruntTypeTable(int, int, int, int);
-    void LoadGruntTuningConstants(int);
+    i32 winapi_04d800_CopyRect(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32);
+    i32 winapi_064540_PostMessageA();
+    i32 winapi_0ee800_IntersectRect_PtInRect();
+    void LoadGruntTypeTable(i32, i32, i32, i32);
+    void LoadGruntTuningConstants(i32);
     void LoadGruntDecayConfig();
     void LoadGruntDecayConfig2();
     void LoadWandGruntItemConfig();
 
-    int m_04;             // +0x04
-    int m_08;             // +0x08
+    i32 m_04;             // +0x04
+    i32 m_08;             // +0x08
     CGameObject* m_0c;    // +0x0c
     CGameObject* m_10;    // +0x10
     CGameObjAux* m_14;    // +0x14
     CUserBaseLink m_link; // +0x18..+0x27 (ctor 0x16d710, can throw)
-    int m_28;             // +0x28
-    int m_2c;             // +0x2c
+    i32 m_28;             // +0x28
+    i32 m_2c;             // +0x2c
     void* m_30;           // +0x30
     CGameObject* m_34;    // +0x34
     CGameObject* m_38;    // +0x38

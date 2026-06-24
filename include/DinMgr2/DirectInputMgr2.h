@@ -19,6 +19,8 @@
 #ifndef DINMGR2_DIRECTINPUTMGR2_H
 #define DINMGR2_DIRECTINPUTMGR2_H
 
+#include <Ints.h>
+
 // ---------------------------------------------------------------------------
 // IDirectInput (DINPUT) - the object DirectInputCreateA returns. COM convention
 // => __stdcall with the interface pointer as the hidden first ("this") argument.
@@ -31,19 +33,19 @@ struct IDirectInputDeviceZ;
 struct IDirectInputZ {
     struct Vtbl {
         char m_pad0[0x08];
-        unsigned long(__stdcall* Release)(IDirectInputZ*); // +0x08 (IUnknown::Release)
-        long(__stdcall* CreateDevice)(
+        u32(__stdcall* Release)(IDirectInputZ*); // +0x08 (IUnknown::Release)
+        i32(__stdcall* CreateDevice)(
             IDirectInputZ*,
             const void* rguid,
             IDirectInputDeviceZ** outDev,
             void* unk
         ); // +0x0c
-        long(__stdcall* EnumDevices)(
+        i32(__stdcall* EnumDevices)(
             IDirectInputZ*,
-            unsigned long devType,
+            u32 devType,
             void* callback,
             void* ref,
-            unsigned long flags
+            u32 flags
         ); // +0x10
     }* vtbl;
 };
@@ -62,24 +64,19 @@ struct IDirectInputZ {
 // ---------------------------------------------------------------------------
 struct IDirectInputDeviceZ {
     struct Vtbl {
-        long(__stdcall*
-                 QueryInterface)(IDirectInputDeviceZ*, const void* riid, void** out); // +0x00
+        i32(__stdcall* QueryInterface)(IDirectInputDeviceZ*, const void* riid, void** out); // +0x00
         char m_pad4[0x08 - 0x04];
-        unsigned long(__stdcall* Release)(IDirectInputDeviceZ*); // +0x08 (IUnknown::Release)
+        u32(__stdcall* Release)(IDirectInputDeviceZ*); // +0x08 (IUnknown::Release)
         char m_pad0c[0x18 - 0x0c];
-        long(__stdcall* SetProperty)(IDirectInputDeviceZ*, const void* rguid, void* prop); // +0x18
-        long(__stdcall* Acquire)(IDirectInputDeviceZ*);                                    // +0x1c
-        long(__stdcall* Unacquire)(IDirectInputDeviceZ*);                                  // +0x20
-        long(__stdcall*
-                 GetDeviceState)(IDirectInputDeviceZ*, unsigned long cb, void* data); // +0x24
+        i32(__stdcall* SetProperty)(IDirectInputDeviceZ*, const void* rguid, void* prop); // +0x18
+        i32(__stdcall* Acquire)(IDirectInputDeviceZ*);                                    // +0x1c
+        i32(__stdcall* Unacquire)(IDirectInputDeviceZ*);                                  // +0x20
+        i32(__stdcall* GetDeviceState)(IDirectInputDeviceZ*, u32 cb, void* data);         // +0x24
         char m_pad28[0x2c - 0x28];
-        long(__stdcall* SetDataFormat)(IDirectInputDeviceZ*, void* fmt); // +0x2c
+        i32(__stdcall* SetDataFormat)(IDirectInputDeviceZ*, void* fmt); // +0x2c
         char m_pad30[0x34 - 0x30];
-        long(__stdcall* SetCooperativeLevel)(
-            IDirectInputDeviceZ*,
-            void* hwnd,
-            unsigned long flags
-        ); // +0x34
+        i32(__stdcall* SetCooperativeLevel)(IDirectInputDeviceZ*, void* hwnd,
+                                            u32 flags); // +0x34
     }* vtbl;
 };
 
@@ -95,12 +92,12 @@ struct IDirectInputDeviceZ {
 // ---------------------------------------------------------------------------
 class CInputDeviceBase {
 public:
-    virtual int ScalarDtor(int flag); // +0x00
+    virtual i32 ScalarDtor(i32 flag); // +0x00
     virtual void Slot04();            // +0x04
     virtual void Slot08();            // +0x08
     virtual void Slot0C();            // +0x0c
-    virtual long PollA();             // +0x10  slot 4
-    virtual long PollB();             // +0x14  slot 5
+    virtual i32 PollA();              // +0x10  slot 4
+    virtual i32 PollB();              // +0x14  slot 5
 };
 
 // The CInputDevice class (below) IS the 0x338-byte object InitA new's, inits inline,
@@ -116,13 +113,13 @@ typedef CInputDevice CDeviceConfigA;
 // ---------------------------------------------------------------------------
 struct CDevicePtrArray {
     ~CDevicePtrArray();                    // 0x1b4f3e (external, reloc-masked)
-    void SetSize(int newSize, int growBy); // 0x1b4f75 (CObArray::SetSize)
+    void SetSize(i32 newSize, i32 growBy); // 0x1b4f75 (CObArray::SetSize)
 
     void* m_vptr;              // +0x00  CPtrArray vftable
     CInputDeviceBase** m_data; // +0x04  element storage
-    int m_size;                // +0x08  element count
-    int m_maxSize;             // +0x0c
-    int m_growBy;              // +0x10
+    i32 m_size;                // +0x08  element count
+    i32 m_maxSize;             // +0x0c
+    i32 m_growBy;              // +0x10
 }; // 0x14
 
 // ---------------------------------------------------------------------------
@@ -130,11 +127,11 @@ struct CDevicePtrArray {
 // next@0, payload@8; destructed via 0x134c60 then freed.
 // ---------------------------------------------------------------------------
 struct CDeviceListNode {
-    int ConfigCreate(int a1, int a2, int a3); // 0x134be0
+    i32 ConfigCreate(i32 a1, i32 a2, i32 a3); // 0x134be0
     void ConfigDtor();                        // 0x134c60
 
     CDeviceListNode* m_next; // +0x00
-    int m_004;               // +0x04
+    i32 m_004;               // +0x04
     void* m_payload;         // +0x08
 }; // 0x88 (only +0/+4/+8 load-bearing)
 
@@ -162,7 +159,7 @@ class DirectInputMgr2 {
 public:
     // Brings up the DInput object (DirectInputCreateA) into m_directInput, caches
     // the owner/hinst/flags, then runs the three sub-initializers gated on the flags.
-    int Create(void* owner, void* hinst, unsigned long flags); // 0x132ce0
+    i32 Create(void* owner, void* hinst, u32 flags); // 0x132ce0
 
     // Destructor: Shutdown(), then auto-destructs the m_deviceList and m_devices
     // array (the /GX EH frame covers the two member sub-object dtors). 0x085fc0.
@@ -174,17 +171,17 @@ public:
 
     // Sub-initializers. InitA (0x132e20) new's a 0x338 device-config into m_deviceA
     // and Create()s it; InitB (0x132ee0, not matched here) does the m_deviceB device.
-    int InitA(unsigned long flags);                // 0x132e20
-    int InitB(unsigned long flags);                // 0x132ee0
-    int EnumGameControllers(unsigned long unused); // 0x132f80 EnumDevices(JOYSTICK, cb, this)
+    i32 InitA(u32 flags);                // 0x132e20
+    i32 InitB(u32 flags);                // 0x132ee0
+    i32 EnumGameControllers(u32 unused); // 0x132f80 EnumDevices(JOYSTICK, cb, this)
 
     // Per-frame device polling. PollAll(0x133080) updates m_deviceA/m_deviceB
     // (slot 4) then the array (0x1330d0); ReadAll(0x133110) updates m_deviceA/
     // m_deviceB (slot 4) then the array via slot 5 (0x133160). PollArrayA/B walk m_devices.
-    int PollAll();    // 0x133080
-    int PollArrayA(); // 0x1330d0
-    int ReadAll();    // 0x133110
-    int PollArrayB(); // 0x133160
+    i32 PollAll();    // 0x133080
+    i32 PollArrayA(); // 0x1330d0
+    i32 ReadAll();    // 0x133110
+    i32 PollArrayB(); // 0x133160
 
     // Frees the m_deviceList nodes and empties the list (0x1331a0).
     void FreeDeviceList(); // 0x1331a0
@@ -192,8 +189,8 @@ public:
     // Registers a controller: new's a 0x88 node, Create()s it, appends to the
     // m_deviceList on success (0x1331e0); 0x133260 is a thiscall trampoline copying
     // its 7 stack dwords into a local before forwarding.
-    void* AddController(int count, int a2, int a3);                                // 0x1331e0
-    void AddControllerArr(int a1, int a2, int a3, int a4, int a5, int a6, int a7); // 0x133260
+    void* AddController(i32 count, i32 a2, i32 a3);                                // 0x1331e0
+    void AddControllerArr(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7); // 0x133260
 
     // Diagnostic error reporter. Given the calling site's __FILE__/__LINE__ and
     // a DirectInput HRESULT, builds a "<DIERR_NAME> (<code>) - <description>"
@@ -202,13 +199,13 @@ public:
     // ignores `this` (the call sites leave ECX set from a prior thiscall, but the
     // body never reads it) and is caller-cleaned (plain `ret`; call sites
     // `add esp,0xc`).
-    static void GetErrorString(char* file, int line, long hr); // 0x133590
+    static void GetErrorString(char* file, i32 line, i32 hr); // 0x133590
 
     // --- layout ---------------------------------------------------------------
     IDirectInputZ* m_directInput; // +0x00  the DInput object (DirectInputCreateA out)
     void* m_owner;                // +0x04  owner back-pointer (Create arg1)
     void* m_hinst;                // +0x08  the hinst passed to DirectInputCreateA
-    unsigned long m_flags;        // +0x0c  the device-type flags (Create arg3)
+    u32 m_flags;                  // +0x0c  the device-type flags (Create arg3)
     CInputDeviceBase* m_deviceB;  // +0x10  keyboard/joystick device B (InitB)
     CInputDeviceBase* m_deviceA;  // +0x14  keyboard device A (InitA)
     CDevicePtrArray m_devices;    // +0x18  extra devices (CPtrArray; data@1c size@20)
@@ -237,7 +234,7 @@ public:
     // CreateDev (0x133b50): the manager's InitA entry. Validates di/owner, runs the
     // CreateDevice+QI bring-up (CreateDeviceWrap), sets the data format / cooperative
     // level, then allocates the 0x100 GetDeviceState snapshot buffer.
-    int CreateDev(IDirectInputZ* di, const void* cfg, void* owner, unsigned long flags); // 0x133b50
+    i32 CreateDev(IDirectInputZ* di, const void* cfg, void* owner, u32 flags); // 0x133b50
 
     // The scalar/structured destructor body (0x133bf0): frees the snapshot buffer
     // (+0x2a0) and releases the COM devices (ReleaseDevices). Driven by the
@@ -251,17 +248,17 @@ public:
     // Poll (0x133d00): per-frame key read. When acquired+state-buffered it samples
     // the +0x2a0 GetDeviceState snapshot; otherwise polls GetAsyncKeyState directly,
     // packing the current/edge flags into +0x2ac/+0x2b0/+0x2a8.
-    int Poll(); // 0x133d00
+    i32 Poll(); // 0x133d00
 
     // CreateDeviceWrap (0x134260): validates (di, guid), runs Create, then the +0x14
     // virtual configure step. ret 0xc => 3 args.
-    int CreateDeviceWrap(IDirectInputZ* di, const void* guid, void* hwnd); // 0x134260
+    i32 CreateDeviceWrap(IDirectInputZ* di, const void* guid, void* hwnd); // 0x134260
 
     // ReleaseDevices (0x134d50): Unacquire + Release m_device2, Release m_device, clear handles.
     void ReleaseDevices(); // 0x134d50
 
     // Unacquire (0x134fe0): IDirectInputDevice::Unacquire (slot +0x20); 0/1 bool.
-    int Unacquire(); // 0x134fe0
+    i32 Unacquire(); // 0x134fe0
 
     // ReadState (0x134d90): GetDeviceState (slot +0x24) into the +0x2a0 buffer, with
     // a re-Acquire retry on DIERR_INPUTLOST/NOTACQUIRED. (helper, not a target here.)
@@ -269,25 +266,25 @@ public:
 
     // CreateDevice(di, guid, hwnd) then QI to the v2 device interface; returns
     // whether the QI'd interface is non-null.
-    int Create(IDirectInputZ* di, const void* deviceGuid, void* hwnd); // 0x134cb0
-    int SetDataFormat(void* fmt);                                      // 0x134eb0
-    int SetCooperativeLevel(unsigned long flags);                      // 0x134ef0
-    int SetProperty(const void* rguid, void* prop);                    // 0x134f30
-    int Acquire();                                                     // 0x134fb0
+    i32 Create(IDirectInputZ* di, const void* deviceGuid, void* hwnd); // 0x134cb0
+    i32 SetDataFormat(void* fmt);                                      // 0x134eb0
+    i32 SetCooperativeLevel(u32 flags);                                // 0x134ef0
+    i32 SetProperty(const void* rguid, void* prop);                    // 0x134f30
+    i32 Acquire();                                                     // 0x134fb0
 
     // --- layout ---------------------------------------------------------------
     void* m_vptr;                   // +0x000  stamped to g_deviceConfigVtblA (@0x5ef628)
     IDirectInputDeviceZ* m_device;  // +0x004  the created device (CreateDevice out)
     IDirectInputDeviceZ* m_device2; // +0x008  the QI'd v2 device interface (slot dispatch)
     char m_padc[0x29c - 0x0c];
-    void* m_hwnd;                    // +0x29c  cached cooperative-level HWND
-    void* m_stateBuffer;             // +0x2a0  GetDeviceState snapshot buffer (operator new 0x100)
-    unsigned long m_stateBufferSize; // +0x2a4  snapshot buffer size (0x100)
-    int m_latchedKeys;               // +0x2a8  per-bit "already counted" latch (= -1)
-    unsigned long m_currentKeys;     // +0x2ac  current packed key flags (press edges this frame)
-    unsigned long m_edgeKeys;        // +0x2b0  raw current snapshot (pre-latch)
-    unsigned long m_keyTable[0x20];  // +0x2b4..0x333  scan-code table (0x20 dwords)
-    int m_modeFlags;                 // +0x334  keyboard/mouse mode flag (bit 0 = direct/async mode)
+    void* m_hwnd;          // +0x29c  cached cooperative-level HWND
+    void* m_stateBuffer;   // +0x2a0  GetDeviceState snapshot buffer (operator new 0x100)
+    u32 m_stateBufferSize; // +0x2a4  snapshot buffer size (0x100)
+    i32 m_latchedKeys;     // +0x2a8  per-bit "already counted" latch (= -1)
+    u32 m_currentKeys;     // +0x2ac  current packed key flags (press edges this frame)
+    u32 m_edgeKeys;        // +0x2b0  raw current snapshot (pre-latch)
+    u32 m_keyTable[0x20];  // +0x2b4..0x333  scan-code table (0x20 dwords)
+    i32 m_modeFlags;       // +0x334  keyboard/mouse mode flag (bit 0 = direct/async mode)
 };
 
 // Polymorphic VIEW over the manually-stamped foreign vtable (@0x5ef628): the

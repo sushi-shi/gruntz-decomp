@@ -13,12 +13,14 @@
 #ifndef DSNDMGR_STREAMFEEDER_H
 #define DSNDMGR_STREAMFEEDER_H
 
+#include <Ints.h>
+
 // The streaming source reader the feeder pulls window bytes from (the same
 // polymorphic reader SoundStream.h models as StreamSource; declared here so this
 // TU is self-contained - SoundStream.h's wider view stays in its own TU). Read
 // (0x139af0) returns the byte count actually read at `at` (-1 = current cursor).
 struct FeederSource {
-    int Read(void* buf, int n, int at); // 0x139af0
+    i32 Read(void* buf, i32 n, i32 at); // 0x139af0
 };
 
 // The feeder's owner (m_4): a SoundDevice/SoundStream-family object that creates
@@ -27,7 +29,7 @@ struct FeederSource {
 struct FeederOwner {
     // 0x1366f0 - build a streaming secondary buffer from the PCM format + size,
     // return the buffer wrapper (or 0). Caller-side: ecx=owner, (fmt, bytes, flags).
-    void* CreateStreamBuf(void* fmt, unsigned long bytes, unsigned long flags);
+    void* CreateStreamBuf(void* fmt, u32 bytes, u32 flags);
     // 0x136d80 - reap voices + release the COM buffer + unlink one wrapper.
     void RemoveBuffer(void* buf);
 };
@@ -37,20 +39,13 @@ struct FeederOwner {
 // __thiscall calls. Offsets/sizes match DirectSoundMgr but the feeder only ever
 // calls these methods, so a thin view is matching-neutral.
 struct FeederBuf {
-    int Lock(
-        unsigned long off,
-        unsigned long bytes,
-        void** p1,
-        unsigned long* n1,
-        void** p2,
-        unsigned long* n2,
-        unsigned long flags
-    );                                                                  // 0x136370
-    int Unlock(void* p1, unsigned long n1, void* p2, unsigned long n2); // 0x1359c0
-    int StopAndRewind();                                                // 0x135380
-    int IsPlaying();      // 0x136270  (returns play-state)
-    int Resume(int flag); // 0x135510  (resume/restart playback)
-    int Tick(int now);    // 0x135a70  ... actually SetCurrentPosition pump
+    i32 Lock(u32 off, u32 bytes, void** p1, u32* n1, void** p2, u32* n2,
+             u32 flags);                            // 0x136370
+    i32 Unlock(void* p1, u32 n1, void* p2, u32 n2); // 0x1359c0
+    i32 StopAndRewind();                            // 0x135380
+    i32 IsPlaying();                                // 0x136270  (returns play-state)
+    i32 Resume(i32 flag);                           // 0x135510  (resume/restart playback)
+    i32 Tick(i32 now); // 0x135a70  ... actually SetCurrentPosition pump
 };
 
 // The streaming feeder. Its own vftable (0x5ef6f0) is restamped by the ctor +
@@ -58,51 +53,51 @@ struct FeederBuf {
 // 0x11fec0, slot 1 = FeedData 0x137e10, slot 2 = OnDrain 0x137e20 - all external,
 // so the class stays non-polymorphic and the compiler emits no vtable).
 struct StreamFeeder {
-    void* m_vtbl;       // +0x00  (retail vtable 0x5ef6f0; virtuals external)
-    FeederOwner* m_4;   // +0x04  owner (SoundStream/SoundDevice)
-    FeederBuf* m_8;     // +0x08  per-stream DirectSound buffer wrapper
-    unsigned long m_c;  // +0x0c  read cursor into the buffer (write phase)
-    unsigned long m_10; // +0x10  loop/buffer length
-    unsigned long m_14; // +0x14  format / flags
-    unsigned long m_18; // +0x18  armed flag
-    unsigned long m_1c; // +0x1c  drained flag
-    unsigned long m_20; // +0x20  pending-bytes accumulator
-    unsigned char m_24; // +0x24  silence byte (0x80 for 8-bit PCM, else 0)
+    void* m_vtbl;     // +0x00  (retail vtable 0x5ef6f0; virtuals external)
+    FeederOwner* m_4; // +0x04  owner (SoundStream/SoundDevice)
+    FeederBuf* m_8;   // +0x08  per-stream DirectSound buffer wrapper
+    u32 m_c;          // +0x0c  read cursor into the buffer (write phase)
+    u32 m_10;         // +0x10  loop/buffer length
+    u32 m_14;         // +0x14  format / flags
+    u32 m_18;         // +0x18  armed flag
+    u32 m_1c;         // +0x1c  drained flag
+    u32 m_20;         // +0x20  pending-bytes accumulator
+    u8 m_24;          // +0x24  silence byte (0x80 for 8-bit PCM, else 0)
     char m_pad25[0x28 - 0x25];
-    unsigned long m_28; // +0x28  last Tick time
-    unsigned long m_2c; // +0x2c  source back-pointer (window)
-    unsigned long m_30; // +0x30  loop flag
-    unsigned long m_34; // +0x34  running source offset
-    unsigned long m_38; // +0x38  window start offset
-    unsigned long m_3c; // +0x3c  window length
-    unsigned long m_40; // +0x40  window end (start+length)
+    u32 m_28; // +0x28  last Tick time
+    u32 m_2c; // +0x2c  source back-pointer (window)
+    u32 m_30; // +0x30  loop flag
+    u32 m_34; // +0x34  running source offset
+    u32 m_38; // +0x38  window start offset
+    u32 m_3c; // +0x3c  window length
+    u32 m_40; // +0x40  window end (start+length)
 
-    int SeedWindow(void* src, unsigned long off, unsigned long len); // 0x137340
-    int CopyWindow(
+    i32 SeedWindow(void* src, u32 off, u32 len); // 0x137340
+    i32 CopyWindow(
         void* dst1,
-        unsigned long n1,
-        unsigned long* got1,
+        u32 n1,
+        u32* got1,
         void* dst2,
-        unsigned long n2,
-        unsigned long* got2
+        u32 n2,
+        u32* got2
     );              // 0x137380 (slot-0 feed)
     StreamFeeder(); // 0x137cd0
     void Cleanup(); // 0x137cf0  (dtor body)
-    int FeederStart(
+    i32 FeederStart(
         FeederOwner* owner,
-        int arg2,
-        unsigned long len,
+        i32 arg2,
+        u32 len,
         void* fmt,
         void* buf,
-        int tickArg
-    );                                                           // 0x137d10
-    void FeederReset(int doStop);                                // 0x137dc0
-    int Resume();                                                // 0x137ed0
-    int Pause();                                                 // 0x137f00
-    int FillBuffer(unsigned long writePos, unsigned long bytes); // 0x137f30
+        i32 tickArg
+    );                                       // 0x137d10
+    void FeederReset(i32 doStop);            // 0x137dc0
+    i32 Resume();                            // 0x137ed0
+    i32 Pause();                             // 0x137f00
+    i32 FillBuffer(u32 writePos, u32 bytes); // 0x137f30
 
     // Tick (0x1380d0): sibling pump, external to this TU - reloc-masked.
-    int TickPump(int now);
+    i32 TickPump(i32 now);
 };
 
 #endif // DSNDMGR_STREAMFEEDER_H

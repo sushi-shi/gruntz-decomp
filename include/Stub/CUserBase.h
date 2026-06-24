@@ -7,7 +7,7 @@
 class CUserBase {
 public:
     virtual ~CUserBase();
-    virtual int UserBaseVfunc1();
-    virtual int UserBaseVfunc2();
+    virtual i32 UserBaseVfunc1();
+    virtual i32 UserBaseVfunc2();
 };
 #endif // GRUNTZ_STUB_CUSERBASE_H

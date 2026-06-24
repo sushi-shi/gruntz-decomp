@@ -16,15 +16,15 @@
 struct CSprite;
 class CSpriteHashTable {
 public:
-    int Lookup(char* szName, CSprite** ppOut);
+    i32 Lookup(char* szName, CSprite** ppOut);
 };
 
 struct CSprite {
     char m_pad00[0x14];
-    int** m_14; // +0x14  frame-pointer table
+    i32** m_14; // +0x14  frame-pointer table
     char m_pad18[0x64 - 0x18];
-    int m_64; // +0x64  first valid frame number
-    int m_68; // +0x68  last valid frame number
+    i32 m_64; // +0x64  first valid frame number
+    i32 m_68; // +0x68  last valid frame number
 };
 
 struct CSpriteMgr {
@@ -36,16 +36,16 @@ struct CSpriteMgr {
 // world width used to clamp the bar position. WrapCoord is NO-body so its
 // __thiscall `call 0xa000` reloc-masks (WwdFile::WwdFile_00a000).
 struct CViewport {
-    void WrapCoord(int* px, int* py);
+    void WrapCoord(i32* px, i32* py);
     char m_pad00[0x30];
-    int m_30; // +0x30  world width
+    i32 m_30; // +0x30  world width
 };
 
 // The level/view object (g_gameReg->m_30->m_24): +0x10 is the on-screen bar RECT,
 // +0x5c the viewport transform.
 struct CMenuViewObj {
     char m_pad00[0x10];
-    int m_10rect[4]; // +0x10  on-screen bar RECT (left,top,right,bottom)
+    i32 m_10rect[4]; // +0x10  on-screen bar RECT (left,top,right,bottom)
     char m_pad20[0x5c - 0x20];
     CViewport* m_5c; // +0x5c
 };
@@ -53,7 +53,7 @@ struct CMenuViewObj {
 // The active draw surface (g_gameReg->m_30->m_04): +0x14 is the draw context.
 struct CDrawTarget {
     char m_pad00[0x14];
-    int m_14; // +0x14  draw context
+    i32 m_14; // +0x14  draw context
 };
 
 // The game's resource/level manager (g_gameReg->m_30).
@@ -69,13 +69,13 @@ struct CResMgr {
 // The grunt/logic record stored in the level grid object table (g_gameReg->m_68);
 // the bar polls a handful of its fields to pick which mode-chip to light.
 struct CGruntRec {
-    int IsBusy(); // NO-body -> reloc-masks (CUserLogic::CUserLogic_0514a0)
+    i32 IsBusy(); // NO-body -> reloc-masks (CUserLogic::CUserLogic_0514a0)
     char m_pad000[0x170];
-    int m_170; // +0x170  grunt kind
+    i32 m_170; // +0x170  grunt kind
     char m_pad174[0x194 - 0x174];
-    int m_194; // +0x194  alt mode value
-    int m_198; // +0x198  secondary icon
-    int m_19c; // +0x19c  primary mode value
+    i32 m_194; // +0x194  alt mode value
+    i32 m_198; // +0x198  secondary icon
+    i32 m_19c; // +0x19c  primary mode value
 };
 
 struct CGameReg {
@@ -91,17 +91,17 @@ extern CGameReg* g_gameReg;
 // bar/chips; +0x10 is its draw entry. NO-body so `call 0x153810` reloc-masks
 // (ClassUnknown_31::ClassUnknown_31_153810).
 struct CMenuBarFrame {
-    void Draw(int ctx, int x, int y, int* rect, int flag);
+    void Draw(i32 ctx, i32 x, i32 y, i32* rect, i32 flag);
 };
 
 // Per-serialize round counter the CString archive helpers bump (g_serialCount).
 DATA(0x00229ad0)
-extern int g_serialCount;
+extern i32 g_serialCount;
 
 // The CString-read helper (0x155630): receiver = g_gameReg->m_30->m_10.
 // NO-body -> reloc-masks (CDDrawWorkerRegistry::CDDrawWorkerRegistry_155630).
 struct CStrReader {
-    void ReadField(int dst, char* tmp, int* outZero);
+    void ReadField(i32 dst, char* tmp, i32* outZero);
 };
 
 // The archive (CArchive) passed to Serialize; the read/write entry is the virtual
@@ -121,7 +121,7 @@ struct CMenuArchive {
     virtual void Slot24();
     virtual void Slot28();
     virtual void Slot2C();
-    virtual void Transfer(void* buf, int n); // +0x30
+    virtual void Transfer(void* buf, i32 n); // +0x30
 };
 
 // ---------------------------------------------------------------------------
@@ -130,33 +130,33 @@ struct CMenuArchive {
 class CActionOptionsMenuBar {
 public:
     CActionOptionsMenuBar();
-    void Init(int a, int b, int x, int y, int gx, int gy);
+    void Init(i32 a, i32 b, i32 x, i32 y, i32 gx, i32 gy);
     void Clear();
-    int Activate(int a);
-    int Refresh();
-    int Render();
-    int HitClick(int mx, int my);
-    int HitHover(int mx, int my);
+    i32 Activate(i32 a);
+    i32 Refresh();
+    i32 Render();
+    i32 HitClick(i32 mx, i32 my);
+    i32 HitHover(i32 mx, i32 my);
     void Deactivate();
-    int Serialize(CMenuArchive* ar);
-    int LoadAssets();
+    i32 Serialize(CMenuArchive* ar);
+    i32 LoadAssets();
 
-    int m_00;      // +0x00  grid X
-    int m_04;      // +0x04  grid Y
-    int m_08;      // +0x08  screen X (clamped)
-    int m_0c;      // +0x0c  screen Y (adjusted)
-    int* m_10;     // +0x10  menu-bar frame 1 (the drawable)
-    int m_14;      // +0x14  button[0] state
-    int m_18;      // +0x18  button[1] state
-    int m_1c;      // +0x1c  button[0] resolved frame
-    int m_20;      // +0x20  button[1] resolved frame
-    int m_24;      // +0x24  button[0] icon
-    int m_28;      // +0x28  button[1] icon
-    int m_2c;      // +0x2c  active flag
+    i32 m_00;      // +0x00  grid X
+    i32 m_04;      // +0x04  grid Y
+    i32 m_08;      // +0x08  screen X (clamped)
+    i32 m_0c;      // +0x0c  screen Y (adjusted)
+    i32* m_10;     // +0x10  menu-bar frame 1 (the drawable)
+    i32 m_14;      // +0x14  button[0] state
+    i32 m_18;      // +0x18  button[1] state
+    i32 m_1c;      // +0x1c  button[0] resolved frame
+    i32 m_20;      // +0x20  button[1] resolved frame
+    i32 m_24;      // +0x24  button[0] icon
+    i32 m_28;      // +0x28  button[1] icon
+    i32 m_2c;      // +0x2c  active flag
     CSprite* m_30; // +0x30  norm-chip sprite
     CSprite* m_34; // +0x34  high-chip sprite
     CSprite* m_38; // +0x38  grey-chip sprite
-    int m_3c;      // +0x3c  loaded flag
+    i32 m_3c;      // +0x3c  loaded flag
 };
 
 // ===========================================================================
@@ -191,7 +191,7 @@ CActionOptionsMenuBar::CActionOptionsMenuBar() {
 // scheduling.md): per Lookup the target sinks the `mov [&spr],0` past the arg
 // pushes; our cl emits it before. Identical multiset, permuted. Logic exact.
 RVA(0x000090e0, 0x100)
-int CActionOptionsMenuBar::LoadAssets() {
+i32 CActionOptionsMenuBar::LoadAssets() {
     CSprite* spr = 0;
 
     m_2c = 0;
@@ -231,20 +231,20 @@ int CActionOptionsMenuBar::LoadAssets() {
 // adjusted-y + four arg loads) are the same instruction multiset as retail but
 // our cl sinks the precomputed `m_0c=eax` store one slot early. Logic exact.
 RVA(0x00009220, 0x8f)
-void CActionOptionsMenuBar::Init(int gx, int a, int x, int y, int b, int gy) {
+void CActionOptionsMenuBar::Init(i32 gx, i32 a, i32 x, i32 y, i32 b, i32 gy) {
     if (m_2c) {
         return;
     }
     if (x - 0x25 < 0) {
         x = 0x25;
     } else {
-        int limit = g_gameReg->m_30->m_24->m_5c->m_30;
+        i32 limit = g_gameReg->m_30->m_24->m_5c->m_30;
         if (x + 0x25 >= limit) {
             x = limit - 0x26;
         }
     }
-    int ym = y - 0x34;
-    int yy;
+    i32 ym = y - 0x34;
+    i32 yy;
     if (ym - 0x19 >= 0) {
         yy = ym;
     } else {
@@ -267,7 +267,7 @@ void CActionOptionsMenuBar::Clear() {
 }
 
 RVA(0x00009300, 0x14)
-int CActionOptionsMenuBar::Activate(int a) {
+i32 CActionOptionsMenuBar::Activate(i32 a) {
     if (m_2c) {
         Refresh();
     }
@@ -280,7 +280,7 @@ int CActionOptionsMenuBar::Activate(int a) {
 // g_gameReg load - the choice cascades through every [this+off] encoding and the
 // frame is 6 bytes short of 310 (size mismatch -> no per-fn %). Logic exact.
 RVA(0x00009330, 0x136)
-int CActionOptionsMenuBar::Refresh() {
+i32 CActionOptionsMenuBar::Refresh() {
     CGruntRec* grunt = g_gameReg->m_68[m_00 * 15 + m_04];
     if (grunt != 0) {
         m_28 = grunt->m_198;
@@ -289,7 +289,7 @@ int CActionOptionsMenuBar::Refresh() {
         } else if (m_18 == 3) {
             m_18 = 1;
         }
-        int prim = (grunt->m_170 > 0x16) ? grunt->m_19c : grunt->m_170;
+        i32 prim = (grunt->m_170 > 0x16) ? grunt->m_19c : grunt->m_170;
         m_24 = prim;
         if (prim == 0) {
             m_24 = 0x21;
@@ -307,29 +307,29 @@ int CActionOptionsMenuBar::Refresh() {
     }
     // Refresh both buttons: icon in m_24/m_28, state in m_14/m_18, resolved frame
     // into m_1c/m_20.
-    int* p = &m_24;
-    int n = 2;
+    i32* p = &m_24;
+    i32 n = 2;
     do {
         if (*p == 0) {
             p[-4] = 0;
         } else if (p[-4] == 0) {
             p[-4] = 1;
         }
-        int frame;
+        i32 frame;
         switch (p[-4]) {
             case 1: {
                 CSprite* s = m_30;
-                frame = (*p < s->m_64 || *p > s->m_68) ? 0 : (int)s->m_14[*p];
+                frame = (*p < s->m_64 || *p > s->m_68) ? 0 : (i32)s->m_14[*p];
                 break;
             }
             case 2: {
                 CSprite* s = m_34;
-                frame = (*p < s->m_64 || *p > s->m_68) ? 0 : (int)s->m_14[*p];
+                frame = (*p < s->m_64 || *p > s->m_68) ? 0 : (i32)s->m_14[*p];
                 break;
             }
             case 3: {
                 CSprite* s = m_38;
-                frame = (*p < s->m_64 || *p > s->m_68) ? 0 : (int)s->m_14[*p];
+                frame = (*p < s->m_64 || *p > s->m_68) ? 0 : (i32)s->m_14[*p];
                 break;
             }
             default:
@@ -351,17 +351,17 @@ int CActionOptionsMenuBar::Refresh() {
 // `add eax,0x10` then `(%eax)`, and reads m_08/m_0c in the opposite order; the
 // register/addressing-mode choices cascade. Logic exact (size matches at 305).
 RVA(0x000094c0, 0x131)
-int CActionOptionsMenuBar::Render() {
+i32 CActionOptionsMenuBar::Render() {
     if (!m_2c) {
         return 1;
     }
-    int sx = m_08;
-    int sy = m_0c;
+    i32 sx = m_08;
+    i32 sy = m_0c;
     g_gameReg->m_30->m_24->m_5c->WrapCoord(&sx, &sy);
 
-    int r[4];
-    int* src = g_gameReg->m_30->m_24->m_10rect;
-    int ctx = g_gameReg->m_30->m_04->m_14;
+    i32 r[4];
+    i32* src = g_gameReg->m_30->m_24->m_10rect;
+    i32 ctx = g_gameReg->m_30->m_04->m_14;
     r[0] = src[0];
     r[1] = src[1];
     r[2] = src[2];
@@ -369,7 +369,7 @@ int CActionOptionsMenuBar::Render() {
     ((CMenuBarFrame*)m_10)->Draw(ctx, sy, sx, r, 0);
 
     if (m_1c) {
-        int* src2 = g_gameReg->m_30->m_24->m_10rect;
+        i32* src2 = g_gameReg->m_30->m_24->m_10rect;
         r[0] = src2[0];
         r[1] = src2[1];
         r[2] = src2[2];
@@ -377,7 +377,7 @@ int CActionOptionsMenuBar::Render() {
         ((CMenuBarFrame*)m_10)->Draw(ctx, sy - 0xc, sx + 2, r, 0);
     }
     if (m_20) {
-        int* src3 = g_gameReg->m_30->m_24->m_10rect;
+        i32* src3 = g_gameReg->m_30->m_24->m_10rect;
         r[0] = src3[0];
         r[1] = src3[1];
         r[2] = src3[2];
@@ -395,7 +395,7 @@ int CActionOptionsMenuBar::Render() {
 // our cl assigns `my`->ebx and the bounds to edi/esi where retail uses ebp and
 // ebx/edi; the naming cascade is the residual. Logic exact.
 RVA(0x00009650, 0xcf)
-int CActionOptionsMenuBar::HitClick(int mx, int my) {
+i32 CActionOptionsMenuBar::HitClick(i32 mx, i32 my) {
     if (!m_2c) {
         return 1;
     }
@@ -403,9 +403,9 @@ int CActionOptionsMenuBar::HitClick(int mx, int my) {
         return 1;
     }
     // Demote any held (==2) button back to armed (==1).
-    int* btn = &m_14;
-    int* p = btn;
-    int k = 2;
+    i32* btn = &m_14;
+    i32* p = btn;
+    i32 k = 2;
     do {
         if (*p == 2) {
             *p = 1;
@@ -413,10 +413,10 @@ int CActionOptionsMenuBar::HitClick(int mx, int my) {
         ++p;
     } while (--k != 0);
 
-    int y0 = m_0c;
-    int ylo = y0 - 0xa;
-    int yhi = y0 + 0xe;
-    int x0 = m_08;
+    i32 y0 = m_0c;
+    i32 ylo = y0 - 0xa;
+    i32 yhi = y0 + 0xe;
+    i32 x0 = m_08;
     // Button[0] box.
     if (mx < x0 && mx >= x0 - 0x18 && my < yhi && my >= ylo) {
         if (*btn == 1) {
@@ -441,14 +441,14 @@ int CActionOptionsMenuBar::HitClick(int mx, int my) {
 // eax for `my`; our cl reads `my` early into ebp and puts the bounds in ebx/edi.
 // Same shape, register/scheduling residual. Logic exact.
 RVA(0x00009760, 0x6c)
-int CActionOptionsMenuBar::HitHover(int mx, int my) {
+i32 CActionOptionsMenuBar::HitHover(i32 mx, i32 my) {
     if (!m_2c) {
         return 0;
     }
-    int y0 = m_0c;
-    int x0 = m_08;
-    int ylo = y0 - 0xc;
-    int yhi = y0 + 0xc;
+    i32 y0 = m_0c;
+    i32 x0 = m_08;
+    i32 ylo = y0 - 0xc;
+    i32 yhi = y0 + 0xc;
     if (mx < x0 && mx >= x0 - 0x18 && my < yhi && my >= ylo && m_14 != 3) {
         return 2;
     }
@@ -472,7 +472,7 @@ void CActionOptionsMenuBar::Deactivate() {
 // `zero` its own slot -> 0x88 frame, which shifts every frame-size immediate and
 // arg offset by 4. Body (vtable Transfer dispatch + inlined memset/strcpy) exact.
 RVA(0x00009810, 0x2df)
-int CActionOptionsMenuBar::Serialize(CMenuArchive* ar) {
+i32 CActionOptionsMenuBar::Serialize(CMenuArchive* ar) {
     if (ar == 0) {
         return 0;
     }
@@ -519,9 +519,9 @@ int CActionOptionsMenuBar::Serialize(CMenuArchive* ar) {
     g_serialCount++;
     memset(tmp, 0, sizeof(tmp));
     {
-        int zero = 0;
+        i32 zero = 0;
         if (m_10) {
-            ((CStrReader*)mgr->m_10)->ReadField((int)m_10, tmp, &zero);
+            ((CStrReader*)mgr->m_10)->ReadField((i32)m_10, tmp, &zero);
         }
         ar->Transfer(tmp, 0x80);
         ar->Transfer(&zero, 4);
@@ -530,9 +530,9 @@ int CActionOptionsMenuBar::Serialize(CMenuArchive* ar) {
     g_serialCount++;
     memset(tmp, 0, sizeof(tmp));
     {
-        int zero = 0;
+        i32 zero = 0;
         if (m_1c) {
-            ((CStrReader*)mgr->m_10)->ReadField((int)m_1c, tmp, &zero);
+            ((CStrReader*)mgr->m_10)->ReadField((i32)m_1c, tmp, &zero);
         }
         ar->Transfer(tmp, 0x80);
         ar->Transfer(&zero, 4);
@@ -540,8 +540,8 @@ int CActionOptionsMenuBar::Serialize(CMenuArchive* ar) {
 
     g_serialCount++;
     {
-        int zero = 0;
-        int v20 = m_20;
+        i32 zero = 0;
+        i32 v20 = m_20;
         memset(tmp, 0, sizeof(tmp));
         if (v20) {
             ((CStrReader*)mgr->m_10)->ReadField(v20, tmp, &zero);

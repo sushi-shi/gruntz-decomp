@@ -44,6 +44,11 @@
 #ifndef GRUNTZ_RVA_H
 #define GRUNTZ_RVA_H
 
+// Fixed-width integer aliases (i8/u8/.../i64/u64). rva.h is included by every
+// source/header here, so this makes the aliases visible tree-wide. Additive
+// (typedefs only) -> matching-neutral.
+#include <Ints.h>
+
 #ifdef __clang__
 
 #define RVA(addr, size) __attribute__((annotate("rva:" #addr " size:" #size)))

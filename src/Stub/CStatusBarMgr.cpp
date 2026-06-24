@@ -28,7 +28,7 @@ struct SBList {
 
 struct SBMgrOwner {
     char m_pad[0x78];
-    int m_78; // gate
+    i32 m_78; // gate
 };
 
 class CStatusBarMgr {
@@ -39,13 +39,13 @@ private:
     char m_pad0[0x10];
     SBMgrOwner* m_10; // [+0x10]
     char m_pad14[0x04];
-    int m_18; // [+0x18]
-    int m_1c; // [+0x1c]
-    int m_20; // [+0x20]
+    i32 m_18; // [+0x18]
+    i32 m_1c; // [+0x1c]
+    i32 m_20; // [+0x20]
     char m_pad24[0x58 - 0x24];
     SBList m_58; // [+0x58] embedded list head
 
-    CStatusBarItem2* Create(int); // 0x135c20 thiscall
+    CStatusBarItem2* Create(i32); // 0x135c20 thiscall
 };
 
 // @confidence: med

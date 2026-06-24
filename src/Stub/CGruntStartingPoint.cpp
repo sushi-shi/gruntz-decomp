@@ -7,4 +7,4 @@
 // @source: rtti-vptr
 // @stub
 RVA(0x0003df30, 0x161)
-CGruntStartingPoint::CGruntStartingPoint(int) {}
+CGruntStartingPoint::CGruntStartingPoint(i32) {}

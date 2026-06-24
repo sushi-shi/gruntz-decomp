@@ -16,7 +16,7 @@ struct CSprite;
 // The sub-object embedded in the anim player at +0x1a0 (a CSubMgr-style member);
 // Tick advances it once per frame via its 0x55c360 method (one int arg).
 struct CSlimeSubMgr {
-    void Advance(int tick); // CDDrawSubMgr method @0x55c360 (reloc-masked)
+    void Advance(i32 tick); // CDDrawSubMgr method @0x55c360 (reloc-masked)
 };
 
 // The animation player @this+0x38 that holds the current direction sprite at
@@ -25,11 +25,11 @@ struct CSlimeAnimPlayer {
     void CacheFirstFrame(const char* name); // CGruntSprite::CacheFirstFrame (reloc-masked)
 
     char m_pad0[0x8];
-    int m_8; // +0x08  status/flags word (Tick sets bit 0x10000 when stalled)
+    i32 m_8; // +0x08  status/flags word (Tick sets bit 0x10000 when stalled)
     char m_padc[0x190 - 0xc];
-    int m_190;          // +0x190  first frame number
+    i32 m_190;          // +0x190  first frame number
     CSprite* m_194;     // +0x194  the current direction sprite
-    int* m_198;         // +0x198  first frame pointer
+    i32* m_198;         // +0x198  first frame pointer
     char m_pad19c[4];   // +0x19c
     CSlimeSubMgr m_1a0; // +0x1a0  per-frame sub-mgr (Advance)
 };
@@ -39,10 +39,10 @@ struct CSprite {
     void CacheFirstFrame(const char* name); // CGruntSprite::CacheFirstFrame
 
     char m_pad0[0x14];
-    int** m_14; // +0x14  frame-pointer table
+    i32** m_14; // +0x14  frame-pointer table
     char m_pad18[0x64 - 0x18];
-    int m_64; // +0x64
-    int m_68; // +0x68
+    i32 m_64; // +0x64
+    i32 m_68; // +0x68
 };
 
 // The slime's resource/level holder (this->m_10). m_124 = travel direction
@@ -52,42 +52,42 @@ struct CSprite {
 // The level/timing object at CSlimeLevel+0x7c; its +0xbc overrides the per-tile time.
 struct CSlimeTiming {
     char m_pad0[0xbc];
-    unsigned int m_bc;
+    u32 m_bc;
 };
 
 struct CSlimeLevel {
     char m_pad0[0x5c];
-    int m_5c; // +0x5c  step dx (pixels)
-    int m_60; // +0x60  step dy (pixels)
+    i32 m_5c; // +0x5c  step dx (pixels)
+    i32 m_60; // +0x60  step dy (pixels)
     char m_pad64[0x7c - 0x64];
     CSlimeTiming* m_7c; // +0x7c  level/timing object (m_7c->m_bc time override)
     char m_pad80[0x124 - 0x80];
-    int m_124; // +0x124 travel direction (1..4)
+    i32 m_124; // +0x124 travel direction (1..4)
     char m_pad128[0x12c - 0x128];
-    int m_12c; // +0x12c lock-direction flag
+    i32 m_12c; // +0x12c lock-direction flag
     char m_pad130[0x134 - 0x130];
-    int m_134; // +0x134 window min X
-    int m_138; // +0x138 window min Y
-    int m_13c; // +0x13c window max X
-    int m_140; // +0x140 window max Y
-    int m_144; // +0x144 on-screen rect base (Tick passes &m_144 to the cue gate)
+    i32 m_134; // +0x134 window min X
+    i32 m_138; // +0x138 window min Y
+    i32 m_13c; // +0x13c window max X
+    i32 m_140; // +0x140 window max Y
+    i32 m_144; // +0x144 on-screen rect base (Tick passes &m_144 to the cue gate)
 };
 
 // The level tile map reached via g_gameReg->m_70. m_c/m_10 = grid extents,
 // m_8 = the row table (row[gy][gx*7] is the tile-flags word).
 struct CTileMap {
     char m_pad0[0x8];
-    int** m_8; // +0x08  row table
-    int m_c;   // +0x0c  grid width
-    int m_10;  // +0x10  grid height
+    i32** m_8; // +0x08  row table
+    i32 m_c;   // +0x0c  grid width
+    i32 m_10;  // +0x10  grid height
 };
 // The on-screen object reached as g_gameReg->m_68 (the visibility/cue gate). Its
 // QueryAt resolves the entity under the slime's screen rect and ScrollTo posts a
 // scroll; modeled NO-body so both calls reloc-mask.
 struct CSlimeCueGate {
     // QueryAt(level->m_5c, level->m_60, &level->m_144, &outA, &outB, 0) -> entity*.
-    void* QueryAt(int x, int y, int* rect, int* outA, int* outB, int z); // 0x75c60
-    void ScrollTo(int a, int b, int mode, int flags);                    // 0x6bcb0
+    void* QueryAt(i32 x, i32 y, i32* rect, i32* outA, i32* outB, i32 z); // 0x75c60
+    void ScrollTo(i32 a, i32 b, i32 mode, i32 flags);                    // 0x6bcb0
 };
 
 struct CGameReg {
@@ -96,9 +96,9 @@ struct CGameReg {
     char m_pad6c[0x70 - 0x6c];
     CTileMap* m_70; // +0x70
     char m_pad74[0x118 - 0x74];
-    int m_118; // +0x118 has-window flag
+    i32 m_118; // +0x118 has-window flag
     char m_pad11c[0x134 - 0x11c];
-    int m_134; // +0x134 mode discriminator (==1 -> skip the visibility scroll)
+    i32 m_134; // +0x134 mode discriminator (==1 -> skip the visibility scroll)
 };
 DATA(0x0024556c)
 extern CGameReg* g_gameReg;
@@ -107,7 +107,7 @@ extern CGameReg* g_gameReg;
 // itself, so its own footprint is ignored when probing the destination tile).
 struct CSlimeEntity {
     char m_pad0[0x258];
-    int m_258; // +0x258 type tag
+    i32 m_258; // +0x258 type tag
 };
 
 // 32.0 (the per-tile-time -> per-frame-speed reciprocal numerator).
@@ -117,7 +117,7 @@ extern const double g_slimeSpeedNum; // VA 0x5ea3e0
 // Per-frame scroll/scale factor (.data int) Tick multiplies into m_58 to get the
 // per-frame pixel step.
 DATA(0x00245584)
-extern int g_slimeFrameScale; // VA 0x645584
+extern i32 g_slimeFrameScale; // VA 0x645584
 
 // 0.0 (the velocity-sign comparand for the movement integrator).
 DATA(0x001ea400)
@@ -125,12 +125,12 @@ extern const double g_slimeZero; // VA 0x5ea400
 
 // A frame/tick counter (BSS) the anim sub-mgr Advance consumes.
 DATA(0x002bf3bc)
-extern int g_slimeTick; // VA 0x6bf3bc
+extern i32 g_slimeTick; // VA 0x6bf3bc
 
 class CKitchenSlime {
 public:
-    int Tick();
-    int LoadSprites();
+    i32 Tick();
+    i32 LoadSprites();
 
     char m_pad0[0x10];
     CSlimeLevel* m_10; // +0x10
@@ -142,10 +142,10 @@ public:
     double m_68; // +0x68  accumulated dy (double)
     double m_70; // +0x70  (cleared)
     double m_78; // +0x78  (cleared)
-    int m_80;    // +0x80  current tile X
-    int m_84;    // +0x84  current tile Y
-    int m_88;    // +0x88  (per-step magnitude / cleared)
-    int m_8c;    // +0x8c  (cleared)
+    i32 m_80;    // +0x80  current tile X
+    i32 m_84;    // +0x84  current tile Y
+    i32 m_88;    // +0x88  (per-step magnitude / cleared)
+    i32 m_8c;    // +0x8c  (cleared)
 };
 
 // The math externs the movement integrator chains (CRT, reloc-masked):
@@ -168,13 +168,13 @@ extern "C" double fabs(double);
 // [esp+0x10], swapping the per-iter temp) plus the dead x-clamp redundant-jump
 // schedule. Logic byte-for-byte correct; ~95%, above the documented 60-75% range.
 RVA(0x000b2ca0, 0x29c)
-int CKitchenSlime::Tick() {
+i32 CKitchenSlime::Tick() {
     m_38->m_1a0.Advance(g_slimeTick);
 
     CGameReg* reg = g_gameReg;
     if (reg->m_118 == 0 || reg->m_134 != 1) {
         CSlimeLevel* lvl = m_10;
-        int outX, outY;
+        i32 outX, outY;
         CSlimeEntity* ent =
             (CSlimeEntity*)reg->m_68->QueryAt(lvl->m_5c, lvl->m_60, &lvl->m_144, &outY, &outX, 0);
         if (ent && ent->m_258 != 0x38) {
@@ -188,14 +188,14 @@ int CKitchenSlime::Tick() {
         return 0;
     }
 
-    double step = (double)(__int64)(unsigned __int64)(unsigned)g_slimeFrameScale * m_58;
+    double step = (double)(i64)(u64)(u32)g_slimeFrameScale * m_58;
     double* m88d = (double*)&m_88;
 
-    int newX;
+    i32 newX;
     if (m_70 > g_slimeZero) {
         double t = (m_60 = m_60 + step);
-        newX = (int)floor(t);
-        int tx = m_80;
+        newX = (i32)floor(t);
+        i32 tx = m_80;
         *m88d = fabs(m_60 - (double)tx);
         // The X axis never clamps (unlike Y), but retail still emits the compare
         // (a min/max fold whose result equals the input); the empty-body test
@@ -205,21 +205,21 @@ int CKitchenSlime::Tick() {
         }
     } else if (m_70 < g_slimeZero) {
         double t = (m_60 = m_60 - step);
-        newX = (int)ceil(t);
-        int tx = m_80;
+        newX = (i32)ceil(t);
+        i32 tx = m_80;
         *m88d = fabs(m_60 - (double)tx);
         if (newX < tx) {
             newX = newX;
         }
     } else {
-        newX = (int)floor(m_60);
+        newX = (i32)floor(m_60);
     }
 
-    int newY;
+    i32 newY;
     if (m_78 > g_slimeZero) {
         double t = (m_68 = m_68 + step);
-        newY = (int)floor(t);
-        int ty = m_84;
+        newY = (i32)floor(t);
+        i32 ty = m_84;
         *m88d = fabs(m_68 - (double)ty);
         if (newY > ty) {
             m_10->m_5c = newX;
@@ -228,8 +228,8 @@ int CKitchenSlime::Tick() {
         }
     } else if (m_78 < g_slimeZero) {
         double t = (m_68 = m_68 - step);
-        newY = (int)ceil(t);
-        int ty = m_84;
+        newY = (i32)ceil(t);
+        i32 ty = m_84;
         *m88d = fabs(m_68 - (double)ty);
         if (newY < ty) {
             m_10->m_5c = newX;
@@ -237,7 +237,7 @@ int CKitchenSlime::Tick() {
             return 0;
         }
     } else {
-        newY = (int)floor(m_68);
+        newY = (i32)floor(m_68);
     }
 
     m_10->m_5c = newX;
@@ -251,14 +251,14 @@ int CKitchenSlime::Tick() {
 // /jump-table stack-frame schedule wall it has carried (retail reserves 0x1c vs
 // our 0x14 - an extra direction-magnitude stack temp). ~69%, logic exact.
 RVA(0x000b3160, 0x339)
-int CKitchenSlime::LoadSprites() {
-    int savedDir = m_10->m_124;
+i32 CKitchenSlime::LoadSprites() {
+    i32 savedDir = m_10->m_124;
 
-    int tileX, tileY;
-    int found = 0;
-    for (int i = 0; i <= 4;) {
+    i32 tileX, tileY;
+    i32 found = 0;
+    for (i32 i = 0; i <= 4;) {
         CSlimeLevel* lvl = m_10;
-        int sw = lvl->m_124 - 1;
+        i32 sw = lvl->m_124 - 1;
         switch (sw) {
             case 0:
                 tileX = m_80;
@@ -278,14 +278,14 @@ int CKitchenSlime::LoadSprites() {
                 break; // west
         }
 
-        int gx = tileX >> 5;
-        int gy = tileY >> 5;
-        int tileFlags;
+        i32 gx = tileX >> 5;
+        i32 gy = tileY >> 5;
+        i32 tileFlags;
         CTileMap* map = g_gameReg->m_70;
-        if ((unsigned)gx >= (unsigned)map->m_c || (unsigned)gy >= (unsigned)map->m_10) {
+        if ((u32)gx >= (u32)map->m_c || (u32)gy >= (u32)map->m_10) {
             tileFlags = 1;
         } else {
-            tileFlags = ((int*)map->m_8[gy])[gx * 7];
+            tileFlags = ((i32*)map->m_8[gy])[gx * 7];
         }
 
         if (tileY >= lvl->m_138 && tileX <= lvl->m_13c && tileY <= lvl->m_140 && tileX >= lvl->m_134
@@ -316,47 +316,47 @@ int CKitchenSlime::LoadSprites() {
 
     m_60 = 0;
     m_68 = 0;
-    int changed = (m_10->m_124 != savedDir);
+    i32 changed = (m_10->m_124 != savedDir);
     switch (m_10->m_124 - 1) {
         case 0: // north
-            m_68 = -(double)*(int*)&m_88;
+            m_68 = -(double)*(i32*)&m_88;
             m_70 = 0;
             m_78 = 0;
-            *(int*)&m_78 = 0;
-            *((int*)&m_70 + 1) = 0;
-            *((int*)&m_78 + 1) = 0xbff00000;
+            *(i32*)&m_78 = 0;
+            *((i32*)&m_70 + 1) = 0;
+            *((i32*)&m_78 + 1) = 0xbff00000;
             if (changed) {
                 m_38->CacheFirstFrame("LEVEL_KITCHENSLIME_NORTH");
             }
             break;
         case 1: // east
-            *(int*)&m_60 = m_88;
-            *((int*)&m_60 + 1) = *((int*)&m_88 + 1);
+            *(i32*)&m_60 = m_88;
+            *((i32*)&m_60 + 1) = *((i32*)&m_88 + 1);
             m_70 = 0;
             m_78 = 0;
-            *((int*)&m_70 + 1) = 0x3ff00000;
-            *((int*)&m_78 + 1) = 0;
+            *((i32*)&m_70 + 1) = 0x3ff00000;
+            *((i32*)&m_78 + 1) = 0;
             if (changed) {
                 m_38->CacheFirstFrame("LEVEL_KITCHENSLIME_EAST");
             }
             break;
         case 2: // south
-            *(int*)&m_68 = m_88;
-            *((int*)&m_68 + 1) = *((int*)&m_88 + 1);
+            *(i32*)&m_68 = m_88;
+            *((i32*)&m_68 + 1) = *((i32*)&m_88 + 1);
             m_70 = 0;
             m_78 = 0;
-            *((int*)&m_78 + 1) = 0x3ff00000;
-            *((int*)&m_70 + 1) = 0;
+            *((i32*)&m_78 + 1) = 0x3ff00000;
+            *((i32*)&m_70 + 1) = 0;
             if (changed) {
                 m_38->CacheFirstFrame("LEVEL_KITCHENSLIME_SOUTH");
             }
             break;
         case 3: // west
-            m_60 = -(double)*(int*)&m_88;
+            m_60 = -(double)*(i32*)&m_88;
             m_70 = 0;
             m_78 = 0;
-            *((int*)&m_70 + 1) = 0xbff00000;
-            *((int*)&m_78 + 1) = 0;
+            *((i32*)&m_70 + 1) = 0xbff00000;
+            *((i32*)&m_78 + 1) = 0;
             if (changed) {
                 m_38->CacheFirstFrame("LEVEL_KITCHENSLIME_WEST");
             }
@@ -366,14 +366,14 @@ int CKitchenSlime::LoadSprites() {
     m_60 = (double)m_10->m_5c + m_60;
     m_68 = (double)m_10->m_60 + m_68;
 
-    unsigned int time;
+    u32 time;
     if (m_10->m_7c->m_bc != 0) {
         time = m_10->m_7c->m_bc;
     } else {
         time = g_buteMgr.GetDwordDef("Hazardz", "KitchenSlimeTimePerTile", 1000);
     }
 
-    m_58 = g_slimeSpeedNum / (double)(__int64)(unsigned __int64)time;
+    m_58 = g_slimeSpeedNum / (double)(i64)(u64)time;
     m_80 = tileX;
     m_84 = tileY;
 

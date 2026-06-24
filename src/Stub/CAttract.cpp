@@ -26,7 +26,7 @@
 // DIR32, so naming is matching-neutral against the matched butemgr getter.
 class CAttractButeMgr {
 public:
-    int GetIntDef(char* tag, char* key, int def);
+    i32 GetIntDef(char* tag, char* key, i32 def);
 };
 
 DATA(0x002453d8)
@@ -38,11 +38,11 @@ extern CAttractButeMgr g_attractButeMgr;
 
 // The attract-state count divisor (DAT_00645534, a writable global int).
 DATA(0x00245534)
-extern int g_attractStateCount;
+extern i32 g_attractStateCount;
 
 // The "ShowCursor" Win32 import slot the engine calls indirectly to force the
 // cursor visible (PTR_ShowCursor_006c44c4).
-typedef int(__stdcall* ShowCursorFn)(int);
+typedef i32(__stdcall* ShowCursorFn)(i32);
 DATA(0x002c44c4)
 extern ShowCursorFn g_ShowCursor;
 
@@ -56,7 +56,7 @@ extern ShowCursorFn g_ShowCursor;
 #define s_ATTRACT "ATTRACT"
 #define s_UNDERSCORE "_"
 
-extern "C" int sprintf(char* buf, const char* fmt, ...);
+extern "C" i32 sprintf(char* buf, const char* fmt, ...);
 
 // ---------------------------------------------------------------------------
 // The video-mode sub-object at CAttract+0x4. Its first method (engine
@@ -75,7 +75,7 @@ public:
 
 class CAttractVideo {
 public:
-    int RestoreVideoMode(int save);
+    i32 RestoreVideoMode(i32 save);
 
     char m_pad00[0x48];
     CAttractSceneSlot* m_48; // +0x48  scene/scheduler handle
@@ -108,7 +108,7 @@ public:
 // ---------------------------------------------------------------------------
 class CMenuBrightnessTarget {
 public:
-    void SetBrightness(int value, int flags);
+    void SetBrightness(i32 value, i32 flags);
 };
 
 struct CMenuBrightnessHolder {
@@ -132,7 +132,7 @@ public:
 // ret 0xc) so the attract page is wired into the active menu.
 class CAttractRegistrar {
 public:
-    int Register(void* sound, char* type, char* sep);
+    i32 Register(void* sound, char* type, char* sep);
 };
 
 struct CMenuRoot {
@@ -147,7 +147,7 @@ struct CMenuRoot {
 // on the same +0x2c brightness target whose SetBrightness LoadTitleConfig drives.
 class CMenuBrightnessReset {
 public:
-    void Reset(int value);
+    void Reset(i32 value);
 };
 
 // ---------------------------------------------------------------------------
@@ -163,22 +163,22 @@ public:
     virtual void vf_slot0();
     virtual void vf_slot1();
     virtual void vf_slot2();
-    virtual int vf_OnActivate(); // slot 3 (+0xc) — the pre-flight gate
+    virtual i32 vf_OnActivate(); // slot 3 (+0xc) — the pre-flight gate
 
-    int EnterAttractMode(int a, int b, int mode);
-    int RefreshTitle(int unused);
-    int LoadTitleConfig(int mode);
-    int Activate();
+    i32 EnterAttractMode(i32 a, i32 b, i32 mode);
+    i32 RefreshTitle(i32 unused);
+    i32 LoadTitleConfig(i32 mode);
+    i32 Activate();
 
     // The pre-flight gate for EnterAttractMode (engine FUN_004f9ea0, non-virtual
     // __thiscall ret 0xc, reached via ILT thunk): readies the scene from the
     // three caller args; a zero result aborts the entry.
-    int LoadAttractScene(int a, int b, int mode); // FUN_004f9ea0
+    i32 LoadAttractScene(i32 a, i32 b, i32 mode); // FUN_004f9ea0
 
     // engine tail helpers (__thiscall, reached via ILT thunks).
-    int FadeInTitle(char* name, int a, int b, int c, int d, int e); // FUN_004fa1f0
-    int RunTitle(char* name, int a, int b, int c, int d);           // FUN_004fa350
-    int BuildMenuPage(int x, int w, int h, int flag);               // FUN_004fa8f0
+    i32 FadeInTitle(char* name, i32 a, i32 b, i32 c, i32 d, i32 e); // FUN_004fa1f0
+    i32 RunTitle(char* name, i32 a, i32 b, i32 c, i32 d);           // FUN_004fa350
+    i32 BuildMenuPage(i32 x, i32 w, i32 h, i32 flag);               // FUN_004fa8f0
     void CommitStage();                                             // FUN_004a05a0
 
     CAttractVideo* m_04;    // +0x4   video-mode sub-object (vptr occupies +0x0)
@@ -187,8 +187,8 @@ public:
     char m_pad10[0x2c - 0x10];
     CAttractState* m_2c; // +0x2c  active attract state slot (scratch)
     char m_pad30[0x1b8 - 0x30];
-    int m_1b8; // +0x1b8  attract-entry flag (always cleared on entry)
-    int m_1bc; // +0x1bc  attract-active flag (clear when mode == 3, else set)
+    i32 m_1b8; // +0x1b8  attract-entry flag (always cleared on entry)
+    i32 m_1bc; // +0x1bc  attract-active flag (clear when mode == 3, else set)
 };
 
 inline void CAttract::vf_slot0() {}
@@ -200,7 +200,7 @@ inline void CAttract::vf_slot2() {}
 // then RestoreScene), re-resolves the "STATEZ_ATTRACT" state into m_2c, runs the
 // title sequence (engine FUN_004fa350) with the bare "TITLE" tag, and returns 1.
 RVA(0x00039160, 0x46)
-int CAttract::RefreshTitle(int unused) {
+i32 CAttract::RefreshTitle(i32 unused) {
     m_04->m_48->PrimeScene();
     m_04->m_48->RestoreScene();
     m_2c = m_08->LookupState(s_STATEZ_ATTRACT);
@@ -214,12 +214,12 @@ int CAttract::RefreshTitle(int unused) {
 // body byte-exact; retail emits a separate inline `xor eax,eax` for the FadeInTitle
 // fail return-0, the recompile reuses the already-zero eax. Not steerable by source.
 RVA(0x000a03f0, 0x14b)
-int CAttract::LoadTitleConfig(int mode) {
+i32 CAttract::LoadTitleConfig(i32 mode) {
     char stateName[0x20];
     char titleName[0x20];
 
     if (mode != 2) {
-        int idx = *(int*)((char*)g_gameReg + 0x80) % g_attractStateCount + 1;
+        i32 idx = *(i32*)((char*)g_gameReg + 0x80) % g_attractStateCount + 1;
         sprintf(stateName, s_STATEZ_ATTRACT);
         sprintf(titleName, s_TITLE_d, idx);
 
@@ -230,7 +230,7 @@ int CAttract::LoadTitleConfig(int mode) {
             return 0;
         }
 
-        int faded = FadeInTitle(titleName, 0, 0, 1, 0, 0);
+        i32 faded = FadeInTitle(titleName, 0, 0, 1, 0, 0);
         m_2c = saved;
         if (faded == 0) {
             return 0;
@@ -268,18 +268,18 @@ int CAttract::LoadTitleConfig(int mode) {
 // `xor eax,eax` (return 0) while the recompile reuses the already-zero FadeInTitle
 // result in eax (bare pop/ret). Same non-steerable wall as the sibling LoadTitleConfig.
 RVA(0x000a0a30, 0x110)
-int CAttract::Activate() {
+i32 CAttract::Activate() {
     char stateName[0x20];
     char titleName[0x20];
 
-    int gate = vf_OnActivate();
+    i32 gate = vf_OnActivate();
     if (gate == 0) {
         return gate;
     }
 
     ((CMenuBrightnessReset*)m_0c->m_04->m_14->m_2c)->Reset(0);
 
-    int idx = *(int*)((char*)g_gameReg + 0x80) % g_attractStateCount + 1;
+    i32 idx = *(i32*)((char*)g_gameReg + 0x80) % g_attractStateCount + 1;
     sprintf(stateName, s_STATEZ_ATTRACT);
     sprintf(titleName, s_TITLE_d, idx);
 
@@ -290,7 +290,7 @@ int CAttract::Activate() {
         return 0;
     }
 
-    int faded = FadeInTitle(titleName, 0, 0, 1, 0, 0);
+    i32 faded = FadeInTitle(titleName, 0, 0, 1, 0, 0);
     m_2c = saved;
     if (faded == 0) {
         return 0;
@@ -318,7 +318,7 @@ int CAttract::Activate() {
 // entry flags: m_1b8 is always cleared, and m_1bc is cleared when mode == 3
 // (else set to 1). Returns 1 on success, 0 on any early-out.
 RVA(0x00013fb0, 0xd5)
-int CAttract::EnterAttractMode(int a, int b, int mode) {
+i32 CAttract::EnterAttractMode(i32 a, i32 b, i32 mode) {
     if (LoadAttractScene(a, b, mode) == 0) {
         return 0;
     }

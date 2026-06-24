@@ -27,7 +27,7 @@ extern void* const g_PureVtbl[];
 struct SoundVoiceList {
     void* m_head;
     void* m_tail;
-    void Reap(void* node, int mask); // 0x136f60
+    void Reap(void* node, i32 mask); // 0x136f60
 };
 
 // The intrusive buffer-list unlink helper (0x1391e0, __thiscall on the +0x04
@@ -132,7 +132,7 @@ void SoundDevice::StopAll() {
 // RezFree) is byte-exact; only the prologue/early-out register scheduling shifts.
 // 77% on a documented regalloc wall - logic complete, deferred to the final sweep.
 RVA(0x00136ed0, 0x72)
-int SoundDevice::FreeSamples() {
+i32 SoundDevice::FreeSamples() {
     if (m_78 == 0) {
         return 0;
     }
@@ -154,14 +154,14 @@ int SoundDevice::FreeSamples() {
 // SoundDevice::SetPrimaryFormat (0x1371a0, __thiscall, 1 arg). Ensure the primary
 // buffer exists, then set its WAVEFORMATEX; report a failing HRESULT and bail.
 RVA(0x001371a0, 0x5a)
-int SoundDevice::SetPrimaryFormat(void* fmt) {
+i32 SoundDevice::SetPrimaryFormat(void* fmt) {
     if (m_78 == 0) {
         return 0;
     }
     if (CreatePrimaryBuffer() == 0) {
         return 0;
     }
-    int hr = m_84->vtbl->SetFormat(m_84, fmt) != 0;
+    i32 hr = m_84->vtbl->SetFormat(m_84, fmt) != 0;
     if (hr) {
         DirectSoundMgr::GetErrorString(DSNDMGR_FILE, 0x678, hr);
         return 0;

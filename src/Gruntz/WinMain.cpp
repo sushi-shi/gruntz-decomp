@@ -45,25 +45,25 @@ extern "C" {
     // CheckExePath (reached via an incremental-link thunk). Validates
     // the module path; __cdecl 3 args (path, count, reserved); returns nonzero to
     // proceed to the single-instance check.
-    int CheckExePath(char* pszPath, int nCount, void* pReserved);
+    i32 CheckExePath(char* pszPath, i32 nCount, void* pReserved);
 
     // SubstringMatch (a strstr-class helper). Returns nonzero when
     // `pszNeedle` occurs in `pszHaystack`. __cdecl 2 args (haystack first, then
     // needle - the target's push order). Used for the LOBBYLAUNCH check and the
     // "advanced"/"optionz" cmd-line scans.
-    int SubstringMatch(LPCSTR pszHaystack, LPCSTR pszNeedle);
+    i32 SubstringMatch(LPCSTR pszHaystack, LPCSTR pszNeedle);
 
     // StartupGate (reached via a thunk). __cdecl 1 arg; runs the
     // resource/CD/launch validation, returns nonzero to proceed.
-    int StartupGate(int nReserved);
+    i32 StartupGate(i32 nReserved);
 
     // SettleDelay - a GetTickCount busy-wait used as a brief settle delay
     // before the hot-key sample. __cdecl 1 arg (ms).
-    int SettleDelay(int nMs);
+    i32 SettleDelay(i32 nMs);
 
     // VersionScan - an sscanf wrapper (parses "%d.%d.%d.%d" into the four
     // version ints). __cdecl variadic.
-    int VersionScan(const char* pszVersion, const char* pszFormat, ...);
+    i32 VersionScan(const char* pszVersion, const char* pszFormat, ...);
 
     // VERSION.DLL imports (GetFileVersionInfoSizeA/GetFileVersionInfoA/VerQueryValueA)
     // come from <windows.h> (winver, pulled by afx.h/MFC).
@@ -75,7 +75,7 @@ extern "C" {
 
 // The Advanced Options modal dialog proc (matched, unit advancedoptions). Its
 // address is taken for DialogBoxParamA (reloc-masked via a thunk).
-int __stdcall AdvancedOptionsDialogProc(HWND, UINT, WPARAM, LPARAM);
+i32 __stdcall AdvancedOptionsDialogProc(HWND, UINT, WPARAM, LPARAM);
 
 // CGruntzApp - the game application object `new`'d on the normal path, defined
 // once in <Gruntz/GruntzApp.h>. WinMain touches only its vtable: slot 2
@@ -94,10 +94,10 @@ int __stdcall AdvancedOptionsDialogProc(HWND, UINT, WPARAM, LPARAM);
 //   g_hInstance     - this module's HINSTANCE (shared with
 //       AdvancedOptions.cpp, which reads it for LoadIconA).
 // ---------------------------------------------------------------------------
-static int g_version0; // 1st %d
-static int g_version1; // 2nd %d
-static int g_version2; // 3rd %d
-static int g_version3; // 4th %d
+static i32 g_version0; // 1st %d
+static i32 g_version1; // 2nd %d
+static i32 g_version2; // 3rd %d
+static i32 g_version3; // 4th %d
 static CGruntzApp* g_pApp;
 static HINSTANCE g_hInstance;
 
@@ -106,8 +106,8 @@ static HINSTANCE g_hInstance;
 // `_WinMain@16` (NOT C++ mangled).
 SYMBOL(_WinMain @16)
 RVA(0x0011c860, 0x327)
-extern "C" int WINAPI
-WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd) {
+extern "C" i32 WINAPI
+WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, i32 nShowCmd) {
     char szModulePath[0xFE]; // [esp+0x1c] - the GetModuleFileNameA buffer
 
     // 1. Module path + engine path-check. When the path-check SUCCEEDS this is
@@ -166,15 +166,15 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShow
     //     the "advanced"/"optionz" cmd-line tokens. The hInstance store is
     //     scheduled here (the target interleaves it with the settle-delay call).
     g_hInstance = hInstance;
-    int bAdvanced = 0;
+    i32 bAdvanced = 0;
     SettleDelay(0x64); // busy-wait, ~100ms
-    if ((short)GetAsyncKeyState(VK_CONTROL) & 0x80000000) {
+    if ((i16)GetAsyncKeyState(VK_CONTROL) & 0x80000000) {
         bAdvanced = 1;
     }
-    if ((short)GetAsyncKeyState(VK_SHIFT) & 0x80000000) {
+    if ((i16)GetAsyncKeyState(VK_SHIFT) & 0x80000000) {
         bAdvanced = 1;
     }
-    if ((short)GetAsyncKeyState(VK_DOLLAR) & 0x80000000) {
+    if ((i16)GetAsyncKeyState(VK_DOLLAR) & 0x80000000) {
         bAdvanced = 1;
     }
 
@@ -202,7 +202,7 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShow
     // 3e. If requested, run the Advanced Options modal; on it returning 0 (the
     //     "do not launch the game" result) tear the app down and exit.
     if (bAdvanced != 0) {
-        int nDlgResult = DialogBoxParamA(
+        i32 nDlgResult = DialogBoxParamA(
             g_hInstance,
             "CONFIG_ADVANCED",
             0,
@@ -238,7 +238,7 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShow
     }
 
     // 3g. Run the main message loop (vtable +0x18), then tear down.
-    int rc = g_pApp->RunMessageLoop();
+    i32 rc = g_pApp->RunMessageLoop();
     if (g_pApp != 0) {
         delete g_pApp;
     }

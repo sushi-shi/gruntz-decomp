@@ -13,11 +13,11 @@
 // The lookup table buffer (100 ints). Written by
 // initializeUnknownLookupTable with getLookupTableValue results.
 DATA(0x00653ab8)
-int g_salazarLookupTable[100];
+i32 g_salazarLookupTable[100];
 
 class UnknownSalazar {
 public:
-    static int getLookupTableValue(int value); // still a stub
+    static i32 getLookupTableValue(i32 value); // still a stub
     static void initializeUnknownLookupTable();
 
     // Engine-label backlog stubs.
@@ -32,7 +32,7 @@ public:
 // ---------------------------------------------------------------------------
 RVA(0x001351a0, 0x23)
 void UnknownSalazar::initializeUnknownLookupTable() {
-    for (int i = 0; i < 100; i++) {
+    for (i32 i = 0; i < 100; i++) {
         g_salazarLookupTable[i] = getLookupTableValue(i);
     }
 }
@@ -46,7 +46,7 @@ void UnknownSalazar::initializeUnknownLookupTable() {
 // @source: tomalla
 // @stub
 RVA(0x001350b0, 0x5d)
-int UnknownSalazar::getLookupTableValue(int) {
+i32 UnknownSalazar::getLookupTableValue(i32) {
     return 0;
 }
 

@@ -18,7 +18,9 @@
 #ifndef SRC_GRUNTZ_GRUNTZCOMMAND_H
 #define SRC_GRUNTZ_GRUNTZCOMMAND_H
 
-typedef unsigned int gz_size_t;
+#include <Ints.h>
+
+typedef u32 gz_size_t;
 void* operator new(gz_size_t);
 
 // The recycle-list type each leaf allocator pulls from (a WAP32 CObList-family
@@ -34,7 +36,7 @@ struct CGruntzCmdList {
 // external to this TU (reloc-masked); modeled here as a method on a tiny opaque
 // helper so `mov ecx,p; push args...; call` falls out with no stack cleanup.
 struct CGruntzCmdTarget {
-    int Exec(char kind, char index, char a2, short a3, short a4, char a5, char a6);
+    i32 Exec(char kind, char index, char a2, i16 a3, i16 a4, char a5, char a6);
 };
 
 // ---------------------------------------------------------------------------
@@ -60,16 +62,16 @@ struct CGruntzCmdTarget {
 // ---------------------------------------------------------------------------
 class CGruntzCommand {
 public:
-    char m_4;   // +0x04
-    char m_5;   // +0x05
-    char m_6;   // +0x06
-    char m_7;   // +0x07 (unused by this cluster)
-    short m_8;  // +0x08
-    short m_a;  // +0x0a
-    int m_c;    // +0x0c (unused by this cluster)
-    char m_10;  // +0x10
-    char m_11;  // +0x11
-    short m_12; // +0x12 (pad -> 0x14)
+    char m_4;  // +0x04
+    char m_5;  // +0x05
+    char m_6;  // +0x06
+    char m_7;  // +0x07 (unused by this cluster)
+    i16 m_8;   // +0x08
+    i16 m_a;   // +0x0a
+    i32 m_c;   // +0x0c (unused by this cluster)
+    char m_10; // +0x10
+    char m_11; // +0x11
+    i16 m_12;  // +0x12 (pad -> 0x14)
 
     virtual ~CGruntzCommand() {} // slot 0 (scalar-deleting dtor)
     virtual void Vfunc1();       // slot 1
@@ -77,28 +79,21 @@ public:
     virtual void Vfunc3();       // slot 3
     // slot 4 (+0x10) - the base "set params" implementation (0x023e20): store
     // the five scalar params; returns 1. Inherited unchanged by both leaves.
-    virtual int SetParams(char a0, char a1, char a2, short a3, short a4);
-    virtual int Vslot05();  // slot 5 (+0x14)
+    virtual i32 SetParams(char a0, char a1, char a2, i16 a3, i16 a4);
+    virtual i32 Vslot05();  // slot 5 (+0x14)
     virtual void Vslot06(); // slot 6
     virtual void Vslot07(); // slot 7
 
     // Non-virtual members of the base (called directly, not via the vtable):
-    int SetParamsEx(char a0, char a1, char a2, short a3, short a4, char a5, char a6); // 0x023e60
-    int SetMaskFromList(
-        char a0,
-        char a1,
-        char a2,
-        short a3,
-        short a4,
-        int count,
-        unsigned char* buf
-    );                                  // 0x023ed0
-    int ApplyOne(CGruntzCmdTarget* p);  // 0x024140
-    int ApplyMask(CGruntzCmdTarget* p); // 0x024190
+    i32 SetParamsEx(char a0, char a1, char a2, i16 a3, i16 a4, char a5, char a6); // 0x023e60
+    i32 SetMaskFromList(char a0, char a1, char a2, i16 a3, i16 a4, i32 count,
+                        u8* buf);       // 0x023ed0
+    i32 ApplyOne(CGruntzCmdTarget* p);  // 0x024140
+    i32 ApplyMask(CGruntzCmdTarget* p); // 0x024190
 };
 
 // The 16-entry 1<<i bit table (0x5e9608; VA) the mask loop indexes/scans.
-extern const unsigned short g_cmdBitTable[16]; // 0x1e9608
+extern const u16 g_cmdBitTable[16]; // 0x1e9608
 
 // ---------------------------------------------------------------------------
 // CGruntzSingleCommand - single-target command (0x14 bytes; vtable 0x5e9634).
@@ -125,9 +120,9 @@ public:
 
 // The per-class recycle lists + their non-empty gates (file-scope globals the
 // allocators test/pull from). Reloc-masked; only the addresses are load-bearing.
-extern int g_singleCmdCount;           // 0x62b5dc - non-empty gate
+extern i32 g_singleCmdCount;           // 0x62b5dc - non-empty gate
 extern CGruntzCmdList g_singleCmdList; // 0x62b5d0 - the recycle list (ecx for RemoveTail)
-extern int g_multiCmdCount;            // 0x62b64c
+extern i32 g_multiCmdCount;            // 0x62b64c
 extern CGruntzCmdList g_multiCmdList;  // 0x62b640
 
 #endif // SRC_GRUNTZ_GRUNTZCOMMAND_H

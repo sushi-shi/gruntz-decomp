@@ -31,8 +31,8 @@ extern "C" void RezFree(void* p);
 
 // Per-type validators used by ValidateByType (reloc-masked rel32 callees; both
 // callee-cleanup taking the object pointer).
-int __stdcall TileSwitchCheckType4(void* obj);
-int __stdcall TileSwitchCheckType7(void* obj);
+i32 __stdcall TileSwitchCheckType4(void* obj);
+i32 __stdcall TileSwitchCheckType7(void* obj);
 
 // ---------------------------------------------------------------------------
 // CTileTriggerSwitchLogic::CTileTriggerSwitchLogic()
@@ -42,7 +42,7 @@ int __stdcall TileSwitchCheckType7(void* obj);
 RVA(0x00110430, 0x1c)
 CTileTriggerSwitchLogic::CTileTriggerSwitchLogic() {
     *(void**)this = &g_tileTriggerSwitchLogicVtbl;
-    for (int i = 0; i < 24; i++) {
+    for (i32 i = 0; i < 24; i++) {
         m_block[i] = 0;
     }
     m_20 = 0;
@@ -53,9 +53,9 @@ CTileTriggerSwitchLogic::CTileTriggerSwitchLogic() {
 // Linear scan of the 24-dword m_block; returns 1 on a hit, 0 otherwise.
 // ---------------------------------------------------------------------------
 RVA(0x00110820, 0x23)
-int CTileTriggerSwitchLogic::FindIndexByKey(int key) {
+i32 CTileTriggerSwitchLogic::FindIndexByKey(i32 key) {
     // Scans the 24-dword array that begins at +0x3c (== &m_block[4]).
-    for (int i = 0; i < 24; i++) {
+    for (i32 i = 0; i < 24; i++) {
         if (m_block[i + 4] == key) {
             return 1;
         }
@@ -73,7 +73,7 @@ int CTileTriggerSwitchLogic::FindIndexByKey(int key) {
 // keeps arg1 in eax (returns it as the null-zero, push eax for validators) vs
 // our ecx + explicit xor in the null block. Entry-block register only.
 RVA(0x00113a90, 0x3b)
-int CTileTriggerSwitchLogic::ValidateByType(void* obj, int type, int a3, int a4) {
+i32 CTileTriggerSwitchLogic::ValidateByType(void* obj, i32 type, i32 a3, i32 a4) {
     if (obj == 0) {
         return 0;
     }
@@ -98,7 +98,7 @@ int CTileTriggerSwitchLogic::ValidateByType(void* obj, int type, int a3, int a4)
 // matching per-type apply (returns 0 on its failure); otherwise returns 1.
 // ---------------------------------------------------------------------------
 RVA(0x00113d40, 0x6f)
-int CTileTriggerSwitchLogic::ApplyByType(void* obj, int type, int a3, int a4) {
+i32 CTileTriggerSwitchLogic::ApplyByType(void* obj, i32 type, i32 a3, i32 a4) {
     if (obj == 0) {
         return 0;
     }
@@ -131,7 +131,7 @@ int CTileTriggerSwitchLogic::ApplyByType(void* obj, int type, int a3, int a4) {
 // stream->edi (pushes all 4 callee regs, then loads args) vs our this->edi /
 // stream->esi (arg load interleaved with the pushes). Reg-pair swap only.
 RVA(0x00113dd0, 0x7b)
-int CTileTriggerSwitchLogic::SerializeMatrix(CSerialStream* s) {
+i32 CTileTriggerSwitchLogic::SerializeMatrix(CSerialStream* s) {
     if (s == 0) {
         return 0;
     }
@@ -140,9 +140,9 @@ int CTileTriggerSwitchLogic::SerializeMatrix(CSerialStream* s) {
     }
     s->Transfer(&m_block[37], 4); // +0xc0
     s->Transfer(&m_block[38], 4); // +0xc4
-    int* p = &m_block[28];        // +0x9c
-    for (int r = 0; r < 3; r++) {
-        for (int c = 0; c < 3; c++) {
+    i32* p = &m_block[28];        // +0x9c
+    for (i32 r = 0; r < 3; r++) {
+        for (i32 c = 0; c < 3; c++) {
             s->Transfer(p, 4);
             p++;
         }
@@ -156,7 +156,7 @@ int CTileTriggerSwitchLogic::SerializeMatrix(CSerialStream* s) {
 // otherwise sets it to 1 and returns 1.
 // ---------------------------------------------------------------------------
 RVA(0x00115f00, 0x13)
-int CTileTriggerSwitchLogic::GetFlag74() {
+i32 CTileTriggerSwitchLogic::GetFlag74() {
     if (m_block[18] != 0) {
         return 0;
     }
@@ -175,7 +175,7 @@ int CTileTriggerSwitchLogic::GetFlag74() {
 // node in a 2nd reg (ecx) to deref data while keeping cur in esi for RemoveAt,
 // vs our single live-node deref. Loop-body copy scheduling only; final-sweep.
 RVA(0x00116320, 0x66)
-int CTileTriggerSwitchLogic::RemoveByKeys(int k1, int k2) {
+i32 CTileTriggerSwitchLogic::RemoveByKeys(i32 k1, i32 k2) {
     ListNode* node = (ListNode*)m_04;
     while (node) {
         ListNode* cur = node;
@@ -200,7 +200,7 @@ int CTileTriggerSwitchLogic::RemoveByKeys(int k1, int k2) {
 // first child whose +0x10 == k1 and (k2==0 || +0x04 == k2), else NULL.
 // ---------------------------------------------------------------------------
 RVA(0x00116ee0, 0x2f)
-CTileTriggerSwitchLogic* CTileTriggerSwitchLogic::FindChild(int k1, int k2) {
+CTileTriggerSwitchLogic* CTileTriggerSwitchLogic::FindChild(i32 k1, i32 k2) {
     ListNode* node = (ListNode*)m_04;
     while (node) {
         ListNode* cur = node;
@@ -220,7 +220,7 @@ CTileTriggerSwitchLogic* CTileTriggerSwitchLogic::FindChild(int k1, int k2) {
 // Walks the list at +0x58; returns the first child whose +0x0c == key, else NULL.
 // ---------------------------------------------------------------------------
 RVA(0x001171d0, 0x20)
-CTileTriggerSwitchLogic* CTileTriggerSwitchLogic::FindByField0C(int key) {
+CTileTriggerSwitchLogic* CTileTriggerSwitchLogic::FindByField0C(i32 key) {
     ListNode* node = (ListNode*)m_block[11];
     while (node) {
         ListNode* cur = node;
@@ -240,7 +240,7 @@ CTileTriggerSwitchLogic* CTileTriggerSwitchLogic::FindByField0C(int key) {
 // stream's Transfer (vtable slot 12) and returns 1.
 // ---------------------------------------------------------------------------
 RVA(0x00117e20, 0x36)
-int CTileTriggerSwitchLogic::TransferFlag74(CSerialStream* s) {
+i32 CTileTriggerSwitchLogic::TransferFlag74(CSerialStream* s) {
     if (s == 0) {
         return 0;
     }
@@ -262,11 +262,11 @@ int CTileTriggerSwitchLogic::TransferFlag74(CSerialStream* s) {
 // match; retail reserves 8B of frame (sub esp,8) and hoists the inner (y-1,y+2)
 // bounds out of the outer loop, vs our tighter frame. Final-sweep.
 RVA(0x00117ec0, 0x7f)
-int CTileTriggerSwitchLogic::ScanNeighborhood(int x, int y) {
-    for (int px = x - 1; px < x + 2; px++) {
-        int base = px << 8;
-        for (int py = y - 1; py < y + 2; py++) {
-            int r = ProbeCell(py + base, 0x16);
+i32 CTileTriggerSwitchLogic::ScanNeighborhood(i32 x, i32 y) {
+    for (i32 px = x - 1; px < x + 2; px++) {
+        i32 base = px << 8;
+        for (i32 py = y - 1; py < y + 2; py++) {
+            i32 r = ProbeCell(py + base, 0x16);
             if (r != 0) {
                 return r;
             }

@@ -3,14 +3,14 @@
 
 class RemusParseSource {
 public:
-    int BeginParse();
+    i32 BeginParse();
     void EndParse();
 };
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @stub
 RVA(0x00139960, 0x6b)
-int RemusParseSource::BeginParse() {
+i32 RemusParseSource::BeginParse() {
     return 0;
 }
 // @confidence: med

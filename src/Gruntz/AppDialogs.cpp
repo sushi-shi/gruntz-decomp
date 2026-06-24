@@ -25,7 +25,7 @@
 namespace Utils {
     class RegistryHelper {
     public:
-        int SetValueDword(char* szValueName, unsigned long value);
+        i32 SetValueDword(char* szValueName, u32 value);
     };
 } // namespace Utils
 
@@ -35,12 +35,12 @@ namespace Utils {
 //   g_gameReg->m_30->m_24->m_5c->m_84 / ->m_88   the seed X/Y for WM_INITDIALOG
 struct CGameRegLevel {
     char m_pad00[0x1c];
-    int m_1c;
+    i32 m_1c;
 };
 struct CGameRegWarp {
     char m_pad00[0x84];
-    int m_84;
-    int m_88;
+    i32 m_84;
+    i32 m_88;
 };
 struct CGameRegSub24 {
     char m_pad00[0x5c];
@@ -63,9 +63,9 @@ extern CGameReg* g_gameReg;
 // File-scope sinks the IDOK path stores the two edit-field values into before
 // the (optional) registry write (reloc-masked DIR32 stores).
 DATA(0x00212610)
-extern int g_warpX; // 0x612610
+extern i32 g_warpX; // 0x612610
 DATA(0x00212614)
-extern int g_warpY; // 0x612614
+extern i32 g_warpY; // 0x612614
 
 // ---------------------------------------------------------------------------
 // WarpDialogProc - the warp-cheat dialog callback.
@@ -76,8 +76,8 @@ INT_PTR __stdcall WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
     switch (msg) {
         case WM_INITDIALOG: {
             CGameRegWarp* warp = g_gameReg->m_30->m_24->m_5c;
-            int seedX = warp->m_84;
-            int seedY = warp->m_88;
+            i32 seedX = warp->m_84;
+            i32 seedY = warp->m_88;
             SetDlgItemInt(hDlg, 0x40e, seedX, 0);
             SetDlgItemInt(hDlg, 0x40f, seedY, 0);
             return 1;
@@ -89,8 +89,8 @@ INT_PTR __stdcall WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                 return 1;
             }
             if (wParam == 1) {
-                int valX = GetDlgItemInt(hDlg, 0x40e, 0, 0);
-                int valY = GetDlgItemInt(hDlg, 0x40f, 0, 0);
+                i32 valX = GetDlgItemInt(hDlg, 0x40e, 0, 0);
+                i32 valY = GetDlgItemInt(hDlg, 0x40f, 0, 0);
                 g_warpX = valX;
                 g_warpY = valY;
                 if (IsDlgButtonChecked(hDlg, 0x410)) {

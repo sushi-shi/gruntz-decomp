@@ -15,7 +15,7 @@ namespace Utils {
     // szLastKey into the m_1c/m_11c buffers, then resolves the deepest value key
     // through InitializeLastKey. Returns 1 on full success, 0 on any failure.
     RVA(0x00139210, 0x11c)
-    int RegistryHelper::Open(
+    i32 RegistryHelper::Open(
         char* szKeyName1,
         char* szKeyName2,
         char* szKeyName3,
@@ -51,7 +51,7 @@ namespace Utils {
     // Resolves m_18 (the deepest value key): when szLastKey is null it aliases
     // m_14; otherwise it opens szLastKey under m_14 via GetRegistryKey.
     RVA(0x00139370, 0x37)
-    int RegistryHelper::InitializeLastKey(char* szLastKey) {
+    i32 RegistryHelper::InitializeLastKey(char* szLastKey) {
         if (!m_0) {
             return 0;
         }
@@ -73,7 +73,7 @@ namespace Utils {
     char* RegistryHelper::GetValueString(
         char* szValueName,
         char* szValueBuffer,
-        unsigned int* pValueBufferSize,
+        u32* pValueBufferSize,
         char* szDefault
     ) {
         DWORD dwType;
@@ -127,7 +127,7 @@ namespace Utils {
     // Writes szValue as a REG_SZ value (length includes the terminator).
     // Returns nonzero on success.
     RVA(0x001393b0, 0x58)
-    int RegistryHelper::SetValueString(char* szValueName, char* szValue) {
+    i32 RegistryHelper::SetValueString(char* szValueName, char* szValue) {
         if (!m_0) {
             return 0;
         }
@@ -152,7 +152,7 @@ namespace Utils {
     // RegistryHelper::SetValueDword
     // Writes value as a 4-byte REG_DWORD value. Returns nonzero on success.
     RVA(0x00139460, 0x33)
-    int RegistryHelper::SetValueDword(char* szValueName, DWORD value) {
+    i32 RegistryHelper::SetValueDword(char* szValueName, DWORD value) {
         if (!m_0) {
             return 0;
         }
@@ -187,7 +187,7 @@ namespace Utils {
     // Creates/opens szSubKey under hKey with KEY_ALL_ACCESS; returns success.
     // (lpClass is an empty mutable global string in the original .data.)
     RVA(0x00139650, 0x32)
-    int RegistryHelper::GetRegistryKey(HKEY hKey, char* szSubKey, PHKEY phKeyResult) {
+    i32 RegistryHelper::GetRegistryKey(HKEY hKey, char* szSubKey, PHKEY phKeyResult) {
         DWORD dwDisposition;
         return RegCreateKeyExA(
                    hKey,

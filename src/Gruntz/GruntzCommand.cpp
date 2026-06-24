@@ -37,7 +37,7 @@
 void CGruntzCommand::Vfunc1() {}
 void CGruntzCommand::Vfunc2() {}
 void CGruntzCommand::Vfunc3() {}
-int CGruntzCommand::Vslot05() {
+i32 CGruntzCommand::Vslot05() {
     return 1;
 }
 void CGruntzCommand::Vslot06() {}
@@ -49,7 +49,7 @@ void CGruntzCommand::Vslot07() {}
 // 1. Inherited unchanged by both leaves (slot 4 = this in all three vtables).
 // ---------------------------------------------------------------------------
 RVA(0x00023e20, 0x2f)
-int CGruntzCommand::SetParams(char a0, char a1, char a2, short a3, short a4) {
+i32 CGruntzCommand::SetParams(char a0, char a1, char a2, i16 a3, i16 a4) {
     m_4 = a0;
     m_5 = a1;
     m_6 = a2;
@@ -64,7 +64,7 @@ int CGruntzCommand::SetParams(char a0, char a1, char a2, short a3, short a4) {
 // byte pair; return 1 (or 0 if SetParams failed).
 // ---------------------------------------------------------------------------
 RVA(0x00023e60, 0x42)
-int CGruntzCommand::SetParamsEx(char a0, char a1, char a2, short a3, short a4, char a5, char a6) {
+i32 CGruntzCommand::SetParamsEx(char a0, char a1, char a2, i16 a3, i16 a4, char a5, char a6) {
     if (!CGruntzCommand::SetParams(a0, a1, a2, a3, a4)) {
         return 0;
     }
@@ -79,27 +79,19 @@ int CGruntzCommand::SetParamsEx(char a0, char a1, char a2, short a3, short a4, c
 // +0x10 from `count` indices in `buf` (m_10word |= 1<<buf[i]). Returns 1/0.
 // ---------------------------------------------------------------------------
 RVA(0x00023ed0, 0x83)
-int CGruntzCommand::SetMaskFromList(
-    char a0,
-    char a1,
-    char a2,
-    short a3,
-    short a4,
-    int count,
-    unsigned char* buf
-) {
+i32 CGruntzCommand::SetMaskFromList(char a0, char a1, char a2, i16 a3, i16 a4, i32 count, u8* buf) {
     if (!buf) {
         return 0;
     }
-    if ((unsigned char)count > 0x10) {
+    if ((u8)count > 0x10) {
         return 0;
     }
     if (!CGruntzCommand::SetParams(a0, a1, a2, a3, a4)) {
         return 0;
     }
-    *(unsigned short*)&m_10 = 0;
-    for (int i = 0; i < (count & 0xff); i++) {
-        *(unsigned short*)&m_10 |= g_cmdBitTable[buf[i]];
+    *(u16*)&m_10 = 0;
+    for (i32 i = 0; i < (count & 0xff); i++) {
+        *(u16*)&m_10 |= g_cmdBitTable[buf[i]];
     }
     return 1;
 }
@@ -109,7 +101,7 @@ int CGruntzCommand::SetMaskFromList(
 // CPlay executor once with index slot = m_10. Returns its result (0 if p==0).
 // ---------------------------------------------------------------------------
 RVA(0x00024140, 0x35)
-int CGruntzCommand::ApplyOne(CGruntzCmdTarget* p) {
+i32 CGruntzCommand::ApplyOne(CGruntzCmdTarget* p) {
     if (!p) {
         return 0;
     }
@@ -122,13 +114,13 @@ int CGruntzCommand::ApplyOne(CGruntzCmdTarget* p) {
 // (return 1 only if every call succeeded; 0 if p==0).
 // ---------------------------------------------------------------------------
 RVA(0x00024190, 0x6c)
-int CGruntzCommand::ApplyMask(CGruntzCmdTarget* p) {
+i32 CGruntzCommand::ApplyMask(CGruntzCmdTarget* p) {
     if (!p) {
         return 0;
     }
-    int ok = 1;
-    for (int i = 0; i < 16; i++) {
-        if (g_cmdBitTable[i] & *(unsigned short*)&m_10) {
+    i32 ok = 1;
+    for (i32 i = 0; i < 16; i++) {
+        if (g_cmdBitTable[i] & *(u16*)&m_10) {
             if (!p->Exec(m_4, (char)i, m_5, m_8, m_a, 0, m_6)) {
                 ok = 0;
             }
@@ -188,7 +180,7 @@ SIZE(CGruntzCommand, 0x14);
 // The 1<<i bit table (0x5e9608) the mask builder/scanner indexes. DATA-pinned so
 // the *(short*)... mask loop's address operands reloc-mask against it.
 DATA(0x001e9608)
-const unsigned short g_cmdBitTable[16] = {
+const u16 g_cmdBitTable[16] = {
     1,
     2,
     4,

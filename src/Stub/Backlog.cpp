@@ -8,7 +8,7 @@
 // A named asset-namespace registry slot (BootyState's m_28/m_2c/m_30). Lookup()
 // finds a child set by name and returns a handle (reloc-masked __thiscall).
 struct BootyNamespace {
-    int Lookup(char* szName); // FUN_0013bae0 __thiscall
+    i32 Lookup(char* szName); // FUN_0013bae0 __thiscall
 };
 // The registrar object reached via BootyState::m_c->m_10. Its vtable slot +0x4c
 // registers a looked-up image set under a prefix (returns -1 on failure). The
@@ -19,14 +19,14 @@ struct BootyNamespace {
 struct BootyRegistrarVtbl; // opaque; the PMF lives at offset 0x4c inside it
 struct BootyRegistrar {
     BootyRegistrarVtbl* m_vtbl; // +0x00
-    int CallRegister(int handle, char* prefix, char* sep);
+    i32 CallRegister(i32 handle, char* prefix, char* sep);
 };
-typedef int (BootyRegistrar::*BootyRegFn)(int handle, char* prefix, char* sep);
+typedef i32 (BootyRegistrar::*BootyRegFn)(i32 handle, char* prefix, char* sep);
 struct BootyRegistrarVtbl {
     char m_pad00[0x4c];
     BootyRegFn Register; // +0x4c
 };
-inline int BootyRegistrar::CallRegister(int handle, char* prefix, char* sep) {
+inline i32 BootyRegistrar::CallRegister(i32 handle, char* prefix, char* sep) {
     return (this->*(m_vtbl->Register))(handle, prefix, sep);
 }
 struct CGruntDataLoader { // BootyState::m_c->m_4 sub-object
@@ -40,12 +40,12 @@ struct BootyAssetRoot { // BootyState::m_c
 };
 class BootyState {
 public:
-    void vfunc_9(int);
-    int OnActivate_vfunc8();
-    int BaseOnActivate();                                             // base vfunc8 (reloc-masked)
-    int RegisterMultiNamespaces(char* mode, int, int, int, int, int); // FUN @ 0x1e60
+    void vfunc_9(i32);
+    i32 OnActivate_vfunc8();
+    i32 BaseOnActivate();                                             // base vfunc8 (reloc-masked)
+    i32 RegisterMultiNamespaces(char* mode, i32, i32, i32, i32, i32); // FUN @ 0x1e60
     void OnActivated();                                               // FUN @ 0x3fdf (reloc-masked)
-    void StartTimer(int, int, int, int);                              // FUN @ 0x1843 (reloc-masked)
+    void StartTimer(i32, i32, i32, i32);                              // FUN @ 0x1843 (reloc-masked)
 
     char m_pad00[0xc];
     BootyAssetRoot* m_c; // +0x0c
@@ -70,7 +70,7 @@ struct CHelpAssetSet {          // m_8 points here
     void* Register(char* name); // FUN_0053c030, __thiscall, returns the registered object
 };
 struct CHelpMsgPump {          // m_4->m_4 points here
-    void Pump(int msg, int n); // FUN_0053d4e0, __thiscall message burst
+    void Pump(i32 msg, i32 n); // FUN_0053d4e0, __thiscall message burst
 };
 struct CHelpAssetRoot { // m_4 / arg1 points here
     char m_pad00[0x4];
@@ -78,8 +78,8 @@ struct CHelpAssetRoot { // m_4 / arg1 points here
 };
 class CHelpState {
 public:
-    int LoadAssets(int, int, int);
-    int LoadGameAssetNamespaces(int, int, int); // base loader; reloc-masked external call
+    i32 LoadAssets(i32, i32, i32);
+    i32 LoadGameAssetNamespaces(i32, i32, i32); // base loader; reloc-masked external call
 
     char m_pad00[0x4];
     CHelpAssetRoot* m_4; // +0x4
@@ -89,7 +89,7 @@ public:
 };
 class CloudHazard {
 public:
-    void vfunc_20(int, int);
+    void vfunc_20(i32, i32);
 };
 class GameLevelState {
 public:
@@ -105,8 +105,8 @@ public:
 };
 class StatusBarItem {
 public:
-    void vfunc_12(int, int);
-    void vfunc_16(int, int, int);
+    void vfunc_12(i32, i32);
+    void vfunc_16(i32, i32, i32);
 };
 // The icon-key registry object BuildPowerupIconKeys writes into (arg1=esi).
 // SetGroup() seeds the "GAME_INGAMEICONZ" group key, Add() appends one entry.
@@ -122,8 +122,8 @@ public:
 // <windows.h> first, so the real <afx.h> can't follow.)
 struct EngCString {
     char* m_pszData;
-    char* GetBuffer(int nMinBufLength); // CString::GetBuffer, FUN_001ba11c
-    void ReleaseBuffer(int nNewLength); // CString::ReleaseBuffer, FUN_001ba16b
+    char* GetBuffer(i32 nMinBufLength); // CString::GetBuffer, FUN_001ba11c
+    void ReleaseBuffer(i32 nNewLength); // CString::ReleaseBuffer, FUN_001ba16b
 };
 
 // CConfigStore - the engine's registry-or-INI config wrapper. When m_7c (a
@@ -134,7 +134,7 @@ class CConfigStore {
 public:
     HKEY OpenRoot();              // Stub_1d4ee3  __thiscall, opens HKCU\Software\<m_7c>
     HKEY OpenSubKey(char* szSub); // Stub_1d4f77  __thiscall
-    int GetInt(char* szSection, char* szKey, int nDefault); // Stub_1d4fbd
+    i32 GetInt(char* szSection, char* szKey, i32 nDefault); // Stub_1d4fbd
 
     char m_pad00[0x7c];
     char* m_7c; // +0x7c  registry subkey path (null -> use INI)
@@ -145,48 +145,48 @@ public:
 namespace EngineLabelBacklog {
 
     void CreateGameObjectByName();
-    void __stdcall LoadBootyCheatState(int, int, int);
+    void __stdcall LoadBootyCheatState(i32, i32, i32);
     void ShowSecretBonusMessage();
     void BuildGruntSprintAnimation();
     void UpdateBootyWalkingGruntz();
     void BuildBootyPerfectAnimation();
     void ShowLevelCompleteMessage();
     void BuildBootyGruntIdleAnimation();
-    void __stdcall BuildPowerupIconKeys(PowerupKeyRegistry* reg, int key);
+    void __stdcall BuildPowerupIconKeys(PowerupKeyRegistry* reg, i32 key);
     void DrawBattleStats();
     void StartUpPrompt();
-    int Stub_01fd70(char* szPath);
+    i32 Stub_01fd70(char* szPath);
     void LoadCheatConfig();
     void LoadCustomWorldInfo();
     void HandleFortConquered();
-    void __stdcall LoadVehicleGruntSprites(int);
-    void __stdcall WireTileSwitchLogic(int, int, int);
-    void __stdcall LoadTerrainTileSprites(int, int, int, int, int, int);
+    void __stdcall LoadVehicleGruntSprites(i32);
+    void __stdcall WireTileSwitchLogic(i32, i32, i32);
+    void __stdcall LoadTerrainTileSprites(i32, i32, i32, i32, i32, i32);
     void LoadCameraSprite();
-    void __stdcall LoadToyBoxIcon(int, int, int, int, int);
+    void __stdcall LoadToyBoxIcon(i32, i32, i32, i32, i32);
     void LoadExplosionSprites();
-    void __stdcall BuildRockBreakParticles(int, int, int, int);
-    void __stdcall LoadGruntResurrectTuning(int, int, int);
+    void __stdcall BuildRockBreakParticles(i32, i32, i32, i32);
+    void __stdcall LoadGruntResurrectTuning(i32, i32, i32);
     void LoadPowerupIconSprites();
-    void __stdcall LaunchPortalExe(int);
-    void __stdcall BuildLevelRezPath(int, int, int, int, int);
+    void __stdcall LaunchPortalExe(i32);
+    void __stdcall BuildLevelRezPath(i32, i32, i32, i32, i32);
     void LoadHelpBookSprite();
-    void __stdcall LoadObjectImageResources(int, int);
-    void __stdcall LoadObjectSoundResources(int, int);
-    void __stdcall LoadObjectAnimResources(int, int);
-    void __stdcall LoadMenuStateAssets(int, int, int);
+    void __stdcall LoadObjectImageResources(i32, i32);
+    void __stdcall LoadObjectSoundResources(i32, i32);
+    void __stdcall LoadObjectAnimResources(i32, i32);
+    void __stdcall LoadMenuStateAssets(i32, i32, i32);
     void LoadAreaLevelTable();
     void LoadRollingBallHazardSprites();
     void BuildGruntzCrcInfo();
     void BuildNamedGruntTable();
-    void __stdcall LoadLevelByMode(int, int);
+    void __stdcall LoadLevelByMode(i32, i32);
     void DrawDebugStats();
     void ValidateLevelTiles();
-    void __stdcall BuildAssetNamespacePrefixes(int, int, int, int);
+    void __stdcall BuildAssetNamespacePrefixes(i32, i32, i32, i32);
     void DrawSaveGameMenu();
     void BuildLevelTitleString();
     void BuildSoundFontPath();
-    int Stub_0f90f0(char* szPath);
+    i32 Stub_0f90f0(char* szPath);
     void LoadStatzTabToggleSprite();
     void UpdateGruntOvenStatusBar();
     void UpdateChipGrinderStatusBar();
@@ -194,31 +194,31 @@ namespace EngineLabelBacklog {
     void UpdateDestructButtonStatusBar();
     void LoadSwitchDownSprite();
     void LoadSwitchUpSprite();
-    void __stdcall LoadBridgeMoveSprites(int);
+    void __stdcall LoadBridgeMoveSprites(i32);
     void LoadPyramidBridgeSprites();
-    void __stdcall BuildStatzTabSmall_vfunc1(int, int, int, int, int, int, int, int, int);
+    void __stdcall BuildStatzTabSmall_vfunc1(i32, i32, i32, i32, i32, i32, i32, i32, i32);
     void SaveScreenshot();
     void FreeAllFonts();
     void FormatGameInfoString();
-    void __stdcall BuildVoiceSoundList(int);
+    void __stdcall BuildVoiceSoundList(i32);
     void Stub_11f900();
     void Stub_12abf0();
     void Stub_12d230();
     void Stub_12d460();
     void Stub_12d880();
     void Stub_1315d0();
-    void __stdcall Stub_148940(int, int, int, int);
+    void __stdcall Stub_148940(i32, i32, i32, i32);
     void _tr_init();
     void _ct_init();
     void Stub_18c780();
-    int __stdcall Stub_1bf702(char* szClsid, EngCString* out);
-    void __stdcall Stub_1bf8f8(int, int);
-    void __stdcall Stub_1c1609(int, int);
-    void __stdcall Stub_1c176a(int, int);
+    i32 __stdcall Stub_1bf702(char* szClsid, EngCString* out);
+    void __stdcall Stub_1bf8f8(i32, i32);
+    void __stdcall Stub_1c1609(i32, i32);
+    void __stdcall Stub_1c176a(i32, i32);
     void Stub_1c7cb3();
-    void __stdcall Stub_1ccb5c(int, int, int);
-    void __stdcall Stub_1d5029(int, int, int, int);
-    void __stdcall Stub_1d513b(int, int, int, int);
+    void __stdcall Stub_1ccb5c(i32, i32, i32);
+    void __stdcall Stub_1d5029(i32, i32, i32, i32);
+    void __stdcall Stub_1d513b(i32, i32, i32, i32);
 } // namespace EngineLabelBacklog
 
 // @confidence: high
@@ -231,13 +231,13 @@ void EngineLabelBacklog::CreateGameObjectByName() {}
 // @source: string-xref
 // @stub
 RVA(0x00018830, 0x380)
-void __stdcall EngineLabelBacklog::LoadBootyCheatState(int, int, int) {}
+void __stdcall EngineLabelBacklog::LoadBootyCheatState(i32, i32, i32) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x00018d30, 0xcd)
-void BootyState::vfunc_9(int) {}
+void BootyState::vfunc_9(i32) {}
 
 // @confidence: med
 // @source: string-xref
@@ -280,7 +280,7 @@ void EngineLabelBacklog::BuildBootyGruntIdleAnimation() {}
 // (verified by raw byte-compare; only the index-table/jump-table base reloc
 // operands + $L labels differ). See docs/patterns/jumptable-data-overlap.md.
 RVA(0x0001e720, 0x2fe)
-void __stdcall EngineLabelBacklog::BuildPowerupIconKeys(PowerupKeyRegistry* reg, int key) {
+void __stdcall EngineLabelBacklog::BuildPowerupIconKeys(PowerupKeyRegistry* reg, i32 key) {
     reg->SetGroup("GAME_INGAMEICONZ");
     switch (key) {
         case 1:
@@ -432,7 +432,7 @@ void EngineLabelBacklog::DrawBattleStats() {}
 // the BOOTY/GRUNTZ/LEVEL image namespaces under the asset host, install the
 // "multi" namespaces, then kick the grunt-data load + the state timer.
 RVA(0x0001f6f0, 0x10b)
-int BootyState::OnActivate_vfunc8() {
+i32 BootyState::OnActivate_vfunc8() {
     if (!BaseOnActivate()) {
         return 0;
     }
@@ -440,7 +440,7 @@ int BootyState::OnActivate_vfunc8() {
     while (ShowCursor(FALSE) >= 0)
         ;
 
-    int h = m_2c->Lookup("IMAGEZ");
+    i32 h = m_2c->Lookup("IMAGEZ");
     if (!h) {
         return 0;
     }
@@ -502,8 +502,8 @@ struct CChatBoxFrame { // the looked-up "GAME_CHATBOX" sprite set
     char m_pad00[0x14];
     void** m_14; // +0x14  frame-entry array
     char m_pad18[0x64 - 0x18];
-    int m_64; // +0x64  frame index (mode != 3)
-    int m_68; // +0x68  frame index (mode == 3)
+    i32 m_64; // +0x64  frame index (mode != 3)
+    i32 m_68; // +0x68  frame index (mode == 3)
 };
 struct CChatBoxHash { // embedded at CChatBoxRegistry+0x10
     // FUN_005b8008 __thiscall; writes the found set to *out.
@@ -538,10 +538,10 @@ struct CChatBoxCtx { // arg1 points here
     CChatBoxDcHost* m_2c; // +0x2c
 };
 // FUN_00553790 __stdcall: renders the chatbox frame into the looked-up set.
-void __stdcall RenderChatBoxFrame(int ctx, void* a, void* b, int z); // RVA 0x153790
+void __stdcall RenderChatBoxFrame(i32 ctx, void* a, void* b, i32 z); // RVA 0x153790
 // The text-stamp host reached through this->m_14 (FUN @ RVA 0x1cd0, __thiscall).
 struct CChatBoxTextHost {
-    void StampText(HDC dc, int id, void* rect); // FUN @ 0x1cd0
+    void StampText(HDC dc, i32 id, void* rect); // FUN @ 0x1cd0
 };
 // Typed view of `this`: m_0/m_4 are the two source roots whose sub-fields feed
 // the render + text-stamp, m_8 the mode flag, m_10/m_14 source pointers, m_18
@@ -549,7 +549,7 @@ struct CChatBoxTextHost {
 struct CChatBoxOwner {
     char* m_0; // +0x00
     char* m_4; // +0x04
-    int m_8;   // +0x08  mode (==3 selects alternate set)
+    i32 m_8;   // +0x08  mode (==3 selects alternate set)
     char m_pad0c[0x10 - 0xc];
     void* m_10;             // +0x10
     CChatBoxTextHost* m_14; // +0x14
@@ -579,13 +579,13 @@ struct CChatBoxOwner {
 // CHelpState (FUN_0053c030). FindSet/FindSubset/Resolve/IsLoaded below are the
 // reloc-masked __thiscall helpers off it / its sub-entries.
 struct CCreditzSubEntry { // a music sub-entry ("PLAY"/"MONOLITH")
-    int IsLoaded();       // FUN_00539960 __thiscall, ret BOOL/value
+    i32 IsLoaded();       // FUN_00539960 __thiscall, ret BOOL/value
     char m_pad00[0xc];
     void* m_c; // +0x0c
 };
 struct CCreditzMusicSet { // the looked-up "MIDIZ" set (m_2c->FindSet)
     // FUN_0053a000 __thiscall: resolve a named sub-entry under a packed tag.
-    CCreditzSubEntry* Resolve(char* szName, int tag);
+    CCreditzSubEntry* Resolve(char* szName, i32 tag);
 };
 struct CCreditzRegObj {               // the registered STATEZ_CREDITZ object (m_2c)
     void* FindSoundSet(char* szName); // FUN_0053a230 __thiscall, ret set ptr
@@ -599,8 +599,8 @@ struct CCreditzImageRegistry { // this->m_4->+0x48
     void Install3(void* res, void* host, char* szName);
 };
 struct CCreditzStateCore {      // this->m_c->m_4 (the ready/init pump)
-    int IsReady();              // FUN_00558d20 __thiscall, ret BOOL
-    int Init(int a, int flags); // FUN_00558cb0 __thiscall, ret BOOL
+    i32 IsReady();              // FUN_00558d20 __thiscall, ret BOOL
+    i32 Init(i32 a, i32 flags); // FUN_00558cb0 __thiscall, ret BOOL
 };
 struct CCreditzImageRoot { // this->m_4 points here; +0x48 is the registry
     char m_pad00[0x48];
@@ -629,16 +629,16 @@ struct CCreditzOwner {
     char m_pad10[0x2c - 0x10];
     CCreditzRegObj* m_2c; // +0x2c
     char m_pad30[0x1b4 - 0x30];
-    int m_1b4; // +0x1b4
-    int m_1b8; // +0x1b8
-    int m_1bc; // +0x1bc
-    int m_1c0; // +0x1c0
-    int m_1c4; // +0x1c4
+    i32 m_1b4; // +0x1b4
+    i32 m_1b8; // +0x1b8
+    i32 m_1bc; // +0x1bc
+    i32 m_1c0; // +0x1c0
+    i32 m_1c4; // +0x1c4
     char m_pad1c8[0x20c - 0x1c8];
-    int m_20c;                                  // +0x20c
+    i32 m_20c;                                  // +0x20c
     void SetupTitle();                          // RVA 0x39a60 __thiscall
-    int FinishState();                          // RVA 0x439c40 __thiscall
-    int LoadGameAssetNamespaces(int, int, int); // base loader; reloc-masked near call
+    i32 FinishState();                          // RVA 0x439c40 __thiscall
+    i32 LoadGameAssetNamespaces(i32, i32, i32); // base loader; reloc-masked near call
 };
 
 // @confidence: med
@@ -657,7 +657,7 @@ void EngineLabelBacklog::HandleFortConquered() {}
 // @source: string-xref
 // @stub
 RVA(0x00050ce0, 0x399)
-void __stdcall EngineLabelBacklog::LoadVehicleGruntSprites(int) {}
+void __stdcall EngineLabelBacklog::LoadVehicleGruntSprites(i32) {}
 
 // @confidence: med
 // @source: decomp-xref
@@ -669,13 +669,13 @@ void Projectile::vfunc_9() {}
 // @source: string-xref
 // @stub
 RVA(0x0006c130, 0xd62)
-void __stdcall EngineLabelBacklog::WireTileSwitchLogic(int, int, int) {}
+void __stdcall EngineLabelBacklog::WireTileSwitchLogic(i32, i32, i32) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
 RVA(0x00075e90, 0x1329)
-void __stdcall EngineLabelBacklog::LoadTerrainTileSprites(int, int, int, int, int, int) {}
+void __stdcall EngineLabelBacklog::LoadTerrainTileSprites(i32, i32, i32, i32, i32, i32) {}
 
 // LoadCameraSprite @0x078960 graduated to src/Gruntz/IconLoaders.cpp.
 
@@ -683,7 +683,7 @@ void __stdcall EngineLabelBacklog::LoadTerrainTileSprites(int, int, int, int, in
 // @source: decomp-xref
 // @stub
 RVA(0x0007a3f0, 0xd7)
-void __stdcall EngineLabelBacklog::LoadToyBoxIcon(int, int, int, int, int) {}
+void __stdcall EngineLabelBacklog::LoadToyBoxIcon(i32, i32, i32, i32, i32) {}
 
 // LoadExplosionSprites @0x07b330 graduated to src/Gruntz/IconLoaders.cpp.
 
@@ -691,13 +691,13 @@ void __stdcall EngineLabelBacklog::LoadToyBoxIcon(int, int, int, int, int) {}
 // @source: decomp-xref
 // @stub
 RVA(0x0007b440, 0x3f0)
-void __stdcall EngineLabelBacklog::BuildRockBreakParticles(int, int, int, int) {}
+void __stdcall EngineLabelBacklog::BuildRockBreakParticles(i32, i32, i32, i32) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
 RVA(0x0007be60, 0x21e)
-void __stdcall EngineLabelBacklog::LoadGruntResurrectTuning(int, int, int) {}
+void __stdcall EngineLabelBacklog::LoadGruntResurrectTuning(i32, i32, i32) {}
 
 // LoadPowerupIconSprites @0x07c620 graduated to src/Gruntz/IconLoaders.cpp.
 
@@ -705,17 +705,17 @@ void __stdcall EngineLabelBacklog::LoadGruntResurrectTuning(int, int, int) {}
 // @source: decomp-xref
 // @stub
 RVA(0x00090550, 0x1e6)
-void __stdcall EngineLabelBacklog::LaunchPortalExe(int) {}
+void __stdcall EngineLabelBacklog::LaunchPortalExe(i32) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
 RVA(0x00093d40, 0x473)
-void __stdcall EngineLabelBacklog::BuildLevelRezPath(int, int, int, int, int) {}
+void __stdcall EngineLabelBacklog::BuildLevelRezPath(i32, i32, i32, i32, i32) {}
 
 // @source: decomp-xref
 RVA(0x00095090, 0x6e)
-int CHelpState::LoadAssets(int a1, int a2, int a3) {
+i32 CHelpState::LoadAssets(i32 a1, i32 a2, i32 a3) {
     if (!LoadGameAssetNamespaces(a1, a2, a3)) {
         return 0;
     }
@@ -739,25 +739,25 @@ void EngineLabelBacklog::LoadHelpBookSprite() {}
 // @source: decomp-xref
 // @stub
 RVA(0x0009a510, 0x275)
-void __stdcall EngineLabelBacklog::LoadObjectImageResources(int, int) {}
+void __stdcall EngineLabelBacklog::LoadObjectImageResources(i32, i32) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x0009a910, 0x261)
-void __stdcall EngineLabelBacklog::LoadObjectSoundResources(int, int) {}
+void __stdcall EngineLabelBacklog::LoadObjectSoundResources(i32, i32) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x0009ac20, 0x261)
-void __stdcall EngineLabelBacklog::LoadObjectAnimResources(int, int) {}
+void __stdcall EngineLabelBacklog::LoadObjectAnimResources(i32, i32) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
 RVA(0x0009fe50, 0x343)
-void __stdcall EngineLabelBacklog::LoadMenuStateAssets(int, int, int) {}
+void __stdcall EngineLabelBacklog::LoadMenuStateAssets(i32, i32, i32) {}
 
 // @confidence: med
 // @source: string-xref
@@ -775,7 +775,7 @@ void EngineLabelBacklog::LoadRollingBallHazardSprites() {}
 // @source: decomp-xref
 // @stub
 RVA(0x000b4640, 0x104)
-void CloudHazard::vfunc_20(int, int) {}
+void CloudHazard::vfunc_20(i32, i32) {}
 
 // @confidence: low
 // @source: decomp-xref
@@ -807,7 +807,7 @@ void EngineLabelBacklog::BuildNamedGruntTable() {
 // @source: string-xref
 // @stub
 RVA(0x000ca200, 0xe34)
-void __stdcall EngineLabelBacklog::LoadLevelByMode(int, int) {}
+void __stdcall EngineLabelBacklog::LoadLevelByMode(i32, i32) {}
 
 // @confidence: med
 // @source: decomp-xref
@@ -819,13 +819,13 @@ void GameLevelState::OnActivate_vfunc8() {}
 // @source: decomp-xref
 // @stub
 RVA(0x000cbcc0, 0x16da)
-void StatusBarItem::vfunc_12(int, int) {}
+void StatusBarItem::vfunc_12(i32, i32) {}
 
 // @confidence: med
 // @source: decomp-xref
 // @stub
 RVA(0x000ce660, 0x362)
-void StatusBarItem::vfunc_16(int, int, int) {}
+void StatusBarItem::vfunc_16(i32, i32, i32) {}
 
 // @confidence: low
 // @source: decomp-xref
@@ -852,7 +852,7 @@ void EngineLabelBacklog::ValidateLevelTiles() {}
 // (FUN_00555550, returns found-flag), Register() adds a namespace
 // (FUN_00555360), and a virtual slot (index 18) installs the loaded TILEZ set.
 struct CActionResRegistry {
-    int Has(char* szName);                    // FUN_00555550 __thiscall, ret found
+    i32 Has(char* szName);                    // FUN_00555550 __thiscall, ret found
     void Register(char* szName, char* szKey); // FUN_00555360 __thiscall
     virtual void v0();
     virtual void v1();
@@ -882,7 +882,7 @@ struct CTileSetSource {                // this->m_28 points here
     void* LookupTileSet(char* szName); // FUN_0053bae0 __thiscall, ret set ptr
 };
 DATA(0x002bf37c)
-extern int g_severusCounterA;
+extern i32 g_severusCounterA;
 extern "C" char g_emptyString[]; // 0x6293f4
 
 // Typed view of `this` for this loader: m_c is the resource manager, m_28 the
@@ -904,7 +904,7 @@ struct CActionTileOwner {
 // "SOUNDZ" set off this->m_28, and install it (key "_"). No severus reset here.
 // Only offsets / code bytes are load-bearing; helpers are reloc-masked externals.
 struct CSoundResRegistry {                              // this->m_c->+0x28 points here
-    int Has(char* szName);                              // FUN_004583c0 __thiscall, ret found
+    i32 Has(char* szName);                              // FUN_004583c0 __thiscall, ret found
     void Register(char* szName, char* szKey);           // FUN_00557c70 __thiscall
     void Install(void* set, char* szName, char* szKey); // FUN_00557ee0 __thiscall
 };
@@ -929,7 +929,7 @@ struct CSoundOwner {
 // @source: string-xref
 // @stub
 RVA(0x000dca70, 0x4a4)
-void __stdcall EngineLabelBacklog::BuildAssetNamespacePrefixes(int, int, int, int) {}
+void __stdcall EngineLabelBacklog::BuildAssetNamespacePrefixes(i32, i32, i32, i32) {}
 
 // ---------------------------------------------------------------------------
 // LoadGruntzPalette - registers a level's "GRUNTZ_PALETTEZ_<name>"
@@ -958,7 +958,7 @@ struct CPaletteDestRegistry {
     virtual void v6();
     virtual void v7();
     virtual void v8();
-    virtual int Install(void* res, int a, int b); // slot 9 (+0x24)
+    virtual i32 Install(void* res, i32 a, i32 b); // slot 9 (+0x24)
     char m_pad04[0x10 - 0x4];
     CPaletteHashTable m_10; // +0x10  hash sub-table Lookup runs on
 };
@@ -969,7 +969,7 @@ struct CPaletteDestRoot { // this->m_4 points here; +0x18 is the dest registry
 // arg1's source registry: FUN_0053bff0 __thiscall resolves a packed-tag resource
 // ('PAL' = 0x50414c) by namespaced name, returning the resource (0 if absent).
 struct CPaletteSource {
-    void* Resolve(char* szName, int tag); // FUN_0053bff0
+    void* Resolve(char* szName, i32 tag); // FUN_0053bff0
 };
 
 // Typed view of `this`: m_4 is the destination registry root.
@@ -1006,7 +1006,7 @@ void EngineLabelBacklog::BuildSoundFontPath() {}
 // FileExists - tests a path via OpenFile(OF_EXIST). Re-emitted copy of
 // Utils::WinAPI::FileExists (same bytes).
 RVA(0x000f90f0, 0x45)
-int EngineLabelBacklog::Stub_0f90f0(char* szPath) {
+i32 EngineLabelBacklog::Stub_0f90f0(char* szPath) {
     OFSTRUCT of;
 
     if (!szPath) {
@@ -1022,7 +1022,7 @@ int EngineLabelBacklog::Stub_0f90f0(char* szPath) {
 // @source: string-xref
 // @stub
 RVA(0x00110860, 0x25f)
-void __stdcall EngineLabelBacklog::LoadBridgeMoveSprites(int) {}
+void __stdcall EngineLabelBacklog::LoadBridgeMoveSprites(i32) {}
 
 // @confidence: med
 // @source: string-xref
@@ -1035,7 +1035,7 @@ void EngineLabelBacklog::LoadPyramidBridgeSprites() {}
 // @stub
 RVA(0x00112a50, 0xdd)
 void __stdcall EngineLabelBacklog::
-    BuildStatzTabSmall_vfunc1(int, int, int, int, int, int, int, int, int) {}
+    BuildStatzTabSmall_vfunc1(i32, i32, i32, i32, i32, i32, i32, i32, i32) {}
 
 // @confidence: high
 // @source: decomp-xref
@@ -1053,7 +1053,7 @@ void EngineLabelBacklog::FormatGameInfoString() {}
 // @source: decomp-xref
 // @stub
 RVA(0x0011c210, 0x29d)
-void __stdcall EngineLabelBacklog::BuildVoiceSoundList(int) {}
+void __stdcall EngineLabelBacklog::BuildVoiceSoundList(i32) {}
 
 // @confidence: low
 // @source: import:FindFirstFileA
@@ -1095,7 +1095,7 @@ void EngineLabelBacklog::Stub_1315d0() {}
 // @source: second '.PID' xref; image-format dispatch consumer (entry not pinned)
 // @stub
 RVA(0x00148940, 0x102)
-void __stdcall EngineLabelBacklog::Stub_148940(int, int, int, int) {}
+void __stdcall EngineLabelBacklog::Stub_148940(i32, i32, i32, i32) {}
 
 // @confidence: med
 // @source: decomp-xref
@@ -1136,19 +1136,19 @@ extern "C" char g_emptyString[]; // 0x6293f4
 // aggregate recompiles it esp-relative. Logic + all externs + string constants
 // match. Belongs in a /Oy- TU in the final sweep. docs/patterns/o2-optimizer-bailout-framed.md.
 RVA(0x001bf702, 0xac)
-int __stdcall EngineLabelBacklog::Stub_1bf702(char* szClsid, EngCString* out) {
+i32 __stdcall EngineLabelBacklog::Stub_1bf702(char* szClsid, EngCString* out) {
     HKEY hClsidRoot = 0;
     HKEY hClsid = 0;
     HKEY hServer;
     DWORD dwType;
-    int result = 0;
+    i32 result = 0;
 
     if (RegOpenKeyA((HKEY)0x80000000 /*HKCR*/, "CLSID", &hClsidRoot) == 0) {
         if (RegOpenKeyA(hClsidRoot, szClsid, &hClsid) == 0) {
             if (RegOpenKeyA(hClsid, "InProcServer32", &hServer) == 0) {
                 DWORD cb = 0x104;
                 char* pszBuf = out->GetBuffer(0x104);
-                int rc = RegQueryValueExA(hServer, g_emptyString, 0, &dwType, (LPBYTE)pszBuf, &cb);
+                i32 rc = RegQueryValueExA(hServer, g_emptyString, 0, &dwType, (LPBYTE)pszBuf, &cb);
                 out->ReleaseBuffer(-1);
                 result = (rc == 0);
                 RegCloseKey(hServer);
@@ -1164,19 +1164,19 @@ int __stdcall EngineLabelBacklog::Stub_1bf702(char* szClsid, EngCString* out) {
 // @source: import:FindFirstFileA
 // @stub
 RVA(0x001bf8f8, 0xd9)
-void __stdcall EngineLabelBacklog::Stub_1bf8f8(int, int) {}
+void __stdcall EngineLabelBacklog::Stub_1bf8f8(i32, i32) {}
 
 // @confidence: low
 // @source: import:FindFirstFileA
 // @stub
 RVA(0x001c1609, 0xb2)
-void __stdcall EngineLabelBacklog::Stub_1c1609(int, int) {}
+void __stdcall EngineLabelBacklog::Stub_1c1609(i32, i32) {}
 
 // @confidence: low
 // @source: import:CreateFileA
 // @stub
 RVA(0x001c176a, 0x12d)
-void __stdcall EngineLabelBacklog::Stub_1c176a(int, int) {}
+void __stdcall EngineLabelBacklog::Stub_1c176a(i32, i32) {}
 
 // @confidence: med
 // @source: import:RegCloseKey,RegOpenKeyExA,RegQueryValueExA
@@ -1188,7 +1188,7 @@ void EngineLabelBacklog::Stub_1c7cb3() {}
 // @source: import:RegCloseKey,RegSetValueExA
 // @stub
 RVA(0x001ccb5c, 0xa0)
-void __stdcall EngineLabelBacklog::Stub_1ccb5c(int, int, int) {}
+void __stdcall EngineLabelBacklog::Stub_1ccb5c(i32, i32, i32) {}
 
 // @source: import:RegOpenKeyExA
 // CConfigStore::OpenRoot - opens/creates HKCU\Software\<m_7c>\<m_90> and returns
@@ -1223,7 +1223,7 @@ HKEY CConfigStore::OpenRoot() {
 // FileExists - tests a path via OpenFile(OF_EXIST). Re-emitted copy of
 // Utils::WinAPI::FileExists (same bytes).
 RVA(0x0001fd70, 0x45)
-int EngineLabelBacklog::Stub_01fd70(char* szPath) {
+i32 EngineLabelBacklog::Stub_01fd70(char* szPath) {
     OFSTRUCT of;
 
     if (!szPath) {
@@ -1271,7 +1271,7 @@ HKEY CConfigStore::OpenSubKey(char* szSub) {
 // cbData and keeps an ebp frame; the recompile allocates a fresh cbData local +
 // frameless. Logic correct; all externs named. docs/patterns/o2-optimizer-bailout-framed.md.
 RVA(0x001d4fbd, 0x6c)
-int CConfigStore::GetInt(char* szSection, char* szKey, int nDefault) {
+i32 CConfigStore::GetInt(char* szSection, char* szKey, i32 nDefault) {
     DWORD dwType;
     DWORD dwData;
 
@@ -1281,7 +1281,7 @@ int CConfigStore::GetInt(char* szSection, char* szKey, int nDefault) {
             return nDefault;
         }
         DWORD cbData = 4;
-        int rc = RegQueryValueExA(hKey, szKey, 0, &dwType, (LPBYTE)&dwData, &cbData);
+        i32 rc = RegQueryValueExA(hKey, szKey, 0, &dwType, (LPBYTE)&dwData, &cbData);
         RegCloseKey(hKey);
         if (rc == 0) {
             return dwData;
@@ -1296,10 +1296,10 @@ int CConfigStore::GetInt(char* szSection, char* szKey, int nDefault) {
 // @source: import:RegCloseKey
 // @stub
 RVA(0x001d5029, 0x112)
-void __stdcall EngineLabelBacklog::Stub_1d5029(int, int, int, int) {}
+void __stdcall EngineLabelBacklog::Stub_1d5029(i32, i32, i32, i32) {}
 
 // @confidence: med
 // @source: import:RegCloseKey
 // @stub
 RVA(0x001d513b, 0x11b)
-void __stdcall EngineLabelBacklog::Stub_1d513b(int, int, int, int) {}
+void __stdcall EngineLabelBacklog::Stub_1d513b(i32, i32, i32, i32) {}

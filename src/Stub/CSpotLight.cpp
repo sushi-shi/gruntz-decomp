@@ -7,4 +7,4 @@
 // @source: rtti-vptr
 // @stub
 RVA(0x000b1200, 0x2cb)
-CSpotLight::CSpotLight(int) {}
+CSpotLight::CSpotLight(i32) {}

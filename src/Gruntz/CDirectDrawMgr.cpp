@@ -25,13 +25,13 @@
 
 // Reporting-mode globals (live in .data).
 DATA(0x00283ec0)
-extern "C" int g_beepEnabled; // 0x683ec0
+extern "C" i32 g_beepEnabled; // 0x683ec0
 DATA(0x00283eb8)
-extern "C" int g_logEnabled; // 0x683eb8
+extern "C" i32 g_logEnabled; // 0x683eb8
 DATA(0x00283ebc)
-extern "C" int g_msgBoxEnabled; // 0x683ebc
+extern "C" i32 g_msgBoxEnabled; // 0x683ebc
 DATA(0x00283ec4)
-extern "C" int g_thirdEnabled; // 0x683ec4
+extern "C" i32 g_thirdEnabled; // 0x683ec4
 
 // Empty mutable string in .data copied into the working buffer up front.
 DATA(0x002293f4)
@@ -53,18 +53,18 @@ extern void __cdecl DDrawLogLine(char* line); // 0x141cb0
 
 // DDRAW.dll DirectDrawCreate - direct `e8 rel32` to the incremental-link thunk
 // (reloc-masked), like DirectSoundCreate, not an `ff 15 [IAT]` indirect.
-extern "C" long __stdcall
+extern "C" i32 __stdcall
 DirectDrawCreate(void* lpGuid, IDirectDrawSurfaceZ** ppDD, void* pUnkOuter);
 
 // IID_IDirectDraw2 / IID_IDirectDrawSurface3 - dxguid GUID constants in .rdata,
 // passed to QueryInterface. Reloc-masked DATA() externs.
 DATA(0x001ef848)
-extern const unsigned char IID_IDirectDraw2[16]; // 0x5ef848
+extern const u8 IID_IDirectDraw2[16]; // 0x5ef848
 DATA(0x001ef888)
-extern const unsigned char IID_IDirectDrawSurface3[16]; // 0x5ef888
+extern const u8 IID_IDirectDrawSurface3[16]; // 0x5ef888
 
 // operator new(size_t) - the engine allocator (reloc-masked rel32).
-void* operator new(unsigned int);
+void* operator new(u32);
 
 // The process-wide DirectDraw object + the CDirectDrawMgr singleton (.data).
 DATA(0x00283ee8)
@@ -79,12 +79,12 @@ extern "C" CDirectDrawMgr* g_DirectDrawMgr; // 0x6bed00
 // CDDSurface::Lock (__thiscall). Lock(this->m_desc) with NULL rect / flags 1;
 // on SURFACELOST restore-and-retry, else report. Returns m_34 on hard fail.
 RVA(0x0013e6d0, 0x88)
-int CDDSurface::Lock(void* rect) {
-    int hr = m_8->vtbl->Lock(m_8, rect, m_desc, 1, 0);
+i32 CDDSurface::Lock(void* rect) {
+    i32 hr = m_8->vtbl->Lock(m_8, rect, m_desc, 1, 0);
     if (hr == 0) {
         return m_34;
     }
-    if (hr == (int)DDERR_SURFACELOST) {
+    if (hr == (i32)DDERR_SURFACELOST) {
         if (RestoreLost() == 0) {
             return 0;
         }
@@ -101,8 +101,8 @@ int CDDSurface::Lock(void* rect) {
 
 // CDDSurface::SetPalette (__thiscall). m_8->SetPalette(pal->m_4).
 RVA(0x0013e690, 0x35)
-int CDDSurface::SetPalette(CDDPalette* pal, int unused) {
-    int hr = m_8->vtbl->SetPalette(m_8, pal->m_4);
+i32 CDDSurface::SetPalette(CDDPalette* pal, i32 unused) {
+    i32 hr = m_8->vtbl->SetPalette(m_8, pal->m_4);
     if (hr == 0) {
         return 1;
     }
@@ -112,16 +112,16 @@ int CDDSurface::SetPalette(CDDPalette* pal, int unused) {
 
 // CDDSurface::Flip (__thiscall). Flip(target->m_8, 1); SURFACELOST retry.
 RVA(0x0013e850, 0x93)
-int CDDSurface::Flip(CDDSurface* target) {
+i32 CDDSurface::Flip(CDDSurface* target) {
     IDirectDrawSurfaceZ* tsurf = 0;
     if (target != 0) {
         tsurf = target->m_8;
     }
-    int hr = m_8->vtbl->Flip(m_8, tsurf, 1);
+    i32 hr = m_8->vtbl->Flip(m_8, tsurf, 1);
     if (hr == 0) {
         return 0;
     }
-    if (hr == (int)DDERR_SURFACELOST) {
+    if (hr == (i32)DDERR_SURFACELOST) {
         if (RestoreLost() == 0) {
             return hr;
         }
@@ -138,8 +138,8 @@ int CDDSurface::Flip(CDDSurface* target) {
 
 // CDDSurface::SetColorKey (__thiscall). m_8->SetColorKey(flags, key).
 RVA(0x0013eaa0, 0x39)
-int CDDSurface::SetColorKey(unsigned long flags, void* key) {
-    int hr = m_8->vtbl->SetColorKey(m_8, flags, key);
+i32 CDDSurface::SetColorKey(u32 flags, void* key) {
+    i32 hr = m_8->vtbl->SetColorKey(m_8, flags, key);
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DIRSURF_FILE, 0x353, hr);
         return hr;
@@ -150,15 +150,15 @@ int CDDSurface::SetColorKey(unsigned long flags, void* key) {
 // CDDSurface::Blt (__thiscall, ret 4 => 1 arg). Blts src's RECT (src->m_80) into
 // this surface's RECT (this->m_80) with flags 0x1000000; SURFACELOST retry.
 RVA(0x0013ee60, 0x8d)
-int CDDSurface::Blt(CDDSurface* src) {
+i32 CDDSurface::Blt(CDDSurface* src) {
     void* srcRect = src->m_80;
     void* dstRect = m_80;
-    int hr = m_8->vtbl->Blt(m_8, dstRect, src->m_8, srcRect, 0x1000000, 0);
-    if (hr == (int)DDERR_SURFACELOST) {
+    i32 hr = m_8->vtbl->Blt(m_8, dstRect, src->m_8, srcRect, 0x1000000, 0);
+    if (hr == (i32)DDERR_SURFACELOST) {
         if (RestoreLost()) {
             hr = m_8->vtbl->Blt(m_8, dstRect, src->m_8, srcRect, 0x1000000, 0);
         } else {
-            return (int)DDERR_SURFACELOST;
+            return (i32)DDERR_SURFACELOST;
         }
     }
     if (hr != 0) {
@@ -170,24 +170,18 @@ int CDDSurface::Blt(CDDSurface* src) {
 // CDDSurface::BltEx (__thiscall, ret 0x14 => 5 args). Generic Blt with the source
 // surface conditional (src may be NULL); SURFACELOST retry.
 RVA(0x0013eef0, 0x98)
-int CDDSurface::BltEx(
-    void* dstRect,
-    CDDSurface* src,
-    void* srcRect,
-    unsigned long flags,
-    void* fx
-) {
-    int hr;
+i32 CDDSurface::BltEx(void* dstRect, CDDSurface* src, void* srcRect, u32 flags, void* fx) {
+    i32 hr;
     if (src != 0) {
         hr = m_8->vtbl->Blt(m_8, dstRect, src->m_8, srcRect, flags, fx);
     } else {
         hr = m_8->vtbl->Blt(m_8, dstRect, 0, srcRect, flags, fx);
     }
-    if (hr == (int)DDERR_SURFACELOST) {
+    if (hr == (i32)DDERR_SURFACELOST) {
         if (RestoreLost()) {
             hr = m_8->vtbl->Blt(m_8, dstRect, src->m_8, srcRect, flags, fx);
         } else {
-            return (int)DDERR_SURFACELOST;
+            return (i32)DDERR_SURFACELOST;
         }
     }
     if (hr != 0) {
@@ -198,19 +192,13 @@ int CDDSurface::BltEx(
 
 // CDDSurface::BltFast (__thiscall, ret 0x14 => 5 args). SURFACELOST retry.
 RVA(0x0013ef90, 0x8b)
-int CDDSurface::BltFast(
-    unsigned long x,
-    unsigned long y,
-    CDDSurface* src,
-    void* srcRect,
-    unsigned long trans
-) {
-    int hr = m_8->vtbl->BltFast(m_8, x, y, src->m_8, srcRect, trans);
-    if (hr == (int)DDERR_SURFACELOST) {
+i32 CDDSurface::BltFast(u32 x, u32 y, CDDSurface* src, void* srcRect, u32 trans) {
+    i32 hr = m_8->vtbl->BltFast(m_8, x, y, src->m_8, srcRect, trans);
+    if (hr == (i32)DDERR_SURFACELOST) {
         if (RestoreLost()) {
             hr = m_8->vtbl->BltFast(m_8, x, y, src->m_8, srcRect, trans);
         } else {
-            return (int)DDERR_SURFACELOST;
+            return (i32)DDERR_SURFACELOST;
         }
     }
     if (hr != 0) {
@@ -222,10 +210,10 @@ int CDDSurface::BltFast(
 // CDDSurface::GetColorKey (__thiscall). GetColorKey(8, &local); NOCOLORKEY is a
 // non-error returning -1; on success returns the key, on error reports + -1.
 RVA(0x0013fa60, 0x40)
-int CDDSurface::GetColorKey() {
-    unsigned long key[2];
-    long hr = m_8->vtbl->GetColorKey(m_8, 8, key);
-    if (hr != (int)DDERR_NOCOLORKEY) {
+i32 CDDSurface::GetColorKey() {
+    u32 key[2];
+    i32 hr = m_8->vtbl->GetColorKey(m_8, 8, key);
+    if (hr != (i32)DDERR_NOCOLORKEY) {
         if (hr == 0) {
             return key[0];
         }
@@ -237,20 +225,20 @@ int CDDSurface::GetColorKey() {
 // CDDSurface::Refresh (__thiscall, ret 4 => 1 arg). GetSurfaceDesc into the
 // scratch desc, then derive the row/pixel geometry by a bit-depth switch.
 RVA(0x0013e140, 0x133)
-int CDDSurface::Refresh(IDirectDrawSurfaceZ* surf) {
+i32 CDDSurface::Refresh(IDirectDrawSurfaceZ* surf) {
     m_8 = surf;
-    int i;
-    int* d = (int*)m_desc;
+    i32 i;
+    i32* d = (i32*)m_desc;
     for (i = 0x1b; i != 0; i--) {
         *d++ = 0;
     }
-    *(int*)m_desc = 0x6c; // dwSize
-    int hr = m_8->vtbl->GetSurfaceDesc(m_8, m_desc);
+    *(i32*)m_desc = 0x6c; // dwSize
+    i32 hr = m_8->vtbl->GetSurfaceDesc(m_8, m_desc);
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DIRSURF_FILE, 0x7e, hr);
     }
 
-    int bits = m_64;
+    i32 bits = m_64;
     m_bc = 0;
     m_a8 = bits;
     // NOTE: retail emits two MSVC jump tables here (selector = bits-8, range 25),
@@ -262,20 +250,20 @@ int CDDSurface::Refresh(IDirectDrawSurfaceZ* surf) {
     // it is the jump-table plateau, same family as GetErrorString's 96.24%.
     switch (bits) {
         case 16:
-            m_ac = *(int*)(m_desc + 0xc) * 2; // m_1c = dwWidth
+            m_ac = *(i32*)(m_desc + 0xc) * 2; // m_1c = dwWidth
             break;
         case 24:
-            m_ac = *(int*)(m_desc + 0xc) * 3;
+            m_ac = *(i32*)(m_desc + 0xc) * 3;
             break;
         case 32:
-            m_ac = *(int*)(m_desc + 0xc) * 4;
+            m_ac = *(i32*)(m_desc + 0xc) * 4;
             break;
         default:
-            m_ac = *(int*)(m_desc + 0xc);
+            m_ac = *(i32*)(m_desc + 0xc);
             break;
     }
 
-    int divisor = 1;
+    i32 divisor = 1;
     switch (bits) {
         case 16:
             divisor = 2;
@@ -292,11 +280,11 @@ int CDDSurface::Refresh(IDirectDrawSurfaceZ* surf) {
     }
     m_b0 = divisor;
 
-    m_88 = *(int*)(m_desc + 0xc); // m_1c (width) cached after switch
-    m_b4 = (unsigned int)*(int*)(m_desc + 0x10) / (unsigned int)m_b0; // m_20 = lPitch
+    m_88 = *(i32*)(m_desc + 0xc);                     // m_1c (width) cached after switch
+    m_b4 = (u32) * (i32*)(m_desc + 0x10) / (u32)m_b0; // m_20 = lPitch
     m_80[0] = 0;
     m_80[1] = 0;
-    int height = *(int*)(m_desc + 8); // m_18 = dwHeight
+    i32 height = *(i32*)(m_desc + 8); // m_18 = dwHeight
     m_8c = height;
     m_90 = m_ac * height;
     m_7c = m_7c | 1;
@@ -309,7 +297,7 @@ int CDDSurface::Refresh(IDirectDrawSurfaceZ* surf) {
 
 // CDirectDrawMgr::GetErrorString
 RVA(0x00141400, 0x835)
-void CDirectDrawMgr::GetErrorString(char* file, int line, long hr) {
+void CDirectDrawMgr::GetErrorString(char* file, i32 line, i32 hr) {
     char szCode[64];  // local_340 - error-code name
     char szMsg[256];  // local_300 - description
     char szLine[512]; // local_200 - formatted output line
@@ -321,66 +309,66 @@ void CDirectDrawMgr::GetErrorString(char* file, int line, long hr) {
         return;
     }
 
-    int code = hr & 0xffff;
+    i32 code = hr & 0xffff;
 
     strcpy(szMsg, "Unknown Error Message");
     sprintf(szCode, "Unknown Error Code");
     strcpy(szLine, g_emptyString);
 
     switch (hr) {
-        case (int)0x80004001:
+        case (i32)0x80004001:
             strcpy(szCode, "DDERR_UNSUPPORTED");
             strcpy(szMsg, "Action not supported");
             break;
-        case (int)0x80004005:
+        case (i32)0x80004005:
             strcpy(szCode, "DDERR_GENERIC");
             strcpy(szMsg, "Generic failure");
             break;
-        case (int)0x8007000e:
+        case (i32)0x8007000e:
             strcpy(szCode, "DDERR_OUTOFMEMORY");
             strcpy(szMsg, "No message");
             break;
-        case (int)0x80070057:
+        case (i32)0x80070057:
             strcpy(szCode, "DDERR_INVALIDPARAMS");
             strcpy(szMsg, "No message");
             break;
-        case (int)0x88760064:
+        case (i32)0x88760064:
             strcpy(szCode, "DDERR_INVALIDCAPS");
             strcpy(szMsg, "One or more of the caps bits passed to the callback are incorrect");
             break;
-        case (int)0x88760078:
+        case (i32)0x88760078:
             strcpy(szCode, "DDERR_INVALIDMODE");
             strcpy(szMsg, "No message");
             break;
-        case (int)0x88760082:
+        case (i32)0x88760082:
             strcpy(szCode, "DDERR_INVALIDOBJECT");
             strcpy(szMsg, "No message");
             break;
-        case (int)0x88760091:
+        case (i32)0x88760091:
             strcpy(szCode, "DDERR_INVALIDPIXELFORMAT");
             strcpy(szMsg, "Pixel format was invalid as specified.");
             break;
-        case (int)0x88760096:
+        case (i32)0x88760096:
             strcpy(szCode, "DDERR_INVALIDRECT");
             strcpy(szMsg, "No message");
             break;
-        case (int)0x887600a0:
+        case (i32)0x887600a0:
             strcpy(szCode, "DDERR_LOCKEDSURFACES");
             strcpy(szMsg, "No message");
             break;
-        case (int)0x887600aa:
+        case (i32)0x887600aa:
             strcpy(szCode, "DDERR_NO3D");
             strcpy(szMsg, "No message");
             break;
-        case (int)0x887600b4:
+        case (i32)0x887600b4:
             strcpy(szCode, "DDERR_NOALPHAHW");
             strcpy(szMsg, "No message");
             break;
-        case (int)0x887600d2:
+        case (i32)0x887600d2:
             strcpy(szCode, "DDERR_NOCOLORCONVHW");
             strcpy(szMsg, "No message");
             break;
-        case (int)0x887600d4:
+        case (i32)0x887600d4:
             strcpy(szCode, "DDERR_NOCOOPERATIVELEVELSET");
             strcpy(
                 szMsg,
@@ -388,15 +376,15 @@ void CDirectDrawMgr::GetErrorString(char* file, int line, long hr) {
                 "called"
             );
             break;
-        case (int)0x887600e1:
+        case (i32)0x887600e1:
             strcpy(szCode, "DDERR_NOEXCLUSIVEMODE");
             strcpy(szMsg, "No message");
             break;
-        case (int)0x887600f0:
+        case (i32)0x887600f0:
             strcpy(szCode, "DDERR_NOGDI");
             strcpy(szMsg, "There is no GDI present");
             break;
-        case (int)0x887600fa:
+        case (i32)0x887600fa:
             strcpy(szCode, "DDERR_NOMIRRORHW");
             strcpy(
                 szMsg,
@@ -404,83 +392,83 @@ void CDirectDrawMgr::GetErrorString(char* file, int line, long hr) {
                 "available."
             );
             break;
-        case (int)0x887600ff:
+        case (i32)0x887600ff:
             strcpy(szCode, "DDERR_NOTFOUND");
             strcpy(szMsg, "Request item was not found");
             break;
-        case (int)0x88760104:
+        case (i32)0x88760104:
             strcpy(szCode, "DDERR_NOOVERLAYHW");
             strcpy(szMsg, "No message");
             break;
-        case (int)0x88760118:
+        case (i32)0x88760118:
             strcpy(szCode, "DDERR_NORASTEROPHW");
             strcpy(szMsg, "No message");
             break;
-        case (int)0x88760122:
+        case (i32)0x88760122:
             strcpy(szCode, "DDERR_NOROTATEHW");
             strcpy(szMsg, "No message");
             break;
-        case (int)0x88760136:
+        case (i32)0x88760136:
             strcpy(szCode, "DDERR_NOSTRETCHHW");
             strcpy(szMsg, "No message");
             break;
-        case (int)0x88760140:
+        case (i32)0x88760140:
             strcpy(szCode, "DDERR_NOT8BITCOLOR");
             strcpy(szMsg, "No message");
             break;
-        case (int)0x8876014a:
+        case (i32)0x8876014a:
             strcpy(szCode, "DDERR_NOTEXTUREHW");
             strcpy(szMsg, "No message");
             break;
-        case (int)0x8876014f:
+        case (i32)0x8876014f:
             strcpy(szCode, "DDERR_NOVSYNCHW");
             strcpy(szMsg, "No message");
             break;
-        case (int)0x88760154:
+        case (i32)0x88760154:
             strcpy(szCode, "DDERR_NOZBUFFERHW");
             strcpy(szMsg, "No message");
             break;
-        case (int)0x88760168:
+        case (i32)0x88760168:
             strcpy(szCode, "DDERR_OUTOFCAPS");
             strcpy(szMsg, "No message");
             break;
-        case (int)0x8876017c:
+        case (i32)0x8876017c:
             strcpy(szCode, "DDERR_OUTOFVIDEOMEMORY");
             strcpy(szMsg, "No message");
             break;
-        case (int)0x88760183:
+        case (i32)0x88760183:
             strcpy(szCode, "DDERR_PALETTEBUSY");
             strcpy(szMsg, "No message");
             break;
-        case (int)0x887601ae:
+        case (i32)0x887601ae:
             strcpy(szCode, "DDERR_SURFACEBUSY");
             strcpy(szMsg, "No message");
             break;
-        case (int)0x887601b8:
+        case (i32)0x887601b8:
             strcpy(szCode, "DDERR_SURFACEISOBSCURED");
             strcpy(szMsg, "No message");
             break;
-        case (int)0x887601c2:
+        case (i32)0x887601c2:
             strcpy(szCode, "DDERR_SURFACELOST");
             strcpy(szMsg, "No message");
             break;
-        case (int)0x887601cc:
+        case (i32)0x887601cc:
             strcpy(szCode, "DDERR_SURFACENOTATTACHED");
             strcpy(szMsg, "The requested surface is not attached");
             break;
-        case (int)0x887601e0:
+        case (i32)0x887601e0:
             strcpy(szCode, "DDERR_TOOBIGSIZE");
             strcpy(szMsg, "No message");
             break;
-        case (int)0x887601ea:
+        case (i32)0x887601ea:
             strcpy(szCode, "DDERR_TOOBIGWIDTH");
             strcpy(szMsg, "No message");
             break;
-        case (int)0x88760219:
+        case (i32)0x88760219:
             strcpy(szCode, "DDERR_VERTICALBLANKINPROGRESS");
             strcpy(szMsg, "No message");
             break;
-        case (int)0x8876021c:
+        case (i32)0x8876021c:
             strcpy(szCode, "DDERR_WASTILLDRAWING");
             strcpy(
                 szMsg,
@@ -488,39 +476,39 @@ void CDirectDrawMgr::GetErrorString(char* file, int line, long hr) {
                 "incomplete"
             );
             break;
-        case (int)0x88760233:
+        case (i32)0x88760233:
             strcpy(szCode, "DDERR_NODIRECTDRAWHW");
             strcpy(szMsg, "No message");
             break;
-        case (int)0x88760232:
+        case (i32)0x88760232:
             strcpy(szCode, "DDERR_DIRECTDRAWALREADYCREATED");
             strcpy(szMsg, "No message");
             break;
-        case (int)0x88760230:
+        case (i32)0x88760230:
             strcpy(szCode, "DDERR_XALIGN");
             strcpy(szMsg, "Rectangle provided was not horizontally aligned on a DWORD boundary");
             break;
-        case (int)0x8876023a:
+        case (i32)0x8876023a:
             strcpy(szCode, "DDERR_HWNDSUBCLASSED");
             strcpy(szMsg, "No message");
             break;
-        case (int)0x8876023b:
+        case (i32)0x8876023b:
             strcpy(szCode, "DDERR_HWNDALREADYSET");
             strcpy(szMsg, "No message");
             break;
-        case (int)0x8876023d:
+        case (i32)0x8876023d:
             strcpy(szCode, "DDERR_NOPALETTEHW");
             strcpy(szMsg, "No hardware support for 16 or 256 color palettes");
             break;
-        case (int)0x88760234:
+        case (i32)0x88760234:
             strcpy(szCode, "DDERR_PRIMARYSURFACEALREADYEXISTS");
             strcpy(szMsg, "This process already has created a primary surface");
             break;
-        case (int)0x88760245:
+        case (i32)0x88760245:
             strcpy(szCode, "DDERR_EXCLUSIVEMODEALREADYSET");
             strcpy(szMsg, "No message");
             break;
-        case (int)0x88760248:
+        case (i32)0x88760248:
             strcpy(szCode, "DDERR_LOCKEDSURFACES");
             strcpy(szMsg, "No message");
             break;
@@ -553,13 +541,13 @@ void CDirectDrawMgr::GetErrorString(char* file, int line, long hr) {
 // CDirectDrawMgr::CreateDevice (__thiscall, ret 0x18 => 6 args; arg1 unused).
 // Brings up the DirectDraw device and caches it as the singleton.
 RVA(0x00141dc0, 0x224)
-int CDirectDrawMgr::CreateDevice(
+i32 CDirectDrawMgr::CreateDevice(
     void* a1,
     void* hwnd,
-    int width,
-    int height,
-    int bpp,
-    unsigned long coopFlags
+    i32 width,
+    i32 height,
+    i32 bpp,
+    u32 coopFlags
 ) {
     m_93c = 0;
     m_940 = 0;
@@ -567,7 +555,7 @@ int CDirectDrawMgr::CreateDevice(
     if (dd != 0) {
         m_0 = dd;
     } else {
-        int chr = DirectDrawCreate(hwnd, (IDirectDrawSurfaceZ**)&m_4, 0);
+        i32 chr = DirectDrawCreate(hwnd, (IDirectDrawSurfaceZ**)&m_4, 0);
         if (chr != 0) {
             CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0x88, chr);
             if (m_944 == 0) {
@@ -585,7 +573,7 @@ int CDirectDrawMgr::CreateDevice(
         }
     }
 
-    int hr = m_0->vtbl->SetCooperativeLevel(m_0, hwnd, coopFlags);
+    i32 hr = m_0->vtbl->SetCooperativeLevel(m_0, hwnd, coopFlags);
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DDRAWMGR_H_FILE, 0x120, hr);
     }
@@ -596,12 +584,12 @@ int CDirectDrawMgr::CreateDevice(
         return 0;
     }
 
-    int i;
-    int* p = m_caps;
+    i32 i;
+    i32* p = m_caps;
     for (i = 0x5f; i != 0; i--) {
         *p++ = 0;
     }
-    int* q = m_helCaps;
+    i32* q = m_helCaps;
     for (i = 0x5f; i != 0; i--) {
         *q++ = 0;
     }
@@ -627,9 +615,9 @@ int CDirectDrawMgr::CreateDevice(
     }
 
     if (bpp == 0) {
-        int desc[0x1b];
-        int j;
-        int* d = desc;
+        i32 desc[0x1b];
+        i32 j;
+        i32* d = desc;
         for (j = 0x1b; j != 0; j--) {
             *d++ = 0;
         }
@@ -652,16 +640,16 @@ int CDirectDrawMgr::CreateDevice(
 // PALETTEENTRY array (m_c), allocates a second cache (m_10), then creates the
 // DirectDraw palette via IDirectDraw::CreatePalette into m_4.
 RVA(0x00147390, 0x78)
-int CDDPalette::Create(IDirectDraw2Z* dd, void* entries, unsigned long flags) {
-    m_c = (unsigned char*)operator new(0x400);
+i32 CDDPalette::Create(IDirectDraw2Z* dd, void* entries, u32 flags) {
+    m_c = (u8*)operator new(0x400);
     // Plateau note: byte-for-byte except the copy loop's SIB base/index roles
     // (retail encodes [entries+i]/[m_c+i] with i as the index; MSVC here makes i
     // the base) - a 1-byte-per-insn encoding choice, semantically identical.
-    for (int i = 0; i < 0x400; i += 4) {
-        *(int*)(m_c + i) = *(int*)((char*)entries + i);
+    for (i32 i = 0; i < 0x400; i += 4) {
+        *(i32*)(m_c + i) = *(i32*)((char*)entries + i);
     }
-    m_10 = (unsigned char*)operator new(0x400);
-    int hr = dd->vtbl->CreatePalette(dd, flags, entries, &m_4, 0);
+    m_10 = (u8*)operator new(0x400);
+    i32 hr = dd->vtbl->CreatePalette(dd, flags, entries, &m_4, 0);
     if (hr == 0) {
         return 1;
     }
@@ -672,19 +660,19 @@ int CDDPalette::Create(IDirectDraw2Z* dd, void* entries, unsigned long flags) {
 // CDDPalette::GetEntries (__thiscall, ret 0 => no args). Lazily allocates the
 // readback cache (m_10), then reads all 256 entries; reports a bad HRESULT.
 RVA(0x00147c30, 0x4d)
-int CDDPalette::GetEntries() {
+i32 CDDPalette::GetEntries() {
     // Lazily allocates the readback cache, then reads all 256 entries; reports a
     // bad HRESULT. Plateau note: retail's body falls off the end (no return -
     // the int symbol returns whatever sits in eax), so it omits the trailing
     // `xor eax,eax` this `return 0` emits. MSVC 5.0 C++ forbids fall-off
     // (C2561), so the one-instruction `xor` gap can't be reproduced from clean C.
     if (m_10 == 0) {
-        m_10 = (unsigned char*)operator new(0x400);
+        m_10 = (u8*)operator new(0x400);
         if (m_10 == 0) {
             return 0;
         }
     }
-    int hr = m_4->vtbl->GetEntries(m_4, 0, 0, 0x100, m_10);
+    i32 hr = m_4->vtbl->GetEntries(m_4, 0, 0, 0x100, m_10);
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DIRPAL_FILE, 0x265, hr);
     }
@@ -693,20 +681,13 @@ int CDDPalette::GetEntries() {
 
 // CDDPalette::SetRange (__thiscall, ret 0x18 => 6 args).
 RVA(0x00147cd0, 0x78)
-int CDDPalette::SetRange(
-    int start,
-    int count,
-    unsigned char r,
-    unsigned char g,
-    unsigned char b,
-    unsigned long flags
-) {
-    for (int i = start; i < start + count; i++) {
+i32 CDDPalette::SetRange(i32 start, i32 count, u8 r, u8 g, u8 b, u32 flags) {
+    for (i32 i = start; i < start + count; i++) {
         m_c[i * 4 + 0] = r;
         m_c[i * 4 + 1] = g;
         m_c[i * 4 + 2] = b;
     }
-    int hr = m_4->vtbl->SetEntries(m_4, flags, start, count, m_c + start * 4);
+    i32 hr = m_4->vtbl->SetEntries(m_4, flags, start, count, m_c + start * 4);
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DIRPAL_FILE, 0x2a3, hr);
     }
@@ -724,7 +705,7 @@ int CDDPalette::SetRange(
 // creates the primary surface (QI'd to IDirectDrawSurface3) and, for 8bpp, a
 // palette; caches the geometry and shows the cursor.
 RVA(0x0017c040, 0x25d)
-int CDDPageMgr::Init(void* window, DDModeInfo* mode, unsigned long coopFlags) {
+i32 CDDPageMgr::Init(void* window, DDModeInfo* mode, u32 coopFlags) {
     if (m_4 != 0) {
         return 0;
     }
@@ -732,7 +713,7 @@ int CDDPageMgr::Init(void* window, DDModeInfo* mode, unsigned long coopFlags) {
         return 0;
     }
 
-    int w, h, bpp;
+    i32 w, h, bpp;
     if (mode != 0) {
         w = mode->width;
         h = mode->height;
@@ -759,14 +740,14 @@ int CDDPageMgr::Init(void* window, DDModeInfo* mode, unsigned long coopFlags) {
         return 0;
     }
 
-    int i;
-    int* d = (int*)m_desc;
+    i32 i;
+    i32* d = (i32*)m_desc;
     for (i = 0x1b; i != 0; i--) {
         *d++ = 0;
     }
-    *(int*)m_desc = 0x6c;
+    *(i32*)m_desc = 0x6c;
     m_24 = 1;                       // [esi+0x34]=1 -> desc field? actually m_34; placeholder
-    *(int*)(m_desc + 0x68) = 0x200; // [esi+0x98]
+    *(i32*)(m_desc + 0x68) = 0x200; // [esi+0x98]
     if (m_14->vtbl->CreateSurface(m_14, m_desc, &m_20, 0) != 0) {
         HandleError();
         return 0;

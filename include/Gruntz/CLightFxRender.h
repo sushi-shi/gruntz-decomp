@@ -22,10 +22,10 @@
 // ---------------------------------------------------------------------------
 // A 4-int RECT (left, top, right, bottom) - the engine's plain integer rect.
 struct LfxRect {
-    int left;
-    int top;
-    int right;
-    int bottom;
+    i32 left;
+    i32 top;
+    i32 right;
+    i32 bottom;
 };
 
 // The surface manager the renderer talks to (the object at this+0xc / this+0x10).
@@ -49,44 +49,44 @@ struct CGameReg;
 class CLightFxRender {
 public:
     // 0x0a32c0  Init - copy mgr fields, validate, zero the rect/state block.
-    int Init(LfxMgr* mgr, int arg2);
+    i32 Init(LfxMgr* mgr, i32 arg2);
     // 0x0a3360  ctor - zero the core pointers + sizes.
     void Ctor();
     // 0x0a33a0  FreeSurface - release the alloc'd surface (+0x10) via the mgr.
     void FreeSurface();
     // 0x0a33e0  AllocSurface - create the work surface via the surface mgr.
-    int AllocSurface();
+    i32 AllocSurface();
     // 0x0a3460  (755B) the resize/realloc path - deferred.
-    int Resize(int arg1, int arg2);
+    i32 Resize(i32 arg1, i32 arg2);
     // 0x0a3820  (398B) compute the effect rect from a source rect + scale.
-    int ComputeRect(LfxRect* src);
+    i32 ComputeRect(LfxRect* src);
     // 0x0a3b50  DrawBorder - lock surface, fill 4 rect edges 16-bit, unlock.
-    void DrawBorder(LfxRect* r, unsigned short color);
+    void DrawBorder(LfxRect* r, u16 color);
     // 0x0a3c90  BuildShape - zero the buffer, dispatch the shape generator.
-    int BuildShape(int shape);
+    i32 BuildShape(i32 shape);
     // The 8 shape generators the switch dispatches to. Four are in this TU's
     // target set (RVA stubs, deferred to the final sweep); the other four
     // (Shape2/5/7/8) live in adjacent TUs - declared so the calls reloc-mask.
-    int Shape1(); // 0x0a3dc0 (deferred)
-    int Shape2(); // 0x0a4890 (extern)
-    int Shape3(); // 0x0a5310 (deferred)
-    int Shape4(); // 0x0a5d90 (deferred)
-    int Shape5(); // 0x0a67d0 (extern)
-    int Shape6(); // 0x0a7260 (deferred)
-    int Shape7(); // 0x0a7d50 (extern)
-    int Shape8(); // 0x0a8900 (extern)
+    i32 Shape1(); // 0x0a3dc0 (deferred)
+    i32 Shape2(); // 0x0a4890 (extern)
+    i32 Shape3(); // 0x0a5310 (deferred)
+    i32 Shape4(); // 0x0a5d90 (deferred)
+    i32 Shape5(); // 0x0a67d0 (extern)
+    i32 Shape6(); // 0x0a7260 (deferred)
+    i32 Shape7(); // 0x0a7d50 (extern)
+    i32 Shape8(); // 0x0a8900 (extern)
     // 0x0a4840  FillSpan - fill one horizontal 16-bit span in the +0x4c buffer.
-    void FillSpan(unsigned x1, unsigned x2, unsigned short color);
+    void FillSpan(u32 x1, u32 x2, u16 color);
     // 0x0a9480  ApplyA - clamp (x,y) to a tile cell, draw via the mgr context.
-    int ApplyA(int dummy, int x, int y);
+    i32 ApplyA(i32 dummy, i32 x, i32 y);
     // 0x0a9500  ClearHandle - drop the +0x48 cached handle.
-    int ClearHandle(int a, int b, int c);
+    i32 ClearHandle(i32 a, i32 b, i32 c);
     // 0x0a9550  ApplyGlobal - clamp + blit through the g_gameReg surface.
-    int ApplyGlobal(int dummy, int x, int y);
+    i32 ApplyGlobal(i32 dummy, i32 x, i32 y);
     // 0x0a95d0  ApplyB - like ApplyA but gated on the +0x48 handle.
-    int ApplyB(int dummy, int x, int y);
+    i32 ApplyB(i32 dummy, i32 x, i32 y);
     // 0x0a9660  ClampRect - bounds-check + snap (x,y), emit tile-cell out.
-    int ClampRect(int x, int y, int* out, int margin);
+    i32 ClampRect(i32 x, i32 y, i32* out, i32 margin);
 
     // ----- layout (placeholders; offsets are load-bearing) -----
     LfxMgr* m_00;     // +0x00 game/render manager (set by Init)
@@ -95,20 +95,20 @@ public:
     LfxSurfMgr* m_0c; // +0x0c mgr+0x30 (the surface manager)
     LfxSurface* m_10; // +0x10 the alloc'd work surface
     char m_pad14[0x10];
-    int m_24;                    // +0x24 source rect L
-    int m_28;                    // +0x28 source rect T
-    int m_2c;                    // +0x2c source rect R
-    int m_30;                    // +0x30 source rect B
-    int m_34;                    // +0x34 screen rect L
-    int m_38;                    // +0x38 screen rect T
-    int m_3c;                    // +0x3c screen rect R
-    int m_40;                    // +0x40 screen rect B
-    int m_44;                    // +0x44 scale level (0..3) / valid flag
-    int m_48;                    // +0x48 cached handle
-    unsigned short m_buf[0x1f4]; // +0x4c .. +0x433  the 16-bit pixel buffer (500 words)
-    int m_434;                   // +0x434 buffer total
-    int m_438;                   // +0x438 remaining
-    int m_43c;
+    i32 m_24;         // +0x24 source rect L
+    i32 m_28;         // +0x28 source rect T
+    i32 m_2c;         // +0x2c source rect R
+    i32 m_30;         // +0x30 source rect B
+    i32 m_34;         // +0x34 screen rect L
+    i32 m_38;         // +0x38 screen rect T
+    i32 m_3c;         // +0x3c screen rect R
+    i32 m_40;         // +0x40 screen rect B
+    i32 m_44;         // +0x44 scale level (0..3) / valid flag
+    i32 m_48;         // +0x48 cached handle
+    u16 m_buf[0x1f4]; // +0x4c .. +0x433  the 16-bit pixel buffer (500 words)
+    i32 m_434;        // +0x434 buffer total
+    i32 m_438;        // +0x438 remaining
+    i32 m_43c;
 };
 
 #endif

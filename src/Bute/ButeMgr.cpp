@@ -48,10 +48,10 @@
 
 // Global operator new (engine NAFXCW); external/no-body so the
 // `push 0x2c; call ??2; add esp,4` shape falls out reloc-masked.
-void* operator new(unsigned int n);
+void* operator new(u32 n);
 
 // The node-ctor descriptor. Reloc-masked file-scope address.
-extern int g_nodeDescriptor;
+extern i32 g_nodeDescriptor;
 
 // ---------------------------------------------------------------------------
 // Lexer static tables (read-only engine data, reloc-masked DATA externs).
@@ -62,13 +62,13 @@ extern int g_nodeDescriptor;
 //                       base (g_transTable[i], [i+1], [i+2] -> base +0/+2/+4).
 // ---------------------------------------------------------------------------
 DATA(0x0021cf40)
-extern "C" short g_charClass[]; // 0x61cf40
+extern "C" i16 g_charClass[]; // 0x61cf40
 DATA(0x0021d140)
-extern "C" short g_transTable[]; // 0x61d140  (state x class table, row stride 147)
+extern "C" i16 g_transTable[]; // 0x61d140  (state x class table, row stride 147)
 // The token-type column is read off the table's second WORD (0x61d142): retail
 // folds the +1 into the data symbol's address, so it is its own DATA extern.
 DATA(0x0021d142)
-extern "C" short g_transTable142[][147]; // 0x61d142
+extern "C" i16 g_transTable142[][147]; // 0x61d142
 
 // The shared empty C string (0x6293f4); Init assigns it into the two scratch
 // CStrings.
@@ -78,7 +78,7 @@ extern "C" char g_emptyString[]; // 0x6293f4
 // byte position (an engine __thiscall, reloc-masked external/no-body).
 class CButeStream {
 public:
-    int ReadByte();
+    i32 ReadByte();
 };
 
 // The big attribute-file line driver at 0x170750 (the same class as CButeMgr;
@@ -104,7 +104,7 @@ public:
 };
 
 // The token-length counter (file-scope signed WORD, read with movsx).
-static short g_tokenLen;
+static i16 g_tokenLen;
 
 // Error-reporter format strings (reloc-masked file-scope literals).
 static const char s_fmtFormatError[] = "ButeMgr (%d): A formatting error";
@@ -119,7 +119,7 @@ static const float s_floatZero = 0.0f;
 static const double s_doubleZero = 0.0;
 
 // CRT varargs formatter (engine NAFXCW vsprintf, reloc-masked external/no-body).
-extern "C" int vsprintf(char* buf, const char* fmt, char* va);
+extern "C" i32 vsprintf(char* buf, const char* fmt, char* va);
 
 // ---------------------------------------------------------------------------
 // CButeMgr::ReportError
@@ -150,7 +150,7 @@ void CButeMgr::ReportError(const char* fmt, ...) {
 // (m_tokType == expectType). On mismatch it reports a formatting error (with the
 // current line m_lineNo) and returns false; else true.
 RVA(0x00170710, 0x3b)
-bool CButeMgr::ScanToken(int expectType) {
+bool CButeMgr::ScanToken(i32 expectType) {
     if (!Parse()) {
         return false;
     }
@@ -168,13 +168,13 @@ bool CButeMgr::ScanToken(int expectType) {
 // hit return *(int*)rec->pValue, on type mismatch report + fall through, on any
 // miss return def.
 RVA(0x00171aa0, 0x50)
-int CButeMgr::GetIntDef(char* tag, char* key, int def) {
+i32 CButeMgr::GetIntDef(char* tag, char* key, i32 def) {
     void* grp = Tree()->Find(tag);
     if (grp) {
         CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
         if (rec) {
             if (rec->type == 0) {
-                return *(int*)rec->pValue;
+                return *(i32*)rec->pValue;
             }
             ReportError(s_fmtTypeMismatch, tag, key);
         }
@@ -187,22 +187,22 @@ int CButeMgr::GetIntDef(char* tag, char* key, int def) {
 // type-0 getter, no default: returns 0x80000000 on any miss (and reports the
 // specific failure - type mismatch / symbol-not-found / invalid-tag).
 RVA(0x00171af0, 0x86)
-int CButeMgr::GetInt(char* tag, char* key) {
+i32 CButeMgr::GetInt(char* tag, char* key) {
     void* grp = Tree()->Find(tag);
     if (grp) {
         CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
         if (rec) {
             if (rec->type == 0) {
-                return *(int*)rec->pValue;
+                return *(i32*)rec->pValue;
             }
             ReportError(s_fmtTypeMismatch, tag, key);
-            return (int)0x80000000;
+            return (i32)0x80000000;
         }
         ReportError(s_fmtNotFound, tag, key);
-        return (int)0x80000000;
+        return (i32)0x80000000;
     }
     ReportError(s_fmtInvalidTag, tag);
-    return (int)0x80000000;
+    return (i32)0x80000000;
 }
 
 // ---------------------------------------------------------------------------
@@ -261,7 +261,7 @@ float CButeMgr::GetFloat(char* tag, char* key) {
         if (rec) {
             switch (rec->type) {
                 case 0:
-                    return (float)*(int*)rec->pValue;
+                    return (float)*(i32*)rec->pValue;
                 case 3:
                     return *(float*)rec->pValue;
             }
@@ -288,7 +288,7 @@ double CButeMgr::GetDouble(char* tag, char* key) {
         if (rec) {
             switch (rec->type) {
                 case 0:
-                    return (double)*(int*)rec->pValue;
+                    return (double)*(i32*)rec->pValue;
                 case 2:
                     return *(double*)rec->pValue;
             }
@@ -395,11 +395,11 @@ bool CButeMgr::ParseTagLine() {
 // Reports "Bad symbol encountered" (with m_lineNo) on the error class.
 RVA(0x001704c0, 0x1e3)
 bool CButeMgr::Parse() {
-    int kind = 0x11;
+    i32 kind = 0x11;
     g_tokenLen = 0;
 
     for (;;) {
-        short cls = PeekClass(kind, m_curChar);
+        i16 cls = PeekClass(kind, m_curChar);
         switch (cls) {
             case 0: // bad symbol
                 ReportError(s_fmtBadSymbol, m_lineNo);
@@ -590,9 +590,9 @@ void CButeMgr::ClearHelper() {
 // Returns `this` (or NULL on alloc failure, though the target code always
 // returns `this` with pValue reset to NULL).
 RVA(0x00172000, 0x31)
-CButeValue* CButeValue::SetDword(int type, unsigned long val) {
+CButeValue* CButeValue::SetDword(i32 type, u32 val) {
     this->type = type;
-    unsigned long* p = new unsigned long;
+    u32* p = new u32;
     if (p) {
         *p = val;
         this->pValue = p;
@@ -607,7 +607,7 @@ CButeValue* CButeValue::SetDword(int type, unsigned long val) {
 // ===========================================================================
 // Allocates 4-byte float storage, stores the value.
 RVA(0x00172680, 0x31)
-CButeValue* CButeValue::SetFloat(int type, float val) {
+CButeValue* CButeValue::SetFloat(i32 type, float val) {
     this->type = type;
     float* p = new float;
     if (p) {
@@ -624,9 +624,9 @@ CButeValue* CButeValue::SetFloat(int type, float val) {
 // ===========================================================================
 // Allocates 4-byte int storage, stores the value.
 RVA(0x00172b90, 0x31)
-CButeValue* CButeValue::SetInt(int type, int val) {
+CButeValue* CButeValue::SetInt(i32 type, i32 val) {
     this->type = type;
-    int* p = new int;
+    i32* p = new i32;
     if (p) {
         *p = val;
         this->pValue = p;
@@ -641,7 +641,7 @@ CButeValue* CButeValue::SetInt(int type, int val) {
 // ===========================================================================
 // Allocates 8-byte double storage, stores the value.  Returns `this`.
 RVA(0x00173140, 0x38)
-CButeValue* CButeValue::SetDouble(int type, double val) {
+CButeValue* CButeValue::SetDouble(i32 type, double val) {
     this->type = type;
     double* p = new double;
     if (p) {
@@ -696,9 +696,9 @@ void CButeMgr::SetErrCallback(ErrCallback cb) {
 // outparam-zeroinit-scheduling family); no source spelling flips it.
 RVA(0x00170390, 0x50)
 void CButeMgr::NextChar() {
-    int delta = ((CButeStream*)m_stream)->ReadByte() - m_00;
+    i32 delta = ((CButeStream*)m_stream)->ReadByte() - m_00;
     char* bitmap = *(char**)((char*)*(void**)m_stream + 4);
-    if (bitmap[(int)m_stream + 8] & 1) {
+    if (bitmap[(i32)m_stream + 8] & 1) {
         m_curChar = 0;
         return;
     }
@@ -714,8 +714,8 @@ void CButeMgr::NextChar() {
 // CButeMgr::CharClass
 // Map a raw char to its lexer character-class index (g_charClass[uc] - 1).
 RVA(0x001703e0, 0x15)
-short CButeMgr::CharClass(char c) {
-    return (short)(g_charClass[(unsigned char)c] - 1);
+i16 CButeMgr::CharClass(char c) {
+    return (i16)(g_charClass[(u8)c] - 1);
 }
 
 // ---------------------------------------------------------------------------
@@ -724,12 +724,12 @@ short CButeMgr::CharClass(char c) {
 // WORDs) / column CharClass(c). The two variants read adjacent columns
 // (g_transTable[idx] vs [idx+1]).
 RVA(0x00170400, 0x2f)
-short CButeMgr::PeekState(short state, char c) {
-    return ((short (*)[147])g_transTable)[state][CharClass(c) * 3];
+i16 CButeMgr::PeekState(i16 state, char c) {
+    return ((i16(*)[147])g_transTable)[state][CharClass(c) * 3];
 }
 
 RVA(0x00170430, 0x2f)
-short CButeMgr::PeekState2(short state, char c) {
+i16 CButeMgr::PeekState2(i16 state, char c) {
     return g_transTable142[state][CharClass(c) * 3];
 }
 
@@ -738,8 +738,8 @@ short CButeMgr::PeekState2(short state, char c) {
 // Write the token type (+0xaa) and the secondary lexer state (+0xac) from two
 // adjacent columns of the transition table.
 RVA(0x00170460, 0x58)
-void CButeMgr::ScanState(short state, char c) {
-    int base = state * 49;
+void CButeMgr::ScanState(i16 state, char c) {
+    i32 base = state * 49;
     m_tokType = g_transTable[(base + CharClass(c)) * 3 + 1];
     m_ac = g_transTable[(base + CharClass(c)) * 3 + 2];
 }
@@ -762,7 +762,7 @@ bool CButeMgr::SkipToTag() {
         if (!Parse()) {
             break;
         }
-        short t = m_tokType;
+        i16 t = m_tokType;
         if (t == 1 || t == 2) {
             return true;
         }
@@ -792,7 +792,7 @@ bool CButeMgr::ParseGroup() {
     if (!Parse()) {
         return false;
     }
-    short t = m_tokType;
+    i16 t = m_tokType;
     if (t == 1) {
         return true;
     }
@@ -875,7 +875,7 @@ extern "C" void Helper_InitCriticalSection(void* cs);
 // The shared one-time-init guard + the shared critical section (reloc-masked
 // file-scope DATA externs at 0x6bf400 / 0x6bf3c8).
 DATA(0x006bf400)
-extern "C" int g_helperRefCount; // 0x6bf400
+extern "C" i32 g_helperRefCount; // 0x6bf400
 DATA(0x006bf3c8)
 extern "C" CRITICAL_SECTION g_helperSharedCS; // 0x6bf3c8
 
@@ -896,7 +896,7 @@ extern "C" void* g_helperVbaseVtblD; // 0x5f047c
 // dtor (`mov eax,[ecx]; push 1; call [eax]`): modeled polymorphically so the
 // receiver lands in ecx and the call carries no caller-side cleanup.
 struct CButeSub {
-    virtual void* ScalarDtor(int flags);
+    virtual void* ScalarDtor(i32 flags);
 };
 
 // ---------------------------------------------------------------------------
@@ -908,7 +908,7 @@ struct CButeSub {
 // [edx+ecx-0xc],vtbl` form exactly; the tail call folds to the `jmp`.
 RVA(0x001697c0, 0x13)
 void CButeMgrHelper::InitVbaseA() {
-    int* vbptr = *(int**)((char*)this - 0xc);
+    i32* vbptr = *(i32**)((char*)this - 0xc);
     *(void**)((char*)this - 0xc + vbptr[1]) = &g_helperVbaseVtblA;
     InitVbaseC();
 }
@@ -918,7 +918,7 @@ void CButeMgrHelper::InitVbaseA() {
 // As InitVbaseA but for the vbtable at this-0x8, then tail into InitVbaseD.
 RVA(0x001699c0, 0x13)
 void CButeMgrHelper::InitVbaseB() {
-    int* vbptr = *(int**)((char*)this - 0x8);
+    i32* vbptr = *(i32**)((char*)this - 0x8);
     *(void**)((char*)this - 0x8 + vbptr[1]) = &g_helperVbaseVtblB;
     InitVbaseD();
 }
@@ -972,7 +972,7 @@ void CButeMgrHelper::SetSub(void* p) {
 // Ret-only virtual-base vtable-init thunk: stamp the vbase at this-0xc.
 RVA(0x0016b650, 0xf)
 void CButeMgrHelper::InitVbaseC() {
-    int* vbptr = *(int**)((char*)this - 0xc);
+    i32* vbptr = *(i32**)((char*)this - 0xc);
     *(void**)((char*)this - 0xc + vbptr[1]) = &g_helperVbaseVtblC;
 }
 
@@ -981,6 +981,6 @@ void CButeMgrHelper::InitVbaseC() {
 // Ret-only virtual-base vtable-init thunk: stamp the vbase at this-0x8.
 RVA(0x0016c0c0, 0xf)
 void CButeMgrHelper::InitVbaseD() {
-    int* vbptr = *(int**)((char*)this - 0x8);
+    i32* vbptr = *(i32**)((char*)this - 0x8);
     *(void**)((char*)this - 0x8 + vbptr[1]) = &g_helperVbaseVtblD;
 }

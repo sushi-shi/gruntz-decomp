@@ -30,10 +30,12 @@
 #ifndef SRC_GRUNTZ_MAPMGR_H
 #define SRC_GRUNTZ_MAPMGR_H
 
+#include <Ints.h>
+
 // Raw heap alloc/free the arrays link in (engine NAFXCW: alloc(size) returns a
 // pointer; free(ptr)). __cdecl, args on the stack. Modeled external/no-body so
 // the `call rel32` displacements are reloc-masked.
-extern "C" void* MapAlloc(unsigned int size);
+extern "C" void* MapAlloc(u32 size);
 extern "C" void MapFree(void* p);
 
 // ---------------------------------------------------------------------------
@@ -49,11 +51,11 @@ class CMapArrayA {
 public:
     CMapArrayA();
     ~CMapArrayA();
-    int Allocate(unsigned int count);
+    i32 Allocate(u32 count);
 
-    void* m_block;    // +0x00
-    void* m_0;        // +0x04  (the heap block the dtor frees)
-    unsigned m_count; // +0x08
+    void* m_block; // +0x00
+    void* m_0;     // +0x04  (the heap block the dtor frees)
+    u32 m_count;   // +0x08
 };
 
 // ---------------------------------------------------------------------------
@@ -69,11 +71,11 @@ class CMapArrayB {
 public:
     CMapArrayB();
     ~CMapArrayB();
-    int Allocate(unsigned int count);
+    i32 Allocate(u32 count);
 
-    void* m_0;        // +0x00  (the heap block the dtor frees)
-    void* m_block;    // +0x04
-    unsigned m_count; // +0x08
+    void* m_0;     // +0x00  (the heap block the dtor frees)
+    void* m_block; // +0x04
+    u32 m_count;   // +0x08
 };
 
 // ---------------------------------------------------------------------------
@@ -96,20 +98,20 @@ public:
 
     void* m_4;                 // +0x04  (heap ptr; Reset frees it)
     void* m_8;                 // +0x08  (heap ptr; Reset frees it)
-    int m_c;                   // +0x0c
-    int m_10;                  // +0x10
-    int m_14;                  // +0x14  (not ctor-written)
-    int m_18;                  // +0x18
-    int m_1c;                  // +0x1c
+    i32 m_c;                   // +0x0c
+    i32 m_10;                  // +0x10
+    i32 m_14;                  // +0x14  (not ctor-written)
+    i32 m_18;                  // +0x18
+    i32 m_1c;                  // +0x1c
     char m_pad20[0x30 - 0x20]; // +0x20..+0x2f (not ctor-written)
     CMapArrayA m_colA;         // +0x30  (0x0c bytes)
     CMapArrayB m_colB;         // +0x3c  (0x0c bytes)
-    int m_48;                  // +0x48  (not ctor-written)
-    int m_4c;                  // +0x4c  (= 0)
-    int m_50;                  // +0x50  (= -1)
-    int m_54;                  // +0x54  (not ctor-written)
-    int m_58;                  // +0x58  (= 0)
-    int m_5c;                  // +0x5c  (= 1)
+    i32 m_48;                  // +0x48  (not ctor-written)
+    i32 m_4c;                  // +0x4c  (= 0)
+    i32 m_50;                  // +0x50  (= -1)
+    i32 m_54;                  // +0x54  (not ctor-written)
+    i32 m_58;                  // +0x58  (= 0)
+    i32 m_5c;                  // +0x5c  (= 1)
 };
 
 #endif // SRC_GRUNTZ_MAPMGR_H

@@ -17,7 +17,7 @@ struct CSprite; // the created HUD/anim sprite
 // The HUD sprite factory reached via g_gameReg->m_30->m_8. CreateSprite looks the
 // template up by class-NAME (the 5th arg) and builds it; __thiscall ret 0x18.
 struct CSpriteFactory {
-    CSprite* CreateSprite(int kind, int geoB, int geoA, int hint, const char* name, int flags);
+    CSprite* CreateSprite(i32 kind, i32 geoB, i32 geoA, i32 hint, const char* name, i32 flags);
 };
 
 struct CSpriteFactoryHolder {
@@ -30,17 +30,17 @@ struct CSpriteFactoryHolder {
 // visible-bounds mode gate +0x134) plus the factory holder +0x30.
 struct CResourceTracker {
     char m_pad0[0x1c];
-    int m_1c; // +0x1c  (Level number source)
+    i32 m_1c; // +0x1c  (Level number source)
 };
 struct CGameReg {
     char m_pad0[0x2c];
     CResourceTracker* m_2c;     // +0x2c
     CSpriteFactoryHolder* m_30; // +0x30
     char m_pad34[0x8c - 0x34];
-    int m_8c; // +0x8c  viewport X
-    int m_90; // +0x90  viewport Y
+    i32 m_8c; // +0x8c  viewport X
+    i32 m_90; // +0x90  viewport Y
     char m_pad94[0x134 - 0x94];
-    int m_134; // +0x134 visible-bounds mode gate (==1)
+    i32 m_134; // +0x134 visible-bounds mode gate (==1)
 };
 DATA(0x0024556c)
 extern CGameReg* g_gameReg;
@@ -49,7 +49,7 @@ extern CGameReg* g_gameReg;
 extern CButeMgr g_buteMgr;
 
 // CRT (reloc-masked).
-extern "C" int rand(void);
+extern "C" i32 rand(void);
 
 // The created sprite. CacheFirstFrame caches its first valid frame; the icon
 // loader pushes a pile of configuration ints into the +0x114..+0x130 block. The
@@ -63,19 +63,19 @@ struct CSpriteVtbl {
 
 struct CSprite {
     void CacheFirstFrame(const char* name); // CGruntSprite::CacheFirstFrame @0x150540
-    int ApplyLookupGeometry(const char* name, int applyDefault); // CGruntAnimPlayer @0x1505b0
+    i32 ApplyLookupGeometry(const char* name, i32 applyDefault); // CGruntAnimPlayer @0x1505b0
 
     char m_pad0[0x7c];          // +0x00
     CSpriteVtbl* m_7c;          // +0x7c  init-interface vtable (slot +0x10 = Init)
     char m_pad80[0x114 - 0x80]; // +0x80
-    int m_114;                  // +0x114
-    int m_118;                  // +0x118
-    int m_11c;                  // +0x11c
-    int m_120;                  // +0x120
-    int m_124;                  // +0x124
-    int m_128;                  // +0x128
-    int m_12c;                  // +0x12c
-    int m_130;                  // +0x130
+    i32 m_114;                  // +0x114
+    i32 m_118;                  // +0x118
+    i32 m_11c;                  // +0x11c
+    i32 m_120;                  // +0x120
+    i32 m_124;                  // +0x124
+    i32 m_128;                  // +0x128
+    i32 m_12c;                  // +0x12c
+    i32 m_130;                  // +0x130
 };
 
 // the matched leaves live in the spriteresource unit; declared here so the
@@ -91,10 +91,10 @@ struct CSprite {
 // The free EngineLabelBacklog holder (matches the stub's mangled namespace).
 class EngineLabelBacklog {
 public:
-    int LoadPowerupIconSprites(int type, int geoB, int geoA, int m130, int warpIdx, int m120);
-    int LoadExplosionSprites(int geoB, int geoA, int variant, int dummy);
-    int LoadCameraSprite();
-    int BuildBootyPerfectAnimation();
+    i32 LoadPowerupIconSprites(i32 type, i32 geoB, i32 geoA, i32 m130, i32 warpIdx, i32 m120);
+    i32 LoadExplosionSprites(i32 geoB, i32 geoA, i32 variant, i32 dummy);
+    i32 LoadCameraSprite();
+    i32 BuildBootyPerfectAnimation();
 
     char m_pad00[0x22c];          // +0x000
     CSpriteFactoryHolder* m_22c;  // +0x22c  sprite-factory holder (->m_8 = factory)
@@ -113,9 +113,9 @@ public:
 // geometry. __thiscall (this @ esi). Stores the sprite at this+0x2f8.
 
 RVA(0x0001c070, 0x59)
-int EngineLabelBacklog::BuildBootyPerfectAnimation() {
+i32 EngineLabelBacklog::BuildBootyPerfectAnimation() {
     CSprite* spr =
-        g_gameReg->m_30->m_8->CreateSprite(0, (int)0xffffff7e, 0xf0, 0x64, "SimpleAnimation", 3);
+        g_gameReg->m_30->m_8->CreateSprite(0, (i32)0xffffff7e, 0xf0, 0x64, "SimpleAnimation", 3);
     m_2f8 = spr;
     if (!spr) {
         return 0;
@@ -136,16 +136,16 @@ int EngineLabelBacklog::BuildBootyPerfectAnimation() {
 // __thiscall (this @ esi). Returns 1 on (re)creation, 0 if already present.
 
 RVA(0x00078960, 0x9b)
-int EngineLabelBacklog::LoadCameraSprite() {
+i32 EngineLabelBacklog::LoadCameraSprite() {
     if (m_23c != 0) {
         return 0;
     }
 
-    int vx = g_gameReg->m_8c;
-    int vy = g_gameReg->m_90;
-    int count = *(*(int**)((char*)g_gameReg->m_2c + 0x2dc));
+    i32 vx = g_gameReg->m_8c;
+    i32 vy = g_gameReg->m_90;
+    i32 count = *(*(i32**)((char*)g_gameReg->m_2c + 0x2dc));
 
-    int ax, cx;
+    i32 ax, cx;
     if (count == 0) {
         ax = vx - 0xc8;
         cx = vy - 0x28;
@@ -171,11 +171,11 @@ int EngineLabelBacklog::LoadCameraSprite() {
 // this+0x124 with the loaded flag at this+0x114. __thiscall ret 0x10 (4 args).
 
 RVA(0x0007b330, 0xc6)
-int EngineLabelBacklog::LoadExplosionSprites(int geoB, int geoA, int variant, int dummy) {
+i32 EngineLabelBacklog::LoadExplosionSprites(i32 geoB, i32 geoA, i32 variant, i32 dummy) {
     CSpriteFactory* fac = m_22c->m_8;
     CSprite* spr = fac->CreateSprite(0, geoB, geoA, 0, "Explosion", 0x40003);
     if (spr) {
-        int v = variant;
+        i32 v = variant;
         if (v == 0) {
             v = (rand(), 1);
         }
@@ -200,13 +200,13 @@ int EngineLabelBacklog::LoadExplosionSprites(int geoB, int geoA, int variant, in
 // __thiscall-free ret 0x18 (6 args). Returns 1 on success.
 
 RVA(0x0007c620, 0x3c5)
-int EngineLabelBacklog::LoadPowerupIconSprites(
-    int type,
-    int geoB,
-    int geoA,
-    int m130,
-    int warpIdx,
-    int m120
+i32 EngineLabelBacklog::LoadPowerupIconSprites(
+    i32 type,
+    i32 geoB,
+    i32 geoA,
+    i32 m130,
+    i32 warpIdx,
+    i32 m120
 ) {
     if (type == 0) {
         return 0;

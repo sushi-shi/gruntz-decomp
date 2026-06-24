@@ -11,12 +11,12 @@
 
 class CImage {
 public:
-    int DecodeBlit(void*, void*, int, int, int, void*);
+    i32 DecodeBlit(void*, void*, i32, i32, i32, void*);
 };
 // @confidence: high
 // @source: reloc-correlation (CImage::DecodeResData + DecodeRidData)
 // @stub
 RVA(0x00175930, 0xc6)
-int CImage::DecodeBlit(void*, void*, int, int, int, void*) {
+i32 CImage::DecodeBlit(void*, void*, i32, i32, i32, void*) {
     return 0;
 }

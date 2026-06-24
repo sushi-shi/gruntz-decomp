@@ -14,6 +14,8 @@
 #ifndef DSNDMGR_SOUNDSTREAM_H
 #define DSNDMGR_SOUNDSTREAM_H
 
+#include <Ints.h>
+
 #include <Dsndmgr/SoundDevice.h>
 
 struct StreamVoice;
@@ -27,12 +29,12 @@ class SoundStream;
 struct StreamSource {
     void* m_vtbl; // +0x00
     char m_pad04[0x0c - 0x04];
-    unsigned long m_0c; // +0x0c  source length
+    u32 m_0c; // +0x0c  source length
     char m_pad10[0x18 - 0x10];
-    unsigned long m_18; // +0x18  read cursor / file position
+    u32 m_18; // +0x18  read cursor / file position
 
-    int Seek(int pos);                  // 0x139ae0  m_18 = pos
-    int Read(void* buf, int n, int at); // 0x139af0  read n bytes (at == -1: current)
+    i32 Seek(i32 pos);                  // 0x139ae0  m_18 = pos
+    i32 Read(void* buf, i32 n, i32 at); // 0x139af0  read n bytes (at == -1: current)
 };
 
 // The streaming feeder sub-object embedded at StreamVoice+0x6c (a Timer-ish
@@ -41,18 +43,18 @@ struct StreamSource {
 // pre-seeds its data window (+0x2c..+0x3c) before arming.
 struct StreamFeeder {
     char m_pad00[0x18];
-    unsigned long m_18; // +0x18  cursor
+    u32 m_18; // +0x18  cursor
     char m_pad1c[0x2c - 0x1c];
-    unsigned long m_2c; // +0x2c  source back-pointer
-    unsigned long m_30; // +0x30
-    unsigned long m_34; // +0x34
-    unsigned long m_38; // +0x38  data length
-    unsigned long m_3c; // +0x3c  data back-pointer
+    u32 m_2c; // +0x2c  source back-pointer
+    u32 m_30; // +0x30
+    u32 m_34; // +0x34
+    u32 m_38; // +0x38  data length
+    u32 m_3c; // +0x3c  data back-pointer
     char m_pad40[0x44 - 0x40];
 
-    int FeederStart(SoundStream* owner, void* fmt, int b, int c, StreamVoice* voice, int d);
+    i32 FeederStart(SoundStream* owner, void* fmt, i32 b, i32 c, StreamVoice* voice, i32 d);
     // 0x137d10
-    void FeederReset(int flag); // 0x137dc0
+    void FeederReset(i32 flag); // 0x137dc0
 };
 
 // The per-stream voice object the creator allocates (0xb0 bytes via RezAlloc,
@@ -67,44 +69,44 @@ struct StreamVoice {
     void* m_pad08;                // +0x08
     IDirectSoundBufferZ* m_buf0c; // +0x0c  the IDirectSoundBuffer to release
     char m_pad10[0x28 - 0x10];
-    unsigned long m_28; // +0x28  duration-ms (= m_2c*1000/m_3c)
-    unsigned long m_2c; // +0x2c  byte length
+    u32 m_28; // +0x28  duration-ms (= m_2c*1000/m_3c)
+    u32 m_2c; // +0x2c  byte length
     char m_pad30[0x38 - 0x30];
-    unsigned long m_38; // +0x38  avg-bytes-per-sec
-    unsigned long m_3c; // +0x3c  avg-bytes-per-sec (divisor)
+    u32 m_38; // +0x38  avg-bytes-per-sec
+    u32 m_3c; // +0x3c  avg-bytes-per-sec (divisor)
     char m_pad40[0x6c - 0x40];
     StreamFeeder m_feeder; // +0x6c  embedded streaming feeder sub-object
 
     // ctor 0x1375b0(IDirectSoundBuffer* buf, SoundStream* owner, int a, int b).
-    StreamVoice(IDirectSoundBufferZ* buf, SoundStream* owner, int a, int b);
+    StreamVoice(IDirectSoundBufferZ* buf, SoundStream* owner, i32 a, i32 b);
     void ComputeDuration(); // 0x1359a0  m_28 = m_2c*1000/m_3c
 };
 
 // WAVEFORMATEX as the validator reads it: wFormatTag (PCM == 1), then the
 // 16-byte PCM tail copied verbatim into the DSBUFFERDESC.lpwfxFormat scratch.
 struct WaveFormatX {
-    unsigned short wFormatTag;     // +0x00  (== 1: PCM)
-    unsigned short nChannels;      // +0x02
-    unsigned long nSamplesPerSec;  // +0x04
-    unsigned long nAvgBytesPerSec; // +0x08
-    unsigned short nBlockAlign;    // +0x0c
-    unsigned short wBitsPerSample; // +0x0e
-    unsigned short cbSize;         // +0x10
+    u16 wFormatTag;      // +0x00  (== 1: PCM)
+    u16 nChannels;       // +0x02
+    u32 nSamplesPerSec;  // +0x04
+    u32 nAvgBytesPerSec; // +0x08
+    u16 nBlockAlign;     // +0x0c
+    u16 wBitsPerSample;  // +0x0e
+    u16 cbSize;          // +0x10
 };
 
 class SoundStream : public SoundDevice {
 public:
     ~SoundStream(); // 0x137710  restamp vptr (0x5ef6ec) then ~SoundDevice
-    StreamVoice* CreateStreamBuffer(WaveFormatX* fmt, unsigned long bytes, int a, int b, int c);
+    StreamVoice* CreateStreamBuffer(WaveFormatX* fmt, u32 bytes, i32 a, i32 b, i32 c);
     // 0x137780
-    StreamVoice* OpenStream(StreamSource* src, int p1, int p2, int p3, int p4, int p5);
+    StreamVoice* OpenStream(StreamSource* src, i32 p1, i32 p2, i32 p3, i32 p4, i32 p5);
     // 0x137900
     void DestroyVoice(StreamVoice* voice); // 0x1379d0
-    int ParseWave(
+    i32 ParseWave(
         StreamSource* src,
         WaveFormatX* fmtBuf,
-        unsigned long* outDataOff,
-        unsigned long* outDataLen
+        u32* outDataOff,
+        u32* outDataLen
     ); // 0x137b70
 };
 

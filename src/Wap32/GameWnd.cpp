@@ -26,9 +26,9 @@ static CGameWnd* s_activeWnd;
 // SHOWNORMAL). Bails (returning 0) if params/owner is null or a window is
 // already active.
 RVA(0x0013cf20, 0x8f)
-int CGameWnd::CreateAndShow(CGameWndCreateParams* pParams, void* pOwner) {
+i32 CGameWnd::CreateAndShow(CGameWndCreateParams* pParams, void* pOwner) {
     if (!pParams) {
-        return (int)pParams;
+        return (i32)pParams;
     }
     if (!pOwner) {
         return 0;
@@ -84,7 +84,7 @@ void CGameWnd::Destroy() {
 // Frees the game manager through the owning app, optionally reports the stored
 // error, then posts WM_QUIT.
 RVA(0x0013d490, 0x29)
-int CGameWnd::QuitMessageLoop() {
+i32 CGameWnd::QuitMessageLoop() {
     ((CGameApp*)m_8)->FreeGameManager();
     if (((CGameApp*)m_8)->m_248) {
         ((CGameApp*)m_8)->ShowError();
@@ -132,13 +132,12 @@ LRESULT __stdcall CGameApp::GameWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, 
             }
             break;
         case 0x0003 /*WM_MOVE*/:
-            if (s_activeWnd->OnMove((int)(lParam & 0xffff), (int)((unsigned long)lParam >> 16))) {
+            if (s_activeWnd->OnMove((i32)(lParam & 0xffff), (i32)((u32)lParam >> 16))) {
                 return 0;
             }
             break;
         case 0x0005 /*WM_SIZE*/:
-            if (s_activeWnd
-                    ->OnSize(wParam, (int)(lParam & 0xffff), (int)((unsigned long)lParam >> 16))) {
+            if (s_activeWnd->OnSize(wParam, (i32)(lParam & 0xffff), (i32)((u32)lParam >> 16))) {
                 return 0;
             }
             break;
@@ -188,65 +187,44 @@ LRESULT __stdcall CGameApp::GameWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, 
             }
             break;
         case 0x0201 /*WM_LBUTTONDOWN*/:
-            if (s_activeWnd->OnLButtonDown(
-                    wParam,
-                    (int)(lParam & 0xffff),
-                    (int)((unsigned long)lParam >> 16)
-                )) {
+            if (s_activeWnd
+                    ->OnLButtonDown(wParam, (i32)(lParam & 0xffff), (i32)((u32)lParam >> 16))) {
                 return 0;
             }
             break;
         case 0x0202 /*WM_LBUTTONUP*/:
-            if (s_activeWnd->OnLButtonUp(
-                    wParam,
-                    (int)(lParam & 0xffff),
-                    (int)((unsigned long)lParam >> 16)
-                )) {
+            if (s_activeWnd
+                    ->OnLButtonUp(wParam, (i32)(lParam & 0xffff), (i32)((u32)lParam >> 16))) {
                 return 0;
             }
             break;
         case 0x0204 /*WM_RBUTTONDOWN*/:
-            if (s_activeWnd->OnRButtonDown(
-                    wParam,
-                    (int)(lParam & 0xffff),
-                    (int)((unsigned long)lParam >> 16)
-                )) {
+            if (s_activeWnd
+                    ->OnRButtonDown(wParam, (i32)(lParam & 0xffff), (i32)((u32)lParam >> 16))) {
                 return 0;
             }
             break;
         case 0x0205 /*WM_RBUTTONUP*/:
-            if (s_activeWnd->OnRButtonUp(
-                    wParam,
-                    (int)(lParam & 0xffff),
-                    (int)((unsigned long)lParam >> 16)
-                )) {
+            if (s_activeWnd
+                    ->OnRButtonUp(wParam, (i32)(lParam & 0xffff), (i32)((u32)lParam >> 16))) {
                 return 0;
             }
             break;
         case 0x0200 /*WM_MOUSEMOVE*/:
-            if (s_activeWnd->OnMouseMove(
-                    wParam,
-                    (int)(lParam & 0xffff),
-                    (int)((unsigned long)lParam >> 16)
-                )) {
+            if (s_activeWnd
+                    ->OnMouseMove(wParam, (i32)(lParam & 0xffff), (i32)((u32)lParam >> 16))) {
                 return 0;
             }
             break;
         case 0x0203 /*WM_LBUTTONDBLCLK*/:
-            if (s_activeWnd->OnLButtonDblClk(
-                    wParam,
-                    (int)(lParam & 0xffff),
-                    (int)((unsigned long)lParam >> 16)
-                )) {
+            if (s_activeWnd
+                    ->OnLButtonDblClk(wParam, (i32)(lParam & 0xffff), (i32)((u32)lParam >> 16))) {
                 return 0;
             }
             break;
         case 0x0206 /*WM_RBUTTONDBLCLK*/:
-            if (s_activeWnd->OnRButtonDblClk(
-                    wParam,
-                    (int)(lParam & 0xffff),
-                    (int)((unsigned long)lParam >> 16)
-                )) {
+            if (s_activeWnd
+                    ->OnRButtonDblClk(wParam, (i32)(lParam & 0xffff), (i32)((u32)lParam >> 16))) {
                 return 0;
             }
             break;
@@ -264,64 +242,64 @@ CGameWnd::~CGameWnd() {}
 // ~CGameWnd cleanup (zeroes a file-scope global, calls a base dtor; not reconstructed,
 // so this only NAMES the retail function). MSVC synthesizes ??_G from the dtor above.
 // @rva-symbol: ??_GCGameWnd@@UAEPAXI@Z 0x00094d80 0x2f
-int CGameWnd::PreDispatchMessage(UINT, WPARAM, LPARAM) {
+i32 CGameWnd::PreDispatchMessage(UINT, WPARAM, LPARAM) {
     return 0;
 }
-int CGameWnd::Wap32GameWndVfunc2() {
+i32 CGameWnd::Wap32GameWndVfunc2() {
     return 0;
 }
-int CGameWnd::OnCreate(LPARAM) {
+i32 CGameWnd::OnCreate(LPARAM) {
     return 0;
 }
-int CGameWnd::OnClose() {
+i32 CGameWnd::OnClose() {
     return 0;
 }
-int CGameWnd::OnMove(int, int) {
+i32 CGameWnd::OnMove(i32, i32) {
     return 0;
 }
-int CGameWnd::OnSize(WPARAM, int, int) {
+i32 CGameWnd::OnSize(WPARAM, i32, i32) {
     return 0;
 }
-int CGameWnd::OnPaint() {
+i32 CGameWnd::OnPaint() {
     return 0;
 }
-int CGameWnd::OnChar(WPARAM, LPARAM) {
+i32 CGameWnd::OnChar(WPARAM, LPARAM) {
     return 0;
 }
-int CGameWnd::OnKeyDown(WPARAM, LPARAM) {
+i32 CGameWnd::OnKeyDown(WPARAM, LPARAM) {
     return 0;
 }
-int CGameWnd::OnKeyUp(WPARAM, LPARAM) {
+i32 CGameWnd::OnKeyUp(WPARAM, LPARAM) {
     return 0;
 }
-int CGameWnd::OnSysKeyDown(WPARAM, LPARAM) {
+i32 CGameWnd::OnSysKeyDown(WPARAM, LPARAM) {
     return 0;
 }
-int CGameWnd::OnActivateApp(WPARAM, LPARAM) {
+i32 CGameWnd::OnActivateApp(WPARAM, LPARAM) {
     return 0;
 }
-int CGameWnd::OnLButtonDown(WPARAM, int, int) {
+i32 CGameWnd::OnLButtonDown(WPARAM, i32, i32) {
     return 0;
 }
-int CGameWnd::OnRButtonDown(WPARAM, int, int) {
+i32 CGameWnd::OnRButtonDown(WPARAM, i32, i32) {
     return 0;
 }
-int CGameWnd::OnLButtonUp(WPARAM, int, int) {
+i32 CGameWnd::OnLButtonUp(WPARAM, i32, i32) {
     return 0;
 }
-int CGameWnd::OnRButtonUp(WPARAM, int, int) {
+i32 CGameWnd::OnRButtonUp(WPARAM, i32, i32) {
     return 0;
 }
-int CGameWnd::OnMouseMove(WPARAM, int, int) {
+i32 CGameWnd::OnMouseMove(WPARAM, i32, i32) {
     return 0;
 }
-int CGameWnd::OnLButtonDblClk(WPARAM, int, int) {
+i32 CGameWnd::OnLButtonDblClk(WPARAM, i32, i32) {
     return 0;
 }
-int CGameWnd::OnRButtonDblClk(WPARAM, int, int) {
+i32 CGameWnd::OnRButtonDblClk(WPARAM, i32, i32) {
     return 0;
 }
-int CGameWnd::OnCommand(WPARAM, LPARAM) {
+i32 CGameWnd::OnCommand(WPARAM, LPARAM) {
     return 0;
 }
 

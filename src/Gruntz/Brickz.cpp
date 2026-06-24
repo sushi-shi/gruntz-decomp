@@ -11,7 +11,7 @@
 // CBrickz::Insert - insert node into the m_18-headed list, kept ascending by
 // m_10. Links: m_14 = forward (next), m_18 = backward (prev). Always returns 1.
 RVA(0x0009f370, 0x8a)
-int CBrickz::Insert(BrickzNode* node) {
+i32 CBrickz::Insert(BrickzNode* node) {
     BrickzNode* cur = m_18;
     node->m_18 = 0;
     node->m_14 = 0;
@@ -19,7 +19,7 @@ int CBrickz::Insert(BrickzNode* node) {
         m_18 = node;
         return 1;
     }
-    int key = node->m_10;
+    i32 key = node->m_10;
     while (cur != 0) {
         if (key < cur->m_10) {
             if (cur->m_18 != 0) {
@@ -121,10 +121,10 @@ void CBrickz::CellPush(BrickzNode* node) {
         *head = slot;
         slot->m_4 = 0;
         slot->m_8 = 0;
-        slot->m_0 = (int)node;
+        slot->m_0 = (i32)node;
         node->m_20 = slot;
     } else {
-        slot->m_4 = (int)old;
+        slot->m_4 = (i32)old;
         slot->m_8 = (*head)->m_8;
         *head = slot;
         node->m_20 = slot;
@@ -143,7 +143,7 @@ void CBrickz::CellPush(BrickzNode* node) {
 RVA(0x0009f5d0, 0x81)
 void CBrickz::Reset() {
     BrickzCell* cell = m_4;
-    for (unsigned int i = 0; i < m_10 * m_c; i++) {
+    for (u32 i = 0; i < m_10 * m_c; i++) {
         BrickzNode* node = cell->m_head;
         while (node != 0) {
             BrickzNode** link = &node->m_8;
@@ -155,7 +155,7 @@ void CBrickz::Reset() {
             m_30 = child;
             node->m_4 = 0;
             *link = m_40;
-            m_40->m_4 = (int)node;
+            m_40->m_4 = (i32)node;
             m_40 = node;
             node = next;
         }
@@ -173,7 +173,7 @@ void CBrickz::Reset() {
 // redundant `cmp prev,0` re-tests in retail that MSVC5 folds with no call to pin
 // the flag. Logic byte-correct, container shape proven; parked for the sweep.
 RVA(0x0009f710, 0xa7)
-void CBrickz::CellPop(BrickzNode* node, int flag) {
+void CBrickz::CellPop(BrickzNode* node, i32 flag) {
     BrickzNode** head = &m_8[node->m_4][node->m_0].m_head;
     BrickzNode* slot = node->m_20;
     if ((BrickzNode*)slot->m_4 != 0) {
@@ -198,7 +198,7 @@ void CBrickz::CellPop(BrickzNode* node, int flag) {
     node->m_20 = 0;
     slot->m_8 = m_40;
     slot->m_4 = 0;
-    m_40->m_4 = (int)slot;
+    m_40->m_4 = (i32)slot;
     m_40 = slot;
     if (flag != 0) {
         node->m_18 = 0;
@@ -212,7 +212,7 @@ void CBrickz::CellPop(BrickzNode* node, int flag) {
 // CBrickz::Find - walk the m_18 lookup list (linked via m_14), return the node
 // whose (m_0,m_4) pair equals (key1,key2); 0 if absent.
 RVA(0x0009f500, 0x24)
-BrickzNode* CBrickz::Find(int key1, int key2) {
+BrickzNode* CBrickz::Find(i32 key1, i32 key2) {
     BrickzNode* p = m_18;
     if (p == 0) {
         return 0;

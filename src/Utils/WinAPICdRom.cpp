@@ -38,13 +38,13 @@ namespace Utils {
         //   3. else scan drives A..Z for any CD-ROM.
         RVA(0x0001fde0, 0x189)
         char CheckCdRomRegistry() {
-            unsigned int valueSize;
+            u32 valueSize;
             char value[32];
             char drivePath[32];
             char cwdPath[256];
             RegistryHelper reg;
             char letter;
-            int i;
+            i32 i;
 
             if (reg.Open(
                     "Monolith Productions",
@@ -57,7 +57,7 @@ namespace Utils {
                 valueSize = 0x1e;
                 value[0] = 0;
                 if (reg.GetValueString("CdRom Drive", value, &valueSize, 0)
-                    && (signed char)value[0] > 0x14) {
+                    && (i8)value[0] > 0x14) {
                     letter = value[0];
                     sprintf(drivePath, "%c:\\", letter);
                     if (GetDriveTypeA(drivePath) == 5 /*DRIVE_CDROM*/) {

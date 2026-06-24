@@ -7,4 +7,4 @@
 // @source: rtti-vptr
 // @stub
 RVA(0x000ae3f0, 0x18f)
-CWayPoint::CWayPoint(int) {}
+CWayPoint::CWayPoint(i32) {}

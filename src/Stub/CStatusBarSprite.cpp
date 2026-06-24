@@ -7,4 +7,4 @@
 // @source: rtti-vptr
 // @stub
 RVA(0x0010c230, 0x178)
-CStatusBarSprite::CStatusBarSprite(int) {}
+CStatusBarSprite::CStatusBarSprite(i32) {}

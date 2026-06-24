@@ -13,6 +13,8 @@
 #ifndef GRUNTZ_CSTATUSBARMGR_H
 #define GRUNTZ_CSTATUSBARMGR_H
 
+#include <Ints.h>
+
 #include <Gruntz/StatusBarItem.h>
 
 // ---------------------------------------------------------------------------
@@ -20,10 +22,10 @@
 // Built as base + per-item offsets: left/top/right/bottom = m_10 + dx / m_14 + dy.
 // ---------------------------------------------------------------------------
 struct SbRect {
-    int left;
-    int top;
-    int right;
-    int bottom;
+    i32 left;
+    i32 top;
+    i32 right;
+    i32 bottom;
 };
 
 // ---------------------------------------------------------------------------
@@ -40,18 +42,18 @@ class CStatusBarMgr;
 
 class CSBI : public CStatusBarItem {
 public:
-    virtual int
-    Configure(CStatusBarMgr* mgr, int a, int b, int c, SbRect rect, const char* key, int d, int e);
-    virtual int ConfigureEx(
+    virtual i32
+    Configure(CStatusBarMgr* mgr, i32 a, i32 b, i32 c, SbRect rect, const char* key, i32 d, i32 e);
+    virtual i32 ConfigureEx(
         CStatusBarMgr* mgr,
-        int a0,
+        i32 a0,
         SbRect rect,
         const char* key,
-        int b,
-        int c,
-        int d,
-        int e,
-        int f
+        i32 b,
+        i32 c,
+        i32 d,
+        i32 e,
+        i32 f
     );
 };
 

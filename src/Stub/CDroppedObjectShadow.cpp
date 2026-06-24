@@ -13,4 +13,4 @@ void CDroppedObjectShadow::LoadAttributes() {}
 // @source: rtti-vptr
 // @stub
 RVA(0x000c7490, 0x1a6)
-CDroppedObjectShadow::CDroppedObjectShadow(int) {}
+CDroppedObjectShadow::CDroppedObjectShadow(i32) {}

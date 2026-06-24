@@ -48,10 +48,10 @@
 // the buffer addresses are differently-named symbols in the base obj (the absolute
 // pushes/compares reloc-mask against the retail DAT_* names). Declared in their
 // retail BSS order so the layout follows the binary.
-static unsigned char s_palBmp[0x400];     // 0x6842f0
-static unsigned char s_palPcx[0x400];     // 0x6846f0
-static unsigned char s_palPidData[0x400]; // 0x684ef0 (CFileImage::DecodePid)
-static unsigned char s_palPcxData[0x400]; // 0x6852f0 (CFileImage::DecodePcxData)
+static u8 s_palBmp[0x400];     // 0x6842f0
+static u8 s_palPcx[0x400];     // 0x6846f0
+static u8 s_palPidData[0x400]; // 0x684ef0 (CFileImage::DecodePid)
+static u8 s_palPcxData[0x400]; // 0x6852f0 (CFileImage::DecodePcxData)
 
 // The four file-extension literals (reloc-masked .rdata globals). Declared at
 // file scope so each `push OFFSET` matches the binary's direct-address push.
@@ -69,7 +69,7 @@ static const char s_extPid[] = ".PID";
 // plane (HBITMAP @+0x428, bits @+0x42c), and operator-new's the bottom-up
 // per-row byte-offset table (this+0x430). Returns 0 if CreateDIBSection fails.
 RVA(0x001757c0, 0x16f)
-int CImage::DecodeBmpHeader(void* a2, int width, int height, int bitcount, void* a3) {
+i32 CImage::DecodeBmpHeader(void* a2, i32 width, i32 height, i32 bitcount, void* a3) {
     m_434 = 0;
     m_438 = width;
     m_43c = (height < 0) ? -height : height;
@@ -94,8 +94,8 @@ int CImage::DecodeBmpHeader(void* a2, int width, int height, int bitcount, void*
     m_bih.biClrUsed = 0;
     m_bih.biClrImportant = 0;
     if (m_440 == 8) {
-        for (int i = 0; i < 256; i++) {
-            m_pal[i] = (unsigned short)i;
+        for (i32 i = 0; i < 256; i++) {
+            m_pal[i] = (u16)i;
         }
         m_428 = CreateDIBSection((HDC)a2, (BITMAPINFO*)this, DIB_PAL_COLORS, &m_42c, 0, 0);
     } else {
@@ -104,8 +104,8 @@ int CImage::DecodeBmpHeader(void* a2, int width, int height, int bitcount, void*
     if (!m_428) {
         return 0;
     }
-    m_430 = (int*)operator new(m_43c * 4);
-    for (int i = 0; i < m_43c; i++) {
+    m_430 = (i32*)operator new(m_43c * 4);
+    for (i32 i = 0; i < m_43c; i++) {
         m_430[i] = (m_43c - i - 1) * (m_440 / 8) * m_444;
     }
     return 1;
@@ -117,7 +117,7 @@ int CImage::DecodeBmpHeader(void* a2, int width, int height, int bitcount, void*
 // branch re-tests `ext != 0` (the target's `test esi; je default` per case) and
 // forwards (name,a2,a3); a matched ext returns its loader's result directly.
 RVA(0x00175a90, 0xee)
-int CImage::LoadFromRez(char* name, void* a2, void* a3) {
+i32 CImage::LoadFromRez(char* name, void* a2, void* a3) {
     char* ext = strrchr(name, '.');
 
     if (ext && _stricmp(ext, s_extBmp) == 0) {
@@ -146,14 +146,14 @@ extern "C" HINSTANCE g_hResModule; // 0x6bf6e0
 // buf+biSize+0x400, else right after the 0x28 header + the 4 RGBQUAD masks at
 // buf+0x2c) and hand it to the shared blitter.
 RVA(0x00175e00, 0x3d)
-int CImage::DecodeResData(void* buf, void* a2, void* a3) {
-    unsigned char* hdr = (unsigned char*)buf;
-    int bitcount = *(unsigned short*)(hdr + 0xe);
-    int height = *(int*)(hdr + 8);
-    int width = *(int*)(hdr + 4);
+i32 CImage::DecodeResData(void* buf, void* a2, void* a3) {
+    u8* hdr = (u8*)buf;
+    i32 bitcount = *(u16*)(hdr + 0xe);
+    i32 height = *(i32*)(hdr + 8);
+    i32 width = *(i32*)(hdr + 4);
     void* src = hdr + 0x2c;
     if (bitcount == 8) {
-        src = hdr + *(int*)hdr + 0x400;
+        src = hdr + *(i32*)hdr + 0x400;
     }
     return DecodeBlit(src, a2, width, height, bitcount, a3);
 }
@@ -167,7 +167,7 @@ int CImage::DecodeResData(void* buf, void* a2, void* a3) {
 // plane. Returns 1 on a full read, 0 on any I/O / decode failure. The CFileIO
 // stack object's dtor runs on every exit -> the C++ EH frame.
 RVA(0x00175e40, 0x1b3)
-int CImage::LoadBmp(char* name, void* a2, void* a3) {
+i32 CImage::LoadBmp(char* name, void* a2, void* a3) {
     CFileIO file;
     BITMAPFILEHEADER fh;
     BITMAPINFOHEADER ih;
@@ -182,15 +182,15 @@ int CImage::LoadBmp(char* name, void* a2, void* a3) {
         return 0;
     }
 
-    int height = ih.biHeight;
-    int width = ih.biWidth;
-    int bitcount = ih.biBitCount & 0xffff;
+    i32 height = ih.biHeight;
+    i32 width = ih.biWidth;
+    i32 bitcount = ih.biBitCount & 0xffff;
     if (!DecodeBmpHeader(a2, width, height, bitcount, a3)) {
         return 0;
     }
 
     file.Seek(fh.bfOffBits, 0);
-    unsigned int size = (bitcount / 8) * m_444 * height;
+    u32 size = (bitcount / 8) * m_444 * height;
     if (file.Read(m_42c, size) != size) {
         return 0;
     }
@@ -205,29 +205,29 @@ int CImage::LoadBmp(char* name, void* a2, void* a3) {
 // scratch buffer (filled back-to-front) and emit it into the plane row, either
 // straight (1 plane) or interleaving 3 planes into RGB triples.
 RVA(0x00176000, 0x18f)
-int CImage::DecodePcxData(void* buf, void* a2, void* a3) {
-    unsigned char* hdr = (unsigned char*)buf;
-    int width = *(short*)(hdr + 8) - *(short*)(hdr + 4) + 1;
-    int height = *(short*)(hdr + 0xa) - *(short*)(hdr + 6) + 1;
+i32 CImage::DecodePcxData(void* buf, void* a2, void* a3) {
+    u8* hdr = (u8*)buf;
+    i32 width = *(i16*)(hdr + 8) - *(i16*)(hdr + 4) + 1;
+    i32 height = *(i16*)(hdr + 0xa) - *(i16*)(hdr + 6) + 1;
     if (hdr[3] != 8) {
         return 0;
     }
-    if (!DecodeBmpHeader(a2, width, height, (signed char)hdr[0x41] * 8, a3)) {
+    if (!DecodeBmpHeader(a2, width, height, (i8)hdr[0x41] * 8, a3)) {
         return 0;
     }
 
-    unsigned char* src = hdr + 0x80;
-    int scanBytes = (width * (signed char)hdr[0x41] * (signed char)hdr[3] + 7) / 8;
-    unsigned char* scan = (unsigned char*)operator new(scanBytes);
+    u8* src = hdr + 0x80;
+    i32 scanBytes = (width * (i8)hdr[0x41] * (i8)hdr[3] + 7) / 8;
+    u8* scan = (u8*)operator new(scanBytes);
 
-    for (int y = 0; y < height; y++) {
-        unsigned char* dst = (unsigned char*)m_42c + m_430[y];
-        int n = width * (signed char)hdr[0x41];
+    for (i32 y = 0; y < height; y++) {
+        u8* dst = (u8*)m_42c + m_430[y];
+        i32 n = width * (i8)hdr[0x41];
         while (n > 0) {
-            unsigned char c = *src++;
+            u8 c = *src++;
             if ((c & 0xc0) == 0xc0) {
-                int count = c & 0x3f;
-                unsigned char v = *src++;
+                i32 count = c & 0x3f;
+                u8 v = *src++;
                 if (count > 0) {
                     do {
                         --n;
@@ -240,14 +240,14 @@ int CImage::DecodePcxData(void* buf, void* a2, void* a3) {
             }
         }
 
-        if ((signed char)hdr[0x41] == 1) {
-            for (int x = width; x != 0; x--) {
+        if ((i8)hdr[0x41] == 1) {
+            for (i32 x = width; x != 0; x--) {
                 *dst++ = scan[x - 1];
             }
-        } else if ((signed char)hdr[0x41] == 3) {
-            unsigned char* g = scan + width * 2;
-            unsigned char* b = g + width;
-            for (int x = width; x != 0; x--) {
+        } else if ((i8)hdr[0x41] == 3) {
+            u8* g = scan + width * 2;
+            u8* b = g + width;
+            for (i32 x = width; x != 0; x--) {
                 *dst++ = scan[x - 1];
                 *dst++ = g[-1];
                 *dst++ = b[-1];
@@ -267,13 +267,13 @@ int CImage::DecodePcxData(void* buf, void* a2, void* a3) {
 // size; if it fails return 0. Read the whole file, hand the buffer (+a2,a3) to
 // the PCX decode helper, free the buffer and return the decoder's result.
 RVA(0x00176190, 0x126)
-int CImage::LoadPcx(char* name, void* a2, void* a3) {
+i32 CImage::LoadPcx(char* name, void* a2, void* a3) {
     CFileIO file;
 
     if (!file.Open(name, 0, 0)) {
         return 0;
     }
-    unsigned int len = file.GetLength();
+    u32 len = file.GetLength();
     if (len == 0) {
         return 0;
     }
@@ -282,7 +282,7 @@ int CImage::LoadPcx(char* name, void* a2, void* a3) {
         return 0;
     }
     file.Read(buf, len);
-    int result = DecodePcxData(buf, a2, a3);
+    i32 result = DecodePcxData(buf, a2, a3);
     operator delete(buf);
     return result;
 }
@@ -293,12 +293,12 @@ int CImage::LoadPcx(char* name, void* a2, void* a3) {
 // 8bpp pixels begin at buf+0x20; hand them straight to the blitter. a3's low bit
 // gates the transparency flag at this+0x450 (cleared when not set).
 RVA(0x001762c0, 0x42)
-int CImage::DecodeRidData(void* buf, void* a2, void* a3) {
-    int* hdr = (int*)((char*)buf + 8);
-    int width = hdr[0];
-    int height = hdr[1];
-    int ok = DecodeBlit((char*)buf + 0x20, a2, width, height, 8, a3);
-    if (!((int)a3 & 1)) {
+i32 CImage::DecodeRidData(void* buf, void* a2, void* a3) {
+    i32* hdr = (i32*)((char*)buf + 8);
+    i32 width = hdr[0];
+    i32 height = hdr[1];
+    i32 ok = DecodeBlit((char*)buf + 0x20, a2, width, height, 8, a3);
+    if (!((i32)a3 & 1)) {
         m_450 = 0;
     }
     return ok;
@@ -309,13 +309,13 @@ int CImage::DecodeRidData(void* buf, void* a2, void* a3) {
 // Byte-identical to LoadPcx except for the per-format decode helper (the .RID
 // reader DecodeRidData).
 RVA(0x00176310, 0x126)
-int CImage::LoadRid(char* name, void* a2, void* a3) {
+i32 CImage::LoadRid(char* name, void* a2, void* a3) {
     CFileIO file;
 
     if (!file.Open(name, 0, 0)) {
         return 0;
     }
-    unsigned int len = file.GetLength();
+    u32 len = file.GetLength();
     if (len == 0) {
         return 0;
     }
@@ -324,7 +324,7 @@ int CImage::LoadRid(char* name, void* a2, void* a3) {
         return 0;
     }
     file.Read(buf, len);
-    int result = DecodeRidData(buf, a2, a3);
+    i32 result = DecodeRidData(buf, a2, a3);
     operator delete(buf);
     return result;
 }
@@ -341,17 +341,17 @@ int CImage::LoadRid(char* name, void* a2, void* a3) {
 // flags&0x100 masks the fill colour (buf+0x18) to a low word, else it is zeroed.
 // a3's low bit gates the transparency flag at this+0x450.
 RVA(0x00176440, 0x25d)
-int CImage::DecodePidData(void* buf, void* a2, void* a3) {
-    unsigned char* src = (unsigned char*)buf + 0x20;
-    int width = *(int*)((char*)buf + 8);
-    int height = *(int*)((char*)buf + 0xc);
-    int flags = *(int*)((char*)buf + 4);
-    int fill = *(int*)((char*)buf + 0x18);
+i32 CImage::DecodePidData(void* buf, void* a2, void* a3) {
+    u8* src = (u8*)buf + 0x20;
+    i32 width = *(i32*)((char*)buf + 8);
+    i32 height = *(i32*)((char*)buf + 0xc);
+    i32 flags = *(i32*)((char*)buf + 4);
+    i32 fill = *(i32*)((char*)buf + 0x18);
 
     if (!DecodeBmpHeader(a2, width, height, 8, a3)) {
         return 0;
     }
-    if (!((int)a3 & 1)) {
+    if (!((i32)a3 & 1)) {
         m_450 = 0;
     }
 
@@ -363,19 +363,19 @@ int CImage::DecodePidData(void* buf, void* a2, void* a3) {
 
     if (flags & 0x20) {
         m_450 = 1;
-        unsigned char* dstRow = (unsigned char*)m_42c + m_430[0];
-        int x = 0;
-        int y = 0;
-        int i = 0;
+        u8* dstRow = (u8*)m_42c + m_430[0];
+        i32 x = 0;
+        i32 y = 0;
+        i32 i = 0;
         while (y < m_43c) {
-            unsigned char c = src[i];
+            u8 c = src[i];
             if (c & 0x80) {
-                int count = (c & 0xff) - 0x80;
-                memset(dstRow + x, (unsigned char)fill, count);
+                i32 count = (c & 0xff) - 0x80;
+                memset(dstRow + x, (u8)fill, count);
                 x += (src[i] & 0xff) - 0x80;
                 i++;
             } else {
-                int count = c & 0xff;
+                i32 count = c & 0xff;
                 memcpy(dstRow + x, &src[i + 1], count);
                 x += src[i];
                 i += src[i] + 1;
@@ -386,18 +386,18 @@ int CImage::DecodePidData(void* buf, void* a2, void* a3) {
                 if (y >= m_43c) {
                     break;
                 }
-                dstRow = (unsigned char*)m_42c + m_430[y];
+                dstRow = (u8*)m_42c + m_430[y];
             }
         }
     } else {
-        for (int y = 0; (unsigned int)y < (unsigned int)height; y++) {
-            unsigned char* dst = (unsigned char*)m_42c + m_430[y];
-            int n = width;
+        for (i32 y = 0; (u32)y < (u32)height; y++) {
+            u8* dst = (u8*)m_42c + m_430[y];
+            i32 n = width;
             while (n > 0) {
-                unsigned char c = *src++;
+                u8 c = *src++;
                 if ((c & 0xc0) == 0xc0) {
-                    int count = c & 0x3f;
-                    unsigned char v = *src++;
+                    i32 count = c & 0x3f;
+                    u8 v = *src++;
                     if (count > 0) {
                         memset(dst, v, count);
                         dst += count;
@@ -417,13 +417,13 @@ int CImage::DecodePidData(void* buf, void* a2, void* a3) {
 // CImage::LoadPid
 // Byte-identical to LoadPcx/LoadRid except for the .PID decode helper.
 RVA(0x001766a0, 0x126)
-int CImage::LoadPid(char* name, void* a2, void* a3) {
+i32 CImage::LoadPid(char* name, void* a2, void* a3) {
     CFileIO file;
 
     if (!file.Open(name, 0, 0)) {
         return 0;
     }
-    unsigned int len = file.GetLength();
+    u32 len = file.GetLength();
     if (len == 0) {
         return 0;
     }
@@ -432,7 +432,7 @@ int CImage::LoadPid(char* name, void* a2, void* a3) {
         return 0;
     }
     file.Read(buf, len);
-    int result = DecodePidData(buf, a2, a3);
+    i32 result = DecodePidData(buf, a2, a3);
     operator delete(buf);
     return result;
 }
@@ -443,7 +443,7 @@ int CImage::LoadPid(char* name, void* a2, void* a3) {
 // the engine's resource module and decode it in place. Returns 0 unless the
 // module handle is set and FindResource/LoadResource/LockResource all succeed.
 RVA(0x001767d0, 0x64)
-int CImage::LoadDefault(char* name, void* a2, void* a3) {
+i32 CImage::LoadDefault(char* name, void* a2, void* a3) {
     HINSTANCE hModule = g_hResModule;
     if (!hModule) {
         return 0;
@@ -480,20 +480,20 @@ int CImage::LoadDefault(char* name, void* a2, void* a3) {
 // ddckCKSrcBlt dwFlags 0x20, the key colour at m_64). Then dispatch the surface's
 // own slot-8 virtual with `surf`.
 RVA(0x0013e0d0, 0x66)
-int CFileImage::BlitSurf(void* surf, int width, int height, int a4, int a5) {
+i32 CFileImage::BlitSurf(void* surf, i32 width, i32 height, i32 a4, i32 a5) {
     CDDSurface* s = (CDDSurface*)this;
-    int* desc = (int*)s->m_desc;
-    for (int i = 0x1b; i != 0; i--) {
+    i32* desc = (i32*)s->m_desc;
+    for (i32 i = 0x1b; i != 0; i--) {
         *desc++ = 0;
     }
-    *(int*)(s->m_desc + 0x68) = a5; // m_78
-    *(int*)(s->m_desc + 0xc) = width;
-    *(int*)(s->m_desc + 8) = height;
-    *(int*)s->m_desc = 0x6c;    // dwSize
-    *(int*)(s->m_desc + 4) = 7; // dwFlags
+    *(i32*)(s->m_desc + 0x68) = a5; // m_78
+    *(i32*)(s->m_desc + 0xc) = width;
+    *(i32*)(s->m_desc + 8) = height;
+    *(i32*)s->m_desc = 0x6c;    // dwSize
+    *(i32*)(s->m_desc + 4) = 7; // dwFlags
     if (a4 != 0 && a4 != ((CFileImage*)surf)->m_538) {
-        *(int*)(s->m_desc + 4) = 0x1007;
-        *(int*)(s->m_desc + 0x48) = 0x20; // m_58
+        *(i32*)(s->m_desc + 4) = 0x1007;
+        *(i32*)(s->m_desc + 0x48) = 0x20; // m_58
         s->m_64 = a4;
     }
     return s->v20(surf);
@@ -510,7 +510,7 @@ int CFileImage::BlitSurf(void* surf, int width, int height, int a4, int a5) {
 // docs/patterns/switch-subtract-chain-vs-ifelse.md), case bodies in retail .text
 // order (4, 2, 1).
 RVA(0x0013e550, 0x71)
-int CFileImage::Resolve(void* surf, void* buf, int type, unsigned int size, void* surf2) {
+i32 CFileImage::Resolve(void* surf, void* buf, i32 type, u32 size, void* surf2) {
     if (size == 0) {
         return 0;
     }
@@ -543,16 +543,16 @@ int CFileImage::Resolve(void* surf, void* buf, int type, unsigned int size, void
 // through the surface's BltEx thunk. A bad HRESULT routes through
 // CDirectDrawMgr::GetErrorString (DIRSURF.CPP, line 0x22c). Returns hr == DD_OK.
 RVA(0x0013e760, 0x63)
-int CFileImage::Fill(unsigned long color) {
+i32 CFileImage::Fill(u32 color) {
     CDDSurface* s = (CDDSurface*)this;
-    int fx[0x19]; // DDBLTFX (0x64 bytes)
-    int* p = fx;
-    for (int i = 0x19; i != 0; i--) {
+    i32 fx[0x19]; // DDBLTFX (0x64 bytes)
+    i32* p = fx;
+    for (i32 i = 0x19; i != 0; i--) {
         *p++ = 0;
     }
     fx[0] = 0x64;          // dwSize
-    fx[0x14] = (int)color; // dwFillColor @ +0x50
-    int hr = s->BltEx(0, 0, 0, 0x1000400, fx);
+    fx[0x14] = (i32)color; // dwFillColor @ +0x50
+    i32 hr = s->BltEx(0, 0, 0, 0x1000400, fx);
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString((char*)"C:\\Proj\\DDrawMgr\\DIRSURF.CPP", 0x22c, hr);
     }
@@ -567,10 +567,10 @@ int CFileImage::Fill(unsigned long color) {
 RVA(0x0013eb40, 0x3c)
 void CFileImage::FillPalette(void* arg) {
     CDDSurface* s = (CDDSurface*)this;
-    unsigned long ck[2];
-    ck[0] = (unsigned long)arg;
-    ck[1] = (unsigned long)arg;
-    if ((int)arg != -1) {
+    u32 ck[2];
+    ck[0] = (u32)arg;
+    ck[1] = (u32)arg;
+    if ((i32)arg != -1) {
         s->m_bc = 1;
     } else {
         s->m_bc = 0;
@@ -585,29 +585,29 @@ void CFileImage::FillPalette(void* arg) {
 // row at locked + row*lPitch; mode 2 walks rows bottom-up (flipped), else top-
 // down. Unlock and return 1.
 RVA(0x0013ece0, 0xc7)
-int CFileImage::BlitDirect(void* src, int mode) {
+i32 CFileImage::BlitDirect(void* src, i32 mode) {
     CDDSurface* s = (CDDSurface*)this;
-    int locked = s->Lock(0);
+    i32 locked = s->Lock(0);
     if (locked == 0) {
         return 0;
     }
-    unsigned char* p = (unsigned char*)src;
+    u8* p = (u8*)src;
     if (mode == 2) {
-        for (int row = *(int*)(s->m_desc + 8) - 1; row >= 0; row--) {
-            unsigned char* dst = (unsigned char*)locked + row * *(int*)(s->m_desc + 0x10);
-            unsigned char* sp = p;
-            int n = s->m_ac;
-            for (int i = n; i > 0; i--) {
+        for (i32 row = *(i32*)(s->m_desc + 8) - 1; row >= 0; row--) {
+            u8* dst = (u8*)locked + row * *(i32*)(s->m_desc + 0x10);
+            u8* sp = p;
+            i32 n = s->m_ac;
+            for (i32 i = n; i > 0; i--) {
                 *dst++ = *sp++;
             }
             p += n;
         }
     } else {
-        for (int row = 0; row < *(int*)(s->m_desc + 8); row++) {
-            unsigned char* dst = (unsigned char*)locked + row * *(int*)(s->m_desc + 0x10);
-            unsigned char* sp = p;
-            int n = s->m_ac;
-            for (int i = n; i > 0; i--) {
+        for (i32 row = 0; row < *(i32*)(s->m_desc + 8); row++) {
+            u8* dst = (u8*)locked + row * *(i32*)(s->m_desc + 0x10);
+            u8* sp = p;
+            i32 n = s->m_ac;
+            for (i32 i = n; i > 0; i--) {
                 *dst++ = *sp++;
             }
             p += n;
@@ -625,9 +625,9 @@ int CFileImage::BlitDirect(void* src, int mode) {
 // then src bpp picks the matching Blit<dest><src> specialization. Unhandled
 // combinations return 0.
 RVA(0x0013faa0, 0x108)
-int CFileImage::Blit(void* src, int bitcount, void* palette, int mode) {
+i32 CFileImage::Blit(void* src, i32 bitcount, void* palette, i32 mode) {
     CDDSurface* s = (CDDSurface*)this;
-    int dest = s->m_a8;
+    i32 dest = s->m_a8;
     if ((dest == 0) == bitcount) {
         return BlitDirect(src, mode);
     }
@@ -694,12 +694,12 @@ CFileImage::~CFileImage() {
 // through the remapping Blit; otherwise straight-copy via BlitDirect. The pixel
 // data starts at buf + bfOffBits. Returns 1 on a successful blit, else 0.
 RVA(0x00143fc0, 0x142)
-void* CFileImage::DecodeBmp(char* surf, void* buf, unsigned int size) {
+void* CFileImage::DecodeBmp(char* surf, void* buf, u32 size) {
     CFileImage* pal = (CFileImage*)surf;
     BITMAPINFOHEADER* ih = (BITMAPINFOHEADER*)((char*)buf + 0xe);
-    int width = ih->biWidth;
-    int bitcount = ih->biBitCount;
-    int height = ih->biHeight;
+    i32 width = ih->biWidth;
+    i32 bitcount = ih->biBitCount;
+    i32 height = ih->biHeight;
     if (m_1c != width) {
         return 0;
     }
@@ -710,8 +710,8 @@ void* CFileImage::DecodeBmp(char* surf, void* buf, unsigned int size) {
         return 0;
     }
 
-    int remap = 0;
-    int palBpp = pal->m_538;
+    i32 remap = 0;
+    i32 palBpp = pal->m_538;
     if (palBpp != bitcount) {
         remap = 1;
     }
@@ -722,8 +722,8 @@ void* CFileImage::DecodeBmp(char* surf, void* buf, unsigned int size) {
     void* palette = 0;
     if (remap) {
         if (bitcount == 8) {
-            unsigned char* src = (unsigned char*)buf + 0x36;
-            unsigned char* d = s_palBmp;
+            u8* src = (u8*)buf + 0x36;
+            u8* d = s_palBmp;
             do {
                 d[0] = src[2];
                 d[1] = src[1];
@@ -759,7 +759,7 @@ void* CFileImage::LoadBmp(char* name, char* path) {
         return 0;
     }
 
-    unsigned int len = file.GetLength();
+    u32 len = file.GetLength();
     if (len == 0) {
         return 0;
     }
@@ -790,17 +790,17 @@ void* CFileImage::LoadBmp(char* name, char* path) {
 // through the palette (built from the PCX trailing 768-byte VGA palette for 8bpp,
 // or the surface palette for 24bpp). Returns 1 on success, 0 on failure.
 RVA(0x00144ee0, 0x225)
-void* CFileImage::DecodePcx(char* surf, void* buf, unsigned int size) {
+void* CFileImage::DecodePcx(char* surf, void* buf, u32 size) {
     if (!buf) {
         return 0;
     }
     CFileImage* pal = (CFileImage*)surf;
-    unsigned char* hdr = (unsigned char*)buf;
-    int width = *(short*)(hdr + 8) - *(short*)(hdr + 4) + 1;
-    int height = *(short*)(hdr + 0xa) - *(short*)(hdr + 6) + 1;
-    unsigned char planes = hdr[0x41];
+    u8* hdr = (u8*)buf;
+    i32 width = *(i16*)(hdr + 8) - *(i16*)(hdr + 4) + 1;
+    i32 height = *(i16*)(hdr + 0xa) - *(i16*)(hdr + 6) + 1;
+    u8 planes = hdr[0x41];
 
-    int bitcount = 0;
+    i32 bitcount = 0;
     if (planes == 1) {
         bitcount = 8;
     } else if (planes == 3) {
@@ -816,8 +816,8 @@ void* CFileImage::DecodePcx(char* surf, void* buf, unsigned int size) {
         return 0;
     }
 
-    int remap = 0;
-    int palBpp = pal->m_538;
+    i32 remap = 0;
+    i32 palBpp = pal->m_538;
     if (palBpp != bitcount) {
         remap = 1;
     }
@@ -828,8 +828,8 @@ void* CFileImage::DecodePcx(char* surf, void* buf, unsigned int size) {
     void* palette = 0;
     if (remap) {
         if (bitcount == 8) {
-            unsigned char* src = (unsigned char*)buf + size - 0x300;
-            unsigned char* d = s_palPcx;
+            u8* src = (u8*)buf + size - 0x300;
+            u8* d = s_palPcx;
             do {
                 d[0] = *src++;
                 d[1] = *src++;
@@ -843,8 +843,8 @@ void* CFileImage::DecodePcx(char* surf, void* buf, unsigned int size) {
         }
     }
 
-    unsigned char* pixels = (unsigned char*)buf + 0x80;
-    int ok;
+    u8* pixels = (u8*)buf + 0x80;
+    i32 ok;
     void* decoded = 0;
     if (!remap) {
         if (bitcount == 8) {
@@ -898,7 +898,7 @@ void* CFileImage::LoadPcx(char* name, char* path) {
         return 0;
     }
 
-    unsigned int len = file.GetLength();
+    u32 len = file.GetLength();
     if (len == 0) {
         return 0;
     }
@@ -930,13 +930,13 @@ void* CFileImage::LoadPcx(char* name, char* path) {
 // (RunDecode1) and blit through the palette. flags&1 (TRANSPARENCY) installs the
 // transparent colour (surf2) via FillPalette. Returns 1 on success, 0 on failure.
 RVA(0x00145b10, 0x1b5)
-void* CFileImage::DecodePid(char* surf, void* buf, unsigned int size, void* surf2) {
+void* CFileImage::DecodePid(char* surf, void* buf, u32 size, void* surf2) {
     CFileImage* pal = (CFileImage*)surf;
-    unsigned char* hdr = (unsigned char*)buf;
-    int flags = *(int*)(hdr + 4);
-    int width = *(int*)(hdr + 8);
-    int height = *(int*)(hdr + 0xc);
-    unsigned char* data = hdr + 0x20;
+    u8* hdr = (u8*)buf;
+    i32 flags = *(i32*)(hdr + 4);
+    i32 width = *(i32*)(hdr + 8);
+    i32 height = *(i32*)(hdr + 0xc);
+    u8* data = hdr + 0x20;
 
     if (width & 3) {
         return 0;
@@ -952,8 +952,8 @@ void* CFileImage::DecodePid(char* surf, void* buf, unsigned int size, void* surf
     if (pal->m_93c != 0) {
         palette = pal->m_53c;
     }
-    int remap = 0;
-    int palBpp = pal->m_538;
+    i32 remap = 0;
+    i32 palBpp = pal->m_538;
     if (palBpp != 8) {
         remap = 1;
     }
@@ -962,8 +962,8 @@ void* CFileImage::DecodePid(char* surf, void* buf, unsigned int size, void* surf
         if (size <= 0x300) {
             return 0;
         }
-        unsigned char* src = (unsigned char*)buf + size - 0x300;
-        unsigned char* d = s_palPidData;
+        u8* src = (u8*)buf + size - 0x300;
+        u8* d = s_palPidData;
         do {
             d[0] = *src++;
             d[1] = *src++;
@@ -1025,7 +1025,7 @@ void* CFileImage::LoadPid(char* name, char* path, void* a3) {
         return 0;
     }
 
-    unsigned int len = file.GetLength();
+    u32 len = file.GetLength();
     void* buf = operator new(len);
     if (!buf) {
         return 0;
@@ -1052,13 +1052,13 @@ void* CFileImage::LoadPid(char* name, char* path, void* a3) {
 // palette (built from the trailing 768-byte VGA palette when flags&0x80 is set,
 // else the surface palette). flags&1 (TRANSPARENCY) installs a5 via FillPalette.
 RVA(0x001457a0, 0x22c)
-int CFileImage::DecodePcxData(void* surf, int bufptr, int size, int a4, int a5) {
-    unsigned char* hdr = (unsigned char*)bufptr; // arg2: the source header pointer
+i32 CFileImage::DecodePcxData(void* surf, i32 bufptr, i32 size, i32 a4, i32 a5) {
+    u8* hdr = (u8*)bufptr; // arg2: the source header pointer
     CFileImage* dst = (CFileImage*)surf;
-    int flags = *(int*)(hdr + 4);
-    int w = *(int*)(hdr + 8);
-    int h = *(int*)(hdr + 0xc);
-    unsigned char* data = hdr + 0x20;
+    i32 flags = *(i32*)(hdr + 4);
+    i32 w = *(i32*)(hdr + 8);
+    i32 h = *(i32*)(hdr + 0xc);
+    u8* data = hdr + 0x20;
 
     if (w & 3) {
         return 0;
@@ -1073,18 +1073,18 @@ int CFileImage::DecodePcxData(void* surf, int bufptr, int size, int a4, int a5) 
     if (dst->m_93c) {
         palette = dst->m_53c;
     }
-    int remap = 0;
-    int palBpp = dst->m_538;
+    i32 remap = 0;
+    i32 palBpp = dst->m_538;
     if (palBpp != 8) {
         remap = 1;
     }
 
     if (flags & 0x80) {
-        if ((unsigned int)size <= 0x300) {
+        if ((u32)size <= 0x300) {
             return 0;
         }
-        unsigned char* src = hdr + size - 0x300;
-        unsigned char* d = s_palPcxData;
+        u8* src = hdr + size - 0x300;
+        u8* d = s_palPcxData;
         do {
             d[0] = *src++;
             d[1] = *src++;
@@ -1145,14 +1145,14 @@ int CFileImage::DecodePcxData(void* surf, int bufptr, int size, int a4, int a5) 
 // Opens a PCX file, reads data, calls DecodePcxData.
 // ===========================================================================
 RVA(0x001459d0, 0x135)
-int CFileImage::DecodePcxEx(char* name, char* path, void* a3, void* a4) {
+i32 CFileImage::DecodePcxEx(char* name, char* path, void* a3, void* a4) {
     CFileIO file;
 
     if (!file.Open(path, 0, 0)) {
         return 0;
     }
 
-    unsigned int len = file.GetLength();
+    u32 len = file.GetLength();
     void* buf = operator new(len);
     if (!buf) {
         return 0;
@@ -1163,7 +1163,7 @@ int CFileImage::DecodePcxEx(char* name, char* path, void* a3, void* a4) {
         return 0;
     }
 
-    int result = DecodePcxData(name, (int)buf, len, (int)a3, (int)a4);
+    i32 result = DecodePcxData(name, (i32)buf, len, (i32)a3, (i32)a4);
     operator delete(buf);
     return result;
 }
@@ -1179,14 +1179,14 @@ int CFileImage::DecodePcxEx(char* name, char* path, void* a3, void* a4) {
 // handled it (PID = type 4). Returns 1 on success, else 0. The case labels lower
 // to the running-subtract chain (switch, bodies in retail .text order 4, 2, 1).
 RVA(0x00148890, 0xad)
-int CFileImage::ResolveEx(void* surf, void* buf, int type, unsigned int size, int ctrl, int trans) {
+i32 CFileImage::ResolveEx(void* surf, void* buf, i32 type, u32 size, i32 ctrl, i32 trans) {
     if (size == 0) {
         return 0;
     }
-    int c = ctrl | 0x40;
+    i32 c = ctrl | 0x40;
     switch (type) {
         case 4:
-            if (!DecodePcxData(surf, (int)buf, size, c, trans)) {
+            if (!DecodePcxData(surf, (i32)buf, size, c, trans)) {
                 return 0;
             }
             break;

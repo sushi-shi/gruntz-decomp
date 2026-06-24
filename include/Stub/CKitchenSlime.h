@@ -5,7 +5,7 @@
 // CKitchenSlime : CUserLogic (RTTI). sizeof 0x90.
 class CKitchenSlime : public CUserLogic {
 public:
-    CKitchenSlime(int);
+    CKitchenSlime(i32);
     char m_size_pad[0x50]; // own region over CUserLogic (0x40)
 };
 SIZE(CKitchenSlime, 0x90);

@@ -30,44 +30,44 @@ extern CButeTree g_buteTree;
 // (~CUserBase / ~CUserLogic are now inline in the header so leaf dtors fold the
 // whole base teardown; the remaining out-of-line virtuals still anchor the
 // vftables.)
-int CUserBase::UserBaseVfunc1() {
+i32 CUserBase::UserBaseVfunc1() {
     return 0;
 }
-int CUserBase::UserBaseVfunc2() {
+i32 CUserBase::UserBaseVfunc2() {
     return 0;
 }
 
-int CUserLogic::UserLogicVfunc1() {
+i32 CUserLogic::UserLogicVfunc1() {
     return 0;
 }
-int CUserLogic::UserLogicVfunc2() {
+i32 CUserLogic::UserLogicVfunc2() {
     return 0;
 }
-int CUserLogic::UserLogicVfunc3() {
+i32 CUserLogic::UserLogicVfunc3() {
     return 0;
 }
-int CUserLogic::UserLogicVfunc4() {
+i32 CUserLogic::UserLogicVfunc4() {
     return 0;
 }
-int CUserLogic::UserLogicVfunc5() {
+i32 CUserLogic::UserLogicVfunc5() {
     return 0;
 }
-int CUserLogic::UserLogicVfunc6() {
+i32 CUserLogic::UserLogicVfunc6() {
     return 0;
 }
-int CUserLogic::UserLogicVfunc7() {
+i32 CUserLogic::UserLogicVfunc7() {
     return 0;
 }
-int CUserLogic::UserLogicVfunc8() {
+i32 CUserLogic::UserLogicVfunc8() {
     return 0;
 }
-int CUserLogic::UserLogicVfunc9() {
+i32 CUserLogic::UserLogicVfunc9() {
     return 0;
 }
-int CUserLogic::UserLogicVfuncA() {
+i32 CUserLogic::UserLogicVfuncA() {
     return 0;
 }
-int CUserLogic::UserLogicVfuncB() {
+i32 CUserLogic::UserLogicVfuncB() {
     return 0;
 }
 
@@ -80,7 +80,7 @@ int CUserLogic::UserLogicVfuncB() {
 //     (reached via `lea ecx,[esi+0x34]`). Modeled as a method on a tiny helper.
 // (Both bodies are pinned in src/Stub/Discovered.cpp.)
 struct CSerialSub34 {
-    int Chain(int a, int b, int c, int d); // 0x8c00
+    i32 Chain(i32 a, i32 b, i32 c, i32 d); // 0x8c00
 };
 // ===========================================================================
 // Class declarations (one vftable each; some have both ctor shapes).
@@ -124,8 +124,8 @@ public:
     CGruntHealthSprite(CGameObject* obj); // 0x07eb00 (1-arg)
     virtual ~CGruntHealthSprite() OVERRIDE;
     char m_pad40[0x5c - 0x40]; // CUserLogic ends +0x40; anchors at +0x5c
-    int m_5c;                  // +0x5c
-    int m_60;                  // +0x60
+    i32 m_5c;                  // +0x5c
+    i32 m_60;                  // +0x60
 };
 
 class CVoiceTrigger : public CUserLogic {
@@ -139,7 +139,7 @@ public:
     CTeleporter(CGameObject* obj); // 0x041020
     virtual ~CTeleporter() OVERRIDE;
     char m_pad40[0x58 - 0x40];  // CUserLogic ends +0x40; CTeleporter fields at +0x58
-    int m_58, m_5c, m_60, m_64; // +0x58..+0x67
+    i32 m_58, m_5c, m_60, m_64; // +0x58..+0x67
     void EnterField1();         // 0x1771 (this-method, no body)
     void EnterField2();         // 0x27d9 (this-method, no body)
 };
@@ -149,11 +149,11 @@ public:
     CSecretTeleporterTrigger(CGameObject* obj); // 0x041e90
     virtual ~CSecretTeleporterTrigger() OVERRIDE;
     // The two overridden CUserLogic virtuals reconstructed below.
-    int Serialize(int a, int b, int c, int d); // 0x010a10 (vtable slot 1)
-    void FireActivation(int coord);            // 0x042150 (vtable slot 4)
+    i32 Serialize(i32 a, i32 b, i32 c, i32 d); // 0x010a10 (vtable slot 1)
+    void FireActivation(i32 coord);            // 0x042150 (vtable slot 4)
     // The registered point-activation callback 0x042b80 stamped into the
     // coordinate registry by FireActivation. __thiscall, no args, returns int.
-    int SpawnTeleporter(); // 0x042b80
+    i32 SpawnTeleporter(); // 0x042b80
 };
 
 class CWarpStonePad : public CUserLogic {
@@ -178,7 +178,7 @@ class CToobSpikez : public CUserLogic {
 public:
     CToobSpikez(CGameObject* obj); // 0x1145c0
     virtual ~CToobSpikez() OVERRIDE;
-    int m_40; // +0x40
+    i32 m_40; // +0x40
 };
 
 class CParticlez : public CUserLogic {
@@ -191,7 +191,7 @@ class CAniCycle : public CUserLogic {
 public:
     CAniCycle(CGameObject* obj); // 0x0aad20
     virtual ~CAniCycle() OVERRIDE;
-    int m_40; // +0x40
+    i32 m_40; // +0x40
 };
 
 class CSingleAnimation : public CUserLogic {
@@ -211,7 +211,7 @@ class CGruntSelectedSprite : public CUserLogic {
 public:
     CGruntSelectedSprite(CGameObject* obj); // 0x07e3e0
     virtual ~CGruntSelectedSprite() OVERRIDE;
-    int m_40; // +0x40
+    i32 m_40; // +0x40
 };
 
 class CGruntToySprite : public CUserLogic {
@@ -219,14 +219,14 @@ public:
     CGruntToySprite(CGameObject* obj); // 0x07f350
     virtual ~CGruntToySprite() OVERRIDE;
     char m_pad40[0x5c - 0x40];
-    int m_5c; // +0x5c
+    i32 m_5c; // +0x5c
 };
 
 class CGruntPowerupSprite : public CUserLogic {
 public:
     CGruntPowerupSprite(CGameObject* obj); // 0x07fdb0
     virtual ~CGruntPowerupSprite() OVERRIDE;
-    int m_40; // +0x40
+    i32 m_40; // +0x40
 };
 
 // ---------------------------------------------------------------------------
@@ -269,21 +269,21 @@ class CFrontCandyAni : public CUserLogic {
 public:
     CFrontCandyAni(CGameObject* obj); // 0x0acf40
     virtual ~CFrontCandyAni() OVERRIDE;
-    int m_40; // +0x40
+    i32 m_40; // +0x40
 };
 
 class CBehindCandyAni : public CUserLogic {
 public:
     CBehindCandyAni(CGameObject* obj); // 0x0ad540
     virtual ~CBehindCandyAni() OVERRIDE;
-    int m_40; // +0x40
+    i32 m_40; // +0x40
 };
 
 class CMenuSparkle : public CUserLogic {
 public:
     CMenuSparkle(CGameObject* obj); // 0x0adbe0
     virtual ~CMenuSparkle() OVERRIDE;
-    int m_40; // +0x40
+    i32 m_40; // +0x40
 };
 
 // CPathHazard (0x13170, no-arg): same folded base schedule, then zeroes its own
@@ -309,14 +309,14 @@ public:
 // are modeled). Declared extern only - wwdfile owns the DATA label.
 struct WwdGameRegAux {
     char m_pad00[0x3c];
-    int m_3c; // +0x3c
+    i32 m_3c; // +0x3c
 };
 
 // The on-screen-cue receiver (g_gameReg->m_60). The teleporter spawn fires a
 // 6-arg cue (CueA, ret 0x18, via the 0x39f4 thunk). External/no-body
 // (reloc-masked).
 struct CTeleCueSink {
-    void CueA(void* hit, int b, int c, int d, int e, int f); // 0x11b3b0
+    void CueA(void* hit, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x11b3b0
 };
 
 // The point-probe sink (g_gameReg->m_68): given screen x/y, fills two out-ints
@@ -324,16 +324,16 @@ struct CTeleCueSink {
 // 0x35f3 thunk (-> 0x75af0). External/no-body (reloc-masked).
 struct CTrigger; // the trigger object the probe returns / the cue receives
 struct CTriggerProbe {
-    CTrigger* Probe(int x, int y, int* outA, int* outB, int flag); // 0x75af0
+    CTrigger* Probe(i32 x, i32 y, i32* outA, i32* outB, i32 flag); // 0x75af0
 };
 
 // The viewport rect base reached as g_gameReg->m_30->m_24->m_5c + 0x40; the
 // on-screen test reads its left/top/right/bottom (m_0/m_4/m_8/m_c).
 struct CViewRect {
-    int m_0; // left
-    int m_4; // top
-    int m_8; // right
-    int m_c; // bottom
+    i32 m_0; // left
+    i32 m_4; // top
+    i32 m_8; // right
+    i32 m_c; // bottom
 };
 struct CViewport {
     char m_pad0[0x5c];
@@ -345,35 +345,35 @@ struct CViewport {
 // touched offsets are modeled.
 struct CTeleHudAux {
     char m_pad0[0xbc];
-    int m_bc; // +0xbc  teleport-link id
+    i32 m_bc; // +0xbc  teleport-link id
 };
 struct CTeleHudSprite {
     char m_pad0[0x5c];
-    int m_5c; // +0x5c  screen x
-    int m_60; // +0x60  screen y
+    i32 m_5c; // +0x5c  screen x
+    i32 m_60; // +0x60  screen y
     char m_pad64[0x7c - 0x64];
     CTeleHudAux* m_7c; // +0x7c
     char m_pad80[0x114 - 0x80];
-    int m_114; // +0x114  tile col
-    int m_118; // +0x118  tile row
-    int m_11c; // +0x11c
-    int m_120; // +0x120
-    int m_124; // +0x124  state
-    int m_128; // +0x128
+    i32 m_114; // +0x114  tile col
+    i32 m_118; // +0x118  tile row
+    i32 m_11c; // +0x11c
+    i32 m_120; // +0x120
+    i32 m_124; // +0x124  state
+    i32 m_128; // +0x128
     char m_pad12c[0x164 - 0x12c];
-    int m_164; // +0x164
-    int m_168; // +0x168
+    i32 m_164; // +0x164
+    i32 m_168; // +0x168
 };
 
 // The HUD sprite factory the spawn calls (g_gameReg->m_30->m_8->CreateSprite).
 struct CTeleSpriteFactory {
     CTeleHudSprite* CreateSprite(
-        int kind,
-        int gx,
-        int gy,
-        int hint,
+        i32 kind,
+        i32 gx,
+        i32 gy,
+        i32 hint,
         const char* name,
-        int flags
+        i32 flags
     ); // 0x1597b0
 };
 
@@ -403,15 +403,15 @@ struct WwdGameReg {
     char m_pad6c[0x7c - 0x6c];
     WwdGameRegAux* m_7c; // +0x7c
     char m_pad80[0x118 - 0x80];
-    int m_118; // +0x118
+    i32 m_118; // +0x118
     char m_pad11c[0x130 - 0x11c];
-    int m_130; // +0x130
-    int m_134; // +0x134
+    i32 m_130; // +0x130
+    i32 m_134; // +0x134
 };
 extern WwdGameReg* g_gameReg;
 
 // The CRT rand() (0x11fee0); CMenuSparkle seeds its +0x130 timer from it.
-extern "C" int rand(void);
+extern "C" i32 rand(void);
 
 // ---------------------------------------------------------------------------
 // The per-coordinate activation registry FireActivation (0x042150) dispatches
@@ -425,25 +425,25 @@ extern "C" int rand(void);
 // collection methods are external/no-body.
 struct CActEntry; // an entry: first dword is the registered handler vtable
 struct CActColl {
-    int Find(int coord, int z); // 0x16da80 (__thiscall ret 8)
+    i32 Find(i32 coord, i32 z); // 0x16da80 (__thiscall ret 8)
 };
 struct CActColl2 {
-    void Insert(void* coll, void* item, int n); // 0x16d850 (__thiscall ret 0xc)
+    void Insert(void* coll, void* item, i32 n); // 0x16d850 (__thiscall ret 0xc)
 };
-extern "C" int ActAlloc(); // 0x16d990
+extern "C" i32 ActAlloc(); // 0x16d990
 
 DATA(0x00244690)
-extern int g_actLo;
+extern i32 g_actLo;
 DATA(0x00244694)
-extern int g_actHi;
+extern i32 g_actHi;
 DATA(0x00244698)
 extern char* g_actBase;
 DATA(0x002446a0)
-extern int g_actStride;
+extern i32 g_actStride;
 DATA(0x0024469c)
 extern CActEntry* g_actCur;
 DATA(0x002446a8)
-extern int g_actScratch;
+extern i32 g_actScratch;
 DATA(0x00244688)
 extern CActColl g_actColl;
 DATA(0x0024468c)
@@ -465,7 +465,7 @@ struct CActEntry {
 };
 
 // The inlined coordinate->Entry* lookup FireActivation folds in twice.
-static inline CActEntry* ActLookup(int coord) {
+static inline CActEntry* ActLookup(i32 coord) {
     g_actScratch = 0;
     if (coord >= g_actLo && coord <= g_actHi) {
         return (CActEntry*)(g_actBase + (coord - g_actLo) * g_actStride);
@@ -487,7 +487,7 @@ static inline CActEntry* ActLookup(int coord) {
 // Chains the shared serialize helper on `this`, and (only on success) the +0x34
 // serializable sub-object's chain; normalizes the result to a strict bool.
 RVA(0x00010a10, 0x47)
-int CSecretTeleporterTrigger::Serialize(int a, int b, int c, int d) {
+i32 CSecretTeleporterTrigger::Serialize(i32 a, i32 b, i32 c, i32 d) {
     if (!SerializeChain(a, b, c, d)) {
         return 0;
     }
@@ -553,8 +553,8 @@ CVoiceTrigger::CVoiceTrigger() {}
 RVA(0x00029a50, 0x15)
 void CUserLogic::GetScreenPos(ScreenPoint* out) {
     CGameObject* o = m_10;
-    int y = o->m_60;
-    int x = o->m_5c;
+    i32 y = o->m_60;
+    i32 x = o->m_5c;
     out->x = x;
     out->y = y;
 }
@@ -602,7 +602,7 @@ CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj) : CUserLogi
 // Look the activation coordinate up in the per-coordinate registry; if the entry
 // has a registered handler, look it up again and dispatch it __thiscall on this.
 RVA(0x00042150, 0x102)
-void CSecretTeleporterTrigger::FireActivation(int coord) {
+void CSecretTeleporterTrigger::FireActivation(i32 coord) {
     CActEntry* e = ActLookup(coord);
     if (e->m_fn != 0) {
         CActEntry* e2 = ActLookup(coord);
@@ -636,8 +636,8 @@ CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj) : CUserLogic(obj) {
 // hit grunt is on-screen) fire the 6-arg cue. Always closes by marking the
 // trigger sub-object hidden (m_38->m_08 |= 0x10000).
 RVA(0x00042b80, 0x153)
-int CSecretTeleporterTrigger::SpawnTeleporter() {
-    int loc0, loc4;
+i32 CSecretTeleporterTrigger::SpawnTeleporter() {
+    i32 loc0, loc4;
     CTeleHudSprite* o = (CTeleHudSprite*)m_10;
     CTrigger* hit = g_gameReg->m_68->Probe(o->m_5c, o->m_60, &loc0, &loc4, 1);
     if (hit) {
@@ -663,8 +663,8 @@ int CSecretTeleporterTrigger::SpawnTeleporter() {
             spr->m_128 = 0;
             CTeleHudSprite* eo = hit->m_10;
             WwdGameReg* g = g_gameReg;
-            int ey = eo->m_60;
-            int ex = eo->m_5c;
+            i32 ey = eo->m_60;
+            i32 ex = eo->m_5c;
             CViewRect* rc = (CViewRect*)(g->m_30->m_24->m_5c + 0x40);
             if (ex < rc->m_8 && ex >= rc->m_0 && ey < rc->m_c && ey >= rc->m_4) {
                 g->m_60->CueA(hit, 0x3fc, -1, 0, -1, -1);
@@ -846,7 +846,7 @@ RVA(0x000ac620, 0x1cf)
 CEyeCandy::CEyeCandy(CGameObject* obj) : CUserLogic(obj) {
     CGameObject* o = m_10;
     if (o->m_74 == 0 && o->m_198 != 0) {
-        int v = o->m_198->m_1c + o->m_60 + 0x186a0;
+        i32 v = o->m_198->m_1c + o->m_60 + 0x186a0;
         if (o->m_74 != v) {
             o->m_74 = v;
             o->m_08 |= 0x20000;
@@ -1011,7 +1011,7 @@ CToobSpikez::CToobSpikez(CGameObject* obj) : CUserLogic(obj) {
 // @source: winapi:CopyRect
 // @stub
 RVA(0x0004d800, 0x423)
-int CUserLogic::winapi_04d800_CopyRect(int, int, int, int, int, int, int, int, int, int, int, int) {
+i32 CUserLogic::winapi_04d800_CopyRect(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32) {
     return 0;
 }
 
@@ -1019,7 +1019,7 @@ int CUserLogic::winapi_04d800_CopyRect(int, int, int, int, int, int, int, int, i
 // @source: winapi:PostMessageA
 // @stub
 RVA(0x00064540, 0x11c)
-int CUserLogic::winapi_064540_PostMessageA() {
+i32 CUserLogic::winapi_064540_PostMessageA() {
     return 0;
 }
 
@@ -1027,7 +1027,7 @@ int CUserLogic::winapi_064540_PostMessageA() {
 // @source: winapi:IntersectRect;PtInRect
 // @stub
 RVA(0x000ee800, 0x971)
-int CUserLogic::winapi_0ee800_IntersectRect_PtInRect() {
+i32 CUserLogic::winapi_0ee800_IntersectRect_PtInRect() {
     return 0;
 }
 
@@ -1035,13 +1035,13 @@ int CUserLogic::winapi_0ee800_IntersectRect_PtInRect() {
 // @source: string-xref
 // @stub
 RVA(0x0004dd50, 0x22c0)
-void CUserLogic::LoadGruntTypeTable(int, int, int, int) {}
+void CUserLogic::LoadGruntTypeTable(i32, i32, i32, i32) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
 RVA(0x0005d210, 0x1443)
-void CUserLogic::LoadGruntTuningConstants(int) {}
+void CUserLogic::LoadGruntTuningConstants(i32) {}
 
 // @confidence: med
 // @source: decomp-xref

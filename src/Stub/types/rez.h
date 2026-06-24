@@ -1,6 +1,8 @@
 #ifndef FORMATS_REZ_H
 #define FORMATS_REZ_H
 
+#include <Ints.h>
+
 /*
  * REZ / VRZ archive directory format — "RezMgr" (Monolith resource manager).
  *
@@ -81,8 +83,8 @@ typedef char RezFourCC[4];
 struct RezDirEntry {
     RezFourCC type; // "Type" — FOURCC resource-type tag (4 chars)
     void* name;     // "Rez Name" — entry name (MFC CString ptr; layout placeholder)
-    int size;       // "Size" — payload byte length
-    int id;         // "ID" — numeric resource id ("ID = %i")
+    i32 size;       // "Size" — payload byte length
+    i32 id;         // "ID" — numeric resource id ("ID = %i")
 };
 
 /*

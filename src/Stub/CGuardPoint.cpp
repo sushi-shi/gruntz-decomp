@@ -7,4 +7,4 @@
 // @source: rtti-vptr
 // @stub
 RVA(0x000ae5f0, 0x18f)
-CGuardPoint::CGuardPoint(int) {}
+CGuardPoint::CGuardPoint(i32) {}

@@ -9,7 +9,7 @@
 class CUserLogic : public CUserBase {
 public:
     void CUserLogic_0138d0();    // RVA 0x0138d0 (the shared base ctor)
-    void CUserLogic_058cd0(int); // RVA 0x058cd0
+    void CUserLogic_058cd0(i32); // RVA 0x058cd0
     char m_pad[0x40 - 0x04];     // own region over CUserBase(0x04); fields in UserLogic.h
 };
 SIZE(CUserLogic, 0x40);

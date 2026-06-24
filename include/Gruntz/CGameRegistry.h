@@ -6,6 +6,8 @@
 #ifndef GRUNTZ_GRUNTZ_CGAMEREGISTRY_H
 #define GRUNTZ_GRUNTZ_CGAMEREGISTRY_H
 
+#include <Ints.h>
+
 struct CSpriteFactory; // +0x30 -> +0x08 factory (CreateSprite); Grunt.h completes it
 class CGruntCueSink;   // +0x60 on-screen cue receiver; Grunt.h completes it
 
@@ -14,7 +16,7 @@ class CGruntCueSink;   // +0x60 on-screen cue receiver; Grunt.h completes it
 // entrance-reset (CGrunt::Stub_062e10) focused-grunt cue path.
 struct CGameViewport {
     char m_pad0[0x5c];
-    int m_5c; // +0x5c  rect/clip base (helper reads +0x40 off this)
+    i32 m_5c; // +0x5c  rect/clip base (helper reads +0x40 off this)
 };
 
 struct CSpriteFactoryHolder { // the +0x30 resource/sprite-factory holder
@@ -32,10 +34,10 @@ struct CSpriteFactoryHolder { // the +0x30 resource/sprite-factory holder
 // cell[1]. m_c/m_10 are the grid dimensions (tile width/height bounds).
 struct CTileGrid {
     char m_pad0[0x8];
-    int**
+    i32**
         m_8;  // +0x08  row-pointer table (m_8[tileY] = row base; cell = (int*)m_8[tileY] + tileX*7)
-    int m_c;  // +0x0c  width in tiles
-    int m_10; // +0x10  height in tiles
+    i32 m_c;  // +0x0c  width in tiles
+    i32 m_10; // +0x10  height in tiles
 };
 
 struct CGameRegistry {
@@ -47,7 +49,7 @@ struct CGameRegistry {
     void PerFrameCue();
 
     char m_pad0[0x14];
-    int m_14; // +0x14  has-window / dev flag (gates rect-update calls)
+    i32 m_14; // +0x14  has-window / dev flag (gates rect-update calls)
     char m_pad18[0x30 - 0x18];
     CSpriteFactoryHolder* m_30; // +0x30
     char m_pad34[0x60 - 0x34];
@@ -58,15 +60,15 @@ struct CGameRegistry {
     CTileGrid* m_70; // +0x70  tile occupancy grid (LoadEntranceConfig)
     void* m_74;      // +0x74  the sprite factory (BeginGridWalk retry path)
     char m_pad78[0x8c - 0x78];
-    int m_8c; // +0x8c  viewport X
-    int m_90; // +0x90  viewport Y
+    i32 m_8c; // +0x8c  viewport X
+    i32 m_90; // +0x90  viewport Y
     char m_pad94[0x134 - 0x94];
-    int m_134; // +0x134 mode discriminator (==1 visible-bounds gate, ==2 alt path)
+    i32 m_134; // +0x134 mode discriminator (==1 visible-bounds gate, ==2 alt path)
     char m_pad138[0x13c - 0x138];
-    int m_13c; // +0x13c view min X
-    int m_140; // +0x140 view min Y
-    int m_144; // +0x144 view max X
-    int m_148; // +0x148 view max Y
+    i32 m_13c; // +0x13c view min X
+    i32 m_140; // +0x140 view min Y
+    i32 m_144; // +0x144 view max X
+    i32 m_148; // +0x148 view max Y
     char m_pad14c[0x15c - 0x14c];
     void* m_15c; // +0x15c level/entity-tree holder
 };

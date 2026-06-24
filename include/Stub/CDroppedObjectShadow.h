@@ -6,7 +6,7 @@
 class CDroppedObjectShadow : public CUserLogic {
 public:
     void LoadAttributes();
-    CDroppedObjectShadow(int);
+    CDroppedObjectShadow(i32);
     char m_size_pad[0x14]; // own region over CUserLogic (0x40)
 };
 SIZE(CDroppedObjectShadow, 0x54);

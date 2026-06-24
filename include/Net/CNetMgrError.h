@@ -17,6 +17,8 @@
 #ifndef NET_CNETMGRERROR_H
 #define NET_CNETMGRERROR_H
 
+#include <Ints.h>
+
 class CNetMgr {
 public:
     // Diagnostic error reporter. Given the calling site's __FILE__/__LINE__, a
@@ -25,7 +27,7 @@ public:
     // reporting-mode globals) beeps, formats it and/or shows it in a "Net
     // Manager" message box owned by `hWnd`. STATIC: it ignores `this` and is
     // __cdecl/caller-cleaned (plain `ret`; call sites `add esp,0x10`).
-    static void ReportError(char* file, int line, long hr, void* hWnd);
+    static void ReportError(char* file, i32 line, i32 hr, void* hWnd);
 };
 
 #endif // NET_CNETMGRERROR_H

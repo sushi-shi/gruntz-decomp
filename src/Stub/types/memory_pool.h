@@ -1,6 +1,8 @@
 #ifndef UTILS_MEMORY_POOL_H
 #define UTILS_MEMORY_POOL_H
 
+#include <Ints.h>
+
 /*
  * Utils::MemoryPool<T> — a fixed-block free-list allocator over a single
  * contiguous char[] block. Each node is { Node* pNext; T data; }; free nodes form
@@ -34,17 +36,17 @@ namespace Utils {
         // Allocates the backing block of `nodesCount` nodes and threads the
         // free-list. @bug (faithfully reproduced from tomalla's reading): the
         // null-check after `new` can never fire, and double-alloc is unguarded.
-        bool AllocateBlock(unsigned int nodesCount);
+        bool AllocateBlock(u32 nodesCount);
         // Pops the next free node's data (returns 0 when only the sentinel remains).
         T* Get();
         // Pushes a node back onto the free-list (uses m_dataOffset to recover Node*).
         void Free(T* pData);
 
     private:
-        char* m_pBlock;            // +0x00  the single contiguous backing block
-        Node* m_pNextFreeNode;     // +0x04  head of the free-list
-        unsigned int m_nodesCount; // +0x08
-        unsigned int m_dataOffset; // +0x0c  offset from Node* to its `data`
+        char* m_pBlock;        // +0x00  the single contiguous backing block
+        Node* m_pNextFreeNode; // +0x04  head of the free-list
+        u32 m_nodesCount;      // +0x08
+        u32 m_dataOffset;      // +0x0c  offset from Node* to its `data`
     }; // 0x10 bytes
 } // namespace Utils
 
@@ -55,10 +57,10 @@ namespace Utils {
 // element-type independent) so `gruntz structs` emits a "MemoryPool_Pair" record.
 // @approx tomalla 1.0.1.77 (offsets version-independent).
 struct MemoryPool_Pair {
-    char* m_pBlock;            // +0x00  the single contiguous backing block
-    void* m_pNextFreeNode;     // +0x04  head of the free-list (a Node*)
-    unsigned int m_nodesCount; // +0x08
-    unsigned int m_dataOffset; // +0x0c  offset from Node* to its `data`
+    char* m_pBlock;        // +0x00  the single contiguous backing block
+    void* m_pNextFreeNode; // +0x04  head of the free-list (a Node*)
+    u32 m_nodesCount;      // +0x08
+    u32 m_dataOffset;      // +0x0c  offset from Node* to its `data`
 }; // 0x10
 
 #endif /* UTILS_MEMORY_POOL_H */

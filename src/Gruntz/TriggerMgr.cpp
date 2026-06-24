@@ -11,8 +11,8 @@
 // pair at +0/+4. Opaque otherwise. These are the record-list / selection-list nodes.
 struct CTmNode {
     CTmNode* m_next; // +0x00
-    int m_4;         // +0x04
-    int* m_payload;  // +0x08  -> { x@+0, y@+4 }
+    i32 m_4;         // +0x04
+    i32* m_payload;  // +0x08  -> { x@+0, y@+4 }
 };
 
 // A placed grid-cell game object (a CGrunt). Only the reloc-masked hooks dispatched
@@ -20,7 +20,7 @@ struct CTmNode {
 struct CTmGrunt {
     void ClearAllSprites();      // 0x4b240 (reloc-masked)
     void ExitGrid();             // 0x641b0 (reloc-masked)
-    void Route(int kind, int a); // 0x60150 (reloc-masked)
+    void Route(i32 kind, i32 a); // 0x60150 (reloc-masked)
     char p0[0x368];
     void* m_368; // +0x368  notify hook
 };
@@ -29,13 +29,13 @@ struct CTmGrunt {
 // two reloc-masked __thiscall hooks are dispatched from the reconstructed leaves.
 struct CTmOverlay {
     void Tick();   // 0x97f0  (reloc-masked)
-    int Release(); // 0x94c0  (reloc-masked) - ret used by OverlayRelease
+    i32 Release(); // 0x94c0  (reloc-masked) - ret used by OverlayRelease
 };
 
 // The goal object at CTriggerMgr+0x23c; ResetAll ORs 0x10000 into its +0x8 flags.
 struct CTmGoal {
     char p0[0x8];
-    int m_8; // +0x08  flags
+    i32 m_8; // +0x08  flags
 };
 
 // The MFC pointer-list at CTriggerMgr+0x240 and at each +0x2d0[i] selection slot;
@@ -51,12 +51,12 @@ struct CTmPtrList {
 
 // The level/group base-index sentinel (DAT_00644c54) the selection helpers guard on
 // (same global the StatzTab toggle keys off; see StatusBarUpdaters.cpp / CPlay.h).
-extern int g_644c54;
+extern i32 g_644c54;
 
 // The global game-registry singleton (?g_gameReg@@3PAUWwdGameReg@@A @0x64556c). Only
 // the +0x2c world back-ptr is read here; the world's hooks are reloc-masked.
 struct CTmWorld {
-    void StopFx(int a, int b); // 0xd0120 (__thiscall, reloc-masked)
+    void StopFx(i32 a, i32 b); // 0xd0120 (__thiscall, reloc-masked)
     void Refresh();            // 0xda2d0 (__thiscall, reloc-masked)
     char p0[0x504];
     void* m_504; // +0x504  pending-fx flag
@@ -72,14 +72,14 @@ extern CTmGameReg* g_gameReg;
 // 1-instr phase shift: retail floats `mov eax,1` up between the stores; we emit it
 // at the epilogue. Structure + offsets byte-exact. docs/patterns/zero-register-pinning.md
 RVA(0x0006b640, 0x2f)
-int CTriggerMgr::SetLevel(void* lvl) {
+i32 CTriggerMgr::SetLevel(void* lvl) {
     if (lvl == 0) {
         return 0;
     }
     *(void**)((char*)this + 0x22c) = lvl;
-    *(int*)((char*)this + 0x230) = 0;
-    *(int*)((char*)this + 0x2a0) = 0;
-    *(int*)((char*)this + 0x2a4) = 0;
+    *(i32*)((char*)this + 0x230) = 0;
+    *(i32*)((char*)this + 0x2a0) = 0;
+    *(i32*)((char*)this + 0x2a4) = 0;
     return 1;
 }
 
@@ -87,7 +87,7 @@ int CTriggerMgr::SetLevel(void* lvl) {
 // if it has a notify hook run NotifyCell(row,col,0) (ret 0); else route the cell by
 // `kind` (0xd => ExitGrid, else Route(kind,arg)) and ret 1; ret 0 when no cell.
 RVA(0x0006bcb0, 0x6a)
-int CTriggerMgr::CellDispatch(int row, int col, int kind, int arg) {
+i32 CTriggerMgr::CellDispatch(i32 row, i32 col, i32 kind, i32 arg) {
     CTmGrunt* cell = *(CTmGrunt**)((char*)this + (row * 15 + col) * 4 + 0x1c);
     if (cell == 0) {
         return 0;
@@ -114,8 +114,8 @@ void CTriggerMgr::ResetAll() {
         do {
             CTmNode* cur = n;
             n = n->m_next;
-            int* payload = cur->m_payload;
-            int idx = payload[1] + 15 * payload[0];
+            i32* payload = cur->m_payload;
+            i32 idx = payload[1] + 15 * payload[0];
             CTmGrunt* cell = *(CTmGrunt**)((char*)this + idx * 4 + 0x1c);
             if (cell != 0) {
                 cell->ClearAllSprites();
@@ -141,7 +141,7 @@ void CTriggerMgr::ResetAll() {
 // eax=0 return (fall-through); our cl emits `je end; jmp top` + a separate
 // `xor eax,eax`. docs/patterns/identical-return-epilogue-tailmerge.md
 RVA(0x000784d0, 0x3a)
-int CTriggerMgr::RecordListHas(int x, int y) {
+i32 CTriggerMgr::RecordListHas(i32 x, i32 y) {
     CTmNode* n = *(CTmNode**)((char*)this + 0x244);
     if (n == 0) {
         return 0;
@@ -149,7 +149,7 @@ int CTriggerMgr::RecordListHas(int x, int y) {
     do {
         CTmNode* cur = n;
         n = n->m_next;
-        int* p = cur->m_payload;
+        i32* p = cur->m_payload;
         if (p[0] == x && p[1] == y) {
             return 1;
         }
@@ -168,7 +168,7 @@ RVA(0x00078880, 0x3c)
 void CTriggerMgr::ClearRecords() {
     CTmNode* n = *(CTmNode**)((char*)this + 0x244);
     if (n != 0) {
-        int bias = g_freeListNodeBias;
+        i32 bias = g_freeListNodeBias;
         void* head = g_freeList;
         do {
             CTmNode* cur = n;
@@ -193,7 +193,7 @@ void CTriggerMgr::OverlayTick() {
 
 // 0x79b00: OverlayRelease - release the overlay sub-object when present; ret 1.
 RVA(0x00079b00, 0x15)
-int CTriggerMgr::OverlayRelease() {
+i32 CTriggerMgr::OverlayRelease() {
     CTmOverlay* ov = *(CTmOverlay**)((char*)this + 0x25c);
     if (ov) {
         return ov->Release();
@@ -208,13 +208,13 @@ int CTriggerMgr::OverlayRelease() {
 // (`mov dl,[eax+ecx]`, edx hoisted-zeroed) and splits the two prologue pushes around
 // the count load; our cl peels the i==0 iteration. docs/patterns/zero-store-before-loop-inline-bound.md
 RVA(0x00079b30, 0x3e)
-int CTriggerMgr::ByteTableHas(int b) {
-    int n = *(int*)((char*)this + 0x268);
-    int i = 0;
+i32 CTriggerMgr::ByteTableHas(i32 b) {
+    i32 n = *(i32*)((char*)this + 0x268);
+    i32 i = 0;
     if (n <= 0) {
         return 0;
     }
-    unsigned char* tbl = *(unsigned char**)((char*)this + 0x264);
+    u8* tbl = *(u8**)((char*)this + 0x264);
     do {
         if (b == tbl[i]) {
             return 1;
@@ -229,11 +229,11 @@ int CTriggerMgr::ByteTableHas(int b) {
 RVA(0x0007be10, 0x34)
 void CTriggerMgr::StopPendingFx() {
     CTmWorld* world = g_gameReg->m_2c;
-    if (*(int*)((char*)this + 0x2a8) == 0 && world->m_504 == 0) {
+    if (*(i32*)((char*)this + 0x2a8) == 0 && world->m_504 == 0) {
         return;
     }
     world->StopFx(0, 0);
-    *(int*)((char*)this + 0x2a8) = 0;
+    *(i32*)((char*)this + 0x2a8) = 0;
 }
 
 // 0x7d0c0: ClearSelections - drain all 10 selection lists (+0x2d0, stride 0x1c) back
@@ -241,7 +241,7 @@ void CTriggerMgr::StopPendingFx() {
 RVA(0x0007d0c0, 0x57)
 void CTriggerMgr::ClearSelections() {
     CTmPtrList* list = (CTmPtrList*)((char*)this + 0x2d0);
-    int k = 10;
+    i32 k = 10;
     do {
         CTmNode* n = list->m_head;
         if (n != 0) {
@@ -249,7 +249,7 @@ void CTriggerMgr::ClearSelections() {
             do {
                 CTmNode* cur = n;
                 n = n->m_next;
-                int* payload = cur->m_payload;
+                i32* payload = cur->m_payload;
                 if (payload != 0) {
                     void** slot = (void**)((char*)payload - g_freeListNodeBias);
                     *slot = head;
@@ -262,15 +262,15 @@ void CTriggerMgr::ClearSelections() {
         list = (CTmPtrList*)((char*)list + 0x1c);
         k--;
     } while (k != 0);
-    *(int*)((char*)this + 0x3e8) = -1;
+    *(i32*)((char*)this + 0x3e8) = -1;
 }
 
 // 0x7d140: ClearRow(row) - run ExitGrid on the 15 live, hook-less cells of grid
 // row `row` (+0x1c); clear +0x400 when row is the magic group, then refresh world.
 RVA(0x0007d140, 0x61)
-int CTriggerMgr::ClearRow(int row) {
+i32 CTriggerMgr::ClearRow(i32 row) {
     CTmGrunt** cell = (CTmGrunt**)((char*)this + row * 15 * 4 + 0x1c);
-    int i = 15;
+    i32 i = 15;
     do {
         CTmGrunt* c = *cell;
         if (c != 0 && c->m_368 == 0) {
@@ -280,7 +280,7 @@ int CTriggerMgr::ClearRow(int row) {
         i--;
     } while (i != 0);
     if (row == g_644c54) {
-        *(int*)((char*)this + 0x400) = 0;
+        *(i32*)((char*)this + 0x400) = 0;
     }
     g_gameReg->m_2c->Refresh();
     return 1;
@@ -294,19 +294,19 @@ int CTriggerMgr::ClearRow(int row) {
 // retail loops with `jl top` (fall-through exit) and interleaves `mov eax,0xa` between
 // the pops; our cl emits `jge end; jmp top` + a clean epilogue. topic:wall.
 RVA(0x0007d2a0, 0x64)
-int CTriggerMgr::SelectionListFind(int key, int y) {
+i32 CTriggerMgr::SelectionListFind(i32 key, i32 y) {
     if (key != g_644c54) {
         return 0;
     }
-    int result = 0;
-    int i = 0;
+    i32 result = 0;
+    i32 i = 0;
     CTmNode** head = (CTmNode**)((char*)this + 0x2d4);
     do {
         CTmNode* n = *head;
         while (n != 0) {
             CTmNode* cur = n;
             n = n->m_next;
-            int* payload = cur->m_payload;
+            i32* payload = cur->m_payload;
             if (payload[0] == key && payload[1] == y) {
                 if (result != 0) {
                     return 10;

@@ -50,7 +50,7 @@ extern void* g_freeList;
 
 // The per-map start-coord array's SetAtGrow appender (callee-cleanup engine free
 // fn; 2 args). The marker pair node is appended to the array handle (arr->m_8).
-extern "C" void __stdcall SetAtGrow(int arrayHandle, void* node);
+extern "C" void __stdcall SetAtGrow(i32 arrayHandle, void* node);
 
 // The three engine RTTI type-descriptor records the marker filters key off. Each
 // loop's type test is `obj->m_7c->m_10 == (typeId)`, where the engine encodes the
@@ -66,7 +66,7 @@ DATA(0x0000b620)
 extern char g_typeDesc3[];
 
 // The C runtime PRNG (reloc-masked).
-extern "C" int rand(void);
+extern "C" i32 rand(void);
 
 // The FP scale constant the difficulty rescale multiplies by (a 4-byte float in
 // .data; fmuls reads it). Reloc-masked const datum.
@@ -75,7 +75,7 @@ extern const float g_diffScale;
 
 // The difficulty-tier sink the rescale stamps (5 Hard / 10 Normal / 20 Easy).
 DATA(0x0022b738)
-extern int g_diffTier;
+extern i32 g_diffTier;
 
 // ---------------------------------------------------------------------------
 // The level object-list node + the per-tag store the loops walk.
@@ -94,19 +94,19 @@ struct CLevelNode {
 // against `&g_typeDescN + 5` (see the type-descriptor externs above).
 struct CRttiRec {
     char m_pad00[0x10];
-    int m_10;
+    i32 m_10;
 };
 
 struct CLevelObj {
     char m_pad00[0x8];
-    int m_8; // +0x08  flags (loop 2 ors in 0x10000)
+    i32 m_8; // +0x08  flags (loop 2 ors in 0x10000)
     char m_pad0c[0x5c - 0xc];
-    int m_5c; // +0x5c  marker X (scaled into the coord pair)
-    int m_60; // +0x60  marker Y
+    i32 m_5c; // +0x5c  marker X (scaled into the coord pair)
+    i32 m_60; // +0x60  marker Y
     char m_pad64[0x7c - 0x64];
     CRttiRec* m_7c; // +0x7c  RTTI object whose +0x10 holds the type-id
     char m_pad80[0x124 - 0x80];
-    int m_124; // +0x124 per-map id (matched against the map-id local)
+    i32 m_124; // +0x124 per-map id (matched against the map-id local)
 };
 
 struct CLevelList {
@@ -133,21 +133,21 @@ struct CLevelInfo {
 // stores). The freelist links through node->m_0; the usable pair is m_4/m_8.
 struct CCoordPair {
     void* m_0; // +0x00  freelist next
-    int m_4;   // +0x04  X
-    int m_8;   // +0x08  Y
+    i32 m_4;   // +0x04  X
+    i32 m_8;   // +0x08  Y
 };
 
 // The per-map start-coord array sub-object (embedded at this+0xdc and this+0xf0).
 // SetAtGrow takes the inner handle at +0x8.
 struct CStartArray {
     char m_pad00[8];
-    int m_8; // +0x08  array handle passed to SetAtGrow
+    i32 m_8; // +0x08  array handle passed to SetAtGrow
 };
 
 // The dims object m_c points at: its +0xc word drives the /3 and >>2 fields.
 struct CMapDims {
     char m_pad00[0xc];
-    unsigned int m_c;
+    u32 m_c;
 };
 
 // The list GetFirst/GetNext cursor idiom the three marker loops share. GetFirst
@@ -179,103 +179,103 @@ static inline CLevelObj* ListGetNext(CLevelList* list) {
 // ---------------------------------------------------------------------------
 class CBattlezMapConfig {
 public:
-    int LoadConfig(CLevelInfo* lvl, int id, int diff);
+    i32 LoadConfig(CLevelInfo* lvl, i32 id, i32 diff);
 
-    int m_0;         // +0x00  = 1
+    i32 m_0;         // +0x00  = 1
     CLevelInfo* m_4; // +0x04  = lvl
     void* m_8;       // +0x08  = lvl->m_68
     CMapDims* m_c;   // +0x0c  = lvl->m_70
     void* m_10;      // +0x10  = lvl->m_2c
-    int m_14;        // +0x14  = ((int*)m_10)[0x2e4/4]
+    i32 m_14;        // +0x14  = ((int*)m_10)[0x2e4/4]
     void* m_18;      // +0x18  = id (arg2)
     char m_pad1c[0x30 - 0x1c];
     DWORD m_30; // +0x30  DefenderChance
     char m_pad34[0x48 - 0x34];
     DWORD m_48; // +0x48  GruntCreationTime (rescaled)
     DWORD m_4c; // +0x4c  (zeroed)
-    int m_50;   // +0x50  (zeroed)
+    i32 m_50;   // +0x50  (zeroed)
     DWORD m_54; // +0x54  ResourceCreationTime (rescaled)
-    int m_58;   // +0x58  (zeroed)
-    int m_5c;   // +0x5c  (zeroed)
+    i32 m_58;   // +0x58  (zeroed)
+    i32 m_5c;   // +0x5c  (zeroed)
     DWORD m_60; // +0x60  GauntletzChance
     DWORD m_64; // +0x64  ShovelzChance
     DWORD m_68; // +0x68  SpyzChance
     DWORD m_6c; // +0x6c  BrickzChance
     DWORD m_70; // +0x70  GooberzChance
     DWORD m_74; // +0x74  GruntRatio
-    int m_78;   // +0x78  (epilogue = 0)
-    int m_7c;   // +0x7c  (epilogue = 0)
-    int m_80;   // +0x80  (epilogue = 0)
-    int m_84;   // +0x84  (epilogue = 0)
+    i32 m_78;   // +0x78  (epilogue = 0)
+    i32 m_7c;   // +0x7c  (epilogue = 0)
+    i32 m_80;   // +0x80  (epilogue = 0)
+    i32 m_84;   // +0x84  (epilogue = 0)
     char m_pad88[0x8c - 0x88];
-    int m_8c; // +0x8c  = 6
-    int m_90; // +0x90  = 6
-    int m_94; // +0x94  = 6
-    int m_98; // +0x98  = 6
+    i32 m_8c; // +0x8c  = 6
+    i32 m_90; // +0x90  = 6
+    i32 m_94; // +0x94  = 6
+    i32 m_98; // +0x98  = 6
     char m_pad9c[0xa4 - 0x9c];
-    int m_a4; // +0xa4  = 8
+    i32 m_a4; // +0xa4  = 8
     char m_pada8[0xac - 0xa8];
-    unsigned int m_ac; // +0xac  = (m_c->m_c)/3
-    unsigned int m_b0; // +0xb0  = (m_c->m_c)/3
+    u32 m_ac; // +0xac  = (m_c->m_c)/3
+    u32 m_b0; // +0xb0  = (m_c->m_c)/3
     char m_padb4[0xc0 - 0xb4];
-    unsigned int m_c0; // +0xc0  = (m_c->m_c)>>2
+    u32 m_c0; // +0xc0  = (m_c->m_c)>>2
     char m_padc4[0xd0 - 0xc4];
-    int m_d0; // +0xd0  loop-1 fast-path marker X
-    int m_d4; // +0xd4  loop-1 fast-path marker Y
+    i32 m_d0; // +0xd0  loop-1 fast-path marker X
+    i32 m_d4; // +0xd4  loop-1 fast-path marker Y
     char m_padd8[0xdc - 0xd8];
     CStartArray m_dc; // +0xdc  loop-1 start-coord array
     char m_padec[0xf0 - (0xdc + 0xc)];
     CStartArray m_f0; // +0xf0  loop-2 start-coord array
     char m_pad100[0x140 - (0xf0 + 0xc)];
-    int m_140; // +0x140 = 0
-    int m_144; // +0x144 = ((rand "mod" 4) + 5) * 25 * 8
-    int m_148; // +0x148 = 0
-    int m_14c; // +0x14c = 0
-    int m_150; // +0x150 ToolzPercent (running total seed)
-    int m_154; // +0x154 ToyzPercent
-    int m_158; // +0x158 BrickzPercent
-    int m_15c; // +0x15c RedBrick
-    int m_160; // +0x160 BlueBrick
-    int m_164; // +0x164 GoldBrick
-    int m_168; // +0x168 BlackBrick
-    int m_16c; // +0x16c BabyWalkerz
-    int m_170; // +0x170 BeachBallz
-    int m_174; // +0x174 BigWheelz
-    int m_178; // +0x178 GoKartz
-    int m_17c; // +0x17c JackInTheBoxz
-    int m_180; // +0x180 JumpRopez
-    int m_184; // +0x184 PogoStickz
-    int m_188; // +0x188 Scrollz
-    int m_18c; // +0x18c SqueakToyz
-    int m_190; // +0x190 Yoyoz
-    int m_194; // +0x194 Bombz
-    int m_198; // +0x198 Boomerangz (+ Brickz)
-    int m_19c; // +0x19c Clubz
-    int m_1a0; // +0x1a0 Gauntletz
-    int m_1a4; // +0x1a4 Glovez
-    int m_1a8; // +0x1a8 Gooberz
-    int m_1ac; // +0x1ac GravityBootz
-    int m_1b0; // +0x1b0 GunHatz
-    int m_1b4; // +0x1b4 NerfGunz
-    int m_1b8; // +0x1b8 Rockz
-    int m_1bc; // +0x1bc Shieldz
-    int m_1c0; // +0x1c0 Shovelz
-    int m_1c4; // +0x1c4 Springz
-    int m_1c8; // +0x1c8 Spyz
-    int m_1cc; // +0x1cc Swordz
-    int m_1d0; // +0x1d0 TimeBombz
-    int m_1d4; // +0x1d4 Toobz
-    int m_1d8; // +0x1d8 Wandz
-    int m_1dc; // +0x1dc Welderz
-    int m_1e0; // +0x1e0 Wingz
-    int m_1e4; // +0x1e4 (final running total)
+    i32 m_140; // +0x140 = 0
+    i32 m_144; // +0x144 = ((rand "mod" 4) + 5) * 25 * 8
+    i32 m_148; // +0x148 = 0
+    i32 m_14c; // +0x14c = 0
+    i32 m_150; // +0x150 ToolzPercent (running total seed)
+    i32 m_154; // +0x154 ToyzPercent
+    i32 m_158; // +0x158 BrickzPercent
+    i32 m_15c; // +0x15c RedBrick
+    i32 m_160; // +0x160 BlueBrick
+    i32 m_164; // +0x164 GoldBrick
+    i32 m_168; // +0x168 BlackBrick
+    i32 m_16c; // +0x16c BabyWalkerz
+    i32 m_170; // +0x170 BeachBallz
+    i32 m_174; // +0x174 BigWheelz
+    i32 m_178; // +0x178 GoKartz
+    i32 m_17c; // +0x17c JackInTheBoxz
+    i32 m_180; // +0x180 JumpRopez
+    i32 m_184; // +0x184 PogoStickz
+    i32 m_188; // +0x188 Scrollz
+    i32 m_18c; // +0x18c SqueakToyz
+    i32 m_190; // +0x190 Yoyoz
+    i32 m_194; // +0x194 Bombz
+    i32 m_198; // +0x198 Boomerangz (+ Brickz)
+    i32 m_19c; // +0x19c Clubz
+    i32 m_1a0; // +0x1a0 Gauntletz
+    i32 m_1a4; // +0x1a4 Glovez
+    i32 m_1a8; // +0x1a8 Gooberz
+    i32 m_1ac; // +0x1ac GravityBootz
+    i32 m_1b0; // +0x1b0 GunHatz
+    i32 m_1b4; // +0x1b4 NerfGunz
+    i32 m_1b8; // +0x1b8 Rockz
+    i32 m_1bc; // +0x1bc Shieldz
+    i32 m_1c0; // +0x1c0 Shovelz
+    i32 m_1c4; // +0x1c4 Springz
+    i32 m_1c8; // +0x1c8 Spyz
+    i32 m_1cc; // +0x1cc Swordz
+    i32 m_1d0; // +0x1d0 TimeBombz
+    i32 m_1d4; // +0x1d4 Toobz
+    i32 m_1d8; // +0x1d8 Wandz
+    i32 m_1dc; // +0x1dc Welderz
+    i32 m_1e0; // +0x1e0 Wingz
+    i32 m_1e4; // +0x1e4 (final running total)
 };
 
 // ===========================================================================
 // CBattlezMapConfig::LoadConfig
 // ===========================================================================
 RVA(0x00025020, 0x984)
-int CBattlezMapConfig::LoadConfig(CLevelInfo* lvl, int id, int diff) {
+i32 CBattlezMapConfig::LoadConfig(CLevelInfo* lvl, i32 id, i32 diff) {
     // --- prologue: zero the scratch fields, copy the level-info handles. ---
     m_48 = 0;
     m_4c = 0;
@@ -288,7 +288,7 @@ int CBattlezMapConfig::LoadConfig(CLevelInfo* lvl, int id, int diff) {
     m_8 = lvl->m_68;
     m_c = (CMapDims*)lvl->m_70;
     m_10 = lvl->m_2c;
-    m_14 = ((int*)m_10)[0x2e4 / 4];
+    m_14 = ((i32*)m_10)[0x2e4 / 4];
     m_0 = 1;
 
     // --- the [Battlez] creation-rate / chance block. ---
@@ -308,9 +308,9 @@ int CBattlezMapConfig::LoadConfig(CLevelInfo* lvl, int id, int diff) {
     //     cursor idiom on every step. ---
     for (CLevelObj* cur = ListGetFirst(lvl->m_30->m_8); cur != 0;
          cur = ListGetNext(lvl->m_30->m_8)) {
-        if (cur->m_7c->m_10 == (int)(g_typeDesc1 + 5) && cur->m_124 == id) {
+        if (cur->m_7c->m_10 == (i32)(g_typeDesc1 + 5) && cur->m_124 == id) {
             CCoordPair* p = (CCoordPair*)g_freeList;
-            int* slot = 0;
+            i32* slot = 0;
             if (p->m_0 != 0) {
                 slot = &p->m_4;
                 g_freeList = p->m_0;
@@ -325,7 +325,7 @@ int CBattlezMapConfig::LoadConfig(CLevelInfo* lvl, int id, int diff) {
     //     and stop (fall straight into loop 3). ---
     for (CLevelObj* cur2 = ListGetFirst(lvl->m_30->m_8); cur2 != 0;
          cur2 = ListGetNext(lvl->m_30->m_8)) {
-        if (cur2->m_7c->m_10 == (int)(g_typeDesc2 + 5) && cur2->m_124 == id) {
+        if (cur2->m_7c->m_10 == (i32)(g_typeDesc2 + 5) && cur2->m_124 == id) {
             m_d0 = cur2->m_5c / 32;
             m_d4 = cur2->m_60 / 32;
             break;
@@ -336,9 +336,9 @@ int CBattlezMapConfig::LoadConfig(CLevelInfo* lvl, int id, int diff) {
     //     (arithmetic floor), and set bit 0x10000 in the matched object's flags. ---
     for (CLevelObj* cur3 = ListGetFirst(lvl->m_30->m_8); cur3 != 0;
          cur3 = ListGetNext(lvl->m_30->m_8)) {
-        if (cur3->m_7c->m_10 == (int)(g_typeDesc3 + 5) && cur3->m_124 == id) {
+        if (cur3->m_7c->m_10 == (i32)(g_typeDesc3 + 5) && cur3->m_124 == id) {
             CCoordPair* p = (CCoordPair*)g_freeList;
-            int* slot = 0;
+            i32* slot = 0;
             if (p->m_0 != 0) {
                 slot = &p->m_4;
                 g_freeList = p->m_0;
@@ -358,17 +358,17 @@ int CBattlezMapConfig::LoadConfig(CLevelInfo* lvl, int id, int diff) {
             break;
         }
         case 1: { // Normal
-            int r = g_buteMgr.GetIntDef("Battlez", "NormalDifficulty", 50);
+            i32 r = g_buteMgr.GetIntDef("Battlez", "NormalDifficulty", 50);
             g_diffTier = 10;
-            m_48 = (long)((double)r * ((double)(__int64)m_48 * g_diffScale));
-            m_54 = (long)((double)r * ((double)(__int64)m_54 * g_diffScale));
+            m_48 = (i32)((double)r * ((double)(i64)m_48 * g_diffScale));
+            m_54 = (i32)((double)r * ((double)(i64)m_54 * g_diffScale));
             break;
         }
         case 2: { // Hard
-            int r = g_buteMgr.GetIntDef("Battlez", "HardDifficulty", 25);
+            i32 r = g_buteMgr.GetIntDef("Battlez", "HardDifficulty", 25);
             g_diffTier = 5;
-            m_48 = (long)((double)r * ((double)(__int64)m_48 * g_diffScale));
-            m_54 = (long)((double)r * ((double)(__int64)m_54 * g_diffScale));
+            m_48 = (i32)((double)r * ((double)(i64)m_48 * g_diffScale));
+            m_54 = (i32)((double)r * ((double)(i64)m_54 * g_diffScale));
             break;
         }
         default:
@@ -379,7 +379,7 @@ int CBattlezMapConfig::LoadConfig(CLevelInfo* lvl, int id, int diff) {
     m_50 = 0;
     m_14c = 0;
     {
-        int rv = rand();
+        i32 rv = rand();
         m_144 = ((rv % 4) + 5) * 125 * 8;
     }
     m_148 = 0;

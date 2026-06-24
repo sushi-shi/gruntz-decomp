@@ -5,7 +5,7 @@
 // CLevelTime : CUserLogic (RTTI). sizeof 0x54.
 class CLevelTime : public CUserLogic {
 public:
-    CLevelTime(int);
+    CLevelTime(i32);
     char m_size_pad[0x14]; // own region over CUserLogic (0x40)
 };
 SIZE(CLevelTime, 0x54);

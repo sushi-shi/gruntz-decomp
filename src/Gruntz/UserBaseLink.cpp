@@ -15,7 +15,7 @@ CUserBaseLink::CUserBaseLink() {}
 // engine string TU; pinned here so the ctors' temp-construct/assign/destruct
 // sequence reloc-masks.
 RVA(0x0016d3a0, 0x344)
-EngStr::EngStr(const char*, int) {}
+EngStr::EngStr(const char*, i32) {}
 RVA(0x0016d2f0, 0xac)
 EngStr& EngStr::operator=(const EngStr&) {
     return *this;
@@ -36,4 +36,4 @@ void CGameObject::AddLogicBump(char*) {}
 // guard. g_emptyString (RVA 0x2293f4) is already labeled by netmgrerror, so it
 // is only DECLARED in the header, never re-defined here.
 DATA(0x002bf674)
-int g_logicTypesRegistered;
+i32 g_logicTypesRegistered;

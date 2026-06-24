@@ -22,9 +22,9 @@
 
 // CRT rand() (RVA 0x11fee0); used by the grid-scan helpers to pick a random
 // neighbour. External, reloc-masked.
-extern "C" int rand(void);
+extern "C" i32 rand(void);
 // CRT abs(); inlined by MSVC5 to the branchless cdq/xor/sub sequence.
-extern "C" int abs(int);
+extern "C" i32 abs(i32);
 
 // The WwdGameReg singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c). It
 // fronts an array of per-level records (0x238-byte stride = the
@@ -32,9 +32,9 @@ extern "C" int abs(int);
 // are named. Reloc-masked DATA. A struct (mangles `U`) gives the retail name.
 struct WwdGameReg {
     char m_pad000[0x164];
-    int m_164; // +0x164  per-level "loaded" flag
+    i32 m_164; // +0x164  per-level "loaded" flag
     char m_pad168[0x170 - 0x168];
-    int m_170; // +0x170  per-level "active" flag
+    i32 m_170; // +0x170  per-level "active" flag
     char m_pad174[0x238 - 0x174];
 };
 
@@ -42,7 +42,7 @@ struct WwdGameReg {
 // bundle taking one int. Modeled as a method on a tiny helper laid over `this`
 // so the `mov ecx,this; push 0; call` falls out, reloc-masked (no body).
 struct ElementRefresher {
-    void Refresh(int index); // ~0x021906
+    void Refresh(i32 index); // ~0x021906
 };
 
 // The argument object of Method_02bfc0: a polymorphic unit whose vtable carries
@@ -62,8 +62,8 @@ struct EmitArg {
     virtual void v8();
     virtual void v9();
     virtual void v10();
-    virtual void Emit2c(void* coord, int count); // +0x2c (index 11)
-    virtual void Emit30(void* coord, int count); // +0x30 (index 12)
+    virtual void Emit2c(void* coord, i32 count); // +0x2c (index 11)
+    virtual void Emit30(void* coord, i32 count); // +0x30 (index 12)
 };
 
 // The serializer/archive the Serialize method writes into: a polymorphic object
@@ -83,19 +83,19 @@ struct Serializer {
     virtual void v9();
     virtual void v10();
     virtual void v11();
-    virtual void Write(const void* buf, unsigned count); // +0x30 (index 12)
+    virtual void Write(const void* buf, u32 count); // +0x30 (index 12)
 };
 
 // A free helper (RVA 0x01146a) that validates a kind-7 EmitArg; nonzero result
 // means "skip the emit". __stdcall (callee pops its one arg — no add esp at the
 // call site). External, reloc-masked.
-int __stdcall Validate_01146a(EmitArg*);
+i32 __stdcall Validate_01146a(EmitArg*);
 
 // The kind-4 validator (RVA 0x022040), a __thiscall method on the array bundle.
 // Modeled as a method on a tiny helper laid over `this`, so the `mov ecx,this;
 // call` lowers cleanly and reloc-masks (external, no body).
 struct Kind4Validator {
-    int Validate(EmitArg*); // 0x022040
+    i32 Validate(EmitArg*); // 0x022040
 };
 
 // A CGrunt unit (the huge game-object the grid stores). Modeled by raw offset:
@@ -105,39 +105,39 @@ struct GridUnit {
     char m_pad000[0x10];
     void* m_010; // +0x010  UnitLevel* (board geometry)
     char m_pad014[0x170 - 0x14];
-    int m_170; // +0x170  primary anim/state id
-    int m_174; // +0x174  packed x (>>5)
-    int m_178; // +0x178  packed y (>>5)
+    i32 m_170; // +0x170  primary anim/state id
+    i32 m_174; // +0x174  packed x (>>5)
+    i32 m_178; // +0x178  packed y (>>5)
     char m_pad17c[0x19c - 0x17c];
-    int m_19c; // +0x19c  secondary anim/state id (used when m_170 > 0x16)
+    i32 m_19c; // +0x19c  secondary anim/state id (used when m_170 > 0x16)
     char m_pad1a0[0x1ec - 0x1a0];
-    int m_1ec; // +0x1ec
-    int m_1f0; // +0x1f0
+    i32 m_1ec; // +0x1ec
+    i32 m_1f0; // +0x1f0
     char m_pad1f4[0x250 - 0x1f4];
-    int m_250; // +0x250
-    int m_254; // +0x254
-    int m_258; // +0x258  (packed coord pair base)
+    i32 m_250; // +0x250
+    i32 m_254; // +0x254
+    i32 m_258; // +0x258  (packed coord pair base)
     char m_pad25c[0x2d4 - 0x25c];
-    int m_2d4; // +0x2d4
-    int m_2d8; // +0x2d8  mode
+    i32 m_2d4; // +0x2d4
+    i32 m_2d8; // +0x2d8  mode
     char m_pad2dc[0x2e0 - 0x2dc];
-    int m_2e0; // +0x2e0
-    int m_2e4; // +0x2e4
-    int m_2e8; // +0x2e8
-    int m_2ec; // +0x2ec
-    int m_2f0; // +0x2f0
-    int m_2f4; // +0x2f4
+    i32 m_2e0; // +0x2e0
+    i32 m_2e4; // +0x2e4
+    i32 m_2e8; // +0x2e8
+    i32 m_2ec; // +0x2ec
+    i32 m_2f0; // +0x2f0
+    i32 m_2f4; // +0x2f4
     char m_pad2f8[0x31c - 0x2f8];
     char m_31c[0x320 - 0x31c]; // +0x31c  occupied-coords list object base
     void* m_320;               // +0x320  list head (node->next at +0)
     void* m_324;               // +0x324
-    int m_328;                 // +0x328  list count/flag
+    i32 m_328;                 // +0x328  list count/flag
 };
 
 // A {x, y} coordinate pair (a list node's +0x8 payload).
 struct Coord {
-    int m_x; // +0x00
-    int m_y; // +0x04
+    i32 m_x; // +0x00
+    i32 m_y; // +0x04
 };
 
 // One occupied-coord list node: ->next at +0, ->coord at +8.
@@ -150,14 +150,14 @@ struct CoordNode {
 // A candidate spawn-point node: {x, y} at +0 / +4. Lives in the per-level
 // record's candidate array (rec->m_04[r]).
 struct Candidate {
-    int m_x; // +0x00
-    int m_y; // +0x04
+    i32 m_x; // +0x00
+    i32 m_y; // +0x04
 };
 
 // A map tile: 0x1c-byte record; its first byte carries flag bits
 // (bit 2 = 0x4 = "blocked"/special).
 struct Tile {
-    unsigned char m_flags; // +0x00
+    u8 m_flags; // +0x00
     char m_pad01[0x1c - 1];
 };
 
@@ -166,16 +166,16 @@ struct Tile {
 struct Board {
     char m_pad00[0x08];
     Tile** m_rows; // +0x08  rows[y][x] -> Tile
-    int m_w;       // +0x0c  x bound
-    int m_h;       // +0x10  y bound
+    i32 m_w;       // +0x0c  x bound
+    i32 m_h;       // +0x10  y bound
 };
 
 // A level/board geometry object held on a unit at +0x10: its +0x5c / +0x60 carry
 // a packed (x<<5)/(y<<5) coordinate.
 struct UnitLevel {
     char m_pad00[0x5c];
-    int m_5c; // +0x5c
-    int m_60; // +0x60
+    i32 m_5c; // +0x5c
+    i32 m_60; // +0x60
 };
 
 // ---- Reloc-masked engine globals --------------------------------------------
@@ -188,7 +188,7 @@ extern void* g_freeList;
 // The element<->node bias subtracted from a stored element pointer to recover its
 // freelist node header (the allocator hands out node + bias; recycle reverses it).
 DATA(0x0024554c)
-extern int g_freeListNodeBias;
+extern i32 g_freeListNodeBias;
 
 // The WwdGameReg singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c).
 DATA(0x0024556c)
@@ -261,9 +261,9 @@ UnknownClassArrays::~UnknownClassArrays() {
 // every element of the first CPtrArray (m_0dc). Returns 1 unconditionally.
 // ===========================================================================
 RVA(0x00025c20, 0x55)
-int UnknownClassArrays::Method_025c20() {
+i32 UnknownClassArrays::Method_025c20() {
     if (g_gameReg[m_018].m_164 == 0 && g_gameReg[m_018].m_170 != 0) {
-        for (int i = 0; i < m_0dc.GetSize(); i++) {
+        for (i32 i = 0; i < m_0dc.GetSize(); i++) {
             ((ElementRefresher*)this)->Refresh(0);
         }
     }
@@ -279,7 +279,7 @@ int UnknownClassArrays::Method_025c20() {
 // ===========================================================================
 RVA(0x00025ca0, 0xbf)
 void UnknownClassArrays::FreeArrays() {
-    int i;
+    i32 i;
     for (i = 0; i < m_0dc.GetSize(); i++) {
         void* p = m_0dc[i];
         if (p != 0) {
@@ -306,7 +306,7 @@ void UnknownClassArrays::FreeArrays() {
 // @source: winapi:IntersectRect;PtInRect
 // @stub
 RVA(0x000267c0, 0x281d)
-int UnknownClassArrays::winapi_0267c0_IntersectRect_PtInRect() {
+i32 UnknownClassArrays::winapi_0267c0_IntersectRect_PtInRect() {
     return 0;
 }
 
@@ -314,7 +314,7 @@ int UnknownClassArrays::winapi_0267c0_IntersectRect_PtInRect() {
 // @source: winapi:IntersectRect
 // @stub
 RVA(0x0002a570, 0x4c6)
-int UnknownClassArrays::winapi_02a570_IntersectRect(int) {
+i32 UnknownClassArrays::winapi_02a570_IntersectRect(i32) {
     return 0;
 }
 
@@ -322,7 +322,7 @@ int UnknownClassArrays::winapi_02a570_IntersectRect(int) {
 // @source: winapi:PtInRect
 // @stub
 RVA(0x0002ab80, 0x15e)
-int UnknownClassArrays::winapi_02ab80_PtInRect(int, int, int, int) {
+i32 UnknownClassArrays::winapi_02ab80_PtInRect(i32, i32, i32, i32) {
     return 0;
 }
 
@@ -339,7 +339,7 @@ void UnknownClassArrays::Clear_02ade0() {
 // @source: winapi:IntersectRect
 // @stub
 RVA(0x0002ae00, 0x42e)
-int UnknownClassArrays::winapi_02ae00_IntersectRect(int, int) {
+i32 UnknownClassArrays::winapi_02ae00_IntersectRect(i32, i32) {
     return 0;
 }
 
@@ -351,7 +351,7 @@ int UnknownClassArrays::winapi_02ae00_IntersectRect(int, int) {
 // elements are 8-byte payloads; the two CDWordArrays' are 4-byte dwords).
 // ===========================================================================
 RVA(0x0002b420, 0x419)
-int UnknownClassArrays::Serialize_02b420(void* arArg) {
+i32 UnknownClassArrays::Serialize_02b420(void* arArg) {
     Serializer* ar = (Serializer*)arArg;
     if (ar == 0) {
         return 0;
@@ -407,8 +407,8 @@ int UnknownClassArrays::Serialize_02b420(void* arArg) {
     ar->Write(&m_148, 4);
     ar->Write(&m_14c, 4);
 
-    unsigned i;
-    unsigned n = m_104.GetSize();
+    u32 i;
+    u32 n = m_104.GetSize();
     ar->Write(&n, 4);
     for (i = 0; i < n; i++) {
         DWORD v = m_104[i];
@@ -422,8 +422,8 @@ int UnknownClassArrays::Serialize_02b420(void* arArg) {
         ar->Write(&v, 4);
     }
 
-    int* p = &m_12c;
-    for (int k = 0; k < 4; k++) {
+    i32* p = &m_12c;
+    for (i32 k = 0; k < 4; k++) {
         ar->Write(p, 4);
         p++;
     }
@@ -455,9 +455,9 @@ int UnknownClassArrays::Serialize_02b420(void* arArg) {
 // inline (cmp 4; jne). No steerable source spelling found (switch would add a
 // jump table). Deferred to the final sweep.
 RVA(0x0002bfc0, 0x8a)
-int UnknownClassArrays::Method_02bfc0(int objArg, void* kindArg, int, int) {
+i32 UnknownClassArrays::Method_02bfc0(i32 objArg, void* kindArg, i32, i32) {
     EmitArg* obj = (EmitArg*)objArg;
-    int kind = (int)(long)kindArg;
+    i32 kind = (i32)(i32)kindArg;
     if (kind == 4) {
         if (((Kind4Validator*)this)->Validate(obj) != 0) {
             return 0;
@@ -487,7 +487,7 @@ int UnknownClassArrays::Method_02bfc0(int objArg, void* kindArg, int, int) {
 //   grid row = m_008 + m_018*0x3c, the 15-entry unit array starts at +0x1c.
 // ===========================================================================
 RVA(0x0002c0a0, 0x78)
-int UnknownClassArrays::Method_02c0a0(int unitArg, int value) {
+i32 UnknownClassArrays::Method_02c0a0(i32 unitArg, i32 value) {
     GridUnit* unit = (GridUnit*)unitArg;
     if (unit->m_2d4 == 3) {
         return 1;
@@ -496,8 +496,8 @@ int UnknownClassArrays::Method_02c0a0(int unitArg, int value) {
     unit->m_2d4 = 3;
     unit->m_2e4 = value;
     void** units = (void**)m_008 + m_018 * 15 + 7;
-    int count = 0;
-    for (int k = 0; k < 15; k++) {
+    i32 count = 0;
+    for (i32 k = 0; k < 15; k++) {
         GridUnit* p = (GridUnit*)units[k];
         if (p != 0 && unit != p && p->m_2d4 == 3) {
             count++;
@@ -511,7 +511,7 @@ int UnknownClassArrays::Method_02c0a0(int unitArg, int value) {
 // @source: winapi:IntersectRect;PtInRect
 // @stub
 RVA(0x0002c140, 0x3e7)
-int UnknownClassArrays::winapi_02c140_IntersectRect_PtInRect(int) {
+i32 UnknownClassArrays::winapi_02c140_IntersectRect_PtInRect(i32) {
     return 0;
 }
 
@@ -519,7 +519,7 @@ int UnknownClassArrays::winapi_02c140_IntersectRect_PtInRect(int) {
 // @source: winapi:IntersectRect
 // @stub
 RVA(0x0002dfa0, 0x325)
-int UnknownClassArrays::winapi_02dfa0_IntersectRect(int, int, int, int) {
+i32 UnknownClassArrays::winapi_02dfa0_IntersectRect(i32, i32, i32, i32) {
     return 0;
 }
 
@@ -527,7 +527,7 @@ int UnknownClassArrays::winapi_02dfa0_IntersectRect(int, int, int, int) {
 // @source: winapi:PtInRect
 // @stub
 RVA(0x0002e3a0, 0x7e1)
-int UnknownClassArrays::winapi_02e3a0_PtInRect(int) {
+i32 UnknownClassArrays::winapi_02e3a0_PtInRect(i32) {
     return 0;
 }
 
@@ -536,7 +536,7 @@ int UnknownClassArrays::winapi_02e3a0_PtInRect(int) {
 // One-arg predicate that always returns 0. (xor eax,eax; ret 4)
 // ===========================================================================
 RVA(0x0002ed90, 0x5)
-int UnknownClassArrays::Method_02ed90(int) {
+i32 UnknownClassArrays::Method_02ed90(i32) {
     return 0;
 }
 
@@ -546,7 +546,7 @@ int UnknownClassArrays::Method_02ed90(int) {
 // flag byte has bit 0x4 set; else 0. Bails to 0 if the unit has no coord list.
 // ===========================================================================
 RVA(0x00030530, 0x56)
-int UnknownClassArrays::Method_030530(int unitArg) {
+i32 UnknownClassArrays::Method_030530(i32 unitArg) {
     GridUnit* unit = (GridUnit*)unitArg;
     if (unit->m_328 == 0) {
         return 0;
@@ -560,8 +560,8 @@ int UnknownClassArrays::Method_030530(int unitArg) {
         CoordNode* cur = node;
         node = node->m_next;
         Coord* c = cur->m_coord;
-        int y = c->m_y;
-        int x = c->m_x;
+        i32 y = c->m_y;
+        i32 x = c->m_x;
         if (rows[y][x].m_flags & 4) {
             return 1;
         }
@@ -584,9 +584,9 @@ int UnknownClassArrays::Method_030530(int unitArg) {
 // ebx. The divergence cascades through every register operand. No steerable
 // spelling found. Deferred to the final sweep.
 RVA(0x000305b0, 0x121)
-int UnknownClassArrays::Method_0305b0(int selfUnit, int qx, int qy) {
+i32 UnknownClassArrays::Method_0305b0(i32 selfUnit, i32 qx, i32 qy) {
     void** units = (void**)m_008 + m_018 * 15 + 7;
-    for (int i = 0; i < 15; i++) {
+    for (i32 i = 0; i < 15; i++) {
         GridUnit* unit = (GridUnit*)units[i];
         if (unit == 0) {
             continue;
@@ -604,11 +604,11 @@ int UnknownClassArrays::Method_0305b0(int selfUnit, int qx, int qy) {
                 CoordNode* cur = node;
                 node = node->m_next;
                 Coord* c = cur->m_coord;
-                int x = c->m_x;
-                int y = c->m_y;
-                int tile;
-                if ((unsigned)x < (unsigned)board->m_w && (unsigned)y < (unsigned)board->m_h) {
-                    tile = ((int*)board->m_rows[y])[x * 7];
+                i32 x = c->m_x;
+                i32 y = c->m_y;
+                i32 tile;
+                if ((u32)x < (u32)board->m_w && (u32)y < (u32)board->m_h) {
+                    tile = ((i32*)board->m_rows[y])[x * 7];
                 } else {
                     tile = 1;
                 }
@@ -644,7 +644,7 @@ int UnknownClassArrays::Method_0305b0(int selfUnit, int qx, int qy) {
 // locals (no spill slot) vs retail's 0xc. Cascades through the cellX/cellY
 // reg-vs-memory operand choice. No steerable spelling found; final sweep.
 RVA(0x00030730, 0x1da)
-int UnknownClassArrays::Method_030730(int cellX, int cellY, int, int) {
+i32 UnknownClassArrays::Method_030730(i32 cellX, i32 cellY, i32, i32) {
     if (m_000 == 0) {
         return 0;
     }
@@ -659,28 +659,28 @@ int UnknownClassArrays::Method_030730(int cellX, int cellY, int, int) {
         return 0;
     }
     if (src->m_2d8 == 4) {
-        int sx = src->m_2f0;
-        int sy = src->m_2f4;
+        i32 sx = src->m_2f0;
+        i32 sy = src->m_2f4;
         if (sx == m_018) {
             return 0;
         }
     }
-    for (int i = 0; i < 15; i++) {
+    for (i32 i = 0; i < 15; i++) {
         GridUnit* u = ((GridUnit**)(m_008 + m_018 * 0x3c + 0x1c))[i];
         if (u == 0) {
             continue;
         }
-        int ok = 1;
+        i32 ok = 1;
         if (u->m_2d8 == 3) {
-            int ux = u->m_2f0;
-            int uy = u->m_2f4;
+            i32 ux = u->m_2f0;
+            i32 uy = u->m_2f4;
             if (ux == cellX && uy == cellY) {
                 ok = 0;
             }
         }
         if (u->m_2d8 == 3) {
-            int ux = u->m_2f0;
-            int uy = u->m_2f4;
+            i32 ux = u->m_2f0;
+            i32 uy = u->m_2f4;
             if (!(ux == cellX && uy == cellY) && (rand() % 3) != 0) {
                 ok = 0;
             }
@@ -689,12 +689,12 @@ int UnknownClassArrays::Method_030730(int cellX, int cellY, int, int) {
             continue;
         }
         UnitLevel* lvl = (UnitLevel*)u->m_010;
-        int lx = lvl->m_5c >> 5;
-        int ly = lvl->m_60 >> 5;
+        i32 lx = lvl->m_5c >> 5;
+        i32 ly = lvl->m_60 >> 5;
         if (u->m_2d8 == 4 && u->m_2e8 != -1) {
             char* rec = (char*)m_004 + u->m_2e8 * 0x238;
-            int dx = *(int*)(rec + 0x258) - lx;
-            int dy = *(int*)(rec + 0x25c) - ly;
+            i32 dx = *(i32*)(rec + 0x258) - lx;
+            i32 dy = *(i32*)(rec + 0x25c) - ly;
             dx = abs(dx);
             dy = abs(dy);
             if (dx * dx + dy * dy > 0x19) {
@@ -730,7 +730,7 @@ int UnknownClassArrays::Method_030730(int cellX, int cellY, int, int) {
 // collision loop's register operands (load-then-test vs memory-compare on
 // u->m_328, cand coord regs). No steerable spelling found; final sweep.
 RVA(0x00030f20, 0x16d)
-void* UnknownClassArrays::Method_030f20(void* out, int unitArg, int kind) {
+void* UnknownClassArrays::Method_030f20(void* out, i32 unitArg, i32 kind) {
     Coord* o = (Coord*)out;
     GridUnit* unit = (GridUnit*)unitArg;
     if (kind < 0 || kind >= 4) {
@@ -741,26 +741,26 @@ void* UnknownClassArrays::Method_030f20(void* out, int unitArg, int kind) {
     }
     char* rec = (char*)m_004 + kind * 0x238 + 0x278;
     UnitLevel* lvl = (UnitLevel*)unit->m_010;
-    int rx = lvl->m_5c >> 5;
-    int ry = lvl->m_60 >> 5;
-    int count = *(int*)(rec + 0x8);
+    i32 rx = lvl->m_5c >> 5;
+    i32 ry = lvl->m_60 >> 5;
+    i32 count = *(i32*)(rec + 0x8);
     if (count != 0) {
-        int r = rand() % count;
-        int k = 0;
+        i32 r = rand() % count;
+        i32 k = 0;
         if (count > 0) {
             Candidate** arr = *(Candidate***)(rec + 0x4);
             char* grid = m_008;
-            int cell = m_018;
+            i32 cell = m_018;
             for (;;) {
                 Candidate* cand = arr[r];
-                int cx = cand->m_x;
-                int cy = cand->m_y;
-                int ok = 1;
+                i32 cx = cand->m_x;
+                i32 cy = cand->m_y;
+                i32 ok = 1;
                 GridUnit** row = (GridUnit**)(grid + cell * 0x3c + 0x1c);
-                for (int j = 15; j != 0; j--) {
+                for (i32 j = 15; j != 0; j--) {
                     GridUnit* u = *row;
                     if (u != 0 && u->m_328 != 0) {
-                        int* node = *(int**)((char*)u->m_324 + 0x8);
+                        i32* node = *(i32**)((char*)u->m_324 + 0x8);
                         if (node[0] == cx && node[1] == cy) {
                             ok = 0;
                         }
@@ -793,7 +793,7 @@ void* UnknownClassArrays::Method_030f20(void* out, int unitArg, int kind) {
 // @source: winapi:IntersectRect
 // @stub
 RVA(0x00031ca0, 0x2f2)
-int UnknownClassArrays::winapi_031ca0_IntersectRect(int) {
+i32 UnknownClassArrays::winapi_031ca0_IntersectRect(i32) {
     return 0;
 }
 
@@ -801,6 +801,6 @@ int UnknownClassArrays::winapi_031ca0_IntersectRect(int) {
 // @source: winapi:IntersectRect
 // @stub
 RVA(0x00032060, 0x7bd)
-int UnknownClassArrays::winapi_032060_IntersectRect(int) {
+i32 UnknownClassArrays::winapi_032060_IntersectRect(i32) {
     return 0;
 }

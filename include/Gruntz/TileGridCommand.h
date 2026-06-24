@@ -15,10 +15,12 @@
 #ifndef SRC_GRUNTZ_TILEGRIDCOMMAND_H
 #define SRC_GRUNTZ_TILEGRIDCOMMAND_H
 
+#include <Ints.h>
+
 #include <Gruntz/TileTriggerContainer.h>
 
 // The running game clock (DAT_00645588); reloc-masked DIR32 datum.
-extern unsigned int g_645588;
+extern u32 g_645588;
 
 // The WwdGameReg singleton (g_gameReg, RVA 0x64556c); only +0x30 (the active
 // game-manager pointer) is read here.  Reloc-masked DIR32.
@@ -44,30 +46,30 @@ public:
     virtual void Slot24();
     virtual void Slot28();
     virtual void Slot2C();
-    virtual void Transfer(void* buf, int n); // +0x30
+    virtual void Transfer(void* buf, i32 n); // +0x30
 };
 
 class CTileGridCommand {
 public:
     void RecordMove();           // 0x112880
-    int Serialize(TgcStream* s); // 0x113ae0
+    i32 Serialize(TgcStream* s); // 0x113ae0
 
     void* m_vptr;                // +0x00
-    int m_04;                    // +0x04  type tag
-    int m_08;                    // +0x08  coord x
-    int m_0c;                    // +0x0c  coord y
-    int m_10;                    // +0x10
-    int m_14;                    // +0x14  flag
-    int m_18;                    // +0x18
-    int m_1c;                    // +0x1c
+    i32 m_04;                    // +0x04  type tag
+    i32 m_08;                    // +0x08  coord x
+    i32 m_0c;                    // +0x0c  coord y
+    i32 m_10;                    // +0x10
+    i32 m_14;                    // +0x14  flag
+    i32 m_18;                    // +0x18
+    i32 m_1c;                    // +0x1c
     CTileTriggerContainer* m_20; // +0x20  owning container
-    unsigned int m_24;           // +0x24  captured game clock
-    int m_28;                    // +0x28
-    int m_2c;                    // +0x2c
-    int m_30;                    // +0x30
-    int m_34;                    // +0x34
-    int m_38;                    // +0x38
-    int m_grid[24];              // +0x3c..+0x9b  (24-dword block, serialized in a loop)
+    u32 m_24;                    // +0x24  captured game clock
+    i32 m_28;                    // +0x28
+    i32 m_2c;                    // +0x2c
+    i32 m_30;                    // +0x30
+    i32 m_34;                    // +0x34
+    i32 m_38;                    // +0x38
+    i32 m_grid[24];              // +0x3c..+0x9b  (24-dword block, serialized in a loop)
 };
 
 #endif // SRC_GRUNTZ_TILEGRIDCOMMAND_H

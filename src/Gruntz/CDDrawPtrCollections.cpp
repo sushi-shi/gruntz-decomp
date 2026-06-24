@@ -14,7 +14,7 @@
 // CPtrList: vptr@0 + 6 scalar fields = 0x1c.  CPtrArray: vptr@0 + 4 fields = 0x14.
 class CPtrList {
 public:
-    CPtrList(int nBlockSize);
+    CPtrList(i32 nBlockSize);
     ~CPtrList();         // (invoked on EH unwind)
     char _raw[0x1c - 4]; // 0x1c incl vptr
 };
@@ -36,19 +36,19 @@ class CDDrawPtrCollections {
 public:
     CDDrawPtrCollections();
 
-    int fieldUnknown000;         // +0x00  — zeroed in ctor
-    int fieldUnknown004;         // +0x04  — zeroed in ctor
+    i32 fieldUnknown000;         // +0x00  — zeroed in ctor
+    i32 fieldUnknown004;         // +0x04  — zeroed in ctor
     char _pad008[0x47c - 0x08];  // +0x08..0x47b
     CPtrList m_unknownPtrList1;  // +0x47c  (ctor blockSize=0xa)
     CPtrList m_unknownPtrList2;  // +0x498  (ctor blockSize=0xa)
     CPtrArray m_unknownPtrArray; // +0x4b4  (default ctor)
     char _pad4C8[0x534 - 0x4c8]; // +0x4c8..0x533
-    int fieldUnknown534;         // +0x534  — zeroed in ctor
-    int fieldUnknown538;         // +0x538  — zeroed in ctor
+    i32 fieldUnknown534;         // +0x534  — zeroed in ctor
+    i32 fieldUnknown538;         // +0x538  — zeroed in ctor
     char _pad53C[0x93c - 0x53c]; // +0x53c..0x93b
-    int fieldUnknown93C;         // +0x93c  — zeroed in ctor
-    int fieldUnknown940;         // +0x940  — zeroed in ctor
-    int fieldUnknown944;         // +0x944  — zeroed in ctor
+    i32 fieldUnknown93C;         // +0x93c  — zeroed in ctor
+    i32 fieldUnknown940;         // +0x940  — zeroed in ctor
+    i32 fieldUnknown944;         // +0x944  — zeroed in ctor
 }; // 0x948
 
 // ---------------------------------------------------------------------------

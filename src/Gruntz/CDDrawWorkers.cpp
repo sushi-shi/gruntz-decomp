@@ -12,8 +12,8 @@
 // ---------------------------------------------------------------------------
 
 struct HelperHost {
-    void Helper_166040(int a, int b);
-    int Helper_164790(int a, int b);
+    void Helper_166040(i32 a, i32 b);
+    i32 Helper_164790(i32 a, i32 b);
 };
 
 // =========================================================================
@@ -21,31 +21,31 @@ struct HelperHost {
 // =========================================================================
 struct CDDrawWorkerA {
     void Init();
-    int Vfunc2C(int a1, int a2, int a3);
+    i32 Vfunc2C(i32 a1, i32 a2, i32 a3);
 
     void* m_vptr; // +0x00
-    int m_04;     // +0x04
-    int m_08;     // +0x08
-    int m_0c;     // +0x0c
+    i32 m_04;     // +0x04
+    i32 m_08;     // +0x08
+    i32 m_0c;     // +0x0c
     char _pad10[0x20 - 0x10];
-    int m_20; // +0x20
+    i32 m_20; // +0x20
     char _pad24[0x38 - 0x24];
-    int m_38; // +0x38
-    int m_3c; // +0x3c
-    int m_40; // +0x40
+    i32 m_38; // +0x38
+    i32 m_3c; // +0x3c
+    i32 m_40; // +0x40
     char _pad44[0x5c - 0x44];
-    int m_5c; // +0x5c
+    i32 m_5c; // +0x5c
     char _pad60[0x64 - 0x60];
-    int m_64; // +0x64
+    i32 m_64; // +0x64
     char _pad68[0x74 - 0x68];
-    int m_st;  // +0x74
+    i32 m_st;  // +0x74
     char m_78; // +0x78 (BYTE)
     char _pad79[0x7c - 0x79];
 };
 
 // ---------------------------------------------------------------------------
 RVA(0x00157110, 0x20)
-int CDDrawWorkerA::Vfunc2C(int a1, int a2, int a3) {
+i32 CDDrawWorkerA::Vfunc2C(i32 a1, i32 a2, i32 a3) {
     HelperHost* h = (HelperHost*)this;
     m_78 = (char)a3;
     m_st = 2;
@@ -57,32 +57,32 @@ int CDDrawWorkerA::Vfunc2C(int a1, int a2, int a3) {
 // =========================================================================
 struct CDDrawWorkerB {
     void Init();
-    int Vfunc2C(int a1, int a2, int a3);
-    int Vfunc30(int a1, int a2, int a3, int a4);
-    int Vfunc34(int a1, int a2, int a3, int a4);
+    i32 Vfunc2C(i32 a1, i32 a2, i32 a3);
+    i32 Vfunc30(i32 a1, i32 a2, i32 a3, i32 a4);
+    i32 Vfunc34(i32 a1, i32 a2, i32 a3, i32 a4);
 
     void* m_vptr; // +0x00
-    int m_04;     // +0x04
-    int m_08;     // +0x08
-    int m_0c;     // +0x0c
+    i32 m_04;     // +0x04
+    i32 m_08;     // +0x08
+    i32 m_0c;     // +0x0c
     char _pad10[0x20 - 0x10];
-    int m_20; // +0x20
+    i32 m_20; // +0x20
     char _pad24[0x38 - 0x24];
-    int m_38; // +0x38
-    int m_3c; // +0x3c
-    int m_40; // +0x40
+    i32 m_38; // +0x38
+    i32 m_3c; // +0x3c
+    i32 m_40; // +0x40
     char _pad44[0x5c - 0x44];
-    int m_5c; // +0x5c
+    i32 m_5c; // +0x5c
     char _pad60[0x64 - 0x60];
-    int m_64; // +0x64
+    i32 m_64; // +0x64
     char _pad68[0x74 - 0x68];
-    int m_st; // +0x74
-    int m_78; // +0x78 (int)
+    i32 m_st; // +0x74
+    i32 m_78; // +0x78 (int)
 };
 
 // ---------------------------------------------------------------------------
 RVA(0x001572f0, 0x20)
-int CDDrawWorkerB::Vfunc2C(int a1, int a2, int a3) {
+i32 CDDrawWorkerB::Vfunc2C(i32 a1, i32 a2, i32 a3) {
     HelperHost* h = (HelperHost*)this;
     m_78 = a3;
     m_st = 2;
@@ -91,7 +91,7 @@ int CDDrawWorkerB::Vfunc2C(int a1, int a2, int a3) {
 
 // ---------------------------------------------------------------------------
 RVA(0x00157280, 0x30)
-int CDDrawWorkerB::Vfunc34(int a1, int a2, int a3, int a4) {
+i32 CDDrawWorkerB::Vfunc34(i32 a1, i32 a2, i32 a3, i32 a4) {
     HelperHost* h = (HelperHost*)this;
     h->Helper_166040(a3, a4);
     m_st = 2;

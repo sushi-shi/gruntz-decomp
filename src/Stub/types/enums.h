@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_ENUMS_H
 #define GRUNTZ_ENUMS_H
 
+#include <Ints.h>
+
 /*
  * Gruntz game taxonomy enums.
  *
@@ -275,9 +277,9 @@ enum Commands {
  * Modeled here as the generating spec, not the 101 literals.
  * ------------------------------------------------------------------ */
 struct GruntzVolumeAttenuation {
-    static const int kSize = 101;
-    static const int kFloor = -10000; // table[0]
-    static const int kFull = 0;       // table[100]
+    static const i32 kSize = 101;
+    static const i32 kFloor = -10000; // table[0]
+    static const i32 kFull = 0;       // table[100]
     // table[i] = -1000 * log2(100 / i), for i in 1..100
 };
 

@@ -7,4 +7,4 @@
 // @source: rtti-vptr
 // @stub
 RVA(0x00040490, 0x1ab)
-CGruntPuddle::CGruntPuddle(int) {}
+CGruntPuddle::CGruntPuddle(i32) {}

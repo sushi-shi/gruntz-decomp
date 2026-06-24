@@ -39,7 +39,7 @@ CMapLogic::~CMapLogic() {}
 // transfers six trailing floats one at a time (size 4). Any other mode is a no-op
 // that still returns 1. Returns 0 only for a null archive.
 RVA(0x000ec230, 0x11c)
-int MapSerializeCurve(CMapArchive* ar, int mode) {
+i32 MapSerializeCurve(CMapArchive* ar, i32 mode) {
     if (ar == 0) {
         return 0;
     }
@@ -82,7 +82,7 @@ int MapSerializeCurve(CMapArchive* ar, int mode) {
 // then shrink the array to empty (SetSize(0, -1)) and run the grid Reset (0x9ec30).
 RVA(0x00085480, 0x52)
 void CMapLogic::FreeNodes() {
-    for (int i = 0; i < m_arr.m_nSize; i++) {
+    for (i32 i = 0; i < m_arr.m_nSize; i++) {
         void* elem = m_arr.m_pData[i];
         if (elem != 0) {
             void** node = (void**)((char*)elem - g_freeListNodeBias);
@@ -102,7 +102,7 @@ void CMapLogic::FreeNodes() {
 // non-zero (then the slot's truthiness short-circuits to a 0 return). A null buffer
 // returns 0; any other mode returns 1.
 RVA(0x0009f7f0, 0x3b)
-int CMapVisitTarget::Visit(void* buf, int mode, int a2, int a3) {
+i32 CMapVisitTarget::Visit(void* buf, i32 mode, i32 a2, i32 a3) {
     if (buf == 0) {
         return 0;
     }
