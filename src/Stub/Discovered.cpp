@@ -1259,19 +1259,11 @@ void MallocCtor_16bfa0::MallocCtor_16bfa0_16bd90() {}
 RVA(0x00192060, 0xb5)
 void MallocCtor_16bfa0::MallocCtor_16bfa0_192060() {}
 
-// ---- MallocCtor_17fdb0 ----
-RVA(0x0017e450, 0x23)
-void MallocCtor_17fdb0::MallocCtor_17fdb0_17e450() {}
-RVA(0x0017e4a0, 0x69)
-void MallocCtor_17fdb0::MallocCtor_17fdb0_17e4a0() {}
-RVA(0x0017e510, 0x23)
-void MallocCtor_17fdb0::MallocCtor_17fdb0_17e510() {}
-RVA(0x0017e760, 0x11)
-void MallocCtor_17fdb0::MallocCtor_17fdb0_17e760() {}
-RVA(0x0017e780, 0xa)
-void MallocCtor_17fdb0::MallocCtor_17fdb0_17e780() {}
-RVA(0x0017fdf0, 0xb)
-void MallocCtor_17fdb0::MallocCtor_17fdb0_17fdf0() {}
+// ---- MallocCtor_17fdb0 ---- the CFader element base class (vtable 0x5f07a8) +
+// the case-"3" subtype's ~CFaderSine (0x17fdf0, vtable 0x5f0848) are reconstructed
+// in src/Gruntz/CFader.cpp. The subtype ctor 0x17fdb0 itself stays in
+// MallocConstructors.cpp (its own unit). The +0x04 subobject is a CShadeTableCache
+// (ctor 0x14de30 / dtor 0x14de50 / FindRemove 0x14fb80).
 
 // ---- MinervaInner ---- (== the DirectSound *device* manager, DSNDMGR.CPP,
 // vtable 0x5ef6c4; trace conflated it with the buffer-wrapper DirectSoundMgr).

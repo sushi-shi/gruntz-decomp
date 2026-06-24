@@ -35,6 +35,7 @@ cddrawworkermapsmall	8	2
 cddrawworkerregistry	25	12
 cddrawworkers	3	3
 cdirectdrawmgr	15	9
+cfader	6	5
 cfadermgr	5	2
 chatbox	16	9
 chatbox_eh	1	1
@@ -48,7 +49,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	387	0
+engine_discovered	381	0
 engine_label_stubs	524	120
 filemem	8	7
 filestream	13	9
@@ -389,6 +390,12 @@ cdirectdrawmgr	?Refresh@CDDSurface@@QAEHPAUIDirectDrawSurfaceZ@@@Z	64.5128	64.51
 cdirectdrawmgr	?SetColorKey@CDDSurface@@QAEHIPAX@Z	100.0000	100.0000	1	d7a9dda893b1	0x13eaa0
 cdirectdrawmgr	?SetPalette@CDDSurface@@QAEHPAVCDDPalette@@H@Z	100.0000	100.0000	3	3730c3ae3c2a	0x13e690
 cdirectdrawmgr	?SetRange@CDDPalette@@QAEHHHEEEI@Z	100.0000	100.0000	2	bfca20776fbd	0x147cd0
+cfader	??0CFader@@QAE@XZ	100.0000	100.0000	1	78cd95dd8e45	0x17e450
+cfader	??1CFader@@QAE@XZ	88.2759	88.2759	1	fdbfb44a3d6b	0x17e4a0
+cfader	??1CFaderSine@@QAE@XZ	100.0000	100.0000	1	ae93aa6df1fe	0x17fdf0
+cfader	?Set2c@CFader@@QAEXH@Z	100.0000	100.0000	1	ede94c0e181f	0x17e780
+cfader	?SetTimers@CFader@@QAEXHH@Z	100.0000	100.0000	1	f5abacb4e2fd	0x17e760
+cfader	?Wait@CFader@@QAEXH@Z	100.0000	100.0000	1	22403b8571db	0x17e510
 cfadermgr	??1CFaderMgr@@QAE@XZ	82.8889	82.8889	1	9bd8a535fa45	0x17d910
 cfadermgr	?Add@CFaderMgr@@QAEPAUCFader@@HPAU2@@Z	0.0000	0.0000	2	fefd6e005c49	0x17d9c0
 cfadermgr	?DeleteAll@CFaderMgr@@QAEXXZ	100.0000	100.0000	1	7c42fa42e763	0x17e1d0
@@ -913,12 +920,6 @@ engine_discovered	?MallocCtor_16bfa0_16ab20@MallocCtor_16bfa0@@QAEXXZ	1.3793	1.3
 engine_discovered	?MallocCtor_16bfa0_16bd10@MallocCtor_16bfa0@@QAEXXZ	2.0000	2.0000	1	40a163f42420	0x16bd10
 engine_discovered	?MallocCtor_16bfa0_16bd90@MallocCtor_16bfa0@@QAEXXZ	1.4493	1.4493	1	1c5e3db5ddfc	0x16bd90
 engine_discovered	?MallocCtor_16bfa0_192060@MallocCtor_16bfa0@@QAEXXZ	0.6154	0.6154	1	87dcf038907b	0x192060
-engine_discovered	?MallocCtor_17fdb0_17e450@MallocCtor_17fdb0@@QAEXXZ	10.0000	10.0000	1	bab0976582bd	0x17e450
-engine_discovered	?MallocCtor_17fdb0_17e4a0@MallocCtor_17fdb0@@QAEXXZ	3.4483	3.4483	1	05219945e419	0x17e4a0
-engine_discovered	?MallocCtor_17fdb0_17e510@MallocCtor_17fdb0@@QAEXXZ	2.5000	2.5000	1	d8ca3c746e70	0x17e510
-engine_discovered	?MallocCtor_17fdb0_17e760@MallocCtor_17fdb0@@QAEXXZ	8.0000	8.0000	1	b1f9beda96be	0x17e760
-engine_discovered	?MallocCtor_17fdb0_17e780@MallocCtor_17fdb0@@QAEXXZ	13.3333	13.3333	1	4dd9f97e0456	0x17e780
-engine_discovered	?MallocCtor_17fdb0_17fdf0@MallocCtor_17fdb0@@QAEXXZ	20.0000	20.0000	1	031ef36dec41	0x17fdf0
 engine_discovered	?MinervaInner_1366f0@MinervaInner@@QAEXXZ	0.3361	0.3361	1	2a21de0ffbb9	0x1366f0
 engine_discovered	?MinervaInner_136910@MinervaInner@@QAEXXZ	0.3704	0.3704	1	436780529d10	0x136910
 engine_discovered	?NetUnattributed_11f618@NetUnattributed@@QAEXXZ	10.0000	10.0000	1	bfe6623a9a24	0x11f618

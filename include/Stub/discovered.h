@@ -930,15 +930,6 @@ public:
     void MallocCtor_16bfa0_16bd90();
     void MallocCtor_16bfa0_192060();
 };
-class MallocCtor_17fdb0 {
-public:
-    void MallocCtor_17fdb0_17e450();
-    void MallocCtor_17fdb0_17e4a0();
-    void MallocCtor_17fdb0_17e510();
-    void MallocCtor_17fdb0_17e760();
-    void MallocCtor_17fdb0_17e780();
-    void MallocCtor_17fdb0_17fdf0();
-};
 class MinervaInner {
 public:
     void MinervaInner_1366f0();

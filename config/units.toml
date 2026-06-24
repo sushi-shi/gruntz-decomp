@@ -721,3 +721,8 @@ flags = "base"
 unit = "mgrtokenquery"
 source = "src/Gruntz/MgrTokenQuery.cpp"
 flags = "base"
+
+[[unit]]
+unit = "cfader"
+source = "src/Gruntz/CFader.cpp"
+flags = "eh"
