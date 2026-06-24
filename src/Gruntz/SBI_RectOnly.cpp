@@ -11,10 +11,13 @@
 
 // ---------------------------------------------------------------------------
 // CSBI_RectOnly - the rect-only status-bar item. A large, deeply-derived member
-// of the CStatusBarItem family. Field names are placeholders (m_<hexoffset>);
-// only the offsets + code bytes are load-bearing. The class carries a 24-byte
-// (0x18) slot-struct array at +0x208, a pointer array at +0x204, a tab-index at
-// +0x10c, an int gauge pair at +0x298/0x29c, and toggle flags at +0x558/0x55c.
+// of the CStatusBarItem family. Fields are named from how the matched methods
+// use them; the remaining m_<hexoffset> placeholders are the ones whose role no
+// reconstructed use-site pins. The class carries a 24-byte (0x18) slot-struct
+// array (m_slots) at +0x208, a notify-pointer array (m_slotNotify) at +0x204, a
+// tab index (m_activeTab) at +0x10c, the gauge pair (m_gauge/m_gaugeTarget) at
+// +0x298/0x29c, and the mode toggle pair at +0x558/0x55c (m_modeState). Offsets
+// + code bytes remain the load-bearing fact; names are codegen-neutral.
 //
 // MEMBERSHIP NOTE: the this-pointer tracer assigned ~48 RVAs to CSBI_RectOnly.
 // They all operate on this same large layout (offsets up to ~0x630) and the
@@ -24,17 +27,17 @@
 // ---------------------------------------------------------------------------
 
 // A 24-byte (0x18) slot record: the +0x208 array element.
+// m_state: 0 = armed, 2 = ready (see kSlotArmed/kSlotReady).
 struct CSbiSlot {
-    int m_0; // +0x00 (rel +0x208)
-    int m_4; // +0x04 (rel +0x20c)
+    int m_state; // +0x00 (rel +0x208)
+    int m_value; // +0x04 (rel +0x20c)
     char m_pad8[0x18 - 0x8];
 };
 
-// A 24-byte highlight-row record (the +0x378 array element): m_0 = state,
-// m_4 = handle value passed to the notify pointer.
+// A 24-byte highlight-row record (the +0x378 array element).
 struct CSbiHlRow {
-    int m_0; // +0x00 state
-    int m_4; // +0x04 handle
+    int m_state;  // +0x00 state
+    int m_handle; // +0x04 handle value passed to the notify pointer
     char m_pad8[0x18 - 0x8];
 };
 
@@ -71,16 +74,16 @@ public:
     void Release(); // __thiscall, no args (sibling thunk_FUN_004e84f0)
 };
 
-// A hit-test rect widget held in m_150[]: m_4 = enabled flag, m_14/m_1c = x
-// span, m_18/m_20 = y span.
+// A hit-test rect widget held in m_hitRects[]: m_enabled gate, m_xLo/m_xHi the
+// x span, m_yLo/m_yHi the y span.
 struct CSbiRect {
     char m_pad0[0x4];
-    int m_4; // +0x04 enabled
+    int m_enabled; // +0x04 enabled
     char m_pad8[0x14 - 0x8];
-    int m_14; // +0x14 x lo
-    int m_18; // +0x18 y lo
-    int m_1c; // +0x1c x hi
-    int m_20; // +0x20 y hi
+    int m_xLo; // +0x14 x lo
+    int m_yLo; // +0x18 y lo
+    int m_xHi; // +0x1c x hi
+    int m_yHi; // +0x20 y hi
 };
 
 // The element type of the +0x204 pointer array: an engine object whose vtable
@@ -102,6 +105,26 @@ public:
     virtual void Notify(int on); // +0x30 (slot 12)
 };
 
+// Slot state values (CSbiSlot::m_state) named from how every site reads/writes
+// them: ArmSlot/ResetGroupA store kSlotArmed; FindReadySlot looks for kSlotReady.
+enum SbiSlotState {
+    kSlotArmed = 0,
+    kSlotReady = 2,
+};
+
+// CommitSlot stores this cooked level into the active slot's value and forwards
+// it to the slot's notifier.
+const int kSlotCommitLevel = 0x1a;
+
+// Offset-0 subtype tag TryActivate gates on (read raw from slot 0; see the note
+// at the use-site and the de-hack flag in the report).
+const int kSubtypeTag = 2;
+
+// The error-report id pair TryActivate passes to the game registry when the
+// activation probe fails (resource/message id + source-line tag; raw ids).
+const int kActivateErrId = 0x80e4;
+const int kActivateErrTag = 0x44b;
+
 // base vftable (CStatusBarItem) anchored out-of-line in this TU.
 class CSBI_RectOnly : public CStatusBarItem {
 public:
@@ -109,20 +132,20 @@ public:
     virtual int SbiVfunc0() OVERRIDE;
 
     // ----- reconstructed CSBI_RectOnly methods (RVA-ascending) -----
-    void Sbi_0e7400_ResetCounters();
-    void Sbi_105520_ClearGauge();
-    void Sbi_105560_SetSlotState(int idx);
-    int Sbi_105710_AnyTabActive();
-    void Sbi_105750_AdvanceGauge(int delta);
-    void Sbi_1057d0_SetGauge(int value);
-    void Sbi_1058d0_RefreshAll();
-    void Sbi_105920_ResetGauge();
-    void Sbi_107aa0_ToggleStat(int idx);
-    void Sbi_1066f0_SetRectA(int y0, int x0, int z);
-    void Sbi_106740_SetRectB(int y0, int x0, int z);
-    void Sbi_106790_CommitSlot(int active);
-    int Sbi_109a90_FindReadySlot();
-    void Sbi_10bb90_SetMode(int mode);
+    void ResetCounters();
+    void ResetSlots();
+    void ArmSlot(int idx);
+    int AnySlotActive();
+    void AdvanceGauge(int delta);
+    void SetGauge(int value);
+    void RefreshAll();
+    void Reset();
+    void ToggleStat(int idx);
+    void SetHudRectA(int y0, int x0, int z);
+    void SetHudRectB(int y0, int x0, int z);
+    void CommitSlot(int active);
+    int FindReadySlot();
+    void SetMode(int mode);
 
     // Engine-label backlog stubs.
     void Stub_0ffde0();
@@ -144,102 +167,102 @@ public:
 
     // ----- sibling methods called by the reconstructed bodies (declared so the
     // ILT call targets resolve; bodies live elsewhere / are stubbed) -----
-    int Sbi_105710_probe(int idx);
-    void Sbi_106900_RebuildA();
-    void Sbi_106610_ResetGroupA();
-    void Sbi_104f90b(int);
+    int ProbeSlot(int idx);
+    void RebuildGroupA();
+    void ResetGroupA();
+    void ClearStatToggle(int);
     void LoadStatzTabToggleSprite(int, int);
     void UpdateGruntOvenStatusBar();
-    void Sbi_105480_TickGauge();
+    void TickGauge();
     void UpdateChipGrinderStatusBar();
     void UpdateDestructButtonStatusBar();
-    int Sbi_104dd0_Activate();
+    int Activate();
     int Stub_0ffde0_probe();
-    void Sbi_100d70_SetTabState(int tab, int state);
+    void SetTabState(int tab, int state);
 
-    int Sbi_104d60_TryActivate();
-    int Sbi_101420_ClearTabSprites(int idx);
-    int Sbi_105280_HitTest(int x, int y);
-    int Sbi_1090a0_Serialize(CSbiStream* s);
-    void Sbi_106a00_NotifyAllSlots();
+    int TryActivate();
+    int ClearTabSprites(int idx);
+    int HitTest(int x, int y);
+    int Serialize(CSbiStream* s);
+    void NotifyAllSlots();
 
     // ----- layout (placeholders; offsets are the load-bearing fact) -----
     char m_pad2c[0x30 - 0x2c];
     int m_30; // +0x30
     int m_34; // +0x34
     char m_pad38[0x10c - 0x38];
-    int m_10c; // +0x10c  active tab index
+    int m_activeTab; // +0x10c  active tab index
     char m_pad110[0x114 - 0x110];
-    int m_114[1]; // +0x114  per-stat toggle flag array
+    int m_statFlags[1]; // +0x114  per-stat toggle flag array
     char m_pad118[0x150 - 0x118];
-    CSbiRect* m_150[15]; // +0x150  hit-test rect widgets
+    CSbiRect* m_hitRects[15]; // +0x150  hit-test rect widgets
     char m_pad18c[0x1c8 - 0x18c];
-    CSbiSprite* m_1c8;     // +0x1c8  per-tab sprite widgets (cleared by
-    CSbiSprite* m_1cc;     // +0x1cc  Sbi_101420 in declaration order)
-    CSbiSprite* m_1d0;     // +0x1d0
-    CSbiSprite* m_1d4;     // +0x1d4
-    CSbiSprite* m_1d8;     // +0x1d8
-    CSbiSprite* m_1dc;     // +0x1dc
-    CSbiSprite* m_1e0;     // +0x1e0
-    CSbiSprite* m_1e4;     // +0x1e4
-    CSbiSprite* m_1e8;     // +0x1e8
-    CSbiSprite* m_1ec;     // +0x1ec
-    CSbiSprite* m_1f0;     // +0x1f0
-    CSbiSprite* m_1f4;     // +0x1f4
-    CSbiSprite* m_1f8;     // +0x1f8
-    CSbiSprite* m_1fc;     // +0x1fc
-    CSbiSprite* m_200;     // +0x200
-    CSbiSlotPtr* m_204[1]; // +0x204  slot pointer array (4-byte stride)
+    CSbiSprite* m_1c8;            // +0x1c8  per-tab sprite widgets (cleared by
+    CSbiSprite* m_1cc;            // +0x1cc  ClearTabSprites in declaration order)
+    CSbiSprite* m_1d0;            // +0x1d0
+    CSbiSprite* m_1d4;            // +0x1d4
+    CSbiSprite* m_1d8;            // +0x1d8
+    CSbiSprite* m_1dc;            // +0x1dc
+    CSbiSprite* m_1e0;            // +0x1e0
+    CSbiSprite* m_1e4;            // +0x1e4
+    CSbiSprite* m_1e8;            // +0x1e8
+    CSbiSprite* m_1ec;            // +0x1ec
+    CSbiSprite* m_1f0;            // +0x1f0
+    CSbiSprite* m_1f4;            // +0x1f4
+    CSbiSprite* m_1f8;            // +0x1f8
+    CSbiSprite* m_1fc;            // +0x1fc
+    CSbiSprite* m_200;            // +0x200
+    CSbiSlotPtr* m_slotNotify[1]; // +0x204  slot pointer array (4-byte stride)
     char m_pad208[0x220 - 0x208];
-    CSbiSlot m_220[1]; // +0x220  24-byte slot records
+    CSbiSlot m_slots[1]; // +0x220  24-byte slot records
     char m_pad238[0x298 - (0x220 + 0x18)];
-    int m_298; // +0x298  gauge current
-    int m_29c; // +0x29c  gauge target
+    int m_gauge;       // +0x298  gauge current
+    int m_gaugeTarget; // +0x29c  gauge target
     char m_pad2a0[0x2c0 - 0x2a0];
-    CSbiSlot m_2c0[3];     // +0x2c0  group-A 24-byte slot records
-    CSbiSlotPtr* m_308[3]; // +0x308  group-A notify pointers
+    CSbiSlot m_groupSlots[3];      // +0x2c0  group-A 24-byte slot records
+    CSbiSlotPtr* m_groupNotify[3]; // +0x308  group-A notify pointers
     char m_pad314[0x318 - 0x314];
-    int m_318; // +0x318  HUD-rect group B (x0)
-    int m_31c; // +0x31c  (y0)
-    int m_320; // +0x320  (latched dword from g_dat645588)
-    int m_324; // +0x324
-    int m_328; // +0x328
-    int m_32c; // +0x32c
-    int m_330; // +0x330  HUD-rect group A (x0)
-    int m_334; // +0x334  (y0)
-    int m_338; // +0x338
-    int m_33c; // +0x33c
-    int m_340; // +0x340
-    int m_344; // +0x344
+    int m_hudRectB_x; // +0x318  HUD-rect group B (x0)
+    int m_hudRectB_y; // +0x31c  (y0)
+    int m_320;        // +0x320  (latched dword from g_dat645588)
+    int m_324;        // +0x324
+    int m_hudRectB_z; // +0x328
+    int m_32c;        // +0x32c
+    int m_hudRectA_x; // +0x330  HUD-rect group A (x0)
+    int m_hudRectA_y; // +0x334  (y0)
+    int m_338;        // +0x338
+    int m_33c;        // +0x33c
+    int m_hudRectA_z; // +0x340
+    int m_344;        // +0x344
     char m_pad348[0x354 - 0x348];
-    int m_354; // +0x354  hit-test disable flag
+    int m_hitTestDisabled; // +0x354  hit-test disable flag
     char m_pad358[0x35c - 0x358];
-    int m_35c;          // +0x35c  active-slot index (-1 = none)
-    int m_360;          // +0x360  pending highlight row index (-1 none)
-    CSbiSlotPtr* m_364; // +0x364  notify targets (slot 0x28)
-    CSbiSlotPtr* m_368; // +0x368
-    CSbiSlotPtr* m_36c; // +0x36c
-    CSbiSlotPtr* m_370; // +0x370
+    int m_activeSlot;       // +0x35c  active-slot index (-1 = none)
+    int m_360;              // +0x360  pending highlight row index (-1 none)
+    CSbiSlotPtr* m_notify0; // +0x364  notify targets (slot 0x28)
+    CSbiSlotPtr* m_notify1; // +0x368
+    CSbiSlotPtr* m_notify2; // +0x36c
+    CSbiSlotPtr* m_notify3; // +0x370
     char m_pad374[0x378 - 0x374];
-    CSbiHlRow m_378[12];          // +0x378  3 groups x 4 highlight rows (24B each)
-    CSbiSlotPtr* m_498[12];       // +0x498  3 groups x 4 notify pointers
+    CSbiHlRow m_hlGrid[12];       // +0x378  3 groups x 4 highlight rows (24B each)
+    CSbiSlotPtr* m_hlNotify[12];  // +0x498  3 groups x 4 notify pointers
     char m_pad4c8[0x4cc - 0x4c8]; // 0x498 + 12*4 = 0x4c8
-    int m_4cc;                    // +0x4cc  arg for (*m_4e0)->Notify
+    int m_extraNotifyArg0;        // +0x4cc  arg for (*m_extraNotify0)->Notify
     char m_pad4d0[0x4e0 - 0x4d0];
-    CSbiSlotPtr* m_4e0; // +0x4e0
+    CSbiSlotPtr* m_extraNotify0; // +0x4e0
     char m_pad4e4[0x4ec - 0x4e4];
-    int m_4ec; // +0x4ec  arg for (*m_500)->Notify
+    int m_extraNotifyArg1; // +0x4ec  arg for (*m_extraNotify1)->Notify
     char m_pad4f0[0x500 - 0x4f0];
-    CSbiSlotPtr* m_500; // +0x500
+    CSbiSlotPtr* m_extraNotify1; // +0x500
     char m_pad504[0x534 - 0x504];
-    void* m_534[1]; // +0x534  pointer table (elements streamed 8B)
-    int m_538;      // +0x538  count for m_534
+    void* m_ptrTable[1]; // +0x534  pointer table (elements streamed 8B)
+    int m_ptrCount;      // +0x538  count for m_ptrTable
     char m_pad53c[0x558 - 0x53c];
-    int m_558; // +0x558
-    int m_55c; // +0x55c
+    int m_558;       // +0x558
+    int m_modeState; // +0x55c
     char m_pad560[0x570 - 0x560];
-    CSbiSlotPtr* m_570; // +0x570  notify target
-    int m_574;          // +0x574
+    CSbiSlotPtr* m_modeNotify; // +0x570  notify target
+    int m_modeArmed;           // +0x574
     char m_pad578[0x630 - 0x578];
 };
 
@@ -285,63 +308,63 @@ int CSBI_RectOnly::SbiVfunc0() {
 
 // m_34 = m_30 = 0.
 RVA(0x000e7400, 0x9)
-void CSBI_RectOnly::Sbi_0e7400_ResetCounters() {
+void CSBI_RectOnly::ResetCounters() {
     m_34 = 0;
     m_30 = 0;
 }
 
-// Reset slots 0..4, then m_35c = -1.
+// Reset slots 0..4, then m_activeSlot = -1.
 RVA(0x00105520, 0x21)
-void CSBI_RectOnly::Sbi_105520_ClearGauge() {
+void CSBI_RectOnly::ResetSlots() {
     for (int i = 0; i < 5; i++) {
-        Sbi_105560_SetSlotState(i);
+        ArmSlot(i);
     }
-    m_35c = -1;
+    m_activeSlot = -1;
 }
 
-// Slot[idx].f0 = 0; slot[idx].f4 = 1; notify the slot's pointer (vfunc 0x30).
+// Arm slot[idx]: state = armed, value = 1; notify the slot's pointer (vfunc 0x30).
 RVA(0x00105560, 0x33)
-void CSBI_RectOnly::Sbi_105560_SetSlotState(int idx) {
-    m_220[idx].m_0 = 0;
-    m_220[idx].m_4 = 1;
-    if (m_204[idx]) {
-        m_204[idx]->Notify(1);
+void CSBI_RectOnly::ArmSlot(int idx) {
+    m_slots[idx].m_state = kSlotArmed;
+    m_slots[idx].m_value = 1;
+    if (m_slotNotify[idx]) {
+        m_slotNotify[idx]->Notify(1);
     }
 }
 
 // Probe slots 0..4; return 1 on first hit, else 0.
 RVA(0x00105710, 0x23)
-int CSBI_RectOnly::Sbi_105710_AnyTabActive() {
+int CSBI_RectOnly::AnySlotActive() {
     for (int i = 0; i < 5; i++) {
-        if (Sbi_105710_probe(i)) {
+        if (ProbeSlot(i)) {
             return 1;
         }
     }
     return 0;
 }
 
-// m_29c = min(m_298 + delta, 100).
+// m_gaugeTarget = min(m_gauge + delta, 100).
 RVA(0x00105750, 0x1f)
-void CSBI_RectOnly::Sbi_105750_AdvanceGauge(int delta) {
-    int v = m_298 + delta;
+void CSBI_RectOnly::AdvanceGauge(int delta) {
+    int v = m_gauge + delta;
     if (v >= 100) {
         v = 100;
     }
-    m_29c = v;
+    m_gaugeTarget = v;
 }
 
-// m_29c = m_298 = value.
+// m_gaugeTarget = m_gauge = value.
 RVA(0x001057d0, 0x13)
-void CSBI_RectOnly::Sbi_1057d0_SetGauge(int value) {
-    m_29c = value;
-    m_298 = value;
+void CSBI_RectOnly::SetGauge(int value) {
+    m_gaugeTarget = value;
+    m_gauge = value;
 }
 
 // Run the seven per-stat refresh updaters in sequence.
 RVA(0x001058d0, 0x34)
-void CSBI_RectOnly::Sbi_1058d0_RefreshAll() {
+void CSBI_RectOnly::RefreshAll() {
     UpdateGruntOvenStatusBar();
-    Sbi_105480_TickGauge();
+    TickGauge();
     UpdateRezConveyorStatusBar();
     LoadRezMachineConfig();
     LoadChipMachineConfig();
@@ -349,24 +372,24 @@ void CSBI_RectOnly::Sbi_1058d0_RefreshAll() {
     UpdateDestructButtonStatusBar();
 }
 
-// Clear the gauge, zero m_298/m_29c, run two updaters, set toggle flags.
+// Clear the gauge, zero m_gauge/m_gaugeTarget, run two updaters, set toggle flags.
 RVA(0x00105920, 0x47)
-void CSBI_RectOnly::Sbi_105920_ResetGauge() {
-    Sbi_105520_ClearGauge();
-    m_29c = 0;
-    m_298 = 0;
-    Sbi_106610_ResetGroupA();
+void CSBI_RectOnly::Reset() {
+    ResetSlots();
+    m_gaugeTarget = 0;
+    m_gauge = 0;
+    ResetGroupA();
     UpdateRezMachineSnoozeStatusBar();
-    Sbi_106900_RebuildA();
-    m_55c = 1;
+    RebuildGroupA();
+    m_modeState = 1;
     m_558 = 0;
 }
 
 // Toggle stat[idx]: if already set, clear it; else set it on.
 RVA(0x00107aa0, 0x23)
-void CSBI_RectOnly::Sbi_107aa0_ToggleStat(int idx) {
-    if (m_114[idx]) {
-        Sbi_104f90b(idx);
+void CSBI_RectOnly::ToggleStat(int idx) {
+    if (m_statFlags[idx]) {
+        ClearStatToggle(idx);
     } else {
         LoadStatzTabToggleSprite(idx, 1);
     }
@@ -374,16 +397,17 @@ void CSBI_RectOnly::Sbi_107aa0_ToggleStat(int idx) {
 
 // Find the index of the first enabled hit-test rect containing (x,y); -1 none.
 // @early-stop
-// bool-materialization wall: retail keeps the redundant inner `p->m_4` test and
+// bool-materialization wall: retail keeps the redundant inner `p->m_enabled` test and
 // materializes the point-in-rect predicate via `mov ecx,1 / xor ecx,ecx / test`;
 // MSVC5 folds our `&&` chain into direct control flow (~80%). Logic byte-correct.
 RVA(0x00105280, 0x61)
-int CSBI_RectOnly::Sbi_105280_HitTest(int x, int y) {
-    if (m_354 == 0) {
+int CSBI_RectOnly::HitTest(int x, int y) {
+    if (m_hitTestDisabled == 0) {
         for (int i = 0; i < 15; i++) {
-            CSbiRect* p = m_150[i];
-            if (p && p->m_4) {
-                int hit = p->m_4 && x < p->m_1c && x >= p->m_14 && y < p->m_20 && y >= p->m_18;
+            CSbiRect* p = m_hitRects[i];
+            if (p && p->m_enabled) {
+                int hit =
+                    p->m_enabled && x < p->m_xHi && x >= p->m_xLo && y < p->m_yHi && y >= p->m_yLo;
                 if (hit) {
                     return i;
                 }
@@ -393,28 +417,28 @@ int CSBI_RectOnly::Sbi_105280_HitTest(int x, int y) {
     return -1;
 }
 
-// Reset the three group-A slots (arm f0=0/f4=1) and notify each pointer.
+// Reset the three group-A slots (arm state=0/value=1) and notify each pointer.
 RVA(0x00106610, 0x3b)
-void CSBI_RectOnly::Sbi_106610_ResetGroupA() {
+void CSBI_RectOnly::ResetGroupA() {
     for (int i = 0; i < 3; i++) {
-        m_2c0[i].m_0 = 0;
-        m_2c0[i].m_4 = 1;
-        if (m_308[i]) {
-            m_308[i]->Notify(-1);
+        m_groupSlots[i].m_state = kSlotArmed;
+        m_groupSlots[i].m_value = 1;
+        if (m_groupNotify[i]) {
+            m_groupNotify[i]->Notify(-1);
         }
     }
 }
 
 // Latch HUD-rect group A from three args + a global dword.
 // @early-stop
-// scheduling wall: logic byte-correct, but MSVC defers the m_330 store and
+// scheduling wall: logic byte-correct, but MSVC defers the m_hudRectA_x store and
 // reorders the m_33c/m_338 zero+global pair vs retail; ~72%, not steerable from
 // C (see docs/patterns/u64-store-clock-hi-zero.md, statement-schedule-faithful).
 RVA(0x001066f0, 0x3b)
-void CSBI_RectOnly::Sbi_1066f0_SetRectA(int y0, int x0, int z) {
-    m_334 = y0;
-    m_330 = x0;
-    m_340 = z;
+void CSBI_RectOnly::SetHudRectA(int y0, int x0, int z) {
+    m_hudRectA_y = y0;
+    m_hudRectA_x = x0;
+    m_hudRectA_z = z;
     m_344 = 0;
     m_338 = g_dat645588;
     m_33c = 0;
@@ -422,52 +446,52 @@ void CSBI_RectOnly::Sbi_1066f0_SetRectA(int y0, int x0, int z) {
 
 // Latch HUD-rect group B from three args + a global dword.
 // @early-stop
-// scheduling wall: same store-reorder as Sbi_1066f0_SetRectA; ~72%.
+// scheduling wall: same store-reorder as SetHudRectA; ~72%.
 RVA(0x00106740, 0x3b)
-void CSBI_RectOnly::Sbi_106740_SetRectB(int y0, int x0, int z) {
-    m_31c = y0;
-    m_318 = x0;
-    m_328 = z;
+void CSBI_RectOnly::SetHudRectB(int y0, int x0, int z) {
+    m_hudRectB_y = y0;
+    m_hudRectB_x = x0;
+    m_hudRectB_z = z;
     m_32c = 0;
     m_320 = g_dat645588;
     m_324 = 0;
 }
 
-// Commit the active slot: either re-arm it, or push a cooked value (0x1a) and
+// Commit the active slot: either re-arm it, or push the cooked commit level and
 // notify its pointer; then clear the active-slot index.
 RVA(0x00106790, 0x62)
-void CSBI_RectOnly::Sbi_106790_CommitSlot(int active) {
+void CSBI_RectOnly::CommitSlot(int active) {
     if (active) {
-        Sbi_105560_SetSlotState(m_35c);
-        m_35c = -1;
+        ArmSlot(m_activeSlot);
+        m_activeSlot = -1;
     } else {
-        m_220[m_35c].m_4 = 0x1a;
-        if (m_204[m_35c]) {
-            m_204[m_35c]->Notify(m_220[m_35c].m_4);
+        m_slots[m_activeSlot].m_value = kSlotCommitLevel;
+        if (m_slotNotify[m_activeSlot]) {
+            m_slotNotify[m_activeSlot]->Notify(m_slots[m_activeSlot].m_value);
         }
-        m_35c = -1;
+        m_activeSlot = -1;
     }
 }
 
 // Fire every live slot's notifier: the four singletons, the 3x4 group grid
 // (each pointer notified with its row's handle), then two trailing singletons.
 RVA(0x00106a00, 0xbf)
-void CSBI_RectOnly::Sbi_106a00_NotifyAllSlots() {
-    if (m_364) {
-        m_364->v28();
+void CSBI_RectOnly::NotifyAllSlots() {
+    if (m_notify0) {
+        m_notify0->v28();
     }
-    if (m_36c) {
-        m_36c->v28();
+    if (m_notify2) {
+        m_notify2->v28();
     }
-    if (m_370) {
-        m_370->v28();
+    if (m_notify3) {
+        m_notify3->v28();
     }
-    if (m_4e0 && m_4cc) {
-        m_4e0->Notify(m_4cc);
+    if (m_extraNotify0 && m_extraNotifyArg0) {
+        m_extraNotify0->Notify(m_extraNotifyArg0);
     }
 
-    CSbiSlotPtr** p = &m_498[4]; // group B base; ±4 elements reach groups A / C
-    int* h = &m_378[4].m_4;      // anchor on the handle field (+0x3dc)
+    CSbiSlotPtr** p = &m_hlNotify[4]; // group B base; ±4 elements reach groups A / C
+    int* h = &m_hlGrid[4].m_handle;   // anchor on the handle field (+0x3dc)
     for (int n = 0; n < 4; n++) {
         if (p[-4]) {
             p[-4]->Notify(h[-24]); // -4 rows = -0x60 bytes = -24 ints
@@ -482,18 +506,18 @@ void CSBI_RectOnly::Sbi_106a00_NotifyAllSlots() {
         h += 6; // one row = 0x18 bytes = 6 ints
     }
 
-    if (m_368) {
-        m_368->v28();
+    if (m_notify1) {
+        m_notify1->v28();
     }
-    if (m_500) {
-        m_500->Notify(m_4ec);
+    if (m_extraNotify1) {
+        m_extraNotify1->Notify(m_extraNotifyArg1);
     }
 }
 
 // Stream the full rect-only item state through the archive (stream slot 0x30).
 // Returns 0 if the stream or the active game-manager is null; bumps the global
-// serialize counter; ends with a variable-length loop over the m_534[] pointer
-// table (count m_538), each element streamed as 8 bytes. Field buffers are
+// serialize counter; ends with a variable-length loop over the m_ptrTable[] pointer
+// table (count m_ptrCount), each element streamed as 8 bytes. Field buffers are
 // addressed by offset (the codegen is naming-independent here).
 // @early-stop
 // ~95.6%: the entire ~70-field transfer body is byte-exact; the residual is a
@@ -502,7 +526,7 @@ void CSBI_RectOnly::Sbi_106a00_NotifyAllSlots() {
 // recompile spills the inner counter and reserves 3 via `sub esp,0xc`). Not
 // steerable from C (docs/patterns regalloc/scheduling walls); deferred.
 RVA(0x001090a0, 0x38f)
-int CSBI_RectOnly::Sbi_1090a0_Serialize(CSbiStream* s) {
+int CSBI_RectOnly::Serialize(CSbiStream* s) {
     if (s == 0) {
         return 0;
     }
@@ -516,6 +540,10 @@ int CSBI_RectOnly::Sbi_1090a0_Serialize(CSbiStream* s) {
 
     g_serialCounter++;
     int seq = 0;
+    // m_8 is the base CStatusBarItem `int` member, overlaid here as a pointer to
+    // the sequence holder (retail reads it as a pointer and fetches +0x188).
+    // Authentic int-as-pointer overlay; retyping it lives in the base class, not
+    // here, so the cast stays (flagged in the report).
     if (m_8) {
         seq = ((CSbiSeqHolder*)m_8)->m_188;
     }
@@ -586,20 +614,20 @@ int CSBI_RectOnly::Sbi_1090a0_Serialize(CSbiStream* s) {
         }
     } while (--outer);
 
-    int count = m_538;
+    int count = m_ptrCount;
     s->Transfer(&count, 4);
     for (unsigned int n = 0; n < (unsigned int)count; n++) {
-        s->Transfer(m_534[n], 8);
+        s->Transfer(m_ptrTable[n], 8);
     }
     return 1;
 }
 
-// Find the first slot whose state == 2; re-arm it and report found.
+// Find the first slot whose state is ready; re-arm it and report found.
 RVA(0x00109a90, 0x25)
-int CSBI_RectOnly::Sbi_109a90_FindReadySlot() {
+int CSBI_RectOnly::FindReadySlot() {
     for (int i = 0; i < 5; i++) {
-        if (m_220[i].m_0 == 2) {
-            Sbi_105560_SetSlotState(i);
+        if (m_slots[i].m_state == kSlotReady) {
+            ArmSlot(i);
             return 1;
         }
     }
@@ -608,7 +636,7 @@ int CSBI_RectOnly::Sbi_109a90_FindReadySlot() {
 
 // Release the per-tab sprite widgets for the given tab group (idx, with -1 = all).
 RVA(0x00101420, 0x110)
-int CSBI_RectOnly::Sbi_101420_ClearTabSprites(int idx) {
+int CSBI_RectOnly::ClearTabSprites(int idx) {
     if (idx == -1 || idx == 0) {
         if (m_1c8) {
             m_1c8->Release();
@@ -663,29 +691,34 @@ int CSBI_RectOnly::Sbi_101420_ClearTabSprites(int idx) {
     return 1;
 }
 
-// Activate the rect-only item; gate on the mode field at offset 0 and a probe.
+// Activate the rect-only item; gate on the offset-0 subtype tag and a probe.
 RVA(0x00104d60, 0x48)
-int CSBI_RectOnly::Sbi_104d60_TryActivate() {
-    if (*(int*)this == 2) {
-        return Sbi_104dd0_Activate();
+int CSBI_RectOnly::TryActivate() {
+    // Offset-0 read: in retail this object's slot 0 holds a small integer
+    // subtype tag (the manual-vtable-stamp device shared with CStatusBarMgr's
+    // g_vtbl_t* tags), not a real C++ vptr. We model the vtable via `virtual`,
+    // so slot 0 cannot also be a named field here without dropping the vtable;
+    // the raw `*(int*)this` read is the faithful model. See report (flagged).
+    if (*(int*)this == kSubtypeTag) {
+        return Activate();
     }
     if (!Stub_0ffde0_probe()) {
-        g_gameReg->ReportError(0x80e4, 0x44b);
+        g_gameReg->ReportError(kActivateErrId, kActivateErrTag);
         return 0;
     }
-    Sbi_100d70_SetTabState(m_10c, 3);
+    SetTabState(m_activeTab, 3);
     return 1;
 }
 
-// Enter mode: latch m_574, conditionally reset the toggle pair, notify m_570.
+// Enter mode: latch m_modeArmed, conditionally reset the toggle pair, notify m_modeNotify.
 RVA(0x0010bb90, 0x3f)
-void CSBI_RectOnly::Sbi_10bb90_SetMode(int mode) {
-    m_574 = 1;
-    if (mode && m_55c != 7) {
+void CSBI_RectOnly::SetMode(int mode) {
+    m_modeArmed = 1;
+    if (mode && m_modeState != 7) {
         m_558 = 0;
-        m_55c = 1;
-        if (m_570) {
-            m_570->Notify(1);
+        m_modeState = 1;
+        if (m_modeNotify) {
+            m_modeNotify->Notify(1);
         }
     }
 }
