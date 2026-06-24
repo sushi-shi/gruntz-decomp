@@ -224,6 +224,9 @@ public:
     CSBI_RectOnly();
     virtual i32 SbiVfunc0() OVERRIDE;
 
+    // vtable slot 2 (0xe86e0): the 10-arg setup; inherited by CSBI_Image/_ImageSet.
+    i32 Setup(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8, i32 a9, i32 a10);
+
     // ----- reconstructed CSBI_RectOnly methods (RVA-ascending) -----
     void ResetCounters();
     void ResetSlots();
@@ -322,7 +325,7 @@ public:
     i32 ActivateSlot(i32 idx);
 
     // ----- layout (placeholders; offsets are the load-bearing fact) -----
-    char m_pad2c[0x30 - 0x2c];
+    i32 m_2c; // +0x2c  Setup arg1 (vtable-slot-2 setup target)
     i32 m_30; // +0x30
     i32 m_34; // +0x34
     char m_pad38[0xb8 - 0x38];
@@ -521,6 +524,36 @@ CSBI_RectOnly::CSBI_RectOnly() {
 }
 
 i32 CSBI_RectOnly::SbiVfunc0() {
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CSBI_RectOnly::Setup - vtable slot 2 (0xe86e0). The 10-arg config setter (the
+// last two args are accepted by the ABI but unused). Bails (returns 0) if either
+// the object id (a2) or the owner (a1) is null; otherwise stores the eight live
+// args into the base-region fields, marks m_4 = 1 (active) and returns 1.
+// @early-stop
+// 90.4%: every field/store and the control flow are correct, BUT retail writes the
+// +0x14 sub-block through a `lea edx,[ecx+0x14]` base (strict sequential load-store)
+// while MSVC5 here folds it to ecx-relative disp8 stores and interleaves the loads.
+// A pure instruction-selection/scheduling residual (docs/patterns/
+// statement-schedule-faithful.md) - direct, array, and struct-pointer spellings all
+// fold the same; not steerable from C. Deferred to the final sweep.
+RVA(0x000e86e0, 0x53)
+i32 CSBI_RectOnly::
+    Setup(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8, i32 a9, i32 a10) {
+    if (a2 == 0 || a1 == 0) {
+        return 0;
+    }
+    m_2c = a1;
+    m_24 = a2;
+    m_10 = a4;
+    m_rect14.m_0 = a5;
+    m_rect14.m_4 = a6;
+    m_rect14.m_8 = a7;
+    m_rect14.m_c = a8;
+    m_c = a3;
+    m_4 = 1;
     return 1;
 }
 

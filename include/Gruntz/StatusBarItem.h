@@ -23,6 +23,14 @@
 // with an out-of-line ctor purely as a labeling device for the COMDAT - a tooling
 // workaround, not a second class the developers wrote.
 // ---------------------------------------------------------------------------
+// The +0x14 sub-block CSBI_RectOnly::Setup fills (a RECT-like 4-int record).
+struct SbiRect {
+    i32 m_0; // +0x00 (rel +0x14)
+    i32 m_4; // +0x04 (rel +0x18)
+    i32 m_8; // +0x08 (rel +0x1c)
+    i32 m_c; // +0x0c (rel +0x20)
+};
+
 class CStatusBarItem {
 public:
     CStatusBarItem() {
@@ -34,11 +42,15 @@ public:
     virtual ~CStatusBarItem();
     virtual i32 SbiVfunc0();
 
-    i32 m_4;                  // +0x04
-    i32 m_8;                  // +0x08
-    char m_padc[0x24 - 0x0c]; // +0x0c..0x23
-    i32 m_24;                 // +0x24
-    i32 m_28;                 // +0x28
+    i32 m_4;  // +0x04
+    i32 m_8;  // +0x08
+    i32 m_c;  // +0x0c  Setup arg3
+    i32 m_10; // +0x10  Setup arg4
+    // +0x14..0x20: a 4-int sub-block (a RECT-like record) that Setup fills through
+    // a single base pointer (lea &m_14; [+0]/[+4]/[+8]/[+c]).
+    SbiRect m_rect14; // +0x14  Setup args 5..8
+    i32 m_24;         // +0x24  Setup arg2
+    i32 m_28;         // +0x28
 };
 
 #endif // STATUSBARITEM_H

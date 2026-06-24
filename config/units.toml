@@ -124,6 +124,31 @@ source = "src/Gruntz/SBI_RectOnlyEh.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "sbi_sidetab"
+source = "src/Gruntz/SBI_SideTab.cpp"
+flags = "base"
+
+[[unit]]
+unit = "sbi_sidetab_eh"
+source = "src/Gruntz/SBI_SideTabEh.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "sbi_image"
+source = "src/Gruntz/SBI_Image.cpp"
+flags = "base"
+
+[[unit]]
+unit = "sbi_image_eh"
+source = "src/Gruntz/SBI_ImageEh.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "sbi_imageset"
+source = "src/Gruntz/SBI_ImageSet.cpp"
+flags = "base"
+
+[[unit]]
 unit = "tiletriggerlogic"
 source = "src/Gruntz/TileTriggerLogic.cpp"
 flags = "base"
