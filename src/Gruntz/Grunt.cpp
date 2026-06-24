@@ -72,6 +72,7 @@
 // return 0; else return 1.
 #include <Gruntz/Grunt.h>
 #include <rva.h>
+#include <math.h>
 #include <string.h>
 
 // The sprite class-name string the factory is asked to build, per creator. These
@@ -1038,3 +1039,685 @@ void CGrunt::ReadConfigFromButeMgr() {
 // @stub
 RVA(0x0006a060, 0x43d)
 void CGrunt::LoadGruntMovingDeathConfig() {}
+
+// ===========================================================================
+// Migrated CGrunt cluster (formerly the CUserLogic_* stubs in
+// src/Stub/Discovered.cpp). A prior matcher proved this whole block is CGrunt:
+// the dtor @0xf2f0 stamps vtable 0x5e8754 over CUserLogic/CUserBase bases, and
+// the anim loader @0x49c60 builds "GRUNTZ_<type>_<POSE>" keys. Reconstructed in
+// ascending retail-RVA order. Raw-offset member access (the campaign style used
+// by ReadConfigFromButeMgr above) keeps the giant ~0x46c layout tractable.
+// ===========================================================================
+
+// The global free-list pool the name caches recycle into (head @0x645544, base
+// subtrahend @0x64554c). Defined TU-local (reloc-masked); shared in retail.
+void** g_freePoolHead; // DAT_00645544
+int g_freePoolBase;    // DAT_0064554c (raw subtrahend)
+int g_serialCounter;   // DAT_00629ad0 (Save's per-record counter)
+
+// CGrunt::IsSameType(a, b) @0x3c7f0 - a free __cdecl comparator returning
+// whether two grunts share the same type record (their +0x8 sub-object ptr).
+RVA(0x0003c7f0, 0x18)
+int CGrunt_IsSameType(CGrunt* a, CGrunt* b) {
+    return *(void**)((char*)a + 8) == *(void**)((char*)b + 8);
+}
+
+// CGrunt::ClearAllSprites() @0x4b240 - on death/teardown, flag each live HUD
+// sprite record (+0x8 |= 0x10000) and null its slot. The stamina/toy-time/
+// wingz-time trio is gated on m_1fc==0 (entrance not yet committed). Clears the
+// arrival gate m_1d8 last.
+RVA(0x0004b240, 0xaa)
+void CGrunt::ClearAllSprites() {
+    if (m_selectedSprite) {
+        ((CSpriteRegRecord*)m_selectedSprite)->m_8 |= 0x10000;
+        m_selectedSprite = 0;
+    }
+    if (m_healthSprite) {
+        ((CSpriteRegRecord*)m_healthSprite)->m_8 |= 0x10000;
+        m_healthSprite = 0;
+    }
+    if (m_toySprite) {
+        ((CSpriteRegRecord*)m_toySprite)->m_8 |= 0x10000;
+        m_toySprite = 0;
+    }
+    if (m_1fc == 0) {
+        if (m_staminaSprite) {
+            ((CSpriteRegRecord*)m_staminaSprite)->m_8 |= 0x10000;
+            m_staminaSprite = 0;
+        }
+        if (m_toyTimeSprite) {
+            ((CSpriteRegRecord*)m_toyTimeSprite)->m_8 |= 0x10000;
+            m_toyTimeSprite = 0;
+        }
+        if (m_wingzTimeSprite) {
+            ((CSpriteRegRecord*)m_wingzTimeSprite)->m_8 |= 0x10000;
+            m_wingzTimeSprite = 0;
+        }
+    }
+    m_1d8 = 0;
+}
+
+// CGrunt::CanShowStamina() @0x514a0 - the stamina-bar visibility gate: shown
+// only if not powered-up (m_218==0), stamina below full (m_3f0 < 0x64), and not
+// mid-entrance (m_1e4==0).
+RVA(0x000514a0, 0x26)
+int CGrunt::CanShowStamina() {
+    if (*(int*)((char*)this + 0x218) == 0 && m_3f0 >= 0x64 && m_1e4 == 0) {
+        return 1;
+    }
+    return 0;
+}
+
+// CGrunt::ClearSubA() @0x57c10 - destroy the optional sub-object at +0x424.
+RVA(0x00057c10, 0x1e)
+void CGrunt::ClearSubA() {
+    CGruntSub* p = *(CGruntSub**)((char*)this + 0x424);
+    if (p) {
+        p->Free();
+        *(CGruntSub**)((char*)this + 0x424) = 0;
+    }
+}
+
+// CGrunt::ClearSubB() @0x57ce0 - destroy the optional sub-object at +0x428.
+RVA(0x00057ce0, 0x1e)
+void CGrunt::ClearSubB() {
+    CGruntSub* p = *(CGruntSub**)((char*)this + 0x428);
+    if (p) {
+        p->Free();
+        *(CGruntSub**)((char*)this + 0x428) = 0;
+    }
+}
+
+// CGrunt::DestroyAnims() @0x57d80 - the two-step anim teardown (both this-calls
+// reach engine cleanup; reloc-masked).
+RVA(0x00057d80, 0x11)
+void CGrunt::DestroyAnims() {
+    AnimTeardownA();
+    AnimTeardownB();
+}
+
+// CGrunt::DispatchVtbl24() @0x6b260 - a one-instruction virtual tail-call thunk
+// (mov eax,[ecx]; jmp [eax+0x24] = vtable slot 9). Modeled by reinterpreting
+// this as a 10-virtual interface and calling its 10th slot in tail position.
+RVA(0x0006b260, 0x5)
+void CGrunt::DispatchVtbl24() {
+    ((CVtblSlot9*)this)->Slot9();
+}
+
+// @early-stop
+// reloc-masked-symbol plateau: instruction stream byte-exact vs retail (verified
+// llvm-objdump), but the two free-pool globals (g_freePoolHead/Base) and the
+// three engine calls (Coll::Reset, List::RemoveHead, node deleter) are unnamed,
+// so their DIR32/REL32 operands pair to differently named retail symbols and
+// score fuzzy. Naming the whole referent set is a final-sweep task.
+// CGrunt::FreeNameList() @0x48360 - tears down the per-grunt name/animation
+// caches: walks a small list at +0x320 returning each node's +0x8 buffer to a
+// global free pool (head/base at 0x645544/0x64554c), empties the collection at
+// +0x31c, then drains the name CObList at +0x338 (count = m_33c->m_8; each node
+// freed via the engine deleter).
+RVA(0x00048360, 0x7e)
+void CGrunt::FreeNameList() {
+    if (*(int*)((char*)this + 0x328) != 0) {
+        void** node = *(void***)((char*)this + 0x320);
+        if (node) {
+            do {
+                void* next = node[0];
+                void* buf = node[2];
+                if (buf) {
+                    void** slot = (void**)((char*)buf - g_freePoolBase);
+                    *slot = g_freePoolHead;
+                    g_freePoolHead = slot;
+                }
+                node = (void**)next;
+            } while (node);
+        }
+        ((CGruntColl*)((char*)this + 0x31c))->Reset();
+    }
+
+    while (1) {
+        void* list = *(void**)((char*)this + 0x344);
+        int count = list ? *(int*)((char*)(*(void**)((char*)this + 0x33c)) + 8) : 0;
+        if (count == 0) {
+            return;
+        }
+        if (list == 0) {
+            continue;
+        }
+        void* p = ((CGruntList*)((char*)this + 0x338))->RemoveHead();
+        GruntNode_Delete(p);
+    }
+}
+
+// @early-stop
+// FP instruction-scheduling wall: logic + offsets exact, but MSVC's x87 stack
+// scheduling for the magnitude/normalize rarely matches from C source (an x87
+// fxch/fsubp ordering the compiler picks); see docs/patterns (FP scheduling).
+// CGrunt::ComputeFacing(double dt) @0x57060 - sets the grunt's facing/velocity:
+//   m_400 = (sqrt(dx*dx + dy*dy) / m_41c) * dt   (dx=m_17c-m_5c, dy=m_180-m_60)
+//   m_408 = (double)m_10->m_5c;  m_410 = (double)m_10->m_60
+// dt is the per-tile time step; m_41c is the configured TimePerTile.
+RVA(0x00057060, 0x6f)
+void CGrunt::ComputeFacing(double dt) {
+    CGruntHud* h = m_10;
+    double dx = (double)m_17c - (double)h->m_5c;
+    double dy = (double)m_180 - (double)h->m_60;
+    *(double*)((char*)this + 0x400) =
+        (sqrt(dx * dx + dy * dy) / (double)*(int*)((char*)this + 0x41c)) * dt;
+    *(double*)((char*)this + 0x408) = (double)h->m_5c;
+    *(double*)((char*)this + 0x410) = (double)h->m_60;
+}
+
+// @early-stop
+// reloc-masked-extern plateau: logic + CFG + every member store byte-exact, but
+// the 8 engine this-calls (NotifyArrival, ArrivalClaim, 6 ArrivalHooks) are
+// unnamed externals, so their `call rel32` displacements pair to differently
+// named retail thunks and score fuzzy. Resolving each thunk to its real fn is a
+// final-sweep task (the whole referent set must be named for exact).
+// CGrunt::CommitArrival() @0x4b130 - finalizes the grunt's arrival on its tile.
+// If already arrived (m_1d8) returns 1 immediately. Otherwise, if not yet
+// claimed (m_420==0): in alt-mode (registry m_134==2) it just notifies the tile
+// owner; else it seeds the arrival defender block (m_308/m_310/.., m_420, m_2d0,
+// m_248 &= mask) and claims the tile. Then runs the six per-arrival hooks and
+// latches m_1d8=1.
+RVA(0x0004b130, 0xc8)
+int CGrunt::CommitArrival() {
+    if (m_1d8 != 0) {
+        return 1;
+    }
+    if (m_420 != 0) {
+        if (g_pGameRegistry->m_134 == 2) {
+            m_260->NotifyArrival(m_1ec, m_1f0);
+        } else if (m_420 != 0) {
+            m_308 = 0;
+            m_310 = 0;
+            m_30c = 0;
+            m_314 = 0;
+            int flags = m_248 & 0xe7fbfbfd;
+            m_420 = 0;
+            m_2d0 = 0;
+            m_248 = flags;
+            ArrivalClaim(1, 1);
+        }
+    }
+    ArrivalHook0();
+    ArrivalHook1();
+    ArrivalHook2();
+    ArrivalHook3();
+    ArrivalHook4();
+    ArrivalHook5();
+    m_1d8 = 1;
+    return 1;
+}
+
+// @early-stop
+// shuttle-register regalloc wall: logic exact; the target threads the four
+// passthrough args (c..f) through one saved esi (push esi; mov esi,[..]; push
+// esi x4) while MSVC here pre-loads them into eax/ecx/edx. Pure arg-marshalling
+// schedule coin-flip; no source lever flips it (entropy-class).
+// CGrunt::TileSwitch(a, b, c, d, e, f) @0x4b320 - a __stdcall passthrough that
+// scales the first two grid coords to tile-pixel centers (*0x20 + 0x10) and
+// forwards all six args to the engine tile-switch helper.
+RVA(0x0004b320, 0x34)
+void __stdcall CGrunt_TileSwitch(int a, int b, int c, int d, int e, int f) {
+    GruntTileSwitchImpl(a * 0x20 + 0x10, b * 0x20 + 0x10, c, d, e, f);
+}
+
+// @early-stop
+// reloc-masked-symbol plateau: instruction stream byte-exact vs retail (verified
+// llvm-objdump), residual is the two unnamed free-pool globals (g_freePoolHead/
+// Base) + the Coll::Reset call pairing to differently named retail symbols.
+// CGrunt::SetEntrancePos(a, b) @0x4d060 - records the grunt's current tile as
+// its committed entrance position (m_174/m_178 = m_17c/m_180), clears the
+// arrival timers (m_210); if `a`, also clears m_450/m_230; and if `b` and the
+// grunt is not a special kind (m_2d0!=0x11) it drains the name list at +0x320
+// into the global free pool and resets the collection at +0x31c.
+RVA(0x0004d060, 0x98)
+void CGrunt::SetEntrancePos(int a, int b) {
+    *(int*)((char*)this + 0x174) = m_17c;
+    *(int*)((char*)this + 0x178) = m_180;
+    *(int*)((char*)this + 0x210) = 0;
+    if (a) {
+        *(int*)((char*)this + 0x450) = 0;
+        m_230 = 0;
+    }
+    if (b && m_2d0 != 0x11 && *(int*)((char*)this + 0x328) != 0) {
+        void** node = *(void***)((char*)this + 0x320);
+        if (node) {
+            do {
+                void* next = node[0];
+                void* buf = node[2];
+                if (buf) {
+                    void** slot = (void**)((char*)buf - g_freePoolBase);
+                    *slot = g_freePoolHead;
+                    g_freePoolHead = slot;
+                }
+                node = (void**)next;
+            } while (node);
+        }
+        ((CGruntColl*)((char*)this + 0x31c))->Reset();
+    }
+}
+
+// @early-stop
+// reloc-masked-extern tail (94%+): the 4560-byte instruction stream is
+// byte-exact vs retail (no EH frame, same sprite/string/name-id/field/tail
+// blocks, verified llvm-objdump) - the residual is the ~35 unnamed call operands
+// in the 18 name-id + 3 string blocks (catalog LookupName + ~CString) pairing to
+// differently named retail symbols. Naming the whole referent set -> exact is a
+// final-sweep task.
+// ---------------------------------------------------------------------------
+// CGrunt::Save(ar) @0x53f90 - serializes the whole grunt state into a custom
+// archive (each member -> ar->Write(&field, size) via vtable slot 0x30). Bails
+// (return 0) if the archive is null or the type catalog (m_158->m_c) is unset.
+// The 4560-byte body is, in order: 7 sprite-id blocks (each bumps the global
+// serialize counter and writes the sprite's m_188, or 0 if the slot is empty);
+// 3 name strings (a 0x80-byte buffer copy); 18 anim-name-id blocks (look the id
+// up in the catalog's name map and copy the resolved name into the buffer); then
+// ~100 plain field writes; finally a linked-list tail (m_33c) writing each
+// node's +0x8 (size 0x2c). The serialize counter is the global DAT_00629ad0.
+RVA(0x00053f90, 0x11d0)
+int CGrunt::Save(CGruntArchive* ar) {
+    if (!ar) {
+        return 0;
+    }
+    CGruntNameMap* catalog = ((CGruntTypeCatalog*)*(void**)((char*)this + 0x158))->m_c;
+    if (!catalog) {
+        return 0;
+    }
+    int tmp;
+    char buf[0x80];
+    g_serialCounter++;
+    tmp = 0;
+    {
+        CHudSprite* sp = *(CHudSprite**)((char*)this + 0x1b8);
+        if (sp) {
+            tmp = *(int*)((char*)sp + 0x188);
+        }
+    }
+    ar->Write(&tmp, 4);
+    g_serialCounter++;
+    tmp = 0;
+    {
+        CHudSprite* sp = *(CHudSprite**)((char*)this + 0x1bc);
+        if (sp) {
+            tmp = *(int*)((char*)sp + 0x188);
+        }
+    }
+    ar->Write(&tmp, 4);
+    g_serialCounter++;
+    tmp = 0;
+    {
+        CHudSprite* sp = *(CHudSprite**)((char*)this + 0x1c4);
+        if (sp) {
+            tmp = *(int*)((char*)sp + 0x188);
+        }
+    }
+    ar->Write(&tmp, 4);
+    g_serialCounter++;
+    tmp = 0;
+    {
+        CHudSprite* sp = *(CHudSprite**)((char*)this + 0x1c8);
+        if (sp) {
+            tmp = *(int*)((char*)sp + 0x188);
+        }
+    }
+    ar->Write(&tmp, 4);
+    g_serialCounter++;
+    tmp = 0;
+    {
+        CHudSprite* sp = *(CHudSprite**)((char*)this + 0x1cc);
+        if (sp) {
+            tmp = *(int*)((char*)sp + 0x188);
+        }
+    }
+    ar->Write(&tmp, 4);
+    g_serialCounter++;
+    tmp = 0;
+    {
+        CHudSprite* sp = *(CHudSprite**)((char*)this + 0x1d0);
+        if (sp) {
+            tmp = *(int*)((char*)sp + 0x188);
+        }
+    }
+    ar->Write(&tmp, 4);
+    g_serialCounter++;
+    tmp = 0;
+    {
+        CHudSprite* sp = *(CHudSprite**)((char*)this + 0x1d4);
+        if (sp) {
+            tmp = *(int*)((char*)sp + 0x188);
+        }
+    }
+    ar->Write(&tmp, 4);
+    g_serialCounter++;
+    memset(buf, 0, 0x80);
+    strcpy(buf, *(const char**)((char*)this + 0x1c0));
+    ar->Write(buf, 0x80);
+    g_serialCounter++;
+    memset(buf, 0, 0x80);
+    strcpy(buf, *(const char**)((char*)this + 0x448));
+    ar->Write(buf, 0x80);
+    g_serialCounter++;
+    memset(buf, 0, 0x80);
+    strcpy(buf, *(const char**)((char*)this + 0x44c));
+    ar->Write(buf, 0x80);
+    g_serialCounter++;
+    memset(buf, 0, 0x80);
+    {
+        int id = *(int*)((char*)this + 0x394);
+        if (id) {
+            CString nm = catalog->LookupName(id);
+            strcpy(buf, nm);
+        }
+    }
+    ar->Write(buf, 0x80);
+    g_serialCounter++;
+    memset(buf, 0, 0x80);
+    {
+        int id = *(int*)((char*)this + 0x398);
+        if (id) {
+            CString nm = catalog->LookupName(id);
+            strcpy(buf, nm);
+        }
+    }
+    ar->Write(buf, 0x80);
+    g_serialCounter++;
+    memset(buf, 0, 0x80);
+    {
+        int id = *(int*)((char*)this + 0x39c);
+        if (id) {
+            CString nm = catalog->LookupName(id);
+            strcpy(buf, nm);
+        }
+    }
+    ar->Write(buf, 0x80);
+    g_serialCounter++;
+    memset(buf, 0, 0x80);
+    {
+        int id = *(int*)((char*)this + 0x3a0);
+        if (id) {
+            CString nm = catalog->LookupName(id);
+            strcpy(buf, nm);
+        }
+    }
+    ar->Write(buf, 0x80);
+    g_serialCounter++;
+    memset(buf, 0, 0x80);
+    {
+        int id = *(int*)((char*)this + 0x3a4);
+        if (id) {
+            CString nm = catalog->LookupName(id);
+            strcpy(buf, nm);
+        }
+    }
+    ar->Write(buf, 0x80);
+    g_serialCounter++;
+    memset(buf, 0, 0x80);
+    {
+        int id = *(int*)((char*)this + 0x3a8);
+        if (id) {
+            CString nm = catalog->LookupName(id);
+            strcpy(buf, nm);
+        }
+    }
+    ar->Write(buf, 0x80);
+    g_serialCounter++;
+    memset(buf, 0, 0x80);
+    {
+        int id = *(int*)((char*)this + 0x3ac);
+        if (id) {
+            CString nm = catalog->LookupName(id);
+            strcpy(buf, nm);
+        }
+    }
+    ar->Write(buf, 0x80);
+    g_serialCounter++;
+    memset(buf, 0, 0x80);
+    {
+        int id = *(int*)((char*)this + 0x3b0);
+        if (id) {
+            CString nm = catalog->LookupName(id);
+            strcpy(buf, nm);
+        }
+    }
+    ar->Write(buf, 0x80);
+    g_serialCounter++;
+    memset(buf, 0, 0x80);
+    {
+        int id = *(int*)((char*)this + 0x3b4);
+        if (id) {
+            CString nm = catalog->LookupName(id);
+            strcpy(buf, nm);
+        }
+    }
+    ar->Write(buf, 0x80);
+    g_serialCounter++;
+    memset(buf, 0, 0x80);
+    {
+        int id = *(int*)((char*)this + 0x3b8);
+        if (id) {
+            CString nm = catalog->LookupName(id);
+            strcpy(buf, nm);
+        }
+    }
+    ar->Write(buf, 0x80);
+    g_serialCounter++;
+    memset(buf, 0, 0x80);
+    {
+        int id = *(int*)((char*)this + 0x3bc);
+        if (id) {
+            CString nm = catalog->LookupName(id);
+            strcpy(buf, nm);
+        }
+    }
+    ar->Write(buf, 0x80);
+    g_serialCounter++;
+    memset(buf, 0, 0x80);
+    {
+        int id = *(int*)((char*)this + 0x3c0);
+        if (id) {
+            CString nm = catalog->LookupName(id);
+            strcpy(buf, nm);
+        }
+    }
+    ar->Write(buf, 0x80);
+    g_serialCounter++;
+    memset(buf, 0, 0x80);
+    {
+        int id = *(int*)((char*)this + 0x3c4);
+        if (id) {
+            CString nm = catalog->LookupName(id);
+            strcpy(buf, nm);
+        }
+    }
+    ar->Write(buf, 0x80);
+    g_serialCounter++;
+    memset(buf, 0, 0x80);
+    {
+        int id = *(int*)((char*)this + 0x3c8);
+        if (id) {
+            CString nm = catalog->LookupName(id);
+            strcpy(buf, nm);
+        }
+    }
+    ar->Write(buf, 0x80);
+    g_serialCounter++;
+    memset(buf, 0, 0x80);
+    {
+        int id = *(int*)((char*)this + 0x3cc);
+        if (id) {
+            CString nm = catalog->LookupName(id);
+            strcpy(buf, nm);
+        }
+    }
+    ar->Write(buf, 0x80);
+    g_serialCounter++;
+    memset(buf, 0, 0x80);
+    {
+        int id = *(int*)((char*)this + 0x3d0);
+        if (id) {
+            CString nm = catalog->LookupName(id);
+            strcpy(buf, nm);
+        }
+    }
+    ar->Write(buf, 0x80);
+    g_serialCounter++;
+    memset(buf, 0, 0x80);
+    {
+        int id = *(int*)((char*)this + 0x3d4);
+        if (id) {
+            CString nm = catalog->LookupName(id);
+            strcpy(buf, nm);
+        }
+    }
+    ar->Write(buf, 0x80);
+    g_serialCounter++;
+    memset(buf, 0, 0x80);
+    {
+        int id = *(int*)((char*)this + 0x3d8);
+        if (id) {
+            CString nm = catalog->LookupName(id);
+            strcpy(buf, nm);
+        }
+    }
+    ar->Write(buf, 0x80);
+    ar->Write((char*)this + 0x18c, 4);
+    ar->Write((char*)this + 0x190, 4);
+    ar->Write((char*)this + 0x194, 4);
+    ar->Write((char*)this + 0x170, 4);
+    ar->Write((char*)this + 0x198, 4);
+    ar->Write((char*)this + 0x19c, 4);
+    ar->Write((char*)this + 0x1a0, 4);
+    ar->Write((char*)this + 0x1a4, 4);
+    ar->Write((char*)this + 0x1a8, 4);
+    ar->Write((char*)this + 0x1ac, 4);
+    ar->Write((char*)this + 0x1b0, 4);
+    ar->Write((char*)this + 0x1b4, 4);
+    ar->Write((char*)this + 0x1d8, 4);
+    ar->Write((char*)this + 0x174, 8);
+    ar->Write((char*)this + 0x17c, 8);
+    ar->Write((char*)this + 0x184, 8);
+    ar->Write((char*)this + 0x1dc, 8);
+    ar->Write((char*)this + 0x1e4, 4);
+    ar->Write((char*)this + 0x1e8, 4);
+    ar->Write((char*)this + 0x1ec, 4);
+    ar->Write((char*)this + 0x1f0, 4);
+    ar->Write((char*)this + 0x1f4, 4);
+    ar->Write((char*)this + 0x1f8, 4);
+    ar->Write((char*)this + 0x1fc, 4);
+    ar->Write((char*)this + 0x200, 8);
+    ar->Write((char*)this + 0x208, 8);
+    ar->Write((char*)this + 0x210, 4);
+    ar->Write((char*)this + 0x214, 4);
+    ar->Write((char*)this + 0x218, 4);
+    ar->Write((char*)this + 0x21c, 4);
+    ar->Write((char*)this + 0x220, 4);
+    ar->Write((char*)this + 0x224, 4);
+    ar->Write((char*)this + 0x228, 4);
+    ar->Write((char*)this + 0x22c, 4);
+    ar->Write((char*)this + 0x230, 4);
+    ar->Write((char*)this + 0x290, 16);
+    ar->Write((char*)this + 0x2a0, 16);
+    ar->Write((char*)this + 0x2b0, 16);
+    ar->Write((char*)this + 0x2c0, 16);
+    ar->Write((char*)this + 0x3ec, 4);
+    ar->Write((char*)this + 0x3f0, 4);
+    ar->Write((char*)this + 0x3f4, 4);
+    ar->Write((char*)this + 0x3f8, 4);
+    ar->Write((char*)this + 0x400, 8);
+    ar->Write((char*)this + 0x418, 4);
+    ar->Write((char*)this + 0x42c, 4);
+    ar->Write((char*)this + 0x430, 4);
+    ar->Write((char*)this + 0x434, 4);
+    ar->Write((char*)this + 0x438, 4);
+    ar->Write((char*)this + 0x2d0, 4);
+    ar->Write((char*)this + 0x2d4, 4);
+    ar->Write((char*)this + 0x2d8, 4);
+    ar->Write((char*)this + 0x2dc, 4);
+    ar->Write((char*)this + 0x2e0, 4);
+    ar->Write((char*)this + 0x2e4, 4);
+    ar->Write((char*)this + 0x2ec, 4);
+    ar->Write((char*)this + 0x2f0, 8);
+    ar->Write((char*)this + 0x300, 8);
+    ar->Write((char*)this + 0x354, 4);
+    ar->Write((char*)this + 0x358, 4);
+    ar->Write((char*)this + 0x35c, 4);
+    ar->Write((char*)this + 0x3dc, 8);
+    ar->Write((char*)this + 0x3e4, 8);
+    ar->Write((char*)this + 0x450, 4);
+    ar->Write((char*)this + 0x41c, 4);
+    ar->Write((char*)this + 0x408, 8);
+    ar->Write((char*)this + 0x410, 8);
+    ar->Write((char*)this + 0x8d0, 4);
+    ar->Write((char*)this + 0x234, 4);
+    ar->Write((char*)this + 0x238, 4);
+    ar->Write((char*)this + 0x23c, 4);
+    ar->Write((char*)this + 0x240, 4);
+    ar->Write((char*)this + 0x244, 4);
+    ar->Write((char*)this + 0x248, 4);
+    ar->Write((char*)this + 0x24c, 4);
+    ar->Write((char*)this + 0x258, 4);
+    ar->Write((char*)this + 0x25c, 4);
+    ar->Write((char*)this + 0x360, 4);
+    ar->Write((char*)this + 0x364, 4);
+    ar->Write((char*)this + 0x318, 4);
+    ar->Write((char*)this + 0x2f8, 8);
+    ar->Write((char*)this + 0x36c, 4);
+    ar->Write((char*)this + 0x454, 4);
+    ar->Write((char*)this + 0x370, 4);
+    ar->Write((char*)this + 0x420, 4);
+    ar->Write((char*)this + 0x368, 4);
+    ar->Write((char*)this + 0x458, 8);
+    ar->Write((char*)this + 0x250, 4);
+    ar->Write((char*)this + 0x254, 4);
+    ar->Write((char*)this + 0x374, 4);
+    ar->Write((char*)this + 0x37c, 4);
+    ar->Write((char*)this + 0x380, 4);
+    ar->Write((char*)this + 0x384, 4);
+    ar->Write((char*)this + 0x388, 4);
+    ar->Write((char*)this + 0x390, 4);
+    ar->Write((char*)this + 0x378, 4);
+    ar->Write((char*)this + 0x38c, 4);
+    ar->Write((char*)this + 0x460, 4);
+    ar->Write((char*)this + 0x2e8, 4);
+    ar->Write((char*)this + 0x288, 8);
+
+    for (CGruntListNode* node = *(CGruntListNode**)((char*)this + 0x33c); node;
+         node = node->m_next) {
+        ar->Write(node->m_data, 0x2c);
+    }
+    return 1;
+}
+
+// @early-stop
+// reloc-masked-extern plateau: instruction stream byte-exact (verified
+// llvm-objdump - prologue, geometry call, desc/frame read, cell-index math
+// `0x468 + (3*col+row)*0x68`, GetName/SetAnimFrame, anim-set latch all match),
+// residual is the 4 unnamed engine calls (SetGeometry/GetName/SetAnimFrame/
+// LookupAnimSet) pairing to differently named retail symbols.
+// ---------------------------------------------------------------------------
+// CGrunt::ResetGeometry() @0x616e0 - re-arms the entrance player's geometry to
+// the m_3a0 source, re-stamps the active anim-set node, and re-applies the
+// per-cell entrance frame. Reads the active-anim descriptor's first element's
+// frame (+0x14), looks the per-cell name up by the m_43c {col,row} triple (cell
+// stride 0x68 at +0x468), applies the frame, then latches a fresh idle anim-set
+// node (g_entranceAnimSrc.LookupAnimSet) into m_14->m_1c. __thiscall, ret 0.
+RVA(0x000616e0, 0xa8)
+int CGrunt::ResetGeometry() {
+    m_15c = (int)m_154->m_1b4;
+    m_154->m_1a0.SetGeometry(*(int*)((char*)this + 0x3a0));
+
+    CEntranceAnimDescColl* desc = m_154->m_1b4;
+    int* elem = desc->m_10 > 0 ? *desc->m_c : 0;
+    int frame = elem[0x14 / 4];
+
+    int col = m_43c[0];
+    int row = m_43c[1];
+    int index = 3 * col + row;
+    const char* name = ((CGruntCell*)((char*)this + 0x468 + index * 0x68))->GetName(0);
+    m_154->SetAnimFrame(name, frame);
+
+    m_30 = (int)m_14->m_1c;
+    m_14->m_1c = (void*)EntranceLookupAnimSet(s_animKeyA);
+    return 0;
+}

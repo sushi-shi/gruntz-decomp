@@ -253,8 +253,17 @@ public:
     // tail reads them via raw offsets off &player->m_1a0 instead.
 };
 
+// A per-cell entrance record (0x68-byte stride at CGrunt+0x474). GetName(flag)
+// resolves the cell's frame name (__thiscall, 1 arg). External (reloc-masked).
+class CGruntCell {
+public:
+    const char* GetName(int flag);
+};
+
 class CEntranceAnimPlayer {
 public:
+    void SetAnimFrame(const char* name, int frame); // FUN_005504d0-class (ret 8)
+
     char m_pad0[0xc];
     CEntranceResMgr* m_c; // +0x0c  resource object (lookup table holder)
     char m_pad10[0x1a0 - 0x10];
@@ -320,6 +329,101 @@ struct CFocusSlot {
     char m_pad0[0x14];
     int m_14; // +0x14
 };
+
+// ---------------------------------------------------------------------------
+// The serialization sink CGrunt::Save drives: a custom archive whose vtable
+// slot 0x30 is a `Write(const void* data, int size)` (member fn, thiscall).
+// Modeled as a polymorphic class with 13 virtuals (slot 0x30 = the 13th) so
+// each `mov edx,[ebx]; push size; push &field; mov ecx,ebx; call [edx+0x30]`
+// falls out. The archive is external (never instantiated here, so no vtable is
+// emitted); Write's body is reloc-masked.
+// ---------------------------------------------------------------------------
+class CGruntArchive {
+public:
+    virtual void slot00();
+    virtual void slot04();
+    virtual void slot08();
+    virtual void slot0c();
+    virtual void slot10();
+    virtual void slot14();
+    virtual void slot18();
+    virtual void slot1c();
+    virtual void slot20();
+    virtual void slot24();
+    virtual void slot28();
+    virtual void slot2c();
+    virtual void Write(const void* data, int size); // vtable slot +0x30
+};
+
+// The grunt's name-id resolver the Save reaches via m_158->m_c->m_2c: maps an
+// integer id to its name CString (returned by value). __thiscall, ret 4.
+class CGruntNameMap {
+public:
+    CString LookupName(int id);
+};
+
+// The +0x158 "type catalog" object: Save reads its m_c (a non-null owner that
+// also holds the name-id map at m_2c). External; modeled minimally.
+struct CGruntTypeCatalog {
+    char m_pad0[0xc];
+    CGruntNameMap* m_c; // +0x0c  owner -> name-id map
+};
+
+// The global serialize counter Save bumps before each variable-length record
+// (DAT_00629ad0). TU-local (reloc-masked); shared in retail.
+extern int g_serialCounter;
+
+// The linked-list node Save's tail walks (m_33c head): {next @+0, data @+0x8}.
+struct CGruntListNode {
+    CGruntListNode* m_next; // +0x00
+    char m_pad4[0x8 - 0x4];
+    void* m_data; // +0x08  serialized payload (0x2c bytes)
+};
+
+// The global running game clock (DAT_00645588) - already declared as g_645588
+// in the .cpp; the Save serialize loop's name-table lookup helper.
+class CArchive; // (unused MFC fwd; Save uses CGruntArchive)
+
+// A small owned sub-object the grunt destroys on teardown (slots +0x424/+0x428).
+// Free() is __thiscall, no args, reloc-masked.
+class CGruntSub {
+public:
+    void Free();
+};
+
+// A 10-virtual interface view for CGrunt::DispatchVtbl24's tail call (vtable
+// slot 0x24 = index 9). Calling Slot9() emits `mov eax,[ecx]; jmp [eax+0x24]`.
+class CVtblSlot9 {
+public:
+    virtual void s0();
+    virtual void s1();
+    virtual void s2();
+    virtual void s3();
+    virtual void s4();
+    virtual void s5();
+    virtual void s6();
+    virtual void s7();
+    virtual void s8();
+    virtual void Slot9();
+};
+
+// The name/animation cache collections FreeNameList drains (sub-objects of CGrunt
+// at +0x31c and +0x338). External engine collections; only the called methods
+// are modeled (reloc-masked).
+class CGruntColl {
+public:
+    void Reset(); // empty the collection in place
+};
+class CGruntList {
+public:
+    void* RemoveHead(); // pop the head node, return it
+};
+// __cdecl node deleter (operator delete-style; push p; call; add esp,4).
+void GruntNode_Delete(void* p);
+
+// The global free-list pool the name caches recycle into.
+extern void** g_freePoolHead; // DAT_00645544
+extern int g_freePoolBase;    // DAT_0064554c (raw subtrahend)
 
 // ---------------------------------------------------------------------------
 // CGrunt - only the members the HUD sprite creators touch. CGrunt is large;
@@ -482,6 +586,41 @@ public:
     void EntranceFinishWire(int a, int b);  // thunk_FUN_00449c60 (2-arg)
     void EntranceOnReleased();              // thunk_FUN_0044b130 (0-arg)
     void EntranceArrivalHook(int a, int b); // thunk_FUN_0044d060 (2-arg; arrival commit)
+
+    // ---- migrated CGrunt cluster (ex-CUserLogic_*) ----
+    int Save(CGruntArchive* ar);     // @0x53f90 serialize
+    void ClearAllSprites();          // @0x4b240
+    int CommitArrival();             // @0x4b130
+    void ClearSubA();                // @0x57c10
+    void ClearSubB();                // @0x57ce0
+    void DestroyAnims();             // @0x57d80
+    void AnimTeardownA();            // engine thunk (DestroyAnims step 1)
+    void AnimTeardownB();            // engine thunk (DestroyAnims step 2)
+    void ArrivalClaim(int a, int b); // CommitArrival's this->claim(1,1)
+    // CommitArrival's six per-arrival this-call hooks (engine thunks).
+    void ArrivalHook0();
+    void ArrivalHook1();
+    void ArrivalHook2();
+    void ArrivalHook3();
+    void ArrivalHook4();
+    void ArrivalHook5();
+    int CanShowStamina();              // @0x514a0
+    void SetEntrancePos(int a, int b); // @0x4d060 (ret 8)
+    void ComputeFacing(double dt);     // @0x57060 (ret 8)
+    void FreeNameList();               // @0x48360
+    int ResetGeometry();               // @0x616e0
+    void DispatchVtbl24();             // @0x6b260 (jmp [vtbl+0x24])
 };
+
+// CGrunt::IsSameType(a, b) @0x3c7f0 - a free (__cdecl) comparator: returns
+// (a->m_8 == b->m_8). Not a member (reads both args off the stack).
+int CGrunt_IsSameType(CGrunt* a, CGrunt* b);
+
+// CGrunt::TileSwitch(...) @0x4b320 - a 6-arg (__stdcall, ret 0x18) passthrough
+// that scales the first two args to tile pixel coords (*0x20+0x10) and forwards
+// all six to an engine helper. External callee reloc-masks.
+void __stdcall CGrunt_TileSwitch(int a, int b, int c, int d, int e, int f);
+// The engine tile-switch helper TileSwitch forwards to (__stdcall ret 0x18).
+void __stdcall GruntTileSwitchImpl(int a, int b, int c, int d, int e, int f);
 
 #endif // SRC_GRUNTZ_GRUNT_H

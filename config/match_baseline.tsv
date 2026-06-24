@@ -39,7 +39,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	822	0
+engine_discovered	808	0
 engine_label_stubs	534	117
 filestream	13	9
 font	16	9
@@ -51,7 +51,7 @@ gamemode	35	15
 gameobjectctors	5	0
 gametext	4	2
 gamewnd	6	4
-grunt	20	0
+grunt	34	7
 gruntpuddle	4	2
 gruntvoice	4	3
 gruntzapp	10	8
@@ -627,40 +627,26 @@ engine_discovered	?CTileTriggerTransition_110070@CTileTriggerTransition@@QAEXXZ	
 engine_discovered	?CToobSpikez_012c60@CToobSpikez@@QAEXXZ	5.8824	5.8824	1	d16ff0f9da5d	0x12c60
 engine_discovered	?CToobSpikez_114860@CToobSpikez@@QAEXXZ	0.5333	0.5333	1	0b1c4042697d	0x114860
 engine_discovered	?CUserLogic_00f2f0@CUserLogic@@QAEXXZ	2.2727	2.2727	1	211acac7460b	0xf2f0
-engine_discovered	?CUserLogic_03c7f0@CUserLogic@@QAEXXZ	10.0000	10.0000	1	e74f076e0b03	0x3c7f0
-engine_discovered	?CUserLogic_048360@CUserLogic@@QAEXXZ	2.4390	2.4390	1	15042300f3f6	0x48360
 engine_discovered	?CUserLogic_049c60@CUserLogic@@QAEXXZ	0.0671	0.0671	1	ed18caba3ae4	0x49c60
 engine_discovered	?CUserLogic_04ac10@CUserLogic@@QAEXXZ	0.1133	0.1133	1	8c41366a7e7a	0x4ac10
-engine_discovered	?CUserLogic_04b130@CUserLogic@@QAEXXZ	1.9231	1.9231	1	f2049cddb76d	0x4b130
-engine_discovered	?CUserLogic_04b240@CUserLogic@@QAEXXZ	1.9231	1.9231	1	1caf86a7be33	0x4b240
-engine_discovered	?CUserLogic_04b320@CUserLogic@@QAEXXZ	2.0000	2.0000	1	dcf9c6e26006	0x4b320
 engine_discovered	?CUserLogic_04b370@CUserLogic@@QAEXXZ	0.0477	0.0477	1	a72b0fb0015d	0x4b370
 engine_discovered	?CUserLogic_04c170@CUserLogic@@QAEXXZ	0.1122	0.1122	1	57404257354c	0x4c170
-engine_discovered	?CUserLogic_04d060@CUserLogic@@QAEXXZ	1.0526	1.0526	1	a9cb20ab575a	0x4d060
 engine_discovered	?CUserLogic_0511b0@CUserLogic@@QAEXXZ	0.2174	0.2174	1	197cc6ed7d12	0x511b0
-engine_discovered	?CUserLogic_0514a0@CUserLogic@@QAEXXZ	8.3333	8.3333	1	c6eb76926b32	0x514a0
 engine_discovered	?CUserLogic_051850@CUserLogic@@QAEXXZ	0.3226	0.3226	1	c78a2a64aaea	0x51850
 engine_discovered	?CUserLogic_051a20@CUserLogic@@QAEXXZ	0.3150	0.3150	1	ae49786b1746	0x51a20
 engine_discovered	?CUserLogic_052fb0@CUserLogic@@QAEXXZ	0.0496	0.0496	1	7ac5a7ad55fc	0x52fb0
 engine_discovered	?CUserLogic_053b80@CUserLogic@@QAEXXZ	0.1130	0.1130	1	5d780b659a25	0x53b80
-engine_discovered	?CUserLogic_053f90@CUserLogic@@QAEXXZ	0.0251	0.0251	1	146f19aab7c9	0x53f90
-engine_discovered	?CUserLogic_057060@CUserLogic@@QAEXXZ	1.2121	1.2121	1	6767652820f2	0x57060
-engine_discovered	?CUserLogic_057c10@CUserLogic@@QAEXXZ	11.1111	11.1111	1	b96405fe7ecc	0x57c10
-engine_discovered	?CUserLogic_057ce0@CUserLogic@@QAEXXZ	11.1111	11.1111	1	0dc542c94710	0x57ce0
-engine_discovered	?CUserLogic_057d80@CUserLogic@@QAEXXZ	14.2857	14.2857	1	1ae8abf8bafe	0x57d80
 engine_discovered	?CUserLogic_0588f0@CUserLogic@@QAEXXZ	0.2381	0.2381	1	e068ace1adce	0x588f0
 engine_discovered	?CUserLogic_059230@CUserLogic@@QAEXXZ	0.1238	0.1238	1	0cbaf8303e9e	0x59230
 engine_discovered	?CUserLogic_05b6f0@CUserLogic@@QAEXXZ	0.6667	0.6667	1	71cfbf30ea0f	0x5b6f0
 engine_discovered	?CUserLogic_05caa0@CUserLogic@@QAEXXZ	0.3030	0.3030	1	35e3f27f4fcd	0x5caa0
 engine_discovered	?CUserLogic_05f310@CUserLogic@@QAEXXZ	0.1074	0.1074	1	58534e6b01e8	0x5f310
-engine_discovered	?CUserLogic_0616e0@CUserLogic@@QAEXXZ	2.0000	2.0000	1	f0951cee9ac1	0x616e0
 engine_discovered	?CUserLogic_0617c0@CUserLogic@@QAEXXZ	1.0638	1.0638	1	b258787ef2a1	0x617c0
 engine_discovered	?CUserLogic_062110@CUserLogic@@QAEXXZ	0.0901	0.0901	1	6f4d7a6216ed	0x62110
 engine_discovered	?CUserLogic_0637a0@CUserLogic@@QAEXXZ	0.4274	0.4274	1	996fd0af22fa	0x637a0
 engine_discovered	?CUserLogic_067850@CUserLogic@@QAEXXZ	0.5405	0.5405	1	310190d26e3c	0x67850
 engine_discovered	?CUserLogic_068370@CUserLogic@@QAEXXZ	1.0417	1.0417	1	2ac4077e4bfb	0x68370
 engine_discovered	?CUserLogic_06a6d0@CUserLogic@@QAEXXZ	0.1264	0.1264	1	9ed03eb1c099	0x6a6d0
-engine_discovered	?CUserLogic_06b260@CUserLogic@@QAEXXZ	20.0000	20.0000	1	a6f84ec2fc95	0x6b260
 engine_discovered	?CUserLogic_0f26f0@CUserLogic@@QAEXXZ	1.2658	1.2658	1	5b155e163df7	0xf26f0
 engine_discovered	?CUserLogic_16e7f0@CUserLogic@@QAEXXZ	0.2532	0.2532	1	95da5b87b27f	0x16e7f0
 engine_discovered	?CUserLogic_16ea90@CUserLogic@@QAEXXZ	0.6061	0.6061	1	68eaea7fe177	0x16ea90
@@ -1888,6 +1874,14 @@ gamewnd	?Destroy@CGameWnd@@QAEXXZ	100.0000	100.0000	4	fa5932613a67	0x13cfb0
 gamewnd	?GameWindowProc@CGameApp@@SGJPAUHWND__@@IIJ@Z	94.8343	94.8343	3	9bc02827b8ee	0x13cff0
 gamewnd	?QuitMessageLoop@CGameWnd@@UAEHXZ	100.0000	100.0000	3	6ea60ca9869b	0x13d490
 grunt	?BuildEntranceAnimation@CGrunt@@QAEXH@Z	71.4562	71.4562	4	676669405c19	0x67bd0
+grunt	?CGrunt_IsSameType@@YAHPAVCGrunt@@0@Z	100.0000	100.0000	1	8f52cdf72003	0x3c7f0
+grunt	?CGrunt_TileSwitch@@YGXHHHHHH@Z	66.2000	66.2000	1	95e45811eb6c	0x4b320
+grunt	?CanShowStamina@CGrunt@@QAEHXZ	100.0000	100.0000	1	cf95c2914c7f	0x514a0
+grunt	?ClearAllSprites@CGrunt@@QAEXXZ	100.0000	100.0000	1	8607f586d5e9	0x4b240
+grunt	?ClearSubA@CGrunt@@QAEXXZ	100.0000	100.0000	1	85ac452dc9a6	0x57c10
+grunt	?ClearSubB@CGrunt@@QAEXXZ	100.0000	100.0000	1	02f416174db0	0x57ce0
+grunt	?CommitArrival@CGrunt@@QAEHXZ	56.7885	56.7885	1	4f9ee30bc651	0x4b130
+grunt	?ComputeFacing@CGrunt@@QAEXN@Z	88.2727	88.2727	1	aaa35cceb5e9	0x57060
 grunt	?CreateHealthSprite@CGrunt@@QAEHXZ	99.6552	99.6552	4	33ad0492b5ff	0x4d130
 grunt	?CreatePowerupSprite@CGrunt@@QAEHH@Z	99.6296	99.6296	4	0d0c5c7b97fa	0x4d650
 grunt	?CreateSelectedSprite@CGrunt@@QAEHXZ	91.9231	91.9231	4	3d97368f1640	0x4d730
@@ -1895,14 +1889,20 @@ grunt	?CreateStaminaSprite@CGrunt@@QAEHXZ	99.6491	99.6491	4	414c2168cda6	0x4d2f0
 grunt	?CreateToySprite@CGrunt@@QAEHXZ	92.0755	92.0755	4	1e87374a7fac	0x4d220
 grunt	?CreateToyTimeSprite@CGrunt@@QAEHXZ	99.7222	99.7222	4	84c476b715b2	0x4d3e0
 grunt	?CreateWingzTimeSprite@CGrunt@@QAEHXZ	99.7059	99.7059	4	7242a3aaee48	0x4d520
+grunt	?DestroyAnims@CGrunt@@QAEXXZ	100.0000	100.0000	1	96a5e454ab14	0x57d80
+grunt	?DispatchVtbl24@CGrunt@@QAEXXZ	100.0000	100.0000	1	bc3bd12b926d	0x6b260
+grunt	?FreeNameList@CGrunt@@QAEXXZ	76.9512	76.9512	1	7cf0d93575ef	0x48360
 grunt	?LoadEntranceConfig@CGrunt@@QAEXXZ	78.8377	78.8377	4	0831c1b4580b	0x67f80
 grunt	?LoadGruntMovingDeathConfig@CGrunt@@QAEXXZ	0.4132	0.4132	1	7e3c13f46f60	0x6a060
 grunt	?ReadConfigFromButeMgr@CGrunt@@QAEXXZ	96.8421	96.8421	3	0434027301f3	0x48400
+grunt	?ResetGeometry@CGrunt@@QAEHXZ	72.7800	72.7800	1	7e60b084b3d5	0x616e0
 grunt	?ResolveAnimation@CGrunt@@QAEHXZ	95.4210	95.4210	4	32cd29c25774	0x457b0
 grunt	?ResolveBattlecryAnimation@CGrunt@@QAEHXZ	90.3365	90.3365	4	9bb5ba02de69	0x45b60
 grunt	?ResolveDeathAnimation@CGrunt@@QAEHXZ	97.8283	97.8283	4	eb1735612b10	0x455f0
 grunt	?ResolveIdleAnimation@CGrunt@@QAEHXZ	92.0598	92.0598	4	834882cf1148	0x45960
 grunt	?ResolveMovingAnimation@CGrunt@@QAEHXZ	92.8816	92.8816	4	31e76395d5fd	0x45100
+grunt	?Save@CGrunt@@QAEHPAVCGruntArchive@@@Z	94.2489	94.2489	1	76d718ff6fe1	0x53f90
+grunt	?SetEntrancePos@CGrunt@@QAEXHH@Z	89.3421	89.3421	1	cd7cf7699b66	0x4d060
 grunt	?Stub_047a10@CGrunt@@QAEXXZ	0.0990	0.0990	2	e1bc672cfeb6	0x47a10
 grunt	?Stub_048470@CGrunt@@QAEXHH@Z	0.0778	0.0778	2	4c9121eeebc7	0x48470
 grunt	?Stub_062e10@CGrunt@@QAEXHHH@Z	28.9443	28.9443	4	96431e36cc39	0x62e10
@@ -2248,12 +2248,12 @@ unknownclassarrays	??0UnknownClassArrays@@QAE@XZ	93.3108	93.3108	2	2de6dbacf6b9	
 unknownclassarrays	??1UnknownClassArrays@@QAE@XZ	100.0000	100.0000	2	c7546fcbd111	0x24f80
 unknownclassarrays	?Clear_02ade0@UnknownClassArrays@@QAEXXZ	100.0000	100.0000	1	e138105d4c30	0x2ade0
 unknownclassarrays	?FreeArrays@UnknownClassArrays@@QAEXXZ	100.0000	100.0000	2	3ae79d836b6f	0x25ca0
-unknownclassarrays	?Method_025c20@UnknownClassArrays@@QAEHXZ	100.0000	100.0000	1	046d00048cb6	0x25c20
-unknownclassarrays	?Method_02bfc0@UnknownClassArrays@@QAEHHPAXHH@Z	80.7188	80.7188	1	65a5d07ff9aa	0x2bfc0
-unknownclassarrays	?Method_02c0a0@UnknownClassArrays@@QAEHHH@Z	100.0000	100.0000	1	c5243b1309c5	0x2c0a0
+unknownclassarrays	?Method_025c20@UnknownClassArrays@@QAEHXZ	100.0000	100.0000	2	5e3db94b9805	0x25c20
+unknownclassarrays	?Method_02bfc0@UnknownClassArrays@@QAEHHPAXHH@Z	80.7188	80.7188	2	74a376d12188	0x2bfc0
+unknownclassarrays	?Method_02c0a0@UnknownClassArrays@@QAEHHH@Z	100.0000	100.0000	2	b18f69430603	0x2c0a0
 unknownclassarrays	?Method_02ed90@UnknownClassArrays@@QAEHH@Z	100.0000	100.0000	1	522edbf459be	0x2ed90
-unknownclassarrays	?Method_030530@UnknownClassArrays@@QAEHH@Z	100.0000	100.0000	1	67dfa68db679	0x30530
-unknownclassarrays	?Method_0305b0@UnknownClassArrays@@QAEHHHH@Z	46.6224	46.6224	1	aee1be583b2b	0x305b0
+unknownclassarrays	?Method_030530@UnknownClassArrays@@QAEHH@Z	100.0000	100.0000	2	792b7b56a128	0x30530
+unknownclassarrays	?Method_0305b0@UnknownClassArrays@@QAEHHHH@Z	46.6224	46.6224	2	96d326b89ff8	0x305b0
 unknownclassarrays	?winapi_0267c0_IntersectRect_PtInRect@UnknownClassArrays@@QAEHXZ	0.0596	0.0596	1	b0ca466ccc1d	0x267c0
 unknownclassarrays	?winapi_02a570_IntersectRect@UnknownClassArrays@@QAEHH@Z	0.5195	0.5195	1	9e88c9157200	0x2a570
 unknownclassarrays	?winapi_02ab80_PtInRect@UnknownClassArrays@@QAEHHHHH@Z	1.7411	1.7411	1	2a51d8f1ed48	0x2ab80

@@ -648,33 +648,19 @@ void CToobSpikez::CToobSpikez_012c60() {}
 RVA(0x00114860, 0x102)
 void CToobSpikez::CToobSpikez_114860() {}
 
-// ---- CUserLogic ----
+// ---- CGrunt (migration in progress; see src/Gruntz/Grunt.cpp) ----
 RVA(0x0000f2f0, 0xc8)
 void CUserLogic::CUserLogic_00f2f0() {}
-RVA(0x0003c7f0, 0x18)
-void CUserLogic::CUserLogic_03c7f0() {}
-RVA(0x00048360, 0x7e)
-void CUserLogic::CUserLogic_048360() {}
 RVA(0x00049c60, 0x8d1)
 void CUserLogic::CUserLogic_049c60() {}
 RVA(0x0004ac10, 0x402)
 void CUserLogic::CUserLogic_04ac10() {}
-RVA(0x0004b130, 0xc8)
-void CUserLogic::CUserLogic_04b130() {}
-RVA(0x0004b240, 0xaa)
-void CUserLogic::CUserLogic_04b240() {}
-RVA(0x0004b320, 0x34)
-void CUserLogic::CUserLogic_04b320() {}
 RVA(0x0004b370, 0xafd)
 void CUserLogic::CUserLogic_04b370() {}
 RVA(0x0004c170, 0xbe7)
 void CUserLogic::CUserLogic_04c170() {}
-RVA(0x0004d060, 0x98)
-void CUserLogic::CUserLogic_04d060() {}
 RVA(0x000511b0, 0x246)
 void CUserLogic::CUserLogic_0511b0() {}
-RVA(0x000514a0, 0x26)
-void CUserLogic::CUserLogic_0514a0() {}
 RVA(0x00051850, 0x165)
 void CUserLogic::CUserLogic_051850() {}
 RVA(0x00051a20, 0x17d)
@@ -683,16 +669,6 @@ RVA(0x00052fb0, 0x96e)
 void CUserLogic::CUserLogic_052fb0() {}
 RVA(0x00053b80, 0x340)
 void CUserLogic::CUserLogic_053b80() {}
-RVA(0x00053f90, 0x11d0)
-void CUserLogic::CUserLogic_053f90() {}
-RVA(0x00057060, 0x72)
-void CUserLogic::CUserLogic_057060() {}
-RVA(0x00057c10, 0x1e)
-void CUserLogic::CUserLogic_057c10() {}
-RVA(0x00057ce0, 0x1e)
-void CUserLogic::CUserLogic_057ce0() {}
-RVA(0x00057d80, 0x11)
-void CUserLogic::CUserLogic_057d80() {}
 RVA(0x000588f0, 0x1ea)
 void CUserLogic::CUserLogic_0588f0() {}
 RVA(0x00059230, 0x40d)
@@ -703,8 +679,6 @@ RVA(0x0005caa0, 0x5e4)
 void CUserLogic::CUserLogic_05caa0() {}
 RVA(0x0005f310, 0xb5e)
 void CUserLogic::CUserLogic_05f310() {}
-RVA(0x000616e0, 0xa8)
-void CUserLogic::CUserLogic_0616e0() {}
 RVA(0x000617c0, 0x127)
 void CUserLogic::CUserLogic_0617c0() {}
 RVA(0x00062110, 0x5bc)
@@ -717,8 +691,6 @@ RVA(0x00068370, 0x14c)
 void CUserLogic::CUserLogic_068370() {}
 RVA(0x0006a6d0, 0x936)
 void CUserLogic::CUserLogic_06a6d0() {}
-RVA(0x0006b260, 0x5)
-void CUserLogic::CUserLogic_06b260() {}
 RVA(0x000f26f0, 0x106)
 void CUserLogic::CUserLogic_0f26f0() {}
 RVA(0x0016e7f0, 0x1cf)
