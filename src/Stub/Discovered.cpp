@@ -674,15 +674,12 @@ void ClassUnknown_20::ClassUnknown_20_16df70() {}
 RVA(0x0016e480, 0x3e)
 void ClassUnknown_21::ClassUnknown_21_16e480() {}
 
-// ---- ClassUnknown_22 ----
-RVA(0x00022b00, 0xaf)
-void ClassUnknown_22::ClassUnknown_22_022b00() {}
-RVA(0x00022be0, 0x71)
-void ClassUnknown_22::ClassUnknown_22_022be0() {}
-RVA(0x00022c80, 0x173)
-void ClassUnknown_22::ClassUnknown_22_022c80() {}
-RVA(0x00085e60, 0x4a)
-void ClassUnknown_22::ClassUnknown_22_085e60() {}
+// ---- ClassUnknown_22 -> CCheatMgr (src/Gruntz/CheatMgr.cpp) ----
+// All 4 methods reconstructed: the cheat-code dictionary. Empty (0x22b00),
+// AddCheat (0x22be0), RegisterCheats (0x22c80, seeds 19 built-ins + calls
+// LoadCheatConfig 0x22e60), and ~CCheatMgr (0x85e60, the 0x85xxx-region teardown
+// wrapper). The class embeds a CMapStringToPtr at +0x04 keyed by each obfuscated
+// code string.
 
 // ---- ClassUnknown_24 -> CGruntSpawnConfig (src/Gruntz/CGruntSpawnConfig.cpp) ----
 // All 10 methods reconstructed: the grunt spawn/voice config manager. The dtor

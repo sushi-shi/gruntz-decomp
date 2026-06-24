@@ -42,6 +42,7 @@ cfader	6	5
 cfadermgr	5	2
 chatbox	16	9
 chatbox_eh	1	1
+cheatmgr	4	3
 clightfxrender	20	8
 cmulti	11	7
 cplay	27	8
@@ -52,7 +53,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	318	0
+engine_discovered	314	0
 engine_label_stubs	519	118
 filemem	8	7
 filestream	13	9
@@ -446,6 +447,10 @@ chatbox	?ScrollRow0@CChatBox@@QAEHXZ	63.2353	63.2353	3	d54dcc684915	0x183030
 chatbox	?ScrollRow1@CChatBox@@QAEHXZ	63.2353	63.2353	3	3df1f3275a8f	0x1830b0
 chatbox	?Step@CChatBox@@QAEHH@Z	88.9467	88.9467	3	2b61715f864e	0x182ed0
 chatbox_eh	??1CChatBox@@QAE@XZ	100.0000	100.0000	1	ab8e83aa5ef4	0xa0360
+cheatmgr	??1CCheatMgr@@QAE@XZ	100.0000	100.0000	1	94bf38f28220	0x85e60
+cheatmgr	?AddCheat@CCheatMgr@@QAEHPBDHH@Z	98.5714	98.5714	1	77144daa4699	0x22be0
+cheatmgr	?Empty@CCheatMgr@@QAEXXZ	100.0000	100.0000	1	8cc149232bcc	0x22b00
+cheatmgr	?RegisterCheats@CCheatMgr@@QAEXXZ	100.0000	100.0000	1	368e0d229303	0x22c80
 clightfxrender	?AllocSurface@CLightFxRender@@QAEHXZ	99.6842	99.6842	3	1bad35c5b187	0xa33e0
 clightfxrender	?ApplyA@CLightFxRender@@QAEHHHH@Z	100.0000	100.0000	3	fd8fea7499fa	0xa9480
 clightfxrender	?ApplyB@CLightFxRender@@QAEHHHH@Z	100.0000	100.0000	3	aa96ba8e89bb	0xa95d0
@@ -753,10 +758,6 @@ engine_discovered	?ClassUnknown_1_134c60@ClassUnknown_1@@QAEXXZ	11.1111	11.1111	
 engine_discovered	?ClassUnknown_1_134c80@ClassUnknown_1@@QAEXXZ	3.3333	3.3333	1	7c20426223e1	0x134c80
 engine_discovered	?ClassUnknown_20_16df70@ClassUnknown_20@@QAEXXZ	5.0000	5.0000	1	e054eb0147b0	0x16df70
 engine_discovered	?ClassUnknown_21_16e480@ClassUnknown_21@@QAEXXZ	3.3333	3.3333	1	432ff58d0e5d	0x16e480
-engine_discovered	?ClassUnknown_22_022b00@ClassUnknown_22@@QAEXXZ	1.8182	1.8182	1	066e66ec3746	0x22b00
-engine_discovered	?ClassUnknown_22_022be0@ClassUnknown_22@@QAEXXZ	0.8163	0.8163	1	4aa269ac7749	0x22be0
-engine_discovered	?ClassUnknown_22_022c80@ClassUnknown_22@@QAEXXZ	1.0000	1.0000	1	d1303daba725	0x22c80
-engine_discovered	?ClassUnknown_22_085e60@ClassUnknown_22@@QAEXXZ	5.2632	5.2632	1	4d8e872f9178	0x85e60
 engine_discovered	?ClassUnknown_25_099ca0@ClassUnknown_25@@QAEXXZ	5.2632	5.2632	1	67346d148b79	0x99ca0
 engine_discovered	?ClassUnknown_25_09a450@ClassUnknown_25@@QAEXXZ	4.0000	4.0000	1	cb85a6a869f3	0x9a450
 engine_discovered	?ClassUnknown_25_11c560@ClassUnknown_25@@QAEXXZ	0.8889	0.8889	1	dc4bb3a03072	0x11c560

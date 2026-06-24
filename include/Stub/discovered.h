@@ -471,13 +471,8 @@ class ClassUnknown_21 {
 public:
     void ClassUnknown_21_16e480();
 };
-class ClassUnknown_22 {
-public:
-    void ClassUnknown_22_022b00();
-    void ClassUnknown_22_022be0();
-    void ClassUnknown_22_022c80();
-    void ClassUnknown_22_085e60();
-};
+// ClassUnknown_22 -> CCheatMgr (all 4 methods graduated to
+// src/Gruntz/CheatMgr.cpp).
 // ClassUnknown_24 -> CGruntSpawnConfig (all 10 graduated to
 // src/Gruntz/CGruntSpawnConfig.cpp).
 class ClassUnknown_25 {

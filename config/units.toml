@@ -259,6 +259,11 @@ source = "src/Gruntz/CGruntSpawnConfig.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "cheatmgr"
+source = "src/Gruntz/CheatMgr.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "gameobjectctors"
 source = "src/Gruntz/GameObjectCtors.cpp"
 flags = "eh"
