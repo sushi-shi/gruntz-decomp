@@ -503,7 +503,7 @@ flags = "base"
 [[unit]]
 unit = "cddrawsubmgrleaf"
 source = "src/Gruntz/CDDrawSubMgrLeaf.cpp"
-flags = "base"
+flags = "eh"
 
 [[unit]]
 unit = "cddrawsubmgrleafscan"

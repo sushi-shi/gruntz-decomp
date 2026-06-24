@@ -670,16 +670,13 @@ class ClassUnknown_36 {
 public:
     void ClassUnknown_36_14dd90();
 };
+// ClassUnknown_37 == tomalla CDDrawSubMgrLeaf (reconstructed in
+// src/Gruntz/CDDrawSubMgrLeaf.cpp). Only the two large /GX builders remain
+// stubbed here (factory 0x1528d0, recursive directory walker 0x152ad0).
 class ClassUnknown_37 {
 public:
-    void ClassUnknown_37_06b2a0();
-    void ClassUnknown_37_152720();
-    void ClassUnknown_37_1527d0();
     void ClassUnknown_37_1528d0();
     void ClassUnknown_37_152ad0();
-    void ClassUnknown_37_152c50();
-    void ClassUnknown_37_152d30();
-    void ClassUnknown_37_1577e0();
 };
 class ClassUnknown_38 {
 public:

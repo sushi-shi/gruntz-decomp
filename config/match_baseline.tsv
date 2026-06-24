@@ -25,7 +25,7 @@ cddrawptrcollections	1	0
 cddrawshadeblit	2	1
 cddrawsubmgr	29	15
 cddrawsubmgrdraco	5	2
-cddrawsubmgrleaf	7	1
+cddrawsubmgrleaf	13	4
 cddrawsubmgrleafscan	6	1
 cddrawsurfacemgr	7	5
 cddrawworkercache	4	1
@@ -45,7 +45,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	505	0
+engine_discovered	499	0
 engine_label_stubs	525	121
 filestream	13	9
 font	21	10
@@ -263,12 +263,18 @@ cddrawsubmgrdraco	?Stub_1588f0@CDDrawSubMgrDraco@@QAEXXZ	0.2516	0.2516	4	4e28e05
 cddrawsubmgrdraco	?VirtualMethodUnknown14@CDDrawSubMgrDraco@@QAEHXZ	100.0000	100.0000	6	e0c1279f8b67	0x157480
 cddrawsubmgrdraco	?VirtualMethodUnknown1C@CDDrawSubMgrDraco@@QAEXXZ	100.0000	100.0000	5	a41d1b9ad686	0x158ac0
 cddrawsubmgrleaf	??1CDDrawMapHolder@@QAE@XZ	3.6364	3.6364	2	4ddfb441cb14	0x157550
-cddrawsubmgrleaf	??1CDDrawSubMgrLeaf@@QAE@XZ	3.6364	3.6364	2	b06d75a187b1	0x1577c0
+cddrawsubmgrleaf	??1CDDrawSubMgrLeaf@@QAE@XZ	95.0000	95.0000	3	174b3ad417c9	0x1577e0
 cddrawsubmgrleaf	?ClearUnknownMap@CDDrawMapHolder@@QAEXXZ	2.0408	2.0408	2	55ec7fd8cd45	0x157bc0
+cddrawsubmgrleaf	?FreeAll_152720@CDDrawSubMgrLeaf@@QAEXXZ	94.6939	94.6939	1	c1b2f198b514	0x152720
+cddrawsubmgrleaf	?HasKeyPrefix_152c50@CDDrawSubMgrLeaf@@QAEHPBD@Z	61.3571	61.3571	1	7739b6d2185a	0x152c50
+cddrawsubmgrleaf	?KeyOfValue_152d30@CDDrawSubMgrLeaf@@QAE?AVCString@@PAVCObject@@@Z	68.7714	68.7714	1	e007d801eaee	0x152d30
+cddrawsubmgrleaf	?LookupValue_06b2a0@CDDrawSubMgrLeaf@@QAEPAVCObject@@PBD@Z	100.0000	100.0000	1	fb4d26a5e2e6	0x6b2a0
+cddrawsubmgrleaf	?RemoveKeysEqual_1527d0@CDDrawSubMgrLeaf@@QAEHPBD0@Z	91.6667	91.6667	1	103ed6fd4226	0x1527d0
+cddrawsubmgrleaf	?ScalarDtor_1577c0@CDDrawSubMgrLeaf@@QAEPAXH@Z	100.0000	100.0000	1	3c79903c7e0a	0x1577c0
 cddrawsubmgrleaf	?VirtualMethodUnknown14@CDDrawMapHolder@@QAEXXZ	10.0000	10.0000	2	395e642e42e5	0x157530
 cddrawsubmgrleaf	?VirtualMethodUnknown14@CDDrawSubMgrLeaf@@QAEHXZ	100.0000	100.0000	6	efc8ef22da32	0x1577a0
 cddrawsubmgrleaf	?VirtualMethodUnknown18@CDDrawSubMgrLeaf@@QAEXXZ	99.8333	99.8333	5	44a7c25457fe	0x157ae0
-cddrawsubmgrleaf	?VirtualMethodUnknown1C@CDDrawSubMgrLeaf@@QAEXXZ	40.0000	40.0000	2	07eddf422ce9	0x152650
+cddrawsubmgrleaf	?VirtualMethodUnknown1C@CDDrawSubMgrLeaf@@QAEXXZ	100.0000	100.0000	3	c176e58b0dd0	0x152650
 cddrawsubmgrleafscan	??1CDDrawSubMgrLeafScan@@QAE@XZ	95.0000	95.0000	1	2904408bbf9e	0x157570
 cddrawsubmgrleafscan	?FindKeyOfValue_158570@CDDrawSubMgrLeafScan@@QAE?AVCString@@PAVLeafScanValue@@@Z	70.7714	70.7714	1	7bdf64ecba4f	0x158570
 cddrawsubmgrleafscan	?HasKeyEqual_1583c0@CDDrawSubMgrLeafScan@@QAEHPBD@Z	61.3571	61.3571	1	ec1b2c10ae51	0x1583c0
@@ -781,14 +787,8 @@ engine_discovered	?ClassUnknown_34_1490d0@ClassUnknown_34@@QAEXXZ	0.2985	0.2985	
 engine_discovered	?ClassUnknown_35_151eb0@ClassUnknown_35@@QAEXXZ	3.7037	3.7037	1	e166e0f484fe	0x151eb0
 engine_discovered	?ClassUnknown_35_1557a0@ClassUnknown_35@@QAEXXZ	4.1667	4.1667	1	5c8af7e7edc2	0x1557a0
 engine_discovered	?ClassUnknown_36_14dd90@ClassUnknown_36@@QAEXXZ	1.2500	1.2500	1	5b0b6fe47864	0x14dd90
-engine_discovered	?ClassUnknown_37_06b2a0@ClassUnknown_37@@QAEXXZ	3.6364	3.6364	1	1e0eda532d77	0x6b2a0
-engine_discovered	?ClassUnknown_37_152720@ClassUnknown_37@@QAEXXZ	2.0408	2.0408	1	601e0dfd1a82	0x152720
-engine_discovered	?ClassUnknown_37_1527d0@ClassUnknown_37@@QAEXXZ	0.5128	0.5128	1	09e6af61e043	0x1527d0
 engine_discovered	?ClassUnknown_37_1528d0@ClassUnknown_37@@QAEXXZ	0.5797	0.5797	1	d735c9c6e8d7	0x1528d0
 engine_discovered	?ClassUnknown_37_152ad0@ClassUnknown_37@@QAEXXZ	0.2778	0.2778	1	7a90bc268e76	0x152ad0
-engine_discovered	?ClassUnknown_37_152c50@ClassUnknown_37@@QAEXXZ	0.5714	0.5714	1	cd994de46b4a	0x152c50
-engine_discovered	?ClassUnknown_37_152d30@ClassUnknown_37@@QAEXXZ	0.5714	0.5714	1	43175952b05c	0x152d30
-engine_discovered	?ClassUnknown_37_1577e0@ClassUnknown_37@@QAEXXZ	4.1667	4.1667	1	826993d12a9b	0x1577e0
 engine_discovered	?ClassUnknown_38_06b270@ClassUnknown_38@@QAEXXZ	4.0000	4.0000	1	bafd335436ac	0x6b270
 engine_discovered	?ClassUnknown_38_165460@ClassUnknown_38@@QAEXXZ	0.3053	0.3053	1	fafdd70ac576	0x165460
 engine_discovered	?ClassUnknown_38_1655c0@ClassUnknown_38@@QAEXXZ	1.1765	1.1765	1	664e2d041554	0x1655c0
@@ -2370,9 +2370,9 @@ wwdgameobject	?WriteSnapshot@CWwdGameObject@@QAEHH@Z	95.9020	95.9020	2	9fee6fde6
 wwdspatialmgr	?CountInRect@CWwdSpatialMgr@@QAEHPAVCWwdGrid@@@Z	86.1539	86.1539	1	a38237476287	0x168460
 wwdspatialmgr	?FreeGrids@CWwdSpatialMgr@@QAEXXZ	100.0000	100.0000	1	86831d8ccca0	0x1682f0
 wwdspatialmgr	?GetSize@CWwdSpatialMgr@@QAEHXZ	100.0000	100.0000	1	38653b262d2f	0x168430
-wwdspatialmgr	?PruneCount@CWwdSpatialMgr@@QAEHXZ	100.0000	100.0000	1	86f72e0f0abe	0x1688b0
+wwdspatialmgr	?PruneCount@CWwdSpatialMgr@@QAEHXZ	100.0000	100.0000	2	3dd1356074d6	0x1688b0
 wwdspatialmgr	?Relocate@CWwdSpatialMgr@@QAEHHH@Z	0.6515	0.6515	1	48931d868e4f	0x168500
 wwdspatialmgr	?RemoveObject@CWwdSpatialMgr@@QAEXPAVCWwdObject@@@Z	100.0000	100.0000	1	350b60b064c3	0x1688f0
-wwdspatialmgr	?ScrollTo@CWwdSpatialMgr@@QAEHHH@Z	66.1023	66.1023	1	053f556c66a2	0x168340
+wwdspatialmgr	?ScrollTo@CWwdSpatialMgr@@QAEHHH@Z	66.1023	66.1023	2	fc9dd921bcc1	0x168340
 zutil	_zcalloc	100.0000	100.0000	1	55f82c5a172f	0x188410
 zutil	_zcfree	100.0000	100.0000	1	e741567a7e95	0x188430
