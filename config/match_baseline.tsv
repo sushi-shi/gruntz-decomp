@@ -45,7 +45,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	499	0
+engine_discovered	489	0
 engine_label_stubs	525	121
 filestream	13	9
 font	21	10
@@ -60,6 +60,7 @@ gametext	4	2
 gamewnd	6	4
 grunt	49	9
 gruntpuddle	4	2
+gruntspawnconfig	10	4
 gruntvoice	4	3
 gruntzapp	10	8
 gruntzcommand	9	9
@@ -737,16 +738,6 @@ engine_discovered	?ClassUnknown_22_022b00@ClassUnknown_22@@QAEXXZ	1.8182	1.8182	
 engine_discovered	?ClassUnknown_22_022be0@ClassUnknown_22@@QAEXXZ	0.8163	0.8163	1	4aa269ac7749	0x22be0
 engine_discovered	?ClassUnknown_22_022c80@ClassUnknown_22@@QAEXXZ	1.0000	1.0000	1	d1303daba725	0x22c80
 engine_discovered	?ClassUnknown_22_085e60@ClassUnknown_22@@QAEXXZ	5.2632	5.2632	1	4d8e872f9178	0x85e60
-engine_discovered	?ClassUnknown_24_085df0@ClassUnknown_24@@QAEXXZ	5.2632	5.2632	1	66d64e59ae6a	0x85df0
-engine_discovered	?ClassUnknown_24_11adc0@ClassUnknown_24@@QAEXXZ	1.7391	1.7391	1	339b3d30fdf0	0x11adc0
-engine_discovered	?ClassUnknown_24_11ae30@ClassUnknown_24@@QAEXXZ	1.7241	1.7241	1	807677bea678	0x11ae30
-engine_discovered	?ClassUnknown_24_11af00@ClassUnknown_24@@QAEXXZ	2.3256	2.3256	1	d45b75be9803	0x11af00
-engine_discovered	?ClassUnknown_24_11af90@ClassUnknown_24@@QAEXXZ	20.0000	20.0000	1	3a369f44c6c4	0x11af90
-engine_discovered	?ClassUnknown_24_11bba0@ClassUnknown_24@@QAEXXZ	0.3226	0.3226	1	519c56b709da	0x11bba0
-engine_discovered	?ClassUnknown_24_11bee0@ClassUnknown_24@@QAEXXZ	0.2174	0.2174	1	8d012db7bcce	0x11bee0
-engine_discovered	?ClassUnknown_24_11c1a0@ClassUnknown_24@@QAEXXZ	3.4483	3.4483	1	34532ba7721e	0x11c1a0
-engine_discovered	?ClassUnknown_24_11c7b0@ClassUnknown_24@@QAEXXZ	5.2632	5.2632	1	db5cd697e01b	0x11c7b0
-engine_discovered	?ClassUnknown_24_11c830@ClassUnknown_24@@QAEXXZ	14.2857	14.2857	1	f094dc7bbbc8	0x11c830
 engine_discovered	?ClassUnknown_25_099ca0@ClassUnknown_25@@QAEXXZ	5.2632	5.2632	1	67346d148b79	0x99ca0
 engine_discovered	?ClassUnknown_25_09a450@ClassUnknown_25@@QAEXXZ	4.0000	4.0000	1	cb85a6a869f3	0x9a450
 engine_discovered	?ClassUnknown_25_11c560@ClassUnknown_25@@QAEXXZ	0.8889	0.8889	1	dc4bb3a03072	0x11c560
@@ -1730,6 +1721,16 @@ gruntpuddle	??1CGruntPuddle@@UAE@XZ	100.0000	100.0000	1	d8797374243c	0x10d10
 gruntpuddle	?Place@CGruntPuddle@@QAEHHHHH@Z	73.5400	73.5400	2	f8ec38ad7367	0x40c30
 gruntpuddle	?Remove@CGruntPuddle@@QAEHXZ	71.3000	71.3000	2	bcf839e386ba	0x40d20
 gruntpuddle	?SetBute@CGruntPuddle@@QAEXPAD@Z	100.0000	100.0000	1	25260462d64d	0x7d810
+gruntspawnconfig	??1CGruntSpawnConfig@@QAE@XZ	100.0000	100.0000	1	b4d92e06a1a7	0x85df0
+gruntspawnconfig	?BuildVoiceList@CGruntSpawnConfig@@QAEHXZ	100.0000	100.0000	1	0766873d02f8	0x11c1a0
+gruntspawnconfig	?Clear@CGruntSpawnConfig@@QAEXXZ	68.0517	68.0517	1	3ee95b4ae6d9	0x11ae30
+gruntspawnconfig	?ClearSprites@CGruntSpawnConfig@@QAEXXZ	67.8000	67.8000	1	c10e44170b11	0x11af90
+gruntspawnconfig	?DtorBody@CGruntSpawnConfig@@QAEXXZ	100.0000	100.0000	1	7edb01f0309c	0x11c7b0
+gruntspawnconfig	?GetButeSlot@CGruntSpawnConfig@@QAEPAXPAUCSpawnButeConfig@@PAUCSpawnButeTarget@@@Z	73.3468	73.3468	1	2ebfb2bfb4d5	0x11bba0
+gruntspawnconfig	?Init@CGruntSpawnConfig@@QAEHPAUCSpawnOwner@@@Z	55.3478	55.3478	1	daee427fc5f3	0x11adc0
+gruntspawnconfig	?IsReady@CGruntSpawnConfig@@QAEHXZ	100.0000	100.0000	1	920e1a592c09	0x11c830
+gruntspawnconfig	?LoadGruntVoices@CGruntSpawnConfig@@QAEHXZ	95.3488	95.3488	1	fe042277a742	0x11af00
+gruntspawnconfig	?PickWeighted@CGruntSpawnConfig@@QAEHHH@Z	1.0870	1.0870	1	b9cc209559f5	0x11bee0
 gruntvoice	??1CGruntVoice@@UAE@XZ	100.0000	100.0000	1	800298c90ba0	0x119ae0
 gruntvoice	?Dispatch@CGruntVoice@@QAEXH@Z	100.0000	100.0000	2	254b7ed0b958	0x119e40
 gruntvoice	?Reset@CGruntVoice@@QAEXXZ	100.0000	100.0000	1	dade6712d474	0x11a870

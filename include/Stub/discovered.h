@@ -577,19 +577,8 @@ public:
     void ClassUnknown_22_022c80();
     void ClassUnknown_22_085e60();
 };
-class ClassUnknown_24 {
-public:
-    void ClassUnknown_24_085df0();
-    void ClassUnknown_24_11adc0();
-    void ClassUnknown_24_11ae30();
-    void ClassUnknown_24_11af00();
-    void ClassUnknown_24_11af90();
-    void ClassUnknown_24_11bba0();
-    void ClassUnknown_24_11bee0();
-    void ClassUnknown_24_11c1a0();
-    void ClassUnknown_24_11c7b0();
-    void ClassUnknown_24_11c830();
-};
+// ClassUnknown_24 -> CGruntSpawnConfig (all 10 graduated to
+// src/Gruntz/CGruntSpawnConfig.cpp).
 class ClassUnknown_25 {
 public:
     void ClassUnknown_25_099ca0();

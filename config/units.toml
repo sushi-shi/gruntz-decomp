@@ -204,6 +204,11 @@ source = "src/Gruntz/CGruntVoice.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "gruntspawnconfig"
+source = "src/Gruntz/CGruntSpawnConfig.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "gameobjectctors"
 source = "src/Gruntz/GameObjectCtors.cpp"
 flags = "eh"

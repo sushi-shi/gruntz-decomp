@@ -802,27 +802,10 @@ void ClassUnknown_22::ClassUnknown_22_022c80() {}
 RVA(0x00085e60, 0x4a)
 void ClassUnknown_22::ClassUnknown_22_085e60() {}
 
-// ---- ClassUnknown_24 ----
-RVA(0x00085df0, 0x4a)
-void ClassUnknown_24::ClassUnknown_24_085df0() {}
-RVA(0x0011adc0, 0x44)
-void ClassUnknown_24::ClassUnknown_24_11adc0() {}
-RVA(0x0011ae30, 0x95)
-void ClassUnknown_24::ClassUnknown_24_11ae30() {}
-RVA(0x0011af00, 0x62)
-void ClassUnknown_24::ClassUnknown_24_11af00() {}
-RVA(0x0011af90, 0xb)
-void ClassUnknown_24::ClassUnknown_24_11af90() {}
-RVA(0x0011bba0, 0x1f4)
-void ClassUnknown_24::ClassUnknown_24_11bba0() {}
-RVA(0x0011bee0, 0x230)
-void ClassUnknown_24::ClassUnknown_24_11bee0() {}
-RVA(0x0011c1a0, 0x46)
-void ClassUnknown_24::ClassUnknown_24_11c1a0() {}
-RVA(0x0011c7b0, 0x2d)
-void ClassUnknown_24::ClassUnknown_24_11c7b0() {}
-RVA(0x0011c830, 0x12)
-void ClassUnknown_24::ClassUnknown_24_11c830() {}
+// ---- ClassUnknown_24 -> CGruntSpawnConfig (src/Gruntz/CGruntSpawnConfig.cpp) ----
+// All 10 methods reconstructed: the grunt spawn/voice config manager. The dtor
+// (0x85df0) lives in the 0x85xxx text region but is this class's teardown; the
+// trace discovery conflated the two regions under one stub label.
 
 // ---- ClassUnknown_25 ----
 RVA(0x00099ca0, 0x49)
