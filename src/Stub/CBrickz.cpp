@@ -14,3 +14,11 @@ void CBrickz::LoadAttributes(int, int) {}
 // @stub
 RVA(0x0010e800, 0x17d)
 CBrickz::CBrickz(int) {}
+
+// @confidence: low
+// @source: winapi:IntersectRect
+// @stub
+RVA(0x0009ea60, 0x168)
+int CBrickz::winapi_09ea60_IntersectRect(int, int, int) {
+    return 0;
+}

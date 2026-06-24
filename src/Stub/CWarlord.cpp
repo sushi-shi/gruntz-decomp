@@ -128,6 +128,7 @@ public:
     void ResolveBattlecryAnimation(); // 0x45b60
     void RaiseBattleAlert();          // 0x457b0  (panic-radius alert variant)
     void ResolveMovingAnimation();    // 0x45100
+    void BuildFortSplashParticles();
 
     char m_pad00[0x10];
     CWarlordOwner* m_10; // +0x10  owner/state sub-object
@@ -230,3 +231,15 @@ int CWarlord::LoadAttributes2() {
     }
     return 0;
 }
+
+// @confidence: med
+// @source: decomp-xref
+// @stub
+RVA(0x00044f80, 0x127)
+void CWarlord::BuildFortSplashParticles() {}
+
+// @confidence: med
+// @source: string-xref
+// @stub
+RVA(0x00045270, 0x2a8)
+void CWarlord::NotifyFortUnderAttack() {}

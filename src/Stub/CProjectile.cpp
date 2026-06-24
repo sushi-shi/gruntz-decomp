@@ -8,6 +8,7 @@ class CProjectile {
 public:
     void CProjectile_0dec60(int);
     void LoadProjectileSprites(int, int, int, int, int, int, int);
+    void LoadProjectileEffects();
 };
 
 // @confidence: med
@@ -39,3 +40,9 @@ void CProjectile::CProjectile_0dec60(int) {}
 // @stub
 RVA(0x000df050, 0x6ba)
 void CProjectile::LoadProjectileSprites(int, int, int, int, int, int, int) {}
+
+// @confidence: med
+// @source: string-xref
+// @stub
+RVA(0x000dfd00, 0x6f5)
+void CProjectile::LoadProjectileEffects() {}

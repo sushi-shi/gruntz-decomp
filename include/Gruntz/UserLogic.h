@@ -186,6 +186,17 @@ public:
     void RegisterLogicTypesOnce();
     void BuildLogicTypeTable(CLogicTypeBuilder* ctx); // 0x8a40 (ignores this)
 
+    // __thiscall stub methods re-homed from src/Stub/ApiCallers.cpp; bodies in
+    // src/Gruntz/UserLogic.cpp.
+    int winapi_04d800_CopyRect(int, int, int, int, int, int, int, int, int, int, int, int);
+    int winapi_064540_PostMessageA();
+    int winapi_0ee800_IntersectRect_PtInRect();
+    void LoadGruntTypeTable(int, int, int, int);
+    void LoadGruntTuningConstants(int);
+    void LoadGruntDecayConfig();
+    void LoadGruntDecayConfig2();
+    void LoadWandGruntItemConfig();
+
     int m_04;             // +0x04
     int m_08;             // +0x08
     CGameObject* m_0c;    // +0x0c

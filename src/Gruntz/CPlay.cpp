@@ -692,3 +692,45 @@ int CState::SetBeginClearParams(int unused, int arg2, int arg3) {
     m_154 = arg3;
     return 1;
 }
+
+// @confidence: low
+// @source: winapi:PostMessageA
+// @stub
+RVA(0x000cdb10, 0x80c)
+int CPlay::winapi_0cdb10_PostMessageA(int, int, int) {
+    return 0;
+}
+
+// @confidence: low
+// @source: winapi:PostMessageA
+// @stub
+RVA(0x000ceae0, 0x268)
+int CPlay::winapi_0ceae0_PostMessageA(int, int, int) {
+    return 0;
+}
+
+// @confidence: low
+// @source: winapi:CopyRect
+// @stub
+RVA(0x000d0b30, 0x200)
+int CPlay::winapi_0d0b30_CopyRect(int) {
+    return 0;
+}
+
+// @confidence: med
+// @source: string-xref
+// @stub
+RVA(0x000d0120, 0x5d8)
+void CPlay::LoadCursorSprites(int, int) {}
+
+// @confidence: med
+// @source: decomp-xref
+// @stub
+RVA(0x000d12b0, 0x2d5)
+void CPlay::LoadScrollSpeedOptions() {}
+
+// @confidence: med
+// @source: string-xref
+// @stub
+RVA(0x000dc6d0, 0x215)
+void CPlay::BuildGruntTypeNameTable(int, int, int, int) {}

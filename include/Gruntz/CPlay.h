@@ -264,6 +264,12 @@ public:
 
     // Engine-label backlog stubs.
     void Stub_08c9d0();
+    int winapi_0cdb10_PostMessageA(int, int, int);
+    int winapi_0ceae0_PostMessageA(int, int, int);
+    int winapi_0d0b30_CopyRect(int);
+    void LoadCursorSprites(int, int);
+    void LoadScrollSpeedOptions();
+    void BuildGruntTypeNameTable(int, int, int, int);
 };
 
 // ===========================================================================

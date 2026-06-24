@@ -350,6 +350,7 @@ public:
     int CreateSelectedSprite();
 
     void ReadConfigFromButeMgr();
+    void LoadGruntMovingDeathConfig();
 
     // --- animation resolvers (this TU's targets) ---
     int ResolveMovingAnimation();

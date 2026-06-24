@@ -1032,3 +1032,9 @@ void CGrunt::ReadConfigFromButeMgr() {
         *(int*)((char*)this + 0x41c) >>= 1;
     }
 }
+
+// @confidence: med
+// @source: decomp-xref
+// @stub
+RVA(0x0006a060, 0x43d)
+void CGrunt::LoadGruntMovingDeathConfig() {}

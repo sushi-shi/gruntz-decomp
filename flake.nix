@@ -228,6 +228,7 @@
         file
         xxd
         jq
+        gdb             # dynamic this/ecx tracing of the game under wine (winedbg --gdb)
       ]);
 
     in {

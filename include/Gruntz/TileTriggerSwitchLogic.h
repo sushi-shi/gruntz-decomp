@@ -20,6 +20,7 @@ public:
     // Engine-label backlog stubs.
     void CTileTriggerSwitchLogic_115f60();
     void CTileTriggerSwitchLogic_116320();
+    void BuildRockBreakInGameText();
 
     // +0x00 vptr (implicit)
     int m_04;                  // +0x04  list head (owner) / key (data obj)

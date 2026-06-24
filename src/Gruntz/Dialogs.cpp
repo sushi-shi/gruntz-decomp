@@ -66,3 +66,46 @@ void CMultiStartDlg::InitPlayerSlots() {}
 // ---------------------------------------------------------------------------
 RVA(0x000234a0, 0x1e)
 CCheckpointDlg::CCheckpointDlg(CWnd* pParent) : CDialog(0xcd, pParent) {}
+
+// -------------------------------------------------------------------------
+// Engine-label backlog stubs (relocated from src/Stub/ - own this class here).
+// -------------------------------------------------------------------------
+// @confidence: low
+// @source: winapi:InvalidateRect
+// @stub
+RVA(0x00016cd0, 0x98)
+int CBattlezDlg::winapi_016cd0_InvalidateRect() {
+    return 0;
+}
+
+// @confidence: low
+// @source: winapi:InvalidateRect
+// @stub
+RVA(0x00016dc0, 0x97)
+int CBattlezDlg::winapi_016dc0_InvalidateRect() {
+    return 0;
+}
+
+// @confidence: low
+// @source: winapi:InvalidateRect
+// @stub
+RVA(0x00016e90, 0x98)
+int CBattlezDlg::winapi_016e90_InvalidateRect() {
+    return 0;
+}
+
+// @confidence: low
+// @source: winapi:InvalidateRect
+// @stub
+RVA(0x00016f60, 0x98)
+int CBattlezDlg::winapi_016f60_InvalidateRect() {
+    return 0;
+}
+
+// @confidence: low
+// @source: winapi:GetWindow;SendMessageA
+// @stub
+RVA(0x000171b0, 0xca)
+int CBattlezDlg::winapi_0171b0_GetWindow_SendMessageA() {
+    return 0;
+}

@@ -115,6 +115,10 @@ public:
     int m_19c;
     int m_1a0;
     int m_1a4;
+
+    void BuildWarpStoneGlitterAnimation();
+    void LoadGruntEffectSprites();
+    void BuildBootyWalkingGruntz();
 };
 
 #endif // GRUNTZ_GRUNTZ_CSTATE_H

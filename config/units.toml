@@ -214,6 +214,13 @@ source = "src/Stub/All.cpp"
 flags = "base"
 
 [[unit]]
+# trace-discovered class memberships (gruntz.analysis.gen_class_stubs); own TU so
+# the minimal class decls never clash with the real models in other units.
+unit = "engine_discovered"
+source = "src/Stub/Discovered.cpp"
+flags = "base"
+
+[[unit]]
 unit = "netmgr"
 source = "src/Net/NetMgr.cpp"
 flags = "eh"
