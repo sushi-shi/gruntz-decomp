@@ -138,18 +138,28 @@ class DirectSoundMgr {
 public:
     // --- per-buffer wrappers (this = a buffer object, m_buffer = the buffer) --
     DirectSoundMgr(IDirectSoundBufferZ* buf, DirectSoundMgr* owner); // 0x1351d0 ctor
-    i32 Restore();                  // 0x135310  m_buffer->Restore()
-    i32 StopAndRewind();            // 0x135380  Stop + SetCurrentPosition(0)
-    i32 IsPlaying();                // 0x1353f0  GetStatus & DSBSTATUS_PLAYING
-    i32 IsLooping();                // 0x135440  GetStatus & DSBSTATUS_LOOPING
-    i32 SetVolume(i32 vol);         // 0x135560  SetVolume (caps DSBCAPS_CTRLVOLUME)
-    i32 GetVolume();                // 0x1355f0  GetVolume
-    void SetVolumeByIndex(i32 idx); // 0x1355c0  SetVolume(g_volumeTable[idx]) (extern)
-    i32 GetVolumePercent();         // 0x135640  GetVolume -> percent (0x135110)
+    i32 Restore();                 // 0x135310  m_buffer->Restore()
+    i32 StopAndRewind();           // 0x135380  Stop + SetCurrentPosition(0)
+    i32 IsPlaying();               // 0x1353f0  GetStatus & DSBSTATUS_PLAYING
+    i32 IsLooping();               // 0x135440  GetStatus & DSBSTATUS_LOOPING
+    i32 SetVolume(i32 vol);        // 0x135560  SetVolume (caps DSBCAPS_CTRLVOLUME)
+    i32 GetVolume();               // 0x1355f0  GetVolume
+    i32 SetVolumeByIndex(i32 idx); // 0x1355c0  SetVolume(g_volumeTable[idx]) (extern)
+    i32 GetVolumePercent();        // 0x135640  GetVolume -> percent (0x135110)
     i32 CloneAndPlay(i32 key, i32 mode, i32 slot); // 0x135660  reap + spawn a voice
     i32 SetPan(i32 pan);                           // 0x135740  SetPan (caps DSBCAPS_CTRLPAN)
     i32 GetPan();                                  // 0x1357f0  GetPan
     i32 SetFrequency(u32 freq); // 0x135880  SetFrequency (caps DSBCAPS_CTRLFREQUENCY)
+    i32 Lock(
+        u32 off,
+        u32 bytes,
+        void** p1,
+        u32* n1,
+        void** p2,
+        u32* n2,
+        u32 flags
+    );                     // 0x136370  Lock + reacquire-on-DSERR_BUFFERLOST retry
+    i32 ReacquireBuffer(); // 0x135340  restore via m_30 callback / m_owner reacquire (extern)
     i32 Unlock(void* p1, u32 n1, void* p2, u32 n2);   // 0x1359c0
     i32 GetCurrentPosition(u32* play, u32* write);    // 0x135a20
     i32 SetCurrentPosition(u32 pos);                  // 0x135a70
@@ -197,7 +207,8 @@ public:
         CloneNode* m_prev;      // +0x04 (clone +0x48)
         DirectSoundMgr* m_inst; // +0x08 (clone +0x4c) back-pointer to the clone
     } m_node44;
-    char m_pad50[0x58 - 0x50];
+    char m_pad50[0x54 - 0x50];
+    DirectSoundMgr* m_54; // +0x54  device/owner used to reacquire a lost buffer
     // +0x58  head of this instance's clone/child list (head@+0x58, tail@+0x5c);
     // each member is a cloned DirectSoundMgr chained through its m_node44.
     CloneNode* m_cloneHead;

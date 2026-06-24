@@ -42,9 +42,6 @@ MallocCtor_136180::MallocCtor_136180() {}
 RVA(0x0016bfa0, 0x85)
 MallocCtor_16bfa0::MallocCtor_16bfa0() {}
 
-RVA(0x001375b0, 0x77)
-MallocCtor_1375b0::MallocCtor_1375b0() {}
-
 RVA(0x00139bf0, 0x71)
 MallocCtor_139bf0::MallocCtor_139bf0() {}
 

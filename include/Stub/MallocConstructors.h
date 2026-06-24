@@ -100,13 +100,8 @@ public:
     MallocCtor_16bfa0();
 };
 
-// non-RTTI ctor @ 0x001375b0, sizeof 0xb0
-class MallocCtor_1375b0 {
-public:
-    MallocCtor_1375b0();
-    char m_data[0xb0]; // operator-new size; real fields TBD
-};
-SIZE(MallocCtor_1375b0, 0xb0);
+// 0x001375b0 (sizeof 0xb0) reconstructed as StreamVoice::StreamVoice in
+// src/Dsndmgr/StreamVoice.cpp (the per-stream DirectSoundMgr-derived voice).
 
 // non-RTTI ctor @ 0x00139bf0, sizeof 0x30
 class MallocCtor_139bf0 {

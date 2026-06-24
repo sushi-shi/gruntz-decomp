@@ -1191,18 +1191,6 @@ void InterfaceObject::InterfaceObject_179340() {}
 RVA(0x001359a0, 0x18)
 void MallocCtor_136230::MallocCtor_136230_1359a0() {}
 
-// ---- MallocCtor_1375b0 ----
-RVA(0x00136370, 0xcc)
-void MallocCtor_1375b0::MallocCtor_1375b0_136370() {}
-RVA(0x001374c0, 0x5d)
-void MallocCtor_1375b0::MallocCtor_1375b0_1374c0() {}
-RVA(0x00137520, 0x6e)
-void MallocCtor_1375b0::MallocCtor_1375b0_137520() {}
-RVA(0x00137590, 0x18)
-void MallocCtor_1375b0::MallocCtor_1375b0_137590() {}
-RVA(0x00137650, 0x64)
-void MallocCtor_1375b0::MallocCtor_1375b0_137650() {}
-
 // ---- MallocCtor_1615a0 ----
 RVA(0x000311e0, 0x4c)
 void MallocCtor_1615a0::MallocCtor_1615a0_0311e0() {}

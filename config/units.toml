@@ -674,6 +674,11 @@ source = "src/Dsndmgr/StreamFeeder.cpp"
 flags = "base"
 
 [[unit]]
+unit = "streamvoice"
+source = "src/Dsndmgr/StreamVoice.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "gruntzsoundz"
 source = "src/Dsndmgr/CGruntzSoundZ.cpp"
 flags = "eh"

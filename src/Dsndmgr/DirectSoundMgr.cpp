@@ -574,6 +574,41 @@ void DirectSoundMgr::StopAllClones() {
 }
 
 // ---------------------------------------------------------------------------
+// DirectSoundMgr::Lock (__thiscall, 7 args). Pass-through IDirectSoundBuffer::Lock;
+// on DSERR_BUFFERLOST (0x88780096) it asks m_54 to reacquire the buffer and, if that
+// succeeds, retries the Lock once. A retry failure or a non-buffer-lost HRESULT is
+// reported via GetErrorString; a failed reacquire returns 0 silently.
+// @early-stop
+// tail-merge wall (docs/patterns/identical-return-epilogue-tailmerge.md): the Lock
+// COM dispatch, neg/sbb/neg HRESULT bool, reacquire + retry are byte-exact, but the
+// two GetErrorString(0x37c/0x386) report+return-0 blocks tail-merge into one shared
+// `push str;call;add esp,0xc` where retail duplicates them inline. Optimizer layout
+// choice, not steerable from source (tried both branch orderings). ~67.7%.
+RVA(0x00136370, 0xcc)
+i32 DirectSoundMgr::Lock(u32 off, u32 bytes, void** p1, u32* n1, void** p2, u32* n2, u32 flags) {
+    if (m_owner->m_initialized == 0) {
+        return 0;
+    }
+    i32 hr = m_buffer->vtbl->Lock(m_buffer, off, bytes, p1, n1, p2, n2, flags) != 0;
+    if (!hr) {
+        return 1;
+    }
+    if (hr == (i32)0x88780096) {
+        if (m_54->ReacquireBuffer() == 0) {
+            return 0;
+        }
+        hr = m_buffer->vtbl->Lock(m_buffer, off, bytes, p1, n1, p2, n2, flags) != 0;
+        if (!hr) {
+            return 1;
+        }
+        GetErrorString(DSNDMGR_FILE, 0x37c, hr);
+        return 0;
+    }
+    GetErrorString(DSNDMGR_FILE, 0x386, hr);
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
 // DirectSoundMgr::Create (__thiscall). Brings up the DirectSound device:
 // DirectSoundCreate into m_device (its HRESULT normalized into a stored bool), then
 // SetCooperativeLevel(hwnd, level). A failed coop call is reported and the device

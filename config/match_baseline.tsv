@@ -50,9 +50,9 @@ cstatusbarmgr	2	1
 deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
-directsoundmgr	26	19
-engine_discovered	349	0
-engine_label_stubs	520	118
+directsoundmgr	27	19
+engine_discovered	344	0
+engine_label_stubs	519	118
 filemem	8	7
 filestream	13	9
 font	21	10
@@ -129,6 +129,7 @@ statemgrbz	5	3
 statusbaritem	2	1
 statusbarupdaters	7	0
 streamfeeder	9	7
+streamvoice	5	3
 symtab	10	7
 terraintileloader	1	0
 tileactionevent	5	3
@@ -569,6 +570,7 @@ directsoundmgr	?GetVolume@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	2	922619dc808
 directsoundmgr	?GetVolumePercent@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	2	b7536ea97fc9	0x135640
 directsoundmgr	?IsLooping@DirectSoundMgr@@QAEHXZ	99.8529	99.8529	4	4f34a91fa01d	0x135440
 directsoundmgr	?IsPlaying@DirectSoundMgr@@QAEHXZ	99.8529	99.8529	4	993b4d422d51	0x1353f0
+directsoundmgr	?Lock@DirectSoundMgr@@QAEHIIPAPAXPAI01I@Z	67.6556	67.6556	1	e5c48a702811	0x136370
 directsoundmgr	?LockConvert@DirectSoundMgr@@QAEHPAXII@Z	100.0000	100.0000	3	1195b8fc939d	0x135f40
 directsoundmgr	?RemoveClone@DirectSoundMgr@@QAEXPAV1@@Z	100.0000	100.0000	2	7875878133be	0x135d20
 directsoundmgr	?Restore@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	4	2d71bdf5406d	0x135310
@@ -899,11 +901,6 @@ engine_discovered	?HelperHost_1647e0@HelperHost@@QAEXXZ	1.6667	1.6667	1	0e6014e8
 engine_discovered	?InterfaceObject_179300@InterfaceObject@@QAEXXZ	3.3333	3.3333	1	06be38d7daa8	0x179300
 engine_discovered	?InterfaceObject_179340@InterfaceObject@@QAEXXZ	5.0000	5.0000	1	43d37ba6b4be	0x179340
 engine_discovered	?MallocCtor_136230_1359a0@MallocCtor_136230@@QAEXXZ	11.1111	11.1111	1	c3152ce25ccf	0x1359a0
-engine_discovered	?MallocCtor_1375b0_136370@MallocCtor_1375b0@@QAEXXZ	0.4444	0.4444	1	5ca41f5d71bf	0x136370
-engine_discovered	?MallocCtor_1375b0_1374c0@MallocCtor_1375b0@@QAEXXZ	1.0256	1.0256	1	9aacbe21d9d8	0x1374c0
-engine_discovered	?MallocCtor_1375b0_137520@MallocCtor_1375b0@@QAEXXZ	0.9302	0.9302	1	a67b44440663	0x137520
-engine_discovered	?MallocCtor_1375b0_137590@MallocCtor_1375b0@@QAEXXZ	12.5000	12.5000	1	17d119f06f57	0x137590
-engine_discovered	?MallocCtor_1375b0_137650@MallocCtor_1375b0@@QAEXXZ	3.5714	3.5714	1	ac341e809193	0x137650
 engine_discovered	?MallocCtor_1615a0_0311e0@MallocCtor_1615a0@@QAEXXZ	1.2121	1.2121	1	8b5f5f189f13	0x311e0
 engine_discovered	?MallocCtor_16b510_16a410@MallocCtor_16b510@@QAEXXZ	2.0408	2.0408	1	05aec7345dd6	0x16a410
 engine_discovered	?MallocCtor_16b510_16a510@MallocCtor_16b510@@QAEXXZ	0.8163	0.8163	1	d9de152b2e2a	0x16a510
@@ -979,7 +976,6 @@ engine_label_stubs	??0CWayPoint@@QAE@H@Z	2.5455	2.5455	1	cpp:6bf52155264d	0xae3f
 engine_label_stubs	??0MallocCtor_135b10@@QAE@XZ	2.5000	2.5000	1	cpp:e8a4cb0d5b2a	0x135b10
 engine_label_stubs	??0MallocCtor_136180@@QAE@XZ	2.0513	2.0513	1	cpp:e8a4cb0d5b2a	0x136180
 engine_label_stubs	??0MallocCtor_136230@@QAE@XZ	5.3333	5.3333	1	cpp:e8a4cb0d5b2a	0x136230
-engine_label_stubs	??0MallocCtor_1375b0@@QAE@XZ	2.3529	2.3529	1	cpp:e8a4cb0d5b2a	0x1375b0
 engine_label_stubs	??0MallocCtor_139bf0@@QAE@XZ	2.5806	2.5806	1	cpp:e8a4cb0d5b2a	0x139bf0
 engine_label_stubs	??0MallocCtor_139c80@@QAE@XZ	4.6552	4.6552	1	cpp:e8a4cb0d5b2a	0x139c80
 engine_label_stubs	??0MallocCtor_13aa10@@QAE@XZ	2.5000	2.5000	1	cpp:e8a4cb0d5b2a	0x13aa10
@@ -2128,7 +2124,7 @@ spriteresource	?ApplyLookupGeometry@CGruntAnimPlayer@@QAEHPBDH@Z	93.9394	93.9394
 spriteresource	?CacheFirstFrame@CGruntSprite@@QAEXPBD@Z	89.2647	89.2647	4	dbfa3e3333a0	0x150540
 spriteresource	?ConfigureItem@CStatusBarMgr@@QAEHHHHH@Z	100.0000	100.0000	4	be2023a676b3	0x1360d0
 spriteresource	?CreateSprite@CSpriteFactory@@QAEPAUCSprite@@HHHHPBDH@Z	94.1176	94.1176	4	6102cd6262c1	0x1597b0
-statemgrbz	?Build@StateMgrBZ@@QAEHPAUSbzInputManager@@H@Z	94.7384	94.7384	1	8b16fbab5ae4	0x383b0
+statemgrbz	?Build@StateMgrBZ@@QAEHPAUSbzInputManager@@H@Z	94.7384	94.7384	2	78713fa346a6	0x383b0
 statemgrbz	?Flush@StateMgrBZ@@QAEHXZ	74.0612	74.0612	1	6a6b3ba6dfa0	0x385e0
 statemgrbz	?Init@StateMgrBZ@@QAEHPAUSbzInputManager@@H@Z	100.0000	100.0000	1	45e41039c473	0x382c0
 statemgrbz	?Reset@StateMgrBZ@@QAEHXZ	100.0000	100.0000	1	34a3a5e2a886	0x386b0
@@ -2151,6 +2147,11 @@ streamfeeder	?FillBuffer@StreamFeeder@@QAEHII@Z	88.5679	88.5679	1	de778cdecdb0	0
 streamfeeder	?Pause@StreamFeeder@@QAEHXZ	100.0000	100.0000	2	52812e99cdff	0x137f00
 streamfeeder	?Resume@StreamFeeder@@QAEHXZ	100.0000	100.0000	2	c47c07137340	0x137ed0
 streamfeeder	?SeedWindow@StreamFeeder@@QAEHPAXII@Z	100.0000	100.0000	1	edea263e685a	0x137340
+streamvoice	??0StreamVoice@@QAE@PAUIDirectSoundBufferZ@@PAVDirectSoundMgr@@HH@Z	35.8824	35.8824	1	32868b69f13b	0x1375b0
+streamvoice	??1StreamVoice@@QAE@XZ	42.4643	42.4643	1	59cc0331f52c	0x137650
+streamvoice	?ComputeRatio@StreamVoice@@QAEIXZ	100.0000	100.0000	1	bc813ec12694	0x137590
+streamvoice	?Configure@StreamVoice@@QAEHHHHH@Z	100.0000	100.0000	1	8ec6fd23b06a	0x137520
+streamvoice	?SetSource@StreamVoice@@QAEHPAUStreamSource@@@Z	100.0000	100.0000	1	6052f26a3cfc	0x1374c0
 symtab	??1CSymTab@@QAE@XZ	88.7245	88.7245	1	3d0073f2a05b	0x139ee0
 symtab	?FindSub@CSymTab@@QAEPAXPBD@Z	100.0000	100.0000	1	a80b960c2c89	0x13a230
 symtab	?FirstSub@CSymTab@@QAEPAXXZ	100.0000	100.0000	1	592426346612	0x13a260
