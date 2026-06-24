@@ -1883,25 +1883,9 @@ void StatusBarItem::StatusBarItem_0da030() {}
 
 // ---- Timer_1380d0 ---- (reconstructed as StreamFeeder in src/Dsndmgr/StreamFeeder.cpp)
 
-// ---- UnknownClassArrays ----
-RVA(0x00025d90, 0x580)
-void UnknownClassArrays::UnknownClassArrays_025d90() {}
-RVA(0x00026470, 0x29d)
-void UnknownClassArrays::UnknownClassArrays_026470() {}
-RVA(0x00029b40, 0x813)
-void UnknownClassArrays::UnknownClassArrays_029b40() {}
-RVA(0x0002d800, 0x605)
-void UnknownClassArrays::UnknownClassArrays_02d800() {}
-RVA(0x0002edb0, 0x6b4)
-void UnknownClassArrays::UnknownClassArrays_02edb0() {}
-RVA(0x0002f620, 0x871)
-void UnknownClassArrays::UnknownClassArrays_02f620() {}
-RVA(0x000300c0, 0x190)
-void UnknownClassArrays::UnknownClassArrays_0300c0() {}
-RVA(0x00030b20, 0x328)
-void UnknownClassArrays::UnknownClassArrays_030b20() {}
-RVA(0x00034460, 0x3fc)
-void UnknownClassArrays::UnknownClassArrays_034460() {}
+// ---- UnknownClassArrays ---- (all 9 moved into the real class TU
+// src/Gruntz/UnknownClassArrays.cpp: 4 reconstructed [025d90/026470/0300c0/034460],
+// 5 @early-stop placeholders [029b40/02d800/02edb0/02f620/030b20] for the final sweep)
 
 // ---- UnknownClassInCGruntzMgr ----
 RVA(0x0001f450, 0x20)

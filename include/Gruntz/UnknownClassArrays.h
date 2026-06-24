@@ -35,6 +35,15 @@ public:
     i32 Serialize_02b420(void*);
     i32 Method_030730(i32, i32, i32, i32);
     void* Method_030f20(void*, i32, i32);
+    i32 Method_0300c0(i32, i32, i32, i32, i32, i32);
+    i32 Method_026470(i32);
+    i32 Method_034460(i32);
+    i32 Method_025d90();
+    i32 Method_02f620(i32);
+    i32 Method_029b40(i32);
+    i32 Method_02d800(i32, i32, i32, i32);
+    i32 Method_02edb0(i32, i32, i32, i32);
+    i32 Method_030b20(i32, i32, i32);
     i32 winapi_0267c0_IntersectRect_PtInRect();
     i32 winapi_02a570_IntersectRect(i32);
     i32 winapi_02ab80_PtInRect(i32, i32, i32, i32);
