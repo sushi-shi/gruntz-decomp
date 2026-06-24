@@ -503,20 +503,6 @@ public:
     void ClassUnknown_15_13c600();
     void ClassUnknown_15_13c830();
 };
-class ClassUnknown_16 {
-public:
-    void ClassUnknown_16_021280();
-    void ClassUnknown_16_169160();
-    void ClassUnknown_16_169220();
-    void ClassUnknown_16_1692b0();
-    void ClassUnknown_16_169490();
-    void ClassUnknown_16_16b070();
-    void ClassUnknown_16_16b150();
-    void ClassUnknown_16_16b1d0();
-    void ClassUnknown_16_16b320();
-    void ClassUnknown_16_16b3a0();
-    void ClassUnknown_16_16cd00();
-};
 class ClassUnknown_17 {
 public:
     void ClassUnknown_17_16f6c0();

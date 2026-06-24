@@ -40,12 +40,14 @@ chatbox_eh	1	1
 clightfxrender	20	8
 cmulti	11	7
 cplay	27	8
+crt_streambuf	7	5
+crt_strstreambuf	4	2
 cstatusbarmgr	1	0
 deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	456	0
+engine_discovered	445	0
 engine_label_stubs	525	121
 filestream	13	9
 font	21	10
@@ -454,6 +456,17 @@ cplay	?Update@CPlay@@UAEHXZ	100.0000	100.0000	4	1c6efda4cb9e	0x8c910
 cplay	?winapi_0cdb10_PostMessageA@CPlay@@QAEHHHH@Z	0.2946	0.2946	2	db8d57057a6f	0xcdb10
 cplay	?winapi_0ceae0_PostMessageA@CPlay@@QAEHHHH@Z	0.9500	0.9500	2	fb82d3f55040	0xceae0
 cplay	?winapi_0d0b30_CopyRect@CPlay@@QAEHH@Z	1.2270	1.2270	2	edf43ed7aef3	0xd0b30
+crt_streambuf	??0streambuf@@QAE@XZ	15.9167	15.9167	1	ef791f1f51c0	0x16b070
+crt_streambuf	??1streambuf@@QAE@XZ	100.0000	100.0000	1	c84dd3d90705	0x16b150
+crt_streambuf	?out_waiting@streambuf@@QBEHXZ	100.0000	100.0000	1	57d78b1417ca	0x21280
+crt_streambuf	?sbumpc@streambuf@@QAEHXZ	93.1429	93.1429	1	f30c8deb28a3	0x16cd00
+crt_streambuf	?setb@streambuf@@IAEXPAD0H@Z	100.0000	100.0000	1	93a6bec104f0	0x16b3a0
+crt_streambuf	?sync@streambuf@@QAEHXZ	100.0000	100.0000	1	4df57c060719	0x16b320
+crt_streambuf	?xsputn@streambuf@@QAEHPBDH@Z	100.0000	100.0000	1	112e0cad2af0	0x16b1d0
+crt_strstreambuf	??0strstreambuf@@QAE@PADH0@Z	100.0000	100.0000	1	69fb91a263b7	0x169160
+crt_strstreambuf	??1strstreambuf@@QAE@XZ	89.6970	89.6970	1	409f904f6431	0x169220
+crt_strstreambuf	?str@strstreambuf@@QAEPADXZ	100.0000	100.0000	1	08404bbcac2f	0x1692b0
+crt_strstreambuf	?underflow@strstreambuf@@QAEHXZ	91.7353	91.7353	1	5b157eb540b4	0x169490
 cstatusbarmgr	?LoadTabSprites@CStatusBarMgr@@QAEHXZ	16.7383	16.7383	4	045cfeaa498f	0x102250
 deflate	_deflate_fast	100.0000	100.0000	1	3de2151b888f	0x186db0
 deflate	_deflate_slow	100.0000	100.0000	1	963869a51c2d	0x187170
@@ -717,17 +730,6 @@ engine_discovered	?ClassUnknown_15_13c520@ClassUnknown_15@@QAEXXZ	33.3333	33.333
 engine_discovered	?ClassUnknown_15_13c590@ClassUnknown_15@@QAEXXZ	3.4483	3.4483	1	a4cd19b9babe	0x13c590
 engine_discovered	?ClassUnknown_15_13c600@ClassUnknown_15@@QAEXXZ	0.4651	0.4651	1	86c2cef2e922	0x13c600
 engine_discovered	?ClassUnknown_15_13c830@ClassUnknown_15@@QAEXXZ	2.5641	2.5641	1	c844d1a97299	0x13c830
-engine_discovered	?ClassUnknown_16_021280@ClassUnknown_16@@QAEXXZ	12.5000	12.5000	1	82acb2a47148	0x21280
-engine_discovered	?ClassUnknown_16_169160@ClassUnknown_16@@QAEXXZ	0.6061	0.6061	1	65a9d49d59f4	0x169160
-engine_discovered	?ClassUnknown_16_169220@ClassUnknown_16@@QAEXXZ	3.0303	3.0303	1	720a41bdcc13	0x169220
-engine_discovered	?ClassUnknown_16_1692b0@ClassUnknown_16@@QAEXXZ	33.3333	33.3333	1	40f26ed89284	0x1692b0
-engine_discovered	?ClassUnknown_16_169490@ClassUnknown_16@@QAEXXZ	2.9412	2.9412	1	0d8b4ae1b9d3	0x169490
-engine_discovered	?ClassUnknown_16_16b070@ClassUnknown_16@@QAEXXZ	4.1667	4.1667	1	fcb19b6e9f5a	0x16b070
-engine_discovered	?ClassUnknown_16_16b150@ClassUnknown_16@@QAEXXZ	5.0000	5.0000	1	a59d7a4255af	0x16b150
-engine_discovered	?ClassUnknown_16_16b1d0@ClassUnknown_16@@QAEXXZ	0.8889	0.8889	1	d8fc404a5b35	0x16b1d0
-engine_discovered	?ClassUnknown_16_16b320@ClassUnknown_16@@QAEXXZ	8.3333	8.3333	1	bd66ae014ff5	0x16b320
-engine_discovered	?ClassUnknown_16_16b3a0@ClassUnknown_16@@QAEXXZ	2.1053	2.1053	1	00f04d78a4bc	0x16b3a0
-engine_discovered	?ClassUnknown_16_16cd00@ClassUnknown_16@@QAEXXZ	2.8571	2.8571	1	34d0983ebb5c	0x16cd00
 engine_discovered	?ClassUnknown_17_16f6c0@ClassUnknown_17@@QAEXXZ	6.6667	6.6667	1	a128cf579ccc	0x16f6c0
 engine_discovered	?ClassUnknown_17_16f760@ClassUnknown_17@@QAEXXZ	0.8333	0.8333	1	b13325b5e1c8	0x16f760
 engine_discovered	?ClassUnknown_17_170100@ClassUnknown_17@@QAEXXZ	1.0989	1.0989	1	26204a48c417	0x170100

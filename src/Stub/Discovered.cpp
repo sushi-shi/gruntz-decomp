@@ -702,30 +702,6 @@ void ClassUnknown_15::ClassUnknown_15_13c600() {}
 RVA(0x0013c830, 0x63)
 void ClassUnknown_15::ClassUnknown_15_13c830() {}
 
-// ---- ClassUnknown_16 ----
-RVA(0x00021280, 0x10)
-void ClassUnknown_16::ClassUnknown_16_021280() {}
-RVA(0x00169160, 0xbc)
-void ClassUnknown_16::ClassUnknown_16_169160() {}
-RVA(0x00169220, 0x6c)
-void ClassUnknown_16::ClassUnknown_16_169220() {}
-RVA(0x001692b0, 0xb)
-void ClassUnknown_16::ClassUnknown_16_1692b0() {}
-RVA(0x00169490, 0x49)
-void ClassUnknown_16::ClassUnknown_16_169490() {}
-RVA(0x0016b070, 0x42)
-void ClassUnknown_16::ClassUnknown_16_16b070() {}
-RVA(0x0016b150, 0x35)
-void ClassUnknown_16::ClassUnknown_16_16b150() {}
-RVA(0x0016b1d0, 0x58)
-void ClassUnknown_16::ClassUnknown_16_16b1d0() {}
-RVA(0x0016b320, 0x1b)
-void ClassUnknown_16::ClassUnknown_16_16b320() {}
-RVA(0x0016b3a0, 0x33)
-void ClassUnknown_16::ClassUnknown_16_16b3a0() {}
-RVA(0x0016cd00, 0x4b)
-void ClassUnknown_16::ClassUnknown_16_16cd00() {}
-
 // ---- ClassUnknown_17 ----
 RVA(0x0016f6c0, 0x12)
 void ClassUnknown_17::ClassUnknown_17_16f6c0() {}

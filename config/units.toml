@@ -346,6 +346,18 @@ source = "src/Stub/Discovered.cpp"
 flags = "base"
 
 [[unit]]
+# MSVC5 LIBCMT iostreams `streambuf` base (non-EH leaves).
+unit = "crt_streambuf"
+source = "src/Crt/StreamBuf.cpp"
+flags = "base"
+
+[[unit]]
+# MSVC5 LIBCMT iostreams `strstreambuf` (ctor/dtor carry the /GX SEH frame).
+unit = "crt_strstreambuf"
+source = "src/Crt/StrStreamBuf.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "netmgr"
 source = "src/Net/NetMgr.cpp"
 flags = "eh"
