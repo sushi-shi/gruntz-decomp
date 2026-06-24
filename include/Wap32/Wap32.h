@@ -256,6 +256,9 @@ public:
     // Static window procedure stored into m_wc.lpfnWndProc.
     static LRESULT __stdcall GameWindowProc(HWND, UINT, WPARAM, LPARAM);
 
+    // Non-virtual modal-screen handler (reloc-masked; ?@2b0d).
+    void RunModal(int id, HWND hwnd);
+
     CGameResource* m_4;           // +0x04  deleted by CloseResources (the CGameWnd)
     CGameResource* m_8;           // +0x08  deleted by CloseResources (the CGameMgr)
     HINSTANCE m_c;                // +0x0c  hInstance

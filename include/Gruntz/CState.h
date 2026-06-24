@@ -36,11 +36,11 @@ public:
     virtual void Vfunc3();           // slot 3
     virtual int Update();            // slot 4  (+0x10)  base default = return 1;
     virtual int Render();            // slot 5  (+0x14)  base default = return 1;
-    virtual void Vslot06();          // slot 6
+    virtual int Vslot06();           // slot 6  (+0x18)  activation-ready poll
     virtual int Vslot07();           // slot 7  (+0x1c)  lobby-host-ready poll
     virtual int InputVirtual();      // slot 8  (+0x20)  per-frame input poll
-    virtual void Vslot09();
-    virtual int FrameSlot28(int); // slot 10 (+0x28)  per-frame poll (leaf override)
+    virtual int Vslot09(int);        // slot 9  (+0x24)  notify w/ state id
+    virtual int FrameSlot28(int);    // slot 10 (+0x28)  per-frame poll (leaf override)
     // CGruntzMgr's per-state forwarders (0x8d9d0..0x8dbe0) dispatch a 2-arg or
     // 3-arg notification into these slots; the int return / arg shapes are what
     // those forwarders' push/ret-N codegen needs (vtables not diffed).
@@ -63,7 +63,7 @@ public:
     virtual void Vslot1b();
     virtual void Vslot1c();
     virtual void Vslot1d();
-    virtual void Vslot1e();
+    virtual int Vslot1e(int, int);               // slot 30 (+0x78)  (a0, a2) -> handled flag
     virtual void BeginFrameClear(int, int, int); // slot 31 (+0x7c)
     virtual void Vslot20();
     virtual void Vslot21();
@@ -77,6 +77,8 @@ public:
 
     // Non-virtual leaf (matched): seeds the begin-clear params.
     int SetBeginClearParams(int unused, int arg2, int arg3);
+    // Non-virtual exit notification (reloc-masked; called by ExitModalUI).
+    void NotifyExit(int code);
 
     // --- scalar members, at the offsets CState::CState pins ---
     void* m_4;  // +0x04  owner back-ptr (CGMOwner / CWorld view)

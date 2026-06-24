@@ -57,8 +57,45 @@ struct CStateStackZ {
 struct CGruntzSoundZ {
     void StopBank(int flag);  // FUN_00538900 (this, 1)  -> ret 4
     void StopAll();           // FUN_005388f0 (this)
+    void StopBank2();         // FUN_00538920 (this)     -> ret 4 (busy-driven stop)
     char m_pad0[0x1c];        // +0x00..+0x1c
     CGruntzSoundInnerZ* m_1c; // +0x1c  inner object IsBusy/StopAll deref
+};
+
+// The level/world object held at CGruntzMgr +0x30 (the loaded map + its active
+// CWorld view). Reached as `m_30->...`; every method is reloc-masked. +0x24 is
+// the active world view (the scroll/camera holder the FP scaler reads); +0x28 a
+// sub-controller whose +0x2c object carries a teardown thiscall; +0x520 a 4-slot
+// status array the paused-state poll walks (status id at each slot's +0x20).
+struct CWorldSub2c {
+    void Teardown(); // FUN_00537a80 (this)
+};
+struct CWorldSub28 {
+    char m_pad[0x2c];
+    CWorldSub2c* m_2c; // +0x2c
+};
+struct CWorldView;
+// A polymorphic sub-object held in the world at +0x1c, dispatched through a
+// pointer-to-pointer (`*m_1c`) then vtbl slot 10 (+0x28).
+struct CWorldDispatch {
+    struct Vtbl {
+        void* s0[10];
+        void(__stdcall* Slot0a)(CWorldDispatch*); // +0x28
+    }* vtbl;
+};
+// The world's +0x4 sub-object exposes a map-index field at +0x14.
+struct CWorldSub4 {
+    char m_pad0[0x14];
+    int m_14; // +0x14
+};
+struct CWorldZ {
+    char m_pad0[0x4];
+    CWorldSub4* m_4; // +0x04
+    char m_pad8[0x1c - 0x8];
+    CWorldDispatch** m_1c; // +0x1c
+    char m_pad20[0x24 - 0x20];
+    CWorldView* m_24;  // +0x24  active world view
+    CWorldSub28* m_28; // +0x28
 };
 
 // Minimal IDirectPlayLobby-shaped COM surface used by
@@ -118,7 +155,37 @@ public:
     int CheckMovieFileExists();     // @0x090aa0 (FileExists(m_strF0))
     CState* FindStateById(int id);  // @0x092900 (live + stack search by Update id)
 
-    int StoreInputState(int v); // @0x091a10 (store +0x120, forward to m_60)
+    int StoreInputState(int v);              // @0x091a10 (store +0x120, forward to m_60)
+    void StoreInputFlag(int v);              // @0x0919d0 (store +0x11c, mirror to g_61ab24 + m_54)
+    void UnloadSoundChain();                 // @0x08f740 (m_30->m_28->m_2c teardown + StopBank2)
+    void ClearOptionsSlots();                // @0x092ec0 (zero the 4 options slots' +0x20/+0x24)
+    CString GetWorldFileName();              // @0x0928c0 (return a copy of m_strC8)
+    int AdvanceOptionsCycle();               // @0x0933e0 (round-robin tick of the options slots)
+    void SetCellHeight(int r, int c, int v); // @0x111ec0 (write the world height grid)
+    int PassClickToPlayState(int a0, int a1, int a2);       // @0x08d780
+    int SwitchToNextState();                                // @0x08d6a0
+    void EnterModalUI(int arg);                             // @0x08ef10
+    int ExitModalUI(class CModalDialog* dlg, int notify);   // @0x0903f0
+    int FinishLevel(int full, int stopBank);                // @0x08e980
+    int FillSaveInfo(struct SaveInfo* dst, void* snapshot); // @0x0927b0
+    int SaveState(class CSerializerZ* ar);                  // @0x093620
+    void UpdateScoreHud();                                  // @0x0860b0
+    int BroadcastCmd(int a0, int cmd, int a2, int a3);      // @0x093460
+    void RecomputeViewScale();                              // @0x08f7f0
+    int PrepCmd4(int a0);                                   // reloc-masked sibling (cmd-4 arm gate)
+    int PrepCmd7(int a0);                                   // reloc-masked sibling (cmd-7 arm gate)
+    struct CActiveObj* GetActiveObj(); // reloc-masked sibling (active game object)
+    void RunWinHook();                 // reloc-masked sibling (win/level-complete hook)
+    int CheckLevelActive();            // reloc-masked sibling (level-active predicate)
+    void* GetSaveSource();             // reloc-masked sibling (live source-state ptr)
+    CString GetLevelName();            // reloc-masked sibling (current level name)
+    // A sibling state-transition pusher reached by PassClickToPlayState's reloc-
+    // masked 4-arg call (deferred body / matched elsewhere).
+    int ChangeToPlayState(int a, int b, int c, int d);
+    // Reloc-masked CGruntzMgr siblings reached from SwitchToNextState.
+    CState* MakeNextState();       // build/find the next state to switch to
+    void ActivateState(CState* s); // install + activate the new live state
+    void PostSwitchHook();         // post-switch app hook
 
     // Clock / global helpers.
     void SetGameClock(int now, int delta, int abs); // @0x08f7b0 (mirror the 5 clock globals)
@@ -136,10 +203,11 @@ public:
     int ChangeState_8fab0(int arg); // @0x08fab0 (deferred / stubbed)
 
     // --- members (offsets relative to `this`; base CGameMgr occupies 0x00..0x2c) ---
-    CState* m_2c;                           // +0x2c  current game-state (Update() -> state id)
-    int m_30, m_34, m_38, m_3c, m_40, m_44; // +0x30..+0x44
-    CGruntzSoundZ* m_48;                    // +0x48  sound/bank object (StopBank/StopAll)
-    int m_4c, m_50;                         // +0x4c, +0x50
+    CState* m_2c;                     // +0x2c  current game-state (Update() -> state id)
+    CWorldZ* m_30;                    // +0x30  loaded world/map object (also a draw gate)
+    int m_34, m_38, m_3c, m_40, m_44; // +0x34..+0x44
+    CGruntzSoundZ* m_48;              // +0x48  sound/bank object (StopBank/StopAll)
+    int m_4c, m_50;                   // +0x4c, +0x50
     int m_54, m_58, m_5c, m_60, m_64, m_68, m_6c, m_70, m_74, m_78; // +0x54..+0x78
     int m_7c;                                                       // +0x7c
     int m_80, m_84;                                                 // +0x80, +0x84
@@ -170,7 +238,8 @@ public:
     int m_124;                                    // +0x124
     int m_128, m_12c, m_130, m_134;               // +0x128..+0x134
     int m_138;                                    // +0x138  (=3 in ctor)
-    char m_pad13c[0x150 - 0x13c];                 // +0x13c..+0x150 gap
+    int m_13c, m_140, m_144, m_148;               // +0x13c..+0x148  view-edge origins
+    char m_pad14c[0x150 - 0x14c];                 // +0x14c..+0x150 gap
     CGruntzMgrOptions m_options150;               // +0x150 (0x238 bytes; EH state 4)
     char m_pad388[0xa30 - 0x388];                 // +0x388..0xa30  remaining game state
 };

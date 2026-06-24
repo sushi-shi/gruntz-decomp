@@ -210,24 +210,8 @@ public:
 };
 class CGruntzMgr {
 public:
-    void CGruntzMgr_0860b0();
     void CGruntzMgr_08b960();
-    void CGruntzMgr_08d6a0();
-    void CGruntzMgr_08d780();
-    void CGruntzMgr_08e980();
-    void CGruntzMgr_08ef10();
-    void CGruntzMgr_08f740();
-    void CGruntzMgr_08f7f0();
-    void CGruntzMgr_0903f0();
-    void CGruntzMgr_0919d0();
-    void CGruntzMgr_0927b0();
-    void CGruntzMgr_0928c0();
-    void CGruntzMgr_092ec0();
     void CGruntzMgr_093170();
-    void CGruntzMgr_0933e0();
-    void CGruntzMgr_093460();
-    void CGruntzMgr_093620();
-    void CGruntzMgr_111ec0();
 };
 class CGuardPoint {
 public:

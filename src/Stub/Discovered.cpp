@@ -287,44 +287,23 @@ void CGruntToySprite::CGruntToySprite_07f960() {}
 RVA(0x00012130, 0x44)
 void CGruntToyTimeSprite::CGruntToyTimeSprite_012130() {}
 
-// ---- CGruntzMgr ---- (26 methods migrated to src/Gruntz/GruntzMgr.cpp; the
-// remaining mid/big methods stay stubbed for a later sweep.)
-RVA(0x000860b0, 0xe8)
-void CGruntzMgr::CGruntzMgr_0860b0() {}
+// ---- CGruntzMgr ---- (42 methods migrated to src/Gruntz/GruntzMgr.cpp). The two
+// biggest/most-entangled stay stubbed for the final sweep (per matcher doctrine:
+// don't half-do a big EH/switch body - a partial under-counts AND diverges its
+// regalloc; redo leaf-first):
+//   0x08b960 (1988 B) - the object-build/init method: /GX EH frame + a switch
+//     (jump table switchdataD_0048c124) + the CByteArray ctor/dtor + ~10 vtable
+//     PTR_LAB constructions for the 4 embedded options slots + a scalar-deleting
+//     dtor. Needs the full options-slot class shapes modeled first.
+//   0x093170 (483 B) - SyncOptionsState: /GX EH frame + a CString LoadString(0x81ab)
+//     + inline strcmp vs m_strC8 + an unidentified __cdecl state save/restore pair
+//     (FUN_00520210 / FUN_0051fed0) + a DUAL-slot loop (the g_644c54-matched slot
+//     and its successor handled together, advancing the index by 2). The dual-slot
+//     unroll + the unidentified pair make this defer-worthy.
 RVA(0x0008b960, 0x7c4)
 void CGruntzMgr::CGruntzMgr_08b960() {}
-RVA(0x0008d6a0, 0xaf)
-void CGruntzMgr::CGruntzMgr_08d6a0() {}
-RVA(0x0008d780, 0x95)
-void CGruntzMgr::CGruntzMgr_08d780() {}
-RVA(0x0008e980, 0x11e)
-void CGruntzMgr::CGruntzMgr_08e980() {}
-RVA(0x0008ef10, 0x9e)
-void CGruntzMgr::CGruntzMgr_08ef10() {}
-RVA(0x0008f740, 0x46)
-void CGruntzMgr::CGruntzMgr_08f740() {}
-RVA(0x0008f7f0, 0x131)
-void CGruntzMgr::CGruntzMgr_08f7f0() {}
-RVA(0x000903f0, 0x10c)
-void CGruntzMgr::CGruntzMgr_0903f0() {}
-RVA(0x000919d0, 0x30)
-void CGruntzMgr::CGruntzMgr_0919d0() {}
-RVA(0x000927b0, 0xc4)
-void CGruntzMgr::CGruntzMgr_0927b0() {}
-RVA(0x000928c0, 0x23)
-void CGruntzMgr::CGruntzMgr_0928c0() {}
-RVA(0x00092ec0, 0x24)
-void CGruntzMgr::CGruntzMgr_092ec0() {}
 RVA(0x00093170, 0x1e3)
 void CGruntzMgr::CGruntzMgr_093170() {}
-RVA(0x000933e0, 0x5e)
-void CGruntzMgr::CGruntzMgr_0933e0() {}
-RVA(0x00093460, 0x124)
-void CGruntzMgr::CGruntzMgr_093460() {}
-RVA(0x00093620, 0x254)
-void CGruntzMgr::CGruntzMgr_093620() {}
-RVA(0x00111ec0, 0x37)
-void CGruntzMgr::CGruntzMgr_111ec0() {}
 
 // ---- CGruntzSoundZ ---- migrated to src/Dsndmgr/CGruntzSoundZ.cpp (all 8 methods).
 
