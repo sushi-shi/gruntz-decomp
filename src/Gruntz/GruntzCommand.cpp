@@ -31,19 +31,111 @@
 // deleting-dtor symbol by mangled name here.
 // @rva-symbol: ??_GCGruntzCommand@@UAEPAXI@Z 0x00024330 0x20
 
-// Out-of-line vtable anchors (slots 1..7) so the CGruntzCommand vftable is
-// emitted in this TU (the ctor/dtor reference it). Bodies are placeholders.
+// Out-of-line vtable anchors (the slots NOT reconstructed here) so the
+// CGruntzCommand vftable is emitted in this TU (the ctor/dtor reference it).
+// Bodies are placeholders.
 void CGruntzCommand::Vfunc1() {}
 void CGruntzCommand::Vfunc2() {}
 void CGruntzCommand::Vfunc3() {}
-int CGruntzCommand::Vslot04() {
-    return 1;
-}
 int CGruntzCommand::Vslot05() {
     return 1;
 }
 void CGruntzCommand::Vslot06() {}
 void CGruntzCommand::Vslot07() {}
+
+// ---------------------------------------------------------------------------
+// CGruntzCommand::SetParams() - 0x023e20 (vtable slot 4). The base "set the
+// five scalar params" implementation: store kind/sub bytes + two words, return
+// 1. Inherited unchanged by both leaves (slot 4 = this in all three vtables).
+// ---------------------------------------------------------------------------
+RVA(0x00023e20, 0x2f)
+int CGruntzCommand::SetParams(char a0, char a1, char a2, short a3, short a4) {
+    m_4 = a0;
+    m_5 = a1;
+    m_6 = a2;
+    m_8 = a3;
+    m_a = a4;
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CGruntzCommand::SetParamsEx() - 0x023e60. Delegate the five scalar params to
+// the base SetParams (a direct, devirtualized call), then store the +0x10/+0x11
+// byte pair; return 1 (or 0 if SetParams failed).
+// ---------------------------------------------------------------------------
+RVA(0x00023e60, 0x42)
+int CGruntzCommand::SetParamsEx(char a0, char a1, char a2, short a3, short a4, char a5, char a6) {
+    if (!CGruntzCommand::SetParams(a0, a1, a2, a3, a4)) {
+        return 0;
+    }
+    m_10 = a5;
+    m_11 = a6;
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CGruntzCommand::SetMaskFromList() - 0x023ed0. Validate (buf!=0, count<=0x10),
+// delegate the five scalar params to SetParams, then OR a 16-bit flag mask at
+// +0x10 from `count` indices in `buf` (m_10word |= 1<<buf[i]). Returns 1/0.
+// ---------------------------------------------------------------------------
+RVA(0x00023ed0, 0x83)
+int CGruntzCommand::SetMaskFromList(
+    char a0,
+    char a1,
+    char a2,
+    short a3,
+    short a4,
+    int count,
+    unsigned char* buf
+) {
+    if (!buf) {
+        return 0;
+    }
+    if ((unsigned char)count > 0x10) {
+        return 0;
+    }
+    if (!CGruntzCommand::SetParams(a0, a1, a2, a3, a4)) {
+        return 0;
+    }
+    *(unsigned short*)&m_10 = 0;
+    for (int i = 0; i < (count & 0xff); i++) {
+        *(unsigned short*)&m_10 |= g_cmdBitTable[buf[i]];
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CGruntzCommand::ApplyOne() - 0x024140. If p!=0, unpack the params and call the
+// CPlay executor once with index slot = m_10. Returns its result (0 if p==0).
+// ---------------------------------------------------------------------------
+RVA(0x00024140, 0x35)
+int CGruntzCommand::ApplyOne(CGruntzCmdTarget* p) {
+    if (!p) {
+        return 0;
+    }
+    return p->Exec(m_4, m_10, m_5, m_8, m_a, m_11, m_6);
+}
+
+// ---------------------------------------------------------------------------
+// CGruntzCommand::ApplyMask() - 0x024190. For each of the 16 bit positions set
+// in the +0x10 flag mask, call the executor with that index; AND the results
+// (return 1 only if every call succeeded; 0 if p==0).
+// ---------------------------------------------------------------------------
+RVA(0x00024190, 0x6c)
+int CGruntzCommand::ApplyMask(CGruntzCmdTarget* p) {
+    if (!p) {
+        return 0;
+    }
+    int ok = 1;
+    for (int i = 0; i < 16; i++) {
+        if (g_cmdBitTable[i] & *(unsigned short*)&m_10) {
+            if (!p->Exec(m_4, (char)i, m_5, m_8, m_a, 0, m_6)) {
+                ok = 0;
+            }
+        }
+    }
+    return ok;
+}
 
 // ---------------------------------------------------------------------------
 // CGruntzSingleCommand::Allocate() - 0x024220.
@@ -71,7 +163,46 @@ CGruntzMultiCommand* CGruntzMultiCommand::Allocate() {
     }
     return new CGruntzMultiCommand;
 }
+
+// ---------------------------------------------------------------------------
+// CGruntzMultiCommand::FreeAll() - 0x024490. Drain the per-class recycle list:
+// while it is non-empty, RemoveTail() a node and `delete` it (the virtual
+// scalar-deleting dtor with flag 1). A static method (no this).
+// ---------------------------------------------------------------------------
+RVA(0x00024490, 0x29)
+void CGruntzMultiCommand::FreeAll() {
+    while (g_multiCmdCount) {
+        CGruntzCommand* node = (CGruntzCommand*)g_multiCmdList.RemoveTail();
+        if (node) {
+            delete node;
+        }
+    }
+}
+
 // size 0x14 from operator-new vtable attribution (gruntz.analysis.news)
 SIZE(CGruntzMultiCommand, 0x14);
 // size 0x14 from operator-new vtable attribution (gruntz.analysis.news)
 SIZE(CGruntzSingleCommand, 0x14);
+SIZE(CGruntzCommand, 0x14);
+
+// The 1<<i bit table (0x5e9608) the mask builder/scanner indexes. DATA-pinned so
+// the *(short*)... mask loop's address operands reloc-mask against it.
+DATA(0x001e9608)
+const unsigned short g_cmdBitTable[16] = {
+    1,
+    2,
+    4,
+    8,
+    0x10,
+    0x20,
+    0x40,
+    0x80,
+    0x100,
+    0x200,
+    0x400,
+    0x800,
+    0x1000,
+    0x2000,
+    0x4000,
+    0x8000
+};

@@ -29,27 +29,76 @@ struct CGruntzCmdList {
     void* RemoveTail();
 };
 
+// The "apply" target each Apply*() passes the unpacked command params to (the
+// big CPlay command-executor at 0x0d1b60, ret 0x1c => 7 __thiscall args). It is
+// external to this TU (reloc-masked); modeled here as a method on a tiny opaque
+// helper so `mov ecx,p; push args...; call` falls out with no stack cleanup.
+struct CGruntzCmdTarget {
+    int Exec(char kind, char index, char a2, short a3, short a4, char a5, char a6);
+};
+
 // ---------------------------------------------------------------------------
 // CGruntzCommand - the abstract base command.
 //
-// The base sub-object is vptr-only. ~CGruntzCommand is the slot-0 scalar-
+// The whole command object is 0x14 bytes (vptr + a packed parameter block); the
+// data lives in the BASE (the leaves only override virtuals). The slot-0 scalar-
 // deleting dtor (??_G shape, reached through the vtable's incremental-link
 // thunk): restore the vftable and, if the low bit of the hidden flags arg is
-// set, operator delete(this). Empty body (no destructible members, no base to
-// chain) - modeled as `virtual ~CGruntzCommand() {}` so MSVC synthesizes the
-// deleting thunk; its mangled symbol is pinned by @rva-symbol in the .cpp.
+// set, operator delete(this). Modeled as `virtual ~CGruntzCommand() {}` so MSVC
+// synthesizes the deleting thunk; its mangled symbol is pinned by @rva-symbol in
+// the .cpp.
+//
+// Layout (offsets pinned by the setters/getters; names are placeholders):
+//   +0x04 m_4   char   (kind selector; switch index in the executor)
+//   +0x05 m_5   char
+//   +0x06 m_6   char
+//   +0x08 m_8   short
+//   +0x0a m_a   short
+//   +0x10 m_10  char  } the +0x10 word is used both as a byte pair (the two
+//   +0x11 m_11  char  } setters/getters) AND as a 16-bit flag mask (the bit
+//                       loop), so it is read/written via *(short*)&m_10.
 // ---------------------------------------------------------------------------
 class CGruntzCommand {
 public:
+    char m_4;   // +0x04
+    char m_5;   // +0x05
+    char m_6;   // +0x06
+    char m_7;   // +0x07 (unused by this cluster)
+    short m_8;  // +0x08
+    short m_a;  // +0x0a
+    int m_c;    // +0x0c (unused by this cluster)
+    char m_10;  // +0x10
+    char m_11;  // +0x11
+    short m_12; // +0x12 (pad -> 0x14)
+
     virtual ~CGruntzCommand() {} // slot 0 (scalar-deleting dtor)
     virtual void Vfunc1();       // slot 1
     virtual void Vfunc2();       // slot 2
     virtual void Vfunc3();       // slot 3
-    virtual int Vslot04();       // slot 4 (+0x10)  base default = return 1;
-    virtual int Vslot05();       // slot 5 (+0x14)
-    virtual void Vslot06();      // slot 6
-    virtual void Vslot07();      // slot 7
+    // slot 4 (+0x10) - the base "set params" implementation (0x023e20): store
+    // the five scalar params; returns 1. Inherited unchanged by both leaves.
+    virtual int SetParams(char a0, char a1, char a2, short a3, short a4);
+    virtual int Vslot05();  // slot 5 (+0x14)
+    virtual void Vslot06(); // slot 6
+    virtual void Vslot07(); // slot 7
+
+    // Non-virtual members of the base (called directly, not via the vtable):
+    int SetParamsEx(char a0, char a1, char a2, short a3, short a4, char a5, char a6); // 0x023e60
+    int SetMaskFromList(
+        char a0,
+        char a1,
+        char a2,
+        short a3,
+        short a4,
+        int count,
+        unsigned char* buf
+    );                                  // 0x023ed0
+    int ApplyOne(CGruntzCmdTarget* p);  // 0x024140
+    int ApplyMask(CGruntzCmdTarget* p); // 0x024190
 };
+
+// The 16-entry 1<<i bit table (0x5e9608; VA) the mask loop indexes/scans.
+extern const unsigned short g_cmdBitTable[16]; // 0x1e9608
 
 // ---------------------------------------------------------------------------
 // CGruntzSingleCommand - single-target command (0x14 bytes; vtable 0x5e9634).
@@ -59,7 +108,6 @@ public:
 // ---------------------------------------------------------------------------
 class CGruntzSingleCommand : public CGruntzCommand {
 public:
-    int m_4, m_8, m_c, m_10;  // four scalar members (size -> 0x14)
     CGruntzSingleCommand() {} // inline empty ctor (vftable store only)
     static CGruntzSingleCommand* Allocate();
 };
@@ -70,9 +118,9 @@ public:
 // ---------------------------------------------------------------------------
 class CGruntzMultiCommand : public CGruntzCommand {
 public:
-    int m_4, m_8, m_c, m_10;
     CGruntzMultiCommand() {}
     static CGruntzMultiCommand* Allocate();
+    static void FreeAll(); // 0x024490 - drain g_multiCmdList, delete each node
 };
 
 // The per-class recycle lists + their non-empty gates (file-scope globals the

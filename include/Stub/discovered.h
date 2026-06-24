@@ -274,15 +274,6 @@ public:
     void CGruntVoice_11a7e0();
     void CGruntVoice_11a870();
 };
-class CGruntzCommand {
-public:
-    void CGruntzCommand_023e20();
-    void CGruntzCommand_023e60();
-    void CGruntzCommand_023ed0();
-    void CGruntzCommand_024140();
-    void CGruntzCommand_024190();
-    void CGruntzCommand_024490();
-};
 class CGruntzMgr {
 public:
     void CGruntzMgr_0860b0();

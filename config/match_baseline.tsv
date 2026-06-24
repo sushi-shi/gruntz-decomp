@@ -36,7 +36,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	18	17
 directsoundmgr	26	19
-engine_discovered	1035	0
+engine_discovered	1029	0
 engine_label_stubs	537	120
 filestream	13	9
 font	16	9
@@ -50,7 +50,7 @@ gametext	4	2
 gamewnd	6	4
 grunt	20	0
 gruntzapp	10	8
-gruntzcommand	3	3
+gruntzcommand	9	9
 gruntzmgr	9	5
 gruntzwnd	2	1
 iconloaders	4	1
@@ -469,12 +469,6 @@ engine_discovered	?CGruntVoice_119e40@CGruntVoice@@QAEXXZ	0.5333	0.5333	1	d93541
 engine_discovered	?CGruntVoice_11a7e0@CGruntVoice@@QAEXXZ	1.2500	1.2500	1	d6d3f7f8c8f6	0x11a7e0
 engine_discovered	?CGruntVoice_11a870@CGruntVoice@@QAEXXZ	6.6667	6.6667	1	22ecc49cfc8f	0x11a870
 engine_discovered	?CGrunt_057c40@CGrunt@@QAEXXZ	1.0811	1.0811	1	12e9f96d3a6b	0x57c40
-engine_discovered	?CGruntzCommand_023e20@CGruntzCommand@@QAEXXZ	3.3333	3.3333	1	bca43ac2bbf3	0x23e20
-engine_discovered	?CGruntzCommand_023e60@CGruntzCommand@@QAEXXZ	1.6000	1.6000	1	b12952349b9f	0x23e60
-engine_discovered	?CGruntzCommand_023ed0@CGruntzCommand@@QAEXXZ	0.7273	0.7273	1	50627bcb2cf8	0x23ed0
-engine_discovered	?CGruntzCommand_024140@CGruntzCommand@@QAEXXZ	1.8182	1.8182	1	268f14eb7f58	0x24140
-engine_discovered	?CGruntzCommand_024190@CGruntzCommand@@QAEXXZ	0.8889	0.8889	1	9aa86fc61c7a	0x24190
-engine_discovered	?CGruntzCommand_024490@CGruntzCommand@@QAEXXZ	6.6667	6.6667	1	51f90d2ec9d5	0x24490
 engine_discovered	?CGruntzMgr_0860b0@CGruntzMgr@@QAEXXZ	1.4286	1.4286	1	ecd6a666c3b8	0x860b0
 engine_discovered	?CGruntzMgr_08b960@CGruntzMgr@@QAEXXZ	0.0907	0.0907	1	4a22ea071af3	0x8b960
 engine_discovered	?CGruntzMgr_08d6a0@CGruntzMgr@@QAEXXZ	1.1905	1.1905	1	036d5b5242a8	0x8d6a0
@@ -1976,7 +1970,7 @@ gamelevel	?VirtualMethodUnknown34@CGameLevel@@QAEHHH@Z	84.2800	84.2800	3	49c878d
 gamelevel	?VirtualMethodUnknown3C@CGameLevel@@QAEHPAURemusParseSource@@@Z	100.0000	100.0000	3	3e5ddca3d380	0x15d630
 gamelevel	?VirtualMethodUnknown40@CGameLevel@@QAEHPBD@Z	100.0000	100.0000	3	6f1f2b901cdb	0x15d500
 gamelevel	?VirtualMethodUnknown44@CGameLevel@@QAEXXZ	100.0000	100.0000	3	84cf89ea5ab7	0x15d680
-gamelevel	?VisitVisible@CGameLevel@@QAEXPAXH@Z	87.3206	87.3206	1	ff38a448c3b0	0x15dc90
+gamelevel	?VisitVisible@CGameLevel@@QAEXPAXH@Z	87.3206	87.3206	2	68cd7fc3babd	0x15dc90
 gamemode	??0CState@@QAE@XZ	100.0000	100.0000	4	a1d9fd8bca62	0x8c750
 gamemode	??_GCState@@UAEPAXI@Z	100.0000	100.0000	1	cpp:2601fb2a9496	0x8c710
 gamemode	?BuildBootyWalkingGruntz@CState@@QAEXXZ	0.6579	0.6579	1	ec771b9e0f06	0x1b450
@@ -2044,6 +2038,12 @@ gruntzapp	?VirtualUnknownMethod04@CGruntzApp@@UAEHHHH@Z	100.0000	100.0000	5	f637
 gruntzcommand	??_GCGruntzCommand@@UAEPAXI@Z	100.0000	100.0000	1	cpp:c78f93a7a299	0x24330
 gruntzcommand	?Allocate@CGruntzMultiCommand@@SAPAV1@XZ	100.0000	100.0000	3	a0fc7f099d4c	0x24360
 gruntzcommand	?Allocate@CGruntzSingleCommand@@SAPAV1@XZ	100.0000	100.0000	3	d7f3faca637e	0x24220
+gruntzcommand	?ApplyMask@CGruntzCommand@@QAEHPAUCGruntzCmdTarget@@@Z	100.0000	100.0000	1	f66d54878c92	0x24190
+gruntzcommand	?ApplyOne@CGruntzCommand@@QAEHPAUCGruntzCmdTarget@@@Z	100.0000	100.0000	1	5c2c8935c457	0x24140
+gruntzcommand	?FreeAll@CGruntzMultiCommand@@SAXXZ	100.0000	100.0000	1	a52eb4303e98	0x24490
+gruntzcommand	?SetMaskFromList@CGruntzCommand@@QAEHDDDFFHPAE@Z	100.0000	100.0000	1	e30de28cd8e9	0x23ed0
+gruntzcommand	?SetParams@CGruntzCommand@@UAEHDDDFF@Z	100.0000	100.0000	1	2cfe1652248e	0x23e20
+gruntzcommand	?SetParamsEx@CGruntzCommand@@QAEHDDDFFDD@Z	100.0000	100.0000	1	444be6ed964c	0x23e60
 gruntzmgr	??1CGruntzMgr@@UAE@XZ	89.8500	89.8500	3	1bb6e0929358	0x83360
 gruntzmgr	?AdvanceFrame@CGruntzMgr@@QAEXHH@Z	100.0000	100.0000	3	41985f542cd6	0x8f6a0
 gruntzmgr	?BuildMoviePath@CGruntzMgr@@QAE?AVCString@@H@Z	88.0630	88.0630	3	7656e43f4254	0x8ff30

@@ -380,20 +380,6 @@ void CGruntVoice::CGruntVoice_11a7e0() {}
 RVA(0x0011a870, 0x38)
 void CGruntVoice::CGruntVoice_11a870() {}
 
-// ---- CGruntzCommand ----
-RVA(0x00023e20, 0x2f)
-void CGruntzCommand::CGruntzCommand_023e20() {}
-RVA(0x00023e60, 0x42)
-void CGruntzCommand::CGruntzCommand_023e60() {}
-RVA(0x00023ed0, 0x83)
-void CGruntzCommand::CGruntzCommand_023ed0() {}
-RVA(0x00024140, 0x35)
-void CGruntzCommand::CGruntzCommand_024140() {}
-RVA(0x00024190, 0x6c)
-void CGruntzCommand::CGruntzCommand_024190() {}
-RVA(0x00024490, 0x29)
-void CGruntzCommand::CGruntzCommand_024490() {}
-
 // ---- CGruntzMgr ----
 RVA(0x000860b0, 0xe8)
 void CGruntzMgr::CGruntzMgr_0860b0() {}
