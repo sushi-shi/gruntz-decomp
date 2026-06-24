@@ -1939,8 +1939,6 @@ RVA(0x00026470, 0x29d)
 void UnknownClassArrays::UnknownClassArrays_026470() {}
 RVA(0x00029b40, 0x813)
 void UnknownClassArrays::UnknownClassArrays_029b40() {}
-RVA(0x0002b420, 0x419)
-void UnknownClassArrays::UnknownClassArrays_02b420() {}
 RVA(0x0002d800, 0x605)
 void UnknownClassArrays::UnknownClassArrays_02d800() {}
 RVA(0x0002edb0, 0x6b4)
@@ -1949,12 +1947,8 @@ RVA(0x0002f620, 0x871)
 void UnknownClassArrays::UnknownClassArrays_02f620() {}
 RVA(0x000300c0, 0x190)
 void UnknownClassArrays::UnknownClassArrays_0300c0() {}
-RVA(0x00030730, 0x1da)
-void UnknownClassArrays::UnknownClassArrays_030730() {}
 RVA(0x00030b20, 0x328)
 void UnknownClassArrays::UnknownClassArrays_030b20() {}
-RVA(0x00030f20, 0x16d)
-void UnknownClassArrays::UnknownClassArrays_030f20() {}
 RVA(0x00034460, 0x3fc)
 void UnknownClassArrays::UnknownClassArrays_034460() {}
 

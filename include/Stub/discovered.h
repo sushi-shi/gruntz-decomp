@@ -1362,14 +1362,11 @@ public:
     void UnknownClassArrays_025d90();
     void UnknownClassArrays_026470();
     void UnknownClassArrays_029b40();
-    void UnknownClassArrays_02b420();
     void UnknownClassArrays_02d800();
     void UnknownClassArrays_02edb0();
     void UnknownClassArrays_02f620();
     void UnknownClassArrays_0300c0();
-    void UnknownClassArrays_030730();
     void UnknownClassArrays_030b20();
-    void UnknownClassArrays_030f20();
     void UnknownClassArrays_034460();
 };
 class UnknownClassInCGruntzMgr {

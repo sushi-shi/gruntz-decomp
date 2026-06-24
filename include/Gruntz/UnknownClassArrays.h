@@ -32,6 +32,9 @@ public:
     int Method_0305b0(int, int, int);
     int Method_02bfc0(int, void*, int, int);
     int Method_02ed90(int);
+    int Serialize_02b420(void*);
+    int Method_030730(int, int, int, int);
+    void* Method_030f20(void*, int, int);
     int winapi_0267c0_IntersectRect_PtInRect();
     int winapi_02a570_IntersectRect(int);
     int winapi_02ab80_PtInRect(int, int, int, int);
@@ -42,60 +45,73 @@ public:
     int winapi_031ca0_IntersectRect(int);
     int winapi_032060_IntersectRect(int);
 
-    int m_000;                    // +0x000  (vtbl-slot / first dword; some methods test/clear it)
-    void* m_004;                  // +0x004  level/board object pointer
-    char* m_008;                  // +0x008  grid base: a cell array, 0x3c-byte stride
-    void* m_00c;                  // +0x00c  board/tile-map object pointer
-    char m_pad010[0x18 - 0x10];   // +0x010  (untouched by ctor)
-    int m_018;                    // +0x018  = 0  (current cell index)
-    int m_01c;                    // +0x01c  = 1
-    int m_020;                    // +0x020  = 0x40
-    int m_024;                    // +0x024  = 0x40
-    int m_028;                    // +0x028  = 0x40
-    int m_02c;                    // +0x02c  = 0x32
-    int m_030;                    // +0x030  = 0x32
-    char m_pad034[0x48 - 0x34];   // +0x034  (untouched)
-    int m_048;                    // +0x048  = 0
-    int m_04c;                    // +0x04c  = 0
-    int m_050;                    // +0x050  = 0
-    int m_054;                    // +0x054  = 0
-    int m_058;                    // +0x058  = 0
-    int m_05c;                    // +0x05c  = 0
-    char m_pad060[0x74 - 0x60];   // +0x060  (untouched)
-    int m_074;                    // +0x074  = 0x19
-    int m_078;                    // +0x078  = 0
-    int m_07c;                    // +0x07c  = 0
-    int m_080;                    // +0x080  = 0
-    int m_084;                    // +0x084  = 0
-    int m_088;                    // +0x088  = 0x32
-    int m_08c;                    // +0x08c  = 5
-    int m_090;                    // +0x090  = 5
-    int m_094;                    // +0x094  = 8
-    int m_098;                    // +0x098  = 8
-    int m_09c;                    // +0x09c  = 0x7d0
-    int m_0a0;                    // +0x0a0  = 0x7d0
-    int m_0a4;                    // +0x0a4  = 6
-    int m_0a8;                    // +0x0a8  = 0x32
-    int m_0ac;                    // +0x0ac  = 8
-    int m_0b0;                    // +0x0b0  = 8
-    int m_0b4;                    // +0x0b4  = 0x3e8
-    int m_0b8;                    // +0x0b8  = 0x7d0
-    int m_0bc;                    // +0x0bc  = 0x3e8
-    int m_0c0;                    // +0x0c0  = 0xa
-    int m_0c4;                    // +0x0c4  = 0xbb8
-    int m_0c8;                    // +0x0c8  = 0x7530
-    int m_0cc;                    // +0x0cc  = 0xbb8
-    char m_pad0d0[0xdc - 0xd0];   // +0x0d0  (untouched)
-    CPtrArray m_0dc;              // +0x0dc  CPtrArray  (m_pData@+0xe0, m_nSize@+0xe4)
-    CPtrArray m_0f0;              // +0x0f0  CPtrArray  (m_pData@+0xf4, m_nSize@+0xf8)
-    CDWordArray m_104;            // +0x104  CDWordArray
-    CDWordArray m_118;            // +0x118  CDWordArray
-    char m_pad12c[0x13c - 0x12c]; // +0x12c  (untouched)
-    int m_13c;                    // +0x13c  = 0
-    int m_140;                    // +0x140  = 0
-    int m_144;                    // +0x144
-    int m_148;                    // +0x148  (cleared by 02c0a0)
-    char m_pad14c[0x150 - 0x14c]; // +0x14c
+    int m_000;                  // +0x000  (vtbl-slot / first dword; some methods test/clear it)
+    void* m_004;                // +0x004  level/board object pointer
+    char* m_008;                // +0x008  grid base: a cell array, 0x3c-byte stride
+    void* m_00c;                // +0x00c  board/tile-map object pointer
+    char m_pad010[0x18 - 0x10]; // +0x010  (untouched by ctor)
+    int m_018;                  // +0x018  = 0  (current cell index)
+    int m_01c;                  // +0x01c  = 1
+    int m_020;                  // +0x020  = 0x40
+    int m_024;                  // +0x024  = 0x40
+    int m_028;                  // +0x028  = 0x40
+    int m_02c;                  // +0x02c  = 0x32
+    int m_030;                  // +0x030  = 0x32
+    int m_034;                  // +0x034  (serialized)
+    int m_038;                  // +0x038  (serialized)
+    int m_03c;                  // +0x03c  (serialized)
+    int m_040;                  // +0x040  (serialized)
+    int m_044;                  // +0x044  (serialized)
+    int m_048;                  // +0x048  = 0
+    int m_04c;                  // +0x04c  = 0
+    int m_050;                  // +0x050  = 0
+    int m_054;                  // +0x054  = 0
+    int m_058;                  // +0x058  = 0
+    int m_05c;                  // +0x05c  = 0
+    int m_060;                  // +0x060  (serialized)
+    int m_064;                  // +0x064  (serialized)
+    int m_068;                  // +0x068  (serialized)
+    int m_06c;                  // +0x06c  (serialized)
+    int m_070;                  // +0x070  (serialized)
+    int m_074;                  // +0x074  = 0x19
+    int m_078;                  // +0x078  = 0
+    int m_07c;                  // +0x07c  = 0
+    int m_080;                  // +0x080  = 0
+    int m_084;                  // +0x084  = 0
+    int m_088;                  // +0x088  = 0x32
+    int m_08c;                  // +0x08c  = 5
+    int m_090;                  // +0x090  = 5
+    int m_094;                  // +0x094  = 8
+    int m_098;                  // +0x098  = 8
+    int m_09c;                  // +0x09c  = 0x7d0
+    int m_0a0;                  // +0x0a0  = 0x7d0
+    int m_0a4;                  // +0x0a4  = 6
+    int m_0a8;                  // +0x0a8  = 0x32
+    int m_0ac;                  // +0x0ac  = 8
+    int m_0b0;                  // +0x0b0  = 8
+    int m_0b4;                  // +0x0b4  = 0x3e8
+    int m_0b8;                  // +0x0b8  = 0x7d0
+    int m_0bc;                  // +0x0bc  = 0x3e8
+    int m_0c0;                  // +0x0c0  = 0xa
+    int m_0c4;                  // +0x0c4  = 0xbb8
+    int m_0c8;                  // +0x0c8  = 0x7530
+    int m_0cc;                  // +0x0cc  = 0xbb8
+    int m_0d0;                  // +0x0d0  (serialized, 8 B with m_0d4)
+    int m_0d4;                  // +0x0d4
+    int m_0d8;                  // +0x0d8  (serialized)
+    CPtrArray m_0dc;            // +0x0dc  CPtrArray  (m_pData@+0xe0, m_nSize@+0xe4)
+    CPtrArray m_0f0;            // +0x0f0  CPtrArray  (m_pData@+0xf4, m_nSize@+0xf8)
+    CDWordArray m_104;          // +0x104  CDWordArray
+    CDWordArray m_118;          // +0x118  CDWordArray
+    int m_12c;                  // +0x12c  (serialized, 4-dword inline array)
+    int m_130;                  // +0x130
+    int m_134;                  // +0x134
+    int m_138;                  // +0x138
+    int m_13c;                  // +0x13c  = 0
+    int m_140;                  // +0x140  = 0
+    int m_144;                  // +0x144
+    int m_148;                  // +0x148  (cleared by 02c0a0)
+    int m_14c;                  // +0x14c  (serialized)
 };
 
 #endif // SRC_GRUNTZ_UNKNOWNCLASSARRAYS_H

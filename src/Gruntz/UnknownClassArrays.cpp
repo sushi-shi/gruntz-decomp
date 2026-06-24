@@ -23,6 +23,8 @@
 // CRT rand() (RVA 0x11fee0); used by the grid-scan helpers to pick a random
 // neighbour. External, reloc-masked.
 extern "C" int rand(void);
+// CRT abs(); inlined by MSVC5 to the branchless cdq/xor/sub sequence.
+extern "C" int abs(int);
 
 // The WwdGameReg singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c). It
 // fronts an array of per-level records (0x238-byte stride = the
@@ -64,6 +66,26 @@ struct EmitArg {
     virtual void Emit30(void* coord, int count); // +0x30 (index 12)
 };
 
+// The serializer/archive the Serialize method writes into: a polymorphic object
+// whose vtable carries a Write(void* buf, uint count) slot at +0x30 (index 12).
+// The slot call is a __thiscall indirect (mov edx,[ar]; call [edx+0x30]); modeled
+// with real virtuals so the convention falls out (see dummy-virtual-slots.md).
+struct Serializer {
+    virtual void v0();
+    virtual void v1();
+    virtual void v2();
+    virtual void v3();
+    virtual void v4();
+    virtual void v5();
+    virtual void v6();
+    virtual void v7();
+    virtual void v8();
+    virtual void v9();
+    virtual void v10();
+    virtual void v11();
+    virtual void Write(const void* buf, unsigned count); // +0x30 (index 12)
+};
+
 // A free helper (RVA 0x01146a) that validates a kind-7 EmitArg; nonzero result
 // means "skip the emit". __stdcall (callee pops its one arg — no add esp at the
 // call site). External, reloc-masked.
@@ -82,27 +104,34 @@ struct Kind4Validator {
 struct GridUnit {
     char m_pad000[0x10];
     void* m_010; // +0x010  UnitLevel* (board geometry)
-    char m_pad014[0x174 - 0x14];
+    char m_pad014[0x170 - 0x14];
+    int m_170; // +0x170  primary anim/state id
     int m_174; // +0x174  packed x (>>5)
     int m_178; // +0x178  packed y (>>5)
-    char m_pad17c[0x250 - 0x17c];
+    char m_pad17c[0x19c - 0x17c];
+    int m_19c; // +0x19c  secondary anim/state id (used when m_170 > 0x16)
+    char m_pad1a0[0x1ec - 0x1a0];
+    int m_1ec; // +0x1ec
+    int m_1f0; // +0x1f0
+    char m_pad1f4[0x250 - 0x1f4];
     int m_250; // +0x250
     int m_254; // +0x254
     int m_258; // +0x258  (packed coord pair base)
     char m_pad25c[0x2d4 - 0x25c];
     int m_2d4; // +0x2d4
-    int m_2d8; // +0x2d8
+    int m_2d8; // +0x2d8  mode
     char m_pad2dc[0x2e0 - 0x2dc];
     int m_2e0; // +0x2e0
     int m_2e4; // +0x2e4
     int m_2e8; // +0x2e8
-    char m_pad2ec[0x2f0 - 0x2ec];
+    int m_2ec; // +0x2ec
     int m_2f0; // +0x2f0
     int m_2f4; // +0x2f4
-    char m_pad2f8[0x320 - 0x2f8];
-    void* m_320; // +0x320  occupied-coords list head (node->next at +0)
-    int m_324;   // +0x324
-    int m_328;   // +0x328  occupied-coords list count/flag
+    char m_pad2f8[0x31c - 0x2f8];
+    char m_31c[0x320 - 0x31c]; // +0x31c  occupied-coords list object base
+    void* m_320;               // +0x320  list head (node->next at +0)
+    void* m_324;               // +0x324
+    int m_328;                 // +0x328  list count/flag
 };
 
 // A {x, y} coordinate pair (a list node's +0x8 payload).
@@ -116,6 +145,13 @@ struct CoordNode {
     CoordNode* m_next; // +0x00
     char m_pad04[0x08 - 0x04];
     Coord* m_coord; // +0x08
+};
+
+// A candidate spawn-point node: {x, y} at +0 / +4. Lives in the per-level
+// record's candidate array (rec->m_04[r]).
+struct Candidate {
+    int m_x; // +0x00
+    int m_y; // +0x04
 };
 
 // A map tile: 0x1c-byte record; its first byte carries flag bits
@@ -308,6 +344,105 @@ int UnknownClassArrays::winapi_02ae00_IntersectRect(int, int) {
 }
 
 // ===========================================================================
+// UnknownClassArrays::Serialize_02b420  @0x02b420
+// Stream every config scalar (then the four growable arrays + the inline 4-dword
+// block) into the archive via its Write(buf, count) vtable slot. Each array
+// section writes the element count first, then each element (the two CPtrArrays'
+// elements are 8-byte payloads; the two CDWordArrays' are 4-byte dwords).
+// ===========================================================================
+RVA(0x0002b420, 0x419)
+int UnknownClassArrays::Serialize_02b420(void* arArg) {
+    Serializer* ar = (Serializer*)arArg;
+    if (ar == 0) {
+        return 0;
+    }
+    ar->Write(&m_000, 4);
+    ar->Write(&m_018, 4);
+    ar->Write(&m_01c, 4);
+    ar->Write(&m_020, 4);
+    ar->Write(&m_024, 4);
+    ar->Write(&m_028, 4);
+    ar->Write(&m_02c, 4);
+    ar->Write(&m_030, 4);
+    ar->Write(&m_034, 4);
+    ar->Write(&m_038, 4);
+    ar->Write(&m_03c, 4);
+    ar->Write(&m_040, 4);
+    ar->Write(&m_044, 4);
+    ar->Write(&m_048, 4);
+    ar->Write(&m_054, 4);
+    ar->Write(&m_050, 4);
+    ar->Write(&m_058, 4);
+    ar->Write(&m_04c, 4);
+    ar->Write(&m_05c, 4);
+    ar->Write(&m_060, 4);
+    ar->Write(&m_064, 4);
+    ar->Write(&m_068, 4);
+    ar->Write(&m_06c, 4);
+    ar->Write(&m_070, 4);
+    ar->Write(&m_074, 4);
+    ar->Write(&m_088, 4);
+    ar->Write(&m_08c, 4);
+    ar->Write(&m_090, 4);
+    ar->Write(&m_094, 4);
+    ar->Write(&m_098, 4);
+    ar->Write(&m_09c, 4);
+    ar->Write(&m_0a0, 4);
+    ar->Write(&m_0a4, 4);
+    ar->Write(&m_0a8, 4);
+    ar->Write(&m_0ac, 4);
+    ar->Write(&m_0b0, 4);
+    ar->Write(&m_0b4, 4);
+    ar->Write(&m_0b8, 4);
+    ar->Write(&m_0bc, 4);
+    ar->Write(&m_0c0, 4);
+    ar->Write(&m_0c4, 4);
+    ar->Write(&m_0c8, 4);
+    ar->Write(&m_0cc, 4);
+    ar->Write(&m_0d0, 8);
+    ar->Write(&m_0d8, 4);
+    ar->Write(&m_13c, 4);
+    ar->Write(&m_140, 4);
+    ar->Write(&m_144, 4);
+    ar->Write(&m_148, 4);
+    ar->Write(&m_14c, 4);
+
+    unsigned i;
+    unsigned n = m_104.GetSize();
+    ar->Write(&n, 4);
+    for (i = 0; i < n; i++) {
+        DWORD v = m_104[i];
+        ar->Write(&v, 4);
+    }
+
+    n = m_118.GetSize();
+    ar->Write(&n, 4);
+    for (i = 0; i < n; i++) {
+        DWORD v = m_118[i];
+        ar->Write(&v, 4);
+    }
+
+    int* p = &m_12c;
+    for (int k = 0; k < 4; k++) {
+        ar->Write(p, 4);
+        p++;
+    }
+
+    n = m_0f0.GetSize();
+    ar->Write(&n, 4);
+    for (i = 0; i < n; i++) {
+        ar->Write(m_0f0[i], 8);
+    }
+
+    n = m_0dc.GetSize();
+    ar->Write(&n, 4);
+    for (i = 0; i < n; i++) {
+        ar->Write(m_0dc[i], 8);
+    }
+    return 1;
+}
+
+// ===========================================================================
 // UnknownClassArrays::Method_02bfc0  @0x02bfc0
 // Validate an EmitArg by kind (4 or 7); on success, dispatch through its vtable
 // to emit a {x,y} pair into the bundle's m_078/m_080 scratch via slot +0x2c
@@ -491,6 +626,167 @@ int UnknownClassArrays::Method_0305b0(int selfUnit, int qx, int qy) {
         }
     }
     return 0;
+}
+
+// ===========================================================================
+// UnknownClassArrays::Method_030730  @0x030730
+// Cell-claim scan: for the (cellX,cellY) source unit, walk the 15 unit slots of
+// the CURRENT cell-row (m_018) and, for each candidate whose mode is 3 (or a
+// 2/3-of-the-time random pick) and whose per-level record lands within distance
+// 0x19 of the candidate's geometry, claim it - mark mode 3 / state 2, stamp the
+// target coord (cellX,cellY) and seed m_250 = 0xd87.
+// ===========================================================================
+// @early-stop
+// regalloc wall (~88%): logic byte-exact. Retail pins `this` in edi and SPILLS a
+// copy to [esp+0x10] so it can reuse edi as scratch for this->m_004 (mov edi,
+// [edi+0x4]) in the distance block, reloading it after; MSVC5 here keeps `this`
+// live in one callee-saved reg + loads m_004 into a fresh one, reserving 0x8 of
+// locals (no spill slot) vs retail's 0xc. Cascades through the cellX/cellY
+// reg-vs-memory operand choice. No steerable spelling found; final sweep.
+RVA(0x00030730, 0x1da)
+int UnknownClassArrays::Method_030730(int cellX, int cellY, int, int) {
+    if (m_000 == 0) {
+        return 0;
+    }
+    if (cellX == m_018) {
+        return 1;
+    }
+    GridUnit* src = ((GridUnit**)(m_008 + cellX * 0x3c + 0x1c))[cellY];
+    if (src == 0) {
+        return 0;
+    }
+    if (src->m_258 == 0x36) {
+        return 0;
+    }
+    if (src->m_2d8 == 4) {
+        int sx = src->m_2f0;
+        int sy = src->m_2f4;
+        if (sx == m_018) {
+            return 0;
+        }
+    }
+    for (int i = 0; i < 15; i++) {
+        GridUnit* u = ((GridUnit**)(m_008 + m_018 * 0x3c + 0x1c))[i];
+        if (u == 0) {
+            continue;
+        }
+        int ok = 1;
+        if (u->m_2d8 == 3) {
+            int ux = u->m_2f0;
+            int uy = u->m_2f4;
+            if (ux == cellX && uy == cellY) {
+                ok = 0;
+            }
+        }
+        if (u->m_2d8 == 3) {
+            int ux = u->m_2f0;
+            int uy = u->m_2f4;
+            if (!(ux == cellX && uy == cellY) && (rand() % 3) != 0) {
+                ok = 0;
+            }
+        }
+        if (ok == 0) {
+            continue;
+        }
+        UnitLevel* lvl = (UnitLevel*)u->m_010;
+        int lx = lvl->m_5c >> 5;
+        int ly = lvl->m_60 >> 5;
+        if (u->m_2d8 == 4 && u->m_2e8 != -1) {
+            char* rec = (char*)m_004 + u->m_2e8 * 0x238;
+            int dx = *(int*)(rec + 0x258) - lx;
+            int dy = *(int*)(rec + 0x25c) - ly;
+            dx = abs(dx);
+            dy = abs(dy);
+            if (dx * dx + dy * dy > 0x19) {
+                ok = 0;
+            }
+        }
+        if (ok == 0) {
+            continue;
+        }
+        u->m_2f0 = cellX;
+        u->m_2d8 = 3;
+        u->m_2f4 = cellY;
+        u->m_2d4 = 2;
+        u->m_250 = 0xd87;
+        u->m_254 = 0;
+    }
+    return 1;
+}
+
+// ===========================================================================
+// UnknownClassArrays::Method_030f20  @0x030f20
+// Pick a spawn coordinate for `unit` from the per-level record's candidate list
+// (index `kind`, 0..3): start at a random candidate and walk forward (mod count)
+// looking for one not already occupied by any unit in the current cell-row; on
+// success write it to `out`. Out-of-range `kind` or empty list falls back to the
+// unit's own (>>5) geometry. Returns `out`.
+// ===========================================================================
+// @early-stop
+// regalloc wall (~58%): logic byte-exact (count==0 / final-rand tail-merge, the
+// found-in-loop early return, the 15-slot collision scan all reproduced). Retail
+// re-reads `unit` from the stack arg and spills the candidate count to a stack
+// slot; MSVC5 here caches `unit` and pins count in edi, which cascades the inner
+// collision loop's register operands (load-then-test vs memory-compare on
+// u->m_328, cand coord regs). No steerable spelling found; final sweep.
+RVA(0x00030f20, 0x16d)
+void* UnknownClassArrays::Method_030f20(void* out, int unitArg, int kind) {
+    Coord* o = (Coord*)out;
+    GridUnit* unit = (GridUnit*)unitArg;
+    if (kind < 0 || kind >= 4) {
+        UnitLevel* lvl = (UnitLevel*)unit->m_010;
+        o->m_x = lvl->m_5c >> 5;
+        o->m_y = lvl->m_60 >> 5;
+        return o;
+    }
+    char* rec = (char*)m_004 + kind * 0x238 + 0x278;
+    UnitLevel* lvl = (UnitLevel*)unit->m_010;
+    int rx = lvl->m_5c >> 5;
+    int ry = lvl->m_60 >> 5;
+    int count = *(int*)(rec + 0x8);
+    if (count != 0) {
+        int r = rand() % count;
+        int k = 0;
+        if (count > 0) {
+            Candidate** arr = *(Candidate***)(rec + 0x4);
+            char* grid = m_008;
+            int cell = m_018;
+            for (;;) {
+                Candidate* cand = arr[r];
+                int cx = cand->m_x;
+                int cy = cand->m_y;
+                int ok = 1;
+                GridUnit** row = (GridUnit**)(grid + cell * 0x3c + 0x1c);
+                for (int j = 15; j != 0; j--) {
+                    GridUnit* u = *row;
+                    if (u != 0 && u->m_328 != 0) {
+                        int* node = *(int**)((char*)u->m_324 + 0x8);
+                        if (node[0] == cx && node[1] == cy) {
+                            ok = 0;
+                        }
+                    }
+                    row++;
+                }
+                if (ok != 0) {
+                    o->m_x = cx;
+                    o->m_y = cy;
+                    return o;
+                }
+                r = (r + 1) % count;
+                k++;
+                if (k >= count) {
+                    break;
+                }
+            }
+        }
+        r = rand() % count;
+        Candidate* cand = (*(Candidate***)(rec + 0x4))[r];
+        rx = cand->m_x;
+        ry = cand->m_y;
+    }
+    o->m_x = rx;
+    o->m_y = ry;
+    return o;
 }
 
 // @confidence: low
