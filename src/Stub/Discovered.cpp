@@ -977,21 +977,23 @@ void ClassUnknown_42::ClassUnknown_42_0e2df0() {}
 RVA(0x000e32e0, 0x25)
 void ClassUnknown_42::ClassUnknown_42_0e32e0() {}
 
-// ---- ClassUnknown_43 ----
-RVA(0x0013e4d0, 0x7e)
-void ClassUnknown_43::ClassUnknown_43_13e4d0() {}
-RVA(0x0013edb0, 0x78)
-void ClassUnknown_43::ClassUnknown_43_13edb0() {}
-RVA(0x0013f910, 0x4a)
-void ClassUnknown_43::ClassUnknown_43_13f910() {}
+// ---- ClassUnknown_43 (CFileImage / CDDSurface, DIRSURF.CPP) ----
+// The bulk of the class (FreeSurfaces/Clear/SaveFile/SaveDispatch/LoadKeyed) is
+// reconstructed in src/Image/Image.cpp. Two members are deferred to the final sweep:
+//
+// 0x142360 - the full object destructor, byte-identical to ~CFileImage (0x141350)
+//   but a second compiled copy (a distinct /GX EH funclet). It must BE a real
+//   destructor (the compiler auto-emits the m_elements CPtrArray member-dtor +
+//   EH frame); modeling a second one cleanly needs the CDDSurface/CFileImage split
+//   as two classes - left for the final sweep. Same EH-ordering wall as its twin.
+//
+// 0x144640 - CFileImage::SaveRle16, the 16bpp surface -> 24bpp BMP file writer.
+//   702 B with a /GX EH frame, inline strcpy, a CFile object lifecycle and a
+//   16bpp->24bpp pixel-conversion inner loop. SaveDispatch reaches it reloc-masked.
 RVA(0x00142360, 0x53)
 void ClassUnknown_43::ClassUnknown_43_142360() {}
-RVA(0x00144350, 0x5f)
-void ClassUnknown_43::ClassUnknown_43_144350() {}
 RVA(0x00144640, 0x2be)
 void ClassUnknown_43::ClassUnknown_43_144640() {}
-RVA(0x00148840, 0x47)
-void ClassUnknown_43::ClassUnknown_43_148840() {}
 
 // ---- ClassUnknown_44 ----
 RVA(0x00158680, 0x5b)

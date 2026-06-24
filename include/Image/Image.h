@@ -108,12 +108,46 @@ public:
 // geometry (m_height, m_width) and the palette context (m_palBitCount,
 // m_palette 256-entry table, m_hasPalette flag).
 // ---------------------------------------------------------------------------
+
+// A heap element held in CFileImage::m_elements (the +0x94 CPtrArray). FreeSurfaces
+// walks the array calling each element's slot-0 scalar-deleting destructor
+// (vtbl[0](1)). Only that one slot is invoked; the element type itself lives in
+// another (unmatched) TU, so it is modeled as a tiny polymorphic stand-in (no
+// vtable emitted here - address never taken).
+class CFileImageElement {
+public:
+    virtual void* ScalarDtor(i32 flag); // slot 0, @0x00
+};
+
 class CFileImage {
 public:
     void* LoadBmp(char* name, char* path);
     void* LoadPcx(char* name, char* path);
     void* LoadPid(char* name, char* path, void* a3);
     i32 DecodePcxEx(char* name, char* path, void* a3, void* a4);
+
+    // The surface SAVE/export path (DIRSURF.CPP). SaveFile validates the surface +
+    // arguments, then SaveDispatch picks the per-bit-depth writer by m_a8 (8/16/24).
+    // Clear blanks the surface, LoadKeyed blits + installs a colour key.
+    i32 SaveFile(char* buf, i32 type, void* a3, void* a4); // 0x13f910 (ret 0x10)
+    i32 SaveDispatch(void* a1, void* a2, void* a3);        // 0x144350 (ret 0xc)
+    void Clear(i32 white);                                 // 0x13edb0 (ret 4)
+    i32 LoadKeyed(
+        void* surf,
+        i32 width,
+        i32 height,
+        i32 a4,
+        i32 a5,
+        i32 key
+    ); // 0x148840 (ret 0x18)
+
+    // The per-bit-depth file writers SaveDispatch delegates to (external no-body,
+    // reloc-masked; ret 0xc = 3 args). Save8/Save24 write the 8bpp/24bpp variants;
+    // SaveRle16 (0x144640) is the 16bpp BMP exporter, deferred to src/Stub for the
+    // final sweep (702 B EH + pixel-conversion loop).
+    i32 Save8(void* a1, void* a2, void* a3);     // 0x144900
+    i32 SaveRle16(void* a1, void* a2, void* a3); // 0x144640
+    i32 Save24(void* a1, void* a2, void* a3);    // 0x1443b0
 
     // Format dispatchers (reconstructed in Image.cpp). __thiscall on CFileImage.
     // Resolve picks the BMP/PCX/PID decoder by `type` (1/2/4) for the file path;
@@ -174,7 +208,8 @@ public:
     i32 m_height;               // +0x18  surface height (compared vs decoded height)
     i32 m_width;                // +0x1c  surface width  (compared vs decoded width)
     char m_pad20[0x94 - 0x20];  // +0x20
-    CByteArray m_byteBuffer;    // +0x94  owned byte buffer (destroyed by ~CFileImage)
+    CPtrArray m_elements;       // +0x94  owned element array (m_pData@0x98 / m_nSize@0x9c);
+                                //        FreeSurfaces scalar-dtor-deletes each then RemoveAll
     char m_pada8[0x538 - 0xa8]; // +0xa8
     i32 m_palBitCount;          // +0x538  bits per pixel of the palette context
     i32 m_palette[0x100];       // +0x53c  256-entry palette (ends at 0x93c)

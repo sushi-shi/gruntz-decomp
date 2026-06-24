@@ -706,6 +706,121 @@ CFileImage::~CFileImage() {
 }
 
 // ---------------------------------------------------------------------------
+// CFileImage::FreeSurfaces (vtable slot 4, @+0x10) - the shared surface teardown.
+// Walk the +0x94 CPtrArray (m_pData@0x98, count@0x9c, unsigned) running each
+// element's slot-0 scalar-deleting destructor, RemoveAll the array (SetSize(0,-1)),
+// then - unless the "don't-own" flag (m_7c & 1) is set - Release the two held
+// IDirectDrawSurfaces (m_8/m_c) and null them, and clear m_b8.
+RVA(0x0013e4d0, 0x7e)
+void CFileImage::FreeSurfaces() {
+    CDDSurface* s = (CDDSurface*)this;
+    for (u32 i = 0; i < (u32)m_elements.GetSize(); i++) {
+        CFileImageElement* e = (CFileImageElement*)m_elements[i];
+        if (e != 0) {
+            e->ScalarDtor(1);
+        }
+    }
+    m_elements.SetSize(0, -1);
+    if (s->m_8 != 0) {
+        if ((s->m_7c & 1) == 0) {
+            s->m_8->vtbl->Release(s->m_8);
+        }
+        s->m_8 = 0;
+    }
+    if (s->m_c != 0) {
+        if ((s->m_7c & 1) == 0) {
+            s->m_c->vtbl->Release(s->m_c);
+        }
+        s->m_c = 0;
+    }
+    s->m_b8 = 0;
+}
+
+// ---------------------------------------------------------------------------
+// CFileImage::Clear (ret 4) - blank the surface. Build a zeroed 0x64-byte DDBLTFX
+// on the stack (dwSize@+0x0 = 0x64, fill flags@+0x8 = 0x42 | (white ? 0xff0020 :
+// 0)), Blt(NULL, NULL, NULL, 0x1020000, &fx) through the held surface, and on a
+// non-zero (failed/lost) HRESULT colour-fill it white (0xff) or black (0) via Fill.
+RVA(0x0013edb0, 0x78)
+void CFileImage::Clear(i32 white) {
+    CDDSurface* s = (CDDSurface*)this;
+    i32 fx[0x19]; // DDBLTFX (0x64 bytes)
+    i32* p = fx;
+    for (i32 i = 0x19; i != 0; i--) {
+        *p++ = 0;
+    }
+    fx[0] = 0x64;                         // dwSize @+0x0
+    fx[2] = white ? (i32)0xff0062 : 0x42; // fill flags @+0x8
+    i32 hr = s->m_8->vtbl->Blt(s->m_8, 0, 0, 0, 0x1020000, fx);
+    if (hr != 0) {
+        if (white != 0) {
+            Fill(0xff);
+        } else {
+            Fill(0);
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// CFileImage::SaveFile (ret 0x10) - the surface SAVE entry point. Bail (return 0)
+// unless the surface is valid (slot-5 IsValid), `buf` is non-null and non-empty
+// (*buf != 0), and `type` == 1. Then hand (buf, a3, a4) to the per-bit-depth
+// dispatcher and return its result.
+RVA(0x0013f910, 0x4a)
+i32 CFileImage::SaveFile(char* buf, i32 type, void* a3, void* a4) {
+    if (((CDDSurface*)this)->IsValid() == 0) {
+        return 0;
+    }
+    if (buf == 0) {
+        return 0;
+    }
+    if (*buf == 0) {
+        return 0;
+    }
+    switch (type) {
+        case 1:
+            return SaveDispatch(buf, a3, a4);
+        default:
+            return 0;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// CFileImage::SaveDispatch (ret 0xc) - pick the per-bit-depth file writer by the
+// surface's raw bit depth m_a8 (8 -> Save8, 16 -> SaveRle16, 24 -> Save24),
+// forwarding all three pass-through args; any other depth returns 0. Case bodies in
+// retail .text order (24, 16, 8); the near case labels lower to MSVC's compare
+// ladder.
+RVA(0x00144350, 0x5f)
+i32 CFileImage::SaveDispatch(void* a1, void* a2, void* a3) {
+    switch (((CDDSurface*)this)->m_a8) {
+        case 0x18:
+            return Save24(a1, a2, a3);
+        case 0x10:
+            return SaveRle16(a1, a2, a3);
+        case 8:
+            return Save8(a1, a2, a3);
+        default:
+            return 0;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// CFileImage::LoadKeyed (ret 0x18) - blit a source surface in with the control word
+// forced to OR 0x40 (BlitSurf), and on success - unless the colour key is -1 -
+// install it via FillPalette. Returns 1.
+RVA(0x00148840, 0x47)
+i32 CFileImage::LoadKeyed(void* surf, i32 width, i32 height, i32 a4, i32 a5, i32 key) {
+    if (BlitSurf(surf, width, height, a4, a5 | 0x40) == 0) {
+        return 0;
+    }
+    if (key != -1) {
+        FillPalette((void*)key);
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
 // CFileImage::DecodeBmp
 // `buf` is a whole .BMP file (packed BITMAPFILEHEADER + BITMAPINFOHEADER). Pull
 // biWidth/biHeight/biBitCount, validate them against the destination surface's

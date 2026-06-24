@@ -40,7 +40,9 @@
 struct IDirectDrawSurfaceZ {
     struct Vtbl {
         i32(__stdcall* QueryInterface)(IDirectDrawSurfaceZ*, const void* riid, void** out); // +0x00
-        char m_pad4[0x14 - 0x04];
+        char m_pad4[0x08 - 0x04];
+        u32(__stdcall* Release)(IDirectDrawSurfaceZ*); // +0x08 (slot 2, IUnknown)
+        char m_padc[0x14 - 0x0c];
         i32(__stdcall* Blt)(
             IDirectDrawSurfaceZ*,
             void* dstRect,
@@ -224,7 +226,7 @@ public:
     virtual void v08();
     virtual void v0c();
     virtual void v10();
-    virtual void v14();
+    virtual i32 IsValid(); // slot 5, @0x14 (surface present + positive w/h)
     virtual void v18();
     virtual i32 RestoreLost(); // slot 7, @0x1c
     virtual i32 v20(void* a);  // slot 8, @0x20 (the surface's own blit-into-desc)
@@ -243,10 +245,10 @@ public:
     // --- layout ---------------------------------------------------------------
     // vptr @0x00 (implicit)
     char m_pad4[0x08 - 0x04];
-    IDirectDrawSurfaceZ* m_8; // +0x08  the held surface
-    char m_padc[0x10 - 0x0c];
-    char m_desc[0x24]; // +0x10  DDSURFACEDESC scratch (m_18/m_1c/m_20 inside)
-    i32 m_34;          // +0x34  desc lPitch field (returned by Lock)
+    IDirectDrawSurfaceZ* m_8; // +0x08  the held surface (released via IUnknown::Release)
+    IDirectDrawSurfaceZ* m_c; // +0x0c  the held back/secondary surface (also released)
+    char m_desc[0x24];        // +0x10  DDSURFACEDESC scratch (m_18/m_1c/m_20 inside)
+    i32 m_34;                 // +0x34  desc lPitch field (returned by Lock)
     char m_desc2[0x64 - 0x38];
     i32 m_64; // +0x64  pixel-format bit depth
     char m_desc3[0x7c - 0x68];
@@ -260,7 +262,7 @@ public:
     i32 m_ac; // +0xac  bytes-per-row factor
     i32 m_b0; // +0xb0  pixels-per-unit divisor
     i32 m_b4; // +0xb4  lPitch/divisor
-    char m_padb8[0xbc - 0xb8];
+    i32 m_b8; // +0xb8  cleared by the surface teardown
     i32 m_bc; // +0xbc  cleared
 };
 

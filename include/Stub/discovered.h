@@ -701,13 +701,8 @@ public:
 };
 class ClassUnknown_43 {
 public:
-    void ClassUnknown_43_13e4d0();
-    void ClassUnknown_43_13edb0();
-    void ClassUnknown_43_13f910();
-    void ClassUnknown_43_142360();
-    void ClassUnknown_43_144350();
-    void ClassUnknown_43_144640();
-    void ClassUnknown_43_148840();
+    void ClassUnknown_43_142360(); // CFileImage 2nd destructor copy (deferred, see Discovered.cpp)
+    void ClassUnknown_43_144640(); // CFileImage::SaveRle16 (deferred, see Discovered.cpp)
 };
 class ClassUnknown_44 {
 public:
