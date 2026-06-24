@@ -1175,12 +1175,130 @@ const char g_codeJ[] = "J";
 const char g_codeN[] = "N";
 const char g_codeM[] = "M";
 const char g_codeK[] = "K";
+const char g_codeF[] = "F";
+const char g_codeE[] = "E";
 
 // CGrunt::IsSameType(a, b) @0x3c7f0 - a free __cdecl comparator returning
 // whether two grunts share the same type record (their +0x8 sub-object ptr).
 RVA(0x0003c7f0, 0x18)
-i32 CGrunt_IsSameType(CGrunt* a, CGrunt* b) {
+bool CGrunt_IsSameType(CGrunt* a, CGrunt* b) {
     return *(void**)((char*)a + 8) == *(void**)((char*)b + 8);
+}
+
+// ---------------------------------------------------------------------------
+// CGrunt::PlaySound(range, rec)   @0x4ac10   (__thiscall, ret 0x10)
+// The directional grunt-voice entrance handler PlayMoveSound fires. `rec` is the
+// 3-DWORD compass voice record passed by value {col, row, flag}; the latched cell
+// record is m_entranceCell (this+0x43c). It bails if the new record matches the
+// latched one (same +8 flag), else dispatches on the grunt's current anim-name
+// single-letter type code (F/D/A/K/E/I/M) to one of four geometry arms, re-stamps
+// the entrance player's geometry + per-cell frame from the m_474 cell tables, and
+// latches the record into m_entranceCell. `range` (1000) is unused here.
+// @early-stop
+// regalloc/frame plateau (~62%): the full dispatch CFG, all 7 type-code arms (the
+// bool-eq inline-strcmp setcc form), the 4 geometry arms, the 3 cell tables
+// (0x468/0x474/0x470, (3*col+row)*0x68), and the record latch are byte-exact in
+// shape/order. Residue = retail reserves a 0xc scratch frame + spills rec fields
+// where mine keeps them in regs (cellrec pinned ebp vs ebx), plus the merged
+// E/IDLE GetName tail and per-arm esi/edx placement - pure register/spill
+// scheduling, no source lever flips it. Closing this brought PlayMoveSound to 100%.
+// Deferred to the final sweep.
+RVA(0x0004ac10, 0x402)
+void CGrunt::PlaySound(i32 range, CGruntVoiceRec rec) {
+    (void)range;
+    if (CGrunt_IsSameType((CGrunt*)m_entranceCell, (CGrunt*)&rec)) {
+        return;
+    }
+
+    bool eq;
+    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeF) == 0);
+    if (eq) {
+        return;
+    }
+    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeD) == 0);
+    if (eq) {
+        goto walk;
+    }
+    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeA) == 0);
+    if (eq) {
+        goto idle;
+    }
+    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeK) == 0);
+    if (eq) {
+        goto idle;
+    }
+    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeE) == 0);
+    if (eq) {
+        // code "E": drive the ATTACK-IDLE geometry, stamp the cell frame from the
+        // latched m_entranceCell triple (cell table base 0x468).
+        m_prevEntranceDesc = (i32)m_154->m_1b4;
+        m_154->m_1a0.SetGeometry(*(i32*)((char*)this + 0x3a0));
+        {
+            CEntranceAnimDescColl* desc = m_154->m_1b4;
+            i32* elem = desc->m_10 > 0 ? *desc->m_c : 0;
+            i32 frame = elem[0x14 / 4];
+            i32 col = m_entranceCell[0];
+            i32 row = m_entranceCell[1];
+            i32 index = 3 * col + row;
+            const char* nm = ((CGruntCell*)((char*)this + 0x468 + index * 0x68))->GetName(0);
+            m_154->SetAnimFrame(nm, frame);
+        }
+        goto store;
+    }
+    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeI) == 0);
+    if (eq) {
+        goto codeI;
+    }
+    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeM) == 0);
+    if (eq) {
+        goto walk;
+    }
+
+codeI:
+    // code "I": latch the record first, drive the IDLE2 geometry, reseed the idle
+    // timer. Returns directly (no cell-frame stamp).
+    m_entranceCell[0] = rec.m_0;
+    m_entranceCell[1] = rec.m_4;
+    m_entranceCell[2] = rec.m_8;
+    m_prevEntranceDesc = (i32)m_154->m_1b4;
+    m_154->m_1a0.SetGeometry(*(i32*)((char*)this + 0x3b0));
+    ReseedIdleReset(1, 0, 0);
+    return;
+
+idle:
+    // codes "A"/"K": drive the IDLE1 geometry (the forwarding setter), stamp the
+    // cell frame from the incoming record (cell table base 0x474).
+    m_prevEntranceDesc = (i32)m_154->m_1b4;
+    m_154->SetGeometryEx(*(i32*)((char*)this + 0x3ac), 0);
+    {
+        CEntranceAnimDescColl* desc = m_154->m_1b4;
+        i32* elem = desc->m_10 > 0 ? *desc->m_c : 0;
+        i32 frame = elem[0x14 / 4];
+        i32 col = rec.m_0;
+        i32 row = rec.m_4;
+        i32 index = 3 * col + row;
+        const char* nm = ((CGruntCell*)((char*)this + 0x474 + index * 0x68))->GetName(0);
+        m_154->SetAnimFrame(nm, frame);
+    }
+    goto store;
+
+walk:
+    // codes "D"/"M" (and the default): drive the WALK geometry, stamp the cell name
+    // from the incoming record (cell table base 0x470), set it by name only.
+    m_prevEntranceDesc = (i32)m_154->m_1b4;
+    m_154->m_1a0.SetGeometry(*(i32*)((char*)this + 0x394));
+    {
+        i32 col = rec.m_0;
+        i32 row = rec.m_4;
+        i32 index = 3 * col + row;
+        const char* nm = ((CGruntCell*)((char*)this + 0x470 + index * 0x68))->GetName(0);
+        m_154->SetAnimName(nm);
+    }
+
+store:
+    m_entranceCell[0] = rec.m_0;
+    m_entranceCell[1] = rec.m_4;
+    m_entranceCell[2] = rec.m_8;
 }
 
 // CGrunt::ClearAllSprites() @0x4b240 - on death/teardown, flag each live HUD
@@ -1291,6 +1409,110 @@ RVA(0x000514a0, 0x26)
 i32 CGrunt::CanShowStamina() {
     if (*(i32*)((char*)this + 0x218) == 0 && m_stamina >= 0x64 && m_entranceActive == 0) {
         return 1;
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// CGrunt::RectContains(x, y)   @0x51850   (__thiscall, ret 8)
+// @early-stop
+// register-relative rect-walk plateau: the logic is exact - builds two tile-space
+// rects from the grunt's stored bounds (this+0x290 / this+0x2a0) shifted by the
+// committed pixel position (m_17c/m_180)>>5 and inflated by +1 on the high edges,
+// tests the query point (x>>5, y>>5) against the live rect(s) via IsRectEmpty, and
+// returns whether it is contained. Residue: cl interleaves the two CRect builds
+// and reuses the [esp+N] temp slots in an order the source can't pin (it folds the
+// member loads + the >>5 shifts across both rects); the IAT-hoisted `IsRectEmpty`
+// call shape matches. Pure stack-slot/regalloc scheduling. Deferred to final sweep.
+RVA(0x00051850, 0x165)
+i32 CGrunt::RectContains(i32 x, i32 y) {
+    i32 dx = *(i32*)((char*)this + 0x17c) >> 5;
+    i32 dy = *(i32*)((char*)this + 0x180) >> 5;
+    i32 px = x >> 5;
+    i32 py = y >> 5;
+
+    i32* ra = (i32*)((char*)this + 0x290);
+    i32* rb = (i32*)((char*)this + 0x2a0);
+
+    RECT r1;
+    r1.left = ra[0] + dx;
+    r1.top = ra[1] + dy;
+    r1.right = ra[2] + dx + 1;
+    r1.bottom = ra[3] + dy + 1;
+
+    RECT r2;
+    r2.left = rb[0] + dx;
+    r2.top = rb[1] + dy;
+    r2.right = rb[2] + dx;
+    r2.bottom = rb[3] + dy;
+
+    if (IsRectEmpty(&r1) || IsRectEmpty(&r2)) {
+        if (IsRectEmpty(&r2)) {
+            // rect2 degenerate: test the point against rect1 only.
+            if (px < r1.right && px >= r1.left && py < r1.bottom && py >= r1.top) {
+                return 1;
+            }
+            return 0;
+        }
+        return 0;
+    }
+    // both rects live: the point must sit inside rect1 and (left/top of) rect2.
+    if (px < r1.right && px >= r1.left && py < r1.bottom && py >= r1.top) {
+        if (px >= r2.right || px < r2.left || py >= r2.bottom || py >= r2.top) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// CGrunt::RectContainsGated(x, y)   @0x51a20   (__thiscall, ret 8)
+// @early-stop
+// register-relative rect-walk plateau (sibling of RectContains, same wall): gated
+// on the m_198 enable flag, then builds two tile-space rects from this+0x2b0 /
+// this+0x2c0 shifted by (m_17c/m_180)>>5 (rect1's high edges +1), and tests the
+// query point (x>>5, y>>5) against them via IsRectEmpty + the 4-way bounds compare.
+// Residue: identical to RectContains - cl interleaves the two CRect builds and the
+// [esp+N] temp-slot reuse in an unpinnable order. Deferred to the final sweep.
+RVA(0x00051a20, 0x17d)
+i32 CGrunt::RectContainsGated(i32 x, i32 y) {
+    i32 px = x >> 5;
+    i32 py = y >> 5;
+    i32 dx = *(i32*)((char*)this + 0x17c) >> 5;
+    i32 dy = *(i32*)((char*)this + 0x180) >> 5;
+
+    i32* ra = (i32*)((char*)this + 0x2b0);
+    i32* rb = (i32*)((char*)this + 0x2c0);
+
+    RECT r1;
+    r1.left = ra[0] + dx;
+    r1.top = ra[1] + dy;
+    r1.right = ra[2] + dx + 1;
+    r1.bottom = ra[3] + dy + 1;
+
+    RECT r2;
+    r2.left = rb[0] + dx;
+    r2.top = rb[1] + dy;
+    r2.right = rb[2] + dx;
+    r2.bottom = rb[3] + dy;
+
+    if (*(i32*)((char*)this + 0x198) == 0) {
+        return 0;
+    }
+
+    if (IsRectEmpty(&r1) || IsRectEmpty(&r2)) {
+        if (IsRectEmpty(&r2)) {
+            if (px < r1.right && px >= r1.left && py < r1.bottom && py >= r1.top) {
+                return 1;
+            }
+            return 0;
+        }
+        return 0;
+    }
+    if (px < r1.right && px >= r1.left && py < r1.bottom && py >= r1.top) {
+        if (px >= r2.right || px < r2.left || py >= r2.bottom || py >= r2.top) {
+            return 1;
+        }
     }
     return 0;
 }

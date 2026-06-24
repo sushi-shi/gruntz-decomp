@@ -266,6 +266,12 @@ public:
 class CEntranceAnimPlayer {
 public:
     void SetAnimFrame(const char* name, i32 frame); // FUN_005504d0-class (ret 8)
+    // Geometry setter that forwards to m_1a0.SetGeometry(src) then, if flag!=0,
+    // a 2nd setter (FUN_00458b60, ret 8). PlaySound's IDLE arm drives it directly.
+    void SetGeometryEx(i32 src, i32 flag); // FUN_00458b60
+    // A 1-arg setter the WALK/E arms call on the player itself (FUN_00550540,
+    // FUN_005504d0 is the 2-arg form). Takes the resolved cell name.
+    void SetAnimName(const char* name); // FUN_00550540 (ret 4)
 
     char m_pad0[0xc];
     CEntranceResMgr* m_c; // +0x0c  resource object (lookup table holder)
@@ -341,6 +347,8 @@ extern const char g_codeJ[]; // 0x60cc94 "J"
 extern const char g_codeN[]; // 0x60dc04 "N"
 extern const char g_codeM[]; // 0x60d7f4 "M"
 extern const char g_codeK[]; // 0x60d7f8 "K"
+extern const char g_codeF[]; // 0x60d2e8 "F"  (PlaySound entrance handler)
+extern const char g_codeE[]; // 0x60d2ec "E"  (PlaySound entrance handler)
 
 // The keyed anim-set lookup is g_entranceAnimSrc.LookupAnimSet (FUN_0056d190 @
 // the global @0x6bf620, already modeled above): maps a single-char anim key to a
@@ -591,6 +599,8 @@ public:
     // sweep (a register-relative rect-walk regalloc wall - cl folds this+const to
     // absolute loads, overshooting 0x165 B). Called external/reloc-masked here.
     i32 RectContains(i32 x, i32 y);
+    i32
+    RectContainsGated(i32 x, i32 y); // @0x51a20 (ret 8) sibling; m_198 gate, rects +0x2b0/+0x2c0
     void CommitNeighbor(i32 a, i32 b, i32 c, i32 d); // @0x5b050 (ret 0x10)
     CGrunt* FindGridNeighbor(i32 validate);          // @0x5b6f0 (ret 4)
     i32 UpdateGruntStatus();                         // @0x617c0 (ret 0)
@@ -823,7 +833,7 @@ public:
 
 // CGrunt::IsSameType(a, b) @0x3c7f0 - a free (__cdecl) comparator: returns
 // (a->m_8 == b->m_8). Not a member (reads both args off the stack).
-i32 CGrunt_IsSameType(CGrunt* a, CGrunt* b);
+bool CGrunt_IsSameType(CGrunt* a, CGrunt* b);
 
 // CGrunt::TileSwitch(...) @0x4b320 - a 6-arg (__stdcall, ret 0x18) passthrough
 // that scales the first two args to tile pixel coords (*0x20+0x10) and forwards

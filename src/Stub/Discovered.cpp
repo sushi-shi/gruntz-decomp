@@ -482,14 +482,11 @@ void CToobSpikez::CToobSpikez_114860() {}
 // ---- CGrunt (migration in progress; see src/Gruntz/Grunt.cpp) ----
 RVA(0x0000f2f0, 0xc8)
 void CUserLogic::CUserLogic_00f2f0() {}
-RVA(0x0004ac10, 0x402)
-void CUserLogic::CUserLogic_04ac10() {}
+// 0x04ac10 -> CGrunt::PlaySound (src/Gruntz/Grunt.cpp)
 // 0x04b370 -> CGrunt::StepArrivalDrop (src/Gruntz/Grunt.cpp)
 // 0x04c170 -> CGrunt::StepGruntMovement (src/Gruntz/Grunt.cpp)
-RVA(0x00051850, 0x165)
-void CUserLogic::CUserLogic_051850() {}
-RVA(0x00051a20, 0x17d)
-void CUserLogic::CUserLogic_051a20() {}
+// 0x051850 -> CGrunt::RectContains (src/Gruntz/Grunt.cpp)
+// 0x051a20 -> CGrunt::RectContainsGated (src/Gruntz/Grunt.cpp)
 // 0x052fb0 -> CGrunt::StepAnimDispatchA (src/Gruntz/Grunt.cpp)
 RVA(0x00053b80, 0x340)
 void CUserLogic::CUserLogic_053b80() {}

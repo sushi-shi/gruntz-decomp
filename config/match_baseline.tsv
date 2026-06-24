@@ -42,7 +42,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	591	0
+engine_discovered	588	0
 engine_label_stubs	526	121
 filestream	13	9
 font	21	10
@@ -55,7 +55,7 @@ gamemode	35	15
 gameobjectctors	5	0
 gametext	4	2
 gamewnd	6	4
-grunt	46	9
+grunt	49	9
 gruntpuddle	4	2
 gruntvoice	4	3
 gruntzapp	10	8
@@ -208,7 +208,7 @@ cddrawsubmgr	?AddToMap48_15aba0@CWwdObjMgr@@QAEXPAVCWwdObject@@@Z	100.0000	100.0
 cddrawsubmgr	?Constructor_156e10@CDDrawSubMgrBase@@QAEXXZ	4.1667	4.1667	2	a218d18e0947	0x156e10
 cddrawsubmgr	?Constructor_157630@CDDrawSubMgr@@QAEXXZ	3.3333	3.3333	2	98e6212efc1f	0x157630
 cddrawsubmgr	?CountActive_15abc0@CWwdObjMgr@@QAEHXZ	100.0000	100.0000	1	9d89eae53a89	0x15abc0
-cddrawsubmgr	?Dispatch_15c900@CDDrawBlitParam@@QAEHPAVCWwdArchive@@HHH@Z	80.0000	80.0000	1	6e71d53b1fa4	0x15c900
+cddrawsubmgr	?Dispatch_15c900@CDDrawBlitParam@@QAEHPAVCWwdArchive@@HHH@Z	80.0000	80.0000	2	1d5cbf09f02a	0x15c900
 cddrawsubmgr	?ForEachDispatch_15ac20@CWwdObjMgr@@QAEHHHH@Z	100.0000	100.0000	1	ad4a80665824	0x15ac20
 cddrawsubmgr	?ForEachProbe_15acb0@CWwdObjMgr@@QAEHHH@Z	100.0000	100.0000	1	bcbd79c191fb	0x15acb0
 cddrawsubmgr	?ForEachSerialize_15b020@CWwdObjMgr@@QAEHPAVCWwdArchive@@H@Z	90.1266	90.1266	1	0dc7dfa03953	0x15b020
@@ -594,9 +594,6 @@ engine_discovered	?CTileTriggerTransition_110070@CTileTriggerTransition@@QAEXXZ	
 engine_discovered	?CToobSpikez_012c60@CToobSpikez@@QAEXXZ	5.8824	5.8824	1	d16ff0f9da5d	0x12c60
 engine_discovered	?CToobSpikez_114860@CToobSpikez@@QAEXXZ	0.5333	0.5333	1	0b1c4042697d	0x114860
 engine_discovered	?CUserLogic_00f2f0@CUserLogic@@QAEXXZ	2.2727	2.2727	1	211acac7460b	0xf2f0
-engine_discovered	?CUserLogic_04ac10@CUserLogic@@QAEXXZ	0.1133	0.1133	1	8c41366a7e7a	0x4ac10
-engine_discovered	?CUserLogic_051850@CUserLogic@@QAEXXZ	0.3226	0.3226	1	c78a2a64aaea	0x51850
-engine_discovered	?CUserLogic_051a20@CUserLogic@@QAEXXZ	0.3150	0.3150	1	ae49786b1746	0x51a20
 engine_discovered	?CUserLogic_053b80@CUserLogic@@QAEXXZ	0.1130	0.1130	1	5d780b659a25	0x53b80
 engine_discovered	?CUserLogic_059230@CUserLogic@@QAEXXZ	0.1238	0.1238	1	0cbaf8303e9e	0x59230
 engine_discovered	?CUserLogic_05caa0@CUserLogic@@QAEXXZ	0.3030	0.3030	1	35e3f27f4fcd	0x5caa0
@@ -1728,7 +1725,7 @@ gamewnd	?Destroy@CGameWnd@@QAEXXZ	100.0000	100.0000	4	fa5932613a67	0x13cfb0
 gamewnd	?GameWindowProc@CGameApp@@SGJPAUHWND__@@IIJ@Z	94.8343	94.8343	5	e0448494357b	0x13cff0
 gamewnd	?QuitMessageLoop@CGameWnd@@UAEHXZ	100.0000	100.0000	4	f2de6543e99e	0x13d490
 grunt	?BuildEntranceAnimation@CGrunt@@QAEXH@Z	71.4562	71.4562	6	31017869150f	0x67bd0
-grunt	?CGrunt_IsSameType@@YAHPAVCGrunt@@0@Z	100.0000	100.0000	2	869ccb057989	0x3c7f0
+grunt	?CGrunt_IsSameType@@YA_NPAVCGrunt@@0@Z	100.0000	100.0000	1	04ada45b6431	0x3c7f0
 grunt	?CGrunt_TileSwitch@@YGXHHHHHH@Z	66.2000	66.2000	2	e4d83b1d7834	0x4b320
 grunt	?CanShowStamina@CGrunt@@QAEHXZ	100.0000	100.0000	3	e5851737e25e	0x514a0
 grunt	?ClearAllSprites@CGrunt@@QAEXXZ	100.0000	100.0000	2	ab523f1f3a12	0x4b240
@@ -1752,9 +1749,12 @@ grunt	?LoadEntranceConfig@CGrunt@@QAEXXZ	78.8377	78.8377	6	7a2efa979b8d	0x67f80
 grunt	?LoadGruntMovingDeathConfig@CGrunt@@QAEXXZ	0.4132	0.4132	1	7e3c13f46f60	0x6a060
 grunt	?OnStruck@CGrunt@@QAEXH@Z	76.2798	76.2798	1	adbf392072d5	0x588f0
 grunt	?PlayMoveSound@CGrunt@@QAEXHH@Z	100.0000	100.0000	1	aa803a2a8575	0x511b0
+grunt	?PlaySound@CGrunt@@QAEXHUCGruntVoiceRec@@@Z	62.4901	62.4901	1	a2a2cfd991e5	0x4ac10
 grunt	?ReadConfigFromButeMgr@CGrunt@@QAEXXZ	96.8421	96.8421	5	39bb0fe6f60a	0x48400
-grunt	?RearmEntranceDrop@CGrunt@@QAEXXZ	88.9167	88.9167	2	d64979f40a7e	0x68370
-grunt	?ResetGeometry@CGrunt@@QAEHXZ	72.7800	72.7800	3	502caa6ebbcc	0x616e0
+grunt	?RearmEntranceDrop@CGrunt@@QAEXXZ	88.8646	88.8646	2	d64979f40a7e	0x68370
+grunt	?RectContains@CGrunt@@QAEHHH@Z	63.0081	63.0081	1	490b1e26e8f0	0x51850
+grunt	?RectContainsGated@CGrunt@@QAEHHH@Z	63.5433	63.5433	1	e41d77906d32	0x51a20
+grunt	?ResetGeometry@CGrunt@@QAEHXZ	82.8800	82.8800	3	502caa6ebbcc	0x616e0
 grunt	?ResolveAnimation@CGrunt@@QAEHXZ	95.4210	95.4210	6	9f3a431918a8	0x457b0
 grunt	?ResolveArrivalNeighbor@CGrunt@@QAEHXZ	74.9747	74.9747	2	85816637f608	0xf26f0
 grunt	?ResolveBattlecryAnimation@CGrunt@@QAEHXZ	90.3365	90.3365	6	871a141b3eab	0x45b60
