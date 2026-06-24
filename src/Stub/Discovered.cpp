@@ -26,20 +26,6 @@ void CActionOptionsMenuBar::CActionOptionsMenuBar_0097f0() {}
 RVA(0x00009810, 0x2df)
 void CActionOptionsMenuBar::CActionOptionsMenuBar_009810() {}
 
-// ---- CBattlezDlg ----
-RVA(0x00015ac0, 0x46)
-void CBattlezDlg::CBattlezDlg_015ac0() {}
-RVA(0x00015b40, 0x46)
-void CBattlezDlg::CBattlezDlg_015b40() {}
-RVA(0x00015bc0, 0x46)
-void CBattlezDlg::CBattlezDlg_015bc0() {}
-RVA(0x00015c40, 0x46)
-void CBattlezDlg::CBattlezDlg_015c40() {}
-RVA(0x00015db0, 0x19)
-void CBattlezDlg::CBattlezDlg_015db0() {}
-RVA(0x00017460, 0x22)
-void CBattlezDlg::CBattlezDlg_017460() {}
-
 // ---- CBattlezDlgColors ----
 RVA(0x00017ac0, 0x6)
 void CBattlezDlgColors::CBattlezDlgColors_017ac0() {}

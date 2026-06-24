@@ -33,10 +33,10 @@ cdirectdrawmgr	15	9
 cplay	18	7
 cstatusbarmgr	1	0
 deflate	6	6
-dialogs	11	5
+dialogs	17	7
 directinputmgr2	8	8
 directsoundmgr	21	16
-engine_discovered	1112	0
+engine_discovered	1106	0
 engine_label_stubs	537	120
 filestream	13	9
 font	16	9
@@ -250,7 +250,13 @@ dialogs	??0CBattlezDlgColors@@QAE@HHHPAVCWnd@@@Z	100.0000	100.0000	4	39370939ae1
 dialogs	??0CBattlezDlgCustom@@QAE@PAVCWnd@@@Z	100.0000	100.0000	4	796b59607a47	0x18030
 dialogs	??0CCheckpointDlg@@QAE@PAVCWnd@@@Z	100.0000	100.0000	3	6c51964bdb81	0x234a0
 dialogs	??0CMultiStartDlg@@QAE@HPAVCWnd@@@Z	100.0000	100.0000	4	6283ecc3b365	0xc1750
+dialogs	?GetCtrlA@CBattlezDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	1	23e4a7aec5c5	0x15ac0
+dialogs	?GetCtrlB@CBattlezDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	1	57aa63bf01c6	0x15b40
+dialogs	?GetCtrlC@CBattlezDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	1	eca1c682616a	0x15bc0
+dialogs	?GetCtrlD@CBattlezDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	1	0762239e527b	0x15c40
 dialogs	?InitPlayerSlots@CMultiStartDlg@@QAEXXZ	0.1294	0.1294	2	460bc8e04d05	0xc20a0
+dialogs	?SetCtrlBText@CBattlezDlg@@QAEXHPBD@Z	100.0000	100.0000	1	2ef1562fad4d	0x15db0
+dialogs	?SetSlotValue@CBattlezDlg@@QAEHHH@Z	100.0000	100.0000	1	c31ec76ef3b2	0x17460
 dialogs	?winapi_016cd0_InvalidateRect@CBattlezDlg@@QAEHXZ	3.1111	3.1111	1	295e9aea2f20	0x16cd0
 dialogs	?winapi_016dc0_InvalidateRect@CBattlezDlg@@QAEHXZ	3.1111	3.1111	1	794fff494cc5	0x16dc0
 dialogs	?winapi_016e90_InvalidateRect@CBattlezDlg@@QAEHXZ	3.1111	3.1111	1	20bec42c49b3	0x16e90
@@ -296,12 +302,6 @@ engine_discovered	?CActionOptionsMenuBar_009760@CActionOptionsMenuBar@@QAEXXZ	0.
 engine_discovered	?CActionOptionsMenuBar_0097f0@CActionOptionsMenuBar@@QAEXXZ	50.0000	50.0000	1	7f3386699111	0x97f0
 engine_discovered	?CActionOptionsMenuBar_009810@CActionOptionsMenuBar@@QAEXXZ	0.1481	0.1481	1	fab537b39201	0x9810
 engine_discovered	?CBattlezDlgColors_017ac0@CBattlezDlgColors@@QAEXXZ	50.0000	50.0000	1	09b7da16b5bb	0x17ac0
-engine_discovered	?CBattlezDlg_015ac0@CBattlezDlg@@QAEXXZ	2.3529	2.3529	1	609152ccc49f	0x15ac0
-engine_discovered	?CBattlezDlg_015b40@CBattlezDlg@@QAEXXZ	2.3529	2.3529	1	ae4b69edfc7e	0x15b40
-engine_discovered	?CBattlezDlg_015bc0@CBattlezDlg@@QAEXXZ	2.3529	2.3529	1	e58602b9ccef	0x15bc0
-engine_discovered	?CBattlezDlg_015c40@CBattlezDlg@@QAEXXZ	2.3529	2.3529	1	73e39756f6a6	0x15c40
-engine_discovered	?CBattlezDlg_015db0@CBattlezDlg@@QAEXXZ	5.0000	5.0000	1	be140c39c9ba	0x15db0
-engine_discovered	?CBattlezDlg_017460@CBattlezDlg@@QAEXXZ	4.4444	4.4444	1	5e7fa712c08c	0x17460
 engine_discovered	?CBehindCandyAni_0100f0@CBehindCandyAni@@QAEXXZ	5.8824	5.8824	1	80a11c742c49	0x100f0
 engine_discovered	?CBehindCandyAni_0adbb0@CBehindCandyAni@@QAEXXZ	14.2857	14.2857	1	d6849b97b232	0xadbb0
 engine_discovered	?CBehindCandy_00fb70@CBehindCandy@@QAEXXZ	50.0000	50.0000	1	2b22dd025caf	0xfb70

@@ -25,9 +25,15 @@
 // never matched here (their `call rel32` displacements reloc-mask in objdiff).
 // ---------------------------------------------------------------------------
 
-// CWnd - referenced ONLY as the `CWnd*` 2nd arg of the CDialog ctor.
-// Opaque; never dereferenced.
-class CWnd;
+// CWnd - the MFC window base. Referenced as the `CWnd*` 2nd arg of the CDialog
+// ctor, as GetDlgItem's return, and as the holder of SetWindowTextA. The latter
+// is a NAFXCW __thiscall method reached by call-rel32 (external/no-body so the
+// displacement reloc-masks in objdiff); only the __thiscall arg shape is load-
+// bearing here.
+class CWnd {
+public:
+    void SetWindowTextA(const char* lpszString);
+};
 
 // CString - the MFC string. Only its default ctor is touched (the embedded
 // string members the dialog ctors construct in place).
@@ -47,7 +53,11 @@ class CWnd;
 class CDialog {
 public:
     CDialog(unsigned int nIDTemplate, CWnd* pParent);
-    virtual ~CDialog();    // (gives CDialog its vptr @+0x00)
+    virtual ~CDialog(); // (gives CDialog its vptr @+0x00)
+    // GetDlgItem - the NAFXCW __thiscall resolver (control ID -> child CWnd*),
+    // reached by call-rel32 (external/no-body so it reloc-masks). Inherited by the
+    // dialog subclasses; their accessors tail-call it on `this`.
+    CWnd* GetDlgItem(int nID) const;
     char m_body[0x5c - 4]; // pad to 0x5c (vptr occupies +0x00)
 };
 
@@ -55,14 +65,32 @@ public:
 // CBattlezDlg
 //   base CDialog(0xc0, pParent); m_5c = a0; CString @+0x6c; m_68 = 0.
 // ---------------------------------------------------------------------------
+// A player-slot record in the battle dialog's slot array (CBattlezDlg::m_5c).
+// 0x238 bytes/slot (the disasm scales index by 0x238 = lea x71, *8); only the
+// +0x158 int field (set by SetSlotValue) and the size are load-bearing.
+struct CBattlezSlot {
+    char pad[0x238];
+};
+
 class CBattlezDlg : public CDialog {
 public:
     CBattlezDlg(int a0, CWnd* pParent);
 
-    int m_5c;        // +0x5c  (= a0)
+    int m_5c;        // +0x5c  (= a0; also reused as the CBattlezSlot* slot-array base)
     char m_pad60[8]; // +0x60
     int m_68;        // +0x68  (= 0)
     CString m_6c;    // +0x6c  (default CString)
+
+    // Control accessors: switch(index) -> GetDlgItem(constID). Four families,
+    // each over a 4-entry control-ID table.
+    CWnd* GetCtrlA(int index);
+    CWnd* GetCtrlB(int index);
+    CWnd* GetCtrlC(int index);
+    CWnd* GetCtrlD(int index);
+    // SetCtrlBText - GetCtrlB(index)->SetWindowTextA(text).
+    void SetCtrlBText(int index, const char* text);
+    // SetSlotValue - store val into slot[index].field@0x158; returns TRUE.
+    int SetSlotValue(int index, int val);
 
     int winapi_016cd0_InvalidateRect();
     int winapi_016dc0_InvalidateRect();

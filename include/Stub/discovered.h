@@ -19,15 +19,6 @@ public:
     void CActionOptionsMenuBar_0097f0();
     void CActionOptionsMenuBar_009810();
 };
-class CBattlezDlg {
-public:
-    void CBattlezDlg_015ac0();
-    void CBattlezDlg_015b40();
-    void CBattlezDlg_015bc0();
-    void CBattlezDlg_015c40();
-    void CBattlezDlg_015db0();
-    void CBattlezDlg_017460();
-};
 class CBattlezDlgColors {
 public:
     void CBattlezDlgColors_017ac0();
