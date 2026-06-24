@@ -44,6 +44,18 @@ public:
     virtual int ScalarDtor(int flag); // +0x04  scalar-deleting destructor
 };
 
+// A map value as seen by the scan helpers: it exposes a dword at +0x10 (compared
+// in FindKeyOfValue_165360) and a non-virtual probe at RVA 0x152xc0 (called from
+// AnyValueMatches_155630). Modeled with a typed +0x10 field + the probe method so
+// `val->m_10field` and `val->Probe(...)` lower to the exact loads/thiscall; the
+// probe is declared only (its body is another TU), so it is a reloc-masked call.
+class SeverusMapValue {
+public:
+    char m_pad00[0x10];
+    int m_10field; // +0x10
+    int Probe_1525c0(int a1, int a2, int a3);
+};
+
 // CMapStringToOb lives at CDDrawWorkerRegistry+0x10. Lookup/RemoveKey are out-of-line
 // NAFXCW thunks (reloc-masked rel32 calls); declared with the exact MFC signatures
 // so clang mangles them to the MFC-canonical names.
@@ -141,6 +153,12 @@ public:
     void VirtualMethodUnknown58();
     void MapTeardown_1552b0();
     int StringCopy_155810(const char* src);
+
+    // Map-scan helpers (non-virtual; direct-called from the worker code region).
+    int RemoveKeysEqual_155360(const char* base, const char* str);
+    int HasKeyEqual_155550(const char* str);
+    int AnyValueMatches_155630(int a1, int a2, int a3);
+    CString FindKeyOfValue_165360(SeverusMapValue* target);
 
     void* m_vptr;              // +0x00
     int m_04;                  // +0x04  initialized to -1 when inactive
@@ -418,6 +436,114 @@ int CDDrawWorkerRegistry::StringCopy_155810(const char* src) {
     strncpy((char*)this + 0x24, src, 0x3f);
     *((char*)this + 0x63) = 0;
     return 1;
+}
+
+// ---------------------------------------------------------------------------
+// Map scan: remove every entry whose key strncmp-equals `str` (over its full
+// length), destroying each removed value via its scalar dtor; returns the count.
+// The compare string is a CString built from `base` then assigned `str`.
+// @early-stop
+// regalloc wall (~91.7%) - complete & correct: logic/CFG/all calls/args/offsets
+// reproduced. Residue is the val/loop-flag stack-slot swap (0x10<->0x14 coin-flip,
+// docs/patterns/zero-register-pinning.md) + the reloc-masked EH-state push (0x0 vs
+// 0x8, same as the 100%-matched MapTeardown_1552b0). No source lever flips it.
+RVA(0x00155360, 0xf8)
+int CDDrawWorkerRegistry::RemoveKeysEqual_155360(const char* base, const char* str) {
+    CString match(base);
+    match = str;
+    int len = match.GetLength();
+    int n = 0;
+    CObject* val = 0;
+    CString key;
+    POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
+    if (*(volatile int*)&pos != 0) {
+        do {
+            m_10.GetNextAssoc(pos, key, val);
+            if (strncmp(key, match, len) == 0) {
+                m_10.RemoveKey(key);
+                if (val != 0) {
+                    ((SeverusValue*)val)->ScalarDtor(1);
+                }
+                ++n;
+            }
+        } while (pos != 0);
+    }
+    return n;
+}
+
+// ---------------------------------------------------------------------------
+// Map scan: return 1 if any key strncmp-equals `str` over strlen(str), else 0.
+// @early-stop
+// optimizer loop-peel wall (~61.4%) - complete & correct. MSVC5 peels the first
+// iteration of this `do/while + early return` here (the retail body is a single
+// loop); body/calls/args match. Every restructure tried (break+flag, slot reorder)
+// scored lower. Deferred to the final sweep. docs/patterns/zero-register-pinning.md.
+RVA(0x00155550, 0xdc)
+int CDDrawWorkerRegistry::HasKeyEqual_155550(const char* str) {
+    int len = strlen(str);
+    CObject* val = 0;
+    CString key;
+    POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
+    if (*(volatile int*)&pos != 0) {
+        do {
+            m_10.GetNextAssoc(pos, key, val);
+            if (strncmp(key, str, len) == 0) {
+                return 1;
+            }
+        } while (pos != 0);
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// Map scan: probe every non-null value via its Probe_1525c0(a1,a2,a3); return 1
+// on the first that returns nonzero, else 0. Returns 0 immediately if a1 is null.
+// @early-stop
+// regalloc wall (~75.9%) - complete & correct: a1==0 guard, the per-value
+// Probe_1525c0 thiscall, the loop CFG all reproduced. Residue is the same
+// val/loop-flag stack-slot swap + reloc-masked EH-state push as RemoveKeysEqual.
+RVA(0x00155630, 0xc5)
+int CDDrawWorkerRegistry::AnyValueMatches_155630(int a1, int a2, int a3) {
+    if (a1 == 0) {
+        return 0;
+    }
+    CObject* val = 0;
+    CString key;
+    POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
+    if (*(volatile int*)&pos != 0) {
+        do {
+            m_10.GetNextAssoc(pos, key, val);
+            if (val != 0 && ((SeverusMapValue*)val)->Probe_1525c0(a1, a2, a3)) {
+                return 1;
+            }
+        } while (pos != 0);
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// Map scan: return (by value) the key of the first entry whose value's +0x10
+// dword equals target's +0x10; empty CString if none.
+// @early-stop
+// NRVO-elision wall (~79.1%) - complete & correct: the whole scan + the +0x10
+// compare + the `return key` copy-ctor path match byte-for-byte. Residue is only
+// the no-match `return CString()` path: retail materializes an empty CString temp
+// then copy-constructs the return (no RVO); MSVC5 here elides it into the return
+// slot directly. An optimizer choice, not a source-steerable one.
+RVA(0x00165360, 0xf1)
+CString CDDrawWorkerRegistry::FindKeyOfValue_165360(SeverusMapValue* target) {
+    CObject* val = 0;
+    POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
+    CString key;
+    if (*(volatile int*)&pos != 0) {
+        do {
+            m_10.GetNextAssoc(pos, key, val);
+            if (val != 0 && ((SeverusMapValue*)val)->m_10field == target->m_10field) {
+                return key;
+            }
+        } while (pos != 0);
+    }
+    return CString();
 }
 
 // -------------------------------------------------------------------------

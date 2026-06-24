@@ -159,14 +159,12 @@ public:
     void CDDrawWorkerMapSmall_156d20();
     void CDDrawWorkerMapSmall_165810();
 };
-class CDDrawWorkerRegistry {
+// 0x151f00 / 0x15cc30 are worker-object methods (g_severusWorkerVtbl), not
+// registry methods; the four map-holder methods were reconstructed in the TU.
+class CSeverusWorker {
 public:
-    void CDDrawWorkerRegistry_151f00();
-    void CDDrawWorkerRegistry_155360();
-    void CDDrawWorkerRegistry_155550();
-    void CDDrawWorkerRegistry_155630();
-    void CDDrawWorkerRegistry_15cc30();
-    void CDDrawWorkerRegistry_165360();
+    void CSeverusWorker_151f00();
+    void CSeverusWorker_15cc30();
 };
 class CDoNothing {
 public:

@@ -27,7 +27,7 @@ cddrawsurfacemgr	7	5
 cddrawworkercache	4	1
 cddrawworkerlist	10	7
 cddrawworkermapsmall	8	2
-cddrawworkerregistry	21	12
+cddrawworkerregistry	25	12
 cddrawworkers	3	3
 cdirectdrawmgr	15	9
 cplay	18	6
@@ -36,7 +36,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	18	17
 directsoundmgr	26	19
-engine_discovered	1029	0
+engine_discovered	1025	0
 engine_label_stubs	537	120
 filestream	13	9
 font	16	9
@@ -198,7 +198,11 @@ cddrawworkermapsmall	?VirtualMethodUnknown14@CDDrawWorkerMapSmall@@QAEHXZ	100.00
 cddrawworkermapsmall	?VirtualMethodUnknown20@CDDrawWorkerMapSmall@@QAEHXZ	100.0000	100.0000	3	1e06d282c031	0x157600
 cddrawworkermapsmall	?VirtualMethodUnknown28@CDDrawWorkerMapSmall@@QAEPAXHPBDH@Z	99.7391	99.7391	3	c36f32e27be9	0x165990
 cddrawworkermapsmall	?VirtualMethodUnknown2C@CDDrawWorkerMapSmall@@QAEPAXHPBDH@Z	99.7391	99.7391	3	2cd157fa5c29	0x165a10
+cddrawworkerregistry	?AnyValueMatches_155630@CDDrawWorkerRegistry@@QAEHHHH@Z	75.8769	75.8769	1	5ec64bb28c6d	0x155630
+cddrawworkerregistry	?FindKeyOfValue_165360@CDDrawWorkerRegistry@@QAE?AVCString@@PAVSeverusMapValue@@@Z	79.0556	79.0556	1	dbda3559d451	0x165360
+cddrawworkerregistry	?HasKeyEqual_155550@CDDrawWorkerRegistry@@QAEHPBD@Z	61.3571	61.3571	1	fbceaedbb872	0x155550
 cddrawworkerregistry	?MapTeardown_1552b0@CDDrawWorkerRegistry@@QAEXXZ	100.0000	100.0000	4	680e0e42a38f	0x1552b0
+cddrawworkerregistry	?RemoveKeysEqual_155360@CDDrawWorkerRegistry@@QAEHPBD0@Z	91.6667	91.6667	1	a5cbedd4d6a7	0x155360
 cddrawworkerregistry	?StringCopy_155810@CDDrawWorkerRegistry@@QAEHPBD@Z	100.0000	100.0000	3	a35405561c81	0x155810
 cddrawworkerregistry	?Stub_154f80@CDDrawWorkerRegistry@@QAEXXZ	0.2564	0.2564	2	91c3734b27fa	0x154f80
 cddrawworkerregistry	?Stub_155160@CDDrawWorkerRegistry@@QAEXXZ	0.3604	0.3604	2	4edfb98ac449	0x155160
@@ -417,12 +421,6 @@ engine_discovered	?CDDrawSurfaceMgr_156020@CDDrawSurfaceMgr@@QAEXXZ	0.1274	0.127
 engine_discovered	?CDDrawWorkerList_163bc0@CDDrawWorkerList@@QAEXXZ	4.7619	4.7619	1	2c08916d9c7a	0x163bc0
 engine_discovered	?CDDrawWorkerMapSmall_156d20@CDDrawWorkerMapSmall@@QAEXXZ	3.3333	3.3333	1	b07b78caacf4	0x156d20
 engine_discovered	?CDDrawWorkerMapSmall_165810@CDDrawWorkerMapSmall@@QAEXXZ	2.0000	2.0000	1	792211886a74	0x165810
-engine_discovered	?CDDrawWorkerRegistry_151f00@CDDrawWorkerRegistry@@QAEXXZ	0.5479	0.5479	1	4b73efe63169	0x151f00
-engine_discovered	?CDDrawWorkerRegistry_155360@CDDrawWorkerRegistry@@QAEXXZ	0.5128	0.5128	1	90e69aac47a1	0x155360
-engine_discovered	?CDDrawWorkerRegistry_155550@CDDrawWorkerRegistry@@QAEXXZ	0.5714	0.5714	1	f73188bce8e6	0x155550
-engine_discovered	?CDDrawWorkerRegistry_155630@CDDrawWorkerRegistry@@QAEXXZ	0.6154	0.6154	1	9eb369d516b6	0x155630
-engine_discovered	?CDDrawWorkerRegistry_15cc30@CDDrawWorkerRegistry@@QAEXXZ	3.6364	3.6364	1	5508014e10ca	0x15cc30
-engine_discovered	?CDDrawWorkerRegistry_165360@CDDrawWorkerRegistry@@QAEXXZ	0.5556	0.5556	1	6cb3854c2f34	0x165360
 engine_discovered	?CDoNothing_00f6b0@CDoNothing@@QAEXXZ	50.0000	50.0000	1	80db00432e74	0xf6b0
 engine_discovered	?CDoNothing_00f770@CDoNothing@@QAEXXZ	5.8824	5.8824	1	922edfdf8260	0xf770
 engine_discovered	?CDroppedObjectShadow_012670@CDroppedObjectShadow@@QAEXXZ	5.8824	5.8824	1	4feb13539780	0x12670
@@ -640,6 +638,8 @@ engine_discovered	?CSecretTeleporterTrigger_010a10@CSecretTeleporterTrigger@@QAE
 engine_discovered	?CSecretTeleporterTrigger_010ab0@CSecretTeleporterTrigger@@QAEXXZ	5.8824	5.8824	1	b5b35e5a6445	0x10ab0
 engine_discovered	?CSecretTeleporterTrigger_042150@CSecretTeleporterTrigger@@QAEXXZ	0.5333	0.5333	1	78c1c5513a0d	0x42150
 engine_discovered	?CSecretTeleporterTrigger_042b80@CSecretTeleporterTrigger@@QAEXXZ	1.0309	1.0309	1	f6641a3791d6	0x42b80
+engine_discovered	?CSeverusWorker_151f00@CSeverusWorker@@QAEXXZ	0.5479	0.5479	1	a50098a87424	0x151f00
+engine_discovered	?CSeverusWorker_15cc30@CSeverusWorker@@QAEXXZ	3.6364	3.6364	1	a9a2bd37f28c	0x15cc30
 engine_discovered	?CSimpleAnimation_00f9d0@CSimpleAnimation@@QAEXXZ	5.8824	5.8824	1	89680198f0ac	0xf9d0
 engine_discovered	?CSimpleAnimation_0abf70@CSimpleAnimation@@QAEXXZ	14.2857	14.2857	1	0e17bd41559e	0xabf70
 engine_discovered	?CSingleAnimation_010540@CSingleAnimation@@QAEXXZ	5.8824	5.8824	1	8475326a1cfc	0x10540
@@ -2041,7 +2041,7 @@ gruntzcommand	?Allocate@CGruntzSingleCommand@@SAPAV1@XZ	100.0000	100.0000	3	d7f3
 gruntzcommand	?ApplyMask@CGruntzCommand@@QAEHPAUCGruntzCmdTarget@@@Z	100.0000	100.0000	1	f66d54878c92	0x24190
 gruntzcommand	?ApplyOne@CGruntzCommand@@QAEHPAUCGruntzCmdTarget@@@Z	100.0000	100.0000	1	5c2c8935c457	0x24140
 gruntzcommand	?FreeAll@CGruntzMultiCommand@@SAXXZ	100.0000	100.0000	1	a52eb4303e98	0x24490
-gruntzcommand	?SetMaskFromList@CGruntzCommand@@QAEHDDDFFHPAE@Z	100.0000	100.0000	1	e30de28cd8e9	0x23ed0
+gruntzcommand	?SetMaskFromList@CGruntzCommand@@QAEHDDDFFHPAE@Z	100.0000	100.0000	2	8726bfe6c19d	0x23ed0
 gruntzcommand	?SetParams@CGruntzCommand@@UAEHDDDFF@Z	100.0000	100.0000	1	2cfe1652248e	0x23e20
 gruntzcommand	?SetParamsEx@CGruntzCommand@@QAEHDDDFFDD@Z	100.0000	100.0000	1	444be6ed964c	0x23e60
 gruntzmgr	??1CGruntzMgr@@UAE@XZ	89.8500	89.8500	3	1bb6e0929358	0x83360

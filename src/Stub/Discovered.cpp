@@ -234,19 +234,18 @@ void CDDrawWorkerMapSmall::CDDrawWorkerMapSmall_156d20() {}
 RVA(0x00165810, 0xa9)
 void CDDrawWorkerMapSmall::CDDrawWorkerMapSmall_165810() {}
 
-// ---- CDDrawWorkerRegistry ----
+// ---- CSeverusWorker ----
+// MISATTRIBUTION CORRECTED: 0x151f00 / 0x15cc30 are methods of the *worker*
+// object (vtable g_severusWorkerVtbl @ RVA 0x1efbe8: 0x151f00 is slot +0x38),
+// NOT of CDDrawWorkerRegistry. They iterate the worker's own CByteArray (m_pData
+// at this+0x14, m_nSize at this+0x18) and track min/max at this+0x64/+0x68 - the
+// SeverusWorkerObj layout, not the registry's CMapStringToOb. Left stubbed for a
+// dedicated worker TU. The other four (0x155360/550/630, 0x165360) were genuine
+// map-holder methods and now live reconstructed in src/Gruntz/CDDrawWorkerRegistry.cpp.
 RVA(0x00151f00, 0xa4)
-void CDDrawWorkerRegistry::CDDrawWorkerRegistry_151f00() {}
-RVA(0x00155360, 0xf8)
-void CDDrawWorkerRegistry::CDDrawWorkerRegistry_155360() {}
-RVA(0x00155550, 0xdc)
-void CDDrawWorkerRegistry::CDDrawWorkerRegistry_155550() {}
-RVA(0x00155630, 0xc5)
-void CDDrawWorkerRegistry::CDDrawWorkerRegistry_155630() {}
+void CSeverusWorker::CSeverusWorker_151f00() {}
 RVA(0x0015cc30, 0x1e)
-void CDDrawWorkerRegistry::CDDrawWorkerRegistry_15cc30() {}
-RVA(0x00165360, 0xf1)
-void CDDrawWorkerRegistry::CDDrawWorkerRegistry_165360() {}
+void CSeverusWorker::CSeverusWorker_15cc30() {}
 
 // ---- CDoNothing ----
 RVA(0x0000f6b0, 0x6)
