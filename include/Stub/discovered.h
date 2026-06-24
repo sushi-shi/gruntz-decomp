@@ -1110,16 +1110,6 @@ public:
     void MallocCtor_1375b0_137590();
     void MallocCtor_1375b0_137650();
 };
-class MallocCtor_15b390 {
-public:
-    void MallocCtor_15b390_150a70();
-    void MallocCtor_15b390_150b00();
-    void MallocCtor_15b390_150d60();
-    void MallocCtor_15b390_151150();
-    void MallocCtor_15b390_151320();
-    void MallocCtor_15b390_151c00();
-    void MallocCtor_15b390_15b940();
-};
 class MallocCtor_1615a0 {
 public:
     void MallocCtor_1615a0_0311e0();

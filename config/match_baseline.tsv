@@ -42,7 +42,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	574	0
+engine_discovered	567	0
 engine_label_stubs	526	121
 filestream	13	9
 font	21	10
@@ -123,6 +123,7 @@ winapimodule	1	0
 winmain	1	1
 wormhole	4	1
 wwdfile	6	1
+wwdgameobject	7	2
 zutil	2	2
 # [functions]	unit	function	best_pct	cur_pct	tries	src_hash	rva
 actionoptionsmenubar	??0CActionOptionsMenuBar@@QAE@XZ	64.3500	64.3500	1	776faf88a5cc	0x9090
@@ -979,13 +980,6 @@ engine_discovered	?MallocCtor_1375b0_1374c0@MallocCtor_1375b0@@QAEXXZ	1.0256	1.0
 engine_discovered	?MallocCtor_1375b0_137520@MallocCtor_1375b0@@QAEXXZ	0.9302	0.9302	1	a67b44440663	0x137520
 engine_discovered	?MallocCtor_1375b0_137590@MallocCtor_1375b0@@QAEXXZ	12.5000	12.5000	1	17d119f06f57	0x137590
 engine_discovered	?MallocCtor_1375b0_137650@MallocCtor_1375b0@@QAEXXZ	3.5714	3.5714	1	ac341e809193	0x137650
-engine_discovered	?MallocCtor_15b390_150a70@MallocCtor_15b390@@QAEXXZ	0.5797	0.5797	1	387e2f45a018	0x150a70
-engine_discovered	?MallocCtor_15b390_150b00@MallocCtor_15b390@@QAEXXZ	0.3774	0.3774	1	d875d7e97e16	0x150b00
-engine_discovered	?MallocCtor_15b390_150d60@MallocCtor_15b390@@QAEXXZ	0.4706	0.4706	1	6cc958692c91	0x150d60
-engine_discovered	?MallocCtor_15b390_151150@MallocCtor_15b390@@QAEXXZ	0.2899	0.2899	1	38903d86c5e7	0x151150
-engine_discovered	?MallocCtor_15b390_151320@MallocCtor_15b390@@QAEXXZ	0.0946	0.0946	1	16006ab15d9a	0x151320
-engine_discovered	?MallocCtor_15b390_151c00@MallocCtor_15b390@@QAEXXZ	0.3922	0.3922	1	9c1f630b6106	0x151c00
-engine_discovered	?MallocCtor_15b390_15b940@MallocCtor_15b390@@QAEXXZ	2.2222	2.2222	1	c075a296c3b1	0x15b940
 engine_discovered	?MallocCtor_1615a0_0311e0@MallocCtor_1615a0@@QAEXXZ	1.2121	1.2121	1	8b5f5f189f13	0x311e0
 engine_discovered	?MallocCtor_16b510_16a410@MallocCtor_16b510@@QAEXXZ	2.0408	2.0408	1	05aec7345dd6	0x16a410
 engine_discovered	?MallocCtor_16b510_16a510@MallocCtor_16b510@@QAEXXZ	0.8163	0.8163	1	d9de152b2e2a	0x16a510
@@ -1959,7 +1953,7 @@ menupage	?SelectBackward@CMenuPage@@QAEHXZ	60.8194	60.8194	1	9df148bf4a84	0x1844
 menupage	?SelectForward@CMenuPage@@QAEHXZ	60.8194	60.8194	1	891990b30b8a	0x1843f0
 menupage	?SetFocus@CMenuPage@@QAEHPAVCMenuItem@@H@Z	100.0000	100.0000	1	20f58cb55e3b	0x183ad0
 motionstate	??0CMotionState@@QAE@XZ	100.0000	100.0000	1	24ca6b679299	0x136d0
-motionstate	?SetParams@CMotionState@@QAEHNNNNNNNNNNN@Z	100.0000	100.0000	1	a047abb9b3bd	0x58bc0
+motionstate	?SetParams@CMotionState@@QAEHNNNNNNNNNNN@Z	100.0000	100.0000	2	57c861974e56	0x58bc0
 motionstate	?SetZ@CMotionState@@QAEXN@Z	100.0000	100.0000	1	9d25f9ec952e	0x58ca0
 netmgr	?AnnounceVersion@CNetMgr@@QAEXH@Z	90.1000	90.1000	5	f9e1f9c715a8	0xbd180
 netmgr	?ApplyCmdDelayDefaults@CNetMgr@@QAEXXZ	100.0000	100.0000	6	f6fa2de8b3f2	0xb85a0
@@ -2365,5 +2359,12 @@ wwdfile	?ValidateMainBlock@WwdFile@@SAHVCString@@@Z	74.0667	74.0667	3	66ad5dacd4
 wwdfile	?WwdFile_CheckHeader@@YGHPBDPAX@Z	99.9872	99.9872	7	6e939a29d5a1	0x160660
 wwdfile	?WwdFile_IsValidWwd@@YGHPBDPAX@Z	100.0000	100.0000	7	d6fb4886d4a5	0x160530
 wwdfile	_WwdFile_InflateMainBlock@12	88.7400	88.7400	7	ab241da184e3	0x160790
+wwdgameobject	?Dispatch@CWwdGameObject@@QAEHHHHH@Z	100.0000	100.0000	1	9c3d02186d56	0x150a70
+wwdgameobject	?Init@CWwdGameObject@@QAEHHHHH@Z	100.0000	100.0000	1	f9cf2de94e5d	0x15b940
+wwdgameobject	?Play@CWwdGameObject@@QAEHHHHH@Z	0.0000	0.0000	1	949dfb607884	0x151150
+wwdgameobject	?ReadState@CWwdGameObject@@QAEHH@Z	99.3491	99.3491	1	da8f0748505b	0x150b00
+wwdgameobject	?Serialize@CWwdGameObject@@QAEHH@Z	99.5745	99.5745	1	b08e254a1974	0x151320
+wwdgameobject	?Setup@CWwdGameObject@@QAEHHHHH@Z	97.1059	97.1059	1	de92e29dd207	0x150d60
+wwdgameobject	?WriteSnapshot@CWwdGameObject@@QAEHH@Z	95.9020	95.9020	1	0980e3e3dbe3	0x151c00
 zutil	_zcalloc	100.0000	100.0000	1	55f82c5a172f	0x188410
 zutil	_zcfree	100.0000	100.0000	1	e741567a7e95	0x188430

@@ -501,6 +501,11 @@ source = "src/Gruntz/CDDrawWorkerCache.cpp"
 flags = "base"
 
 [[unit]]
+unit = "wwdgameobject"
+source = "src/Gruntz/WwdGameObject.cpp"
+flags = "base"
+
+[[unit]]
 unit = "cddrawworkers"
 source = "src/Gruntz/CDDrawWorkers.cpp"
 flags = "base"
