@@ -127,15 +127,16 @@ struct CNetVersionPacket {
 // ---------------------------------------------------------------------------
 // CNetMgr - the DirectPlay networking manager. Only the members the matched
 // methods touch are pinned:
-//   +0x004 m_4   : a sub-object whose +0x4 is a window-handle holder; the
-//                  message handlers do (((T*)m_4)->m_4)->m_4 to reach the HWND.
-//   +0x01c m_1c  : the wParam value posted with the resync message.
-//   +0x574 m_574 : OnOutOfSync's per-instance reentrancy guard.
-//   +0x584 m_584 : a state word the handlers clear on entry.
-//   +0x598 m_598 : a CString - the config section/value-name prefix
-//                  ("m_598 + _CmdDelay" etc.).
-//   +0x5a4 m_5a4 : the _CmdDelay value persisted by ApplyCmdDelayDefaults.
-//   +0x5a8 m_5a8 : the _Resend value persisted by ApplyCmdDelayDefaults.
+//   +0x004 m_4              : a sub-object whose +0x4 is a window-handle holder;
+//                             the message handlers do (((T*)m_4)->m_4)->m_4 to
+//                             reach the HWND.
+//   +0x01c m_1c             : the lParam value posted with the resync message.
+//   +0x574 m_outOfSyncGuard : OnOutOfSync's per-instance reentrancy guard.
+//   +0x584 m_584            : a state word the handlers clear on entry.
+//   +0x598 m_configSection  : a CString - the config section/value-name prefix
+//                             ("m_configSection + _CmdDelay" etc.).
+//   +0x5a4 m_cmdDelay       : the _CmdDelay value persisted by ApplyCmdDelayDefaults.
+//   +0x5a8 m_resend         : the _Resend value persisted by ApplyCmdDelayDefaults.
 // ---------------------------------------------------------------------------
 // One per-player slot in the m_4 sub-object's slot array (stride 0x238). Only
 // the three dwords GetMaxAckLatency reads are pinned: two "slot active" gate
@@ -393,48 +394,63 @@ public:
     void AckDropPlayer(i32 id);
 
     char m_pad0[4]; // +0x000
-    void* m_4;      // +0x004
-    char m_pad8[0x18 - 0x8];
-    IDirectPlay4Z* m_18; // +0x018  the DirectPlay session interface
-    i32 m_1c;            // +0x01c
+    // The engine sub-object reached through several views: ->m_4->m_4 is the HWND
+    // holder the message handlers PostMessageA through; +0x6c is the command queue
+    // (CNetSubObject); and (CNetPlayerSlot*)m_4 is the base of the four per-player
+    // ack-latency slots. No single clean type -> left as the +0x4 sub-object ptr.
+    void* m_4; // +0x004
+    char m_pad8[0x14 - 0x8];
+    INetReleasable* m_releaseIface; // +0x014  the secondary COM interface Destroy releases (slot 2)
+    IDirectPlay4Z* m_directPlay; // +0x018  the DirectPlay session interface (IDirectPlay4-shaped)
+    i32 m_1c;                    // +0x01c  WM_COMMAND lParam value the resync handlers post
     char m_pad20[0x58 - 0x20];
     // The managed-player-object list (a by-value CObList embedded at +0x54). Its
     // 0x1c-byte body spans +0x54..+0x70; the +0x58 head node ptr below is the
     // CObList's own m_pHead (what FindPlayerById walks). Modeled as the head
     // pointer here; RemovePlayerObj reaches the embedded CObList via a +0x54 cast.
-    CNetPlayerNode* m_58; // +0x58  head of the player list (CObList m_pHead)
-    char m_pad5c[0x520 - 0x5c];
-    CNetSession* m_520; // +0x520  the DirectPlay session sub-object
-    CNetMgr* m_524;     // +0x524  peer net-manager (owns the player list)
-    i32 m_528;          // +0x528  branch selector
-    i32 m_52c;          // +0x52c  "session terminated" flag
+    CNetPlayerNode* m_58; // +0x58  head of the player-object list (CObList m_pHead)
+    char m_pad5c[0x70 - 0x5c];
+    // The three list-box selection latches (one per managed list). Each list's
+    // ReadXxxSel reader writes the selected item's data here when it is in range;
+    // the matching clear-loop zeroes it (along with the +0x7c/+0x80/+0x84 id below).
+    i32 m_groupSel;     // +0x70  group-list selected item data (ReadGroupSel)
+    i32 m_playerSel;    // +0x74  player-list selected item data (ReadPlayerSel)
+    i32 m_sessionSel;   // +0x78  player-object-list selected item data
+    i32 m_groupSelId;   // +0x7c  group-list selection id (zeroed with m_groupSel on clear)
+    i32 m_playerSelId;  // +0x80  player-list selection id (zeroed with m_playerSel on clear)
+    i32 m_sessionSelId; // +0x84  player-object-list selection id (zeroed with m_sessionSel on clear)
+    char m_pad88[0x520 - 0x88];
+    CNetSession* m_session; // +0x520  the DirectPlay session sub-object (command slots)
+    CNetMgr* m_peer;        // +0x524  peer net-manager (owns the player list); null => no session
+    i32 m_useChannelLatency; // +0x528  ack-latency source selector (set => inline m_channelLatency[])
+    i32 m_sessionTerminated; // +0x52c  "the game session has been terminated"
     char m_pad530[0x534 - 0x530];
-    i32 m_534; // +0x534  host-mode flag
-    i32 m_538; // +0x538  "removed from game" flag
+    i32 m_534;             // +0x534  host-mode flag (no use-site in matched code; left placeholder)
+    i32 m_removedFromGame; // +0x538  "you have been removed from the game by the host"
     char m_pad53c[0x56c - 0x53c];
-    i32 m_56c; // +0x56c  "game full" flag
-    i32 m_570; // +0x570  version-mismatch latch
-    i32 m_574; // +0x574
-    i32 m_578; // +0x578  sync-toggle gate
+    i32 m_gameFull; // +0x56c  "this game is already full"
+    i32 m_versionMismatch; // +0x570  version-mismatch latch (HandleVersionCheck sets; WaitForConnect reports)
+    i32 m_outOfSyncGuard; // +0x574  OnOutOfSync per-instance reentrancy guard
+    i32 m_syncGate;       // +0x578  gates the frame-sync long-frame toggle
     char m_pad57c[0x580 - 0x57c];
-    i32 m_580; // +0x580  "connected" flag (gates report)
-    i32 m_584; // +0x584
+    i32 m_connected; // +0x580  connection established (gates resend/version report)
+    i32 m_584;       // +0x584  state word cleared on each dispatch handler entry (role unproven)
     char m_pad588[0x58c - 0x588];
-    i32 m_58c; // +0x58c  "abort" flag set during connect-wait
+    i32 m_admitted; // +0x58c  set once the local player is admitted (connect-wait exit latch)
     char m_pad590[0x598 - 0x590];
-    CString m_598; // +0x598
+    CString m_configSection; // +0x598  config section/value-name prefix ("<section>_CmdDelay" etc.)
     char m_pad59c[0x5a4 - 0x59c];
-    DWORD m_5a4; // +0x5a4
-    DWORD m_5a8; // +0x5a8
-    i32 m_5ac;   // +0x5ac  "game closed" flag
+    DWORD m_cmdDelay; // +0x5a4  the "_CmdDelay" value (also the per-command sequence scale)
+    DWORD m_resend;   // +0x5a8  the "_Resend" value
+    i32 m_gameClosed; // +0x5ac  "this game is closed"
     char m_pad5b0[0x5bc - 0x5b0];
-    i32 m_5bc; // +0x5bc  the local player descriptor ptr
-    i32 m_5c0; // +0x5c0  the local player id (from +0x5bc[+4])
+    i32 m_localPlayer; // +0x5bc  the local player descriptor ptr (gate in WaitForConnect)
+    i32 m_5c0;         // +0x5c0  local player id (inferred from +0x5bc[+4]; no use-site here)
     char m_pad5c4[0x5e0 - 0x5c4];
-    u32 m_5e0; // +0x5e0  last frame-sync delta
-    u32 m_5e4; // +0x5e4  last frame-sync timestamp
+    u32 m_lastFrameDelta; // +0x5e0  last frame-sync delta (ms)
+    u32 m_lastFrameTime;  // +0x5e4  last frame-sync timestamp (timeGetTime)
     char m_pad5e8[0x5f0 - 0x5e8];
-    DWORD m_5f0[4]; // +0x5f0  per-channel latency values
+    DWORD m_channelLatency[4]; // +0x5f0  per-channel ack-latency values
 
     // Engine-label backlog stubs.
     void Stub_0b5460();
