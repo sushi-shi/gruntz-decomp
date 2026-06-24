@@ -47,8 +47,9 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	406	0
+engine_discovered	398	0
 engine_label_stubs	524	120
+filemem	8	7
 filestream	13	9
 font	21	10
 fontconfig	7	4
@@ -884,14 +885,6 @@ engine_discovered	?ClassUnknown_90_1d38a1@ClassUnknown_90@@QAEXXZ	33.3333	33.333
 engine_discovered	?ClassUnknown_91_1d496b@ClassUnknown_91@@QAEXXZ	3.6364	3.6364	1	08f8408e9535	0x1d496b
 engine_discovered	?ClassUnknown_92_0e3c60@ClassUnknown_92@@QAEXXZ	0.8264	0.8264	1	8f6796d587bc	0xe3c60
 engine_discovered	?ClassUnknown_93_00d170@ClassUnknown_93@@QAEXXZ	2.0408	2.0408	1	a3807448efff	0xd170
-engine_discovered	?ClassUnknown_94_157850@ClassUnknown_94@@QAEXXZ	3.7037	3.7037	1	beddbda784a7	0x157850
-engine_discovered	?ClassUnknown_94_157980@ClassUnknown_94@@QAEXXZ	3.7037	3.7037	1	5290dc1c8038	0x157980
-engine_discovered	?ClassUnknown_94_157a40@ClassUnknown_94@@QAEXXZ	8.0000	8.0000	1	38efe820ac7b	0x157a40
-engine_discovered	?ClassUnknown_94_157a50@ClassUnknown_94@@QAEXXZ	5.7143	5.7143	1	087c7a6a251f	0x157a50
-engine_discovered	?ClassUnknown_94_165e30@ClassUnknown_94@@QAEXXZ	3.0769	3.0769	1	b2d034a194c6	0x165e30
-engine_discovered	?ClassUnknown_94_165e60@ClassUnknown_94@@QAEXXZ	1.7857	1.7857	1	3b0247776f6d	0x165e60
-engine_discovered	?ClassUnknown_94_165ef0@ClassUnknown_94@@QAEXXZ	20.0000	20.0000	1	1790f732c62e	0x165ef0
-engine_discovered	?ClassUnknown_94_165f50@ClassUnknown_94@@QAEXXZ	1.2903	1.2903	1	8e17970f7dbd	0x165f50
 engine_discovered	?ClassUnknown_95_008c00@ClassUnknown_95@@QAEXXZ	0.3306	0.3306	1	038986b78266	0x8c00
 engine_discovered	?ClassUnknown_96_03c8f0@ClassUnknown_96@@QAEXXZ	0.7692	0.7692	1	ece22a6ce123	0x3c8f0
 engine_discovered	?ClassUnknown_97_058ee0@ClassUnknown_97@@QAEXXZ	1.0000	1.0000	1	fa315db7bdcd	0x58ee0
@@ -1481,6 +1474,14 @@ engine_label_stubs	_RezStrrchr	8.6957	8.6957	1	cpp:2262ffc5f902	0x120680
 engine_label_stubs	_StartupGate	0.0000	0.0000	1	cpp:2262ffc5f902	0x2f59
 engine_label_stubs	_SubstringMatch	2.8986	2.8986	1	cpp:2262ffc5f902	0x120090
 engine_label_stubs	_VersionScan	8.6957	8.6957	1	cpp:2262ffc5f902	0x120900
+filemem	??0CFileMemBase@@QAE@XZ	100.0000	100.0000	1	04d2148fb703	0x157850
+filemem	??1CFileMem@@QAE@XZ	59.2593	59.2593	1	ec8015f95309	0x157980
+filemem	?Open@CFileMem@@QAEHXZ	100.0000	100.0000	1	a36fe9e8b972	0x165e60
+filemem	?Ready@CFileMem@@QAEHXZ	100.0000	100.0000	1	26548c100971	0x165ef0
+filemem	?Reset@CFileMem@@QAEXXZ	100.0000	100.0000	1	7ad10b89364a	0x157a50
+filemem	?ResetBase@CFileMem@@QAEXXZ	100.0000	100.0000	1	fd57c8dec978	0x157a40
+filemem	?SetName@CFileMem@@QAEHPBDHH@Z	100.0000	100.0000	1	58ad2fe5876a	0x165e30
+filemem	?Write@CFileMem@@QAEHPBXH@Z	100.0000	100.0000	1	bfc92f55e006	0x165f50
 filestream	??0CFileIO@@QAE@PAX@Z	100.0000	100.0000	4	71072e81b26d	0x1bf033
 filestream	??0CFileIO@@QAE@XZ	100.0000	100.0000	4	71072e81b26d	0x1befd7
 filestream	??1CFileIO@@UAE@XZ	100.0000	100.0000	4	53a856f67760	0x1bf121

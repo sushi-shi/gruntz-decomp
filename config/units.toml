@@ -284,6 +284,11 @@ source = "src/Io/SaveGame.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "filemem"
+source = "src/Io/FileMem.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "rezmgr"
 source = "src/Rez/RezMgr.cpp"
 flags = "eh"

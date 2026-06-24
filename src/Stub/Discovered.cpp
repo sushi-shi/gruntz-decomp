@@ -1188,23 +1188,8 @@ void ClassUnknown_92::ClassUnknown_92_0e3c60() {}
 RVA(0x0000d170, 0x74)
 void ClassUnknown_93::ClassUnknown_93_00d170() {}
 
-// ---- ClassUnknown_94 ----
-RVA(0x00157850, 0x54)
-void ClassUnknown_94::ClassUnknown_94_157850() {}
-RVA(0x00157980, 0x74)
-void ClassUnknown_94::ClassUnknown_94_157980() {}
-RVA(0x00157a40, 0x10)
-void ClassUnknown_94::ClassUnknown_94_157a40() {}
-RVA(0x00157a50, 0x16)
-void ClassUnknown_94::ClassUnknown_94_157a50() {}
-RVA(0x00165e30, 0x27)
-void ClassUnknown_94::ClassUnknown_94_165e30() {}
-RVA(0x00165e60, 0x82)
-void ClassUnknown_94::ClassUnknown_94_165e60() {}
-RVA(0x00165ef0, 0xf)
-void ClassUnknown_94::ClassUnknown_94_165ef0() {}
-RVA(0x00165f50, 0x45)
-void ClassUnknown_94::ClassUnknown_94_165f50() {}
+// ---- ClassUnknown_94 ---- reconstructed as CFileMem (the CFile-derived save/
+// pack file stream wrapping a CFileIO) in src/Io/FileMem.cpp.
 
 // ---- ClassUnknown_95 ----
 RVA(0x00008c00, 0x152)
