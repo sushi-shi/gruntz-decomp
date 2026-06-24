@@ -1051,18 +1051,6 @@ void ClassUnknown_76::ClassUnknown_76_0aa5a0() {}
 RVA(0x0016ecd0, 0x6e6)
 void ClassUnknown_77::ClassUnknown_77_16ecd0() {}
 
-// ---- ClassUnknown_78 ----
-RVA(0x00008750, 0x15)
-void ClassUnknown_78::ClassUnknown_78_008750() {}
-RVA(0x000310f0, 0x8d)
-void ClassUnknown_78::ClassUnknown_78_0310f0() {}
-RVA(0x000312a0, 0x74)
-void ClassUnknown_78::ClassUnknown_78_0312a0() {}
-RVA(0x0016da80, 0x10b)
-void ClassUnknown_78::ClassUnknown_78_16da80() {}
-RVA(0x0016df40, 0x22)
-void ClassUnknown_78::ClassUnknown_78_16df40() {}
-
 // ---- ClassUnknown_8 ---- reconstructed as StateMgrBZ in src/Gruntz/StateMgrBZ.cpp
 
 // ---- ClassUnknown_81 ----

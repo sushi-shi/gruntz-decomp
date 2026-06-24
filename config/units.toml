@@ -269,6 +269,11 @@ source = "src/Gruntz/MotionState.cpp"
 flags = "base"
 
 [[unit]]
+unit = "zvec"
+source = "src/Wap32/ZVec.cpp"
+flags = "base"
+
+[[unit]]
 unit = "userbaselink"
 source = "src/Gruntz/UserBaseLink.cpp"
 flags = "eh"

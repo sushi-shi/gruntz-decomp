@@ -51,7 +51,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	339	0
+engine_discovered	334	0
 engine_label_stubs	519	118
 filemem	8	7
 filestream	13	9
@@ -159,6 +159,7 @@ wwdgameobject	7	2
 wwdgrid	7	4
 wwdspatialmgr	7	4
 zutil	2	2
+zvec	5	2
 # [functions]	unit	function	best_pct	cur_pct	tries	src_hash	rva
 actionoptionsmenubar	??0CActionOptionsMenuBar@@QAE@XZ	64.3500	64.3500	1	776faf88a5cc	0x9090
 actionoptionsmenubar	?Activate@CActionOptionsMenuBar@@QAEHH@Z	100.0000	100.0000	2	21e9324cee9b	0x9300
@@ -858,11 +859,6 @@ engine_discovered	?ClassUnknown_74_16e360@ClassUnknown_74@@QAEXXZ	0.4000	0.4000	
 engine_discovered	?ClassUnknown_75_0a9cc0@ClassUnknown_75@@QAEXXZ	1.1905	1.1905	1	4e1a9a579eac	0xa9cc0
 engine_discovered	?ClassUnknown_76_0aa5a0@ClassUnknown_76@@QAEXXZ	1.1905	1.1905	1	459253cf8cd4	0xaa5a0
 engine_discovered	?ClassUnknown_77_16ecd0@ClassUnknown_77@@QAEXXZ	0.0718	0.0718	1	aecffd120170	0x16ecd0
-engine_discovered	?ClassUnknown_78_008750@ClassUnknown_78@@QAEXXZ	14.2857	14.2857	1	504c0300f8b3	0x8750
-engine_discovered	?ClassUnknown_78_0310f0@ClassUnknown_78@@QAEXXZ	0.7143	0.7143	1	c7b54b542594	0x310f0
-engine_discovered	?ClassUnknown_78_0312a0@ClassUnknown_78@@QAEXXZ	0.8889	0.8889	1	e8547a937ee6	0x312a0
-engine_discovered	?ClassUnknown_78_16da80@ClassUnknown_78@@QAEXXZ	0.3540	0.3540	1	a25c866a6d05	0x16da80
-engine_discovered	?ClassUnknown_78_16df40@ClassUnknown_78@@QAEXXZ	7.6923	7.6923	1	d593bf15723e	0x16df40
 engine_discovered	?ClassUnknown_81_00b790@ClassUnknown_81@@QAEXXZ	20.0000	20.0000	1	0debda0fc977	0xb790
 engine_discovered	?ClassUnknown_81_00c090@ClassUnknown_81@@QAEXXZ	0.4082	0.4082	1	6141a9bee099	0xc090
 engine_discovered	?ClassUnknown_81_00c200@ClassUnknown_81@@QAEXXZ	0.8333	0.8333	1	b385c318ecff	0xc200
@@ -2150,7 +2146,7 @@ streamvoice	?Configure@StreamVoice@@QAEHHHHH@Z	100.0000	100.0000	1	8ec6fd23b06a	
 streamvoice	?SetSource@StreamVoice@@QAEHPAUStreamSource@@@Z	100.0000	100.0000	1	6052f26a3cfc	0x1374c0
 symparser	??1CSymParser@@QAE@XZ	97.9725	97.9725	1	753911be15cf	0x13abc0
 symparser	?AddNode@CSymParser@@QAEXPAX@Z	100.0000	100.0000	1	9dbc0f9a4b8a	0x13c210
-symparser	?Clear@CSymParser@@QAEPAXH@Z	91.3803	91.3803	1	4dc23de213ed	0x13b850
+symparser	?Clear@CSymParser@@QAEPAXH@Z	91.3803	91.3803	2	d1a32a225d01	0x13b850
 symparser	?ResolvePath@CSymParser@@QAEPAXPBD@Z	100.0000	100.0000	1	d2f5951f4d21	0x13c030
 symparser	?ResolveQualified@CSymParser@@QAEHPBDPAX@Z	100.0000	100.0000	1	65f97a6deb84	0x13bff0
 symtab	??1CSymTab@@QAE@XZ	88.7245	88.7245	1	3d0073f2a05b	0x139ee0
@@ -2403,3 +2399,8 @@ wwdspatialmgr	?RemoveObject@CWwdSpatialMgr@@QAEXPAVCWwdObject@@@Z	100.0000	100.0
 wwdspatialmgr	?ScrollTo@CWwdSpatialMgr@@QAEHHH@Z	66.1023	66.1023	2	fc9dd921bcc1	0x168340
 zutil	_zcalloc	100.0000	100.0000	1	55f82c5a172f	0x188410
 zutil	_zcfree	100.0000	100.0000	1	e741567a7e95	0x188430
+zvec	??1zDArray@@QAE@XZ	100.0000	100.0000	1	acb35fa292bc	0x16df40
+zvec	?Destroy@zDArray@@QAEHXZ	69.2857	69.2857	1	8a4eaadaa868	0x8750
+zvec	?GrowTo@_zvec@@QAEPAXHH@Z	80.3894	80.3894	1	bb1a6a216ece	0x16da80
+zvec	?IndexToPtr@_zvec@@QAEHH@Z	83.7778	83.7778	1	5cf87796de76	0x312a0
+zvec	?IndexToPtr@zDArray@@QAEHH@Z	100.0000	100.0000	1	3b12ca64f379	0x310f0
