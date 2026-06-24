@@ -300,8 +300,6 @@ void CMenuState::CMenuState_0a0d40() {}
 //   0x18c022 CRT libm routine (fyl2x/fstcw == pow/log; not a method)
 RVA(0x00007c20, 0x2a)
 void NetUnattributed::NetUnattributed_007c20() {}
-RVA(0x00024450, 0x29)
-void NetUnattributed::NetUnattributed_024450() {}
 RVA(0x00099d10, 0x20)
 void NetUnattributed::NetUnattributed_099d10() {}
 RVA(0x000b89e0, 0xc8)
@@ -1193,30 +1191,6 @@ void ClassUnknown_88::ClassUnknown_88_0311b0() {}
 // ---- ClassUnknown_89 ----
 RVA(0x0014c9f0, 0x5a6)
 void ClassUnknown_89::ClassUnknown_89_14c9f0() {}
-
-// ---- ClassUnknown_9 ----
-RVA(0x000239d0, 0xf)
-void ClassUnknown_9::ClassUnknown_9_0239d0() {}
-RVA(0x000239f0, 0xc)
-void ClassUnknown_9::ClassUnknown_9_0239f0() {}
-RVA(0x00023a10, 0xe7)
-void ClassUnknown_9::ClassUnknown_9_023a10() {}
-RVA(0x00023bc0, 0x25)
-void ClassUnknown_9::ClassUnknown_9_023bc0() {}
-RVA(0x00023c00, 0x1c)
-void ClassUnknown_9::ClassUnknown_9_023c00() {}
-RVA(0x00023c30, 0x47)
-void ClassUnknown_9::ClassUnknown_9_023c30() {}
-RVA(0x00023ca0, 0x47)
-void ClassUnknown_9::ClassUnknown_9_023ca0() {}
-RVA(0x00023d10, 0x5a)
-void ClassUnknown_9::ClassUnknown_9_023d10() {}
-RVA(0x00024890, 0x18d)
-void ClassUnknown_9::ClassUnknown_9_024890() {}
-RVA(0x00024a90, 0x20)
-void ClassUnknown_9::ClassUnknown_9_024a90() {}
-RVA(0x00085bd0, 0x56)
-void ClassUnknown_9::ClassUnknown_9_085bd0() {}
 
 // ---- ClassUnknown_90 ----
 RVA(0x001d38a1, 0x9)

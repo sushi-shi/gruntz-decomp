@@ -210,7 +210,6 @@ public:
 class NetUnattributed {
 public:
     void NetUnattributed_007c20();
-    void NetUnattributed_024450();
     void NetUnattributed_099d10();
     void NetUnattributed_0b89e0();
     void NetUnattributed_0f93b0();
@@ -867,20 +866,6 @@ public:
 class ClassUnknown_89 {
 public:
     void ClassUnknown_89_14c9f0();
-};
-class ClassUnknown_9 {
-public:
-    void ClassUnknown_9_0239d0();
-    void ClassUnknown_9_0239f0();
-    void ClassUnknown_9_023a10();
-    void ClassUnknown_9_023bc0();
-    void ClassUnknown_9_023c00();
-    void ClassUnknown_9_023c30();
-    void ClassUnknown_9_023ca0();
-    void ClassUnknown_9_023d10();
-    void ClassUnknown_9_024890();
-    void ClassUnknown_9_024a90();
-    void ClassUnknown_9_085bd0();
 };
 class ClassUnknown_90 {
 public:

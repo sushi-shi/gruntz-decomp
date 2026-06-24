@@ -339,6 +339,11 @@ source = "src/Gruntz/GruntzCommand.cpp"
 flags = "base"
 
 [[unit]]
+unit = "gruntzcmdmgr"
+source = "src/Gruntz/GruntzCmdMgr.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "engine_label_stubs"
 source = "src/Stub/All.cpp"
 flags = "base"

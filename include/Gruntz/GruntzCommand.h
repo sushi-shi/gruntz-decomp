@@ -105,6 +105,7 @@ class CGruntzSingleCommand : public CGruntzCommand {
 public:
     CGruntzSingleCommand() {} // inline empty ctor (vftable store only)
     static CGruntzSingleCommand* Allocate();
+    static void FreeAll(); // 0x024450 - drain g_singleCmdList, delete each node
 };
 
 // ---------------------------------------------------------------------------

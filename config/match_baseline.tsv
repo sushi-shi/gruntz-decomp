@@ -47,7 +47,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	436	0
+engine_discovered	424	0
 engine_label_stubs	525	121
 filestream	13	9
 font	21	10
@@ -65,7 +65,8 @@ gruntpuddle	4	2
 gruntspawnconfig	10	4
 gruntvoice	4	3
 gruntzapp	10	8
-gruntzcommand	9	9
+gruntzcmdmgr	11	9
+gruntzcommand	10	10
 gruntzmgr	51	39
 gruntzsoundz	8	7
 gruntzwnd	2	1
@@ -900,17 +901,6 @@ engine_discovered	?ClassUnknown_96_03c8f0@ClassUnknown_96@@QAEXXZ	0.7692	0.7692	
 engine_discovered	?ClassUnknown_97_058ee0@ClassUnknown_97@@QAEXXZ	1.0000	1.0000	1	fa315db7bdcd	0x58ee0
 engine_discovered	?ClassUnknown_98_056da0@ClassUnknown_98@@QAEXXZ	0.5263	0.5263	1	908ad32a140c	0x56da0
 engine_discovered	?ClassUnknown_99_046850@ClassUnknown_99@@QAEXXZ	1.1905	1.1905	1	682e379fb996	0x46850
-engine_discovered	?ClassUnknown_9_0239d0@ClassUnknown_9@@QAEXXZ	10.0000	10.0000	1	bbde329e1a28	0x239d0
-engine_discovered	?ClassUnknown_9_0239f0@ClassUnknown_9@@QAEXXZ	20.0000	20.0000	1	5f8c4bff3789	0x239f0
-engine_discovered	?ClassUnknown_9_023a10@ClassUnknown_9@@QAEXXZ	0.4211	0.4211	1	a9cff2174a47	0x23a10
-engine_discovered	?ClassUnknown_9_023bc0@ClassUnknown_9@@QAEXXZ	5.8824	5.8824	1	a63fd1122cb0	0x23bc0
-engine_discovered	?ClassUnknown_9_023c00@ClassUnknown_9@@QAEXXZ	11.1111	11.1111	1	3d8bf16cd90b	0x23c00
-engine_discovered	?ClassUnknown_9_023c30@ClassUnknown_9@@QAEXXZ	1.3793	1.3793	1	9a5d1e930385	0x23c30
-engine_discovered	?ClassUnknown_9_023ca0@ClassUnknown_9@@QAEXXZ	1.3793	1.3793	1	59fdc42584ec	0x23ca0
-engine_discovered	?ClassUnknown_9_023d10@ClassUnknown_9@@QAEXXZ	1.2121	1.2121	1	e5d475016b8c	0x23d10
-engine_discovered	?ClassUnknown_9_024890@ClassUnknown_9@@QAEXXZ	0.2395	0.2395	1	17dd8dfc991d	0x24890
-engine_discovered	?ClassUnknown_9_024a90@ClassUnknown_9@@QAEXXZ	3.6364	3.6364	1	6b404c8cb124	0x24a90
-engine_discovered	?ClassUnknown_9_085bd0@ClassUnknown_9@@QAEXXZ	4.5455	4.5455	1	8adfcdc9c3d0	0x85bd0
 engine_discovered	?CmdHost_0953f0_08cf30@CmdHost_0953f0@@QAEXXZ	4.7619	4.7619	1	b754770039fb	0x8cf30
 engine_discovered	?CmdHost_0953f0_095140@CmdHost_0953f0@@QAEXXZ	1.0000	1.0000	1	51dfad8f6659	0x95140
 engine_discovered	?EngStr_115440@EngStr@@QAEXXZ	3.5714	3.5714	1	4df860a030a3	0x115440
@@ -945,7 +935,6 @@ engine_discovered	?MallocCtor_17fdb0_17fdf0@MallocCtor_17fdb0@@QAEXXZ	20.0000	20
 engine_discovered	?MinervaInner_1366f0@MinervaInner@@QAEXXZ	0.3361	0.3361	1	2a21de0ffbb9	0x1366f0
 engine_discovered	?MinervaInner_136910@MinervaInner@@QAEXXZ	0.3704	0.3704	1	436780529d10	0x136910
 engine_discovered	?NetUnattributed_007c20@NetUnattributed@@QAEXXZ	1.9048	1.9048	1	4afeaf0bfb22	0x7c20
-engine_discovered	?NetUnattributed_024450@NetUnattributed@@QAEXXZ	6.6667	6.6667	1	59e0c154223f	0x24450
 engine_discovered	?NetUnattributed_099d10@NetUnattributed@@QAEXXZ	10.0000	10.0000	1	3ba875542c5c	0x99d10
 engine_discovered	?NetUnattributed_0b89e0@NetUnattributed@@QAEXXZ	1.4085	1.4085	1	5f776acc84a9	0xb89e0
 engine_discovered	?NetUnattributed_0f93b0@NetUnattributed@@QAEXXZ	5.5556	5.5556	1	4820ee39e2d6	0xf93b0
@@ -1726,12 +1715,24 @@ gruntzapp	?ShowMessage@CGruntzApp@@QAEXPADPAUHWND__@@@Z	100.0000	100.0000	3	6f4b
 gruntzapp	?Stub_112820@CGruntzApp@@QAEXXZ	20.0000	20.0000	4	5c05d76328a4	0x112820
 gruntzapp	?VirtualUnknownMethod03@CGruntzApp@@UAEHPAUHINSTANCE__@@PAD11HHH@Z	100.0000	100.0000	4	3b37ac9526be	0x80930
 gruntzapp	?VirtualUnknownMethod04@CGruntzApp@@UAEHHHH@Z	100.0000	100.0000	6	04de218aad44	0x80aa0
+gruntzcmdmgr	??1CGruntzCmdMgr@@QAE@XZ	100.0000	100.0000	1	d02a34496b22	0x85bd0
+gruntzcmdmgr	?Clear@CGruntzCmdMgr@@QAEXXZ	100.0000	100.0000	1	779423d9febc	0x23c00
+gruntzcmdmgr	?ClearAndReset@CGruntzCmdMgr@@QAEXXZ	100.0000	100.0000	1	5b76866c84ec	0x239f0
+gruntzcmdmgr	?DrainBase@CGruntzCmdMgr@@QAEXXZ	100.0000	100.0000	1	f12916b39a32	0x23bc0
+gruntzcmdmgr	?EnqueueCommand@CGruntzCmdMgr@@QAEXHPAX@Z	100.0000	100.0000	1	09a6640d76df	0x23d10
+gruntzcmdmgr	?EnqueueMulti@CGruntzCmdMgr@@QAEXHDHPAEDFFD@Z	100.0000	100.0000	1	3b920899e431	0x23ca0
+gruntzcmdmgr	?EnqueueSingle@CGruntzCmdMgr@@QAEXHDDDFFDD@Z	100.0000	100.0000	1	31c4335e0c8c	0x23c30
+gruntzcmdmgr	?IsActive@CGruntzCmdMgr@@QAEHH@Z	100.0000	100.0000	1	7e1c4da11ea7	0x24a90
+gruntzcmdmgr	?ScanTargets@CGruntzCmdMgr@@QAEHH@Z	93.8421	93.8421	1	dad8f27c81a9	0x23a10
+gruntzcmdmgr	?Serialize@CGruntzCmdMgr@@QAEHPAVGzStream@@HHH@Z	8.0838	8.0838	1	d609e4f3f663	0x24890
+gruntzcmdmgr	?SetMgr@CGruntzCmdMgr@@QAEHPAUGzMgr@@@Z	100.0000	100.0000	1	faa13b5d1edf	0x239d0
 gruntzcommand	??_GCGruntzCommand@@UAEPAXI@Z	100.0000	100.0000	1	cpp:c78f93a7a299	0x24330
 gruntzcommand	?Allocate@CGruntzMultiCommand@@SAPAV1@XZ	100.0000	100.0000	3	a0fc7f099d4c	0x24360
 gruntzcommand	?Allocate@CGruntzSingleCommand@@SAPAV1@XZ	100.0000	100.0000	3	d7f3faca637e	0x24220
 gruntzcommand	?ApplyMask@CGruntzCommand@@QAEHPAUCGruntzCmdTarget@@@Z	100.0000	100.0000	2	c47cdeaf846d	0x24190
 gruntzcommand	?ApplyOne@CGruntzCommand@@QAEHPAUCGruntzCmdTarget@@@Z	100.0000	100.0000	2	bebca49f3289	0x24140
 gruntzcommand	?FreeAll@CGruntzMultiCommand@@SAXXZ	100.0000	100.0000	1	a52eb4303e98	0x24490
+gruntzcommand	?FreeAll@CGruntzSingleCommand@@SAXXZ	100.0000	100.0000	1	4e0ead03e65c	0x24450
 gruntzcommand	?SetMaskFromList@CGruntzCommand@@QAEHDDDFFHPAE@Z	100.0000	100.0000	4	3127710483d2	0x23ed0
 gruntzcommand	?SetParams@CGruntzCommand@@UAEHDDDFF@Z	100.0000	100.0000	2	d1452a90a202	0x23e20
 gruntzcommand	?SetParamsEx@CGruntzCommand@@QAEHDDDFFDD@Z	100.0000	100.0000	2	6b462beb4099	0x23e60

@@ -157,6 +157,23 @@ CGruntzMultiCommand* CGruntzMultiCommand::Allocate() {
 }
 
 // ---------------------------------------------------------------------------
+// CGruntzSingleCommand::FreeAll() - 0x024450. Drain the per-class recycle list
+// (g_singleCmdList): while non-empty, RemoveTail() a node and `delete` it (the
+// virtual scalar-deleting dtor with flag 1). A static method (no this). (Retail
+// FLIRT-misattributed this RVA as NetUnattributed_024450; it is the single-cmd
+// twin of CGruntzMultiCommand::FreeAll below.)
+// ---------------------------------------------------------------------------
+RVA(0x00024450, 0x29)
+void CGruntzSingleCommand::FreeAll() {
+    while (g_singleCmdCount) {
+        CGruntzCommand* node = (CGruntzCommand*)g_singleCmdList.RemoveTail();
+        if (node) {
+            delete node;
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
 // CGruntzMultiCommand::FreeAll() - 0x024490. Drain the per-class recycle list:
 // while it is non-empty, RemoveTail() a node and `delete` it (the virtual
 // scalar-deleting dtor with flag 1). A static method (no this).
