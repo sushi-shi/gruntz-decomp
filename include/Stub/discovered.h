@@ -539,16 +539,6 @@ public:
     void CTileTriggerTransition_0117f0();
     void CTileTriggerTransition_110070();
 };
-class CTimer {
-public:
-    void CTimer_09bab0();
-    void CTimer_09bc70();
-    void CTimer_09bca0();
-    void CTimer_09bfa0();
-    void CTimer_09c0e0();
-    void CTimer_09c1c0();
-    void CTimer_09c2e0();
-};
 class CToobSpikez {
 public:
     void CToobSpikez_012c60();

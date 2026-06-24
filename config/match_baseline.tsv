@@ -36,7 +36,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	18	17
 directsoundmgr	26	19
-engine_discovered	976	0
+engine_discovered	969	0
 engine_label_stubs	537	120
 filestream	13	9
 font	16	9
@@ -74,7 +74,7 @@ registryhelper	8	8
 rezmgr	10	6
 savegame	18	13
 sbi_rectonly	17	1
-spriteloaders	2	0
+spriteloaders	9	4
 spriteresource	4	1
 statusbaritem	2	1
 statusbarupdaters	7	0
@@ -668,13 +668,6 @@ engine_discovered	?CTileTrigger_011290@CTileTrigger@@QAEXXZ	5.8824	5.8824	1	ceb7
 engine_discovered	?CTileTrigger_011540@CTileTrigger@@QAEXXZ	5.8824	5.8824	1	fd610e4c4425	0x11540
 engine_discovered	?CTileTrigger_011600@CTileTrigger@@QAEXXZ	5.8824	5.8824	1	147b88189e11	0x11600
 engine_discovered	?CTileTrigger_0116c0@CTileTrigger@@QAEXXZ	5.8824	5.8824	1	ab7e785ceb1d	0x116c0
-engine_discovered	?CTimer_09bab0@CTimer@@QAEXXZ	5.2632	5.2632	1	b978d7d24406	0x9bab0
-engine_discovered	?CTimer_09bc70@CTimer@@QAEXXZ	11.1111	11.1111	1	e35e0808a0bd	0x9bc70
-engine_discovered	?CTimer_09bca0@CTimer@@QAEXXZ	0.1878	0.1878	1	4341de05549d	0x9bca0
-engine_discovered	?CTimer_09bfa0@CTimer@@QAEXXZ	0.5556	0.5556	1	cd1987164c9d	0x9bfa0
-engine_discovered	?CTimer_09c0e0@CTimer@@QAEXXZ	0.7143	0.7143	1	33b1b03f8779	0x9c0e0
-engine_discovered	?CTimer_09c1c0@CTimer@@QAEXXZ	0.3774	0.3774	1	c1fbcc4cd8d4	0x9c1c0
-engine_discovered	?CTimer_09c2e0@CTimer@@QAEXXZ	0.1587	0.1587	1	5ab2f083134e	0x9c2e0
 engine_discovered	?CToobSpikez_012c60@CToobSpikez@@QAEXXZ	5.8824	5.8824	1	d16ff0f9da5d	0x12c60
 engine_discovered	?CToobSpikez_114860@CToobSpikez@@QAEXXZ	0.5333	0.5333	1	0b1c4042697d	0x114860
 engine_discovered	?CUserLogic_00f2f0@CUserLogic@@QAEXXZ	2.2727	2.2727	1	211acac7460b	0xf2f0
@@ -2146,7 +2139,7 @@ projectile	??1CProjectile@@UAE@XZ	89.8367	89.8367	1	8e9ce0f777d4	0xdef60
 projectile	?DetachRenderObj@CProjectile@@QAEHXZ	100.0000	100.0000	1	8819d855c6a1	0xe05e0
 projectile	?LaunchSound@CProjectile@@QAEHPBD@Z	44.4444	44.4444	1	80db51c5492c	0xe2190
 projectile	?ReleaseDeferred@CProjectile@@QAEXH@Z	100.0000	100.0000	1	9f0d0b9073ac	0x13c70
-projectile	?ScanTargets@CProjectile@@QAEXH@Z	93.9254	93.9254	1	fa0ecdb9e710	0xe0b10
+projectile	?ScanTargets@CProjectile@@QAEXH@Z	93.9254	93.9254	2	4d63241c38f4	0xe0b10
 projectile	?StepMotion@CProjectile@@QAEXXZ	70.6977	70.6977	1	c70c55970a61	0xe08b0
 randomambientsound	??1CRandomAmbientSound@@QAE@XZ	100.0000	100.0000	1	745bfd96f836	0x85ed0
 randomambientsound	?Init@CRandomAmbientSound@@QAEHPAX0@Z	100.0000	100.0000	1	72b286fbf88a	0xb5e0
@@ -2208,8 +2201,15 @@ sbi_rectonly	?UpdateRezMachineSnoozeStatusBar@CSBI_RectOnly@@QAEXXZ	3.4483	3.448
 sbi_rectonly	?UpdateRezMachineWakeStatusBar@CSBI_RectOnly@@QAEXXZ	3.2258	3.2258	1	74fc495868ec	0x107a10
 sbi_rectonly	?UpdateStatusBarTabHighlight@CSBI_RectOnly@@QAEXHHH@Z	0.1099	0.1099	1	d6cb44eb22ea	0xfe910
 sbi_rectonly	?winapi_107d00_SetRect@CSBI_RectOnly@@QAEHXZ	0.5155	0.5155	1	6df81b8626ce	0x107d00
+spriteloaders	?AddTime@CTimer@@QAEXHH@Z	94.2679	94.2679	1	08fa44eb6f44	0x9c0e0
+spriteloaders	?Draw@CTimer@@QAEHHH@Z	100.0000	100.0000	1	102a51ac3439	0x9bfa0
+spriteloaders	?HandleEvent@CTimer@@QAEHPAUCTimerArchive@@HHH@Z	88.1132	88.1132	1	55bf7ce080e8	0x9c1c0
+spriteloaders	?Init@CTimer@@QAEPAV1@XZ	100.0000	100.0000	1	ea7798c3ab3c	0x9bab0
 spriteloaders	?LoadLoadingBarSprite@CLoadingBar@@QAEHXZ	95.8064	95.8064	6	442edc48da87	0xd7440
 spriteloaders	?LoadTimerSprite@CTimer@@QAEHHH@Z	96.5217	96.5217	6	a776461ab6b3	0x9bb00
+spriteloaders	?Reset@CTimer@@QAEXXZ	100.0000	100.0000	1	f198e826ac7a	0x9bc70
+spriteloaders	?Serialize@CTimer@@QAEHPAUCTimerArchive@@@Z	100.0000	100.0000	1	c1b244fe8407	0x9c2e0
+spriteloaders	?Tick@CTimer@@QAEHH@Z	85.7981	85.7981	1	7f65eaab9408	0x9bca0
 spriteresource	?ApplyLookupGeometry@CGruntAnimPlayer@@QAEHPBDH@Z	93.9394	93.9394	3	cd6a16205bc5	0x1505b0
 spriteresource	?CacheFirstFrame@CGruntSprite@@QAEXPBD@Z	89.2647	89.2647	3	9b5d1b0e8b71	0x150540
 spriteresource	?ConfigureItem@CStatusBarMgr@@QAEHHHHH@Z	100.0000	100.0000	3	e63c64317935	0x1360d0

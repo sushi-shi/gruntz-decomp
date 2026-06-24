@@ -830,22 +830,6 @@ void CTileTriggerTransition::CTileTriggerTransition_0117f0() {}
 RVA(0x00110070, 0x71)
 void CTileTriggerTransition::CTileTriggerTransition_110070() {}
 
-// ---- CTimer ----
-RVA(0x0009bab0, 0x35)
-void CTimer::CTimer_09bab0() {}
-RVA(0x0009bc70, 0x18)
-void CTimer::CTimer_09bc70() {}
-RVA(0x0009bca0, 0x25d)
-void CTimer::CTimer_09bca0() {}
-RVA(0x0009bfa0, 0xb4)
-void CTimer::CTimer_09bfa0() {}
-RVA(0x0009c0e0, 0xa3)
-void CTimer::CTimer_09c0e0() {}
-RVA(0x0009c1c0, 0xdb)
-void CTimer::CTimer_09c1c0() {}
-RVA(0x0009c2e0, 0x2b6)
-void CTimer::CTimer_09c2e0() {}
-
 // ---- CToobSpikez ----
 RVA(0x00012c60, 0x44)
 void CToobSpikez::CToobSpikez_012c60() {}
