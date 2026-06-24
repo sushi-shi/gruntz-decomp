@@ -97,7 +97,8 @@ public:
     char m_pad4d[0x150 - 0x4d];
     int m_150; // +0x150 BeginFrameClear arg
     int m_154; // +0x154 BeginFrameClear arg
-    char m_pad158[0x160 - 0x158];
+    int m_158; // +0x158 drag/select snap origin X
+    int m_15c; // +0x15c drag/select snap origin Y
     // +0x160..+0x1a4: the per-axis scroll/input state block StepInputA walks
     // (two mirrored halves; four extents seeded to 0x40 by the ctor).
     int m_160; // +0x160 first-half axis value

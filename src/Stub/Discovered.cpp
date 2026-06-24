@@ -403,7 +403,13 @@ void CParticlez::CParticlez_012d90() {}
 RVA(0x00046d30, 0x102)
 void CParticlez::CParticlez_046d30() {}
 
-// ---- CPlay ----
+// ---- CPlay ---- HandleDragMove (0xd0db0) reconstructed in src/Gruntz/CPlay.cpp.
+// MISATTRIBUTION CONFIRMED: the 0x08d270 / 0x0b6110-0x0bc420 cluster is NOT CPlay
+// (whose layout tops out at +0x510). Each touches a networking/lobby sub-object at
+// member offsets >0x510 (this+0x524/0x580/0x59c/0x5a0/0x5bc/0x604) and the
+// MULTI_JOIN / "Error: %s - %i" lobby strings; 0x08d270 is that net class's EH-frame
+// destructor (vtables 0x5e9fe4/0x5ea0bc/0x5ea21c, sub-objects to +0x604). Left
+// stubbed for a dedicated networking TU - do NOT reconstruct as CPlay.
 RVA(0x0008d270, 0x124)
 void CPlay::CPlay_08d270() {}
 RVA(0x000b6110, 0xc7)
@@ -426,8 +432,11 @@ RVA(0x000bc250, 0x55)
 void CPlay::CPlay_0bc250() {}
 RVA(0x000bc420, 0x2b)
 void CPlay::CPlay_0bc420() {}
-RVA(0x000d0db0, 0x347)
-void CPlay::CPlay_0d0db0() {}
+// 0x0d1b60 (3119 B) IS a genuine CPlay method (offsets <=0x464, uses g_64556c/
+// g_644c54/g_buteMgr, strings GAME_BADSELECT/PlayerDefenderRadius/Grunt) - the big
+// selection/command dispatcher built on a jump table (switchdataD_004d2790, 40
+// calls, 104 branches). Too large/entangled to converge in breadth-first mode;
+// deferred to the final sweep (leaf-first redo) - do NOT half-reconstruct.
 RVA(0x000d1b60, 0xc2f)
 void CPlay::CPlay_0d1b60() {}
 

@@ -34,13 +34,13 @@ cdirectdrawmgr	15	9
 chatbox	16	9
 chatbox_eh	1	1
 clightfxrender	19	8
-cplay	26	8
+cplay	27	8
 cstatusbarmgr	1	0
 deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	755	0
+engine_discovered	754	0
 engine_label_stubs	534	121
 filestream	13	9
 font	16	9
@@ -318,6 +318,7 @@ cplay	?BuildHelpReveal@CPlay@@QAEHXZ	67.8125	67.8125	1	7227ae443c4e	0xd72c0
 cplay	?DispatchHudClick@CPlay@@QAEHHHH@Z	72.0125	72.0125	1	f6e34fd67003	0xce530
 cplay	?DrawWorldFrame@CPlay@@QAEXXZ	94.4118	94.4118	2	c6806eebd846	0xc9c20
 cplay	?DrawWorldFrames@CPlay@@QAEHXZ	88.8529	88.8529	1	da4eeef3e9b0	0xc9cc0
+cplay	?HandleDragMove@CPlay@@QAEHHHH@Z	34.9732	34.9732	1	4aa4084db2ac	0xd0db0
 cplay	?LoadCursorSprites@CPlay@@QAEXHH@Z	0.1664	0.1664	1	d2c16912a1e6	0xd0120
 cplay	?LoadScrollSpeedOptions@CPlay@@QAEXXZ	0.5000	0.5000	1	1bb238e16fd9	0xd12b0
 cplay	?OnRegion1@CPlay@@QAEHH@Z	100.0000	100.0000	5	b483a19efb4f	0xd8aa0
@@ -553,7 +554,6 @@ engine_discovered	?CPlay_0b7f60@CPlay@@QAEXXZ	1.6000	1.6000	1	adb894d010a4	0xb7f
 engine_discovered	?CPlay_0b7fe0@CPlay@@QAEXXZ	5.8824	5.8824	1	7bca5cbacf82	0xb7fe0
 engine_discovered	?CPlay_0bc250@CPlay@@QAEXXZ	1.2500	1.2500	1	04d05816ea21	0xbc250
 engine_discovered	?CPlay_0bc420@CPlay@@QAEXXZ	7.6923	7.6923	1	f82a60085ff8	0xbc420
-engine_discovered	?CPlay_0d0db0@CPlay@@QAEXXZ	0.1533	0.1533	1	646388cda988	0xd0db0
 engine_discovered	?CPlay_0d1b60@CPlay@@QAEXXZ	0.0452	0.0452	1	7c783745d488	0xd1b60
 engine_discovered	?CRollingBall_012f80@CRollingBall@@QAEXXZ	5.8824	5.8824	1	c3e5dcb9f3b3	0x12f80
 engine_discovered	?CRollingBall_0b0fe0@CRollingBall@@QAEXXZ	0.2139	0.2139	1	a6e364c8e14c	0xb0fe0

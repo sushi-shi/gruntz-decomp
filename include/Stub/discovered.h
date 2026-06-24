@@ -294,7 +294,6 @@ public:
     void CPlay_0b7fe0();
     void CPlay_0bc250();
     void CPlay_0bc420();
-    void CPlay_0d0db0();
     void CPlay_0d1b60();
 };
 class CRollingBall {

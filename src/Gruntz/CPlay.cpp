@@ -931,6 +931,155 @@ int CPlay::BeginGridWalk(int key, int index, int e8, int delay, int hasGrid) {
 }
 
 // ===========================================================================
+// CPlay::HandleDragMove (0x0d0db0) - the per-frame drag/box-select update at
+// pointer (x,y) with selector `a`. Bails while the primary mode (m_4f8) or the
+// paused flag (m_500) is set. If an overlay is up (m_320) and the guts subsystem
+// isn't busy, forwards to the in-rect HUD drag. Then a 3-way:
+//   m_2e8  -> a drag is being snapped: snap to (m_158+x, m_15c+y) and re-arm m_4e4.
+//   m_4fc  -> an overlay drag: dispatch m_2dc->DragSelect and return.
+//   else   -> the world box-drag: point-test against the viewport box
+//             (m_c->m_24+0x10). INSIDE -> finish (clear m_2ec, normalize the sel
+//             rect, re-arm m_4e4); OUTSIDE -> continue the drag (post to m_2e0's
+//             hit-test, else either WorldPost the world-space delta or DragSelect
+//             + clamp the sel rect into the box, then the m_504 end-notify).
+// ===========================================================================
+// @early-stop
+// block-placement + min/max-clamp regalloc wall (~35%). Logic, control flow,
+// member offsets, the full call set, the box point-test and BOTH drag-rect clamp
+// ladders are byte-faithful; the RECT-local copy already forced the matching
+// `sub esp,0x10` frame and the goto folds the two snap/inside tails into retail's
+// shared Lf1a. The residual is non-source-steerable codegen choice: (1) retail
+// hoists the cold OUTSIDE-of-box clamp block to the function end (forward-jumped)
+// while MSVC here lays it inline after the box-test; (2) the m_320/m_2e8 probes
+// color into ecx vs eax; (3) the four min/max ternaries pick the eax/ecx operand
+// for the clamp the opposite way. The block-float matches the family in
+// docs/patterns/nested-if-success-deepest-error-tail.md; the regalloc residual is
+// docs/patterns/zero-register-pinning.md.
+RVA(0x000d0db0, 0x347)
+int CPlay::HandleDragMove(int a, int x, int y) {
+    // box corners declared (uninitialized) up front so the `goto rearm` tail
+    // doesn't cross their initialization (MSVC C2362); they're filled only on
+    // the box-drag path below and unused at the rearm label.
+    int left, top, right, bottom;
+    if (m_4f8 != 0) {
+        return 1;
+    }
+    if (m_500 != 0) {
+        return 1;
+    }
+    if (m_320 != 0 && m_2dc->m_0 != 2 && m_2dc->m_10c != 5) {
+        DragHudInRect(a, x, y);
+    }
+
+    if (m_2e8 != 0) {
+        if (m_2dc == 0) {
+            return 1;
+        }
+        DragSnapTo(m_158 + x, m_15c + y);
+        goto rearm; // -> shared m_4e4 re-arm tail
+    }
+
+    if (m_4fc != 0) {
+        m_2dc->DragSelect(a, x, y);
+        return 1;
+    }
+
+    // --- the world box-drag: point-test (x,y) against the viewport box ---
+    // (box copied to a 0x10 RECT local so the clamp ladders re-read top/right/
+    //  bottom from [esp+0x14/0x18/0x1c] across the DragSelect call. The INSIDE
+    //  path is the fall-through "success" so the OUTSIDE block floats to the
+    //  tail; see docs/patterns/nested-if-success-deepest-error-tail.md.)
+    RECT box = *(RECT*)((char*)m_c->m_24 + 0x10);
+    left = box.left;
+    top = box.top;
+    right = box.right;
+    bottom = box.bottom;
+    if (x >= left && x <= right && y >= top && y <= bottom) {
+        // INSIDE the box -> finish the drag.
+        if (m_2ec != 0) {
+            m_2dc->DragClear(-1);
+        }
+        m_2ec = 0;
+        if (m_30c != 0) {
+            // normalize {m_150,m_154}..{m_304,m_308} into min/max:
+            m_310.left = m_150 < m_304 ? m_150 : m_304;
+            m_310.right = m_150 > m_304 ? m_150 : m_304;
+            m_310.top = m_154 < m_308 ? m_154 : m_308;
+            m_310.bottom = m_154 > m_308 ? m_154 : m_308;
+            goto rearm; // -> shared m_4e4 re-arm tail
+        }
+
+        // m_30c == 0: the hit-test / world-post branch.
+        if (m_2e0->HitTest(x, y) != 0 || m_4w()->m_c != 0 || m_4f8 != 0 || m_368 != 0
+            || m_36c != 0) {
+            // (a second, distinct re-arm landing pad in retail.)
+            M4e4* s2 = m_4e4;
+            if (s2 == 0) {
+                return 1;
+            }
+            s2->m_40 |= 1;
+            return 1;
+        }
+        if (m_2f8 != 0) {
+            if (m_4e4 != 0) {
+                m_4e4->m_40 |= 1;
+            }
+        } else {
+            if (m_4e4 != 0) {
+                m_4e4->m_40 &= ~1;
+            }
+        }
+        CDrawSurface* v = m_c->m_24;
+        int wx = v->m_5c->m_40_0 - v->m_10 + x;
+        int wy = v->m_5c->m_40_4 - v->m_14 + y;
+        m_4w()->m_68->WorldPost(wx, wy);
+        return 1;
+    }
+
+    // OUTSIDE the box -> continue dragging (the cold block, floated to the tail).
+    if (m_4e4 != 0) {
+        m_4e4->m_40 |= 1;
+    }
+    m_2ec = 1;
+    m_2dc->DragSelect(a, x, y);
+    if (m_30c != 0) {
+        // clamp the selection rect into [box, m_304/m_308]:
+        int lo = m_150 > left ? m_150 : left;
+        m_310.left = lo;
+        if (lo >= m_304) {
+            m_310.left = m_304;
+        }
+        int hi = m_150 < right ? m_150 : right;
+        m_310.right = hi;
+        if (hi > m_304) {
+            m_310.right = m_304;
+        }
+        int tlo = m_154 <= top ? m_154 : top;
+        m_310.top = tlo;
+        if (tlo < m_308) {
+            m_310.top = m_308;
+        }
+        int thi = m_154 < bottom ? m_154 : bottom;
+        m_310.bottom = thi;
+        if (thi > m_308) {
+            m_310.bottom = m_308;
+        }
+    }
+    if (m_504 != 0 && m_4w()->m_68->m_2a8 == 0) {
+        EndDragSel();
+    }
+    return 1;
+
+rearm:
+    M4e4* s = m_4e4;
+    if (s == 0) {
+        return 1;
+    }
+    s->m_40 |= 1;
+    return 1;
+}
+
+// ===========================================================================
 // CPlay::BuildHelpReveal (0x0d72c0) - the per-frame help-overlay "wipe" animation.
 // Bails if there is no view (m_c->m_4->m_14). On the first frame (m_4bc==1) draws
 // the two static end-cap strips. Each frame computes the wipe column from the

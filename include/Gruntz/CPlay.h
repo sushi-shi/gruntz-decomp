@@ -162,6 +162,8 @@ struct CWorld {
         void StepFull(int now, int delta, int accum);
         // 0x78060: post a by-value HUD rect + flag (DispatchHudClick). reloc-masked.
         void HudRect(RECT r, int flag);
+        // 0x478a50: a world post (thiscall(a, b)) -> HandleDragMove out-of-box drag.
+        void WorldPost(int a, int b);
         char p0[0x230];
         int m_230; // +0x230  substep gate (cleared by ResetGoals)
         char p234[0x23c - 0x234];
@@ -169,9 +171,11 @@ struct CWorld {
             char p0[0x8];
             int m_8; // +0x8  flags (ResetGoals ORs 0x10000)
         }* m_23c;    // +0x23c  goal object (ResetGoals)
-    }* m_68;         // +0x68  -> +0x230 substep gate
-    void* m_6c;      // +0x6c  a frame-timer object (Eng_FrameTimerStep)
-    void* m_70;      // +0x70  an input sub-object
+        char p240[0x2a8 - 0x240];
+        int m_2a8; // +0x2a8  drag-end suppress flag (HandleDragMove tail)
+    }* m_68;       // +0x68  -> +0x230 substep gate
+    void* m_6c;    // +0x6c  a frame-timer object (Eng_FrameTimerStep)
+    void* m_70;    // +0x70  an input sub-object
     // +0x74: the sprite factory (BeginGridWalk loads the grid's frame sprite).
     struct CSpriteFactory {
         void* LoadSprite(void* desc, int flag); // 0x4e23c0 (thiscall)
@@ -268,11 +272,16 @@ public:
     int DispatchHudClick(int, int, int);        // 0x0ce530 (THIS TU)
     int BeginGridWalk(int, int, int, int, int); // 0x0d0920 (THIS TU)
     int StepGridWalk(int dt);                   // 0x0d0a60 (THIS TU)
+    int HandleDragMove(int a, int x, int y);    // 0x0d0db0 (THIS TU)
     int ResetGoals(int, int);                   // 0x0d5f00 (THIS TU)
     int BuildHelpReveal();                      // 0x0d72c0 (THIS TU)
     int RegisterInputBindings();                // 0x0d9160 (THIS TU)
     // leaf engine callees the above dispatch to (external, reloc-masked):
     void HudClickInRect(int a, int x, int y); // 0x4a9500 (thiscall on this)
+    // HandleDragMove's own leaf callees (external, reloc-masked):
+    void DragHudInRect(int a, int x, int y); // 0x4a95d0 (thiscall on this)
+    void DragSnapTo(int x, int y);           // 0x4fe860 (thiscall on this)
+    void EndDragSel();                       // 0x4da2d0 (thiscall on this)
 
     // ---- CPlay-specific members (offsets pinned by the Render disasm) ----
     int m_1a8; // +0x1a8  StepInputA latch-1 (one-shot)
@@ -284,6 +293,10 @@ public:
         void Step(int now);
         // 0x4ff9d0: a HUD click-at-point dispatch (thiscall(a, x, y)). reloc-masked.
         void HudClickAt(int a, int x, int y);
+        // 0x4ff9f0: the drag-select press/move dispatch (thiscall(a, x, y)). reloc-masked.
+        void DragSelect(int a, int x, int y);
+        // 0x501420: drag-select clear/cancel (thiscall(flag)). reloc-masked.
+        void DragClear(int flag);
         int m_0; // +0x0  subsystem state (==2 -> ready)
         char p4[0x10c - 0x4];
         int m_10c;
@@ -291,13 +304,19 @@ public:
         int m_550, m_554;
         char q[0x574 - 0x558];
         int m_574;
-    }* m_2dc;    // +0x2dc subsystem
-    void* m_2e0; // +0x2e0  marker push sink
+    }* m_2dc; // +0x2dc subsystem
+    // +0x2e0: a hit-test/region sink (HandleDragMove: m_2e0->HitTest(x, y)).
+    struct M2e0 {
+        int HitTest(int x, int y); // 0x421140 (thiscall) -> nonzero = consumed
+    }* m_2e0;
     void* m_2e4; // +0x2e4  begin-marker sink
-    int m_2e8;   // +0x2e8  HUD-click latch (cleared by DispatchHudClick)
-    char m_pad2ec[0x2f8 - 0x2ec];
+    int m_2e8;   // +0x2e8  HUD-click / drag-active latch
+    int m_2ec;   // +0x2ec  drag-in-progress latch (HandleDragMove)
+    char m_pad2f0[0x2f8 - 0x2f0];
     int m_2f8; // +0x2f8  level/state id (==0x66 -> booty-region init)
-    char m_pad2fc[0x30c - 0x2fc];
+    char m_pad2fc[0x304 - 0x2fc];
+    int m_304;  // +0x304  drag-clamp max X
+    int m_308;  // +0x308  drag-clamp max Y
     int m_30c;  // +0x30c  world-ready gate
     RECT m_310; // +0x310  a color/rect buffer fed to the HUD draw
     int m_320;  // +0x320  show-overlay gate / object ptr
@@ -305,7 +324,10 @@ public:
     int m_328, m_32c, m_330, m_334; // +0x328  booty-region 64-bit timer + interval + hi
     int m_338, m_33c, m_340, m_344; // +0x338  ambient-init timer + interval + hi
     int m_348;                      // +0x348  ambient-init DONE latch
-    char m_pad34c[0x3f4 - 0x34c];
+    char m_pad34c[0x368 - 0x34c];
+    int m_368; // +0x368  drag/select inhibit gate
+    int m_36c; // +0x36c  drag/select inhibit gate
+    char m_pad370[0x3f4 - 0x370];
     void* m_3f4; // +0x3f4  frame-marker/timeline object (+0x30..0x4c reset block)
     int m_3f8, m_3fc, m_400, m_404; // +0x3f8  AMBIENT-cue 64-bit timer + interval + hi
     int m_408;                      // +0x408  AMBIENT-cue toggle
@@ -346,7 +368,9 @@ public:
     int m_4dc;    // +0x4dc  step delay countdown
     int m_4e0;    // +0x4e0  current row index
     struct M4e4 {
-        char p0[0x5c];
+        char p0[0x40];
+        int m_40; // +0x40  drag/select state flags (bit0 = active)
+        char p44[0x5c - 0x44];
         int m_5c;
         int m_60;
     }* m_4e4;  // +0x4e4  StepScroll's scroll-offset sink (writes +0x5c/+0x60)
@@ -357,7 +381,8 @@ public:
     int m_4f8; // +0x4f8  PRIMARY mode switch
     int m_4fc; // +0x4fc  overlay-active flag
     int m_500; // +0x500  paused/no-step flag
-    char m_pad504[0x510 - 0x504];
+    int m_504; // +0x504  drag-end notify gate
+    char m_pad508[0x510 - 0x508];
     int m_510; // +0x510  per-frame countdown
 
     // Engine-label backlog stubs.
