@@ -406,6 +406,16 @@ source = "src/Gruntz/TileTriggerSwitchLogic.cpp"
 flags = "base"
 
 [[unit]]
+unit = "tiletriggercontainer"
+source = "src/Gruntz/TileTriggerContainer.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "tilegridcommand"
+source = "src/Gruntz/TileGridCommand.cpp"
+flags = "base"
+
+[[unit]]
 unit = "unknownsalazar"
 source = "src/Dsndmgr/UnknownSalazar.cpp"
 flags = "base"

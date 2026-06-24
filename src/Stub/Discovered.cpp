@@ -710,39 +710,32 @@ void CTeleporter::CTeleporter_0419e0() {}
 RVA(0x000110f0, 0x44)
 void CTileTriggerSwitch::CTileTriggerSwitch_0110f0() {}
 
-// ---- CTileTriggerSwitchLogic ----
+// ---- CTileTriggerSwitchLogic ---- (leftover misattributed cluster) Two distinct
+// classes were carved out of this block: the 3-CObList container
+// (src/Gruntz/TileTriggerContainer.cpp - dtor 0xc8640's lists + the list
+// move/find/remove accessors + the +0x74-buffer dtor 0x115f30) and the tile-grid
+// command class (src/Gruntz/TileGridCommand.cpp - RecordMove 0x112880 + Serialize
+// 0x113ae0).  The RVAs below are the remaining big/EH/switch/grid-math members of
+// those two classes, parked for the final sweep:
+//   container (CTileTriggerContainer): 0xc8640 (EH dtor), 116a40, 116cf0, 116fa0,
+//     117280 (EH), 117630, 117710, 117f60
+//   command   (CTileGridCommand):      112590, 112970, 112b70, 112c70
 RVA(0x000c8640, 0x70)
 void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_0c8640() {}
 RVA(0x00112590, 0x166)
 void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_112590() {}
-RVA(0x00112880, 0x12)
-void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_112880() {}
 RVA(0x00112970, 0xad)
 void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_112970() {}
 RVA(0x00112b70, 0x5a)
 void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_112b70() {}
 RVA(0x00112c70, 0xc4)
 void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_112c70() {}
-RVA(0x00113ae0, 0xe8)
-void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_113ae0() {}
-RVA(0x00115f30, 0x18)
-void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_115f30() {}
 RVA(0x00116a40, 0xf5)
 void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_116a40() {}
 RVA(0x00116cf0, 0x111)
 void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_116cf0() {}
-RVA(0x00116e60, 0x59)
-void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_116e60() {}
-RVA(0x00116f20, 0x51)
-void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_116f20() {}
 RVA(0x00116fa0, 0xc7)
 void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_116fa0() {}
-RVA(0x001170b0, 0x72)
-void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_1170b0() {}
-RVA(0x00117150, 0x53)
-void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_117150() {}
-RVA(0x00117200, 0x53)
-void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_117200() {}
 RVA(0x00117280, 0x2ec)
 void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_117280() {}
 RVA(0x00117630, 0x82)
