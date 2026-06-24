@@ -12,7 +12,7 @@
 #   src_hash = per-function source fingerprint (editing a fn bumps tries + resets best).
 # Query: python -m gruntz.match.status check | status | summary | diff <revA> [<revB>]
 # [units]	unit	n_functions	matched
-actionoptionsmenubar	1	0
+actionoptionsmenubar	11	3
 adler32	1	1
 advancedoptions	5	5
 appdialogs	1	1
@@ -36,7 +36,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	18	17
 directsoundmgr	26	19
-engine_discovered	1020	0
+engine_discovered	1010	0
 engine_label_stubs	537	120
 filestream	13	9
 font	16	9
@@ -93,7 +93,17 @@ wormhole	4	1
 wwdfile	6	1
 zutil	2	2
 # [functions]	unit	function	best_pct	cur_pct	tries	src_hash	rva
+actionoptionsmenubar	??0CActionOptionsMenuBar@@QAE@XZ	64.3500	64.3500	1	776faf88a5cc	0x9090
+actionoptionsmenubar	?Activate@CActionOptionsMenuBar@@QAEHH@Z	100.0000	100.0000	1	527c47b95d66	0x9300
+actionoptionsmenubar	?Clear@CActionOptionsMenuBar@@QAEXXZ	100.0000	100.0000	1	d46cb9fdd417	0x92e0
+actionoptionsmenubar	?Deactivate@CActionOptionsMenuBar@@QAEXXZ	100.0000	100.0000	1	df3470b2deae	0x97f0
+actionoptionsmenubar	?HitClick@CActionOptionsMenuBar@@QAEHHH@Z	80.9753	80.9753	1	3634bae7a2f9	0x9650
+actionoptionsmenubar	?HitHover@CActionOptionsMenuBar@@QAEHHH@Z	89.1633	89.1633	1	5eaa05a2883c	0x9760
+actionoptionsmenubar	?Init@CActionOptionsMenuBar@@QAEXHHHHHH@Z	76.6415	76.6415	1	1c4b81a22ff0	0x9220
 actionoptionsmenubar	?LoadAssets@CActionOptionsMenuBar@@QAEHXZ	84.8191	84.8191	3	fe4c1993a03e	0x90e0
+actionoptionsmenubar	?Refresh@CActionOptionsMenuBar@@QAEHXZ	0.0000	0.0000	1	5638b54134d3	0x9330
+actionoptionsmenubar	?Render@CActionOptionsMenuBar@@QAEHXZ	76.8762	76.8762	1	6bd0055e9d81	0x94c0
+actionoptionsmenubar	?Serialize@CActionOptionsMenuBar@@QAEHPAUCMenuArchive@@@Z	95.8667	95.8667	1	dfe97b94039e	0x9810
 adler32	_adler32	100.0000	100.0000	1	7d212c481a3f	0x1882d0
 advancedoptions	?AdvancedOptionsDialogProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	3	92601d43c5f5	0xafb0
 advancedoptions	?LoadOptions@@YAXPAUHWND__@@PAVRegistryHelper@Utils@@@Z	100.0000	100.0000	3	2a7ca29b4cee	0xb1b0
@@ -327,16 +337,6 @@ directsoundmgr	?StopAndRewind@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	2	113d919
 directsoundmgr	?Unlock@DirectSoundMgr@@QAEHPAXK0K@Z	100.0000	100.0000	2	bd0c20465b9b	0x1359c0
 directsoundmgr	?winapi_136e20_timeGetTime@DirectSoundMgr@@QAEHH@Z	2.6667	2.6667	1	f36707a76160	0x136e20
 directsoundmgr	?winapi_137ac0_timeGetTime@DirectSoundMgr@@QAEHH@Z	2.9231	2.9231	1	c0c048df20b6	0x137ac0
-engine_discovered	?CActionOptionsMenuBar_009090@CActionOptionsMenuBar@@QAEXXZ	5.0000	5.0000	1	71b6483f0c41	0x9090
-engine_discovered	?CActionOptionsMenuBar_009220@CActionOptionsMenuBar@@QAEXXZ	0.7547	0.7547	1	aa3f642fd9f3	0x9220
-engine_discovered	?CActionOptionsMenuBar_0092e0@CActionOptionsMenuBar@@QAEXXZ	50.0000	50.0000	1	f7afd34ee4d6	0x92e0
-engine_discovered	?CActionOptionsMenuBar_009300@CActionOptionsMenuBar@@QAEXXZ	6.6667	6.6667	1	e0be8fcd556f	0x9300
-engine_discovered	?CActionOptionsMenuBar_009330@CActionOptionsMenuBar@@QAEXXZ	0.9009	0.9009	1	f570ee0244a4	0x9330
-engine_discovered	?CActionOptionsMenuBar_0094c0@CActionOptionsMenuBar@@QAEXXZ	0.9524	0.9524	1	a3958a6aa7c1	0x94c0
-engine_discovered	?CActionOptionsMenuBar_009650@CActionOptionsMenuBar@@QAEXXZ	0.4938	0.4938	1	babf1570569e	0x9650
-engine_discovered	?CActionOptionsMenuBar_009760@CActionOptionsMenuBar@@QAEXXZ	0.8163	0.8163	1	ef1cca23b315	0x9760
-engine_discovered	?CActionOptionsMenuBar_0097f0@CActionOptionsMenuBar@@QAEXXZ	50.0000	50.0000	1	7f3386699111	0x97f0
-engine_discovered	?CActionOptionsMenuBar_009810@CActionOptionsMenuBar@@QAEXXZ	0.1481	0.1481	1	fab537b39201	0x9810
 engine_discovered	?CBattlezDlgColors_017ac0@CBattlezDlgColors@@QAEXXZ	50.0000	50.0000	1	09b7da16b5bb	0x17ac0
 engine_discovered	?CBehindCandyAni_0100f0@CBehindCandyAni@@QAEXXZ	5.8824	5.8824	1	80a11c742c49	0x100f0
 engine_discovered	?CBehindCandyAni_0adbb0@CBehindCandyAni@@QAEXXZ	14.2857	14.2857	1	d6849b97b232	0xadbb0

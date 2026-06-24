@@ -6,19 +6,6 @@
 #ifndef GRUNTZ_STUB_DISCOVERED_H
 #define GRUNTZ_STUB_DISCOVERED_H
 
-class CActionOptionsMenuBar {
-public:
-    void CActionOptionsMenuBar_009090();
-    void CActionOptionsMenuBar_009220();
-    void CActionOptionsMenuBar_0092e0();
-    void CActionOptionsMenuBar_009300();
-    void CActionOptionsMenuBar_009330();
-    void CActionOptionsMenuBar_0094c0();
-    void CActionOptionsMenuBar_009650();
-    void CActionOptionsMenuBar_009760();
-    void CActionOptionsMenuBar_0097f0();
-    void CActionOptionsMenuBar_009810();
-};
 class CBattlezDlgColors {
 public:
     void CBattlezDlgColors_017ac0();

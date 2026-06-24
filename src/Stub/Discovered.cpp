@@ -4,28 +4,6 @@
 #include <rva.h>
 #include <Stub/discovered.h>
 
-// ---- CActionOptionsMenuBar ----
-RVA(0x00009090, 0x32)
-void CActionOptionsMenuBar::CActionOptionsMenuBar_009090() {}
-RVA(0x00009220, 0x8f)
-void CActionOptionsMenuBar::CActionOptionsMenuBar_009220() {}
-RVA(0x000092e0, 0x8)
-void CActionOptionsMenuBar::CActionOptionsMenuBar_0092e0() {}
-RVA(0x00009300, 0x14)
-void CActionOptionsMenuBar::CActionOptionsMenuBar_009300() {}
-RVA(0x00009330, 0x136)
-void CActionOptionsMenuBar::CActionOptionsMenuBar_009330() {}
-RVA(0x000094c0, 0x131)
-void CActionOptionsMenuBar::CActionOptionsMenuBar_0094c0() {}
-RVA(0x00009650, 0xcf)
-void CActionOptionsMenuBar::CActionOptionsMenuBar_009650() {}
-RVA(0x00009760, 0x6c)
-void CActionOptionsMenuBar::CActionOptionsMenuBar_009760() {}
-RVA(0x000097f0, 0x8)
-void CActionOptionsMenuBar::CActionOptionsMenuBar_0097f0() {}
-RVA(0x00009810, 0x2df)
-void CActionOptionsMenuBar::CActionOptionsMenuBar_009810() {}
-
 // ---- CBattlezDlgColors ----
 RVA(0x00017ac0, 0x6)
 void CBattlezDlgColors::CBattlezDlgColors_017ac0() {}
