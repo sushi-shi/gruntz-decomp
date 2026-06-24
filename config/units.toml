@@ -339,6 +339,11 @@ source = "src/Gruntz/TileActionEvent.cpp"
 flags = "base"
 
 [[unit]]
+unit = "spritereftable"
+source = "src/Gruntz/SpriteRefTable.cpp"
+flags = "base"
+
+[[unit]]
 unit = "butemgr"
 source = "src/Bute/ButeMgr.cpp"
 flags = "eh"

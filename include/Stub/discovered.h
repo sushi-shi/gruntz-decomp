@@ -327,16 +327,7 @@ public:
     void ClassUnknown_1_134c60();
     void ClassUnknown_1_134c80();
 };
-class ClassUnknown_10 {
-public:
-    void ClassUnknown_10_0e2250();
-    void ClassUnknown_10_0e2290();
-    void ClassUnknown_10_0e22d0();
-    void ClassUnknown_10_0e2360();
-    void ClassUnknown_10_0e2390();
-    void ClassUnknown_10_0e23c0();
-    void ClassUnknown_10_0e2890();
-};
+// ClassUnknown_10 -> CSpriteRefTable, migrated to src/Gruntz/SpriteRefTable.cpp.
 class ClassUnknown_100 {
 public:
     void ClassUnknown_100_109bb0();

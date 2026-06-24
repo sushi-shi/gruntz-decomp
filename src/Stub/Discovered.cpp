@@ -482,21 +482,9 @@ void ClassUnknown_1::ClassUnknown_1_134c60() {}
 RVA(0x00134c80, 0x24)
 void ClassUnknown_1::ClassUnknown_1_134c80() {}
 
-// ---- ClassUnknown_10 ----
-RVA(0x000e2250, 0x26)
-void ClassUnknown_10::ClassUnknown_10_0e2250() {}
-RVA(0x000e2290, 0x2a)
-void ClassUnknown_10::ClassUnknown_10_0e2290() {}
-RVA(0x000e22d0, 0x6e)
-void ClassUnknown_10::ClassUnknown_10_0e22d0() {}
-RVA(0x000e2360, 0x15)
-void ClassUnknown_10::ClassUnknown_10_0e2360() {}
-RVA(0x000e2390, 0x15)
-void ClassUnknown_10::ClassUnknown_10_0e2390() {}
-RVA(0x000e23c0, 0x2d)
-void ClassUnknown_10::ClassUnknown_10_0e23c0() {}
-RVA(0x000e2890, 0xb6)
-void ClassUnknown_10::ClassUnknown_10_0e2890() {}
+// ---- ClassUnknown_10 ---- recovered as CSpriteRefTable, the game-registry
+// sprite/animation reference table (g_gameReg+0x74); migrated to
+// src/Gruntz/SpriteRefTable.cpp.
 
 // ---- ClassUnknown_100 ----
 RVA(0x00109bb0, 0xb)
