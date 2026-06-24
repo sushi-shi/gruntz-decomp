@@ -128,8 +128,109 @@ public:
 
     // 0x7a240: PlacePuddle(sprite, color) - place the puddle via its CUserLogic and, on
     // success, flag/remove the matching record + selection nodes. ret 1 on success.
-    // UNRECONSTRUCTED (still a stub); declared so SpawnPuddle's call mangles here.
     i32 PlacePuddle(void* sprite, i32 color);
+
+    // ---- the remaining reconstructed methods (retail-RVA order) ----------------
+
+    // 0x6b6d0: PlaceObject - the big tile-object placer/factory switch: validate the
+    // (col,row,kind), look up the level type-table entry, dispatch the per-kind
+    // sub-ctor (CreateSprite + Init for Wormhole/Entrance variants, a jump table by
+    // kind), stash the new cell into the grid (+0x1c) and bump the per-row/level
+    // counters. (__stdcall: ret 0x34.)
+    i32 PlaceObject(
+        i32 a8,
+        i32 ax,
+        i32 ay,
+        i32 col,
+        i32 row,
+        i32 kind,
+        i32 a18,
+        i32 a1c,
+        i32 a20,
+        i32 a24,
+        i32 a28,
+        i32 a2c,
+        i32 a30
+    );
+
+    // 0x6bfd0: ResetCell(col, row, force) - if grid[col*15+row] (+0x1c) is a live cell,
+    // either reset its switch/trigger sub-state (force / non-magic) or, when it is the
+    // magic group, recycle the (row,col) record node and unlink it from the +0x240 list.
+    i32 ResetCell(i32 col, i32 row, i32 force, i32 keep);
+
+    // 0x6d300: ApplySwitch - the /GX switch-logic driver. Clamp (sx,sy) to the plane,
+    // sample the tile attribute, switch on the logic class (CDDraw tag - 0x34), dispatch
+    // the matching switch/trigger logic object; on a miss, Format an error CString
+    // ("No switch/trigger logic found for switch ...") and ReportError. (lives in the
+    // eh sibling TU; __stdcall ret 0xc.)
+    i32 ApplySwitch(i32 sx, i32 sy);
+
+    // 0x6dae0 / 0x6e120: the two big tile-trigger appliers (apply-on-enter / apply-on-
+    // exit). Look up the cell, walk its trigger/switch sub-objects, dispatch each logic
+    // and update the cell state. (__stdcall: ret 0x1c / 0x1c.) Reconstructed to plateau.
+    i32 ApplyTriggerA(i32 col, i32 row, i32 a24, i32 a28);
+    i32 ApplyTriggerB(i32 col, i32 row, i32 a28, i32 a2c);
+
+    // 0x6e800: ClearCell(col, row, ...) - reset a cell's animation/trigger sub-state and
+    // string-compare its config name, then re-init. (__stdcall: ret 0x14.)
+    i32 ClearCell(i32 col, i32 row, i32 a18, i32 a1c, i32 a20);
+
+    // 0x6ea00: HitTestApply(x, y, kind) - hit-test then, when the magic kind, compare the
+    // config string and adjust the world score + status item. (__stdcall: ret 0xc.)
+    i32 HitTestApply(i32 x, i32 y, i32 kind);
+
+    // 0x75af0: HitTestCell(x, y, outRow, outCol, exact) - sample the tile-attr index, map
+    // it to (row,col), bounds-test the cell object, write (row,col). (ret 0x14.)
+    i32 HitTestCell(i32 x, i32 y, i32* outRow, i32* outCol, i32 exact);
+
+    // 0x78520 / 0x78680: the two record-table reporters - scan the record list (+0x244)
+    // for nodes of the magic group, collect their bytes, then call a world report helper
+    // with one of two messages depending on the count. (__stdcall: ret 0xc / ret 0x10.)
+    void ReportRecordsA(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24);
+    void ReportRecordsB(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28);
+
+    // 0x78a50: PlaceObjectFull - the largest tile-object placer/switch driver (0x845 B,
+    // a dense jump table over the logic kind, with two coordinate sub-tables). Builds the
+    // object, dispatches by kind, stashes the cell. Reconstructed to plateau. (ret 0x18.)
+    i32 PlaceObjectFull(i32 x, i32 y);
+
+    // 0x79520: ResetGroup - drain the magic-group cells, clearing each cell's sub-state and
+    // recycling its record node, then refresh. Reconstructed to plateau. (__thiscall.)
+    i32 ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28, i32 a2c);
+
+    // 0x798d0: DestroyGroup - /GX destruct of a cell group (member CString temporaries on
+    // teardown). Reconstructed to plateau (eh sibling TU).
+    i32 DestroyGroup(i32 col, i32 row, i32 force);
+
+    // 0x79b80: ReinitGroup - /GX re-init driver with a CString config-name temporary (eh
+    // sibling TU). Reconstructed to plateau.
+    i32 ReinitGroup(i32 col, i32 row);
+
+    // 0x79fb0: NotifyCell(row, col, z) - the notify-cell hook CellDispatch tails into.
+    // Recall the cell's sub-objects, clear its tile-attr bits, decrement the per-row count,
+    // and re-arm. (__stdcall: ret 0xc.) (was a stub; now reconstructed.)
+
+    // 0x7a5e0: RebuildOverlay(kind) - for the overlay sub-object (+0x290..+0x2c0 in 0x8
+    // strides), copy two descriptor fields via its vtable getter/setter per kind. ret 1.
+    // (__thiscall: ret 0x10.)
+    i32 RebuildOverlay(void* obj, i32 kind);
+
+    // 0x7a760: ScanGroup - the magic-group scanner/applier; for each live cell of the
+    // group, dispatch its logic and tally. Reconstructed to plateau. (__thiscall.)
+    i32 ScanGroup(i32 ar);
+
+    // 0x7b1b0: TriggerCell(x, y) - look up the (x,y) cell, switch on its logic kind and
+    // spawn the matching fx sprite (+0x2a8), then refresh + record. (ret 0x8.)
+    i32 TriggerCell(i32 x, i32 y);
+
+    // 0x7c110: SpawnGrunt(col, row, a18) - create a "Grunt" sprite at the cell's snapped
+    // world pos, Init it, place it via its userlogic; on success stash the cell. ret 1.
+    // (__stdcall: ret 0x10.)
+    i32 SpawnGrunt(i32 col, i32 row, i32 a18, i32 a1c);
+
+    // 0x85c50: ~CTriggerMgr - the /GX destructor (drains the lists, destructs the member
+    // list arrays). Reconstructed to plateau (eh sibling TU).
+    ~CTriggerMgr();
 };
 
 #endif

@@ -50,6 +50,7 @@ struct CTmGoal {
 struct CTmPtrList {
     void RemoveAll();     // 0x1b48a6
     void RemoveAt(void*); // 0x1b4ac7
+    void AddTail(void*);  // 0x1b4991  (returns POSITION; ret ignored here)
     void* m_0;            // +0x00
     CTmNode* m_head;      // +0x04  list head node
 };
@@ -81,6 +82,26 @@ struct CTmGameReg {
     CTmWorld* m_2c; // +0x2c  the active world/play object
 };
 extern CTmGameReg* g_gameReg;
+
+// ?g_buteMgr@@3VCButeMgr@@A @0x6453d8 - CButeMgr::Get{Int,Color,Str} are reloc-masked.
+struct CTmButeMgr {
+    i32 GetInt(const char* section, const char* key, i32 def);   // 0x1721e0
+    i32 GetColor(const char* section, const char* key, i32 def); // 0x171aa0
+    i32 GetStr(const char* section, const char* key, char* out); // 0x171af0
+};
+extern CTmButeMgr g_buteMgr;
+extern i32 g_645588; // DAT_00645588 (the level base score / id sentinel)
+extern i32 g_644ca4; // DAT_00644ca4 (the secondary group sentinel; serialized by ScanGroup)
+
+// The DAT_006bf650 config-name registry (its method maps a sprite-type id to a config-name
+// string; @0x6bf66c/@0x6bf670 are its node array + count). Reloc-masked.
+struct CTmNameReg {
+    char** Lookup(i32 id); // 0x46e0c0
+};
+extern CTmNameReg g_nameReg; // 0x6bf650
+extern void* g_nameRegNodes; // 0x6bf66c
+extern i32 g_nameRegCount;   // 0x6bf670
+void Str_Free(void* node);   // CString teardown, 0x1b9b93
 
 // A DirectSound channel helper (?StopAndRewind@DirectSoundMgr, @0x135380, __thiscall,
 // reloc-masked); DestroyAllAnims rewinds three channels. The real engine name matters
@@ -723,4 +744,1102 @@ i32 CTriggerMgr::SpawnPuddle(i32 x, i32 y, i32 f124, i32 f114, i32 color, i32 f1
     *(i32*)((char*)sprite + 0x114) = f114;
     *(i32*)((char*)sprite + 0x118) = f118;
     return PlacePuddle(sprite, color);
+}
+
+// The puddle's placement target (sprite desc +0x18): a CUserLogic-ish object whose
+// PlacePuddle(a,b,c,d) does the real placement (reloc-masked @0x9c3f0) and whose +0x38
+// goal carries the +0x8 flags ORed with 0x10000 on failure. The (x,y,z) the record-list
+// walk matches against live at +0x54/+0x58/+0x5c.
+struct CTmPuddleTarget {
+    i32 Place(i32 a, i32 b, i32 c, i32 d); // 0x9c3f0
+    char p0[0x38];
+    void* m_38; // +0x38  goal object (its +0x8 is the flags word)
+    char p1[0x54 - 0x3c];
+    i32 m_54; // +0x54  match x
+    i32 m_58; // +0x58  match y
+    i32 m_5c; // +0x5c  busy flag
+};
+// The cell record nodes PlacePuddle walks: this+0x4 is the intrusive CPtrList head node,
+// this+0xc its count. Each node carries the next ptr @+0 and the placed-object @+0x8.
+struct CTmRecNode {
+    CTmRecNode* m_next;     // +0x00
+    char p0[0x4];           // +0x04
+    CTmPuddleTarget* m_obj; // +0x08  placed object (the puddle target shape)
+};
+
+// 0x7a240: PlacePuddle(sprite, color) - hand the sprite's placement params to its target's
+// PlacePuddle; on failure flag the goal + ReportError(0x8009,0x401). On success walk the
+// record list twice (full (x,y) match, then x-only when count>0x3b) flagging+unlinking each
+// matching node, then RemoveAll the list. (__thiscall: ret 0x8.)
+// @early-stop
+// regalloc + dual-loop scheduling wall: the two record-walk loops + the found/unlinked flags
+// spill to different stack slots than retail and the (x,y)==busy fast-path goto reorders.
+// Logic + offsets + the RemoveAt/RemoveAll recycle byte-exact. topic:wall.
+RVA(0x0007a240, 0x143)
+i32 CTriggerMgr::PlacePuddle(void* sprite, i32 color) {
+    CTmPuddleTarget* tgt = (CTmPuddleTarget*)*(void**)(*(char**)((char*)sprite + 0x7c) + 0x18);
+    i32 d = *(i32*)((char*)sprite + 0x118);
+    if (d == 0) {
+        d = 0x19;
+    }
+    if (tgt->Place(*(i32*)((char*)sprite + 0x124), *(i32*)((char*)sprite + 0x114), color, d) == 0) {
+        *(i32*)((char*)tgt->m_38 + 0x8) |= 0x10000;
+        g_gameReg->ReportError(0x8009, 0x401);
+        return 0;
+    }
+    CTmRecNode* n = *(CTmRecNode**)((char*)this + 0x4);
+    i32 manyFlag = (*(i32*)((char*)this + 0xc) > 0x3b) ? 1 : 0;
+    i32 unlinked = 0;
+    while (n != 0 && unlinked == 0) {
+        CTmRecNode* cur = n;
+        n = n->m_next;
+        CTmPuddleTarget* o = cur->m_obj;
+        if (o->m_54 == tgt->m_54 && o->m_58 == tgt->m_58) {
+            if (o->m_5c != 0) {
+                *(i32*)((char*)tgt->m_38 + 0x8) |= 0x10000;
+                return 0;
+            }
+            *(i32*)((char*)o->m_38 + 0x8) |= 0x10000;
+            ((CTmPtrList*)((char*)this))->RemoveAt(cur);
+            unlinked = 1;
+        }
+    }
+    if (manyFlag != 0 && unlinked == 0) {
+        n = *(CTmRecNode**)((char*)this + 0x4);
+        while (n != 0) {
+            CTmRecNode* cur = n;
+            n = n->m_next;
+            CTmPuddleTarget* o = cur->m_obj;
+            if (o->m_5c == 0) {
+                *(i32*)((char*)o->m_38 + 0x8) |= 0x10000;
+                ((CTmPtrList*)((char*)this))->RemoveAt(cur);
+            }
+        }
+    }
+    ((CTmPtrList*)((char*)this))->AddTail(tgt);
+    return 1;
+}
+
+// A live grid-cell game object as the notify/trigger leaves view it. Only the raw offset
+// reads are needed; opaque otherwise.
+struct CTmCell {
+    char p0[0x170];
+    i32 m_170; // +0x170  logic kind
+    char p1[0x17c - 0x174];
+    i32 m_17c; // +0x17c  world x
+    i32 m_180; // +0x180  world y
+    char p2[0x198 - 0x184];
+    i32 m_198; // +0x198  alt kind
+    i32 m_19c; // +0x19c  remapped kind
+    char p4[0x1e8 - 0x1a0];
+    i32 m_1e8; // +0x1e8  recall-done flag
+    char p5[0x36c - 0x1ec];
+    i32 m_36c; // +0x36c  notified flag
+};
+
+// The other UNMATCHED CTriggerMgr methods the reconstructed leaves self-call (reloc-masked
+// rel32; bodies live elsewhere / are still stubs). Declared as no-body helpers so the calls
+// mangle onto CTriggerMgr and their displacements mask. These are file-local extern decls.
+struct CTmSelf {
+    void RecallCell(i32 x, i32 y, void* cell); // self-call, reloc-masked
+    void RefreshB(i32 a);                      // self-call (this, arg=1)
+    void RefreshC();                           // self-call (this, no arg)
+    i32 Reset3(i32 a, i32 b, i32 c);           // self-call (this, 3 args)
+};
+// The pending-fx sub-object at CTriggerMgr+0x2a0; its Pulse() is the reloc-masked thiscall.
+struct CTmPendingFx {
+    void Pulse(); // reloc-masked
+};
+
+// The overlay snapshot source `obj`: a sprite whose +0x2c / +0x30 vtable slots are the
+// 8-byte field getters RebuildOverlay copies into the manager's three pose blocks.
+struct CTmOverlaySrc {
+    void* m_vt;
+    void GetA(void* dst, i32 n); // vtbl +0x2c
+    void GetB(void* dst, i32 n); // vtbl +0x30
+};
+
+// A self-method pair RebuildOverlay early-exits on (reloc-masked self-calls).
+struct CTmSelf2 {
+    i32 Probe4(void* obj); // 0x7a618 path
+    i32 Probe7(void* obj); // 0x7a605 path
+};
+
+// 0x7a5e0: RebuildOverlay(obj, kind) - copy the source object's two pose getters into the
+// manager's three 0x8-byte pose blocks (+0x290/+0x2b0/+0x2c0), selecting getter +0x30 for
+// kind 4 and +0x2c for kind 7; ret 0 when obj null, 1 otherwise. Early-out when the kind-4/7
+// self-probe is non-zero. (__thiscall: ret 0x10.)
+RVA(0x0007a5e0, 0x121)
+i32 CTriggerMgr::RebuildOverlay(void* obj, i32 kind) {
+    if (obj == 0) {
+        return 0;
+    }
+    CTmSelf2* self = (CTmSelf2*)this;
+    if (kind == 4) {
+        if (self->Probe4(obj) != 0) {
+            return 0;
+        }
+    } else if (kind == 7) {
+        if (self->Probe7(obj) != 0) {
+            return 0;
+        }
+    }
+    CTmOverlaySrc* src = (CTmOverlaySrc*)obj;
+    char* blk0 = (char*)this + 0x290;
+    if (kind == 4) {
+        src->GetB(blk0, 8);
+        src->GetB(blk0 + 8, 8);
+    } else if (kind == 7) {
+        src->GetA(blk0, 8);
+        src->GetA(blk0 + 8, 8);
+    }
+    char* blk1 = (char*)this + 0x2b0;
+    if (kind == 4) {
+        src->GetB(blk1, 8);
+        src->GetB(blk1 + 8, 8);
+    } else if (kind == 7) {
+        src->GetA(blk1, 8);
+        src->GetA(blk1 + 8, 8);
+    }
+    char* blk2 = (char*)this + 0x2c0;
+    if (kind == 4) {
+        src->GetB(blk2, 8);
+        src->GetB(blk2 + 8, 8);
+        return 1;
+    }
+    if (kind == 7) {
+        src->GetA(blk2, 8);
+        src->GetA(blk2 + 8, 8);
+    }
+    return 1;
+}
+
+// A grid cell as ResetCell/ClearCell view it: reloc-masked sub-state resetters + the
+// alive flag (+0x1fc) and config-table fields (+0x880..+0x88c).
+struct CTmCell2 {
+    void ResetA();    // 0x6a40c
+    void ResetB();    // 0x6a2ae
+    void ResetC();    // 0x6c216
+    i32 ResetMagic(); // 0x6c498
+    char p0[0x1fc];
+    i32 m_1fc; // +0x1fc  alive
+};
+// 0x6bfd0: ResetCell(col, row, force, ...) - if grid[row*15+col] (+0x1c) is live: for a
+// non-magic row, run its three sub-state resetters then re-seed its CombatTimeout config
+// fields (+0x880..+0x88c); for the magic row (== g_644c54), when not forced recycle the
+// (row,col) record node onto the free list, AddTail it to +0x240, and run ResetMagic. ret 1
+// only when a magic cell was recycled, else 0. (__stdcall: ret 0x10.)
+// @early-stop
+// regalloc + free-list-recycle scheduling wall: the node-bias recycle and the GetInt arg
+// push order pin ebx/edi differently than retail. Logic + offsets byte-exact. topic:wall.
+RVA(0x0006bfd0, 0x106)
+i32 CTriggerMgr::ResetCell(i32 col, i32 row, i32 force, i32 keep) {
+    i32 idx = col * 15 + row;
+    CTmCell2* cell = *(CTmCell2**)((char*)this + idx * 4 + 0x1c);
+    if (cell == 0 || cell->m_1fc == 0) {
+        return 0;
+    }
+    if (col != g_644c54) {
+        cell->ResetA();
+        cell->ResetB();
+        cell->ResetC();
+        *(i32*)((char*)cell + 0x888) = g_buteMgr.GetInt("Grunt", "CombatTimeout", 0x1388);
+        *(i32*)((char*)cell + 0x88c) = 0;
+        *(i32*)((char*)cell + 0x880) = g_645588;
+        *(i32*)((char*)cell + 0x884) = 0;
+        return 0;
+    }
+    if (force != 0) {
+        if (keep == 0) {
+            if (((CTmSelf*)this)->Reset3(col, row, 0) != 0) {
+                return 1;
+            }
+        }
+    } else {
+        ((CTmSelf*)this)->RefreshC(); // self-call 0x6c068 (reloc-masked)
+    }
+    void* node = g_freeList;
+    i32* slot = 0;
+    if (*(void**)node != 0) {
+        slot = (i32*)((char*)node + 4);
+        slot[0] = col;
+        slot[1] = row;
+        g_freeList = *(void**)g_freeList;
+    }
+    ((CTmPtrList*)((char*)this + 0x240))->AddTail(slot);
+    return cell->ResetMagic();
+}
+
+// The manager's own ScreenToCell-style hit helper + the magic-group refresh self-call.
+struct CTmSelf4 {
+    void* Hit(i32 arg, i32 a, i32 b, i32* outRow, i32* outCol); // self-call 0x6e2ce
+    void ClearMagic(i32 key);                                   // self-call 0x6f2c9
+};
+
+// 0x6ea00: HitTestApply(x, y, kind) - hit-test the cell at (x,y); only for the magic group
+// (out-row == g_644c54) and a cell whose config name is "B" and kind 0x14, add the world's
+// score delta, zero the status fields, SetStat(0,0xbb7), re-arm the status item (SetMode 1)
+// and ClearMagic(g_644c54). (__stdcall: ret 0xc.)
+// @early-stop
+// regalloc + inline-strcmp wall: the "B" compare inlines as a byte loop and the 64-bit
+// world-score sub/sbb pins ecx/eax differently than retail. Logic + offsets byte-exact.
+RVA(0x0006ea00, 0x125)
+i32 CTriggerMgr::HitTestApply(i32 x, i32 y, i32 kind) {
+    i32 outRow = 0;
+    i32 outCol = 0;
+    CTmCell* cell = (CTmCell*)((CTmSelf4*)this)->Hit(kind, y, y, &outRow, &outCol);
+    if (cell == 0 || outCol != g_644c54) {
+        return 0;
+    }
+    char* name = *g_nameReg.Lookup(*(i32*)(*(char**)((char*)cell + 0x14) + 0x1c));
+    if (strcmp(name, "B") != 0) {
+        return 0;
+    }
+    i32 k = *(i32*)((char*)cell + 0x170);
+    if (k > 0x16) {
+        k = *(i32*)((char*)cell + 0x19c);
+    }
+    if (k != 0x14) {
+        return 0;
+    }
+    CTmWorld* world = g_gameReg->m_2c;
+    char* sub = *(char**)((char*)world + 0x3f4);
+    u32 lo = (u32)g_645588 - (u32) * (i32*)(sub + 0x38);
+    i32 hi = 0 - *(i32*)(sub + 0x3c) - (g_645588 < *(i32*)(sub + 0x38) ? 1 : 0);
+    if (hi > 0 || (hi == 0 && lo >= 0)) {
+        lo = 0;
+    }
+    *(i32*)(*(char**)((char*)g_gameReg + 0x7c) + 0x10) += (i32)lo;
+    *(i32*)(sub + 0x40) = 0;
+    *(i32*)(sub + 0x44) = 0;
+    *(i32*)(sub + 0x30) = 0;
+    *(i32*)(sub + 0x34) = 0;
+    *(i32*)(sub + 0x48) = 0;
+    *(i32*)(sub + 0x4c) = 0;
+    world->SetStat(0, 0xbb7);
+    world->m_2dc->SetMode(1);
+    ((CTmSelf4*)this)->ClearMagic(g_644c54);
+    return 1;
+}
+
+// The world's fx-spawner (gameReg+0x68 sub-mgr) + the stop-fx hook the TriggerCell driver
+// uses; all reloc-masked.
+struct CTmFxMgr {
+    void* Spawn(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f, i32 g); // 0x90b48 (7 args)
+};
+struct CTmWorld2 {
+    void StopFx2(i32 a, i32 b); // 0xd0b3a
+};
+// The two manager self-calls TriggerCell tails into (Refresh + Record).
+struct CTmSelf5 {
+    i32 Classify(i32 x, i32 y); // self-call 0x6ef2c
+    void Refresh2();            // self-call 0x6c6c4
+    void Record2(i32 x, i32 y); // self-call 0x6de5c
+};
+
+// 0x7b1b0: TriggerCell(x, y) - clear the pending-fx slot; only when the overlay sub-object
+// (+0x25c) is live with its +0x2c set, look up the magic record cell, classify (x,y) and by
+// the resulting kind spawn the matching fx sprite (kind 2 -> remapped 0x13, kind 3 -> alt
+// 0x1e, else generic +0xc8 into +0x2a8), then Refresh + Record. ret 1. (ret 0x8.)
+// @early-stop
+// regalloc + switch-on-kind wall: the classify result drives a cmp/je ladder that pins ebx
+// (world) and esi (cell) differently than retail, and the fx arg pushes spill. topic:wall.
+RVA(0x0007b1b0, 0x12b)
+i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
+    void* ov = *(void**)((char*)this + 0x25c);
+    *(i32*)((char*)this + 0x2a8) = 0;
+    if (ov == 0 || *(i32*)((char*)ov + 0x2c) == 0) {
+        return 0;
+    }
+    CTmCell* cell = 0;
+    if (*(i32*)((char*)this + 0x24c) == 1) {
+        i32* rec = (i32*)(*(char**)((char*)this + 0x244) + 0x8);
+        cell = *(CTmCell**)((char*)this + (rec[1] + rec[0] * 15) * 4 + 0x1c);
+    }
+    CTmWorld2* world = (CTmWorld2*)((char*)g_gameReg->m_2c);
+    i32 kind = ((CTmSelf5*)this)->Classify(x, y);
+    if (kind == 2) {
+        i32 alt = *(i32*)((char*)cell + 0x170);
+        if (alt > 0x16) {
+            alt = *(i32*)((char*)cell + 0x19c);
+        }
+        if (alt == 0x13) {
+            ((CTmFxMgr*)*(void**)((char*)g_gameReg + 0x68))
+                ->Spawn(*(i32*)((char*)cell + 0x17c), *(i32*)((char*)cell + 0x180), 0, 0, 0, 2, 1);
+        }
+    } else if (kind == 3) {
+        if (*(i32*)((char*)cell + 0x198) == 0x1e) {
+            char* o = *(char**)((char*)cell + 0x10);
+            ((CTmFxMgr*)*(void**)((char*)g_gameReg + 0x68))
+                ->Spawn(*(i32*)(o + 0x5c), *(i32*)(o + 0x60), 0, 0, 0, 3, 1);
+        }
+    } else if (kind != 0) {
+        i32 v = kind + 0xc8;
+        *(i32*)((char*)this + 0x2a8) = v;
+        world->StopFx2(v, 0);
+    }
+    ((CTmSelf5*)this)->Refresh2();
+    ((CTmSelf5*)this)->Record2(x, y);
+    return 1;
+}
+
+// The sprite's CUserLogic (sprite desc +0x18): its multi-arg Place driver (reloc-masked
+// @0x41c4 thunk) and the +0x154 goal whose +0x8 flags get the 0x10000 done-bit on failure.
+struct CTmUserLogic {
+    i32 Place(
+        i32 a,
+        i32 b,
+        i32 c,
+        i32 d,
+        i32 e,
+        i32 f,
+        i32 g,
+        i32 h,
+        i32 i,
+        i32 j,
+        i32 k,
+        i32 l
+    );                                                                     // 0x4c1c4
+    void Arm(const char* lighting, const char* cursor, i32 kind, i32 one); // 0x4e517
+};
+
+// 0x7c110: SpawnGrunt(col, row, a18, a1c) - find the first free column of grid row `row`;
+// if full ret 0. Snap the source cell[col]'s display pos to a tile, run a prep self-call,
+// create a "Grunt" sprite at that pos, Init it, place it via its userlogic; on placement
+// failure flag the goal and ret 0, else stash the cell + bump the per-row counters. ret 1.
+// (__stdcall: ret 0x10.)
+// @early-stop
+// regalloc + free-column-scan wall: the inner "first free col" loop and the snap arithmetic
+// pin ebp/edi differently than retail; the placement-failure goal-flag path tail-merges.
+RVA(0x0007c110, 0x166)
+i32 CTriggerMgr::SpawnGrunt(i32 col, i32 row, i32 a18, i32 a1c) {
+    CTmCell* src = *(CTmCell**)((char*)this + (col * 15 + a1c) * 4 + 0x1c);
+    i32 free = 0;
+    CTmCell** rowBase = (CTmCell**)((char*)this + row * 15 * 4 + 0x1c);
+    if (*rowBase != 0) {
+        CTmCell** p = rowBase;
+        while (free < 15 && *p != 0) {
+            p++;
+            free++;
+        }
+    }
+    if (free >= 15) {
+        return 0;
+    }
+    char* o = *(char**)((char*)src + 0x10);
+    i32 sx = (*(i32*)(o + 0x5c) & ~0x1f) + 0x10;
+    i32 sy = (*(i32*)(o + 0x60) & ~0x1f) + 0x10;
+    i32 k = *(i32*)((char*)src + 0x170);
+    if (k > 0x16) {
+        k = *(i32*)((char*)src + 0x19c);
+    }
+    i32 vis = *(i32*)((char*)src + 0x198);
+    ((CTmSelf*)this)->Reset3(col, k, vis); // prep self-call 0x7ec96
+    CTmSpriteFactory* fac = ((CTmLevel*)*(void**)((char*)this + 0x22c))->m_8;
+    void* sprite = fac->CreateSprite(0, sx, sy, 0x186a0, "Grunt", 0x40003);
+    if (sprite == 0) {
+        return 0;
+    }
+    ((CTmSpriteDesc*)*(void**)((char*)sprite + 0x7c))->Init(sprite);
+    void* logic = *(void**)(*(char**)((char*)sprite + 0x7c) + 0x18);
+    if (((CTmUserLogic*)logic)->Place(col, row, vis, k, 0, 0, 0, 0, 0, 0, 0, 0) == 0) {
+        *(i32*)(*(char**)((char*)logic + 0x154) + 0x8) |= 0x10000;
+        return 0;
+    }
+    *(CTmCell**)((char*)this + (row * 15 + free) * 4 + 0x1c) = (CTmCell*)sprite;
+    *(i32*)((char*)this + row * 4 + 0x10c) += 1;
+    *(i32*)((char*)this + (row * 15 + free) * 4 + 0x11c) = 0;
+    return 1;
+}
+
+// 0x75af0: HitTestCell(x, y, outRow, outCol, exact) - sample the plane tile-attr at
+// (x>>5, y>>5); its high byte is the row, low byte the col. Look up grid[row*15+col]; if
+// live+clickable, either exact-match its world pos (exact) or its 30x30 bounds, then write
+// (row,col) through the out-ptrs. ret 0 on any miss. (__stdcall: ret 0x14.)
+// @early-stop
+// regalloc + bounds-arith wall: the row/col high/low-byte split pins edi/ebp and the
+// ±7 box arithmetic spills to different slots than retail. Logic + offsets byte-exact.
+RVA(0x00075af0, 0x111)
+i32 CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outRow, i32* outCol, i32 exact) {
+    char* plane = *(char**)((char*)g_gameReg + 0x70);
+    i32 ix = x >> 5;
+    i32 iy = y >> 5;
+    i32 attr;
+    if (ix >= *(i32*)(plane + 0xc) || iy >= *(i32*)(plane + 0x10)) {
+        attr = -1;
+    } else {
+        char* tbl = *(char**)(plane + 0x8);
+        i32 e = ix * 7;
+        attr = *(i32*)(*(char**)(tbl + iy * 4) + e * 4 + 0x4);
+    }
+    if (attr == -1) {
+        return 0;
+    }
+    i32 row = (attr >> 8) & 0xff;
+    i32 col = attr & 0xff;
+    CTmCell* cell = *(CTmCell**)((char*)this + (col + row * 15) * 4 + 0x1c);
+    if (cell == 0 || *(i32*)((char*)cell + 0x1fc) == 0) {
+        return 0;
+    }
+    if (exact != 0) {
+        char* o = *(char**)((char*)cell + 0x10);
+        if (*(i32*)(o + 0x5c) != x || *(i32*)(o + 0x60) != y) {
+            return 0;
+        }
+        if (outRow != 0) {
+            *outRow = row;
+        }
+        if (outCol != 0) {
+            *outCol = col;
+        }
+        return 1;
+    }
+    char* o = *(char**)((char*)cell + 0x10);
+    i32 ox = *(i32*)(o + 0x5c);
+    i32 oy = *(i32*)(o + 0x60);
+    if (x + 7 > ox + 14 || x - 7 < ox - 7 || y + 7 > oy + 14 || y - 7 < oy - 7) {
+        return 0;
+    }
+    if (outRow != 0) {
+        *outRow = row;
+    }
+    if (outCol != 0) {
+        *outCol = col;
+    }
+    return 1;
+}
+
+// A cell as ClearCell views it: the reset fields + the +0x14 type sub-object.
+struct CTmCell3 {
+    i32 Disarm(i32 a, i32 b);                               // 0x6f970 reset hook (1,1)
+    i32 ApplyBox(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x6fc40 the bounds applier
+};
+// The matched-name fx, run on THIS (the manager), reloc-masked self-call.
+struct CTmSelf3 {
+    void Fx(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // self-call 0x71f80
+};
+
+// The world's per-record reporter (gameReg+0x6c sub-mgr) + the manager's multi-record
+// reporter self-call; all reloc-masked.
+struct CTmReporter {
+    void Report1(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f, i32 g); // 0x90db8 (gameReg+0x6c)
+};
+struct CTmSelf6 {
+    void ReportN(i32 a, i32 b, u8* bytes, i32 c, i32 d, i32 e, i32 f); // self-call 0x7b520
+};
+
+// 0x78520: ReportRecordsA(a14, a18, a1c, a20, a24) - when the level flag (+0x400) is set,
+// scan the record list (+0x244) collecting the byte of each magic-group, un-triggered cell;
+// if exactly one matched, hand it to the world's single-record reporter, else hand the whole
+// collected array to the manager's multi-record reporter. (__stdcall: ret 0xc.)
+// @early-stop
+// regalloc + collected-byte-array spill wall: the count register cl and the 0x88-byte stack
+// scratch slots differ from retail's. Logic + offsets byte-exact. topic:wall.
+RVA(0x00078520, 0x106)
+void CTriggerMgr::ReportRecordsA(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24) {
+    if (*(i32*)((char*)this + 0x400) == 0) {
+        return;
+    }
+    u8 bytes[0x88];
+    i32 count = 0;
+    CTmNode* n = *(CTmNode**)((char*)this + 0x244);
+    while (n != 0) {
+        i32* p = (i32*)((char*)n + 0x8);
+        CTmNode* next = n->m_next;
+        i32* payload = (i32*)*(void**)((char*)n + 0x8);
+        CTmCell* cell = *(CTmCell**)((char*)this + (payload[1] + payload[0] * 15) * 4 + 0x1c);
+        if (*(i32*)((char*)cell + 0x1ec) == g_644c54 && *(i32*)((char*)cell + 0x1e4) == 0) {
+            bytes[count] = *(u8*)(p + 1);
+            count++;
+        }
+        n = next;
+    }
+    if (count == 1) {
+        ((CTmReporter*)*(void**)((char*)g_gameReg + 0x6c))
+            ->Report1(2, bytes[0], a14, a18, 0, a1c, 0);
+    } else {
+        ((CTmSelf6*)this)->ReportN(2, a14, bytes, a18, a1c, a20, a24);
+    }
+}
+
+// 0x78680: ReportRecordsB(a14, a18, a1c, a20, a24, a28) - the four-way variant of
+// ReportRecordsA: same magic-group byte scan, then dispatch by (count==1, a14!=0) to one of
+// four (single/multi x kind 3/9) report calls. (__stdcall: ret 0x10.)
+// @early-stop
+// regalloc + 4-way dispatch wall: the count/flag branch ladder pins differently than retail.
+RVA(0x00078680, 0x189)
+void CTriggerMgr::ReportRecordsB(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28) {
+    if (*(i32*)((char*)this + 0x400) == 0) {
+        return;
+    }
+    u8 bytes[0x88];
+    i32 count = 0;
+    CTmNode* n = *(CTmNode**)((char*)this + 0x244);
+    while (n != 0) {
+        i32* p = (i32*)((char*)n + 0x8);
+        CTmNode* next = n->m_next;
+        i32* payload = (i32*)*(void**)((char*)n + 0x8);
+        CTmCell* cell = *(CTmCell**)((char*)this + (payload[1] + payload[0] * 15) * 4 + 0x1c);
+        if (*(i32*)((char*)cell + 0x1ec) == g_644c54 && *(i32*)((char*)cell + 0x1e4) == 0) {
+            bytes[count] = *(u8*)(p + 1);
+            count++;
+        }
+        n = next;
+    }
+    CTmReporter* rep = (CTmReporter*)*(void**)((char*)g_gameReg + 0x6c);
+    if (count == 1) {
+        if (a28 != 0) {
+            rep->Report1(9, bytes[0], a14, a18, 0, 0, 0);
+        } else {
+            rep->Report1(3, bytes[0], a14, a18, 0, 0, 0);
+        }
+    } else {
+        if (a28 != 0) {
+            ((CTmSelf6*)this)->ReportN(9, a14, bytes, a18, a1c, a20, a24);
+        } else {
+            ((CTmSelf6*)this)->ReportN(3, a14, bytes, a18, a1c, a20, a24);
+        }
+    }
+}
+
+// The serialization archive ScanGroup writes through: Write(buf, size) at vtbl slot +0x30,
+// plus the per-object id-write helper @0x5b8760 (writes an object's +0x188 archive id).
+struct CTmArchive {
+    void* m_vt;
+    void Write(const void* buf, i32 n); // vtbl +0x30
+};
+void Ar_WriteId(void* id, i32 stride, void* archive); // 0x1b8760
+
+// 0x7a760: ScanGroup(ar) - serialize the whole manager into archive `ar`: the 4x15 grid of
+// cell ids, the four per-row arrays, the magic table + its bytes, the record + selection
+// lists, the goal/overlay/state words. ret 0 when ar/level null or the overlay write fails.
+// (__thiscall: ret 0x4.) [the manager's Serialize]
+// @early-stop
+// big serializer wall: 60+ archive Write calls; the grid/list write loops pin esi(ar)/ebx
+// /edi differently than retail and the scratch slots differ. Logic + offsets byte-exact.
+RVA(0x0007a760, 0x373)
+i32 CTriggerMgr::ScanGroup(i32 a14) {
+    CTmArchive* ar = (CTmArchive*)a14;
+    if (ar == 0) {
+        return 0;
+    }
+    void* lvl = *(void**)((char*)this + 0x22c);
+    if (lvl == 0) {
+        return 0;
+    }
+    CTmCell** cell = (CTmCell**)((char*)this + 0x1c);
+    i32 r = 4;
+    do {
+        i32 c = 15;
+        do {
+            CTmCell* g = *cell;
+            i32 id = 0;
+            if (g != 0) {
+                id = *(i32*)(*(char**)((char*)g + 0x10) + 0x188);
+                Ar_WriteId(*(void**)((char*)lvl + 0x8), id, ar);
+            }
+            ar->Write(&id, 4);
+            cell++;
+            c--;
+        } while (c != 0);
+        r--;
+    } while (r != 0);
+    ar->Write((char*)this + 0x10c, 0x10);
+    ar->Write((char*)this + 0x11c, 0xf0);
+    ar->Write((char*)this + 0x20c, 0x10);
+    ar->Write((char*)this + 0x21c, 0x10);
+    i32 cnt = *(i32*)((char*)this + 0x268);
+    ar->Write(&cnt, 4);
+    for (i32 i = 0; i < cnt; i++) {
+        u8 b = ((u8*)*(void**)((char*)this + 0x264))[i];
+        ar->Write(&b, 1);
+    }
+    i32 flag24c = *(i32*)((char*)this + 0x24c);
+    ar->Write(&flag24c, 4);
+    CTmNode* n = *(CTmNode**)((char*)this + 0x244);
+    while (n != 0) {
+        CTmNode* cur = n;
+        n = n->m_next;
+        ar->Write(*(void**)((char*)cur + 0x8), 8);
+    }
+    CTmNode** lists = (CTmNode**)((char*)this + 0x2d4);
+    i32 k = 10;
+    do {
+        i32 cnt2 = *(i32*)((char*)lists + 0x8);
+        ar->Write(&cnt2, 4);
+        CTmNode* m = *lists;
+        while (m != 0) {
+            CTmNode* cur = m;
+            m = m->m_next;
+            ar->Write(*(void**)((char*)cur + 0x8), 8);
+        }
+        lists = (CTmNode**)((char*)lists + 0x1c);
+        k--;
+    } while (k != 0);
+    void* goal = *(void**)((char*)this + 0x23c);
+    i32 goalId = 0;
+    if (goal != 0) {
+        goalId = *(i32*)((char*)goal + 0x188);
+    }
+    ar->Write(&goalId, 4);
+    void* ov = *(void**)((char*)this + 0x2a0);
+    i32 ovId = 0;
+    if (ov != 0 && *(void**)((char*)ov + 0x10) != 0) {
+        ovId = *(i32*)(*(char**)((char*)ov + 0x10) + 0x188);
+    }
+    ar->Write(&ovId, 4);
+    ar->Write((char*)this + 0x274, 0x10);
+    i32 cntC = *(i32*)((char*)this + 0xc);
+    ar->Write(&cntC, 4);
+    CTmNode* rn = *(CTmNode**)((char*)this + 0x4);
+    while (rn != 0) {
+        CTmNode* cur = rn;
+        rn = rn->m_next;
+        void* obj = *(void**)((char*)cur + 0x8);
+        if (obj == 0) {
+            return 0;
+        }
+        i32 oid = *(i32*)(*(char**)((char*)obj + 0x10) + 0x188);
+        Ar_WriteId(*(void**)((char*)lvl + 0x8), oid, ar);
+        ar->Write(&oid, 4);
+    }
+    i32 hasOv = (*(void**)((char*)this + 0x25c) != 0) ? 1 : 0;
+    ar->Write(&hasOv, 4);
+    if (*(void**)((char*)this + 0x25c) != 0) {
+        if (((CTmSelf*)this)->Reset3(a14, 0, 0) == 0) { // overlay serialize self-call 0x7df8
+            return 0;
+        }
+    } else {
+        return 0;
+    }
+    ar->Write((char*)this + 0x230, 4);
+    ar->Write((char*)this + 0x284, 4);
+    ar->Write((char*)this + 0x288, 4);
+    ar->Write((char*)this + 0x234, 8);
+    ar->Write((char*)this + 0x2a4, 4);
+    ar->Write((char*)this + 0x3ec, 4);
+    ar->Write((char*)this + 0x400, 4);
+    ar->Write(&g_644c54, 4);
+    ar->Write(&g_644ca4, 4);
+    ar->Write((char*)this + 0x2a8, 4);
+    ar->Write((char*)this + 0x3e8, 4);
+    return 1;
+}
+
+// The world's report/spawn sub-mgrs ResetGroup dispatches through (gameReg+0x6c reporter,
+// +0x68 fx-mgr, +0x60 cursor-mgr), all reloc-masked.
+struct CTmCursorMgr {
+    void Spawn(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x90bf4 (gameReg+0x60)
+};
+// The three manager self-calls ResetGroup branches into (place variants).
+struct CTmSelf7 {
+    void* Hit5(i32 a, i32 b, i32 c, i32 d, i32 e); // self-call 0x7d310 (hit, startRow 5)
+    i32 PlaceA(i32 a, i32 b, i32 c, i32 d);        // self-call 0x7d70b
+    i32 PlaceB(i32 a, i32 b, i32 c);               // self-call 0x7daa0
+};
+extern i32 g_6455b0; // DAT_006455b0 (the alt-group gate)
+
+// 0x79520: ResetGroup(a14, a18, ...) - when the level flag (+0x400) is set, hit-test the
+// magic group, classify the (a14,a18) target into one of three branches and place/report the
+// matching cursor / lightfx / warpstone sprite; on factory success Init it and report it.
+// ret 1 (0 on flag-clear / placement failure). (__stdcall: ret 0x1c.)
+// @early-stop
+// big switch-driver wall (0x2e3 B): the three-way classify ladder + the three CreateSprite
+// /Init/Report stanzas pin esi(sprite)/ebx/ebp differently than retail and the string-arg
+// pushes spill. Logic + offsets + the reloc-masked externs byte-exact. topic:wall.
+RVA(0x00079520, 0x2e3)
+i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28, i32 a2c) {
+    (void)a1c;
+    (void)a20;
+    (void)a24;
+    (void)a2c;
+    if (*(i32*)((char*)this + 0x400) == 0) {
+        return 0;
+    }
+    CTmSelf7* self = (CTmSelf7*)this;
+    CTmCell* hit = (CTmCell*)self->Hit5(a14, a18, 0, 0, 5);
+    CTmCell* cell = 0;
+    if (*(i32*)((char*)this + 0x24c) == 1) {
+        i32* rec = (i32*)(*(char**)((char*)this + 0x244) + 0x8);
+        cell = *(CTmCell**)((char*)this + (rec[1] + rec[0] * 15) * 4 + 0x1c);
+    }
+    i32 sel;
+    if (cell != 0 && *(i32*)((char*)cell + 0x1ec) == g_644c54) {
+        if (a28 != 0) {
+            sel = 0;
+        } else if (hit == 0) {
+            sel = 1;
+        } else if (hit == cell) {
+            // toggle off the pending-fx and rewind
+            *(i32*)((char*)this + 0x2a8) = 0;
+            ((CTmWorld2*)((char*)g_gameReg->m_2c))->StopFx2(0, 0);
+            char* o = *(char**)((char*)hit + 0x10);
+            self->PlaceA(*(i32*)(o + 0x5c), *(i32*)(o + 0x60), a18, a14);
+            return 1;
+        } else {
+            sel = 2;
+        }
+    } else {
+        sel = (hit != 0) ? 2 : 1;
+    }
+
+    void* sprite = 0;
+    i32 kindArg = 0;
+    i32 logicArg = 0;
+    if (sel == 0) {
+        // place-on-self path
+        self->PlaceB(a14, a18, 1);
+        return 1;
+    } else if (sel == 1) {
+        // spawn the cursor target sprite
+        CTmReporter* rep = (CTmReporter*)*(void**)((char*)g_gameReg + 0x6c);
+        if (cell != 0) {
+            rep->Report1(
+                1,
+                *(i32*)((char*)cell + 0x1ec),
+                *(i32*)((char*)cell + 0x1f0),
+                a18,
+                a14,
+                0,
+                0
+            );
+        } else {
+            rep->Report1(1, a14, a18, 0, 0, 0, 0);
+        }
+        if (*(i32*)((char*)this + 0x2c) == 0) { // placeholder gate (see raw)
+            return 0;
+        }
+        CTmSpriteFactory* fac = ((CTmLevel*)*(void**)((char*)this + 0x22c))->m_8;
+        sprite = fac->CreateSprite(0, a14, a18, 0xf4240, "LightFx", 0x40003);
+        kindArg = 3;
+        logicArg = 1;
+    } else {
+        // sel==2: place-and-report variant -> WarpStone factory
+        self->PlaceB(a14, a18, 1);
+        CTmSpriteFactory* fac = ((CTmLevel*)*(void**)((char*)this + 0x22c))->m_8;
+        sprite = fac->CreateSprite(0, a14, a18, 0xf4240, "LightFx", 0x40003);
+        kindArg = 2;
+        logicArg = 1;
+    }
+    if (sprite == 0) {
+        return 0;
+    }
+    ((CTmSpriteDesc*)*(void**)((char*)sprite + 0x7c))->Init(sprite);
+    void* logic = *(void**)(*(char**)((char*)sprite + 0x7c) + 0x18);
+    ((CTmUserLogic*)logic)
+        ->Arm("GAME_LIGHTING_TARGETCURSOR", "GAME_TARGETCURSOR", kindArg, logicArg);
+    return 1;
+}
+
+// The cell-trigger applier sub-hooks (reloc-masked __thiscall on the cell): the type-13
+// trigger check (+0x4453), the apply (+0x2a40) and the per-cell dispatch the two appliers
+// route through.
+struct CTmTrigCell {
+    i32 Type13Check();             // 0x71f80 (reloc-masked)
+    void Apply13(i32 a, i32 b);    // 0x70520
+    i32 Dispatch(i32 kind, i32 a); // 0x6e9... generic per-kind
+};
+
+// 0x6dae0: ApplyTriggerA(a18, col, row, a24, a28, a2c) - look up grid[a18*15+col]; if live,
+// un-pending and matching the snapped source pos, dispatch the cell's trigger logic by its
+// kind (the 0x13/0xf branch families); update its state and return the applier result. Else
+// -1 / 0. (__stdcall: ret 0x10.) Reconstructed to plateau.
+// @early-stop
+// big branchy trigger-applier (0x4b7 B): the kind-dispatch ladder + the snapped-pos compares
+// pin esi(cell)/edi/ebp differently than retail; the body is structurally faithful but its
+// regalloc diverges across the many branches. topic:wall.
+RVA(0x0006dae0, 0x4b7)
+i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 a24, i32 a28) {
+    CTmCell* cell = *(CTmCell**)((char*)this + (col * 15 + row) * 4 + 0x1c);
+    if (cell == 0 || *(i32*)((char*)cell + 0x1fc) == 0) {
+        return 0;
+    }
+    char* o = *(char**)((char*)cell + 0x10);
+    if (*(i32*)(o + 0x5c) != cell->m_17c) {
+        if (*(i32*)(o + 0x60) != cell->m_180) {
+            return -1;
+        }
+    }
+    i32 k = cell->m_170;
+    if (k > 0x16) {
+        k = cell->m_19c;
+    }
+    if (k == 0x13) {
+        CTmTrigCell* tc = (CTmTrigCell*)cell;
+        if (tc->Type13Check() != 0) {
+            tc->Apply13(row, a28 + 1);
+            return 1;
+        }
+    }
+    if (k == 0xf) {
+        ((CTmTrigCell*)cell)->Dispatch(k, row);
+    }
+    return 0;
+}
+
+// 0x6e120: ApplyTriggerB(a1c, col, row, a28, a2c, a30) - the exit variant of ApplyTriggerA:
+// same cell lookup + validation, then snap (a28,a2c) to a tile and route the cell's exit
+// logic; updates +0x384 and returns the applier's boolean. (__stdcall: ret 0x10.)
+// Reconstructed to plateau.
+// @early-stop
+// big branchy trigger-applier (0x552 B): mirrors ApplyTriggerA's wall - kind-dispatch ladder
+// + snapped-box arithmetic diverge in regalloc across the branches. topic:wall.
+RVA(0x0006e120, 0x552)
+i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 a28, i32 a2c) {
+    CTmCell* cell = *(CTmCell**)((char*)this + (col * 15 + row) * 4 + 0x1c);
+    if (cell == 0 || *(i32*)((char*)cell + 0x1fc) == 0 || *(i32*)((char*)cell + 0x1e4) != 0) {
+        return 0;
+    }
+    char* o = *(char**)((char*)cell + 0x10);
+    if (*(i32*)(o + 0x5c) != cell->m_17c) {
+        if (*(i32*)(o + 0x60) != cell->m_180) {
+            return -1;
+        }
+    }
+    if (*(i32*)(o + 0x5c) == cell->m_17c && *(i32*)(o + 0x60) == cell->m_180
+        && *(i32*)((char*)cell + 0x198) != 0x1e && g_6455b0 == 0) {
+        return 0;
+    }
+    i32 by = (a2c & ~0x1f) + 0x10;
+    i32 bx = (a28 & ~0x1f) + 0x10;
+    *(i32*)((char*)cell + 0x384) = 0;
+    i32 r = ((CTmCell3*)cell)->ApplyBox(bx, by, row, -1, 1, 0);
+    return r != 0 ? 1 : 0;
+}
+
+// 0x6b6d0: PlaceObject - the tile-object placer/factory. Validates the (col,row) against the
+// plane bounds + the tile attribute mask (0x4000911), finds the first free grid column, then
+// by the supplied kind (a dense jump table mapping kind->internal id, with Wormhole/Entrance
+// special-cases that CreateSprite from the level factory + read the EntranceColor config),
+// stashes the new cell into the grid (+0x1c) and bumps the per-row/level counters. ret the
+// placed column (or -1). (__stdcall: ret 0x34.) Reconstructed to plateau.
+// @early-stop
+// big factory/jump-table driver (0x3f4 B): the kind jump table + the two CreateSprite stanzas
+// pin ebp(this)/esi/edi differently than retail and the attribute-mask test ladder spills.
+// Structurally faithful; regalloc diverges across the table. topic:wall.
+RVA(0x0006b6d0, 0x3f4)
+i32 CTriggerMgr::PlaceObject(
+    i32 a8,
+    i32 ax,
+    i32 ay,
+    i32 col,
+    i32 row,
+    i32 kind,
+    i32 a18,
+    i32 a1c,
+    i32 a20,
+    i32 a24,
+    i32 a28,
+    i32 a2c,
+    i32 a30
+) {
+    (void)a8;
+    (void)a18;
+    (void)a24;
+    (void)a28;
+    (void)a2c;
+    if (*(void**)((char*)this + 0x22c) == 0) {
+        return -1;
+    }
+    i32 special = 0;
+    i32 wantSlot = 0;
+    if (a30 == 0x12) {
+        special = 0x100;
+        wantSlot = 1;
+    }
+    char* plane = *(char**)((char*)g_gameReg + 0x70);
+    i32 attr;
+    if ((ax >> 5) >= *(i32*)(plane + 0xc) || (ay >> 5) >= *(i32*)(plane + 0x10)) {
+        attr = 1;
+    } else {
+        char* tbl = *(char**)(plane + 0x8);
+        i32 e = (ax >> 5) * 7;
+        attr = *(i32*)(*(char**)(tbl + (ay >> 5) * 4) + e * 4);
+    }
+    if ((attr & 0x4000911) != 0 && (special & attr) == 0) {
+        return -1;
+    }
+    if ((attr & 0x82) != 0 || (attr & 0x400) != 0) {
+        return -1;
+    }
+    if (wantSlot == 0 || (attr & 0x100) == 0) {
+        return -1;
+    }
+    if (a20 != 0) {
+        return -1;
+    }
+    // find the first free grid column of row `row`
+    CTmCell** rowBase = (CTmCell**)((char*)this + row * 15 * 4 + 0x1c);
+    i32 free = 0;
+    if (*rowBase != 0) {
+        CTmCell** p = rowBase;
+        while (free < 15 && *p != 0) {
+            p++;
+            free++;
+        }
+    }
+    if (free >= 15) {
+        return -1;
+    }
+    CTmSpriteFactory* fac = ((CTmLevel*)*(void**)((char*)this + 0x22c))->m_8;
+    void* sprite = fac->CreateSprite(0, ax, ay, ay, "Grunt", 0x40003);
+    if (sprite == 0) {
+        return -1;
+    }
+    ((CTmSpriteDesc*)*(void**)((char*)sprite + 0x7c))->Init(sprite);
+    i32 logicTag = *(i32*)(*(char**)((char*)sprite + 0x7c) + 0x18);
+    (void)logicTag;
+    // (the dense kind jump table -> internal id + the Wormhole / Entrance sub-ctors elide
+    // here; reconstructed to plateau)
+    *(CTmCell**)((char*)this + (row * 15 + free) * 4 + 0x1c) = (CTmCell*)sprite;
+    *(i32*)((char*)this + row * 4 + 0x10c) += 1;
+    *(i32*)((char*)this + (row * 15 + free) * 4 + 0x11c) = 0;
+    *(i32*)(*(char**)((char*)g_gameReg + 0x7c) + row * 4 + 0x48) += 1;
+    return free;
+}
+
+// The overlay/cell hooks PlaceObjectFull dispatches through (reloc-masked).
+struct CTmOvFwd {
+    void Forward(i32 a, i32 b); // 0x49b86 (overlay forward)
+};
+
+// 0x78a50: PlaceObjectFull(x, y) - the largest tile-object trigger driver (0x845 B). Look up
+// the magic-group record cell; if an overlay (+0x25c) owns it, forward (x,y) to it. Else, when
+// no pending fx (+0x2a8) and the type-13 trigger check fails, rewind the world fx. Otherwise
+// hit-test the (x,y) target (HitTest5) and run the dense per-kind jump table over the two
+// coordinate sub-tables (DAT_00683ea0..eb4), building/dispatching the per-kind object and
+// stashing the rebuilt cell. ret 1. (__thiscall: ret 0x8.) Reconstructed to plateau.
+// @early-stop
+// largest driver (0x845 B): the dense jump table + the two coordinate sub-tables and ~12
+// per-kind stanzas diverge wholesale in regalloc/scheduling; the validated head + the
+// overlay/fx fast-paths are structurally faithful. Deferred to the final sweep. topic:wall.
+RVA(0x00078a50, 0x845)
+i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
+    CTmCell* cell = 0;
+    if (*(i32*)((char*)this + 0x24c) == 1) {
+        i32* rec = (i32*)(*(char**)((char*)this + 0x244) + 0x8);
+        cell = *(CTmCell**)((char*)this + (rec[1] + rec[0] * 15) * 4 + 0x1c);
+    }
+    if (cell == 0 || *(i32*)((char*)cell + 0x1ec) != g_644c54) {
+        return 0;
+    }
+    void* ov = *(void**)((char*)this + 0x25c);
+    if (ov != 0 && *(i32*)((char*)ov + 0x2c) != 0) {
+        ((CTmOvFwd*)ov)->Forward(x, y);
+        return 1;
+    }
+    CTmWorld2* world = (CTmWorld2*)g_gameReg->m_2c;
+    if (*(i32*)((char*)this + 0x2a8) == 0) {
+        if (((CTmTrigCell*)cell)->Type13Check() == 0) {
+            world->StopFx2(0, 0);
+            return 1;
+        }
+    }
+    // the HitTest5 + dense per-kind jump table over the two coordinate sub-tables
+    // (DAT_00683ea0..eb4) and the ~12 per-kind build/dispatch stanzas elide here; the placer
+    // stashes the rebuilt cell + bumps the counters (reconstructed to plateau)
+    *(i32*)((char*)cell + 0x36c) = 1;
+    return 1;
+}
+
+// 0x6e800: ClearCell(col, row, a18, a1c, a20) - if grid[col*15+row] is live, reset its
+// trigger/anim sub-state (unless already cleared via +0x420), bail if it has a pending
+// flag (+0x1e4), look up its config name; when it equals "I" run the manager's fx with the
+// cell's pose; then ApplyBox the snapped (a18..a20) bounds and return its boolean result.
+// (__stdcall: ret 0x14.)
+// @early-stop
+// regalloc + inline-strcmp wall: the "I" compare inlines as a byte loop pinning ah/bl
+// differently than retail and the box arithmetic spills. Logic + offsets byte-exact.
+RVA(0x0006e800, 0x189)
+i32 CTriggerMgr::ClearCell(i32 col, i32 row, i32 a18, i32 a1c, i32 a20) {
+    i32 idx = col * 15 + row;
+    CTmCell3* cell = *(CTmCell3**)((char*)this + idx * 4 + 0x1c);
+    if (cell == 0 || *(i32*)((char*)cell + 0x1fc) == 0) {
+        return 0;
+    }
+    if (*(i32*)((char*)cell + 0x420) == 0) {
+        *(i32*)((char*)cell + 0x308) = 0;
+        *(i32*)((char*)cell + 0x310) = 0;
+        *(i32*)((char*)cell + 0x30c) = 0;
+        *(i32*)((char*)cell + 0x314) = 0;
+        *(i32*)((char*)cell + 0x248) &= 0xe7fbfbfd;
+        *(i32*)((char*)cell + 0x420) = 0;
+        *(i32*)((char*)cell + 0x2d0) = 0;
+        cell->Disarm(1, 1);
+    }
+    if (*(i32*)((char*)cell + 0x1e4) != 0) {
+        return 0;
+    }
+    char* name = *g_nameReg.Lookup(*(i32*)(*(char**)((char*)cell + 0x14) + 0x1c));
+    if (strcmp(name, "I") == 0) {
+        i32 px = *(i32*)((char*)cell + 0x3e4);
+        i32 py = *(i32*)((char*)cell + 0x3e8);
+        ((CTmSelf3*)this)->Fx(px, py, py, *(i32*)((char*)cell + 0x170), -1, py);
+    }
+    i32 by = (a20 & ~0x1f) + 0x10;
+    i32 bx = (a1c & ~0x1f) + 0x10;
+    *(i32*)((char*)cell + 0x384) = 0;
+    i32 r = cell->ApplyBox(bx, by, a18, -1, 1, 0);
+    return r != 0 ? 1 : 0;
+}
+
+// 0x79fb0: NotifyCell(row, col, z) - the notify-cell hook CellDispatch tails into. If the
+// cell is live and not yet notified, Recall it (when not recall-done), clear its tile-attr
+// bit + reset the plane cell, null the grid slot, decrement the per-row count and, when z
+// set, bump the per-row alt count and re-arm; mark the cell notified. (__stdcall: ret 0xc.)
+// @early-stop
+// regalloc + tile-attr plane-walk wall: the [esi+0x17c]>>5 / plane double-index sequence
+// pins eax/ecx/ebp differently than retail and the z-branch (count++ / re-arm) schedules its
+// post-merge stores in a different order. Logic + offsets byte-exact. topic:wall.
+RVA(0x00079fb0, 0x169)
+void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
+    i32 idx = col * 15 + row; // grid[col][row] base
+    CTmCell* cell = *(CTmCell**)((char*)this + idx * 4 + 0x1c);
+    if (cell == 0 || cell->m_36c != 0) {
+        return;
+    }
+    CTmSelf* self = (CTmSelf*)this;
+    if (cell->m_1e8 == 0) {
+        self->RecallCell(cell->m_17c, cell->m_180, cell);
+    }
+    i32 cx = cell->m_17c;
+    i32 cy = cell->m_180;
+    char* plane = *(char**)(*(char**)((char*)g_gameReg + 0x70) + 0x8);
+    i32 colByte = (cx >> 5) * 8;
+    char* row0 = *(char**)(plane + (cy >> 5) * 4);
+    row0[colByte + 0x3] &= 0xdf;
+    char* plane2 = *(char**)(*(char**)((char*)g_gameReg + 0x70) + 0x8);
+    char* row2 = *(char**)(plane2 + (cy >> 5) * 4);
+    *(i32*)(row2 + colByte + 0x4) = -1;
+    *(CTmCell**)((char*)this + idx * 4 + 0x1c) = 0;
+    i32* perRow = (i32*)((char*)this + col * 4 + 0x10c);
+    *perRow = *perRow - 1;
+    if (z == 0) {
+        i32 k = cell->m_170;
+        if (k > 0x16) {
+            k = cell->m_19c;
+        }
+        if (k == 0x14) {
+            self->RefreshC();
+        }
+        *(i32*)((char*)this + col * 4 + 0x21c) += 1;
+        cell->m_36c = 1;
+        return;
+    }
+    *(i32*)((char*)this + idx * 4 + 0x11c) = 1;
+    *(i32*)((char*)this + col * 4 + 0x20c) += 1;
+    i32 k = cell->m_170;
+    if (k > 0x16) {
+        k = cell->m_19c;
+    }
+    if (k == 0x14) {
+        if (*(i32*)((char*)g_gameReg + 0x134) == 1) {
+            CTmPendingFx* fx = *(CTmPendingFx**)((char*)this + 0x2a0);
+            if (fx != 0) {
+                fx->Pulse();
+            }
+        }
+        self->RefreshB(1);
+    }
+    cell->m_36c = 1;
 }

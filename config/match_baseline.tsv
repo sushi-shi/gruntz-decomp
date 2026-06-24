@@ -41,7 +41,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	673	0
+engine_discovered	652	0
 engine_label_stubs	534	121
 filestream	13	9
 font	16	9
@@ -96,7 +96,8 @@ tileswitchlogic	13	7
 tiletriggercontainer	6	2
 tiletriggerlogic	2	1
 trees	17	17
-triggermgr	21	7
+triggermgr	38	7
+triggermgr_eh	4	0
 uncompr	1	1
 unknownclassarrays	31	8
 unknownsalazar	4	0
@@ -590,27 +591,6 @@ engine_discovered	?CTileTriggerTransition_0117f0@CTileTriggerTransition@@QAEXXZ	
 engine_discovered	?CTileTriggerTransition_110070@CTileTriggerTransition@@QAEXXZ	1.0526	1.0526	1	d352853f3fcf	0x110070
 engine_discovered	?CToobSpikez_012c60@CToobSpikez@@QAEXXZ	5.8824	5.8824	1	d16ff0f9da5d	0x12c60
 engine_discovered	?CToobSpikez_114860@CToobSpikez@@QAEXXZ	0.5333	0.5333	1	0b1c4042697d	0x114860
-engine_discovered	?CTriggerMgr_06b6d0@CTriggerMgr@@QAEXXZ	0.1365	0.1365	1	013778fe1c73	0x6b6d0
-engine_discovered	?CTriggerMgr_06bfd0@CTriggerMgr@@QAEXXZ	0.4598	0.4598	1	270f9d17c617	0x6bfd0
-engine_discovered	?CTriggerMgr_06d300@CTriggerMgr@@QAEXXZ	0.0955	0.0955	1	cc43a3bcac43	0x6d300
-engine_discovered	?CTriggerMgr_06dae0@CTriggerMgr@@QAEXXZ	0.0955	0.0955	1	de36de4b0f3a	0x6dae0
-engine_discovered	?CTriggerMgr_06e120@CTriggerMgr@@QAEXXZ	0.0864	0.0864	1	13911942d6af	0x6e120
-engine_discovered	?CTriggerMgr_06e800@CTriggerMgr@@QAEXXZ	0.3030	0.3030	1	fd1504c4d0f9	0x6e800
-engine_discovered	?CTriggerMgr_06ea00@CTriggerMgr@@QAEXXZ	0.3922	0.3922	1	79350e677a4d	0x6ea00
-engine_discovered	?CTriggerMgr_075af0@CTriggerMgr@@QAEXXZ	0.3960	0.3960	1	268d2303fc1a	0x75af0
-engine_discovered	?CTriggerMgr_078520@CTriggerMgr@@QAEXXZ	0.4706	0.4706	1	0789ca9dd768	0x78520
-engine_discovered	?CTriggerMgr_078680@CTriggerMgr@@QAEXXZ	0.3101	0.3101	1	9125bb8c8c39	0x78680
-engine_discovered	?CTriggerMgr_078a50@CTriggerMgr@@QAEXXZ	0.0600	0.0600	1	6905d5c69a19	0x78a50
-engine_discovered	?CTriggerMgr_079520@CTriggerMgr@@QAEXXZ	0.1581	0.1581	1	61b6b609841f	0x79520
-engine_discovered	?CTriggerMgr_0798d0@CTriggerMgr@@QAEXXZ	0.2985	0.2985	1	842c7bf9d8c3	0x798d0
-engine_discovered	?CTriggerMgr_079b80@CTriggerMgr@@QAEXXZ	0.3604	0.3604	1	d30e01069b1d	0x79b80
-engine_discovered	?CTriggerMgr_079fb0@CTriggerMgr@@QAEXXZ	0.3922	0.3922	1	adca05e7c861	0x79fb0
-engine_discovered	?CTriggerMgr_07a240@CTriggerMgr@@QAEXXZ	0.3419	0.3419	1	1ff68198e357	0x7a240
-engine_discovered	?CTriggerMgr_07a5e0@CTriggerMgr@@QAEXXZ	0.2985	0.2985	1	c4606a0d282e	0x7a5e0
-engine_discovered	?CTriggerMgr_07a760@CTriggerMgr@@QAEXXZ	0.1223	0.1223	1	cb1b774b4557	0x7a760
-engine_discovered	?CTriggerMgr_07b1b0@CTriggerMgr@@QAEXXZ	0.3922	0.3922	1	bf7ee7500add	0x7b1b0
-engine_discovered	?CTriggerMgr_07c110@CTriggerMgr@@QAEXXZ	0.3125	0.3125	1	0c24a3c16ef4	0x7c110
-engine_discovered	?CTriggerMgr_085c50@CTriggerMgr@@QAEXXZ	3.1250	3.1250	1	60408972e863	0x85c50
 engine_discovered	?CUserLogic_00f2f0@CUserLogic@@QAEXXZ	2.2727	2.2727	1	211acac7460b	0xf2f0
 engine_discovered	?CUserLogic_04ac10@CUserLogic@@QAEXXZ	0.1133	0.1133	1	8c41366a7e7a	0x4ac10
 engine_discovered	?CUserLogic_04b370@CUserLogic@@QAEXXZ	0.0477	0.0477	1	a72b0fb0015d	0x4b370
@@ -2217,27 +2197,48 @@ trees	_scan_tree	100.0000	100.0000	1	383047072868	0x1892b0
 trees	_send_all_trees	100.0000	100.0000	1	4943fa3be295	0x1893a0
 trees	_send_tree	100.0000	100.0000	1	0a0643654ea9	0x189610
 trees	_set_data_type	100.0000	100.0000	1	167de8f88841	0x18a100
+triggermgr	?ApplyTriggerA@CTriggerMgr@@QAEHHHHH@Z	12.6014	12.6014	1	bf9ffeb1ee72	0x6dae0
+triggermgr	?ApplyTriggerB@CTriggerMgr@@QAEHHHHH@Z	13.0886	13.0886	1	1f6f4b0fe4d9	0x6e120
 triggermgr	?ByteTableHas@CTriggerMgr@@QAEHH@Z	62.0370	62.0370	3	df3f90ab5d78	0x79b30
 triggermgr	?CellDispatch@CTriggerMgr@@QAEHHHHH@Z	100.0000	100.0000	3	a1ad6c6f57fe	0x6bcb0
 triggermgr	?CellHitTest@CTriggerMgr@@QAEPAXHHPAH0H@Z	73.4419	73.4419	1	32cb03d0d199	0x6bea0
 triggermgr	?Cleanup@CTriggerMgr@@QAEXXZ	100.0000	100.0000	1	7423cc9ff1b0	0x6b680
+triggermgr	?ClearCell@CTriggerMgr@@QAEHHHHHH@Z	59.2576	59.2576	1	f5f91b1b326a	0x6e800
 triggermgr	?ClearGridRange@CTriggerMgr@@QAEHH@Z	52.1094	52.1094	1	3dc60b0e14fd	0x6bd40
 triggermgr	?ClearRecords@CTriggerMgr@@QAEXXZ	89.2500	89.2500	2	ac4a8922ae83	0x78880
 triggermgr	?ClearRow@CTriggerMgr@@QAEHH@Z	100.0000	100.0000	3	eb16fe8ac3c9	0x7d140
 triggermgr	?ClearRowAndRefresh@CTriggerMgr@@QAEHH@Z	72.0727	72.0727	1	08116ddf5f53	0x7a510
 triggermgr	?ClearSelections@CTriggerMgr@@QAEXXZ	99.8387	99.8387	2	a0b3e8e75bb5	0x7d0c0
 triggermgr	?DestroyAllAnims@CTriggerMgr@@QAEXXZ	96.5000	96.5000	1	2ced2820e161	0x7d330
+triggermgr	?HitTestApply@CTriggerMgr@@QAEHHHH@Z	53.0980	53.0980	1	e419aad92d65	0x6ea00
+triggermgr	?HitTestCell@CTriggerMgr@@QAEHHHPAH0H@Z	38.6040	38.6040	1	4c34f8594aba	0x75af0
 triggermgr	?NearestCellDist@CTriggerMgr@@QAEHHHH@Z	77.1667	77.1667	1	c3b8b0e26e2d	0x7d1d0
+triggermgr	?NotifyCell@CTriggerMgr@@QAEXHHH@Z	50.6765	50.6765	1	fee0160a92e7	0x79fb0
 triggermgr	?OverlayRelease@CTriggerMgr@@QAEHXZ	100.0000	100.0000	3	814c6331e041	0x79b00
 triggermgr	?OverlayTick@CTriggerMgr@@QAEXXZ	100.0000	100.0000	2	6af15c29ef21	0x78a30
+triggermgr	?PlaceObject@CTriggerMgr@@QAEHHHHHHHHHHHHHH@Z	28.5188	28.5188	1	33c184ed4d5c	0x6b6d0
+triggermgr	?PlaceObjectFull@CTriggerMgr@@QAEHHH@Z	6.9355	6.9355	1	0d30e645f673	0x78a50
+triggermgr	?PlacePuddle@CTriggerMgr@@QAEHPAXH@Z	89.7436	89.7436	1	9b071f46a4ff	0x7a240
+triggermgr	?RebuildOverlay@CTriggerMgr@@QAEHPAXH@Z	74.2910	74.2910	1	fb7c41514bc3	0x7a5e0
 triggermgr	?RecordListHas@CTriggerMgr@@QAEHHH@Z	90.4348	90.4348	3	bd724b88cab7	0x784d0
 triggermgr	?RemoveCellRecord@CTriggerMgr@@QAEHHHH@Z	75.1040	75.1040	1	15a4bb8c903e	0x78260
+triggermgr	?ReportRecordsA@CTriggerMgr@@QAEXHHHHH@Z	38.8941	38.8941	1	e81840346526	0x78520
+triggermgr	?ReportRecordsB@CTriggerMgr@@QAEXHHHHHH@Z	55.8062	55.8062	1	f1a3880145c9	0x78680
 triggermgr	?ResetAll@CTriggerMgr@@QAEXXZ	99.3902	99.3902	2	89c8046c20d8	0x78430
-triggermgr	?ScreenToCell@CTriggerMgr@@QAEPAXHHPAH0H@Z	95.8929	95.8929	1	0b9dff2ba9ef	0x6be30
+triggermgr	?ResetCell@CTriggerMgr@@QAEHHHHH@Z	62.0690	62.0690	1	f10466e7eb7c	0x6bfd0
+triggermgr	?ResetGroup@CTriggerMgr@@QAEHHHHHHHH@Z	45.1107	45.1107	1	0d622c268d77	0x79520
+triggermgr	?ScanGroup@CTriggerMgr@@QAEHH@Z	58.5688	58.5688	1	469c316badfd	0x7a760
+triggermgr	?ScreenToCell@CTriggerMgr@@QAEPAXHHPAH0H@Z	74.2143	74.2143	1	0b9dff2ba9ef	0x6be30
 triggermgr	?SelectionListFind@CTriggerMgr@@QAEHHH@Z	84.5833	84.5833	3	5b0c7da2e453	0x7d2a0
 triggermgr	?SetLevel@CTriggerMgr@@QAEHPAX@Z	89.8333	89.8333	3	8b076d5434a0	0x6b640
+triggermgr	?SpawnGrunt@CTriggerMgr@@QAEHHHHH@Z	70.2188	70.2188	1	72ca5ae3f07a	0x7c110
 triggermgr	?SpawnPuddle@CTriggerMgr@@QAEHHHHHHH@Z	100.0000	100.0000	1	ea9e49bf16e2	0x7a180
 triggermgr	?StopPendingFx@CTriggerMgr@@QAEXXZ	100.0000	100.0000	3	1ccff5fe0d81	0x7be10
+triggermgr	?TriggerCell@CTriggerMgr@@QAEHHH@Z	74.5392	74.5392	1	a33cfde4df87	0x7b1b0
+triggermgr_eh	??1CTriggerMgr@@QAE@XZ	46.0625	46.0625	1	acd16ffe98a8	0x85c50
+triggermgr_eh	?ApplySwitch@CTriggerMgr@@QAEHHH@Z	20.7017	20.7017	1	cd338b97d735	0x6d300
+triggermgr_eh	?DestroyGroup@CTriggerMgr@@QAEHHHH@Z	49.1269	49.1269	1	9cd277db7d13	0x798d0
+triggermgr_eh	?ReinitGroup@CTriggerMgr@@QAEHHH@Z	59.1261	59.1261	1	29e8aa59bb48	0x79b80
 uncompr	_uncompress	100.0000	100.0000	1	b40cccad8cc9	0x185320
 unknownclassarrays	??0UnknownClassArrays@@QAE@XZ	93.3108	93.3108	2	2de6dbacf6b9	0x24dc0
 unknownclassarrays	??1UnknownClassArrays@@QAE@XZ	100.0000	100.0000	2	c7546fcbd111	0x24f80

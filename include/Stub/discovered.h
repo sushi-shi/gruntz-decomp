@@ -630,30 +630,6 @@ public:
     void ClassUnknown_22_022c80();
     void ClassUnknown_22_085e60();
 };
-class CTriggerMgr {
-public:
-    void CTriggerMgr_06b6d0();
-    void CTriggerMgr_06bfd0();
-    void CTriggerMgr_06d300();
-    void CTriggerMgr_06dae0();
-    void CTriggerMgr_06e120();
-    void CTriggerMgr_06e800();
-    void CTriggerMgr_06ea00();
-    void CTriggerMgr_075af0();
-    void CTriggerMgr_078520();
-    void CTriggerMgr_078680();
-    void CTriggerMgr_078a50();
-    void CTriggerMgr_079520();
-    void CTriggerMgr_0798d0();
-    void CTriggerMgr_079b80();
-    void CTriggerMgr_079fb0();
-    void CTriggerMgr_07a240();
-    void CTriggerMgr_07a5e0();
-    void CTriggerMgr_07a760();
-    void CTriggerMgr_07b1b0();
-    void CTriggerMgr_07c110();
-    void CTriggerMgr_085c50();
-};
 class ClassUnknown_24 {
 public:
     void ClassUnknown_24_085df0();
