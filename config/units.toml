@@ -494,3 +494,13 @@ flags = "base"
 unit = "winapicdrom"
 source = "src/Utils/WinAPICdRom.cpp"
 flags = "eh"
+
+[[unit]]
+unit = "chatbox"
+source = "src/Gruntz/ChatBox.cpp"
+flags = "base"
+
+[[unit]]
+unit = "chatbox_eh"
+source = "src/Gruntz/ChatBoxDtor.cpp"
+flags = "eh"

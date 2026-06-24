@@ -2042,42 +2042,6 @@ void PaintHost_0fac70::PaintHost_0fac70_08cd90() {}
 RVA(0x000fa300, 0x3a)
 void PaintHost_0fac70::PaintHost_0fac70_0fa300() {}
 
-// ---- Region_182ab0 ----
-RVA(0x000a0280, 0x2b)
-void Region_182ab0::Region_182ab0_0a0280() {}
-RVA(0x000a0360, 0x64)
-void Region_182ab0::Region_182ab0_0a0360() {}
-RVA(0x00182b30, 0x30)
-void Region_182ab0::Region_182ab0_182b30() {}
-RVA(0x00182b60, 0x3e)
-void Region_182ab0::Region_182ab0_182b60() {}
-RVA(0x00182ba0, 0x35)
-void Region_182ab0::Region_182ab0_182ba0() {}
-RVA(0x00182be0, 0x8d)
-void Region_182ab0::Region_182ab0_182be0() {}
-RVA(0x00182da0, 0x2a)
-void Region_182ab0::Region_182ab0_182da0() {}
-RVA(0x00182dd0, 0x19)
-void Region_182ab0::Region_182ab0_182dd0() {}
-RVA(0x00182df0, 0x69)
-void Region_182ab0::Region_182ab0_182df0() {}
-RVA(0x00182e60, 0x69)
-void Region_182ab0::Region_182ab0_182e60() {}
-RVA(0x00182ed0, 0xbc)
-void Region_182ab0::Region_182ab0_182ed0() {}
-RVA(0x00182f90, 0x92)
-void Region_182ab0::Region_182ab0_182f90() {}
-RVA(0x00183030, 0x7b)
-void Region_182ab0::Region_182ab0_183030() {}
-RVA(0x001830b0, 0x7b)
-void Region_182ab0::Region_182ab0_1830b0() {}
-RVA(0x001831a0, 0x24)
-void Region_182ab0::Region_182ab0_1831a0() {}
-RVA(0x00183210, 0x16)
-void Region_182ab0::Region_182ab0_183210() {}
-RVA(0x00183230, 0x16)
-void Region_182ab0::Region_182ab0_183230() {}
-
 // ---- RegistryHelper ----
 RVA(0x00114fa0, 0x3e)
 void RegistryHelper::RegistryHelper_114fa0() {}

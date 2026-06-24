@@ -31,13 +31,15 @@ cddrawworkermapsmall	8	2
 cddrawworkerregistry	25	12
 cddrawworkers	3	3
 cdirectdrawmgr	15	9
+chatbox	16	9
+chatbox_eh	1	1
 cplay	26	8
 cstatusbarmgr	1	0
 deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	851	0
+engine_discovered	834	0
 engine_label_stubs	534	117
 filestream	13	9
 font	16	9
@@ -272,11 +274,28 @@ cdirectdrawmgr	?Refresh@CDDSurface@@QAEHPAUIDirectDrawSurfaceZ@@@Z	64.5128	64.51
 cdirectdrawmgr	?SetColorKey@CDDSurface@@QAEHKPAX@Z	100.0000	100.0000	2	9274fe4c8005	0x13eaa0
 cdirectdrawmgr	?SetPalette@CDDSurface@@QAEHPAVCDDPalette@@H@Z	100.0000	100.0000	2	3f550fc96469	0x13e690
 cdirectdrawmgr	?SetRange@CDDPalette@@QAEHHHEEEK@Z	100.0000	100.0000	3	002aa53d9267	0x147cd0
-cplay	?BeginGridWalk@CPlay@@QAEHHHHHH@Z	81.1191	81.1191	1	9e4a7c79787d	0xd0920
+chatbox	?AddNode@CChatBox@@QAEHPAX@Z	100.0000	100.0000	1	8b70b53800ba	0x182ba0
+chatbox	?AdvanceRow0@CChatBox@@QAEHPAXHH@Z	94.8718	94.8718	1	8ba72e6202a4	0x182df0
+chatbox	?AdvanceRow1@CChatBox@@QAEHPAXHH@Z	94.8718	94.8718	1	88e9c18d1dd6	0x182e60
+chatbox	?AttachNode@CChatBox@@QAEHPAX@Z	100.0000	100.0000	1	3096b50450af	0x182da0
+chatbox	?Clear@CChatBox@@QAEXXZ	100.0000	100.0000	1	5014d3198d29	0x182b60
+chatbox	?Draw@CChatBox@@QAEHHHHH@Z	95.2000	95.2000	1	7bd9e320ad7a	0x182f90
+chatbox	?Find@CChatBox@@QAEHPBD@Z	73.8116	73.8116	1	e5a61e1f6eee	0x182be0
+chatbox	?HitTest0@CChatBox@@QAEHHH@Z	100.0000	100.0000	1	36ffa8e72308	0x1831a0
+chatbox	?HitTest1@CChatBox@@QAEHXZ	100.0000	100.0000	1	1a7a6ef36d61	0x183210
+chatbox	?HitTest2@CChatBox@@QAEHXZ	100.0000	100.0000	1	52279b68d657	0x183230
+chatbox	?Init@CChatBox@@QAEXXZ	100.0000	100.0000	1	ee723d15e54c	0xa0280
+chatbox	?ReplaceNode@CChatBox@@QAEHPAX@Z	100.0000	100.0000	1	cf09e8918ff7	0x182dd0
+chatbox	?Reset@CChatBox@@QAEXXZ	100.0000	100.0000	1	40ea73dae4e4	0x182b30
+chatbox	?ScrollRow0@CChatBox@@QAEHXZ	63.2353	63.2353	1	a0883cc678e7	0x183030
+chatbox	?ScrollRow1@CChatBox@@QAEHXZ	63.2353	63.2353	1	db6fa0211e06	0x1830b0
+chatbox	?Step@CChatBox@@QAEHH@Z	88.9467	88.9467	1	6ec3d0adf352	0x182ed0
+chatbox_eh	??1CChatBox@@QAE@XZ	100.0000	100.0000	1	ab8e83aa5ef4	0xa0360
+cplay	?BeginGridWalk@CPlay@@QAEHHHHHH@Z	81.1191	81.1191	2	dec8202764e5	0xd0920
 cplay	?BuildGruntTypeNameTable@CPlay@@QAEXHHHH@Z	0.7092	0.7092	1	1f94124e3e6b	0xdc6d0
 cplay	?BuildHelpReveal@CPlay@@QAEHXZ	67.8125	67.8125	1	7227ae443c4e	0xd72c0
 cplay	?DispatchHudClick@CPlay@@QAEHHHH@Z	72.0125	72.0125	1	f6e34fd67003	0xce530
-cplay	?DrawWorldFrame@CPlay@@QAEXXZ	94.4118	94.4118	1	afe6b5cc1a42	0xc9c20
+cplay	?DrawWorldFrame@CPlay@@QAEXXZ	94.4118	94.4118	2	c6806eebd846	0xc9c20
 cplay	?DrawWorldFrames@CPlay@@QAEHXZ	88.8529	88.8529	1	da4eeef3e9b0	0xc9cc0
 cplay	?LoadCursorSprites@CPlay@@QAEXHH@Z	0.1664	0.1664	1	d2c16912a1e6	0xd0120
 cplay	?LoadScrollSpeedOptions@CPlay@@QAEXXZ	0.5000	0.5000	1	1bb238e16fd9	0xd12b0
@@ -1162,23 +1181,6 @@ engine_discovered	?PaintHost_0fac70_0147b0@PaintHost_0fac70@@QAEXXZ	2.0833	2.083
 engine_discovered	?PaintHost_0fac70_08c610@PaintHost_0fac70@@QAEXXZ	20.0000	20.0000	1	4f32bc892863	0x8c610
 engine_discovered	?PaintHost_0fac70_08cd90@PaintHost_0fac70@@QAEXXZ	4.7619	4.7619	1	b740de1e971d	0x8cd90
 engine_discovered	?PaintHost_0fac70_0fa300@PaintHost_0fac70@@QAEXXZ	1.9048	1.9048	1	68747aae63a4	0xfa300
-engine_discovered	?Region_182ab0_0a0280@Region_182ab0@@QAEXXZ	6.2500	6.2500	1	51e9a2b9fc59	0xa0280
-engine_discovered	?Region_182ab0_0a0360@Region_182ab0@@QAEXXZ	4.0000	4.0000	1	b50a3e222616	0xa0360
-engine_discovered	?Region_182ab0_182b30@Region_182ab0@@QAEXXZ	5.8824	5.8824	1	e8f77755fd23	0x182b30
-engine_discovered	?Region_182ab0_182b60@Region_182ab0@@QAEXXZ	3.8462	3.8462	1	238d0e7957bd	0x182b60
-engine_discovered	?Region_182ab0_182ba0@Region_182ab0@@QAEXXZ	1.7391	1.7391	1	1bc6cbe13cd5	0x182ba0
-engine_discovered	?Region_182ab0_182be0@Region_182ab0@@QAEXXZ	0.5797	0.5797	1	8d563e58784a	0x182be0
-engine_discovered	?Region_182ab0_182da0@Region_182ab0@@QAEXXZ	2.6667	2.6667	1	d9b000375037	0x182da0
-engine_discovered	?Region_182ab0_182dd0@Region_182ab0@@QAEXXZ	4.0000	4.0000	1	eaf21a73a737	0x182dd0
-engine_discovered	?Region_182ab0_182df0@Region_182ab0@@QAEXXZ	1.0256	1.0256	1	24d2b4bf8a6d	0x182df0
-engine_discovered	?Region_182ab0_182e60@Region_182ab0@@QAEXXZ	1.0256	1.0256	1	1569ac5faebd	0x182e60
-engine_discovered	?Region_182ab0_182ed0@Region_182ab0@@QAEXXZ	0.5333	0.5333	1	f7e3bef11b5e	0x182ed0
-engine_discovered	?Region_182ab0_182f90@Region_182ab0@@QAEXXZ	0.6154	0.6154	1	4043a445172b	0x182f90
-engine_discovered	?Region_182ab0_183030@Region_182ab0@@QAEXXZ	1.9608	1.9608	1	b862275a54f8	0x183030
-engine_discovered	?Region_182ab0_1830b0@Region_182ab0@@QAEXXZ	1.9608	1.9608	1	5eeaaf22ae11	0x1830b0
-engine_discovered	?Region_182ab0_1831a0@Region_182ab0@@QAEXXZ	2.8571	2.8571	1	5f45332b37f1	0x1831a0
-engine_discovered	?Region_182ab0_183210@Region_182ab0@@QAEXXZ	10.0000	10.0000	1	4cdaae48339b	0x183210
-engine_discovered	?Region_182ab0_183230@Region_182ab0@@QAEXXZ	10.0000	10.0000	1	7dd070c022fc	0x183230
 engine_discovered	?RegistryHelper_114fa0@RegistryHelper@@QAEXXZ	3.8462	3.8462	1	8b09b3ba3fed	0x114fa0
 engine_discovered	?RemusParseSource_139800@RemusParseSource@@QAEXXZ	33.3333	33.3333	1	96a1b7b02169	0x139800
 engine_discovered	?RngBox_00cd70_00bb40@RngBox_00cd70@@QAEXXZ	20.0000	20.0000	1	b368ca698993	0xbb40

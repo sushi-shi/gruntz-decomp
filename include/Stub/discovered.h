@@ -1407,26 +1407,6 @@ public:
     void PaintHost_0fac70_08cd90();
     void PaintHost_0fac70_0fa300();
 };
-class Region_182ab0 {
-public:
-    void Region_182ab0_0a0280();
-    void Region_182ab0_0a0360();
-    void Region_182ab0_182b30();
-    void Region_182ab0_182b60();
-    void Region_182ab0_182ba0();
-    void Region_182ab0_182be0();
-    void Region_182ab0_182da0();
-    void Region_182ab0_182dd0();
-    void Region_182ab0_182df0();
-    void Region_182ab0_182e60();
-    void Region_182ab0_182ed0();
-    void Region_182ab0_182f90();
-    void Region_182ab0_183030();
-    void Region_182ab0_1830b0();
-    void Region_182ab0_1831a0();
-    void Region_182ab0_183210();
-    void Region_182ab0_183230();
-};
 class RegistryHelper {
 public:
     void RegistryHelper_114fa0();
