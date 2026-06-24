@@ -1381,23 +1381,3 @@ RVA(0x000dace0, 0x239)
 void UnknownClassInCGruntzMgr::UnknownClassInCGruntzMgr_0dace0() {}
 RVA(0x000dafb0, 0x71)
 void UnknownClassInCGruntzMgr::UnknownClassInCGruntzMgr_0dafb0() {}
-
-// ---- WndHolder_13d4c0 ----
-RVA(0x000946a0, 0x5f)
-void WndHolder_13d4c0::WndHolder_13d4c0_0946a0() {}
-RVA(0x00094920, 0x21)
-void WndHolder_13d4c0::WndHolder_13d4c0_094920() {}
-RVA(0x00094a20, 0x26)
-void WndHolder_13d4c0::WndHolder_13d4c0_094a20() {}
-RVA(0x00094a60, 0x26)
-void WndHolder_13d4c0::WndHolder_13d4c0_094a60() {}
-RVA(0x00094ae0, 0x26)
-void WndHolder_13d4c0::WndHolder_13d4c0_094ae0() {}
-RVA(0x00094b20, 0x49)
-void WndHolder_13d4c0::WndHolder_13d4c0_094b20() {}
-RVA(0x00094b90, 0x1b)
-void WndHolder_13d4c0::WndHolder_13d4c0_094b90() {}
-RVA(0x0013d470, 0x12)
-void WndHolder_13d4c0::WndHolder_13d4c0_13d470() {}
-RVA(0x0013d4e0, 0x43)
-void WndHolder_13d4c0::WndHolder_13d4c0_13d4e0() {}

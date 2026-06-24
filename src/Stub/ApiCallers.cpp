@@ -2983,24 +2983,10 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    // @confidence: low
-    // @source: winapi:DestroyWindow
-    // __thiscall(): destroy the owned window once (m_c guards re-entry).
-    struct WndHolder_13d4c0 {
-        char m_pad0[4];
-        HWND m_4; // +0x04
-        char m_pad8[0xc - 8];
-        i32 m_c; // +0x0c (destroyed flag)
-        i32 Destroy();
-    };
-    RVA(0x0013d4c0, 0x1e)
-    i32 WndHolder_13d4c0::Destroy() {
-        if (!m_c) {
-            m_c = 1;
-            DestroyWindow(m_4);
-        }
-        return 1;
-    }
+    // (0x13d4c0 was WndHolder_13d4c0::Destroy; recovered as CGameWnd::OnClose -
+    // the WM_CLOSE handler, vtable slot 4 - and migrated to src/Wap32/GameWnd.cpp.
+    // The "WndHolder_13d4c0" placeholder class is CGameWnd: m_4 (HWND) / m_c
+    // (destroyed flag) are the CGameWnd ctor-zeroed fields.)
 
     // @confidence: low
     // @source: winapi:CopyRect

@@ -47,10 +47,24 @@ struct CGameWndCreateParams {
 //   are out-of-line stubs here (vtable anchors); only the ones reconstructed in
 //   their own right (the ctor, QuitMessageLoop @ +0x34 = WM_DESTROY) carry bodies.
 // ---------------------------------------------------------------------------
+class CGameWnd;
+// Active-window singleton (DAT_00653c68): the one CGameWnd currently driving the
+// WNDPROC. Set by CreateAndShow, cleared by Destroy / ~CGameWnd. Shared so the
+// inline ~CGameWnd below (which CGruntzWnd's cross-TU dtor folds) resolves it; the
+// reloc that names it is masked in objdiff.
+extern CGameWnd* g_activeGameWnd;
+
 class CGameWnd {
 public:
     CGameWnd();
-    virtual ~CGameWnd(); // +0x00  idx0  dtor
+    // ~CGameWnd is INLINE in the engine header: it re-runs the window teardown
+    // (Destroy) then clears the active-window singleton. The body must be visible
+    // here so CGruntzWnd's cross-TU ~CGruntzWnd folds the base-subobject teardown
+    // (the call Destroy + s_activeWnd=0) and earns its /GX EH frame. vtbl +0x00.
+    virtual ~CGameWnd() {
+        Destroy();
+        g_activeGameWnd = 0;
+    } // +0x00  idx0  dtor
     // Pre-dispatch hook: GameWindowProc calls this for EVERY message before the
     // switch; nonzero swallows the message (WndProc returns 0).
     virtual i32 PreDispatchMessage(UINT uMsg, WPARAM wParam, LPARAM lParam); // +0x04 idx1
@@ -85,6 +99,11 @@ public:
     // Returns nonzero on success.
     i32 CreateAndShow(CGameWndCreateParams* pParams, void* pOwner);
     void Destroy();
+    // Drains up to `count` queued messages for this window's HWND, all filtered to
+    // a single message id (PeekMessageA min==max==filterMsg, PM_REMOVE). Stops at
+    // the first empty peek. Returns nothing (retail leaves eax undefined).
+    // @0x13d4e0 (13 callers across the engine).
+    void PumpMessages(u32 filterMsg, i32 count);
 
     HWND m_4;  // +0x04  HWND (set by CreateAndShow / zeroed by ctor)
     void* m_8; // +0x08  owner pointer (set by CreateAndShow; not touched by ctor)

@@ -47,8 +47,8 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	415	0
-engine_label_stubs	525	121
+engine_discovered	406	0
+engine_label_stubs	524	120
 filestream	13	9
 font	21	10
 fontconfig	7	4
@@ -59,7 +59,7 @@ gamelevel	30	19
 gamemode	35	15
 gameobjectctors	5	0
 gametext	4	2
-gamewnd	6	4
+gamewnd	9	8
 grunt	49	9
 gruntpuddle	4	2
 gruntspawnconfig	10	4
@@ -69,7 +69,7 @@ gruntzcmdmgr	11	9
 gruntzcommand	10	10
 gruntzmgr	51	39
 gruntzsoundz	8	7
-gruntzwnd	2	1
+gruntzwnd	9	7
 hash	9	9
 iconloaders	4	1
 image	32	21
@@ -957,15 +957,6 @@ engine_discovered	?UnknownClassInCGruntzMgr_0da870@UnknownClassInCGruntzMgr@@QAE
 engine_discovered	?UnknownClassInCGruntzMgr_0da960@UnknownClassInCGruntzMgr@@QAEXXZ	4.3478	4.3478	1	f34feaa5d626	0xda960
 engine_discovered	?UnknownClassInCGruntzMgr_0dace0@UnknownClassInCGruntzMgr@@QAEXXZ	0.1778	0.1778	1	5cba09be3920	0xdace0
 engine_discovered	?UnknownClassInCGruntzMgr_0dafb0@UnknownClassInCGruntzMgr@@QAEXXZ	1.4815	1.4815	1	37af04524cd9	0xdafb0
-engine_discovered	?WndHolder_13d4c0_0946a0@WndHolder_13d4c0@@QAEXXZ	4.5455	4.5455	1	4ee6e1473e55	0x946a0
-engine_discovered	?WndHolder_13d4c0_094920@WndHolder_13d4c0@@QAEXXZ	3.3333	3.3333	1	c7681a6b7fc3	0x94920
-engine_discovered	?WndHolder_13d4c0_094a20@WndHolder_13d4c0@@QAEXXZ	2.8571	2.8571	1	0a21086f573e	0x94a20
-engine_discovered	?WndHolder_13d4c0_094a60@WndHolder_13d4c0@@QAEXXZ	2.8571	2.8571	1	fd57119eb10f	0x94a60
-engine_discovered	?WndHolder_13d4c0_094ae0@WndHolder_13d4c0@@QAEXXZ	2.8571	2.8571	1	792ea68dbb8c	0x94ae0
-engine_discovered	?WndHolder_13d4c0_094b20@WndHolder_13d4c0@@QAEXXZ	1.1765	1.1765	1	54ce36c25d84	0x94b20
-engine_discovered	?WndHolder_13d4c0_094b90@WndHolder_13d4c0@@QAEXXZ	9.0909	9.0909	1	c727799e9863	0x94b90
-engine_discovered	?WndHolder_13d4c0_13d470@WndHolder_13d4c0@@QAEXXZ	8.0000	8.0000	1	9e02f29e1acc	0x13d470
-engine_discovered	?WndHolder_13d4c0_13d4e0@WndHolder_13d4c0@@QAEXXZ	1.2500	1.2500	1	cb9103bbab1c	0x13d4e0
 engine_label_stubs	??0CActionArea@@QAE@H@Z	2.1226	2.1226	1	cpp:6bf52155264d	0x7da0
 engine_label_stubs	??0CBoomerang@@QAE@H@Z	97.3077	97.3077	1	cpp:6bf52155264d	0xe0650
 engine_label_stubs	??0CBrickz@@QAE@H@Z	1.6667	1.6667	1	cpp:6bf52155264d	0x10e800
@@ -1110,7 +1101,6 @@ engine_label_stubs	?DebugPrintf@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXXZ	0.86
 engine_label_stubs	?DecodeBlit@CImage@@QAEHPAX0HHH0@Z	2.7778	2.7778	1	cpp:e1535087fe94	0x175930
 engine_label_stubs	?DecodeRun24@CFileImage@@QAEHPAX@Z	0.6472	0.6472	1	cpp:e1535087fe94	0x140c50
 engine_label_stubs	?DecodeRun8@CFileImage@@QAEHPAX@Z	1.5385	1.5385	1	cpp:e1535087fe94	0x140aa0
-engine_label_stubs	?Destroy@WndHolder_13d4c0@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x13d4c0
 engine_label_stubs	?Dispatch@Dispatcher_0cfbd0@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:e1535087fe94	0xcfbd0
 engine_label_stubs	?DrawBattleStats@EngineLabelBacklog@@YAXXZ	0.2445	0.2445	1	cpp:45e65336d4b5	0x1ed30
 engine_label_stubs	?DrawCount@DrawHost_164380@ApiCallerStubs@@QAEXPAUtagRECT@@H@Z	80.6964	80.6964	1	cpp:6bf52155264d	0x164380
@@ -1629,10 +1619,13 @@ gametext	?GetWarlordName@@YG?AVCString@@H@Z	89.2553	89.2553	4	290253c681a0	0x1ec
 gametext	_$E1	100.0000	100.0000	1	cpp:a7f73c40eefc	0x82990
 gametext	_$E4	100.0000	100.0000	1	cpp:a7f73c40eefc	0x18740
 gamewnd	??0CGameWnd@@QAE@XZ	100.0000	100.0000	4	f7e328f59927	0x13cf00
-gamewnd	??_GCGameWnd@@UAEPAXI@Z	74.2857	74.2857	1	cpp:edb0e6bff54a	0x94d80
-gamewnd	?CreateAndShow@CGameWnd@@QAEHPAUCGameWndCreateParams@@PAX@Z	100.0000	100.0000	5	69fa97dc1c97	0x13cf20
-gamewnd	?Destroy@CGameWnd@@QAEXXZ	100.0000	100.0000	4	fa5932613a67	0x13cfb0
-gamewnd	?GameWindowProc@CGameApp@@SGJPAUHWND__@@IIJ@Z	94.8343	94.8343	5	e0448494357b	0x13cff0
+gamewnd	??_GCGameWnd@@UAEPAXI@Z	100.0000	100.0000	1	cpp:edb0e6bff54a	0x94d80
+gamewnd	?CreateAndShow@CGameWnd@@QAEHPAUCGameWndCreateParams@@PAX@Z	100.0000	100.0000	6	5cdaa200d29f	0x13cf20
+gamewnd	?Destroy@CGameWnd@@QAEXXZ	100.0000	100.0000	5	2a7c706ed423	0x13cfb0
+gamewnd	?GameWindowProc@CGameApp@@SGJPAUHWND__@@IIJ@Z	94.8343	94.8343	6	eb6508416b8b	0x13cff0
+gamewnd	?OnActivateApp@CGameWnd@@UAEHIJ@Z	100.0000	100.0000	1	9f7546976a20	0x13d470
+gamewnd	?OnClose@CGameWnd@@UAEHXZ	100.0000	100.0000	1	afe18af98c56	0x13d4c0
+gamewnd	?PumpMessages@CGameWnd@@QAEXIH@Z	100.0000	100.0000	1	00d21758f5d6	0x13d4e0
 gamewnd	?QuitMessageLoop@CGameWnd@@UAEHXZ	100.0000	100.0000	4	f2de6543e99e	0x13d490
 grunt	?BuildEntranceAnimation@CGrunt@@QAEXH@Z	71.4562	71.4562	6	31017869150f	0x67bd0
 grunt	?CGrunt_IsSameType@@YA_NPAVCGrunt@@0@Z	100.0000	100.0000	1	04ada45b6431	0x3c7f0
@@ -1792,6 +1785,13 @@ gruntzsoundz	?Play_138840@CGruntzSoundZ@@QAEHHH@Z	100.0000	100.0000	2	c415231b70
 gruntzsoundz	?StopAndFlush_138530@CGruntzSoundZ@@QAEXXZ	100.0000	100.0000	1	fc55b1345f19	0x138530
 gruntzsoundz	?StopCurrent_1388a0@CGruntzSoundZ@@QAEXXZ	100.0000	100.0000	1	99f267d9da6f	0x1388a0
 gruntzwnd	??0CGruntzWnd@@QAE@XZ	100.0000	100.0000	5	cce3fed8f7f8	0x94640
+gruntzwnd	??1CGruntzWnd@@UAE@XZ	39.4545	39.4545	1	e178d8d8603b	0x946a0
+gruntzwnd	?OnActivateAppImpl@CGruntzWnd@@QAEHIJ@Z	100.0000	100.0000	1	d43076a1cc33	0x94b20
+gruntzwnd	?OnCloseImpl@CGruntzWnd@@QAEHXZ	100.0000	100.0000	1	d976afe1279e	0x94b90
+gruntzwnd	?OnKeyUpImpl@CGruntzWnd@@QAEHIJ@Z	100.0000	100.0000	1	c94c3c4c140c	0x94920
+gruntzwnd	?OnRButtonDblClkImpl@CGruntzWnd@@QAEHIHH@Z	100.0000	100.0000	1	0f44d4968260	0x94ae0
+gruntzwnd	?OnRButtonDownImpl@CGruntzWnd@@QAEHIHH@Z	100.0000	100.0000	1	5307d2869b72	0x94a20
+gruntzwnd	?OnRButtonUpImpl@CGruntzWnd@@QAEHIHH@Z	100.0000	100.0000	1	2ea6169b961a	0x94a60
 gruntzwnd	?Stub_094670@CGruntzWnd@@QAEXXZ	3.6364	3.6364	4	efb99feddc33	0x94670
 hash	?FindInt@CHash@@QAEPAXI@Z	100.0000	100.0000	1	f161fc706dec	0x13c360
 hash	?HashInt@CHash@@QAEII@Z	100.0000	100.0000	1	c516bb837bca	0x13c350
@@ -2019,9 +2019,9 @@ savegame	?Save@CSaveGame@@QAEHHH@Z	41.5752	41.5752	2	8dc3f3720c50	0xe4ea0
 savegame	?SetField18@CSaveGame@@QAEXH@Z	96.3333	96.3333	2	805c5816acdb	0xe5620
 savegame	?SetField1c@CSaveGame@@QAEXH@Z	100.0000	100.0000	2	a0994b0515d6	0xe5660
 savegame	?Verify@CSaveGame@@QAEHXZ	100.0000	100.0000	2	99fbc66be447	0xe50f0
-sbi_image	?SetupImage@CSBI_Image@@QAEHHPAUCImageCfgHost@@HHHHHHHHH@Z	64.7500	64.7500	1	4a29504766a6	0xe6c80
+sbi_image	?SetupImage@CSBI_Image@@QAEHHPAUCImageCfgHost@@HHHHHHHHH@Z	64.7500	64.7500	2	2facdd2dfb73	0xe6c80
 sbi_image_eh	??1CSBI_Image@@QAE@XZ	42.7200	42.7200	1	b3fa0dd28c09	0x100870
-sbi_imageset	?Serialize@CSBI_ImageSet@@QAEHPAUCImageSetStream@@HHH@Z	99.1803	99.1803	1	ec3cbbedbe2d	0xe74f0
+sbi_imageset	?Serialize@CSBI_ImageSet@@QAEHPAUCImageSetStream@@HHH@Z	99.1803	99.1803	2	30e578b47581	0xe74f0
 sbi_menuitem	?Blit@CSBI_MenuItem@@QAEHXZ	100.0000	100.0000	1	89b04f10c391	0xe84f0
 sbi_menuitem	?ClearFrame2@CSBI_MenuItem@@QAEXXZ	100.0000	100.0000	1	54de26b0f1b5	0xe81a0
 sbi_menuitem	?ClearFrame@CSBI_MenuItem@@QAEXXZ	100.0000	100.0000	1	b89098c623b9	0xe6d90
@@ -2083,7 +2083,7 @@ sbi_rectonly	?SetHudRectB@CSBI_RectOnly@@QAEXHHH@Z	72.3333	72.3333	2	25a4592f51b
 sbi_rectonly	?SetMode@CSBI_RectOnly@@QAEXH@Z	100.0000	100.0000	2	0f418853e54a	0x10bb90
 sbi_rectonly	?SetTab@CSBI_RectOnly@@QAEHHH@Z	99.9636	99.9636	2	75acee6fd3d7	0x1020a0
 sbi_rectonly	?SetTabState@CSBI_RectOnly@@QAEHHH@Z	85.5328	85.5328	1	4a14706630f5	0x100d70
-sbi_rectonly	?Setup@CSBI_RectOnly@@QAEHHHHHHHHHHH@Z	90.3846	90.3846	1	c9c6e230fa5d	0xe86e0
+sbi_rectonly	?Setup@CSBI_RectOnly@@QAEHHHHHHHHHHH@Z	90.3846	90.3846	2	9a8ca2bb645a	0xe86e0
 sbi_rectonly	?Stub_0ffde0@CSBI_RectOnly@@QAEXXZ	0.2119	0.2119	4	3326c6c6d306	0xffde0
 sbi_rectonly	?Teardown@CSBI_RectOnly@@QAEXXZ	84.7059	84.7059	2	d3950462b68c	0xfe350
 sbi_rectonly	?TickGauge@CSBI_RectOnly@@QAEXXZ	95.6905	95.6905	2	cfd3e12e9ddb	0x105480

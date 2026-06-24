@@ -1007,17 +1007,5 @@ public:
     void UnknownClassInCGruntzMgr_0dace0();
     void UnknownClassInCGruntzMgr_0dafb0();
 };
-class WndHolder_13d4c0 {
-public:
-    void WndHolder_13d4c0_0946a0();
-    void WndHolder_13d4c0_094920();
-    void WndHolder_13d4c0_094a20();
-    void WndHolder_13d4c0_094a60();
-    void WndHolder_13d4c0_094ae0();
-    void WndHolder_13d4c0_094b20();
-    void WndHolder_13d4c0_094b90();
-    void WndHolder_13d4c0_13d470();
-    void WndHolder_13d4c0_13d4e0();
-};
 
 #endif

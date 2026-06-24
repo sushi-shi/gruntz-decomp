@@ -15,9 +15,12 @@ CGameWnd::CGameWnd() {
     m_c = 0;
 }
 
-// File-scope active-window singleton. Set by
-// CreateAndShow; read by GameWindowProc to dispatch messages to this object.
-static CGameWnd* s_activeWnd;
+// Active-window singleton (declared in Wap32.h so the inline ~CGameWnd resolves
+// it). Set by CreateAndShow; read by GameWindowProc to dispatch to this object.
+// DATA-annotated at its retail address so the delinker names the target symbol
+// the same way (the cross-TU refs in GameWindowProc / the dtors stay exact).
+DATA(0x00653c68)
+CGameWnd* g_activeGameWnd;
 
 // -------------------------------------------------------------------------
 // CGameWnd::CreateAndShow
@@ -33,12 +36,12 @@ i32 CGameWnd::CreateAndShow(CGameWndCreateParams* pParams, void* pOwner) {
     if (!pOwner) {
         return 0;
     }
-    if (s_activeWnd) {
+    if (g_activeGameWnd) {
         return 0;
     }
 
     m_8 = pOwner;
-    s_activeWnd = this;
+    g_activeGameWnd = this;
     m_c = 0;
 
     m_4 = CreateWindowExA(
@@ -76,7 +79,29 @@ void CGameWnd::Destroy() {
         m_4 = 0;
     }
     m_8 = 0;
-    s_activeWnd = 0;
+    g_activeGameWnd = 0;
+}
+
+// -------------------------------------------------------------------------
+// CGameWnd::OnClose (WM_CLOSE handler, vtable slot 4). Destroys the OS window
+// exactly once (m_c guards re-entry) and reports "handled" (1).
+RVA(0x0013d4c0, 0x1e)
+i32 CGameWnd::OnClose() {
+    if (!m_c) {
+        m_c = 1;
+        DestroyWindow(m_4);
+    }
+    return 1;
+}
+
+// -------------------------------------------------------------------------
+// CGameWnd::OnActivateApp (WM_ACTIVATEAPP handler, vtable slot 12). Records the
+// app-active flag (wParam) into the owning CGameApp's m_240 and reports "not
+// handled" (0) so GameWindowProc falls through to DefWindowProcA.
+RVA(0x0013d470, 0xd)
+i32 CGameWnd::OnActivateApp(WPARAM wParam, LPARAM /*lParam*/) {
+    ((CGameApp*)m_8)->m_240 = wParam;
+    return 0;
 }
 
 // -------------------------------------------------------------------------
@@ -94,10 +119,26 @@ i32 CGameWnd::QuitMessageLoop() {
 }
 
 // -------------------------------------------------------------------------
+// CGameWnd::PumpMessages
+// Drains up to `count` queued messages for this window, every PeekMessageA
+// filtered to the single id `filterMsg` (wMsgFilterMin == wMsgFilterMax) and
+// removed (PM_REMOVE). Bails immediately on a non-positive count and stops at
+// the first empty peek; the discarded MSG lives in a stack local.
+RVA(0x0013d4e0, 0x43)
+void CGameWnd::PumpMessages(u32 filterMsg, i32 count) {
+    MSG msg;
+    for (i32 i = 0; i < count; ++i) {
+        if (!PeekMessageA(&msg, m_4, filterMsg, filterMsg, PM_REMOVE)) {
+            break;
+        }
+    }
+}
+
+// -------------------------------------------------------------------------
 // CGameApp::GameWindowProc - the static window procedure stored into
 // WNDCLASS.lpfnWndProc (so __stdcall, the Win32 WNDPROC ABI: ret 0x10). Its code
 // lives in the CGameWnd cluster because it dispatches to the active CGameWnd
-// singleton (s_activeWnd, set by CreateAndShow):
+// singleton (g_activeGameWnd, set by CreateAndShow):
 //
 //   1. If no window is active yet, DefWindowProcA passthrough.
 //   2. Give the active window a first crack via PreDispatchMessage (vtbl +0x04)
@@ -106,14 +147,14 @@ i32 CGameWnd::QuitMessageLoop() {
 //      (the slot offsets are load-bearing - see Wap32.h's vtable map). A handler
 //      returning nonzero = "handled" => return 0; returning zero falls through to
 //      DefWindowProcA. The singleton global is RE-READ in every case (the source
-//      uses s_activeWnd directly, not a cached local - a cached pWnd would stay
+//      uses g_activeGameWnd directly, not a cached local - a cached pWnd would stay
 //      in a saved register across the vtbl call instead of reloading [0x653c68]).
 //
 // Point messages (WM_MOVE / mouse) split lParam into LOWORD(x)/HIWORD(y); the
 // (int) low/high words come straight off lParam (& 0xffff / >> 16).
 RVA(0x0013cff0, 0x35c)
 LRESULT __stdcall CGameApp::GameWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-    CGameWnd* pWnd = s_activeWnd;
+    CGameWnd* pWnd = g_activeGameWnd;
     if (!pWnd) {
         return DefWindowProcA(hwnd, uMsg, wParam, lParam);
     }
@@ -127,103 +168,103 @@ LRESULT __stdcall CGameApp::GameWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, 
     // keyboard, command, then mouse. The order is load-bearing for the byte match.
     switch (uMsg) {
         case 0x0001 /*WM_CREATE*/:
-            if (s_activeWnd->OnCreate(lParam)) {
+            if (g_activeGameWnd->OnCreate(lParam)) {
                 return 0;
             }
             break;
         case 0x0003 /*WM_MOVE*/:
-            if (s_activeWnd->OnMove((i32)(lParam & 0xffff), (i32)((u32)lParam >> 16))) {
+            if (g_activeGameWnd->OnMove((i32)(lParam & 0xffff), (i32)((u32)lParam >> 16))) {
                 return 0;
             }
             break;
         case 0x0005 /*WM_SIZE*/:
-            if (s_activeWnd->OnSize(wParam, (i32)(lParam & 0xffff), (i32)((u32)lParam >> 16))) {
+            if (g_activeGameWnd->OnSize(wParam, (i32)(lParam & 0xffff), (i32)((u32)lParam >> 16))) {
                 return 0;
             }
             break;
         case 0x0002 /*WM_DESTROY*/:
-            if (s_activeWnd->QuitMessageLoop()) {
+            if (g_activeGameWnd->QuitMessageLoop()) {
                 return 0;
             }
             break;
         case 0x000f /*WM_PAINT*/:
-            if (s_activeWnd->OnPaint()) {
+            if (g_activeGameWnd->OnPaint()) {
                 return 0;
             }
             break;
         case 0x0010 /*WM_CLOSE*/:
-            if (s_activeWnd->OnClose()) {
+            if (g_activeGameWnd->OnClose()) {
                 return 0;
             }
             break;
         case 0x001c /*WM_ACTIVATEAPP*/:
-            if (s_activeWnd->OnActivateApp(wParam, lParam)) {
+            if (g_activeGameWnd->OnActivateApp(wParam, lParam)) {
                 return 0;
             }
             break;
         case 0x0102 /*WM_CHAR*/:
-            if (s_activeWnd->OnChar(wParam, lParam)) {
+            if (g_activeGameWnd->OnChar(wParam, lParam)) {
                 return 0;
             }
             break;
         case 0x0100 /*WM_KEYDOWN*/:
-            if (s_activeWnd->OnKeyDown(wParam, lParam)) {
+            if (g_activeGameWnd->OnKeyDown(wParam, lParam)) {
                 return 0;
             }
             break;
         case 0x0101 /*WM_KEYUP*/:
-            if (s_activeWnd->OnKeyUp(wParam, lParam)) {
+            if (g_activeGameWnd->OnKeyUp(wParam, lParam)) {
                 return 0;
             }
             break;
         case 0x0104 /*WM_SYSKEYDOWN*/:
-            if (s_activeWnd->OnSysKeyDown(wParam, lParam)) {
+            if (g_activeGameWnd->OnSysKeyDown(wParam, lParam)) {
                 return 0;
             }
             break;
         case 0x0111 /*WM_COMMAND*/:
-            if (s_activeWnd->OnCommand(wParam, lParam)) {
+            if (g_activeGameWnd->OnCommand(wParam, lParam)) {
                 return 0;
             }
             break;
         case 0x0201 /*WM_LBUTTONDOWN*/:
-            if (s_activeWnd
+            if (g_activeGameWnd
                     ->OnLButtonDown(wParam, (i32)(lParam & 0xffff), (i32)((u32)lParam >> 16))) {
                 return 0;
             }
             break;
         case 0x0202 /*WM_LBUTTONUP*/:
-            if (s_activeWnd
+            if (g_activeGameWnd
                     ->OnLButtonUp(wParam, (i32)(lParam & 0xffff), (i32)((u32)lParam >> 16))) {
                 return 0;
             }
             break;
         case 0x0204 /*WM_RBUTTONDOWN*/:
-            if (s_activeWnd
+            if (g_activeGameWnd
                     ->OnRButtonDown(wParam, (i32)(lParam & 0xffff), (i32)((u32)lParam >> 16))) {
                 return 0;
             }
             break;
         case 0x0205 /*WM_RBUTTONUP*/:
-            if (s_activeWnd
+            if (g_activeGameWnd
                     ->OnRButtonUp(wParam, (i32)(lParam & 0xffff), (i32)((u32)lParam >> 16))) {
                 return 0;
             }
             break;
         case 0x0200 /*WM_MOUSEMOVE*/:
-            if (s_activeWnd
+            if (g_activeGameWnd
                     ->OnMouseMove(wParam, (i32)(lParam & 0xffff), (i32)((u32)lParam >> 16))) {
                 return 0;
             }
             break;
         case 0x0203 /*WM_LBUTTONDBLCLK*/:
-            if (s_activeWnd
+            if (g_activeGameWnd
                     ->OnLButtonDblClk(wParam, (i32)(lParam & 0xffff), (i32)((u32)lParam >> 16))) {
                 return 0;
             }
             break;
         case 0x0206 /*WM_RBUTTONDBLCLK*/:
-            if (s_activeWnd
+            if (g_activeGameWnd
                     ->OnRButtonDblClk(wParam, (i32)(lParam & 0xffff), (i32)((u32)lParam >> 16))) {
                 return 0;
             }
@@ -235,12 +276,10 @@ LRESULT __stdcall CGameApp::GameWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, 
 
 // Out-of-line stubs so the vftable is emitted in this TU.
 // Not matched / not in symbol_names.csv; present only to anchor the vftable
-// relocation that the ctor stores (the full 22-slot CGameWnd vtable). The two
-// reconstructed virtuals (~CGameWnd, QuitMessageLoop) are defined above.
-CGameWnd::~CGameWnd() {}
-// Scalar-deleting dtor (??_G, slot 0): compiler-generated thunk wrapping the real
-// ~CGameWnd cleanup (zeroes a file-scope global, calls a base dtor; not reconstructed,
-// so this only NAMES the retail function). MSVC synthesizes ??_G from the dtor above.
+// relocation that the ctor stores (the full 22-slot CGameWnd vtable). ~CGameWnd
+// is inline in Wap32.h (Destroy + clear singleton); QuitMessageLoop is above.
+// Scalar-deleting dtor (??_G, slot 0): compiler-generated thunk wrapping the
+// inline ~CGameWnd (call Destroy; clear g_activeGameWnd; conditional RezFree).
 // @rva-symbol: ??_GCGameWnd@@UAEPAXI@Z 0x00094d80 0x2f
 i32 CGameWnd::PreDispatchMessage(UINT, WPARAM, LPARAM) {
     return 0;
@@ -249,9 +288,6 @@ i32 CGameWnd::Wap32GameWndVfunc2() {
     return 0;
 }
 i32 CGameWnd::OnCreate(LPARAM) {
-    return 0;
-}
-i32 CGameWnd::OnClose() {
     return 0;
 }
 i32 CGameWnd::OnMove(i32, i32) {
@@ -273,9 +309,6 @@ i32 CGameWnd::OnKeyUp(WPARAM, LPARAM) {
     return 0;
 }
 i32 CGameWnd::OnSysKeyDown(WPARAM, LPARAM) {
-    return 0;
-}
-i32 CGameWnd::OnActivateApp(WPARAM, LPARAM) {
     return 0;
 }
 i32 CGameWnd::OnLButtonDown(WPARAM, i32, i32) {
