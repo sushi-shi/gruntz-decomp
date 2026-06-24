@@ -42,7 +42,7 @@ dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
 engine_discovered	648	0
-engine_label_stubs	534	121
+engine_label_stubs	532	121
 filestream	13	9
 font	16	9
 fontconfig	7	4
@@ -72,7 +72,9 @@ infutil	1	1
 ingameicon	5	2
 inputdeviceconfig	1	0
 kitchenslime	2	0
+leveltilevalidation	1	0
 logictypetable	1	0
+mainmenubuilder	1	0
 maplogic	4	4
 mapmgr	7	7
 netmgr	40	20
@@ -1276,7 +1278,6 @@ engine_label_stubs	?Load@PalLoad_1479e0@ApiCallerStubs@@QAEHHPADH@Z	89.7286	89.7
 engine_label_stubs	?Load@ResLoad_144270@ApiCallerStubs@@QAEHHPADH@Z	86.9885	86.9885	1	cpp:6bf52155264d	0x144270
 engine_label_stubs	?Load@StrHost_0b7ec0@ApiCallerStubs@@QAEXHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0xb7ec0
 engine_label_stubs	?LoadActionTileSprites@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHH@Z	100.0000	100.0000	1	cpp:e8a4cb0d5b2a	0xdb600
-engine_label_stubs	?LoadAreaLevelTable@EngineLabelBacklog@@YAXXZ	0.0517	0.0517	1	cpp:45e65336d4b5	0xa11d0
 engine_label_stubs	?LoadAssets@CHelpState@@QAEHHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x95090
 engine_label_stubs	?LoadAttributes2@CStaticHazard@@QAEHXZ	97.8571	97.8571	1	cpp:6bf52155264d	0xfc0b0
 engine_label_stubs	?LoadAttributes2@CWarlord@@QAEHXZ	91.6296	91.6296	1	cpp:6bf52155264d	0x44d10
@@ -1448,7 +1449,6 @@ engine_label_stubs	?UpdateBootyWalkingGruntz@EngineLabelBacklog@@YAXXZ	0.1898	0.
 engine_label_stubs	?UpdateClock@RezMgr@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x13ddc0
 engine_label_stubs	?UpdateDestructButtonStatusBar2@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXH@Z	3.5714	3.5714	1	cpp:e8a4cb0d5b2a	0x10bc30
 engine_label_stubs	?Validate@VrHost_094bc0@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x94bc0
-engine_label_stubs	?ValidateLevelTiles@EngineLabelBacklog@@YAXXZ	0.0424	0.0424	1	cpp:45e65336d4b5	0xd2dd0
 engine_label_stubs	?WireTileSwitchLogic@EngineLabelBacklog@@YGXHHH@Z	0.1028	0.1028	1	cpp:6bf52155264d	0x6c130
 engine_label_stubs	?_ct_init@EngineLabelBacklog@@YAXXZ	0.6329	0.6329	1	cpp:45e65336d4b5	0x1884c0
 engine_label_stubs	?_tr_init@EngineLabelBacklog@@YAXXZ	5.0000	5.0000	1	cpp:45e65336d4b5	0x188440
@@ -1787,10 +1787,10 @@ grunt	?LoadGruntMovingDeathConfig@CGrunt@@QAEXXZ	0.4132	0.4132	1	7e3c13f46f60	0x
 grunt	?OnStruck@CGrunt@@QAEXH@Z	76.2798	76.2798	1	adbf392072d5	0x588f0
 grunt	?PlayMoveSound@CGrunt@@QAEXHH@Z	100.0000	100.0000	1	aa803a2a8575	0x511b0
 grunt	?ReadConfigFromButeMgr@CGrunt@@QAEXXZ	96.8421	96.8421	5	39bb0fe6f60a	0x48400
-grunt	?RearmEntranceDrop@CGrunt@@QAEXXZ	88.9167	88.9167	1	7323dd45a6ce	0x68370
+grunt	?RearmEntranceDrop@CGrunt@@QAEXXZ	88.9167	88.9167	2	d64979f40a7e	0x68370
 grunt	?ResetGeometry@CGrunt@@QAEHXZ	72.7800	72.7800	3	502caa6ebbcc	0x616e0
 grunt	?ResolveAnimation@CGrunt@@QAEHXZ	95.4210	95.4210	6	9f3a431918a8	0x457b0
-grunt	?ResolveArrivalNeighbor@CGrunt@@QAEHXZ	74.9747	74.9747	1	1c55741071c0	0xf26f0
+grunt	?ResolveArrivalNeighbor@CGrunt@@QAEHXZ	74.9747	74.9747	2	85816637f608	0xf26f0
 grunt	?ResolveBattlecryAnimation@CGrunt@@QAEHXZ	90.3365	90.3365	6	871a141b3eab	0x45b60
 grunt	?ResolveDeathAnimation@CGrunt@@QAEHXZ	97.8283	97.8283	6	142c8cc4dd01	0x455f0
 grunt	?ResolveIdleAnimation@CGrunt@@QAEHXZ	92.0598	92.0598	6	4559532e9c2a	0x45960
@@ -1951,7 +1951,9 @@ ingameicon	?SetField54@CInGameIcon@@QAEXH@Z	100.0000	100.0000	2	996198841286	0x9
 inputdeviceconfig	?LoadInputDeviceConfig@CInputConfig@@QAE?AVCString@@H@Z	77.3265	77.3265	5	a06dac34f93f	0x387c0
 kitchenslime	?LoadSprites@CKitchenSlime@@QAEHXZ	69.1992	69.1992	2	2c07cc5dc21b	0xb3160
 kitchenslime	?Tick@CKitchenSlime@@QAEHXZ	94.8551	94.8551	3	c7b9e1dd58eb	0xb2ca0
+leveltilevalidation	?ValidateLevelTiles@CLevelValidator@@QAEHXZ	17.0098	17.0098	1	c6603603073d	0xd2dd0
 logictypetable	?BuildLogicTypeTable@@YGXPAUCLogicTypeBuilder@@@Z	87.9167	87.9167	6	313ac91839f7	0x8a40
+mainmenubuilder	?BuildMainMenuTree@@YAXPAX@Z	77.6725	77.6725	1	74144dbb09e0	0xa11d0
 maplogic	??1CMapLogic@@UAE@XZ	100.0000	100.0000	1	baec3be51eff	0x113c0
 maplogic	?FreeNodes@CMapLogic@@QAEXXZ	100.0000	100.0000	2	8cb172a03e69	0x85480
 maplogic	?MapSerializeCurve@@YAHPAUCMapArchive@@H@Z	100.0000	100.0000	3	daaffc7e391f	0xec230

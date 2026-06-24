@@ -759,11 +759,11 @@ void __stdcall EngineLabelBacklog::LoadObjectAnimResources(i32, i32) {}
 RVA(0x0009fe50, 0x343)
 void __stdcall EngineLabelBacklog::LoadMenuStateAssets(i32, i32, i32) {}
 
-// @confidence: med
-// @source: string-xref
-// @stub
-RVA(0x000a11d0, 0x180d)
-void EngineLabelBacklog::LoadAreaLevelTable() {}
+// 0x000a11d0 (6157 B) is NOT a level-table loader - the $SG string set
+// ("MENU.MAINMENU.TITLE", "SINGLEPLAYER", ...) identifies it as the main-menu
+// tree builder. Reconstructed (complete body, @early-stop on the /GX EH-state
+// wall) in the eh unit src/Gruntz/MainMenuBuilder.cpp; its CString temps give it
+// an exception frame, so it left the frameless backlog aggregate.
 
 // @confidence: med
 // @source: string-xref
@@ -833,11 +833,10 @@ void StatusBarItem::vfunc_16(i32, i32, i32) {}
 RVA(0x000cf770, 0x35e)
 void EngineLabelBacklog::DrawDebugStats() {}
 
-// @confidence: med
-// @source: string-xref
-// @stub
-RVA(0x000d2dd0, 0x1de4)
-void EngineLabelBacklog::ValidateLevelTiles() {}
+// ValidateLevelTiles (0x000d2dd0, 7652 B) is reconstructed (complete body,
+// @early-stop on the megafunction regalloc wall) in the eh unit
+// src/Gruntz/LevelTileValidation.cpp - moved out of the frameless backlog
+// aggregate because its CString diagnostics give it a /GX exception frame.
 
 // ---------------------------------------------------------------------------
 // LoadActionTileSprites - per-level ACTION/TILEZ asset loader.

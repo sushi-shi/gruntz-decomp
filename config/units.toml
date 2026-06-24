@@ -134,6 +134,16 @@ source = "src/Gruntz/UserLogic.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "leveltilevalidation"
+source = "src/Gruntz/LevelTileValidation.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "mainmenubuilder"
+source = "src/Gruntz/MainMenuBuilder.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "ingameicon"
 source = "src/Gruntz/CInGameIcon.cpp"
 flags = "eh"
