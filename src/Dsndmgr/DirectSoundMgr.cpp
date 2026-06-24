@@ -577,3 +577,22 @@ void DirectSoundMgr::GetErrorString(char* file, int line, long hr) {
         MessageBoxA((HWND)0, szLine, "DirectSoundMgr", MB_ICONEXCLAMATION);
     }
 }
+
+// -------------------------------------------------------------------------
+// Engine-label backlog stubs (relocated from src/Stub/ - own this class here).
+// -------------------------------------------------------------------------
+// @confidence: low
+// @source: winapi:timeGetTime
+// @stub
+RVA(0x00136e20, 0xa8)
+int DirectSoundMgr::winapi_136e20_timeGetTime(int) {
+    return 0;
+}
+
+// @confidence: low
+// @source: winapi:timeGetTime
+// @stub
+RVA(0x00137ac0, 0xa2)
+int DirectSoundMgr::winapi_137ac0_timeGetTime(int) {
+    return 0;
+}

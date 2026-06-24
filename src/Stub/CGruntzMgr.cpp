@@ -13,6 +13,12 @@ public:
     void vector_deleting_destructor(int);
     void UnknownClose();
     void InitCFileIOMember();
+    int winapi_0861e0_timeGetTime();
+    int winapi_08e6c0_SendMessageA();
+    int winapi_08f530_PostMessageA();
+    int winapi_090260_DialogBoxParamA(int, int, int);
+    int winapi_092f00_PostMessageA();
+    void LoadSaveMessageSprite();
 };
 
 // @confidence: high
@@ -46,3 +52,49 @@ void CGruntzMgr::UnknownClose() {}
 // src/Gruntz/GruntzMgr.cpp.
 RVA(0x0008fea0, 0x6d)
 void CGruntzMgr::InitCFileIOMember() {}
+
+// @confidence: low
+// @source: winapi:timeGetTime
+// @stub
+RVA(0x000861e0, 0xc5)
+int CGruntzMgr::winapi_0861e0_timeGetTime() {
+    return 0;
+}
+
+// @confidence: low
+// @source: winapi:SendMessageA
+// @stub
+RVA(0x0008e6c0, 0x85)
+int CGruntzMgr::winapi_08e6c0_SendMessageA() {
+    return 0;
+}
+
+// @confidence: low
+// @source: winapi:PostMessageA
+// @stub
+RVA(0x0008f530, 0xbd)
+int CGruntzMgr::winapi_08f530_PostMessageA() {
+    return 0;
+}
+
+// @confidence: low
+// @source: winapi:DialogBoxParamA
+// @stub
+RVA(0x00090260, 0x13e)
+int CGruntzMgr::winapi_090260_DialogBoxParamA(int, int, int) {
+    return 0;
+}
+
+// @confidence: low
+// @source: winapi:PostMessageA
+// @stub
+RVA(0x00092f00, 0x1ef)
+int CGruntzMgr::winapi_092f00_PostMessageA() {
+    return 0;
+}
+
+// @confidence: med
+// @source: decomp-xref
+// @stub
+RVA(0x00092420, 0xa4)
+void CGruntzMgr::LoadSaveMessageSprite() {}

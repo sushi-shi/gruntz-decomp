@@ -319,3 +319,189 @@ void CBootyState::vfunc_1() {}
 // @stub
 RVA(0x0008d5e0, 0x8b)
 void CCreditsState::Stub_08d5e0() {}
+
+// @confidence: low
+// @source: winapi:SelectClipRgn;SetBkMode
+// @stub
+RVA(0x000396f0, 0x2b8)
+int CCreditsState::winapi_0396f0_SelectClipRgn_SetBkMode() {
+    return 0;
+}
+
+// -------------------------------------------------------------------------
+// Re-homed __thiscall behavioral methods (relocated from src/Stub/).
+// -------------------------------------------------------------------------
+
+// @confidence: med
+// @source: decomp-xref
+// @stub
+RVA(0x00019540, 0x12a)
+void CState::BuildWarpStoneGlitterAnimation() {}
+
+// @confidence: med
+// @source: string-xref
+// @stub
+RVA(0x0001a040, 0x55e)
+void CState::LoadGruntEffectSprites() {}
+
+// @confidence: med
+// @source: decomp-xref
+// @stub
+RVA(0x0001b450, 0x1ac)
+void CState::BuildBootyWalkingGruntz() {}
+
+// @confidence: med
+// @source: string-xref
+// @stub
+RVA(0x0001c210, 0x4b5)
+void CBootyState::CheckWarpLetterBonus() {}
+
+// @confidence: med
+// @source: decomp-xref
+// @stub
+RVA(0x000a0d80, 0xd7)
+void CMenuState::BuildVersionString(int, int, int, int) {}
+
+// The "STATEZ_CREDITZ" registered object (m_2c): same Register source as
+// CHelpState (FUN_0053c030). FindSet/FindSubset/Resolve/IsLoaded below are the
+// reloc-masked __thiscall helpers off it / its sub-entries.
+struct CCreditzSubEntry { // a music sub-entry ("PLAY"/"MONOLITH")
+    int IsLoaded();       // FUN_00539960 __thiscall, ret BOOL/value
+    char m_pad00[0xc];
+    void* m_c; // +0x0c
+};
+struct CCreditzMusicSet { // the looked-up "MIDIZ" set (m_2c->FindSet)
+    // FUN_0053a000 __thiscall: resolve a named sub-entry under a packed tag.
+    CCreditzSubEntry* Resolve(char* szName, int tag);
+};
+struct CCreditzRegObj {               // the registered STATEZ_CREDITZ object (m_2c)
+    void* FindSoundSet(char* szName); // FUN_0053a230 __thiscall, ret set ptr
+    void* FindMusicSet(char* szName); // FUN_0053bae0 __thiscall, ret set ptr
+};
+struct CCreditzSoundRegistry { // this->m_c->+0x28 (the LoadLevelSounds registry)
+    void Install(void* set, char* szName, char* szKey); // FUN_00557ee0 __thiscall
+};
+struct CCreditzImageRegistry { // this->m_4->+0x48
+    // FUN_00538670 __thiscall: install a resolved sub-entry under a name.
+    void Install3(void* res, void* host, char* szName);
+};
+struct CCreditzStateCore {      // this->m_c->m_4 (the ready/init pump)
+    int IsReady();              // FUN_00558d20 __thiscall, ret BOOL
+    int Init(int a, int flags); // FUN_00558cb0 __thiscall, ret BOOL
+};
+struct CCreditzImageRoot { // this->m_4 points here; +0x48 is the registry
+    char m_pad00[0x48];
+    CCreditzImageRegistry* m_48; // +0x48
+};
+struct CCreditzSoundMgr { // this->m_c points here
+    char m_pad00[0x4];
+    CCreditzStateCore* m_4; // +0x04
+    char m_pad08[0x28 - 0x8];
+    CCreditzSoundRegistry* m_28; // +0x28
+};
+struct CCreditzRegSet {                   // this->m_8 points here
+    CCreditzRegObj* Register(char* name); // FUN_0053c030 __thiscall (CHelpState idiom)
+};
+// Two owner methods reached at the tail, both __thiscall(this) no args:
+// the title/cursor setup (RVA 0x39a60) and the state-finish (0x439c40).
+
+// Typed view of `this`: m_4 the image-registry root, m_8 the namespace registry,
+// m_c the sound/state manager, m_2c the registered STATEZ_CREDITZ object.
+struct CCreditzOwner {
+    char m_pad00[0x4];
+    CCreditzImageRoot* m_4; // +0x04
+    CCreditzRegSet* m_8;    // +0x08
+    CCreditzSoundMgr* m_c;  // +0x0c
+    char m_pad10[0x2c - 0x10];
+    CCreditzRegObj* m_2c; // +0x2c
+    char m_pad30[0x1b4 - 0x30];
+    int m_1b4; // +0x1b4
+    int m_1b8; // +0x1b8
+    int m_1bc; // +0x1bc
+    int m_1c0; // +0x1c0
+    int m_1c4; // +0x1c4
+    char m_pad1c8[0x20c - 0x1c8];
+    int m_20c;                                  // +0x20c
+    void SetupTitle();                          // RVA 0x39a60 __thiscall
+    int FinishState();                          // RVA 0x439c40 __thiscall
+    int LoadGameAssetNamespaces(int, int, int); // base loader; reloc-masked near call
+};
+
+// @confidence: high
+// @source: decomp-xref
+// Byte-exact (100%). int (BOOL) return like its loader siblings: the early
+// guards `return 0` (each reusing the just-loaded/zeroed eax via `test eax,eax`),
+// and the success tail returns FinishState()'s result unmodified - a `void`
+// return would tail-merge the bare epilogues. The literal `return 0;` (not
+// `return loaded;`) is load-bearing: it keeps the opening/Init guards as
+// `test eax,eax` and lets cl defer `xor ebp,ebp` to where retail materializes it.
+// The MONOLITH block is a SIBLING (not nested) `if(midiz)` so the second
+// `cmp edi,ebp; je` survives (docs/patterns/redundant-sibling-guard-retest.md).
+// The 'IMX' music tag (0x584d49) is a non-relocated immediate. The
+// "STATEZ_CREDITZ" Register is the CHelpState::LoadAssets source (FUN_0053c030).
+RVA(0x00038d20, 0x176)
+int CCreditsState::LoadCreditzStateAssets(int a1, int a2, int a3) {
+    CCreditzOwner* self = (CCreditzOwner*)this;
+
+    if (!self->LoadGameAssetNamespaces(a1, a2, a3)) {
+        return 0;
+    }
+    while (ShowCursor(0) >= 0)
+        ;
+
+    self->m_1b8 = 0;
+    self->m_1bc = 0;
+    self->m_1c0 = 0;
+    self->m_1c4 = 0;
+    self->m_2c = self->m_8->Register("STATEZ_CREDITZ");
+    if (!self->m_2c) {
+        return 0;
+    }
+
+    void* sounds = self->m_2c->FindSoundSet("SOUNDZ");
+    if (!sounds) {
+        return 0;
+    }
+    self->m_c->m_28->Install(sounds, "CREDITZ", "_");
+
+    CCreditzMusicSet* midiz = (CCreditzMusicSet*)self->m_2c->FindMusicSet("MIDIZ");
+    if (midiz) {
+        CCreditzSubEntry* e = midiz->Resolve("PLAY", 0x584d49);
+        if (e) {
+            int val = e->IsLoaded();
+            if (val) {
+                self->m_4->m_48->Install3((void*)val, e->m_c, "CREDITZ");
+            }
+        }
+    }
+    // Sibling re-test (not nested): retail re-emits `cmp edi,ebp; je` for the
+    // MONOLITH block, pinning midiz in edi across the PLAY calls
+    // (docs/patterns/redundant-sibling-guard-retest.md).
+    if (midiz) {
+        CCreditzSubEntry* e2 = midiz->Resolve("MONOLITH", 0x584d49);
+        if (e2) {
+            int val = e2->IsLoaded();
+            if (val) {
+                self->m_4->m_48->Install3((void*)val, e2->m_c, "MONOLITH");
+            }
+        }
+    }
+
+    if (!self->m_c->m_4->IsReady()) {
+        if (!self->m_c->m_4->Init(0, 0x30000)) {
+            return 0;
+        }
+    }
+
+    self->SetupTitle();
+    self->m_20c = 2;
+    int r = self->FinishState();
+    self->m_1b4 = 0;
+    return r;
+}
+
+// @confidence: med
+// @source: decomp-xref
+// @stub
+RVA(0x00039570, 0x122)
+void CCreditsState::InitAttractTitle() {}

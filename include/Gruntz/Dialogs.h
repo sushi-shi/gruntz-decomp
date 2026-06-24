@@ -63,6 +63,12 @@ public:
     char m_pad60[8]; // +0x60
     int m_68;        // +0x68  (= 0)
     CString m_6c;    // +0x6c  (default CString)
+
+    int winapi_016cd0_InvalidateRect();
+    int winapi_016dc0_InvalidateRect();
+    int winapi_016e90_InvalidateRect();
+    int winapi_016f60_InvalidateRect();
+    int winapi_0171b0_GetWindow_SendMessageA();
 };
 
 // ---------------------------------------------------------------------------

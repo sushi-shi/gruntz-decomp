@@ -702,3 +702,57 @@ CToobSpikez::CToobSpikez(CGameObject* obj) : CUserLogic(obj) {
         m_10->m_08 |= 0x20000;
     }
 }
+
+// @confidence: low
+// @source: winapi:CopyRect
+// @stub
+RVA(0x0004d800, 0x423)
+int CUserLogic::winapi_04d800_CopyRect(int, int, int, int, int, int, int, int, int, int, int, int) {
+    return 0;
+}
+
+// @confidence: low
+// @source: winapi:PostMessageA
+// @stub
+RVA(0x00064540, 0x11c)
+int CUserLogic::winapi_064540_PostMessageA() {
+    return 0;
+}
+
+// @confidence: low
+// @source: winapi:IntersectRect;PtInRect
+// @stub
+RVA(0x000ee800, 0x971)
+int CUserLogic::winapi_0ee800_IntersectRect_PtInRect() {
+    return 0;
+}
+
+// @confidence: med
+// @source: string-xref
+// @stub
+RVA(0x0004dd50, 0x22c0)
+void CUserLogic::LoadGruntTypeTable(int, int, int, int) {}
+
+// @confidence: med
+// @source: string-xref
+// @stub
+RVA(0x0005d210, 0x1443)
+void CUserLogic::LoadGruntTuningConstants(int) {}
+
+// @confidence: med
+// @source: decomp-xref
+// @stub
+RVA(0x000612a0, 0x23c)
+void CUserLogic::LoadGruntDecayConfig() {}
+
+// @confidence: low
+// @source: decomp-xref
+// @stub
+RVA(0x00061570, 0x11d)
+void CUserLogic::LoadGruntDecayConfig2() {}
+
+// @confidence: med
+// @source: decomp-xref
+// @stub
+RVA(0x00065a60, 0x159)
+void CUserLogic::LoadWandGruntItemConfig() {}

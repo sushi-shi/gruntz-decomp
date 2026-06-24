@@ -8,3 +8,9 @@
 // @stub
 RVA(0x000c68b0, 0x1f5)
 CDroppedObject::CDroppedObject(int) {}
+
+// @confidence: med
+// @source: string-xref
+// @stub
+RVA(0x000c7090, 0x21b)
+void CDroppedObject::LoadDroppedObjectEffects() {}

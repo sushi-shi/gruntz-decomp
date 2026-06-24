@@ -25,6 +25,15 @@ public:
     UnknownClassArrays();
     ~UnknownClassArrays();
     void FreeArrays();
+    int winapi_0267c0_IntersectRect_PtInRect();
+    int winapi_02a570_IntersectRect(int);
+    int winapi_02ab80_PtInRect(int, int, int, int);
+    int winapi_02ae00_IntersectRect(int, int);
+    int winapi_02c140_IntersectRect_PtInRect(int);
+    int winapi_02dfa0_IntersectRect(int, int, int, int);
+    int winapi_02e3a0_PtInRect(int);
+    int winapi_031ca0_IntersectRect(int);
+    int winapi_032060_IntersectRect(int);
 
     char m_pad000[0x18];          // +0x000  (untouched by ctor)
     int m_018;                    // +0x018  = 0

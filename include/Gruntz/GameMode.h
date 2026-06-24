@@ -203,6 +203,8 @@ public:
 
     char m_pad1a8[0x1b4 - 0x1a8];
     CGMMenuUI* m_1b4; // +0x1b4 the menu UI object the scans drive
+
+    void BuildVersionString(int, int, int, int);
 };
 
 // CCreditsState - the credits state. Render
@@ -226,12 +228,16 @@ public:
     // non-virtual placeholder so the carefully-built vftable (slots 4..8) is
     // unchanged; the real ??1/??_G is not matched here.
     void Stub_08d5e0();
+    int winapi_0396f0_SelectClipRgn_SetBkMode();
 
     // --- CCreditsState members the Render path pins (placeholders) ---
     char m_pad1a8[0x1b4 - 0x1a8];
     int m_1b4; // +0x1b4 one-shot FX latch
     char m_pad1b8[0x1c4 - 0x1b8];
     int m_1c4; // +0x1c4 conditional-FX gate
+
+    int LoadCreditzStateAssets(int a1, int a2, int a3);
+    void InitAttractTitle();
 };
 
 class CBootyState : public CState {
@@ -240,6 +246,8 @@ public:
 
     // Engine-label backlog stub (non-virtual placeholder; vtable-neutral).
     void vfunc_1(); // stub
+
+    void CheckWarpLetterBonus();
 };
 
 #endif // SRC_GRUNTZ_GAMEMODE_H

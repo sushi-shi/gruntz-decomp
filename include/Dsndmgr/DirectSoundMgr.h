@@ -161,6 +161,10 @@ public:
 
     static void GetErrorString(char* file, int line, long hr); // 0x138150
 
+    // Engine-label backlog stubs (relocated from src/Stub/ - own this class here).
+    int winapi_136e20_timeGetTime(int);
+    int winapi_137ac0_timeGetTime(int);
+
     // --- layout ---------------------------------------------------------------
     char m_pad0[0x0c];
     IDirectSoundBufferZ* m_0c; // +0x0c  the held sound buffer (per-buffer this)

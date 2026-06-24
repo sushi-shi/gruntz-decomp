@@ -56,6 +56,7 @@ extern CButeMgr g_buteMgr;
 class CFontConfig {
 public:
     int LoadFontConfig(int a1, int a2);
+    int winapi_022360_DrawTextA_SelectObject_SetTextColor(int, int, int, int);
 
     char m_pad00[0x20];
     int m_20; // +0x20  (= 0)
@@ -167,4 +168,15 @@ int CFontConfig::LoadFontConfig(int a1, int a2) {
     }
 
     return 1;
+}
+
+// -------------------------------------------------------------------------
+// Engine-label backlog stubs (relocated from src/Stub/ - own this class here).
+// -------------------------------------------------------------------------
+// @confidence: low
+// @source: winapi:DrawTextA;SelectObject;SetTextColor
+// @stub
+RVA(0x00022360, 0x2f4)
+int CFontConfig::winapi_022360_DrawTextA_SelectObject_SetTextColor(int, int, int, int) {
+    return 0;
 }

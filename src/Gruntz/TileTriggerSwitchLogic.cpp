@@ -49,3 +49,9 @@ void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_115f60() {}
 // @stub
 RVA(0x00116320, 0x66)
 void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_116320() {}
+
+// @confidence: med
+// @source: decomp-xref
+// @stub
+RVA(0x001122a0, 0x241)
+void CTileTriggerSwitchLogic::BuildRockBreakInGameText() {}

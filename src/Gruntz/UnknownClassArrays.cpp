@@ -124,3 +124,75 @@ void UnknownClassArrays::FreeArrays() {
     m_118.SetSize(0, -1);
     m_13c = 0;
 }
+
+// @confidence: low
+// @source: winapi:IntersectRect;PtInRect
+// @stub
+RVA(0x000267c0, 0x281d)
+int UnknownClassArrays::winapi_0267c0_IntersectRect_PtInRect() {
+    return 0;
+}
+
+// @confidence: low
+// @source: winapi:IntersectRect
+// @stub
+RVA(0x0002a570, 0x4c6)
+int UnknownClassArrays::winapi_02a570_IntersectRect(int) {
+    return 0;
+}
+
+// @confidence: low
+// @source: winapi:PtInRect
+// @stub
+RVA(0x0002ab80, 0x15e)
+int UnknownClassArrays::winapi_02ab80_PtInRect(int, int, int, int) {
+    return 0;
+}
+
+// @confidence: low
+// @source: winapi:IntersectRect
+// @stub
+RVA(0x0002ae00, 0x42e)
+int UnknownClassArrays::winapi_02ae00_IntersectRect(int, int) {
+    return 0;
+}
+
+// @confidence: low
+// @source: winapi:IntersectRect;PtInRect
+// @stub
+RVA(0x0002c140, 0x3e7)
+int UnknownClassArrays::winapi_02c140_IntersectRect_PtInRect(int) {
+    return 0;
+}
+
+// @confidence: low
+// @source: winapi:IntersectRect
+// @stub
+RVA(0x0002dfa0, 0x325)
+int UnknownClassArrays::winapi_02dfa0_IntersectRect(int, int, int, int) {
+    return 0;
+}
+
+// @confidence: low
+// @source: winapi:PtInRect
+// @stub
+RVA(0x0002e3a0, 0x7e1)
+int UnknownClassArrays::winapi_02e3a0_PtInRect(int) {
+    return 0;
+}
+
+// @confidence: low
+// @source: winapi:IntersectRect
+// @stub
+RVA(0x00031ca0, 0x2f2)
+int UnknownClassArrays::winapi_031ca0_IntersectRect(int) {
+    return 0;
+}
+
+// @confidence: low
+// @source: winapi:IntersectRect
+// @stub
+RVA(0x00032060, 0x7bd)
+int UnknownClassArrays::winapi_032060_IntersectRect(int) {
+    return 0;
+}
