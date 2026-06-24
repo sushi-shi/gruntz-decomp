@@ -1178,22 +1178,14 @@ RVA(0x00191a70, 0x57)
 void ClassUnknown_64::ClassUnknown_64_191a70() {}
 
 // ---- ClassUnknown_65 ----
+// The five real members moved to CLogicRecord (src/Gruntz/LogicRecord.cpp). The
+// three below are __cdecl free message handlers mis-clustered here (see header).
 RVA(0x00095750, 0xf4)
 void ClassUnknown_65::ClassUnknown_65_095750() {}
 RVA(0x00095890, 0xf1)
 void ClassUnknown_65::ClassUnknown_65_095890() {}
 RVA(0x000aa6e0, 0xf1)
 void ClassUnknown_65::ClassUnknown_65_0aa6e0() {}
-RVA(0x00151da0, 0x80)
-void ClassUnknown_65::ClassUnknown_65_151da0() {}
-RVA(0x00151e20, 0x46)
-void ClassUnknown_65::ClassUnknown_65_151e20() {}
-RVA(0x0015b340, 0x2b)
-void ClassUnknown_65::ClassUnknown_65_15b340() {}
-RVA(0x00164830, 0xd3)
-void ClassUnknown_65::ClassUnknown_65_164830() {}
-RVA(0x00164960, 0x41a)
-void ClassUnknown_65::ClassUnknown_65_164960() {}
 
 // ---- ClassUnknown_66 ----
 RVA(0x00161370, 0x7)

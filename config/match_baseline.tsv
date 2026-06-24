@@ -44,7 +44,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	523	0
+engine_discovered	518	0
 engine_label_stubs	525	121
 filestream	13	9
 font	21	10
@@ -78,6 +78,7 @@ inputdeviceconfig	1	0
 kitchenslime	2	0
 leveltilevalidation	1	0
 loadlevelbymode	1	0
+logicrecord	5	3
 logictypetable	1	0
 mainmenubuilder	1	0
 maplogic	4	4
@@ -339,7 +340,7 @@ cdirectdrawmgr	?SetColorKey@CDDSurface@@QAEHIPAX@Z	100.0000	100.0000	1	d7a9dda89
 cdirectdrawmgr	?SetPalette@CDDSurface@@QAEHPAVCDDPalette@@H@Z	100.0000	100.0000	3	3730c3ae3c2a	0x13e690
 cdirectdrawmgr	?SetRange@CDDPalette@@QAEHHHEEEI@Z	100.0000	100.0000	2	bfca20776fbd	0x147cd0
 cfadermgr	??1CFaderMgr@@QAE@XZ	82.8889	82.8889	1	9bd8a535fa45	0x17d910
-cfadermgr	?Add@CFaderMgr@@QAEPAUCFader@@HPAU2@@Z	0.0000	0.0000	1	917f829f0a6d	0x17d9c0
+cfadermgr	?Add@CFaderMgr@@QAEPAUCFader@@HPAU2@@Z	0.0000	0.0000	2	fefd6e005c49	0x17d9c0
 cfadermgr	?DeleteAll@CFaderMgr@@QAEXXZ	100.0000	100.0000	1	7c42fa42e763	0x17e1d0
 cfadermgr	?FreeAll@CFaderMgr@@QAEXXZ	100.0000	100.0000	1	f0e41c40b256	0x17d9a0
 cfadermgr	?Remove@CFaderMgr@@QAEXPAUCFader@@@Z	67.1111	67.1111	1	7c395e00a7e3	0x17e170
@@ -869,11 +870,6 @@ engine_discovered	?ClassUnknown_64_191a70@ClassUnknown_64@@QAEXXZ	2.4390	2.4390	
 engine_discovered	?ClassUnknown_65_095750@ClassUnknown_65@@QAEXXZ	1.1905	1.1905	1	1e411b3155fb	0x95750
 engine_discovered	?ClassUnknown_65_095890@ClassUnknown_65@@QAEXXZ	1.1905	1.1905	1	59869a658e05	0x95890
 engine_discovered	?ClassUnknown_65_0aa6e0@ClassUnknown_65@@QAEXXZ	1.1905	1.1905	1	be7d08983e85	0xaa6e0
-engine_discovered	?ClassUnknown_65_151da0@ClassUnknown_65@@QAEXXZ	2.5000	2.5000	1	2275de3b2f03	0x151da0
-engine_discovered	?ClassUnknown_65_151e20@ClassUnknown_65@@QAEXXZ	1.9048	1.9048	1	437938301a2c	0x151e20
-engine_discovered	?ClassUnknown_65_15b340@ClassUnknown_65@@QAEXXZ	2.8571	2.8571	1	62cc2f2fd1e4	0x15b340
-engine_discovered	?ClassUnknown_65_164830@ClassUnknown_65@@QAEXXZ	0.5063	0.5063	1	dbe237bd1703	0x164830
-engine_discovered	?ClassUnknown_65_164960@ClassUnknown_65@@QAEXXZ	0.0932	0.0932	1	fc0eb752418f	0x164960
 engine_discovered	?ClassUnknown_66_161370@ClassUnknown_66@@QAEXXZ	50.0000	50.0000	1	5b39a726447f	0x161370
 engine_discovered	?ClassUnknown_66_166d40@ClassUnknown_66@@QAEXXZ	3.3333	3.3333	1	f2ee01b8e610	0x166d40
 engine_discovered	?ClassUnknown_67_191ad0@ClassUnknown_67@@QAEXXZ	1.9048	1.9048	1	1e4f9d691f96	0x191ad0
@@ -1887,6 +1883,11 @@ kitchenslime	?LoadSprites@CKitchenSlime@@QAEHXZ	69.1992	69.1992	2	2c07cc5dc21b	0
 kitchenslime	?Tick@CKitchenSlime@@QAEHXZ	94.8551	94.8551	3	c7b9e1dd58eb	0xb2ca0
 leveltilevalidation	?ValidateLevelTiles@CLevelValidator@@QAEHXZ	17.0098	17.0098	2	791c1428e1a4	0xd2dd0
 loadlevelbymode	?LoadByMode@CPlayLevelLoad@@QAEHH@Z	34.8503	34.8503	2	10b320b3c10a	0xca200
+logicrecord	??1CLogicRecord@@QAE@XZ	56.7250	56.7250	1	574971764638	0x151da0
+logicrecord	?Consume@CLogicRecord@@QAEHH@Z	100.0000	100.0000	1	30815d7b8ca4	0x15b340
+logicrecord	?Dispatch@CLogicRecord@@QAEHHHPAX0@Z	79.6203	79.6203	1	5db0447ef675	0x164830
+logicrecord	?Init@CLogicRecord@@QAEHPAXH@Z	100.0000	100.0000	1	13cd2b4bb6f4	0x151e20
+logicrecord	?Load@CLogicRecord@@QAEHPAVLogicArchive@@@Z	100.0000	100.0000	1	f15fadec497e	0x164960
 logictypetable	?BuildLogicTypeTable@@YGXPAUCLogicTypeBuilder@@@Z	87.9167	87.9167	6	313ac91839f7	0x8a40
 mainmenubuilder	?BuildMainMenuTree@@YAXPAX@Z	77.6725	77.6725	2	77164b63ab1c	0xa11d0
 maplogic	??1CMapLogic@@UAE@XZ	100.0000	100.0000	1	baec3be51eff	0x113c0
