@@ -408,7 +408,7 @@ flags = "eh"
 [[unit]]
 unit = "directsoundmgr"
 source = "src/Dsndmgr/DirectSoundMgr.cpp"
-flags = "base"
+flags = "eh"
 
 [[unit]]
 unit = "appdialogs"

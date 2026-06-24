@@ -1582,14 +1582,6 @@ public:
     void CmdHost_0953f0_08cf30();
     void CmdHost_0953f0_095140();
 };
-class DirectSoundMgr {
-public:
-    void DirectSoundMgr_135640();
-    void DirectSoundMgr_135660();
-    void DirectSoundMgr_135bb0();
-    void DirectSoundMgr_135d20();
-    void DirectSoundMgr_136150();
-};
 class EngStr {
 public:
     void EngStr_115440();

@@ -61,6 +61,58 @@ extern "C" long __stdcall DirectSoundCreate(void* lpGuid, IDirectSoundZ** ppDS, 
 DATA(0x001ef6b8)
 extern void* const g_DirectSoundMgrVtbl[];
 
+// The clone-instance class's retail vftable (0x5ef6bc), stamped by ~DirectSoundMgr
+// at entry - same transitional reloc-masked DIR32 store as the buffer vtable above.
+DATA(0x001ef6bc)
+extern void* const g_DirectSoundCloneVtbl[];
+
+// Volume (DSound hundredths-of-dB, [-10000..0]) -> 0..100 linear percent. A free
+// __cdecl helper (0x135110): caller pops the one arg (`add esp,4`).
+extern "C" long ConvertVolumeToPercent(long vol);
+
+// The 0x28-byte "playing voice" node minted by CloneAndPlay. Its 6-arg __thiscall
+// ctor (0x136fe0) stamps a vtable (0x5ef6d0) + the play params; CloneAndPlay then
+// links the node's anchor (m_link@+0x04) into the owner's voice list (owner+0xc).
+// The ctor is external (modeled here, defined in 0x136fe0); a placement-new call
+// lowers to `mov ecx,voice; call 0x136fe0` reloc-masked.
+struct DSoundVoice {
+    void* m_vtbl; // +0x00
+    struct Link { // +0x04  the intrusive list-anchor
+        Link* m_next;
+        Link* m_prev;
+    } m_link;
+    DSoundVoice(long key, long pct, long mode, long owner, long slot, long stamp); // 0x136fe0
+};
+
+// Owner voice-list helpers (intrusive doubly-linked list, __thiscall on the list
+// head). Insert-at-head (0x1390e0) takes the anchor.
+struct DSoundList {
+    void* m_head;                  // +0x00
+    void* m_tail;                  // +0x04
+    void InsertHead(void* anchor); // 0x1390e0
+};
+
+// The owner's voice-list lookup/free (0x136f60): walks owner+0xc, unlinking +
+// deleting every voice whose (key, slot) match - __thiscall on the list head,
+// 2 stack args (key, slot).
+struct DSoundVoiceList {
+    void* m_head;
+    void* m_tail;
+    void Reap(long key, long slot); // 0x136f60
+};
+
+// The intrusive clone-list helper (0x1391e0): unlink a clone node (its m_node44
+// anchor) from a clone-list head - __thiscall on the head, 1 stack arg (anchor).
+struct DSoundCloneList {
+    void* m_head;              // +0x00
+    void* m_tail;              // +0x04
+    void Unlink(void* anchor); // 0x1391e0
+};
+
+// operator new / operator delete (engine allocator), reloc-masked rel32.
+void* operator new(unsigned int);
+void operator delete(void*);
+
 // ---------------------------------------------------------------------------
 // DirectSoundMgr ctor (__thiscall). Wraps a held IDirectSoundBuffer: stamps the
 // vptr, caches the buffer (m_0c) + owning manager (m_10), zero-inits the cached
@@ -224,6 +276,47 @@ long DirectSoundMgr::GetVolume() {
 }
 
 // ---------------------------------------------------------------------------
+// DirectSoundMgr::GetVolumePercent (__thiscall). Gated on init; reads the raw
+// DSound volume via GetVolume and maps it to a 0..100 linear percent through the
+// __cdecl helper ConvertVolumeToPercent.
+RVA(0x00135640, 0x1c)
+long DirectSoundMgr::GetVolumePercent() {
+    if (m_10->m_78 == 0) {
+        return 0;
+    }
+    return ConvertVolumeToPercent(GetVolume());
+}
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::CloneAndPlay (__thiscall, ret 0xc => 3 args = key, mode, slot).
+// Gated on init. First reaps any matching finished voices from the owner's voice
+// list (owner+0xc). When mode==0 it just re-applies the volume via SetField0;
+// otherwise new's a 0x28-byte DSoundVoice for the requested play and links its
+// anchor into the owner's voice list (new/ctor in a /GX EH frame, the voice ctor
+// being the destructible local). Returns 1 on a successful dispatch, 0 if the
+// device is down or the voice allocation/ctor failed.
+RVA(0x00135660, 0xe0)
+int DirectSoundMgr::CloneAndPlay(long key, long mode, long slot) {
+    DirectSoundMgr* owner = m_10;
+    if (owner->m_78 == 0) {
+        return 0;
+    }
+    ((DSoundVoiceList*)&owner->m_0c)->Reap((long)this, 1);
+
+    if (mode == 0) {
+        SetField0(key);
+        return 1;
+    }
+
+    DSoundVoice* voice = new DSoundVoice(key, GetVolumePercent(), mode, (long)this, slot, -1);
+    if (voice == 0) {
+        return 0;
+    }
+    ((DSoundList*)&m_10->m_0c)->InsertHead(&voice->m_link);
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
 // DirectSoundMgr::SetPan (__thiscall). Gated on init + the pan capability bit
 // (m_40 & 0x40); SetPan, report on failure.
 RVA(0x00135740, 0x55)
@@ -344,6 +437,50 @@ int DirectSoundMgr::GetFormat(void* fmt, unsigned long size, unsigned long* writ
 }
 
 // ---------------------------------------------------------------------------
+// DirectSoundMgr::~DirectSoundMgr (__thiscall). Stamps the clone-class vftable,
+// then drains its clone list (m_58): for each clone the back-pointer
+// (node->m_inst) is handed to RemoveClone, which Releases its buffer, unlinks it,
+// and scalar-deletes it - re-reading the head each pass since RemoveClone shrinks
+// the list. Once empty, BaseDtor runs the base-subobject destruction. A /GX EH
+// frame wraps the loop (the `mov [esp+0x10],1/-1` stores are the unwind levels).
+// @early-stop
+// EH-dtor wall (docs/patterns/eh-dtor-needs-base-subobject.md): the clone-loop +
+// vptr stamp + BaseDtor call are byte-exact, but the /GX EH frame retail emits for
+// the non-trivial base subobject is unreachable while the class is modeled non-
+// polymorphically (manual vptr stamp, no real base). Modeling the base hierarchy
+// would re-shape the ctor + emit a ??_7/??_G and risk the 20 exact siblings; defer
+// to the final sweep when the whole class is modeled. 54.45%.
+RVA(0x00135bb0, 0x63)
+DirectSoundMgr::~DirectSoundMgr() {
+    *(void**)this = (void*)g_DirectSoundCloneVtbl;
+    while (m_58_head != 0) {
+        RemoveClone(m_58_head->m_inst);
+    }
+    BaseDtor();
+}
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::RemoveClone (__thiscall, ret 4 => 1 arg). Gated on init. For a
+// real clone (clone != this), Releases its held buffer and clears m_0c; then
+// unlinks the clone's anchor (m_node44) from this->m_58 list; finally, when the
+// clone is a distinct non-null object, scalar-deletes it through its own vtable.
+RVA(0x00135d20, 0x47)
+void DirectSoundMgr::RemoveClone(DirectSoundMgr* clone) {
+    if (m_10->m_78 == 0) {
+        return;
+    }
+    if (clone != this) {
+        IDirectSoundBufferZ* buf = clone->m_0c;
+        buf->vtbl->Release(buf);
+        clone->m_0c = 0;
+    }
+    ((DSoundCloneList*)&m_58_head)->Unlink(&clone->m_node44);
+    if (clone != this && clone != 0) {
+        ((DSoundCloneBase*)clone)->ScalarDtor(1);
+    }
+}
+
+// ---------------------------------------------------------------------------
 // DirectSoundMgr::LockConvert (__thiscall). Writes a source buffer (src) into
 // the held sound buffer, handling the circular wraparound via Lock's two output
 // regions (p1/n1 then p2/n2). The third arg is a "convert 16->8" flag, not a
@@ -406,6 +543,20 @@ int DirectSoundMgr::LockConvert(void* src, unsigned long lockBytes, unsigned lon
         return 0;
     }
     return 1;
+}
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::StopAllClones (__thiscall, no args). Gated on init. Walks the
+// clone list (m_58), calling StopAndRewind on each clone (node->m_inst) so every
+// playing voice halts and rewinds; the list itself is left intact.
+RVA(0x00136150, 0x22)
+void DirectSoundMgr::StopAllClones() {
+    if (m_10->m_78 == 0) {
+        return;
+    }
+    for (CloneNode* node = m_58_head; node != 0; node = node->m_next) {
+        node->m_inst->StopAndRewind();
+    }
 }
 
 // ---------------------------------------------------------------------------

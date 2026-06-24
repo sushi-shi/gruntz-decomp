@@ -127,6 +127,17 @@ struct IDirectSoundBufferZ {
 };
 
 // ---------------------------------------------------------------------------
+// DSoundCloneBase - a tiny polymorphic view used only to dispatch a clone's
+// scalar-deleting destructor (vtable slot 0) as the exact `mov eax,[obj]; push 1;
+// call [eax]` __thiscall call. Its virtuals are never defined here, so no ??_7
+// vtable is emitted in this TU (same idiom as CInputDeviceBase).
+// ---------------------------------------------------------------------------
+class DSoundCloneBase {
+public:
+    virtual void* ScalarDtor(int flag); // +0x00 slot 0
+};
+
+// ---------------------------------------------------------------------------
 // DirectSoundMgr. Single class spanning both wrapper `this`-shapes; only the
 // touched offsets are pinned (the rest is opaque). Field names are placeholders;
 // the offsets + the COM slot dispatch are the load-bearing facts.
@@ -136,19 +147,26 @@ public:
     // --- per-buffer wrappers (this = a buffer object, m_0c = the buffer) ------
     DirectSoundMgr(IDirectSoundBufferZ* buf, DirectSoundMgr* owner); // 0x1351d0 ctor
     int Restore();                                                   // 0x135310  m_0c->Restore()
-    int StopAndRewind();                  // 0x135380  Stop + SetCurrentPosition(0)
-    int IsPlaying();                      // 0x1353f0  GetStatus & 1
-    int IsLooping();                      // 0x135440  GetStatus & 2
-    int SetVolume(long vol);              // 0x135560  SetVolume (caps 0x80)
-    long GetVolume();                     // 0x1355f0  GetVolume
-    int SetPan(long pan);                 // 0x135740  SetPan (caps 0x40)
-    long GetPan();                        // 0x1357f0  GetPan
-    int SetFrequency(unsigned long freq); // 0x135880  SetFrequency (caps 0x20)
-    int Unlock(void* p1, unsigned long n1, void* p2, unsigned long n2);         // 0x1359c0
-    int GetCurrentPosition(unsigned long* play, unsigned long* write);          // 0x135a20
-    int SetCurrentPosition(unsigned long pos);                                  // 0x135a70
-    int GetFormat(void* fmt, unsigned long size, unsigned long* written);       // 0x135ac0
+    int StopAndRewind();      // 0x135380  Stop + SetCurrentPosition(0)
+    int IsPlaying();          // 0x1353f0  GetStatus & 1
+    int IsLooping();          // 0x135440  GetStatus & 2
+    int SetVolume(long vol);  // 0x135560  SetVolume (caps 0x80)
+    long GetVolume();         // 0x1355f0  GetVolume
+    void SetField0(long idx); // 0x1355c0  SetVolume(g_volumeTable[idx]) (extern)
+    long GetVolumePercent();  // 0x135640  GetVolume -> percent (0x135110)
+    int CloneAndPlay(long key, long mode, long slot); // 0x135660  reap + spawn a voice
+    int SetPan(long pan);                             // 0x135740  SetPan (caps 0x40)
+    long GetPan();                                    // 0x1357f0  GetPan
+    int SetFrequency(unsigned long freq);             // 0x135880  SetFrequency (caps 0x20)
+    int Unlock(void* p1, unsigned long n1, void* p2, unsigned long n2);   // 0x1359c0
+    int GetCurrentPosition(unsigned long* play, unsigned long* write);    // 0x135a20
+    int SetCurrentPosition(unsigned long pos);                            // 0x135a70
+    int GetFormat(void* fmt, unsigned long size, unsigned long* written); // 0x135ac0
+    ~DirectSoundMgr();                       // 0x135bb0  destructor (frees clone list)
+    void BaseDtor();                         // 0x136260  base-subobject dtor (extern)
+    void RemoveClone(DirectSoundMgr* clone); // 0x135d20  release + unlink one clone
     int LockConvert(void* src, unsigned long lockBytes, unsigned long convert); // 0x135f40
+    void StopAllClones();                                                       // 0x136150
 
     // --- device-level wrappers (this = the manager, m_14 = IDirectSound) ------
     int Create(
@@ -181,7 +199,21 @@ public:
     int m_38;           // +0x38
     int m_3c;           // +0x3c
     unsigned long m_40; // +0x40  buffer capability flags (0x20/0x40/0x80)
-    char m_pad44[0x78 - 0x44];
+    // +0x44  intrusive list-node by which a clone instance hangs in its parent's
+    // clone list (next@+0x44, prev@+0x48, back-pointer to this clone @+0x4c). The
+    // list-helper at 0x1391e0 unlinks the node given &m_node44; the parent walks
+    // the list reading m_node44.m_inst (+0x4c) to reach each clone.
+    struct CloneNode {
+        CloneNode* m_next;      // +0x00 (clone +0x44)
+        CloneNode* m_prev;      // +0x04 (clone +0x48)
+        DirectSoundMgr* m_inst; // +0x08 (clone +0x4c) back-pointer to the clone
+    } m_node44;
+    char m_pad50[0x58 - 0x50];
+    // +0x58  head of this instance's clone/child list (head@+0x58, tail@+0x5c);
+    // each member is a cloned DirectSoundMgr chained through its m_node44.
+    CloneNode* m_58_head;
+    CloneNode* m_5c_tail;
+    char m_pad60[0x78 - 0x60];
     int m_78; // +0x78  "initialized" flag (manager this)
     int m_7c; // +0x7c
     char m_pad80[0x84 - 0x80];

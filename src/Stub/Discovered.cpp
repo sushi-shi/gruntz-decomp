@@ -2322,18 +2322,6 @@ void CmdHost_0953f0::CmdHost_0953f0_08cf30() {}
 RVA(0x00095140, 0x6e)
 void CmdHost_0953f0::CmdHost_0953f0_095140() {}
 
-// ---- DirectSoundMgr ----
-RVA(0x00135640, 0x1c)
-void DirectSoundMgr::DirectSoundMgr_135640() {}
-RVA(0x00135660, 0xe0)
-void DirectSoundMgr::DirectSoundMgr_135660() {}
-RVA(0x00135bb0, 0x63)
-void DirectSoundMgr::DirectSoundMgr_135bb0() {}
-RVA(0x00135d20, 0x47)
-void DirectSoundMgr::DirectSoundMgr_135d20() {}
-RVA(0x00136150, 0x22)
-void DirectSoundMgr::DirectSoundMgr_136150() {}
-
 // ---- EngStr ----
 RVA(0x00115440, 0x45)
 void EngStr::EngStr_115440() {}
