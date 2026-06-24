@@ -119,6 +119,11 @@ source = "src/Gruntz/GameObjectCtors.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "randomambientsound"
+source = "src/Gruntz/CRandomAmbientSound.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "projectile"
 source = "src/Gruntz/Projectile.cpp"
 flags = "eh"

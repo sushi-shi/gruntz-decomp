@@ -403,16 +403,6 @@ public:
     void CProjectile_0e0b10();
     void CProjectile_0e2190();
 };
-class CRandomAmbientSound {
-public:
-    void CRandomAmbientSound_00b5e0();
-    void CRandomAmbientSound_00b660();
-    void CRandomAmbientSound_00bc30();
-    void CRandomAmbientSound_00bc80();
-    void CRandomAmbientSound_00bcf0();
-    void CRandomAmbientSound_00bd60();
-    void CRandomAmbientSound_085ed0();
-};
 class CRollingBall {
 public:
     void CRollingBall_012f80();

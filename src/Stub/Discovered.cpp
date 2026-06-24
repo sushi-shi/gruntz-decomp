@@ -600,22 +600,6 @@ void CProjectile::CProjectile_0e0b10() {}
 RVA(0x000e2190, 0x83)
 void CProjectile::CProjectile_0e2190() {}
 
-// ---- CRandomAmbientSound ----
-RVA(0x0000b5e0, 0x29)
-void CRandomAmbientSound::CRandomAmbientSound_00b5e0() {}
-RVA(0x0000b660, 0x2b)
-void CRandomAmbientSound::CRandomAmbientSound_00b660() {}
-RVA(0x0000bc30, 0x3a)
-void CRandomAmbientSound::CRandomAmbientSound_00bc30() {}
-RVA(0x0000bc80, 0x44)
-void CRandomAmbientSound::CRandomAmbientSound_00bc80() {}
-RVA(0x0000bcf0, 0x43)
-void CRandomAmbientSound::CRandomAmbientSound_00bcf0() {}
-RVA(0x0000bd60, 0x4b)
-void CRandomAmbientSound::CRandomAmbientSound_00bd60() {}
-RVA(0x00085ed0, 0x4a)
-void CRandomAmbientSound::CRandomAmbientSound_085ed0() {}
-
 // ---- CRollingBall ----
 RVA(0x00012f80, 0x44)
 void CRollingBall::CRollingBall_012f80() {}

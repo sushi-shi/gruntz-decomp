@@ -36,7 +36,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	18	17
 directsoundmgr	26	19
-engine_discovered	989	0
+engine_discovered	982	0
 engine_label_stubs	537	120
 filestream	13	9
 font	16	9
@@ -69,6 +69,7 @@ mapmgr	7	7
 netmgr	40	20
 netmgrerror	1	1
 projectile	1	0
+randomambientsound	7	5
 registryhelper	8	8
 rezmgr	10	6
 savegame	18	13
@@ -563,13 +564,6 @@ engine_discovered	?CProjectile_0e05e0@CProjectile@@QAEXXZ	4.5455	4.5455	1	a8f39d
 engine_discovered	?CProjectile_0e08b0@CProjectile@@QAEXXZ	0.7752	0.7752	1	8be57f7cc7a3	0xe08b0
 engine_discovered	?CProjectile_0e0b10@CProjectile@@QAEXXZ	0.2985	0.2985	1	e8f2c731eb6c	0xe0b10
 engine_discovered	?CProjectile_0e2190@CProjectile@@QAEXXZ	0.8889	0.8889	1	9f84c6c30374	0xe2190
-engine_discovered	?CRandomAmbientSound_00b5e0@CRandomAmbientSound@@QAEXXZ	2.8571	2.8571	1	b8722927b46b	0xb5e0
-engine_discovered	?CRandomAmbientSound_00b660@CRandomAmbientSound@@QAEXXZ	4.7619	4.7619	1	07629eba1f33	0xb660
-engine_discovered	?CRandomAmbientSound_00bc30@CRandomAmbientSound@@QAEXXZ	1.6000	1.6000	1	21e4e934114c	0xbc30
-engine_discovered	?CRandomAmbientSound_00bc80@CRandomAmbientSound@@QAEXXZ	3.1250	3.1250	1	93bdaccf99c5	0xbc80
-engine_discovered	?CRandomAmbientSound_00bcf0@CRandomAmbientSound@@QAEXXZ	3.0303	3.0303	1	c90da078dcba	0xbcf0
-engine_discovered	?CRandomAmbientSound_00bd60@CRandomAmbientSound@@QAEXXZ	1.1429	1.1429	1	ff07c7a63844	0xbd60
-engine_discovered	?CRandomAmbientSound_085ed0@CRandomAmbientSound@@QAEXXZ	5.2632	5.2632	1	d5aeff6b8fb4	0x85ed0
 engine_discovered	?CRollingBall_012f80@CRollingBall@@QAEXXZ	5.8824	5.8824	1	c3e5dcb9f3b3	0x12f80
 engine_discovered	?CRollingBall_0b0fe0@CRollingBall@@QAEXXZ	0.2139	0.2139	1	a6e364c8e14c	0xb0fe0
 engine_discovered	?CSBI_RectOnly_0c8980@CSBI_RectOnly@@QAEXXZ	3.8462	3.8462	1	5ef05cd5c468	0xc8980
@@ -2154,6 +2148,13 @@ netmgr	?Stub_1788a0@CNetMgr@@QAEXXZ	0.3419	0.3419	1	864a5d19b888	0x1788a0
 netmgr	?WaitForConnect@CNetMgr@@QAEHXZ	74.0809	74.0809	3	6fc7d79bed6d	0xbca50
 netmgrerror	?ReportError@CNetMgr@@SAXPADHJPAX@Z	100.0000	100.0000	4	be41456c928e	0x1776a0
 projectile	??0CProjectile@@QAE@XZ	99.0472	99.0472	1	4eead4695d92	0x126e0
+randomambientsound	??1CRandomAmbientSound@@QAE@XZ	100.0000	100.0000	1	745bfd96f836	0x85ed0
+randomambientsound	?Init@CRandomAmbientSound@@QAEHPAX0@Z	100.0000	100.0000	1	72b286fbf88a	0xb5e0
+randomambientsound	?Restart@CRandomAmbientSound@@QAEXPAX@Z	100.0000	100.0000	1	9ffbab030895	0xbc30
+randomambientsound	?Resume@CRandomAmbientSound@@QAEXXZ	99.6970	99.6970	1	67987243e6bd	0xbcf0
+randomambientsound	?Retune@CRandomAmbientSound@@QAEXHH@Z	86.2571	86.2571	1	6682c66b3fde	0xbd60
+randomambientsound	?Stop@CRandomAmbientSound@@QAEXXZ	100.0000	100.0000	1	fdc70334743c	0xbc80
+randomambientsound	?Teardown@CRandomAmbientSound@@QAEXXZ	100.0000	100.0000	1	54c66ebab17c	0xb660
 registryhelper	?Close@RegistryHelper@Utils@@QAEXXZ	100.0000	100.0000	4	384a98aaca34	0x139330
 registryhelper	?GetRegistryKey@RegistryHelper@Utils@@QAEHPAUHKEY__@@PADPAPAU3@@Z	100.0000	100.0000	2	3484125a1efa	0x139650
 registryhelper	?GetValueDword@RegistryHelper@Utils@@QAEKPADK@Z	100.0000	100.0000	4	8557af160863	0x1395d0
@@ -2306,7 +2307,7 @@ userlogic	?LoadGruntTuningConstants@CUserLogic@@QAEXH@Z	0.0646	0.0646	1	2b4b0f8e
 userlogic	?LoadGruntTypeTable@CUserLogic@@QAEXHHHH@Z	0.0415	0.0415	1	4eccb4031701	0x4dd50
 userlogic	?LoadWandGruntItemConfig@CUserLogic@@QAEXXZ	1.0638	1.0638	1	10cb95c55260	0x65a60
 userlogic	?Serialize@CSecretTeleporterTrigger@@QAEHHHHH@Z	100.0000	100.0000	1	e85a3772d1b2	0x10a10
-userlogic	?SpawnTeleporter@CSecretTeleporterTrigger@@QAEHXZ	100.0000	100.0000	1	bfda8869fc3c	0x42b80
+userlogic	?SpawnTeleporter@CSecretTeleporterTrigger@@QAEHXZ	100.0000	100.0000	2	d7e268f770f8	0x42b80
 userlogic	?winapi_04d800_CopyRect@CUserLogic@@QAEHHHHHHHHHHHHH@Z	0.6786	0.6786	2	20c2d9c1eeaa	0x4d800
 userlogic	?winapi_064540_PostMessageA@CUserLogic@@QAEHXZ	2.5974	2.5974	1	43a786a492a0	0x64540
 userlogic	?winapi_0ee800_IntersectRect_PtInRect@CUserLogic@@QAEHXZ	0.2653	0.2653	1	60fd51ad9d42	0xee800
