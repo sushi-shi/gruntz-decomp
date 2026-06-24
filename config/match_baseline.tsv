@@ -37,7 +37,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	18	17
 directsoundmgr	26	19
-engine_discovered	940	0
+engine_discovered	936	0
 engine_label_stubs	534	117
 filestream	13	9
 font	16	9
@@ -51,6 +51,7 @@ gametext	4	2
 gamewnd	6	4
 grunt	20	0
 gruntpuddle	4	2
+gruntvoice	4	3
 gruntzapp	10	8
 gruntzcommand	9	9
 gruntzmgr	9	5
@@ -458,10 +459,6 @@ engine_discovered	?CGruntToySprite_0122b0@CGruntToySprite@@QAEXXZ	5.8824	5.8824	
 engine_discovered	?CGruntToySprite_07f920@CGruntToySprite@@QAEXXZ	4.0000	4.0000	1	8eebf3889931	0x7f920
 engine_discovered	?CGruntToySprite_07f960@CGruntToySprite@@QAEXXZ	2.0000	2.0000	1	05b0fb932926	0x7f960
 engine_discovered	?CGruntToyTimeSprite_012130@CGruntToyTimeSprite@@QAEXXZ	5.8824	5.8824	1	28eca57e8d98	0x12130
-engine_discovered	?CGruntVoice_119ae0@CGruntVoice@@QAEXXZ	5.8824	5.8824	1	98b513bea26e	0x119ae0
-engine_discovered	?CGruntVoice_119e40@CGruntVoice@@QAEXXZ	0.5333	0.5333	1	d93541002c03	0x119e40
-engine_discovered	?CGruntVoice_11a7e0@CGruntVoice@@QAEXXZ	1.2500	1.2500	1	d6d3f7f8c8f6	0x11a7e0
-engine_discovered	?CGruntVoice_11a870@CGruntVoice@@QAEXXZ	6.6667	6.6667	1	22ecc49cfc8f	0x11a870
 engine_discovered	?CGrunt_057c40@CGrunt@@QAEXXZ	1.0811	1.0811	1	12e9f96d3a6b	0x57c40
 engine_discovered	?CGruntzMgr_0860b0@CGruntzMgr@@QAEXXZ	1.4286	1.4286	1	ecd6a666c3b8	0x860b0
 engine_discovered	?CGruntzMgr_08b960@CGruntzMgr@@QAEXXZ	0.0907	0.0907	1	4a22ea071af3	0x8b960
@@ -1978,6 +1975,10 @@ gruntpuddle	??1CGruntPuddle@@UAE@XZ	100.0000	100.0000	1	d8797374243c	0x10d10
 gruntpuddle	?Place@CGruntPuddle@@QAEHHHHH@Z	73.5400	73.5400	1	c0acb6853a09	0x40c30
 gruntpuddle	?Remove@CGruntPuddle@@QAEHXZ	71.3000	71.3000	1	f9934ddc5c36	0x40d20
 gruntpuddle	?SetBute@CGruntPuddle@@QAEXPAD@Z	100.0000	100.0000	1	25260462d64d	0x7d810
+gruntvoice	??1CGruntVoice@@UAE@XZ	100.0000	100.0000	1	800298c90ba0	0x119ae0
+gruntvoice	?Dispatch@CGruntVoice@@QAEXH@Z	100.0000	100.0000	1	b262f079bd08	0x119e40
+gruntvoice	?Reset@CGruntVoice@@QAEXXZ	100.0000	100.0000	1	dade6712d474	0x11a870
+gruntvoice	?Setup@CGruntVoice@@QAEHHPAXHH@Z	85.2500	85.2500	1	26c0be68f570	0x11a7e0
 gruntzapp	??0CGruntzApp@@QAE@XZ	100.0000	100.0000	6	4559dd088d06	0x80850
 gruntzapp	??1CGruntzApp@@UAE@XZ	100.0000	100.0000	6	43c4ac32e8f0	0x808b0
 gruntzapp	?CreateU10O@@YAPAXXZ	99.9583	99.9583	5	c79c77d4e5bc	0x809a0
@@ -2212,7 +2213,7 @@ statusbarupdaters	?UpdateDestructButtonStatusBar@EngineLabelBacklog@@QAEXXZ	94.6
 statusbarupdaters	?UpdateGruntOvenStatusBar@EngineLabelBacklog@@QAEXXZ	79.8947	79.8947	3	a217b44184b4	0x105310
 statusbarupdaters	?UpdateWarpStoneStatusBar@EngineLabelBacklog@@QAEHHHHH@Z	81.2286	81.2286	3	560a70e4c7be	0x109bd0
 tileswitchlogic	??0CTileTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	4	aac3372d26bd	0x110430
-tileswitchlogic	?ApplyByType@CTileTriggerSwitchLogic@@QAEHPAXHHH@Z	100.0000	100.0000	1	975dacc04f9e	0x113d40
+tileswitchlogic	?ApplyByType@CTileTriggerSwitchLogic@@QAEHPAXHHH@Z	100.0000	100.0000	2	d601f8d527b4	0x113d40
 tileswitchlogic	?BuildRockBreakInGameText@CTileTriggerSwitchLogic@@QAEXXZ	0.5464	0.5464	1	a6548c9bdd8e	0x1122a0
 tileswitchlogic	?CTileTriggerSwitchLogic_115f60@CTileTriggerSwitchLogic@@QAEXXZ	0.2198	0.2198	2	fedab5b88bae	0x115f60
 tileswitchlogic	?FindByField0C@CTileTriggerSwitchLogic@@QAEPAV1@H@Z	100.0000	100.0000	1	10e16587d353	0x1171d0
@@ -2223,7 +2224,7 @@ tileswitchlogic	?RemoveByKeys@CTileTriggerSwitchLogic@@QAEHHH@Z	96.2791	96.2791	
 tileswitchlogic	?ScanNeighborhood@CTileTriggerSwitchLogic@@QAEHHH@Z	76.2600	76.2600	1	2babadb2e451	0x117ec0
 tileswitchlogic	?SerializeMatrix@CTileTriggerSwitchLogic@@QAEHPAVCSerialStream@@@Z	95.0909	95.0909	1	bdfa364919a2	0x113dd0
 tileswitchlogic	?TransferFlag74@CTileTriggerSwitchLogic@@QAEHPAVCSerialStream@@@Z	100.0000	100.0000	1	142da4cf4c21	0x117e20
-tileswitchlogic	?ValidateByType@CTileTriggerSwitchLogic@@QAEHPAXHHH@Z	93.3333	93.3333	1	d8dab58c94e7	0x113a90
+tileswitchlogic	?ValidateByType@CTileTriggerSwitchLogic@@QAEHPAXHHH@Z	93.3333	93.3333	2	c8911d7ccee4	0x113a90
 tiletriggerlogic	??0CTileTriggerLogic@@QAE@XZ	100.0000	100.0000	4	6bacffe5a006	0x1107f0
 tiletriggerlogic	??_GCTileTriggerLogic@@UAEPAXI@Z	4.7624	4.7624	1	cpp:abf93c58a136	0x116610
 trees	__tr_flush_block	100.0000	100.0000	1	54a1b09eba2f	0x188ad0

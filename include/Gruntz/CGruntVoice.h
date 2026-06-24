@@ -1,0 +1,146 @@
+// CGruntVoice.h - a grunt-voice game/sound object, a CUserLogic-derived leaf
+// (vftables 0x5e705c / 0x5e70b4, the CUserLogic / CUserBase pair - same shape
+// every UserLogic leaf dtor folds). Trace-discovered as CGruntVoice.
+//
+// Modeled as a CUserLogic leaf so the empty dtor (0x119ae0) folds to the bare
+// CUserLogic teardown (store 0x5e705c, ~EngStr on +0x18, store 0x5e70b4) under a
+// /GX frame - byte-identical to CGruntPuddle's dtor (0x10d10) except the
+// reloc-masked handler/`~EngStr` operands.
+//
+// Field names are placeholders (m_<hexoffset>); only the OFFSETS + code bytes
+// are load-bearing (campaign doctrine). Own state begins at +0x40 (CUserLogic
+// ends at +0x40). Layout recovered from the method field stores:
+//   Setup11a7e0 writes +0x68/+0x70/+0x54/+0x60/+0x64/+0x58/+0x5c/+0x6c/+0x30
+//               and m_14->m_1c (g_buteTree.Find("B"));
+//   Reset11a870 writes +0x54/+0x30/+0x6c/+0x68 and m_14->m_1c (Find("A"));
+//   Dispatch119e40 reads no own field (dispatches through the registry).
+#ifndef GRUNTZ_GRUNTZ_CGRUNTVOICE_H
+#define GRUNTZ_GRUNTZ_CGRUNTVOICE_H
+
+#include <rva.h>
+
+#include <Mfc.h> // CObject base + <windows.h>
+
+#include <Gruntz/UserLogic.h>   // CUserLogic : CUserBase, EngStr, CGameObject
+#include <Gruntz/CInGameIcon.h> // g_iconBute ("B" @0x60d1bc), g_iconDefault (@0x645588)
+
+// The bute store the setup/reset paths query (mov ecx,&g_buteTree; call Find).
+// CButeTree is declared in <Bute/ButeMgr.h> (pulled via UserLogic.h); g_buteTree
+// is owned by another TU - redeclared here so the Find call reloc-masks.
+extern CButeTree g_buteTree;
+
+// The idle-anim bute key "A" (0x60a454) the reset path looks up. Its own rdata
+// (DAT_0060a454, also referenced by Grunt.cpp). Declared here so the Find call
+// reloc-masks.
+DATA(0x0020a454)
+extern char g_voiceKeyA[]; // s_A_0060a454
+
+// ---------------------------------------------------------------------------
+// The audio/sample object Setup is handed as `sample` (arg2). Its rate helper
+// (0x137590, __thiscall) computes (m_a8 * 5^3 * 8) / m_3c - the play duration
+// stamped into m_60. External/no-body so the call reloc-masks.
+// ---------------------------------------------------------------------------
+struct CVoiceSample {
+    int ComputeDuration(); // 0x137590 (__thiscall: (m_a8*1000)/m_3c)
+};
+
+// ---------------------------------------------------------------------------
+// The per-coordinate activation registry CGruntVoice::Dispatch (0x119e40)
+// dispatches through - the SAME ActLookup/FireActivation shape as
+// CSecretTeleporterTrigger::FireActivation (0x042150), but on CGruntVoice's OWN
+// registry statics at 0x6514xx (the shared collection methods + the cache/alloc
+// scratch globals g_actCache/g_actAllocResult are reused). A coordinate maps to
+// an Entry* either directly (within the fast [g_vactLo,g_vactHi] range) via
+// g_vactBase + (coord-g_vactLo)*g_vactStride, or by a slow lookup in g_vactColl
+// (0x16da80, __thiscall ret 8) which on miss rebuilds the table
+// (ActAlloc 0x16d990 -> g_actCache, g_vactColl2 insert 0x16d850 __thiscall ret
+// 0xc) and yields g_vactCur. The entry's first dword is a fn-ptr; a nonzero
+// entry's handler is called __thiscall on `this`. All registry globals are
+// unnamed BSS (DATA-pinned so the loads reloc-mask).
+// ---------------------------------------------------------------------------
+struct CVActColl {
+    int Find(int coord, int z); // 0x16da80 (__thiscall ret 8)
+};
+struct CVActColl2 {
+    void Insert(void* coll, void* item, int n); // 0x16d850 (__thiscall ret 0xc)
+};
+extern "C" int ActAlloc(); // 0x16d990
+
+DATA(0x002514e0)
+extern int g_vactLo;
+DATA(0x002514e4)
+extern int g_vactHi;
+DATA(0x002514e8)
+extern char* g_vactBase;
+DATA(0x002514f0)
+extern int g_vactStride;
+DATA(0x002514ec)
+extern struct CVActEntry* g_vactCur;
+DATA(0x002514f8)
+extern int g_vactScratch;
+DATA(0x002514d8)
+extern CVActColl g_vactColl;
+DATA(0x002514dc)
+extern CVActColl2* g_vactColl2;
+
+// The cache/alloc scratch globals shared with the trigger registry (reused
+// verbatim - 0x6bf464 / 0x6bf428; owned by UserLogic.cpp, declared extern here
+// so the loads reloc-mask against the already-matched symbols).
+DATA(0x002bf464)
+extern void* g_actCache;
+DATA(0x002bf428)
+extern void* g_actAllocResult;
+
+// ---------------------------------------------------------------------------
+// CGruntVoice : CUserLogic. Its own state begins at +0x40. The dtor (0x119ae0)
+// adds no destructible members, so it folds the bare CUserLogic teardown. The
+// class must be COMPLETE before the VActHandler typedef below so MSVC sizes the
+// pointer-to-member-function on a complete single-inheritance type (a 4-byte
+// code pointer with no this-adjustment) - matching retail's `mov ecx,this;
+// call [entry]`. An incomplete type forces the 8-byte general PMF representation
+// (an extra adjust-load + `add this`), which diverges the first dispatch call.
+// ---------------------------------------------------------------------------
+class CGruntVoice : public CUserLogic {
+public:
+    virtual ~CGruntVoice() OVERRIDE; // 0x119ae0
+
+    void Dispatch(int coord);                        // 0x119e40
+    int Setup(int a0, void* sample, int a2, int a3); // 0x11a7e0
+    void Reset();                                    // 0x11a870
+
+    // --- CGruntVoice own fields (placeholders; offsets load-bearing) ---
+    char m_pad40[0x54 - 0x40];
+    int m_54; // +0x54
+    int m_58; // +0x58
+    int m_5c; // +0x5c
+    int m_60; // +0x60
+    int m_64; // +0x64
+    int m_68; // +0x68
+    int m_6c; // +0x6c
+    int m_70; // +0x70
+};
+
+// The registry Entry: its first dword is a pointer-to-member-function of
+// CGruntVoice (single inheritance -> a 4-byte code pointer); Dispatch invokes it
+// on `this`, emitting `mov ecx,this; call [entry]`.
+typedef void (CGruntVoice::*VActHandler)();
+struct CVActEntry {
+    VActHandler m_fn; // [entry]
+};
+
+// The inlined coordinate->Entry* lookup Dispatch folds in twice.
+static inline CVActEntry* VActLookup(int coord) {
+    g_vactScratch = 0;
+    if (coord >= g_vactLo && coord <= g_vactHi) {
+        return (CVActEntry*)(g_vactBase + (coord - g_vactLo) * g_vactStride);
+    }
+    if (g_vactColl.Find(coord, 0)) {
+        return (CVActEntry*)(g_vactBase + (coord - g_vactLo) * g_vactStride);
+    }
+    void* item = g_actCache;
+    g_actAllocResult = (void*)ActAlloc();
+    g_vactColl2->Insert(&g_vactColl, item, 0xc);
+    return g_vactCur;
+}
+
+#endif // GRUNTZ_GRUNTZ_CGRUNTVOICE_H

@@ -311,16 +311,6 @@ void CGruntToySprite::CGruntToySprite_07f960() {}
 RVA(0x00012130, 0x44)
 void CGruntToyTimeSprite::CGruntToyTimeSprite_012130() {}
 
-// ---- CGruntVoice ----
-RVA(0x00119ae0, 0x44)
-void CGruntVoice::CGruntVoice_119ae0() {}
-RVA(0x00119e40, 0x102)
-void CGruntVoice::CGruntVoice_119e40() {}
-RVA(0x0011a7e0, 0x6e)
-void CGruntVoice::CGruntVoice_11a7e0() {}
-RVA(0x0011a870, 0x38)
-void CGruntVoice::CGruntVoice_11a870() {}
-
 // ---- CGruntzMgr ----
 RVA(0x000860b0, 0xe8)
 void CGruntzMgr::CGruntzMgr_0860b0() {}

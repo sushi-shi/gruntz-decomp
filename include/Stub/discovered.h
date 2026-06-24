@@ -229,13 +229,6 @@ class CGruntToyTimeSprite {
 public:
     void CGruntToyTimeSprite_012130();
 };
-class CGruntVoice {
-public:
-    void CGruntVoice_119ae0();
-    void CGruntVoice_119e40();
-    void CGruntVoice_11a7e0();
-    void CGruntVoice_11a870();
-};
 class CGruntzMgr {
 public:
     void CGruntzMgr_0860b0();

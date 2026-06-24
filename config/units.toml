@@ -129,6 +129,11 @@ source = "src/Gruntz/CGruntPuddle.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "gruntvoice"
+source = "src/Gruntz/CGruntVoice.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "gameobjectctors"
 source = "src/Gruntz/GameObjectCtors.cpp"
 flags = "eh"
