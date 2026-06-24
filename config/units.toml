@@ -114,6 +114,11 @@ source = "src/Gruntz/TileTriggerLogic.cpp"
 flags = "base"
 
 [[unit]]
+unit = "triggermgr"
+source = "src/Gruntz/TriggerMgr.cpp"
+flags = "base"
+
+[[unit]]
 unit = "userlogic"
 source = "src/Gruntz/UserLogic.cpp"
 flags = "eh"

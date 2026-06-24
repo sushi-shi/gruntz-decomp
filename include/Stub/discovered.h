@@ -698,10 +698,8 @@ public:
 };
 class ClassUnknown_23 {
 public:
-    void ClassUnknown_23_06b640();
     void ClassUnknown_23_06b680();
     void ClassUnknown_23_06b6d0();
-    void ClassUnknown_23_06bcb0();
     void ClassUnknown_23_06bd40();
     void ClassUnknown_23_06be30();
     void ClassUnknown_23_06bea0();
@@ -713,17 +711,11 @@ public:
     void ClassUnknown_23_06ea00();
     void ClassUnknown_23_075af0();
     void ClassUnknown_23_078260();
-    void ClassUnknown_23_078430();
-    void ClassUnknown_23_0784d0();
     void ClassUnknown_23_078520();
     void ClassUnknown_23_078680();
-    void ClassUnknown_23_078880();
-    void ClassUnknown_23_078a30();
     void ClassUnknown_23_078a50();
     void ClassUnknown_23_079520();
     void ClassUnknown_23_0798d0();
-    void ClassUnknown_23_079b00();
-    void ClassUnknown_23_079b30();
     void ClassUnknown_23_079b80();
     void ClassUnknown_23_079fb0();
     void ClassUnknown_23_07a180();
@@ -732,12 +724,8 @@ public:
     void ClassUnknown_23_07a5e0();
     void ClassUnknown_23_07a760();
     void ClassUnknown_23_07b1b0();
-    void ClassUnknown_23_07be10();
     void ClassUnknown_23_07c110();
-    void ClassUnknown_23_07d0c0();
-    void ClassUnknown_23_07d140();
     void ClassUnknown_23_07d1d0();
-    void ClassUnknown_23_07d2a0();
     void ClassUnknown_23_07d330();
     void ClassUnknown_23_085c50();
 };

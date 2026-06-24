@@ -997,14 +997,10 @@ RVA(0x00085e60, 0x4a)
 void ClassUnknown_22::ClassUnknown_22_085e60() {}
 
 // ---- ClassUnknown_23 ----
-RVA(0x0006b640, 0x2f)
-void ClassUnknown_23::ClassUnknown_23_06b640() {}
 RVA(0x0006b680, 0x39)
 void ClassUnknown_23::ClassUnknown_23_06b680() {}
 RVA(0x0006b6d0, 0x3f4)
 void ClassUnknown_23::ClassUnknown_23_06b6d0() {}
-RVA(0x0006bcb0, 0x6a)
-void ClassUnknown_23::ClassUnknown_23_06bcb0() {}
 RVA(0x0006bd40, 0xb3)
 void ClassUnknown_23::ClassUnknown_23_06bd40() {}
 RVA(0x0006be30, 0x47)
@@ -1027,28 +1023,16 @@ RVA(0x00075af0, 0x111)
 void ClassUnknown_23::ClassUnknown_23_075af0() {}
 RVA(0x00078260, 0x165)
 void ClassUnknown_23::ClassUnknown_23_078260() {}
-RVA(0x00078430, 0x7f)
-void ClassUnknown_23::ClassUnknown_23_078430() {}
-RVA(0x000784d0, 0x3a)
-void ClassUnknown_23::ClassUnknown_23_0784d0() {}
 RVA(0x00078520, 0x106)
 void ClassUnknown_23::ClassUnknown_23_078520() {}
 RVA(0x00078680, 0x189)
 void ClassUnknown_23::ClassUnknown_23_078680() {}
-RVA(0x00078880, 0x3c)
-void ClassUnknown_23::ClassUnknown_23_078880() {}
-RVA(0x00078a30, 0x10)
-void ClassUnknown_23::ClassUnknown_23_078a30() {}
 RVA(0x00078a50, 0x845)
 void ClassUnknown_23::ClassUnknown_23_078a50() {}
 RVA(0x00079520, 0x2e3)
 void ClassUnknown_23::ClassUnknown_23_079520() {}
 RVA(0x000798d0, 0x1b6)
 void ClassUnknown_23::ClassUnknown_23_0798d0() {}
-RVA(0x00079b00, 0x15)
-void ClassUnknown_23::ClassUnknown_23_079b00() {}
-RVA(0x00079b30, 0x3e)
-void ClassUnknown_23::ClassUnknown_23_079b30() {}
 RVA(0x00079b80, 0x194)
 void ClassUnknown_23::ClassUnknown_23_079b80() {}
 RVA(0x00079fb0, 0x169)
@@ -1065,18 +1049,10 @@ RVA(0x0007a760, 0x373)
 void ClassUnknown_23::ClassUnknown_23_07a760() {}
 RVA(0x0007b1b0, 0x12b)
 void ClassUnknown_23::ClassUnknown_23_07b1b0() {}
-RVA(0x0007be10, 0x34)
-void ClassUnknown_23::ClassUnknown_23_07be10() {}
 RVA(0x0007c110, 0x166)
 void ClassUnknown_23::ClassUnknown_23_07c110() {}
-RVA(0x0007d0c0, 0x57)
-void ClassUnknown_23::ClassUnknown_23_07d0c0() {}
-RVA(0x0007d140, 0x61)
-void ClassUnknown_23::ClassUnknown_23_07d140() {}
 RVA(0x0007d1d0, 0x9d)
 void ClassUnknown_23::ClassUnknown_23_07d1d0() {}
-RVA(0x0007d2a0, 0x64)
-void ClassUnknown_23::ClassUnknown_23_07d2a0() {}
 RVA(0x0007d330, 0xd3)
 void ClassUnknown_23::ClassUnknown_23_07d330() {}
 RVA(0x00085c50, 0x83)
