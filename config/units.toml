@@ -224,6 +224,11 @@ source = "src/Gruntz/CInGameIcon.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "aniplayer"
+source = "src/Gruntz/CAniPlayer.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "warlord"
 source = "src/Gruntz/CWarlord.cpp"
 flags = "eh"

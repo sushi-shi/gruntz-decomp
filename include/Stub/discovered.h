@@ -401,9 +401,6 @@ public:
 };
 class ClassUnknown_116 {
 public:
-    void ClassUnknown_116_0e7980();
-    void ClassUnknown_116_0e7b00();
-    void ClassUnknown_116_0ea0f0();
     void ClassUnknown_116_1047f0();
     void ClassUnknown_116_1048f0();
 };

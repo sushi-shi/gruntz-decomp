@@ -82,7 +82,13 @@ public:
         i32 d,
         i32 e,
         i32 f
-    ); // +0x34
+    );                                                        // +0x34
+    virtual void v34_pad();                                   // +0x34 (filler)
+    virtual void v38(i32 p0, i32 p1, i32 p2, i32 p3, i32 p4); // +0x38
+
+    // SetDirection (0xea0f0): pick one of four direction tuples from the two
+    // boolean selectors and forward to the +0x38 virtual.
+    void SetDirection(i32 a, i32 b); // 0x0ea0f0
 
     i32 m_4; // +0x04
     i32 m_8; // +0x08 type tag (3/4/5/6/7/8/9/0xb)
@@ -117,7 +123,6 @@ public:
     void SetA(i32 v);        // thunk 0x11e5 -> FUN_004eb830
     void SetB(i32 a, i32 b); // thunk 0x23dd -> FUN_004eb740
     void AddRef(i32 v);      // thunk 0x3b98 -> FUN_004ea170
-    void AddRef0(i32 v);     // thunk 0x1573 -> FUN_004ea0f0
 };
 
 // The game registry: factory at +0x68/+0x74, a per-player icon table at +0x158
@@ -174,6 +179,28 @@ public:
     char m_padd4[0x10c - 0xd4];
     i32 m_10c; // +0x10c  current tab selector (1..5)
 };
+
+// ===========================================================================
+// CSbItem::SetDirection  (0x0ea0f0)
+// ===========================================================================
+// Two boolean selectors (a,b) pick one of four direction tuples, forwarded to
+// the +0x38 virtual. Reached via thunk 0x1573 from LoadTabSprites + FUN_00504f90.
+RVA(0x000ea0f0, 0x5c)
+void CSbItem::SetDirection(i32 a, i32 b) {
+    if (a == 0) {
+        if (b == 0) {
+            v38(4, -1, 0, 0, -1);
+        } else {
+            v38(-1, -1, 1, 0, -1);
+        }
+    } else {
+        if (b == 0) {
+            v38(1, -1, 0, 0, -1);
+        } else {
+            v38(-1, -1, -1, 0, -1);
+        }
+    }
+}
 
 // ===========================================================================
 // CStatusBarMgr::LoadTabSprites  @0x102250

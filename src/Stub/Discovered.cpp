@@ -564,13 +564,17 @@ void ClassUnknown_115::ClassUnknown_115_0e8dc0() {}
 RVA(0x00104ce0, 0x55)
 void ClassUnknown_115::ClassUnknown_115_104ce0() {}
 
-// ---- ClassUnknown_116 ----
-RVA(0x000e7980, 0x109)
-void ClassUnknown_116::ClassUnknown_116_0e7980() {}
-RVA(0x000e7b00, 0xe1)
-void ClassUnknown_116::ClassUnknown_116_0e7b00() {}
-RVA(0x000ea0f0, 0x5c)
-void ClassUnknown_116::ClassUnknown_116_0ea0f0() {}
+// ---- ClassUnknown_116 ---- (CONFLATED by the dynamic trace; SPLIT into two
+// real owners by caller/RTTI evidence)
+//   - 0xe7980/0xe7b00 = a timed cel-animation player (Init/Tick); both
+//     reconstructed into src/Gruntz/CAniPlayer.cpp.
+//   - 0xea0f0/0x1047f0/0x1048f0 = the CStatusBar item family. 0xea0f0 is the
+//     CSbItem directional `[vtbl+0x38]` dispatch (called by LoadTabSprites +
+//     FUN_00504f90); reconstructed into src/Gruntz/CStatusBarMgr.cpp. The two
+//     EH-frame chain destructors (0x1047f0/0x1048f0) stamp the CSBI t3/t4/t5/t8
+//     vtables and are reached from the `scalar_deleting_destructor`s at
+//     0x1047c0/0x1048c0 - left stubbed below (CSBI destructor-chain EH wall,
+//     deferred to the final sweep).
 RVA(0x001047f0, 0x94)
 void ClassUnknown_116::ClassUnknown_116_1047f0() {}
 RVA(0x001048f0, 0xa9)

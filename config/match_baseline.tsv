@@ -15,6 +15,7 @@
 actionoptionsmenubar	11	3
 adler32	1	1
 advancedoptions	5	5
+aniplayer	2	0
 appdialogs	1	1
 applyrange	1	1
 battlezdata	14	11
@@ -45,12 +46,12 @@ cmulti	11	7
 cplay	27	8
 crt_streambuf	7	5
 crt_strstreambuf	4	2
-cstatusbarmgr	1	0
+cstatusbarmgr	2	1
 deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	357	0
+engine_discovered	354	0
 engine_label_stubs	520	118
 filemem	8	7
 filestream	13	9
@@ -173,6 +174,8 @@ advancedoptions	?LoadOptions@@YAXPAUHWND__@@PAVRegistryHelper@Utils@@@Z	100.0000
 advancedoptions	?SaveOption@@YAXPAUHWND__@@PAVRegistryHelper@Utils@@PADK@Z	100.0000	100.0000	3	cc78dc6b6272	0xb110
 advancedoptions	?SaveOptions@@YAXPAUHWND__@@PAVRegistryHelper@Utils@@@Z	100.0000	100.0000	3	42bc821feac7	0xb270
 advancedoptions	?SetDefaults@@YAXPAUHWND__@@@Z	100.0000	100.0000	3	debb3761026d	0xb160
+aniplayer	?Init@CAniPlayer@@QAEHPAUAniSeq@@0HHHHHHHHHHHH@Z	64.5543	64.5543	1	af4e113bdde4	0xe7980
+aniplayer	?Tick@CAniPlayer@@QAEHXZ	91.3555	91.3555	1	a95461068729	0xe7b00
 appdialogs	?WarpDialogProc@@YGHPAXIIJ@Z	100.0000	100.0000	4	abc884dd8cb1	0x8e4e0
 applyrange	?ApplyToRange@@YGXPAVApplyElem@@HHP81@AEXXZ@Z	100.0000	100.0000	1	b977df9605c7	0x7c20
 battlezdata	?BumpWin@CBattlezData@@QAEXHH@Z	100.0000	100.0000	2	d6751b8a863d	0xfcc50
@@ -501,6 +504,7 @@ crt_strstreambuf	??1strstreambuf@@QAE@XZ	89.6970	89.6970	2	7c53a170b574	0x169220
 crt_strstreambuf	?str@strstreambuf@@QAEPADXZ	100.0000	100.0000	1	08404bbcac2f	0x1692b0
 crt_strstreambuf	?underflow@strstreambuf@@QAEHXZ	91.7353	91.7353	2	b71b810269ba	0x169490
 cstatusbarmgr	?LoadTabSprites@CStatusBarMgr@@QAEHXZ	16.7383	16.7383	4	045cfeaa498f	0x102250
+cstatusbarmgr	?SetDirection@CSbItem@@QAEXHH@Z	100.0000	100.0000	1	680f643f4a6b	0xea0f0
 deflate	_deflate_fast	100.0000	100.0000	1	3de2151b888f	0x186db0
 deflate	_deflate_slow	100.0000	100.0000	1	963869a51c2d	0x187170
 deflate	_deflate_stored	100.0000	100.0000	1	f3d8403d157d	0x186af0
@@ -712,9 +716,6 @@ engine_discovered	?ClassUnknown_115_0e8c70@ClassUnknown_115@@QAEXXZ	20.0000	20.0
 engine_discovered	?ClassUnknown_115_0e8cb0@ClassUnknown_115@@QAEXXZ	1.2821	1.2821	1	f52b098935e8	0xe8cb0
 engine_discovered	?ClassUnknown_115_0e8dc0@ClassUnknown_115@@QAEXXZ	4.0000	4.0000	1	c99b4672bdac	0xe8dc0
 engine_discovered	?ClassUnknown_115_104ce0@ClassUnknown_115@@QAEXXZ	4.7619	4.7619	1	367c61736429	0x104ce0
-engine_discovered	?ClassUnknown_116_0e7980@ClassUnknown_116@@QAEXXZ	0.4348	0.4348	1	7e54e6e03fee	0xe7980
-engine_discovered	?ClassUnknown_116_0e7b00@ClassUnknown_116@@QAEXXZ	1.1111	1.1111	1	4d83870a3b6a	0xe7b00
-engine_discovered	?ClassUnknown_116_0ea0f0@ClassUnknown_116@@QAEXXZ	1.0000	1.0000	1	dab0cc2faca3	0xea0f0
 engine_discovered	?ClassUnknown_116_1047f0@ClassUnknown_116@@QAEXXZ	3.0303	3.0303	1	7cd339e1a88c	0x1047f0
 engine_discovered	?ClassUnknown_116_1048f0@ClassUnknown_116@@QAEXXZ	2.7027	2.7027	1	01bdfccec81f	0x1048f0
 engine_discovered	?ClassUnknown_117_0ea470@ClassUnknown_117@@QAEXXZ	7.6923	7.6923	1	4eacb5969c18	0xea470
