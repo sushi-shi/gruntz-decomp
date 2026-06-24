@@ -78,15 +78,9 @@ public:
 };
 class CDDrawSubMgrLeaf {
 public:
-    void CDDrawSubMgrLeaf_05b7e0();
     void CDDrawSubMgrLeaf_114120();
-    void CDDrawSubMgrLeaf_157570();
-    void CDDrawSubMgrLeaf_157c70();
     void CDDrawSubMgrLeaf_157d70();
     void CDDrawSubMgrLeaf_157ee0();
-    void CDDrawSubMgrLeaf_1583c0();
-    void CDDrawSubMgrLeaf_1584f0();
-    void CDDrawSubMgrLeaf_158570();
 };
 class CDDrawSurfaceMgr {
 public:

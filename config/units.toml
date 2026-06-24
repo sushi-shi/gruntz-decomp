@@ -506,6 +506,11 @@ source = "src/Gruntz/CDDrawSubMgrLeaf.cpp"
 flags = "base"
 
 [[unit]]
+unit = "cddrawsubmgrleafscan"
+source = "src/Gruntz/CDDrawSubMgrLeafScan.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "cddrawworkercache"
 source = "src/Gruntz/CDDrawWorkerCache.cpp"
 flags = "base"
