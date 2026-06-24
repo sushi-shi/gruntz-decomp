@@ -20,16 +20,8 @@ public:
     void CBehindCandyAni_0100f0();
     void CBehindCandyAni_0adbb0();
 };
-// Trace-placeholder class for 5 CMapLogic grid/serializer methods (NOT the real
-// CBrickz, which lives in <Gruntz/Brickz.h>); deferred to the final sweep. These
-// stay named CBrickz_* so their stub RVAs keep their existing mangled symbols.
-class CBrickz {
-public:
-    void CBrickz_077790();
-    void CBrickz_081e10();
-    void CBrickz_082030();
-    void CBrickz_09356c();
-};
+// CBrickz's four terrain-grid methods (0x077790/0x081e10/0x082030/0x09356c) were
+// reconstructed into src/Gruntz/Brickz.cpp (the real CBrickz TU); no stubs remain.
 // CButeMgr lexer cluster migrated to src/Bute/ButeMgr.cpp (its real class TU);
 // only the EH-frame scalar destructor stays here, deferred to the final sweep.
 class CButeMgr {

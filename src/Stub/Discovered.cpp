@@ -20,38 +20,12 @@ void CBehindCandyAni::CBehindCandyAni_0100f0() {}
 RVA(0x000adbb0, 0x17)
 void CBehindCandyAni::CBehindCandyAni_0adbb0() {}
 
-// ---- CBrickz ---- MEMBERSHIP CORRECTED. The cluster is ONE class, the real
-// RTTI CBrickz (ctor 0x10e800 / LoadAttributes 0x810f0, vptr chain 0x5e70b4 ->
-// 0x5e705c -> 0x5e7c54 - same chain as the 0x113c0 dtor). The "CMapLogic" /
-// "different this-shape" claim was wrong: the object carries BOTH the BrickzCell
-// grid (+0x4 cell pool / +0x8 column table / +0xc height / +0x10 width / +0x4c
-// mask / +0x5c dirty flag) AND the +0x7c CObArray serializer (m_80/m_84/m_90).
-// (The placeholder names "CMapLogic"/"CBrickz container" stay in MapLogic.cpp /
-//  Brickz.h because their reconstructed RVAs already carry those mangled symbols;
-//  only offsets + code bytes are load-bearing, so the split is name-neutral.)
-//   - 0x82430 (node serializer) -> reconstructed as CMapLogic::SerializeNodes in
-//     src/Gruntz/MapLogic.cpp (~96%, tail-dispatches Visit 0x9f7f0).
-// The three terrain-grid walks below operate on the BrickzCell grid shape and are
-// large spill-heavy methods (the wall family per matcher doctrine) - deferred to
-// the final sweep for a leaf-first redo, NOT half-reconstructed:
-//   0x77790 (893 B) jump-table cell-flag compute (switchdataD_00477be0/b10 over a
-//     0x99-case bute-type -> flag-bitmask LUT, then the 8-neighbour 0x939 walk),
-//   0x81e10 (423 B) edge-flag grid op (calls CBrickz::Search 0x9eca0; +0x8 column
-//     table, +0x4c mask, the 0x20000000 bit),
-//   0x82030 (417 B) diagonal-passability flag walk (+0x4 cell pool, 0x1c stride,
-//     the 0x939 mask, sets the 0x1000 bit on a passable diagonal pair).
-// 0x9356c (56 B) is the thin __thiscall Serialize wrapper: MapSerializeCurve
-//   (0xec230) then, on success, the +0x7c sub-object serializer (0xfd3f0,
-//   ClassUnknown_7) - its garbage-register arg-forwarding prologue is an unusual
-//   codegen shape; deferred with the grid walks.
-RVA(0x00077790, 0x37d)
-void CBrickz::CBrickz_077790() {}
-RVA(0x00081e10, 0x1a7)
-void CBrickz::CBrickz_081e10() {}
-RVA(0x00082030, 0x1a1)
-void CBrickz::CBrickz_082030() {}
-RVA(0x0009356c, 0x38)
-void CBrickz::CBrickz_09356c() {}
+// ---- CBrickz ---- the four terrain-grid methods (ComputeCellFlags 0x077790,
+// SearchEdge 0x081e10, UpdateDiagonals 0x082030, Serialize 0x09356c) were
+// reconstructed into src/Gruntz/Brickz.cpp (the real CBrickz TU); the grid is the
+// BrickzCell pool (+0x4 cell pool / +0x8 column table / +0xc/+0x10 dims / +0x4c
+// mask / +0x5c dirty flag) and the +0x7c Serialize sub-object. (0x82430, the node
+// serializer, is in src/Gruntz/MapLogic.cpp as CMapLogic::SerializeNodes.)
 
 // ---- CButeMgr ---- lexer cluster migrated to src/Bute/ButeMgr.cpp; only the
 // EH-frame scalar destructor remains here (deferred to the final sweep).

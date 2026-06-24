@@ -31,6 +31,338 @@ struct BrickzResultList {
     void* AddHead(void* node); // 0x1b4967
 };
 
+// MapSerializeCurve (0x0ec230) - declared 4-arg __cdecl here: the Serialize
+// wrapper forwards all four of its args unchanged (the callee only reads the first
+// two). Modeled no-body so the call reloc-masks. Same symbol as the 2-arg form in
+// MapLogic.cpp; the extra params don't change the @0xec230 displacement.
+extern "C" i32 __cdecl MapSerializeCurve(i32 a0, i32 a1, i32 a2, i32 a3);
+
+// ---------------------------------------------------------------------------
+// CBrickz::ComputeCellFlags (0x077790) - terrain-grid cell-flag compute.
+// Look up the 1-based bute-type id for cell (x,y) through the m_78 attribute
+// manager (clamp x/y into the grid, index the flat id table; id 0xeeeeeeee /
+// 0xffffffff = empty), switch it to a packed flag value, OR in the preserved high
+// bits (0x1bf40000 / 0x20000000) of the old cell flags, stash id3 at +0xc and the
+// type id at +0x10, then run the 8-neighbour edge-update walk over the 3x3 block
+// around (x,y): for each in-bounds neighbour cell whose own flag bit 0x100 is set,
+// clear its 0x1000 bit and re-set it when one of the four opposite neighbour pairs
+// is both passable (no 0x939 bit).
+// @early-stop
+// dense-switch + 8-neighbour spill wall (objdiff 0% scoring artifact): the bute-id
+// lookup + the 0x99-case jump table (cases written in retail .text body order, so
+// the byte index LUT + jump table + the per-case `mov [cell],flagval` bodies all
+// align) are byte-correct, but the deep 8-neighbour walk's pointer/spill schedule
+// diverges from retail's stack-slot-heavy neighbour layout, and the big jump-table
+// data region (REL32 vs cl's $L self-relocs) drags the whole-symbol % to 0 (the
+// jumptable-data-overlap scoring artifact). Logic complete; parked for the sweep.
+RVA(0x00077790, 0x37d)
+void CBrickz::ComputeCellFlags(i32 x, i32 y, i32 id3) {
+    // The target cell pointer is computed first and held in a callee-saved register
+    // across the whole body (retail's esi).
+    BrickzCell* cell = &m_8[y][x];
+    BrickzAttrMgr* attr = m_78->m_24;
+    // Clamp the lookup coordinate into the grid descriptor's extent.
+    i32 cx = x;
+    if (x < 0) {
+        cx = 0;
+    } else if (x >= attr->m_5c->m_28) {
+        cx = attr->m_5c->m_28 - 1;
+    }
+    i32 cy = y;
+    if (y < 0) {
+        cy = 0;
+    } else if (y >= attr->m_5c->m_2c) {
+        cy = attr->m_5c->m_2c - 1;
+    }
+    i32 id = attr->m_5c->m_20[attr->m_5c->m_24[cy] + cx];
+    i32 typeCode;
+    if (id == (i32)0xeeeeeeee || id == -1) {
+        typeCode = 0;
+    } else {
+        typeCode = attr->m_4c[id & 0xffff]->GetTypeCode(0, 0);
+    }
+    i32 oldFlags = cell->m_0;
+    i32 keep = oldFlags & 0x1bf40000;
+    i32 edgeBit = oldFlags & 0x20000000;
+    // Each case writes the packed flag value straight into cell->m_0 (the retail
+    // `mov [esi],imm` per body). The case GROUPS are written in retail's .text
+    // body-layout order (so the jump table + byte index LUT match); the preserved
+    // high bits are merged after.
+    switch (typeCode - 1) {
+        case 0:
+            cell->m_0 = 0x1;
+            break;
+        case 9:
+            cell->m_0 = 0x100;
+            break;
+        case 113:
+            cell->m_0 = 0x300;
+            break;
+        case 35:
+            cell->m_0 = 0x800;
+            break;
+        case 92:
+        case 94:
+        case 96:
+        case 98:
+        case 100:
+        case 102:
+        case 104:
+            cell->m_0 = 0x4002008;
+            break;
+        case 29:
+        case 30:
+        case 32:
+            cell->m_0 = 0x2021;
+            break;
+        case 150:
+        case 151:
+        case 152:
+            cell->m_0 = 0x6021;
+            break;
+        case 149:
+            cell->m_0 = 0x8000;
+            break;
+        case 153:
+            cell->m_0 = 0x2001;
+            break;
+        case 107:
+            cell->m_0 = 0x108;
+            break;
+        case 109:
+            cell->m_0 = 0xa;
+            break;
+        case 3:
+            cell->m_0 = 0x2;
+            break;
+        case 34:
+            cell->m_0 = 0x42;
+            break;
+        case 33:
+            cell->m_0 = 0x10000;
+            break;
+        case 115:
+            cell->m_0 = 0x202;
+            break;
+        case 50:
+        case 51:
+        case 52:
+        case 53:
+        case 54:
+        case 55:
+        case 56:
+        case 57:
+        case 58:
+        case 59:
+        case 60:
+        case 61:
+        case 62:
+        case 63:
+        case 64:
+        case 65:
+            cell->m_0 = 0x4;
+            break;
+        case 10:
+        case 11:
+        case 12:
+        case 13:
+        case 14:
+        case 15:
+        case 16:
+        case 17:
+        case 18:
+            cell->m_0 = 0x80;
+            break;
+        case 31:
+            cell->m_0 = 0x400;
+            break;
+        default:
+            cell->m_0 = (id3 == -1) ? 2 : 0;
+            break;
+    }
+    if (edgeBit != 0) {
+        cell->m_0 |= 0x20000000;
+    }
+    cell->m_0 |= keep;
+    cell->m_c = id3;
+    cell->m_10 = typeCode;
+    // 8-neighbour edge-update walk over the 3x3 block around (x,y).
+    i32 colCount = (i32)m_c;
+    for (i32 r = y - 1; r <= y + 1; r++) {
+        if (r < 0 || (u32)r >= (u32)m_10) {
+            continue;
+        }
+        for (i32 c = x - 1; c <= x + 1; c++) {
+            if (c < 0 || (u32)c >= (u32)m_c) {
+                continue;
+            }
+            BrickzCell* nc = &m_8[r][c];
+            i32 nf = nc->m_0;
+            if ((nf & 0x100) == 0) {
+                continue;
+            }
+            BrickzCell* up = (r != 0) ? nc - colCount : 0;
+            BrickzCell* down = (r < (i32)m_10 - 1) ? nc + colCount : 0;
+            BrickzCell* right = (c < colCount - 1) ? nc + 1 : 0;
+            BrickzCell* left = (c != 0) ? nc - 1 : 0;
+            BrickzCell* ur = (up && right) ? up + 1 : 0;
+            BrickzCell* dl = (down && left) ? down - 1 : 0;
+            BrickzCell* ul = (up && left) ? up - 1 : 0;
+            BrickzCell* dr = (down && right) ? down + 1 : 0;
+            nf &= ~0x1000;
+            nc->m_0 = nf;
+            if (up && down && !(up->m_0 & 0x939) && !(down->m_0 & 0x939)) {
+                goto setbit;
+            }
+            if (right && left && !(right->m_0 & 0x939) && !(left->m_0 & 0x939)) {
+                goto setbit;
+            }
+            if (ur && dl && !(ur->m_0 & 0x939) && !(dl->m_0 & 0x939)) {
+                goto setbit;
+            }
+            if (ul && dr && !(ul->m_0 & 0x939) && !(dr->m_0 & 0x939)) {
+            setbit:
+                nc->m_0 = nf | 0x1000;
+            }
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// CBrickz::SearchEdge (0x081e10) - run a Search between two adjacent cells with
+// their edge state temporarily punched open, then restore. Bounds-check both
+// cells (cols < m_c, rows < m_10); save cellA.m_0/m_4 + cellB.m_0/m_4 + cellB's
+// 0x20000000 edge bit; clear that bit, set both cells' m_4 = -1 and (when
+// clearFlag) m_0 = 0; set m_4c = maskA & 0x20000000; run Search(...,0x2000,...);
+// then m_4c = 0 and restore every saved field. Returns Search's result.
+// @early-stop
+// regalloc wall (~82%): the body is byte-correct end to end - the combined bounds
+// gate shares one return-0 tail, the cell save/punch/restore re-indexes m_8[row][col]
+// per write (matching retail's factored col byte-offset), and the 8-arg Search call's
+// interleaved push/reload schedule is byte-identical. The residual is that retail pins
+// `this` in ebx (xA in edi) where MSVC5 here pins `this` in edi, plus a 1-slot frame
+// delta (0x1c vs 0x18); the zero-pin/this-reg choice is not source-steerable.
+RVA(0x00081e10, 0x1a7)
+i32 CBrickz::SearchEdge(
+    i32 xA,
+    i32 yA,
+    i32 xB,
+    i32 yB,
+    void* list,
+    i32 clearFlag,
+    i32 maskA,
+    i32 maskC
+) {
+    if ((u32)xA >= m_c || (u32)yA >= m_10 || (u32)xB >= m_c || (u32)yB >= m_10) {
+        return 0;
+    }
+    BrickzCell* cellB = &m_8[yB][xB];
+    BrickzCell* cellA = &m_8[yA][xA];
+    i32 savedB0 = cellB->m_0;
+    i32 savedA4 = cellA->m_4;
+    i32 savedA0 = cellA->m_0;
+    i32 bBit29 = ((u32)savedB0 >> 29) & 1;
+    i32 savedB4 = cellB->m_4;
+    if (bBit29 != 0) {
+        cellB->m_0 = savedB0 & 0xdfffffff;
+    }
+    // Punch the edge open: re-index m_8[row][col] for each write (retail keeps the
+    // col byte-offset factored and re-reads the row base rather than caching cell).
+    m_8[yA][xA].m_4 = -1;
+    m_8[yB][xB].m_4 = -1;
+    m_4c = maskA & 0x20000000;
+    if (clearFlag != 0) {
+        m_8[yA][xA].m_0 = 0;
+        m_8[yB][xB].m_0 = 0;
+    }
+    i32 ret = Search(xA, yA, xB, yB, list, maskA, 0x2000, maskC);
+    m_4c = 0;
+    m_8[yA][xA].m_4 = savedA4;
+    m_8[yB][xB].m_4 = savedB4;
+    if (clearFlag != 0) {
+        m_8[yA][xA].m_0 = savedA0;
+        m_8[yB][xB].m_0 = savedB0;
+    }
+    if (bBit29 != 0) {
+        m_8[yB][xB].m_0 |= 0x20000000;
+    }
+    return ret;
+}
+
+// ---------------------------------------------------------------------------
+// CBrickz::UpdateDiagonals (0x082030) - when m_5c (dirty) is set, walk the whole
+// flat cell pool and, for each cell with flag bit 0x100 set, clear its 0x1000 bit
+// and re-set it if any opposite neighbour pair (UP/DOWN, RIGHT/LEFT, UR/DL, UL/DR)
+// is both passable (no 0x939 bit). Clears m_5c and returns 1.
+// @early-stop
+// 8-neighbour spill-walk regalloc wall (~54%): logic byte-correct - the dirty gate,
+// the per-cell `test ah,1` / `and ah,0xef` / `or ah,0x10` byte-flag ops, and the
+// goto-cascade that sets the 0x1000 bit at one shared site all match retail. The
+// residual is the shrink-wrapped callee-save push order (retail pins the cell walker
+// in ebx by pushing ebx first; MSVC5 here picks ebp) and the 4 stack-slot diagonal
+// neighbour layout; neither is source-steerable. Parked for the final sweep.
+RVA(0x00082030, 0x1a1)
+i32 CBrickz::UpdateDiagonals(i32 unused) {
+    BrickzCell* cell = m_4;
+    if (m_5c == 0) {
+        return 1;
+    }
+    for (u32 r = 0; r < m_10; r++) {
+        for (u32 c = 0; c < m_c; c++) {
+            i32 nf = cell->m_0;
+            if ((nf & 0x100) != 0) {
+                BrickzCell* up = (r != 0) ? cell - m_c : 0;
+                BrickzCell* down = (r < m_10 - 1) ? cell + m_c : 0;
+                BrickzCell* right = (c < m_c - 1) ? cell + 1 : 0;
+                BrickzCell* left = (c != 0) ? cell - 1 : 0;
+                BrickzCell* ur = (up && right) ? up + 1 : 0;
+                BrickzCell* dl = (down && left) ? down - 1 : 0;
+                BrickzCell* ul = (up && left) ? up - 1 : 0;
+                BrickzCell* dr = (down && right) ? down + 1 : 0;
+                nf &= ~0x1000;
+                cell->m_0 = nf;
+                if (up && down && !(up->m_0 & 0x939) && !(down->m_0 & 0x939)) {
+                    goto setbit;
+                }
+                if (right && left && !(right->m_0 & 0x939) && !(left->m_0 & 0x939)) {
+                    goto setbit;
+                }
+                if (ur && dl && !(ur->m_0 & 0x939) && !(dl->m_0 & 0x939)) {
+                    goto setbit;
+                }
+                if (ul && dr && !(ul->m_0 & 0x939) && !(dr->m_0 & 0x939)) {
+                setbit:
+                    cell->m_0 = nf | 0x1000;
+                }
+            }
+            cell++;
+        }
+    }
+    m_5c = 0;
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CBrickz::Serialize (0x09356c) - thin wrapper: MapSerializeCurve(a0,a1,a2,a3) and,
+// on success, the +0x7c sub-object's Serialize(a0,a1,a2,a3); returns the latter as
+// a bool. The +0x7c object is reached through the LAST arg (a3), not `this`.
+// @early-stop
+// arg-forwarding-via-uninitialised-callee-saved-regs wall (~38%): logic correct
+// (MapSerializeCurve gate, then arg3->m_7c->Serialize forwarding the 4 args, neg/
+// sbb/neg bool). The wall: retail pushes ebx/ebp/esi/edi straight as the 4 call
+// args with NO loads (the forwarded values arrive in those callee-saved registers,
+// separate from the stack args - arg3 IS re-read from [esp+0x10] for ->m_7c), so a
+// normal __thiscall(i32,i32,i32,i32) reconstruction necessarily emits the 4
+// `mov reg,[esp+N]` loads retail omits. Not reproducible from a standard signature;
+// see docs/patterns/serialize-wrapper-reg-forward.md. Parked for the final sweep.
+RVA(0x0009356c, 0x38)
+i32 CBrickz::Serialize(i32 a0, i32 a1, i32 a2, i32 a3) {
+    if (MapSerializeCurve(a0, a1, a2, a3) == 0) {
+        return 0;
+    }
+    return ((BrickzSerObj*)a3)->Serialize(a0, a1, a2, a3) != 0;
+}
+
 // ---------------------------------------------------------------------------
 // CBrickz::Search (0x09eca0) - the A*-style grid search driver. Bounds-check the
 // start (x1,y1) and goal (x2,y2) against the grid origin (m_60,m_64) / size
