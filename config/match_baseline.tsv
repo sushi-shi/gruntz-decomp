@@ -39,7 +39,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	829	0
+engine_discovered	822	0
 engine_label_stubs	534	117
 filestream	13	9
 font	16	9
@@ -94,7 +94,7 @@ tiletriggercontainer	6	2
 tiletriggerlogic	2	1
 trees	17	17
 uncompr	1	1
-unknownclassarrays	12	2
+unknownclassarrays	19	7
 unknownsalazar	4	0
 userbaselink	7	0
 userlogic	48	17
@@ -1186,21 +1186,14 @@ engine_discovered	?StatusBarItem_0d1b30@StatusBarItem@@QAEXXZ	3.3333	3.3333	1	62
 engine_discovered	?StatusBarItem_0d6560@StatusBarItem@@QAEXXZ	2.5000	2.5000	1	8e4d7bfeafc3	0xd6560
 engine_discovered	?StatusBarItem_0d9290@StatusBarItem@@QAEXXZ	0.5076	0.5076	1	4a791d5da5e7	0xd9290
 engine_discovered	?StatusBarItem_0da030@StatusBarItem@@QAEXXZ	0.8333	0.8333	1	b0702d588fa0	0xda030
-engine_discovered	?UnknownClassArrays_025c20@UnknownClassArrays@@QAEXXZ	3.3333	3.3333	1	1685d09e02e7	0x25c20
 engine_discovered	?UnknownClassArrays_025d90@UnknownClassArrays@@QAEXXZ	0.2070	0.2070	1	371bab4558db	0x25d90
 engine_discovered	?UnknownClassArrays_026470@UnknownClassArrays@@QAEXXZ	0.1786	0.1786	1	41e6015d251f	0x26470
 engine_discovered	?UnknownClassArrays_029b40@UnknownClassArrays@@QAEXXZ	0.0602	0.0602	1	4279fdc2e119	0x29b40
-engine_discovered	?UnknownClassArrays_02ade0@UnknownClassArrays@@QAEXXZ	50.0000	50.0000	1	875c601acffb	0x2ade0
 engine_discovered	?UnknownClassArrays_02b420@UnknownClassArrays@@QAEXXZ	0.0939	0.0939	1	ccfb61932349	0x2b420
-engine_discovered	?UnknownClassArrays_02bfc0@UnknownClassArrays@@QAEXXZ	0.6250	0.6250	1	db7760d6df91	0x2bfc0
-engine_discovered	?UnknownClassArrays_02c0a0@UnknownClassArrays@@QAEXXZ	1.0526	1.0526	1	cd80f8ea9f9d	0x2c0a0
 engine_discovered	?UnknownClassArrays_02d800@UnknownClassArrays@@QAEXXZ	0.0881	0.0881	1	de36c79d720b	0x2d800
-engine_discovered	?UnknownClassArrays_02ed90@UnknownClassArrays@@QAEXXZ	20.0000	20.0000	1	176e7aabfc71	0x2ed90
 engine_discovered	?UnknownClassArrays_02edb0@UnknownClassArrays@@QAEXXZ	0.0723	0.0723	1	324f7c5e5641	0x2edb0
 engine_discovered	?UnknownClassArrays_02f620@UnknownClassArrays@@QAEXXZ	0.0532	0.0532	1	7052d5b43db5	0x2f620
 engine_discovered	?UnknownClassArrays_0300c0@UnknownClassArrays@@QAEXXZ	0.3279	0.3279	1	8f16c39d2048	0x300c0
-engine_discovered	?UnknownClassArrays_030530@UnknownClassArrays@@QAEXXZ	1.1429	1.1429	1	daaacaf5648c	0x30530
-engine_discovered	?UnknownClassArrays_0305b0@UnknownClassArrays@@QAEXXZ	0.4082	0.4082	1	a75d7e6c2025	0x305b0
 engine_discovered	?UnknownClassArrays_030730@UnknownClassArrays@@QAEXXZ	0.2564	0.2564	1	0be50ae26f79	0x30730
 engine_discovered	?UnknownClassArrays_030b20@UnknownClassArrays@@QAEXXZ	0.1533	0.1533	1	4c9ea4b2e44a	0x30b20
 engine_discovered	?UnknownClassArrays_030f20@UnknownClassArrays@@QAEXXZ	0.3175	0.3175	1	04ead51d6db0	0x30f20
@@ -2016,7 +2009,7 @@ image	?LoadPid@CFileImage@@QAEPAXPAD0PAX@Z	100.0000	100.0000	4	6552deed507c	0x14
 image	?LoadPid@CImage@@QAEHPADPAX1@Z	100.0000	100.0000	2	1f518c2ee972	0x1766a0
 image	?LoadRid@CImage@@QAEHPADPAX1@Z	100.0000	100.0000	2	d18ece419441	0x176310
 image	?Resolve@CFileImage@@QAEHPAX0HI0@Z	100.0000	100.0000	1	09075ca5168c	0x13e550
-image	?ResolveEx@CFileImage@@QAEHPAX0HIHH@Z	100.0000	100.0000	1	99dcb814a237	0x148890
+image	?ResolveEx@CFileImage@@QAEHPAX0HIHH@Z	100.0000	100.0000	2	9cf86feee8f5	0x148890
 infblock	_inflate_blocks	98.6518	98.6518	1	56f158ca58f1	0x1875a0
 infblock	_inflate_blocks_free	100.0000	100.0000	1	1618d6843d69	0x188250
 infblock	_inflate_blocks_new	100.0000	100.0000	1	fc0dd390fb8b	0x187530
@@ -2253,7 +2246,14 @@ trees	_set_data_type	100.0000	100.0000	1	167de8f88841	0x18a100
 uncompr	_uncompress	100.0000	100.0000	1	b40cccad8cc9	0x185320
 unknownclassarrays	??0UnknownClassArrays@@QAE@XZ	93.3108	93.3108	2	2de6dbacf6b9	0x24dc0
 unknownclassarrays	??1UnknownClassArrays@@QAE@XZ	100.0000	100.0000	2	c7546fcbd111	0x24f80
+unknownclassarrays	?Clear_02ade0@UnknownClassArrays@@QAEXXZ	100.0000	100.0000	1	e138105d4c30	0x2ade0
 unknownclassarrays	?FreeArrays@UnknownClassArrays@@QAEXXZ	100.0000	100.0000	2	3ae79d836b6f	0x25ca0
+unknownclassarrays	?Method_025c20@UnknownClassArrays@@QAEHXZ	100.0000	100.0000	1	046d00048cb6	0x25c20
+unknownclassarrays	?Method_02bfc0@UnknownClassArrays@@QAEHHPAXHH@Z	80.7188	80.7188	1	65a5d07ff9aa	0x2bfc0
+unknownclassarrays	?Method_02c0a0@UnknownClassArrays@@QAEHHH@Z	100.0000	100.0000	1	c5243b1309c5	0x2c0a0
+unknownclassarrays	?Method_02ed90@UnknownClassArrays@@QAEHH@Z	100.0000	100.0000	1	522edbf459be	0x2ed90
+unknownclassarrays	?Method_030530@UnknownClassArrays@@QAEHH@Z	100.0000	100.0000	1	67dfa68db679	0x30530
+unknownclassarrays	?Method_0305b0@UnknownClassArrays@@QAEHHHH@Z	46.6224	46.6224	1	aee1be583b2b	0x305b0
 unknownclassarrays	?winapi_0267c0_IntersectRect_PtInRect@UnknownClassArrays@@QAEHXZ	0.0596	0.0596	1	b0ca466ccc1d	0x267c0
 unknownclassarrays	?winapi_02a570_IntersectRect@UnknownClassArrays@@QAEHH@Z	0.5195	0.5195	1	9e88c9157200	0x2a570
 unknownclassarrays	?winapi_02ab80_PtInRect@UnknownClassArrays@@QAEHHHHH@Z	1.7411	1.7411	1	2a51d8f1ed48	0x2ab80

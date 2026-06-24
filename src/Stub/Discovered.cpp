@@ -2061,36 +2061,22 @@ void StatusBarItem::StatusBarItem_0da030() {}
 // ---- Timer_1380d0 ---- (reconstructed as StreamFeeder in src/Dsndmgr/StreamFeeder.cpp)
 
 // ---- UnknownClassArrays ----
-RVA(0x00025c20, 0x55)
-void UnknownClassArrays::UnknownClassArrays_025c20() {}
 RVA(0x00025d90, 0x580)
 void UnknownClassArrays::UnknownClassArrays_025d90() {}
 RVA(0x00026470, 0x29d)
 void UnknownClassArrays::UnknownClassArrays_026470() {}
 RVA(0x00029b40, 0x813)
 void UnknownClassArrays::UnknownClassArrays_029b40() {}
-RVA(0x0002ade0, 0x7)
-void UnknownClassArrays::UnknownClassArrays_02ade0() {}
 RVA(0x0002b420, 0x419)
 void UnknownClassArrays::UnknownClassArrays_02b420() {}
-RVA(0x0002bfc0, 0x8a)
-void UnknownClassArrays::UnknownClassArrays_02bfc0() {}
-RVA(0x0002c0a0, 0x78)
-void UnknownClassArrays::UnknownClassArrays_02c0a0() {}
 RVA(0x0002d800, 0x605)
 void UnknownClassArrays::UnknownClassArrays_02d800() {}
-RVA(0x0002ed90, 0x5)
-void UnknownClassArrays::UnknownClassArrays_02ed90() {}
 RVA(0x0002edb0, 0x6b4)
 void UnknownClassArrays::UnknownClassArrays_02edb0() {}
 RVA(0x0002f620, 0x871)
 void UnknownClassArrays::UnknownClassArrays_02f620() {}
 RVA(0x000300c0, 0x190)
 void UnknownClassArrays::UnknownClassArrays_0300c0() {}
-RVA(0x00030530, 0x56)
-void UnknownClassArrays::UnknownClassArrays_030530() {}
-RVA(0x000305b0, 0x121)
-void UnknownClassArrays::UnknownClassArrays_0305b0() {}
 RVA(0x00030730, 0x1da)
 void UnknownClassArrays::UnknownClassArrays_030730() {}
 RVA(0x00030b20, 0x328)

@@ -25,6 +25,13 @@ public:
     UnknownClassArrays();
     ~UnknownClassArrays();
     void FreeArrays();
+    int Method_025c20();
+    void Clear_02ade0();
+    int Method_02c0a0(int, int);
+    int Method_030530(int);
+    int Method_0305b0(int, int, int);
+    int Method_02bfc0(int, void*, int, int);
+    int Method_02ed90(int);
     int winapi_0267c0_IntersectRect_PtInRect();
     int winapi_02a570_IntersectRect(int);
     int winapi_02ab80_PtInRect(int, int, int, int);
@@ -35,8 +42,12 @@ public:
     int winapi_031ca0_IntersectRect(int);
     int winapi_032060_IntersectRect(int);
 
-    char m_pad000[0x18];          // +0x000  (untouched by ctor)
-    int m_018;                    // +0x018  = 0
+    int m_000;                    // +0x000  (vtbl-slot / first dword; some methods test/clear it)
+    void* m_004;                  // +0x004  level/board object pointer
+    char* m_008;                  // +0x008  grid base: a cell array, 0x3c-byte stride
+    void* m_00c;                  // +0x00c  board/tile-map object pointer
+    char m_pad010[0x18 - 0x10];   // +0x010  (untouched by ctor)
+    int m_018;                    // +0x018  = 0  (current cell index)
     int m_01c;                    // +0x01c  = 1
     int m_020;                    // +0x020  = 0x40
     int m_024;                    // +0x024  = 0x40
@@ -82,6 +93,9 @@ public:
     char m_pad12c[0x13c - 0x12c]; // +0x12c  (untouched)
     int m_13c;                    // +0x13c  = 0
     int m_140;                    // +0x140  = 0
+    int m_144;                    // +0x144
+    int m_148;                    // +0x148  (cleared by 02c0a0)
+    char m_pad14c[0x150 - 0x14c]; // +0x14c
 };
 
 #endif // SRC_GRUNTZ_UNKNOWNCLASSARRAYS_H
