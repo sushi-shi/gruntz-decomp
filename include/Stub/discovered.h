@@ -654,38 +654,29 @@ public:
     void ClassUnknown_22_022c80();
     void ClassUnknown_22_085e60();
 };
-class ClassUnknown_23 {
+class CTriggerMgr {
 public:
-    void ClassUnknown_23_06b680();
-    void ClassUnknown_23_06b6d0();
-    void ClassUnknown_23_06bd40();
-    void ClassUnknown_23_06be30();
-    void ClassUnknown_23_06bea0();
-    void ClassUnknown_23_06bfd0();
-    void ClassUnknown_23_06d300();
-    void ClassUnknown_23_06dae0();
-    void ClassUnknown_23_06e120();
-    void ClassUnknown_23_06e800();
-    void ClassUnknown_23_06ea00();
-    void ClassUnknown_23_075af0();
-    void ClassUnknown_23_078260();
-    void ClassUnknown_23_078520();
-    void ClassUnknown_23_078680();
-    void ClassUnknown_23_078a50();
-    void ClassUnknown_23_079520();
-    void ClassUnknown_23_0798d0();
-    void ClassUnknown_23_079b80();
-    void ClassUnknown_23_079fb0();
-    void ClassUnknown_23_07a180();
-    void ClassUnknown_23_07a240();
-    void ClassUnknown_23_07a510();
-    void ClassUnknown_23_07a5e0();
-    void ClassUnknown_23_07a760();
-    void ClassUnknown_23_07b1b0();
-    void ClassUnknown_23_07c110();
-    void ClassUnknown_23_07d1d0();
-    void ClassUnknown_23_07d330();
-    void ClassUnknown_23_085c50();
+    void CTriggerMgr_06b6d0();
+    void CTriggerMgr_06bfd0();
+    void CTriggerMgr_06d300();
+    void CTriggerMgr_06dae0();
+    void CTriggerMgr_06e120();
+    void CTriggerMgr_06e800();
+    void CTriggerMgr_06ea00();
+    void CTriggerMgr_075af0();
+    void CTriggerMgr_078520();
+    void CTriggerMgr_078680();
+    void CTriggerMgr_078a50();
+    void CTriggerMgr_079520();
+    void CTriggerMgr_0798d0();
+    void CTriggerMgr_079b80();
+    void CTriggerMgr_079fb0();
+    void CTriggerMgr_07a240();
+    void CTriggerMgr_07a5e0();
+    void CTriggerMgr_07a760();
+    void CTriggerMgr_07b1b0();
+    void CTriggerMgr_07c110();
+    void CTriggerMgr_085c50();
 };
 class ClassUnknown_24 {
 public:

@@ -40,7 +40,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	706	0
+engine_discovered	697	0
 engine_label_stubs	534	121
 filestream	13	9
 font	16	9
@@ -95,7 +95,7 @@ tileswitchlogic	13	7
 tiletriggercontainer	6	2
 tiletriggerlogic	2	1
 trees	17	17
-triggermgr	12	6
+triggermgr	21	7
 uncompr	1	1
 unknownclassarrays	31	8
 unknownsalazar	4	0
@@ -602,6 +602,27 @@ engine_discovered	?CTileTriggerTransition_0117f0@CTileTriggerTransition@@QAEXXZ	
 engine_discovered	?CTileTriggerTransition_110070@CTileTriggerTransition@@QAEXXZ	1.0526	1.0526	1	d352853f3fcf	0x110070
 engine_discovered	?CToobSpikez_012c60@CToobSpikez@@QAEXXZ	5.8824	5.8824	1	d16ff0f9da5d	0x12c60
 engine_discovered	?CToobSpikez_114860@CToobSpikez@@QAEXXZ	0.5333	0.5333	1	0b1c4042697d	0x114860
+engine_discovered	?CTriggerMgr_06b6d0@CTriggerMgr@@QAEXXZ	0.1365	0.1365	1	013778fe1c73	0x6b6d0
+engine_discovered	?CTriggerMgr_06bfd0@CTriggerMgr@@QAEXXZ	0.4598	0.4598	1	270f9d17c617	0x6bfd0
+engine_discovered	?CTriggerMgr_06d300@CTriggerMgr@@QAEXXZ	0.0955	0.0955	1	cc43a3bcac43	0x6d300
+engine_discovered	?CTriggerMgr_06dae0@CTriggerMgr@@QAEXXZ	0.0955	0.0955	1	de36de4b0f3a	0x6dae0
+engine_discovered	?CTriggerMgr_06e120@CTriggerMgr@@QAEXXZ	0.0864	0.0864	1	13911942d6af	0x6e120
+engine_discovered	?CTriggerMgr_06e800@CTriggerMgr@@QAEXXZ	0.3030	0.3030	1	fd1504c4d0f9	0x6e800
+engine_discovered	?CTriggerMgr_06ea00@CTriggerMgr@@QAEXXZ	0.3922	0.3922	1	79350e677a4d	0x6ea00
+engine_discovered	?CTriggerMgr_075af0@CTriggerMgr@@QAEXXZ	0.3960	0.3960	1	268d2303fc1a	0x75af0
+engine_discovered	?CTriggerMgr_078520@CTriggerMgr@@QAEXXZ	0.4706	0.4706	1	0789ca9dd768	0x78520
+engine_discovered	?CTriggerMgr_078680@CTriggerMgr@@QAEXXZ	0.3101	0.3101	1	9125bb8c8c39	0x78680
+engine_discovered	?CTriggerMgr_078a50@CTriggerMgr@@QAEXXZ	0.0600	0.0600	1	6905d5c69a19	0x78a50
+engine_discovered	?CTriggerMgr_079520@CTriggerMgr@@QAEXXZ	0.1581	0.1581	1	61b6b609841f	0x79520
+engine_discovered	?CTriggerMgr_0798d0@CTriggerMgr@@QAEXXZ	0.2985	0.2985	1	842c7bf9d8c3	0x798d0
+engine_discovered	?CTriggerMgr_079b80@CTriggerMgr@@QAEXXZ	0.3604	0.3604	1	d30e01069b1d	0x79b80
+engine_discovered	?CTriggerMgr_079fb0@CTriggerMgr@@QAEXXZ	0.3922	0.3922	1	adca05e7c861	0x79fb0
+engine_discovered	?CTriggerMgr_07a240@CTriggerMgr@@QAEXXZ	0.3419	0.3419	1	1ff68198e357	0x7a240
+engine_discovered	?CTriggerMgr_07a5e0@CTriggerMgr@@QAEXXZ	0.2985	0.2985	1	c4606a0d282e	0x7a5e0
+engine_discovered	?CTriggerMgr_07a760@CTriggerMgr@@QAEXXZ	0.1223	0.1223	1	cb1b774b4557	0x7a760
+engine_discovered	?CTriggerMgr_07b1b0@CTriggerMgr@@QAEXXZ	0.3922	0.3922	1	bf7ee7500add	0x7b1b0
+engine_discovered	?CTriggerMgr_07c110@CTriggerMgr@@QAEXXZ	0.3125	0.3125	1	0c24a3c16ef4	0x7c110
+engine_discovered	?CTriggerMgr_085c50@CTriggerMgr@@QAEXXZ	3.1250	3.1250	1	60408972e863	0x85c50
 engine_discovered	?CUserLogic_00f2f0@CUserLogic@@QAEXXZ	2.2727	2.2727	1	211acac7460b	0xf2f0
 engine_discovered	?CUserLogic_04ac10@CUserLogic@@QAEXXZ	0.1133	0.1133	1	8c41366a7e7a	0x4ac10
 engine_discovered	?CUserLogic_04b370@CUserLogic@@QAEXXZ	0.0477	0.0477	1	a72b0fb0015d	0x4b370
@@ -735,36 +756,6 @@ engine_discovered	?ClassUnknown_22_022b00@ClassUnknown_22@@QAEXXZ	1.8182	1.8182	
 engine_discovered	?ClassUnknown_22_022be0@ClassUnknown_22@@QAEXXZ	0.8163	0.8163	1	4aa269ac7749	0x22be0
 engine_discovered	?ClassUnknown_22_022c80@ClassUnknown_22@@QAEXXZ	1.0000	1.0000	1	d1303daba725	0x22c80
 engine_discovered	?ClassUnknown_22_085e60@ClassUnknown_22@@QAEXXZ	5.2632	5.2632	1	4d8e872f9178	0x85e60
-engine_discovered	?ClassUnknown_23_06b680@ClassUnknown_23@@QAEXXZ	5.2632	5.2632	1	a3aa95f7603e	0x6b680
-engine_discovered	?ClassUnknown_23_06b6d0@ClassUnknown_23@@QAEXXZ	0.1365	0.1365	1	9e85c195bde8	0x6b6d0
-engine_discovered	?ClassUnknown_23_06bd40@ClassUnknown_23@@QAEXXZ	0.6250	0.6250	1	086a472d8ca5	0x6bd40
-engine_discovered	?ClassUnknown_23_06be30@ClassUnknown_23@@QAEXXZ	1.4286	1.4286	1	86e3a18e098f	0x6be30
-engine_discovered	?ClassUnknown_23_06bea0@ClassUnknown_23@@QAEXXZ	0.4651	0.4651	1	7aee6f4d401d	0x6bea0
-engine_discovered	?ClassUnknown_23_06bfd0@ClassUnknown_23@@QAEXXZ	0.4598	0.4598	1	68fa170a0f3a	0x6bfd0
-engine_discovered	?ClassUnknown_23_06d300@ClassUnknown_23@@QAEXXZ	0.0955	0.0955	1	b6a7ec338187	0x6d300
-engine_discovered	?ClassUnknown_23_06dae0@ClassUnknown_23@@QAEXXZ	0.0955	0.0955	1	32a55facf183	0x6dae0
-engine_discovered	?ClassUnknown_23_06e120@ClassUnknown_23@@QAEXXZ	0.0864	0.0864	1	b7cbb7ee2580	0x6e120
-engine_discovered	?ClassUnknown_23_06e800@ClassUnknown_23@@QAEXXZ	0.3030	0.3030	1	69a038ec1092	0x6e800
-engine_discovered	?ClassUnknown_23_06ea00@ClassUnknown_23@@QAEXXZ	0.3922	0.3922	1	26458f897bdb	0x6ea00
-engine_discovered	?ClassUnknown_23_075af0@ClassUnknown_23@@QAEXXZ	0.3960	0.3960	1	9d0ee1cb9259	0x75af0
-engine_discovered	?ClassUnknown_23_078260@ClassUnknown_23@@QAEXXZ	0.3200	0.3200	1	d374534054b8	0x78260
-engine_discovered	?ClassUnknown_23_078520@ClassUnknown_23@@QAEXXZ	0.4706	0.4706	1	bfd8e4f03952	0x78520
-engine_discovered	?ClassUnknown_23_078680@ClassUnknown_23@@QAEXXZ	0.3101	0.3101	1	2471b005d344	0x78680
-engine_discovered	?ClassUnknown_23_078a50@ClassUnknown_23@@QAEXXZ	0.0600	0.0600	1	3f501e4d6c05	0x78a50
-engine_discovered	?ClassUnknown_23_079520@ClassUnknown_23@@QAEXXZ	0.1581	0.1581	1	fdb870809d46	0x79520
-engine_discovered	?ClassUnknown_23_0798d0@ClassUnknown_23@@QAEXXZ	0.2985	0.2985	1	d70ab3f1acba	0x798d0
-engine_discovered	?ClassUnknown_23_079b80@ClassUnknown_23@@QAEXXZ	0.3604	0.3604	1	5d9ad849afe7	0x79b80
-engine_discovered	?ClassUnknown_23_079fb0@ClassUnknown_23@@QAEXXZ	0.3922	0.3922	1	0a14112b0abc	0x79fb0
-engine_discovered	?ClassUnknown_23_07a180@ClassUnknown_23@@QAEXXZ	0.9302	0.9302	1	3b288b4cb06c	0x7a180
-engine_discovered	?ClassUnknown_23_07a240@ClassUnknown_23@@QAEXXZ	0.3419	0.3419	1	f2c410be6dea	0x7a240
-engine_discovered	?ClassUnknown_23_07a510@ClassUnknown_23@@QAEXXZ	0.7273	0.7273	1	0e4458da7fd6	0x7a510
-engine_discovered	?ClassUnknown_23_07a5e0@ClassUnknown_23@@QAEXXZ	0.2985	0.2985	1	88aa4ac1359e	0x7a5e0
-engine_discovered	?ClassUnknown_23_07a760@ClassUnknown_23@@QAEXXZ	0.1223	0.1223	1	360d288d3c04	0x7a760
-engine_discovered	?ClassUnknown_23_07b1b0@ClassUnknown_23@@QAEXXZ	0.3922	0.3922	1	166641cd21bb	0x7b1b0
-engine_discovered	?ClassUnknown_23_07c110@ClassUnknown_23@@QAEXXZ	0.3125	0.3125	1	87f993cdf0ff	0x7c110
-engine_discovered	?ClassUnknown_23_07d1d0@ClassUnknown_23@@QAEXXZ	0.6667	0.6667	1	6e2712527d74	0x7d1d0
-engine_discovered	?ClassUnknown_23_07d330@ClassUnknown_23@@QAEXXZ	1.4286	1.4286	1	44ac88ccbc6f	0x7d330
-engine_discovered	?ClassUnknown_23_085c50@ClassUnknown_23@@QAEXXZ	3.1250	3.1250	1	d806937b766c	0x85c50
 engine_discovered	?ClassUnknown_24_085df0@ClassUnknown_24@@QAEXXZ	5.2632	5.2632	1	66d64e59ae6a	0x85df0
 engine_discovered	?ClassUnknown_24_11adc0@ClassUnknown_24@@QAEXXZ	1.7391	1.7391	1	339b3d30fdf0	0x11adc0
 engine_discovered	?ClassUnknown_24_11ae30@ClassUnknown_24@@QAEXXZ	1.7241	1.7241	1	807677bea678	0x11ae30
@@ -2227,15 +2218,24 @@ trees	_send_tree	100.0000	100.0000	1	0a0643654ea9	0x189610
 trees	_set_data_type	100.0000	100.0000	1	167de8f88841	0x18a100
 triggermgr	?ByteTableHas@CTriggerMgr@@QAEHH@Z	62.0370	62.0370	3	df3f90ab5d78	0x79b30
 triggermgr	?CellDispatch@CTriggerMgr@@QAEHHHHH@Z	100.0000	100.0000	3	a1ad6c6f57fe	0x6bcb0
+triggermgr	?CellHitTest@CTriggerMgr@@QAEPAXHHPAH0H@Z	73.4419	73.4419	1	32cb03d0d199	0x6bea0
+triggermgr	?Cleanup@CTriggerMgr@@QAEXXZ	100.0000	100.0000	1	7423cc9ff1b0	0x6b680
+triggermgr	?ClearGridRange@CTriggerMgr@@QAEHH@Z	52.1094	52.1094	1	3dc60b0e14fd	0x6bd40
 triggermgr	?ClearRecords@CTriggerMgr@@QAEXXZ	89.2500	89.2500	2	ac4a8922ae83	0x78880
 triggermgr	?ClearRow@CTriggerMgr@@QAEHH@Z	100.0000	100.0000	3	eb16fe8ac3c9	0x7d140
+triggermgr	?ClearRowAndRefresh@CTriggerMgr@@QAEHH@Z	72.0727	72.0727	1	08116ddf5f53	0x7a510
 triggermgr	?ClearSelections@CTriggerMgr@@QAEXXZ	99.8387	99.8387	2	a0b3e8e75bb5	0x7d0c0
+triggermgr	?DestroyAllAnims@CTriggerMgr@@QAEXXZ	96.5000	96.5000	1	2ced2820e161	0x7d330
+triggermgr	?NearestCellDist@CTriggerMgr@@QAEHHHH@Z	77.1667	77.1667	1	c3b8b0e26e2d	0x7d1d0
 triggermgr	?OverlayRelease@CTriggerMgr@@QAEHXZ	100.0000	100.0000	3	814c6331e041	0x79b00
 triggermgr	?OverlayTick@CTriggerMgr@@QAEXXZ	100.0000	100.0000	2	6af15c29ef21	0x78a30
 triggermgr	?RecordListHas@CTriggerMgr@@QAEHHH@Z	90.4348	90.4348	3	bd724b88cab7	0x784d0
-triggermgr	?ResetAll@CTriggerMgr@@QAEXXZ	100.0000	100.0000	2	89c8046c20d8	0x78430
+triggermgr	?RemoveCellRecord@CTriggerMgr@@QAEHHHH@Z	75.1040	75.1040	1	15a4bb8c903e	0x78260
+triggermgr	?ResetAll@CTriggerMgr@@QAEXXZ	99.3902	99.3902	2	89c8046c20d8	0x78430
+triggermgr	?ScreenToCell@CTriggerMgr@@QAEPAXHHPAH0H@Z	95.8929	95.8929	1	0b9dff2ba9ef	0x6be30
 triggermgr	?SelectionListFind@CTriggerMgr@@QAEHHH@Z	84.5833	84.5833	3	5b0c7da2e453	0x7d2a0
 triggermgr	?SetLevel@CTriggerMgr@@QAEHPAX@Z	89.8333	89.8333	3	8b076d5434a0	0x6b640
+triggermgr	?SpawnPuddle@CTriggerMgr@@QAEHHHHHHH@Z	100.0000	100.0000	1	ea9e49bf16e2	0x7a180
 triggermgr	?StopPendingFx@CTriggerMgr@@QAEXXZ	100.0000	100.0000	3	1ccff5fe0d81	0x7be10
 uncompr	_uncompress	100.0000	100.0000	1	b40cccad8cc9	0x185320
 unknownclassarrays	??0UnknownClassArrays@@QAE@XZ	93.3108	93.3108	2	2de6dbacf6b9	0x24dc0
@@ -2243,8 +2243,8 @@ unknownclassarrays	??1UnknownClassArrays@@QAE@XZ	100.0000	100.0000	2	c7546fcbd11
 unknownclassarrays	?Clear_02ade0@UnknownClassArrays@@QAEXXZ	100.0000	100.0000	1	e138105d4c30	0x2ade0
 unknownclassarrays	?FreeArrays@UnknownClassArrays@@QAEXXZ	100.0000	100.0000	3	4ea2efcadae9	0x25ca0
 unknownclassarrays	?Method_025c20@UnknownClassArrays@@QAEHXZ	100.0000	100.0000	3	42e24aff548f	0x25c20
-unknownclassarrays	?Method_025d90@UnknownClassArrays@@QAEHXZ	75.6087	75.6087	1	9c5e734655b1	0x25d90
-unknownclassarrays	?Method_026470@UnknownClassArrays@@QAEHH@Z	83.1071	83.1071	1	5fde67dcb386	0x26470
+unknownclassarrays	?Method_025d90@UnknownClassArrays@@QAEHXZ	75.6087	75.6087	2	d8ff2c56564a	0x25d90
+unknownclassarrays	?Method_026470@UnknownClassArrays@@QAEHH@Z	83.1071	83.1071	2	c93b8db81e03	0x26470
 unknownclassarrays	?Method_029b40@UnknownClassArrays@@QAEHH@Z	0.3008	0.3008	1	a688e6a0df63	0x29b40
 unknownclassarrays	?Method_02bfc0@UnknownClassArrays@@QAEHHPAXHH@Z	80.7188	80.7188	3	1d37b002a3ec	0x2bfc0
 unknownclassarrays	?Method_02c0a0@UnknownClassArrays@@QAEHHH@Z	100.0000	100.0000	3	c59928dcae02	0x2c0a0
@@ -2258,7 +2258,7 @@ unknownclassarrays	?Method_0305b0@UnknownClassArrays@@QAEHHHH@Z	46.6224	46.6224	
 unknownclassarrays	?Method_030730@UnknownClassArrays@@QAEHHHHH@Z	88.4487	88.4487	2	48f0f2797bd5	0x30730
 unknownclassarrays	?Method_030b20@UnknownClassArrays@@QAEHHHH@Z	0.7471	0.7471	1	9fdd8ac60187	0x30b20
 unknownclassarrays	?Method_030f20@UnknownClassArrays@@QAEPAXPAXHH@Z	58.3333	58.3333	2	11302799f028	0x30f20
-unknownclassarrays	?Method_034460@UnknownClassArrays@@QAEHH@Z	80.2043	80.2043	1	dcc228b8dd6f	0x34460
+unknownclassarrays	?Method_034460@UnknownClassArrays@@QAEHH@Z	80.2043	80.2043	2	9fe11845bca1	0x34460
 unknownclassarrays	?Serialize_02b420@UnknownClassArrays@@QAEHPAX@Z	100.0000	100.0000	2	7b63ca13d3d0	0x2b420
 unknownclassarrays	?winapi_0267c0_IntersectRect_PtInRect@UnknownClassArrays@@QAEHXZ	0.0596	0.0596	2	380a71b8d73d	0x267c0
 unknownclassarrays	?winapi_02a570_IntersectRect@UnknownClassArrays@@QAEHH@Z	0.5195	0.5195	2	a9181a69c11a	0x2a570

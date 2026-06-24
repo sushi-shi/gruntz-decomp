@@ -940,67 +940,49 @@ void ClassUnknown_22::ClassUnknown_22_022c80() {}
 RVA(0x00085e60, 0x4a)
 void ClassUnknown_22::ClassUnknown_22_085e60() {}
 
-// ---- ClassUnknown_23 ----
-RVA(0x0006b680, 0x39)
-void ClassUnknown_23::ClassUnknown_23_06b680() {}
+// ---- CTriggerMgr ----
 RVA(0x0006b6d0, 0x3f4)
-void ClassUnknown_23::ClassUnknown_23_06b6d0() {}
-RVA(0x0006bd40, 0xb3)
-void ClassUnknown_23::ClassUnknown_23_06bd40() {}
-RVA(0x0006be30, 0x47)
-void ClassUnknown_23::ClassUnknown_23_06be30() {}
-RVA(0x0006bea0, 0xe2)
-void ClassUnknown_23::ClassUnknown_23_06bea0() {}
+void CTriggerMgr::CTriggerMgr_06b6d0() {}
 RVA(0x0006bfd0, 0x106)
-void ClassUnknown_23::ClassUnknown_23_06bfd0() {}
+void CTriggerMgr::CTriggerMgr_06bfd0() {}
 RVA(0x0006d300, 0x5b2)
-void ClassUnknown_23::ClassUnknown_23_06d300() {}
+void CTriggerMgr::CTriggerMgr_06d300() {}
 RVA(0x0006dae0, 0x4b7)
-void ClassUnknown_23::ClassUnknown_23_06dae0() {}
+void CTriggerMgr::CTriggerMgr_06dae0() {}
 RVA(0x0006e120, 0x552)
-void ClassUnknown_23::ClassUnknown_23_06e120() {}
+void CTriggerMgr::CTriggerMgr_06e120() {}
 RVA(0x0006e800, 0x189)
-void ClassUnknown_23::ClassUnknown_23_06e800() {}
+void CTriggerMgr::CTriggerMgr_06e800() {}
 RVA(0x0006ea00, 0x125)
-void ClassUnknown_23::ClassUnknown_23_06ea00() {}
+void CTriggerMgr::CTriggerMgr_06ea00() {}
 RVA(0x00075af0, 0x111)
-void ClassUnknown_23::ClassUnknown_23_075af0() {}
-RVA(0x00078260, 0x165)
-void ClassUnknown_23::ClassUnknown_23_078260() {}
+void CTriggerMgr::CTriggerMgr_075af0() {}
 RVA(0x00078520, 0x106)
-void ClassUnknown_23::ClassUnknown_23_078520() {}
+void CTriggerMgr::CTriggerMgr_078520() {}
 RVA(0x00078680, 0x189)
-void ClassUnknown_23::ClassUnknown_23_078680() {}
+void CTriggerMgr::CTriggerMgr_078680() {}
 RVA(0x00078a50, 0x845)
-void ClassUnknown_23::ClassUnknown_23_078a50() {}
+void CTriggerMgr::CTriggerMgr_078a50() {}
 RVA(0x00079520, 0x2e3)
-void ClassUnknown_23::ClassUnknown_23_079520() {}
+void CTriggerMgr::CTriggerMgr_079520() {}
 RVA(0x000798d0, 0x1b6)
-void ClassUnknown_23::ClassUnknown_23_0798d0() {}
+void CTriggerMgr::CTriggerMgr_0798d0() {}
 RVA(0x00079b80, 0x194)
-void ClassUnknown_23::ClassUnknown_23_079b80() {}
+void CTriggerMgr::CTriggerMgr_079b80() {}
 RVA(0x00079fb0, 0x169)
-void ClassUnknown_23::ClassUnknown_23_079fb0() {}
-RVA(0x0007a180, 0x86)
-void ClassUnknown_23::ClassUnknown_23_07a180() {}
+void CTriggerMgr::CTriggerMgr_079fb0() {}
 RVA(0x0007a240, 0x143)
-void ClassUnknown_23::ClassUnknown_23_07a240() {}
-RVA(0x0007a510, 0x9e)
-void ClassUnknown_23::ClassUnknown_23_07a510() {}
+void CTriggerMgr::CTriggerMgr_07a240() {}
 RVA(0x0007a5e0, 0x121)
-void ClassUnknown_23::ClassUnknown_23_07a5e0() {}
+void CTriggerMgr::CTriggerMgr_07a5e0() {}
 RVA(0x0007a760, 0x373)
-void ClassUnknown_23::ClassUnknown_23_07a760() {}
+void CTriggerMgr::CTriggerMgr_07a760() {}
 RVA(0x0007b1b0, 0x12b)
-void ClassUnknown_23::ClassUnknown_23_07b1b0() {}
+void CTriggerMgr::CTriggerMgr_07b1b0() {}
 RVA(0x0007c110, 0x166)
-void ClassUnknown_23::ClassUnknown_23_07c110() {}
-RVA(0x0007d1d0, 0x9d)
-void ClassUnknown_23::ClassUnknown_23_07d1d0() {}
-RVA(0x0007d330, 0xd3)
-void ClassUnknown_23::ClassUnknown_23_07d330() {}
+void CTriggerMgr::CTriggerMgr_07c110() {}
 RVA(0x00085c50, 0x83)
-void ClassUnknown_23::ClassUnknown_23_085c50() {}
+void CTriggerMgr::CTriggerMgr_085c50() {}
 
 // ---- ClassUnknown_24 ----
 RVA(0x00085df0, 0x4a)

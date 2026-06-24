@@ -85,10 +85,51 @@ public:
     // self-call mangles onto this class. No body in this TU.
     void NotifyCell(i32 row, i32 col, i32 z);
 
-    // 0x6bea0: scan the 15-row x N-col cell grid for the cell whose object bounds
-    // contain (px,py); writes the found (row,col) through the out-ptrs and returns
-    // the cell pointer (0 when none). (__stdcall: ret 0x14.)
-    void* CellHitTest(i32 row0, i32 px, i32 py, i32* outRow, i32* outCol);
+    // 0x6bea0: scan the cell grid (startRow, or rows 0..3 when startRow==5) for the
+    // cell whose 30x30 object bounds contain (px,py); writes the found (row,col)
+    // through the out-ptrs and returns the cell pointer (0 when none). (ret 0x14.)
+    void* CellHitTest(i32 px, i32 py, i32* outRow, i32* outCol, i32 startRow);
+
+    // 0x6be30: ScreenToCell - translate (sx,sy) by the level view's scroll origin and
+    // forward to CellHitTest(startRow). (__stdcall: ret 0x14.)
+    void* ScreenToCell(i32 sx, i32 sy, i32* outRow, i32* outCol, i32 startRow);
+
+    // 0x6b680: Cleanup - destruct+free the overlay sub-object (+0x25c) when present,
+    // then drain the record (+0x244) and selection (+0x2d0) lists.
+    void Cleanup();
+
+    // 0x7d1d0: NearestCellDist - the minimum squared (>>5) distance from (px,py) to any
+    // live, clickable grid cell, skipping grid row `skipRow`. (__stdcall: ret 0xc.)
+    i32 NearestCellDist(i32 skipRow, i32 px, i32 py);
+
+    // 0x7d330: DestroyAllAnims - DestroyAnims on every live grid cell (4x15), clear the
+    // +0x200 marker on every list object of the level's matching type, and stop the
+    // three sound channels (+0x3f0, +0x3f4, and the active grunt's +0x618).
+    void DestroyAllAnims();
+
+    // 0x6bd40: ClearGridRange(startRow) - ResetAll, then for rows startRow..3 flag each
+    // live cell's goal (+0x154) done, null the cell + its parallel grid slot (+0x11c)
+    // and per-row state (+0x10c/+0x20c/+0x21c); finally ClearSelections. ret 1.
+    i32 ClearGridRange(i32 startRow);
+
+    // 0x7a510: ClearRowAndRefresh(startRow) - Recall every live, hook-less cell of rows
+    // startRow..3; clear +0x400 when startRow is the magic group; refresh the world,
+    // bump a world stat, and re-arm the status item. ret 1.
+    i32 ClearRowAndRefresh(i32 startRow);
+
+    // 0x78260: RemoveCellRecord(x,y,fromSelection) - unlink the (x,y) node from the
+    // selection lists (when fromSelection) and from the record list, clearing the cell's
+    // sprites / goal / overlay along the way. ret 1 if a record was removed. (ret 0xc.)
+    i32 RemoveCellRecord(i32 x, i32 y, i32 fromSelection);
+
+    // 0x7a180: SpawnPuddle(x,y,...) - create+init a "GruntPuddle" sprite, stash its
+    // placement fields, then PlacePuddle it. ret 0 on factory failure. (ret 0x18.)
+    i32 SpawnPuddle(i32 x, i32 y, i32 f124, i32 f114, i32 color, i32 f118);
+
+    // 0x7a240: PlacePuddle(sprite, color) - place the puddle via its CUserLogic and, on
+    // success, flag/remove the matching record + selection nodes. ret 1 on success.
+    // UNRECONSTRUCTED (still a stub); declared so SpawnPuddle's call mangles here.
+    i32 PlacePuddle(void* sprite, i32 color);
 };
 
 #endif
