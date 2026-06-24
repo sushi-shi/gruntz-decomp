@@ -10,9 +10,12 @@
 //
 // BANKED (all byte-exact): ~CMapLogic (0x113c0), MapSerializeCurve (0xec230),
 //   CMapLogic::FreeNodes (0x85480), CMapVisitTarget::Visit (0x9f7f0).
-// The larger grid/serializer methods (0x77790/0x81e10/0x82030/0x82430/0x9356c) stay
-// in the src/Stub/ "CBrickz" block for the final sweep; 0x9eca0/0x9f010 are CBrickz
-// CONTAINER methods (they call CBrickz::Insert/Find/Unlink/CellPop) - see Brickz.cpp.
+//   SerializeNodes (0x82430) reconstructed here (~96%, stack-slot entropy tail).
+// The terrain-grid methods (0x77790/0x81e10/0x82030) operate on the CBrickz grid
+// shape (+0x4 cell pool / +0x8 column table / +0xc/+0x10 dims / +0x4c mask) and
+// were moved to Brickz.cpp; 0x9eca0/0x9f010 are CBrickz CONTAINER methods (they
+// call CBrickz::Insert/Find/Unlink/CellPop) - see Brickz.cpp. (0x9356c is a thin
+// Serialize wrapper over MapSerializeCurve + the +0x7c sub-object serializer.)
 #include <Mfc.h>
 
 #include <Gruntz/MapLogic.h>
@@ -92,6 +95,73 @@ void CMapLogic::FreeNodes() {
     }
     m_arr.SetSize(0, -1);
     Reset();
+}
+
+// ===========================================================================
+// CMapLogic::SerializeNodes  (0x082430) - __thiscall
+// ===========================================================================
+// Stream the +0x7c pointer-array (m_80 body, m_84 count) and the +0x90 scratch
+// dword through `ar` keyed by `mode`, then tail-dispatch the polymorphic Visit
+// probe (0x9f7f0) with the archive. mode 4 = write-out (slot +0x30): write m_90,
+// the count, then each non-null node body (size 8). mode 7 = read-in (slot +0x2c):
+// read m_90, the new count, push every existing node back onto g_freeList, resize
+// the array to empty then to count, and pull a fresh node off g_freeList per slot
+// (body = node+4), reading each (size 8). Returns the Visit probe's bool.
+// @early-stop
+// stack-slot coalescing entropy tail (~96%): instruction selection + block order
+// byte-match retail; residual is the write-count local landing at esp+0x14 where
+// retail spreads the read/write counts across esp+0x14 / esp+0x18 (frame-layout,
+// not steerable without guessing the local-allocation order).
+RVA(0x00082430, 0x161)
+i32 CMapLogic::SerializeNodes(CMapArchive* ar, i32 mode, i32 a2, i32 a3) {
+    if (ar == 0) {
+        return 0;
+    }
+    switch (mode) {
+        case 7: {
+            // read-in: m_90, the new count; recycle every existing node onto
+            // g_freeList; resize empty->count; pull a fresh node per slot.
+            ar->Read(&m_90, 4);
+            i32 count;
+            ar->Read(&count, 4);
+            for (i32 fi = 0; fi < m_arr.m_nSize; fi++) {
+                void* elem = m_arr.m_pData[fi];
+                if (elem != 0) {
+                    void** node = (void**)((char*)elem - g_freeListNodeBias);
+                    *node = g_freeList;
+                    g_freeList = node;
+                }
+            }
+            m_arr.SetSize(0, -1);
+            m_arr.SetSize(count, -1);
+            for (u32 ri = 0; ri < (u32)count; ri++) {
+                void** node = (void**)g_freeList;
+                void* elem = 0;
+                if (*node != 0) {
+                    elem = (char*)node + 4;
+                    g_freeList = *node;
+                }
+                ar->Read(elem, 8);
+                m_arr.m_pData[ri] = elem;
+            }
+            break;
+        }
+        case 4: {
+            // write-out: m_90, the count (a local copy of m_84), each node body.
+            ar->Write(&m_90, 4);
+            i32 wn = m_arr.m_nSize;
+            ar->Write(&wn, 4);
+            for (u32 wi = 0; wi < (u32)wn; wi++) {
+                void* elem = m_arr.m_pData[wi];
+                if (elem == 0) {
+                    return 0;
+                }
+                ar->Write(elem, 8);
+            }
+            break;
+        }
+    }
+    return ((CMapVisitTarget*)this)->Visit(ar, mode, a2, a3) != 0;
 }
 
 // ===========================================================================

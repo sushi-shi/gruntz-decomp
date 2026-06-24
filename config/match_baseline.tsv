@@ -45,7 +45,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	489	0
+engine_discovered	488	0
 engine_label_stubs	525	121
 filestream	13	9
 font	21	10
@@ -83,7 +83,7 @@ loadlevelbymode	1	0
 logicrecord	5	3
 logictypetable	1	0
 mainmenubuilder	1	0
-maplogic	4	4
+maplogic	5	4
 mapmgr	7	7
 menuitem	11	9
 menupage	22	13
@@ -519,7 +519,6 @@ engine_discovered	?CBehindCandy_00fc30@CBehindCandy@@QAEXXZ	5.8824	5.8824	1	2d04
 engine_discovered	?CBrickz_077790@CBrickz@@QAEXXZ	0.1413	0.1413	1	5c3a20fbb893	0x77790
 engine_discovered	?CBrickz_081e10@CBrickz@@QAEXXZ	0.2985	0.2985	1	28e25acbc807	0x81e10
 engine_discovered	?CBrickz_082030@CBrickz@@QAEXXZ	0.2878	0.2878	1	b992327ccdda	0x82030
-engine_discovered	?CBrickz_082430@CBrickz@@QAEXXZ	0.2941	0.2941	1	6018917acf67	0x82430
 engine_discovered	?CBrickz_09356c@CBrickz@@QAEXXZ	1.2903	1.2903	1	c40e7b288494	0x9356c
 engine_discovered	?CButeMgr_0213c0@CButeMgr@@QAEXXZ	1.1494	1.1494	1	27bb9064c61c	0x213c0
 engine_discovered	?CButeTree_16e070@CButeTree@@QAEXXZ	0.8000	0.8000	1	5f71bcbafe56	0x16e070
@@ -1726,10 +1725,10 @@ gruntspawnconfig	?BuildVoiceList@CGruntSpawnConfig@@QAEHXZ	100.0000	100.0000	1	0
 gruntspawnconfig	?Clear@CGruntSpawnConfig@@QAEXXZ	68.0517	68.0517	1	3ee95b4ae6d9	0x11ae30
 gruntspawnconfig	?ClearSprites@CGruntSpawnConfig@@QAEXXZ	67.8000	67.8000	1	c10e44170b11	0x11af90
 gruntspawnconfig	?DtorBody@CGruntSpawnConfig@@QAEXXZ	100.0000	100.0000	1	7edb01f0309c	0x11c7b0
-gruntspawnconfig	?GetButeSlot@CGruntSpawnConfig@@QAEPAXPAUCSpawnButeConfig@@PAUCSpawnButeTarget@@@Z	73.3468	73.3468	1	2ebfb2bfb4d5	0x11bba0
+gruntspawnconfig	?GetButeSlot@CGruntSpawnConfig@@QAEPAXPAUCSpawnButeConfig@@PAUCSpawnButeTarget@@@Z	73.3468	73.3468	2	190cfa3edafe	0x11bba0
 gruntspawnconfig	?Init@CGruntSpawnConfig@@QAEHPAUCSpawnOwner@@@Z	55.3478	55.3478	1	daee427fc5f3	0x11adc0
 gruntspawnconfig	?IsReady@CGruntSpawnConfig@@QAEHXZ	100.0000	100.0000	1	920e1a592c09	0x11c830
-gruntspawnconfig	?LoadGruntVoices@CGruntSpawnConfig@@QAEHXZ	95.3488	95.3488	1	fe042277a742	0x11af00
+gruntspawnconfig	?LoadGruntVoices@CGruntSpawnConfig@@QAEHXZ	95.3488	95.3488	2	788f9701ac23	0x11af00
 gruntspawnconfig	?PickWeighted@CGruntSpawnConfig@@QAEHHH@Z	1.0870	1.0870	1	b9cc209559f5	0x11bee0
 gruntvoice	??1CGruntVoice@@UAE@XZ	100.0000	100.0000	1	800298c90ba0	0x119ae0
 gruntvoice	?Dispatch@CGruntVoice@@QAEXH@Z	100.0000	100.0000	2	254b7ed0b958	0x119e40
@@ -1889,6 +1888,7 @@ mainmenubuilder	?BuildMainMenuTree@@YAXPAX@Z	77.6725	77.6725	2	77164b63ab1c	0xa1
 maplogic	??1CMapLogic@@UAE@XZ	100.0000	100.0000	1	baec3be51eff	0x113c0
 maplogic	?FreeNodes@CMapLogic@@QAEXXZ	100.0000	100.0000	2	8cb172a03e69	0x85480
 maplogic	?MapSerializeCurve@@YAHPAUCMapArchive@@H@Z	100.0000	100.0000	3	daaffc7e391f	0xec230
+maplogic	?SerializeNodes@CMapLogic@@QAEHPAUCMapArchive@@HHH@Z	96.2721	96.2721	1	1802b95e17ea	0x82430
 maplogic	?Visit@CMapVisitTarget@@QAEHPAXHHH@Z	100.0000	100.0000	3	418d99136883	0x9f7f0
 mapmgr	??0CMapArrayA@@QAE@XZ	100.0000	100.0000	4	24c52bc6b148	0x9e700
 mapmgr	??0CMapArrayB@@QAE@XZ	100.0000	100.0000	4	2cc7f69c0ba7	0x9e820

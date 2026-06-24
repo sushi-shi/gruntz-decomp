@@ -28,7 +28,6 @@ public:
     void CBrickz_077790();
     void CBrickz_081e10();
     void CBrickz_082030();
-    void CBrickz_082430();
     void CBrickz_09356c();
 };
 // CButeMgr lexer cluster migrated to src/Bute/ButeMgr.cpp (its real class TU);
