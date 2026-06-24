@@ -611,8 +611,6 @@ void CToobSpikez::CToobSpikez_114860() {}
 // ---- CGrunt (migration in progress; see src/Gruntz/Grunt.cpp) ----
 RVA(0x0000f2f0, 0xc8)
 void CUserLogic::CUserLogic_00f2f0() {}
-RVA(0x00049c60, 0x8d1)
-void CUserLogic::CUserLogic_049c60() {}
 RVA(0x0004ac10, 0x402)
 void CUserLogic::CUserLogic_04ac10() {}
 RVA(0x0004b370, 0xafd)
@@ -633,14 +631,10 @@ RVA(0x000588f0, 0x1ea)
 void CUserLogic::CUserLogic_0588f0() {}
 RVA(0x00059230, 0x40d)
 void CUserLogic::CUserLogic_059230() {}
-RVA(0x0005b6f0, 0xb5)
-void CUserLogic::CUserLogic_05b6f0() {}
 RVA(0x0005caa0, 0x5e4)
 void CUserLogic::CUserLogic_05caa0() {}
 RVA(0x0005f310, 0xb5e)
 void CUserLogic::CUserLogic_05f310() {}
-RVA(0x000617c0, 0x127)
-void CUserLogic::CUserLogic_0617c0() {}
 RVA(0x00062110, 0x5bc)
 void CUserLogic::CUserLogic_062110() {}
 RVA(0x000637a0, 0x2f8)

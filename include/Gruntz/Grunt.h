@@ -201,6 +201,7 @@ class CGruntCueSink {
 public:
     void Cue(int a, int b, int c, int d, int e);             // via thunk 0x33b4
     void CueA(CGrunt* g, int b, int c, int d, int e, int f); // 6-arg entrance cue (ret 0x18)
+    void CueSpawn(CGrunt* g, int b, int c, int d, int e);    // via thunk 0x27ac (ret 0x14)
 };
 
 // The entrance-reset (Stub_062e10) cue-gate visibility helper (thunk_FUN_0046b330,
@@ -455,6 +456,14 @@ public:
 
     void ReadConfigFromButeMgr();
     void LoadGruntMovingDeathConfig();
+    void LoadAnimNameTable(int a, int b); // @0x49c60 (ret 8)
+    // @0x51850 (ret 8) tile-rect predicate; reconstruction deferred to the final
+    // sweep (a register-relative rect-walk regalloc wall - cl folds this+const to
+    // absolute loads, overshooting 0x165 B). Called external/reloc-masked here.
+    int RectContains(int x, int y);
+    void CommitNeighbor(int a, int b, int c, int d); // @0x5b050 (ret 0x10)
+    CGrunt* FindGridNeighbor(int validate);          // @0x5b6f0 (ret 4)
+    int UpdateGruntStatus();                         // @0x617c0 (ret 0)
 
     // --- animation resolvers (this TU's targets) ---
     int ResolveMovingAnimation();
@@ -496,10 +505,12 @@ public:
     char m_pad174[0x17c - 0x174];
     int m_17c; // +0x17c (LoadEntranceConfig: last occupied tile X, pixel; -1 = none)
     int m_180; // +0x180 (LoadEntranceConfig: last occupied tile Y, pixel; -1 = none)
-    char m_pad184[0x1b8 - 0x184];
-    CHudSprite* m_selectedSprite; // +0x1b8
-    CHudSprite* m_toySprite;      // +0x1bc
-    char m_pad1c0[0x1c4 - 0x1c0];
+    char m_pad184[0x190 - 0x184];
+    int m_190; // +0x190 (anim-name loader: TOY1/TOY2 blend percent)
+    char m_pad194[0x1b8 - 0x194];
+    CHudSprite* m_selectedSprite;  // +0x1b8
+    CHudSprite* m_toySprite;       // +0x1bc
+    CString m_animSetName;         // +0x1c0  (anim-name loader: "GRUNTZ_"+m_1c0+...)
     CHudSprite* m_healthSprite;    // +0x1c4
     CHudSprite* m_staminaSprite;   // +0x1c8
     CHudSprite* m_toyTimeSprite;   // +0x1cc
@@ -513,7 +524,12 @@ public:
     int m_1f0; // +0x1f0
     char m_pad1f4[0x1fc - 0x1f4];
     int m_1fc; // +0x1fc (entrance: cleared)
-    char m_pad200[0x230 - 0x200];
+    int m_200; // +0x200 (grid-neighbor: column, -1 = none)
+    int m_204; // +0x204 (grid-neighbor: row, -1 = none)
+    char m_pad208[0x21c - 0x208];
+    int m_21c; // +0x21c (grid-neighbor: cleared on miss)
+    int m_220; // +0x220 (powered-up gate; 0 = run entrance reset)
+    char m_pad224[0x230 - 0x224];
     int m_230; // +0x230 (entrance-arrival: cleared)
     char m_pad234[0x238 - 0x234];
     int m_238; // +0x238
@@ -540,9 +556,26 @@ public:
     int m_314; // +0x314 (arrival: cleared)
     char m_pad318[0x364 - 0x318];
     int m_364; // +0x364 (entrance: set to 1)
-    char m_pad368[0x3ac - 0x368];
-    int m_3ac[3]; // +0x3ac (entrance geometry sources; [0]=default, [1]/[2] variants)
-    char m_pad3b8[0x3ec - 0x3b8];
+    char m_pad368[0x394 - 0x368];
+    // The per-pose animation-name index table (LoadAnimNameTable @0x49c60 fills
+    // it from "GRUNTZ_"+m_animSetName+"_<POSE>" lookups). The entrance code reads
+    // the IDLE1/2/3 slots (m_3ac/m_3b0/m_3b4) as its geometry-source triple.
+    int m_394;    // +0x394 (_WALK)
+    int m_398;    // +0x398 (_ATTACK1)
+    int m_39c;    // +0x39c (_ATTACK2)
+    int m_3a0;    // +0x3a0 (_ATTACK-IDLE)
+    int m_3a4;    // +0x3a4 (_STRUCK1)
+    int m_3a8;    // +0x3a8 (_STRUCK2)
+    int m_3ac[3]; // +0x3ac (_IDLE1/2/3) (entrance geometry-source triple [0..2])
+    int m_3b8;    // +0x3b8 (_IDLE4)
+    int m_3bc;    // +0x3bc (_IDLE5)
+    int m_3c0;    // +0x3c0 (_DEATH)
+    int m_3c4;    // +0x3c4 (_TOY1)
+    int m_3c8;    // +0x3c8 (_TOY2)
+    int m_3cc;    // +0x3cc (_TOY-BREAK)
+    int m_3d0;    // +0x3d0 (_ITEM)
+    int m_3d4;    // +0x3d4 (_ITEM2)
+    char m_pad3d8[0x3ec - 0x3d8];
     int m_3ec; // +0x3ec
     int m_3f0; // +0x3f0
     int m_3f4; // +0x3f4
@@ -551,7 +584,8 @@ public:
     int m_420; // +0x420 (arrival-claimed latch)
     char m_pad424[0x43c - 0x424];
     int m_43c[3]; // +0x43c (entrance-cell triple: [0]=col, [1]=row, [2]=m_444 reason)
-    char m_pad448[0x464 - 0x448];
+    char m_pad448[0x460 - 0x448];
+    int m_460; // +0x460 (low-stamina off-screen cue latch)
     int m_464; // +0x464 (entrance-reset latch flag)
     char m_pad468[0x474 - 0x468];
     char m_474[1]; // +0x474 (entrance-cell record table; 0x68-byte stride records)

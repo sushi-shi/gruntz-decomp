@@ -543,6 +543,102 @@ RVA(0x00048470, 0x131b)
 void CGrunt::Stub_048470(int, int) {}
 
 // ---------------------------------------------------------------------------
+// CGrunt::LoadAnimNameTable(int kind, int toyOnly)   @0x49c60
+// Fills the per-pose animation-name index table (m_394..m_3d4) by looking up
+// "GRUNTZ_" + this->m_animSetName + "_<POSE>" in the entrance player's
+// name->animset hash (m_154->m_c->m_2c->m_10map). __thiscall, ret 8 (/GX - the
+// two operator+ CString temporaries per block carry a C++ EH frame).
+//
+//   * kind==0  : load the full grunt pose set (WALK/ATTACK*/STRUCK*/IDLE1..5/
+//                ITEM*/DEATH; 14 poses).
+//   * kind!=0, toyOnly!=0 : reload only WALK + TOY-BREAK.
+//   * kind!=0, toyOnly==0 : reload the toy poses (TOY1, TOY2, TOY-BREAK) and
+//                derive the toy-swap blend percent m_190 from the relative
+//                animation lengths (node->m_10) of TOY1 vs TOY2.
+//
+// The pose-suffix strings + "GRUNTZ_" prefix are literal .rodata (reloc-masked
+// DIR32 operands). Each `LOAD_POSE` builds the key via the two AFXAPI (__stdcall)
+// operator+ overloads -> a pair of stack CString temps -> CEntranceHashTable::
+// Lookup(key, &out) (writes node->m_c on a hit; out defaults 0).
+static const char s_pose_WALK[] = "_WALK";
+static const char s_pose_ATTACK1[] = "_ATTACK1";
+static const char s_pose_ATTACK2[] = "_ATTACK2";
+static const char s_pose_ATTACKIDLE[] = "_ATTACK-IDLE";
+static const char s_pose_STRUCK1[] = "_STRUCK1";
+static const char s_pose_STRUCK2[] = "_STRUCK2";
+static const char s_pose_IDLE1[] = "_IDLE1";
+static const char s_pose_IDLE2[] = "_IDLE2";
+static const char s_pose_IDLE3[] = "_IDLE3";
+static const char s_pose_IDLE4[] = "_IDLE4";
+static const char s_pose_IDLE5[] = "_IDLE5";
+static const char s_pose_ITEM[] = "_ITEM";
+static const char s_pose_ITEM2[] = "_ITEM2";
+static const char s_pose_DEATH[] = "_DEATH";
+static const char s_pose_TOY1[] = "_TOY1";
+static const char s_pose_TOY2[] = "_TOY2";
+static const char s_pose_TOYBREAK[] = "_TOY-BREAK";
+
+// The looked-up animation-set node: Lookup stores node->m_c (an int) into the
+// out slot; the blend math reads node->m_10 (the animation length).
+struct CAnimSetNode {
+    char m_pad0[0xc];
+    int m_c;  // +0x0c  the value Lookup returns into the table
+    int m_10; // +0x10  animation length (toy-swap blend uses this)
+};
+
+#define LOAD_POSE(dst, sfx)                                                                        \
+    do {                                                                                           \
+        CSprite* _out = 0;                                                                         \
+        m_154->m_c->m_2c->m_10map.Lookup("GRUNTZ_" + m_animSetName + (sfx), &_out);                \
+        (dst) = (int)_out;                                                                         \
+    } while (0)
+
+// @early-stop
+// out-param zero-init scheduling wall (docs/patterns/outparam-zeroinit-scheduling.md):
+// instruction MULTISET byte-identical vs retail (verified), logic/CFG/offsets exact;
+// residue = retail SINKS the `out=0` store past the Lookup arg pushes + stores the
+// table member before the temp-dtors where cl hoists/reorders, permuted per block
+// across 22 near-identical Lookup blocks. Source-invariant. ~76%.
+RVA(0x00049c60, 0x8d1)
+void CGrunt::LoadAnimNameTable(int kind, int toyOnly) {
+    if (kind == 0) {
+        LOAD_POSE(m_394, s_pose_WALK);
+        LOAD_POSE(m_398, s_pose_ATTACK1);
+        LOAD_POSE(m_39c, s_pose_ATTACK2);
+        LOAD_POSE(m_3a0, s_pose_ATTACKIDLE);
+        LOAD_POSE(m_3a4, s_pose_STRUCK1);
+        LOAD_POSE(m_3a8, s_pose_STRUCK2);
+        LOAD_POSE(m_3ac[0], s_pose_IDLE1);
+        LOAD_POSE(m_3ac[1], s_pose_IDLE2);
+        LOAD_POSE(m_3ac[2], s_pose_IDLE3);
+        LOAD_POSE(m_3b8, s_pose_IDLE4);
+        LOAD_POSE(m_3bc, s_pose_IDLE5);
+        LOAD_POSE(m_3d0, s_pose_ITEM);
+        LOAD_POSE(m_3d4, s_pose_ITEM2);
+        LOAD_POSE(m_3c0, s_pose_DEATH);
+        return;
+    }
+
+    if (toyOnly != 0) {
+        LOAD_POSE(m_394, s_pose_WALK);
+    } else {
+        LOAD_POSE(m_3c4, s_pose_TOY1);
+        int x = ((CAnimSetNode*)m_3c4)->m_10;
+        LOAD_POSE(m_3c8, s_pose_TOY2);
+        int y = ((CAnimSetNode*)m_3c8)->m_10;
+        if (x >= y) {
+            m_190 = (int)(100.0 / ((double)x / y - -1.0) - -0.5);
+        } else {
+            m_190 = 100 - (int)(100.0 / ((double)y / x - -1.0) - -0.5);
+        }
+    }
+
+    LOAD_POSE(m_3cc, s_pose_TOYBREAK);
+}
+
+#undef LOAD_POSE
+
+// ---------------------------------------------------------------------------
 // CGrunt::ResetEntranceAnimation(int apply, int cycle, int cue)   @0x62e10
 // The shared entrance/idle-anim reset the entrance state machine (and its two
 // callers BuildEntranceAnimation + LoadEntranceConfig) run to (re)select and
@@ -1719,5 +1815,96 @@ int CGrunt::ResetGeometry() {
 
     m_30 = (int)m_14->m_1c;
     m_14->m_1c = (void*)EntranceLookupAnimSet(s_animKeyA);
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// CGrunt::FindGridNeighbor(int validate)   @0x5b6f0
+// Resolves the grunt's stored grid-cell neighbour (the CGrunt* at
+// m_260's 15-wide cell grid indexed by the latched coords m_200/m_204), validates
+// it occupies the expected tile, runs the tile-rect predicate + commit, and
+// returns it. __thiscall, ret 4. Frameless. On any miss it clears m_21c and
+// returns 0; a validate-mismatch returns 0 WITHOUT touching m_21c.
+RVA(0x0005b6f0, 0xb5)
+CGrunt* CGrunt::FindGridNeighbor(int validate) {
+    if (m_200 == -1) {
+        return 0;
+    }
+    if (m_204 == -1) {
+        return 0;
+    }
+
+    CGrunt* n = *(CGrunt**)((char*)m_260 + (m_204 + 15 * m_200) * 4 + 0x1c);
+    if (n != 0 && n->m_1fc != 0) {
+        if (validate != 0) {
+            if (n->m_10->m_5c != n->m_17c) {
+                return 0;
+            }
+            if (n->m_10->m_60 != n->m_180) {
+                return 0;
+            }
+        }
+        if (RectContains(n->m_10->m_5c, n->m_10->m_60)) {
+            CommitNeighbor(m_200, m_204, n->m_10->m_5c, n->m_10->m_60);
+            return n;
+        }
+    }
+
+    m_21c = 0;
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// CGrunt::UpdateGruntStatus()   @0x617c0
+// The per-frame grunt status step. If not powered-up (m_220==0) it just runs the
+// entrance reset and bails. Otherwise it re-arms the entrance geometry source and,
+// gated on the grunt's stamina (m_3f0): when full (>=100) it resolves + commits its
+// grid-cell neighbour (same 15-wide m_260 grid as FindGridNeighbor); when low
+// (0x33..0x63, latched once via m_460) and on-screen, it fires a spawn cue.
+// __thiscall, ret 0, frameless.
+// @early-stop
+// lazy callee-saved-reg save: instruction MULTISET byte-identical vs retail
+// (verified), logic/CFG/offsets exact; residue = retail defers `push edi` until
+// AFTER the m_220==0 early-bail (the cold path uses only esi) where cl saves edi
+// in the prolog. Pure regalloc placement, not steerable from source. ~94.5%.
+RVA(0x000617c0, 0x127)
+int CGrunt::UpdateGruntStatus() {
+    if (m_220 == 0) {
+        Stub_062e10(1, 0, 0);
+        return 0;
+    }
+
+    m_154->m_1a0.SetGeoSourceR(g_defaultGeo);
+
+    if (m_3f0 >= 0x64) {
+        if (m_21c == 0) {
+            return 0;
+        }
+        m_21c = 0;
+        CGrunt* n = *(CGrunt**)((char*)m_260 + (m_204 + 15 * m_200) * 4 + 0x1c);
+        if (n == 0 || n->m_1fc == 0) {
+            return 0;
+        }
+        if (RectContains(n->m_10->m_5c, n->m_10->m_60)) {
+            CommitNeighbor(m_200, m_204, n->m_10->m_5c, n->m_10->m_60);
+        }
+        return 0;
+    }
+
+    if (m_3f0 <= 0x32) {
+        return 0;
+    }
+    if (m_460 != 0) {
+        return 0;
+    }
+
+    CGameRegistry* g = g_pGameRegistry;
+    int x = m_10->m_5c;
+    int y = m_10->m_60;
+    int* vr = (int*)(g->m_30->m_24->m_5c + 0x40);
+    if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
+        g->m_60->CueSpawn(this, 2, -1, -1, -1);
+    }
+    m_460 = 1;
     return 0;
 }

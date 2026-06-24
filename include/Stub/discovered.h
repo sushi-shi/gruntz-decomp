@@ -407,7 +407,6 @@ public:
 class CUserLogic {
 public:
     void CUserLogic_00f2f0();
-    void CUserLogic_049c60();
     void CUserLogic_04ac10();
     void CUserLogic_04b370();
     void CUserLogic_04c170();
@@ -418,10 +417,8 @@ public:
     void CUserLogic_053b80();
     void CUserLogic_0588f0();
     void CUserLogic_059230();
-    void CUserLogic_05b6f0();
     void CUserLogic_05caa0();
     void CUserLogic_05f310();
-    void CUserLogic_0617c0();
     void CUserLogic_062110();
     void CUserLogic_0637a0();
     void CUserLogic_067850();
