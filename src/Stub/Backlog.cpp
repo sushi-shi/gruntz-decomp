@@ -803,11 +803,11 @@ void EngineLabelBacklog::BuildNamedGruntTable() {
     g_gruntNames[3] = "Jebediah";
 }
 
-// @confidence: med
-// @source: string-xref
-// @stub
-RVA(0x000ca200, 0xe34)
-void __stdcall EngineLabelBacklog::LoadLevelByMode(i32, i32) {}
+// LoadLevelByMode (0x000ca200, 3636 B) is the PLAY game-state per-mode level
+// loader (BATTLEZ/MULTI/CUSTOMLEVEL/TRAINING/Level%i); reconstructed (complete
+// body + the linear init chain, @early-stop on the /GX megafunction wall) as
+// CPlayLevelLoad::LoadByMode in src/Gruntz/LoadLevelByMode.cpp (eh unit). Its
+// area-name / WarpStone CString temps give it the exception frame.
 
 // @confidence: med
 // @source: decomp-xref
@@ -1022,11 +1022,13 @@ i32 EngineLabelBacklog::Stub_0f90f0(char* szPath) {
 RVA(0x00110860, 0x25f)
 void __stdcall EngineLabelBacklog::LoadBridgeMoveSprites(i32) {}
 
-// @confidence: med
-// @source: string-xref
-// @stub
-RVA(0x00110c10, 0xe3f)
-void EngineLabelBacklog::LoadPyramidBridgeSprites() {}
+// LoadPyramidBridgeSprites (0x00110c10, 3647 B) is the pyramid/bridge tile-
+// transition dispatcher (a 0x66-case jump table over the sprite-type id);
+// reconstructed (complete top structure + the pyramid jump arms, @early-stop on
+// the /GX nested-jump-table megafunction wall) as
+// CPlayLevelLoad::LoadPyramidBridge in src/Gruntz/PyramidBridgeSprites.cpp (eh
+// unit). Its GAME_<COLOR>PYRAMIDZ / GAME_PYRAMIDUP CString temps give it the
+// exception frame.
 
 // @confidence: med
 // @source: decomp-xref

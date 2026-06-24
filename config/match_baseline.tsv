@@ -43,7 +43,7 @@ dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
 engine_discovered	644	0
-engine_label_stubs	530	121
+engine_label_stubs	528	121
 filestream	13	9
 font	16	9
 fontconfig	7	4
@@ -75,6 +75,7 @@ ingameicon	5	2
 inputdeviceconfig	1	0
 kitchenslime	2	0
 leveltilevalidation	1	0
+loadlevelbymode	1	0
 logictypetable	1	0
 mainmenubuilder	1	0
 maplogic	4	4
@@ -82,6 +83,7 @@ mapmgr	7	7
 netmgr	40	20
 netmgrerror	1	1
 projectile	7	2
+pyramidbridgesprites	1	0
 randomambientsound	7	5
 registryhelper	8	8
 rezmgr	10	6
@@ -145,7 +147,7 @@ brickz	?Find@CBrickz@@QAEPAUBrickzNode@@HH@Z	100.0000	100.0000	3	f5b3beabacfa	0x
 brickz	?Insert@CBrickz@@QAEHPAUBrickzNode@@@Z	100.0000	100.0000	2	56f2e32884a9	0x9f370
 brickz	?PopFront@CBrickz@@QAEPAUBrickzNode@@XZ	100.0000	100.0000	1	c73fe77132a8	0x9f430
 brickz	?Reset@CBrickz@@QAEXXZ	64.7115	64.7115	2	2061d42178be	0x9f5d0
-brickz	?Search@CBrickz@@QAEHHHHHPAXHHH@Z	91.3409	91.3409	1	74f12e2a1b8d	0x9eca0
+brickz	?Search@CBrickz@@QAEHHHHHPAXHHH@Z	91.3409	91.3409	2	1cedc5f1f659	0x9eca0
 brickz	?Unlink@CBrickz@@QAEXPAUBrickzNode@@@Z	74.9487	74.9487	2	ead4b3e1d312	0x9f690
 butemgr	?CharClass@CButeMgr@@QAEFD@Z	100.0000	100.0000	2	6b8d1de98cce	0x1703e0
 butemgr	?ClearHelper@CButeMgr@@QAEXXZ	100.0000	100.0000	3	78033bc3e61d	0x171a40
@@ -1311,7 +1313,6 @@ engine_label_stubs	?LoadGruntSpawnConfig@ThisStubOwnerUnknown@ApiCallerStubs@@QA
 engine_label_stubs	?LoadGruntzPalette@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHH@Z	96.9231	96.9231	1	cpp:e8a4cb0d5b2a	0xe2d10
 engine_label_stubs	?LoadHelpBookSprite@EngineLabelBacklog@@YAXXZ	0.5988	0.5988	1	cpp:45e65336d4b5	0x997c0
 engine_label_stubs	?LoadImageBanks_vfunc29@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXXZ	4.0000	4.0000	1	cpp:e8a4cb0d5b2a	0xcffe0
-engine_label_stubs	?LoadLevelByMode@EngineLabelBacklog@@YGXHH@Z	0.0972	0.0972	1	cpp:6bf52155264d	0xca200
 engine_label_stubs	?LoadLevelEffectSprites@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXXZ	0.2494	0.2494	1	cpp:e8a4cb0d5b2a	0xdc060
 engine_label_stubs	?LoadLevelImages@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHH@Z	100.0000	100.0000	1	cpp:e8a4cb0d5b2a	0xdb7e0
 engine_label_stubs	?LoadLevelPreviewScreen@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXXZ	1.0526	1.0526	1	cpp:e8a4cb0d5b2a	0xde420
@@ -1325,7 +1326,6 @@ engine_label_stubs	?LoadObjectSoundResources@EngineLabelBacklog@@YGXHH@Z	0.5747	
 engine_label_stubs	?LoadPickupSprites@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXHHHHH@Z	0.0833	0.0833	1	cpp:e8a4cb0d5b2a	0x65e80
 engine_label_stubs	?LoadProjectileEffects@CProjectile@@QAEXXZ	0.2165	0.2165	1	cpp:e8a4cb0d5b2a	0xdfd00
 engine_label_stubs	?LoadProjectileSprites@CProjectile@@QAEXHHHHHHH@Z	0.2183	0.2183	1	cpp:6bf52155264d	0xdf050
-engine_label_stubs	?LoadPyramidBridgeSprites@EngineLabelBacklog@@YAXXZ	0.0858	0.0858	1	cpp:45e65336d4b5	0x110c10
 engine_label_stubs	?LoadRollingBallHazardSprites@EngineLabelBacklog@@YAXXZ	0.1287	0.1287	1	cpp:45e65336d4b5	0xb0140
 engine_label_stubs	?LoadSBITextEdges@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXH@Z	1.2048	1.2048	1	cpp:e8a4cb0d5b2a	0xd1710
 engine_label_stubs	?LoadSaveMessageSprite@CGruntzMgr@@QAEXXZ	2.2727	2.2727	1	cpp:e8a4cb0d5b2a	0x92420
@@ -1954,6 +1954,7 @@ inputdeviceconfig	?LoadInputDeviceConfig@CInputConfig@@QAE?AVCString@@H@Z	77.326
 kitchenslime	?LoadSprites@CKitchenSlime@@QAEHXZ	69.1992	69.1992	2	2c07cc5dc21b	0xb3160
 kitchenslime	?Tick@CKitchenSlime@@QAEHXZ	94.8551	94.8551	3	c7b9e1dd58eb	0xb2ca0
 leveltilevalidation	?ValidateLevelTiles@CLevelValidator@@QAEHXZ	17.0098	17.0098	2	791c1428e1a4	0xd2dd0
+loadlevelbymode	?LoadByMode@CPlayLevelLoad@@QAEHH@Z	34.8503	34.8503	1	8269a375cf3f	0xca200
 logictypetable	?BuildLogicTypeTable@@YGXPAUCLogicTypeBuilder@@@Z	87.9167	87.9167	6	313ac91839f7	0x8a40
 mainmenubuilder	?BuildMainMenuTree@@YAXPAX@Z	77.6725	77.6725	2	77164b63ab1c	0xa11d0
 maplogic	??1CMapLogic@@UAE@XZ	100.0000	100.0000	1	baec3be51eff	0x113c0
@@ -2015,6 +2016,7 @@ projectile	?LaunchSound@CProjectile@@QAEHPBD@Z	44.4444	44.4444	2	af629d1a9d6a	0x
 projectile	?ReleaseDeferred@CProjectile@@QAEXH@Z	100.0000	100.0000	2	ac50b8317e25	0x13c70
 projectile	?ScanTargets@CProjectile@@QAEXH@Z	93.9254	93.9254	3	beefe98399cb	0xe0b10
 projectile	?StepMotion@CProjectile@@QAEXXZ	70.6977	70.6977	2	be95913fb568	0xe08b0
+pyramidbridgesprites	?LoadPyramidBridge@CPlayLevelLoad@@QAEXH@Z	7.3030	7.3030	1	2be0fcbac087	0x110c10
 randomambientsound	??1CRandomAmbientSound@@QAE@XZ	100.0000	100.0000	1	745bfd96f836	0x85ed0
 randomambientsound	?Init@CRandomAmbientSound@@QAEHPAX0@Z	100.0000	100.0000	2	57bae3ec57a0	0xb5e0
 randomambientsound	?Restart@CRandomAmbientSound@@QAEXPAX@Z	100.0000	100.0000	2	8dfe49530132	0xbc30

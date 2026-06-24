@@ -554,3 +554,13 @@ flags = "eh"
 unit = "clightfxrender"
 source = "src/Gruntz/CLightFxRender.cpp"
 flags = "base"
+
+[[unit]]
+unit = "loadlevelbymode"
+source = "src/Gruntz/LoadLevelByMode.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "pyramidbridgesprites"
+source = "src/Gruntz/PyramidBridgeSprites.cpp"
+flags = "eh"
