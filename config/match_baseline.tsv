@@ -17,7 +17,7 @@ adler32	1	1
 advancedoptions	5	5
 appdialogs	1	1
 battlezmapconfig	1	0
-butemgr	32	21
+butemgr	38	27
 cddrawchildgroup	9	5
 cddrawptrcollections	1	0
 cddrawsubmgr	7	2
@@ -36,7 +36,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	18	17
 directsoundmgr	26	19
-engine_discovered	1072	0
+engine_discovered	1066	0
 engine_label_stubs	537	120
 filestream	13	9
 font	16	9
@@ -103,6 +103,7 @@ appdialogs	?WarpDialogProc@@YGHPAXIIJ@Z	100.0000	100.0000	3	63bd2df7ad1b	0x8e4e0
 battlezmapconfig	?LoadConfig@CBattlezMapConfig@@QAEHPAUCLevelInfo@@HH@Z	85.9933	85.9933	3	9cbb0bf9dee6	0x25020
 butemgr	?CharClass@CButeMgr@@QAEFD@Z	100.0000	100.0000	1	e6c560ff46b3	0x1703e0
 butemgr	?ClearHelper@CButeMgr@@QAEXXZ	100.0000	100.0000	3	78033bc3e61d	0x171a40
+butemgr	?Construct@CButeMgrHelper@@QAEPAV1@XZ	100.0000	100.0000	1	e1b849446087	0x169c00
 butemgr	?Exists@CButeMgr@@QAE_NPAD0@Z	100.0000	100.0000	1	7e7b4a41611f	0x171a60
 butemgr	?GetDouble@CButeMgr@@QAENPAD0@Z	100.0000	100.0000	5	8fcffd7d5fc7	0x172c40
 butemgr	?GetDword@CButeMgr@@QAEKPAD0@Z	100.0000	100.0000	5	8f3542d05e2b	0x172240
@@ -117,6 +118,10 @@ butemgr	?GetRef8@CButeMgr@@QAEPAUCButeRef8@@PAD0@Z	85.4783	85.4783	4	69f1eb09c8f
 butemgr	?GetString@CButeMgr@@QAEPADPAD0@Z	99.6324	99.6324	6	da4d01777f8e	0x1731d0
 butemgr	?GetStringDef@CButeMgr@@QAEPAVCString@@PAD0PAV2@@Z	100.0000	100.0000	4	a5f1d62ef35b	0x173180
 butemgr	?Init@CButeMgr@@QAEXXZ	100.0000	100.0000	1	058757d89c29	0x170330
+butemgr	?InitVbaseA@CButeMgrHelper@@QAEXXZ	100.0000	100.0000	1	15e8463a3cde	0x1697c0
+butemgr	?InitVbaseB@CButeMgrHelper@@QAEXXZ	100.0000	100.0000	1	ae7ebf7b8102	0x1699c0
+butemgr	?InitVbaseC@CButeMgrHelper@@QAEXXZ	100.0000	100.0000	1	cee9960213a4	0x16b650
+butemgr	?InitVbaseD@CButeMgrHelper@@QAEXXZ	100.0000	100.0000	1	6c1020f7d056	0x16c0c0
 butemgr	?InvokeCallback@CButeMgr@@QAEPAXP6APAXPAV1@@Z@Z	100.0000	100.0000	3	b8aec83ccb1a	0x171550
 butemgr	?NextChar@CButeMgr@@QAEXXZ	88.6667	88.6667	1	6daeb15616b3	0x170390
 butemgr	?Parse@CButeMgr@@QAE_NXZ	94.6831	94.6831	5	3ea26ec71bca	0x1704c0
@@ -132,6 +137,7 @@ butemgr	?SetDword@CButeValue@@QAEPAU1@HK@Z	92.0000	92.0000	3	ff65ed55f52a	0x1720
 butemgr	?SetErrCallback@CButeMgr@@QAEXP6AXPBD@Z@Z	100.0000	100.0000	1	63093c625ca0	0x170380
 butemgr	?SetFloat@CButeValue@@QAEPAU1@HM@Z	92.0000	92.0000	3	e99c28f3ad9d	0x172680
 butemgr	?SetInt@CButeValue@@QAEPAU1@HH@Z	92.0000	92.0000	3	96860d716f56	0x172b90
+butemgr	?SetSub@CButeMgrHelper@@QAEXPAX@Z	100.0000	100.0000	1	2aede66f10cc	0x169dd0
 butemgr	?SkipToTag@CButeMgr@@QAE_NXZ	78.1429	78.1429	1	246eb21f3a3f	0x171160
 cddrawchildgroup	?Stub_1591f0@CDDrawChildGroup@@QAEXXZ	2.9412	2.9412	4	c142c66f7447	0x1591f0
 cddrawchildgroup	?Stub_159a70@CDDrawChildGroup@@QAEXXZ	0.2367	0.2367	4	6bb06c5c8409	0x159a70
@@ -357,12 +363,6 @@ engine_discovered	?CBrickz_09f690@CBrickz@@QAEXXZ	1.0256	1.0256	1	418c1d5367ac	0
 engine_discovered	?CBrickz_09f710@CBrickz@@QAEXXZ	0.5970	0.5970	1	c7de9fd1031d	0x9f710
 engine_discovered	?CBrickz_09f7f0@CBrickz@@QAEXXZ	1.7391	1.7391	1	f8e6868a5b79	0x9f7f0
 engine_discovered	?CBrickz_0ec230@CBrickz@@QAEXXZ	0.9434	0.9434	1	a661ca61f36b	0xec230
-engine_discovered	?CButeMgrHelper_1697c0@CButeMgrHelper@@QAEXXZ	10.0000	10.0000	1	6e54946cabee	0x1697c0
-engine_discovered	?CButeMgrHelper_1699c0@CButeMgrHelper@@QAEXXZ	10.0000	10.0000	1	5c270302a441	0x1699c0
-engine_discovered	?CButeMgrHelper_169c00@CButeMgrHelper@@QAEXXZ	3.2258	3.2258	1	7fa887130830	0x169c00
-engine_discovered	?CButeMgrHelper_169dd0@CButeMgrHelper@@QAEXXZ	1.6667	1.6667	1	ee51a13f6d52	0x169dd0
-engine_discovered	?CButeMgrHelper_16b650@CButeMgrHelper@@QAEXXZ	25.0000	25.0000	1	6c59770aa37a	0x16b650
-engine_discovered	?CButeMgrHelper_16c0c0@CButeMgrHelper@@QAEXXZ	25.0000	25.0000	1	b9cc5c91a5a6	0x16c0c0
 engine_discovered	?CButeMgr_0213c0@CButeMgr@@QAEXXZ	1.1494	1.1494	1	27bb9064c61c	0x213c0
 engine_discovered	?CButeTree_16e070@CButeTree@@QAEXXZ	0.8000	0.8000	1	5f71bcbafe56	0x16e070
 engine_discovered	?CCheckpointDlg_023570@CCheckpointDlg@@QAEXXZ	50.0000	50.0000	1	f5567be8c30b	0x23570

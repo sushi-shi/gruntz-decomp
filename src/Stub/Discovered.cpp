@@ -103,19 +103,8 @@ void CBrickz::CBrickz_0ec230() {}
 RVA(0x000213c0, 0x14c)
 void CButeMgr::CButeMgr_0213c0() {}
 
-// ---- CButeMgrHelper ----
-RVA(0x001697c0, 0x13)
-void CButeMgrHelper::CButeMgrHelper_1697c0() {}
-RVA(0x001699c0, 0x13)
-void CButeMgrHelper::CButeMgrHelper_1699c0() {}
-RVA(0x00169c00, 0x67)
-void CButeMgrHelper::CButeMgrHelper_169c00() {}
-RVA(0x00169dd0, 0x37)
-void CButeMgrHelper::CButeMgrHelper_169dd0() {}
-RVA(0x0016b650, 0xf)
-void CButeMgrHelper::CButeMgrHelper_16b650() {}
-RVA(0x0016c0c0, 0xf)
-void CButeMgrHelper::CButeMgrHelper_16c0c0() {}
+// ---- CButeMgrHelper ---- ctor/dtor + vbase vtable-init thunks migrated to
+// src/Bute/ButeMgr.cpp (CButeMgrHelper, the +0x14 sub-object).
 
 // ---- CButeTree ----
 RVA(0x0016e070, 0x7b)

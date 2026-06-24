@@ -71,15 +71,6 @@ class CButeMgr {
 public:
     void CButeMgr_0213c0();
 };
-class CButeMgrHelper {
-public:
-    void CButeMgrHelper_1697c0();
-    void CButeMgrHelper_1699c0();
-    void CButeMgrHelper_169c00();
-    void CButeMgrHelper_169dd0();
-    void CButeMgrHelper_16b650();
-    void CButeMgrHelper_16c0c0();
-};
 class CButeTree {
 public:
     void CButeTree_16e070();

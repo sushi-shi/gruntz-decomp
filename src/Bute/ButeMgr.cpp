@@ -854,3 +854,133 @@ bool CButeMgr::Exists(char* tag, char* key) {
 // `neg/sbb/and` second-base adjust. Reproducing it exactly needs each sub-tree
 // retyped with its 2-vptr virtual dtor (a restructuring that risks the 14
 // already-matched getters/parser here), so it is deferred to the final sweep.
+
+// ===========================================================================
+// CButeMgrHelper cluster (0x1697c0-0x16c0c0). The helper sub-object embedded at
+// CButeMgr+0x14 (a .bute registry/compiler object). All __thiscall.
+//   0x1697c0 / 0x1699c0  - virtual-base vtable-init thunks (set one vbase vptr,
+//                          then jmp the matching ret-only thunk to set another)
+//   0x169c00 Construct   - the constructor (field-init + per-instance crit-sec +
+//                          one-time shared crit-sec under a ref-count guard)
+//   0x169dd0 SetSub      - replace the +0x4 sub-object (delete-through-vtable +
+//                          flag toggle)
+//   0x16b650 / 0x16c0c0  - ret-only vbase vtable-init thunks
+// ===========================================================================
+
+// The per-instance + shared critical-section init/delete go through engine
+// thunks (0x16c9c0 / 0x16c9d0) over the Win32 imports; modeled as __cdecl
+// externals (no body) so the `push p; call; add esp,4` shape reloc-masks.
+extern "C" void Helper_InitCriticalSection(void* cs);
+
+// The shared one-time-init guard + the shared critical section (reloc-masked
+// file-scope DATA externs at 0x6bf400 / 0x6bf3c8).
+DATA(0x006bf400)
+extern "C" int g_helperRefCount; // 0x6bf400
+DATA(0x006bf3c8)
+extern "C" CRITICAL_SECTION g_helperSharedCS; // 0x6bf3c8
+
+// The helper's primary vtable (shared with the cleanup dtor's restore); the four
+// virtual-base vtables the init thunks stamp. Reloc-masked file-scope addresses.
+DATA(0x005f03bc)
+extern "C" void* g_helperVtbl; // 0x5f03bc
+DATA(0x005f0374)
+extern "C" void* g_helperVbaseVtblA; // 0x5f0374
+DATA(0x005f0384)
+extern "C" void* g_helperVbaseVtblB; // 0x5f0384
+DATA(0x005f045c)
+extern "C" void* g_helperVbaseVtblC; // 0x5f045c
+DATA(0x005f047c)
+extern "C" void* g_helperVbaseVtblD; // 0x5f047c
+
+// The sub-object at +0x4. Its slot-0 virtual is a __thiscall scalar-deleting
+// dtor (`mov eax,[ecx]; push 1; call [eax]`): modeled polymorphically so the
+// receiver lands in ecx and the call carries no caller-side cleanup.
+struct CButeSub {
+    virtual void* ScalarDtor(int flags);
+};
+
+// ---------------------------------------------------------------------------
+// CButeMgrHelper::InitVbaseA (0x1697c0)
+// Virtual-base vtable-init thunk: read the vbtable pointer at this-0xc, follow
+// its [+4] displacement to the virtual base subobject, stamp its vptr, then tail
+// (jmp) into InitVbaseC to stamp the next vbase's vptr. The this-relative offset
+// arithmetic reproduces the `mov eax,[ecx-0xc]; mov edx,[eax+4]; mov
+// [edx+ecx-0xc],vtbl` form exactly; the tail call folds to the `jmp`.
+RVA(0x001697c0, 0x13)
+void CButeMgrHelper::InitVbaseA() {
+    int* vbptr = *(int**)((char*)this - 0xc);
+    *(void**)((char*)this - 0xc + vbptr[1]) = &g_helperVbaseVtblA;
+    InitVbaseC();
+}
+
+// ---------------------------------------------------------------------------
+// CButeMgrHelper::InitVbaseB (0x1699c0)
+// As InitVbaseA but for the vbtable at this-0x8, then tail into InitVbaseD.
+RVA(0x001699c0, 0x13)
+void CButeMgrHelper::InitVbaseB() {
+    int* vbptr = *(int**)((char*)this - 0x8);
+    *(void**)((char*)this - 0x8 + vbptr[1]) = &g_helperVbaseVtblB;
+    InitVbaseD();
+}
+
+// ---------------------------------------------------------------------------
+// CButeMgrHelper::Construct (0x169c00)
+// Constructor: zero-init the data fields, stamp the vptr + the type constants,
+// init the per-instance critical section, and one-time-init the shared critical
+// section under a ref-count guard.
+RVA(0x00169c00, 0x67)
+CButeMgrHelper* CButeMgrHelper::Construct() {
+    m_pSub = 0;
+    m_0c = 0;
+    m_10 = 0;
+    m_20 = 0;
+    m_24 = 0;
+    m_30 = 0;
+    m_1c = 0;
+    m_vptr = &g_helperVtbl;
+    m_08 = 4;
+    m_28 = 6;
+    m_2c = 0x20;
+    m_34 = -1;
+    Helper_InitCriticalSection(&m_cs);
+    if (g_helperRefCount++ == 0) {
+        Helper_InitCriticalSection(&g_helperSharedCS);
+    }
+    return this;
+}
+
+// ---------------------------------------------------------------------------
+// CButeMgrHelper::SetSub (0x169dd0)
+// Replace the +0x4 sub-object: if it is owned (m_1c) and present (m_pSub), delete
+// it through its slot-0 scalar-deleting dtor; store the new pointer; toggle bit
+// 0x4 of the flag word from the new pointer's nullness.
+RVA(0x00169dd0, 0x37)
+void CButeMgrHelper::SetSub(void* p) {
+    if (m_1c && m_pSub) {
+        ((CButeSub*)m_pSub)->ScalarDtor(1);
+    }
+    m_pSub = p;
+    if (p) {
+        m_08 &= ~0x4;
+    } else {
+        m_08 |= 0x4;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// CButeMgrHelper::InitVbaseC (0x16b650)
+// Ret-only virtual-base vtable-init thunk: stamp the vbase at this-0xc.
+RVA(0x0016b650, 0xf)
+void CButeMgrHelper::InitVbaseC() {
+    int* vbptr = *(int**)((char*)this - 0xc);
+    *(void**)((char*)this - 0xc + vbptr[1]) = &g_helperVbaseVtblC;
+}
+
+// ---------------------------------------------------------------------------
+// CButeMgrHelper::InitVbaseD (0x16c0c0)
+// Ret-only virtual-base vtable-init thunk: stamp the vbase at this-0x8.
+RVA(0x0016c0c0, 0xf)
+void CButeMgrHelper::InitVbaseD() {
+    int* vbptr = *(int**)((char*)this - 0x8);
+    *(void**)((char*)this - 0x8 + vbptr[1]) = &g_helperVbaseVtblD;
+}

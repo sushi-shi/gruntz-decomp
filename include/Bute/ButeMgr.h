@@ -56,12 +56,62 @@ struct CButeValue {
     CButeValue* SetDouble(int type, double val);
 };
 
-// Minimal engine helper embedded at CButeMgr+0x14; the cleanup pair operate on
-// it (reloc-masked __thiscall externs, no body).
+// The engine helper embedded at CButeMgr+0x14 (the .bute compiler/registry
+// sub-object). FuncA/FuncB are the cleanup pair ClearHelper drives (reloc-masked
+// __thiscall externs, no body). The rest is the constructor + the sub-object
+// setter (SetSub) + the virtual-base vtable-init thunks reconstructed below.
+//
+// Layout recovered from the ctor's field-init list (0x169c00):
+//   +0x00  m_vptr    : vptr (0x5f03bc, shared with the dtor's vtable restore)
+//   +0x04  m_pSub    : void* - a sub-object pointer (the dtor/Set delete-and-
+//                      replace target; its slot-0 is a scalar deleting dtor)
+//   +0x08  m_08      : int   - flag word (Set toggles bit 2 (0x4))
+//   +0x0c  m_0c      : int   - zero-init
+//   +0x10  m_10      : int   - zero-init
+//   +0x14  m_14[8]   : padding to +0x1c
+//   +0x1c  m_1c      : int   - "owns sub-object" guard (Set checks it)
+//   +0x20  m_20      : int   - zero-init
+//   +0x24  m_24      : int   - zero-init
+//   +0x28  m_28      : int   - 6
+//   +0x2c  m_2c      : char  - 0x20
+//   +0x30  m_30      : int   - zero-init
+//   +0x34  m_34      : int   - -1
+//   +0x38  m_cs      : CRITICAL_SECTION (per-instance, Initialize/Delete'd)
 class CButeMgrHelper {
 public:
     void FuncA();
     void FuncB();
+
+    // The constructor: zero-init the fields, stamp the vptr, set the constants,
+    // init the per-instance critical section, and one-time-init the shared
+    // critical section under a ref-count guard.
+    CButeMgrHelper* Construct();
+    // Replace the sub-object at +0x4 (delete the old one through its vtable when
+    // owned), then toggle bit 0x4 of m_08 from the new pointer's nullness.
+    void SetSub(void* p);
+    // The virtual-base vtable-init thunks (compiler vbase ctor closures): each
+    // stamps a virtual-base subobject's vptr through the this-relative vbtable;
+    // the A/B pair tail into the C/D ret-only thunks.
+    void InitVbaseA();
+    void InitVbaseB();
+    void InitVbaseC();
+    void InitVbaseD();
+
+    void* m_vptr;              // +0x00
+    void* m_pSub;              // +0x04
+    int m_08;                  // +0x08
+    int m_0c;                  // +0x0c
+    int m_10;                  // +0x10
+    char m_pad14[0x1c - 0x14]; // +0x14
+    int m_1c;                  // +0x1c
+    int m_20;                  // +0x20
+    int m_24;                  // +0x24
+    int m_28;                  // +0x28
+    char m_2c;                 // +0x2c
+    char m_pad2d[0x30 - 0x2d]; // +0x2d
+    int m_30;                  // +0x30
+    int m_34;                  // +0x34
+    CRITICAL_SECTION m_cs;     // +0x38
 };
 
 class CButeTree {
