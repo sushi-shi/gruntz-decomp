@@ -1469,14 +1469,8 @@ public:
 };
 class MinervaInner {
 public:
-    void MinervaInner_136500();
-    void MinervaInner_136690();
     void MinervaInner_1366f0();
     void MinervaInner_136910();
-    void MinervaInner_136d80();
-    void MinervaInner_136de0();
-    void MinervaInner_136ed0();
-    void MinervaInner_1371a0();
     void MinervaInner_137710();
     void MinervaInner_137780();
     void MinervaInner_137900();

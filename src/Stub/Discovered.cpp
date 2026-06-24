@@ -2130,23 +2130,19 @@ void MallocCtor_17fdb0::MallocCtor_17fdb0_17e780() {}
 RVA(0x0017fdf0, 0xb)
 void MallocCtor_17fdb0::MallocCtor_17fdb0_17fdf0() {}
 
-// ---- MinervaInner ----
-RVA(0x00136500, 0x43)
-void MinervaInner::MinervaInner_136500() {}
-RVA(0x00136690, 0x58)
-void MinervaInner::MinervaInner_136690() {}
+// ---- MinervaInner ---- (== the DirectSound *device* manager, DSNDMGR.CPP,
+// vtable 0x5ef6c4; trace conflated it with the buffer-wrapper DirectSoundMgr).
+// The lifecycle/teardown run (~dtor 0x136500, Shutdown 0x136690, RemoveBuffer
+// 0x136d80, StopAll 0x136de0) is reconstructed in src/Dsndmgr/SoundDevice.cpp.
+// FreeSamples (0x136ed0) + SetPrimaryFormat (0x1371a0) also reconstructed in
+// src/Dsndmgr/SoundDevice.cpp. The remaining device methods (CreateBuffer
+// 0x1366f0, Acquire 0x136910) and the *derived* DSndMgSR.cpp class (vtable
+// 0x5ef6ec: 0x137710/0x137780/0x137900/0x1379d0/0x137b70) are left here for a
+// follow-up.
 RVA(0x001366f0, 0x168)
 void MinervaInner::MinervaInner_1366f0() {}
 RVA(0x00136910, 0x119)
 void MinervaInner::MinervaInner_136910() {}
-RVA(0x00136d80, 0x56)
-void MinervaInner::MinervaInner_136d80() {}
-RVA(0x00136de0, 0x3c)
-void MinervaInner::MinervaInner_136de0() {}
-RVA(0x00136ed0, 0x72)
-void MinervaInner::MinervaInner_136ed0() {}
-RVA(0x001371a0, 0x5a)
-void MinervaInner::MinervaInner_1371a0() {}
 RVA(0x00137710, 0xb)
 void MinervaInner::MinervaInner_137710() {}
 RVA(0x00137780, 0x171)

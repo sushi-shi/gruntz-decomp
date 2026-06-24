@@ -110,11 +110,11 @@ struct IDirectSoundBufferZ {
         ); // +0x2c
         char m_pad30[0x34 - 0x30];
         long(__stdcall* SetCurrentPosition)(IDirectSoundBufferZ*, unsigned long pos); // +0x34
-        char m_pad38[0x3c - 0x38];
-        long(__stdcall* SetVolume)(IDirectSoundBufferZ*, long vol);              // +0x3c
-        long(__stdcall* SetPan)(IDirectSoundBufferZ*, long pan);                 // +0x40
-        long(__stdcall* SetFrequency)(IDirectSoundBufferZ*, unsigned long freq); // +0x44
-        long(__stdcall* Stop)(IDirectSoundBufferZ*);                             // +0x48
+        long(__stdcall* SetFormat)(IDirectSoundBufferZ*, void* fmt);                  // +0x38
+        long(__stdcall* SetVolume)(IDirectSoundBufferZ*, long vol);                   // +0x3c
+        long(__stdcall* SetPan)(IDirectSoundBufferZ*, long pan);                      // +0x40
+        long(__stdcall* SetFrequency)(IDirectSoundBufferZ*, unsigned long freq);      // +0x44
+        long(__stdcall* Stop)(IDirectSoundBufferZ*);                                  // +0x48
         long(__stdcall* Unlock)(
             IDirectSoundBufferZ*,
             void* p1,
