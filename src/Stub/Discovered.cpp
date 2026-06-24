@@ -624,14 +624,9 @@ RVA(0x0013a000, 0x37)
 void ClassUnknown_14::ClassUnknown_14_13a000() {}
 
 // ---- ClassUnknown_15 ----
-RVA(0x0013c520, 0xe)
-void ClassUnknown_15::ClassUnknown_15_13c520() {}
-RVA(0x0013c590, 0x66)
-void ClassUnknown_15::ClassUnknown_15_13c590() {}
-RVA(0x0013c600, 0xbd)
-void ClassUnknown_15::ClassUnknown_15_13c600() {}
-RVA(0x0013c830, 0x63)
-void ClassUnknown_15::ClassUnknown_15_13c830() {}
+// RECOVERED -> CRezItm (a buffered FILE* reader; base-vtbl @0x5ef768, derived
+// @0x5ef788). The 4 methods are the CRezItmBase/CRezItm dtor pair + Read + Close,
+// migrated to src/Rez/RezMgr.cpp (CRezItm already lives there).
 
 // ---- ClassUnknown_17 ----
 RVA(0x0016f6c0, 0x12)

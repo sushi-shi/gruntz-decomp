@@ -55,7 +55,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	295	0
+engine_discovered	291	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -110,7 +110,7 @@ projectile	7	2
 pyramidbridgesprites	1	0
 randomambientsound	4	2
 registryhelper	8	8
-rezmgr	10	6
+rezmgr	14	8
 rollingball	1	0
 savegame	18	13
 sbi_gruntmachine	3	2
@@ -754,10 +754,6 @@ engine_discovered	?ClassUnknown_127_11cee3@ClassUnknown_127@@QAEXXZ	50.0000	50.0
 engine_discovered	?ClassUnknown_128_174d70@ClassUnknown_128@@QAEXXZ	3.2258	3.2258	1	e15f9fbb040e	0x174d70
 engine_discovered	?ClassUnknown_129_016460@ClassUnknown_129@@QAEXXZ	5.5556	5.5556	1	82492c27a489	0x16460
 engine_discovered	?ClassUnknown_14_13a000@ClassUnknown_14@@QAEXXZ	1.8182	1.8182	1	1f321aad131a	0x13a000
-engine_discovered	?ClassUnknown_15_13c520@ClassUnknown_15@@QAEXXZ	33.3333	33.3333	1	a7c9b4611b4a	0x13c520
-engine_discovered	?ClassUnknown_15_13c590@ClassUnknown_15@@QAEXXZ	3.4483	3.4483	1	a4cd19b9babe	0x13c590
-engine_discovered	?ClassUnknown_15_13c600@ClassUnknown_15@@QAEXXZ	0.4651	0.4651	1	86c2cef2e922	0x13c600
-engine_discovered	?ClassUnknown_15_13c830@ClassUnknown_15@@QAEXXZ	2.5641	2.5641	1	c844d1a97299	0x13c830
 engine_discovered	?ClassUnknown_17_16f6c0@ClassUnknown_17@@QAEXXZ	6.6667	6.6667	1	a128cf579ccc	0x16f6c0
 engine_discovered	?ClassUnknown_17_16f760@ClassUnknown_17@@QAEXXZ	0.8333	0.8333	1	b13325b5e1c8	0x16f760
 engine_discovered	?ClassUnknown_17_170100@ClassUnknown_17@@QAEXXZ	1.0989	1.0989	1	26204a48c417	0x170100
@@ -1542,7 +1538,7 @@ gamemode	?BuildWarpStoneGlitterAnimation@CState@@QAEXXZ	0.9804	0.9804	1	48a14ab5
 gamemode	?CheckPerfectBonus@CMultiBootyState@@QAEHXZ	100.0000	100.0000	2	9fc93e05a397	0x1c0f0
 gamemode	?CheckWarpLetterBonus@CBootyState@@QAEXXZ	0.2849	0.2849	1	86e864f54e78	0x1c210
 gamemode	?FinishState@CCreditsState@@QAEHXZ	100.0000	100.0000	1	b2c3a49646dc	0x39c40
-gamemode	?FlashColor@CCreditsState@@QAEHXZ	70.4231	70.4231	1	fcd764f9eff7	0x39d00
+gamemode	?FlashColor@CCreditsState@@QAEHXZ	66.5769	66.5769	1	fcd764f9eff7	0x39d00
 gamemode	?FormatHudText@CMenuState@@QAEXH@Z	0.3094	0.3094	2	639568dc3209	0x1af70
 gamemode	?FrameSlot24@CMultiBootyState@@UAEHH@Z	100.0000	100.0000	2	1df26f9626ef	0x1e570
 gamemode	?FrameSlot28@CMenuState@@UAEHH@Z	100.0000	100.0000	2	e9d8da09d7f7	0xa06d0
@@ -1956,12 +1952,16 @@ registryhelper	?SetValueString@RegistryHelper@Utils@@QAEHPAD0@Z	100.0000	100.000
 rezmgr	??0CRezDir@@QAE@PAX0@Z	78.9091	78.9091	5	6e79226f1d72	0x13c940
 rezmgr	??0CRezItm@@QAE@PAX@Z	100.0000	100.0000	4	f168abdbb8b4	0x13c540
 rezmgr	??0CRezItmBase@@QAE@PAX@Z	100.0000	100.0000	4	cb122a3428e6	0x13c4e0
+rezmgr	??1CRezItm@@UAE@XZ	100.0000	100.0000	1	8ec9f735c5bc	0x13c590
+rezmgr	??1CRezItmBase@@UAE@XZ	100.0000	100.0000	1	955033bff6b3	0x13c520
+rezmgr	?Close@CRezItm@@QAEHXZ	81.2820	81.2820	1	5db450ed35bd	0x13c830
 rezmgr	?FindEntry@CRezDir@@QAEHPAD@Z	100.0000	100.0000	5	44cd4dc84aaa	0x13c080
 rezmgr	?HandleDebugPosition@RezMgr@@QAEHXZ	93.1667	93.1667	5	aac0d05f5683	0x8e470
 rezmgr	?Load@CRezDirNode@@QAEHH@Z	100.0000	100.0000	5	f5c690a2c68c	0x13a0f0
 rezmgr	?MakeImageKey@RezMgr@@QAEHPAXPAD0@Z	100.0000	100.0000	5	45cbafe1118c	0x13e5d0
 rezmgr	?MakeRezPath@RezMgr@@QAEHXZ	92.7923	92.7923	6	89aba364b6ae	0x91670
 rezmgr	?PerFrameTick@RezMgr@@UAEHXZ	100.0000	100.0000	5	f48f8cfdbf55	0x8b740
+rezmgr	?Read@CRezItm@@QAEHHHIPAX@Z	99.3023	99.3023	1	f36f55a6737f	0x13c600
 rezmgr	?Stub_13b0c0@CRezDir@@QAEXXZ	0.2139	0.2139	2	0caf2154eccf	0x13b0c0
 rollingball	?Update@CRollingBall@@QAEHXZ	35.2831	35.2831	2	c4d7cce584e4	0xb0140
 savegame	??1CSaveGame@@QAE@XZ	100.0000	100.0000	1	a26d45c833a7	0x85b50

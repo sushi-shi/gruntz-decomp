@@ -4,6 +4,10 @@
 //
 // Functions matched in this TU:
 //   CRezItm::CRezItm(parent)        BYTE-EXACT  - leaf ctor (new 0x24)
+//   CRezItmBase::~CRezItmBase()     BYTE-EXACT  - base dtor (vtbl restore + m_parent=0)
+//   CRezItm::~CRezItm()             BYTE-EXACT  - leaf dtor (/GX EH; Close + free buf)
+//   CRezItm::Read(off,base,n,buf)   99.3%       - buffered fseek/fread w/ owner Retry()
+//   CRezItm::Close()                81% (@early-stop) - fclose/free; esi<->edi regalloc wall
 //   CRezDir::CRezDir(parent,rezmgr) PLATEAU 78% - dir  ctor (new 0x38)
 //   CRezDir::FindEntry(name)        BYTE-EXACT  - is-this-a-dir? stat
 //   CRezDirNode::Load(childFlag)    BYTE-EXACT  - recursive dir parse
@@ -58,6 +62,112 @@ CRezItm::CRezItm(void* parent) : CRezItmBase(parent) {
     m_10 = 0;
     m_14 = 0;
     m_20 = -1;
+}
+
+// ---------------------------------------------------------------------------
+// CRezItmBase::~CRezItmBase()
+// The base destructor: restore the base vtbl (auto, since polymorphic) and clear
+// the parent pointer. Out-of-line so the derived dtor emits a `call` to it.
+RVA(0x0013c520, 0xe)
+CRezItmBase::~CRezItmBase() {
+    m_parent = 0;
+}
+
+// ---------------------------------------------------------------------------
+// CRezItm::~CRezItm()
+// Derived dtor: if a FILE* is open, Close() it; free the read buffer; chain to
+// the base dtor. A destructible state -> the /GX EH frame (push -1 / handler).
+RVA(0x0013c590, 0x66)
+CRezItm::~CRezItm() {
+    if (m_10 != 0) {
+        Close();
+    }
+    if (m_14 != 0) {
+        RezFree(m_14);
+    }
+}
+
+// ---------------------------------------------------------------------------
+// CRezItm::Read(off, base, count, buf)  (vtable slot 2)
+// Seek to absolute position (off+base) if the cursor isn't already there,
+// recovering through the owner's Retry() gate on a seek failure; then fread
+// `count` bytes into buf, retrying through the same gate on a short read. On
+// success advances the +0x20 cursor and returns the bytes read; 0 / cursor=-1
+// on a zero count or a gate that gives up.
+//
+// 99.30% (entropy tail): EVERY instruction is opcode+ModRM-identical to the
+// disasm except the entry guard - retail emits `test edi,edi; ja` (unsigned
+// `count > 0`) where my `if(count==0)return 0` lowers to `test; jne`. The two are
+// logically identical for the u32 `count`; wrapping the body in `if(count>0)`
+// flips that one opcode but cascades the rest (99.3%->83.4%). The early-return is
+// the right form; green-enough per the doctrine (§2a).
+RVA(0x0013c600, 0xbd)
+i32 CRezItm::Read(i32 off, i32 base, u32 count, void* buf) {
+    if (count == 0) {
+        return 0;
+    }
+
+    i32 pos = base + off;
+
+    if (m_20 != pos) {
+        while (RezFSeek(m_10, pos, 0) != 0) {
+            if (((CRezItmOwner*)m_parent)->Retry() == 0) {
+                m_20 = -1;
+                return 0;
+            }
+        }
+    }
+
+    u32 got = RezFRead(buf, 1, count, m_10);
+    while (got != count) {
+        if (((CRezItmOwner*)m_parent)->Retry() == 0) {
+            m_20 = -1;
+            return 0;
+        }
+        got = RezFRead(buf, 1, count, m_10);
+    }
+
+    m_20 = got + pos;
+    return got;
+}
+
+// ---------------------------------------------------------------------------
+// CRezItm::Close()  (vtable slot 5)
+// fclose the FILE*, retrying through the owner's Retry() gate; then free the
+// read buffer and reset the cursor. Returns 1 on success, 0 if there was no open
+// FILE* or the gate gave up.
+// @early-stop
+// regalloc wall (zero-register-pinning): structure is byte-exact but retail pins
+// this->esi / the loop-flag ok->edi, while my cl swaps them (this->edi, ok->esi)
+// -- the prologue interleave `push esi; mov ecx,esi; push edi` vs mine
+// `push esi; push edi; mov ecx,edi`, cascading the esi<->edi names through the
+// whole body. `while(ok==0)`+`ok=0` init beats `do-while` (81.3% vs 56.5%); the
+// swap is the documented MSVC5 callee-save coin-flip, not source-steerable.
+RVA(0x0013c830, 0x63)
+i32 CRezItm::Close() {
+    if (m_10 == 0) {
+        return 0;
+    }
+
+    i32 ok = 0;
+    while (ok == 0) {
+        if (RezFClose(m_10) == 0) {
+            ok = 1;
+        } else {
+            ok = 0;
+            if (((CRezItmOwner*)m_parent)->Retry() == 0) {
+                return 0;
+            }
+        }
+    }
+
+    m_10 = 0;
+    if (m_14 != 0) {
+        RezFree(m_14);
+    }
+    m_14 = 0;
+    m_20 = -1;
+    return ok;
 }
 
 // The embedded child-collection vftable both CRezDir sub-objects install (a

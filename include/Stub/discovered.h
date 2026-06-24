@@ -430,13 +430,6 @@ class ClassUnknown_14 {
 public:
     void ClassUnknown_14_13a000();
 };
-class ClassUnknown_15 {
-public:
-    void ClassUnknown_15_13c520();
-    void ClassUnknown_15_13c590();
-    void ClassUnknown_15_13c600();
-    void ClassUnknown_15_13c830();
-};
 class ClassUnknown_17 {
 public:
     void ClassUnknown_17_16f6c0();

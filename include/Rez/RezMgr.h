@@ -99,30 +99,62 @@ extern "C" i32 RezStricmp(const char* a, const char* b);
 // Polymorphic so the vptr lands at +0x00 and the two-phase vtable stores fall
 // out; the ctor takes the parent pointer (stored @+0xc).
 // ---------------------------------------------------------------------------
+// The owning node reached at CRezItmBase+0xc. CRezItm's stream methods poll it
+// through a virtual at slot index 2 ([vtbl+0x8]) - a "keep going / recover from a
+// short read or seek failure?" gate (nonzero => retry, zero => give up). Modeled
+// polymorphic with the slot indices kept so `mov eax,[ecx]; call [eax+8]` falls
+// out (reloc-masked indirect call); slots 0/1 are placeholders.
+class CRezItmOwner {
+public:
+    virtual void v0();   // +0x00
+    virtual void v1();   // +0x04
+    virtual i32 Retry(); // +0x08  (slot 2) - recover/keep-going gate
+};
+
 class CRezItmBase {
 public:
     CRezItmBase(void* parent);
-    virtual ~CRezItmBase() {}
+    virtual ~CRezItmBase();
 
     void* m_4;      // +0x04
     void* m_8;      // +0x08
-    void* m_parent; // +0x0c
+    void* m_parent; // +0x0c  (a CRezItmOwner*; cast at use in CRezItm's methods)
 };
 
 // ---------------------------------------------------------------------------
-// CRezItm (0x24 = 36 bytes) - a leaf resource/file node.
+// CRezItm (0x24 = 36 bytes) - a leaf resource/file node. By its dtor/Read/Close
+// bytes it is a buffered FILE* reader: +0x10 the stdio FILE*, +0x14 a heap read
+// buffer, +0x20 the current file position cursor (-1 = unset). The owner at
+// +0xc is polled to recover from short reads / seek failures.
 // ---------------------------------------------------------------------------
 class CRezItm : public CRezItmBase {
 public:
     CRezItm(void* parent);
-    virtual ~CRezItm() OVERRIDE {}
+    virtual ~CRezItm() OVERRIDE;
 
-    i32 m_10; // +0x10  (= 0)
-    i32 m_14; // +0x14  (= 0)
-    i32 m_18; // +0x18  (set by load)
-    i32 m_1c; // +0x1c  (set by load)
-    i32 m_20; // +0x20  (= -1)
+    // Read `count` bytes at file position (off+base) into buf, recovering through
+    // the owner's Retry() gate on seek/short-read failure. Returns bytes read
+    // (== count) or 0; updates the +0x20 position cursor. (vtable slot 2)
+    i32 Read(i32 off, i32 base, u32 count, void* buf);
+
+    // Close the FILE*, free the read buffer, reset the position cursor. Retries
+    // fclose through the owner's gate. Returns 1 on success, 0 if no FILE*/gave up.
+    // (vtable slot 5)
+    i32 Close();
+
+    void* m_10; // +0x10  FILE* (= 0)
+    void* m_14; // +0x14  read buffer (= 0)
+    i32 m_18;   // +0x18  (set by load)
+    i32 m_1c;   // +0x1c  (set by load)
+    i32 m_20;   // +0x20  position cursor (= -1)
 };
+
+// The buffered-FILE stdio helpers CRezItm's stream methods call (statically linked
+// CRT in retail; external no-body so their `call rel32` displacements are
+// reloc-masked). __cdecl, args on the stack.
+extern "C" i32 RezFClose(void* fp);                            // 0x11f780
+extern "C" u32 RezFRead(void* buf, u32 size, u32 n, void* fp); // 0x18c220
+extern "C" i32 RezFSeek(void* fp, i32 off, i32 origin);        // 0x18c3a0
 
 // ---------------------------------------------------------------------------
 // CRezDir (ctor builds 0x38 = 56 bytes; runtime fields extend to +0x68) - a
