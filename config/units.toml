@@ -104,6 +104,16 @@ source = "src/Gruntz/StatusBarItem.cpp"
 flags = "base"
 
 [[unit]]
+unit = "sbi_menuitem"
+source = "src/Gruntz/SBI_MenuItem.cpp"
+flags = "base"
+
+[[unit]]
+unit = "sbi_menuitem_eh"
+source = "src/Gruntz/SBI_MenuItemEh.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "sbi_rectonly"
 source = "src/Gruntz/SBI_RectOnly.cpp"
 flags = "base"

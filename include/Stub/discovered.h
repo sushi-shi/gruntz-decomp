@@ -279,22 +279,8 @@ public:
     void CStaticHazard_012b30();
     void CStaticHazard_0fbbf0();
 };
-class CStatusBarItem {
-public:
-    void CStatusBarItem_0e6d90();
-    void CStatusBarItem_0e6e40();
-    void CStatusBarItem_0e80e0();
-    void CStatusBarItem_0e81a0();
-    void CStatusBarItem_0e81e0();
-    void CStatusBarItem_0e82a0();
-    void CStatusBarItem_0e8310();
-    void CStatusBarItem_0e8480();
-    void CStatusBarItem_0e84f0();
-    void CStatusBarItem_0e8520();
-    void CStatusBarItem_1005b0();
-    void CStatusBarItem_1007d0();
-    void CStatusBarItem_10bfc0();
-};
+// CStatusBarItem's discovered methods were recovered as CSBI_MenuItem and moved
+// to src/Gruntz/SBI_MenuItem.cpp (see the note in Discovered.cpp).
 class CTeleporter {
 public:
     void CTeleporter_010dd0();

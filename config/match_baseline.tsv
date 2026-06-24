@@ -43,7 +43,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	541	0
+engine_discovered	528	0
 engine_label_stubs	525	121
 filestream	13	9
 font	21	10
@@ -93,6 +93,8 @@ registryhelper	8	8
 rezmgr	10	6
 rollingball	1	0
 savegame	18	13
+sbi_menuitem	12	7
+sbi_menuitem_eh	1	0
 sbi_rectonly	59	23
 sbi_rectonly_eh	2	1
 shadetablecache	7	3
@@ -146,20 +148,20 @@ advancedoptions	?SaveOption@@YAXPAUHWND__@@PAVRegistryHelper@Utils@@PADK@Z	100.0
 advancedoptions	?SaveOptions@@YAXPAUHWND__@@PAVRegistryHelper@Utils@@@Z	100.0000	100.0000	3	42bc821feac7	0xb270
 advancedoptions	?SetDefaults@@YAXPAUHWND__@@@Z	100.0000	100.0000	3	debb3761026d	0xb160
 appdialogs	?WarpDialogProc@@YGHPAXIIJ@Z	100.0000	100.0000	4	abc884dd8cb1	0x8e4e0
-battlezdata	?BumpWin@CBattlezData@@QAEXHH@Z	100.0000	100.0000	1	3e9af1e8c25c	0xfcc50
-battlezdata	?ClearFlags@CBattlezData@@QAEXXZ	100.0000	100.0000	1	5ae18e57cb5d	0xfcb90
-battlezdata	?ClearWins@CBattlezData@@QAEXXZ	100.0000	100.0000	1	7cdf93f410b0	0xfcc90
+battlezdata	?BumpWin@CBattlezData@@QAEXHH@Z	100.0000	100.0000	2	d6751b8a863d	0xfcc50
+battlezdata	?ClearFlags@CBattlezData@@QAEXXZ	100.0000	100.0000	2	56a78ec21608	0xfcb90
+battlezdata	?ClearWins@CBattlezData@@QAEXXZ	100.0000	100.0000	2	38254a5cab0b	0xfcc90
 battlezdata	?FillRecord@CBattlezData@@QAEXHH@Z	100.0000	100.0000	1	e483d973ee40	0xfd330
-battlezdata	?GetFlag@CBattlezData@@QAEHHH@Z	100.0000	100.0000	1	55ae8b3cebab	0xfcc10
-battlezdata	?GetRecordValue@CBattlezData@@QAEHH@Z	76.5000	76.5000	1	5ce8a7e73df7	0xfced0
-battlezdata	?InBounds@CBattlezData@@QAEHH@Z	100.0000	100.0000	1	4077aa538933	0xfcd70
-battlezdata	?Init@CBattlezData@@QAEXXZ	81.0909	81.0909	1	b3678f82a535	0xfca10
+battlezdata	?GetFlag@CBattlezData@@QAEHHH@Z	100.0000	100.0000	2	fd3b6448a4bb	0xfcc10
+battlezdata	?GetRecordValue@CBattlezData@@QAEHH@Z	76.5000	76.5000	2	063ac06e408a	0xfced0
+battlezdata	?InBounds@CBattlezData@@QAEHH@Z	100.0000	100.0000	2	269416aa7675	0xfcd70
+battlezdata	?Init@CBattlezData@@QAEXXZ	81.0909	81.0909	2	705017f2a3a7	0xfca10
 battlezdata	?InitWithRecords@CBattlezData@@QAEHPAX@Z	100.0000	100.0000	1	bb6157de5263	0xfc9c0
-battlezdata	?MarkFlag@CBattlezData@@QAEXHH@Z	100.0000	100.0000	1	f72e686c1af9	0xfcb50
-battlezdata	?Serialize@CBattlezData@@QAEHPAVBattlezStream@@HHH@Z	92.3907	92.3907	1	c4fb4d21f484	0xfd3f0
-battlezdata	?SetCount@CBattlezData@@QAEXH@Z	100.0000	100.0000	1	b3b16a0100f6	0xfcad0
-battlezdata	?SumFlags@CBattlezData@@QAEHH@Z	100.0000	100.0000	1	49d0ac8ba2ec	0xfcbc0
-battlezdata	?SumWinRow@CBattlezData@@QAEHH@Z	100.0000	100.0000	1	892e6d37c257	0xfccb0
+battlezdata	?MarkFlag@CBattlezData@@QAEXHH@Z	100.0000	100.0000	2	a029df02d459	0xfcb50
+battlezdata	?Serialize@CBattlezData@@QAEHPAVBattlezStream@@HHH@Z	92.3907	92.3907	2	d8946f3c0f0c	0xfd3f0
+battlezdata	?SetCount@CBattlezData@@QAEXH@Z	100.0000	100.0000	2	fe4c034429ca	0xfcad0
+battlezdata	?SumFlags@CBattlezData@@QAEHH@Z	100.0000	100.0000	2	06e535f65b73	0xfcbc0
+battlezdata	?SumWinRow@CBattlezData@@QAEHH@Z	100.0000	100.0000	2	f7cb273e44cf	0xfccb0
 battlezmapconfig	?LoadConfig@CBattlezMapConfig@@QAEHPAUCLevelInfo@@HH@Z	85.9933	85.9933	4	f06ecd871376	0x25020
 brickz	?CellPop@CBrickz@@QAEXPAUBrickzNode@@H@Z	80.3284	80.3284	3	6c5a65d16fa4	0x9f710
 brickz	?CellPush@CBrickz@@QAEXPAUBrickzNode@@@Z	85.9070	85.9070	2	890d04538e3f	0x9f470
@@ -589,19 +591,6 @@ engine_discovered	?CSimpleAnimation_0abf70@CSimpleAnimation@@QAEXXZ	14.2857	14.2
 engine_discovered	?CSingleAnimation_010540@CSingleAnimation@@QAEXXZ	5.8824	5.8824	1	8475326a1cfc	0x10540
 engine_discovered	?CStaticHazard_012b30@CStaticHazard@@QAEXXZ	5.8824	5.8824	1	912bfe88ee5b	0x12b30
 engine_discovered	?CStaticHazard_0fbbf0@CStaticHazard@@QAEXXZ	0.5333	0.5333	1	7807d7e838b0	0xfbbf0
-engine_discovered	?CStatusBarItem_0e6d90@CStatusBarItem@@QAEXXZ	50.0000	50.0000	1	19b6f3c049fc	0xe6d90
-engine_discovered	?CStatusBarItem_0e6e40@CStatusBarItem@@QAEXXZ	0.3030	0.3030	1	73ab25b9d0ca	0xe6e40
-engine_discovered	?CStatusBarItem_0e80e0@CStatusBarItem@@QAEXXZ	0.8696	0.8696	1	3f6ddfd1369b	0xe80e0
-engine_discovered	?CStatusBarItem_0e81a0@CStatusBarItem@@QAEXXZ	50.0000	50.0000	1	862df47ac97b	0xe81a0
-engine_discovered	?CStatusBarItem_0e81e0@CStatusBarItem@@QAEXXZ	0.7547	0.7547	1	f98c8490873c	0xe81e0
-engine_discovered	?CStatusBarItem_0e82a0@CStatusBarItem@@QAEXXZ	3.5714	3.5714	1	ce6f0bcf146b	0xe82a0
-engine_discovered	?CStatusBarItem_0e8310@CStatusBarItem@@QAEXXZ	0.4082	0.4082	1	abaf6cd5289a	0xe8310
-engine_discovered	?CStatusBarItem_0e8480@CStatusBarItem@@QAEXXZ	1.5385	1.5385	1	4b47d3d2eff5	0xe8480
-engine_discovered	?CStatusBarItem_0e84f0@CStatusBarItem@@QAEXXZ	12.5000	12.5000	1	c62c7d7fd8d3	0xe84f0
-engine_discovered	?CStatusBarItem_0e8520@CStatusBarItem@@QAEXXZ	0.3279	0.3279	1	3fdc05a4c848	0xe8520
-engine_discovered	?CStatusBarItem_1005b0@CStatusBarItem@@QAEXXZ	50.0000	50.0000	1	c7e280854ffd	0x1005b0
-engine_discovered	?CStatusBarItem_1007d0@CStatusBarItem@@QAEXXZ	3.4483	3.4483	1	4fbdd40085f7	0x1007d0
-engine_discovered	?CStatusBarItem_10bfc0@CStatusBarItem@@QAEXXZ	0.3883	0.3883	1	81cde391d702	0x10bfc0
 engine_discovered	?CTeleporter_010dd0@CTeleporter@@QAEXXZ	5.8824	5.8824	1	b5851b8709c8	0x10dd0
 engine_discovered	?CTeleporter_0419e0@CTeleporter@@QAEXXZ	2.5641	2.5641	1	9bd08dbcc7c2	0x419e0
 engine_discovered	?CTileTriggerSwitchLogic_112c70@CTileTriggerSwitchLogic@@QAEXXZ	1.1494	1.1494	1	821467b84e39	0x112c70
@@ -2039,6 +2028,19 @@ savegame	?Save@CSaveGame@@QAEHHH@Z	41.5752	41.5752	2	8dc3f3720c50	0xe4ea0
 savegame	?SetField18@CSaveGame@@QAEXH@Z	96.3333	96.3333	2	805c5816acdb	0xe5620
 savegame	?SetField1c@CSaveGame@@QAEXH@Z	100.0000	100.0000	2	a0994b0515d6	0xe5660
 savegame	?Verify@CSaveGame@@QAEHXZ	100.0000	100.0000	2	99fbc66be447	0xe50f0
+sbi_menuitem	?Blit@CSBI_MenuItem@@QAEHXZ	100.0000	100.0000	1	89b04f10c391	0xe84f0
+sbi_menuitem	?ClearFrame2@CSBI_MenuItem@@QAEXXZ	100.0000	100.0000	1	54de26b0f1b5	0xe81a0
+sbi_menuitem	?ClearFrame@CSBI_MenuItem@@QAEXXZ	100.0000	100.0000	1	b89098c623b9	0xe6d90
+sbi_menuitem	?DecCounter@CSBI_MenuItem@@QAEHXZ	92.0357	92.0357	1	76ba7ba94f3b	0xe82a0
+sbi_menuitem	?InitItem@CSBI_MenuItem@@QAEHHHHHHHHHPAXHH@Z	67.8261	67.8261	1	711c194f8a6c	0xe80e0
+sbi_menuitem	?ProbeState@CSBI_MenuItem@@QAEHH@Z	100.0000	100.0000	1	624cf65074d2	0xe8480
+sbi_menuitem	?ResolveFrame@CSBI_MenuItem@@QAEHHH@Z	45.7547	45.7547	1	6e969ccb8dbb	0xe81e0
+sbi_menuitem	?Serialize@CSBI_MenuItem@@QAEHPAXHHH@Z	100.0000	100.0000	1	07d064ab15e5	0xe8520
+sbi_menuitem	?SerializeChain@CSBI_MenuItem@@QAEHPAXHHH@Z	84.9697	84.9697	1	46920b40f6fc	0xe6e40
+sbi_menuitem	?SerializeFields@CSBI_MenuItem@@QAEHPAXHHH@Z	100.0000	100.0000	1	75eb03114066	0x10bfc0
+sbi_menuitem	?SetState@CSBI_MenuItem@@QAEHHH@Z	93.1020	93.1020	1	77d598c9a000	0xe8310
+sbi_menuitem	?SetSubtype@CSBI_MenuItem@@QAEXXZ	100.0000	100.0000	1	ef8f234ee98d	0x1005b0
+sbi_menuitem_eh	??1CSBI_MenuItem@@QAE@XZ	43.0345	43.0345	1	922b51808a58	0x1007d0
 sbi_rectonly	??0CSBI_RectOnly@@QAE@XZ	100.0000	100.0000	6	9bee20d45286	0x101fa0
 sbi_rectonly	?ActivateSlot@CSBI_RectOnly@@QAEHH@Z	68.2963	68.2963	1	eb6101eb1e9a	0x10b930
 sbi_rectonly	?AdvanceGauge@CSBI_RectOnly@@QAEXH@Z	100.0000	100.0000	2	ea00c64bd531	0x105750

@@ -401,32 +401,9 @@ RVA(0x000fbbf0, 0x102)
 void CStaticHazard::CStaticHazard_0fbbf0() {}
 
 // ---- CStatusBarItem ----
-RVA(0x000e6d90, 0x8)
-void CStatusBarItem::CStatusBarItem_0e6d90() {}
-RVA(0x000e6e40, 0x17c)
-void CStatusBarItem::CStatusBarItem_0e6e40() {}
-RVA(0x000e80e0, 0x8c)
-void CStatusBarItem::CStatusBarItem_0e80e0() {}
-RVA(0x000e81a0, 0x8)
-void CStatusBarItem::CStatusBarItem_0e81a0() {}
-RVA(0x000e81e0, 0x8b)
-void CStatusBarItem::CStatusBarItem_0e81e0() {}
-RVA(0x000e82a0, 0x45)
-void CStatusBarItem::CStatusBarItem_0e82a0() {}
-RVA(0x000e8310, 0x112)
-void CStatusBarItem::CStatusBarItem_0e8310() {}
-RVA(0x000e8480, 0x4a)
-void CStatusBarItem::CStatusBarItem_0e8480() {}
-RVA(0x000e84f0, 0x16)
-void CStatusBarItem::CStatusBarItem_0e84f0() {}
-RVA(0x000e8520, 0x152)
-void CStatusBarItem::CStatusBarItem_0e8520() {}
-RVA(0x001005b0, 0x8)
-void CStatusBarItem::CStatusBarItem_1005b0() {}
-RVA(0x001007d0, 0x7f)
-void CStatusBarItem::CStatusBarItem_1007d0() {}
-RVA(0x0010bfc0, 0xe8)
-void CStatusBarItem::CStatusBarItem_10bfc0() {}
+// The 13 methods here were recovered as CSBI_MenuItem (RTTI .?AVCSBI_MenuItem@@,
+// most-derived of CSBI_MenuItem : CSBI_Image : CSBI_RectOnly : CStatusBarItem) and
+// migrated to src/Gruntz/SBI_MenuItem.cpp (+ SBI_MenuItemEh.cpp for the /GX dtor).
 
 // ---- CTeleporter ----
 RVA(0x00010dd0, 0x44)
