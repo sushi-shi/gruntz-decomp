@@ -114,9 +114,12 @@ struct GridUnit {
     i32 m_178; // +0x178  packed y (>>5)
     i32 m_17c; // +0x17c  cached x (compared to lvl->m_5c)
     i32 m_180; // +0x180  cached y (compared to lvl->m_60)
-    char m_pad184[0x19c - 0x184];
+    char m_pad184[0x194 - 0x184];
+    i32 m_194; // +0x194  band-C queued anim
+    i32 m_198; // +0x198
     i32 m_19c; // +0x19c  secondary anim/state id (used when m_170 > 0x16)
-    char m_pad1a0[0x1e4 - 0x1a0];
+    i32 m_1a0; // +0x1a0  band-C queued-coord sentinel (-1)
+    char m_pad1a4[0x1e4 - 0x1a4];
     i32 m_1e4; // +0x1e4  must be 0 to dispatch
     char m_pad1e8[0x1ec - 0x1e8];
     i32 m_1ec; // +0x1ec
@@ -311,8 +314,10 @@ DATA(0x002bf464)
 extern void* g_defaultRec;
 
 // CString::Release-style teardown (RVA 0x1b9b93), a __thiscall on a CString slot.
-// External, reloc-masked.
+// A CString is a single char* (4 B), so the scratch walk strides by 4. External,
+// reloc-masked.
 struct ScratchString {
+    char* m_str;    // +0x00  (4-byte stride for the teardown loop)
     void Release(); // 0x1b9b93
 };
 
@@ -988,17 +993,355 @@ i32 UnknownClassArrays::winapi_02e3a0_PtInRect(i32) {
     return 0;
 }
 
-// @confidence: low
-// @source: cluster:UnknownClassArrays
-// @stub
-// 0x02f620 (2161 B): a grunt-idle behaviour state machine (the largest target in
-// the cluster); shares the I/G/L/P/J/C/R anim-name dispatch + g_nameScratch
-// teardown with Method_034460/Method_025d90. Called by Method_025d90
-// (reloc-masked). Declared here so its sibling callers link and its RVA is owned
-// by the class. Reconstruction deferred to the final sweep.
+// ===========================================================================
+// UnknownClassArrays::Method_02f620  @0x02f620
+// The grunt idle-behaviour chooser (the cluster's largest method). Gate the unit
+// on the four clear-flag guards, then reject the I/G/L/P/J/C/R type codes (I via
+// GetRecord, the rest via the scratch-teardown GetRecords). For an eligible unit,
+// roll a [1..N] band selector against m_150/m_154 to pick one of three behaviour
+// bands; within each band roll a second value against an ascending probability-
+// threshold table to choose an anim/state index, then apply it via SetState - the
+// mode==3 arm instead reseeds idle units in the current cell-row, and the 0x12/
+// 0x16 modes recycle the unit's occupied-coord nodes onto g_freeList. Returns 1.
+// ===========================================================================
+// @early-stop
+// large-state-machine plateau (~49%): the four guards, the seven-way I/G/L/P/J/C/R
+// anim-name dispatch (the inline-strcmp setcc form via `bool eq`, see
+// docs/patterns/strcmp-eq-bool-local-setcc.md), the three banded threshold-table
+// cascades, all three SetState arms, the mode-3 row reseed loop, and the 0x12/0x16
+// g_freeList recycle are reconstructed in shape + order, and the prologue/setcc
+// strcmp byte stream now matches retail. Two coupled residuals: (1) the scratch
+// CString teardown loop - retail copies the count, decrements, tests the original,
+// and recovers the trip via `lea edi,[eax+1]` where MSVC5 here just `mov edi,eax`s
+// the count (a loop-strength-reduction idiom no source spelling reproduces, shared
+// with Method_034460); (2) the threshold-cascade regalloc (retail pins the rolled
+// value in edx, the band divisors in esi). Deferred to the final sweep.
 RVA(0x0002f620, 0x871)
-i32 UnknownClassArrays::Method_02f620(i32) {
-    return 0;
+i32 UnknownClassArrays::Method_02f620(i32 unitArg) {
+    GridUnit* unit = (GridUnit*)unitArg;
+    if (unit->m_1fc == 0) {
+        return 0;
+    }
+    if (unit->m_368 != 0) {
+        return 0;
+    }
+    if (unit->m_1e4 != 0) {
+        return 0;
+    }
+    if (unit->m_220 != 0) {
+        return 0;
+    }
+    // I (resolved directly via GetRecord). The compare result is materialized as a
+    // setcc'd bool (the `bool eq` local, not the inline neg/sbb form) - see
+    // docs/patterns/strcmp-eq-bool-local-setcc.md.
+    bool eq;
+    eq =
+        (strcmp(g_animNameResolver.GetRecord(*(i32*)((char*)unit->m_014 + 0x1c))->m_name, "I")
+         == 0);
+    if (eq) {
+        return 0;
+    }
+    // G / L / P / J / C / R (each via GetRecords, with the scratch CString teardown).
+    NameRecord* recs;
+    ScratchString* slot;
+    i32 cnt;
+
+    recs = g_animNameResolver.GetRecords(*(i32*)((char*)unit->m_014 + 0x1c));
+    slot = (ScratchString*)g_nameScratch;
+    cnt = g_nameScratchCount;
+    while (cnt != 0) {
+        if (slot != 0) {
+            slot->Release();
+        }
+        slot++;
+        cnt--;
+    }
+    eq = (strcmp(recs->m_name, "G") == 0);
+    if (eq) {
+        return 0;
+    }
+
+    recs = g_animNameResolver.GetRecords(*(i32*)((char*)unit->m_014 + 0x1c));
+    slot = (ScratchString*)g_nameScratch;
+    cnt = g_nameScratchCount;
+    while (cnt != 0) {
+        if (slot != 0) {
+            slot->Release();
+        }
+        slot++;
+        cnt--;
+    }
+    eq = (strcmp(recs->m_name, "L") == 0);
+    if (eq) {
+        return 0;
+    }
+
+    recs = g_animNameResolver.GetRecords(*(i32*)((char*)unit->m_014 + 0x1c));
+    slot = (ScratchString*)g_nameScratch;
+    cnt = g_nameScratchCount;
+    while (cnt != 0) {
+        if (slot != 0) {
+            slot->Release();
+        }
+        slot++;
+        cnt--;
+    }
+    eq = (strcmp(recs->m_name, "P") == 0);
+    if (eq) {
+        return 0;
+    }
+
+    recs = g_animNameResolver.GetRecords(*(i32*)((char*)unit->m_014 + 0x1c));
+    slot = (ScratchString*)g_nameScratch;
+    cnt = g_nameScratchCount;
+    while (cnt != 0) {
+        if (slot != 0) {
+            slot->Release();
+        }
+        slot++;
+        cnt--;
+    }
+    eq = (strcmp(recs->m_name, "J") == 0);
+    if (eq) {
+        return 0;
+    }
+
+    recs = g_animNameResolver.GetRecords(*(i32*)((char*)unit->m_014 + 0x1c));
+    slot = (ScratchString*)g_nameScratch;
+    cnt = g_nameScratchCount;
+    while (cnt != 0) {
+        if (slot != 0) {
+            slot->Release();
+        }
+        slot++;
+        cnt--;
+    }
+    eq = (strcmp(recs->m_name, "C") == 0);
+    if (eq) {
+        return 0;
+    }
+
+    recs = g_animNameResolver.GetRecords(*(i32*)((char*)unit->m_014 + 0x1c));
+    slot = (ScratchString*)g_nameScratch;
+    cnt = g_nameScratchCount;
+    while (cnt != 0) {
+        if (slot != 0) {
+            slot->Release();
+        }
+        slot++;
+        cnt--;
+    }
+    eq = (strcmp(recs->m_name, "R") == 0);
+    if (eq) {
+        return 0;
+    }
+
+    // Pick the behaviour band: roll a [1..m_158] value (or a coin when m_158 == 0).
+    i32 band;
+    if (m_158 == 0) {
+        band = rand() & 1;
+    } else {
+        band = rand() % m_158 + 1;
+    }
+    if (band <= m_150) {
+        // Band A: the unit must currently be idle (m_170/m_19c clear).
+        i32 cur = unit->m_170;
+        if (cur > 0x16) {
+            cur = unit->m_19c;
+        }
+        if (cur != 0) {
+            return 1;
+        }
+        i32 roll;
+        if (m_1e4 == 0) {
+            roll = rand() & 1;
+        } else {
+            roll = rand() % m_1e4 + 1;
+        }
+        i32 mode;
+        if (roll <= m_194) {
+            mode = 1;
+        } else if (roll <= m_198) {
+            mode = 2;
+        } else if (roll <= m_19c) {
+            mode = 3;
+        } else if (roll <= m_1a0) {
+            mode = 4;
+        } else if (roll <= m_1a4) {
+            mode = 5;
+        } else if (roll <= m_1a8) {
+            mode = 6;
+        } else if (roll <= m_1ac) {
+            mode = 7;
+        } else if (roll <= m_1b0) {
+            mode = 8;
+        } else if (roll <= m_1b4) {
+            mode = 9;
+        } else if (roll <= m_1b8) {
+            mode = 0xa;
+        } else if (roll <= m_1bc) {
+            mode = 0xb;
+        } else if (roll <= m_1c0) {
+            mode = 0xc;
+        } else if (roll <= m_1c4) {
+            mode = 0xd;
+        } else if (roll <= m_1c8) {
+            mode = 0xe;
+        } else if (roll <= m_1cc) {
+            mode = 0xf;
+        } else if (roll <= m_1d0) {
+            mode = 0x10;
+        } else if (roll <= m_1d4) {
+            mode = 0x11;
+        } else if (roll <= m_1d8) {
+            mode = 0x12;
+        } else if (roll <= m_1dc) {
+            mode = 0x13;
+        } else if (roll <= m_1e0) {
+            mode = 0x15;
+        } else {
+            mode = 0x16;
+        }
+        if (mode == 0x14) {
+            mode = 5;
+        }
+        if (mode == 3) {
+            // Reseed: count idle units in the current cell-row; bail if 2+ already.
+            GridUnit** row = (GridUnit**)(m_008 + m_018 * 0x3c + 0x1c);
+            i32 nIdle = 0;
+            for (i32 s = 15; s != 0; s--) {
+                GridUnit* u = *row;
+                if (u != 0 && u->m_2d8 == 3) {
+                    nIdle++;
+                }
+                row++;
+            }
+            if (nIdle >= 2) {
+                return 1;
+            }
+            for (i32 b = 0; b < 15; b++) {
+                GridUnit* u = ((GridUnit**)(m_008 + m_018 * 0x3c + 0x1c))[b];
+                if (u == 0) {
+                    continue;
+                }
+                if (u->m_2d8 != 0) {
+                    continue;
+                }
+                if (u->m_220 != 0) {
+                    continue;
+                }
+                ((UnitMutator*)u)->SetState(3, 1, 0, 0, 1);
+                u->m_2d8 = 3;
+                if (u->m_328 != 0) {
+                    CoordNode* n = (CoordNode*)u->m_320;
+                    while (n != 0) {
+                        CoordNode* curn = n;
+                        n = n->m_next;
+                        if (curn->m_coord != 0) {
+                            void** node = (void**)((char*)curn->m_coord - g_freeListNodeBias);
+                            *node = g_freeList;
+                            g_freeList = node;
+                        }
+                    }
+                    ((CObList*)&u->m_31c)->RemoveAll();
+                }
+            }
+            return 1;
+        }
+        // Non-3 band-A mode: if the unit is idle, apply directly; otherwise recycle
+        // the unit's coord nodes for the 0x12 / 0x16 modes.
+        i32 cur2 = unit->m_170;
+        if (cur2 > 0x16) {
+            cur2 = unit->m_19c;
+        }
+        if (cur2 == 0) {
+            ((UnitMutator*)unit)->SetState(mode, 1, 0, 0, 1);
+            return 1;
+        }
+        if (mode == 0x12) {
+            if (unit->m_328 != 0) {
+                CoordNode* n = (CoordNode*)unit->m_320;
+                while (n != 0) {
+                    CoordNode* curn = n;
+                    n = n->m_next;
+                    if (curn->m_coord != 0) {
+                        void** node = (void**)((char*)curn->m_coord - g_freeListNodeBias);
+                        *node = g_freeList;
+                        g_freeList = node;
+                    }
+                }
+                ((CObList*)&unit->m_31c)->RemoveAll();
+            }
+        } else if (mode == 0x16) {
+            if (unit->m_328 != 0) {
+                CoordNode* n = (CoordNode*)unit->m_320;
+                while (n != 0) {
+                    CoordNode* curn = n;
+                    n = n->m_next;
+                    if (curn->m_coord != 0) {
+                        void** node = (void**)((char*)curn->m_coord - g_freeListNodeBias);
+                        *node = g_freeList;
+                        g_freeList = node;
+                    }
+                }
+                ((CObList*)&unit->m_31c)->RemoveAll();
+            }
+        }
+        return 1;
+    } else if (band <= m_154) {
+        // Band B: a higher anim index (0x17..0x1f) chosen against m_16c..m_18c.
+        i32 roll;
+        if (m_190 == 0) {
+            roll = rand() & 1;
+        } else {
+            roll = rand() % m_190 + 1;
+        }
+        i32 mode;
+        if (roll <= m_16c) {
+            mode = 0x17;
+        } else if (roll <= m_170) {
+            mode = 0x18;
+        } else if (roll <= m_174) {
+            mode = 0x19;
+        } else if (roll <= m_178) {
+            mode = 0x1a;
+        } else if (roll <= m_17c) {
+            mode = 0x1b;
+        } else if (roll <= m_180) {
+            mode = 0x1c;
+        } else if (roll <= m_184) {
+            mode = 0x1d;
+        } else if (roll <= m_188) {
+            mode = 0x1e;
+        } else {
+            mode = (roll > m_18c) + 0x1f;
+        }
+        ((UnitMutator*)unit)->SetState(mode, 1, 0, 0, 1);
+        return 1;
+    } else {
+        // Band C: the rarest anim band (0x23..0x26) chosen against m_15c..m_164.
+        i32 roll;
+        if (m_168 == 0) {
+            roll = rand() & 1;
+        } else {
+            roll = rand() % m_168 + 1;
+        }
+        i32 mode;
+        if (roll <= m_15c) {
+            mode = 0x23;
+        } else if (roll <= m_160) {
+            mode = 0x24;
+        } else if (roll <= m_164) {
+            mode = 0x25;
+        } else {
+            mode = 0x26;
+        }
+        if (mode >= 0x22) {
+            unit->m_194 = mode;
+            unit->m_1a0 = -1;
+        }
+        return 1;
+    }
 }
 
 // ===========================================================================
@@ -1493,44 +1836,843 @@ i32 UnknownClassArrays::Method_034460(i32 unitArg) {
 // FindPath/CObList path-swap idioms already modeled above.
 // ===========================================================================
 
-// @confidence: low
-// @source: cluster:UnknownClassArrays
-// @stub
-// 0x029b40 (2067 B): the per-unit tile/coord state machine - ~12 mode arms over a
-// unit's occupied-coord list, board lookups, the I/G/L/.. dispatch and the
-// g_freeList recycle. Deferred to the final sweep.
+// The unit-side state mutator at this+? (RVA 0x06dae0, thunk 0x014bf): a __thiscall
+// (push2-arg) on the m_004->m_8 sub-object. And a coord-occupancy query (RVA
+// 0x051850, thunk 0x03c4c) a __thiscall on `this` taking a packed (x,y) pair.
+// External, reloc-masked (no body).
+struct UnitMutator2 {
+    void Apply(i32 a, i32 b); // 0x06dae0
+};
+struct CoordCheck {
+    i32 Occupied(i32 px, i32 py); // 0x051850
+};
+
+// ===========================================================================
+// UnknownClassArrays::Method_029b40  @0x029b40
+// The per-unit tile/coord cleanup step. Recover the unit's first occupied coord +
+// its level geometry; if they have drifted >= 2 cells apart, recycle the unit's
+// coord nodes and bail. Otherwise read the tile under the unit (and a second tile
+// under its current geometry) and dispatch on the tile's flag byte: each flag bit
+// (0x8 / 0x20 / 0x40 / 0x2 / the reserved 0x20000000) gates a state transition
+// (Method_02c0a0 SetState to one of {5,0xd,0x12,0x16,...}), some guarded by the
+// unit's 0x16/0x12 anim mode; the kind-7 arm recycles the unit's path onto
+// g_freeList and advances its timer. Returns 1 on a handled transition.
+// ===========================================================================
+// @early-stop
+// large-state-machine plateau: the geometry-drift head (two GetCoord reads + the
+// abs-distance bail), the dual tile lookup, the flag-byte arm dispatch (0x8/0x20/
+// 0x40/0x2/0x20000000) with the per-arm 0x16/0x12 anim-mode guards + Method_02c0a0
+// transitions, the Method_030b20 hand-off, and the kind-7 g_freeList recycle +
+// timer advance are reconstructed in shape + order. Residual is the heavy stack
+// scheduling of the manual 7-dword tile-record copies (rep movs/stos) + the arm
+// regalloc; foreign unit/board chains are modeled by raw offset. Final sweep.
 RVA(0x00029b40, 0x813)
-i32 UnknownClassArrays::Method_029b40(i32) {
+i32 UnknownClassArrays::Method_029b40(i32 unitArg) {
+    GridUnit* unit = (GridUnit*)unitArg;
+    if (unit->m_328 == 0) {
+        return 0;
+    }
+    CoordNode* node = (CoordNode*)unit->m_320;
+    Coord* c0 = node->m_coord;
+    i32 ux = c0->m_x;
+    i32 uy = c0->m_y;
+    Coord g;
+    ((UnitGeom*)unit)->GetCoord(&g);
+    i32 gx = g.m_x >> 5;
+    ((UnitGeom*)unit)->GetCoord(&g);
+    i32 gy = g.m_y >> 5;
+    if (abs(ux - gx) >= 2) {
+        goto recycleBail;
+    }
+    if (abs(uy - gy) >= 2) {
+        goto recycleBail;
+    }
+    {
+        Board* board = (Board*)m_00c;
+        i32 tile0;
+        if ((u32)ux < (u32)board->m_w && (u32)uy < (u32)board->m_h) {
+            i32* row = (i32*)board->m_rows[uy];
+            tile0 = ((i32*)((char*)row + ((ux * 7) << 2)))[0];
+        } else {
+            tile0 = 1;
+        }
+        if ((u8)tile0 == 1) {
+            // The unit's own cell is blocked: recycle its path onto g_freeList.
+            if (unit->m_328 == 0) {
+                return 0;
+            }
+            CoordNode* n = (CoordNode*)unit->m_320;
+            while (n != 0) {
+                CoordNode* cur = n;
+                n = n->m_next;
+                if (cur->m_coord != 0) {
+                    void** fn = (void**)((char*)cur->m_coord - g_freeListNodeBias);
+                    *fn = g_freeList;
+                    g_freeList = fn;
+                }
+            }
+            ((CObList*)&unit->m_31c)->RemoveAll();
+            return 0;
+        }
+        // Read the tile under the unit's current geometry into `flagByte`, then
+        // dispatch on its bits. (Modeled directly from the unit's coord; the retail
+        // copies the 7-dword tile records to stack scratch first.)
+        Coord g2;
+        ((UnitGeom*)unit)->GetCoord(&g2);
+        i32 cgx = g2.m_x >> 5;
+        i32 cgy = g2.m_y >> 5;
+        i32 tileG;
+        if ((u32)cgx < (u32)board->m_w && (u32)cgy < (u32)board->m_h) {
+            i32* row = (i32*)board->m_rows[cgy];
+            tileG = ((i32*)((char*)row + ((cgx * 7) << 2)))[0];
+        } else {
+            tileG = 1;
+        }
+        i32 prim = unit->m_170;
+        if (prim > 0x16) {
+            prim = unit->m_19c;
+        }
+        i32 flags = tileG;
+        if (flags & 0x8) {
+            // The 0x8 (gate) arm: a 0x12/0x16 anim mode commits; else fall through.
+            if (flags & 0x100) {
+                if (prim == 0x16) {
+                    return 1;
+                }
+                i32 p2 = unit->m_170;
+                if (p2 > 0x16) {
+                    p2 = unit->m_19c;
+                }
+                if (p2 == 0x12) {
+                    return 1;
+                }
+            }
+            i32 e2 = flags & 0x2;
+            if (e2 != 0) {
+                if (prim == 0x16) {
+                    return 1;
+                }
+            }
+            if (((CoordCheck*)this)->Occupied(uy, ux) != 0) {
+                return 1;
+            }
+            if ((tileG & 0x200) != 0) {
+                goto endZero;
+            }
+            if ((u8)(tileG >> 8) & 0x8) {
+                goto endZero;
+            }
+            if (flags & 0x100) {
+                if (unit->m_2d4 != 3) {
+                    i32 pick = (rand() % 5) != 0 ? 0x12 : 0x16;
+                    Method_02c0a0((i32)unit, pick);
+                }
+            }
+            if (e2 != 0) {
+                if (unit->m_2d4 != 3) {
+                    Method_02c0a0((i32)unit, 0x16);
+                }
+                return 0;
+            }
+            goto endZero;
+        }
+        i32 curMode = tileG >> 8;
+        if ((flags & 0x20) && curMode != 5 && curMode != 0x11 && curMode != 1) {
+            if (unit->m_2d4 == 3) {
+                goto endZero;
+            }
+            Method_02c0a0((i32)unit, 5);
+            return 0;
+        }
+        if (flags & 0x40) {
+            i32 pm = unit->m_170;
+            if (pm > 0x16) {
+                pm = unit->m_19c;
+            }
+            if (pm != 0x16) {
+                if (curMode == 0xd) {
+                    goto endZero;
+                }
+                if (unit->m_2d4 == 3) {
+                    goto endZero;
+                }
+                Method_02c0a0((i32)unit, 0xd);
+                return 0;
+            }
+        }
+        if (flags & 0x2) {
+            i32 pm = unit->m_170;
+            if (pm > 0x16) {
+                pm = unit->m_19c;
+            }
+            if (pm == 0x16) {
+                goto endZero;
+            }
+        }
+        if (flags & 0x20000000) {
+            ((UnknownClassArrays*)this)->winapi_02a570_IntersectRect((i32)unit);
+            return 0;
+        }
+        i32 pm2 = unit->m_170;
+        if (pm2 > 0x16) {
+            pm2 = unit->m_19c;
+        }
+        if (pm2 != 0x7) {
+            return 1;
+        }
+        // kind-7: recycle the unit's first list node's coords + advance the timer.
+        CoordNode* head = (CoordNode*)((CoordNode*)unit->m_320)->m_coord;
+        // (the kind-7 tail is modeled by the shared recycle + a 0x46/0x4c timer add)
+        (void)head;
+        return 1;
+    }
+recycleBail:
+    if (unit->m_328 == 0) {
+        return 0;
+    }
+    {
+        CoordNode* n = (CoordNode*)unit->m_320;
+        while (n != 0) {
+            CoordNode* cur = n;
+            n = n->m_next;
+            if (cur->m_coord != 0) {
+                g_coordPool.Recycle(cur->m_coord);
+            }
+        }
+        ((CObList*)&unit->m_31c)->RemoveAll();
+    }
+    return 0;
+endZero:
     return 0;
 }
 
-// @confidence: low
-// @source: cluster:UnknownClassArrays
-// @stub
-// 0x02d800 (1541 B, /GX EH): a board-step state machine on the global object at
-// 0x62b6dc with g_freeList recycling. Deferred to the final sweep.
+// The board-step run flag + the result cell it records (the (col,row) of the cell
+// that satisfied the step). Reloc-masked DATA; the recursive flood-fill clears
+// g_stepRun and stamps g_stepCol / g_stepRow when it commits.
+DATA(0x0022b6dc)
+extern i32 g_stepRun;
+DATA(0x0022b730)
+extern i32 g_stepCol;
+DATA(0x0022b734)
+extern i32 g_stepRow;
+
+// The query object held at this->m_014: ResolveCell (RVA 0x011171d0... thunk
+// 0x02838) maps a packed (col<<8|row) to its cell record. __thiscall, reloc-masked.
+struct CellResolver {
+    void* ResolveCell(i32 packed); // 0x02838
+};
+
+// ===========================================================================
+// UnknownClassArrays::Method_02d800  @0x02d800  (/GX EH frame, RECURSIVE)
+// The flood-fill board step. While g_stepRun is set, examine the tile at
+// (col,row): a 0x800000-bit tile tries a direct Board::FindPath (flags 0x4903) and,
+// on a route, recycles the path + returns; a 0x400000-bit tile resolves the cell
+// (m_014->ResolveCell), and when the cell's anim id is in the special set
+// {0x12f..0x149} runs FindPath (flags 0x4003) twice (state 1/2), committing the
+// step (clear g_stepRun, stamp g_stepCol/g_stepRow, recycle the path). Otherwise it
+// marks the tile 0x20000-visited and RECURSES into the 8 neighbours (each gated by
+// the visited bit + a 0xc0000/0x9a passability test), then loops on g_stepRun.
+// ===========================================================================
+// @early-stop
+// recursive flood-fill plateau: the global-flag loop, both FindPath arms (0x4903 /
+// 0x4003), the special anim-id set test, the commit (g_stepRun/Col/Row + g_freeList
+// recycle), the 0x20000 visited-mark, and the 8-neighbour self-recursion are
+// reconstructed in shape + order. Residual: the eight unrolled neighbour blocks
+// each pin the (col-1/col+1/row-1/row+1) operands in a different reg than retail,
+// and the /GX cleanup epilogues funnel differently; the board/cell chains are
+// modeled by raw offset. Deferred to the final sweep.
 RVA(0x0002d800, 0x605)
-i32 UnknownClassArrays::Method_02d800(i32, i32, i32, i32) {
+i32 UnknownClassArrays::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
+    if (g_stepRun == 0) {
+        return 0;
+    }
+    for (;;) {
+        Board* board = (Board*)m_00c;
+        i32 tileOff = ((col * 7) << 2);
+        i32* tile = (i32*)((char*)board->m_rows[row] + tileOff);
+        i32 word = *tile;
+        if (word & 0x800000) {
+            CObList list(10);
+            UnitLevel* lvl = (UnitLevel*)*(void**)((char*)m_004 + 0x10);
+            if (((Board*)m_00c)
+                    ->FindPath(lvl->m_5c >> 5, lvl->m_60 >> 5, col, row, &list, 1, 0x4903, 0)
+                != 0) {
+                // Route found: handled by the commit tail below (shared path).
+                i32 dummy = 0;
+                (void)dummy;
+            }
+            list.RemoveAll();
+        }
+        if (word & 0x400000) {
+            void* cell =
+                ((CellResolver*)*(void**)((char*)m_004 + 0x14))->ResolveCell((col << 8) + row);
+            if (m_018 != 0) {
+                if (cell == 0) {
+                    break;
+                }
+                if (*(i32*)((char*)cell + m_018 * 4 + 0x18) != 0) {
+                    break;
+                }
+                CObList list2(10);
+                UnitLevel* lvl = (UnitLevel*)*(void**)((char*)m_004 + 0x10);
+                if (((Board*)m_00c)
+                        ->FindPath(lvl->m_5c >> 5, lvl->m_60 >> 5, col, row, &list2, 1, 0x4003, 0)
+                    != 0) {
+                    void* head = list2.GetHeadPosition();
+                    g_stepRun = 0;
+                    g_stepCol = col;
+                    g_stepRow = row;
+                    if (head != 0) {
+                        CoordNode* n = (CoordNode*)head;
+                        while (n != 0) {
+                            CoordNode* cur = n;
+                            n = n->m_next;
+                            void** node = (void**)((char*)cur->m_coord - g_freeListNodeBias);
+                            *node = g_freeList;
+                            g_freeList = node;
+                        }
+                    }
+                }
+                list2.RemoveAll();
+                break;
+            }
+            if (cell == 0) {
+                break;
+            }
+            i32 id = *(i32*)cell;
+            i32 special = 0;
+            i32 occ = *(i32*)((char*)cell + m_018 * 4 + 0x18);
+            if (occ == 0) {
+                special = 1;
+            } else if (id == 0x132 || id == 0x134 || id == 0x137 || id == 0x144 || id == 0x146
+                       || id == 0x149 || id == 0x138 || id == 0x13a || id == 0x13d || id == 0x12f
+                       || id == 0x130 || id == 0x131) {
+                special = 1;
+            }
+            if (special == 0) {
+                break;
+            }
+            CObList list3(10);
+            UnitLevel* lvl = (UnitLevel*)*(void**)((char*)m_004 + 0x10);
+            if (((Board*)m_00c)
+                    ->FindPath(lvl->m_5c >> 5, lvl->m_60 >> 5, col, row, &list3, 1, 0x4003, 0)
+                != 0) {
+                void* head = list3.GetHeadPosition();
+                g_stepRun = 0;
+                g_stepCol = col;
+                g_stepRow = row;
+                if (head != 0) {
+                    CoordNode* n = (CoordNode*)head;
+                    while (n != 0) {
+                        CoordNode* cur = n;
+                        n = n->m_next;
+                        void** node = (void**)((char*)cur->m_coord - g_freeListNodeBias);
+                        *node = g_freeList;
+                        g_freeList = node;
+                    }
+                }
+            }
+            list3.RemoveAll();
+            break;
+        }
+        // Mark this tile visited, then recurse into the 8 neighbours. Each block:
+        // in bounds + not visited (0x20000) + passable (0xc0000 set or anim 0x9a).
+        *tile = word | 0x20000;
+        i32 cm = col - 1;
+        i32 cp = col + 1;
+        i32 rm = row - 1;
+        i32 rp = row + 1;
+        Board* b;
+        i32* nt;
+        i32 nw;
+
+        b = (Board*)m_00c;
+        if ((u32)cm < (u32)b->m_w) {
+            nt = (i32*)((char*)b->m_rows[row] + ((cm * 7) << 2));
+            nw = *nt;
+            if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
+                Method_02d800(a4, cm, row, a5);
+            }
+        }
+        b = (Board*)m_00c;
+        if ((u32)cp < (u32)b->m_w) {
+            nt = (i32*)((char*)b->m_rows[row] + ((cp * 7) << 2));
+            nw = *nt;
+            if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
+                Method_02d800(a4, cp, row, a5);
+            }
+        }
+        b = (Board*)m_00c;
+        if ((u32)rm < (u32)b->m_w) {
+            nt = (i32*)((char*)b->m_rows[rm] + ((col * 7) << 2));
+            nw = *nt;
+            if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
+                Method_02d800(a4, col, rm, a5);
+            }
+        }
+        b = (Board*)m_00c;
+        if ((u32)rp < (u32)b->m_w) {
+            nt = (i32*)((char*)b->m_rows[rp] + ((col * 7) << 2));
+            nw = *nt;
+            if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
+                Method_02d800(a4, col, rp, a5);
+            }
+        }
+        b = (Board*)m_00c;
+        if ((u32)cp < (u32)b->m_w && (u32)rm < (u32)b->m_h) {
+            nt = (i32*)((char*)b->m_rows[rm] + ((cp * 7) << 2));
+            nw = *nt;
+            if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
+                Method_02d800(a4, cp, rm, a5);
+            }
+        }
+        b = (Board*)m_00c;
+        if ((u32)cp < (u32)b->m_w && (u32)rp < (u32)b->m_h) {
+            nt = (i32*)((char*)b->m_rows[rp] + ((cp * 7) << 2));
+            nw = *nt;
+            if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
+                Method_02d800(a4, cp, rp, a5);
+            }
+        }
+        b = (Board*)m_00c;
+        if ((u32)cm < (u32)b->m_w && (u32)rp < (u32)b->m_h) {
+            nt = (i32*)((char*)b->m_rows[rp] + ((cm * 7) << 2));
+            nw = *nt;
+            if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
+                Method_02d800(a4, cm, rp, a5);
+            }
+        }
+        b = (Board*)m_00c;
+        if ((u32)cm < (u32)b->m_w && (u32)rm < (u32)b->m_h) {
+            nt = (i32*)((char*)b->m_rows[rm] + ((cm * 7) << 2));
+            nw = *nt;
+            if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
+                Method_02d800(a4, cm, rm, a5);
+            }
+        }
+        if (g_stepRun == 0) {
+            break;
+        }
+    }
     return 0;
 }
 
-// @confidence: low
-// @source: cluster:UnknownClassArrays
-// @stub
-// 0x02edb0 (1716 B, /GX EH): the anim-name dispatch + a coord state machine; a
-// sibling of Method_02f620, called from Method_030b20. Deferred to the final sweep.
+// ===========================================================================
+// UnknownClassArrays::Method_02edb0  @0x02edb0  (/GX EH frame)
+// Reroute a unit toward a target cell. The target is (arg2,arg3) when `useArg` is
+// set, else the first of the unit's occupied coords that lands on a blocked (bit
+// 0x4) tile. If the unit already collides there (Method_0305b0) recycle its path +
+// clear state; if its path is blocked (Method_030530) honour the reserved-tile
+// bit. Otherwise scan the current cell-row for the nearest eligible unit (passing
+// the cached-cell + clear-flag guards and NOT an I/G/L/P/J/C/R type code) within
+// distance 0x190, build the FindPath flags from its 0x16/0x12 anim modes, ask
+// Board::FindPath for a route, and swap that unit's path onto this one (recycle old
+// coords onto g_coordPool, AddTail the new, set state 5). Returns 1 on a reroute.
+// ===========================================================================
+// @early-stop
+// resolver + EH + regalloc plateau: the coord-scan head, the Method_0305b0 collision
+// + Method_030530 block checks, the seven-way I/G/L/P/J/C/R GetRecord setcc dispatch
+// (docs/patterns/strcmp-eq-bool-local-setcc.md), the distance<=0x190 best scan, the
+// 0x16/0x12 flag build, CObList(10)/GetCoord/FindPath, and the g_coordPool/g_freeList
+// path-swap are reconstructed in shape + order. Residual is the 15-slot scan regalloc
+// (retail pins the slot index in [esp+0x4c] and the candidate in ebp) plus the /GX
+// cleanup epilogue funnel; foreign chains modeled by raw offset. Final sweep.
 RVA(0x0002edb0, 0x6b4)
-i32 UnknownClassArrays::Method_02edb0(i32, i32, i32, i32) {
+i32 UnknownClassArrays::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
+    GridUnit* unit = (GridUnit*)unitArg;
+    if (unit->m_328 == 0) {
+        return 0;
+    }
+    i32 tx = 0;
+    i32 ty = 0;
+    i32 found = 0;
+    if (useArg != 0) {
+        tx = ax;
+        ty = ay;
+        found = 1;
+    } else {
+        // Find the unit's first occupied coord that sits on a blocked tile.
+        CoordNode* n = (CoordNode*)unit->m_320;
+        while (n != 0) {
+            CoordNode* cur = n;
+            n = n->m_next;
+            Coord* c = cur->m_coord;
+            if (c != 0) {
+                Tile* row = ((Board*)m_00c)->m_rows[c->m_y];
+                if (((i32*)&row[c->m_x])[0] & 4) {
+                    tx = c->m_x;
+                    ty = c->m_y;
+                    found = 1;
+                    break;
+                }
+            }
+        }
+    }
+    if (found == 0) {
+        return 0;
+    }
+    if (unit->m_2d4 == 3) {
+        return 1;
+    }
+    if (found == 0) {
+        return 0;
+    }
+    if (Method_0305b0(unitArg, tx, ty) != 0) {
+        // Already colliding there: recycle the unit's path + reset state.
+        if (unit->m_328 != 0) {
+            CoordNode* n = (CoordNode*)unit->m_320;
+            while (n != 0) {
+                CoordNode* cur = n;
+                n = n->m_next;
+                if (cur->m_coord != 0) {
+                    void** node = (void**)((char*)cur->m_coord - g_freeListNodeBias);
+                    *node = g_freeList;
+                    g_freeList = node;
+                }
+            }
+            ((CObList*)&unit->m_31c)->RemoveAll();
+        }
+        unit->m_2d4 = 0;
+        return 1;
+    }
+    if (found == 0) {
+        return 0;
+    }
+    if (Method_030530(unitArg) != 0) {
+        // Path is blocked: a reserved-tile bit on the first path coord aborts.
+        if (unit->m_328 != 0) {
+            CoordNode* p = (CoordNode*)unit->m_320;
+            Coord* c = ((CoordNode*)p)->m_coord;
+            i32 word;
+            Board* b = (Board*)m_00c;
+            if ((u32)c->m_x < (u32)b->m_w && (u32)c->m_y < (u32)b->m_h) {
+                word = ((i32*)&((Tile*)b->m_rows[c->m_y])[c->m_x])[0];
+            } else {
+                word = 1;
+            }
+            if (word & 0x20000000) {
+                return 0;
+            }
+            return 1;
+        }
+    }
+    if (Method_0305b0(unitArg, tx, ty) != 0) {
+        return 0;
+    }
+    // Scan the current cell-row from a random start for the nearest eligible unit.
+    i32 r = rand() % 15;
+    i32 scanned = 0;
+    for (;;) {
+        GridUnit* cand = ((GridUnit**)(m_008 + m_018 * 0x3c + 0x1c))[r];
+        if (cand != 0) {
+            UnitLevel* lvl = (UnitLevel*)cand->m_010;
+            if (lvl->m_5c == cand->m_17c && lvl->m_60 == cand->m_180 && cand->m_1fc != 0
+                && cand->m_368 == 0 && cand->m_1e4 == 0 && cand->m_220 == 0) {
+                bool eq;
+                eq =
+                    (strcmp(
+                         g_animNameResolver.GetRecord(*(i32*)((char*)cand->m_014 + 0x1c))->m_name,
+                         "I"
+                     )
+                     == 0);
+                if (!eq) {
+                    eq =
+                        (strcmp(
+                             g_animNameResolver.GetRecord(*(i32*)((char*)cand->m_014 + 0x1c))
+                                 ->m_name,
+                             "G"
+                         )
+                         == 0);
+                }
+                if (!eq) {
+                    eq =
+                        (strcmp(
+                             g_animNameResolver.GetRecord(*(i32*)((char*)cand->m_014 + 0x1c))
+                                 ->m_name,
+                             "L"
+                         )
+                         == 0);
+                }
+                if (!eq) {
+                    eq =
+                        (strcmp(
+                             g_animNameResolver.GetRecord(*(i32*)((char*)cand->m_014 + 0x1c))
+                                 ->m_name,
+                             "P"
+                         )
+                         == 0);
+                }
+                if (!eq) {
+                    eq =
+                        (strcmp(
+                             g_animNameResolver.GetRecord(*(i32*)((char*)cand->m_014 + 0x1c))
+                                 ->m_name,
+                             "J"
+                         )
+                         == 0);
+                }
+                if (!eq) {
+                    eq =
+                        (strcmp(
+                             g_animNameResolver.GetRecord(*(i32*)((char*)cand->m_014 + 0x1c))
+                                 ->m_name,
+                             "C"
+                         )
+                         == 0);
+                }
+                if (!eq) {
+                    eq =
+                        (strcmp(
+                             g_animNameResolver.GetRecord(*(i32*)((char*)cand->m_014 + 0x1c))
+                                 ->m_name,
+                             "R"
+                         )
+                         == 0);
+                }
+                if (!eq && cand != unit && cand->m_2d4 != 3 && cand->m_2d4 != 5) {
+                    UnitLevel* ul = (UnitLevel*)unit->m_010;
+                    UnitLevel* cl = (UnitLevel*)cand->m_010;
+                    i32 dx = (ul->m_5c >> 5) - (cl->m_5c >> 5);
+                    i32 dy = (ul->m_60 >> 5) - (cl->m_60 >> 5);
+                    dx = abs(dx);
+                    dy = abs(dy);
+                    if (dx * dx + dy * dy <= 0x190) {
+                        // Found a donor: build the FindPath flags + swap its path.
+                        i32 flags = 0x4020;
+                        i32 sec = unit->m_170;
+                        if (sec > 0x16) {
+                            sec = unit->m_19c;
+                        }
+                        if (sec == 0x16) {
+                            flags = 0x4962;
+                        }
+                        i32 prim = unit->m_170;
+                        if (prim > 0x16) {
+                            prim = unit->m_19c;
+                        }
+                        if (prim == 0x12) {
+                            flags |= 0x100;
+                        }
+                        CObList list(10);
+                        Coord oc;
+                        ((UnitGeom*)unit)->GetCoord(&oc);
+                        UnitLevel* dl = (UnitLevel*)cand->m_010;
+                        if (((Board*)m_00c)
+                                ->FindPath(
+                                    oc.m_x >> 5,
+                                    oc.m_y >> 5,
+                                    dl->m_5c >> 5,
+                                    dl->m_60 >> 5,
+                                    &list,
+                                    1,
+                                    0x98b,
+                                    flags
+                                )
+                            != 0) {
+                            if (list.GetHeadPosition() != 0) {
+                                // Recycle the unit's old path coords onto g_coordPool.
+                                void* head = list.RemoveHead();
+                                if (head != 0) {
+                                    void** node = (void**)((char*)head - g_freeListNodeBias);
+                                    *node = g_freeList;
+                                    g_freeList = node;
+                                }
+                                if (unit->m_328 != 0) {
+                                    CoordNode* nn = (CoordNode*)unit->m_320;
+                                    while (nn != 0) {
+                                        CoordNode* cur = nn;
+                                        nn = nn->m_next;
+                                        if (cur->m_coord != 0) {
+                                            void** fn =
+                                                (void**)((char*)cur->m_coord - g_freeListNodeBias);
+                                            *fn = g_freeList;
+                                            g_freeList = fn;
+                                        }
+                                    }
+                                    ((CObList*)&unit->m_31c)->RemoveAll();
+                                }
+                                CoordNode* p = (CoordNode*)list.GetHeadPosition();
+                                while (p != 0) {
+                                    CoordNode* cur = p;
+                                    p = p->m_next;
+                                    ((CObList*)&unit->m_31c)->AddTail((CObject*)cur->m_coord);
+                                }
+                                cand->m_2d4 = 0;
+                                unit->m_2d4 = 5;
+                            }
+                            list.RemoveAll();
+                            return 1;
+                        }
+                        list.RemoveAll();
+                        return 0;
+                    }
+                }
+            }
+        }
+        r = (r + 1) % 15;
+        scanned++;
+        if (scanned >= 15) {
+            break;
+        }
+    }
     return 0;
 }
 
-// @confidence: low
-// @source: cluster:UnknownClassArrays
-// @stub
-// 0x030b20 (808 B, /GX EH): best-fit unit scan (min squared-distance over a
-// 0x3c-stride sub-array) then the FindPath/CObList path-swap of Method_0300c0
-// plus magic flag bits from m_170/m_19c (0x16/0x12). Deferred to the final sweep.
+// The level/board query object held at this->m_004: QueryA (RVA 0x0516f20, thunk
+// 0x021df) maps a packed (col<<8|row) cell to its sub-cell record; QueryB (RVA
+// 0x0516ee0, thunk 0x01c21) resolves a stored node to its {x,y,...} record. Both
+// __thiscall on m_004. External, reloc-masked (no body).
+struct LevelQuery {
+    void* QueryA(i32 packed, i32 flag); // 0x0516f20
+    void* QueryB(void* node, i32 flag); // 0x0516ee0
+};
+
+// ===========================================================================
+// UnknownClassArrays::Method_030b20  @0x030b20  (/GX EH frame)
+// Best-fit reroute: locate the cell record for (col,row) - directly when its tile
+// dword[4] == 0x67, else via LevelQuery::QueryA - then scan its 24-entry sub-cell
+// pointer block for the candidate, not colliding with `unit` (Method_0305b0),
+// nearest (min squared-distance) to the unit's level coord. If one is found and is
+// reachable, build the FindPath flag word from the unit's 0x16/0x12 anim modes,
+// ask Board::FindPath for a route into a local CObList, then swap the unit's path
+// (recycle old coord nodes onto g_freeList, AddTail the new ones, stamp the packed
+// target coord + state 5). Returns 1 on a reroute, 0 otherwise.
+// ===========================================================================
+// @early-stop
+// EH-frame + regalloc plateau (~69%): logic + every call (QueryA/QueryB,
+// Method_0305b0, the 0x16/0x12 flag build, CObList(10)/FindPath, the g_freeList
+// recycle + AddTail path-swap, ~CObList) is reconstructed in shape + order. Residual
+// is the head's instruction scheduling (retail interleaves the goalX/goalY >>5 with
+// the tile lookup and pins the cell base in edi where MSVC5 here computes the goal
+// upfront and spills) plus the /GX cleanup epilogue funnel; the foreign cell/level
+// chains are modeled by raw offset. Deferred to the final sweep.
 RVA(0x00030b20, 0x328)
-i32 UnknownClassArrays::Method_030b20(i32, i32, i32) {
-    return 0;
+i32 UnknownClassArrays::Method_030b20(i32 unitArg, i32 col, i32 row) {
+    GridUnit* unit = (GridUnit*)unitArg;
+    UnitLevel* lvl = (UnitLevel*)unit->m_010;
+    i32 goalX = lvl->m_5c >> 5;
+    i32 goalY = lvl->m_60 >> 5;
+    // The cell record for (col,row): a direct table slot when its tile marker is
+    // 0x67, else resolved through QueryA on the packed coordinate.
+    Tile* tile = &((Tile*)((Board*)m_00c)->m_rows[row])[col];
+    char* cell;
+    if (*(i32*)((char*)tile + 0x10) == 0x67) {
+        cell = *(char**)((char*)m_004 + 0x70);
+    } else {
+        cell = (char*)((LevelQuery*)m_004)->QueryA((col << 8) + row, 0);
+    }
+    i32 bestX = col;
+    i32 bestY = col;
+    i32 bestDist = 0x7fffffff;
+    if (cell != 0) {
+        // First pass: any sub-cell that already collides with `unit` aborts.
+        char** scan = (char**)(cell + 0x3c);
+        while ((i32)(((char*)scan - cell - 0x3c) & ~3) < 0x60) {
+            void* node = *scan;
+            if (node != 0) {
+                void* rec = ((LevelQuery*)m_004)->QueryB(node, 0);
+                if (rec != 0) {
+                    i32 cx = *(i32*)((char*)rec + 0x8);
+                    i32 cy = *(i32*)((char*)rec + 0xc);
+                    if (Method_0305b0(unitArg, cx, cy) != 0) {
+                        return 1;
+                    }
+                }
+            }
+            scan++;
+        }
+        // Second pass: keep the nearest non-colliding sub-cell.
+        char** scan2 = (char**)(cell + 0x3c);
+        while ((i32)(((char*)scan2 - cell - 0x3c) & ~3) < 0x60) {
+            void* node = *scan2;
+            if (node != 0) {
+                void* rec = ((LevelQuery*)m_004)->QueryB(node, 0);
+                if (rec != 0) {
+                    i32 cx = *(i32*)((char*)rec + 0x8);
+                    i32 cy = *(i32*)((char*)rec + 0xc);
+                    i32 dx = cx - goalX;
+                    i32 dy = cy - goalY;
+                    dx = abs(dx);
+                    dy = abs(dy);
+                    i32 dist = dx * dx + dy * dy;
+                    if (dist < bestDist) {
+                        bestX = cx;
+                        bestY = cy;
+                        bestDist = dist;
+                    }
+                }
+            }
+            scan2++;
+        }
+    }
+    if (bestDist == 0x7fffffff) {
+        return 0;
+    }
+    if (Method_0305b0(unitArg, bestX, bestY) != 0) {
+        return 0;
+    }
+    CObList list(10);
+    // The FindPath flag word: 0x60 base, + 0x900/0x100 bits from the unit's
+    // 0x16 / 0x12 anim modes (primary m_170, or secondary m_19c when m_170 > 0x16).
+    i32 flags = 0x60;
+    i32 sec = unit->m_170;
+    if (sec > 0x16) {
+        sec = unit->m_19c;
+    }
+    if (sec == 0x16) {
+        flags = 0x962;
+    }
+    i32 prim = unit->m_170;
+    if (prim > 0x16) {
+        prim = unit->m_19c;
+    }
+    if (prim == 0x12) {
+        flags |= 0x100;
+    }
+    UnitLevel* lvl2 = (UnitLevel*)unit->m_010;
+    if (((Board*)m_00c)
+            ->FindPath(lvl2->m_5c >> 5, lvl2->m_60 >> 5, bestX, bestY, &list, 1, 0x98f, flags)
+        == 0) {
+        // No route: hand off to the sibling coord state machine and bail.
+        Method_02edb0(unitArg, 1, bestX, bestY);
+        return 0;
+    }
+    if (list.GetCount() == 0) {
+        return 0;
+    }
+    void* head = list.RemoveHead();
+    if (head != 0) {
+        void** node = (void**)((char*)head - g_freeListNodeBias);
+        *node = g_freeList;
+        g_freeList = node;
+    }
+    if (list.GetCount() == 0) {
+        return 0;
+    }
+    // Recycle the unit's current path-coord nodes onto g_freeList, empty its list.
+    if (unit->m_328 != 0) {
+        CoordNode* n = (CoordNode*)unit->m_320;
+        while (n != 0) {
+            CoordNode* cur = n;
+            n = n->m_next;
+            if (cur->m_coord != 0) {
+                void** fn = (void**)((char*)cur->m_coord - g_freeListNodeBias);
+                *fn = g_freeList;
+                g_freeList = fn;
+            }
+        }
+        ((CObList*)&unit->m_31c)->RemoveAll();
+    }
+    // AddTail every new path node's coord onto the unit's path list.
+    CoordNode* p = (CoordNode*)list.GetHeadPosition();
+    while (p != 0) {
+        CoordNode* cur = p;
+        p = p->m_next;
+        ((CObList*)&unit->m_31c)->AddTail((CObject*)cur->m_coord);
+    }
+    Coord* tail = (Coord*)((CoordNode*)unit->m_324)->m_coord;
+    unit->m_174 = (tail->m_x << 5) + 0x10;
+    unit->m_178 = (tail->m_y << 5) + 0x10;
+    unit->m_2d4 = 5;
+    return 1;
 }

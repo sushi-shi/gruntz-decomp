@@ -121,6 +121,49 @@ public:
     i32 m_144;                  // +0x144
     i32 m_148;                  // +0x148  (cleared by 02c0a0)
     i32 m_14c;                  // +0x14c  (serialized)
+    // The idle-behaviour chooser config block (config-loaded elsewhere, not by the
+    // ctor). m_150/m_154 split the [1..N] random pick into three behaviour bands;
+    // m_158/m_168/m_190 are the per-band rand divisors; the m_15c.., m_16c..0x18c,
+    // and m_194..0x1e0 runs are ascending probability thresholds mapping the rolled
+    // value to an anim/state index. Read by Method_02f620 / Method_02edb0.
+    i32 m_150; // +0x150
+    i32 m_154; // +0x154
+    i32 m_158; // +0x158  band-A divisor
+    i32 m_15c; // +0x15c
+    i32 m_160; // +0x160
+    i32 m_164; // +0x164
+    i32 m_168; // +0x168  band-C divisor
+    i32 m_16c; // +0x16c
+    i32 m_170; // +0x170
+    i32 m_174; // +0x174
+    i32 m_178; // +0x178
+    i32 m_17c; // +0x17c
+    i32 m_180; // +0x180
+    i32 m_184; // +0x184
+    i32 m_188; // +0x188
+    i32 m_18c; // +0x18c
+    i32 m_190; // +0x190  band-B divisor
+    i32 m_194; // +0x194
+    i32 m_198; // +0x198
+    i32 m_19c; // +0x19c
+    i32 m_1a0; // +0x1a0
+    i32 m_1a4; // +0x1a4
+    i32 m_1a8; // +0x1a8
+    i32 m_1ac; // +0x1ac
+    i32 m_1b0; // +0x1b0
+    i32 m_1b4; // +0x1b4
+    i32 m_1b8; // +0x1b8
+    i32 m_1bc; // +0x1bc
+    i32 m_1c0; // +0x1c0
+    i32 m_1c4; // +0x1c4
+    i32 m_1c8; // +0x1c8
+    i32 m_1cc; // +0x1cc
+    i32 m_1d0; // +0x1d0
+    i32 m_1d4; // +0x1d4
+    i32 m_1d8; // +0x1d8
+    i32 m_1dc; // +0x1dc
+    i32 m_1e0; // +0x1e0
+    i32 m_1e4; // +0x1e4
 };
 
 #endif // SRC_GRUNTZ_UNKNOWNCLASSARRAYS_H
