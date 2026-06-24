@@ -41,14 +41,6 @@ public:
     void CBrickz_09356c();
     void CBrickz_09eca0();
     void CBrickz_09f010();
-    void CBrickz_09f370();
-    void CBrickz_09f430();
-    void CBrickz_09f470();
-    void CBrickz_09f500();
-    void CBrickz_09f590();
-    void CBrickz_09f5d0();
-    void CBrickz_09f690();
-    void CBrickz_09f710();
     void CBrickz_09f7f0();
     void CBrickz_0ec230();
 };

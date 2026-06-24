@@ -55,22 +55,6 @@ RVA(0x0009eca0, 0x2bd)
 void CBrickz::CBrickz_09eca0() {}
 RVA(0x0009f010, 0x2a1)
 void CBrickz::CBrickz_09f010() {}
-RVA(0x0009f370, 0x8a)
-void CBrickz::CBrickz_09f370() {}
-RVA(0x0009f430, 0x2a)
-void CBrickz::CBrickz_09f430() {}
-RVA(0x0009f470, 0x62)
-void CBrickz::CBrickz_09f470() {}
-RVA(0x0009f500, 0x24)
-void CBrickz::CBrickz_09f500() {}
-RVA(0x0009f590, 0x2f)
-void CBrickz::CBrickz_09f590() {}
-RVA(0x0009f5d0, 0x81)
-void CBrickz::CBrickz_09f5d0() {}
-RVA(0x0009f690, 0x5d)
-void CBrickz::CBrickz_09f690() {}
-RVA(0x0009f710, 0xa7)
-void CBrickz::CBrickz_09f710() {}
 RVA(0x0009f7f0, 0x3b)
 void CBrickz::CBrickz_09f7f0() {}
 RVA(0x000ec230, 0x11c)

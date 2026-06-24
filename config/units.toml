@@ -94,6 +94,11 @@ source = "src/Wap32/GameApp.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "brickz"
+source = "src/Gruntz/Brickz.cpp"
+flags = "base"
+
+[[unit]]
 unit = "statusbaritem"
 source = "src/Gruntz/StatusBarItem.cpp"
 flags = "base"

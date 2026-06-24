@@ -17,6 +17,7 @@ adler32	1	1
 advancedoptions	5	5
 appdialogs	1	1
 battlezmapconfig	1	0
+brickz	8	2
 butemgr	38	27
 cddrawchildgroup	9	5
 cddrawptrcollections	1	0
@@ -36,7 +37,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	18	17
 directsoundmgr	26	19
-engine_discovered	956	0
+engine_discovered	948	0
 engine_label_stubs	534	117
 filestream	13	9
 font	16	9
@@ -116,6 +117,14 @@ advancedoptions	?SaveOptions@@YAXPAUHWND__@@PAVRegistryHelper@Utils@@@Z	100.0000
 advancedoptions	?SetDefaults@@YAXPAUHWND__@@@Z	100.0000	100.0000	3	debb3761026d	0xb160
 appdialogs	?WarpDialogProc@@YGHPAXIIJ@Z	100.0000	100.0000	3	63bd2df7ad1b	0x8e4e0
 battlezmapconfig	?LoadConfig@CBattlezMapConfig@@QAEHPAUCLevelInfo@@HH@Z	85.9933	85.9933	3	9cbb0bf9dee6	0x25020
+brickz	?CellPop@CBrickz@@QAEXPAUBrickzNode@@H@Z	80.3284	80.3284	1	f686a5bfa1b6	0x9f710
+brickz	?CellPush@CBrickz@@QAEXPAUBrickzNode@@@Z	85.9070	85.9070	1	d5bc7e1a4e7e	0x9f470
+brickz	?Drain@CBrickz@@QAEXXZ	66.7391	66.7391	1	ebba6ada4e7d	0x9f590
+brickz	?Find@CBrickz@@QAEPAUBrickzNode@@HH@Z	100.0000	100.0000	1	3a582332d5f2	0x9f500
+brickz	?Insert@CBrickz@@QAEHPAUBrickzNode@@@Z	100.0000	100.0000	1	8af06d1e92c7	0x9f370
+brickz	?PopFront@CBrickz@@QAEXXZ	97.1053	97.1053	1	d0e524077039	0x9f430
+brickz	?Reset@CBrickz@@QAEXXZ	64.7115	64.7115	1	7dd4f9fbce7d	0x9f5d0
+brickz	?Unlink@CBrickz@@QAEXPAUBrickzNode@@@Z	74.9487	74.9487	1	d5d620cc156e	0x9f690
 butemgr	?CharClass@CButeMgr@@QAEFD@Z	100.0000	100.0000	1	e6c560ff46b3	0x1703e0
 butemgr	?ClearHelper@CButeMgr@@QAEXXZ	100.0000	100.0000	3	78033bc3e61d	0x171a40
 butemgr	?Construct@CButeMgrHelper@@QAEPAV1@XZ	100.0000	100.0000	1	e1b849446087	0x169c00
@@ -362,14 +371,6 @@ engine_discovered	?CBrickz_085480@CBrickz@@QAEXXZ	3.7037	3.7037	1	47333e17d56a	0
 engine_discovered	?CBrickz_09356c@CBrickz@@QAEXXZ	1.2903	1.2903	1	c40e7b288494	0x9356c
 engine_discovered	?CBrickz_09eca0@CBrickz@@QAEXXZ	0.1515	0.1515	1	03f44d7b7ac7	0x9eca0
 engine_discovered	?CBrickz_09f010@CBrickz@@QAEXXZ	0.1581	0.1581	1	e0ef45a31f00	0x9f010
-engine_discovered	?CBrickz_09f370@CBrickz@@QAEXXZ	0.7843	0.7843	1	11d19603ff65	0x9f370
-engine_discovered	?CBrickz_09f430@CBrickz@@QAEXXZ	5.2632	5.2632	1	a91c17254e25	0x9f430
-engine_discovered	?CBrickz_09f470@CBrickz@@QAEXXZ	0.9302	0.9302	1	ffb7019650f5	0x9f470
-engine_discovered	?CBrickz_09f500@CBrickz@@QAEXXZ	2.8571	2.8571	1	c99aed475acf	0x9f500
-engine_discovered	?CBrickz_09f590@CBrickz@@QAEXXZ	4.3478	4.3478	1	b2af071161d0	0x9f590
-engine_discovered	?CBrickz_09f5d0@CBrickz@@QAEXXZ	1.9231	1.9231	1	f9759ab4c991	0x9f5d0
-engine_discovered	?CBrickz_09f690@CBrickz@@QAEXXZ	1.0256	1.0256	1	418c1d5367ac	0x9f690
-engine_discovered	?CBrickz_09f710@CBrickz@@QAEXXZ	0.5970	0.5970	1	c7de9fd1031d	0x9f710
 engine_discovered	?CBrickz_09f7f0@CBrickz@@QAEXXZ	1.7391	1.7391	1	f8e6868a5b79	0x9f7f0
 engine_discovered	?CBrickz_0ec230@CBrickz@@QAEXXZ	0.9434	0.9434	1	a661ca61f36b	0xec230
 engine_discovered	?CButeMgr_0213c0@CButeMgr@@QAEXXZ	1.1494	1.1494	1	27bb9064c61c	0x213c0
