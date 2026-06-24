@@ -1194,6 +1194,72 @@ void CGrunt::ClearAllSprites() {
     m_arrived = 0;
 }
 
+// The 8 compass grunt-voice records (3 DWORDs each, runtime-filled .data) +
+// PlaySound (the @0x4ac10 entrance handler, external/reloc-masked). TU-local
+// definitions so each `mov ds:addr` reloc-masks against retail.
+i32 g_voiceN[3];
+i32 g_voiceS[3];
+i32 g_voiceE[3];
+i32 g_voiceW[3];
+i32 g_voiceSE[3];
+i32 g_voiceNW[3];
+i32 g_voiceNE[3];
+i32 g_voiceSW[3];
+
+// CGrunt::PlayMoveSound(x, y) @0x511b0 - directional grunt-voice dispatcher.
+// Bucketize the screen vector (x,y) - (m_10->m_5c, m_10->m_60) into one of 8
+// compass directions by the slope dy/dx vs {+-2.0f, +-0.5} and fire the matching
+// 3-DWORD voice record through PlaySound(1000, rec). __thiscall, ret 8, frameless.
+RVA(0x000511b0, 0x246)
+void CGrunt::PlayMoveSound(i32 x, i32 y) {
+    CGruntHud* h = m_10;
+    i32 dy = y - h->m_60;
+    i32 dx = x - h->m_5c;
+    i32 cx = h->m_5c;
+
+    if (dx == 0) {
+        if (y > h->m_60) {
+            PlaySound(1000, *(CGruntVoiceRec*)g_voiceN);
+        } else if (y < h->m_60) {
+            PlaySound(1000, *(CGruntVoiceRec*)g_voiceS);
+        }
+        return;
+    }
+
+    float ratio = (float)dy / dx;
+    if (ratio > 2.0f || ratio < -2.0f) {
+        if (y > h->m_60) {
+            PlaySound(1000, *(CGruntVoiceRec*)g_voiceN);
+        } else {
+            PlaySound(1000, *(CGruntVoiceRec*)g_voiceS);
+        }
+        return;
+    }
+    if (ratio <= 0.5 && ratio >= -0.5) {
+        if (x > cx) {
+            PlaySound(1000, *(CGruntVoiceRec*)g_voiceE);
+        } else {
+            PlaySound(1000, *(CGruntVoiceRec*)g_voiceW);
+        }
+        return;
+    }
+    if (ratio > 0.5) {
+        if (x > cx) {
+            PlaySound(1000, *(CGruntVoiceRec*)g_voiceSE);
+        } else {
+            PlaySound(1000, *(CGruntVoiceRec*)g_voiceNW);
+        }
+        return;
+    }
+    if (ratio < -0.5) {
+        if (x > cx) {
+            PlaySound(1000, *(CGruntVoiceRec*)g_voiceNE);
+        } else {
+            PlaySound(1000, *(CGruntVoiceRec*)g_voiceSW);
+        }
+    }
+}
+
 // CGrunt::CanShowStamina() @0x514a0 - the stamina-bar visibility gate: shown
 // only if not powered-up (m_218==0), stamina below full (m_stamina < 0x64), and not
 // mid-entrance (m_entranceActive==0).
@@ -1203,6 +1269,82 @@ i32 CGrunt::CanShowStamina() {
         return 1;
     }
     return 0;
+}
+
+// CGrunt::OnStruck(wasHit) @0x588f0 - the struck/damage reaction step. Re-arm the
+// struck cooldown (m_270=0xfa0 window, m_268=game clock now), bump the struck
+// counter (m_struckCount), and - if the grunt is on-screen (the registry
+// visible-bounds rect at g->m_30->m_24->m_5c+0x40) - fire an escalating struck
+// grunt-voice cue (CueA) keyed by whether it was a real hit and the running count.
+// __thiscall, ret 4, frameless.
+// @early-stop
+// regalloc wall: logic/CFG/member-offsets/cue-ids byte-exact (the on-screen push
+// blocks match verbatim); residue = retail pins `this` in esi (push esi; mov
+// esi,ecx) for the whole 4-branch body, mine keeps it in ecx and reloads the cue
+// sink per branch in a different slot - pure register placement, no source lever
+// flips it. ~76%, deferred to the final sweep.
+RVA(0x000588f0, 0x1ea)
+void CGrunt::OnStruck(i32 wasHit) {
+    m_struckTimerLo = 0xfa0;
+    m_struckTimerHi = 0;
+    m_struckClockLo = (i32)g_645588;
+    m_struckClockHi = 0;
+    i32 c = ++m_struckCount;
+
+    if (wasHit == 0) {
+        if (m_gruntKind == 0x36) {
+            return;
+        }
+        i32 x = m_10->m_5c;
+        i32 y = m_10->m_60;
+        if (c < 5) {
+            CGameRegistry* g = g_pGameRegistry;
+            i32* vr = (i32*)(g->m_30->m_24->m_5c + 0x40);
+            if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
+                g->m_60->CueA(this, 0x370, -1, 0, -1, -1);
+            }
+            return;
+        }
+        CGameRegistry* g = g_pGameRegistry;
+        i32* vr = (i32*)(g->m_30->m_24->m_5c + 0x40);
+        if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
+            g->m_60->CueA(this, 0x371, -1, 0, -1, -1);
+        } else {
+            m_struckCount = 0;
+        }
+        return;
+    }
+
+    if (c < 5) {
+        i32 x = m_10->m_5c;
+        i32 y = m_10->m_60;
+        CGameRegistry* g = g_pGameRegistry;
+        i32* vr = (i32*)(g->m_30->m_24->m_5c + 0x40);
+        if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
+            g->m_60->CueA(this, 0x320, -1, 0, -1, -1);
+        }
+        return;
+    }
+    if (c < 0xa) {
+        i32 x = m_10->m_5c;
+        i32 y = m_10->m_60;
+        CGameRegistry* g = g_pGameRegistry;
+        i32* vr = (i32*)(g->m_30->m_24->m_5c + 0x40);
+        if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
+            g->m_60->CueA(this, 0x321, -1, 0, -1, -1);
+        }
+        return;
+    }
+    {
+        i32 x = m_10->m_5c;
+        i32 y = m_10->m_60;
+        m_struckCount = 0;
+        CGameRegistry* g = g_pGameRegistry;
+        i32* vr = (i32*)(g->m_30->m_24->m_5c + 0x40);
+        if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
+            g->m_60->CueA(this, 0x322, -1, 0, -1, -1);
+        }
+    }
 }
 
 // CGrunt::ClearSubA() @0x57c10 - destroy the optional sub-object at +0x424.
@@ -1852,6 +1994,115 @@ CGrunt* CGrunt::FindGridNeighbor(i32 validate) {
 
     m_neighborValid = 0;
     return 0;
+}
+
+// ---------------------------------------------------------------------------
+// CGrunt::RearmEntranceDrop() @0x68370 - re-arms the entrance "drop" geometry.
+// Re-points the entrance player's geometry sub-player at the default source, and
+// when the sub-player just became ready (m_1a0.m_28 set, m_1a0.m_20 clear) it
+// re-inits geometry to the ITEM2 pose, re-applies the per-cell frame name, and
+// arms the drop gate. Then, if the drop hasn't been latched (m_22c==0), it looks
+// up the tile under the grunt's HUD point and either claims it (SetTile drop +
+// owner) or marks the entrance committed (m_1fc=1). __thiscall, ret 0.
+// @early-stop
+// scheduling tail: logic/CFG/member-offsets/calls exact (same entrance cell-math
+// `(3*col+row+0xb)*0x68`, SetGeoSourceR/SetGeometry/GetName/SetAnimFrame/LookupTile/
+// SetTile all match). Residue = cl hoists the GetName(0) `push 0` + reuses the
+// `m_154+0x1a0` address in a reg earlier than mine (same entropy-class scheduling
+// as ResetGeometry @0x616e0) - no source lever flips it. ~88.5%.
+RVA(0x00068370, 0x14c)
+void CGrunt::RearmEntranceDrop() {
+    m_154->m_1a0.SetGeoSourceR(g_defaultGeo);
+
+    if (*(i32*)((char*)m_154 + 0x1a0 + 0x28) != 0 && *(i32*)((char*)m_154 + 0x1a0 + 0x20) == 0) {
+        m_22c = 0;
+        m_prevEntranceDesc = (i32)m_154->m_1b4;
+        m_154->m_1a0.SetGeometry(m_poseItem2);
+
+        CEntranceAnimDescColl* desc = m_154->m_1b4;
+        i32* elem = desc->m_10 > 0 ? *desc->m_c : 0;
+        i32 frame = elem[0x14 / 4];
+
+        i32 col = m_entranceCell[0];
+        i32 row = m_entranceCell[1];
+        const char* name = ((CGruntCell*)((char*)this + (3 * col + row + 0xb) * 0x68))->GetName(0);
+        m_154->SetAnimFrame(name, frame);
+    }
+
+    if (m_22c == 0) {
+        i32 a;
+        i32 b;
+        m_entranceCommitted = 0;
+        if (m_tileMgr->LookupTile(m_10->m_5c, m_10->m_60, &a, &b, 0) != 0) {
+            m_tileMgr->SetTile(a, b, 0xb, -1);
+            m_tileMgr->SetTile(m_tileOwnerHi, m_tileOwnerLo, 1, -1);
+        } else {
+            m_entranceCommitted = 1;
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// CGrunt::ResolveArrivalNeighbor() @0xf26f0 - the per-frame arrival follow-up,
+// active only while the grunt is mid-arrival (m_2d4==2). When powered-up
+// (m_poweredUp) it re-resolves the stored grid neighbour once stamina is full;
+// otherwise it clears the arrival latch, looks up the grunt currently occupying
+// its tile (m_tileMgr->GetOccupant), and - if that occupant is settled on its own
+// tile and on-screen (RectContains) - commits a neighbour link to it. __thiscall,
+// ret 0, always returns 1.
+// @early-stop
+// regalloc wall: logic/CFG/cue-paths exact, the m_2d4 dispatch is the retail
+// switch subtract-chain (sub 0/sub 2, see switch-subtract-chain-vs-ifelse). Residue
+// = retail pins `this` in edi + occupant in esi (mine flips them) and pre-stages
+// the CommitNeighbor stack args (sub esp,8; redundant [esp+8]/[esp+1c] copies) -
+// pure register/scheduling placement, no source lever flips it. ~75%.
+RVA(0x000f26f0, 0x106)
+i32 CGrunt::ResolveArrivalNeighbor() {
+    switch (m_2d4) {
+        case 0:
+            return 1;
+        case 2:
+            break;
+        default:
+            return 1;
+    }
+
+    if (m_poweredUp != 0) {
+        if (m_neighborValid != 0) {
+            return 1;
+        }
+        if (*(i32*)((char*)this + 0x218) != 0) {
+            return 1;
+        }
+        if (m_stamina < 0x64) {
+            return 1;
+        }
+        FindGridNeighbor(1);
+        return 1;
+    }
+
+    m_2d4 = 0;
+    CGrunt* occ = m_tileMgr->GetOccupant(this);
+    if (occ == 0) {
+        return 1;
+    }
+    if (m_poweredUp != 0) {
+        return 1;
+    }
+    if (m_stamina < 0x64) {
+        return 1;
+    }
+    if (RectContains(occ->m_10->m_5c, occ->m_10->m_60) == 0) {
+        return 1;
+    }
+    if (m_10->m_5c != occ->m_lastTilePxX) {
+        return 1;
+    }
+    if (m_10->m_60 != occ->m_lastTilePxY) {
+        return 1;
+    }
+    CommitNeighbor(occ->m_tileOwnerHi, occ->m_tileOwnerLo, occ->m_lastTilePxX, occ->m_lastTilePxY);
+    return 1;
 }
 
 // ---------------------------------------------------------------------------

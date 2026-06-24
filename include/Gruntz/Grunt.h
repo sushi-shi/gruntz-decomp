@@ -323,6 +323,8 @@ public:
     i32 ReleaseTile(i32 a, i32 b);              // thunk_FUN_004784d0
     void PostWire();                            // WireTileSwitchLogic (0-arg)
     void NotifyArrival(i32 a, i32 b);           // thunk_FUN_0046da60 (2-arg)
+    CGrunt* GetOccupant(CGrunt* g);             // FUN_00477df0 (1-arg, returns grunt)
+    i32 LookupTile(i32 x, i32 y, i32* outA, i32* outB, i32 flag); // FUN_00475af0 (ret 0x14)
 };
 
 // The registry focused-grunt slot the arrival gate reads: an array at
@@ -429,6 +431,36 @@ extern void** g_freePoolHead; // DAT_00645544
 extern i32 g_freePoolBase;    // DAT_0064554c (raw subtrahend)
 
 // ---------------------------------------------------------------------------
+// CGrunt::PlayMoveSound(x, y) @0x511b0 - the directional grunt-voice dispatcher.
+// Computes the screen vector from the grunt's HUD center (m_10->m_5c/m_60) to
+// (x, y), buckets it into one of 8 compass directions by the slope dy/dx vs the
+// thresholds {+-2.0 (float), +-0.5 (double)}, and fires the matching grunt-voice
+// record via the entrance handler @0x4ac10 (PlaySound below). Each direction is a
+// 3-DWORD runtime-filled .data record {soundId, a, b}; PlaySound takes them by
+// value plus a constant 1000 (0x3e8) range/volume. The 8 records + PlaySound are
+// external/no-body (reloc-masked).
+//
+// The compass records (each 3 DWORDs at .data, runtime-filled). Modeled as 24
+// individual i32 externs so each `mov ds:addr` reloc-masks against retail.
+extern i32 g_voiceN[3];  // 0x6448e8  (dx==0, dy>0  -> South: down)
+extern i32 g_voiceS[3];  // 0x6448d8  (dx==0, dy<0  -> North: up)
+extern i32 g_voiceE[3];  // 0x6448c8  (shallow +, dx>0 -> East)
+extern i32 g_voiceW[3];  // 0x6448f8  (shallow +, dx<0 -> West)
+extern i32 g_voiceSE[3]; // 0x644928  (mid +, dx>0)
+extern i32 g_voiceNW[3]; // 0x644918  (mid +, dx<0)
+extern i32 g_voiceNE[3]; // 0x644908  (mid -, dx>0)
+extern i32 g_voiceSW[3]; // 0x644948  (mid -, dx<0)
+
+// The grunt-voice record passed by value to PlaySound (3 DWORDs). Building it
+// from a named [3] record makes cl emit the 3 `mov ds:addr; mov [stk],reg` copies
+// the target uses; passing it by value forces the `sub esp,0xc; ...; ret 0x10`.
+struct CGruntVoiceRec {
+    i32 m_0;
+    i32 m_4;
+    i32 m_8;
+};
+
+// ---------------------------------------------------------------------------
 // CGrunt - only the members the HUD sprite creators touch. CGrunt is large;
 // this is a deliberately partial model (load-bearing offsets only).
 //   +0x10   m_10      CGruntHud* (factory geometry source)
@@ -532,7 +564,8 @@ public:
     char m_pad208[0x21c - 0x208];
     i32 m_neighborValid; // +0x21c (grid-neighbor: cleared on miss)
     i32 m_poweredUp;     // +0x220 (powered-up gate; 0 = run entrance reset)
-    char m_pad224[0x230 - 0x224];
+    char m_pad224[0x22c - 0x224];
+    i32 m_22c; // +0x22c (entrance-drop: latched anim re-init gate)
     i32 m_230; // +0x230 (entrance-arrival: cleared)
     char m_pad234[0x238 - 0x234];
     i32 m_wingzEnabled; // +0x238
@@ -543,7 +576,12 @@ public:
     i32 m_gruntKind;          // +0x258 (grunt type/kind; ==0x37 -> halve TimePerTile)
     i32 m_entranceArmed;      // +0x25c (entrance: set to 1)
     CGruntTileMgr* m_tileMgr; // +0x260 (path/occupancy sub-manager)
-    char m_pad264[0x2d0 - 0x264];
+    i32 m_struckCount;        // +0x264 (struck-reaction counter; cue tier 5/0xa)
+    i32 m_struckClockLo;      // +0x268 (= g_645588 game clock at last struck)
+    i32 m_struckClockHi;      // +0x26c (= 0)
+    i32 m_struckTimerLo;      // +0x270 (= 0xfa0 struck cooldown window)
+    i32 m_struckTimerHi;      // +0x274 (= 0)
+    char m_pad278[0x2d0 - 0x278];
     i32 m_arrivalState; // +0x2d0 (arrival: = 4)
     i32 m_2d4;          // +0x2d4 (arrival: = 0)
     char m_pad2d8[0x2dc - 0x2d8];
@@ -649,6 +687,12 @@ public:
     void FreeNameList();               // @0x48360
     i32 ResetGeometry();               // @0x616e0
     void DispatchVtbl24();             // @0x6b260 (jmp [vtbl+0x24])
+
+    void PlayMoveSound(i32 x, i32 y);              // @0x511b0 (ret 8)
+    void PlaySound(i32 range, CGruntVoiceRec rec); // @0x4ac10 (ret 0x10) external
+    void OnStruck(i32 wasHit);                     // @0x588f0 (ret 4)
+    i32 ResolveArrivalNeighbor();                  // @0xf26f0 (ret 0)
+    void RearmEntranceDrop();                      // @0x68370 (ret 0)
 };
 
 // CGrunt::IsSameType(a, b) @0x3c7f0 - a free (__cdecl) comparator: returns
