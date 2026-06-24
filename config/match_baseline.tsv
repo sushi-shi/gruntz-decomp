@@ -51,7 +51,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	354	0
+engine_discovered	349	0
 engine_label_stubs	520	118
 filemem	8	7
 filestream	13	9
@@ -125,6 +125,7 @@ soundstream	5	2
 spriteloaders	9	4
 spritereftable	7	6
 spriteresource	4	1
+statemgrbz	5	3
 statusbaritem	2	1
 statusbarupdaters	7	0
 streamfeeder	9	7
@@ -175,7 +176,7 @@ advancedoptions	?SaveOption@@YAXPAUHWND__@@PAVRegistryHelper@Utils@@PADK@Z	100.0
 advancedoptions	?SaveOptions@@YAXPAUHWND__@@PAVRegistryHelper@Utils@@@Z	100.0000	100.0000	3	42bc821feac7	0xb270
 advancedoptions	?SetDefaults@@YAXPAUHWND__@@@Z	100.0000	100.0000	3	debb3761026d	0xb160
 aniplayer	?Init@CAniPlayer@@QAEHPAUAniSeq@@0HHHHHHHHHHHH@Z	64.5543	64.5543	1	af4e113bdde4	0xe7980
-aniplayer	?Tick@CAniPlayer@@QAEHXZ	91.3555	91.3555	1	a95461068729	0xe7b00
+aniplayer	?Tick@CAniPlayer@@QAEHXZ	91.3555	91.3555	2	553040f9cf2b	0xe7b00
 appdialogs	?WarpDialogProc@@YGHPAXIIJ@Z	100.0000	100.0000	4	abc884dd8cb1	0x8e4e0
 applyrange	?ApplyToRange@@YGXPAVApplyElem@@HHP81@AEXXZ@Z	100.0000	100.0000	1	b977df9605c7	0x7c20
 battlezdata	?BumpWin@CBattlezData@@QAEXHH@Z	100.0000	100.0000	2	d6751b8a863d	0xfcc50
@@ -504,7 +505,7 @@ crt_strstreambuf	??1strstreambuf@@QAE@XZ	89.6970	89.6970	2	7c53a170b574	0x169220
 crt_strstreambuf	?str@strstreambuf@@QAEPADXZ	100.0000	100.0000	1	08404bbcac2f	0x1692b0
 crt_strstreambuf	?underflow@strstreambuf@@QAEHXZ	91.7353	91.7353	2	b71b810269ba	0x169490
 cstatusbarmgr	?LoadTabSprites@CStatusBarMgr@@QAEHXZ	16.7383	16.7383	4	045cfeaa498f	0x102250
-cstatusbarmgr	?SetDirection@CSbItem@@QAEXHH@Z	100.0000	100.0000	1	680f643f4a6b	0xea0f0
+cstatusbarmgr	?SetDirection@CSbItem@@QAEXHH@Z	100.0000	100.0000	2	46fcb29ef102	0xea0f0
 deflate	_deflate_fast	100.0000	100.0000	1	3de2151b888f	0x186db0
 deflate	_deflate_slow	100.0000	100.0000	1	963869a51c2d	0x187170
 deflate	_deflate_stored	100.0000	100.0000	1	f3d8403d157d	0x186af0
@@ -877,11 +878,6 @@ engine_discovered	?ClassUnknown_87_152520@ClassUnknown_87@@QAEXXZ	1.1429	1.1429	
 engine_discovered	?ClassUnknown_87_1525c0@ClassUnknown_87@@QAEXXZ	0.7143	0.7143	1	044691a53f19	0x1525c0
 engine_discovered	?ClassUnknown_88_0311b0@ClassUnknown_88@@QAEXXZ	5.7143	5.7143	1	46eec7c3d0f4	0x311b0
 engine_discovered	?ClassUnknown_89_14c9f0@ClassUnknown_89@@QAEXXZ	0.0769	0.0769	1	346819baf2e1	0x14c9f0
-engine_discovered	?ClassUnknown_8_0382c0@ClassUnknown_8@@QAEXXZ	1.2903	1.2903	1	cf3a54aaf72e	0x382c0
-engine_discovered	?ClassUnknown_8_038340@ClassUnknown_8@@QAEXXZ	7.6923	7.6923	1	f6c3af33f17f	0x38340
-engine_discovered	?ClassUnknown_8_0383b0@ClassUnknown_8@@QAEXXZ	0.2326	0.2326	1	db3102a20868	0x383b0
-engine_discovered	?ClassUnknown_8_0385e0@ClassUnknown_8@@QAEXXZ	2.0408	2.0408	1	c8491f1e4025	0x385e0
-engine_discovered	?ClassUnknown_8_0386b0@ClassUnknown_8@@QAEXXZ	2.2727	2.2727	1	f72fe63490db	0x386b0
 engine_discovered	?ClassUnknown_90_1d38a1@ClassUnknown_90@@QAEXXZ	33.3333	33.3333	1	447f332acd97	0x1d38a1
 engine_discovered	?ClassUnknown_91_1d496b@ClassUnknown_91@@QAEXXZ	3.6364	3.6364	1	08f8408e9535	0x1d496b
 engine_discovered	?ClassUnknown_92_0e3c60@ClassUnknown_92@@QAEXXZ	0.8264	0.8264	1	8f6796d587bc	0xe3c60
@@ -2132,6 +2128,11 @@ spriteresource	?ApplyLookupGeometry@CGruntAnimPlayer@@QAEHPBDH@Z	93.9394	93.9394
 spriteresource	?CacheFirstFrame@CGruntSprite@@QAEXPBD@Z	89.2647	89.2647	4	dbfa3e3333a0	0x150540
 spriteresource	?ConfigureItem@CStatusBarMgr@@QAEHHHHH@Z	100.0000	100.0000	4	be2023a676b3	0x1360d0
 spriteresource	?CreateSprite@CSpriteFactory@@QAEPAUCSprite@@HHHHPBDH@Z	94.1176	94.1176	4	6102cd6262c1	0x1597b0
+statemgrbz	?Build@StateMgrBZ@@QAEHPAUSbzInputManager@@H@Z	94.7384	94.7384	1	8b16fbab5ae4	0x383b0
+statemgrbz	?Flush@StateMgrBZ@@QAEHXZ	74.0612	74.0612	1	6a6b3ba6dfa0	0x385e0
+statemgrbz	?Init@StateMgrBZ@@QAEHPAUSbzInputManager@@H@Z	100.0000	100.0000	1	45e41039c473	0x382c0
+statemgrbz	?Reset@StateMgrBZ@@QAEHXZ	100.0000	100.0000	1	34a3a5e2a886	0x386b0
+statemgrbz	?Setup@StateMgrBZ@@QAEXXZ	100.0000	100.0000	1	2e58d146fba9	0x38340
 statusbaritem	??0CStatusBarItem@@QAE@XZ	100.0000	100.0000	3	5a450f5db35b	0x1005d0
 statusbaritem	??_GCStatusBarItem@@UAEPAXI@Z	91.6667	91.6667	1	cpp:08500b778fe1	0x100620
 statusbarupdaters	?LoadStatzTabToggleSprite@EngineLabelBacklog@@QAEHHH@Z	80.7867	80.7867	4	ddb115e6490d	0x104e60

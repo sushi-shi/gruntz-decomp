@@ -334,6 +334,11 @@ source = "src/Gruntz/GruntzMgr.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "statemgrbz"
+source = "src/Gruntz/StateMgrBZ.cpp"
+flags = "base"
+
+[[unit]]
 unit = "gruntzwnd"
 source = "src/Gruntz/GruntzWnd.cpp"
 flags = "base"
