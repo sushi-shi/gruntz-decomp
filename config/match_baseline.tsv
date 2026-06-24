@@ -42,7 +42,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	567	0
+engine_discovered	563	0
 engine_label_stubs	526	121
 filestream	13	9
 font	21	10
@@ -122,7 +122,7 @@ winapicdrom	1	0
 winapimodule	1	0
 winmain	1	1
 wormhole	4	1
-wwdfile	6	1
+wwdfile	10	1
 wwdgameobject	7	2
 zutil	2	2
 # [functions]	unit	function	best_pct	cur_pct	tries	src_hash	rva
@@ -1033,10 +1033,6 @@ engine_discovered	?WndHolder_13d4c0_094b20@WndHolder_13d4c0@@QAEXXZ	1.1765	1.176
 engine_discovered	?WndHolder_13d4c0_094b90@WndHolder_13d4c0@@QAEXXZ	9.0909	9.0909	1	c727799e9863	0x94b90
 engine_discovered	?WndHolder_13d4c0_13d470@WndHolder_13d4c0@@QAEXXZ	8.0000	8.0000	1	9e02f29e1acc	0x13d470
 engine_discovered	?WndHolder_13d4c0_13d4e0@WndHolder_13d4c0@@QAEXXZ	1.2500	1.2500	1	cb9103bbab1c	0x13d4e0
-engine_discovered	?WwdFile_00a000@WwdFile@@QAEXXZ	0.5000	0.5000	1	d10adc9afbe5	0xa000
-engine_discovered	?WwdFile_162010@WwdFile@@QAEXXZ	0.0556	0.0556	1	a44d86fe0ac8	0x162010
-engine_discovered	?WwdFile_163300@WwdFile@@QAEXXZ	1.7857	1.7857	1	e75c3b1f4768	0x163300
-engine_discovered	?WwdFile_163370@WwdFile@@QAEXXZ	1.7857	1.7857	1	4b68b20a0ceb	0x163370
 engine_label_stubs	??0CActionArea@@QAE@H@Z	2.1226	2.1226	1	cpp:6bf52155264d	0x7da0
 engine_label_stubs	??0CBoomerang@@QAE@H@Z	97.3077	97.3077	1	cpp:6bf52155264d	0xe0650
 engine_label_stubs	??0CBrickz@@QAE@H@Z	1.6667	1.6667	1	cpp:6bf52155264d	0x10e800
@@ -2353,18 +2349,22 @@ wormhole	?LoadColors@CWormhole@@QAEXXZ	100.0000	100.0000	7	b6a214116e74	0x411f0
 wormhole	?Stub_03fc70@CWormhole@@QAEXXZ	0.3333	0.3333	4	b52ffef5d830	0x3fc70
 wormhole	?Stub_03fed0@CWormhole@@QAEXXZ	0.6349	0.6349	4	77e92219c343	0x3fed0
 wormhole	?Stub_0412c0@CWormhole@@QAEXXZ	3.5714	3.5714	4	e051969c2768	0x412c0
+wwdfile	?CenterScrollA@CPlaneRender@@QAEHXZ	87.8750	87.8750	1	caafea006407	0x163300
+wwdfile	?CenterScrollB@CPlaneRender@@QAEHXZ	87.8750	87.8750	1	3eb87c589b6b	0x163370
+wwdfile	?Draw@CPlaneRender@@QAEXPAX@Z	0.1391	0.1391	1	f705be10435a	0x162010
 wwdfile	?ReadPlane@CGameLevelPlanes@@QAEPAVCPlane@@PAX00@Z	99.5362	99.5362	4	1345c133fc23	0x15d8d0
 wwdfile	?ReadPlaneObjects@WwdFile@@QAEHPBH@Z	77.1667	77.1667	4	3a0000002e43	0x162af0
-wwdfile	?ValidateMainBlock@WwdFile@@SAHVCString@@@Z	74.0667	74.0667	3	66ad5dacd472	0x3b470
+wwdfile	?ValidateMainBlock@WwdFile@@SAHVCString@@@Z	99.6667	99.6667	3	66ad5dacd472	0x3b470
+wwdfile	?WrapCoord@CPlaneRender@@QAEXPAH0@Z	91.4875	91.4875	1	cd67080fb751	0xa000
 wwdfile	?WwdFile_CheckHeader@@YGHPBDPAX@Z	99.9872	99.9872	7	6e939a29d5a1	0x160660
 wwdfile	?WwdFile_IsValidWwd@@YGHPBDPAX@Z	100.0000	100.0000	7	d6fb4886d4a5	0x160530
 wwdfile	_WwdFile_InflateMainBlock@12	88.7400	88.7400	7	ab241da184e3	0x160790
-wwdgameobject	?Dispatch@CWwdGameObject@@QAEHHHHH@Z	100.0000	100.0000	1	9c3d02186d56	0x150a70
+wwdgameobject	?Dispatch@CWwdGameObject@@QAEHHHHH@Z	100.0000	100.0000	2	1336b4afcd7e	0x150a70
 wwdgameobject	?Init@CWwdGameObject@@QAEHHHHH@Z	100.0000	100.0000	1	f9cf2de94e5d	0x15b940
-wwdgameobject	?Play@CWwdGameObject@@QAEHHHHH@Z	0.0000	0.0000	1	949dfb607884	0x151150
-wwdgameobject	?ReadState@CWwdGameObject@@QAEHH@Z	99.3491	99.3491	1	da8f0748505b	0x150b00
-wwdgameobject	?Serialize@CWwdGameObject@@QAEHH@Z	99.5745	99.5745	1	b08e254a1974	0x151320
-wwdgameobject	?Setup@CWwdGameObject@@QAEHHHHH@Z	97.1059	97.1059	1	de92e29dd207	0x150d60
-wwdgameobject	?WriteSnapshot@CWwdGameObject@@QAEHH@Z	95.9020	95.9020	1	0980e3e3dbe3	0x151c00
+wwdgameobject	?Play@CWwdGameObject@@QAEHHHHH@Z	0.0000	0.0000	2	e9d3e97beeb5	0x151150
+wwdgameobject	?ReadState@CWwdGameObject@@QAEHH@Z	99.3491	99.3491	2	f9aba483f647	0x150b00
+wwdgameobject	?Serialize@CWwdGameObject@@QAEHH@Z	99.5745	99.5745	2	5cf4879a0998	0x151320
+wwdgameobject	?Setup@CWwdGameObject@@QAEHHHHH@Z	97.1059	97.1059	2	d6f3fc6ef894	0x150d60
+wwdgameobject	?WriteSnapshot@CWwdGameObject@@QAEHH@Z	95.9020	95.9020	2	9fee6fde6abb	0x151c00
 zutil	_zcalloc	100.0000	100.0000	1	55f82c5a172f	0x188410
 zutil	_zcfree	100.0000	100.0000	1	e741567a7e95	0x188430

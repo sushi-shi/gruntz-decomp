@@ -97,6 +97,109 @@ public:
 };
 
 // ---------------------------------------------------------------------------
+// CDDSurface - the engine DirectDraw surface. UNMATCHED; modeled as an external
+// shell so the plane draw methods' Blt calls reloc-mask. The plane embeds its
+// scratch DDBLTFX-ish blit param at +0xF4 (passed by address into BltEx). Only
+// the two blit virtuals the renderer uses are declared.
+class CDDSurface {
+public:
+    // BltEx(srcRect, a, b, flags, blitParam) - the "fill / colorkey-clear" blit;
+    // __thiscall, 5 stack args. Reloc-masked engine code.
+    i32 BltEx(void* srcRect, i32 a, i32 b, i32 flags, void* blitParam);
+    // BltFast(x, y, src, srcRect, blitParam) - the per-tile fast blit; __thiscall,
+    // 5 stack args. Reloc-masked engine code.
+    i32 BltFast(i32 x, i32 y, void* src, void* srcRect, void* blitParam);
+};
+
+// A drawable plane source-frame (one entry of the tile/image lookup the renderer
+// dereferences through m_planeArray[handle>>16]). Only the fields the draw loop
+// reads are pinned: the cell-bounds (+0x64/+0x68), the frame table (+0x14), and
+// the per-frame blit src (+0x28 surface, +0x2c srcRect).
+struct CPlaneFrame {
+    u8 pad_0[0x14];
+    void** m_frames; // +0x14  frame table (indexed by the low 16 bits of handle)
+    u8 pad_18[0x64 - 0x18];
+    i32 m_lo; // +0x64  valid handle range [m_lo, m_hi]
+    i32 m_hi; // +0x68
+};
+
+// One resolved tile/sprite frame: +0x28 = the source surface, +0x2c = its srcRect.
+struct CPlaneTile {
+    u8 pad_0[0x28];
+    void* m_surface; // +0x28
+    void* m_srcRect; // +0x2c
+};
+
+// ---------------------------------------------------------------------------
+// CPlaneRender - the WWD plane render view (a window onto CPlane / the level
+// plane). The four draw methods below are __thiscall members. Layout (offsets
+// are the load-bearing thing; this is the same plane object as PlaneGeom):
+//   +0x08 flags        bit1 (0x2)=hidden, bit2 (0x4)=wrap X, bit3 (0x8)=wrap Y
+//   +0x10/+0x14        scaledX / scaledY (float scroll origin)
+//   +0x20 m_tileGrid   i32* tile-handle grid (row-major, stride m_gridW)
+//   +0x24 m_colOffsets i32* per-column base offset (indexed by tile col)
+//   +0x28/+0x2c        gridW / gridH (tile wrap counts; row-major dims)
+//   +0x30/+0x34        wrapW / wrapH (pixel-wrap moduli)
+//   +0x38/+0x3c        tilePxW / tilePxH (one tile's pixel size)
+//   +0x40/+0x44        originX / originY      +0x48/+0x4c extentX / extentY
+//   +0x50/+0x54        viewX / viewY (scroll pixel offset)
+//   +0x60/+0x64/+0x68/+0x6c  default fill rect (passed as a BltFast src rect)
+//   +0x8c/+0x90        log2(tilePxW) / log2(tilePxH) (shift amounts)
+//   +0xa0 m_planeArray CPlaneFrame** (resolved by handle>>16)
+//   +0xb0 m_scroll     the camera/scroll sub-object (SetTarget)
+//   +0xf4 m_surface    embedded CDDSurface blit target/param
+// ---------------------------------------------------------------------------
+struct CPlaneScroll {
+    // 0x168340 / 0x168500: SetTarget(x, y) - stores at +0x68/+0x6c when changed,
+    // returns nonzero when it moved (0 when unchanged).
+    i32 SetTargetA(i32 a, i32 b);
+    i32 SetTargetB(i32 a, i32 b);
+};
+
+class CPlaneRender {
+public:
+    void Draw(void* ctx);             // 0x162010  the tile-grid render
+    void WrapCoord(i32* px, i32* py); // 0x00a000  wrap+transform a world coord
+    i32 CenterScrollA();              // 0x163300
+    i32 CenterScrollB();              // 0x163370
+
+    u8 pad_0[0x08];
+    u32 m_flags; // +0x08
+    u8 pad_c[0x10 - 0x0c];
+    float m_scaledX; // +0x10
+    float m_scaledY; // +0x14
+    u8 pad_18[0x20 - 0x18];
+    i32* m_tileGrid;   // +0x20
+    i32* m_colOffsets; // +0x24
+    i32 m_gridW;       // +0x28
+    i32 m_gridH;       // +0x2c
+    i32 m_wrapW;       // +0x30
+    i32 m_wrapH;       // +0x34
+    i32 m_tilePxW;     // +0x38
+    i32 m_tilePxH;     // +0x3c
+    i32 m_originX;     // +0x40
+    i32 m_originY;     // +0x44
+    i32 m_extentX;     // +0x48
+    i32 m_extentY;     // +0x4c
+    i32 m_viewX;       // +0x50
+    i32 m_viewY;       // +0x54
+    u8 pad_58[0x60 - 0x58];
+    i32 m_fillL; // +0x60
+    i32 m_fillT; // +0x64
+    i32 m_fillR; // +0x68
+    i32 m_fillB; // +0x6c
+    u8 pad_70[0x8c - 0x70];
+    i32 m_shiftX; // +0x8c
+    i32 m_shiftY; // +0x90
+    u8 pad_94[0xa0 - 0x94];
+    CPlaneFrame** m_planeArray; // +0xa0
+    u8 pad_a4[0xb0 - 0xa4];
+    CPlaneScroll* m_scroll; // +0xb0
+    u8 pad_b4[0xf4 - 0xb4];
+    CDDSurface m_surface; // +0xf4
+};
+
+// ---------------------------------------------------------------------------
 // CGameLevel - the level-load orchestrator (a.k.a. CDDrawLevelData). ReadPlane is a
 // __thiscall member on it. Only the members ReadPlane touches are pinned here
 // (the rest of the class is reconstructed in src/Gruntz/GameLevel.{cpp,h}):

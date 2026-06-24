@@ -1665,13 +1665,3 @@ RVA(0x0013d470, 0x12)
 void WndHolder_13d4c0::WndHolder_13d4c0_13d470() {}
 RVA(0x0013d4e0, 0x43)
 void WndHolder_13d4c0::WndHolder_13d4c0_13d4e0() {}
-
-// ---- WwdFile ----
-RVA(0x0000a000, 0xac)
-void WwdFile::WwdFile_00a000() {}
-RVA(0x00162010, 0x8bd)
-void WwdFile::WwdFile_162010() {}
-RVA(0x00163300, 0x70)
-void WwdFile::WwdFile_163300() {}
-RVA(0x00163370, 0x70)
-void WwdFile::WwdFile_163370() {}

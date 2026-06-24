@@ -49,6 +49,51 @@ DATA(0x0024556c)
 extern WwdGameReg* g_gameReg;
 
 // ---------------------------------------------------------------------------
+// CPlaneRender::WrapCoord (__thiscall, ret 0x8). Maps a world coordinate
+// (*px, *py) into the plane's local draw space: wrap each axis into its pixel
+// modulus (when the plane wraps on that axis: flag bit2=X, bit3=Y), pull it back
+// near the visible origin, then subtract the plane origin and add the scroll
+// view offset. Pure integer arithmetic + member reads; no calls.
+//
+// @early-stop
+// 91.5%, logic byte-exact. Residual: the SECOND flag test - retail emits a direct
+// `test BYTE [ecx+8],8` (memory) and loads py into eax in the branch shadow; this
+// build loads the flag byte into al (`mov al; test al,8`) and parks py in edx.
+// A whole-function regalloc/scheduling choice (which physical reg holds py); not
+// source-steerable. Documented scheduling wall (matching-patterns.md §entropy).
+RVA(0x0000a000, 0xac)
+void CPlaneRender::WrapCoord(i32* px, i32* py) {
+    if (m_flags & 0x4) { // wrap X
+        i32 x = *px;
+        if (x < 0) {
+            *px = m_wrapW + x;
+        } else if (x >= m_wrapW) {
+            *px = x - m_wrapW;
+        }
+        if (m_extentX >= m_wrapW && *px < m_originX && *px <= m_extentX - m_wrapW) {
+            *px = m_wrapW + *px;
+        }
+    }
+
+    if (m_flags & 0x8) { // wrap Y
+        i32 y = *py;
+        if (y < 0) {
+            *py = m_wrapH + y;
+        } else if (y >= m_wrapH) {
+            *py = y - m_wrapH;
+        }
+        if (m_extentY >= m_wrapH && *py < m_originY && *py <= m_extentY - m_wrapH) {
+            *py = m_wrapH + *py;
+        }
+    }
+
+    *px = *px - m_originX;
+    *py = *py - m_originY;
+    *px = *px + m_viewX;
+    *py = *py + m_viewY;
+}
+
+// ---------------------------------------------------------------------------
 // WwdFile::ValidateMainBlock (static, __cdecl: ignores `this`, caller-cleaned
 // `ret`; Ghidra mis-derived the void/no-arg `QAEXXZ` prototype).
 // Takes a CString BY VALUE (the callee runs its dtor on every exit). Returns -1
@@ -225,6 +270,36 @@ i32 __stdcall WwdFile_InflateMainBlock(WwdHeader* src, Bytef* dest, u32 destLen)
 
     return outLen == src->mainBlockLength ? (i32)dest : 0;
 }
+
+// ===========================================================================
+// CPlaneRender::Draw (__thiscall, ret 0x4) - the toroidally-wrapped tile-grid
+// renderer. Takes one context arg (the blit destination owner) at +0xA8; ebp =
+// ctx->m_2c is the target CDDSurface (the BltEx/BltFast `this`). If the plane is
+// hidden (flag bit1) it returns immediately.
+//
+// It converts the plane's pixel view-rect [m_40..m_4c] into tile indices via the
+// log2 shifts (m_8c=shiftX, m_90=shiftY), computing the partial-tile pad at each
+// edge (leftPad/topPad/rightPad/botPad) and the interior tile counts
+// (interiorCols = colR-colL-1, interiorRows = rowB-rowT-1). It then walks the
+// visible grid in five phases - top-left corner, top strip, top-right corner;
+// then per interior row: left column, interior columns, right column; then the
+// bottom edge - blitting each cell. For each cell it reads the tile handle from
+// the row-major grid m_20[m_24[row] + col]: 0xEEEEEEEE (uninitialised) => a
+// clipped fill via CDDSurface::BltEx(&m_f4 blitparam); -1 => skip; else resolve
+// the frame (m_a0[handle>>16], bounds-check (handle&0xffff) against the frame's
+// [+0x64,+0x68], index its +0x14 frame table) and CDDSurface::BltFast it.
+//
+// @early-stop
+// Deferred to the final sweep: a 2237-byte function with the tile-lookup+blit
+// body inlined at ~8 sites over a ~0x94-byte frame (~20 stack slots). The logic,
+// the per-edge coordinate math, the wrap, the handle resolution, and the
+// CDDSurface blit callees (CDDSurface::BltEx@0x13eef0 / BltFast@0x13ef90, both
+// reloc-masked) are fully decoded above, but reproducing MSVC 5.0's exact
+// stack-slot assignment + the 8 inlined-site scheduling is a leaf-first /
+// dedicated-grind job, not a breadth-mode worker's. Left claimed in its real TU
+// (not Stub/) so the final sweep re-attacks it with this decode as a head start.
+RVA(0x00162010, 0x8bd)
+void CPlaneRender::Draw(void* /*ctx*/) {}
 
 // ===========================================================================
 // WwdFile::ReadPlaneObjects (__thiscall, ret 0x4; Ghidra mis-derived the
@@ -584,4 +659,73 @@ i32 WwdFile::ReadPlaneObjects(const i32* src) {
     ((WwdObjList*)((char*)loader + 0xb0))->Add(obj);
 
     return (i32)(strCursor - (const char*)src);
+}
+
+// ---------------------------------------------------------------------------
+// CPlaneRender::CenterScrollA / CenterScrollB (__thiscall, returns int). Compute
+// a scroll target for the plane's camera sub-object (+0xB0) and hand it to the
+// camera's SetTarget (returning its result). When the plane wraps an axis (flag
+// bit2=X, bit3=Y) the target is the (int) scroll origin (m_scaledX/Y); otherwise
+// it is the rect mid-point ((origin+extent)/2 + 1). A and B differ only in the
+// camera method called (0x168340 vs 0x168500) and the symmetric mid-point pairing.
+//
+// @early-stop
+// 87.9%, logic byte-exact (the int return + `return 0` guard restored retail's
+// inline epilogues, 83.5%->87.9%). Two residuals, both uncontrollable MSVC5
+// scheduling/regalloc: (1) retail SHRINK-WRAPS the callee-save pushes - only
+// ebp/esi before the null guard, edi/ebx after it passes - while this build pushes
+// all four upfront; (2) the mid-point `add` loads m_40-first (A) / m_48-first (B)
+// in retail but this build loads the higher-offset field first regardless of
+// source operand order. Documented prologue/member-load scheduling wall. See
+// docs/patterns/shrink-wrapped-callee-save-push.md.
+RVA(0x00163300, 0x70)
+i32 CPlaneRender::CenterScrollA() {
+    CPlaneScroll* scroll = m_scroll;
+    if (scroll == 0) {
+        return 0;
+    }
+
+    u32 flags = m_flags;
+
+    i32 x;
+    if (flags & 0x4) {
+        x = (i32)m_scaledX;
+    } else {
+        x = (m_originX + m_extentX) / 2 + 1;
+    }
+
+    i32 y;
+    if (flags & 0x8) {
+        y = (i32)m_scaledY;
+        return scroll->SetTargetA(x, y);
+    }
+    y = (m_originY + m_extentY) / 2 + 1;
+    return scroll->SetTargetA(x, y);
+}
+
+// @early-stop
+// 87.9%, same shrink-wrapped-push / member-load scheduling wall as CenterScrollA.
+RVA(0x00163370, 0x70)
+i32 CPlaneRender::CenterScrollB() {
+    CPlaneScroll* scroll = m_scroll;
+    if (scroll == 0) {
+        return 0;
+    }
+
+    u32 flags = m_flags;
+
+    i32 x;
+    if (flags & 0x4) {
+        x = (i32)m_scaledX;
+    } else {
+        x = (m_extentX + m_originX) / 2 + 1;
+    }
+
+    i32 y;
+    if (flags & 0x8) {
+        y = (i32)m_scaledY;
+        return scroll->SetTargetB(x, y);
+    }
+    y = (m_extentY + m_originY) / 2 + 1;
+    return scroll->SetTargetB(x, y);
 }

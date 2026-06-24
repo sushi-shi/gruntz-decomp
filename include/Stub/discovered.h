@@ -1192,12 +1192,5 @@ public:
     void WndHolder_13d4c0_13d470();
     void WndHolder_13d4c0_13d4e0();
 };
-class WwdFile {
-public:
-    void WwdFile_00a000();
-    void WwdFile_162010();
-    void WwdFile_163300();
-    void WwdFile_163370();
-};
 
 #endif
