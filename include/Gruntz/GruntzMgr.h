@@ -17,7 +17,7 @@
 #include <Wap32/Wap32.h>
 #include <Gruntz/CString.h>
 #include <Gruntz/GameLevel.h> // CByteArray
-#include <Gruntz/CState.h>    // CState (m_2c game-state; Update() at slot 4)
+#include <Gruntz/CState.h>    // CState (m_curState game-state; Update() at slot 4)
 
 // The 0x238-byte options/registry-backed sub-object embedded at +0x150. Its
 // ctor (FUN_0051f5a0) takes (this, 0x238, 4, &thunk_FUN_00431250, &LoadOptions)
@@ -39,7 +39,7 @@ struct CGruntzSoundInnerZ {
 
 // A typed VIEW of the state-stack array at CGruntzMgr +0xd8. The member itself
 // stays a destructible CByteArray (so the ctor/dtor's EH-state numbering is
-// unchanged); the accessor methods reinterpret &m_arrD8 as this CObArray-shaped
+// unchanged); the accessor methods reinterpret &m_stateStack as this CObArray-shaped
 // view (CObject vptr at +0x00, m_pData at +0x04, m_nSize at +0x08, ...). The
 // stored elements are CState* (the pushed game states) whose Update() (slot 4,
 // +0x10) reports the state id; SetSize/SetAtGrow/RemoveAt are the out-of-line
@@ -63,7 +63,7 @@ struct CGruntzSoundZ {
 };
 
 // The level/world object held at CGruntzMgr +0x30 (the loaded map + its active
-// CWorld view). Reached as `m_30->...`; every method is reloc-masked. +0x24 is
+// CWorld view). Reached as `m_world->...`; every method is reloc-masked. +0x24 is
 // the active world view (the scroll/camera holder the FP scaler reads); +0x28 a
 // sub-controller whose +0x2c object carries a teardown thiscall; +0x520 a 4-slot
 // status array the paused-state poll walks (status id at each slot's +0x20).
@@ -130,43 +130,43 @@ public:
     CString BuildMoviePath(i32 movie);              // @0x08ff30 (per-movie path on the CD)
     void PerFrameTick();                            // @0x08f620 (per-frame draw-clock tick)
     void AdvanceFrame(i32 doDraw, i32 unused);      // @0x08f6a0 (the per-frame advance gate)
-    i32 CheckPlayState();                           // @0x08ec50 (m_2c->Update()==3||==0x11)
+    i32 CheckPlayState();                           // @0x08ec50 (m_curState->Update()==3||==0x11)
     i32 RestoreVideoMode(i32 save);                 // @0x08ddd0 (re-assert 640x480; save on hit)
     i32 SetVideoMode(i32 w, i32 h, i32 flag);       // @0x08df00 (mode-switch the display; stubbed)
 
     // Per-state notification forwarders: dispatch (a,b[,c]) into the live state's
     // vtable slot 11..20, returning 0 with no state (0x8d9d0..0x8dbe0).
-    i32 NotifyState0b(i32 a, i32 b);        // @0x08d9d0 -> m_2c slot 11 (+0x2c)
-    i32 NotifyState0c(i32 a, i32 b);        // @0x08da00 -> m_2c slot 12 (+0x30)
-    i32 NotifyState0d(i32 a, i32 b);        // @0x08da30 -> m_2c slot 13 (+0x34)
-    i32 NotifyState0e(i32 a, i32 b, i32 c); // @0x08da60 -> m_2c slot 14 (+0x38)
-    i32 NotifyState0f(i32 a, i32 b, i32 c); // @0x08daa0 -> m_2c slot 15 (+0x3c)
-    i32 NotifyState10(i32 a, i32 b, i32 c); // @0x08dae0 -> m_2c slot 16 (+0x40)
-    i32 NotifyState11(i32 a, i32 b, i32 c); // @0x08db20 -> m_2c slot 17 (+0x44)
-    i32 NotifyState12(i32 a, i32 b, i32 c); // @0x08db60 -> m_2c slot 18 (+0x48)
-    i32 NotifyState13(i32 a, i32 b, i32 c); // @0x08dba0 -> m_2c slot 19 (+0x4c)
-    i32 NotifyState14(i32 a, i32 b, i32 c); // @0x08dbe0 -> m_2c slot 20 (+0x50)
+    i32 NotifyState0b(i32 a, i32 b);        // @0x08d9d0 -> m_curState slot 11 (+0x2c)
+    i32 NotifyState0c(i32 a, i32 b);        // @0x08da00 -> m_curState slot 12 (+0x30)
+    i32 NotifyState0d(i32 a, i32 b);        // @0x08da30 -> m_curState slot 13 (+0x34)
+    i32 NotifyState0e(i32 a, i32 b, i32 c); // @0x08da60 -> m_curState slot 14 (+0x38)
+    i32 NotifyState0f(i32 a, i32 b, i32 c); // @0x08daa0 -> m_curState slot 15 (+0x3c)
+    i32 NotifyState10(i32 a, i32 b, i32 c); // @0x08dae0 -> m_curState slot 16 (+0x40)
+    i32 NotifyState11(i32 a, i32 b, i32 c); // @0x08db20 -> m_curState slot 17 (+0x44)
+    i32 NotifyState12(i32 a, i32 b, i32 c); // @0x08db60 -> m_curState slot 18 (+0x48)
+    i32 NotifyState13(i32 a, i32 b, i32 c); // @0x08dba0 -> m_curState slot 19 (+0x4c)
+    i32 NotifyState14(i32 a, i32 b, i32 c); // @0x08dbe0 -> m_curState slot 20 (+0x50)
 
     // State-stack accessors (the CState* array at +0xd8).
     CState* TopState();             // @0x090980 (last pushed state)
     void PushState(CState* s);      // @0x0909b0 (SetAtGrow append)
     i32 PopTopIfMatches(CState* s); // @0x0909e0 (RemoveAt last; old top == s)
     void ClearStateStack();         // @0x090a50 (delete all, SetSize(0,-1))
-    i32 CheckMovieFileExists();     // @0x090aa0 (FileExists(m_strF0))
+    i32 CheckMovieFileExists();     // @0x090aa0 (FileExists(m_strMoviePath))
     CState* FindStateById(i32 id);  // @0x092900 (live + stack search by Update id)
 
-    i32 StoreInputState(i32 v);              // @0x091a10 (store +0x120, forward to m_60)
-    void StoreInputFlag(i32 v);              // @0x0919d0 (store +0x11c, mirror to g_61ab24 + m_54)
-    void UnloadSoundChain();                 // @0x08f740 (m_30->m_28->m_2c teardown + StopBank2)
-    void ClearOptionsSlots();                // @0x092ec0 (zero the 4 options slots' +0x20/+0x24)
-    CString GetWorldFileName();              // @0x0928c0 (return a copy of m_strC8)
-    i32 AdvanceOptionsCycle();               // @0x0933e0 (round-robin tick of the options slots)
-    void SetCellHeight(i32 r, i32 c, i32 v); // @0x111ec0 (write the world height grid)
-    i32 PassClickToPlayState(i32 a0, i32 a1, i32 a2);       // @0x08d780
-    i32 SwitchToNextState();                                // @0x08d6a0
-    void EnterModalUI(i32 arg);                             // @0x08ef10
-    i32 ExitModalUI(class CModalDialog* dlg, i32 notify);   // @0x0903f0
-    i32 FinishLevel(i32 full, i32 stopBank);                // @0x08e980
+    i32 StoreInputState(i32 v); // @0x091a10 (store m_inputStateVal, forward to m_timer)
+    void StoreInputFlag(i32 v); // @0x0919d0 (store m_inputFlag, mirror to g_61ab24 + m_inputState)
+    void UnloadSoundChain();    // @0x08f740 (m_world->m_28->m_2c teardown + StopBank2)
+    void ClearOptionsSlots();   // @0x092ec0 (zero the 4 options slots' +0x20/+0x24)
+    CString GetWorldFileName(); // @0x0928c0 (return a copy of m_strWorldFile)
+    i32 AdvanceOptionsCycle();  // @0x0933e0 (round-robin tick of the options slots)
+    void SetCellHeight(i32 r, i32 c, i32 v);              // @0x111ec0 (write the world height grid)
+    i32 PassClickToPlayState(i32 a0, i32 a1, i32 a2);     // @0x08d780
+    i32 SwitchToNextState();                              // @0x08d6a0
+    void EnterModalUI(i32 arg);                           // @0x08ef10
+    i32 ExitModalUI(class CModalDialog* dlg, i32 notify); // @0x0903f0
+    i32 FinishLevel(i32 full, i32 stopBank);              // @0x08e980
     i32 FillSaveInfo(struct SaveInfo* dst, void* snapshot); // @0x0927b0
     i32 SaveState(class CSerializerZ* ar);                  // @0x093620
     void UpdateScoreHud();                                  // @0x0860b0
@@ -192,7 +192,7 @@ public:
     void ResetClockGlobals();                       // @0x08f4f0 (zero the 7 clock globals)
     i32 TickStateMgrs();                            // @0x0920b0 (drive two engine singletons)
     i32 CheckSavedMode();                           // @0x08de70 (saved==live mode test)
-    i32 IsLobbyHostReady();                         // @0x091500 (m_2c/m_8/m_ac null-chain)
+    i32 IsLobbyHostReady();            // @0x091500 (m_curState/m_8/m_modalBusy null-chain)
     i32 RunFromState();                // @0x090200 (thin wrapper -> ChangeState_8fab0(1))
     CState* PickPlayOrPausedState();   // @0x092990 (FindStateById(3))
     CState* PickPausedThenPlayState(); // @0x0929b0 (FindStateById(0x11)|| (3))
@@ -203,45 +203,60 @@ public:
     i32 ChangeState_8fab0(i32 arg); // @0x08fab0 (deferred / stubbed)
 
     // --- members (offsets relative to `this`; base CGameMgr occupies 0x00..0x2c) ---
-    CState* m_2c;                     // +0x2c  current game-state (Update() -> state id)
-    CWorldZ* m_30;                    // +0x30  loaded world/map object (also a draw gate)
-    i32 m_34, m_38, m_3c, m_40, m_44; // +0x34..+0x44
-    CGruntzSoundZ* m_48;              // +0x48  sound/bank object (StopBank/StopAll)
+    CState* m_curState;               // +0x2c  current game-state (Update() -> state id)
+    CWorldZ* m_world;                 // +0x30  loaded world/map object (also a draw gate)
+    i32 m_34, m_38, m_3c, m_40, m_44; // +0x34..+0x44  (+0x44 -> HudGuard44 first-frame guard)
+    CGruntzSoundZ* m_sound;           // +0x48  sound/bank object (StopBank/StopAll)
     i32 m_4c, m_50;                   // +0x4c, +0x50
-    i32 m_54, m_58, m_5c, m_60, m_64, m_68, m_6c, m_70, m_74, m_78; // +0x54..+0x78
-    i32 m_7c;                                                       // +0x7c
-    i32 m_80, m_84;                                                 // +0x80, +0x84
-    i32 m_88;                                                       // +0x88  (=0x10 in ctor)
-    i32 m_8c, m_90;                               // +0x8c, +0x90  live video mode (w, h)
-    i32 m_94, m_98;                               // +0x94, +0x98  saved/last-good mode (w, h)
-    i32 m_9c, m_a0, m_a4, m_a8, m_ac, m_b0, m_b4; // +0x9c..+0xb4
-    i32 m_b8;                                     // +0xb8  (=1 in ctor)
-    i32 m_bc;                                     // +0xbc
-    IDirectPlayLobbyZ* m_c0;                      // +0xc0  the lobby interface (Released/recreated)
-    void* m_c4;                                   // +0xc4  the IDirectPlay interface from Connect
-    CString m_strC8;                              // +0xc8  (EH state 0)
-    i32 m_cc;                                     // +0xcc  (=0x1e in ctor)
-    char m_d0;                                    // +0xd0  cached CD drive letter
-    char m_padD1[3];                              // +0xd1
-    i32 m_d4;                                     // +0xd4  drive-letter probed flag
-    CByteArray m_arrD8;                           // +0xd8  (0x14 bytes; EH state 1)
-    CString m_strEC;                              // +0xec  (EH state 2)
-    CString m_strF0;                              // +0xf0  (EH state 3)
-    i32 m_f4;                                     // +0xf4  (=1 in ctor)
-    i32 m_f8, m_fc;                               // +0xf8, +0xfc
-    i32 m_100, m_104, m_108;                      // +0x100..+0x108  (m_100/m_104 =1 in ctor)
-    i32 m_10c, m_110;                             // +0x10c, +0x110  (=1 in ctor)
-    i32 m_114;                                    // +0x114
-    i32 m_118;                                    // +0x118
-    i32 m_11c;                                    // +0x11c
-    i32 m_120;                                    // +0x120  StoreInputState target
-    i32 m_124;                                    // +0x124
-    i32 m_128, m_12c, m_130, m_134;               // +0x128..+0x134
-    i32 m_138;                                    // +0x138  (=3 in ctor)
-    i32 m_13c, m_140, m_144, m_148;               // +0x13c..+0x148  view-edge origins
-    char m_pad14c[0x150 - 0x14c];                 // +0x14c..+0x150 gap
-    CGruntzMgrOptions m_options150;               // +0x150 (0x238 bytes; EH state 4)
-    char m_pad388[0xa30 - 0x388];                 // +0x388..0xa30  remaining game state
+    // +0x54..+0x78 sub-controllers (4-byte object pointers; each is reached only
+    // through a reloc-masked thiscall on a TU-local view, so kept i32-wide):
+    i32 m_inputState;     // +0x54  input/state object (Method0/Method1/StoreFlag)
+    i32 m_saveSink;       // +0x58  save-record sink (SaveSink58::Store)
+    i32 m_5c;             // +0x5c
+    i32 m_timer;          // +0x60  per-frame timer/poll controller (Stop/Tick; +0x2c mirror)
+    i32 m_64;             // +0x64
+    i32 m_cmdGrid;        // +0x68  world delta-table grid + command sink (Reset/Flush)
+    i32 m_cmdSubMgr;      // +0x6c  command sub-manager sink
+    i32 m_cmdNotify;      // +0x70  command sink (vtbl slot 1) + cell-height notify
+    i32 m_74, m_78;       // +0x74, +0x78
+    i32 m_scoreHud;       // +0x7c  HUD/score accumulator + command sink
+    i32 m_80, m_84;       // +0x80, +0x84
+    i32 m_88;             // +0x88  (=0x10 in ctor)
+    i32 m_modeW, m_modeH; // +0x8c, +0x90  live video mode (w, h)
+    i32 m_savedModeW, m_savedModeH; // +0x94, +0x98  saved/last-good mode (w, h)
+    i32 m_lobbyResult;              // +0x9c  lobby-connect success flag (1/0)
+    i32 m_lobbyProbed;              // +0xa0  one-shot lobby-connect guard
+    i32 m_a4, m_a8;                 // +0xa4, +0xa8
+    i32 m_modalBusy;                // +0xac  modal-UI/cursor-busy gate
+    i32 m_b0, m_b4;                 // +0xb0, +0xb4
+    i32 m_b8;                       // +0xb8  (=1 in ctor)
+    i32 m_saveInfoRec;              // +0xbc  last FillSaveInfo dst record
+    IDirectPlayLobbyZ* m_lobby;     // +0xc0  the lobby interface (Released/recreated)
+    void* m_connSettings;           // +0xc4  the launch connection-settings buffer
+    CString m_strWorldFile;         // +0xc8  world file name (EH state 0)
+    i32 m_cc;                       // +0xcc  (=0x1e in ctor)
+    char m_driveLetter;             // +0xd0  cached CD drive letter
+    char m_padD1[3];                // +0xd1
+    i32 m_driveLetterProbed;        // +0xd4  drive-letter probed flag
+    CByteArray m_stateStack;        // +0xd8  CState* push-down stack (0x14 bytes; EH state 1)
+    CString m_strEC;                // +0xec  (EH state 2)
+    CString m_strMoviePath;         // +0xf0  resolved movie path (EH state 3)
+    i32 m_f4;                       // +0xf4  (=1 in ctor)
+    i32 m_f8, m_fc;                 // +0xf8, +0xfc
+    i32 m_100, m_104, m_108;        // +0x100..+0x108  (m_100/m_104 =1 in ctor)
+    i32 m_10c, m_110;               // +0x10c, +0x110  (=1 in ctor)
+    i32 m_114;                      // +0x114
+    i32 m_118;                      // +0x118
+    i32 m_inputFlag;                // +0x11c  StoreInputFlag target
+    i32 m_inputStateVal;            // +0x120  StoreInputState target
+    i32 m_124;                      // +0x124
+    i32 m_128, m_12c, m_130, m_134; // +0x128..+0x134  (m_134==3 -> "won"; FillSaveInfo)
+    i32 m_optionsCount;             // +0x138  options-cycle high index (=3 in ctor -> 4 slots)
+    i32 m_viewOriginL, m_viewOriginT, m_viewOriginR,
+        m_viewOriginB;            // +0x13c..+0x148  view-edge origins
+    char m_pad14c[0x150 - 0x14c]; // +0x14c..+0x150 gap
+    CGruntzMgrOptions m_options;  // +0x150 (4x0x238 options array; EH state 4)
+    char m_pad388[0xa30 - 0x388]; // +0x388..0xa30  remaining game state
 };
 
 #endif // GRUNTZ_GRUNTZ_GRUNTZMGR_H

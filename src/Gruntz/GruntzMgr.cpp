@@ -29,7 +29,7 @@ namespace Utils {
 // External DirectPlay surface used by InitializeLobbyConnectionSettings. The
 // DPLAYX export DirectPlayLobbyCreate (ordinal 4) and CNetMgr::ReportError are
 // reached as `call rel32`/[IAT] - the displacement reloc-masks, so only the
-// arg shapes are load-bearing. `m_c4` (the connection-settings buffer) is freed
+// arg shapes are load-bearing. `m_connSettings` (the connection-settings buffer) is freed
 // through a small NAFXCW-style operator-delete helper (out-of-line, reloc-
 // masked); modelled as a plain free function.
 extern "C" __declspec(dllimport) i32 __stdcall DirectPlayLobbyCreate(
@@ -159,9 +159,12 @@ void RedrawMapIndex(i32 idx); // FUN_00558c70
 // `push a3..a0; call; add esp,0x10`).
 i32 CmdHook(i32 a, i32 b, i32 c, i32 d); // FUN @ 0x17da thunk
 
-// The +0x60 timer/poll object (reloc-masked thiscall).
+// The +0x60 timer/poll object (reloc-masked thiscall). StoreInputState mirrors
+// the latest input-state value into its +0x2c field.
 struct TimerObj {
-    void Stop(); // (this) reloc-masked
+    char m_pad0[0x2c];
+    i32 m_inputMirror; // +0x2c
+    void Stop();       // (this) reloc-masked
 };
 
 // The +0x68 sub-controller (gated on m_10; reloc-masked thiscall).
@@ -176,7 +179,7 @@ struct InputState54 {
     void Method1(); // FUN @ 0x18e8 thunk
 };
 
-// One player-status slot in the PLAY state's 4-entry status array (m_2c->+0x520),
+// One player-status slot in the PLAY state's 4-entry status array (m_curState->+0x520),
 // each 0x64 bytes; the status id is at +0x20 (3 == "won/done").
 struct PlayStatusSlot {
     char m_pad0[0x20];
@@ -327,7 +330,7 @@ public:
     virtual i32 Command(i32 a, i32 b, i32 c, i32 d); // slot 1 (+0x04)
 };
 
-// The loaded world's height/influence grid (reached via m_30->m_24->m_5c). m_20
+// The loaded world's height/influence grid (reached via m_world->m_24->m_5c). m_20
 // is the value grid, m_24 the per-column base offset table.
 struct CHeightGrid {
     char m_pad0[0x20];
@@ -335,13 +338,13 @@ struct CHeightGrid {
     i32* m_24; // +0x24  per-column base table
 };
 
-// The active world view at m_30->m_24; its +0x5c holds the height grid.
+// The active world view at m_world->m_24; its +0x5c holds the height grid.
 struct CWorldViewZ {
     char m_pad0[0x5c];
     CHeightGrid* m_5c; // +0x5c
 };
 
-// The scroll/camera view at m_30->m_24 (a CWorldView): a tile rect at
+// The scroll/camera view at m_world->m_24 (a CWorldView): a tile rect at
 // +0x10..+0x1c and the three scaled-extent output pairs at +0xc8..+0xdc that
 // RecomputeViewScale fills; +0x5c is a CWorldEdges sub-object (origin fields at
 // +0x40..+0x4c). The view's rescale notify is a reloc-masked thiscall.
@@ -430,25 +433,25 @@ void CGruntzMgr::ReportError(WPARAM wParam, LPARAM lParam) {
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::RestoreVideoMode  (__thiscall; `ret 4`; retail FUN_0048ddd0)
-// Re-asserts the standard 640x480 display mode. If the live mode (m_8c x m_90)
+// Re-asserts the standard 640x480 display mode. If the live mode (m_modeW x m_modeH)
 // is already 640x480 it is a no-op success - and when `save` is set it also
-// records the mode into the saved/last-good pair (m_94/m_98). Otherwise it
+// records the mode into the saved/last-good pair (m_savedModeW/m_savedModeH). Otherwise it
 // drives SetVideoMode(640, 480, save); on failure it surfaces a (0x8008, 0x438)
 // error and returns 0.
 // @early-stop
 // constant-CSE/copy-prop wall: retail uses immediate cmp operands + re-loads the
 // fields fresh in the save block (no constant propagation); MSVC 5.0 here either
 // hoists 0x280/0x1e0 into entry registers (direct-member compare) or copy-props
-// the known value into the m_94/m_98 store (local-copy compare). Logic is exact;
+// the known value into the m_savedModeW/m_savedModeH store (local-copy compare). Logic is exact;
 // see docs/patterns/constant-cse-immediate-vs-hoist.md.
 RVA(0x0008ddd0, 0x7e)
 i32 CGruntzMgr::RestoreVideoMode(i32 save) {
-    i32 w = m_8c;
-    i32 h = m_90;
+    i32 w = m_modeW;
+    i32 h = m_modeH;
     if (w == 0x280 && h == 0x1e0) {
         if (save) {
-            m_94 = w;
-            m_98 = h;
+            m_savedModeW = w;
+            m_savedModeH = h;
         }
         return 1;
     }
@@ -462,18 +465,18 @@ i32 CGruntzMgr::RestoreVideoMode(i32 save) {
 // -------------------------------------------------------------------------
 // CGruntzMgr::GetGruntzDriveLetter  (__thiscall)
 // Returns the CD-ROM drive letter holding the Gruntz disc, memoised in the
-// pair (m_d0 = letter, m_d4 = probed-flag): once probed, return the cached
+// pair (m_driveLetter = letter, m_driveLetterProbed = probed-flag): once probed, return the cached
 // letter; otherwise call Utils::WinAPI::GetGruntzDriveLetter(), cache + set the
 // flag. (The result is discarded by the engine on the first/uncached path - the
 // store IS the return, the cached path returns the byte.)
 RVA(0x0008fa70, 0x2c)
 char CGruntzMgr::GetGruntzDriveLetter() {
-    if (m_d4) {
-        return m_d0;
+    if (m_driveLetterProbed) {
+        return m_driveLetter;
     }
-    m_d0 = Utils::WinAPI::GetGruntzDriveLetter();
-    m_d4 = 1;
-    return m_d0;
+    m_driveLetter = Utils::WinAPI::GetGruntzDriveLetter();
+    m_driveLetterProbed = 1;
+    return m_driveLetter;
 }
 
 // -------------------------------------------------------------------------
@@ -485,78 +488,78 @@ char CGruntzMgr::GetGruntzDriveLetter() {
 // on the second compare, matching the retail two-call codegen.)
 RVA(0x0008ec50, 0x33)
 i32 CGruntzMgr::CheckPlayState() {
-    if (m_2c == 0) {
+    if (m_curState == 0) {
         return 0;
     }
-    if (m_2c->Update() == 3) {
+    if (m_curState->Update() == 3) {
         return 1;
     }
-    return m_2c->Update() == 0x11;
+    return m_curState->Update() == 0x11;
 }
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::InitializeLobbyConnectionSettings  (__thiscall)
-// One-shot (guarded by m_a0) acquisition of the DirectPlay lobby connection
-// settings the game was launched with: create an IDirectPlayLobby (m_c0), then
+// One-shot (guarded by m_lobbyProbed) acquisition of the DirectPlay lobby connection
+// settings the game was launched with: create an IDirectPlayLobby (m_lobby), then
 // pull the launch-time connection-settings blob into a freshly allocated buffer
-// (m_c4) using the classic size-probe / fill-buffer two-call idiom. Every COM /
+// (m_connSettings) using the classic size-probe / fill-buffer two-call idiom. Every COM /
 // DPLAYX failure routes a CNetMgr::ReportError diagnostic (with this TU's file +
-// the call-site line) through the game window. m_9c records success (1) / failure
+// the call-site line) through the game window. m_lobbyResult records success (1) / failure
 // (0); the result also lands in eax for the call site.
 RVA(0x0008eca0, 0x164)
 i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
-    if (m_a0) {
-        return m_9c;
+    if (m_lobbyProbed) {
+        return m_lobbyResult;
     }
 
-    m_a0 = 1;
-    m_9c = 0;
+    m_lobbyProbed = 1;
+    m_lobbyResult = 0;
 
-    if (m_c0) {
-        m_c0->vtbl->Release(m_c0);
-        m_c0 = 0;
+    if (m_lobby) {
+        m_lobby->vtbl->Release(m_lobby);
+        m_lobby = 0;
     }
 
-    i32 hr = DirectPlayLobbyCreate(0, &m_c0, 0, 0, 0);
+    i32 hr = DirectPlayLobbyCreate(0, &m_lobby, 0, 0, 0);
     if (hr) {
         CNetMgr::ReportError("C:\\Proj\\Gruntz\\GruntzMgr.cpp", 0x120d, hr, ((CGameWnd*)m_4)->m_4);
         return 0;
     }
-    if (!m_c0) {
+    if (!m_lobby) {
         return 0;
     }
 
-    if (m_c4) {
-        FreeConnectionSettings(m_c4);
-        m_c4 = 0;
+    if (m_connSettings) {
+        FreeConnectionSettings(m_connSettings);
+        m_connSettings = 0;
     }
 
     u32 dwSize = 0;
-    hr = m_c0->vtbl->GetConnectionSettings(m_c0, 0, 0, &dwSize);
+    hr = m_lobby->vtbl->GetConnectionSettings(m_lobby, 0, 0, &dwSize);
     if (hr != 0 && hr != (i32)0x8877001e) { // !DPERR_BUFFERTOOSMALL
         CNetMgr::ReportError("C:\\Proj\\Gruntz\\GruntzMgr.cpp", 0x1221, hr, ((CGameWnd*)m_4)->m_4);
-        m_c0->vtbl->Release(m_c0);
-        m_c0 = 0;
+        m_lobby->vtbl->Release(m_lobby);
+        m_lobby = 0;
         return 0;
     }
 
-    m_c4 = operator new(dwSize);
-    if (!m_c4) {
-        m_c0->vtbl->Release(m_c0);
-        m_c0 = 0;
+    m_connSettings = operator new(dwSize);
+    if (!m_connSettings) {
+        m_lobby->vtbl->Release(m_lobby);
+        m_lobby = 0;
         return 0;
     }
 
-    hr = m_c0->vtbl->GetConnectionSettings(m_c0, 0, m_c4, &dwSize);
+    hr = m_lobby->vtbl->GetConnectionSettings(m_lobby, 0, m_connSettings, &dwSize);
     if (hr) {
         CNetMgr::ReportError("C:\\Proj\\Gruntz\\GruntzMgr.cpp", 0x1232, hr, ((CGameWnd*)m_4)->m_4);
-        m_c0->vtbl->Release(m_c0);
-        m_c0 = 0;
+        m_lobby->vtbl->Release(m_lobby);
+        m_lobby = 0;
         return 0;
     }
 
-    m_9c = 1;
-    return m_9c;
+    m_lobbyResult = 1;
+    return m_lobbyResult;
 }
 
 // -------------------------------------------------------------------------
@@ -564,18 +567,18 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
 // The per-frame draw-clock tick. If the active state's Update() reports the
 // "paused/hold" id (0x11) the tick is skipped; otherwise it refreshes the engine
 // clock (CGameMgr::UnknownMethodInitializeTimeGlobal), optionally re-stamps the
-// draw clock (g_6bf3c0 = timeGetTime(), g_6bf3bc = 0) when the draw gate m_30 is
+// draw clock (g_6bf3c0 = timeGetTime(), g_6bf3bc = 0) when the draw gate m_world is
 // set, and finally mirrors the freshly-refreshed engine clock into the game-side
 // pair (g_645580/g_645584).
 RVA(0x0008f620, 0x51)
 void CGruntzMgr::PerFrameTick() {
-    if (m_2c && m_2c->Update() == 0x11) {
+    if (m_curState && m_curState->Update() == 0x11) {
         return;
     }
 
     UnknownMethodInitializeTimeGlobal();
 
-    if (m_30) {
+    if (m_world) {
         g_6bf3c0 = timeGetTime();
         g_6bf3bc = 0;
     }
@@ -612,20 +615,20 @@ void CGruntzMgr::AdvanceFrame(i32 doDraw, i32 /*unused*/) {
         if (m_14 == 0) {
             return;
         }
-        if (CheckPlayState() == 0 && (m_2c == 0 || m_2c->Update() != 8)) {
+        if (CheckPlayState() == 0 && (m_curState == 0 || m_curState->Update() != 8)) {
             return;
         }
-        m_48->StopBank(1);
+        m_sound->StopBank(1);
         return;
     }
 
     if (m_14 == 0) {
         return;
     }
-    if ((m_48->m_1c ? m_48->m_1c->IsBusy() : 0) == 0) {
+    if ((m_sound->m_1c ? m_sound->m_1c->IsBusy() : 0) == 0) {
         return;
     }
-    m_48->StopAll();
+    m_sound->StopAll();
 }
 
 // -------------------------------------------------------------------------
@@ -709,85 +712,86 @@ CString CGruntzMgr::BuildMoviePath(i32 movie) {
 // re-loaded fresh from the moving stack per push (the natural forwarder codegen).
 RVA(0x0008d9d0, 0x1e)
 i32 CGruntzMgr::NotifyState0b(i32 a, i32 b) {
-    if (m_2c) {
-        return m_2c->Vslot0b(a, b);
+    if (m_curState) {
+        return m_curState->Vslot0b(a, b);
     }
     return 0;
 }
 RVA(0x0008da00, 0x1e)
 i32 CGruntzMgr::NotifyState0c(i32 a, i32 b) {
-    if (m_2c) {
-        return m_2c->Vslot0c(a, b);
+    if (m_curState) {
+        return m_curState->Vslot0c(a, b);
     }
     return 0;
 }
 RVA(0x0008da30, 0x1e)
 i32 CGruntzMgr::NotifyState0d(i32 a, i32 b) {
-    if (m_2c) {
-        return m_2c->Vslot0d(a, b);
+    if (m_curState) {
+        return m_curState->Vslot0d(a, b);
     }
     return 0;
 }
 RVA(0x0008da60, 0x23)
 i32 CGruntzMgr::NotifyState0e(i32 a, i32 b, i32 c) {
-    if (m_2c) {
-        return m_2c->Vslot0e(a, b, c);
+    if (m_curState) {
+        return m_curState->Vslot0e(a, b, c);
     }
     return 0;
 }
 RVA(0x0008daa0, 0x23)
 i32 CGruntzMgr::NotifyState0f(i32 a, i32 b, i32 c) {
-    if (m_2c) {
-        return m_2c->Vslot0f(a, b, c);
+    if (m_curState) {
+        return m_curState->Vslot0f(a, b, c);
     }
     return 0;
 }
 RVA(0x0008dae0, 0x23)
 i32 CGruntzMgr::NotifyState10(i32 a, i32 b, i32 c) {
-    if (m_2c) {
-        return m_2c->Vslot10(a, b, c);
+    if (m_curState) {
+        return m_curState->Vslot10(a, b, c);
     }
     return 0;
 }
 RVA(0x0008db20, 0x23)
 i32 CGruntzMgr::NotifyState11(i32 a, i32 b, i32 c) {
-    if (m_2c) {
-        return m_2c->Vslot11(a, b, c);
+    if (m_curState) {
+        return m_curState->Vslot11(a, b, c);
     }
     return 0;
 }
 RVA(0x0008db60, 0x23)
 i32 CGruntzMgr::NotifyState12(i32 a, i32 b, i32 c) {
-    if (m_2c) {
-        return m_2c->Vslot12(a, b, c);
+    if (m_curState) {
+        return m_curState->Vslot12(a, b, c);
     }
     return 0;
 }
 RVA(0x0008dba0, 0x23)
 i32 CGruntzMgr::NotifyState13(i32 a, i32 b, i32 c) {
-    if (m_2c) {
-        return m_2c->Vslot13(a, b, c);
+    if (m_curState) {
+        return m_curState->Vslot13(a, b, c);
     }
     return 0;
 }
 RVA(0x0008dbe0, 0x23)
 i32 CGruntzMgr::NotifyState14(i32 a, i32 b, i32 c) {
-    if (m_2c) {
-        return m_2c->Vslot14(a, b, c);
+    if (m_curState) {
+        return m_curState->Vslot14(a, b, c);
     }
     return 0;
 }
 
 // -------------------------------------------------------------------------
-// CGruntzMgr::CheckSavedMode (0x08de70; ret). If the live mode (m_8c x m_90)
-// already equals the saved/last-good mode (m_94 x m_98) it succeeds; otherwise
+// CGruntzMgr::CheckSavedMode (0x08de70; ret). If the live mode (m_modeW x m_modeH)
+// already equals the saved/last-good mode (m_savedModeW x m_savedModeH) it succeeds; otherwise
 // it drives SetVideoMode(saved-w, saved-h, save=1), falling back to
 // RestoreVideoMode(1), and on total failure surfaces a (0x8008, 0x45e) error.
 RVA(0x0008de70, 0x61)
 i32 CGruntzMgr::CheckSavedMode() {
     // All success paths short-circuit to one trailing `return 1` (retail tail-
     // merges the mov eax,1; pop; ret epilogue).
-    if ((m_8c == m_94 && m_90 == m_98) || SetVideoMode(m_94, m_98, 1) || RestoreVideoMode(1)) {
+    if ((m_modeW == m_savedModeW && m_modeH == m_savedModeH)
+        || SetVideoMode(m_savedModeW, m_savedModeH, 1) || RestoreVideoMode(1)) {
         return 1;
     }
     ReportError(0x8008, 0x45e);
@@ -833,7 +837,7 @@ i32 CGruntzMgr::RunFromState() {
 // stack is empty).
 RVA(0x00090980, 0x18)
 CState* CGruntzMgr::TopState() {
-    CStateStackZ* st = (CStateStackZ*)&m_arrD8;
+    CStateStackZ* st = (CStateStackZ*)&m_stateStack;
     if (st->m_nSize <= 0) {
         return 0;
     }
@@ -848,14 +852,14 @@ void CGruntzMgr::PushState(CState* s) {
     if (!s) {
         return;
     }
-    CStateStackZ* st = (CStateStackZ*)&m_arrD8;
+    CStateStackZ* st = (CStateStackZ*)&m_stateStack;
     st->SetAtGrow(st->m_nSize, s);
 }
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::PopTopIfMatches (0x0909e0; ret 4). Saves the last stack slot,
 // RemoveAt()s it, and reports whether the removed top was s. The count/data are
-// read fresh off `this` (+0xe0/+0xdc); only the helper call forms &m_arrD8.
+// read fresh off `this` (+0xe0/+0xdc); only the helper call forms &m_stateStack.
 RVA(0x000909e0, 0x46)
 i32 CGruntzMgr::PopTopIfMatches(CState* s) {
     if (!s) {
@@ -866,7 +870,7 @@ i32 CGruntzMgr::PopTopIfMatches(CState* s) {
         return 0;
     }
     CState* top = (*(CState***)((char*)this + 0xdc))[n - 1];
-    ((CStateStackZ*)&m_arrD8)->RemoveAt(n - 1, 1);
+    ((CStateStackZ*)&m_stateStack)->RemoveAt(n - 1, 1);
     return top == s;
 }
 
@@ -882,37 +886,37 @@ void CGruntzMgr::ClearStateStack() {
             delete s;
         }
     }
-    ((CStateStackZ*)&m_arrD8)->SetSize(0, -1);
+    ((CStateStackZ*)&m_stateStack)->SetSize(0, -1);
 }
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::CheckMovieFileExists (0x090aa0; cdecl ret). Probes whether the
-// resolved movie path (m_strF0) exists on disk.
+// resolved movie path (m_strMoviePath) exists on disk.
 RVA(0x00090aa0, 0x10)
 i32 CGruntzMgr::CheckMovieFileExists() {
-    return Utils::WinAPI::FileExists((char*)(const char*)m_strF0);
+    return Utils::WinAPI::FileExists((char*)(const char*)m_strMoviePath);
 }
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::IsLobbyHostReady (0x091500). Null-chain predicate: returns
-// m_2c->ReleaseResources-slot result (slot 7, +0x1c) only when m_2c, the
-// CGameApp (m_8), its +0x240 sub-object and !m_ac all hold; else 0.
+// m_curState->ReleaseResources-slot result (slot 7, +0x1c) only when m_curState, the
+// CGameApp (m_8), its +0x240 sub-object and !m_modalBusy all hold; else 0.
 RVA(0x00091500, 0x42)
 i32 CGruntzMgr::IsLobbyHostReady() {
-    if (m_2c == 0) {
+    if (m_curState == 0) {
         return 0;
     }
-    i32* app = (i32*)m_8;
+    CGameApp* app = (CGameApp*)m_8;
     if (app == 0) {
         return 0;
     }
-    if (*(i32*)((char*)app + 0x240) == 0) {
+    if (app->m_240 == 0) {
         return 0;
     }
-    if (m_ac != 0) {
+    if (m_modalBusy != 0) {
         return 0;
     }
-    return m_2c->Vslot07() != 0;
+    return m_curState->Vslot07() != 0;
 }
 
 // -------------------------------------------------------------------------
@@ -920,10 +924,10 @@ i32 CGruntzMgr::IsLobbyHostReady() {
 // +0x60 sub-object is present mirrors it into that object's +0x2c.
 RVA(0x00091a10, 0x17)
 i32 CGruntzMgr::StoreInputState(i32 v) {
-    m_120 = v;
-    i32* p = (i32*)m_60;
-    if (p) {
-        p[0x2c / 4] = v;
+    m_inputStateVal = v;
+    TimerObj* timer = (TimerObj*)m_timer;
+    if (timer) {
+        timer->m_inputMirror = v;
     }
     return v;
 }
@@ -944,10 +948,10 @@ i32 CGruntzMgr::TickStateMgrs() {
 // matches (or 0).
 RVA(0x00092900, 0x6e)
 CState* CGruntzMgr::FindStateById(i32 id) {
-    if (m_2c && m_2c->Update() == id) {
-        return m_2c;
+    if (m_curState && m_curState->Update() == id) {
+        return m_curState;
     }
-    CStateStackZ* st = (CStateStackZ*)&m_arrD8;
+    CStateStackZ* st = (CStateStackZ*)&m_stateStack;
     for (i32 i = 0; i < st->m_nSize; i++) {
         CState* s = st->m_pData[i];
         if (s && s->Update() == id) {
@@ -995,7 +999,7 @@ i32 CGruntzMgr::ChangeState_8fab0(i32 /*arg*/) {
 // -------------------------------------------------------------------------
 // CGruntzMgr::~CGruntzMgr  (virtual; vtable slot 0; own vftable @0x5e9b64)
 // The own body just runs UnknownClose(); the compiler then destructs the five
-// destructible members (m_options150, m_strF0, m_strEC, m_arrD8, m_strC8, in
+// destructible members (m_options, m_strMoviePath, m_strEC, m_stateStack, m_strWorldFile, in
 // reverse-construction order) and chains the base ~CGameMgr - all under the /GX
 // C++ EH frame (per-member unwind states 4..0).
 RVA(0x00083360, 0xb2)
@@ -1007,22 +1011,22 @@ CGruntzMgr::~CGruntzMgr() {
 // CGruntzMgr::RecomputeViewScale (0x08f7f0; ret). Recomputes the world view's
 // three scaled-extent pairs from its tile rect (width/height + 1) at three zoom
 // factors (1.4 / 5.3 / 1.12), notifying the view after each pair, then snapshots
-// the view's edge origins (m_5c +0x40..+0x4c, biased by 0x60) into m_13c..m_148.
+// the view's edge origins (m_5c +0x40..+0x4c, biased by 0x60) into m_viewOriginL..m_148.
 // No-op when no world is loaded. The int extents are converted to float once and
 // reused across the three scale passes (fild/fst then fld).
 // @early-stop
 // ~83% x87-scheduling wall: logic is exact (same 1.4/5.3/1.12 scales, same view
-// writes + per-pass Notify + the m_13c..m_148 edge snapshot). Retail keeps the
+// writes + per-pass Notify + the m_viewOriginL..m_148 edge snapshot). Retail keeps the
 // freshly-converted extent in st0 with `fst` (store-and-keep) and multiplies it
 // in place; MSVC here emits `fstp` (store-and-pop) + a reload `fld`, a 1-2 instr
 // FPU-stack scheduling drift per pass. No source spelling flips fst<->fstp;
 // interleaving the conversions makes it worse (78%).
 RVA(0x0008f7f0, 0x131)
 void CGruntzMgr::RecomputeViewScale() {
-    if (m_30 == 0) {
+    if (m_world == 0) {
         return;
     }
-    CScrollView* view = (CScrollView*)m_30->m_24;
+    CScrollView* view = (CScrollView*)m_world->m_24;
     float fw = (float)(view->m_18 - view->m_10 + 1);
     float fh = (float)(view->m_1c - view->m_14 + 1);
 
@@ -1030,24 +1034,24 @@ void CGruntzMgr::RecomputeViewScale() {
     view->m_cc = (i32)(fh * 1.4f);
     view->Notify();
 
-    view = (CScrollView*)m_30->m_24;
+    view = (CScrollView*)m_world->m_24;
     view->m_d0 = (i32)(fw * 5.3f);
     view->m_d4 = (i32)(fh * 5.3f);
     view->Notify();
 
-    view = (CScrollView*)m_30->m_24;
+    view = (CScrollView*)m_world->m_24;
     view->m_d8 = (i32)(fw * 1.12f);
     view->m_dc = (i32)(fh * 1.12f);
     view->Notify();
 
-    CScrollView* v = (CScrollView*)m_30->m_24;
+    CScrollView* v = (CScrollView*)m_world->m_24;
     if (v->m_5c == 0) {
         return;
     }
-    m_13c = v->m_5c->m_40 - 0x60;
-    m_140 = ((CScrollView*)m_30->m_24)->m_5c->m_44 - 0x60;
-    m_144 = ((CScrollView*)m_30->m_24)->m_5c->m_48 + 0x60;
-    m_148 = ((CScrollView*)m_30->m_24)->m_5c->m_4c + 0x60;
+    m_viewOriginL = v->m_5c->m_40 - 0x60;
+    m_viewOriginT = ((CScrollView*)m_world->m_24)->m_5c->m_44 - 0x60;
+    m_viewOriginR = ((CScrollView*)m_world->m_24)->m_5c->m_48 + 0x60;
+    m_viewOriginB = ((CScrollView*)m_world->m_24)->m_5c->m_4c + 0x60;
 }
 
 // -------------------------------------------------------------------------
@@ -1061,9 +1065,9 @@ void CGruntzMgr::RecomputeViewScale() {
 // (normalized to 0/1) is returned.
 // @early-stop
 // ~78% block-layout wall: logic is exact and the cmd==7 arm + the whole fan-out
-// (options loop, m_68/source/m_6c/m_70/hook/m_7c) match byte for byte. Retail
+// (options loop, m_cmdGrid/source/m_cmdSubMgr/m_cmdNotify/hook/m_scoreHud) match byte for byte. Retail
 // emits the cmd==4 arm OUT-OF-LINE at the function tail (`cmp 4; je <end>`; the
-// 4-block jmps back into the shared m_60->Tick), but MSVC here keeps it inline
+// 4-block jmps back into the shared m_timer->Tick), but MSVC here keeps it inline
 // between the gate and the cmd==7 test, shifting that one block. Pure basic-block
 // placement; case reorder doesn't move it (see docs/patterns/switch-cases-source-order.md).
 // NOTE: the trace size was 0x124 but the real function runs to 0x15c (the cmd==4
@@ -1078,13 +1082,13 @@ i32 CGruntzMgr::BroadcastCmd(i32 a0, i32 cmd, i32 a2, i32 a3) {
             if (PrepCmd4(a0) == 0) {
                 return 0;
             }
-            ((CmdTimer60*)m_60)->Tick();
+            ((CmdTimer60*)m_timer)->Tick();
             break;
         case 7:
             if (PrepCmd7(a0) == 0) {
                 return 0;
             }
-            ((CmdTimer60*)m_60)->Tick();
+            ((CmdTimer60*)m_timer)->Tick();
             break;
     }
 
@@ -1096,30 +1100,30 @@ i32 CGruntzMgr::BroadcastCmd(i32 a0, i32 cmd, i32 a2, i32 a3) {
         slot = (OptionsSlot*)((char*)slot + 0x238);
     }
 
-    if (((CmdSink*)m_68)->Command(a0, cmd, a2, a3) == 0) {
+    if (((CmdSink*)m_cmdGrid)->Command(a0, cmd, a2, a3) == 0) {
         return 0;
     }
     if (((CmdSink*)GetSaveSource())->Command(a0, cmd, a2, a3) == 0) {
         return 0;
     }
-    if (((CmdSink*)m_6c)->Command(a0, cmd, a2, a3) == 0) {
+    if (((CmdSink*)m_cmdSubMgr)->Command(a0, cmd, a2, a3) == 0) {
         return 0;
     }
-    if (((CmdSinkV*)m_70)->Command(a0, cmd, a2, a3) == 0) {
+    if (((CmdSinkV*)m_cmdNotify)->Command(a0, cmd, a2, a3) == 0) {
         return 0;
     }
     if (CmdHook(a0, cmd, a2, a3) == 0) {
         return 0;
     }
-    return ((CmdSink*)m_7c)->Command(a0, cmd, a2, a3) != 0;
+    return ((CmdSink*)m_scoreHud)->Command(a0, cmd, a2, a3) != 0;
 }
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::UpdateScoreHud (0x0860b0; ret). Per-frame score/HUD accumulator,
 // active only while the registry's gate (g_gameReg->m_134) is 1. Folds this
-// world's score/time deltas (m_68's +0x20c/+0x21c tables, indexed by the active
+// world's score/time deltas (m_cmdGrid's +0x20c/+0x21c tables, indexed by the active
 // world g_644c54) into the +0x7c HUD accumulators. If a level name is loaded
-// (m_strC8 non-empty) it just refreshes the HUD with 1 and marks it dirty;
+// (m_strWorldFile non-empty) it just refreshes the HUD with 1 and marks it dirty;
 // otherwise, on the first frame (m_44->m_124 == 0) it seeds the HUD from the
 // registry's cumulative score and fires the score-bump / tick / notify chain,
 // then refreshes the HUD with the live score and clears the dirty flag.
@@ -1130,30 +1134,30 @@ void CGruntzMgr::UpdateScoreHud() {
     }
     ScoreSub2c* sub = g_gameReg->m_2c;
 
-    ((ScoreHud*)m_7c)->m_1c += ((WorldDeltaTables*)m_68)->m_arr20c[g_644c54];
-    ((ScoreHud*)m_7c)->m_20 += ((WorldDeltaTables*)m_68)->m_arr21c[g_644c54];
+    ((ScoreHud*)m_scoreHud)->m_1c += ((WorldDeltaTables*)m_cmdGrid)->m_arr20c[g_644c54];
+    ((ScoreHud*)m_scoreHud)->m_20 += ((WorldDeltaTables*)m_cmdGrid)->m_arr21c[g_644c54];
 
-    if (m_strC8.GetLength() != 0) {
-        ((ScoreHud*)m_7c)->Refresh(1);
-        ((ScoreHud*)m_7c)->m_8 = 1;
+    if (m_strWorldFile.GetLength() != 0) {
+        ((ScoreHud*)m_scoreHud)->Refresh(1);
+        ((ScoreHud*)m_scoreHud)->m_8 = 1;
         return;
     }
 
     if (((HudGuard44*)m_44)->m_124 == 0) {
-        ((ScoreHud*)m_7c)->Seed(sub->m_1c, 0);
+        ((ScoreHud*)m_scoreHud)->Seed(sub->m_1c, 0);
         g_gameReg->m_58->Bump(sub->m_1c);
         g_gameReg->m_58->Tick((sub->m_1c % 0x28) + 1);
         g_gameReg->m_58->Notify(0, 0x81a6);
     }
-    ((ScoreHud*)m_7c)->Refresh(sub->m_1c);
-    ((ScoreHud*)m_7c)->m_8 = 0;
+    ((ScoreHud*)m_scoreHud)->Refresh(sub->m_1c);
+    ((ScoreHud*)m_scoreHud)->m_8 = 0;
 }
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::SaveState (0x093620; ret 4; returns 1/0). Streams the whole
 // game-clock / scroll / warp snapshot through the supplied archive. Bails (0)
 // when no archive or no loaded world. Bumps the global save serial, writes the
-// world file name (m_strC8, copied into a fresh 0x80 buffer), then the per-frame
+// world file name (m_strWorldFile, copied into a fresh 0x80 buffer), then the per-frame
 // state block (m_114..m_13c) and the clock/scroll/warp globals - each via the
 // archive's Serialize(&field, size) slot. Returns 1.
 RVA(0x00093620, 0x254)
@@ -1161,24 +1165,24 @@ i32 CGruntzMgr::SaveState(CSerializerZ* ar) {
     if (ar == 0) {
         return 0;
     }
-    if (m_30 == 0) {
+    if (m_world == 0) {
         return 0;
     }
     g_629ad0++;
 
     char buf[0x80];
     memset(buf, 0, 0x80);
-    strcpy(buf, (const char*)m_strC8);
+    strcpy(buf, (const char*)m_strWorldFile);
     ar->Serialize(buf, 0x80);
 
     ar->Serialize(&m_114, 4);
-    ar->Serialize(&m_11c, 4);
+    ar->Serialize(&m_inputFlag, 4);
     ar->Serialize(&m_128, 4);
     ar->Serialize(&m_12c, 4);
     ar->Serialize(&m_130, 4);
     ar->Serialize(&m_134, 4);
-    ar->Serialize(&m_138, 4);
-    ar->Serialize((char*)this + 0x13c, 0x10);
+    ar->Serialize(&m_optionsCount, 4);
+    ar->Serialize(&m_viewOriginL, 0x10); // the 0x10-byte view-origin block (+0x13c..+0x148)
     ar->Serialize(&g_645580, 4);
     ar->Serialize(&g_645584, 4);
     ar->Serialize(&g_645588, 4);
@@ -1209,7 +1213,7 @@ i32 CGruntzMgr::SaveState(CSerializerZ* ar) {
 // the live game: bails if there is no record or no live source state, copies the
 // level name into the record (inline strcpy), stamps the win/level state flags
 // (m_134==3 -> m_fc, m_130 -> m_f8), hands the record + the source state's data
-// block (+0x1d0) to the +0x58 sink, remembers the record at m_bc, and - when a
+// block (+0x1d0) to the +0x58 sink, remembers the record at m_saveInfoRec, and - when a
 // snapshot block is supplied - copies its 0x20 bytes into the record (+0x14).
 // @early-stop
 // ~99.2% regalloc tail tiebreak: logic + the EH-frame elision (the name temp is
@@ -1234,8 +1238,8 @@ i32 CGruntzMgr::FillSaveInfo(SaveInfo* dst, void* snapshot) {
     }
     dst->m_fc = (m_134 == 3);
     dst->m_f8 = m_130;
-    ((SaveSink58*)m_58)->Store(dst, src + 0x1d0);
-    m_bc = (i32)dst;
+    ((SaveSink58*)m_saveSink)->Store(dst, src + 0x1d0);
+    m_saveInfoRec = (i32)dst;
     if (snapshot) {
         EngineCopy(dst->m_14, snapshot, 0x20);
     }
@@ -1261,8 +1265,8 @@ i32 CGruntzMgr::FillSaveInfo(SaveInfo* dst, void* snapshot) {
 // reuse/stack-offset shift; see docs/patterns/pin-local-for-callee-saved-reg.md.
 RVA(0x0008e980, 0x11e)
 i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
-    if (m_2c && m_2c->Update() == 0x11) {
-        PlayStatusSlot* base = ((CPlayStateView*)m_2c)->m_520;
+    if (m_curState && m_curState->Update() == 0x11) {
+        PlayStatusSlot* base = ((CPlayStateView*)m_curState)->m_520;
         char* p = (char*)base + 0x20;
         i32 done = 0;
         for (i32 d = 4; d != 0; d--) {
@@ -1280,19 +1284,19 @@ i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
     }
 
     if (full) {
-        if (m_54) {
-            ((InputState54*)m_54)->Method0();
+        if (m_inputState) {
+            ((InputState54*)m_inputState)->Method0();
         }
-        if (m_30) {
-            CWorldSub28* sub = m_30->m_28;
+        if (m_world) {
+            CWorldSub28* sub = m_world->m_28;
             if (sub && sub->m_2c) {
                 sub->m_2c->Teardown();
             }
         }
-        if ((m_48->m_1c ? m_48->m_1c->IsBusy() : 0) && stopBank) {
-            m_48->StopAll();
+        if ((m_sound->m_1c ? m_sound->m_1c->IsBusy() : 0) && stopBank) {
+            m_sound->StopAll();
         }
-        m_2c->Vslot18();
+        m_curState->Vslot18();
         if (full) {
             return 1;
         }
@@ -1300,16 +1304,16 @@ i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
 
     if (m_14) {
         if (CheckLevelActive()) {
-            m_48->StopBank(1);
+            m_sound->StopBank(1);
         }
     }
     if (m_10) {
-        ((InputState54*)m_54)->Method1();
-        if (m_68 && m_10) {
-            ((Ctrl68*)m_68)->Reset();
+        ((InputState54*)m_inputState)->Method1();
+        if (m_cmdGrid && m_10) {
+            ((Ctrl68*)m_cmdGrid)->Reset();
         }
     }
-    m_2c->Vslot19();
+    m_curState->Vslot19();
     g_645570->Flush();
     PostSwitchHook();
     return 1;
@@ -1334,12 +1338,12 @@ void CGruntzMgr::EnterModalUI(i32 arg) {
     if (app == 0) {
         return;
     }
-    if (m_60) {
-        ((TimerObj*)m_60)->Stop();
+    if (m_timer) {
+        ((TimerObj*)m_timer)->Stop();
     }
-    if (m_30) {
-        RedrawMapIndex(m_30->m_4->m_14);
-        CWorldDispatch* d = *m_30->m_1c;
+    if (m_world) {
+        RedrawMapIndex(m_world->m_4->m_14);
+        CWorldDispatch* d = *m_world->m_1c;
         d->vtbl->Slot0a(d);
     }
 
@@ -1348,10 +1352,10 @@ void CGruntzMgr::EnterModalUI(i32 arg) {
     while (show(1) < 0) {
     }
 
-    m_ac = 1;
+    m_modalBusy = 1;
     app->RunModal(arg, ((CGameWnd*)m_4)->m_4);
     g_64557c = 0;
-    m_ac = 0;
+    m_modalBusy = 0;
     if (shown <= 0) {
         while (show(0) >= 0) {
         }
@@ -1371,19 +1375,19 @@ void CGruntzMgr::EnterModalUI(i32 arg) {
 // self). The dialog's return value is the function's result.
 RVA(0x000903f0, 0x10c)
 i32 CGruntzMgr::ExitModalUI(CModalDialog* dlg, i32 notify) {
-    if (m_60) {
-        ((TimerObj*)m_60)->Stop();
+    if (m_timer) {
+        ((TimerObj*)m_timer)->Stop();
     }
-    if (m_68 && m_10) {
-        ((Ctrl68*)m_68)->Flush();
+    if (m_cmdGrid && m_10) {
+        ((Ctrl68*)m_cmdGrid)->Flush();
     }
-    if (m_30) {
-        if (notify && m_2c && m_2c->Update() != 5) {
-            m_2c->NotifyExit(0x32);
+    if (m_world) {
+        if (notify && m_curState && m_curState->Update() != 5) {
+            m_curState->NotifyExit(0x32);
         } else {
             notify = 0;
         }
-        CWorldDispatch* d = *m_30->m_1c;
+        CWorldDispatch* d = *m_world->m_1c;
         d->vtbl->Slot0a(d);
     }
 
@@ -1392,12 +1396,12 @@ i32 CGruntzMgr::ExitModalUI(CModalDialog* dlg, i32 notify) {
     while (show(1) < 0) {
     }
 
-    m_ac = 1;
+    m_modalBusy = 1;
     i32 result = dlg->Run();
     g_64557c = 0;
-    m_ac = 0;
-    if (m_2c && notify) {
-        m_2c->Vslot06();
+    m_modalBusy = 0;
+    if (m_curState && notify) {
+        m_curState->Vslot06();
     }
 
     if (shown <= 0) {
@@ -1420,7 +1424,7 @@ i32 CGruntzMgr::ExitModalUI(CModalDialog* dlg, i32 notify) {
 // CGruntzMgr::SwitchToNextState (0x08d6a0; ret). If the manager is ready
 // (vtbl slot 3) and a next state can be built (MakeNextState), and it differs
 // from the live state, it tears the live state down (notify slot 10 with the new
-// state's id, then delete it), installs the new state (m_2c = next; Activate),
+// state's id, then delete it), installs the new state (m_curState = next; Activate),
 // then notifies slot 9 (Vslot09) with the old state's id and polls slot 6
 // (Vslot06); on either success it arms the app's resume flag (m_8->+0x244) and
 // runs the post-switch hook, returning 1. Otherwise returns 0.
@@ -1433,21 +1437,21 @@ i32 CGruntzMgr::SwitchToNextState() {
     if (next == 0) {
         return 0;
     }
-    if (m_2c == next) {
+    if (m_curState == next) {
         return 0;
     }
     i32 oldId = 0;
-    if (m_2c) {
-        oldId = m_2c->Update();
-        m_2c->FrameSlot28(next->Update());
-        if (m_2c) {
-            delete m_2c;
+    if (m_curState) {
+        oldId = m_curState->Update();
+        m_curState->FrameSlot28(next->Update());
+        if (m_curState) {
+            delete m_curState;
         }
-        m_2c = 0;
+        m_curState = 0;
     }
-    m_2c = next;
+    m_curState = next;
     ActivateState(next);
-    if (m_2c->Vslot09(oldId) == 0 && m_2c->Vslot06() == 0) {
+    if (m_curState->Vslot09(oldId) == 0 && m_curState->Vslot06() == 0) {
         return 0;
     }
     ((CGameApp*)m_8)->m_244 = 1;
@@ -1463,25 +1467,25 @@ i32 CGruntzMgr::SwitchToNextState() {
 // slot 9 (Vslot09) and returns 1, otherwise returns 0. When not in PLAY/paused
 // it pushes a fresh PLAY transition via ChangeToPlayState(3, a0, 0, 0).
 // @early-stop
-// regalloc wall: in the hit block retail caches m_2c's vtbl in callee-saved ebx
+// regalloc wall: in the hit block retail caches m_curState's vtbl in callee-saved ebx
 // across the two virtual calls (push ebx at entry, stack args shift +4); MSVC
 // here keeps the vtbl in edi and re-reads it, so no ebx push. Logic is exact;
 // the residual is the vtbl-CSE register choice (see docs/patterns/
 // pin-local-for-callee-saved-reg.md - no clean source spelling for vtbl pinning).
 i32 CGruntzMgr::PassClickToPlayState(i32 a0, i32 a1, i32 a2) {
     i32 inPlay = 0;
-    if (m_2c->Update() == 3) {
+    if (m_curState->Update() == 3) {
         inPlay = 1;
     }
-    if (m_2c->Update() == 0x11) {
+    if (m_curState->Update() == 0x11) {
         inPlay = 1;
     }
     if (inPlay && a1 == 0) {
-        m_2c->FrameSlot28(m_2c->Update());
-        if (m_2c->Vslot1e(a0, a2) == 0) {
+        m_curState->FrameSlot28(m_curState->Update());
+        if (m_curState->Vslot1e(a0, a2) == 0) {
             return 0;
         }
-        m_2c->Vslot09(m_2c->Update());
+        m_curState->Vslot09(m_curState->Update());
         return 1;
     }
     return ChangeToPlayState(3, a0, 0, 0);
@@ -1489,12 +1493,12 @@ i32 CGruntzMgr::PassClickToPlayState(i32 a0, i32 a1, i32 a2) {
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::UnloadSoundChain (0x08f740; ret). Tears down the loaded world's
-// inner controller object (m_30->m_28->m_2c->Teardown(), each guarded) then, if
+// inner controller object (m_world->m_28->m_2c->Teardown(), each guarded) then, if
 // the sound object's inner busy-poll reports busy, stops the bank via StopBank2.
 RVA(0x0008f740, 0x46)
 void CGruntzMgr::UnloadSoundChain() {
-    if (m_30) {
-        CWorldSub28* sub = m_30->m_28;
+    if (m_world) {
+        CWorldSub28* sub = m_world->m_28;
         if (sub) {
             CWorldSub2c* obj = sub->m_2c;
             if (obj) {
@@ -1502,9 +1506,9 @@ void CGruntzMgr::UnloadSoundChain() {
             }
         }
     }
-    CGruntzSoundZ* snd = m_48;
+    CGruntzSoundZ* snd = m_sound;
     if (snd && (snd->m_1c ? snd->m_1c->IsBusy() : 0)) {
-        m_48->StopBank2();
+        m_sound->StopBank2();
     }
 }
 
@@ -1514,11 +1518,11 @@ void CGruntzMgr::UnloadSoundChain() {
 // into the g_61ab24 global; finally forwards the flag to the +0x54 input object.
 RVA(0x000919d0, 0x30)
 void CGruntzMgr::StoreInputFlag(i32 v) {
-    m_11c = v;
-    if (m_30 && m_30->m_28) {
+    m_inputFlag = v;
+    if (m_world && m_world->m_28) {
         g_61ab24 = v;
     }
-    InputStateObj* in = (InputStateObj*)m_54;
+    InputStateObj* in = (InputStateObj*)m_inputState;
     if (in) {
         in->StoreFlag(v);
     }
@@ -1530,7 +1534,7 @@ void CGruntzMgr::StoreInputFlag(i32 v) {
 // the `if (&elem)` guard fall out of the manual per-element loop).
 RVA(0x00092ec0, 0x24)
 void CGruntzMgr::ClearOptionsSlots() {
-    char* p = (char*)this + 0x174; // &m_options150[0].m_24
+    char* p = (char*)this + 0x174; // &m_options[0].m_24
     for (i32 i = 4; i != 0; i--) {
         char* elem = p - 0x24;
         if (elem) {
@@ -1547,20 +1551,20 @@ void CGruntzMgr::ClearOptionsSlots() {
 // masked; the dest pointer comes in as the hidden NRVO arg).
 RVA(0x000928c0, 0x23)
 CString CGruntzMgr::GetWorldFileName() {
-    return m_strC8;
+    return m_strWorldFile;
 }
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::AdvanceOptionsCycle (0x0933e0; ret). Bumps the global round-robin
 // cursor g_6455fc (mod 4); for the options slot whose index matches the cursor,
 // if it is armed (m_164 == 0) and loaded (m_170 != 0) it ticks the slot's +0x38
-// sub-object. The loop runs i in [0, m_138]; both the count and the cursor are
+// sub-object. The loop runs i in [0, m_optionsCount]; both the count and the cursor are
 // re-read each iteration (the cursor after the reloc-masked tick).
 RVA(0x000933e0, 0x5e)
 i32 CGruntzMgr::AdvanceOptionsCycle() {
     i32 cursor = (g_6455fc + 1) & 3;
     g_6455fc = cursor;
-    for (i32 i = 0; i < m_138 + 1; i++) {
+    for (i32 i = 0; i < m_optionsCount + 1; i++) {
         OptionsSlot* slot = (OptionsSlot*)((char*)this + 0x150 + i * 0x238);
         if (cursor == i && slot->m_14 == 0 && slot->m_20 != 0) {
             slot->m_38.Tick();
@@ -1576,10 +1580,10 @@ i32 CGruntzMgr::AdvanceOptionsCycle() {
 // Then forwards (row, col, value) to the +0x70 notify object (reloc-masked).
 RVA(0x00111ec0, 0x37)
 void CGruntzMgr::SetCellHeight(i32 row, i32 col, i32 value) {
-    CHeightGrid* grid = ((CWorldViewZ*)m_30->m_24)->m_5c;
+    CHeightGrid* grid = ((CWorldViewZ*)m_world->m_24)->m_5c;
     i32 idx = grid->m_24[col] + row;
     grid->m_20[idx] = value;
-    ((CNotify70*)m_70)->Set(row, col, value);
+    ((CNotify70*)m_cmdNotify)->Set(row, col, value);
 }
 
 // size 0xa30 recovered from operator-new sites (gruntz.analysis.news)
