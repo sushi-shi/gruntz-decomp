@@ -304,6 +304,11 @@ source = "src/Gruntz/MapLogic.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "tileactionevent"
+source = "src/Gruntz/TileActionEvent.cpp"
+flags = "base"
+
+[[unit]]
 unit = "butemgr"
 source = "src/Bute/ButeMgr.cpp"
 flags = "eh"

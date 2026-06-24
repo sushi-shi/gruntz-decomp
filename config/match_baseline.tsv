@@ -45,7 +45,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	481	0
+engine_discovered	476	0
 engine_label_stubs	525	121
 filestream	13	9
 font	21	10
@@ -110,6 +110,7 @@ statusbaritem	2	1
 statusbarupdaters	7	0
 streamfeeder	9	7
 terraintileloader	1	0
+tileactionevent	5	3
 tilegridcommand	5	2
 tileswitchlogic	13	7
 tiletriggercontainer	13	4
@@ -641,11 +642,6 @@ engine_discovered	?ClassUnknown_104_165730@ClassUnknown_104@@QAEXXZ	3.1250	3.125
 engine_discovered	?ClassUnknown_105_1657a0@ClassUnknown_105@@QAEXXZ	3.8462	3.8462	1	033a1d7bb7c2	0x1657a0
 engine_discovered	?ClassUnknown_106_0af0a0@ClassUnknown_106@@QAEXXZ	1.1905	1.1905	1	53bfe76c4c1b	0xaf0a0
 engine_discovered	?ClassUnknown_107_10d3d0@ClassUnknown_107@@QAEXXZ	1.1905	1.1905	1	d80aa32ae453	0x10d3d0
-engine_discovered	?ClassUnknown_108_112d80@ClassUnknown_108@@QAEXXZ	33.3333	33.3333	1	55e700121e76	0x112d80
-engine_discovered	?ClassUnknown_108_112da0@ClassUnknown_108@@QAEXXZ	0.7273	0.7273	1	82707d4d103a	0x112da0
-engine_discovered	?ClassUnknown_108_112ee0@ClassUnknown_108@@QAEXXZ	0.1660	0.1660	1	2d05e47571f7	0x112ee0
-engine_discovered	?ClassUnknown_108_113f10@ClassUnknown_108@@QAEXXZ	1.9048	1.9048	1	59d093abf5ed	0x113f10
-engine_discovered	?ClassUnknown_108_113f60@ClassUnknown_108@@QAEXXZ	0.5333	0.5333	1	1e0fc5695cc0	0x113f60
 engine_discovered	?ClassUnknown_109_0aa960@ClassUnknown_109@@QAEXXZ	1.1905	1.1905	1	dd1b8a6c605e	0xaa960
 engine_discovered	?ClassUnknown_10_0e2250@ClassUnknown_10@@QAEXXZ	4.0000	4.0000	1	d0a51541705d	0xe2250
 engine_discovered	?ClassUnknown_10_0e2290@ClassUnknown_10@@QAEXXZ	6.2500	6.2500	1	53ff98635ee7	0xe2290
@@ -2150,6 +2146,11 @@ streamfeeder	?Pause@StreamFeeder@@QAEHXZ	100.0000	100.0000	2	52812e99cdff	0x137f
 streamfeeder	?Resume@StreamFeeder@@QAEHXZ	100.0000	100.0000	2	c47c07137340	0x137ed0
 streamfeeder	?SeedWindow@StreamFeeder@@QAEHPAXII@Z	100.0000	100.0000	1	edea263e685a	0x137340
 terraintileloader	?Load@CTerrainTileLoader@@QAGXHHHHHH@Z	1.1273	1.1273	1	0cea279b8baf	0x75e90
+tileactionevent	?Process@CTileActionEvent@@QAEHH@Z	61.6432	61.6432	1	00a58268f6be	0x112ee0
+tileactionevent	?ResetFlag@CTileActionEvent@@QAEPAV1@XZ	100.0000	100.0000	1	08bd2f762b58	0x112d80
+tileactionevent	?Serialize@CTileActionEvent@@QAEHPAXHHH@Z	100.0000	100.0000	1	4f4986735ddf	0x113f10
+tileactionevent	?SerializeFields@CTileActionEvent@@QAEHPAX@Z	100.0000	100.0000	1	287433ed653e	0x113f60
+tileactionevent	?SetActionCode@CTileActionEvent@@QAEHH@Z	0.0000	0.0000	1	2e39f943b9da	0x112da0
 tilegridcommand	?ApplyMove@CTileGridCommand@@QAEHH@Z	70.3622	70.3622	2	6655079e5e8d	0x112590
 tilegridcommand	?BumpCell@CTileGridCommand@@QAEHXZ	73.1351	73.1351	1	96bc63908c93	0x112b70
 tilegridcommand	?Classify@CTileGridCommand@@QAEHH@Z	95.9578	95.9578	1	a4fd29c72ab8	0x112970
