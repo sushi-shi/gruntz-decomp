@@ -510,32 +510,27 @@ RVA(0x0000f2f0, 0xc8)
 void CUserLogic::CUserLogic_00f2f0() {}
 RVA(0x0004ac10, 0x402)
 void CUserLogic::CUserLogic_04ac10() {}
-RVA(0x0004b370, 0xafd)
-void CUserLogic::CUserLogic_04b370() {}
-RVA(0x0004c170, 0xbe7)
-void CUserLogic::CUserLogic_04c170() {}
+// 0x04b370 -> CGrunt::StepArrivalDrop (src/Gruntz/Grunt.cpp)
+// 0x04c170 -> CGrunt::StepGruntMovement (src/Gruntz/Grunt.cpp)
 RVA(0x00051850, 0x165)
 void CUserLogic::CUserLogic_051850() {}
 RVA(0x00051a20, 0x17d)
 void CUserLogic::CUserLogic_051a20() {}
-RVA(0x00052fb0, 0x96e)
-void CUserLogic::CUserLogic_052fb0() {}
+// 0x052fb0 -> CGrunt::StepAnimDispatchA (src/Gruntz/Grunt.cpp)
 RVA(0x00053b80, 0x340)
 void CUserLogic::CUserLogic_053b80() {}
 RVA(0x00059230, 0x40d)
 void CUserLogic::CUserLogic_059230() {}
 RVA(0x0005caa0, 0x5e4)
 void CUserLogic::CUserLogic_05caa0() {}
-RVA(0x0005f310, 0xb5e)
-void CUserLogic::CUserLogic_05f310() {}
+// 0x05f310 -> CGrunt::StepCoordResolve (src/Gruntz/Grunt.cpp)
 RVA(0x00062110, 0x5bc)
 void CUserLogic::CUserLogic_062110() {}
 RVA(0x000637a0, 0x2f8)
 void CUserLogic::CUserLogic_0637a0() {}
 RVA(0x00067850, 0x214)
 void CUserLogic::CUserLogic_067850() {}
-RVA(0x0006a6d0, 0x936)
-void CUserLogic::CUserLogic_06a6d0() {}
+// 0x06a6d0 -> CGrunt::StepAnimDispatchB (src/Gruntz/Grunt.cpp)
 RVA(0x0016e7f0, 0x1cf)
 void CUserLogic::CUserLogic_16e7f0() {}
 RVA(0x0016ea90, 0x234)

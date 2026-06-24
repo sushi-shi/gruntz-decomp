@@ -298,11 +298,101 @@ extern CEntranceAnimSrc g_entranceAnimSrc; // DAT_006bf620
 // The grunt's current-anim-name resolver (the global at DAT_006bf650). Its
 // GetNameRecord (thunk_FUN_004310f0, __thiscall ret 4) maps an anim-set node to
 // a record whose first field is the anim's name char*. External/no-body.
+//
+// GetNameRecords (thunk_FUN_004312a0, ret 4) is the SECOND resolver: it resolves
+// into the g_animScratch CString[] (count g_animScratchCount), returning the
+// record whose +0 is the name char*. The grunt anim-dispatch state machines that
+// reject by single-letter type code use the scratch form for the later codes (so
+// each reject is followed by the scratch CString teardown loop, the shared
+// loop-strength-reduction wall from docs/patterns).
+class CAnimNameRecord {
+public:
+    char* m_name; // +0x00
+};
 class CAnimNameResolver {
 public:
-    char** GetNameRecord(void* node); // thunk_FUN_004310f0 (ret 4)
+    char** GetNameRecord(void* node);            // thunk_FUN_004310f0 (ret 4)
+    CAnimNameRecord* GetNameRecords(void* node); // thunk_FUN_004312a0 (ret 4)
 };
 extern CAnimNameResolver g_animNameResolver; // DAT_006bf650
+
+// The second-resolver scratch CString[] (data @0x6bf66c, count @0x6bf670). Each
+// reject path that resolves via GetNameRecords tears these down (Release each
+// non-null slot, count times). Reloc-masked DATA.
+struct CAnimScratchString {
+    char* m_str;    // +0x00  (4-byte stride for the teardown walk)
+    void Release(); // FUN_001b9b93 (engine CString release)
+};
+extern CAnimScratchString* g_animScratch; // DAT_006bf66c
+extern i32 g_animScratchCount;            // DAT_006bf670
+
+// The single-letter anim type-code literals the grunt dispatch machines compare
+// the current anim name against (each a 1-char .rodata string, reloc-masked).
+//   "A"=idle  "D" "I" "G" "L" "P" "O" "Q" "J" "N" "M" "K"
+extern const char g_codeA[]; // 0x60a454 "A"
+extern const char g_codeD[]; // 0x60cca4 "D"
+extern const char g_codeI[]; // 0x60cca0 "I"
+extern const char g_codeG[]; // 0x60cc9c "G"
+extern const char g_codeL[]; // 0x60cc98 "L"
+extern const char g_codeP[]; // 0x60beb8 "P"
+extern const char g_codeO[]; // 0x60dc0c "O"
+extern const char g_codeQ[]; // 0x60dc08 "Q"
+extern const char g_codeJ[]; // 0x60cc94 "J"
+extern const char g_codeN[]; // 0x60dc04 "N"
+extern const char g_codeM[]; // 0x60d7f4 "M"
+extern const char g_codeK[]; // 0x60d7f8 "K"
+
+// The keyed anim-set lookup is g_entranceAnimSrc.LookupAnimSet (FUN_0056d190 @
+// the global @0x6bf620, already modeled above): maps a single-char anim key to a
+// new active anim-set node latched into m_14->m_1c. The grunt dispatch machines
+// reach it as `mov ecx,0x6bf620; call 0x16d190`.
+
+// ---------------------------------------------------------------------------
+// The WwdGameReg per-level registry singleton
+// (see the duplicate g_focusedGruntSentinel below; declared once at block end)
+// --------------------------------------------------------------------------- (?g_gameReg @0x64556c). The grunt
+// movement/arrival machines reach the level board via g_gameReg->m_70 (a Board*),
+// whose m_8 is the row-pointer table (rows[y][x] -> a 0x1c-byte tile record whose
+// first dword carries the occupancy/flag bits) and m_c/m_10 the x/y in-bounds
+// limits. Reloc-masked DATA; a struct (mangles `U`) gives the retail name.
+// ---------------------------------------------------------------------------
+struct GruntBoard {
+    char m_pad0[0x8];
+    char** m_8; // +0x08  row table: m_8[y][x] -> tile record
+    i32 m_c;    // +0x0c  x bound
+    i32 m_10;   // +0x10  y bound
+};
+struct WwdGameReg {
+    char m_pad0[0x70];
+    GruntBoard* m_70; // +0x70  the level board
+    char m_pad74[0x8];
+};
+extern WwdGameReg* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
+
+// The intrusive coord-node freelist the grunt machines recycle occupied-coord
+// nodes onto (head @0x645544, bias @0x64554c) - the SAME pool g_freePoolHead/Base
+// front; aliased here under the names the movement machines read. Reloc-masked.
+extern void* g_gruntFreeList;   // DAT_00645544
+extern i32 g_gruntFreeListBias; // DAT_0064554c
+
+// The coord-node free pool (DAT_00645540): Recycle(elem) (FUN_004311b0, thunk
+// 0x163b) pushes (elem - bias) onto the freelist headed at this->m_04. Reloc-masked
+// DATA; modeled as a tiny object so `mov ecx,0x645540; push elem; call` falls out.
+struct GruntCoordPool {
+    void Recycle(void* elem); // FUN_004311b0
+};
+extern GruntCoordPool g_coordPool; // DAT_00645540
+
+// A grunt occupied-coord list node: ->next at +0, ->coord at +8 (an {x,y} pair).
+struct GruntCoord {
+    i32 m_x; // +0x00
+    i32 m_y; // +0x04
+};
+struct GruntCoordNode {
+    GruntCoordNode* m_next; // +0x00
+    char m_pad4[0x4];
+    GruntCoord* m_coord; // +0x08
+};
 
 // The "focused grunt" sentinel the on-screen flag compares m_tileOwnerHi against
 // (DAT_00644c54, reloc-masked).
@@ -325,6 +415,12 @@ public:
     void NotifyArrival(i32 a, i32 b);           // thunk_FUN_0046da60 (2-arg)
     CGrunt* GetOccupant(CGrunt* g);             // FUN_00477df0 (1-arg, returns grunt)
     i32 LookupTile(i32 x, i32 y, i32* outA, i32* outB, i32 flag); // FUN_00475af0 (ret 0x14)
+    // The grunt anim-dispatch state machines drive the tile-mgr through two more
+    // thunks (external/no-body, reloc-masked): a 6-arg arrival notify and a 4-arg
+    // tile state set.
+    void ArrivalNotify6(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // thunk (ret 0x18)
+    void SetTileState4(i32 a, i32 b, i32 c, i32 d);                // thunk (ret 0x10)
+    i32 ProbeFreeTile(i32 a, i32 b, void* c, i32 d, void* e, i32 f, i32 g, i32 h, i32 i); // probe
 };
 
 // The registry focused-grunt slot the arrival gate reads: an array at
@@ -693,6 +789,36 @@ public:
     void OnStruck(i32 wasHit);                     // @0x588f0 (ret 4)
     i32 ResolveArrivalNeighbor();                  // @0xf26f0 (ret 0)
     void RearmEntranceDrop();                      // @0x68370 (ret 0)
+
+    // ---- grunt movement / anim-name dispatch state machines (this TU) ----
+    // The 5 big per-pose/anim-name resolution state machines: each resolves the
+    // grunt's current anim name (via g_animNameResolver) and dispatches on its
+    // single-letter type code (A/D/I/G/L/P/O/Q/J/N/M/K), driving the grunt's
+    // movement/arrival state + occupied-coord recycle + a re-latch of m_14->m_1c.
+    void StepArrivalDrop(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // @0x4b370 (ret 0x18, /GX)
+    i32 StepGruntMovement(); // @0x4c170 (ret 0)         - the per-tick move step
+    i32 StepAnimDispatchA(i32 a, i32 b, i32 c, i32 d); // @0x52fb0 (ret 0x10)
+    void StepCoordResolve();                           // @0x5f310 (ret 0)
+    i32 StepAnimDispatchB();                           // @0x6a6d0 (ret 0)
+
+    // The engine helpers these machines call (all external/no-body, reloc-masked;
+    // modeled as __thiscall methods on the grunt so `mov ecx,this; ...; call`
+    // falls out). Names describe the observed effect, not a recovered symbol.
+    i32 IsDropReady();                                     // thunk_0x17df (drop-ready predicate)
+    void ApplySetState1(i32 v);                            // thunk_0x4322 (1-arg state apply)
+    void SetMoveStateA(i32 v, i32 a, i32 b, i32 c);        // thunk_0x3bd9 (4-arg state set)
+    void SetMoveStateB(i32 v, i32 a, i32 b, i32 c, i32 d); // thunk_0x1401 (5-arg-ish)
+    void EmitMoveCueQ(i32 a);                              // thunk_0x4336 (1-arg cue/state)
+    void EmitMoveCueShort(i32 a, i32 b, i32 c);            // thunk_0x1163 (3-arg cue on m_10)
+    void ReseedIdleReset(i32 a, i32 b, i32 c);             // thunk_0x136b (3-arg idle reset)
+    void OnMoveFinishA(i32 a);                             // thunk_0x3ea4 (1-arg finish)
+    void CommitMoveA(i32 a, i32 b, i32 c);                 // thunk_0x3dfa (3-arg move commit)
+    void StepCoordTick();                                  // thunk_0x245a (0-arg coord tick)
+    void OnCoordCommit(i32 a);                             // thunk_0x1e47 (1-arg commit)
+    void NotifyDrop();                                     // thunk_0x119a (0-arg drop notify)
+    i32 ProbeRetry();                                      // thunk_0x3c0b (retry predicate)
+    void OnReanchor(i32 a);                                // thunk_0x3cce (1-arg reanchor)
+    void StepDropApply();                                  // thunk (drop-apply tail)
 };
 
 // CGrunt::IsSameType(a, b) @0x3c7f0 - a free (__cdecl) comparator: returns

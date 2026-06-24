@@ -42,7 +42,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	639	0
+engine_discovered	634	0
 engine_label_stubs	526	121
 filestream	13	9
 font	21	10
@@ -55,7 +55,7 @@ gamemode	35	15
 gameobjectctors	5	0
 gametext	4	2
 gamewnd	6	4
-grunt	41	9
+grunt	46	9
 gruntpuddle	4	2
 gruntvoice	4	3
 gruntzapp	10	8
@@ -604,19 +604,14 @@ engine_discovered	?CToobSpikez_012c60@CToobSpikez@@QAEXXZ	5.8824	5.8824	1	d16ff0
 engine_discovered	?CToobSpikez_114860@CToobSpikez@@QAEXXZ	0.5333	0.5333	1	0b1c4042697d	0x114860
 engine_discovered	?CUserLogic_00f2f0@CUserLogic@@QAEXXZ	2.2727	2.2727	1	211acac7460b	0xf2f0
 engine_discovered	?CUserLogic_04ac10@CUserLogic@@QAEXXZ	0.1133	0.1133	1	8c41366a7e7a	0x4ac10
-engine_discovered	?CUserLogic_04b370@CUserLogic@@QAEXXZ	0.0477	0.0477	1	a72b0fb0015d	0x4b370
-engine_discovered	?CUserLogic_04c170@CUserLogic@@QAEXXZ	0.1122	0.1122	1	57404257354c	0x4c170
 engine_discovered	?CUserLogic_051850@CUserLogic@@QAEXXZ	0.3226	0.3226	1	c78a2a64aaea	0x51850
 engine_discovered	?CUserLogic_051a20@CUserLogic@@QAEXXZ	0.3150	0.3150	1	ae49786b1746	0x51a20
-engine_discovered	?CUserLogic_052fb0@CUserLogic@@QAEXXZ	0.0496	0.0496	1	7ac5a7ad55fc	0x52fb0
 engine_discovered	?CUserLogic_053b80@CUserLogic@@QAEXXZ	0.1130	0.1130	1	5d780b659a25	0x53b80
 engine_discovered	?CUserLogic_059230@CUserLogic@@QAEXXZ	0.1238	0.1238	1	0cbaf8303e9e	0x59230
 engine_discovered	?CUserLogic_05caa0@CUserLogic@@QAEXXZ	0.3030	0.3030	1	35e3f27f4fcd	0x5caa0
-engine_discovered	?CUserLogic_05f310@CUserLogic@@QAEXXZ	0.1074	0.1074	1	58534e6b01e8	0x5f310
 engine_discovered	?CUserLogic_062110@CUserLogic@@QAEXXZ	0.0901	0.0901	1	6f4d7a6216ed	0x62110
 engine_discovered	?CUserLogic_0637a0@CUserLogic@@QAEXXZ	0.4274	0.4274	1	996fd0af22fa	0x637a0
 engine_discovered	?CUserLogic_067850@CUserLogic@@QAEXXZ	0.5405	0.5405	1	310190d26e3c	0x67850
-engine_discovered	?CUserLogic_06a6d0@CUserLogic@@QAEXXZ	0.1264	0.1264	1	9ed03eb1c099	0x6a6d0
 engine_discovered	?CUserLogic_16e7f0@CUserLogic@@QAEXXZ	0.2532	0.2532	1	95da5b87b27f	0x16e7f0
 engine_discovered	?CUserLogic_16ea90@CUserLogic@@QAEXXZ	0.6061	0.6061	1	68eaea7fe177	0x16ea90
 engine_discovered	?CVoiceTrigger_0135a0@CVoiceTrigger@@QAEXXZ	5.8824	5.8824	1	4e77fe0835ad	0x135a0
@@ -1763,7 +1758,7 @@ gamewnd	?CreateAndShow@CGameWnd@@QAEHPAUCGameWndCreateParams@@PAX@Z	100.0000	100
 gamewnd	?Destroy@CGameWnd@@QAEXXZ	100.0000	100.0000	4	fa5932613a67	0x13cfb0
 gamewnd	?GameWindowProc@CGameApp@@SGJPAUHWND__@@IIJ@Z	94.8343	94.8343	5	e0448494357b	0x13cff0
 gamewnd	?QuitMessageLoop@CGameWnd@@UAEHXZ	100.0000	100.0000	4	f2de6543e99e	0x13d490
-grunt	?BuildEntranceAnimation@CGrunt@@QAEXH@Z	70.6037	70.6037	6	31017869150f	0x67bd0
+grunt	?BuildEntranceAnimation@CGrunt@@QAEXH@Z	71.4562	71.4562	6	31017869150f	0x67bd0
 grunt	?CGrunt_IsSameType@@YAHPAVCGrunt@@0@Z	100.0000	100.0000	2	869ccb057989	0x3c7f0
 grunt	?CGrunt_TileSwitch@@YGXHHHHHH@Z	66.2000	66.2000	2	e4d83b1d7834	0x4b320
 grunt	?CanShowStamina@CGrunt@@QAEHXZ	100.0000	100.0000	3	e5851737e25e	0x514a0
@@ -1799,6 +1794,11 @@ grunt	?ResolveIdleAnimation@CGrunt@@QAEHXZ	92.0598	92.0598	6	4559532e9c2a	0x4596
 grunt	?ResolveMovingAnimation@CGrunt@@QAEHXZ	92.8816	92.8816	6	c96d52636e85	0x45100
 grunt	?Save@CGrunt@@QAEHPAVCGruntArchive@@@Z	94.2489	94.2489	4	40228e139df7	0x53f90
 grunt	?SetEntrancePos@CGrunt@@QAEXHH@Z	89.3421	89.3421	3	2c26e611f009	0x4d060
+grunt	?StepAnimDispatchA@CGrunt@@QAEHHHHH@Z	41.6245	41.6245	1	c515bd565cac	0x52fb0
+grunt	?StepAnimDispatchB@CGrunt@@QAEHXZ	40.7674	40.7674	1	5409fc609dd4	0x6a6d0
+grunt	?StepArrivalDrop@CGrunt@@QAEXHHHHHH@Z	7.7088	7.7088	1	731eeff2b7e9	0x4b370
+grunt	?StepCoordResolve@CGrunt@@QAEXXZ	9.3598	9.3598	1	7e18466adeed	0x5f310
+grunt	?StepGruntMovement@CGrunt@@QAEHXZ	5.3367	5.3367	1	ed2029033118	0x4c170
 grunt	?Stub_047a10@CGrunt@@QAEXXZ	0.0990	0.0990	2	e1bc672cfeb6	0x47a10
 grunt	?Stub_048470@CGrunt@@QAEXHH@Z	0.0778	0.0778	3	f58a37c3e870	0x48470
 grunt	?Stub_062e10@CGrunt@@QAEXHHH@Z	28.9443	28.9443	6	ffa7fa6815d0	0x62e10
@@ -2042,7 +2042,7 @@ rezmgr	?MakeImageKey@RezMgr@@QAEHPAXPAD0@Z	100.0000	100.0000	5	45cbafe1118c	0x13
 rezmgr	?MakeRezPath@RezMgr@@QAEHXZ	92.7923	92.7923	6	89aba364b6ae	0x91670
 rezmgr	?PerFrameTick@RezMgr@@UAEHXZ	100.0000	100.0000	5	f48f8cfdbf55	0x8b740
 rezmgr	?Stub_13b0c0@CRezDir@@QAEXXZ	0.2139	0.2139	2	0caf2154eccf	0x13b0c0
-rollingball	?Update@CRollingBall@@QAEHXZ	35.2831	35.2831	1	d5306a684fa5	0xb0140
+rollingball	?Update@CRollingBall@@QAEHXZ	35.2831	35.2831	2	c4d7cce584e4	0xb0140
 savegame	??1CSaveGame@@QAE@XZ	100.0000	100.0000	1	a26d45c833a7	0x85b50
 savegame	?CheckField20@CSaveGame@@QAEHXZ	100.0000	100.0000	2	3389d231b6f6	0xe5690
 savegame	?ComputeAll@CSaveGame@@QAEXXZ	90.8800	90.8800	2	d62fcdc450f1	0xe50a0

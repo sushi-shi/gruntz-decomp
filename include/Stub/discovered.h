@@ -346,19 +346,18 @@ class CUserLogic {
 public:
     void CUserLogic_00f2f0();
     void CUserLogic_04ac10();
-    void CUserLogic_04b370();
-    void CUserLogic_04c170();
+    // 0x04b370/0x04c170 -> CGrunt::StepArrivalDrop/StepGruntMovement (Grunt.cpp)
     void CUserLogic_051850();
     void CUserLogic_051a20();
-    void CUserLogic_052fb0();
+    // 0x052fb0 -> CGrunt::StepAnimDispatchA (Grunt.cpp)
     void CUserLogic_053b80();
     void CUserLogic_059230();
     void CUserLogic_05caa0();
-    void CUserLogic_05f310();
+    // 0x05f310 -> CGrunt::StepCoordResolve (Grunt.cpp)
     void CUserLogic_062110();
     void CUserLogic_0637a0();
     void CUserLogic_067850();
-    void CUserLogic_06a6d0();
+    // 0x06a6d0 -> CGrunt::StepAnimDispatchB (Grunt.cpp)
     void CUserLogic_16e7f0();
     void CUserLogic_16ea90();
 };

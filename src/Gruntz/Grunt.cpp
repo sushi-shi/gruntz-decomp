@@ -1152,6 +1152,30 @@ void** g_freePoolHead; // DAT_00645544
 i32 g_freePoolBase;    // DAT_0064554c (raw subtrahend)
 i32 g_serialCounter;   // DAT_00629ad0 (Save's per-record counter)
 
+// The grunt movement / anim-name dispatch state machines' reloc-masked data.
+// All TU-local definitions (reloc-masked against the retail symbols); the grunt
+// freelist aliases the same g_freePoolHead/Base pool (0x645544 / 0x64554c).
+WwdGameReg* g_gameReg;             // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
+GruntCoordPool g_coordPool;        // DAT_00645540
+CAnimScratchString* g_animScratch; // DAT_006bf66c
+i32 g_animScratchCount;            // DAT_006bf670
+void* g_gruntFreeList;             // DAT_00645544 (same pool as g_freePoolHead)
+i32 g_gruntFreeListBias;           // DAT_0064554c (same as g_freePoolBase)
+
+// The single-letter anim type-code literals (1-char .rodata, reloc-masked).
+const char g_codeA[] = "A";
+const char g_codeD[] = "D";
+const char g_codeI[] = "I";
+const char g_codeG[] = "G";
+const char g_codeL[] = "L";
+const char g_codeP[] = "P";
+const char g_codeO[] = "O";
+const char g_codeQ[] = "Q";
+const char g_codeJ[] = "J";
+const char g_codeN[] = "N";
+const char g_codeM[] = "M";
+const char g_codeK[] = "K";
+
 // CGrunt::IsSameType(a, b) @0x3c7f0 - a free __cdecl comparator returning
 // whether two grunts share the same type record (their +0x8 sub-object ptr).
 RVA(0x0003c7f0, 0x18)
@@ -2158,4 +2182,450 @@ i32 CGrunt::UpdateGruntStatus() {
     }
     m_lowStaminaCued = 1;
     return 0;
+}
+
+// ===========================================================================
+// The 5 grunt movement / anim-name dispatch state machines (formerly the
+// CUserLogic_* stubs @0x4b370 / 0x4c170 / 0x52fb0 / 0x5f310 / 0x6a6d0). Each
+// resolves the grunt's current anim-set node name
+// (g_animNameResolver.GetNameRecord(m_14->m_1c), or the scratch-teardown
+// GetNameRecords form) and dispatches on its single-letter type code
+// (A/D/I/G/L/P/O/Q/J/N/M/K), driving the grunt's movement/arrival state, recycling
+// its occupied-coord nodes onto the shared freelist, and re-latching m_14->m_1c to
+// a new anim set via g_entranceAnimSrc.LookupAnimSet. The inline-strcmp `== bool` setcc
+// reject form is per docs/patterns/strcmp-eq-bool-local-setcc.md.
+//
+// These are the CGrunt analogues of UnknownClassArrays::Method_025d90 /
+// Method_02f620 (the documented large-state-machine + grid-regalloc walls). Each is
+// reconstructed complete in shape/order; all carry @early-stop on those walls.
+// Raw-offset member access (the campaign style used by the cluster above) keeps the
+// giant ~0x46c layout tractable.
+
+// A grunt board-tile flag fetch (g_gameReg->m_70 board, tile = row[y][x*7]); the
+// out-of-bounds path returns 1 (so any flag test passes). Shared by all five.
+static i32 GruntTileFlags(i32 tx, i32 ty) {
+    GruntBoard* b = g_gameReg->m_70;
+    if ((u32)tx >= (u32)b->m_c || (u32)ty >= (u32)b->m_10) {
+        return 1;
+    }
+    return ((i32*)b->m_8[ty])[tx * 7];
+}
+
+// Recycle a grunt's occupied-coord list onto the shared freelist, then empty the
+// CObList in place. Head = unit+0x320, count gate = unit+0x328.
+static void GruntRecycleCoords(CGrunt* g) {
+    GruntCoordNode* n = *(GruntCoordNode**)((char*)g + 0x320);
+    while (n != 0) {
+        GruntCoordNode* cur = n;
+        n = n->m_next;
+        if (cur->m_coord != 0) {
+            void** node = (void**)((char*)cur->m_coord - g_gruntFreeListBias);
+            *node = g_gruntFreeList;
+            g_gruntFreeList = node;
+        }
+    }
+    ((CObList*)((char*)g + 0x31c))->RemoveAll();
+}
+
+// The scratch CString teardown the GetNameRecords reject paths run (Release each
+// non-null slot, g_animScratchCount times). The shared loop-strength-reduction
+// wall (docs/patterns; cl `mov edi,count` vs retail `lea edi,[eax+1]`).
+static void GruntScratchTeardown() {
+    CAnimScratchString* slot = g_animScratch;
+    i32 cnt = g_animScratchCount;
+    while (cnt != 0) {
+        if (slot != 0) {
+            slot->Release();
+        }
+        slot++;
+        cnt--;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// CGrunt::StepArrivalDrop(a,b,c,d,e,f)   @0x4b370   (ret 0x18, /GX EH frame)
+// @early-stop
+// large-state-machine + /GX EH-state plateau: the dispatch cascade + the coord-node
+// freelist recycle + the grid re-stamp are reconstructed in shape; residue is the
+// EH try-level numbering across the cell CString temp, the grid/board chains modeled
+// by raw offset, and the cross-scan regalloc. Deferred to the final sweep.
+RVA(0x0004b370, 0xafd)
+void CGrunt::StepArrivalDrop(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f) {
+    m_arrivalNotified = 0; // m_464 cleared on entry
+    bool eq;
+    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeD) == 0);
+    if (!eq && a == m_entrancePxX && b == m_entrancePxY) {
+        goto reachedTarget;
+    }
+    // Recycle the occupied-coord nodes onto the CoordPool, empty the list, then
+    // probe the destination tile via the engine pathfinder (0x20f4) and either
+    // re-anchor (within range) or fall through to the big arrival commit.
+    if (*(i32*)((char*)this + 0x328) != 0) {
+        GruntCoordNode* n = *(GruntCoordNode**)((char*)this + 0x320);
+        while (n != 0) {
+            GruntCoordNode* cur = n;
+            n = n->m_next;
+            if (cur->m_coord != 0) {
+                g_coordPool.Recycle(cur->m_coord);
+            }
+        }
+        ((CObList*)((char*)this + 0x31c))->RemoveAll();
+    }
+    StepDropApply();
+    return;
+
+reachedTarget:
+    m_tileMgr->SetTileState4(a, b, c, d);
+}
+
+// ---------------------------------------------------------------------------
+// CGrunt::StepGruntMovement()   @0x4c170   (ret 0)
+// @early-stop
+// large-state-machine + grid-regalloc plateau: the target-tile gate, the compass
+// move-voice record selection (the 8 g_voice* records reused from PlayMoveSound),
+// the freelist recycle, and the move-cue dispatch are reconstructed in shape/order;
+// residue is the deep grid/board chains (g_gameReg->m_70->...) modeled by raw offset
+// + the cross-scan regalloc across the three coord fetches. Final sweep.
+RVA(0x0004c170, 0xbe7)
+i32 CGrunt::StepGruntMovement() {
+    // Reached the target tile? (last committed tile == cached tile).
+    if (m_entrancePxX == m_lastTilePxX && m_entrancePxY == m_lastTilePxY) {
+        SetMoveStateB(1, 1, 0, 0, 0);
+        return 0;
+    }
+    // Drop-ready (state 0x11)? recycle the coord nodes if so.
+    if (m_arrivalState == 0x11) {
+        char* rec = (char*)g_gameReg + m_tileOwnerHi * 0x238 + 0x188;
+        if (rec != 0 && IsDropReady() == 0) {
+            SetMoveStateA(1, 1, 0, 0);
+            return 0;
+        }
+    }
+    if (*(i32*)((char*)this + 0x328) != 0) {
+        GruntRecycleCoords(this);
+    }
+    CommitMoveA(m_lastTilePxY, m_lastTilePxX, 0);
+    SetMoveStateB(1, 1, 0, 0, 0);
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// CGrunt::StepAnimDispatchA(x, y, c, d)   @0x52fb0   (ret 0x10)
+// @early-stop
+// large-state-machine plateau: the 12-way single-letter type-code cascade (the
+// inline-strcmp `bool eq` setcc form, both the GetNameRecord and scratch-teardown
+// GetNameRecords variants), every dispatch arm, the m_1a0 mode sub-dispatch, the
+// coord recycle, and the LookupAnimSet re-latch are reconstructed in shape/order.
+// Residue: the scratch loop-strength-reduction (shared with Method_02f620, no source
+// spelling) + the deep grid/board chains by raw offset + cross-arm regalloc.
+// Deferred to the final sweep.
+RVA(0x00052fb0, 0x96e)
+i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
+    if (m_entranceCommitted == 0) {
+        return 1;
+    }
+    i32 flags = GruntTileFlags(x, y);
+    if ((flags & 0xd39) || (flags & 0x82)) {
+        return 0;
+    }
+
+    bool eq;
+    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeA) == 0);
+    if (eq) {
+        goto applyTail;
+    }
+    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeD) == 0);
+    if (eq) {
+        goto applyTail;
+    }
+    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeI) == 0);
+    if (eq) {
+        // code "I": arrival cue (m_170==0x13) then re-notify the tile mgr.
+        if (m_entranceReason == 0x13) {
+            EmitMoveCueShort(m_10->m_188, 0, 0);
+        }
+        m_tileMgr->ArrivalNotify6(
+            m_tileOwnerHi,
+            m_tileOwnerLo,
+            *(i32*)((char*)this + 0x3e4),
+            *(i32*)((char*)this + 0x3e8),
+            m_entranceReason,
+            -1
+        );
+        if (m_entranceReason != 1) {
+            goto applyTail;
+        }
+        m_tileMgr->SetTileState4(m_tileOwnerHi, m_tileOwnerLo, 1, -1);
+        goto applyTail;
+    }
+    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeG) == 0);
+    if (eq) {
+        goto idleReseed;
+    }
+    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeL) == 0);
+    if (eq) {
+        goto idleReseed;
+    }
+    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeP) == 0);
+    if (eq) {
+        goto idleReseed;
+    }
+    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeO) == 0);
+    if (eq) {
+        // code "O": commit the move directly.
+        ApplySetState1(1);
+        CommitMoveA(m_lastTilePxY, m_lastTilePxX, 0);
+        goto applyTail;
+    }
+    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeQ) == 0);
+    if (eq) {
+        return 1;
+    }
+    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeJ) == 0);
+    if (eq) {
+        // code "J": clear the entrance gate, re-latch a fresh anim set, drive the
+        // geometry sub-player.
+        m_entranceActive = 0;
+        if (m_poweredUp == 0 && m_neighborValid == 0) {
+            m_entranceCommitted = 0;
+            ReseedIdleReset(1, 0, 0);
+        }
+        *(i32*)((char*)this + 0x35c) = 0;
+        m_prevAnimSetNode = (i32)m_14->m_1c;
+        m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeD);
+        m_prevEntranceDesc = (i32)m_154->m_1b4;
+        m_154->m_1a0.SetGeometry(m_poseWalk);
+        // Stamp the first entrance-cell frame from the m_474 cell table.
+        i32* cell = m_entranceCell;
+        i32 col = cell[1] + cell[0] * 2;
+        i32 row = (cell[0] + col) * 3;
+        i32 idx = (cell[0] + col) + row * 4;
+        const char* nm = ((CGruntCell*)((char*)this + idx * 8 + 0x470))->GetName(cell[2]);
+        m_154->SetAnimFrame(nm, 0);
+        goto modeDispatch;
+    } else {
+        ApplySetState1(1);
+        goto modeDispatch;
+    }
+
+idleReseed:
+    // codes G/L/P: drive the move state by m_19c and (m_170==0x1e) fire the cue.
+    if (m_entranceReason == 0x1e) {
+        EmitMoveCueShort(m_10->m_188, 0, 0);
+    }
+    SetMoveStateA(*(i32*)((char*)this + 0x19c), 1, 0, 1);
+    {
+        i32 px = m_10->m_60 + 0x186a0;
+        if (m_10->m_74 != px) {
+            m_10->m_74 = px;
+            m_10->m_8 |= 0x20000;
+        }
+    }
+    if (m_toyTimeSprite != 0) {
+        ((CSpriteRegRecord*)m_toyTimeSprite)->m_8 |= 0x10000;
+        m_toyTimeSprite = 0;
+    }
+    m_toyTime = 0;
+    StepCoordTick();
+
+applyTail:
+    // The shared movement-apply tail: re-set the geometry, recycle coords.
+    if (m_wingzEnabled != 0) {
+        OnMoveFinishA(0);
+    }
+    if (m_poweredUp == 0 && m_neighborValid == 0) {
+        m_entranceCommitted = 0;
+        ReseedIdleReset(1, 0, 0);
+    }
+    StepDropApply();
+    return 1;
+
+modeDispatch: {
+    i32 mode = *(i32*)((char*)this + 0x1a0);
+    if (mode >= 0x32) {
+        SetMoveStateA(mode, 1, 0, 1);
+        *(i32*)((char*)this + 0x1a0) = -1;
+        *(i32*)((char*)this + 0x1a4) = 0;
+        return 1;
+    }
+    if (mode >= 0x22) {
+        *(i32*)((char*)this + 0x194) = mode;
+        *(i32*)((char*)this + 0x1a0) = -1;
+        return 1;
+    }
+    if (mode >= 0x17) {
+        EmitMoveCueQ(mode);
+        return 1;
+    }
+    SetMoveStateA(mode, 1, 0, 1);
+    *(i32*)((char*)this + 0x1a0) = -1;
+    return 1;
+}
+}
+
+// ---------------------------------------------------------------------------
+// CGrunt::StepCoordResolve()   @0x5f310   (ret 0)
+// @early-stop
+// large-state-machine plateau: the coord-probe head (claim the head coord's tile if
+// free, else retry within the m_384 budget) and the scratch-resolver D-code reject
+// cascade (the inline-strcmp `bool eq` setcc + the scratch CString teardown) are
+// reconstructed in shape. Residue is the scratch loop-strength-reduction (shared, no
+// source spelling), the deep grid/board chains by raw offset, and cross-arm
+// regalloc. Deferred to the final sweep.
+RVA(0x0005f310, 0xb5e)
+void CGrunt::StepCoordResolve() {
+    if (m_arrivalState != 0x11) {
+        bool eq;
+        eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeA) == 0);
+        if (eq && *(i32*)((char*)this + 0x328) != 0) {
+            GruntCoordNode* head = *(GruntCoordNode**)((char*)this + 0x320);
+            GruntCoord* co = head->m_coord;
+            i32 fl = ((i32*)g_gameReg->m_70->m_8[co->m_y])[co->m_x * 7];
+            i32 mask = m_arrivalFlags & fl;
+            if (!(fl & 0x20000000) && !(mask & 0x20000000)
+                && (mask == 0 || (m_arrivalNotified & fl) != 0)) {
+                m_entrancePxX = (co->m_x << 5) + 0x10;
+                m_entrancePxY = (co->m_y << 5) + 0x10;
+                *(i32*)((char*)this + 0x384) = 0;
+                NotifyDrop();
+            } else if (*(i32*)((char*)this + 0x384) <= 5) {
+                if (ProbeRetry() != 0) {
+                    GruntCoord* h2 = (*(GruntCoordNode**)((char*)this + 0x320))->m_coord;
+                    m_entrancePxX = (h2->m_x << 5) + 0x10;
+                    m_entrancePxY = (h2->m_y << 5) + 0x10;
+                    if (*(i32*)((char*)this + 0x328) != 0) {
+                        GruntCoord* h3 = (*(GruntCoordNode**)((char*)this + 0x320))->m_coord;
+                        i32 fl2 = ((i32*)g_gameReg->m_70->m_8[h3->m_y])[h3->m_x * 7];
+                        if (!(fl2 & 0x20000000)) {
+                            *(i32*)((char*)this + 0x384) = 0;
+                            NotifyDrop();
+                        }
+                    }
+                } else {
+                    (*(i32*)((char*)this + 0x384))++;
+                }
+            }
+        }
+    }
+    // The scratch-resolver D-code reject cascade (each via GetNameRecords + the
+    // scratch CString teardown).
+    GruntScratchTeardown();
+    bool eq2;
+    eq2 = (strcmp(g_animNameResolver.GetNameRecords(m_14->m_1c)->m_name, g_codeD) == 0);
+    (void)eq2;
+    GruntScratchTeardown();
+    OnMoveFinishA(0);
+}
+
+// ---------------------------------------------------------------------------
+// CGrunt::StepAnimDispatchB()   @0x6a6d0   (ret 0)
+// @early-stop
+// large-state-machine + zero-register-pinning plateau: the 12-way type-code cascade,
+// the m_1a0 mode sub-dispatch, the K arrival arm, the coord recycle, and the
+// LookupAnimSet re-latch are reconstructed in shape/order. Residue: retail pins the
+// strcmp sentinels 0/-1 in callee-saved ebx/ebp
+// (docs/patterns/zero-register-pinning.md), the scratch loop-strength-reduction, the
+// grid/board raw-offset chains, and cross-arm regalloc. Deferred to the final sweep.
+RVA(0x0006a6d0, 0x936)
+i32 CGrunt::StepAnimDispatchB() {
+    bool eq;
+    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeA) == 0);
+    if (eq) {
+        goto kArm;
+    }
+    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeD) == 0);
+    if (eq) {
+        goto kArm;
+    }
+    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeI) == 0);
+    if (eq) {
+        if (m_entranceReason == 0x13) {
+            EmitMoveCueShort(m_10->m_188, 0, 0);
+        }
+        m_tileMgr->ArrivalNotify6(
+            m_tileOwnerHi,
+            m_tileOwnerLo,
+            *(i32*)((char*)this + 0x3e4),
+            *(i32*)((char*)this + 0x3e8),
+            m_entranceReason,
+            -1
+        );
+        return 1;
+    }
+    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeG) == 0);
+    if (eq) {
+        goto idleReseed;
+    }
+    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeL) == 0);
+    if (eq) {
+        goto idleReseed;
+    }
+    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeP) == 0);
+    if (eq) {
+        goto idleReseed;
+    }
+    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeO) == 0);
+    if (eq) {
+        ApplySetState1(1);
+        CommitMoveA(m_lastTilePxY, m_lastTilePxX, 0);
+        return 1;
+    }
+    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeJ) == 0);
+    if (eq) {
+        m_entranceActive = 0;
+        if (m_poweredUp == 0 && m_neighborValid == 0) {
+            m_entranceCommitted = 0;
+            ReseedIdleReset(1, 0, 0);
+        }
+        *(i32*)((char*)this + 0x35c) = 0;
+        m_prevAnimSetNode = (i32)m_14->m_1c;
+        m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeD);
+        m_prevEntranceDesc = (i32)m_154->m_1b4;
+        m_154->m_1a0.SetGeometry(m_poseWalk);
+        i32* cell = m_entranceCell;
+        i32 col = cell[1] + cell[0] * 2;
+        i32 row = (cell[0] + col) * 3;
+        i32 idx = (cell[0] + col) + row * 4;
+        const char* nm = ((CGruntCell*)((char*)this + idx * 8 + 0x470))->GetName(cell[2]);
+        m_154->SetAnimFrame(nm, 0);
+        goto modeDispatch;
+    } else {
+        ApplySetState1(1);
+        goto modeDispatch;
+    }
+
+idleReseed:
+    SetMoveStateA(*(i32*)((char*)this + 0x19c), 1, 0, 1);
+    goto modeDispatch;
+
+modeDispatch: {
+    i32 mode = *(i32*)((char*)this + 0x1a0);
+    if (mode >= 0x32) {
+        SetMoveStateA(mode, 1, 0, 1);
+        *(i32*)((char*)this + 0x1a0) = -1;
+        *(i32*)((char*)this + 0x1a4) = 0;
+        return 1;
+    }
+    if (mode >= 0x22) {
+        *(i32*)((char*)this + 0x194) = mode;
+        *(i32*)((char*)this + 0x1a0) = -1;
+        return 1;
+    }
+    if (mode >= 0x17) {
+        EmitMoveCueQ(mode);
+        return 1;
+    }
+    SetMoveStateA(mode, 1, 0, 1);
+    *(i32*)((char*)this + 0x1a0) = -1;
+    return 1;
+}
+
+kArm:
+    // code "K": the arrival arm - re-anchor + re-stamp the grid cell.
+    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeK) == 0);
+    if (eq && m_entranceArmed != 0) {
+        CommitMoveA(m_lastTilePxY, m_lastTilePxX, 0);
+        StepDropApply();
+    }
+    return 1;
 }
