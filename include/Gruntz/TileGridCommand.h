@@ -22,11 +22,61 @@
 // The running game clock (DAT_00645588); reloc-masked DIR32 datum.
 extern u32 g_645588;
 
-// The WwdGameReg singleton (g_gameReg, RVA 0x64556c); only +0x30 (the active
-// game-manager pointer) is read here.  Reloc-masked DIR32.
+// One indexed tile layer: a flat cell array at +0x20 and a per-row base-offset
+// table at +0x24, so cell (x,y) is m_20[m_24[y] + x].
+struct TgcLayer {
+    char _pad00[0x20];
+    i32* m_20; // +0x20  flat cell array
+    i32* m_24; // +0x24  per-row base offsets
+};
+
+// The tile map: m_5c is the active layer.
+struct TgcMap {
+    char _pad00[0x5c];
+    TgcLayer* m_5c; // +0x5c  active layer
+};
+
+// A report record posted by the in-game text manager; +0x124 latches a serial.
+struct TgcReport {
+    char _pad00[0x124];
+    i32 m_124; // +0x124
+};
+
+// The in-game floating-text manager (gamemgr->m_08): Report posts a formatted
+// status line and returns the new record.  __thiscall engine callee, reloc-masked.
+struct TgcTextMgr {
+    TgcReport* Report(i32 a1, i32 x, i32 y, i32 strId, const char* fmt, i32 flags); // 0x1597b0
+};
+
+// The active game manager: m_08 is the in-game text manager; m_24 the tile map.
+struct TgcGameMgr {
+    char _pad00[0x08];
+    TgcTextMgr* m_08; // +0x08  in-game text manager
+    char _pad0c[0x24 - 0x0c];
+    TgcMap* m_24; // +0x24  the tile map
+};
+
+// A redraw-region helper (g_gameReg->m_70): MarkCell pushes a dirty cell so the
+// renderer repaints it.  __thiscall engine callee, reloc-masked.
+struct TgcRedraw {
+    void MarkCell(i32 x, i32 y, i32 val); // 0x33f0
+};
+
+// A pixel-region dirty helper (g_gameReg->m_68): MarkRect flags a screen rect for
+// repaint.  __thiscall engine callee, reloc-masked.
+struct TgcRegion {
+    void MarkRect(i32 a1, i32 x, i32 y, i32 span, i32 a5, i32 a6); // 0x152d
+};
+
+// The WwdGameReg singleton (g_gameReg, RVA 0x64556c); +0x30 is the active game
+// manager, +0x68 the rect-dirty helper, +0x70 the redraw helper.
 struct TgcGameReg {
     char _pad00[0x30];
-    void* m_30; // +0x30  game-manager pointer (null-checked)
+    TgcGameMgr* m_30; // +0x30  game-manager pointer (null-checked)
+    char _pad34[0x68 - 0x34];
+    TgcRegion* m_68; // +0x68  rect-dirty helper
+    char _pad6c[0x70 - 0x6c];
+    TgcRedraw* m_70; // +0x70  redraw helper
 };
 extern TgcGameReg* g_gameReg;
 
@@ -49,10 +99,29 @@ public:
     virtual void Transfer(void* buf, i32 n); // +0x30
 };
 
+// A polymorphic VIEW of the command used only to fire its slot-0 virtual (the
+// duty-edge tick): cast the (manually-vptr'd, non-polymorphic) command to this
+// and call Tick() -> mov eax,[this]; mov ecx,this; call [eax].
+struct TgcTickView {
+    virtual void Tick(); // slot 0
+};
+
 class CTileGridCommand {
 public:
     void RecordMove();           // 0x112880
     i32 Serialize(TgcStream* s); // 0x113ae0
+
+    // Time-driven duty-cycle classifier: returns +1 while inside the on/off span,
+    // 0 on the rising edge of a one-shot, -1 on the falling edge.  __thiscall.
+    i32 Classify(i32 arg); // 0x112970
+
+    // Sets the tile cell (m_08,m_0c) of the active layer to its value+1 and marks
+    // it dirty; latches m_14.  __thiscall.
+    i32 BumpCell(); // 0x112b70
+
+    // Edits the tile grid according to a verb arg (set/clear/notify), then reports
+    // the move into the in-game text log.  __thiscall.
+    i32 ApplyMove(i32 verb); // 0x112590
 
     void* m_vptr;                // +0x00
     i32 m_04;                    // +0x04  type tag

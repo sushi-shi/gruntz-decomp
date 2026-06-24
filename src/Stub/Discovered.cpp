@@ -456,40 +456,30 @@ void CTeleporter::CTeleporter_0419e0() {}
 RVA(0x000110f0, 0x44)
 void CTileTriggerSwitch::CTileTriggerSwitch_0110f0() {}
 
-// ---- CTileTriggerSwitchLogic ---- (leftover misattributed cluster) Two distinct
-// classes were carved out of this block: the 3-CObList container
-// (src/Gruntz/TileTriggerContainer.cpp - dtor 0xc8640's lists + the list
-// move/find/remove accessors + the +0x74-buffer dtor 0x115f30) and the tile-grid
-// command class (src/Gruntz/TileGridCommand.cpp - RecordMove 0x112880 + Serialize
-// 0x113ae0).  The RVAs below are the remaining big/EH/switch/grid-math members of
-// those two classes, parked for the final sweep:
-//   container (CTileTriggerContainer): 0xc8640 (EH dtor), 116a40, 116cf0, 116fa0,
-//     117280 (EH), 117630, 117710, 117f60
-//   command   (CTileGridCommand):      112590, 112970, 112b70, 112c70
-RVA(0x000c8640, 0x70)
-void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_0c8640() {}
-RVA(0x00112590, 0x166)
-void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_112590() {}
-RVA(0x00112970, 0xad)
-void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_112970() {}
-RVA(0x00112b70, 0x5a)
-void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_112b70() {}
+// ---- CTileTriggerSwitchLogic ---- (leftover misattributed cluster) The block
+// was 3 conflated classes; 9 of the 12 RVAs are now reconstructed in their real
+// homes:
+//   container (CTileTriggerContainer, src/Gruntz/TileTriggerContainer.cpp):
+//     0xc8640 (~dtor, 100%), 116fa0 (RemoveAll, 100%), 117f60 (SetCell, ~78%),
+//     116a40/116cf0 (AddTo* /GX-new walls, ~43/29%), 117630/117710
+//     (SerializeApplyA/B switch-table walls, ~57/63%).
+//   command   (CTileGridCommand, src/Gruntz/TileGridCommand.cpp):
+//     112970 (Classify, ~96%), 112b70 (BumpCell, ~73%), 112590 (ApplyMove, ~70%).
+// Two RVAs remain stubbed below (see each note).
+// The remaining conflated outlier (a tile-trigger/switch object whose this+0x24
+// is a CTileTriggerContainer back-pointer, walked then queried for grid commands)
+// stays stubbed for the final sweep: it is NEITHER the command (its +0x24 is a
+// game clock) NOR the container (its lists are at +0x1c/+0x38/+0x54, not +0x24).
 RVA(0x00112c70, 0xc4)
 void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_112c70() {}
-RVA(0x00116a40, 0xf5)
-void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_116a40() {}
-RVA(0x00116cf0, 0x111)
-void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_116cf0() {}
-RVA(0x00116fa0, 0xc7)
-void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_116fa0() {}
+
+// CTileTriggerContainer::SerializeWalk (0x117280, 748 B, /GX): the big serialize
+// driver that walks all three lists, streams each element's count, and applies
+// SerializeApplyA/B per element (its tag-dispatched helpers 117630/117710 ARE
+// reconstructed in src/Gruntz/TileTriggerContainer.cpp).  Deferred for the final
+// sweep (>512 B EH; would under-count + diverge its regalloc if half-reconstructed).
 RVA(0x00117280, 0x2ec)
 void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_117280() {}
-RVA(0x00117630, 0x82)
-void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_117630() {}
-RVA(0x00117710, 0xa6)
-void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_117710() {}
-RVA(0x00117f60, 0xa1)
-void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_117f60() {}
 
 // ---- CTileTriggerTransition ----
 RVA(0x00011730, 0x6)

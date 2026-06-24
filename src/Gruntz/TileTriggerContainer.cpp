@@ -1,9 +1,12 @@
 // TileTriggerContainer.cpp - Gruntz CTileTriggerContainer (C:\Proj\Gruntz).
 //
-// A 3-CObList container (base @ +0x00, CObList members @ +0x1c / +0x38 / +0x54;
-// heads @ +0x20 / +0x3c / +0x58).  The accessors find/move/remove the heap
-// command elements (CTileGridCommand) across the three lists; an element is
-// destroyed inline (stamp vtable 0x5eaea4 + RezFree) before its node is unlinked.
+// A 4-CObList container: a base sub-object at +0x00 (head +0x04) plus three more
+// CObList members at +0x1c / +0x38 / +0x54 (heads +0x20 / +0x3c / +0x58).  The
+// accessors find/move/remove heap command elements (CTileGridCommand) across the
+// lists; an element is destroyed inline (stamp vtable + RezFree) before its node
+// is unlinked.  The /GX ~dtor + RemoveAll empty all four lists; AddToList1/3
+// allocate+append elements; SetCell flags a keyed element; SerializeApplyA/B are
+// the tag-dispatched serialize helpers of the big serialize walk (0x117280).
 //
 // The dynamic this-tracer originally lumped these RVAs under
 // CTileTriggerSwitchLogic; they are a DIFFERENT shape (verified by the EH dtor
@@ -29,13 +32,13 @@ public:
 
 // ---------------------------------------------------------------------------
 // CTileTriggerContainer::DtorBase
-// When +0x74 is set, runs the no-arg helper Cleanup116fa0 (RVA 0x116fa0) and
-// clears +0x74.  Reloc-masked rel32 callee invoked first by the EH dtor.
+// When +0x74 is set, runs RemoveAll (RVA 0x116fa0) and clears +0x74.
+// Reloc-masked rel32 callee invoked first by the EH dtor.
 // ---------------------------------------------------------------------------
 RVA(0x00115f30, 0x18)
 void CTileTriggerContainer::DtorBase() {
     if (m_74 != 0) {
-        Cleanup116fa0();
+        RemoveAll();
         m_74 = 0;
     }
 }
@@ -204,4 +207,264 @@ i32 CTileTriggerContainer::DelFromList3(void* data) {
         }
     }
     return 0;
+}
+
+// ---------------------------------------------------------------------------
+// CTileTriggerContainer::RemoveAll
+// Empties all four lists, inline-destroying every element (stamp its vtable +
+// clear a field + RezFree) before RemoveAll'ing the list, then clears m_70.  The
+// element type/cleared-field differs per list: m_list1 / m_list2 hold grid
+// commands (vtable 0x5eaea4, clear +0x1c); m_base holds switch siblings (vtable
+// 0x5eae8c, clear +0x20); m_list3 holds plain records (clear +0x10, no stamp).
+// ---------------------------------------------------------------------------
+RVA(0x00116fa0, 0xc7)
+void CTileTriggerContainer::RemoveAll() {
+    TtcNode* node = m_list1.m_pNodeHead;
+    while (node != 0) {
+        TtcNode* cur = node;
+        node = node->m_next;
+        i32* elem = (i32*)cur->m_data;
+        if (elem != 0) {
+            *(void**)elem = &g_tileGridCmdVtbl;
+            elem[7] = 0; // +0x1c
+            RezFree(elem);
+        }
+    }
+    m_list1.RemoveAll();
+    node = m_base.m_pNodeHead;
+    while (node != 0) {
+        TtcNode* cur = node;
+        node = node->m_next;
+        i32* elem = (i32*)cur->m_data;
+        if (elem != 0) {
+            *(void**)elem = &g_tileTriggerSwitchVtbl;
+            elem[8] = 0; // +0x20
+            RezFree(elem);
+        }
+    }
+    m_base.RemoveAll();
+    node = m_list2.m_pNodeHead;
+    while (node != 0) {
+        TtcNode* cur = node;
+        node = node->m_next;
+        i32* elem = (i32*)cur->m_data;
+        if (elem != 0) {
+            *(void**)elem = &g_tileGridCmdVtbl;
+            elem[7] = 0; // +0x1c
+            RezFree(elem);
+        }
+    }
+    m_list2.RemoveAll();
+    node = m_list3.m_pNodeHead;
+    while (node != 0) {
+        TtcNode* cur = node;
+        node = node->m_next;
+        i32* elem = (i32*)cur->m_data;
+        if (elem != 0) {
+            elem[4] = 0; // +0x10
+            RezFree(elem);
+        }
+    }
+    m_list3.RemoveAll();
+    m_70 = 0;
+}
+
+// ---------------------------------------------------------------------------
+// CTileTriggerContainer::SetCell
+// Looks up the keyed element for cell (a,b) (key = (a<<8)|b).  If it exists, a
+// verb of 5 flags all four state words [+0x18..+0x24], otherwise just word
+// [+0x18 + verb*4]; either way the element is notified.  If absent, a new mark
+// is registered (AddMark key,0x1a); on failure the fallback (RunFallback a,b)
+// decides the result.  Returns 1 on success, 0 only from a failed fallback.
+// ---------------------------------------------------------------------------
+// @early-stop
+// regalloc wall (~78%): logic identical; retail pins key in edi / this in esi,
+// the recompile swaps them (esi<->edi), propagating through the body.
+RVA(0x00117f60, 0xa1)
+i32 CTileTriggerContainer::SetCell(i32 a, i32 b, i32 verb) {
+    i32 key = (a << 8) + b;
+    TtcKeyedElem* elem = FindByKey(key);
+    if (elem != 0) {
+        if (verb == 5) {
+            elem->m_18 = 1;
+            elem->m_1c = 1;
+            elem->m_20 = 1;
+            elem->m_24 = 1;
+        } else {
+            (&elem->m_18)[verb] = 1;
+        }
+        elem->Notify(elem->m_vptr);
+        return 1;
+    }
+    if (AddMark(key, 0x1a) != 0) {
+        return 1;
+    }
+    return RunFallback(a, b) != 0;
+}
+
+// ---------------------------------------------------------------------------
+// CTileTriggerContainer::Dtor
+// The /GX destructor: runs the most-derived teardown (DtorBase) then destroys the
+// four CObList sub-objects in reverse declaration order (m_list3, m_list2,
+// m_list1, m_base), each at its own EH trylevel.
+// ---------------------------------------------------------------------------
+RVA(0x000c8640, 0x70)
+CTileTriggerContainer::~CTileTriggerContainer() {
+    DtorBase();
+    // m_list3 / m_list2 / m_list1 / m_base are auto-destroyed here (reverse decl
+    // order) by the compiler-emitted /GX member teardown.
+}
+
+// ---------------------------------------------------------------------------
+// CTileTriggerContainer::AddToList3
+// Allocates a 0x28-byte mark, constructs it, and (when its init flag is clear)
+// fills its fields from the args, back-links it to this container, notifies it,
+// and appends it to m_list3.  Returns the mark, or 0 on alloc/double-init failure.
+// ---------------------------------------------------------------------------
+// @early-stop
+// /GX operator-new wall (~43%): the RezAlloc + placement-ctor + exception-cleanup
+// trylevel guard around the partially-constructed heap element is not reproducible
+// with a plain new (distinct from the member-teardown dtor frame, which IS
+// steerable - see eh-dtor-model-members-as-destructible.md); field-fill + Notify +
+// AddTail identical.
+RVA(0x00116a40, 0xf5)
+TtcMark*
+CTileTriggerContainer::AddToList3(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8) {
+    TtcMark* raw = (TtcMark*)RezAlloc(0x28);
+    TtcMark* m = raw != 0 ? TtcMarkCtor(raw) : 0;
+    if (m == 0) {
+        return 0;
+    }
+    if (m->m_10 != 0) {
+        m->m_10 = 0;
+        RezFree(m);
+        return 0;
+    }
+    m->m_04 = a2;
+    m->m_08 = a3;
+    m->m_0c = a4;
+    m->m_18 = a5;
+    m->m_1c = a6;
+    m->m_24 = a8;
+    m->m_00 = a1;
+    m->m_14 = (i32)this;
+    m->m_10 = 1;
+    m->m_20 = a7;
+    m->Notify((void*)a1);
+    m_list3.AddTail(m);
+    return m;
+}
+
+// ---------------------------------------------------------------------------
+// CTileTriggerContainer::AddToList1
+// Allocates a 0xc8-byte command element, constructs it, copies the 9-dword block
+// into +0x9c, fills the rest from the args + two game-clock snapshots, back-links
+// this container, and appends it to m_list1.  Returns the element, or 0 on
+// alloc/double-init failure (vtable-stamped + freed).
+// ---------------------------------------------------------------------------
+// @early-stop
+// /GX operator-new wall (~29%): the RezAlloc + placement-ctor + exception-cleanup
+// trylevel guard around the partial heap element is not reproducible with a plain
+// new; field-fill + rep-movs + AddTail identical (arg->field mapping approximate).
+RVA(0x00116cf0, 0x111)
+TtcBaseElem*
+CTileTriggerContainer::AddToList1(i32 a1, i32 a2, i32* block9, i32 a4, i32 a5, i32 a6, i32 a7) {
+    TtcBaseElem* raw = (TtcBaseElem*)RezAlloc(0xc8);
+    TtcBaseElem* e = raw != 0 ? TtcBaseElemCtor(raw) : 0;
+    if (e == 0) {
+        return 0;
+    }
+    if (e->m_1c != 0) {
+        *(void**)e = &g_tileGridCmdVtbl;
+        e->m_1c = 0;
+        RezFree(e);
+        return 0;
+    }
+    for (i32 i = 0; i < 9; i++) {
+        e->m_9c[i] = block9[i];
+    }
+    e->m_c0 = a4;
+    e->m_c4 = a6;
+    e->m_0c = a2;
+    e->m_04 = 0x16;
+    e->m_08 = a1;
+    e->m_10 = (i32)block9;
+    e->m_20 = (i32)this;
+    e->m_1c = 1;
+    e->m_38 = 0;
+    e->m_24 = (i32)g_645588;
+    e->m_28 = 0;
+    e->m_34 = 0;
+    e->m_2c = 0;
+    e->m_30 = 0;
+    e->m_30 = a7;
+    e->m_24 = (i32)g_645588;
+    m_list1.AddTail(e);
+    return e;
+}
+
+// ---------------------------------------------------------------------------
+// SerializeApplyA  (0x117630)
+// Streams the object's type tag, then for tags 1..7 applies operation A and for
+// tag 8 applies it again as the trailing case; returns whether the apply
+// succeeded (0 for the null object or an out-of-range tag).  __stdcall helper of
+// the container's serialize walk (117280).
+// ---------------------------------------------------------------------------
+// @early-stop
+// switch jump-table-vs-cmp-tree wall (~57%): logic identical; retail lowers the
+// 8-tag switch to a jmp[tbl+(tag-1)*4] table, the recompile to a range-check tree
+// (the two identical case bodies collapse).  See docs/patterns/switch-cmpje-tree-vs-jumptable.md
+RVA(0x00117630, 0x82)
+i32 __stdcall SerializeApplyA(TtcStream* s, i32 a2, i32 a3, i32 a4, TtcSwitchObj* o) {
+    if (o == 0) {
+        return 0;
+    }
+    i32 tag = o->m_04;
+    s->Transfer(&tag, 4);
+    switch (tag) {
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+        case 7:
+            return o->ApplyA(s, a2, a3, a4) != 0;
+        case 8:
+            return o->ApplyA(s, a2, a3, a4) != 0;
+        default:
+            return 0;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// SerializeApplyB  (0x117710)
+// Streams the object's type tag, then dispatches tags 0x15..0x1a: 0x16 applies
+// operation B, the rest apply operation C; returns success.  __stdcall helper of
+// the container's serialize walk (117280).
+// ---------------------------------------------------------------------------
+// @early-stop
+// switch jump-table-vs-cmp-tree wall (~63%): logic identical; retail lowers the
+// 6-tag switch to a jmp[tbl+(tag-0x15)*4] table, the recompile to a cmp tree.
+// See docs/patterns/switch-cmpje-tree-vs-jumptable.md
+RVA(0x00117710, 0xa6)
+i32 __stdcall SerializeApplyB(TtcStream* s, i32 a2, i32 a3, i32 a4, TtcSwitchObj* o) {
+    if (o == 0) {
+        return 0;
+    }
+    i32 tag = o->m_04;
+    s->Transfer(&tag, 4);
+    switch (tag) {
+        case 0x16:
+            return o->ApplyB(s, a2, a3, a4) != 0;
+        case 0x15:
+        case 0x17:
+        case 0x18:
+        case 0x19:
+            return o->ApplyC(s, a2, a3, a4) != 0;
+        case 0x1a:
+            return o->ApplyC(s, a2, a3, a4) != 0;
+        default:
+            return 0;
+    }
 }

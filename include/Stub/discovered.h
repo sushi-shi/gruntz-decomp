@@ -318,18 +318,8 @@ public:
 };
 class CTileTriggerSwitchLogic {
 public:
-    void CTileTriggerSwitchLogic_0c8640();
-    void CTileTriggerSwitchLogic_112590();
-    void CTileTriggerSwitchLogic_112970();
-    void CTileTriggerSwitchLogic_112b70();
     void CTileTriggerSwitchLogic_112c70();
-    void CTileTriggerSwitchLogic_116a40();
-    void CTileTriggerSwitchLogic_116cf0();
-    void CTileTriggerSwitchLogic_116fa0();
     void CTileTriggerSwitchLogic_117280();
-    void CTileTriggerSwitchLogic_117630();
-    void CTileTriggerSwitchLogic_117710();
-    void CTileTriggerSwitchLogic_117f60();
 };
 class CTileTriggerTransition {
 public:

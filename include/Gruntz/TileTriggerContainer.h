@@ -14,12 +14,33 @@
 
 #include <Ints.h>
 
-// The Rez heap free (RVA 0x1b9b82, _RezFree); reloc-masked rel32 callee.
+// The Rez heap alloc/free (RVA 0x1b9b46 _RezAlloc / 0x1b9b82 _RezFree);
+// reloc-masked rel32 callees.
+extern "C" void* RezAlloc(u32 n);
 extern "C" void RezFree(void* p);
+
+// The running game clock (DAT_00645588); reloc-masked DIR32 datum.
+extern u32 g_645588;
 
 // A list element (command) object's vftable, stamped into the element by the
 // inlined element-destructor before RezFree.  Reloc-masked DIR32 datum.
 extern void* g_tileGridCmdVtbl; // 0x5eaea4
+
+// The base-list element vftable (the +0x00 list's elements, cleared at elem+0x20
+// before free).  Reloc-masked DIR32 datum.
+extern void* g_tileTriggerSwitchVtbl; // 0x5eae8c
+
+// A keyed element found by SetCell's lookup: four state flags at +0x18..+0x24 and
+// a slot-0 Notify (called with its own vtable pointer).  __thiscall callee.
+struct TtcKeyedElem {
+    void Notify(void* a); // 0x149c
+    void* m_vptr;         // +0x00
+    char _pad04[0x18 - 0x04];
+    i32 m_18; // +0x18
+    i32 m_1c; // +0x1c
+    i32 m_20; // +0x20
+    i32 m_24; // +0x24
+};
 
 // A singly-walked CObList node: next@+0x00, data@+0x08 (MFC CList layout, the
 // +0x04 prev slot unused by these walkers).
@@ -35,10 +56,93 @@ class TtcObList {
 public:
     void RemoveAt(void* pos); // 0x1b4ac7
     void* AddTail(void* obj); // 0x1b4991
+    void RemoveAll();         // 0x1b48a6
+    void Dtor();              // 0x1b48c6  ~CObList (reloc-masked rel32 callee)
+    ~TtcObList() {
+        Dtor();
+    }                         // real subobject dtor: drives the container's /GX frame
     void* m_vptr;             // +0x00
     TtcNode* m_pNodeHead;     // +0x04
     char _pad08[0x1c - 0x08]; // +0x08..0x1b
 };
+
+// The list3 (m_list3, +0x54) element: a 0x28-byte record initialised from the
+// AddToList3 args, notified, then appended.  m_10 gates the init (1 = live).
+struct TtcMark {
+    void Notify(void* a); // 0x149c (reloc-masked __thiscall)
+    i32 m_00;
+    i32 m_04;
+    i32 m_08;
+    i32 m_0c;
+    i32 m_10; // +0x10  init flag
+    i32 m_14; // +0x14  owning container
+    i32 m_18;
+    i32 m_1c;
+    i32 m_20;
+    i32 m_24;
+};
+// The mark allocator/ctor: RezAlloc(0x28) then the __thiscall ctor (0x1e1a).
+extern "C" TtcMark* TtcMarkCtor(TtcMark* p); // 0x1e1a (reloc-masked)
+
+// The list1 (m_list1, +0x1c) element: a 0xc8-byte command record initialised from
+// the AddToList1 args (incl. a 9-dword rep-movs block at +0x9c), a type tag 0x16
+// at +0x04, two game-clock snapshots at +0x24.  m_1c gates the init.
+struct TtcBaseElem {
+    i32 m_00;
+    i32 m_04; // +0x04  type tag (0x16)
+    i32 m_08;
+    i32 m_0c;
+    i32 m_10;
+    i32 m_14;
+    i32 m_18;
+    i32 m_1c; // +0x1c  init flag
+    i32 m_20;
+    i32 m_24; // +0x24  clock snapshot
+    i32 m_28;
+    i32 m_2c;
+    i32 m_30;
+    i32 m_34;
+    i32 m_38;
+    char _pad3c[0x9c - 0x3c];
+    i32 m_9c[9]; // +0x9c  9-dword block (rep movs)
+    i32 m_c0;    // +0xc0
+    i32 m_c4;    // +0xc4
+};
+extern "C" TtcBaseElem* TtcBaseElemCtor(TtcBaseElem* p); // 0x2c3e (reloc-masked)
+
+// A serialization stream (its slot-12 / +0x30 Transfer copies n bytes); only the
+// vtable slot offset matters.  Reloc-masked virtual call.
+struct TtcStream {
+    virtual void Slot00();
+    virtual void Slot04();
+    virtual void Slot08();
+    virtual void Slot0C();
+    virtual void Slot10();
+    virtual void Slot14();
+    virtual void Slot18();
+    virtual void Slot1C();
+    virtual void Slot20();
+    virtual void Slot24();
+    virtual void Slot28();
+    virtual void Slot2C();
+    virtual void Transfer(void* buf, i32 n); // +0x30
+};
+
+// A switch-logic object operated on by the tag-dispatched serialize helpers; m_04
+// is its serialized type tag.  ApplyA/ApplyB are the per-helper appliers
+// (reloc-masked __thiscall callees) returning nonzero on success.
+struct TtcSwitchObj {
+    i32 ApplyA(TtcStream* s, i32 a2, i32 a3, i32 a4); // 0x277f (117630)
+    i32 ApplyB(TtcStream* s, i32 a2, i32 a3, i32 a4); // 0x1d39 (117710)
+    i32 ApplyC(TtcStream* s, i32 a2, i32 a3, i32 a4); // 0x1abe (117710)
+    void* m_vptr;
+    i32 m_04; // +0x04  type tag
+};
+
+// The two tag-dispatched serialize-and-apply helpers of 117280.  __stdcall free
+// functions: stream the object's tag, then dispatch on it.
+i32 __stdcall SerializeApplyA(TtcStream* s, i32 a2, i32 a3, i32 a4, TtcSwitchObj* o); // 0x117630
+i32 __stdcall SerializeApplyB(TtcStream* s, i32 a2, i32 a3, i32 a4, TtcSwitchObj* o); // 0x117710
 
 class CTileTriggerContainer {
 public:
@@ -48,19 +152,41 @@ public:
     i32 MoveList1ToList2(void* data);  // 0x117150
     i32 DelFromList3(void* data);      // 0x117200
 
-    // A no-arg __thiscall helper (RVA 0x116fa0) invoked by DtorBase when +0x74 is
-    // set; reloc-masked rel32 callee (body still stubbed for the final sweep).
-    void Cleanup116fa0(); // 0x116fa0
+    // The /GX dtor: runs DtorBase then destroys m_list3 / m_list2 / m_list1 /
+    // m_base (auto member teardown, reverse declaration order).
+    ~CTileTriggerContainer(); // 0xc8640
 
-    // The base sub-object's own destructor; runs Cleanup116fa0 then clears +0x74.
+    // Allocates a 0x28-byte mark, initialises it from the call args, notifies it,
+    // and appends it to m_list3 (the +0x54 list).  /GX (the mark is a stack-tracked
+    // partial during ctor).
+    TtcMark* AddToList3(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8); // 0x116a40
+
+    // Allocates a 0xc8-byte element, fills it (incl. a 9-dword rep-movs block) and
+    // appends it to m_list1 (the +0x1c list).  /GX.
+    TtcBaseElem*
+    AddToList1(i32 a1, i32 a2, i32* block9, i32 a4, i32 a5, i32 a6, i32 a7); // 0x116cf0
+
+    // Empties all four lists (m_base + m_list1/2/3), inline-destroying every
+    // element, then clears m_70.  Invoked by DtorBase when m_74 is set.
+    void RemoveAll(); // 0x116fa0
+
+    // Looks up the keyed element for cell (a,b); if present flags one (or all)
+    // of its +0x18..+0x24 state words and notifies it; else registers a new mark
+    // (helper 0x21df) or runs the fallback (helper 0x377e).  Returns 1/0.
+    i32 SetCell(i32 a, i32 b, i32 verb); // 0x117f60
+    TtcKeyedElem* FindByKey(i32 key);    // 0x2838 (reloc-masked)
+    void* AddMark(i32 key, i32 kind);    // 0x21df (reloc-masked)
+    i32 RunFallback(i32 a, i32 b);       // 0x377e (reloc-masked)
+
+    // The base sub-object's own destructor; runs RemoveAll then clears +0x74.
     void DtorBase(); // 0x115f30
 
-    char m_pad00[0x1c]; // +0x00..0x1b  base sub-object
-    TtcObList m_list1;  // +0x1c (head @ +0x20)
-    TtcObList m_list2;  // +0x38 (head @ +0x3c)
-    TtcObList m_list3;  // +0x54 (head @ +0x58)
-    char m_pad70[4];    // +0x70..0x73
-    void* m_74;         // +0x74  gates DtorBase's Cleanup116fa0 call, then cleared
+    TtcObList m_base;  // +0x00 (head @ +0x04)  the base CObList sub-object
+    TtcObList m_list1; // +0x1c (head @ +0x20)
+    TtcObList m_list2; // +0x38 (head @ +0x3c)
+    TtcObList m_list3; // +0x54 (head @ +0x58)
+    i32 m_70;          // +0x70
+    void* m_74;        // +0x74  gates DtorBase's RemoveAll call, then cleared
 };
 
 #endif // SRC_GRUNTZ_TILETRIGGERCONTAINER_H
