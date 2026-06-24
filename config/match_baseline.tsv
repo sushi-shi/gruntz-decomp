@@ -36,11 +36,11 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	18	17
 directsoundmgr	26	19
-engine_discovered	1025	0
+engine_discovered	1020	0
 engine_label_stubs	537	120
 filestream	13	9
 font	16	9
-fontconfig	2	0
+fontconfig	7	4
 fonts	2	1
 gameapp	19	15
 gamelevel	30	19
@@ -435,11 +435,6 @@ engine_discovered	?CFileImage_13e550@CFileImage@@QAEXXZ	0.9091	0.9091	1	b8a0500e
 engine_discovered	?CFileImage_13e760@CFileImage@@QAEXXZ	1.1765	1.1765	1	9ba1526105ba	0x13e760
 engine_discovered	?CFileImage_141350@CFileImage@@QAEXXZ	5.0000	5.0000	1	0fb3b385e30d	0x141350
 engine_discovered	?CFileImage_148890@CFileImage@@QAEXXZ	0.4819	0.4819	1	468462546de3	0x148890
-engine_discovered	?CFontConfig_021b60@CFontConfig@@QAEXXZ	3.5714	3.5714	1	9ea812fe4160	0x21b60
-engine_discovered	?CFontConfig_021bd0@CFontConfig@@QAEXXZ	3.5714	3.5714	1	8355df18d676	0x21bd0
-engine_discovered	?CFontConfig_021c60@CFontConfig@@QAEXXZ	0.5405	0.5405	1	e47e80b1271b	0x21c60
-engine_discovered	?CFontConfig_021d80@CFontConfig@@QAEXXZ	0.8696	0.8696	1	c49da924e50c	0x21d80
-engine_discovered	?CFontConfig_085f40@CFontConfig@@QAEXXZ	4.5455	4.5455	1	63fa17a7c820	0x85f40
 engine_discovered	?CFortressFlag_010e90@CFortressFlag@@QAEXXZ	5.8824	5.8824	1	7ea2863168db	0x10e90
 engine_discovered	?CFortressFlag_046410@CFortressFlag@@QAEXXZ	0.6897	0.6897	1	d7adb6cc3f23	0x46410
 engine_discovered	?CGruntAnimPlayer_150610@CGruntAnimPlayer@@QAEXXZ	1.7391	1.7391	1	d011afc77469	0x150610
@@ -1918,7 +1913,12 @@ font	?IsInterface4@InterfaceObject@@QAEHXZ	96.2500	96.2500	3	36598e9dbfa1	0x1795
 font	?IsInterface5@InterfaceObject@@QAEHXZ	96.2500	96.2500	3	180ca4c302f9	0x179570
 font	?LoadFont@Font@@QAEHVCString@@@Z	100.0000	100.0000	5	ff64619efb85	0x179830
 font	?SetColor@FontRenderer@@QAEXH@Z	100.0000	100.0000	3	77af4fc7adcc	0x179c20
+fontconfig	??1CFontConfig@@UAE@XZ	92.7273	92.7273	1	562d70cadd9b	0x85f40
+fontconfig	?AddItem@CFontConfig@@QAEHPBDHH@Z	100.0000	100.0000	1	1e1f740a6a3a	0x21c60
+fontconfig	?FreeNodes@CFontConfig@@QAEXXZ	100.0000	100.0000	1	c597192ef01d	0x21bd0
 fontconfig	?LoadFontConfig@CFontConfig@@QAEHHH@Z	99.9735	99.9735	7	f38fe8140c99	0x218e0
+fontconfig	?Reset@CFontConfig@@QAEXXZ	100.0000	100.0000	1	5854791fe3ee	0x21b60
+fontconfig	?Scroll@CFontConfig@@QAEXH@Z	100.0000	100.0000	1	c41cdf2e17cd	0x21d80
 fontconfig	?winapi_022360_DrawTextA_SelectObject_SetTextColor@CFontConfig@@QAEHHHHH@Z	0.7353	0.7353	1	7bb2f8e1039a	0x22360
 fonts	?FreeFontsMemory@@YAHXZ	100.0000	100.0000	5	27dafe7fa5c2	0x1158f0
 fonts	?InitializeFonts@@YAHXZ	77.3077	77.3077	6	86a16d1e6ae8	0x115810

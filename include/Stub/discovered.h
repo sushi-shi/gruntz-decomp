@@ -201,14 +201,6 @@ public:
     void CFileImage_141350();
     void CFileImage_148890();
 };
-class CFontConfig {
-public:
-    void CFontConfig_021b60();
-    void CFontConfig_021bd0();
-    void CFontConfig_021c60();
-    void CFontConfig_021d80();
-    void CFontConfig_085f40();
-};
 class CFortressFlag {
 public:
     void CFortressFlag_010e90();

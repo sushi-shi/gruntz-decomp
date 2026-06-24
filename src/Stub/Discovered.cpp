@@ -289,18 +289,6 @@ void CFileImage::CFileImage_141350() {}
 RVA(0x00148890, 0xad)
 void CFileImage::CFileImage_148890() {}
 
-// ---- CFontConfig ----
-RVA(0x00021b60, 0x4d)
-void CFontConfig::CFontConfig_021b60() {}
-RVA(0x00021bd0, 0x45)
-void CFontConfig::CFontConfig_021bd0() {}
-RVA(0x00021c60, 0xde)
-void CFontConfig::CFontConfig_021c60() {}
-RVA(0x00021d80, 0x79)
-void CFontConfig::CFontConfig_021d80() {}
-RVA(0x00085f40, 0x56)
-void CFontConfig::CFontConfig_085f40() {}
-
 // ---- CFortressFlag ----
 RVA(0x00010e90, 0x44)
 void CFortressFlag::CFortressFlag_010e90() {}
