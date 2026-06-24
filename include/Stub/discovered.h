@@ -301,16 +301,8 @@ public:
     void CPlay_0b7fe0();
     void CPlay_0bc250();
     void CPlay_0bc420();
-    void CPlay_0c9c20();
-    void CPlay_0c9cc0();
-    void CPlay_0ce530();
-    void CPlay_0d0920();
-    void CPlay_0d0a60();
     void CPlay_0d0db0();
     void CPlay_0d1b60();
-    void CPlay_0d5f00();
-    void CPlay_0d72c0();
-    void CPlay_0d9160();
 };
 class CRollingBall {
 public:

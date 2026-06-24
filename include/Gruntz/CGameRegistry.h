@@ -42,6 +42,9 @@ struct CGameRegistry {
     // The entrance-reset cue-prep call (thunk_FUN_0040cd00, __thiscall ret 0): run
     // once before the focused-grunt cue test. External/no-body (reloc-masked).
     void CuePrep();
+    // The mode-3 per-frame cue step (thunk_FUN_004933e0, __thiscall): run each
+    // world-draw frame when m_134==3. External/no-body (reloc-masked).
+    void PerFrameCue();
 
     char m_pad0[0x14];
     int m_14; // +0x14  has-window / dev flag (gates rect-update calls)
@@ -53,7 +56,8 @@ struct CGameRegistry {
     void* m_68; // +0x68  cue sink B (message poster)
     char m_pad6c[0x70 - 0x6c];
     CTileGrid* m_70; // +0x70  tile occupancy grid (LoadEntranceConfig)
-    char m_pad74[0x8c - 0x74];
+    void* m_74;      // +0x74  the sprite factory (BeginGridWalk retry path)
+    char m_pad78[0x8c - 0x78];
     int m_8c; // +0x8c  viewport X
     int m_90; // +0x90  viewport Y
     char m_pad94[0x134 - 0x94];

@@ -436,26 +436,10 @@ RVA(0x000bc250, 0x55)
 void CPlay::CPlay_0bc250() {}
 RVA(0x000bc420, 0x2b)
 void CPlay::CPlay_0bc420() {}
-RVA(0x000c9c20, 0x79)
-void CPlay::CPlay_0c9c20() {}
-RVA(0x000c9cc0, 0x12e)
-void CPlay::CPlay_0c9cc0() {}
-RVA(0x000ce530, 0xe3)
-void CPlay::CPlay_0ce530() {}
-RVA(0x000d0920, 0xfe)
-void CPlay::CPlay_0d0920() {}
-RVA(0x000d0a60, 0x92)
-void CPlay::CPlay_0d0a60() {}
 RVA(0x000d0db0, 0x347)
 void CPlay::CPlay_0d0db0() {}
 RVA(0x000d1b60, 0xc2f)
 void CPlay::CPlay_0d1b60() {}
-RVA(0x000d5f00, 0x69)
-void CPlay::CPlay_0d5f00() {}
-RVA(0x000d72c0, 0x128)
-void CPlay::CPlay_0d72c0() {}
-RVA(0x000d9160, 0xac)
-void CPlay::CPlay_0d9160() {}
 
 // ---- CRollingBall ----
 RVA(0x00012f80, 0x44)

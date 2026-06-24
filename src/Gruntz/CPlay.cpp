@@ -120,6 +120,8 @@ extern "C" {
         int a6,
         int a7
     );
+    // BuildHelpReveal's per-strip HUD draw (0x115300, cdecl, 6 args). reloc-masked.
+    void Eng_HudStrip(void* target, void* obj, int x, int w, int one, int zero);
 }
 
 // A reg->m_68 sink that OnRegion4 posts to.
@@ -671,6 +673,303 @@ void CPlay::PlayCueAt(int cueId, int a2, int a3, int a4, int a5, int a6, int a7,
     } else {
         Eng_CueRenderDef(m_c, &m_410, &rect, a2, 1, a4, a5, a6, a7);
     }
+}
+
+// ===========================================================================
+// CPlay::DrawWorldFrame (0x0c9c20) - one in-game world-draw frame: the begin
+// virtual (this->vtbl[+0x98]), the m_c->m_24->m_5c sub-step (if present), mirror
+// the draw clock, present (m_c->m_8->vtbl[+0x24]), the m_4->m_68 frame-timer step,
+// the optional mode-3 reg cue, then the m_2dc guts step.
+// ===========================================================================
+// @early-stop
+// regalloc/scheduling wall — structure byte-identical, only temp-register naming
+// (eax vs edx in the pointer-chain derefs) + one m_4/global load-order in the
+// Step-call setup differ; see docs/patterns/zero-register-pinning.md.
+RVA(0x000c9c20, 0x79)
+void CPlay::DrawWorldFrame() {
+    Vslot26(); // this->vtbl[+0x98]()  (begin-frame virtual, thiscall)
+    if (m_c->m_24->m_5c != 0) {
+        m_c->m_24->m_5c->DrawA();
+    }
+    g_6bf3c0 = g_645580;
+    g_6bf3bc = g_645584;
+    m_c->m_8->BeginScene(0);           // m_c->m_8->vtbl[+0x24](0)
+    m_4w()->m_68->Step((int)g_645584); // m_4->m_68 frame-timer step
+    if (g_64556c->m_134 == 3) {
+        g_64556c->PerFrameCue();
+    }
+    m_2dc->Step((int)g_645584); // m_2dc guts step
+}
+
+// ===========================================================================
+// CPlay::DrawWorldFrames (0x0c9cc0) - the fixed-step world catch-up loop: divide
+// the frame delta by 0x12 (the fixed sub-step), then run that many world-draw
+// frames (clamping the first/last sub-step to 0x12), finishing with one tail
+// frame-timer step over the full delta.
+// ===========================================================================
+// @early-stop
+// regalloc wall — full control flow + the fixed-substep loop + 3-arg StepFull
+// calls byte-structure-identical; MSVC colors now/accum into ebx/ebp swapped vs
+// retail and the prologue spill schedule differs. See docs/patterns/zero-register-pinning.md.
+RVA(0x000c9cc0, 0x12e)
+int CPlay::DrawWorldFrames() {
+    int delta = (int)g_645584;
+    int steps = (int)((unsigned int)delta / 0x12); // 0x38e38e39 magic-div by 18
+    int now = (int)g_645580;
+    int accum = (int)g_645588;
+    int rem = delta - steps * 0x12;
+    int saveDelta = delta; // [esp+0x1c]
+    int saveAccum = accum; // [esp+0x20]
+    int saveNow = now;     // [esp+0x24]
+    if (rem != 0) {
+        steps = steps + 1;
+    }
+    now -= delta;
+    accum -= delta;
+    if (steps > 0) {
+        int last = steps - 1;
+        int i = 0;
+        do {
+            int dt = (i == last && rem != 0) ? rem : 0x12;
+            accum += dt;
+            now += dt;
+            m_4w()->m_68->StepFull(now, dt, accum);
+            if (i > 0 && i < last) {
+                if (m_c->m_24->m_5c != 0) {
+                    m_c->m_24->m_5c->DrawB();
+                }
+            }
+            Vslot26(); // this->vtbl[+0x98]()
+            if (m_c->m_24->m_5c != 0) {
+                m_c->m_24->m_5c->DrawA();
+            }
+            m_c->m_8->BeginScene(0);
+            m_4w()->m_68->Step((int)g_645584);
+            if (g_64556c->m_134 == 3) {
+                g_64556c->PerFrameCue();
+            }
+            m_2dc->Step((int)g_645584);
+            i++;
+        } while (i < steps);
+    }
+    m_4w()->m_68->StepFull(saveNow, saveDelta, saveAccum); // tail step
+    return steps;
+}
+
+// ===========================================================================
+// CPlay::ResetGoals (0x0d5f00) - clear the world goal object's pending bit
+// (m_4->m_68->m_23c, OR 0x10000 into +0x8), reset the substep gate (m_68->m_230),
+// then recompute the plane geom (m_4->m_30->m_24->m_5c) from the (x,y) args:
+// store them as floats, scaling by the geom's +0x18/+0x1c factors unless bit0 of
+// +0x8 is set, then call RecomputePlaneCoords.
+// ===========================================================================
+RVA(0x000d5f00, 0x69)
+int CPlay::ResetGoals(int x, int y) {
+    CWorld* w = m_4w();
+    CWorld::M68* g = w->m_68;
+    if (g->m_23c != 0) {
+        g->m_23c->m_8 |= 0x10000;
+        g->m_23c = 0;
+    }
+    g->m_230 = 0;
+    CPlaneGeom* pg = m_4w()->m_30->m_24->m_5c;
+    if ((pg->m_8 & 1) == 0) {
+        pg->m_10 = (float)x * pg->m_18;
+        pg->m_14 = (float)y * pg->m_1c;
+    } else {
+        pg->m_10 = (float)x;
+        pg->m_14 = (float)y;
+    }
+    pg->Recompute();
+    return 1;
+}
+
+// ===========================================================================
+// CPlay::RegisterInputBindings (0x0d9160) - register the nine keyboard control
+// bindings (the WM_KEYDOWN-style codes 0x100-0x102 / 0x200-0x206, each with flag
+// 0x40) on the world input dispatcher (m_4->m_4).
+// ===========================================================================
+RVA(0x000d9160, 0xac)
+int CPlay::RegisterInputBindings() {
+    m_4w()->m_4->Bind(0x102, 0x40);
+    m_4w()->m_4->Bind(0x100, 0x40);
+    m_4w()->m_4->Bind(0x200, 0x40);
+    m_4w()->m_4->Bind(0x201, 0x40);
+    m_4w()->m_4->Bind(0x202, 0x40);
+    m_4w()->m_4->Bind(0x203, 0x40);
+    m_4w()->m_4->Bind(0x204, 0x40);
+    m_4w()->m_4->Bind(0x205, 0x40);
+    m_4w()->m_4->Bind(0x206, 0x40);
+    return 1;
+}
+
+// ===========================================================================
+// CPlay::StepGridWalk (0x0d0a60) - the per-frame frame-grid advance. If the walk
+// is inactive (m_4e8==0) bail. Decrement the delay countdown (m_4dc) by dt; while
+// it is still positive just return. When it expires reload it from m_4d8, advance
+// the row index (m_4e0), look up that row's frame in the grid table (clamped to
+// [m_64,m_68]); if the lookup is empty wrap back to the first row.
+// ===========================================================================
+// @early-stop
+// regalloc/save-scheduling wall — logic + control flow identical; retail defers the
+// `push esi`/`pop esi` past the two early returns (into the m_4dc>dt block) and colors
+// idx/grid into edx/eax swapped vs MSVC here. See docs/patterns/zero-register-pinning.md.
+RVA(0x000d0a60, 0x92)
+int CPlay::StepGridWalk(int dt) {
+    if (m_4e8 == 0) {
+        return 1;
+    }
+    if ((unsigned int)m_4dc > (unsigned int)dt) {
+        m_4dc = m_4dc - dt;
+        return 1;
+    }
+    m_4dc = m_4d8;
+    m_4e0 = m_4e0 + 1;
+    int idx = m_4e0;
+    CFrameGrid* g = m_4cc;
+    int frame;
+    if (idx >= g->m_64 && idx <= g->m_68) {
+        frame = g->m_14[idx];
+    } else {
+        frame = 0;
+    }
+    m_4d0 = frame;
+    if (frame == 0) {
+        m_4d0 = g->m_14[g->m_64];
+        m_4e0 = g->m_64;
+    }
+    return 1;
+}
+
+// ===========================================================================
+// CPlay::DispatchHudClick (0x0ce530) - route a HUD pointer event at (x,y). If the
+// HUD is suppressed (m_484) just succeed. If an overlay is up (m_320) and the guts
+// subsystem isn't busy (m_2dc->m_0!=2 && m_2dc->m_10c!=5), forward to the in-rect
+// handler. If a pending HUD rect is armed (m_30c), post it (gated by the dev-flag
+// 0x645578->m_18 & 0x20) and clear m_30c/m_2e8. Finally, unless the guts subsystem
+// is busy (==2), point-test against the viewport box (m_c->m_24+0x10): inside ->
+// succeed, outside -> forward to the click-at-point handler.
+// ===========================================================================
+// @early-stop
+// zero-register-pinning wall — structure + offsets byte-identical; retail pins ebx=0
+// (xor ebx,ebx + cmp ebx,[member] null tests) and colors y into ebp (5 callee-saves),
+// MSVC here uses test/4 saves. No source lever forces it. docs/patterns/zero-register-pinning.md.
+RVA(0x000ce530, 0xe3)
+int CPlay::DispatchHudClick(int a, int x, int y) {
+    if (m_484 != 0) {
+        return 1;
+    }
+    if (m_320 != 0 && m_2dc->m_0 != 2 && m_2dc->m_10c != 5) {
+        HudClickInRect(a, x, y);
+    }
+    if (m_30c != 0) {
+        ((CWorld*)m_4)->m_68->HudRect(*(RECT*)&m_310, g_645578->m_18 & 0x20);
+    }
+    m_30c = 0;
+    m_2e8 = 0;
+    if (m_2dc->m_0 == 2) {
+        return 1;
+    }
+    int* vp = (int*)((char*)m_c->m_24 + 0x10);
+    if (x >= vp[0] && x <= vp[2] && y >= vp[1] && y <= vp[3]) {
+        return 1;
+    }
+    m_2dc->HudClickAt(a, x, y);
+    return 1;
+}
+
+// ===========================================================================
+// CPlay::BeginGridWalk (0x0d0920) - arm the frame-grid walk for a level cue. Look
+// up the grid object for `key` in the view's grid map (m_c->m_10->m_10); bail if
+// absent. If `hasGrid`, load the grid's frame sprite from the world sprite factory
+// (m_4->m_74, retrying via the registry's factory) using the per-type descriptor
+// from the world config array (m_4+0x158, indexed by g_644c54), then push it into
+// the grid (SetDelay 0xa / SetSprite). Finally seed the current row (m_4d0) from
+// `index` (clamped to [m_64,m_68]) and, if non-empty, latch the e8/delay state.
+// ===========================================================================
+// @early-stop
+// arg-push-scheduling wall — control flow + the config-array index + map Lookup +
+// grid-setup byte-identical; the LoadSprite retry pushes (prev,1) in the opposite
+// order and the g_64556c reload sits one slot off. docs/patterns/statement-schedule-faithful.md.
+RVA(0x000d0920, 0xfe)
+int CPlay::BeginGridWalk(int key, int index, int e8, int delay, int hasGrid) {
+    if (m_c == 0) {
+        return 1;
+    }
+    void* grid = 0;
+    m_c->m_10->m_10.Lookup(key, grid);
+    m_4cc = (CFrameGrid*)grid;
+    if (grid == 0) {
+        return 1;
+    }
+    m_4d4 = hasGrid;
+    if (hasGrid != 0) {
+        CWorld* w = m_4w();
+        int id = g_644c54;
+        void* spr = w->m_74->LoadSprite(*(void**)(w->m_158 + (id * 0x47) * 8), 0);
+        if (spr == 0) {
+            spr = ((CWorld::CSpriteFactory*)g_64556c->m_74)->LoadSprite(spr, 1);
+        }
+        m_4cc->SetDelay(0xa);
+        m_4cc->SetSprite(spr);
+    }
+    CFrameGrid* g = m_4cc;
+    int frame;
+    if (index >= g->m_64 && index <= g->m_68) {
+        frame = g->m_14[index];
+    } else {
+        frame = 0;
+    }
+    m_4d0 = frame;
+    if (frame != 0) {
+        m_4e0 = index;
+        m_4e8 = e8;
+        m_4d8 = delay;
+        m_4dc = delay;
+    }
+    return 1;
+}
+
+// ===========================================================================
+// CPlay::BuildHelpReveal (0x0d72c0) - the per-frame help-overlay "wipe" animation.
+// Bails if there is no view (m_c->m_4->m_14). On the first frame (m_4bc==1) draws
+// the two static end-cap strips. Each frame computes the wipe column from the
+// frame counter (counter * 3.7857, truncated), then either snaps the single cap to
+// the right edge (counter>=0x37) or sweeps a column of strips (0xe0 - i*3.7857) for
+// i in [counter, 0x37). Always draws the trailing cap and advances the counter.
+// ===========================================================================
+// @early-stop
+// control-flow/float-schedule wall — prologue + the two cap strips + the per-strip
+// HudStrip pushes + the __ftol column math are byte-faithful; the counter>=0x37 cap
+// branch merges into the trailing-cap tail via a shared landing pad the C if/else
+// can't reproduce 1:1, and the x87 fmul/fild ordering diverges. ~68%.
+RVA(0x000d72c0, 0x128)
+int CPlay::BuildHelpReveal() {
+    void* view = m_c->m_4->m_14;
+    if (view == 0) {
+        return 0;
+    }
+    if (m_4bc == 1) {
+        Eng_HudStrip(view, (void*)m_4c8, 0x140, 0x1a6, 1, 0);
+        Eng_HudStrip(m_c, (void*)m_4c0, 0xe0, 0x1a6, 1, 0);
+    }
+
+    int counter = m_4bc;
+    int col = (int)((float)counter * 3.7857143878936768f);
+    if (counter < 0x37) {
+        int i = counter;
+        do {
+            int x = 0xe0 - (int)((float)i * -3.7857143878936768f);
+            Eng_HudStrip(m_c, (void*)m_4c0, x, 0x1a6, 1, 0);
+            i++;
+        } while (i < 0x37);
+    } else {
+        Eng_HudStrip(m_c, (void*)m_4c0, col + 0xe0, 0x1a6, 1, 0);
+    }
+
+    Eng_HudStrip(m_c, (void*)m_4c4, 0x1b4, 0x1a6, 1, 0);
+    m_4bc = m_4bc + 1;
+    return 1;
 }
 
 // -------------------------------------------------------------------------
