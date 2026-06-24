@@ -154,6 +154,16 @@ source = "src/Gruntz/TerrainTileLoader.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "rollingball"
+source = "src/Gruntz/RollingBall.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "tilewireswitchlogic"
+source = "src/Gruntz/TileSwitchLogic.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "ingameicon"
 source = "src/Gruntz/CInGameIcon.cpp"
 flags = "eh"

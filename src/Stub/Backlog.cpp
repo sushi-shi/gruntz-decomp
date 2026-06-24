@@ -665,11 +665,13 @@ void __stdcall EngineLabelBacklog::LoadVehicleGruntSprites(i32) {}
 RVA(0x00061cb0, 0x34a)
 void Projectile::vfunc_9() {}
 
-// @confidence: med
-// @source: string-xref
-// @stub
-RVA(0x0006c130, 0xd62)
-void __stdcall EngineLabelBacklog::WireTileSwitchLogic(i32, i32, i32) {}
+// WireTileSwitchLogic (0x0006c130, 3426 B) graduated to
+// src/Gruntz/TileSwitchLogic.cpp (eh unit) as CGruntzMgr::WireTileSwitchLogic:
+// the tile-switch/plate wire dispatcher (the "No switch/trigger/plate logic
+// found" + "GAME_SECRETSWITCH" / "CrumbleTileDelay" $SG set). Its CString
+// diagnostic temp gives it the /GX exception frame. Reconstructed (validated top
+// - prologue, grid clamp, cell-tag resolve, primary switch dispatch + the first
+// diagnostic arm; @early-stop on the branchy nested-jump-table /GX wall).
 
 // LoadTerrainTileSprites (0x00075e90, 4905 B) is the per-tile terrain-action
 // sprite loader; reconstructed (complete top structure + DIRT/GIANTROCK arms,
@@ -765,11 +767,13 @@ void __stdcall EngineLabelBacklog::LoadMenuStateAssets(i32, i32, i32) {}
 // wall) in the eh unit src/Gruntz/MainMenuBuilder.cpp; its CString temps give it
 // an exception frame, so it left the frameless backlog aggregate.
 
-// @confidence: med
-// @source: string-xref
-// @stub
-RVA(0x000b0140, 0xa7a)
-void EngineLabelBacklog::LoadRollingBallHazardSprites() {}
+// LoadRollingBallHazardSprites (0x000b0140, 2682 B) is NOT a sprite loader: it
+// graduated to src/Gruntz/RollingBall.cpp (eh unit) as CRollingBall::Update, the
+// per-tick rolling-ball movement/state update (the LEVEL_ROLLINGBALL_*
+// directional roll + sink/fall/explosion sound $SG set + the sub-tile position
+// interpolation). Its two CString sound-name temps give it the /GX exception
+// frame. Reconstructed (complete body - prologue, action/direction/sink switches,
+// float-interp tail; @early-stop on the branchy nested-jump-table /GX wall).
 
 // @confidence: med
 // @source: decomp-xref

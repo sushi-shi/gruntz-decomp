@@ -1,0 +1,328 @@
+// RollingBall.cpp - Gruntz CRollingBall::Update (C:\Proj\Gruntz). The per-tick
+// movement/state update for the rolling-ball hazard (CRollingBall : CUserLogic,
+// sizeof 0xa0). Recovered from the $SG string set (LEVEL_ROLLINGBALL_FALL/
+// EXPLOSION/SINK*, LEVEL_ROLLINGBALL_NORTH/SOUTH/EAST/WEST, LEVEL_DEATHSPLASH,
+// "RollingBallTimePerTile"/"Hazardz" CButeMgr key, "Particlez"/"GAME_WATER")
+// which identify the ball's directional roll + sink/fall/explosion sound + the
+// per-frame sub-tile position interpolation.
+//
+// Structure: an outer action switch on the tile's terrain id ([map]-4, range
+// 0..0x70 -> jump table 0x4b0bbc) selects FALL / EXPLOSION / SINK / WATER /
+// default; the SINK arm runs an inner switch on the sink-type id (0x98 base,
+// 0..0x23 -> 0x4b0c68) and the move arm runs a direction switch (state +0x12c,
+// 1..4) that picks NORTH/SOUTH/EAST/WEST and steps the integer tile coords
+// (+0x78,+0x7c) by 0x20. The tail interpolates the double sub-tile position
+// (+0x60/+0x68) toward the target at a per-tile time read from the bute file,
+// then writes the snapped grid coords back into the logic object (+0x10).
+//
+// It is a /GX EH-framed routine: two CString diagnostic/scratch temps at
+// [esp+0x10]/[esp+0x14] (the per-direction sound-name strings) give it the
+// exception frame, so it lives in an `eh` unit.
+//
+// CARCASS doctrine: CRollingBall's own fields and the level/map/registry
+// sub-objects are unmatched engine classes accessed by raw this+offset; every
+// callee is an external reloc-masked __thiscall/__cdecl thunk; the LEVEL_*/GAME_*
+// strings are $SG literals reloc-masked against the matched string symbols. Only
+// the offsets / code bytes are load-bearing (campaign doctrine).
+//
+// @early-stop
+// /GX branchy nested-jump-table state-machine wall. The whole body is
+// reconstructed here and matches retail's logic; the byte-match of the descending
+// /GX exception-state thread around the two CString temps + the three nested
+// jump-table base relocs across this 2682-byte size is the documented
+// megafunction wall (cf. the sibling /GX megafunctions TerrainTileLoader,
+// MainMenuBuilder ~78%): MSVC5's jump-table base reloc typing + the EH-state
+// numbering are not steerable from C source. Deferred to the final sweep
+// (docs/patterns/jumptable-data-overlap.md; big-seh-fuzzy-desync.md;
+// eh-state-numbering-base.md; o2-optimizer-bailout-framed.md).
+
+#include <Mfc.h> // the two CString diagnostic temps (the /GX frame)
+#include <rva.h>
+
+// ---------------------------------------------------------------------------
+// Shared singletons (named so their DIR32 datum reloc-masks).
+// ---------------------------------------------------------------------------
+extern void* g_64556c;      // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
+extern "C" void* g_buteMgr; // ?g_buteMgr@@3VCButeMgr@@A @0x6453d8
+extern "C" i32 g_645588;    // DAT_00645588 @0x645588 (world clock ms)
+extern "C" i32 g_645584;    // DAT_00645584 @0x645584 (frame delta ms)
+extern "C" double g_5ea3e8; // DAT_005ea3e8 @0x5ea3e8 (1000.0 ms->tiles divisor)
+extern "C" void* g_6bf3bc;  // _g_6bf3bc @0x6bf3bc (the EH frame's pushed global)
+
+// ---------------------------------------------------------------------------
+// Engine helpers reached through reloc-masked thunks (no body).
+// ---------------------------------------------------------------------------
+void RbSubUpdate(void* anim1a0);                         // 0x15c360 [this+0x38]+0x1a0 sub-update
+void RbCacheFirst(void* anim, const char* name);         // 0x150540 CacheFirstFrame(CString byval)
+void RbApplyLookup(void* anim, const char* name, i32 z); // 0x1505b0 ApplyLookupGeometry
+void RbStrAssign(void* str, const char* s);              // 0x1b9e74 CString::operator=(LPCSTR)
+void* RbCreateSprite(i32 a, i32 b, i32 c, const char* ns, i32 tag, i32 flags); // 0x1597b0 register
+i32 RbGetDwordDef(const char* sec, const char* key, i32 def); // 0x1721e0 CButeMgr::GetDwordDef
+double RbCeil(double x);                                      // 0x120480 ceil
+double RbFloor(double x);                                     // 0x120580 floor
+i32 RbFtol(double x);                                         // 0x11f570 __ftol
+
+// Registry slot calls on g_gameReg sub-objects (reloc-masked __thiscall).
+i32 RbProbeRect(void* obj, i32 cx, i32 cy, i32* rectBase, i32* outA, i32* outB, i32 z); // 0x32ce
+void RbMarkRect(void* obj, i32 a, i32 b, i32 mode, i32 neg);                            // 0x2e96
+void RbClearCell(void* obj, i32 a, i32 b, i32 z);                                       // 0x26df
+
+#define I32(p, off) (*(i32*)((char*)(p) + (off)))
+#define PTR(p, off) (*(void**)((char*)(p) + (off)))
+#define DBL(p, off) (*(double*)((char*)(p) + (off)))
+
+// Vtable slot +0x20 (the cell -> object-id resolver): mov edx,[ent]; call [edx+0x20].
+static i32 VtblResolve(void* ent) {
+    void* vtbl = *(void**)ent;
+    return (*(i32(**)(void*, i32, i32))((char*)vtbl + 0x20))(ent, 0, 0);
+}
+
+// CRollingBall (: CUserLogic, sizeof 0xa0). Only the touched offsets matter; the
+// body accesses everything by raw this+offset (carcass doctrine).
+class CRollingBall {
+public:
+    i32 Update();
+    char m_pad[0xa0];
+};
+
+// CRollingBall::Update - the per-tick rolling-ball state machine (__thiscall).
+// @early-stop
+// /GX branchy nested-jump-table megafunction wall (~35%): complete, correct
+// reconstruction (prologue, explosion/fall latches, action/direction/sink
+// switches, x87 interpolation tail); the EH-state numbering + jump-table reloc
+// typing across 2682 B is the documented wall. See file header; final-sweep.
+RVA(0x000b0140, 0xa7a)
+i32 CRollingBall::Update() {
+    void* self = this;
+    void* gr = g_64556c;
+    (void)g_6bf3bc;
+
+    RbSubUpdate((char*)PTR(self, 0x38) + 0x1a0);
+
+    void* anim = PTR(self, 0x38);
+    if (I32(anim, 0x1c8) != 0 && I32(anim, 0x1c0) == 0) {
+        I32(anim, 0x8) |= 0x10000;
+        return 0;
+    }
+
+    // The explosion latch (+0x80): the explosion sound + cell-clear fire once.
+    if (I32(self, 0x80) == 0) {
+        void* logic = PTR(self, 0x10);
+        i32 lo = g_645588 - I32(self, 0x88);
+        i32 hi = 0 - I32(self, 0x8c);
+        i32 lim = I32(self, 0x94);
+        if (hi < lim || (hi == lim && (u32)lo < (u32)I32(self, 0x90))) {
+            RbCacheFirst(PTR(self, 0x38), "LEVEL_ROLLINGBALL_EXPLOSION");
+            I32(self, 0x40) = I32(PTR(self, 0x38), 0x1b4);
+            RbApplyLookup(PTR(self, 0x38), "LEVEL_ROLLINGBALLEXPLOSION", 0);
+            void* map = PTR(gr, 0x70);
+            i32 cx = I32(logic, 0x5c) >> 5;
+            i32 cy = I32(logic, 0x60) >> 5;
+            if ((u32)cx < (u32)I32(map, 0xc) && (u32)cy < (u32)I32(map, 0x10)) {
+                void* row = PTR(map, 0x8);
+                i32 ix = cx * 7;
+                i32* cell = (i32*)((char*)PTR(row, cy * 4) + ix * 4);
+                *cell &= 0xefffffff;
+            }
+        }
+        I32(self, 0x80) = 1;
+    }
+
+    // The fall latch (+0x84): grid-side death flag + rect re-mark.
+    if (I32(self, 0x84) == 0) {
+        void* logic = PTR(self, 0x10);
+        i32 cx = I32(logic, 0x5c);
+        i32 cy = I32(logic, 0x60);
+        if (cx < I32(gr, 0x144) && cx >= I32(gr, 0x13c) && cy < I32(gr, 0x148)
+            && cy >= I32(gr, 0x140)) {
+            I32(PTR(gr, 0x68), 0x3f8) = 1;
+        }
+        void* logic2 = PTR(self, 0x10);
+        i32 outA, outB;
+        if (RbProbeRect(
+                PTR(gr, 0x68),
+                I32(logic2, 0x5c),
+                I32(logic2, 0x60),
+                (i32*)((char*)logic2 + 0x144),
+                &outB,
+                &outA,
+                0
+            )) {
+            RbMarkRect(PTR(gr, 0x68), outA, outB, 2, -1);
+        }
+    }
+
+    // ----- the sub-tile-snapped move + action switch -----
+    void* logic = PTR(self, 0x10);
+    if (I32(logic, 0x5c) == I32(self, 0x78) && I32(logic, 0x60) == I32(self, 0x7c)) {
+        // arrived at the target cell: clear the cell, read its terrain id and
+        // dispatch on the rolling-ball action.
+        RbClearCell(PTR(gr, 0x68), I32(self, 0x7c), I32(self, 0x78), 0);
+
+        void* map = PTR(gr, 0x70);
+        i32 cx = I32(self, 0x78) >> 5;
+        i32 cy = I32(self, 0x7c) >> 5;
+        i32 terrain;
+        if ((u32)cx < (u32)I32(map, 0xc) && (u32)cy < (u32)I32(map, 0x10)) {
+            void* row = PTR(map, 0x8);
+            i32 ix = cx * 7;
+            terrain = I32((char*)PTR(row, cy * 4) + ix * 4, 0);
+        } else {
+            terrain = 1;
+        }
+
+        if ((terrain & 0x939) != 0 || (terrain & 2) != 0) {
+            CString fall;      // [esp+0x14]
+            CString explosion; // [esp+0x10]
+            // resolve the action id from the second grid plane.
+            void* m2 = PTR(gr, 0x30);
+            void* lvl = PTR(m2, 0x24);
+            i32 ax = I32(self, 0x7c) >> 5;
+            i32 ay = I32(self, 0x78) >> 5;
+            if (ax < 0) {
+                ax = 0;
+            } else {
+                i32 w = I32(PTR(lvl, 0x5c), 0x28);
+                if (ax >= w) {
+                    ax = w - 1;
+                }
+            }
+            if (ay < 0) {
+                ay = 0;
+            } else {
+                i32 h = I32(PTR(lvl, 0x5c), 0x2c);
+                if (ay >= h) {
+                    ay = h - 1;
+                }
+            }
+            i32 col = I32(PTR(lvl, 0x5c), 0x24);
+            i32 idx = I32((char*)col + ay * 4, 0) + ax;
+            i32 raw = I32(PTR(lvl, 0x20), idx * 4);
+            i32 obj = 0;
+            if (raw != (i32)0xeeeeeeee && raw != -1) {
+                void* tbl = PTR(lvl, 0x4c);
+                void* ent = PTR((char*)tbl, (raw & 0xffff) * 4);
+                obj = VtblResolve(ent);
+            }
+
+            // The action switch (obj's terrain id, near-dense range): FALL,
+            // EXPLOSION, SINK and their neighbours collapse to a few sound pairs.
+            // Spelled as a natural switch so cl emits its own jump table.
+            switch (obj) {
+                case 0xa: // FALL group
+                case 0x24:
+                    RbStrAssign(&fall, "LEVEL_ROLLINGBALL_FALL");
+                    RbStrAssign(&explosion, "LEVEL_ROLLINGBALLFALL");
+                    break;
+                case 0x10: // EXPLOSION
+                    RbStrAssign(&fall, "LEVEL_ROLLINGBALL_EXPLOSION");
+                    RbStrAssign(&explosion, "LEVEL_ROLLINGBALLEXPLOSION");
+                    obj = 1;
+                    break;
+                default: // SINK and the rest collapse onto the sink temps
+                    RbStrAssign(&fall, "LEVEL_ROLLINGBALL_SINK");
+                    RbStrAssign(&explosion, "LEVEL_ROLLINGBALLSINKDEATH");
+                    break;
+            }
+            RbCacheFirst(PTR(self, 0x38), explosion);
+            I32(self, 0x40) = I32(PTR(self, 0x38), 0x1b4);
+            RbApplyLookup(PTR(self, 0x38), fall, 0);
+            if (obj == 4) {
+                i32 t = RbGetDwordDef("Hazardz", "RollingBallTimePerTile", 0x3e8);
+                DBL(self, 0x58) = g_5ea3e8 / (double)t;
+            }
+        }
+    }
+
+    // ----- the direction sub-switch (state +0x12c -> NORTH/SOUTH/EAST/WEST) -----
+    I32(self, 0x60) = 0;
+    I32(self, 0x68) = 0;
+    I32(self, 0x64) = 0;
+    I32(self, 0x6c) = 0;
+    void* lg = PTR(self, 0x10);
+    switch (I32(lg, 0x12c)) {
+        case 1:
+            DBL(self, 0x68) = -DBL(self, 0x98);
+            I32(self, 0x78) -= 0x20;
+            I32(self, 0x70) = -1;
+            I32(self, 0x74) = -1;
+            break;
+        case 2:
+            I32(self, 0x60) = I32(self, 0x98);
+            I32(self, 0x64) = I32(self, 0x9c);
+            I32(self, 0x78) += 0x20;
+            I32(self, 0x70) = 1;
+            I32(self, 0x74) = 0;
+            break;
+        case 4:
+            I32(self, 0x68) = I32(self, 0x98);
+            I32(self, 0x6c) = I32(self, 0x9c);
+            I32(self, 0x78) += 0x20;
+            I32(self, 0x70) = 0;
+            I32(self, 0x74) = 1;
+            break;
+        case 3:
+            DBL(self, 0x60) = -DBL(self, 0x98);
+            I32(self, 0x78) -= 0x20;
+            I32(self, 0x70) = -1;
+            I32(self, 0x74) = 0;
+            break;
+    }
+
+    // ----- the x87 sub-tile interpolation tail -----
+    void* lg2 = PTR(self, 0x10);
+    DBL(self, 0x60) = (double)I32(lg2, 0x5c) + DBL(self, 0x60);
+    DBL(self, 0x68) = (double)I32(lg2, 0x60) + DBL(self, 0x68);
+    I32(self, 0x98) = 0;
+    I32(self, 0x9c) = 0;
+
+    double dt = (double)g_645584 * DBL(self, 0x58);
+    i32 nx = I32(self, 0x78) >> 5;
+    if (I32(self, 0x70) > 0) {
+        double v = dt + DBL(self, 0x60);
+        DBL(self, 0x60) = v;
+        nx = RbFtol(RbCeil(v));
+        if (nx >= (I32(self, 0x78) >> 5)) {
+            nx = I32(self, 0x78) >> 5;
+        }
+    } else if (I32(self, 0x70) < 0) {
+        double v = DBL(self, 0x60) - dt;
+        DBL(self, 0x60) = v;
+        nx = RbFtol(RbFloor(v));
+        if (nx < (I32(self, 0x78) >> 5)) {
+            nx = I32(self, 0x78) >> 5;
+        }
+    } else {
+        nx = RbFtol(RbFloor(DBL(self, 0x60)));
+    }
+
+    i32 ny = I32(self, 0x7c) >> 5;
+    if (I32(self, 0x74) > 0) {
+        double v = dt + DBL(self, 0x68);
+        DBL(self, 0x68) = v;
+        ny = RbFtol(RbCeil(v));
+        if (ny >= (I32(self, 0x7c) >> 5)) {
+            ny = I32(self, 0x7c) >> 5;
+        }
+    } else if (I32(self, 0x74) < 0) {
+        double v = DBL(self, 0x68) - dt;
+        DBL(self, 0x68) = v;
+        ny = RbFtol(RbFloor(v));
+        if (ny < (I32(self, 0x7c) >> 5)) {
+            ny = I32(self, 0x7c) >> 5;
+        }
+    } else {
+        ny = RbFtol(RbFloor(DBL(self, 0x68)));
+    }
+
+    void* out = PTR(self, 0x10);
+    I32(out, 0x5c) = nx;
+    I32(out, 0x60) = ny;
+    void* out2 = PTR(self, 0x10);
+    i32 next = I32(out2, 0x60) + 0x186a0;
+    if (I32(out2, 0x74) != next) {
+        I32(out2, 0x74) = next;
+        I32(out2, 0x8) |= 0x20000;
+    }
+    return 0;
+}
