@@ -40,7 +40,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	697	0
+engine_discovered	684	0
 engine_label_stubs	534	121
 filestream	13	9
 font	16	9
@@ -81,7 +81,7 @@ randomambientsound	7	5
 registryhelper	8	8
 rezmgr	10	6
 savegame	18	13
-sbi_rectonly	46	19
+sbi_rectonly	59	23
 sbi_rectonly_eh	2	1
 sounddevice	6	4
 soundstream	5	2
@@ -544,22 +544,9 @@ engine_discovered	?CPlay_0d1b60@CPlay@@QAEXXZ	0.0452	0.0452	1	7c783745d488	0xd1b
 engine_discovered	?CRollingBall_012f80@CRollingBall@@QAEXXZ	5.8824	5.8824	1	c3e5dcb9f3b3	0x12f80
 engine_discovered	?CRollingBall_0b0fe0@CRollingBall@@QAEXXZ	0.2139	0.2139	1	a6e364c8e14c	0xb0fe0
 engine_discovered	?CSBI_RectOnly_0c8980@CSBI_RectOnly@@QAEXXZ	3.8462	3.8462	1	5ef05cd5c468	0xc8980
-engine_discovered	?CSBI_RectOnly_0e72f0@CSBI_RectOnly@@QAEXXZ	0.6154	0.6154	1	e2815d385303	0xe72f0
 engine_discovered	?CSBI_RectOnly_0ebd70@CSBI_RectOnly@@QAEXXZ	0.3774	0.3774	1	7136bad16d3f	0xebd70
-engine_discovered	?CSBI_RectOnly_0ff850@CSBI_RectOnly@@QAEXXZ	0.3960	0.3960	1	b87216fd2d89	0xff850
-engine_discovered	?CSBI_RectOnly_0ff9f0@CSBI_RectOnly@@QAEXXZ	0.4301	0.4301	1	d60006a89286	0xff9f0
-engine_discovered	?CSBI_RectOnly_0ffcb0@CSBI_RectOnly@@QAEXXZ	0.4348	0.4348	1	820d46e68091	0xffcb0
-engine_discovered	?CSBI_RectOnly_100930@CSBI_RectOnly@@QAEXXZ	0.4040	0.4040	1	f5d082fc3776	0x100930
-engine_discovered	?CSBI_RectOnly_100b00@CSBI_RectOnly@@QAEXXZ	0.9804	0.9804	1	2d5842638744	0x100b00
-engine_discovered	?CSBI_RectOnly_100d70@CSBI_RectOnly@@QAEXXZ	0.1050	0.1050	1	4039c016478d	0x100d70
-engine_discovered	?CSBI_RectOnly_104f90@CSBI_RectOnly@@QAEXXZ	0.7143	0.7143	1	1ff9907ca0ad	0x104f90
 engine_discovered	?CSBI_RectOnly_105800@CSBI_RectOnly@@QAEXXZ	0.7273	0.7273	1	cf06857d2846	0x105800
-engine_discovered	?CSBI_RectOnly_106820@CSBI_RectOnly@@QAEXXZ	0.6897	0.6897	1	0ea0c3a4b5a6	0x106820
-engine_discovered	?CSBI_RectOnly_106900@CSBI_RectOnly@@QAEXXZ	2.3810	2.3810	1	6ba8bc4e54df	0x106900
-engine_discovered	?CSBI_RectOnly_107920@CSBI_RectOnly@@QAEXXZ	0.5405	0.5405	1	5319349b363e	0x107920
 engine_discovered	?CSBI_RectOnly_1084d0@CSBI_RectOnly@@QAEXXZ	0.0438	0.0438	1	0189173023e8	0x1084d0
-engine_discovered	?CSBI_RectOnly_10b210@CSBI_RectOnly@@QAEXXZ	1.6949	1.6949	1	ff697a257e01	0x10b210
-engine_discovered	?CSBI_RectOnly_10b930@CSBI_RectOnly@@QAEXXZ	0.2963	0.2963	1	f5365b1c286e	0x10b930
 engine_discovered	?CSecretLevelTrigger_010c50@CSecretLevelTrigger@@QAEXXZ	5.8824	5.8824	1	6b2878a10ea6	0x10c50
 engine_discovered	?CSecretLevelTrigger_042ac0@CSecretLevelTrigger@@QAEXXZ	1.9608	1.9608	1	646e65b35651	0x42ac0
 engine_discovered	?CSeverusWorker_151f00@CSeverusWorker@@QAEXXZ	0.5479	0.5479	1	a50098a87424	0x151f00
@@ -2087,20 +2074,30 @@ savegame	?SetField18@CSaveGame@@QAEXH@Z	96.3333	96.3333	2	805c5816acdb	0xe5620
 savegame	?SetField1c@CSaveGame@@QAEXH@Z	100.0000	100.0000	2	a0994b0515d6	0xe5660
 savegame	?Verify@CSaveGame@@QAEHXZ	100.0000	100.0000	2	99fbc66be447	0xe50f0
 sbi_rectonly	??0CSBI_RectOnly@@QAE@XZ	100.0000	100.0000	6	9bee20d45286	0x101fa0
+sbi_rectonly	?ActivateSlot@CSBI_RectOnly@@QAEHH@Z	68.2963	68.2963	1	eb6101eb1e9a	0x10b930
 sbi_rectonly	?AdvanceGauge@CSBI_RectOnly@@QAEXH@Z	100.0000	100.0000	2	ea00c64bd531	0x105750
 sbi_rectonly	?AnySlotActive@CSBI_RectOnly@@QAEHXZ	100.0000	100.0000	2	cc30bba269ac	0x105710
 sbi_rectonly	?ArmSlot@CSBI_RectOnly@@QAEXH@Z	100.0000	100.0000	2	c31c87dc7f16	0x105560
 sbi_rectonly	?BuildGameTabPauseButton@CSBI_RectOnly@@QAEXXZ	6.2500	6.2500	1	edd76020e3a4	0x102200
 sbi_rectonly	?BuildGameTabResumeButton@CSBI_RectOnly@@QAEXH@Z	3.5714	3.5714	2	8ebe9f8288c1	0x102180
 sbi_rectonly	?ClearHlCell@CSBI_RectOnly@@QAEXHH@Z	100.0000	100.0000	2	19db944634aa	0x1069c0
+sbi_rectonly	?ClearStat@CSBI_RectOnly@@QAEHH@Z	100.0000	100.0000	1	1ab0c467e5e8	0x104f90
+sbi_rectonly	?ClearTabGroup@CSBI_RectOnly@@QAEXXZ	67.4706	67.4706	1	57d2592ce398	0x100b00
 sbi_rectonly	?ClearTabSprites@CSBI_RectOnly@@QAEHH@Z	100.0000	100.0000	2	9848c8e09963	0x101420
+sbi_rectonly	?ClickHilite@CSBI_RectOnly@@QAEHHHH@Z	89.0693	89.0693	1	19043db79ff5	0xff850
+sbi_rectonly	?ClickToggle@CSBI_RectOnly@@QAEHHHH@Z	99.9677	99.9677	1	986555ef6153	0xff9f0
 sbi_rectonly	?CommitSlot@CSBI_RectOnly@@QAEXH@Z	100.0000	100.0000	2	3c59433ef69c	0x106790
+sbi_rectonly	?ConfigureRect@CSBI_RectOnly@@QAEHHPAUCSbiCfgHost@@HHHHHHHHH@Z	62.3231	62.3231	1	d69ad42badf0	0xe72f0
 sbi_rectonly	?Deactivate@CSBI_RectOnly@@QAEHXZ	97.2115	97.2115	2	fcae74e9af3e	0x100cb0
+sbi_rectonly	?EnterHlRow@CSBI_RectOnly@@QAEXHH@Z	100.0000	100.0000	1	2da54fa164bd	0x106820
+sbi_rectonly	?ExitMode@CSBI_RectOnly@@QAEXXZ	100.0000	100.0000	1	831f1003dd04	0x10b210
 sbi_rectonly	?FindReadySlot@CSBI_RectOnly@@QAEHXZ	100.0000	100.0000	2	a54b1bfe5f25	0x109a90
 sbi_rectonly	?HitTest@CSBI_RectOnly@@QAEHHH@Z	80.6250	80.6250	3	38b32ad34aa8	0x105280
+sbi_rectonly	?HitTestRects@CSBI_RectOnly@@QAEPAVCSbiRect@@HH@Z	94.0761	94.0761	1	457cf5e32002	0xffcb0
 sbi_rectonly	?HlClickGroup0@CSBI_RectOnly@@QAEHH@Z	94.1884	94.1884	2	325386f84c16	0x10b5d0
 sbi_rectonly	?HlClickGroup1@CSBI_RectOnly@@QAEHH@Z	94.1884	94.1884	2	dff2b74cb867	0x10b6f0
 sbi_rectonly	?HlClickGroup2@CSBI_RectOnly@@QAEHH@Z	94.1884	94.1884	2	b9c7a0be828a	0x10b810
+sbi_rectonly	?InitTabRects@CSBI_RectOnly@@QAEXXZ	100.0000	100.0000	1	79ba10566f37	0x106900
 sbi_rectonly	?LoadBattlezItemConfig@CSBI_RectOnly@@QAEXH@Z	0.3096	0.3096	2	244943b7822a	0xfdc00
 sbi_rectonly	?LoadChipMachineConfig@CSBI_RectOnly@@QAEXXZ	0.2066	0.2066	1	f98614cb56ef	0x106bb0
 sbi_rectonly	?LoadDestructButtonSprite@CSBI_RectOnly@@QAEXH@Z	0.9174	0.9174	2	6196a49de510	0xffb20
@@ -2114,13 +2111,16 @@ sbi_rectonly	?Reset@CSBI_RectOnly@@QAEXXZ	100.0000	100.0000	1	44d541578f73	0x105
 sbi_rectonly	?ResetCounters@CSBI_RectOnly@@QAEXXZ	100.0000	100.0000	1	d7308431df45	0xe7400
 sbi_rectonly	?ResetGroupA@CSBI_RectOnly@@QAEXXZ	100.0000	100.0000	2	8ef3e69bdd1f	0x106610
 sbi_rectonly	?ResetSlots@CSBI_RectOnly@@QAEXXZ	100.0000	100.0000	2	c5df592d9cbd	0x105520
+sbi_rectonly	?ResetWidgets@CSBI_RectOnly@@QAEXH@Z	77.8788	77.8788	1	a770b67e8b1d	0x100930
 sbi_rectonly	?Serialize@CSBI_RectOnly@@QAEHPAVCSbiStream@@@Z	95.6124	95.6124	2	ac27796079cc	0x1090a0
+sbi_rectonly	?SetFallRect@CSBI_RectOnly@@QAEHHHH@Z	69.7568	69.7568	1	66ff94b40edf	0x107920
 sbi_rectonly	?SetGauge@CSBI_RectOnly@@QAEXH@Z	100.0000	100.0000	2	254e3556c936	0x1057d0
 sbi_rectonly	?SetHlCell@CSBI_RectOnly@@QAEHHHH@Z	100.0000	100.0000	2	d433d9fa7e6b	0x106b40
 sbi_rectonly	?SetHudRectA@CSBI_RectOnly@@QAEXHHH@Z	72.3333	72.3333	2	a2c37d68b379	0x1066f0
 sbi_rectonly	?SetHudRectB@CSBI_RectOnly@@QAEXHHH@Z	72.3333	72.3333	2	25a4592f51b1	0x106740
 sbi_rectonly	?SetMode@CSBI_RectOnly@@QAEXH@Z	100.0000	100.0000	2	0f418853e54a	0x10bb90
 sbi_rectonly	?SetTab@CSBI_RectOnly@@QAEHHH@Z	99.9636	99.9636	2	75acee6fd3d7	0x1020a0
+sbi_rectonly	?SetTabState@CSBI_RectOnly@@QAEHHH@Z	85.5328	85.5328	1	4a14706630f5	0x100d70
 sbi_rectonly	?Stub_0ffde0@CSBI_RectOnly@@QAEXXZ	0.2119	0.2119	4	3326c6c6d306	0xffde0
 sbi_rectonly	?Teardown@CSBI_RectOnly@@QAEXXZ	84.7059	84.7059	2	d3950462b68c	0xfe350
 sbi_rectonly	?TickGauge@CSBI_RectOnly@@QAEXXZ	95.6905	95.6905	2	cfd3e12e9ddb	0x105480
@@ -2245,18 +2245,18 @@ unknownclassarrays	?FreeArrays@UnknownClassArrays@@QAEXXZ	100.0000	100.0000	3	4e
 unknownclassarrays	?Method_025c20@UnknownClassArrays@@QAEHXZ	100.0000	100.0000	3	42e24aff548f	0x25c20
 unknownclassarrays	?Method_025d90@UnknownClassArrays@@QAEHXZ	75.6087	75.6087	2	d8ff2c56564a	0x25d90
 unknownclassarrays	?Method_026470@UnknownClassArrays@@QAEHH@Z	83.1071	83.1071	2	c93b8db81e03	0x26470
-unknownclassarrays	?Method_029b40@UnknownClassArrays@@QAEHH@Z	24.7804	24.7804	2	b34d89edacb8	0x29b40
+unknownclassarrays	?Method_029b40@UnknownClassArrays@@QAEHH@Z	24.7804	24.7804	3	1e5695e1439c	0x29b40
 unknownclassarrays	?Method_02bfc0@UnknownClassArrays@@QAEHHPAXHH@Z	80.7188	80.7188	3	1d37b002a3ec	0x2bfc0
 unknownclassarrays	?Method_02c0a0@UnknownClassArrays@@QAEHHH@Z	100.0000	100.0000	3	c59928dcae02	0x2c0a0
-unknownclassarrays	?Method_02d800@UnknownClassArrays@@QAEHHHHH@Z	20.0022	20.0022	2	04b1d01dd154	0x2d800
+unknownclassarrays	?Method_02d800@UnknownClassArrays@@QAEHHHHH@Z	20.0022	20.0022	3	fd9bac4db9f7	0x2d800
 unknownclassarrays	?Method_02ed90@UnknownClassArrays@@QAEHH@Z	100.0000	100.0000	2	823ca86ef3a1	0x2ed90
-unknownclassarrays	?Method_02edb0@UnknownClassArrays@@QAEHHHHH@Z	78.5986	78.5986	2	7de5ee518715	0x2edb0
-unknownclassarrays	?Method_02f620@UnknownClassArrays@@QAEHH@Z	48.6144	48.6144	2	cec3eff5e786	0x2f620
+unknownclassarrays	?Method_02edb0@UnknownClassArrays@@QAEHHHHH@Z	78.5986	78.5986	3	4756ccc7921a	0x2edb0
+unknownclassarrays	?Method_02f620@UnknownClassArrays@@QAEHH@Z	48.6144	48.6144	3	77b32e4d9c7b	0x2f620
 unknownclassarrays	?Method_0300c0@UnknownClassArrays@@QAEHHHHHHH@Z	63.8443	63.8443	1	2ed8a1bfa8af	0x300c0
 unknownclassarrays	?Method_030530@UnknownClassArrays@@QAEHH@Z	100.0000	100.0000	3	e73532e1bbab	0x30530
 unknownclassarrays	?Method_0305b0@UnknownClassArrays@@QAEHHHH@Z	46.6224	46.6224	3	c2a0dd095073	0x305b0
 unknownclassarrays	?Method_030730@UnknownClassArrays@@QAEHHHHH@Z	88.4487	88.4487	2	48f0f2797bd5	0x30730
-unknownclassarrays	?Method_030b20@UnknownClassArrays@@QAEHHHH@Z	69.2299	69.2299	2	9918eaa99eea	0x30b20
+unknownclassarrays	?Method_030b20@UnknownClassArrays@@QAEHHHH@Z	69.2299	69.2299	3	5660013556cd	0x30b20
 unknownclassarrays	?Method_030f20@UnknownClassArrays@@QAEPAXPAXHH@Z	58.3333	58.3333	2	11302799f028	0x30f20
 unknownclassarrays	?Method_034460@UnknownClassArrays@@QAEHH@Z	80.6851	80.6851	2	9fe11845bca1	0x34460
 unknownclassarrays	?Serialize_02b420@UnknownClassArrays@@QAEHPAX@Z	100.0000	100.0000	2	7b63ca13d3d0	0x2b420

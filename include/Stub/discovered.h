@@ -277,22 +277,9 @@ public:
 class CSBI_RectOnly {
 public:
     void CSBI_RectOnly_0c8980();
-    void CSBI_RectOnly_0e72f0();
     void CSBI_RectOnly_0ebd70();
-    void CSBI_RectOnly_0ff850();
-    void CSBI_RectOnly_0ff9f0();
-    void CSBI_RectOnly_0ffcb0();
-    void CSBI_RectOnly_100930();
-    void CSBI_RectOnly_100b00();
-    void CSBI_RectOnly_100d70();
-    void CSBI_RectOnly_104f90();
     void CSBI_RectOnly_105800();
-    void CSBI_RectOnly_106820();
-    void CSBI_RectOnly_106900();
-    void CSBI_RectOnly_107920();
     void CSBI_RectOnly_1084d0();
-    void CSBI_RectOnly_10b210();
-    void CSBI_RectOnly_10b930();
 };
 class CSecretLevelTrigger {
 public:

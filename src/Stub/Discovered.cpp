@@ -412,38 +412,12 @@ void CRollingBall::CRollingBall_0b0fe0() {}
 // ---- CSBI_RectOnly ----
 RVA(0x000c8980, 0x64)
 void CSBI_RectOnly::CSBI_RectOnly_0c8980() {}
-RVA(0x000e72f0, 0xc4)
-void CSBI_RectOnly::CSBI_RectOnly_0e72f0() {}
 RVA(0x000ebd70, 0x366)
 void CSBI_RectOnly::CSBI_RectOnly_0ebd70() {}
-RVA(0x000ff850, 0x121)
-void CSBI_RectOnly::CSBI_RectOnly_0ff850() {}
-RVA(0x000ff9f0, 0xe4)
-void CSBI_RectOnly::CSBI_RectOnly_0ff9f0() {}
-RVA(0x000ffcb0, 0xe2)
-void CSBI_RectOnly::CSBI_RectOnly_0ffcb0() {}
-RVA(0x00100930, 0x16c)
-void CSBI_RectOnly::CSBI_RectOnly_100930() {}
-RVA(0x00100b00, 0x139)
-void CSBI_RectOnly::CSBI_RectOnly_100b00() {}
-RVA(0x00100d70, 0x519)
-void CSBI_RectOnly::CSBI_RectOnly_100d70() {}
-RVA(0x00104f90, 0xa8)
-void CSBI_RectOnly::CSBI_RectOnly_104f90() {}
 RVA(0x00105800, 0x9e)
 void CSBI_RectOnly::CSBI_RectOnly_105800() {}
-RVA(0x00106820, 0xa8)
-void CSBI_RectOnly::CSBI_RectOnly_106820() {}
-RVA(0x00106900, 0x8d)
-void CSBI_RectOnly::CSBI_RectOnly_106900() {}
-RVA(0x00107920, 0xb7)
-void CSBI_RectOnly::CSBI_RectOnly_107920() {}
 RVA(0x001084d0, 0x96c)
 void CSBI_RectOnly::CSBI_RectOnly_1084d0() {}
-RVA(0x0010b210, 0xc5)
-void CSBI_RectOnly::CSBI_RectOnly_10b210() {}
-RVA(0x0010b930, 0x1a7)
-void CSBI_RectOnly::CSBI_RectOnly_10b930() {}
 
 // ---- CSecretLevelTrigger ----
 RVA(0x00010c50, 0x44)

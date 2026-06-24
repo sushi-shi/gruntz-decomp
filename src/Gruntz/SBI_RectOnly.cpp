@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Mfc.h>
 #include <Gruntz/StatusBarItem.h>
 // SBI_RectOnly.cpp - Gruntz CSBI_RectOnly (C:\Proj\Gruntz).
 // The constructor is matched byte-exact.
@@ -68,22 +69,67 @@ struct CSbiSeqHolder {
     i32 m_188; // +0x188
 };
 
-// A per-tab sprite widget: the reconstructed bodies only call its Release().
+// A per-tab sprite widget: ClearTabSprites calls Release(); SetTabState shows the
+// selected tab's sprite (Show, +flag) and hides the rest (Hide). All sibling
+// thunks - the call rel32 is reloc-masked, only the arg shape is load-bearing.
 class CSbiSprite {
 public:
-    void Release(); // __thiscall, no args (sibling thunk_FUN_004e84f0)
+    void Release();             // __thiscall, no args (sibling thunk_FUN_004e84f0)
+    void Show(i32 idx, i32 on); // 2 args (call 0x2059)
+    void Hide(i32 idx);         // 1 arg  (call 0x3279)
 };
 
-// A hit-test rect widget held in m_hitRects[]: m_enabled gate, m_xLo/m_xHi the
-// x span, m_yLo/m_yHi the y span.
-struct CSbiRect {
-    char m_pad0[0x4];
-    i32 m_enabled; // +0x04 enabled
-    char m_pad8[0x14 - 0x8];
-    i32 m_xLo; // +0x14 x lo
-    i32 m_yLo; // +0x18 y lo
-    i32 m_xHi; // +0x1c x hi
-    i32 m_yHi; // +0x20 y hi
+// A hit-test rect widget held in m_hitRects[] / the hit-test lists: a polymorphic
+// object (vptr at +0) with the m_enabled gate at +4, m_xLo/m_xHi the x span, and
+// m_yLo/m_yHi the y span. Two click handlers dispatch through vtable slots 7/9.
+class CSbiRect {
+public:
+    virtual void v0();
+    virtual void v4();
+    virtual void v8();
+    virtual void vc();
+    virtual void v10();
+    virtual void v14();
+    virtual void v18();
+    virtual void Click1c(i32 a, i32 b, i32 c); // +0x1c (slot 7)
+    virtual void v20();
+    virtual void Click24(i32 a, i32 b, i32 c); // +0x24 (slot 9)
+    i32 m_enabled;                             // +0x04 enabled
+    i32 m_kind;                                // +0x08 widget kind tag
+    i32 m_cmd;                                 // +0x0c command id
+    i32 m_tab;                                 // +0x10 owning tab index
+    i32 m_xLo;                                 // +0x14 x lo
+    i32 m_yLo;                                 // +0x18 y lo
+    i32 m_xHi;                                 // +0x1c x hi
+    i32 m_yHi;                                 // +0x20 y hi
+};
+
+// The ConfigureRect host (its arg1): carries a config object at +0x10 that holds a
+// CMapStringToOb at +0x10; the looked-up cue record exposes a frame range at
+// +0x64/+0x68 and a frame table at +0x14.
+struct CSbiCfgMap {
+    i32 Lookup(i32 key, void** out); // CMapWordToOb::Lookup (ret 8)
+};
+struct CSbiCfgObj {
+    char m_pad0[0x10];
+    void* m_10; // +0x10  the config object holding the map at +0x10
+};
+struct CSbiCfgHost {
+    char m_pad0[0x10];
+    CSbiCfgObj* m_10; // +0x10
+};
+struct CSbiCfgRecord {
+    char m_pad0[0x14];
+    i32* m_14; // +0x14  frame table
+    char m_pad18[0x64 - 0x18];
+    i32 m_64; // +0x64  frame range lo / default frame
+    i32 m_68; // +0x68  frame range hi
+};
+
+// A per-stat widget object (m_statObj[]): a sibling thunk drives its (tag,on)
+// notifier; the call is reloc-masked, so only the arg shape is load-bearing.
+struct CSbiStatObj {
+    void Notify2(i32 tag, i32 on); // __thiscall, 2 args (sibling thunk)
 };
 
 // The element type of the +0x204 pointer array: an engine object whose vtable
@@ -229,7 +275,7 @@ public:
     void UpdateDestructButtonStatusBar();
     i32 Activate();
     i32 Stub_0ffde0_probe();
-    void SetTabState(i32 tab, i32 state);
+    i32 SetTabState(i32 tab, i32 state);
 
     void Teardown();
     void TeardownNotify(i32); // call 0x12fd - pre-teardown notify (1 arg)
@@ -248,19 +294,47 @@ public:
     i32 Serialize(CSbiStream* s);
     void NotifyAllSlots();
 
+    // ----- newly reconstructed CSBI_RectOnly methods (RVA-ascending) -----
+    i32 ConfigureRect(
+        i32 sub,
+        CSbiCfgHost* host,
+        i32 cmd,
+        i32 obj,
+        i32 r0,
+        i32 r1,
+        i32 r2,
+        i32 r3,
+        i32 key,
+        i32 frame,
+        i32 extra
+    );
+    i32 ClickHilite(i32 x, i32 y, i32 z);
+    i32 ClickToggle(i32 x, i32 y, i32 z);
+    CSbiRect* HitTestRects(i32 x, i32 y);
+    void ResetWidgets(i32 keepLists);
+    void ClearTabGroup();
+    i32 ClearStat(i32 idx);
+    i32 ActivateCursor(i32 idx, i32 on);
+    void EnterHlRow(i32 row, i32 group);
+    void InitTabRects();
+    i32 SetFallRect(i32 a, i32 b, i32 c);
+    void ExitMode();
+    i32 ActivateSlot(i32 idx);
+
     // ----- layout (placeholders; offsets are the load-bearing fact) -----
     char m_pad2c[0x30 - 0x2c];
     i32 m_30; // +0x30
     i32 m_34; // +0x34
     char m_pad38[0xb8 - 0x38];
     CSbiPtrList m_listB8; // +0xb8  per-tab notify list (RemoveAll'd on retab)
-    char m_padc0[0x10c - 0xc0];
+    char m_padc0[0xd4 - 0xc0];
+    CSbiPtrList m_listD4; // +0xd4  trailing hit-test list (head at +0xd8)
+    char m_paddc[0x10c - 0xdc];
     i32 m_activeTab; // +0x10c  active tab index
     char m_pad110[0x114 - 0x110];
-    i32 m_statFlags[1]; // +0x114  per-stat toggle flag array
-    char m_pad118[0x150 - 0x118];
-    CSbiRect* m_hitRects[15]; // +0x150  hit-test rect widgets
-    char m_pad18c[0x1c8 - 0x18c];
+    i32 m_statFlags[15];          // +0x114  per-stat toggle flag array
+    CSbiRect* m_hitRects[15];     // +0x150  hit-test rect widgets
+    CSbiStatObj* m_statObj[15];   // +0x18c  per-stat object array (notified on clear)
     CSbiSprite* m_1c8;            // +0x1c8  per-tab sprite widgets (cleared by
     CSbiSprite* m_1cc;            // +0x1cc  ClearTabSprites in declaration order)
     CSbiSprite* m_1d0;            // +0x1d0
@@ -310,10 +384,10 @@ public:
     CSbiSlotPtr* m_notify2; // +0x36c
     CSbiSlotPtr* m_notify3; // +0x370
     char m_pad374[0x378 - 0x374];
-    CSbiHlRow m_hlGrid[12];       // +0x378  3 groups x 4 highlight rows (24B each)
-    CSbiSlotPtr* m_hlNotify[12];  // +0x498  3 groups x 4 notify pointers
-    char m_pad4c8[0x4cc - 0x4c8]; // 0x498 + 12*4 = 0x4c8
-    i32 m_extraNotifyArg0;        // +0x4cc  arg for (*m_extraNotify0)->Notify
+    CSbiHlRow m_hlGrid[12];      // +0x378  3 groups x 4 highlight rows (24B each)
+    CSbiSlotPtr* m_hlNotify[12]; // +0x498  3 groups x 4 notify pointers
+    i32 m_4c8;                   // +0x4c8  (set to 1 by InitTabRects)
+    i32 m_extraNotifyArg0;       // +0x4cc  arg for (*m_extraNotify0)->Notify
     char m_pad4d0[0x4e0 - 0x4d0];
     CSbiSlotPtr* m_extraNotify0; // +0x4e0
     char m_pad4e4[0x4ec - 0x4e4];
@@ -324,13 +398,19 @@ public:
     CSbiPtrCollection m_530; // +0x530  pooled-ptr collection (RemoveAll on teardown)
     void* m_ptrTable[1];     // +0x534  pointer table (elements streamed 8B)
     i32 m_ptrCount;          // +0x538  count for m_ptrTable
-    char m_pad53c[0x558 - 0x53c];
+    char m_pad53c[0x548 - 0x53c];
+    i32 m_548; // +0x548
+    char m_pad54c[0x550 - 0x54c];
+    i32 m_550;       // +0x550  toggle-mode active flag
+    i32 m_554;       // +0x554  toggle-mode tab handle
     i32 m_558;       // +0x558
     i32 m_modeState; // +0x55c
     char m_pad560[0x570 - 0x560];
     CSbiSlotPtr* m_modeNotify; // +0x570  notify target
     i32 m_modeArmed;           // +0x574
-    char m_pad578[0x630 - 0x578];
+    char m_pad578[0x61c - 0x578];
+    i32 m_61c[4]; // +0x61c  trailing dword block (cleared on reset)
+    char m_pad62c[0x630 - 0x62c];
 };
 
 // An unnamed engine DWORD global read by the HUD-rect group setters.
@@ -374,6 +454,13 @@ struct CSbiSubMgr {
     i32 m_4f0; // +0x4f0  highlight-busy flag (non-zero => bail)
 };
 
+// The active grunt/level object at g_gameReg+0x68: carries a tab-highlight-enabled
+// gate at +0x400 (zero => skip the cue + cursor activation).
+struct CSbiActiveObj {
+    char m_pad0[0x400];
+    i32 m_400; // +0x400  tab-highlight-enabled gate
+};
+
 // The diagnostics logger at g_gameReg+0x38 (a position-string sink).
 struct CSbiLogger {
     void LogPos(char* tag, i32 subtype); // __thiscall, 2 args
@@ -387,9 +474,13 @@ struct CGameReg {
     CSbiGameMgr* m_30; // +0x30  active game-manager (null-guard in Serialize)
     char m_pad34[0x38 - 0x34];
     CSbiLogger* m_38; // +0x38  diagnostics logger
-    char m_pad3c[0x8c - 0x3c];
+    char m_pad3c[0x68 - 0x3c];
+    CSbiActiveObj* m_68; // +0x68  active grunt/level object
+    char m_pad6c[0x8c - 0x6c];
     i32 m_8c; // +0x8c  cursor/view x (offset by -0x45 into the rect-only item)
     i32 m_90; // +0x90  cursor/view y (offset by -0x30)
+    char m_pad94[0x134 - 0x94];
+    i32 m_134;                      // +0x134  game-over/exit gate
     void ReportError(i32 a, i32 b); // __thiscall
 };
 DATA(0x0024556c)
@@ -1132,6 +1223,785 @@ void CSBI_RectOnly::SetMode(i32 mode) {
             m_modeNotify->Notify(1);
         }
     }
+}
+
+// Find the rect widget under (x,y) by walking the three hit-test lists (the +0x30
+// list, the active-tab list at +tab*0x1c+0x30, then the +0xd8 list); return the
+// first enabled rect whose span contains the point, else null. Same point-in-rect
+// predicate as HitTest, materialized to a bool per retail.
+RVA(0x000ffcb0, 0xe2)
+CSbiRect* CSBI_RectOnly::HitTestRects(i32 x, i32 y) {
+    char* B = (char*)this;
+    CSbiNotifyNode* n = *(CSbiNotifyNode**)(B + 0x30);
+    while (n) {
+        CSbiRect* r = (CSbiRect*)n->m_payload;
+        n = n->m_next;
+        if (r && r->m_enabled) {
+            i32 hit = x < r->m_xHi && x >= r->m_xLo && y < r->m_yHi && y >= r->m_yLo;
+            if (hit) {
+                return r;
+            }
+        }
+    }
+    CSbiNotifyNode* m = *(CSbiNotifyNode**)(B + m_activeTab * 0x1c + 0x30);
+    while (m) {
+        CSbiRect* r = (CSbiRect*)m->m_payload;
+        m = m->m_next;
+        if (r && r->m_enabled) {
+            i32 hit = x < r->m_xHi && x >= r->m_xLo && y < r->m_yHi && y >= r->m_yLo;
+            if (hit) {
+                return r;
+            }
+        }
+    }
+    CSbiNotifyNode* k = m_listD4.m_head;
+    while (k) {
+        CSbiRect* r = (CSbiRect*)k->m_payload;
+        k = k->m_next;
+        if (r && r->m_enabled) {
+            i32 hit = x < r->m_xHi && x >= r->m_xLo && y < r->m_yHi && y >= r->m_yLo;
+            if (hit) {
+                return r;
+            }
+        }
+    }
+    return 0;
+}
+
+// Initialize the two HUD rects (+0x504, +0x514) via Win32 SetRect through its IAT
+// thunk (CSE'd into one load), clear the four highlight-grid groups, latch flags,
+// reset the pending-row index.
+RVA(0x00106900, 0x8d)
+void CSBI_RectOnly::InitTabRects() {
+    for (i32 i = 0; i < 4; i++) {
+        ClearHlCell(0, i);
+        ClearHlCell(1, i);
+        ClearHlCell(2, i);
+    }
+    m_4c8 = 1;
+    m_extraNotifyArg0 = 0;
+    *(i32*)((char*)this + 0x4e8) = 0;
+    m_extraNotifyArg1 = 0;
+    SetRect((LPRECT)((char*)this + 0x504), 0, 0, 1, 1);
+    SetRect((LPRECT)((char*)this + 0x514), 0x49, 0xd7, 0x61, 0xef);
+    m_360 = -1;
+}
+
+// Group-A click handler: hit-test the lists; if no rect, drop the tab sprites.
+// Otherwise dispatch the rect's slot-9 click; if it is a kind-2 (subtype) widget
+// and no hit-test is disabled, play the GAME_TABHIGHLIGHT1 cue on the draw-clock
+// window, then forward the offset command id.
+RVA(0x000ff9f0, 0xe4)
+i32 CSBI_RectOnly::ClickToggle(i32 x, i32 y, i32 z) {
+    CSbiRect* r = HitTestRects(x, y);
+    if (r == 0) {
+        ClearTabSprites(-1);
+        return 1;
+    }
+    r->Click24(z, x, y);
+    if (r->m_kind != 2) {
+        ClearTabSprites(-1);
+        return 1;
+    }
+    i32 cmd = r->m_cmd;
+    if (m_hitTestDisabled == 0) {
+        if (cmd >= 1 && cmd <= 5) {
+            SetTabState(cmd, 2);
+        } else {
+            ClearTabSprites(0);
+        }
+    }
+    if (m_activeTab == 5) {
+        if (r->m_tab == 5) {
+            SetTabState(cmd, 2);
+        } else {
+            ClearTabSprites(5);
+        }
+    }
+    if (m_550) {
+        if (r->m_tab == 6) {
+            SetTabState(cmd, 2);
+            return 1;
+        }
+        ClearTabSprites(5);
+    }
+    return 1;
+}
+
+// The notify-payload object the +0x8 holder points at: an event flags pair the
+// reset latches (an "abort"/"dirty" bit OR'd into +0x40 and +0x8).
+struct CSbiResetHost {
+    char m_pad0[0x8];
+    i32 m_8; // +0x08  status flags (|= 0x10000)
+    char m_padc[0x40 - 0xc];
+    i32 m_40; // +0x40  control flags (|= 1)
+};
+
+// Reset every per-tab widget list (8 notify lists at +0x2c, stride 0x1c) - notify
+// each payload, then RemoveAll - then (when keepHost is set) flag the +0x8 host as
+// aborted, and finally zero the whole widget/notify field block.
+// @early-stop
+// ~78%: instruction selection + scheduling are byte-identical end to end (the
+// 8-list walk, the host flag-OR, every field zero, both rep-stos memsets), but
+// MSVC pins `this` in ebx / the zero in ebp where the recompile uses esi/ebx -
+// the same regalloc register-naming coin-flip as ClearTabGroup. Not steerable
+// from C; documented regalloc wall, deferred to the final sweep.
+RVA(0x00100930, 0x16c)
+void CSBI_RectOnly::ResetWidgets(i32 keepHost) {
+    char* B = (char*)this;
+    char* list = B + 0x2c;
+    for (i32 outer = 8; outer != 0; outer--) {
+        CSbiNotifyNode* n = *(CSbiNotifyNode**)(list + 4);
+        while (n) {
+            CSbiNotifyNode* cur = n;
+            n = n->m_next;
+            if (cur->m_payload) {
+                cur->m_payload->Notify(1);
+            }
+        }
+        ((CSbiPtrList*)list)->RemoveAll();
+        list += 0x1c;
+    }
+    if (keepHost) {
+        CSbiResetHost* h = *(CSbiResetHost**)(B + 8);
+        if (h) {
+            h->m_40 |= 1;
+            h = *(CSbiResetHost**)(B + 8);
+            h->m_8 |= 0x10000;
+        }
+    }
+    m_1c8 = 0;
+    m_1cc = 0;
+    m_1d0 = 0;
+    m_1d4 = 0;
+    m_1d8 = 0;
+    m_1dc = 0;
+    m_1e0 = 0;
+    m_1e4 = 0;
+    m_1e8 = 0;
+    m_1ec = 0;
+    m_1f0 = 0;
+    m_1f4 = 0;
+    m_1f8 = 0;
+    m_1fc = 0;
+    m_200 = 0;
+    m_8 = 0;
+    i32 i;
+    for (i = 0; i < 15; i++) {
+        m_hitRects[i] = 0;
+    }
+    for (i = 0; i < 15; i++) {
+        m_statObj[i] = 0;
+    }
+    i32* sp = (i32*)(B + 0x204);
+    sp[0] = 0;
+    sp[1] = 0;
+    sp[2] = 0;
+    sp[3] = 0;
+    sp[4] = 0;
+    i32* gp = (i32*)(B + 0x308);
+    gp[0] = 0;
+    gp[1] = 0;
+    gp[2] = 0;
+    for (i = 0; i < 12; i++) {
+        m_hlNotify[i] = 0;
+    }
+    i32* tp = m_61c;
+    tp[0] = 0;
+    tp[1] = 0;
+    tp[2] = 0;
+    tp[3] = 0;
+    m_extraNotify0 = 0;
+    m_extraNotify1 = 0;
+    m_modeNotify = 0;
+    m_notify0 = 0;
+    m_notify2 = 0;
+    m_notify3 = 0;
+    m_notify1 = 0;
+    *(i32*)(B + 0x348) = 0;
+    m_218 = 0;
+    m_21c = 0;
+    *(i32*)(B + 0x358) = 0;
+}
+
+// Exit the alternate (toggle) mode: bail if not active; notify+clear the +0xd4
+// list, drop the trailing sprites + the +0x548 flag, then either re-arm the
+// active tab (when no handle is pending and the game is not over) or just clear
+// the hit-test flag; finish through Deactivate.
+RVA(0x0010b210, 0xc5)
+void CSBI_RectOnly::ExitMode() {
+    if (m_550 == 0) {
+        return;
+    }
+    CSbiNotifyNode* n = m_listD4.m_head;
+    while (n) {
+        CSbiNotifyNode* cur = n;
+        n = n->m_next;
+        if (cur->m_payload) {
+            cur->m_payload->Notify(1);
+        }
+    }
+    m_listD4.RemoveAll();
+    i32 handle = m_554;
+    m_1f4 = 0;
+    m_1f8 = 0;
+    m_1fc = 0;
+    m_200 = 0;
+    m_548 = 0;
+    if (handle == 0 && g_gameReg->m_134 != 1) {
+        if (*(i32*)this == 2) {
+            TabRefresh();
+        }
+        if (m_activeTab != 5) {
+            SetTabState(5, 3);
+        }
+        SetTab(5, 1);
+        Deactivate();
+    } else {
+        m_hitTestDisabled = 0;
+    }
+    m_550 = 0;
+    m_554 = 0;
+    Deactivate();
+}
+
+// Tear down the widgets owned by the active tab: notify+RemoveAll the active-tab
+// list, then (switch on the tab index) zero the per-tab field group. Bails when no
+// tab is active or the tab index is out of [1,5].
+// @early-stop
+// ~67%: instruction selection + scheduling are byte-identical (the list walk, the
+// RemoveAll, the jump-table dispatch, every per-case field zero), but MSVC pins
+// `this` in ebx and the zero constant in ebp (5 callee-saved pushes) where the
+// recompile uses esi/ebx (4 pushes) - a regalloc register-naming coin-flip not
+// steerable from C. Documented regalloc wall; deferred to the final sweep.
+RVA(0x00100b00, 0x139)
+void CSBI_RectOnly::ClearTabGroup() {
+    char* B = (char*)this;
+    if (m_activeTab == 0) {
+        return;
+    }
+    CSbiNotifyNode* n = *(CSbiNotifyNode**)(B + m_activeTab * 0x1c + 0x30);
+    while (n) {
+        CSbiNotifyNode* cur = n;
+        n = n->m_next;
+        if (cur->m_payload) {
+            cur->m_payload->Notify(1);
+        }
+    }
+    ((CSbiPtrList*)(B + m_activeTab * 0x1c + 0x2c))->RemoveAll();
+    switch (m_activeTab) {
+        case 1:
+            m_1dc = 0;
+            m_1e0 = 0;
+            m_1e4 = 0;
+            m_1e8 = 0;
+            m_1ec = 0;
+            m_1f0 = 0;
+            m_modeNotify = 0;
+            break;
+        case 2: {
+            for (i32 i = 0; i < 15; i++) {
+                m_statObj[i] = 0;
+            }
+            break;
+        }
+        case 3: {
+            i32* p = m_61c;
+            p[0] = 0;
+            p[1] = 0;
+            p[2] = 0;
+            p[3] = 0;
+            break;
+        }
+        case 4: {
+            i32* p = (i32*)(B + 0x204);
+            p[0] = 0;
+            p[1] = 0;
+            p[2] = 0;
+            p[3] = 0;
+            p[4] = 0;
+            m_218 = 0;
+            m_21c = 0;
+            break;
+        }
+        case 5: {
+            i32* p = (i32*)(B + 0x308);
+            p[0] = 0;
+            p[1] = 0;
+            p[2] = 0;
+            *(i32*)(B + 0x348) = 0;
+            for (i32 i = 0; i < 12; i++) {
+                m_hlNotify[i] = 0;
+            }
+            m_notify0 = 0;
+            m_notify2 = 0;
+            m_notify3 = 0;
+            m_notify1 = 0;
+            m_extraNotify0 = 0;
+            m_extraNotify1 = 0;
+            break;
+        }
+    }
+}
+
+// Configure a rect-only item from a descriptor: bail unless both the host and the
+// subtype are valid; latch the descriptor fields (subtype, command, the four rect
+// coords, the rect-test command), then look the cue key up in the host's map and,
+// if found, resolve the start frame from the cue's frame range/table.
+// @early-stop
+// ~62%: the gate, every field latch (same statement order as retail), the map
+// lookup and the frame-range resolution are byte-correct in instruction selection,
+// but retail stages the four rect coords through a reused `edx = this+0x14`
+// pointer where the recompile addresses them as direct `[this+0x14..]` offsets,
+// and the surrounding store schedule + register naming diverge accordingly. An
+// addressing-mode/scheduling wall, not steerable from C; deferred.
+RVA(0x000e72f0, 0xc4)
+i32 CSBI_RectOnly::ConfigureRect(
+    i32 sub,
+    CSbiCfgHost* host,
+    i32 cmd,
+    i32 obj,
+    i32 r0,
+    i32 r1,
+    i32 r2,
+    i32 r3,
+    i32 key,
+    i32 frame,
+    i32 extra
+) {
+    (void)extra;
+    char* B = (char*)this;
+    if (host == 0 || sub == 0) {
+        return 0;
+    }
+    *(i32*)(B + 0x2c) = sub;
+    *(i32*)(B + 0x10) = obj;
+    i32* rc = (i32*)(B + 0x14);
+    m_24 = (i32)host;
+    m_28 = 0;
+    m_4 = 1;
+    rc[0] = r0;
+    rc[1] = r1;
+    rc[2] = r2;
+    rc[3] = r3;
+    *(i32*)(B + 0xc) = cmd;
+    if (key == 0) {
+        return 0;
+    }
+    void* found = 0;
+    CSbiCfgMap* map = (CSbiCfgMap*)((char*)host->m_10 + 0x10);
+    map->Lookup(key, &found);
+    m_34 = (i32)found;
+    if (found == 0) {
+        return 0;
+    }
+    CSbiCfgRecord* rec = (CSbiCfgRecord*)found;
+    i32 f = frame;
+    if (f == -1) {
+        f = rec->m_64;
+    }
+    *(i32*)(B + 0x38) = f;
+    if (f >= rec->m_64 && f <= rec->m_68) {
+        m_30 = rec->m_14[f];
+    } else {
+        m_30 = 0;
+    }
+    return 1;
+}
+
+// Drive the tab-selection sprites: require the five bank-A sprites all present,
+// then switch on the tab id to Show the selected sprite (with flag) and Hide the
+// rest, gated per case by m_548 (busy => early-return 1). Banks A (1-5), B
+// (0x1f4-0x1fa), C (0x324/0x325), D (0x327/0x328). `state` is the sprite index arg.
+// @early-stop
+// ~85.5% (1305 B): the 5-sprite guard, both jump-table dispatches and every
+// Show/Hide sequence are byte-correct; the residual is the shared-tail merging
+// retail performs across adjacent cases (the `jmp` convergence at the m_1d4/m_1d8
+// and bank-B tails) which the recompile duplicates per case instead. A
+// scheduling/tail-merge wall on a big switch; not steerable from C. Deferred.
+RVA(0x00100d70, 0x519)
+i32 CSBI_RectOnly::SetTabState(i32 tab, i32 state) {
+    if (m_1c8 == 0 || m_1cc == 0 || m_1d0 == 0 || m_1d4 == 0 || m_1d8 == 0) {
+        return 0;
+    }
+    switch (tab) {
+        case 1:
+            if (m_548) {
+                return 1;
+            }
+            m_1c8->Show(state, 1);
+            m_1d0->Hide(state);
+            m_1cc->Hide(state);
+            m_1d4->Hide(state);
+            m_1d8->Hide(state);
+            return 1;
+        case 2:
+            if (m_548) {
+                return 1;
+            }
+            m_1c8->Hide(state);
+            m_1d0->Show(state, 1);
+            m_1cc->Hide(state);
+            m_1d4->Hide(state);
+            m_1d8->Hide(state);
+            return 1;
+        case 3:
+            if (m_548) {
+                return 1;
+            }
+            m_1c8->Hide(state);
+            m_1d0->Hide(state);
+            m_1cc->Show(state, 1);
+            m_1d4->Hide(state);
+            m_1d8->Hide(state);
+            return 1;
+        case 4:
+            if (m_548) {
+                return 1;
+            }
+            m_1c8->Hide(state);
+            m_1d0->Hide(state);
+            m_1cc->Hide(state);
+            m_1d4->Show(state, 1);
+            m_1d8->Hide(state);
+            return 1;
+        case 5:
+            if (m_548) {
+                return 1;
+            }
+            m_1c8->Hide(state);
+            m_1d0->Hide(state);
+            m_1cc->Hide(state);
+            m_1d4->Hide(state);
+            m_1d8->Show(state, 1);
+            return 1;
+        case 0x1f4:
+            if (m_548) {
+                return 1;
+            }
+            m_1dc->Show(state, 1);
+            m_1e0->Hide(state);
+            m_1e4->Hide(state);
+            m_1e8->Hide(state);
+            m_1ec->Hide(state);
+            m_1f0->Hide(state);
+            return 1;
+        case 0x1f5:
+            if (m_548) {
+                return 1;
+            }
+            m_1dc->Hide(state);
+            m_1e0->Show(state, 1);
+            m_1e4->Hide(state);
+            m_1e8->Hide(state);
+            m_1ec->Hide(state);
+            m_1f0->Hide(state);
+            return 1;
+        case 0x1f6:
+            if (m_548) {
+                return 1;
+            }
+            m_1dc->Hide(state);
+            m_1e0->Hide(state);
+            m_1e4->Show(state, 1);
+            m_1e8->Hide(state);
+            m_1ec->Hide(state);
+            m_1f0->Hide(state);
+            return 1;
+        case 0x1f7:
+            if (m_548) {
+                return 1;
+            }
+            m_1dc->Hide(state);
+            m_1e0->Hide(state);
+            m_1e4->Hide(state);
+            m_1e8->Show(state, 1);
+            m_1ec->Hide(state);
+            m_1f0->Hide(state);
+            return 1;
+        case 0x1f8:
+            if (m_548) {
+                return 1;
+            }
+            m_1dc->Hide(state);
+            m_1e0->Hide(state);
+            m_1e4->Hide(state);
+            m_1e8->Hide(state);
+            m_1ec->Show(state, 1);
+            m_1f0->Hide(state);
+            return 1;
+        case 0x1f9:
+            if (m_548) {
+                return 1;
+            }
+            m_1dc->Hide(state);
+            m_1e0->Hide(state);
+            m_1e4->Hide(state);
+            m_1e8->Hide(state);
+            m_1ec->Hide(state);
+            m_1f0->Show(state, 1);
+            return 1;
+        case 0x1fa:
+            if (m_548) {
+                return 1;
+            }
+            m_1f0->Show(state, 1);
+            return 1;
+        case 0x324:
+            if (m_1f4) {
+                m_1f4->Show(state, 1);
+            }
+            m_1f8->Hide(state);
+            return 1;
+        case 0x325:
+            if (m_1f4) {
+                m_1f4->Hide(state);
+            }
+            m_1f8->Show(state, 1);
+            return 1;
+        case 0x327:
+            m_1fc->Show(state, 1);
+            m_200->Hide(state);
+            return 1;
+        case 0x328:
+            m_1fc->Hide(state);
+            m_200->Show(state, 1);
+            return 1;
+    }
+    return 1;
+}
+
+// Enter a highlight handle at the pending row m_360: pick the group from arg1's
+// range, then either (arg0 != 0) clear the group's row m_360 and shift every set
+// row below it down by one (inserting at the top), or (arg0 == 0) just latch the
+// handle into row m_360's cell. Always re-notify and reset m_360.
+RVA(0x00106820, 0xa8)
+void CSBI_RectOnly::EnterHlRow(i32 shift, i32 key) {
+    if (m_360 == -1) {
+        return;
+    }
+    i32 group;
+    if (key >= 0x22) {
+        group = 2;
+    } else {
+        group = (key >= 0x17);
+    }
+    if (shift != 0) {
+        ClearHlCell(group, m_360);
+        for (i32 row = m_360 - 1; row >= 0; row--) {
+            CSbiHlRow* cell = &m_hlGrid[row + group * 4];
+            if (cell->m_state == 1) {
+                m_hlGrid[row + group * 4 + 1].m_state = 1;
+                cell[1].m_handle = cell->m_handle;
+                cell->m_state = 0;
+                cell->m_handle = 0;
+            }
+        }
+    } else {
+        m_hlGrid[m_360 + group * 4].m_handle = key;
+    }
+    NotifyAllSlots();
+    m_360 = -1;
+}
+
+// Group-A highlight click: hit-test the rect under (x,y); dispatch its slot-7
+// click; then, only for a tab-1 widget whose command is in the highlight range
+// and when nothing blocks it, play the GAME_TABHIGHLIGHT1 cue + activate the
+// cursor for the offset command. The fallback (any gate fails) drives the tab
+// highlight directly. Single-exit, success-deepest (shared fallback tail).
+// @early-stop
+// ~89%: the whole hit-test / dispatch / gate chain / cue play / cursor activation
+// is byte-correct; the residual is two documented walls - the bare `return 1`
+// null-path tail-merges with the other identical `return 1` epilogues where retail
+// duplicates them inline (identical-return-epilogue-tailmerge), and retail tests
+// the tab via `dec; jne` where the recompile uses `cmp 1; jne`. Logic correct,
+// deferred to the final sweep.
+RVA(0x000ff850, 0x121)
+i32 CSBI_RectOnly::ClickHilite(i32 a, i32 x, i32 y) {
+    CSbiRect* r = HitTestRects(x, y);
+    if (r == 0) {
+        return 1;
+    }
+    r->Click1c(a, x, y);
+    i32 cmd = r->m_cmd;
+    if (r->m_tab == 1 && m_hitTestDisabled == 0 && g_gameReg->m_68->m_400 != 0 && cmd >= 0x13b
+        && cmd <= 0x149) {
+        CSbiMusicHost* host = g_gameReg->m_30->m_28;
+        if (host->m_30 == 0) {
+            void* found = 0;
+            CSbiLookupMap* map = (CSbiLookupMap*)((char*)host + 0x10);
+            map->Lookup("GAME_TABHIGHLIGHT1", &found);
+            if (found) {
+                i32 gate = g_61ab20;
+                i32 item = g_61ab24;
+                if (gate != 0) {
+                    CSbiCueRecord* p = (CSbiCueRecord*)found;
+                    if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
+                        p->m_14 = g_6bf3c0;
+                        ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                    }
+                }
+            }
+        }
+        ActivateCursor(cmd - 0x13b, 1);
+        return 1;
+    }
+    UpdateStatusBarTabHighlight(a, x, y);
+    return 1;
+}
+
+// Clear stat[idx]: disable its hit-rect (zero +0x44 + m_enabled); on the active
+// (tab 1) screen notify the stat object and play the GAME_STATZTABTOGGLE cue on
+// the draw-clock window; then clear the stat flag. Returns 1.
+RVA(0x00104f90, 0xa8)
+i32 CSBI_RectOnly::ClearStat(i32 idx) {
+    CSbiRect* r = m_hitRects[idx];
+    if (r != 0) {
+        *(i32*)((char*)r + 0x44) = 0;
+        r->m_enabled = 0;
+        if (m_activeTab == 1) {
+            m_statObj[idx]->Notify2(*(i32*)this, 1);
+            CSbiMusicHost* host = g_gameReg->m_30->m_28;
+            if (host->m_30 == 0) {
+                void* found = 0;
+                CSbiLookupMap* map = (CSbiLookupMap*)((char*)host + 0x10);
+                map->Lookup("GAME_STATZTABTOGGLE", &found);
+                if (found) {
+                    i32 gate = g_61ab20;
+                    i32 item = g_61ab24;
+                    if (gate != 0) {
+                        CSbiCueRecord* p = (CSbiCueRecord*)found;
+                        if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
+                            p->m_14 = g_6bf3c0;
+                            ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    m_statFlags[idx] = 0;
+    return 1;
+}
+
+// Position a falling-item status bar: bail unless a highlight row is pending; hit
+// the rect under (x,y) and require it be a falling-item widget (cmd 0xce/0xd0);
+// clamp x into the rect's inset span, convert to item-local coords, drive the
+// falling-item bar, then arm highlight row arg2.
+// @early-stop
+// ~70%: the gate chain, the hit-test, the cmd filter, the x-clamp, the coord
+// conversion and both calls are byte-correct, but retail reserves a 0x10 RECT
+// frame and spills the rect's yLo/yHi into it (dead stores left by an inlined
+// RECT-staging the optimizer half-removed). MSVC DCEs any unread local I add, so
+// the spills are not reproducible from C - a dead-store/scheduling wall; deferred.
+RVA(0x00107920, 0xb7)
+i32 CSBI_RectOnly::SetFallRect(i32 x, i32 y, i32 item) {
+    char* B = (char*)this;
+    if (m_360 == -1) {
+        return 0;
+    }
+    CSbiRect* r = HitTestRects(x, y);
+    if (r == 0) {
+        return 0;
+    }
+    if (r->m_cmd != 0xce && r->m_cmd != 0xd0) {
+        return 0;
+    }
+    i32* rc = (i32*)((char*)r + 0x14); // &m_xLo
+    i32 cx = x;
+    i32 lo = rc[0] + 0x1b;
+    i32 xHi = rc[2];
+    if (x < lo) {
+        cx = lo;
+    } else if (x > xHi - 0x1a) {
+        cx = xHi - 0x1a;
+    }
+    i32 localX = cx - *(i32*)(B + 0x10);
+    i32 localY = 0x1b3 - *(i32*)(B + 0x14);
+    UpdateFallingItemStatusBar(item, localX, localY);
+    EnterHlRow(1, item);
+    return 1;
+}
+
+// Activate a ready slot: bail if the highlight sub-manager is busy. With idx == -1
+// find the first slot whose state is 2 (ready); otherwise require slot idx to be
+// ready. Validate handle 0x66, play the GAME_TABHIGHLIGHT1 cue on the draw-clock
+// window, then latch the active slot, mark its value, and notify its pointer.
+// @early-stop
+// ~68%: both the find-first-ready and the indexed branch - the handle validation,
+// the cue play, the activeSlot/value latch and the slot notify - are byte-correct;
+// the residual is the identical-return-epilogue wall (the three `return 0` paths
+// tail-merge where retail inlines them, flipping the busy-gate je/jne) plus a
+// one-instruction eager read in the find-slot loop. Documented walls; deferred.
+RVA(0x0010b930, 0x1a7)
+i32 CSBI_RectOnly::ActivateSlot(i32 idx) {
+    if (g_gameReg->m_2c->m_4f0 != 0) {
+        return 0;
+    }
+    if (idx == -1) {
+        i32 slot = 0;
+        while (m_slots[slot].m_state != kSlotReady) {
+            slot++;
+            if (slot >= 5) {
+                return 0;
+            }
+        }
+        if (!ResolveHandle(0x66)) {
+            return 0;
+        }
+        CSbiMusicHost* host = g_gameReg->m_30->m_28;
+        if (host->m_30 == 0) {
+            void* found = 0;
+            CSbiLookupMap* map = (CSbiLookupMap*)((char*)host + 0x10);
+            map->Lookup("GAME_TABHIGHLIGHT1", &found);
+            if (found) {
+                i32 gate = g_61ab20;
+                i32 item = g_61ab24;
+                if (gate != 0) {
+                    CSbiCueRecord* p = (CSbiCueRecord*)found;
+                    if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
+                        p->m_14 = g_6bf3c0;
+                        ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                    }
+                }
+            }
+        }
+        m_activeSlot = slot;
+        m_slots[slot].m_value = 1;
+        if (m_slotNotify[slot]) {
+            m_slotNotify[slot]->Notify(1);
+        }
+        return 1;
+    }
+    if (m_slots[idx].m_state != kSlotReady) {
+        return 0;
+    }
+    if (!ResolveHandle(0x66)) {
+        return 0;
+    }
+    CSbiMusicHost* host = g_gameReg->m_30->m_28;
+    if (host->m_30 == 0) {
+        void* found = 0;
+        CSbiLookupMap* map = (CSbiLookupMap*)((char*)host + 0x10);
+        map->Lookup("GAME_TABHIGHLIGHT1", &found);
+        if (found) {
+            i32 gate = g_61ab20;
+            i32 item = g_61ab24;
+            if (gate != 0) {
+                CSbiCueRecord* p = (CSbiCueRecord*)found;
+                if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
+                    p->m_14 = g_6bf3c0;
+                    ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                }
+            }
+        }
+    }
+    m_activeSlot = idx;
+    m_slots[idx].m_value = 1;
+    if (m_slotNotify[idx]) {
+        m_slotNotify[idx]->Notify(1);
+    }
+    return 1;
 }
 
 // -------------------------------------------------------------------------
