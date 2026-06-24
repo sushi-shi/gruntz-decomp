@@ -209,6 +209,11 @@ source = "src/Gruntz/Projectile.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "motionstate"
+source = "src/Gruntz/MotionState.cpp"
+flags = "base"
+
+[[unit]]
 unit = "userbaselink"
 source = "src/Gruntz/UserBaseLink.cpp"
 flags = "eh"

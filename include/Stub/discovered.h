@@ -959,9 +959,6 @@ public:
 };
 class ClassUnknown_77 {
 public:
-    void ClassUnknown_77_0136d0();
-    void ClassUnknown_77_058bc0();
-    void ClassUnknown_77_058ca0();
     void ClassUnknown_77_16ecd0();
 };
 class ClassUnknown_78 {

@@ -42,7 +42,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	577	0
+engine_discovered	574	0
 engine_label_stubs	526	121
 filestream	13	9
 font	21	10
@@ -82,6 +82,7 @@ maplogic	4	4
 mapmgr	7	7
 menuitem	11	9
 menupage	22	13
+motionstate	3	3
 netmgr	40	20
 netmgrerror	1	1
 projectile	7	2
@@ -895,9 +896,6 @@ engine_discovered	?ClassUnknown_73_15b730@ClassUnknown_73@@QAEXXZ	3.0769	3.0769	
 engine_discovered	?ClassUnknown_74_16e360@ClassUnknown_74@@QAEXXZ	0.4000	0.4000	1	60b78d553f76	0x16e360
 engine_discovered	?ClassUnknown_75_0a9cc0@ClassUnknown_75@@QAEXXZ	1.1905	1.1905	1	4e1a9a579eac	0xa9cc0
 engine_discovered	?ClassUnknown_76_0aa5a0@ClassUnknown_76@@QAEXXZ	1.1905	1.1905	1	459253cf8cd4	0xaa5a0
-engine_discovered	?ClassUnknown_77_0136d0@ClassUnknown_77@@QAEXXZ	1.2500	1.2500	1	8d57922d9ed8	0x136d0
-engine_discovered	?ClassUnknown_77_058bc0@ClassUnknown_77@@QAEXXZ	0.8696	0.8696	1	9478cfd27389	0x58bc0
-engine_discovered	?ClassUnknown_77_058ca0@ClassUnknown_77@@QAEXXZ	8.0000	8.0000	1	30868ceb00a0	0x58ca0
 engine_discovered	?ClassUnknown_77_16ecd0@ClassUnknown_77@@QAEXXZ	0.0718	0.0718	1	aecffd120170	0x16ecd0
 engine_discovered	?ClassUnknown_78_008750@ClassUnknown_78@@QAEXXZ	14.2857	14.2857	1	504c0300f8b3	0x8750
 engine_discovered	?ClassUnknown_78_0310f0@ClassUnknown_78@@QAEXXZ	0.7143	0.7143	1	c7b54b542594	0x310f0
@@ -1960,6 +1958,9 @@ menupage	?RestoreFocus@CMenuPage@@QAEHXZ	60.6759	60.6759	1	843b969751a7	0x1839d0
 menupage	?SelectBackward@CMenuPage@@QAEHXZ	60.8194	60.8194	1	9df148bf4a84	0x1844d0
 menupage	?SelectForward@CMenuPage@@QAEHXZ	60.8194	60.8194	1	891990b30b8a	0x1843f0
 menupage	?SetFocus@CMenuPage@@QAEHPAVCMenuItem@@H@Z	100.0000	100.0000	1	20f58cb55e3b	0x183ad0
+motionstate	??0CMotionState@@QAE@XZ	100.0000	100.0000	1	24ca6b679299	0x136d0
+motionstate	?SetParams@CMotionState@@QAEHNNNNNNNNNNN@Z	100.0000	100.0000	1	a047abb9b3bd	0x58bc0
+motionstate	?SetZ@CMotionState@@QAEXN@Z	100.0000	100.0000	1	9d25f9ec952e	0x58ca0
 netmgr	?AnnounceVersion@CNetMgr@@QAEXH@Z	90.1000	90.1000	5	f9e1f9c715a8	0xbd180
 netmgr	?ApplyCmdDelayDefaults@CNetMgr@@QAEXXZ	100.0000	100.0000	6	f6fa2de8b3f2	0xb85a0
 netmgr	?ClearGroupList@CNetMgr@@QAEXXZ	100.0000	100.0000	3	d0f72cff0bbf	0x178430

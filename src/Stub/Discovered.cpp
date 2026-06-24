@@ -1336,12 +1336,10 @@ RVA(0x000aa5a0, 0xf1)
 void ClassUnknown_76::ClassUnknown_76_0aa5a0() {}
 
 // ---- ClassUnknown_77 ----
-RVA(0x000136d0, 0x184)
-void ClassUnknown_77::ClassUnknown_77_0136d0() {}
-RVA(0x00058bc0, 0xa1)
-void ClassUnknown_77::ClassUnknown_77_058bc0() {}
-RVA(0x00058ca0, 0x19)
-void ClassUnknown_77::ClassUnknown_77_058ca0() {}
+// Recovered: CMotionState (the 3-axis kinematic subobject at CMovingLogic+0x38).
+// The ctor/SetParams/SetZ are reconstructed in src/Gruntz/MotionState.cpp; only
+// the big per-frame easing integrator Step (0x16ecd0) remains stubbed - a 1766 B
+// hand-scheduled x87 routine, deferred to the final sweep (big-FP wall).
 RVA(0x0016ecd0, 0x6e6)
 void ClassUnknown_77::ClassUnknown_77_16ecd0() {}
 
