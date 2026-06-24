@@ -516,6 +516,11 @@ source = "src/Gruntz/CDDrawWorkerCache.cpp"
 flags = "base"
 
 [[unit]]
+unit = "wwdspatialmgr"
+source = "src/Gruntz/WwdSpatialMgr.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "wwdgameobject"
 source = "src/Gruntz/WwdGameObject.cpp"
 flags = "base"

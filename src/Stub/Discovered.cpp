@@ -1135,21 +1135,8 @@ void ClassUnknown_62::ClassUnknown_62_09a0b0() {}
 RVA(0x0009b430, 0x49)
 void ClassUnknown_62::ClassUnknown_62_09b430() {}
 
-// ---- ClassUnknown_63 ----
-RVA(0x001682f0, 0x4a)
-void ClassUnknown_63::ClassUnknown_63_1682f0() {}
-RVA(0x00168340, 0xe1)
-void ClassUnknown_63::ClassUnknown_63_168340() {}
-RVA(0x00168430, 0x2e)
-void ClassUnknown_63::ClassUnknown_63_168430() {}
-RVA(0x00168460, 0x95)
-void ClassUnknown_63::ClassUnknown_63_168460() {}
-RVA(0x00168500, 0x3af)
-void ClassUnknown_63::ClassUnknown_63_168500() {}
-RVA(0x001688b0, 0x40)
-void ClassUnknown_63::ClassUnknown_63_1688b0() {}
-RVA(0x001688f0, 0x6d)
-void ClassUnknown_63::ClassUnknown_63_1688f0() {}
+// ---- ClassUnknown_63 ---- reconstructed as CWwdSpatialMgr in
+// src/Gruntz/WwdSpatialMgr.cpp (wwdspatialmgr unit).
 
 // ---- ClassUnknown_64 ----
 RVA(0x001682a0, 0x46)

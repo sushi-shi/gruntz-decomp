@@ -45,7 +45,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	512	0
+engine_discovered	505	0
 engine_label_stubs	525	121
 filestream	13	9
 font	21	10
@@ -131,6 +131,7 @@ winmain	1	1
 wormhole	4	1
 wwdfile	10	1
 wwdgameobject	7	2
+wwdspatialmgr	7	4
 zutil	2	2
 # [functions]	unit	function	best_pct	cur_pct	tries	src_hash	rva
 actionoptionsmenubar	??0CActionOptionsMenuBar@@QAE@XZ	64.3500	64.3500	1	776faf88a5cc	0x9090
@@ -854,13 +855,6 @@ engine_discovered	?ClassUnknown_62_099c20@ClassUnknown_62@@QAEXXZ	4.1667	4.1667	
 engine_discovered	?ClassUnknown_62_099d40@ClassUnknown_62@@QAEXXZ	0.1826	0.1826	1	37a398f7c64e	0x99d40
 engine_discovered	?ClassUnknown_62_09a0b0@ClassUnknown_62@@QAEXXZ	50.0000	50.0000	1	63b5ee8b734b	0x9a0b0
 engine_discovered	?ClassUnknown_62_09b430@ClassUnknown_62@@QAEXXZ	1.1765	1.1765	1	27e8201238e1	0x9b430
-engine_discovered	?ClassUnknown_63_1682f0@ClassUnknown_63@@QAEXXZ	3.8462	3.8462	1	0db15c28b63e	0x1682f0
-engine_discovered	?ClassUnknown_63_168340@ClassUnknown_63@@QAEXXZ	0.4545	0.4545	1	4713c292c8a0	0x168340
-engine_discovered	?ClassUnknown_63_168430@ClassUnknown_63@@QAEXXZ	4.7619	4.7619	1	4af7da41e048	0x168430
-engine_discovered	?ClassUnknown_63_168460@ClassUnknown_63@@QAEXXZ	0.7692	0.7692	1	92beab8e40a7	0x168460
-engine_discovered	?ClassUnknown_63_168500@ClassUnknown_63@@QAEXXZ	0.1303	0.1303	1	ba20d7339fd0	0x168500
-engine_discovered	?ClassUnknown_63_1688b0@ClassUnknown_63@@QAEXXZ	3.7037	3.7037	1	95d8fa173e3e	0x1688b0
-engine_discovered	?ClassUnknown_63_1688f0@ClassUnknown_63@@QAEXXZ	1.0256	1.0256	1	deff62d42308	0x1688f0
 engine_discovered	?ClassUnknown_64_1682a0@ClassUnknown_64@@QAEXXZ	5.5556	5.5556	1	06faa2af1f4a	0x1682a0
 engine_discovered	?ClassUnknown_64_1915c0@ClassUnknown_64@@QAEXXZ	0.3419	0.3419	1	36d7e66dd141	0x1915c0
 engine_discovered	?ClassUnknown_64_191800@ClassUnknown_64@@QAEXXZ	4.3478	4.3478	1	909d6f2c12c9	0x191800
@@ -2373,5 +2367,12 @@ wwdgameobject	?ReadState@CWwdGameObject@@QAEHH@Z	99.3491	99.3491	2	f9aba483f647	
 wwdgameobject	?Serialize@CWwdGameObject@@QAEHH@Z	99.5745	99.5745	2	5cf4879a0998	0x151320
 wwdgameobject	?Setup@CWwdGameObject@@QAEHHHHH@Z	97.1059	97.1059	2	d6f3fc6ef894	0x150d60
 wwdgameobject	?WriteSnapshot@CWwdGameObject@@QAEHH@Z	95.9020	95.9020	2	9fee6fde6abb	0x151c00
+wwdspatialmgr	?CountInRect@CWwdSpatialMgr@@QAEHPAVCWwdGrid@@@Z	86.1539	86.1539	1	a38237476287	0x168460
+wwdspatialmgr	?FreeGrids@CWwdSpatialMgr@@QAEXXZ	100.0000	100.0000	1	86831d8ccca0	0x1682f0
+wwdspatialmgr	?GetSize@CWwdSpatialMgr@@QAEHXZ	100.0000	100.0000	1	38653b262d2f	0x168430
+wwdspatialmgr	?PruneCount@CWwdSpatialMgr@@QAEHXZ	100.0000	100.0000	1	86f72e0f0abe	0x1688b0
+wwdspatialmgr	?Relocate@CWwdSpatialMgr@@QAEHHH@Z	0.6515	0.6515	1	48931d868e4f	0x168500
+wwdspatialmgr	?RemoveObject@CWwdSpatialMgr@@QAEXPAVCWwdObject@@@Z	100.0000	100.0000	1	350b60b064c3	0x1688f0
+wwdspatialmgr	?ScrollTo@CWwdSpatialMgr@@QAEHHH@Z	66.1023	66.1023	1	053f556c66a2	0x168340
 zutil	_zcalloc	100.0000	100.0000	1	55f82c5a172f	0x188410
 zutil	_zcfree	100.0000	100.0000	1	e741567a7e95	0x188430
