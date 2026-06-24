@@ -1,8 +1,9 @@
 // Image.h - the engine's image-resolution surface (the REZ -> image load path).
 //
 // Two classes live here, both reconstructed only as deeply as needed to
-// byte-match their leaf methods. Field names are placeholders (m_<hexoffset>);
-// only the OFFSETS + code bytes are load-bearing (campaign doctrine).
+// byte-match their leaf methods. Fields are named from their use across the
+// matched methods; the OFFSETS + code bytes stay load-bearing. A few write-only
+// fields with no proven role keep their m_<hexoffset> placeholder.
 //
 //   class CImage  - the extension DISPATCHER class plus its five per-extension
 //     loaders. LoadFromRez(name,a2,a3) does `ext = strrchr(name,'.')` then a
@@ -62,29 +63,30 @@ public:
 
     // The shared plane blitter (FUN_00575930): a __thiscall CImage method that
     // (re)allocates/decodes via DecodeBmpHeader then copies `src` into the plane
-    // (flat rep-movs when m_448==0, else row-by-row through the +0x430 table).
+    // (flat rep-movs when m_rowPad==0, else row-by-row through m_rowOffsets).
     // External/no-body so its call reloc-masks. ret 0x18 = 6 stack args.
     i32 DecodeBlit(void* src, void* a2, i32 width, i32 height, i32 bitcount, void* a3);
 
-    // Layout. Field names are placeholders; the OFFSETS are load-bearing. The
-    // object opens with a BITMAPINFOHEADER (this+0, biSize..biClrImportant) and a
-    // 256-entry WORD color table (this+0x28). DecodeBmpHeader fills these.
+    // Layout. The object opens with a BITMAPINFOHEADER (this+0,
+    // biSize..biClrImportant) and a 256-entry WORD color table (this+0x28);
+    // DecodeBmpHeader fills these, CreateDIBSections the plane and builds the
+    // bottom-up per-row offset table. The OFFSETS are load-bearing.
     BITMAPINFOHEADER m_bih;       // +0x000  biSize/biWidth/biHeight/... (filled by setup)
     u16 m_pal[256];               // +0x28  DIB_PAL_COLORS index table
     char m_pad228[0x428 - 0x228]; // +0x228
-    void* m_428;                  // +0x428  HBITMAP from CreateDIBSection (the DIB section)
-    void* m_42c;                  // +0x42c  decoded pixel buffer (CreateDIBSection's bits)
-    i32* m_430;                   // +0x430  per-row byte-offset table (operator new'd)
-    i32 m_434;                    // +0x434  0
-    i32 m_438;                    // +0x438  source width param (bytes/row of the source)
-    i32 m_43c;                    // +0x43c  abs(height): number of rows
-    i32 m_440;                    // +0x440  bit count
-    i32 m_444;                    // +0x444  aligned destination row stride (bytes per row)
-    i32 m_448;                    // +0x448  destination padding = m_444 - m_438
+    HBITMAP m_dibSection;         // +0x428  HBITMAP from CreateDIBSection (the DIB section)
+    void* m_pixels;               // +0x42c  decoded pixel plane (CreateDIBSection's bits)
+    i32* m_rowOffsets;            // +0x430  bottom-up per-row byte-offset table (operator new'd)
+    i32 m_434;                    // +0x434  0 (write-only; role unproven, decoded by DecodeBlit)
+    i32 m_width;                  // +0x438  image width (bytes/row of the source)
+    i32 m_height;                 // +0x43c  abs(height): number of rows
+    i32 m_bitCount;               // +0x440  bits per pixel
+    i32 m_stride;                 // +0x444  aligned destination row stride (bytes per row)
+    i32 m_rowPad;                 // +0x448  destination padding = m_stride - m_width
     char m_pad44c[0x4];           // +0x44c
-    i32 m_450;                    // +0x450  flag (1 = transparent/RLE plane)
-    i32 m_454;                    // +0x454  0
-    i32 m_458;                    // +0x458  0
+    i32 m_transparent;            // +0x450  flag (1 = transparent/RLE plane)
+    i32 m_454;                    // +0x454  0 (write-only; role unproven)
+    i32 m_458;                    // +0x458  0 (write-only; role unproven)
 };
 
 // ---------------------------------------------------------------------------
@@ -102,10 +104,9 @@ public:
 // pixel bytes to one of the surface blitters (Blit / BlitDirect, ret 0x10/8 -
 // external no-body) which copy into the destination plane.
 //
-// Field names are placeholders (m_<hexoffset>); only the OFFSETS + code bytes are
-// load-bearing. The decoders touch the surface geometry (m_18 height, m_1c width)
-// and the palette context (m_538 bitcount, m_53c 256-entry palette, m_93c
-// have-palette flag).
+// The OFFSETS + code bytes are load-bearing. The decoders touch the surface
+// geometry (m_height, m_width) and the palette context (m_palBitCount,
+// m_palette 256-entry table, m_hasPalette flag).
 // ---------------------------------------------------------------------------
 class CFileImage {
 public:
@@ -133,7 +134,7 @@ public:
     void* DecodeBmp(char* surf, void* buf, u32 size);
     void* DecodePcx(char* surf, void* buf, u32 size);
     void* DecodePid(char* surf, void* buf, u32 size, void* surf2);
-    i32 DecodePcxData(void* surf, i32 bufptr, i32 size, i32 a4, i32 a5);
+    i32 DecodePcxData(void* surf, void* buf, i32 size, i32 a4, i32 a5);
 
     // The surface-blit decoder variants ResolveEx dispatches to (external no-body,
     // reloc-masked; ret 0x10 = 4 args). DecodeBmpData/DecodePcxData2 take
@@ -166,16 +167,18 @@ public:
     i32 Blit824(void* src, void* palette, i32 mode); // 0x140110 (ret 0xc)
     i32 Blit816(void* src, void* palette, i32 mode); // 0x140420 (ret 0xc)
 
-    // Layout. Field names are placeholders; the OFFSETS are load-bearing.
+    // Layout. The OFFSETS are load-bearing. This is the same physical object the
+    // CDDSurface wrapper holds (DIRSURF.CPP); the decoders touch only the geometry
+    // (height/width) and the palette context (bitcount/palette/have-palette flag).
     char m_pad00[0x18];         // +0x00  (vptr @0, manually stamped by ~CFileImage)
-    i32 m_18;                   // +0x18  height
-    i32 m_1c;                   // +0x1c  width
+    i32 m_height;               // +0x18  surface height (compared vs decoded height)
+    i32 m_width;                // +0x1c  surface width  (compared vs decoded width)
     char m_pad20[0x94 - 0x20];  // +0x20
-    CByteArray m_94;            // +0x94  owned byte buffer (destroyed by ~CFileImage)
+    CByteArray m_byteBuffer;    // +0x94  owned byte buffer (destroyed by ~CFileImage)
     char m_pada8[0x538 - 0xa8]; // +0xa8
-    i32 m_538;                  // +0x538  bitcount of the palette context
-    i32 m_53c[0x100];           // +0x53c  256-entry palette (ends at 0x93c)
-    i32 m_93c;                  // +0x93c  have-palette flag
+    i32 m_palBitCount;          // +0x538  bits per pixel of the palette context
+    i32 m_palette[0x100];       // +0x53c  256-entry palette (ends at 0x93c)
+    i32 m_hasPalette;           // +0x93c  have-palette flag
 };
 
 #endif // SRC_IMAGE_IMAGE_H
