@@ -1,103 +1,100 @@
-// CRandomAmbientSound.h - a Gruntz ambient-sound game object (trace-discovered
-// CRandomAmbientSound, an eyecandy/sound object in C:\Proj\Gruntz). It owns a
-// world/level back-pointer (+0x00), a second back-pointer seeded at init (+0x04),
-// an embedded MFC list of active sound channels (+0x08, head at +0x0c), an
-// "active" flag (+0x24), and a pending pan/volume pair (+0x28/+0x2c).
+// CRandomAmbientSound.h - the RTTI-named CRandomAmbientSound (vtable 0x5e713c,
+// RTTI chain CRandomAmbientSound : CAmbientSound : CUserBase, sizeof 0x58, in
+// C:\Proj\Gruntz). A "play a sound at random intervals while the listener is in a
+// region" eyecandy object: it owns a DirectSoundMgr handle (+0x04), two visibility
+// boxes (+0x18 / +0x28, sentinel 0x80000000 == "no box"), a couple of play params
+// (+0x08/+0x0c/+0x10/+0x38), an "is playing" flag (+0x14), and an embedded interval
+// roller (+0x40..+0x54: [lo,hi]/[lo2,hi2], the rolled countdown at +0x50, a phase
+// flag at +0x54). The roller LCG is the global rand (winapi_00cd00_timeGetTime).
 //
-// None of the matched methods touch a vptr on `this` (offset 0 is the world
-// pointer, not a vftable), so the class is modeled non-polymorphic - the embedded
-// CObject-derived bases / engine vtable live in another TU and are never used
-// here. Field names are placeholders (m_<hexoffset>); only the OFFSETS + emitted
-// code bytes are load-bearing (campaign doctrine).
+// NOTE: the trace-discovered class formerly squatting this name (offset 0 = world
+// back-pointer, no vptr) was renamed CWorldSoundSet (include/Gruntz/CWorldSoundSet.h);
+// it is a different, non-polymorphic class.
+//
+// Field names are placeholders (m_<hexoffset>); only OFFSETS + emitted code bytes
+// are load-bearing (campaign doctrine). The base CUserBase vptr (0x5e70b4) is
+// stamped by the base ctor via a manual store (the transitional workaround: this
+// class's full vtable 0x5e713c and its virtuals are not all reconstructed here, so
+// a polymorphic model would emit a divergent ??_7).
 #ifndef GRUNTZ_CRANDOMAMBIENTSOUND_H
 #define GRUNTZ_CRANDOMAMBIENTSOUND_H
 
-#include <Mfc.h>
+#include <Ints.h>
 #include <rva.h>
 
-// The engine handles the sound pokes through. These are minimal __thiscall shells
-// declared under the SAME mangled names the retail objects carry (the names the
-// delinker assigned at the call targets), so each reloc-masked call pairs by name:
-//   MinervaInner::MinervaInner_136ed0   @ 0x136ed0
-//   DirectSoundMgr::StopAndRewind       @ 0x135380
-//   DirectSoundMgr::winapi_136e20_timeGetTime @ 0x136e20
-// (The world's +0x2c handle is poked both as a MinervaInner and as a DirectSoundMgr
-// - the engine overlays both views on the one sub-object; the binary proves it.)
-class MinervaInner {
-public:
-    void MinervaInner_136ed0(); // 0x136ed0  (thiscall, no args)
+#include <Dsndmgr/DirectSoundMgr.h>
+
+// The big game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A @ 0x64556c).
+// Update gates the play on m_10 (active-level handle) and m_54->m_24 (the active
+// world's object count). The interval roller in Step also loads g_gameReg as a dead
+// receiver before the rand call (the binary proves the load even though rand ignores it).
+struct WwdActiveLevel {
+    char m_pad0[0x24];
+    i32 m_24; // +0x24  object count (non-zero == playable)
+};
+struct WwdGameReg {
+    char m_pad0[0x10];
+    void* m_10; // +0x10  active-level handle (Update gates on it)
+    char m_pad14[0x54 - 0x14];
+    WwdActiveLevel* m_54; // +0x54  the active world view
+};
+DATA(0x0064556c)
+extern WwdGameReg* g_gameReg;
+
+// The global frame-delta clock in ms (DAT_00645584, canonical ?g_tickDelta@@3HA);
+// the countdown at +0x50 is drained by it each Step.
+DATA(0x00645584)
+extern i32 g_tickDelta;
+
+// The MS-CRT LCG rand() at 0x0000cd00 (lazily seeded from timeGetTime). Reached
+// through the 0x39ae ILT thunk; called as a free function from Step.
+extern "C" i32 winapi_00cd00_timeGetTime();
+
+// The mgr's frame-reseed helper at 0x136300 (FUN_00536300, __thiscall, 4 args).
+// Modeled as a one-method shell so `mov ecx,m_4; call` falls out reloc-masked.
+struct DsndReseed {
+    void Reseed(i32 a1, i32 a2, i32 a3, i32 a4); // 0x136300
 };
 
-class DirectSoundMgr {
-public:
-    i32 StopAndRewind();                // 0x135380  (thiscall, no args)
-    i32 winapi_136e20_timeGetTime(i32); // 0x136e20  (thiscall, 1 arg)
-};
-
-// One active sound channel hanging off a list node. Polymorphic: the teardown /
-// retune paths dispatch through its vtable (scalar-deleting dtor at slot 0, a
-// 3-arg retune at slot 3). The class + its vtable live in another TU, so it is
-// modeled as a small typed shell whose virtual calls reloc-mask by slot.
-struct CSoundChannel {
-    virtual void ScalarDtor(i32 flag); // slot 0  -> call [vptr]
-    virtual void Slot1();
-    virtual void Slot2();
-    virtual void Retune(i32 a1, i32 a2, i32 a3); // slot 3 -> call [vptr+0xc]
-
-    void Recompute(i32 frame); // 0x00bf10  (non-virtual, defined elsewhere)
-
-    DirectSoundMgr* m_04; // +0x04  DirectSound handle (StopAndRewind target)
-    char m_pad08[0x14 - 0x08];
-    i32 m_14; // +0x14  cleared on stop/retune
-};
-
-// MFC CPtrList node, walked raw: next at +0x00, the channel payload at +0x08.
-struct CSoundNode {
-    CSoundNode* m_next;    // +0x00
-    CSoundNode* m_prev;    // +0x04
-    CSoundChannel* m_data; // +0x08
-};
-
-// The embedded MFC CPtrList of channels (the +0x08 sub-object). Modeled minimally:
-// the raw node walks read m_head directly; RemoveAll + the destructor are engine
-// externs (reloc-masked __thiscall on the sub-object address).
-struct CSoundChannelList {
-    void* m_vptr;       // +0x00 (== object +0x08) list vftable slot
-    CSoundNode* m_head; // +0x04 (== object +0x0c)
-    CSoundNode* m_tail; // +0x08
-    void* m_free;       // +0x0c
-    void* m_blocks;     // +0x10
-    i32 m_blockSize;    // +0x14
-    i32 m_count;        // +0x18
-
-    void RemoveAll();     // 0x1b48a6
-    ~CSoundChannelList(); // 0x1b48c6
-};
-
-// The world/level object the sound hangs off. Only its +0x2c slot is read here
-// (a DirectSoundMgr-ish sub-object), then poked via the engine helpers.
-struct CRandomAmbientWorld {
-    char m_pad00[0x2c];
-    DirectSoundMgr* m_2c; // +0x2c  sub-object handle (also viewed as MinervaInner)
+// An axis-aligned region the listener must be inside for the sound to play. The
+// sentinel left==0x80000000 means "no box / always pass".
+struct AmbientBox {
+    i32 left;   // +0x00
+    i32 top;    // +0x04
+    i32 right;  // +0x08
+    i32 bottom; // +0x0c
 };
 
 class CRandomAmbientSound {
 public:
-    i32 Init(void* world, void* a2); // 0x00b5e0
-    void Teardown();                 // 0x00b660
-    void Restart(void* a1);          // 0x00bc30
-    void Stop();                     // 0x00bc80
-    void Resume();                   // 0x00bcf0
-    void Retune(i32 pan, i32 vol);   // 0x00bd60
-    void Deactivate();               // 0x00b620  (sibling, defined elsewhere)
-    ~CRandomAmbientSound();          // 0x085ed0
+    void BaseInit(); // 0x00bb40  base init (stamps the CUserBase vptr); void (no return-this)
+    // Setup(world, a2, a3, box, a5): seed the mgr handle + play params, copy/clear
+    // the primary box, clear the secondary box. Returns 1 (0 on a null world).
+    i32 Setup(DirectSoundMgr* mgr, i32 a2, i32 a3, AmbientBox* box, i32 a5); // 0x00be50
+    // Update(playFlag, pos, kind): start or stop the sound this frame. 0x00c2a0.
+    void Update(i32 playFlag, i32 pos, i32 kind); // 0x00c2a0
+    // Step(x, y, force): the per-frame tick (vtable slot 3). 0x00cb30.
+    void Step(i32 x, i32 y, i32 force); // 0x00cb30
+    ~CRandomAmbientSound();             // 0x00bb60  scalar-deleting / full dtor (defined elsewhere)
 
-    CRandomAmbientWorld* m_world; // +0x00
-    void* m_04;                   // +0x04
-    CSoundChannelList m_list;     // +0x08  head at +0x0c
-    i32 m_24;                     // +0x24  active flag
-    i32 m_28;                     // +0x28  pan
-    i32 m_2c;                     // +0x2c  vol
+    // --- layout (sizeof 0x58) -------------------------------------------------
+    void* m_vptr;        // +0x00  CUserBase vptr (0x5e70b4) then 0x5e713c
+    DirectSoundMgr* m_4; // +0x04  the sound-mgr handle (mgr->...)
+    i32 m_8;             // +0x08  last play position / pan base
+    i32 m_c;             // +0x0c  scale A (compared to 5; -0xf above)
+    i32 m_10;            // +0x10  scale B (>0 gate)
+    i32 m_14;            // +0x14  "is playing" flag
+    AmbientBox m_box1;   // +0x18  primary visibility box
+    AmbientBox m_box2;   // +0x28  secondary visibility box
+    i32 m_38;            // +0x38  Update param (passed to mgr helper)
+    i32 m_3c;            // +0x3c  zero-init in ctor
+    i32 m_40;            // +0x40  interval roller lo
+    i32 m_44;            // +0x44  interval roller hi
+    i32 m_48;            // +0x48  interval roller lo2 (phase B)
+    i32 m_4c;            // +0x4c  interval roller hi2 (phase B)
+    i32 m_50;            // +0x50  rolled countdown (ms, drained by g_645584)
+    i32 m_54;            // +0x54  roller phase flag (toggled each reroll)
 };
+SIZE(CRandomAmbientSound, 0x58);
 
 #endif // GRUNTZ_CRANDOMAMBIENTSOUND_H

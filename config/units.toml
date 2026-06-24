@@ -269,6 +269,11 @@ source = "src/Gruntz/GameObjectCtors.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "worldsoundset"
+source = "src/Gruntz/CWorldSoundSet.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "randomambientsound"
 source = "src/Gruntz/CRandomAmbientSound.cpp"
 flags = "eh"

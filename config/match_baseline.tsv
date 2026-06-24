@@ -54,7 +54,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	310	0
+engine_discovered	306	0
 engine_label_stubs	519	118
 filemem	8	7
 filestream	13	9
@@ -106,7 +106,7 @@ netmgrerror	1	1
 netsession	2	1
 projectile	7	2
 pyramidbridgesprites	1	0
-randomambientsound	7	5
+randomambientsound	4	2
 registryhelper	8	8
 rezmgr	10	6
 rollingball	1	0
@@ -159,6 +159,7 @@ winapi	5	3
 winapicdrom	1	0
 winapimodule	1	0
 winmain	1	1
+worldsoundset	7	5
 wormhole	4	1
 wwdfile	10	1
 wwdgameobject	7	2
@@ -901,10 +902,6 @@ engine_discovered	?NetUnattributed_11f618@NetUnattributed@@QAEXXZ	10.0000	10.000
 engine_discovered	?NetUnattributed_18c022@NetUnattributed@@QAEXXZ	0.7874	0.7874	1	ad41badd75ea	0x18c022
 engine_discovered	?RegistryHelper_114fa0@RegistryHelper@@QAEXXZ	3.8462	3.8462	1	8b09b3ba3fed	0x114fa0
 engine_discovered	?RemusParseSource_139800@RemusParseSource@@QAEXXZ	33.3333	33.3333	1	96a1b7b02169	0x139800
-engine_discovered	?RngBox_00cd70_00bb40@RngBox_00cd70@@QAEXXZ	20.0000	20.0000	1	b368ca698993	0xbb40
-engine_discovered	?RngBox_00cd70_00be50@RngBox_00cd70@@QAEXXZ	0.8511	0.8511	1	8b2efda1380e	0xbe50
-engine_discovered	?RngBox_00cd70_00c2a0@RngBox_00cd70@@QAEXXZ	0.2778	0.2778	1	ddb323dee0a5	0xc2a0
-engine_discovered	?RngBox_00cd70_00cb30@RngBox_00cd70@@QAEXXZ	0.2899	0.2899	1	2a7bb92c25ef	0xcb30
 engine_discovered	?StatusBarItem_0d1b30@StatusBarItem@@QAEXXZ	3.3333	3.3333	1	625d66ded92a	0xd1b30
 engine_discovered	?StatusBarItem_0d6560@StatusBarItem@@QAEXXZ	2.5000	2.5000	1	8e4d7bfeafc3	0xd6560
 engine_discovered	?StatusBarItem_0d9290@StatusBarItem@@QAEXXZ	0.5076	0.5076	1	4a791d5da5e7	0xd9290
@@ -1944,13 +1941,10 @@ projectile	?ReleaseDeferred@CProjectile@@QAEXH@Z	100.0000	100.0000	2	ac50b8317e2
 projectile	?ScanTargets@CProjectile@@QAEXH@Z	93.9254	93.9254	3	beefe98399cb	0xe0b10
 projectile	?StepMotion@CProjectile@@QAEXXZ	70.6977	70.6977	2	be95913fb568	0xe08b0
 pyramidbridgesprites	?LoadPyramidBridge@CPlayLevelLoad@@QAEXH@Z	7.3030	7.3030	2	fc1e88cb93b0	0x110c10
-randomambientsound	??1CRandomAmbientSound@@QAE@XZ	100.0000	100.0000	1	745bfd96f836	0x85ed0
-randomambientsound	?Init@CRandomAmbientSound@@QAEHPAX0@Z	100.0000	100.0000	2	57bae3ec57a0	0xb5e0
-randomambientsound	?Restart@CRandomAmbientSound@@QAEXPAX@Z	100.0000	100.0000	2	8dfe49530132	0xbc30
-randomambientsound	?Resume@CRandomAmbientSound@@QAEXXZ	99.6970	99.6970	1	67987243e6bd	0xbcf0
-randomambientsound	?Retune@CRandomAmbientSound@@QAEXHH@Z	86.2571	86.2571	2	9039a128c88b	0xbd60
-randomambientsound	?Stop@CRandomAmbientSound@@QAEXXZ	100.0000	100.0000	1	fdc70334743c	0xbc80
-randomambientsound	?Teardown@CRandomAmbientSound@@QAEXXZ	100.0000	100.0000	1	54c66ebab17c	0xb660
+randomambientsound	?BaseInit@CRandomAmbientSound@@QAEXXZ	100.0000	100.0000	1	7fdacdff3f87	0xbb40
+randomambientsound	?Setup@CRandomAmbientSound@@QAEHPAVDirectSoundMgr@@HHPAUAmbientBox@@H@Z	100.0000	100.0000	1	55857903aa7d	0xbe50
+randomambientsound	?Step@CRandomAmbientSound@@QAEXHHH@Z	93.6594	93.6594	1	8a96fa01eee7	0xcb30
+randomambientsound	?Update@CRandomAmbientSound@@QAEXHHH@Z	35.3264	35.3264	1	e8761bf3bb1a	0xc2a0
 registryhelper	?Close@RegistryHelper@Utils@@QAEXXZ	100.0000	100.0000	4	384a98aaca34	0x139330
 registryhelper	?GetRegistryKey@RegistryHelper@Utils@@QAEHPAUHKEY__@@PADPAPAU3@@Z	100.0000	100.0000	3	90d7795268cd	0x139650
 registryhelper	?GetValueDword@RegistryHelper@Utils@@QAEKPADK@Z	100.0000	100.0000	4	8557af160863	0x1395d0
@@ -2368,6 +2362,13 @@ winapi	?Stub_118ce0@WinAPI@Utils@@YAXXZ	0.6494	0.6494	5	42e8e8127bdd	0x118ce0
 winapicdrom	?CheckCdRomRegistry@WinAPI@Utils@@YADXZ	76.1429	76.1429	4	c6ba621c6bbe	0x1fde0
 winapimodule	?LegacyFindModule@WinAPI@Utils@@YAHKKPAXK@Z	99.9000	99.9000	4	f574baeadf5f	0x118f60
 winmain	_WinMain@16	100.0000	100.0000	6	a459e7cdd0d6	0x11c860
+worldsoundset	??1CWorldSoundSet@@QAE@XZ	100.0000	100.0000	1	575205cf84c8	0x85ed0
+worldsoundset	?Init@CWorldSoundSet@@QAEHPAX0@Z	100.0000	100.0000	1	316fab8b3cce	0xb5e0
+worldsoundset	?Restart@CWorldSoundSet@@QAEXPAX@Z	100.0000	100.0000	1	00f3d4b65497	0xbc30
+worldsoundset	?Resume@CWorldSoundSet@@QAEXXZ	99.6970	99.6970	1	526dc5538b8a	0xbcf0
+worldsoundset	?Retune@CWorldSoundSet@@QAEXHH@Z	86.2571	86.2571	1	a8ba0daa5bc0	0xbd60
+worldsoundset	?Stop@CWorldSoundSet@@QAEXXZ	100.0000	100.0000	1	909b0518053a	0xbc80
+worldsoundset	?Teardown@CWorldSoundSet@@QAEXXZ	100.0000	100.0000	1	587b40d75372	0xb660
 wormhole	?LoadColors@CWormhole@@QAEXXZ	100.0000	100.0000	7	b6a214116e74	0x411f0
 wormhole	?Stub_03fc70@CWormhole@@QAEXXZ	0.3333	0.3333	4	b52ffef5d830	0x3fc70
 wormhole	?Stub_03fed0@CWormhole@@QAEXXZ	0.6349	0.6349	4	77e92219c343	0x3fed0

@@ -846,13 +846,6 @@ class RemusParseSource {
 public:
     void RemusParseSource_139800();
 };
-class RngBox_00cd70 {
-public:
-    void RngBox_00cd70_00bb40();
-    void RngBox_00cd70_00be50();
-    void RngBox_00cd70_00c2a0();
-    void RngBox_00cd70_00cb30();
-};
 class StatusBarItem {
 public:
     void StatusBarItem_0d1b30();

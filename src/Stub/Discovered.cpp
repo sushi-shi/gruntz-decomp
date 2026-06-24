@@ -1193,14 +1193,10 @@ RVA(0x00139800, 0x6)
 void RemusParseSource::RemusParseSource_139800() {}
 
 // ---- RngBox_00cd70 ----
-RVA(0x0000bb40, 0xf)
-void RngBox_00cd70::RngBox_00cd70_00bb40() {}
-RVA(0x0000be50, 0x8f)
-void RngBox_00cd70::RngBox_00cd70_00be50() {}
-RVA(0x0000c2a0, 0x19e)
-void RngBox_00cd70::RngBox_00cd70_00c2a0() {}
-RVA(0x0000cb30, 0x168)
-void RngBox_00cd70::RngBox_00cd70_00cb30() {}
+// Reconstructed as the RTTI-true CRandomAmbientSound (vtable 0x5e713c, chain
+// CRandomAmbientSound : CAmbientSound : CUserBase): the base ctor, Setup, Update,
+// and the slot-3 Step now live in src/Gruntz/CRandomAmbientSound.cpp. The Roll
+// (0xcd70) / Set (0xc200) siblings stay in src/Stub/ApiCallers.cpp.
 
 // ---- StatusBarItem ----
 RVA(0x000d1b30, 0x20)
