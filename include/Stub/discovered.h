@@ -83,8 +83,6 @@ public:
 };
 class CDDrawSurfaceMgr {
 public:
-    void CDDrawSurfaceMgr_1558b0();
-    void CDDrawSurfaceMgr_155e20();
     void CDDrawSurfaceMgr_156020();
 };
 class CDDrawWorkerList {

@@ -27,7 +27,7 @@ cddrawsubmgr	29	15
 cddrawsubmgrdraco	5	2
 cddrawsubmgrleaf	13	4
 cddrawsubmgrleafscan	6	1
-cddrawsurfacemgr	7	5
+cddrawsurfacemgr	9	5
 cddrawworkercache	4	1
 cddrawworkerlist	10	7
 cddrawworkermapsmall	8	2
@@ -45,7 +45,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	483	0
+engine_discovered	481	0
 engine_label_stubs	525	121
 filestream	13	9
 font	21	10
@@ -283,6 +283,8 @@ cddrawsubmgrleafscan	?Lookup_05b7e0@CDDrawSubMgrLeafScan@@QAEPAVCObject@@PBD@Z	1
 cddrawsubmgrleafscan	?MatchSub_1584f0@CDDrawSubMgrLeafScan@@QAEHPAVLeafScanSoundArg@@H@Z	99.9800	99.9800	1	8be1aac02e26	0x1584f0
 cddrawsubmgrleafscan	?RemoveKeysEqual_157c70@CDDrawSubMgrLeafScan@@QAEHPBD0@Z	91.6667	91.6667	1	b6899c82851c	0x157c70
 cddrawsurfacemgr	??0CDDrawSurfaceMgr@@QAE@XZ	100.0000	100.0000	5	06a0488572fd	0x155840
+cddrawsurfacemgr	??1CDDrawSurfaceMgr@@UAE@XZ	31.3333	31.3333	1	ae3ac5005d6b	0x1558b0
+cddrawsurfacemgr	?Cleanup_155e20@CDDrawSurfaceMgr@@QAEXXZ	96.1236	96.1236	1	f8c53c988eee	0x155e20
 cddrawsurfacemgr	?UnknownVirtualMethod14@CDDrawSurfaceMgr@@UAEHXZ	100.0000	100.0000	6	26deb5b232cc	0x155f00
 cddrawsurfacemgr	?UnknownVirtualMethod18@CDDrawSurfaceMgr@@QAEXXZ	0.0998	0.0998	4	06635cbf0579	0x155900
 cddrawsurfacemgr	?UnknownVirtualMethod20@CDDrawSurfaceMgr@@UAEXXZ	100.0000	100.0000	5	ae524f417d5b	0x155fc0
@@ -539,8 +541,6 @@ engine_discovered	?CDDrawSubMgrLeaf_157ee0@CDDrawSubMgrLeaf@@QAEXXZ	0.2353	0.235
 engine_discovered	?CDDrawSubMgr_031250@CDDrawSubMgr@@QAEXXZ	3.8462	3.8462	1	beb861628c31	0x31250
 engine_discovered	?CDDrawSubMgr_159600@CDDrawSubMgr@@QAEXXZ	0.3200	0.3200	1	cc27de035f3d	0x159600
 engine_discovered	?CDDrawSubMgr_15c360@CDDrawSubMgr@@QAEXXZ	0.0877	0.0877	1	0cd80af732ae	0x15c360
-engine_discovered	?CDDrawSurfaceMgr_1558b0@CDDrawSurfaceMgr@@QAEXXZ	5.5556	5.5556	1	8a059c7da070	0x1558b0
-engine_discovered	?CDDrawSurfaceMgr_155e20@CDDrawSurfaceMgr@@QAEXXZ	1.1236	1.1236	1	6bddeb153d5c	0x155e20
 engine_discovered	?CDDrawSurfaceMgr_156020@CDDrawSurfaceMgr@@QAEXXZ	0.1274	0.1274	1	d290924cde9f	0x156020
 engine_discovered	?CDDrawWorkerList_163bc0@CDDrawWorkerList@@QAEXXZ	4.7619	4.7619	1	2c08916d9c7a	0x163bc0
 engine_discovered	?CDDrawWorkerMapSmall_156d20@CDDrawWorkerMapSmall@@QAEXXZ	3.3333	3.3333	1	b07b78caacf4	0x156d20
@@ -1817,7 +1817,7 @@ image	??1CFileImage@@QAE@XZ	94.0000	94.0000	1	ddf6abceee3f	0x141350
 image	?Blit@CFileImage@@QAEHPAXH0H@Z	100.0000	100.0000	2	181d8e710203	0x13faa0
 image	?BlitDirect@CFileImage@@QAEHPAXH@Z	70.4941	70.4941	2	d45ef879a365	0x13ece0
 image	?BlitSurf@CFileImage@@QAEHPAXHHHH@Z	100.0000	100.0000	3	f4d5a5e5672c	0x13e0d0
-image	?Clear@CFileImage@@QAEXH@Z	100.0000	100.0000	1	bec4166f2331	0x13edb0
+image	?Clear@CFileImage@@QAEXH@Z	100.0000	100.0000	2	bfee47867379	0x13edb0
 image	?DecodeBmp@CFileImage@@QAEPAXPADPAXI@Z	31.2544	31.2544	4	ee7ec349a997	0x143fc0
 image	?DecodeBmpHeader@CImage@@QAEHPAXHHH0@Z	95.7395	95.7395	5	5af44e6457a4	0x1757c0
 image	?DecodePcx@CFileImage@@QAEPAXPADPAXI@Z	55.6786	55.6786	4	77f8fc32ed4c	0x144ee0

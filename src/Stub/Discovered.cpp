@@ -130,10 +130,14 @@ RVA(0x00157ee0, 0x1c6)
 void CDDrawSubMgrLeaf::CDDrawSubMgrLeaf_157ee0() {}
 
 // ---- CDDrawSurfaceMgr ----
-RVA(0x001558b0, 0x46)
-void CDDrawSurfaceMgr::CDDrawSurfaceMgr_1558b0() {}
-RVA(0x00155e20, 0xd1)
-void CDDrawSurfaceMgr::CDDrawSurfaceMgr_155e20() {}
+// 0x1558b0 (~CDDrawSurfaceMgr, /GX dtor — eh-dtor-needs-base-subobject wall) and
+// 0x155e20 (Cleanup_155e20 child-teardown walk — zero-register-pinning wall, ~96%)
+// reconstructed in src/Gruntz/CDDrawSurfaceMgr.cpp. 0x156020 is the 1285-B child
+// blit-param serializer/dispatcher: a /GX EH state-machine (~14 unwind states over
+// MFC CString temps + inline strlen/strcpy, dispatching push-1/3/4/5 modes through
+// the per-child blit ops 0x15abc0/0x15acb0/0x15ac20/0x15b020/0x160f70). Big-SEH wall
+// family (docs/patterns/big-seh-fuzzy-desync.md); deferred to the final sweep for a
+// leaf-first redo, NOT half-reconstructed.
 RVA(0x00156020, 0x505)
 void CDDrawSurfaceMgr::CDDrawSurfaceMgr_156020() {}
 

@@ -51,6 +51,9 @@ public:
     // Engine-label backlog stubs.
     void UnknownVirtualMethod18();
 
+    // Owned-child teardown helper, called by ~CDDrawSurfaceMgr (0x1558b0).
+    void Cleanup_155e20();
+
     CDDrawSubMgr* m_04; // +0x04  Draco
     CDDrawSubMgr* m_08; // +0x08  Hermiona
     CDDrawSubMgr* m_0c; // +0x0c  Hagrid
@@ -72,6 +75,28 @@ DATA(0x002bf3c0)
 extern "C" u32 g_6bf3c0; // draw-clock mirror
 DATA(0x002bf3bc)
 extern "C" u32 g_6bf3bc; // draw-delta mirror
+
+// The base-subobject (CObject-like) dtor vtable restamped at ~CDDrawSurfaceMgr
+// exit; reloc-masked DATA() while the class stays non-polymorphic in this model.
+DATA(0x005e8cb4)
+extern void* g_remusBaseDtorVtbl;
+
+// Polymorphic-delete views for the owned children torn down by Cleanup_155e20.
+// Most children carry the engine scalar-deleting destructor at vtable slot 1
+// (`mov eax,[child]; push 1; call [eax+4]`); the Voldemort surface at +0x20 has
+// it at slot 0 (`call [eax]`). The Filch object at +0x1c is a heap object with a
+// non-virtual __thiscall dtor + an explicit RezFree.
+struct DDChildSlot1 {
+    virtual void Slot00();
+    virtual void Destroy(u32 flags); // slot 1: scalar-deleting destructor
+};
+struct DDChildSlot0 {
+    virtual void Destroy(u32 flags); // slot 0: scalar-deleting destructor
+};
+struct FilchObj {
+    void Dtor(); // 0x141d50, __thiscall /GX destructor
+};
+extern "C" void RezFree(void* p); // 0x1b9b82, __cdecl engine operator delete
 
 // ---------------------------------------------------------------------------
 // CDDrawSurfaceMgr::CDDrawSurfaceMgr()
@@ -95,6 +120,90 @@ CDDrawSurfaceMgr::CDDrawSurfaceMgr() {
     m_3c = 0;
     g_6bf3c0 = 0;
     g_6bf3bc = 0;
+}
+
+// ---------------------------------------------------------------------------
+// CDDrawSurfaceMgr::~CDDrawSurfaceMgr() (0x1558b0, __thiscall, /GX)
+// Stamps the derived vptr, runs the owned-child teardown (Cleanup_155e20), then
+// restamps the base-subobject (CObject) dtor vtable.
+// @early-stop
+// eh-dtor-needs-base-subobject wall (docs/patterns/eh-dtor-needs-base-subobject.md):
+// the body (derived vptr stamp + Cleanup_155e20 call + base vptr restamp) is
+// byte-exact, but the retail /GX frame (push -1 / push handler / mov fs:0 +
+// [esp+0x10] trylevel) comes from the non-trivial CObject base subobject the
+// derived-side polymorphic model already supplies — yet this TU keeps the class
+// non-polymorphic at the vtable level (the 13 virtuals are RVA-keyed, the emitted
+// ??_7 does not byte-match), so MSVC emits the dtor frameless. Defer to the final
+// sweep once the full base hierarchy + vtable are modeled.
+RVA(0x001558b0, 0x46)
+CDDrawSurfaceMgr::~CDDrawSurfaceMgr() {
+    Cleanup_155e20();
+    *(void**)this = &g_remusBaseDtorVtbl;
+}
+
+// ---------------------------------------------------------------------------
+// CDDrawSurfaceMgr::Cleanup_155e20() (0x155e20, __thiscall)
+// Tear down every owned child in the engine's fixed teardown order. Each child
+// carries the scalar-deleting destructor at vtable slot 1 (slot 0 for the
+// Voldemort surface at +0x20); the Filch object at +0x1c is a heap object freed
+// by its non-virtual dtor + RezFree. Frameless (the dev's explicit teardown, not
+// a compiler member-dtor chain), so no /GX frame here.
+// @early-stop
+// zero-register-pinning wall (docs/patterns/zero-register-pinning.md): body, the
+// child order, the slot-1/slot-0 deletes, the m_1c cache+RezFree, and every store
+// are byte-exact; only the callee-saved register holding the constant 0 differs
+// (retail pins ebx for the zero / edi for the cached m_1c; cl pins edi=0 / ebx=m_1c),
+// a 1-instr phase shift through the =0 stores. No source lever flips the allocation.
+// ~96%; defer to the final sweep.
+RVA(0x00155e20, 0xd1)
+void CDDrawSurfaceMgr::Cleanup_155e20() {
+    if (m_24) {
+        ((DDChildSlot1*)m_24)->Destroy(1);
+        m_24 = 0;
+    }
+    if (m_28) {
+        ((DDChildSlot1*)m_28)->Destroy(1);
+        m_28 = 0;
+    }
+    if (m_20) {
+        ((DDChildSlot0*)m_20)->Destroy(1);
+        m_20 = 0;
+    }
+    if (m_04) {
+        ((DDChildSlot1*)m_04)->Destroy(1);
+        m_04 = 0;
+    }
+    if (m_08) {
+        ((DDChildSlot1*)m_08)->Destroy(1);
+        m_08 = 0;
+    }
+    if (m_0c) {
+        ((DDChildSlot1*)m_0c)->Destroy(1);
+        m_0c = 0;
+    }
+    if (m_10) {
+        ((DDChildSlot1*)m_10)->Destroy(1);
+        m_10 = 0;
+    }
+    if (m_14) {
+        ((DDChildSlot1*)m_14)->Destroy(1);
+        m_14 = 0;
+    }
+    if (m_18) {
+        ((DDChildSlot1*)m_18)->Destroy(1);
+        m_18 = 0;
+    }
+    if (m_2c) {
+        ((DDChildSlot1*)m_2c)->Destroy(1);
+        m_2c = 0;
+    }
+    FilchObj* filch = (FilchObj*)m_1c;
+    if (filch) {
+        filch->Dtor();
+        RezFree(filch);
+        m_1c = 0;
+    }
+    m_3c = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -211,7 +320,6 @@ i32 CDDrawSurfaceMgr::UnknownVirtualMethod38(void* arg1, i32 arg2, i32 arg3, i32
 
 // Out-of-line stubs so the vftable is emitted in this TU. They are not claimed
 // as matched in symbol_names.csv.
-CDDrawSurfaceMgr::~CDDrawSurfaceMgr() {}
 i32 CDDrawSurfaceMgr::UnknownVirtualMethod18(HWND, i32, i32, i32, i32) {
     return 0;
 }
