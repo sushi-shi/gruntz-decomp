@@ -600,21 +600,8 @@ public:
     void ClassUnknown_31_152fb0();
     void ClassUnknown_31_153810();
 };
-class ClassUnknown_32 {
-public:
-    void ClassUnknown_32_141d50();
-    void ClassUnknown_32_142060();
-    void ClassUnknown_32_142100();
-    void ClassUnknown_32_142120();
-    void ClassUnknown_32_142160();
-    void ClassUnknown_32_142260();
-    void ClassUnknown_32_1423c0();
-    void ClassUnknown_32_142e60();
-    void ClassUnknown_32_142eb0();
-    void ClassUnknown_32_142ed0();
-    void ClassUnknown_32_142f10();
-    void ClassUnknown_32_142fc0();
-};
+// ClassUnknown_32 reconstructed as CDDrawPtrCollections in
+// src/Gruntz/CDDrawPtrCollections.cpp.
 class ClassUnknown_33 {
 public:
     void ClassUnknown_33_153180();

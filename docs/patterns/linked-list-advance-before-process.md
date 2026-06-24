@@ -31,4 +31,12 @@ STEERABLE. Both the `do { next = node->next; …; node = next; } while(next)` an
 `for(;;){ next=…; …; if(!next)break; node=next; }` spellings PEEL (~46-63%); only the
 advance-first `while` closes it. Evidence: UnknownClassArrays::Method_030530 46%→**100%**
 (occupied-coord blocked-tile scan); same fix lifts Method_0305b0's inner list loop.
+
+Also fixes the **pool-drain** variant (`for each node: delete node->data; RemoveAll()`)
+where reading `node->data` (off the live walker `esi`) BEFORE advancing is byte-different
+from retail's `mov eax,esi`(twin) / `mov esi,[esi]`(advance) / `mov ecx,[eax+8]`(deref via
+twin): the same `cur=node; node=node->next; item=cur->data;` reorder materialises the eax
+twin and closes it. Evidence: CDDrawPtrCollections::EmptyPoolA (0x142120) 92.4%→**100%**,
+EmptyPoolB (0x142ed0) 87%→**99.9%**. (The find+RemoveAt walk where the node must survive an
+in-loop call is still the wall — see related.)
 related: linked-list-walk-node-eax-rotation.md.

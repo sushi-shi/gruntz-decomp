@@ -839,31 +839,10 @@ void ClassUnknown_31::ClassUnknown_31_152fb0() {}
 RVA(0x00153810, 0x95)
 void ClassUnknown_31::ClassUnknown_31_153810() {}
 
-// ---- ClassUnknown_32 ----
-RVA(0x00141d50, 0x6f)
-void ClassUnknown_32::ClassUnknown_32_141d50() {}
-RVA(0x00142060, 0x9d)
-void ClassUnknown_32::ClassUnknown_32_142060() {}
-RVA(0x00142100, 0x18)
-void ClassUnknown_32::ClassUnknown_32_142100() {}
-RVA(0x00142120, 0x31)
-void ClassUnknown_32::ClassUnknown_32_142120() {}
-RVA(0x00142160, 0x24)
-void ClassUnknown_32::ClassUnknown_32_142160() {}
-RVA(0x00142260, 0xd2)
-void ClassUnknown_32::ClassUnknown_32_142260() {}
-RVA(0x001423c0, 0xd2)
-void ClassUnknown_32::ClassUnknown_32_1423c0() {}
-RVA(0x00142e60, 0x27)
-void ClassUnknown_32::ClassUnknown_32_142e60() {}
-RVA(0x00142eb0, 0x17)
-void ClassUnknown_32::ClassUnknown_32_142eb0() {}
-RVA(0x00142ed0, 0x3d)
-void ClassUnknown_32::ClassUnknown_32_142ed0() {}
-RVA(0x00142f10, 0x2b)
-void ClassUnknown_32::ClassUnknown_32_142f10() {}
-RVA(0x00142fc0, 0x7c)
-void ClassUnknown_32::ClassUnknown_32_142fc0() {}
+// ---- ClassUnknown_32 ---- RECONSTRUCTED as CDDrawPtrCollections (tomalla
+// UnknownFilch, 0x948 standalone): the dtor + item-pool management for the two
+// CPtrList pools (+0x47c CPoolItemA, +0x498 CPoolItemB) and CPtrArray (+0x4b4).
+// All 12 methods moved to src/Gruntz/CDDrawPtrCollections.cpp.
 
 // ---- ClassUnknown_33 ----
 RVA(0x00153180, 0xda)

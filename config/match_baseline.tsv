@@ -21,7 +21,7 @@ battlezmapconfig	1	0
 brickz	14	3
 butemgr	39	27
 cddrawchildgroup	9	5
-cddrawptrcollections	1	0
+cddrawptrcollections	13	10
 cddrawshadeblit	2	1
 cddrawsubmgr	29	15
 cddrawsubmgrdraco	5	2
@@ -45,7 +45,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	468	0
+engine_discovered	456	0
 engine_label_stubs	525	121
 filestream	13	9
 font	21	10
@@ -180,7 +180,7 @@ brickz	?Insert@CBrickz@@QAEHPAUBrickzNode@@@Z	100.0000	100.0000	2	56f2e32884a9	0
 brickz	?PopFront@CBrickz@@QAEPAUBrickzNode@@XZ	100.0000	100.0000	1	c73fe77132a8	0x9f430
 brickz	?Reset@CBrickz@@QAEXXZ	64.7115	64.7115	2	2061d42178be	0x9f5d0
 brickz	?Search@CBrickz@@QAEHHHHHPAXHHH@Z	91.3409	91.3409	2	1cedc5f1f659	0x9eca0
-brickz	?SearchEdge@CBrickz@@QAEHHHHHPAXHHH@Z	82.5373	82.5373	1	417b49a52b16	0x81e10
+brickz	?SearchEdge@CBrickz@@QAEHHHHHPAXHHH@Z	82.5373	82.5373	2	9a02e814554f	0x81e10
 brickz	?Serialize@CBrickz@@QAEHHHHH@Z	37.9032	37.9032	1	18774618cdf4	0x9356c
 brickz	?Unlink@CBrickz@@QAEXPAUBrickzNode@@@Z	74.9487	74.9487	2	ead4b3e1d312	0x9f690
 brickz	?UpdateDiagonals@CBrickz@@QAEHH@Z	53.5683	53.5683	1	e2065e000df7	0x82030
@@ -232,7 +232,19 @@ cddrawchildgroup	?VirtualMethodUnknown2C@CDDrawChildGroup@@UAEXHH@Z	100.0000	100
 cddrawchildgroup	?VirtualMethodUnknown30@CDDrawChildGroup@@QAEXHHH@Z	89.0909	89.0909	6	657ccfa48923	0x159cf0
 cddrawchildgroup	?VirtualMethodUnknown34@CDDrawChildGroup@@QAEXHHH@Z	89.0909	89.0909	6	5b41e511b849	0x159d40
 cddrawchildgroup	?VirtualMethodUnknown38@CDDrawChildGroup@@UAEXXZ	100.0000	100.0000	5	3b973f16dca8	0x159d90
-cddrawptrcollections	??0CDDrawPtrCollections@@QAE@XZ	99.8000	99.8000	5	f9e380983319	0x141cc0
+cddrawptrcollections	??0CDDrawPtrCollections@@QAE@XZ	100.0000	100.0000	6	dee578ff0baf	0x141cc0
+cddrawptrcollections	??1CDDrawPtrCollections@@QAE@XZ	99.9615	99.9615	1	34dac2207b6a	0x141d50
+cddrawptrcollections	?AddItemA@CDDrawPtrCollections@@QAEXPAVCPoolItemA@@@Z	100.0000	100.0000	1	08823e73ec27	0x142100
+cddrawptrcollections	?AddItemB@CDDrawPtrCollections@@QAEXPAUCPoolItemB@@@Z	100.0000	100.0000	1	49c9c58ce9de	0x142eb0
+cddrawptrcollections	?Clear@CDDrawPtrCollections@@QAEXH@Z	100.0000	100.0000	1	e67bb1393aec	0x142060
+cddrawptrcollections	?CreateA@CDDrawPtrCollections@@QAEPAVCPoolItemA@@HHHHH@Z	60.5278	60.5278	1	d45039d45b2e	0x142260
+cddrawptrcollections	?CreateB@CDDrawPtrCollections@@QAEPAVCPoolItemA@@HHHHH@Z	60.5278	60.5278	1	235115dc5be2	0x1423c0
+cddrawptrcollections	?EmptyPoolA@CDDrawPtrCollections@@QAEXXZ	100.0000	100.0000	1	5e3997835593	0x142120
+cddrawptrcollections	?EmptyPoolB@CDDrawPtrCollections@@QAEXXZ	100.0000	100.0000	1	dc3d2b2523b0	0x142ed0
+cddrawptrcollections	?MakeAndAddB@CDDrawPtrCollections@@QAEPAVCPoolItemA@@HHHHH@Z	100.0000	100.0000	1	dd1437d900d0	0x142e60
+cddrawptrcollections	?MakeB@CDDrawPtrCollections@@QAEPAUCPoolItemB@@HH@Z	100.0000	100.0000	1	65bf9ff78c84	0x142fc0
+cddrawptrcollections	?RemoveItemA@CDDrawPtrCollections@@QAEXPAVCPoolItemA@@@Z	100.0000	100.0000	1	4ddf350abd6e	0x142160
+cddrawptrcollections	?RemoveItemB@CDDrawPtrCollections@@QAEXPAUCPoolItemB@@@Z	100.0000	100.0000	1	a7726bad4d9a	0x142f10
 cddrawshadeblit	?Blit@CDDrawShadeBlit@@QAEHHPAUShadeSrc@@PAUShadeRect@@HH@Z	100.0000	100.0000	2	3bec4cb0d7c2	0x1497f0
 cddrawshadeblit	?BlitLoop@CDDrawShadeBlit@@QAEXHPAUShadeSrc@@PAUShadeRect@@H@Z	0.0556	0.0556	1	cd0bcbb696d9	0x14a200
 cddrawsubmgr	??0CDDrawSubMgr@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	100.0000	100.0000	6	af4f6a250fe2	0x156cb0
@@ -752,18 +764,6 @@ engine_discovered	?ClassUnknown_30_1391e0@ClassUnknown_30@@QAEXXZ	1.9048	1.9048	
 engine_discovered	?ClassUnknown_31_152f20@ClassUnknown_31@@QAEXXZ	0.7407	0.7407	1	2933ba7b0e04	0x152f20
 engine_discovered	?ClassUnknown_31_152fb0@ClassUnknown_31@@QAEXXZ	0.3704	0.3704	1	8c9a52559e72	0x152fb0
 engine_discovered	?ClassUnknown_31_153810@ClassUnknown_31@@QAEXXZ	0.8511	0.8511	1	add5b7345b4d	0x153810
-engine_discovered	?ClassUnknown_32_141d50@ClassUnknown_32@@QAEXXZ	3.8462	3.8462	1	84aa39f52970	0x141d50
-engine_discovered	?ClassUnknown_32_142060@ClassUnknown_32@@QAEXXZ	0.7692	0.7692	1	861e606c2922	0x142060
-engine_discovered	?ClassUnknown_32_142100@ClassUnknown_32@@QAEXXZ	5.0000	5.0000	1	f97c1a991e2f	0x142100
-engine_discovered	?ClassUnknown_32_142120@ClassUnknown_32@@QAEXXZ	4.7619	4.7619	1	77cdb9bc27ba	0x142120
-engine_discovered	?ClassUnknown_32_142160@ClassUnknown_32@@QAEXXZ	2.8571	2.8571	1	2b54d287291b	0x142160
-engine_discovered	?ClassUnknown_32_142260@ClassUnknown_32@@QAEXXZ	0.5556	0.5556	1	afcd1fbc3edc	0x142260
-engine_discovered	?ClassUnknown_32_1423c0@ClassUnknown_32@@QAEXXZ	0.5556	0.5556	1	c8afb0c9ba5c	0x1423c0
-engine_discovered	?ClassUnknown_32_142e60@ClassUnknown_32@@QAEXXZ	3.0769	3.0769	1	642cf17b6e2a	0x142e60
-engine_discovered	?ClassUnknown_32_142eb0@ClassUnknown_32@@QAEXXZ	5.0000	5.0000	1	cdd197108cbf	0x142eb0
-engine_discovered	?ClassUnknown_32_142ed0@ClassUnknown_32@@QAEXXZ	4.0000	4.0000	1	bdfff77290b7	0x142ed0
-engine_discovered	?ClassUnknown_32_142f10@ClassUnknown_32@@QAEXXZ	2.6667	2.6667	1	36ffb06d0bd0	0x142f10
-engine_discovered	?ClassUnknown_32_142fc0@ClassUnknown_32@@QAEXXZ	0.7547	0.7547	1	babc3f42cd89	0x142fc0
 engine_discovered	?ClassUnknown_33_153180@ClassUnknown_33@@QAEXXZ	0.5714	0.5714	1	134a742a6519	0x153180
 engine_discovered	?ClassUnknown_34_148ce0@ClassUnknown_34@@QAEXXZ	7.1429	7.1429	1	e7ef2a193252	0x148ce0
 engine_discovered	?ClassUnknown_34_1490d0@ClassUnknown_34@@QAEXXZ	0.2985	0.2985	1	1f694b7f256f	0x1490d0
