@@ -1038,17 +1038,7 @@ void ClassUnknown_47::ClassUnknown_47_17e7b0() {}
 RVA(0x0017e880, 0x28)
 void ClassUnknown_47::ClassUnknown_47_17e880() {}
 
-// ---- ClassUnknown_48 ----
-RVA(0x0017d910, 0x65)
-void ClassUnknown_48::ClassUnknown_48_17d910() {}
-RVA(0x0017d9a0, 0x11)
-void ClassUnknown_48::ClassUnknown_48_17d9a0() {}
-RVA(0x0017d9c0, 0x786)
-void ClassUnknown_48::ClassUnknown_48_17d9c0() {}
-RVA(0x0017e170, 0x5b)
-void ClassUnknown_48::ClassUnknown_48_17e170() {}
-RVA(0x0017e1d0, 0x4d)
-void ClassUnknown_48::ClassUnknown_48_17e1d0() {}
+// ---- ClassUnknown_48 -> CFaderMgr (src/Gruntz/CFaderMgr.cpp) ----
 
 // ---- ClassUnknown_49 ----
 RVA(0x00182940, 0x13c)

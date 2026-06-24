@@ -614,3 +614,8 @@ flags = "eh"
 unit = "battlezdata"
 source = "src/Gruntz/BattlezData.cpp"
 flags = "base"
+
+[[unit]]
+unit = "cfadermgr"
+source = "src/Gruntz/CFaderMgr.cpp"
+flags = "eh"

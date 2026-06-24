@@ -743,14 +743,6 @@ public:
     void ClassUnknown_47_17e7b0();
     void ClassUnknown_47_17e880();
 };
-class ClassUnknown_48 {
-public:
-    void ClassUnknown_48_17d910();
-    void ClassUnknown_48_17d9a0();
-    void ClassUnknown_48_17d9c0();
-    void ClassUnknown_48_17e170();
-    void ClassUnknown_48_17e1d0();
-};
 class ClassUnknown_49 {
 public:
     void ClassUnknown_49_182940();

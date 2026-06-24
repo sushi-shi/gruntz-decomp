@@ -33,6 +33,7 @@ cddrawworkermapsmall	8	2
 cddrawworkerregistry	25	12
 cddrawworkers	3	3
 cdirectdrawmgr	15	9
+cfadermgr	5	2
 chatbox	16	9
 chatbox_eh	1	1
 clightfxrender	20	8
@@ -43,7 +44,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	528	0
+engine_discovered	523	0
 engine_label_stubs	525	121
 filestream	13	9
 font	21	10
@@ -337,6 +338,11 @@ cdirectdrawmgr	?Refresh@CDDSurface@@QAEHPAUIDirectDrawSurfaceZ@@@Z	64.5128	64.51
 cdirectdrawmgr	?SetColorKey@CDDSurface@@QAEHIPAX@Z	100.0000	100.0000	1	d7a9dda893b1	0x13eaa0
 cdirectdrawmgr	?SetPalette@CDDSurface@@QAEHPAVCDDPalette@@H@Z	100.0000	100.0000	3	3730c3ae3c2a	0x13e690
 cdirectdrawmgr	?SetRange@CDDPalette@@QAEHHHEEEI@Z	100.0000	100.0000	2	bfca20776fbd	0x147cd0
+cfadermgr	??1CFaderMgr@@QAE@XZ	82.8889	82.8889	1	9bd8a535fa45	0x17d910
+cfadermgr	?Add@CFaderMgr@@QAEPAUCFader@@HPAU2@@Z	0.0000	0.0000	1	917f829f0a6d	0x17d9c0
+cfadermgr	?DeleteAll@CFaderMgr@@QAEXXZ	100.0000	100.0000	1	7c42fa42e763	0x17e1d0
+cfadermgr	?FreeAll@CFaderMgr@@QAEXXZ	100.0000	100.0000	1	f0e41c40b256	0x17d9a0
+cfadermgr	?Remove@CFaderMgr@@QAEXPAUCFader@@@Z	67.1111	67.1111	1	7c395e00a7e3	0x17e170
 chatbox	?AddNode@CChatBox@@QAEHPAX@Z	100.0000	100.0000	3	88a7b8bd99e7	0x182ba0
 chatbox	?AdvanceRow0@CChatBox@@QAEHPAXHH@Z	94.8718	94.8718	3	5b6842c8ffeb	0x182df0
 chatbox	?AdvanceRow1@CChatBox@@QAEHPAXHH@Z	94.8718	94.8718	3	e91d1d630c54	0x182e60
@@ -806,11 +812,6 @@ engine_discovered	?ClassUnknown_44_1587c0@ClassUnknown_44@@QAEXXZ	7.1429	7.1429	
 engine_discovered	?ClassUnknown_47_0f9280@ClassUnknown_47@@QAEXXZ	0.9709	0.9709	1	0b4331a0db85	0xf9280
 engine_discovered	?ClassUnknown_47_17e7b0@ClassUnknown_47@@QAEXXZ	33.3333	33.3333	1	bf775c2f2423	0x17e7b0
 engine_discovered	?ClassUnknown_47_17e880@ClassUnknown_47@@QAEXXZ	8.3333	8.3333	1	910a02366f66	0x17e880
-engine_discovered	?ClassUnknown_48_17d910@ClassUnknown_48@@QAEXXZ	3.7037	3.7037	1	120a5d43c36f	0x17d910
-engine_discovered	?ClassUnknown_48_17d9a0@ClassUnknown_48@@QAEXXZ	16.6667	16.6667	1	a6a4a7a0e329	0x17d9a0
-engine_discovered	?ClassUnknown_48_17d9c0@ClassUnknown_48@@QAEXXZ	0.0642	0.0642	1	9a3c5bea11ef	0x17d9c0
-engine_discovered	?ClassUnknown_48_17e170@ClassUnknown_48@@QAEXXZ	0.8889	0.8889	1	ef09ec20b0b6	0x17e170
-engine_discovered	?ClassUnknown_48_17e1d0@ClassUnknown_48@@QAEXXZ	3.2258	3.2258	1	3ababb670be4	0x17e1d0
 engine_discovered	?ClassUnknown_49_182940@ClassUnknown_49@@QAEXXZ	0.9009	0.9009	1	f566f81d5390	0x182940
 engine_discovered	?ClassUnknown_49_182a80@ClassUnknown_49@@QAEXXZ	4.5455	4.5455	1	c379a980e6cb	0x182a80
 engine_discovered	?ClassUnknown_4_150180@ClassUnknown_4@@QAEXXZ	16.6667	16.6667	1	dc7096716c82	0x150180
@@ -2035,9 +2036,9 @@ sbi_menuitem	?DecCounter@CSBI_MenuItem@@QAEHXZ	92.0357	92.0357	1	76ba7ba94f3b	0x
 sbi_menuitem	?InitItem@CSBI_MenuItem@@QAEHHHHHHHHHPAXHH@Z	67.8261	67.8261	1	711c194f8a6c	0xe80e0
 sbi_menuitem	?ProbeState@CSBI_MenuItem@@QAEHH@Z	100.0000	100.0000	1	624cf65074d2	0xe8480
 sbi_menuitem	?ResolveFrame@CSBI_MenuItem@@QAEHHH@Z	45.7547	45.7547	1	6e969ccb8dbb	0xe81e0
-sbi_menuitem	?Serialize@CSBI_MenuItem@@QAEHPAXHHH@Z	100.0000	100.0000	1	07d064ab15e5	0xe8520
-sbi_menuitem	?SerializeChain@CSBI_MenuItem@@QAEHPAXHHH@Z	84.9697	84.9697	1	46920b40f6fc	0xe6e40
-sbi_menuitem	?SerializeFields@CSBI_MenuItem@@QAEHPAXHHH@Z	100.0000	100.0000	1	75eb03114066	0x10bfc0
+sbi_menuitem	?Serialize@CSBI_MenuItem@@QAEHPAXHHH@Z	100.0000	100.0000	2	40b921248610	0xe8520
+sbi_menuitem	?SerializeChain@CSBI_MenuItem@@QAEHPAXHHH@Z	84.9697	84.9697	2	0a90ba3cd659	0xe6e40
+sbi_menuitem	?SerializeFields@CSBI_MenuItem@@QAEHPAXHHH@Z	100.0000	100.0000	2	dad5e24b70f6	0x10bfc0
 sbi_menuitem	?SetState@CSBI_MenuItem@@QAEHHH@Z	93.1020	93.1020	1	77d598c9a000	0xe8310
 sbi_menuitem	?SetSubtype@CSBI_MenuItem@@QAEXXZ	100.0000	100.0000	1	ef8f234ee98d	0x1005b0
 sbi_menuitem_eh	??1CSBI_MenuItem@@QAE@XZ	43.0345	43.0345	1	922b51808a58	0x1007d0
