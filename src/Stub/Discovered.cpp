@@ -924,15 +924,10 @@ void ClassUnknown_61::ClassUnknown_61_120120() {}
 RVA(0x0017b500, 0x8)
 void ClassUnknown_61::ClassUnknown_61_17b500() {}
 
-// ---- ClassUnknown_62 ----
-RVA(0x00099c20, 0x5f)
-void ClassUnknown_62::ClassUnknown_62_099c20() {}
-RVA(0x00099d40, 0x21c)
-void ClassUnknown_62::ClassUnknown_62_099d40() {}
-RVA(0x0009a0b0, 0x7)
-void ClassUnknown_62::ClassUnknown_62_09a0b0() {}
-RVA(0x0009b430, 0x49)
-void ClassUnknown_62::ClassUnknown_62_09b430() {}
+// ---- ClassUnknown_62 ---- reconstructed as CAreaMgr in src/Gruntz/AreaMgr.cpp
+// (areamgr unit): a global area/zone state object (current-index word + embedded
+// CPtrList + two ints).  ~CAreaMgr / Dispatch / Reset / SameGroup; the 40 per-area
+// handlers (0x09af30..0x09b410, each `mov eax,1; ret`) remain stubbed siblings.
 
 // ---- ClassUnknown_63 ---- reconstructed as CWwdSpatialMgr in
 // src/Gruntz/WwdSpatialMgr.cpp (wwdspatialmgr unit).

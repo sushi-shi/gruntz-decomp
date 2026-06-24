@@ -18,6 +18,7 @@ advancedoptions	5	5
 aniplayer	2	0
 appdialogs	1	1
 applyrange	1	1
+areamgr	4	2
 battlezdata	14	11
 battlezmapconfig	1	0
 brickz	14	3
@@ -53,7 +54,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	314	0
+engine_discovered	310	0
 engine_label_stubs	519	118
 filemem	8	7
 filestream	13	9
@@ -187,6 +188,10 @@ aniplayer	?Init@CAniPlayer@@QAEHPAUAniSeq@@0HHHHHHHHHHHH@Z	64.5543	64.5543	1	af4
 aniplayer	?Tick@CAniPlayer@@QAEHXZ	91.3555	91.3555	2	553040f9cf2b	0xe7b00
 appdialogs	?WarpDialogProc@@YGHPAXIIJ@Z	100.0000	100.0000	4	abc884dd8cb1	0x8e4e0
 applyrange	?ApplyToRange@@YGXPAVApplyElem@@HHP81@AEXXZ@Z	100.0000	100.0000	1	b977df9605c7	0x7c20
+areamgr	??1CAreaMgr@@QAE@XZ	100.0000	100.0000	1	e6fdf3f99a6a	0x99c20
+areamgr	?Dispatch@CAreaMgr@@QAEHH@Z	78.8584	78.8584	1	149ba02dc7bc	0x99d40
+areamgr	?Reset@CAreaMgr@@QAEXXZ	100.0000	100.0000	1	8ba7b79b3da8	0x9a0b0
+areamgr	?SameGroup@CAreaMgr@@QAEHH@Z	58.3529	58.3529	1	9eb1e4ec0b0f	0x9b430
 battlezdata	?BumpWin@CBattlezData@@QAEXHH@Z	100.0000	100.0000	2	d6751b8a863d	0xfcc50
 battlezdata	?ClearFlags@CBattlezData@@QAEXXZ	100.0000	100.0000	2	56a78ec21608	0xfcb90
 battlezdata	?ClearWins@CBattlezData@@QAEXXZ	100.0000	100.0000	2	38254a5cab0b	0xfcc90
@@ -826,10 +831,6 @@ engine_discovered	?ClassUnknown_5_150040@ClassUnknown_5@@QAEXXZ	0.3226	0.3226	1	
 engine_discovered	?ClassUnknown_60_0ebd30@ClassUnknown_60@@QAEXXZ	12.5000	12.5000	1	2eccf0c58550	0xebd30
 engine_discovered	?ClassUnknown_61_120120@ClassUnknown_61@@QAEXXZ	1.1628	1.1628	1	a41e00445cad	0x120120
 engine_discovered	?ClassUnknown_61_17b500@ClassUnknown_61@@QAEXXZ	25.0000	25.0000	1	50e219956f29	0x17b500
-engine_discovered	?ClassUnknown_62_099c20@ClassUnknown_62@@QAEXXZ	4.1667	4.1667	1	c65d96bb087a	0x99c20
-engine_discovered	?ClassUnknown_62_099d40@ClassUnknown_62@@QAEXXZ	0.1826	0.1826	1	37a398f7c64e	0x99d40
-engine_discovered	?ClassUnknown_62_09a0b0@ClassUnknown_62@@QAEXXZ	50.0000	50.0000	1	63b5ee8b734b	0x9a0b0
-engine_discovered	?ClassUnknown_62_09b430@ClassUnknown_62@@QAEXXZ	1.1765	1.1765	1	27e8201238e1	0x9b430
 engine_discovered	?ClassUnknown_65_095750@ClassUnknown_65@@QAEXXZ	1.1905	1.1905	1	1e411b3155fb	0x95750
 engine_discovered	?ClassUnknown_65_095890@ClassUnknown_65@@QAEXXZ	1.1905	1.1905	1	59869a658e05	0x95890
 engine_discovered	?ClassUnknown_65_0aa6e0@ClassUnknown_65@@QAEXXZ	1.1905	1.1905	1	be7d08983e85	0xaa6e0

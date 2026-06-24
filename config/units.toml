@@ -614,6 +614,11 @@ source = "src/Gruntz/TileTriggerContainer.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "areamgr"
+source = "src/Gruntz/AreaMgr.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "tilegridcommand"
 source = "src/Gruntz/TileGridCommand.cpp"
 flags = "base"

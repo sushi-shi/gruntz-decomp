@@ -649,13 +649,7 @@ public:
     void ClassUnknown_61_120120();
     void ClassUnknown_61_17b500();
 };
-class ClassUnknown_62 {
-public:
-    void ClassUnknown_62_099c20();
-    void ClassUnknown_62_099d40();
-    void ClassUnknown_62_09a0b0();
-    void ClassUnknown_62_09b430();
-};
+// ClassUnknown_62 reconstructed as CAreaMgr in src/Gruntz/AreaMgr.cpp (areamgr unit).
 // ClassUnknown_64 reconstructed as CWwdGrid in src/Gruntz/WwdGrid.cpp.
 // NOTE: the five real members (151da0/151e20/15b340/164830/164960) of this
 // trace-cluster are reconstructed as CLogicRecord (src/Gruntz/LogicRecord.cpp).
