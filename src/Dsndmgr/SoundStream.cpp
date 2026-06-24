@@ -102,7 +102,7 @@ StreamVoice* SoundStream::CreateStreamBuffer(WaveFormatX* fmt, u32 bytes, i32 a,
     desc.dwReserved = 0;
     desc.lpwfxFormat = &wf;
 
-    i32 hr = m_14->vtbl->CreateSoundBuffer(m_14, &desc, (IDirectSoundZ**)&out, 0) != 0;
+    i32 hr = m_14->vtbl->CreateSoundBuffer(m_14, &desc, &out, 0) != 0;
     if (hr) {
         DirectSoundMgr::GetErrorString(DSNDMGSR_FILE, 0x678, hr);
         return 0;

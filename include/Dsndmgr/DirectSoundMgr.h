@@ -6,18 +6,19 @@
 // wrapper thunks that, on a nonzero HRESULT, route through GetErrorString.
 //
 // The wrappers come in two `this`-shapes that share one class here (the offsets
-// never collide): the device-level methods (m_14 = IDirectSound, gated on the
-// m_78 "initialized" flag) and the per-buffer methods (m_0c = IDirectSoundBuffer,
-// m_10 = the owning manager, gated on m_10->m_78, caps in m_40). Every wrapper
-// does `iface->vtbl->Method(iface, args...)` so the retail `call *off(reg)` COM
-// dispatch falls out; only the called slots are pinned, the rest is padding.
+// never collide): the device-level methods (m_device = IDirectSound, gated on the
+// m_initialized flag) and the per-buffer methods (m_buffer = IDirectSoundBuffer,
+// m_owner = the owning manager, gated on m_owner->m_initialized, caps in m_caps).
+// Every wrapper does `iface->vtbl->Method(iface, args...)` so the retail
+// `call *off(reg)` COM dispatch falls out; only the called slots are pinned, the
+// rest is padding.
 #ifndef DSNDMGR_DIRECTSOUNDMGR_H
 #define DSNDMGR_DIRECTSOUNDMGR_H
 
 #include <Ints.h>
 
 // DSBCAPS - the buffer-caps struct GetCaps fills (dwSize 0x14 in, dwFlags out).
-// The ctor reads dwFlags into m_40 and ignores the rest.
+// The ctor reads dwFlags into m_caps and ignores the rest.
 struct DSBCAPS {
     u32 dwSize;
     u32 dwFlags;
@@ -37,6 +38,8 @@ struct DSBUFFERDESC {
     void* lpwfxFormat;
 };
 
+struct IDirectSoundBufferZ; // forward-decl: CreateSoundBuffer's out-param type
+
 // ---------------------------------------------------------------------------
 // IDirectSound (DSOUND) - the device interface DirectSoundCreate returns. Only
 // the slots the manager calls are pinned. COM convention => __stdcall with the
@@ -52,7 +55,7 @@ struct IDirectSoundZ {
         i32(__stdcall* CreateSoundBuffer)(
             IDirectSoundZ*,
             void* desc,
-            IDirectSoundZ** out,
+            IDirectSoundBufferZ** out,
             void* unk
         ); // +0x0c
         char m_pad10[0x18 - 0x10];
@@ -133,20 +136,20 @@ public:
 // ---------------------------------------------------------------------------
 class DirectSoundMgr {
 public:
-    // --- per-buffer wrappers (this = a buffer object, m_0c = the buffer) ------
+    // --- per-buffer wrappers (this = a buffer object, m_buffer = the buffer) --
     DirectSoundMgr(IDirectSoundBufferZ* buf, DirectSoundMgr* owner); // 0x1351d0 ctor
-    i32 Restore();                                                   // 0x135310  m_0c->Restore()
-    i32 StopAndRewind();     // 0x135380  Stop + SetCurrentPosition(0)
-    i32 IsPlaying();         // 0x1353f0  GetStatus & 1
-    i32 IsLooping();         // 0x135440  GetStatus & 2
-    i32 SetVolume(i32 vol);  // 0x135560  SetVolume (caps 0x80)
-    i32 GetVolume();         // 0x1355f0  GetVolume
-    void SetField0(i32 idx); // 0x1355c0  SetVolume(g_volumeTable[idx]) (extern)
-    i32 GetVolumePercent();  // 0x135640  GetVolume -> percent (0x135110)
-    i32 CloneAndPlay(i32 key, i32 mode, i32 slot);    // 0x135660  reap + spawn a voice
-    i32 SetPan(i32 pan);                              // 0x135740  SetPan (caps 0x40)
-    i32 GetPan();                                     // 0x1357f0  GetPan
-    i32 SetFrequency(u32 freq);                       // 0x135880  SetFrequency (caps 0x20)
+    i32 Restore();                  // 0x135310  m_buffer->Restore()
+    i32 StopAndRewind();            // 0x135380  Stop + SetCurrentPosition(0)
+    i32 IsPlaying();                // 0x1353f0  GetStatus & DSBSTATUS_PLAYING
+    i32 IsLooping();                // 0x135440  GetStatus & DSBSTATUS_LOOPING
+    i32 SetVolume(i32 vol);         // 0x135560  SetVolume (caps DSBCAPS_CTRLVOLUME)
+    i32 GetVolume();                // 0x1355f0  GetVolume
+    void SetVolumeByIndex(i32 idx); // 0x1355c0  SetVolume(g_volumeTable[idx]) (extern)
+    i32 GetVolumePercent();         // 0x135640  GetVolume -> percent (0x135110)
+    i32 CloneAndPlay(i32 key, i32 mode, i32 slot); // 0x135660  reap + spawn a voice
+    i32 SetPan(i32 pan);                           // 0x135740  SetPan (caps DSBCAPS_CTRLPAN)
+    i32 GetPan();                                  // 0x1357f0  GetPan
+    i32 SetFrequency(u32 freq); // 0x135880  SetFrequency (caps DSBCAPS_CTRLFREQUENCY)
     i32 Unlock(void* p1, u32 n1, void* p2, u32 n2);   // 0x1359c0
     i32 GetCurrentPosition(u32* play, u32* write);    // 0x135a20
     i32 SetCurrentPosition(u32 pos);                  // 0x135a70
@@ -157,11 +160,11 @@ public:
     i32 LockConvert(void* src, u32 lockBytes, u32 convert); // 0x135f40
     void StopAllClones();                                   // 0x136150
 
-    // --- device-level wrappers (this = the manager, m_14 = IDirectSound) ------
+    // --- device-level wrappers (this = the manager, m_device = IDirectSound) --
     i32 Create(void* hwnd, u32 level,
                u32 flags);                          // 0x136550  DirectSoundCreate + coop
     i32 SetCooperativeLevel(void* hwnd, u32 level); // 0x1365f0
-    i32 CreatePrimaryBuffer();                      // 0x137260  m_14->CreateSoundBuffer
+    i32 CreatePrimaryBuffer();                      // 0x137260  m_device->CreateSoundBuffer
 
     static void GetErrorString(char* file, i32 line, i32 hr); // 0x138150
 
@@ -171,20 +174,20 @@ public:
 
     // --- layout ---------------------------------------------------------------
     char m_pad0[0x0c];
-    IDirectSoundBufferZ* m_0c; // +0x0c  the held sound buffer (per-buffer this)
-    DirectSoundMgr* m_10;      // +0x10  owning manager back-pointer (per-buffer this)
-    IDirectSoundZ* m_14;       // +0x14  the DirectSound device (manager this)
-    i32 m_18;                  // +0x18  cached frequency
-    i32 m_1c;                  // +0x1c  cached pan
-    i32 m_20;                  // +0x20  cached volume
-    u32 m_24;                  // +0x24  cached set-frequency value
-    i32 m_28;                  // +0x28
+    IDirectSoundBufferZ* m_buffer; // +0x0c  the held sound buffer (per-buffer this)
+    DirectSoundMgr* m_owner;       // +0x10  owning manager back-pointer (per-buffer this)
+    IDirectSoundZ* m_device;       // +0x14  the DirectSound device (manager this)
+    u32 m_freq;                    // +0x18  cached frequency (GetFrequency)
+    i32 m_pan;                     // +0x1c  cached pan (GetPan)
+    i32 m_volume;                  // +0x20  cached volume (GetVolume)
+    u32 m_setFreq;                 // +0x24  cached SetFrequency value
+    i32 m_28;                      // +0x28  zero-init in ctor; role unproven
     char m_pad2c[0x30 - 0x2c];
-    i32 m_30; // +0x30
-    i32 m_34; // +0x34
-    i32 m_38; // +0x38
-    i32 m_3c; // +0x3c
-    u32 m_40; // +0x40  buffer capability flags (0x20/0x40/0x80)
+    i32 m_30;   // +0x30  zero-init in ctor; role unproven
+    i32 m_34;   // +0x34  zero-init in ctor; role unproven
+    i32 m_38;   // +0x38  zero-init in ctor; role unproven
+    i32 m_3c;   // +0x3c  zero-init in ctor; role unproven
+    u32 m_caps; // +0x40  buffer capability flags (DSBCAPS_CTRLFREQUENCY/PAN/VOLUME)
     // +0x44  intrusive list-node by which a clone instance hangs in its parent's
     // clone list (next@+0x44, prev@+0x48, back-pointer to this clone @+0x4c). The
     // list-helper at 0x1391e0 unlinks the node given &m_node44; the parent walks
@@ -197,15 +200,15 @@ public:
     char m_pad50[0x58 - 0x50];
     // +0x58  head of this instance's clone/child list (head@+0x58, tail@+0x5c);
     // each member is a cloned DirectSoundMgr chained through its m_node44.
-    CloneNode* m_58_head;
-    CloneNode* m_5c_tail;
+    CloneNode* m_cloneHead;
+    CloneNode* m_cloneTail;
     char m_pad60[0x78 - 0x60];
-    i32 m_78; // +0x78  "initialized" flag (manager this)
-    i32 m_7c; // +0x7c
+    i32 m_initialized; // +0x78  device-up flag (manager this)
+    i32 m_7c;          // +0x7c  cleared by Create; role unproven
     char m_pad80[0x84 - 0x80];
-    IDirectSoundBufferZ* m_84; // +0x84  primary buffer
-    i32 m_88;                  // +0x88  cooperative level / coop arg
-    u32 m_8c;                  // +0x8c  buffer-desc flags
+    IDirectSoundBufferZ* m_primaryBuffer; // +0x84  primary buffer
+    i32 m_coopLevel;                      // +0x88  cooperative level
+    u32 m_bufferFlags;                    // +0x8c  buffer-desc flags
 };
 
 #endif // DSNDMGR_DIRECTSOUNDMGR_H
