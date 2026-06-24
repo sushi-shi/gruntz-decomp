@@ -269,3 +269,109 @@ RVA(0x0017b4f0, 0xc)
 u8 FontRenderer::GetChar(i32 i) {
     return ((u8*)m_font)[i];
 }
+
+// =========================================================================
+// FontRenderer::MeasureText
+// Sum the advance widths of every glyph in `text` and pair it with the font's
+// line-height. With no font loaded the extent is {0,0}. The CString arg is
+// taken by value (the EH frame destroys it); the result is returned by value.
+// @early-stop
+// zero-register-pinning wall (docs/patterns/zero-register-pinning.md): retail
+// pins esi=0 and reuses it for the null-branch result stores, the EH-state
+// writes and the length compares (+ one dead `mov [esp+0x10],esi` spill); cl
+// allocates ecx for the zero, cascading a 1-instr regalloc shift. Body/offsets
+// byte-exact; logic complete.
+RVA(0x0017ac50, 0xbd)
+TextExtent FontRenderer::MeasureText(CString text) {
+    TextExtent ext;
+    i32 i = 0;
+    i32 width = 0;
+    if (m_font == 0) {
+        ext.width = 0;
+        ext.height = 0;
+        return ext;
+    }
+    for (i = 0; i < text.GetLength(); i++) {
+        Glyph g;
+        u8 c = ((const u8*)(const char*)text)[i];
+        m_font->GetGlyph(c, g);
+        width += g.width;
+    }
+    ext.width = width;
+    ext.height = m_font->GetMaxHeight();
+    return ext;
+}
+
+// =========================================================================
+// FontRenderer::DrawLineClipped
+// Draw one text run with up to two shadow passes: a white pass offset by
+// (+1,+1) when m_clip is set, a black pass offset by (.,+2) when m_surface is
+// set, then the main pass in m_color. Each pass forwards the same rect+text to
+// the inner glyph-blit (DrawGlyphRun, external). The CString is taken by value
+// (destroyed by the EH frame).
+RVA(0x00179d10, 0x15c)
+void FontRenderer::DrawLineClipped(CString text, i32 a1, Rect rc, i32 x, i32 y, i32 z) {
+    i32 savedColor = m_color;
+    if (m_clip) {
+        SetColor(0xffffff);
+        DrawGlyphRun(text, a1, rc, x, y, z);
+        x++;
+        y++;
+    }
+    if (m_surface) {
+        SetColor(0);
+        x += 2;
+        DrawGlyphRun(text, a1, rc, x, y, z);
+        x -= 2;
+    }
+    SetColor(savedColor);
+    DrawGlyphRun(text, a1, rc, x, y, z);
+}
+
+// =========================================================================
+// FontRenderer::Stub_17a460  ==  DrawWrapped (~2 KB), the cluster's largest.
+// Word-wrap layout + draw: greedily breaks the run into lines (measuring with
+// MeasureText) and draws each via DrawLine. Deferred to the final sweep - a
+// CString-temp-heavy /GX body (Left/Mid/fill, ~6 nested temps with cycling EH
+// states) that needs a leaf-first redo to converge past the eh-state-numbering
+// wall. Backlog stub retained, RVA-tracked under its real class (FontRenderer).
+// @confidence: high
+// @source: this-trace
+// @stub
+RVA(0x0017a460, 0x7ec)
+void FontRenderer::Stub_17a460() {}
+
+// =========================================================================
+// FontRenderer::Stub_17ad10  ==  MeasureWrapped (~1 KB).
+// Greedy word-wrap bounding-box measurer: returns {maxLineWidth, totalHeight}.
+// Same CString-temp / EH-state density as DrawWrapped; deferred to the final
+// sweep for a leaf-first redo. Backlog stub retained, RVA-tracked.
+// @confidence: high
+// @source: this-trace
+// @stub
+RVA(0x0017ad10, 0x402)
+void FontRenderer::Stub_17ad10() {}
+
+// =========================================================================
+// FontRenderer::DrawLine
+// Public single-line entry: measure the run, reject it if it would overflow
+// the box's vertical limit (p->m_bottom), otherwise build the destination Rect
+// and hand off to DrawLineClipped. No-op when no font is loaded.
+// @early-stop
+// arg-bundle/frame wall: the 9-dword DrawLineClipped call is assembled from a
+// heterogeneous bundle (the 029ac0 Rect result + p + a Rect field + the CString
+// temp) whose exact field grouping isn't fully recovered; retail reserves 2
+// extra stack dwords, skewing every [esp+N]. Control flow + measure/clip/draw
+// logic are exact; residual is push scheduling + frame size (~85%).
+RVA(0x00179c30, 0xdb)
+void FontRenderer::DrawLine(DrawRect* p, i32 x, i32 y, CString text, i32 a4) {
+    TextExtent ext = MeasureText(text);
+    if (m_font == 0) {
+        return;
+    }
+    i32 limit = p->m_bottom;
+    if (m_font->GetMaxHeight() + y > limit) {
+        return;
+    }
+    DrawLineClipped(text, a4, Rect(0, 0, x, y), x, y, p->left);
+}

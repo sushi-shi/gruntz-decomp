@@ -851,14 +851,6 @@ class ClassUnknown_51 {
 public:
     void ClassUnknown_51_1154b0();
 };
-class ClassUnknown_52 {
-public:
-    void ClassUnknown_52_179c30();
-    void ClassUnknown_52_179d10();
-    void ClassUnknown_52_17a460();
-    void ClassUnknown_52_17ac50();
-    void ClassUnknown_52_17ad10();
-};
 class ClassUnknown_53 {
 public:
     void ClassUnknown_53_029ac0();

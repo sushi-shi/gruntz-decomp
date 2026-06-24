@@ -1203,18 +1203,7 @@ void ClassUnknown_50::ClassUnknown_50_153790() {}
 RVA(0x001154b0, 0x45)
 void ClassUnknown_51::ClassUnknown_51_1154b0() {}
 
-// ---- ClassUnknown_52 ----
-RVA(0x00179c30, 0xdb)
-void ClassUnknown_52::ClassUnknown_52_179c30() {}
-RVA(0x00179d10, 0x15c)
-void ClassUnknown_52::ClassUnknown_52_179d10() {}
-RVA(0x0017a460, 0x7ec)
-void ClassUnknown_52::ClassUnknown_52_17a460() {}
-RVA(0x0017ac50, 0xbd)
-void ClassUnknown_52::ClassUnknown_52_17ac50() {}
-RVA(0x0017ad10, 0x402)
-void ClassUnknown_52::ClassUnknown_52_17ad10() {}
-
+// ---- ClassUnknown_52 (== FontRenderer, see src/Font/Font.cpp) ----
 // ---- ClassUnknown_53 ----
 RVA(0x00029ac0, 0x20)
 void ClassUnknown_53::ClassUnknown_53_029ac0() {}

@@ -42,10 +42,10 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	644	0
+engine_discovered	639	0
 engine_label_stubs	528	121
 filestream	13	9
-font	16	9
+font	21	10
 fontconfig	7	4
 fonts	2	1
 gameapp	19	15
@@ -868,11 +868,6 @@ engine_discovered	?ClassUnknown_50_0d5e80@ClassUnknown_50@@QAEXXZ	4.7619	4.7619	
 engine_discovered	?ClassUnknown_50_153260@ClassUnknown_50@@QAEXXZ	3.5714	3.5714	1	e4a09d8d2e88	0x153260
 engine_discovered	?ClassUnknown_50_153790@ClassUnknown_50@@QAEXXZ	1.1111	1.1111	1	7e5717cffdcf	0x153790
 engine_discovered	?ClassUnknown_51_1154b0@ClassUnknown_51@@QAEXXZ	3.5714	3.5714	1	13cffed88461	0x1154b0
-engine_discovered	?ClassUnknown_52_179c30@ClassUnknown_52@@QAEXXZ	0.5405	0.5405	1	ff2e1a6360e6	0x179c30
-engine_discovered	?ClassUnknown_52_179d10@ClassUnknown_52@@QAEXXZ	0.3361	0.3361	1	1f32a8a5e1d5	0x179d10
-engine_discovered	?ClassUnknown_52_17a460@ClassUnknown_52@@QAEXXZ	0.0684	0.0684	1	57ba8d67fa0f	0x17a460
-engine_discovered	?ClassUnknown_52_17ac50@ClassUnknown_52@@QAEXXZ	0.6452	0.6452	1	223361118a5a	0x17ac50
-engine_discovered	?ClassUnknown_52_17ad10@ClassUnknown_52@@QAEXXZ	0.1307	0.1307	1	fac855e4823c	0x17ad10
 engine_discovered	?ClassUnknown_53_029ac0@ClassUnknown_53@@QAEXXZ	4.0000	4.0000	1	9c6b3f60ac2b	0x29ac0
 engine_discovered	?ClassUnknown_54_135110@ClassUnknown_54@@QAEXXZ	2.2222	2.2222	1	ac0756dd1290	0x135110
 engine_discovered	?ClassUnknown_55_137060@ClassUnknown_55@@QAEXXZ	0.9302	0.9302	1	c02cbb33260c	0x137060
@@ -1641,6 +1636,8 @@ filestream	?Write@CFileIO@@QAEXPBXI@Z	100.0000	100.0000	5	0c752c60199f	0x1bf362
 font	??0Font@@QAE@XZ	100.0000	100.0000	4	689d6593b435	0x179700
 font	??0FontRenderer@@QAE@XZ	100.0000	100.0000	3	100b652c37b2	0x179be0
 font	?AllocateMemory@Font@@QAEHH@Z	92.1429	92.1429	5	c9cb34d23b1a	0x179720
+font	?DrawLine@FontRenderer@@QAEXPAUDrawRect@@HHVCString@@H@Z	85.5541	85.5541	1	e0a1b2e36297	0x179c30
+font	?DrawLineClipped@FontRenderer@@QAEXVCString@@HURect@@HHH@Z	100.0000	100.0000	1	722983ef19f0	0x179d10
 font	?FreeMemory@Font@@QAEXXZ	100.0000	100.0000	5	48390f7bd94e	0x1797b0
 font	?FreeStrings@CWapNodeB@@QAEXXZ	100.0000	100.0000	3	4e6dc4459c58	0x179680
 font	?GetChar@FontRenderer@@QAEEH@Z	100.0000	100.0000	4	8f0c6a026b37	0x17b4f0
@@ -1653,7 +1650,10 @@ font	?IsInterface3@InterfaceObject@@QAEHXZ	96.2500	96.2500	4	fd8baf7ee241	0x1795
 font	?IsInterface4@InterfaceObject@@QAEHXZ	96.2500	96.2500	4	7db3529fc67b	0x179540
 font	?IsInterface5@InterfaceObject@@QAEHXZ	96.2500	96.2500	4	d40604b6a273	0x179570
 font	?LoadFont@Font@@QAEHVCString@@@Z	100.0000	100.0000	6	fa7f3fc73a82	0x179830
+font	?MeasureText@FontRenderer@@QAE?AUTextExtent@@VCString@@@Z	66.1936	66.1936	1	34f48e4f97c3	0x17ac50
 font	?SetColor@FontRenderer@@QAEXH@Z	100.0000	100.0000	4	945d607c3be9	0x179c20
+font	?Stub_17a460@FontRenderer@@QAEXXZ	0.0684	0.0684	1	cf29e8e947ca	0x17a460
+font	?Stub_17ad10@FontRenderer@@QAEXXZ	0.1307	0.1307	1	8384c09d6a21	0x17ad10
 fontconfig	??1CFontConfig@@UAE@XZ	92.7273	92.7273	1	562d70cadd9b	0x85f40
 fontconfig	?AddItem@CFontConfig@@QAEHPBDHH@Z	100.0000	100.0000	2	0ed05f26e3ca	0x21c60
 fontconfig	?FreeNodes@CFontConfig@@QAEXXZ	100.0000	100.0000	1	c597192ef01d	0x21bd0
@@ -1954,7 +1954,7 @@ inputdeviceconfig	?LoadInputDeviceConfig@CInputConfig@@QAE?AVCString@@H@Z	77.326
 kitchenslime	?LoadSprites@CKitchenSlime@@QAEHXZ	69.1992	69.1992	2	2c07cc5dc21b	0xb3160
 kitchenslime	?Tick@CKitchenSlime@@QAEHXZ	94.8551	94.8551	3	c7b9e1dd58eb	0xb2ca0
 leveltilevalidation	?ValidateLevelTiles@CLevelValidator@@QAEHXZ	17.0098	17.0098	2	791c1428e1a4	0xd2dd0
-loadlevelbymode	?LoadByMode@CPlayLevelLoad@@QAEHH@Z	34.8503	34.8503	1	8269a375cf3f	0xca200
+loadlevelbymode	?LoadByMode@CPlayLevelLoad@@QAEHH@Z	34.8503	34.8503	2	10b320b3c10a	0xca200
 logictypetable	?BuildLogicTypeTable@@YGXPAUCLogicTypeBuilder@@@Z	87.9167	87.9167	6	313ac91839f7	0x8a40
 mainmenubuilder	?BuildMainMenuTree@@YAXPAX@Z	77.6725	77.6725	2	77164b63ab1c	0xa11d0
 maplogic	??1CMapLogic@@UAE@XZ	100.0000	100.0000	1	baec3be51eff	0x113c0
@@ -2016,7 +2016,7 @@ projectile	?LaunchSound@CProjectile@@QAEHPBD@Z	44.4444	44.4444	2	af629d1a9d6a	0x
 projectile	?ReleaseDeferred@CProjectile@@QAEXH@Z	100.0000	100.0000	2	ac50b8317e25	0x13c70
 projectile	?ScanTargets@CProjectile@@QAEXH@Z	93.9254	93.9254	3	beefe98399cb	0xe0b10
 projectile	?StepMotion@CProjectile@@QAEXXZ	70.6977	70.6977	2	be95913fb568	0xe08b0
-pyramidbridgesprites	?LoadPyramidBridge@CPlayLevelLoad@@QAEXH@Z	7.3030	7.3030	1	2be0fcbac087	0x110c10
+pyramidbridgesprites	?LoadPyramidBridge@CPlayLevelLoad@@QAEXH@Z	7.3030	7.3030	2	fc1e88cb93b0	0x110c10
 randomambientsound	??1CRandomAmbientSound@@QAE@XZ	100.0000	100.0000	1	745bfd96f836	0x85ed0
 randomambientsound	?Init@CRandomAmbientSound@@QAEHPAX0@Z	100.0000	100.0000	2	57bae3ec57a0	0xb5e0
 randomambientsound	?Restart@CRandomAmbientSound@@QAEXPAX@Z	100.0000	100.0000	2	8dfe49530132	0xbc30

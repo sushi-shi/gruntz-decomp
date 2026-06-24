@@ -85,15 +85,69 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// FontRenderer - a stateful rendering shim wrapping a Font*. Only the three
-// leaves matched here (ctor / SetColor / GetChar) are reconstructed; the other
-// render entry points stay external (no body) so their calls reloc-mask.
+// The pixel extent of a measured run of text: {total advance width, line
+// height}. Returned by value (sret) from FontRenderer::MeasureText - a plain
+// 8-byte pair so the two int stores reproduce exactly.
 // ---------------------------------------------------------------------------
+struct TextExtent {
+    i32 width;  // +0x00 (sum of per-glyph advance widths)
+    i32 height; // +0x04 (the font line-height, Font::GetMaxHeight)
+};
+
+// ---------------------------------------------------------------------------
+// FontRenderer - a stateful rendering shim wrapping a Font*. The leaf methods
+// (ctor / SetColor / GetChar) plus the text geometry/word-wrap/draw entry
+// points below are matched here; the lower-level blit/glyph callees stay
+// external (no body) so their calls reloc-mask.
+// ---------------------------------------------------------------------------
+// A 16-byte rectangle bundle passed by value to the inner glyph-blit
+// (DrawGlyphRun) - four ints carried as one block on the stack. Built by the
+// out-of-line Rect(i32,i32,i32,i32) ctor at 0x29ac0 (external/no-body here).
+struct Rect {
+    Rect(i32 a, i32 b, i32 c, i32 d); // 0x29ac0
+    i32 a;                            // +0x00
+    i32 b;                            // +0x04
+    i32 c;                            // +0x08
+    i32 d;                            // +0x0c
+};
+
+// The layout/draw rectangle the public draw entry points receive a pointer to:
+// a destination box plus alignment/limit fields. Only the offsets the matched
+// methods read are load-bearing.
+struct DrawRect {
+    i32 left;     // +0x00
+    i32 top;      // +0x04
+    i32 right;    // +0x08
+    i32 bottom;   // +0x0c
+    i32 m_10;     // +0x10
+    i32 m_14;     // +0x14
+    i32 m_bottom; // +0x18  (vertical limit, clip test in DrawLine)
+};
+
 class FontRenderer {
 public:
     FontRenderer();
     void SetColor(i32 color);
     u8 GetChar(i32 i);
+
+    // Text geometry + drawing (the ClassUnknown_52 cluster).
+    TextExtent MeasureText(CString text); // 0x17ac50
+
+    // The inner glyph-run blit (0x179e70). External (no body here) so its
+    // call reloc-masks; the 9-dword arg shape (CString + 1 int + Rect{4} + 3
+    // ints) reproduces the retail `ret 0x24` and the caller's pushes.
+    void DrawGlyphRun(CString text, i32 a1, Rect rc, i32 x, i32 y, i32 z); // 0x179e70
+
+    void DrawLine(DrawRect* p, i32 x, i32 y, CString text, i32 a4);           // 0x179c30
+    void DrawLineClipped(CString text, i32 a1, Rect rc, i32 x, i32 y, i32 z); // 0x179d10
+
+    // Word-wrap entry points (the two big methods) deferred to the final sweep:
+    //   Stub_17ad10 = MeasureWrapped (bounding {w,h} of greedily wrapped text)
+    //   Stub_17a460 = DrawWrapped    (lay out + draw each line via DrawLine)
+    // CString-temp-heavy /GX bodies (~1-2 KB); kept as backlog stubs, RVA-tracked
+    // under their real class - see src/Font/Font.cpp.
+    void Stub_17ad10(); // 0x17ad10 (FontRenderer::MeasureWrapped)
+    void Stub_17a460(); // 0x17a460 (FontRenderer::DrawWrapped)
 
     Font* m_font;    // +0x00  (Font* to render with)
     i32 m_color;     // +0x04  (packed colour, default 0x00ffffff)
