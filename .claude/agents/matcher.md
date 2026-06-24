@@ -22,7 +22,12 @@ convention across `src/` + `config/match-queue.md`; leave the size arg unpadded.
    `extern_harvest`/`string_xref` for the referent set.
 2. **Reconstruct the types** (class layout from offsets/sizes; each extern's *real* signature)
    **and the bodies** (C++ that lowers to the same instruction selection + scheduling).
-3. **Build + diff:** `nix develop .#build --command gruntz build`; read the per-function objdiff.
+3. **Build + diff:** `gruntz build`, then read the per-function objdiff. **Run it INSIDE one
+   open `nix develop .#build` shell** — `cd` into your assigned worktree FIRST, enter the shell
+   once, and run every `gruntz build`/`status` *inside* it (don't spawn `nix develop` per command).
+   `GRUNTZ_DIR`/`WINEPREFIX`/`REPO` are fixed at shell entry to `$PWD`, so a shell opened in main —
+   or a `cd` *after* `nix develop` — builds and scores **main, not your worktree**. Use absolute
+   paths; never touch the repo root.
 4. **Iterate** on the residual. Done = 100% exact, or the reloc-masked plateau (code bytes match;
    only differently-named symbol operands differ — confirm by `llvm-objdump -dr` base vs target).
    **When a diff row is stuck, GREP `docs/patterns/INDEX.md` FIRST** (by symptom token or tag,

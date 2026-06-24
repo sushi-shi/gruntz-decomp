@@ -334,6 +334,12 @@ must STOP and report, not force the wrong class.
    (`delink` → synth_pdb → vostok-delinker), and `objdiff` rescores. You never run
    configure / ninja / delink / objdiff by hand. (What re-delinks and the exact
    chain: build-system.md "What triggers a re-delink".)
+   **Run a wave of builds INSIDE one open `nix develop .#build` shell** — don't pay
+   `nix develop` startup per command. For the campaign / parallel matchers, enter the
+   shell once and run `gruntz build`/`status` *inside* it. When the work is in a
+   worktree, **`cd` into that worktree BEFORE entering the shell**: `GRUNTZ_DIR`/
+   `WINEPREFIX`/`REPO` are fixed at shell entry to `$PWD`, so a shell opened in main
+   (or a `cd` *after* `nix develop`) builds and scores **main, not the worktree**.
 5. **Read the per-unit match %** (`gruntz status` reprints the last report without
    rebuilding). Then iterate: edit `src/` → `gruntz build` → read → repeat until
    **byte-exact**. When a diff row is stuck, grep **`docs/patterns/INDEX.md`**

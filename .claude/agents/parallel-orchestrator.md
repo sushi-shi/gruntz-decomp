@@ -13,9 +13,10 @@ matchers at once without tangling main.**
 
 ## The invariant
 
-- **Fan out:** keep **3 matchers in flight** at all times (the default pool
-  size). Each runs in **its own worktree** from a **fixed, reused pool** — never
-  spawn a fresh worktree per task.
+- **Fan out:** keep **N matchers in flight** at all times (default **4**, the
+  provisioned pool). Each runs in **its own worktree** from a **fixed, reused,
+  persistently-named pool** (`matcher-1 … matcher-N` under `.claude/worktrees/`) —
+  never spawn a fresh worktree per task.
 - **Serialize integration:** results land in **main one at a time**. Only ONE
   integration (apply → build → bless → commit) is in progress at any moment.
   → main's history is a **single linear line of `match:` commits**, even though
@@ -25,33 +26,49 @@ matchers at once without tangling main.**
   The pool stays full until the worklist is dry.
 
 ```
-          pool-1 ─ matcher A ─┐
-          pool-2 ─ matcher B ─┼─► integration queue (SERIAL) ─► main: c1─c2─c3─…
-          pool-3 ─ matcher C ─┘        build → bless → commit
-   (as A lands, reset pool-1 to main, launch matcher D into pool-1)
+       matcher-1 ─ matcher A ─┐
+       matcher-2 ─ matcher B ─┼─► integration queue (SERIAL) ─► main: c1─c2─c3─…
+       matcher-3 ─ matcher C ─┤        build → bless → commit
+       matcher-4 ─ matcher D ─┘
+   (as A lands, reset matcher-1 to main, launch matcher E into matcher-1)
 ```
 
-## Pool setup (once per session)
+## Pool setup (provision once — the worktrees PERSIST across restarts)
 
-The pool is 3 long-lived worktrees that are **reused** across many matchers. Each
-needs the gitignored `build/` artifacts so its `gruntz build` is incremental, not
-a cold `gruntz init`.
+The pool is N long-lived worktrees named **`matcher-1 … matcher-N`** that are
+**reused** across many matchers AND across orchestrator restarts. Each carries its
+OWN gitignored `build/` (incl. its own wineprefix — `GRUNTZ_DIR=$PWD` ⇒
+`WINEPREFIX=$PWD/build/wineprefix`), so its `gruntz build` is incremental, not a
+cold `gruntz init`. Provisioning is a **full one-time `build/` copy** from main; a
+copied wineprefix relocates fine (measured: all 4 worktrees build green in-place,
+416/1092 exact, no regressions).
+
+**Idempotent setup — skip any slot that already exists (this is what makes a
+restart free; the four slots are already provisioned):**
 
 ```bash
-for n in 1 2 3; do
-  git worktree add -B pool/$n .claude/worktrees/pool-$n main
-  # provision the heavy gitignored build state once (so matchers build fast):
-  rsync -a --delete build/ .claude/worktrees/pool-$n/build/   # or cp -r
+for n in 1 2 3 4; do
+  wt=.claude/worktrees/matcher-$n
+  if [ -d "$wt" ]; then
+    git -C "$wt" reset --hard main          # REUSE: build/ (+ wineprefix) survives
+  else
+    git worktree add -B matcher/$n "$wt" main
+    cp -a build "$wt"/build                 # provision heavy gitignored state ONCE
+  fi
 done
 ```
 
-Verify a pool worktree can build before dispatching into it:
-`nix develop .#build --command bash -c 'cd .claude/worktrees/pool-1 && gruntz build'`.
+Verify a slot can build before dispatching — **cd-first** so `GRUNTZ_DIR`/`REPO`
+resolve to the worktree, NOT main:
+`cd .claude/worktrees/matcher-1 && nix develop .#build --command gruntz build`.
+**`cd` AFTER `nix develop` builds *main*** (`GRUNTZ_DIR` is fixed at shell entry).
+Better: open ONE `nix develop .#build` shell per slot and run `gruntz build`/status
+inside it — avoids `nix develop` startup per command.
 
-If `rsync` of `build/` is too heavy, copy only what the matcher loop needs
-(`build/ghidra-enrich/exports build/gen build/ghidra-named` + the wine prefix +
-base objs) — but a full one-time `build/` copy is simplest and pays off over many
-reused dispatches.
+(Filesystem is ext4 → no reflink; `cp -a` is a full ~680 MB copy per slot, seconds
+each. If ever too heavy, copy only `build/{exe,gen,ghidra-named,ghidra-enrich,clangd,
+delink,objdiff,pdb,wineprefix}` — but the whole-`build/` copy is simplest and pays
+off over many reused dispatches.)
 
 ## Dispatching a matcher into a pool slot
 
@@ -59,9 +76,13 @@ Spawn a **matcher** agent (subagent_type `matcher`), **`run_in_background: true`
 **NOT** `isolation: worktree` (you manage the worktree yourself). The prompt MUST:
 
 1. Name the assigned **absolute** worktree path and say *do ALL work there*.
-2. **Use absolute paths for every file/build command** — relative paths can leak
-   into the main repo (see `[[subagent-bash-cwd-leaks-to-main]]`). Tell the
-   matcher: `cd <abs worktree>` first and never operate on the repo root.
+2. **Work cd-first, inside ONE open shell.** Tell the matcher: `cd <abs worktree>`
+   FIRST, then enter a single `nix develop .#build` shell and run every `gruntz
+   build`/status *inside it* — `GRUNTZ_DIR` is fixed at shell entry, so `cd`-after
+   or a fresh `nix develop` per command builds/scores the **wrong tree** AND pays
+   startup each time. Use absolute paths for every file/build command — relative
+   paths can leak into the main repo (see `[[subagent-bash-cwd-leaks-to-main]]`).
+   Never operate on the repo root.
 3. Carry the standard matcher task (target RVA/name/size/file), the 8-digit
    address convention, and the STOP-EARLY + `@early-stop` rule (marker line + reason
    on the next line, **no percentage** — the baseline tracks %).
@@ -124,17 +145,19 @@ once — main has a single `build/` and a single HEAD):
    commit. (A clean `@early-stop` partial is a legitimate commit too; a
    mis-attributed / wrong-shape reconstruction is NOT — keep it stubbed,
    `[[correctness-not-artifacts]]`.)
-6. **Refresh the slot:** `git -C .claude/worktrees/pool-N fetch` is not needed
-   (same repo); instead `git -C .claude/worktrees/pool-N reset --hard main` then
+6. **Refresh the slot:** `git -C .claude/worktrees/matcher-N fetch` is not needed
+   (same repo); instead `git -C .claude/worktrees/matcher-N reset --hard main` then
    re-provision build state if needed (the worktree's own `build/` survives the
    reset — only tracked source is reset, so the next build stays incremental).
    Now the slot is at the latest main (it SEES the just-landed match as a possible
    dependency).
 7. **Refill:** pick the next target (orchestrator.md cross-check: skip anything
    already reconstructed or `@early-stop`) and dispatch a new background matcher
-   into pool-N.
+   into matcher-N.
 
-Repeat until the worklist is dry, then `git worktree remove` the pool.
+Repeat until the worklist is dry. **Leave the `matcher-N` worktrees in place** so
+the next run reuses them (their `build/` stays warm); `git worktree remove` only if
+the user asks.
 
 ## Why serial integration (not parallel merges)
 
