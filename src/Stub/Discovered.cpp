@@ -750,16 +750,6 @@ void CTeleporter::CTeleporter_010dd0() {}
 RVA(0x000419e0, 0x81)
 void CTeleporter::CTeleporter_0419e0() {}
 
-// ---- CTileTrigger ----
-RVA(0x00011290, 0x44)
-void CTileTrigger::CTileTrigger_011290() {}
-RVA(0x00011540, 0x44)
-void CTileTrigger::CTileTrigger_011540() {}
-RVA(0x00011600, 0x44)
-void CTileTrigger::CTileTrigger_011600() {}
-RVA(0x000116c0, 0x44)
-void CTileTrigger::CTileTrigger_0116c0() {}
-
 // ---- CTileTriggerSwitch ----
 RVA(0x000110f0, 0x44)
 void CTileTriggerSwitch::CTileTriggerSwitch_0110f0() {}

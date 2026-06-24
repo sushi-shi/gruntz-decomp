@@ -92,11 +92,30 @@ public:
     virtual ~CSecretLevelTrigger() OVERRIDE;
 };
 
-class CTileTrigger : public CUserLogic {
+// CTileTrigger is declared in <Gruntz/UserLogic.h>.
+
+// The three CTileTrigger leaves (1-arg ctors, RTTI-named). Each adds no data
+// members; the ctor chains CTileTrigger(obj) (out-of-line call) and the leaf vptr
+// auto-stamps; the empty dtor folds the bare CUserLogic teardown. Their ctors
+// were previously stubbed (manual-vptr) in src/Stub/{CTileSecretTrigger,CGiantRock,
+// CCoveredPowerup}.cpp; modeled polymorphically here so the /GX EH-frame dtor folds
+// (a manual-vptr model is frameless - see docs/patterns/eh-dtor-needs-base-subobject.md).
+class CTileSecretTrigger : public CTileTrigger {
 public:
-    CTileTrigger();                 // 0x011160 (no-arg)
-    CTileTrigger(CGameObject* obj); // 0x10e220 (1-arg)
-    virtual ~CTileTrigger() OVERRIDE;
+    CTileSecretTrigger(CGameObject* obj); // 0x10fa60
+    virtual ~CTileSecretTrigger() OVERRIDE;
+};
+
+class CGiantRock : public CTileTrigger {
+public:
+    CGiantRock(CGameObject* obj); // 0x10fa90
+    virtual ~CGiantRock() OVERRIDE;
+};
+
+class CCoveredPowerup : public CTileTrigger {
+public:
+    CCoveredPowerup(CGameObject* obj); // 0x10fac0
+    virtual ~CCoveredPowerup() OVERRIDE;
 };
 
 class CGruntHealthSprite : public CUserLogic {
@@ -488,9 +507,25 @@ CSecretLevelTrigger::~CSecretLevelTrigger() {}
 RVA(0x00010b20, 0x4b)
 CSecretLevelTrigger::CSecretLevelTrigger() {}
 
-CTileTrigger::~CTileTrigger() {}
 RVA(0x00011160, 0x4b)
 CTileTrigger::CTileTrigger() {}
+
+// --- CTileTrigger / leaf destructors (0x011290 / 0x011540 / 0x011600 / 0x0116c0) ---
+// All four are the SAME folded CUserLogic teardown (store CUserLogic vptr,
+// inline-destruct the +0x18 link via ~EngStr 0x16d2a0, store CUserBase vptr; the
+// destructible link forces the /GX EH frame; leaf vptr store dead-eliminated).
+// ~CTileTrigger is inline (header) so it folds into the three leaf dtors instead
+// of being called. MSVC still emits one out-of-line COMDAT copy of ~CTileTrigger
+// (called by its scalar-deleting dtor); it lands at 0x011290. An inline-defined
+// dtor can't hang an RVA() (the attribute would also tag the synthesized ??_G ->
+// duplicate-RVA), so it is pinned by mangled name here:
+// @rva-symbol: ??1CTileTrigger@@UAE@XZ 0x00011290 0x44
+RVA(0x00011540, 0x44)
+CTileSecretTrigger::~CTileSecretTrigger() {}
+RVA(0x00011600, 0x44)
+CGiantRock::~CGiantRock() {}
+RVA(0x000116c0, 0x44)
+CCoveredPowerup::~CCoveredPowerup() {}
 
 CGruntHealthSprite::~CGruntHealthSprite() {}
 RVA(0x00011ef0, 0x4b)
@@ -921,6 +956,17 @@ CTileTrigger::CTileTrigger(CGameObject* obj) : CUserLogic(obj) {
     m_10->m_168 = m_10->m_60 >> 5;
     m_10->m_04 = (m_10->m_164 << 8) + m_10->m_168;
 }
+
+// --- The three CTileTrigger leaves' 1-arg ctors (0x10fa60/90/c0) ---
+// Each just chains CTileTrigger(obj) (out-of-line call) then the leaf vptr
+// auto-stamps. vptrs: CTileSecretTrigger 0x5e7e64, CGiantRock 0x5e7d5c,
+// CCoveredPowerup 0x5e7e0c.
+RVA(0x0010fa60, 0x19)
+CTileSecretTrigger::CTileSecretTrigger(CGameObject* obj) : CTileTrigger(obj) {}
+RVA(0x0010fa90, 0x19)
+CGiantRock::CGiantRock(CGameObject* obj) : CTileTrigger(obj) {}
+RVA(0x0010fac0, 0x19)
+CCoveredPowerup::CCoveredPowerup(CGameObject* obj) : CTileTrigger(obj) {}
 
 // --- CTileTriggerTransition (0x10faf0), vptr 0x5e7db4 ---
 CTileTriggerTransition::~CTileTriggerTransition() {}

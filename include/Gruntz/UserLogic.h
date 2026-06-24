@@ -250,4 +250,24 @@ inline void CUserLogic::RegisterLogicTypesOnce() {
     }
 }
 
+// ---------------------------------------------------------------------------
+// CTileTrigger : CUserLogic (vftable 0x5e7f14). Adds no data members. Three
+// trace-discovered leaf classes derive from it (CTileSecretTrigger /
+// CGiantRock / CCoveredPowerup, each in its own src/Stub/ TU) - shared here so
+// they get a single class definition. Ctors/dtor are out-of-line in
+// src/Gruntz/UserLogic.cpp (no-arg 0x011160, 1-arg 0x10e220, dtor 0x011290).
+// ---------------------------------------------------------------------------
+class CTileTrigger : public CUserLogic {
+public:
+    CTileTrigger();                 // 0x011160 (no-arg)
+    CTileTrigger(CGameObject* obj); // 0x10e220 (1-arg)
+    // Inline & trivial so it folds into the three leaf dtors (0x11540/0x11600/
+    // 0x116c0) rather than being called. MSVC still emits one out-of-line COMDAT
+    // copy (called by CTileTrigger's scalar-deleting dtor); it lands at 0x011290
+    // and is labeled via the @rva-symbol pin in src/Gruntz/UserLogic.cpp (an
+    // inline-defined fn can't hang an RVA() without also tagging the synthesized
+    // ??_G - see the duplicate-RVA guard).
+    virtual ~CTileTrigger() OVERRIDE {}
+};
+
 #endif // GRUNTZ_USERLOGIC_H

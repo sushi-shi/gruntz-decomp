@@ -491,13 +491,6 @@ public:
     void CTeleporter_010dd0();
     void CTeleporter_0419e0();
 };
-class CTileTrigger {
-public:
-    void CTileTrigger_011290();
-    void CTileTrigger_011540();
-    void CTileTrigger_011600();
-    void CTileTrigger_0116c0();
-};
 class CTileTriggerSwitch {
 public:
     void CTileTriggerSwitch_0110f0();

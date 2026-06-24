@@ -36,8 +36,8 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	18	17
 directsoundmgr	26	19
-engine_discovered	969	0
-engine_label_stubs	537	120
+engine_discovered	965	0
+engine_label_stubs	534	117
 filestream	13	9
 font	16	9
 fontconfig	7	4
@@ -85,7 +85,7 @@ uncompr	1	1
 unknownclassarrays	12	2
 unknownsalazar	4	0
 userbaselink	7	0
-userlogic	40	9
+userlogic	47	16
 videoconfig	2	0
 winapi	5	3
 winapicdrom	1	0
@@ -664,10 +664,6 @@ engine_discovered	?CTileTriggerSwitch_0110f0@CTileTriggerSwitch@@QAEXXZ	5.8824	5
 engine_discovered	?CTileTriggerTransition_011730@CTileTriggerTransition@@QAEXXZ	50.0000	50.0000	1	8c033a33771d	0x11730
 engine_discovered	?CTileTriggerTransition_0117f0@CTileTriggerTransition@@QAEXXZ	5.8824	5.8824	1	9a90d2610500	0x117f0
 engine_discovered	?CTileTriggerTransition_110070@CTileTriggerTransition@@QAEXXZ	1.0526	1.0526	1	d352853f3fcf	0x110070
-engine_discovered	?CTileTrigger_011290@CTileTrigger@@QAEXXZ	5.8824	5.8824	1	ceb71d9bbdc6	0x11290
-engine_discovered	?CTileTrigger_011540@CTileTrigger@@QAEXXZ	5.8824	5.8824	1	fd610e4c4425	0x11540
-engine_discovered	?CTileTrigger_011600@CTileTrigger@@QAEXXZ	5.8824	5.8824	1	147b88189e11	0x11600
-engine_discovered	?CTileTrigger_0116c0@CTileTrigger@@QAEXXZ	5.8824	5.8824	1	ab7e785ceb1d	0x116c0
 engine_discovered	?CToobSpikez_012c60@CToobSpikez@@QAEXXZ	5.8824	5.8824	1	d16ff0f9da5d	0x12c60
 engine_discovered	?CToobSpikez_114860@CToobSpikez@@QAEXXZ	0.5333	0.5333	1	0b1c4042697d	0x114860
 engine_discovered	?CUserLogic_00f2f0@CUserLogic@@QAEXXZ	2.2727	2.2727	1	211acac7460b	0xf2f0
@@ -1314,7 +1310,6 @@ engine_label_stubs	??0CBrickz@@QAE@H@Z	1.6667	1.6667	1	cpp:6bf52155264d	0x10e800
 engine_label_stubs	??0CButeNodeBase@@QAE@PAXH@Z	59.5806	59.5806	1	cpp:2262ffc5f902	0x16dff0
 engine_label_stubs	??0CCheckpointTrigger@@QAE@H@Z	1.3554	1.3554	1	cpp:6bf52155264d	0x10ee20
 engine_label_stubs	??0CCheckpointTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	1	cpp:45e65336d4b5	0x1127f0
-engine_label_stubs	??0CCoveredPowerup@@QAE@H@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x10fac0
 engine_label_stubs	??0CCoveredPowerupLogic@@QAE@XZ	100.0000	100.0000	1	cpp:45e65336d4b5	0x112240
 engine_label_stubs	??0CCursorSnapSprite@@QAE@H@Z	1.7822	1.7822	1	cpp:6bf52155264d	0x3a340
 engine_label_stubs	??0CDoNothing@@QAE@H@Z	1.5385	1.5385	1	cpp:6bf52155264d	0xac1d0
@@ -1325,7 +1320,6 @@ engine_label_stubs	??0CExitTrigger@@QAE@H@Z	0.9890	0.9890	1	cpp:6bf52155264d	0x3
 engine_label_stubs	??0CExplosion@@QAE@H@Z	2.2959	2.2959	1	cpp:6bf52155264d	0x470e0
 engine_label_stubs	??0CEyeCandyAni@@QAE@H@Z	1.6014	1.6014	1	cpp:6bf52155264d	0xac870
 engine_label_stubs	??0CFortressFlag@@QAE@H@Z	1.6667	1.6667	1	cpp:6bf52155264d	0x45d30
-engine_label_stubs	??0CGiantRock@@QAE@H@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x10fa90
 engine_label_stubs	??0CGiantRockLogic@@QAE@XZ	100.0000	100.0000	1	cpp:45e65336d4b5	0x112210
 engine_label_stubs	??0CGruntCreationPoint@@QAE@H@Z	1.6187	1.6187	1	cpp:6bf52155264d	0x3e520
 engine_label_stubs	??0CGruntPuddle@@QAE@H@Z	1.8926	1.8926	1	cpp:6bf52155264d	0x40490
@@ -1347,7 +1341,6 @@ engine_label_stubs	??0CStaticHazard@@QAE@H@Z	0.7107	0.7107	1	cpp:6bf52155264d	0x
 engine_label_stubs	??0CStatusBarSprite@@QAE@H@Z	2.3854	2.3854	1	cpp:6bf52155264d	0x10c230
 engine_label_stubs	??0CTileExclusiveTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	1	cpp:45e65336d4b5	0x112050
 engine_label_stubs	??0CTileMultiTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	1	cpp:45e65336d4b5	0x111f10
-engine_label_stubs	??0CTileSecretTrigger@@QAE@H@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x10fa60
 engine_label_stubs	??0CTileSecretTriggerLogic@@QAE@XZ	100.0000	100.0000	1	cpp:45e65336d4b5	0x112760
 engine_label_stubs	??0CTileSecretTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	1	cpp:45e65336d4b5	0x112790
 engine_label_stubs	??0CTileTimeTriggerLogic@@QAE@XZ	100.0000	100.0000	1	cpp:45e65336d4b5	0x112270
@@ -2209,7 +2202,7 @@ spriteloaders	?LoadLoadingBarSprite@CLoadingBar@@QAEHXZ	95.8064	95.8064	6	442edc
 spriteloaders	?LoadTimerSprite@CTimer@@QAEHHH@Z	96.5217	96.5217	6	a776461ab6b3	0x9bb00
 spriteloaders	?Reset@CTimer@@QAEXXZ	100.0000	100.0000	1	f198e826ac7a	0x9bc70
 spriteloaders	?Serialize@CTimer@@QAEHPAUCTimerArchive@@@Z	100.0000	100.0000	1	c1b244fe8407	0x9c2e0
-spriteloaders	?Tick@CTimer@@QAEHH@Z	85.7981	85.7981	1	7f65eaab9408	0x9bca0
+spriteloaders	?Tick@CTimer@@QAEHH@Z	85.7981	85.7981	2	298e9a0bca47	0x9bca0
 spriteresource	?ApplyLookupGeometry@CGruntAnimPlayer@@QAEHPBDH@Z	93.9394	93.9394	3	cd6a16205bc5	0x1505b0
 spriteresource	?CacheFirstFrame@CGruntSprite@@QAEXPBD@Z	89.2647	89.2647	3	9b5d1b0e8b71	0x150540
 spriteresource	?ConfigureItem@CStatusBarMgr@@QAEHHHHH@Z	100.0000	100.0000	3	e63c64317935	0x1360d0
@@ -2274,9 +2267,11 @@ userbaselink	?AddLogicHit@CGameObject@@QAEXPAD@Z	5.2632	5.2632	2	c8ba1df48c6e	0x
 userlogic	??0CAniCycle@@QAE@PAUCGameObject@@@Z	89.0632	89.0632	2	3fc14839e1e8	0xaad20
 userlogic	??0CBehindCandy@@QAE@PAUCGameObject@@@Z	88.7265	88.7265	2	a4e166512356	0xac3f0
 userlogic	??0CBehindCandyAni@@QAE@PAUCGameObject@@@Z	51.7537	51.7537	2	3b3d019e9d02	0xad540
+userlogic	??0CCoveredPowerup@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	1	5293eec817c6	0x10fac0
 userlogic	??0CEyeCandy@@QAE@PAUCGameObject@@@Z	92.5159	92.5159	2	7d58fe9aae58	0xac620
 userlogic	??0CFrontCandy@@QAE@PAUCGameObject@@@Z	91.0678	91.0678	2	207921a08e6a	0xabfa0
 userlogic	??0CFrontCandyAni@@QAE@PAUCGameObject@@@Z	44.7113	44.7113	2	48e218379539	0xacf40
+userlogic	??0CGiantRock@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	1	08161078588f	0x10fa90
 userlogic	??0CGruntHealthSprite@@QAE@PAUCGameObject@@@Z	89.9785	89.9785	2	de496036c857	0x7eb00
 userlogic	??0CGruntHealthSprite@@QAE@XZ	100.0000	100.0000	3	de496036c857	0x11ef0
 userlogic	??0CGruntPowerupSprite@@QAE@PAUCGameObject@@@Z	93.6196	93.6196	2	0db344e654d6	0x7fdb0
@@ -2292,6 +2287,7 @@ userlogic	??0CSimpleAnimation@@QAE@PAUCGameObject@@@Z	93.4831	93.4831	2	750d98c8
 userlogic	??0CSingleAnimation@@QAE@PAUCGameObject@@@Z	89.0000	89.0000	2	e588470a69ca	0xae7f0
 userlogic	??0CSingleFrameMessage@@QAE@PAUCGameObject@@@Z	82.3246	82.3246	2	bddb4acb19f9	0xab310
 userlogic	??0CTeleporter@@QAE@PAUCGameObject@@@Z	89.9806	89.9806	2	a49943fa7768	0x41020
+userlogic	??0CTileSecretTrigger@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	1	77f161166ea3	0x10fa60
 userlogic	??0CTileTrigger@@QAE@PAUCGameObject@@@Z	91.6759	91.6759	2	bc2a30d21c88	0x10e220
 userlogic	??0CTileTrigger@@QAE@XZ	100.0000	100.0000	3	bc2a30d21c88	0x11160
 userlogic	??0CTileTriggerSwitch@@QAE@PAUCGameObject@@@Z	97.9479	97.9479	2	0900a941b158	0x10dc40
@@ -2299,7 +2295,11 @@ userlogic	??0CTileTriggerTransition@@QAE@PAUCGameObject@@@Z	94.9390	94.9390	2	6d
 userlogic	??0CToobSpikez@@QAE@PAUCGameObject@@@Z	93.0094	93.0094	2	220a38aa2067	0x1145c0
 userlogic	??0CVoiceTrigger@@QAE@XZ	100.0000	100.0000	2	5f5c27939720	0x13470
 userlogic	??0CWarpStonePad@@QAE@PAUCGameObject@@@Z	91.9406	91.9406	2	8c9f294f9ac0	0x10d650
+userlogic	??1CCoveredPowerup@@UAE@XZ	100.0000	100.0000	1	02ad44f70f44	0x116c0
+userlogic	??1CGiantRock@@UAE@XZ	100.0000	100.0000	1	5f8577cc8ce3	0x11600
 userlogic	??1CSecretTeleporterTrigger@@UAE@XZ	100.0000	100.0000	1	8a1acf755936	0x10ab0
+userlogic	??1CTileSecretTrigger@@UAE@XZ	100.0000	100.0000	1	a32d67055f07	0x11540
+userlogic	??1CTileTrigger@@UAE@XZ	100.0000	100.0000	1	cpp:69062e3bf126	0x11290
 userlogic	?FireActivation@CSecretTeleporterTrigger@@QAEXH@Z	100.0000	100.0000	1	2f3290ad0c77	0x42150
 userlogic	?LoadGruntDecayConfig2@CUserLogic@@QAEXXZ	1.2195	1.2195	1	edd8f9929bc3	0x61570
 userlogic	?LoadGruntDecayConfig@CUserLogic@@QAEXXZ	0.6135	0.6135	1	92fac0c4600f	0x612a0
