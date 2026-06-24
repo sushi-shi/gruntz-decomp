@@ -648,13 +648,6 @@ class ClassUnknown_56 {
 public:
     void ClassUnknown_56_08c3b0();
 };
-class ClassUnknown_57 {
-public:
-    void ClassUnknown_57_03a1d0();
-    void ClassUnknown_57_1590f0();
-    void ClassUnknown_57_163e20();
-    void ClassUnknown_57_163f40();
-};
 class ClassUnknown_58 {
 public:
     void ClassUnknown_58_0204e0();

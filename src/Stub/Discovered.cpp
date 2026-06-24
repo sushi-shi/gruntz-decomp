@@ -916,14 +916,8 @@ RVA(0x0008c3b0, 0x10)
 void ClassUnknown_56::ClassUnknown_56_08c3b0() {}
 
 // ---- ClassUnknown_57 ----
-RVA(0x0003a1d0, 0x1d)
-void ClassUnknown_57::ClassUnknown_57_03a1d0() {}
-RVA(0x001590f0, 0x56)
-void ClassUnknown_57::ClassUnknown_57_1590f0() {}
-RVA(0x00163e20, 0x2d)
-void ClassUnknown_57::ClassUnknown_57_163e20() {}
-RVA(0x00163f40, 0x23e)
-void ClassUnknown_57::ClassUnknown_57_163f40() {}
+// All four methods reconstructed in src/Gruntz/CDDrawSurfacePair.cpp
+// (CDDrawSurfacePair: BltSelf/~dtor/TeardownSurface/DrawBox).
 
 // ---- ClassUnknown_58 ----
 RVA(0x000204e0, 0x19)

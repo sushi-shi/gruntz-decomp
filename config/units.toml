@@ -659,6 +659,11 @@ source = "src/Gruntz/CDirectDrawMgr.cpp"
 flags = "base"
 
 [[unit]]
+unit = "cddrawsurfacepair"
+source = "src/Gruntz/CDDrawSurfacePair.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "directinputmgr2"
 source = "src/DinMgr2/DirectInputMgr2.cpp"
 flags = "eh"
