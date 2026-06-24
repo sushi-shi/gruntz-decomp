@@ -794,9 +794,6 @@ public:
 };
 class EngStr {
 public:
-    void EngStr_115440();
-    void EngStr_16da60();
-    void EngStr_16e100();
     void EngStr_193080();
 };
 class HelperHost {

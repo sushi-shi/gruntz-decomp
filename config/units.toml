@@ -294,6 +294,11 @@ source = "src/Wap32/ZVec.cpp"
 flags = "base"
 
 [[unit]]
+unit = "engstr"
+source = "src/Wap32/EngStr.cpp"
+flags = "base"
+
+[[unit]]
 unit = "userbaselink"
 source = "src/Gruntz/UserBaseLink.cpp"
 flags = "eh"

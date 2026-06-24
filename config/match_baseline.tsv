@@ -54,8 +54,9 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	306	0
+engine_discovered	303	0
 engine_label_stubs	519	118
+engstr	3	1
 filemem	8	7
 filestream	13	9
 font	21	10
@@ -878,9 +879,6 @@ engine_discovered	?ClassUnknown_98_056da0@ClassUnknown_98@@QAEXXZ	0.5263	0.5263	
 engine_discovered	?ClassUnknown_99_046850@ClassUnknown_99@@QAEXXZ	1.1905	1.1905	1	682e379fb996	0x46850
 engine_discovered	?CmdHost_0953f0_08cf30@CmdHost_0953f0@@QAEXXZ	4.7619	4.7619	1	b754770039fb	0x8cf30
 engine_discovered	?CmdHost_0953f0_095140@CmdHost_0953f0@@QAEXXZ	1.0000	1.0000	1	51dfad8f6659	0x95140
-engine_discovered	?EngStr_115440@EngStr@@QAEXXZ	3.5714	3.5714	1	4df860a030a3	0x115440
-engine_discovered	?EngStr_16da60@EngStr@@QAEXXZ	16.6667	16.6667	1	cc9758184bbb	0x16da60
-engine_discovered	?EngStr_16e100@EngStr@@QAEXXZ	0.8511	0.8511	1	5f553ba04b96	0x16e100
 engine_discovered	?EngStr_193080@EngStr@@QAEXXZ	1.4085	1.4085	1	57668837d0b4	0x193080
 engine_discovered	?HelperHost_1549d0@HelperHost@@QAEXXZ	8.3333	8.3333	1	e75288bb0c22	0x1549d0
 engine_discovered	?HelperHost_154a50@HelperHost@@QAEXXZ	9.0909	9.0909	1	7e8b49cdcd9c	0x154a50
@@ -1430,6 +1428,9 @@ engine_label_stubs	_RezStrrchr	8.6957	8.6957	1	cpp:2262ffc5f902	0x120680
 engine_label_stubs	_StartupGate	0.0000	0.0000	1	cpp:2262ffc5f902	0x2f59
 engine_label_stubs	_SubstringMatch	2.8986	2.8986	1	cpp:2262ffc5f902	0x120090
 engine_label_stubs	_VersionScan	8.6957	8.6957	1	cpp:2262ffc5f902	0x120900
+engstr	??1CContainerErr@@QAE@XZ	100.0000	100.0000	1	437607bea3c5	0x16da60
+engstr	?EngStr_DrawText@@YAXPAUEngStrRenderObj@@HHHHHHHH@Z	94.2857	94.2857	1	3394d3b9fa01	0x115440
+engstr	?SetSize@zBitVec@@QAEHH@Z	98.7234	98.7234	1	fcee90903128	0x16e100
 filemem	??0CFileMemBase@@QAE@XZ	100.0000	100.0000	1	04d2148fb703	0x157850
 filemem	??1CFileMem@@QAE@XZ	59.2593	59.2593	1	ec8015f95309	0x157980
 filemem	?Open@CFileMem@@QAEHXZ	100.0000	100.0000	1	a36fe9e8b972	0x165e60
@@ -1943,7 +1944,7 @@ projectile	?StepMotion@CProjectile@@QAEXXZ	70.6977	70.6977	2	be95913fb568	0xe08b
 pyramidbridgesprites	?LoadPyramidBridge@CPlayLevelLoad@@QAEXH@Z	7.3030	7.3030	2	fc1e88cb93b0	0x110c10
 randomambientsound	?BaseInit@CRandomAmbientSound@@QAEXXZ	100.0000	100.0000	1	7fdacdff3f87	0xbb40
 randomambientsound	?Setup@CRandomAmbientSound@@QAEHPAVDirectSoundMgr@@HHPAUAmbientBox@@H@Z	100.0000	100.0000	1	55857903aa7d	0xbe50
-randomambientsound	?Step@CRandomAmbientSound@@QAEXHHH@Z	93.6594	93.6594	1	8a96fa01eee7	0xcb30
+randomambientsound	?Step@CRandomAmbientSound@@QAEXHHH@Z	93.6594	93.6594	2	acf931ba19b0	0xcb30
 randomambientsound	?Update@CRandomAmbientSound@@QAEXHHH@Z	35.3264	35.3264	1	e8761bf3bb1a	0xc2a0
 registryhelper	?Close@RegistryHelper@Utils@@QAEXXZ	100.0000	100.0000	4	384a98aaca34	0x139330
 registryhelper	?GetRegistryKey@RegistryHelper@Utils@@QAEHPAUHKEY__@@PADPAPAU3@@Z	100.0000	100.0000	3	90d7795268cd	0x139650

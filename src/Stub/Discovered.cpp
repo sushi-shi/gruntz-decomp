@@ -1108,13 +1108,11 @@ void CmdHost_0953f0::CmdHost_0953f0_08cf30() {}
 RVA(0x00095140, 0x6e)
 void CmdHost_0953f0::CmdHost_0953f0_095140() {}
 
-// ---- EngStr ----
-RVA(0x00115440, 0x45)
-void EngStr::EngStr_115440() {}
-RVA(0x0016da60, 0x12)
-void EngStr::EngStr_16da60() {}
-RVA(0x0016e100, 0x7f)
-void EngStr::EngStr_16e100() {}
+// ---- EngStr ---- the cluster splits across classes (not one EngStr): the text-
+// draw forwarder (0x115440), CContainerErr::~CContainerErr (0x16da60, NOT ~_zvec)
+// and zBitVec::SetSize (0x16e100) were reconstructed into src/Wap32/EngStr.cpp.
+// 0x193080 (a CButeText bit-set serializer; appends '[' / indices / ']' via the
+// CButeText helpers) belongs in src/Bute/ and remains here for the final sweep.
 RVA(0x00193080, 0xb5)
 void EngStr::EngStr_193080() {}
 
