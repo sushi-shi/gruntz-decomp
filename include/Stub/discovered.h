@@ -474,13 +474,6 @@ public:
     void CSecretLevelTrigger_010c50();
     void CSecretLevelTrigger_042ac0();
 };
-class CSecretTeleporterTrigger {
-public:
-    void CSecretTeleporterTrigger_010a10();
-    void CSecretTeleporterTrigger_010ab0();
-    void CSecretTeleporterTrigger_042150();
-    void CSecretTeleporterTrigger_042b80();
-};
 class CSimpleAnimation {
 public:
     void CSimpleAnimation_00f9d0();

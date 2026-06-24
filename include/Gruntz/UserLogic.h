@@ -62,9 +62,9 @@ extern "C" char g_emptyString[];
 // makes MSVC emit the /GX EH frame in every leaf ctor.
 // ---------------------------------------------------------------------------
 struct CUserBaseLink {
-    CUserBaseLink();  // 0x16d710 (out-of-line; can throw)
-    ~CUserBaseLink(); // out-of-line dtor (cleaned up on unwind)
-    EngStr m_str;     // +0x00  (its name field; the 0x5f04c8 EngStr vptr)
+    CUserBaseLink();    // 0x16d710 (out-of-line; can throw)
+    ~CUserBaseLink() {} // inline: folds to the embedded ~EngStr call in leaf dtors
+    EngStr m_str;       // +0x00  (its name field; the 0x5f04c8 EngStr vptr)
 };
 
 // ---------------------------------------------------------------------------
@@ -152,7 +152,7 @@ struct CLogicTypeBuilder;
 class CUserBase {
 public:
     CUserBase() {}
-    virtual ~CUserBase();         // slot 0
+    virtual ~CUserBase() {}       // inline: folds into leaf dtors (final base vptr store)
     virtual int UserBaseVfunc1(); // slot 1
     virtual int UserBaseVfunc2(); // slot 2
 };
@@ -167,7 +167,7 @@ class CUserLogic : public CUserBase {
 public:
     CUserLogic() {}
     CUserLogic(CGameObject* obj);
-    virtual ~CUserLogic() OVERRIDE; // slot 0 (most-derived dtor)
+    virtual ~CUserLogic() OVERRIDE {} // inline: folds into leaf dtors (link teardown + vptr stores)
     virtual int UserLogicVfunc1();
     virtual int UserLogicVfunc2();
     virtual int UserLogicVfunc3();
@@ -179,6 +179,11 @@ public:
     virtual int UserLogicVfunc9();
     virtual int UserLogicVfuncA();
     virtual int UserLogicVfuncB();
+
+    // The shared serialize-chain helper (0x16e7f0, __thiscall ret 0x10). Run on
+    // `this` by the leaf Serialize overrides. External/no-body (reloc-masked;
+    // pinned in src/Stub/Discovered.cpp).
+    int SerializeChain(int a, int b, int c, int d); // 0x16e7f0
 
     // Inline one-shot wrapper: registers the built-in logic types the first time
     // any tile-logic object is built. Inlined into the 1-arg ctor; its `this`

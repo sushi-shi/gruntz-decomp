@@ -10,7 +10,6 @@
 // The +0x18 link: an EngStr name, ctor at 0x16d710 (can throw).
 RVA(0x0016d710, 0x76)
 CUserBaseLink::CUserBaseLink() {}
-CUserBaseLink::~CUserBaseLink() {}
 
 // EngStr - the engine string class (incs CString clone). Bodies live in the
 // engine string TU; pinned here so the ctors' temp-construct/assign/destruct

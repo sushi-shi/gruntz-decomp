@@ -36,7 +36,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	18	17
 directsoundmgr	26	19
-engine_discovered	993	0
+engine_discovered	989	0
 engine_label_stubs	537	120
 filestream	13	9
 font	16	9
@@ -84,7 +84,7 @@ uncompr	1	1
 unknownclassarrays	12	2
 unknownsalazar	4	0
 userbaselink	7	0
-userlogic	36	5
+userlogic	40	9
 videoconfig	2	0
 winapi	5	3
 winapicdrom	1	0
@@ -622,10 +622,6 @@ engine_discovered	?CSBI_RectOnly_10b930@CSBI_RectOnly@@QAEXXZ	0.2963	0.2963	1	f5
 engine_discovered	?CSBI_RectOnly_10bb90@CSBI_RectOnly@@QAEXXZ	2.5000	2.5000	1	01fc066ba46c	0x10bb90
 engine_discovered	?CSecretLevelTrigger_010c50@CSecretLevelTrigger@@QAEXXZ	5.8824	5.8824	1	6b2878a10ea6	0x10c50
 engine_discovered	?CSecretLevelTrigger_042ac0@CSecretLevelTrigger@@QAEXXZ	1.9608	1.9608	1	646e65b35651	0x42ac0
-engine_discovered	?CSecretTeleporterTrigger_010a10@CSecretTeleporterTrigger@@QAEXXZ	1.1111	1.1111	1	adad776ecb39	0x10a10
-engine_discovered	?CSecretTeleporterTrigger_010ab0@CSecretTeleporterTrigger@@QAEXXZ	5.8824	5.8824	1	b5b35e5a6445	0x10ab0
-engine_discovered	?CSecretTeleporterTrigger_042150@CSecretTeleporterTrigger@@QAEXXZ	0.5333	0.5333	1	78c1c5513a0d	0x42150
-engine_discovered	?CSecretTeleporterTrigger_042b80@CSecretTeleporterTrigger@@QAEXXZ	1.0309	1.0309	1	f6641a3791d6	0x42b80
 engine_discovered	?CSeverusWorker_151f00@CSeverusWorker@@QAEXXZ	0.5479	0.5479	1	a50098a87424	0x151f00
 engine_discovered	?CSeverusWorker_15cc30@CSeverusWorker@@QAEXXZ	3.6364	3.6364	1	a9a2bd37f28c	0x15cc30
 engine_discovered	?CSimpleAnimation_00f9d0@CSimpleAnimation@@QAEXXZ	5.8824	5.8824	1	89680198f0ac	0xf9d0
@@ -2302,11 +2298,15 @@ userlogic	??0CTileTriggerTransition@@QAE@PAUCGameObject@@@Z	94.9390	94.9390	2	6d
 userlogic	??0CToobSpikez@@QAE@PAUCGameObject@@@Z	93.0094	93.0094	2	220a38aa2067	0x1145c0
 userlogic	??0CVoiceTrigger@@QAE@XZ	100.0000	100.0000	2	5f5c27939720	0x13470
 userlogic	??0CWarpStonePad@@QAE@PAUCGameObject@@@Z	91.9406	91.9406	2	8c9f294f9ac0	0x10d650
+userlogic	??1CSecretTeleporterTrigger@@UAE@XZ	100.0000	100.0000	1	8a1acf755936	0x10ab0
+userlogic	?FireActivation@CSecretTeleporterTrigger@@QAEXH@Z	100.0000	100.0000	1	2f3290ad0c77	0x42150
 userlogic	?LoadGruntDecayConfig2@CUserLogic@@QAEXXZ	1.2195	1.2195	1	edd8f9929bc3	0x61570
 userlogic	?LoadGruntDecayConfig@CUserLogic@@QAEXXZ	0.6135	0.6135	1	92fac0c4600f	0x612a0
 userlogic	?LoadGruntTuningConstants@CUserLogic@@QAEXH@Z	0.0646	0.0646	1	2b4b0f8eed4e	0x5d210
 userlogic	?LoadGruntTypeTable@CUserLogic@@QAEXHHHH@Z	0.0415	0.0415	1	4eccb4031701	0x4dd50
 userlogic	?LoadWandGruntItemConfig@CUserLogic@@QAEXXZ	1.0638	1.0638	1	10cb95c55260	0x65a60
+userlogic	?Serialize@CSecretTeleporterTrigger@@QAEHHHHH@Z	100.0000	100.0000	1	e85a3772d1b2	0x10a10
+userlogic	?SpawnTeleporter@CSecretTeleporterTrigger@@QAEHXZ	100.0000	100.0000	1	bfda8869fc3c	0x42b80
 userlogic	?winapi_04d800_CopyRect@CUserLogic@@QAEHHHHHHHHHHHHH@Z	0.6786	0.6786	2	20c2d9c1eeaa	0x4d800
 userlogic	?winapi_064540_PostMessageA@CUserLogic@@QAEHXZ	2.5974	2.5974	1	43a786a492a0	0x64540
 userlogic	?winapi_0ee800_IntersectRect_PtInRect@CUserLogic@@QAEHXZ	0.2653	0.2653	1	60fd51ad9d42	0xee800

@@ -726,16 +726,6 @@ void CSecretLevelTrigger::CSecretLevelTrigger_010c50() {}
 RVA(0x00042ac0, 0x90)
 void CSecretLevelTrigger::CSecretLevelTrigger_042ac0() {}
 
-// ---- CSecretTeleporterTrigger ----
-RVA(0x00010a10, 0x47)
-void CSecretTeleporterTrigger::CSecretTeleporterTrigger_010a10() {}
-RVA(0x00010ab0, 0x44)
-void CSecretTeleporterTrigger::CSecretTeleporterTrigger_010ab0() {}
-RVA(0x00042150, 0x102)
-void CSecretTeleporterTrigger::CSecretTeleporterTrigger_042150() {}
-RVA(0x00042b80, 0x153)
-void CSecretTeleporterTrigger::CSecretTeleporterTrigger_042b80() {}
-
 // ---- CSimpleAnimation ----
 RVA(0x0000f9d0, 0x44)
 void CSimpleAnimation::CSimpleAnimation_00f9d0() {}

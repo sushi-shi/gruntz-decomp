@@ -27,7 +27,9 @@ extern CButeTree g_buteTree;
 // ---------------------------------------------------------------------------
 // Out-of-line vtable anchors. These give each base class a real vftable in this
 // TU so the inline ctors emit the right vptr stores. Bodies are not matched.
-CUserBase::~CUserBase() {}
+// (~CUserBase / ~CUserLogic are now inline in the header so leaf dtors fold the
+// whole base teardown; the remaining out-of-line virtuals still anchor the
+// vftables.)
 int CUserBase::UserBaseVfunc1() {
     return 0;
 }
@@ -35,7 +37,6 @@ int CUserBase::UserBaseVfunc2() {
     return 0;
 }
 
-CUserLogic::~CUserLogic() {}
 int CUserLogic::UserLogicVfunc1() {
     return 0;
 }
@@ -70,6 +71,17 @@ int CUserLogic::UserLogicVfuncB() {
     return 0;
 }
 
+// ---------------------------------------------------------------------------
+// CSecretTeleporterTrigger virtual support. Two engine externs the Serialize
+// override (0x010a10) chains; both __thiscall ret 0x10 (4 args), modeled NO-body
+// so the calls reloc-mask:
+//   * CUserLogic::SerializeChain (0x16e7f0) - run on `this`.
+//   * the +0x34 serializable sub-object's chain (0x8c00) - run on `&this->m_34`
+//     (reached via `lea ecx,[esi+0x34]`). Modeled as a method on a tiny helper.
+// (Both bodies are pinned in src/Stub/Discovered.cpp.)
+struct CSerialSub34 {
+    int Chain(int a, int b, int c, int d); // 0x8c00
+};
 // ===========================================================================
 // Class declarations (one vftable each; some have both ctor shapes).
 // ===========================================================================
@@ -117,6 +129,12 @@ class CSecretTeleporterTrigger : public CUserLogic {
 public:
     CSecretTeleporterTrigger(CGameObject* obj); // 0x041e90
     virtual ~CSecretTeleporterTrigger() OVERRIDE;
+    // The two overridden CUserLogic virtuals reconstructed below.
+    int Serialize(int a, int b, int c, int d); // 0x010a10 (vtable slot 1)
+    void FireActivation(int coord);            // 0x042150 (vtable slot 4)
+    // The registered point-activation callback 0x042b80 stamped into the
+    // coordinate registry by FireActivation. __thiscall, no args, returns int.
+    int SpawnTeleporter(); // 0x042b80
 };
 
 class CWarpStonePad : public CUserLogic {
@@ -274,11 +292,96 @@ struct WwdGameRegAux {
     char m_pad00[0x3c];
     int m_3c; // +0x3c
 };
+
+// The on-screen-cue receiver (g_gameReg->m_60). The teleporter spawn fires a
+// 6-arg cue (CueA, ret 0x18, via the 0x39f4 thunk). External/no-body
+// (reloc-masked).
+struct CTeleCueSink {
+    void CueA(void* hit, int b, int c, int d, int e, int f); // 0x11b3b0
+};
+
+// The point-probe sink (g_gameReg->m_68): given screen x/y, fills two out-ints
+// and returns the trigger object hit (or 0). 5-arg __thiscall ret 0x14, via the
+// 0x35f3 thunk (-> 0x75af0). External/no-body (reloc-masked).
+struct CTrigger; // the trigger object the probe returns / the cue receives
+struct CTriggerProbe {
+    CTrigger* Probe(int x, int y, int* outA, int* outB, int flag); // 0x75af0
+};
+
+// The viewport rect base reached as g_gameReg->m_30->m_24->m_5c + 0x40; the
+// on-screen test reads its left/top/right/bottom (m_0/m_4/m_8/m_c).
+struct CViewRect {
+    int m_0; // left
+    int m_4; // top
+    int m_8; // right
+    int m_c; // bottom
+};
+struct CViewport {
+    char m_pad0[0x5c];
+    char* m_5c; // +0x5c  rect-base pointer (test reads (CViewRect*)(m_5c + 0x40))
+};
+
+// The HUD sprite object the teleporter spawn produces / reads its template from
+// (the trigger's m_10). The spawn copies its tile/teleport-link fields. Only the
+// touched offsets are modeled.
+struct CTeleHudAux {
+    char m_pad0[0xbc];
+    int m_bc; // +0xbc  teleport-link id
+};
+struct CTeleHudSprite {
+    char m_pad0[0x5c];
+    int m_5c; // +0x5c  screen x
+    int m_60; // +0x60  screen y
+    char m_pad64[0x7c - 0x64];
+    CTeleHudAux* m_7c; // +0x7c
+    char m_pad80[0x114 - 0x80];
+    int m_114; // +0x114  tile col
+    int m_118; // +0x118  tile row
+    int m_11c; // +0x11c
+    int m_120; // +0x120
+    int m_124; // +0x124  state
+    int m_128; // +0x128
+    char m_pad12c[0x164 - 0x12c];
+    int m_164; // +0x164
+    int m_168; // +0x168
+};
+
+// The HUD sprite factory the spawn calls (g_gameReg->m_30->m_8->CreateSprite).
+struct CTeleSpriteFactory {
+    CTeleHudSprite* CreateSprite(
+        int kind,
+        int gx,
+        int gy,
+        int hint,
+        const char* name,
+        int flags
+    ); // 0x1597b0
+};
+
+// The trigger object the probe returns (its m_10 is the HUD sprite read for the
+// on-screen cue's coordinates).
+struct CTrigger {
+    char m_pad0[0x10];
+    CTeleHudSprite* m_10; // +0x10
+};
+struct CTeleResHolder { // the +0x30 resource/sprite-factory holder
+    char m_pad0[0x8];
+    CTeleSpriteFactory* m_8; // +0x08
+    char m_pad0c[0x24 - 0xc];
+    CViewport* m_24; // +0x24  viewport (visible-bounds source)
+};
+
 struct WwdGameReg {
     // Fills the passed RECT with the on-screen message bounds and returns it
     // (0x2cb1 thunk; __thiscall). Modeled NO-body so the call reloc-masks.
     RECT* GetMessageBounds(RECT* out);
-    char m_pad00[0x7c];
+    char m_pad00[0x30];
+    CTeleResHolder* m_30; // +0x30  sprite-factory/viewport holder
+    char m_pad34[0x60 - 0x34];
+    CTeleCueSink* m_60; // +0x60  on-screen cue receiver
+    char m_pad64[0x68 - 0x64];
+    CTriggerProbe* m_68; // +0x68  point-probe sink
+    char m_pad6c[0x7c - 0x6c];
     WwdGameRegAux* m_7c; // +0x7c
     char m_pad80[0x118 - 0x80];
     int m_118; // +0x118
@@ -291,9 +394,96 @@ extern WwdGameReg* g_gameReg;
 // The CRT rand() (0x11fee0); CMenuSparkle seeds its +0x130 timer from it.
 extern "C" int rand(void);
 
+// ---------------------------------------------------------------------------
+// The per-coordinate activation registry FireActivation (0x042150) dispatches
+// through. A coordinate maps to an Entry* either directly (when within the
+// fast [g_actLo,g_actHi] range) via g_actBase + (coord-g_actLo)*g_actStride, or
+// by a slow lookup in g_actColl (0x16da80, __thiscall ret 8), which on miss
+// rebuilds the table (g_actAlloc 0x16d990 -> g_actCache, g_actColl2 insert
+// 0x16d850 __thiscall ret 0xc) and yields g_actCur. The entry's first dword is a
+// fn-ptr table; a nonzero entry's handler is called __thiscall on `this`.
+// All globals are unnamed BSS (DATA-pinned here so the loads reloc-mask); the
+// collection methods are external/no-body.
+struct CActEntry; // an entry: first dword is the registered handler vtable
+struct CActColl {
+    int Find(int coord, int z); // 0x16da80 (__thiscall ret 8)
+};
+struct CActColl2 {
+    void Insert(void* coll, void* item, int n); // 0x16d850 (__thiscall ret 0xc)
+};
+extern "C" int ActAlloc(); // 0x16d990
+
+DATA(0x00244690)
+extern int g_actLo;
+DATA(0x00244694)
+extern int g_actHi;
+DATA(0x00244698)
+extern char* g_actBase;
+DATA(0x002446a0)
+extern int g_actStride;
+DATA(0x0024469c)
+extern CActEntry* g_actCur;
+DATA(0x002446a8)
+extern int g_actScratch;
+DATA(0x00244688)
+extern CActColl g_actColl;
+DATA(0x0024468c)
+extern CActColl2* g_actColl2;
+DATA(0x002bf464)
+extern void* g_actCache;
+DATA(0x002bf428)
+extern void* g_actAllocResult;
+
+// The Entry the registry yields: its first dword is the handler fn-ptr, a
+// __thiscall called with the trigger as `this`.
+class CSecretTeleporterTrigger;
+// The entry's first dword is a pointer-to-member-function of the trigger class
+// (single inheritance -> a 4-byte code pointer); FireActivation invokes it on
+// `this`, emitting `mov ecx,this; call [entry]`.
+typedef void (CSecretTeleporterTrigger::*ActHandler)();
+struct CActEntry {
+    ActHandler m_fn; // [entry]
+};
+
+// The inlined coordinate->Entry* lookup FireActivation folds in twice.
+static inline CActEntry* ActLookup(int coord) {
+    g_actScratch = 0;
+    if (coord >= g_actLo && coord <= g_actHi) {
+        return (CActEntry*)(g_actBase + (coord - g_actLo) * g_actStride);
+    }
+    if (g_actColl.Find(coord, 0)) {
+        return (CActEntry*)(g_actBase + (coord - g_actLo) * g_actStride);
+    }
+    void* item = g_actCache;
+    g_actAllocResult = (void*)ActAlloc();
+    g_actColl2->Insert(&g_actColl, item, 0xc);
+    return g_actCur;
+}
+
 // ===========================================================================
 // Definitions in ascending-RVA order.
 // ===========================================================================
+
+// --- CSecretTeleporterTrigger::Serialize (0x010a10), vtable slot 1 ---
+// Chains the shared serialize helper on `this`, and (only on success) the +0x34
+// serializable sub-object's chain; normalizes the result to a strict bool.
+RVA(0x00010a10, 0x47)
+int CSecretTeleporterTrigger::Serialize(int a, int b, int c, int d) {
+    if (!SerializeChain(a, b, c, d)) {
+        return 0;
+    }
+    return ((CSerialSub34*)((char*)this + 0x34))->Chain(a, b, c, d) != 0;
+}
+
+// --- CSecretTeleporterTrigger::~CSecretTeleporterTrigger (0x010ab0) ---
+// The leaf adds no members, so its dtor folds the bare CUserLogic teardown:
+// store the CUserLogic vptr, inline-destruct the +0x18 link (the embedded
+// ~EngStr call), store the CUserBase vptr. The destructible link forces the /GX
+// EH frame. The fold requires ~CUserBase/~CUserLogic/~CUserBaseLink to be inline
+// (see UserLogic.h); the empty leaf body below is enough for cl to emit it.
+RVA(0x00010ab0, 0x44)
+CSecretTeleporterTrigger::~CSecretTeleporterTrigger() {}
+
 CSecretLevelTrigger::~CSecretLevelTrigger() {}
 RVA(0x00010b20, 0x4b)
 CSecretLevelTrigger::CSecretLevelTrigger() {}
@@ -343,7 +533,6 @@ CTeleporter::CTeleporter(CGameObject* obj) : CUserLogic(obj) {
 }
 
 // --- CSecretTeleporterTrigger (0x041e90), vptr 0x5e7564 ---
-CSecretTeleporterTrigger::~CSecretTeleporterTrigger() {}
 RVA(0x00041e90, 0x1ac)
 CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj) : CUserLogic(obj) {
     if (g_gameReg->m_118 == 0 && g_gameReg->m_134 == 1) {
@@ -360,6 +549,18 @@ CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj) : CUserLogi
         m_30 = m_14->m_1c;
         m_14->m_1c = g_buteTree.Find("A");
         g_gameReg->m_7c->m_3c++;
+    }
+}
+
+// --- CSecretTeleporterTrigger::FireActivation (0x042150), vtable slot 4 ---
+// Look the activation coordinate up in the per-coordinate registry; if the entry
+// has a registered handler, look it up again and dispatch it __thiscall on this.
+RVA(0x00042150, 0x102)
+void CSecretTeleporterTrigger::FireActivation(int coord) {
+    CActEntry* e = ActLookup(coord);
+    if (e->m_fn != 0) {
+        CActEntry* e2 = ActLookup(coord);
+        (this->*(e2->m_fn))();
     }
 }
 
@@ -380,6 +581,52 @@ CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj) : CUserLogic(obj) {
     } else {
         m_38->m_08 |= 0x10000;
     }
+}
+
+// --- CSecretTeleporterTrigger::SpawnTeleporter (0x042b80) ---
+// The registered point-activation callback: probe the trigger's screen point for
+// a hit grunt; if hit, spawn the "Teleporter" HUD sprite at the (tile<<5)+0x10
+// position, clone the trigger's teleport-link/tile fields into it, and (when the
+// hit grunt is on-screen) fire the 6-arg cue. Always closes by marking the
+// trigger sub-object hidden (m_38->m_08 |= 0x10000).
+RVA(0x00042b80, 0x153)
+int CSecretTeleporterTrigger::SpawnTeleporter() {
+    int loc0, loc4;
+    CTeleHudSprite* o = (CTeleHudSprite*)m_10;
+    CTrigger* hit = g_gameReg->m_68->Probe(o->m_5c, o->m_60, &loc0, &loc4, 1);
+    if (hit) {
+        o = (CTeleHudSprite*)m_10;
+        CTeleSpriteFactory* fac = g_gameReg->m_30->m_8;
+        CTeleHudSprite* spr = fac->CreateSprite(
+            0,
+            (o->m_114 << 5) + 0x10,
+            (o->m_118 << 5) + 0x10,
+            0,
+            "Teleporter",
+            0x40003
+        );
+        if (spr) {
+            spr->m_124 = 2;
+            spr->m_7c->m_bc = ((CTeleHudSprite*)m_10)->m_7c->m_bc;
+            spr->m_164 = ((CTeleHudSprite*)m_10)->m_164;
+            spr->m_168 = ((CTeleHudSprite*)m_10)->m_168;
+            spr->m_11c = ((CTeleHudSprite*)m_10)->m_11c;
+            spr->m_120 = ((CTeleHudSprite*)m_10)->m_120;
+            spr->m_114 = ((CTeleHudSprite*)m_10)->m_114;
+            spr->m_118 = ((CTeleHudSprite*)m_10)->m_118;
+            spr->m_128 = 0;
+            CTeleHudSprite* eo = hit->m_10;
+            WwdGameReg* g = g_gameReg;
+            int ey = eo->m_60;
+            int ex = eo->m_5c;
+            CViewRect* rc = (CViewRect*)(g->m_30->m_24->m_5c + 0x40);
+            if (ex < rc->m_8 && ex >= rc->m_0 && ey < rc->m_c && ey >= rc->m_4) {
+                g->m_60->CueA(hit, 0x3fc, -1, 0, -1, -1);
+            }
+        }
+        m_38->m_08 |= 0x10000;
+    }
+    return 0;
 }
 
 // --- CParticlez (0x046ad0), vptr 0x5e7614 ---
