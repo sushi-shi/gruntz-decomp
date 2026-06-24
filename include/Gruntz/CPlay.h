@@ -63,19 +63,16 @@ struct CDrawSurface {
     char p0[0x10];
     // +0x10: the viewport rect {left,top,right,bottom}; StepScroll reads .left/.top
     // as the scroll origin, DispatchHudClick reads all four as the bounds box.
-    i32 m_10; // +0x10  scroll origin X / viewport left
-    i32 m_14; // +0x14  scroll origin Y / viewport top
-    i32 m_18; // +0x18  viewport right
-    i32 m_1c; // +0x1c  viewport bottom
+    RECT m_viewport; // +0x10  viewport rect (also the scroll origin .left/.top)
     char p20[0x5c - 0x20];
-    // +0x5c -> a geom block: StepScroll reads (m_5c+0x40).{m_0,m_4}; the world
-    // blit reads (m_5c).{m_84,m_88}.
-    struct M5c {
+    // +0x5c -> a geom block: StepScroll reads (m_5c+0x40).{m_originX,m_originY};
+    // the world blit reads (m_5c).{m_84,m_88}.
+    struct CameraGeom {
         void DrawA(); // 0x563300  per-frame world-draw sub-step A
         void DrawB(); // 0x563370  per-frame world-draw sub-step B
         char p0[0x40];
-        i32 m_40_0;
-        i32 m_40_4;
+        i32 m_originX; // +0x40
+        i32 m_originY; // +0x44
         char p48[0x84 - 0x48];
         i32 m_84;
         i32 m_88;
@@ -85,13 +82,13 @@ struct CDrawSurface {
 // m_c (the view/anim sub-object holder).
 struct CView {
     char p0[0x4];
-    struct M4 { // +0x04  the renderer-state object
+    struct RenderState { // +0x04  the renderer-state object
         char p0[0x10];
-        struct M10 {
+        struct SurfaceA {
             char p0[0x2c];
             void* m_2c;
         }* m_10; // +0x10 -> +0x2c surface
-        struct M14 {
+        struct SurfaceB {
             char p0[0x2c];
             void* m_2c;
         }* m_14;    // +0x14 -> +0x2c draw surface (view obj)
@@ -100,7 +97,7 @@ struct CView {
     CRenderer* m_8; // +0x08  renderer A
     CRenderer* m_c; // +0x0c  renderer B (present)
     // +0x10 -> +0x10 is a CMapPtrToPtr (BeginGridWalk looks up the frame grid).
-    struct M10 {
+    struct GridMapHolder {
         char p0[0x10];
         struct CMap {
             void Lookup(i32 key, void*& out); // 0x1b8008 (thiscall)
@@ -141,9 +138,9 @@ struct CWorld {
     char p8[0xc - 0x8];
     void* m_c; // +0x0c  a "active grunt"/selection ptr (==0 selects overlay path)
     char p10[0x30 - 0x10];
-    struct M30 {
+    struct RenderStateHolder {
         char p0[0x24];
-        struct M24 {
+        struct PlaneGeomHolder {
             char p0[0x5c];
             CPlaneGeom* m_5c; // +0x5c
         }* m_24;              // +0x24
@@ -155,7 +152,9 @@ struct CWorld {
     char p58[0x5c - 0x58];
     void* m_5c; // +0x5c  a 2nd world layer
     char p60[0x68 - 0x60];
-    struct M68 {
+    // +0x68: the per-frame world timeline/substep object (the frame-timer step,
+    // the fixed-sub-step variant, the HUD-rect post, the drag WorldPost).
+    struct WorldTimeline {
         // 0x3017: a per-frame frame-timer step (thiscall(now)). reloc-masked.
         void Step(i32 now);
         // 0x48f7b0: the fixed-sub-step variant (thiscall(now, delta, accum)).
@@ -167,17 +166,19 @@ struct CWorld {
         char p0[0x230];
         i32 m_230; // +0x230  substep gate (cleared by ResetGoals)
         char p234[0x23c - 0x234];
-        struct M23c {
+        struct GoalObject {
             char p0[0x8];
-            i32 m_8; // +0x8  flags (ResetGoals ORs 0x10000)
-        }* m_23c;    // +0x23c  goal object (ResetGoals)
+            i32 m_flags; // +0x8  flags (ResetGoals ORs 0x10000)
+        }* m_23c;        // +0x23c  goal object (ResetGoals)
         char p240[0x2a8 - 0x240];
         i32 m_2a8; // +0x2a8  drag-end suppress flag (HandleDragMove tail)
     }* m_68;       // +0x68  -> +0x230 substep gate
     void* m_6c;    // +0x6c  a frame-timer object (Eng_FrameTimerStep)
     void* m_70;    // +0x70  an input sub-object
-    // +0x74: the sprite factory (BeginGridWalk loads the grid's frame sprite).
-    struct CSpriteFactory {
+    // +0x74: the sprite/animation loader (BeginGridWalk loads the grid's frame
+    // sprite). NOT the engine CSpriteFactory (that one is CreateSprite); this is a
+    // distinct LoadSprite API, named for its role to avoid a false identity.
+    struct SpriteLoader {
         void* LoadSprite(void* desc, i32 flag); // 0x4e23c0 (thiscall)
     }* m_74;
     // +0x158: a flat config-array (stride 71*8 = 0x238 bytes); entry [id].m_0 is
@@ -244,17 +245,17 @@ public:
     void OnRegion5();
 
     // --- leaf sub-helpers the THIS-TU functions call (external, reloc-masked) ---
-    void StepC_ModeA(i32 z); // (thiscall, 1 arg) StepC m_480==1
+    void StepC_ModeA(i32 z); // (thiscall, 1 arg) StepC m_viewMode==1
     void StepC_ModeB(i32 z); // (thiscall, 1 arg) StepC else
     void RegionEnter();      // (thiscall, no arg) OnRegion on-enter
     void RegionLeave();      // (thiscall, no arg) OnRegion on-leave
     // StepInputA's two engine callees (free fns):
     // int  Eng_InputProbe(stdcall, a,b,edge-ptr,axis-ptr,0x10)
     // void Eng_InputDispatch(cdecl, 0,0,probe-result)
-    void MarkerEnd(i32 now);               // (m_2e4 begin marker)
-    void GutsStep();                       // (m_2dc step)
-    void FrameTimerBegin(i32 now);         // (m_3f4 begin)
-    void FrameTimerEnd(i32 flag, i32 now); // (m_3f4 end)
+    void MarkerEnd(i32 now);               // (m_beginMarker begin marker)
+    void GutsStep();                       // (m_guts step)
+    void FrameTimerBegin(i32 now);         // (m_frameMarker begin)
+    void FrameTimerEnd(i32 flag, i32 now); // (m_frameMarker end)
     void SnapPostMessage(i32 wParam);
     void GutsStepB();
     void GutsStepC();
@@ -284,11 +285,13 @@ public:
     void EndDragSel();                       // 0x4da2d0 (thiscall on this)
 
     // ---- CPlay-specific members (offsets pinned by the Render disasm) ----
-    i32 m_1a8; // +0x1a8  StepInputA latch-1 (one-shot)
-    i32 m_1ac; // +0x1ac  StepInputA latch-2 (one-shot)
-    i32 m_1b0; // +0x1b0  StepInputA half-selector
+    i32 m_inputWarmup1; // +0x1a8  StepInputA first-frame one-shot latch
+    i32 m_inputWarmup2; // +0x1ac  StepInputA second-frame one-shot latch
+    i32 m_inputHalfSel; // +0x1b0  StepInputA mirrored-half selector (0/1)
     char m_pad1b4[0x2dc - 0x1b4];
-    struct M2dc {
+    // +0x2dc: the "guts"/UI subsystem the per-frame Step + the HUD/drag-select
+    // dispatches run on (the click/drag/clear entry points + the busy-state words).
+    struct GutsSubsystem {
         // 0x34bd: a per-frame guts step (thiscall(now)). reloc-masked.
         void Step(i32 now);
         // 0x4ff9d0: a HUD click-at-point dispatch (thiscall(a, x, y)). reloc-masked.
@@ -297,93 +300,97 @@ public:
         void DragSelect(i32 a, i32 x, i32 y);
         // 0x501420: drag-select clear/cancel (thiscall(flag)). reloc-masked.
         void DragClear(i32 flag);
-        i32 m_0; // +0x0  subsystem state (==2 -> ready)
+        i32 m_state; // +0x0  subsystem state (==2 -> ready)
         char p4[0x10c - 0x4];
-        i32 m_10c;
+        i32 m_mode; // +0x10c  mode word (==5 -> overlay busy)
         char p[0x550 - 0x110];
-        i32 m_550, m_554;
+        i32 m_busyA, m_busyB; // +0x550  win/lose-suppress busy words
         char q[0x574 - 0x558];
-        i32 m_574;
-    }* m_2dc; // +0x2dc subsystem
-    // +0x2e0: a hit-test/region sink (HandleDragMove: m_2e0->HitTest(x, y)).
-    struct M2e0 {
+        i32 m_snapPostSel; // +0x574  snapshot post-message selector
+    }* m_guts;             // +0x2dc guts/UI subsystem
+    // +0x2e0: a hit-test/region sink (HandleDragMove: m_hitTest->HitTest(x, y)).
+    struct HitTestSink {
         i32 HitTest(i32 x, i32 y); // 0x421140 (thiscall) -> nonzero = consumed
-    }* m_2e0;
-    void* m_2e4; // +0x2e4  begin-marker sink
-    i32 m_2e8;   // +0x2e8  HUD-click / drag-active latch
-    i32 m_2ec;   // +0x2ec  drag-in-progress latch (HandleDragMove)
+    }* m_hitTest;
+    void* m_beginMarker;  // +0x2e4  begin-marker sink (MarkerBegin)
+    i32 m_dragSnapActive; // +0x2e8  drag-snap-active latch (HandleDragMove snap path)
+    i32 m_dragInProgress; // +0x2ec  box-drag-in-progress latch (HandleDragMove)
     char m_pad2f0[0x2f8 - 0x2f0];
-    i32 m_2f8; // +0x2f8  level/state id (==0x66 -> booty-region init)
+    i32 m_levelId; // +0x2f8  level/region id (==0x66 -> booty-region init)
     char m_pad2fc[0x304 - 0x2fc];
-    i32 m_304;  // +0x304  drag-clamp max X
-    i32 m_308;  // +0x308  drag-clamp max Y
-    i32 m_30c;  // +0x30c  world-ready gate
-    RECT m_310; // +0x310  a color/rect buffer fed to the HUD draw
-    i32 m_320;  // +0x320  show-overlay gate / object ptr
+    i32 m_dragClampMaxX; // +0x304  drag-clamp max X
+    i32 m_dragClampMaxY; // +0x308  drag-clamp max Y
+    i32 m_worldReady;    // +0x30c  world-ready gate (0 until inited)
+    RECT m_hudRect;      // +0x310  HUD/selection rect buffer fed to the HUD draw
+    i32 m_overlayActive; // +0x320  show-overlay/banner gate
     char m_pad324[0x328 - 0x324];
-    i32 m_328, m_32c, m_330, m_334; // +0x328  booty-region 64-bit timer + interval + hi
-    i32 m_338, m_33c, m_340, m_344; // +0x338  ambient-init timer + interval + hi
-    i32 m_348;                      // +0x348  ambient-init DONE latch
+    i32 m_bootyTimerLo, m_bootyTimerHi, m_bootyInterval,
+        m_bootyIntervalHi; // +0x328  booty-region 64-bit timer
+    i32 m_ambientTimerLo, m_ambientTimerHi, m_ambientInterval,
+        m_ambientIntervalHi; // +0x338  ambient-init timer
+    i32 m_ambientInitDone;   // +0x348  ambient-init DONE latch
     char m_pad34c[0x368 - 0x34c];
-    i32 m_368; // +0x368  drag/select inhibit gate
-    i32 m_36c; // +0x36c  drag/select inhibit gate
+    i32 m_dragInhibit1; // +0x368  drag/select inhibit gate
+    i32 m_dragInhibit2; // +0x36c  drag/select inhibit gate
     char m_pad370[0x3f4 - 0x370];
-    void* m_3f4; // +0x3f4  frame-marker/timeline object (+0x30..0x4c reset block)
-    i32 m_3f8, m_3fc, m_400, m_404; // +0x3f8  AMBIENT-cue 64-bit timer + interval + hi
-    i32 m_408;                      // +0x408  AMBIENT-cue toggle
-    i32 m_40c;                      // +0x40c  PlayCueAt last-wParam latch (de-dupe gate)
-    char m_410[0x414 - 0x410];      // +0x410  PlayCueAt cue-state object (addr taken)
-    i32 m_414;                      // +0x414  per-frame "drew" flag (cleared at entry)
+    void* m_frameMarker; // +0x3f4  frame-marker/timeline object (+0x30..0x4c reset block)
+    i32 m_cueTimerLo, m_cueTimerHi, m_cueInterval,
+        m_cueIntervalHi;            // +0x3f8  AMBIENT-cue 64-bit timer
+    i32 m_cueToggle;                // +0x408  AMBIENT-cue on/off toggle
+    i32 m_lastCueId;                // +0x40c  PlayCueAt last-shown cueId (de-dupe gate)
+    char m_cueState[0x414 - 0x410]; // +0x410  PlayCueAt per-cue de-dupe state object (addr taken)
+    i32 m_drewThisFrame;            // +0x414  per-frame "drew" flag (cleared at entry)
     char m_pad418[0x430 - 0x418];
-    i32 m_430, m_434, m_438, m_43c; // +0x430  scroll-region-1 timer
-    i32 m_440, m_444, m_448, m_44c; // +0x440  scroll-region-2 timer
-    i32 m_450, m_454, m_458, m_45c; // +0x450  scroll-region-3 timer
-    i32 m_460, m_464, m_468, m_46c; // +0x460  scroll-region-4 timer
-    i32 m_470;                      // +0x470  draw-extra-layer gate
-    i32 m_474;                      // +0x474  alt-input-draw gate
-    i32 m_478;                      // +0x478  scroll-region-3 gate
-    i32 m_47c;                      // +0x47c  scroll-region-4 gate
-    i32 m_480;                      // +0x480  StepC/OnRegion0 view-mode discriminator (0/1/2)
-    i32 m_484;                      // +0x484  HUD-suppress gate (DispatchHudClick early-out)
+    i32 m_region0TimerLo, m_region0TimerHi, m_region0Interval, m_region0IntervalHi; // +0x430
+    i32 m_region1TimerLo, m_region1TimerHi, m_region1Interval, m_region1IntervalHi; // +0x440
+    i32 m_region2TimerLo, m_region2TimerHi, m_region2Interval, m_region2IntervalHi; // +0x450
+    i32 m_region3TimerLo, m_region3TimerHi, m_region3Interval, m_region3IntervalHi; // +0x460
+    i32 m_region0Gate;   // +0x470  region-0 gate (OnRegion2 / extra HUD layer)
+    i32 m_region1Gate;   // +0x474  region-1 gate (OnRegion1 / alt-input draw)
+    i32 m_region2Gate;   // +0x478  region-2 gate (OnRegion3)
+    i32 m_region3Gate;   // +0x47c  region-3 gate (OnRegion4)
+    i32 m_viewMode;      // +0x480  StepC/OnRegion view-mode discriminator (0=idle/1/2)
+    i32 m_hudSuppressed; // +0x484  HUD-suppress gate (DispatchHudClick early-out)
     char m_pad488[0x4a0 - 0x488];
-    i32 m_4a0, m_4a4, m_4a8, m_4ac; // +0x4a0  snapshot 64-bit base + duration
-    i32 m_4b0;                      // +0x4b0  snapshot ACTIVE latch
+    i32 m_snapBaseLo, m_snapBaseHi, m_snapDur,
+        m_snapDurHi;      // +0x4a0  snapshot 64-bit base + duration
+    i32 m_snapshotActive; // +0x4b0  snapshot ACTIVE latch
     char m_pad4b4[0x4bc - 0x4b4];
-    i32 m_4bc;               // +0x4bc  reveal-strip frame counter (BuildHelpReveal)
-    i32 m_4c0, m_4c4, m_4c8; // +0x4c0  three reveal-strip sprites
-    // +0x4cc: the level/tile grid block GrabTile/AdvanceTile walk:
-    //   m_4cc -> a grid object (+0x64 first row, +0x68 last row, +0x14 row table)
+    i32 m_revealFrame; // +0x4bc  reveal-strip frame counter (BuildHelpReveal)
+    i32 m_revealCapMid, m_revealCapEnd, m_revealCapStart; // +0x4c0  reveal-strip cap sprites
+    // +0x4cc: the level/tile frame grid GrabTile/AdvanceTile walk:
+    //   m_grid -> a grid object (+0x64 first row, +0x68 last row, +0x14 row table)
     struct CFrameGrid {
         void SetDelay(i32 d);    // 0x552480 (thiscall)
         void SetSprite(void* s); // 0x552520 (thiscall)
         char p0[0x14];
-        i32* m_14; // +0x14  row/frame table
+        i32* m_rowTable; // +0x14  row/frame table
         char p18[0x64 - 0x18];
-        i32 m_64; // +0x64  first frame index
-        i32 m_68; // +0x68  last frame index
-    }* m_4cc;     // +0x4cc  level grid object
-    i32 m_4d0;    // +0x4d0  current tile id
-    i32 m_4d4;    // +0x4d4  has-grid flag
-    i32 m_4d8;    // +0x4d8  step delay base
-    i32 m_4dc;    // +0x4dc  step delay countdown
-    i32 m_4e0;    // +0x4e0  current row index
-    struct M4e4 {
+        i32 m_firstRow;   // +0x64  first frame index
+        i32 m_lastRow;    // +0x68  last frame index
+    }* m_grid;            // +0x4cc  level grid object
+    i32 m_gridCurFrame;   // +0x4d0  current tile/frame id
+    i32 m_gridHasSprite;  // +0x4d4  has-grid-sprite flag
+    i32 m_gridDelayBase;  // +0x4d8  step-delay base
+    i32 m_gridDelayCount; // +0x4dc  step-delay countdown
+    i32 m_gridRow;        // +0x4e0  current row index
+    struct ScrollSink {
         char p0[0x40];
-        i32 m_40; // +0x40  drag/select state flags (bit0 = active)
+        i32 m_flags; // +0x40  drag/select state flags (bit0 = active)
         char p44[0x5c - 0x44];
-        i32 m_5c;
-        i32 m_60;
-    }* m_4e4;  // +0x4e4  StepScroll's scroll-offset sink (writes +0x5c/+0x60)
-    i32 m_4e8; // +0x4e8  grid-walk active flag
-    i32 m_4ec; // +0x4ec  hard early-out gate
+        i32 m_scrollX;    // +0x5c  scroll offset X (StepScroll out)
+        i32 m_scrollY;    // +0x60  scroll offset Y (StepScroll out)
+    }* m_scrollSink;      // +0x4e4  StepScroll's scroll-offset sink + drag flags
+    i32 m_gridWalkActive; // +0x4e8  grid-walk active flag
+    i32 m_renderDisabled; // +0x4ec  Render hard early-out gate
     char m_pad4f0[0x4f4 - 0x4f0];
-    i32 m_4f4; // +0x4f4  win/lose banner gate
-    i32 m_4f8; // +0x4f8  PRIMARY mode switch
-    i32 m_4fc; // +0x4fc  overlay-active flag
-    i32 m_500; // +0x500  paused/no-step flag
-    i32 m_504; // +0x504  drag-end notify gate
+    i32 m_winLoseBanner; // +0x4f4  win/lose banner gate
+    i32 m_inGame;        // +0x4f8  PRIMARY mode: nonzero = main in-game frame
+    i32 m_overlayDrag;   // +0x4fc  overlay-drag-active flag
+    i32 m_paused;        // +0x500  paused/no-step flag
+    i32 m_dragEndNotify; // +0x504  drag-end notify gate
     char m_pad508[0x510 - 0x508];
-    i32 m_510; // +0x510  per-frame countdown
+    i32 m_stepCountdown; // +0x510  per-frame entity-step countdown
 
     // Engine-label backlog stubs.
     void Stub_08c9d0();
