@@ -21,6 +21,7 @@ brickz	8	2
 butemgr	38	27
 cddrawchildgroup	9	5
 cddrawptrcollections	1	0
+cddrawshadeblit	2	1
 cddrawsubmgr	18	10
 cddrawsubmgrdraco	5	2
 cddrawsubmgrleaf	7	1
@@ -41,7 +42,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	648	0
+engine_discovered	646	0
 engine_label_stubs	530	121
 filestream	13	9
 font	16	9
@@ -192,6 +193,8 @@ cddrawchildgroup	?VirtualMethodUnknown30@CDDrawChildGroup@@QAEXHHH@Z	89.0909	89.
 cddrawchildgroup	?VirtualMethodUnknown34@CDDrawChildGroup@@QAEXHHH@Z	89.0909	89.0909	6	5b41e511b849	0x159d40
 cddrawchildgroup	?VirtualMethodUnknown38@CDDrawChildGroup@@UAEXXZ	100.0000	100.0000	5	3b973f16dca8	0x159d90
 cddrawptrcollections	??0CDDrawPtrCollections@@QAE@XZ	99.8000	99.8000	5	f9e380983319	0x141cc0
+cddrawshadeblit	?Blit@CDDrawShadeBlit@@QAEHHPAUShadeSrc@@PAUShadeRect@@HH@Z	100.0000	100.0000	1	9e4b683c7f84	0x1497f0
+cddrawshadeblit	?BlitLoop@CDDrawShadeBlit@@QAEXHPAUShadeSrc@@PAUShadeRect@@H@Z	0.0556	0.0556	1	cd0bcbb696d9	0x14a200
 cddrawsubmgr	??0CDDrawSubMgr@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	100.0000	100.0000	6	af4f6a250fe2	0x156cb0
 cddrawsubmgr	??1CDDrawSubMgr@@UAE@XZ	100.0000	100.0000	5	450d3140b22a	0x1574d0
 cddrawsubmgr	?Constructor_156e10@CDDrawSubMgrBase@@QAEXXZ	4.1667	4.1667	2	a218d18e0947	0x156e10
@@ -973,8 +976,6 @@ engine_discovered	?ClassUnknown_83_029a30@ClassUnknown_83@@QAEXXZ	6.6667	6.6667	
 engine_discovered	?ClassUnknown_84_09a260@ClassUnknown_84@@QAEXXZ	3.6364	3.6364	1	d8ff23cf0285	0x9a260
 engine_discovered	?ClassUnknown_85_139ae0@ClassUnknown_85@@QAEXXZ	10.0000	10.0000	1	97b4f12281f4	0x139ae0
 engine_discovered	?ClassUnknown_85_139af0@ClassUnknown_85@@QAEXXZ	0.4348	0.4348	1	bf63347742e3	0x139af0
-engine_discovered	?ClassUnknown_86_1497f0@ClassUnknown_86@@QAEXXZ	0.3448	0.3448	1	081c38751801	0x1497f0
-engine_discovered	?ClassUnknown_86_14a200@ClassUnknown_86@@QAEXXZ	0.0223	0.0223	1	ce7788559bac	0x14a200
 engine_discovered	?ClassUnknown_87_152480@ClassUnknown_87@@QAEXXZ	1.0526	1.0526	1	5eb81d35c41a	0x152480
 engine_discovered	?ClassUnknown_87_152520@ClassUnknown_87@@QAEXXZ	1.1429	1.1429	1	6cb94b29b22b	0x152520
 engine_discovered	?ClassUnknown_87_1525c0@ClassUnknown_87@@QAEXXZ	0.7143	0.7143	1	044691a53f19	0x1525c0
@@ -1681,7 +1682,7 @@ gameapp	?VirtualUnknownMethod02@CGameApp@@UAEHPAUGameInfo@@PAUtagWNDCLASSA@@PAUt
 gameapp	?VirtualUnknownMethod03@CGameApp@@UAEHPAUHINSTANCE__@@PAD11HHH@Z	100.0000	100.0000	3	d6391a951d57	0x13d7b0
 gameapp	?VirtualUnknownMethod09@CGameApp@@UAEXXZ	100.0000	100.0000	4	a25a05503939	0x13dc70
 gameapp	?vector_deleting_destructor@CGameMgr@WAP32@@QAEXXZ	3.3333	3.3333	2	356122a8377e	0x133380
-gamekeyhandler	?DispatchKey@CGamePlayInput@@QAEHHH@Z	5.4164	5.4164	1	37e0c09f1c5c	0xcbcc0
+gamekeyhandler	?DispatchKey@CGamePlayInput@@QAEHHH@Z	5.4164	5.4164	2	8f5ddc83713c	0xcbcc0
 gamelevel	??0CGameLevel@@QAE@HHH@Z	94.4528	94.4528	5	722b4e18b3dc	0x15ccd0
 gamelevel	??1CGameLevel@@QAE@XZ	96.0000	96.0000	3	be6f9346ae7e	0x1611e0
 gamelevel	?ApplyScroll@CGameLevel@@SGHPAV1@HHH@Z	94.7826	94.7826	2	66b03ea53107	0x167130

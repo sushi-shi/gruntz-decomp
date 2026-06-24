@@ -1507,11 +1507,8 @@ void ClassUnknown_85::ClassUnknown_85_139ae0() {}
 RVA(0x00139af0, 0xcc)
 void ClassUnknown_85::ClassUnknown_85_139af0() {}
 
-// ---- ClassUnknown_86 ----
-RVA(0x001497f0, 0x154)
-void ClassUnknown_86::ClassUnknown_86_1497f0() {}
-RVA(0x0014a200, 0x14f3)
-void ClassUnknown_86::ClassUnknown_86_14a200() {}
+// ---- ClassUnknown_86 ---- reconstructed in src/Gruntz/CDDrawShadeBlit.cpp
+// (CDDrawShadeBlit, the DDrawMgr software shaded-sprite blitter).
 
 // ---- ClassUnknown_87 ----
 RVA(0x00152480, 0x4e)

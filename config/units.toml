@@ -406,6 +406,11 @@ source = "src/Gruntz/LogicTypeTable.cpp"
 flags = "base"
 
 [[unit]]
+unit = "cddrawshadeblit"
+source = "src/Gruntz/CDDrawShadeBlit.cpp"
+flags = "base"
+
+[[unit]]
 unit = "cddrawworkerlist"
 source = "src/Gruntz/CDDrawWorkerList.cpp"
 flags = "base"
