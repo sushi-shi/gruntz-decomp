@@ -442,8 +442,6 @@ RVA(0x000c8980, 0x64)
 void CSBI_RectOnly::CSBI_RectOnly_0c8980() {}
 RVA(0x000e72f0, 0xc4)
 void CSBI_RectOnly::CSBI_RectOnly_0e72f0() {}
-RVA(0x000e7400, 0x9)
-void CSBI_RectOnly::CSBI_RectOnly_0e7400() {}
 RVA(0x000ebd70, 0x366)
 void CSBI_RectOnly::CSBI_RectOnly_0ebd70() {}
 RVA(0x000fe350, 0x6d)
@@ -462,64 +460,28 @@ RVA(0x00100cb0, 0x8b)
 void CSBI_RectOnly::CSBI_RectOnly_100cb0() {}
 RVA(0x00100d70, 0x519)
 void CSBI_RectOnly::CSBI_RectOnly_100d70() {}
-RVA(0x00101420, 0x110)
-void CSBI_RectOnly::CSBI_RectOnly_101420() {}
 RVA(0x00102000, 0x7f)
 void CSBI_RectOnly::CSBI_RectOnly_102000() {}
 RVA(0x001020a0, 0xae)
 void CSBI_RectOnly::CSBI_RectOnly_1020a0() {}
-RVA(0x00104d60, 0x48)
-void CSBI_RectOnly::CSBI_RectOnly_104d60() {}
 RVA(0x00104f90, 0xa8)
 void CSBI_RectOnly::CSBI_RectOnly_104f90() {}
-RVA(0x00105280, 0x61)
-void CSBI_RectOnly::CSBI_RectOnly_105280() {}
 RVA(0x00105480, 0x7d)
 void CSBI_RectOnly::CSBI_RectOnly_105480() {}
-RVA(0x00105520, 0x21)
-void CSBI_RectOnly::CSBI_RectOnly_105520() {}
-RVA(0x00105560, 0x33)
-void CSBI_RectOnly::CSBI_RectOnly_105560() {}
-RVA(0x00105710, 0x23)
-void CSBI_RectOnly::CSBI_RectOnly_105710() {}
-RVA(0x00105750, 0x1f)
-void CSBI_RectOnly::CSBI_RectOnly_105750() {}
-RVA(0x001057d0, 0x13)
-void CSBI_RectOnly::CSBI_RectOnly_1057d0() {}
 RVA(0x00105800, 0x9e)
 void CSBI_RectOnly::CSBI_RectOnly_105800() {}
-RVA(0x001058d0, 0x34)
-void CSBI_RectOnly::CSBI_RectOnly_1058d0() {}
-RVA(0x00105920, 0x47)
-void CSBI_RectOnly::CSBI_RectOnly_105920() {}
-RVA(0x00106610, 0x3b)
-void CSBI_RectOnly::CSBI_RectOnly_106610() {}
-RVA(0x001066f0, 0x3b)
-void CSBI_RectOnly::CSBI_RectOnly_1066f0() {}
-RVA(0x00106740, 0x3b)
-void CSBI_RectOnly::CSBI_RectOnly_106740() {}
-RVA(0x00106790, 0x62)
-void CSBI_RectOnly::CSBI_RectOnly_106790() {}
 RVA(0x00106820, 0xa8)
 void CSBI_RectOnly::CSBI_RectOnly_106820() {}
 RVA(0x00106900, 0x8d)
 void CSBI_RectOnly::CSBI_RectOnly_106900() {}
 RVA(0x001069c0, 0x2e)
 void CSBI_RectOnly::CSBI_RectOnly_1069c0() {}
-RVA(0x00106a00, 0xbf)
-void CSBI_RectOnly::CSBI_RectOnly_106a00() {}
 RVA(0x00106b40, 0x44)
 void CSBI_RectOnly::CSBI_RectOnly_106b40() {}
 RVA(0x00107920, 0xb7)
 void CSBI_RectOnly::CSBI_RectOnly_107920() {}
-RVA(0x00107aa0, 0x23)
-void CSBI_RectOnly::CSBI_RectOnly_107aa0() {}
 RVA(0x001084d0, 0x96c)
 void CSBI_RectOnly::CSBI_RectOnly_1084d0() {}
-RVA(0x001090a0, 0x38f)
-void CSBI_RectOnly::CSBI_RectOnly_1090a0() {}
-RVA(0x00109a90, 0x25)
-void CSBI_RectOnly::CSBI_RectOnly_109a90() {}
 RVA(0x00109ad0, 0xa9)
 void CSBI_RectOnly::CSBI_RectOnly_109ad0() {}
 RVA(0x0010b210, 0xc5)
@@ -532,8 +494,6 @@ RVA(0x0010b810, 0xdd)
 void CSBI_RectOnly::CSBI_RectOnly_10b810() {}
 RVA(0x0010b930, 0x1a7)
 void CSBI_RectOnly::CSBI_RectOnly_10b930() {}
-RVA(0x0010bb90, 0x3f)
-void CSBI_RectOnly::CSBI_RectOnly_10bb90() {}
 
 // ---- CSecretLevelTrigger ----
 RVA(0x00010c50, 0x44)

@@ -306,7 +306,6 @@ class CSBI_RectOnly {
 public:
     void CSBI_RectOnly_0c8980();
     void CSBI_RectOnly_0e72f0();
-    void CSBI_RectOnly_0e7400();
     void CSBI_RectOnly_0ebd70();
     void CSBI_RectOnly_0fe350();
     void CSBI_RectOnly_0ff850();
@@ -316,42 +315,23 @@ public:
     void CSBI_RectOnly_100b00();
     void CSBI_RectOnly_100cb0();
     void CSBI_RectOnly_100d70();
-    void CSBI_RectOnly_101420();
     void CSBI_RectOnly_102000();
     void CSBI_RectOnly_1020a0();
-    void CSBI_RectOnly_104d60();
     void CSBI_RectOnly_104f90();
-    void CSBI_RectOnly_105280();
     void CSBI_RectOnly_105480();
-    void CSBI_RectOnly_105520();
-    void CSBI_RectOnly_105560();
-    void CSBI_RectOnly_105710();
-    void CSBI_RectOnly_105750();
-    void CSBI_RectOnly_1057d0();
     void CSBI_RectOnly_105800();
-    void CSBI_RectOnly_1058d0();
-    void CSBI_RectOnly_105920();
-    void CSBI_RectOnly_106610();
-    void CSBI_RectOnly_1066f0();
-    void CSBI_RectOnly_106740();
-    void CSBI_RectOnly_106790();
     void CSBI_RectOnly_106820();
     void CSBI_RectOnly_106900();
     void CSBI_RectOnly_1069c0();
-    void CSBI_RectOnly_106a00();
     void CSBI_RectOnly_106b40();
     void CSBI_RectOnly_107920();
-    void CSBI_RectOnly_107aa0();
     void CSBI_RectOnly_1084d0();
-    void CSBI_RectOnly_1090a0();
-    void CSBI_RectOnly_109a90();
     void CSBI_RectOnly_109ad0();
     void CSBI_RectOnly_10b210();
     void CSBI_RectOnly_10b5d0();
     void CSBI_RectOnly_10b6f0();
     void CSBI_RectOnly_10b810();
     void CSBI_RectOnly_10b930();
-    void CSBI_RectOnly_10bb90();
 };
 class CSecretLevelTrigger {
 public:
