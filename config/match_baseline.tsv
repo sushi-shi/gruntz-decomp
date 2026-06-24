@@ -42,7 +42,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	588	0
+engine_discovered	577	0
 engine_label_stubs	526	121
 filestream	13	9
 font	21	10
@@ -80,6 +80,7 @@ logictypetable	1	0
 mainmenubuilder	1	0
 maplogic	4	4
 mapmgr	7	7
+menuitem	11	9
 menupage	22	13
 netmgr	40	20
 netmgrerror	1	1
@@ -802,17 +803,6 @@ engine_discovered	?ClassUnknown_43_144640@ClassUnknown_43@@QAEXXZ	0.1896	0.1896	
 engine_discovered	?ClassUnknown_43_148840@ClassUnknown_43@@QAEXXZ	1.4286	1.4286	1	56bdaf3b8ad7	0x148840
 engine_discovered	?ClassUnknown_44_158680@ClassUnknown_44@@QAEXXZ	4.7619	4.7619	1	bc27ebee79bf	0x158680
 engine_discovered	?ClassUnknown_44_1587c0@ClassUnknown_44@@QAEXXZ	7.1429	7.1429	1	de80fa3798e8	0x1587c0
-engine_discovered	?ClassUnknown_46_1845b0@ClassUnknown_46@@QAEXXZ	3.3333	3.3333	1	2703e640611d	0x1845b0
-engine_discovered	?ClassUnknown_46_184610@ClassUnknown_46@@QAEXXZ	3.3333	3.3333	1	a8a28e247c32	0x184610
-engine_discovered	?ClassUnknown_46_184630@ClassUnknown_46@@QAEXXZ	3.3333	3.3333	1	58064e7dc682	0x184630
-engine_discovered	?ClassUnknown_46_184690@ClassUnknown_46@@QAEXXZ	2.8571	2.8571	1	7267480e0f4b	0x184690
-engine_discovered	?ClassUnknown_46_184730@ClassUnknown_46@@QAEXXZ	4.7619	4.7619	1	e8f7d555c86a	0x184730
-engine_discovered	?ClassUnknown_46_185460@ClassUnknown_46@@QAEXXZ	0.7273	0.7273	1	a8433ee98dc8	0x185460
-engine_discovered	?ClassUnknown_46_185510@ClassUnknown_46@@QAEXXZ	20.0000	20.0000	1	729b87f88d8e	0x185510
-engine_discovered	?ClassUnknown_46_185580@ClassUnknown_46@@QAEXXZ	2.8571	2.8571	1	8a70d5ebdc68	0x185580
-engine_discovered	?ClassUnknown_46_1855f0@ClassUnknown_46@@QAEXXZ	0.6061	0.6061	1	a79d2531febc	0x1855f0
-engine_discovered	?ClassUnknown_46_1856d0@ClassUnknown_46@@QAEXXZ	7.6923	7.6923	1	3ef034bc41f7	0x1856d0
-engine_discovered	?ClassUnknown_46_185700@ClassUnknown_46@@QAEXXZ	1.2500	1.2500	1	5e5854d81c2e	0x185700
 engine_discovered	?ClassUnknown_47_0f9280@ClassUnknown_47@@QAEXXZ	0.9709	0.9709	1	0b4331a0db85	0xf9280
 engine_discovered	?ClassUnknown_47_17e7b0@ClassUnknown_47@@QAEXXZ	33.3333	33.3333	1	bf775c2f2423	0x17e7b0
 engine_discovered	?ClassUnknown_47_17e880@ClassUnknown_47@@QAEXXZ	8.3333	8.3333	1	910a02366f66	0x17e880
@@ -1937,6 +1927,17 @@ mapmgr	??1CMapArrayA@@QAE@XZ	100.0000	100.0000	4	ef24e0e7ace1	0x9e7e0
 mapmgr	??1CMapArrayB@@QAE@XZ	100.0000	100.0000	4	81335f7036b8	0x9e900
 mapmgr	??1CMapMgr@@QAE@XZ	100.0000	100.0000	4	b55e2d3c334c	0x9e9e0
 mapmgr	?Reset@CMapMgr@@UAEXXZ	100.0000	100.0000	4	2dbc6f60f2f5	0x9ec30
+menuitem	??1CMenuItem@@QAE@XZ	96.5714	96.5714	1	5d6d9583cf88	0x184690
+menuitem	?Dispatch0c@CMenuItem@@QAEXXZ	100.0000	100.0000	1	b89ca68497d8	0x185510
+menuitem	?GetField54@CMenuItem@@QAE?AVCString@@XZ	100.0000	100.0000	1	03356630dbee	0x184610
+menuitem	?GetField58@CMenuItem@@QAE?AVCString@@XZ	100.0000	100.0000	1	b1b3c810e677	0x184630
+menuitem	?GetName@CMenuItem@@QAE?AVCString@@XZ	100.0000	100.0000	1	42c38040b74b	0x1845b0
+menuitem	?Hit@CMenuItem@@QAEHHH@Z	100.0000	100.0000	1	5c96338120b2	0x185700
+menuitem	?Init@CMenuItem@@QAEHHHHHHH@Z	100.0000	100.0000	1	27e27be9ec17	0x185460
+menuitem	?Notify@CMenuItem@@QAEHXZ	100.0000	100.0000	1	02ff30273f0b	0x185580
+menuitem	?Place@CMenuItem@@QAEHHHH@Z	99.1364	99.1364	1	c3085a22d234	0x1855f0
+menuitem	?Reset@CMenuItem@@QAEXXZ	100.0000	100.0000	1	fc603e28c52a	0x184730
+menuitem	?Trigger@CMenuItem@@QAEHXZ	100.0000	100.0000	1	d0ee200e0292	0x1856d0
 menupage	??1CMenuPage@@QAE@XZ	100.0000	100.0000	1	677d46434f16	0x183250
 menupage	?Activate@CMenuPage@@QAEHXZ	100.0000	100.0000	1	9f249bbb20a4	0x183dd0
 menupage	?AddItem@CMenuPage@@QAEPAVCMenuItem@@HHHHHH@Z	34.0099	34.0099	1	4400292d0cb6	0x183460

@@ -1061,31 +1061,7 @@ void ClassUnknown_44::ClassUnknown_44_1587c0() {}
 // The named menu/list page node (3 CStrings + a CPtrList of child items + focus
 // navigation), built by the main-menu builder (0xa11d0) and driven by the menu
 // host (0x182ab0). All 22 methods reconstructed in MenuPage.cpp. The child-item
-// class (vtable 0x5f08c0, methods 0x184670+) remains ClassUnknown_46 below.
-
-// ---- ClassUnknown_46 ----
-RVA(0x001845b0, 0x20)
-void ClassUnknown_46::ClassUnknown_46_1845b0() {}
-RVA(0x00184610, 0x20)
-void ClassUnknown_46::ClassUnknown_46_184610() {}
-RVA(0x00184630, 0x20)
-void ClassUnknown_46::ClassUnknown_46_184630() {}
-RVA(0x00184690, 0x91)
-void ClassUnknown_46::ClassUnknown_46_184690() {}
-RVA(0x00184730, 0x41)
-void ClassUnknown_46::ClassUnknown_46_184730() {}
-RVA(0x00185460, 0xa9)
-void ClassUnknown_46::ClassUnknown_46_185460() {}
-RVA(0x00185510, 0x5)
-void ClassUnknown_46::ClassUnknown_46_185510() {}
-RVA(0x00185580, 0x4a)
-void ClassUnknown_46::ClassUnknown_46_185580() {}
-RVA(0x001855f0, 0x94)
-void ClassUnknown_46::ClassUnknown_46_1855f0() {}
-RVA(0x001856d0, 0x25)
-void ClassUnknown_46::ClassUnknown_46_1856d0() {}
-RVA(0x00185700, 0x4b)
-void ClassUnknown_46::ClassUnknown_46_185700() {}
+// class recovered -> CMenuItem (src/Gruntz/MenuItem.cpp).
 
 // ---- ClassUnknown_47 ----
 RVA(0x000f9280, 0xe4)

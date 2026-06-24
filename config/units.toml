@@ -149,6 +149,11 @@ source = "src/Gruntz/MenuPage.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "menuitem"
+source = "src/Gruntz/MenuItem.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "gamekeyhandler"
 source = "src/Gruntz/GameKeyHandler.cpp"
 flags = "base"

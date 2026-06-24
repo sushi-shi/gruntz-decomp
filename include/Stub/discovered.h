@@ -758,20 +758,7 @@ public:
     void ClassUnknown_44_1587c0();
 };
 // ClassUnknown_45 fully recovered -> CMenuPage (src/Gruntz/MenuPage.cpp).
-class ClassUnknown_46 {
-public:
-    void ClassUnknown_46_1845b0();
-    void ClassUnknown_46_184610();
-    void ClassUnknown_46_184630();
-    void ClassUnknown_46_184690();
-    void ClassUnknown_46_184730();
-    void ClassUnknown_46_185460();
-    void ClassUnknown_46_185510();
-    void ClassUnknown_46_185580();
-    void ClassUnknown_46_1855f0();
-    void ClassUnknown_46_1856d0();
-    void ClassUnknown_46_185700();
-};
+// ClassUnknown_46 fully recovered -> CMenuItem (src/Gruntz/MenuItem.cpp).
 class ClassUnknown_47 {
 public:
     void ClassUnknown_47_0f9280();
