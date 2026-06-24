@@ -37,15 +37,15 @@ typedef CDWordArray CLevelPtrArray;
 class CImageSet {
 public:
     virtual int dummy0();
-    virtual void Release(int arg);   // +0x04  release/free hook
-    virtual int dummy2();            // +0x08
-    virtual int dummy3();            // +0x0c
-    virtual int dummy4();            // +0x10
-    virtual int Parse(void* record); // +0x14  init from the WWD record
-    virtual int dummy6();            // +0x18
-    virtual int dummy7();            // +0x1c
-    virtual int dummy8();            // +0x20
-    virtual int GetStride();         // +0x24  record byte length (cursor advance)
+    virtual void Release(int arg);    // +0x04  release/free hook
+    virtual int dummy2();             // +0x08
+    virtual int dummy3();             // +0x0c
+    virtual int dummy4();             // +0x10
+    virtual int Parse(void* record);  // +0x14  init from the WWD record
+    virtual int dummy6();             // +0x18
+    virtual int dummy7();             // +0x1c
+    virtual int dummy8(int a, int b); // +0x20
+    virtual int GetStride();          // +0x24  record byte length (cursor advance)
 };
 
 // The 4-int coordinate/extent record stored at CGameLevel+0x10, passed by pointer
@@ -186,6 +186,55 @@ public:
     int VirtualMethodUnknown20();
     int VirtualMethodUnknown40(const char* path);
     int VirtualMethodUnknown3C(RemusParseSource* arg);
+
+    // --- merged from the trace-discovered CGameLevel cluster -------------------
+    // Tests a tile coord (x, y) against the bounds record. Free (cdecl) helper; the
+    // record is the 4-int RemusCoords (minX/minY/maxX/maxY at +0/+4/+8/+0xc).
+    static int PointInBounds(const RemusCoords* r, int x, int y);
+
+    // Clamp (x, y) to the main plane's tile grid, look up the tile id from its tile
+    // map, and (when valid) dispatch the image set's slot +0x20. ret 8.
+    int LookupTile(int x, int y);
+
+    // Three forwarders to a method on the main plane (return 0 / dispatch nothing
+    // when there is no main plane). The first two return an int; the third is void.
+    int MainPlaneQueryA();
+    int MainPlaneQueryB();
+    void MainPlaneNotify();
+
+    // Copies *coords into m_planeCtx, then drives every plane's Build(coords).
+    void BuildAllPlanes(RemusCoords* coords);
+
+    // The edit-state switch driver: when this->flags & 4 it tails into ApplyScroll
+    // on `target`; otherwise runs `target`'s +0xe4 brush-kind switch. Returns the
+    // accumulated state-flag word. `target` is itself a level (passed explicitly).
+    int EditSwitch(void* target, int a1, int a2, int a3);
+
+    // Finds the plane whose name (plane+0xb4) case-insensitively matches `name`.
+    CPlane* FindPlaneByName(const char* name);
+
+    // ClampScroll: if the requested move (arg1,arg2) is within this level's per-axis
+    // step limits (m_64/m_68) drive EditSwitch once; otherwise step toward it in
+    // limited increments, re-running EditSwitch until it reaches or is blocked.
+    int ClampScroll(void* target, int arg1, int arg2, int arg3);
+
+    // Forwards a method (vtable +0x28/+0x2c) across every plane.
+    void NotifyAllPlanes();
+
+    // VisitVisible: when this level is flagged origin-fixed (m_flags & 1) walk ctx's
+    // object chain dispatching each object's +0x2c hook (above a depth cap) and Sync
+    // the planes; otherwise Sync every plane and dispatch ctx's +0x28 hook. `visitor`
+    // is the arg every dispatch receives; `ctx` owns the chain.
+    void VisitVisible(void* visitor, int ctx);
+
+    // String/state edit dispatch: arg1 selects a name get/set on `sink` (a
+    // serializer), then forwards (arg2, arg2, arg3) to a level-resolve helper.
+    int EditDispatch(void* sink, int arg1, int arg2, int arg3);
+
+    // The scroll-state setter the clamp drivers tail into. Takes the level
+    // explicitly (the edit-state +0xe4 machine viewed as scroll x/y at +0x5c/+0x60).
+    // __stdcall (callee-cleans its 4 stack args: ret 0x10).
+    static int __stdcall ApplyScroll(CGameLevel* lvl, int a, int b, int c);
 
     // Destructor (vtable slot 1, the ~CGameLevel @0x1611e0). Stamps the derived
     // vftable, runs the level cleanup (VirtualMethodUnknown1C), then the three array

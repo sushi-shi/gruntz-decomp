@@ -216,22 +216,6 @@ public:
     void CFortressFlag_010e90();
     void CFortressFlag_046410();
 };
-class CGameLevel {
-public:
-    void CGameLevel_06b330();
-    void CGameLevel_082600();
-    void CGameLevel_0cedf0();
-    void CGameLevel_0cee10();
-    void CGameLevel_15da80();
-    void CGameLevel_15dc90();
-    void CGameLevel_15dde0();
-    void CGameLevel_15de40();
-    void CGameLevel_15dfb0();
-    void CGameLevel_160ee0();
-    void CGameLevel_160f40();
-    void CGameLevel_160f70();
-    void CGameLevel_167130();
-};
 class CGrunt {
 public:
     void CGrunt_057c40();

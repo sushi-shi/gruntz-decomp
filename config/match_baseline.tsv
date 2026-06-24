@@ -36,14 +36,14 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	18	17
 directsoundmgr	26	19
-engine_discovered	1048	0
+engine_discovered	1035	0
 engine_label_stubs	537	120
 filestream	13	9
 font	16	9
 fontconfig	2	0
 fonts	2	1
 gameapp	19	15
-gamelevel	17	11
+gamelevel	30	19
 gamemode	19	9
 gameobjectctors	5	0
 gametext	4	2
@@ -444,19 +444,6 @@ engine_discovered	?CFontConfig_021d80@CFontConfig@@QAEXXZ	0.8696	0.8696	1	c49da9
 engine_discovered	?CFontConfig_085f40@CFontConfig@@QAEXXZ	4.5455	4.5455	1	63fa17a7c820	0x85f40
 engine_discovered	?CFortressFlag_010e90@CFortressFlag@@QAEXXZ	5.8824	5.8824	1	7ea2863168db	0x10e90
 engine_discovered	?CFortressFlag_046410@CFortressFlag@@QAEXXZ	0.6897	0.6897	1	d7adb6cc3f23	0x46410
-engine_discovered	?CGameLevel_06b330@CGameLevel@@QAEXXZ	6.2500	6.2500	1	276b30a5dce6	0x6b330
-engine_discovered	?CGameLevel_082600@CGameLevel@@QAEXXZ	0.8511	0.8511	1	683de95b670a	0x82600
-engine_discovered	?CGameLevel_0cedf0@CGameLevel@@QAEXXZ	16.6667	16.6667	1	72456214eccd	0xcedf0
-engine_discovered	?CGameLevel_0cee10@CGameLevel@@QAEXXZ	16.6667	16.6667	1	be8e78710042	0xcee10
-engine_discovered	?CGameLevel_15da80@CGameLevel@@QAEXXZ	1.2903	1.2903	1	c797f084eb03	0x15da80
-engine_discovered	?CGameLevel_15dc90@CGameLevel@@QAEXXZ	0.3053	0.3053	1	806f0be45bdf	0x15dc90
-engine_discovered	?CGameLevel_15dde0@CGameLevel@@QAEXXZ	0.8511	0.8511	1	3f467b81e4f6	0x15dde0
-engine_discovered	?CGameLevel_15de40@CGameLevel@@QAEXXZ	0.2797	0.2797	1	78cf193efee0	0x15de40
-engine_discovered	?CGameLevel_15dfb0@CGameLevel@@QAEXXZ	0.3670	0.3670	1	50d242508669	0x15dfb0
-engine_discovered	?CGameLevel_160ee0@CGameLevel@@QAEXXZ	20.0000	20.0000	1	0c1d8a9dbe36	0x160ee0
-engine_discovered	?CGameLevel_160f40@CGameLevel@@QAEXXZ	5.8824	5.8824	1	ad00492564ac	0x160f40
-engine_discovered	?CGameLevel_160f70@CGameLevel@@QAEXXZ	0.4255	0.4255	1	bce243f5c786	0x160f70
-engine_discovered	?CGameLevel_167130@CGameLevel@@QAEXXZ	0.8696	0.8696	1	0a94848c69c8	0x167130
 engine_discovered	?CGruntAnimPlayer_150610@CGruntAnimPlayer@@QAEXXZ	1.7391	1.7391	1	d011afc77469	0x150610
 engine_discovered	?CGruntCreationPoint_010730@CGruntCreationPoint@@QAEXXZ	5.8824	5.8824	1	a665e2a00b47	0x10730
 engine_discovered	?CGruntCreationPoint_03ecc0@CGruntCreationPoint@@QAEXXZ	14.2857	14.2857	1	0f98ea774892	0x3ecc0
@@ -1962,7 +1949,19 @@ gameapp	?VirtualUnknownMethod09@CGameApp@@UAEXXZ	100.0000	100.0000	4	a25a0550393
 gameapp	?vector_deleting_destructor@CGameMgr@WAP32@@QAEXXZ	3.3333	3.3333	2	356122a8377e	0x133380
 gamelevel	??0CGameLevel@@QAE@HHH@Z	94.4528	94.4528	3	9061dbe2e379	0x15ccd0
 gamelevel	??1CGameLevel@@QAE@XZ	96.0000	96.0000	2	11b261ef2d95	0x1611e0
+gamelevel	?ApplyScroll@CGameLevel@@SGHPAV1@HHH@Z	94.7826	94.7826	1	93221cfa7686	0x167130
+gamelevel	?BuildAllPlanes@CGameLevel@@QAEXPAURemusCoords@@@Z	100.0000	100.0000	1	adf3ba37c8b2	0x15da80
+gamelevel	?ClampScroll@CGameLevel@@QAEHPAXHHH@Z	70.7413	70.7413	1	926953bf5262	0x15de40
+gamelevel	?EditDispatch@CGameLevel@@QAEHPAXHHH@Z	47.8085	47.8085	1	2d16d6bf58e6	0x160f70
+gamelevel	?EditSwitch@CGameLevel@@QAEHPAXHHH@Z	79.0183	79.0183	1	17a62306db58	0x15dfb0
+gamelevel	?FindPlaneByName@CGameLevel@@QAEPAVCPlane@@PBD@Z	100.0000	100.0000	1	a8bba23d3b46	0x15dde0
 gamelevel	?LoadWwd@CGameLevel@@QAEHPAUWwdHeader@@@Z	82.1894	82.1894	6	27e8740d5f13	0x15d280
+gamelevel	?LookupTile@CGameLevel@@QAEHHH@Z	100.0000	100.0000	1	9b14f4790802	0x82600
+gamelevel	?MainPlaneNotify@CGameLevel@@QAEXXZ	100.0000	100.0000	1	1ec3fdb6a110	0x160ee0
+gamelevel	?MainPlaneQueryA@CGameLevel@@QAEHXZ	100.0000	100.0000	1	d08607eec9f3	0xcedf0
+gamelevel	?MainPlaneQueryB@CGameLevel@@QAEHXZ	100.0000	100.0000	1	0da119a61140	0xcee10
+gamelevel	?NotifyAllPlanes@CGameLevel@@QAEXXZ	100.0000	100.0000	1	272c30d86429	0x160f40
+gamelevel	?PointInBounds@CGameLevel@@SAHPBURemusCoords@@HH@Z	100.0000	100.0000	1	dd9be7d3bfe9	0x6b330
 gamelevel	?ReadImageSet@CGameLevel@@AAEPAVCImageSet@@PAX@Z	68.0137	68.0137	3	f4c8311543c5	0x15d820
 gamelevel	?RecomputePlaneCoords@PlaneGeom@@QAEXXZ	97.0640	97.0640	2	f77870e26bba	0x161c90
 gamelevel	?ScalarDtor@CGameLevel@@QAEPAXI@Z	100.0000	100.0000	2	abfaa6a8daec	0x1611c0
@@ -1977,6 +1976,7 @@ gamelevel	?VirtualMethodUnknown34@CGameLevel@@QAEHHH@Z	84.2800	84.2800	3	49c878d
 gamelevel	?VirtualMethodUnknown3C@CGameLevel@@QAEHPAURemusParseSource@@@Z	100.0000	100.0000	3	3e5ddca3d380	0x15d630
 gamelevel	?VirtualMethodUnknown40@CGameLevel@@QAEHPBD@Z	100.0000	100.0000	3	6f1f2b901cdb	0x15d500
 gamelevel	?VirtualMethodUnknown44@CGameLevel@@QAEXXZ	100.0000	100.0000	3	84cf89ea5ab7	0x15d680
+gamelevel	?VisitVisible@CGameLevel@@QAEXPAXH@Z	87.3206	87.3206	1	ff38a448c3b0	0x15dc90
 gamemode	??0CState@@QAE@XZ	100.0000	100.0000	4	a1d9fd8bca62	0x8c750
 gamemode	??_GCState@@UAEPAXI@Z	100.0000	100.0000	1	cpp:2601fb2a9496	0x8c710
 gamemode	?BuildBootyWalkingGruntz@CState@@QAEXXZ	0.6579	0.6579	1	ec771b9e0f06	0x1b450

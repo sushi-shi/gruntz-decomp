@@ -771,3 +771,563 @@ void PlaneGeom::RecomputePlaneCoords() {
         p->originY = p->originY - over;
     }
 }
+
+// ===========================================================================
+// The trace-discovered CGameLevel cluster (13 leaves). All are plain /O2 /MT
+// leaves touching only member offsets, the per-plane objects, and engine sibling
+// callees that reloc-mask (no string/global relocations except the jump tables).
+// ===========================================================================
+
+// LevelPlane - a window onto the per-plane object stored in m_planes (CPlane*),
+// viewed at the offsets this cluster touches. The named slot methods are UNMATCHED
+// engine __thiscall leaves modeled with no body (their call sites reloc-mask):
+//   Build(coords)  @0x161e80  - re-place + recompute one plane's coords
+//   Sync(arg)      @0x162010  - per-plane visit helper
+//   Refresh()      @0x163670  - per-plane refresh hook
+// Fields: +0x08 flags, +0x20 tileBase, +0x24 rowOfs, +0x28 width, +0x2c height,
+//   +0x74 limit, +0x80 cap, +0xb4 name[].
+struct LevelPlane {
+    char pad_0[0x08];
+    unsigned int flags; // +0x08
+    char pad_c[0x20 - 0x0c];
+    int* tileBase; // +0x20
+    int* rowOfs;   // +0x24
+    int width;     // +0x28
+    int height;    // +0x2c
+    char pad_30[0x74 - 0x30];
+    int limit; // +0x74
+    char pad_78[0x80 - 0x78];
+    int cap; // +0x80
+    char pad_84[0xb4 - 0x84];
+    char name[4]; // +0xb4
+
+    void Build(RemusCoords* coords); // @0x161e80 (ret 4)
+    void Sync(int arg);              // @0x162010 (ret 4)
+    void Refresh();                  // @0x163670 (ret)
+};
+
+// Three zero-arg __thiscall methods on the main plane the forwarders tail into.
+struct MainPlane {
+    int QueryA();  // @0x163300
+    int QueryB();  // @0x163370
+    void Notify(); // @0x163420
+};
+
+// __strcmpi (CRT) - reloc-masked. Declared with no header to keep the cdecl shape.
+extern "C" int __cdecl _strcmpi(const char*, const char*);
+
+// LevelScroll - the scroll-state record the edit-state methods manipulate: the
+// +0x5c/+0x60 scroll x/y, +0x64/+0x68 limits, +0x08 flags and +0xe4 edit-state
+// brush-kind all live on the same object that elsewhere is the level container.
+// Accessed via raw offsets so the codegen is naming-independent (the same offsets
+// are typed differently by the level-load methods).
+struct LevelScroll {
+    char pad_0[0x08];
+    unsigned int flags; // +0x08
+    char pad_c[0x5c - 0x0c];
+    int scrollX; // +0x5c
+    int scrollY; // +0x60
+    int limitX;  // +0x64
+    int limitY;  // +0x68
+    char pad_6c[0xe4 - 0x6c];
+    int editKind; // +0xe4
+};
+
+// The edit-state sub-dispatch leaves, all __stdcall(target, a1, a2, a3) returning a
+// state-flag word (kinds 1..2 -> ScrollKindDispatch12). Reloc-masked engine leaves.
+extern "C" int __stdcall ScrollKindDispatch12(LevelScroll* lvl, int a, int b, int c); // @0x1671c0
+extern int __stdcall EditHandlerA(LevelScroll*, int, int, int);                       // @0x15e130
+extern int __stdcall EditHandlerB(LevelScroll*, int, int, int);                       // @0x15e4b0
+extern int __stdcall EditHandlerC(LevelScroll*, int, int, int);                       // @0x15e2f0
+extern int __stdcall EditHandlerD(LevelScroll*, int, int, int);                       // @0x15e5b0
+
+// EditSink - the serializer `arg0` of EditDispatch: a polymorphic object whose slots
+// +0x2c (read a name into buf) and +0x30 (write buf as a name) are used.
+struct EditSink {
+    virtual void v00();
+    virtual void v04();
+    virtual void v08();
+    virtual void v0c();
+    virtual void v10();
+    virtual void v14();
+    virtual void v18();
+    virtual void v1c();
+    virtual void v20();
+    virtual void v24();
+    virtual void v28();
+    virtual void GetName(char* buf, int cap); // +0x2c
+    virtual void SetName(char* buf, int cap); // +0x30
+};
+
+// Resolve a level/name to a tile id (returns nonzero on success). __stdcall. @0x163710
+extern int __stdcall ResolveLevelName(void* sink, int a, int b, int c);
+
+// ---------------------------------------------------------------------------
+// PointInBounds (free cdecl): tile (x, y) inside the [minX,maxX) x [minY,maxY)
+// half-open box (RemusCoords minX/minY/maxX/maxY at +0/+4/+8/+0xc). ret.
+RVA(0x0006b330, 0x2a)
+int CGameLevel::PointInBounds(const RemusCoords* r, int x, int y) {
+    if (x < r->m_8 && x >= r->m_0 && y < r->m_c && y >= r->m_4) {
+        return 1;
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// LookupTile: clamp (x, y) into the main plane's tile grid, fetch the tile id from
+// its row-indexed tile map, and (when not the empty/clear sentinel) dispatch the
+// referenced image set's slot +0x20 with (0, 0). ret 8.
+RVA(0x00082600, 0x73)
+int CGameLevel::LookupTile(int x, int y) {
+    LevelPlane* mp;
+    if (x < 0) {
+        x = 0;
+    } else {
+        mp = (LevelPlane*)m_mainPlane;
+        if (x >= mp->width) {
+            x = mp->width - 1;
+        }
+    }
+    if (y < 0) {
+        y = 0;
+    } else {
+        mp = (LevelPlane*)m_mainPlane;
+        if (y >= mp->height) {
+            y = mp->height - 1;
+        }
+    }
+    mp = (LevelPlane*)m_mainPlane;
+    int tile = mp->tileBase[mp->rowOfs[y] + x];
+    if (tile == (int)0xeeeeeeee || tile == -1) {
+        return 0;
+    }
+    CImageSet* set = (CImageSet*)m_imageSets[tile & 0xffff];
+    return set->dummy8(0, 0); // slot +0x20, called with (0, 0)
+}
+
+// ---------------------------------------------------------------------------
+// Three forwarders to a method on the main plane; no-op / 0 when none.
+RVA(0x000cedf0, 0xf)
+int CGameLevel::MainPlaneQueryA() {
+    if (m_mainPlane != 0) {
+        return ((MainPlane*)m_mainPlane)->QueryA();
+    }
+    return 0;
+}
+
+RVA(0x000cee10, 0xf)
+int CGameLevel::MainPlaneQueryB() {
+    if (m_mainPlane != 0) {
+        return ((MainPlane*)m_mainPlane)->QueryB();
+    }
+    return 0;
+}
+
+RVA(0x00160ee0, 0xd)
+void CGameLevel::MainPlaneNotify() {
+    if (m_mainPlane != 0) {
+        ((MainPlane*)m_mainPlane)->Notify();
+    }
+}
+
+// ---------------------------------------------------------------------------
+// BuildAllPlanes: copy *coords into m_planeCtx, then Build(coords) on every plane.
+RVA(0x0015da80, 0x47)
+void CGameLevel::BuildAllPlanes(RemusCoords* coords) {
+    m_planeCtx = *coords;
+    for (int i = 0; i < m_planes.GetSize(); i++) {
+        ((LevelPlane*)m_planes[i])->Build(coords);
+    }
+}
+
+// ---------------------------------------------------------------------------
+// FindPlaneByName: case-insensitive search for the plane named `name`; null if none.
+// ---------------------------------------------------------------------------
+// ClampScroll: drive EditSwitch toward (arg1, arg2) on `target`, never moving more
+// than this level's per-axis step limits (m_64/m_68) at once. A direct call when
+// the move is within limits or forced by the target flags / kind 7; otherwise an
+// incremental stepping loop that re-runs EditSwitch until it reaches the goal or is
+// reported blocked.
+//
+// @early-stop
+// scheduling/spill wall: the stepping loop's six spilled locals (the per-axis step,
+// the running goal, the ok flag) and the abs() lowering schedule into a register
+// assignment MSVC reproduces only for one spill order; logic + offsets + CFG are
+// exact. Deferred to the final sweep.
+RVA(0x0015de40, 0x164)
+int CGameLevel::ClampScroll(void* target, int arg1, int arg2, int arg3) {
+    LevelScroll* t = (LevelScroll*)target;
+    int limX = m_64;
+    int limY = m_68;
+
+    int dx = t->scrollX - arg1;
+    if (dx < 0) {
+        dx = -dx;
+    }
+    if (dx <= limX) {
+        int dy = t->scrollY - arg2;
+        if (dy < 0) {
+            dy = -dy;
+        }
+        if (dy <= m_68) {
+            return EditSwitch(target, arg1, arg2, arg3);
+        }
+    }
+
+    if (t->flags & 0x10) {
+        return EditSwitch(target, arg1, arg2, arg3);
+    }
+
+    int kind = t->editKind;
+    if (kind == 7) {
+        return EditSwitch(target, arg1, arg2, arg3);
+    }
+
+    // --- incremental stepping toward (arg1, arg2) ---------------------------
+    int stepX = limX;
+    int goalX = arg1;
+    if (t->scrollX > arg1) {
+        stepX = -stepX;
+    }
+    int stepY = limY;
+    if (t->scrollY > arg2) {
+        stepY = -stepY;
+    }
+
+    int ok = 1;
+    do {
+        int nx = stepX + t->scrollX;
+        if (stepX > 0) {
+            if (nx > goalX) {
+                nx = goalX;
+            }
+        } else {
+            if (nx < goalX) {
+                nx = goalX;
+            }
+        }
+        int ny = stepY + t->scrollY;
+        if (stepY > 0) {
+            if (ny > arg2) {
+                ny = arg2;
+            }
+        } else {
+            if (ny < arg2) {
+                ny = arg2;
+            }
+        }
+
+        int flags = EditSwitch(target, nx, ny, arg3);
+
+        ok = 1;
+        if (t->editKind == kind && (flags & 0x10000) == 0) {
+            if (t->scrollX == goalX && t->scrollY == arg2) {
+                ok = 0;
+            } else if ((flags & 0x400000) == 0) {
+                ok = 0;
+            }
+        }
+    } while (ok != 0);
+    return ok;
+}
+
+RVA(0x0015dde0, 0x5c)
+CPlane* CGameLevel::FindPlaneByName(const char* name) {
+    for (int i = 0; i < m_planes.GetSize(); i++) {
+        LevelPlane* p = (i >= 0 && i < m_planes.GetSize()) ? (LevelPlane*)m_planes[i] : 0;
+        if (_strcmpi(name, p->name) == 0) {
+            return (CPlane*)p;
+        }
+    }
+    return 0;
+}
+
+// VisitCtx - the `arg1` of VisitVisible: a polymorphic context whose object chain
+// hangs off +0x14 (the node list) and whose +0x28 hook is dispatched in the
+// non-origin-fixed path. ObjNode - one node in that chain (next@+0, payload@+8);
+// the payload object carries a depth key at +0x74 and a +0x2c draw hook.
+struct ObjPayload {
+    virtual void v00();
+    virtual void v04();
+    virtual void v08();
+    virtual void v0c();
+    virtual void v10();
+    virtual void v14();
+    virtual void v18();
+    virtual void v1c();
+    virtual void v20();
+    virtual void v24();
+    virtual void v28(int arg);  // +0x28
+    virtual void Draw(int arg); // +0x2c
+    char pad_4[0x74 - 0x04];
+    int depth; // +0x74
+};
+struct ObjNode {
+    ObjNode* next;    // +0x00
+    char pad_4[0x04]; // +0x04
+    ObjPayload* obj;  // +0x08
+};
+// VisitCtx - the `ctx` (2nd param) of VisitVisible. Its object chain hangs off a
+// sub-record at +0x10 whose +0x04 field is the head node; the engine takes the
+// ADDRESS of the +0x10 record (lea), null-checks it (always live), then loads the
+// head. The +0x28 hook is dispatched in the non-origin-fixed path.
+struct VisitChain {
+    char pad_0[0x04];
+    ObjNode* head; // +0x04 (i.e. VisitCtx+0x14)
+};
+struct VisitCtx {
+    virtual void v00();
+    virtual void v04();
+    virtual void v08();
+    virtual void v0c();
+    virtual void v10();
+    virtual void v14();
+    virtual void v18();
+    virtual void v1c();
+    virtual void v20();
+    virtual void v24();
+    virtual void Hook(int arg); // +0x28
+    char pad_4[0x10 - 0x04];
+    VisitChain m_chain; // +0x10  (head at +0x14)
+};
+
+// ---------------------------------------------------------------------------
+// VisitVisible: depth-ordered object visit. When the level is origin-fixed
+// (m_flags & 1) walk ctx's object chain, draw each object whose depth is below the
+// running plane's cap, Sync the planes around it; otherwise Sync every plane (from
+// the main index) and dispatch ctx's +0x28 hook. `visitor` (1st param) is the arg
+// every Sync/Draw/Hook receives; `ctx` (2nd param) owns the chain.
+//
+// @early-stop
+// register-scheduling wall (~86%): the interleaved object-chain walk + per-plane Sync
+// loop pins ebp/esi/ebx across calls in an order MSVC reproduces only for one spilling
+// of the chain cursor; logic + offsets + CFG are exact. Deferred to the final sweep.
+RVA(0x0015dc90, 0x141)
+void CGameLevel::VisitVisible(void* visitor, int ctx) {
+    VisitCtx* c = (VisitCtx*)ctx;
+    VisitChain* chain = &c->m_chain;
+
+    if ((m_flags & 1) && chain != 0 && (m_planes.GetSize() > 0 ? m_planes.GetData()[0] : 0) != 0) {
+        ((LevelPlane*)(m_planes.GetSize() > 0 ? m_planes.GetData()[0] : 0))->Sync((int)visitor);
+        ObjNode* node = chain->head;
+
+        int i = 1;
+        if (m_planes.GetSize() > i) {
+            do {
+                LevelPlane* p =
+                    (i >= 0 && i < m_planes.GetSize()) ? (LevelPlane*)m_planes.GetData()[i] : 0;
+                int cap = p->cap;
+                int blocked = 0;
+                while (node != 0 && blocked == 0) {
+                    ObjNode* cur = node;
+                    node = node->next;
+                    ObjPayload* pl = cur->obj;
+                    if (pl->depth >= cap) {
+                        node = cur;
+                        blocked = 1;
+                    } else {
+                        pl->Draw((int)visitor);
+                    }
+                }
+                ((LevelPlane*)m_planes.GetData()[i])->Sync((int)visitor);
+                ++i;
+            } while (i < m_planes.GetSize());
+        }
+
+        while (node != 0) {
+            ObjNode* cur = node;
+            node = node->next;
+            cur->obj->Draw((int)visitor);
+        }
+        return;
+    }
+
+    // --- not origin-fixed: Sync planes around the main index + the ctx hook ---
+    int idx = 0;
+    if (m_mainIndex >= 0) {
+        do {
+            ((LevelPlane*)m_planes.GetData()[idx])->Sync((int)visitor);
+            ++idx;
+        } while (idx <= m_mainIndex);
+    }
+    c->Hook((int)visitor);
+    int j = m_mainIndex + 1;
+    if (j < m_planes.GetSize()) {
+        do {
+            ((LevelPlane*)m_planes.GetData()[j])->Sync((int)visitor);
+            ++j;
+        } while (j < m_planes.GetSize());
+    }
+}
+
+// ---------------------------------------------------------------------------
+// NotifyAllPlanes: Refresh() across every plane.
+RVA(0x00160f40, 0x23)
+void CGameLevel::NotifyAllPlanes() {
+    for (int i = 0; i < m_planes.GetSize(); i++) {
+        ((LevelPlane*)m_planes[i])->Refresh();
+    }
+}
+
+// ---------------------------------------------------------------------------
+// ApplyScroll: drive the +0xe4 edit-state machine. editKind <= 0: nothing; kind 7
+// commits the new scroll x/y directly; kinds 1..2 fan to ScrollKindDispatch12. Then
+// fold flag bits into the result and tag 0x400000 when the scroll did not move.
+//
+// @early-stop
+// call-arg-materialization entropy (~95%): logic/offsets/CFG/__stdcall conv are exact;
+// the only residue is the ScrollKindDispatch12 call setup - retail interleaves a reload
+// between the arg pushes (2 regs), MSVC pre-loads all three (eax/ecx/edx). See
+// docs/patterns/pin-local-for-callee-saved-reg.md. Entropy tail; deferred.
+RVA(0x00167130, 0x83)
+int __stdcall CGameLevel::ApplyScroll(CGameLevel* lvl, int a, int b, int c) {
+    LevelScroll* s = (LevelScroll*)lvl;
+    int eax = 0;
+    int prevX = s->scrollX;
+    int prevY = s->scrollY;
+    int kind = s->editKind;
+
+    if (kind > 0) {
+        if (kind > 2) {
+            if (kind == 7) {
+                s->scrollX = a;
+                s->scrollY = b;
+            }
+        } else {
+            eax = ScrollKindDispatch12(s, a, b, c);
+        }
+    }
+
+    if (eax & 0x20000) {
+        eax |= 0x10000;
+    }
+    unsigned int f = s->flags;
+    if (f & 0x400000) {
+        eax |= 0x100000;
+    }
+    if (f & 0x10) {
+        eax |= 0x200000;
+    }
+    if (s->scrollX == prevX && s->scrollY == prevY) {
+        eax |= 0x400000;
+    }
+    return eax;
+}
+
+// ---------------------------------------------------------------------------
+// EditDispatch: case 4 pushes this level's name into the sink; case 7 pulls a name
+// from the sink into this level; then (if a main plane exists) resolve the name to
+// a tile id and return 1/0. ret 0x10.
+//
+// @early-stop
+// switch jump-table-density wall (~48%): retail lowers the arg1 switch to a dense
+// .rdata jump table over kinds 3..8 (jmp [eax*4+tbl]); MSVC sees only 2 non-empty
+// cases (4 & 7) and emits a cmp/subtract chain instead. The strcpy/name-copy case
+// bodies are byte-exact. Not steerable from source (case-value density decides the
+// lowering) - see docs/patterns/switch-cmpje-tree-vs-jumptable.md. Deferred.
+RVA(0x00160f70, 0xfa)
+int CGameLevel::EditDispatch(void* sink, int arg1, int arg2, int arg3) {
+    EditSink* s = (EditSink*)sink;
+    if (s == 0) {
+        return 0;
+    }
+
+    char buf[0x80];
+    switch (arg1) {
+        case 4:
+            memset(buf, 0, sizeof(buf));
+            strcpy(buf, m_levelName);
+            s->SetName(buf, 0x80);
+            break;
+        case 7:
+            s->GetName(buf, 0x80);
+            strcpy(m_levelName, buf);
+            break;
+    }
+
+    if (m_mainPlane == 0) {
+        return 0;
+    }
+    return ResolveLevelName(sink, arg2, arg2, arg3) != 0 ? 1 : 0;
+}
+
+// ---------------------------------------------------------------------------
+// EditSwitch: when this->flags & 4, tail into ApplyScroll on `target`; else run
+// `target`'s +0xe4 brush-kind switch (kinds 1..8) and fold the flag bits into the
+// returned state word, tagging 0x400000 when the scroll did not move.
+//
+// @early-stop
+// call-arg-materialization entropy (~79%): the dense kinds-1..8 jump table, every
+// case body, the flag-folding tail and the __stdcall sub-handler convention are
+// exact; the residue is the recurring call setup (forward-to-ApplyScroll + 5
+// EditHandler sites) where retail interleaves an arg reload between pushes (2 regs)
+// and MSVC pre-loads (3 regs). docs/patterns/pin-local-for-callee-saved-reg.md.
+// Logic/offsets/CFG exact; deferred to the final sweep.
+RVA(0x0015dfb0, 0x15b)
+int CGameLevel::EditSwitch(void* target, int a1, int a2, int a3) {
+    if (m_flags & 4) {
+        return ApplyScroll((CGameLevel*)target, a1, a2, a3);
+    }
+
+    LevelScroll* s = (LevelScroll*)target;
+    int eax = 0;
+    int kind = s->editKind;
+    int prevX = s->scrollX;
+    int prevY = s->scrollY;
+
+    switch (kind) {
+        case 1:
+        case 2:
+        case 5:
+            eax = EditHandlerA(s, a1, a2, a3);
+            break;
+        case 3:
+            eax = EditHandlerB(s, a1, a2, a3);
+            if (s->editKind == 4) {
+                eax |= 0x800000;
+            }
+            break;
+        case 4:
+            eax = EditHandlerC(s, a1, a2, a3);
+            if (s->editKind == 1) {
+                eax |= 0x1000000;
+            }
+            break;
+        case 8:
+            if (a2 < prevY) {
+                eax = EditHandlerB(s, a1, a2, a3);
+                if (s->editKind == 4) {
+                    eax |= 0x800000;
+                    s->editKind = 8;
+                }
+            } else {
+                eax = EditHandlerC(s, a1, a2, a3);
+                if (s->editKind == 1) {
+                    eax |= 0x1000000;
+                }
+            }
+            break;
+        case 6:
+            eax = EditHandlerD(s, a1, a2, a3);
+            break;
+        case 7:
+            s->scrollX = a1;
+            s->scrollY = a2;
+            break;
+    }
+
+    if (eax & 0x1820000) {
+        eax |= 0x10000;
+    }
+    unsigned int f = s->flags;
+    if (f & 0x400000) {
+        eax |= 0x100000;
+    }
+    if (f & 0x10) {
+        eax |= 0x200000;
+    }
+    if (s->scrollX == prevX && s->scrollY == prevY) {
+        eax |= 0x400000;
+    }
+    return eax;
+}

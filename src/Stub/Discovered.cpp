@@ -308,34 +308,6 @@ void CFortressFlag::CFortressFlag_010e90() {}
 RVA(0x00046410, 0x92)
 void CFortressFlag::CFortressFlag_046410() {}
 
-// ---- CGameLevel ----
-RVA(0x0006b330, 0x2a)
-void CGameLevel::CGameLevel_06b330() {}
-RVA(0x00082600, 0x73)
-void CGameLevel::CGameLevel_082600() {}
-RVA(0x000cedf0, 0xf)
-void CGameLevel::CGameLevel_0cedf0() {}
-RVA(0x000cee10, 0xf)
-void CGameLevel::CGameLevel_0cee10() {}
-RVA(0x0015da80, 0x47)
-void CGameLevel::CGameLevel_15da80() {}
-RVA(0x0015dc90, 0x141)
-void CGameLevel::CGameLevel_15dc90() {}
-RVA(0x0015dde0, 0x5c)
-void CGameLevel::CGameLevel_15dde0() {}
-RVA(0x0015de40, 0x164)
-void CGameLevel::CGameLevel_15de40() {}
-RVA(0x0015dfb0, 0x15b)
-void CGameLevel::CGameLevel_15dfb0() {}
-RVA(0x00160ee0, 0xd)
-void CGameLevel::CGameLevel_160ee0() {}
-RVA(0x00160f40, 0x23)
-void CGameLevel::CGameLevel_160f40() {}
-RVA(0x00160f70, 0xfa)
-void CGameLevel::CGameLevel_160f70() {}
-RVA(0x00167130, 0x83)
-void CGameLevel::CGameLevel_167130() {}
-
 // ---- CGrunt ----
 RVA(0x00057c40, 0x71)
 void CGrunt::CGrunt_057c40() {}
