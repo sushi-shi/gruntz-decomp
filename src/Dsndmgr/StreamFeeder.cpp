@@ -1,0 +1,305 @@
+// StreamFeeder.cpp - the streaming feeder/pump (Dsndmgr module,
+// C:\Proj\Dsndmgr\DSndMgSR.CPP, retail vftable 0x5ef6f0). Embedded at
+// StreamVoice+0x6c; the trace tagged it "Timer_1380d0" after its Tick pump
+// (0x1380d0). It arms a data window over the source (SeedWindow/FeederStart),
+// then each Tick copies that window into a streaming DirectSound secondary
+// buffer (CopyWindow / FillBuffer), wrapping + silence-padding the tail.
+//
+// Field names are placeholders; offsets + emitted bytes are load-bearing.
+#include <Dsndmgr/StreamFeeder.h>
+#include <Win32.h>
+#include <rva.h>
+#include <string.h> // memset (inlined to rep stos)
+
+// The feeder's virtuals (slot 0 dtor 0x11fec0, slot 1 FeedData 0x137e10, slot 2
+// OnDrain 0x137e20) live in other TUs. Dispatch them through pointer-to-member
+// types so the calls are __thiscall (this in ecx) - a single-inheritance pmf is
+// just a 4-byte code pointer, so reinterpreting the raw vtable slot is exact.
+typedef int (StreamFeeder::*FeederVFn)();
+union VSlot {
+    void* p;
+    FeederVFn fn;
+};
+
+inline FeederVFn vslot(void* vtbl, int slot) {
+    VSlot v;
+    v.p = ((void**)vtbl)[slot];
+    return v.fn;
+}
+
+// Slot 0 (0x11fec0) is the feed-into-two-regions virtual: (p1, n1, &got1, p2,
+// n2, &got2) -> int. Same pmf-via-union trick for the __thiscall convention.
+typedef int (StreamFeeder::*FeedRegionsFn)(
+    void*,
+    unsigned long,
+    unsigned long*,
+    void*,
+    unsigned long,
+    unsigned long*
+);
+union VSlot0 {
+    void* p;
+    FeedRegionsFn fn;
+};
+
+inline FeedRegionsFn vslot0(void* vtbl) {
+    VSlot0 v;
+    v.p = ((void**)vtbl)[0];
+    return v.fn;
+}
+
+// The feeder's retail vftable (0x5ef6f0), restamped by the ctor + dtor - a
+// transitional reloc-masked DIR32 store while its virtuals (0x11fec0 / 0x137e10
+// / 0x137e20) live in other TUs, so the class stays non-polymorphic.
+DATA(0x001ef6f0)
+extern void* const g_StreamFeederVtbl[];
+
+// ---------------------------------------------------------------------------
+// StreamFeeder::SeedWindow (0x137340, __thiscall, 3 args). Arm the data window
+// (source + offset + length) over the stream, then prime via Tick(-1).
+RVA(0x00137340, 0x33)
+int StreamFeeder::SeedWindow(void* src, unsigned long off, unsigned long len) {
+    if (src == 0) {
+        return 0;
+    }
+    m_2c = (unsigned long)src;
+    m_3c = len;
+    m_38 = off;
+    m_34 = off;
+    m_40 = off + len;
+    TickPump(-1);
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// StreamFeeder::CopyWindow (0x137380, __thiscall, 6 args - two
+// (dst, n, *got) triples). Stream-copy up to `n` bytes into each destination
+// region from the running window cursor (m_34), reporting the byte count read in
+// *got, and looping back to the window start (m_38) at the end when the loop
+// flag (m_30) is set. Each chunk is read through StreamSource::Read (0x139af0)
+// at the source back-pointer (m_2c). This is the slot-0 feed virtual's body.
+RVA(0x00137380, 0x10e)
+int StreamFeeder::CopyWindow(
+    void* dst1,
+    unsigned long n1,
+    unsigned long* got1,
+    void* dst2,
+    unsigned long n2,
+    unsigned long* got2
+) {
+    if (dst1 != 0 && n1 > 0) {
+        unsigned long want = n1;
+        if (m_34 + n1 > m_40) {
+            want = m_40 - m_34;
+        }
+        *got1 = ((FeederSource*)m_2c)->Read(dst1, want, m_34);
+        m_34 += *got1;
+        while (*got1 < n1 && m_30 != 0) {
+            m_34 = m_38;
+            want = n1;
+            if (m_38 + n1 > m_40) {
+                want = m_40 - m_38;
+            }
+            *got1 = ((FeederSource*)m_2c)->Read(dst1, want, m_34);
+            m_34 += *got1;
+        }
+    }
+    if (dst2 != 0 && n2 > 0) {
+        unsigned long want = n2;
+        if (m_34 + n2 > m_40) {
+            want = m_40 - m_34;
+        }
+        *got2 = ((FeederSource*)m_2c)->Read(dst2, want, m_34);
+        m_34 += *got2;
+        while (*got2 < n2 && m_30 != 0) {
+            m_34 = m_38;
+            want = n2;
+            if (m_38 + n2 > m_40) {
+                want = m_40 - m_38;
+            }
+            *got2 = ((FeederSource*)m_2c)->Read(dst2, want, m_34);
+            m_34 += *got2;
+        }
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// StreamFeeder::StreamFeeder (0x137cd0, __thiscall). Stamp the vptr, zero the
+// buffer/cursor/flag fields.
+RVA(0x00137cd0, 0x1a)
+StreamFeeder::StreamFeeder() {
+    *(void**)this = (void*)g_StreamFeederVtbl;
+    m_8 = 0;
+    m_18 = 0;
+    m_c = 0;
+    m_1c = 0;
+    m_28 = 0;
+}
+
+// ---------------------------------------------------------------------------
+// StreamFeeder::Cleanup (0x137cf0, __thiscall - the dtor body). Restamp the
+// vptr, tear down the armed buffer, clear m_8.
+RVA(0x00137cf0, 0x20)
+void StreamFeeder::Cleanup() {
+    *(void**)this = (void*)g_StreamFeederVtbl;
+    if (m_18 != 0) {
+        FeederReset(1);
+    }
+    m_8 = 0;
+}
+
+// ---------------------------------------------------------------------------
+// StreamFeeder::FeederReset (0x137dc0, __thiscall, 1 arg). If armed, drain
+// (Pause if drained, then the OnDrain virtual), optionally reap the buffer from
+// the owner, and disarm.
+RVA(0x00137dc0, 0x43)
+void StreamFeeder::FeederReset(int doStop) {
+    if (m_18 != 0) {
+        if (m_1c != 0) {
+            Pause();
+        }
+        (this->*vslot(m_vtbl, 2))(); // OnDrain (slot 2)
+        if (doStop != 0) {
+            m_4->RemoveBuffer(m_8);
+        }
+        m_8 = 0;
+        m_18 = 0;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// StreamFeeder::Resume (0x137ed0, __thiscall). If not already drained, resume
+// the buffer (m_8->Resume(1)) and, if it reports playing, mark drained (m_1c=1).
+RVA(0x00137ed0, 0x30)
+int StreamFeeder::Resume() {
+    if (m_1c != 0) {
+        return 1;
+    }
+    m_8->Resume(1);
+    int r = m_8->IsPlaying();
+    if (r != 0) {
+        m_1c = 1;
+    }
+    return r; // fall-through keeps the IsPlaying result in eax (no re-zero)
+}
+
+// ---------------------------------------------------------------------------
+// StreamFeeder::Pause (0x137f00, __thiscall). If drained, stop+rewind the
+// buffer and clear the drained flag; else nothing.
+RVA(0x00137f00, 0x26)
+int StreamFeeder::Pause() {
+    if (m_1c == 0) {
+        return 1;
+    }
+    int r = m_8->StopAndRewind();
+    if (r != 0) {
+        m_1c = 0;
+    }
+    return r; // fall-through keeps the StopAndRewind result in eax (no re-zero)
+}
+
+// ---------------------------------------------------------------------------
+// StreamFeeder::FeederStart (0x137d10, __thiscall, 6 args, ret 0x18). Arm the
+// feeder: record owner/length/format, derive the silence byte from the PCM bit
+// depth, create (or adopt) the streaming buffer, arm, FeedData (slot 1) and
+// prime via Tick.
+// @early-stop
+// regalloc eax/edx wall: retail pins len(arg3)->eax, fmt(arg4)->edx; MSVC here
+// assigns the opposite pair (len->edx, fmt->eax). Body + control flow byte-exact,
+// only the two-arg register choice differs - 96.8%, a register-allocation
+// plateau (docs/patterns/zero-register-pinning.md family). Logic complete,
+// deferred to the final sweep.
+RVA(0x00137d10, 0xab)
+int StreamFeeder::FeederStart(
+    FeederOwner* owner,
+    int arg2,
+    unsigned long len,
+    void* fmt,
+    void* buf,
+    int tickArg
+) {
+    m_10 = len;
+    m_4 = owner;
+    m_14 = (unsigned long)fmt;
+    m_1c = 0;
+    if (*(unsigned short*)((char*)fmt + 0xe) > 8) {
+        m_24 = 0;
+    } else {
+        m_24 = 0x80;
+    }
+    if (buf == 0) {
+        m_8 = (FeederBuf*)owner->CreateStreamBuf(fmt, len, 0x100e0);
+    } else {
+        m_8 = (FeederBuf*)buf;
+    }
+    if (m_8 == 0) {
+        return 0;
+    }
+    m_18 = 1;
+    if ((this->*vslot(m_vtbl, 1))() == 0) { // FeedData (slot 1)
+        FeederReset(1);
+        return 0;
+    }
+    if (TickPump(tickArg) == 0) {
+        FeederReset(1);
+        return 0;
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// StreamFeeder::FillBuffer (0x137f30, __thiscall, 2 args, ret 0x8). Lock the
+// streaming secondary buffer at the write window, copy the source window into
+// the (possibly wrapped) locked regions, silence-pad the unfilled tail, advance
+// the read cursor (m_c) with wraparound, and Unlock.
+// @early-stop
+// local-coalescing / frame-size wall: retail reuses dead local slots for the
+// got1/got2 scratch (sub esp,0x10, 4 dwords); MSVC here keeps them distinct
+// (sub esp,0x14, 5 dwords), shifting every Lock out-pointer slot + the [esp+N]
+// local offsets. Instruction selection + control flow byte-exact; only the
+// stack-slot assignment differs - 88.6%, the documented local-coalescing wall
+// (docs/patterns/stack-buffer-size-drives-frame.md). Logic complete, deferred
+// to the final sweep.
+RVA(0x00137f30, 0x197)
+int StreamFeeder::FillBuffer(unsigned long writePos, unsigned long bytes) {
+    void* p1;
+    unsigned long n1;
+    void* p2;
+    unsigned long n2;
+    if (m_8->Lock(writePos, bytes, &p1, &n1, &p2, &n2, 0) == 0) {
+        return 0;
+    }
+    unsigned long got1 = 0;
+    unsigned long got2 = 0;
+    if (m_20 == 0) {
+        if ((this->*vslot0(m_vtbl))(p1, n1, &got1, p2, n2, &got2) == 0) {
+            m_8->Unlock(p1, n1, p2, n2);
+            return 0;
+        }
+    } else {
+        got1 = 0;
+        got2 = 0;
+    }
+    if (got1 < n1) {
+        m_20 += n1 - got1;
+        memset((char*)p1 + got1, m_24, n1 - got1);
+    }
+    if (got2 < n2) {
+        m_20 += n2 - got2;
+        memset((char*)p2 + got2, m_24, n2 - got2);
+    }
+    if (m_20 >= m_10) {
+        Pause();
+    }
+    if (got2 != 0) {
+        m_c = got2;
+    } else {
+        m_c = writePos + bytes;
+    }
+    if (m_c >= m_10) {
+        m_c = 0;
+    }
+    m_8->Unlock(p1, n1, p2, n2);
+    return 1;
+}

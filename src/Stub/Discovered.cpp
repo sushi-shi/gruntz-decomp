@@ -2189,25 +2189,7 @@ void StatusBarItem::StatusBarItem_0d9290() {}
 RVA(0x000da030, 0x169)
 void StatusBarItem::StatusBarItem_0da030() {}
 
-// ---- Timer_1380d0 ----
-RVA(0x00137340, 0x33)
-void Timer_1380d0::Timer_1380d0_137340() {}
-RVA(0x00137380, 0x10e)
-void Timer_1380d0::Timer_1380d0_137380() {}
-RVA(0x00137cd0, 0x1a)
-void Timer_1380d0::Timer_1380d0_137cd0() {}
-RVA(0x00137cf0, 0x20)
-void Timer_1380d0::Timer_1380d0_137cf0() {}
-RVA(0x00137d10, 0xab)
-void Timer_1380d0::Timer_1380d0_137d10() {}
-RVA(0x00137dc0, 0x43)
-void Timer_1380d0::Timer_1380d0_137dc0() {}
-RVA(0x00137ed0, 0x30)
-void Timer_1380d0::Timer_1380d0_137ed0() {}
-RVA(0x00137f00, 0x26)
-void Timer_1380d0::Timer_1380d0_137f00() {}
-RVA(0x00137f30, 0x197)
-void Timer_1380d0::Timer_1380d0_137f30() {}
+// ---- Timer_1380d0 ---- (reconstructed as StreamFeeder in src/Dsndmgr/StreamFeeder.cpp)
 
 // ---- UnknownClassArrays ----
 RVA(0x00025c20, 0x55)

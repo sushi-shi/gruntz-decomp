@@ -1493,18 +1493,6 @@ public:
     void StatusBarItem_0d9290();
     void StatusBarItem_0da030();
 };
-class Timer_1380d0 {
-public:
-    void Timer_1380d0_137340();
-    void Timer_1380d0_137380();
-    void Timer_1380d0_137cd0();
-    void Timer_1380d0_137cf0();
-    void Timer_1380d0_137d10();
-    void Timer_1380d0_137dc0();
-    void Timer_1380d0_137ed0();
-    void Timer_1380d0_137f00();
-    void Timer_1380d0_137f30();
-};
 class UnknownClassArrays {
 public:
     void UnknownClassArrays_025c20();

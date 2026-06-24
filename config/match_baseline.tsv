@@ -37,7 +37,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	901	0
+engine_discovered	892	0
 engine_label_stubs	534	117
 filestream	13	9
 font	16	9
@@ -85,6 +85,7 @@ spriteloaders	9	4
 spriteresource	4	1
 statusbaritem	2	1
 statusbarupdaters	7	0
+streamfeeder	9	7
 tilegridcommand	2	2
 tileswitchlogic	13	7
 tiletriggercontainer	6	2
@@ -1221,15 +1222,6 @@ engine_discovered	?StatusBarItem_0d1b30@StatusBarItem@@QAEXXZ	3.3333	3.3333	1	62
 engine_discovered	?StatusBarItem_0d6560@StatusBarItem@@QAEXXZ	2.5000	2.5000	1	8e4d7bfeafc3	0xd6560
 engine_discovered	?StatusBarItem_0d9290@StatusBarItem@@QAEXXZ	0.5076	0.5076	1	4a791d5da5e7	0xd9290
 engine_discovered	?StatusBarItem_0da030@StatusBarItem@@QAEXXZ	0.8333	0.8333	1	b0702d588fa0	0xda030
-engine_discovered	?Timer_1380d0_137340@Timer_1380d0@@QAEXXZ	2.5000	2.5000	1	02a132b36044	0x137340
-engine_discovered	?Timer_1380d0_137380@Timer_1380d0@@QAEXXZ	0.3478	0.3478	1	119d88d9d03e	0x137380
-engine_discovered	?Timer_1380d0_137cd0@Timer_1380d0@@QAEXXZ	11.1111	11.1111	1	c6338dcb925a	0x137cd0
-engine_discovered	?Timer_1380d0_137cf0@Timer_1380d0@@QAEXXZ	9.0909	9.0909	1	bd22a3814fc7	0x137cf0
-engine_discovered	?Timer_1380d0_137d10@Timer_1380d0@@QAEXXZ	0.6349	0.6349	1	af63a817da19	0x137d10
-engine_discovered	?Timer_1380d0_137dc0@Timer_1380d0@@QAEXXZ	1.7391	1.7391	1	e1914a8f1ca7	0x137dc0
-engine_discovered	?Timer_1380d0_137ed0@Timer_1380d0@@QAEXXZ	5.5556	5.5556	1	aca7f9be6b9c	0x137ed0
-engine_discovered	?Timer_1380d0_137f00@Timer_1380d0@@QAEXXZ	6.6667	6.6667	1	11a6c3fd3fe2	0x137f00
-engine_discovered	?Timer_1380d0_137f30@Timer_1380d0@@QAEXXZ	0.2469	0.2469	1	dfb2425c6c42	0x137f30
 engine_discovered	?UnknownClassArrays_025c20@UnknownClassArrays@@QAEXXZ	3.3333	3.3333	1	1685d09e02e7	0x25c20
 engine_discovered	?UnknownClassArrays_025d90@UnknownClassArrays@@QAEXXZ	0.2070	0.2070	1	371bab4558db	0x25d90
 engine_discovered	?UnknownClassArrays_026470@UnknownClassArrays@@QAEXXZ	0.1786	0.1786	1	41e6015d251f	0x26470
@@ -2208,6 +2200,15 @@ statusbarupdaters	?UpdateChipGrinderStatusBar@EngineLabelBacklog@@QAEXXZ	80.7372
 statusbarupdaters	?UpdateDestructButtonStatusBar@EngineLabelBacklog@@QAEXXZ	94.6667	94.6667	3	265f3a4012b2	0x10b320
 statusbarupdaters	?UpdateGruntOvenStatusBar@EngineLabelBacklog@@QAEXXZ	79.8947	79.8947	3	a217b44184b4	0x105310
 statusbarupdaters	?UpdateWarpStoneStatusBar@EngineLabelBacklog@@QAEHHHHH@Z	81.2286	81.2286	3	560a70e4c7be	0x109bd0
+streamfeeder	??0StreamFeeder@@QAE@XZ	100.0000	100.0000	1	a70b4dbbd197	0x137cd0
+streamfeeder	?Cleanup@StreamFeeder@@QAEXXZ	100.0000	100.0000	1	2dadceb859c0	0x137cf0
+streamfeeder	?CopyWindow@StreamFeeder@@QAEHPAXKPAK0K1@Z	100.0000	100.0000	1	47ae2d53f9e3	0x137380
+streamfeeder	?FeederReset@StreamFeeder@@QAEXH@Z	100.0000	100.0000	1	ac6fc9696e19	0x137dc0
+streamfeeder	?FeederStart@StreamFeeder@@QAEHPAUFeederOwner@@HKPAX1H@Z	96.8254	96.8254	1	62c3ef2ec33c	0x137d10
+streamfeeder	?FillBuffer@StreamFeeder@@QAEHKK@Z	88.5679	88.5679	1	6fbc6c65d3e8	0x137f30
+streamfeeder	?Pause@StreamFeeder@@QAEHXZ	100.0000	100.0000	1	da3aa93b22ac	0x137f00
+streamfeeder	?Resume@StreamFeeder@@QAEHXZ	100.0000	100.0000	1	97a72477ba53	0x137ed0
+streamfeeder	?SeedWindow@StreamFeeder@@QAEHPAXKK@Z	100.0000	100.0000	1	69450bfb38a2	0x137340
 tilegridcommand	?RecordMove@CTileGridCommand@@QAEXXZ	100.0000	100.0000	1	23f12c9ec885	0x112880
 tilegridcommand	?Serialize@CTileGridCommand@@QAEHPAVTgcStream@@@Z	100.0000	100.0000	1	02f4bec36bca	0x113ae0
 tileswitchlogic	??0CTileTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	4	aac3372d26bd	0x110430

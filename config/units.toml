@@ -471,6 +471,11 @@ source = "src/Dsndmgr/SoundStream.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "streamfeeder"
+source = "src/Dsndmgr/StreamFeeder.cpp"
+flags = "base"
+
+[[unit]]
 unit = "gruntzsoundz"
 source = "src/Dsndmgr/CGruntzSoundZ.cpp"
 flags = "eh"
