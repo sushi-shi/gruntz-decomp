@@ -733,16 +733,8 @@ RVA(0x00112b70, 0x5a)
 void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_112b70() {}
 RVA(0x00112c70, 0xc4)
 void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_112c70() {}
-RVA(0x00113a90, 0x3b)
-void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_113a90() {}
 RVA(0x00113ae0, 0xe8)
 void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_113ae0() {}
-RVA(0x00113d40, 0x6f)
-void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_113d40() {}
-RVA(0x00113dd0, 0x7b)
-void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_113dd0() {}
-RVA(0x00115f00, 0x13)
-void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_115f00() {}
 RVA(0x00115f30, 0x18)
 void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_115f30() {}
 RVA(0x00116a40, 0xf5)
@@ -751,8 +743,6 @@ RVA(0x00116cf0, 0x111)
 void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_116cf0() {}
 RVA(0x00116e60, 0x59)
 void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_116e60() {}
-RVA(0x00116ee0, 0x2f)
-void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_116ee0() {}
 RVA(0x00116f20, 0x51)
 void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_116f20() {}
 RVA(0x00116fa0, 0xc7)
@@ -761,8 +751,6 @@ RVA(0x001170b0, 0x72)
 void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_1170b0() {}
 RVA(0x00117150, 0x53)
 void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_117150() {}
-RVA(0x001171d0, 0x20)
-void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_1171d0() {}
 RVA(0x00117200, 0x53)
 void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_117200() {}
 RVA(0x00117280, 0x2ec)
@@ -771,10 +759,6 @@ RVA(0x00117630, 0x82)
 void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_117630() {}
 RVA(0x00117710, 0xa6)
 void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_117710() {}
-RVA(0x00117e20, 0x36)
-void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_117e20() {}
-RVA(0x00117ec0, 0x7f)
-void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_117ec0() {}
 RVA(0x00117f60, 0xa1)
 void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_117f60() {}
 

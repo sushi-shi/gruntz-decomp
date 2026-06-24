@@ -480,27 +480,19 @@ public:
     void CTileTriggerSwitchLogic_112970();
     void CTileTriggerSwitchLogic_112b70();
     void CTileTriggerSwitchLogic_112c70();
-    void CTileTriggerSwitchLogic_113a90();
     void CTileTriggerSwitchLogic_113ae0();
-    void CTileTriggerSwitchLogic_113d40();
-    void CTileTriggerSwitchLogic_113dd0();
-    void CTileTriggerSwitchLogic_115f00();
     void CTileTriggerSwitchLogic_115f30();
     void CTileTriggerSwitchLogic_116a40();
     void CTileTriggerSwitchLogic_116cf0();
     void CTileTriggerSwitchLogic_116e60();
-    void CTileTriggerSwitchLogic_116ee0();
     void CTileTriggerSwitchLogic_116f20();
     void CTileTriggerSwitchLogic_116fa0();
     void CTileTriggerSwitchLogic_1170b0();
     void CTileTriggerSwitchLogic_117150();
-    void CTileTriggerSwitchLogic_1171d0();
     void CTileTriggerSwitchLogic_117200();
     void CTileTriggerSwitchLogic_117280();
     void CTileTriggerSwitchLogic_117630();
     void CTileTriggerSwitchLogic_117710();
-    void CTileTriggerSwitchLogic_117e20();
-    void CTileTriggerSwitchLogic_117ec0();
     void CTileTriggerSwitchLogic_117f60();
 };
 class CTileTriggerTransition {

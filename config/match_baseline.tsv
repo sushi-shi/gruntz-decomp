@@ -37,7 +37,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	18	17
 directsoundmgr	26	19
-engine_discovered	948	0
+engine_discovered	940	0
 engine_label_stubs	534	117
 filestream	13	9
 font	16	9
@@ -81,7 +81,7 @@ spriteloaders	9	4
 spriteresource	4	1
 statusbaritem	2	1
 statusbarupdaters	7	0
-tileswitchlogic	5	0
+tileswitchlogic	13	7
 tiletriggerlogic	2	1
 trees	17	17
 uncompr	1	1
@@ -117,14 +117,14 @@ advancedoptions	?SaveOptions@@YAXPAUHWND__@@PAVRegistryHelper@Utils@@@Z	100.0000
 advancedoptions	?SetDefaults@@YAXPAUHWND__@@@Z	100.0000	100.0000	3	debb3761026d	0xb160
 appdialogs	?WarpDialogProc@@YGHPAXIIJ@Z	100.0000	100.0000	3	63bd2df7ad1b	0x8e4e0
 battlezmapconfig	?LoadConfig@CBattlezMapConfig@@QAEHPAUCLevelInfo@@HH@Z	85.9933	85.9933	3	9cbb0bf9dee6	0x25020
-brickz	?CellPop@CBrickz@@QAEXPAUBrickzNode@@H@Z	80.3284	80.3284	1	f686a5bfa1b6	0x9f710
+brickz	?CellPop@CBrickz@@QAEXPAUBrickzNode@@H@Z	80.3284	80.3284	2	4518966bce73	0x9f710
 brickz	?CellPush@CBrickz@@QAEXPAUBrickzNode@@@Z	85.9070	85.9070	1	d5bc7e1a4e7e	0x9f470
 brickz	?Drain@CBrickz@@QAEXXZ	66.7391	66.7391	1	ebba6ada4e7d	0x9f590
-brickz	?Find@CBrickz@@QAEPAUBrickzNode@@HH@Z	100.0000	100.0000	1	3a582332d5f2	0x9f500
+brickz	?Find@CBrickz@@QAEPAUBrickzNode@@HH@Z	100.0000	100.0000	2	945333e25283	0x9f500
 brickz	?Insert@CBrickz@@QAEHPAUBrickzNode@@@Z	100.0000	100.0000	1	8af06d1e92c7	0x9f370
 brickz	?PopFront@CBrickz@@QAEXXZ	97.1053	97.1053	1	d0e524077039	0x9f430
 brickz	?Reset@CBrickz@@QAEXXZ	64.7115	64.7115	1	7dd4f9fbce7d	0x9f5d0
-brickz	?Unlink@CBrickz@@QAEXPAUBrickzNode@@@Z	74.9487	74.9487	1	d5d620cc156e	0x9f690
+brickz	?Unlink@CBrickz@@QAEXPAUBrickzNode@@@Z	74.9487	74.9487	2	ead4b3e1d312	0x9f690
 butemgr	?CharClass@CButeMgr@@QAEFD@Z	100.0000	100.0000	1	e6c560ff46b3	0x1703e0
 butemgr	?ClearHelper@CButeMgr@@QAEXXZ	100.0000	100.0000	3	78033bc3e61d	0x171a40
 butemgr	?Construct@CButeMgrHelper@@QAEPAV1@XZ	100.0000	100.0000	1	e1b849446087	0x169c00
@@ -632,27 +632,19 @@ engine_discovered	?CTileTriggerSwitchLogic_112880@CTileTriggerSwitchLogic@@QAEXX
 engine_discovered	?CTileTriggerSwitchLogic_112970@CTileTriggerSwitchLogic@@QAEXXZ	0.5634	0.5634	1	41004e9f11c9	0x112970
 engine_discovered	?CTileTriggerSwitchLogic_112b70@CTileTriggerSwitchLogic@@QAEXXZ	2.7027	2.7027	1	5dc8c08f7b3f	0x112b70
 engine_discovered	?CTileTriggerSwitchLogic_112c70@CTileTriggerSwitchLogic@@QAEXXZ	1.1494	1.1494	1	821467b84e39	0x112c70
-engine_discovered	?CTileTriggerSwitchLogic_113a90@CTileTriggerSwitchLogic@@QAEXXZ	1.9048	1.9048	1	fb90b4a2133e	0x113a90
 engine_discovered	?CTileTriggerSwitchLogic_113ae0@CTileTriggerSwitchLogic@@QAEXXZ	0.3704	0.3704	1	7c6fe7a001b9	0x113ae0
-engine_discovered	?CTileTriggerSwitchLogic_113d40@CTileTriggerSwitchLogic@@QAEXXZ	0.7407	0.7407	1	21177af87436	0x113d40
-engine_discovered	?CTileTriggerSwitchLogic_113dd0@CTileTriggerSwitchLogic@@QAEXXZ	0.7273	0.7273	1	af1ba2a0336f	0x113dd0
-engine_discovered	?CTileTriggerSwitchLogic_115f00@CTileTriggerSwitchLogic@@QAEXXZ	12.5000	12.5000	1	1440893c6068	0x115f00
 engine_discovered	?CTileTriggerSwitchLogic_115f30@CTileTriggerSwitchLogic@@QAEXXZ	11.1111	11.1111	1	69f92e08ea71	0x115f30
 engine_discovered	?CTileTriggerSwitchLogic_116a40@CTileTriggerSwitchLogic@@QAEXXZ	0.5263	0.5263	1	4a10d0263fdf	0x116a40
 engine_discovered	?CTileTriggerSwitchLogic_116cf0@CTileTriggerSwitchLogic@@QAEXXZ	0.5063	0.5063	1	cffa951671f9	0x116cf0
 engine_discovered	?CTileTriggerSwitchLogic_116e60@CTileTriggerSwitchLogic@@QAEXXZ	1.1111	1.1111	1	4102b2083980	0x116e60
-engine_discovered	?CTileTriggerSwitchLogic_116ee0@CTileTriggerSwitchLogic@@QAEXXZ	2.0000	2.0000	1	f1b1659df4c9	0x116ee0
 engine_discovered	?CTileTriggerSwitchLogic_116f20@CTileTriggerSwitchLogic@@QAEXXZ	1.1111	1.1111	1	715063aeb310	0x116f20
 engine_discovered	?CTileTriggerSwitchLogic_116fa0@CTileTriggerSwitchLogic@@QAEXXZ	1.2987	1.2987	1	657fe1e62658	0x116fa0
 engine_discovered	?CTileTriggerSwitchLogic_1170b0@CTileTriggerSwitchLogic@@QAEXXZ	0.8889	0.8889	1	b817da216733	0x1170b0
 engine_discovered	?CTileTriggerSwitchLogic_117150@CTileTriggerSwitchLogic@@QAEXXZ	1.0811	1.0811	1	6fc71b68b283	0x117150
-engine_discovered	?CTileTriggerSwitchLogic_1171d0@CTileTriggerSwitchLogic@@QAEXXZ	3.0769	3.0769	1	6168e98cfb29	0x1171d0
 engine_discovered	?CTileTriggerSwitchLogic_117200@CTileTriggerSwitchLogic@@QAEXXZ	1.1429	1.1429	1	cc6ea7fbca4d	0x117200
 engine_discovered	?CTileTriggerSwitchLogic_117280@CTileTriggerSwitchLogic@@QAEXXZ	0.1465	0.1465	1	f1eca530b852	0x117280
 engine_discovered	?CTileTriggerSwitchLogic_117630@CTileTriggerSwitchLogic@@QAEXXZ	0.7692	0.7692	1	cab10f08100a	0x117630
 engine_discovered	?CTileTriggerSwitchLogic_117710@CTileTriggerSwitchLogic@@QAEXXZ	0.6061	0.6061	1	aeb518c25e51	0x117710
-engine_discovered	?CTileTriggerSwitchLogic_117e20@CTileTriggerSwitchLogic@@QAEXXZ	1.8182	1.8182	1	efc415899a7f	0x117e20
-engine_discovered	?CTileTriggerSwitchLogic_117ec0@CTileTriggerSwitchLogic@@QAEXXZ	0.8000	0.8000	1	7da43ffa313a	0x117ec0
 engine_discovered	?CTileTriggerSwitchLogic_117f60@CTileTriggerSwitchLogic@@QAEXXZ	0.5882	0.5882	1	21a63ef680d6	0x117f60
 engine_discovered	?CTileTriggerSwitch_0110f0@CTileTriggerSwitch@@QAEXXZ	5.8824	5.8824	1	2020b3bd2f3a	0x110f0
 engine_discovered	?CTileTriggerTransition_011730@CTileTriggerTransition@@QAEXXZ	50.0000	50.0000	1	8c033a33771d	0x11730
@@ -2219,11 +2211,19 @@ statusbarupdaters	?UpdateChipGrinderStatusBar@EngineLabelBacklog@@QAEXXZ	80.7372
 statusbarupdaters	?UpdateDestructButtonStatusBar@EngineLabelBacklog@@QAEXXZ	94.6667	94.6667	3	265f3a4012b2	0x10b320
 statusbarupdaters	?UpdateGruntOvenStatusBar@EngineLabelBacklog@@QAEXXZ	79.8947	79.8947	3	a217b44184b4	0x105310
 statusbarupdaters	?UpdateWarpStoneStatusBar@EngineLabelBacklog@@QAEHHHHH@Z	81.2286	81.2286	3	560a70e4c7be	0x109bd0
-tileswitchlogic	??0CTileTriggerSwitchLogic@@QAE@XZ	90.7273	90.7273	3	846cc63f87fc	0x110430
+tileswitchlogic	??0CTileTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	4	aac3372d26bd	0x110430
+tileswitchlogic	?ApplyByType@CTileTriggerSwitchLogic@@QAEHPAXHHH@Z	100.0000	100.0000	1	975dacc04f9e	0x113d40
 tileswitchlogic	?BuildRockBreakInGameText@CTileTriggerSwitchLogic@@QAEXXZ	0.5464	0.5464	1	a6548c9bdd8e	0x1122a0
 tileswitchlogic	?CTileTriggerSwitchLogic_115f60@CTileTriggerSwitchLogic@@QAEXXZ	0.2198	0.2198	2	fedab5b88bae	0x115f60
-tileswitchlogic	?CTileTriggerSwitchLogic_116320@CTileTriggerSwitchLogic@@QAEXXZ	0.9302	0.9302	2	f5ebb302a2ac	0x116320
-tileswitchlogic	?FindIndexByKey@CTileTriggerSwitchLogic@@QAEHH@Z	99.9231	99.9231	3	260f8c799e84	0x110820
+tileswitchlogic	?FindByField0C@CTileTriggerSwitchLogic@@QAEPAV1@H@Z	100.0000	100.0000	1	10e16587d353	0x1171d0
+tileswitchlogic	?FindChild@CTileTriggerSwitchLogic@@QAEPAV1@HH@Z	100.0000	100.0000	1	6d969e05fc02	0x116ee0
+tileswitchlogic	?FindIndexByKey@CTileTriggerSwitchLogic@@QAEHH@Z	100.0000	100.0000	4	de7750d529d5	0x110820
+tileswitchlogic	?GetFlag74@CTileTriggerSwitchLogic@@QAEHXZ	100.0000	100.0000	1	3a063e8a17a0	0x115f00
+tileswitchlogic	?RemoveByKeys@CTileTriggerSwitchLogic@@QAEHHH@Z	96.2791	96.2791	1	7799834e20a8	0x116320
+tileswitchlogic	?ScanNeighborhood@CTileTriggerSwitchLogic@@QAEHHH@Z	76.2600	76.2600	1	2babadb2e451	0x117ec0
+tileswitchlogic	?SerializeMatrix@CTileTriggerSwitchLogic@@QAEHPAVCSerialStream@@@Z	95.0909	95.0909	1	bdfa364919a2	0x113dd0
+tileswitchlogic	?TransferFlag74@CTileTriggerSwitchLogic@@QAEHPAVCSerialStream@@@Z	100.0000	100.0000	1	142da4cf4c21	0x117e20
+tileswitchlogic	?ValidateByType@CTileTriggerSwitchLogic@@QAEHPAXHHH@Z	93.3333	93.3333	1	d8dab58c94e7	0x113a90
 tiletriggerlogic	??0CTileTriggerLogic@@QAE@XZ	100.0000	100.0000	4	6bacffe5a006	0x1107f0
 tiletriggerlogic	??_GCTileTriggerLogic@@UAEPAXI@Z	4.7624	4.7624	1	cpp:abf93c58a136	0x116610
 trees	__tr_flush_block	100.0000	100.0000	1	54a1b09eba2f	0x188ad0
