@@ -224,6 +224,11 @@ source = "src/Gruntz/MapMgr.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "maplogic"
+source = "src/Gruntz/MapLogic.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "butemgr"
 source = "src/Bute/ButeMgr.cpp"
 flags = "eh"

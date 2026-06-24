@@ -37,7 +37,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	18	17
 directsoundmgr	26	19
-engine_discovered	921	0
+engine_discovered	917	0
 engine_label_stubs	534	117
 filestream	13	9
 font	16	9
@@ -69,6 +69,7 @@ ingameicon	5	2
 inputdeviceconfig	1	0
 kitchenslime	2	0
 logictypetable	1	0
+maplogic	4	4
 mapmgr	7	7
 netmgr	40	20
 netmgrerror	1	1
@@ -366,17 +367,13 @@ engine_discovered	?CBootyState_01e520@CBootyState@@QAEXXZ	5.0000	5.0000	1	43306c
 engine_discovered	?CBootyState_01e570@CBootyState@@QAEXXZ	0.6349	0.6349	1	a4e80298e65a	0x1e570
 engine_discovered	?CBootyState_01ecf0@CBootyState@@QAEXXZ	6.2500	6.2500	1	77b964e74548	0x1ecf0
 engine_discovered	?CBootyState_08d510@CBootyState@@QAEXXZ	4.7619	4.7619	1	84b5d581c2a2	0x8d510
-engine_discovered	?CBrickz_0113c0@CBrickz@@QAEXXZ	5.8824	5.8824	1	9253d90f2d1f	0x113c0
 engine_discovered	?CBrickz_077790@CBrickz@@QAEXXZ	0.1413	0.1413	1	5c3a20fbb893	0x77790
 engine_discovered	?CBrickz_081e10@CBrickz@@QAEXXZ	0.2985	0.2985	1	28e25acbc807	0x81e10
 engine_discovered	?CBrickz_082030@CBrickz@@QAEXXZ	0.2878	0.2878	1	b992327ccdda	0x82030
 engine_discovered	?CBrickz_082430@CBrickz@@QAEXXZ	0.2941	0.2941	1	6018917acf67	0x82430
-engine_discovered	?CBrickz_085480@CBrickz@@QAEXXZ	3.7037	3.7037	1	47333e17d56a	0x85480
 engine_discovered	?CBrickz_09356c@CBrickz@@QAEXXZ	1.2903	1.2903	1	c40e7b288494	0x9356c
 engine_discovered	?CBrickz_09eca0@CBrickz@@QAEXXZ	0.1515	0.1515	1	03f44d7b7ac7	0x9eca0
 engine_discovered	?CBrickz_09f010@CBrickz@@QAEXXZ	0.1581	0.1581	1	e0ef45a31f00	0x9f010
-engine_discovered	?CBrickz_09f7f0@CBrickz@@QAEXXZ	1.7391	1.7391	1	f8e6868a5b79	0x9f7f0
-engine_discovered	?CBrickz_0ec230@CBrickz@@QAEXXZ	0.9434	0.9434	1	a661ca61f36b	0xec230
 engine_discovered	?CButeMgr_0213c0@CButeMgr@@QAEXXZ	1.1494	1.1494	1	27bb9064c61c	0x213c0
 engine_discovered	?CButeTree_16e070@CButeTree@@QAEXXZ	0.8000	0.8000	1	5f71bcbafe56	0x16e070
 engine_discovered	?CCheckpointDlg_023570@CCheckpointDlg@@QAEXXZ	50.0000	50.0000	1	f5567be8c30b	0x23570
@@ -2064,6 +2061,10 @@ inputdeviceconfig	?LoadInputDeviceConfig@CInputConfig@@QAE?AVCString@@H@Z	77.326
 kitchenslime	?LoadSprites@CKitchenSlime@@QAEHXZ	69.1992	69.1992	1	960ebc2aba86	0xb3160
 kitchenslime	?Tick@CKitchenSlime@@QAEHXZ	94.8551	94.8551	2	65e983a95b2c	0xb2ca0
 logictypetable	?BuildLogicTypeTable@@YGXPAUCLogicTypeBuilder@@@Z	87.9167	87.9167	6	313ac91839f7	0x8a40
+maplogic	??1CMapLogic@@UAE@XZ	100.0000	100.0000	1	baec3be51eff	0x113c0
+maplogic	?FreeNodes@CMapLogic@@QAEXXZ	100.0000	100.0000	1	929d4b497a09	0x85480
+maplogic	?MapSerializeCurve@@YAHPAUCMapArchive@@H@Z	100.0000	100.0000	1	596961c61931	0xec230
+maplogic	?Visit@CMapVisitTarget@@QAEHPAXHHH@Z	100.0000	100.0000	1	5b83063d9963	0x9f7f0
 mapmgr	??0CMapArrayA@@QAE@XZ	100.0000	100.0000	4	24c52bc6b148	0x9e700
 mapmgr	??0CMapArrayB@@QAE@XZ	100.0000	100.0000	4	2cc7f69c0ba7	0x9e820
 mapmgr	??0CMapMgr@@QAE@XZ	100.0000	100.0000	4	67474d81f74b	0x9e940
@@ -2186,7 +2187,7 @@ sounddevice	?SetPrimaryFormat@SoundDevice@@QAEHPAX@Z	100.0000	100.0000	1	0fb7514
 sounddevice	?Shutdown@SoundDevice@@QAEXXZ	100.0000	100.0000	1	fb1766cf3e8b	0x136690
 sounddevice	?StopAll@SoundDevice@@QAEXXZ	100.0000	100.0000	1	1bf09dff5de0	0x136de0
 soundstream	??1SoundStream@@QAE@XZ	100.0000	100.0000	1	611af7941630	0x137710
-soundstream	?CreateStreamBuffer@SoundStream@@QAEPAUStreamVoice@@PAUWaveFormatX@@KHHH@Z	47.0744	47.0744	1	2742693be395	0x137780
+soundstream	?CreateStreamBuffer@SoundStream@@QAEPAUStreamVoice@@PAUWaveFormatX@@KHHH@Z	47.0744	47.0744	2	7f609ccbd730	0x137780
 soundstream	?DestroyVoice@SoundStream@@QAEXPAUStreamVoice@@@Z	100.0000	100.0000	1	faf57eb2e985	0x1379d0
 soundstream	?OpenStream@SoundStream@@QAEPAUStreamVoice@@PAUStreamSource@@HHHHH@Z	90.5714	90.5714	1	07a6a471975c	0x137900
 soundstream	?ParseWave@SoundStream@@QAEHPAUStreamSource@@PAUWaveFormatX@@PAK2@Z	98.2640	98.2640	1	992912befaa1	0x137b70
