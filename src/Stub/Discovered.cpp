@@ -98,29 +98,10 @@ void CBrickz::CBrickz_09f7f0() {}
 RVA(0x000ec230, 0x11c)
 void CBrickz::CBrickz_0ec230() {}
 
-// ---- CButeMgr ----
+// ---- CButeMgr ---- lexer cluster migrated to src/Bute/ButeMgr.cpp; only the
+// EH-frame scalar destructor remains here (deferred to the final sweep).
 RVA(0x000213c0, 0x14c)
 void CButeMgr::CButeMgr_0213c0() {}
-RVA(0x00170330, 0x34)
-void CButeMgr::CButeMgr_170330() {}
-RVA(0x00170380, 0xa)
-void CButeMgr::CButeMgr_170380() {}
-RVA(0x00170390, 0x50)
-void CButeMgr::CButeMgr_170390() {}
-RVA(0x001703e0, 0x15)
-void CButeMgr::CButeMgr_1703e0() {}
-RVA(0x00170400, 0x2f)
-void CButeMgr::CButeMgr_170400() {}
-RVA(0x00170430, 0x2f)
-void CButeMgr::CButeMgr_170430() {}
-RVA(0x00170460, 0x58)
-void CButeMgr::CButeMgr_170460() {}
-RVA(0x00171160, 0x45)
-void CButeMgr::CButeMgr_171160() {}
-RVA(0x00171580, 0xba)
-void CButeMgr::CButeMgr_171580() {}
-RVA(0x00171a60, 0x34)
-void CButeMgr::CButeMgr_171a60() {}
 
 // ---- CButeMgrHelper ----
 RVA(0x001697c0, 0x13)

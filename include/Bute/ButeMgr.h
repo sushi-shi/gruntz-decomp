@@ -70,6 +70,9 @@ public:
     void* Find(const char* key);
     // Insert a key/value node (__thiscall).
     void Insert(const char* key, void* pNode);
+    // Apply a callback to each matching node (__thiscall: push flag/ctx/fn,
+    // callee-cleanup). Reloc-masked external/no-body.
+    void Walk(void (*fn)(), void* ctx, int flag);
 };
 
 // ---------------------------------------------------------------------------
@@ -193,36 +196,76 @@ public:
     // Lexer sub-helpers (engine functions, reloc-masked external/no-body).
     // PeekClass classifies the current char (returns a token-class word);
     // ReadValue/ReadIdent scan a value/identifier token (return the next kind);
-    // NextChar advances the input. All __thiscall on CButeMgr.
+    // All __thiscall on CButeMgr.
     short PeekClass(int kind, char c);
     int ReadValue(int kind, char c);
     int ReadIdent(int kind, char c);
+
+    // ------------------------------------------------------------------
+    // Lexer cluster (0x170330-0x170460, 0x171160-0x171a60). Recovered as
+    // real methods on this class; the externals they reach (CButeTree::Find,
+    // the recursive tree-walks, the static class/transition tables) are
+    // reloc-masked.
+    // ------------------------------------------------------------------
+    // Reset the line/position counters + clear the two scratch CStrings.
+    void Init();
+    // Store the optional error callback (+0x14).
+    void SetErrCallback(ErrCallback cb);
+    // Advance the input one char: pull the next byte from the source stream
+    // (+0xa0), update line/position, set m_curChar (+0xa8).
     void NextChar();
+    // Map a raw char to its lexer character-class index (g_charClass - 1).
+    short CharClass(char c);
+    // Two adjacent columns of the lexer transition table (state x class):
+    // PeekState classifies the current state/char; ScanState writes the token
+    // type (+0xaa) and the secondary state (+0xac).
+    short PeekState(short state, char c);
+    short PeekState2(short state, char c);
+    void ScanState(short state, char c);
+    // Outer tag-skip loop: re-lex until a tag/group token (1/2), or fail.
+    bool SkipToTag();
+    // Recursive group parser (the per-tag descent).
+    bool ParseGroup();
+    // Key existence probe: Find(tag); if no key requested, hit on the group;
+    // else require the key under it.
+    bool Exists(char* tag, char* key);
 
     // Accessor for the +0x18 store tree (CButeTree is data-less; address it by
     // offset so its `this` resolves to `this+0x18` -> `lea ecx,[esi+0x18]`).
     CButeTree* Tree() {
         return reinterpret_cast<CButeTree*>(m_treeRaw);
     }
+    // The second keyed sub-tree at +0x48 (ParseGroup reaches it).
+    CButeTree* Tree48() {
+        return reinterpret_cast<CButeTree*>(m_tree48);
+    }
 
-    char m_pad00[0x8];            // +0x00
-    int m_lineNo;                 // +0x08
-    char m_pad0c[0x10 - 0xc];     // +0x0c
-    CString m_errStr;             // +0x10  scratch the error reporter formats into
-    ErrCallback m_errCallback;    // +0x14  optional error-callback fn-ptr
-    char m_treeRaw[0x44 - 0x18];  // +0x18  the CButeTree store root
-    void* m_pNode;                // +0x44
-    char m_pad48[0xa4 - 0x48];    // +0x48
-    void* m_pText;                // +0xa4
-    char m_curChar;               // +0xa8
-    char m_pada9;                 // +0xa9
-    short m_tokType;              // +0xaa
-    char m_padac[0xae - 0xac];    // +0xac
-    char m_token[0x100 - 0xae];   // +0xae
-    CString m_tagName;            // +0x100
-    char m_pad104[0x10c - 0x104]; // +0x104
-    char m_10c;                   // +0x10c
-    char m_10d;                   // +0x10d
+    int m_00;                    // +0x00  source base offset
+    int m_04;                    // +0x04  current char position
+    int m_lineNo;                // +0x08
+    char m_0c;                   // +0x0c  "count this line" flag
+    char m_0d;                   // +0x0d
+    char m_pad0e[0x10 - 0xe];    // +0x0e
+    CString m_errStr;            // +0x10  scratch the error reporter formats into
+    ErrCallback m_errCallback;   // +0x14  optional error-callback fn-ptr
+    char m_treeRaw[0x44 - 0x18]; // +0x18  the CButeTree store root
+    void* m_pNode;               // +0x44
+    char m_tree48[0x74 - 0x48];  // +0x48  second store sub-tree
+    char m_tree74[0xa0 - 0x74];  // +0x74  third store sub-tree
+    void* m_stream;              // +0xa0  the input source stream object
+    void* m_pText;               // +0xa4
+    char m_curChar;              // +0xa8
+    char m_pada9;                // +0xa9
+    short m_tokType;             // +0xaa
+    short m_ac;                  // +0xac  secondary lexer state
+    char m_token[0x100 - 0xae];  // +0xae
+    CString m_tagName;           // +0x100
+    CString m_str104;            // +0x104  second scratch string
+    CString m_str108;            // +0x108  third scratch string
+    char m_10c;                  // +0x10c
+    char m_10d;                  // +0x10d
+    char m_10e;                  // +0x10e
+    char m_10f;                  // +0x10f  1-byte embedded object (trivial dtor)
 
     // The typed-reference getters (tag5-8). Each returns a pointer to the typed
     // value record's storage on a type hit, or a shared zero-default static on

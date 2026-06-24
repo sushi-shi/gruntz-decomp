@@ -19,6 +19,19 @@
 //   CButeMgr::ParseTagLine - one tag=value line
 //   CButeMgr::Parse        - the .att parser
 //
+// Lexer cluster (migrated from src/Stub/Discovered.cpp, the trace-discovered
+// CButeMgr set 0x170330-0x171a60):
+//   CButeMgr::Init           - reset counters + the +0x100/+0x104 scratch strings
+//   CButeMgr::SetErrCallback - store the +0x14 error callback
+//   CButeMgr::NextChar       - advance the input one char (the lexer's getch)
+//   CButeMgr::CharClass      - char -> lexer character-class index
+//   CButeMgr::PeekState/2    - read a transition-table column (state x class)
+//   CButeMgr::ScanState      - write m_tokType (+0xaa) + m_ac (+0xac) from it
+//   CButeMgr::SkipToTag      - re-lex until a tag/group token
+//   CButeMgr::ParseGroup     - the recursive per-tag descent
+//   CButeMgr::Exists         - tag/key existence probe
+// (The EH-frame scalar destructor at 0x0213c0 stays stubbed for the final sweep.)
+//
 // The getters funnel through one __thiscall find-by-key helper (CButeTree::Find):
 // outer Find(tag) on m_tree (+0x18) yields the tag sub-tree;
 // inner Find(key) yields the typed value record { int type; void* pValue; }. Each
@@ -39,6 +52,47 @@ void* operator new(unsigned int n);
 
 // The node-ctor descriptor. Reloc-masked file-scope address.
 extern int g_nodeDescriptor;
+
+// ---------------------------------------------------------------------------
+// Lexer static tables (read-only engine data, reloc-masked DATA externs).
+//   g_charClass[256]  - per-char lexer character-class word (the getter returns
+//                       this - 1). One WORD per char.
+//   g_transTable      - the 2D state x class transition table (row stride 147
+//                       WORDs); three adjacent columns are read off the same
+//                       base (g_transTable[i], [i+1], [i+2] -> base +0/+2/+4).
+// ---------------------------------------------------------------------------
+DATA(0x0021cf40)
+extern "C" short g_charClass[]; // 0x61cf40
+DATA(0x0021d140)
+extern "C" short g_transTable[]; // 0x61d140  (state x class table, row stride 147)
+// The token-type column is read off the table's second WORD (0x61d142): retail
+// folds the +1 into the data symbol's address, so it is its own DATA extern.
+DATA(0x0021d142)
+extern "C" short g_transTable142[][147]; // 0x61d142
+
+// The shared empty C string (0x6293f4); Init assigns it into the two scratch
+// CStrings.
+extern "C" char g_emptyString[]; // 0x6293f4
+
+// The input source stream embedded at CButeMgr+0xa0. ReadByte pulls the next
+// byte position (an engine __thiscall, reloc-masked external/no-body).
+class CButeStream {
+public:
+    int ReadByte();
+};
+
+// The big attribute-file line driver at 0x170750 (the same class as CButeMgr;
+// its retail symbol is ?ParseAttributeFile@ButeMgr@@QAE_NXZ, stubbed in
+// src/Stub/Backlog.cpp). The lexer cluster reaches it through this `ButeMgr`
+// view so the call pairs by name; `this` (a CButeMgr*) is the receiver.
+class ButeMgr {
+public:
+    bool ParseAttributeFile();
+};
+
+// ParseGroup's recursive node-walk callback (the engine apply-fn passed to the
+// tree walker at 0x193340). Reloc-masked file-scope address.
+extern "C" void ButeGroup_Apply();
 
 // CString::operator+= one char (__thiscall(receiver, char)):
 // appends the char to the value-text accumulator (m_pText + 0xc). Modeled as an
@@ -598,3 +652,205 @@ CButeValue* CButeValue::SetDouble(int type, double val) {
     }
     return this;
 }
+
+// ===========================================================================
+// Lexer cluster (CButeMgr 0x170330-0x171a60) + the destructor at 0x0213c0.
+// All __thiscall. The CButeTree sub-objects, the recursive node-walks, the
+// stream reader, and the static lexer tables are reloc-masked externals.
+// ===========================================================================
+
+// ---------------------------------------------------------------------------
+// CButeMgr::Init
+// Reset the position/line counters and the two scratch CStrings to empty.
+RVA(0x00170330, 0x34)
+void CButeMgr::Init() {
+    m_04 = 0;
+    m_lineNo = 0;
+    m_0c = 1;
+    m_0d = 0;
+    m_tagName = g_emptyString;
+    m_str104 = g_emptyString;
+}
+
+// ---------------------------------------------------------------------------
+// CButeMgr::SetErrCallback
+// Store the optional error callback at +0x14.
+RVA(0x00170380, 0xa)
+void CButeMgr::SetErrCallback(ErrCallback cb) {
+    m_errCallback = cb;
+}
+
+// ---------------------------------------------------------------------------
+// CButeMgr::NextChar
+// Advance the input one char: pull the next byte position from the source
+// stream (+0xa0), compute the delta from the base (m_00), and -- unless the
+// stream signals EOF (a self-indexed bitmap bit) -- record it as m_curChar,
+// bump the line counter on the count-flag, track the newline flag, and advance
+// the position (m_04).
+// @early-stop
+// 88.67% scheduling/materialization wall: body/CFG/EOF-test/offsets are
+// byte-identical; only the tail differs -- retail interleaves `mov m_curChar,al`
+// between cmp and `sete cl` and stores the bool without pre-zeroing ecx, while
+// MSVC here emits `xor ecx,ecx` + floats the m_curChar store past the sete. An
+// identical instruction multiset, permuted (statement-schedule-faithful /
+// outparam-zeroinit-scheduling family); no source spelling flips it.
+RVA(0x00170390, 0x50)
+void CButeMgr::NextChar() {
+    int delta = ((CButeStream*)m_stream)->ReadByte() - m_00;
+    char* bitmap = *(char**)((char*)*(void**)m_stream + 4);
+    if (bitmap[(int)m_stream + 8] & 1) {
+        m_curChar = 0;
+        return;
+    }
+    if (m_0c) {
+        m_lineNo++;
+    }
+    m_curChar = (char)delta;
+    m_0c = delta == 0xa;
+    m_04 += delta;
+}
+
+// ---------------------------------------------------------------------------
+// CButeMgr::CharClass
+// Map a raw char to its lexer character-class index (g_charClass[uc] - 1).
+RVA(0x001703e0, 0x15)
+short CButeMgr::CharClass(char c) {
+    return (short)(g_charClass[(unsigned char)c] - 1);
+}
+
+// ---------------------------------------------------------------------------
+// CButeMgr::PeekState / PeekState2
+// Read one column of the 2D lexer transition table at row `state` (stride 147
+// WORDs) / column CharClass(c). The two variants read adjacent columns
+// (g_transTable[idx] vs [idx+1]).
+RVA(0x00170400, 0x2f)
+short CButeMgr::PeekState(short state, char c) {
+    return ((short (*)[147])g_transTable)[state][CharClass(c) * 3];
+}
+
+RVA(0x00170430, 0x2f)
+short CButeMgr::PeekState2(short state, char c) {
+    return g_transTable142[state][CharClass(c) * 3];
+}
+
+// ---------------------------------------------------------------------------
+// CButeMgr::ScanState
+// Write the token type (+0xaa) and the secondary lexer state (+0xac) from two
+// adjacent columns of the transition table.
+RVA(0x00170460, 0x58)
+void CButeMgr::ScanState(short state, char c) {
+    int base = state * 49;
+    m_tokType = g_transTable[(base + CharClass(c)) * 3 + 1];
+    m_ac = g_transTable[(base + CharClass(c)) * 3 + 2];
+}
+
+// ---------------------------------------------------------------------------
+// CButeMgr::SkipToTag
+// Re-lex tokens until a tag/group token (type 1 or 2) is reached (return true),
+// failing on a parse error or any non-continuation token. Type 4 continues the
+// loop (re-running the attribute-file driver).
+// @early-stop
+// 78% block-layout wall: the body is byte-identical (the shared `je fail` and
+// the `jne loop`-to-Parse loop-back all match) -- the ONLY divergence is the two
+// 3-byte cold exit blocks `xor al,al`(false) / `mov al,1`(true) emitted in
+// swapped .text order vs retail (false-first), which shifts the branch
+// displacements that target them. A block-placement coin-flip; while/break,
+// nested success-deepest, and continue forms all leave the order fixed.
+RVA(0x00171160, 0x45)
+bool CButeMgr::SkipToTag() {
+    while (((ButeMgr*)this)->ParseAttributeFile()) {
+        if (!Parse()) {
+            break;
+        }
+        short t = m_tokType;
+        if (t == 1 || t == 2) {
+            return true;
+        }
+        if (t != 4) {
+            break;
+        }
+    }
+    return false;
+}
+
+// ---------------------------------------------------------------------------
+// CButeMgr::ParseGroup
+// The recursive per-tag descent: advance, lex, and -- depending on the token
+// type -- either accept the group (1), parse a tag line (2) and walk its
+// matching nodes, or recurse. Loops while the current token stays a group.
+// @early-stop
+// 94.6%: two residuals, both walls. (1) The node-walk callback push references
+// the static apply-fn at 0x1712b0 (an un-named recovery-gap function) so the
+// reloc is masked (push $0 vs retail's section-offset push); naming it is a
+// separate reconstruction. (2) A loop-rotation difference at the bottom: retail
+// loops back with a bare `jne loopTop`, MSVC duplicates the ParseTagLine call
+// onto the fall-through edge. CFG/offsets/the shared token-classify tail are
+// otherwise byte-identical.
+RVA(0x00171580, 0xba)
+bool CButeMgr::ParseGroup() {
+    NextChar();
+    if (!Parse()) {
+        return false;
+    }
+    short t = m_tokType;
+    if (t == 1) {
+        return true;
+    }
+    if (t != 2) {
+        return false;
+    }
+    for (;;) {
+        if (!ParseTagLine()) {
+            return false;
+        }
+        if (m_10d) {
+            CButeTree* grp = (CButeTree*)Tree48()->Find((char*)(const char*)m_tagName);
+            if (grp) {
+                grp->Walk(&ButeGroup_Apply, m_pText, 0);
+            }
+        }
+        if (!Parse()) {
+            return false;
+        }
+        t = m_tokType;
+        if (t == 1) {
+            return true;
+        }
+        if (t != 2) {
+            if (t != 4) {
+                return false;
+            }
+            if (!SkipToTag()) {
+                return false;
+            }
+        }
+        if (m_tokType == 1) {
+            return true;
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// CButeMgr::Exists
+// Probe for a tag (and optionally a key under it): Tree()->Find(tag); on a hit
+// with no key requested return true, else require the key to exist under it.
+RVA(0x00171a60, 0x34)
+bool CButeMgr::Exists(char* tag, char* key) {
+    void* grp = Tree()->Find(tag);
+    if (grp) {
+        if (key == 0) {
+            return true;
+        }
+        if (((CButeTree*)grp)->Find(key)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// NOTE: the CButeMgr scalar destructor at 0x0213c0 stays stubbed in
+// src/Stub/Discovered.cpp for now -- it is an EH-frame (/GX) destructor that
+// re-stamps three sub-tree vtables and dispatches the engine base dtors via the
+// `neg/sbb/and` second-base adjust. Reproducing it exactly needs each sub-tree
+// retyped with its 2-vptr virtual dtor (a restructuring that risks the 14
+// already-matched getters/parser here), so it is deferred to the final sweep.

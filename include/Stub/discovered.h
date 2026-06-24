@@ -65,19 +65,11 @@ public:
     void CBrickz_09f7f0();
     void CBrickz_0ec230();
 };
+// CButeMgr lexer cluster migrated to src/Bute/ButeMgr.cpp (its real class TU);
+// only the EH-frame scalar destructor stays here, deferred to the final sweep.
 class CButeMgr {
 public:
     void CButeMgr_0213c0();
-    void CButeMgr_170330();
-    void CButeMgr_170380();
-    void CButeMgr_170390();
-    void CButeMgr_1703e0();
-    void CButeMgr_170400();
-    void CButeMgr_170430();
-    void CButeMgr_170460();
-    void CButeMgr_171160();
-    void CButeMgr_171580();
-    void CButeMgr_171a60();
 };
 class CButeMgrHelper {
 public:

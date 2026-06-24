@@ -12,7 +12,10 @@ public:
 };
 class ButeMgr {
 public:
-    void ParseAttributeFile();
+    // Returns whether another line was produced (the lexer cluster in
+    // src/Bute/ButeMgr.cpp tests al as a bool). Same class as CButeMgr; kept on
+    // the `ButeMgr` placeholder here so the stub's symbol name is unchanged.
+    bool ParseAttributeFile();
 };
 // The help-screen game state. LoadAssets() first chains the base-class asset
 // loader (LoadGameAssetNamespaces, reloc-masked external call) which populates
@@ -812,7 +815,9 @@ void __stdcall EngineLabelBacklog::Stub_148940(int, int, int, int) {}
 // @source: decomp-xref
 // @stub
 RVA(0x00170750, 0x9d8)
-void ButeMgr::ParseAttributeFile() {}
+bool ButeMgr::ParseAttributeFile() {
+    return false;
+}
 
 // @confidence: high
 // @source: call-xref
