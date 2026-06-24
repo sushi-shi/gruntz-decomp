@@ -51,7 +51,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	344	0
+engine_discovered	339	0
 engine_label_stubs	519	118
 filemem	8	7
 filestream	13	9
@@ -130,6 +130,7 @@ statusbaritem	2	1
 statusbarupdaters	7	0
 streamfeeder	9	7
 streamvoice	5	3
+symparser	5	3
 symtab	10	7
 terraintileloader	1	0
 tileactionevent	5	3
@@ -570,7 +571,7 @@ directsoundmgr	?GetVolume@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	2	922619dc808
 directsoundmgr	?GetVolumePercent@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	2	b7536ea97fc9	0x135640
 directsoundmgr	?IsLooping@DirectSoundMgr@@QAEHXZ	99.8529	99.8529	4	4f34a91fa01d	0x135440
 directsoundmgr	?IsPlaying@DirectSoundMgr@@QAEHXZ	99.8529	99.8529	4	993b4d422d51	0x1353f0
-directsoundmgr	?Lock@DirectSoundMgr@@QAEHIIPAPAXPAI01I@Z	67.6556	67.6556	1	e5c48a702811	0x136370
+directsoundmgr	?Lock@DirectSoundMgr@@QAEHIIPAPAXPAI01I@Z	67.6556	67.6556	2	653e44a391b9	0x136370
 directsoundmgr	?LockConvert@DirectSoundMgr@@QAEHPAXII@Z	100.0000	100.0000	3	1195b8fc939d	0x135f40
 directsoundmgr	?RemoveClone@DirectSoundMgr@@QAEXPAV1@@Z	100.0000	100.0000	2	7875878133be	0x135d20
 directsoundmgr	?Restore@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	4	2d71bdf5406d	0x135310
@@ -726,11 +727,6 @@ engine_discovered	?ClassUnknown_117_0ea4b0@ClassUnknown_117@@QAEXXZ	3.6364	3.636
 engine_discovered	?ClassUnknown_117_0ea6c0@ClassUnknown_117@@QAEXXZ	0.5495	0.5495	1	fbe4d2e71fb3	0xea6c0
 engine_discovered	?ClassUnknown_117_104b00@ClassUnknown_117@@QAEXXZ	4.7619	4.7619	1	764c03e74b97	0x104b00
 engine_discovered	?ClassUnknown_119_1591b0@ClassUnknown_119@@QAEXXZ	14.2857	14.2857	1	fb191ddfdab1	0x1591b0
-engine_discovered	?ClassUnknown_11_13abc0@ClassUnknown_11@@QAEXXZ	0.9174	0.9174	1	e0f64287a2c8	0x13abc0
-engine_discovered	?ClassUnknown_11_13b850@ClassUnknown_11@@QAEXXZ	0.5634	0.5634	1	0d12159826c3	0x13b850
-engine_discovered	?ClassUnknown_11_13bff0@ClassUnknown_11@@QAEXXZ	5.0000	5.0000	1	92b772d9c26d	0x13bff0
-engine_discovered	?ClassUnknown_11_13c030@ClassUnknown_11@@QAEXXZ	6.6667	6.6667	1	319245c6eb6e	0x13c030
-engine_discovered	?ClassUnknown_11_13c210@ClassUnknown_11@@QAEXXZ	5.0000	5.0000	1	fcab7e68fed8	0x13c210
 engine_discovered	?ClassUnknown_120_1852e0@ClassUnknown_120@@QAEXXZ	1.9048	1.9048	1	e9c01edd3333	0x1852e0
 engine_discovered	?ClassUnknown_121_139cf0@ClassUnknown_121@@QAEXXZ	1.4085	1.4085	1	a29177f249c3	0x139cf0
 engine_discovered	?ClassUnknown_122_1397a0@ClassUnknown_122@@QAEXXZ	2.7027	2.7027	1	2a5877401bcd	0x1397a0
@@ -2152,6 +2148,11 @@ streamvoice	??1StreamVoice@@QAE@XZ	42.4643	42.4643	1	59cc0331f52c	0x137650
 streamvoice	?ComputeRatio@StreamVoice@@QAEIXZ	100.0000	100.0000	1	bc813ec12694	0x137590
 streamvoice	?Configure@StreamVoice@@QAEHHHHH@Z	100.0000	100.0000	1	8ec6fd23b06a	0x137520
 streamvoice	?SetSource@StreamVoice@@QAEHPAUStreamSource@@@Z	100.0000	100.0000	1	6052f26a3cfc	0x1374c0
+symparser	??1CSymParser@@QAE@XZ	97.9725	97.9725	1	753911be15cf	0x13abc0
+symparser	?AddNode@CSymParser@@QAEXPAX@Z	100.0000	100.0000	1	9dbc0f9a4b8a	0x13c210
+symparser	?Clear@CSymParser@@QAEPAXH@Z	91.3803	91.3803	1	4dc23de213ed	0x13b850
+symparser	?ResolvePath@CSymParser@@QAEPAXPBD@Z	100.0000	100.0000	1	d2f5951f4d21	0x13c030
+symparser	?ResolveQualified@CSymParser@@QAEHPBDPAX@Z	100.0000	100.0000	1	65f97a6deb84	0x13bff0
 symtab	??1CSymTab@@QAE@XZ	88.7245	88.7245	1	3d0073f2a05b	0x139ee0
 symtab	?FindSub@CSymTab@@QAEPAXPBD@Z	100.0000	100.0000	1	a80b960c2c89	0x13a230
 symtab	?FirstSub@CSymTab@@QAEPAXXZ	100.0000	100.0000	1	592426346612	0x13a260

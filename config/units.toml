@@ -379,6 +379,11 @@ source = "src/Bute/Hash.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "symparser"
+source = "src/Bute/SymParser.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "winapi"
 source = "src/Utils/WinAPI.cpp"
 flags = "eh"

@@ -89,6 +89,9 @@ public:
     // Drop every entry: array-delete the bucket array (no-op per-slot dtor + free
     // the count-cookie). The table's destructor.
     void RemoveAll(); // 0x184a40
+    // Splice `node` (a record's intrusive node) into the table (0x584a70). External
+    // (no body) so the __thiscall splice falls out reloc-masked.
+    void Insert(void* node); // 0x184a70
 
     u32 m_count;          // +0x00
     CHashSlot* m_buckets; // +0x04

@@ -520,17 +520,9 @@ void ClassUnknown_107::ClassUnknown_107_10d3d0() {}
 RVA(0x000aa960, 0xf1)
 void ClassUnknown_109::ClassUnknown_109_0aa960() {}
 
-// ---- ClassUnknown_11 ----
-RVA(0x0013abc0, 0x13f)
-void ClassUnknown_11::ClassUnknown_11_13abc0() {}
-RVA(0x0013b850, 0xa8)
-void ClassUnknown_11::ClassUnknown_11_13b850() {}
-RVA(0x0013bff0, 0x19)
-void ClassUnknown_11::ClassUnknown_11_13bff0() {}
-RVA(0x0013c030, 0x14)
-void ClassUnknown_11::ClassUnknown_11_13c030() {}
-RVA(0x0013c210, 0x1a)
-void ClassUnknown_11::ClassUnknown_11_13c210() {}
+// ---- ClassUnknown_11 ---- reconstructed as CSymParser (the Remus parser/owner)
+// in src/Bute/SymParser.cpp: ~CSymParser (0x13abc0), Clear (0x13b850) and the
+// three path-resolution/insert thunks (0x13bff0/0x13c030/0x13c210).
 
 // ---- ClassUnknown_110 ----
 RVA(0x000fb660, 0xf1)
