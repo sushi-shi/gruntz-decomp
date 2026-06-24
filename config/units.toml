@@ -504,3 +504,8 @@ flags = "base"
 unit = "chatbox_eh"
 source = "src/Gruntz/ChatBoxDtor.cpp"
 flags = "eh"
+
+[[unit]]
+unit = "clightfxrender"
+source = "src/Gruntz/CLightFxRender.cpp"
+flags = "base"

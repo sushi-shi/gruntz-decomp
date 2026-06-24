@@ -33,13 +33,14 @@ cddrawworkers	3	3
 cdirectdrawmgr	15	9
 chatbox	16	9
 chatbox_eh	1	1
+clightfxrender	19	8
 cplay	26	8
 cstatusbarmgr	1	0
 deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	788	0
+engine_discovered	773	0
 engine_label_stubs	534	121
 filestream	13	9
 font	16	9
@@ -291,6 +292,25 @@ chatbox	?ScrollRow0@CChatBox@@QAEHXZ	63.2353	63.2353	2	a1b956fa2e60	0x183030
 chatbox	?ScrollRow1@CChatBox@@QAEHXZ	63.2353	63.2353	2	2118f6eef2e4	0x1830b0
 chatbox	?Step@CChatBox@@QAEHH@Z	88.9467	88.9467	2	8b1afcc74592	0x182ed0
 chatbox_eh	??1CChatBox@@QAE@XZ	100.0000	100.0000	1	ab8e83aa5ef4	0xa0360
+clightfxrender	?AllocSurface@CLightFxRender@@QAEHXZ	99.6842	99.6842	1	8dd72369d7c2	0xa33e0
+clightfxrender	?ApplyA@CLightFxRender@@QAEHHHH@Z	100.0000	100.0000	1	eb856b985e6e	0xa9480
+clightfxrender	?ApplyB@CLightFxRender@@QAEHHHH@Z	100.0000	100.0000	1	9f48a46007da	0xa95d0
+clightfxrender	?ApplyGlobal@CLightFxRender@@QAEHHHH@Z	100.0000	100.0000	1	084f2f137f84	0xa9550
+clightfxrender	?BuildShape@CLightFxRender@@QAEHH@Z	86.0127	86.0127	1	3fbf1c40baec	0xa3c90
+clightfxrender	?ClampRect@CLightFxRender@@QAEHHHPAHH@Z	88.4819	88.4819	1	21e61faadea8	0xa9660
+clightfxrender	?ClearHandle@CLightFxRender@@QAEHHHH@Z	100.0000	100.0000	1	5a3a0e3a3da5	0xa9500
+clightfxrender	?Ctor@CLightFxRender@@QAEXXZ	100.0000	100.0000	1	a2222a53d107	0xa3360
+clightfxrender	?FillSpan@CLightFxRender@@QAEXIIG@Z	100.0000	100.0000	1	08bbcc7cdcc5	0xa4840
+clightfxrender	?FreeSurface@CLightFxRender@@QAEXXZ	100.0000	100.0000	1	825081ce566c	0xa33a0
+clightfxrender	?Init@CLightFxRender@@QAEHPAULfxMgr@@H@Z	100.0000	100.0000	1	4aaa86a43913	0xa32c0
+clightfxrender	?Shape1@CLightFxRender@@QAEHXZ	0.2950	0.2950	1	1e4df6f3e754	0xa3dc0
+clightfxrender	?Shape2@CLightFxRender@@QAEHXZ	0.3045	0.3045	1	7b8f67bae1e2	0xa4890
+clightfxrender	?Shape3@CLightFxRender@@QAEHXZ	0.2194	0.2194	1	8c71f10e3a9f	0xa5310
+clightfxrender	?Shape4@CLightFxRender@@QAEHXZ	0.3089	0.3089	1	324f89072be4	0xa5d90
+clightfxrender	?Shape5@CLightFxRender@@QAEHXZ	0.2946	0.2946	1	1dfeebe63d2d	0xa67d0
+clightfxrender	?Shape6@CLightFxRender@@QAEHXZ	0.2108	0.2108	1	876effa8e20e	0xa7260
+clightfxrender	?Shape7@CLightFxRender@@QAEHXZ	0.2680	0.2680	1	866740440fc7	0xa7d50
+clightfxrender	?Shape8@CLightFxRender@@QAEHXZ	0.2722	0.2722	1	09ace95d398a	0xa8900
 cplay	?BeginGridWalk@CPlay@@QAEHHHHHH@Z	81.1191	81.1191	2	dec8202764e5	0xd0920
 cplay	?BuildGruntTypeNameTable@CPlay@@QAEXHHHH@Z	0.7092	0.7092	1	1f94124e3e6b	0xdc6d0
 cplay	?BuildHelpReveal@CPlay@@QAEHXZ	67.8125	67.8125	1	7227ae443c4e	0xd72c0
@@ -985,24 +1005,9 @@ engine_discovered	?ClassUnknown_66_166d40@ClassUnknown_66@@QAEXXZ	3.3333	3.3333	
 engine_discovered	?ClassUnknown_67_191ad0@ClassUnknown_67@@QAEXXZ	1.9048	1.9048	1	1e4f9d691f96	0x191ad0
 engine_discovered	?ClassUnknown_67_191b10@ClassUnknown_67@@QAEXXZ	0.3448	0.3448	1	f40cbafe2e4a	0x191b10
 engine_discovered	?ClassUnknown_67_191c30@ClassUnknown_67@@QAEXXZ	1.2195	1.2195	1	a963c7685860	0x191c30
-engine_discovered	?ClassUnknown_68_0a32c0@ClassUnknown_68@@QAEXXZ	0.9756	0.9756	1	7e2777663c72	0xa32c0
-engine_discovered	?ClassUnknown_68_0a3360@ClassUnknown_68@@QAEXXZ	7.1429	7.1429	1	853f63c5f7e2	0xa3360
-engine_discovered	?ClassUnknown_68_0a33a0@ClassUnknown_68@@QAEXXZ	7.1429	7.1429	1	4b9224f7f265	0xa33a0
-engine_discovered	?ClassUnknown_68_0a33e0@ClassUnknown_68@@QAEXXZ	2.6316	2.6316	1	ec2779997353	0xa33e0
 engine_discovered	?ClassUnknown_68_0a3460@ClassUnknown_68@@QAEXXZ	0.1681	0.1681	1	815fbd276ee5	0xa3460
 engine_discovered	?ClassUnknown_68_0a3820@ClassUnknown_68@@QAEXXZ	0.2564	0.2564	1	09641df9ee29	0xa3820
 engine_discovered	?ClassUnknown_68_0a3b50@ClassUnknown_68@@QAEXXZ	0.4301	0.4301	1	f11d80543629	0xa3b50
-engine_discovered	?ClassUnknown_68_0a3c90@ClassUnknown_68@@QAEXXZ	0.5063	0.5063	1	041bbb216185	0xa3c90
-engine_discovered	?ClassUnknown_68_0a3dc0@ClassUnknown_68@@QAEXXZ	0.1553	0.1553	1	aeefc2e71a57	0xa3dc0
-engine_discovered	?ClassUnknown_68_0a4840@ClassUnknown_68@@QAEXXZ	2.0000	2.0000	1	8c7f4181a0fa	0xa4840
-engine_discovered	?ClassUnknown_68_0a5310@ClassUnknown_68@@QAEXXZ	0.1567	0.1567	1	12bc74b3ac18	0xa5310
-engine_discovered	?ClassUnknown_68_0a5d90@ClassUnknown_68@@QAEXXZ	0.1626	0.1626	1	41a6b0ed4438	0xa5d90
-engine_discovered	?ClassUnknown_68_0a7260@ClassUnknown_68@@QAEXXZ	0.1506	0.1506	1	c35fc9db6788	0xa7260
-engine_discovered	?ClassUnknown_68_0a9480@ClassUnknown_68@@QAEXXZ	1.1429	1.1429	1	2baac8ada0b3	0xa9480
-engine_discovered	?ClassUnknown_68_0a9500@ClassUnknown_68@@QAEXXZ	6.6667	6.6667	1	c1ff2eb802e8	0xa9500
-engine_discovered	?ClassUnknown_68_0a9550@ClassUnknown_68@@QAEXXZ	1.2500	1.2500	1	995101183294	0xa9550
-engine_discovered	?ClassUnknown_68_0a95d0@ClassUnknown_68@@QAEXXZ	0.9756	0.9756	1	662faaf11edf	0xa95d0
-engine_discovered	?ClassUnknown_68_0a9660@ClassUnknown_68@@QAEXXZ	0.4819	0.4819	1	8653d5ad20b2	0xa9660
 engine_discovered	?ClassUnknown_69_058b60@ClassUnknown_69@@QAEXXZ	2.6667	2.6667	1	78e0eaa5007e	0x58b60
 engine_discovered	?ClassUnknown_69_10d150@ClassUnknown_69@@QAEXXZ	1.1905	1.1905	1	ca7e05bc985a	0x10d150
 engine_discovered	?ClassUnknown_69_1504d0@ClassUnknown_69@@QAEXXZ	1.1429	1.1429	1	a207561dec28	0x1504d0
@@ -2135,25 +2140,25 @@ sbi_rectonly	?LoadMainStatusBarSprite@CSBI_RectOnly@@QAEXXZ	0.8772	0.8772	1	0f2b
 sbi_rectonly	?LoadMultiplayerBattlezConfig@CSBI_RectOnly@@QAEXH@Z	0.8264	0.8264	1	b06793efc636	0x107ae0
 sbi_rectonly	?LoadRezMachineConfig@CSBI_RectOnly@@QAEXXZ	0.2469	0.2469	1	00a671763151	0x105e40
 sbi_rectonly	?Sbi_0e7400_ResetCounters@CSBI_RectOnly@@QAEXXZ	100.0000	100.0000	1	a95aca5960e7	0xe7400
-sbi_rectonly	?Sbi_101420_ClearTabSprites@CSBI_RectOnly@@QAEHH@Z	100.0000	100.0000	1	85273bc2c4d6	0x101420
-sbi_rectonly	?Sbi_104d60_TryActivate@CSBI_RectOnly@@QAEHXZ	100.0000	100.0000	1	7f366952a1b5	0x104d60
-sbi_rectonly	?Sbi_105280_HitTest@CSBI_RectOnly@@QAEHHH@Z	80.6250	80.6250	1	116708d5389f	0x105280
-sbi_rectonly	?Sbi_105520_ClearGauge@CSBI_RectOnly@@QAEXXZ	100.0000	100.0000	1	ac6e5bf22f29	0x105520
-sbi_rectonly	?Sbi_105560_SetSlotState@CSBI_RectOnly@@QAEXH@Z	100.0000	100.0000	1	cf4c0d82b17a	0x105560
-sbi_rectonly	?Sbi_105710_AnyTabActive@CSBI_RectOnly@@QAEHXZ	100.0000	100.0000	1	92564a70d65d	0x105710
-sbi_rectonly	?Sbi_105750_AdvanceGauge@CSBI_RectOnly@@QAEXH@Z	100.0000	100.0000	1	a7ea3749dd8d	0x105750
+sbi_rectonly	?Sbi_101420_ClearTabSprites@CSBI_RectOnly@@QAEHH@Z	100.0000	100.0000	2	a6a83bf6912c	0x101420
+sbi_rectonly	?Sbi_104d60_TryActivate@CSBI_RectOnly@@QAEHXZ	100.0000	100.0000	2	f248821fe513	0x104d60
+sbi_rectonly	?Sbi_105280_HitTest@CSBI_RectOnly@@QAEHHH@Z	80.6250	80.6250	2	5d2d5e8166cc	0x105280
+sbi_rectonly	?Sbi_105520_ClearGauge@CSBI_RectOnly@@QAEXXZ	100.0000	100.0000	2	103055bad37e	0x105520
+sbi_rectonly	?Sbi_105560_SetSlotState@CSBI_RectOnly@@QAEXH@Z	100.0000	100.0000	2	d2cbf52c81cc	0x105560
+sbi_rectonly	?Sbi_105710_AnyTabActive@CSBI_RectOnly@@QAEHXZ	100.0000	100.0000	2	ae7097f6af93	0x105710
+sbi_rectonly	?Sbi_105750_AdvanceGauge@CSBI_RectOnly@@QAEXH@Z	100.0000	100.0000	2	7fa243ae295a	0x105750
 sbi_rectonly	?Sbi_1057d0_SetGauge@CSBI_RectOnly@@QAEXH@Z	100.0000	100.0000	1	2255a09b669c	0x1057d0
 sbi_rectonly	?Sbi_1058d0_RefreshAll@CSBI_RectOnly@@QAEXXZ	100.0000	100.0000	1	06069f48f19e	0x1058d0
 sbi_rectonly	?Sbi_105920_ResetGauge@CSBI_RectOnly@@QAEXXZ	100.0000	100.0000	1	c71ee6923653	0x105920
-sbi_rectonly	?Sbi_106610_ResetGroupA@CSBI_RectOnly@@QAEXXZ	100.0000	100.0000	1	017fc870d04a	0x106610
+sbi_rectonly	?Sbi_106610_ResetGroupA@CSBI_RectOnly@@QAEXXZ	100.0000	100.0000	2	4a29cff473d6	0x106610
 sbi_rectonly	?Sbi_1066f0_SetRectA@CSBI_RectOnly@@QAEXHHH@Z	72.3333	72.3333	1	abd63fe39359	0x1066f0
 sbi_rectonly	?Sbi_106740_SetRectB@CSBI_RectOnly@@QAEXHHH@Z	72.3333	72.3333	1	b42b8882267a	0x106740
-sbi_rectonly	?Sbi_106790_CommitSlot@CSBI_RectOnly@@QAEXH@Z	100.0000	100.0000	1	7fb5562ed269	0x106790
-sbi_rectonly	?Sbi_106a00_NotifyAllSlots@CSBI_RectOnly@@QAEXXZ	100.0000	100.0000	1	23c9cf817197	0x106a00
-sbi_rectonly	?Sbi_107aa0_ToggleStat@CSBI_RectOnly@@QAEXH@Z	100.0000	100.0000	1	fb8fc147ca4d	0x107aa0
-sbi_rectonly	?Sbi_1090a0_Serialize@CSBI_RectOnly@@QAEHPAVCSbiStream@@@Z	95.6124	95.6124	1	a7b06385583a	0x1090a0
+sbi_rectonly	?Sbi_106790_CommitSlot@CSBI_RectOnly@@QAEXH@Z	100.0000	100.0000	2	b89bd816df20	0x106790
+sbi_rectonly	?Sbi_106a00_NotifyAllSlots@CSBI_RectOnly@@QAEXXZ	100.0000	100.0000	2	e396e26d1f18	0x106a00
+sbi_rectonly	?Sbi_107aa0_ToggleStat@CSBI_RectOnly@@QAEXH@Z	100.0000	100.0000	2	00f7230801d8	0x107aa0
+sbi_rectonly	?Sbi_1090a0_Serialize@CSBI_RectOnly@@QAEHPAVCSbiStream@@@Z	95.6124	95.6124	2	92a213ec48bf	0x1090a0
 sbi_rectonly	?Sbi_109a90_FindReadySlot@CSBI_RectOnly@@QAEHXZ	100.0000	100.0000	1	97f24b4de2b9	0x109a90
-sbi_rectonly	?Sbi_10bb90_SetMode@CSBI_RectOnly@@QAEXH@Z	100.0000	100.0000	1	2b951028a037	0x10bb90
+sbi_rectonly	?Sbi_10bb90_SetMode@CSBI_RectOnly@@QAEXH@Z	100.0000	100.0000	2	18ab8c92e8eb	0x10bb90
 sbi_rectonly	?Stub_0ffde0@CSBI_RectOnly@@QAEXXZ	0.2119	0.2119	4	3326c6c6d306	0xffde0
 sbi_rectonly	?UpdateFallingItemStatusBar@CSBI_RectOnly@@QAEXHHH@Z	1.8182	1.8182	1	92f43fed2870	0x107590
 sbi_rectonly	?UpdateRezConveyorStatusBar@CSBI_RectOnly@@QAEXXZ	0.3717	0.3717	1	1dfce58384f5	0x105990

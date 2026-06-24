@@ -1564,43 +1564,13 @@ void ClassUnknown_67::ClassUnknown_67_191b10() {}
 RVA(0x00191c30, 0xcc)
 void ClassUnknown_67::ClassUnknown_67_191c30() {}
 
-// ---- ClassUnknown_68 ----
-RVA(0x000a32c0, 0x72)
-void ClassUnknown_68::ClassUnknown_68_0a32c0() {}
-RVA(0x000a3360, 0x29)
-void ClassUnknown_68::ClassUnknown_68_0a3360() {}
-RVA(0x000a33a0, 0x23)
-void ClassUnknown_68::ClassUnknown_68_0a33a0() {}
-RVA(0x000a33e0, 0x55)
-void ClassUnknown_68::ClassUnknown_68_0a33e0() {}
+// ---- ClassUnknown_68 ----  (recovered: CLightFxRender, src/Gruntz/CLightFxRender.cpp)
 RVA(0x000a3460, 0x2f3)
 void ClassUnknown_68::ClassUnknown_68_0a3460() {}
 RVA(0x000a3820, 0x18e)
 void ClassUnknown_68::ClassUnknown_68_0a3820() {}
 RVA(0x000a3b50, 0xfa)
 void ClassUnknown_68::ClassUnknown_68_0a3b50() {}
-RVA(0x000a3c90, 0xc7)
-void ClassUnknown_68::ClassUnknown_68_0a3c90() {}
-RVA(0x000a3dc0, 0x85f)
-void ClassUnknown_68::ClassUnknown_68_0a3dc0() {}
-RVA(0x000a4840, 0x32)
-void ClassUnknown_68::ClassUnknown_68_0a4840() {}
-RVA(0x000a5310, 0x855)
-void ClassUnknown_68::ClassUnknown_68_0a5310() {}
-RVA(0x000a5d90, 0x825)
-void ClassUnknown_68::ClassUnknown_68_0a5d90() {}
-RVA(0x000a7260, 0x8c0)
-void ClassUnknown_68::ClassUnknown_68_0a7260() {}
-RVA(0x000a9480, 0x5c)
-void ClassUnknown_68::ClassUnknown_68_0a9480() {}
-RVA(0x000a9500, 0x16)
-void ClassUnknown_68::ClassUnknown_68_0a9500() {}
-RVA(0x000a9550, 0x5b)
-void ClassUnknown_68::ClassUnknown_68_0a9550() {}
-RVA(0x000a95d0, 0x69)
-void ClassUnknown_68::ClassUnknown_68_0a95d0() {}
-RVA(0x000a9660, 0xca)
-void ClassUnknown_68::ClassUnknown_68_0a9660() {}
 
 // ---- ClassUnknown_69 ----
 RVA(0x00058b60, 0x2d)
