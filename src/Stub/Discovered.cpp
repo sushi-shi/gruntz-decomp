@@ -435,23 +435,7 @@ void CGruntzMgr::CGruntzMgr_093620() {}
 RVA(0x00111ec0, 0x37)
 void CGruntzMgr::CGruntzMgr_111ec0() {}
 
-// ---- CGruntzSoundZ ----
-RVA(0x00086040, 0x49)
-void CGruntzSoundZ::CGruntzSoundZ_086040() {}
-RVA(0x00138530, 0xa2)
-void CGruntzSoundZ::CGruntzSoundZ_138530() {}
-RVA(0x00138670, 0x8a)
-void CGruntzSoundZ::CGruntzSoundZ_138670() {}
-RVA(0x00138700, 0x2d)
-void CGruntzSoundZ::CGruntzSoundZ_138700() {}
-RVA(0x00138730, 0x41)
-void CGruntzSoundZ::CGruntzSoundZ_138730() {}
-RVA(0x00138840, 0x56)
-void CGruntzSoundZ::CGruntzSoundZ_138840() {}
-RVA(0x001388a0, 0x18)
-void CGruntzSoundZ::CGruntzSoundZ_1388a0() {}
-RVA(0x00138920, 0xf)
-void CGruntzSoundZ::CGruntzSoundZ_138920() {}
+// ---- CGruntzSoundZ ---- migrated to src/Dsndmgr/CGruntzSoundZ.cpp (all 8 methods).
 
 // ---- CGuardPoint ----
 RVA(0x00010410, 0x44)

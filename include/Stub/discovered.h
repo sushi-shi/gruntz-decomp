@@ -298,17 +298,6 @@ public:
     void CGruntzMgr_093620();
     void CGruntzMgr_111ec0();
 };
-class CGruntzSoundZ {
-public:
-    void CGruntzSoundZ_086040();
-    void CGruntzSoundZ_138530();
-    void CGruntzSoundZ_138670();
-    void CGruntzSoundZ_138700();
-    void CGruntzSoundZ_138730();
-    void CGruntzSoundZ_138840();
-    void CGruntzSoundZ_1388a0();
-    void CGruntzSoundZ_138920();
-};
 class CGuardPoint {
 public:
     void CGuardPoint_010410();

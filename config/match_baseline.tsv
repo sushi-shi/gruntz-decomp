@@ -36,7 +36,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	18	17
 directsoundmgr	26	19
-engine_discovered	1001	0
+engine_discovered	993	0
 engine_label_stubs	537	120
 filestream	13	9
 font	16	9
@@ -52,6 +52,7 @@ grunt	20	0
 gruntzapp	10	8
 gruntzcommand	9	9
 gruntzmgr	9	5
+gruntzsoundz	8	7
 gruntzwnd	2	1
 iconloaders	4	1
 image	23	13
@@ -506,14 +507,6 @@ engine_discovered	?CGruntzMgr_0933e0@CGruntzMgr@@QAEXXZ	2.8571	2.8571	1	0cf14893
 engine_discovered	?CGruntzMgr_093460@CGruntzMgr@@QAEXXZ	0.2985	0.2985	1	ba48f6cfd4f5	0x93460
 engine_discovered	?CGruntzMgr_093620@CGruntzMgr@@QAEXXZ	0.1826	0.1826	1	2ef823d0e35b	0x93620
 engine_discovered	?CGruntzMgr_111ec0@CGruntzMgr@@QAEXXZ	1.7391	1.7391	1	7289606f9e90	0x111ec0
-engine_discovered	?CGruntzSoundZ_086040@CGruntzSoundZ@@QAEXXZ	5.2632	5.2632	1	179a80f7ddf4	0x86040
-engine_discovered	?CGruntzSoundZ_138530@CGruntzSoundZ@@QAEXXZ	1.7857	1.7857	1	b8126b31d77a	0x138530
-engine_discovered	?CGruntzSoundZ_138670@CGruntzSoundZ@@QAEXXZ	0.6667	0.6667	1	d0cb12a9321e	0x138670
-engine_discovered	?CGruntzSoundZ_138700@CGruntzSoundZ@@QAEXXZ	2.0000	2.0000	1	b45643459127	0x138700
-engine_discovered	?CGruntzSoundZ_138730@CGruntzSoundZ@@QAEXXZ	1.7391	1.7391	1	6293817c0be8	0x138730
-engine_discovered	?CGruntzSoundZ_138840@CGruntzSoundZ@@QAEXXZ	1.0256	1.0256	1	d5e10d272c2e	0x138840
-engine_discovered	?CGruntzSoundZ_1388a0@CGruntzSoundZ@@QAEXXZ	10.0000	10.0000	1	79239ee87ab9	0x1388a0
-engine_discovered	?CGruntzSoundZ_138920@CGruntzSoundZ@@QAEXXZ	14.2857	14.2857	1	44701332b992	0x138920
 engine_discovered	?CGuardPoint_010410@CGuardPoint@@QAEXXZ	5.8824	5.8824	1	4e3b67105cbe	0x10410
 engine_discovered	?CInGameIcon_011d00@CInGameIcon@@QAEXXZ	5.8824	5.8824	1	00c21dac870d	0x11d00
 engine_discovered	?CInGameIcon_097680@CInGameIcon@@QAEXXZ	1.2987	1.2987	1	01d57bb70a2a	0x97680
@@ -1972,7 +1965,7 @@ gamemode	?BuildWarpStoneGlitterAnimation@CState@@QAEXXZ	0.9804	0.9804	1	48a14ab5
 gamemode	?CheckWarpLetterBonus@CBootyState@@QAEXXZ	0.2849	0.2849	1	86e864f54e78	0x1c210
 gamemode	?FormatHudText@CMenuState@@QAEXH@Z	0.3094	0.3094	1	414de11c4f00	0x1af70
 gamemode	?FrameSlot28@CMenuState@@UAEHH@Z	100.0000	100.0000	1	d65252922e53	0xa06d0
-gamemode	?GenMenuRandPos@@YGXHPAH0@Z	89.3724	89.3724	1	becadcb40621	0x19cd0
+gamemode	?GenMenuRandPos@@YGXHPAH0@Z	89.3724	89.3724	2	5d5f008bed8d	0x19cd0
 gamemode	?InitAttractTitle@CCreditsState@@QAEXXZ	0.9901	0.9901	1	7f93c1339fff	0x39570
 gamemode	?LoadCreditzStateAssets@CCreditsState@@QAEHHHH@Z	100.0000	100.0000	1	82179fcf6500	0x38d20
 gamemode	?LoadGruntEffectSprites@CState@@QAEXXZ	0.2268	0.2268	1	4762f4e00dc7	0x1a040
@@ -2053,6 +2046,14 @@ gruntzmgr	?InitializeLobbyConnectionSettings@CGruntzMgr@@QAEHXZ	99.5588	99.5588	
 gruntzmgr	?PerFrameTick@CGruntzMgr@@QAEXXZ	100.0000	100.0000	3	dbc31ce0c39a	0x8f620
 gruntzmgr	?ReportError@CGruntzMgr@@QAEXIJ@Z	100.0000	100.0000	3	540078744175	0x8dc60
 gruntzmgr	?RestoreVideoMode@CGruntzMgr@@QAEHH@Z	61.1471	61.1471	1	991fd91344b8	0x8ddd0
+gruntzsoundz	??1CGruntzSoundZ@@UAE@XZ	91.5790	91.5790	1	eadd9784e22d	0x86040
+gruntzsoundz	?CreateBank_138670@CGruntzSoundZ@@QAEPAVCGruntzSoundInnerZ@@HHH@Z	100.0000	100.0000	1	0d41e025e940	0x138670
+gruntzsoundz	?Insert_138700@CGruntzSoundZ@@QAEXPAVCGruntzSoundInnerZ@@@Z	100.0000	100.0000	1	278c200139dc	0x138700
+gruntzsoundz	?IsPlaying_138920@CGruntzSoundZ@@QAEHXZ	100.0000	100.0000	1	387ac6efbbed	0x138920
+gruntzsoundz	?Lookup_138730@CGruntzSoundZ@@QAEPAVCGruntzSoundInnerZ@@PBD@Z	100.0000	100.0000	1	4546bf9e6b66	0x138730
+gruntzsoundz	?Play_138840@CGruntzSoundZ@@QAEHHH@Z	100.0000	100.0000	1	e27e5bb8c89d	0x138840
+gruntzsoundz	?StopAndFlush_138530@CGruntzSoundZ@@QAEXXZ	100.0000	100.0000	1	fc55b1345f19	0x138530
+gruntzsoundz	?StopCurrent_1388a0@CGruntzSoundZ@@QAEXXZ	100.0000	100.0000	1	99f267d9da6f	0x1388a0
 gruntzwnd	??0CGruntzWnd@@QAE@XZ	100.0000	100.0000	5	cce3fed8f7f8	0x94640
 gruntzwnd	?Stub_094670@CGruntzWnd@@QAEXXZ	3.6364	3.6364	4	efb99feddc33	0x94670
 iconloaders	?BuildBootyPerfectAnimation@EngineLabelBacklog@@QAEHXZ	100.0000	100.0000	3	ee16f7b6695c	0x1c070

@@ -416,6 +416,11 @@ source = "src/Dsndmgr/DirectSoundMgr.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "gruntzsoundz"
+source = "src/Dsndmgr/CGruntzSoundZ.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "appdialogs"
 source = "src/Gruntz/AppDialogs.cpp"
 flags = "base"
