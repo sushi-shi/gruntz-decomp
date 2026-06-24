@@ -37,7 +37,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	892	0
+engine_discovered	885	0
 engine_label_stubs	534	117
 filestream	13	9
 font	16	9
@@ -45,7 +45,7 @@ fontconfig	7	4
 fonts	2	1
 gameapp	19	15
 gamelevel	30	19
-gamemode	28	12
+gamemode	35	15
 gameobjectctors	5	0
 gametext	4	2
 gamewnd	6	4
@@ -372,13 +372,6 @@ engine_discovered	?CBehindCandyAni_0100f0@CBehindCandyAni@@QAEXXZ	5.8824	5.8824	
 engine_discovered	?CBehindCandyAni_0adbb0@CBehindCandyAni@@QAEXXZ	14.2857	14.2857	1	d6849b97b232	0xadbb0
 engine_discovered	?CBehindCandy_00fb70@CBehindCandy@@QAEXXZ	50.0000	50.0000	1	2b22dd025caf	0xfb70
 engine_discovered	?CBehindCandy_00fc30@CBehindCandy@@QAEXXZ	5.8824	5.8824	1	2d047edfa354	0xfc30
-engine_discovered	?CBootyState_0196c0@CBootyState@@QAEXXZ	0.7463	0.7463	1	bfa2d6de77dd	0x196c0
-engine_discovered	?CBootyState_019b90@CBootyState@@QAEXXZ	1.2658	1.2658	1	3c81e3f2d042	0x19b90
-engine_discovered	?CBootyState_01c0f0@CBootyState@@QAEXXZ	1.3889	1.3889	1	d57893bab249	0x1c0f0
-engine_discovered	?CBootyState_01e520@CBootyState@@QAEXXZ	5.0000	5.0000	1	43306cfa1ca0	0x1e520
-engine_discovered	?CBootyState_01e570@CBootyState@@QAEXXZ	0.6349	0.6349	1	a4e80298e65a	0x1e570
-engine_discovered	?CBootyState_01ecf0@CBootyState@@QAEXXZ	6.2500	6.2500	1	77b964e74548	0x1ecf0
-engine_discovered	?CBootyState_08d510@CBootyState@@QAEXXZ	4.7619	4.7619	1	84b5d581c2a2	0x8d510
 engine_discovered	?CBrickz_077790@CBrickz@@QAEXXZ	0.1413	0.1413	1	5c3a20fbb893	0x77790
 engine_discovered	?CBrickz_081e10@CBrickz@@QAEXXZ	0.2985	0.2985	1	28e25acbc807	0x81e10
 engine_discovered	?CBrickz_082030@CBrickz@@QAEXXZ	0.2878	0.2878	1	b992327ccdda	0x82030
@@ -1883,23 +1876,30 @@ gamelevel	?VisitVisible@CGameLevel@@QAEXPAXH@Z	87.3206	87.3206	2	68cd7fc3babd	0x
 gamemode	??0CState@@QAE@XZ	100.0000	100.0000	4	a1d9fd8bca62	0x8c750
 gamemode	??1CBootyState@@UAE@XZ	100.0000	100.0000	1	899f9930b960	0x8d440
 gamemode	??1CMenuState@@UAE@XZ	100.0000	100.0000	1	7e8055f2f15c	0x8ce60
+gamemode	??1CMultiBootyState@@UAE@XZ	100.0000	100.0000	1	e3b4ba267d7a	0x8d510
 gamemode	??_GCState@@UAEPAXI@Z	100.0000	100.0000	1	cpp:2601fb2a9496	0x8c710
 gamemode	?BuildBootyWalkingGruntz@CState@@QAEXXZ	0.6579	0.6579	1	ec771b9e0f06	0x1b450
 gamemode	?BuildVersionString@CMenuState@@QAEXHHHH@Z	1.6129	1.6129	1	7c72ec74a3f1	0xa0d80
 gamemode	?BuildWarpStoneGlitterAnimation@CState@@QAEXXZ	0.9804	0.9804	1	48a14ab5d217	0x19540
+gamemode	?CheckPerfectBonus@CMultiBootyState@@QAEHXZ	100.0000	100.0000	1	319eeeda954f	0x1c0f0
 gamemode	?CheckWarpLetterBonus@CBootyState@@QAEXXZ	0.2849	0.2849	1	86e864f54e78	0x1c210
 gamemode	?FormatHudText@CMenuState@@QAEXH@Z	0.3094	0.3094	1	414de11c4f00	0x1af70
+gamemode	?FrameSlot24@CMultiBootyState@@UAEHH@Z	100.0000	100.0000	1	0c1ad52bc856	0x1e570
 gamemode	?FrameSlot28@CMenuState@@UAEHH@Z	100.0000	100.0000	1	d65252922e53	0xa06d0
 gamemode	?GenMenuRandPos@@YGXHPAH0@Z	89.3724	89.3724	2	5d5f008bed8d	0x19cd0
 gamemode	?InitAttractTitle@CCreditsState@@QAEXXZ	0.9901	0.9901	1	7f93c1339fff	0x39570
 gamemode	?LoadCreditzStateAssets@CCreditsState@@QAEHHHH@Z	100.0000	100.0000	1	82179fcf6500	0x38d20
 gamemode	?LoadGruntEffectSprites@CState@@QAEXXZ	0.2268	0.2268	1	4762f4e00dc7	0x1a040
+gamemode	?MoveLettersByDir@CMultiBootyState@@QAEXXZ	59.9241	59.9241	1	ef85452bc14c	0x19b90
+gamemode	?QueryGruntSlots@CMultiBootyState@@QAEHXZ	87.5000	87.5000	1	a306f471e463	0x1ecf0
 gamemode	?ReleaseResources@CBootyState@@UAEXXZ	98.4375	98.4375	1	5b3e49874e83	0x18c90
 gamemode	?ReleaseResources@CMenuState@@UAEXXZ	99.4737	99.4737	1	570eecea03da	0xa02c0
+gamemode	?ReleaseResources@CMultiBootyState@@UAEXXZ	98.5000	98.5000	1	13bfa176e41c	0x1e520
 gamemode	?Render@CCreditsState@@UAEHXZ	97.7121	97.7121	4	2cdd5ac8e110	0x391d0
 gamemode	?Render@CMenuState@@UAEHXZ	100.0000	100.0000	4	9048409ed6ee	0xa0750
 gamemode	?Render@CState@@UAEHXZ	100.0000	100.0000	4	527388a9ccca	0x8c4d0
 gamemode	?StartMusic@CMenuState@@QAEXXZ	94.7561	94.7561	1	159a01616a2b	0xa05a0
+gamemode	?StepGlitterAnim@CMultiBootyState@@QAEXXZ	80.1343	80.1343	1	e5f16a5adb53	0x196c0
 gamemode	?StopMusicChain@CMenuState@@QAEXXZ	99.7059	99.7059	1	f84633f00b69	0xa0640
 gamemode	?Stub_08d5e0@CCreditsState@@QAEXXZ	3.0303	3.0303	2	55b18b536e0d	0x8d5e0
 gamemode	?Update@CBootyState@@UAEHXZ	100.0000	100.0000	4	6f43405d33b8	0x8d3f0

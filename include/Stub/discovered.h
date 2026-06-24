@@ -20,16 +20,6 @@ public:
     void CBehindCandyAni_0100f0();
     void CBehindCandyAni_0adbb0();
 };
-class CBootyState {
-public:
-    void CBootyState_0196c0();
-    void CBootyState_019b90();
-    void CBootyState_01c0f0();
-    void CBootyState_01e520();
-    void CBootyState_01e570();
-    void CBootyState_01ecf0();
-    void CBootyState_08d510();
-};
 class CBrickz {
 public:
     void CBrickz_077790();

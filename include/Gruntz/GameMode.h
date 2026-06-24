@@ -273,4 +273,44 @@ public:
     void CheckWarpLetterBonus();
 };
 
+// CMultiBootyState - the MULTIPLAYER booty/bonus state (RTTI .?AVCMultiBootyState@@,
+// vtable @0x5e9bdc; a SIBLING of CBootyState (.?AVCBootyState@@, vtable @0x5e9cec),
+// NOT the same class - the trace conflated the two under "CBootyState"). Drives the
+// "multi"/"BOOTY_LOOP"/"BOOTY_PERFECT" cue set. Its slots line up with CState's
+// (ReleaseResources slot 2, the dtor slot 0); on top of the CState layout it owns a
+// glitter/spawn animation block at +0x1b4..+0x208 (a count, a phase, two scratch
+// coords, two ptr arrays @+0x1ec/+0x204, a target @+0x1fc) and a state object @+0x2f8.
+class CMultiBootyState : public CState {
+public:
+    // ~CMultiBootyState() (EH-framed `??1` @0x8d510): re-stamp the CMultiBootyState
+    // vtable, run the slot-2 release (statically bound), re-stamp the CState vtable,
+    // chain BaseCleanup. Out-of-line so MSVC emits a distinct `??1`.
+    virtual ~CMultiBootyState() OVERRIDE;
+    virtual void ReleaseResources() OVERRIDE; // slot 2 (+0x8) @0x1e520 - booty teardown
+    virtual int FrameSlot24(int arg); // slot 9 (+0x24) @0x1e570 - per-frame cue poll (ret 4)
+
+    // Non-virtual behavioral methods (the rel32 thunks dispatched with mov ecx,this).
+    void StepGlitterAnim();  // 0x196c0 - the trig glitter/spawn positioner
+    void MoveLettersByDir(); // 0x19b90 - the 8-direction letter walk (jump-table)
+    int CheckPerfectBonus(); // 0x1c0f0 - "BOOTY_PERFECT" cue + scroll advance
+    int QueryGruntSlots();   // 0x1ecf0 - scan 4 reg records for an empty slot
+
+    // --- CMultiBootyState members (placeholders, beyond the CState layout) ---
+    // The +0x1ec and +0x204 sprite-ptr arrays overlap (the two animators index the
+    // same letter set from different bases) - accessed by offset in the bodies, not
+    // declared as fields here. Only the directly-stored scalars are named.
+    char m_pad1a8[0x1b4 - 0x1a8];
+    int m_1b4; // +0x1b4 anim-mode gate (0 = trig path, !=0 = table path)
+    char m_pad1b8[0x1d8 - 0x1b8];
+    int m_1d8; // +0x1d8 active letter count / index
+    int m_1dc; // +0x1dc phase accumulator (ftol result)
+    int m_1e0; // +0x1e0 step counter (advances by 5)
+    int m_1e4; // +0x1e4 scratch X (ftol)
+    int m_1e8; // +0x1e8 scratch Y (ftol)
+    char m_pad1ec[0x1fc - 0x1ec];
+    void* m_1fc; // +0x1fc the trailing/cursor letter sprite
+    char m_pad200[0x2f8 - 0x200];
+    void* m_2f8; // +0x2f8 the bonus state object (m_5c phase / m_8 flags)
+};
+
 #endif // SRC_GRUNTZ_GAMEMODE_H

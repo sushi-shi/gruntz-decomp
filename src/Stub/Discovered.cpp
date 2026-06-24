@@ -20,22 +20,6 @@ void CBehindCandyAni::CBehindCandyAni_0100f0() {}
 RVA(0x000adbb0, 0x17)
 void CBehindCandyAni::CBehindCandyAni_0adbb0() {}
 
-// ---- CBootyState ----
-RVA(0x000196c0, 0x1d3)
-void CBootyState::CBootyState_0196c0() {}
-RVA(0x00019b90, 0xd7)
-void CBootyState::CBootyState_019b90() {}
-RVA(0x0001c0f0, 0xd5)
-void CBootyState::CBootyState_01c0f0() {}
-RVA(0x0001e520, 0x3e)
-void CBootyState::CBootyState_01e520() {}
-RVA(0x0001e570, 0xb4)
-void CBootyState::CBootyState_01e570() {}
-RVA(0x0001ecf0, 0x2a)
-void CBootyState::CBootyState_01ecf0() {}
-RVA(0x0008d510, 0x55)
-void CBootyState::CBootyState_08d510() {}
-
 // ---- CBrickz ---- (trace placeholder) two distinct classes were grouped here:
 //  (1) the CUserLogic-derived terrain/influence grid leaf "CMapLogic" - its clean
 //      serializer methods (~CMapLogic 0x113c0, float-curve serializer 0xec230,

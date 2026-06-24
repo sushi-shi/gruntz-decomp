@@ -32,6 +32,7 @@
 // real per-frame step+draw is slot +0x14 (Render), overridden by each concrete
 // state (carcassed in the long comment at the bottom of this file).
 #include <Gruntz/GameMode.h>
+#include <math.h>
 #include <rva.h>
 
 // ===========================================================================
@@ -729,6 +730,375 @@ CMenuState::~CMenuState() {
 // chain the base.
 RVA(0x0008d440, 0x55)
 CBootyState::~CBootyState() {
+    ReleaseResources();
+}
+
+// ===========================================================================
+// CMultiBootyState - the MULTIPLAYER booty/bonus state (RTTI .?AVCMultiBootyState@@,
+// vtable @0x5e9bdc). A SIBLING of CBootyState (the trace conflated them); shares the
+// CState spine + the g_gameReg / draw-clock music idiom (CMenuState::StartMusic), and
+// drives the "multi"/"BOOTY_LOOP"/"BOOTY_PERFECT" cue set. Its glitter/spawn animator
+// (StepGlitterAnim) lays eight letter sprites on a sine spiral that shrinks per frame.
+// ===========================================================================
+
+// A letter sprite the booty animators position: m_5c/m_60 = {x,y}, m_40 = a flag
+// word OR'd in on out-of-bounds, m_74 a one-shot latch, m_8 a flag word.
+struct CBootyLetter {
+    char m_pad00[0x8];
+    int m_8; // +0x08 flag word
+    char m_pad0c[0x40 - 0xc];
+    int m_40; // +0x40 out-of-bounds flag word
+    char m_pad44[0x5c - 0x44];
+    int m_5c; // +0x5c x
+    int m_60; // +0x60 y
+    char m_pad64[0x74 - 0x64];
+    int m_74; // +0x74 one-shot latch
+};
+
+// The packed {x,y} spawn-coordinate table the animator indexes by m_1d8 (DAT_005e8fe8;
+// the disasm reads x via [tbl] and y via [tbl+4], stride 8). The +0x1ec / +0x204 sprite
+// arrays are reached by offset off `this`.
+extern "C" int g_5e8fe8[]; // {472,101, 525,98, 474,146, 525,144, ...}
+
+// The trig constants: deg->rad (0.017453292), a phase bias (-225.0f), and the
+// shrink curve (350.0 - step*0.002*350.0). Modeled as named extern doubles/floats so
+// the fld/fmul carry DIR32 relocs (reloc-masked).
+extern "C" float g_5e93b4;  // -225.0f  (phase bias, fsub'd)
+extern "C" double g_5e93b8; // 0.017453292  (pi/180)
+extern "C" double g_5e93c0; // 0.002
+extern "C" double g_5e93c8; // 350.0
+
+// The bonus state object (CMultiBootyState+0x2f8): flags @+0x8, a scroll phase @+0x5c.
+struct CBootyBonusState {
+    char m_pad00[0x8];
+    int m_8; // +0x08 flags
+    char m_pad0c[0x5c - 0xc];
+    int m_5c; // +0x5c scroll phase
+};
+
+// g_gameReg facet these booty pollers add: a draw object @+0x7c (a frame-ready query),
+// the music host @+0x30 (->m_28->m_30 gate, ->m_28+0x10 the Lookup map), the configured
+// item @+0x11c. Read through CBootyGameReg below (an extended WwdGameReg view).
+// The draw object (g_gameReg+0x7c) the frame-ready gate runs on (__thiscall, ret 4).
+struct CBootyDrawObj {
+    int FrameReady(int z); // FUN_004fcd70
+};
+struct CBootyGameReg {
+    char m_pad00[0x30];
+    void* m_30; // +0x30 music host
+    char m_pad34[0x7c - 0x34];
+    CBootyDrawObj* m_7c; // +0x7c draw object
+    char m_pad80[0x11c - 0x80];
+    int m_11c; // +0x11c configured music item
+};
+// g_gameReg is the WwdGameReg* declared above; the booty pollers read it through this
+// extended view (codegen-neutral: same pointer, same loads).
+#define BOOTY_REG ((CBootyGameReg*)g_gameReg)
+
+// The Lookup output ("BOOTY_LOOP"/"BOOTY_PERFECT" cue entry): a player @+0x10
+// (the ConfigureItem `this`), and a draw-clock gate (last @+0x14, interval @+0x18).
+struct CBootyFound {
+    char m_pad00[0x10];
+    void* m_10; // +0x10 player (ConfigureItem this)
+    int m_14;   // +0x14 last draw-clock
+    int m_18;   // +0x18 interval
+};
+
+// The embedded CMapStringToOb the cue lookup runs on (M28+0x10, reached by offset).
+struct CBootyLookupMap {
+    int Lookup(char* key, void** out); // FUN_005b8438 CMapStringToOb::Lookup, ret 8
+};
+
+// The music host chain g_gameReg->m_30->m_28->{m_30 gate, Lookup map @+0x10}.
+struct CBootyMusicHost {
+    char m_pad00[0x28];
+    struct M28 {
+        char m_pad00[0x30];
+        void* m_30; // +0x30 gate (non-null => skip); the lookup map is at this+0x10
+    }* m_28;
+};
+
+// The cue/player config call (FUN_005360d0 ConfigureItem, __thiscall on found+0x10).
+struct CBootyPlayer {
+    void ConfigureItem(int item, int a, int b, int c); // FUN_005360d0, ret 0x10
+};
+struct CBootyFlushView {
+    void Flush(); // FUN_00558ee0
+};
+struct CBootyAnimSelf { // `this` view for the engine tail helpers (reached via thunks)
+    int FadeInTitle(char* name, int a, int b, int c, int d, int e); // FUN_004fa1f0
+    void BuildPage(int x, int w, int h, int flag);                  // FUN_004fa8f0
+};
+
+// ReleaseResources teardown chain: m_4 (owner) -> m_60 sub-object -> Teardown (the
+// __thiscall no-arg FUN_0051c7b0, reloc-masked).
+struct CBootyM4Sub {
+    void Teardown(); // FUN_0051c7b0
+};
+struct CBootyOwnerView {
+    char m_pad00[0x60];
+    CBootyM4Sub* m_60; // +0x60
+};
+
+// The draw-clock mirror + the reentrancy gate the booty music gate reads (declared
+// again near the menu-music helpers below; same DATA symbols, reloc-masked).
+extern "C" unsigned int g_6bf3c0; // draw-clock mirror
+extern int g_61ab20;              // DAT_0061ab20 reentrancy gate
+
+// CMultiBootyState::StepGlitterAnim() (0x196c0): the glitter/spawn positioner. With
+// m_1b4 set it snaps the eight letter sprites to the static spawn table; otherwise it
+// walks a sine spiral (radius m_1dc, angle (m_1e0+225)*pi/180), advances the step by 5,
+// shrinks the radius along the 350.0-step*0.002*350.0 curve, then latches the trailing
+// sprite's spawn flag when the radius reaches zero.
+// @early-stop
+// regalloc wall (~80%): the float branch is byte-exact (sin/cos/__ftol chain matches);
+// the residual is the two integer letter-loops + the final latch block, a pure
+// register-allocation coin-flip - retail pins the `1` latch constant in eax and the
+// loop index in ebx; the recompile picks ebx/edi (docs/patterns/zero-register-pinning.md).
+RVA(0x000196c0, 0x1d3)
+void CMultiBootyState::StepGlitterAnim() {
+    if (m_1b4) {
+        if (m_1d8 >= 0) {
+            int* tbl = g_5e8fe8 + 1;                   // walks: tbl[-1]=x, tbl[0]=y; advances by 2
+            void** ap = (void**)((char*)this + 0x1ec); // walks arr1ec by 1
+            for (int i = 0; i <= m_1d8; i++) {
+                CBootyLetter* e = (CBootyLetter*)*ap;
+                e->m_5c = tbl[-1];
+                e = (CBootyLetter*)*ap;
+                e->m_60 = tbl[0];
+                e = (CBootyLetter*)*ap;
+                if (e->m_74 != 1) {
+                    e->m_74 = 1;
+                    e->m_8 |= 0x20000;
+                }
+                ap++;
+                tbl += 2;
+            }
+        }
+        ((CBootyLetter*)m_1fc)->m_5c = g_5e8fe8[m_1d8 * 2];
+        ((CBootyLetter*)m_1fc)->m_60 = g_5e8fe8[m_1d8 * 2 + 1];
+        return;
+    }
+
+    int step = m_1e0;
+    int idx = m_1d8;
+    double r = (float)m_1dc; // load (float)m_1dc first; shared across sin/cos terms
+    double ang = ((float)step - g_5e93b4) * g_5e93b8;
+    m_1e4 = (int)(sin(ang) * r + (float)g_5e8fe8[idx * 2]);
+    m_1e8 = (int)(cos(ang) * r + (float)g_5e8fe8[idx * 2 + 1]);
+    m_1e0 = step + 5;
+    m_1dc = (int)(g_5e93c8 - (float)(step + 5) * g_5e93c0 * g_5e93c8);
+
+    // Snap the leading sprites (0..m_1d8-1) to their static table coords (pointer walk).
+    int i = 0;
+    void** arr1ec = (void**)((char*)this + 0x1ec);
+    if (idx > 0) {
+        int* tbl = g_5e8fe8 + 1; // ecx: tbl[-1]=x, tbl[0]=y
+        void** ap = arr1ec;      // eax
+        do {
+            CBootyLetter* e = (CBootyLetter*)*ap;
+            i++;
+            ap++;
+            e->m_5c = tbl[-1];
+            e = (CBootyLetter*)ap[-1];
+            e->m_60 = tbl[0];
+            tbl += 2;
+        } while (i < m_1d8);
+    }
+    // The trailing sprite + the i'th (== m_1d8) sprite get the computed scratch coords.
+    ((CBootyLetter*)m_1fc)->m_5c = m_1e4;
+    ((CBootyLetter*)m_1fc)->m_60 = m_1e8;
+    ((CBootyLetter*)arr1ec[i])->m_5c = m_1e4;
+    ((CBootyLetter*)arr1ec[i])->m_60 = m_1e8;
+
+    MoveLettersByDir();
+
+    if (m_1dc == 0) {
+        CBootyLetter* e = (CBootyLetter*)arr1ec[i];
+        if (e->m_74 != 1) {
+            e->m_74 = 1;
+            e->m_8 |= 0x20000;
+        }
+    }
+}
+
+// CMultiBootyState::MoveLettersByDir() (0x19b90): if the anim-mode latch (m_1b4) is set,
+// OR the spawn bit into all eight letters' flags; otherwise step each of the eight
+// letters one cell (+/-4 px) along its compass direction (an 8-way jump table), flagging
+// any that leave the [0,0x280]x[0,0x1e0] play field.
+// @early-stop
+// regalloc wall (~60%): logic/offsets/control-flow/jump-table all match; the residual is
+// pure register allocation - retail loads x->ecx,y->edx and walks the array with `lea
+// edx,[ecx+0x204]` (preserving this), the recompile swaps x/y and uses `add ecx`
+// (docs/patterns/zero-register-pinning.md). The 8-way switch body itself is byte-aligned.
+RVA(0x00019b90, 0xd7)
+void CMultiBootyState::MoveLettersByDir() {
+    if (m_1b4) {
+        void** p = (void**)((char*)this + 0x204);
+        int n = 8;
+        do {
+            CBootyLetter* e = (CBootyLetter*)*p;
+            p++;
+            e->m_40 |= 1;
+        } while (--n);
+        return;
+    }
+    void** p = (void**)((char*)this + 0x204);
+    for (int i = 0; i < 8; i++, p++) {
+        CBootyLetter* e = (CBootyLetter*)*p;
+        int x = e->m_5c;
+        int y = e->m_60;
+        if (x < 0 || x > 0x280 || y < 0 || y > 0x1e0) {
+            e->m_40 |= 1;
+        } else {
+            switch (i) {
+                case 0:
+                    e->m_5c = x;
+                    ((CBootyLetter*)*p)->m_60 = y - 4;
+                    break;
+                case 1:
+                    e->m_5c = x + 4;
+                    ((CBootyLetter*)*p)->m_60 = y - 4;
+                    break;
+                case 2:
+                    e->m_5c = x + 4;
+                    ((CBootyLetter*)*p)->m_60 = y;
+                    break;
+                case 3:
+                    e->m_5c = x + 4;
+                    ((CBootyLetter*)*p)->m_60 = y + 4;
+                    break;
+                case 4:
+                    e->m_5c = x;
+                    ((CBootyLetter*)*p)->m_60 = y + 4;
+                    break;
+                case 5:
+                    e->m_5c = x - 4;
+                    ((CBootyLetter*)*p)->m_60 = y + 4;
+                    break;
+                case 6:
+                    e->m_5c = x - 4;
+                    ((CBootyLetter*)*p)->m_60 = y;
+                    break;
+                case 7:
+                    e->m_5c = x - 4;
+                    ((CBootyLetter*)*p)->m_60 = y - 4;
+                    break;
+            }
+        }
+    }
+}
+
+// CMultiBootyState::CheckPerfectBonus() (0x1c0f0): once the frame-ready gate fires,
+// drive the bonus state's scroll phase (m_2f8->m_5c): on the wrap value (-0x82) play
+// the "BOOTY_PERFECT" cue on the draw-clock window; past 0x302 latch the done flag
+// (m_8 |= 0x10000); otherwise advance the phase by 0xa. Returns 1.
+RVA(0x0001c0f0, 0xd5)
+int CMultiBootyState::CheckPerfectBonus() {
+    if (!BOOTY_REG->m_7c->FrameReady(-1)) {
+        return 1;
+    }
+    CBootyBonusState* st = (CBootyBonusState*)m_2f8;
+    int phase = st->m_5c;
+    if (phase == (int)0xffffff7e) {
+        CBootyMusicHost* host = (CBootyMusicHost*)BOOTY_REG->m_30;
+        int item = BOOTY_REG->m_11c;
+        CBootyMusicHost::M28* m28 = host->m_28;
+        if (m28->m_30 == 0) {
+            void* found = 0;
+            CBootyLookupMap* map = (CBootyLookupMap*)((char*)m28 + 0x10);
+            map->Lookup("BOOTY_PERFECT", &found);
+            if (found && g_61ab20 != 0) {
+                CBootyFound* p = (CBootyFound*)found;
+                if (g_6bf3c0 - (unsigned)p->m_14 >= (unsigned)p->m_18) {
+                    p->m_14 = g_6bf3c0;
+                    ((CBootyPlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                }
+            }
+        }
+    }
+    if (phase >= 0x302) {
+        ((CBootyBonusState*)m_2f8)->m_8 |= 0x10000;
+        return 1;
+    }
+    ((CBootyBonusState*)m_2f8)->m_5c = phase + 0xa;
+    return 1;
+}
+
+// CMultiBootyState::ReleaseResources() (slot 2 / +0x8, 0x1e520): free the leaf-registry
+// pooled resource (if set), release the "BOOTY" set on the leaf registry, run a teardown
+// on the owner's m_4->m_60 sub-object, then chain BaseCleanup.
+// @early-stop
+// near-exact (~98.5%): structure/offsets/calls all match; the sole non-reloc residual is
+// the m_4 deref landing in eax vs retail's edx (single-register coin-flip).
+RVA(0x0001e520, 0x3e)
+void CMultiBootyState::ReleaseResources() {
+    CPooledRes* r = ((CStateResView*)m_c)->m_28->m_2c;
+    if (r) {
+        r->Free();
+    }
+    ((CStateResView*)m_c)->m_28->Release("BOOTY", "_");
+    ((CBootyM4Sub*)((CBootyOwnerView*)m_4)->m_60)->Teardown();
+    ((CGameModeBase*)this)->BaseCleanup();
+}
+
+// CMultiBootyState::FrameSlot24() (slot 9 / +0x24, 0x1e570): on entry build the "multi"
+// title page (fade + page) then, if the menu is live, push the "BOOTY_LOOP" cue into the
+// player on the draw-clock window. Returns 1.
+RVA(0x0001e570, 0xb4)
+int CMultiBootyState::FrameSlot24(int) {
+    int ok = ((CBootyAnimSelf*)this)->FadeInTitle("multi", 0, 0, 0, 0, 1);
+    if (!ok) {
+        return ok; // eax already 0 (the FadeInTitle result) - no xor/mov re-materialize
+    }
+    ((CBootyFlushView*)((CGMView*)m_c)->m_4)->Flush();
+    ((CBootyAnimSelf*)this)->BuildPage(0x50, 0x3e8, 0, 1);
+
+    CBootyMusicHost* host = (CBootyMusicHost*)BOOTY_REG->m_30;
+    int item = BOOTY_REG->m_11c;
+    CBootyMusicHost::M28* m28 = host->m_28;
+    if (m28->m_30 == 0) {
+        void* found = 0;
+        CBootyLookupMap* map = (CBootyLookupMap*)((char*)m28 + 0x10);
+        map->Lookup("BOOTY_LOOP", &found);
+        if (found && g_61ab20 != 0) {
+            CBootyFound* p = (CBootyFound*)found;
+            if (g_6bf3c0 - (unsigned)p->m_14 >= (unsigned)p->m_18) {
+                p->m_14 = g_6bf3c0;
+                ((CBootyPlayer*)p->m_10)->ConfigureItem(item, 0, 0, 1);
+            }
+        }
+    }
+    return 1;
+}
+
+// CMultiBootyState::QueryGruntSlots() (0x1ecf0): scan the four per-player registry
+// records (g_gameReg+0x174, stride 0x238); the first whose +0x4 is set but +0x0 is
+// clear yields its +0x150 field; none -> 0. (`this`/ecx is unused - ecx is the loop
+// counter; modeled as a member that ignores `this`.)
+// @early-stop
+// 1-instruction-order wall (~94%): the `je`/test/loop shape is byte-exact (incl. the
+// `xor ecx,ecx` before the +0x174 setup); the sole residual is the loop tail's `inc ecx`
+// vs `add eax,0x238` order (counter-bump vs pointer-advance) - a /O2 scheduling coin-flip
+// (a do-while reorder reshaped the back-edge worse, so the natural for-loop form is kept).
+RVA(0x0001ecf0, 0x2a)
+int CMultiBootyState::QueryGruntSlots() {
+    char* base = (char*)g_gameReg;
+    int i = 0;
+    char* rec = base + 0x174;
+    for (; i < 4; i++) {
+        if (*(int*)(rec + 4) != 0 && *(int*)rec == 0) {
+            return *(int*)(rec - 0x24);
+        }
+        rec += 0x238;
+    }
+    return 0;
+}
+
+// CMultiBootyState::~CMultiBootyState() (`??1`, 0x8d510): run the booty teardown then
+// chain the base (EH-framed; the vtable re-stamps fold into the compiler-emitted body).
+RVA(0x0008d510, 0x55)
+CMultiBootyState::~CMultiBootyState() {
     ReleaseResources();
 }
 
