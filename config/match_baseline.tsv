@@ -37,7 +37,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	18	17
 directsoundmgr	26	19
-engine_discovered	930	0
+engine_discovered	927	0
 engine_label_stubs	534	117
 filestream	13	9
 font	16	9
@@ -92,6 +92,7 @@ unknownsalazar	4	0
 userbaselink	7	0
 userlogic	47	16
 videoconfig	2	0
+warlord	3	1
 winapi	5	3
 winapicdrom	1	0
 winapimodule	1	0
@@ -691,9 +692,6 @@ engine_discovered	?CUserLogic_16e7f0@CUserLogic@@QAEXXZ	0.2532	0.2532	1	95da5b87
 engine_discovered	?CUserLogic_16ea90@CUserLogic@@QAEXXZ	0.6061	0.6061	1	68eaea7fe177	0x16ea90
 engine_discovered	?CVoiceTrigger_0135a0@CVoiceTrigger@@QAEXXZ	5.8824	5.8824	1	4e77fe0835ad	0x135a0
 engine_discovered	?CVoiceTrigger_11a700@CVoiceTrigger@@QAEXXZ	1.7241	1.7241	1	5bdcee3e94b5	0x11a700
-engine_discovered	?CWarlord_0107f0@CWarlord@@QAEXXZ	4.7619	4.7619	1	ec734b2c544b	0x107f0
-engine_discovered	?CWarlord_044640@CWarlord@@QAEXXZ	0.5333	0.5333	1	498cb2a02352	0x44640
-engine_discovered	?CWarlord_044bb0@CWarlord@@QAEXXZ	5.0000	5.0000	1	a6849d42e0a9	0x44bb0
 engine_discovered	?CWayPoint_0102e0@CWayPoint@@QAEXXZ	5.8824	5.8824	1	e978df05f35a	0x102e0
 engine_discovered	?CWormhole_010980@CWormhole@@QAEXXZ	5.8824	5.8824	1	c127ae477703	0x10980
 engine_discovered	?CWormhole_0403b0@CWormhole@@QAEXXZ	1.6667	1.6667	1	44f89f7deccc	0x403b0
@@ -2318,6 +2316,9 @@ userlogic	?winapi_064540_PostMessageA@CUserLogic@@QAEHXZ	2.5974	2.5974	1	43a786a
 userlogic	?winapi_0ee800_IntersectRect_PtInRect@CUserLogic@@QAEHXZ	0.2653	0.2653	1	60fd51ad9d42	0xee800
 videoconfig	?LoadVideoResolutionConfig@@YAXPAXHH@Z	97.2737	97.2737	6	cbd604dbff87	0x36f30
 videoconfig	?SaveVideoResolutionConfig@@YAXPAX0@Z	88.8148	88.8148	6	6a3159e5dbaa	0x370a0
+warlord	??1CWarlord@@UAE@XZ	73.9524	73.9524	1	0524876559f2	0x107f0
+warlord	?RearmMoving@CWarlord@@QAEHXZ	100.0000	100.0000	1	4fac783699d7	0x44bb0
+warlord	?ResolveState@CWarlord@@QAEHH@Z	1.8667	1.8667	1	2d6323c91ac0	0x44640
 winapi	?ActiveWait@WinAPI@Utils@@YAXI@Z	100.0000	100.0000	6	91ad9497b20a	0x13dfe0
 winapi	?FileExists@WinAPI@Utils@@YAHPAD@Z	100.0000	100.0000	6	f9a1c2d87f8a	0x1189c0
 winapi	?GetGruntzDriveLetter@WinAPI@Utils@@YADXZ	98.4234	98.4234	6	13200d78cd34	0x1ffe0

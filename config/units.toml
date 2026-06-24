@@ -124,6 +124,11 @@ source = "src/Gruntz/CInGameIcon.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "warlord"
+source = "src/Gruntz/CWarlord.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "gruntpuddle"
 source = "src/Gruntz/CGruntPuddle.cpp"
 flags = "eh"

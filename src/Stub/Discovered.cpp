@@ -852,14 +852,6 @@ void CVoiceTrigger::CVoiceTrigger_0135a0() {}
 RVA(0x0011a700, 0xae)
 void CVoiceTrigger::CVoiceTrigger_11a700() {}
 
-// ---- CWarlord ----
-RVA(0x000107f0, 0x55)
-void CWarlord::CWarlord_0107f0() {}
-RVA(0x00044640, 0x102)
-void CWarlord::CWarlord_044640() {}
-RVA(0x00044bb0, 0x38)
-void CWarlord::CWarlord_044bb0() {}
-
 // ---- CWayPoint ----
 RVA(0x000102e0, 0x44)
 void CWayPoint::CWayPoint_0102e0() {}

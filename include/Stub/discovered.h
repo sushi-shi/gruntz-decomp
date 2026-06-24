@@ -546,12 +546,6 @@ public:
     void CVoiceTrigger_0135a0();
     void CVoiceTrigger_11a700();
 };
-class CWarlord {
-public:
-    void CWarlord_0107f0();
-    void CWarlord_044640();
-    void CWarlord_044bb0();
-};
 class CWayPoint {
 public:
     void CWayPoint_0102e0();
