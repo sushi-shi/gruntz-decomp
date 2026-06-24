@@ -1464,11 +1464,6 @@ class MinervaInner {
 public:
     void MinervaInner_1366f0();
     void MinervaInner_136910();
-    void MinervaInner_137710();
-    void MinervaInner_137780();
-    void MinervaInner_137900();
-    void MinervaInner_1379d0();
-    void MinervaInner_137b70();
 };
 class PaintHost_0fac70 {
 public:

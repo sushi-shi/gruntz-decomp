@@ -2125,24 +2125,14 @@ void MallocCtor_17fdb0::MallocCtor_17fdb0_17fdf0() {}
 // The lifecycle/teardown run (~dtor 0x136500, Shutdown 0x136690, RemoveBuffer
 // 0x136d80, StopAll 0x136de0) is reconstructed in src/Dsndmgr/SoundDevice.cpp.
 // FreeSamples (0x136ed0) + SetPrimaryFormat (0x1371a0) also reconstructed in
-// src/Dsndmgr/SoundDevice.cpp. The remaining device methods (CreateBuffer
-// 0x1366f0, Acquire 0x136910) and the *derived* DSndMgSR.cpp class (vtable
-// 0x5ef6ec: 0x137710/0x137780/0x137900/0x1379d0/0x137b70) are left here for a
-// follow-up.
+// src/Dsndmgr/SoundDevice.cpp. The *derived* streaming class (DSndMgSR.cpp,
+// vtable 0x5ef6ec: 0x137710/0x137780/0x137900/0x1379d0/0x137b70) is
+// reconstructed in src/Dsndmgr/SoundStream.cpp. The remaining device methods
+// (CreateBuffer 0x1366f0, Acquire 0x136910) are left here for a follow-up.
 RVA(0x001366f0, 0x168)
 void MinervaInner::MinervaInner_1366f0() {}
 RVA(0x00136910, 0x119)
 void MinervaInner::MinervaInner_136910() {}
-RVA(0x00137710, 0xb)
-void MinervaInner::MinervaInner_137710() {}
-RVA(0x00137780, 0x171)
-void MinervaInner::MinervaInner_137780() {}
-RVA(0x00137900, 0xc6)
-void MinervaInner::MinervaInner_137900() {}
-RVA(0x001379d0, 0x5f)
-void MinervaInner::MinervaInner_1379d0() {}
-RVA(0x00137b70, 0x159)
-void MinervaInner::MinervaInner_137b70() {}
 
 // ---- PaintHost_0fac70 ----
 RVA(0x000140d0, 0x33)

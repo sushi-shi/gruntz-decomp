@@ -37,7 +37,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	18	17
 directsoundmgr	26	19
-engine_discovered	926	0
+engine_discovered	921	0
 engine_label_stubs	534	117
 filestream	13	9
 font	16	9
@@ -79,6 +79,7 @@ rezmgr	10	6
 savegame	18	13
 sbi_rectonly	17	1
 sounddevice	6	4
+soundstream	5	2
 spriteloaders	9	4
 spriteresource	4	1
 statusbaritem	2	1
@@ -1188,11 +1189,6 @@ engine_discovered	?MallocCtor_17fdb0_17e780@MallocCtor_17fdb0@@QAEXXZ	13.3333	13
 engine_discovered	?MallocCtor_17fdb0_17fdf0@MallocCtor_17fdb0@@QAEXXZ	20.0000	20.0000	1	031ef36dec41	0x17fdf0
 engine_discovered	?MinervaInner_1366f0@MinervaInner@@QAEXXZ	0.3361	0.3361	1	2a21de0ffbb9	0x1366f0
 engine_discovered	?MinervaInner_136910@MinervaInner@@QAEXXZ	0.3704	0.3704	1	436780529d10	0x136910
-engine_discovered	?MinervaInner_137710@MinervaInner@@QAEXXZ	20.0000	20.0000	1	df9065b8bffb	0x137710
-engine_discovered	?MinervaInner_137780@MinervaInner@@QAEXXZ	0.3306	0.3306	1	27d3abbe2ee9	0x137780
-engine_discovered	?MinervaInner_137900@MinervaInner@@QAEXXZ	0.4396	0.4396	1	494d12199158	0x137900
-engine_discovered	?MinervaInner_1379d0@MinervaInner@@QAEXXZ	1.1111	1.1111	1	b004fbf6f50e	0x1379d0
-engine_discovered	?MinervaInner_137b70@MinervaInner@@QAEXXZ	0.3200	0.3200	1	75f02a157f79	0x137b70
 engine_discovered	?NetUnattributed_007c20@NetUnattributed@@QAEXXZ	1.9048	1.9048	1	4afeaf0bfb22	0x7c20
 engine_discovered	?NetUnattributed_024450@NetUnattributed@@QAEXXZ	6.6667	6.6667	1	59e0c154223f	0x24450
 engine_discovered	?NetUnattributed_099d10@NetUnattributed@@QAEXXZ	10.0000	10.0000	1	3ba875542c5c	0x99d10
@@ -2066,7 +2062,7 @@ ingameicon	?Serialize@CInGameIcon@@QAEHPAVCArchive@@HHH@Z	0.6826	0.6826	1	b1927f
 ingameicon	?SetField54@CInGameIcon@@QAEXH@Z	100.0000	100.0000	1	47953e78bc5c	0x99b10
 inputdeviceconfig	?LoadInputDeviceConfig@CInputConfig@@QAE?AVCString@@H@Z	77.3265	77.3265	4	cbb58c336f38	0x387c0
 kitchenslime	?LoadSprites@CKitchenSlime@@QAEHXZ	69.1992	69.1992	1	960ebc2aba86	0xb3160
-kitchenslime	?Tick@CKitchenSlime@@QAEHXZ	94.8551	94.8551	1	3f6e7b42be52	0xb2ca0
+kitchenslime	?Tick@CKitchenSlime@@QAEHXZ	94.8551	94.8551	2	65e983a95b2c	0xb2ca0
 logictypetable	?BuildLogicTypeTable@@YGXPAUCLogicTypeBuilder@@@Z	87.9167	87.9167	6	313ac91839f7	0x8a40
 mapmgr	??0CMapArrayA@@QAE@XZ	100.0000	100.0000	4	24c52bc6b148	0x9e700
 mapmgr	??0CMapArrayB@@QAE@XZ	100.0000	100.0000	4	2cc7f69c0ba7	0x9e820
@@ -2189,6 +2185,11 @@ sounddevice	?RemoveBuffer@SoundDevice@@QAEXPAUSoundBuf@@@Z	100.0000	100.0000	1	a
 sounddevice	?SetPrimaryFormat@SoundDevice@@QAEHPAX@Z	100.0000	100.0000	1	0fb751466e5e	0x1371a0
 sounddevice	?Shutdown@SoundDevice@@QAEXXZ	100.0000	100.0000	1	fb1766cf3e8b	0x136690
 sounddevice	?StopAll@SoundDevice@@QAEXXZ	100.0000	100.0000	1	1bf09dff5de0	0x136de0
+soundstream	??1SoundStream@@QAE@XZ	100.0000	100.0000	1	611af7941630	0x137710
+soundstream	?CreateStreamBuffer@SoundStream@@QAEPAUStreamVoice@@PAUWaveFormatX@@KHHH@Z	47.0744	47.0744	1	2742693be395	0x137780
+soundstream	?DestroyVoice@SoundStream@@QAEXPAUStreamVoice@@@Z	100.0000	100.0000	1	faf57eb2e985	0x1379d0
+soundstream	?OpenStream@SoundStream@@QAEPAUStreamVoice@@PAUStreamSource@@HHHHH@Z	90.5714	90.5714	1	07a6a471975c	0x137900
+soundstream	?ParseWave@SoundStream@@QAEHPAUStreamSource@@PAUWaveFormatX@@PAK2@Z	98.2640	98.2640	1	992912befaa1	0x137b70
 spriteloaders	?AddTime@CTimer@@QAEXHH@Z	94.2679	94.2679	1	08fa44eb6f44	0x9c0e0
 spriteloaders	?Draw@CTimer@@QAEHHH@Z	100.0000	100.0000	1	102a51ac3439	0x9bfa0
 spriteloaders	?HandleEvent@CTimer@@QAEHPAUCTimerArchive@@HHH@Z	88.1132	88.1132	1	55bf7ce080e8	0x9c1c0

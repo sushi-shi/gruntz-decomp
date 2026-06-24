@@ -451,6 +451,11 @@ source = "src/Dsndmgr/SoundDevice.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "soundstream"
+source = "src/Dsndmgr/SoundStream.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "gruntzsoundz"
 source = "src/Dsndmgr/CGruntzSoundZ.cpp"
 flags = "eh"
