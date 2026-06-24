@@ -149,6 +149,11 @@ source = "src/Io/FileStream.cpp"
 flags = "mfc"
 
 [[unit]]
+unit = "savegame"
+source = "src/Io/SaveGame.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "rezmgr"
 source = "src/Rez/RezMgr.cpp"
 flags = "eh"

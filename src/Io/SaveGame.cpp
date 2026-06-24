@@ -1,0 +1,313 @@
+// SaveGame.cpp - CSaveGame, the WAP32 save-game / saved-slot roster manager.
+// See SaveGame.h for the layout and the provenance note (these were mislabeled
+// "CFileIO" by the this/ecx tracer; they are the OWNER class that USES CFileIO).
+//
+// Each file-touching method (Load/Save) builds a stack-local CFileIO and drives
+// Open/Read/Write/Close/~CFileIO on it; the CString member + the CFileIO temp's
+// dtor put a C++ EH frame on those methods -> /GX (the `mfc` /O1 profile, matching
+// FileStream.cpp). The leaf accessors are frameless register-frame functions.
+//
+// All cross-class callees (CFileIO, CString, WwdGameReg, the CRT _strncpy, the
+// MFC wait-cursor helpers) are modeled as external/no-body so their reloc
+// operands are masked in objdiff.
+#include <Io/SaveGame.h>
+#include <rva.h>
+
+// ---------------------------------------------------------------------------
+// CSaveGame::~CSaveGame  (0x00085b50)
+// Reset() then the two CString members destruct in reverse declaration order
+// (m_name @+4, then m_str0 @+0) under the EH unwind frame.
+RVA(0x00085b50, 0x56)
+CSaveGame::~CSaveGame() {
+    Reset();
+}
+
+// ---------------------------------------------------------------------------
+// CSaveGame::Reset  (0x000e4d20)
+// Init() the slots, then empty the file-name CString.
+RVA(0x000e4d20, 0x12)
+void CSaveGame::Reset() {
+    Init();
+    m_name.Empty();
+}
+
+// ---------------------------------------------------------------------------
+// CSaveGame::Init  (0x000e4d50)
+// Header field @+0x18 = 0x25, then zero all ten 0x100-byte slot records.
+RVA(0x000e4d50, 0x2f)
+void CSaveGame::Init() {
+    m_18 = 0x25;
+    for (int i = 0; i < 10; i++) {
+        SaveSlot* p = GetSlot(i);
+        if (p != 0) {
+            for (int j = 0; j < 0x40; j++) {
+                ((int*)p)[j] = 0;
+            }
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// CSaveGame::Load  (0x000e4d90)
+// Open(m_name) read-only, read the 0xa1c header then the 0xa00 slot block, close.
+RVA(0x000e4d90, 0xcc)
+int CSaveGame::Load() {
+    CFileIO file;
+    if (!file.Open((const char*)m_name, 0, 0)) {
+        return 0;
+    }
+    file.Read(m_08, 0xa1c);
+    file.Read(m_slots, 0xa00);
+    file.Close();
+    if (!Verify()) {
+        Init();
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CSaveGame::Save  (0x000e4ea0)
+// @early-stop
+// Wait-cursor (AfxGetThreadState()->...->BeginWaitCursor/EndWaitCursor) around a
+// create+write+close sequence with two g_gameReg error/notify branches. The MFC
+// wait-cursor / module-state internals and the two divergent error paths are not
+// yet modeled; logic outline below, byte-match deferred to the final sweep.
+RVA(0x000e4ea0, 0x18c)
+int CSaveGame::Save(int a, int b) {
+    CFileIO file;
+    int ok = 0;
+    if (file.Open((const char*)m_name, 0x1000, 0)) {
+        file.Close();
+        if (file.Open((const char*)m_name, 1, 0)) {
+            ComputeAll();
+            file.Write(m_08, 0xa1c);
+            file.Write(m_slots, 0xa00);
+            file.Close();
+            ok = 1;
+        }
+    }
+    (void)a;
+    (void)b;
+    (void)ok;
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CSaveGame::ComputeAll  (0x000e50a0)
+// Sum Encode() over all ten slots; store header fields (@+0x08..+0x14).
+// @early-stop
+// regalloc wall (~91%): retail materializes the `1` store via `mov eax,1; mov
+// [edi+0xc],eax`; recompile uses the `mov $1,mem` immediate form. Logic exact.
+RVA(0x000e50a0, 0x3e)
+void CSaveGame::ComputeAll() {
+    int sum = 0;
+    for (int i = 0; i < 10; i++) {
+        sum += Encode((unsigned char*)GetSlot(i));
+    }
+    *(int*)&m_08[0] = 0;
+    *(int*)&m_08[4] = 1;
+    *(int*)&m_08[8] = sum;
+    *(int*)&m_08[0xc] = 0;
+}
+
+// ---------------------------------------------------------------------------
+// CSaveGame::Verify  (0x000e50f0)
+// Re-decode every slot, sum, compare to the stored checksum @ (this+0x18).
+RVA(0x000e50f0, 0x2f)
+int CSaveGame::Verify() {
+    int sum = 0;
+    for (int i = 0; i < 10; i++) {
+        sum += Decode((unsigned char*)GetSlot(i));
+    }
+    return *(int*)&m_08[8] == sum;
+}
+
+// ---------------------------------------------------------------------------
+// CSaveGame::FillSlot  (0x000e5130)
+RVA(0x000e5130, 0x78)
+int CSaveGame::FillSlot(SaveSlot* dst, const char* name, void* src) {
+    if (dst == 0) {
+        return 0;
+    }
+    if (src == 0) {
+        return 0;
+    }
+    dst->m_type = 1;
+    dst->m_04 = *(int*)((char*)*(void**)((char*)src + 0x2c) + 0x1c);
+    dst->m_08 = 0;
+    dst->m_0c = 1;
+    if (*(int*)((char*)*(void**)((char*)src + 0x44) + 0x124) != 0) {
+        dst->m_type = 3;
+    }
+    strncpy(dst->m_14, name, 0x20);
+    dst->m_checksum = Register(dst);
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CSaveGame::CopySlot  (0x000e51d0)
+RVA(0x000e51d0, 0x49)
+int CSaveGame::CopySlot(SaveSlot* dst, const SaveSlot* src) {
+    if (dst == 0) {
+        return 0;
+    }
+    if (src == 0) {
+        return 0;
+    }
+    dst->m_type = src->m_type;
+    dst->m_04 = src->m_04;
+    dst->m_08 = src->m_08;
+    dst->m_0c = src->m_0c;
+    dst->m_checksum = src->m_checksum;
+    dst->m_checksum = Register(dst);
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CSaveGame::FillSlot2  (0x000e5240)
+RVA(0x000e5240, 0x54)
+int CSaveGame::FillSlot2(SaveSlot* dst, int name, void* src) {
+    if (dst == 0) {
+        return 0;
+    }
+    if (src == 0) {
+        return 0;
+    }
+    dst->m_type = 1;
+    dst->m_04 = name;
+    dst->m_08 = 0;
+    if (*(int*)((char*)*(void**)((char*)src + 0x44) + 0x124) != 0) {
+        dst->m_type = 3;
+    }
+    dst->m_checksum = Register(dst);
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CSaveGame::Register  (0x000e5390)
+// Build a CString from the slot's name (or the empty string) and hand the slot's
+// level id / flags to g_gameReg->BuildLevelRezPath().
+// @early-stop
+// EH-frame wall (~45%): retail builds the local CString temp WITHOUT a /GX unwind
+// frame and never destroys it (no fs:0 prologue, no ~CString); the reconstructed
+// `CString s(name)` local forces MSVC5 to emit the __EH_prolog + dtor cleanup.
+// Field reads, name-fallback (g_emptyString) and the BuildLevelRezPath args are
+// all exact - only the missing/extra frame differs. Deferred to the final sweep.
+RVA(0x000e5390, 0x59)
+int CSaveGame::Register(SaveSlot* slot) {
+    if (slot == 0) {
+        return 0;
+    }
+    int fc = *(int*)((char*)slot + 0xfc);
+    int f8 = *(int*)((char*)slot + 0xf8);
+    const char* name = (fc == 0 && f8 == 0) ? g_emptyString : ((char*)slot + 0x75);
+    CString s(name);
+    return g_gameReg->BuildLevelRezPath(fc == 0, fc, f8, slot->m_04);
+}
+
+// ---------------------------------------------------------------------------
+// CSaveGame::Encode  (0x000e5410)
+// Running XOR-fold checksum over a 0x100-byte slot (forward key). Checksums the
+// PLAINTEXT byte (pre-XOR) then writes the XOR'd byte back.
+// @early-stop
+// regalloc wall (~89%): retail gratuitously saves edi (push edi) and holds the
+// reloaded plaintext byte there (spill slot [esp+0xc]); recompile keeps it in the
+// volatile edx (spill slot [esp+0x8], no edi save). Logic + spill-reload idiom
+// exact, only the temp's register/slot differs.
+RVA(0x000e5410, 0x3d)
+int CSaveGame::Encode(unsigned char* buf) {
+    if (buf == 0) {
+        return 0;
+    }
+    int acc = 0;
+    for (unsigned int i = 0; i < 0x100; i++) {
+        unsigned char t = buf[i];
+        buf[i] = (unsigned char)(t ^ i);
+        acc += (int)(t & 0xff) * (int)i;
+    }
+    return acc;
+}
+
+// ---------------------------------------------------------------------------
+// CSaveGame::Decode  (0x000e5460)
+RVA(0x000e5460, 0x3f)
+int CSaveGame::Decode(unsigned char* buf) {
+    if (buf == 0) {
+        return 0;
+    }
+    int acc = 0;
+    for (unsigned int i = 0; i < 0x100; i++) {
+        unsigned char t = (unsigned char)(i ^ buf[i]);
+        buf[i] = t;
+        acc += (int)(t & 0xff) * (int)i;
+    }
+    return acc;
+}
+
+// ---------------------------------------------------------------------------
+// CSaveGame::GetSlot  (0x000e54b0)
+// Bounds-checked accessor into the +0xa24 record array.
+RVA(0x000e54b0, 0x1f)
+SaveSlot* CSaveGame::GetSlot(int i) {
+    if (i < 0 || i >= 10) {
+        return 0;
+    }
+    return &m_slots[i];
+}
+
+// ---------------------------------------------------------------------------
+// CSaveGame::FillSlotByIndex  (0x000e54e0)
+RVA(0x000e54e0, 0x25)
+int CSaveGame::FillSlotByIndex(int idx, int name, void* src) {
+    return FillSlot2(GetSlot(idx), name, src);
+}
+
+// ---------------------------------------------------------------------------
+// CSaveGame::SetField18  (0x000e5620)
+// @early-stop
+// regalloc wall (~96%): logic + all (unsigned) comparisons exact; retail holds
+// the param in edx and m_18 in eax, recompile swaps them (eax<->edx). 1-2 bytes.
+RVA(0x000e5620, 0x27)
+void CSaveGame::SetField18(int v) {
+    if (v < 0x21) {
+        if ((unsigned)v > m_18) {
+            m_18 = v;
+            return;
+        }
+        if (m_18 > 0x24) {
+            m_18 = v;
+            return;
+        }
+    }
+    if (m_18 <= 0x24) {
+        return;
+    }
+    if ((unsigned)v <= m_18) {
+        return;
+    }
+    m_18 = v;
+}
+
+// ---------------------------------------------------------------------------
+// CSaveGame::SetField1c  (0x000e5660)
+RVA(0x000e5660, 0x1e)
+void CSaveGame::SetField1c(int v) {
+    if (v >= 0x21) {
+        return;
+    }
+    if (v <= m_1c) {
+        return;
+    }
+    m_1c = v;
+    if (v == 0x20) {
+        Init();
+    }
+}
+
+// ---------------------------------------------------------------------------
+// CSaveGame::CheckField20  (0x000e5690)
+RVA(0x000e5690, 0xf)
+int CSaveGame::CheckField20() {
+    int v = m_20;
+    return v == 0x42a;
+}

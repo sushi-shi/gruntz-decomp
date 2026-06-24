@@ -196,27 +196,6 @@ public:
     void CEyeCandy_00fca0();
     void CEyeCandy_00fd60();
 };
-class CFileIO {
-public:
-    void CFileIO_085b50();
-    void CFileIO_0e4d20();
-    void CFileIO_0e4d50();
-    void CFileIO_0e4d90();
-    void CFileIO_0e4ea0();
-    void CFileIO_0e50a0();
-    void CFileIO_0e50f0();
-    void CFileIO_0e5130();
-    void CFileIO_0e51d0();
-    void CFileIO_0e5240();
-    void CFileIO_0e5390();
-    void CFileIO_0e5410();
-    void CFileIO_0e5460();
-    void CFileIO_0e54b0();
-    void CFileIO_0e54e0();
-    void CFileIO_0e5620();
-    void CFileIO_0e5660();
-    void CFileIO_0e5690();
-};
 class CFileImage {
 public:
     void CFileImage_13e550();

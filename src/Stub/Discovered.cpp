@@ -280,44 +280,6 @@ void CEyeCandy::CEyeCandy_00fca0() {}
 RVA(0x0000fd60, 0x44)
 void CEyeCandy::CEyeCandy_00fd60() {}
 
-// ---- CFileIO ----
-RVA(0x00085b50, 0x56)
-void CFileIO::CFileIO_085b50() {}
-RVA(0x000e4d20, 0x12)
-void CFileIO::CFileIO_0e4d20() {}
-RVA(0x000e4d50, 0x2f)
-void CFileIO::CFileIO_0e4d50() {}
-RVA(0x000e4d90, 0xcc)
-void CFileIO::CFileIO_0e4d90() {}
-RVA(0x000e4ea0, 0x18c)
-void CFileIO::CFileIO_0e4ea0() {}
-RVA(0x000e50a0, 0x3e)
-void CFileIO::CFileIO_0e50a0() {}
-RVA(0x000e50f0, 0x2f)
-void CFileIO::CFileIO_0e50f0() {}
-RVA(0x000e5130, 0x78)
-void CFileIO::CFileIO_0e5130() {}
-RVA(0x000e51d0, 0x49)
-void CFileIO::CFileIO_0e51d0() {}
-RVA(0x000e5240, 0x54)
-void CFileIO::CFileIO_0e5240() {}
-RVA(0x000e5390, 0x59)
-void CFileIO::CFileIO_0e5390() {}
-RVA(0x000e5410, 0x3d)
-void CFileIO::CFileIO_0e5410() {}
-RVA(0x000e5460, 0x3f)
-void CFileIO::CFileIO_0e5460() {}
-RVA(0x000e54b0, 0x1f)
-void CFileIO::CFileIO_0e54b0() {}
-RVA(0x000e54e0, 0x25)
-void CFileIO::CFileIO_0e54e0() {}
-RVA(0x000e5620, 0x27)
-void CFileIO::CFileIO_0e5620() {}
-RVA(0x000e5660, 0x1e)
-void CFileIO::CFileIO_0e5660() {}
-RVA(0x000e5690, 0xf)
-void CFileIO::CFileIO_0e5690() {}
-
 // ---- CFileImage ----
 RVA(0x0013e550, 0x71)
 void CFileImage::CFileImage_13e550() {}

@@ -36,7 +36,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	18	17
 directsoundmgr	26	19
-engine_discovered	1066	0
+engine_discovered	1048	0
 engine_label_stubs	537	120
 filestream	13	9
 font	16	9
@@ -70,6 +70,7 @@ netmgrerror	1	1
 projectile	1	0
 registryhelper	8	8
 rezmgr	10	6
+savegame	18	13
 sbi_rectonly	17	1
 spriteloaders	2	0
 spriteresource	4	1
@@ -432,24 +433,6 @@ engine_discovered	?CExitTrigger_0108c0@CExitTrigger@@QAEXXZ	5.8824	5.8824	1	fac2
 engine_discovered	?CExplosion_012ec0@CExplosion@@QAEXXZ	5.8824	5.8824	1	e14ce3b4a728	0x12ec0
 engine_discovered	?CEyeCandy_00fca0@CEyeCandy@@QAEXXZ	50.0000	50.0000	1	29f6cf5afd3a	0xfca0
 engine_discovered	?CEyeCandy_00fd60@CEyeCandy@@QAEXXZ	5.8824	5.8824	1	695fa62ca5c5	0xfd60
-engine_discovered	?CFileIO_085b50@CFileIO@@QAEXXZ	4.5455	4.5455	1	8cd1ac7ee9cd	0x85b50
-engine_discovered	?CFileIO_0e4d20@CFileIO@@QAEXXZ	14.2857	14.2857	1	12a49d2d2130	0xe4d20
-engine_discovered	?CFileIO_0e4d50@CFileIO@@QAEXXZ	4.5455	4.5455	1	4f22cdb31cb8	0xe4d50
-engine_discovered	?CFileIO_0e4d90@CFileIO@@QAEXXZ	1.8182	1.8182	1	b2b9bd4dd658	0xe4d90
-engine_discovered	?CFileIO_0e4ea0@CFileIO@@QAEXXZ	0.3540	0.3540	1	a664fa67d036	0xe4ea0
-engine_discovered	?CFileIO_0e50a0@CFileIO@@QAEXXZ	4.0000	4.0000	1	9ab3f5c7577c	0xe50a0
-engine_discovered	?CFileIO_0e50f0@CFileIO@@QAEXXZ	4.1667	4.1667	1	9534317f216f	0xe50f0
-engine_discovered	?CFileIO_0e5130@CFileIO@@QAEXXZ	0.9524	0.9524	1	942ebda22400	0xe5130
-engine_discovered	?CFileIO_0e51d0@CFileIO@@QAEXXZ	1.4286	1.4286	1	ac7b24b07c0e	0xe51d0
-engine_discovered	?CFileIO_0e5240@CFileIO@@QAEXXZ	1.4815	1.4815	1	30358827ba53	0xe5240
-engine_discovered	?CFileIO_0e5390@CFileIO@@QAEXXZ	1.1111	1.1111	1	586a7c38d949	0xe5390
-engine_discovered	?CFileIO_0e5410@CFileIO@@QAEXXZ	1.6667	1.6667	1	69a37852acb1	0xe5410
-engine_discovered	?CFileIO_0e5460@CFileIO@@QAEXXZ	1.6000	1.6000	1	8b0d00d474c9	0xe5460
-engine_discovered	?CFileIO_0e54b0@CFileIO@@QAEXXZ	4.0000	4.0000	1	da0bd9a1730c	0xe54b0
-engine_discovered	?CFileIO_0e54e0@CFileIO@@QAEXXZ	2.6667	2.6667	1	b9ebaefb8d1d	0xe54e0
-engine_discovered	?CFileIO_0e5620@CFileIO@@QAEXXZ	2.6667	2.6667	1	4d50c8db9607	0xe5620
-engine_discovered	?CFileIO_0e5660@CFileIO@@QAEXXZ	4.0000	4.0000	1	4665f481008c	0xe5660
-engine_discovered	?CFileIO_0e5690@CFileIO@@QAEXXZ	20.0000	20.0000	1	de79df7f9d57	0xe5690
 engine_discovered	?CFileImage_13e550@CFileImage@@QAEXXZ	0.9091	0.9091	1	b8a0500e523e	0x13e550
 engine_discovered	?CFileImage_13e760@CFileImage@@QAEXXZ	1.1765	1.1765	1	9ba1526105ba	0x13e760
 engine_discovered	?CFileImage_141350@CFileImage@@QAEXXZ	5.0000	5.0000	1	0fb3b385e30d	0x141350
@@ -2192,6 +2175,24 @@ rezmgr	?MakeImageKey@RezMgr@@QAEHPAXPAD0@Z	100.0000	100.0000	4	4b0939de568d	0x13
 rezmgr	?MakeRezPath@RezMgr@@QAEHXZ	92.7923	92.7923	5	389674d6ebd5	0x91670
 rezmgr	?PerFrameTick@RezMgr@@UAEHXZ	100.0000	100.0000	4	e58265d7f8a1	0x8b740
 rezmgr	?Stub_13b0c0@CRezDir@@QAEXXZ	0.2139	0.2139	2	0caf2154eccf	0x13b0c0
+savegame	??1CSaveGame@@QAE@XZ	100.0000	100.0000	1	a26d45c833a7	0x85b50
+savegame	?CheckField20@CSaveGame@@QAEHXZ	100.0000	100.0000	1	a3906cc177f3	0xe5690
+savegame	?ComputeAll@CSaveGame@@QAEXXZ	90.8800	90.8800	1	a7a8f7754c90	0xe50a0
+savegame	?CopySlot@CSaveGame@@QAEHPAUSaveSlot@@PBU2@@Z	100.0000	100.0000	1	05a797e93609	0xe51d0
+savegame	?Decode@CSaveGame@@QAEHPAE@Z	100.0000	100.0000	1	07f84e207983	0xe5460
+savegame	?Encode@CSaveGame@@QAEHPAE@Z	89.2917	89.2917	1	0705d64851a6	0xe5410
+savegame	?FillSlot2@CSaveGame@@QAEHPAUSaveSlot@@HPAX@Z	100.0000	100.0000	1	f5298e74dab9	0xe5240
+savegame	?FillSlot@CSaveGame@@QAEHPAUSaveSlot@@PBDPAX@Z	100.0000	100.0000	1	51e07fcdf0e5	0xe5130
+savegame	?FillSlotByIndex@CSaveGame@@QAEHHHPAX@Z	100.0000	100.0000	1	86aa17421765	0xe54e0
+savegame	?GetSlot@CSaveGame@@QAEPAUSaveSlot@@H@Z	100.0000	100.0000	1	81d80e53f2a5	0xe54b0
+savegame	?Init@CSaveGame@@QAEXXZ	100.0000	100.0000	1	843154cf5498	0xe4d50
+savegame	?Load@CSaveGame@@QAEHXZ	100.0000	100.0000	1	5f4c3de34182	0xe4d90
+savegame	?Register@CSaveGame@@QAEHPAUSaveSlot@@@Z	45.3889	45.3889	1	820425c94133	0xe5390
+savegame	?Reset@CSaveGame@@QAEXXZ	100.0000	100.0000	1	2c6d0d01d978	0xe4d20
+savegame	?Save@CSaveGame@@QAEHHH@Z	41.5752	41.5752	1	0ab90ed674c6	0xe4ea0
+savegame	?SetField18@CSaveGame@@QAEXH@Z	96.3333	96.3333	1	a336c9e65f2a	0xe5620
+savegame	?SetField1c@CSaveGame@@QAEXH@Z	100.0000	100.0000	1	fb0fa244d090	0xe5660
+savegame	?Verify@CSaveGame@@QAEHXZ	100.0000	100.0000	1	d5e66f0f3fe4	0xe50f0
 sbi_rectonly	??0CSBI_RectOnly@@QAE@XZ	100.0000	100.0000	6	9bee20d45286	0x101fa0
 sbi_rectonly	?BuildGameTabPauseButton@CSBI_RectOnly@@QAEXXZ	6.2500	6.2500	1	edd76020e3a4	0x102200
 sbi_rectonly	?BuildGameTabResumeButton@CSBI_RectOnly@@QAEXH@Z	3.5714	3.5714	1	abee071c3a1f	0x102180
