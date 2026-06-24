@@ -94,13 +94,57 @@ public:
 // tree walker at 0x193340). Reloc-masked file-scope address.
 extern "C" void ButeGroup_Apply();
 
+// The token-value scanners ParseAttributeFile feeds the lexed token buffer
+// through (all __cdecl CRT-style, reloc-masked external/no-body):
+//   ReadInt(tok)            atoi-like, the type-0 int value
+//   ReadDword(tok, end, b)  strtoul-like (base b), the type-1 dword value
+//   ReadFloat(tok)          atof-like, returns the value in st(0)
+// plus the CRT variadic sscanf the point/rect cases drive.
+extern "C" i32 ButeRead_Int(char* tok);                           // 0x11ffb0
+extern "C" DWORD ButeRead_Dword(char* tok, char** end, i32 base); // 0x1240b0
+extern "C" double ButeRead_Float(char* tok);                      // 0x18d220
+extern "C" i32 sscanf(const char* buf, const char* fmt, ...);     // 0x120900
+
+// The stored value record ParseAttributeFile builds + inserts: a tagged head
+// `{ i32 type; void* pValue }` (CButeValue), pValue pointing at a heap copy of
+// the parsed value. For the int/dword/float cases pValue is `new`-d 4-byte
+// storage; double is 8-byte; the point/rect refs are 8/16/24-byte blocks. The
+// node is allocated via the global operator new, so the `push N; call ??2;
+// add esp,4; test eax,eax` shape reloc-masks. Modeled with the field offsets
+// the stores hit (type @+0, pValue @+4).
+struct CButeValueNode {
+    i32 type;     // +0x00
+    void* pValue; // +0x04
+};
+
 // CString::operator+= one char (__thiscall(receiver, char)):
 // appends the char to the value-text accumulator. Modeled as an external
 // (no-body) __thiscall on a tiny receiver class so the `mov ecx,recv; call`
 // shape falls out reloc-masked.
+//
+// The other overloads ParseAttributeFile's write-back path drives off the same
+// accumulator (each __thiscall, reloc-masked external/no-body): the value-text
+// reconstruction `accum += "<" += d0 += ", " += d1 += ">"` chains them. The
+// `operator+=(const char*)` returns CButeText& so the chains fold to the
+// `call; mov ecx,eax; call` shape; the typed appends consume the chain result.
 class CButeText {
 public:
     void AppendChar(char c);
+    // 0x16be60  CString::operator+=(const char*) -> CString&
+    CButeText& operator+=(const char* s);
+    // Each formatted-append returns &accum so the write-back value reconstruction
+    // chains `accum += "(" .AppendElem(a) += ", " .AppendElem(b) ...`.
+    // 0x191d20  formatted-append signed int
+    CButeText& AppendInt(i32 v);
+    // 0x1921e0  formatted-append DWORD
+    CButeText& AppendDword(DWORD v);
+    // 0x191df0  formatted-append double
+    CButeText& AppendDouble(double v);
+    // 0x192120  formatted-append signed int (the point/rect element appender)
+    CButeText& AppendElem(i32 v);
+    // 0x192060  truncate/release helper (takes a char count: the quote-strip in
+    // the string write-back path passes 0x22 = '"').
+    void Trim(i32 n);
 };
 
 // The object m_pText points at: the value-text accumulator (a CButeText / MFC
@@ -125,6 +169,24 @@ static const char s_fmtNotFound[] = "ButeMgr: Symbol not found - [%s]";
 // Float/double zero-on-error constants (reloc-masked file-scope).
 static const float s_floatZero = 0.0f;
 static const double s_doubleZero = 0.0;
+
+// ParseAttributeFile write-back decorations + sscanf format strings (reloc-masked
+// file-scope literals, matched against their delinked $SG addresses).
+static const char s_fmtInvalidToken[] = "ButeMgr (%d):  Invalid token encountered.";
+static const char s_strDword[] = "(DWORD)";
+static const char s_strFloat[] = "(FLOAT)";
+static const char s_strFloatSuffix[] = "f";
+static const char s_fmtPoint4[] = "(%d, %d, %d, %d)";
+static const char s_strOpen[] = "(";
+static const char s_strClose[] = ")";
+static const char s_strComma[] = ", ";
+static const char s_fmtPoint2[] = "(%d, %d)";
+static const char s_fmtRect3[] = "<%lf, %lf, %lf>";
+static const char s_strLt[] = "<";
+static const char s_strGt[] = ">";
+static const char s_fmtRect2[] = "[%lf, %lf]";
+static const char s_strLBrack[] = "[";
+static const char s_strRBrack[] = "]";
 
 // CRT varargs formatter (engine NAFXCW vsprintf, reloc-masked external/no-body).
 extern "C" i32 vsprintf(char* buf, const char* fmt, char* va);
@@ -465,6 +527,348 @@ bool CButeMgr::Parse() {
                 return true;
         }
     }
+}
+
+// ---------------------------------------------------------------------------
+// ButeMgr::ParseAttributeFile
+// The "key = value" value-line driver (?ParseAttributeFile@ButeMgr@@QAE_NXZ).
+// Reads the key name (already lexed into m_token) into the scratch CString
+// m_str104, optionally probes the active store node (m_pNode) for a duplicate
+// key (reporting + flagging it), lexes the value-type token, then dispatches an
+// 11-way switch over the value-type token (m_tokType in 5..15) to either:
+//   - STORE mode (m_10d == 0, no duplicate): allocate a CButeValueNode, tag it,
+//     `new` a heap copy of the parsed value, and Insert it under the key; or
+//   - WRITE-BACK mode (m_10d != 0): read the existing typed value back through
+//     the matching getter and append a formatted representation of it to the
+//     value-text accumulator (m_pText->accum), using the per-type literal
+//     decorations ("(DWORD)", "(FLOAT)", "(a, b)", "<x, y, z>", "[x, y]", ...).
+// The token scanners + the heap value copies live under a C++ EH frame (each
+// inline value object + the CString string temp are destructible on unwind) ->
+// /GX. `this` is a CButeMgr (the ButeMgr view only fixes the retail mangling).
+// @early-stop
+// 40.9% this-register-pin + EH-frame-layout regalloc wall. Logic/CFG are complete
+// and correct: all 11 value-type cases (int/dword/float/double/string + the
+// point2/4 + rect2/3 refs), both STORE (new+Insert) and WRITE-BACK (getter +
+// formatted accum append) modes, with byte-correct case bodies (verified
+// per-case against the disasm). The residual is two coupled allocator coin-flips
+// that cascade through every `this`-relative operand: (1) retail pins `this` in
+// EBP (`mov ebp,ecx`), the recompile picks ESI -- so every `[this+N]` access
+// encodes a different mod/rm byte fn-wide; (2) retail reserves a 0x54 frame
+// (double-staging the rect/point value copies through `[esp+0x34..0x60]` +
+// `rep movs`), the recompile reserves 0x28 (field-store, no staging buffer).
+// Modeling the refs as named value-structs copied to the heap (which reproduces
+// the staging + rep-movs) regressed the whole fn 41%->36% by perturbing the /GX
+// EH-state of the destructible locals -- a net-negative lever. The case bodies
+// otherwise match; deferred to the final sweep (see docs/patterns/
+// stack-buffer-size-drives-frame.md + o2-optimizer-bailout-framed.md).
+RVA(0x00170750, 0x9d8)
+bool ButeMgr::ParseAttributeFile() {
+    CButeMgr* self = (CButeMgr*)this;
+    CButeText* accum = &self->m_pText->accum;
+
+    // The shared 4-byte scalar value slot ([esp+0x10] in retail), zero-init at
+    // entry (`mov [esp+0x10],0`) and reused by the int/dword/float store paths.
+    i32 v = 0;
+
+    self->m_str104 = self->m_token;
+
+    bool bDup = false;
+    if (!self->m_10d) {
+        if (((CButeTree*)self->m_pNode)->Find((const char*)self->m_str104)) {
+            self->ReportError(s_fmtDupTag, self->m_str104.GetBuffer(0));
+            bDup = true;
+        }
+    }
+
+    if (!self->ScanToken(5)) {
+        return false;
+    }
+    if (self->m_10d) {
+        accum->Trim(0x20);
+        self->m_captureText = 0;
+    }
+    if (!self->Parse()) {
+        return false;
+    }
+
+    switch (self->m_tokType) {
+        case 5:
+        case 6: { // signed int -> type 0
+            v = ButeRead_Int(self->m_token);
+            if (self->m_10d) {
+                accum->AppendInt(self->GetInt(
+                    (char*)(const char*)self->m_tagName,
+                    (char*)(const char*)self->m_str104
+                ));
+            } else if (!bDup) {
+                CButeValueNode* n = (CButeValueNode*)operator new(8);
+                if (n) {
+                    n->type = 0;
+                    i32* p = (i32*)operator new(4);
+                    if (p) {
+                        *p = v;
+                        n->pValue = p;
+                    } else {
+                        n->pValue = 0;
+                    }
+                }
+                ((CButeTree*)self->m_pNode)->Insert((const char*)self->m_str104, n);
+            }
+            break;
+        }
+        case 13: { // dword -> type 1
+            if (!self->ScanToken(6)) {
+                return false;
+            }
+            *(DWORD*)&v = ButeRead_Dword(self->m_token, 0, 10);
+            if (self->m_10d) {
+                *accum += s_strDword;
+                accum->AppendDword(self->GetDword(
+                    (char*)(const char*)self->m_tagName,
+                    (char*)(const char*)self->m_str104
+                ));
+            } else if (!bDup) {
+                CButeValueNode* n = (CButeValueNode*)operator new(8);
+                if (n) {
+                    n->type = 1;
+                    DWORD* p = (DWORD*)operator new(4);
+                    if (p) {
+                        *p = v;
+                        n->pValue = p;
+                    } else {
+                        n->pValue = 0;
+                    }
+                }
+                ((CButeTree*)self->m_pNode)->Insert((const char*)self->m_str104, n);
+            }
+            break;
+        }
+        case 14: { // float (FLOAT-tagged) -> type 3
+            if (!self->ScanToken(8)) {
+                return false;
+            }
+            *(float*)&v = (float)ButeRead_Float(self->m_token);
+            if (self->m_10d) {
+                (*accum += s_strFloat)
+                    .AppendDouble(self->GetFloat(
+                        (char*)(const char*)self->m_tagName,
+                        (char*)(const char*)self->m_str104
+                    ));
+            } else if (!bDup) {
+                CButeValueNode* n = (CButeValueNode*)operator new(8);
+                if (n) {
+                    n->type = 3;
+                    i32* p = (i32*)operator new(4);
+                    if (p) {
+                        *p = v;
+                        n->pValue = p;
+                    } else {
+                        n->pValue = 0;
+                    }
+                }
+                ((CButeTree*)self->m_pNode)->Insert((const char*)self->m_str104, n);
+            }
+            break;
+        }
+        case 15: { // float ('f'-tagged) -> type 3
+            *(float*)&v = (float)ButeRead_Float(self->m_token);
+            if (self->m_10d) {
+                (*accum).AppendDouble(self->GetFloat(
+                    (char*)(const char*)self->m_tagName,
+                    (char*)(const char*)self->m_str104
+                ));
+                *accum += s_strFloatSuffix;
+            } else if (!bDup) {
+                CButeValueNode* n = (CButeValueNode*)operator new(8);
+                if (n) {
+                    n->type = 3;
+                    i32* p = (i32*)operator new(4);
+                    if (p) {
+                        *p = v;
+                        n->pValue = p;
+                    } else {
+                        n->pValue = 0;
+                    }
+                }
+                ((CButeTree*)self->m_pNode)->Insert((const char*)self->m_str104, n);
+            }
+            break;
+        }
+        case 7: { // double -> type 2
+            double dv = ButeRead_Float(self->m_token);
+            if (self->m_10d) {
+                accum->AppendDouble(self->GetDouble(
+                    (char*)(const char*)self->m_tagName,
+                    (char*)(const char*)self->m_str104
+                ));
+            } else if (!bDup) {
+                CButeValueNode* n = (CButeValueNode*)operator new(8);
+                if (n) {
+                    n->type = 2;
+                    double* p = (double*)operator new(8);
+                    if (p) {
+                        *p = dv;
+                        n->pValue = p;
+                    } else {
+                        n->pValue = 0;
+                    }
+                }
+                ((CButeTree*)self->m_pNode)->Insert((const char*)self->m_str104, n);
+            }
+            break;
+        }
+        case 9: { // (a, b, c, d) point4 -> type 5
+            i32 a, b, c, d;
+            sscanf(self->m_token, s_fmtPoint4, &a, &b, &c, &d);
+            if (self->m_10d) {
+                CButeRef5* r = self->GetRef5(
+                    (char*)(const char*)self->m_tagName,
+                    (char*)(const char*)self->m_str104
+                );
+                (*accum += s_strOpen).AppendElem((i32)r->a);
+                (*accum += s_strComma).AppendElem((i32)r->b);
+                (*accum += s_strComma).AppendElem((i32)r->c);
+                (*accum += s_strComma).AppendElem((i32)r->d);
+                *accum += s_strClose;
+            } else if (!bDup) {
+                CButeValueNode* n = (CButeValueNode*)operator new(8);
+                if (n) {
+                    n->type = 5;
+                    i32* p = (i32*)operator new(0x10);
+                    if (p) {
+                        p[0] = a;
+                        p[1] = b;
+                        p[2] = c;
+                        p[3] = d;
+                        n->pValue = p;
+                    } else {
+                        n->pValue = 0;
+                    }
+                }
+                ((CButeTree*)self->m_pNode)->Insert((const char*)self->m_str104, n);
+            }
+            break;
+        }
+        case 10: { // (a, b) point -> type 6
+            i32 a, b;
+            sscanf(self->m_token, s_fmtPoint2, &a, &b);
+            if (self->m_10d) {
+                CButeRef6* r = self->GetRef6(
+                    (char*)(const char*)self->m_tagName,
+                    (char*)(const char*)self->m_str104
+                );
+                (*accum += s_strOpen).AppendElem((i32)r->a);
+                (*accum += s_strComma).AppendElem((i32)r->b);
+                *accum += s_strClose;
+            } else if (!bDup) {
+                CButeValueNode* n = (CButeValueNode*)operator new(8);
+                if (n) {
+                    n->type = 6;
+                    i32* p = (i32*)operator new(8);
+                    if (p) {
+                        p[0] = a;
+                        p[1] = b;
+                        n->pValue = p;
+                    } else {
+                        n->pValue = 0;
+                    }
+                }
+                ((CButeTree*)self->m_pNode)->Insert((const char*)self->m_str104, n);
+            }
+            break;
+        }
+        case 11: { // <x, y, z> rect3 -> type 7
+            double x, y, z;
+            sscanf(self->m_token, s_fmtRect3, &x, &y, &z);
+            if (self->m_10d) {
+                CButeRef7* r = self->GetRef7(
+                    (char*)(const char*)self->m_tagName,
+                    (char*)(const char*)self->m_str104
+                );
+                double dx = *(double*)&r->a;
+                double dy = *(double*)&r->c;
+                double dz = *(double*)&r->e;
+                (*accum += s_strLt).AppendDouble(dx);
+                (*accum += s_strComma).AppendDouble(dy);
+                (*accum += s_strComma).AppendDouble(dz);
+                *accum += s_strGt;
+            } else if (!bDup) {
+                CButeValueNode* n = (CButeValueNode*)operator new(8);
+                if (n) {
+                    n->type = 7;
+                    double* p = (double*)operator new(0x18);
+                    if (p) {
+                        p[0] = x;
+                        p[1] = y;
+                        p[2] = z;
+                        n->pValue = p;
+                    } else {
+                        n->pValue = 0;
+                    }
+                }
+                ((CButeTree*)self->m_pNode)->Insert((const char*)self->m_str104, n);
+            }
+            break;
+        }
+        case 12: { // [x, y] rect2 -> type 8
+            double x, y;
+            sscanf(self->m_token, s_fmtRect2, &x, &y);
+            if (self->m_10d) {
+                CButeRef8* r = self->GetRef8(
+                    (char*)(const char*)self->m_tagName,
+                    (char*)(const char*)self->m_str104
+                );
+                double dx = *(double*)&r->a;
+                double dy = *(double*)&r->c;
+                (*accum += s_strLBrack).AppendDouble(dx);
+                (*accum += s_strComma).AppendDouble(dy);
+                *accum += s_strRBrack;
+            } else if (!bDup) {
+                CButeValueNode* n = (CButeValueNode*)operator new(8);
+                if (n) {
+                    n->type = 8;
+                    double* p = (double*)operator new(0x10);
+                    if (p) {
+                        p[0] = x;
+                        p[1] = y;
+                        n->pValue = p;
+                    } else {
+                        n->pValue = 0;
+                    }
+                }
+                ((CButeTree*)self->m_pNode)->Insert((const char*)self->m_str104, n);
+            }
+            break;
+        }
+        case 8: { // quoted string -> type 4
+            if (self->m_10d) {
+                CString tmp(*(CString*)self->GetString(
+                    (char*)(const char*)self->m_tagName,
+                    (char*)(const char*)self->m_str104
+                ));
+                accum->Trim(0x22);
+                *accum += tmp.GetBuffer(0);
+                accum->Trim(0x22);
+            } else if (!bDup) {
+                CString s(self->m_token);
+                CButeValueNode* n = (CButeValueNode*)operator new(8);
+                if (n) {
+                    n->type = 4;
+                    n->pValue = new CString(s);
+                }
+                ((CButeTree*)self->m_pNode)->Insert((const char*)self->m_str104, n);
+            }
+            break;
+        }
+        default:
+            self->ReportError(s_fmtInvalidToken, self->m_lineNo);
+            return false;
+    }
+
+    if (self->m_10d) {
+        self->m_captureText = 1;
+    }
+    return true;
 }
 
 // ---------------------------------------------------------------------------

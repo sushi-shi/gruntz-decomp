@@ -18,7 +18,7 @@ advancedoptions	5	5
 appdialogs	1	1
 battlezmapconfig	1	0
 brickz	10	3
-butemgr	38	27
+butemgr	39	27
 cddrawchildgroup	9	5
 cddrawptrcollections	1	0
 cddrawshadeblit	2	1
@@ -43,7 +43,7 @@ dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
 engine_discovered	556	0
-engine_label_stubs	526	121
+engine_label_stubs	525	121
 filestream	13	9
 font	21	10
 fontconfig	7	4
@@ -180,6 +180,7 @@ butemgr	?InitVbaseD@CButeMgrHelper@@QAEXXZ	100.0000	100.0000	2	080b7cf77aef	0x16
 butemgr	?InvokeCallback@CButeMgr@@QAEPAXP6APAXPAV1@@Z@Z	100.0000	100.0000	3	b8aec83ccb1a	0x171550
 butemgr	?NextChar@CButeMgr@@QAEXXZ	88.6667	88.6667	3	527d3af29fa4	0x170390
 butemgr	?Parse@CButeMgr@@QAE_NXZ	94.6831	94.6831	7	fa077d24fa1d	0x1704c0
+butemgr	?ParseAttributeFile@ButeMgr@@QAE_NXZ	40.8564	40.8564	1	af5552978835	0x170750
 butemgr	?ParseGroup@CButeMgr@@QAE_NXZ	94.6377	94.6377	2	49e029a49f99	0x171580
 butemgr	?ParseTagLine@CButeMgr@@QAE_NXZ	100.0000	100.0000	6	b741768354d1	0x1711b0
 butemgr	?PeekState2@CButeMgr@@QAEFFD@Z	100.0000	100.0000	2	694a8ca2712b	0x170430
@@ -1290,7 +1291,6 @@ engine_label_stubs	?OpenLo@SmkPlayer_17c570@ApiCallerStubs@@QAEHHHHHH@Z	70.7324	
 engine_label_stubs	?OpenRoot@CConfigStore@@QAEPAXXZ	54.0462	54.0462	1	cpp:e8a4cb0d5b2a	0x1d4ee3
 engine_label_stubs	?OpenSubKey@CConfigStore@@QAEPAXPAD@Z	54.6667	54.6667	1	cpp:e8a4cb0d5b2a	0x1d4f77
 engine_label_stubs	?Paint@PaintHost_0fac70@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0xfac70
-engine_label_stubs	?ParseAttributeFile@ButeMgr@@QAE_NXZ	0.2599	0.2599	1	cpp:e8a4cb0d5b2a	0x170750
 engine_label_stubs	?Pause@AilSeq@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x138e90
 engine_label_stubs	?Pick0183f0@DlgHost@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x183f0
 engine_label_stubs	?Play@AilSeq@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x138e10
@@ -2100,11 +2100,11 @@ sbi_rectonly	?winapi_107d00_SetRect@CSBI_RectOnly@@QAEHXZ	0.5155	0.5155	2	010307
 sbi_rectonly_eh	??1CSBI_RectOnly@@QAE@XZ	43.0345	43.0345	1	f1bda9a27e1c	0x102000
 sbi_rectonly_eh	?EnsureSub@CSBI_RectOnly@@QAEHHHH@Z	100.0000	100.0000	2	de84c5225915	0x109ad0
 shadetablecache	??0CShadeTableCache@@QAE@XZ	100.0000	100.0000	1	8d165746ed6f	0x14de30
-shadetablecache	??1CShadeTableCache@@QAE@XZ	80.1333	80.1333	1	bae0631568f4	0x14de50
-shadetablecache	?AlphaTable@CShadeTableCache@@QAEPAUCShadeTable@@PAE@Z	66.4253	66.4253	1	9f2dac9e0624	0x14f5b0
-shadetablecache	?FindRemove@CShadeTableCache@@QAEXPAUCShadeTable@@@Z	91.5556	91.5556	1	2db457cacaf4	0x14fb80
+shadetablecache	??1CShadeTableCache@@QAE@XZ	80.1333	80.1333	2	d4743b4c108f	0x14de50
+shadetablecache	?AlphaTable@CShadeTableCache@@QAEPAUCShadeTable@@PAE@Z	66.4253	66.4253	2	43e142788133	0x14f5b0
+shadetablecache	?FindRemove@CShadeTableCache@@QAEXPAUCShadeTable@@@Z	91.5556	91.5556	2	c56be1b35741	0x14fb80
 shadetablecache	?FreeNodes@CShadeTableCache@@QAEXXZ	100.0000	100.0000	1	200336a988e4	0x14ded0
-shadetablecache	?GreyTable@CShadeTableCache@@QAEPAUCShadeTable@@XZ	71.7576	71.7576	1	8913c1779ab3	0x14eef0
+shadetablecache	?GreyTable@CShadeTableCache@@QAEPAUCShadeTable@@XZ	71.7576	71.7576	2	5602dfea4c43	0x14eef0
 shadetablecache	?Init@CShadeTableCache@@QAEHXZ	100.0000	100.0000	1	9851d1a61203	0x14dec0
 sounddevice	??1SoundDevice@@QAE@XZ	28.2353	28.2353	1	980bcd8696e1	0x136500
 sounddevice	?FreeSamples@SoundDevice@@QAEHXZ	77.4074	77.4074	2	252e2641aed3	0x136ed0

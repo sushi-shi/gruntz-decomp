@@ -54,13 +54,8 @@ public:
     BootyNamespace* m_2c; // +0x2c  "BOOTY" image namespace
     BootyNamespace* m_30; // +0x30  "GRUNTZ" image namespace
 };
-class ButeMgr {
-public:
-    // Returns whether another line was produced (the lexer cluster in
-    // src/Bute/ButeMgr.cpp tests al as a bool). Same class as CButeMgr; kept on
-    // the `ButeMgr` placeholder here so the stub's symbol name is unchanged.
-    bool ParseAttributeFile();
-};
+// (class ButeMgr removed - its only method ParseAttributeFile @0x170750 graduated
+// to src/Bute/ButeMgr.cpp; see the migration note further down.)
 // The help-screen game state. LoadAssets() first chains the base-class asset
 // loader (LoadGameAssetNamespaces, reloc-masked external call) which populates
 // m_4/m_8, forces the cursor hidden, registers the "STATEZ_HELP" namespace
@@ -251,6 +246,30 @@ void EngineLabelBacklog::ShowSecretBonusMessage() {}
 RVA(0x00019920, 0x1c2)
 void EngineLabelBacklog::BuildGruntSprintAnimation() {}
 
+// UpdateBootyWalkingGruntz (0x1b690, 1983 B) - the per-frame update of the booty
+// (treasure / "WARP" spell) walking-grunt animation state machine, a __thiscall
+// method on the CGruntzMgr-like game-state object (`this` carries the per-player
+// grunt arrays at +0x2c8 / +0x2d8, the active-player step index m_2e8, and the
+// sub-state flags m_2ec/m_2f0; m_1b4 gates the init vs step path). IDENTITY +
+// STRUCTURE recovered (dump_target + string_xref):
+//   - Entry guards: returns true early if g_gameReg->m_7c->m_8 != 0, or
+//     g_gameReg->m_7c->m_4 > 0x24, or this->m_2e8 >= 4.
+//   - Init path (m_1b4 == 0): a 4-player loop (i=0..3) that sets each grunt's
+//     idle animation ("GRUNTZ_NORMALGRUNT_SOUTH_IDLE" / "..._IDLE4") and builds
+//     the per-player pickup-spell name "GRUNTZ_PICKUPS_<L>" where the letter L is
+//     a 4-entry jump-table on the player index spelling W/A/R/P ("WARP"); fires
+//     the "GRUNTZ_WANDGRUNT_WANDZGRUNTUI1D" wand cue + a "GAME_FLAGRISE" flag,
+//     plays sounds via g_gameReg->m_60/m_74, and seeds a PRNG step (the
+//     `shl/sub/idiv 0x11` LCG at 0x6c1288).
+//   - Step path: advances m_2e8 per frame through the 4 players, toggling the
+//     +0x40 visibility bit, the +0x5c sprite (g_5e9068 table) + the +0x60 timer
+//     (0x1f4 / 0xdc), with a second 4-entry "WARP" jump-table at 0x41be60.
+// DEFERRED to the final sweep: a >512 B deeply-branchy state machine with ~15
+// unnamed engine callees (the CGruntzGrunt animation setters 0x150540/0x1505b0,
+// the CString builders 0x1b8438/0x1b9ff5, the g_gameReg dispatch helpers) + the
+// CGruntzMgr +0x1a0../+0x2c8.. layout; per the matcher >512B-branchy rule it is
+// left stubbed (a partial would under-count AND diverge its regalloc) for a
+// leaf-first redo once the callee set + the owning class are modeled.
 // @confidence: med
 // @source: decomp-xref
 // @stub
@@ -1101,13 +1120,8 @@ void EngineLabelBacklog::Stub_1315d0() {}
 RVA(0x00148940, 0x102)
 void __stdcall EngineLabelBacklog::Stub_148940(i32, i32, i32, i32) {}
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
-RVA(0x00170750, 0x9d8)
-bool ButeMgr::ParseAttributeFile() {
-    return false;
-}
+// ParseAttributeFile @0x170750 graduated to src/Bute/ButeMgr.cpp (the value-line
+// driver; reconstructed on the ButeMgr class alongside the matched getters).
 
 // @confidence: high
 // @source: call-xref
