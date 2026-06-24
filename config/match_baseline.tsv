@@ -42,7 +42,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	634	0
+engine_discovered	612	0
 engine_label_stubs	526	121
 filestream	13	9
 font	21	10
@@ -80,6 +80,7 @@ logictypetable	1	0
 mainmenubuilder	1	0
 maplogic	4	4
 mapmgr	7	7
+menupage	22	13
 netmgr	40	20
 netmgrerror	1	1
 projectile	7	2
@@ -814,28 +815,6 @@ engine_discovered	?ClassUnknown_43_144640@ClassUnknown_43@@QAEXXZ	0.1896	0.1896	
 engine_discovered	?ClassUnknown_43_148840@ClassUnknown_43@@QAEXXZ	1.4286	1.4286	1	56bdaf3b8ad7	0x148840
 engine_discovered	?ClassUnknown_44_158680@ClassUnknown_44@@QAEXXZ	4.7619	4.7619	1	bc27ebee79bf	0x158680
 engine_discovered	?ClassUnknown_44_1587c0@ClassUnknown_44@@QAEXXZ	7.1429	7.1429	1	de80fa3798e8	0x1587c0
-engine_discovered	?ClassUnknown_45_183250@ClassUnknown_45@@QAEXXZ	3.5714	3.5714	1	1f65bc6e0296	0x183250
-engine_discovered	?ClassUnknown_45_1832d0@ClassUnknown_45@@QAEXXZ	3.3333	3.3333	1	164161df039f	0x1832d0
-engine_discovered	?ClassUnknown_45_1832f0@ClassUnknown_45@@QAEXXZ	0.7018	0.7018	1	ca48791429ce	0x1832f0
-engine_discovered	?ClassUnknown_45_1833a0@ClassUnknown_45@@QAEXXZ	9.0909	9.0909	1	a4dca3348bad	0x1833a0
-engine_discovered	?ClassUnknown_45_1833c0@ClassUnknown_45@@QAEXXZ	4.7619	4.7619	1	6cb93adcbbd6	0x1833c0
-engine_discovered	?ClassUnknown_45_183430@ClassUnknown_45@@QAEXXZ	2.8571	2.8571	1	2e4a943c65a4	0x183430
-engine_discovered	?ClassUnknown_45_183460@ClassUnknown_45@@QAEXXZ	0.3960	0.3960	1	e61575fef311	0x183460
-engine_discovered	?ClassUnknown_45_1835a0@ClassUnknown_45@@QAEXXZ	0.3810	0.3810	1	a30a4f10f2c3	0x1835a0
-engine_discovered	?ClassUnknown_45_183990@ClassUnknown_45@@QAEXXZ	4.3478	4.3478	1	317efff06315	0x183990
-engine_discovered	?ClassUnknown_45_1839d0@ClassUnknown_45@@QAEXXZ	0.9259	0.9259	1	bc72f68d7dbd	0x1839d0
-engine_discovered	?ClassUnknown_45_183ad0@ClassUnknown_45@@QAEXXZ	1.0000	1.0000	1	7ee62c5b9529	0x183ad0
-engine_discovered	?ClassUnknown_45_183b30@ClassUnknown_45@@QAEXXZ	2.0000	2.0000	1	76c80cd80003	0x183b30
-engine_discovered	?ClassUnknown_45_183b60@ClassUnknown_45@@QAEXXZ	0.3883	0.3883	1	2bf19a25aeee	0x183b60
-engine_discovered	?ClassUnknown_45_183c50@ClassUnknown_45@@QAEXXZ	1.0638	1.0638	1	5cc3e8649bfa	0x183c50
-engine_discovered	?ClassUnknown_45_183d10@ClassUnknown_45@@QAEXXZ	1.0638	1.0638	1	0fff67a5b816	0x183d10
-engine_discovered	?ClassUnknown_45_183dd0@ClassUnknown_45@@QAEXXZ	9.0909	9.0909	1	950747c42fa3	0x183dd0
-engine_discovered	?ClassUnknown_45_184070@ClassUnknown_45@@QAEXXZ	1.9048	1.9048	1	69054f3e6736	0x184070
-engine_discovered	?ClassUnknown_45_1840a0@ClassUnknown_45@@QAEXXZ	0.9524	0.9524	1	60c1490441ac	0x1840a0
-engine_discovered	?ClassUnknown_45_184100@ClassUnknown_45@@QAEXXZ	1.0000	1.0000	1	1ecc056a387c	0x184100
-engine_discovered	?ClassUnknown_45_184150@ClassUnknown_45@@QAEXXZ	0.5128	0.5128	1	fa423b59e49a	0x184150
-engine_discovered	?ClassUnknown_45_1843f0@ClassUnknown_45@@QAEXXZ	1.3889	1.3889	1	6e34325378a8	0x1843f0
-engine_discovered	?ClassUnknown_45_1844d0@ClassUnknown_45@@QAEXXZ	1.3889	1.3889	1	0d2670ea136e	0x1844d0
 engine_discovered	?ClassUnknown_46_1845b0@ClassUnknown_46@@QAEXXZ	3.3333	3.3333	1	2703e640611d	0x1845b0
 engine_discovered	?ClassUnknown_46_184610@ClassUnknown_46@@QAEXXZ	3.3333	3.3333	1	a8a28e247c32	0x184610
 engine_discovered	?ClassUnknown_46_184630@ClassUnknown_46@@QAEXXZ	3.3333	3.3333	1	58064e7dc682	0x184630
@@ -1794,8 +1773,8 @@ grunt	?ResolveIdleAnimation@CGrunt@@QAEHXZ	92.0598	92.0598	6	4559532e9c2a	0x4596
 grunt	?ResolveMovingAnimation@CGrunt@@QAEHXZ	92.8816	92.8816	6	c96d52636e85	0x45100
 grunt	?Save@CGrunt@@QAEHPAVCGruntArchive@@@Z	94.2489	94.2489	4	40228e139df7	0x53f90
 grunt	?SetEntrancePos@CGrunt@@QAEXHH@Z	89.3421	89.3421	3	2c26e611f009	0x4d060
-grunt	?StepAnimDispatchA@CGrunt@@QAEHHHHH@Z	41.6245	41.6245	1	c515bd565cac	0x52fb0
-grunt	?StepAnimDispatchB@CGrunt@@QAEHXZ	40.7674	40.7674	1	5409fc609dd4	0x6a6d0
+grunt	?StepAnimDispatchA@CGrunt@@QAEHHHHH@Z	41.6245	41.6245	2	cee096a63856	0x52fb0
+grunt	?StepAnimDispatchB@CGrunt@@QAEHXZ	40.7674	40.7674	2	4dbf079670fa	0x6a6d0
 grunt	?StepArrivalDrop@CGrunt@@QAEXHHHHHH@Z	7.7088	7.7088	1	731eeff2b7e9	0x4b370
 grunt	?StepCoordResolve@CGrunt@@QAEXXZ	9.3598	9.3598	1	7e18466adeed	0x5f310
 grunt	?StepGruntMovement@CGrunt@@QAEHXZ	5.3367	5.3367	1	ed2029033118	0x4c170
@@ -1968,6 +1947,28 @@ mapmgr	??1CMapArrayA@@QAE@XZ	100.0000	100.0000	4	ef24e0e7ace1	0x9e7e0
 mapmgr	??1CMapArrayB@@QAE@XZ	100.0000	100.0000	4	81335f7036b8	0x9e900
 mapmgr	??1CMapMgr@@QAE@XZ	100.0000	100.0000	4	b55e2d3c334c	0x9e9e0
 mapmgr	?Reset@CMapMgr@@UAEXXZ	100.0000	100.0000	4	2dbc6f60f2f5	0x9ec30
+menupage	??1CMenuPage@@QAE@XZ	100.0000	100.0000	1	677d46434f16	0x183250
+menupage	?Activate@CMenuPage@@QAEHXZ	100.0000	100.0000	1	9f249bbb20a4	0x183dd0
+menupage	?AddItem@CMenuPage@@QAEPAVCMenuItem@@HHHHHH@Z	34.0099	34.0099	1	4400292d0cb6	0x183460
+menupage	?AddSubItem@CMenuPage@@QAEPAVCMenuItem@@HHHHHH@Z	35.1429	35.1429	1	b1997f81d2b4	0x1835a0
+menupage	?Append@CMenuPage@@QAEPAXPAVCMenuItem@@@Z	100.0000	100.0000	1	d272df6d6ed8	0x183430
+menupage	?Clear@CMenuPage@@QAEXXZ	100.0000	100.0000	1	87d7c5e3ba92	0x1833c0
+menupage	?Click@CMenuPage@@QAEHHH@Z	100.0000	100.0000	1	a36e13c7ea52	0x1840a0
+menupage	?Configure@CMenuPage@@QAEHPAVCMenuItem@@HHHH@Z	100.0000	100.0000	1	cc6ff79f9ac9	0x1832f0
+menupage	?FindByName@CMenuPage@@QAEPAVCMenuItem@@PBD@Z	76.8077	76.8077	1	ac08b95a317a	0x184150
+menupage	?FocusAndSelect@CMenuPage@@QAEHHH@Z	100.0000	100.0000	1	23215e71235c	0x184070
+menupage	?FocusNext@CMenuPage@@QAEHXZ	75.4787	75.4787	1	17352935f0e2	0x183c50
+menupage	?FocusPrev@CMenuPage@@QAEHXZ	75.4787	75.4787	1	b425b1c5e41d	0x183d10
+menupage	?GetKey@CMenuPage@@QAE?AVCString@@XZ	100.0000	100.0000	1	3f39754fd89e	0x1832d0
+menupage	?HitTest@CMenuPage@@QAEPAVCMenuItem@@HH@Z	100.0000	100.0000	1	44e65b182a2e	0x184100
+menupage	?InitDefaults@CMenuPage@@QAEXXZ	100.0000	100.0000	1	54f1bb15a397	0x1833a0
+menupage	?Layout@CMenuPage@@QAEHH@Z	99.9806	99.9806	1	714f659fde20	0x183b60
+menupage	?NotifyAll@CMenuPage@@QAEHPAX@Z	100.0000	100.0000	1	d2de7abc5151	0x183b30
+menupage	?ReleaseAll@CMenuPage@@QAEHXZ	100.0000	100.0000	1	97626de9506c	0x183990
+menupage	?RestoreFocus@CMenuPage@@QAEHXZ	60.6759	60.6759	1	843b969751a7	0x1839d0
+menupage	?SelectBackward@CMenuPage@@QAEHXZ	60.8194	60.8194	1	9df148bf4a84	0x1844d0
+menupage	?SelectForward@CMenuPage@@QAEHXZ	60.8194	60.8194	1	891990b30b8a	0x1843f0
+menupage	?SetFocus@CMenuPage@@QAEHPAVCMenuItem@@H@Z	100.0000	100.0000	1	20f58cb55e3b	0x183ad0
 netmgr	?AnnounceVersion@CNetMgr@@QAEXH@Z	90.1000	90.1000	5	f9e1f9c715a8	0xbd180
 netmgr	?ApplyCmdDelayDefaults@CNetMgr@@QAEXXZ	100.0000	100.0000	6	f6fa2de8b3f2	0xb85a0
 netmgr	?ClearGroupList@CNetMgr@@QAEXXZ	100.0000	100.0000	3	d0f72cff0bbf	0x178430

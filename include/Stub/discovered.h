@@ -778,31 +778,7 @@ public:
     void ClassUnknown_44_158680();
     void ClassUnknown_44_1587c0();
 };
-class ClassUnknown_45 {
-public:
-    void ClassUnknown_45_183250();
-    void ClassUnknown_45_1832d0();
-    void ClassUnknown_45_1832f0();
-    void ClassUnknown_45_1833a0();
-    void ClassUnknown_45_1833c0();
-    void ClassUnknown_45_183430();
-    void ClassUnknown_45_183460();
-    void ClassUnknown_45_1835a0();
-    void ClassUnknown_45_183990();
-    void ClassUnknown_45_1839d0();
-    void ClassUnknown_45_183ad0();
-    void ClassUnknown_45_183b30();
-    void ClassUnknown_45_183b60();
-    void ClassUnknown_45_183c50();
-    void ClassUnknown_45_183d10();
-    void ClassUnknown_45_183dd0();
-    void ClassUnknown_45_184070();
-    void ClassUnknown_45_1840a0();
-    void ClassUnknown_45_184100();
-    void ClassUnknown_45_184150();
-    void ClassUnknown_45_1843f0();
-    void ClassUnknown_45_1844d0();
-};
+// ClassUnknown_45 fully recovered -> CMenuPage (src/Gruntz/MenuPage.cpp).
 class ClassUnknown_46 {
 public:
     void ClassUnknown_46_1845b0();

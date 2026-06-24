@@ -1086,51 +1086,11 @@ void ClassUnknown_44::ClassUnknown_44_158680() {}
 RVA(0x001587c0, 0x23)
 void ClassUnknown_44::ClassUnknown_44_1587c0() {}
 
-// ---- ClassUnknown_45 ----
-RVA(0x00183250, 0x71)
-void ClassUnknown_45::ClassUnknown_45_183250() {}
-RVA(0x001832d0, 0x20)
-void ClassUnknown_45::ClassUnknown_45_1832d0() {}
-RVA(0x001832f0, 0xa5)
-void ClassUnknown_45::ClassUnknown_45_1832f0() {}
-RVA(0x001833a0, 0x1a)
-void ClassUnknown_45::ClassUnknown_45_1833a0() {}
-RVA(0x001833c0, 0x2b)
-void ClassUnknown_45::ClassUnknown_45_1833c0() {}
-RVA(0x00183430, 0x24)
-void ClassUnknown_45::ClassUnknown_45_183430() {}
-RVA(0x00183460, 0x13d)
-void ClassUnknown_45::ClassUnknown_45_183460() {}
-RVA(0x001835a0, 0x14b)
-void ClassUnknown_45::ClassUnknown_45_1835a0() {}
-RVA(0x00183990, 0x38)
-void ClassUnknown_45::ClassUnknown_45_183990() {}
-RVA(0x001839d0, 0xff)
-void ClassUnknown_45::ClassUnknown_45_1839d0() {}
-RVA(0x00183ad0, 0x57)
-void ClassUnknown_45::ClassUnknown_45_183ad0() {}
-RVA(0x00183b30, 0x2c)
-void ClassUnknown_45::ClassUnknown_45_183b30() {}
-RVA(0x00183b60, 0xe8)
-void ClassUnknown_45::ClassUnknown_45_183b60() {}
-RVA(0x00183c50, 0xbc)
-void ClassUnknown_45::ClassUnknown_45_183c50() {}
-RVA(0x00183d10, 0xbc)
-void ClassUnknown_45::ClassUnknown_45_183d10() {}
-RVA(0x00183dd0, 0x16)
-void ClassUnknown_45::ClassUnknown_45_183dd0() {}
-RVA(0x00184070, 0x30)
-void ClassUnknown_45::ClassUnknown_45_184070() {}
-RVA(0x001840a0, 0x57)
-void ClassUnknown_45::ClassUnknown_45_1840a0() {}
-RVA(0x00184100, 0x4a)
-void ClassUnknown_45::ClassUnknown_45_184100() {}
-RVA(0x00184150, 0xe0)
-void ClassUnknown_45::ClassUnknown_45_184150() {}
-RVA(0x001843f0, 0xd2)
-void ClassUnknown_45::ClassUnknown_45_1843f0() {}
-RVA(0x001844d0, 0xd2)
-void ClassUnknown_45::ClassUnknown_45_1844d0() {}
+// ---- ClassUnknown_45 ----  RECOVERED -> CMenuPage (src/Gruntz/MenuPage.cpp).
+// The named menu/list page node (3 CStrings + a CPtrList of child items + focus
+// navigation), built by the main-menu builder (0xa11d0) and driven by the menu
+// host (0x182ab0). All 22 methods reconstructed in MenuPage.cpp. The child-item
+// class (vtable 0x5f08c0, methods 0x184670+) remains ClassUnknown_46 below.
 
 // ---- ClassUnknown_46 ----
 RVA(0x001845b0, 0x20)
