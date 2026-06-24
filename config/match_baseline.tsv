@@ -39,7 +39,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	834	0
+engine_discovered	833	0
 engine_label_stubs	534	117
 filestream	13	9
 font	16	9
@@ -97,7 +97,7 @@ uncompr	1	1
 unknownclassarrays	12	2
 unknownsalazar	4	0
 userbaselink	7	0
-userlogic	47	16
+userlogic	48	17
 videoconfig	2	0
 warlord	3	1
 winapi	5	3
@@ -274,22 +274,22 @@ cdirectdrawmgr	?Refresh@CDDSurface@@QAEHPAUIDirectDrawSurfaceZ@@@Z	64.5128	64.51
 cdirectdrawmgr	?SetColorKey@CDDSurface@@QAEHKPAX@Z	100.0000	100.0000	2	9274fe4c8005	0x13eaa0
 cdirectdrawmgr	?SetPalette@CDDSurface@@QAEHPAVCDDPalette@@H@Z	100.0000	100.0000	2	3f550fc96469	0x13e690
 cdirectdrawmgr	?SetRange@CDDPalette@@QAEHHHEEEK@Z	100.0000	100.0000	3	002aa53d9267	0x147cd0
-chatbox	?AddNode@CChatBox@@QAEHPAX@Z	100.0000	100.0000	1	8b70b53800ba	0x182ba0
-chatbox	?AdvanceRow0@CChatBox@@QAEHPAXHH@Z	94.8718	94.8718	1	8ba72e6202a4	0x182df0
-chatbox	?AdvanceRow1@CChatBox@@QAEHPAXHH@Z	94.8718	94.8718	1	88e9c18d1dd6	0x182e60
-chatbox	?AttachNode@CChatBox@@QAEHPAX@Z	100.0000	100.0000	1	3096b50450af	0x182da0
+chatbox	?AddNode@CChatBox@@QAEHPAX@Z	100.0000	100.0000	2	6ec0a833bed1	0x182ba0
+chatbox	?AdvanceRow0@CChatBox@@QAEHPAXHH@Z	94.8718	94.8718	2	8d82ed264168	0x182df0
+chatbox	?AdvanceRow1@CChatBox@@QAEHPAXHH@Z	94.8718	94.8718	2	3688c5db0f16	0x182e60
+chatbox	?AttachNode@CChatBox@@QAEHPAX@Z	100.0000	100.0000	2	6081a51eeb6a	0x182da0
 chatbox	?Clear@CChatBox@@QAEXXZ	100.0000	100.0000	1	5014d3198d29	0x182b60
-chatbox	?Draw@CChatBox@@QAEHHHHH@Z	95.2000	95.2000	1	7bd9e320ad7a	0x182f90
-chatbox	?Find@CChatBox@@QAEHPBD@Z	73.8116	73.8116	1	e5a61e1f6eee	0x182be0
-chatbox	?HitTest0@CChatBox@@QAEHHH@Z	100.0000	100.0000	1	36ffa8e72308	0x1831a0
-chatbox	?HitTest1@CChatBox@@QAEHXZ	100.0000	100.0000	1	1a7a6ef36d61	0x183210
-chatbox	?HitTest2@CChatBox@@QAEHXZ	100.0000	100.0000	1	52279b68d657	0x183230
+chatbox	?Draw@CChatBox@@QAEHHHHH@Z	95.2000	95.2000	2	34dd6e8dc74f	0x182f90
+chatbox	?Find@CChatBox@@QAEHPBD@Z	73.8116	73.8116	2	ff501a300f05	0x182be0
+chatbox	?HitTest0@CChatBox@@QAEHHH@Z	100.0000	100.0000	2	bf645d4629ba	0x1831a0
+chatbox	?HitTest1@CChatBox@@QAEHXZ	100.0000	100.0000	2	a293cdfec05d	0x183210
+chatbox	?HitTest2@CChatBox@@QAEHXZ	100.0000	100.0000	2	7fa1bf036e70	0x183230
 chatbox	?Init@CChatBox@@QAEXXZ	100.0000	100.0000	1	ee723d15e54c	0xa0280
 chatbox	?ReplaceNode@CChatBox@@QAEHPAX@Z	100.0000	100.0000	1	cf09e8918ff7	0x182dd0
 chatbox	?Reset@CChatBox@@QAEXXZ	100.0000	100.0000	1	40ea73dae4e4	0x182b30
-chatbox	?ScrollRow0@CChatBox@@QAEHXZ	63.2353	63.2353	1	a0883cc678e7	0x183030
-chatbox	?ScrollRow1@CChatBox@@QAEHXZ	63.2353	63.2353	1	db6fa0211e06	0x1830b0
-chatbox	?Step@CChatBox@@QAEHH@Z	88.9467	88.9467	1	6ec3d0adf352	0x182ed0
+chatbox	?ScrollRow0@CChatBox@@QAEHXZ	63.2353	63.2353	2	a1b956fa2e60	0x183030
+chatbox	?ScrollRow1@CChatBox@@QAEHXZ	63.2353	63.2353	2	2118f6eef2e4	0x1830b0
+chatbox	?Step@CChatBox@@QAEHH@Z	88.9467	88.9467	2	8b1afcc74592	0x182ed0
 chatbox_eh	??1CChatBox@@QAE@XZ	100.0000	100.0000	1	ab8e83aa5ef4	0xa0360
 cplay	?BeginGridWalk@CPlay@@QAEHHHHHH@Z	81.1191	81.1191	2	dec8202764e5	0xd0920
 cplay	?BuildGruntTypeNameTable@CPlay@@QAEXHHHH@Z	0.7092	0.7092	1	1f94124e3e6b	0xdc6d0
@@ -631,7 +631,6 @@ engine_discovered	?CTileTriggerTransition_110070@CTileTriggerTransition@@QAEXXZ	
 engine_discovered	?CToobSpikez_012c60@CToobSpikez@@QAEXXZ	5.8824	5.8824	1	d16ff0f9da5d	0x12c60
 engine_discovered	?CToobSpikez_114860@CToobSpikez@@QAEXXZ	0.5333	0.5333	1	0b1c4042697d	0x114860
 engine_discovered	?CUserLogic_00f2f0@CUserLogic@@QAEXXZ	2.2727	2.2727	1	211acac7460b	0xf2f0
-engine_discovered	?CUserLogic_029a50@CUserLogic@@QAEXXZ	5.7143	5.7143	1	ee33a0d0fcbe	0x29a50
 engine_discovered	?CUserLogic_03c7f0@CUserLogic@@QAEXXZ	10.0000	10.0000	1	e74f076e0b03	0x3c7f0
 engine_discovered	?CUserLogic_048360@CUserLogic@@QAEXXZ	2.4390	2.4390	1	15042300f3f6	0x48360
 engine_discovered	?CUserLogic_049c60@CUserLogic@@QAEXXZ	0.0671	0.0671	1	ed18caba3ae4	0x49c60
@@ -2312,6 +2311,7 @@ userlogic	??1CSecretTeleporterTrigger@@UAE@XZ	100.0000	100.0000	1	8a1acf755936	0
 userlogic	??1CTileSecretTrigger@@UAE@XZ	100.0000	100.0000	1	a32d67055f07	0x11540
 userlogic	??1CTileTrigger@@UAE@XZ	100.0000	100.0000	1	cpp:69062e3bf126	0x11290
 userlogic	?FireActivation@CSecretTeleporterTrigger@@QAEXH@Z	100.0000	100.0000	1	2f3290ad0c77	0x42150
+userlogic	?GetScreenPos@CUserLogic@@QAEXPAUScreenPoint@1@@Z	100.0000	100.0000	1	67d74ae24a97	0x29a50
 userlogic	?LoadGruntDecayConfig2@CUserLogic@@QAEXXZ	1.2195	1.2195	1	edd8f9929bc3	0x61570
 userlogic	?LoadGruntDecayConfig@CUserLogic@@QAEXXZ	0.6135	0.6135	1	92fac0c4600f	0x612a0
 userlogic	?LoadGruntTuningConstants@CUserLogic@@QAEXH@Z	0.0646	0.0646	1	2b4b0f8eed4e	0x5d210

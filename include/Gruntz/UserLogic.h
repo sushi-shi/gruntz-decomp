@@ -185,6 +185,14 @@ public:
     // pinned in src/Stub/Discovered.cpp).
     int SerializeChain(int a, int b, int c, int d); // 0x16e7f0
 
+    // Copies the bound object's screen position into the out point (m_10->m_5c =
+    // x, m_10->m_60 = y). 0x29a50, __thiscall ret 4.
+    struct ScreenPoint {
+        int x;
+        int y;
+    };
+    void GetScreenPos(ScreenPoint* out); // 0x29a50
+
     // Inline one-shot wrapper: registers the built-in logic types the first time
     // any tile-logic object is built. Inlined into the 1-arg ctor; its `this`
     // setup is why the retail call carries the dead `mov ecx,esi`.

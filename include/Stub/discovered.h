@@ -434,7 +434,6 @@ public:
 class CUserLogic {
 public:
     void CUserLogic_00f2f0();
-    void CUserLogic_029a50();
     void CUserLogic_03c7f0();
     void CUserLogic_048360();
     void CUserLogic_049c60();

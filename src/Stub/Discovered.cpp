@@ -661,8 +661,6 @@ void CToobSpikez::CToobSpikez_114860() {}
 // ---- CUserLogic ----
 RVA(0x0000f2f0, 0xc8)
 void CUserLogic::CUserLogic_00f2f0() {}
-RVA(0x00029a50, 0x15)
-void CUserLogic::CUserLogic_029a50() {}
 RVA(0x0003c7f0, 0x18)
 void CUserLogic::CUserLogic_03c7f0() {}
 RVA(0x00048360, 0x7e)
