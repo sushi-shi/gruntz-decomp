@@ -1,0 +1,151 @@
+#include <rva.h>
+#include <Mfc.h>
+#include <Ints.h>
+#include <Gruntz/SBI_WarlordHead.h>
+// SBI_WarlordHead.cpp - Gruntz CSBI_WarlordHead (C:\Proj\Gruntz), the frameless
+// methods. RTTI .?AVCSBI_WarlordHead@@; the most-derived leaf of the SBI image
+// chain CSBI_WarlordHead : CSBI_ImageSet : CSBI_Image : CSBI_RectOnly :
+// CStatusBarItem. Vtable @0x5ead24. The 5-level /GX-framed scalar destructor
+// (0x104a00) lives in SBI_WarlordHeadEh.cpp.
+//
+// These are concrete virtual-slot methods (slots 5 and 11) plus two non-virtual
+// helpers, modeled with the SBI family's manual-vtable-stamp device (no real
+// `virtual`); sibling/engine callees are ILT/vtable-reloc-masked.
+
+// The g_gameReg singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c). Only the
+// game-manager chain Render reads is modeled.
+DATA(0x0024556c)
+extern CWhGameReg* g_gameReg;
+
+// ---------------------------------------------------------------------------
+
+// vtable slot 11 (0xeb6b0): forward all 11 setup args to the ImageSet base setup
+// (the four rect ints fold into one by-value aggregate so MSVC stages the 0x10 temp
+// on the caller stack exactly as retail does); on success latch the initial state
+// (SetState(0)) and return 1, else return the base's result (0).
+// @early-stop
+// ~46% (thin-forwarding-wrapper regalloc wall, docs/patterns/serialize-wrapper-reg-
+// forward.md): the call sequence, the 0x10 temp build, the SetState(0) tail and the
+// `test eax;jne;ret 0x2c` control flow are all byte-correct, BUT retail forwards the
+// 11 args using only `push esi` (caller-saved eax/ecx/edx scratch to copy a9..a11
+// stack->stack), while MSVC5 here spills two extra callee-saved regs (`push ebx`/
+// `push edi`) to stage the trailing args across the by-value-aggregate stores. No
+// struct-construction spelling (named local, inline ctor temp, field order) flips
+// the reg choice. Plus the reloc-masked BaseSetupImage/SetState rel32. Deferred to
+// the final sweep (whole-hierarchy model).
+RVA(0x000eb6b0, 0x67)
+i32 CSBI_WarlordHead::SetupImage(
+    i32 a1,
+    i32 host,
+    i32 a3,
+    i32 a4,
+    i32 r0,
+    i32 r1,
+    i32 r2,
+    i32 r3,
+    i32 key,
+    i32 a10,
+    i32 a11
+) {
+    CWhRect rect;
+    rect.m_0 = r0;
+    rect.m_4 = r1;
+    rect.m_8 = r2;
+    rect.m_c = r3;
+    if (BaseSetupImage(a1, host, a3, a4, rect, key, a10, a11) == 0) {
+        return 0;
+    }
+    SetState(0);
+    return 1;
+}
+
+// 0xeb740: drive the show/hide of the two anchor frames (frame-table slots 1 and
+// 2). For each slot, range-gate the index against the config record's m_64/m_68;
+// if the frame exists, fire its sprite handle's show/hide notifier and (when a
+// non-zero arg2 is supplied) latch arg2 into the handle's m_1c.
+// @early-stop
+// ~92.3% (reloc-residual plateau): code bytes byte-identical to retail; the two
+// `call WhShowItem` (0x14dd90) rel32 are reloc-masked against a differently-named
+// symbol (docs/patterns/reloc-typing-vptr-global.md). Exact once it co-names.
+RVA(0x000eb740, 0xb3)
+i32 CSBI_WarlordHead::ShowFrames(i32 show, i32 arg2) {
+    CWhConfig* cfg = m_34;
+    if (cfg == 0) {
+        return 0;
+    }
+
+    CWhFrame* f = (cfg->m_64 <= 1 && cfg->m_68 >= 1) ? cfg->m_14[1] : 0;
+    if (f == 0) {
+        return 0;
+    }
+    if (f->m_30) {
+        WhShowItem(show, 0);
+    }
+    if (arg2 && f->m_30) {
+        ((CWhFrame*)f->m_30)->m_1c = arg2;
+    }
+
+    f = (cfg->m_64 <= 2 && cfg->m_68 >= 2) ? cfg->m_14[2] : 0;
+    if (f == 0) {
+        return 0;
+    }
+    if (f->m_30) {
+        WhShowItem(show, 0);
+    }
+    if (arg2 && f->m_30) {
+        ((CWhFrame*)f->m_30)->m_1c = arg2;
+    }
+    return 1;
+}
+
+// 0xeb830: latch the direction + derived state. dir 0/1 => state 1; else => state 2.
+RVA(0x000eb830, 0x31)
+i32 CSBI_WarlordHead::SetState(i32 dir) {
+    if (dir == 0 || dir == 1) {
+        m_3c = dir;
+        m_38 = 1;
+        return 1;
+    }
+    m_3c = dir;
+    m_38 = 2;
+    return 1;
+}
+
+// vtable slot 5 (0xeb880): the per-frame render. Idle (return 1) while the frame
+// countdown is non-positive; otherwise tick it down, pull the surface context from
+// the active drawable, and blit two frames: the direction frame (table slot 3 or 4
+// per m_3c) and the indexed frame (table slot m_38, latched into m_30). Each draws
+// at the base origin plus the frame record's own m_18/m_1c offset.
+// @early-stop
+// ~87.4% (reloc-residual plateau): code bytes byte-identical to retail; the two
+// `call RenderFrame` (0x153790) rel32 + the g_gameReg DIR32 are reloc-masked against
+// differently-named symbols (docs/patterns/reloc-typing-vptr-global.md). Same
+// plateau as CSBI_SideTab::Render (87.8%).
+RVA(0x000eb880, 0xbd)
+i32 CSBI_WarlordHead::Render(i32 z) {
+    if (m_28 <= 0) {
+        return 1;
+    }
+    m_28--;
+    i32 ctx = g_gameReg->m_30->m_4->m_14;
+
+    CWhConfig* cfg = m_34;
+    CWhFrame* f;
+    if (m_3c == 1) {
+        f = (cfg->m_64 > 3 || cfg->m_68 < 3) ? 0 : cfg->m_14[3];
+    } else {
+        f = (cfg->m_64 > 4 || cfg->m_68 < 4) ? 0 : cfg->m_14[4];
+    }
+    if (f) {
+        ((CWhRenderTarget*)f)->RenderFrame(ctx, m_14 + f->m_18, m_18 + f->m_1c, 0);
+    }
+
+    cfg = m_34;
+    i32 idx = m_38;
+    CWhFrame* g = (idx < cfg->m_64 || idx > cfg->m_68) ? 0 : cfg->m_14[idx];
+    m_30 = g;
+    if (g) {
+        ((CWhRenderTarget*)g)->RenderFrame(ctx, m_14 + g->m_18, m_18 + g->m_1c, 0);
+    }
+    return 1;
+}

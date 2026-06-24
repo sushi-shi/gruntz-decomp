@@ -586,17 +586,11 @@ void ClassUnknown_117::ClassUnknown_117_0ea6c0() {}
 RVA(0x00104b00, 0x55)
 void ClassUnknown_117::ClassUnknown_117_104b00() {}
 
-// ---- ClassUnknown_118 ----
-RVA(0x000eb6b0, 0x67)
-void ClassUnknown_118::ClassUnknown_118_0eb6b0() {}
-RVA(0x000eb740, 0xb3)
-void ClassUnknown_118::ClassUnknown_118_0eb740() {}
-RVA(0x000eb830, 0x31)
-void ClassUnknown_118::ClassUnknown_118_0eb830() {}
-RVA(0x000eb880, 0xbd)
-void ClassUnknown_118::ClassUnknown_118_0eb880() {}
-RVA(0x00104a00, 0x94)
-void ClassUnknown_118::ClassUnknown_118_104a00() {}
+// ---- ClassUnknown_118 -> CSBI_WarlordHead (RTTI .?AVCSBI_WarlordHead@@, vtable
+// 0x5ead24) reconstructed into src/Gruntz/SBI_WarlordHead.cpp (slots 5/11 + two
+// helpers) + the 5-level /GX scalar dtor (0x104a00) in SBI_WarlordHeadEh.cpp; the
+// most-derived leaf of the SBI image chain
+//   CSBI_WarlordHead : CSBI_ImageSet : CSBI_Image : CSBI_RectOnly : CStatusBarItem.
 
 // ---- ClassUnknown_119 ----
 RVA(0x001591b0, 0x19)

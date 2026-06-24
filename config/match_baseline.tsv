@@ -50,7 +50,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	362	0
+engine_discovered	357	0
 engine_label_stubs	520	118
 filemem	8	7
 filestream	13	9
@@ -116,6 +116,8 @@ sbi_rectonly	60	23
 sbi_rectonly_eh	3	1
 sbi_sidetab	3	1
 sbi_sidetab_eh	1	0
+sbi_warlordhead	4	1
+sbi_warlordhead_eh	1	0
 shadetablecache	7	3
 sounddevice	6	4
 soundstream	5	2
@@ -719,11 +721,6 @@ engine_discovered	?ClassUnknown_117_0ea470@ClassUnknown_117@@QAEXXZ	7.6923	7.692
 engine_discovered	?ClassUnknown_117_0ea4b0@ClassUnknown_117@@QAEXXZ	3.6364	3.6364	1	ad3a1f5f5fd0	0xea4b0
 engine_discovered	?ClassUnknown_117_0ea6c0@ClassUnknown_117@@QAEXXZ	0.5495	0.5495	1	fbe4d2e71fb3	0xea6c0
 engine_discovered	?ClassUnknown_117_104b00@ClassUnknown_117@@QAEXXZ	4.7619	4.7619	1	764c03e74b97	0x104b00
-engine_discovered	?ClassUnknown_118_0eb6b0@ClassUnknown_118@@QAEXXZ	1.0526	1.0526	1	d1ba2316bb87	0xeb6b0
-engine_discovered	?ClassUnknown_118_0eb740@ClassUnknown_118@@QAEXXZ	0.4938	0.4938	1	aa3321f6a01a	0xeb740
-engine_discovered	?ClassUnknown_118_0eb830@ClassUnknown_118@@QAEXXZ	3.0769	3.0769	1	2ceabd5bc1c7	0xeb830
-engine_discovered	?ClassUnknown_118_0eb880@ClassUnknown_118@@QAEXXZ	1.3514	1.3514	1	7614cd9b473d	0xeb880
-engine_discovered	?ClassUnknown_118_104a00@ClassUnknown_118@@QAEXXZ	3.0303	3.0303	1	6069bdc04281	0x104a00
 engine_discovered	?ClassUnknown_119_1591b0@ClassUnknown_119@@QAEXXZ	14.2857	14.2857	1	fb191ddfdab1	0x1591b0
 engine_discovered	?ClassUnknown_11_13abc0@ClassUnknown_11@@QAEXXZ	0.9174	0.9174	1	e0f64287a2c8	0x13abc0
 engine_discovered	?ClassUnknown_11_13b850@ClassUnknown_11@@QAEXXZ	0.5634	0.5634	1	0d12159826c3	0x13b850
@@ -2091,6 +2088,11 @@ sbi_sidetab	?Refresh@CSBI_SideTab@@QAEXH@Z	85.7143	85.7143	1	c56923938bb0	0xe982
 sbi_sidetab	?Render@CSBI_SideTab@@QAEHH@Z	87.8438	87.8438	1	1361c82e0ba1	0xe99c0
 sbi_sidetab	?Reset@CSBI_SideTab@@QAEXXZ	100.0000	100.0000	1	fc1e8fed52ab	0xe9800
 sbi_sidetab_eh	??1CSBI_SideTab@@QAE@XZ	34.2381	34.2381	1	1bca8911fa32	0x105200
+sbi_warlordhead	?Render@CSBI_WarlordHead@@QAEHH@Z	87.3919	87.3919	1	9b308dc210c6	0xeb880
+sbi_warlordhead	?SetState@CSBI_WarlordHead@@QAEHH@Z	100.0000	100.0000	1	034d997853c4	0xeb830
+sbi_warlordhead	?SetupImage@CSBI_WarlordHead@@QAEHHHHHHHHHHHH@Z	46.2105	46.2105	1	16d818a3069c	0xeb6b0
+sbi_warlordhead	?ShowFrames@CSBI_WarlordHead@@QAEHHH@Z	92.2716	92.2716	1	73cec54353b2	0xeb740
+sbi_warlordhead_eh	??1CSBI_WarlordHead@@QAE@XZ	43.6061	43.6061	1	bcabec3f0b56	0x104a00
 shadetablecache	??0CShadeTableCache@@QAE@XZ	100.0000	100.0000	1	8d165746ed6f	0x14de30
 shadetablecache	??1CShadeTableCache@@QAE@XZ	80.1333	80.1333	2	d4743b4c108f	0x14de50
 shadetablecache	?AlphaTable@CShadeTableCache@@QAEPAUCShadeTable@@PAE@Z	66.4253	66.4253	2	43e142788133	0x14f5b0
