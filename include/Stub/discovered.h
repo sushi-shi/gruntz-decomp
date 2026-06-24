@@ -523,15 +523,7 @@ class ClassUnknown_26 {
 public:
     void ClassUnknown_26_11c630();
 };
-class ClassUnknown_27 {
-public:
-    void ClassUnknown_27_13a260();
-    void ClassUnknown_27_13a280();
-    void ClassUnknown_27_13a2b0();
-    void ClassUnknown_27_13a2d0();
-    void ClassUnknown_27_13a2f0();
-    void ClassUnknown_27_13a310();
-};
+// ClassUnknown_27 -> CSymTab iteration accessors (src/Bute/SymTab.cpp).
 class ClassUnknown_28 {
 public:
     void ClassUnknown_28_01f940();
@@ -935,15 +927,8 @@ public:
     void MinervaInner_1366f0();
     void MinervaInner_136910();
 };
-class PaintHost_0fac70 {
-public:
-    void PaintHost_0fac70_0140d0();
-    void PaintHost_0fac70_014340();
-    void PaintHost_0fac70_0147b0();
-    void PaintHost_0fac70_08c610();
-    void PaintHost_0fac70_08cd90();
-    void PaintHost_0fac70_0fa300();
-};
+// PaintHost_0fac70 reconstructed as CAttract -> src/Gruntz/CAttract.cpp (5 methods)
+// + CState::Vslot11 -> src/Gruntz/GameMode.cpp (1 base body).
 class RegistryHelper {
 public:
     void RegistryHelper_114fa0();

@@ -423,6 +423,12 @@ source = "src/Gruntz/GameMode.cpp"
 flags = "eh"
 
 [[unit]]
+# CAttract (attract/title CState leaf); the `??1` carries the /GX SEH frame.
+unit = "cattract"
+source = "src/Gruntz/CAttract.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "cplay"
 source = "src/Gruntz/CPlay.cpp"
 flags = "eh"

@@ -53,6 +53,24 @@ struct CHashEntry {
     void* m_payload;        // +0x14  the resolved (key,node) record
 };
 
+// The embedded table iterates RezColl (collection) / RezNode (entry): one
+// physical First (0x184ae0) / Next (0x1848b0), the canonical owners of those
+// RVAs. First() is __thiscall on the collection; Next() is __thiscall on the
+// entry. The returned node's payload (the resolved record) sits at node+0x14.
+// (The iteration accessors below add the collection/entry offset into ecx, so
+// the call shapes fall out; both are reloc-masked externals.)
+struct RezNode;
+
+struct RezColl {
+    RezNode* First(); // 0x184ae0
+};
+
+struct RezNode {
+    RezNode* Next();   // 0x1848b0
+    char m_pad0[0x14]; // +0x00
+    void* m_14;        // +0x14  the resolved record
+};
+
 class CHashTable {
 public:
     // First live entry (0x184ae0), or null.
@@ -124,6 +142,17 @@ public:
     // m_owner->m_68 == 0 (0x13a000; the ResolveQualified tail). __thiscall extern,
     // no body -> reloc-masked. (Currently labeled ClassUnknown_14; a CSymTab method.)
     i32 Insert(const char* key, void* arg);
+
+    // Iteration accessors over the two embedded tables. First* are __thiscall on
+    // the scope; Next* take a previously-returned record and advance via the node
+    // the engine embeds inside it at a fixed offset (each record IS an intrusive
+    // list node). All return the entry's payload ([entry+0x14]), or 0 at the end.
+    void* FirstSub();          // 0x13a260  m_subTabs.First()->payload
+    void* NextSub(void* rec);  // 0x13a280  (rec+0x20)->Next()->payload
+    void* FirstSym();          // 0x13a2b0  m_symbols.First()->payload
+    void* NextSym(void* rec);  // 0x13a2d0  (rec+0x04)->Next()->payload
+    void* NextSym2(void* rec); // 0x13a2f0  (rec+0x24)->Next()->payload
+    void* NextSym3(void* rec); // 0x13a310  (rec+0x1c)->Next()->payload
 
     char* m_name;        // +0x00
     void* m_04;          // +0x04

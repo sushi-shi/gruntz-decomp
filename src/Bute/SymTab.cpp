@@ -91,6 +91,75 @@ void* CSymTab::FindSub(const char* name) {
     return m_subTabs.Walk(name, m_owner->m_68 == 0);
 }
 
+// Iteration accessors (0x13a260..0x13a326). Each fetches a node from the embedded
+// collection (FirstSub/FirstSym via RezColl::First on m_subTabs/+0x38 or
+// m_symbols/+0x40) or from the next-link the engine embeds inside a previously-
+// returned record (NextSub/NextSym* via RezNode::Next on the node at rec+OFF),
+// then returns that node's payload ([node+0x14]). At the end the node is null and
+// the function returns it unchanged (the null falls through, no `xor eax,eax`).
+// The Next* offsets (+0x20/+0x04/+0x24/+0x1c) locate the intrusive list node the
+// engine embeds inside each heterogeneous record.
+
+// FirstSub (0x13a260): first child-scope record (m_subTabs, +0x38).
+RVA(0x0013a260, 0x11)
+void* CSymTab::FirstSub() {
+    RezNode* n = ((RezColl*)&m_subTabs)->First();
+    if (!n) {
+        return n;
+    }
+    return n->m_14;
+}
+
+// NextSub (0x13a280): next child-scope record after `rec` (node @ rec+0x20).
+RVA(0x0013a280, 0x19)
+void* CSymTab::NextSub(void* rec) {
+    RezNode* n = ((RezNode*)((char*)rec + 0x20))->Next();
+    if (!n) {
+        return n;
+    }
+    return n->m_14;
+}
+
+// FirstSym (0x13a2b0): first leaf-symbol record (m_symbols, +0x40).
+RVA(0x0013a2b0, 0x11)
+void* CSymTab::FirstSym() {
+    RezNode* n = ((RezColl*)&m_symbols)->First();
+    if (!n) {
+        return n;
+    }
+    return n->m_14;
+}
+
+// NextSym (0x13a2d0): next leaf-symbol record after `rec` (node @ rec+0x04).
+RVA(0x0013a2d0, 0x19)
+void* CSymTab::NextSym(void* rec) {
+    RezNode* n = ((RezNode*)((char*)rec + 0x4))->Next();
+    if (!n) {
+        return n;
+    }
+    return n->m_14;
+}
+
+// NextSym2 (0x13a2f0): next record after `rec` (node @ rec+0x24).
+RVA(0x0013a2f0, 0x19)
+void* CSymTab::NextSym2(void* rec) {
+    RezNode* n = ((RezNode*)((char*)rec + 0x24))->Next();
+    if (!n) {
+        return n;
+    }
+    return n->m_14;
+}
+
+// NextSym3 (0x13a310): next record after `rec` (node @ rec+0x1c).
+RVA(0x0013a310, 0x19)
+void* CSymTab::NextSym3(void* rec) {
+    RezNode* n = ((RezNode*)((char*)rec + 0x1c))->Next();
+    if (!n) {
+        return n;
+    }
+    return n->m_14;
+}
+
 // @early-stop
 // recursive path tokenizer; the inlined IsTokenChar (3x) + the working-pointer arg
 // reuse + the FindSub recursion schedule against a documented regalloc/scheduling

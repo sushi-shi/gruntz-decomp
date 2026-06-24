@@ -27,7 +27,6 @@
 #include "CActionArea.cpp"
 #include "CAmbientPosSound.cpp"
 #include "CAmbientSound.cpp"
-#include "CAttract.cpp"
 #include "CBoomerang.cpp"
 #include "CBrickz.cpp"
 // reloc-correlation extern stubs (split from GenExterns):

@@ -98,11 +98,23 @@ i32 CState::Render() {
     return 1;
 }
 
-// The intervening vtable slots (1..3) - out-of-line stubs that anchor the vftable
+// The intervening vtable slots (1,2) - out-of-line stubs that anchor the vftable
 // order so Update lands at slot 4 (+0x10) and Render at slot 5 (+0x14).
 void CState::Vfunc1() {}
 void CState::ReleaseResources() {}
-void CState::Vfunc3() {}
+
+// CState::Vfunc3() (slot 3 / +0xc): the active/ready gate - returns m_3c.
+RVA(0x0008c490, 0x4)
+i32 CState::Vfunc3() {
+    return m_3c;
+}
+
+// CState::Vslot11() (slot 17 / +0x44): a 3-arg base default returning 0 (the
+// derived states that care override it; CAttract inherits this body unchanged).
+RVA(0x0008c610, 0x5)
+i32 CState::Vslot11(i32, i32, i32) {
+    return 0;
+}
 
 // ===========================================================================
 // CState-derived leaf teardown / per-frame poll methods (trace-discovered).

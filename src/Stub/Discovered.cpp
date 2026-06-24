@@ -727,19 +727,9 @@ void ClassUnknown_25::ClassUnknown_25_11c560() {}
 RVA(0x0011c630, 0x6e)
 void ClassUnknown_26::ClassUnknown_26_11c630() {}
 
-// ---- ClassUnknown_27 ----
-RVA(0x0013a260, 0x11)
-void ClassUnknown_27::ClassUnknown_27_13a260() {}
-RVA(0x0013a280, 0x19)
-void ClassUnknown_27::ClassUnknown_27_13a280() {}
-RVA(0x0013a2b0, 0x11)
-void ClassUnknown_27::ClassUnknown_27_13a2b0() {}
-RVA(0x0013a2d0, 0x19)
-void ClassUnknown_27::ClassUnknown_27_13a2d0() {}
-RVA(0x0013a2f0, 0x19)
-void ClassUnknown_27::ClassUnknown_27_13a2f0() {}
-RVA(0x0013a310, 0x19)
-void ClassUnknown_27::ClassUnknown_27_13a310() {}
+// ---- ClassUnknown_27 -> CSymTab iteration accessors (src/Bute/SymTab.cpp) ----
+// All 6 reconstructed: First/Next accessors over the two embedded hash tables
+// (m_subTabs +0x38, m_symbols +0x40); each returns the entry's payload.
 
 // ---- ClassUnknown_28 ----
 RVA(0x0001f940, 0x4c)
@@ -1279,19 +1269,11 @@ void MinervaInner::MinervaInner_1366f0() {}
 RVA(0x00136910, 0x119)
 void MinervaInner::MinervaInner_136910() {}
 
-// ---- PaintHost_0fac70 ----
-RVA(0x000140d0, 0x33)
-void PaintHost_0fac70::PaintHost_0fac70_0140d0() {}
-RVA(0x00014340, 0x71)
-void PaintHost_0fac70::PaintHost_0fac70_014340() {}
-RVA(0x000147b0, 0x6a)
-void PaintHost_0fac70::PaintHost_0fac70_0147b0() {}
-RVA(0x0008c610, 0x5)
-void PaintHost_0fac70::PaintHost_0fac70_08c610() {}
-RVA(0x0008cd90, 0x55)
-void PaintHost_0fac70::PaintHost_0fac70_08cd90() {}
-RVA(0x000fa300, 0x3a)
-void PaintHost_0fac70::PaintHost_0fac70_0fa300() {}
+// ---- PaintHost_0fac70 ---- RECONSTRUCTED: the cluster is CAttract (RTTI
+// .?AVCAttract@@, a CState leaf keyed off the WM_PAINT body @0xfac70). Five
+// methods (~dtor 0x08cd90 + ReleaseResources 0x0140d0 + Vslot07 0x0147b0 +
+// FrameSlot28 0x014340 + RunTitle 0x0fa300) moved to src/Gruntz/CAttract.cpp;
+// the sixth (0x08c610) is the shared CState base body Vslot11, now in GameMode.cpp.
 
 // ---- RegistryHelper ----
 RVA(0x00114fa0, 0x3e)
