@@ -42,12 +42,13 @@ dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
 engine_discovered	648	0
-engine_label_stubs	532	121
+engine_label_stubs	530	121
 filestream	13	9
 font	16	9
 fontconfig	7	4
 fonts	2	1
 gameapp	19	15
+gamekeyhandler	1	0
 gamelevel	30	19
 gamemode	35	15
 gameobjectctors	5	0
@@ -93,6 +94,7 @@ spriteresource	4	1
 statusbaritem	2	1
 statusbarupdaters	7	0
 streamfeeder	9	7
+terraintileloader	1	0
 tilegridcommand	2	2
 tileswitchlogic	13	7
 tiletriggercontainer	6	2
@@ -1329,7 +1331,6 @@ engine_label_stubs	?LoadSaveMessageSprite@CGruntzMgr@@QAEXXZ	2.2727	2.2727	1	cpp
 engine_label_stubs	?LoadSounds@CSplashState@@QAEHHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xf9780
 engine_label_stubs	?LoadStateImages_vfunc8@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXXZ	2.2222	2.2222	1	cpp:e8a4cb0d5b2a	0xa09a0
 engine_label_stubs	?LoadTeleporterGooConfig@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXH@Z	0.2262	0.2262	1	cpp:e8a4cb0d5b2a	0x6eb80
-engine_label_stubs	?LoadTerrainTileSprites@EngineLabelBacklog@@YGXHHHHHH@Z	0.0749	0.0749	1	cpp:6bf52155264d	0x75e90
 engine_label_stubs	?LoadTitleConfig@CAttract@@QAEHH@Z	99.0991	99.0991	1	cpp:6bf52155264d	0xa03f0
 engine_label_stubs	?LoadToyBoxIcon@EngineLabelBacklog@@YGXHHHHH@Z	1.3889	1.3889	1	cpp:6bf52155264d	0x7a3f0
 engine_label_stubs	?LoadVehicleGruntAnimations@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXXZ	0.4098	0.4098	1	cpp:e8a4cb0d5b2a	0x63db0
@@ -1463,7 +1464,6 @@ engine_label_stubs	?thirdparty_17c8e0_SmackGoto_8_SmackWait_4@ThisStubOwnerUnkno
 engine_label_stubs	?thirdparty_17caa0_SmackDoFrame_4_SmackNextFrame_4_SmackToBuffer_28@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHXZ	1.7391	1.7391	1	cpp:e8a4cb0d5b2a	0x17caa0
 engine_label_stubs	?thirdparty_winapi_17c790_SmackWait_4_DispatchMessageA_PeekMessageA_TranslateMessa@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHH@Z	1.7699	1.7699	1	cpp:e8a4cb0d5b2a	0x17c790
 engine_label_stubs	?vector_deleting_destructor@CGruntzMgr@@QAEXH@Z	9.0909	9.0909	1	cpp:6bf52155264d	0x83330
-engine_label_stubs	?vfunc_12@StatusBarItem@@QAEXHH@Z	0.0543	0.0543	1	cpp:6bf52155264d	0xcbcc0
 engine_label_stubs	?vfunc_16@StatusBarItem@@QAEXHHH@Z	0.3484	0.3484	1	cpp:6bf52155264d	0xce660
 engine_label_stubs	?vfunc_20@CloudHazard@@QAEXHH@Z	1.4085	1.4085	1	cpp:6bf52155264d	0xb4640
 engine_label_stubs	?vfunc_9@BootyState@@QAEXH@Z	1.3514	1.3514	1	cpp:6bf52155264d	0x18d30
@@ -1681,6 +1681,7 @@ gameapp	?VirtualUnknownMethod02@CGameApp@@UAEHPAUGameInfo@@PAUtagWNDCLASSA@@PAUt
 gameapp	?VirtualUnknownMethod03@CGameApp@@UAEHPAUHINSTANCE__@@PAD11HHH@Z	100.0000	100.0000	3	d6391a951d57	0x13d7b0
 gameapp	?VirtualUnknownMethod09@CGameApp@@UAEXXZ	100.0000	100.0000	4	a25a05503939	0x13dc70
 gameapp	?vector_deleting_destructor@CGameMgr@WAP32@@QAEXXZ	3.3333	3.3333	2	356122a8377e	0x133380
+gamekeyhandler	?DispatchKey@CGamePlayInput@@QAEHHH@Z	5.4164	5.4164	1	37e0c09f1c5c	0xcbcc0
 gamelevel	??0CGameLevel@@QAE@HHH@Z	94.4528	94.4528	5	722b4e18b3dc	0x15ccd0
 gamelevel	??1CGameLevel@@QAE@XZ	96.0000	96.0000	3	be6f9346ae7e	0x1611e0
 gamelevel	?ApplyScroll@CGameLevel@@SGHPAV1@HHH@Z	94.7826	94.7826	2	66b03ea53107	0x167130
@@ -2159,6 +2160,7 @@ streamfeeder	?FillBuffer@StreamFeeder@@QAEHII@Z	88.5679	88.5679	1	de778cdecdb0	0
 streamfeeder	?Pause@StreamFeeder@@QAEHXZ	100.0000	100.0000	2	52812e99cdff	0x137f00
 streamfeeder	?Resume@StreamFeeder@@QAEHXZ	100.0000	100.0000	2	c47c07137340	0x137ed0
 streamfeeder	?SeedWindow@StreamFeeder@@QAEHPAXII@Z	100.0000	100.0000	1	edea263e685a	0x137340
+terraintileloader	?Load@CTerrainTileLoader@@QAGXHHHHHH@Z	1.1273	1.1273	1	0cea279b8baf	0x75e90
 tilegridcommand	?RecordMove@CTileGridCommand@@QAEXXZ	100.0000	100.0000	1	23f12c9ec885	0x112880
 tilegridcommand	?Serialize@CTileGridCommand@@QAEHPAVTgcStream@@@Z	100.0000	100.0000	2	b1fae33460f5	0x113ae0
 tileswitchlogic	??0CTileTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	5	a1db8cb5a037	0x110430

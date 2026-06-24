@@ -671,11 +671,11 @@ void Projectile::vfunc_9() {}
 RVA(0x0006c130, 0xd62)
 void __stdcall EngineLabelBacklog::WireTileSwitchLogic(i32, i32, i32) {}
 
-// @confidence: med
-// @source: string-xref
-// @stub
-RVA(0x00075e90, 0x1329)
-void __stdcall EngineLabelBacklog::LoadTerrainTileSprites(i32, i32, i32, i32, i32, i32) {}
+// LoadTerrainTileSprites (0x00075e90, 4905 B) is the per-tile terrain-action
+// sprite loader; reconstructed (complete top structure + DIRT/GIANTROCK arms,
+// @early-stop on the /GX nested-jump-table megafunction wall) as
+// CTerrainTileLoader::Load in src/Gruntz/TerrainTileLoader.cpp (eh unit). Its
+// CString diagnostic temp gives it the exception frame.
 
 // LoadCameraSprite @0x078960 graduated to src/Gruntz/IconLoaders.cpp.
 
@@ -815,11 +815,10 @@ void __stdcall EngineLabelBacklog::LoadLevelByMode(i32, i32) {}
 RVA(0x000cb800, 0x191)
 void GameLevelState::OnActivate_vfunc8() {}
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
-RVA(0x000cbcc0, 0x16da)
-void StatusBarItem::vfunc_12(i32, i32) {}
+// vfunc_12 (0x000cbcc0, 5850 B) is the PLAY-state keyboard/cheat input
+// dispatcher, not a status-bar method; reconstructed (complete top structure,
+// @early-stop on the megafunction regalloc wall) as CGamePlayInput::DispatchKey
+// in src/Gruntz/GameKeyHandler.cpp (frameless base unit).
 
 // @confidence: med
 // @source: decomp-xref
