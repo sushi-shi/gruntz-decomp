@@ -34,13 +34,14 @@ cdirectdrawmgr	15	9
 chatbox	16	9
 chatbox_eh	1	1
 clightfxrender	20	8
+cmulti	11	7
 cplay	27	8
 cstatusbarmgr	1	0
 deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	684	0
+engine_discovered	673	0
 engine_label_stubs	534	121
 filestream	13	9
 font	16	9
@@ -325,6 +326,17 @@ clightfxrender	?Shape5@CLightFxRender@@QAEHXZ	73.8760	73.8760	4	158440af6457	0xa
 clightfxrender	?Shape6@CLightFxRender@@QAEHXZ	77.4322	77.4322	4	e353a843eb8e	0xa7260
 clightfxrender	?Shape7@CLightFxRender@@QAEHXZ	73.3526	73.3526	4	2ac3e51a74b2	0xa7d50
 clightfxrender	?Shape8@CLightFxRender@@QAEHXZ	70.0243	70.0243	4	41419e5ec730	0xa8900
+cmulti	??1CMulti@@QAE@XZ	0.0000	0.0000	1	301ec69b5a15	0x8d270
+cmulti	?AckJoinFailure@CMulti@@QAEXXZ	100.0000	100.0000	1	bac115793e8c	0xbc420
+cmulti	?ClearString59c@CMulti@@QAEAAVCString@@AAV2@@Z	49.3529	49.3529	1	6f457816186b	0xb76c0
+cmulti	?ClearString5a0@CMulti@@QAEAAVCString@@AAV2@@Z	49.3529	49.3529	1	dc23b4db8d9d	0xb7730
+cmulti	?GetString59c@CMulti@@QAE?AVCString@@XZ	100.0000	100.0000	1	cc47d2a6b3da	0xb7a90
+cmulti	?GetString5a0@CMulti@@QAE?AVCString@@XZ	100.0000	100.0000	1	dfdf4df5c88a	0xb7ad0
+cmulti	?JoinSession@CMulti@@QAEHXZ	100.0000	100.0000	1	9a2e0c390aa8	0xb7fe0
+cmulti	?ReportNetError@CMulti@@QAEXXZ	95.2000	95.2000	1	59b1f15e8f6f	0xb7f60
+cmulti	?ReportVersionMsg@CMulti@@QAEXPADH@Z	100.0000	100.0000	1	a2306abc654e	0xb7e30
+cmulti	?RunErrorDialog@CMulti@@QAEHPADPAXH@Z	100.0000	100.0000	1	f5d13574d2fd	0xbc250
+cmulti	?Teardown@CMulti@@QAEXXZ	100.0000	100.0000	1	40a558486d68	0xb6110
 cplay	?BeginGridWalk@CPlay@@QAEHHHHHH@Z	81.1191	81.1191	4	5929326f7458	0xd0920
 cplay	?BuildGruntTypeNameTable@CPlay@@QAEXHHHH@Z	0.7092	0.7092	2	ed7e76422e54	0xdc6d0
 cplay	?BuildHelpReveal@CPlay@@QAEHXZ	67.8125	67.8125	3	d63528a8ea0e	0xd72c0
@@ -416,7 +428,7 @@ directsoundmgr	?GetVolume@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	2	922619dc808
 directsoundmgr	?GetVolumePercent@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	2	b7536ea97fc9	0x135640
 directsoundmgr	?IsLooping@DirectSoundMgr@@QAEHXZ	99.8529	99.8529	4	4f34a91fa01d	0x135440
 directsoundmgr	?IsPlaying@DirectSoundMgr@@QAEHXZ	99.8529	99.8529	4	993b4d422d51	0x1353f0
-directsoundmgr	?LockConvert@DirectSoundMgr@@QAEHPAXII@Z	100.0000	100.0000	2	452672fb7d39	0x135f40
+directsoundmgr	?LockConvert@DirectSoundMgr@@QAEHPAXII@Z	100.0000	100.0000	3	1195b8fc939d	0x135f40
 directsoundmgr	?RemoveClone@DirectSoundMgr@@QAEXPAV1@@Z	100.0000	100.0000	2	7875878133be	0x135d20
 directsoundmgr	?Restore@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	4	2d71bdf5406d	0x135310
 directsoundmgr	?SetCooperativeLevel@DirectSoundMgr@@QAEHPAXI@Z	100.0000	100.0000	2	d8ac0ca008f6	0x1365f0
@@ -529,17 +541,6 @@ engine_discovered	?CMenuState_0a0d40@CMenuState@@QAEXXZ	5.2632	5.2632	1	1ba1cecd
 engine_discovered	?CObjectDropper_0124f0@CObjectDropper@@QAEXXZ	5.8824	5.8824	1	a8e2ca1ad030	0x124f0
 engine_discovered	?CParticlez_012d90@CParticlez@@QAEXXZ	5.8824	5.8824	1	a3bb172e9a0b	0x12d90
 engine_discovered	?CParticlez_046d30@CParticlez@@QAEXXZ	0.5333	0.5333	1	d1d33721a572	0x46d30
-engine_discovered	?CPlay_08d270@CPlay@@QAEXXZ	1.6129	1.6129	1	8e5c87e4f255	0x8d270
-engine_discovered	?CPlay_0b6110@CPlay@@QAEXXZ	1.7857	1.7857	1	2b0ed4e4a573	0xb6110
-engine_discovered	?CPlay_0b76c0@CPlay@@QAEXXZ	2.3529	2.3529	1	b0975803e1f9	0xb76c0
-engine_discovered	?CPlay_0b7730@CPlay@@QAEXXZ	2.3529	2.3529	1	779015edb4e3	0xb7730
-engine_discovered	?CPlay_0b7a90@CPlay@@QAEXXZ	3.3333	3.3333	1	dccf185560d0	0xb7a90
-engine_discovered	?CPlay_0b7ad0@CPlay@@QAEXXZ	3.3333	3.3333	1	73182c3c1b81	0xb7ad0
-engine_discovered	?CPlay_0b7e30@CPlay@@QAEXXZ	1.2121	1.2121	1	d8e0e757c46f	0xb7e30
-engine_discovered	?CPlay_0b7f60@CPlay@@QAEXXZ	1.6000	1.6000	1	adb894d010a4	0xb7f60
-engine_discovered	?CPlay_0b7fe0@CPlay@@QAEXXZ	5.8824	5.8824	1	7bca5cbacf82	0xb7fe0
-engine_discovered	?CPlay_0bc250@CPlay@@QAEXXZ	1.2500	1.2500	1	04d05816ea21	0xbc250
-engine_discovered	?CPlay_0bc420@CPlay@@QAEXXZ	7.6923	7.6923	1	f82a60085ff8	0xbc420
 engine_discovered	?CPlay_0d1b60@CPlay@@QAEXXZ	0.0452	0.0452	1	7c783745d488	0xd1b60
 engine_discovered	?CRollingBall_012f80@CRollingBall@@QAEXXZ	5.8824	5.8824	1	c3e5dcb9f3b3	0x12f80
 engine_discovered	?CRollingBall_0b0fe0@CRollingBall@@QAEXXZ	0.2139	0.2139	1	a6e364c8e14c	0xb0fe0

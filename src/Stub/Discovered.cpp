@@ -367,34 +367,10 @@ RVA(0x00046d30, 0x102)
 void CParticlez::CParticlez_046d30() {}
 
 // ---- CPlay ---- HandleDragMove (0xd0db0) reconstructed in src/Gruntz/CPlay.cpp.
-// MISATTRIBUTION CONFIRMED: the 0x08d270 / 0x0b6110-0x0bc420 cluster is NOT CPlay
-// (whose layout tops out at +0x510). Each touches a networking/lobby sub-object at
-// member offsets >0x510 (this+0x524/0x580/0x59c/0x5a0/0x5bc/0x604) and the
-// MULTI_JOIN / "Error: %s - %i" lobby strings; 0x08d270 is that net class's EH-frame
-// destructor (vtables 0x5e9fe4/0x5ea0bc/0x5ea21c, sub-objects to +0x604). Left
-// stubbed for a dedicated networking TU - do NOT reconstruct as CPlay.
-RVA(0x0008d270, 0x124)
-void CPlay::CPlay_08d270() {}
-RVA(0x000b6110, 0xc7)
-void CPlay::CPlay_0b6110() {}
-RVA(0x000b76c0, 0x4f)
-void CPlay::CPlay_0b76c0() {}
-RVA(0x000b7730, 0x4f)
-void CPlay::CPlay_0b7730() {}
-RVA(0x000b7a90, 0x23)
-void CPlay::CPlay_0b7a90() {}
-RVA(0x000b7ad0, 0x23)
-void CPlay::CPlay_0b7ad0() {}
-RVA(0x000b7e30, 0x63)
-void CPlay::CPlay_0b7e30() {}
-RVA(0x000b7f60, 0x52)
-void CPlay::CPlay_0b7f60() {}
-RVA(0x000b7fe0, 0x2f)
-void CPlay::CPlay_0b7fe0() {}
-RVA(0x000bc250, 0x55)
-void CPlay::CPlay_0bc250() {}
-RVA(0x000bc420, 0x2b)
-void CPlay::CPlay_0bc420() {}
+// The 0x08d270 / 0x0b6110-0x0bc420 cluster was MIS-ATTRIBUTED to CPlay: RTTI
+// (.?AVCMulti@@) recovered the real class CMulti (the multiplayer/lobby game-
+// state, `CMulti : public CPlay, public CState`), now reconstructed in
+// src/Gruntz/CMulti.cpp (the EH-frame dtor at 0x08d270 + the 10 lobby methods).
 // 0x0d1b60 (3119 B) IS a genuine CPlay method (offsets <=0x464, uses g_64556c/
 // g_644c54/g_buteMgr, strings GAME_BADSELECT/PlayerDefenderRadius/Grunt) - the big
 // selection/command dispatcher built on a jump table (switchdataD_004d2790, 40

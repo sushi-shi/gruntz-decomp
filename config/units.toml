@@ -411,6 +411,11 @@ source = "src/Gruntz/CDDrawWorkerRegistry.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "cmulti"
+source = "src/Gruntz/CMulti.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "tileswitchlogic"
 source = "src/Gruntz/TileTriggerSwitchLogic.cpp"
 flags = "base"

@@ -256,17 +256,6 @@ public:
 };
 class CPlay {
 public:
-    void CPlay_08d270();
-    void CPlay_0b6110();
-    void CPlay_0b76c0();
-    void CPlay_0b7730();
-    void CPlay_0b7a90();
-    void CPlay_0b7ad0();
-    void CPlay_0b7e30();
-    void CPlay_0b7f60();
-    void CPlay_0b7fe0();
-    void CPlay_0bc250();
-    void CPlay_0bc420();
     void CPlay_0d1b60();
 };
 class CRollingBall {
