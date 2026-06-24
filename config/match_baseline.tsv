@@ -17,7 +17,7 @@ adler32	1	1
 advancedoptions	5	5
 appdialogs	1	1
 battlezmapconfig	1	0
-brickz	8	2
+brickz	10	3
 butemgr	38	27
 cddrawchildgroup	9	5
 cddrawptrcollections	1	0
@@ -42,7 +42,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	646	0
+engine_discovered	644	0
 engine_label_stubs	530	121
 filestream	13	9
 font	16	9
@@ -140,10 +140,12 @@ battlezmapconfig	?LoadConfig@CBattlezMapConfig@@QAEHPAUCLevelInfo@@HH@Z	85.9933	
 brickz	?CellPop@CBrickz@@QAEXPAUBrickzNode@@H@Z	80.3284	80.3284	3	6c5a65d16fa4	0x9f710
 brickz	?CellPush@CBrickz@@QAEXPAUBrickzNode@@@Z	85.9070	85.9070	2	890d04538e3f	0x9f470
 brickz	?Drain@CBrickz@@QAEXXZ	66.7391	66.7391	1	ebba6ada4e7d	0x9f590
+brickz	?Expand@CBrickz@@QAEHPAUBrickzNode@@HHHH@Z	78.9605	78.9605	1	01b62b8644d4	0x9f010
 brickz	?Find@CBrickz@@QAEPAUBrickzNode@@HH@Z	100.0000	100.0000	3	f5b3beabacfa	0x9f500
 brickz	?Insert@CBrickz@@QAEHPAUBrickzNode@@@Z	100.0000	100.0000	2	56f2e32884a9	0x9f370
-brickz	?PopFront@CBrickz@@QAEXXZ	97.1053	97.1053	1	d0e524077039	0x9f430
-brickz	?Reset@CBrickz@@QAEXXZ	64.6731	64.6731	2	2061d42178be	0x9f5d0
+brickz	?PopFront@CBrickz@@QAEPAUBrickzNode@@XZ	100.0000	100.0000	1	c73fe77132a8	0x9f430
+brickz	?Reset@CBrickz@@QAEXXZ	64.7115	64.7115	2	2061d42178be	0x9f5d0
+brickz	?Search@CBrickz@@QAEHHHHHPAXHHH@Z	91.3409	91.3409	1	74f12e2a1b8d	0x9eca0
 brickz	?Unlink@CBrickz@@QAEXPAUBrickzNode@@@Z	74.9487	74.9487	2	ead4b3e1d312	0x9f690
 butemgr	?CharClass@CButeMgr@@QAEFD@Z	100.0000	100.0000	2	6b8d1de98cce	0x1703e0
 butemgr	?ClearHelper@CButeMgr@@QAEXXZ	100.0000	100.0000	3	78033bc3e61d	0x171a40
@@ -193,7 +195,7 @@ cddrawchildgroup	?VirtualMethodUnknown30@CDDrawChildGroup@@QAEXHHH@Z	89.0909	89.
 cddrawchildgroup	?VirtualMethodUnknown34@CDDrawChildGroup@@QAEXHHH@Z	89.0909	89.0909	6	5b41e511b849	0x159d40
 cddrawchildgroup	?VirtualMethodUnknown38@CDDrawChildGroup@@UAEXXZ	100.0000	100.0000	5	3b973f16dca8	0x159d90
 cddrawptrcollections	??0CDDrawPtrCollections@@QAE@XZ	99.8000	99.8000	5	f9e380983319	0x141cc0
-cddrawshadeblit	?Blit@CDDrawShadeBlit@@QAEHHPAUShadeSrc@@PAUShadeRect@@HH@Z	100.0000	100.0000	1	9e4b683c7f84	0x1497f0
+cddrawshadeblit	?Blit@CDDrawShadeBlit@@QAEHHPAUShadeSrc@@PAUShadeRect@@HH@Z	100.0000	100.0000	2	3bec4cb0d7c2	0x1497f0
 cddrawshadeblit	?BlitLoop@CDDrawShadeBlit@@QAEXHPAUShadeSrc@@PAUShadeRect@@H@Z	0.0556	0.0556	1	cd0bcbb696d9	0x14a200
 cddrawsubmgr	??0CDDrawSubMgr@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	100.0000	100.0000	6	af4f6a250fe2	0x156cb0
 cddrawsubmgr	??1CDDrawSubMgr@@UAE@XZ	100.0000	100.0000	5	450d3140b22a	0x1574d0
@@ -459,8 +461,6 @@ engine_discovered	?CBrickz_081e10@CBrickz@@QAEXXZ	0.2985	0.2985	1	28e25acbc807	0
 engine_discovered	?CBrickz_082030@CBrickz@@QAEXXZ	0.2878	0.2878	1	b992327ccdda	0x82030
 engine_discovered	?CBrickz_082430@CBrickz@@QAEXXZ	0.2941	0.2941	1	6018917acf67	0x82430
 engine_discovered	?CBrickz_09356c@CBrickz@@QAEXXZ	1.2903	1.2903	1	c40e7b288494	0x9356c
-engine_discovered	?CBrickz_09eca0@CBrickz@@QAEXXZ	0.1515	0.1515	1	03f44d7b7ac7	0x9eca0
-engine_discovered	?CBrickz_09f010@CBrickz@@QAEXXZ	0.1581	0.1581	1	e0ef45a31f00	0x9f010
 engine_discovered	?CButeMgr_0213c0@CButeMgr@@QAEXXZ	1.1494	1.1494	1	27bb9064c61c	0x213c0
 engine_discovered	?CButeTree_16e070@CButeTree@@QAEXXZ	0.8000	0.8000	1	5f71bcbafe56	0x16e070
 engine_discovered	?CCheckpointDlg_023570@CCheckpointDlg@@QAEXXZ	50.0000	50.0000	1	f5567be8c30b	0x23570

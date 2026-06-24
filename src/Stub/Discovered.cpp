@@ -25,12 +25,13 @@ void CBehindCandyAni::CBehindCandyAni_0adbb0() {}
 //      serializer methods (~CMapLogic 0x113c0, float-curve serializer 0xec230,
 //      polymorphic Visit 0x9f7f0, FreeNodes tear-down 0x85480) are reconstructed
 //      BYTE-EXACT in src/Gruntz/MapLogic.cpp.
-//  (2) the matched CBrickz container itself (src/Gruntz/Brickz.cpp): 0x9eca0 and
-//      0x9f010 call CBrickz::Insert/Find/Unlink/CellPop (0x9f370/.../0x9f710), so
-//      they are container methods - left here for a Brickz.cpp sweep, NOT CMapLogic.
+//  (2) the matched CBrickz container itself (src/Gruntz/Brickz.cpp): its A*-style
+//      grid search driver Search (0x9eca0) and neighbour-relax Expand (0x9f010)
+//      are reconstructed there - they call CBrickz::Insert/Find/Unlink/CellPop.
 // The remaining CMapLogic grid/serializer methods (0x77790 jump-table flag compute,
 // 0x81e10/0x82030 terrain-flag grid walks, 0x82430 node serializer, 0x9356c the
 // thin ec230+fd3f0 wrapper) are large/entangled and deferred to the final sweep.
+// They are NOT CBrickz members - they belong to CMapLogic (different this-shape).
 RVA(0x00077790, 0x37d)
 void CBrickz::CBrickz_077790() {}
 RVA(0x00081e10, 0x1a7)
@@ -41,10 +42,6 @@ RVA(0x00082430, 0x161)
 void CBrickz::CBrickz_082430() {}
 RVA(0x0009356c, 0x38)
 void CBrickz::CBrickz_09356c() {}
-RVA(0x0009eca0, 0x2bd)
-void CBrickz::CBrickz_09eca0() {}
-RVA(0x0009f010, 0x2a1)
-void CBrickz::CBrickz_09f010() {}
 
 // ---- CButeMgr ---- lexer cluster migrated to src/Bute/ButeMgr.cpp; only the
 // EH-frame scalar destructor remains here (deferred to the final sweep).
