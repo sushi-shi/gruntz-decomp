@@ -21,7 +21,7 @@ brickz	8	2
 butemgr	38	27
 cddrawchildgroup	9	5
 cddrawptrcollections	1	0
-cddrawsubmgr	7	2
+cddrawsubmgr	18	10
 cddrawsubmgrdraco	5	2
 cddrawsubmgrleaf	7	1
 cddrawsurfacemgr	7	5
@@ -40,7 +40,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	738	0
+engine_discovered	727	0
 engine_label_stubs	534	121
 filestream	13	9
 font	16	9
@@ -189,6 +189,17 @@ cddrawsubmgr	??0CDDrawSubMgr@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	100.0000	100.0000	5	
 cddrawsubmgr	??1CDDrawSubMgr@@UAE@XZ	100.0000	100.0000	5	450d3140b22a	0x1574d0
 cddrawsubmgr	?Constructor_156e10@CDDrawSubMgrBase@@QAEXXZ	4.1667	4.1667	2	a218d18e0947	0x156e10
 cddrawsubmgr	?Constructor_157630@CDDrawSubMgr@@QAEXXZ	3.3333	3.3333	2	98e6212efc1f	0x157630
+cddrawsubmgr	?Init_15c290@CDDrawBlitParam@@QAEXPAVCDDrawBlitParamSrc@@@Z	94.7500	94.7500	1	494a15b89781	0x15c290
+cddrawsubmgr	?Method_158b40@CDDrawWorkerMgr@@QAEHHH@Z	100.0000	100.0000	1	870a466b58db	0x158b40
+cddrawsubmgr	?Method_158c70@CDDrawWorkerMgr@@QAEHPAVCDDrawSurfacePair@@@Z	100.0000	100.0000	1	9dcab0965f3a	0x158c70
+cddrawsubmgr	?Method_158d20@CDDrawWorkerMgr@@QAEHXZ	100.0000	100.0000	1	bbb7b8de7c93	0x158d20
+cddrawsubmgr	?Method_158dc0@CDDrawWorkerMgr@@QAEHXZ	71.1429	71.1429	1	cf26ee8c20e2	0x158dc0
+cddrawsubmgr	?Method_158e40@CDDrawWorkerMgr@@QAEHXZ	50.1282	50.1282	1	b9fd3cf90fe6	0x158e40
+cddrawsubmgr	?Method_158e90@CDDrawWorkerMgr@@QAEHXZ	100.0000	100.0000	1	7945583cabbb	0x158e90
+cddrawsubmgr	?Method_158ee0@CDDrawWorkerMgr@@QAEHXZ	100.0000	100.0000	1	1ac42330e797	0x158ee0
+cddrawsubmgr	?Method_159ef0@CDDrawWorkerMgr@@QAEXXZ	100.0000	100.0000	1	14f6f09b257f	0x159ef0
+cddrawsubmgr	?Reset_15c2c0@CDDrawBlitParam@@QAEXXZ	100.0000	100.0000	1	d1c77897f6cf	0x15c2c0
+cddrawsubmgr	?Setup_15c2d0@CDDrawBlitParam@@QAEXPAVCDDrawBlitParamSrc@@@Z	100.0000	100.0000	1	05596052fea4	0x15c2d0
 cddrawsubmgr	?Stub_155720@CDDrawSubMgr@@QAEXXZ	3.6364	3.6364	2	da4e92815b42	0x155720
 cddrawsubmgr	?VirtualMethodUnknown1C@CDDrawSubMgr@@UAEXXZ	50.0000	50.0000	2	746bc9d4025a	0x1576c0
 cddrawsubmgr	?VirtualMethodUnknown20@CDDrawSubMgr@@UAEXXZ	50.0000	50.0000	2	0f68242bafed	0x157790
@@ -372,7 +383,7 @@ directinputmgr2	?Create@CInputDevice@@QAEHPAUIDirectInputZ@@PBXPAX@Z	100.0000	10
 directinputmgr2	?Create@DirectInputMgr2@@QAEHPAX0K@Z	100.0000	100.0000	3	6908441c9cfe	0x132ce0
 directinputmgr2	?CreateDev@CInputDevice@@QAEHPAUIDirectInputZ@@PBXPAXK@Z	100.0000	100.0000	2	10559c07654e	0x133b50
 directinputmgr2	?CreateDeviceWrap@CInputDevice@@QAEHPAUIDirectInputZ@@PBXPAX@Z	100.0000	100.0000	1	4348688392c8	0x134260
-directinputmgr2	?EnumGameControllers@DirectInputMgr2@@QAEHK@Z	100.0000	100.0000	3	68028fe864da	0x132f80
+directinputmgr2	?EnumGameControllers@DirectInputMgr2@@QAEHK@Z	100.0000	100.0000	4	ef054edbbc70	0x132f80
 directinputmgr2	?FreeDeviceList@DirectInputMgr2@@QAEXXZ	100.0000	100.0000	2	1d3bcb1b2753	0x1331a0
 directinputmgr2	?GetErrorString@DirectInputMgr2@@SAXPADHJ@Z	100.0000	100.0000	4	750b1e766b8e	0x133590
 directinputmgr2	?InitA@DirectInputMgr2@@QAEHK@Z	86.5079	86.5079	3	fceb927638c9	0x132e20
@@ -386,7 +397,7 @@ directinputmgr2	?ReleaseDevices@CInputDevice@@QAEXXZ	100.0000	100.0000	2	c847948
 directinputmgr2	?SetCooperativeLevel@CInputDevice@@QAEHK@Z	100.0000	100.0000	3	0d6e269ec7f3	0x134ef0
 directinputmgr2	?SetDataFormat@CInputDevice@@QAEHPAX@Z	100.0000	100.0000	3	85ba2a767a39	0x134eb0
 directinputmgr2	?SetProperty@CInputDevice@@QAEHPBXPAX@Z	100.0000	100.0000	3	383bb000d181	0x134f30
-directinputmgr2	?SetupKeyTable@CInputDevice@@QAEXXZ	94.5946	94.5946	2	74b84438f695	0x133c30
+directinputmgr2	?SetupKeyTable@CInputDevice@@QAEXXZ	94.5946	94.5946	3	f76e5dc1fdaa	0x133c30
 directinputmgr2	?Shutdown@DirectInputMgr2@@QAEXXZ	100.0000	100.0000	2	173f3a582371	0x132d90
 directinputmgr2	?Teardown@CInputDevice@@QAEXXZ	100.0000	100.0000	2	f32e81f04bab	0x133bf0
 directinputmgr2	?Unacquire@CInputDevice@@QAEHXZ	100.0000	100.0000	2	31c3cafa4cbf	0x134fe0
@@ -451,16 +462,8 @@ engine_discovered	?CDDrawSubMgrLeaf_1583c0@CDDrawSubMgrLeaf@@QAEXXZ	0.5714	0.571
 engine_discovered	?CDDrawSubMgrLeaf_1584f0@CDDrawSubMgrLeaf@@QAEXXZ	0.8000	0.8000	1	7318eacf4e10	0x1584f0
 engine_discovered	?CDDrawSubMgrLeaf_158570@CDDrawSubMgrLeaf@@QAEXXZ	0.5714	0.5714	1	85f67e6fa91d	0x158570
 engine_discovered	?CDDrawSubMgr_031250@CDDrawSubMgr@@QAEXXZ	3.8462	3.8462	1	beb861628c31	0x31250
-engine_discovered	?CDDrawSubMgr_158b40@CDDrawSubMgr@@QAEXXZ	2.3529	2.3529	1	b846d111a81d	0x158b40
-engine_discovered	?CDDrawSubMgr_158c70@CDDrawSubMgr@@QAEXXZ	1.9048	1.9048	1	82a2890fd315	0x158c70
-engine_discovered	?CDDrawSubMgr_158d20@CDDrawSubMgr@@QAEXXZ	9.0909	9.0909	1	a8deaec7fb87	0x158d20
-engine_discovered	?CDDrawSubMgr_158dc0@CDDrawSubMgr@@QAEXXZ	1.7857	1.7857	1	07f2b31ce4b2	0x158dc0
-engine_discovered	?CDDrawSubMgr_158e40@CDDrawSubMgr@@QAEXXZ	2.5641	2.5641	1	b14ca75b9489	0x158e40
-engine_discovered	?CDDrawSubMgr_158e90@CDDrawSubMgr@@QAEXXZ	2.9412	2.9412	1	5de4290da5c4	0x158e90
-engine_discovered	?CDDrawSubMgr_158ee0@CDDrawSubMgr@@QAEXXZ	2.9412	2.9412	1	e0bf715fa3d7	0x158ee0
 engine_discovered	?CDDrawSubMgr_159600@CDDrawSubMgr@@QAEXXZ	0.3200	0.3200	1	cc27de035f3d	0x159600
 engine_discovered	?CDDrawSubMgr_159e40@CDDrawSubMgr@@QAEXXZ	0.5634	0.5634	1	1c5d13176535	0x159e40
-engine_discovered	?CDDrawSubMgr_159ef0@CDDrawSubMgr@@QAEXXZ	20.0000	20.0000	1	f8be6c8c5ff5	0x159ef0
 engine_discovered	?CDDrawSubMgr_15aa90@CDDrawSubMgr@@QAEXXZ	2.5641	2.5641	1	ab8612526934	0x15aa90
 engine_discovered	?CDDrawSubMgr_15ab70@CDDrawSubMgr@@QAEXXZ	3.0769	3.0769	1	2dc53bffd135	0x15ab70
 engine_discovered	?CDDrawSubMgr_15aba0@CDDrawSubMgr@@QAEXXZ	4.4444	4.4444	1	aec6bddef1e6	0x15aba0
@@ -469,9 +472,6 @@ engine_discovered	?CDDrawSubMgr_15ac20@CDDrawSubMgr@@QAEXXZ	0.7273	0.7273	1	79f5
 engine_discovered	?CDDrawSubMgr_15acb0@CDDrawSubMgr@@QAEXXZ	0.8163	0.8163	1	5f4f3870001d	0x15acb0
 engine_discovered	?CDDrawSubMgr_15b020@CDDrawSubMgr@@QAEXXZ	0.5063	0.5063	1	564614cb2ba3	0x15b020
 engine_discovered	?CDDrawSubMgr_15b1d0@CDDrawSubMgr@@QAEXXZ	1.6393	1.6393	1	e93686a75a05	0x15b1d0
-engine_discovered	?CDDrawSubMgr_15c290@CDDrawSubMgr@@QAEXXZ	3.3333	3.3333	1	1a270e5ff763	0x15c290
-engine_discovered	?CDDrawSubMgr_15c2c0@CDDrawSubMgr@@QAEXXZ	20.0000	20.0000	1	d6e8f87f2a1f	0x15c2c0
-engine_discovered	?CDDrawSubMgr_15c2d0@CDDrawSubMgr@@QAEXXZ	1.9048	1.9048	1	b46a13126e31	0x15c2d0
 engine_discovered	?CDDrawSubMgr_15c360@CDDrawSubMgr@@QAEXXZ	0.0877	0.0877	1	0cd80af732ae	0x15c360
 engine_discovered	?CDDrawSubMgr_15c900@CDDrawSubMgr@@QAEXXZ	1.8182	1.8182	1	56b16b4dbb7e	0x15c900
 engine_discovered	?CDDrawSubMgr_15c970@CDDrawSubMgr@@QAEXXZ	0.3883	0.3883	1	2d6045cea2d1	0x15c970

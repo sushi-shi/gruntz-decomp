@@ -72,16 +72,8 @@ public:
 class CDDrawSubMgr {
 public:
     void CDDrawSubMgr_031250();
-    void CDDrawSubMgr_158b40();
-    void CDDrawSubMgr_158c70();
-    void CDDrawSubMgr_158d20();
-    void CDDrawSubMgr_158dc0();
-    void CDDrawSubMgr_158e40();
-    void CDDrawSubMgr_158e90();
-    void CDDrawSubMgr_158ee0();
     void CDDrawSubMgr_159600();
     void CDDrawSubMgr_159e40();
-    void CDDrawSubMgr_159ef0();
     void CDDrawSubMgr_15aa90();
     void CDDrawSubMgr_15ab70();
     void CDDrawSubMgr_15aba0();
@@ -90,9 +82,6 @@ public:
     void CDDrawSubMgr_15acb0();
     void CDDrawSubMgr_15b020();
     void CDDrawSubMgr_15b1d0();
-    void CDDrawSubMgr_15c290();
-    void CDDrawSubMgr_15c2c0();
-    void CDDrawSubMgr_15c2d0();
     void CDDrawSubMgr_15c360();
     void CDDrawSubMgr_15c900();
     void CDDrawSubMgr_15c970();

@@ -93,28 +93,18 @@ RVA(0x00142a40, 0x53)
 void CDDSurface::CDDSurface_142a40() {}
 
 // ---- CDDrawSubMgr ----
+// NOTE: this discovery cluster is a DISTINCT class from the matched small
+// CDDrawSubMgr (different field layout / vtable).  The clean self-contained
+// methods (158b40..158ee0, 159ef0, 15c290/2c0/2d0) were reconstructed into
+// src/Gruntz/CDDrawSubMgr.cpp as CDDrawWorkerMgr / CDDrawBlitParam.  The rest
+// (MFC-collection iterators, the 0x555 serializer, the jump-table switch) are
+// deferred to the final sweep.
 RVA(0x00031250, 0x33)
 void CDDrawSubMgr::CDDrawSubMgr_031250() {}
-RVA(0x00158b40, 0x2c)
-void CDDrawSubMgr::CDDrawSubMgr_158b40() {}
-RVA(0x00158c70, 0x36)
-void CDDrawSubMgr::CDDrawSubMgr_158c70() {}
-RVA(0x00158d20, 0x16)
-void CDDrawSubMgr::CDDrawSubMgr_158d20() {}
-RVA(0x00158dc0, 0x7d)
-void CDDrawSubMgr::CDDrawSubMgr_158dc0() {}
-RVA(0x00158e40, 0x4c)
-void CDDrawSubMgr::CDDrawSubMgr_158e40() {}
-RVA(0x00158e90, 0x47)
-void CDDrawSubMgr::CDDrawSubMgr_158e90() {}
-RVA(0x00158ee0, 0x47)
-void CDDrawSubMgr::CDDrawSubMgr_158ee0() {}
 RVA(0x00159600, 0x1ab)
 void CDDrawSubMgr::CDDrawSubMgr_159600() {}
 RVA(0x00159e40, 0xaa)
 void CDDrawSubMgr::CDDrawSubMgr_159e40() {}
-RVA(0x00159ef0, 0x5)
-void CDDrawSubMgr::CDDrawSubMgr_159ef0() {}
 RVA(0x0015aa90, 0x5d)
 void CDDrawSubMgr::CDDrawSubMgr_15aa90() {}
 RVA(0x0015ab70, 0x27)
@@ -131,12 +121,6 @@ RVA(0x0015b020, 0xc0)
 void CDDrawSubMgr::CDDrawSubMgr_15b020() {}
 RVA(0x0015b1d0, 0x9b)
 void CDDrawSubMgr::CDDrawSubMgr_15b1d0() {}
-RVA(0x0015c290, 0x2f)
-void CDDrawSubMgr::CDDrawSubMgr_15c290() {}
-RVA(0x0015c2c0, 0xc)
-void CDDrawSubMgr::CDDrawSubMgr_15c2c0() {}
-RVA(0x0015c2d0, 0x45)
-void CDDrawSubMgr::CDDrawSubMgr_15c2d0() {}
 RVA(0x0015c360, 0x555)
 void CDDrawSubMgr::CDDrawSubMgr_15c360() {}
 RVA(0x0015c900, 0x42)
