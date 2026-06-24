@@ -190,7 +190,6 @@ public:
 class CGruntzMgr {
 public:
     void CGruntzMgr_08b960();
-    void CGruntzMgr_093170();
 };
 class CGuardPoint {
 public:

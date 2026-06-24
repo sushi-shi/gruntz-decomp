@@ -300,9 +300,15 @@ struct InputStateObj {
 // forwards the 4-arg command into the slot itself.
 struct OptionsTickSub {
     void Tick(); // (this) reloc-masked
+    // SyncOptionsState drives the slot's +0x38 sub-object: LoadConfig pulls the
+    // per-slot config from disk (mgr, slotIndex, configSelect) and the second
+    // thiscall arms the matched slot's just-loaded config. Both reloc-masked.
+    i32 LoadConfig(class CGruntzMgr* mgr, i32 slotIndex, i32 configSelect); // 0x18c0 thunk
+    void Activate();                                                        // FUN_0042ade0
 };
 struct OptionsSlot {
-    char m_pad0[0x14];
+    char m_pad0[0x10];
+    i32 m_10; // +0x10  per-slot config id
     i32 m_14; // +0x14  arm flag
     char m_pad18[0x20 - 0x18];
     i32 m_20; // +0x20  loaded flag
@@ -1570,6 +1576,83 @@ i32 CGruntzMgr::AdvanceOptionsCycle() {
             slot->m_38.Tick();
             cursor = g_6455fc;
         }
+    }
+    return 1;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::SyncOptionsState (0x093170; __thiscall; /GX EH; ret 1/0). Reloads
+// every options slot's saved config from disk and (re)arms the slots, then
+// reseeds the RNG. A scratch CString loads resource 0x81ab and is strcmp'd vs
+// the world-file name (+0xc8): a match clears the per-slot config selector (so
+// the loaded config is replaced by 0). The reload walks the slots with three
+// running pointers (m_10 config / m_14 arm / m_38 sub-object, +0x238 apart);
+// the slot whose index hits the active world g_644c54 is the "current" one - it
+// is armed (m_14=1), its sub-object Activated, and its SUCCESSOR slot is handled
+// in the same pass (the dual-slot unroll: idx jumps by 2 but the loop counter by
+// 1). Any LoadConfig failure aborts (delete the CString, return 0).
+// @early-stop
+// 92.95% - logic byte-exact (inline strcmp, srand(time(0)), the dual-slot
+// unroll). Residual is the loop preheader placement: the `for` form floats the
+// invariant `lea` preheader above the i<count guard + spills `this`; the
+// `do-while` form keeps it inside but inverts the exit-block order. Neither
+// MSVC5 spelling reaches both at once - see docs/patterns/loop-preheader-vs-exit-block-order.md.
+RVA(0x00093170, 0x1e3)
+i32 CGruntzMgr::SyncOptionsState() {
+    i32 matched = 0;
+    CString s;
+    if (s.LoadString(0x81ab)) {
+        bool eq;
+        eq = (strcmp((const char*)s, (const char*)m_strWorldFile) == 0);
+        if (eq) {
+            matched = 1;
+        }
+    }
+    srand((u32)time(0));
+    g_6455fc = 0;
+
+    i32 idx = 0;
+    OptionsTickSub* tick = &((OptionsSlot*)((char*)this + 0x150))->m_38;
+    i32* cfgp = &((OptionsSlot*)((char*)this + 0x150))->m_10;
+    i32* arm = &((OptionsSlot*)((char*)this + 0x150))->m_14;
+    for (i32 i = 0; i < m_optionsCount; i++) {
+        i32 cfg;
+        if (idx == g_644c54) {
+            *arm = 1;
+            cfg = *cfgp;
+            if (matched) {
+                cfg = 0;
+            }
+            if (!tick->LoadConfig(this, idx, cfg)) {
+                return 0;
+            }
+            tick->Activate();
+            arm = (i32*)((char*)arm + 0x238);
+            cfgp = (i32*)((char*)cfgp + 0x238);
+            idx++;
+            tick = (OptionsTickSub*)((char*)tick + 0x238);
+            *arm = 0;
+            cfg = *cfgp;
+            if (matched) {
+                cfg = 0;
+            }
+            if (!tick->LoadConfig(this, idx, cfg)) {
+                return 0;
+            }
+        } else {
+            *arm = 0;
+            cfg = *cfgp;
+            if (matched) {
+                cfg = 0;
+            }
+            if (!tick->LoadConfig(this, idx, cfg)) {
+                return 0;
+            }
+        }
+        idx++;
+        arm = (i32*)((char*)arm + 0x238);
+        cfgp = (i32*)((char*)cfgp + 0x238);
+        tick = (OptionsTickSub*)((char*)tick + 0x238);
     }
     return 1;
 }

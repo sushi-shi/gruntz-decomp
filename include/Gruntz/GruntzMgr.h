@@ -161,6 +161,7 @@ public:
     void ClearOptionsSlots();   // @0x092ec0 (zero the 4 options slots' +0x20/+0x24)
     CString GetWorldFileName(); // @0x0928c0 (return a copy of m_strWorldFile)
     i32 AdvanceOptionsCycle();  // @0x0933e0 (round-robin tick of the options slots)
+    i32 SyncOptionsState();     // @0x093170 (reload each options slot's config; dual-slot)
     void SetCellHeight(i32 r, i32 c, i32 v);              // @0x111ec0 (write the world height grid)
     i32 PassClickToPlayState(i32 a0, i32 a1, i32 a2);     // @0x08d780
     i32 SwitchToNextState();                              // @0x08d6a0

@@ -252,23 +252,21 @@ void CGruntToySprite::CGruntToySprite_07f960() {}
 RVA(0x00012130, 0x44)
 void CGruntToyTimeSprite::CGruntToyTimeSprite_012130() {}
 
-// ---- CGruntzMgr ---- (42 methods migrated to src/Gruntz/GruntzMgr.cpp). The two
-// biggest/most-entangled stay stubbed for the final sweep (per matcher doctrine:
-// don't half-do a big EH/switch body - a partial under-counts AND diverges its
-// regalloc; redo leaf-first):
-//   0x08b960 (1988 B) - the object-build/init method: /GX EH frame + a switch
-//     (jump table switchdataD_0048c124) + the CByteArray ctor/dtor + ~10 vtable
-//     PTR_LAB constructions for the 4 embedded options slots + a scalar-deleting
-//     dtor. Needs the full options-slot class shapes modeled first.
-//   0x093170 (483 B) - SyncOptionsState: /GX EH frame + a CString LoadString(0x81ab)
-//     + inline strcmp vs m_strC8 + an unidentified __cdecl state save/restore pair
-//     (FUN_00520210 / FUN_0051fed0) + a DUAL-slot loop (the g_644c54-matched slot
-//     and its successor handled together, advancing the index by 2). The dual-slot
-//     unroll + the unidentified pair make this defer-worthy.
+// ---- CGruntzMgr ---- (43 methods migrated to src/Gruntz/GruntzMgr.cpp, incl.
+// SyncOptionsState @0x093170, now @early-stop at 92.95%). The one remaining big
+// method stays stubbed for the final sweep (per matcher doctrine: don't half-do a
+// big EH/switch state-factory - a partial under-counts AND diverges its regalloc;
+// redo leaf-first once the ~11 state classes are modeled):
+//   0x08b960 (1988 B) - the state-FACTORY/switch method: /GX EH frame + a 0x11-case
+//     switch (jump table switchdataD_0048c124 @0x48c124) that `new`s a distinct
+//     game-state object per case, each with its own vftable (PTR_LAB_005ea21c ..
+//     PTR_LAB_005e9bdc - 11 distinct, none yet named to a class) + CString/CByteArray
+//     members (out-of-line NAFXCW ctors FUN_0051f5a0 etc.) + a scalar-deleting dtor.
+//     Tearing down m_curState (vtbl 0x10/0x28) then installing+entering the new state
+//     (vtbl 0x4). Blocked on modelling all ~11 state-class layouts + their vtable
+//     contents; reconstruct those leaves FIRST, then this dispatcher.
 RVA(0x0008b960, 0x7c4)
 void CGruntzMgr::CGruntzMgr_08b960() {}
-RVA(0x00093170, 0x1e3)
-void CGruntzMgr::CGruntzMgr_093170() {}
 
 // ---- CGruntzSoundZ ---- migrated to src/Dsndmgr/CGruntzSoundZ.cpp (all 8 methods).
 

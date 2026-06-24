@@ -42,7 +42,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	556	0
+engine_discovered	555	0
 engine_label_stubs	525	121
 filestream	13	9
 font	21	10
@@ -60,7 +60,7 @@ gruntpuddle	4	2
 gruntvoice	4	3
 gruntzapp	10	8
 gruntzcommand	9	9
-gruntzmgr	50	39
+gruntzmgr	51	39
 gruntzsoundz	8	7
 gruntzwnd	2	1
 iconloaders	4	1
@@ -180,7 +180,7 @@ butemgr	?InitVbaseD@CButeMgrHelper@@QAEXXZ	100.0000	100.0000	2	080b7cf77aef	0x16
 butemgr	?InvokeCallback@CButeMgr@@QAEPAXP6APAXPAV1@@Z@Z	100.0000	100.0000	3	b8aec83ccb1a	0x171550
 butemgr	?NextChar@CButeMgr@@QAEXXZ	88.6667	88.6667	3	527d3af29fa4	0x170390
 butemgr	?Parse@CButeMgr@@QAE_NXZ	94.6831	94.6831	7	fa077d24fa1d	0x1704c0
-butemgr	?ParseAttributeFile@ButeMgr@@QAE_NXZ	40.8564	40.8564	1	af5552978835	0x170750
+butemgr	?ParseAttributeFile@ButeMgr@@QAE_NXZ	40.8564	40.8564	2	cae53ef38d60	0x170750
 butemgr	?ParseGroup@CButeMgr@@QAE_NXZ	94.6377	94.6377	2	49e029a49f99	0x171580
 butemgr	?ParseTagLine@CButeMgr@@QAE_NXZ	100.0000	100.0000	6	b741768354d1	0x1711b0
 butemgr	?PeekState2@CButeMgr@@QAEFFD@Z	100.0000	100.0000	2	694a8ca2712b	0x170430
@@ -543,7 +543,6 @@ engine_discovered	?CGruntToySprite_07f960@CGruntToySprite@@QAEXXZ	2.0000	2.0000	
 engine_discovered	?CGruntToyTimeSprite_012130@CGruntToyTimeSprite@@QAEXXZ	5.8824	5.8824	1	28eca57e8d98	0x12130
 engine_discovered	?CGrunt_057c40@CGrunt@@QAEXXZ	1.0811	1.0811	1	12e9f96d3a6b	0x57c40
 engine_discovered	?CGruntzMgr_08b960@CGruntzMgr@@QAEXXZ	0.0907	0.0907	1	4a22ea071af3	0x8b960
-engine_discovered	?CGruntzMgr_093170@CGruntzMgr@@QAEXXZ	0.6623	0.6623	1	7ae86b3d5a41	0x93170
 engine_discovered	?CGuardPoint_010410@CGuardPoint@@QAEXXZ	5.8824	5.8824	1	4e3b67105cbe	0x10410
 engine_discovered	?CInGameText_011dc0@CInGameText@@QAEXXZ	5.8824	5.8824	1	981463c96391	0x11dc0
 engine_discovered	?CInGameText_099460@CInGameText@@QAEXXZ	0.5333	0.5333	1	2cf0b5c3a5dc	0x99460
@@ -1818,6 +1817,7 @@ gruntzmgr	?SetGameClock@CGruntzMgr@@QAEXHHH@Z	100.0000	100.0000	2	6f4e825cb466	0
 gruntzmgr	?StoreInputFlag@CGruntzMgr@@QAEXH@Z	100.0000	100.0000	3	a35f4e8723aa	0x919d0
 gruntzmgr	?StoreInputState@CGruntzMgr@@QAEHH@Z	100.0000	100.0000	3	4c9f555b02ce	0x91a10
 gruntzmgr	?SwitchToNextState@CGruntzMgr@@QAEHXZ	100.0000	100.0000	3	f0c527dd3751	0x8d6a0
+gruntzmgr	?SyncOptionsState@CGruntzMgr@@QAEHXZ	92.9470	92.9470	1	968d456ad452	0x93170
 gruntzmgr	?TickStateMgrs@CGruntzMgr@@QAEHXZ	100.0000	100.0000	2	6429f081f684	0x920b0
 gruntzmgr	?TopState@CGruntzMgr@@QAEPAVCState@@XZ	100.0000	100.0000	2	d1407d256efd	0x90980
 gruntzmgr	?UnloadSoundChain@CGruntzMgr@@QAEXXZ	100.0000	100.0000	2	d0f043efcdce	0x8f740
