@@ -701,16 +701,7 @@ public:
     void ClassUnknown_62_09a0b0();
     void ClassUnknown_62_09b430();
 };
-class ClassUnknown_64 {
-public:
-    void ClassUnknown_64_1682a0();
-    void ClassUnknown_64_1915c0();
-    void ClassUnknown_64_191800();
-    void ClassUnknown_64_191840();
-    void ClassUnknown_64_191890();
-    void ClassUnknown_64_1918c0();
-    void ClassUnknown_64_191a70();
-};
+// ClassUnknown_64 reconstructed as CWwdGrid in src/Gruntz/WwdGrid.cpp.
 // NOTE: the five real members (151da0/151e20/15b340/164830/164960) of this
 // trace-cluster are reconstructed as CLogicRecord (src/Gruntz/LogicRecord.cpp).
 // The three remaining handlers are __cdecl free functions (no ecx use) that

@@ -972,21 +972,9 @@ void ClassUnknown_62::ClassUnknown_62_09b430() {}
 // ---- ClassUnknown_63 ---- reconstructed as CWwdSpatialMgr in
 // src/Gruntz/WwdSpatialMgr.cpp (wwdspatialmgr unit).
 
-// ---- ClassUnknown_64 ----
-RVA(0x001682a0, 0x46)
-void ClassUnknown_64::ClassUnknown_64_1682a0() {}
-RVA(0x001915c0, 0x15d)
-void ClassUnknown_64::ClassUnknown_64_1915c0() {}
-RVA(0x00191800, 0x39)
-void ClassUnknown_64::ClassUnknown_64_191800() {}
-RVA(0x00191840, 0x48)
-void ClassUnknown_64::ClassUnknown_64_191840() {}
-RVA(0x00191890, 0x24)
-void ClassUnknown_64::ClassUnknown_64_191890() {}
-RVA(0x001918c0, 0x1a2)
-void ClassUnknown_64::ClassUnknown_64_1918c0() {}
-RVA(0x00191a70, 0x57)
-void ClassUnknown_64::ClassUnknown_64_191a70() {}
+// ---- ClassUnknown_64 ---- reconstructed as CWwdGrid in src/Gruntz/WwdGrid.cpp
+// (wwdgrid unit): the per-plane spatial bucket-index grid (ctor/dtor + Add /
+// Remove / Query / Clear / FreeBuckets) the matched CWwdSpatialMgr holds three of.
 
 // ---- ClassUnknown_65 ----
 // The five real members moved to CLogicRecord (src/Gruntz/LogicRecord.cpp). The

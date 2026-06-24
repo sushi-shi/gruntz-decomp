@@ -50,7 +50,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	369	0
+engine_discovered	362	0
 engine_label_stubs	520	118
 filemem	8	7
 filestream	13	9
@@ -150,6 +150,7 @@ winmain	1	1
 wormhole	4	1
 wwdfile	10	1
 wwdgameobject	7	2
+wwdgrid	7	4
 wwdspatialmgr	7	4
 zutil	2	2
 # [functions]	unit	function	best_pct	cur_pct	tries	src_hash	rva
@@ -834,13 +835,6 @@ engine_discovered	?ClassUnknown_62_099c20@ClassUnknown_62@@QAEXXZ	4.1667	4.1667	
 engine_discovered	?ClassUnknown_62_099d40@ClassUnknown_62@@QAEXXZ	0.1826	0.1826	1	37a398f7c64e	0x99d40
 engine_discovered	?ClassUnknown_62_09a0b0@ClassUnknown_62@@QAEXXZ	50.0000	50.0000	1	63b5ee8b734b	0x9a0b0
 engine_discovered	?ClassUnknown_62_09b430@ClassUnknown_62@@QAEXXZ	1.1765	1.1765	1	27e8201238e1	0x9b430
-engine_discovered	?ClassUnknown_64_1682a0@ClassUnknown_64@@QAEXXZ	5.5556	5.5556	1	06faa2af1f4a	0x1682a0
-engine_discovered	?ClassUnknown_64_1915c0@ClassUnknown_64@@QAEXXZ	0.3419	0.3419	1	36d7e66dd141	0x1915c0
-engine_discovered	?ClassUnknown_64_191800@ClassUnknown_64@@QAEXXZ	4.3478	4.3478	1	909d6f2c12c9	0x191800
-engine_discovered	?ClassUnknown_64_191840@ClassUnknown_64@@QAEXXZ	1.4286	1.4286	1	d0f0d54fd767	0x191840
-engine_discovered	?ClassUnknown_64_191890@ClassUnknown_64@@QAEXXZ	2.8571	2.8571	1	e05bc4c94ea1	0x191890
-engine_discovered	?ClassUnknown_64_1918c0@ClassUnknown_64@@QAEXXZ	0.2500	0.2500	1	2e39d63ac1f1	0x1918c0
-engine_discovered	?ClassUnknown_64_191a70@ClassUnknown_64@@QAEXXZ	2.4390	2.4390	1	d81ba3d6ee2f	0x191a70
 engine_discovered	?ClassUnknown_65_095750@ClassUnknown_65@@QAEXXZ	1.1905	1.1905	1	1e411b3155fb	0x95750
 engine_discovered	?ClassUnknown_65_095890@ClassUnknown_65@@QAEXXZ	1.1905	1.1905	1	59869a658e05	0x95890
 engine_discovered	?ClassUnknown_65_0aa6e0@ClassUnknown_65@@QAEXXZ	1.1905	1.1905	1	be7d08983e85	0xaa6e0
@@ -2387,6 +2381,13 @@ wwdgameobject	?ReadState@CWwdGameObject@@QAEHH@Z	99.3491	99.3491	2	f9aba483f647	
 wwdgameobject	?Serialize@CWwdGameObject@@QAEHH@Z	99.5745	99.5745	2	5cf4879a0998	0x151320
 wwdgameobject	?Setup@CWwdGameObject@@QAEHHHHH@Z	97.1059	97.1059	2	d6f3fc6ef894	0x150d60
 wwdgameobject	?WriteSnapshot@CWwdGameObject@@QAEHH@Z	95.9020	95.9020	2	9fee6fde6abb	0x151c00
+wwdgrid	??0CWwdGrid@@QAE@HHHHHH@Z	75.2308	75.2308	1	39f856bc524a	0x1915c0
+wwdgrid	??1CWwdGrid@@QAE@XZ	93.3333	93.3333	1	89dd27ea66ce	0x1682a0
+wwdgrid	?Add@CWwdGrid@@QAEHPAUWwdRegion@@@Z	100.0000	100.0000	1	7696cb6899d9	0x191840
+wwdgrid	?Clear@CWwdGrid@@QAEHXZ	100.0000	100.0000	1	bdf402e6fae5	0x191a70
+wwdgrid	?FreeBuckets@CWwdGrid@@QAEXXZ	100.0000	100.0000	1	1a048d95b55c	0x191800
+wwdgrid	?Query@CWwdGrid@@QAEHHHHHH@Z	99.7188	99.7188	1	e93bb39bd8a3	0x1918c0
+wwdgrid	?Remove@CWwdGrid@@QAEXPAUWwdRegion@@@Z	100.0000	100.0000	1	0d0f14401f48	0x191890
 wwdspatialmgr	?CountInRect@CWwdSpatialMgr@@QAEHPAVCWwdGrid@@@Z	86.1539	86.1539	1	a38237476287	0x168460
 wwdspatialmgr	?FreeGrids@CWwdSpatialMgr@@QAEXXZ	100.0000	100.0000	1	86831d8ccca0	0x1682f0
 wwdspatialmgr	?GetSize@CWwdSpatialMgr@@QAEHXZ	100.0000	100.0000	1	38653b262d2f	0x168430

@@ -599,6 +599,11 @@ source = "src/Gruntz/WwdSpatialMgr.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "wwdgrid"
+source = "src/Gruntz/WwdGrid.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "wwdgameobject"
 source = "src/Gruntz/WwdGameObject.cpp"
 flags = "base"
