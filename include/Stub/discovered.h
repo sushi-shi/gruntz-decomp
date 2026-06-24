@@ -448,24 +448,15 @@ class CMenuState {
 public:
     void CMenuState_0a0d40();
 };
-class CNetMgr {
+class NetUnattributed {
 public:
-    void CNetMgr_007c20();
-    void CNetMgr_024450();
-    void CNetMgr_099d10();
-    void CNetMgr_0b89e0();
-    void CNetMgr_0f93b0();
-    void CNetMgr_11f618();
-    void CNetMgr_178230();
-    void CNetMgr_178360();
-    void CNetMgr_178430();
-    void CNetMgr_178590();
-    void CNetMgr_178610();
-    void CNetMgr_178750();
-    void CNetMgr_178820();
-    void CNetMgr_1788a0();
-    void CNetMgr_178c70();
-    void CNetMgr_18c022();
+    void NetUnattributed_007c20();
+    void NetUnattributed_024450();
+    void NetUnattributed_099d10();
+    void NetUnattributed_0b89e0();
+    void NetUnattributed_0f93b0();
+    void NetUnattributed_11f618();
+    void NetUnattributed_18c022();
 };
 class CObjectDropper {
 public:

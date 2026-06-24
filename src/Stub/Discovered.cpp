@@ -668,39 +668,30 @@ void CMapArrayB::CMapArrayB_09e860() {}
 RVA(0x000a0d40, 0x24)
 void CMenuState::CMenuState_0a0d40() {}
 
-// ---- CNetMgr ----
+// ---- NetUnattributed ----
+// Trace-discovered near the NetMgr DirectPlay body but NOT CNetMgr methods (the
+// 0x178xxx CNetMgr cluster moved to src/Net/NetMgr.cpp). Each verified non-member:
+//   0x007c20 __cdecl/__stdcall callback-iterator (ret 0x10, no `this`)
+//   0x024450 __cdecl teardown of a .data global object (no `this`)
+//   0x099d10 __thiscall on a .data global (ecx = &g_0x6459b0, not CNetMgr)
+//   0x0b89e0 free function taking the net-mgr as a parameter (no `mov reg,ecx`)
+//   0x0f93b0 __cdecl format/log helper (esp args, no `this`)
+//   0x11f618 SEH cleanup funclet (ebp-relative; not a function start)
+//   0x18c022 CRT libm routine (fyl2x/fstcw == pow/log; not a method)
 RVA(0x00007c20, 0x2a)
-void CNetMgr::CNetMgr_007c20() {}
+void NetUnattributed::NetUnattributed_007c20() {}
 RVA(0x00024450, 0x29)
-void CNetMgr::CNetMgr_024450() {}
+void NetUnattributed::NetUnattributed_024450() {}
 RVA(0x00099d10, 0x20)
-void CNetMgr::CNetMgr_099d10() {}
+void NetUnattributed::NetUnattributed_099d10() {}
 RVA(0x000b89e0, 0xc8)
-void CNetMgr::CNetMgr_0b89e0() {}
+void NetUnattributed::NetUnattributed_0b89e0() {}
 RVA(0x000f93b0, 0x41)
-void CNetMgr::CNetMgr_0f93b0() {}
+void NetUnattributed::NetUnattributed_0f93b0() {}
 RVA(0x0011f618, 0x14)
-void CNetMgr::CNetMgr_11f618() {}
-RVA(0x00178230, 0x49)
-void CNetMgr::CNetMgr_178230() {}
-RVA(0x00178360, 0xc8)
-void CNetMgr::CNetMgr_178360() {}
-RVA(0x00178430, 0x3a)
-void CNetMgr::CNetMgr_178430() {}
-RVA(0x00178590, 0x78)
-void CNetMgr::CNetMgr_178590() {}
-RVA(0x00178610, 0x8c)
-void CNetMgr::CNetMgr_178610() {}
-RVA(0x00178750, 0x3d)
-void CNetMgr::CNetMgr_178750() {}
-RVA(0x00178820, 0x78)
-void CNetMgr::CNetMgr_178820() {}
-RVA(0x001788a0, 0x13c)
-void CNetMgr::CNetMgr_1788a0() {}
-RVA(0x00178c70, 0x3d)
-void CNetMgr::CNetMgr_178c70() {}
+void NetUnattributed::NetUnattributed_11f618() {}
 RVA(0x0018c022, 0x1d3)
-void CNetMgr::CNetMgr_18c022() {}
+void NetUnattributed::NetUnattributed_18c022() {}
 
 // ---- CObjectDropper ----
 RVA(0x000124f0, 0x44)

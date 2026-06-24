@@ -444,6 +444,32 @@ void CNetMgr::AnnounceVersion(int param) {
 RVA(0x001780b0, 0xbb)
 void CNetMgr::Stub_1780b0() {}
 
+// ---------------------------------------------------------------------------
+// CNetMgr::Destroy  (__thiscall).
+// Full session teardown: clears the three managed lists (+0x1c/+0x38/+0x54) via
+// their clear-loops, then releases the two COM interfaces. The +0x14 interface
+// is released through its vtable slot 2 (IUnknown::Release form); the +0x18
+// IDirectPlay4 through slot 4 then slot 2. Both pointers are nulled after release.
+RVA(0x00178230, 0x49)
+void CNetMgr::Destroy() {
+    ClearGroupList();
+    ClearPlayerList();
+    ClearSessionList();
+
+    INetReleasable*& iface14 = *(INetReleasable**)((char*)this + 0x14);
+    if (iface14 != 0) {
+        iface14->vtbl->Release(iface14);
+        iface14 = 0;
+    }
+    INetReleasable*& iface18 = *(INetReleasable**)((char*)this + 0x18);
+    if (iface18 != 0) {
+        iface18->vtbl->Slot10(iface18);
+        INetReleasable* again = iface18;
+        again->vtbl->Release(again);
+        iface18 = 0;
+    }
+}
+
 // @confidence: high
 // @source: import:DPLAYX.dll!#2
 // @stub
@@ -455,6 +481,180 @@ void CNetMgr::Stub_178280() {}
 // @stub
 RVA(0x001782d0, 0x86)
 void CNetMgr::Stub_1782d0() {}
+
+// AddGroupNode: operator-new'd 0x10-byte node (2-phase vtbl @0x5f0748 / base
+// dtor-vtbl @0x5e8cb4 + CString member @+0x8 + /GX EH frame) AddTail'd onto the
+// +0x1c list. Reconstruct in the final sweep: needs the custom node class modeled.
+// @confidence: high
+// @source: decomp-xref
+// @stub
+RVA(0x00178360, 0xc8)
+void CNetMgr::Stub_178360() {}
+
+// ---------------------------------------------------------------------------
+// CNetMgr::ClearGroupList  (__thiscall).
+// Tears down the managed CObList at +0x1c: walks its nodes (head at +0x20),
+// self-destructs each node's payload sub-object (vtable slot 1, flag 1), then
+// RemoveAll's the list and zeroes the count/id pair (+0x7c, +0x70).
+RVA(0x00178430, 0x3a)
+void CNetMgr::ClearGroupList() {
+    CNetListNode* node = *(CNetListNode**)((char*)this + 0x20);
+    while (node != 0) {
+        CNetListNode* cur = node;
+        node = node->m_next;
+        if (cur->m_data != 0) {
+            cur->m_data->SelfDestruct(1);
+        }
+    }
+    ((CObList*)((char*)this + 0x1c))->RemoveAll();
+    *(int*)((char*)this + 0x7c) = 0;
+    *(int*)((char*)this + 0x70) = 0;
+}
+
+// ---------------------------------------------------------------------------
+// CNetMgr::ReadGroupSel  (__thiscall).
+// Reads the current selection of the supplied list box (Win32) and, if its item
+// data is a valid in-range index (< the +0x28 count), latches it into +0x70.
+// Returns the latched value, or 0 on any failure / out-of-range / no selection.
+RVA(0x00178590, 0x78)
+int CNetMgr::ReadGroupSel(void* hList) {
+    if (hList == 0) {
+        return 0;
+    }
+    int sel = (int)SendMessageA((HWND)hList, 0x188, 0, 0);
+    if (sel == -1) {
+        return 0;
+    }
+    if (sel < 0) {
+        return 0;
+    }
+    if (sel >= *(int*)((char*)this + 0x28)) {
+        return 0;
+    }
+    int data = (int)SendMessageA((HWND)hList, 0x199, sel, 0);
+    if (data == -1) {
+        return 0;
+    }
+    if (data == 0) {
+        return 0;
+    }
+    *(int*)((char*)this + 0x70) = data;
+    return data;
+}
+
+// ---------------------------------------------------------------------------
+// CNetMgr::EnumPlayersInto  (__thiscall).
+// Re-enumerates the session's players: first clears the +0x38 player list, then
+// builds a 0x50-byte session descriptor on the stack (dwSize + the session GUID
+// copied from this+4) and fires the IDirectPlay4 EnumPlayers slot (+0x34) with the
+// per-player callback (NetEnumPlayerCb), the two caller args, and `this` as the
+// enum context. On a nonzero HRESULT it routes the error through the static
+// diagnostic reporter (NetMgr.cpp:0x1c9) and returns it; otherwise returns 0.
+// @early-stop
+// stack-anchor/scheduling wall (~67.7%): logic, memset, dwSize, the GUID copy,
+// the 6-arg COM call and ReportError are all reproduced - but MSVC anchors the
+// 0x50 stack desc at esp+0xc (retail esp+0x8) and interleaves the GUID stores
+// with the arg pushes differently. struct-vs-raw-buffer and base-ptr GUID-copy
+// levers did not move it; see docs/patterns/stack-buffer-size-drives-frame.md +
+// statement-schedule-faithful.md. Deferred to the final sweep.
+RVA(0x00178610, 0x8c)
+long CNetMgr::EnumPlayersInto(void* a, void* b) {
+    ClearPlayerList();
+
+    char desc[0x50];
+    memset(desc, 0, 0x50);
+    int* guid = (int*)((char*)this + 4);
+    *(int*)(desc + 0x00) = 0x50;
+    *(int*)(desc + 0x18) = guid[0];
+    *(int*)(desc + 0x1c) = guid[1];
+    *(int*)(desc + 0x20) = guid[2];
+    *(int*)(desc + 0x24) = guid[3];
+
+    IDirectPlay4Z* com = *(IDirectPlay4Z**)((char*)this + 0x18);
+    long hr = com->vtbl->EnumPlayers(com, desc, a, (void*)&NetEnumPlayerCb, this, b);
+    if (hr) {
+        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x1c9, hr, 0);
+        return hr;
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// CNetMgr::ClearPlayerList  (__thiscall).
+// Tears down the managed CObList at +0x38 (head at +0x3c): self-destructs each
+// node's payload, RemoveAll's the list, zeroes the count/id pair (+0x80, +0x74).
+RVA(0x00178750, 0x3d)
+void CNetMgr::ClearPlayerList() {
+    CNetListNode* node = *(CNetListNode**)((char*)this + 0x3c);
+    while (node != 0) {
+        CNetListNode* cur = node;
+        node = node->m_next;
+        if (cur->m_data != 0) {
+            cur->m_data->SelfDestruct(1);
+        }
+    }
+    ((CObList*)((char*)this + 0x38))->RemoveAll();
+    *(int*)((char*)this + 0x80) = 0;
+    *(int*)((char*)this + 0x74) = 0;
+}
+
+// ---------------------------------------------------------------------------
+// CNetMgr::ReadPlayerSel  (__thiscall).
+// As ReadGroupSel but for the +0x44 count / +0x74 latch list box.
+RVA(0x00178820, 0x78)
+int CNetMgr::ReadPlayerSel(void* hList) {
+    if (hList == 0) {
+        return 0;
+    }
+    int sel = (int)SendMessageA((HWND)hList, 0x188, 0, 0);
+    if (sel == -1) {
+        return 0;
+    }
+    if (sel < 0) {
+        return 0;
+    }
+    if (sel >= *(int*)((char*)this + 0x44)) {
+        return 0;
+    }
+    int data = (int)SendMessageA((HWND)hList, 0x199, sel, 0);
+    if (data == -1) {
+        return 0;
+    }
+    if (data == 0) {
+        return 0;
+    }
+    *(int*)((char*)this + 0x74) = data;
+    return data;
+}
+
+// EnumGroupsInto: IDirectPlay4 EnumGroups (+0x60) wrapper + GetPlayerData2 (+0x58)
+// probes with operator-new/RezFree blob juggling; calls the sibling group-node
+// factory at 0x1786d0 (itself unmatched). Reconstruct in the final sweep once
+// 0x1786d0 and the node class are modeled.
+// @confidence: high
+// @source: decomp-xref
+// @stub
+RVA(0x001788a0, 0x13c)
+void CNetMgr::Stub_1788a0() {}
+
+// ---------------------------------------------------------------------------
+// CNetMgr::ClearSessionList  (__thiscall).
+// Tears down the managed CObList at +0x54 (head at +0x58): self-destructs each
+// node's payload, RemoveAll's the list, zeroes the count/id pair (+0x84, +0x78).
+RVA(0x00178c70, 0x3d)
+void CNetMgr::ClearSessionList() {
+    CNetListNode* node = *(CNetListNode**)((char*)this + 0x58);
+    while (node != 0) {
+        CNetListNode* cur = node;
+        node = node->m_next;
+        if (cur->m_data != 0) {
+            cur->m_data->SelfDestruct(1);
+        }
+    }
+    ((CObList*)((char*)this + 0x54))->RemoveAll();
+    *(int*)((char*)this + 0x84) = 0;
+    *(int*)((char*)this + 0x78) = 0;
+}
 
 // ---------------------------------------------------------------------------
 // CNetMgr::RemovePlayerObj  (__thiscall).

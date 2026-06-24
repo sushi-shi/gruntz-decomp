@@ -221,7 +221,15 @@ struct CNetSubObject {
 // ---------------------------------------------------------------------------
 struct IDirectPlay4Z {
     struct Vtbl {
-        char m_pad0[0x38];
+        char m_pad0[0x34];
+        long(__stdcall* EnumPlayers)(
+            IDirectPlay4Z*,
+            void* desc,
+            void* a,
+            void* callback,
+            void* ctx,
+            void* flags
+        );                                                             // +0x34 (slot 13)
         long(__stdcall* Enum2)(IDirectPlay4Z*, void* desc, void* ctx); // +0x38
         char m_pad3c[0x50 - 0x3c];
         long(__stdcall* GetData2)(
@@ -231,7 +239,11 @@ struct IDirectPlay4Z {
             unsigned long* lpSize,
             unsigned long fl
         ); // +0x50
-        char m_pad54[0x68 - 0x54];
+        char m_pad54[0x58 - 0x54];
+        long(__stdcall* GetPlayerData2)(IDirectPlay4Z*, void* in, void* out); // +0x58 (slot 22)
+        char m_pad5c[0x60 - 0x5c];
+        long(__stdcall* EnumGroups)(IDirectPlay4Z*, void* desc, int flags); // +0x60 (slot 24)
+        char m_pad64[0x68 - 0x64];
         long(__stdcall* SetData5)(IDirectPlay4Z*, int a, int b, int c, int d, int e); // +0x68
     }* vtbl;
 };
@@ -254,6 +266,41 @@ public:
     __POSITION* m_20;        // +0x20  cached list position
 };
 
+// ---------------------------------------------------------------------------
+// One node of the three managed CObList collections at CNetMgr+0x1c/+0x38/+0x54.
+// Each node holds a payload sub-object at +0x8 whose vtable slot 1 (+0x4) is the
+// self-destruct (scalar-deleting dtor with a flag arg) the clear-loops fire.
+// (The list-node CNode shape: +0x0 next, +0x4 prev, +0x8 payload pointer.)
+// ---------------------------------------------------------------------------
+struct CNetListNode {
+    CNetListNode* m_next;  // +0x00  next node
+    char m_pad4[4];        // +0x04  prev node (unused)
+    CNetPlayerObj* m_data; // +0x08  payload sub-object (polymorphic; slot1 self-destruct)
+};
+
+// ---------------------------------------------------------------------------
+// The per-player enumeration callback EnumPlayersInto hands to the DirectPlay
+// EnumPlayers slot (its address is taken => DIR32 reloc-masked). The body lives
+// elsewhere in the NetMgr TU (a recovery gap with no carved boundary); declared
+// no-body here so the `push &NetEnumPlayerCb` reloc-masks.
+// ---------------------------------------------------------------------------
+extern "C" void NetEnumPlayerCb();
+
+// ---------------------------------------------------------------------------
+// A COM interface CNetMgr keeps at +0x14 alongside the IDirectPlay4 at +0x18.
+// Destroy releases both: the +0x14 interface via its vtable slot 2 (the
+// IUnknown::Release form), the +0x18 via slot 4 then slot 2. Only those slots
+// are pinned; everything else is opaque padding. __stdcall (COM convention).
+// ---------------------------------------------------------------------------
+struct INetReleasable {
+    struct Vtbl {
+        char m_pad0[8];
+        long(__stdcall* Release)(INetReleasable*); // +0x08 (slot 2)
+        char m_padc[0x10 - 0xc];
+        long(__stdcall* Slot10)(INetReleasable*); // +0x10 (slot 4)
+    }* vtbl;
+};
+
 class CNetMgr {
 public:
     void OnMultiOptions();
@@ -274,6 +321,29 @@ public:
     long SetData(int a, int b, int c, int d, int e);                                 // 0x178fc0
     long SetGroupDataFrom(CNetPlayerEntry* a, int c, int d, int e);                  // 0x179090
     int EnumSessions(void* desc, void* ctx);                                         // 0x179130
+
+    // The session-list cluster (engine CNetMgr base; ~0x178xxx). The three managed
+    // collections at +0x1c/+0x38/+0x54 each have a clear-loop that self-destructs
+    // every node's payload then RemoveAll's the list and zeroes a count/id pair.
+    void Destroy();          // 0x178230  full teardown (clears all three lists + COM)
+    void ClearGroupList();   // 0x178430  +0x1c list -> clear +0x7c/+0x70
+    void ClearPlayerList();  // 0x178750  +0x38 list -> clear +0x80/+0x74
+    void ClearSessionList(); // 0x178c70  +0x54 list -> clear +0x84/+0x78
+    // Two list-box selection readers: read the current selection's item-data and
+    // latch it into a per-list field if it is in range (Win32 SendMessageA).
+    int ReadGroupSel(void* hList);  // 0x178590  -> latch into +0x70 (count +0x28)
+    int ReadPlayerSel(void* hList); // 0x178820  -> latch into +0x74 (count +0x44)
+    // Two IDirectPlay4 enumeration wrappers: enumerate sessions/players into the
+    // COM interface at +0x18 and, on a nonzero HRESULT, route it through ReportError.
+    long EnumPlayersInto(void* a, void* b); // 0x178610 (@early-stop, scheduling wall)
+
+    // Backlog (not yet reconstructed - left as @stub in NetMgr.cpp):
+    //   0x178360  AddGroupNode  - operator-new'd 0x10 node (2-phase vtbl + CString
+    //                             member + /GX EH frame) AddTail'd onto the +0x1c list
+    //   0x1788a0  EnumGroupsInto- 0x50-desc EnumGroups COM call + GetPlayerData2 +
+    //                             operator-new/RezFree juggling; calls sibling 0x1786d0
+    void Stub_178360(); // 0x178360
+    void Stub_1788a0(); // 0x1788a0
 
     // The diagnostic error reporter (lives in the netmgrerror TU; static
     // __cdecl). Declared here so the wrappers can route HRESULTs through it.
