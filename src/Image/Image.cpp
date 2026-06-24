@@ -500,6 +500,66 @@ int CFileImage::BlitSurf(void* surf, int width, int height, int a4, int a5) {
 }
 
 // ---------------------------------------------------------------------------
+// CFileImage::Resolve
+// The file-format dispatcher (the .REZ payload path). `type` (1=BMP, 2=PCX,
+// 4=PID) selects the matching decoder; the destination buffer arg (`size`) must
+// be non-zero. Each decoder is handed (surf, buf, size); PID additionally takes
+// the transparency-colour pass-through (surf2). Returns 1 on a successful decode,
+// else 0. The near-consecutive case labels lower to MSVC's running-subtract chain
+// (dec/dec/sub 2), so this is spelled as a switch (see
+// docs/patterns/switch-subtract-chain-vs-ifelse.md), case bodies in retail .text
+// order (4, 2, 1).
+RVA(0x0013e550, 0x71)
+int CFileImage::Resolve(void* surf, void* buf, int type, unsigned int size, void* surf2) {
+    if (size == 0) {
+        return 0;
+    }
+    switch (type) {
+        case 4:
+            if (!DecodePid((char*)surf, buf, size, surf2)) {
+                return 0;
+            }
+            break;
+        case 2:
+            if (!DecodePcx((char*)surf, buf, size)) {
+                return 0;
+            }
+            break;
+        case 1:
+            if (!DecodeBmp((char*)surf, buf, size)) {
+                return 0;
+            }
+            break;
+        default:
+            return 0;
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CFileImage::Fill
+// Colour-fill blt: build a zeroed DDBLTFX (dwSize 0x64, dwFillColor = `color` at
+// +0x50) and Blt(NULL, NULL, NULL, DDBLT_COLORFILL|DDBLT_WAIT (0x1000400), &fx)
+// through the surface's BltEx thunk. A bad HRESULT routes through
+// CDirectDrawMgr::GetErrorString (DIRSURF.CPP, line 0x22c). Returns hr == DD_OK.
+RVA(0x0013e760, 0x63)
+int CFileImage::Fill(unsigned long color) {
+    CDDSurface* s = (CDDSurface*)this;
+    int fx[0x19]; // DDBLTFX (0x64 bytes)
+    int* p = fx;
+    for (int i = 0x19; i != 0; i--) {
+        *p++ = 0;
+    }
+    fx[0] = 0x64;          // dwSize
+    fx[0x14] = (int)color; // dwFillColor @ +0x50
+    int hr = s->BltEx(0, 0, 0, 0x1000400, fx);
+    if (hr != 0) {
+        CDirectDrawMgr::GetErrorString((char*)"C:\\Proj\\DDrawMgr\\DIRSURF.CPP", 0x22c, hr);
+    }
+    return hr == 0;
+}
+
+// ---------------------------------------------------------------------------
 // CFileImage::FillPalette
 // Installs the transparency colour. arg == -1 means "no colour key": clear the
 // have-key flag (m_bc) and pass {-1,-1}; otherwise set m_bc and set the surface
@@ -598,6 +658,29 @@ int CFileImage::Blit(void* src, int bitcount, void* palette, int mode) {
             return 0;
     }
     return 0;
+}
+
+// The CFileImage vtable (reloc-masked .rdata global). The destructor restores the
+// vptr to it before tearing the object down; the class's virtuals live in other
+// (unmatched) TUs, so the vtable is modeled as a DATA extern + a manual stamp
+// rather than letting the compiler emit a divergent one.
+DATA(0x001ef7f0)
+extern void* g_fileImageVtbl; // 0x5ef7f0
+
+// ---------------------------------------------------------------------------
+// CFileImage::~CFileImage
+// Restore the vptr, run the shared surface teardown (FreeSurfaces: release the
+// held DirectDraw surfaces + walk the +0x98 object array), then destroy the owned
+// CByteArray at +0x94. The CByteArray member-dtor is guarded -> the /GX EH frame.
+// @early-stop
+// EH-state wall: the compiler-generated entry trylevel-0 write is scheduled
+// BEFORE the user vptr re-stamp (retail emits the stamp first); body otherwise
+// byte-identical. Not steerable by source spelling - the /GX EH-state machine
+// fixes the order. See docs/patterns/eh-dtor-vptr-stamp-vs-trylevel-order.md.
+RVA(0x00141350, 0x53)
+CFileImage::~CFileImage() {
+    *(void**)this = &g_fileImageVtbl;
+    FreeSurfaces();
 }
 
 // ---------------------------------------------------------------------------
@@ -1083,4 +1166,45 @@ int CFileImage::DecodePcxEx(char* name, char* path, void* a3, void* a4) {
     int result = DecodePcxData(name, (int)buf, len, (int)a3, (int)a4);
     operator delete(buf);
     return result;
+}
+
+// ---------------------------------------------------------------------------
+// CFileImage::ResolveEx
+// The surface-blit format dispatcher: like Resolve but for the *Data decoders
+// that blit straight into the destination surface. The control word is OR'd with
+// 0x40 up front; `type` (1=BMP, 2=PCX, 4=PID) selects DecodeBmpData/DecodePcxData2/
+// DecodePcxData, each handed (surf, buf, size, ctrl); PID also takes the
+// transparency colour. After a successful decode the transparency colour is
+// installed via FillPalette unless it is "no key" (-1) or the format already
+// handled it (PID = type 4). Returns 1 on success, else 0. The case labels lower
+// to the running-subtract chain (switch, bodies in retail .text order 4, 2, 1).
+RVA(0x00148890, 0xad)
+int CFileImage::ResolveEx(void* surf, void* buf, int type, unsigned int size, int ctrl, int trans) {
+    if (size == 0) {
+        return 0;
+    }
+    int c = ctrl | 0x40;
+    switch (type) {
+        case 4:
+            if (!DecodePcxData(surf, (int)buf, size, c, trans)) {
+                return 0;
+            }
+            break;
+        case 2:
+            if (!DecodePcxData2(surf, buf, size, c)) {
+                return 0;
+            }
+            break;
+        case 1:
+            if (!DecodeBmpData(surf, buf, size, c)) {
+                return 0;
+            }
+            break;
+        default:
+            return 0;
+    }
+    if (trans != -1 && type != 4) {
+        FillPalette((void*)trans);
+    }
+    return 1;
 }

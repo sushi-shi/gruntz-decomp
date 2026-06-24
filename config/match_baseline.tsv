@@ -39,7 +39,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	833	0
+engine_discovered	829	0
 engine_label_stubs	534	117
 filestream	13	9
 font	16	9
@@ -60,7 +60,7 @@ gruntzmgr	35	30
 gruntzsoundz	8	7
 gruntzwnd	2	1
 iconloaders	4	1
-image	23	13
+image	27	16
 infblock	5	4
 infcodes	3	2
 inffast	1	1
@@ -469,10 +469,6 @@ engine_discovered	?CExitTrigger_0108c0@CExitTrigger@@QAEXXZ	5.8824	5.8824	1	fac2
 engine_discovered	?CExplosion_012ec0@CExplosion@@QAEXXZ	5.8824	5.8824	1	e14ce3b4a728	0x12ec0
 engine_discovered	?CEyeCandy_00fca0@CEyeCandy@@QAEXXZ	50.0000	50.0000	1	29f6cf5afd3a	0xfca0
 engine_discovered	?CEyeCandy_00fd60@CEyeCandy@@QAEXXZ	5.8824	5.8824	1	695fa62ca5c5	0xfd60
-engine_discovered	?CFileImage_13e550@CFileImage@@QAEXXZ	0.9091	0.9091	1	b8a0500e523e	0x13e550
-engine_discovered	?CFileImage_13e760@CFileImage@@QAEXXZ	1.1765	1.1765	1	9ba1526105ba	0x13e760
-engine_discovered	?CFileImage_141350@CFileImage@@QAEXXZ	5.0000	5.0000	1	0fb3b385e30d	0x141350
-engine_discovered	?CFileImage_148890@CFileImage@@QAEXXZ	0.4819	0.4819	1	468462546de3	0x148890
 engine_discovered	?CFortressFlag_010e90@CFortressFlag@@QAEXXZ	5.8824	5.8824	1	7ea2863168db	0x10e90
 engine_discovered	?CFortressFlag_046410@CFortressFlag@@QAEXXZ	0.6897	0.6897	1	d7adb6cc3f23	0x46410
 engine_discovered	?CGruntAnimPlayer_150610@CGruntAnimPlayer@@QAEXXZ	1.7391	1.7391	1	d011afc77469	0x150610
@@ -1994,6 +1990,7 @@ iconloaders	?BuildBootyPerfectAnimation@EngineLabelBacklog@@QAEHXZ	100.0000	100.
 iconloaders	?LoadCameraSprite@EngineLabelBacklog@@QAEHXZ	86.8000	86.8000	3	ed1e190e6d52	0x78960
 iconloaders	?LoadExplosionSprites@EngineLabelBacklog@@QAEHHHHH@Z	98.0727	98.0727	3	8fb4468ced84	0x7b330
 iconloaders	?LoadPowerupIconSprites@EngineLabelBacklog@@QAEHHHHHHH@Z	33.8559	33.8559	3	1f5e57041be8	0x7c620
+image	??1CFileImage@@QAE@XZ	94.0000	94.0000	1	ddf6abceee3f	0x141350
 image	?Blit@CFileImage@@QAEHPAXH0H@Z	100.0000	100.0000	1	ea8cb13e3301	0x13faa0
 image	?BlitDirect@CFileImage@@QAEHPAXH@Z	70.4941	70.4941	1	57740ce0ff23	0x13ece0
 image	?BlitSurf@CFileImage@@QAEHPAXHHHH@Z	100.0000	100.0000	1	b26a830a5dd2	0x13e0d0
@@ -2001,12 +1998,13 @@ image	?DecodeBmp@CFileImage@@QAEPAXPADPAXI@Z	31.2544	31.2544	2	aab901e76ba8	0x14
 image	?DecodeBmpHeader@CImage@@QAEHPAXHHH0@Z	95.7395	95.7395	2	99355aa52c8e	0x1757c0
 image	?DecodePcx@CFileImage@@QAEPAXPADPAXI@Z	55.7755	55.7755	2	aa8dad0380ef	0x144ee0
 image	?DecodePcxData@CFileImage@@QAEHPAXHHHH@Z	86.2370	86.2370	2	9b2eaf8f7a11	0x1457a0
-image	?DecodePcxData@CImage@@QAEHPAX00@Z	91.2848	91.2848	2	d8925e344524	0x176000
+image	?DecodePcxData@CImage@@QAEHPAX00@Z	91.3291	91.3291	2	d8925e344524	0x176000
 image	?DecodePcxEx@CFileImage@@QAEHPAD0PAX1@Z	100.0000	100.0000	3	e96d0cc6d9b6	0x1459d0
 image	?DecodePid@CFileImage@@QAEPAXPADPAXI1@Z	35.4204	35.4204	2	0b3358854fea	0x145b10
 image	?DecodePidData@CImage@@QAEHPAX00@Z	72.7817	72.7817	2	74edcb7b1e8e	0x176440
 image	?DecodeResData@CImage@@QAEHPAX00@Z	96.2692	96.2692	2	c3c423898a75	0x175e00
 image	?DecodeRidData@CImage@@QAEHPAX00@Z	74.2963	74.2963	2	03de51d61f8b	0x1762c0
+image	?Fill@CFileImage@@QAEHK@Z	100.0000	100.0000	1	d0feb9d041ce	0x13e760
 image	?FillPalette@CFileImage@@QAEXPAX@Z	100.0000	100.0000	1	453a54ff34c3	0x13eb40
 image	?LoadBmp@CFileImage@@QAEPAXPAD0@Z	100.0000	100.0000	4	9d103a92c4ef	0x144110
 image	?LoadBmp@CImage@@QAEHPADPAX1@Z	100.0000	100.0000	2	344b29af72b9	0x175e40
@@ -2017,6 +2015,8 @@ image	?LoadPcx@CImage@@QAEHPADPAX1@Z	100.0000	100.0000	2	f5476f012659	0x176190
 image	?LoadPid@CFileImage@@QAEPAXPAD0PAX@Z	100.0000	100.0000	4	6552deed507c	0x145cd0
 image	?LoadPid@CImage@@QAEHPADPAX1@Z	100.0000	100.0000	2	1f518c2ee972	0x1766a0
 image	?LoadRid@CImage@@QAEHPADPAX1@Z	100.0000	100.0000	2	d18ece419441	0x176310
+image	?Resolve@CFileImage@@QAEHPAX0HI0@Z	100.0000	100.0000	1	09075ca5168c	0x13e550
+image	?ResolveEx@CFileImage@@QAEHPAX0HIHH@Z	100.0000	100.0000	1	99dcb814a237	0x148890
 infblock	_inflate_blocks	98.6518	98.6518	1	56f158ca58f1	0x1875a0
 infblock	_inflate_blocks_free	100.0000	100.0000	1	1618d6843d69	0x188250
 infblock	_inflate_blocks_new	100.0000	100.0000	1	fc0dd390fb8b	0x187530

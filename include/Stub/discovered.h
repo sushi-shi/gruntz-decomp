@@ -159,13 +159,6 @@ public:
     void CEyeCandy_00fca0();
     void CEyeCandy_00fd60();
 };
-class CFileImage {
-public:
-    void CFileImage_13e550();
-    void CFileImage_13e760();
-    void CFileImage_141350();
-    void CFileImage_148890();
-};
 class CFortressFlag {
 public:
     void CFortressFlag_010e90();

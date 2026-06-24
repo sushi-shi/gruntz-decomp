@@ -227,16 +227,6 @@ void CEyeCandy::CEyeCandy_00fca0() {}
 RVA(0x0000fd60, 0x44)
 void CEyeCandy::CEyeCandy_00fd60() {}
 
-// ---- CFileImage ----
-RVA(0x0013e550, 0x71)
-void CFileImage::CFileImage_13e550() {}
-RVA(0x0013e760, 0x63)
-void CFileImage::CFileImage_13e760() {}
-RVA(0x00141350, 0x53)
-void CFileImage::CFileImage_141350() {}
-RVA(0x00148890, 0xad)
-void CFileImage::CFileImage_148890() {}
-
 // ---- CFortressFlag ----
 RVA(0x00010e90, 0x44)
 void CFortressFlag::CFortressFlag_010e90() {}

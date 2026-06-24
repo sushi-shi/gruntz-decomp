@@ -112,11 +112,32 @@ public:
     void* LoadPid(char* name, char* path, void* a3);
     int DecodePcxEx(char* name, char* path, void* a3, void* a4);
 
+    // Format dispatchers (reconstructed in Image.cpp). __thiscall on CFileImage.
+    // Resolve picks the BMP/PCX/PID decoder by `type` (1/2/4) for the file path;
+    // ResolveEx is the surface-blit variant that ORs the control word with 0x40,
+    // runs the *Data decoders and installs the transparency colour after.
+    int Resolve(void* surf, void* buf, int type, unsigned int size, void* surf2);
+    int ResolveEx(void* surf, void* buf, int type, unsigned int size, int ctrl, int trans);
+    int Fill(unsigned long color); // colour-fill blt (0x13e760)
+    ~CFileImage();                 // 0x141350
+
+    // The shared surface-teardown helper the destructor calls before destroying
+    // its CByteArray member (external no-body, reloc-masked): releases the held
+    // DirectDraw surfaces (m_8/m_c), empties the +0x94 CByteArray, and walks the
+    // +0x98/+0x9c object array calling each element's slot-0 destructor.
+    void FreeSurfaces(); // 0x13e4d0
+
     // Per-format decoders (reconstructed in Image.cpp). __thiscall on CFileImage.
     void* DecodeBmp(char* surf, void* buf, unsigned int size);
     void* DecodePcx(char* surf, void* buf, unsigned int size);
     void* DecodePid(char* surf, void* buf, unsigned int size, void* surf2);
     int DecodePcxData(void* surf, int bufptr, int size, int a4, int a5);
+
+    // The surface-blit decoder variants ResolveEx dispatches to (external no-body,
+    // reloc-masked; ret 0x10 = 4 args). DecodeBmpData/DecodePcxData2 take
+    // (surf, buf, size, ctrl).
+    int DecodeBmpData(void* surf, void* buf, unsigned int size, int ctrl);  // 0x143cf0
+    int DecodePcxData2(void* surf, void* buf, unsigned int size, int ctrl); // 0x144b30
 
     // The surface blitters + raw run-decoders the decoders delegate to (external
     // no-body, reloc-masked). Blit does a palette-remap copy (ret 0x10 = 4 args),
@@ -144,10 +165,12 @@ public:
     int Blit816(void* src, void* palette, int mode); // 0x140420 (ret 0xc)
 
     // Layout. Field names are placeholders; the OFFSETS are load-bearing.
-    char m_pad00[0x18];         // +0x00
+    char m_pad00[0x18];         // +0x00  (vptr @0, manually stamped by ~CFileImage)
     int m_18;                   // +0x18  height
     int m_1c;                   // +0x1c  width
-    char m_pad20[0x538 - 0x20]; // +0x20
+    char m_pad20[0x94 - 0x20];  // +0x20
+    CByteArray m_94;            // +0x94  owned byte buffer (destroyed by ~CFileImage)
+    char m_pada8[0x538 - 0xa8]; // +0xa8
     int m_538;                  // +0x538  bitcount of the palette context
     int m_53c[0x100];           // +0x53c  256-entry palette (ends at 0x93c)
     int m_93c;                  // +0x93c  have-palette flag
