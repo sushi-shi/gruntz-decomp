@@ -105,6 +105,50 @@ public:
     virtual void Notify(int on); // +0x30 (slot 12)
 };
 
+// A singly-linked notify node (the +0xbc list element): next ptr at +0, the
+// payload object at +8. The payload's vtable slot 0 is a __thiscall void(int).
+class CSbiNotifyTarget {
+public:
+    virtual void Notify(int on); // slot 0 (__thiscall void(int))
+};
+struct CSbiNotifyNode {
+    CSbiNotifyNode* m_next; // +0
+    char m_pad4[0x8 - 0x4];
+    CSbiNotifyTarget* m_payload; // +8
+};
+
+// A minimal MFC-style CPtrList view (head node at +4); only RemoveAll is called.
+struct CSbiPtrList {
+    char m_pad0[0x4];
+    CSbiNotifyNode* m_head; // +0x04 head node pointer
+    void RemoveAll();       // __thiscall (sibling thunk)
+};
+
+// The pooled-ptr collection embedded at +0x530; teardown calls RemoveAll(-1, 0).
+struct CSbiPtrCollection {
+    char m_pad0[0x4];
+    void RemoveAll(int a, int b); // __thiscall, 2 args
+};
+
+// The gauge notifier (m_218/m_21c): the value sink carries m_44 (set to the gauge
+// reading) and a refresh slot at vtable index 0x28 (slot 10).
+class CSbiGaugeNotify {
+public:
+    virtual void v0();
+    virtual void v4();
+    virtual void v8();
+    virtual void vc();
+    virtual void v10();
+    virtual void v14();
+    virtual void v18();
+    virtual void v1c();
+    virtual void v20();
+    virtual void v24();
+    virtual void v28(); // +0x28 (slot 10) refresh
+    char m_pad4[0x44 - 0x4];
+    int m_44; // +0x44  latched gauge reading
+};
+
 // Slot state values (CSbiSlot::m_state) named from how every site reads/writes
 // them: ArmSlot/ResetGroupA store kSlotArmed; FindReadySlot looks for kSlotReady.
 enum SbiSlotState {
@@ -125,6 +169,9 @@ const int kSubtypeTag = 2;
 const int kActivateErrId = 0x80e4;
 const int kActivateErrTag = 0x44b;
 
+// SetTab's own report tag (same error id, line tag 0x44a).
+const int kSetTabErrTag = 0x44a;
+
 // base vftable (CStatusBarItem) anchored out-of-line in this TU.
 class CSBI_RectOnly : public CStatusBarItem {
 public:
@@ -144,6 +191,8 @@ public:
     void SetHudRectA(int y0, int x0, int z);
     void SetHudRectB(int y0, int x0, int z);
     void CommitSlot(int active);
+    void ClearHlCell(int row, int group);
+    int SetHlCell(int row, int handle, int group);
     int FindReadySlot();
     void SetMode(int mode);
 
@@ -174,13 +223,26 @@ public:
     void LoadStatzTabToggleSprite(int, int);
     void UpdateGruntOvenStatusBar();
     void TickGauge();
+    int GaugeComplete();   // call 0x3e2c - gauge-at-100 completion test
+    void GaugeFinish(int); // call 0x39ef - completion hook
     void UpdateChipGrinderStatusBar();
     void UpdateDestructButtonStatusBar();
     int Activate();
     int Stub_0ffde0_probe();
     void SetTabState(int tab, int state);
 
+    void Teardown();
+    void TeardownNotify(int); // call 0x12fd - pre-teardown notify (1 arg)
     int TryActivate();
+    int Deactivate();
+    int HlClickGroup0(int row);
+    int HlClickGroup1(int row);
+    int HlClickGroup2(int row);
+    void* ResolveHandle(int handle);  // call 0x17a8 - validity probe
+    void SetCursorRect(int x, int y); // call 0x3878 (__thiscall, 2 args)
+    int SetTab(int tab, int flag);
+    int TabRefresh(); // call 0x1690 - activation probe (returns int)
+    void TabCommit(); // call 0x125d - success helper
     int ClearTabSprites(int idx);
     int HitTest(int x, int y);
     int Serialize(CSbiStream* s);
@@ -190,7 +252,9 @@ public:
     char m_pad2c[0x30 - 0x2c];
     int m_30; // +0x30
     int m_34; // +0x34
-    char m_pad38[0x10c - 0x38];
+    char m_pad38[0xb8 - 0x38];
+    CSbiPtrList m_listB8; // +0xb8  per-tab notify list (RemoveAll'd on retab)
+    char m_padc0[0x10c - 0xc0];
     int m_activeTab; // +0x10c  active tab index
     char m_pad110[0x114 - 0x110];
     int m_statFlags[1]; // +0x114  per-stat toggle flag array
@@ -213,8 +277,10 @@ public:
     CSbiSprite* m_1fc;            // +0x1fc
     CSbiSprite* m_200;            // +0x200
     CSbiSlotPtr* m_slotNotify[1]; // +0x204  slot pointer array (4-byte stride)
-    char m_pad208[0x220 - 0x208];
-    CSbiSlot m_slots[1]; // +0x220  24-byte slot records
+    char m_pad208[0x218 - 0x208];
+    CSbiGaugeNotify* m_218; // +0x218  gauge notifier (vfunc 0x28)
+    CSbiGaugeNotify* m_21c; // +0x21c  gauge value sink (m_44 = gauge; vfunc 0x28)
+    CSbiSlot m_slots[1];    // +0x220  24-byte slot records
     char m_pad238[0x298 - (0x220 + 0x18)];
     int m_gauge;       // +0x298  gauge current
     int m_gaugeTarget; // +0x29c  gauge target
@@ -254,9 +320,10 @@ public:
     int m_extraNotifyArg1; // +0x4ec  arg for (*m_extraNotify1)->Notify
     char m_pad4f0[0x500 - 0x4f0];
     CSbiSlotPtr* m_extraNotify1; // +0x500
-    char m_pad504[0x534 - 0x504];
-    void* m_ptrTable[1]; // +0x534  pointer table (elements streamed 8B)
-    int m_ptrCount;      // +0x538  count for m_ptrTable
+    char m_pad504[0x530 - 0x504];
+    CSbiPtrCollection m_530; // +0x530  pooled-ptr collection (RemoveAll on teardown)
+    void* m_ptrTable[1];     // +0x534  pointer table (elements streamed 8B)
+    int m_ptrCount;          // +0x538  count for m_ptrTable
     char m_pad53c[0x558 - 0x53c];
     int m_558;       // +0x558
     int m_modeState; // +0x55c
@@ -270,19 +337,83 @@ public:
 DATA(0x00245588)
 extern int g_dat645588;
 
+// The cue-lookup string map embedded at host->m_28 + 0x10 (CMapStringToOb).
+struct CSbiLookupMap {
+    int Lookup(char* key, void** out); // CMapStringToOb::Lookup (ret 8)
+};
+
+// A resolved cue record: a player at +0x10 plus a draw-clock gate (+0x14 last,
+// +0x18 interval). Same shape as GameMode's CBootyFound.
+struct CSbiCueRecord {
+    char m_pad0[0x10];
+    void* m_10; // +0x10  player (ConfigureItem this)
+    int m_14;   // +0x14  last draw-clock
+    int m_18;   // +0x18  interval
+};
+
+// The cue player (ConfigureItem == FUN_005360d0, __thiscall, ret 0x10).
+struct CSbiCuePlayer {
+    void ConfigureItem(int item, int a, int b, int c);
+};
+
+// The music host chain: g_gameReg->m_gmgr->m_28->{m_30 gate, Lookup map @+0x10}.
+struct CSbiMusicHost {
+    char m_pad0[0x30];
+    void* m_30; // +0x30  gate (non-null => skip the cue play)
+};
+
+// The active game manager (g_gameReg->m_gmgr): carries the music host at +0x28.
+struct CSbiGameMgr {
+    char m_pad0[0x28];
+    CSbiMusicHost* m_28; // +0x28  music host
+};
+
+// The sub-manager at g_gameReg+0x2c that carries the highlight-busy gate at +0x4f0.
+struct CSbiSubMgr {
+    char m_pad0[0x4f0];
+    int m_4f0; // +0x4f0  highlight-busy flag (non-zero => bail)
+};
+
+// The diagnostics logger at g_gameReg+0x38 (a position-string sink).
+struct CSbiLogger {
+    void LogPos(char* tag, int subtype); // __thiscall, 2 args
+};
+
 // The CGameReg singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c). Modeled
 // minimally - only the members/methods the reconstructed bodies touch.
 struct CGameReg {
-    char m_pad0[0x30];
-    void* m_30;                     // +0x30  active game-manager (null-guard in Serialize)
+    char m_pad0[0x2c];
+    CSbiSubMgr* m_2c;  // +0x2c  highlight sub-manager
+    CSbiGameMgr* m_30; // +0x30  active game-manager (null-guard in Serialize)
+    char m_pad34[0x38 - 0x34];
+    CSbiLogger* m_38; // +0x38  diagnostics logger
+    char m_pad3c[0x8c - 0x3c];
+    int m_8c; // +0x8c  cursor/view x (offset by -0x45 into the rect-only item)
+    int m_90; // +0x90  cursor/view y (offset by -0x30)
     void ReportError(int a, int b); // __thiscall
 };
 DATA(0x0024556c)
 extern CGameReg* g_gameReg;
 
+// The reentrancy gate + cue-item id pair the highlight handlers play through.
+DATA(0x0021ab20)
+extern int g_61ab20;
+DATA(0x0021ab24)
+extern int g_61ab24;
+// The draw-clock mirror (g_6bf3c0), unsigned for the wrap-safe gate compare.
+DATA(0x002bf3c0)
+extern "C" unsigned int g_6bf3c0;
+
 // Global serialize-sequence counter (bumped once per Serialize).
 DATA(0x00229ad0)
 extern int g_serialCounter;
+
+// The engine free-list head + the node-pointer bias (raw subtrahend), shared with
+// Projectile/TriggerMgr. The teardown returns each pooled element to this list.
+DATA(0x00245544)
+extern void* g_freeList;
+DATA(0x0024554c)
+extern int g_freeListNodeBias;
 
 CStatusBarItem::~CStatusBarItem() {}
 int CStatusBarItem::SbiVfunc0() {
@@ -473,6 +604,28 @@ void CSBI_RectOnly::CommitSlot(int active) {
     }
 }
 
+// Clear highlight-grid cell [row,group] (state + handle = 0), then re-notify.
+RVA(0x001069c0, 0x2e)
+void CSBI_RectOnly::ClearHlCell(int row, int group) {
+    int idx = group + row * 4;
+    m_hlGrid[idx].m_state = 0;
+    m_hlGrid[idx].m_handle = 0;
+    NotifyAllSlots();
+}
+
+// Set highlight-grid cell [row,group] handle if its slot is free; 1 = set, 0 = busy.
+RVA(0x00106b40, 0x44)
+int CSBI_RectOnly::SetHlCell(int row, int handle, int group) {
+    int idx = group + row * 4;
+    if (m_hlGrid[idx].m_state) {
+        return 0;
+    }
+    m_hlGrid[idx].m_handle = handle;
+    m_hlGrid[idx].m_state = 1;
+    NotifyAllSlots();
+    return 1;
+}
+
 // Fire every live slot's notifier: the four singletons, the 3x4 group grid
 // (each pointer notified with its row's handle), then two trailing singletons.
 RVA(0x00106a00, 0xbf)
@@ -622,6 +775,160 @@ int CSBI_RectOnly::Serialize(CSbiStream* s) {
     return 1;
 }
 
+// Highlight-click handler for group 0 (rows m_hlGrid[0..3]): bail if the busy
+// gate is set or the row is not armed (state==1); validate the row's handle, play
+// the GAME_TABHIGHLIGHT1 cue on the draw-clock window if the music gate is free,
+// then latch the pending row, clear the handle, and re-notify. Single-exit nesting
+// (success-deepest, one trailing `return 0`) reproduces retail's shared FAIL tail
+// (docs/patterns/nested-if-success-deepest-error-tail.md); the global pair must be
+// read TOGETHER inside the `if (found)` so MSVC lands g_61ab20 in ecx / g_61ab24 in
+// edx like retail.
+// @early-stop
+// ~94.2%: code bytes are byte-exact vs retail; the residual is purely the
+// reloc-symbol-naming scoring tail (DIR32 to differently-named globals/the cue
+// string vs retail's REL32). Not a wall - matcher.md reloc-typing artifact.
+RVA(0x0010b5d0, 0xdd)
+int CSBI_RectOnly::HlClickGroup0(int row) {
+    if (g_gameReg->m_2c->m_4f0 == 0 && m_hlGrid[row].m_state == 1) {
+        int handle = m_hlGrid[row].m_handle;
+        int* slot = &m_hlGrid[row].m_handle;
+        if (ResolveHandle(handle)) {
+            CSbiMusicHost* host = g_gameReg->m_30->m_28;
+            if (host->m_30 == 0) {
+                void* found = 0;
+                CSbiLookupMap* map = (CSbiLookupMap*)((char*)host + 0x10);
+                map->Lookup("GAME_TABHIGHLIGHT1", &found);
+                if (found) {
+                    int gate = g_61ab20;
+                    int item = g_61ab24;
+                    if (gate != 0) {
+                        CSbiCueRecord* p = (CSbiCueRecord*)found;
+                        if (g_6bf3c0 - (unsigned)p->m_14 >= (unsigned)p->m_18) {
+                            p->m_14 = g_6bf3c0;
+                            ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                        }
+                    }
+                }
+            }
+            m_360 = row;
+            *slot = 0;
+            NotifyAllSlots();
+            return 1;
+        }
+    }
+    return 0;
+}
+
+// Highlight-click handler for group 1 (rows m_hlGrid[4..7]); identical to group 0
+// with the +4-row base folded into the index.
+// @early-stop
+// ~94.2%: code byte-exact; reloc-symbol-naming tail only (see HlClickGroup0).
+RVA(0x0010b6f0, 0xdd)
+int CSBI_RectOnly::HlClickGroup1(int row) {
+    if (g_gameReg->m_2c->m_4f0 == 0 && m_hlGrid[row + 4].m_state == 1) {
+        int handle = m_hlGrid[row + 4].m_handle;
+        int* slot = &m_hlGrid[row + 4].m_handle;
+        if (ResolveHandle(handle)) {
+            CSbiMusicHost* host = g_gameReg->m_30->m_28;
+            if (host->m_30 == 0) {
+                void* found = 0;
+                CSbiLookupMap* map = (CSbiLookupMap*)((char*)host + 0x10);
+                map->Lookup("GAME_TABHIGHLIGHT1", &found);
+                if (found) {
+                    int gate = g_61ab20;
+                    int item = g_61ab24;
+                    if (gate != 0) {
+                        CSbiCueRecord* p = (CSbiCueRecord*)found;
+                        if (g_6bf3c0 - (unsigned)p->m_14 >= (unsigned)p->m_18) {
+                            p->m_14 = g_6bf3c0;
+                            ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                        }
+                    }
+                }
+            }
+            m_360 = row;
+            *slot = 0;
+            NotifyAllSlots();
+            return 1;
+        }
+    }
+    return 0;
+}
+
+// Highlight-click handler for group 2 (rows m_hlGrid[8..11]); +8-row base.
+// @early-stop
+// ~94.2%: code byte-exact; reloc-symbol-naming tail only (see HlClickGroup0).
+RVA(0x0010b810, 0xdd)
+int CSBI_RectOnly::HlClickGroup2(int row) {
+    if (g_gameReg->m_2c->m_4f0 == 0 && m_hlGrid[row + 8].m_state == 1) {
+        int handle = m_hlGrid[row + 8].m_handle;
+        int* slot = &m_hlGrid[row + 8].m_handle;
+        if (ResolveHandle(handle)) {
+            CSbiMusicHost* host = g_gameReg->m_30->m_28;
+            if (host->m_30 == 0) {
+                void* found = 0;
+                CSbiLookupMap* map = (CSbiLookupMap*)((char*)host + 0x10);
+                map->Lookup("GAME_TABHIGHLIGHT1", &found);
+                if (found) {
+                    int gate = g_61ab20;
+                    int item = g_61ab24;
+                    if (gate != 0) {
+                        CSbiCueRecord* p = (CSbiCueRecord*)found;
+                        if (g_6bf3c0 - (unsigned)p->m_14 >= (unsigned)p->m_18) {
+                            p->m_14 = g_6bf3c0;
+                            ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                        }
+                    }
+                }
+            }
+            m_360 = row;
+            *slot = 0;
+            NotifyAllSlots();
+            return 1;
+        }
+    }
+    return 0;
+}
+
+// Step the gauge one unit toward its target; on reaching 100 fire the completion
+// hook; if the gauge moved, refresh the two gauge notifiers (the sink latches the
+// new reading into its m_44). The toward-target step is spelled as `<`/`<=goto`/`>`
+// (no outer `!=`) so the equal case folds into the jge/jle pair like retail and the
+// two inc/dec branches share one store, not an extra top `je`.
+// @early-stop
+// ~95.7%: byte-exact except a 1-instr regalloc coin-flip in the m_21c->m_44 store
+// block (retail keeps the gauge value in eax + loads the vtable into edx; the
+// recompile uses edx for the value). Not steerable from C; deferred.
+RVA(0x00105480, 0x7d)
+void CSBI_RectOnly::TickGauge() {
+    int changed = 0;
+    int g = m_gauge;
+    int t = m_gaugeTarget;
+    if (g < t) {
+        g++;
+    } else if (g <= t) {
+        goto noChange;
+    } else {
+        g--;
+    }
+    m_gauge = g;
+    changed = 1;
+noChange:;
+    if (m_gauge == 100) {
+        if (GaugeComplete()) {
+            changed = 1;
+            GaugeFinish(0);
+        }
+    }
+    if (changed) {
+        if (m_21c && m_218) {
+            m_218->v28();
+            m_21c->m_44 = m_gauge;
+            m_21c->v28();
+        }
+    }
+}
+
 // Find the first slot whose state is ready; re-arm it and report found.
 RVA(0x00109a90, 0x25)
 int CSBI_RectOnly::FindReadySlot() {
@@ -689,6 +996,110 @@ int CSBI_RectOnly::ClearTabSprites(int idx) {
         }
     }
     return 1;
+}
+
+// Deactivate the rect-only item: if it is the subtype-2 cursor item, latch the
+// game-reg cursor rect; then fire the deactivate notifier across list[0] and the
+// active-tab list, clear, and tag the state. The +0x30 list array (0x1c stride,
+// head at +0) is offset-addressed: the typed array view would overlap the
+// matched m_30/m_34 ints, so the raw access is the codegen-faithful model here.
+// @early-stop
+// ~97.2%: the two notify-list walks + teardown are byte-exact; the residual is a
+// 3-instr regalloc choice in the cursor-rect prologue (retail loads g_gameReg via
+// `mov eax,moffs` and computes the two `-0x45/-0x30` offsets with non-destructive
+// `lea` into fresh regs; the recompile loads into ecx and uses `sub` in place).
+// Not steerable from C - logic byte-correct; deferred to the final sweep.
+RVA(0x00100cb0, 0x8b)
+int CSBI_RectOnly::Deactivate() {
+    if (*(int*)this == kSubtypeTag) {
+        CGameReg* g = g_gameReg;
+        int a = g->m_8c;
+        int b = g->m_90;
+        int x = a - 0x45;
+        int y = b - 0x30;
+        m_28 = y;
+        m_24 = x;
+        SetCursorRect(x, y);
+    }
+
+    char* B = (char*)this;
+    CSbiNotifyNode* n = *(CSbiNotifyNode**)(B + 0x30);
+    while (n) {
+        CSbiNotifyNode* cur = n;
+        n = n->m_next;
+        if (cur->m_payload) {
+            ((CSbiSlotPtr*)cur->m_payload)->v28();
+        }
+    }
+
+    CSbiNotifyNode* m = *(CSbiNotifyNode**)(B + m_activeTab * 0x1c + 0x30);
+    while (m) {
+        CSbiNotifyNode* cur = m;
+        m = m->m_next;
+        if (cur->m_payload) {
+            ((CSbiSlotPtr*)cur->m_payload)->v28();
+        }
+    }
+
+    ClearTabSprites(-1);
+    *(int*)(B + 0x20) = 2;
+    return 1;
+}
+
+// Switch the active tab: short-circuit if already on it (and not forced);
+// otherwise notify the per-tab list, clear it, drop the tab-5 sprites, latch the
+// new tab, and re-probe. On probe failure report the error and bail.
+RVA(0x001020a0, 0xae)
+int CSBI_RectOnly::SetTab(int tab, int flag) {
+    if (tab == m_activeTab && flag == 0) {
+        return 1;
+    }
+    CSbiNotifyNode* n = m_listB8.m_head;
+    while (n) {
+        CSbiNotifyNode* cur = n;
+        n = n->m_next;
+        if (cur->m_payload) {
+            cur->m_payload->Notify(1);
+        }
+    }
+    m_listB8.RemoveAll();
+    m_1dc = 0;
+    m_1e0 = 0;
+    m_1e4 = 0;
+    m_1e8 = 0;
+    m_1ec = 0;
+    m_1f0 = 0;
+    m_activeTab = tab;
+    if (!TabRefresh()) {
+        g_gameReg->ReportError(kActivateErrId, kSetTabErrTag);
+        return 0;
+    }
+    TabCommit();
+    return 1;
+}
+
+// Tear down the rect-only item: log its position tag, fire the pre-teardown
+// notify, return every pooled m_ptrTable element to the engine free-list, then
+// RemoveAll the +0x530 collection.
+// @early-stop
+// ~84.7%: the log/notify head + the free-list return + the +0x530 RemoveAll are
+// byte-correct; the residual is the free-loop's induction-variable choice (retail
+// indexes m_ptrTable[ecx] reloading the base each iter and keeps the running
+// free-list head in edx; the recompile strength-reduces to a walking pointer +
+// pins the head in a callee-saved edi). Regalloc/induction wall; deferred.
+RVA(0x000fe350, 0x6d)
+void CSBI_RectOnly::Teardown() {
+    g_gameReg->m_38->LogPos("StatusBar Position", *(int*)this);
+    TeardownNotify(0);
+    for (int i = 0; i < m_ptrCount; i++) {
+        void* p = m_ptrTable[i];
+        if (p) {
+            void** node = (void**)((char*)p - g_freeListNodeBias);
+            *node = g_freeList;
+            g_freeList = node;
+        }
+    }
+    m_530.RemoveAll(0, -1);
 }
 
 // Activate the rect-only item; gate on the offset-0 subtype tag and a probe.

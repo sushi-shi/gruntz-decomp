@@ -109,6 +109,11 @@ source = "src/Gruntz/SBI_RectOnly.cpp"
 flags = "base"
 
 [[unit]]
+unit = "sbi_rectonly_eh"
+source = "src/Gruntz/SBI_RectOnlyEh.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "tiletriggerlogic"
 source = "src/Gruntz/TileTriggerLogic.cpp"
 flags = "base"

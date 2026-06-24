@@ -416,8 +416,6 @@ RVA(0x000e72f0, 0xc4)
 void CSBI_RectOnly::CSBI_RectOnly_0e72f0() {}
 RVA(0x000ebd70, 0x366)
 void CSBI_RectOnly::CSBI_RectOnly_0ebd70() {}
-RVA(0x000fe350, 0x6d)
-void CSBI_RectOnly::CSBI_RectOnly_0fe350() {}
 RVA(0x000ff850, 0x121)
 void CSBI_RectOnly::CSBI_RectOnly_0ff850() {}
 RVA(0x000ff9f0, 0xe4)
@@ -428,42 +426,22 @@ RVA(0x00100930, 0x16c)
 void CSBI_RectOnly::CSBI_RectOnly_100930() {}
 RVA(0x00100b00, 0x139)
 void CSBI_RectOnly::CSBI_RectOnly_100b00() {}
-RVA(0x00100cb0, 0x8b)
-void CSBI_RectOnly::CSBI_RectOnly_100cb0() {}
 RVA(0x00100d70, 0x519)
 void CSBI_RectOnly::CSBI_RectOnly_100d70() {}
-RVA(0x00102000, 0x7f)
-void CSBI_RectOnly::CSBI_RectOnly_102000() {}
-RVA(0x001020a0, 0xae)
-void CSBI_RectOnly::CSBI_RectOnly_1020a0() {}
 RVA(0x00104f90, 0xa8)
 void CSBI_RectOnly::CSBI_RectOnly_104f90() {}
-RVA(0x00105480, 0x7d)
-void CSBI_RectOnly::CSBI_RectOnly_105480() {}
 RVA(0x00105800, 0x9e)
 void CSBI_RectOnly::CSBI_RectOnly_105800() {}
 RVA(0x00106820, 0xa8)
 void CSBI_RectOnly::CSBI_RectOnly_106820() {}
 RVA(0x00106900, 0x8d)
 void CSBI_RectOnly::CSBI_RectOnly_106900() {}
-RVA(0x001069c0, 0x2e)
-void CSBI_RectOnly::CSBI_RectOnly_1069c0() {}
-RVA(0x00106b40, 0x44)
-void CSBI_RectOnly::CSBI_RectOnly_106b40() {}
 RVA(0x00107920, 0xb7)
 void CSBI_RectOnly::CSBI_RectOnly_107920() {}
 RVA(0x001084d0, 0x96c)
 void CSBI_RectOnly::CSBI_RectOnly_1084d0() {}
-RVA(0x00109ad0, 0xa9)
-void CSBI_RectOnly::CSBI_RectOnly_109ad0() {}
 RVA(0x0010b210, 0xc5)
 void CSBI_RectOnly::CSBI_RectOnly_10b210() {}
-RVA(0x0010b5d0, 0xdd)
-void CSBI_RectOnly::CSBI_RectOnly_10b5d0() {}
-RVA(0x0010b6f0, 0xdd)
-void CSBI_RectOnly::CSBI_RectOnly_10b6f0() {}
-RVA(0x0010b810, 0xdd)
-void CSBI_RectOnly::CSBI_RectOnly_10b810() {}
 RVA(0x0010b930, 0x1a7)
 void CSBI_RectOnly::CSBI_RectOnly_10b930() {}
 
