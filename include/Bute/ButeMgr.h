@@ -4,25 +4,28 @@
 // lexer/parser over the .att text, queried by a family of typed getters.
 //
 // Minimal Monolith-faithful reconstruction sufficient to byte-match the leaf
-// getters + parser. Field names are placeholders (m_<hexoffset>); only the
-// OFFSETS + code bytes are load-bearing (campaign doctrine). Recovered from the
-// getter/parser bodies (python -m gruntz.analysis.dump_target):
+// getters + parser. Field names recovered from how every getter/parser body
+// reads/writes them; only the OFFSETS + code bytes are load-bearing (campaign
+// doctrine). Fields whose role stays unprovable keep the m_<hexoffset> form.
 //
-//   +0x08  m_lineNo  : int     - current source line (the `%d` in error msgs).
-//   +0x18  m_tree    : the parsed store root (CButeTree). The getters do
-//                      `lea ecx,[this+0x18]; Find(tag)` to get the tag-group,
-//                      then `Find(key)` on it to get the typed value record.
-//   +0x44  m_pNode   : void*   - last-created store node (set by ParseTagLine).
-//   +0xa4  m_pText   : ptr to a CString-ish text accumulator; the parser appends
-//                      the current char at +0xc inside it (CString::operator+=).
-//   +0xa8  m_curChar : char    - the lexer's current character.
-//   +0xaa  m_tokType : short   - the token type returned by the tokenizer.
-//   +0xae  m_token[] : char    - the current token text buffer (indexed by the
-//                      file-scope token-length counter).
-//   +0x100 m_tagName : CString - the active tag name (ParseTagLine copies the
-//                      token buffer here).
-//   +0x10c m_10c     : char    - parser flag byte.
-//   +0x10d m_10d     : char    - "skip duplicate-tag check" flag byte.
+//   +0x00  m_streamBase : int  - stream base offset NextChar subtracts.
+//   +0x04  m_pos        : int  - running parse cursor position.
+//   +0x08  m_lineNo     : int  - current source line (the `%d` in error msgs).
+//   +0x0c  m_countLine  : char - bump m_lineNo on the next char (set after '\n').
+//   +0x18  m_tree       : the parsed store root (CButeTree). The getters do
+//                         `lea ecx,[this+0x18]; Find(tag)` for the tag-group,
+//                         then `Find(key)` on it for the typed value record.
+//   +0x44  m_pNode      : void* - last-created store node (set by ParseTagLine).
+//   +0xa4  m_pText      : ptr to a value-text accumulator host; the parser
+//                         appends to its +0xc CString (CString::operator+=).
+//   +0xa8  m_curChar    : char  - the lexer's current character.
+//   +0xaa  m_tokType    : short - the token type returned by the tokenizer.
+//   +0xac  m_lexState   : short - transition-table secondary state output.
+//   +0xae  m_token[]    : char  - the current token text buffer (indexed by the
+//                         file-scope token-length counter).
+//   +0x100 m_tagName    : CString - the active tag name (ParseTagLine copies the
+//                         token buffer here).
+//   +0x10c m_captureText: char  - gate appending value text to the accumulator.
 #ifndef SRC_BUTE_BUTEMGR_H
 #define SRC_BUTE_BUTEMGR_H
 
@@ -32,6 +35,24 @@
 // so the class below can use both. (afx.h is the period-correct windows.h path.)
 #include <Gruntz/CString.h>
 
+// The CButeValue::type discriminant. Recovered from the type-tag each getter
+// compares against (GetInt==0, GetDword==1, GetDouble==2, GetFloat==3,
+// GetString==4) and the typed-reference getters (GetRef5..8). The numeric values
+// are load-bearing (the exact immediates the getters cmp); the enum only names
+// them. Kept as an `int`-width enum so it is interchangeable with the `i32 type`
+// field/params at /O2.
+enum ButeType {
+    kButeInt = 0,    // stored int      (GetInt/GetIntDef)
+    kButeDword = 1,  // stored DWORD    (GetDword/GetDwordDef)
+    kButeDouble = 2, // stored double   (GetDouble)
+    kButeFloat = 3,  // stored float    (GetFloat)
+    kButeString = 4, // stored char*    (GetString/GetStringDef)
+    kButeRef5 = 5,   // 16-byte struct  (GetRef5)
+    kButeRef6 = 6,   // 8-byte struct   (GetRef6)
+    kButeRef7 = 7,   // 24-byte struct  (GetRef7)
+    kButeRef8 = 8,   // 16-byte struct  (GetRef8)
+};
+
 // ---------------------------------------------------------------------------
 // CButeTree - the keyed store node. The getters/parser reach it through a single
 // __thiscall lookup helper that, given a key string, returns
@@ -39,8 +60,7 @@
 // (CButeMgr::m_tree) maps a tag name to a per-tag sub-tree; the sub-tree maps a
 // key name to a typed value record. Find() is modeled returning the record, and
 // the typed getters interpret it:
-//   +0x00  type   : int   - the value's type-tag (0=int, 1=dword, 2=double,
-//                           3=float, 4=string, ...).
+//   +0x00  type   : ButeType - the value's type-tag (see enum above).
 //   +0x04  pValue : void* - pointer to the stored value (the int/dword/float/
 //                           double sits at [pValue]; for strings the char* IS
 //                           [pValue] -- GetString returns it directly).
@@ -48,7 +68,7 @@
 // vtable stores are modeled as external/no-body calls (reloc-masked).
 // ---------------------------------------------------------------------------
 struct CButeValue {
-    i32 type;     // +0x00
+    i32 type;     // +0x00  ButeType discriminant (kept i32-width for the ABI)
     void* pValue; // +0x04
 
     // Value constructors: allocate storage, store the value, return `this`.
@@ -67,11 +87,11 @@ struct CButeValue {
 //   +0x00  m_vptr    : vptr (0x5f03bc, shared with the dtor's vtable restore)
 //   +0x04  m_pSub    : void* - a sub-object pointer (the dtor/Set delete-and-
 //                      replace target; its slot-0 is a scalar deleting dtor)
-//   +0x08  m_08      : int   - flag word (Set toggles bit 2 (0x4))
+//   +0x08  m_flags   : int   - flag word (Set toggles bit 0x4 from sub nullness)
 //   +0x0c  m_0c      : int   - zero-init
 //   +0x10  m_10      : int   - zero-init
 //   +0x14  m_14[8]   : padding to +0x1c
-//   +0x1c  m_1c      : int   - "owns sub-object" guard (Set checks it)
+//   +0x1c  m_ownsSub : int   - "owns sub-object" guard (Set checks it)
 //   +0x20  m_20      : int   - zero-init
 //   +0x24  m_24      : int   - zero-init
 //   +0x28  m_28      : int   - 6
@@ -89,7 +109,7 @@ public:
     // critical section under a ref-count guard.
     CButeMgrHelper* Construct();
     // Replace the sub-object at +0x4 (delete the old one through its vtable when
-    // owned), then toggle bit 0x4 of m_08 from the new pointer's nullness.
+    // owned), then toggle bit 0x4 of m_flags from the new pointer's nullness.
     void SetSub(void* p);
     // The virtual-base vtable-init thunks (compiler vbase ctor closures): each
     // stamps a virtual-base subobject's vptr through the this-relative vbtable;
@@ -101,11 +121,11 @@ public:
 
     void* m_vptr;              // +0x00
     void* m_pSub;              // +0x04
-    i32 m_08;                  // +0x08
+    i32 m_flags;               // +0x08  flag word (SetSub toggles bit 0x4)
     i32 m_0c;                  // +0x0c
     i32 m_10;                  // +0x10
     char m_pad14[0x1c - 0x14]; // +0x14
-    i32 m_1c;                  // +0x1c
+    i32 m_ownsSub;             // +0x1c  "owns sub-object" guard (SetSub checks it)
     i32 m_20;                  // +0x20
     i32 m_24;                  // +0x24
     i32 m_28;                  // +0x28
@@ -285,39 +305,39 @@ public:
     // Accessor for the +0x18 store tree (CButeTree is data-less; address it by
     // offset so its `this` resolves to `this+0x18` -> `lea ecx,[esi+0x18]`).
     CButeTree* Tree() {
-        return reinterpret_cast<CButeTree*>(m_treeRaw);
+        return reinterpret_cast<CButeTree*>(m_tree);
     }
     // The second keyed sub-tree at +0x48 (ParseGroup reaches it).
     CButeTree* Tree48() {
         return reinterpret_cast<CButeTree*>(m_tree48);
     }
 
-    i32 m_00;                    // +0x00  source base offset
-    i32 m_04;                    // +0x04  current char position
-    i32 m_lineNo;                // +0x08
-    char m_0c;                   // +0x0c  "count this line" flag
-    char m_0d;                   // +0x0d
-    char m_pad0e[0x10 - 0xe];    // +0x0e
-    CString m_errStr;            // +0x10  scratch the error reporter formats into
-    ErrCallback m_errCallback;   // +0x14  optional error-callback fn-ptr
-    char m_treeRaw[0x44 - 0x18]; // +0x18  the CButeTree store root
-    void* m_pNode;               // +0x44
-    char m_tree48[0x74 - 0x48];  // +0x48  second store sub-tree
-    char m_tree74[0xa0 - 0x74];  // +0x74  third store sub-tree
-    void* m_stream;              // +0xa0  the input source stream object
-    void* m_pText;               // +0xa4
-    char m_curChar;              // +0xa8
-    char m_pada9;                // +0xa9
-    i16 m_tokType;               // +0xaa
-    i16 m_ac;                    // +0xac  secondary lexer state
-    char m_token[0x100 - 0xae];  // +0xae
-    CString m_tagName;           // +0x100
-    CString m_str104;            // +0x104  second scratch string
-    CString m_str108;            // +0x108  third scratch string
-    char m_10c;                  // +0x10c
-    char m_10d;                  // +0x10d
-    char m_10e;                  // +0x10e
-    char m_10f;                  // +0x10f  1-byte embedded object (trivial dtor)
+    i32 m_streamBase;             // +0x00  stream base offset (NextChar's `- m_00`)
+    i32 m_pos;                    // +0x04  running parse cursor position
+    i32 m_lineNo;                 // +0x08
+    char m_countLine;             // +0x0c  bump m_lineNo on the next char (set after \n)
+    char m_0d;                    // +0x0d  (role unproven - cleared by Init only)
+    char m_pad0e[0x10 - 0xe];     // +0x0e
+    CString m_errStr;             // +0x10  scratch the error reporter formats into
+    ErrCallback m_errCallback;    // +0x14  optional error-callback fn-ptr
+    char m_tree[0x44 - 0x18];     // +0x18  the CButeTree store root
+    void* m_pNode;                // +0x44
+    char m_tree48[0x74 - 0x48];   // +0x48  second store sub-tree
+    char m_tree74[0xa0 - 0x74];   // +0x74  third store sub-tree
+    void* m_stream;               // +0xa0  the input source stream object
+    struct CButeTextBuf* m_pText; // +0xa4  -> value-text accumulator host (+0xc)
+    char m_curChar;               // +0xa8
+    char m_pada9;                 // +0xa9
+    i16 m_tokType;                // +0xaa
+    i16 m_lexState;               // +0xac  transition-table secondary state output
+    char m_token[0x100 - 0xae];   // +0xae
+    CString m_tagName;            // +0x100
+    CString m_str104;             // +0x104  second scratch string
+    CString m_str108;             // +0x108  third scratch string
+    char m_captureText;           // +0x10c  capture value text into m_pText accumulator
+    char m_10d;                   // +0x10d  build-suppress / group-walk mode (role unproven)
+    char m_10e;                   // +0x10e
+    char m_10f;                   // +0x10f  1-byte embedded object (trivial dtor)
 
     // The typed-reference getters (tag5-8). Each returns a pointer to the typed
     // value record's storage on a type hit, or a shared zero-default static on

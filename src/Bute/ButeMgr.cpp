@@ -26,7 +26,7 @@
 //   CButeMgr::NextChar       - advance the input one char (the lexer's getch)
 //   CButeMgr::CharClass      - char -> lexer character-class index
 //   CButeMgr::PeekState/2    - read a transition-table column (state x class)
-//   CButeMgr::ScanState      - write m_tokType (+0xaa) + m_ac (+0xac) from it
+//   CButeMgr::ScanState      - write m_tokType (+0xaa) + m_lexState (+0xac)
 //   CButeMgr::SkipToTag      - re-lex until a tag/group token
 //   CButeMgr::ParseGroup     - the recursive per-tag descent
 //   CButeMgr::Exists         - tag/key existence probe
@@ -95,12 +95,20 @@ public:
 extern "C" void ButeGroup_Apply();
 
 // CString::operator+= one char (__thiscall(receiver, char)):
-// appends the char to the value-text accumulator (m_pText + 0xc). Modeled as an
-// external (no-body) __thiscall on a tiny receiver class so the `mov ecx,recv;
-// call` shape falls out reloc-masked.
+// appends the char to the value-text accumulator. Modeled as an external
+// (no-body) __thiscall on a tiny receiver class so the `mov ecx,recv; call`
+// shape falls out reloc-masked.
 class CButeText {
 public:
     void AppendChar(char c);
+};
+
+// The object m_pText points at: the value-text accumulator (a CButeText / MFC
+// CString) lives at +0xc inside it. Parse reaches it as m_pText->accum so the
+// `mov ecx,[esi+0xa4]; add ecx,0xc; call` shape falls out (no raw-offset cast).
+struct CButeTextBuf {
+    char m_pad00[0xc]; // +0x00
+    CButeText accum;   // +0x0c  the appended value text
 };
 
 // The token-length counter (file-scope signed WORD, read with movsx).
@@ -173,7 +181,7 @@ i32 CButeMgr::GetIntDef(char* tag, char* key, i32 def) {
     if (grp) {
         CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
         if (rec) {
-            if (rec->type == 0) {
+            if (rec->type == kButeInt) {
                 return *(i32*)rec->pValue;
             }
             ReportError(s_fmtTypeMismatch, tag, key);
@@ -192,7 +200,7 @@ i32 CButeMgr::GetInt(char* tag, char* key) {
     if (grp) {
         CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
         if (rec) {
-            if (rec->type == 0) {
+            if (rec->type == kButeInt) {
                 return *(i32*)rec->pValue;
             }
             ReportError(s_fmtTypeMismatch, tag, key);
@@ -216,7 +224,7 @@ DWORD CButeMgr::GetDwordDef(char* tag, char* key, DWORD def) {
         CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
         if (rec) {
             switch (rec->type) {
-                case 1:
+                case kButeDword:
                     return *(DWORD*)rec->pValue;
             }
             ReportError(s_fmtTypeMismatch, tag, key);
@@ -235,7 +243,7 @@ DWORD CButeMgr::GetDword(char* tag, char* key) {
         CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
         if (rec) {
             switch (rec->type) {
-                case 1:
+                case kButeDword:
                     return *(DWORD*)rec->pValue;
             }
             ReportError(s_fmtTypeMismatch, tag, key);
@@ -260,9 +268,9 @@ float CButeMgr::GetFloat(char* tag, char* key) {
         CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
         if (rec) {
             switch (rec->type) {
-                case 0:
+                case kButeInt:
                     return (float)*(i32*)rec->pValue;
-                case 3:
+                case kButeFloat:
                     return *(float*)rec->pValue;
             }
             ReportError(s_fmtTypeMismatch, tag, key);
@@ -287,9 +295,9 @@ double CButeMgr::GetDouble(char* tag, char* key) {
         CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
         if (rec) {
             switch (rec->type) {
-                case 0:
+                case kButeInt:
                     return (double)*(i32*)rec->pValue;
-                case 2:
+                case kButeDouble:
                     return *(double*)rec->pValue;
             }
             ReportError(s_fmtTypeMismatch, tag, key);
@@ -312,7 +320,7 @@ CString* CButeMgr::GetStringDef(char* tag, char* key, CString* def) {
     if (grp) {
         CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
         if (rec) {
-            if (rec->type == 4) {
+            if (rec->type == kButeString) {
                 return (CString*)rec->pValue;
             }
             ReportError(s_fmtTypeMismatch, tag, key);
@@ -335,7 +343,7 @@ char* CButeMgr::GetString(char* tag, char* key) {
     if (grp) {
         CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
         if (rec) {
-            if (rec->type == 4) {
+            if (rec->type == kButeString) {
                 return (char*)rec->pValue;
             }
             ReportError(s_fmtTypeMismatch, key, tag);
@@ -395,7 +403,8 @@ bool CButeMgr::ParseTagLine() {
 // Reports "Bad symbol encountered" (with m_lineNo) on the error class.
 RVA(0x001704c0, 0x1e3)
 bool CButeMgr::Parse() {
-    i32 kind = 0x11;
+    const i32 kLexStartState = 0x11; // initial lexer state seeded into PeekClass
+    i32 kind = kLexStartState;
     g_tokenLen = 0;
 
     for (;;) {
@@ -408,16 +417,16 @@ bool CButeMgr::Parse() {
             case 1: // value char: scan, store to token buffer, echo, advance, loop
                 kind = ReadValue(kind, m_curChar);
                 m_token[g_tokenLen++] = m_curChar;
-                if (m_10c != 0 && m_curChar != 0) {
-                    ((CButeText*)((char*)m_pText + 0xc))->AppendChar(m_curChar);
+                if (m_captureText != 0 && m_curChar != 0) {
+                    m_pText->accum.AppendChar(m_curChar);
                 }
                 NextChar();
                 break;
 
             case 2: // value char: scan, echo only, advance, loop
                 kind = ReadValue(kind, m_curChar);
-                if (m_10c != 0 && m_curChar != 0) {
-                    ((CButeText*)((char*)m_pText + 0xc))->AppendChar(m_curChar);
+                if (m_captureText != 0 && m_curChar != 0) {
+                    m_pText->accum.AppendChar(m_curChar);
                 }
                 NextChar();
                 break;
@@ -425,8 +434,8 @@ bool CButeMgr::Parse() {
             case 3: // identifier: scan, store, echo, advance, recurse, terminate
                 ReadIdent(kind, m_curChar);
                 m_token[g_tokenLen++] = m_curChar;
-                if (m_10c != 0 && m_curChar != 0) {
-                    ((CButeText*)((char*)m_pText + 0xc))->AppendChar(m_curChar);
+                if (m_captureText != 0 && m_curChar != 0) {
+                    m_pText->accum.AppendChar(m_curChar);
                 }
                 NextChar();
                 if (m_tokType == 0) {
@@ -437,8 +446,8 @@ bool CButeMgr::Parse() {
 
             case 4: // identifier: scan, echo only, advance, recurse, terminate
                 ReadIdent(kind, m_curChar);
-                if (m_10c != 0 && m_curChar != 0) {
-                    ((CButeText*)((char*)m_pText + 0xc))->AppendChar(m_curChar);
+                if (m_captureText != 0 && m_curChar != 0) {
+                    m_pText->accum.AppendChar(m_curChar);
                 }
                 NextChar();
                 if (m_tokType == 0) {
@@ -486,7 +495,7 @@ CButeRef5* CButeMgr::GetRef5(char* tag, char* key) {
     if (grp) {
         CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
         if (rec) {
-            if (rec->type == 5) {
+            if (rec->type == kButeRef5) {
                 return (CButeRef5*)rec->pValue;
             }
             ReportError(s_fmtTypeMismatch, tag, key);
@@ -507,7 +516,7 @@ CButeRef6* CButeMgr::GetRef6(char* tag, char* key) {
     if (grp) {
         CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
         if (rec) {
-            if (rec->type == 6) {
+            if (rec->type == kButeRef6) {
                 return (CButeRef6*)rec->pValue;
             }
             ReportError(s_fmtTypeMismatch, tag, key);
@@ -528,7 +537,7 @@ CButeRef7* CButeMgr::GetRef7(char* tag, char* key) {
     if (grp) {
         CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
         if (rec) {
-            if (rec->type == 7) {
+            if (rec->type == kButeRef7) {
                 return (CButeRef7*)rec->pValue;
             }
             ReportError(s_fmtTypeMismatch, tag, key);
@@ -549,7 +558,7 @@ CButeRef8* CButeMgr::GetRef8(char* tag, char* key) {
     if (grp) {
         CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
         if (rec) {
-            if (rec->type == 8) {
+            if (rec->type == kButeRef8) {
                 return (CButeRef8*)rec->pValue;
             }
             ReportError(s_fmtTypeMismatch, tag, key);
@@ -575,7 +584,13 @@ void* CButeMgr::InvokeCallback(void* (*fn)(CButeMgr*)) {
 // ===========================================================================
 // CButeMgr::ClearHelper
 // ===========================================================================
-// Calls two cleanup methods on the engine helper object at this+0x14.
+// Calls two cleanup methods on the engine helper sub-object at this+0x14.
+// FLAG (raw-offset, not cleanly removable): +0x14 is also where SetErrCallback
+// stores m_errCallback and ReportError reads it. Modeling the helper as a real
+// embedded member at +0x14 would collide with that already-matched field, so the
+// char-offset view stays a transitional device until the helper-vs-callback
+// overlap is reconciled (a follow-up matcher: is m_errCallback the helper's vptr
+// slot, or does the helper start past +0x14?).
 RVA(0x00171a40, 0x14)
 void CButeMgr::ClearHelper() {
     CButeMgrHelper* h = (CButeMgrHelper*)((char*)this + 0x14);
@@ -664,9 +679,9 @@ CButeValue* CButeValue::SetDouble(i32 type, double val) {
 // Reset the position/line counters and the two scratch CStrings to empty.
 RVA(0x00170330, 0x34)
 void CButeMgr::Init() {
-    m_04 = 0;
+    m_pos = 0;
     m_lineNo = 0;
-    m_0c = 1;
+    m_countLine = 1;
     m_0d = 0;
     m_tagName = g_emptyString;
     m_str104 = g_emptyString;
@@ -683,10 +698,10 @@ void CButeMgr::SetErrCallback(ErrCallback cb) {
 // ---------------------------------------------------------------------------
 // CButeMgr::NextChar
 // Advance the input one char: pull the next byte position from the source
-// stream (+0xa0), compute the delta from the base (m_00), and -- unless the
-// stream signals EOF (a self-indexed bitmap bit) -- record it as m_curChar,
+// stream (+0xa0), compute the delta from the base (m_streamBase), and -- unless
+// the stream signals EOF (a self-indexed bitmap bit) -- record it as m_curChar,
 // bump the line counter on the count-flag, track the newline flag, and advance
-// the position (m_04).
+// the position (m_pos).
 // @early-stop
 // 88.67% scheduling/materialization wall: body/CFG/EOF-test/offsets are
 // byte-identical; only the tail differs -- retail interleaves `mov m_curChar,al`
@@ -696,18 +711,18 @@ void CButeMgr::SetErrCallback(ErrCallback cb) {
 // outparam-zeroinit-scheduling family); no source spelling flips it.
 RVA(0x00170390, 0x50)
 void CButeMgr::NextChar() {
-    i32 delta = ((CButeStream*)m_stream)->ReadByte() - m_00;
+    i32 delta = ((CButeStream*)m_stream)->ReadByte() - m_streamBase;
     char* bitmap = *(char**)((char*)*(void**)m_stream + 4);
     if (bitmap[(i32)m_stream + 8] & 1) {
         m_curChar = 0;
         return;
     }
-    if (m_0c) {
+    if (m_countLine) {
         m_lineNo++;
     }
     m_curChar = (char)delta;
-    m_0c = delta == 0xa;
-    m_04 += delta;
+    m_countLine = delta == 0xa;
+    m_pos += delta;
 }
 
 // ---------------------------------------------------------------------------
@@ -741,7 +756,7 @@ RVA(0x00170460, 0x58)
 void CButeMgr::ScanState(i16 state, char c) {
     i32 base = state * 49;
     m_tokType = g_transTable[(base + CharClass(c)) * 3 + 1];
-    m_ac = g_transTable[(base + CharClass(c)) * 3 + 2];
+    m_lexState = g_transTable[(base + CharClass(c)) * 3 + 2];
 }
 
 // ---------------------------------------------------------------------------
@@ -936,9 +951,9 @@ CButeMgrHelper* CButeMgrHelper::Construct() {
     m_20 = 0;
     m_24 = 0;
     m_30 = 0;
-    m_1c = 0;
+    m_ownsSub = 0;
     m_vptr = &g_helperVtbl;
-    m_08 = 4;
+    m_flags = 4;
     m_28 = 6;
     m_2c = 0x20;
     m_34 = -1;
@@ -951,19 +966,19 @@ CButeMgrHelper* CButeMgrHelper::Construct() {
 
 // ---------------------------------------------------------------------------
 // CButeMgrHelper::SetSub (0x169dd0)
-// Replace the +0x4 sub-object: if it is owned (m_1c) and present (m_pSub), delete
-// it through its slot-0 scalar-deleting dtor; store the new pointer; toggle bit
-// 0x4 of the flag word from the new pointer's nullness.
+// Replace the +0x4 sub-object: if it is owned (m_ownsSub) and present (m_pSub),
+// delete it through its slot-0 scalar-deleting dtor; store the new pointer;
+// toggle bit 0x4 of the flag word from the new pointer's nullness.
 RVA(0x00169dd0, 0x37)
 void CButeMgrHelper::SetSub(void* p) {
-    if (m_1c && m_pSub) {
+    if (m_ownsSub && m_pSub) {
         ((CButeSub*)m_pSub)->ScalarDtor(1);
     }
     m_pSub = p;
     if (p) {
-        m_08 &= ~0x4;
+        m_flags &= ~0x4;
     } else {
-        m_08 |= 0x4;
+        m_flags |= 0x4;
     }
 }
 
