@@ -31,16 +31,16 @@ public:
     virtual ~CState() {
         ((CGameModeBase*)this)->BaseCleanup();
     } // slot 0
-    virtual void Vfunc1();      // slot 1
-    virtual void Vfunc2();      // slot 2
-    virtual void Vfunc3();      // slot 3
-    virtual int Update();       // slot 4  (+0x10)  base default = return 1;
-    virtual int Render();       // slot 5  (+0x14)  base default = return 1;
-    virtual void Vslot06();     // slot 6
-    virtual void Vslot07();     // slot 7
-    virtual int InputVirtual(); // slot 8  (+0x20)  per-frame input poll
+    virtual void Vfunc1();           // slot 1
+    virtual void ReleaseResources(); // slot 2  (+0x8)  resource teardown (leaf override)
+    virtual void Vfunc3();           // slot 3
+    virtual int Update();            // slot 4  (+0x10)  base default = return 1;
+    virtual int Render();            // slot 5  (+0x14)  base default = return 1;
+    virtual void Vslot06();          // slot 6
+    virtual void Vslot07();          // slot 7
+    virtual int InputVirtual();      // slot 8  (+0x20)  per-frame input poll
     virtual void Vslot09();
-    virtual void Vslot0a();
+    virtual int FrameSlot28(int); // slot 10 (+0x28)  per-frame poll (leaf override)
     virtual void Vslot0b();
     virtual void Vslot0c();
     virtual void Vslot0d();

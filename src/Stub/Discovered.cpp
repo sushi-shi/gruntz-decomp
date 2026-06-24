@@ -762,25 +762,9 @@ void CSimpleAnimation::CSimpleAnimation_0abf70() {}
 RVA(0x00010540, 0x44)
 void CSingleAnimation::CSingleAnimation_010540() {}
 
-// ---- CState ----
-RVA(0x00018c90, 0x72)
-void CState::CState_018c90() {}
-RVA(0x00019cd0, 0x1df)
-void CState::CState_019cd0() {}
-RVA(0x0001af70, 0x3c0)
-void CState::CState_01af70() {}
-RVA(0x0008ce60, 0x55)
-void CState::CState_08ce60() {}
-RVA(0x0008d440, 0x55)
-void CState::CState_08d440() {}
-RVA(0x000a02c0, 0x7d)
-void CState::CState_0a02c0() {}
-RVA(0x000a05a0, 0x74)
-void CState::CState_0a05a0() {}
-RVA(0x000a0640, 0x6a)
-void CState::CState_0a0640() {}
-RVA(0x000a06d0, 0x5f)
-void CState::CState_0a06d0() {}
+// ---- CState ---- migrated to src/Gruntz/GameMode.cpp (its real class TU): the
+// two leaf `??1` destructors + slot-2 release virtuals (CMenuState/CBootyState)
+// and the CMenuState per-frame poll methods, plus the two switch dispatchers.
 
 // ---- CStaticHazard ----
 RVA(0x00012b30, 0x44)

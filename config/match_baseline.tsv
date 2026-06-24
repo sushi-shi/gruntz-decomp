@@ -36,7 +36,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	18	17
 directsoundmgr	26	19
-engine_discovered	1010	0
+engine_discovered	1001	0
 engine_label_stubs	537	120
 filestream	13	9
 font	16	9
@@ -44,7 +44,7 @@ fontconfig	7	4
 fonts	2	1
 gameapp	19	15
 gamelevel	30	19
-gamemode	19	9
+gamemode	28	12
 gameobjectctors	5	0
 gametext	4	2
 gamewnd	6	4
@@ -638,15 +638,6 @@ engine_discovered	?CSeverusWorker_15cc30@CSeverusWorker@@QAEXXZ	3.6364	3.6364	1	
 engine_discovered	?CSimpleAnimation_00f9d0@CSimpleAnimation@@QAEXXZ	5.8824	5.8824	1	89680198f0ac	0xf9d0
 engine_discovered	?CSimpleAnimation_0abf70@CSimpleAnimation@@QAEXXZ	14.2857	14.2857	1	0e17bd41559e	0xabf70
 engine_discovered	?CSingleAnimation_010540@CSingleAnimation@@QAEXXZ	5.8824	5.8824	1	8475326a1cfc	0x10540
-engine_discovered	?CState_018c90@CState@@QAEXXZ	3.1250	3.1250	1	9663adca8c45	0x18c90
-engine_discovered	?CState_019cd0@CState@@QAEXXZ	0.2759	0.2759	1	36e24089dad2	0x19cd0
-engine_discovered	?CState_01af70@CState@@QAEXXZ	0.1250	0.1250	1	ebc61ddb0997	0x1af70
-engine_discovered	?CState_08ce60@CState@@QAEXXZ	4.7619	4.7619	1	9f61b74ae06d	0x8ce60
-engine_discovered	?CState_08d440@CState@@QAEXXZ	4.7619	4.7619	1	46f4a4cde43b	0x8d440
-engine_discovered	?CState_0a02c0@CState@@QAEXXZ	2.6316	2.6316	1	7d12d68abab1	0xa02c0
-engine_discovered	?CState_0a05a0@CState@@QAEXXZ	2.4390	2.4390	1	19494234ba1c	0xa05a0
-engine_discovered	?CState_0a0640@CState@@QAEXXZ	2.9412	2.9412	1	3a6c0a4db4c2	0xa0640
-engine_discovered	?CState_0a06d0@CState@@QAEXXZ	1.1429	1.1429	1	034dbfac66be	0xa06d0
 engine_discovered	?CStaticHazard_012b30@CStaticHazard@@QAEXXZ	5.8824	5.8824	1	912bfe88ee5b	0x12b30
 engine_discovered	?CStaticHazard_0fbbf0@CStaticHazard@@QAEXXZ	0.5333	0.5333	1	7807d7e838b0	0xfbbf0
 engine_discovered	?CStatusBarItem_0e6d90@CStatusBarItem@@QAEXXZ	50.0000	50.0000	1	19b6f3c049fc	0xe6d90
@@ -1972,17 +1963,26 @@ gamelevel	?VirtualMethodUnknown40@CGameLevel@@QAEHPBD@Z	100.0000	100.0000	3	6f1f
 gamelevel	?VirtualMethodUnknown44@CGameLevel@@QAEXXZ	100.0000	100.0000	3	84cf89ea5ab7	0x15d680
 gamelevel	?VisitVisible@CGameLevel@@QAEXPAXH@Z	87.3206	87.3206	2	68cd7fc3babd	0x15dc90
 gamemode	??0CState@@QAE@XZ	100.0000	100.0000	4	a1d9fd8bca62	0x8c750
+gamemode	??1CBootyState@@UAE@XZ	100.0000	100.0000	1	899f9930b960	0x8d440
+gamemode	??1CMenuState@@UAE@XZ	100.0000	100.0000	1	7e8055f2f15c	0x8ce60
 gamemode	??_GCState@@UAEPAXI@Z	100.0000	100.0000	1	cpp:2601fb2a9496	0x8c710
 gamemode	?BuildBootyWalkingGruntz@CState@@QAEXXZ	0.6579	0.6579	1	ec771b9e0f06	0x1b450
 gamemode	?BuildVersionString@CMenuState@@QAEXHHHH@Z	1.6129	1.6129	1	7c72ec74a3f1	0xa0d80
 gamemode	?BuildWarpStoneGlitterAnimation@CState@@QAEXXZ	0.9804	0.9804	1	48a14ab5d217	0x19540
 gamemode	?CheckWarpLetterBonus@CBootyState@@QAEXXZ	0.2849	0.2849	1	86e864f54e78	0x1c210
+gamemode	?FormatHudText@CMenuState@@QAEXH@Z	0.3094	0.3094	1	414de11c4f00	0x1af70
+gamemode	?FrameSlot28@CMenuState@@UAEHH@Z	100.0000	100.0000	1	d65252922e53	0xa06d0
+gamemode	?GenMenuRandPos@@YGXHPAH0@Z	89.3724	89.3724	1	becadcb40621	0x19cd0
 gamemode	?InitAttractTitle@CCreditsState@@QAEXXZ	0.9901	0.9901	1	7f93c1339fff	0x39570
 gamemode	?LoadCreditzStateAssets@CCreditsState@@QAEHHHH@Z	100.0000	100.0000	1	82179fcf6500	0x38d20
 gamemode	?LoadGruntEffectSprites@CState@@QAEXXZ	0.2268	0.2268	1	4762f4e00dc7	0x1a040
+gamemode	?ReleaseResources@CBootyState@@UAEXXZ	98.4375	98.4375	1	5b3e49874e83	0x18c90
+gamemode	?ReleaseResources@CMenuState@@UAEXXZ	99.4737	99.4737	1	570eecea03da	0xa02c0
 gamemode	?Render@CCreditsState@@UAEHXZ	97.7121	97.7121	4	2cdd5ac8e110	0x391d0
 gamemode	?Render@CMenuState@@UAEHXZ	100.0000	100.0000	4	9048409ed6ee	0xa0750
 gamemode	?Render@CState@@UAEHXZ	100.0000	100.0000	4	527388a9ccca	0x8c4d0
+gamemode	?StartMusic@CMenuState@@QAEXXZ	94.7561	94.7561	1	159a01616a2b	0xa05a0
+gamemode	?StopMusicChain@CMenuState@@QAEXXZ	99.7059	99.7059	1	f84633f00b69	0xa0640
 gamemode	?Stub_08d5e0@CCreditsState@@QAEXXZ	3.0303	3.0303	2	55b18b536e0d	0x8d5e0
 gamemode	?Update@CBootyState@@UAEHXZ	100.0000	100.0000	4	6f43405d33b8	0x8d3f0
 gamemode	?Update@CCreditsState@@UAEHXZ	100.0000	100.0000	4	cdf1b13ef693	0x8d590

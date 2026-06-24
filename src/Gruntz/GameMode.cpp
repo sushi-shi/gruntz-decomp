@@ -100,8 +100,184 @@ int CState::Render() {
 // The intervening vtable slots (1..3) - out-of-line stubs that anchor the vftable
 // order so Update lands at slot 4 (+0x10) and Render at slot 5 (+0x14).
 void CState::Vfunc1() {}
-void CState::Vfunc2() {}
+void CState::ReleaseResources() {}
 void CState::Vfunc3() {}
+
+// ===========================================================================
+// CState-derived leaf teardown / per-frame poll methods (trace-discovered).
+// The cleanup virtuals (slot 2) release the named resource sets the state
+// registered, then chain BaseCleanup; the destructors are the EH-framed `??1`
+// the `??_G` deleting dtors dispatch to. The `m_c` view sub-object (CState+0xc)
+// is re-modeled here for the resource-release facet (registry @+0x10, leaf
+// registry @+0x28, worker list @+0x0c, ddraw @+0x04) - field names placeholder.
+// ===========================================================================
+
+// The named-resource registries the release path drives. Each `Release*` is a
+// __thiscall(this, szName, szKey) that callee-cleans 8 bytes (reloc-masked).
+struct CResRegistry { // m_c->m_10  (FUN_00155360)
+    void Release(const char* szName, const char* szKey);
+};
+// The pooled resource Free (FUN_00137a80) + the per-frame tick (FUN_00136e20),
+// both __thiscall on the resource object (reloc-masked).
+struct CPooledRes {
+    void Free();          // FUN_00137a80, no-arg
+    void TickAnim(int z); // FUN_00136e20, ret 4
+};
+struct CResLeafRegistry { // m_c->m_28  (FUN_00157c70 + the m_2c resource)
+    void Release(const char* szName, const char* szKey); // FUN_00157c70
+    char m_pad00[0x2c];
+    CPooledRes* m_2c; // +0x2c  pooled resource (Free() if set)
+};
+struct CResWorkerList {    // m_c->m_c  (FUN_00163c60)
+    void DisposeWorkers(); // FUN_00163c60, thiscall no-arg
+};
+
+// The flip target the slot-10 poll drives: m_c->m_4->m_10->m_2c->Flip(0), with a
+// Flush() on m_4 first (both reloc-masked __thiscall).
+struct CFlipTarget {
+    void Flip(int z); // FUN_0013e850, ret 4
+};
+struct CRenderM10 {
+    char m_pad00[0x2c];
+    CFlipTarget* m_2c; // +0x2c  flip target
+};
+struct CRenderM4 {
+    void Flush(); // FUN_00558ee0, no-arg
+    char m_pad00[0x10];
+    CRenderM10* m_10; // +0x10
+};
+
+// The CState+0xc resource view, as the teardown / poll paths walk it.
+struct CStateResView {
+    char m_pad00[0x04];
+    CRenderM4* m_4; // +0x04  render/flip view (slot-10 poll)
+    char m_pad08[0x0c - 0x08];
+    CResWorkerList* m_c; // +0x0c  worker list (CMenuState dispose)
+    CResRegistry* m_10;  // +0x10  name registry
+    char m_pad14[0x28 - 0x14];
+    CResLeafRegistry* m_28; // +0x28  leaf registry + pooled resource
+};
+
+// FUN_00137a80 Free + FUN_004a0360 menu-UI pre-delete are thiscall no-arg
+// externs on their respective objects; model as methods so the `mov ecx,obj;
+// call rel32` falls out with no stack cleanup.
+struct CMenuUIRes {   // CMenuState::m_1b4 object (pre-delete release)
+    void PreDelete(); // FUN_004a0360
+};
+
+// CState::~CState() chains the WAP32 base cleanup; the leaf `??1`s re-stamp the
+// base vtable and call it (compiler-emitted). `operator delete` is reached by
+// the synthesized `??_G`; declare it so /GX tracks the EH state.
+void operator delete(void*);
+
+// GenMenuRandPos (0x19cd0): a free __stdcall helper (no `this`; the trace
+// mis-attributed it to CState - it is reached via a thunk from a CState method
+// but takes only stack args). Generates a random {x,y} spawn position by edge,
+// selected by `sel` (1..8); the edge cases share rand-modulo tails (the goto
+// labels mirror the retail jump-table fall-throughs). Both output pointers must
+// be non-null. Rand() = signed game RNG; RandRange(0,N) = uniform [0,N).
+
+// The global game registry facet these CState helpers read: m_10 a presence gate,
+// m_11c the item passed to ConfigureItem, plus the Rand() / RandRange() __thiscall
+// helpers (all reloc-masked).
+struct WwdGameReg {
+    int Rand();                    // FUN_0040cd00, no-arg signed rand
+    int RandRange(int lo, int hi); // FUN_00419f50, ret 8
+    char m_pad00[0x10];
+    int m_10; // +0x10  presence gate
+    char m_pad14[0x11c - 0x14];
+    int m_11c; // +0x11c  configure item value
+};
+extern WwdGameReg* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A (reloc-masked)
+
+// @early-stop
+// regalloc coin-flip wall (~89%): all 8 cases + shared tails + idiv constants are
+// byte-identical; the sole residual is outX/outY swapped between esi/edi (retail
+// outX->edi/outY->esi, recompile outX->esi/outY->edi). A named-local pin
+// (docs/patterns/pin-local-for-callee-saved-reg.md) did NOT flip it -> the pure
+// allocator coin-flip that doc flags as the zero-register-pinning.md wall.
+RVA(0x00019cd0, 0x1df)
+void __stdcall GenMenuRandPos(int sel, int* outX, int* outY) {
+    if (!outX || !outY) {
+        return;
+    }
+    switch (sel) {
+        case 1:
+            *outX = g_gameReg->Rand() % 0x281;
+            *outY = 0x1e0;
+            return;
+        case 5:
+            *outX = g_gameReg->Rand() % 0x281;
+            *outY = 0;
+            return;
+        case 3:
+            *outX = 0;
+            goto y_1e1;
+        case 7:
+            *outX = 0x280;
+            goto y_1e1;
+        y_1e1:
+            *outY = g_gameReg->Rand() % 0x1e1;
+            return;
+        case 2:
+            if (g_gameReg->Rand() % 2) {
+                *outX = 0;
+                goto y_f1;
+            }
+            *outX = g_gameReg->Rand() % 0x141;
+            *outY = 0x1e0;
+            return;
+        case 8:
+            if (g_gameReg->Rand() % 2) {
+                *outX = 0x280;
+                goto y_f1;
+            }
+            *outX = g_gameReg->Rand() % 0x141 + 0x140;
+            *outY = 0x1e0;
+            return;
+        y_f1:
+            *outY = g_gameReg->Rand() % 0xf1 + 0xf0;
+            return;
+        case 4:
+            if (g_gameReg->Rand() % 2) {
+                *outX = g_gameReg->RandRange(0, 0x140);
+                *outY = 0;
+                return;
+            }
+            *outX = 0;
+            goto y_f0;
+        case 6:
+            if (g_gameReg->RandRange(0, 1)) {
+                *outX = g_gameReg->RandRange(0, 0x140) + 0x140;
+                *outY = 0;
+                return;
+            }
+            *outX = 0x280;
+            goto y_f0;
+        y_f0:
+            *outY = g_gameReg->RandRange(0, 0xf0);
+            return;
+    }
+}
+
+// CBootyState::ReleaseResources() (slot 2 / +0x8): release the BOOTY resource
+// set, then chain BaseCleanup. The `m_c` view's leaf registry (m_28) holds a
+// pooled resource (Free if set) and releases two named sound sets; the name
+// registry (m_10) releases two named sprite sets. Also reached directly from
+// ~CBootyState (statically bound) - the booty teardown.
+RVA(0x00018c90, 0x72)
+void CBootyState::ReleaseResources() {
+    // The view (m_c) is re-read for every access (retail does not cache it).
+    CPooledRes* r = ((CStateResView*)m_c)->m_28->m_2c;
+    if (r) {
+        r->Free();
+    }
+    ((CStateResView*)m_c)->m_28->Release("BOOTY", "_");
+    ((CStateResView*)m_c)->m_28->Release("GRUNTZ_WANDGRUNT", "_");
+    ((CStateResView*)m_c)->m_10->Release("BOOTY", "_");
+    ((CStateResView*)m_c)->m_10->Release("GRUNTZ_GOKARTGRUNT", "_");
+    ((CGameModeBase*)this)->BaseCleanup();
+}
 
 // ===========================================================================
 // The concrete states - each overrides Update() to return its state-ID tag.
@@ -505,3 +681,158 @@ int CCreditsState::LoadCreditzStateAssets(int a1, int a2, int a3) {
 // @stub
 RVA(0x00039570, 0x122)
 void CCreditsState::InitAttractTitle() {}
+
+// ===========================================================================
+// CMenuState / CBootyState teardown (the `??1` destructors + the slot-2
+// resource-release virtuals). Compiled under /GX (gamemode unit = "eh"): the
+// destructors carry the C++ EH frame the retail `??1` does. The destructor
+// re-stamps its own vtable, calls the slot-2 release (statically bound), then
+// re-stamps the CState vtable and chains BaseCleanup (compiler-emitted).
+// ===========================================================================
+
+// CMenuState::ReleaseResources() (slot 2 / +0x8): release the MENU resource set
+// (name registry + leaf registry), dispose the worker list, free the menu UI
+// object, then chain BaseCleanup. Also reached directly from ~CMenuState.
+RVA(0x000a02c0, 0x7d)
+void CMenuState::ReleaseResources() {
+    // m_c re-read for each access (retail does not cache it); the null-guarded
+    // block tests m_c once and reuses it for both the Free and DisposeWorkers.
+    ((CStateResView*)m_c)->m_10->Release("MENU", "_");
+    ((CStateResView*)m_c)->m_28->Release("MENU", "_");
+    if (m_c) {
+        // The test value of m_c is reused for the leaf-registry access; the
+        // worker-list dispose re-reads m_c fresh (retail does not cache it).
+        CPooledRes* r = ((CStateResView*)m_c)->m_28->m_2c;
+        if (r) {
+            r->Free();
+        }
+        ((CStateResView*)m_c)->m_c->DisposeWorkers();
+    }
+    // m_1b4 IS cached (retail holds it in edi across the pre-delete + delete).
+    CGMMenuUI* ui = m_1b4;
+    if (ui) {
+        ((CMenuUIRes*)ui)->PreDelete();
+        operator delete(ui);
+        m_1b4 = 0;
+    }
+    ((CGameModeBase*)this)->BaseCleanup();
+}
+
+// CMenuState::~CMenuState() (`??1`, 0x8ce60): run the menu teardown then chain
+// the base. ReleaseResources/the base ~CState are statically bound in the dtor.
+RVA(0x0008ce60, 0x55)
+CMenuState::~CMenuState() {
+    ReleaseResources();
+}
+
+// CBootyState::~CBootyState() (`??1`, 0x8d440): run the booty teardown then
+// chain the base.
+RVA(0x0008d440, 0x55)
+CBootyState::~CBootyState() {
+    ReleaseResources();
+}
+
+// ===========================================================================
+// CMenuState per-frame music/poll helpers (0xa05a0/0xa0640) and the slot-10
+// per-frame poll (0xa06d0). They share the menu music controller at +0x1bc and
+// the global game registry / draw-clock idiom (see StatusBarUpdaters.cpp).
+// ===========================================================================
+
+// The menu music controller (CMenuState+0x1bc): a player @+0x10 with a draw-clock
+// gate (last @+0x14, interval @+0x18). The player has IsPlaying / Stop /
+// ConfigureItem __thiscall slots (reloc-masked externs).
+struct CMenuMusicPlayer {                           // m_1bc->m_10
+    int IsPlaying();                                // FUN_001353f0, ret value
+    void Stop(int a, int b, int c);                 // FUN_00135660, ret 0xc
+    void ConfigureItem(int a, int b, int c, int d); // FUN_001360d0, ret 0x10
+};
+struct CMenuMusic {
+    char m_pad00[0x10];
+    CMenuMusicPlayer* m_10; // +0x10  player
+    int m_14;               // +0x14  last draw-clock
+    int m_18;               // +0x18  interval
+};
+
+// CMenuState::FormatHudText(int) (0x1af70): the 960-byte HUD-text formatter - an
+// 8-case switch that sprintf()s the game clock (MM:SS via the imul-by-0x10624dd3
+// divide-by-60), score, and "%d of %d" progress into a buffer, each case applying
+// the `redundant-sibling-guard-retest` idiom over g_gameReg->m_7c. Deferred to the
+// final sweep: a >512-byte variadic-sprintf switch is left stubbed rather than
+// half-reconstructed (would diverge its regalloc/schedule). See the orchestrator
+// big-function rule.
+// @confidence: med
+// @source: decomp-xref
+// @stub
+RVA(0x0001af70, 0x3c0)
+void CMenuState::FormatHudText(int) {}
+
+// The draw-clock mirror + the reentrancy gate the menu music poll save/restores.
+extern "C" unsigned int g_6bf3c0; // draw-clock mirror
+extern int g_61ab20;              // DAT_0061ab20 reentrancy gate
+
+// CMenuState::StartMusic() (0xa05a0): if the menu music + the registry gate are
+// live, push the configured item into the player on the draw-clock window, under
+// a save/restored reentrancy gate.
+RVA(0x000a05a0, 0x74)
+void CMenuState::StartMusic() {
+    if (m_1bc == 0) {
+        return;
+    }
+    if (g_gameReg->m_10 == 0) {
+        return;
+    }
+    int saved = g_61ab20;
+    int flag = saved;
+    if (!saved) {
+        flag = 1;
+        g_61ab20 = 1;
+    }
+    int item = g_gameReg->m_11c;
+    CMenuMusic* mus = (CMenuMusic*)m_1bc;
+    if (flag) {
+        unsigned int clk = g_6bf3c0;
+        if (clk - mus->m_14 >= (unsigned)mus->m_18) {
+            mus->m_14 = clk;
+            mus->m_10->ConfigureItem(item, 0, 0, 1);
+        }
+    }
+    if (!saved) {
+        g_61ab20 = saved;
+    }
+}
+
+// CMenuState::StopMusicChain() (0xa0640): if the menu music is playing, request
+// a fade-out stop, then spin the cursor/anim tick until playback ends.
+RVA(0x000a0640, 0x6a)
+void CMenuState::StopMusicChain() {
+    if (m_1bc == 0) {
+        return;
+    }
+    CMenuMusic* mus = (CMenuMusic*)m_1bc;
+    if (!mus->m_10->IsPlaying()) {
+        return;
+    }
+    ((CMenuMusic*)m_1bc)->m_10->Stop(0, 0x1f4, 1);
+    if (!((CMenuMusic*)m_1bc)->m_10->IsPlaying()) {
+        return;
+    }
+    do {
+        CPooledRes* r = ((CStateResView*)m_c)->m_28->m_2c;
+        if (r) {
+            r->TickAnim(-1);
+        }
+    } while (((CMenuMusic*)m_1bc)->m_10->IsPlaying());
+}
+
+// CMenuState::FrameSlot28(int) (slot 10 / +0x28, 0xa06d0): flush + flip the menu
+// view, stamp the start clock, run the music-stop chain, then busy-wait m_1b8 ms.
+RVA(0x000a06d0, 0x5f)
+int CMenuState::FrameSlot28(int) {
+    ((CStateResView*)m_c)->m_4->Flush();
+    ((CStateResView*)m_c)->m_4->m_10->m_2c->Flip(0);
+    unsigned int start = timeGetTime();
+    StopMusicChain();
+    while (timeGetTime() < start + m_1b8)
+        ;
+    return 1;
+}

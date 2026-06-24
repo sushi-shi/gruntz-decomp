@@ -194,15 +194,33 @@ extern "C" char g_60ce74[]; // "MONOLITH" (FindSound name)
 // then the UI step + the on-screen version-string RECT draw.
 class CMenuState : public CState {
 public:
-    virtual int Update() OVERRIDE; // return 5;  (slot 4)
-    virtual int Render() OVERRIDE; // the per-frame menu draw (this TU)
+    // The ~CMenuState() destructor (EH-framed `??1` under /GX): it re-stamps the
+    // CMenuState vtable, runs the slot-2 resource release (ReleaseResources,
+    // statically bound in the dtor), then re-stamps the CState vtable and chains
+    // the base cleanup. Defined out-of-line (GameMode.cpp) so MSVC emits a
+    // distinct `??1` the `??_G` deleting dtor dispatches to.
+    virtual ~CMenuState() OVERRIDE;
+    virtual int Update() OVERRIDE;             // return 5;  (slot 4)
+    virtual int Render() OVERRIDE;             // the per-frame menu draw (this TU)
+    virtual void ReleaseResources() OVERRIDE;  // slot 2 (+0x8) - menu teardown
+    virtual int FrameSlot28(int arg) OVERRIDE; // slot 10 (+0x28) - per-frame poll
 
     // CMenuState's own methods (the rel32 thunks Render dispatches to with
     // `mov ecx,this`). External no-body -> reloc-masked.
     void DrawVersion(CGMVerRect r); // (this, RECT by value)
 
+    // Non-virtual menu helpers (called from FrameSlot28 / its siblings).
+    void StartMusic();     // 0xa05a0 - music start gate
+    void StopMusicChain(); // 0xa0640 - stop + cue chain
+
+    // 0x1af70 - the 960-B HUD-text formatter switch (8 cases of sprintf over the
+    // game-reg clock/score fields). Deferred to the final sweep (see GameMode.cpp).
+    void FormatHudText(int sel);
+
     char m_pad1a8[0x1b4 - 0x1a8];
     CGMMenuUI* m_1b4; // +0x1b4 the menu UI object the scans drive
+    int m_1b8;        // +0x1b8 fade/poll duration
+    int m_1bc;        // +0x1bc music sub-object / enable gate
 
     void BuildVersionString(int, int, int, int);
 };
@@ -242,7 +260,12 @@ public:
 
 class CBootyState : public CState {
 public:
-    virtual int Update() OVERRIDE; // return 0xa; (slot 4)
+    // ~CBootyState() (EH-framed `??1`): re-stamp the CBootyState vtable, run the
+    // slot-2 release (statically bound), re-stamp the CState vtable, chain the
+    // base cleanup. Out-of-line so MSVC emits a distinct `??1`. See GameMode.cpp.
+    virtual ~CBootyState() OVERRIDE;
+    virtual int Update() OVERRIDE;            // return 0xa; (slot 4)
+    virtual void ReleaseResources() OVERRIDE; // slot 2 (+0x8) - booty teardown
 
     // Engine-label backlog stub (non-virtual placeholder; vtable-neutral).
     void vfunc_1(); // stub

@@ -501,18 +501,7 @@ class CSingleAnimation {
 public:
     void CSingleAnimation_010540();
 };
-class CState {
-public:
-    void CState_018c90();
-    void CState_019cd0();
-    void CState_01af70();
-    void CState_08ce60();
-    void CState_08d440();
-    void CState_0a02c0();
-    void CState_0a05a0();
-    void CState_0a0640();
-    void CState_0a06d0();
-};
+// CState migrated to src/Gruntz/GameMode.cpp (CMenuState/CBootyState methods).
 class CStaticHazard {
 public:
     void CStaticHazard_012b30();
