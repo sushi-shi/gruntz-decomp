@@ -441,17 +441,7 @@ void CGruntzMgr::CGruntzMgr_111ec0() {}
 RVA(0x00010410, 0x44)
 void CGuardPoint::CGuardPoint_010410() {}
 
-// ---- CInGameIcon ----
-RVA(0x00011d00, 0x44)
-void CInGameIcon::CInGameIcon_011d00() {}
-RVA(0x00097680, 0xf5)
-void CInGameIcon::CInGameIcon_097680() {}
-RVA(0x000986b0, 0x30c)
-void CInGameIcon::CInGameIcon_0986b0() {}
-RVA(0x00098c90, 0x31f)
-void CInGameIcon::CInGameIcon_098c90() {}
-RVA(0x00099b10, 0x36)
-void CInGameIcon::CInGameIcon_099b10() {}
+// ---- CInGameIcon ---- migrated to src/Gruntz/CInGameIcon.cpp (all 5 methods).
 
 // ---- CInGameText ----
 RVA(0x00011dc0, 0x44)

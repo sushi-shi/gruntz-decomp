@@ -114,6 +114,11 @@ source = "src/Gruntz/UserLogic.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "ingameicon"
+source = "src/Gruntz/CInGameIcon.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "gameobjectctors"
 source = "src/Gruntz/GameObjectCtors.cpp"
 flags = "eh"

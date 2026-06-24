@@ -302,14 +302,6 @@ class CGuardPoint {
 public:
     void CGuardPoint_010410();
 };
-class CInGameIcon {
-public:
-    void CInGameIcon_011d00();
-    void CInGameIcon_097680();
-    void CInGameIcon_0986b0();
-    void CInGameIcon_098c90();
-    void CInGameIcon_099b10();
-};
 class CInGameText {
 public:
     void CInGameText_011dc0();

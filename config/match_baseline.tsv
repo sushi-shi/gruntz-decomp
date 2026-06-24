@@ -36,7 +36,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	18	17
 directsoundmgr	26	19
-engine_discovered	965	0
+engine_discovered	960	0
 engine_label_stubs	534	117
 filestream	13	9
 font	16	9
@@ -62,6 +62,7 @@ inffast	1	1
 inflate	7	6
 inftrees	6	6
 infutil	1	1
+ingameicon	5	2
 inputdeviceconfig	1	0
 kitchenslime	1	0
 logictypetable	1	0
@@ -509,11 +510,6 @@ engine_discovered	?CGruntzMgr_093460@CGruntzMgr@@QAEXXZ	0.2985	0.2985	1	ba48f6cf
 engine_discovered	?CGruntzMgr_093620@CGruntzMgr@@QAEXXZ	0.1826	0.1826	1	2ef823d0e35b	0x93620
 engine_discovered	?CGruntzMgr_111ec0@CGruntzMgr@@QAEXXZ	1.7391	1.7391	1	7289606f9e90	0x111ec0
 engine_discovered	?CGuardPoint_010410@CGuardPoint@@QAEXXZ	5.8824	5.8824	1	4e3b67105cbe	0x10410
-engine_discovered	?CInGameIcon_011d00@CInGameIcon@@QAEXXZ	5.8824	5.8824	1	00c21dac870d	0x11d00
-engine_discovered	?CInGameIcon_097680@CInGameIcon@@QAEXXZ	1.2987	1.2987	1	01d57bb70a2a	0x97680
-engine_discovered	?CInGameIcon_0986b0@CInGameIcon@@QAEXXZ	0.1619	0.1619	1	4e8de485e4e2	0x986b0
-engine_discovered	?CInGameIcon_098c90@CInGameIcon@@QAEXXZ	0.1365	0.1365	1	21caced16061	0x98c90
-engine_discovered	?CInGameIcon_099b10@CInGameIcon@@QAEXXZ	2.1053	2.1053	1	bade2a615560	0x99b10
 engine_discovered	?CInGameText_011dc0@CInGameText@@QAEXXZ	5.8824	5.8824	1	981463c96391	0x11dc0
 engine_discovered	?CInGameText_099460@CInGameText@@QAEXXZ	0.5333	0.5333	1	2cf0b5c3a5dc	0x99460
 engine_discovered	?CInGameText_099a30@CInGameText@@QAEXXZ	0.4762	0.4762	1	cea309c35927	0x99a30
@@ -2076,6 +2072,11 @@ inftrees	_inflate_trees_dynamic	100.0000	100.0000	1	dfefcb841088	0x18a850
 inftrees	_inflate_trees_fixed	100.0000	100.0000	1	0a70daff599f	0x18a940
 inftrees	_inflate_trees_free	100.0000	100.0000	1	f385d577afa6	0x18aab0
 infutil	_inflate_flush	100.0000	100.0000	1	e0e7519d9f47	0x18b300
+ingameicon	??1CInGameIcon@@UAE@XZ	100.0000	100.0000	1	fde4a2ce1197	0x11d00
+ingameicon	?HandleInput@CInGameIcon@@QAEHXZ	90.8442	90.8442	1	97b03c551262	0x97680
+ingameicon	?PlaceAt@CInGameIcon@@QAEHHH@Z	71.2551	71.2551	1	1e9fa2180f17	0x986b0
+ingameicon	?Serialize@CInGameIcon@@QAEHPAVCArchive@@HHH@Z	0.6826	0.6826	1	b1927f1743b3	0x98c90
+ingameicon	?SetField54@CInGameIcon@@QAEXH@Z	100.0000	100.0000	1	47953e78bc5c	0x99b10
 inputdeviceconfig	?LoadInputDeviceConfig@CInputConfig@@QAE?AVCString@@H@Z	77.3265	77.3265	4	cbb58c336f38	0x387c0
 kitchenslime	?LoadSprites@CKitchenSlime@@QAEXXZ	71.0000	71.0000	3	0037ec293dc9	0xb3160
 logictypetable	?BuildLogicTypeTable@@YGXPAUCLogicTypeBuilder@@@Z	87.9167	87.9167	6	313ac91839f7	0x8a40
