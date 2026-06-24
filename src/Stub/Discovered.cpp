@@ -2350,28 +2350,6 @@ void CmdHost_0953f0::CmdHost_0953f0_08cf30() {}
 RVA(0x00095140, 0x6e)
 void CmdHost_0953f0::CmdHost_0953f0_095140() {}
 
-// ---- DirectInputMgr2 ----
-RVA(0x00085fc0, 0x57)
-void DirectInputMgr2::DirectInputMgr2_085fc0() {}
-RVA(0x00132d90, 0x82)
-void DirectInputMgr2::DirectInputMgr2_132d90() {}
-RVA(0x00132e20, 0xb1)
-void DirectInputMgr2::DirectInputMgr2_132e20() {}
-RVA(0x00133080, 0x4a)
-void DirectInputMgr2::DirectInputMgr2_133080() {}
-RVA(0x001330d0, 0x3a)
-void DirectInputMgr2::DirectInputMgr2_1330d0() {}
-RVA(0x00133110, 0x4a)
-void DirectInputMgr2::DirectInputMgr2_133110() {}
-RVA(0x00133160, 0x3a)
-void DirectInputMgr2::DirectInputMgr2_133160() {}
-RVA(0x001331a0, 0x37)
-void DirectInputMgr2::DirectInputMgr2_1331a0() {}
-RVA(0x001331e0, 0x7c)
-void DirectInputMgr2::DirectInputMgr2_1331e0() {}
-RVA(0x00133260, 0x4a)
-void DirectInputMgr2::DirectInputMgr2_133260() {}
-
 // ---- DirectSoundMgr ----
 RVA(0x00135640, 0x1c)
 void DirectSoundMgr::DirectSoundMgr_135640() {}

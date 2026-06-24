@@ -1599,19 +1599,6 @@ public:
     void CmdHost_0953f0_08cf30();
     void CmdHost_0953f0_095140();
 };
-class DirectInputMgr2 {
-public:
-    void DirectInputMgr2_085fc0();
-    void DirectInputMgr2_132d90();
-    void DirectInputMgr2_132e20();
-    void DirectInputMgr2_133080();
-    void DirectInputMgr2_1330d0();
-    void DirectInputMgr2_133110();
-    void DirectInputMgr2_133160();
-    void DirectInputMgr2_1331a0();
-    void DirectInputMgr2_1331e0();
-    void DirectInputMgr2_133260();
-};
 class DirectSoundMgr {
 public:
     void DirectSoundMgr_135640();

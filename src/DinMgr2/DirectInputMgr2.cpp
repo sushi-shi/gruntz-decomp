@@ -72,9 +72,35 @@ extern "C" int g_thirdEnabled; // 0x653ab0
 DATA(0x002293f4)
 extern "C" char g_emptyString[]; // 0x6293f4
 
+// The engine allocator / deallocator (global operator new / delete) - reloc-
+// masked rel32 (cdecl: callers `add esp,4`). Same address every TU.
+void* operator new(unsigned int);
+void operator delete(void*);
+
+// The foreign device-config vftable InitA stamps into its new'd 0x338 object
+// (@0x5ef628). Referenced as DIR32 data; we never emit this vtable.
+DATA(0x001ef628)
+extern void* g_deviceConfigVtblA; // 0x5ef628
+
+// The config blob InitA passes to CDeviceConfigA::CreateDev (@0x5ef548), pushed
+// by address (reloc-masked DIR32 operand).
+DATA(0x001ef548)
+extern const unsigned char g_deviceConfigA[]; // 0x5ef548
+
 // ===========================================================================
 // DirectInputMgr2 (DinMgr2.cpp) - the device manager.
 // ===========================================================================
+
+// DirectInputMgr2::~DirectInputMgr2 (__thiscall). Runs Shutdown() to release the
+// live devices + DInput object, then the /GX compiler auto-destructs the two
+// member sub-objects in reverse declaration order: the m_2c CDeviceList
+// (0x1b48c6) then the m_18 CPtrArray (0x1b4f3e). The EH frame (push -1 / push
+// handler / mov fs:0) wraps the two member dtors; the `mov [esp+0x10],1 / 0 / -1`
+// stores are the unwind try-level stamps the compiler advances after each.
+RVA(0x00085fc0, 0x57)
+DirectInputMgr2::~DirectInputMgr2() {
+    Shutdown();
+}
 
 // DirectInputMgr2::Create (__thiscall, ret 0xc => 3 args). Creates the DInput
 // object via DirectInputCreateA (version 0x500) into m_0, reporting + bailing on
@@ -115,6 +141,78 @@ int DirectInputMgr2::Create(void* owner, void* hinst, unsigned long flags) {
     return 1;
 }
 
+// DirectInputMgr2::Shutdown (__thiscall, no args). When the DInput object is live,
+// scalar-deletes the two cached devices (m_10/m_14), then every non-null element
+// of the m_18 CPtrArray, empties the array (SetSize(0,-1)), frees the m_2c device
+// list (FreeDeviceList), and finally Releases the m_0 DInput object.
+RVA(0x00132d90, 0x82)
+void DirectInputMgr2::Shutdown() {
+    if (m_0 == 0) {
+        return;
+    }
+    if (m_10 != 0) {
+        m_10->ScalarDtor(1);
+        m_10 = 0;
+    }
+    if (m_14 != 0) {
+        m_14->ScalarDtor(1);
+        m_14 = 0;
+    }
+    int n = m_18.m_size;
+    for (int i = 0; i < n; i++) {
+        CInputDeviceBase* d = (i >= 0 && i < m_18.m_size) ? m_18.m_data[i] : 0;
+        if (d != 0) {
+            d->ScalarDtor(1);
+        }
+    }
+    m_18.SetSize(0, -1);
+    FreeDeviceList();
+    m_0->vtbl->Release(m_0);
+    m_0 = 0;
+}
+
+// DirectInputMgr2::InitA (__thiscall, ret 4 => 1 arg = flags). When the DInput
+// object exists, new's a 0x338-byte CDeviceConfigA, inits its fields + stamps its
+// foreign vftable, then CreateDev(m_0, g_deviceConfigA, m_4, flags). On failure
+// scalar-deletes it (m_14) and returns 0; on success keeps it in m_14, returns 1.
+// @early-stop
+// zero-register-pin wall (docs/patterns/zero-register-pinning.md): logic + offsets
+// byte-exact, residual is the this<->0 ebx/esi swap + the rep-stos `lea edi` hoist
+// scheduling, no /O2 source lever flips it. 86.5%.
+RVA(0x00132e20, 0xb1)
+int DirectInputMgr2::InitA(unsigned long flags) {
+    IDirectInputZ* di = m_0;
+    if (di == 0) {
+        return 0;
+    }
+    CDeviceConfigA* raw = (CDeviceConfigA*)operator new(sizeof(CDeviceConfigA));
+    CDeviceConfigA* dev;
+    if (raw != 0) {
+        raw->m_004 = 0;
+        raw->m_008 = 0;
+        raw->m_29c = 0;
+        raw->m_2a0 = 0;
+        raw->m_2a8 = -1;
+        raw->m_2ac = 0;
+        raw->m_2b0 = 0;
+        raw->m_vptr = &g_deviceConfigVtblA;
+        memset(raw->_pad2b4, 0, 0x80);
+        raw->m_334 = 0;
+        dev = raw;
+    } else {
+        dev = 0;
+    }
+    m_14 = (CInputDeviceBase*)dev;
+    if (dev->CreateDev(m_0, g_deviceConfigA, m_4, flags) == 0) {
+        if (m_14 != 0) {
+            m_14->ScalarDtor(1);
+        }
+        m_14 = 0;
+        return 0;
+    }
+    return 1;
+}
+
 // DirectInputMgr2::EnumGameControllers (__thiscall, ret 4 => 1 arg; the arg is
 // unused). When the DInput object exists, enumerates game controllers via
 // IDirectInput::EnumDevices(devType=4, callback, ref=this, flags=1); reports a
@@ -131,6 +229,133 @@ int DirectInputMgr2::EnumGameControllers(unsigned long) {
         return 0;
     }
     return 1;
+}
+
+// DirectInputMgr2::PollAll (__thiscall, no args). Polls both cached devices
+// (m_14 then m_10, slot 4) and the m_18 array (PollArrayA); returns 1 iff none
+// of the three reported a failure.
+RVA(0x00133080, 0x4a)
+int DirectInputMgr2::PollAll() {
+    int failed = 0;
+    if (m_14 != 0 && m_14->PollA() == 0) {
+        failed = 1;
+    }
+    if (m_10 != 0 && m_10->PollA() == 0) {
+        failed = 1;
+    }
+    if (PollArrayA() == 0) {
+        failed = 1;
+    }
+    return failed == 0;
+}
+
+// DirectInputMgr2::PollArrayA (__thiscall, no args). Polls every non-null element
+// of the m_18 CPtrArray (slot 4); returns 1 iff none failed.
+RVA(0x001330d0, 0x3a)
+int DirectInputMgr2::PollArrayA() {
+    int failed = 0;
+    int n = m_18.m_size;
+    for (int i = 0; i < n; i++) {
+        CInputDeviceBase* d = m_18.m_data[i];
+        if (d != 0 && d->PollA() == 0) {
+            failed = 1;
+        }
+    }
+    return failed == 0;
+}
+
+// DirectInputMgr2::ReadAll (__thiscall, no args). As PollAll but the array is
+// processed by PollArrayB (slot 5).
+RVA(0x00133110, 0x4a)
+int DirectInputMgr2::ReadAll() {
+    int failed = 0;
+    if (m_14 != 0 && m_14->PollA() == 0) {
+        failed = 1;
+    }
+    if (m_10 != 0 && m_10->PollA() == 0) {
+        failed = 1;
+    }
+    if (PollArrayB() == 0) {
+        failed = 1;
+    }
+    return failed == 0;
+}
+
+// DirectInputMgr2::PollArrayB (__thiscall, no args). As PollArrayA but dispatches
+// the array elements' slot 5 (PollB).
+RVA(0x00133160, 0x3a)
+int DirectInputMgr2::PollArrayB() {
+    int failed = 0;
+    int n = m_18.m_size;
+    for (int i = 0; i < n; i++) {
+        CInputDeviceBase* d = m_18.m_data[i];
+        if (d != 0 && d->PollB() == 0) {
+            failed = 1;
+        }
+    }
+    return failed == 0;
+}
+
+// DirectInputMgr2::FreeDeviceList (__thiscall, no args). Walks the m_2c device
+// list (head at +0x30), destructs+frees each node's payload, then empties the
+// list (RemoveAll).
+RVA(0x001331a0, 0x37)
+void DirectInputMgr2::FreeDeviceList() {
+    CDeviceListNode* node = m_2c.m_head;
+    while (node != 0) {
+        CDeviceListNode* cur = node;
+        node = node->m_next;
+        void* payload = cur->m_payload;
+        if (payload != 0) {
+            ((CDeviceListNode*)payload)->ConfigDtor();
+            operator delete(payload);
+        }
+    }
+    m_2c.RemoveAll();
+}
+
+// DirectInputMgr2::AddController (__thiscall, ret 0xc => 3 args). When count!=0,
+// new's a 0x88-byte node, inits next/+4 to 0, ConfigCreate()s it; on failure
+// destructs+frees it and returns 0; on success appends it to the m_2c list and
+// returns it.
+RVA(0x001331e0, 0x7c)
+void* DirectInputMgr2::AddController(int count, int a2, int a3) {
+    if (count == 0) {
+        return 0;
+    }
+    void* raw = operator new(0x88);
+    CDeviceListNode* node;
+    if (raw != 0) {
+        ((CDeviceListNode*)raw)->m_next = 0;
+        ((CDeviceListNode*)raw)->m_004 = 0;
+        node = (CDeviceListNode*)raw;
+    } else {
+        node = 0;
+    }
+    if (node->ConfigCreate(count, a2, a3) == 0) {
+        if (node != 0) {
+            node->ConfigDtor();
+            operator delete(node);
+        }
+        return 0;
+    }
+    m_2c.Add(node);
+    return node;
+}
+
+// DirectInputMgr2::AddControllerArr (__thiscall, ret 0x1c => 7 args). A trampoline
+// that copies its 7 stack dwords into a local buffer and forwards (&buf, 6, last)
+// to AddController.
+RVA(0x00133260, 0x4a)
+void DirectInputMgr2::AddControllerArr(int a1, int a2, int a3, int a4, int a5, int a6, int a7) {
+    int buf[6];
+    buf[0] = a1;
+    buf[1] = a2;
+    buf[2] = a3;
+    buf[3] = a4;
+    buf[4] = a5;
+    buf[5] = a6;
+    AddController((int)buf, 6, a7);
 }
 
 // ---------------------------------------------------------------------------
