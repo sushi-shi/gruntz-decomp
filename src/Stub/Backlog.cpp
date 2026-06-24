@@ -5,10 +5,54 @@
 // Backlog.cpp - engine-label stubs without a class attribution.
 
 // Folded engine-label stubs with a known owning class.
+// A named asset-namespace registry slot (BootyState's m_28/m_2c/m_30). Lookup()
+// finds a child set by name and returns a handle (reloc-masked __thiscall).
+struct BootyNamespace {
+    int Lookup(char* szName); // FUN_0013bae0 __thiscall
+};
+// The registrar object reached via BootyState::m_c->m_10. Its vtable slot +0x4c
+// registers a looked-up image set under a prefix (returns -1 on failure). The
+// slot is a __thiscall virtual; modeled as a pointer-to-member loaded from the
+// vtable so MSVC emits `mov edx,[ecx]; call [edx+0x4c]`. The class must be
+// COMPLETE before the T::* typedef so the PMF stays 4 bytes (no this-adjustor) -
+// see docs/patterns/pmf-complete-class-4byte.md.
+struct BootyRegistrarVtbl; // opaque; the PMF lives at offset 0x4c inside it
+struct BootyRegistrar {
+    BootyRegistrarVtbl* m_vtbl; // +0x00
+    int CallRegister(int handle, char* prefix, char* sep);
+};
+typedef int (BootyRegistrar::*BootyRegFn)(int handle, char* prefix, char* sep);
+struct BootyRegistrarVtbl {
+    char m_pad00[0x4c];
+    BootyRegFn Register; // +0x4c
+};
+inline int BootyRegistrar::CallRegister(int handle, char* prefix, char* sep) {
+    return (this->*(m_vtbl->Register))(handle, prefix, sep);
+}
+struct CGruntDataLoader { // BootyState::m_c->m_4 sub-object
+    void Load();          // FUN @ 0x158ee0 __thiscall (reloc-masked)
+};
+struct BootyAssetRoot { // BootyState::m_c
+    char m_pad00[0x4];
+    CGruntDataLoader* m_4; // +0x04
+    char m_pad08[0x10 - 0x8];
+    BootyRegistrar* m_10; // +0x10  vtable-bearing registrar (slot +0x4c)
+};
 class BootyState {
 public:
     void vfunc_9(int);
-    void OnActivate_vfunc8();
+    int OnActivate_vfunc8();
+    int BaseOnActivate();                                             // base vfunc8 (reloc-masked)
+    int RegisterMultiNamespaces(char* mode, int, int, int, int, int); // FUN @ 0x1e60
+    void OnActivated();                                               // FUN @ 0x3fdf (reloc-masked)
+    void StartTimer(int, int, int, int);                              // FUN @ 0x1843 (reloc-masked)
+
+    char m_pad00[0xc];
+    BootyAssetRoot* m_c; // +0x0c
+    char m_pad10[0x28 - 0x10];
+    BootyNamespace* m_28; // +0x28  "LEVEL" image namespace
+    BootyNamespace* m_2c; // +0x2c  "BOOTY" image namespace
+    BootyNamespace* m_30; // +0x30  "GRUNTZ" image namespace
 };
 class ButeMgr {
 public:
@@ -64,6 +108,39 @@ public:
     void vfunc_12(int, int);
     void vfunc_16(int, int, int);
 };
+// The icon-key registry object BuildPowerupIconKeys writes into (arg1=esi).
+// SetGroup() seeds the "GAME_INGAMEICONZ" group key, Add() appends one entry.
+// Both __thiscall, reloc-masked externals.
+class PowerupKeyRegistry {
+public:
+    void SetGroup(char* key); // FUN_001b9e74 __thiscall
+    void Add(char* key);      // FUN_001ba0c8 __thiscall
+};
+
+// MFC CString modeled by its GetBuffer/ReleaseBuffer (reloc-masked __thiscall
+// externals) for the COM-registry helper Stub_1bf702. (engine_label_stubs pulls
+// <windows.h> first, so the real <afx.h> can't follow.)
+struct EngCString {
+    char* m_pszData;
+    char* GetBuffer(int nMinBufLength); // CString::GetBuffer, FUN_001ba11c
+    void ReleaseBuffer(int nNewLength); // CString::ReleaseBuffer, FUN_001ba16b
+};
+
+// CConfigStore - the engine's registry-or-INI config wrapper. When m_7c (a
+// registry subkey path under HKCU\Software\...) is set the value getters go
+// through ADVAPI32!Reg*; when it is null they fall back to GetPrivateProfile*
+// against the INI file named by m_90. Only offsets are load-bearing.
+class CConfigStore {
+public:
+    HKEY OpenRoot();              // Stub_1d4ee3  __thiscall, opens HKCU\Software\<m_7c>
+    HKEY OpenSubKey(char* szSub); // Stub_1d4f77  __thiscall
+    int GetInt(char* szSection, char* szKey, int nDefault); // Stub_1d4fbd
+
+    char m_pad00[0x7c];
+    char* m_7c; // +0x7c  registry subkey path (null -> use INI)
+    char m_pad80[0x90 - 0x80];
+    char* m_90; // +0x90  INI file path (used in INI fallback)
+};
 
 namespace EngineLabelBacklog {
 
@@ -75,10 +152,10 @@ namespace EngineLabelBacklog {
     void BuildBootyPerfectAnimation();
     void ShowLevelCompleteMessage();
     void BuildBootyGruntIdleAnimation();
-    void __stdcall BuildPowerupIconKeys(int, int);
+    void __stdcall BuildPowerupIconKeys(PowerupKeyRegistry* reg, int key);
     void DrawBattleStats();
     void StartUpPrompt();
-    void Stub_01fd70();
+    int Stub_01fd70(char* szPath);
     void LoadCheatConfig();
     void LoadCustomWorldInfo();
     void HandleFortConquered();
@@ -109,7 +186,7 @@ namespace EngineLabelBacklog {
     void DrawSaveGameMenu();
     void BuildLevelTitleString();
     void BuildSoundFontPath();
-    void Stub_0f90f0();
+    int Stub_0f90f0(char* szPath);
     void LoadStatzTabToggleSprite();
     void UpdateGruntOvenStatusBar();
     void UpdateChipGrinderStatusBar();
@@ -134,15 +211,12 @@ namespace EngineLabelBacklog {
     void _tr_init();
     void _ct_init();
     void Stub_18c780();
-    void __stdcall Stub_1bf702(int, int);
+    int __stdcall Stub_1bf702(char* szClsid, EngCString* out);
     void __stdcall Stub_1bf8f8(int, int);
     void __stdcall Stub_1c1609(int, int);
     void __stdcall Stub_1c176a(int, int);
     void Stub_1c7cb3();
     void __stdcall Stub_1ccb5c(int, int, int);
-    void Stub_1d4ee3();
-    void __stdcall Stub_1d4f77(int);
-    void __stdcall Stub_1d4fbd(int, int, int);
     void __stdcall Stub_1d5029(int, int, int, int);
     void __stdcall Stub_1d513b(int, int, int, int);
 } // namespace EngineLabelBacklog
@@ -197,11 +271,155 @@ void EngineLabelBacklog::ShowLevelCompleteMessage() {}
 RVA(0x0001ce60, 0x450)
 void EngineLabelBacklog::BuildBootyGruntIdleAnimation() {}
 
-// @confidence: med
 // @source: string-xref
-// @stub
+// BuildPowerupIconKeys - seeds the "GAME_INGAMEICONZ" icon-key group then
+// appends one tool/toy/powerup key string selected by `key` (a sparse switch;
+// out-of-range / gap keys fall through to POWERUPZ_COIN).
+// @early-stop
+// jump-table-data-overlap scoring wall (~53%): code bytes byte-exact vs retail
+// (verified by raw byte-compare; only the index-table/jump-table base reloc
+// operands + $L labels differ). See docs/patterns/jumptable-data-overlap.md.
 RVA(0x0001e720, 0x2fe)
-void __stdcall EngineLabelBacklog::BuildPowerupIconKeys(int, int) {}
+void __stdcall EngineLabelBacklog::BuildPowerupIconKeys(PowerupKeyRegistry* reg, int key) {
+    reg->SetGroup("GAME_INGAMEICONZ");
+    switch (key) {
+        case 1:
+            reg->Add("TOOLZ_BOMBZ");
+            return;
+        case 2:
+            reg->Add("TOOLZ_BOOMERANGZ");
+            return;
+        case 3:
+            reg->Add("TOOLZ_BRICKZ");
+            return;
+        case 4:
+            reg->Add("TOOLZ_CLUBZ");
+            return;
+        case 5:
+            reg->Add("TOOLZ_GAUNTLETZ");
+            return;
+        case 6:
+            reg->Add("TOOLZ_GLOVEZ");
+            return;
+        case 7:
+            reg->Add("TOOLZ_GOOBERZ");
+            return;
+        case 8:
+            reg->Add("TOOLZ_GRAVITYBOOTZ");
+            return;
+        case 9:
+            reg->Add("TOOLZ_GUNHATZ");
+            return;
+        case 10:
+            reg->Add("TOOLZ_NERFGUNZ");
+            return;
+        case 11:
+            reg->Add("TOOLZ_ROCKZ");
+            return;
+        case 12:
+            reg->Add("TOOLZ_SHIELDZ");
+            return;
+        case 13:
+            reg->Add("TOOLZ_SHOVELZ");
+            return;
+        case 14:
+            reg->Add("TOOLZ_SPRINGZ");
+            return;
+        case 15:
+            reg->Add("TOOLZ_SPYZ");
+            return;
+        case 16:
+            reg->Add("TOOLZ_SWORDZ");
+            return;
+        case 17:
+            reg->Add("TOOLZ_TIMEBOMBZ");
+            return;
+        case 18:
+            reg->Add("TOOLZ_TOOBZ");
+            return;
+        case 19:
+            reg->Add("TOOLZ_WANDZ");
+            return;
+        case 20:
+            reg->Add("TOOLZ_WARPSTONEZ1");
+            return;
+        case 21:
+            reg->Add("TOOLZ_WELDERZ");
+            return;
+        case 22:
+            reg->Add("TOOLZ_WINGZ");
+            return;
+        case 23:
+            reg->Add("TOYZ_BABYWALKERZ");
+            return;
+        case 24:
+            reg->Add("TOYZ_BEACHBALLZ");
+            return;
+        case 25:
+            reg->Add("TOYZ_BIGWHEELZ");
+            return;
+        case 26:
+            reg->Add("TOYZ_GOKARTZ");
+            return;
+        case 27:
+            reg->Add("TOYZ_JACKINTHEBOXZ");
+            return;
+        case 28:
+            reg->Add("TOYZ_JUMPROPEZ");
+            return;
+        case 29:
+            reg->Add("TOYZ_POGOSTICKZ");
+            return;
+        case 30:
+            reg->Add("TOYZ_SCROLLZ");
+            return;
+        case 31:
+            reg->Add("TOYZ_SQUEAKTOYZ");
+            return;
+        case 32:
+            reg->Add("TOYZ_YOYOZ");
+            return;
+        case 50:
+            reg->Add("POWERUPZ_MEGAPHONEZ");
+            return;
+        case 54:
+            reg->Add("POWERUPZ_GHOST");
+            return;
+        case 55:
+            reg->Add("POWERUPZ_SUPERSPEED");
+            return;
+        case 56:
+            reg->Add("POWERUPZ_INVULNERABILITY");
+            return;
+        case 57:
+            reg->Add("POWERUPZ_CONVERSION");
+            return;
+        case 58:
+            reg->Add("POWERUPZ_DEATHTOUCH");
+            return;
+        case 59:
+            reg->Add("POWERUPZ_ROIDZ");
+            return;
+        case 60:
+            reg->Add("POWERUPZ_REACTIVEARMOR");
+            return;
+        case 61:
+            reg->Add("POWERUPZ_RANDOMCOLORZ");
+            return;
+        case 62:
+            reg->Add("POWERUPZ_SCREENSHAKE");
+            return;
+        case 63:
+            reg->Add("POWERUPZ_BLACKSCREEN");
+            return;
+        case 64:
+            reg->Add("POWERUPZ_MINICAM");
+            return;
+        default:
+            reg->Add("POWERUPZ_COIN");
+            return;
+    }
+}
 
 // @confidence: med
 // @source: string-xref
@@ -209,11 +427,55 @@ void __stdcall EngineLabelBacklog::BuildPowerupIconKeys(int, int) {}
 RVA(0x0001ed30, 0x549)
 void EngineLabelBacklog::DrawBattleStats() {}
 
-// @confidence: med
 // @source: decomp-xref
-// @stub
+// BootyState::OnActivate_vfunc8 - on state activation: hide the cursor, register
+// the BOOTY/GRUNTZ/LEVEL image namespaces under the asset host, install the
+// "multi" namespaces, then kick the grunt-data load + the state timer.
 RVA(0x0001f6f0, 0x10b)
-void BootyState::OnActivate_vfunc8() {}
+int BootyState::OnActivate_vfunc8() {
+    if (!BaseOnActivate()) {
+        return 0;
+    }
+
+    while (ShowCursor(FALSE) >= 0)
+        ;
+
+    int h = m_2c->Lookup("IMAGEZ");
+    if (!h) {
+        return 0;
+    }
+    BootyRegistrar* reg = m_c->m_10;
+    if (reg->CallRegister(h, "BOOTY", "_") == -1) {
+        return 0;
+    }
+
+    h = m_30->Lookup("IMAGEZ");
+    if (!h) {
+        return 0;
+    }
+    reg = m_c->m_10;
+    if (reg->CallRegister(h, "GRUNTZ", "_") == -1) {
+        return 0;
+    }
+
+    h = m_28->Lookup("IMAGEZ");
+    if (!h) {
+        return 0;
+    }
+    reg = m_c->m_10;
+    if (reg->CallRegister(h, "LEVEL", "_") == -1) {
+        return 0;
+    }
+
+    if (!RegisterMultiNamespaces("multi", 0, 0, 0, 0, 1)) {
+        return 0;
+    }
+
+    OnActivated();
+    m_c->m_4->Load();
+    StartTimer(0x50, 0x3e8, 0, 1);
+    return 1;
+}
 
 // @confidence: high
 // @source: tomalla
@@ -523,9 +785,23 @@ void EngineLabelBacklog::BuildGruntzCrcInfo() {}
 
 // @confidence: med
 // @source: decomp-xref
-// @stub
+// BuildNamedGruntTable - seeds the 4 named-grunt CString globals (contiguous
+// array at 0x64bdb0) with their default names via CString::operator=(LPCSTR)
+// (FUN_001b9d4c, reloc-masked __thiscall).
+struct EngStrAssign {
+    char* m_pszData;
+    void operator=(const char* s); // CString::operator=, FUN_001b9d4c
+};
+// 4 contiguous CString globals at 0x64bdb0 (defined in the engine's data).
+DATA(0x0064bdb0)
+extern EngStrAssign g_gruntNames[4];
 RVA(0x000c16b0, 0x3d)
-void EngineLabelBacklog::BuildNamedGruntTable() {}
+void EngineLabelBacklog::BuildNamedGruntTable() {
+    g_gruntNames[0] = "Beefy";
+    g_gruntNames[1] = "Zed";
+    g_gruntNames[2] = "Serra";
+    g_gruntNames[3] = "Jebediah";
+}
 
 // @confidence: med
 // @source: string-xref
@@ -726,11 +1002,21 @@ void SFManager::SelectBestDevice() {}
 RVA(0x000f8f30, 0x160)
 void EngineLabelBacklog::BuildSoundFontPath() {}
 
-// @confidence: low
 // @source: import:OpenFile
-// @stub
+// FileExists - tests a path via OpenFile(OF_EXIST). Re-emitted copy of
+// Utils::WinAPI::FileExists (same bytes).
 RVA(0x000f90f0, 0x45)
-void EngineLabelBacklog::Stub_0f90f0() {}
+int EngineLabelBacklog::Stub_0f90f0(char* szPath) {
+    OFSTRUCT of;
+
+    if (!szPath) {
+        return 0;
+    }
+    if (!*szPath) {
+        return 0;
+    }
+    return OpenFile(szPath, &of, 0x4000 /*OF_EXIST*/) != -1;
+}
 
 // @confidence: med
 // @source: string-xref
@@ -837,11 +1123,42 @@ void EngineLabelBacklog::_ct_init() {}
 RVA(0x0018c780, 0x33f)
 void EngineLabelBacklog::Stub_18c780() {}
 
-// @confidence: med
+// The empty global string used as RegQueryValueEx's value name (default value).
+extern "C" char g_emptyString[]; // 0x6293f4
+
 // @source: import:RegQueryValueExA
-// @stub
+// Stub_1bf702 - reads HKCR\CLSID\<szClsid>\InProcServer32's default value into
+// the out CString (the COM in-proc server DLL path). Returns whether it
+// succeeded; closes every opened key on the way out.
+// @early-stop
+// frame-pointer wall (~55%): retail compiles this 0x1bf*-0x1d5* registry/COM
+// helper module WITH frame pointers (push ebp/mov ebp,esp); this frameless /O2
+// aggregate recompiles it esp-relative. Logic + all externs + string constants
+// match. Belongs in a /Oy- TU in the final sweep. docs/patterns/o2-optimizer-bailout-framed.md.
 RVA(0x001bf702, 0xac)
-void __stdcall EngineLabelBacklog::Stub_1bf702(int, int) {}
+int __stdcall EngineLabelBacklog::Stub_1bf702(char* szClsid, EngCString* out) {
+    HKEY hClsidRoot = 0;
+    HKEY hClsid = 0;
+    HKEY hServer;
+    DWORD dwType;
+    int result = 0;
+
+    if (RegOpenKeyA((HKEY)0x80000000 /*HKCR*/, "CLSID", &hClsidRoot) == 0) {
+        if (RegOpenKeyA(hClsidRoot, szClsid, &hClsid) == 0) {
+            if (RegOpenKeyA(hClsid, "InProcServer32", &hServer) == 0) {
+                DWORD cb = 0x104;
+                char* pszBuf = out->GetBuffer(0x104);
+                int rc = RegQueryValueExA(hServer, g_emptyString, 0, &dwType, (LPBYTE)pszBuf, &cb);
+                out->ReleaseBuffer(-1);
+                result = (rc == 0);
+                RegCloseKey(hServer);
+            }
+            RegCloseKey(hClsid);
+        }
+        RegCloseKey(hClsidRoot);
+    }
+    return result;
+}
 
 // @confidence: low
 // @source: import:FindFirstFileA
@@ -873,17 +1190,50 @@ void EngineLabelBacklog::Stub_1c7cb3() {}
 RVA(0x001ccb5c, 0xa0)
 void __stdcall EngineLabelBacklog::Stub_1ccb5c(int, int, int) {}
 
-// @confidence: med
 // @source: import:RegOpenKeyExA
-// @stub
+// CConfigStore::OpenRoot - opens/creates HKCU\Software\<m_7c>\<m_90> and returns
+// the deepest key (0 on failure), closing the two intermediate keys.
+// @early-stop
+// frame-pointer/regalloc wall (~54%): retail keeps an ebp frame + caches `this`
+// in ebx; the /O2 recompile of the same logic comes out frameless with this in
+// esi. Logic correct; all externs named. See docs/patterns/o2-optimizer-bailout-framed.md.
 RVA(0x001d4ee3, 0x94)
-void EngineLabelBacklog::Stub_1d4ee3() {}
+HKEY CConfigStore::OpenRoot() {
+    HKEY hSoftware = 0;
+    HKEY hMid = 0;
+    HKEY hResult = 0;
+    DWORD dwDisp;
+    CConfigStore* self = this;
 
-// @confidence: low
+    if (RegOpenKeyExA((HKEY)0x80000001, "Software", 0, 0x2001f, &hSoftware) == 0
+        && RegCreateKeyExA(hSoftware, m_7c, 0, 0, 0, 0x2001f, 0, &hMid, &dwDisp) == 0) {
+        RegCreateKeyExA(hMid, self->m_90, 0, 0, 0, 0x2001f, 0, &hResult, &dwDisp);
+    }
+
+    if (hSoftware) {
+        RegCloseKey(hSoftware);
+    }
+    if (hMid) {
+        RegCloseKey(hMid);
+    }
+    return hResult;
+}
+
 // @source: import:OpenFile
-// @stub
+// FileExists - tests a path via OpenFile(OF_EXIST). Re-emitted copy of
+// Utils::WinAPI::FileExists (same bytes).
 RVA(0x0001fd70, 0x45)
-void EngineLabelBacklog::Stub_01fd70() {}
+int EngineLabelBacklog::Stub_01fd70(char* szPath) {
+    OFSTRUCT of;
+
+    if (!szPath) {
+        return 0;
+    }
+    if (!*szPath) {
+        return 0;
+    }
+    return OpenFile(szPath, &of, 0x4000 /*OF_EXIST*/) != -1;
+}
 
 // @confidence: med
 // @source: string-xref
@@ -891,17 +1241,56 @@ void EngineLabelBacklog::Stub_01fd70() {}
 RVA(0x00022e60, 0x1be)
 void EngineLabelBacklog::LoadCheatConfig() {}
 
-// @confidence: med
 // @source: import:RegCloseKey,RegCreateKeyExA
-// @stub
+// CConfigStore::OpenSubKey - opens szSub under the OpenRoot() key, then closes
+// the root and returns the opened subkey (0 on failure).
+// @early-stop
+// frame-pointer/regalloc wall (~55%): same ebp-frame divergence as OpenRoot.
+// Logic correct; all externs named. See docs/patterns/o2-optimizer-bailout-framed.md.
 RVA(0x001d4f77, 0x46)
-void __stdcall EngineLabelBacklog::Stub_1d4f77(int) {}
+HKEY CConfigStore::OpenSubKey(char* szSub) {
+    HKEY hResult = 0;
+    DWORD dwDisp;
 
-// @confidence: med
+    HKEY hRoot = OpenRoot();
+    if (hRoot == 0) {
+        return 0;
+    }
+
+    RegCreateKeyExA(hRoot, szSub, 0, 0, 0, 0x2001f, 0, &hResult, &dwDisp);
+    RegCloseKey(hRoot);
+    return hResult;
+}
+
 // @source: import:RegCloseKey,RegQueryValueExA
-// @stub
+// CConfigStore::GetInt - reads an integer value: through the registry when m_7c
+// is set (open szSection subkey, RegQueryValueEx szKey), else via the INI file
+// m_90 (GetPrivateProfileInt). Returns nDefault on any failure.
+// @early-stop
+// frame-pointer/regalloc wall (~24%): retail reuses the szSection arg slot as
+// cbData and keeps an ebp frame; the recompile allocates a fresh cbData local +
+// frameless. Logic correct; all externs named. docs/patterns/o2-optimizer-bailout-framed.md.
 RVA(0x001d4fbd, 0x6c)
-void __stdcall EngineLabelBacklog::Stub_1d4fbd(int, int, int) {}
+int CConfigStore::GetInt(char* szSection, char* szKey, int nDefault) {
+    DWORD dwType;
+    DWORD dwData;
+
+    if (m_7c != 0) {
+        HKEY hKey = OpenSubKey(szSection);
+        if (hKey == 0) {
+            return nDefault;
+        }
+        DWORD cbData = 4;
+        int rc = RegQueryValueExA(hKey, szKey, 0, &dwType, (LPBYTE)&dwData, &cbData);
+        RegCloseKey(hKey);
+        if (rc == 0) {
+            return dwData;
+        }
+        return nDefault;
+    }
+
+    return GetPrivateProfileIntA(szSection, szKey, nDefault, m_90);
+}
 
 // @confidence: med
 // @source: import:RegCloseKey
