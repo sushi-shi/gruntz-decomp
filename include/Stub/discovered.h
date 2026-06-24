@@ -209,10 +209,6 @@ public:
 };
 class NetUnattributed {
 public:
-    void NetUnattributed_007c20();
-    void NetUnattributed_099d10();
-    void NetUnattributed_0b89e0();
-    void NetUnattributed_0f93b0();
     void NetUnattributed_11f618();
     void NetUnattributed_18c022();
 };

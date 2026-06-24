@@ -706,3 +706,18 @@ flags = "base"
 unit = "cfadermgr"
 source = "src/Gruntz/CFaderMgr.cpp"
 flags = "eh"
+
+[[unit]]
+unit = "netsession"
+source = "src/Net/NetSession.cpp"
+flags = "base"
+
+[[unit]]
+unit = "applyrange"
+source = "src/Utils/ApplyRange.cpp"
+flags = "base"
+
+[[unit]]
+unit = "mgrtokenquery"
+source = "src/Gruntz/MgrTokenQuery.cpp"
+flags = "base"

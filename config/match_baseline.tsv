@@ -16,6 +16,7 @@ actionoptionsmenubar	11	3
 adler32	1	1
 advancedoptions	5	5
 appdialogs	1	1
+applyrange	1	1
 battlezdata	14	11
 battlezmapconfig	1	0
 brickz	14	3
@@ -47,7 +48,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	391	0
+engine_discovered	387	0
 engine_label_stubs	524	120
 filemem	8	7
 filestream	13	9
@@ -92,9 +93,11 @@ maplogic	5	4
 mapmgr	7	7
 menuitem	11	9
 menupage	22	13
+mgrtokenquery	1	1
 motionstate	3	3
 netmgr	40	20
 netmgrerror	1	1
+netsession	2	1
 projectile	7	2
 pyramidbridgesprites	1	0
 randomambientsound	7	5
@@ -166,6 +169,7 @@ advancedoptions	?SaveOption@@YAXPAUHWND__@@PAVRegistryHelper@Utils@@PADK@Z	100.0
 advancedoptions	?SaveOptions@@YAXPAUHWND__@@PAVRegistryHelper@Utils@@@Z	100.0000	100.0000	3	42bc821feac7	0xb270
 advancedoptions	?SetDefaults@@YAXPAUHWND__@@@Z	100.0000	100.0000	3	debb3761026d	0xb160
 appdialogs	?WarpDialogProc@@YGHPAXIIJ@Z	100.0000	100.0000	4	abc884dd8cb1	0x8e4e0
+applyrange	?ApplyToRange@@YGXPAVApplyElem@@HHP81@AEXXZ@Z	100.0000	100.0000	1	b977df9605c7	0x7c20
 battlezdata	?BumpWin@CBattlezData@@QAEXHH@Z	100.0000	100.0000	2	d6751b8a863d	0xfcc50
 battlezdata	?ClearFlags@CBattlezData@@QAEXXZ	100.0000	100.0000	2	56a78ec21608	0xfcb90
 battlezdata	?ClearWins@CBattlezData@@QAEXXZ	100.0000	100.0000	2	38254a5cab0b	0xfcc90
@@ -917,10 +921,6 @@ engine_discovered	?MallocCtor_17fdb0_17e780@MallocCtor_17fdb0@@QAEXXZ	13.3333	13
 engine_discovered	?MallocCtor_17fdb0_17fdf0@MallocCtor_17fdb0@@QAEXXZ	20.0000	20.0000	1	031ef36dec41	0x17fdf0
 engine_discovered	?MinervaInner_1366f0@MinervaInner@@QAEXXZ	0.3361	0.3361	1	2a21de0ffbb9	0x1366f0
 engine_discovered	?MinervaInner_136910@MinervaInner@@QAEXXZ	0.3704	0.3704	1	436780529d10	0x136910
-engine_discovered	?NetUnattributed_007c20@NetUnattributed@@QAEXXZ	1.9048	1.9048	1	4afeaf0bfb22	0x7c20
-engine_discovered	?NetUnattributed_099d10@NetUnattributed@@QAEXXZ	10.0000	10.0000	1	3ba875542c5c	0x99d10
-engine_discovered	?NetUnattributed_0b89e0@NetUnattributed@@QAEXXZ	1.4085	1.4085	1	5f776acc84a9	0xb89e0
-engine_discovered	?NetUnattributed_0f93b0@NetUnattributed@@QAEXXZ	5.5556	5.5556	1	4820ee39e2d6	0xf93b0
 engine_discovered	?NetUnattributed_11f618@NetUnattributed@@QAEXXZ	10.0000	10.0000	1	bfe6623a9a24	0x11f618
 engine_discovered	?NetUnattributed_18c022@NetUnattributed@@QAEXXZ	0.7874	0.7874	1	ad41badd75ea	0x18c022
 engine_discovered	?PaintHost_0fac70_0140d0@PaintHost_0fac70@@QAEXXZ	5.8824	5.8824	1	65ecef05e5c0	0x140d0
@@ -1918,6 +1918,7 @@ menupage	?RestoreFocus@CMenuPage@@QAEHXZ	60.6759	60.6759	1	843b969751a7	0x1839d0
 menupage	?SelectBackward@CMenuPage@@QAEHXZ	60.8194	60.8194	1	9df148bf4a84	0x1844d0
 menupage	?SelectForward@CMenuPage@@QAEHXZ	60.8194	60.8194	1	891990b30b8a	0x1843f0
 menupage	?SetFocus@CMenuPage@@QAEHPAVCMenuItem@@H@Z	100.0000	100.0000	1	20f58cb55e3b	0x183ad0
+mgrtokenquery	?QueryToken@@YAHH@Z	100.0000	100.0000	1	33f0fb7f4951	0x99d10
 motionstate	??0CMotionState@@QAE@XZ	100.0000	100.0000	1	24ca6b679299	0x136d0
 motionstate	?SetParams@CMotionState@@QAEHNNNNNNNNNNN@Z	100.0000	100.0000	2	57c861974e56	0x58bc0
 motionstate	?SetZ@CMotionState@@QAEXN@Z	100.0000	100.0000	1	9d25f9ec952e	0x58ca0
@@ -1962,6 +1963,8 @@ netmgr	?Stub_178360@CNetMgr@@QAEXXZ	0.6557	0.6557	1	dd88549d2542	0x178360
 netmgr	?Stub_1788a0@CNetMgr@@QAEXXZ	0.3419	0.3419	1	864a5d19b888	0x1788a0
 netmgr	?WaitForConnect@CNetMgr@@QAEHXZ	74.0809	74.0809	5	5676879b5f9c	0xbca50
 netmgrerror	?ReportError@CNetMgr@@SAXPADHHPAX@Z	100.0000	100.0000	1	4c76abe210b0	0x1776a0
+netsession	?AppendInt@@YAXPADPBDH@Z	100.0000	100.0000	1	b2f3e4307dc7	0xf93b0
+netsession	?FillPlayerList@@YAXPAUHWND__@@PAUSession@@@Z	91.5352	91.5352	1	94ce9d538305	0xb89e0
 projectile	??0CProjectile@@QAE@XZ	99.0472	99.0472	1	4eead4695d92	0x126e0
 projectile	??1CProjectile@@UAE@XZ	89.8367	89.8367	1	8e9ce0f777d4	0xdef60
 projectile	?DetachRenderObj@CProjectile@@QAEHXZ	100.0000	100.0000	2	5f5b4f60ca08	0xe05e0
@@ -2124,12 +2127,12 @@ spriteloaders	?LoadTimerSprite@CTimer@@QAEHHH@Z	96.5217	96.5217	7	5c2e2a6c645b	0
 spriteloaders	?Reset@CTimer@@QAEXXZ	100.0000	100.0000	1	f198e826ac7a	0x9bc70
 spriteloaders	?Serialize@CTimer@@QAEHPAUCTimerArchive@@@Z	100.0000	100.0000	2	3e5484c77360	0x9c2e0
 spriteloaders	?Tick@CTimer@@QAEHH@Z	85.7981	85.7981	3	671c39b9c760	0x9bca0
-spritereftable	?Add@CSpriteRefTable@@QAEPAVCSpriteRef@@PADH@Z	97.5000	97.5000	1	9bee9e1f92c3	0xe2890
+spritereftable	?Add@CSpriteRefTable@@QAEPAVCSpriteRef@@PADH@Z	97.5000	97.5000	2	c1cbee075071	0xe2890
 spritereftable	?Clear@CSpriteRefTable@@QAEXXZ	100.0000	100.0000	1	1defe128e339	0xe22d0
-spritereftable	?GetA@CSpriteRefTable@@QAEPAVCSpriteRef@@H@Z	100.0000	100.0000	1	c8058fe78b59	0xe2360
-spritereftable	?GetB@CSpriteRefTable@@QAEPAVCSpriteRef@@H@Z	100.0000	100.0000	1	6b5a984b1956	0xe2390
-spritereftable	?GetSel@CSpriteRefTable@@QAEHHH@Z	100.0000	100.0000	1	3d580613aa0e	0xe23c0
-spritereftable	?Init@CSpriteRefTable@@QAEHHH@Z	100.0000	100.0000	1	3732b3ee2659	0xe2250
+spritereftable	?GetA@CSpriteRefTable@@QAEPAVCSpriteRef@@H@Z	100.0000	100.0000	2	58f97cf1fd94	0xe2360
+spritereftable	?GetB@CSpriteRefTable@@QAEPAVCSpriteRef@@H@Z	100.0000	100.0000	2	cc61c1ed518e	0xe2390
+spritereftable	?GetSel@CSpriteRefTable@@QAEHHH@Z	100.0000	100.0000	2	46b5e4f637d2	0xe23c0
+spritereftable	?Init@CSpriteRefTable@@QAEHHH@Z	100.0000	100.0000	2	f0e34ea5742f	0xe2250
 spritereftable	?Reset@CSpriteRefTable@@QAEXXZ	100.0000	100.0000	1	1f62670ca9f4	0xe2290
 spriteresource	?ApplyLookupGeometry@CGruntAnimPlayer@@QAEHPBDH@Z	93.9394	93.9394	4	cb136edb79cc	0x1505b0
 spriteresource	?CacheFirstFrame@CGruntSprite@@QAEXPBD@Z	89.2647	89.2647	4	dbfa3e3333a0	0x150540

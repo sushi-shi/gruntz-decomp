@@ -298,14 +298,6 @@ void CMenuState::CMenuState_0a0d40() {}
 //   0x0f93b0 __cdecl format/log helper (esp args, no `this`)
 //   0x11f618 SEH cleanup funclet (ebp-relative; not a function start)
 //   0x18c022 CRT libm routine (fyl2x/fstcw == pow/log; not a method)
-RVA(0x00007c20, 0x2a)
-void NetUnattributed::NetUnattributed_007c20() {}
-RVA(0x00099d10, 0x20)
-void NetUnattributed::NetUnattributed_099d10() {}
-RVA(0x000b89e0, 0xc8)
-void NetUnattributed::NetUnattributed_0b89e0() {}
-RVA(0x000f93b0, 0x41)
-void NetUnattributed::NetUnattributed_0f93b0() {}
 RVA(0x0011f618, 0x14)
 void NetUnattributed::NetUnattributed_11f618() {}
 RVA(0x0018c022, 0x1d3)
