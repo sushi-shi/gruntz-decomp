@@ -52,7 +52,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	330	0
+engine_discovered	326	0
 engine_label_stubs	519	118
 filemem	8	7
 filestream	13	9
@@ -121,6 +121,7 @@ sbi_sidetab_eh	1	0
 sbi_warlordhead	4	1
 sbi_warlordhead_eh	1	0
 shadetablecache	7	3
+siriusworkerhandlers	4	0
 sounddevice	6	4
 soundstream	5	2
 spriteloaders	9	4
@@ -851,10 +852,6 @@ engine_discovered	?ClassUnknown_69_15b2c0@ClassUnknown_69@@QAEXXZ	2.3529	2.3529	
 engine_discovered	?ClassUnknown_6_14dcf0@ClassUnknown_6@@QAEXXZ	3.4483	3.4483	1	15185bc126ec	0x14dcf0
 engine_discovered	?ClassUnknown_70_15b2b0@ClassUnknown_70@@QAEXXZ	16.6667	16.6667	1	8df1519a80a9	0x15b2b0
 engine_discovered	?ClassUnknown_71_15b270@ClassUnknown_71@@QAEXXZ	25.0000	25.0000	1	3828d9557c5b	0x15b270
-engine_discovered	?ClassUnknown_72_03d670@ClassUnknown_72@@QAEXXZ	1.1905	1.1905	1	d6dfa062585c	0x3d670
-engine_discovered	?ClassUnknown_72_07db20@ClassUnknown_72@@QAEXXZ	1.1905	1.1905	1	745abf36b086	0x7db20
-engine_discovered	?ClassUnknown_72_07dda0@ClassUnknown_72@@QAEXXZ	1.1905	1.1905	1	9627eccb1f81	0x7dda0
-engine_discovered	?ClassUnknown_72_15b300@ClassUnknown_72@@QAEXXZ	2.3529	2.3529	1	725bef1a66fc	0x15b300
 engine_discovered	?ClassUnknown_73_15b730@ClassUnknown_73@@QAEXXZ	3.0769	3.0769	1	870a57c79836	0x15b730
 engine_discovered	?ClassUnknown_74_16e360@ClassUnknown_74@@QAEXXZ	0.4000	0.4000	1	60b78d553f76	0x16e360
 engine_discovered	?ClassUnknown_75_0a9cc0@ClassUnknown_75@@QAEXXZ	1.1905	1.1905	1	4e1a9a579eac	0xa9cc0
@@ -2086,6 +2083,10 @@ shadetablecache	?FindRemove@CShadeTableCache@@QAEXPAUCShadeTable@@@Z	91.5556	91.
 shadetablecache	?FreeNodes@CShadeTableCache@@QAEXXZ	100.0000	100.0000	1	200336a988e4	0x14ded0
 shadetablecache	?GreyTable@CShadeTableCache@@QAEPAUCShadeTable@@XZ	71.7576	71.7576	2	5602dfea4c43	0x14eef0
 shadetablecache	?Init@CShadeTableCache@@QAEHXZ	100.0000	100.0000	1	9851d1a61203	0x14dec0
+siriusworkerhandlers	??0WorkerFull@@QAE@HHH@Z	99.7647	99.7647	1	5742f7cb4005	0x15b300
+siriusworkerhandlers	?Handler03d670@@YAHPAUOwner@@@Z	97.8571	97.8571	1	839c531d42a0	0x3d670
+siriusworkerhandlers	?Handler07db20@@YAHPAUOwner@@@Z	97.8571	97.8571	1	b23002ac8904	0x7db20
+siriusworkerhandlers	?Handler07dda0@@YAHPAUOwner@@@Z	97.8571	97.8571	1	27f15168f4f5	0x7dda0
 sounddevice	??1SoundDevice@@QAE@XZ	28.2353	28.2353	1	980bcd8696e1	0x136500
 sounddevice	?FreeSamples@SoundDevice@@QAEHXZ	77.4074	77.4074	2	252e2641aed3	0x136ed0
 sounddevice	?RemoveBuffer@SoundDevice@@QAEXPAUSoundBuf@@@Z	100.0000	100.0000	1	adf3276a17a2	0x136d80

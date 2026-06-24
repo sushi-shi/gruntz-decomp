@@ -734,6 +734,11 @@ source = "src/Gruntz/LogicRecord.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "siriusworkerhandlers"
+source = "src/Gruntz/SiriusWorkerHandlers.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "loadlevelbymode"
 source = "src/Gruntz/LoadLevelByMode.cpp"
 flags = "eh"

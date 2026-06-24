@@ -1012,14 +1012,9 @@ RVA(0x0015b270, 0x11)
 void ClassUnknown_71::ClassUnknown_71_15b270() {}
 
 // ---- ClassUnknown_72 ----
-RVA(0x0003d670, 0xf1)
-void ClassUnknown_72::ClassUnknown_72_03d670() {}
-RVA(0x0007db20, 0xf1)
-void ClassUnknown_72::ClassUnknown_72_07db20() {}
-RVA(0x0007dda0, 0xf1)
-void ClassUnknown_72::ClassUnknown_72_07dda0() {}
-RVA(0x0015b300, 0x40)
-void ClassUnknown_72::ClassUnknown_72_15b300() {}
+// Reconstructed in src/Gruntz/SiriusWorkerHandlers.cpp: a FALSE cluster - the
+// three 0xf1 functions are __cdecl free message-handlers, 0x15b300 is the
+// out-of-line 3-arg SiriusWorker constructor. See the matcher report.
 
 // ---- ClassUnknown_73 ----
 RVA(0x0015b730, 0x2b)
