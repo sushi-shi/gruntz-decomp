@@ -36,6 +36,24 @@ struct CGruntzMgrOptions {
 struct CGruntzSoundInnerZ {
     int IsBusy(); // FUN_00538f60 (this) -> ret (busy state-id 4/0x10)
 };
+
+// A typed VIEW of the state-stack array at CGruntzMgr +0xd8. The member itself
+// stays a destructible CByteArray (so the ctor/dtor's EH-state numbering is
+// unchanged); the accessor methods reinterpret &m_arrD8 as this CObArray-shaped
+// view (CObject vptr at +0x00, m_pData at +0x04, m_nSize at +0x08, ...). The
+// stored elements are CState* (the pushed game states) whose Update() (slot 4,
+// +0x10) reports the state id; SetSize/SetAtGrow/RemoveAt are the out-of-line
+// NAFXCW helpers (reloc-masked).
+struct CStateStackZ {
+    void* m_vptr;                        // +0x00 CObject vptr
+    CState** m_pData;                    // +0x04 element store
+    int m_nSize;                         // +0x08 live count
+    int m_nMaxSize;                      // +0x0c
+    int m_nGrowBy;                       // +0x10
+    void SetSize(int n, int growBy);     // @0x5b4f75  (clear via SetSize(0, -1))
+    void SetAtGrow(int i, CState* elem); // @0x5b5144
+    void RemoveAt(int i, int n);         // @0x5b5200
+};
 struct CGruntzSoundZ {
     void StopBank(int flag);  // FUN_00538900 (this, 1)  -> ret 4
     void StopAll();           // FUN_005388f0 (this)
@@ -79,6 +97,44 @@ public:
     int RestoreVideoMode(int save);                 // @0x08ddd0 (re-assert 640x480; save on hit)
     int SetVideoMode(int w, int h, int flag);       // @0x08df00 (mode-switch the display; stubbed)
 
+    // Per-state notification forwarders: dispatch (a,b[,c]) into the live state's
+    // vtable slot 11..20, returning 0 with no state (0x8d9d0..0x8dbe0).
+    int NotifyState0b(int a, int b);        // @0x08d9d0 -> m_2c slot 11 (+0x2c)
+    int NotifyState0c(int a, int b);        // @0x08da00 -> m_2c slot 12 (+0x30)
+    int NotifyState0d(int a, int b);        // @0x08da30 -> m_2c slot 13 (+0x34)
+    int NotifyState0e(int a, int b, int c); // @0x08da60 -> m_2c slot 14 (+0x38)
+    int NotifyState0f(int a, int b, int c); // @0x08daa0 -> m_2c slot 15 (+0x3c)
+    int NotifyState10(int a, int b, int c); // @0x08dae0 -> m_2c slot 16 (+0x40)
+    int NotifyState11(int a, int b, int c); // @0x08db20 -> m_2c slot 17 (+0x44)
+    int NotifyState12(int a, int b, int c); // @0x08db60 -> m_2c slot 18 (+0x48)
+    int NotifyState13(int a, int b, int c); // @0x08dba0 -> m_2c slot 19 (+0x4c)
+    int NotifyState14(int a, int b, int c); // @0x08dbe0 -> m_2c slot 20 (+0x50)
+
+    // State-stack accessors (the CState* array at +0xd8).
+    CState* TopState();             // @0x090980 (last pushed state)
+    void PushState(CState* s);      // @0x0909b0 (SetAtGrow append)
+    int PopTopIfMatches(CState* s); // @0x0909e0 (RemoveAt last; old top == s)
+    void ClearStateStack();         // @0x090a50 (delete all, SetSize(0,-1))
+    int CheckMovieFileExists();     // @0x090aa0 (FileExists(m_strF0))
+    CState* FindStateById(int id);  // @0x092900 (live + stack search by Update id)
+
+    int StoreInputState(int v); // @0x091a10 (store +0x120, forward to m_60)
+
+    // Clock / global helpers.
+    void SetGameClock(int now, int delta, int abs); // @0x08f7b0 (mirror the 5 clock globals)
+    void ResetClockGlobals();                       // @0x08f4f0 (zero the 7 clock globals)
+    int TickStateMgrs();                            // @0x0920b0 (drive two engine singletons)
+    int CheckSavedMode();                           // @0x08de70 (saved==live mode test)
+    int IsLobbyHostReady();                         // @0x091500 (m_2c/m_8/m_ac null-chain)
+    int RunFromState();                // @0x090200 (thin wrapper -> ChangeState_8fab0(1))
+    CState* PickPlayOrPausedState();   // @0x092990 (FindStateById(3))
+    CState* PickPausedThenPlayState(); // @0x0929b0 (FindStateById(0x11)|| (3))
+
+    // Larger sibling reached by RunFromState's reloc-masked call; body still a
+    // @stub in GruntzMgr.cpp (migrated from src/Stub/Discovered.cpp) so the call
+    // binds to a CGruntzMgr symbol at 0x08fab0.
+    int ChangeState_8fab0(int arg); // @0x08fab0 (deferred / stubbed)
+
     // --- members (offsets relative to `this`; base CGameMgr occupies 0x00..0x2c) ---
     CState* m_2c;                           // +0x2c  current game-state (Update() -> state id)
     int m_30, m_34, m_38, m_3c, m_40, m_44; // +0x30..+0x44
@@ -109,7 +165,9 @@ public:
     int m_10c, m_110;                             // +0x10c, +0x110  (=1 in ctor)
     int m_114;                                    // +0x114
     int m_118;                                    // +0x118
-    char m_pad11c[0x128 - 0x11c];                 // +0x11c..+0x128 gap
+    int m_11c;                                    // +0x11c
+    int m_120;                                    // +0x120  StoreInputState target
+    int m_124;                                    // +0x124
     int m_128, m_12c, m_130, m_134;               // +0x128..+0x134
     int m_138;                                    // +0x138  (=3 in ctor)
     char m_pad13c[0x150 - 0x13c];                 // +0x13c..+0x150 gap

@@ -62,8 +62,33 @@ extern int g_wap32FrameDelta; // ?g_wap32FrameDelta@@3HA
 extern "C" {
     extern unsigned int g_645580; // game-side now mirror (DAT_00645580)
     extern unsigned int g_645584; // game-side delta mirror (DAT_00645584)
+    extern unsigned int g_645588; // game-side abs clock (DAT_00645588)
     extern unsigned int g_6bf3c0; // draw-clock (timeGetTime stamp)
     extern unsigned int g_6bf3bc; // draw-clock delta (cleared)
+    // The clock/scroll-state globals ResetClockGlobals zeroes (reloc-masked).
+    extern unsigned int g_645600; // DAT_00645600
+    extern unsigned int g_6455b0; // DAT_006455b0
+    extern unsigned int g_6455a4; // DAT_006455a4
+    extern unsigned int g_6455a8; // DAT_006455a8
+    extern unsigned int g_6455ac; // DAT_006455ac
+    extern unsigned int g_6455f8; // DAT_006455f8
+    extern unsigned int g_6455f4; // DAT_006455f4
+}
+
+// The two engine input/state singletons TickStateMgrs drives once per call
+// (DAT_00645570/DAT_00645578; reloc-masked DATA refs). g_645570 is the
+// DirectInputMgr2 (its PollAll @0x533080 is the per-frame device poll); g_645578
+// is a second mgr (Flush @0x4385e0). Each call is a single reloc-masked
+// __thiscall, so only the one-method shape on a tiny helper is load-bearing.
+struct DirectInputMgr2 {
+    int PollAll(); // FUN_00533080
+};
+struct StateMgrBZ {
+    void Flush(); // FUN_004385e0
+};
+extern "C" {
+    extern DirectInputMgr2* g_645570; // DAT_00645570
+    extern StateMgrBZ* g_645578;      // DAT_00645578
 }
 
 // The embedded options object's ctor/dtor are out-of-line NAFXCW-style helpers
@@ -357,6 +382,291 @@ CString CGruntzMgr::BuildMoviePath(int movie) {
     }
 
     return path;
+}
+
+// -------------------------------------------------------------------------
+// Per-state notification forwarders (0x08d9d0..0x08dbe0). Each dispatches its
+// (a,b[,c]) args into the live state's vtable slot 11..20 (+0x2c..+0x50),
+// returning the slot's result or 0 when there is no live state. The args are
+// re-loaded fresh from the moving stack per push (the natural forwarder codegen).
+RVA(0x0008d9d0, 0x1e)
+int CGruntzMgr::NotifyState0b(int a, int b) {
+    if (m_2c) {
+        return m_2c->Vslot0b(a, b);
+    }
+    return 0;
+}
+RVA(0x0008da00, 0x1e)
+int CGruntzMgr::NotifyState0c(int a, int b) {
+    if (m_2c) {
+        return m_2c->Vslot0c(a, b);
+    }
+    return 0;
+}
+RVA(0x0008da30, 0x1e)
+int CGruntzMgr::NotifyState0d(int a, int b) {
+    if (m_2c) {
+        return m_2c->Vslot0d(a, b);
+    }
+    return 0;
+}
+RVA(0x0008da60, 0x23)
+int CGruntzMgr::NotifyState0e(int a, int b, int c) {
+    if (m_2c) {
+        return m_2c->Vslot0e(a, b, c);
+    }
+    return 0;
+}
+RVA(0x0008daa0, 0x23)
+int CGruntzMgr::NotifyState0f(int a, int b, int c) {
+    if (m_2c) {
+        return m_2c->Vslot0f(a, b, c);
+    }
+    return 0;
+}
+RVA(0x0008dae0, 0x23)
+int CGruntzMgr::NotifyState10(int a, int b, int c) {
+    if (m_2c) {
+        return m_2c->Vslot10(a, b, c);
+    }
+    return 0;
+}
+RVA(0x0008db20, 0x23)
+int CGruntzMgr::NotifyState11(int a, int b, int c) {
+    if (m_2c) {
+        return m_2c->Vslot11(a, b, c);
+    }
+    return 0;
+}
+RVA(0x0008db60, 0x23)
+int CGruntzMgr::NotifyState12(int a, int b, int c) {
+    if (m_2c) {
+        return m_2c->Vslot12(a, b, c);
+    }
+    return 0;
+}
+RVA(0x0008dba0, 0x23)
+int CGruntzMgr::NotifyState13(int a, int b, int c) {
+    if (m_2c) {
+        return m_2c->Vslot13(a, b, c);
+    }
+    return 0;
+}
+RVA(0x0008dbe0, 0x23)
+int CGruntzMgr::NotifyState14(int a, int b, int c) {
+    if (m_2c) {
+        return m_2c->Vslot14(a, b, c);
+    }
+    return 0;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::CheckSavedMode (0x08de70; ret). If the live mode (m_8c x m_90)
+// already equals the saved/last-good mode (m_94 x m_98) it succeeds; otherwise
+// it drives SetVideoMode(saved-w, saved-h, save=1), falling back to
+// RestoreVideoMode(1), and on total failure surfaces a (0x8008, 0x45e) error.
+RVA(0x0008de70, 0x61)
+int CGruntzMgr::CheckSavedMode() {
+    // All success paths short-circuit to one trailing `return 1` (retail tail-
+    // merges the mov eax,1; pop; ret epilogue).
+    if ((m_8c == m_94 && m_90 == m_98) || SetVideoMode(m_94, m_98, 1) || RestoreVideoMode(1)) {
+        return 1;
+    }
+    ReportError(0x8008, 0x45e);
+    return 0;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::ResetClockGlobals (0x08f4f0). Zeroes the seven game-clock / scroll
+// state globals (reloc-masked DATA refs).
+RVA(0x0008f4f0, 0x26)
+void CGruntzMgr::ResetClockGlobals() {
+    g_645600 = 0;
+    g_6455b0 = 0;
+    g_6455a4 = 0;
+    g_6455a8 = 0;
+    g_6455ac = 0;
+    g_6455f8 = 0;
+    g_6455f4 = 0;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::SetGameClock (0x08f7b0; ret 0xc). Mirrors the three clock args into
+// the game-side now/delta/abs globals plus the draw-clock pair (reloc-masked).
+RVA(0x0008f7b0, 0x2b)
+void CGruntzMgr::SetGameClock(int now, int delta, int abs) {
+    g_645580 = now;
+    g_645584 = delta;
+    g_645588 = abs;
+    g_6bf3c0 = now;
+    g_6bf3bc = delta;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::RunFromState (0x090200; ret, no arg cleanup). Thin forwarder:
+// ChangeState_8fab0(1).
+RVA(0x00090200, 0x8)
+int CGruntzMgr::RunFromState() {
+    return ChangeState_8fab0(1);
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::TopState (0x090980). Returns the last pushed state (or 0 when the
+// stack is empty).
+RVA(0x00090980, 0x18)
+CState* CGruntzMgr::TopState() {
+    CStateStackZ* st = (CStateStackZ*)&m_arrD8;
+    if (st->m_nSize <= 0) {
+        return 0;
+    }
+    return st->m_pData[st->m_nSize - 1];
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::PushState (0x0909b0; ret 4). Appends s to the state stack via
+// SetAtGrow(GetSize(), s); ignores a null push.
+RVA(0x000909b0, 0x1b)
+void CGruntzMgr::PushState(CState* s) {
+    if (!s) {
+        return;
+    }
+    CStateStackZ* st = (CStateStackZ*)&m_arrD8;
+    st->SetAtGrow(st->m_nSize, s);
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::PopTopIfMatches (0x0909e0; ret 4). Saves the last stack slot,
+// RemoveAt()s it, and reports whether the removed top was s. The count/data are
+// read fresh off `this` (+0xe0/+0xdc); only the helper call forms &m_arrD8.
+RVA(0x000909e0, 0x46)
+int CGruntzMgr::PopTopIfMatches(CState* s) {
+    if (!s) {
+        return 0;
+    }
+    int n = *(int*)((char*)this + 0xe0);
+    if (n <= 0) {
+        return 0;
+    }
+    CState* top = (*(CState***)((char*)this + 0xdc))[n - 1];
+    ((CStateStackZ*)&m_arrD8)->RemoveAt(n - 1, 1);
+    return top == s;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::ClearStateStack (0x090a50; ret). Deletes every pushed state then
+// clears the array via SetSize(0, -1). The loop reads count/data off `this`
+// (+0xe0/+0xdc) so the array base is not hoisted into a register.
+RVA(0x00090a50, 0x40)
+void CGruntzMgr::ClearStateStack() {
+    for (int i = 0; i < *(int*)((char*)this + 0xe0); i++) {
+        CState* s = (*(CState***)((char*)this + 0xdc))[i];
+        if (s) {
+            delete s;
+        }
+    }
+    ((CStateStackZ*)&m_arrD8)->SetSize(0, -1);
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::CheckMovieFileExists (0x090aa0; cdecl ret). Probes whether the
+// resolved movie path (m_strF0) exists on disk.
+RVA(0x00090aa0, 0x10)
+int CGruntzMgr::CheckMovieFileExists() {
+    return Utils::WinAPI::FileExists((char*)(const char*)m_strF0);
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::IsLobbyHostReady (0x091500). Null-chain predicate: returns
+// m_2c->ReleaseResources-slot result (slot 7, +0x1c) only when m_2c, the
+// CGameApp (m_8), its +0x240 sub-object and !m_ac all hold; else 0.
+RVA(0x00091500, 0x42)
+int CGruntzMgr::IsLobbyHostReady() {
+    if (m_2c == 0) {
+        return 0;
+    }
+    int* app = (int*)m_8;
+    if (app == 0) {
+        return 0;
+    }
+    if (*(int*)((char*)app + 0x240) == 0) {
+        return 0;
+    }
+    if (m_ac != 0) {
+        return 0;
+    }
+    return m_2c->Vslot07() != 0;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::StoreInputState (0x091a10; ret 4). Stores v at +0x120, and when the
+// +0x60 sub-object is present mirrors it into that object's +0x2c.
+RVA(0x00091a10, 0x17)
+int CGruntzMgr::StoreInputState(int v) {
+    m_120 = v;
+    int* p = (int*)m_60;
+    if (p) {
+        p[0x2c / 4] = v;
+    }
+    return v;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::TickStateMgrs (0x0920b0). Drives the two engine state singletons
+// (g_645570/g_645578) once and reports success.
+RVA(0x000920b0, 0x1c)
+int CGruntzMgr::TickStateMgrs() {
+    g_645570->PollAll();
+    g_645578->Flush();
+    return 1;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::FindStateById (0x092900; ret 4). Returns the live state when its
+// Update() id matches `id`; otherwise the first stack entry whose Update() id
+// matches (or 0).
+RVA(0x00092900, 0x6e)
+CState* CGruntzMgr::FindStateById(int id) {
+    if (m_2c && m_2c->Update() == id) {
+        return m_2c;
+    }
+    CStateStackZ* st = (CStateStackZ*)&m_arrD8;
+    for (int i = 0; i < st->m_nSize; i++) {
+        CState* s = st->m_pData[i];
+        if (s && s->Update() == id) {
+            return s;
+        }
+    }
+    return 0;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::PickPlayOrPausedState (0x092990; ret). FindStateById(3).
+RVA(0x00092990, 0x8)
+CState* CGruntzMgr::PickPlayOrPausedState() {
+    return FindStateById(3);
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::PickPausedThenPlayState (0x0929b0; ret). Prefers the paused/hold
+// state (id 0x11), falling back to PLAY (id 3).
+RVA(0x000929b0, 0x19)
+CState* CGruntzMgr::PickPausedThenPlayState() {
+    CState* s = FindStateById(0x11);
+    if (s) {
+        return s;
+    }
+    return FindStateById(3);
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::ChangeState_8fab0 (0x08fab0) - deferred big method; the thin
+// RunFromState wrapper calls it (reloc-masked). Migrated from Discovered.cpp.
+// @confidence: high
+// @source: call-xref
+// @stub
+RVA(0x0008fab0, 0x318)
+int CGruntzMgr::ChangeState_8fab0(int /*arg*/) {
+    return 0;
 }
 
 // CGruntzMgr::UnknownClose (@0x0855e0) is the large member-teardown method the

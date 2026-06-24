@@ -297,7 +297,8 @@ void CGruntToySprite::CGruntToySprite_07f960() {}
 RVA(0x00012130, 0x44)
 void CGruntToyTimeSprite::CGruntToyTimeSprite_012130() {}
 
-// ---- CGruntzMgr ----
+// ---- CGruntzMgr ---- (26 methods migrated to src/Gruntz/GruntzMgr.cpp; the
+// remaining mid/big methods stay stubbed for a later sweep.)
 RVA(0x000860b0, 0xe8)
 void CGruntzMgr::CGruntzMgr_0860b0() {}
 RVA(0x0008b960, 0x7c4)
@@ -306,74 +307,22 @@ RVA(0x0008d6a0, 0xaf)
 void CGruntzMgr::CGruntzMgr_08d6a0() {}
 RVA(0x0008d780, 0x95)
 void CGruntzMgr::CGruntzMgr_08d780() {}
-RVA(0x0008d9d0, 0x1e)
-void CGruntzMgr::CGruntzMgr_08d9d0() {}
-RVA(0x0008da00, 0x1e)
-void CGruntzMgr::CGruntzMgr_08da00() {}
-RVA(0x0008da30, 0x1e)
-void CGruntzMgr::CGruntzMgr_08da30() {}
-RVA(0x0008da60, 0x23)
-void CGruntzMgr::CGruntzMgr_08da60() {}
-RVA(0x0008daa0, 0x23)
-void CGruntzMgr::CGruntzMgr_08daa0() {}
-RVA(0x0008dae0, 0x23)
-void CGruntzMgr::CGruntzMgr_08dae0() {}
-RVA(0x0008db20, 0x23)
-void CGruntzMgr::CGruntzMgr_08db20() {}
-RVA(0x0008db60, 0x23)
-void CGruntzMgr::CGruntzMgr_08db60() {}
-RVA(0x0008dba0, 0x23)
-void CGruntzMgr::CGruntzMgr_08dba0() {}
-RVA(0x0008dbe0, 0x23)
-void CGruntzMgr::CGruntzMgr_08dbe0() {}
-RVA(0x0008de70, 0x61)
-void CGruntzMgr::CGruntzMgr_08de70() {}
 RVA(0x0008e980, 0x11e)
 void CGruntzMgr::CGruntzMgr_08e980() {}
 RVA(0x0008ef10, 0x9e)
 void CGruntzMgr::CGruntzMgr_08ef10() {}
-RVA(0x0008f4f0, 0x26)
-void CGruntzMgr::CGruntzMgr_08f4f0() {}
 RVA(0x0008f740, 0x46)
 void CGruntzMgr::CGruntzMgr_08f740() {}
-RVA(0x0008f7b0, 0x2b)
-void CGruntzMgr::CGruntzMgr_08f7b0() {}
 RVA(0x0008f7f0, 0x131)
 void CGruntzMgr::CGruntzMgr_08f7f0() {}
-RVA(0x0008fab0, 0x318)
-void CGruntzMgr::CGruntzMgr_08fab0() {}
-RVA(0x00090200, 0x8)
-void CGruntzMgr::CGruntzMgr_090200() {}
 RVA(0x000903f0, 0x10c)
 void CGruntzMgr::CGruntzMgr_0903f0() {}
-RVA(0x00090980, 0x18)
-void CGruntzMgr::CGruntzMgr_090980() {}
-RVA(0x000909b0, 0x1b)
-void CGruntzMgr::CGruntzMgr_0909b0() {}
-RVA(0x000909e0, 0x46)
-void CGruntzMgr::CGruntzMgr_0909e0() {}
-RVA(0x00090a50, 0x40)
-void CGruntzMgr::CGruntzMgr_090a50() {}
-RVA(0x00090aa0, 0x10)
-void CGruntzMgr::CGruntzMgr_090aa0() {}
-RVA(0x00091500, 0x42)
-void CGruntzMgr::CGruntzMgr_091500() {}
 RVA(0x000919d0, 0x30)
 void CGruntzMgr::CGruntzMgr_0919d0() {}
-RVA(0x00091a10, 0x17)
-void CGruntzMgr::CGruntzMgr_091a10() {}
-RVA(0x000920b0, 0x1c)
-void CGruntzMgr::CGruntzMgr_0920b0() {}
 RVA(0x000927b0, 0xc4)
 void CGruntzMgr::CGruntzMgr_0927b0() {}
 RVA(0x000928c0, 0x23)
 void CGruntzMgr::CGruntzMgr_0928c0() {}
-RVA(0x00092900, 0x6e)
-void CGruntzMgr::CGruntzMgr_092900() {}
-RVA(0x00092990, 0x8)
-void CGruntzMgr::CGruntzMgr_092990() {}
-RVA(0x000929b0, 0x19)
-void CGruntzMgr::CGruntzMgr_0929b0() {}
 RVA(0x00092ec0, 0x24)
 void CGruntzMgr::CGruntzMgr_092ec0() {}
 RVA(0x00093170, 0x1e3)

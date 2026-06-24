@@ -37,7 +37,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	885	0
+engine_discovered	859	0
 engine_label_stubs	534	117
 filestream	13	9
 font	16	9
@@ -54,7 +54,7 @@ gruntpuddle	4	2
 gruntvoice	4	3
 gruntzapp	10	8
 gruntzcommand	9	9
-gruntzmgr	9	5
+gruntzmgr	35	30
 gruntzsoundz	8	7
 gruntzwnd	2	1
 iconloaders	4	1
@@ -469,40 +469,14 @@ engine_discovered	?CGruntzMgr_0860b0@CGruntzMgr@@QAEXXZ	1.4286	1.4286	1	ecd6a666
 engine_discovered	?CGruntzMgr_08b960@CGruntzMgr@@QAEXXZ	0.0907	0.0907	1	4a22ea071af3	0x8b960
 engine_discovered	?CGruntzMgr_08d6a0@CGruntzMgr@@QAEXXZ	1.1905	1.1905	1	036d5b5242a8	0x8d6a0
 engine_discovered	?CGruntzMgr_08d780@CGruntzMgr@@QAEXXZ	0.6250	0.6250	1	456c375f3f6e	0x8d780
-engine_discovered	?CGruntzMgr_08d9d0@CGruntzMgr@@QAEXXZ	3.3333	3.3333	1	6428ac41246e	0x8d9d0
-engine_discovered	?CGruntzMgr_08da00@CGruntzMgr@@QAEXXZ	3.3333	3.3333	1	261061bd029a	0x8da00
-engine_discovered	?CGruntzMgr_08da30@CGruntzMgr@@QAEXXZ	3.3333	3.3333	1	48b5f72c73ff	0x8da30
-engine_discovered	?CGruntzMgr_08da60@CGruntzMgr@@QAEXXZ	2.8571	2.8571	1	401681a9809e	0x8da60
-engine_discovered	?CGruntzMgr_08daa0@CGruntzMgr@@QAEXXZ	2.8571	2.8571	1	ef94636eea0d	0x8daa0
-engine_discovered	?CGruntzMgr_08dae0@CGruntzMgr@@QAEXXZ	2.8571	2.8571	1	ef9a7342ef4f	0x8dae0
-engine_discovered	?CGruntzMgr_08db20@CGruntzMgr@@QAEXXZ	2.8571	2.8571	1	df9c916516c2	0x8db20
-engine_discovered	?CGruntzMgr_08db60@CGruntzMgr@@QAEXXZ	2.8571	2.8571	1	09a0366ac87c	0x8db60
-engine_discovered	?CGruntzMgr_08dba0@CGruntzMgr@@QAEXXZ	2.8571	2.8571	1	51121eec4280	0x8dba0
-engine_discovered	?CGruntzMgr_08dbe0@CGruntzMgr@@QAEXXZ	2.8571	2.8571	1	19f95dfd632f	0x8dbe0
-engine_discovered	?CGruntzMgr_08de70@CGruntzMgr@@QAEXXZ	3.0303	3.0303	1	dbb11195d154	0x8de70
 engine_discovered	?CGruntzMgr_08e980@CGruntzMgr@@QAEXXZ	0.3922	0.3922	1	59e97c5cd5ef	0x8e980
 engine_discovered	?CGruntzMgr_08ef10@CGruntzMgr@@QAEXXZ	0.6349	0.6349	1	c26aa4e3d72b	0x8ef10
-engine_discovered	?CGruntzMgr_08f4f0@CGruntzMgr@@QAEXXZ	11.1111	11.1111	1	d177d7a5eab6	0x8f4f0
 engine_discovered	?CGruntzMgr_08f740@CGruntzMgr@@QAEXXZ	3.4483	3.4483	1	be568d166cd3	0x8f740
-engine_discovered	?CGruntzMgr_08f7b0@CGruntzMgr@@QAEXXZ	4.4444	4.4444	1	f73bf78e8dda	0x8f7b0
 engine_discovered	?CGruntzMgr_08f7f0@CGruntzMgr@@QAEXXZ	1.1765	1.1765	1	b51ea45b8ccb	0x8f7f0
-engine_discovered	?CGruntzMgr_08fab0@CGruntzMgr@@QAEXXZ	0.2247	0.2247	1	961617f2a810	0x8fab0
-engine_discovered	?CGruntzMgr_090200@CGruntzMgr@@QAEXXZ	33.3333	33.3333	1	30f53099d5a0	0x90200
 engine_discovered	?CGruntzMgr_0903f0@CGruntzMgr@@QAEXXZ	0.4255	0.4255	1	4b0abf06258b	0x903f0
-engine_discovered	?CGruntzMgr_090980@CGruntzMgr@@QAEXXZ	12.5000	12.5000	1	c70e487aba39	0x90980
-engine_discovered	?CGruntzMgr_0909b0@CGruntzMgr@@QAEXXZ	4.4444	4.4444	1	24cc6b60a130	0x909b0
-engine_discovered	?CGruntzMgr_0909e0@CGruntzMgr@@QAEXXZ	1.3793	1.3793	1	b0816fd75f61	0x909e0
-engine_discovered	?CGruntzMgr_090a50@CGruntzMgr@@QAEXXZ	4.0000	4.0000	1	6a33b2792b2d	0x90a50
-engine_discovered	?CGruntzMgr_090aa0@CGruntzMgr@@QAEXXZ	20.0000	20.0000	1	564a068602d2	0x90aa0
-engine_discovered	?CGruntzMgr_091500@CGruntzMgr@@QAEXXZ	3.0303	3.0303	1	2f43cc7db541	0x91500
 engine_discovered	?CGruntzMgr_0919d0@CGruntzMgr@@QAEXXZ	2.3529	2.3529	1	b6328c4b9e49	0x919d0
-engine_discovered	?CGruntzMgr_091a10@CGruntzMgr@@QAEXXZ	5.7143	5.7143	1	b1e17464c563	0x91a10
-engine_discovered	?CGruntzMgr_0920b0@CGruntzMgr@@QAEXXZ	16.6667	16.6667	1	59e84d75bf1b	0x920b0
 engine_discovered	?CGruntzMgr_0927b0@CGruntzMgr@@QAEXXZ	0.5128	0.5128	1	76ca06bf5654	0x927b0
 engine_discovered	?CGruntzMgr_0928c0@CGruntzMgr@@QAEXXZ	3.3333	3.3333	1	c3b8c2a88457	0x928c0
-engine_discovered	?CGruntzMgr_092900@CGruntzMgr@@QAEXXZ	0.7407	0.7407	1	3d18e6eaaa6a	0x92900
-engine_discovered	?CGruntzMgr_092990@CGruntzMgr@@QAEXXZ	33.3333	33.3333	1	00c7307a13b5	0x92990
-engine_discovered	?CGruntzMgr_0929b0@CGruntzMgr@@QAEXXZ	9.0909	9.0909	1	5ee7d7c9422d	0x929b0
 engine_discovered	?CGruntzMgr_092ec0@CGruntzMgr@@QAEXXZ	7.1429	7.1429	1	50907c20e82e	0x92ec0
 engine_discovered	?CGruntzMgr_093170@CGruntzMgr@@QAEXXZ	0.6623	0.6623	1	7ae86b3d5a41	0x93170
 engine_discovered	?CGruntzMgr_0933e0@CGruntzMgr@@QAEXXZ	2.8571	2.8571	1	0cf14893a34f	0x933e0
@@ -1899,7 +1873,7 @@ gamemode	?Render@CCreditsState@@UAEHXZ	97.7121	97.7121	4	2cdd5ac8e110	0x391d0
 gamemode	?Render@CMenuState@@UAEHXZ	100.0000	100.0000	4	9048409ed6ee	0xa0750
 gamemode	?Render@CState@@UAEHXZ	100.0000	100.0000	4	527388a9ccca	0x8c4d0
 gamemode	?StartMusic@CMenuState@@QAEXXZ	94.7561	94.7561	1	159a01616a2b	0xa05a0
-gamemode	?StepGlitterAnim@CMultiBootyState@@QAEXXZ	80.1343	80.1343	1	e5f16a5adb53	0x196c0
+gamemode	?StepGlitterAnim@CMultiBootyState@@QAEXXZ	80.1343	80.1343	2	e05a0ab1c12c	0x196c0
 gamemode	?StopMusicChain@CMenuState@@QAEXXZ	99.7059	99.7059	1	f84633f00b69	0xa0640
 gamemode	?Stub_08d5e0@CCreditsState@@QAEXXZ	3.0303	3.0303	2	55b18b536e0d	0x8d5e0
 gamemode	?Update@CBootyState@@UAEHXZ	100.0000	100.0000	4	6f43405d33b8	0x8d3f0
@@ -1973,12 +1947,38 @@ gruntzcommand	?SetParamsEx@CGruntzCommand@@QAEHDDDFFDD@Z	100.0000	100.0000	1	444
 gruntzmgr	??1CGruntzMgr@@UAE@XZ	89.8500	89.8500	3	1bb6e0929358	0x83360
 gruntzmgr	?AdvanceFrame@CGruntzMgr@@QAEXHH@Z	100.0000	100.0000	3	41985f542cd6	0x8f6a0
 gruntzmgr	?BuildMoviePath@CGruntzMgr@@QAE?AVCString@@H@Z	88.0630	88.0630	3	7656e43f4254	0x8ff30
+gruntzmgr	?ChangeState_8fab0@CGruntzMgr@@QAEHH@Z	1.1236	1.1236	1	e5e9785c765c	0x8fab0
+gruntzmgr	?CheckMovieFileExists@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	3e5ab89cc835	0x90aa0
 gruntzmgr	?CheckPlayState@CGruntzMgr@@QAEHXZ	100.0000	100.0000	3	2d22126a4274	0x8ec50
+gruntzmgr	?CheckSavedMode@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	df993e5e4b92	0x8de70
+gruntzmgr	?ClearStateStack@CGruntzMgr@@QAEXXZ	100.0000	100.0000	1	11a66df0204b	0x90a50
+gruntzmgr	?FindStateById@CGruntzMgr@@QAEPAVCState@@H@Z	100.0000	100.0000	1	671cf0f6891e	0x92900
 gruntzmgr	?GetGruntzDriveLetter@CGruntzMgr@@QAEDXZ	100.0000	100.0000	3	382c23c5c890	0x8fa70
 gruntzmgr	?InitializeLobbyConnectionSettings@CGruntzMgr@@QAEHXZ	99.5588	99.5588	3	69192685512f	0x8eca0
+gruntzmgr	?IsLobbyHostReady@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	4fc238fada4b	0x91500
+gruntzmgr	?NotifyState0b@CGruntzMgr@@QAEHHH@Z	100.0000	100.0000	1	dce572290cc8	0x8d9d0
+gruntzmgr	?NotifyState0c@CGruntzMgr@@QAEHHH@Z	100.0000	100.0000	1	562a951feb78	0x8da00
+gruntzmgr	?NotifyState0d@CGruntzMgr@@QAEHHH@Z	100.0000	100.0000	1	b322392472a2	0x8da30
+gruntzmgr	?NotifyState0e@CGruntzMgr@@QAEHHHH@Z	100.0000	100.0000	1	d8aea53576c4	0x8da60
+gruntzmgr	?NotifyState0f@CGruntzMgr@@QAEHHHH@Z	100.0000	100.0000	1	5845de349185	0x8daa0
+gruntzmgr	?NotifyState10@CGruntzMgr@@QAEHHHH@Z	100.0000	100.0000	1	945cb8544216	0x8dae0
+gruntzmgr	?NotifyState11@CGruntzMgr@@QAEHHHH@Z	100.0000	100.0000	1	de7c7fc836fc	0x8db20
+gruntzmgr	?NotifyState12@CGruntzMgr@@QAEHHHH@Z	100.0000	100.0000	1	3cd9b6aeace0	0x8db60
+gruntzmgr	?NotifyState13@CGruntzMgr@@QAEHHHH@Z	100.0000	100.0000	1	290c1f534f34	0x8dba0
+gruntzmgr	?NotifyState14@CGruntzMgr@@QAEHHHH@Z	100.0000	100.0000	1	3333dfa65397	0x8dbe0
 gruntzmgr	?PerFrameTick@CGruntzMgr@@QAEXXZ	100.0000	100.0000	3	dbc31ce0c39a	0x8f620
+gruntzmgr	?PickPausedThenPlayState@CGruntzMgr@@QAEPAVCState@@XZ	100.0000	100.0000	1	02b7911454da	0x929b0
+gruntzmgr	?PickPlayOrPausedState@CGruntzMgr@@QAEPAVCState@@XZ	100.0000	100.0000	1	6e79b43e172f	0x92990
+gruntzmgr	?PopTopIfMatches@CGruntzMgr@@QAEHPAVCState@@@Z	100.0000	100.0000	1	799b902a756c	0x909e0
+gruntzmgr	?PushState@CGruntzMgr@@QAEXPAVCState@@@Z	100.0000	100.0000	1	cc7070817adc	0x909b0
 gruntzmgr	?ReportError@CGruntzMgr@@QAEXIJ@Z	100.0000	100.0000	3	540078744175	0x8dc60
+gruntzmgr	?ResetClockGlobals@CGruntzMgr@@QAEXXZ	100.0000	100.0000	1	d58457a94a1c	0x8f4f0
 gruntzmgr	?RestoreVideoMode@CGruntzMgr@@QAEHH@Z	61.1471	61.1471	1	991fd91344b8	0x8ddd0
+gruntzmgr	?RunFromState@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	e73a713bddb8	0x90200
+gruntzmgr	?SetGameClock@CGruntzMgr@@QAEXHHH@Z	100.0000	100.0000	1	5962a76328af	0x8f7b0
+gruntzmgr	?StoreInputState@CGruntzMgr@@QAEHH@Z	100.0000	100.0000	1	6765e535a604	0x91a10
+gruntzmgr	?TickStateMgrs@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	b11ac00a2d02	0x920b0
+gruntzmgr	?TopState@CGruntzMgr@@QAEPAVCState@@XZ	100.0000	100.0000	1	c7d4b7e0a451	0x90980
 gruntzsoundz	??1CGruntzSoundZ@@UAE@XZ	91.5790	91.5790	1	eadd9784e22d	0x86040
 gruntzsoundz	?CreateBank_138670@CGruntzSoundZ@@QAEPAVCGruntzSoundInnerZ@@HHH@Z	100.0000	100.0000	1	0d41e025e940	0x138670
 gruntzsoundz	?Insert_138700@CGruntzSoundZ@@QAEXPAVCGruntzSoundInnerZ@@@Z	100.0000	100.0000	1	278c200139dc	0x138700

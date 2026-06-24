@@ -37,20 +37,23 @@ public:
     virtual int Update();            // slot 4  (+0x10)  base default = return 1;
     virtual int Render();            // slot 5  (+0x14)  base default = return 1;
     virtual void Vslot06();          // slot 6
-    virtual void Vslot07();          // slot 7
+    virtual int Vslot07();           // slot 7  (+0x1c)  lobby-host-ready poll
     virtual int InputVirtual();      // slot 8  (+0x20)  per-frame input poll
     virtual void Vslot09();
     virtual int FrameSlot28(int); // slot 10 (+0x28)  per-frame poll (leaf override)
-    virtual void Vslot0b();
-    virtual void Vslot0c();
-    virtual void Vslot0d();
-    virtual void Vslot0e();
-    virtual void Vslot0f();
-    virtual void Vslot10();
-    virtual void Vslot11();
-    virtual void Vslot12();
-    virtual void Vslot13();
-    virtual void Vslot14();
+    // CGruntzMgr's per-state forwarders (0x8d9d0..0x8dbe0) dispatch a 2-arg or
+    // 3-arg notification into these slots; the int return / arg shapes are what
+    // those forwarders' push/ret-N codegen needs (vtables not diffed).
+    virtual int Vslot0b(int, int);      // slot 11 (+0x2c)
+    virtual int Vslot0c(int, int);      // slot 12 (+0x30)
+    virtual int Vslot0d(int, int);      // slot 13 (+0x34)
+    virtual int Vslot0e(int, int, int); // slot 14 (+0x38)
+    virtual int Vslot0f(int, int, int); // slot 15 (+0x3c)
+    virtual int Vslot10(int, int, int); // slot 16 (+0x40)
+    virtual int Vslot11(int, int, int); // slot 17 (+0x44)
+    virtual int Vslot12(int, int, int); // slot 18 (+0x48)
+    virtual int Vslot13(int, int, int); // slot 19 (+0x4c)
+    virtual int Vslot14(int, int, int); // slot 20 (+0x50)
     virtual void Vslot15();
     virtual void Vslot16();
     virtual void Vslot17();
