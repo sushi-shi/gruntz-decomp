@@ -301,15 +301,7 @@ void CGruntPowerupSprite::CGruntPowerupSprite_080380() {}
 RVA(0x00080410, 0x51)
 void CGruntPowerupSprite::CGruntPowerupSprite_080410() {}
 
-// ---- CGruntPuddle ----
-RVA(0x00010d10, 0x44)
-void CGruntPuddle::CGruntPuddle_010d10() {}
-RVA(0x00040c30, 0xb3)
-void CGruntPuddle::CGruntPuddle_040c30() {}
-RVA(0x00040d20, 0xe3)
-void CGruntPuddle::CGruntPuddle_040d20() {}
-RVA(0x0007d810, 0x25)
-void CGruntPuddle::CGruntPuddle_07d810() {}
+// ---- CGruntPuddle ---- migrated to src/Gruntz/CGruntPuddle.cpp (all 4 methods).
 
 // ---- CGruntSelectedSprite ----
 RVA(0x00011e80, 0x44)

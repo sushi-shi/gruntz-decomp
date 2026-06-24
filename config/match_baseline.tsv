@@ -36,7 +36,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	18	17
 directsoundmgr	26	19
-engine_discovered	960	0
+engine_discovered	956	0
 engine_label_stubs	534	117
 filestream	13	9
 font	16	9
@@ -49,6 +49,7 @@ gameobjectctors	5	0
 gametext	4	2
 gamewnd	6	4
 grunt	20	0
+gruntpuddle	4	2
 gruntzapp	10	8
 gruntzcommand	9	9
 gruntzmgr	9	5
@@ -448,10 +449,6 @@ engine_discovered	?CGruntHealthSprite_07f0d0@CGruntHealthSprite@@QAEXXZ	1.1765	1
 engine_discovered	?CGruntPowerupSprite_012370@CGruntPowerupSprite@@QAEXXZ	5.8824	5.8824	1	a6f565d7460a	0x12370
 engine_discovered	?CGruntPowerupSprite_080380@CGruntPowerupSprite@@QAEXXZ	1.3333	1.3333	1	14d49d87c05a	0x80380
 engine_discovered	?CGruntPowerupSprite_080410@CGruntPowerupSprite@@QAEXXZ	3.5714	3.5714	1	eb6a197bc153	0x80410
-engine_discovered	?CGruntPuddle_010d10@CGruntPuddle@@QAEXXZ	5.8824	5.8824	1	59b5442a3712	0x10d10
-engine_discovered	?CGruntPuddle_040c30@CGruntPuddle@@QAEXXZ	0.8000	0.8000	1	156318552a75	0x40c30
-engine_discovered	?CGruntPuddle_040d20@CGruntPuddle@@QAEXXZ	1.2500	1.2500	1	3e3b0b2fd24a	0x40d20
-engine_discovered	?CGruntPuddle_07d810@CGruntPuddle@@QAEXXZ	3.0769	3.0769	1	246e61a696a2	0x7d810
 engine_discovered	?CGruntSelectedSprite_011e80@CGruntSelectedSprite@@QAEXXZ	5.8824	5.8824	1	44d28d24eb61	0x11e80
 engine_discovered	?CGruntSelectedSprite_07e9c0@CGruntSelectedSprite@@QAEXXZ	6.6667	6.6667	1	28d642792980	0x7e9c0
 engine_discovered	?CGruntSelectedSprite_07e9f0@CGruntSelectedSprite@@QAEXXZ	3.0303	3.0303	1	20b504bf8ecc	0x7e9f0
@@ -1984,6 +1981,10 @@ grunt	?Stub_047a10@CGrunt@@QAEXXZ	0.0990	0.0990	2	e1bc672cfeb6	0x47a10
 grunt	?Stub_048470@CGrunt@@QAEXHH@Z	0.0778	0.0778	2	4c9121eeebc7	0x48470
 grunt	?Stub_062e10@CGrunt@@QAEXHHH@Z	28.9443	28.9443	4	96431e36cc39	0x62e10
 grunt	?Stub_0633e0@CGrunt@@QAEXXZ	86.4115	86.4115	4	1222eb136744	0x633e0
+gruntpuddle	??1CGruntPuddle@@UAE@XZ	100.0000	100.0000	1	d8797374243c	0x10d10
+gruntpuddle	?Place@CGruntPuddle@@QAEHHHHH@Z	73.5400	73.5400	1	c0acb6853a09	0x40c30
+gruntpuddle	?Remove@CGruntPuddle@@QAEHXZ	71.3000	71.3000	1	f9934ddc5c36	0x40d20
+gruntpuddle	?SetBute@CGruntPuddle@@QAEXPAD@Z	100.0000	100.0000	1	25260462d64d	0x7d810
 gruntzapp	??0CGruntzApp@@QAE@XZ	100.0000	100.0000	6	4559dd088d06	0x80850
 gruntzapp	??1CGruntzApp@@UAE@XZ	100.0000	100.0000	6	43c4ac32e8f0	0x808b0
 gruntzapp	?CreateU10O@@YAPAXXZ	99.9583	99.9583	5	c79c77d4e5bc	0x809a0
@@ -2074,7 +2075,7 @@ inftrees	_inflate_trees_free	100.0000	100.0000	1	f385d577afa6	0x18aab0
 infutil	_inflate_flush	100.0000	100.0000	1	e0e7519d9f47	0x18b300
 ingameicon	??1CInGameIcon@@UAE@XZ	100.0000	100.0000	1	fde4a2ce1197	0x11d00
 ingameicon	?HandleInput@CInGameIcon@@QAEHXZ	90.8442	90.8442	1	97b03c551262	0x97680
-ingameicon	?PlaceAt@CInGameIcon@@QAEHHH@Z	71.2551	71.2551	1	1e9fa2180f17	0x986b0
+ingameicon	?PlaceAt@CInGameIcon@@QAEHHH@Z	71.2551	71.2551	2	058602d0454d	0x986b0
 ingameicon	?Serialize@CInGameIcon@@QAEHPAVCArchive@@HHH@Z	0.6826	0.6826	1	b1927f1743b3	0x98c90
 ingameicon	?SetField54@CInGameIcon@@QAEXH@Z	100.0000	100.0000	1	47953e78bc5c	0x99b10
 inputdeviceconfig	?LoadInputDeviceConfig@CInputConfig@@QAE?AVCString@@H@Z	77.3265	77.3265	4	cbb58c336f38	0x387c0

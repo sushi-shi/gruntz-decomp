@@ -217,13 +217,6 @@ public:
     void CGruntPowerupSprite_080380();
     void CGruntPowerupSprite_080410();
 };
-class CGruntPuddle {
-public:
-    void CGruntPuddle_010d10();
-    void CGruntPuddle_040c30();
-    void CGruntPuddle_040d20();
-    void CGruntPuddle_07d810();
-};
 class CGruntSelectedSprite {
 public:
     void CGruntSelectedSprite_011e80();
