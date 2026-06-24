@@ -22,7 +22,7 @@ butemgr	38	27
 cddrawchildgroup	9	5
 cddrawptrcollections	1	0
 cddrawshadeblit	2	1
-cddrawsubmgr	18	10
+cddrawsubmgr	29	15
 cddrawsubmgrdraco	5	2
 cddrawsubmgrleaf	7	1
 cddrawsurfacemgr	7	5
@@ -42,7 +42,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	602	0
+engine_discovered	591	0
 engine_label_stubs	526	121
 filestream	13	9
 font	21	10
@@ -204,9 +204,16 @@ cddrawshadeblit	?Blit@CDDrawShadeBlit@@QAEHHPAUShadeSrc@@PAUShadeRect@@HH@Z	100.
 cddrawshadeblit	?BlitLoop@CDDrawShadeBlit@@QAEXHPAUShadeSrc@@PAUShadeRect@@H@Z	0.0556	0.0556	1	cd0bcbb696d9	0x14a200
 cddrawsubmgr	??0CDDrawSubMgr@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	100.0000	100.0000	6	af4f6a250fe2	0x156cb0
 cddrawsubmgr	??1CDDrawSubMgr@@UAE@XZ	100.0000	100.0000	5	450d3140b22a	0x1574d0
+cddrawsubmgr	?AddToMap48_15aba0@CWwdObjMgr@@QAEXPAVCWwdObject@@@Z	100.0000	100.0000	1	cf53df5ddff3	0x15aba0
 cddrawsubmgr	?Constructor_156e10@CDDrawSubMgrBase@@QAEXXZ	4.1667	4.1667	2	a218d18e0947	0x156e10
 cddrawsubmgr	?Constructor_157630@CDDrawSubMgr@@QAEXXZ	3.3333	3.3333	2	98e6212efc1f	0x157630
+cddrawsubmgr	?CountActive_15abc0@CWwdObjMgr@@QAEHXZ	100.0000	100.0000	1	9d89eae53a89	0x15abc0
+cddrawsubmgr	?Dispatch_15c900@CDDrawBlitParam@@QAEHPAVCWwdArchive@@HHH@Z	80.0000	80.0000	1	6e71d53b1fa4	0x15c900
+cddrawsubmgr	?ForEachDispatch_15ac20@CWwdObjMgr@@QAEHHHH@Z	100.0000	100.0000	1	ad4a80665824	0x15ac20
+cddrawsubmgr	?ForEachProbe_15acb0@CWwdObjMgr@@QAEHHH@Z	100.0000	100.0000	1	bcbd79c191fb	0x15acb0
+cddrawsubmgr	?ForEachSerialize_15b020@CWwdObjMgr@@QAEHPAVCWwdArchive@@H@Z	90.1266	90.1266	1	0dc7dfa03953	0x15b020
 cddrawsubmgr	?Init_15c290@CDDrawBlitParam@@QAEXPAVCDDrawBlitParamSrc@@@Z	94.7500	94.7500	2	03cefac5ad07	0x15c290
+cddrawsubmgr	?InsertSorted_159e40@CWwdObjMgr@@QAEXPAVCWwdObject@@H@Z	97.7465	97.7465	1	1019106e2d3d	0x159e40
 cddrawsubmgr	?Method_158b40@CDDrawWorkerMgr@@QAEHHH@Z	100.0000	100.0000	3	bf1eab5bac0f	0x158b40
 cddrawsubmgr	?Method_158c70@CDDrawWorkerMgr@@QAEHPAVCDDrawSurfacePair@@@Z	100.0000	100.0000	3	1fde1bab891f	0x158c70
 cddrawsubmgr	?Method_158d20@CDDrawWorkerMgr@@QAEHXZ	100.0000	100.0000	3	eb28c9b50478	0x158d20
@@ -215,7 +222,11 @@ cddrawsubmgr	?Method_158e40@CDDrawWorkerMgr@@QAEHXZ	50.1282	50.1282	3	80a89fb331
 cddrawsubmgr	?Method_158e90@CDDrawWorkerMgr@@QAEHXZ	100.0000	100.0000	3	62fc0a8b07d0	0x158e90
 cddrawsubmgr	?Method_158ee0@CDDrawWorkerMgr@@QAEHXZ	100.0000	100.0000	3	103b119fccdc	0x158ee0
 cddrawsubmgr	?Method_159ef0@CDDrawWorkerMgr@@QAEXXZ	100.0000	100.0000	1	14f6f09b257f	0x159ef0
+cddrawsubmgr	?PruneList_15aa90@CWwdObjMgr@@QAEXXZ	95.6410	95.6410	1	56df548d0ecd	0x15aa90
+cddrawsubmgr	?PruneOrphans_15b1d0@CWwdObjMgr@@QAEHXZ	94.2295	94.2295	1	d5da28ae9ca6	0x15b1d0
+cddrawsubmgr	?RemoveByPosition_15ab70@CWwdObjMgr@@QAEXHPAVCWwdObject@@@Z	100.0000	100.0000	1	bd5215a51066	0x15ab70
 cddrawsubmgr	?Reset_15c2c0@CDDrawBlitParam@@QAEXXZ	100.0000	100.0000	1	d1c77897f6cf	0x15c2c0
+cddrawsubmgr	?Serialize_15c970@CDDrawBlitParam@@QAEHPAVCWwdArchive@@@Z	99.4175	99.4175	1	d9613a190017	0x15c970
 cddrawsubmgr	?Setup_15c2d0@CDDrawBlitParam@@QAEXPAVCDDrawBlitParamSrc@@@Z	100.0000	100.0000	2	de9d51caa4a5	0x15c2d0
 cddrawsubmgr	?Stub_155720@CDDrawSubMgr@@QAEXXZ	3.6364	3.6364	2	da4e92815b42	0x155720
 cddrawsubmgr	?VirtualMethodUnknown1C@CDDrawSubMgr@@UAEXXZ	50.0000	50.0000	2	746bc9d4025a	0x1576c0
@@ -490,18 +501,7 @@ engine_discovered	?CDDrawSubMgrLeaf_1584f0@CDDrawSubMgrLeaf@@QAEXXZ	0.8000	0.800
 engine_discovered	?CDDrawSubMgrLeaf_158570@CDDrawSubMgrLeaf@@QAEXXZ	0.5714	0.5714	1	85f67e6fa91d	0x158570
 engine_discovered	?CDDrawSubMgr_031250@CDDrawSubMgr@@QAEXXZ	3.8462	3.8462	1	beb861628c31	0x31250
 engine_discovered	?CDDrawSubMgr_159600@CDDrawSubMgr@@QAEXXZ	0.3200	0.3200	1	cc27de035f3d	0x159600
-engine_discovered	?CDDrawSubMgr_159e40@CDDrawSubMgr@@QAEXXZ	0.5634	0.5634	1	1c5d13176535	0x159e40
-engine_discovered	?CDDrawSubMgr_15aa90@CDDrawSubMgr@@QAEXXZ	2.5641	2.5641	1	ab8612526934	0x15aa90
-engine_discovered	?CDDrawSubMgr_15ab70@CDDrawSubMgr@@QAEXXZ	3.0769	3.0769	1	2dc53bffd135	0x15ab70
-engine_discovered	?CDDrawSubMgr_15aba0@CDDrawSubMgr@@QAEXXZ	4.4444	4.4444	1	aec6bddef1e6	0x15aba0
-engine_discovered	?CDDrawSubMgr_15abc0@CDDrawSubMgr@@QAEXXZ	2.5000	2.5000	1	9eb2252df9b2	0x15abc0
-engine_discovered	?CDDrawSubMgr_15ac20@CDDrawSubMgr@@QAEXXZ	0.7273	0.7273	1	79f5c2382e1f	0x15ac20
-engine_discovered	?CDDrawSubMgr_15acb0@CDDrawSubMgr@@QAEXXZ	0.8163	0.8163	1	5f4f3870001d	0x15acb0
-engine_discovered	?CDDrawSubMgr_15b020@CDDrawSubMgr@@QAEXXZ	0.5063	0.5063	1	564614cb2ba3	0x15b020
-engine_discovered	?CDDrawSubMgr_15b1d0@CDDrawSubMgr@@QAEXXZ	1.6393	1.6393	1	e93686a75a05	0x15b1d0
 engine_discovered	?CDDrawSubMgr_15c360@CDDrawSubMgr@@QAEXXZ	0.0877	0.0877	1	0cd80af732ae	0x15c360
-engine_discovered	?CDDrawSubMgr_15c900@CDDrawSubMgr@@QAEXXZ	1.8182	1.8182	1	56b16b4dbb7e	0x15c900
-engine_discovered	?CDDrawSubMgr_15c970@CDDrawSubMgr@@QAEXXZ	0.3883	0.3883	1	2d6045cea2d1	0x15c970
 engine_discovered	?CDDrawSurfaceMgr_1558b0@CDDrawSurfaceMgr@@QAEXXZ	5.5556	5.5556	1	8a059c7da070	0x1558b0
 engine_discovered	?CDDrawSurfaceMgr_155e20@CDDrawSurfaceMgr@@QAEXXZ	1.1236	1.1236	1	6bddeb153d5c	0x155e20
 engine_discovered	?CDDrawSurfaceMgr_156020@CDDrawSurfaceMgr@@QAEXXZ	0.1274	0.1274	1	d290924cde9f	0x156020
@@ -2156,7 +2156,7 @@ streamfeeder	?Pause@StreamFeeder@@QAEHXZ	100.0000	100.0000	2	52812e99cdff	0x137f
 streamfeeder	?Resume@StreamFeeder@@QAEHXZ	100.0000	100.0000	2	c47c07137340	0x137ed0
 streamfeeder	?SeedWindow@StreamFeeder@@QAEHPAXII@Z	100.0000	100.0000	1	edea263e685a	0x137340
 terraintileloader	?Load@CTerrainTileLoader@@QAGXHHHHHH@Z	1.1273	1.1273	1	0cea279b8baf	0x75e90
-tilegridcommand	?ApplyMove@CTileGridCommand@@QAEHH@Z	70.3622	70.3622	1	459fcef5e0e3	0x112590
+tilegridcommand	?ApplyMove@CTileGridCommand@@QAEHH@Z	70.3622	70.3622	2	6655079e5e8d	0x112590
 tilegridcommand	?BumpCell@CTileGridCommand@@QAEHXZ	73.1351	73.1351	1	96bc63908c93	0x112b70
 tilegridcommand	?Classify@CTileGridCommand@@QAEHH@Z	95.9578	95.9578	1	a4fd29c72ab8	0x112970
 tilegridcommand	?RecordMove@CTileGridCommand@@QAEXXZ	100.0000	100.0000	1	23f12c9ec885	0x112880
@@ -2175,8 +2175,8 @@ tileswitchlogic	?SerializeMatrix@CTileTriggerSwitchLogic@@QAEHPAVCSerialStream@@
 tileswitchlogic	?TransferFlag74@CTileTriggerSwitchLogic@@QAEHPAVCSerialStream@@@Z	100.0000	100.0000	2	b5b02a407d1e	0x117e20
 tileswitchlogic	?ValidateByType@CTileTriggerSwitchLogic@@QAEHPAXHHH@Z	93.3333	93.3333	3	8268a9fb07a1	0x113a90
 tiletriggercontainer	??1CTileTriggerContainer@@QAE@XZ	100.0000	100.0000	1	4d04187e064e	0xc8640
-tiletriggercontainer	?AddToList1@CTileTriggerContainer@@QAEPAUTtcBaseElem@@HHPAHHHHH@Z	29.2278	29.2278	1	1e717e385329	0x116cf0
-tiletriggercontainer	?AddToList3@CTileTriggerContainer@@QAEPAUTtcMark@@HHHHHHHH@Z	42.8816	42.8816	1	266c09e5ce2b	0x116a40
+tiletriggercontainer	?AddToList1@CTileTriggerContainer@@QAEPAUTtcBaseElem@@HHPAHHHHH@Z	29.2278	29.2278	2	c6aeeebf676a	0x116cf0
+tiletriggercontainer	?AddToList3@CTileTriggerContainer@@QAEPAUTtcMark@@HHHHHHHH@Z	42.8816	42.8816	2	d77f142eae1d	0x116a40
 tiletriggercontainer	?DelFromList1@CTileTriggerContainer@@QAEHPAX@Z	69.4167	69.4167	2	80d8d2a803b9	0x116e60
 tiletriggercontainer	?DelFromList3@CTileTriggerContainer@@QAEHPAX@Z	82.2857	82.2857	2	29a2656deb82	0x117200
 tiletriggercontainer	?DtorBase@CTileTriggerContainer@@QAEXXZ	100.0000	100.0000	2	4db891ce5638	0x115f30
@@ -2184,8 +2184,8 @@ tiletriggercontainer	?FilterList2@CTileTriggerContainer@@QAEHPAX@Z	84.2000	84.20
 tiletriggercontainer	?FindInLists12@CTileTriggerContainer@@QAEPAXHH@Z	100.0000	100.0000	2	c6ed53b9990d	0x116f20
 tiletriggercontainer	?MoveList1ToList2@CTileTriggerContainer@@QAEHPAX@Z	51.3243	51.3243	2	031444f05700	0x117150
 tiletriggercontainer	?RemoveAll@CTileTriggerContainer@@QAEXXZ	100.0000	100.0000	1	d8586fefd0bf	0x116fa0
-tiletriggercontainer	?SerializeApplyA@@YGHPAUTtcStream@@HHHPAUTtcSwitchObj@@@Z	57.3077	57.3077	1	8a3ac556e634	0x117630
-tiletriggercontainer	?SerializeApplyB@@YGHPAUTtcStream@@HHHPAUTtcSwitchObj@@@Z	63.2576	63.2576	1	bad625a99634	0x117710
+tiletriggercontainer	?SerializeApplyA@@YGHPAUTtcStream@@HHHPAUTtcSwitchObj@@@Z	57.3077	57.3077	2	a1a03c04f1a2	0x117630
+tiletriggercontainer	?SerializeApplyB@@YGHPAUTtcStream@@HHHPAUTtcSwitchObj@@@Z	63.2576	63.2576	2	fe53fda39900	0x117710
 tiletriggercontainer	?SetCell@CTileTriggerContainer@@QAEHHHH@Z	77.9559	77.9559	1	cd7922705e40	0x117f60
 tiletriggerlogic	??0CTileTriggerLogic@@QAE@XZ	100.0000	100.0000	5	94795c513302	0x1107f0
 tiletriggerlogic	??_GCTileTriggerLogic@@UAEPAXI@Z	4.7624	4.7624	1	cpp:abf93c58a136	0x116610

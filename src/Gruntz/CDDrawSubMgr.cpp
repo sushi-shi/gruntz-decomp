@@ -1,4 +1,8 @@
 #include <rva.h>
+// <Mfc.h> brings the real MFC CPtrList / CMapPtrToPtr (afxcoll) used by the
+// CWwdObjMgr collection class below.  Must precede any windows/DirectX header.
+#include <Mfc.h>
+#include <string.h> // strcpy (the inline CRT copy in Serialize_15c970)
 // The discovered cluster's surface helpers (Blt/Flip/BltFast on CDDSurface) come
 // from the DDrawMgr group; reuse its real types instead of placeholder casts.
 #include <Gruntz/CDirectDrawMgr.h>
@@ -151,24 +155,59 @@ public:
     float m_20; // +0x20
 };
 
+// __thiscall archive/file sink (vtable slot +0x30 = Write(buf, len)).  Shared by
+// CWwdObjMgr::ForEachSerialize and CDDrawBlitParam::Serialize.
+class CWwdArchive {
+public:
+    virtual void Av00();
+    virtual void Av04();
+    virtual void Av08();
+    virtual void Av0C();
+    virtual void Av10();
+    virtual void Av14();
+    virtual void Av18();
+    virtual void Av1C();
+    virtual void Av20();
+    virtual void Av24();
+    virtual void Av28();
+    virtual void Av2C();
+    virtual void Write(const void* buf, i32 len); // +0x30
+};
+
+// The worker held at CDDrawBlitParam+0x0c: holds a sub-object at +0x2c whose
+// 0x152d30 method returns a CString (the label written by Serialize).
+class CDDrawBlitWorker {
+public:
+    char m_pad00[0x2c]; // +0x00..0x2b
+    void* m_2c;         // +0x2c sub-object (Method_152d30 -> CString)
+};
+class CDDrawBlitLabelSource {
+public:
+    CString GetLabel_152d30(i32 a);
+};
+
 class CDDrawBlitParam {
 public:
     void Init_15c290(CDDrawBlitParamSrc* src);
     void Reset_15c2c0();
     void Setup_15c2d0(CDDrawBlitParamSrc* src);
+    i32 Serialize_15c970(CWwdArchive* ar);
+    i32 Deserialize_15ca70(CWwdArchive* ar);
+    i32 Dispatch_15c900(CWwdArchive* ar, i32 type, i32 a3, i32 a4);
 
-    char m_pad00[0x10]; // +0x00 .. +0x0f
-    i32 m_10;           // +0x10
-    i32 m_14;           // +0x14
-    i32 m_18;           // +0x18
-    i32 m_1c;           // +0x1c
-    i32 m_20;           // +0x20
-    i32 m_24;           // +0x24
-    i32 m_28;           // +0x28
-    i32 m_2c;           // +0x2c
-    i32 m_30;           // +0x30
-    i32 m_34;           // +0x34
-    float m_38;         // +0x38
+    char m_pad00[0x0c];     // +0x00 .. +0x0b
+    CDDrawBlitWorker* m_0c; // +0x0c
+    i32 m_10;               // +0x10
+    i32 m_14;               // +0x14
+    i32 m_18;               // +0x18
+    i32 m_1c;               // +0x1c
+    i32 m_20;               // +0x20
+    i32 m_24;               // +0x24
+    i32 m_28;               // +0x28
+    i32 m_2c;               // +0x2c
+    i32 m_30;               // +0x30
+    i32 m_34;               // +0x34
+    float m_38;             // +0x38
 };
 
 // ---------------------------------------------------------------------------
@@ -456,4 +495,368 @@ void CDDrawBlitParam::Setup_15c2d0(CDDrawBlitParamSrc* src) {
         float f = src->m_20;
         m_38 = f;
     }
+}
+
+// ---------------------------------------------------------------------------
+// 0x15c970: serialize the blit-param.  Writes the eight dwords m_1c..m_38 to
+// the archive (4 bytes each via slot +0x30), zeroes a 0x80-byte label buffer,
+// and if m_14 is set, fetches the worker label (a returns-by-value CString from
+// the +0x2c sub-object's 0x152d30) and strcpy's it into the buffer; then writes
+// the whole 0x80-byte buffer.  Returns 1.
+// @early-stop
+// 99.4% — the eight Writes + the buffer zero + the GetLabel call + the inline
+// strcpy all byte-exact; the only residual is the NRVO-temp addressing of the
+// returned CString: retail derefs the return pointer (`mov edi,[eax]`, 2 B), our
+// cl re-reads the temp slot (`mov edi,[esp+0xc]`, 4 B).  Entropy tail / NRVO
+// addressing choice; no source lever.
+RVA(0x0015c970, 0xfe)
+i32 CDDrawBlitParam::Serialize_15c970(CWwdArchive* ar) {
+    if (ar == 0) {
+        return 0;
+    }
+    ar->Write(&m_1c, 4);
+    ar->Write(&m_20, 4);
+    ar->Write(&m_24, 4);
+    ar->Write(&m_28, 4);
+    ar->Write(&m_2c, 4);
+    ar->Write(&m_30, 4);
+    ar->Write(&m_34, 4);
+    ar->Write(&m_38, 4);
+    char buf[0x80];
+    for (i32 i = 0; i < 0x20; ++i) {
+        ((i32*)buf)[i] = 0;
+    }
+    if (m_14 != 0) {
+        CString label = ((CDDrawBlitLabelSource*)m_0c->m_2c)->GetLabel_152d30(m_14);
+        strcpy(buf, label);
+    }
+    ar->Write(buf, 0x80);
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// 0x15c900: dispatch on `type` — type 4 serializes, type 7 deserializes (both
+// via the named sibling), every other type is a no-op that returns 1.  A
+// serialize/deserialize that returns 0 propagates the 0.  The (type-3) switch
+// over [0,5] builds the 6-entry jump table.
+// @early-stop
+// 80% — logic exact (both sibling calls + the propagate-0 + return-1 paths
+// match).  Residual is the switch lowering: retail emits a `.rdata` jump table
+// (the 4 default-folding cases keep the range dense), but MSVC5 folds our empty
+// cases into a cmp/je-subtract chain.  Not source-steerable — the lowering
+// follows case-value density.  docs/patterns/switch-cmpje-tree-vs-jumptable.md.
+RVA(0x0015c900, 0x42)
+i32 CDDrawBlitParam::Dispatch_15c900(CWwdArchive* ar, i32 type, i32 a3, i32 a4) {
+    if (ar == 0) {
+        return 0;
+    }
+    switch (type) {
+        case 3:
+            break;
+        case 4:
+            if (Serialize_15c970(ar) == 0) {
+                return 0;
+            }
+            break;
+        case 5:
+            break;
+        case 6:
+            break;
+        case 7:
+            if (Deserialize_15ca70(ar) == 0) {
+                return 0;
+            }
+            break;
+        case 8:
+            break;
+        default:
+            break;
+    }
+    return 1;
+}
+
+// ===========================================================================
+// CWwdObjMgr — the 0x159xxx-0x15bxxx collection class.  A DISTINCT class from
+// CDDrawWorkerMgr above: its `this` layout is a CPtrList at +0x10, two
+// CMapPtrToPtr at +0x2c and +0x48, and field +0x0c (a parent handle copied
+// into spawned objects).  +0x54 is the SECOND map's m_nCount (CMapPtrToPtr's
+// count sits 0xc into the +0x48 map), so the `(*(p+0x54) != 0)?-1:0` start-
+// position trick the iterators use is just `m_48.GetCount() != 0`.
+//
+// The managed objects (CWwdObject, the 0x1dc-byte g_wwdObjVtbl factory output
+// of Method_159600) carry: a flag word at +0x08, a sort key at +0x74, a
+// CPtrList POSITION cache at +0x78, and the map key at +0x188.  Modeled
+// polymorphically only so the vtable dispatches lower to the exact
+// `mov eax,[obj]; call [eax+slot]`; virtuals are never defined here.
+// Field names are placeholders; only offsets + emitted bytes are load-bearing.
+// ===========================================================================
+
+class CWwdObject {
+public:
+    virtual void Slot00();
+    virtual i32 ScalarDtor(i32 flag); // +0x04 scalar-deleting destructor
+    virtual void Slot08();
+    virtual void Slot0C();
+    virtual i32 Slot10(void* a); // +0x10 (1-arg op, called from 159600)
+    virtual void Slot14();
+    virtual void Slot18();
+    virtual void Slot1C();
+    virtual void Slot20();
+    virtual void Slot24();
+    virtual void Slot28();
+    virtual void Slot2C();
+    virtual void Slot30(); // +0x30 archive write
+    virtual void Slot34();
+    virtual void Slot38();
+    virtual i32 Slot3C(i32 a1, i32 a2, i32 a3, void* obj); // +0x3c
+    char m_pad04[0x08 - 0x04];
+    i32 m_08;                  // +0x08 flag word
+    char m_pad0c[0x74 - 0x0c]; // +0x0c..0x73
+    i32 m_74;                  // +0x74 sort key
+    i32 m_78;                  // +0x78 CPtrList POSITION cache
+    char m_pad7c[0x188 - 0x7c];
+    void* m_188; // +0x188 map key
+};
+
+// A worker held in the +0x2c/+0x48 maps that exposes a __thiscall probe at
+// 0x151c00 (called from Method_15acb0).
+class CWwdProbeObject : public CWwdObject {
+public:
+    i32 Probe_151c00(i32 a1, i32 a2);
+};
+
+class CWwdObjMgr {
+public:
+    void RemoveByPosition_15ab70(i32 pos, CWwdObject* obj);
+    void AddToMap48_15aba0(CWwdObject* obj);
+    void PruneList_15aa90();
+    i32 CountActive_15abc0();
+    i32 ForEachDispatch_15ac20(i32 a1, i32 a2, i32 a3);
+    i32 ForEachProbe_15acb0(i32 a1, i32 a2);
+    i32 ForEachSerialize_15b020(CWwdArchive* ar, i32 a2);
+    i32 PruneOrphans_15b1d0();
+    void InsertSorted_159e40(CWwdObject* obj, i32 addToMaps);
+
+    char m_pad00[0x0c]; // +0x00..0x0b
+    i32 m_0c;           // +0x0c parent handle
+    CPtrList m_10;      // +0x10 sorted object list
+    CMapPtrToPtr m_2c;  // +0x2c key -> object (primary)
+    CMapPtrToPtr m_48;  // +0x48 key -> object (active set)
+};
+
+// CPtrList CNode shape (pNext@0, pPrev@4, data@8); the list head node is at
+// CWwdObjMgr+0x14 (= m_10.m_pNodeHead).
+struct CWwdNode {
+    CWwdNode* m_next;  // +0x00
+    void* m_prev;      // +0x04
+    CWwdObject* m_obj; // +0x08
+};
+
+// ---------------------------------------------------------------------------
+// 0x15ab70: drop a list slot + its primary-map entry.
+RVA(0x0015ab70, 0x27)
+void CWwdObjMgr::RemoveByPosition_15ab70(i32 pos, CWwdObject* obj) {
+    m_10.RemoveAt((POSITION)pos);
+    m_2c.RemoveKey(obj->m_188);
+}
+
+// ---------------------------------------------------------------------------
+// 0x15aba0: m_48[obj->key] = obj.
+RVA(0x0015aba0, 0x1a)
+void CWwdObjMgr::AddToMap48_15aba0(CWwdObject* obj) {
+    m_48[obj->m_188] = obj;
+}
+
+// ---------------------------------------------------------------------------
+// 0x15aa90: walk the list; for every object lacking flag 0x200, drop it from
+// the list + both maps and destroy it.
+// @early-stop
+// 95.6% — list-walk twin-copy regalloc wall: retail materializes the cur node
+// in two registers (eax+ecx) to free edi for the advance + push ecx for
+// RemoveAt; our cl keeps cur in one reg.  Logic/CFG/offsets exact.
+// docs/patterns/linked-list-walk-node-eax-rotation.md.
+RVA(0x0015aa90, 0x5d)
+void CWwdObjMgr::PruneList_15aa90() {
+    struct HLayout {
+        char _pad[0x14];
+        CWwdNode* m_head;
+    };
+    CWwdNode* node = ((HLayout*)this)->m_head;
+    while (node != 0) {
+        CWwdNode* cur = node;
+        node = node->m_next;
+        CWwdObject* obj = cur->m_obj;
+        if (obj != 0 && !(obj->m_08 & 0x200)) {
+            m_10.RemoveAt((POSITION)cur);
+            m_2c.RemoveKey(obj->m_188);
+            m_48.RemoveKey(obj->m_188);
+            obj->ScalarDtor(1);
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 0x15abc0: count m_48 entries whose object lacks flag 0x4000000.
+RVA(0x0015abc0, 0x5e)
+i32 CWwdObjMgr::CountActive_15abc0() {
+    i32 n = 0;
+    POSITION pos = (POSITION)(m_48.GetCount() != 0 ? -1 : 0);
+    if (pos != 0) {
+        do {
+            void* key = 0;
+            CWwdObject* val = 0;
+            m_48.GetNextAssoc(pos, key, (void*&)val);
+            if (val != 0 && !(val->m_08 & 0x4000000)) {
+                ++n;
+            }
+        } while (pos != 0);
+    }
+    return n;
+}
+
+// ---------------------------------------------------------------------------
+// 0x15ac20: for each active m_48 object, dispatch its +0x3c virtual with the
+// three args + the object; always returns 1.  Returns 0 immediately if a1==0.
+RVA(0x0015ac20, 0x81)
+i32 CWwdObjMgr::ForEachDispatch_15ac20(i32 a1, i32 a2, i32 a3) {
+    if (a1 == 0) {
+        return 0;
+    }
+    POSITION pos = (POSITION)(m_48.GetCount() != 0 ? -1 : 0);
+    if (pos != 0) {
+        do {
+            void* key = 0;
+            CWwdObject* val = 0;
+            m_48.GetNextAssoc(pos, key, (void*&)val);
+            if (val != 0 && !(val->m_08 & 0x4000000)) {
+                val->Slot3C(a1, a2, a3, val);
+            }
+        } while (pos != 0);
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// 0x15acb0: for each active m_48 object, run its __thiscall probe at 0x151c00
+// with (a1, a2); always returns 1.  Returns 0 immediately if a1==0.
+RVA(0x0015acb0, 0x76)
+i32 CWwdObjMgr::ForEachProbe_15acb0(i32 a1, i32 a2) {
+    if (a1 == 0) {
+        return 0;
+    }
+    POSITION pos = (POSITION)(m_48.GetCount() != 0 ? -1 : 0);
+    if (pos != 0) {
+        do {
+            void* key = 0;
+            CWwdObject* val = 0;
+            m_48.GetNextAssoc(pos, key, (void*&)val);
+            if (val != 0 && !(val->m_08 & 0x4000000)) {
+                ((CWwdProbeObject*)val)->Probe_151c00(a1, a2);
+            }
+        } while (pos != 0);
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// 0x15b020: for each active m_48 object, write its key to the archive then run
+// its +0x3c virtual; bail to 0 on a 0 result, else 1.  Returns 0 if ar==0.
+// @early-stop
+// 90.1% — the per-element block (Write + the +0x3c dispatch) is byte-exact; the
+// residual is the loop-tail structure: retail emits a bottom-tested loop with
+// two distinct `return 1` epilogues (empty-map vs loop-done), our cl hoists the
+// body and merges the epilogue.  An optimizer CFG-shape choice; logic exact.
+RVA(0x0015b020, 0xc0)
+i32 CWwdObjMgr::ForEachSerialize_15b020(CWwdArchive* ar, i32 a2) {
+    if (ar == 0) {
+        return 0;
+    }
+    POSITION pos = (POSITION)(m_48.GetCount() != 0 ? -1 : 0);
+    if (pos != 0) {
+        do {
+            void* key = 0;
+            CWwdObject* val = 0;
+            m_48.GetNextAssoc(pos, key, (void*&)val);
+            if (val != 0 && !(val->m_08 & 0x4000000)) {
+                void* k = val->m_188;
+                ar->Write(&k, 4);
+                if (val->Slot3C((i32)ar, 4, a2, val) == 0) {
+                    return 0;
+                }
+            }
+        } while (pos != 0);
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// 0x15b1d0: for each m_48 object, look its key up in m_2c; if absent, remove it
+// from m_48 and destroy it.  Returns the number removed.
+// @early-stop
+// 94.2% — logic/CFG/offsets exact; residual is the Lookup `found`-slot handling:
+// retail reads `found` into a register only on Lookup-success and compares the
+// register, our cl re-zeroes the slot and compares memory.  A found-slot regalloc
+// coin-flip (docs/patterns/zero-register-pinning.md); no source lever flips it.
+RVA(0x0015b1d0, 0x9b)
+i32 CWwdObjMgr::PruneOrphans_15b1d0() {
+    i32 n = 0;
+    POSITION pos = (POSITION)(m_48.GetCount() != 0 ? -1 : 0);
+    if (pos != 0) {
+        do {
+            void* key = 0;
+            CWwdObject* val = 0;
+            m_48.GetNextAssoc(pos, key, (void*&)val);
+            if (val != 0) {
+                void* found = 0;
+                if (!m_2c.Lookup(val->m_188, found)) {
+                    found = 0;
+                }
+                if (found == 0) {
+                    m_48.RemoveKey(val->m_188);
+                    if (val != 0) {
+                        val->ScalarDtor(1);
+                    }
+                    ++n;
+                }
+            }
+        } while (pos != 0);
+    }
+    return n;
+}
+
+// ---------------------------------------------------------------------------
+// 0x159e40: register `obj` — if its flag 0x800 is set, clear its POSITION cache
+// and bail; otherwise (when addToMaps) record it in both maps, then insert it
+// into the sorted list before the first node whose object has a larger sort key
+// and lacks flag 0x20000.  The returned POSITION is cached in obj->+0x78.
+// @early-stop
+// 97.75% — code bytes match retail; residual is the reloc-typing scoring
+// artifact on the two CMapPtrToPtr::operator[] calls (REL32 vs cl's DIR32 vs a
+// differently-named symbol).  docs/patterns + objdiff-reloc-scoring.
+RVA(0x00159e40, 0xaa)
+void CWwdObjMgr::InsertSorted_159e40(CWwdObject* obj, i32 addToMaps) {
+    if (obj->m_08 & 0x800) {
+        obj->m_78 = 0;
+        return;
+    }
+    if (addToMaps != 0) {
+        m_2c[obj->m_188] = obj;
+        m_48[obj->m_188] = obj;
+    }
+    struct HLayout {
+        char _pad[0x14];
+        CWwdNode* m_head;
+    };
+    CWwdNode* node = ((HLayout*)this)->m_head;
+    i32 key = obj->m_74;
+    while (node != 0) {
+        CWwdNode* cur = node;
+        CWwdObject* data = cur->m_obj;
+        node = node->m_next;
+        if (data->m_74 > key && !(data->m_08 & 0x20000)) {
+            obj->m_78 = (i32)m_10.InsertBefore((POSITION)cur, obj);
+            return;
+        }
+    }
+    obj->m_78 = (i32)m_10.AddTail(obj);
 }

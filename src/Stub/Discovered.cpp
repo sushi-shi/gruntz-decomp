@@ -92,38 +92,22 @@ void CDDSurface::CDDSurface_142a40() {}
 // ---- CDDrawSubMgr ----
 // NOTE: this discovery cluster is a DISTINCT class from the matched small
 // CDDrawSubMgr (different field layout / vtable).  The clean self-contained
-// methods (158b40..158ee0, 159ef0, 15c290/2c0/2d0) were reconstructed into
-// src/Gruntz/CDDrawSubMgr.cpp as CDDrawWorkerMgr / CDDrawBlitParam.  The rest
-// (MFC-collection iterators, the 0x555 serializer, the jump-table switch) are
-// deferred to the final sweep.
+// methods (158b40..158ee0, 159ef0, 15c290/2c0/2d0) plus the whole CMap/CList
+// collection family (159e40, 15aa90..15b1d0 = CWwdObjMgr) and the blit-param
+// serializer/dispatcher (15c900/15c970) were reconstructed into
+// src/Gruntz/CDDrawSubMgr.cpp (CWwdObjMgr / CDDrawBlitParam).  Three remain:
+//   - 0x031250: a NON-MEMBER (iterates a +0x68 list, vtable+0x20==5 probe; a
+//     different class entirely) — left stubbed.
+//   - 0x159600: the CWwdObject factory (EH frame + 0x1dc heap construct +
+//     vtable stamps; tail-calls the matched 159e40) — deferred to final sweep.
+//   - 0x15c360: the 0x555-byte blit-param step/advance megafunction (two jump
+//     tables, EH) — deferred to final sweep.
 RVA(0x00031250, 0x33)
 void CDDrawSubMgr::CDDrawSubMgr_031250() {}
 RVA(0x00159600, 0x1ab)
 void CDDrawSubMgr::CDDrawSubMgr_159600() {}
-RVA(0x00159e40, 0xaa)
-void CDDrawSubMgr::CDDrawSubMgr_159e40() {}
-RVA(0x0015aa90, 0x5d)
-void CDDrawSubMgr::CDDrawSubMgr_15aa90() {}
-RVA(0x0015ab70, 0x27)
-void CDDrawSubMgr::CDDrawSubMgr_15ab70() {}
-RVA(0x0015aba0, 0x1a)
-void CDDrawSubMgr::CDDrawSubMgr_15aba0() {}
-RVA(0x0015abc0, 0x5e)
-void CDDrawSubMgr::CDDrawSubMgr_15abc0() {}
-RVA(0x0015ac20, 0x81)
-void CDDrawSubMgr::CDDrawSubMgr_15ac20() {}
-RVA(0x0015acb0, 0x76)
-void CDDrawSubMgr::CDDrawSubMgr_15acb0() {}
-RVA(0x0015b020, 0xc0)
-void CDDrawSubMgr::CDDrawSubMgr_15b020() {}
-RVA(0x0015b1d0, 0x9b)
-void CDDrawSubMgr::CDDrawSubMgr_15b1d0() {}
 RVA(0x0015c360, 0x555)
 void CDDrawSubMgr::CDDrawSubMgr_15c360() {}
-RVA(0x0015c900, 0x42)
-void CDDrawSubMgr::CDDrawSubMgr_15c900() {}
-RVA(0x0015c970, 0xfe)
-void CDDrawSubMgr::CDDrawSubMgr_15c970() {}
 
 // ---- CDDrawSubMgrLeaf ----
 RVA(0x0005b7e0, 0x23)
