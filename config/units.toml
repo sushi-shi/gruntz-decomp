@@ -599,3 +599,8 @@ flags = "eh"
 unit = "shadetablecache"
 source = "src/DDrawMgr/ShadeTableCache.cpp"
 flags = "eh"
+
+[[unit]]
+unit = "battlezdata"
+source = "src/Gruntz/BattlezData.cpp"
+flags = "base"

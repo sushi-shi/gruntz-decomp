@@ -16,6 +16,7 @@ actionoptionsmenubar	11	3
 adler32	1	1
 advancedoptions	5	5
 appdialogs	1	1
+battlezdata	14	11
 battlezmapconfig	1	0
 brickz	10	3
 butemgr	39	27
@@ -42,7 +43,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	26	19
-engine_discovered	555	0
+engine_discovered	541	0
 engine_label_stubs	525	121
 filestream	13	9
 font	21	10
@@ -145,6 +146,20 @@ advancedoptions	?SaveOption@@YAXPAUHWND__@@PAVRegistryHelper@Utils@@PADK@Z	100.0
 advancedoptions	?SaveOptions@@YAXPAUHWND__@@PAVRegistryHelper@Utils@@@Z	100.0000	100.0000	3	42bc821feac7	0xb270
 advancedoptions	?SetDefaults@@YAXPAUHWND__@@@Z	100.0000	100.0000	3	debb3761026d	0xb160
 appdialogs	?WarpDialogProc@@YGHPAXIIJ@Z	100.0000	100.0000	4	abc884dd8cb1	0x8e4e0
+battlezdata	?BumpWin@CBattlezData@@QAEXHH@Z	100.0000	100.0000	1	3e9af1e8c25c	0xfcc50
+battlezdata	?ClearFlags@CBattlezData@@QAEXXZ	100.0000	100.0000	1	5ae18e57cb5d	0xfcb90
+battlezdata	?ClearWins@CBattlezData@@QAEXXZ	100.0000	100.0000	1	7cdf93f410b0	0xfcc90
+battlezdata	?FillRecord@CBattlezData@@QAEXHH@Z	100.0000	100.0000	1	e483d973ee40	0xfd330
+battlezdata	?GetFlag@CBattlezData@@QAEHHH@Z	100.0000	100.0000	1	55ae8b3cebab	0xfcc10
+battlezdata	?GetRecordValue@CBattlezData@@QAEHH@Z	76.5000	76.5000	1	5ce8a7e73df7	0xfced0
+battlezdata	?InBounds@CBattlezData@@QAEHH@Z	100.0000	100.0000	1	4077aa538933	0xfcd70
+battlezdata	?Init@CBattlezData@@QAEXXZ	81.0909	81.0909	1	b3678f82a535	0xfca10
+battlezdata	?InitWithRecords@CBattlezData@@QAEHPAX@Z	100.0000	100.0000	1	bb6157de5263	0xfc9c0
+battlezdata	?MarkFlag@CBattlezData@@QAEXHH@Z	100.0000	100.0000	1	f72e686c1af9	0xfcb50
+battlezdata	?Serialize@CBattlezData@@QAEHPAVBattlezStream@@HHH@Z	92.3907	92.3907	1	c4fb4d21f484	0xfd3f0
+battlezdata	?SetCount@CBattlezData@@QAEXH@Z	100.0000	100.0000	1	b3b16a0100f6	0xfcad0
+battlezdata	?SumFlags@CBattlezData@@QAEHH@Z	100.0000	100.0000	1	49d0ac8ba2ec	0xfcbc0
+battlezdata	?SumWinRow@CBattlezData@@QAEHH@Z	100.0000	100.0000	1	892e6d37c257	0xfccb0
 battlezmapconfig	?LoadConfig@CBattlezMapConfig@@QAEHPAUCLevelInfo@@HH@Z	85.9933	85.9933	4	f06ecd871376	0x25020
 brickz	?CellPop@CBrickz@@QAEXPAUBrickzNode@@H@Z	80.3284	80.3284	3	6c5a65d16fa4	0x9f710
 brickz	?CellPush@CBrickz@@QAEXPAUBrickzNode@@@Z	85.9070	85.9070	2	890d04538e3f	0x9f470
@@ -897,20 +912,6 @@ engine_discovered	?ClassUnknown_78_0310f0@ClassUnknown_78@@QAEXXZ	0.7143	0.7143	
 engine_discovered	?ClassUnknown_78_0312a0@ClassUnknown_78@@QAEXXZ	0.8889	0.8889	1	e8547a937ee6	0x312a0
 engine_discovered	?ClassUnknown_78_16da80@ClassUnknown_78@@QAEXXZ	0.3540	0.3540	1	a25c866a6d05	0x16da80
 engine_discovered	?ClassUnknown_78_16df40@ClassUnknown_78@@QAEXXZ	7.6923	7.6923	1	d593bf15723e	0x16df40
-engine_discovered	?ClassUnknown_7_0fc9c0@ClassUnknown_7@@QAEXXZ	5.0000	5.0000	1	dc4a802f1238	0xfc9c0
-engine_discovered	?ClassUnknown_7_0fca10@ClassUnknown_7@@QAEXXZ	2.2727	2.2727	1	0450cb8812f0	0xfca10
-engine_discovered	?ClassUnknown_7_0fcad0@ClassUnknown_7@@QAEXXZ	1.1429	1.1429	1	af060f7320d0	0xfcad0
-engine_discovered	?ClassUnknown_7_0fcb50@ClassUnknown_7@@QAEXXZ	3.0769	3.0769	1	6ac183e53ce4	0xfcb50
-engine_discovered	?ClassUnknown_7_0fcb90@ClassUnknown_7@@QAEXXZ	14.2857	14.2857	1	7b08b5709a2b	0xfcb90
-engine_discovered	?ClassUnknown_7_0fcbc0@ClassUnknown_7@@QAEXXZ	1.6000	1.6000	1	870516c47673	0xfcbc0
-engine_discovered	?ClassUnknown_7_0fcc10@ClassUnknown_7@@QAEXXZ	2.5000	2.5000	1	64efa6c70a2e	0xfcc10
-engine_discovered	?ClassUnknown_7_0fcc50@ClassUnknown_7@@QAEXXZ	2.5000	2.5000	1	31dcabfbc348	0xfcc50
-engine_discovered	?ClassUnknown_7_0fcc90@ClassUnknown_7@@QAEXXZ	14.2857	14.2857	1	f24dfb56b422	0xfcc90
-engine_discovered	?ClassUnknown_7_0fccb0@ClassUnknown_7@@QAEXXZ	3.0769	3.0769	1	dd021110e316	0xfccb0
-engine_discovered	?ClassUnknown_7_0fcd70@ClassUnknown_7@@QAEXXZ	0.9302	0.9302	1	72643c0fd033	0xfcd70
-engine_discovered	?ClassUnknown_7_0fced0@ClassUnknown_7@@QAEXXZ	2.0000	2.0000	1	43ba0fea9828	0xfced0
-engine_discovered	?ClassUnknown_7_0fd330@ClassUnknown_7@@QAEXXZ	0.9756	0.9756	1	00dc9bf356a3	0xfd330
-engine_discovered	?ClassUnknown_7_0fd3f0@ClassUnknown_7@@QAEXXZ	0.0930	0.0930	1	2b8020f0abd5	0xfd3f0
 engine_discovered	?ClassUnknown_81_00b790@ClassUnknown_81@@QAEXXZ	20.0000	20.0000	1	0debda0fc977	0xb790
 engine_discovered	?ClassUnknown_81_00c090@ClassUnknown_81@@QAEXXZ	0.4082	0.4082	1	6141a9bee099	0xc090
 engine_discovered	?ClassUnknown_81_00c200@ClassUnknown_81@@QAEXXZ	0.8333	0.8333	1	b385c318ecff	0xc200
