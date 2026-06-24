@@ -566,16 +566,6 @@ void ClassUnknown_116::ClassUnknown_116_1047f0() {}
 RVA(0x001048f0, 0xa9)
 void ClassUnknown_116::ClassUnknown_116_1048f0() {}
 
-// ---- ClassUnknown_117 ----
-RVA(0x000ea470, 0x24)
-void ClassUnknown_117::ClassUnknown_117_0ea470() {}
-RVA(0x000ea4b0, 0x1c)
-void ClassUnknown_117::ClassUnknown_117_0ea4b0() {}
-RVA(0x000ea6c0, 0x237)
-void ClassUnknown_117::ClassUnknown_117_0ea6c0() {}
-RVA(0x00104b00, 0x55)
-void ClassUnknown_117::ClassUnknown_117_104b00() {}
-
 // ---- ClassUnknown_118 -> CSBI_WarlordHead (RTTI .?AVCSBI_WarlordHead@@, vtable
 // 0x5ead24) reconstructed into src/Gruntz/SBI_WarlordHead.cpp (slots 5/11 + two
 // helpers) + the 5-level /GX scalar dtor (0x104a00) in SBI_WarlordHeadEh.cpp; the

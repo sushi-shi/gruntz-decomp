@@ -159,6 +159,16 @@ source = "src/Gruntz/SBI_WarlordHeadEh.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "sbi_statztabgruntbar"
+source = "src/Gruntz/SBI_StatzTabGruntBar.cpp"
+flags = "base"
+
+[[unit]]
+unit = "sbi_statztabgruntbar_eh"
+source = "src/Gruntz/SBI_StatzTabGruntBarEh.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "tiletriggerlogic"
 source = "src/Gruntz/TileTriggerLogic.cpp"
 flags = "base"
