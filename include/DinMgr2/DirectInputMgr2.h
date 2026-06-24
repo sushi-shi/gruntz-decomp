@@ -11,7 +11,7 @@
 //     Acquire, SetCooperativeLevel) and, on failure, report through
 //     DirectInputMgr2::GetErrorString. (The labeler stamped these methods with
 //     the DirectInputMgr2 placeholder mangling; the distinct InputDevice.cpp
-//     __FILE__ string + the m_8 = COM-interface layout show they are a separate
+//     __FILE__ string + the m_device2 = COM-interface layout show they are a separate
 //     class. Names are placeholders; offsets + code bytes are load-bearing.)
 //
 // Every wrapper does iface->vtbl->Method(iface, args...) so the retail
@@ -85,7 +85,7 @@ struct IDirectInputDeviceZ {
 
 // ---------------------------------------------------------------------------
 // CInputDeviceBase - the engine-internal input-device base (keyboard / mouse /
-// joystick subclasses), held by DirectInputMgr2 in m_10 / m_14 and in the m_18
+// joystick subclasses), held by DirectInputMgr2 in m_deviceB / m_deviceA and in the m_devices
 // CPtrArray. Modeled polymorphically ONLY so the device->Slot dispatches lower to
 // the exact `mov eax,[obj]; call [eax+slot]` __thiscall calls; its virtuals are
 // never defined here, so no ??_7 vtable is emitted in this TU. Dispatched slots:
@@ -111,7 +111,7 @@ class CInputDevice;
 typedef CInputDevice CDeviceConfigA;
 
 // ---------------------------------------------------------------------------
-// CDevicePtrArray - DirectInputMgr2's embedded CPtrArray (m_18). 0x14-byte MFC
+// CDevicePtrArray - DirectInputMgr2's embedded CPtrArray (m_devices). 0x14-byte MFC
 // CPtrArray layout; the dtor empties it via SetSize(0,-1) (reloc-masked thiscall).
 // ---------------------------------------------------------------------------
 struct CDevicePtrArray {
@@ -139,7 +139,7 @@ struct CDeviceListNode {
 }; // 0x88 (only +0/+4/+8 load-bearing)
 
 // ---------------------------------------------------------------------------
-// CDeviceList - DirectInputMgr2's embedded device collection (m_2c). A custom
+// CDeviceList - DirectInputMgr2's embedded device collection (m_deviceList). A custom
 // MFC-derived intrusive list (head@+4, tail@+8). Methods are reloc-masked thiscall.
 // ---------------------------------------------------------------------------
 struct CDeviceList {
@@ -160,37 +160,37 @@ struct CDeviceList {
 // ---------------------------------------------------------------------------
 class DirectInputMgr2 {
 public:
-    // Brings up the DInput object (DirectInputCreateA) into m_0, caches the
-    // owner/hinst/flags, then runs the three sub-initializers gated on the flags.
+    // Brings up the DInput object (DirectInputCreateA) into m_directInput, caches
+    // the owner/hinst/flags, then runs the three sub-initializers gated on the flags.
     int Create(void* owner, void* hinst, unsigned long flags); // 0x132ce0
 
-    // Destructor: Shutdown(), then auto-destructs the m_2c list and m_18 array
-    // (the /GX EH frame covers the two member sub-object dtors). 0x085fc0.
+    // Destructor: Shutdown(), then auto-destructs the m_deviceList and m_devices
+    // array (the /GX EH frame covers the two member sub-object dtors). 0x085fc0.
     ~DirectInputMgr2();
 
-    // Releases the COM devices (m_10/m_14) + the array elements, empties the
-    // m_18 array, frees the m_2c device list, and Releases the m_0 DInput obj.
+    // Releases the COM devices (m_deviceA/m_deviceB) + the array elements, empties
+    // the m_devices array, frees the m_deviceList, Releases the m_directInput obj.
     void Shutdown(); // 0x132d90
 
-    // Sub-initializers. InitA (0x132e20) new's a 0x338 device-config into m_14
-    // and Create()s it; InitB (0x132ee0, not matched here) does the m_10 device.
+    // Sub-initializers. InitA (0x132e20) new's a 0x338 device-config into m_deviceA
+    // and Create()s it; InitB (0x132ee0, not matched here) does the m_deviceB device.
     int InitA(unsigned long flags);                // 0x132e20
     int InitB(unsigned long flags);                // 0x132ee0
-    int EnumGameControllers(unsigned long unused); // 0x132f80  m_0->EnumDevices(4, cb, this, 1)
+    int EnumGameControllers(unsigned long unused); // 0x132f80 EnumDevices(JOYSTICK, cb, this)
 
-    // Per-frame device polling. PollAll(0x133080) updates m_14/m_10 (slot 4) then
-    // the array (0x1330d0); ReadAll(0x133110) updates m_14/m_10 (slot 4) then the
-    // array via slot 5 (0x133160). PollArrayA/PollArrayB walk m_18.
+    // Per-frame device polling. PollAll(0x133080) updates m_deviceA/m_deviceB
+    // (slot 4) then the array (0x1330d0); ReadAll(0x133110) updates m_deviceA/
+    // m_deviceB (slot 4) then the array via slot 5 (0x133160). PollArrayA/B walk m_devices.
     int PollAll();    // 0x133080
     int PollArrayA(); // 0x1330d0
     int ReadAll();    // 0x133110
     int PollArrayB(); // 0x133160
 
-    // Frees the m_2c device-list nodes and empties the list (0x1331a0).
+    // Frees the m_deviceList nodes and empties the list (0x1331a0).
     void FreeDeviceList(); // 0x1331a0
 
     // Registers a controller: new's a 0x88 node, Create()s it, appends to the
-    // m_2c list on success (0x1331e0); 0x133260 is a thiscall trampoline copying
+    // m_deviceList on success (0x1331e0); 0x133260 is a thiscall trampoline copying
     // its 7 stack dwords into a local before forwarding.
     void* AddController(int count, int a2, int a3);                                // 0x1331e0
     void AddControllerArr(int a1, int a2, int a3, int a4, int a5, int a6, int a7); // 0x133260
@@ -205,20 +205,20 @@ public:
     static void GetErrorString(char* file, int line, long hr); // 0x133590
 
     // --- layout ---------------------------------------------------------------
-    IDirectInputZ* m_0;     // +0x00  the DInput object (DirectInputCreateA out)
-    void* m_4;              // +0x04  owner back-pointer (Create arg1)
-    void* m_8;              // +0x08  the hinst passed to DirectInputCreateA
-    unsigned long m_c;      // +0x0c  the device-type flags (Create arg3)
-    CInputDeviceBase* m_10; // +0x10  device B (InitB)
-    CInputDeviceBase* m_14; // +0x14  device A (InitA)
-    CDevicePtrArray m_18;   // +0x18  extra devices (CPtrArray; data@1c size@20)
-    CDeviceList m_2c;       // +0x2c  device-config list (head@30 tail@34)
+    IDirectInputZ* m_directInput; // +0x00  the DInput object (DirectInputCreateA out)
+    void* m_owner;                // +0x04  owner back-pointer (Create arg1)
+    void* m_hinst;                // +0x08  the hinst passed to DirectInputCreateA
+    unsigned long m_flags;        // +0x0c  the device-type flags (Create arg3)
+    CInputDeviceBase* m_deviceB;  // +0x10  keyboard/joystick device B (InitB)
+    CInputDeviceBase* m_deviceA;  // +0x14  keyboard device A (InitA)
+    CDevicePtrArray m_devices;    // +0x18  extra devices (CPtrArray; data@1c size@20)
+    CDeviceList m_deviceList;     // +0x2c  device-config list (head@30 tail@34)
 };
 
 // ---------------------------------------------------------------------------
 // CInputDevice (InputDevice.cpp) - one created+QI'd DirectInput device. It is the
-// 0x338-byte object DirectInputMgr2::InitA new's; m_4 is the device CreateDevice
-// returns, m_8 the device QI'd to its v2 interface, m_29c the cached
+// 0x338-byte object DirectInputMgr2::InitA new's; m_device is the device CreateDevice
+// returns, m_device2 the device QI'd to its v2 interface, m_hwnd the cached
 // cooperative-level HWND, and +0x2a0/+0x2a4 the GetDeviceState snapshot buffer.
 // +0x2b4..+0x333 is the keyboard scan-code table (0x20 dwords) and +0x2ac/+0x2b0
 // the packed current/edge key bitflags. The vptr (+0x00) is stamped MANUALLY to a
@@ -257,7 +257,7 @@ public:
     // virtual configure step. ret 0xc => 3 args.
     int CreateDeviceWrap(IDirectInputZ* di, const void* guid, void* hwnd); // 0x134260
 
-    // ReleaseDevices (0x134d50): Unacquire + Release m_8, Release m_4, clear handles.
+    // ReleaseDevices (0x134d50): Unacquire + Release m_device2, Release m_device, clear handles.
     void ReleaseDevices(); // 0x134d50
 
     // Unacquire (0x134fe0): IDirectInputDevice::Unacquire (slot +0x20); 0/1 bool.
@@ -276,18 +276,18 @@ public:
     int Acquire();                                                     // 0x134fb0
 
     // --- layout ---------------------------------------------------------------
-    void* m_vptr;             // +0x000  stamped to g_deviceConfigVtblA (@0x5ef628)
-    IDirectInputDeviceZ* m_4; // +0x004  the created device (CreateDevice out)
-    IDirectInputDeviceZ* m_8; // +0x008  the QI'd device interface (slot dispatch)
+    void* m_vptr;                   // +0x000  stamped to g_deviceConfigVtblA (@0x5ef628)
+    IDirectInputDeviceZ* m_device;  // +0x004  the created device (CreateDevice out)
+    IDirectInputDeviceZ* m_device2; // +0x008  the QI'd v2 device interface (slot dispatch)
     char m_padc[0x29c - 0x0c];
-    void* m_29c;               // +0x29c  cached cooperative-level HWND
-    void* m_2a0;               // +0x2a0  GetDeviceState snapshot buffer (operator new 0x100)
-    unsigned long m_2a4;       // +0x2a4  snapshot buffer size (0x100)
-    int m_2a8;                 // +0x2a8  prev packed key flags (= -1)
-    unsigned long m_2ac;       // +0x2ac  current packed key flags
-    unsigned long m_2b0;       // +0x2b0  edge (changed) packed key flags
-    unsigned long m_2b4[0x20]; // +0x2b4..0x333  scan-code table (0x20 dwords)
-    int m_334;                 // +0x334  keyboard/mouse mode flag
+    void* m_hwnd;                    // +0x29c  cached cooperative-level HWND
+    void* m_stateBuffer;             // +0x2a0  GetDeviceState snapshot buffer (operator new 0x100)
+    unsigned long m_stateBufferSize; // +0x2a4  snapshot buffer size (0x100)
+    int m_latchedKeys;               // +0x2a8  per-bit "already counted" latch (= -1)
+    unsigned long m_currentKeys;     // +0x2ac  current packed key flags (press edges this frame)
+    unsigned long m_edgeKeys;        // +0x2b0  raw current snapshot (pre-latch)
+    unsigned long m_keyTable[0x20];  // +0x2b4..0x333  scan-code table (0x20 dwords)
+    int m_modeFlags;                 // +0x334  keyboard/mouse mode flag (bit 0 = direct/async mode)
 };
 
 // Polymorphic VIEW over the manually-stamped foreign vtable (@0x5ef628): the
