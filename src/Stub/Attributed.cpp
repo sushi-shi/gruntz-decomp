@@ -5,22 +5,10 @@
 #include <rva.h>
 #include <Stub/attributed.h>
 
-// ---- CAttract ----
-RVA(0x00014520, 0xc3) void CAttract::CAttract_014520() {}  // high
-RVA(0x00014630, 0xbd) void CAttract::CAttract_014630() {}  // high
-
 // ---- CBattlezDlg ----
-RVA(0x00015de0, 0x5f) void CBattlezDlg::CBattlezDlg_015de0() {}  // high
-RVA(0x00015e60, 0x5f) void CBattlezDlg::CBattlezDlg_015e60() {}  // high
-RVA(0x00015ee0, 0x5f) void CBattlezDlg::CBattlezDlg_015ee0() {}  // high
-RVA(0x00015f60, 0x5f) void CBattlezDlg::CBattlezDlg_015f60() {}  // high
-RVA(0x00016410, 0x7) void CBattlezDlg::CBattlezDlg_016410() {}  // high
-RVA(0x00016500, 0x46) void CBattlezDlg::CBattlezDlg_016500() {}  // high
+RVA(0x00016410, 0x7) void CSeverusWorker::CSeverusWorker_016410() {}  // high
+RVA(0x00016500, 0x46) void CSeverusWorker::CSeverusWorker_016500() {}  // high
 RVA(0x00017340, 0x73) void CBattlezDlg::CBattlezDlg_017340() {}  // high
-
-// ---- CBehindCandyAni ----
-RVA(0x000ad7d0, 0x15) void CBehindCandyAni::CBehindCandyAni_0ad7d0() {}  // med
-RVA(0x000ad9b0, 0x18d) void CBehindCandyAni::CBehindCandyAni_0ad9b0() {}  // med
 
 // ---- CBootyState ----
 RVA(0x0001ce30, 0x1d) void CBootyState::CBootyState_01ce30() {}  // med
@@ -28,9 +16,6 @@ RVA(0x0001d420, 0x8) void CBootyState::CBootyState_01d420() {}  // med
 
 // ---- CChatBoxOwner ----
 RVA(0x000205c0, 0x741) void CChatBoxOwner::CChatBoxOwner_0205c0() {}  // high
-
-// ---- CCreditsState ----
-RVA(0x000393b0, 0x3a) void CCreditsState::CCreditsState_0393b0() {}  // high
 
 // ---- CFontConfig ----
 RVA(0x000220f0, 0x46) void CFontConfig::CFontConfig_0220f0() {}  // high
@@ -48,10 +33,6 @@ RVA(0x00175d50, 0xad) void CImage::CImage_175d50() {}  // high
 RVA(0x000b6220, 0x54) void CMulti::CMulti_0b6220() {}  // med
 RVA(0x000b62a0, 0x4a) void CMulti::CMulti_0b62a0() {}  // med
 RVA(0x000bc3f0, 0x1e) void CMulti::CMulti_0bc3f0() {}  // med
-
-// ---- CMultiStartDlg ----
-RVA(0x000c1e60, 0x115) void CMultiStartDlg::CMultiStartDlg_0c1e60() {}  // med
-RVA(0x000c1fd0, 0x99) void CMultiStartDlg::CMultiStartDlg_0c1fd0() {}  // med
 
 // ---- CNetMgr ----
 RVA(0x000b86c0, 0x206) void CNetMgr::CNetMgr_0b86c0() {}  // high; large /GX EH func, final-sweep
@@ -71,9 +52,6 @@ RVA(0x000bccd0, 0x141) void CNetMgr::CNetMgr_0bccd0() {}  // high
 
 // ---- CSBI_RectOnly ----
 RVA(0x00109520, 0x44c) void CSBI_RectOnly::CSBI_RectOnly_109520() {}  // high
-
-// ---- CSecretTeleporterTrigger ----
-RVA(0x000420d0, 0x15) void CSecretTeleporterTrigger::CSecretTeleporterTrigger_0420d0() {}  // med
 
 // ---- CShadeTableCache ----
 RVA(0x0014df40, 0x5f4) void CShadeTableCache::CShadeTableCache_14df40() {}  // high

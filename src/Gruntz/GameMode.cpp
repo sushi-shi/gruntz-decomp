@@ -692,6 +692,23 @@ i32 CCreditsState::LoadCreditzStateAssets(i32 a1, i32 a2, i32 a3) {
     return r;
 }
 
+// CCreditsState::ShowAttractTitle @0x393b0 - gate on the state core (m_c->m_4->
+// IsLoaded); if loaded, force the cursor hidden then prime the attract title.
+// Returns 1 (0 when the gate is not yet loaded, reusing the already-zero eax).
+RVA(0x000393b0, 0x3a)
+i32 CCreditsState::ShowAttractTitle() {
+    CCreditzOwner* self = (CCreditzOwner*)this;
+    if (self->m_c->m_4->IsLoaded() == 0) {
+        return 0;
+    }
+    if (ShowCursor(0) >= 0) {
+        do {
+        } while (ShowCursor(0) >= 0);
+    }
+    InitAttractTitle();
+    return 1;
+}
+
 // @confidence: med
 // @source: decomp-xref
 // @stub

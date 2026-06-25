@@ -24,6 +24,12 @@
 
 class CBehindCandyAni : public CUserLogic {
 public:
+    // Construct the class's activation-coordinate registry (g_behindCandyActReg
+    // @0x645f98) over the fixed [2000,2010] range; free init thunk, reloc-masked.
+    static void InitActReg(); // 0x0ad7d0
+    // Bind the per-frame handler (AdvanceAnim) to the activation key "A" via the
+    // shared name registry (the same archetype as CSecretLevelTrigger::RegisterActs).
+    static void RegisterActs(); // 0x0ad9b0
     i32 AdvanceAnim(); // 0x0adbb0 (re-target bound anim to the draw-delta; ret 0)
     ~CBehindCandyAni(); // 0x0100f0 (folds the CUserLogic teardown)
 };

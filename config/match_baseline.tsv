@@ -28,9 +28,9 @@ butemgr	40	27
 cambientsound	3	2
 canielement	3	2
 canirecord	8	5
-cattract	9	5
+cattract	11	7
 cbehindcandy	2	2
-cbehindcandyani	2	2
+cbehindcandyani	4	3
 ccursorsnapsprite	2	2
 cddrawchildgroup	9	5
 cddrawptrcollections	26	11
@@ -99,11 +99,11 @@ ctoobspikez	3	3
 cvoicetrigger	2	2
 databuffer	7	5
 deflate	6	6
-dialogs	19	7
+dialogs	25	11
 directinputmgr2	29	25
 directsoundmgr	33	23
 dsoundvoice	2	1
-engine_attributed	51	0
+engine_attributed	39	0
 engine_boundary	626	0
 engine_discovered	86	0
 engine_label_stubs	502	117
@@ -116,7 +116,7 @@ fonts	2	1
 gameapp	20	16
 gamekeyhandler	1	0
 gamelevel	51	23
-gamemode	41	18
+gamemode	42	19
 gamemodeobjlifecycle	3	2
 gameobjectctors	5	0
 gametext	4	2
@@ -223,7 +223,7 @@ uncompr	1	1
 unknownclassarrays	38	10
 unknownsalazar	4	0
 userbaselink	9	0
-userlogic	47	17
+userlogic	48	18
 videoconfig	2	0
 warlord	3	1
 warpstonefly	3	2
@@ -378,12 +378,16 @@ cattract	?FrameSlot28@CAttract@@UAEHH@Z	99.7143	99.7143	1	97bf0c4b3f17	0x14340
 cattract	?LoadTitleConfig@CAttract@@QAEHH@Z	99.0991	99.0991	1	ebd81004bad7	0xa03f0
 cattract	?RefreshTitle@CAttract@@QAEHH@Z	100.0000	100.0000	1	ec73ee41ee24	0x39160
 cattract	?ReleaseResources@CAttract@@UAEXXZ	100.0000	100.0000	1	7565e627ebc6	0x140d0
+cattract	?RollTitleByPage@CAttract@@QAEHXZ	100.0000	100.0000	1	51e8b7080223	0x14520
+cattract	?RollTitleByV3@CAttract@@QAEHXZ	100.0000	100.0000	1	5bd84e46adaa	0x14630
 cattract	?RunTitle@CAttract@@QAEHHHHHH@Z	99.5238	99.5238	1	9a5828a77e96	0xfa300
 cattract	?Vslot07@CAttract@@UAEHXZ	100.0000	100.0000	1	91fafb3898fd	0x147b0
 cbehindcandy	??1CBehindCandy@@UAE@XZ	100.0000	100.0000	1	5c9c55aab0c6	0xfc30
 cbehindcandy	?GetTypeTag@CBehindCandy@@QAEHXZ	100.0000	100.0000	1	32ed38245a17	0xfb70
 cbehindcandyani	??1CBehindCandyAni@@UAE@XZ	100.0000	100.0000	1	f4c855a7d8db	0x100f0
 cbehindcandyani	?AdvanceAnim@CBehindCandyAni@@QAEHXZ	100.0000	100.0000	1	4d7ee7a13f73	0xadbb0
+cbehindcandyani	?InitActReg@CBehindCandyAni@@SAXXZ	100.0000	100.0000	1	0d9455b8c944	0xad7d0
+cbehindcandyani	?RegisterActs@CBehindCandyAni@@SAXXZ	92.9130	92.9130	1	29528d9538e4	0xad9b0
 ccursorsnapsprite	??1CCursorSnapSprite@@UAE@XZ	100.0000	100.0000	1	2eab333c770e	0x11920
 ccursorsnapsprite	?Serialize@CCursorSnapSprite@@QAEHHHHH@Z	100.0000	100.0000	1	1ff3ed4ebd3b	0x11880
 cddrawchildgroup	?Stub_1591f0@CDDrawChildGroup@@QAEXXZ	2.9412	2.9412	4	c142c66f7447	0x1591f0
@@ -859,6 +863,11 @@ dialogs	??0CCheckpointDlg@@QAE@PAVCWnd@@@Z	100.0000	100.0000	3	6c51964bdb81	0x23
 dialogs	??0CMultiStartDlg@@QAE@HPAVCWnd@@@Z	100.0000	100.0000	5	a71396cbe887	0xc1750
 dialogs	??1CBattlezDlg@@UAE@XZ	94.4444	94.4444	1	7ed27cb65fc2	0x14c90
 dialogs	??1CBattlezDlgCustom@@UAE@XZ	94.4444	94.4444	1	8ef41d520506	0x17140
+dialogs	?ApplyOption0@CBattlezDlg@@QAEXXZ	100.0000	100.0000	1	a2649603d299	0x15de0
+dialogs	?ApplyOption1@CBattlezDlg@@QAEXXZ	100.0000	100.0000	1	4ca2816e5f53	0x15e60
+dialogs	?ApplyOption2@CBattlezDlg@@QAEXXZ	100.0000	100.0000	1	1e85f0a44dab	0x15ee0
+dialogs	?ApplyOption3@CBattlezDlg@@QAEXXZ	100.0000	100.0000	1	e384d2e48285	0x15f60
+dialogs	?BuildSlotList@CMultiStartDlg@@QAEXXZ	88.8588	88.8588	1	95188a37dcda	0xc1e60
 dialogs	?GetCtrlA@CBattlezDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	2	f719a29e8f44	0x15ac0
 dialogs	?GetCtrlB@CBattlezDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	2	55fe085491a3	0x15b40
 dialogs	?GetCtrlC@CBattlezDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	2	7882b445b6ec	0x15bc0
@@ -866,6 +875,7 @@ dialogs	?GetCtrlD@CBattlezDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	2	2df6252ff25e	0x
 dialogs	?InitPlayerSlots@CMultiStartDlg@@QAEXXZ	0.1294	0.1294	2	460bc8e04d05	0xc20a0
 dialogs	?SetCtrlBText@CBattlezDlg@@QAEXHPBD@Z	100.0000	100.0000	2	3b905b2c10b8	0x15db0
 dialogs	?SetSlotValue@CBattlezDlg@@QAEHHH@Z	100.0000	100.0000	2	b1675baacc7b	0x17460
+dialogs	?UpdateSlot@CMultiStartDlg@@QAEHXZ	91.8571	91.8571	1	583597665330	0xc1fd0
 dialogs	?winapi_016cd0_InvalidateRect@CBattlezDlg@@QAEHXZ	3.1111	3.1111	2	da2d8f0cc322	0x16cd0
 dialogs	?winapi_016dc0_InvalidateRect@CBattlezDlg@@QAEHXZ	3.1111	3.1111	2	b6f0b2a1e69f	0x16dc0
 dialogs	?winapi_016e90_InvalidateRect@CBattlezDlg@@QAEHXZ	3.1111	3.1111	2	e8ce8ce52214	0x16e90
@@ -935,29 +945,16 @@ directsoundmgr	?winapi_136e20_timeGetTime@DirectSoundMgr@@QAEHH@Z	2.6667	2.6667	
 directsoundmgr	?winapi_137ac0_timeGetTime@DirectSoundMgr@@QAEHH@Z	2.9231	2.9231	2	63f8b426702d	0x137ac0
 dsoundvoice	?Stop_1370d0@DSoundVoice@@QAEHXZ	100.0000	100.0000	1	6ed65c4dd540	0x1370d0
 dsoundvoice	?Tick_137060@DSoundVoice@@QAEHH@Z	95.6977	95.6977	1	e0318068fc4a	0x137060
-engine_attributed	?CAttract_014520@CAttract@@QAEXXZ	1.6129	1.6129	1	8514e7ebdd62	0x14520
-engine_attributed	?CAttract_014630@CAttract@@QAEXXZ	1.6393	1.6393	1	d90c0a9e5a3f	0x14630
-engine_attributed	?CBattlezDlg_015de0@CBattlezDlg@@QAEXXZ	2.7027	2.7027	1	fa8f2a6b1825	0x15de0
-engine_attributed	?CBattlezDlg_015e60@CBattlezDlg@@QAEXXZ	2.7027	2.7027	1	2357c1392365	0x15e60
-engine_attributed	?CBattlezDlg_015ee0@CBattlezDlg@@QAEXXZ	2.7027	2.7027	1	61dae10ff74c	0x15ee0
-engine_attributed	?CBattlezDlg_015f60@CBattlezDlg@@QAEXXZ	2.7027	2.7027	1	20a5f80fe0d1	0x15f60
-engine_attributed	?CBattlezDlg_016410@CBattlezDlg@@QAEXXZ	50.0000	50.0000	1	a8025dd69185	0x16410
-engine_attributed	?CBattlezDlg_016500@CBattlezDlg@@QAEXXZ	5.5556	5.5556	1	1893782ac89b	0x16500
 engine_attributed	?CBattlezDlg_017340@CBattlezDlg@@QAEXXZ	1.1111	1.1111	1	7f90e15a8ffa	0x17340
-engine_attributed	?CBehindCandyAni_0ad7d0@CBehindCandyAni@@QAEXXZ	20.0000	20.0000	1	e6b75081af45	0xad7d0
-engine_attributed	?CBehindCandyAni_0ad9b0@CBehindCandyAni@@QAEXXZ	0.8696	0.8696	1	fe9752cfe7fe	0xad9b0
 engine_attributed	?CBootyState_01ce30@CBootyState@@QAEXXZ	6.6667	6.6667	1	ee0938cc3645	0x1ce30
 engine_attributed	?CBootyState_01d420@CBootyState@@QAEXXZ	20.0000	20.0000	1	d54c0ecb7af5	0x1d420
 engine_attributed	?CChatBoxOwner_0205c0@CChatBoxOwner@@QAEXXZ	0.0835	0.0835	1	c73daebdde18	0x205c0
-engine_attributed	?CCreditsState_0393b0@CCreditsState@@QAEXXZ	4.0000	4.0000	1	a4a6f8b06ca9	0x393b0
 engine_attributed	?CFontConfig_0220f0@CFontConfig@@QAEXXZ	5.5556	5.5556	1	e56cf98473ea	0x220f0
 engine_attributed	?CGrunt_051c00@CGrunt@@QAEXXZ	0.1147	0.1147	1	489bc806fe84	0x51c00
 engine_attributed	?CImage_175a00@CImage@@QAEXXZ	1.0256	1.0256	1	2acf5c4906a1	0x175a00
 engine_attributed	?CImage_175b80@CImage@@QAEXXZ	0.4301	0.4301	1	44144a88c2bc	0x175b80
 engine_attributed	?CImage_175ce0@CImage@@QAEXXZ	1.0000	1.0000	1	2e9f2a5ac6e7	0x175ce0
 engine_attributed	?CImage_175d50@CImage@@QAEXXZ	0.6452	0.6452	1	561012428e16	0x175d50
-engine_attributed	?CMultiStartDlg_0c1e60@CMultiStartDlg@@QAEXXZ	1.1765	1.1765	1	48850a629a3d	0xc1e60
-engine_attributed	?CMultiStartDlg_0c1fd0@CMultiStartDlg@@QAEXXZ	1.7857	1.7857	1	d5a3ff62529f	0xc1fd0
 engine_attributed	?CMulti_0b6220@CMulti@@QAEXXZ	4.3478	4.3478	1	5224b768b1e7	0xb6220
 engine_attributed	?CMulti_0b62a0@CMulti@@QAEXXZ	5.2632	5.2632	1	38b72def6b4e	0xb62a0
 engine_attributed	?CMulti_0bc3f0@CMulti@@QAEXXZ	3.6364	3.6364	1	fd31ae8c8cc9	0xbc3f0
@@ -970,7 +967,8 @@ engine_attributed	?CNetMgr_0bbf80@CNetMgr@@QAEXXZ	1.5152	1.5152	1	966da8c493a8	0
 engine_attributed	?CNetMgr_0bc750@CNetMgr@@QAEXXZ	0.9259	0.9259	1	8243db1bde49	0xbc750
 engine_attributed	?CNetMgr_0bccd0@CNetMgr@@QAEXXZ	0.5128	0.5128	1	a059a86d6c08	0xbccd0
 engine_attributed	?CSBI_RectOnly_109520@CSBI_RectOnly@@QAEXXZ	0.0946	0.0946	1	bfcdd55fd70f	0x109520
-engine_attributed	?CSecretTeleporterTrigger_0420d0@CSecretTeleporterTrigger@@QAEXXZ	20.0000	20.0000	1	d3be2e64873b	0x420d0
+engine_attributed	?CSeverusWorker_016410@CSeverusWorker@@QAEXXZ	50.0000	50.0000	1	168662ec10c4	0x16410
+engine_attributed	?CSeverusWorker_016500@CSeverusWorker@@QAEXXZ	5.5556	5.5556	1	e8fb48ba3312	0x16500
 engine_attributed	?CShadeTableCache_14df40@CShadeTableCache@@QAEXXZ	0.0797	0.0797	1	e1665bd8bf80	0x14df40
 engine_attributed	?CTileTriggerTransition_10fe70@CTileTriggerTransition@@QAEXXZ	0.8696	0.8696	1	c029553c4df8	0x10fe70
 engine_attributed	?CTriggerMgr_07abc0@CTriggerMgr@@QAEXXZ	0.0948	0.0948	1	d276c5e72e8b	0x7abc0
@@ -2359,6 +2357,7 @@ gamemode	?ReleaseResources@CMultiBootyState@@UAEXXZ	98.5000	98.5000	1	13bfa176e4
 gamemode	?Render@CCreditsState@@UAEHXZ	97.7121	97.7121	5	6997299da45d	0x391d0
 gamemode	?Render@CMenuState@@UAEHXZ	100.0000	100.0000	5	c89c91454dc8	0xa0750
 gamemode	?Render@CState@@UAEHXZ	100.0000	100.0000	5	d458185de910	0x8c4d0
+gamemode	?ShowAttractTitle@CCreditsState@@QAEHXZ	100.0000	100.0000	1	c7dbfaa3f611	0x393b0
 gamemode	?StartMusic@CMenuState@@QAEXXZ	94.7561	94.7561	2	7c0e029ce454	0xa05a0
 gamemode	?StepGlitterAnim@CMultiBootyState@@QAEXXZ	80.1343	80.1343	3	bc8e61e2a888	0x196c0
 gamemode	?StepVideo@CCreditsState@@QAEHXZ	95.0000	95.0000	1	e9612fee4d4c	0x39c60
@@ -3387,6 +3386,7 @@ userlogic	??1CTileSecretTrigger@@UAE@XZ	100.0000	100.0000	1	a32d67055f07	0x11540
 userlogic	??1CTileTrigger@@UAE@XZ	100.0000	100.0000	1	cpp:69062e3bf126	0x11290
 userlogic	?FireActivation@CSecretTeleporterTrigger@@QAEXH@Z	100.0000	100.0000	2	6d1a80fde174	0x42150
 userlogic	?GetScreenPos@CUserLogic@@QAEXPAUScreenPoint@1@@Z	100.0000	100.0000	2	c09fb9d01a13	0x29a50
+userlogic	?InitActReg@CSecretTeleporterTrigger@@SAXXZ	100.0000	100.0000	1	2f0eeda3c0d0	0x420d0
 userlogic	?LoadGruntDecayConfig2@CUserLogic@@QAEXXZ	1.2195	1.2195	1	edd8f9929bc3	0x61570
 userlogic	?LoadGruntDecayConfig@CUserLogic@@QAEXXZ	0.6135	0.6135	1	92fac0c4600f	0x612a0
 userlogic	?LoadGruntTuningConstants@CUserLogic@@QAEXH@Z	0.0646	0.0646	2	b70d71b09830	0x5d210

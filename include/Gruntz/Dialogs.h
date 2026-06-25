@@ -35,6 +35,7 @@
 class CWnd {
 public:
     void SetWindowTextA(const char* lpszString);
+    void EnableWindow(i32 bEnable); // NAFXCW __thiscall (reloc-masked)
 };
 
 // CString - the MFC string. Only its default ctor is touched (the embedded
@@ -95,6 +96,21 @@ public:
     // SetSlotValue - store val into slot[index].field@0x158; returns TRUE.
     i32 SetSlotValue(i32 index, i32 val);
 
+    // Slot/option helpers reached via ILT thunks (own CBattlezDlg methods, owned
+    // as RVA stubs in src/Stub/ApiCallers.cpp; external/no-body here so the calls
+    // reloc-mask). Sub015fe0 sets the active option N; Sub0173e0 refreshes; the
+    // Query015d00(slot) probes whether a slot is occupied.
+    void Sub015fe0(i32 option); // 0x015fe0
+    void Sub0173e0();           // 0x0173e0
+    i32 Query015d00(i32 slot);  // 0x015d00
+
+    // The four per-option apply handlers (0x15de0/15e60/15ee0/15f60): set option N,
+    // refresh, then enable IDOK when any of slots 1..3 is occupied.
+    void ApplyOption0();
+    void ApplyOption1();
+    void ApplyOption2();
+    void ApplyOption3();
+
     i32 winapi_016cd0_InvalidateRect();
     i32 winapi_016dc0_InvalidateRect();
     i32 winapi_016e90_InvalidateRect();
@@ -139,6 +155,20 @@ public:
 
     // Engine-label backlog stub (non-virtual placeholder; vtable-neutral).
     void InitPlayerSlots();
+
+    // BuildSlotList (0xc1e60): allocate the player-slot list, derive the player
+    // count from the game-registry snapshot, and seed the list.
+    void BuildSlotList();
+    // UpdateSlot (0xc1fd0): enable a dialog control by slot occupancy, then push
+    // the current selection into the slot list.
+    i32 UpdateSlot();
+    // GetSlotIndex (0xc4b30): the current slot index (own method, reloc-masked).
+    i32 GetSlotIndex();
+
+    // The GetSafeHwnd-style accessor the builders fold inline: (this != 0) ?
+    // (handle @ +0x1c) : 0. Inline member so MSVC inlines it and keeps the null
+    // test (matching retail's `test esi,esi; jne; xor eax,eax; mov eax,[esi+0x1c]`).
+    i32 GetSafe1c() { return this == 0 ? 0 : *(i32*)((char*)this + 0x1c); }
 
     i32 m_5c;        // +0x5c  (= a0)
     i32 m_60;        // +0x60  (= 0)

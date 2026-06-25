@@ -148,6 +148,9 @@ class CSecretTeleporterTrigger : public CUserLogic {
 public:
     CSecretTeleporterTrigger(CGameObject* obj); // 0x041e90
     virtual ~CSecretTeleporterTrigger() OVERRIDE;
+    // Construct the class's activation-coordinate registry (g_actColl @0x644688)
+    // over the fixed [2000,2010] range; a free init thunk, reloc-masked.
+    static void InitActReg(); // 0x0420d0
     // The two overridden CUserLogic virtuals reconstructed below.
     i32 Serialize(i32 a, i32 b, i32 c, i32 d); // 0x010a10 (vtable slot 1)
     void FireActivation(i32 coord);            // 0x042150 (vtable slot 4)
@@ -422,7 +425,8 @@ extern "C" i32 rand(void);
 // collection methods are external/no-body.
 struct CActEntry; // an entry: first dword is the registered handler vtable
 struct CActColl {
-    i32 Find(i32 coord, i32 z); // 0x16da80 (__thiscall ret 8)
+    i32 Find(i32 coord, i32 z);      // 0x16da80 (__thiscall ret 8)
+    void Construct(i32 lo, i32 hi); // 0x408710 (shared registry ctor, __thiscall ret 8)
 };
 struct CActColl2 {
     void Insert(void* coll, void* item, i32 n); // 0x16d850 (__thiscall ret 0xc)
@@ -593,6 +597,15 @@ CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj) : CUserLogi
         m_14->m_1c = g_buteTree.Find("A");
         g_gameReg->m_7c->m_3c++;
     }
+}
+
+// --- CSecretTeleporterTrigger::InitActReg (0x0420d0) ---
+// Construct the class's activation-coordinate registry singleton (g_actColl
+// @0x644688) over the fixed range [2000, 2010] via the shared registry ctor
+// (0x408710). Free init thunk; reloc-masked.
+RVA(0x000420d0, 0x15)
+void CSecretTeleporterTrigger::InitActReg() {
+    g_actColl.Construct(2000, 2010);
 }
 
 // --- CSecretTeleporterTrigger::FireActivation (0x042150), vtable slot 4 ---

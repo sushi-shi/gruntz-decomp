@@ -81,6 +81,7 @@ struct CMenuRenderM10 {
 
 class CMenuPage {
 public:
+    i32 IsLoaded();    // FUN_00558bc0  (ready-3 predicate; gate for the title roll)
     void TransEnter(); // FUN_00558e40  (mode == 2: enter, runs first)
     void TransTitle(); // FUN_00558e90  (mode != 2: after brightness)
     void TransExit();  // FUN_00558ee0  (mode == 2: after brightness)
@@ -162,6 +163,12 @@ public:
     i32 LoadTitleConfig(i32 mode);                   // 0xa03f0
     i32 Activate();                                  // 0xa0a30
     i32 RunTitle(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x0fa300 (5 args, ret 0x14)
+
+    // Two random-title rolls (0x14520/0x14630): gate (page IsLoaded / Vfunc3),
+    // hide cursor, pick a random TITLE%d index off the game-reg counter, then
+    // RunTitleSeq it. Differ only in the entry gate.
+    i32 RollTitleByPage(); // 0x14520 (gate: m_c->m_04->IsLoaded())
+    i32 RollTitleByV3();   // 0x14630 (gate: Vfunc3())
 
     // The pre-flight gate for EnterAttractMode (engine FUN_004f9ea0, non-virtual
     // __thiscall ret 0xc, reached via ILT thunk): a zero result aborts the entry.

@@ -25,6 +25,54 @@ DATA(0x0024bd5c)
 extern i32 g_64bd5c; // the file-scope int sink (reloc-masked DATA symbol)
 
 // ---------------------------------------------------------------------------
+// CMultiStartDlg multiplayer-setup helpers (BuildSlotList / UpdateSlot model).
+// ---------------------------------------------------------------------------
+// The game-registry snapshot g_64bd5c holds (a per-team player-info sub-object at
+// +0x524->+0x70 the slot probes run on, a team/mode latch at +0x528/+0x588/+0x600,
+// and the +0x5a4/+0x5a8 color pair). Reloc-masked field offsets.
+struct CMultiPlayerInfo { // reg->m_524->m_70
+    i32 Q1794b0();        // 0x1794b0  slot-1 occupancy probe
+    i32 Q1794e0();        // 0x1794e0  slot-2
+    i32 Q179510();        // 0x179510  slot-3
+    i32 Q179540();        // 0x179540  slot-4
+};
+struct CMultiRegSub {
+    char m_pad00[0x70];
+    CMultiPlayerInfo* m_70; // +0x70
+};
+struct CMultiReg {
+    char m_pad000[0x524];
+    CMultiRegSub* m_524; // +0x524
+    void* m_528;         // +0x528  mode/team latch
+    char m_pad52c[0x588 - 0x52c];
+    void* m_588;         // +0x588  forced-count latch
+    char m_pad58c[0x5a4 - 0x58c];
+    i32 m_5a4; // +0x5a4
+    i32 m_5a8; // +0x5a8
+    char m_pad5ac[0x600 - 0x5ac];
+    i32 m_600; // +0x600  committed flag
+};
+
+// A player-slot record in the m_5c slot array (0x238 stride); only the +0x16c
+// occupancy field is read.
+struct CMultiSlot {
+    char m_pad00[0x16c];
+    i32 m_16c; // +0x16c
+    char m_pad170[0x238 - 0x170];
+};
+
+// The player-slot list (m_60): a CObList member (its ctor sets the vptr) plus one
+// trailing dword; allocated 0x20 bytes. The three add/refresh methods reloc-mask.
+struct CMultiSlotList {
+    CObList m_list; // +0x00  (CObList, 0x1c bytes)
+    i32 m_1c;       // +0x1c
+    CMultiSlotList(i32 nBlockSize) : m_list(nBlockSize) { m_1c = 0; }
+    void Method1546(i32 a);                      // 0x37910
+    void Method2a45(i32 a, i32 b);               // 0x37ff0
+    void Method3396(i32 a, i32 b, i32 c, i32 d); // 0x38150
+};
+
+// ---------------------------------------------------------------------------
 RVA(0x00014b30, 0x64)
 CBattlezDlg::CBattlezDlg(i32 a0, CWnd* pParent) : CDialog(0xc0, pParent) {
     m_5c = a0;
@@ -73,6 +121,78 @@ CMultiStartDlg::CMultiStartDlg(i32 a0, CWnd* pParent) : CDialog(0xc5, pParent), 
     m_6c = 0;
     m_60 = 0;
     g_64bd5c = g_gameReg[0x2c / 4];
+}
+
+// CMultiStartDlg::BuildSlotList (0xc1e60): allocate the player-slot list, derive
+// the player count from the registry snapshot (a forced count, else a cascade of
+// slot-occupancy probes), seed the list with the count + the dialog's selection.
+// /GX EH frame for the new-expression's ctor unwind.
+// @early-stop
+// regalloc/scheduling wall (docs/patterns/zero-register-pinning.md): the new-expr,
+// the count cascade, the inlined GetSafe1c null-check, and the three list calls are
+// all logic-faithful; the residual is the callee-saved register assignment for the
+// count/pi/selection values (ebp-vs-edi choice) cascading into push scheduling. ~89%.
+RVA(0x000c1e60, 0x115)
+void CMultiStartDlg::BuildSlotList() {
+    m_60 = (i32) new CMultiSlotList(0xa);
+    CMultiReg* reg = (CMultiReg*)g_64bd5c;
+    i32 count = 5;
+    CMultiPlayerInfo* pi = reg->m_524->m_70;
+    if (reg->m_588) {
+        count = 2;
+    } else if (pi) {
+        if (pi->Q1794b0()) {
+            count = 1;
+        }
+        if (pi->Q1794e0()) {
+            count = 2;
+        }
+        if (pi->Q179510()) {
+            count = 3;
+        }
+        if (pi->Q179540()) {
+            count = 4;
+        }
+    }
+    ((CMultiSlotList*)m_60)->Method1546(count);
+    i32 v = GetSafe1c();
+    ((CMultiSlotList*)m_60)->Method2a45(v, 0x527);
+    ((CMultiSlotList*)m_60)->Method3396(v, 0x527, 0, 0);
+    reg->m_600 = 1;
+}
+
+// CMultiStartDlg::UpdateSlot (0xc1fd0): enable the team control by current-slot
+// occupancy, then push the dialog selection (with the registry color pair, unless
+// already committed) into the slot list. Returns 1 (0 when the control is absent).
+// @early-stop
+// regalloc coin-flip wall (docs/patterns/zero-register-pinning.md): GetDlgItem gate,
+// the 0x238-stride slot probe, the inlined GetSafe1c, and the committed/color
+// Method3396 branch are byte-faithful; the inlined GetSafe1c result lands in ecx
+// (retail keeps it in eax), cascading into the g_64bd5c register + the final push
+// schedule. A pure allocator choice, no source lever. ~92%.
+RVA(0x000c1fd0, 0x99)
+i32 CMultiStartDlg::UpdateSlot() {
+    CWnd* w = GetDlgItem(0x527);
+    if (w == 0) {
+        return 0;
+    }
+    CMultiReg* reg = (CMultiReg*)g_64bd5c;
+    i32 enable;
+    if (reg->m_528) {
+        i32 idx = GetSlotIndex();
+        enable = (((CMultiSlot*)m_5c)[idx].m_16c == 0);
+    } else {
+        enable = 0;
+    }
+    w->EnableWindow(enable);
+    i32 v = GetSafe1c();
+    CMultiReg* reg2 = (CMultiReg*)g_64bd5c;
+    if (reg2->m_600) {
+        ((CMultiSlotList*)m_60)->Method3396(v, 0x527, 0, 0);
+    } else {
+        ((CMultiSlotList*)m_60)->Method3396(v, 0x527, reg2->m_5a4, reg2->m_5a8);
+    }
+    return 1;
 }
 
 // -------------------------------------------------------------------------
@@ -194,6 +314,55 @@ RVA(0x00015db0, 0x19)
 void CBattlezDlg::SetCtrlBText(i32 index, const char* text) {
     CWnd* w = GetCtrlB(index);
     w->SetWindowTextA(text);
+}
+
+// ApplyOption0..3 (0x15de0/15e60/15ee0/15f60): set the active option N, refresh
+// the dialog, then enable IDOK (GetDlgItem(1)) when any of slots 1..3 is occupied
+// (the short-circuit `||` reuses the failed-probe's zero in eax on the false path).
+// The Sub015fe0/Sub0173e0/Query015d00 calls reloc-mask (own CBattlezDlg methods
+// homed as RVA stubs in src/Stub/ApiCallers.cpp).
+RVA(0x00015de0, 0x5f)
+void CBattlezDlg::ApplyOption0() {
+    Sub015fe0(0);
+    Sub0173e0();
+    if (Query015d00(1) || Query015d00(2) || Query015d00(3)) {
+        GetDlgItem(1)->EnableWindow(1);
+    } else {
+        GetDlgItem(1)->EnableWindow(0);
+    }
+}
+
+RVA(0x00015e60, 0x5f)
+void CBattlezDlg::ApplyOption1() {
+    Sub015fe0(1);
+    Sub0173e0();
+    if (Query015d00(1) || Query015d00(2) || Query015d00(3)) {
+        GetDlgItem(1)->EnableWindow(1);
+    } else {
+        GetDlgItem(1)->EnableWindow(0);
+    }
+}
+
+RVA(0x00015ee0, 0x5f)
+void CBattlezDlg::ApplyOption2() {
+    Sub015fe0(2);
+    Sub0173e0();
+    if (Query015d00(1) || Query015d00(2) || Query015d00(3)) {
+        GetDlgItem(1)->EnableWindow(1);
+    } else {
+        GetDlgItem(1)->EnableWindow(0);
+    }
+}
+
+RVA(0x00015f60, 0x5f)
+void CBattlezDlg::ApplyOption3() {
+    Sub015fe0(3);
+    Sub0173e0();
+    if (Query015d00(1) || Query015d00(2) || Query015d00(3)) {
+        GetDlgItem(1)->EnableWindow(1);
+    } else {
+        GetDlgItem(1)->EnableWindow(0);
+    }
 }
 
 // -------------------------------------------------------------------------

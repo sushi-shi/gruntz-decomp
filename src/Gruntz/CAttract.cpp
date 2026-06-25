@@ -11,6 +11,7 @@
 //   EnterAttractMode     0x013fb0  slot 1  (reached non-virtually; ret 0xc)
 // Non-virtual title/menu logic: RefreshTitle / LoadTitleConfig / Activate /
 // RunTitle. Field names are placeholders; only OFFSETS + code bytes matter.
+#include <Gruntz/CString.h> // MFC CString (the title-roll formats into one); MFC-first
 #include <Gruntz/CAttract.h>
 #include <rva.h>
 
@@ -100,6 +101,43 @@ i32 CAttract::FrameSlot28(i32 arg) {
         }
     } while (m_1b8->m_10->IsPlaying());
     return 1;
+}
+
+// CAttract::RollTitleByPage (0x14520): gate on the menu page's IsLoaded; if loaded,
+// hide the cursor, pick a random TITLE%d index off the game-reg attract counter, and
+// run that title sequence. The CString format local forces the /GX EH frame.
+RVA(0x00014520, 0xc3)
+i32 CAttract::RollTitleByPage() {
+    if (((CMenuRoot*)m_c)->m_04->IsLoaded() == 0) {
+        return 0;
+    }
+    ShowCursorFn showCursor = g_ShowCursor;
+    if (showCursor(0) >= 0) {
+        do {
+        } while (showCursor(0) >= 0);
+    }
+    i32 idx = *(i32*)((char*)g_gameReg + 0x80) % g_attractStateCount + 1;
+    CString s;
+    s.Format(s_TITLE_d, idx);
+    return RunTitleSeq((char*)(const char*)s, 0, 0, 1, 0);
+}
+
+// CAttract::RollTitleByV3 (0x14630): identical to RollTitleByPage but gated on the
+// slot-3 virtual (Vfunc3) instead of the page IsLoaded.
+RVA(0x00014630, 0xbd)
+i32 CAttract::RollTitleByV3() {
+    if (Vfunc3() == 0) {
+        return 0;
+    }
+    ShowCursorFn showCursor = g_ShowCursor;
+    if (showCursor(0) >= 0) {
+        do {
+        } while (showCursor(0) >= 0);
+    }
+    i32 idx = *(i32*)((char*)g_gameReg + 0x80) % g_attractStateCount + 1;
+    CString s;
+    s.Format(s_TITLE_d, idx);
+    return RunTitleSeq((char*)(const char*)s, 0, 0, 1, 0);
 }
 
 // CAttract::Vslot07() (slot 7 / +0x1c, 0x0147b0): the host/paint poll. Gate on the
