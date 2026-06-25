@@ -157,6 +157,30 @@ extern "C" u32 g_645588;
 extern i32 g_defaultGeo;
 
 // ---------------------------------------------------------------------------
+// CGrunt::GetTilePos(out)  @0x31c70 - write the grunt's current tile coordinates
+// (its HUD pixel position m_10->m_5c/m_60 each >> 5) into the caller's {x,y} out
+// slot, and return that pointer. __thiscall, ret 4.
+//
+// @early-stop
+// leaf-accessor regalloc/schedule coin-flip (the tiny-accessor family of
+// docs/patterns/pin-local-for-callee-saved-reg.md): instruction multiset is
+// byte-identical (same 10 ops, same mem operands, same `sar 5`), logic/offsets
+// exact. Residue = retail pins `out` in edx (so a trailing `mov eax,edx`
+// materializes the return) and field-loads m_5c before m_60; cl keeps `out` in
+// eax (no closing mov) and loads m_60 before m_5c. Source-invariant on a 29-byte
+// leaf: direct-store / explicit-temps / aliased-ptr all normalize to one of the
+// two valid schedules; no lever flips the register choice. ~85%.
+RVA(0x00031c70, 0x1d)
+GruntTilePos* CGrunt::GetTilePos(GruntTilePos* out) {
+    CGruntHud* h = m_10;
+    i32 x = h->m_5c >> 5;
+    i32 y = h->m_60 >> 5;
+    out->m_x = x;
+    out->m_y = y;
+    return out;
+}
+
+// ---------------------------------------------------------------------------
 // CGrunt::ResolveMovingAnimation()
 // Gate: m_animResolved == 0 (else return 0). Feed key "GRUNTZ_<type>_MOVING" + geometry
 // m_movingGeoSrc into the player; look up tree key "B"; then randomize the move-start time
@@ -1601,6 +1625,42 @@ void CGrunt::ClearSubA() {
         p->Free();
         *(CGruntSub**)((char*)this + 0x424) = 0;
     }
+}
+
+// CGrunt::EnsureStruckVoice(key) @0x57c40 - lazily build + play the grunt's
+// struck-voice sound sample. Bails if already created (the +0x428 slot ClearSubB
+// frees). Looks `key` up in the global sound table (g_gameReg->m_30->m_28->m_10),
+// clones a sample from the entry's factory (GetItem), stores it into +0x428, and
+// plays it on the sound channel (g_gameReg->m_11c). __thiscall, ret 4. Same
+// sound-lookup shape as CProjectile::LaunchSound (0xe2190).
+//
+// @early-stop
+// reloc-naming scoring artifact (docs/patterns, objdiff-reloc-scoring memory):
+// instruction stream byte-identical vs retail (verified llvm-objdump), 100% fuzzy.
+// g_gameReg IS named (the two ds: relocs pair); the three engine callees - the
+// sound-map Lookup (0x1b8438), the sample factory GetItem (0x135d70) and the
+// sample Play (0x136300) - are not yet RVA-annotated, so their REL32 operands pair
+// to the target's FUN_ names and stay fuzzy. Flips to exact once those engine
+// functions get stubs (the SAME referent set LaunchSound waits on). Logic complete.
+RVA(0x00057c40, 0x71)
+void CGrunt::EnsureStruckVoice(const char* key) {
+    GruntSoundSample*& sample = *(GruntSoundSample**)((char*)this + 0x428);
+    if (sample != 0) {
+        return;
+    }
+    GruntSoundEntry* entry = 0;
+    g_gameReg->m_30->m_28->m_10.Lookup(key, &entry);
+    if (entry == 0) {
+        return;
+    }
+    if (entry->m_10 == 0) {
+        return;
+    }
+    sample = entry->m_10->GetItem();
+    if (sample == 0) {
+        return;
+    }
+    sample->Play(g_gameReg->m_11c, 0, 0, 1);
 }
 
 // CGrunt::ClearSubB() @0x57ce0 - destroy the optional sub-object at +0x428.

@@ -370,14 +370,49 @@ struct GruntBoard {
     i32 m_c;    // +0x0c  x bound
     i32 m_10;   // +0x10  y bound
 };
+// The per-effect sound-table object reached via g_gameReg->m_30 (the sound
+// category), whose m_28 holds a CMapStringToOb at +0x10 (the launch-sound lookup
+// the struck-voice creator @0x57c40 queries). Same shape Projectile's LaunchSound
+// reaches. All external (reloc-masked).
+struct GruntSoundEntry; // map value: per-effect sound entry (factory at +0x10)
+struct GruntSoundInner; // m_30->m_28: holds the lookup map at +0x10
+struct GruntSoundCat {  // m_30: the sound-category object
+    char m_pad0[0x28];
+    GruntSoundInner* m_28; // +0x28  -> the lookup map lives at (*m_28)+0x10
+};
 struct WwdGameReg {
-    char m_pad0[0x68];
+    char m_pad0[0x30];
+    GruntSoundCat* m_30; // +0x30  the sound category (struck-voice lookup root)
+    char m_pad34[0x68 - 0x34];
     i32 m_68; // +0x68  (SerializeMove mode-8: -> CGrunt::m_tileMgr)
     char m_pad6c[0x70 - 0x6c];
     GruntBoard* m_70; // +0x70  the level board
-    char m_pad74[0x8];
+    char m_pad74[0x11c - 0x74];
+    i32 m_11c; // +0x11c  the sound-channel param (struck-voice Play arg)
 };
 extern WwdGameReg* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
+
+// The struck-voice sound model (creator @0x57c40). The lookup returns a
+// GruntSoundEntry whose +0x10 sub-object owns a sample factory (GetItem @0x135d70,
+// __thiscall ret 0 -> new sample); the sample is Play'd (0x136300) and lives in the
+// grunt's +0x428 slot (freed by ClearSubB). All engine callees external/reloc-masked.
+struct GruntSoundSample {
+    i32 Play(i32 channel, i32 a, i32 b, i32 c); // 0x136300 (__thiscall, 4 args)
+};
+struct GruntSampleFactory {
+    GruntSoundSample* GetItem(); // 0x135d70 (__thiscall, 0 args; returns a new sample)
+};
+struct GruntSoundEntry {
+    char m_pad0[0x10];
+    GruntSampleFactory* m_10; // +0x10  the sample factory
+};
+struct GruntSoundMap {
+    i32 Lookup(const char* key, GruntSoundEntry** out); // 0x1b8438 (ret 8)
+};
+struct GruntSoundInner {
+    char m_pad0[0x10];
+    GruntSoundMap m_10; // +0x10  the lookup map (call this->m_10.Lookup)
+};
 
 // The intrusive coord-node freelist the grunt machines recycle occupied-coord
 // nodes onto (head @0x645544, bias @0x64554c) - the SAME pool g_freePoolHead/Base
@@ -573,6 +608,13 @@ struct CGruntVoiceRec {
     i32 m_0;
     i32 m_4;
     i32 m_8;
+};
+
+// The {x, y} tile-coordinate pair GetTilePos (@0x31c70) writes its result into
+// (the grunt's HUD pixel pos >> 5). Returned by pointer (the out arg).
+struct GruntTilePos {
+    i32 m_x; // +0x00
+    i32 m_y; // +0x04
 };
 
 // ---------------------------------------------------------------------------
@@ -788,6 +830,12 @@ public:
     void ClearSubA();                // @0x57c10
     void ClearSubB();                // @0x57ce0
     void DestroyAnims();             // @0x57d80
+    // @0x31c70 (ret 4) - write the grunt's HUD tile coords (m_10->m_5c/m_60 >> 5)
+    // into the caller's {x,y} out slot and return it.
+    struct GruntTilePos* GetTilePos(struct GruntTilePos* out);
+    // @0x57c40 (ret 4) - lazily build + play the grunt's struck-voice sample for the
+    // given sound key (stored into the +0x428 slot ClearSubB frees).
+    void EnsureStruckVoice(const char* key);
     void AnimTeardownA();            // engine thunk (DestroyAnims step 1)
     void AnimTeardownB();            // engine thunk (DestroyAnims step 2)
     void ArrivalClaim(i32 a, i32 b); // CommitArrival's this->claim(1,1)

@@ -74,10 +74,6 @@ RVA(0x0000fd60, 0x44) void CEyeCandy::CEyeCandy_00fd60() {}
 RVA(0x00010e90, 0x44) void CFortressFlag::CFortressFlag_010e90() {}
 RVA(0x00046410, 0x92) void CFortressFlag::CFortressFlag_046410() {}
 
-// ---- CGrunt ----
-RVA(0x00031c70, 0x1d) void CGrunt::CGrunt_031c70() {}
-RVA(0x00057c40, 0x71) void CGrunt::CGrunt_057c40() {}
-
 // ---- CGruntAnimPlayer ----
 RVA(0x00150610, 0x41) void CGruntAnimPlayer::CGruntAnimPlayer_150610() {}
 

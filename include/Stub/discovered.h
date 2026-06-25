@@ -26,7 +26,6 @@ class CExitTrigger { public: void CExitTrigger_010870(); void CExitTrigger_0108c
 class CExplosion { public: void CExplosion_012ec0(); };
 class CEyeCandy { public: void CEyeCandy_00fca0(); void CEyeCandy_00fd60(); };
 class CFortressFlag { public: void CFortressFlag_010e90(); void CFortressFlag_046410(); };
-class CGrunt { public: void CGrunt_031c70(); void CGrunt_057c40(); };
 class CGruntAnimPlayer { public: void CGruntAnimPlayer_150610(); };
 class CGruntCreationPoint { public: void CGruntCreationPoint_010730(); void CGruntCreationPoint_03ecc0(); };
 class CGruntHealthSprite { public: void CGruntHealthSprite_011fb0(); void CGruntHealthSprite_07f0d0(); };

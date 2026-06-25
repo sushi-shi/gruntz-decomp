@@ -67,7 +67,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	210	0
+engine_discovered	208	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -83,7 +83,7 @@ gamemodeobjlifecycle	3	2
 gameobjectctors	5	0
 gametext	4	2
 gamewnd	9	8
-grunt	50	10
+grunt	52	11
 gruntpuddle	4	2
 gruntspawnconfig	10	4
 gruntvoice	4	3
@@ -735,8 +735,6 @@ engine_discovered	?CGruntToySprite_07f960@CGruntToySprite@@QAEXXZ	2.0000	2.0000	
 engine_discovered	?CGruntToyTimeSprite_012130@CGruntToyTimeSprite@@QAEXXZ	5.8824	5.8824	2	5ffada3946fb	0x12130
 engine_discovered	?CGruntWingzTimeSprite_0121f0@CGruntWingzTimeSprite@@QAEXXZ	5.8824	5.8824	1	ba087a9b3b4e	0x121f0
 engine_discovered	?CGruntWingzTimeSprite_07fd90@CGruntWingzTimeSprite@@QAEXXZ	13.3333	13.3333	1	58f438126d27	0x7fd90
-engine_discovered	?CGrunt_031c70@CGrunt@@QAEXXZ	4.0000	4.0000	1	b12943a4edaf	0x31c70
-engine_discovered	?CGrunt_057c40@CGrunt@@QAEXXZ	1.0811	1.0811	2	0939cb1b53d2	0x57c40
 engine_discovered	?CGruntzMgr_08b960@CGruntzMgr@@QAEXXZ	0.0907	0.0907	2	f28c03e9d08a	0x8b960
 engine_discovered	?CGruntzMgr_08d780@CGruntzMgr@@QAEXXZ	0.6250	0.6250	1	c0221294c808	0x8d780
 engine_discovered	?CGruntzMgr_08fa40@CGruntzMgr@@QAEXXZ	10.0000	10.0000	1	127553f73f6f	0x8fa40
@@ -1599,8 +1597,10 @@ grunt	?CreateToyTimeSprite@CGrunt@@QAEHXZ	99.7222	99.7222	6	4927caee5de4	0x4d3e0
 grunt	?CreateWingzTimeSprite@CGrunt@@QAEHXZ	99.7059	99.7059	6	a0f9ba0e07fd	0x4d520
 grunt	?DestroyAnims@CGrunt@@QAEXXZ	100.0000	100.0000	1	96a5e454ab14	0x57d80
 grunt	?DispatchVtbl24@CGrunt@@QAEXXZ	100.0000	100.0000	1	bc3bd12b926d	0x6b260
+grunt	?EnsureStruckVoice@CGrunt@@QAEXPBD@Z	100.0000	100.0000	1	63219e2db42a	0x57c40
 grunt	?FindGridNeighbor@CGrunt@@QAEPAV1@H@Z	100.0000	100.0000	3	61dd38cb1b46	0x5b6f0
 grunt	?FreeNameList@CGrunt@@QAEXXZ	76.9512	76.9512	2	2e3438eb07ba	0x48360
+grunt	?GetTilePos@CGrunt@@QAEPAUGruntTilePos@@PAU2@@Z	85.3000	85.3000	1	995269eb1311	0x31c70
 grunt	?LoadAnimNameTable@CGrunt@@QAEXHH@Z	75.9312	75.9312	3	f341d57d748b	0x49c60
 grunt	?LoadEntranceConfig@CGrunt@@QAEXXZ	78.8377	78.8377	6	7a2efa979b8d	0x67f80
 grunt	?LoadGruntMovingDeathConfig@CGrunt@@QAEXXZ	0.4132	0.4132	1	7e3c13f46f60	0x6a060
