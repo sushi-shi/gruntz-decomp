@@ -22,21 +22,25 @@
 // virtuals are never defined, so no vtable is emitted in this TU - the real vtable
 // is the foreign engine datum stamped manually into the heap block.
 //
-// SIBLING DEFERRED: CDDrawWorkerMapSmall::VirtualMethodUnknown1C is the
-// map-teardown counterpart; it carries a C++ EH frame (a stack CString iteration
-// key with a destructor) and a subtle GetNextAssoc loop with a per-iteration
-// stack-layout shift. Deferred to its own pass to keep this factory TU /O2 /MT and
-// free of /GX entropy. The constant-id sibling VirtualMethodUnknown20 is
-// reconstructed below.
+// The TU is /GX ("eh" flag): besides the frameless /O2 factory leaves it now also
+// carries the map-teardown VirtualMethodUnknown1C (0x165810, a /GX CString-iteration
+// loop, byte-exact) and the /GX member-teardown destructor ~CDDrawWorkerMapSmall
+// (0x156d20). /GX adds a frame only to the functions that need one; the factory
+// leaves + VirtualMethodUnknown14/20 stay frameless and byte-exact. The full class
+// shape recovered from the destructor: a base sub-object at +0x00..+0x0f (vptr + 3
+// fields) and THREE CMapStringToOb maps at +0x10/+0x2c/+0x48, then an i32 counter at
+// +0x64 (the factories + VirtualMethodUnknown14/20 only touch <=+0x2b).
 // ---------------------------------------------------------------------------
 
 // --- MFC placeholders (only the call symbols + the 0x10 map offset matter) -----
 class CObject;
 
-// CMapStringToOb lives at CDDrawWorkerMapSmall+0x10. operator[] is an out-of-line NAFXCW
-// thunk (reloc-masked rel32 call); declared with the exact MFC signature so clang
-// mangles it to the MFC-canonical name.
+// CMapStringToOb lives at CDDrawWorkerMapSmall+0x10. operator[] / GetNextAssoc /
+// RemoveAll / GetCount / ~CMapStringToOb are out-of-line NAFXCW thunks (reloc-masked
+// rel32 calls); the REAL MFC CMapStringToOb (via <Mfc.h>) supplies them with the
+// MFC-canonical mangling. <Mfc.h> also brings CString / POSITION for the teardown.
 #include <Gruntz/CMapStringToOb.h>
+#include <Gruntz/CString.h>
 
 // The worker virtual interface. Slots laid out so the dispatched methods land at
 // the byte offsets the target uses: +0x04 scalar-deleting dtor, +0x28/+0x2c the
@@ -69,6 +73,34 @@ struct AlbusWorkerObj : public AlbusWorker {
 DATA(0x001f02d8)
 extern void* g_albusWorkerVtbl;
 
+// The class's own vftable (stamped at ~CDDrawWorkerMapSmall entry) and the
+// CObject-base teardown vftable (restamped by the base subobject's destructor at
+// dtor exit). Manual-vtable model (the class's virtuals live in other, unmatched
+// TUs), so both are reloc-masked DATA() externs.
+DATA(0x001efcc8)
+extern void* g_albusClassVtbl; // 0x5efcc8
+DATA(0x001e8cb4)
+extern void* g_remusBaseDtorVtbl; // 0x5e8cb4
+
+// The base sub-object occupying CDDrawWorkerMapSmall+0x00..+0x0f (vptr + three
+// fields). Its destructor is the dtor's trailing teardown: zero the fields and
+// restore the base vftable. Declared first (a base class) so the compiler schedules
+// it as the LAST member-teardown of ~CDDrawWorkerMapSmall, after the three maps,
+// matching the retail `[esi+0x4]=-1 / [esi+0x8]=0 / [esi+0xc]=0 / [esi]=base-vtbl`
+// tail.
+struct AlbusMapBase {
+    void* m_vptr; // +0x00
+    i32 m_04;     // +0x04
+    i32 m_08;     // +0x08
+    i32 m_0c;     // +0x0c  parent HarryPotter handle
+    ~AlbusMapBase() {
+        m_04 = -1;
+        m_08 = 0;
+        m_0c = 0;
+        m_vptr = &g_remusBaseDtorVtbl;
+    }
+};
+
 // ---------------------------------------------------------------------------
 // CDDrawWorkerMapSmall - only the load-bearing offsets are modeled: m_0c (parent handle,
 // copied into the worker), m_1c (a CMapStringToOb-internal field of map1 also
@@ -76,18 +108,20 @@ extern void* g_albusWorkerVtbl;
 // occupy lower vtable slots (slot numbers not load-bearing, only bodies), placed
 // last.
 // ---------------------------------------------------------------------------
-class CDDrawWorkerMapSmall {
+class CDDrawWorkerMapSmall : public AlbusMapBase {
 public:
+    ~CDDrawWorkerMapSmall();
     i32 VirtualMethodUnknown14();
+    void VirtualMethodUnknown1C();
     void* VirtualMethodUnknown28(i32 a1, const char* key, i32 a3);
     void* VirtualMethodUnknown2C(i32 a1, const char* key, i32 a3);
     i32 VirtualMethodUnknown20();
 
-    void* m_vptr;              // +0x00
-    i32 m_04;                  // +0x04  initialized to -1 when inactive
-    char m_pad08[0x0c - 0x08]; // +0x08..0x0b
-    i32 m_0c;                  // +0x0c  parent HarryPotter handle
-    CMapStringToOb m_10;       // +0x10  m_unknownMap1 (0x10..0x2b)
+    // m_vptr/m_04/m_08/m_0c are inherited from AlbusMapBase (+0x00..+0x0f).
+    CMapStringToOb m_10; // +0x10  m_unknownMap1 (0x10..0x2b)
+    CMapStringToOb m_2c; // +0x2c  m_unknownMap2 (0x2c..0x47)
+    CMapStringToOb m_48; // +0x48  m_unknownMap3 (0x48..0x63)
+    i32 m_64;            // +0x64  entry counter cleared by the teardown
 
     // Engine-label backlog stubs.
     void Stub_157610();
@@ -123,6 +157,33 @@ fail:
     return 0;
 }
 
+// ---------------------------------------------------------------------------
+// ~CDDrawWorkerMapSmall (0x156d20, __thiscall, /GX): stamp the class vftable, run the
+// map teardown (VirtualMethodUnknown1C), then let the compiler destruct the three
+// CMapStringToOb members (reverse decl order, descending trylevels 2/1/0) and the
+// AlbusMapBase sub-object (the trailing field-zero + base-vptr restore). The /GX
+// member-teardown frame is recovered by modeling the three maps as real destructible
+// CMapStringToOb value members + the AlbusMapBase base sub-object with a real
+// destructor (docs/patterns/eh-dtor-model-members-as-destructible.md +
+// eh-dtor-subobject-vptr-restore-member.md); the TU's "eh" flag supplies /GX.
+//
+// @early-stop
+// reloc-typing scoring artifact (docs/patterns/reloc-typing-vptr-global.md): EVERY
+// code byte matches retail (verified llvm-objdump -dr base vs target) - the entry/
+// exit vptr stamps, the 0x3/2/1/0 trylevel chain, the three reverse-order
+// ~CMapStringToOb member calls, and the AlbusMapBase reset are byte-identical. The
+// ~96% fuzzy cap is purely differently-named reloc operands: the EH Unwind/handler
+// table symbol ($L vs Unwind@..), the member dtor (mine ??1CMapStringToOb canonical
+// vs the target's FLIRT ~CInternetSession alias), and the base-vtbl global placeholder
+// name. Not steerable; this is the reloc-masked plateau (= done).
+RVA(0x00156d20, 0x82)
+CDDrawWorkerMapSmall::~CDDrawWorkerMapSmall() {
+    m_vptr = &g_albusClassVtbl;
+    VirtualMethodUnknown1C();
+    // m_48 / m_2c / m_10 (reverse decl order) and the AlbusMapBase sub-object
+    // auto-destruct here under the /GX member-teardown trylevels.
+}
+
 // Inline worker constructor. New's the raw 0x14 block; on success seeds the fields
 // THROUGH the allocation register and returns it, else returns 0. Defined inline so
 // it folds into each factory, reproducing the target's "init via eax, commit to esi
@@ -155,6 +216,30 @@ static inline AlbusWorkerObj* MakeAlbusWorker(const CDDrawWorkerMapSmall* parent
         w = 0;
     }
     return w;
+}
+
+// ---------------------------------------------------------------------------
+// Map teardown (0x165810, __thiscall, /GX): iterate every entry of m_10 via
+// GetNextAssoc, destroying each CObject* value through its scalar-deleting
+// destructor (vtbl +0x4, arg 1), RemoveAll the map, then clear the +0x64 counter.
+// Same shape as CDDrawWorkerRegistry::VirtualMethodUnknown58, plus the m_64 clear.
+// Carries a /GX EH frame for the local CString key (must be unwound through the
+// iteration loop).
+RVA(0x00165810, 0xa9)
+void CDDrawWorkerMapSmall::VirtualMethodUnknown1C() {
+    CObject* val = 0;
+    POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
+    CString key;
+    if (*(volatile i32*)&pos != 0) {
+        do {
+            m_10.GetNextAssoc(pos, key, val);
+            if (val != 0) {
+                ((AlbusWorker*)val)->ScalarDtor(1);
+            }
+        } while (pos != 0);
+    }
+    m_10.RemoveAll();
+    m_64 = 0;
 }
 
 // ---------------------------------------------------------------------------

@@ -678,7 +678,7 @@ flags = "base"
 [[unit]]
 unit = "cddrawworkermapsmall"
 source = "src/Gruntz/CDDrawWorkerMapSmall.cpp"
-flags = "base"
+flags = "eh"
 
 [[unit]]
 unit = "cddrawsurfacemgr"

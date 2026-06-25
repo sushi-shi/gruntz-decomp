@@ -44,10 +44,6 @@ RVA(0x0015c360, 0x555) void CDDrawSubMgr::CDDrawSubMgr_15c360() {}
 // ---- CDDrawWorkerList ----
 RVA(0x00163bc0, 0x2c) void CDDrawWorkerList::CDDrawWorkerList_163bc0() {}
 
-// ---- CDDrawWorkerMapSmall ----
-RVA(0x00156d20, 0x82) void CDDrawWorkerMapSmall::CDDrawWorkerMapSmall_156d20() {}
-RVA(0x00165810, 0xa9) void CDDrawWorkerMapSmall::CDDrawWorkerMapSmall_165810() {}
-
 // ---- CDDrawWorkerRegistry ----
 RVA(0x00151f00, 0xa4) void CDDrawWorkerRegistry::CDDrawWorkerRegistry_151f00() {}
 RVA(0x0015cc30, 0x1e) void CDDrawWorkerRegistry::CDDrawWorkerRegistry_15cc30() {}

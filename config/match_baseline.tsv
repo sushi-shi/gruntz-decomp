@@ -40,7 +40,7 @@ cddrawsurfacemgrserialize	1	0
 cddrawsurfacepair	4	2
 cddrawworkercache	4	1
 cddrawworkerlist	10	7
-cddrawworkermapsmall	8	2
+cddrawworkermapsmall	10	3
 cddrawworkerregistry	25	12
 cddrawworkers	3	3
 cdirectdrawmgr	15	9
@@ -67,7 +67,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	214	0
+engine_discovered	212	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -422,11 +422,13 @@ cddrawworkerlist	?VirtualMethodUnknown28@CDDrawWorkerList@@QAEPAXHHHH@Z	100.0000
 cddrawworkerlist	?VirtualMethodUnknown2C@CDDrawWorkerList@@QAEPAXHHHHH@Z	100.0000	100.0000	6	9d8d8b6aeb0f	0x157330
 cddrawworkerlist	?VirtualMethodUnknown30@CDDrawWorkerList@@QAEPAXHHHHH@Z	100.0000	100.0000	6	16dd0dfca828	0x157150
 cddrawworkerlist	?VirtualMethodUnknown34@CDDrawWorkerList@@QAEXHH@Z	95.2857	95.2857	6	ccb32102961c	0x163bf0
+cddrawworkermapsmall	??1CDDrawWorkerMapSmall@@QAE@XZ	96.0000	96.0000	1	18912176131f	0x156d20
 cddrawworkermapsmall	?Stub_157610@CDDrawWorkerMapSmall@@QAEXXZ	3.6364	3.6364	2	7f7fbbc82f2c	0x157610
 cddrawworkermapsmall	?Stub_1658c0@CDDrawWorkerMapSmall@@QAEXXZ	0.4598	0.4598	2	3cae15e9a59d	0x1658c0
 cddrawworkermapsmall	?Stub_165a90@CDDrawWorkerMapSmall@@QAEXXZ	0.3846	0.3846	2	255e7aa21fe0	0x165a90
 cddrawworkermapsmall	?Stub_165b90@CDDrawWorkerMapSmall@@QAEXXZ	2.0000	2.0000	2	6c89d2f95352	0x165b90
 cddrawworkermapsmall	?VirtualMethodUnknown14@CDDrawWorkerMapSmall@@QAEHXZ	100.0000	100.0000	4	32c92a213e59	0x156cd0
+cddrawworkermapsmall	?VirtualMethodUnknown1C@CDDrawWorkerMapSmall@@QAEXXZ	100.0000	100.0000	1	9c92c66b63c0	0x165810
 cddrawworkermapsmall	?VirtualMethodUnknown20@CDDrawWorkerMapSmall@@QAEHXZ	100.0000	100.0000	4	c67f64804f62	0x157600
 cddrawworkermapsmall	?VirtualMethodUnknown28@CDDrawWorkerMapSmall@@QAEPAXHPBDH@Z	99.7391	99.7391	4	222624152be3	0x165990
 cddrawworkermapsmall	?VirtualMethodUnknown2C@CDDrawWorkerMapSmall@@QAEPAXHPBDH@Z	99.7391	99.7391	4	f43c8f83d528	0x165a10
@@ -700,8 +702,6 @@ engine_discovered	?CDDPalette_147530@CDDPalette@@QAEXXZ	2.8571	2.8571	2	8705702d
 engine_discovered	?CDDSurface_142a40@CDDSurface@@QAEXXZ	5.0000	5.0000	2	acbbb47b3378	0x142a40
 engine_discovered	?CDDrawSubMgr_15c360@CDDrawSubMgr@@QAEXXZ	0.0877	0.0877	2	cb87cd66d104	0x15c360
 engine_discovered	?CDDrawWorkerList_163bc0@CDDrawWorkerList@@QAEXXZ	4.7619	4.7619	2	b51a988cb1ef	0x163bc0
-engine_discovered	?CDDrawWorkerMapSmall_156d20@CDDrawWorkerMapSmall@@QAEXXZ	3.3333	3.3333	2	db2b150ea8f0	0x156d20
-engine_discovered	?CDDrawWorkerMapSmall_165810@CDDrawWorkerMapSmall@@QAEXXZ	2.0000	2.0000	2	22d7180afa1c	0x165810
 engine_discovered	?CDDrawWorkerRegistry_151f00@CDDrawWorkerRegistry@@QAEXXZ	0.5479	0.5479	1	0327183bf3bb	0x151f00
 engine_discovered	?CDDrawWorkerRegistry_15cc30@CDDrawWorkerRegistry@@QAEXXZ	3.6364	3.6364	1	9a65fd41cb5e	0x15cc30
 engine_discovered	?CDoNothing_00f6b0@CDoNothing@@QAEXXZ	50.0000	50.0000	2	9ea9dfd42eb8	0xf6b0
