@@ -1,0 +1,160 @@
+// CLightFx.cpp - the "LightFx" tile-logic game object (C:\Proj\Gruntz), a
+// CUserLogic leaf (ctor 0x9cf00; RTTI .?AVCUserLogic@@). Two leaf methods are
+// reconstructed here, in ascending retail-RVA order:
+//   * Activate  (0x9d520) - bind the effect spec from the object bute map.
+//   * RebindNode(0x9d770) - re-point the object bute map at the "A" section.
+//
+// The spine (CUserLogic base, m_14/m_30/m_38/m_3c) is in <Gruntz/UserLogic.h>;
+// CLightFx adds the +0x40/+0x54/+0x58 leaf words. Engine callees (the bute-map
+// Lookup, the per-frame logic-table push, the layer SetNode) are modeled NO-body
+// so their call displacements reloc-mask. Field names are placeholders; only the
+// OFFSETS + code bytes are load-bearing.
+#include <Gruntz/CLightFx.h>
+
+#include <rva.h>
+
+// ---------------------------------------------------------------------------
+// The CMap core embedded at +0x10 inside each spec/effect store. Lookup(key,
+// &out) fills *out with the mapped node and returns nonzero on hit. __thiscall,
+// ret 8 (2 args), matched in the engine map TU - NO-body so the call reloc-masks.
+struct LfxMapCore {
+    i32 Lookup(i32 key, i32* out); // 0x1b8008 / 0x1b8438
+};
+
+// A spec/effect store: the CMap core sits at +0x10 (the engine call is
+// `mov ecx,store; add ecx,0x10; Lookup`).
+struct LfxNodeMap {
+    char m_pad00[0x10];
+    LfxMapCore m_10; // +0x10  the CMap core
+};
+
+// The two store objects the lookup chains walk to. The bound object's holder
+// (m_3c->m_0c / m_38->m_0c) points at a record whose +0x10 holds the spec store
+// and +0x2c the effect store.
+struct LfxMapHolder {
+    char m_pad00[0x10];
+    LfxNodeMap* m_10; // +0x10  spec store
+    char m_pad14[0x2c - 0x14];
+    LfxNodeMap* m_2c; // +0x2c  effect store
+};
+struct LfxMapSource {
+    char m_pad00[0xc];
+    LfxMapHolder* m_0c; // +0xc
+};
+
+// The per-frame logic-table push the bound object runs (g_gameReg->m_78). It
+// IGNORES `this` (reads its ctx from the first stack arg), __thiscall ret 0xc
+// (3 args) - the 0x9dcb0 routine; modeled NO-body so the call reloc-masks.
+struct LfxLogicPump {
+    i32 Push(i32 node, i32 anchor, i32 slot); // 0x9dcb0 (via the 0x295f thunk)
+};
+
+// The global game registry (?g_gameReg, *0x64556c); only the +0x78 logic pump is
+// read here. (Declared as the engine's WwdGameReg via the existing DATA label.)
+struct WwdGameReg {
+    char m_pad00[0x78];
+    LfxLogicPump* m_78; // +0x78
+};
+DATA(0x0024556c)
+extern WwdGameReg* g_gameReg;
+
+// The global bute store RebindNode re-points the object map at ("A" section).
+// g_buteTree (0x6bf620) + CButeTree::Find (0x16d190) live in the bute TUs;
+// declared extern only so `g_buteTree.Find("A")` reloc-masks (CButeTree owns the
+// DATA label).
+DATA(0x002bf620)
+extern CButeTree g_buteTree;
+
+// The bound object's effect node (the Lookup result): +0x14 a value table indexed
+// by the clamped key, +0x64/+0x68 the key bounds.
+struct LfxEffectNode {
+    char m_pad00[0x14];
+    i32* m_14; // +0x14  value table
+    char m_pad18[0x64 - 0x18];
+    i32 m_64; // +0x64  key lo
+    i32 m_68; // +0x68  key hi
+};
+
+// The bound object's layer sub-descriptor (m_38+0x1a0): SetNode caches the
+// resolved effect node. __thiscall ret 4 (1 arg), 0x15c2d0; modeled NO-body.
+struct LfxLayerSink {
+    void SetNode(i32 node); // 0x15c2d0
+};
+
+// The bound object proper (m_38): +0x08 flags, +0x0c the map holder, +0x190..0x198
+// the resolved-node triple, +0x1a0 the layer sub-descriptor, +0x1b4 the layer base.
+struct LfxObj {
+    char m_pad00[0x8];
+    i32 m_08;           // +0x08  flag word (|= 2)
+    LfxMapHolder* m_0c; // +0x0c
+    char m_pad10[0x190 - 0x10];
+    i32 m_190; // +0x190 resolved key
+    i32 m_194; // +0x194 resolved node
+    i32 m_198; // +0x198 resolved value
+    char m_pad19c[0x1a0 - 0x19c];
+    LfxLayerSink m_1a0; // +0x1a0 layer sub-descriptor
+    char m_pad1a4[0x1b4 - 0x1a4];
+    i32 m_1b4; // +0x1b4 layer base
+};
+
+// ===========================================================================
+// CLightFx::Activate  (0x9d520)  - look the effect spec up in the bound object's
+// spec map, run the per-frame logic push, prime the bound object's resolved-node
+// triple from the effect node, latch the (anchorA, anchorB) pair, look the effect
+// up in the effect map (twice), feed it to the layer descriptor, and rebind.
+// ===========================================================================
+// @early-stop
+// 86.7% - scheduling/stack-slot wall (regalloc family, see
+// docs/patterns/pin-local-for-callee-saved-reg.md + reread-member-view-pointer.md):
+// the body is byte-identical in shape - promoting the spec-lookup result into the
+// named local `found` already pins it callee-saved (edi) like retail (70%->86.7%),
+// and re-reading m_38 per-region matches retail's reload pattern. The residual is
+// (a) the `node` out-param stack slot lands at [esp+0xc] vs retail's [esp+0x14]
+// (an 8-byte frame-layout pick that renames every slot ref) and (b) two 2-3 instr
+// schedule swaps (the node=0 zero relative to the arg pushes; the m_54/m_58 stores
+// vs the m_38 reload before the effect lookup). Logic 100% correct.
+RVA(0x0009d520, 0xfd)
+i32 CLightFx::Activate(i32 spec, i32 anchorA, i32 effect, i32 anchorB) {
+    i32 node = 0;
+    ((LfxMapSource*)m_3c)->m_0c->m_10->m_10.Lookup(spec, &node);
+    i32 found = node;
+    g_gameReg->m_78->Push(found, anchorA, 7);
+    LfxObj* obj = (LfxObj*)m_38;
+    if (found != 0) {
+        LfxEffectNode* en = (LfxEffectNode*)found;
+        i32 key = en->m_64;
+        obj->m_194 = found;
+        i32 val;
+        if (key < en->m_64 || key > en->m_68) {
+            val = 0;
+        } else {
+            val = en->m_14[key];
+        }
+        obj->m_198 = val;
+        obj->m_190 = key;
+    }
+    node = 0;
+    ((LfxObj*)m_38)->m_08 |= 2;
+    m_54 = anchorA;
+    m_58 = anchorB;
+    ((LfxObj*)m_38)->m_0c->m_2c->m_10.Lookup(effect, &node);
+    if (node != 0) {
+        node = 0;
+        ((LfxObj*)m_38)->m_0c->m_2c->m_10.Lookup(effect, &node);
+        m_40 = ((LfxObj*)m_38)->m_1b4;
+        ((LfxObj*)m_38)->m_1a0.SetNode(node);
+        RebindNode();
+    }
+    return 0;
+}
+
+// ===========================================================================
+// CLightFx::RebindNode  (0x9d770)  - save the object map's current bute node into
+// m_30, re-point it at the "A" section of g_buteTree, return 0.
+// ===========================================================================
+RVA(0x0009d770, 0x25)
+i32 CLightFx::RebindNode() {
+    m_30 = m_14->m_1c;
+    m_14->m_1c = g_buteTree.Find("A");
+    return 0;
+}

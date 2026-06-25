@@ -172,9 +172,8 @@ public:
 };
 class CLightFx {
 public:
-    void CLightFx_012430();
-    void CLightFx_09d520();
-    void CLightFx_09d770();
+    void CLightFx_012430(); // mis-assigned sibling EH dtor (see Discovered.cpp)
+    // 0x9d520 / 0x9d770 graduated to src/Gruntz/CLightFx.cpp (real CLightFx leaf).
 };
 class CMapArrayA {
 public:

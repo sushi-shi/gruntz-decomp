@@ -45,6 +45,7 @@ chatbox	16	9
 chatbox_eh	1	1
 chatboxowner	4	1
 cheatmgr	4	3
+clightfx	2	1
 clightfxrender	20	8
 cmulti	11	7
 cplay	27	8
@@ -58,7 +59,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	267	0
+engine_discovered	265	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -359,7 +360,7 @@ cddrawsubmgrleafscan	?Lookup_05b7e0@CDDrawSubMgrLeafScan@@QAEPAVCObject@@PBD@Z	1
 cddrawsubmgrleafscan	?MatchSub_1584f0@CDDrawSubMgrLeafScan@@QAEHPAVLeafScanSoundArg@@H@Z	99.9800	99.9800	1	8be1aac02e26	0x1584f0
 cddrawsubmgrleafscan	?RefreshAsset_114120@CDDrawSubMgrLeafScan@@QAEHPBD@Z	100.0000	100.0000	1	9f2214792375	0x114120
 cddrawsubmgrleafscan	?RemoveKeysEqual_157c70@CDDrawSubMgrLeafScan@@QAEHPBD0@Z	91.6667	91.6667	1	b6899c82851c	0x157c70
-cddrawsubmgrleafscan	?ScanTree_157ee0@CDDrawSubMgrLeafScan@@QAEHPAVDirNode@@PBD1@Z	100.0000	100.0000	1	67314b808303	0x157ee0
+cddrawsubmgrleafscan	?ScanTree_157ee0@CDDrawSubMgrLeafScan@@QAEHPAVDirNode@@PBD1@Z	100.0000	100.0000	2	e7963647e727	0x157ee0
 cddrawsurfacemgr	??0CDDrawSurfaceMgr@@QAE@XZ	100.0000	100.0000	5	06a0488572fd	0x155840
 cddrawsurfacemgr	??1CDDrawSurfaceMgr@@UAE@XZ	31.3333	31.3333	1	ae3ac5005d6b	0x1558b0
 cddrawsurfacemgr	?Cleanup_155e20@CDDrawSurfaceMgr@@QAEXXZ	96.1236	96.1236	1	f8c53c988eee	0x155e20
@@ -474,6 +475,8 @@ cheatmgr	??1CCheatMgr@@QAE@XZ	100.0000	100.0000	1	94bf38f28220	0x85e60
 cheatmgr	?AddCheat@CCheatMgr@@QAEHPBDHH@Z	98.5714	98.5714	1	77144daa4699	0x22be0
 cheatmgr	?Empty@CCheatMgr@@QAEXXZ	100.0000	100.0000	1	8cc149232bcc	0x22b00
 cheatmgr	?RegisterCheats@CCheatMgr@@QAEXXZ	100.0000	100.0000	1	368e0d229303	0x22c80
+clightfx	?Activate@CLightFx@@QAEHHHHH@Z	86.7407	86.7407	1	017ace156fac	0x9d520
+clightfx	?RebindNode@CLightFx@@QAEHXZ	100.0000	100.0000	1	d9610ef994d0	0x9d770
 clightfxrender	?AllocSurface@CLightFxRender@@QAEHXZ	99.6842	99.6842	3	1bad35c5b187	0xa33e0
 clightfxrender	?ApplyA@CLightFxRender@@QAEHHHH@Z	100.0000	100.0000	3	fd8fea7499fa	0xa9480
 clightfxrender	?ApplyB@CLightFxRender@@QAEHHHH@Z	100.0000	100.0000	3	aa96ba8e89bb	0xa95d0
@@ -687,8 +690,6 @@ engine_discovered	?CGuardPoint_010410@CGuardPoint@@QAEXXZ	5.8824	5.8824	1	4e3b67
 engine_discovered	?CKitchenSlime_013100@CKitchenSlime@@QAEXXZ	5.8824	5.8824	1	74b705f9f108	0x13100
 engine_discovered	?CKitchenSlime_0b2940@CKitchenSlime@@QAEXXZ	0.5333	0.5333	1	611ebae04872	0xb2940
 engine_discovered	?CLightFx_012430@CLightFx@@QAEXXZ	5.8824	5.8824	1	0382b08af60c	0x12430
-engine_discovered	?CLightFx_09d520@CLightFx@@QAEXXZ	0.4938	0.4938	1	ba6a98589399	0x9d520
-engine_discovered	?CLightFx_09d770@CLightFx@@QAEXXZ	7.6923	7.6923	1	dfd64e781cd9	0x9d770
 engine_discovered	?CMapArrayA_09e740@CMapArrayA@@QAEXXZ	0.8000	0.8000	1	985525996982	0x9e740
 engine_discovered	?CMapArrayB_09e860@CMapArrayB@@QAEXXZ	0.7843	0.7843	1	89232b59532c	0x9e860
 engine_discovered	?CMenuState_0a0d40@CMenuState@@QAEXXZ	5.2632	5.2632	1	1ba1cecd5c50	0xa0d40

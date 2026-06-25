@@ -795,6 +795,11 @@ source = "src/Gruntz/ChatBoxOwner.cpp"
 flags = "base"
 
 [[unit]]
+unit = "clightfx"
+source = "src/Gruntz/CLightFx.cpp"
+flags = "base"
+
+[[unit]]
 unit = "clightfxrender"
 source = "src/Gruntz/CLightFxRender.cpp"
 flags = "base"

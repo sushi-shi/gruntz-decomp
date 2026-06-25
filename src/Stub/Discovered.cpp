@@ -254,13 +254,15 @@ void CKitchenSlime::CKitchenSlime_013100() {}
 RVA(0x000b2940, 0x102)
 void CKitchenSlime::CKitchenSlime_0b2940() {}
 
-// ---- CLightFx ----
+// ---- CLightFx ----  (recovered: 0x9d520 Activate + 0x9d770 RebindNode are
+// CLightFx leaf methods, reconstructed in src/Gruntz/CLightFx.cpp. 0x12430 is a
+// MIS-ASSIGNED sibling: it is the EH base-destructor of a *different* CUserLogic
+// leaf (byte-identical twin of 0x12370; same CUserLogic/CUserBase vtables + EngStr
+// member at +0x18, only the EH handler RVA differs), reached only from the
+// scalar-deleting dtor at 0x12400 - NOT CLightFx, whose ctor is 0x9cf00. Left
+// stubbed under its placeholder name pending its real owner.)
 RVA(0x00012430, 0x44)
 void CLightFx::CLightFx_012430() {}
-RVA(0x0009d520, 0xfd)
-void CLightFx::CLightFx_09d520() {}
-RVA(0x0009d770, 0x25)
-void CLightFx::CLightFx_09d770() {}
 
 // ---- CMapArrayA ----
 RVA(0x0009e740, 0x76)
