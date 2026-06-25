@@ -660,10 +660,7 @@ public:
 };
 class ClassUnknown_69 {
 public:
-    void ClassUnknown_69_058b60();
     void ClassUnknown_69_10d150();
-    void ClassUnknown_69_1504d0();
-    void ClassUnknown_69_15b2c0();
 };
 class ClassUnknown_70 {
 public:

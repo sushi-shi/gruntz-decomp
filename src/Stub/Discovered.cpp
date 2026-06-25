@@ -953,15 +953,14 @@ void ClassUnknown_68::ClassUnknown_68_0a3460() {}
 RVA(0x000a3820, 0x18e)
 void ClassUnknown_68::ClassUnknown_68_0a3820() {}
 
-// ---- ClassUnknown_69 ----
-RVA(0x00058b60, 0x2d)
-void ClassUnknown_69::ClassUnknown_69_058b60() {}
+// ---- ClassUnknown_69 ---- (split: NOT one class)
+//   0x058b60 -> CGruntAnimPlayer::ApplyGeometryDirect (src/Gruntz/SpriteResource.cpp)
+//   0x1504d0 -> CGruntSprite::CacheFrame             (src/Gruntz/SpriteResource.cpp)
+//   0x15b2c0 -> CRemusNode ctor                      (src/Gruntz/CRemusNode.cpp)
+//   0x10d150 -> the CTileTriggerTransition state dispatcher remains here for the
+//               final sweep (EH frame; this+0x7c controller, big state switch).
 RVA(0x0010d150, 0xf1)
 void ClassUnknown_69::ClassUnknown_69_10d150() {}
-RVA(0x001504d0, 0x6c)
-void ClassUnknown_69::ClassUnknown_69_1504d0() {}
-RVA(0x0015b2c0, 0x3d)
-void ClassUnknown_69::ClassUnknown_69_15b2c0() {}
 
 // ---- ClassUnknown_70 ----
 RVA(0x0015b2b0, 0xe)

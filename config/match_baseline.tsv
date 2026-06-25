@@ -47,6 +47,7 @@ cheatmgr	4	3
 clightfxrender	20	8
 cmulti	11	7
 cplay	27	8
+cremusnode	1	0
 crt_ostream	4	3
 crt_streambuf	7	5
 crt_strstreambuf	4	2
@@ -56,7 +57,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	287	0
+engine_discovered	284	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -135,7 +136,7 @@ sounddevice	6	4
 soundstream	5	2
 spriteloaders	9	4
 spritereftable	7	6
-spriteresource	4	1
+spriteresource	6	2
 statemgrbz	5	3
 statusbaritem	2	1
 statusbarupdaters	7	0
@@ -520,6 +521,7 @@ cplay	?Update@CPlay@@UAEHXZ	100.0000	100.0000	4	1c6efda4cb9e	0x8c910
 cplay	?winapi_0cdb10_PostMessageA@CPlay@@QAEHHHH@Z	0.2946	0.2946	2	db8d57057a6f	0xcdb10
 cplay	?winapi_0ceae0_PostMessageA@CPlay@@QAEHHHH@Z	0.9500	0.9500	2	fb82d3f55040	0xceae0
 cplay	?winapi_0d0b30_CopyRect@CPlay@@QAEHH@Z	1.2270	1.2270	2	edf43ed7aef3	0xd0b30
+cremusnode	??0CRemusNode@@QAE@HHH@Z	60.1176	60.1176	1	615495e1686f	0x15b2c0
 crt_ostream	??6ostream@@QAEAAV0@E@Z	90.3077	90.3077	1	2e9ddcbfc58c	0x192060
 crt_ostream	?opfx@ostream@@QAEHXZ	100.0000	100.0000	1	c7d033751aea	0x16bd10
 crt_ostream	?osfx@ostream@@QAEXXZ	100.0000	100.0000	1	53782d87a169	0x16bd90
@@ -539,8 +541,8 @@ cstatusbarmgr	?LoadTabSprites@CStatusBarMgr@@QAEHXZ	16.7383	16.7383	4	045cfeaa49
 cstatusbarmgr	?SetDirection@CSbItem@@QAEXHH@Z	100.0000	100.0000	2	46fcb29ef102	0xea0f0
 databuffer	??0CDataBuffer@@QAE@XZ	100.0000	100.0000	1	3a641ac221a3	0x150180
 databuffer	?Free@CDataBuffer@@QAEXXZ	100.0000	100.0000	1	be93bfb9147a	0x1503c0
-databuffer	?Reset@CDataBuffer@@QAEXXZ	100.0000	100.0000	1	2d8120316da9	0x150190
-databuffer	?Set@CDataBuffer@@QAEHIH@Z	100.0000	100.0000	1	4b0da091778e	0x1501a0
+databuffer	?Reset@CDataBuffer@@QAEXXZ	100.0000	100.0000	2	75008ba8c576	0x150190
+databuffer	?Set@CDataBuffer@@QAEHIH@Z	100.0000	100.0000	2	637f711a934b	0x1501a0
 deflate	_deflate_fast	100.0000	100.0000	1	3de2151b888f	0x186db0
 deflate	_deflate_slow	100.0000	100.0000	1	963869a51c2d	0x187170
 deflate	_deflate_stored	100.0000	100.0000	1	f3d8403d157d	0x186af0
@@ -843,10 +845,7 @@ engine_discovered	?ClassUnknown_67_191b10@ClassUnknown_67@@QAEXXZ	0.3448	0.3448	
 engine_discovered	?ClassUnknown_67_191c30@ClassUnknown_67@@QAEXXZ	1.2195	1.2195	1	a963c7685860	0x191c30
 engine_discovered	?ClassUnknown_68_0a3460@ClassUnknown_68@@QAEXXZ	0.1681	0.1681	1	815fbd276ee5	0xa3460
 engine_discovered	?ClassUnknown_68_0a3820@ClassUnknown_68@@QAEXXZ	0.2564	0.2564	1	09641df9ee29	0xa3820
-engine_discovered	?ClassUnknown_69_058b60@ClassUnknown_69@@QAEXXZ	2.6667	2.6667	1	78e0eaa5007e	0x58b60
 engine_discovered	?ClassUnknown_69_10d150@ClassUnknown_69@@QAEXXZ	1.1905	1.1905	1	ca7e05bc985a	0x10d150
-engine_discovered	?ClassUnknown_69_1504d0@ClassUnknown_69@@QAEXXZ	1.1429	1.1429	1	a207561dec28	0x1504d0
-engine_discovered	?ClassUnknown_69_15b2c0@ClassUnknown_69@@QAEXXZ	2.3529	2.3529	1	d53e3b5ecb1c	0x15b2c0
 engine_discovered	?ClassUnknown_6_14dcf0@ClassUnknown_6@@QAEXXZ	3.4483	3.4483	1	15185bc126ec	0x14dcf0
 engine_discovered	?ClassUnknown_70_15b2b0@ClassUnknown_70@@QAEXXZ	16.6667	16.6667	1	8df1519a80a9	0x15b2b0
 engine_discovered	?ClassUnknown_71_15b270@ClassUnknown_71@@QAEXXZ	25.0000	25.0000	1	3828d9557c5b	0x15b270
@@ -2117,8 +2116,10 @@ spritereftable	?GetB@CSpriteRefTable@@QAEPAVCSpriteRef@@H@Z	100.0000	100.0000	2	
 spritereftable	?GetSel@CSpriteRefTable@@QAEHHH@Z	100.0000	100.0000	2	46b5e4f637d2	0xe23c0
 spritereftable	?Init@CSpriteRefTable@@QAEHHH@Z	100.0000	100.0000	2	f0e34ea5742f	0xe2250
 spritereftable	?Reset@CSpriteRefTable@@QAEXXZ	100.0000	100.0000	1	1f62670ca9f4	0xe2290
+spriteresource	?ApplyGeometryDirect@CGruntAnimPlayer@@QAEXHH@Z	100.0000	100.0000	1	77aad38a5c97	0x58b60
 spriteresource	?ApplyLookupGeometry@CGruntAnimPlayer@@QAEHPBDH@Z	93.9394	93.9394	4	cb136edb79cc	0x1505b0
 spriteresource	?CacheFirstFrame@CGruntSprite@@QAEXPBD@Z	89.2647	89.2647	4	dbfa3e3333a0	0x150540
+spriteresource	?CacheFrame@CGruntSprite@@QAEXPBDH@Z	84.2571	84.2571	1	a2abe1026505	0x1504d0
 spriteresource	?ConfigureItem@CStatusBarMgr@@QAEHHHHH@Z	100.0000	100.0000	4	be2023a676b3	0x1360d0
 spriteresource	?CreateSprite@CSpriteFactory@@QAEPAUCSprite@@HHHHPBDH@Z	94.1176	94.1176	4	6102cd6262c1	0x1597b0
 statemgrbz	?Build@StateMgrBZ@@QAEHPAUSbzInputManager@@H@Z	94.7384	94.7384	2	78713fa346a6	0x383b0

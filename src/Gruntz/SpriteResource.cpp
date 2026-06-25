@@ -78,6 +78,7 @@ struct CResMgr {
 class CGruntSprite {
 public:
     void CacheFirstFrame(const char* name);
+    void CacheFrame(const char* name, i32 frame);
 
     char m_pad00[0xc];
     CResMgr* m_c; // +0x0c
@@ -101,6 +102,36 @@ void CGruntSprite::CacheFirstFrame(const char* name) {
         }
     }
     m_198 = 0;
+}
+
+// ===========================================================================
+// CGruntSprite::CacheFrame  @0x1504d0
+// ===========================================================================
+//
+// As CacheFirstFrame, but the frame number is supplied by the caller (arg 2)
+// instead of taken from spr->m_64. Looks the named sprite up through m_c->m_10,
+// caches it at m_194, and - on a hit and a frame in [m_64..m_68] - caches the
+// frame's pointer at m_198 and the frame number at m_190; otherwise m_190 still
+// records the requested frame and m_198 is 0. __thiscall, ret 8.
+// @early-stop
+// out-param zero-init scheduling wall (docs/patterns/outparam-zeroinit-scheduling.md):
+// the `mov [&spr],0` sinks past the arg pushes + the extra frame arg flips the
+// sprite/frame eax<->ecx allocation; identical instruction multiset, ~84%. Same
+// wall as the sibling CacheFirstFrame (89%). Logic complete.
+RVA(0x001504d0, 0x6c)
+void CGruntSprite::CacheFrame(const char* name, i32 frame) {
+    CSprite* spr = 0;
+    m_c->m_10->m_10map.Lookup(name, &spr);
+    m_194 = spr;
+    if (spr) {
+        if (frame >= spr->m_64 && frame <= spr->m_68) {
+            m_190 = frame;
+            m_198 = spr->m_14[frame];
+        } else {
+            m_190 = frame;
+            m_198 = 0;
+        }
+    }
 }
 
 // ===========================================================================
@@ -230,6 +261,7 @@ extern i32 g_defaultGeo; // VA 0x6bf3bc (RVA 0x2bf3bc)
 class CGruntAnimPlayer {
 public:
     i32 ApplyLookupGeometry(const char* name, i32 applyDefault);
+    void ApplyGeometryDirect(i32 srcSprite, i32 applyDefault);
 
     char m_pad00[0xc];
     CResMgr* m_c; // +0x0c
@@ -249,4 +281,20 @@ i32 CGruntAnimPlayer::ApplyLookupGeometry(const char* name, i32 applyDefault) {
         m_1a0.SetGeoSource(g_defaultGeo);
     }
     return 1;
+}
+
+// ===========================================================================
+// CGruntAnimPlayer::ApplyGeometryDirect  @0x58b60
+// ===========================================================================
+//
+// The direct counterpart of ApplyLookupGeometry: the sprite source is passed in
+// directly (no name lookup), so it ALWAYS drives the +0x1a0 geometry sub-player's
+// SetGeometry(srcSprite), then - when the second arg is set - applies the global
+// default geometry source g_defaultGeo via the sibling setter. __thiscall, ret 8.
+RVA(0x00058b60, 0x2d)
+void CGruntAnimPlayer::ApplyGeometryDirect(i32 srcSprite, i32 applyDefault) {
+    m_1a0.SetGeometry(srcSprite);
+    if (applyDefault) {
+        m_1a0.SetGeoSource(g_defaultGeo);
+    }
 }
