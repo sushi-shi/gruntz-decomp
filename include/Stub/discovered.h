@@ -792,12 +792,12 @@ class RemusParseSource {
 public:
     void RemusParseSource_139800();
 };
-class StatusBarItem {
+// CGameModeObj's big /GX EH RandomizeStartColors (0xd9290) remains stubbed for the
+// final sweep; the other three methods are reconstructed in
+// src/Gruntz/GameModeObjLifecycle.cpp.
+class CGameModeObj_stub {
 public:
-    void StatusBarItem_0d1b30();
-    void StatusBarItem_0d6560();
-    void StatusBarItem_0d9290();
-    void StatusBarItem_0da030();
+    void CGameModeObj_stub_0d9290();
 };
 class UnknownClassInCGruntzMgr {
 public:

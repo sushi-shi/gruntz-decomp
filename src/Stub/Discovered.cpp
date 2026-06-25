@@ -1158,15 +1158,22 @@ void RemusParseSource::RemusParseSource_139800() {}
 // and the slot-3 Step now live in src/Gruntz/CRandomAmbientSound.cpp. The Roll
 // (0xcd70) / Set (0xc200) siblings stay in src/Stub/ApiCallers.cpp.
 
-// ---- StatusBarItem ----
-RVA(0x000d1b30, 0x20)
-void StatusBarItem::StatusBarItem_0d1b30() {}
-RVA(0x000d6560, 0x45)
-void StatusBarItem::StatusBarItem_0d6560() {}
+// ---- StatusBarItem ---- (MISATTRIBUTION corrected) These were NOT CStatusBarItem
+// (a ~0x2c-byte HUD item) methods - they are lifecycle steps on the big in-game
+// game-mode object (the same physical class as CPlayLevelLoad / EngineLabelBacklog:
+// members at +0x1cc/+0x2dc/+0x2f4/+0x3a8/+0x4fc). Three migrated to
+// src/Gruntz/GameModeObjLifecycle.cpp (CGameModeObj): SetCursorFrame (0xd1b30) and
+// ReleaseLevelOverlay (0xd6560) are byte-exact; ClearPlacedObjects (0xda030, 361 B
+// map-grid free-list walk) is a complete reconstruction parked @early-stop. The
+// remaining method stays stubbed here for the final sweep (per doctrine: don't
+// half-do a >512-B /GX EH function - it under-counts AND diverges its regalloc):
+//   0x0d9290 (679 B) - RandomizeStartColors: a /GX EH frame building a local
+//     CByteArray Fisher-Yates permutation (rand%(n+1)) of 4 team/color slots, then
+//     walking a linked list and classifying each object by probing [obj+0x7c]->m_10
+//     against 6 constant vtable-method addresses to permute the +0x64/+0x134/+0x144/
+//     +0x154 color slots. Big-SEH wall (big-seh-fuzzy-desync.md); leaf-first redo.
 RVA(0x000d9290, 0x2a7)
-void StatusBarItem::StatusBarItem_0d9290() {}
-RVA(0x000da030, 0x169)
-void StatusBarItem::StatusBarItem_0da030() {}
+void CGameModeObj_stub::CGameModeObj_stub_0d9290() {}
 
 // ---- Timer_1380d0 ---- (reconstructed as StreamFeeder in src/Dsndmgr/StreamFeeder.cpp)
 

@@ -58,7 +58,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	273	0
+engine_discovered	270	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -70,6 +70,7 @@ gameapp	19	15
 gamekeyhandler	1	0
 gamelevel	30	19
 gamemode	41	18
+gamemodeobjlifecycle	3	2
 gameobjectctors	5	0
 gametext	4	2
 gamewnd	9	8
@@ -663,6 +664,7 @@ engine_discovered	?CEyeCandy_00fca0@CEyeCandy@@QAEXXZ	50.0000	50.0000	1	29f6cf5a
 engine_discovered	?CEyeCandy_00fd60@CEyeCandy@@QAEXXZ	5.8824	5.8824	1	695fa62ca5c5	0xfd60
 engine_discovered	?CFortressFlag_010e90@CFortressFlag@@QAEXXZ	5.8824	5.8824	1	7ea2863168db	0x10e90
 engine_discovered	?CFortressFlag_046410@CFortressFlag@@QAEXXZ	0.6897	0.6897	1	d7adb6cc3f23	0x46410
+engine_discovered	?CGameModeObj_stub_0d9290@CGameModeObj_stub@@QAEXXZ	0.5076	0.5076	1	91cb19ccef37	0xd9290
 engine_discovered	?CGruntAnimPlayer_150610@CGruntAnimPlayer@@QAEXXZ	1.7391	1.7391	1	d011afc77469	0x150610
 engine_discovered	?CGruntCreationPoint_010730@CGruntCreationPoint@@QAEXXZ	5.8824	5.8824	1	a665e2a00b47	0x10730
 engine_discovered	?CGruntCreationPoint_03ecc0@CGruntCreationPoint@@QAEXXZ	14.2857	14.2857	1	0f98ea774892	0x3ecc0
@@ -891,10 +893,6 @@ engine_discovered	?NetUnattributed_11f618@NetUnattributed@@QAEXXZ	10.0000	10.000
 engine_discovered	?NetUnattributed_18c022@NetUnattributed@@QAEXXZ	0.7874	0.7874	1	ad41badd75ea	0x18c022
 engine_discovered	?RegistryHelper_114fa0@RegistryHelper@@QAEXXZ	3.8462	3.8462	1	8b09b3ba3fed	0x114fa0
 engine_discovered	?RemusParseSource_139800@RemusParseSource@@QAEXXZ	33.3333	33.3333	1	96a1b7b02169	0x139800
-engine_discovered	?StatusBarItem_0d1b30@StatusBarItem@@QAEXXZ	3.3333	3.3333	1	625d66ded92a	0xd1b30
-engine_discovered	?StatusBarItem_0d6560@StatusBarItem@@QAEXXZ	2.5000	2.5000	1	8e4d7bfeafc3	0xd6560
-engine_discovered	?StatusBarItem_0d9290@StatusBarItem@@QAEXXZ	0.5076	0.5076	1	4a791d5da5e7	0xd9290
-engine_discovered	?StatusBarItem_0da030@StatusBarItem@@QAEXXZ	0.8333	0.8333	1	b0702d588fa0	0xda030
 engine_discovered	?UnknownClassInCGruntzMgr_01f450@UnknownClassInCGruntzMgr@@QAEXXZ	3.3333	3.3333	1	52db09c9b515	0x1f450
 engine_discovered	?UnknownClassInCGruntzMgr_0da870@UnknownClassInCGruntzMgr@@QAEXXZ	0.7843	0.7843	1	f1d200e746bc	0xda870
 engine_discovered	?UnknownClassInCGruntzMgr_0da960@UnknownClassInCGruntzMgr@@QAEXXZ	4.3478	4.3478	1	f34feaa5d626	0xda960
@@ -1564,6 +1562,9 @@ gamemode	?Vfunc3@CState@@UAEHXZ	100.0000	100.0000	1	449f857c8ec1	0x8c490
 gamemode	?Vslot11@CState@@UAEHHHH@Z	100.0000	100.0000	1	84fdcdc12e89	0x8c610
 gamemode	?vfunc_1@CBootyState@@QAEXXZ	0.0417	0.0417	2	6e4ddd578781	0x1d440
 gamemode	?winapi_0396f0_SelectClipRgn_SetBkMode@CCreditsState@@QAEHXZ	0.9662	0.9662	2	60b1ea2ed5b7	0x396f0
+gamemodeobjlifecycle	?ClearPlacedObjects@CGameModeObj@@QAEHXZ	53.9750	53.9750	1	30192eab88a2	0xda030
+gamemodeobjlifecycle	?ReleaseLevelOverlay@CGameModeObj@@QAEHH@Z	100.0000	100.0000	1	036396bebe2f	0xd6560
+gamemodeobjlifecycle	?SetCursorFrame@CGameModeObj@@QAEHH@Z	100.0000	100.0000	1	98c98e0a8044	0xd1b30
 gameobjectctors	??0CGruntStaminaSprite@@QAE@PAUCSpriteObj@@@Z	94.7619	94.7619	2	432dc16b6366	0x7fae0
 gameobjectctors	??0CGruntToyTimeSprite@@QAE@PAUCSpriteObj@@@Z	94.7619	94.7619	2	83fe8ba17874	0x7fbd0
 gameobjectctors	??0CGruntWingzTimeSprite@@QAE@PAUCSpriteObj@@@Z	94.7619	94.7619	2	d29f9444e61a	0x7fcc0

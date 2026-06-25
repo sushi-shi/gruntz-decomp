@@ -815,6 +815,11 @@ source = "src/Gruntz/LoadLevelByMode.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "gamemodeobjlifecycle"
+source = "src/Gruntz/GameModeObjLifecycle.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "pyramidbridgesprites"
 source = "src/Gruntz/PyramidBridgeSprites.cpp"
 flags = "eh"
