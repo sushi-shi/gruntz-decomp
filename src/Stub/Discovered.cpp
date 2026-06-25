@@ -505,13 +505,10 @@ void ClassUnknown_1::ClassUnknown_1_134c80() {}
 // sprite/animation reference table (g_gameReg+0x74); migrated to
 // src/Gruntz/SpriteRefTable.cpp.
 
-// ---- ClassUnknown_100 ----
-RVA(0x00109bb0, 0xb)
-void ClassUnknown_100::ClassUnknown_100_109bb0() {}
-RVA(0x0010a0f0, 0x184)
-void ClassUnknown_100::ClassUnknown_100_10a0f0() {}
-RVA(0x0010a2f0, 0x35)
-void ClassUnknown_100::ClassUnknown_100_10a2f0() {}
+// ---- ClassUnknown_100 ---- recovered as CWarpStoneFly, the flying-warpstone
+// status-bar overlay owned by CSBI_RectOnly at +0x54c; ctor (0x109bb0), Tick
+// (0x10a0f0) and Draw (0x10a2f0) migrated to src/Gruntz/WarpStoneFly.cpp. The
+// Setup (0x109bd0) and mode dispatch (0x109e00) remain unreconstructed.
 
 // ---- ClassUnknown_101 ----
 RVA(0x0011f6b9, 0x17)

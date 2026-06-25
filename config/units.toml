@@ -149,6 +149,11 @@ source = "src/Gruntz/SBI_ImageSet.cpp"
 flags = "base"
 
 [[unit]]
+unit = "warpstonefly"
+source = "src/Gruntz/WarpStoneFly.cpp"
+flags = "base"
+
+[[unit]]
 unit = "sbi_warlordhead"
 source = "src/Gruntz/SBI_WarlordHead.cpp"
 flags = "base"

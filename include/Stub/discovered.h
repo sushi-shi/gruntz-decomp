@@ -291,12 +291,7 @@ public:
     void ClassUnknown_1_134c80();
 };
 // ClassUnknown_10 -> CSpriteRefTable, migrated to src/Gruntz/SpriteRefTable.cpp.
-class ClassUnknown_100 {
-public:
-    void ClassUnknown_100_109bb0();
-    void ClassUnknown_100_10a0f0();
-    void ClassUnknown_100_10a2f0();
-};
+// ClassUnknown_100 -> CWarpStoneFly, migrated to src/Gruntz/WarpStoneFly.cpp.
 class ClassUnknown_101 {
 public:
     void ClassUnknown_101_11f6b9();

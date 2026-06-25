@@ -65,7 +65,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	211	0
+engine_discovered	208	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -177,6 +177,7 @@ userbaselink	7	0
 userlogic	47	17
 videoconfig	2	0
 warlord	3	1
+warpstonefly	3	2
 winapi	5	3
 winapicdrom	1	0
 winapimodule	1	0
@@ -764,9 +765,6 @@ engine_discovered	?CVoiceTrigger_11a700@CVoiceTrigger@@QAEXXZ	1.7241	1.7241	1	5b
 engine_discovered	?CWayPoint_0102e0@CWayPoint@@QAEXXZ	5.8824	5.8824	1	e978df05f35a	0x102e0
 engine_discovered	?CWormhole_010980@CWormhole@@QAEXXZ	5.8824	5.8824	1	c127ae477703	0x10980
 engine_discovered	?CWormhole_0403b0@CWormhole@@QAEXXZ	1.6667	1.6667	1	44f89f7deccc	0x403b0
-engine_discovered	?ClassUnknown_100_109bb0@ClassUnknown_100@@QAEXXZ	20.0000	20.0000	1	a3938108249f	0x109bb0
-engine_discovered	?ClassUnknown_100_10a0f0@ClassUnknown_100@@QAEXXZ	0.3175	0.3175	1	b27dcd35e4ec	0x10a0f0
-engine_discovered	?ClassUnknown_100_10a2f0@ClassUnknown_100@@QAEXXZ	5.2632	5.2632	1	f1504ca88034	0x10a2f0
 engine_discovered	?ClassUnknown_101_11f6b9@ClassUnknown_101@@QAEXXZ	9.0909	9.0909	1	321f42794106	0x11f6b9
 engine_discovered	?ClassUnknown_102_06b2e0@ClassUnknown_102@@QAEXXZ	2.2222	2.2222	1	bd7f9bdda007	0x6b2e0
 engine_discovered	?ClassUnknown_103_148d10@ClassUnknown_103@@QAEXXZ	6.2500	6.2500	1	3933e9c11c57	0x148d10
@@ -2374,6 +2372,9 @@ videoconfig	?SaveVideoResolutionConfig@@YAXPAX0@Z	88.8148	88.8148	6	6a3159e5dbaa
 warlord	??1CWarlord@@UAE@XZ	73.9524	73.9524	1	0524876559f2	0x107f0
 warlord	?RearmMoving@CWarlord@@QAEHXZ	100.0000	100.0000	2	636920fedee4	0x44bb0
 warlord	?ResolveState@CWarlord@@QAEHH@Z	1.8667	1.8667	2	3a30038a541f	0x44640
+warpstonefly	??0CWarpStoneFly@@QAE@XZ	100.0000	100.0000	1	4663c4a384a2	0x109bb0
+warpstonefly	?Draw@CWarpStoneFly@@QAEHXZ	100.0000	100.0000	1	7c703675c820	0x10a2f0
+warpstonefly	?Tick@CWarpStoneFly@@QAEHH@Z	79.2857	79.2857	1	9278a6344347	0x10a0f0
 winapi	?ActiveWait@WinAPI@Utils@@YAXI@Z	100.0000	100.0000	7	5a0a133e85f9	0x13dfe0
 winapi	?FileExists@WinAPI@Utils@@YAHPAD@Z	100.0000	100.0000	7	f415daa19593	0x1189c0
 winapi	?GetGruntzDriveLetter@WinAPI@Utils@@YADXZ	98.4234	98.4234	7	9845fffea311	0x1ffe0
