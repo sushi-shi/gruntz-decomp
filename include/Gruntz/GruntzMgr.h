@@ -156,6 +156,16 @@ public:
     i32 CheckMovieFileExists();     // @0x090aa0 (FileExists(m_strMoviePath))
     CState* FindStateById(i32 id);  // @0x092900 (live + stack search by Update id)
 
+    // Level cycle + debug layer toggles (proximity-attributed, reconstructed).
+    i32 GoToNextLevel();     // @0x08d850 (PLAY: advance current level index, wrap)
+    i32 GoToPrevLevel();     // @0x08d910 (PLAY: retreat current level index, wrap)
+    i32 ToggleObjectLayer(); // @0x08efe0 (toggle the "current" object layer visible bit)
+    i32 ToggleHeightLayer(); // @0x08f060 (toggle the m_5c sub-layer visible bit)
+    i32 ToggleBaseLayer();   // @0x08f0b0 (toggle layer[0]'s visible bit)
+    i32 PollUnlessIdle();    // @0x08f2f0 (CheckPlayState() unless state idle (5); ret 0)
+    i32 AppendChatMessage(char* msg);            // @0x08f9c0 (-> m_5c chat-log insert)
+    i32 ShowToggleMessage(char* itemName, i32 on); // @0x08f9f0 ("<item> is ON/OFF")
+
     i32 StoreInputState(i32 v); // @0x091a10 (store m_inputStateVal, forward to m_timer)
     void StoreInputFlag(i32 v); // @0x0919d0 (store m_inputFlag, mirror to g_61ab24 + m_inputState)
     void UnloadSoundChain();    // @0x08f740 (m_world->m_28->m_2c teardown + StopBank2)

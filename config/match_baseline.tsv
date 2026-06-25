@@ -100,7 +100,7 @@ dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
 dsoundvoice	2	1
-engine_attributed	325	0
+engine_attributed	317	0
 engine_boundary	628	0
 engine_discovered	86	0
 engine_label_stubs	519	118
@@ -126,7 +126,7 @@ gruntvoice	4	3
 gruntzapp	10	8
 gruntzcmdmgr	11	9
 gruntzcommand	10	10
-gruntzmgr	54	40
+gruntzmgr	62	47
 gruntzplayer	5	1
 gruntzsoundz	8	7
 gruntzwnd	9	7
@@ -959,14 +959,6 @@ engine_attributed	?CGrunt_069fd0@CGrunt@@QAEXXZ	3.3333	3.3333	1	a0fdd9006bb2	0x6
 engine_attributed	?CGruntzCmdMgr_023b40@CGruntzCmdMgr@@QAEXXZ	1.0000	1.0000	1	1b6fcb317f47	0x23b40
 engine_attributed	?CGruntzCommand_024050@CGruntzCommand@@QAEXXZ	1.0256	1.0256	1	6eefba16e1e7	0x24050
 engine_attributed	?CGruntzCommand_0240d0@CGruntzCommand@@QAEXXZ	1.2121	1.2121	1	1f64a091be09	0x240d0
-engine_attributed	?CGruntzMgr_08d850@CGruntzMgr@@QAEXXZ	1.7544	1.7544	1	d86d5d77504d	0x8d850
-engine_attributed	?CGruntzMgr_08d910@CGruntzMgr@@QAEXXZ	1.7544	1.7544	1	56ef97cb8d4a	0x8d910
-engine_attributed	?CGruntzMgr_08efe0@CGruntzMgr@@QAEXXZ	2.5641	2.5641	1	b7bf249685db	0x8efe0
-engine_attributed	?CGruntzMgr_08f060@CGruntzMgr@@QAEXXZ	4.1667	4.1667	1	d8d60aaef9de	0x8f060
-engine_attributed	?CGruntzMgr_08f0b0@CGruntzMgr@@QAEXXZ	3.1250	3.1250	1	2691d5984d05	0x8f0b0
-engine_attributed	?CGruntzMgr_08f2f0@CGruntzMgr@@QAEXXZ	8.3333	8.3333	1	6d8fab918867	0x8f2f0
-engine_attributed	?CGruntzMgr_08f9c0@CGruntzMgr@@QAEXXZ	3.6364	3.6364	1	f57049cb94f7	0x8f9c0
-engine_attributed	?CGruntzMgr_08f9f0@CGruntzMgr@@QAEXXZ	2.0000	2.0000	1	fa53f97bf6f4	0x8f9f0
 engine_attributed	?CGruntzMgr_0901d0@CGruntzMgr@@QAEXXZ	12.5000	12.5000	1	1dd2cf3fb9bc	0x901d0
 engine_attributed	?CGruntzMgr_090ac0@CGruntzMgr@@QAEXXZ	0.2532	0.2532	1	406136ba335d	0x90ac0
 engine_attributed	?CGruntzMgr_0910d0@CGruntzMgr@@QAEXXZ	0.9302	0.9302	1	d6ac4b7c98cc	0x910d0
@@ -2672,6 +2664,7 @@ gruntzcommand	?SetParamsEx@CGruntzCommand@@QAEHDDDFFDD@Z	100.0000	100.0000	2	6b4
 gruntzmgr	??1CGruntzMgr@@UAE@XZ	89.8500	89.8500	3	1bb6e0929358	0x83360
 gruntzmgr	?AdvanceFrame@CGruntzMgr@@QAEXHH@Z	100.0000	100.0000	5	c2ad09e8774c	0x8f6a0
 gruntzmgr	?AdvanceOptionsCycle@CGruntzMgr@@QAEHXZ	100.0000	100.0000	3	b2bfc15c026a	0x933e0
+gruntzmgr	?AppendChatMessage@CGruntzMgr@@QAEHPAD@Z	100.0000	100.0000	1	f5b0a3a3127f	0x8f9c0
 gruntzmgr	?BroadcastCmd@CGruntzMgr@@QAEHHHHH@Z	77.8582	77.8582	3	b6f37d352307	0x93460
 gruntzmgr	?BuildMoviePath@CGruntzMgr@@QAE?AVCString@@H@Z	88.0630	88.0630	4	edb3c3ee7d21	0x8ff30
 gruntzmgr	?ChangeState_8fab0@CGruntzMgr@@QAEHH@Z	1.1236	1.1236	2	741fdee855ba	0x8fab0
@@ -2687,6 +2680,8 @@ gruntzmgr	?FindStateById@CGruntzMgr@@QAEPAVCState@@H@Z	100.0000	100.0000	3	646cf
 gruntzmgr	?FinishLevel@CGruntzMgr@@QAEHHH@Z	84.1471	84.1471	3	168a1e237366	0x8e980
 gruntzmgr	?GetGruntzDriveLetter@CGruntzMgr@@QAEDXZ	100.0000	100.0000	4	bd2cebfcd9e9	0x8fa70
 gruntzmgr	?GetWorldFileName@CGruntzMgr@@QAE?AVCString@@XZ	100.0000	100.0000	2	3fb6c7c4f642	0x928c0
+gruntzmgr	?GoToNextLevel@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	cbee59b79662	0x8d850
+gruntzmgr	?GoToPrevLevel@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	ee87a5fc6b0c	0x8d910
 gruntzmgr	?InitializeLobbyConnectionSettings@CGruntzMgr@@QAEHXZ	99.5588	99.5588	5	cc1dca68936d	0x8eca0
 gruntzmgr	?IsInPlayState@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	62d491889452	0x8fa40
 gruntzmgr	?IsLobbyHostReady@CGruntzMgr@@QAEHXZ	100.0000	100.0000	3	8dedad14eb04	0x91500
@@ -2704,6 +2699,7 @@ gruntzmgr	?PassClickToPlayState@CGruntzMgr@@QAEHHHH@Z	84.7812	84.7812	1	9700c7f1
 gruntzmgr	?PerFrameTick@CGruntzMgr@@QAEXXZ	100.0000	100.0000	4	d0cc5b87b77d	0x8f620
 gruntzmgr	?PickPausedThenPlayState@CGruntzMgr@@QAEPAVCState@@XZ	100.0000	100.0000	1	02b7911454da	0x929b0
 gruntzmgr	?PickPlayOrPausedState@CGruntzMgr@@QAEPAVCState@@XZ	100.0000	100.0000	1	6e79b43e172f	0x92990
+gruntzmgr	?PollUnlessIdle@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	3135edf3199d	0x8f2f0
 gruntzmgr	?PopTopIfMatches@CGruntzMgr@@QAEHPAVCState@@@Z	100.0000	100.0000	3	0fcd71a0e7c5	0x909e0
 gruntzmgr	?PushState@CGruntzMgr@@QAEXPAVCState@@@Z	100.0000	100.0000	2	c6c7ce7105b4	0x909b0
 gruntzmgr	?RecomputeViewScale@CGruntzMgr@@QAEXXZ	83.1529	83.1529	3	256a10c47877	0x8f7f0
@@ -2715,11 +2711,15 @@ gruntzmgr	?SaveState@CGruntzMgr@@QAEHPAVCSerializerZ@@@Z	100.0000	100.0000	3	b7c
 gruntzmgr	?SetCellHeight@CGruntzMgr@@QAEXHHH@Z	100.0000	100.0000	3	469dd234782d	0x111ec0
 gruntzmgr	?SetGameClock@CGruntzMgr@@QAEXHHH@Z	100.0000	100.0000	2	6f4e825cb466	0x8f7b0
 gruntzmgr	?SetRunState@CGruntzMgr@@QAEXH@Z	99.6154	99.6154	1	c9feb86d24a3	0x92340
+gruntzmgr	?ShowToggleMessage@CGruntzMgr@@QAEHPADH@Z	100.0000	100.0000	1	3bbf04942740	0x8f9f0
 gruntzmgr	?StoreInputFlag@CGruntzMgr@@QAEXH@Z	100.0000	100.0000	3	a35f4e8723aa	0x919d0
 gruntzmgr	?StoreInputState@CGruntzMgr@@QAEHH@Z	100.0000	100.0000	3	4c9f555b02ce	0x91a10
 gruntzmgr	?SwitchToNextState@CGruntzMgr@@QAEHXZ	100.0000	100.0000	3	f0c527dd3751	0x8d6a0
 gruntzmgr	?SyncOptionsState@CGruntzMgr@@QAEHXZ	92.9470	92.9470	1	968d456ad452	0x93170
 gruntzmgr	?TickStateMgrs@CGruntzMgr@@QAEHXZ	100.0000	100.0000	2	6429f081f684	0x920b0
+gruntzmgr	?ToggleBaseLayer@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	6e07cdbb2e96	0x8f0b0
+gruntzmgr	?ToggleHeightLayer@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	9fa9cd1e7bf6	0x8f060
+gruntzmgr	?ToggleObjectLayer@CGruntzMgr@@QAEHXZ	96.6667	96.6667	1	a292e82a1c5f	0x8efe0
 gruntzmgr	?TopState@CGruntzMgr@@QAEPAVCState@@XZ	100.0000	100.0000	2	d1407d256efd	0x90980
 gruntzmgr	?UnloadSoundChain@CGruntzMgr@@QAEXXZ	100.0000	100.0000	2	d0f043efcdce	0x8f740
 gruntzmgr	?UpdateScoreHud@CGruntzMgr@@QAEXXZ	100.0000	100.0000	2	11350f0d66b3	0x860b0

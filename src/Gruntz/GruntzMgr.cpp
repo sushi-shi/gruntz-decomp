@@ -18,6 +18,7 @@
 #include <Mfc.h>
 #include <Gruntz/GruntzMgr.h>
 #include <rva.h>
+#include <stdio.h> // engine sprintf (reloc-masked) for the toggle-message formatter
 
 namespace Utils {
     namespace WinAPI {
@@ -429,6 +430,98 @@ CGruntzMgrOptions::CGruntzMgrOptions() {}
 CGruntzMgrOptions::~CGruntzMgrOptions() {}
 
 // -------------------------------------------------------------------------
+// The world's +0x24 view exposes a layer array (+0x38 base, +0x3c count) plus a
+// distinguished sub-layer (+0x5c); each layer carries a flag word at +0x8 whose
+// bit 1 (0x2) is a visibility toggle the level-cycle / debug methods flip.
+struct WorldLayer {
+    char m_pad0[0x8];
+    i32 m_8; // +0x08  flag word (bit 0 = locked, bit 1 = visible)
+};
+struct WorldLayerView {
+    char m_pad0[0x38];
+    WorldLayer** m_38; // +0x38  layer array
+    i32 m_3c;          // +0x3c  layer count
+    char m_pad40[0x5c - 0x40];
+    WorldLayer* m_5c; // +0x5c  distinguished sub-layer
+};
+
+// The live state's +0x1c "current level index" the next/prev cycle reads/writes
+// (a CState field inside the +0x1c..+0x24 gap; the offset is load-bearing, so a
+// small TU-local view avoids touching the shared CState header).
+struct CLevelState {
+    char m_pad0[0x1c];
+    i32 m_levelIndex; // +0x1c
+};
+
+// The +0x5c chat/message-log object: AppendChatMessage routes one message line
+// (with type 0 / channel 0x11) into its insert slot (FUN_00421c60, reloc-masked).
+struct CChatLog {
+    i32 Insert(char* msg, i32 type, i32 channel); // (this, msg, type, channel)
+};
+
+// The shared scratch buffer the toggle-message formatter renders "<item> is
+// ON/OFF" into before logging it (reloc-masked DATA ref). The format helper is
+// the statically-linked CRT sprintf (FUN_0051f890; reloc-masked call).
+DATA(0x002452d8)
+extern "C" char g_msgScratch[]; // 0x6452d8
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::GoToNextLevel (0x08d850; ret). Only when the live state is PLAY
+// (id 3): clears the world-file name, computes the next level index
+// (m_curState->m_levelIndex + 1, wrapping past 0x28 back to 1), and - unless that
+// index lands in the reserved band 0x21..0x24 - notifies the state (FrameSlot28
+// with the live id) and routes the level switch through Vslot1e(next, 1). On a
+// successful switch it re-notifies via Vslot09(live id) and returns 1; any
+// reserved-index / failed-switch surfaces a (0x8007, 0x436) error and returns 0.
+RVA(0x0008d850, 0x83)
+i32 CGruntzMgr::GoToNextLevel() {
+    if (m_curState->Update() != 3) {
+        return 0;
+    }
+    m_strWorldFile.Empty();
+    CState* st = m_curState;
+    i32 next = ((CLevelState*)st)->m_levelIndex + 1;
+    if (next > 0x28) {
+        next = 1;
+    }
+    if (next <= 0x20 || next >= 0x25) {
+        st->FrameSlot28(st->Update());
+        if (st->Vslot1e(next, 1)) {
+            st->Vslot09(st->Update());
+            return 1;
+        }
+    }
+    ReportError(0x8007, 0x436);
+    return 0;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::GoToPrevLevel (0x08d910; ret). The descending twin of GoToNextLevel:
+// the index is m_curState->m_levelIndex - 1, wrapping at/below 0 back to 0x28, and
+// the failure error code is (0x8007, 0x437).
+RVA(0x0008d910, 0x82)
+i32 CGruntzMgr::GoToPrevLevel() {
+    if (m_curState->Update() != 3) {
+        return 0;
+    }
+    m_strWorldFile.Empty();
+    CState* st = m_curState;
+    i32 prev = ((CLevelState*)st)->m_levelIndex - 1;
+    if (prev <= 0) {
+        prev = 0x28;
+    }
+    if (prev <= 0x20 || prev >= 0x25) {
+        st->FrameSlot28(st->Update());
+        if (st->Vslot1e(prev, 1)) {
+            st->Vslot09(st->Update());
+            return 1;
+        }
+    }
+    ReportError(0x8007, 0x437);
+    return 0;
+}
+
+// -------------------------------------------------------------------------
 // CGruntzMgr::ReportError  (__thiscall; `ret 8`)
 // Forwards the (id, detail) error to the owning CGameApp held in the base
 // CGameMgr::m_8 pointer, via its vtable slot +0x1c (CGameApp::ReportError).
@@ -470,6 +563,36 @@ i32 CGruntzMgr::RestoreVideoMode(i32 save) {
     }
     ReportError(0x8008, 0x438);
     return 0;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::AppendChatMessage (0x08f9c0; ret 4). Routes one message line into
+// the +0x5c chat/message-log object (insert with type 0 / channel 0x11),
+// returning its result; 0 when no log is bound.
+RVA(0x0008f9c0, 0x1d)
+i32 CGruntzMgr::AppendChatMessage(char* msg) {
+    CChatLog* log = (CChatLog*)m_5c;
+    if (log == 0) {
+        return 0;
+    }
+    return log->Insert(msg, 0, 0x11);
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::ShowToggleMessage (0x08f9f0; ret 8). Formats "<item> is ON/OFF"
+// (selected by `on`) into the shared scratch buffer and appends it to the chat
+// log, returning AppendChatMessage's result.
+// Per-branch sprintf (NOT a ternary on the fmt arg) so each branch pushes
+// itemName + its format literal and the optimizer cross-jumps only the shared
+// `push g_msgScratch; call sprintf` tail - retail's exact block layout.
+RVA(0x0008f9f0, 0x3e)
+i32 CGruntzMgr::ShowToggleMessage(char* itemName, i32 on) {
+    if (on) {
+        sprintf(g_msgScratch, "%s is ON", itemName);
+    } else {
+        sprintf(g_msgScratch, "%s is OFF", itemName);
+    }
+    return AppendChatMessage(g_msgScratch);
 }
 
 // -------------------------------------------------------------------------
@@ -583,6 +706,95 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
 
     m_lobbyResult = 1;
     return m_lobbyResult;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::ToggleObjectLayer (0x08efe0; ret). Debug visibility toggle for the
+// world view's (m_world->m_24) "current" object layer: only when the manager is
+// active (base slot-3 gate) and a world+view are loaded. The layer index is
+// count-1, biased down one more when the count is exactly 4; once bounds-checked
+// and unlocked (bit 0 clear) it flips the layer's visible bit (m_8 ^= 2) and
+// returns 1, else 0.
+// Errors share one trailing `return 0` (success path nested deepest) so every
+// guard `je`s the single fail tail, matching retail's block layout instead of a
+// per-guard epilogue; see docs/patterns/nested-if-success-deepest-error-tail.md.
+// @early-stop
+// 96.7% constant-fold tiebreak: logic byte-exact (guard chain + index + toggle).
+// Residual is MSVC folding the index's true-arm `count-1` to `mov eax,3` (with a
+// je/jne polarity flip) where retail kept `cmp eax,4; jne; dec eax`; the literal
+// `if(idx==4)idx--` form scores worse (88%, view in edx). Documented constant-CSE
+// wall, see docs/patterns/constant-cse-immediate-vs-hoist.md (regalloc family).
+RVA(0x0008efe0, 0x54)
+i32 CGruntzMgr::ToggleObjectLayer() {
+    if (Wap32GameMgrVfunc3() && m_world) {
+        WorldLayerView* view = (WorldLayerView*)m_world->m_24;
+        if (view) {
+            i32 count = view->m_3c;
+            // (count==4 ? count-1 : count) - 1: best-scoring spelling (96.7%); it
+            // recovers retail's ecx/edx view/count regs + the `cmp;jne;dec` shape.
+            // The lone residual is MSVC folding the true-arm `count-1` to `mov 3`
+            // (+ the je/jne polarity) where retail kept `dec eax`; the literal
+            // `if(idx==4)idx--;idx--;` form regresses to 88% (view in edx). The
+            // fold is the constant-CSE tiebreak, not source-steerable.
+            i32 idx = (count == 4 ? count - 1 : count) - 1;
+            WorldLayer* layer = (idx < 0 || idx >= count) ? 0 : view->m_38[idx];
+            if (layer && !(layer->m_8 & 1)) {
+                layer->m_8 ^= 2;
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::ToggleHeightLayer (0x08f060; ret). Visibility toggle for the world
+// view's distinguished sub-layer (m_world->m_24->m_5c) - flipped unconditionally
+// (no lock check). Active-gated + world/view guarded like ToggleObjectLayer.
+RVA(0x0008f060, 0x35)
+i32 CGruntzMgr::ToggleHeightLayer() {
+    if (Wap32GameMgrVfunc3() && m_world) {
+        WorldLayerView* view = (WorldLayerView*)m_world->m_24;
+        if (view) {
+            WorldLayer* layer = view->m_5c;
+            if (layer) {
+                layer->m_8 ^= 2;
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::ToggleBaseLayer (0x08f0b0; ret). Visibility toggle for the world
+// view's first layer (m_world->m_24->m_38[0], present only when the count is
+// positive); unlocked-checked (bit 0) then m_8 ^= 2. Active-gated + guarded.
+RVA(0x0008f0b0, 0x46)
+i32 CGruntzMgr::ToggleBaseLayer() {
+    if (Wap32GameMgrVfunc3() && m_world) {
+        WorldLayerView* view = (WorldLayerView*)m_world->m_24;
+        if (view) {
+            WorldLayer* layer = (view->m_3c > 0) ? view->m_38[0] : 0;
+            if (layer && !(layer->m_8 & 1)) {
+                layer->m_8 ^= 2;
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::PollUnlessIdle (0x08f2f0; ret). Unless the live state is the idle
+// state (id 5), runs the play-state poll (CheckPlayState, result discarded);
+// always returns 0.
+RVA(0x0008f2f0, 0x1b)
+i32 CGruntzMgr::PollUnlessIdle() {
+    if (m_curState->Update() != 5) {
+        CheckPlayState();
+    }
+    return 0;
 }
 
 // -------------------------------------------------------------------------
