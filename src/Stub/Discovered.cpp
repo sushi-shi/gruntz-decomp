@@ -710,15 +710,10 @@ void ClassUnknown_3::ClassUnknown_3_09dc80() {}
 RVA(0x0009dcb0, 0x41)
 void ClassUnknown_3::ClassUnknown_3_09dcb0() {}
 
-// ---- ClassUnknown_30 ----
-RVA(0x00136f60, 0x74)
-void ClassUnknown_30::ClassUnknown_30_136f60() {}
-RVA(0x001390e0, 0x25)
-void ClassUnknown_30::ClassUnknown_30_1390e0() {}
-RVA(0x00139110, 0x27)
-void ClassUnknown_30::ClassUnknown_30_139110() {}
-RVA(0x001391e0, 0x30)
-void ClassUnknown_30::ClassUnknown_30_1391e0() {}
+// ---- ClassUnknown_30 -> the WAP32 sound engine intrusive {head,tail} list ----
+// All 4 reconstructed as DSoundList in src/Dsndmgr/SoundVoiceList.cpp: the shared
+// list primitive (InsertHead 0x1390e0, InsertTail 0x139110, Unlink 0x1391e0,
+// RemoveMatching 0x136f60) every Dsndmgr collection embeds and calls __thiscall.
 
 // ---- ClassUnknown_31 ----
 RVA(0x00152f20, 0x86)

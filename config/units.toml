@@ -735,6 +735,11 @@ source = "src/Dsndmgr/SoundDevice.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "soundvoicelist"
+source = "src/Dsndmgr/SoundVoiceList.cpp"
+flags = "base"
+
+[[unit]]
 unit = "soundstream"
 source = "src/Dsndmgr/SoundStream.cpp"
 flags = "eh"

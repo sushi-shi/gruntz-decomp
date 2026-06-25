@@ -487,13 +487,6 @@ public:
     void ClassUnknown_3_09dc80();
     void ClassUnknown_3_09dcb0();
 };
-class ClassUnknown_30 {
-public:
-    void ClassUnknown_30_136f60();
-    void ClassUnknown_30_1390e0();
-    void ClassUnknown_30_139110();
-    void ClassUnknown_30_1391e0();
-};
 class ClassUnknown_31 {
 public:
     void ClassUnknown_31_152f20();

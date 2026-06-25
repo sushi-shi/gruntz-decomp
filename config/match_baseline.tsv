@@ -58,7 +58,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	280	0
+engine_discovered	276	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -135,6 +135,7 @@ shadetablecache	7	3
 siriusworkerhandlers	4	0
 sounddevice	6	4
 soundstream	5	2
+soundvoicelist	4	3
 spriteloaders	9	4
 spritereftable	7	6
 spriteresource	6	2
@@ -785,10 +786,6 @@ engine_discovered	?ClassUnknown_28_158760@ClassUnknown_28@@QAEXXZ	1.0811	1.0811	
 engine_discovered	?ClassUnknown_29_137110@ClassUnknown_29@@QAEXXZ	1.7544	1.7544	1	00b82a2022cd	0x137110
 engine_discovered	?ClassUnknown_2_14f080@ClassUnknown_2@@QAEXXZ	0.2198	0.2198	1	2281c0263940	0x14f080
 engine_discovered	?ClassUnknown_2_14f310@ClassUnknown_2@@QAEXXZ	0.1932	0.1932	1	f0e4c9b0b6a8	0x14f310
-engine_discovered	?ClassUnknown_30_136f60@ClassUnknown_30@@QAEXXZ	0.8000	0.8000	1	7d0ef83fb39a	0x136f60
-engine_discovered	?ClassUnknown_30_1390e0@ClassUnknown_30@@QAEXXZ	3.0769	3.0769	1	e925d487d922	0x1390e0
-engine_discovered	?ClassUnknown_30_139110@ClassUnknown_30@@QAEXXZ	3.0769	3.0769	1	debf9e37937d	0x139110
-engine_discovered	?ClassUnknown_30_1391e0@ClassUnknown_30@@QAEXXZ	1.9048	1.9048	1	fc1b50eb6884	0x1391e0
 engine_discovered	?ClassUnknown_31_152f20@ClassUnknown_31@@QAEXXZ	0.7407	0.7407	1	2933ba7b0e04	0x152f20
 engine_discovered	?ClassUnknown_31_152fb0@ClassUnknown_31@@QAEXXZ	0.3704	0.3704	1	8c9a52559e72	0x152fb0
 engine_discovered	?ClassUnknown_31_153810@ClassUnknown_31@@QAEXXZ	0.8511	0.8511	1	add5b7345b4d	0x153810
@@ -2101,6 +2098,10 @@ soundstream	?CreateStreamBuffer@SoundStream@@QAEPAUStreamVoice@@PAUWaveFormatX@@
 soundstream	?DestroyVoice@SoundStream@@QAEXPAUStreamVoice@@@Z	100.0000	100.0000	1	faf57eb2e985	0x1379d0
 soundstream	?OpenStream@SoundStream@@QAEPAUStreamVoice@@PAUStreamSource@@HHHHH@Z	90.5714	90.5714	2	9fb428c54620	0x137900
 soundstream	?ParseWave@SoundStream@@QAEHPAUStreamSource@@PAUWaveFormatX@@PAI2@Z	98.2640	98.2640	1	a9b9d366d2b7	0x137b70
+soundvoicelist	?InsertHead@DSoundList@@QAEXPAUDSoundLink@@@Z	100.0000	100.0000	1	dbbaa64039bc	0x1390e0
+soundvoicelist	?InsertTail@DSoundList@@QAEXPAUDSoundLink@@@Z	100.0000	100.0000	1	b2001e2d12ac	0x139110
+soundvoicelist	?RemoveMatching@DSoundList@@QAEXII@Z	99.4000	99.4000	1	f32687293f30	0x136f60
+soundvoicelist	?Unlink@DSoundList@@QAEXPAUDSoundLink@@@Z	100.0000	100.0000	1	2a5b4e31349e	0x1391e0
 spriteloaders	?AddTime@CTimer@@QAEXHH@Z	94.2679	94.2679	2	819512ff1fb1	0x9c0e0
 spriteloaders	?Draw@CTimer@@QAEHHH@Z	100.0000	100.0000	2	d59d5baeaff6	0x9bfa0
 spriteloaders	?HandleEvent@CTimer@@QAEHPAUCTimerArchive@@HHH@Z	88.1132	88.1132	2	bd00d1b7e6f8	0x9c1c0
