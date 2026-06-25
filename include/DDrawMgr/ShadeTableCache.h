@@ -36,6 +36,9 @@ struct CShadeTable {
     void Free();              // 0x150190
     i32 Alloc(i32 sz, i32 k); // 0x1501a0 -> bool
     void Destroy();           // 0x1503c0
+    // The two AddFrom* element loaders (sibling element TU, reloc-masked).
+    i32 Load(struct CStr& s, i32 key);                 // 0x150250
+    i32 LoadFile(struct CMemFile* f, i32 size, i32 k); // 0x150330
 };
 
 // The growable element-array subobject (lives at class +0x04). Polymorphic: its
@@ -53,17 +56,35 @@ struct CShadeTableArray {
     void SetSizeGrow(i32 n, i32 grow); // 0x150040
 };
 
+// The live 256-entry RGB palette base (0x6bf224), each entry a 4-byte
+// {r,g,b,pad} record. The sort/remap builders publish the working palette here
+// for their __cdecl qsort comparators; the hue comparator (0x14fa60) and the
+// RGB->HSV helper (0x14fcc0) read it. Reloc-masked DATA.
+struct PalEntry {
+    u8 r, g, b, pad;
+};
+
 class CShadeTableCache {
 public:
     CShadeTableCache();                 // 0x14de30
     ~CShadeTableCache();                // 0x14de50
     i32 Init();                         // 0x14dec0
     void FreeNodes();                   // 0x14ded0
+    CShadeTable* HsvShiftTable(PalEntry* pal, i32 steps, i32 packedColor); // 0x14e540
+    CShadeTable* HueRampTable(PalEntry* pal, i32 steps, i32 packedColor);  // 0x14e830
+    CShadeTable* GammaTable(PalEntry* pal, i32 wRow, i32 wCol);         // 0x14e9f0
+    CShadeTable* LumaSortTable(PalEntry* pal);                          // 0x14ec00
+    CShadeTable* HueSortTable(PalEntry* pal);                           // 0x14ede0
+    CShadeTable* AddFromArray(const char* name);                       // 0x14f6c0
+    CShadeTable* AddFromFile(const char* name, i32 size);              // 0x14f8b0
     CShadeTable* GreyTable();           // 0x14eef0
     CShadeTable* AddTable(float scale); // 0x14f080
     CShadeTable* SubTable(i32 color);   // 0x14f310
     CShadeTable* AlphaTable(u8* pal);   // 0x14f5b0
     void FindRemove(CShadeTable* t);    // 0x14fb80
+
+    // 0x14fa60 - __cdecl qsort comparator: sort palette indices by hue.
+    static i32 __cdecl CompareHue(const void* a, const void* b);
 
     i32 m_00;               // +0x00 gate
     CShadeTableArray m_arr; // +0x04 element array subobject

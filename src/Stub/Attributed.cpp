@@ -298,14 +298,6 @@ RVA(0x000420d0, 0x15) void CSecretTeleporterTrigger::CSecretTeleporterTrigger_04
 
 // ---- CShadeTableCache ----
 RVA(0x0014df40, 0x5f4) void CShadeTableCache::CShadeTableCache_14df40() {}  // high
-RVA(0x0014e540, 0x2ea) void CShadeTableCache::CShadeTableCache_14e540() {}  // high
-RVA(0x0014e830, 0x1b9) void CShadeTableCache::CShadeTableCache_14e830() {}  // high
-RVA(0x0014e9f0, 0x208) void CShadeTableCache::CShadeTableCache_14e9f0() {}  // high
-RVA(0x0014ec00, 0x10f) void CShadeTableCache::CShadeTableCache_14ec00() {}  // high
-RVA(0x0014ede0, 0x10f) void CShadeTableCache::CShadeTableCache_14ede0() {}  // high
-RVA(0x0014f6c0, 0x1e1) void CShadeTableCache::CShadeTableCache_14f6c0() {}  // high
-RVA(0x0014f8b0, 0x1b0) void CShadeTableCache::CShadeTableCache_14f8b0() {}  // high
-RVA(0x0014fa60, 0xd7) void CShadeTableCache::CShadeTableCache_14fa60() {}  // high
 
 // ---- CSimpleAnimation ----
 RVA(0x000abb90, 0x15) void CSimpleAnimation::CSimpleAnimation_0abb90() {}  // med

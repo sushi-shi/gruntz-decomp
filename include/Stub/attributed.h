@@ -63,7 +63,7 @@ class CSBI_RectOnly { public: void CSBI_RectOnly_0fe3e0(); void CSBI_RectOnly_0f
 class CSaveGame { public: void CSaveGame_0e52c0(); };
 class CSecretLevelTrigger { public: void CSecretLevelTrigger_0426e0(); void CSecretLevelTrigger_0428c0(); };
 class CSecretTeleporterTrigger { public: void CSecretTeleporterTrigger_0420d0(); };
-class CShadeTableCache { public: void CShadeTableCache_14df40(); void CShadeTableCache_14e540(); void CShadeTableCache_14e830(); void CShadeTableCache_14e9f0(); void CShadeTableCache_14ec00(); void CShadeTableCache_14ede0(); void CShadeTableCache_14f6c0(); void CShadeTableCache_14f8b0(); void CShadeTableCache_14fa60(); };
+class CShadeTableCache { public: void CShadeTableCache_14df40(); };
 class CSimpleAnimation { public: void CSimpleAnimation_0abb90(); void CSimpleAnimation_0abd70(); };
 class CSymTab { public: void CSymTab_13bca0(); };
 class CTileTriggerSwitchLogic { public: void CTileTriggerSwitchLogic_117e70(); };
