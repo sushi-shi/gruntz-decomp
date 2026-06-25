@@ -109,7 +109,7 @@ dsoundvoice	2	1
 engine_attributed	28	0
 engine_boundary	626	0
 engine_discovered	85	0
-engine_label_stubs	483	104
+engine_label_stubs	475	104
 engstr	3	1
 filemem	9	8
 filestream	13	9
@@ -132,7 +132,7 @@ gruntvoice	5	4
 gruntzapp	10	8
 gruntzcmdmgr	12	10
 gruntzcommand	12	12
-gruntzmgr	77	54
+gruntzmgr	85	60
 gruntzplayer	6	1
 gruntzsoundz	12	11
 gruntzwnd	9	7
@@ -1735,7 +1735,6 @@ engine_label_stubs	??0CGruntCreationPoint@@QAE@H@Z	1.6187	1.6187	1	cpp:6bf521552
 engine_label_stubs	??0CGruntPuddle@@QAE@H@Z	1.8926	1.8926	1	cpp:6bf52155264d	0x40490
 engine_label_stubs	??0CGruntStartingPoint@@QAE@H@Z	1.8182	1.8182	1	cpp:6bf52155264d	0x3df30
 engine_label_stubs	??0CGruntVoice@@QAE@H@Z	1.2500	1.2500	1	cpp:6bf52155264d	0x1198a0
-engine_label_stubs	??0CGruntzMgr@@QAE@XZ	1.4286	1.4286	1	cpp:45e65336d4b5	0x83030
 engine_label_stubs	??0CGuardPoint@@QAE@H@Z	2.5455	2.5455	1	cpp:6bf52155264d	0xae5f0
 engine_label_stubs	??0CInGameIcon@@QAE@H@Z	0.1063	0.0981	1	cpp:6bf52155264d	0x95b10
 engine_label_stubs	??0CInGameText@@QAE@H@Z	1.2414	1.2414	1	cpp:6bf52155264d	0x99110
@@ -1932,7 +1931,6 @@ engine_label_stubs	?LoadPickupSprites@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXH
 engine_label_stubs	?LoadProjectileEffects@CProjectile@@QAEXXZ	0.2165	0.2165	1	cpp:e8a4cb0d5b2a	0xdfd00
 engine_label_stubs	?LoadProjectileSprites@CProjectile@@QAEXHHHHHHH@Z	0.2183	0.2183	1	cpp:6bf52155264d	0xdf050
 engine_label_stubs	?LoadSBITextEdges@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXH@Z	1.2048	1.2048	1	cpp:e8a4cb0d5b2a	0xd1710
-engine_label_stubs	?LoadSaveMessageSprite@CGruntzMgr@@QAEXXZ	2.2727	2.2727	1	cpp:e8a4cb0d5b2a	0x92420
 engine_label_stubs	?LoadSounds@CSplashState@@QAEHHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xf9780
 engine_label_stubs	?LoadStateImages_vfunc8@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXXZ	2.2222	2.2222	1	cpp:e8a4cb0d5b2a	0xa09a0
 engine_label_stubs	?LoadTeleporterGooConfig@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXH@Z	0.2262	0.2262	1	cpp:e8a4cb0d5b2a	0x6eb80
@@ -2020,7 +2018,6 @@ engine_label_stubs	?Tick@Throttle_137e30@ApiCallerStubs@@QAEHH@Z	99.0476	99.0476
 engine_label_stubs	?Tick@Timer_1380d0@ApiCallerStubs@@QAEHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x1380d0
 engine_label_stubs	?Toggle@RosterHost_0c50f0@ApiCallerStubs@@QAEXH@Z	97.6531	97.6531	1	cpp:6bf52155264d	0xc50f0
 engine_label_stubs	?Tune1770e0@PalBuilder_176df0@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x1770e0
-engine_label_stubs	?UnknownClose@CGruntzMgr@@QAEXXZ	0.2915	0.2915	1	cpp:45e65336d4b5	0x855e0
 engine_label_stubs	?Update0@SelHost_0c4ee0@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0xc4ee0
 engine_label_stubs	?Update1@SelHost_0c4ee0@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0xc4f30
 engine_label_stubs	?Update3@SelHost_0c4ee0@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0xc4fd0
@@ -2039,7 +2036,6 @@ engine_label_stubs	?thirdparty_138c20_AIL_allocate_sequence_handle_4_AIL_init_se
 engine_label_stubs	?thirdparty_17c8e0_SmackGoto_8_SmackWait_4@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHH@Z	2.7778	2.7778	1	cpp:e8a4cb0d5b2a	0x17c8e0
 engine_label_stubs	?thirdparty_17caa0_SmackDoFrame_4_SmackNextFrame_4_SmackToBuffer_28@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHXZ	1.7391	1.7391	1	cpp:e8a4cb0d5b2a	0x17caa0
 engine_label_stubs	?thirdparty_winapi_17c790_SmackWait_4_DispatchMessageA_PeekMessageA_TranslateMessa@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHH@Z	1.7699	1.7699	1	cpp:e8a4cb0d5b2a	0x17c790
-engine_label_stubs	?vector_deleting_destructor@CGruntzMgr@@QAEXH@Z	9.0909	9.0909	1	cpp:6bf52155264d	0x83330
 engine_label_stubs	?vfunc_16@StatusBarItem@@QAEXHHH@Z	0.3484	0.3484	1	cpp:6bf52155264d	0xce660
 engine_label_stubs	?vfunc_9@BootyState@@QAEHH@Z	94.7973	94.7973	1	cpp:aab6e5a6e511	0x18d30
 engine_label_stubs	?vfunc_9@Projectile@@QAEXXZ	0.3891	0.3891	1	cpp:45e65336d4b5	0x61cb0
@@ -2083,13 +2079,9 @@ engine_label_stubs	?winapi_057db0_IntersectRect@ThisStubOwnerUnknown@ApiCallerSt
 engine_label_stubs	?winapi_075c60_CopyRect_SetRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHHHHHH@Z	1.2418	1.2418	1	cpp:e8a4cb0d5b2a	0x75c60
 engine_label_stubs	?winapi_077df0_PtInRect@ApiCallerStubs@@YGHH@Z	1.9417	1.9417	1	cpp:6bf52155264d	0x77df0
 engine_label_stubs	?winapi_078060_SetRect@ApiCallerStubs@@YGHHHHHH@Z	1.5447	1.5447	1	cpp:6bf52155264d	0x78060
-engine_label_stubs	?winapi_0861e0_timeGetTime@CGruntzMgr@@QAEHXZ	2.8571	2.8571	1	cpp:e8a4cb0d5b2a	0x861e0
 engine_label_stubs	?winapi_0862f0_PostMessageA_wsprintfA@ApiCallerStubs@@YGHHHH@Z	0.0448	0.0448	1	cpp:6bf52155264d	0x862f0
-engine_label_stubs	?winapi_08e6c0_SendMessageA@CGruntzMgr@@QAEHXZ	3.7838	3.7838	1	cpp:e8a4cb0d5b2a	0x8e6c0
 engine_label_stubs	?winapi_08f120_CreateProcessA_RegQueryValueA@ApiCallerStubs@@YGHH@Z	1.7241	1.7241	1	cpp:6bf52155264d	0x8f120
 engine_label_stubs	?winapi_08f340_PostMessageA@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHXZ	2.8986	2.8986	1	cpp:e8a4cb0d5b2a	0x8f340
-engine_label_stubs	?winapi_08f530_PostMessageA@CGruntzMgr@@QAEHXZ	3.1148	3.1148	1	cpp:e8a4cb0d5b2a	0x8f530
-engine_label_stubs	?winapi_090260_DialogBoxParamA@CGruntzMgr@@QAEHHHH@Z	1.6807	1.6807	1	cpp:e8a4cb0d5b2a	0x90260
 engine_label_stubs	?winapi_090860_CreateProcessA_wsprintfA@ApiCallerStubs@@YGHHH@Z	2.8169	2.8169	1	cpp:6bf52155264d	0x90860
 engine_label_stubs	?winapi_092ab0_EndDialog@ApiCallerStubs@@YGHHHHH@Z	1.0929	1.0929	1	cpp:6bf52155264d	0x92ab0
 engine_label_stubs	?winapi_092f00_PostMessageA@CGruntzMgr@@QAEHXZ	1.6529	1.6529	1	cpp:e8a4cb0d5b2a	0x92f00
@@ -2527,7 +2519,9 @@ gruntzcommand	?Pack@CGruntzSingleCommand@@QAEHPADH@Z	100.0000	100.0000	1	1f0d8b5
 gruntzcommand	?SetMaskFromList@CGruntzCommand@@QAEHDDDFFHPAE@Z	100.0000	100.0000	4	3127710483d2	0x23ed0
 gruntzcommand	?SetParams@CGruntzCommand@@UAEHDDDFF@Z	100.0000	100.0000	2	d1452a90a202	0x23e20
 gruntzcommand	?SetParamsEx@CGruntzCommand@@QAEHDDDFFDD@Z	100.0000	100.0000	2	6b462beb4099	0x23e60
-gruntzmgr	??1CGruntzMgr@@UAE@XZ	89.8500	89.8500	3	1bb6e0929358	0x83360
+gruntzmgr	??0CGruntzMgr@@QAE@XZ	100.0000	100.0000	1	dd5246c50d52	0x83030
+gruntzmgr	??1CGruntzMgr@@UAE@XZ	100.0000	100.0000	3	1bb6e0929358	0x83360
+gruntzmgr	?AccrueScoreTime@CGruntzMgr@@QAEXXZ	100.0000	100.0000	1	94531ee07466	0x861e0
 gruntzmgr	?AdvanceFrame@CGruntzMgr@@QAEXHH@Z	100.0000	100.0000	5	c2ad09e8774c	0x8f6a0
 gruntzmgr	?AdvanceOptionsCycle@CGruntzMgr@@QAEHXZ	100.0000	100.0000	3	b2bfc15c026a	0x933e0
 gruntzmgr	?AppendChatMessage@CGruntzMgr@@QAEHPAD@Z	100.0000	100.0000	1	f5b0a3a3127f	0x8f9c0
@@ -2540,6 +2534,7 @@ gruntzmgr	?CheckSavedMode@CGruntzMgr@@QAEHXZ	100.0000	100.0000	4	0ad1e1909d7f	0x
 gruntzmgr	?ClearOptionsSlots@CGruntzMgr@@QAEXXZ	100.0000	100.0000	3	1ed91a406874	0x92ec0
 gruntzmgr	?ClearStateStack@CGruntzMgr@@QAEXXZ	100.0000	100.0000	3	85a3564640dc	0x90a50
 gruntzmgr	?CountReadyOptionsSlots@CGruntzMgr@@QAEHH@Z	100.0000	100.0000	1	d51ff9dc97e6	0x92e30
+gruntzmgr	?DelayedQuit@CGruntzMgr@@QAEXXZ	3.5246	3.5246	1	a9607fd21901	0x8f530
 gruntzmgr	?EnterModalUI@CGruntzMgr@@QAEXH@Z	93.0159	93.0159	3	a14f93bd4e59	0x8ef10
 gruntzmgr	?ExitModalUI@CGruntzMgr@@QAEHPAVCModalDialog@@H@Z	99.5745	99.5745	3	f310ddd5af40	0x903f0
 gruntzmgr	?FillSaveInfo@CGruntzMgr@@QAEHPAUSaveInfo@@PAX@Z	99.2308	99.2308	3	92b36db40f60	0x927b0
@@ -2555,6 +2550,7 @@ gruntzmgr	?IsInPlayState@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	62d491889452	0x8
 gruntzmgr	?IsLobbyHostReady@CGruntzMgr@@QAEHXZ	100.0000	100.0000	3	8dedad14eb04	0x91500
 gruntzmgr	?IsMoviePathValid@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	81cec570990e	0x901d0
 gruntzmgr	?LoadOptionsSlotName@CGruntzMgr@@QAEHHHHHHPBDH@Z	100.0000	100.0000	1	5dbed70529dd	0x92d50
+gruntzmgr	?LoadSaveMessageSprite@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	04070be0e0e4	0x92420
 gruntzmgr	?LoadWorldMode@CGruntzMgr@@QAEHH@Z	26.6228	26.6228	1	163dd156e145	0x91a40
 gruntzmgr	?NotifyState0b@CGruntzMgr@@QAEHHH@Z	100.0000	100.0000	3	64e27a6fc2b8	0x8d9d0
 gruntzmgr	?NotifyState0c@CGruntzMgr@@QAEHHH@Z	100.0000	100.0000	3	cd6b9998f035	0x8da00
@@ -2566,6 +2562,7 @@ gruntzmgr	?NotifyState11@CGruntzMgr@@QAEHHHH@Z	100.0000	100.0000	3	4443db26d8ed	
 gruntzmgr	?NotifyState12@CGruntzMgr@@QAEHHHH@Z	100.0000	100.0000	3	fbf21d80d1c2	0x8db60
 gruntzmgr	?NotifyState13@CGruntzMgr@@QAEHHHH@Z	100.0000	100.0000	3	fb145c5e547b	0x8dba0
 gruntzmgr	?NotifyState14@CGruntzMgr@@QAEHHHH@Z	100.0000	100.0000	3	f89e14a8a323	0x8dbe0
+gruntzmgr	?OnCheckpointReached@CGruntzMgr@@QAEXXZ	100.0000	100.0000	1	7197f40a2e40	0x8e6c0
 gruntzmgr	?PassClickToPlayState@CGruntzMgr@@QAEHHHH@Z	84.7812	84.7812	1	9700c7f1842c	0x8d780
 gruntzmgr	?PerFrameTick@CGruntzMgr@@QAEXXZ	100.0000	100.0000	4	d0cc5b87b77d	0x8f620
 gruntzmgr	?PickPausedThenPlayState@CGruntzMgr@@QAEPAVCState@@XZ	100.0000	100.0000	1	02b7911454da	0x929b0
@@ -2583,7 +2580,9 @@ gruntzmgr	?RestoreVideoMode@CGruntzMgr@@QAEHH@Z	61.1471	61.1471	3	7c54c8d61182	0
 gruntzmgr	?RunDebugGruntTypeDialog@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	bf3fcf30dd79	0x929e0
 gruntzmgr	?RunFromState@CGruntzMgr@@QAEHXZ	100.0000	100.0000	2	f710a1f0a1d9	0x90200
 gruntzmgr	?RunLoadGameDialog@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	192d7e4c4917	0x92500
+gruntzmgr	?RunModalDialog@CGruntzMgr@@QAEHPBDPAXH@Z	99.4118	99.4118	1	a05301813756	0x90260
 gruntzmgr	?SaveState@CGruntzMgr@@QAEHPAVCSerializerZ@@@Z	100.0000	100.0000	3	b7c7cd31630d	0x93620
+gruntzmgr	?ScalarDeletingDtor@CGruntzMgr@@QAEPAXI@Z	100.0000	100.0000	1	2b7667fab811	0x83330
 gruntzmgr	?SetCellHeight@CGruntzMgr@@QAEXHHH@Z	100.0000	100.0000	3	469dd234782d	0x111ec0
 gruntzmgr	?SetColorDepth@CGruntzMgr@@QAEHH@Z	82.8298	82.8298	1	f711853ea4a8	0x91170
 gruntzmgr	?SetGameClock@CGruntzMgr@@QAEXHHH@Z	100.0000	100.0000	2	6f4e825cb466	0x8f7b0
@@ -2602,6 +2601,7 @@ gruntzmgr	?ToggleBaseLayer@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	6e07cdbb2e96	0
 gruntzmgr	?ToggleHeightLayer@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	9fa9cd1e7bf6	0x8f060
 gruntzmgr	?ToggleObjectLayer@CGruntzMgr@@QAEHXZ	96.6667	96.6667	1	a292e82a1c5f	0x8efe0
 gruntzmgr	?TopState@CGruntzMgr@@QAEPAVCState@@XZ	100.0000	100.0000	2	d1407d256efd	0x90980
+gruntzmgr	?UnknownClose@CGruntzMgr@@UAEXXZ	78.5569	78.5569	1	0c5bf43db3f0	0x855e0
 gruntzmgr	?UnloadSoundChain@CGruntzMgr@@QAEXXZ	100.0000	100.0000	2	d0f043efcdce	0x8f740
 gruntzmgr	?UpdateScoreHud@CGruntzMgr@@QAEXXZ	100.0000	100.0000	2	11350f0d66b3	0x860b0
 gruntzplayer	??0GruntzPlayer@@QAE@H@Z	42.4510	42.4510	1	451d8a0aae67	0xda870

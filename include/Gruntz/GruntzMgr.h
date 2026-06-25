@@ -61,6 +61,7 @@ struct CGruntzSoundZ {
     void StopAll();           // FUN_005388f0 (this)
     void StopBank2();         // FUN_00538920 (this)     -> ret 4 (busy-driven stop)
     i32 Restart_1388c0(i32 a1); // FUN_005388c0 (this, 1) re-launch current bank
+    i32 GetMusicVolume();       // FUN_005389c0 (this) -> current music volume (UnknownClose save)
     char m_pad0[0x1c];        // +0x00..+0x1c
     CGruntzSoundInnerZ* m_1c; // +0x1c  inner object IsBusy/StopAll deref / m_pCurrent
 };
@@ -124,9 +125,18 @@ class CGruntzMgr : public WAP32::CGameMgr {
 public:
     CGruntzMgr();
     virtual ~CGruntzMgr() OVERRIDE; // vtbl slot 0 (own vftable 0x5e9b64)
+    // The ??_G scalar-deleting destructor (vtable slot 0 entry the retail vtable
+    // holds): run the dtor body, then operator delete when the low flag bit is set;
+    // returns this. Modeled by hand (MSVC's own ??_G mangling differs from the retail
+    // label the delinker emits, so this carries the RVA).
+    void* ScalarDeletingDtor(u32 flags); // @0x083330
 
     // Manager-owned methods reconstructed in GruntzMgr.cpp.
-    void UnknownClose() OVERRIDE;                   // @0x0855e0 (member teardown; stubbed)
+    void UnknownClose() OVERRIDE;                   // @0x0855e0 (member teardown)
+    void AccrueScoreTime();          // @0x0861e0 (per-state HUD time/score accrual + state push)
+    void OnCheckpointReached();      // @0x08e6c0 (checkpoint modal -> WM_COMMAND 0x80cf)
+    void DelayedQuit();              // @0x08f530 (menu-activate delay spin -> WM_CLOSE)
+    i32 SaveGameAs();                // @0x092f00 (save-as name dialog -> WM_COMMAND 0x80e3)
     void ReportError(WPARAM wParam, LPARAM lParam); // @0x08dc60  -> m_8->vtbl[0x1c]
     char GetGruntzDriveLetter();                    // @0x08fa70  (memoised CD letter)
     i32 IsInPlayState();                            // @0x08fa40  (m_curState && CheckPlayState())
@@ -307,9 +317,8 @@ public:
     i32 m_optionsCount;             // +0x138  options-cycle high index (=3 in ctor -> 4 slots)
     i32 m_viewOriginL, m_viewOriginT, m_viewOriginR,
         m_viewOriginB;            // +0x13c..+0x148  view-edge origins
-    char m_pad14c[0x150 - 0x14c]; // +0x14c..+0x150 gap
-    CGruntzMgrOptions m_options;  // +0x150 (4x0x238 options array; EH state 4)
-    char m_pad388[0xa30 - 0x388]; // +0x388..0xa30  remaining game state
+    char m_pad14c[0x150 - 0x14c];   // +0x14c..+0x150 gap
+    CGruntzMgrOptions m_options[4]; // +0x150 (4x0x238 options array; EH state 4) -> 0xa30
 };
 
 #endif // GRUNTZ_GRUNTZ_GRUNTZMGR_H
