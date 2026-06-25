@@ -237,17 +237,6 @@ RVA(0x000b2ff0, 0x11b) void CKitchenSlime::CKitchenSlime_0b2ff0() {}  // med
 RVA(0x001845d0, 0x20) void CMenuItem::CMenuItem_1845d0() {}  // high
 RVA(0x001845f0, 0x20) void CMenuItem::CMenuItem_1845f0() {}  // high
 
-// ---- CMenuPage ----
-RVA(0x001836f0, 0x160) void CMenuPage::CMenuPage_1836f0() {}  // high
-RVA(0x00183850, 0x13b) void CMenuPage::CMenuPage_183850() {}  // high
-RVA(0x00183df0, 0x3d) void CMenuPage::CMenuPage_183df0() {}  // high
-RVA(0x00183e30, 0x1f) void CMenuPage::CMenuPage_183e30() {}  // high
-RVA(0x00183e50, 0x11c) void CMenuPage::CMenuPage_183e50() {}  // high
-RVA(0x00183f70, 0x74) void CMenuPage::CMenuPage_183f70() {}  // high
-RVA(0x00183ff0, 0x75) void CMenuPage::CMenuPage_183ff0() {}  // high
-RVA(0x00184230, 0xd2) void CMenuPage::CMenuPage_184230() {}  // high
-RVA(0x00184310, 0xd2) void CMenuPage::CMenuPage_184310() {}  // high
-
 // ---- CMulti ----
 RVA(0x000b6220, 0x54) void CMulti::CMulti_0b6220() {}  // med
 RVA(0x000b62a0, 0x4a) void CMulti::CMulti_0b62a0() {}  // med

@@ -86,6 +86,28 @@ public:
     CString GetName();     // 0x1845b0 (returns the item's name by value)
 
     void Construct(); // the inlined leaf ctor (CStrings + vtable + sentinels)
+
+    // The page's two by-value key accessors used by SelectFwd2/SelectBack2:
+    // each returns one of the item's strings (vtable 0x5f08f8 sibling factories).
+    CString GetKey1(); // 0x1845d0
+    CString GetKey2(); // 0x1845f0
+
+    // The shared field-reset tail of the leaf ctor (scalars + CString Empty()s,
+    // NO vtable stamp): 0x184730, called by AddSubItem2 between the two stamps.
+    void ResetFields();
+};
+
+// The 0x74-byte derived menu item (base CMenuItem @0x5f08c0 -> own vtable
+// 0x5f08f8). AddItem2/AddSubItem2 allocate 0x74, run the base ctor, re-stamp the
+// derived vtable, then zero +0x5c..+0x6c and seed +0x70 = 0x64.
+class CMenuItem2 : public CMenuItem {
+public:
+    i32 m_5c; // +0x5c
+    i32 m_60; // +0x60
+    i32 m_64; // +0x64
+    i32 m_68; // +0x68
+    i32 m_6c; // +0x6c
+    i32 m_70; // +0x70  seeded to 0x64
 };
 
 class CMenuPage {
@@ -113,7 +135,17 @@ public:
     CMenuItem* FindByName(const char* s);      // 0x184150  /GX; walk + strcmp
     i32 SelectForward();                       // 0x1843f0  /GX
     i32 SelectBackward();                      // 0x1844d0  /GX
-    i32 LayoutOne(i32 ctx);                    // 0x183e50  (other TU; no-body extern)
+    i32 LayoutOne(i32 ctx);                    // 0x183e50  single-column measure/place
+
+    // 0x74-item factories (derived item @0x5f08f8) - mirror AddItem/AddSubItem:
+    CMenuItem2* AddItem2(i32, i32, i32, i32, i32);                   // 0x1836f0
+    CMenuItem2* AddSubItem2(i32, i32, i32, i32, i32, i32, i32, i32); // 0x183850
+    i32 Switch(i32 refocus);                   // 0x183df0  host SwitchToPage + refocus
+    i32 CanWrap();                             // 0x183e30  focus-wrap gate
+    i32 FocusForwardN();                       // 0x183f70  step focus +m_50 nodes
+    i32 FocusBackwardN();                      // 0x183ff0  step focus -m_50 nodes
+    i32 SelectFwd2();                          // 0x184230  /GX  m_64 GetKey1 -> FindByName
+    i32 SelectBack2();                         // 0x184310  /GX  m_64 GetKey2 -> FindByName
 
     void* m_0;
     void* m_4;

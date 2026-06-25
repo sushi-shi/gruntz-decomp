@@ -100,7 +100,7 @@ dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
 dsoundvoice	2	1
-engine_attributed	274	0
+engine_attributed	265	0
 engine_boundary	628	0
 engine_discovered	86	0
 engine_label_stubs	519	118
@@ -155,7 +155,7 @@ mainmenubuilder	1	0
 maplogic	5	4
 mapmgr	7	7
 menuitem	11	9
-menupage	22	13
+menupage	31	16
 mgrtokenquery	1	1
 motionstate	4	3
 netmgr	53	31
@@ -978,15 +978,6 @@ engine_attributed	?CKitchenSlime_0b2aa0@CKitchenSlime@@QAEXXZ	0.8696	0.8696	1	a1
 engine_attributed	?CKitchenSlime_0b2ff0@CKitchenSlime@@QAEXXZ	0.3175	0.3175	1	7b3ae8f5eb33	0xb2ff0
 engine_attributed	?CMenuItem_1845d0@CMenuItem@@QAEXXZ	3.3333	3.3333	1	f47117e72b54	0x1845d0
 engine_attributed	?CMenuItem_1845f0@CMenuItem@@QAEXXZ	3.3333	3.3333	1	e85986542b99	0x1845f0
-engine_attributed	?CMenuPage_1836f0@CMenuPage@@QAEXXZ	0.3571	0.3571	1	c48d14d5a018	0x1836f0
-engine_attributed	?CMenuPage_183850@CMenuPage@@QAEXXZ	0.3922	0.3922	1	c18c9699dada	0x183850
-engine_attributed	?CMenuPage_183df0@CMenuPage@@QAEXXZ	1.6667	1.6667	1	8679af36dfc2	0x183df0
-engine_attributed	?CMenuPage_183e30@CMenuPage@@QAEXXZ	7.6923	7.6923	1	c051528ca1e4	0x183e30
-engine_attributed	?CMenuPage_183e50@CMenuPage@@QAEXXZ	0.3509	0.3509	1	af0f2343e225	0x183e50
-engine_attributed	?CMenuPage_183f70@CMenuPage@@QAEXXZ	1.5385	1.5385	1	bcfe2c5dfebc	0x183f70
-engine_attributed	?CMenuPage_183ff0@CMenuPage@@QAEXXZ	1.5385	1.5385	1	3fee09665d87	0x183ff0
-engine_attributed	?CMenuPage_184230@CMenuPage@@QAEXXZ	1.3889	1.3889	1	a1fafed0033b	0x184230
-engine_attributed	?CMenuPage_184310@CMenuPage@@QAEXXZ	1.3889	1.3889	1	02f97cdce368	0x184310
 engine_attributed	?CMultiStartDlg_0c1e60@CMultiStartDlg@@QAEXXZ	1.1765	1.1765	1	48850a629a3d	0xc1e60
 engine_attributed	?CMultiStartDlg_0c1fd0@CMultiStartDlg@@QAEXXZ	1.7857	1.7857	1	d5a3ff62529f	0xc1fd0
 engine_attributed	?CMulti_0b6220@CMulti@@QAEXXZ	4.3478	4.3478	1	5224b768b1e7	0xb6220
@@ -2868,26 +2859,35 @@ menuitem	?Reset@CMenuItem@@QAEXXZ	100.0000	100.0000	1	fc603e28c52a	0x184730
 menuitem	?Trigger@CMenuItem@@QAEHXZ	100.0000	100.0000	1	d0ee200e0292	0x1856d0
 menupage	??1CMenuPage@@QAE@XZ	100.0000	100.0000	1	677d46434f16	0x183250
 menupage	?Activate@CMenuPage@@QAEHXZ	100.0000	100.0000	1	9f249bbb20a4	0x183dd0
+menupage	?AddItem2@CMenuPage@@QAEPAVCMenuItem2@@HHHHH@Z	31.1339	31.1339	1	168c7648ab07	0x1836f0
 menupage	?AddItem@CMenuPage@@QAEPAVCMenuItem@@HHHHHH@Z	34.0099	34.0099	1	4400292d0cb6	0x183460
+menupage	?AddSubItem2@CMenuPage@@QAEPAVCMenuItem2@@HHHHHHHH@Z	59.9412	59.9412	1	476858ddd267	0x183850
 menupage	?AddSubItem@CMenuPage@@QAEPAVCMenuItem@@HHHHHH@Z	35.1429	35.1429	1	b1997f81d2b4	0x1835a0
 menupage	?Append@CMenuPage@@QAEPAXPAVCMenuItem@@@Z	100.0000	100.0000	1	d272df6d6ed8	0x183430
+menupage	?CanWrap@CMenuPage@@QAEHXZ	95.3846	95.3846	1	a72c9138e7a2	0x183e30
 menupage	?Clear@CMenuPage@@QAEXXZ	100.0000	100.0000	1	87d7c5e3ba92	0x1833c0
 menupage	?Click@CMenuPage@@QAEHHH@Z	100.0000	100.0000	1	a36e13c7ea52	0x1840a0
 menupage	?Configure@CMenuPage@@QAEHPAVCMenuItem@@HHHH@Z	100.0000	100.0000	1	cc6ff79f9ac9	0x1832f0
 menupage	?FindByName@CMenuPage@@QAEPAVCMenuItem@@PBD@Z	76.8077	76.8077	1	ac08b95a317a	0x184150
 menupage	?FocusAndSelect@CMenuPage@@QAEHHH@Z	100.0000	100.0000	1	23215e71235c	0x184070
-menupage	?FocusNext@CMenuPage@@QAEHXZ	75.4787	75.4787	1	17352935f0e2	0x183c50
-menupage	?FocusPrev@CMenuPage@@QAEHXZ	75.4787	75.4787	1	b425b1c5e41d	0x183d10
+menupage	?FocusBackwardN@CMenuPage@@QAEHXZ	100.0000	100.0000	1	89fc2d8e6a6c	0x183ff0
+menupage	?FocusForwardN@CMenuPage@@QAEHXZ	100.0000	100.0000	1	7a97bbfd8e76	0x183f70
+menupage	?FocusNext@CMenuPage@@QAEHXZ	77.1277	77.1277	2	362c7269297d	0x183c50
+menupage	?FocusPrev@CMenuPage@@QAEHXZ	77.1277	77.1277	2	ca527a9ab88b	0x183d10
 menupage	?GetKey@CMenuPage@@QAE?AVCString@@XZ	100.0000	100.0000	1	3f39754fd89e	0x1832d0
 menupage	?HitTest@CMenuPage@@QAEPAVCMenuItem@@HH@Z	100.0000	100.0000	1	44e65b182a2e	0x184100
 menupage	?InitDefaults@CMenuPage@@QAEXXZ	100.0000	100.0000	1	54f1bb15a397	0x1833a0
 menupage	?Layout@CMenuPage@@QAEHH@Z	99.9806	99.9806	1	714f659fde20	0x183b60
+menupage	?LayoutOne@CMenuPage@@QAEHH@Z	99.9825	99.9825	1	e262bd77d54e	0x183e50
 menupage	?NotifyAll@CMenuPage@@QAEHPAX@Z	100.0000	100.0000	1	d2de7abc5151	0x183b30
 menupage	?ReleaseAll@CMenuPage@@QAEHXZ	100.0000	100.0000	1	97626de9506c	0x183990
 menupage	?RestoreFocus@CMenuPage@@QAEHXZ	60.6759	60.6759	1	843b969751a7	0x1839d0
+menupage	?SelectBack2@CMenuPage@@QAEHXZ	62.0000	62.0000	1	702732fa2ed9	0x184310
 menupage	?SelectBackward@CMenuPage@@QAEHXZ	60.8194	60.8194	1	9df148bf4a84	0x1844d0
 menupage	?SelectForward@CMenuPage@@QAEHXZ	60.8194	60.8194	1	891990b30b8a	0x1843f0
+menupage	?SelectFwd2@CMenuPage@@QAEHXZ	62.0000	62.0000	1	be98c737a2a4	0x184230
 menupage	?SetFocus@CMenuPage@@QAEHPAVCMenuItem@@H@Z	100.0000	100.0000	1	20f58cb55e3b	0x183ad0
+menupage	?Switch@CMenuPage@@QAEHH@Z	100.0000	100.0000	1	493ec45e749b	0x183df0
 mgrtokenquery	?QueryToken@@YAHH@Z	100.0000	100.0000	1	33f0fb7f4951	0x99d10
 motionstate	??0CMotionState@@QAE@XZ	100.0000	100.0000	1	24ca6b679299	0x136d0
 motionstate	?SetParams@CMotionState@@QAEHNNNNNNNNNNN@Z	100.0000	100.0000	2	57c861974e56	0x58bc0
