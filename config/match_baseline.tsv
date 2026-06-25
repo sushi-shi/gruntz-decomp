@@ -29,7 +29,7 @@ butestoreclear	1	1
 cambientsound	4	3
 canielement	3	2
 canirecord	8	5
-cattract	11	7
+cattract	13	8
 cbehindcandy	2	2
 cbehindcandyani	4	3
 cbrickz	1	0
@@ -115,7 +115,7 @@ directinputmgr2	33	29
 directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	28	0
-engine_boundary	580	0
+engine_boundary	573	0
 engine_discovered	72	0
 engine_label_stubs	462	106
 engstr	3	1
@@ -230,7 +230,7 @@ tiletriggerlogic	2	1
 tiletriggertransition	6	5
 tilewireswitchlogic	1	0
 trees	19	19
-triggermgr	43	7
+triggermgr	48	8
 triggermgr_eh	4	0
 uncompr	1	1
 unknownclassarrays	38	10
@@ -391,6 +391,7 @@ canirecord	?ResolveIndices_168d00@CAniRecord@@QAEXPAUCAniMapOwner@@PBD@Z	97.0686
 cattract	??1CAttract@@UAE@XZ	100.0000	100.0000	1	8f5b73f92144	0x8cd90
 cattract	?Activate@CAttract@@QAEHXZ	99.0000	99.0000	1	c7655128de41	0xa0a30
 cattract	?EnterAttractMode@CAttract@@QAEHHHH@Z	100.0000	100.0000	1	99f233598d02	0x13fb0
+cattract	?FadeInTitle@CAttract@@QAEHPADHHHHH@Z	73.5119	73.5119	1	7e9ba337baab	0xfa1f0
 cattract	?FrameSlot28@CAttract@@UAEHH@Z	99.7143	99.7143	1	97bf0c4b3f17	0x14340
 cattract	?LoadTitleConfig@CAttract@@QAEHH@Z	99.0991	99.0991	1	ebd81004bad7	0xa03f0
 cattract	?RefreshTitle@CAttract@@QAEHH@Z	100.0000	100.0000	1	ec73ee41ee24	0x39160
@@ -398,6 +399,7 @@ cattract	?ReleaseResources@CAttract@@UAEXXZ	100.0000	100.0000	1	7565e627ebc6	0x1
 cattract	?RollTitleByPage@CAttract@@QAEHXZ	100.0000	100.0000	1	51e8b7080223	0x14520
 cattract	?RollTitleByV3@CAttract@@QAEHXZ	100.0000	100.0000	1	5bd84e46adaa	0x14630
 cattract	?RunTitle@CAttract@@QAEHHHHHH@Z	99.5238	99.5238	1	9a5828a77e96	0xfa300
+cattract	?RunTitleSeq@CAttract@@QAEHPADHHHH@Z	100.0000	100.0000	1	972aca3e63d9	0xfa350
 cattract	?Vslot07@CAttract@@UAEHXZ	100.0000	100.0000	1	91fafb3898fd	0x147b0
 cbehindcandy	??1CBehindCandy@@UAE@XZ	100.0000	100.0000	1	5c9c55aab0c6	0xfc30
 cbehindcandy	?GetTypeTag@CBehindCandy@@QAEHXZ	100.0000	100.0000	1	32ed38245a17	0xfb70
@@ -1119,13 +1121,8 @@ engine_boundary	?Boundary_05bc50@@YAXXZ	20.0000	20.0000	1	7fdc0c03bf09	0x5bc50
 engine_boundary	?Boundary_05be30@@YAXXZ	0.1362	0.1362	1	9dfe685bcbc3	0x5be30
 engine_boundary	?Boundary_077dc0@@YAXXZ	4.4444	4.4444	1	b7815cb49298	0x77dc0
 engine_boundary	?Boundary_0788d0@@YAXXZ	3.4483	3.4483	1	8af949c907ad	0x788d0
-engine_boundary	?Boundary_07c2e0@@YAXXZ	0.6667	0.6667	1	421d548afd6e	0x7c2e0
-engine_boundary	?Boundary_07cc60@@YAXXZ	0.6897	0.6897	1	f1c77c738bcc	0x7cc60
 engine_boundary	?Boundary_07cd40@@YAXXZ	0.2985	0.2985	1	2908d2591014	0x7cd40
 engine_boundary	?Boundary_07cf40@@YAXXZ	0.3540	0.3540	1	b77c4d719642	0x7cf40
-engine_boundary	?Boundary_07d450@@YAXXZ	1.2048	1.2048	1	ffc0463a7fef	0x7d450
-engine_boundary	?Boundary_07d5c0@@YAXXZ	1.3514	1.3514	1	63d6820a7fbd	0x7d5c0
-engine_boundary	?Boundary_07d6e0@@YAXXZ	1.2048	1.2048	1	de87bd3a53c6	0x7d6e0
 engine_boundary	?Boundary_080cf0@@YAXXZ	25.0000	25.0000	1	416182abe5b8	0x80cf0
 engine_boundary	?Boundary_082aa0@@YAXXZ	25.0000	25.0000	1	52f602cf8c29	0x82aa0
 engine_boundary	?Boundary_082b20@@YAXXZ	20.0000	20.0000	1	b533548f1814	0x82b20
@@ -1251,8 +1248,6 @@ engine_boundary	?Boundary_0ea990@@YAXXZ	0.0417	0.0417	1	2f61ae494675	0xea990
 engine_boundary	?Boundary_0eb970@@YAXXZ	0.7407	0.7407	1	8d4264fa505f	0xeb970
 engine_boundary	?Boundary_0f2b20@@YAXXZ	0.1942	0.1942	1	786cd714db87	0xf2b20
 engine_boundary	?Boundary_0fa150@@YAXXZ	2.3810	2.3810	1	93b54cb9b316	0xfa150
-engine_boundary	?Boundary_0fa1f0@@YAXXZ	0.4762	0.4762	1	f07aab91a8bd	0xfa1f0
-engine_boundary	?Boundary_0fa350@@YAXXZ	0.5797	0.5797	1	777f94f81c7b	0xfa350
 engine_boundary	?Boundary_0fa410@@YAXXZ	0.4396	0.4396	1	5d4b3673a634	0xfa410
 engine_boundary	?Boundary_0fa550@@YAXXZ	0.3704	0.3704	1	8a3bcfc84d4a	0xfa550
 engine_boundary	?Boundary_0fa790@@YAXXZ	0.3774	0.3774	1	2c4624014978	0xfa790
@@ -3262,12 +3257,14 @@ triggermgr	?ClearRecords@CTriggerMgr@@QAEXXZ	89.2500	89.2500	2	ac4a8922ae83	0x78
 triggermgr	?ClearRow@CTriggerMgr@@QAEHH@Z	100.0000	100.0000	3	eb16fe8ac3c9	0x7d140
 triggermgr	?ClearRowAndRefresh@CTriggerMgr@@QAEHH@Z	72.0727	72.0727	1	08116ddf5f53	0x7a510
 triggermgr	?ClearSelections@CTriggerMgr@@QAEXXZ	99.8387	99.8387	2	a0b3e8e75bb5	0x7d0c0
+triggermgr	?CycleMoveIcons@CTriggerMgr@@QAEHHH@Z	92.9667	92.9667	1	69cf37f44587	0x7c2e0
 triggermgr	?DestroyAllAnims@CTriggerMgr@@QAEXXZ	96.5000	96.5000	1	2ced2820e161	0x7d330
+triggermgr	?EnqueueGroupCells@CTriggerMgr@@QAEHXZ	85.0121	85.0121	1	8a2b27dcdaa8	0x7d6e0
 triggermgr	?FindNearestInRow@CTriggerMgr@@QAEPAXPAX@Z	84.1403	84.1403	1	c9c7e4a27a46	0x77f80
 triggermgr	?GridAction6@@YAHHH@Z	95.7143	95.7143	1	b86ea5da9bfd	0x6da60
 triggermgr	?GridAction7@@YAHHH@Z	95.7143	95.7143	1	2f3343dbfede	0x6daa0
 triggermgr	?HitTestApply@CTriggerMgr@@QAEHHHH@Z	53.0980	53.0980	2	097db8949544	0x6ea00
-triggermgr	?HitTestCell@CTriggerMgr@@QAEHHHPAH0H@Z	38.5842	38.5842	1	4c34f8594aba	0x75af0
+triggermgr	?HitTestCell@CTriggerMgr@@QAEHHHPAH0H@Z	38.6040	38.6040	1	4c34f8594aba	0x75af0
 triggermgr	?NearestCellDist@CTriggerMgr@@QAEHHHH@Z	77.1667	77.1667	1	c3b8b0e26e2d	0x7d1d0
 triggermgr	?NotifyCell@CTriggerMgr@@QAEXHHH@Z	50.6765	50.6765	1	fee0160a92e7	0x79fb0
 triggermgr	?OverlayRelease@CTriggerMgr@@QAEHXZ	100.0000	100.0000	3	814c6331e041	0x79b00
@@ -3276,11 +3273,12 @@ triggermgr	?PlaceObject@CTriggerMgr@@QAEHHHHHHHHHHHHHH@Z	28.5188	28.5188	2	0082d
 triggermgr	?PlaceObjectFull@CTriggerMgr@@QAEHHH@Z	6.9355	6.9355	1	0d30e645f673	0x78a50
 triggermgr	?PlacePuddle@CTriggerMgr@@QAEHPAXH@Z	89.7436	89.7436	1	9b071f46a4ff	0x7a240
 triggermgr	?RebuildOverlay@CTriggerMgr@@QAEHPAXH@Z	74.2910	74.2910	1	fb7c41514bc3	0x7a5e0
+triggermgr	?RebuildSelectionList@CTriggerMgr@@QAEHH@Z	85.7759	85.7759	1	603d17042a7e	0x7cc60
 triggermgr	?RecordListHas@CTriggerMgr@@QAEHHH@Z	90.4348	90.4348	3	bd724b88cab7	0x784d0
 triggermgr	?RemoveCellRecord@CTriggerMgr@@QAEHHHH@Z	75.1040	75.1040	1	15a4bb8c903e	0x78260
 triggermgr	?ReportRecordsA@CTriggerMgr@@QAEXHHHHH@Z	38.8941	38.8941	2	53bf8ed8efc8	0x78520
 triggermgr	?ReportRecordsB@CTriggerMgr@@QAEXHHHHHH@Z	55.8062	55.8062	1	f1a3880145c9	0x78680
-triggermgr	?ResetAll@CTriggerMgr@@QAEXXZ	99.3902	99.3902	2	89c8046c20d8	0x78430
+triggermgr	?ResetAll@CTriggerMgr@@QAEXXZ	100.0000	100.0000	2	89c8046c20d8	0x78430
 triggermgr	?ResetCell@CTriggerMgr@@QAEHHHHH@Z	62.0690	62.0690	1	f10466e7eb7c	0x6bfd0
 triggermgr	?ResetGroup@CTriggerMgr@@QAEHHHHHHHH@Z	45.1107	45.1107	2	ea9ea3c75d34	0x79520
 triggermgr	?ResetSpawnState@CTriggerMgr@@QAEXXZ	97.7885	97.7885	1	243dcaad914e	0x79d90
@@ -3292,6 +3290,8 @@ triggermgr	?SpawnGrunt@CTriggerMgr@@QAEHHHHH@Z	70.2188	70.2188	1	72ca5ae3f07a	0x
 triggermgr	?SpawnPuddle@CTriggerMgr@@QAEHHHHHHH@Z	100.0000	100.0000	1	ea9e49bf16e2	0x7a180
 triggermgr	?SpawnTileFx@@YAHHHH@Z	78.5270	78.5270	1	99063f46879a	0x79ea0
 triggermgr	?StopPendingFx@CTriggerMgr@@QAEXXZ	100.0000	100.0000	3	1ccff5fe0d81	0x7be10
+triggermgr	?ToggleRegionA@CTriggerMgr@@QAEHXZ	54.1566	54.1566	1	f99cbf420d35	0x7d450
+triggermgr	?ToggleRegionB@CTriggerMgr@@QAEHXZ	81.8108	81.8108	1	a8d7bb3a582d	0x7d5c0
 triggermgr	?TriggerCell@CTriggerMgr@@QAEHHH@Z	74.5392	74.5392	1	a33cfde4df87	0x7b1b0
 triggermgr_eh	??1CTriggerMgr@@QAE@XZ	46.0625	46.0625	1	acd16ffe98a8	0x85c50
 triggermgr_eh	?ApplySwitch@CTriggerMgr@@QAEHHH@Z	20.7017	20.7017	1	cd338b97d735	0x6d300

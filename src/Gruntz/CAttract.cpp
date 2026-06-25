@@ -52,8 +52,28 @@ extern ShowCursorFn g_ShowCursor;
 #define s_SOUNDZ "SOUNDZ"
 #define s_ATTRACT "ATTRACT"
 #define s_UNDERSCORE "_"
+#define s_SCREENZ_PCT_S "\\SCREENZ\\%s"
 
 extern "C" i32 sprintf(char* buf, const char* fmt, ...);
+
+// FadeInTitle's resolved-state object (m_2c re-typed): its ResolveScreen
+// (FUN_00520120) maps the "\SCREENZ\%s" path + a screen-type tag to a fade page.
+class CAttractScreenObj {
+public:
+    void* ResolveScreen(char* path, void* tag); // 0x120120
+};
+
+// The screen-type tag (DAT_00504358) ResolveScreen keys off.
+DATA(0x00104358)
+extern i32 g_screenTag;
+
+// The menu page worker (m_c->m_04 re-typed): its fader (0x158b40, ret 8) runs the
+// title fade, returning non-zero when the fade is still in progress. Named to retail
+// (?Method_158b40@CDDrawWorkerMgr) so the call pairs exactly.
+class CDDrawWorkerMgr {
+public:
+    i32 Method_158b40(i32 page, i32 mode); // 0x158b40
+};
 
 // ===========================================================================
 // Virtual-slot overrides.
@@ -199,6 +219,69 @@ i32 CAttract::RunTitle(i32 a, i32 b, i32 c, i32 d, i32 e) {
     }
     ((CMenuRoot*)m_c)->m_04->m_10->m_2c->Flip(0);
     return 1;
+}
+
+// CAttract::FadeInTitle(name, a, b, c, d, e) (0x0fa1f0, 6 args, ret 0x18): resolve the
+// "\SCREENZ\<name>" fade page off m_2c (with the screen-type tag), then run the page
+// worker's fade (mode 2 when `e`, else 1); on `e` retry once with mode 1. ret 1 on a
+// started fade, else 0.
+// @early-stop
+// frame-reservation + reloc wall (~74%): logic + offsets byte-exact; retail reserves an
+// 0x40 frame (0xc outgoing-arg scratch below the 0x34 buf) where our cl reserves only the
+// 0x34 buf, and the ResolveScreen callee (FUN_00520120) is an unnamed body that can't pair
+// (reloc-masked DIR32). Not source-steerable. topic:wall.
+RVA(0x000fa1f0, 0xc6)
+i32 CAttract::FadeInTitle(char* name, i32 a, i32 b, i32 c, i32 d, i32 e) {
+    (void)a;
+    (void)b;
+    (void)c;
+    (void)d;
+    if (!m_c) {
+        return 0;
+    }
+    if (!m_8) {
+        return 0;
+    }
+    if (!m_2c) {
+        return 0;
+    }
+    char buf[0x34];
+    sprintf(buf, s_SCREENZ_PCT_S, name);
+    void* page = ((CAttractScreenObj*)m_2c)->ResolveScreen(buf, &g_screenTag);
+    if (page == 0) {
+        return 0;
+    }
+    CDDrawWorkerMgr* w = (CDDrawWorkerMgr*)((CMenuRoot*)m_c)->m_04;
+    if (w->Method_158b40((i32)page, e != 0 ? 2 : 1) != 0) {
+        return 1;
+    }
+    if (e == 0) {
+        return 1;
+    }
+    if (w->Method_158b40((i32)page, 1) != 0) {
+        return 1;
+    }
+    return 0;
+}
+
+// CAttract::RunTitleSeq(name, a, b, c, d) (0x0fa350, 5 args, ret 0x14): the title-roll
+// entry. Bail (0) if the menu root/state-machine/active-state is null; FadeInTitle the
+// screen (mode 0); on success return RunTitle() != 0.
+RVA(0x000fa350, 0x84)
+i32 CAttract::RunTitleSeq(char* name, i32 a, i32 b, i32 c, i32 d) {
+    if (!m_c) {
+        return 0;
+    }
+    if (!m_8) {
+        return 0;
+    }
+    if (!m_2c) {
+        return 0;
+    }
+    if (FadeInTitle(name, a, b, c, d, 0) == 0) {
+        return 0;
+    }
+    return RunTitle((i32)name, a, b, c, d) != 0;
 }
 
 // CAttract::EnterAttractMode - enter (or re-enter) the attract scene.

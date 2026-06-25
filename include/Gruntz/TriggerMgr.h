@@ -239,6 +239,28 @@ public:
     // build-state notifier, re-pulse the pending-fx (+0x2a0), and RefreshB(6). (__thiscall.)
     void ResetSpawnState();
 
+    // 0x7c2e0: CycleMoveIcons(skipRow, enable) - for rows 0..3 except `skipRow`, either
+    // (enable) roll a random move-icon onto each live cell and OnRegion4, or (else) restore
+    // each cell's stashed icon (+0x1f8). ret 1. (__stdcall: ret 8.)
+    i32 CycleMoveIcons(i32 skipRow, i32 enable);
+
+    // 0x7cc60: RebuildSelectionList(idx) - recycle selection list `idx` (+0x2d4) back to the
+    // free list, RemoveAll it, then copy the record list (+0x244) into it as fresh nodes;
+    // reset +0x3e8. ret 1. (__thiscall: ret 4.)
+    i32 RebuildSelectionList(i32 idx);
+
+    // 0x7d450 / 0x7d5c0: the two region-toggle handlers. If a pending fx (+0x2a8) is live,
+    // clear it and LoadCursorSprites(0,0); else look up the active record cell and, by its
+    // logic kind (+0x170/+0x19c/+0x198), either ResetGroup, set a pending fx, or just tick
+    // the overlay. ret 1.
+    i32 ToggleRegionA();
+    i32 ToggleRegionB();
+
+    // 0x7d6e0: EnqueueGroupCells - collect the y-bytes of every magic-group record cell with
+    // a clear +0x1e4 flag, then post the group to the command mgr (+0x6c): EnqueueSingle when
+    // exactly one, else EnqueueMulti. ret 1 (0 when +0x400 is clear). (__thiscall.)
+    i32 EnqueueGroupCells();
+
     // 0x85c50: ~CTriggerMgr - the /GX destructor (drains the lists, destructs the member
     // list arrays). Reconstructed to plateau (eh sibling TU).
     ~CTriggerMgr();

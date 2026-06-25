@@ -81,13 +81,8 @@ RVA(0x0005bc50, 0x15) void Boundary_05bc50() {}  // proximity: CDDrawSubMgrLeafS
 RVA(0x0005be30, 0x9e5) void Boundary_05be30() {}  // proximity: CDDrawSubMgrLeafScan@-0x650 | CGrunt@+0xc70
 RVA(0x00077dc0, 0x1d) void Boundary_077dc0() {}  // proximity: CBrickz@-0x630 | CTriggerMgr@+0x4a0
 RVA(0x000788d0, 0x64) void Boundary_0788d0() {}  // proximity: CTriggerMgr@-0x50 | EngineLabelBacklog@+0x90
-RVA(0x0007c2e0, 0xb5) void Boundary_07c2e0() {}  // proximity: CTriggerMgr@-0x1d0 | EngineLabelBacklog@+0x340
-RVA(0x0007cc60, 0xa7) void Boundary_07cc60() {}  // proximity: EngineLabelBacklog@-0x640 | CTriggerMgr@+0x460
 RVA(0x0007cd40, 0x18f) void Boundary_07cd40() {}  // proximity: EngineLabelBacklog@-0x720 | CTriggerMgr@+0x380
 RVA(0x0007cf40, 0x12e) void Boundary_07cf40() {}  // proximity: EngineLabelBacklog@-0x920 | CTriggerMgr@+0x180
-RVA(0x0007d450, 0x112) void Boundary_07d450() {}  // proximity: CTriggerMgr@-0x120 | CGruntPuddle@+0x3c0
-RVA(0x0007d5c0, 0xdc) void Boundary_07d5c0() {}  // proximity: CTriggerMgr@-0x290 | CGruntPuddle@+0x250
-RVA(0x0007d6e0, 0xea) void Boundary_07d6e0() {}  // proximity: CTriggerMgr@-0x3b0 | CGruntPuddle@+0x130
 RVA(0x00080cf0, 0x12) void Boundary_080cf0() {}  // proximity: CGruntzApp@-0x80 | CGameApp@+0xe0
 RVA(0x00082aa0, 0x10) void Boundary_082aa0() {}  // proximity: CGameLevel@-0x4a0 | CGruntzMgr@+0x8c0
 RVA(0x00082b20, 0xa) void Boundary_082b20() {}  // proximity: CGameLevel@-0x520 | CGruntzMgr@+0x840
@@ -213,8 +208,6 @@ RVA(0x000ea990, 0xa72) void Boundary_0ea990() {}  // proximity: CSBI_StatzTabGru
 RVA(0x000eb970, 0x72) void Boundary_0eb970() {}  // proximity: CSBI_WarlordHead@-0xf0 | CUserLogic@+0x2e90
 RVA(0x000f2b20, 0x6e1) void Boundary_0f2b20() {}  // proximity: CGrunt@-0x430 | CAttract@+0x77e0
 RVA(0x000fa150, 0x74) void Boundary_0fa150() {}  // proximity: CGrunt@-0x7a60 | CAttract@+0x1b0
-RVA(0x000fa1f0, 0xc6) void Boundary_0fa1f0() {}  // proximity: CGrunt@-0x7b00 | CAttract@+0x110
-RVA(0x000fa350, 0x84) void Boundary_0fa350() {}  // proximity: CAttract@-0x50 | CStaticHazard@+0x18a0
 RVA(0x000fa410, 0xf5) void Boundary_0fa410() {}  // proximity: CAttract@-0x110 | CStaticHazard@+0x17e0
 RVA(0x000fa550, 0x10c) void Boundary_0fa550() {}  // proximity: CAttract@-0x250 | CStaticHazard@+0x16a0
 RVA(0x000fa790, 0x104) void Boundary_0fa790() {}  // proximity: CAttract@-0x490 | CStaticHazard@+0x1460

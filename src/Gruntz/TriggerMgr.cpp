@@ -75,11 +75,15 @@ struct CTmWorld {
     char p1[0x504 - 0x2e0];
     void* m_504; // +0x504  pending-fx flag
 };
+class CGruntzCmdMgr;
 struct CTmGameReg {
     void* PickPausedThenPlayState();       // 0x929b0 (reloc-masked) - the play/pause state obj
     void ReportError(i32 code, i32 flags); // 0x8dc60 (reloc-masked)
     char p0[0x2c];
     CTmWorld* m_2c; // +0x2c  the active world/play object
+    char p1[0x38];
+    CTriggerMgr* m_68;    // +0x68  the active trigger manager
+    CGruntzCmdMgr* m_6c;  // +0x6c  the command queue
 };
 extern CTmGameReg* g_gameReg;
 
@@ -145,7 +149,26 @@ struct CTmListNode {
 class CGrunt {
 public:
     void ReadConfigFromButeMgr();
+    void SelectMoveIcon(i32 a); // 0x57800 (reloc-masked) - set/restore the move-icon
+    i32 CanShowStamina();       // 0x514a0 (reloc-masked) - region-toggle gate
 };
+
+// CPlay (= the active world, g_gameReg->m_2c): the two reconstructed leaves call its
+// LoadCursorSprites (the +0x2a8 pending-fx loader, 0xd0120) and OnRegion4 (0xd8bc0).
+// Modeled with the real names so the calls pair exactly (reloc-masked DIR32 otherwise).
+class CPlay {
+public:
+    void LoadCursorSprites(i32 a, i32 b); // 0xd0120
+    i32 OnRegion4(i32 z);                 // 0xd8bc0
+};
+
+// CGruntzCmdMgr (= g_gameReg->m_6c): the command queue EnqueueGroupCells posts to.
+class CGruntzCmdMgr {
+public:
+    void EnqueueSingle(i32 a, char b, char c, char d, i16 e, i16 f, char g, char h); // 0x23c30
+    void EnqueueMulti(i32 a, char b, i32 c, char* d, char e, i16 f, i16 g, char h);  // 0x23ca0
+};
+extern "C" i32 rand(void); // CRT rand() 0x11fee0 (reloc-masked)
 
 // 0x6b640: SetLevel(lvl) - stash the level back-ptr, clear companion state.
 // @early-stop
@@ -2012,4 +2035,218 @@ void CTriggerMgr::ResetSpawnState() {
         }
     }
     ((CTmSelfReset*)this)->RefreshB(6);
+}
+
+// 0x7c2e0: CycleMoveIcons(skipRow, enable) - for grid rows 0..3 except `skipRow`, either
+// roll a random move-icon onto each live cell (stashing the prior +0x1f8 when -1) and tick
+// the world's region-4, or restore each cell's stashed icon. ret 1.
+// @early-stop
+// scheduling residual (~93%): logic + offsets + externs byte-exact; retail hoists the -1
+// sentinel into ebp and schedules the rand()/idiv differently. topic:wall.
+RVA(0x0007c2e0, 0xb5)
+i32 CTriggerMgr::CycleMoveIcons(i32 skipRow, i32 enable) {
+    CTmGrunt** grid = (CTmGrunt**)((char*)this + 0x1c);
+    for (i32 r = 0; r < 4; r++) {
+        if (r != skipRow) {
+            CTmGrunt** cell = grid;
+            i32 i = 15;
+            do {
+                CTmGrunt* g = *cell;
+                if (g != 0) {
+                    if (enable != 0) {
+                        i32 t = rand() % 0x11;
+                        if (*(i32*)((char*)g + 0x1f8) == -1) {
+                            *(i32*)((char*)g + 0x1f8) = *(i32*)((char*)g + 0x1f4);
+                        }
+                        ((CGrunt*)g)->SelectMoveIcon(t);
+                        ((CPlay*)g_gameReg->m_2c)->OnRegion4(1);
+                    } else if (*(i32*)((char*)g + 0x1f8) != -1) {
+                        ((CGrunt*)g)->SelectMoveIcon(*(i32*)((char*)g + 0x1f8));
+                        *(i32*)((char*)g + 0x1f8) = -1;
+                    }
+                }
+                cell++;
+                i--;
+            } while (i != 0);
+        }
+        grid += 15;
+    }
+    return 1;
+}
+
+// 0x7cc60: RebuildSelectionList(idx) - recycle selection list `idx` (+0x2d4) to the free
+// list, RemoveAll it (+0x2d0), then allocate a fresh node per record-list entry (+0x244)
+// copying its (x,y) payload; reset +0x3e8. ret 1.
+// @early-stop
+// regalloc wall (~86%): the free-list recycle + node-alloc bodies are byte-exact; retail
+// pins this/idx-base differently across the two list walks. topic:wall.
+RVA(0x0007cc60, 0xa7)
+i32 CTriggerMgr::RebuildSelectionList(i32 idx) {
+    CTmPtrList* sel = (CTmPtrList*)((char*)this + idx * 0x1c + 0x2d0);
+    CTmNode* n = *(CTmNode**)((char*)this + idx * 0x1c + 0x2d4);
+    if (n != 0) {
+        void* head = g_freeList;
+        do {
+            CTmNode* cur = n;
+            n = n->m_next;
+            i32* payload = cur->m_payload;
+            if (payload != 0) {
+                void** slot = (void**)((char*)payload - g_freeListNodeBias);
+                *slot = head;
+                head = slot;
+                g_freeList = head;
+            }
+        } while (n != 0);
+    }
+    sel->RemoveAll();
+    CTmNode* rec = *(CTmNode**)((char*)this + 0x244);
+    while (rec != 0) {
+        CTmNode* cur = rec;
+        rec = rec->m_next;
+        i32* src = cur->m_payload;
+        void** fh = (void**)g_freeList;
+        void* nextFree = *fh;
+        i32* dst = 0;
+        if (nextFree != 0) {
+            dst = (i32*)((char*)fh + 4);
+            g_freeList = nextFree;
+        }
+        dst[0] = src[0];
+        dst[1] = src[1];
+        sel->AddTail(dst);
+    }
+    *(i32*)((char*)this + 0x3e8) = -1;
+    return 1;
+}
+
+// 0x7d450: ToggleRegionA - clear a live pending-fx (LoadCursorSprites(0,0), ret 0); else,
+// for the active record cell of the magic group, gate on CanShowStamina and dispatch by its
+// logic kind (+0x170/+0x19c): kind 0x13 => ResetGroup, else set a pending fx (+0x2a8). ret 1.
+// @early-stop
+// regalloc + dead-spill wall (~54%): logic + offsets + the reloc-masked externs byte-exact,
+// but retail pins this->edi, reserves an 8-byte frame, and emits two DEAD spill stores
+// ([esp+0x20]/[esp+0x28]) of the ResetGroup args; our cl uses esi/no-frame. Not source-
+// steerable; the systematic esi<->edi swap + frame shift misaligns the score. topic:wall.
+RVA(0x0007d450, 0x112)
+i32 CTriggerMgr::ToggleRegionA() {
+    if (*(i32*)((char*)this + 0x2a8) != 0) {
+        *(i32*)((char*)this + 0x2a8) = 0;
+        ((CPlay*)g_gameReg->m_2c)->LoadCursorSprites(0, 0);
+        return 0;
+    }
+    *(i32*)((char*)this + 0x2a8) = 0;
+    CTmGrunt* cell = 0;
+    if (*(i32*)((char*)this + 0x24c) == 1) {
+        i32* rec = (i32*)(*(char**)((char*)this + 0x244) + 0x8);
+        cell = *(CTmGrunt**)((char*)this + (rec[0] * 15 + rec[1]) * 4 + 0x1c);
+    }
+    if (cell == 0) {
+        return 1;
+    }
+    if (*(i32*)((char*)cell + 0x1ec) != g_644c54) {
+        return 1;
+    }
+    if (((CGrunt*)cell)->CanShowStamina() == 0) {
+        OverlayTick();
+        return 1;
+    }
+    i32 v = *(i32*)((char*)cell + 0x170);
+    if (v > 0x16) {
+        v = *(i32*)((char*)cell + 0x19c);
+    }
+    if (v != 0x13) {
+        *(i32*)((char*)this + 0x2a8) = v + 0xc8;
+        ((CPlay*)g_gameReg->m_2c)->LoadCursorSprites(v + 0xc8, 0);
+        OverlayTick();
+        return 1;
+    }
+    g_gameReg->m_68->ResetGroup(
+        *(i32*)((char*)cell + 0x17c), *(i32*)((char*)cell + 0x180), 0, 0, 0, 2, 1
+    );
+    OverlayTick();
+    return 1;
+}
+
+// 0x7d5c0: ToggleRegionB - the sibling of ToggleRegionA: clear a live pending-fx; else, for
+// the active record cell, gate on +0x170<0x17 and dispatch by +0x198: 0x1e => ResetGroup on
+// the cell's display pos, 0 => just tick, else set a pending fx (+0x2a8). ret 1.
+// @early-stop
+// regalloc wall (~82%): logic + offsets + externs byte-exact; retail pins this->esi and the
+// magic const into edi across the dispatch ladder. topic:wall.
+RVA(0x0007d5c0, 0xdc)
+i32 CTriggerMgr::ToggleRegionB() {
+    if (*(i32*)((char*)this + 0x2a8) != 0) {
+        *(i32*)((char*)this + 0x2a8) = 0;
+        ((CPlay*)g_gameReg->m_2c)->LoadCursorSprites(0, 0);
+        return 0;
+    }
+    *(i32*)((char*)this + 0x2a8) = 0;
+    CTmGrunt* cell = 0;
+    if (*(i32*)((char*)this + 0x24c) == 1) {
+        i32* rec = (i32*)(*(char**)((char*)this + 0x244) + 0x8);
+        cell = *(CTmGrunt**)((char*)this + (rec[0] * 15 + rec[1]) * 4 + 0x1c);
+    }
+    if (cell == 0) {
+        return 1;
+    }
+    if (*(i32*)((char*)cell + 0x1ec) != g_644c54) {
+        return 1;
+    }
+    if (*(i32*)((char*)cell + 0x170) >= 0x17) {
+        OverlayTick();
+        return 1;
+    }
+    i32 kind = *(i32*)((char*)cell + 0x198);
+    if (kind == 0x1e) {
+        char* o = *(char**)((char*)cell + 0x10);
+        g_gameReg->m_68->ResetGroup(*(i32*)(o + 0x5c), *(i32*)(o + 0x60), 0, 0, 0, 3, 1);
+        OverlayTick();
+        return 1;
+    }
+    if (kind == 0) {
+        OverlayTick();
+        return 1;
+    }
+    *(i32*)((char*)this + 0x2a8) = kind + 0xc8;
+    ((CPlay*)g_gameReg->m_2c)->LoadCursorSprites(kind + 0xc8, 0);
+    OverlayTick();
+    return 1;
+}
+
+// 0x7d6e0: EnqueueGroupCells - when armed (+0x400), collect the y-byte of every magic-group
+// record cell with a clear +0x1e4 flag, then post the group to the command mgr (+0x6c):
+// EnqueueSingle when exactly one, else EnqueueMulti with the y-byte buffer. ret 1.
+// @early-stop
+// stack-buffer + byte-counter wall (~85%): the record scan + the two CGruntzCmdMgr enqueue
+// calls are byte-exact; retail keeps the match counter in cl with byte stores and reloads
+// the count slot as a dword. topic:wall.
+RVA(0x0007d6e0, 0xea)
+i32 CTriggerMgr::EnqueueGroupCells() {
+    if (*(i32*)((char*)this + 0x400) == 0) {
+        return 0;
+    }
+    u8 buf[0x68];
+    i32 count = 0;
+    char x = 0;
+    CTmNode* n = *(CTmNode**)((char*)this + 0x244);
+    if (n != 0) {
+        i32 magic = g_644c54;
+        do {
+            CTmNode* cur = n;
+            n = n->m_next;
+            i32* p = cur->m_payload;
+            x = *(char*)p;
+            CTmGrunt* cell = *(CTmGrunt**)((char*)this + (p[0] * 15 + p[1]) * 4 + 0x1c);
+            if (*(i32*)((char*)cell + 0x1ec) == magic && *(i32*)((char*)cell + 0x1e4) == 0) {
+                buf[count] = ((u8*)p)[4];
+                count++;
+            }
+        } while (n != 0);
+    }
+    if (count == 1) {
+        g_gameReg->m_6c->EnqueueSingle(1, x, (char)buf[0], 5, 0, 0, 0, 0);
+    } else {
+        g_gameReg->m_6c->EnqueueMulti(1, x, count, (char*)buf, 5, 0, 0, 0);
+    }
+    return 1;
 }
