@@ -79,3 +79,33 @@ class in RTTI but virtuals not all reconstructed) — the `CSBI_*` status-bar it
 family, the `src/Stub/` trigger-logic classes, CUserBase, CMulti/CPlay/CState.
 That's a transitional artifact; the end state is a real C++ class with declared
 virtuals. See [correctness-not-artifacts].
+
+## Removing the struct vtables — follow-up worklist
+
+PR #56 landed the infra + the one *flat* conversion (`CTileTriggerSwitchLogic`).
+Recipe (proven): declare the class's real virtuals (declared-only is fine — the
+bodies live in engine TUs), delete the `extern …g_xVtbl` + `DATA()` + the
+`*(void**)this = &g_xVtbl` stamp; the `??_7` name **auto-derives** for RTTI
+classes (config/vtable_names.csv), or add one `// @data-symbol:` line for
+non-RTTI. Then `gruntz build` and confirm byte-exact + no regressions.
+
+Everything left is a base-hierarchy *family* — convert per family (model the
+shared base once, then the derived classes), not one-off:
+
+- **Sprite family** (`GameObjectCtors.cpp`; RTTI, measurable): CUFO, CRainCloud,
+  CGruntStaminaSprite, CGruntToyTimeSprite, CGruntWingzTimeSprite — shared
+  `CGruntSpriteBase`, base-ctor calls. Most self-contained → do first.
+- **Status-bar chain** (`SBI_*Eh.cpp`; RTTI, measurable): CStatusBarItem ←
+  CSBI_RectOnly ← CSBI_Image ← CSBI_MenuItem (+ ImageSet/WarlordHead/WellGoo/
+  SideTab/StatzTabGruntBar/GruntMachine). Multi-vtable **EH-dtor** restamps
+  (`docs/patterns/eh-dtor-*`) — model the chain + virtual dtors.
+- **Trigger-logic family** (`src/Stub/CTile*Logic.cpp`, CGiantRockLogic,
+  CCoveredPowerupLogic, CCheckpointTriggerSwitchLogic; RTTI): size-1 vtables over
+  the (graduated) `CTileTriggerLogic` base. **Blocked on measurability** — they
+  aggregate into `engine_label_stubs` (0/519 oracle); graduate each to its own
+  unit first, then convert.
+- **EH / special singletons**: Dsndmgr (`SoundDevice`/`SoundStream`/
+  `DirectSoundMgr`/`StreamVoice`/`StreamFeeder` — `/GX` EH frames, non-RTTI),
+  CBoomerang (sunk-store wall), CImage/CFileImage, CRemusNode (PMF-vtable +
+  CObject base), CDDrawSurface{Mgr,Pair}/CDDrawSubMgrAni (CObject restamps),
+  CMulti/CPlay/CState (43/43/26-slot vtables), ZVec/EngStr.
