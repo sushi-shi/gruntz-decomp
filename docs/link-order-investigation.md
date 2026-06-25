@@ -9,6 +9,11 @@ we need to make whole-TU layout match?
 linker*. This doc records the method, the evidence, and the actionable
 consequences for matching.
 
+> **See also** [tu-spatial-structure.md](tu-spatial-structure.md) — what sits
+> *inside* one TU's block (tight method runs vs. the exiled-destructor COMDAT
+> pools) and how to attribute *unnamed* functions to a class by RVA proximity
+> (`gruntz.analysis.tu_layout` / `gen_attributed_stubs`).
+
 ## The missing tool: we can now link
 
 The investigation needs the genuine VC5 linker, and we now run it. The toolchain

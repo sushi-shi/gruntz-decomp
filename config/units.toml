@@ -528,6 +528,20 @@ source = "src/Stub/Discovered.cpp"
 flags = "base"
 
 [[unit]]
+# proximity-attributed class memberships (gruntz.analysis.gen_attributed_stubs); own
+# TU, same minimal-decl pattern as engine_discovered (conflict-free across units).
+unit = "engine_attributed"
+source = "src/Stub/Attributed.cpp"
+flags = "base"
+
+[[unit]]
+# class-boundary FUN_ bodies (gruntz.analysis.gen_boundary_stubs): free-function stubs
+# whose comment records the two adjacent classes (single-class proximity abstains here).
+unit = "engine_boundary"
+source = "src/Stub/Boundary.cpp"
+flags = "base"
+
+[[unit]]
 # MSVC5 LIBCMT iostreams `streambuf` base (non-EH leaves).
 unit = "crt_streambuf"
 source = "src/Crt/StreamBuf.cpp"

@@ -218,24 +218,28 @@ namespace EngineLabelBacklog {
 
 // @confidence: high
 // @source: string-xref
+// @proximity: CPlaneRender@-0x3b0 | Utils@+0xd60 (boundary - pick one)
 // @stub
 RVA(0x0000a3b0, 0x6e2)
 void EngineLabelBacklog::CreateGameObjectByName() {}
 
 // @confidence: low
 // @source: string-xref
+// @proximity: CBattlezDlgCustom@-0x800 | CBootyState@+0x460 (boundary - pick one)
 // @stub
 RVA(0x00018830, 0x380)
 void __stdcall EngineLabelBacklog::LoadBootyCheatState(i32, i32, i32) {}
 
 // @confidence: med
 // @source: decomp-xref
+// @proximity: CBootyState@-0xa0 | CState@+0x810 (boundary - pick one)
 // @stub
 RVA(0x00018d30, 0xcd)
 void BootyState::vfunc_9(i32) {}
 
 // @confidence: med
 // @source: string-xref
+// @proximity: CBootyState@-0x270 | CState@+0x640 (boundary - pick one)
 // @stub
 RVA(0x00018f00, 0x4fb)
 void EngineLabelBacklog::ShowSecretBonusMessage() {}
@@ -272,6 +276,7 @@ void EngineLabelBacklog::BuildGruntSprintAnimation() {}
 // leaf-first redo once the callee set + the owning class are modeled.
 // @confidence: med
 // @source: decomp-xref
+// @proximity: CState@-0x240 | EngineLabelBacklog@+0x9e0 (boundary - pick one)
 // @stub
 RVA(0x0001b690, 0x7bf)
 void EngineLabelBacklog::UpdateBootyWalkingGruntz() {}
@@ -442,6 +447,7 @@ void __stdcall EngineLabelBacklog::BuildPowerupIconKeys(PowerupKeyRegistry* reg,
 
 // @confidence: med
 // @source: string-xref
+// @proximity: CMultiBootyState@-0x40 | GruntzPlayer@+0x720 (boundary - pick one)
 // @stub
 RVA(0x0001ed30, 0x549)
 void EngineLabelBacklog::DrawBattleStats() {}
@@ -498,6 +504,7 @@ i32 BootyState::OnActivate_vfunc8() {
 
 // @confidence: high
 // @source: tomalla
+// @proximity: LeafCue@-0x70 | CChatBoxOwner@+0xb30 (boundary - pick one)
 // @stub
 RVA(0x0001f9b0, 0x2d2)
 void EngineLabelBacklog::StartUpPrompt() {}
@@ -662,24 +669,28 @@ struct CCreditzOwner {
 
 // @confidence: med
 // @source: decomp-xref
+// @proximity: WwdFile@-0x350 | CGruntCreationPoint@+0x3500 (boundary - pick one)
 // @stub
 RVA(0x0003b7c0, 0x12c)
 void EngineLabelBacklog::LoadCustomWorldInfo() {}
 
 // @confidence: med
 // @source: decomp-xref
+// @proximity: CGruntCreationPoint@-0x930 | CWormhole@+0x680 (boundary - pick one)
 // @stub
 RVA(0x0003f5f0, 0x526)
 void EngineLabelBacklog::HandleFortConquered() {}
 
 // @confidence: med
 // @source: string-xref
+// @proximity: CUserLogic@-0x2f90 | CGrunt@+0x4d0 (boundary - pick one)
 // @stub
 RVA(0x00050ce0, 0x399)
 void __stdcall EngineLabelBacklog::LoadVehicleGruntSprites(i32) {}
 
 // @confidence: med
 // @source: decomp-xref
+// @proximity: CGrunt (HIGH bracket, tu_layout) - CONFLICTS with this Projectile::vfunc_9 guess; verify the real vtable owner before graduating.
 // @stub
 RVA(0x00061cb0, 0x34a)
 void Projectile::vfunc_9() {}
@@ -702,6 +713,7 @@ void Projectile::vfunc_9() {}
 
 // @confidence: med
 // @source: decomp-xref
+// @proximity: CTriggerMgr (HIGH bracket, tu_layout) is a FALSE POSITIVE - this is an icon loader; siblings LoadCameraSprite/LoadExplosionSprites graduated to src/Gruntz/IconLoaders.cpp. Graduate there, not to CTriggerMgr.
 // @stub
 RVA(0x0007a3f0, 0xd7)
 void __stdcall EngineLabelBacklog::LoadToyBoxIcon(i32, i32, i32, i32, i32) {}
@@ -710,6 +722,7 @@ void __stdcall EngineLabelBacklog::LoadToyBoxIcon(i32, i32, i32, i32, i32) {}
 
 // @confidence: med
 // @source: decomp-xref
+// @proximity: EngineLabelBacklog@-0x110 | CTriggerMgr@+0x9d0 (boundary - pick one)
 // @stub
 RVA(0x0007b440, 0x3f0)
 void __stdcall EngineLabelBacklog::BuildRockBreakParticles(i32, i32, i32, i32) {}
@@ -724,12 +737,14 @@ void __stdcall EngineLabelBacklog::LoadGruntResurrectTuning(i32, i32, i32) {}
 
 // @confidence: low
 // @source: decomp-xref
+// @proximity: CGruntzMgr (HIGH bracket, tu_layout) - plausible owner (existing label is low-confidence); verify before graduating.
 // @stub
 RVA(0x00090550, 0x1e6)
 void __stdcall EngineLabelBacklog::LaunchPortalExe(i32) {}
 
 // @confidence: med
 // @source: string-xref
+// @proximity: CGruntzMgr@-0x720 | CGruntzWnd@+0x900 (boundary - pick one)
 // @stub
 RVA(0x00093d40, 0x473)
 void __stdcall EngineLabelBacklog::BuildLevelRezPath(i32, i32, i32, i32, i32) {}
@@ -758,24 +773,28 @@ void EngineLabelBacklog::LoadHelpBookSprite() {}
 
 // @confidence: med
 // @source: decomp-xref
+// @proximity: CSpawnEntry@-0xc0 | CAreaMgr@+0xf20 (boundary - pick one)
 // @stub
 RVA(0x0009a510, 0x275)
 void __stdcall EngineLabelBacklog::LoadObjectImageResources(i32, i32) {}
 
 // @confidence: med
 // @source: decomp-xref
+// @proximity: CSpawnEntry@-0x4c0 | CAreaMgr@+0xb20 (boundary - pick one)
 // @stub
 RVA(0x0009a910, 0x261)
 void __stdcall EngineLabelBacklog::LoadObjectSoundResources(i32, i32) {}
 
 // @confidence: med
 // @source: decomp-xref
+// @proximity: CSpawnEntry@-0x7d0 | CAreaMgr@+0x810 (boundary - pick one)
 // @stub
 RVA(0x0009ac20, 0x261)
 void __stdcall EngineLabelBacklog::LoadObjectAnimResources(i32, i32) {}
 
 // @confidence: med
 // @source: string-xref
+// @proximity: CMapVisitTarget@-0x660 | CChatBox@+0x430 (boundary - pick one)
 // @stub
 RVA(0x0009fe50, 0x343)
 void __stdcall EngineLabelBacklog::LoadMenuStateAssets(i32, i32, i32) {}
@@ -802,6 +821,7 @@ void CloudHazard::vfunc_20(i32, i32) {}
 
 // @confidence: low
 // @source: decomp-xref
+// @proximity: CFileIO@-0x1df0 | CMultiStartDlg@+0x2580 (boundary - pick one)
 // @stub
 RVA(0x000bf1d0, 0x249)
 void EngineLabelBacklog::BuildGruntzCrcInfo() {}
@@ -834,6 +854,7 @@ void EngineLabelBacklog::BuildNamedGruntTable() {
 
 // @confidence: med
 // @source: decomp-xref
+// @proximity: CPlayLevelLoad@-0x1600 | CGamePlayInput@+0x4c0 (boundary - pick one)
 // @stub
 RVA(0x000cb800, 0x191)
 void GameLevelState::OnActivate_vfunc8() {}
@@ -851,6 +872,7 @@ void StatusBarItem::vfunc_16(i32, i32, i32) {}
 
 // @confidence: low
 // @source: decomp-xref
+// @proximity: CGameLevel@-0x960 | CPlay@+0x9b0 (boundary - pick one)
 // @stub
 RVA(0x000cf770, 0x35e)
 void EngineLabelBacklog::DrawDebugStats() {}
@@ -948,6 +970,7 @@ struct CSoundOwner {
 
 // @confidence: med
 // @source: string-xref
+// @proximity: CPlay@-0x3a0 | CProjectile@+0x24f0 (boundary - pick one)
 // @stub
 RVA(0x000dca70, 0x4a4)
 void __stdcall EngineLabelBacklog::BuildAssetNamespacePrefixes(i32, i32, i32, i32) {}
@@ -1001,24 +1024,28 @@ struct CPaletteOwner {
 
 // @confidence: med
 // @source: string-xref
+// @proximity: CSpriteRef@-0xc60 | CSaveGame@+0xde0 (boundary - pick one)
 // @stub
 RVA(0x000e3f40, 0x3d6)
 void EngineLabelBacklog::DrawSaveGameMenu() {}
 
 // @confidence: med
 // @source: string-xref
+// @proximity: CSpriteRef@-0x1200 | CSaveGame@+0x840 (boundary - pick one)
 // @stub
 RVA(0x000e44e0, 0x2b2)
 void EngineLabelBacklog::BuildLevelTitleString() {}
 
 // @confidence: med
 // @source: decomp-xref
+// @proximity: CGrunt@-0x6280 | CAttract@+0x1990 (boundary - pick one)
 // @stub
 RVA(0x000f8970, 0x3b4)
 void SFManager::SelectBestDevice() {}
 
 // @confidence: high
 // @source: string-xref
+// @proximity: CGrunt@-0x6840 | CAttract@+0x13d0 (boundary - pick one)
 // @stub
 RVA(0x000f8f30, 0x160)
 void EngineLabelBacklog::BuildSoundFontPath() {}
@@ -1041,6 +1068,7 @@ i32 EngineLabelBacklog::Stub_0f90f0(char* szPath) {
 
 // @confidence: med
 // @source: string-xref
+// @proximity: CTileTriggerSwitchLogic@-0x40 | CPlayLevelLoad@+0x3b0 (boundary - pick one)
 // @stub
 RVA(0x00110860, 0x25f)
 void __stdcall EngineLabelBacklog::LoadBridgeMoveSprites(i32) {}
@@ -1062,18 +1090,21 @@ void __stdcall EngineLabelBacklog::
 
 // @confidence: high
 // @source: decomp-xref
+// @proximity: CToobSpikez@-0x790 | CTileTriggerSwitchLogic@+0xf10 (boundary - pick one)
 // @stub
 RVA(0x00114ff0, 0x1b3)
 void EngineLabelBacklog::SaveScreenshot() {}
 
 // @confidence: low
 // @source: decomp-xref
+// @proximity: CTileTriggerContainer@-0x450 | CGruntVoice@+0x1730 (boundary - pick one)
 // @stub
 RVA(0x001183b0, 0x211)
 void EngineLabelBacklog::FormatGameInfoString() {}
 
 // @confidence: med
 // @source: decomp-xref
+// @proximity: CGruntSpawnConfig@-0x70 | CSpawnEntry@+0x350 (boundary - pick one)
 // @stub
 RVA(0x0011c210, 0x29d)
 void __stdcall EngineLabelBacklog::BuildVoiceSoundList(i32) {}
@@ -1110,12 +1141,14 @@ void EngineLabelBacklog::Stub_12d880() {}
 
 // @confidence: low
 // @source: import:ReadFile
+// @proximity: CGruntSpawnConfig@-0x14da0 | DirectInputMgr2@+0x1710 (boundary - pick one)
 // @stub
 RVA(0x001315d0, 0x225)
 void EngineLabelBacklog::Stub_1315d0() {}
 
 // @confidence: low
 // @source: second '.PID' xref; image-format dispatch consumer (entry not pinned)
+// @proximity: CFileImage@-0xb0 | CImageOwned@+0x3a0 (boundary - pick one)
 // @stub
 RVA(0x00148940, 0x102)
 void __stdcall EngineLabelBacklog::Stub_148940(i32, i32, i32, i32) {}
@@ -1255,6 +1288,7 @@ i32 EngineLabelBacklog::Stub_01fd70(char* szPath) {
 
 // @confidence: med
 // @source: string-xref
+// @proximity: CCheatMgr@-0x1e0 | CCheckpointDlg@+0x640 (boundary - pick one)
 // @stub
 RVA(0x00022e60, 0x1be)
 void EngineLabelBacklog::LoadCheatConfig() {}
