@@ -114,24 +114,11 @@ RVA(0x000b86c0, 0x206) void CNetMgr::CNetMgr_0b86c0() {}  // high; large /GX EH 
 RVA(0x000b8960, 0x59) void CNetMgr::CNetMgr_0b8960() {}  // WRONG-CLASS (CDialog dtor); re-attribute
 RVA(0x000b8fc0, 0x151) void CNetMgr::CNetMgr_0b8fc0() {}  // high; /GX cond-temp EH wall, final-sweep
 // b93a0/b9410/b9500/b9570/b95f0/ba170/ba1a0/ba3b0 reconstructed in src/Net/NetMgr.cpp
-RVA(0x000bb510, 0x9d) void CNetMgr::CNetMgr_0bb510() {}  // high
-RVA(0x000bb5e0, 0xd9) void CNetMgr::CNetMgr_0bb5e0() {}  // high
 RVA(0x000bbc90, 0x1b8) void CNetMgr::CNetMgr_0bbc90() {}  // high
 RVA(0x000bbec0, 0x81) void CNetMgr::CNetMgr_0bbec0() {}  // high
 RVA(0x000bbf80, 0xb7) void CNetMgr::CNetMgr_0bbf80() {}  // high
 RVA(0x000bc750, 0x151) void CNetMgr::CNetMgr_0bc750() {}  // high
-RVA(0x000bcc10, 0x8e) void CNetMgr::CNetMgr_0bcc10() {}  // high
 RVA(0x000bccd0, 0x141) void CNetMgr::CNetMgr_0bccd0() {}  // high
-RVA(0x000bce80, 0x77) void CNetMgr::CNetMgr_0bce80() {}  // high
-RVA(0x00178170, 0xba) void CNetMgr::CNetMgr_178170() {}  // high
-RVA(0x001786d0, 0x77) void CNetMgr::CNetMgr_1786d0() {}  // high
-RVA(0x00178790, 0x89) void CNetMgr::CNetMgr_178790() {}  // high
-RVA(0x001789e0, 0x59) void CNetMgr::CNetMgr_1789e0() {}  // high
-RVA(0x00178a40, 0x3e) void CNetMgr::CNetMgr_178a40() {}  // high
-RVA(0x00178a80, 0x73) void CNetMgr::CNetMgr_178a80() {}  // high
-RVA(0x00178b30, 0x140) void CNetMgr::CNetMgr_178b30() {}  // high
-RVA(0x00178cb0, 0x8b) void CNetMgr::CNetMgr_178cb0() {}  // high
-RVA(0x00178d40, 0xdf) void CNetMgr::CNetMgr_178d40() {}  // high
 
 // ---- CPlay ----
 RVA(0x000d8dc0, 0xce) void CPlay::CPlay_0d8dc0() {}  // high

@@ -29,7 +29,7 @@ class CInputDevice { public: void CInputDevice_134f70(); };
 class CMenuItem { public: void CMenuItem_1845d0(); void CMenuItem_1845f0(); };
 class CMulti { public: void CMulti_0b6220(); void CMulti_0b62a0(); void CMulti_0bc3f0(); };
 class CMultiStartDlg { public: void CMultiStartDlg_0c1e60(); void CMultiStartDlg_0c1fd0(); };
-class CNetMgr { public: void CNetMgr_0b86c0(); void CNetMgr_0b8960(); void CNetMgr_0b8fc0(); void CNetMgr_0bb510(); void CNetMgr_0bb5e0(); void CNetMgr_0bbc90(); void CNetMgr_0bbec0(); void CNetMgr_0bbf80(); void CNetMgr_0bc750(); void CNetMgr_0bcc10(); void CNetMgr_0bccd0(); void CNetMgr_0bce80(); void CNetMgr_178170(); void CNetMgr_1786d0(); void CNetMgr_178790(); void CNetMgr_1789e0(); void CNetMgr_178a40(); void CNetMgr_178a80(); void CNetMgr_178b30(); void CNetMgr_178cb0(); void CNetMgr_178d40(); };
+class CNetMgr { public: void CNetMgr_0b86c0(); void CNetMgr_0b8960(); void CNetMgr_0b8fc0(); void CNetMgr_0bbc90(); void CNetMgr_0bbec0(); void CNetMgr_0bbf80(); void CNetMgr_0bc750(); void CNetMgr_0bccd0(); };
 class CPlay { public: void CPlay_0d8dc0(); void CPlay_0d8ed0(); void CPlay_0d9050(); };
 class CRezItm { public: void CRezItm_13c6c0(); };
 class CSBI_RectOnly { public: void CSBI_RectOnly_109520(); };
