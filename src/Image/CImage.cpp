@@ -138,6 +138,48 @@ i32 CImage::LoadDispatch(CImageFrameDesc* desc, u32 mode, void* a, i32 b) {
 }
 
 // ---------------------------------------------------------------------------
+// 0x153180: the slot-13 build path (non-virtual /GX builder). Allocate the owned
+// +0x30 object (a CImageOwned), decode one frame into it (Build) with the parent's
+// active surface format, then cache the decoded geometry (w/h, halved) and the
+// descriptor's m_10/m_14 origin into the image. m_28 = 0x11 on success.
+//
+// The `new CImageOwned()` carries the C++ EH state machine (the [esp+0x14] try-
+// level writes 0 then -1 around the ctor), which puts the /GX frame on this method.
+// __thiscall, ret 8 (2 stack args).
+// @early-stop
+// 98.7% - all 70 instructions present and logic byte-faithful (the 0x3c new, the
+// EH try-level machine, the parent-chain fmt, the geometry copy). The residual is
+// (1) the reloc/EH scoring artifacts (push Unwind handler, call _RezAlloc vs
+// operator new, the fs:0 __except_list writes - all reloc-masked, code bytes match)
+// and (2) a 2-3 byte regalloc/scheduling wall: retail loads `a` into edx before
+// completing the fmt chain (we finish the chain first), and orders the tail
+// geometry copy before the fs:0 restore (we interleave). No source lever flips it
+// under /O2 (tried inline vs local for both the chain and the arg). Logic complete;
+// deferred to the final sweep.
+// ---------------------------------------------------------------------------
+RVA(0x00153180, 0xda)
+i32 CImage::BuildSlot13(CImageFrameDesc* desc, void* a) {
+    CImageOwned* owned = new CImageOwned();
+    m_30 = owned;
+    if (owned == 0) {
+        return 0;
+    }
+    if (!owned->Build((CImageBuildDesc*)desc, (i32)a, m_0c->m_04->m_10[0x18 / 4])) {
+        return 0;
+    }
+    i32 w = m_30->m_04;
+    m_10 = w;
+    i32 h = m_30->m_08;
+    m_14 = h;
+    m_28 = 0x11;
+    m_18 = w >> 1;
+    m_1c = h >> 1;
+    m_20 = desc->m_10;
+    m_24 = desc->m_14;
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
 // 0x153260: the cleanup virtual (vtable slot 7). Remove the held surface (m_2c)
 // from the parent collection's surface pool (m_0c->m_1c), then destroy + free the
 // owned +0x30 object; both handles cleared. m_10/m_14 zeroed up front.

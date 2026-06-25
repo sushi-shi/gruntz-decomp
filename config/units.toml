@@ -821,6 +821,11 @@ source = "src/Gruntz/CDDrawSurfaceMgrSerialize.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "cserialsub34"
+source = "src/Gruntz/CSerialSub34.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "cddrawworkerregistry"
 source = "src/Gruntz/CDDrawWorkerRegistry.cpp"
 flags = "eh"

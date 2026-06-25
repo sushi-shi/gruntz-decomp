@@ -125,6 +125,7 @@ public:
     i32 m_24;   // +0x24  (-1 / src->m_18)
     u8 m_28;    // +0x28  format flag a
     u8 m_29;    // +0x29  format flag b
+    char _2a[0x3c - 0x2a]; // +0x2a  pad to the 0x3c allocation size (operator new(0x3c))
 };
 
 // The CImageFrameDesc as seen by CImageOwned::Build: a flag word at +0x04 (bits
@@ -142,11 +143,23 @@ public:
     u8 m_20[1]; // +0x20  raw frame data (palette + pixels)
 };
 
-// The +0x0c parent (CDDrawPtrCollections): its surface pool sits at +0x1c. Both
+// The display-mode descriptor reached through CImageParent::m_04 in BuildSlot13:
+// m_04->m_10 is the active CDDrawSurface, whose +0x18 holds the format/pitch the
+// owned object's Build needs. Reloc-masked; only the +0x10 / +0x18 offsets matter.
+class CDDrawSurfaceDesc {
+public:
+    char _00[0x10];
+    i32* m_10; // +0x10  active surface (its +0x18 is the format)
+};
+
+// The +0x0c parent (CDDrawPtrCollections): its surface pool sits at +0x1c, and a
+// display-mode descriptor at +0x04 (chased by BuildSlot13 for the build format).
 // FreeAll and LoadDispatch reach the pool through it.
 class CImageParent {
 public:
-    char _00[0x1c];
+    char _00[0x04];
+    CDDrawSurfaceDesc* m_04; // +0x04  display-mode descriptor
+    char _08[0x1c - 0x08];
     CImageSurfacePool* m_1c; // +0x1c  the surface pool
 };
 

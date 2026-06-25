@@ -67,7 +67,7 @@ chatbox	16	9
 chatbox_eh	1	1
 chatboxowner	4	1
 cheatmgr	4	3
-cimage	6	4
+cimage	7	4
 cimageowned	2	1
 clightfx	2	1
 clightfxrender	22	8
@@ -84,6 +84,7 @@ crt_ostream	4	3
 crt_streambuf	7	5
 crt_strstreambuf	4	2
 csecretleveltrigger	2	2
+cserialsub34	1	0
 cseverusentrylist	2	1
 csimpleanimation	2	2
 csingleanimation	1	1
@@ -99,7 +100,7 @@ dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
 dsoundvoice	2	1
-engine_discovered	96	0
+engine_discovered	93	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -163,7 +164,7 @@ randomambientsound	4	2
 registryhelper	8	8
 rezmgr	14	8
 rollingball	3	2
-savegame	18	13
+savegame	19	14
 sbi_gruntmachine	3	2
 sbi_gruntmachine_eh	1	0
 sbi_image	1	0
@@ -600,6 +601,7 @@ cheatmgr	?AddCheat@CCheatMgr@@QAEHPBDHH@Z	98.5714	98.5714	1	77144daa4699	0x22be0
 cheatmgr	?Empty@CCheatMgr@@QAEXXZ	100.0000	100.0000	1	8cc149232bcc	0x22b00
 cheatmgr	?RegisterCheats@CCheatMgr@@QAEXXZ	100.0000	100.0000	1	368e0d229303	0x22c80
 cimage	??1CImage@@QAE@XZ	94.2857	94.2857	1	3a970ca1c753	0xd5e80
+cimage	?BuildSlot13@CImage@@QAEHPAVCImageFrameDesc@@PAX@Z	98.7000	98.7000	1	cd9ab49c2f5c	0x153180
 cimage	?FreeAll@CImage@@QAEXXZ	100.0000	100.0000	1	fc4b51958392	0x153260
 cimage	?LoadDispatch@CImage@@QAEHPAVCImageFrameDesc@@IPAXH@Z	99.8611	99.8611	2	2044bead9ce7	0x152fb0
 cimage	?RenderFrame@CImage@@QAEXPAX000@Z	100.0000	100.0000	1	43b44fcb1e6d	0x153790
@@ -707,6 +709,7 @@ crt_strstreambuf	?str@strstreambuf@@QAEPADXZ	100.0000	100.0000	1	08404bbcac2f	0x
 crt_strstreambuf	?underflow@strstreambuf@@QAEHXZ	91.7353	91.7353	2	b71b810269ba	0x169490
 csecretleveltrigger	??1CSecretLevelTrigger@@UAE@XZ	100.0000	100.0000	1	1a6afbfadd87	0x10c50
 csecretleveltrigger	?Tick@CSecretLevelTrigger@@QAEHXZ	100.0000	100.0000	1	5007af99e855	0x42ac0
+cserialsub34	?Chain@CSerialSub34@@QAEHPAVCSerialArchive@@HHPAVCSerialObj@@@Z	88.0496	88.0496	1	6d191bedea8f	0x8c00
 cseverusentrylist	??1CSeverusEntryList@@QAE@XZ	95.0000	95.0000	1	281e4331e73c	0x1557a0
 cseverusentrylist	?DeleteAll@CSeverusEntryList@@QAEXXZ	100.0000	100.0000	1	bb02994e8868	0x151eb0
 csimpleanimation	??1CSimpleAnimation@@UAE@XZ	100.0000	100.0000	1	90ed99282119	0xf9d0
@@ -865,7 +868,6 @@ engine_discovered	?ClassUnknown_20_16df70@ClassUnknown_20@@QAEXXZ	5.0000	5.0000	
 engine_discovered	?ClassUnknown_21_16e480@ClassUnknown_21@@QAEXXZ	3.3333	3.3333	2	2e3b23619fa3	0x16e480
 engine_discovered	?ClassUnknown_26_11c630@ClassUnknown_26@@QAEXXZ	1.4286	1.4286	2	d8be2e544c1f	0x11c630
 engine_discovered	?ClassUnknown_29_137110@ClassUnknown_29@@QAEXXZ	1.7544	1.7544	2	7990c18836c1	0x137110
-engine_discovered	?ClassUnknown_33_153180@ClassUnknown_33@@QAEXXZ	0.5714	0.5714	2	b208569f3464	0x153180
 engine_discovered	?ClassUnknown_36_14dd90@ClassUnknown_36@@QAEXXZ	1.2500	1.2500	2	51e7e5f98169	0x14dd90
 engine_discovered	?ClassUnknown_51_1154b0@ClassUnknown_51@@QAEXXZ	3.5714	3.5714	2	a514a3b7e143	0x1154b0
 engine_discovered	?ClassUnknown_53_029ac0@ClassUnknown_53@@QAEXXZ	4.0000	4.0000	2	1abf62425a0d	0x29ac0
@@ -886,9 +888,7 @@ engine_discovered	?ClassUnknown_84_09a260@ClassUnknown_84@@QAEXXZ	3.6364	3.6364	
 engine_discovered	?ClassUnknown_88_0311b0@ClassUnknown_88@@QAEXXZ	5.7143	5.7143	2	c8978188c728	0x311b0
 engine_discovered	?ClassUnknown_90_1d38a1@ClassUnknown_90@@QAEXXZ	33.3333	33.3333	2	b4937a92c09d	0x1d38a1
 engine_discovered	?ClassUnknown_91_1d496b@ClassUnknown_91@@QAEXXZ	3.6364	3.6364	2	b4ba66647036	0x1d496b
-engine_discovered	?ClassUnknown_92_0e3c60@ClassUnknown_92@@QAEXXZ	0.8264	0.8264	2	220fa311b47e	0xe3c60
 engine_discovered	?ClassUnknown_93_00d170@ClassUnknown_93@@QAEXXZ	2.0408	2.0408	2	0e6757cc548a	0xd170
-engine_discovered	?ClassUnknown_95_008c00@ClassUnknown_95@@QAEXXZ	0.3306	0.3306	2	7b11faefbb32	0x8c00
 engine_discovered	?ClassUnknown_96_03c8f0@ClassUnknown_96@@QAEXXZ	0.7692	0.7692	2	cb059910f2d4	0x3c8f0
 engine_discovered	?ClassUnknown_97_058ee0@ClassUnknown_97@@QAEXXZ	1.0000	1.0000	2	5ae01d3beae5	0x58ee0
 engine_discovered	?ClassUnknown_98_056da0@ClassUnknown_98@@QAEXXZ	0.5263	0.5263	2	8213cfc7e6d7	0x56da0
@@ -2017,6 +2017,7 @@ savegame	?ComputeAll@CSaveGame@@QAEXXZ	90.8800	90.8800	2	d62fcdc450f1	0xe50a0
 savegame	?CopySlot@CSaveGame@@QAEHPAUSaveSlot@@PBU2@@Z	100.0000	100.0000	2	bd61e3ee90f6	0xe51d0
 savegame	?Decode@CSaveGame@@QAEHPAE@Z	100.0000	100.0000	2	dcc605c87c7d	0xe5460
 savegame	?Encode@CSaveGame@@QAEHPAE@Z	89.2917	89.2917	2	b5d70bbdf923	0xe5410
+savegame	?FillSaveDialog@@YAXPAUHWND__@@PAVCSaveGame@@@Z	100.0000	100.0000	1	3a65adb5a2b6	0xe3c60
 savegame	?FillSlot2@CSaveGame@@QAEHPAUSaveSlot@@HPAX@Z	100.0000	100.0000	2	d2b4d97c68ae	0xe5240
 savegame	?FillSlot@CSaveGame@@QAEHPAUSaveSlot@@PBDPAX@Z	100.0000	100.0000	2	6b2e5dd8d8ab	0xe5130
 savegame	?FillSlotByIndex@CSaveGame@@QAEHHHPAX@Z	100.0000	100.0000	2	eb2aab64ab27	0xe54e0
