@@ -100,3 +100,58 @@ i32 CChatBoxOwner::HitTest(i32 x, i32 y) {
     }
     return 1;
 }
+
+// ===========================================================================
+// CChatBoxOwner::ProcessCheatInput  (0x205c0, 0x741 = 1857 B) - cheat processor
+// ===========================================================================
+// Fired when the player submits a line in the chat box. DECODED BEHAVIOR (for the
+// final sweep; see the disasm at RVA 0x205c0):
+//
+//   if (m_14->IsAcceptingInput() == 0) goto done;       // 0x3508 on m_14
+//   mode = g_gameReg->m_2c->vtbl->GetInputMode();        // [m_2c]->[vtbl+0x10]
+//   if (mode == 0x11) {                                  // a "paste/special" key
+//       CString s = m_14->GetText();                     // 0x12a3
+//       m_14->host->Dispatch(s, 1, 1, 0);                // 0x2243
+//       goto done;
+//   }
+//   CString line = m_14->GetText();                      // 0x12a3
+//   // case-insensitive "Enable Cheatzfile" prefix test (0x11 chars):
+//   if (_strcmpi(line.Left(0x11), "Enable Cheatzfile") != 0) goto reset; // 0x11fdf0
+//   CString arg  = line.Mid(0x12);                       // text after the command
+//   CString name; name.Format("STATEZ_CREDITZ_PALETTEZ_%s", arg);        // 0x1b2cf5
+//   CButeMgr* bm = g_gameReg->m_34->LoadBute('TXT', name);// 0x13bff0 (FourCC 'TXT')
+//   if (!bm) { ok = false; goto teardown; }
+//   int enabled = 0;
+//   int nCheatz = bm->GetInt("Cheatz", "NumCheatz", 0);  // 0x171aa0
+//   for (int i = 1; i <= nCheatz; i++) {
+//       CString key; key.Format("Cheat%i", i);           // 0x1b2cf5
+//       CString cheat = bm->GetString("Cheatz", key, "Text"); // 0x173180/0x171a60
+//       if (cheat.IsEmpty()) continue;
+//       if (bm->GetInt("NonCheat", cheat, 0) == 1)        // 0x171aa0
+//           { if (g_gameReg->m_44->Apply(cheat, bm->GetInt("Value", cheat, 0x807b), 1)) enabled++; } // 0x4269
+//       else
+//           { if (g_gameReg->m_44->Apply(cheat, bm->GetInt("Value", cheat, 0x807b)))    enabled++; }
+//   }
+//   if (enabled > 0) {
+//       CString msg; msg.Format("Congratulations!  You have just enabled %d new cheats!", enabled);
+//       g_gameReg->ShowSystemMessage(msg);               // 0x1b54
+//   }
+//   // teardown: destruct ~8 CString temps in reverse EH-state order, free the
+//   // two RezAlloc'd scratch buffers (0x1b9b82), reset the bute reader (0x170330).
+//   reset:  m_14->ClearInput();                          // 0x167c -> 0x442b
+//   done:   m_14->Refresh(); this->m_10 = 0;             // 0x25c2
+//
+// @early-stop
+// DEFERRED to the final sweep. This is a 1857-byte CString-temp-heavy /GX body
+// with ~24 cascading EH states (the [esp+0x154] state byte runs 0..0x18), MFC
+// CString Format/Left/Mid temps, virtual-dispatch input-mode probes, and a
+// CButeMgr cheat-file load+enumerate. Per the eh-state-numbering-base.md +
+// gx-state-machine-scalar-delete-cleanup.md walls (same family as the deferred
+// Font word-wrap monsters), reproducing the exact EH-state machine + the deep
+// engine-collection model is a leaf-first redo - homed by RVA as a complete-intent
+// placeholder rather than a half-reconstructed body that would diverge regalloc.
+RVA(0x000205c0, 0x741)
+void CChatBoxOwner::ProcessCheatInput(i32 a, i32 b) {
+    (void)a;
+    (void)b;
+}

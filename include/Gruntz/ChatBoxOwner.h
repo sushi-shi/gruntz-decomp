@@ -31,6 +31,8 @@ public:
     i32 HitTest(i32 x, i32 y);
     // Return the box's caption/key CString (m_1c) by value (copy-ctor into sret).
     CString GetField1c();
+    // 0x205c0 - the chat-box cheat-code processor ("Enable Cheatzfile" command).
+    void ProcessCheatInput(i32 a, i32 b);
 
     i32 m_0;                // +0x00  box origin X (or 0/0xa0 by mode)
     i32 m_4;                // +0x04  box origin Y (viewport-relative)

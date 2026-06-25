@@ -5,9 +5,6 @@
 #include <rva.h>
 #include <Stub/attributed.h>
 
-// ---- CChatBoxOwner ----
-RVA(0x000205c0, 0x741) void CChatBoxOwner::CChatBoxOwner_0205c0() {}  // high
-
 // ---- CNetMgr ----
 RVA(0x000b86c0, 0x206) void CNetMgr::CNetMgr_0b86c0() {}  // high; large /GX EH func, final-sweep
 // b8960: WRONG CLASS - this is a CDialog-derived dtor (base ~CDialog @1ba51d
@@ -23,23 +20,14 @@ RVA(0x000bbf80, 0xb7) void CNetMgr::CNetMgr_0bbf80() {}  // high
 RVA(0x000bc750, 0x151) void CNetMgr::CNetMgr_0bc750() {}  // high
 RVA(0x000bccd0, 0x141) void CNetMgr::CNetMgr_0bccd0() {}  // high
 
-// ---- CShadeTableCache ----
-RVA(0x0014df40, 0x5f4) void CShadeTableCache::CShadeTableCache_14df40() {}  // high
-
 // ---- CTileTriggerTransition ----
 RVA(0x0010fe70, 0x18d) void CTileTriggerTransition::CTileTriggerTransition_10fe70() {}  // med
 
 // ---- CTriggerMgr ----
 RVA(0x0007abc0, 0x4b6) void CTriggerMgr::CTriggerMgr_07abc0() {}  // high
 
-// ---- CWarlord ----
-RVA(0x000447a0, 0x333) void CWarlord::CWarlord_0447a0() {}  // med
-
 // ---- CWwdObjMgr ----
 RVA(0x0015ad30, 0x2be) void CWwdObjMgr::CWwdObjMgr_15ad30() {}  // high
-
-// ---- FontRenderer ----
-RVA(0x0017b120, 0x3c6) void FontRenderer::FontRenderer_17b120() {}  // high
 
 // ---- UnknownClassArrays ----
 RVA(0x0002b950, 0x513) void UnknownClassArrays::UnknownClassArrays_02b950() {}  // high

@@ -70,6 +70,9 @@ public:
     ~CShadeTableCache();                // 0x14de50
     i32 Init();                         // 0x14dec0
     void FreeNodes();                   // 0x14ded0
+    // 0x14df40 - a two-phase per-palette brightness-pulse ramp (fade-in over nA
+    // steps, +16 highlight, fade-out over nB steps), mapped to nearest palette.
+    CShadeTable* FlashTable(PalEntry* pal, i32 nA, i32 nB, i32 startPct, i32 endPct);
     CShadeTable* HsvShiftTable(PalEntry* pal, i32 steps, i32 packedColor); // 0x14e540
     CShadeTable* HueRampTable(PalEntry* pal, i32 steps, i32 packedColor);  // 0x14e830
     CShadeTable* GammaTable(PalEntry* pal, i32 wRow, i32 wCol);         // 0x14e9f0

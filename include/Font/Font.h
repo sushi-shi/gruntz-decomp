@@ -150,6 +150,13 @@ public:
     void Stub_17ad10(); // 0x17ad10 (FontRenderer::MeasureWrapped)
     void Stub_17a460(); // 0x17a460 (FontRenderer::DrawWrapped)
 
+    // 0x17b120 - a third word-wrap entry: greedily lays out `text` from `begin`
+    // down to `bottom`, returns the final cursor {x, y + lineHeight + 1} and writes
+    // the total laid-out character count to *outLen. Same CString-temp /GX family
+    // as the two wrap stubs above; deferred to the final sweep.
+    TextExtent LayoutWrapped(CString text, i32 x0, i32 begin, i32 right, i32 bottom,
+                             i32* outLen); // 0x17b120
+
     Font* m_font;    // +0x00  (Font* to render with)
     i32 m_color;     // +0x04  (packed colour, default 0x00ffffff)
     void* m_surface; // +0x08  (optional dest surface pointer)

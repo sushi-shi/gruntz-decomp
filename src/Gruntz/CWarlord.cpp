@@ -85,6 +85,83 @@ i32 CWarlord::ResolveState(i32 key) {
 }
 
 // ===========================================================================
+// RegisterWarlordActions  (0x0447a0)  - a free function, NOT a CWarlord method
+// ===========================================================================
+// Registers six single-letter Gruntz action-type keys ("A".."F") into the global
+// bute-name -> type-id tree (g_buteTree), growing the parallel type-key string
+// collection (g_typeColl, backed by g_typeNodes/g_typeCount) on a miss, then
+// stamps each resolved type-id's slot in the action-handler dispatch array
+// (g_actionTable @0x644610) with that action's handler entry point. The six
+// (key, handler) pairs are emitted inline (the same find-or-create block x6).
+// Takes no `this` (a __cdecl free function); proximity-attributed to the CWarlord
+// cluster, so homed here by RVA.
+//
+// @early-stop
+// inlined-MFC-collection wall (eh-state + ConstructElements / regalloc): the
+// per-type find-or-create inlines the CButeTree insert + the CStringArray grow
+// (the ConstructElements loop over g_typeNodes/g_typeCount + the CString key
+// assignment) + the action-array ElementAt - reproducing MSVC's exact inlining
+// and 6-way register allocation of that collection machinery is a leaf-first /
+// final-sweep task. The FindType/AddType calls, the six key pushes and the six
+// `mov [slot],handler` stores pair by reloc; the logic is complete.
+
+// The Gruntz type-registry globals (.data). g_buteTree maps an action-key string
+// to a 1-based type id (0 = absent); g_typeColl is the parallel growable key
+// collection; g_actionTable holds the per-type action-handler pointer slots.
+struct CTypeNameTree {
+    i32 FindType(const char* key);         // 0x16d190 (-> type id, 0 = absent)
+    void AddType(const char* key, i32 id); // 0x16db90
+};
+DATA(0x002bf620)
+extern CTypeNameTree g_buteTree; // 0x6bf620 (?g_buteTree@@3VCButeTree@@A)
+
+struct CTypeKeyColl {
+    void SetAtGrow(i32 id, const char* key); // grow + assign (inlined in retail)
+};
+DATA(0x002bf650)
+extern CTypeKeyColl g_typeColl; // 0x6bf650 (?g_typeColl@@3UCKSlimeColl@@A)
+
+DATA(0x0021aea8)
+extern i32 g_typeCounter; // 0x61aea8 (next free type id)
+
+struct CActionTable {
+    void** ElementAt(i32 id); // -> &slot (thunked CArray ElementAt)
+};
+DATA(0x00244610)
+extern CActionTable g_actionTable; // 0x644610
+
+// The six action-type handler entry points (reloc-masked code addresses; their
+// mid-function LAB_ addresses are stored as raw dispatch pointers).
+extern "C" void Act_A(); // 0x403ba7
+extern "C" void Act_B(); // 0x401ce9
+extern "C" void Act_C(); // 0x4024f0
+extern "C" void Act_D(); // 0x403422
+extern "C" void Act_E(); // 0x40431d
+extern "C" void Act_F(); // 0x402725
+
+static void* RegisterAction(const char* key, void* handler) {
+    i32 id = g_buteTree.FindType(key);
+    if (id == 0) {
+        g_buteTree.AddType(key, g_typeCounter);
+        g_typeColl.SetAtGrow(g_typeCounter, key);
+        id = g_typeCounter++;
+    }
+    void** slot = g_actionTable.ElementAt(id);
+    *slot = handler;
+    return slot;
+}
+
+RVA(0x000447a0, 0x333)
+void RegisterWarlordActions() {
+    RegisterAction("A", (void*)Act_A);
+    RegisterAction("B", (void*)Act_B);
+    RegisterAction("C", (void*)Act_C);
+    RegisterAction("D", (void*)Act_D);
+    RegisterAction("E", (void*)Act_E);
+    RegisterAction("F", (void*)Act_F);
+}
+
+// ===========================================================================
 // CWarlord::RearmMoving  (0x044bb0)
 // ===========================================================================
 // Re-arm the geometry sub-player at m_38->m_1a0 against the global default geo

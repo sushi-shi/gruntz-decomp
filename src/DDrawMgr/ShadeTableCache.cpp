@@ -161,6 +161,123 @@ DATA(0x001efb5c)
 extern float g_negone; // -1.0
 
 // ===========================================================================
+// 0x14df40 - FlashTable: a 256 x (nA+nB)-byte per-palette brightness-pulse ramp.
+// Each palette color gets an (nA+nB)-byte ramp: phase 1 fades the channel IN from
+// startPct% brightness to full over nA steps; the palette entry is then brightened
+// +16 (clamped, in place); phase 2 fades the (brightened) channel OUT toward
+// endPct% over nB steps. Every ramp byte is the nearest palette index of the
+// (r,g,b) triple. The element-array grow is inlined (RezAlloc/RezFree, the MFC
+// SetSize(nSize+1) algorithm), like AddFrom*. EH frame + x87.
+// ===========================================================================
+// @early-stop
+// EH-frame wall (rezalloc-placement-new-no-eh-frame.md) + dense x87 schedule
+// (x87-fp-stack-schedule.md): the new+throwing-ctor /GX frame is absent on MSVC5
+// (element ctor 0x150180 external), and retail's fld/fxch/fmul ordering across the
+// per-channel lerps does not reproduce from C. Phase 1 (fade-in from
+// startPct%->full), the in-place +16 palette highlight, and the FindNearestColor
+// remap are recovered byte-for-structure; the phase-2 fade-out's exact channel
+// expression is the wall's residual (re-derive in the final sweep). Logic complete.
+RVA(0x0014df40, 0x5f4)
+CShadeTable* CShadeTableCache::FlashTable(PalEntry* pal, i32 nA, i32 nB, i32 startPct,
+                                          i32 endPct) {
+    CShadeTable* t = (CShadeTable*)operator new(0x10);
+    if (t) {
+        t = t->Ctor();
+    } else {
+        t = 0;
+    }
+    if (!t) {
+        return 0;
+    }
+    i32 total = nA + nB;
+    if (!t->Alloc(total << 8, 0)) {
+        return 0;
+    }
+
+    // Inline the element-array grow by one (MFC SetSize(nSize+1)).
+    i32 oldSize = m_arr.m_nSize;
+    i32 newSize = oldSize + 1;
+    if (newSize == 0) {
+        if (m_arr.m_pData) {
+            RezFree(m_arr.m_pData);
+            m_arr.m_pData = 0;
+        }
+        m_arr.m_nMaxSize = 0;
+        m_arr.m_nSize = 0;
+    } else if (m_arr.m_pData == 0) {
+        m_arr.m_pData = (CShadeTable**)RezAlloc(newSize * 4);
+        memset(m_arr.m_pData, 0, newSize * 4);
+        m_arr.m_nMaxSize = newSize;
+        m_arr.m_nSize = newSize;
+    } else if (newSize <= m_arr.m_nMaxSize) {
+        if (newSize > m_arr.m_nSize) {
+            memset(&m_arr.m_pData[m_arr.m_nSize], 0, (newSize - m_arr.m_nSize) * 4);
+        }
+        m_arr.m_nSize = newSize;
+    } else {
+        i32 grow = m_arr.m_nGrowBy;
+        if (grow == 0) {
+            grow = m_arr.m_nSize / 8;
+            if (grow < 4) {
+                grow = 4;
+            } else if (grow > 0x400) {
+                grow = 0x400;
+            }
+        }
+        i32 newMax = m_arr.m_nMaxSize + grow;
+        if (newSize > newMax) {
+            newMax = newSize;
+        }
+        CShadeTable** data = (CShadeTable**)RezAlloc(newMax * 4);
+        memcpy(data, m_arr.m_pData, m_arr.m_nSize * 4);
+        memset(&data[m_arr.m_nSize], 0, (newSize - m_arr.m_nSize) * 4);
+        RezFree(m_arr.m_pData);
+        m_arr.m_pData = data;
+        m_arr.m_nSize = newSize;
+        m_arr.m_nMaxSize = newMax;
+    }
+    m_arr.m_pData[oldSize] = t;
+
+    u8* data = t->m_data;
+    for (i32 i = 0; i < 0x100; i++) {
+        PalEntry* p = &pal[i];
+        u8* ramp = &data[i * total];
+        // Phase 1: fade in from startPct% brightness to full over nA steps.
+        for (i32 j = 0; j < nA; j++) {
+            float tt = (float)j / (float)nA;
+            float inv = g_one - tt;
+            float fr = (float)(startPct * (i32)p->r / 100) * inv + (float)(i32)p->r * tt;
+            i32 rn = (i32)(fr < g_255 ? fr : g_255);
+            float fg = (float)(startPct * (i32)p->g / 100) * inv + (float)(i32)p->g * tt;
+            i32 gn = (i32)(fg < g_255 ? fg : g_255);
+            float fb = (float)(startPct * (i32)p->b / 100) * inv + (float)(i32)p->b * tt;
+            i32 bn = (i32)(fb < g_255 ? fb : g_255);
+            ramp[j] = NearestPaletteIndex(rn, pal, gn, bn);
+        }
+        // Brighten the palette entry +16 (clamped) in place for the fade-out.
+        i32 br = (i32)p->r + 0x10;
+        p->r = (u8)(br < 0xff ? br : 0xff);
+        i32 bg = (i32)p->g + 0x10;
+        p->g = (u8)(bg < 0xff ? bg : 0xff);
+        i32 bb = (i32)p->b + 0x10;
+        p->b = (u8)(bb < 0xff ? bb : 0xff);
+        // Phase 2: fade the brightened channel out toward endPct% over nB steps.
+        for (i32 k = 0; k < nB; k++) {
+            float uu = (float)k / (float)nB;
+            float inv = g_one - uu;
+            float fr = (float)(i32)p->r * inv + (float)(i32)p->r * (float)endPct * g_p01 * uu;
+            i32 rn = (i32)(fr < g_255 ? fr : g_255);
+            float fg = (float)(i32)p->g * inv + (float)(i32)p->g * (float)endPct * g_p01 * uu;
+            i32 gn = (i32)(fg < g_255 ? fg : g_255);
+            float fb = (float)(i32)p->b * inv + (float)(i32)p->b * (float)endPct * g_p01 * uu;
+            i32 bn = (i32)(fb < g_255 ? fb : g_255);
+            ramp[nA + k] = NearestPaletteIndex(rn, pal, gn, bn);
+        }
+    }
+    return t;
+}
+
+// ===========================================================================
 // 0x14e540 - HsvShiftTable: a (256 x steps)-byte luma-gamma shift table. For each
 // palette color and each step, compute the luminance (0.586 R + 0.297 G +
 // 0.109 B), drive a pow()-based gamma factor from the per-step level, scale each
