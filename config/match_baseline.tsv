@@ -89,7 +89,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	141	0
+engine_discovered	139	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -160,8 +160,8 @@ sbi_image_eh	1	0
 sbi_imageset	1	0
 sbi_menuitem	12	7
 sbi_menuitem_eh	1	0
-sbi_rectonly	60	23
-sbi_rectonly_eh	3	1
+sbi_rectonly	61	23
+sbi_rectonly_eh	4	1
 sbi_sidetab	3	1
 sbi_sidetab_eh	1	0
 sbi_statztabgruntbar	3	2
@@ -786,9 +786,7 @@ engine_discovered	?CNetMgr_11f618@CNetMgr@@QAEXXZ	10.0000	10.0000	1	3e84522a7acc
 engine_discovered	?CNetMgr_18c022@CNetMgr@@QAEXXZ	0.7874	0.7874	1	8f2b6c518a93	0x18c022
 engine_discovered	?CObjectDropper_0124f0@CObjectDropper@@QAEXXZ	5.8824	5.8824	2	a2b3d34aa035	0x124f0
 engine_discovered	?CPlay_0d1b60@CPlay@@QAEXXZ	0.0452	0.0452	2	7d7469983ac7	0xd1b60
-engine_discovered	?CSBI_RectOnly_0c8980@CSBI_RectOnly@@QAEXXZ	3.8462	3.8462	2	c46a86133390	0xc8980
 engine_discovered	?CSBI_RectOnly_0ebd70@CSBI_RectOnly@@QAEXXZ	0.3774	0.3774	2	e421395136d1	0xebd70
-engine_discovered	?CSBI_RectOnly_105800@CSBI_RectOnly@@QAEXXZ	0.7273	0.7273	2	ef256b1ce0ce	0x105800
 engine_discovered	?CSBI_RectOnly_1084d0@CSBI_RectOnly@@QAEXXZ	0.0438	0.0438	2	2752ca66119f	0x1084d0
 engine_discovered	?CTeleporter_010dd0@CTeleporter@@QAEXXZ	5.8824	5.8824	2	a36b702a54bf	0x10dd0
 engine_discovered	?CTeleporter_0419e0@CTeleporter@@QAEXXZ	2.5641	2.5641	2	a0b0752002ff	0x419e0
@@ -2072,6 +2070,7 @@ sbi_rectonly	?LoadMainStatusBarSprite@CSBI_RectOnly@@QAEXXZ	0.8772	0.8772	1	0f2b
 sbi_rectonly	?LoadMultiplayerBattlezConfig@CSBI_RectOnly@@QAEXH@Z	0.8264	0.8264	2	255c944cd21c	0x107ae0
 sbi_rectonly	?LoadRezMachineConfig@CSBI_RectOnly@@QAEXXZ	0.2469	0.2469	1	00a671763151	0x105e40
 sbi_rectonly	?NotifyAllSlots@CSBI_RectOnly@@QAEXXZ	100.0000	100.0000	3	a152a54a21af	0x106a00
+sbi_rectonly	?PlaceCursorTarget@CSBI_RectOnly@@QAEHHH@Z	70.9091	70.9091	1	60410997f593	0x105800
 sbi_rectonly	?RefreshAll@CSBI_RectOnly@@QAEXXZ	100.0000	100.0000	1	88ce04ca73a7	0x1058d0
 sbi_rectonly	?Reset@CSBI_RectOnly@@QAEXXZ	100.0000	100.0000	1	44d541578f73	0x105920
 sbi_rectonly	?ResetCounters@CSBI_RectOnly@@QAEXXZ	100.0000	100.0000	1	d7308431df45	0xe7400
@@ -2101,6 +2100,7 @@ sbi_rectonly	?UpdateStatusBarTabHighlight@CSBI_RectOnly@@QAEXHHH@Z	0.1099	0.1099
 sbi_rectonly	?winapi_107d00_SetRect@CSBI_RectOnly@@QAEHXZ	0.5155	0.5155	2	010307708fab	0x107d00
 sbi_rectonly_eh	??1CSBI_ImageSet@@QAE@XZ	43.0345	43.0345	1	c0e32f2f35be	0x102000
 sbi_rectonly_eh	??1CSBI_RectOnly@@QAE@XZ	34.2381	34.2381	2	d10384bf9660	0x100700
+sbi_rectonly_eh	?DtorMembers@CSBI_RectOnly@@QAEXXZ	49.1923	49.1923	1	4c6d76b17d3f	0xc8980
 sbi_rectonly_eh	?EnsureSub@CSBI_RectOnly@@QAEHHHH@Z	100.0000	100.0000	2	de84c5225915	0x109ad0
 sbi_sidetab	?Refresh@CSBI_SideTab@@QAEXH@Z	85.7143	85.7143	1	c56923938bb0	0xe9820
 sbi_sidetab	?Render@CSBI_SideTab@@QAEHH@Z	87.8438	87.8438	1	1361c82e0ba1	0xe99c0

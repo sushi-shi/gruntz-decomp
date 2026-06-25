@@ -81,9 +81,7 @@ RVA(0x000124f0, 0x44) void CObjectDropper::CObjectDropper_0124f0() {}
 RVA(0x000d1b60, 0xc2f) void CPlay::CPlay_0d1b60() {}
 
 // ---- CSBI_RectOnly ----
-RVA(0x000c8980, 0x64) void CSBI_RectOnly::CSBI_RectOnly_0c8980() {}
 RVA(0x000ebd70, 0x366) void CSBI_RectOnly::CSBI_RectOnly_0ebd70() {}
-RVA(0x00105800, 0x9e) void CSBI_RectOnly::CSBI_RectOnly_105800() {}
 RVA(0x001084d0, 0x96c) void CSBI_RectOnly::CSBI_RectOnly_1084d0() {}
 
 // ---- CTeleporter ----

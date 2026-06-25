@@ -323,6 +323,7 @@ public:
     i32 SetFallRect(i32 a, i32 b, i32 c);
     void ExitMode();
     i32 ActivateSlot(i32 idx);
+    i32 PlaceCursorTarget(i32 row, i32 commit);
 
     // ----- layout (placeholders; offsets are the load-bearing fact) -----
     i32 m_2c; // +0x2c  Setup arg1 (vtable-slot-2 setup target)
@@ -420,6 +421,10 @@ public:
 DATA(0x00245588)
 extern i32 g_dat645588;
 
+// The current local-player / area index (PlaceCursorTarget's tile-grid column).
+DATA(0x00244c54)
+extern i32 g_644c54;
+
 // The cue-lookup string map embedded at host->m_28 + 0x10 (CMapStringToOb).
 struct CSbiLookupMap {
     i32 Lookup(char* key, void** out); // CMapStringToOb::Lookup (ret 8)
@@ -452,15 +457,40 @@ struct CSbiGameMgr {
 };
 
 // The sub-manager at g_gameReg+0x2c that carries the highlight-busy gate at +0x4f0.
+// PlaceCursorTarget forwards a resolved tile's (x,y) origin pair to ScrollTo.
 struct CSbiSubMgr {
+    i32 ScrollTo(i32 x, i32 y); // __thiscall, 2 args (FUN_004d5f00)
     char m_pad0[0x4f0];
     i32 m_4f0; // +0x4f0  highlight-busy flag (non-zero => bail)
 };
 
-// The active grunt/level object at g_gameReg+0x68: carries a tab-highlight-enabled
-// gate at +0x400 (zero => skip the cue + cursor activation).
+// A resolved tile-grid entry (m_grid[]): carries a sub-object at +0x10 whose
+// +0x5c/+0x60 are the tile origin pair forwarded to ScrollTo.
+struct CSbiTileSub {
+    char m_pad0[0x5c];
+    i32 m_5c; // +0x5c
+    i32 m_60; // +0x60
+};
+struct CSbiTileEntry {
+    char m_pad0[0x10];
+    CSbiTileSub* m_10; // +0x10
+};
+
+// The active grunt/level object at g_gameReg+0x68: a probe pair (ProbeXY at the
+// front, ScrollProbe), a tile-entry grid at +0x1c (15-wide rows), the placed-cursor
+// latch trio at +0x230, the camera-sprite loader, and a tab-highlight-enabled gate
+// at +0x400 (zero => skip the cue + cursor activation).
 struct CSbiActiveObj {
-    char m_pad0[0x400];
+    i32 ProbeXY(i32 col, i32 row, i32 a, i32 b); // __thiscall, 4 args (FUN_0046bfd0)
+    i32 ScrollProbe(i32 col, i32 row);           // __thiscall, 2 args (FUN_004784d0)
+    void LoadCameraSprite();                      // __thiscall (FUN_00478960)
+    char m_pad0[0x1c];
+    CSbiTileEntry* m_grid[1]; // +0x1c  tile-entry grid (15-wide rows, 4-byte stride)
+    char m_pad20[0x230 - 0x20];
+    i32 m_230; // +0x230  cursor-placed flag
+    i32 m_234; // +0x234  placed column
+    i32 m_238; // +0x238  placed row
+    char m_pad23c[0x400 - 0x23c];
     i32 m_400; // +0x400  tab-highlight-enabled gate
 };
 
@@ -613,6 +643,41 @@ RVA(0x001057d0, 0x13)
 void CSBI_RectOnly::SetGauge(i32 value) {
     m_gaugeTarget = value;
     m_gauge = value;
+}
+
+// Place the cursor on the resolved tile under highlight row `row`: probe the active
+// object's tile at (g_644c54, row); bail (0) if the probe fails or the grid
+// cell is empty. Forward the tile's origin pair to the sub-manager's ScrollTo, then
+// (when `commit` is set and the active object accepts the scroll) latch the placed
+// column/row and reload the camera sprite. Always returns 1 past the two probes.
+// @early-stop
+// ~71%: the code bytes are byte-exact vs retail (same regs/order/offsets; verified by
+// llvm-objdump -dr base vs target). The residual is purely the reloc-symbol-naming
+// scoring tail - this TU models the g_gameReg singleton as ?g_gameReg@@3PAUCGameReg@@A
+// while the retail obj names it _g_mgrSettings, so the three DIR32 data relocs don't
+// pair (weighted heavily on a short function). g_644c54 + the ILT call thunks already
+// pair. A TU-wide g_gameReg rename, not a per-function fix; matcher.md reloc artifact.
+RVA(0x00105800, 0x9e)
+i32 CSBI_RectOnly::PlaceCursorTarget(i32 row, i32 commit) {
+    i32 col = g_644c54;
+    if (g_gameReg->m_68->ProbeXY(col, row, 0, 0) == 0) {
+        return 0;
+    }
+    CSbiTileEntry* entry = g_gameReg->m_68->m_grid[row + col * 15];
+    if (entry == 0) {
+        return 0;
+    }
+    g_gameReg->m_2c->ScrollTo(entry->m_10->m_5c, entry->m_10->m_60);
+    if (commit != 0) {
+        CSbiActiveObj* obj = g_gameReg->m_68;
+        if (obj->ScrollProbe(col, row)) {
+            obj->m_234 = col;
+            obj->m_238 = row;
+            obj->m_230 = 1;
+            obj->LoadCameraSprite();
+        }
+    }
+    return 1;
 }
 
 // Run the seven per-stat refresh updaters in sequence.

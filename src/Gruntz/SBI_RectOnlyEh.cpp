@@ -33,12 +33,30 @@ extern void* g_vtbl_rectBase[]; // 0x5eab8c (CSBI_RectOnly subobject)
 DATA(0x001eabcc)
 extern void* g_vtbl_rectBase2[]; // 0x5eabcc (CStatusBarItem base subobject)
 
+// The MSVC 'eh vector destructor iterator' runtime (0x51f640): runs `dtor` over
+// `count` elements of `stride` from `base`, descending. Reloc-masked rel32 callee.
+void Tm_DestroyArray(void* base, i32 stride, i32 count, void* dtor); // 0x11f640
+
+// The CByteArray member at +0x530: a real destructor (reloc-masked ~CByteArray @0x5b4f3e)
+// so its teardown drives a /GX trylevel level in the member-teardown dtor.
+struct CSbiByteArray {
+    void Dtor();             // 0x5b4f3e  ~CByteArray
+    ~CSbiByteArray() { Dtor(); }
+    char m_pad[0x14];
+};
+
+// The per-element list dtor (~CPtrList, aliased ~CInternetSession @0x5b48c6) passed to
+// the vector-destroy iterator for the eight +0x2c notify lists.
+void SbiList_Dtor(); // 0x5b48c6
+
 class CSBI_RectOnly {
 public:
     i32 EnsureSub(i32 a, i32 b, i32 c);
     ~CSBI_RectOnly();
-    void DtorRect();   // 0xe8760  CSBI_RectOnly member teardown
-    void DtorStatus(); // 0x10bfa0 CStatusBarItem base teardown
+    void DtorMembers(); // 0xc8980  CSBI_RectOnly member teardown (/GX member-array dtor)
+    void Teardown();    // 0xfe350  pre-teardown (drains the pooled ptr table)
+    void DtorRect();    // 0xe8760  CSBI_RectOnly member teardown
+    void DtorStatus();  // 0x10bfa0 CStatusBarItem base teardown
     char m_pad0[0x54c];
     CSbiLazySub* m_54c; // +0x54c  lazily-created sub-object
 };
@@ -57,6 +75,27 @@ public:
     void DtorStatus();   // CStatusBarItem base teardown
     char m_pad0[0x60];
 };
+
+// 0xc8980: CSBI_RectOnly member teardown - the /GX dtor body that drains the pooled
+// state (Teardown), destructs the +0x530 CByteArray, then runs the eh-vector-destroy
+// iterator over the eight +0x2c notify lists (stride 0x1c, ~CPtrList per element). The
+// three teardown stages each carry their own descending /GX trylevel.
+// @early-stop
+// ~49% /GX member-array dtor wall (same family as ~CTriggerMgr 0x85c50 and the 0x100700
+// dtor below): the body is byte-correct - Teardown call, lea [this+0x530] + ~CByteArray,
+// and the four-arg eh-vector-destroy push sequence (push &dtor / 8 / add esi,0x2c / 0x1c /
+// push base) all match retail. But the whole /GX SEH frame (push -1 / push handler / mov
+// fs:0,esp) and the descending [esp+0x10]=1/0/-1 trylevel stamps are MISSING: MSVC only
+// emits them for a real `~Class()` whose VALUE members have non-trivial dtors. 0xc8980 is
+// a standalone teardown HELPER (not the C++ destructor - that slot is 0x100700), so the
+// member-as-destructible steering can't apply. Documented wall (docs/patterns/
+// eh-dtor-model-members-as-destructible.md). Deferred to the final sweep (whole-class model).
+RVA(0x000c8980, 0x64)
+void CSBI_RectOnly::DtorMembers() {
+    Teardown();
+    ((CSbiByteArray*)((char*)this + 0x530))->Dtor();
+    Tm_DestroyArray((char*)this + 0x2c, 0x1c, 8, (void*)&SbiList_Dtor);
+}
 
 // The real CSBI_RectOnly scalar destructor (0x100700): stamps the RectOnly vptr,
 // runs its member teardown, stamps the CStatusBarItem base vptr, runs the base

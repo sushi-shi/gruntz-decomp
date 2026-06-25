@@ -30,7 +30,7 @@ class CMenuState { public: void CMenuState_036a30(); void CMenuState_0a0d40(); }
 class CNetMgr { public: void CNetMgr_11f618(); void CNetMgr_18c022(); };
 class CObjectDropper { public: void CObjectDropper_0124f0(); };
 class CPlay { public: void CPlay_0d1b60(); };
-class CSBI_RectOnly { public: void CSBI_RectOnly_0c8980(); void CSBI_RectOnly_0ebd70(); void CSBI_RectOnly_105800(); void CSBI_RectOnly_1084d0(); };
+class CSBI_RectOnly { public: void CSBI_RectOnly_0ebd70(); void CSBI_RectOnly_1084d0(); };
 class CTeleporter { public: void CTeleporter_010dd0(); void CTeleporter_0419e0(); };
 class CTileTriggerSwitch { public: void CTileTriggerSwitch_0110f0(); };
 class CUserLogic { public: void CUserLogic_059230(); void CUserLogic_05caa0(); void CUserLogic_062110(); void CUserLogic_16e7f0(); void CUserLogic_16ea90(); };
