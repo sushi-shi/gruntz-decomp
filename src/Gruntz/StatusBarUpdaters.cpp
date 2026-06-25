@@ -191,8 +191,6 @@ public:
     void UpdateChipGrinderStatusBar();
     void ChipGrinderFinishStep(); // thunk_FUN_00506a00 (external, reloc-masked)
     i32 LoadStatzTabToggleSprite(i32 value, i32 idx);
-    void LoadSwitchDownSprite();
-    void LoadSwitchUpSprite();
     i32 UpdateWarpStoneStatusBar(i32 a0, i32 phase, i32 srcX, i32 srcY);
 
     // The switch tile-trigger object: m_8/m_c are its grid coords, m_14 its
@@ -440,76 +438,10 @@ i32 EngineLabelBacklog::LoadStatzTabToggleSprite(i32 value, i32 idx) {
     return 1;
 }
 
-// ===========================================================================
-// EngineLabelBacklog::LoadSwitchDownSprite @0x110570
-// ===========================================================================
-//
-// Drives a tile switch into its DOWN state: it bumps the switch tile's cell-state
-// counter in the map grid (grid->m_20[grid->m_24[m_c] + m_8]) and notifies the
-// tile system, then - if the switch tile is on-screen (its pixel rect inside the
-// view bounds) and the status bar surface is live - runs the GAME_SWITCHDOWN
-// status-bar advance. Latches m_14 = 1 (down). __thiscall.
-RVA(0x00110570, 0xfb)
-void EngineLabelBacklog::LoadSwitchDownSprite() {
-    CTileGrid* g = g_gameReg->m_30->m_24->m_5c;
-    i32 v = g->m_20[g->m_24[m_c] + m_8] + 1;
-    CTileGrid* g2 = g_gameReg->m_30->m_24->m_5c;
-    g2->m_20[g2->m_24[m_c] + m_8] = v;
-    g_gameReg->m_70->Notify(m_8, m_c, v);
-
-    i32 px = (m_8 << 5) + 0x10;
-    i32 py = (m_c << 5) + 0x10;
-    if (px < g_gameReg->m_144 && px >= g_gameReg->m_13c && py < g_gameReg->m_148
-        && py >= g_gameReg->m_140) {
-        CStatusBarHolder* h = g_gameReg->m_30->m_28;
-        if (h->m_30 == 0) {
-            CSprite* spr = 0;
-            h->m_10map.Lookup("GAME_SWITCHDOWN", &spr);
-            if (spr) {
-                CStatusBarTab* t = (CStatusBarTab*)spr;
-                if (g_61ab20 != 0 && g_6bf3c0 - t->m_14 >= t->m_18) {
-                    t->m_14 = g_6bf3c0;
-                    t->m_10->ConfigureItem(g_61ab24, 0, 0, 0);
-                }
-            }
-        }
-    }
-    m_14 = 1;
-}
-
-// ===========================================================================
-// EngineLabelBacklog::LoadSwitchUpSprite @0x1106b0
-// ===========================================================================
-//
-// The UP mirror of LoadSwitchDownSprite: decrements the cell-state counter, runs
-// the GAME_SWITCHUP advance, and latches m_14 = 0 (up). __thiscall.
-RVA(0x001106b0, 0xf4)
-void EngineLabelBacklog::LoadSwitchUpSprite() {
-    CTileGrid* g = g_gameReg->m_30->m_24->m_5c;
-    i32 v = g->m_20[g->m_24[m_c] + m_8] - 1;
-    CTileGrid* g2 = g_gameReg->m_30->m_24->m_5c;
-    g2->m_20[g2->m_24[m_c] + m_8] = v;
-    g_gameReg->m_70->Notify(m_8, m_c, v);
-
-    i32 px = (m_8 << 5) + 0x10;
-    i32 py = (m_c << 5) + 0x10;
-    if (px < g_gameReg->m_144 && px >= g_gameReg->m_13c && py < g_gameReg->m_148
-        && py >= g_gameReg->m_140) {
-        CStatusBarHolder* h = g_gameReg->m_30->m_28;
-        if (h->m_30 == 0) {
-            CSprite* spr = 0;
-            h->m_10map.Lookup("GAME_SWITCHUP", &spr);
-            if (spr) {
-                CStatusBarTab* t = (CStatusBarTab*)spr;
-                if (g_61ab20 != 0 && g_6bf3c0 - t->m_14 >= t->m_18) {
-                    t->m_14 = g_6bf3c0;
-                    t->m_10->ConfigureItem(g_61ab24, 0, 0, 0);
-                }
-            }
-        }
-    }
-    m_14 = 0;
-}
+// NOTE: the switch sprite-loaders LoadSwitch{Down,Up}Sprite (@0x110570 / 0x1106b0)
+// were re-homed to their real owner CTileTriggerSwitchLogic (slots 2/3 of its
+// vtable @0x5eae8c) - see src/Gruntz/TileTriggerSwitchLogic.cpp.  A body RVA can
+// have only ONE owning symbol, so their full reconstructions moved there.
 
 // ===========================================================================
 // EngineLabelBacklog::UpdateWarpStoneStatusBar @0x109bd0

@@ -11,15 +11,30 @@
 
 #include <Ints.h>
 
-// The WwdGameReg singleton (g_gameReg, RVA 0x64556c).  Only +0x30 (the active
-// game-manager pointer) is touched by the methods here; reloc-masked DIR32.
+// The WwdGameReg singleton (g_gameReg, RVA 0x64556c).  The switch-logic methods
+// touch +0x30 (the active game-manager / resource holder), and the switch sprite
+// loaders (LoadSwitch{Down,Up}Sprite) additionally reach the tile-grid notifier
+// at +0x70 and the view-bounds rectangle at +0x13c..+0x148.  Reloc-masked DIR32.
+// (This unified view subsumes the old StatusBarUpdaters CGameReg; the LoadSwitch
+// bodies were re-homed here as CTileTriggerSwitchLogic's virtuals.)
+struct CTileGrid;        // map tile grid (cell-state + row-offset tables)
+struct CStatusBarHolder; // status-bar holder (embedded name->sprite hash table)
+struct CTileNotifier;    // tile-system notifier
+struct CRegHolder;       // the +0x30 resource holder (tile grid + status bar)
 struct WwdGameReg {
     // The diagnostic ack reporter (RVA 0x8dc60, __thiscall): reports a (line, code)
     // pair when a switch-logic linkage check fails; reloc-masked rel32 callee.
     void Ack(i32 line, i32 code); // 0x8dc60
 
     char _pad00[0x30];
-    void* m_30; // +0x30  game-manager pointer (null-checked)
+    CRegHolder* m_30; // +0x30  resource holder (null-checked)
+    char m_pad34[0x70 - 0x34];
+    CTileNotifier* m_70; // +0x70  tile-system notifier
+    char m_pad74[0x13c - 0x74];
+    i32 m_13c; // +0x13c  view min X
+    i32 m_140; // +0x140  view min Y
+    i32 m_144; // +0x144  view max X
+    i32 m_148; // +0x148  view max Y
 };
 extern WwdGameReg* g_gameReg;
 
@@ -46,14 +61,16 @@ public:
 // cover the touched offsets.  Size ~0x8c (0x2c base + 0x60 m_block).
 class CTileTriggerSwitchLogic {
 public:
-    // The 4 retail vtable slots (0x5eae8c). Real virtuals now -> cl emits the
-    // ??_7 vftable + the implicit ctor vptr-stamp (replaces the manual struct
-    // stamp). Bodies live in unmatched engine TUs; declared-only here, named on
-    // the target via deterministic @data-symbol/@rva-symbol in the .cpp.
-    virtual void Vf0(); // slot 0 -> 0x001749
-    virtual void Vf1(); // slot 1 -> 0x0022e8
-    virtual void Vf2(); // slot 2 -> 0x002e0f
-    virtual void Vf3(); // slot 3 -> 0x0037e2
+    // The 4 retail vtable slots (vtable @0x5eae8c). Real virtuals -> cl emits the
+    // ??_7 vftable + the implicit ctor vptr-stamp. Each slot value is an ILT
+    // `e9 rel32` jmp thunk in the low .text band; the REAL body is the jmp target
+    // (recovered by gruntz.analysis.vtable_scan --emit-vfuncs). Bodies are DEFINED
+    // in the .cpp at the resolved body RVAs so they delink as real, matchable
+    // functions (slots 2/3 are the re-homed switch sprite loaders).
+    virtual void Vf0();                  // slot 0  thunk 0x001749 -> body 0x1104f0
+    virtual void Vf1();                  // slot 1  thunk 0x0022e8 -> body 0x110460
+    virtual void LoadSwitchDownSprite(); // slot 2  thunk 0x002e0f -> body 0x110570
+    virtual void LoadSwitchUpSprite();   // slot 3  thunk 0x0037e2 -> body 0x1106b0
 
     CTileTriggerSwitchLogic();
     i32 FindIndexByKey(i32 key);
@@ -90,10 +107,10 @@ public:
 
     // +0x00  implicit vptr (real virtuals above; was an explicit m_vptr struct stamp)
     i32 m_04;                         // +0x04  list head (owner) / key (data obj)
-    i32 m_08;                         // +0x08  (not accessed here)
-    i32 m_0c;                         // +0x0c  (not accessed here)
+    i32 m_08;                         // +0x08  switch tile X (LoadSwitch*Sprite)
+    i32 m_0c;                         // +0x0c  switch tile Y (LoadSwitch*Sprite)
     i32 m_10;                         // +0x10  key1 (compared in RemoveByKeys/FindChild)
-    i32 m_14;                         // +0x14  link-check gate (VerifyBlockLinks guard)
+    i32 m_14;                         // +0x14  link-check gate / switch down(1)/up(0) flag
     char m_pad18[0x20 - 0x18];        // +0x18..0x1f
     i32 m_20;                         // +0x20  child-list head (owner) / cleared before delete
     CTileTriggerSwitchLogic* m_owner; // +0x24  back-pointer to the owning switch-logic
