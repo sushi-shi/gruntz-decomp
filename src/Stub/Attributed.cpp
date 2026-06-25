@@ -308,14 +308,14 @@ RVA(0x000c1e60, 0x115) void CMultiStartDlg::CMultiStartDlg_0c1e60() {}  // med
 RVA(0x000c1fd0, 0x99) void CMultiStartDlg::CMultiStartDlg_0c1fd0() {}  // med
 
 // ---- CNetMgr ----
-RVA(0x000b86c0, 0x206) void CNetMgr::CNetMgr_0b86c0() {}  // high
-RVA(0x000b8960, 0x59) void CNetMgr::CNetMgr_0b8960() {}  // high
-RVA(0x000b8fc0, 0x151) void CNetMgr::CNetMgr_0b8fc0() {}  // high
-RVA(0x000b91f0, 0x31) void CNetMgr::CNetMgr_0b91f0() {}  // high
-RVA(0x000b9240, 0x38) void CNetMgr::CNetMgr_0b9240() {}  // high
-RVA(0x000b9290, 0x32) void CNetMgr::CNetMgr_0b9290() {}  // high
-RVA(0x000b92e0, 0x34) void CNetMgr::CNetMgr_0b92e0() {}  // high
-RVA(0x000b9330, 0x41) void CNetMgr::CNetMgr_0b9330() {}  // high
+RVA(0x000b86c0, 0x206) void CNetMgr::CNetMgr_0b86c0() {}  // high; large /GX EH func, final-sweep
+// b8960: WRONG CLASS - this is a CDialog-derived dtor (base ~CDialog @1ba51d
+// vtbl 0x5eb174; CString member @+0x70; CStringList member @+0x74 via
+// ~CObject-based dtor @1b5d78). CNetMgr+0x70/+0x74 are i32 selection latches
+// (ReadGroupSel/ReadPlayerSel, matched), so this is NOT a CNetMgr method -
+// re-attribute (likely CMultiStartDlg or a sibling multiplayer dialog).
+RVA(0x000b8960, 0x59) void CNetMgr::CNetMgr_0b8960() {}  // WRONG-CLASS (CDialog dtor); re-attribute
+RVA(0x000b8fc0, 0x151) void CNetMgr::CNetMgr_0b8fc0() {}  // high; /GX cond-temp EH wall, final-sweep
 RVA(0x000b93a0, 0x47) void CNetMgr::CNetMgr_0b93a0() {}  // high
 RVA(0x000b9410, 0x51) void CNetMgr::CNetMgr_0b9410() {}  // high
 RVA(0x000b9500, 0x46) void CNetMgr::CNetMgr_0b9500() {}  // high

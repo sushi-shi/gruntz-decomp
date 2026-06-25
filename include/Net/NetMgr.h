@@ -157,6 +157,17 @@ struct CNetPlayerEntry {
     i32 m_4; // +0x4  the entry's id (the lookup key)
 };
 
+// The 0x10-byte stat-packet header the SendStat* helpers fire through the
+// DirectPlay set-data slots. Only the three written fields are pinned: a flag
+// byte (bit7 set on every send), the stat id, and the value/player-id word.
+struct CNetStatPacket {
+    u8 m_0; // +0x0  flag byte (bit7 set)
+    char m_pad1[3];
+    i32 m_4;        // +0x4  stat id
+    i32 m_8;        // +0x8  value / player id
+    char m_padc[4]; // +0xc  (0x10 total)
+};
+
 // A singly-linked node in the m_58 player list: +0x0 next, +0x8 payload.
 struct CNetPlayerNode {
     CNetPlayerNode* m_next; // +0x0
@@ -359,16 +370,24 @@ public:
     void HandleVersionCheck(CNetVersionMsg* msg);
     void AnnounceVersion(i32 param);
 
-    // External per-instance command/stat dispatcher (reached through an
-    // incremental-link thunk so its `call rel32` reloc-masks; __thiscall, ecx =
-    // this). No body here - the engine routine is external.
-    void SendNetStat(i32 id, u32 value, i32 flag);
-    // The version-report diagnostic (logs a message string + zero) and the two
-    // stat dispatchers the version cluster fires (a 2-arg stat-id/flag form and
-    // a 4-arg stat packet form). All __thiscall engine routines reached through
-    // incremental-link thunks; no body here.
+    // The stat-send family (matched in NetMgr.cpp). All ship a 0x10-byte
+    // CNetStatPacket (or a caller packet) to the local player's peer group
+    // through the DirectPlay set-data wrappers; SendStatFlag/SendNetStat build
+    // the header then funnel through SendStatBuf.
+    //   SendStatBuf   (b91f0) the core: SetGroupDataFrom(localPlayer, flag, pkt, 0x10)
+    //   SendStatFlag  (b9240) build {id, localPlayer.id} then SendStatBuf
+    //   SendNetStat   (b9290) build {id, value} then SendStatBuf
+    //   SendStatFrom  (b92e0) SetGroupDataFrom wrapper, null-guarded packet
+    //   SendStatPair  (b9330) SetGroupData2 wrapper, null-guarded packet
+    i32 SendStatBuf(CNetStatPacket* pkt, i32 flag);                    // 0xb91f0
+    void SendStatFlag(i32 id, i32 flag);                               // 0xb9240
+    void SendNetStat(i32 id, u32 value, i32 flag);                     // 0xb9290
+    i32 SendStatFrom(CNetStatPacket* pkt, i32 b, i32 c);               // 0xb92e0
+    i32 SendStatPair(CNetPlayerEntry* recipient, CNetStatPacket* pkt, i32 c); // 0xb9330
+    // The version-report diagnostic (logs a message string + zero) and the
+    // 4-arg stat-packet dispatcher AnnounceVersion fires. Both __thiscall engine
+    // routines reached through incremental-link thunks; no body here.
     void ReportVersionMsg(const char* msg, i32 zero);
-    void SendStatFlag(i32 id, i32 flag);
     void SendStatPacket(i32 param, const void* packet, i32 size, i32 flag);
 
     // ---- 0xbc0xx cluster ---------------------------------------------------

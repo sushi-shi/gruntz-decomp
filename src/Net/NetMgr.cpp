@@ -142,6 +142,74 @@ void CNetMgr::ApplyCmdDelayDefaults() {
     reg->SetValueDword((char*)(const char*)resendName, m_resend);
 }
 
+// ---------------------------------------------------------------------------
+// CNetMgr::SendStatBuf  (__thiscall).
+// Core stat sender: sets the packet's bit7 flag, then ships the 0x10-byte
+// packet to the local player's peer group via the DirectPlay set-data wrapper
+// (m_peer->SetGroupDataFrom(localPlayer, flag, pkt, 0x10)). Returns the
+// success bool (hr == 0).
+RVA(0x000b91f0, 0x31)
+i32 CNetMgr::SendStatBuf(CNetStatPacket* pkt, i32 flag) {
+    pkt->m_0 |= 0x80;
+    i32 hr = m_peer->SetGroupDataFrom((CNetPlayerEntry*)m_localPlayer, flag, (i32)pkt, 0x10);
+    return hr == 0;
+}
+
+// ---------------------------------------------------------------------------
+// CNetMgr::SendStatFlag  (__thiscall).
+// Builds the 0x10-byte stat header {id, localPlayer.id} on the stack and ships
+// it through SendStatBuf with the caller's flag.
+RVA(0x000b9240, 0x38)
+void CNetMgr::SendStatFlag(i32 id, i32 flag) {
+    CNetStatPacket pkt;
+    pkt.m_0 |= 0x80;
+    pkt.m_4 = id;
+    pkt.m_8 = ((CNetPlayerEntry*)m_localPlayer)->m_4;
+    SendStatBuf(&pkt, flag);
+}
+
+// ---------------------------------------------------------------------------
+// CNetMgr::SendNetStat  (__thiscall).
+// Builds the 0x10-byte stat header {id, value} on the stack and ships it
+// through SendStatBuf with the caller's flag.
+RVA(0x000b9290, 0x32)
+void CNetMgr::SendNetStat(i32 id, u32 value, i32 flag) {
+    CNetStatPacket pkt;
+    pkt.m_0 |= 0x80;
+    pkt.m_4 = id;
+    pkt.m_8 = value;
+    SendStatBuf(&pkt, flag);
+}
+
+// ---------------------------------------------------------------------------
+// CNetMgr::SendStatFrom  (__thiscall).
+// No-op on a null packet; otherwise ships the caller's packet to the local
+// player's peer group via SetGroupDataFrom(localPlayer, c, pkt, b).
+RVA(0x000b92e0, 0x34)
+i32 CNetMgr::SendStatFrom(CNetStatPacket* pkt, i32 b, i32 c) {
+    if (pkt == 0) {
+        return 0;
+    }
+    i32 hr = m_peer->SetGroupDataFrom((CNetPlayerEntry*)m_localPlayer, c, (i32)pkt, b);
+    return hr == 0;
+}
+
+// ---------------------------------------------------------------------------
+// CNetMgr::SendStatPair  (__thiscall).
+// Null-recipient -> 0; otherwise sets the packet's bit7 flag and ships both
+// through SetGroupData2(localPlayer, recipient, c, packet, 0x10).
+RVA(0x000b9330, 0x41)
+i32 CNetMgr::SendStatPair(CNetPlayerEntry* recipient, CNetStatPacket* pkt, i32 c) {
+    if (recipient == 0) {
+        return 0;
+    }
+    pkt->m_0 |= 0x80;
+    i32 hr = m_peer->SetGroupData2(
+        (CNetPlayerEntry*)m_localPlayer, recipient, c, (i32)pkt, 0x10
+    );
+    return hr == 0;
+}
+
 // -------------------------------------------------------------------------
 // Engine-label backlog stubs.
 // -------------------------------------------------------------------------
