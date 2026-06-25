@@ -567,3 +567,31 @@ i32 CTileActionEvent::SerializeFields(void* ar) {
     a->Write(&m_24, 4);
     return 1;
 }
+
+// ===========================================================================
+// CTileActionEvent::DeserializeFields  (0x114040) - __thiscall, ret 4
+// ===========================================================================
+// The mode-7 read counterpart of SerializeFields: read the same 9 record fields
+// (m_0,m_4,m_8,m_c,m_10,m_18,m_1c,m_20,m_24 - m_14 skipped) back through the archive
+// ar's vtable slot +0x2c (read, 4 bytes each). Returns 0 if ar or the registry's
+// +0x30 sub-object is null, else 1.
+RVA(0x00114040, 0xa2)
+i32 CTileActionEvent::DeserializeFields(void* ar) {
+    CTileActionArchive* a = (CTileActionArchive*)ar;
+    if (a == 0) {
+        return 0;
+    }
+    if (g_gameReg->m_30 == 0) {
+        return 0;
+    }
+    a->Read(&m_0, 4);
+    a->Read(&m_4, 4);
+    a->Read(&m_8, 4);
+    a->Read(&m_c, 4);
+    a->Read(&m_10, 4);
+    a->Read(&m_18, 4);
+    a->Read(&m_1c, 4);
+    a->Read(&m_20, 4);
+    a->Read(&m_24, 4);
+    return 1;
+}

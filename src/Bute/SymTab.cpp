@@ -7,6 +7,13 @@
 
 #include <Bute/SymTab.h>
 
+// A leaf record's parse stream: EndParse releases its inline buffer (0x1399d0,
+// CRemusReadStream); reloc-masked __thiscall, modeled with no body here.
+class CRemusReadStream {
+public:
+    i32 EndParse(); // 0x1399d0
+};
+
 // The tokenizer's "is this character part of a token" predicate, inlined at each
 // scan site. When the parser supplies a delimiter set, a token char is one NOT in
 // it (strchr == 0); otherwise the default identifier classes apply: printable
@@ -79,6 +86,36 @@ CSymTab::~CSymTab() {
     m_1c = 0;
     m_34 = 0;
     // m_symbols, m_subTabs destruct here (reverse decl order, /GX trylevels).
+}
+
+// ReleaseParseBuffers (0x13a190): drop this scope's cached parse state. If the owned
+// +0x48 buffer is live, free it; otherwise walk the leaf-symbol table ending each
+// record's parse stream (EndParse over the NextSym2/NextSym3 sub-chain). When
+// `recurse` is set, descend into every child scope (m_subTabs). Returns 1.
+RVA(0x0013a190, 0x94)
+i32 CSymTab::ReleaseParseBuffers(i32 recurse) {
+    if (m_buf48 != 0) {
+        RezFree(m_buf48);
+        m_buf48 = 0;
+    } else {
+        void* rec = FirstSym();
+        while (rec) {
+            void* sub = NextSym2(rec);
+            while (sub) {
+                ((CRemusReadStream*)sub)->EndParse();
+                sub = NextSym3(sub);
+            }
+            rec = NextSym(rec);
+        }
+    }
+    if (recurse) {
+        RezNode* e = ((RezColl*)&m_subTabs)->First();
+        while (e) {
+            ((CSymTab*)e->m_14)->ReleaseParseBuffers(1);
+            e = e->Next();
+        }
+    }
+    return 1;
 }
 
 // FindSub (0x13a230): look up `name` in the child-scope table (m_subTabs, +0x38),

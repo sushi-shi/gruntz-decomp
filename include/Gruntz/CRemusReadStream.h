@@ -40,6 +40,7 @@ public:
     i32 BeginParse();
     i32 EndParse();
     i32 SetPos(i32 pos);
+    i32 ReadAt(void* dst, i32 pos, u32 len);
     i32 Read(void* dst, u32 len, i32 seekPos);
 
     char* m_00;             // +0x00 source name

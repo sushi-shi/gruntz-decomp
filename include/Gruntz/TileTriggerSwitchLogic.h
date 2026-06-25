@@ -48,7 +48,8 @@ class CTileTriggerSwitchLogic {
 public:
     CTileTriggerSwitchLogic();
     i32 FindIndexByKey(i32 key);
-    i32 VerifyBlockLinks(); // 0x112c70
+    i32 VerifyBlockLinksB(); // 0x111f40 (FindChild(key, 3) variant)
+    i32 VerifyBlockLinks();  // 0x112c70
 
     // CObList::RemoveAt is reached through the inherited CObList base (this == the
     // CObList; head @ +0x04).  Declared no-body, reloc-masked rel32 callee.

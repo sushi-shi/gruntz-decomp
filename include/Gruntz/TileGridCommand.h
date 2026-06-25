@@ -95,7 +95,7 @@ public:
     virtual void Slot20();
     virtual void Slot24();
     virtual void Slot28();
-    virtual void Slot2C();
+    virtual i32 Read(void* buf, i32 n);      // +0x2c (deserialize transfer)
     virtual void Transfer(void* buf, i32 n); // +0x30
 };
 
@@ -108,8 +108,9 @@ struct TgcTickView {
 
 class CTileGridCommand {
 public:
-    void RecordMove();           // 0x112880
-    i32 Serialize(TgcStream* s); // 0x113ae0
+    void RecordMove();             // 0x112880
+    i32 Serialize(TgcStream* s);   // 0x113ae0
+    i32 Deserialize(TgcStream* s); // 0x113c10
 
     // Time-driven duty-cycle classifier: returns +1 while inside the on/off span,
     // 0 on the rising edge of a one-shot, -1 on the falling edge.  __thiscall.

@@ -62,6 +62,40 @@ i32 CTileGridCommand::Serialize(TgcStream* s) {
 }
 
 // ---------------------------------------------------------------------------
+// CTileGridCommand::Deserialize
+// The read counterpart of Serialize: same null/registry guard, same field list,
+// but each transfer goes through the stream's read slot (+0x2c) instead of the
+// write slot (+0x30). Reads the 12 scalar fields then the 24-dword grid block.
+// ---------------------------------------------------------------------------
+RVA(0x00113c10, 0xe8)
+i32 CTileGridCommand::Deserialize(TgcStream* s) {
+    if (s == 0) {
+        return 0;
+    }
+    if (g_gameReg->m_30 == 0) {
+        return 0;
+    }
+    s->Read(&m_08, 4);
+    s->Read(&m_0c, 4);
+    s->Read(&m_10, 4);
+    s->Read(&m_14, 4);
+    s->Read(&m_18, 4);
+    s->Read(&m_1c, 4);
+    s->Read(&m_28, 4);
+    s->Read(&m_2c, 4);
+    s->Read(&m_30, 4);
+    s->Read(&m_34, 4);
+    s->Read(&m_38, 4);
+    s->Read(&m_24, 4);
+    i32* p = m_grid;
+    for (i32 i = 0; i < 24; i++) {
+        s->Read(p, 4);
+        p++;
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
 // CTileGridCommand::Classify
 // Drives the command's on/off duty cycle off the running game clock: while the
 // elapsed time is within the lead-in (m_2c) it stays active (+1); past it, the

@@ -152,6 +152,11 @@ public:
     // counterpart of ResolveQualified.
     void* FindQualified(const char* name);
 
+    // Drop this scope's cached parse state (0x13a190): free the owned +0x48 buffer
+    // if live, else end each leaf record's parse stream; when `recurse`, descend into
+    // every child scope. Returns 1.
+    i32 ReleaseParseBuffers(i32 recurse);
+
     // Iteration accessors over the two embedded tables. First* are __thiscall on
     // the scope; Next* take a previously-returned record and advance via the node
     // the engine embeds inside it at a fixed offset (each record IS an intrusive

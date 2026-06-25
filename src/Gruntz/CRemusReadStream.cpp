@@ -51,6 +51,26 @@ i32 CRemusReadStream::EndParse() {
 }
 
 // ===========================================================================
+// 0x139a40 - ReadAt(dst, pos, len): copy `len` bytes from absolute position `pos`
+// in whichever backing store is live (mapped source / inline buffer / virtual
+// reader), WITHOUT seeking the cursor or clamping to the limit. The two buffer
+// paths return 1; the virtual-reader path returns whether the full `len` was read.
+// ===========================================================================
+RVA(0x00139a40, 0x95)
+i32 CRemusReadStream::ReadAt(void* dst, i32 pos, u32 len) {
+    RemusMappedSource* sd = m_10;
+    if (sd->m_48 != 0) {
+        memcpy(dst, (const void*)(m_14 - sd->m_0c + pos + sd->m_48), len);
+        return 1;
+    }
+    if (m_38 != 0) {
+        memcpy(dst, (const void*)(m_38 + pos), len);
+        return 1;
+    }
+    return m_34->Read(m_14, pos, len, dst) == (i32)len;
+}
+
+// ===========================================================================
 // 0x139ae0 - SetPos(pos): move the read cursor; returns 1.
 // ===========================================================================
 RVA(0x00139ae0, 0xf)
