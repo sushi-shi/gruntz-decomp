@@ -219,10 +219,32 @@ public:
     // Copies *coords into m_planeCtx, then drives every plane's Build(coords).
     void BuildAllPlanes(LevelCoordRect* coords);
 
+    // Builds the [0,0,w-1,h-1] coord rect into m_planeCtx and a local copy, then
+    // Build(&rect) on every plane; returns 1. (ret 8)
+    i32 SetExtentsAndBuildAll(i32 w, i32 h);
+    // Sync(arg) across planes [0 .. m_mainIndex]. (ret 4)
+    void SyncToMainIndex(i32 arg);
+    // Sync(arg) across planes [m_mainIndex+1 .. size). (ret 4)
+    void SyncAfterMainIndex(i32 arg);
+
     // The edit-state switch driver: when this->flags & 4 it tails into ApplyScroll
     // on `target`; otherwise runs `target`'s +0xe4 brush-kind switch. Returns the
     // accumulated state-flag word. `target` is itself a level (passed explicitly).
     i32 EditSwitch(void* target, i32 a1, i32 a2, i32 a3);
+
+    // The four per-brush-kind edit-state handlers EditSwitch dispatches into (each
+    // __thiscall, this=this level, the scroll target passed explicitly). They step
+    // the target's +0x5c/+0x60 scroll toward (a1, a2), probe the +0x138/+0x140 axis
+    // limits and (when blocked) re-clamp, returning the accumulated state-flag word.
+    //   EditHandlerA - axis-1 step + axis-2 advance, then a low/high span re-clamp.
+    //   EditHandlerB - axis-1 step + axis-2 advance, then a low-span re-clamp.
+    //   EditHandlerC - axis-1 step, an alternate axis-2 step, a span re-clamp + a
+    //                  blocked-move retry on the 0x20000 state bit.
+    //   EditHandlerD - a two-probe axis-2 advance + a span validate, then axis-1 step.
+    i32 EditHandlerA(void* target, i32 a1, i32 a2, i32 a3);
+    i32 EditHandlerB(void* target, i32 a1, i32 a2, i32 a3);
+    i32 EditHandlerC(void* target, i32 a1, i32 a2, i32 a3);
+    i32 EditHandlerD(void* target, i32 a1, i32 a2, i32 a3);
 
     // Finds the plane whose name (plane+0xb4) case-insensitively matches `name`.
     CPlane* FindPlaneByName(const char* name);
@@ -268,6 +290,21 @@ private:
 
     // The image-set factory (CGameLevel::ReadImageSet) - external.
     CImageSet* ReadImageSet(void* record);
+
+    // The brush-handler sibling leaves dispatched by EditHandlerA..D - unmatched
+    // engine CGameLevel methods (this=this level, the target passed explicitly),
+    // modeled with no body so their thiscall sites reloc-mask. Each takes the
+    // target as a void* (its real type is the ScrollTarget window in GameLevel.cpp).
+    i32 StepAxisLo(void* t, i32 a1, i32 a2, i32* outX, i32 a3);  // @0x15e720
+    i32 StepAxisHi(void* t, i32 a1, i32 a2, i32* outX, i32 a3);  // @0x15e870
+    i32 AdvanceA(void* t, i32 a1, i32 a2, i32 a3);               // @0x15f1c0
+    i32 ClampSpan(i32 lo, i32 hi, i32* outLo, i32* outHi);       // @0x15ffe0
+    i32 HoldMove(void* t, i32 anchor, i32 a1, i32 a2, i32 a3);   // @0x15ff20
+    i32 FreeMove(void* t, i32 a1, i32 a2, i32 a3);               // @0x15eb00
+    i32 StepAxisAlt(void* t, i32 a1, i32 a2, i32* outY, i32 a3); // @0x15fdb0
+    i32 AdvanceB(void* t, i32 a1, i32 a2, i32 a3);               // @0x15ede0
+    i32 SpanCheck(i32 a, i32 b, i32 c, i32* out);                // @0x15f8d0
+    i32 AxisProbe(i32 coord, i32 limit);                         // @0x00161270
 
 public:
     // vptr@+0x00 (implicit, CGameLevel is polymorphic); +0x04..+0x0c are the

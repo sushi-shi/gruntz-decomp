@@ -33,7 +33,7 @@ class CFileImage { public: void CFileImage_13ebb0(); void CFileImage_141280(); v
 class CFileMem { public: void CFileMem_165f00(); };
 class CFontConfig { public: void CFontConfig_021e20(); void CFontConfig_021ef0(); void CFontConfig_0220f0(); };
 class CGameApp { public: void CGameApp_13dbc0(); };
-class CGameLevel { public: void CGameLevel_15d700(); void CGameLevel_15dad0(); void CGameLevel_15db00(); void CGameLevel_15e130(); void CGameLevel_15e2f0(); void CGameLevel_15e4b0(); void CGameLevel_15e5b0(); void CGameLevel_15e720(); void CGameLevel_15e870(); void CGameLevel_15eb00(); void CGameLevel_15ede0(); void CGameLevel_15f1c0(); void CGameLevel_15f8d0(); void CGameLevel_15fdb0(); void CGameLevel_15fe40(); void CGameLevel_15ff20(); void CGameLevel_15ffe0(); void CGameLevel_160980(); void CGameLevel_160a40(); };
+class CGameLevel { public: void CGameLevel_15e720(); void CGameLevel_15e870(); void CGameLevel_15eb00(); void CGameLevel_15ede0(); void CGameLevel_15f1c0(); void CGameLevel_15f8d0(); void CGameLevel_15fdb0(); void CGameLevel_15fe40(); void CGameLevel_15ff20(); void CGameLevel_15ffe0(); void CGameLevel_160980(); void CGameLevel_160a40(); };
 class CGameObject { public: void CGameObject_150f90(); void CGameObject_151070(); };
 class CGrunt { public: void CGrunt_0514e0(); void CGrunt_0517b0(); void CGrunt_051c00(); void CGrunt_052c70(); void CGrunt_052ed0(); void CGrunt_052f40(); void CGrunt_057800(); void CGrunt_057aa0(); void CGrunt_05b050(); void CGrunt_05b570(); void CGrunt_061940(); void CGrunt_061bc0(); void CGrunt_062b70(); void CGrunt_067b00(); void CGrunt_0692f0(); void CGrunt_069fd0(); };
 class CGruntHealthSprite { public: void CGruntHealthSprite_07ecf0(); void CGruntHealthSprite_07eed0(); };

@@ -100,7 +100,7 @@ dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
 dsoundvoice	2	1
-engine_attributed	309	0
+engine_attributed	302	0
 engine_boundary	628	0
 engine_discovered	86	0
 engine_label_stubs	519	118
@@ -112,7 +112,7 @@ fontconfig	7	4
 fonts	2	1
 gameapp	19	15
 gamekeyhandler	1	0
-gamelevel	32	20
+gamelevel	39	22
 gamemode	41	18
 gamemodeobjlifecycle	3	2
 gameobjectctors	5	0
@@ -909,13 +909,6 @@ engine_attributed	?CFontConfig_021e20@CFontConfig@@QAEXXZ	0.6897	0.6897	1	05a327
 engine_attributed	?CFontConfig_021ef0@CFontConfig@@QAEXXZ	14.2857	14.2857	1	d46e96205815	0x21ef0
 engine_attributed	?CFontConfig_0220f0@CFontConfig@@QAEXXZ	5.5556	5.5556	1	e56cf98473ea	0x220f0
 engine_attributed	?CGameApp_13dbc0@CGameApp@@QAEXXZ	4.1667	4.1667	1	7e93d13fb682	0x13dbc0
-engine_attributed	?CGameLevel_15d700@CGameLevel@@QAEXXZ	0.7273	0.7273	1	4ff7e6b4f9d0	0x15d700
-engine_attributed	?CGameLevel_15dad0@CGameLevel@@QAEXXZ	1.9048	1.9048	1	d4b4a4833a5a	0x15dad0
-engine_attributed	?CGameLevel_15db00@CGameLevel@@QAEXXZ	1.8182	1.8182	1	580ed0b1e862	0x15db00
-engine_attributed	?CGameLevel_15e130@CGameLevel@@QAEXXZ	0.2516	0.2516	1	4eb6bc330708	0x15e130
-engine_attributed	?CGameLevel_15e2f0@CGameLevel@@QAEXXZ	0.2548	0.2548	1	7eb0d2600f1e	0x15e2f0
-engine_attributed	?CGameLevel_15e4b0@CGameLevel@@QAEXXZ	0.4301	0.4301	1	3e24e769f9a0	0x15e4b0
-engine_attributed	?CGameLevel_15e5b0@CGameLevel@@QAEXXZ	0.3306	0.3306	1	ae2daf68f053	0x15e5b0
 engine_attributed	?CGameLevel_15e720@CGameLevel@@QAEXXZ	0.3390	0.3390	1	b2d823af2973	0x15e720
 engine_attributed	?CGameLevel_15e870@CGameLevel@@QAEXXZ	0.3390	0.3390	1	139dc324e944	0x15e870
 engine_attributed	?CGameLevel_15eb00@CGameLevel@@QAEXXZ	0.1600	0.1600	1	a04e08606849	0x15eb00
@@ -2461,7 +2454,11 @@ gamelevel	?BuildAllPlanes@CGameLevel@@QAEXPAULevelCoordRect@@@Z	100.0000	100.000
 gamelevel	?ClampScroll@CGameLevel@@QAEHPAXHHH@Z	70.7413	70.7413	3	3f62b93aa933	0x15de40
 gamelevel	?DtorBase@CImageSet1@@QAEXXZ	100.0000	100.0000	1	a95ce5db1ab7	0x161370
 gamelevel	?EditDispatch@CGameLevel@@QAEHPAXHHH@Z	47.8085	47.8085	2	5cfc22d52d40	0x160f70
-gamelevel	?EditSwitch@CGameLevel@@QAEHPAXHHH@Z	79.0183	79.0183	2	0ff29dc02c1a	0x15dfb0
+gamelevel	?EditHandlerA@CGameLevel@@QAEHPAXHHH@Z	64.9560	64.9560	1	ba4a8952d252	0x15e130
+gamelevel	?EditHandlerB@CGameLevel@@QAEHPAXHHH@Z	78.8602	78.8602	1	5506606c987f	0x15e4b0
+gamelevel	?EditHandlerC@CGameLevel@@QAEHPAXHHH@Z	80.8854	80.8854	1	6a20eb4ef6d2	0x15e2f0
+gamelevel	?EditHandlerD@CGameLevel@@QAEHPAXHHH@Z	83.0000	83.0000	1	7673b10cc91e	0x15e5b0
+gamelevel	?EditSwitch@CGameLevel@@QAEHPAXHHH@Z	88.8440	88.8440	2	0ff29dc02c1a	0x15dfb0
 gamelevel	?FindPlaneByName@CGameLevel@@QAEPAVCPlane@@PBD@Z	100.0000	100.0000	2	7baff22dc335	0x15dde0
 gamelevel	?GetClassId@CGameLevel@@QAEHXZ	100.0000	100.0000	1	777905dbee18	0x1611b0
 gamelevel	?IsLoaded@CGameLevel@@QAEHXZ	100.0000	100.0000	1	1cf4b7c05d14	0x161190
@@ -2484,6 +2481,9 @@ gamelevel	?SetCoords@CGameLevel@@QAEHPAULevelCoordRect@@@Z	100.0000	100.0000	1	6
 gamelevel	?SetCoordsAndLoad38@CGameLevel@@QAEHHPAULevelCoordRect@@@Z	100.0000	100.0000	1	506670b31d4f	0x15cf70
 gamelevel	?SetCoordsAndLoad3C@CGameLevel@@QAEHHPAULevelCoordRect@@@Z	100.0000	100.0000	1	5322c8cc92b8	0x15ceb0
 gamelevel	?SetCoordsAndLoad40@CGameLevel@@QAEHHPAULevelCoordRect@@@Z	100.0000	100.0000	1	c39d12e01f3f	0x15cdf0
+gamelevel	?SetExtentsAndBuildAll@CGameLevel@@QAEHHH@Z	70.6546	70.6546	1	c9f69aa91273	0x15d700
+gamelevel	?SyncAfterMainIndex@CGameLevel@@QAEXH@Z	100.0000	100.0000	1	9a13d0c85396	0x15db00
+gamelevel	?SyncToMainIndex@CGameLevel@@QAEXH@Z	100.0000	100.0000	1	cf4c78a48dfb	0x15dad0
 gamelevel	?Unload@CGameLevel@@QAEHXZ	100.0000	100.0000	1	0ba658920c46	0x15d1f0
 gamelevel	?VisitVisible@CGameLevel@@QAEXPAXH@Z	87.3206	87.3206	3	3b56c9d6b2ae	0x15dc90
 gamemode	??0CState@@QAE@XZ	100.0000	100.0000	4	a1d9fd8bca62	0x8c750
