@@ -11,7 +11,6 @@ class CBattlezDlg { public: void CBattlezDlg_017340(); };
 class CBootyState { public: void CBootyState_01ce30(); void CBootyState_01d420(); };
 class CChatBoxOwner { public: void CChatBoxOwner_0205c0(); };
 class CFontConfig { public: void CFontConfig_0220f0(); };
-class CGrunt { public: void CGrunt_051c00(); };
 class CImage { public: void CImage_175a00(); void CImage_175b80(); void CImage_175ce0(); void CImage_175d50(); };
 class CMulti { public: void CMulti_0b6220(); void CMulti_0b62a0(); void CMulti_0bc3f0(); };
 class CNetMgr { public: void CNetMgr_0b86c0(); void CNetMgr_0b8960(); void CNetMgr_0b8fc0(); void CNetMgr_0bbc90(); void CNetMgr_0bbec0(); void CNetMgr_0bbf80(); void CNetMgr_0bc750(); void CNetMgr_0bccd0(); };
@@ -20,7 +19,6 @@ class CSeverusWorker { public: void CSeverusWorker_016410(); void CSeverusWorker
 class CShadeTableCache { public: void CShadeTableCache_14df40(); };
 class CTileTriggerTransition { public: void CTileTriggerTransition_10fe70(); };
 class CTriggerMgr { public: void CTriggerMgr_07abc0(); };
-class CUserLogic { public: void CUserLogic_0646b0(); };
 class CWarlord { public: void CWarlord_0447a0(); };
 class CWwdObjMgr { public: void CWwdObjMgr_15ad30(); };
 class FontRenderer { public: void FontRenderer_17b120(); };

@@ -284,6 +284,11 @@ public:
     // The death/freeze finalize 2-arg geometry setter (FUN_005505b0); takes the
     // resolved key string + a flag. External/reloc-masked.
     void ApplyLookupGeometry(const char* key, i32 flag); // FUN_005505b0 (ret 8)
+    // The combat-reaction dispatch (@0x646b0) drives the player through its
+    // CGameObject base name/sprite setters (0x150540 / 0x1504d0, not the 0x55xxxx
+    // entrance forms). External/no-body so the call rel32 reloc-masks.
+    void GameApplyName(const char* name);                 // 0x150540 (ret 4)
+    void GameApplyLookupSprite(const char* key, i32 flag); // 0x1504d0 (ret 8)
 
     char m_pad0[0xc];
     CEntranceResMgr* m_c; // +0x0c  resource object (lookup table holder)
@@ -744,6 +749,23 @@ struct GruntTilePos {
 };
 
 // ---------------------------------------------------------------------------
+// CGrunt::StepCompassMove (@0x51c00) builds a small intrusive byte bag of the 8
+// compass move-directions (1..8), then random-picks + tries each in turn. Modeled
+// as a tiny CByteArray-style object {?, data@+4, count@+8} so the /GX-framed local
+// + the SetAtGrow/RemoveAt/dtor calls fall out (all engine, external/reloc-masked).
+// ---------------------------------------------------------------------------
+class CToyTileBag {
+public:
+    CToyTileBag();                    // 0x1b527e (ctor)
+    ~CToyTileBag();                   // 0x1b52b1 (dtor)
+    void SetAtGrow(i32 idx, i32 val); // 0x1b5485 (append at idx, grow)
+    void RemoveAt(i32 idx, i32 n);    // 0x1b5525 (remove n at idx)
+    i32 m_0;       // +0x00
+    u8* m_data;    // +0x04  byte data
+    i32 m_count;   // +0x08  element count
+};
+
+// ---------------------------------------------------------------------------
 // CGrunt - only the members the HUD sprite creators touch. CGrunt is large;
 // this is a deliberately partial model (load-bearing offsets only).
 //   +0x10   m_10      CGruntHud* (factory geometry source)
@@ -1098,6 +1120,20 @@ public:
     // gate on the armed-but-not-running sub-player, notify the tile-mgr of the drop
     // (unless m_36c set), then retire the entrance player (m_154->m_8 |= 0x10000).
     i32 FinishEntranceMove(); // @0x69fd0
+
+    // @0x646b0 (ret 0x20, 8 stack args) - the combat-reaction anim-dispatch state
+    // machine. MISATTRIBUTED to CUserLogic by proximity bracketing; the +0x1fc gate,
+    // g_animNameResolver grunt anim codes (A/D/I/G/L/P/O/Q/J/N), m_10 HUD dirty bit
+    // and "Grunt"/"CombatTimeout" bute section all prove `this` is a CGrunt (CUserLogic
+    // is only 0x40 bytes; +0x1fc is impossible). Re-homed here.
+    i32 StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7);
+
+    // StepCombatReaction's engine thunks (external/no-body, reloc-masked).
+    void UpdateCombatTimer();                          // call 0x243c (0-arg tail step)
+    void OnTileMismatch(i32 v);                         // call 0x2cb6 (1-arg)
+    i32 ForwardCombatStep(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7); // call 0x1451
+    i32 IsInCombatRange(i32 x, i32 y);                 // call 0x3c4c (2-arg predicate)
+    void CommitCombatMove(i32 a, i32 b, i32 c, i32 d); // call 0x302b (4-arg)
 };
 
 // CGrunt segment-vs-box overlap test @0x62b70 - a free (__stdcall, ret 0xc) helper:

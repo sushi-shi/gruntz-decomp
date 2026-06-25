@@ -20,9 +20,6 @@ RVA(0x000205c0, 0x741) void CChatBoxOwner::CChatBoxOwner_0205c0() {}  // high
 // ---- CFontConfig ----
 RVA(0x000220f0, 0x46) void CFontConfig::CFontConfig_0220f0() {}  // high
 
-// ---- CGrunt ----
-RVA(0x00051c00, 0xc7b) void CGrunt::CGrunt_051c00() {}  // high
-
 // ---- CImage ----
 RVA(0x00175a00, 0x74) void CImage::CImage_175a00() {}  // high
 RVA(0x00175b80, 0x105) void CImage::CImage_175b80() {}  // high
@@ -61,9 +58,6 @@ RVA(0x0010fe70, 0x18d) void CTileTriggerTransition::CTileTriggerTransition_10fe7
 
 // ---- CTriggerMgr ----
 RVA(0x0007abc0, 0x4b6) void CTriggerMgr::CTriggerMgr_07abc0() {}  // high
-
-// ---- CUserLogic ----
-RVA(0x000646b0, 0x9c8) void CUserLogic::CUserLogic_0646b0() {}  // med
 
 // ---- CWarlord ----
 RVA(0x000447a0, 0x333) void CWarlord::CWarlord_0447a0() {}  // med
