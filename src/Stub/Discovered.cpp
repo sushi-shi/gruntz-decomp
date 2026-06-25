@@ -7,10 +7,6 @@
 // ---- CBattlezDlgColors ----
 RVA(0x00017ac0, 0x6) void CBattlezDlgColors::CBattlezDlgColors_017ac0() {}
 
-// ---- CBehindCandy ----
-RVA(0x0000fb70, 0x6) void CBehindCandy::CBehindCandy_00fb70() {}
-RVA(0x0000fc30, 0x44) void CBehindCandy::CBehindCandy_00fc30() {}
-
 // ---- CBehindCandyAni ----
 RVA(0x000100f0, 0x44) void CBehindCandyAni::CBehindCandyAni_0100f0() {}
 RVA(0x000adbb0, 0x17) void CBehindCandyAni::CBehindCandyAni_0adbb0() {}
@@ -41,23 +37,11 @@ RVA(0x0015c360, 0x555) void CDDrawSubMgr::CDDrawSubMgr_15c360() {}
 // ---- CDDrawWorkerList ----
 RVA(0x00163bc0, 0x2c) void CDDrawWorkerList::CDDrawWorkerList_163bc0() {}
 
-// ---- CDoNothing ----
-RVA(0x0000f6b0, 0x6) void CDoNothing::CDoNothing_00f6b0() {}
-RVA(0x0000f770, 0x44) void CDoNothing::CDoNothing_00f770() {}
-
 // ---- CDroppedObjectShadow ----
 RVA(0x00012670, 0x44) void CDroppedObjectShadow::CDroppedObjectShadow_012670() {}
 
-// ---- CExitTrigger ----
-RVA(0x00010870, 0x6) void CExitTrigger::CExitTrigger_010870() {}
-RVA(0x000108c0, 0x44) void CExitTrigger::CExitTrigger_0108c0() {}
-
 // ---- CExplosion ----
 RVA(0x00012ec0, 0x44) void CExplosion::CExplosion_012ec0() {}
-
-// ---- CEyeCandy ----
-RVA(0x0000fca0, 0x6) void CEyeCandy::CEyeCandy_00fca0() {}
-RVA(0x0000fd60, 0x44) void CEyeCandy::CEyeCandy_00fd60() {}
 
 // ---- CGruntAnimPlayer ----
 RVA(0x00150610, 0x41) void CGruntAnimPlayer::CGruntAnimPlayer_150610() {}

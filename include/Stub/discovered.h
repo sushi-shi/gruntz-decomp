@@ -7,7 +7,6 @@
 #define GRUNTZ_STUB_DISCOVERED_H
 
 class CBattlezDlgColors { public: void CBattlezDlgColors_017ac0(); };
-class CBehindCandy { public: void CBehindCandy_00fb70(); void CBehindCandy_00fc30(); };
 class CBehindCandyAni { public: void CBehindCandyAni_0100f0(); void CBehindCandyAni_0adbb0(); };
 class CButeTree { public: void CButeTree_16e070(); };
 class CCheckpointDlg { public: void CCheckpointDlg_023570(); };
@@ -17,11 +16,8 @@ class CDDPalette { public: void CDDPalette_1474d0(); void CDDPalette_147530(); }
 class CDDSurface { public: void CDDSurface_142a40(); };
 class CDDrawSubMgr { public: void CDDrawSubMgr_15c360(); };
 class CDDrawWorkerList { public: void CDDrawWorkerList_163bc0(); };
-class CDoNothing { public: void CDoNothing_00f6b0(); void CDoNothing_00f770(); };
 class CDroppedObjectShadow { public: void CDroppedObjectShadow_012670(); };
-class CExitTrigger { public: void CExitTrigger_010870(); void CExitTrigger_0108c0(); };
 class CExplosion { public: void CExplosion_012ec0(); };
-class CEyeCandy { public: void CEyeCandy_00fca0(); void CEyeCandy_00fd60(); };
 class CGruntAnimPlayer { public: void CGruntAnimPlayer_150610(); };
 class CGruntCreationPoint { public: void CGruntCreationPoint_010730(); void CGruntCreationPoint_03ecc0(); };
 class CGruntHealthSprite { public: void CGruntHealthSprite_011fb0(); void CGruntHealthSprite_07f0d0(); };

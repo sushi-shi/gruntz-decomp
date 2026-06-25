@@ -27,6 +27,7 @@ butemgr	40	27
 cambientsound	3	2
 canielement	3	2
 cattract	9	5
+cbehindcandy	2	2
 cddrawchildgroup	9	5
 cddrawptrcollections	13	10
 cddrawshadeblit	3	1
@@ -44,7 +45,10 @@ cddrawworkermapsmall	10	3
 cddrawworkerregistry	25	12
 cddrawworkers	3	3
 cdirectdrawmgr	15	9
+cdonothing	2	2
 cdroppedobject	2	2
+cexittrigger	2	2
+ceyecandy	2	2
 cfader	6	5
 cfadermgr	5	2
 cfortressflag	2	2
@@ -76,7 +80,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	169	0
+engine_discovered	161	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -319,6 +323,8 @@ cattract	?RefreshTitle@CAttract@@QAEHH@Z	100.0000	100.0000	1	ec73ee41ee24	0x3916
 cattract	?ReleaseResources@CAttract@@UAEXXZ	100.0000	100.0000	1	7565e627ebc6	0x140d0
 cattract	?RunTitle@CAttract@@QAEHHHHHH@Z	99.5238	99.5238	1	9a5828a77e96	0xfa300
 cattract	?Vslot07@CAttract@@UAEHXZ	100.0000	100.0000	1	91fafb3898fd	0x147b0
+cbehindcandy	??1CBehindCandy@@UAE@XZ	100.0000	100.0000	1	5c9c55aab0c6	0xfc30
+cbehindcandy	?GetTypeTag@CBehindCandy@@QAEHXZ	100.0000	100.0000	1	32ed38245a17	0xfb70
 cddrawchildgroup	?Stub_1591f0@CDDrawChildGroup@@QAEXXZ	2.9412	2.9412	4	c142c66f7447	0x1591f0
 cddrawchildgroup	?Stub_159a70@CDDrawChildGroup@@QAEXXZ	0.2367	0.2367	4	6bb06c5c8409	0x159a70
 cddrawchildgroup	?VirtualMethodUnknown14@CDDrawChildGroup@@QAEHXZ	100.0000	100.0000	6	5bf8fe296b4f	0x1575e0
@@ -485,8 +491,14 @@ cdirectdrawmgr	?Refresh@CDDSurface@@QAEHPAUIDirectDrawSurfaceZ@@@Z	64.5128	64.51
 cdirectdrawmgr	?SetColorKey@CDDSurface@@QAEHIPAX@Z	100.0000	100.0000	1	d7a9dda893b1	0x13eaa0
 cdirectdrawmgr	?SetPalette@CDDSurface@@QAEHPAVCDDPalette@@H@Z	100.0000	100.0000	3	3730c3ae3c2a	0x13e690
 cdirectdrawmgr	?SetRange@CDDPalette@@QAEHHHEEEI@Z	100.0000	100.0000	2	bfca20776fbd	0x147cd0
+cdonothing	??1CDoNothing@@UAE@XZ	100.0000	100.0000	1	a06511f63ae0	0xf770
+cdonothing	?GetTypeTag@CDoNothing@@QAEHXZ	100.0000	100.0000	1	6ca2183a4b81	0xf6b0
 cdroppedobject	??1CDroppedObject@@UAE@XZ	100.0000	100.0000	1	dd689e9b78c2	0x125b0
 cdroppedobject	?FireActivation@CDroppedObject@@QAEXH@Z	100.0000	100.0000	1	58092acd8cf9	0xc6bd0
+cexittrigger	??1CExitTrigger@@UAE@XZ	100.0000	100.0000	1	db4d24e6c64d	0x108c0
+cexittrigger	?GetTypeTag@CExitTrigger@@QAEHXZ	100.0000	100.0000	1	c68ad601ed76	0x10870
+ceyecandy	??1CEyeCandy@@UAE@XZ	100.0000	100.0000	1	394f31033131	0xfd60
+ceyecandy	?GetTypeTag@CEyeCandy@@QAEHXZ	100.0000	100.0000	1	77b6788a5a6a	0xfca0
 cfader	??0CFader@@QAE@XZ	100.0000	100.0000	1	78cd95dd8e45	0x17e450
 cfader	??1CFader@@QAE@XZ	88.2759	88.2759	1	fdbfb44a3d6b	0x17e4a0
 cfader	??1CFaderSine@@QAE@XZ	100.0000	100.0000	1	ae93aa6df1fe	0x17fdf0
@@ -720,8 +732,6 @@ directsoundmgr	?winapi_137ac0_timeGetTime@DirectSoundMgr@@QAEHH@Z	2.9231	2.9231	
 engine_discovered	?CBattlezDlgColors_017ac0@CBattlezDlgColors@@QAEXXZ	50.0000	50.0000	2	0879229e7eb6	0x17ac0
 engine_discovered	?CBehindCandyAni_0100f0@CBehindCandyAni@@QAEXXZ	5.8824	5.8824	2	c1f555057dcc	0x100f0
 engine_discovered	?CBehindCandyAni_0adbb0@CBehindCandyAni@@QAEXXZ	14.2857	14.2857	2	dd457a2e5834	0xadbb0
-engine_discovered	?CBehindCandy_00fb70@CBehindCandy@@QAEXXZ	50.0000	50.0000	2	29c2c4216897	0xfb70
-engine_discovered	?CBehindCandy_00fc30@CBehindCandy@@QAEXXZ	5.8824	5.8824	2	b56b5edd3dd1	0xfc30
 engine_discovered	?CButeTree_16e070@CButeTree@@QAEXXZ	0.8000	0.8000	2	449e08018b4b	0x16e070
 engine_discovered	?CCheckpointDlg_023570@CCheckpointDlg@@QAEXXZ	50.0000	50.0000	2	6f7562291252	0x23570
 engine_discovered	?CCheckpointTrigger_011480@CCheckpointTrigger@@QAEXXZ	5.8824	5.8824	2	36760718b34d	0x11480
@@ -732,14 +742,8 @@ engine_discovered	?CDDPalette_147530@CDDPalette@@QAEXXZ	2.8571	2.8571	2	8705702d
 engine_discovered	?CDDSurface_142a40@CDDSurface@@QAEXXZ	5.0000	5.0000	2	acbbb47b3378	0x142a40
 engine_discovered	?CDDrawSubMgr_15c360@CDDrawSubMgr@@QAEXXZ	0.0877	0.0877	2	cb87cd66d104	0x15c360
 engine_discovered	?CDDrawWorkerList_163bc0@CDDrawWorkerList@@QAEXXZ	4.7619	4.7619	2	b51a988cb1ef	0x163bc0
-engine_discovered	?CDoNothing_00f6b0@CDoNothing@@QAEXXZ	50.0000	50.0000	2	9ea9dfd42eb8	0xf6b0
-engine_discovered	?CDoNothing_00f770@CDoNothing@@QAEXXZ	5.8824	5.8824	2	6d92ee4f3d4a	0xf770
 engine_discovered	?CDroppedObjectShadow_012670@CDroppedObjectShadow@@QAEXXZ	5.8824	5.8824	2	a315b1a9db88	0x12670
-engine_discovered	?CExitTrigger_010870@CExitTrigger@@QAEXXZ	50.0000	50.0000	2	388df03c94a7	0x10870
-engine_discovered	?CExitTrigger_0108c0@CExitTrigger@@QAEXXZ	5.8824	5.8824	2	2376a913a35f	0x108c0
 engine_discovered	?CExplosion_012ec0@CExplosion@@QAEXXZ	5.8824	5.8824	2	f5ebfa592daf	0x12ec0
-engine_discovered	?CEyeCandy_00fca0@CEyeCandy@@QAEXXZ	50.0000	50.0000	2	b3ffa12665e8	0xfca0
-engine_discovered	?CEyeCandy_00fd60@CEyeCandy@@QAEXXZ	5.8824	5.8824	2	b755a57e26bb	0xfd60
 engine_discovered	?CGruntAnimPlayer_150610@CGruntAnimPlayer@@QAEXXZ	1.7391	1.7391	2	ffb44f05f4d6	0x150610
 engine_discovered	?CGruntCreationPoint_010730@CGruntCreationPoint@@QAEXXZ	5.8824	5.8824	2	466c632bedc8	0x10730
 engine_discovered	?CGruntCreationPoint_03ecc0@CGruntCreationPoint@@QAEXXZ	14.2857	14.2857	2	83aeb3c656f3	0x3ecc0

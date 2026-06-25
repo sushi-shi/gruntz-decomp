@@ -656,6 +656,26 @@ source = "src/Gruntz/CFortressFlag.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "cdonothing"
+source = "src/Gruntz/CDoNothing.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cbehindcandy"
+source = "src/Gruntz/CBehindCandy.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "ceyecandy"
+source = "src/Gruntz/CEyeCandy.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cexittrigger"
+source = "src/Gruntz/CExitTrigger.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "csecretleveltrigger"
 source = "src/Gruntz/CSecretLevelTrigger.cpp"
 flags = "eh"
