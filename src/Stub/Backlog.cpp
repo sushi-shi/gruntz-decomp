@@ -40,7 +40,7 @@ struct BootyAssetRoot { // BootyState::m_c
 };
 class BootyState {
 public:
-    void vfunc_9(i32);
+    i32 vfunc_9(i32);
     i32 OnActivate_vfunc8();
     i32 BaseOnActivate();                                             // base vfunc8 (reloc-masked)
     i32 RegisterMultiNamespaces(char* mode, i32, i32, i32, i32, i32); // FUN @ 0x1e60
@@ -54,6 +54,49 @@ public:
     BootyNamespace* m_2c; // +0x2c  "BOOTY" image namespace
     BootyNamespace* m_30; // +0x30  "GRUNTZ" image namespace
 };
+// vfunc_9 (0x18d30) - the BootyState "bg" activation tick. Like OnActivate but
+// installs the "bg" multi-namespace, kicks the grunt-data load + state timer,
+// and (when the BOOTY_LOOP ambient sound entry exists and is enabled by
+// g_61ab20) re-triggers it on a rate-limited timer keyed off the g_6bf3c0 frame
+// counter vs the entry's last-played stamp + interval. The shared game registry
+// (g_gameReg) sound chain is modeled minimally for this method's needs.
+struct BootySndPlayer {
+    void Play(i32 token, i32, i32, i32); // FUN_001360d0 __thiscall
+};
+struct BootySndEntry {
+    char m_pad00[0x10];
+    BootySndPlayer* m_10; // +0x10
+    u32 m_14;             // +0x14  last-played stamp
+    u32 m_18;             // +0x18  interval
+};
+struct BootySndTable {
+    void Find(char* szName, BootySndEntry** out); // FUN_001b8438 __thiscall, out-param
+};
+struct BootySndSet {
+    char m_pad00[0x10];
+    BootySndTable m_10; // +0x10  (&m_10 == set+0x10)
+    char m_pad11[0x30 - 0x11];
+    i32 m_30; // +0x30  active guard
+};
+struct BootySndMgr {
+    char m_pad00[0x28];
+    BootySndSet* m_28; // +0x28
+};
+// A distinct typed view of the *0x24556c game-registry singleton for this method's
+// sound chain (the All.cpp aggregate's shared g_gameReg/CGameReg is defined later
+// in ApiCallers.cpp, so this method uses its own correctly-RVA'd alias).
+struct BzGameReg {
+    char m_pad00[0x30];
+    BootySndMgr* m_30; // +0x30
+    char m_pad34[0x11c - 0x34];
+    i32 m_11c; // +0x11c  sound token
+};
+DATA(0x0024556c)
+extern BzGameReg* g_bzReg;
+DATA(0x0021ab20)
+extern i32 g_61ab20; // BOOTY_LOOP enable gate
+DATA(0x002bf3c0)
+extern "C" u32 g_6bf3c0; // wrap-safe draw clock
 // (class ButeMgr removed - its only method ParseAttributeFile @0x170750 graduated
 // to src/Bute/ButeMgr.cpp; see the migration note further down.)
 // The help-screen game state. LoadAssets() first chains the base-class asset
@@ -152,7 +195,7 @@ namespace EngineLabelBacklog {
     void StartUpPrompt();
     i32 Stub_01fd70(char* szPath);
     void LoadCheatConfig();
-    void LoadCustomWorldInfo();
+    i32 LoadCustomWorldInfo(HWND hDlg);
     void HandleFortConquered();
     void __stdcall LoadVehicleGruntSprites(i32);
     void __stdcall WireTileSwitchLogic(i32, i32, i32);
@@ -225,12 +268,37 @@ void EngineLabelBacklog::CreateGameObjectByName() {}
 RVA(0x00018830, 0x380)
 void __stdcall EngineLabelBacklog::LoadBootyCheatState(i32, i32, i32) {}
 
-// @confidence: med
 // @source: decomp-xref
-// @proximity: CBootyState@-0xa0 | CState@+0x810 (boundary - pick one)
-// @stub
+// @early-stop
+// regalloc wall (~95%): retail holds `set` (reg->m_30->m_28) in eax and the play
+// entry `res` live in eax with no reload; the /O2 recompile pins `set` in ecx and
+// spills/reloads `res` at the Play call. Logic + all externs/strings named.
 RVA(0x00018d30, 0xcd)
-void BootyState::vfunc_9(i32) {}
+i32 BootyState::vfunc_9(i32) {
+    while (ShowCursor(FALSE) >= 0)
+        ;
+    if (!RegisterMultiNamespaces("bg", 0, 0, 0, 0, 1)) {
+        return 0;
+    }
+    m_c->m_4->Load();
+    StartTimer(0x50, 0x3e8, 0, 1);
+
+    BzGameReg* reg = g_bzReg;
+    BootySndSet* set = reg->m_30->m_28;
+    i32 token = reg->m_11c;
+    if (set->m_30 == 0) {
+        BootySndEntry* res = 0;
+        set->m_10.Find("BOOTY_LOOP", &res);
+        if (res != 0 && g_61ab20 != 0) {
+            u32 now = g_6bf3c0;
+            if (now - res->m_14 >= res->m_18) {
+                res->m_14 = now;
+                res->m_10->Play(token, 0, 0, 1);
+            }
+        }
+    }
+    return 1;
+}
 
 // @confidence: med
 // @source: string-xref
@@ -662,12 +730,66 @@ struct CCreditzOwner {
     i32 LoadGameAssetNamespaces(i32, i32, i32); // base loader; reloc-masked near call
 };
 
-// @confidence: med
+// LoadCustomWorldInfo (0x3b7c0) - the custom-world picker dialog helper. Reads the
+// level name from the dialog's listbox (id 0x3fc, LB_GETCURSEL/LB_GETTEXT), then
+// builds "<gameDir>\Custom\<level>.WWD" through the two global string-key builders
+// (g_pathStr/g_levelStr; Set=FUN_001b9e74, Append=FUN_001ba0c8, Reset=FUN_001b9c69,
+// the same builder used by BuildPowerupIconKeys). If the file exists it pops the
+// CUSTOM_WORLDINFO dialog. Frameless; helpers reloc-masked externals.
+struct GameKeyStr {
+    char* m_str;          // +0x00  the built C-string
+    void Set(char* s);    // FUN_001b9e74 __thiscall
+    void Append(char* s); // FUN_001ba0c8 __thiscall
+    void Reset();         // FUN_001b9c69 __thiscall
+};
+DATA(0x0022c25c)
+extern GameKeyStr g_pathStr; // 0x62c25c  full path builder
+DATA(0x0022c260)
+extern GameKeyStr g_levelStr; // 0x62c260  level name
+DATA(0x0022c26c)
+extern HWND g_customWorldParent; // 0x62c26c
+DATA(0x0022c270)
+extern HINSTANCE g_customWorldInst; // 0x62c270
+// FUN_0011fc10 __cdecl: writes the gruntz game dir into buf (ret nonzero on ok).
+extern i32 GetGameDir(char* buf, i32 cb);
+// FUN_00004282 __cdecl: tests a path exists (OpenFile probe). ret nonzero on ok.
+extern i32 PathFileExists(char* path);
+// The CUSTOM_WORLDINFO dialog proc (RVA 0x305d), reloc-masked code pointer.
+extern "C" INT_PTR __stdcall CustomWorldInfoDlgProc(HWND, UINT, WPARAM, LPARAM);
+
 // @source: decomp-xref
-// @proximity: WwdFile@-0x350 | CGruntCreationPoint@+0x3500 (boundary - pick one)
-// @stub
 RVA(0x0003b7c0, 0x12c)
-void EngineLabelBacklog::LoadCustomWorldInfo() {}
+i32 EngineLabelBacklog::LoadCustomWorldInfo(HWND hDlg) {
+    char szLevel[0x100];
+    char szDir[0x100];
+
+    HWND hList = GetDlgItem(hDlg, 0x3fc);
+    if (!hList) {
+        return 0;
+    }
+    i32 sel = (i32)SendMessageA(hList, 0x188 /*LB_GETCURSEL*/, 0, 0);
+    if (sel == -1) {
+        return 0;
+    }
+    if ((i32)SendMessageA(hList, 0x189 /*LB_GETTEXT*/, sel, (LPARAM)szLevel) == -1) {
+        return 0;
+    }
+    g_levelStr.Set(szLevel);
+    if (!GetGameDir(szDir, 0xfe)) {
+        return 0;
+    }
+    g_pathStr.Set(szDir);
+    g_pathStr.Append("\\Custom\\");
+    g_pathStr.Append(szLevel);
+    g_pathStr.Append(".WWD");
+    if (!PathFileExists(g_pathStr.m_str)) {
+        g_pathStr.Reset();
+        return 0;
+    }
+    DialogBoxParamA(g_customWorldInst, "CUSTOM_WORLDINFO", g_customWorldParent,
+                    (DLGPROC)CustomWorldInfoDlgProc, 0);
+    return 1;
+}
 
 // @confidence: med
 // @source: decomp-xref

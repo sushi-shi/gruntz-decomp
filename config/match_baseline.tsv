@@ -105,7 +105,7 @@ dsoundvoice	2	1
 engine_attributed	51	0
 engine_boundary	626	0
 engine_discovered	86	0
-engine_label_stubs	507	118
+engine_label_stubs	507	119
 engstr	3	1
 filemem	9	8
 filestream	13	9
@@ -1889,7 +1889,7 @@ engine_label_stubs	?LoadBridgeMoveSprites@EngineLabelBacklog@@YGXH@Z	0.6536	0.65
 engine_label_stubs	?LoadChatBoxSprite@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHH@Z	83.3714	83.3714	1	cpp:e8a4cb0d5b2a	0x20f40
 engine_label_stubs	?LoadCheatConfig@EngineLabelBacklog@@YAXXZ	0.8065	0.8065	1	cpp:45e65336d4b5	0x22e60
 engine_label_stubs	?LoadCreditzAssets2@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXXZ	1.1364	1.1364	1	cpp:e8a4cb0d5b2a	0x39dc0
-engine_label_stubs	?LoadCustomWorldInfo@EngineLabelBacklog@@YAXXZ	1.0526	1.0526	1	cpp:45e65336d4b5	0x3b7c0
+engine_label_stubs	?LoadCustomWorldInfo@EngineLabelBacklog@@YAHPAX@Z	100.0000	100.0000	1	cpp:aab6e5a6e511	0x3b7c0
 engine_label_stubs	?LoadDroppedObjectEffects@CDroppedObject@@QAEXXZ	0.6289	0.6289	1	cpp:e8a4cb0d5b2a	0xc7090
 engine_label_stubs	?LoadFinishLevelSprite@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXH@Z	0.9804	0.9804	1	cpp:e8a4cb0d5b2a	0x7c3d0
 engine_label_stubs	?LoadFreezeSpellAssets@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXXZ	0.7463	0.7463	1	cpp:e8a4cb0d5b2a	0x69d60
@@ -2042,7 +2042,7 @@ engine_label_stubs	?thirdparty_winapi_17c790_SmackWait_4_DispatchMessageA_PeekMe
 engine_label_stubs	?vector_deleting_destructor@CGruntzMgr@@QAEXH@Z	9.0909	9.0909	1	cpp:6bf52155264d	0x83330
 engine_label_stubs	?vfunc_16@StatusBarItem@@QAEXHHH@Z	0.3484	0.3484	1	cpp:6bf52155264d	0xce660
 engine_label_stubs	?vfunc_20@CloudHazard@@QAEXHH@Z	1.4085	1.4085	1	cpp:6bf52155264d	0xb4640
-engine_label_stubs	?vfunc_9@BootyState@@QAEXH@Z	1.3514	1.3514	1	cpp:6bf52155264d	0x18d30
+engine_label_stubs	?vfunc_9@BootyState@@QAEHH@Z	94.7973	94.7973	1	cpp:aab6e5a6e511	0x18d30
 engine_label_stubs	?vfunc_9@Projectile@@QAEXXZ	0.3891	0.3891	1	cpp:45e65336d4b5	0x61cb0
 engine_label_stubs	?winapi_00c840_CopyRect_SetRect@ApiCallerStubs@@YAHXZ	1.3084	1.3084	1	cpp:e1535087fe94	0xc840
 engine_label_stubs	?winapi_00cd00_timeGetTime@ApiCallerStubs@@YAHXZ	100.0000	100.0000	1	cpp:e1535087fe94	0xcd00
