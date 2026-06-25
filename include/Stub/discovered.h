@@ -504,11 +504,6 @@ public:
     void ClassUnknown_41_168ee0();
     void ClassUnknown_41_168fb0();
 };
-class ClassUnknown_42 {
-public:
-    void ClassUnknown_42_0e2df0();
-    void ClassUnknown_42_0e32e0();
-};
 class ClassUnknown_43 {
 public:
     void ClassUnknown_43_142360(); // CFileImage 2nd destructor copy (deferred, see Discovered.cpp)

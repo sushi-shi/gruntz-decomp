@@ -22,16 +22,22 @@
 #include <rva.h>
 
 // The 0x10-byte sprite/animation reference node (trace placeholder ClassUnknown_42,
-// the +0x8/+0x4c bucket element). Its ctor (0xe2df0) and dtor (0xe32e0) live in a
-// sibling cluster; modeled NO-body so this table's `call`s through them reloc-mask.
-// __thiscall throughout: Build(p0, sprite, kind) -> BOOL, Free() the teardown.
+// the +0x8/+0x4c bucket element). Build (0xe2df0) caches a CShadeTableCache (m_00)
+// + its CShadeTable alpha key (m_04) and bakes a 3-shade team-color triple (m_08 /
+// m_0a / m_0c, each an RGB565 pixel) from the `kind` enum (0..16); Free (0xe32e0)
+// drops the table back to the cache via FindRemove and zeros both. __thiscall.
+// Bodies live in the sibling SpriteRef.cpp; modeled NO-body here so this table's
+// `call`s through them reloc-mask. Fields kept i32 so Add()/GetSel() stay byte-exact.
 class CSpriteRef {
 public:
-    i32 Build(i32 p0, void* sprite, i32 kind); // 0xe2df0, ret 0xc
-    void Free();                               // 0xe32e0
-    i32 m_00;                                  // +0x00
-    i32 m_04; // +0x04  resolved sprite/frame pointer (returned by GetSel)
-    char m_pad08[0x10 - 0x8];
+    i32 Build(i32 cache, void* shade, i32 kind); // 0xe2df0, ret 0xc
+    void Free();                                 // 0xe32e0
+    i32 m_00;                                    // +0x00  CShadeTableCache*
+    i32 m_04; // +0x04  CShadeTable* alpha key (returned by GetSel)
+    u16 m_08; // +0x08  team color 1 (192/255 shade)
+    u16 m_0a; // +0x0a  team color 3 (128/255 shade)
+    u16 m_0c; // +0x0c  team color 2 (full intensity)
+    u16 m_0e; // +0x0e  pad to 0x10
 };
 
 // The sprite name->object hash table (CSpriteHashTable at +0x10 of the sprite mgr).

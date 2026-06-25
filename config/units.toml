@@ -424,6 +424,11 @@ source = "src/Gruntz/SpriteRefTable.cpp"
 flags = "base"
 
 [[unit]]
+unit = "spriteref"
+source = "src/Gruntz/SpriteRef.cpp"
+flags = "base"
+
+[[unit]]
 unit = "butemgr"
 source = "src/Bute/ButeMgr.cpp"
 flags = "eh"

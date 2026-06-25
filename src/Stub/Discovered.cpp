@@ -795,10 +795,8 @@ RVA(0x00168fb0, 0x1f)
 void ClassUnknown_41::ClassUnknown_41_168fb0() {}
 
 // ---- ClassUnknown_42 ----
-RVA(0x000e2df0, 0x39f)
-void ClassUnknown_42::ClassUnknown_42_0e2df0() {}
-RVA(0x000e32e0, 0x25)
-void ClassUnknown_42::ClassUnknown_42_0e32e0() {}
+// Recovered as CSpriteRef (the CSpriteRefTable bucket-element node): Build (0xe2df0)
+// + Free (0xe32e0). Reconstructed in src/Gruntz/SpriteRef.cpp.
 
 // ---- ClassUnknown_43 (CFileImage / CDDSurface, DIRSURF.CPP) ----
 // The bulk of the class (FreeSurfaces/Clear/SaveFile/SaveDispatch/LoadKeyed) is

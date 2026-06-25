@@ -64,7 +64,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	232	0
+engine_discovered	230	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -146,6 +146,7 @@ sounddevice	6	4
 soundstream	5	2
 soundvoicelist	4	3
 spriteloaders	9	4
+spriteref	2	1
 spritereftable	7	6
 spriteresource	6	2
 statemgrbz	5	3
@@ -826,8 +827,6 @@ engine_discovered	?ClassUnknown_40_168d00@ClassUnknown_40@@QAEXXZ	0.3922	0.3922	
 engine_discovered	?ClassUnknown_41_165dd0@ClassUnknown_41@@QAEXXZ	4.7619	4.7619	1	1bc24edc742b	0x165dd0
 engine_discovered	?ClassUnknown_41_168ee0@ClassUnknown_41@@QAEXXZ	1.7391	1.7391	1	dcf18fd0ff71	0x168ee0
 engine_discovered	?ClassUnknown_41_168fb0@ClassUnknown_41@@QAEXXZ	8.3333	8.3333	1	bca26f1dccfa	0x168fb0
-engine_discovered	?ClassUnknown_42_0e2df0@ClassUnknown_42@@QAEXXZ	0.1455	0.1455	1	96bdc6e4e2d5	0xe2df0
-engine_discovered	?ClassUnknown_42_0e32e0@ClassUnknown_42@@QAEXXZ	7.1429	7.1429	1	1f147bc98413	0xe32e0
 engine_discovered	?ClassUnknown_43_142360@ClassUnknown_43@@QAEXXZ	5.0000	5.0000	1	3960877c2200	0x142360
 engine_discovered	?ClassUnknown_43_144640@ClassUnknown_43@@QAEXXZ	0.1896	0.1896	1	3703064b9ebc	0x144640
 engine_discovered	?ClassUnknown_44_158680@ClassUnknown_44@@QAEXXZ	4.7619	4.7619	1	bc27ebee79bf	0x158680
@@ -1616,7 +1615,7 @@ grunt	?ResolveDeathAnimation@CGrunt@@QAEHXZ	97.8283	97.8283	6	142c8cc4dd01	0x455
 grunt	?ResolveIdleAnimation@CGrunt@@QAEHXZ	92.0598	92.0598	6	4559532e9c2a	0x45960
 grunt	?ResolveMovingAnimation@CGrunt@@QAEHXZ	92.8816	92.8816	6	c96d52636e85	0x45100
 grunt	?Save@CGrunt@@QAEHPAVCGruntArchive@@@Z	94.2489	94.2489	4	40228e139df7	0x53f90
-grunt	?SerializeMove@CGrunt@@QAEHPAVCGruntArchive@@HHH@Z	100.0000	100.0000	1	4dd7714844b4	0x53b80
+grunt	?SerializeMove@CGrunt@@QAEHPAVCGruntArchive@@HHH@Z	100.0000	100.0000	2	bc7f280c7bfd	0x53b80
 grunt	?SetEntrancePos@CGrunt@@QAEXHH@Z	89.3421	89.3421	3	2c26e611f009	0x4d060
 grunt	?StepAnimDispatchA@CGrunt@@QAEHHHHH@Z	41.6245	41.6245	2	cee096a63856	0x52fb0
 grunt	?StepAnimDispatchB@CGrunt@@QAEHXZ	40.7674	40.7674	2	4dbf079670fa	0x6a6d0
@@ -2114,6 +2113,8 @@ spriteloaders	?LoadTimerSprite@CTimer@@QAEHHH@Z	96.5217	96.5217	7	5c2e2a6c645b	0
 spriteloaders	?Reset@CTimer@@QAEXXZ	100.0000	100.0000	1	f198e826ac7a	0x9bc70
 spriteloaders	?Serialize@CTimer@@QAEHPAUCTimerArchive@@@Z	100.0000	100.0000	2	3e5484c77360	0x9c2e0
 spriteloaders	?Tick@CTimer@@QAEHH@Z	85.7981	85.7981	3	671c39b9c760	0x9bca0
+spriteref	?Build@CSpriteRef@@QAEHHPAXH@Z	93.4364	93.4364	1	627fedcf62cf	0xe2df0
+spriteref	?Free@CSpriteRef@@QAEXXZ	100.0000	100.0000	1	fcb38fc9002c	0xe32e0
 spritereftable	?Add@CSpriteRefTable@@QAEPAVCSpriteRef@@PADH@Z	97.5000	97.5000	2	c1cbee075071	0xe2890
 spritereftable	?Clear@CSpriteRefTable@@QAEXXZ	100.0000	100.0000	1	1defe128e339	0xe22d0
 spritereftable	?GetA@CSpriteRefTable@@QAEPAVCSpriteRef@@H@Z	100.0000	100.0000	2	58f97cf1fd94	0xe2360
