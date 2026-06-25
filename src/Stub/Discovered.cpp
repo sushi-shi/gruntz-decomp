@@ -42,14 +42,6 @@ RVA(0x00012ec0, 0x44) void CExplosion::CExplosion_012ec0() {}
 // ---- CGruntAnimPlayer ----
 RVA(0x00150610, 0x41) void CGruntAnimPlayer::CGruntAnimPlayer_150610() {}
 
-// ---- CGruntCreationPoint ----
-RVA(0x00010730, 0x44) void CGruntCreationPoint::CGruntCreationPoint_010730() {}
-RVA(0x0003ecc0, 0x17) void CGruntCreationPoint::CGruntCreationPoint_03ecc0() {}
-
-// ---- CGruntHealthSprite ----
-RVA(0x00011fb0, 0x44) void CGruntHealthSprite::CGruntHealthSprite_011fb0() {}
-RVA(0x0007f0d0, 0x6e) void CGruntHealthSprite::CGruntHealthSprite_07f0d0() {}
-
 // ---- CGruntSpawnConfig ----
 RVA(0x0011c730, 0x5c) void CGruntSpawnConfig::CGruntSpawnConfig_11c730() {}
 
@@ -58,10 +50,6 @@ RVA(0x00010670, 0x44) void CGruntStartingPoint::CGruntStartingPoint_010670() {}
 
 // ---- CGruntToyTimeSprite ----
 RVA(0x00012130, 0x44) void CGruntToyTimeSprite::CGruntToyTimeSprite_012130() {}
-
-// ---- CGruntWingzTimeSprite ----
-RVA(0x000121f0, 0x44) void CGruntWingzTimeSprite::CGruntWingzTimeSprite_0121f0() {}
-RVA(0x0007fd90, 0xd) void CGruntWingzTimeSprite::CGruntWingzTimeSprite_07fd90() {}
 
 // ---- CGruntzMgr ----
 RVA(0x0008b960, 0x7c4) void CGruntzMgr::CGruntzMgr_08b960() {}

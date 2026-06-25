@@ -641,6 +641,21 @@ source = "src/Gruntz/CTimeBomb.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "cgruntcreationpoint"
+source = "src/Gruntz/CGruntCreationPoint.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cgrunthealthsprite"
+source = "src/Gruntz/CGruntHealthSprite.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cgruntwingztimesprite"
+source = "src/Gruntz/CGruntWingzTimeSprite.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "cgruntselectedsprite"
 source = "src/Gruntz/CGruntSelectedSprite.cpp"
 flags = "eh"

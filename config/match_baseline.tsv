@@ -53,9 +53,12 @@ ceyecandy	2	2
 cfader	6	5
 cfadermgr	5	2
 cfortressflag	2	2
+cgruntcreationpoint	2	2
+cgrunthealthsprite	2	2
 cgruntpowerupsprite	3	2
 cgruntselectedsprite	3	2
 cgrunttoysprite	3	2
+cgruntwingztimesprite	2	2
 chatbox	16	9
 chatbox_eh	1	1
 chatboxowner	4	1
@@ -86,7 +89,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	147	0
+engine_discovered	141	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -520,6 +523,10 @@ cfadermgr	?FreeAll@CFaderMgr@@QAEXXZ	100.0000	100.0000	1	f0e41c40b256	0x17d9a0
 cfadermgr	?Remove@CFaderMgr@@QAEXPAUCFader@@@Z	67.1111	67.1111	1	7c395e00a7e3	0x17e170
 cfortressflag	??1CFortressFlag@@UAE@XZ	100.0000	100.0000	1	2055bad4ba8d	0x10e90
 cfortressflag	?Serialize@CFortressFlag@@QAEHHHHH@Z	100.0000	100.0000	1	b560b6331961	0x46410
+cgruntcreationpoint	??1CGruntCreationPoint@@UAE@XZ	100.0000	100.0000	1	887125215466	0x10730
+cgruntcreationpoint	?AdvanceAnim@CGruntCreationPoint@@QAEHXZ	100.0000	100.0000	1	f79597535ca0	0x3ecc0
+cgrunthealthsprite	??1CGruntHealthSprite@@UAE@XZ	100.0000	100.0000	1	819b10e75882	0x11fb0
+cgrunthealthsprite	?SetHealthGlyph@CGruntHealthSprite@@QAEHHHH@Z	100.0000	100.0000	1	91b6d380eb55	0x7f0d0
 cgruntpowerupsprite	??1CGruntPowerupSprite@@UAE@XZ	100.0000	100.0000	1	083563c3491b	0x12370
 cgruntpowerupsprite	?SetCell@CGruntPowerupSprite@@QAEHHHH@Z	100.0000	100.0000	1	88ade8a8af7a	0x80380
 cgruntpowerupsprite	?Update@CGruntPowerupSprite@@QAEHXZ	89.8214	89.8214	1	ff892b66e460	0x80410
@@ -529,6 +536,8 @@ cgruntselectedsprite	?Update@CGruntSelectedSprite@@QAEHXZ	84.8485	84.8485	1	d1fd
 cgrunttoysprite	??1CGruntToySprite@@UAE@XZ	100.0000	100.0000	1	c705bae9e5ce	0x122b0
 cgrunttoysprite	?SetCell@CGruntToySprite@@QAEHHH@Z	100.0000	100.0000	1	a78dbac253e5	0x7f920
 cgrunttoysprite	?Update@CGruntToySprite@@QAEHXZ	99.3000	99.3000	1	516d5554232c	0x7f960
+cgruntwingztimesprite	??1CGruntWingzTimeSprite@@UAE@XZ	100.0000	100.0000	1	45cfd716baa5	0x121f0
+cgruntwingztimesprite	?GetWingzTime@CGruntWingzTimeSprite@@SGHPAUCWingzTimeHost@@@Z	100.0000	100.0000	1	fd29641ade51	0x7fd90
 chatbox	?AddNode@CChatBox@@QAEHPAX@Z	100.0000	100.0000	3	88a7b8bd99e7	0x182ba0
 chatbox	?AdvanceRow0@CChatBox@@QAEHPAXHH@Z	94.8718	94.8718	3	5b6842c8ffeb	0x182df0
 chatbox	?AdvanceRow1@CChatBox@@QAEHPAXHH@Z	94.8718	94.8718	3	e91d1d630c54	0x182e60
@@ -763,15 +772,9 @@ engine_discovered	?CDDrawWorkerList_163bc0@CDDrawWorkerList@@QAEXXZ	4.7619	4.761
 engine_discovered	?CDroppedObjectShadow_012670@CDroppedObjectShadow@@QAEXXZ	5.8824	5.8824	2	a315b1a9db88	0x12670
 engine_discovered	?CExplosion_012ec0@CExplosion@@QAEXXZ	5.8824	5.8824	2	f5ebfa592daf	0x12ec0
 engine_discovered	?CGruntAnimPlayer_150610@CGruntAnimPlayer@@QAEXXZ	1.7391	1.7391	2	ffb44f05f4d6	0x150610
-engine_discovered	?CGruntCreationPoint_010730@CGruntCreationPoint@@QAEXXZ	5.8824	5.8824	2	466c632bedc8	0x10730
-engine_discovered	?CGruntCreationPoint_03ecc0@CGruntCreationPoint@@QAEXXZ	14.2857	14.2857	2	83aeb3c656f3	0x3ecc0
-engine_discovered	?CGruntHealthSprite_011fb0@CGruntHealthSprite@@QAEXXZ	5.8824	5.8824	2	f8d747c8a86f	0x11fb0
-engine_discovered	?CGruntHealthSprite_07f0d0@CGruntHealthSprite@@QAEXXZ	1.1765	1.1765	2	deeb68941d3f	0x7f0d0
 engine_discovered	?CGruntSpawnConfig_11c730@CGruntSpawnConfig@@QAEXXZ	1.1111	1.1111	1	c0d81b9b3250	0x11c730
 engine_discovered	?CGruntStartingPoint_010670@CGruntStartingPoint@@QAEXXZ	5.8824	5.8824	2	ec37c4559f0e	0x10670
 engine_discovered	?CGruntToyTimeSprite_012130@CGruntToyTimeSprite@@QAEXXZ	5.8824	5.8824	2	5ffada3946fb	0x12130
-engine_discovered	?CGruntWingzTimeSprite_0121f0@CGruntWingzTimeSprite@@QAEXXZ	5.8824	5.8824	1	ba087a9b3b4e	0x121f0
-engine_discovered	?CGruntWingzTimeSprite_07fd90@CGruntWingzTimeSprite@@QAEXXZ	13.3333	13.3333	1	58f438126d27	0x7fd90
 engine_discovered	?CGruntzMgr_08b960@CGruntzMgr@@QAEXXZ	0.0907	0.0907	2	f28c03e9d08a	0x8b960
 engine_discovered	?CGuardPoint_010410@CGuardPoint@@QAEXXZ	5.8824	5.8824	2	cd33984f8d7b	0x10410
 engine_discovered	?CLightFx_012430@CLightFx@@QAEXXZ	5.8824	5.8824	2	9bb66611a638	0x12430
