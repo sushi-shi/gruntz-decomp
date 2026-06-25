@@ -656,6 +656,11 @@ source = "src/Gruntz/CDDrawSurfaceMgr.cpp"
 flags = "base"
 
 [[unit]]
+unit = "cddrawsurfacemgrserialize"
+source = "src/Gruntz/CDDrawSurfaceMgrSerialize.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "cddrawworkerregistry"
 source = "src/Gruntz/CDDrawWorkerRegistry.cpp"
 flags = "eh"

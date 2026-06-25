@@ -58,10 +58,6 @@ class CDDrawSubMgr {
 public:
     void CDDrawSubMgr_15c360();
 };
-class CDDrawSurfaceMgr {
-public:
-    void CDDrawSurfaceMgr_156020();
-};
 class CDDrawWorkerList {
 public:
     void CDDrawWorkerList_163bc0();

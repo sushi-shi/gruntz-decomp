@@ -34,6 +34,7 @@ cddrawsubmgrdraco	5	2
 cddrawsubmgrleaf	13	4
 cddrawsubmgrleafscan	9	3
 cddrawsurfacemgr	9	5
+cddrawsurfacemgrserialize	1	0
 cddrawsurfacepair	4	2
 cddrawworkercache	4	1
 cddrawworkerlist	10	7
@@ -63,7 +64,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	235	0
+engine_discovered	234	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -383,6 +384,7 @@ cddrawsurfacemgr	?UnknownVirtualMethod20@CDDrawSurfaceMgr@@UAEXXZ	100.0000	100.0
 cddrawsurfacemgr	?UnknownVirtualMethod24@CDDrawSurfaceMgr@@UAEHHHH@Z	97.8250	97.8250	6	6cecebef4b0f	0x155f60
 cddrawsurfacemgr	?UnknownVirtualMethod28@CDDrawSurfaceMgr@@UAEXPAX@Z	100.0000	100.0000	5	9480406e5471	0x155f50
 cddrawsurfacemgr	?UnknownVirtualMethod38@CDDrawSurfaceMgr@@UAEHPAXHHH@Z	100.0000	100.0000	6	4f82654368f6	0x156a90
+cddrawsurfacemgrserialize	?SnapshotChildren@CDDrawSurfaceMgr@@QAEHP6AHPAX0HHH@ZHPADH@Z	74.6433	74.6433	1	e074f114cd14	0x156020
 cddrawsurfacepair	??1CDDrawSurfacePair@@QAE@XZ	91.5600	91.5600	1	db5a35e769fe	0x1590f0
 cddrawsurfacepair	?BltSelf@CDDrawSurfacePair@@QAEXPAV1@@Z	100.0000	100.0000	1	904242950eca	0x3a1d0
 cddrawsurfacepair	?DrawBox@CDDrawSurfacePair@@QAEXPAHH@Z	52.7371	52.7371	1	e1b13d28ceaa	0x163f40
@@ -673,7 +675,6 @@ engine_discovered	?CDDPalette_1474d0@CDDPalette@@QAEXXZ	1.1429	1.1429	1	3388fbb2
 engine_discovered	?CDDPalette_147530@CDDPalette@@QAEXXZ	2.8571	2.8571	1	8ac5a652ac1e	0x147530
 engine_discovered	?CDDSurface_142a40@CDDSurface@@QAEXXZ	5.0000	5.0000	1	861706b38678	0x142a40
 engine_discovered	?CDDrawSubMgr_15c360@CDDrawSubMgr@@QAEXXZ	0.0877	0.0877	1	0cd80af732ae	0x15c360
-engine_discovered	?CDDrawSurfaceMgr_156020@CDDrawSurfaceMgr@@QAEXXZ	0.1274	0.1274	1	d290924cde9f	0x156020
 engine_discovered	?CDDrawWorkerList_163bc0@CDDrawWorkerList@@QAEXXZ	4.7619	4.7619	1	2c08916d9c7a	0x163bc0
 engine_discovered	?CDDrawWorkerMapSmall_156d20@CDDrawWorkerMapSmall@@QAEXXZ	3.3333	3.3333	1	b07b78caacf4	0x156d20
 engine_discovered	?CDDrawWorkerMapSmall_165810@CDDrawWorkerMapSmall@@QAEXXZ	2.0000	2.0000	1	792211886a74	0x165810

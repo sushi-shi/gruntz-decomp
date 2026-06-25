@@ -94,18 +94,6 @@ void CDDrawSubMgr::CDDrawSubMgr_15c360() {}
 // CDDrawSubMgrLeaf but are CDDrawSubMgrLeafScan members (this+0x10 map / +0x30
 // guard / +0x34 redraw arg).
 
-// ---- CDDrawSurfaceMgr ----
-// 0x1558b0 (~CDDrawSurfaceMgr, /GX dtor — eh-dtor-needs-base-subobject wall) and
-// 0x155e20 (Cleanup_155e20 child-teardown walk — zero-register-pinning wall, ~96%)
-// reconstructed in src/Gruntz/CDDrawSurfaceMgr.cpp. 0x156020 is the 1285-B child
-// blit-param serializer/dispatcher: a /GX EH state-machine (~14 unwind states over
-// MFC CString temps + inline strlen/strcpy, dispatching push-1/3/4/5 modes through
-// the per-child blit ops 0x15abc0/0x15acb0/0x15ac20/0x15b020/0x160f70). Big-SEH wall
-// family (docs/patterns/big-seh-fuzzy-desync.md); deferred to the final sweep for a
-// leaf-first redo, NOT half-reconstructed.
-RVA(0x00156020, 0x505)
-void CDDrawSurfaceMgr::CDDrawSurfaceMgr_156020() {}
-
 // ---- CDDrawWorkerList ----
 RVA(0x00163bc0, 0x2c)
 void CDDrawWorkerList::CDDrawWorkerList_163bc0() {}
