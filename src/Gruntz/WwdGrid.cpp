@@ -19,13 +19,6 @@ extern CWwdGridVtbl g_wwdGridVtbl;
 DATA(0x005e8cb4)
 extern CWwdGridVtbl g_remusBaseDtorVtbl;
 
-// Intrusive doubly-linked bucket-list ops: __thiscall on the 8-byte BucketHead,
-// the node passed as the single stack arg (callee-cleanup, ret 4).
-struct BucketOps {
-    void AddNode_1390e0(WwdRegion* node);
-    void Unlink_1391e0(WwdRegion* node);
-};
-
 // The engine bucket-array deallocator path: the MSVC vector dtor iterator
 // (__ehvec_dtor, __stdcall - callee-clean, NO `add esp` after the call) over the
 // element dtor, then RezFree of the backing block. (The ctor's alloc + element
@@ -58,13 +51,13 @@ CWwdGrid::~CWwdGrid() {
 // ===========================================================================
 RVA(0x00191800, 0x39)
 void CWwdGrid::FreeBuckets() {
-    if (m_04) {
+    if (m_allocated) {
         if (m_buckets) {
             i32* raw = (i32*)m_buckets - 1; // count cookie precedes the array
             EhVecDtor_11f640(m_buckets, 0x8, *raw, (void*)DNameNodeDtor_191d10);
             RezFree(raw);
         }
-        m_04 = 0;
+        m_allocated = 0;
     }
 }
 
@@ -78,7 +71,7 @@ i32 CWwdGrid::Add(WwdRegion* r) {
     i32 row = (r->m_x - m_minX) >> m_shiftY;
     BucketHead* bucket = m_buckets + (col * m_cols + row);
     r->m_bucket = bucket;
-    ((BucketOps*)bucket)->AddNode_1390e0(r);
+    bucket->AddNode_1390e0(r);
     ++m_count;
     return 1;
 }
@@ -88,7 +81,7 @@ i32 CWwdGrid::Add(WwdRegion* r) {
 // ===========================================================================
 RVA(0x00191890, 0x24)
 void CWwdGrid::Remove(WwdRegion* r) {
-    ((BucketOps*)r->m_bucket)->Unlink_1391e0(r);
+    r->m_bucket->Unlink_1391e0(r);
     r->m_bucket = 0;
     --m_count;
 }
@@ -143,13 +136,13 @@ i32 CWwdGrid::Query(i32 a0, i32 a1, i32 a2, i32 a3, i32 doRemove) {
                 i32 rowN = rowB - rowA + 1;
                 i32 idx = base;
                 do {
-                    WwdRegion* r = (WwdRegion*)m_buckets[idx].m_head;
+                    WwdRegion* r = m_buckets[idx].m_head;
                     while (r) {
                         i32 x = r->m_x;
                         WwdRegion* next = r->m_next;
                         if (x >= a0 && r->m_y >= a1 && x <= a2 && r->m_y <= a3) {
                             if (doRemove) {
-                                ((BucketOps*)&m_buckets[idx])->Unlink_1391e0(r);
+                                m_buckets[idx].Unlink_1391e0(r);
                                 r->m_bucket = 0;
                                 --m_count;
                             }
@@ -174,13 +167,13 @@ i32 CWwdGrid::Query(i32 a0, i32 a1, i32 a2, i32 a3, i32 doRemove) {
 RVA(0x00191a70, 0x57)
 i32 CWwdGrid::Clear() {
     i32 nonEmpty = 0;
-    for (i32 i = 0; i < m_1c; ++i) {
-        WwdRegion* r = (WwdRegion*)m_buckets[i].m_head;
+    for (i32 i = 0; i < m_cellCount; ++i) {
+        WwdRegion* r = m_buckets[i].m_head;
         while (r) {
-            ((BucketOps*)&m_buckets[i])->Unlink_1391e0(r);
+            m_buckets[i].Unlink_1391e0(r);
             r->m_bucket = 0;
             ++nonEmpty;
-            r = (WwdRegion*)m_buckets[i].m_head;
+            r = m_buckets[i].m_head;
         }
     }
     m_count = 0;
@@ -225,10 +218,10 @@ CWwdGrid::CWwdGrid(i32 x0, i32 y0, i32 x1, i32 y1, i32 cellW, i32 cellH) {
     m_cellW = (i32)pow(2.0, (double)m_shiftX);
     m_cols = m_width / m_cellH + 1;
     m_rows = m_height / m_cellW + 1;
-    m_1c = m_rows * m_cols;
-    BucketHead* arr = new BucketHead[m_1c];
+    m_cellCount = m_rows * m_cols;
+    BucketHead* arr = new BucketHead[m_cellCount];
     m_buckets = arr;
     if (arr) {
-        m_04 = 1;
+        m_allocated = 1;
     }
 }

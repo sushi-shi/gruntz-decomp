@@ -16,19 +16,7 @@
 
 #include <Ints.h>
 
-// 8-byte intrusive list head: {head, tail} of WwdRegion nodes. Non-trivial
-// ctor (zero the pair) + a user dtor make `new BucketHead[n]` lower to the
-// MSVC array-cookie alloc + __ehvec_ctor/__ehvec_dtor pair (and a /GX frame),
-// matching the retail grid's bucket-array build/teardown.
-struct BucketHead {
-    void* m_head; // +0x00
-    void* m_tail; // +0x04
-    BucketHead() {
-        m_head = 0;
-        m_tail = 0;
-    }
-    ~BucketHead() {}
-};
+struct BucketHead;
 
 // A grid region node: link pair @ +0x00, owning-bucket back-pointer @ +0x0c,
 // pixel position @ +0x10/+0x14 (the engine's CWwdObject region sub-object @
@@ -40,6 +28,23 @@ struct WwdRegion {
     BucketHead* m_bucket; // +0x0c  cached owning bucket
     i32 m_x;              // +0x10
     i32 m_y;              // +0x14
+};
+
+// 8-byte intrusive list head: {head, tail} of WwdRegion nodes, with the engine's
+// __thiscall link/unlink ops (reloc-masked externs at 0x1390e0/0x1391e0). The
+// non-trivial ctor (zero the pair) + user dtor make `new BucketHead[n]` lower to
+// the MSVC array-cookie alloc + __ehvec_ctor/__ehvec_dtor pair (and a /GX frame),
+// matching the retail grid's bucket-array build/teardown.
+struct BucketHead {
+    WwdRegion* m_head; // +0x00
+    WwdRegion* m_tail; // +0x04
+    BucketHead() {
+        m_head = 0;
+        m_tail = 0;
+    }
+    ~BucketHead() {}
+    void AddNode_1390e0(WwdRegion* node);
+    void Unlink_1391e0(WwdRegion* node);
 };
 
 // The "remus" engine base: holds the vptr @ +0x00. Trivial inline ctor (no vptr
@@ -67,13 +72,13 @@ public:
     i32 Query(i32 x0, i32 y0, i32 x1, i32 y1, i32 doRemove);
     i32 Clear();
 
-    i32 m_04;              // +0x04  allocation-OK flag
+    i32 m_allocated;       // +0x04  buckets-allocated flag
     i32 m_count;           // +0x08  live object count
     i32 m_cols;            // +0x0c  width/cellH + 1
     i32 m_rows;            // +0x10  height/cellW + 1
     i32 m_shiftY;          // +0x14  log2(cellW)
     i32 m_shiftX;          // +0x18  log2(cellH)
-    i32 m_1c;              // +0x1c  numCells = cols*rows
+    i32 m_cellCount;       // +0x1c  numCells = cols*rows
     i32 m_width;           // +0x20
     i32 m_height;          // +0x24
     i32 m_minX;            // +0x28

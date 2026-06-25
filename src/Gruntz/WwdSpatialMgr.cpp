@@ -19,14 +19,38 @@
 
 // --- reloc-masked engine externs -------------------------------------------
 
+// A grid bucket list node (the region sub-object embedded at CWwdObject+0x9c):
+// intrusive link pair @ +0x00/+0x04, owning-bucket back-pointer @ +0x0c, pixel
+// position @ +0x10/+0x14, owning-object back-pointer @ +0x18. The iterator walks
+// these and reads their position.
+struct WwdGridNode {
+    WwdGridNode* m_next; // +0x00
+    WwdGridNode* m_prev; // +0x04
+    char m_pad08[0x0c - 0x08];
+    void* m_bucket;             // +0x0c  cached owning bucket head
+    i32 m_x;                    // +0x10
+    i32 m_y;                    // +0x14
+    class CWwdObject* m_object; // +0x18  owning sprite back-pointer
+};
+
+// A worker held off the sprite at +0x7c, carrying its own flag word at +0x08.
+struct CWwdObjWorker {
+    char m_pad00[0x08];
+    i32 m_flags; // +0x08
+};
+
 // CWwdObject - the engine sprite. flag word @ +0x08, callback worker @ +0x7c,
 // region cache @ +0x9c, primary-map key @ +0x188; scalar deleting dtor @ vtbl+4.
 class CWwdObject {
 public:
     virtual void Slot00();
     virtual i32 ScalarDtor(i32 flag); // +0x04
-    char m_pad08[0x9c - 0x08];
-    char m_region9c[0x18]; // +0x9c
+    char m_pad04[0x08 - 0x04];
+    i32 m_flags; // +0x08  plane/active flag word
+    char m_pad0c[0x7c - 0x0c];
+    CWwdObjWorker* m_worker; // +0x7c  per-object worker (its own +0x08 flags)
+    char m_pad80[0x9c - 0x80];
+    WwdGridNode m_region; // +0x9c  embedded grid region sub-object
 };
 
 // CWwdObjMgr - master object manager (m_mgr). Only the cluster-called methods.
@@ -42,18 +66,6 @@ public:
 // A 16-byte rectangle passed by value into the grid scroll method.
 struct WwdRect {
     i32 a, b, c, d;
-};
-
-// A grid bucket list node (the region sub-object embedded at CWwdObject+0x9c):
-// intrusive link pair @ +0x00/+0x04, owning-bucket back-pointer @ +0x0c, pixel
-// position @ +0x10/+0x14. The iterator walks these and reads their position.
-struct WwdGridNode {
-    WwdGridNode* m_next; // +0x00
-    WwdGridNode* m_prev; // +0x04
-    char m_pad08[0x0c - 0x08];
-    void* m_bucket; // +0x0c  cached owning bucket head
-    i32 m_x;        // +0x10
-    i32 m_y;        // +0x14
 };
 
 // 8-byte intrusive list head {head, tail} of WwdGridNode; one per grid cell.
@@ -78,12 +90,12 @@ public:
     i32 Remove_191890(WwdGridNode* region);
     i32 RemoveAll_191a70();
 
-    i32 m_04;     // +0x04
-    i32 m_count;  // +0x08  live object count
-    i32 m_cols;   // +0x0c  columns
-    i32 m_10;     // +0x10
-    i32 m_shiftY; // +0x14  log2(cellW)
-    i32 m_shiftX; // +0x18  log2(cellH)
+    i32 m_allocated; // +0x04  buckets-allocated flag
+    i32 m_count;     // +0x08  live object count
+    i32 m_cols;      // +0x0c  columns
+    i32 m_rows;      // +0x10  rows
+    i32 m_shiftY;    // +0x14  log2(cellW)
+    i32 m_shiftX;    // +0x18  log2(cellH)
     char m_pad1c[0x28 - 0x1c];
     i32 m_minX; // +0x28
     i32 m_minY; // +0x2c
@@ -248,8 +260,8 @@ i32 CWwdSpatialMgr::CountInRect(CWwdGrid* grid) {
     i32 count = 0;
     CWwdGridIter it;
     for (WwdGridNode* obj = it.Start(grid, 0); obj != 0; obj = it.GetNext()) {
-        CWwdObject* w = *(CWwdObject**)((char*)obj + 0x18);
-        if ((*(u8*)((char*)w + 0x8) & 0x2) || (*(u8*)(*(char**)((char*)w + 0x7c) + 0x8) & 0x4)) {
+        CWwdObject* w = obj->m_object;
+        if ((w->m_flags & 0x2) || (w->m_worker->m_flags & 0x4)) {
             m_mgr->InsertSorted_159e40(w, 1);
             grid->Remove_191890(obj);
             ++count;
@@ -320,15 +332,15 @@ i32 CWwdSpatialMgr::PruneCount() {
 // ===========================================================================
 RVA(0x001688f0, 0x6d)
 void CWwdSpatialMgr::RemoveObject(CWwdObject* obj) {
-    i32 flags = *(i32*)((char*)obj + 0x8);
+    i32 flags = obj->m_flags;
     if (flags & 0x800000) {
-        m_grid1->Add_191840((char*)obj + 0x9c);
+        m_grid1->Add_191840(&obj->m_region);
         m_mgr->AddToMap48_15aba0(obj);
     } else if (flags & 0x1000000) {
-        m_grid2->Add_191840((char*)obj + 0x9c);
+        m_grid2->Add_191840(&obj->m_region);
         m_mgr->AddToMap48_15aba0(obj);
     } else {
-        m_grid0->Add_191840((char*)obj + 0x9c);
+        m_grid0->Add_191840(&obj->m_region);
         m_mgr->AddToMap48_15aba0(obj);
     }
 }
@@ -448,7 +460,7 @@ walk:
     if (m_cur->m_x >= m_rect.a && m_cur->m_y >= m_rect.b && m_cur->m_x <= m_rect.c
         && m_cur->m_y <= m_rect.d) {
         if (m_remove) {
-            ((WwdBucketHead*)&m_grid->m_buckets[m_cell])->Unlink_1391e0(m_cur);
+            m_grid->m_buckets[m_cell].Unlink_1391e0(m_cur);
             m_cur->m_bucket = 0;
             --m_grid->m_count;
         }
