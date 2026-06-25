@@ -19,11 +19,15 @@
 // code bytes are load-bearing (campaign doctrine).
 #include <Gruntz/TileTriggerSwitchLogic.h>
 
-// CTileTriggerSwitchLogic's own vftable, referenced as a DIR32 datum and stamped
-// into the object by the ctor (transitional manual vptr; the class's virtuals
-// aren't all modeled yet so we can't let cl emit a matching vtable).
-DATA(0x005eae8c)
-extern void* g_tileTriggerSwitchLogicVtbl;
+// CTileTriggerSwitchLogic is now a REAL polymorphic class (4 virtuals in the
+// header): cl emits the ??_7 vftable + the implicit ctor vptr-stamp - the manual
+// `*(void**)this = &g_...Vtbl` struct stamp is gone. The EXE has no debug
+// symbols, so we assign the target-side names ourselves, and they are
+// DETERMINISTIC: the vtable is ??_7<Class>@@6B@; the 4 slots are placeholder
+// names we pick and apply to both sides. A generator can emit these from the
+// vtable scan (class + RVAs). No /GR -> no COL emitted; this matches the 4
+// vtable slots (the COL at 0x1eae88 is a separate datum, left unmatched here).
+// @data-symbol: ??_7CTileTriggerSwitchLogic@@6B@ 0x001eae8c 0x10
 
 // The Rez heap free (RVA 0x1b9b82, _RezFree); reloc-masked rel32 callee used by
 // the inlined child-delete in RemoveByKeys.
@@ -41,12 +45,20 @@ i32 __stdcall TileSwitchCheckType7(void* obj);
 // ---------------------------------------------------------------------------
 RVA(0x00110430, 0x1c)
 CTileTriggerSwitchLogic::CTileTriggerSwitchLogic() {
-    *(void**)this = &g_tileTriggerSwitchLogicVtbl;
+    // vptr stamp is now IMPLICIT (real polymorphic class) - cl prepends
+    // `mov [this], offset ??_7CTileTriggerSwitchLogic@@6B@`, exactly the retail
+    // ctor's first instruction, replacing the manual struct stamp.
     for (i32 i = 0; i < 24; i++) {
         m_block[i] = 0;
     }
     m_20 = 0;
 }
+
+// The 4 virtuals are DECLARED-ONLY: their real bodies live in unmatched engine
+// TUs, so we don't define them here. cl still emits the ??_7 vftable (the ctor
+// references it) with the 4 slots as external refs - enough for the ctor's
+// implicit vptr-stamp to be byte-exact. The vtable's slot CONTENTS are verified
+// only once each virtual is reconstructed (then named via @rva-symbol).
 
 // ---------------------------------------------------------------------------
 // CTileTriggerSwitchLogic::FindIndexByKey
@@ -242,7 +254,10 @@ i32 CTileTriggerSwitchLogic::RemoveByKeys(i32 k1, i32 k2) {
         node = node->m_next;
         if (data->m_04 == k2 && data->m_10 == k1) {
             if (data) {
-                *(void**)data = &g_tileTriggerSwitchLogicVtbl;
+                // NOTE: retail inlines a vptr restamp (mov [data],offset ??_7)
+                // here; with the manual g_...Vtbl removed it's omitted in this
+                // demo (RemoveByKeys was already @early-stop). The real fix is to
+                // model the inlined ~CTileTriggerSwitchLogic.
                 data->m_20 = 0;
                 RezFree(data);
             }

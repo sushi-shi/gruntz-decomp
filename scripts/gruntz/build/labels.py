@@ -85,6 +85,14 @@ DATA_MACRO_RE = re.compile(r"\bDATA\s*\(\s*(0x[0-9a-fA-F]+)\s*\)")
 # verbatim, so there is no join and no IR - it is read in every TU.
 RVA_SYMBOL_RE = re.compile(
     r"@rva-symbol:\s*(\S+)\s+(0x[0-9a-fA-F]+)(?:\s+(0x[0-9a-fA-F]+|\d+))?")
+# `// @data-symbol: <mangled> <rva> [<size>]` - the DATA analog of @rva-symbol: a
+# compiler-emitted DATUM with no source VarDecl to hang DATA() on (a `??_7`
+# vftable or `??_R*` RTTI record). The EXE carries no debug symbols, so the
+# delinked datum's name is ours to assign - this names it to match what cl emits
+# for the real polymorphic class, so the ctor's `mov [this],offset ??_7...` reloc
+# pairs and can flip to byte-exact. Emitted with kind=data (checked vs all_syms).
+DATA_SYMBOL_RE = re.compile(
+    r"@data-symbol:\s*(\S+)\s+(0x[0-9a-fA-F]+)(?:\s+(0x[0-9a-fA-F]+|\d+))?")
 # Annotation strings carried in @llvm.global.annotations (emitted by src/rva.h).
 ANN_RVA_RE = re.compile(r"^rva:(0x[0-9a-fA-F]+)(?:\s+size:(0x[0-9a-fA-F]+|\d+))?$")
 ANN_SYM_RE = re.compile(r"^symbol:(\S+)$")
@@ -819,6 +827,19 @@ def main():
                 rows.append((rva, sym, unit, size, "func"))
             else:
                 misses.append((rva, sym, unit, "@rva-symbol not in base obj"))
+
+        # --- standalone `// @data-symbol:` data (a `??_7` vtable / `??_R*` RTTI
+        # datum cl emits for a real polymorphic class; name is deterministic from
+        # the class). Authority-checked against the base obj's DATA symbols. ---
+        for m in DATA_SYMBOL_RE.finditer(text):
+            sym, rva_s, size_s = m.group(1), m.group(2), m.group(3)
+            rva = int(rva_s, 16)
+            size = (int(size_s, 16) if size_s and size_s.lower().startswith("0x")
+                    else int(size_s) if size_s else None)
+            if all_syms is None or sym in all_syms:
+                rows.append((rva, sym, unit, size, "data"))
+            else:
+                misses.append((rva, sym, unit, "@data-symbol not in base obj"))
 
         # --- DATA via AST (IR drops the extern's annotation) ---
         if ast is not None and DATA_MACRO_RE.search(text):
