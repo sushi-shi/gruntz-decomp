@@ -7,10 +7,6 @@
 // ---- CBattlezDlgColors ----
 RVA(0x00017ac0, 0x6) void CBattlezDlgColors::CBattlezDlgColors_017ac0() {}
 
-// ---- CBehindCandyAni ----
-RVA(0x000100f0, 0x44) void CBehindCandyAni::CBehindCandyAni_0100f0() {}
-RVA(0x000adbb0, 0x17) void CBehindCandyAni::CBehindCandyAni_0adbb0() {}
-
 // ---- CButeTree ----
 RVA(0x0016e070, 0x7b) void CButeTree::CButeTree_16e070() {}
 
@@ -101,13 +97,6 @@ RVA(0x000c8980, 0x64) void CSBI_RectOnly::CSBI_RectOnly_0c8980() {}
 RVA(0x000ebd70, 0x366) void CSBI_RectOnly::CSBI_RectOnly_0ebd70() {}
 RVA(0x00105800, 0x9e) void CSBI_RectOnly::CSBI_RectOnly_105800() {}
 RVA(0x001084d0, 0x96c) void CSBI_RectOnly::CSBI_RectOnly_1084d0() {}
-
-// ---- CSimpleAnimation ----
-RVA(0x0000f9d0, 0x44) void CSimpleAnimation::CSimpleAnimation_00f9d0() {}
-RVA(0x000abf70, 0x17) void CSimpleAnimation::CSimpleAnimation_0abf70() {}
-
-// ---- CSingleAnimation ----
-RVA(0x00010540, 0x44) void CSingleAnimation::CSingleAnimation_010540() {}
 
 // ---- CTeleporter ----
 RVA(0x00010dd0, 0x44) void CTeleporter::CTeleporter_010dd0() {}

@@ -1034,3 +1034,18 @@ flags = "eh"
 unit = "blowfish"
 source = "src/Crypto/Blowfish.cpp"
 flags = "base"
+
+[[unit]]
+unit = "csimpleanimation"
+source = "src/Gruntz/CSimpleAnimation.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cbehindcandyani"
+source = "src/Gruntz/CBehindCandyAni.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "csingleanimation"
+source = "src/Gruntz/CSingleAnimation.cpp"
+flags = "eh"

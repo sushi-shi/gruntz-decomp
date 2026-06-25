@@ -28,6 +28,7 @@ cambientsound	3	2
 canielement	3	2
 cattract	9	5
 cbehindcandy	2	2
+cbehindcandyani	2	2
 cddrawchildgroup	9	5
 cddrawptrcollections	13	10
 cddrawshadeblit	3	1
@@ -73,6 +74,8 @@ crt_ostream	4	3
 crt_streambuf	7	5
 crt_strstreambuf	4	2
 csecretleveltrigger	2	2
+csimpleanimation	2	2
+csingleanimation	1	1
 cstatichazard	2	2
 cstatusbarmgr	2	1
 ctimebomb	2	2
@@ -83,7 +86,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	152	0
+engine_discovered	147	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -328,6 +331,8 @@ cattract	?RunTitle@CAttract@@QAEHHHHHH@Z	99.5238	99.5238	1	9a5828a77e96	0xfa300
 cattract	?Vslot07@CAttract@@UAEHXZ	100.0000	100.0000	1	91fafb3898fd	0x147b0
 cbehindcandy	??1CBehindCandy@@UAE@XZ	100.0000	100.0000	1	5c9c55aab0c6	0xfc30
 cbehindcandy	?GetTypeTag@CBehindCandy@@QAEHXZ	100.0000	100.0000	1	32ed38245a17	0xfb70
+cbehindcandyani	??1CBehindCandyAni@@UAE@XZ	100.0000	100.0000	1	f4c855a7d8db	0x100f0
+cbehindcandyani	?AdvanceAnim@CBehindCandyAni@@QAEHXZ	100.0000	100.0000	1	4d7ee7a13f73	0xadbb0
 cddrawchildgroup	?Stub_1591f0@CDDrawChildGroup@@QAEXXZ	2.9412	2.9412	4	c142c66f7447	0x1591f0
 cddrawchildgroup	?Stub_159a70@CDDrawChildGroup@@QAEXXZ	0.2367	0.2367	4	6bb06c5c8409	0x159a70
 cddrawchildgroup	?VirtualMethodUnknown14@CDDrawChildGroup@@QAEHXZ	100.0000	100.0000	6	5bf8fe296b4f	0x1575e0
@@ -650,6 +655,9 @@ crt_strstreambuf	?str@strstreambuf@@QAEPADXZ	100.0000	100.0000	1	08404bbcac2f	0x
 crt_strstreambuf	?underflow@strstreambuf@@QAEHXZ	91.7353	91.7353	2	b71b810269ba	0x169490
 csecretleveltrigger	??1CSecretLevelTrigger@@UAE@XZ	100.0000	100.0000	1	1a6afbfadd87	0x10c50
 csecretleveltrigger	?Tick@CSecretLevelTrigger@@QAEHXZ	100.0000	100.0000	1	5007af99e855	0x42ac0
+csimpleanimation	??1CSimpleAnimation@@UAE@XZ	100.0000	100.0000	1	90ed99282119	0xf9d0
+csimpleanimation	?AdvanceAnim@CSimpleAnimation@@QAEHXZ	100.0000	100.0000	1	2a87ef63c834	0xabf70
+csingleanimation	??1CSingleAnimation@@UAE@XZ	100.0000	100.0000	1	96128fb6792b	0x10540
 cstatichazard	??1CStaticHazard@@UAE@XZ	100.0000	100.0000	1	2c9522f3c281	0x12b30
 cstatichazard	?FireActivation@CStaticHazard@@QAEXH@Z	100.0000	100.0000	1	69cb76687143	0xfbbf0
 cstatusbarmgr	?LoadTabSprites@CStatusBarMgr@@QAEHXZ	16.7383	16.7383	4	045cfeaa498f	0x102250
@@ -742,8 +750,6 @@ directsoundmgr	?Unlock@DirectSoundMgr@@QAEHPAXI0I@Z	100.0000	100.0000	2	1173b7b8
 directsoundmgr	?winapi_136e20_timeGetTime@DirectSoundMgr@@QAEHH@Z	2.6667	2.6667	2	593c6f38b8c5	0x136e20
 directsoundmgr	?winapi_137ac0_timeGetTime@DirectSoundMgr@@QAEHH@Z	2.9231	2.9231	2	63f8b426702d	0x137ac0
 engine_discovered	?CBattlezDlgColors_017ac0@CBattlezDlgColors@@QAEXXZ	50.0000	50.0000	2	0879229e7eb6	0x17ac0
-engine_discovered	?CBehindCandyAni_0100f0@CBehindCandyAni@@QAEXXZ	5.8824	5.8824	2	c1f555057dcc	0x100f0
-engine_discovered	?CBehindCandyAni_0adbb0@CBehindCandyAni@@QAEXXZ	14.2857	14.2857	2	dd457a2e5834	0xadbb0
 engine_discovered	?CButeTree_16e070@CButeTree@@QAEXXZ	0.8000	0.8000	2	449e08018b4b	0x16e070
 engine_discovered	?CCheckpointDlg_023570@CCheckpointDlg@@QAEXXZ	50.0000	50.0000	2	6f7562291252	0x23570
 engine_discovered	?CCheckpointTrigger_011480@CCheckpointTrigger@@QAEXXZ	5.8824	5.8824	2	36760718b34d	0x11480
@@ -781,9 +787,6 @@ engine_discovered	?CSBI_RectOnly_0c8980@CSBI_RectOnly@@QAEXXZ	3.8462	3.8462	2	c4
 engine_discovered	?CSBI_RectOnly_0ebd70@CSBI_RectOnly@@QAEXXZ	0.3774	0.3774	2	e421395136d1	0xebd70
 engine_discovered	?CSBI_RectOnly_105800@CSBI_RectOnly@@QAEXXZ	0.7273	0.7273	2	ef256b1ce0ce	0x105800
 engine_discovered	?CSBI_RectOnly_1084d0@CSBI_RectOnly@@QAEXXZ	0.0438	0.0438	2	2752ca66119f	0x1084d0
-engine_discovered	?CSimpleAnimation_00f9d0@CSimpleAnimation@@QAEXXZ	5.8824	5.8824	2	57afe276ba99	0xf9d0
-engine_discovered	?CSimpleAnimation_0abf70@CSimpleAnimation@@QAEXXZ	14.2857	14.2857	2	5df73f1dd9dd	0xabf70
-engine_discovered	?CSingleAnimation_010540@CSingleAnimation@@QAEXXZ	5.8824	5.8824	2	ffe7cf2c61c1	0x10540
 engine_discovered	?CTeleporter_010dd0@CTeleporter@@QAEXXZ	5.8824	5.8824	2	a36b702a54bf	0x10dd0
 engine_discovered	?CTeleporter_0419e0@CTeleporter@@QAEXXZ	2.5641	2.5641	2	a0b0752002ff	0x419e0
 engine_discovered	?CTileTriggerSwitch_0110f0@CTileTriggerSwitch@@QAEXXZ	5.8824	5.8824	2	5bfce3bf793c	0x110f0

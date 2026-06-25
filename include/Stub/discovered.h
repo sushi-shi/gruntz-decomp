@@ -7,7 +7,6 @@
 #define GRUNTZ_STUB_DISCOVERED_H
 
 class CBattlezDlgColors { public: void CBattlezDlgColors_017ac0(); };
-class CBehindCandyAni { public: void CBehindCandyAni_0100f0(); void CBehindCandyAni_0adbb0(); };
 class CButeTree { public: void CButeTree_16e070(); };
 class CCheckpointDlg { public: void CCheckpointDlg_023570(); };
 class CCheckpointTrigger { public: void CCheckpointTrigger_011480(); };
@@ -35,8 +34,6 @@ class CNetMgr { public: void CNetMgr_11f618(); void CNetMgr_18c022(); };
 class CObjectDropper { public: void CObjectDropper_0124f0(); };
 class CPlay { public: void CPlay_0d1b60(); };
 class CSBI_RectOnly { public: void CSBI_RectOnly_0c8980(); void CSBI_RectOnly_0ebd70(); void CSBI_RectOnly_105800(); void CSBI_RectOnly_1084d0(); };
-class CSimpleAnimation { public: void CSimpleAnimation_00f9d0(); void CSimpleAnimation_0abf70(); };
-class CSingleAnimation { public: void CSingleAnimation_010540(); };
 class CTeleporter { public: void CTeleporter_010dd0(); void CTeleporter_0419e0(); };
 class CTileTriggerSwitch { public: void CTileTriggerSwitch_0110f0(); };
 class CUserLogic { public: void CUserLogic_059230(); void CUserLogic_05caa0(); void CUserLogic_062110(); void CUserLogic_16e7f0(); void CUserLogic_16ea90(); };
