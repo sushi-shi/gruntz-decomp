@@ -182,7 +182,7 @@ projectile	9	3
 pyramidbridgesprites	1	0
 randomambientsound	9	4
 registryhelper	8	8
-rezmgr	15	8
+rezmgr	15	10
 rollingball	5	3
 savegame	20	14
 sbi_gruntmachine	3	2
@@ -2922,9 +2922,9 @@ rezmgr	?Load@CRezDirNode@@QAEHH@Z	100.0000	100.0000	5	f5c690a2c68c	0x13a0f0
 rezmgr	?MakeImageKey@RezMgr@@QAEHPAXPAD0@Z	100.0000	100.0000	5	45cbafe1118c	0x13e5d0
 rezmgr	?MakeRezPath@RezMgr@@QAEHXZ	92.7923	92.7923	6	89aba364b6ae	0x91670
 rezmgr	?PerFrameTick@RezMgr@@UAEHXZ	100.0000	100.0000	5	f48f8cfdbf55	0x8b740
-rezmgr	?Read@CRezItm@@QAEHHHIPAX@Z	99.3023	99.3023	1	f36f55a6737f	0x13c600
+rezmgr	?Read@CRezItm@@QAEHHHIPAX@Z	100.0000	100.0000	2	317d2c857ebf	0x13c600
 rezmgr	?Stub_13b0c0@CRezDir@@QAEXXZ	0.2139	0.2139	2	0caf2154eccf	0x13b0c0
-rezmgr	?Write@CRezItm@@QAEHHHIPAX@Z	99.0769	99.0769	1	d7feee54aa72	0x13c6c0
+rezmgr	?Write@CRezItm@@QAEHHHIPAX@Z	100.0000	100.0000	2	e4e65b9964df	0x13c6c0
 rollingball	??1CRollingBall@@UAE@XZ	100.0000	100.0000	1	9f5ff559b5b3	0x12f80
 rollingball	?InitActReg@CRollingBall@@SAXXZ	100.0000	100.0000	1	683351f53157	0xafd60
 rollingball	?RegisterActs@CRollingBall@@SAXXZ	92.9130	92.9130	1	a7984852a451	0xaff40
