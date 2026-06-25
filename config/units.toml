@@ -641,6 +641,11 @@ source = "src/Gruntz/CTimeBomb.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "cpathhazard"
+source = "src/Gruntz/CPathHazard.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "cdroppedobject"
 source = "src/Gruntz/CDroppedObject.cpp"
 flags = "eh"

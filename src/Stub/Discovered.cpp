@@ -131,12 +131,6 @@ RVA(0x0018c022, 0x1d3) void CNetMgr::CNetMgr_18c022() {}
 // ---- CObjectDropper ----
 RVA(0x000124f0, 0x44) void CObjectDropper::CObjectDropper_0124f0() {}
 
-// ---- CPathHazard ----
-RVA(0x00013340, 0x44) void CPathHazard::CPathHazard_013340() {}
-RVA(0x000b4020, 0x26c) void CPathHazard::CPathHazard_0b4020() {}
-RVA(0x000b47e0, 0x170) void CPathHazard::CPathHazard_0b47e0() {}
-RVA(0x000b5070, 0x5) void CPathHazard::CPathHazard_0b5070() {}
-
 // ---- CPlay ----
 RVA(0x000d1b60, 0xc2f) void CPlay::CPlay_0d1b60() {}
 
