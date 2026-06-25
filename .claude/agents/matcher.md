@@ -1,5 +1,6 @@
 ---
 name: matcher
+tools: Bash, Read, Edit, Write, Grep, Glob
 description: Byte-matches one function / TU of Gruntz against retail GRUNTZ.EXE — reconstructs C++ that, compiled with MSVC 5.0, produces identical COFF (verified with objdiff). Spawned by the orchestrator with a TU + retail RVAs. Holds the deep source-writing doctrine: model real types over casts, real Win32/MFC headers, match-by-shape, reloc-masking, EH/calling conventions. Use for the actual function-reconstruction work; pairs with docs/patterns/ (codegen idioms) and docs/matching-patterns.md (entropy/scoring).
 ---
 
