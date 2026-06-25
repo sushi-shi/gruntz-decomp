@@ -110,7 +110,8 @@ struct IDirectSoundBufferZ {
             u32* n2,
             u32 fl
         ); // +0x2c
-        char m_pad30[0x34 - 0x30];
+        i32(__stdcall* Play)(IDirectSoundBufferZ*, u32 r1, u32 r2,
+                             u32 flags);                                   // +0x30
         i32(__stdcall* SetCurrentPosition)(IDirectSoundBufferZ*, u32 pos); // +0x34
         i32(__stdcall* SetFormat)(IDirectSoundBufferZ*, void* fmt);        // +0x38
         i32(__stdcall* SetVolume)(IDirectSoundBufferZ*, i32 vol);          // +0x3c
@@ -150,7 +151,12 @@ public:
     i32 IsLooping();               // 0x135440  GetStatus & DSBSTATUS_LOOPING
     i32 SetVolume(i32 vol);        // 0x135560  SetVolume (caps DSBCAPS_CTRLVOLUME)
     i32 GetVolume();               // 0x1355f0  GetVolume
-    i32 SetVolumeByIndex(i32 idx); // 0x1355c0  SetVolume(g_volumeTable[idx]) (extern)
+    i32 SetVolumeByIndex(i32 idx); // 0x1355c0  SetVolume(g_volumeTable[idx])
+    i32 SetPanByIndex(i32 idx);    // 0x1357a0  SetPan(+/-g_panTable[idx]) by sign
+    i32 SetField2(i32 pct);        // 0x135920  freq-percent + duration recompute
+    void SetField3(i32 on);        // 0x135510  toggle the +0x14 play-flag bit 0 (looping)
+    void ComputeDuration();        // 0x1359a0  m_28 = m_2c*1000/m_3c
+    i32 Play();                    // 0x136270  Play(this looping flag) + reacquire-retry
     i32 GetVolumePercent();        // 0x135640  GetVolume -> percent (0x135110)
     i32 CloneAndPlay(i32 key, i32 mode, i32 slot); // 0x135660  reap + spawn a voice
     i32 SetPan(i32 pan);                           // 0x135740  SetPan (caps DSBCAPS_CTRLPAN)
@@ -200,12 +206,12 @@ public:
     i32 m_pan;                     // +0x1c  cached pan (GetPan)
     i32 m_volume;                  // +0x20  cached volume (GetVolume)
     u32 m_setFreq;                 // +0x24  cached SetFrequency value
-    i32 m_28;                      // +0x28  zero-init in ctor; role unproven
-    char m_pad2c[0x30 - 0x2c];
+    u32 m_28;                      // +0x28  duration (ComputeDuration = m_2c*1000/m_3c)
+    u32 m_2c;                      // +0x2c  sample count (set by the clone ctor)
     i32 m_30;   // +0x30  zero-init in ctor; role unproven
     i32 m_34;   // +0x34  zero-init in ctor; role unproven
-    i32 m_38;   // +0x38  zero-init in ctor; role unproven
-    i32 m_3c;   // +0x3c  zero-init in ctor; role unproven
+    i32 m_38;   // +0x38  zero-init in ctor; SetField2 percent base
+    u32 m_3c;   // +0x3c  sample rate (SetField2 sets it; ComputeDuration divides by it)
     u32 m_caps; // +0x40  buffer capability flags (DSBCAPS_CTRLFREQUENCY/PAN/VOLUME)
     // +0x44  intrusive list-node by which a clone instance hangs in its parent's
     // clone list (next@+0x44, prev@+0x48, back-pointer to this clone @+0x4c). The

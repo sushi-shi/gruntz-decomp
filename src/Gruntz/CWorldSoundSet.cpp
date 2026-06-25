@@ -183,7 +183,7 @@ void CSoundChannel::Recompute(i32 frame) {
     } else if (v > 0x64) {
         v = 0x64;
     }
-    m_04->SetVolByIdx(v);
+    m_04->SetVolumeByIndex(v);
 }
 
 // ---------------------------------------------------------------------------

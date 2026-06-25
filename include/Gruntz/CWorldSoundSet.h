@@ -33,7 +33,7 @@ class DirectSoundMgr {
 public:
     i32 StopAndRewind();                // 0x135380  (thiscall, no args)
     i32 winapi_136e20_timeGetTime(i32); // 0x136e20  (thiscall, 1 arg)
-    i32 SetVolByIdx(i32 idx);           // 0x1355c0  (thiscall, 1 arg) SetVolumeByIndex
+    i32 SetVolumeByIndex(i32 idx);      // 0x1355c0  (thiscall, 1 arg) volume-by-index
 };
 
 // One active sound channel hanging off a list node. Polymorphic: the teardown /

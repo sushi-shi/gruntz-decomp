@@ -238,7 +238,6 @@ RVA(0x00179300, 0x20) void InterfaceObject::InterfaceObject_179300() {}
 RVA(0x00179340, 0x48) void InterfaceObject::InterfaceObject_179340() {}
 
 // ---- MallocCtor_136230 ----
-RVA(0x001359a0, 0x18) void MallocCtor_136230::MallocCtor_136230_1359a0() {}
 
 // ---- MallocCtor_1615a0 ----
 RVA(0x000311e0, 0x4c) void MallocCtor_1615a0::MallocCtor_1615a0_0311e0() {}

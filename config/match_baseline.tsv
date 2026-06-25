@@ -65,7 +65,7 @@ cgruntpowerupsprite	5	4
 cgruntselectedsprite	5	3
 cgrunttoysprite	5	4
 cgruntwingztimesprite	2	2
-chatbox	18	11
+chatbox	27	20
 chatbox_eh	1	1
 chatboxowner	5	2
 cheatmgr	5	4
@@ -103,12 +103,12 @@ databuffer	7	5
 deflate	6	6
 dialogs	26	11
 directinputmgr2	29	25
-directsoundmgr	33	23
+directsoundmgr	39	28
 dsoundvoice	2	1
 engine_attributed	28	0
 engine_boundary	626	0
-engine_discovered	86	0
-engine_label_stubs	502	117
+engine_discovered	85	0
+engine_label_stubs	488	104
 engstr	3	1
 filemem	9	8
 filestream	13	9
@@ -676,11 +676,20 @@ chatbox	?HitTest2@CChatBox@@QAEHXZ	100.0000	100.0000	3	6b8028b9870b	0x183230
 chatbox	?HitTest3@CChatBox@@QAEHXZ	100.0000	100.0000	1	297f2fc11ffe	0x1831d0
 chatbox	?HitTest4@CChatBox@@QAEHXZ	100.0000	100.0000	1	f3916b09ecac	0x1831f0
 chatbox	?Init@CChatBox@@QAEXXZ	100.0000	100.0000	1	ee723d15e54c	0xa0280
+chatbox	?OnFlag00000003@CChatBox@@QAEHXZ	100.0000	100.0000	1	7158fc3ec0a9	0x182d60
+chatbox	?OnFlag00000100@CChatBox@@QAEHXZ	100.0000	100.0000	1	10ea0991314e	0x182d80
+chatbox	?OnFlag10000000@CChatBox@@QAEHXZ	100.0000	100.0000	1	7cc1756bc045	0x183130
+chatbox	?OnFlag20000000@CChatBox@@QAEHXZ	100.0000	100.0000	1	da225472fd8f	0x183150
+chatbox	?OnFlag40000000@CChatBox@@QAEHXZ	100.0000	100.0000	1	df96953e2fa2	0x182d20
+chatbox	?OnFlag80000000@CChatBox@@QAEHXZ	100.0000	100.0000	1	fc83aef84c8c	0x182d40
+chatbox	?Post@CChatBox@@QAEHXZ	100.0000	100.0000	1	6d9380abad28	0x182ce0
+chatbox	?Pre@CChatBox@@QAEHXZ	100.0000	100.0000	1	97042115abf3	0x182cb0
 chatbox	?ReplaceNode@CChatBox@@QAEHPAX@Z	100.0000	100.0000	2	d1a9e1bb764e	0x182dd0
 chatbox	?Reset@CChatBox@@QAEXXZ	100.0000	100.0000	1	40ea73dae4e4	0x182b30
 chatbox	?ScrollRow0@CChatBox@@QAEHXZ	63.2353	63.2353	3	d54dcc684915	0x183030
 chatbox	?ScrollRow1@CChatBox@@QAEHXZ	63.2353	63.2353	3	3df1f3275a8f	0x1830b0
-chatbox	?Step@CChatBox@@QAEHH@Z	88.9467	88.9467	3	2b61715f864e	0x182ed0
+chatbox	?Step@CChatBox@@QAEHH@Z	88.9467	88.9467	4	b20402135d1f	0x182ed0
+chatbox	?Step@CChatBox@@QAEHI@Z	100.0000	100.0000	1	b20402135d1f	0x182c70
 chatbox_eh	??1CChatBox@@QAE@XZ	100.0000	100.0000	1	ab8e83aa5ef4	0xa0360
 chatboxowner	?Attach@CChatBoxOwner@@QAEXPAXPAUCChatBoxTextHost@@@Z	68.5714	68.5714	1	52d62234b528	0x204e0
 chatboxowner	?Configure@CChatBoxOwner@@QAEXH@Z	69.1600	69.1600	1	ac14c7aa5bf4	0x20530
@@ -922,10 +931,11 @@ directinputmgr2	?Teardown@CInputDevice@@QAEXXZ	100.0000	100.0000	2	f32e81f04bab	
 directinputmgr2	?Unacquire@CInputDevice@@QAEHXZ	100.0000	100.0000	3	76cbc70bdd81	0x134fe0
 directsoundmgr	??0DirectSoundMgr@@QAE@PAUIDirectSoundBufferZ@@PAV0@@Z	100.0000	100.0000	4	3d2da2b93896	0x1351d0
 directsoundmgr	??1DirectSoundMgr@@QAE@XZ	54.4483	54.4483	2	dc5874689677	0x135bb0
-directsoundmgr	?ApplyAndPlay@DirectSoundMgr@@QAEHHHHH@Z	100.0000	100.0000	1	a827ca1814ea	0x136300
+directsoundmgr	?ApplyAndPlay@DirectSoundMgr@@QAEHHHHH@Z	100.0000	100.0000	2	6af7920ca856	0x136300
 directsoundmgr	?BaseDtor@DirectSoundMgr@@QAEXXZ	100.0000	100.0000	1	220c935476fd	0x136260
 directsoundmgr	?Clone@DirectSoundMgr@@QAEPAV1@H@Z	71.7294	71.7294	1	30a580b810a9	0x135c20
 directsoundmgr	?CloneAndPlay@DirectSoundMgr@@QAEHHHH@Z	99.9872	99.9872	2	67c972e8ad3c	0x135660
+directsoundmgr	?ComputeDuration@DirectSoundMgr@@QAEXXZ	100.0000	100.0000	1	cffc13edf66a	0x1359a0
 directsoundmgr	?Create@DirectSoundMgr@@QAEHPAXII@Z	100.0000	100.0000	2	e2f738b26faa	0x136550
 directsoundmgr	?CreatePrimaryBuffer@DirectSoundMgr@@QAEHXZ	98.7755	98.7755	4	cfc2cf3f0142	0x137260
 directsoundmgr	?GetCurrentPosition@DirectSoundMgr@@QAEHPAI0@Z	100.0000	100.0000	2	2dbacb075c64	0x135a20
@@ -938,6 +948,7 @@ directsoundmgr	?IsLooping@DirectSoundMgr@@QAEHXZ	99.8529	99.8529	4	4f34a91fa01d	
 directsoundmgr	?IsPlaying@DirectSoundMgr@@QAEHXZ	99.8529	99.8529	4	993b4d422d51	0x1353f0
 directsoundmgr	?Lock@DirectSoundMgr@@QAEHIIPAPAXPAI01I@Z	67.6556	67.6556	2	653e44a391b9	0x136370
 directsoundmgr	?LockConvert@DirectSoundMgr@@QAEHPAXII@Z	100.0000	100.0000	3	1195b8fc939d	0x135f40
+directsoundmgr	?Play@DirectSoundMgr@@QAEHXZ	95.5172	95.5172	1	e54e25fc6d57	0x136270
 directsoundmgr	?ReacquireBuffer@DirectSoundMgr@@QAEHXZ	99.6154	99.6154	1	6438d81d3aff	0x135340
 directsoundmgr	?ReacquireViaCallback@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	1	38853f33f3fc	0x1365e0
 directsoundmgr	?RemoveClone@DirectSoundMgr@@QAEXPAV1@@Z	100.0000	100.0000	2	7875878133be	0x135d20
@@ -945,9 +956,13 @@ directsoundmgr	?RestampBufferVtbl@DirectSoundMgr@@QAEXXZ	100.0000	100.0000	1	aa6
 directsoundmgr	?Restore@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	4	2d71bdf5406d	0x135310
 directsoundmgr	?SetCooperativeLevel@DirectSoundMgr@@QAEHPAXI@Z	100.0000	100.0000	2	d8ac0ca008f6	0x1365f0
 directsoundmgr	?SetCurrentPosition@DirectSoundMgr@@QAEHI@Z	100.0000	100.0000	2	45b5a2f7e845	0x135a70
+directsoundmgr	?SetField2@DirectSoundMgr@@QAEHH@Z	100.0000	100.0000	1	bcc4b8348cee	0x135920
+directsoundmgr	?SetField3@DirectSoundMgr@@QAEXH@Z	100.0000	100.0000	1	4524cdf49987	0x135510
 directsoundmgr	?SetFrequency@DirectSoundMgr@@QAEHI@Z	100.0000	100.0000	2	510f6364f851	0x135880
 directsoundmgr	?SetPan@DirectSoundMgr@@QAEHH@Z	100.0000	100.0000	2	c2969cfa4f21	0x135740
+directsoundmgr	?SetPanByIndex@DirectSoundMgr@@QAEHH@Z	100.0000	100.0000	1	ca81b43045d6	0x1357a0
 directsoundmgr	?SetVolume@DirectSoundMgr@@QAEHH@Z	100.0000	100.0000	2	8fde1fd17e6b	0x135560
+directsoundmgr	?SetVolumeByIndex@DirectSoundMgr@@QAEHH@Z	100.0000	100.0000	1	3bb960801cab	0x1355c0
 directsoundmgr	?StopAllClones@DirectSoundMgr@@QAEXXZ	100.0000	100.0000	2	9794fd044e46	0x136150
 directsoundmgr	?StopAndRewind@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	4	6573311d6e81	0x135380
 directsoundmgr	?Unlock@DirectSoundMgr@@QAEHPAXI0I@Z	100.0000	100.0000	2	1173b7b823c7	0x1359c0
@@ -1690,7 +1705,6 @@ engine_discovered	?CmdHost_0953f0_095140@CmdHost_0953f0@@QAEXXZ	1.0000	1.0000	2	
 engine_discovered	?EngStr_193080@EngStr@@QAEXXZ	1.4085	1.4085	2	b6bc792507ee	0x193080
 engine_discovered	?InterfaceObject_179300@InterfaceObject@@QAEXXZ	3.3333	3.3333	2	89213370298b	0x179300
 engine_discovered	?InterfaceObject_179340@InterfaceObject@@QAEXXZ	5.0000	5.0000	2	c79498be900c	0x179340
-engine_discovered	?MallocCtor_136230_1359a0@MallocCtor_136230@@QAEXXZ	11.1111	11.1111	2	e6353c41ead5	0x1359a0
 engine_discovered	?MallocCtor_1615a0_0311e0@MallocCtor_1615a0@@QAEXXZ	1.2121	1.2121	2	8a26ae8621ed	0x311e0
 engine_discovered	?RegistryHelper_114fa0@RegistryHelper@@QAEXXZ	3.8462	3.8462	2	9de521efe251	0x114fa0
 engine_discovered	?RemusParseSource_139800@RemusParseSource@@QAEXXZ	33.3333	33.3333	2	ebb11c91b919	0x139800
@@ -1844,7 +1858,6 @@ engine_label_stubs	?DrawLabel@DrawHost2_164420@ApiCallerStubs@@QAEXPAUtagRECT@@P
 engine_label_stubs	?DrawSaveGameMenu@EngineLabelBacklog@@YAXXZ	0.3436	0.3436	1	cpp:45e65336d4b5	0xe3f40
 engine_label_stubs	?EndParse@RemusParseSource@@QAEXXZ	8.3333	8.3333	1	cpp:2262ffc5f902	0x1399d0
 engine_label_stubs	?ErrorThunk_08dd80@CDirectDrawMgr@@QAEXXZ	5.0000	5.0000	1	cpp:45e65336d4b5	0x8dd80
-engine_label_stubs	?Finalize@CStatusBarItem2@@QAEHXZ	95.5172	95.5172	1	cpp:2262ffc5f902	0x136270
 engine_label_stubs	?Find@CButeTree@@QAEPAXPBD@Z	1.8868	1.8868	1	cpp:0f6a941a1e75	0x16d190
 engine_label_stubs	?First@RezColl@@QAEPAURezNode@@XZ	11.1111	11.1111	1	cpp:2262ffc5f902	0x184ae0
 engine_label_stubs	?Flip@CoinHost_0da200@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:e1535087fe94	0xda200
@@ -1934,12 +1947,6 @@ engine_label_stubs	?Notify@ModeHost_08f480@ApiCallerStubs@@QAEHXZ	100.0000	100.0
 engine_label_stubs	?NotifyFortUnderAttack@CWarlord@@QAEXXZ	0.5464	0.5464	1	cpp:e8a4cb0d5b2a	0x45270
 engine_label_stubs	?OnActivate_vfunc8@BootyState@@QAEHXZ	100.0000	100.0000	1	cpp:e8a4cb0d5b2a	0x1f6f0
 engine_label_stubs	?OnClick@ClickHost_0394b0@ApiCallerStubs@@QAEHHHH@Z	50.5500	50.5500	1	cpp:e1535087fe94	0x394b0
-engine_label_stubs	?OnFlag00000003@CGMMenuUI@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x182d60
-engine_label_stubs	?OnFlag00000100@CGMMenuUI@@QAEHXZ	100.0000	100.0000	1	cpp:2262ffc5f902	0x182d80
-engine_label_stubs	?OnFlag10000000@CGMMenuUI@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x183130
-engine_label_stubs	?OnFlag20000000@CGMMenuUI@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x183150
-engine_label_stubs	?OnFlag40000000@CGMMenuUI@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x182d20
-engine_label_stubs	?OnFlag80000000@CGMMenuUI@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x182d40
 engine_label_stubs	?OnInitDialog@TimerDlg_0c2cb0@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:e1535087fe94	0xc2cb0
 engine_label_stubs	?Open@DPlayHost_0b77a0@ApiCallerStubs@@QAEHXZ	98.3607	98.3607	1	cpp:6bf52155264d	0xb77a0
 engine_label_stubs	?Open@Screen_0fe460@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:e1535087fe94	0xfe460
@@ -1949,10 +1956,8 @@ engine_label_stubs	?Paint@PaintHost_0fac70@ApiCallerStubs@@QAEHXZ	100.0000	100.0
 engine_label_stubs	?Pause@AilSeq@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x138e90
 engine_label_stubs	?Pick0183f0@DlgHost@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x183f0
 engine_label_stubs	?Play@AilSeq@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x138e10
-engine_label_stubs	?Post@CGMMenuUI@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x182ce0
 engine_label_stubs	?Post@CRegSink@@QAEXHH@Z	40.0000	40.0000	1	cpp:2262ffc5f902	0x3616
 engine_label_stubs	?Post@CmdHost_090220@ApiCallerStubs@@QAEXH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x90220
-engine_label_stubs	?Pre@CGMMenuUI@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x182cb0
 engine_label_stubs	?Quickload@QlHost_092710@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x92710
 engine_label_stubs	?RegionEnter@CPlay@@QAEXXZ	40.0000	40.0000	1	cpp:2262ffc5f902	0x1b9a
 engine_label_stubs	?RegionLeave@CPlay@@QAEXXZ	40.0000	40.0000	1	cpp:2262ffc5f902	0x19f1
@@ -1975,10 +1980,6 @@ engine_label_stubs	?SendNetStat@CNetMgr@@QAEXHIH@Z	40.0000	40.0000	1	cpp:2262ffc
 engine_label_stubs	?SendStat3@CNetMgr@@QAEXHIH@Z	40.0000	40.0000	1	cpp:2262ffc5f902	0x3d0a
 engine_label_stubs	?SendStatFlag@CNetMgr@@QAEXHH@Z	40.0000	40.0000	1	cpp:2262ffc5f902	0x2e82
 engine_label_stubs	?Set@RectHost_08c380@ApiCallerStubs@@QAEXHHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x8c380
-engine_label_stubs	?SetField0@CStatusBarItem2@@QAEHH@Z	100.0000	100.0000	1	cpp:2262ffc5f902	0x1355c0
-engine_label_stubs	?SetField1@CStatusBarItem2@@QAEHH@Z	100.0000	100.0000	1	cpp:2262ffc5f902	0x1357a0
-engine_label_stubs	?SetField2@CStatusBarItem2@@QAEHH@Z	100.0000	100.0000	1	cpp:2262ffc5f902	0x135920
-engine_label_stubs	?SetField3@CStatusBarItem2@@QAEXH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x135510
 engine_label_stubs	?SetLoop@AilSeq@ApiCallerStubs@@QAEHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x139030
 engine_label_stubs	?SetTempo@AilSeq@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x138f90
 engine_label_stubs	?SetVolume@AilSeq@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x138fd0
@@ -1991,7 +1992,6 @@ engine_label_stubs	?ShowSecretBonusMessage@EngineLabelBacklog@@YAXXZ	0.2500	0.25
 engine_label_stubs	?Shutdown@AilMgr_1384f0@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x1384f0
 engine_label_stubs	?Snapshot@PalCache_17cd90@ApiCallerStubs@@QAEXPAX@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x17cd90
 engine_label_stubs	?StartUpPrompt@EngineLabelBacklog@@YAXXZ	0.4950	0.4950	1	cpp:45e65336d4b5	0x1f9b0
-engine_label_stubs	?Step@CGMMenuUI@@QAEHI@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x182c70
 engine_label_stubs	?Stop@AilSeq@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x138e60
 engine_label_stubs	?StopAll@CGruntzSoundZ@@QAEXXZ	14.2857	14.2857	1	cpp:2262ffc5f902	0x1388f0
 engine_label_stubs	?StopBank@CGruntzSoundZ@@QAEXH@Z	10.0000	10.0000	1	cpp:2262ffc5f902	0x138900
@@ -3416,7 +3416,7 @@ winapimodule	?LegacyFindModule@WinAPI@Utils@@YAHKKPAXK@Z	99.9000	99.9000	4	f574b
 winmain	_WinMain@16	100.0000	100.0000	6	a459e7cdd0d6	0x11c860
 worldsoundset	??1CWorldSoundSet@@QAE@XZ	100.0000	100.0000	1	575205cf84c8	0x85ed0
 worldsoundset	?Init@CWorldSoundSet@@QAEHPAX0@Z	100.0000	100.0000	1	316fab8b3cce	0xb5e0
-worldsoundset	?Recompute@CSoundChannel@@QAEXH@Z	97.9268	97.9268	1	1bf3b3913ee1	0xbf10
+worldsoundset	?Recompute@CSoundChannel@@QAEXH@Z	97.9268	97.9268	2	064a4876353e	0xbf10
 worldsoundset	?Restart@CWorldSoundSet@@QAEXPAX@Z	100.0000	100.0000	1	00f3d4b65497	0xbc30
 worldsoundset	?Resume@CWorldSoundSet@@QAEXXZ	99.6970	99.6970	1	526dc5538b8a	0xbcf0
 worldsoundset	?Retune@CWorldSoundSet@@QAEXHH@Z	86.2571	86.2571	1	a8ba0daa5bc0	0xbd60
