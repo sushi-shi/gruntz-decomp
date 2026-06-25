@@ -156,6 +156,11 @@ extern "C" u32 g_645588;
 // (g_defaultGeo @0x6bf3bc; defined in SpriteResource.cpp, reloc-masked here).
 extern i32 g_defaultGeo;
 
+// The scratch CString teardown the GetNameRecords reject paths run (defined with the
+// dispatch-machine cluster below); forward-declared for the two entrance-step
+// methods (StepEntranceReinit / RunEntranceMove) defined earlier in RVA order.
+static void GruntScratchTeardown();
+
 // ---------------------------------------------------------------------------
 // CGrunt::GetTilePos(out)  @0x31c70 - write the grunt's current tile coordinates
 // (its HUD pixel position m_10->m_5c/m_60 each >> 5) into the caller's {x,y} out
@@ -897,6 +902,178 @@ tail:
     if ((i64)(u32)g_645588 - *(i64*)&m_idleAnchorLo >= *(i64*)&m_idleDelayLo && ready == 1) {
         Stub_062e10(0, 1, 1);
     }
+}
+
+// ---------------------------------------------------------------------------
+// CGrunt::StepEntranceReinit()   @0x637a0   (ret 0)
+// @early-stop
+// large-state-machine + grid-regalloc plateau: the D/L early rejects, the +0x8c0
+// struck-timer reset, the "I"-code tile-mgr re-notify + idle reseed, and the two
+// visibility-gated anim-set re-latch + entrance-cell frame re-stamp arms are
+// reconstructed in shape/order. Residue is the strcmp-eq setcc sentinel pinning
+// (docs/patterns/strcmp-eq-bool-local-setcc + zero-register-pinning), the deep
+// g_gameReg->m_70 board chains modeled by raw offset, and the cross-arm regalloc on
+// the shared cell-frame tail. Deferred to the final sweep.
+RVA(0x000637a0, 0x2f8)
+i32 CGrunt::StepEntranceReinit() {
+    bool eq;
+    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeD) == 0);
+    if (eq) {
+        return 0;
+    }
+    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeL) == 0);
+    if (eq) {
+        return 0;
+    }
+    // Reset the struck-cooldown timer window (m_8c0..m_8cc) to a fresh 0x7530 from
+    // the running game clock.
+    *(i32*)((char*)this + 0x8c8) = 0x7530;
+    *(i32*)((char*)this + 0x8cc) = 0;
+    *(i32*)((char*)this + 0x8c0) = (i32)g_645588;
+    *(i32*)((char*)this + 0x8c4) = 0;
+    *(i32*)((char*)this + 0x358) = 0;
+
+    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeI) == 0);
+    if (eq) {
+        // code "I": re-notify the tile mgr of the arrival.
+        m_tileMgr->ArrivalNotify6(
+            m_tileOwnerHi,
+            m_tileOwnerLo,
+            *(i32*)((char*)this + 0x3e4),
+            *(i32*)((char*)this + 0x3e8),
+            m_entranceReason,
+            -1
+        );
+    }
+    if (m_poweredUp != 0 && m_neighborValid == 0) {
+        m_entranceActive = 0;
+        *(i32*)((char*)this + 0x218) = 0;
+        m_neighborValid = 0;
+        m_poweredUp = 0;
+        ReseedIdleReset(1, 0, 0);
+    }
+    *(i32*)((char*)this + 0x35c) = 0;
+    if (*(i32*)((char*)this + 0x328) == 0) {
+        return 0;
+    }
+
+    // The head occupied-coord's tile is clear of the spawn-block bit -> re-latch a
+    // fresh "D" anim set and re-stamp the first entrance-cell frame.
+    GruntCoord* co = (*(GruntCoordNode**)((char*)this + 0x320))->m_coord;
+    GruntBoard* b = g_gameReg->m_70;
+    i32 flag;
+    if ((u32)co->m_x >= (u32)b->m_c || (u32)co->m_y >= (u32)b->m_10) {
+        flag = 1;
+    } else {
+        flag = ((i32*)b->m_8[co->m_y])[co->m_x * 7];
+    }
+    i32* cell;
+    if (!(flag & 0x20000000)) {
+        m_prevAnimSetNode = (i32)m_14->m_1c;
+        m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeD);
+        m_prevEntranceDesc = (i32)m_154->m_1b4;
+        m_154->m_1a0.SetGeometry(m_poseWalk);
+        cell = m_entranceCell;
+    } else {
+        // The grunt's own HUD point is unobstructed (the 0x80 walkable bit).
+        i32 tx = m_10->m_5c >> 5;
+        i32 ty = m_10->m_60 >> 5;
+        i32 flag2;
+        if ((u32)tx >= (u32)b->m_c || (u32)ty >= (u32)b->m_10) {
+            flag2 = 1;
+        } else {
+            flag2 = ((i32*)b->m_8[ty])[tx * 7];
+        }
+        if (!(flag2 & 0x80)) {
+            return 0;
+        }
+        m_entranceActive = 1;
+        m_prevAnimSetNode = (i32)m_14->m_1c;
+        m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeD);
+        m_prevEntranceDesc = (i32)m_154->m_1b4;
+        m_154->m_1a0.SetGeometry(m_poseWalk);
+        cell = m_entranceCell;
+    }
+    i32 col = cell[1] + cell[0] * 2;
+    i32 base = cell[0] + col;
+    i32 row = base * 3;
+    i32 idx = base + row * 4;
+    char* nm = GruntStrGetBuffer((char*)this + idx * 8 + 0x470, 0);
+    m_154->SetAnimName(nm);
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// CGrunt::RunEntranceMove()   @0x67850   (ret 0)
+// @early-stop
+// large-state-machine plateau: the armed-but-not-running sub-player gate, the
+// scratch-resolver "D" re-latch (GetNameRecords + the scratch CString teardown),
+// the on-arrival HUD-stat-sprite creation, the entrance-cell frame re-stamp, and the
+// +0x1a0 move-mode dispatch are reconstructed in shape/order. Residue is the
+// scratch loop-strength-reduction (shared, no source spelling), the short-circuit
+// gate branch ordering, and the cross-arm regalloc. Deferred to the final sweep.
+RVA(0x00067850, 0x214)
+i32 CGrunt::RunEntranceMove() {
+    m_154->m_1a0.SetGeoSourceR(g_defaultGeo);
+    // The geometry sub-player @m_154+0x1a0: m_20/m_28 live past its own m_1b4, so
+    // read via raw offsets off &player->m_1a0 (keeps cl on one base).
+    i32* sub = (i32*)((char*)m_154 + 0x1a0);
+    if (!((sub[0xa] != 0 && sub[8] == 0) || *(i32*)((char*)this + 0x1a0) == 0)) {
+        return 0;
+    }
+
+    m_entranceActive = 0;
+    char* nm0 = g_animNameResolver.GetNameRecords((void*)m_prevAnimSetNode)->m_name;
+    GruntScratchTeardown();
+    bool eq;
+    eq = (strcmp(nm0, g_codeD) == 0);
+    if (eq) {
+        if (m_poweredUp != 0 && m_neighborValid == 0) {
+            m_entranceActive = 0;
+            *(i32*)((char*)this + 0x218) = 0;
+            m_neighborValid = 0;
+            m_poweredUp = 0;
+            ReseedIdleReset(1, 0, 0);
+        }
+        *(i32*)((char*)this + 0x35c) = 0;
+        m_prevAnimSetNode = (i32)m_14->m_1c;
+        m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeD);
+        m_prevEntranceDesc = (i32)m_154->m_1b4;
+        m_154->m_1a0.SetGeometry(m_poseWalk);
+        i32* cell = m_entranceCell;
+        i32 col = cell[1] + cell[0] * 2;
+        i32 base = cell[0] + col;
+        i32 row = base * 3;
+        i32 idx = base + row * 4;
+        char* nm = GruntStrGetBuffer((char*)this + idx * 8 + 0x470, 0);
+        m_154->SetAnimName(nm);
+    } else {
+        ReseedIdleReset(1, 0, 0);
+    }
+
+    if (m_arrived != 0) {
+        CreateHealthSprite();
+        CreateStaminaSprite();
+        CreateToySprite();
+    }
+
+    i32 mode = *(i32*)((char*)this + 0x1a0);
+    if (mode == -1) {
+        return 0;
+    }
+    if (mode >= 0x32) {
+        return ApplyMoveMode(mode);
+    }
+    if (mode >= 0x22) {
+        *(i32*)((char*)this + 0x194) = mode;
+        *(i32*)((char*)this + 0x1a0) = -1;
+        return 1;
+    }
+    if (mode >= 0x17) {
+        EmitMoveCueQ(mode);
+        return 0;
+    }
+    return ApplyMoveMode(mode);
 }
 
 // ---------------------------------------------------------------------------

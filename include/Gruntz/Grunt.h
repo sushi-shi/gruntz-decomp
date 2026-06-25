@@ -933,6 +933,16 @@ public:
     i32 StepAnimDispatchA(i32 a, i32 b, i32 c, i32 d); // @0x52fb0 (ret 0x10)
     void StepCoordResolve();                           // @0x5f310 (ret 0)
     i32 StepAnimDispatchB();                           // @0x6a6d0 (ret 0)
+    // @0x637a0 (ret 0) - the I-code entrance re-stamp dispatch step: D/L reject,
+    // reset the +0x8c0 struck timer, on the "I" anim re-notify the tile mgr, then
+    // (if the grunt's head tile / HUD point is unobstructed) re-latch a fresh anim
+    // set and re-stamp the first entrance-cell frame.
+    i32 StepEntranceReinit();
+    // @0x67850 (ret 0) - the entrance-move update step: drive the geometry source,
+    // gate on the armed-but-not-running sub-player, resolve the current anim name
+    // (scratch form), re-latch on "D", create the HUD stat sprites on arrival, then
+    // dispatch the +0x1a0 move mode.
+    i32 RunEntranceMove();
 
     // The engine helpers these machines call (all external/no-body, reloc-masked;
     // modeled as __thiscall methods on the grunt so `mov ecx,this; ...; call`
@@ -952,6 +962,7 @@ public:
     i32 ProbeRetry();                                      // thunk_0x3c0b (retry predicate)
     void OnReanchor(i32 a);                                // thunk_0x3cce (1-arg reanchor)
     void StepDropApply();                                  // thunk (drop-apply tail)
+    i32 ApplyMoveMode(i32 v); // thunk_0x3b75 -> 0x50ca0 (the >=0x32 / <0x17 mode arm)
 };
 
 // CGrunt::IsSameType(a, b) @0x3c7f0 - a free (__cdecl) comparator: returns

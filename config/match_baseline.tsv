@@ -72,7 +72,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	184	0
+engine_discovered	182	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -88,7 +88,7 @@ gamemodeobjlifecycle	3	2
 gameobjectctors	5	0
 gametext	4	2
 gamewnd	9	8
-grunt	55	11
+grunt	57	11
 gruntpuddle	4	2
 gruntspawnconfig	13	6
 gruntvoice	4	3
@@ -780,8 +780,6 @@ engine_discovered	?CTileTriggerSwitch_0110f0@CTileTriggerSwitch@@QAEXXZ	5.8824	5
 engine_discovered	?CUserLogic_059230@CUserLogic@@QAEXXZ	0.1238	0.1238	2	dce9b15cb8a5	0x59230
 engine_discovered	?CUserLogic_05caa0@CUserLogic@@QAEXXZ	0.3030	0.3030	2	ebb13b551fa5	0x5caa0
 engine_discovered	?CUserLogic_062110@CUserLogic@@QAEXXZ	0.0901	0.0901	2	283f0e12fe57	0x62110
-engine_discovered	?CUserLogic_0637a0@CUserLogic@@QAEXXZ	0.4274	0.4274	2	6a47fb6a3ddd	0x637a0
-engine_discovered	?CUserLogic_067850@CUserLogic@@QAEXXZ	0.5405	0.5405	2	344cefd43973	0x67850
 engine_discovered	?CUserLogic_16e7f0@CUserLogic@@QAEXXZ	0.2532	0.2532	2	28899d63e9a5	0x16e7f0
 engine_discovered	?CUserLogic_16ea90@CUserLogic@@QAEXXZ	0.6061	0.6061	2	e90c8731b739	0x16ea90
 engine_discovered	?CVoiceTrigger_0135a0@CVoiceTrigger@@QAEXXZ	5.8824	5.8824	2	03bf46371349	0x135a0
@@ -1613,6 +1611,7 @@ grunt	?ResolveBattlecryAnimation@CGrunt@@QAEHXZ	90.3365	90.3365	6	871a141b3eab	0
 grunt	?ResolveDeathAnimation@CGrunt@@QAEHXZ	97.8283	97.8283	6	142c8cc4dd01	0x455f0
 grunt	?ResolveIdleAnimation@CGrunt@@QAEHXZ	92.0598	92.0598	6	4559532e9c2a	0x45960
 grunt	?ResolveMovingAnimation@CGrunt@@QAEHXZ	92.8816	92.8816	6	c96d52636e85	0x45100
+grunt	?RunEntranceMove@CGrunt@@QAEHXZ	73.3405	73.3405	1	10f3a2fb1815	0x67850
 grunt	?Save@CGrunt@@QAEHPAVCGruntArchive@@@Z	94.2489	94.2489	4	40228e139df7	0x53f90
 grunt	?SerializeMove@CGrunt@@QAEHPAVCGruntArchive@@HHH@Z	100.0000	100.0000	2	bc7f280c7bfd	0x53b80
 grunt	?SetEntrancePos@CGrunt@@QAEXHH@Z	89.3421	89.3421	3	2c26e611f009	0x4d060
@@ -1620,6 +1619,7 @@ grunt	?StepAnimDispatchA@CGrunt@@QAEHHHHH@Z	41.6245	41.6245	2	cee096a63856	0x52f
 grunt	?StepAnimDispatchB@CGrunt@@QAEHXZ	40.7674	40.7674	2	4dbf079670fa	0x6a6d0
 grunt	?StepArrivalDrop@CGrunt@@QAEXHHHHHH@Z	7.7088	7.7088	1	731eeff2b7e9	0x4b370
 grunt	?StepCoordResolve@CGrunt@@QAEXXZ	9.3598	9.3598	1	7e18466adeed	0x5f310
+grunt	?StepEntranceReinit@CGrunt@@QAEHXZ	74.9359	74.9359	1	8109213253cf	0x637a0
 grunt	?StepGruntMovement@CGrunt@@QAEHXZ	5.3367	5.3367	1	ed2029033118	0x4c170
 grunt	?Stub_047a10@CGrunt@@QAEXXZ	0.0990	0.0990	2	e1bc672cfeb6	0x47a10
 grunt	?Stub_048470@CGrunt@@QAEXHH@Z	0.0778	0.0778	3	f58a37c3e870	0x48470
