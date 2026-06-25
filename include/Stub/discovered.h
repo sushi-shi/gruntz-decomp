@@ -56,8 +56,6 @@ public:
 };
 class CDDrawSubMgr {
 public:
-    void CDDrawSubMgr_031250();
-    void CDDrawSubMgr_159600();
     void CDDrawSubMgr_15c360();
 };
 class CDDrawSurfaceMgr {

@@ -73,17 +73,16 @@ void CDDSurface::CDDSurface_142a40() {}
 // methods (158b40..158ee0, 159ef0, 15c290/2c0/2d0) plus the whole CMap/CList
 // collection family (159e40, 15aa90..15b1d0 = CWwdObjMgr) and the blit-param
 // serializer/dispatcher (15c900/15c970) were reconstructed into
-// src/Gruntz/CDDrawSubMgr.cpp (CWwdObjMgr / CDDrawBlitParam).  Three remain:
-//   - 0x031250: a NON-MEMBER (iterates a +0x68 list, vtable+0x20==5 probe; a
-//     different class entirely) — left stubbed.
-//   - 0x159600: the CWwdObject factory (EH frame + 0x1dc heap construct +
-//     vtable stamps; tail-calls the matched 159e40) — deferred to final sweep.
-//   - 0x15c360: the 0x555-byte blit-param step/advance megafunction (two jump
-//     tables, EH) — deferred to final sweep.
-RVA(0x00031250, 0x33)
-void CDDrawSubMgr::CDDrawSubMgr_031250() {}
-RVA(0x00159600, 0x1ab)
-void CDDrawSubMgr::CDDrawSubMgr_159600() {}
+// src/Gruntz/CDDrawSubMgr.cpp (CWwdObjMgr / CDDrawBlitParam).
+//   - 0x031250 (CQueueDrainHost::Drain) and 0x159600 (CWwdObjMgr::CreateObject /
+//     CSpriteFactory::CreateSpriteImpl) are now RECONSTRUCTED in CDDrawSubMgr.cpp
+//     (both @early-stop on documented walls: 031250 the loop-top member re-read,
+//     159600 the RezAlloc+placement-construct missing-/GX-EH-frame wall).
+//   - 0x15c360: the 0x555-byte blit-param step/advance megafunction (two .rdata
+//     jump tables, idiv/fild/__ftol float math, ~10 frame-select cases reassigning
+//     m_18 via reloc-masked m_14->GetFrame lookups) — a big jump-table state
+//     machine; deferred to the final sweep for a leaf-first redo (callees
+//     15cc30/15cbe0/etc. are themselves unmatched), NOT half-reconstructed.
 RVA(0x0015c360, 0x555)
 void CDDrawSubMgr::CDDrawSubMgr_15c360() {}
 

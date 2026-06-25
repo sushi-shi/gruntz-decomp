@@ -625,8 +625,11 @@ public:
     i32 Probe_151c00(i32 a1, i32 a2);
 };
 
+class CWwdGameObject;
+
 class CWwdObjMgr {
 public:
+    CWwdGameObject* CreateObject_159600(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 flags);
     void RemoveByPosition_15ab70(i32 pos, CWwdObject* obj);
     void AddToMap48_15aba0(CWwdObject* obj);
     void PruneList_15aa90();
@@ -859,4 +862,199 @@ void CWwdObjMgr::InsertSorted_159e40(CWwdObject* obj, i32 addToMaps) {
         }
     }
     obj->m_78 = (i32)m_10.AddTail(obj);
+}
+
+// ===========================================================================
+// 0x031250 — a NON-MEMBER of the cluster (distinct class): a queue-drain probe.
+// Walks the singly-linked list at this+0x68, popping each head node; for each
+// node it dispatches the node-data object's vtable slot +0x20 and returns that
+// data object the first time the probe yields 5.  Empty/exhausted -> 0.
+// __thiscall, no args, no EH frame, fully self-contained (rel32 calls only).
+// Kept here under a neutral local class purely for stub bookkeeping; the byte
+// match depends only on the this/ecx offsets + the (reloc-masked) vtable call.
+// ===========================================================================
+
+// A queued node: m_next at +0x00, data object at +0x08.  The data object exposes
+// a vtable whose slot +0x20 is a status probe returning an int (5 == "ready").
+class CQueueProbeNode {
+public:
+    CQueueProbeNode* m_next; // +0x00
+    char m_pad04[0x04];      // +0x04
+    void* m_data;            // +0x08 -> probed object
+};
+
+class CQueueProbeData {
+public:
+    virtual void Slot00();
+    virtual void Slot04();
+    virtual void Slot08();
+    virtual void Slot0C();
+    virtual void Slot10();
+    virtual void Slot14();
+    virtual void Slot18();
+    virtual void Slot1C();
+    virtual i32 Probe20(); // +0x20 status probe
+};
+
+class CQueueDrainHost {
+public:
+    void* Drain_031250();
+    char m_pad00[0x68];    // +0x00 .. +0x67
+    CQueueProbeNode* m_68; // +0x68 list head
+};
+
+// @early-stop
+// loop-top member re-read wall — retail re-loads `mov eax,[edi+0x68]` at the loop
+// top (a redundant load the call clobbers) and merges the empty/exhausted zero
+// epilogues into one xor-first tail; our cl carries the head pointer across the
+// back-edge (CSE) and splits the epilogues.  Logic/CFG/offsets exact; the
+// back-edge redundant-load survival is an optimizer coin-flip with no source
+// lever (docs/patterns/reread-member-view-pointer.md).
+RVA(0x00031250, 0x33)
+void* CQueueDrainHost::Drain_031250() {
+    while (m_68 != 0) {
+        CQueueProbeNode* head = m_68;
+        m_68 = head->m_next;
+        CQueueProbeData* data = (CQueueProbeData*)head->m_data;
+        if (data->Probe20() == 5) {
+            return data;
+        }
+    }
+    return 0;
+}
+
+// ===========================================================================
+// 0x159600 — CWwdObjMgr::CreateObject (a.k.a. CSpriteFactory::CreateSpriteImpl):
+// allocate + construct a 0x1dc-byte CWwdGameObject, register it in the manager
+// (InsertSorted_159e40), and (when arg `flags & 0x200000`) kick its worker's
+// slot +0x10.  __thiscall, 6 stack args, ret 0x18.  A /GX EH frame guards the
+// destructible sub-objects built inside the allocated block.
+// ===========================================================================
+
+// Engine heap allocator (operator new / RezAlloc).  Reloc-masked __cdecl extern.
+extern "C" void* RezAlloc(u32 size); // 0x1b9b46
+// Engine heap free (RezFree); the worker dtor path.  0x1b9b82.
+extern "C" void RezFree(void* p); // 0x1b9b82
+
+// The global object-id counter the factory stamps into +0x188 and post-increments.
+DATA(0x0021ab14)
+extern i32 g_wwdObjIdCounter; // 0x61ab14
+
+// The constructed wide object's first (CWwdGameObject) vtable, then its final
+// (g_wwdObjVtbl) vtable.  Reloc-masked DATA externs (RVA = VA - 0x400000).
+DATA(0x001f0020)
+extern void* g_wwdGameObjectVtbl; // 0x5f0020
+DATA(0x001f00a8)
+extern void* g_wwdObjFinalVtbl; // 0x5f00a8
+
+// Sub-object ctors hung off the wide object (all __thiscall, reloc-masked).
+class CWwdSubCtorA { // 0x15b2b0
+public:
+    void Ctor();
+};
+class CWwdSubCtorB { // 0x15b270
+public:
+    void Ctor();
+};
+// CRemusNode 3-arg ctor at 0x15b2c0 (root, a2, a3).
+class CWwdRemusBase {
+public:
+    void Ctor(i32 root, i32 a2, i32 a3); // 0x15b2c0
+};
+// The 0x17c-byte sprite-animation worker built at +0x7c (SiriusWorker, 0x15b300).
+class CWwdWorker {
+public:
+    void Ctor(i32 a, i32 b, i32 c); // 0x15b300
+    virtual void V00();
+    virtual void V04();
+    virtual void V08();
+    virtual void V0C();
+    virtual i32 Kick(void* owner); // +0x10
+};
+// The CString ctor (0x1b9b93) for the +0xdc label.
+class CWwdLabel {
+public:
+    void Ctor(); // 0x1b9b93
+};
+// The command-dispatch sub-object at +0x1a0 (CmdMap ctor 0x15b730, 3 args).
+class CWwdCmdMap {
+public:
+    void Ctor(i32 a, i32 b, i32 c); // 0x15b730
+};
+
+// The wide CWwdGameObject the factory builds.  Documented raw-offset access for
+// the 0x1dc-byte object (campaign doctrine: the offsets are load-bearing, the
+// field names are placeholders); the polymorphic slot +0x28 / +0x04 dispatch is
+// modeled via a typed vtable interface so the call lowers exactly.
+class CWwdFactoryObject {
+public:
+    virtual void Vs00();
+    virtual i32 ScalarDtor(i32 flag); // +0x04 scalar-deleting destructor
+    virtual void Vs08();
+    virtual void Vs0C();
+    virtual void Vs10();
+    virtual void Vs14();
+    virtual void Vs18();
+    virtual void Vs1C();
+    virtual void Vs20();
+    virtual void Vs24();
+    virtual i32 Build(i32 a, i32 b, i32 c, i32 d); // +0x28 deserialize/build
+};
+
+// @early-stop
+// RezAlloc + placement-construct EH-frame wall (docs/patterns/rezalloc-placement-
+// new-no-eh-frame.md): the body is byte-exact, but MSVC5 predates placement
+// operator delete so the in-place sub-object construction emits NO ctor-in-flight
+// /GX EH state — retail's full `push -1 / fs:0` frame + shared jmp epilogue is
+// absent, shifting every byte offset (objdiff alignment collapses to ~0% fuzzy).
+// Deferred to the final sweep when the wide-object ctor + a class-`operator new`
+// real-allocator path can emit the retail frame.  Logic/fields/offsets complete.
+RVA(0x00159600, 0x1ab)
+CWwdGameObject* CWwdObjMgr::CreateObject_159600(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 flags) {
+    char* obj = (char*)RezAlloc(0x1dc);
+    CWwdGameObject* result;
+    if (obj != 0) {
+        i32 root = m_0c;
+        ((CWwdRemusBase*)obj)->Ctor(root, a1, flags);
+        ((CWwdSubCtorA*)(obj + 0x9c))->Ctor();
+        ((CWwdSubCtorB*)(obj + 0xb8))->Ctor();
+        ((CWwdLabel*)(obj + 0xdc))->Ctor();
+        *(void**)obj = &g_wwdGameObjectVtbl;
+        *(i32*)(obj + 0x5c) = (i32)0x80000000;
+        *(i32*)(obj + 0x78) = 0;
+        char* worker = (char*)RezAlloc(0x17c);
+        if (worker != 0) {
+            ((CWwdWorker*)worker)->Ctor(root, a1, flags);
+        } else {
+            worker = 0;
+        }
+        *(void**)(obj + 0x7c) = worker;
+        *(i32*)(obj + 0x98) = 0;
+        *(i32*)(obj + 0x80) = 0;
+        *(i32*)(obj + 0x88) = 0;
+        *(i32*)(obj + 0x90) = 0;
+        *(i32*)(obj + 0x188) = g_wwdObjIdCounter;
+        g_wwdObjIdCounter = g_wwdObjIdCounter + 1;
+        ((CWwdCmdMap*)(obj + 0x1a0))->Ctor(root, a1, flags);
+        *(void**)obj = &g_wwdObjFinalVtbl;
+        *(i32*)(obj + 0x18c) = -1;
+        *(i32*)(obj + 0x190) = -1;
+        *(i32*)(obj + 0x198) = 0;
+        *(i32*)(obj + 0x194) = 0;
+        *(i32*)(obj + 0x19c) = 0;
+        result = (CWwdGameObject*)obj;
+    } else {
+        result = 0;
+    }
+    if (((CWwdFactoryObject*)result)->Build(a2, a3, a4, a5) == 0) {
+        if (result != 0) {
+            ((CWwdFactoryObject*)result)->ScalarDtor(1);
+        }
+        return 0;
+    }
+    InsertSorted_159e40((CWwdObject*)result, 1);
+    if (flags & 0x200000) {
+        ((CWwdWorker*)*(void**)((char*)result + 0x7c))->Kick(result);
+    }
+    return result;
 }
