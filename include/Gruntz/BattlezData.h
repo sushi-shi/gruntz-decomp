@@ -85,6 +85,14 @@ public:
     i32 SumGroupField10();                                   // 0xfcfc0
     i32 SumGroupField30();                                   // 0xfd010
     i32 SumGroupField1c();                                   // 0xfd060
+    i32 SumGroupField34();                                   // 0xfd0b0
+    i32 SumGroupField20();                                   // 0xfd100
+    i32 SumGroupField38();                                   // 0xfd150
+    i32 SumGroupField24();                                   // 0xfd1a0
+    i32 SumGroupField3c();                                   // 0xfd1f0
+    i32 SumGroupField18();                                   // 0xfd240
+    i32 SumGroupField14();                                   // 0xfd290
+    i32 SumGroupField08();                                   // 0xfd2e0
     i32 GetRecordValue(i32 b);                               // 0xfced0
     void FillRecord(i32 index, i32 phase);                   // 0xfd330
     i32 Serialize(BattlezStream* s, i32 op, i32 a2, i32 a3); // 0xfd3f0

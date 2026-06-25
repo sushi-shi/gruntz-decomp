@@ -8,7 +8,6 @@
 #define GRUNTZ_STUB_ATTRIBUTED_H
 
 class CAttract { public: void CAttract_014520(); void CAttract_014630(); };
-class CBattlezData { public: void CBattlezData_0fd0b0(); void CBattlezData_0fd100(); void CBattlezData_0fd150(); void CBattlezData_0fd1a0(); void CBattlezData_0fd1f0(); void CBattlezData_0fd240(); void CBattlezData_0fd290(); void CBattlezData_0fd2e0(); };
 class CBattlezDlg { public: void CBattlezDlg_014c90(); void CBattlezDlg_015de0(); void CBattlezDlg_015e60(); void CBattlezDlg_015ee0(); void CBattlezDlg_015f60(); void CBattlezDlg_016410(); void CBattlezDlg_016500(); void CBattlezDlg_017140(); void CBattlezDlg_017340(); };
 class CBehindCandyAni { public: void CBehindCandyAni_0ad7d0(); void CBehindCandyAni_0ad9b0(); };
 class CBootyState { public: void CBootyState_01ce30(); void CBootyState_01d420(); };

@@ -9,16 +9,6 @@
 RVA(0x00014520, 0xc3) void CAttract::CAttract_014520() {}  // high
 RVA(0x00014630, 0xbd) void CAttract::CAttract_014630() {}  // high
 
-// ---- CBattlezData ---- (0fccf0..0fd060 reconstructed in src/Gruntz/BattlezData.cpp)
-RVA(0x000fd0b0, 0x37) void CBattlezData::CBattlezData_0fd0b0() {}  // high
-RVA(0x000fd100, 0x37) void CBattlezData::CBattlezData_0fd100() {}  // high
-RVA(0x000fd150, 0x37) void CBattlezData::CBattlezData_0fd150() {}  // high
-RVA(0x000fd1a0, 0x37) void CBattlezData::CBattlezData_0fd1a0() {}  // high
-RVA(0x000fd1f0, 0x37) void CBattlezData::CBattlezData_0fd1f0() {}  // high
-RVA(0x000fd240, 0x37) void CBattlezData::CBattlezData_0fd240() {}  // high
-RVA(0x000fd290, 0x37) void CBattlezData::CBattlezData_0fd290() {}  // high
-RVA(0x000fd2e0, 0x37) void CBattlezData::CBattlezData_0fd2e0() {}  // high
-
 // ---- CBattlezDlg ----
 RVA(0x00014c90, 0x47) void CBattlezDlg::CBattlezDlg_014c90() {}  // high
 RVA(0x00015de0, 0x5f) void CBattlezDlg::CBattlezDlg_015de0() {}  // high

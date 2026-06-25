@@ -306,6 +306,94 @@ i32 CBattlezData::SumGroupField1c() {
     return sum;
 }
 
+// 0xfd0b0 - sum field m_34 over the 4 records in the current group.
+RVA(0x000fd0b0, 0x37)
+i32 CBattlezData::SumGroupField34() {
+    i32 sum = 0;
+    i32 g = (m_count - 1) / 4 * 4;
+    for (i32 i = g; i < g + 4; i++) {
+        sum += m_records[i].m_34;
+    }
+    return sum;
+}
+
+// 0xfd100 - sum field m_20 over the 4 records in the current group.
+RVA(0x000fd100, 0x37)
+i32 CBattlezData::SumGroupField20() {
+    i32 sum = 0;
+    i32 g = (m_count - 1) / 4 * 4;
+    for (i32 i = g; i < g + 4; i++) {
+        sum += m_records[i].m_20;
+    }
+    return sum;
+}
+
+// 0xfd150 - sum field m_38 over the 4 records in the current group.
+RVA(0x000fd150, 0x37)
+i32 CBattlezData::SumGroupField38() {
+    i32 sum = 0;
+    i32 g = (m_count - 1) / 4 * 4;
+    for (i32 i = g; i < g + 4; i++) {
+        sum += m_records[i].m_38;
+    }
+    return sum;
+}
+
+// 0xfd1a0 - sum field m_24 over the 4 records in the current group.
+RVA(0x000fd1a0, 0x37)
+i32 CBattlezData::SumGroupField24() {
+    i32 sum = 0;
+    i32 g = (m_count - 1) / 4 * 4;
+    for (i32 i = g; i < g + 4; i++) {
+        sum += m_records[i].m_24;
+    }
+    return sum;
+}
+
+// 0xfd1f0 - sum field m_3c over the 4 records in the current group.
+RVA(0x000fd1f0, 0x37)
+i32 CBattlezData::SumGroupField3c() {
+    i32 sum = 0;
+    i32 g = (m_count - 1) / 4 * 4;
+    for (i32 i = g; i < g + 4; i++) {
+        sum += m_records[i].m_3c;
+    }
+    return sum;
+}
+
+// 0xfd240 - sum field m_18 over the 4 records in the current group.
+RVA(0x000fd240, 0x37)
+i32 CBattlezData::SumGroupField18() {
+    i32 sum = 0;
+    i32 g = (m_count - 1) / 4 * 4;
+    for (i32 i = g; i < g + 4; i++) {
+        sum += m_records[i].m_18;
+    }
+    return sum;
+}
+
+// 0xfd290 - sum field m_14 over the 4 records in the current group.
+RVA(0x000fd290, 0x37)
+i32 CBattlezData::SumGroupField14() {
+    i32 sum = 0;
+    i32 g = (m_count - 1) / 4 * 4;
+    for (i32 i = g; i < g + 4; i++) {
+        sum += m_records[i].m_14;
+    }
+    return sum;
+}
+
+// 0xfd2e0 - sum field m_08 over the 4 records in the current group.
+RVA(0x000fd2e0, 0x37)
+i32 CBattlezData::SumGroupField08() {
+    i32 sum = 0;
+    i32 g = (m_count - 1) / 4 * 4;
+    for (i32 i = g; i < g + 4; i++) {
+        sum += m_records[i].m_08;
+    }
+    return sum;
+}
+
 // 0xfced0 - the record's win/score value at the wrap index, or m_44 when the
 // wrapped index lands on the last record.
 // @early-stop
