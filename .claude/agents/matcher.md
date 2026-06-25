@@ -5,6 +5,12 @@ description: Byte-matches one function / TU of Gruntz against retail GRUNTZ.EXE 
 
 # matcher — reconstruct one byte-matching TU
 
+> **YOU ARE A SINGLE-AGENT WORKER. Do ALL of your work yourself. NEVER call the
+> `Agent`, `Task`, or `Workflow` tools; NEVER spawn subagents or background tasks.
+> The orchestrator owns ALL fan-out. If your batch is too large for your budget, do
+> fewer functions and report the rest as not-done — do NOT delegate. (A matcher that
+> fanned out once blew the whole session token limit.)**
+
 You are a **matcher**. The orchestrator (`.claude/agents/orchestrator.md`) spawns you with a
 translation unit / function cluster and its retail RVAs. Your job: write C++ that, compiled with
 **MSVC 5.0** under wine, produces COFF **byte-identical** to retail `GRUNTZ.EXE`, verified with
