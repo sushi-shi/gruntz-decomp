@@ -73,7 +73,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	178	0
+engine_discovered	175	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -96,7 +96,7 @@ gruntvoice	4	3
 gruntzapp	10	8
 gruntzcmdmgr	11	9
 gruntzcommand	10	10
-gruntzmgr	51	39
+gruntzmgr	54	40
 gruntzplayer	5	1
 gruntzsoundz	8	7
 gruntzwnd	9	7
@@ -753,9 +753,6 @@ engine_discovered	?CGruntToyTimeSprite_012130@CGruntToyTimeSprite@@QAEXXZ	5.8824
 engine_discovered	?CGruntWingzTimeSprite_0121f0@CGruntWingzTimeSprite@@QAEXXZ	5.8824	5.8824	1	ba087a9b3b4e	0x121f0
 engine_discovered	?CGruntWingzTimeSprite_07fd90@CGruntWingzTimeSprite@@QAEXXZ	13.3333	13.3333	1	58f438126d27	0x7fd90
 engine_discovered	?CGruntzMgr_08b960@CGruntzMgr@@QAEXXZ	0.0907	0.0907	2	f28c03e9d08a	0x8b960
-engine_discovered	?CGruntzMgr_08d780@CGruntzMgr@@QAEXXZ	0.6250	0.6250	1	c0221294c808	0x8d780
-engine_discovered	?CGruntzMgr_08fa40@CGruntzMgr@@QAEXXZ	10.0000	10.0000	1	127553f73f6f	0x8fa40
-engine_discovered	?CGruntzMgr_092340@CGruntzMgr@@QAEXXZ	1.5385	1.5385	1	e1ea27f77048	0x92340
 engine_discovered	?CGuardPoint_010410@CGuardPoint@@QAEXXZ	5.8824	5.8824	2	cd33984f8d7b	0x10410
 engine_discovered	?CLightFx_012430@CLightFx@@QAEXXZ	5.8824	5.8824	2	9bb66611a638	0x12430
 engine_discovered	?CMapArrayA_09e740@CMapArrayA@@QAEXXZ	0.8000	0.8000	2	6fc8448eb4fd	0x9e740
@@ -1699,6 +1696,7 @@ gruntzmgr	?FinishLevel@CGruntzMgr@@QAEHHH@Z	84.1471	84.1471	3	168a1e237366	0x8e9
 gruntzmgr	?GetGruntzDriveLetter@CGruntzMgr@@QAEDXZ	100.0000	100.0000	4	bd2cebfcd9e9	0x8fa70
 gruntzmgr	?GetWorldFileName@CGruntzMgr@@QAE?AVCString@@XZ	100.0000	100.0000	2	3fb6c7c4f642	0x928c0
 gruntzmgr	?InitializeLobbyConnectionSettings@CGruntzMgr@@QAEHXZ	99.5588	99.5588	5	cc1dca68936d	0x8eca0
+gruntzmgr	?IsInPlayState@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	62d491889452	0x8fa40
 gruntzmgr	?IsLobbyHostReady@CGruntzMgr@@QAEHXZ	100.0000	100.0000	3	8dedad14eb04	0x91500
 gruntzmgr	?NotifyState0b@CGruntzMgr@@QAEHHH@Z	100.0000	100.0000	3	64e27a6fc2b8	0x8d9d0
 gruntzmgr	?NotifyState0c@CGruntzMgr@@QAEHHH@Z	100.0000	100.0000	3	cd6b9998f035	0x8da00
@@ -1710,6 +1708,7 @@ gruntzmgr	?NotifyState11@CGruntzMgr@@QAEHHHH@Z	100.0000	100.0000	3	4443db26d8ed	
 gruntzmgr	?NotifyState12@CGruntzMgr@@QAEHHHH@Z	100.0000	100.0000	3	fbf21d80d1c2	0x8db60
 gruntzmgr	?NotifyState13@CGruntzMgr@@QAEHHHH@Z	100.0000	100.0000	3	fb145c5e547b	0x8dba0
 gruntzmgr	?NotifyState14@CGruntzMgr@@QAEHHHH@Z	100.0000	100.0000	3	f89e14a8a323	0x8dbe0
+gruntzmgr	?PassClickToPlayState@CGruntzMgr@@QAEHHHH@Z	84.7812	84.7812	1	9700c7f1842c	0x8d780
 gruntzmgr	?PerFrameTick@CGruntzMgr@@QAEXXZ	100.0000	100.0000	4	d0cc5b87b77d	0x8f620
 gruntzmgr	?PickPausedThenPlayState@CGruntzMgr@@QAEPAVCState@@XZ	100.0000	100.0000	1	02b7911454da	0x929b0
 gruntzmgr	?PickPlayOrPausedState@CGruntzMgr@@QAEPAVCState@@XZ	100.0000	100.0000	1	6e79b43e172f	0x92990
@@ -1723,6 +1722,7 @@ gruntzmgr	?RunFromState@CGruntzMgr@@QAEHXZ	100.0000	100.0000	2	f710a1f0a1d9	0x90
 gruntzmgr	?SaveState@CGruntzMgr@@QAEHPAVCSerializerZ@@@Z	100.0000	100.0000	3	b7c7cd31630d	0x93620
 gruntzmgr	?SetCellHeight@CGruntzMgr@@QAEXHHH@Z	100.0000	100.0000	3	469dd234782d	0x111ec0
 gruntzmgr	?SetGameClock@CGruntzMgr@@QAEXHHH@Z	100.0000	100.0000	2	6f4e825cb466	0x8f7b0
+gruntzmgr	?SetRunState@CGruntzMgr@@QAEXH@Z	99.6154	99.6154	1	c9feb86d24a3	0x92340
 gruntzmgr	?StoreInputFlag@CGruntzMgr@@QAEXH@Z	100.0000	100.0000	3	a35f4e8723aa	0x919d0
 gruntzmgr	?StoreInputState@CGruntzMgr@@QAEHH@Z	100.0000	100.0000	3	4c9f555b02ce	0x91a10
 gruntzmgr	?SwitchToNextState@CGruntzMgr@@QAEHXZ	100.0000	100.0000	3	f0c527dd3751	0x8d6a0

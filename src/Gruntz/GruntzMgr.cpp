@@ -77,6 +77,10 @@ extern "C" {
     extern i32 g_644c54; // DAT_00644c54  (active player/world index)
 }
 
+// The reentrancy/run-state gate SetRunState mirrors the new run-state into
+// (?g_61ab20@@3HA; reloc-masked DATA store - the same global ChatBox/GameMode touch).
+extern i32 g_61ab20; // DAT_0061ab20
+
 // The game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A), modeled here with
 // the offsets UpdateScoreHud touches (a per-TU view; the DATA pin reloc-masks the
 // `mov eax,ds:g_gameReg` load against the already-named symbol).
@@ -466,6 +470,19 @@ i32 CGruntzMgr::RestoreVideoMode(i32 save) {
     }
     ReportError(0x8008, 0x438);
     return 0;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::IsInPlayState  (__thiscall; retail FUN_0048fa40; ret). A bool-
+// normalized predicate: 0 when no live state, else CheckPlayState() != 0 (true
+// for the PLAY (3) / paused (0x11) states). The CheckPlayState() result lands in
+// eax and the neg/sbb/neg idiom normalizes it to 0/1.
+RVA(0x0008fa40, 0x16)
+i32 CGruntzMgr::IsInPlayState() {
+    if (m_curState == 0) {
+        return 0;
+    }
+    return CheckPlayState() != 0;
 }
 
 // -------------------------------------------------------------------------
@@ -946,6 +963,41 @@ i32 CGruntzMgr::TickStateMgrs() {
     g_645570->PollAll();
     g_645578->Flush();
     return 1;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::SetRunState (0x092340; __thiscall; ret 4). Sets the base run-state
+// flag (CGameMgr::m_10) and, when it changes AND a world is loaded, runs the
+// transition side-effects: tear down the world's inner controller
+// (m_world->m_28->m_2c, guarded), mirror the new state into the g_61ab20 gate,
+// then flush the +0x54 input object - Method1 when entering the run state
+// (m_10 != 0), Method0 when leaving it. A no-op when the value is unchanged, and
+// the whole side-effect chain is skipped when no world is loaded.
+// @early-stop
+// 99.62% global-store regalloc tiebreak: logic byte-exact. The lone residual is
+// the g_61ab20 store - retail re-reads m_10 into eax and uses the `a3` accumulator
+// store (mov ds:g_61ab20,eax), MSVC here loads it into ecx (mov [g_61ab20],ecx,
+// 89 0d). A 1-instruction eax<->ecx pick on the global store; no source spelling
+// flips it (see docs/patterns/select-zero-mask-dest-register.md, regalloc family).
+RVA(0x00092340, 0x49)
+void CGruntzMgr::SetRunState(i32 v) {
+    if (v == m_10) {
+        return;
+    }
+    m_10 = v;
+    if (m_world == 0) {
+        return;
+    }
+    CWorldSub2c* sub = m_world->m_28->m_2c;
+    if (sub) {
+        sub->Teardown();
+    }
+    g_61ab20 = m_10;
+    if (m_10) {
+        ((InputState54*)m_inputState)->Method1();
+    } else {
+        ((InputState54*)m_inputState)->Method0();
+    }
 }
 
 // -------------------------------------------------------------------------
@@ -1478,6 +1530,7 @@ i32 CGruntzMgr::SwitchToNextState() {
 // here keeps the vtbl in edi and re-reads it, so no ebx push. Logic is exact;
 // the residual is the vtbl-CSE register choice (see docs/patterns/
 // pin-local-for-callee-saved-reg.md - no clean source spelling for vtbl pinning).
+RVA(0x0008d780, 0x95)
 i32 CGruntzMgr::PassClickToPlayState(i32 a0, i32 a1, i32 a2) {
     i32 inPlay = 0;
     if (m_curState->Update() == 3) {

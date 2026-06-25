@@ -104,9 +104,6 @@ RVA(0x0007fd90, 0xd) void CGruntWingzTimeSprite::CGruntWingzTimeSprite_07fd90() 
 
 // ---- CGruntzMgr ----
 RVA(0x0008b960, 0x7c4) void CGruntzMgr::CGruntzMgr_08b960() {}
-RVA(0x0008d780, 0x95) void CGruntzMgr::CGruntzMgr_08d780() {}
-RVA(0x0008fa40, 0x16) void CGruntzMgr::CGruntzMgr_08fa40() {}
-RVA(0x00092340, 0x49) void CGruntzMgr::CGruntzMgr_092340() {}
 
 // ---- CGuardPoint ----
 RVA(0x00010410, 0x44) void CGuardPoint::CGuardPoint_010410() {}

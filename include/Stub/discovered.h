@@ -33,7 +33,7 @@ class CGruntStartingPoint { public: void CGruntStartingPoint_010670(); };
 class CGruntToySprite { public: void CGruntToySprite_0122b0(); void CGruntToySprite_07f920(); void CGruntToySprite_07f960(); };
 class CGruntToyTimeSprite { public: void CGruntToyTimeSprite_012130(); };
 class CGruntWingzTimeSprite { public: void CGruntWingzTimeSprite_0121f0(); void CGruntWingzTimeSprite_07fd90(); };
-class CGruntzMgr { public: void CGruntzMgr_08b960(); void CGruntzMgr_08d780(); void CGruntzMgr_08fa40(); void CGruntzMgr_092340(); };
+class CGruntzMgr { public: void CGruntzMgr_08b960(); };
 class CGuardPoint { public: void CGuardPoint_010410(); };
 class CLightFx { public: void CLightFx_012430(); };
 class CMapArrayA { public: void CMapArrayA_09e740(); };

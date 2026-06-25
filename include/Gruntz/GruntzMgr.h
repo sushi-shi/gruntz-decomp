@@ -126,6 +126,7 @@ public:
     void UnknownClose() OVERRIDE;                   // @0x0855e0 (member teardown; stubbed)
     void ReportError(WPARAM wParam, LPARAM lParam); // @0x08dc60  -> m_8->vtbl[0x1c]
     char GetGruntzDriveLetter();                    // @0x08fa70  (memoised CD letter)
+    i32 IsInPlayState();                            // @0x08fa40  (m_curState && CheckPlayState())
     i32 InitializeLobbyConnectionSettings();        // @0x08eca0 (DirectPlay lobby connect)
     CString BuildMoviePath(i32 movie);              // @0x08ff30 (per-movie path on the CD)
     void PerFrameTick();                            // @0x08f620 (per-frame draw-clock tick)
@@ -192,6 +193,7 @@ public:
     void SetGameClock(i32 now, i32 delta, i32 abs); // @0x08f7b0 (mirror the 5 clock globals)
     void ResetClockGlobals();                       // @0x08f4f0 (zero the 7 clock globals)
     i32 TickStateMgrs();                            // @0x0920b0 (drive two engine singletons)
+    void SetRunState(i32 v);                        // @0x092340 (set base m_10 run-state + side-effects)
     i32 CheckSavedMode();                           // @0x08de70 (saved==live mode test)
     i32 IsLobbyHostReady();            // @0x091500 (m_curState/m_8/m_modalBusy null-chain)
     i32 RunFromState();                // @0x090200 (thin wrapper -> ChangeState_8fab0(1))
