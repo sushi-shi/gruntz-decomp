@@ -249,6 +249,11 @@ source = "src/Gruntz/CInGameIcon.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "ingametext"
+source = "src/Gruntz/CInGameText.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "aniplayer"
 source = "src/Gruntz/CAniPlayer.cpp"
 flags = "eh"

@@ -58,7 +58,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	276	0
+engine_discovered	273	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -93,6 +93,7 @@ inflate	7	6
 inftrees	6	6
 infutil	1	1
 ingameicon	5	2
+ingametext	3	3
 inputdeviceconfig	1	0
 kitchenslime	2	0
 leveltilevalidation	1	0
@@ -681,9 +682,6 @@ engine_discovered	?CGruntToyTimeSprite_012130@CGruntToyTimeSprite@@QAEXXZ	5.8824
 engine_discovered	?CGrunt_057c40@CGrunt@@QAEXXZ	1.0811	1.0811	1	12e9f96d3a6b	0x57c40
 engine_discovered	?CGruntzMgr_08b960@CGruntzMgr@@QAEXXZ	0.0907	0.0907	1	4a22ea071af3	0x8b960
 engine_discovered	?CGuardPoint_010410@CGuardPoint@@QAEXXZ	5.8824	5.8824	1	4e3b67105cbe	0x10410
-engine_discovered	?CInGameText_011dc0@CInGameText@@QAEXXZ	5.8824	5.8824	1	981463c96391	0x11dc0
-engine_discovered	?CInGameText_099460@CInGameText@@QAEXXZ	0.5333	0.5333	1	2cf0b5c3a5dc	0x99460
-engine_discovered	?CInGameText_099a30@CInGameText@@QAEXXZ	0.4762	0.4762	1	cea309c35927	0x99a30
 engine_discovered	?CKitchenSlime_013100@CKitchenSlime@@QAEXXZ	5.8824	5.8824	1	74b705f9f108	0x13100
 engine_discovered	?CKitchenSlime_0b2940@CKitchenSlime@@QAEXXZ	0.5333	0.5333	1	611ebae04872	0xb2940
 engine_discovered	?CLightFx_012430@CLightFx@@QAEXXZ	5.8824	5.8824	1	0382b08af60c	0x12430
@@ -1823,6 +1821,9 @@ ingameicon	?HandleInput@CInGameIcon@@QAEHXZ	90.8442	90.8442	2	d070837e8c0c	0x976
 ingameicon	?PlaceAt@CInGameIcon@@QAEHHH@Z	71.2551	71.2551	3	2fb5c55bf11a	0x986b0
 ingameicon	?Serialize@CInGameIcon@@QAEHPAVCArchive@@HHH@Z	0.6826	0.6826	2	958d1db3464e	0x98c90
 ingameicon	?SetField54@CInGameIcon@@QAEXH@Z	100.0000	100.0000	2	996198841286	0x99b10
+ingametext	??1CInGameText@@UAE@XZ	100.0000	100.0000	1	f69bd50df17d	0x11dc0
+ingametext	?Dispatch@CInGameText@@QAEXH@Z	100.0000	100.0000	1	732a6ae0ef8a	0x99460
+ingametext	?Serialize@CInGameText@@QAEHPAVCTextArchive@@HHH@Z	100.0000	100.0000	1	1cfc09245808	0x99a30
 inputdeviceconfig	?LoadInputDeviceConfig@CInputConfig@@QAE?AVCString@@H@Z	77.3265	77.3265	5	a06dac34f93f	0x387c0
 kitchenslime	?LoadSprites@CKitchenSlime@@QAEHXZ	69.1992	69.1992	2	2c07cc5dc21b	0xb3160
 kitchenslime	?Tick@CKitchenSlime@@QAEHXZ	94.8551	94.8551	3	c7b9e1dd58eb	0xb2ca0

@@ -248,13 +248,7 @@ void CGuardPoint::CGuardPoint_010410() {}
 
 // ---- CInGameIcon ---- migrated to src/Gruntz/CInGameIcon.cpp (all 5 methods).
 
-// ---- CInGameText ----
-RVA(0x00011dc0, 0x44)
-void CInGameText::CInGameText_011dc0() {}
-RVA(0x00099460, 0x102)
-void CInGameText::CInGameText_099460() {}
-RVA(0x00099a30, 0xaa)
-void CInGameText::CInGameText_099a30() {}
+// ---- CInGameText ---- migrated to src/Gruntz/CInGameText.cpp (all 3 methods).
 
 // ---- CKitchenSlime ----
 RVA(0x00013100, 0x44)

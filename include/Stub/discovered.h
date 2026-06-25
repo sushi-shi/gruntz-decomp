@@ -171,12 +171,6 @@ class CGuardPoint {
 public:
     void CGuardPoint_010410();
 };
-class CInGameText {
-public:
-    void CInGameText_011dc0();
-    void CInGameText_099460();
-    void CInGameText_099a30();
-};
 class CKitchenSlime {
 public:
     void CKitchenSlime_013100();
