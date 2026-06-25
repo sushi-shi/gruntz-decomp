@@ -107,14 +107,24 @@ def demangle(s):
     if s.endswith("@@"): s = s[:-2]
     parts = [x for x in s.split("@") if x]
     return "::".join(reversed(parts)) if parts else s
-TD = {}                                   # td_va -> name
+
+def vftable_name(decorated):
+    """Decorated TypeDescriptor name -> the deterministic primary-vtable mangled
+    symbol. ".?AVCFoo@@" -> "??_7CFoo@@6B@" (drop the .?A[VUWT] tag, wrap 6B@).
+    Only valid for the base_off==0 primary vtable; MI secondaries embed the base."""
+    s = decorated
+    for pre in (".?AV", ".?AU", ".?AW", ".?AT"):
+        if s.startswith(pre): s = s[len(pre):]; break
+    return "??_7" + s + "6B@"
+
+TD = {}                                   # td_va -> DECORATED name (".?AVClass@@")
 for m in re.finditer(rb'\.\?A[VUWT][\w@?$]+@@\x00', d):
     so = m.start(); rva = None
     for (nm, va, vsz, rsz, rp, ch) in SECS:
         if rp <= so < rp+rsz: rva = so-rp+va; break
     if rva is None: continue
-    TD[(rva-8)+IMAGEBASE] = demangle(m.group(0)[:-1].decode('latin1'))
-COL = {}                                   # col_va -> (name, base_off)
+    TD[(rva-8)+IMAGEBASE] = m.group(0)[:-1].decode('latin1')
+COL = {}                                   # col_va -> (decorated, base_off)
 for (nm, va, vsz, rsz, rp, ch) in SECS:
     if nm != '.rdata': continue
     for a in range(va, va+rsz-20, 4):
@@ -173,7 +183,8 @@ for lo, hi in RUNS:
         col = COL_START.get(st)
         VTABLES.append(dict(
             start=st, size=size, sec=sec(st),
-            rtti=col[0] if col else None, base_off=col[1] if col else None,
+            rtti=demangle(col[0]) if col else None, decorated=col[0] if col else None,
+            base_off=col[1] if col else None,
             code_refs=CODE_REF.get(st, 0),
             head_of_run=(st == lo),
             first=u32(st)-IMAGEBASE,
@@ -197,6 +208,8 @@ def main():
     a = sys.argv[1:]
     csv_path = None
     if "--csv" in a: k = a.index("--csv"); csv_path = a[k+1]; del a[k:k+2]
+    names_path = None
+    if "--emit-names" in a: k = a.index("--emit-names"); names_path = a[k+1]; del a[k:k+2]
     only_new = "--new" in a
 
     for v in VTABLES: v['conf'] = confidence(v)
@@ -237,6 +250,22 @@ def main():
                             v['code_refs'], int(v['start'] in SRC_DATA),
                             f"0x{v['first']:06x}", fn_label(v['first'])])
         print(f"\n# wrote {csv_path}")
+
+    if names_path:
+        # The deterministic target-side vtable names: ??_7<Class>@@6B@ at each RTTI
+        # primary vtable RVA. The build (labels.py) applies a row ONLY when the
+        # base obj actually emits that ??_7 (i.e. the class was made real-poly in
+        # src), so this map is inert until a class is converted - zero noise.
+        n = 0
+        with open(names_path, "w", newline="") as f:
+            w = csv.writer(f)
+            w.writerow(["name", "rva", "size"])
+            for v in sorted(VTABLES, key=lambda v: v['start']):
+                if v['conf'] == "rtti" and v['base_off'] == 0 and v['decorated']:
+                    w.writerow([vftable_name(v['decorated']), f"0x{v['start']:06x}",
+                                f"0x{v['size']*4:x}"])
+                    n += 1
+        print(f"\n# wrote {names_path} ({n} RTTI primary vtable names)")
 
 if __name__ == "__main__":
     main()

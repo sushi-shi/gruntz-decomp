@@ -21,13 +21,11 @@
 
 // CTileTriggerSwitchLogic is now a REAL polymorphic class (4 virtuals in the
 // header): cl emits the ??_7 vftable + the implicit ctor vptr-stamp - the manual
-// `*(void**)this = &g_...Vtbl` struct stamp is gone. The EXE has no debug
-// symbols, so we assign the target-side names ourselves, and they are
-// DETERMINISTIC: the vtable is ??_7<Class>@@6B@; the 4 slots are placeholder
-// names we pick and apply to both sides. A generator can emit these from the
-// vtable scan (class + RVAs). No /GR -> no COL emitted; this matches the 4
-// vtable slots (the COL at 0x1eae88 is a separate datum, left unmatched here).
-// @data-symbol: ??_7CTileTriggerSwitchLogic@@6B@ 0x001eae8c 0x10
+// `*(void**)this = &g_...Vtbl` struct stamp is gone. The target-side vtable name
+// ??_7CTileTriggerSwitchLogic@@6B@ is derived AUTOMATICALLY by the build: the EXE
+// has no debug symbols, so labels.py applies config/vtable_names.csv (generated
+// from RTTI by gruntz.analysis.vtable_scan) whenever the base obj emits the
+// ??_7. No source annotation is needed - naming is a byproduct of the inventory.
 
 // The Rez heap free (RVA 0x1b9b82, _RezFree); reloc-masked rel32 callee used by
 // the inlined child-delete in RemoveByKeys.
