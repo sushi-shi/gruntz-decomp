@@ -448,12 +448,8 @@ public:
     void ClassUnknown_3_09dc80();
     void ClassUnknown_3_09dcb0();
 };
-class ClassUnknown_31 {
-public:
-    void ClassUnknown_31_152f20();
-    void ClassUnknown_31_152fb0();
-    void ClassUnknown_31_153810();
-};
+// ClassUnknown_31 reconstructed as the RTTI CImage (vftable @0x5eaa2c) in
+// src/Image/CImage.cpp (Resolve / LoadDispatch / RenderFrameClipped).
 // ClassUnknown_32 reconstructed as CDDrawPtrCollections in
 // src/Gruntz/CDDrawPtrCollections.cpp.
 class ClassUnknown_33 {

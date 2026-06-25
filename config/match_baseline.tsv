@@ -48,7 +48,7 @@ chatbox	16	9
 chatbox_eh	1	1
 chatboxowner	4	1
 cheatmgr	4	3
-cimage	3	2
+cimage	6	4
 clightfx	2	1
 clightfxrender	22	8
 cmulti	11	7
@@ -64,7 +64,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	216	0
+engine_discovered	213	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -496,7 +496,10 @@ cheatmgr	?Empty@CCheatMgr@@QAEXXZ	100.0000	100.0000	1	8cc149232bcc	0x22b00
 cheatmgr	?RegisterCheats@CCheatMgr@@QAEXXZ	100.0000	100.0000	1	368e0d229303	0x22c80
 cimage	??1CImage@@QAE@XZ	94.2857	94.2857	1	3a970ca1c753	0xd5e80
 cimage	?FreeAll@CImage@@QAEXXZ	100.0000	100.0000	1	fc4b51958392	0x153260
+cimage	?LoadDispatch@CImage@@QAEHPAVCImageFrameDesc@@IPAXH@Z	99.8611	99.8611	1	ce4cdd7e901f	0x152fb0
 cimage	?RenderFrame@CImage@@QAEXPAX000@Z	100.0000	100.0000	1	43b44fcb1e6d	0x153790
+cimage	?RenderFrameClipped@CImage@@QAEXPAX0000@Z	100.0000	100.0000	1	3da75c815733	0x153810
+cimage	?Resolve@CImage@@QAEHPAVCImageSource@@H@Z	100.0000	100.0000	1	4ec2754e4b70	0x152f20
 clightfx	?Activate@CLightFx@@QAEHHHHH@Z	86.7407	86.7407	1	017ace156fac	0x9d520
 clightfx	?RebindNode@CLightFx@@QAEHXZ	100.0000	100.0000	1	d9610ef994d0	0x9d770
 clightfxrender	?AllocSurface@CLightFxRender@@QAEHXZ	99.6842	99.6842	3	1bad35c5b187	0xa33e0
@@ -805,9 +808,6 @@ engine_discovered	?ClassUnknown_26_11c630@ClassUnknown_26@@QAEXXZ	1.4286	1.4286	
 engine_discovered	?ClassUnknown_28_01f940@ClassUnknown_28@@QAEXXZ	1.3333	1.3333	1	b91ea722bf78	0x1f940
 engine_discovered	?ClassUnknown_28_158760@ClassUnknown_28@@QAEXXZ	1.0811	1.0811	1	f275e2596af6	0x158760
 engine_discovered	?ClassUnknown_29_137110@ClassUnknown_29@@QAEXXZ	1.7544	1.7544	1	00b82a2022cd	0x137110
-engine_discovered	?ClassUnknown_31_152f20@ClassUnknown_31@@QAEXXZ	0.7407	0.7407	1	2933ba7b0e04	0x152f20
-engine_discovered	?ClassUnknown_31_152fb0@ClassUnknown_31@@QAEXXZ	0.3704	0.3704	1	8c9a52559e72	0x152fb0
-engine_discovered	?ClassUnknown_31_153810@ClassUnknown_31@@QAEXXZ	0.8511	0.8511	1	add5b7345b4d	0x153810
 engine_discovered	?ClassUnknown_33_153180@ClassUnknown_33@@QAEXXZ	0.5714	0.5714	1	134a742a6519	0x153180
 engine_discovered	?ClassUnknown_34_148ce0@ClassUnknown_34@@QAEXXZ	7.1429	7.1429	1	e7ef2a193252	0x148ce0
 engine_discovered	?ClassUnknown_34_1490d0@ClassUnknown_34@@QAEXXZ	0.2985	0.2985	1	1f694b7f256f	0x1490d0
@@ -1883,7 +1883,7 @@ mgrtokenquery	?QueryToken@@YAHH@Z	100.0000	100.0000	1	33f0fb7f4951	0x99d10
 motionstate	??0CMotionState@@QAE@XZ	100.0000	100.0000	1	24ca6b679299	0x136d0
 motionstate	?SetParams@CMotionState@@QAEHNNNNNNNNNNN@Z	100.0000	100.0000	2	57c861974e56	0x58bc0
 motionstate	?SetZ@CMotionState@@QAEXN@Z	100.0000	100.0000	1	9d25f9ec952e	0x58ca0
-motionstate	?Step@CMotionState@@QAEXN@Z	64.9479	64.9479	1	d6e6b53cdc42	0x16ecd0
+motionstate	?Step@CMotionState@@QAEXN@Z	64.9479	64.9479	2	877abdf7095d	0x16ecd0
 netmgr	?AnnounceVersion@CNetMgr@@QAEXH@Z	90.1000	90.1000	5	f9e1f9c715a8	0xbd180
 netmgr	?ApplyCmdDelayDefaults@CNetMgr@@QAEXXZ	100.0000	100.0000	6	f6fa2de8b3f2	0xb85a0
 netmgr	?ClearGroupList@CNetMgr@@QAEXXZ	100.0000	100.0000	3	d0f72cff0bbf	0x178430

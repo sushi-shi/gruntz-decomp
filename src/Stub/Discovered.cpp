@@ -742,13 +742,13 @@ void ClassUnknown_3::ClassUnknown_3_09dcb0() {}
 // list primitive (InsertHead 0x1390e0, InsertTail 0x139110, Unlink 0x1391e0,
 // RemoveMatching 0x136f60) every Dsndmgr collection embeds and calls __thiscall.
 
-// ---- ClassUnknown_31 ----
-RVA(0x00152f20, 0x86)
-void ClassUnknown_31::ClassUnknown_31_152f20() {}
-RVA(0x00152fb0, 0x123)
-void ClassUnknown_31::ClassUnknown_31_152fb0() {}
-RVA(0x00153810, 0x95)
-void ClassUnknown_31::ClassUnknown_31_153810() {}
+// ---- ClassUnknown_31 == CImage (the RTTI polymorphic image, vftable @0x5eaa2c)
+// -> all three reconstructed in src/Image/CImage.cpp as CImage virtuals/methods:
+//   0x152f20 Resolve (slot 11) - format-tag dispatch -> LoadDispatch
+//   0x152fb0 LoadDispatch (slot 10) - format-index load + surface alloc
+//   0x153810 RenderFrameClipped - the clip-rect render sibling of RenderFrame.
+// (Same class as the ClassUnknown_50 == CImage note below; the trace split CImage's
+// vtable across these two synthetic ids.)
 
 // ---- ClassUnknown_32 ---- RECONSTRUCTED as CDDrawPtrCollections (tomalla
 // UnknownFilch, 0x948 standalone): the dtor + item-pool management for the two
@@ -867,9 +867,9 @@ void ClassUnknown_5::ClassUnknown_5_150040() {}
 
 // ---- ClassUnknown_50 == CImage (the RTTI-confirmed polymorphic image, vftable
 // @0x5eaa2c) -> reconstructed in src/Image/CImage.cpp (dtor 0x0d5e80, FreeAll
-// 0x153260 slot 7, RenderFrame 0x153790). NOTE: distinct from the non-polymorphic
-// loader CImage in src/Image/Image.cpp. Its other vtable virtuals are still
-// stubbed under ClassUnknown_31 (0x152f20/0x152fb0) below.
+// 0x153260 slot 7, RenderFrame 0x153790, plus the ClassUnknown_31 vtable virtuals
+// Resolve 0x152f20 / LoadDispatch 0x152fb0 and RenderFrameClipped 0x153810). NOTE:
+// distinct from the non-polymorphic loader CImage in src/Image/Image.cpp.
 
 // ---- ClassUnknown_51 ----
 RVA(0x001154b0, 0x45)
