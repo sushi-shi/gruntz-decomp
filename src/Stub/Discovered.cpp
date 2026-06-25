@@ -913,14 +913,9 @@ void ClassUnknown_66::ClassUnknown_66_166d40() {}
 // over a CWwdGrid) and migrated into src/Gruntz/WwdSpatialMgr.cpp (wwdspatialmgr
 // unit): 0x191ad0 Start / 0x191b10 Init / 0x191c30 GetNext.
 
-// ---- ClassUnknown_68 ----  (recovered: CLightFxRender, src/Gruntz/CLightFxRender.cpp)
-// 0xa3b50 DrawBorder reconstructed in src/Gruntz/CLightFxRender.cpp.
-// 0xa3460 Resize / 0xa3820 ComputeRect remain for the final sweep (per-pixel
-// palette blit + idiv scale-clamp; coupled to BltEx/Lock surface layout).
-RVA(0x000a3460, 0x2f3)
-void ClassUnknown_68::ClassUnknown_68_0a3460() {}
-RVA(0x000a3820, 0x18e)
-void ClassUnknown_68::ClassUnknown_68_0a3820() {}
+// ---- ClassUnknown_68 ----  FULLY recovered as CLightFxRender
+// (src/Gruntz/CLightFxRender.cpp): the whole class - incl. 0xa3460 Resize and
+// 0xa3820 ComputeRect - is reconstructed there. Nothing remains here.
 
 // ---- ClassUnknown_69 ---- (split: NOT one class)
 //   0x058b60 -> CGruntAnimPlayer::ApplyGeometryDirect (src/Gruntz/SpriteResource.cpp)

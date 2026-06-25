@@ -48,7 +48,7 @@ chatboxowner	4	1
 cheatmgr	4	3
 cimage	3	2
 clightfx	2	1
-clightfxrender	20	8
+clightfxrender	22	8
 cmulti	11	7
 cplay	27	8
 cremusnode	4	2
@@ -62,7 +62,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	241	0
+engine_discovered	239	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -495,19 +495,21 @@ clightfxrender	?ApplyGlobal@CLightFxRender@@QAEHHHH@Z	100.0000	100.0000	3	284ada
 clightfxrender	?BuildShape@CLightFxRender@@QAEHH@Z	86.0127	86.0127	3	bd6116af145d	0xa3c90
 clightfxrender	?ClampRect@CLightFxRender@@QAEHHHPAHH@Z	88.4819	88.4819	3	93b204b71f38	0xa9660
 clightfxrender	?ClearHandle@CLightFxRender@@QAEHHHH@Z	100.0000	100.0000	3	8840c2610535	0xa9500
+clightfxrender	?ComputeRect@CLightFxRender@@QAEHPAULfxBorderCtx@@PAULfxRect@@@Z	59.1987	59.1987	1	d4ce0980ac97	0xa3820
 clightfxrender	?Ctor@CLightFxRender@@QAEXXZ	100.0000	100.0000	1	a2222a53d107	0xa3360
 clightfxrender	?DrawBorder@CLightFxRender@@QAEXPAULfxRect@@PAULfxBorderCtx@@H@Z	70.3871	70.3871	1	8d37fd72be49	0xa3b50
 clightfxrender	?FillSpan@CLightFxRender@@QAEXIIG@Z	100.0000	100.0000	3	c55474f29497	0xa4840
 clightfxrender	?FreeSurface@CLightFxRender@@QAEXXZ	100.0000	100.0000	1	825081ce566c	0xa33a0
 clightfxrender	?Init@CLightFxRender@@QAEHPAULfxMgr@@H@Z	100.0000	100.0000	3	a92ff0cb45e2	0xa32c0
-clightfxrender	?Shape1@CLightFxRender@@QAEHXZ	73.7857	73.7857	4	6af232188686	0xa3dc0
-clightfxrender	?Shape2@CLightFxRender@@QAEHXZ	74.6170	74.6170	4	18e314ea32f2	0xa4890
-clightfxrender	?Shape3@CLightFxRender@@QAEHXZ	72.7320	72.7320	4	56c226194d5c	0xa5310
-clightfxrender	?Shape4@CLightFxRender@@QAEHXZ	69.8244	69.8244	4	859e6df61580	0xa5d90
-clightfxrender	?Shape5@CLightFxRender@@QAEHXZ	73.8760	73.8760	4	158440af6457	0xa67d0
-clightfxrender	?Shape6@CLightFxRender@@QAEHXZ	77.4322	77.4322	4	e353a843eb8e	0xa7260
-clightfxrender	?Shape7@CLightFxRender@@QAEHXZ	73.3526	73.3526	4	2ac3e51a74b2	0xa7d50
-clightfxrender	?Shape8@CLightFxRender@@QAEHXZ	70.0243	70.0243	4	41419e5ec730	0xa8900
+clightfxrender	?Resize@CLightFxRender@@QAEHHH@Z	49.0210	49.0210	1	6bb59d598a95	0xa3460
+clightfxrender	?Shape1@CLightFxRender@@QAEHXZ	73.6972	73.6972	4	6af232188686	0xa3dc0
+clightfxrender	?Shape2@CLightFxRender@@QAEHXZ	74.5978	74.5978	4	18e314ea32f2	0xa4890
+clightfxrender	?Shape3@CLightFxRender@@QAEHXZ	73.9530	73.9530	4	56c226194d5c	0xa5310
+clightfxrender	?Shape4@CLightFxRender@@QAEHXZ	69.8520	69.8520	4	859e6df61580	0xa5d90
+clightfxrender	?Shape5@CLightFxRender@@QAEHXZ	74.0326	74.0326	4	158440af6457	0xa67d0
+clightfxrender	?Shape6@CLightFxRender@@QAEHXZ	77.4443	77.4443	4	e353a843eb8e	0xa7260
+clightfxrender	?Shape7@CLightFxRender@@QAEHXZ	73.6008	73.6008	4	2ac3e51a74b2	0xa7d50
+clightfxrender	?Shape8@CLightFxRender@@QAEHXZ	68.0960	68.0960	4	41419e5ec730	0xa8900
 cmulti	??1CMulti@@QAE@XZ	0.0000	0.0000	1	301ec69b5a15	0x8d270
 cmulti	?AckJoinFailure@CMulti@@QAEXXZ	100.0000	100.0000	1	bac115793e8c	0xbc420
 cmulti	?ClearString59c@CMulti@@QAEAAVCString@@AAV2@@Z	49.3529	49.3529	1	6f457816186b	0xb76c0
@@ -848,8 +850,6 @@ engine_discovered	?ClassUnknown_65_095890@ClassUnknown_65@@QAEXXZ	1.1905	1.1905	
 engine_discovered	?ClassUnknown_65_0aa6e0@ClassUnknown_65@@QAEXXZ	1.1905	1.1905	1	be7d08983e85	0xaa6e0
 engine_discovered	?ClassUnknown_66_161370@ClassUnknown_66@@QAEXXZ	50.0000	50.0000	1	5b39a726447f	0x161370
 engine_discovered	?ClassUnknown_66_166d40@ClassUnknown_66@@QAEXXZ	3.3333	3.3333	1	f2ee01b8e610	0x166d40
-engine_discovered	?ClassUnknown_68_0a3460@ClassUnknown_68@@QAEXXZ	0.1681	0.1681	1	815fbd276ee5	0xa3460
-engine_discovered	?ClassUnknown_68_0a3820@ClassUnknown_68@@QAEXXZ	0.2564	0.2564	1	09641df9ee29	0xa3820
 engine_discovered	?ClassUnknown_6_14dcf0@ClassUnknown_6@@QAEXXZ	3.4483	3.4483	1	15185bc126ec	0x14dcf0
 engine_discovered	?ClassUnknown_70_15b2b0@ClassUnknown_70@@QAEXXZ	16.6667	16.6667	1	8df1519a80a9	0x15b2b0
 engine_discovered	?ClassUnknown_71_15b270@ClassUnknown_71@@QAEXXZ	25.0000	25.0000	1	3828d9557c5b	0x15b270
@@ -2077,13 +2077,13 @@ sbi_warlordhead	?ShowFrames@CSBI_WarlordHead@@QAEHHH@Z	92.2716	92.2716	1	73cec54
 sbi_warlordhead_eh	??1CSBI_WarlordHead@@QAE@XZ	43.6061	43.6061	1	bcabec3f0b56	0x104a00
 shadetablecache	??0CShadeTableCache@@QAE@XZ	100.0000	100.0000	1	8d165746ed6f	0x14de30
 shadetablecache	??1CShadeTableCache@@QAE@XZ	80.1333	80.1333	2	d4743b4c108f	0x14de50
-shadetablecache	?AddTable@CShadeTableCache@@QAEPAUCShadeTable@@M@Z	59.6703	59.6703	1	39aac9dbe614	0x14f080
+shadetablecache	?AddTable@CShadeTableCache@@QAEPAUCShadeTable@@M@Z	59.6703	59.6703	2	102c6568e757	0x14f080
 shadetablecache	?AlphaTable@CShadeTableCache@@QAEPAUCShadeTable@@PAE@Z	66.4253	66.4253	2	43e142788133	0x14f5b0
 shadetablecache	?FindRemove@CShadeTableCache@@QAEXPAUCShadeTable@@@Z	91.5556	91.5556	2	c56be1b35741	0x14fb80
 shadetablecache	?FreeNodes@CShadeTableCache@@QAEXXZ	100.0000	100.0000	1	200336a988e4	0x14ded0
 shadetablecache	?GreyTable@CShadeTableCache@@QAEPAUCShadeTable@@XZ	71.7576	71.7576	2	5602dfea4c43	0x14eef0
 shadetablecache	?Init@CShadeTableCache@@QAEHXZ	100.0000	100.0000	1	9851d1a61203	0x14dec0
-shadetablecache	?SubTable@CShadeTableCache@@QAEPAUCShadeTable@@H@Z	60.8937	60.8937	1	4dd41f8d481e	0x14f310
+shadetablecache	?SubTable@CShadeTableCache@@QAEPAUCShadeTable@@H@Z	60.8937	60.8937	2	16c5c237d296	0x14f310
 siriusworkerhandlers	??0WorkerFull@@QAE@HHH@Z	99.7647	99.7647	1	5742f7cb4005	0x15b300
 siriusworkerhandlers	?Handler03d670@@YAHPAUOwner@@@Z	97.8571	97.8571	1	839c531d42a0	0x3d670
 siriusworkerhandlers	?Handler07db20@@YAHPAUOwner@@@Z	97.8571	97.8571	1	b23002ac8904	0x7db20
@@ -2125,11 +2125,11 @@ spriteresource	?CacheFirstFrame@CGruntSprite@@QAEXPBD@Z	89.2647	89.2647	4	dbfa3e
 spriteresource	?CacheFrame@CGruntSprite@@QAEXPBDH@Z	84.2571	84.2571	1	a2abe1026505	0x1504d0
 spriteresource	?ConfigureItem@CStatusBarMgr@@QAEHHHHH@Z	100.0000	100.0000	4	be2023a676b3	0x1360d0
 spriteresource	?CreateSprite@CSpriteFactory@@QAEPAUCSprite@@HHHHPBDH@Z	94.1176	94.1176	4	6102cd6262c1	0x1597b0
-statemgrbz	?Build@StateMgrBZ@@QAEHPAUSbzInputManager@@H@Z	94.7384	94.7384	2	78713fa346a6	0x383b0
-statemgrbz	?Flush@StateMgrBZ@@QAEHXZ	74.0612	74.0612	1	6a6b3ba6dfa0	0x385e0
-statemgrbz	?Init@StateMgrBZ@@QAEHPAUSbzInputManager@@H@Z	100.0000	100.0000	1	45e41039c473	0x382c0
-statemgrbz	?Reset@StateMgrBZ@@QAEHXZ	100.0000	100.0000	1	34a3a5e2a886	0x386b0
-statemgrbz	?Setup@StateMgrBZ@@QAEXXZ	100.0000	100.0000	1	2e58d146fba9	0x38340
+statemgrbz	?Build@StateMgrBZ@@QAEHPAUSbzInputManager@@H@Z	94.7384	94.7384	3	80ed1d5c6cdf	0x383b0
+statemgrbz	?Flush@StateMgrBZ@@QAEHXZ	74.0612	74.0612	2	6dc0743b6fd8	0x385e0
+statemgrbz	?Init@StateMgrBZ@@QAEHPAUSbzInputManager@@H@Z	100.0000	100.0000	2	12e97377255a	0x382c0
+statemgrbz	?Reset@StateMgrBZ@@QAEHXZ	100.0000	100.0000	2	899b20785515	0x386b0
+statemgrbz	?Setup@StateMgrBZ@@QAEXXZ	100.0000	100.0000	2	76e3a3c435f8	0x38340
 statusbaritem	??0CStatusBarItem@@QAE@XZ	100.0000	100.0000	3	5a450f5db35b	0x1005d0
 statusbaritem	??_GCStatusBarItem@@UAEPAXI@Z	91.6667	91.6667	1	cpp:08500b778fe1	0x100620
 statusbarupdaters	?LoadStatzTabToggleSprite@EngineLabelBacklog@@QAEHHH@Z	80.7867	80.7867	4	ddb115e6490d	0x104e60

@@ -60,11 +60,14 @@ public:
     void FreeSurface();
     // 0x0a33e0  AllocSurface - create the work surface via the surface mgr.
     i32 AllocSurface();
-    // 0x0a3460  (755B) the resize/realloc path - deferred.
-    i32 Resize(i32 arg1, i32 arg2);
+    // 0x0a3460  (755B) the rebuild/repaint path: (re-)alloc the work surface to the
+    // grid's dims, lock it, repaint every cell (buffer copy or live-tile color),
+    // unlock. `delta`/`rebuild` gate the partial-decay fast path.
+    i32 Resize(i32 delta, i32 rebuild);
     // 0x0a3820  (398B) compute the centered effect rect from a source rect +
-    // the chosen scale (m_44), alloc the work surface, then draw the border.
-    i32 ComputeRect(LfxRect* src);
+    // the chosen scale (m_44), blit the work surface to it, then draw the border
+    // framing the live world rect through `ctx`.
+    i32 ComputeRect(LfxBorderCtx* ctx, LfxRect* src);
     // 0x0a3b50  DrawBorder - lock the ctx surface, fill the 4 rect edges with a
     // 16-bit color, unlock. `this`/ecx is unused; ctx supplies the surface.
     void DrawBorder(LfxRect* r, LfxBorderCtx* ctx, i32 color);

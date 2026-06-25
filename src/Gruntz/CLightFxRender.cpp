@@ -12,24 +12,33 @@
 
 #include <rva.h>
 
-// The DirectDraw work surface (this+0x10, callers pass it at +0x2c).
-struct LfxSurface {
-    char m_pad[0x20];
-    i32 m_20; // +0x20 bytes-per-pixel / x stride
-    char m_pad2[0x8c];
-    i32 m_b0;         // +0xb0 pitch
-    i32 Init0(i32 a); // engine method on a freshly-alloc'd surface (FUN_0053edb0)
-    u16* Lock(i32 a); // CDirSurf::Lock (FUN_0053e6d0) -> locked pixel base
-};
-
-// The unlock interface (LfxBorderCtx::m_8): a COM-like object whose vtable slot
-// 0x20 releases the surface lock. Modeled as a typed vtable so the dispatch
-// (mov eax,[iface]; call [eax+0x80]) falls out with no cast.
+// The unlock interface (LfxBorderCtx::m_8 / LfxSurface::m_8): a COM-like object
+// whose vtable slot 0x20 releases the surface lock. Modeled as a typed vtable so
+// the dispatch (mov eax,[iface]; call [eax+0x80]) falls out with no cast.
 struct LfxUnlockIface {
     struct Vtbl {
         void* s0[0x20];
         void(__stdcall* Unlock)(LfxUnlockIface*, i32); // slot 0x20 -> [vtbl+0x80]
     }* vtbl;
+};
+
+// The DirectDraw work surface (this+0x10, callers pass it at +0x2c).
+//   +0x08 unlock interface (Resize's own unlock path)
+//   +0x18 / +0x1c the tile/zoom pixel dims (idiv divisors in Resize/ComputeRect)
+//   +0x20 row stride (per y) / +0xb0 column stride (per x), in bytes
+struct LfxSurface {
+    char m_pad[0x8];
+    LfxUnlockIface* m_08; // +0x08 unlock interface
+    char m_pad0c[0x18 - 0xc];
+    i32 m_18; // +0x18 surface height-in-tiles / divisor
+    i32 m_1c; // +0x1c surface width-in-tiles / divisor
+    i32 m_20; // +0x20 row stride (per scanline)
+    char m_pad24[0xb0 - 0x24];
+    i32 m_b0;         // +0xb0 column stride (per pixel)
+    i32 Init0(i32 a); // engine method on a freshly-alloc'd surface (FUN_0053edb0)
+    u16* Lock(i32 a); // CDirSurf::Lock (FUN_0053e6d0) -> locked pixel base
+    // CDirSurf::BltEx (FUN_0053eef0) - stretch-blit `src` into the dest rect.
+    i32 BltEx(void* destRect, LfxSurface* src, i32 a3, i32 a4, i32 a5);
 };
 
 // The border-draw context (DrawBorder's 2nd arg): +0x08 the unlock interface,
@@ -48,10 +57,25 @@ struct LfxSurfPool {
     LfxSurface* Alloc(i32 w, i32 h, i32 a3, i32 a4, i32 a5); // FUN_00542e60
 };
 
-// The surface manager (this+0xc): +0x1c holds the surface pool.
+// The world-rect holder (LfxView::m_5c): +0x40 is the live world RECT (4 ints,
+// in world pixels; >>5 converts to tile units).
+struct LfxWorldRect {
+    char m_pad[0x40];
+    LfxRect m_40; // +0x40 world rect (world pixels)
+};
+
+// The viewport/world-state object (LfxSurfMgr::m_24): +0x5c points at the holder.
+struct LfxView {
+    char m_pad[0x5c];
+    LfxWorldRect* m_5c; // +0x5c -> the world-rect holder
+};
+
+// The surface manager (this+0xc): +0x1c holds the surface pool, +0x24 the view.
 struct LfxSurfMgr {
     char m_pad[0x1c];
     LfxSurfPool* m_1c; // +0x1c the surface pool
+    char m_pad20[0x24 - 0x20];
+    LfxView* m_24; // +0x24 the view/world-state object
 };
 
 // The surface-info source (this+0x8): +0xc / +0x10 are the requested w / h.
@@ -66,8 +90,25 @@ struct LfxDrawCtx {
     void DrawAt(i32 px, i32 py); // FUN_004d5f00 (__thiscall on m_00->m_2c)
 };
 
+// The per-tile color/animation node returned by the ref table (GetA). The
+// renderer reads one of three 16-bit color slots (+0x8 / +0xa / +0xc) by the
+// alternate-set selector. Modeled NO-body; the GetA call reloc-masks.
+struct LfxColorNode {
+    char m_pad[0x8];
+    u16 m_08; // +0x08 color (alt==0 / default)
+    u16 m_0a; // +0x0a color (alt==2)
+    u16 m_0c; // +0x0c color (alt==1)
+};
+
+// The game-registry sprite/animation reference table (g_gameReg+0x74). GetA maps
+// a kind index to its color node (FUN_004e2360, reloc-masked, ret 0x4).
+struct LfxRefTable {
+    LfxColorNode* GetA(i32 kind);
+};
+
 // The render manager (this+0x00, set by Init). Init copies +0x68/+0x70/+0x30 into
-// this+0x4/0x8/0xc; the apply paths draw through +0x2c.
+// this+0x4/0x8/0xc; the apply paths draw through +0x2c; the resize path resolves
+// tile colors through +0x74 (the ref table).
 struct LfxMgr {
     char m_pad0[0x2c];
     LfxDrawCtx* m_2c; // +0x2c draw context
@@ -75,7 +116,8 @@ struct LfxMgr {
     char m_pad34[0x68 - 0x34];
     void* m_68; // +0x68 surface info     -> this+0x4
     char m_pad6c[0x70 - 0x6c];
-    void* m_70; // +0x70                  -> this+0x8
+    void* m_70;        // +0x70                  -> this+0x8
+    LfxRefTable* m_74; // +0x74 sprite/animation ref table
 };
 
 // A surface the global-apply path blits through (g_gameReg->m_68). The 7-arg
@@ -91,6 +133,49 @@ struct CGameReg {
 };
 extern CGameReg* g_gameReg;
 
+// One tile cell of the grid row (stride 0x1c): +0x4 the tile id (-1 = empty),
+// +0xc a direct index into the +0x4c color buffer.
+struct LfxCell {
+    char m_pad[0x4];
+    i32 m_04; // +0x04 tile id (high byte = bank, low byte = slot; -1 = empty)
+    char m_pad08[0xc - 0x8];
+    i32 m_0c; // +0x0c direct color-buffer index
+};
+
+// The tile grid the resize path walks (this+0x08): +0x08 the row table (one row
+// pointer per y), +0x0c width, +0x10 height. Cells are stride 0x1c (LfxCell).
+struct LfxGrid {
+    char m_pad[0x8];
+    LfxCell** m_08; // +0x08 row table  (m_08[y] -> first cell of row y)
+    u32 m_0c;       // +0x0c width  (cells per row)
+    u32 m_10;       // +0x10 height (rows)
+};
+
+// A tile descriptor (one slot of the LfxTileBank::m_1c table). The renderer reads:
+//   +0x1d8 a flag (nonzero -> select the alternate color slot)
+//   +0x870 / +0x878 a pair of 64-bit timestamps (spawn time / lifetime), compared
+//          against the running game clock to decide live vs. expired
+//   +0x1ec the owning area index (vs g_644c54)
+//   +0x1f4 the kind passed to the ref table's GetA
+struct LfxTileDesc {
+    char m_pad1d8[0x1d8];
+    i32 m_1d8; // +0x1d8 alt-slot select flag
+    char m_pad1dc[0x1ec - 0x1dc];
+    i32 m_1ec; // +0x1ec owning area index
+    char m_pad1f0[0x1f4 - 0x1f0];
+    i32 m_1f4; // +0x1f4 ref-table kind
+    char m_pad1f8[0x870 - 0x1f8];
+    i64 m_870; // +0x870 spawn timestamp (64-bit)
+    i64 m_878; // +0x878 lifetime (64-bit)
+};
+
+// The tile-descriptor bank (this+0x04): a base whose +0x1c is a flat pointer table
+// indexed by the packed tile id (slot + bank*15). Null entries skip the cell.
+struct LfxTileBank {
+    char m_pad[0x1c];
+    LfxTileDesc* m_1c[1]; // +0x1c descriptor pointer table (flexible)
+};
+
 // The live screen RGB-format shift table (VA 0x683ea0..0x683eb4 = RVA 0x283ea0..):
 // per channel a right-shift (8-bit -> channel width) then a left-shift into the
 // channel's slot. B sits at bit 0, so it has no left-shift.
@@ -105,6 +190,17 @@ DATA(0x00283eb0)
 extern i32 g_gDown; // green down-shift
 DATA(0x00283eb4)
 extern i32 g_bDown; // blue  down-shift
+
+// Engine globals the resize repaint path reads (reloc-masked DIR32 loads):
+//   g_645588 - the running game clock (low 32 bits of the engine ms counter)
+//   g_644c54 - the current area / world index
+//   g_645594 - a frame-quality / detail threshold (>=0x32 picks the live color)
+DATA(0x00245588)
+extern i32 g_645588;
+DATA(0x00244c54)
+extern i32 g_644c54;
+DATA(0x00245594)
+extern i32 g_645594;
 
 // Pack an 8-bit (r,g,b) constant triple into a screen-native 16-bit pixel.
 static inline u16 Pack(i32 r, i32 g, i32 b) {
@@ -189,6 +285,191 @@ i32 CLightFxRender::AllocSurface() {
         return 0;
     }
     m_10->Init0(0);
+    return 1;
+}
+
+// ===========================================================================
+// CLightFxRender::Resize  (0x0a3460, 755B)  - the rebuild/repaint path. With
+// `rebuild` clear it just decays the +0x438 remaining-count by `delta` and bails
+// while still nonzero; otherwise it (re-)allocs the work surface to the grid's
+// dimensions, locks it, and repaints every cell: an empty / static cell copies a
+// color straight out of the +0x4c buffer, a live tile resolves its color through
+// the descriptor bank + the game ref table, then unlocks.
+// ===========================================================================
+// @early-stop
+// ~49% - zero-register-pinning WALL (docs/patterns/zero-register-pinning.md, the
+// INVERSE case): the opcode skeleton matches - the two-tier grid walk, the i64
+// clock compare (sub/sbb), the tile-id unpack (slot + bank*15), the GetA dispatch
+// by the alt selector, and the dual buffer-copy arms are all present in shape -
+// but retail pins `this` in ebp (`mov ebp,ecx`) with a 2-slot frame, while our cl
+// pins the constant 0 in ebp (`xor ebp,ebp`, reused for the `=0` stores + null
+// tests) and spills `this` to esi/`[esp+0x10]` with a 4-slot frame. That 1-instr
+// phase shift renames every register through the 755B body. No source lever flips
+// the pinning under /O2 (per the pattern). Logic 100% correct; deferred to the
+// final sweep / a leaf-first redo.
+RVA(0x000a3460, 0x2f3)
+i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
+    if (rebuild == 0) {
+        if ((u32)delta < (u32)m_438) {
+            m_438 -= delta;
+        } else {
+            m_438 = 0;
+        }
+        if (m_438 != 0) {
+            return 1;
+        }
+        m_438 = m_434;
+    }
+    m_438 = m_434;
+    if (m_10 == 0) {
+        if (!AllocSurface()) {
+            return 0;
+        }
+    }
+    LfxGrid* grid = (LfxGrid*)m_08;
+    if (m_10->m_1c != (i32)grid->m_0c || m_10->m_18 != (i32)grid->m_10) {
+        if (!AllocSurface()) {
+            return 0;
+        }
+    }
+    u16* base = m_10->Lock(0);
+    if (base == 0) {
+        return 0;
+    }
+    LfxTileBank* bank = (LfxTileBank*)m_04;
+    for (u32 y = 0; y < grid->m_10; y++) {
+        for (u32 x = 0; x < grid->m_0c; x++) {
+            u16* dst = (u16*)((char*)base + y * m_10->m_20 + x * m_10->m_b0);
+            i32 tile;
+            if (x < grid->m_0c && y < grid->m_10) {
+                tile = grid->m_08[y][x].m_04;
+            } else {
+                tile = -1;
+            }
+            if (tile == -1) {
+                i32 idx;
+                if (x < grid->m_0c && y < grid->m_10) {
+                    idx = grid->m_08[y][x].m_0c;
+                } else {
+                    idx = 0;
+                }
+                if ((u32)idx >= 0x1f4) {
+                    *dst = 0;
+                } else {
+                    *dst = m_buf[idx];
+                }
+                continue;
+            }
+            LfxTileDesc* desc = bank->m_1c[(tile & 0xff) + ((tile >> 8) & 0xff) * 15];
+            if (desc == 0) {
+                continue;
+            }
+            i32 alt = 0;
+            if (desc->m_1d8 != 0) {
+                alt = 1;
+            }
+            if ((i64)(u32)g_645588 - desc->m_870 >= desc->m_878 || desc->m_1ec != g_644c54) {
+                LfxColorNode* node = m_00->m_74->GetA(desc->m_1f4);
+                if (node == 0) {
+                    *dst = 0;
+                    continue;
+                }
+                if (alt == 0) {
+                    *dst = node->m_08;
+                } else if (alt == 1) {
+                    *dst = node->m_0c;
+                } else if (alt == 2) {
+                    *dst = node->m_0a;
+                } else {
+                    *dst = node->m_08;
+                }
+                continue;
+            }
+            if (g_645594 >= 0x32) {
+                LfxColorNode* node = m_00->m_74->GetA(desc->m_1f4);
+                if (node == 0) {
+                    *dst = 0;
+                    continue;
+                }
+                *dst = node->m_0c;
+                continue;
+            }
+            i32 idx;
+            if (x < grid->m_0c && y < grid->m_10) {
+                idx = grid->m_08[y][x].m_0c;
+            } else {
+                idx = 0;
+            }
+            if ((u32)idx >= 0x1f4) {
+                *dst = 0;
+            } else {
+                *dst = m_buf[idx];
+            }
+        }
+    }
+    m_10->m_08->vtbl->Unlock(m_10->m_08, 0);
+    return 1;
+}
+
+// ===========================================================================
+// CLightFxRender::ComputeRect  (0x0a3820, 398B)  - copy the source rect into the
+// state block, center it, choose an integer scale (clamped to 3) from the work
+// surface's tile dims, derive the centered screen rect (+0x34..+0x40), alloc/blit
+// the work surface to it, then draw the border framing the live world rect.
+// ===========================================================================
+// @early-stop
+// ~59% - idiv scale-clamp + scheduling wall: the rect copy now matches exactly
+// (docs/patterns/struct-copy-via-member-pointer-lea.md, `*p = *src` through &m_24),
+// and the centering (W via cdq;sub;sar;>>1), the two idiv scale divisions, the
+// min/clamp-to-3, and the +0x34..+0x40 rect derivation all match in shape - but
+// MSVC keeps W/H and the center/scale temporaries in a different register/stack-
+// slot arrangement than retail (which holds W in ebp live across the H compute +
+// first idiv, +1 frame slot). Logic 100% correct; deferred to the final sweep.
+RVA(0x000a3820, 0x18e)
+i32 CLightFxRender::ComputeRect(LfxBorderCtx* ctx, LfxRect* src) {
+    LfxSurface* surf = m_10;
+    if (surf == 0) {
+        return 0;
+    }
+    LfxRect* srcRect = (LfxRect*)&m_24;
+    *srcRect = *src;
+    i32 w = src->right - src->left + 1;
+    i32 h = src->bottom - src->top + 1;
+    i32 cx = src->left + ((w - (w >> 31)) >> 1);
+    i32 cy = src->top + ((h - (h >> 31)) >> 1);
+    i32 qx = w / surf->m_1c;
+    i32 qy = h / surf->m_18;
+    i32 scale = (qx < qy) ? qx : qy;
+    if (scale > 3) {
+        scale = 3;
+    }
+    m_44 = scale;
+    i32 wpx = surf->m_1c * scale;
+    i32 hpx = surf->m_18 * scale;
+    m_34 = cx - ((wpx - (wpx >> 31)) >> 1);
+    m_38 = cy - ((hpx - (hpx >> 31)) >> 1);
+    m_3c = surf->m_1c * scale + m_34;
+    m_40 = surf->m_18 * scale + m_38;
+    if (ctx->m_2c->BltEx(&m_34, m_10, 0, 0x1000000, 0) != 0) {
+        return 0;
+    }
+    LfxRect* world = &m_0c->m_24->m_5c->m_40;
+    i32 l = world->left >> 5;
+    i32 t = world->top >> 5;
+    i32 rr = world->right >> 5;
+    i32 b = world->bottom >> 5;
+    if (m_44 != 1) {
+        l *= m_44;
+        t *= m_44;
+        rr = rr * m_44 + m_44 - 1;
+        b = b * m_44 + m_44 - 1;
+    }
+    LfxRect box;
+    box.left = l + m_34;
+    box.right = rr + m_34;
+    box.top = t + m_38;
+    box.bottom = b + m_38;
+    DrawBorder(&box, ctx, 0xffff);
     return 1;
 }
 

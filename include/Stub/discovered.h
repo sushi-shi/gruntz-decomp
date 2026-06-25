@@ -604,11 +604,6 @@ public:
     void ClassUnknown_66_161370();
     void ClassUnknown_66_166d40();
 };
-class ClassUnknown_68 {
-public:
-    void ClassUnknown_68_0a3460();
-    void ClassUnknown_68_0a3820();
-};
 class ClassUnknown_70 {
 public:
     void ClassUnknown_70_15b2b0();
