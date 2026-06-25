@@ -437,11 +437,7 @@ class ClassUnknown_33 {
 public:
     void ClassUnknown_33_153180();
 };
-class ClassUnknown_34 {
-public:
-    void ClassUnknown_34_148ce0();
-    void ClassUnknown_34_1490d0();
-};
+// ClassUnknown_34 reconstructed as CImageOwned in src/Image/CImageOwned.cpp.
 class ClassUnknown_35 {
 public:
     void ClassUnknown_35_151eb0();

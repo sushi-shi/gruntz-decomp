@@ -750,11 +750,8 @@ void ClassUnknown_29::ClassUnknown_29_137110() {}
 RVA(0x00153180, 0xda)
 void ClassUnknown_33::ClassUnknown_33_153180() {}
 
-// ---- ClassUnknown_34 ----
-RVA(0x00148ce0, 0x2f)
-void ClassUnknown_34::ClassUnknown_34_148ce0() {}
-RVA(0x001490d0, 0x173)
-void ClassUnknown_34::ClassUnknown_34_1490d0() {}
+// ClassUnknown_34 reconstructed as CImageOwned (the CImage +0x30 owned
+// buffer-holder) in src/Image/CImageOwned.cpp.
 
 // ---- ClassUnknown_35 ----
 RVA(0x00151eb0, 0x43)

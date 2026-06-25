@@ -99,12 +99,47 @@ public:
     CImageSurfaceItem* CreateA(i32 desc, i32 mode, void* a, i32 b, i32 c); // 0x142260
 };
 
-// The owned +0x30 object: destroyed by a direct (non-virtual) call to the engine
-// teardown at 0x148d10 then RezFree'd. Modeled as a tiny stand-in whose only
-// load-bearing fact is the teardown method's RVA.
+// The owned +0x30 object (a 0x3c-byte buffer holder built by BuildSlot13): a
+// decoded-pixel buffer (+0x0c) and a 256-entry hardware palette (+0x20), plus the
+// dimensions/format metadata copied out of the CImageFrameDesc. The ctor primes
+// the defaults; Build (0x1490d0) decodes a frame from the desc into the two owned
+// buffers; Teardown (0x148d10) RezFree's both. CImageBuildDesc (below) holds the
+// desc fields Build reads. Reloc-masked __thiscall throughout.
+class CImageBuildDesc;
 class CImageOwned {
 public:
-    void Teardown(); // 0x148d10
+    CImageOwned();                                      // 0x148ce0
+    i32 Build(CImageBuildDesc* src, i32 size, i32 fmt); // 0x1490d0
+    void* Remap(void* pixels);                          // 0x1495d0  (palette-remap, external)
+    void Teardown();                                    // 0x148d10
+
+    i32 m_00;   // +0x00
+    i32 m_04;   // +0x04  src->m_08
+    i32 m_08;   // +0x08  src->m_0c
+    void* m_0c; // +0x0c  decoded pixel buffer (new / RezFree)
+    i32 m_10;   // +0x10  pixel byte count
+    i32 m_14;   // +0x14  (1)
+    i32 m_18;   // +0x18  (0x80)
+    i32 m_1c;   // +0x1c  (0)
+    void* m_20; // +0x20  256-entry palette buffer (new 0x400 / RezFree)
+    i32 m_24;   // +0x24  (-1 / src->m_18)
+    u8 m_28;    // +0x28  format flag a
+    u8 m_29;    // +0x29  format flag b
+};
+
+// The CImageFrameDesc as seen by CImageOwned::Build: a flag word at +0x04 (bits
+// 0x40/0x80/0x100/0x200 steer the decode), two ints copied to the owned object's
+// +0x04/+0x08, a +0x18 byte, and the raw frame data starting at +0x20.
+class CImageBuildDesc {
+public:
+    char _00[0x04];
+    i32 m_04; // +0x04  decode flags
+    i32 m_08; // +0x08  -> owned m_04
+    i32 m_0c; // +0x0c  -> owned m_08
+    char _10[0x18 - 0x10];
+    u8 m_18; // +0x18  -> owned m_24 when 0x100 set
+    char _19[0x20 - 0x19];
+    u8 m_20[1]; // +0x20  raw frame data (palette + pixels)
 };
 
 // The +0x0c parent (CDDrawPtrCollections): its surface pool sits at +0x1c. Both
