@@ -9,7 +9,6 @@
 class CBattlezDlgColors { public: void CBattlezDlgColors_017ac0(); };
 class CBehindCandy { public: void CBehindCandy_00fb70(); void CBehindCandy_00fc30(); };
 class CBehindCandyAni { public: void CBehindCandyAni_0100f0(); void CBehindCandyAni_0adbb0(); };
-class CButeMgr { public: void CButeMgr_0213c0(); };
 class CButeTree { public: void CButeTree_16e070(); };
 class CCheckpointDlg { public: void CCheckpointDlg_023570(); };
 class CCheckpointTrigger { public: void CCheckpointTrigger_011480(); };

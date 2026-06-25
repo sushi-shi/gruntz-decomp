@@ -30,7 +30,10 @@
 //   CButeMgr::SkipToTag      - re-lex until a tag/group token
 //   CButeMgr::ParseGroup     - the recursive per-tag descent
 //   CButeMgr::Exists         - tag/key existence probe
-// (The EH-frame scalar destructor at 0x0213c0 stays stubbed for the final sweep.)
+//   CButeMgr::~CButeMgr    - the EH-frame (/GX) scalar destructor (0x0213c0);
+//                            tears down the 3 CButeStore sub-trees + 5 CStrings +
+//                            the +0x10f tail object (@early-stop on the EH-region
+//                            granularity wall; see its definition below).
 //
 // The getters funnel through one __thiscall find-by-key helper (CButeTree::Find):
 // outer Find(tag) on m_tree (+0x18) yields the tag sub-tree;
@@ -190,6 +193,39 @@ static const char s_strRBrack[] = "]";
 
 // CRT varargs formatter (engine NAFXCW vsprintf, reloc-masked external/no-body).
 extern "C" i32 vsprintf(char* buf, const char* fmt, char* va);
+
+// ---------------------------------------------------------------------------
+// CButeMgr::~CButeMgr
+// The /GX (EH-frame) scalar destructor: tears down the three owned CButeStore
+// sub-trees (+0x18 / +0x48 / +0x74), the five CStrings (m_errStr @+0x10, m_tagName
+// @+0x100, m_str104 @+0x104, m_str108 @+0x108) and the +0x10f tail object, each at
+// its own descending trylevel in reverse declaration order. The body is empty:
+// every store/string/tail member is a value member with a non-trivial dtor, so the
+// compiler emits the full /GX teardown chain (the `push -1 / mov fs:0,esp` frame,
+// the `[esp+N]=state` trylevel writes, and the per-member `lea ecx,[this+off]; call
+// ~Member` invocations) automatically. The three CButeStore members each expand to
+// the inline multiply-derived teardown (two vptr re-stamps + the recursive clear +
+// the masked second-base restore + the primary-base dtor).
+// @early-stop
+// 68.6% inline-member EH-region-granularity wall (docs/patterns/
+// eh-dtor-inline-member-vtable-stamp-thisadjust.md). The teardown is byte-correct:
+// the /GX frame, the reverse-declaration member order (10f,108,104,100,74,48,18,10),
+// each CString dtor with its trylevel, AND each CButeStore's inline multiply-derived
+// teardown -- the two vptr re-stamps + `mov ecx,edi; call ClearRecursive` + the
+// masked `mov ecx,edi; neg ecx; sbb ecx,ecx; and ecx,ebx; call RestoreVptr`
+// second-base adjust + `mov ecx,edi; call BaseDtor` -- all match retail instruction
+// for instruction. The residual is the EH-state MACHINE only: retail destructs each
+// store member as a NESTED region using TWO state slots ([esp+0x2c] outer state
+// 8/a/c, [esp+0x28] inner 7/9/b + 2/1/0) and stores the member-`this` cleanup
+// pointer (`mov [esp+0x1c],edi`); the inline form collapses each store to a single
+// trylevel (2/1/0) with no member-`this` re-point. That coupling also makes retail
+// reserve a 0x10-larger frame (`sub esp,0x14`/`add esp,0x20` vs our `push ecx`/
+// `add esp,0x10`), shifting every `[esp+N]` operand by 0x10. Out-of-lining
+// ~CButeStore would emit the nested states but then ~CButeMgr would CALL it (retail
+// inlines), diverging worse. No source lever produces the nested two-slot EH region
+// from an inlined manual-vtable member dtor; deferred to the final sweep.
+RVA(0x000213c0, 0x14c)
+CButeMgr::~CButeMgr() {}
 
 // ---------------------------------------------------------------------------
 // CButeMgr::ReportError
@@ -1267,12 +1303,11 @@ bool CButeMgr::Exists(char* tag, char* key) {
     return false;
 }
 
-// NOTE: the CButeMgr scalar destructor at 0x0213c0 stays stubbed in
-// src/Stub/Discovered.cpp for now -- it is an EH-frame (/GX) destructor that
-// re-stamps three sub-tree vtables and dispatches the engine base dtors via the
-// `neg/sbb/and` second-base adjust. Reproducing it exactly needs each sub-tree
-// retyped with its 2-vptr virtual dtor (a restructuring that risks the 14
-// already-matched getters/parser here), so it is deferred to the final sweep.
+// NOTE: the CButeMgr scalar destructor at 0x0213c0 is now reconstructed above (the
+// `CButeMgr::~CButeMgr()` near the top, in retail-RVA order); the @early-stop wall is
+// documented there. The three sub-trees were retyped to the CButeStore value member
+// (matching-neutral: same +0x18/+0x48/+0x74 offsets + 0x2c size), which left all 14
+// already-matched getters/parser at 100%.
 
 // ===========================================================================
 // CButeMgrHelper cluster (0x1697c0-0x16c0c0). The helper sub-object embedded at

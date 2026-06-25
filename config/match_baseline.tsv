@@ -23,7 +23,7 @@ battlezdata	14	11
 battlezmapconfig	1	0
 blowfish	4	3
 brickz	14	3
-butemgr	39	27
+butemgr	40	27
 cambientsound	3	2
 canielement	3	2
 cattract	9	5
@@ -67,7 +67,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	204	0
+engine_discovered	203	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -255,6 +255,7 @@ brickz	?SearchEdge@CBrickz@@QAEHHHHHPAXHHH@Z	82.5373	82.5373	2	9a02e814554f	0x81
 brickz	?Serialize@CBrickz@@QAEHHHHH@Z	37.9032	37.9032	1	18774618cdf4	0x9356c
 brickz	?Unlink@CBrickz@@QAEXPAUBrickzNode@@@Z	74.9487	74.9487	2	ead4b3e1d312	0x9f690
 brickz	?UpdateDiagonals@CBrickz@@QAEHH@Z	53.5683	53.5683	1	e2065e000df7	0x82030
+butemgr	??1CButeMgr@@QAE@XZ	68.6322	68.6322	1	febe7cdf6ea9	0x213c0
 butemgr	?CharClass@CButeMgr@@QAEFD@Z	100.0000	100.0000	2	6b8d1de98cce	0x1703e0
 butemgr	?ClearHelper@CButeMgr@@QAEXXZ	100.0000	100.0000	3	78033bc3e61d	0x171a40
 butemgr	?Construct@CButeMgrHelper@@QAEPAV1@XZ	100.0000	100.0000	2	b7face8539a4	0x169c00
@@ -691,7 +692,6 @@ engine_discovered	?CBehindCandyAni_0100f0@CBehindCandyAni@@QAEXXZ	5.8824	5.8824	
 engine_discovered	?CBehindCandyAni_0adbb0@CBehindCandyAni@@QAEXXZ	14.2857	14.2857	2	dd457a2e5834	0xadbb0
 engine_discovered	?CBehindCandy_00fb70@CBehindCandy@@QAEXXZ	50.0000	50.0000	2	29c2c4216897	0xfb70
 engine_discovered	?CBehindCandy_00fc30@CBehindCandy@@QAEXXZ	5.8824	5.8824	2	b56b5edd3dd1	0xfc30
-engine_discovered	?CButeMgr_0213c0@CButeMgr@@QAEXXZ	1.1494	1.1494	2	78c24647c5f1	0x213c0
 engine_discovered	?CButeTree_16e070@CButeTree@@QAEXXZ	0.8000	0.8000	2	449e08018b4b	0x16e070
 engine_discovered	?CCheckpointDlg_023570@CCheckpointDlg@@QAEXXZ	50.0000	50.0000	2	6f7562291252	0x23570
 engine_discovered	?CCheckpointTrigger_011480@CCheckpointTrigger@@QAEXXZ	5.8824	5.8824	2	36760718b34d	0x11480
@@ -1604,7 +1604,7 @@ grunt	?OnStruck@CGrunt@@QAEXH@Z	76.2798	76.2798	1	adbf392072d5	0x588f0
 grunt	?PlayMoveSound@CGrunt@@QAEXHH@Z	100.0000	100.0000	1	aa803a2a8575	0x511b0
 grunt	?PlaySound@CGrunt@@QAEXHUCGruntVoiceRec@@@Z	62.4901	62.4901	1	a2a2cfd991e5	0x4ac10
 grunt	?ReadConfigFromButeMgr@CGrunt@@QAEXXZ	96.8421	96.8421	5	39bb0fe6f60a	0x48400
-grunt	?RearmEntranceDrop@CGrunt@@QAEXXZ	88.8646	88.8646	2	d64979f40a7e	0x68370
+grunt	?RearmEntranceDrop@CGrunt@@QAEXXZ	88.9167	88.9167	2	d64979f40a7e	0x68370
 grunt	?RectContains@CGrunt@@QAEHHH@Z	63.0081	63.0081	1	490b1e26e8f0	0x51850
 grunt	?RectContainsGated@CGrunt@@QAEHHH@Z	63.5433	63.5433	1	e41d77906d32	0x51a20
 grunt	?ResetGeometry@CGrunt@@QAEHXZ	82.8800	82.8800	3	502caa6ebbcc	0x616e0

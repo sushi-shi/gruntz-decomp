@@ -15,9 +15,6 @@ RVA(0x0000fc30, 0x44) void CBehindCandy::CBehindCandy_00fc30() {}
 RVA(0x000100f0, 0x44) void CBehindCandyAni::CBehindCandyAni_0100f0() {}
 RVA(0x000adbb0, 0x17) void CBehindCandyAni::CBehindCandyAni_0adbb0() {}
 
-// ---- CButeMgr ----
-RVA(0x000213c0, 0x14c) void CButeMgr::CButeMgr_0213c0() {}
-
 // ---- CButeTree ----
 RVA(0x0016e070, 0x7b) void CButeTree::CButeTree_16e070() {}
 

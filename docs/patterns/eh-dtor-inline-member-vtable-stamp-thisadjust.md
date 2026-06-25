@@ -30,3 +30,21 @@ call forces the member-`this` adjust naturally. Defer until the member subobject
 external dtor are modelled. Evidence: `CShadeTableCache::~` (0x14de50) — ctor 100% + dtor 80.13%
 with inline `~CShadeTableArray()` doing the two foreign-vtable stamps; out-of-line → ctor 6.6% /
 dtor 60.7%. related: eh-dtor-model-members-as-destructible.md, eh-dtor-needs-base-subobject.md.
+
+NESTED-REGION variant (multiply-derived member with a 2-vptr / multi-call teardown). When the
+inlined member's dtor is itself a *multi-call multiply-derived* teardown — re-stamp both vptrs,
+`call ClearBody` (the most-derived body), `neg ecx;sbb ecx,ecx;and ecx,ebx;call RestoreBase2` (the
+masked second-base-`this` adjust), `call BaseDtor` — retail destructs the member as a NESTED EH
+region: the OUTER member region takes its own state slot (`[esp+0x2c]` = 8/a/c per member) while
+the inner base teardowns use the primary slot (`[esp+0x28]` = 7/9/b then 2/1/0), and the member-
+`this` cleanup pointer is stored (`mov [esp+0x1c],edi`). An inline manual-stamp member dtor
+reproduces ALL the instruction selection (the two `mov [edi]/[ebx],<vtbl>` stamps, `mov ecx,edi;
+call`, the `neg/sbb/and` second-base mask) but COLLAPSES the member into a single trylevel (2/1/0,
+no outer 8/a/c slot, no `[esp+N],edi` re-point) — which also shrinks the frame 0x10 (`push ecx`
+vs retail `sub esp,0x14`; `add esp,0x10` vs `add esp,0x20`), shifting every `[esp+N]` operand.
+You can't make a non-polymorphic manual-vtable member emit the nested two-slot region: real C++
+bases would synthesize divergent vtables (the virtuals live in other TUs), and out-of-lining the
+member dtor turns the inline teardown into a `call ~Member` (retail inlines). Evidence:
+`CButeMgr::~CButeMgr` (0x213c0) — 68.6%, three CButeStore sub-trees each inlined at +0x18/+0x48/
++0x74; body/CFG/instruction-selection/reverse-decl-order all byte-correct, only the EH-state
+machine's region granularity + the coupled 0x10 frame-size differ.
