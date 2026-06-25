@@ -76,6 +76,17 @@ struct CButeValue {
     CButeValue* SetDword(i32 type, u32 val);
     CButeValue* SetFloat(i32 type, float val);
     CButeValue* SetDouble(i32 type, double val);
+
+    // CopyValue (@0x172040): copy `other`'s payload into this value's storage,
+    // sized by THIS value's type-tag (a jump-table switch over ButeType). Returns
+    // this.
+    CButeValue* CopyValue(CButeValue* other);
+};
+
+// The 24-byte (kButeRef7) payload, copied as a struct so MSVC lowers it to the
+// retail `rep movsd` (6 dwords).
+struct ButeRef24 {
+    i32 w[6];
 };
 
 // The engine helper embedded at CButeMgr+0x14 (the .bute compiler/registry

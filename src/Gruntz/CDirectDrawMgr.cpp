@@ -1047,3 +1047,73 @@ i32 CDDPageMgr::Init(void* window, DDModeInfo* mode, u32 coopFlags) {
     FinishInit();
     return 1;
 }
+
+// ---------------------------------------------------------------------------
+// CDDPageMgr::CheckMode16 (@0x17d2b0, __thiscall, no args)
+// Read the current display mode's pixel format (IDirectDraw2::GetDisplayMode,
+// vtbl slot 12), popcount its R/G/B channel bit-masks, and classify a 16-bit
+// mode: 5/5/5 -> tag m_510 = 0x80000000, 5/6/5 -> 0xc0000000. Returns 1 on a
+// recognised 16-bit mode, 0 otherwise (incl. a failed GetDisplayMode).
+// @early-stop
+// 83.9% - logic/CFG/the GetDisplayMode COM call/the three 32-iter popcount loops/
+// the 5-5-5 vs 5-6-5 classification are all reproduced. The residual is a regalloc
+// coin-flip: retail spills `this` to a stack slot (sub esp,0x70) and uses ebx as a
+// bit counter, while we keep `this` in ebx (sub esp,0x6c) and use edi for the third
+// counter; this cascades the loop register operands + the desc stack offset.
+// Not source-steerable; deferred to the final sweep.
+struct DDModeDesc {
+    u32 dwSize; // +0x00
+    char pad4[0x58 - 0x04];
+    u32 rMask; // +0x58  ddpfPixelFormat.dwRBitMask
+    u32 gMask; // +0x5c  dwGBitMask
+    u32 bMask; // +0x60  dwBBitMask
+    char pad64[0x6c - 0x64];
+}; // 0x6c
+
+RVA(0x0017d2b0, 0xfa)
+i32 CDDPageMgr::CheckMode16() {
+    DDModeDesc desc;
+    memset(&desc, 0, sizeof(desc));
+    desc.dwSize = 0x6c;
+    if (m_14->vtbl->GetDisplayMode(m_14, &desc) != 0) {
+        return 0;
+    }
+
+    i32 r = 0;
+    i32 g = 0;
+    i32 b = 0;
+    i32 i;
+    u32 m;
+
+    m = desc.rMask;
+    for (i = 0; i < 32; i++) {
+        if ((m & 1) == 1) {
+            r++;
+        }
+        m >>= 1;
+    }
+    m = desc.gMask;
+    for (i = 0; i < 32; i++) {
+        if ((m & 1) == 1) {
+            g++;
+        }
+        m >>= 1;
+    }
+    m = desc.bMask;
+    for (i = 0; i < 32; i++) {
+        if ((m & 1) == 1) {
+            b++;
+        }
+        m >>= 1;
+    }
+
+    if (r == 5 && g == 5 && b == 5) {
+        m_510 = (i32)0x80000000;
+        return 1;
+    }
+    if (r == 5 && g == 6 && b == 5) {
+        m_510 = (i32)0xc0000000;
+        return 1;
+    }
+    return 0;
+}

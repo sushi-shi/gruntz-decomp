@@ -76,19 +76,45 @@ public:
 
 // CDDrawPtrCollections::RemoveItemA(CPoolItemA*) @0x142160 - reloc-masked
 // __thiscall engine callee modeled as a method on a tiny view so the call falls
-// out as mov ecx,pool; call with no caller-side stack cleanup.
+// out as mov ecx,pool; call with no caller-side stack cleanup. AcquireA/MakeAndAddB/
+// CreateB are the three pool surface-acquire entries Create() fans into.
 class CDDrawSurfacePool {
 public:
-    void RemoveItemA(CDDSurface* item); // 0x142160
+    void RemoveItemA(CDDSurface* item);                        // 0x142160
+    CDDSurface* AcquireA(i32 a, i32 b);                        // 0x143630
+    CDDSurface* MakeAndAddB(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x142e60
+    CDDSurface* CreateB(i32 a, i32 b, i32 c, i32 d, i32 e);     // 0x1423c0
+};
+
+// CDDrawSurfaceMgr - the parent manager view m_0c points at: a pixel-format chain
+// at +0x4 -> +0x10 -> +0x2c, the surface pool at +0x1c, and a last-error word at
+// +0x38. Only the offsets Create() reads are pinned.
+struct CDDrawSurfChainB {
+    char _pad0[0x2c];
+    i32 m_2c; // +0x2c  pixel-format token
+};
+struct CDDrawSurfChainA {
+    char _pad0[0x10];
+    CDDrawSurfChainB* m_10; // +0x10
+};
+struct CDDrawSurfaceMgr {
+    char _pad0[0x04];
+    CDDrawSurfChainA* m_4; // +0x04  pixel-format chain
+    char _pad8[0x1c - 0x08];
+    CDDrawSurfacePool* m_1c; // +0x1c  surface pool
+    char _pad20[0x38 - 0x20];
+    i32 m_38; // +0x38  last-error word
 };
 
 class CDDrawSurfacePair : public CSurfacePairBase {
 public:
-    void BltSelf(CDDrawSurfacePair* src); // 0x03a1d0
-    ~CDDrawSurfacePair();                 // 0x1590f0
-    i32 RestoreIfLost();                  // 0x163f00
-    void TeardownSurface();               // 0x163e20  (vtable slot 7)
-    void DrawBox(i32* rect, i32 color);   // 0x163f40
+    void BltSelf(CDDrawSurfacePair* src);     // 0x03a1d0
+    ~CDDrawSurfacePair();                      // 0x1590f0
+    i32 Create(i32 w, i32 h, i32 bpp, i32 a3); // 0x163c90  (vtable slot 12)
+    i32 RestoreIfLost();                       // 0x163f00
+    void TeardownSurface();                    // 0x163e20  (vtable slot 7)
+    void DrawBox(i32* rect, i32 color);        // 0x163f40
+    void DrawCross(i32 x, i32 y);              // 0x164180
 
     // --- layout (continues the base; base ends at +0x10) ----------------------
     i32 m_10;                   // +0x10  width

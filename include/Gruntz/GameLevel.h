@@ -134,6 +134,11 @@ struct CSeverusWorker {
 //   +0xac m_checksum       = WwdHeader::checksum
 //   +0xe0 m_header         WwdHeader copy (1524 B == 0x17d dwords)
 // ---------------------------------------------------------------------------
+// ScrollTarget - the per-axis edit target the scroll dispatch + axis steppers
+// drive (the level itself, viewed via its +0x5c/+0x60 scroll x/y). Defined fully
+// in GameLevel.cpp; only the pointer type appears in the class below.
+struct ScrollTarget;
+
 class CGameLevel : public CSeverusWorker {
 public:
     // The vtable: LoadWwd is slot 0x38 (index 14) and the pre-load reset is slot
@@ -282,6 +287,21 @@ public:
     // explicitly (the edit-state +0xe4 machine viewed as scroll x/y at +0x5c/+0x60).
     // __stdcall (callee-cleans its 4 stack args: ret 0x10).
     static i32 __stdcall ApplyScroll(CGameLevel* lvl, i32 a, i32 b, i32 c);
+
+    // ScrollKindDispatch12 (@0x1671c0, __thiscall this=level): the per-axis scroll
+    // dispatcher ApplyScroll fans brush-kinds 1..2 into. For each axis, when the
+    // target's scroll (+0x5c/+0x60) differs from the goal, call the matching
+    // hi/lo axis stepper (which clamps the coord through a by-ref pointer); OR the
+    // two results, then commit the (possibly stepped) scroll x/y. The target is
+    // passed explicitly (it is itself the level).
+    i32 ScrollKindDispatch12(ScrollTarget* t, i32 x, i32 y, i32 flags);
+
+    // The four axis steppers ScrollKindDispatch12 fans into (reloc-masked engine
+    // leaves; this=level, target + an in/out coord pointer passed explicitly).
+    i32 ScrollStepXHi(ScrollTarget* t, i32 x, i32 y, i32* px, i32 flags); // 0x167260
+    i32 ScrollStepXLo(ScrollTarget* t, i32 x, i32 y, i32* px, i32 flags); // 0x167450
+    i32 ScrollStepYHi(ScrollTarget* t, i32 x, i32 y, i32* py, i32 flags); // 0x167640
+    i32 ScrollStepYLo(ScrollTarget* t, i32 x, i32 y, i32* py, i32 flags); // 0x167830
 
     // Destructor (vtable slot 1, the ~CGameLevel @0x1611e0). Stamps the derived
     // vftable, runs the level cleanup (Unload), then the three array members destruct

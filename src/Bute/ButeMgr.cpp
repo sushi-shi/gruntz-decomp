@@ -312,6 +312,59 @@ i32 CButeMgr::GetInt(char* tag, char* key) {
 }
 
 // ---------------------------------------------------------------------------
+// CButeValue::CopyValue (@0x172040)
+// Copy `other`'s value payload into this value's pre-allocated storage, the copy
+// width chosen by THIS value's type-tag via a dense ButeType jump table. The
+// scalar types copy 1-2 dwords, the string assigns the CString, and the Ref5/6/7/8
+// blobs copy 16/8/24/16 bytes. Returns `this`.
+// @early-stop
+// 65% - the dense ButeType jump table + all 8 case bodies (incl. cases 1&3 tail-
+// merged, the string CString::operator= call, and the kButeRef7 rep-movsd) are
+// reproduced with correct logic. The residual is per-case register allocation:
+// retail schedules each same-shape copy into different registers (e.g. the early
+// `mov eax,ebx` return-value hoist in some cases), which is not source-steerable
+// from the switch body. Documented switch/regalloc wall; deferred to the final sweep.
+RVA(0x00172040, 0xfc)
+CButeValue* CButeValue::CopyValue(CButeValue* other) {
+    switch (type) {
+        case kButeInt:
+            *(i32*)pValue = *(i32*)other->pValue;
+            break;
+        case kButeDword:
+        case kButeFloat:
+            *(i32*)pValue = *(i32*)other->pValue;
+            break;
+        case kButeDouble:
+            ((i32*)pValue)[0] = ((i32*)other->pValue)[0];
+            ((i32*)pValue)[1] = ((i32*)other->pValue)[1];
+            break;
+        case kButeString:
+            *(CString*)pValue = *(CString*)other->pValue;
+            break;
+        case kButeRef5:
+            ((i32*)pValue)[0] = ((i32*)other->pValue)[0];
+            ((i32*)pValue)[1] = ((i32*)other->pValue)[1];
+            ((i32*)pValue)[2] = ((i32*)other->pValue)[2];
+            ((i32*)pValue)[3] = ((i32*)other->pValue)[3];
+            break;
+        case kButeRef6:
+            ((i32*)pValue)[0] = ((i32*)other->pValue)[0];
+            ((i32*)pValue)[1] = ((i32*)other->pValue)[1];
+            break;
+        case kButeRef7:
+            *(ButeRef24*)pValue = *(ButeRef24*)other->pValue;
+            break;
+        case kButeRef8:
+            ((i32*)pValue)[0] = ((i32*)other->pValue)[0];
+            ((i32*)pValue)[1] = ((i32*)other->pValue)[1];
+            ((i32*)pValue)[2] = ((i32*)other->pValue)[2];
+            ((i32*)pValue)[3] = ((i32*)other->pValue)[3];
+            break;
+    }
+    return this;
+}
+
+// ---------------------------------------------------------------------------
 // CButeMgr::GetDwordDef
 // type-1 (dword) getter with default. The type check is `if (--type == 0)` i.e.
 // type == 1 (the disasm `mov ecx,[eax]; dec ecx; je`).

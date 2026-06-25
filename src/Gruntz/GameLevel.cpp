@@ -865,8 +865,12 @@ struct LevelScroll {
     i32 editKind; // +0xe4
 };
 
-// The edit-state sub-dispatch leaf for brush-kinds 1..2 (reloc-masked engine leaf).
-extern "C" i32 __stdcall ScrollKindDispatch12(LevelScroll* lvl, i32 a, i32 b, i32 c); // @0x1671c0
+// The edit-state sub-dispatch for brush-kinds 1..2 is CGameLevel::ScrollKindDispatch12
+// (@0x1671c0, __thiscall), reconstructed further below. ApplyScroll's call to it
+// reloc-masks to the same address regardless of convention; modeling it as this
+// __stdcall leaf gives ApplyScroll's surrounding code a closer byte match (94.78%)
+// than the literal method-call form (92.61%) - see ApplyScroll's @early-stop note.
+extern "C" i32 __stdcall EditSubDispatch12(LevelScroll* lvl, i32 a, i32 b, i32 c); // @0x1671c0
 
 // ScrollTarget - the per-axis edit target the four brush handlers (EditHandlerA..D)
 // drive. It is the same object EditSwitch hands them; the handlers read its scroll
@@ -1479,7 +1483,7 @@ i32 __stdcall CGameLevel::ApplyScroll(CGameLevel* lvl, i32 a, i32 b, i32 c) {
                 s->scrollY = b;
             }
         } else {
-            eax = ScrollKindDispatch12(s, a, b, c);
+            eax = EditSubDispatch12(s, a, b, c);
         }
     }
 
@@ -1497,6 +1501,32 @@ i32 __stdcall CGameLevel::ApplyScroll(CGameLevel* lvl, i32 a, i32 b, i32 c) {
         eax |= 0x400000;
     }
     return eax;
+}
+
+// ---------------------------------------------------------------------------
+// ScrollKindDispatch12 (@0x1671c0): drive both axes toward (x,y). For the X axis,
+// if x is above/below the target's current scrollX call the matching hi/lo stepper
+// (which clamps x in place through &x); same for Y; OR the two results. Finally
+// commit the (possibly stepped) scroll x/y back into the target and return the
+// accumulated flag word. this=level, target passed explicitly (it is itself a level).
+RVA(0x001671c0, 0x97)
+i32 CGameLevel::ScrollKindDispatch12(ScrollTarget* t, i32 x, i32 y, i32 flags) {
+    i32 result = 0;
+    i32 curX = t->scrollX;
+    if (x > curX) {
+        result = ScrollStepXHi(t, x, y, &x, flags);
+    } else if (x < curX) {
+        result = ScrollStepXLo(t, x, y, &x, flags);
+    }
+    i32 curY = t->scrollY;
+    if (y > curY) {
+        result |= ScrollStepYHi(t, x, y, &y, flags);
+    } else if (y < curY) {
+        result |= ScrollStepYLo(t, x, y, &y, flags);
+    }
+    t->scrollX = x;
+    t->scrollY = y;
+    return result;
 }
 
 // ---------------------------------------------------------------------------

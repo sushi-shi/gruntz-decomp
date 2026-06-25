@@ -65,6 +65,73 @@ CDDrawSurfacePair::~CDDrawSurfacePair() {
 }
 
 // ---------------------------------------------------------------------------
+// 0x163c90: Create(w, h, bpp, flags) - cache the {w,h,bpp} geometry + the
+// {0,0,w,h} source rect, then acquire a held surface from the parent manager's
+// pool: when m_04 == 1 via AcquireA(pixel-format token, 4); otherwise via
+// MakeAndAddB/CreateB (selected by the 0x10000 flag bit). On any failure record a
+// last-error code (0xfa1/0xfa2/0xfa3/0xfa4) in the manager (only if still 0) and
+// return 0; on success flag the surface as owned (m_30=1) and return 1. The
+// two m_04 paths are TWO sequential ifs (if m_04==1 {...} if m_04!=1 {...}), which
+// is why the success merge re-tests m_04. __thiscall, 4 stack args (ret 0x10).
+// @early-stop
+// 96.02% - logic/CFG/offsets/calls/error-codes all reproduced. The lone residual is
+// a 1-instruction regalloc coin-flip in the w<=0 error path: retail loads m_04 into
+// eax (mov eax,[esi+4]; cmp $1,eax) so it can reuse esi for the manager, we emit the
+// shorter direct compare (cmp $1,[esi+4]). Same values, same branch. Not source-
+// steerable; docs/patterns/zero-register-pinning.md family.
+RVA(0x00163c90, 0x116)
+i32 CDDrawSurfacePair::Create(i32 w, i32 h, i32 bpp, i32 a3) {
+    m_08 = a3;
+    if (w <= 0 || h <= 0) {
+        i32 k = m_04;
+        CDDrawSurfaceMgr* mgr = (CDDrawSurfaceMgr*)m_0c;
+        if (k == 1) {
+            if (mgr->m_38 == 0) {
+                mgr->m_38 = 0xfa1;
+            }
+        } else {
+            if (mgr->m_38 == 0) {
+                mgr->m_38 = 0xfa2;
+            }
+        }
+        return 0;
+    }
+    m_10 = w;
+    m_14 = h;
+    m_18 = bpp;
+    i32* rect = (i32*)m_rect1c;
+    rect[0] = 0;
+    rect[1] = 0;
+    rect[2] = w;
+    rect[3] = h;
+    if (m_04 == 1) {
+        CDDrawSurfaceMgr* mgr = (CDDrawSurfaceMgr*)m_0c;
+        m_2c = mgr->m_1c->AcquireA(mgr->m_4->m_10->m_2c, 4);
+        if (m_2c == 0) {
+            if (((CDDrawSurfaceMgr*)m_0c)->m_38 == 0) {
+                ((CDDrawSurfaceMgr*)m_0c)->m_38 = 0xfa3;
+            }
+            return 0;
+        }
+    }
+    if (m_04 != 1) {
+        if (m_08 & 0x10000) {
+            m_2c = ((CDDrawSurfaceMgr*)m_0c)->m_1c->MakeAndAddB(w, h, 0, 0, -1);
+        } else {
+            m_2c = ((CDDrawSurfaceMgr*)m_0c)->m_1c->CreateB(w, h, 0, 0, -1);
+        }
+        if (m_2c == 0) {
+            if (((CDDrawSurfaceMgr*)m_0c)->m_38 == 0) {
+                ((CDDrawSurfaceMgr*)m_0c)->m_38 = 0xfa4;
+            }
+            return 0;
+        }
+    }
+    m_30 = 1;
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
 // 0x163e20: the surface teardown (vtable slot 7). When the held surface is
 // present AND owned (m_30 set), remove it from the parent manager's surface pool;
 // then zero m_2c. Always zero the width (m_10).
@@ -181,5 +248,66 @@ void CDDrawSurfacePair::DrawBox(i32* rect, i32 color) {
     }
 
     // Unlock the held surface.
+    sv->m_8->vtbl->Unlock(sv->m_8, 0);
+}
+
+// ---------------------------------------------------------------------------
+// 0x164180: draw a small crosshair marker centred at (x,y) when (x,y) is at least
+// 4 px inside the surface. Locks the held surface, writes the 3-px horizontal arm
+// (value 0, the centre pixel left untouched) then the 3-px-up + 3-px-down vertical
+// arms (value 0xff), then unlocks. The pitch is re-read through this->m_2c inside
+// the vertical loops (the base writes may alias the surface header), which is why
+// each iteration reloads m_2c->pitch. __thiscall, 2 stack args (ret 0x8).
+// @early-stop
+// 75.05% - logic/CFG/offsets/calls/the m_2c->pitch reloads all reproduced. Residual
+// is a regalloc coin-flip: retail pins x in ebx (delayed `push ebp` as a loop scratch
+// after the Lock), we pin x in ebp, which cascades the register operand through the
+// body; plus retail coalesces the two [off+1]/[off+2] zero stores into one word store
+// while we keep three byte stores. Not source-steerable; deferred to the final sweep.
+RVA(0x00164180, 0xcd)
+void CDDrawSurfacePair::DrawCross(i32 x, i32 y) {
+    if (x - 4 < 0) {
+        return;
+    }
+    if (x + 4 >= m_10) {
+        return;
+    }
+    if (y - 4 < 0) {
+        return;
+    }
+    if (y + 4 >= m_14) {
+        return;
+    }
+    char* base = (char*)m_2c->Lock(0);
+    if (base == 0) {
+        return;
+    }
+    i32 off = ((DrawSurfaceView*)m_2c)->m_bpp * x + ((DrawSurfaceView*)m_2c)->m_pitch * y;
+
+    // horizontal arm (0), centre pixel skipped
+    i32 i;
+    char* p = base + off - 1;
+    for (i = 0; i < 3; ++i) {
+        *p = 0;
+        --p;
+    }
+    base[off + 1] = 0;
+    base[off + 2] = 0;
+    base[off + 3] = 0;
+
+    // vertical arm up (0xff)
+    i32 up = off;
+    for (i = 0; i < 3; ++i) {
+        up -= ((DrawSurfaceView*)m_2c)->m_pitch;
+        base[up] = (char)0xff;
+    }
+    // vertical arm down (0xff)
+    i32 down = off;
+    for (i = 0; i < 3; ++i) {
+        down += ((DrawSurfaceView*)m_2c)->m_pitch;
+        base[down] = (char)0xff;
+    }
+
+    DrawSurfaceView* sv = (DrawSurfaceView*)m_2c;
     sv->m_8->vtbl->Unlock(sv->m_8, 0);
 }
