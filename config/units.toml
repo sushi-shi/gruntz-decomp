@@ -144,6 +144,26 @@ source = "src/Gruntz/SBI_ImageEh.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "sbi_imagesetani_eh"
+source = "src/Gruntz/SBI_ImageSetAniEh.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "sbi_statztabarrow_eh"
+source = "src/Gruntz/SBI_StatzTabArrowEh.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cremusentrylist"
+source = "src/Gruntz/CRemusEntryList.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cseverusentrylist"
+source = "src/Gruntz/CSeverusEntryList.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "sbi_imageset"
 source = "src/Gruntz/SBI_ImageSet.cpp"
 flags = "base"

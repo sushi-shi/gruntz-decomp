@@ -71,12 +71,14 @@ cmulti	11	7
 cparticlez	2	2
 cpathhazard	4	2
 cplay	28	8
+cremusentrylist	2	1
 cremusnode	4	2
 crt_istream	3	2
 crt_ostream	4	3
 crt_streambuf	7	5
 crt_strstreambuf	4	2
 csecretleveltrigger	2	2
+cseverusentrylist	2	1
 csimpleanimation	2	2
 csingleanimation	1	1
 cstatichazard	2	2
@@ -89,7 +91,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	139	0
+engine_discovered	133	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -158,12 +160,14 @@ sbi_gruntmachine_eh	1	0
 sbi_image	1	0
 sbi_image_eh	1	0
 sbi_imageset	1	0
+sbi_imagesetani_eh	1	0
 sbi_menuitem	12	7
 sbi_menuitem_eh	1	0
 sbi_rectonly	61	23
 sbi_rectonly_eh	4	1
 sbi_sidetab	3	1
 sbi_sidetab_eh	1	0
+sbi_statztabarrow_eh	1	0
 sbi_statztabgruntbar	3	2
 sbi_statztabgruntbar_eh	1	0
 sbi_warlordhead	4	1
@@ -640,6 +644,8 @@ cplay	?Update@CPlay@@UAEHXZ	100.0000	100.0000	4	1c6efda4cb9e	0x8c910
 cplay	?winapi_0cdb10_PostMessageA@CPlay@@QAEHHHH@Z	0.2946	0.2946	2	db8d57057a6f	0xcdb10
 cplay	?winapi_0ceae0_PostMessageA@CPlay@@QAEHHHH@Z	0.9500	0.9500	2	fb82d3f55040	0xceae0
 cplay	?winapi_0d0b30_CopyRect@CPlay@@QAEHH@Z	1.2270	1.2270	2	edf43ed7aef3	0xd0b30
+cremusentrylist	??1CRemusEntryList@@QAE@XZ	94.2857	94.2857	1	91c148d29979	0x152e30
+cremusentrylist	?DeleteAll@CRemusEntryList@@QAEXXZ	100.0000	100.0000	1	20d4d5477494	0x165730
 cremusnode	??0CRemusNode@@QAE@HHH@Z	60.1176	60.1176	2	9b0a333c3352	0x15b2c0
 cremusnode	??0CRemusNode@@QAE@XZ	100.0000	100.0000	1	9b0a333c3352	0x1549d0
 cremusnode	??1CRemusNode@@QAE@XZ	78.8182	78.8182	1	af194ae7afa3	0x154a50
@@ -664,6 +670,8 @@ crt_strstreambuf	?str@strstreambuf@@QAEPADXZ	100.0000	100.0000	1	08404bbcac2f	0x
 crt_strstreambuf	?underflow@strstreambuf@@QAEHXZ	91.7353	91.7353	2	b71b810269ba	0x169490
 csecretleveltrigger	??1CSecretLevelTrigger@@UAE@XZ	100.0000	100.0000	1	1a6afbfadd87	0x10c50
 csecretleveltrigger	?Tick@CSecretLevelTrigger@@QAEHXZ	100.0000	100.0000	1	5007af99e855	0x42ac0
+cseverusentrylist	??1CSeverusEntryList@@QAE@XZ	95.0000	95.0000	1	281e4331e73c	0x1557a0
+cseverusentrylist	?DeleteAll@CSeverusEntryList@@QAEXXZ	100.0000	100.0000	1	bb02994e8868	0x151eb0
 csimpleanimation	??1CSimpleAnimation@@UAE@XZ	100.0000	100.0000	1	90ed99282119	0xf9d0
 csimpleanimation	?AdvanceAnim@CSimpleAnimation@@QAEHXZ	100.0000	100.0000	1	2a87ef63c834	0xabf70
 csingleanimation	??1CSingleAnimation@@UAE@XZ	100.0000	100.0000	1	96128fb6792b	0x10540
@@ -800,8 +808,6 @@ engine_discovered	?CWayPoint_0102e0@CWayPoint@@QAEXXZ	5.8824	5.8824	2	8ce6a144b1
 engine_discovered	?ClassUnknown_101_11f6b9@ClassUnknown_101@@QAEXXZ	9.0909	9.0909	2	7fa3bc6ae63e	0x11f6b9
 engine_discovered	?ClassUnknown_102_06b2e0@ClassUnknown_102@@QAEXXZ	2.2222	2.2222	2	0eef992501d5	0x6b2e0
 engine_discovered	?ClassUnknown_103_148d10@ClassUnknown_103@@QAEXXZ	6.2500	6.2500	2	b03b02f5f4ea	0x148d10
-engine_discovered	?ClassUnknown_104_152e30@ClassUnknown_104@@QAEXXZ	4.7619	4.7619	2	38aac5e8a3a9	0x152e30
-engine_discovered	?ClassUnknown_104_165730@ClassUnknown_104@@QAEXXZ	3.1250	3.1250	2	5519468ae8a7	0x165730
 engine_discovered	?ClassUnknown_105_1657a0@ClassUnknown_105@@QAEXXZ	3.8462	3.8462	2	8175532b10e8	0x1657a0
 engine_discovered	?ClassUnknown_106_0af0a0@ClassUnknown_106@@QAEXXZ	1.1905	1.1905	2	2f871a57d93a	0xaf0a0
 engine_discovered	?ClassUnknown_107_10d3d0@ClassUnknown_107@@QAEXXZ	1.1905	1.1905	2	4a5c8da7814a	0x10d3d0
@@ -810,8 +816,6 @@ engine_discovered	?ClassUnknown_110_0fb660@ClassUnknown_110@@QAEXXZ	1.1905	1.190
 engine_discovered	?ClassUnknown_111_029a80@ClassUnknown_111@@QAEXXZ	6.2500	6.2500	2	b47bbc945ac9	0x29a80
 engine_discovered	?ClassUnknown_112_021c40@ClassUnknown_112@@QAEXXZ	20.0000	20.0000	2	49daa6667209	0x21c40
 engine_discovered	?ClassUnknown_113_114480@ClassUnknown_113@@QAEXXZ	1.1905	1.1905	2	29f8f6334345	0x114480
-engine_discovered	?ClassUnknown_116_1047f0@ClassUnknown_116@@QAEXXZ	3.0303	3.0303	2	262be7bf7d79	0x1047f0
-engine_discovered	?ClassUnknown_116_1048f0@ClassUnknown_116@@QAEXXZ	2.7027	2.7027	2	122f90160e1c	0x1048f0
 engine_discovered	?ClassUnknown_119_1591b0@ClassUnknown_119@@QAEXXZ	14.2857	14.2857	2	e7865f898140	0x1591b0
 engine_discovered	?ClassUnknown_120_1852e0@ClassUnknown_120@@QAEXXZ	1.9048	1.9048	2	a75d725a062d	0x1852e0
 engine_discovered	?ClassUnknown_121_139cf0@ClassUnknown_121@@QAEXXZ	1.4085	1.4085	2	62e8a64de621	0x139cf0
@@ -839,8 +843,6 @@ engine_discovered	?ClassUnknown_28_01f940@ClassUnknown_28@@QAEXXZ	1.3333	1.3333	
 engine_discovered	?ClassUnknown_28_158760@ClassUnknown_28@@QAEXXZ	1.0811	1.0811	2	083088893ae6	0x158760
 engine_discovered	?ClassUnknown_29_137110@ClassUnknown_29@@QAEXXZ	1.7544	1.7544	2	7990c18836c1	0x137110
 engine_discovered	?ClassUnknown_33_153180@ClassUnknown_33@@QAEXXZ	0.5714	0.5714	2	b208569f3464	0x153180
-engine_discovered	?ClassUnknown_35_151eb0@ClassUnknown_35@@QAEXXZ	3.7037	3.7037	2	b303f904c3aa	0x151eb0
-engine_discovered	?ClassUnknown_35_1557a0@ClassUnknown_35@@QAEXXZ	4.1667	4.1667	2	a73a13b0d476	0x1557a0
 engine_discovered	?ClassUnknown_36_14dd90@ClassUnknown_36@@QAEXXZ	1.2500	1.2500	2	51e7e5f98169	0x14dd90
 engine_discovered	?ClassUnknown_39_168c60@ClassUnknown_39@@QAEXXZ	0.7143	0.7143	2	a7a8efa3c308	0x168c60
 engine_discovered	?ClassUnknown_39_168e50@ClassUnknown_39@@QAEXXZ	8.3333	8.3333	2	11b472c7f642	0x168e50
@@ -2024,6 +2026,7 @@ sbi_gruntmachine_eh	??1CSBI_GruntMachine@@QAE@XZ	34.2381	34.2381	1	00ec75e74a8e	
 sbi_image	?SetupImage@CSBI_Image@@QAEHHPAUCImageCfgHost@@HHHHHHHHH@Z	64.7500	64.7500	2	2facdd2dfb73	0xe6c80
 sbi_image_eh	??1CSBI_Image@@QAE@XZ	42.7200	42.7200	1	b3fa0dd28c09	0x100870
 sbi_imageset	?Serialize@CSBI_ImageSet@@QAEHPAUCImageSetStream@@HHH@Z	99.1803	99.1803	2	30e578b47581	0xe74f0
+sbi_imagesetani_eh	??1CSBI_ImageSetAni@@QAE@XZ	43.6061	43.6061	1	243d2ce2455f	0x1047f0
 sbi_menuitem	?Blit@CSBI_MenuItem@@QAEHXZ	100.0000	100.0000	1	89b04f10c391	0xe84f0
 sbi_menuitem	?ClearFrame2@CSBI_MenuItem@@QAEXXZ	100.0000	100.0000	1	54de26b0f1b5	0xe81a0
 sbi_menuitem	?ClearFrame@CSBI_MenuItem@@QAEXXZ	100.0000	100.0000	1	b89098c623b9	0xe6d90
@@ -2106,6 +2109,7 @@ sbi_sidetab	?Refresh@CSBI_SideTab@@QAEXH@Z	85.7143	85.7143	1	c56923938bb0	0xe982
 sbi_sidetab	?Render@CSBI_SideTab@@QAEHH@Z	87.8438	87.8438	1	1361c82e0ba1	0xe99c0
 sbi_sidetab	?Reset@CSBI_SideTab@@QAEXXZ	100.0000	100.0000	1	fc1e8fed52ab	0xe9800
 sbi_sidetab_eh	??1CSBI_SideTab@@QAE@XZ	34.2381	34.2381	1	1bca8911fa32	0x105200
+sbi_statztabarrow_eh	??1CSBI_StatzTabArrow@@QAE@XZ	43.7568	43.7568	1	f23500002d18	0x1048f0
 sbi_statztabgruntbar	?Poll@CSBI_StatzTabGruntBar@@QAEHH@Z	100.0000	100.0000	1	6f194a6de0a2	0xea4b0
 sbi_statztabgruntbar	?Reset@CSBI_StatzTabGruntBar@@QAEXXZ	100.0000	100.0000	1	776b5b18c203	0xea470
 sbi_statztabgruntbar	?Update@CSBI_StatzTabGruntBar@@QAEHXZ	91.6923	91.6923	1	065f88460c02	0xea6c0
