@@ -17,6 +17,7 @@
 #define SRC_GRUNTZ_GRUNT_H
 
 #include <Ints.h>
+#include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (g_gameReg->m_74; GetSel)
 
 // ---------------------------------------------------------------------------
 // The receiver the Add* registration call runs on: edi = sprite->m_7c->m_18.
@@ -70,7 +71,11 @@ struct CHudSprite {
 struct CGruntHud {
     char m_pad0[0x8];
     i32 m_8; // +0x08   (dirty-flag word; BuildEntrance |= 0x20000)
-    char m_padc[0x5c - 0xc];
+    char m_padc[0x4c - 0xc];
+    i32 m_4c; // +0x4c   (SelectMoveIcon: = GetSel result)
+    i32 m_50; // +0x50   (SelectMoveIcon: = 0xa)
+    char m_pad54[0x58 - 0x54];
+    i32 m_58; // +0x58   (SelectMoveIcon: = 1)
     i32 m_5c; // +0x5c
     i32 m_60; // +0x60
     char m_pad64[0x74 - 0x64];
@@ -438,8 +443,9 @@ struct WwdGameReg {
     char m_pad64[0x68 - 0x64];
     i32 m_68; // +0x68  (SerializeMove mode-8: -> CGrunt::m_tileMgr)
     char m_pad6c[0x70 - 0x6c];
-    GruntBoard* m_70; // +0x70  the level board
-    char m_pad74[0x11c - 0x74];
+    GruntBoard* m_70;        // +0x70  the level board
+    CSpriteRefTable* m_74;   // +0x74  the sprite/animation reference table (GetSel)
+    char m_pad78[0x11c - 0x78];
     i32 m_11c; // +0x11c  the sound-channel param (struck-voice Play arg)
     char m_pad120[0x134 - 0x120];
     i32 m_134; // +0x134  the view-cull mode gate (==1 -> rand%3, else rand%6)
@@ -523,6 +529,11 @@ public:
     // UpdateEntranceAnim's arrival-commit: thunk_0x3dfa (0x6c130), __thiscall on the
     // tile-mgr, the grunt + its last-tile pixel coords as args. Reloc-masked.
     void CommitArrivalMove(CGrunt* g, i32 x, i32 y);
+    // ClaimSwitchTile's tile-mgr apply (thunk_0x26df -> 0x6d300 ApplySwitch),
+    // __thiscall(grunt, lastX, lastY) ret 0xc. External/reloc-masked.
+    void ApplyTileSwitch(CGrunt* g, i32 x, i32 y);
+    // TryPowerupAtTile's tile-mgr probe (thunk_0x152d -> 0x7c620), 6 args ret 0x18.
+    void ProbeMoveTile(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);
     // The two big tile-mgr occupancy-commit helpers the arrival/update steps drive
     // (the in-flight-arrival path commits the grunt's occupied slot to a settled
     // position). thunk 0x3030 -> 0x6e120 (4-arg) and thunk 0x14bf -> 0x6dae0 (4-arg);
@@ -765,6 +776,15 @@ public:
     CGrunt* FindGridNeighbor(i32 validate);          // @0x5b6f0 (ret 4)
     i32 UpdateGruntStatus();                         // @0x617c0 (ret 0)
 
+    // --- arrival / move-step helper cluster (proximity-attributed targets) ---
+    void PlayMoveSoundAtTile(i32 tx, i32 ty); // @0x514e0 (ret 8) tile->pixel + PlayMoveSound
+    void SnapToLastTile(i32 a);               // @0x517b0 (ret 4) snap m_10 to last tile + commit
+    i32 ClaimSwitchTile();                    // @0x52c70 (ret 0) switch-dir tile claim
+    void SetArrivalTarget(i32 a, i32 b, i32 c, i32 d); // @0x52ed0 (ret 0x10)
+    void ConsiderArrival(i32 a);              // @0x52f40 (ret 4) arrival/drop gate
+    void SelectMoveIcon(i32 a);               // @0x57800 (ret 4) pick move-cursor icon
+    i32 TryPowerupAtTile();                   // @0x57aa0 (ret 0) probe move tile
+
     // --- animation resolvers (this TU's targets) ---
     i32 ResolveMovingAnimation();
     i32 ResolveDeathAnimation();
@@ -806,7 +826,9 @@ public:
     i32 m_entrancePxY;    // +0x178 (SetEntrancePos: committed entrance position Y, pixel)
     i32 m_lastTilePxX;    // +0x17c (LoadEntranceConfig: last occupied tile X, pixel; -1 = none)
     i32 m_lastTilePxY;    // +0x180 (LoadEntranceConfig: last occupied tile Y, pixel; -1 = none)
-    char m_pad184[0x190 - 0x184];
+    i32 m_184;            // +0x184 (ClaimSwitchTile: = m_lastTilePxX after switch)
+    i32 m_188_tilePxY;    // +0x188 (ClaimSwitchTile: = m_lastTilePxY after switch)
+    char m_pad18c[0x190 - 0x18c];
     i32 m_toyBlendPct; // +0x190 (anim-name loader: TOY1/TOY2 blend percent)
     char m_pad194[0x1b8 - 0x194];
     CHudSprite* m_selectedSprite;  // +0x1b8
@@ -820,10 +842,11 @@ public:
     i32 m_arrived;                 // +0x1d8 (entrance-arrival gate)
     char m_pad1dc[0x1e4 - 0x1dc];
     i32 m_entranceActive; // +0x1e4 (entrance: set to 1)
-    char m_pad1e8[0x1ec - 0x1e8];
+    i32 m_arrivalPending;  // +0x1e8 (SnapToLastTile/ClaimSwitchTile arrival-commit latch)
     i32 m_tileOwnerHi; // +0x1ec
     i32 m_tileOwnerLo; // +0x1f0
-    char m_pad1f4[0x1fc - 0x1f4];
+    i32 m_1f4_moveIcon;       // +0x1f4 (SelectMoveIcon: clamped icon index, [0,0x11))
+    char m_pad1f8[0x1fc - 0x1f8];
     i32 m_entranceCommitted; // +0x1fc (entrance: cleared)
     i32 m_neighborCol;       // +0x200 (grid-neighbor: column, -1 = none)
     i32 m_neighborRow;       // +0x204 (grid-neighbor: row, -1 = none)
@@ -1015,7 +1038,7 @@ public:
     // The engine helpers these machines call (all external/no-body, reloc-masked;
     // modeled as __thiscall methods on the grunt so `mov ecx,this; ...; call`
     // falls out). Names describe the observed effect, not a recovered symbol.
-    i32 IsDropReady();                                     // thunk_0x17df (drop-ready predicate)
+    i32 IsDropReady(i32 a = 0); // thunk_0x17df (drop-ready predicate; 1-arg __thiscall)
     void ApplySetState1(i32 v);                            // thunk_0x4322 (1-arg state apply)
     void SetMoveStateA(i32 v, i32 a, i32 b, i32 c);        // thunk_0x3bd9 (4-arg state set)
     void SetMoveStateB(i32 v, i32 a, i32 b, i32 c, i32 d); // thunk_0x1401 (5-arg-ish)

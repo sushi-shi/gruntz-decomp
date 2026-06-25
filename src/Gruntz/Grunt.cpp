@@ -1659,6 +1659,242 @@ i32 CGrunt::CanShowStamina() {
 }
 
 // ---------------------------------------------------------------------------
+// CGrunt::PlayMoveSoundAtTile(tx, ty)   @0x514e0   (__thiscall, ret 8)
+// Scale the tile coords to HUD pixel centers (tile*32 + 16) and forward to the
+// directional grunt-voice dispatcher. `this` flows straight through to
+// PlayMoveSound (both __thiscall).
+RVA(0x000514e0, 0x1e)
+void CGrunt::PlayMoveSoundAtTile(i32 tx, i32 ty) {
+    PlayMoveSound(tx * 0x20 + 0x10, ty * 0x20 + 0x10);
+}
+
+// ---------------------------------------------------------------------------
+// CGrunt::SnapToLastTile(a)   @0x517b0   (__thiscall, ret 4)
+// Snap the grunt's HUD position to its last occupied tile (m_10->m_5c/m_60 =
+// m_lastTilePxX/Y), bump the entrance latched-anim id (m_10->m_74 += 0x186a0 ->
+// marks the HUD geometry dirty), commit the entrance position (SetEntrancePos(a,1)),
+// and - if an arrival is pending (m_arrivalPending) - notify the tile mgr of the
+// settled move and clear the pending latch.
+RVA(0x000517b0, 0x7d)
+void CGrunt::SnapToLastTile(i32 a) {
+    m_10->m_5c = m_lastTilePxX;
+    m_10->m_60 = m_lastTilePxY;
+    CGruntHud* h = m_10;
+    if (h->m_74 != h->m_60 + 0x186a0) {
+        h->m_74 = h->m_60 + 0x186a0;
+        h->m_8 |= 0x20000;
+    }
+    SetEntrancePos(a, 1);
+    if (m_arrivalPending != 0) {
+        m_tileMgr->CommitArrivalMove(this, m_lastTilePxX, m_lastTilePxY);
+        m_arrivalPending = 0;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// CGrunt::ClaimSwitchTile()   @0x52c70   (__thiscall, ret 0)
+// Pick a neighbour tile by the entrance-cell direction code (m_entranceCell[2],
+// 1..8 -> the 8 compass deltas; anything else keeps the current tile), test the
+// level board's occupancy flags there; if the tile is clear of the blocking bits
+// (0x20000939 / 0x80), apply the tile switch (tile mgr), move the occupancy record
+// from the old tile to the new one (clear bit 5 of the old tile's flag byte, stamp
+// the new tile's owner = (ownerHi<<8)|ownerLo + set bit 5), re-anchor the grunt to
+// the new pixel pos, recompute the facing (ComputeFacing(1.0)), latch
+// m_arrivalPending=1, and return 1. On an obstructed tile return 0.
+//
+// @early-stop
+// switch jump-table + grid-regalloc wall (docs/patterns: switch-cases-source-order,
+// align-down-byte-and-encoding, the regalloc family): logic/CFG/offsets/flag bits +
+// both engine calls byte-exact; residue = (1) the 8-way direction switch tail-merges
+// the overlapping +-0x20 delta arms in a .text layout no source case-order pins, and
+// (2) the x/y move-coords held across both calls + the level-board double-deref
+// (g_gameReg->m_70->m_8[ty]) land in a different callee-saved-reg/stack-spill
+// assignment than retail (retail spills the pre-switch x/y to [esp+0x18/0x1c] for the
+// default arm and keeps x=ebx/y=edi). The memory-RMW byte twiddle is matched
+// (55.8%->61.6%); the rest is the documented regalloc/scheduling plateau. Final sweep.
+RVA(0x00052c70, 0x1b1)
+i32 CGrunt::ClaimSwitchTile() {
+    i32 x = m_lastTilePxX;
+    i32 y = m_lastTilePxY;
+    switch (m_entranceCell[2] - 1) {
+        case 0:
+            y -= 0x20;
+            break;
+        case 1:
+            x += 0x20;
+            y -= 0x20;
+            break;
+        case 2:
+            x += 0x20;
+            break;
+        case 3:
+            x += 0x20;
+            y += 0x20;
+            break;
+        case 4:
+            y += 0x20;
+            break;
+        case 5:
+            x -= 0x20;
+            y += 0x20;
+            break;
+        case 6:
+            x -= 0x20;
+            break;
+        case 7:
+            x -= 0x20;
+            y -= 0x20;
+            break;
+        default:
+            break;
+    }
+
+    GruntBoard* b = g_gameReg->m_70;
+    i32 tx = x >> 5;
+    i32 ty = y >> 5;
+    i32 flags;
+    if ((u32)tx >= (u32)b->m_c || (u32)ty >= (u32)b->m_10) {
+        flags = 1;
+    } else {
+        flags = ((i32*)b->m_8[ty])[tx * 7];
+    }
+    if ((flags & 0x20000939) || (flags & 0x80)) {
+        return 0;
+    }
+
+    m_tileMgr->ApplyTileSwitch(this, m_lastTilePxX, m_lastTilePxY);
+
+    // Release the grunt's old tile: clear bit 5 of the old tile's flag byte, set
+    // its owner record to -1.
+    m_184 = m_lastTilePxX;
+    m_188_tilePxY = m_lastTilePxY;
+    GruntBoard* gb = g_gameReg->m_70;
+    i32 oldTx = m_lastTilePxX >> 5;
+    i32 oldTy = m_lastTilePxY >> 5;
+    ((char*)gb->m_8[oldTy])[oldTx * 7 * 4 + 3] &= 0xdf;
+    *(i32*)&((char*)gb->m_8[oldTy])[oldTx * 7 * 4 + 4] = -1;
+
+    // Claim the new tile: set bit 5 of its flag byte, stamp the owner id.
+    i32 owner = (m_tileOwnerHi << 8) | m_tileOwnerLo;
+    ((char*)gb->m_8[ty])[tx * 7 * 4 + 3] |= 0x20;
+    *(i32*)&((char*)gb->m_8[ty])[tx * 7 * 4 + 4] = owner;
+
+    m_lastTilePxX = x;
+    m_lastTilePxY = y;
+    ComputeFacing(1.0);
+    m_arrivalPending = 1;
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CGrunt::SetArrivalTarget(a, b, c, d)   @0x52ed0   (__thiscall, ret 0x10)
+// Seed the arrival/defender block: m_2f0=a, m_2f4=b, m_230=1, and the two defender
+// pixel coords m_defenderX/Y = (c/d aligned down to the tile grid) + 0x10.
+//
+// @early-stop
+// leaf regalloc / align-down-encoding coin-flip (docs/patterns/align-down-byte-and-
+// encoding + the regalloc family): all 5 member stores + values + `ret 0x10` exact.
+// Residue = retail keeps `c` in edx (dword `and edx,~0x1f`) and materializes the
+// constant 1 in eax (`mov eax,1; mov [m_230],eax`) interleaved into the c-block;
+// our cl loads c into eax (byte `and al,0xe0`) + stores m_230 as an immediate. No
+// source spelling pins which value owns edx vs eax on a 66-byte leaf. Final sweep.
+RVA(0x00052ed0, 0x42)
+void CGrunt::SetArrivalTarget(i32 a, i32 b, i32 c, i32 d) {
+    m_2f0 = a;
+    m_2f4 = b;
+    m_230 = 1;
+    m_defenderX = (c & ~0x1f) + 0x10;
+    m_defenderY = (d & ~0x1f) + 0x10;
+}
+
+// ---------------------------------------------------------------------------
+// CGrunt::ConsiderArrival(a)   @0x52f40   (__thiscall, ret 4)
+// If the grunt's HUD point (aligned to the tile grid + 0x10) does not already sit
+// on its last occupied tile, ask the drop-ready predicate whether to defer; when it
+// is NOT ready, snap to the last tile (SnapToLastTile(a)). When the HUD point IS on
+// the last tile, snap unconditionally. Modeled void: retail never sets eax on the
+// tail path (no `xor eax,eax`), so the slot is morally void.
+//
+// @early-stop
+// leaf regalloc/schedule coin-flip (the same tiny-accessor family as GetTilePos):
+// logic/CFG/offsets exact + the tail (no eax write) byte-matched. Residue = retail
+// pins the arg `a` in ebx (3 callee-saved: ebx/esi/edi, arg spilled up-front) and
+// loads m_5c->eax/m_60->ecx (m_5c aligns first); our cl uses 2 callee-saved and
+// reverses the eax/ecx axis assignment. Source-invariant on a 75-byte leaf. ~84%.
+RVA(0x00052f40, 0x4b)
+void CGrunt::ConsiderArrival(i32 a) {
+    CGruntHud* h = m_10;
+    i32 px = (h->m_5c & ~0x1f) + 0x10;
+    i32 py = (h->m_60 & ~0x1f) + 0x10;
+    if (px != m_lastTilePxX || py != m_lastTilePxY) {
+        if (IsDropReady(a)) {
+            return;
+        }
+    }
+    SnapToLastTile(a);
+}
+
+// ---------------------------------------------------------------------------
+// CGrunt::SelectMoveIcon(a)   @0x57800   (__thiscall, ret 4)
+// Update the move-cursor icon index (m_1f4_moveIcon). No-op if unchanged; else
+// clamp to [0, 0x11), resolve the matching sprite from the registry sprite-ref
+// table (g_gameReg->m_74->GetSel(icon, reason>=0x17)) and stamp it onto the HUD
+// (m_10->m_4c = sprite, m_50 = 0xa, m_58 = 1).
+RVA(0x00057800, 0x64)
+void CGrunt::SelectMoveIcon(i32 a) {
+    if (m_1f4_moveIcon == a) {
+        return;
+    }
+    m_1f4_moveIcon = a;
+    if (a < 0 || a >= 0x11) {
+        m_1f4_moveIcon = 0;
+    }
+    i32 sel = g_gameReg->m_74->GetSel(m_1f4_moveIcon, m_entranceReason >= 0x17);
+    CGruntHud* h = m_10;
+    h->m_58 = 1;
+    h->m_50 = 0xa;
+    h->m_4c = sel;
+}
+
+// ---------------------------------------------------------------------------
+// CGrunt::TryPowerupAtTile()   @0x57aa0   (__thiscall, ret 0)
+// Gated on a live entrance reason (0 < m_entranceReason < 0x17): read the level
+// board's occupancy at the grunt's HUD tile; if it is clear of the blocking bits
+// (0x939 / 0x2), probe a move-tile placement via the tile mgr and return 1; else 0.
+//
+// @early-stop
+// single-instruction scheduling coin-flip: logic/CFG/offsets/board-deref/both returns
+// byte-exact. Residue = cl loads board->m_c (`mov ecx,[ebx+0xc]`) one slot earlier
+// than retail (retail defers it past `add eax,0x10`) and reads g_gameReg before m_10
+// vs retail's m_10-first; the rest is identical. ~93%. Final sweep.
+RVA(0x00057aa0, 0x9b)
+i32 CGrunt::TryPowerupAtTile() {
+    i32 reason = m_entranceReason;
+    if (reason <= 0 || reason >= 0x17) {
+        return 0;
+    }
+    CGruntHud* h = m_10;
+    i32 mx = h->m_5c;
+    i32 my = h->m_60;
+    GruntBoard* b = g_gameReg->m_70;
+    i32 px = (mx & ~0x1f) + 0x10;
+    i32 py = (my & ~0x1f) + 0x10;
+    i32 tx = px >> 5;
+    i32 ty = py >> 5;
+    i32 flags;
+    if ((u32)tx >= (u32)b->m_c || (u32)ty >= (u32)b->m_10) {
+        flags = 1;
+    } else {
+        flags = ((i32*)b->m_8[ty])[tx * 7];
+    }
+    if ((flags & 0x939) || (flags & 2)) {
+        return 0;
+    }
+    m_tileMgr->ProbeMoveTile(reason, px, py, 0, 1, 0);
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
 // CGrunt::RectContains(x, y)   @0x51850   (__thiscall, ret 8)
 // @early-stop
 // register-relative rect-walk plateau: the logic is exact - builds two tile-space
