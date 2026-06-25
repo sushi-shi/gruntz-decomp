@@ -941,6 +941,11 @@ source = "src/Dsndmgr/DirectSoundMgr.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "dsoundvoice"
+source = "src/Dsndmgr/DSoundVoice.cpp"
+flags = "base"
+
+[[unit]]
 unit = "sounddevice"
 source = "src/Dsndmgr/SoundDevice.cpp"
 flags = "eh"

@@ -38,7 +38,7 @@ cddrawsubmgr	31	15
 cddrawsubmgrani	2	1
 cddrawsubmgrdraco	5	2
 cddrawsubmgrleaf	13	4
-cddrawsubmgrleafscan	9	3
+cddrawsubmgrleafscan	13	4
 cddrawsurfacemgr	9	5
 cddrawsurfacemgrserialize	1	0
 cddrawsurfacepair	4	2
@@ -95,7 +95,8 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	117	0
+dsoundvoice	2	1
+engine_discovered	111	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -432,12 +433,16 @@ cddrawsubmgrleaf	?VirtualMethodUnknown14@CDDrawSubMgrLeaf@@QAEHXZ	100.0000	100.0
 cddrawsubmgrleaf	?VirtualMethodUnknown18@CDDrawSubMgrLeaf@@QAEXXZ	99.8333	99.8333	5	44a7c25457fe	0x157ae0
 cddrawsubmgrleaf	?VirtualMethodUnknown1C@CDDrawSubMgrLeaf@@QAEXXZ	100.0000	100.0000	3	c176e58b0dd0	0x152650
 cddrawsubmgrleafscan	??1CDDrawSubMgrLeafScan@@QAE@XZ	95.0000	95.0000	1	2904408bbf9e	0x157570
-cddrawsubmgrleafscan	?CreateEntry_157d70@CDDrawSubMgrLeafScan@@QAEPAULeafElementObj@@PBDPAX@Z	99.8095	99.8095	1	7ba7c8f5429b	0x157d70
+cddrawsubmgrleafscan	??1LeafElementObj@@QAE@XZ	94.2857	94.2857	1	aee771511fbc	0x158680
+cddrawsubmgrleafscan	?Configure_158760@LeafElementObj@@QAEHPAVRemusParseSource@@@Z	41.0811	41.0811	1	03309ae01e45	0x158760
+cddrawsubmgrleafscan	?CreateEntry_157d70@CDDrawSubMgrLeafScan@@QAEPAULeafElementObj@@PBDPAX@Z	99.8095	99.8095	2	97c519f24ab6	0x157d70
 cddrawsubmgrleafscan	?FindKeyOfValue_158570@CDDrawSubMgrLeafScan@@QAE?AVCString@@PAVLeafScanValue@@@Z	70.7714	70.7714	1	7bdf64ecba4f	0x158570
 cddrawsubmgrleafscan	?HasKeyEqual_1583c0@CDDrawSubMgrLeafScan@@QAEHPBD@Z	61.3571	61.3571	1	ec1b2c10ae51	0x1583c0
 cddrawsubmgrleafscan	?Lookup_05b7e0@CDDrawSubMgrLeafScan@@QAEPAVCObject@@PBD@Z	100.0000	100.0000	1	ee3ad43a509d	0x5b7e0
 cddrawsubmgrleafscan	?MatchSub_1584f0@CDDrawSubMgrLeafScan@@QAEHPAVLeafScanSoundArg@@H@Z	99.9800	99.9800	1	8be1aac02e26	0x1584f0
+cddrawsubmgrleafscan	?PlayIfElapsed_01f940@LeafCue@@QAEHHHHH@Z	66.0000	66.0000	1	f33992e72938	0x1f940
 cddrawsubmgrleafscan	?RefreshAsset_114120@CDDrawSubMgrLeafScan@@QAEHPBD@Z	100.0000	100.0000	1	9f2214792375	0x114120
+cddrawsubmgrleafscan	?Release_1587c0@LeafElementObj@@QAEXXZ	100.0000	100.0000	1	4df8d84438d6	0x1587c0
 cddrawsubmgrleafscan	?RemoveKeysEqual_157c70@CDDrawSubMgrLeafScan@@QAEHPBD0@Z	91.6667	91.6667	1	b6899c82851c	0x157c70
 cddrawsubmgrleafscan	?ScanTree_157ee0@CDDrawSubMgrLeafScan@@QAEHPAVDirNode@@PBD1@Z	100.0000	100.0000	2	e7963647e727	0x157ee0
 cddrawsurfacemgr	??0CDDrawSurfaceMgr@@QAE@XZ	100.0000	100.0000	5	06a0488572fd	0x155840
@@ -785,6 +790,8 @@ directsoundmgr	?StopAndRewind@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	4	6573311
 directsoundmgr	?Unlock@DirectSoundMgr@@QAEHPAXI0I@Z	100.0000	100.0000	2	1173b7b823c7	0x1359c0
 directsoundmgr	?winapi_136e20_timeGetTime@DirectSoundMgr@@QAEHH@Z	2.6667	2.6667	2	593c6f38b8c5	0x136e20
 directsoundmgr	?winapi_137ac0_timeGetTime@DirectSoundMgr@@QAEHH@Z	2.9231	2.9231	2	63f8b426702d	0x137ac0
+dsoundvoice	?Stop_1370d0@DSoundVoice@@QAEHXZ	100.0000	100.0000	1	6ed65c4dd540	0x1370d0
+dsoundvoice	?Tick_137060@DSoundVoice@@QAEHH@Z	95.6977	95.6977	1	e0318068fc4a	0x137060
 engine_discovered	?CBattlezDlgColors_017ac0@CBattlezDlgColors@@QAEXXZ	50.0000	50.0000	2	0879229e7eb6	0x17ac0
 engine_discovered	?CButeTree_16e070@CButeTree@@QAEXXZ	0.8000	0.8000	2	449e08018b4b	0x16e070
 engine_discovered	?CCheckpointDlg_023570@CCheckpointDlg@@QAEXXZ	50.0000	50.0000	2	6f7562291252	0x23570
@@ -850,21 +857,15 @@ engine_discovered	?ClassUnknown_1_134c80@ClassUnknown_1@@QAEXXZ	3.3333	3.3333	2	
 engine_discovered	?ClassUnknown_20_16df70@ClassUnknown_20@@QAEXXZ	5.0000	5.0000	2	fce2906f0f57	0x16df70
 engine_discovered	?ClassUnknown_21_16e480@ClassUnknown_21@@QAEXXZ	3.3333	3.3333	2	2e3b23619fa3	0x16e480
 engine_discovered	?ClassUnknown_26_11c630@ClassUnknown_26@@QAEXXZ	1.4286	1.4286	2	d8be2e544c1f	0x11c630
-engine_discovered	?ClassUnknown_28_01f940@ClassUnknown_28@@QAEXXZ	1.3333	1.3333	2	b7efcc9b921f	0x1f940
-engine_discovered	?ClassUnknown_28_158760@ClassUnknown_28@@QAEXXZ	1.0811	1.0811	2	083088893ae6	0x158760
 engine_discovered	?ClassUnknown_29_137110@ClassUnknown_29@@QAEXXZ	1.7544	1.7544	2	7990c18836c1	0x137110
 engine_discovered	?ClassUnknown_33_153180@ClassUnknown_33@@QAEXXZ	0.5714	0.5714	2	b208569f3464	0x153180
 engine_discovered	?ClassUnknown_36_14dd90@ClassUnknown_36@@QAEXXZ	1.2500	1.2500	2	51e7e5f98169	0x14dd90
-engine_discovered	?ClassUnknown_44_158680@ClassUnknown_44@@QAEXXZ	4.7619	4.7619	2	1eecdfcb9bc6	0x158680
-engine_discovered	?ClassUnknown_44_1587c0@ClassUnknown_44@@QAEXXZ	7.1429	7.1429	2	f70a83c923d5	0x1587c0
 engine_discovered	?ClassUnknown_47_0f9280@ClassUnknown_47@@QAEXXZ	0.9709	0.9709	2	a39b6d02d8ec	0xf9280
 engine_discovered	?ClassUnknown_47_17e7b0@ClassUnknown_47@@QAEXXZ	33.3333	33.3333	2	51ba5359455c	0x17e7b0
 engine_discovered	?ClassUnknown_47_17e880@ClassUnknown_47@@QAEXXZ	8.3333	8.3333	2	76a45fc36801	0x17e880
 engine_discovered	?ClassUnknown_51_1154b0@ClassUnknown_51@@QAEXXZ	3.5714	3.5714	2	a514a3b7e143	0x1154b0
 engine_discovered	?ClassUnknown_53_029ac0@ClassUnknown_53@@QAEXXZ	4.0000	4.0000	2	1abf62425a0d	0x29ac0
 engine_discovered	?ClassUnknown_54_135110@ClassUnknown_54@@QAEXXZ	2.2222	2.2222	2	4ce05e15ad8e	0x135110
-engine_discovered	?ClassUnknown_55_137060@ClassUnknown_55@@QAEXXZ	0.9302	0.9302	2	a98c2c51486a	0x137060
-engine_discovered	?ClassUnknown_55_1370d0@ClassUnknown_55@@QAEXXZ	4.7619	4.7619	2	df4d629e5438	0x1370d0
 engine_discovered	?ClassUnknown_56_08c3b0@ClassUnknown_56@@QAEXXZ	25.0000	25.0000	2	a65a19f22045	0x8c3b0
 engine_discovered	?ClassUnknown_5_150040@ClassUnknown_5@@QAEXXZ	0.3226	0.3226	2	22cf5bf0c148	0x150040
 engine_discovered	?ClassUnknown_60_0ebd30@ClassUnknown_60@@QAEXXZ	12.5000	12.5000	2	da6e7b657a86	0xebd30

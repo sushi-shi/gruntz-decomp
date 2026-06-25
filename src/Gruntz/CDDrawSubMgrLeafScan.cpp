@@ -79,6 +79,11 @@ public:
 // ConfigureItem (0x1360d0); +0x14 is the last draw-clock, +0x18 the throttle
 // interval. Same shape as the CSBI_MenuItem cue path. Externals are reloc-masked.
 struct LeafCue {
+    // 0x1f940: gated forward to the player's ConfigureItem when the throttle
+    // interval has elapsed (the cue's own play entry; the same throttle the
+    // manager's RefreshAsset_114120 inlines, but driven by 4 caller-supplied args).
+    i32 PlayIfElapsed_01f940(i32 a0, i32 a1, i32 a2, i32 a3); // 0x1f940 (ret 0x10)
+
     char m_pad0[0x10];
     void* m_10; // +0x10  player (ConfigureItem this)
     i32 m_14;   // +0x14  last draw-clock
@@ -104,6 +109,25 @@ extern "C" u32 g_6bf3c0; // draw-clock mirror
 // here, so the manual stamp is the transitional workaround.
 DATA(0x005eff08)
 extern void* g_leafElemVtbl; // 0x5eff08 - the 0x1c-byte element vftable
+// The element's draw-source the factory passes to Configure: a polymorphic
+// reader whose two virtuals are BeginParse (0x139960 -> the parsed RIFF/WAVE blob,
+// or 0) and EndParse (0x1399d0). Modeled as a layout-compatible view (the
+// `mov ecx,src; call <thunk>` reloc-masks); the trace tagged the same reader
+// RemusParseSource (the symtab/parse-stream node).
+class RemusParseSource {
+public:
+    i32 BeginParse(); // 0x139960  parse + return the RIFF/WAVE blob (or 0)
+    void EndParse();  // 0x1399d0  release the parse cursor
+};
+// The parent root handle the base stores at +0x0c (a raw word in the LeafScanBase
+// shape): its +0x20 word is the SoundDevice the element acquires/releases its
+// buffer through. The handle is a raw word in the base, so reaching the device is
+// an authentic int->object reinterpret (`mov eax,[this+0xc]; mov ecx,[eax+0x20]`).
+struct LeafRootHandle {
+    char m_pad0[0x20];
+    SoundDevice* m_20; // +0x20  the owning DSound device
+};
+
 // The 0x1c-byte cache element's virtual interface: slot+4 is the scalar-deleting
 // dtor the factory's failure path dispatches through (`mov edx,[e]; push 1;
 // call [edx+4]`). Declared-only (never defined), so no ??_7 is emitted; the
@@ -112,14 +136,37 @@ class LeafElement {
 public:
     virtual void Slot00();            // +0x00
     virtual i32 ScalarDtor(i32 flag); // +0x04 scalar-deleting destructor
-    i32 Configure_158760(void* arg2); // 0x158760 __thiscall element configure
 };
-// The 0x1c-byte element layout. Only the seeded offsets are load-bearing.
-struct LeafElementObj : public LeafElement {
-    i32 m_04; // +0x04 = parent map count
+// The element's CObject-like base subobject (vptr + status word at +0x04 + root
+// handle at +0x0c). Its (inlined) destructor resets those fields and restamps the
+// grand-base dtor vtable -- the tail the element dtor chains into AFTER Release.
+// Because this base carries a NON-TRIVIAL dtor, the derived ~LeafElementObj gets a
+// /GX EH frame protecting the base teardown across the Release() call (the
+// half-destructed-element cleanup edge). Same shape as the LeafScanBase / CRemusNode
+// family.
+struct LeafElementBase : public LeafElement {
+    ~LeafElementBase() {
+        m_04 = -1;
+        m_08 = 0;
+        m_0c = 0;
+        *(void**)this = &g_remusBaseDtorVtbl;
+    }
+
+    i32 m_04; // +0x04 = parent map count (-1 when dead)
     i32 m_08; // +0x08 = 0
-    i32 m_0c; // +0x0c = parent handle
-    i32 m_10; // +0x10 = 0
+    i32 m_0c; // +0x0c = parent root handle (LeafRootHandle*)
+};
+// The 0x1c-byte element layout. Only the seeded offsets are load-bearing. Its
+// ~dtor (0x158680) stamps the element vtable, runs Release, then the base
+// subobject dtor auto-fires (reset +0x04/+0x08/+0x0c + restamp grand-base vtbl).
+// Configure (0x158760) loads + acquires the element's buffer; Release (0x1587c0)
+// frees it (both non-virtual __thiscall members reached only from the element).
+struct LeafElementObj : public LeafElementBase {
+    ~LeafElementObj();
+    i32 Configure_158760(RemusParseSource* src); // 0x158760 __thiscall element configure
+    void Release_1587c0();                        // 0x1587c0 release the acquired buffer
+
+    i32 m_10; // +0x10 = 0  the acquired DirectSound buffer
     i32 m_14; // +0x14 = 0
     i32 m_18; // +0x18 = 0 (-> parent->m_34 on success)
 }; // size = 0x1c
@@ -227,6 +274,32 @@ static inline LeafElementObj* MakeLeafElement(const CDDrawSubMgrLeafScan* parent
         e = 0;
     }
     return e;
+}
+
+// ---------------------------------------------------------------------------
+// 0x1f940: LeafCue::PlayIfElapsed -- the cue's own gated play entry. When the
+// reentrancy gate is open AND the throttle interval has elapsed since the last
+// draw-clock, restamp the clock and tail-forward the 4 caller args to the player's
+// ConfigureItem (returning its result); otherwise return 0. 4 stack args (ret 0x10).
+// @early-stop
+// 66% -- split-epilogue wall (twin of RefreshAsset_114120's 100% idiom, but 4-arg):
+// the gate/interval guards, the wrap-safe clock compare, the clock restamp, and the
+// identical 4-arg push sequence into ConfigureItem all match. MSVC5 here MERGES the
+// two guard-failure `return 0` exits into one shared `pop esi; ret 0x10` tail
+// (je/jb to a shared epilogue) where retail emits each failure as its own inline
+// `xor eax; pop esi; ret 0x10` (jne/jae split). The ConfigureItem callee is
+// reloc-masked (CStatusBarMgr vs LeafCuePlayer at the same 0x1360d0). Not source-
+// steerable (tried flat + nested guard forms). Logic complete.
+RVA(0x0001f940, 0x4c)
+i32 LeafCue::PlayIfElapsed_01f940(i32 a0, i32 a1, i32 a2, i32 a3) {
+    if (g_61ab20 == 0) {
+        return 0;
+    }
+    if (g_6bf3c0 - (u32)m_14 >= (u32)m_18) {
+        m_14 = g_6bf3c0;
+        return ((LeafCuePlayer*)m_10)->ConfigureItem(a0, a1, a2, a3);
+    }
+    return 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -345,13 +418,79 @@ LeafElementObj* CDDrawSubMgrLeafScan::CreateEntry_157d70(const char* key, void* 
     if (e == 0) {
         return 0;
     }
-    if (e->Configure_158760(arg2) == 0) {
+    if (e->Configure_158760((RemusParseSource*)arg2) == 0) {
         e->ScalarDtor(1);
         return 0;
     }
     m_10[key] = (CObject*)e;
     e->m_18 = m_34; // +0x18 = redraw arg
     return e;
+}
+
+// ---------------------------------------------------------------------------
+// 0x158680: ~LeafElementObj (the non-deleting destructor). Stamps the element's
+// own vtable, runs Release (frees the acquired buffer), then chains the inlined
+// base teardown: reset +0x04/+0x08/+0x0c and restamp the grand-base dtor vtable.
+// /GX EH frame -- Release runs while the base subobject is still live, so its
+// teardown is unwind-protected (the half-destructed-element cleanup edge).
+// @early-stop
+// 94% -- EH-state/funclet plateau (docs/seh-eh.md): every instruction matches; the
+// residual rows are the EH unwind-map index (`push $0` vs retail's `push $8`) + the
+// one-position schedule of the `mov [esp+0x10],0` EH-state store + the reloc-masked
+// vtable/handler symbol names (g_leafElemVtbl/g_remusBaseDtorVtbl/__except_list all
+// pair against differently-named retail symbols at the SAME addresses). Logic complete.
+RVA(0x00158680, 0x5b)
+LeafElementObj::~LeafElementObj() {
+    StampLeafElemVtbl(this);
+    Release_1587c0();
+    // ~LeafElementBase auto-fires here: reset +0x04/+0x08/+0x0c, restamp grand-base vtbl.
+}
+
+// ---------------------------------------------------------------------------
+// 0x158760: LeafElementObj::Configure. Parse the draw-source for its RIFF/WAVE
+// blob; if the parse failed, fail. Otherwise, when the parent root handle's
+// SoundDevice is up, acquire a buffer for the blob into m_10. EndParse always
+// runs; returns whether a buffer was acquired (0 when the device is down).
+// 1 stack arg (ret 4).
+// @early-stop
+// 41% -- regalloc-pinning wall (docs/patterns/zero-register-pinning.md): the CFG,
+// all three calls (BeginParse/Acquire/EndParse), all field stores, and the result
+// merge are reproduced. MSVC5 homes the `src` param into a 3rd callee-saved register
+// (ebx) and carries the return value differently than retail (which pins this->esi,
+// src->edi and reuses esi as the return carrier, computing ok eagerly before
+// EndParse). Tried 3 result/store spellings; no source lever flips the homing. Logic complete.
+RVA(0x00158760, 0x59)
+i32 LeafElementObj::Configure_158760(RemusParseSource* src) {
+    i32 blob = src->BeginParse();
+    if (blob == 0) {
+        return 0;
+    }
+    SoundDevice* dev = ((LeafRootHandle*)m_0c)->m_20;
+    if (dev == 0) {
+        src->EndParse();
+        return 0;
+    }
+    DirectSoundMgr* buf = dev->Acquire((void*)blob, 0x100ea, 0);
+    m_10 = (i32)buf;
+    i32 ok = buf != 0;
+    src->EndParse();
+    return ok;
+}
+
+// ---------------------------------------------------------------------------
+// 0x1587c0: LeafElementObj::Release. When a buffer is held and the root handle's
+// SoundDevice is still up, remove the buffer through the device (reaps voices +
+// releases + unlinks + scalar-deletes), then clear the held pointer. __thiscall,
+// no args.
+RVA(0x001587c0, 0x23)
+void LeafElementObj::Release_1587c0() {
+    if (m_10 != 0) {
+        SoundDevice* dev = ((LeafRootHandle*)m_0c)->m_20;
+        if (dev != 0) {
+            dev->RemoveBuffer((SoundBuf*)m_10);
+            m_10 = 0;
+        }
+    }
 }
 
 // ---------------------------------------------------------------------------
