@@ -207,6 +207,7 @@ struct PlayMgr {
 class CLevelValidator {
 public:
     i32 ValidateLevelTiles();
+    i32 PositionBridgeToggle(i32 mode, i32 unused); // 0x0d5b20
 
     char m_pad00[0xc];
     PlayMgr* m_0c; // +0x0c
@@ -442,4 +443,93 @@ i32 CLevelValidator::ValidateLevelTiles() {
 
     (void)s_BadMulti;
     return ok;
+}
+
+// ===========================================================================
+// The world/level object (this->m_4): the bridge-toggle reads its viewport-clamp
+// limits (+0x8c/+0x90) and, through the per-frame timeline (+0x68), the active
+// goal object (+0x23c). Modeled locally (offsets only).
+// ---------------------------------------------------------------------------
+struct LvWorld {
+    char m_pad00[0x68];
+    struct LvTimeline {
+        void GoalTail(); // 0x... (thiscall, no arg)  reloc-masked ILT thunk
+        char m_pad00[0x23c];
+        struct LvGoal {
+            char m_pad00[0x8];
+            i32 m_8; // +0x8  flags (the 0x10000 "released" bit)
+        }* m_23c;    // +0x23c  active goal object
+    }* m_68;         // +0x68
+    char m_pad6c[0x8c - 0x6c];
+    i32 m_8c; // +0x8c  viewport-clamp horizontal limit
+    i32 m_90; // +0x90  viewport-clamp vertical limit
+};
+// The bridge-toggle UI sub-object (this->m_2e0): Toggle(mode) sets its state.
+struct LvBridgeUi {
+    void Toggle(i32 mode); // 0x... (thiscall, 1 arg)  reloc-masked
+};
+// The {x,y} screen point the toggle position is written to (this->m_3f4).
+struct LvBridgePoint {
+    i32 x; // +0x0
+    i32 y; // +0x4
+};
+
+// ===========================================================================
+// CLevelValidator::PositionBridgeToggle (0x0d5b20) - place the bridge-toggle UI
+// at a fixed inset from the viewport-clamp limits, with the toggle mode and the
+// X inset selected by `mode` (0 / 1 / other). If the toggle point (+0x3f4) is
+// null, only the mode is set. Then, if a goal object is active (m_4->m_68->m_23c),
+// flag it released, detach it, and run the timeline goal-tail. Migrated from
+// engine_boundary (CLevelValidator: m_4 world, m_2e0 toggle UI, m_3f4 point).
+// ===========================================================================
+// @early-stop
+// ~91%: control flow + offsets byte-identical. Residual is three documented
+// codegen-idiom/regalloc nits: (a) MSVC5 emits `sub edi,K` where retail emits
+// `add edi,-K` for the two X-inset decrements (non-steerable add/sub coin-flip);
+// (b) the tail's m_4 reload lands in eax (ours) vs ecx (retail) - a free-list
+// pick; (c) retail keeps a redundant consecutive `test;je` on the goal pointer
+// that MSVC5 collapses in the nested form here (redundant-sibling-guard-retest.md;
+// no intervening call to pin the flag, so de-nesting doesn't apply). Deferred.
+RVA(0x000d5b20, 0xbb)
+i32 CLevelValidator::PositionBridgeToggle(i32 mode, i32) {
+    LvWorld* w = *(LvWorld**)((char*)this + 4);
+    i32 ex = w->m_8c;
+    i32 ey = w->m_90;
+    LvBridgePoint* pt;
+    if (mode == 1) {
+        (*(LvBridgeUi**)((char*)this + 0x2e0))->Toggle(2);
+        pt = (LvBridgePoint*)m_3f4;
+        if (pt == 0) {
+            goto done;
+        }
+        ex -= 0x37;
+    } else if (mode == 0) {
+        (*(LvBridgeUi**)((char*)this + 0x2e0))->Toggle(1);
+        pt = (LvBridgePoint*)m_3f4;
+        if (pt == 0) {
+            goto done;
+        }
+        ex -= 0xd7;
+    } else {
+        (*(LvBridgeUi**)((char*)this + 0x2e0))->Toggle(3);
+        pt = (LvBridgePoint*)m_3f4;
+        if (pt == 0) {
+            goto done;
+        }
+        ex -= 0x37;
+    }
+    ey -= 0x16;
+    pt->x = ex;
+    pt->y = ey;
+done:
+    LvWorld::LvTimeline* g = (*(LvWorld**)((char*)this + 4))->m_68;
+    LvWorld::LvTimeline::LvGoal* goal = g->m_23c;
+    if (goal != 0) {
+        if (goal != 0) {
+            goal->m_8 |= 0x10000;
+            g->m_23c = 0;
+        }
+        (*(LvWorld**)((char*)this + 4))->m_68->GoalTail();
+    }
+    return 1;
 }

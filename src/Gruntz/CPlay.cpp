@@ -1578,6 +1578,46 @@ i32 CPlay::PresentAndFlush() {
     return 1;
 }
 
+// ===========================================================================
+// CPlay::EnterOverlayDrag (0x0d6440) - arm the win/lose-overlay drag mode. If
+// already armed (m_overlayDrag) bail. Otherwise latch m_overlayDrag, clear the
+// world-ready / drag-snap gates, run the prep sub-step, and (only when `arg`==0)
+// reset the guts subsystem (state/mode resync + two configure calls). Then arm
+// the guts busy words (m_busyA=1, m_busyB=arg, m_548=1) and republish the level
+// clock into m_1cc. Migrated from engine_boundary (CPlay). Returns 1.
+// ===========================================================================
+RVA(0x000d6440, 0xd3)
+i32 CPlay::EnterOverlayDrag(i32 arg) {
+    if (m_overlayDrag != 0) {
+        return 1;
+    }
+    m_overlayDrag = 1;
+    m_worldReady = 0;
+    m_dragSnapActive = 0;
+    Helper2c7f();
+    if (arg == 0) {
+        GutsSubsystem* g = m_guts;
+        if (g->m_state == 2) {
+            g->Guts123f();
+        }
+        if (g->m_mode != 5) {
+            g->Guts1d61(5, 3);
+        }
+        g->Guts427d(0x1fb, 1);
+        g->Guts125d();
+    }
+    m_guts->Guts35b2(1);
+    GutsSubsystem* g = m_guts;
+    g->m_busyA = 1;
+    g->m_busyB = arg;
+    g->Guts12fd(0);
+    g->Guts16ea();
+    g->m_548 = 1;
+    g->Guts125d();
+    m_1cc = g_645588;
+    return 1;
+}
+
 // @confidence: med
 // @source: string-xref
 // @stub

@@ -185,16 +185,13 @@ RVA(0x000cef00, 0x39) void Boundary_0cef00() {}  // proximity: CGameLevel@-0xf0 
 RVA(0x000cef50, 0x46) void Boundary_0cef50() {}  // proximity: CGameLevel@-0x140 | CPlay@+0x11d0
 RVA(0x000d2b20, 0x21f) void Boundary_0d2b20() {}  // proximity: CGameModeObj@-0xff0 | CLevelValidator@+0x2b0
 RVA(0x000d5960, 0x160) void Boundary_0d5960() {}  // proximity: CLevelValidator@-0x2b90 | CImage@+0x520
-RVA(0x000d5b20, 0xbb) void Boundary_0d5b20() {}  // proximity: CLevelValidator@-0x2d50 | CImage@+0x360
 RVA(0x000d5d70, 0x16) void Boundary_0d5d70() {}  // proximity: CLevelValidator@-0x2fa0 | CImage@+0x110
 RVA(0x000d5e20, 0x1b) void Boundary_0d5e20() {}  // proximity: CLevelValidator@-0x3050 | CImage@+0x60
-RVA(0x000d6440, 0xd3) void Boundary_0d6440() {}  // proximity: CPlay@-0x540 | CGameModeObj@+0x120
 RVA(0x000d6fa0, 0x1fa) void Boundary_0d6fa0() {}  // proximity: CGameModeObj@-0xa40 | CPlay@+0x320
 RVA(0x000d79d0, 0x537) void Boundary_0d79d0() {}  // proximity: CLoadingBar@-0x590 | CPlay@+0x1030
 RVA(0x000d88f0, 0x44) void Boundary_0d88f0() {}  // proximity: CLoadingBar@-0x14b0 | CPlay@+0x110
 RVA(0x000d8960, 0x75) void Boundary_0d8960() {}  // proximity: CLoadingBar@-0x1520 | CPlay@+0xa0
 RVA(0x000d9240, 0x3c) void Boundary_0d9240() {}  // proximity: CPlay@-0xe0 | CGameModeObj@+0xdf0
-RVA(0x000da2d0, 0xa5) void Boundary_0da2d0() {}  // proximity: CGameModeObj@-0x2a0 | GruntzPlayer@+0x5a0
 RVA(0x000da3b0, 0x6e) void Boundary_0da3b0() {}  // proximity: CGameModeObj@-0x380 | GruntzPlayer@+0x4c0
 RVA(0x000da440, 0x60) void Boundary_0da440() {}  // proximity: CGameModeObj@-0x410 | GruntzPlayer@+0x430
 RVA(0x000db050, 0x90) void Boundary_0db050() {}  // proximity: GruntzPlayer@-0xa0 | CPlay@+0x1680

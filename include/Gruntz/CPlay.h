@@ -303,6 +303,9 @@ public:
     // Two more draw/present sub-steps migrated from the engine_boundary backlog:
     i32 DrawWorldPresent(); // 0x0cefc0 (double world-draw + present + manager tick)
     i32 PresentAndFlush();  // 0x0cba10 (restore-mode guard + present-or-notify + flush)
+    // Overlay sub-step migrated from the engine_boundary backlog:
+    i32 EnterOverlayDrag(i32 arg); // 0x0d6440 (arm overlay-drag + guts busy words)
+    void Helper2c7f();             // 0x0d6440 prep sub-step (thiscall on this, reloc-masked)
     // leaf engine callees the above dispatch to (external, reloc-masked):
     void HudClickInRect(i32 a, i32 x, i32 y); // 0x4a9500 (thiscall on this)
     // HandleDragMove's own leaf callees (external, reloc-masked):
@@ -314,7 +317,9 @@ public:
     i32 m_inputWarmup1; // +0x1a8  StepInputA first-frame one-shot latch
     i32 m_inputWarmup2; // +0x1ac  StepInputA second-frame one-shot latch
     i32 m_inputHalfSel; // +0x1b0  StepInputA mirrored-half selector (0/1)
-    char m_pad1b4[0x2dc - 0x1b4];
+    char m_pad1b4[0x1cc - 0x1b4];
+    i32 m_1cc; // +0x1cc  level start clock (republished to g_645588 on teardown)
+    char m_pad1d0[0x2dc - 0x1d0];
     // +0x2dc: the "guts"/UI subsystem the per-frame Step + the HUD/drag-select
     // dispatches run on (the click/drag/clear entry points + the busy-state words).
     struct GutsSubsystem {
@@ -328,10 +333,20 @@ public:
         void DragClear(i32 flag);
         // 0x500cb0: the viewport-clamp apply (thiscall, no arg). reloc-masked.
         void ClampApply();
+        // EnterOverlayDrag (0x0d6440) guts sub-steps (reloc-masked ILT thunks):
+        void Guts123f();              // (thiscall, no arg)  m_state==2 path
+        void Guts1d61(i32 a, i32 b);  // (thiscall, 2 args)  m_mode!=5 path
+        void Guts427d(i32 a, i32 b);  // (thiscall, 2 args)
+        void Guts125d();              // (thiscall, no arg)
+        void Guts35b2(i32 a);         // (thiscall, 1 arg)
+        void Guts12fd(i32 a);         // (thiscall, 1 arg)
+        void Guts16ea();              // (thiscall, no arg)
         i32 m_state; // +0x0  subsystem state (==2 -> ready)
         char p4[0x10c - 0x4];
         i32 m_mode; // +0x10c  mode word (==5 -> overlay busy)
-        char p[0x550 - 0x110];
+        char p[0x548 - 0x110];
+        i32 m_548;          // +0x548  overlay-drag arm latch
+        char p54c[0x550 - 0x54c];
         i32 m_busyA, m_busyB; // +0x550  win/lose-suppress busy words
         char q[0x574 - 0x558];
         i32 m_snapPostSel; // +0x574  snapshot post-message selector
