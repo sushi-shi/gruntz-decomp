@@ -31,10 +31,22 @@ struct ShadeSrc {
     i32 m_b0; // +0xb0 blend mode
 };
 
+// A palette/format descriptor: m_1c on the blitter and the global g_blendDescr
+// (DAT_006bf218) both point at one; only its +0x8 (a LUT/palette base) is read
+// here. Read both as u8* (case 2/3/4/6 8-bit tables) and u16* (case 7/10 16-bit
+// palettes), so the field stays a raw base.
+struct ShadeDescr {
+    char m_00[0x8];
+    u8* m_08; // +0x08 LUT/palette base
+};
+
 class CDDrawShadeBlit {
 public:
     i32 Blit(i32 p0, ShadeSrc* src, ShadeRect* clip, i32 sel, i32 p4); // 0x1497f0
     void BlitLoop(i32 p0, ShadeSrc* src, ShadeRect* clip, i32 p4);     // 0x14a200
+    // The per-row format converter the inner blit loops call: dispatches on
+    // (m_14 - 2) to one of nine palette/blend conversions over a row.
+    void ConvertRow(u8* dst, u8* src, i32 count); // 0x14c9f0
     // The other three per-blend-mode loop variants (sibling functions, no body):
     // thiscall on the same object so the call falls out with no stack cleanup.
     void BlitMode_149950(i32 p0, ShadeSrc* src, ShadeRect* clip, i32 p4);
@@ -45,9 +57,9 @@ public:
     i32 m_04; // +0x04 width
     i32 m_08; // +0x08 height
     char m_0c[0x14 - 0x0c];
-    i32 m_14;   // +0x14 draw type
-    i32 m_18;   // +0x18 light level (>>3 indexes the LUT bank)
-    void* m_1c; // +0x1c palette / source-descriptor pointer
+    i32 m_14;         // +0x14 draw type / row-convert selector
+    i32 m_18;         // +0x18 light level (>>3 indexes the LUT bank) / alpha / fill byte
+    ShadeDescr* m_1c; // +0x1c palette / source-descriptor pointer
     char m_20[0x28 - 0x20];
     u8 m_28; // +0x28 byte flag (require-mode gate)
     u8 m_29; // +0x29 blend mode mirror (= src->m_b0)

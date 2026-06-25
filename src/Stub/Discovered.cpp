@@ -995,9 +995,9 @@ void ClassUnknown_85::ClassUnknown_85_139af0() {}
 RVA(0x000311b0, 0x14)
 void ClassUnknown_88::ClassUnknown_88_0311b0() {}
 
-// ---- ClassUnknown_89 ----
-RVA(0x0014c9f0, 0x5a6)
-void ClassUnknown_89::ClassUnknown_89_14c9f0() {}
+// ---- ClassUnknown_89 ---- reconstructed in src/Gruntz/CDDrawShadeBlit.cpp
+// (CDDrawShadeBlit::ConvertRow, the per-row palette/blend format converter the
+// BlitLoop family dispatches; 9-case dense jump table on m_14 - 2).
 
 // ---- ClassUnknown_90 ----
 RVA(0x001d38a1, 0x9)

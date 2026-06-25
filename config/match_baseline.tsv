@@ -27,7 +27,7 @@ cambientsound	3	2
 cattract	9	5
 cddrawchildgroup	9	5
 cddrawptrcollections	13	10
-cddrawshadeblit	2	1
+cddrawshadeblit	3	1
 cddrawsubmgr	29	15
 cddrawsubmgrdraco	5	2
 cddrawsubmgrleaf	13	4
@@ -62,7 +62,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	239	0
+engine_discovered	238	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -313,6 +313,7 @@ cddrawptrcollections	?RemoveItemA@CDDrawPtrCollections@@QAEXPAVCPoolItemA@@@Z	10
 cddrawptrcollections	?RemoveItemB@CDDrawPtrCollections@@QAEXPAUCPoolItemB@@@Z	100.0000	100.0000	1	a7726bad4d9a	0x142f10
 cddrawshadeblit	?Blit@CDDrawShadeBlit@@QAEHHPAUShadeSrc@@PAUShadeRect@@HH@Z	100.0000	100.0000	2	3bec4cb0d7c2	0x1497f0
 cddrawshadeblit	?BlitLoop@CDDrawShadeBlit@@QAEXHPAUShadeSrc@@PAUShadeRect@@H@Z	0.0556	0.0556	1	cd0bcbb696d9	0x14a200
+cddrawshadeblit	?ConvertRow@CDDrawShadeBlit@@QAEXPAE0H@Z	56.6096	56.6096	1	c75acd3c59f2	0x14c9f0
 cddrawsubmgr	??0CDDrawSubMgr@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	100.0000	100.0000	6	af4f6a250fe2	0x156cb0
 cddrawsubmgr	??1CDDrawSubMgr@@UAE@XZ	100.0000	100.0000	5	450d3140b22a	0x1574d0
 cddrawsubmgr	?AddToMap48_15aba0@CWwdObjMgr@@QAEXPAVCWwdObject@@@Z	100.0000	100.0000	1	cf53df5ddff3	0x15aba0
@@ -864,7 +865,6 @@ engine_discovered	?ClassUnknown_84_09a260@ClassUnknown_84@@QAEXXZ	3.6364	3.6364	
 engine_discovered	?ClassUnknown_85_139ae0@ClassUnknown_85@@QAEXXZ	10.0000	10.0000	1	97b4f12281f4	0x139ae0
 engine_discovered	?ClassUnknown_85_139af0@ClassUnknown_85@@QAEXXZ	0.4348	0.4348	1	bf63347742e3	0x139af0
 engine_discovered	?ClassUnknown_88_0311b0@ClassUnknown_88@@QAEXXZ	5.7143	5.7143	1	46eec7c3d0f4	0x311b0
-engine_discovered	?ClassUnknown_89_14c9f0@ClassUnknown_89@@QAEXXZ	0.0769	0.0769	1	346819baf2e1	0x14c9f0
 engine_discovered	?ClassUnknown_90_1d38a1@ClassUnknown_90@@QAEXXZ	33.3333	33.3333	1	447f332acd97	0x1d38a1
 engine_discovered	?ClassUnknown_91_1d496b@ClassUnknown_91@@QAEXXZ	3.6364	3.6364	1	08f8408e9535	0x1d496b
 engine_discovered	?ClassUnknown_92_0e3c60@ClassUnknown_92@@QAEXXZ	0.8264	0.8264	1	8f6796d587bc	0xe3c60

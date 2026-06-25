@@ -653,10 +653,6 @@ class ClassUnknown_88 {
 public:
     void ClassUnknown_88_0311b0();
 };
-class ClassUnknown_89 {
-public:
-    void ClassUnknown_89_14c9f0();
-};
 class ClassUnknown_90 {
 public:
     void ClassUnknown_90_1d38a1();
