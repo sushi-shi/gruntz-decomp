@@ -737,6 +737,35 @@ void CFileImage::FreeSurfaces() {
 }
 
 // ---------------------------------------------------------------------------
+// CFileImageSurface::ScalarDelete (0x142340) - the derived surface wrapper's `??_G`
+// scalar-deleting destructor (vtable slot 0 @0x5efa58). Run the teardown copy, then -
+// when the low bit of the hidden flags arg is set - RezFree the object; return this.
+RVA(0x00142340, 0x1e)
+void* CFileImageSurface::ScalarDelete(u32 flags) {
+    this->~CFileImageSurface();
+    if (flags & 1) {
+        RezFree(this);
+    }
+    return this;
+}
+
+// ---------------------------------------------------------------------------
+// CFileImageSurface::~CFileImageSurface (0x142360) - the second compiled teardown
+// copy, byte-identical to ~CFileImage (0x141350): re-stamp the base vptr, run the
+// shared FreeSurfaces teardown, destroy the owned CPtrArray member at +0x94. The
+// guarded member dtor -> the /GX EH frame.
+// @early-stop
+// Same EH-state wall as its ~CFileImage twin: the compiler-generated entry trylevel-0
+// write is scheduled BEFORE the user vptr re-stamp (retail emits the stamp first);
+// body otherwise byte-identical, ~94%. Not steerable - the /GX EH-state machine fixes
+// the order. See docs/patterns/eh-dtor-vptr-stamp-vs-trylevel-order.md.
+RVA(0x00142360, 0x53)
+CFileImageSurface::~CFileImageSurface() {
+    *(void**)this = &g_fileImageVtbl;
+    FreeSurfaces();
+}
+
+// ---------------------------------------------------------------------------
 // CFileImage::Clear (ret 4) - blank the surface. Build a zeroed 0x64-byte DDBLTFX
 // on the stack (dwSize@+0x0 = 0x64, fill flags@+0x8 = 0x42 | (white ? 0xff0020 :
 // 0)), Blt(NULL, NULL, NULL, 0x1020000, &fx) through the held surface, and on a
@@ -803,6 +832,127 @@ i32 CFileImage::SaveDispatch(void* a1, void* a2, void* a3) {
         default:
             return 0;
     }
+}
+
+// The live screen RGB-format unpack-shift table (file RVA 0x283ea0..0x283eb4 =
+// VA 0x683ea0..). SaveRle16 uses them to expand a screen-native 16bpp pixel into
+// an 8-bit-per-channel BGR triple (the inverse of the CLightFxRender Pack). Same
+// differently-named symbols as elsewhere; reloc-masked.
+DATA(0x00283ea0)
+extern i32 g_rUp; // red   up-shift   (channel position in the 16bpp word)
+DATA(0x00283ea4)
+extern i32 g_gUp; // green up-shift
+DATA(0x00283eac)
+extern i32 g_rDown; // red   down-shift (scale 5/6-bit -> 8-bit)
+DATA(0x00283eb0)
+extern i32 g_gDown; // green down-shift
+DATA(0x00283eb4)
+extern i32 g_bDown; // blue  down-shift
+
+// ---------------------------------------------------------------------------
+// CFileImage::SaveRle16 (0x144640, ret 0xc) - the 16bpp surface -> 24bpp BMP file
+// writer (DIRSURF.CPP). Bail unless the surface is valid (slot-5 IsValid), the
+// name buffer `a1` is non-null and non-empty (*a1 != 0) and the surface is 16bpp
+// (m_a8 == 0x10). Build a packed BITMAPFILEHEADER ("BM", bfSize = 3*w*h + 0x3a,
+// bfOffBits = 0x3a) + a zeroed BITMAPINFOHEADER (biSize 0x28, biWidth/biHeight =
+// surface w/h, biPlanes 1, biBitCount 0x18), operator-new a one-scanline 24bpp
+// buffer, Lock the surface, open the CFileIO (mode 0x2001 / 0x1001 by a3), write
+// the two headers, then walk the rows bottom-up expanding each 16bpp pixel into a
+// BGR triple and writing the scanline. On any failure Unlock + free + close +
+// return 0; on success return 1. The CFileIO stack object -> a /GX EH frame.
+// @early-stop
+// Two stacked walls (~52%): (1) the /GX shared-cleanup ladder - retail's per-reject
+// unwind funclets converge on one Unlock/RezFree/~CFileIO tail that idiomatic C++
+// scope-exit can't reproduce (docs/patterns/gx-state-machine-scalar-delete-cleanup.md);
+// (2) register-allocation entropy in the 16->24bpp conversion inner loop. Logic is
+// complete + correct; both are documented non-steerable plateaus.
+RVA(0x00144640, 0x2be)
+i32 CFileImage::SaveRle16(void* a1, void* a2, void* a3) {
+    CDDSurface* s = (CDDSurface*)this;
+    if (s->IsValid() == 0) {
+        return 0;
+    }
+    if (a1 == 0) {
+        return 0;
+    }
+    if (*(char*)a1 == 0) {
+        return 0;
+    }
+    if (s->m_a8 != 0x10) {
+        return 0;
+    }
+
+    BITMAPFILEHEADER bfh;
+    BITMAPINFOHEADER bih;
+    bih.biSize = 0;
+    bih.biWidth = 0;
+    bih.biHeight = 0;
+    *(i32*)&bih.biPlanes = 0;
+    bih.biSizeImage = 0;
+    bih.biXPelsPerMeter = 0;
+    bih.biYPelsPerMeter = 0;
+    bih.biClrUsed = 0;
+    bih.biClrImportant = 0;
+
+    strcpy((char*)&bfh, "BM");
+    bfh.bfReserved1 = 0;
+    bfh.bfReserved2 = 0;
+
+    i32 height = *(i32*)(s->m_desc + 8);  // dwHeight
+    i32 width = *(i32*)(s->m_desc + 0xc); // dwWidth
+    bih.biHeight = height;
+    bih.biWidth = width;
+    bfh.bfSize = 3 * width * height + 0x3a;
+    bih.biSize = 0x28;
+    bih.biPlanes = 1;
+    bih.biBitCount = 0x18;
+    bfh.bfOffBits = 0x3a;
+
+    u8* line = (u8*)operator new(3 * width * height + 0x3a);
+    if (line == 0) {
+        return 0;
+    }
+
+    u8* locked = (u8*)s->Lock(0);
+    if (locked == 0) {
+        RezFree(line);
+        return 0;
+    }
+
+    CFileIO file;
+    i32 ok;
+    if (a3 != 0) {
+        ok = file.Open((char*)a2, 0x2001, 0);
+    } else {
+        ok = file.Open((char*)a2, 0x1001, 0);
+    }
+    if (ok == 0) {
+        s->m_8->vtbl->Unlock(s->m_8, 0);
+        RezFree(line);
+        return 0;
+    }
+
+    file.Seek(0, 2);
+    file.Write(&bfh, 0xe);
+    file.Write(&bih, 0x2c);
+
+    for (i32 row = height - 1; row >= 0; row--) {
+        u8* src = locked + row * *(i32*)(s->m_desc + 0x10);
+        u8* dst = line;
+        for (i32 x = 0; x < width; x++) {
+            u16 px = *(u16*)src;
+            src += 2;
+            dst[0] = (u8)((u8)px << g_bDown);
+            dst[1] = (u8)((u8)(px >> g_gUp) << g_gDown);
+            dst[2] = (u8)((u8)(px >> g_rUp) << g_rDown);
+            dst += 3;
+        }
+        file.Write(line, 3 * width);
+    }
+
+    s->m_8->vtbl->Unlock(s->m_8, 0);
+    RezFree(line);
+    return 1;
 }
 
 // ---------------------------------------------------------------------------

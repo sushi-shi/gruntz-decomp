@@ -119,6 +119,26 @@ public:
     virtual void* ScalarDtor(i32 flag); // slot 0, @0x00
 };
 
+// ---------------------------------------------------------------------------
+// CFileImageSurface - the derived surface wrapper whose vtable lives at 0x5efa58
+// (adds LoadKeyed/Refresh etc. on top of CFileImage's slots; shares CFileImage's
+// teardown). The class adds no destructible members of its own, so ~CFileImageSurface
+// (0x142360) is byte-identical to ~CFileImage: it re-stamps the BASE vptr
+// (g_fileImageVtbl), runs the shared FreeSurfaces teardown and destroys the owned
+// CPtrArray at +0x94. Modeled as a standalone shape (NOT deriving from CFileImage)
+// so its dtor inlines that teardown the way retail's second compiled copy does,
+// without disturbing the already-matched CFileImage dtor. ScalarDelete is its `??_G`
+// (0x142340): destroy + conditional RezFree.
+class CFileImageSurface {
+public:
+    void* ScalarDelete(u32 flags); // 0x142340 (`??_G` scalar-deleting destructor)
+    ~CFileImageSurface();          // 0x142360 (the second compiled teardown copy)
+    void FreeSurfaces();           // 0x13e4d0 (shared teardown, external/no-body)
+
+    char m_pad00[0x94 - 0x00]; // +0x00  (vptr @0, manually stamped by the dtor)
+    CPtrArray m_elements;      // +0x94  owned element array (auto member-dtor)
+};
+
 class CFileImage {
 public:
     void* LoadBmp(char* name, char* path);

@@ -832,10 +832,6 @@ void ClassUnknown_41::ClassUnknown_41_168fb0() {}
 // 0x144640 - CFileImage::SaveRle16, the 16bpp surface -> 24bpp BMP file writer.
 //   702 B with a /GX EH frame, inline strcpy, a CFile object lifecycle and a
 //   16bpp->24bpp pixel-conversion inner loop. SaveDispatch reaches it reloc-masked.
-RVA(0x00142360, 0x53)
-void ClassUnknown_43::ClassUnknown_43_142360() {}
-RVA(0x00144640, 0x2be)
-void ClassUnknown_43::ClassUnknown_43_144640() {}
 
 // ---- ClassUnknown_44 ----
 RVA(0x00158680, 0x5b)
