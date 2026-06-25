@@ -283,11 +283,6 @@ RVA(0x0016df70, 0x22) void ClassUnknown_20::ClassUnknown_20_16df70() {}
 // ---- ClassUnknown_21 ----
 RVA(0x0016e480, 0x3e) void ClassUnknown_21::ClassUnknown_21_16e480() {}
 
-// ---- ClassUnknown_25 ----
-RVA(0x00099ca0, 0x49) void ClassUnknown_25::ClassUnknown_25_099ca0() {}
-RVA(0x0009a450, 0x36) void ClassUnknown_25::ClassUnknown_25_09a450() {}
-RVA(0x0011c560, 0x91) void ClassUnknown_25::ClassUnknown_25_11c560() {}
-
 // ---- ClassUnknown_26 ----
 RVA(0x0011c630, 0x6e) void ClassUnknown_26::ClassUnknown_26_11c630() {}
 

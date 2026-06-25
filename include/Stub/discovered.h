@@ -85,7 +85,6 @@ class ClassUnknown_17 { public: void ClassUnknown_17_16f760(); };
 class ClassUnknown_170 { public: void ClassUnknown_170_113420(); };
 class ClassUnknown_20 { public: void ClassUnknown_20_16df70(); };
 class ClassUnknown_21 { public: void ClassUnknown_21_16e480(); };
-class ClassUnknown_25 { public: void ClassUnknown_25_099ca0(); void ClassUnknown_25_09a450(); void ClassUnknown_25_11c560(); };
 class ClassUnknown_26 { public: void ClassUnknown_26_11c630(); };
 class ClassUnknown_28 { public: void ClassUnknown_28_01f940(); void ClassUnknown_28_158760(); };
 class ClassUnknown_29 { public: void ClassUnknown_29_137110(); };

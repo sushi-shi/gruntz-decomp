@@ -24,6 +24,54 @@ CGruntSpawnConfig::~CGruntSpawnConfig() {
 }
 
 // ===========================================================================
+// CSpawnEntry::~CSpawnEntry  (0x99ca0)
+// ===========================================================================
+// Empty the voice-sound node list (EmptyVoiceList), then the embedded CObList
+// member dtor frees its blocks (the trailing ~CObList in the /GX frame). The
+// destructible m_list forces the EH frame; the trylevel 0->-1 wraps EmptyVoiceList
+// so the member ~CObList still runs on unwind.
+//
+// @early-stop
+// /GX EH-state wall (docs/patterns/eh-dtor-model-members-as-destructible.md,
+// topic:eh/topic:wall): EmptyVoiceList + the member ~CObList sequence and the
+// frame are byte-exact; the residual is the trylevel-slot threading the /GX
+// state machine emits. Logic complete; deferred to the final sweep.
+RVA(0x00099ca0, 0x49)
+CSpawnEntry::~CSpawnEntry() {
+    EmptyVoiceList();
+}
+
+// ===========================================================================
+// CSpawnEntry::EmptyVoiceList  (0x9a450)
+// ===========================================================================
+// Walk the CObList node chain (head @ m_list+0x4, each CNode = {next,prev,data});
+// `delete (CVoiceSound*)node->data` on each held element (~CString + the engine
+// operator delete = RezFree), then m_list.RemoveAll(). No destructible local, so
+// no /GX frame even under eh flags.
+RVA(0x0009a450, 0x36)
+void CSpawnEntry::EmptyVoiceList() {
+    struct CNode {
+        CNode* m_next; // +0x00
+        void* m_prev;  // +0x04
+        void* m_data;  // +0x08
+    };
+    struct Layout {
+        void* m_vptr;  // +0x00
+        CNode* m_head; // +0x04  CObList::m_pNodeHead
+    };
+    CNode* node = ((Layout*)&m_list)->m_head;
+    while (node != 0) {
+        CNode* cur = node;
+        node = node->m_next;
+        CVoiceSound* v = (CVoiceSound*)cur->m_data;
+        if (v != 0) {
+            delete v;
+        }
+    }
+    m_list.RemoveAll();
+}
+
+// ===========================================================================
 // CGruntSpawnConfig::Init  (0x11adc0)
 // ===========================================================================
 // Bind to an owner and seed the config tree pointer, then build the voice list.
@@ -71,7 +119,7 @@ void CGruntSpawnConfig::Clear() {
     for (i32 i = 0; i < m_18.GetSize(); i++) {
         CSpawnEntry* e = (CSpawnEntry*)m_18[i];
         if (e != 0) {
-            e->Free();
+            e->~CSpawnEntry();
             RezFree(e);
         }
     }
@@ -266,6 +314,28 @@ BOOL CGruntSpawnConfig::BuildVoiceList() {
         m_18.SetAtGrow(i, (DWORD)BuildVoiceSoundList(i));
     }
     return 1;
+}
+
+// ===========================================================================
+// CSpawnEntry::AddVoiceSound  (0x11c560)
+// ===========================================================================
+// Allocate a voice-sound node (operator new 0xc), construct it from the (by-value)
+// name CString, and append it to the list (AddTail). The trailing `flag` arg is
+// unused. The by-value CString param + the inner copy construct the /GX frame.
+//
+// @early-stop
+// /GX frame-size wall (docs/patterns/gx-scoped-local-eh-frame-size.md, topic:eh):
+// instruction selection is byte-identical, but retail reserves the CString temp
+// in ONE dword (`push ecx`) while the recompile reserves two (`sub esp,8`) - the
+// by-value param slot is reused as the temp in retail, allocated fresh here - so
+// every [esp+N] is shifted +4. ~92.5%; not source-steerable. Logic complete.
+RVA(0x0011c560, 0x91)
+void CSpawnEntry::AddVoiceSound(CString s, i32 flag) {
+    (void)flag;
+    CVoiceSound* node = new CVoiceSound(s);
+    if (node != 0) {
+        m_list.AddTail((CObject*)node);
+    }
 }
 
 // ===========================================================================

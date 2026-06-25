@@ -72,7 +72,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	187	0
+engine_discovered	184	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -90,7 +90,7 @@ gametext	4	2
 gamewnd	9	8
 grunt	55	11
 gruntpuddle	4	2
-gruntspawnconfig	10	4
+gruntspawnconfig	13	6
 gruntvoice	4	3
 gruntzapp	10	8
 gruntzcmdmgr	11	9
@@ -824,9 +824,6 @@ engine_discovered	?ClassUnknown_1_134c60@ClassUnknown_1@@QAEXXZ	11.1111	11.1111	
 engine_discovered	?ClassUnknown_1_134c80@ClassUnknown_1@@QAEXXZ	3.3333	3.3333	2	fb6bed5f265a	0x134c80
 engine_discovered	?ClassUnknown_20_16df70@ClassUnknown_20@@QAEXXZ	5.0000	5.0000	2	fce2906f0f57	0x16df70
 engine_discovered	?ClassUnknown_21_16e480@ClassUnknown_21@@QAEXXZ	3.3333	3.3333	2	2e3b23619fa3	0x16e480
-engine_discovered	?ClassUnknown_25_099ca0@ClassUnknown_25@@QAEXXZ	5.2632	5.2632	2	2586dc439651	0x99ca0
-engine_discovered	?ClassUnknown_25_09a450@ClassUnknown_25@@QAEXXZ	4.0000	4.0000	2	f24e5ae4d7ba	0x9a450
-engine_discovered	?ClassUnknown_25_11c560@ClassUnknown_25@@QAEXXZ	0.8889	0.8889	2	f46c81b1757b	0x11c560
 engine_discovered	?ClassUnknown_26_11c630@ClassUnknown_26@@QAEXXZ	1.4286	1.4286	2	d8be2e544c1f	0x11c630
 engine_discovered	?ClassUnknown_28_01f940@ClassUnknown_28@@QAEXXZ	1.3333	1.3333	2	b7efcc9b921f	0x1f940
 engine_discovered	?ClassUnknown_28_158760@ClassUnknown_28@@QAEXXZ	1.0811	1.0811	2	083088893ae6	0x158760
@@ -1635,10 +1632,13 @@ gruntpuddle	?Place@CGruntPuddle@@QAEHHHHH@Z	73.5400	73.5400	2	f8ec38ad7367	0x40c
 gruntpuddle	?Remove@CGruntPuddle@@QAEHXZ	71.3000	71.3000	2	bcf839e386ba	0x40d20
 gruntpuddle	?SetBute@CGruntPuddle@@QAEXPAD@Z	100.0000	100.0000	1	25260462d64d	0x7d810
 gruntspawnconfig	??1CGruntSpawnConfig@@QAE@XZ	100.0000	100.0000	1	b4d92e06a1a7	0x85df0
+gruntspawnconfig	??1CSpawnEntry@@QAE@XZ	100.0000	100.0000	1	e13ba4d042b0	0x99ca0
+gruntspawnconfig	?AddVoiceSound@CSpawnEntry@@QAEXVCString@@H@Z	92.4667	92.4667	1	525105e1ee06	0x11c560
 gruntspawnconfig	?BuildVoiceList@CGruntSpawnConfig@@QAEHXZ	100.0000	100.0000	1	0766873d02f8	0x11c1a0
-gruntspawnconfig	?Clear@CGruntSpawnConfig@@QAEXXZ	68.0517	68.0517	1	3ee95b4ae6d9	0x11ae30
+gruntspawnconfig	?Clear@CGruntSpawnConfig@@QAEXXZ	68.0517	68.0517	2	2a8c0e72235f	0x11ae30
 gruntspawnconfig	?ClearSprites@CGruntSpawnConfig@@QAEXXZ	67.8000	67.8000	1	c10e44170b11	0x11af90
 gruntspawnconfig	?DtorBody@CGruntSpawnConfig@@QAEXXZ	100.0000	100.0000	1	7edb01f0309c	0x11c7b0
+gruntspawnconfig	?EmptyVoiceList@CSpawnEntry@@QAEXXZ	100.0000	100.0000	1	2939bb3621de	0x9a450
 gruntspawnconfig	?GetButeSlot@CGruntSpawnConfig@@QAEPAXPAUCSpawnButeConfig@@PAUCSpawnButeTarget@@@Z	73.3468	73.3468	2	190cfa3edafe	0x11bba0
 gruntspawnconfig	?Init@CGruntSpawnConfig@@QAEHPAUCSpawnOwner@@@Z	55.3478	55.3478	1	daee427fc5f3	0x11adc0
 gruntspawnconfig	?IsReady@CGruntSpawnConfig@@QAEHXZ	100.0000	100.0000	1	920e1a592c09	0x11c830
