@@ -36,14 +36,16 @@
 // (docs/patterns/jumptable-data-overlap.md; big-seh-fuzzy-desync.md;
 // eh-state-numbering-base.md; o2-optimizer-bailout-framed.md).
 
-#include <Mfc.h> // the two CString diagnostic temps (the /GX frame)
+#include <Gruntz/RollingBall.h> // CRollingBall : CUserLogic (+ the /GX CString temps)
+
 #include <rva.h>
 
 // ---------------------------------------------------------------------------
 // Shared singletons (named so their DIR32 datum reloc-masks).
 // ---------------------------------------------------------------------------
-extern void* g_64556c;      // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
-extern "C" void* g_buteMgr; // ?g_buteMgr@@3VCButeMgr@@A @0x6453d8
+extern void* g_64556c; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
+// (g_buteMgr comes from <Bute/ButeMgr.h> via UserLogic.h; Update reaches it only
+//  through RbGetDwordDef, so no direct extern is needed here.)
 extern "C" i32 g_645588;    // DAT_00645588 @0x645588 (world clock ms)
 extern "C" i32 g_645584;    // DAT_00645584 @0x645584 (frame delta ms)
 extern "C" double g_5ea3e8; // DAT_005ea3e8 @0x5ea3e8 (1000.0 ms->tiles divisor)
@@ -77,13 +79,15 @@ static i32 VtblResolve(void* ent) {
     return (*(i32(**)(void*, i32, i32))((char*)vtbl + 0x20))(ent, 0, 0);
 }
 
-// CRollingBall (: CUserLogic, sizeof 0xa0). Only the touched offsets matter; the
-// body accesses everything by raw this+offset (carcass doctrine).
-class CRollingBall {
-public:
-    i32 Update();
-    char m_pad[0xa0];
-};
+// ===========================================================================
+// CRollingBall::~CRollingBall  (0x012f80)
+// ===========================================================================
+// The leaf adds no destructible members, so its dtor folds the bare CUserLogic
+// teardown: store the CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link
+// (the embedded ~EngStr call), store the CUserBase vptr (0x5e70b4). The
+// destructible link forces the /GX EH frame. The empty body is enough.
+RVA(0x00012f80, 0x44)
+CRollingBall::~CRollingBall() {}
 
 // CRollingBall::Update - the per-tick rolling-ball state machine (__thiscall).
 // @early-stop
@@ -325,4 +329,70 @@ i32 CRollingBall::Update() {
         I32(out2, 0x8) |= 0x20000;
     }
     return 0;
+}
+
+// ===========================================================================
+// CRollingBall::Serialize  (0x0b0fe0) - __thiscall, ret 0x10, vtable slot 1
+// ===========================================================================
+// The CArchive round-trip of the ball state. Chains the shared CUserLogic
+// serialize helper on `this`, then the +0x34 sub-object's chain; both gate (early
+// return 0 on failure). Then it streams the ball fields through the archive's
+// vtable: mode 4 = Write (slot +0x30, store), mode 7 = Read (slot +0x2c, load).
+// The +0x88/+0x90 explosion-timing pair is streamed first, then the move/state
+// field list (+0x58..+0x98).
+RVA(0x000b0fe0, 0x1ab)
+i32 CRollingBall::Serialize(CRbArchive* ar, i32 tag, i32 c, i32 d) {
+    if (!SerializeChain((i32)ar, tag, c, d)) {
+        return 0;
+    }
+    if (!((CRbSerialSub34*)((char*)this + 0x34))->Chain((i32)ar, tag, c, d)) {
+        return 0;
+    }
+
+    // The explosion-timing pair (+0x88/+0x90), streamed through a walking pointer
+    // that advances by 8 (retail hoists `lea ebp,[edi+0x88]` before the branch and
+    // does `push ebp; call; add ebp,8; push ebp; call`). A two-case switch (not
+    // if/else) floats the Write arm past the Read arm, matching retail's branch
+    // polarity (docs/patterns/inline-switch-serialize-record-unroll.md +
+    // pointer-walk-increment-in-for-update.md).
+    char* p = (char*)this + 0x88;
+    switch (tag) {
+        case 4:
+            ar->Write(p, 8);
+            p += 8;
+            ar->Write(p, 8);
+            break;
+        case 7:
+            ar->Read(p, 8);
+            p += 8;
+            ar->Read(p, 8);
+            break;
+    }
+
+    // The move/state field list (+0x58..+0x98).
+    switch (tag) {
+        case 4:
+            ar->Write(&m_58, 8);
+            ar->Write(&m_60, 8);
+            ar->Write(&m_68, 8);
+            ar->Write(&m_70, 4);
+            ar->Write(&m_74, 4);
+            ar->Write(&m_78, 8);
+            ar->Write(&m_80, 4);
+            ar->Write(&m_84, 4);
+            ar->Write(&m_98, 8);
+            break;
+        case 7:
+            ar->Read(&m_58, 8);
+            ar->Read(&m_60, 8);
+            ar->Read(&m_68, 8);
+            ar->Read(&m_70, 4);
+            ar->Read(&m_74, 4);
+            ar->Read(&m_78, 8);
+            ar->Read(&m_80, 4);
+            ar->Read(&m_84, 4);
+            ar->Read(&m_98, 8);
+            break;
+    }
+    return 1;
 }

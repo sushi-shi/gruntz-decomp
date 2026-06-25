@@ -66,7 +66,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	202	0
+engine_discovered	200	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -128,7 +128,7 @@ pyramidbridgesprites	1	0
 randomambientsound	4	2
 registryhelper	8	8
 rezmgr	14	8
-rollingball	1	0
+rollingball	3	2
 savegame	18	13
 sbi_gruntmachine	3	2
 sbi_gruntmachine_eh	1	0
@@ -736,8 +736,6 @@ engine_discovered	?CObjectDropper_0124f0@CObjectDropper@@QAEXXZ	5.8824	5.8824	1	
 engine_discovered	?CParticlez_012d90@CParticlez@@QAEXXZ	5.8824	5.8824	1	a3bb172e9a0b	0x12d90
 engine_discovered	?CParticlez_046d30@CParticlez@@QAEXXZ	0.5333	0.5333	1	d1d33721a572	0x46d30
 engine_discovered	?CPlay_0d1b60@CPlay@@QAEXXZ	0.0452	0.0452	1	7c783745d488	0xd1b60
-engine_discovered	?CRollingBall_012f80@CRollingBall@@QAEXXZ	5.8824	5.8824	1	c3e5dcb9f3b3	0x12f80
-engine_discovered	?CRollingBall_0b0fe0@CRollingBall@@QAEXXZ	0.2139	0.2139	1	a6e364c8e14c	0xb0fe0
 engine_discovered	?CSBI_RectOnly_0c8980@CSBI_RectOnly@@QAEXXZ	3.8462	3.8462	1	5ef05cd5c468	0xc8980
 engine_discovered	?CSBI_RectOnly_0ebd70@CSBI_RectOnly@@QAEXXZ	0.3774	0.3774	1	7136bad16d3f	0xebd70
 engine_discovered	?CSBI_RectOnly_105800@CSBI_RectOnly@@QAEXXZ	0.7273	0.7273	1	cf06857d2846	0x105800
@@ -1962,7 +1960,9 @@ rezmgr	?MakeRezPath@RezMgr@@QAEHXZ	92.7923	92.7923	6	89aba364b6ae	0x91670
 rezmgr	?PerFrameTick@RezMgr@@UAEHXZ	100.0000	100.0000	5	f48f8cfdbf55	0x8b740
 rezmgr	?Read@CRezItm@@QAEHHHIPAX@Z	99.3023	99.3023	1	f36f55a6737f	0x13c600
 rezmgr	?Stub_13b0c0@CRezDir@@QAEXXZ	0.2139	0.2139	2	0caf2154eccf	0x13b0c0
-rollingball	?Update@CRollingBall@@QAEHXZ	35.2831	35.2831	2	c4d7cce584e4	0xb0140
+rollingball	??1CRollingBall@@UAE@XZ	100.0000	100.0000	1	9f5ff559b5b3	0x12f80
+rollingball	?Serialize@CRollingBall@@QAEHPAUCRbArchive@@HHH@Z	100.0000	100.0000	1	6aba7ce31cdd	0xb0fe0
+rollingball	?Update@CRollingBall@@QAEHXZ	37.8018	37.8018	2	c4d7cce584e4	0xb0140
 savegame	??1CSaveGame@@QAE@XZ	100.0000	100.0000	1	a26d45c833a7	0x85b50
 savegame	?CheckField20@CSaveGame@@QAEHXZ	100.0000	100.0000	2	3389d231b6f6	0xe5690
 savegame	?ComputeAll@CSaveGame@@QAEXXZ	90.8800	90.8800	2	d62fcdc450f1	0xe50a0

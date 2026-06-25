@@ -199,11 +199,8 @@ class CPlay {
 public:
     void CPlay_0d1b60();
 };
-class CRollingBall {
-public:
-    void CRollingBall_012f80();
-    void CRollingBall_0b0fe0();
-};
+// CRollingBall's discovered methods (dtor 0x012f80, Serialize 0x0b0fe0) were
+// reconstructed into src/Gruntz/RollingBall.cpp; no stubs remain here.
 class CSBI_RectOnly {
 public:
     void CSBI_RectOnly_0c8980();

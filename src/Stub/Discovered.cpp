@@ -301,11 +301,13 @@ void CParticlez::CParticlez_046d30() {}
 RVA(0x000d1b60, 0xc2f)
 void CPlay::CPlay_0d1b60() {}
 
-// ---- CRollingBall ----
-RVA(0x00012f80, 0x44)
-void CRollingBall::CRollingBall_012f80() {}
-RVA(0x000b0fe0, 0x1ab)
-void CRollingBall::CRollingBall_0b0fe0() {}
+// ---- CRollingBall ---- the destructor (0x012f80) and Serialize (0x0b0fe0,
+// vtable slot 1) were reconstructed into src/Gruntz/RollingBall.cpp (the real
+// CRollingBall TU, alongside Update 0x0b0140). CRollingBall : CUserLogic models
+// the leaf polymorphically so the dtor folds the bare CUserLogic teardown; the
+// Serialize streams the +0x58..+0x98 ball state through the archive (mode 4 =
+// write slot +0x30, mode 7 = read slot +0x2c). The 1-arg ctor (0xaf820) stays
+// stubbed in src/Stub/CRollingBall.cpp.
 
 // ---- CSBI_RectOnly ----
 // MEMBERSHIP AUDIT (matcher-2): the this-tracer conflated 4 RVAs onto
