@@ -406,7 +406,7 @@ flags = "eh"
 [[unit]]
 unit = "cimageowned"
 source = "src/Image/CImageOwned.cpp"
-flags = "base"
+flags = "eh"
 
 [[unit]]
 unit = "imageset"

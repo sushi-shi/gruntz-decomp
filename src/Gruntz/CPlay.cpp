@@ -610,6 +610,121 @@ void CPlay::StepC() {
 }
 
 // ===========================================================================
+// CPlay::ClampViewport (0x0d8dc0) - if the active viewport (m_c->m_24+0x10) is
+// wider/taller than 0xc0, inset that axis by `inset` (both edges); if NEITHER axis
+// was clamped, just reset the viewport and bail. Otherwise install the clamped rect
+// on the draw-surface (SetClipRect), re-prepare the held surface, and run the guts +
+// world apply-steps. Returns 1 if clamped, 0 otherwise. __thiscall, ret 4.
+// ===========================================================================
+// @early-stop
+// ~94% regalloc wall - the whole clamp body + the apply-tail call chain are byte-
+// faithful and all relocs pair; retail pins `clamped` in edx and the rect-base copy
+// in ebx where MSVC5 here colors them edi/ebx-swapped (a cascade off the entry
+// `xor edx,edx` vs `xor edi,edi`). Not source-steerable (tried explicit rect-base
+// pointer + reordered the clamped init). docs/patterns/zero-register-pinning.md.
+RVA(0x000d8dc0, 0xce)
+i32 CPlay::ClampViewport(i32 inset) {
+    CView* v = m_c;
+    RECT* vp = &v->m_24->m_viewport;
+    RECT r;
+    r.left = vp->left;
+    r.top = vp->top;
+    r.right = vp->right;
+    r.bottom = vp->bottom;
+
+    i32 clamped = 0;
+    if (r.right - r.left > 0xc0) {
+        r.left += inset;
+        r.right -= inset;
+        clamped = 1;
+    }
+    if (r.bottom - r.top > 0xc0) {
+        r.top += inset;
+        r.bottom -= inset;
+        clamped = 1;
+    }
+    if (clamped == 0) {
+        ResetViewport();
+        return 0;
+    }
+
+    m_c->m_24->SetClipRect(&r);
+    m_c->m_4->m_14->m_2c->Prepare(0);
+    m_guts->ClampApply();
+    m_4w()->ClampApply();
+    return 1;
+}
+
+// ===========================================================================
+// CPlay::ClampViewport2 (0x0d8ed0) - the asymmetric viewport clamp. Each axis whose
+// extent is BELOW the world limit (horizontal m_4->m_8c, biased down 0xa0 unless the
+// guts subsystem is ready; vertical m_4->m_90) is EXPANDED by `stride` on both edges,
+// then clamped into [0, limit-1]. If neither axis moved, reset the viewport and bail;
+// otherwise install the clamped rect + run the apply-tail. __thiscall, ret 4.
+// ===========================================================================
+// @early-stop
+// ~86% regalloc wall - the asymmetric clamp logic, the guts-gated horizontal bound
+// (m_8c / m_8c-0xa0, inlined ternary so it stays in edi not a spill), both axis
+// [0, limit-1] clamps, and the 4-call apply-tail are byte-faithful with all relocs
+// pairing. The residual: retail carries the `clamped` accumulator through `ecx`
+// across the two blocks (allocating an extra spill slot -> `sub esp,0x1c`) where
+// MSVC5 here writes it straight to [esp+0x10] (`sub esp,0x18`), shifting the rect
+// slots by 4 and renaming the block-2 temps. Not source-steerable (the two-block
+// boolean-OR register-merge is the compiler's spill choice).
+// docs/patterns/zero-register-pinning.md.
+RVA(0x000d8ed0, 0x128)
+i32 CPlay::ClampViewport2(i32 stride) {
+    i32 clamped = 0;
+    CView* v = m_c;
+    CWorld* w = m_4w();
+    GutsSubsystem* guts = m_guts;
+
+    i32* rp = (i32*)&v->m_24->m_viewport;
+    RECT r;
+    r.left = rp[0];
+    r.top = rp[1];
+    r.right = rp[2];
+    r.bottom = rp[3];
+
+    i32 hlimit = w->m_8c;
+    i32 vlimit = w->m_90;
+
+    if (r.right - r.left < (guts->m_state == 2 ? hlimit : hlimit - 0xa0)) {
+        r.left -= stride;
+        r.right += stride;
+        if (r.left < 0) {
+            r.left = 0;
+        }
+        if (r.right >= hlimit) {
+            r.right = hlimit - 1;
+        }
+        clamped = 1;
+    }
+    if (r.bottom - r.top < vlimit) {
+        r.top -= stride;
+        r.bottom += stride;
+        if (r.top < 0) {
+            r.top = 0;
+        }
+        if (r.bottom >= vlimit) {
+            r.bottom = vlimit - 1;
+        }
+        clamped = 1;
+    }
+
+    if (clamped == 0) {
+        ResetViewport();
+        return 0;
+    }
+
+    m_c->m_24->SetClipRect(&r);
+    m_c->m_4->m_14->m_2c->Prepare(0);
+    m_guts->ClampApply();
+    m_4w()->ClampApply();
+    return 1;
+}
+
+// ===========================================================================
 // The four screen-region scroll one-shots.
 // Each: thiscall(int z), set its region-active gate to bool(z), call the shared
 // enter/leave sub-step, (re)arm its 64-bit countdown timer (interval 0x7530 ms,
@@ -681,6 +796,106 @@ i32 CPlay::OnRegion4(i32 z) // (region-3 / gate m_region3Gate, timer +0x460)
     m_region3Interval = REGION_INTERVAL_MS;
     m_region3IntervalHi = 0;
     *(u64*)&m_region3TimerLo = g_645588; // 64-bit store: lo=g_645588, hi=0
+    return 1;
+}
+
+// ===========================================================================
+// CPlay::NotifyVisibleEntities (0x0d9050) - notify the draw surface of the (slightly
+// inflated) viewport, then walk the renderer's entity list and, for every entity
+// whose type-discriminator (entity->m_8->m_7c[4], the slot-4 method pointer) is one
+// of 12 known "visible-notify" types, dispatch its slot-0x2c notify with the held
+// view surface. Returns 1. __thiscall, ret 0.
+//
+// The 12 type addresses are reached in retail through ILT jump-thunks (thunk_FUN_*);
+// the recompile binds them to the direct functions, so the `cmp eax,imm32; je` BYTES
+// match retail 1:1 but the 12 DIR32 operands are differently-named (thunk vs direct)
+// reloc-masked symbols.
+// ===========================================================================
+// @early-stop
+// ~75% reloc-masked plateau. The viewport-notify, the entity-list walk, the 12-way
+// `cmp eax,<type>; je` type-discriminator chain (same order, same encoding) and the
+// slot-0x2c notify dispatch are all byte-faithful. The residual is (1) the 12 DIR32
+// reloc-name mismatches - retail compares against ILT thunk addresses, the recompile
+// against the direct function addresses (the delinker has no symbol for the thunks),
+// and (2) a small head regalloc swap + retail's extra `push 0` frame slot. Logic
+// complete; the reloc-name set cannot pair (docs/patterns/reloc-typing-vptr-global.md,
+// objdiff-reloc-scoring), so deferred to the final sweep.
+// ===========================================================================
+
+// The renderer's per-entity list node (m_c->m_8 + 0x10 -> +4 head; next at +0).
+// Each node holds the entity at +0x8 whose +0x7c vtable's slot-4 is the type id
+// NotifyVisibleEntities switches on, and whose own slot-0x2c is the notify.
+struct CVisEntityType {
+    void* s0[4];
+    void* m_10; // [0x10] slot-4 method pointer = the type discriminator
+};
+struct CVisEntityVtbl;
+struct CVisEntity {
+    CVisEntityVtbl* vptr;
+    char p4[0x7c - 0x04];
+    CVisEntityType* m_7c;     // +0x7c
+    void Notify(void* held);  // vtbl[0x2c]
+};
+typedef void (CVisEntity::*VisNotifyFn)(void*);
+struct CVisEntityVtbl {
+    char s0[0x2c];
+    VisNotifyFn Notify; // [0x2c]
+};
+inline void CVisEntity::Notify(void* held) {
+    (this->*(vptr->Notify))(held);
+}
+struct CVisNode {
+    CVisNode* m_next; // +0x00
+    char p4[0x8 - 0x4];
+    CVisEntity* m_8; // +0x08
+};
+
+// The 12 known "visible-notify" entity-type discriminators: the slot-4 method
+// pointers (in retail, the ILT jump-thunks) of 12 entity classes. The entity's
+// m_7c[4] is compared by ADDRESS against each, so they are modeled as functions and
+// the compares lower to `cmp eax, OFFSET Fn` (DIR32). The thunk-vs-direct reloc
+// naming is the scoring artifact; the compare bytes match retail.
+extern "C" {
+    void VisFn_40fe90();  // 0x40fe90
+    void VisFn_4bf150();  // 0x4bf150
+    void VisFn_423b40();  // 0x423b40
+    void VisFn_Roll();    // 0x4cd70  (Roll)
+    void VisFn_41e570();  // 0x41e570
+    void VisFn_41e520();  // 0x41e520
+    void VisFn_49b410();  // 0x49b410
+    void VisFn_IntersectRect(); // 0x432060 (winapi_032060_IntersectRect)
+    void VisFn_49b310();  // 0x49b310
+    void VisFn_CBattlezDlg();    // 0x414b30 (CBattlezDlg)
+    void VisFn_4fce80();  // 0x4fce80
+}
+
+RVA(0x000d9050, 0xc7)
+i32 CPlay::NotifyVisibleEntities() {
+    CView* v = m_c;
+    i32* vp = (i32*)&v->m_24->m_viewport;
+    CView::RenderState::SurfaceB* held = v->m_4->m_14;
+    CVisNode* node = *(CVisNode**)((char*)v->m_8 + 0x14);
+
+    RECT r;
+    r.left = vp[0];
+    r.top = vp[1];
+    r.right = vp[2] + 1;
+    r.bottom = vp[3] + 1;
+    held->m_2c->NotifyClip(&r);
+
+    while (node != 0) {
+        CVisEntity* o = node->m_8;
+        void* id = o->m_7c->m_10;
+        if (id == (void*)VisFn_40fe90 || id == (void*)VisFn_4bf150
+            || id == (void*)VisFn_423b40 || id == (void*)VisFn_Roll
+            || id == (void*)VisFn_41e570 || id == (void*)VisFn_41e520
+            || id == (void*)VisFn_40fe90 || id == (void*)VisFn_49b410
+            || id == (void*)VisFn_IntersectRect || id == (void*)VisFn_49b310
+            || id == (void*)VisFn_CBattlezDlg || id == (void*)VisFn_4fce80) {
+            o->Notify(held);
+        }
+        node = node->m_next;
+    }
     return 1;
 }
 

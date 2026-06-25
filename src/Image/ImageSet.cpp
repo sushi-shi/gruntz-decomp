@@ -31,6 +31,23 @@ i32 CImageSet::SetAllTypes(i32 type) {
     return count;
 }
 
+// SetAllField18 - 0x1524d0 (__thiscall, ret 4). Walk every populated frame in
+// [m_minIndex, m_maxIndex] and write `value` into its format helper's +0x18 field;
+// returns the count touched. Unlike SetAllFormats there is no up-front null guard -
+// the empty range simply yields count 0 (the `jg` skips straight to the return).
+RVA(0x001524d0, 0x41)
+i32 CImageSet::SetAllField18(i32 value) {
+    i32 count = 0;
+    for (i32 i = m_minIndex; i <= m_maxIndex; i++) {
+        CImageFrame* frame = GetAt(i);
+        if (frame && frame->m_format) {
+            frame->m_format->m_18 = value;
+            count++;
+        }
+    }
+    return count;
+}
+
 // SetAllFormats - 0x152520 (__thiscall, ret 4). Returns the number of frames touched.
 RVA(0x00152520, 0x4b)
 i32 CImageSet::SetAllFormats(i32 format) {

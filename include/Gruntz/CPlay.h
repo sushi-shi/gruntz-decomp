@@ -60,6 +60,7 @@ struct CDrawSurface {
     void PushView(void* view, void* renderer);
     void PreStep();
     void PostStep();
+    void SetClipRect(RECT* r); // 0x15da80 (thiscall) ClampViewport apply-tail
     char p0[0x10];
     // +0x10: the viewport rect {left,top,right,bottom}; StepScroll reads .left/.top
     // as the scroll origin, DispatchHudClick reads all four as the bounds box.
@@ -90,7 +91,10 @@ struct CView {
         }* m_10; // +0x10 -> +0x2c surface
         struct SurfaceB {
             char p0[0x2c];
-            void* m_2c;
+            struct Held {
+                void Prepare(i32 z);   // 0x13e760 (thiscall) ClampViewport apply-tail
+                void NotifyClip(RECT* r); // 0x13e7d0 (thiscall) NotifyVisibleEntities
+            }* m_2c;
         }* m_14;    // +0x14 -> +0x2c draw surface (view obj)
         void* m_18; // +0x18  the present target
     }* m_4;
@@ -133,6 +137,7 @@ struct CInputDispatch {
 
 // m_4 (the CState owner back-ptr -> the world/level object).
 struct CWorld {
+    void ClampApply();   // 0x48f7f0 (thiscall, no arg) ClampViewport apply-tail
     char p0[0x4];
     CInputDispatch* m_4; // +0x04  the input dispatcher (RegisterInputBindings)
     char p8[0xc - 0x8];
@@ -181,9 +186,12 @@ struct CWorld {
     struct SpriteLoader {
         void* LoadSprite(void* desc, i32 flag); // 0x4e23c0 (thiscall)
     }* m_74;
+    char p78[0x8c - 0x78];
+    i32 m_8c; // +0x8c  viewport-clamp horizontal limit (ClampViewport2)
+    i32 m_90; // +0x90  viewport-clamp vertical limit (ClampViewport2)
     // +0x158: a flat config-array (stride 71*8 = 0x238 bytes); entry [id].m_0 is
     // the per-grunt-type sprite descriptor BeginGridWalk feeds to LoadSprite.
-    char p78[0x158 - 0x78];
+    char p94[0x158 - 0x94];
     char m_158[1]; // base of the config array (indexed by id*0x238)
 };
 
@@ -244,6 +252,14 @@ public:
     i32 OnRegion4(i32 z); // (THIS TU)
     void OnRegion5();
 
+    // The viewport-clamp sub-steps (THIS TU): shrink/clamp the active viewport then
+    // push it down the draw chain. Both share a common apply-tail.
+    i32 ClampViewport(i32 inset);   // 0x0d8dc0 (THIS TU)
+    i32 ClampViewport2(i32 stride); // 0x0d8ed0 (THIS TU)
+    i32 NotifyVisibleEntities();    // 0x0d9050 (THIS TU)
+    // ClampViewport's no-change fallback (resets the viewport, external/reloc-masked).
+    void ResetViewport(); // 0x0d8c60 (thiscall on this)
+
     // --- leaf sub-helpers the THIS-TU functions call (external, reloc-masked) ---
     void StepC_ModeA(i32 z); // (thiscall, 1 arg) StepC m_viewMode==1
     void StepC_ModeB(i32 z); // (thiscall, 1 arg) StepC else
@@ -301,6 +317,8 @@ public:
         void DragSelect(i32 a, i32 x, i32 y);
         // 0x501420: drag-select clear/cancel (thiscall(flag)). reloc-masked.
         void DragClear(i32 flag);
+        // 0x500cb0: the viewport-clamp apply (thiscall, no arg). reloc-masked.
+        void ClampApply();
         i32 m_state; // +0x0  subsystem state (==2 -> ready)
         char p4[0x10c - 0x4];
         i32 m_mode; // +0x10c  mode word (==5 -> overlay busy)

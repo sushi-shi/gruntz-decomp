@@ -69,20 +69,10 @@ RVA(0x000692f0, 0x850) void CGrunt::CGrunt_0692f0() {}  // high
 RVA(0x00184a70, 0x34) void CHashBase::CHashBase_184a70() {}  // med
 
 // ---- CImage ----
-RVA(0x001530e0, 0x92) void CImage::CImage_1530e0() {}  // high
-RVA(0x001532b0, 0x80) void CImage::CImage_1532b0() {}  // high
-RVA(0x00153380, 0xeb) void CImage::CImage_153380() {}  // high
 RVA(0x00175a00, 0x74) void CImage::CImage_175a00() {}  // high
 RVA(0x00175b80, 0x105) void CImage::CImage_175b80() {}  // high
 RVA(0x00175ce0, 0x6b) void CImage::CImage_175ce0() {}  // high
 RVA(0x00175d50, 0xad) void CImage::CImage_175d50() {}  // high
-
-// ---- CImageOwned ----
-RVA(0x00148d40, 0x202) void CImageOwned::CImageOwned_148d40() {}  // med
-RVA(0x00148fc0, 0x104) void CImageOwned::CImageOwned_148fc0() {}  // med
-
-// ---- CImageSet ----
-RVA(0x001524d0, 0x41) void CImageSet::CImageSet_1524d0() {}  // med
 
 // ---- CInGameIcon ----
 
@@ -119,11 +109,6 @@ RVA(0x000bbec0, 0x81) void CNetMgr::CNetMgr_0bbec0() {}  // high
 RVA(0x000bbf80, 0xb7) void CNetMgr::CNetMgr_0bbf80() {}  // high
 RVA(0x000bc750, 0x151) void CNetMgr::CNetMgr_0bc750() {}  // high
 RVA(0x000bccd0, 0x141) void CNetMgr::CNetMgr_0bccd0() {}  // high
-
-// ---- CPlay ----
-RVA(0x000d8dc0, 0xce) void CPlay::CPlay_0d8dc0() {}  // high
-RVA(0x000d8ed0, 0x128) void CPlay::CPlay_0d8ed0() {}  // high
-RVA(0x000d9050, 0xc7) void CPlay::CPlay_0d9050() {}  // high
 
 // ---- CRandomAmbientSound ----
 

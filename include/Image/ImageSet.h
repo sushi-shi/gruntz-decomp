@@ -25,7 +25,8 @@ class CImageFormat {
 public:
     void SetType(i32 type, i32 noResolve); // 0x14dd90 (__thiscall, ret 8)
 
-    char m_pad00[0x1c];
+    char m_pad00[0x18];
+    i32 m_18; // +0x18  field written directly by SetAllField18 (0x1524d0)
     i32 m_1c; // +0x1c  resolved format word (written directly by SetAllFormats)
 };
 
@@ -47,6 +48,9 @@ public:
     // Same walk, but writes `format` straight into each frame's resolved format word
     // (+0x1c). A null format is a no-op (returns 0). Returns the count touched.
     i32 SetAllFormats(i32 format);
+
+    // Same walk, writing `value` into each populated frame's format +0x18.
+    i32 SetAllField18(i32 value); // 0x1524d0
 
     // Linear-search the frame array for `frame`; on a hit, copy the set's name into
     // `outName` (when non-null) and store the matched array index through `outIndex`
