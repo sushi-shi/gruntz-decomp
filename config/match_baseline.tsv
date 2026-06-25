@@ -54,7 +54,9 @@ cexittrigger	2	2
 ceyecandy	2	2
 cfader	6	5
 cfadermgr	5	2
+cfixedptrarray32	3	2
 cfortressflag	2	2
+cfxmodedesc	3	3
 cgruntcreationpoint	2	2
 cgrunthealthsprite	2	2
 cgruntpowerupsprite	3	2
@@ -76,6 +78,7 @@ cpathhazard	4	2
 cplay	28	8
 cremusentrylist	2	1
 cremusnode	4	2
+cremusreadstream	2	1
 crt_istream	3	2
 crt_ostream	4	3
 crt_streambuf	7	5
@@ -96,7 +99,7 @@ dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
 dsoundvoice	2	1
-engine_discovered	111	0
+engine_discovered	103	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -545,8 +548,14 @@ cfadermgr	?Add@CFaderMgr@@QAEPAUCFader@@HPAU2@@Z	0.0000	0.0000	2	fefd6e005c49	0x
 cfadermgr	?DeleteAll@CFaderMgr@@QAEXXZ	100.0000	100.0000	1	7c42fa42e763	0x17e1d0
 cfadermgr	?FreeAll@CFaderMgr@@QAEXXZ	100.0000	100.0000	1	f0e41c40b256	0x17d9a0
 cfadermgr	?Remove@CFaderMgr@@QAEXPAUCFader@@@Z	67.1111	67.1111	1	7c395e00a7e3	0x17e170
+cfixedptrarray32	?Add@CFixedPtrArray32@@QAEHPAX@Z	100.0000	100.0000	1	b24c68f70892	0x134c80
+cfixedptrarray32	?Clear@CFixedPtrArray32@@QAEXXZ	100.0000	100.0000	1	c9c707807f3f	0x134c60
+cfixedptrarray32	?FillFrom@CFixedPtrArray32@@QAEHPAPAXHH@Z	92.3016	92.3016	1	fcb6b0bb6ead	0x134be0
 cfortressflag	??1CFortressFlag@@UAE@XZ	100.0000	100.0000	1	2055bad4ba8d	0x10e90
 cfortressflag	?Serialize@CFortressFlag@@QAEHHHHH@Z	100.0000	100.0000	1	b560b6331961	0x46410
+cfxmodedesc	??0CFxModeDesc@@QAE@XZ	100.0000	100.0000	1	1d50e1699c1c	0x17e7b0
+cfxmodedesc	??0CFxModeT3@@QAE@XZ	100.0000	100.0000	1	ed60fc3e1923	0x17e880
+cfxmodedesc	?MakeButeSectionKey@@YAHPADPBD1@Z	100.0000	100.0000	1	c9630b01af12	0xf9280
 cgruntcreationpoint	??1CGruntCreationPoint@@UAE@XZ	100.0000	100.0000	1	887125215466	0x10730
 cgruntcreationpoint	?AdvanceAnim@CGruntCreationPoint@@QAEHXZ	100.0000	100.0000	1	f79597535ca0	0x3ecc0
 cgrunthealthsprite	??1CGruntHealthSprite@@UAE@XZ	100.0000	100.0000	1	819b10e75882	0x11fb0
@@ -672,6 +681,8 @@ cremusnode	??0CRemusNode@@QAE@HHH@Z	60.1176	60.1176	2	9b0a333c3352	0x15b2c0
 cremusnode	??0CRemusNode@@QAE@XZ	100.0000	100.0000	1	9b0a333c3352	0x1549d0
 cremusnode	??1CRemusNode@@QAE@XZ	78.8182	78.8182	1	af194ae7afa3	0x154a50
 cremusnode	?Init@CRemusNode@@QAEHHHHHHH@Z	100.0000	100.0000	1	e65680f58643	0x1647e0
+cremusreadstream	?Read@CRemusReadStream@@QAEHPAXIH@Z	91.1957	91.1957	1	a3c64a9d684b	0x139af0
+cremusreadstream	?SetPos@CRemusReadStream@@QAEHH@Z	100.0000	100.0000	1	dbbfa0bcee57	0x139ae0
 crt_istream	?get@istream@@QAEHXZ	100.0000	100.0000	1	c72ccfaea1d2	0x16a410
 crt_istream	?ipfx@istream@@QAEHH@Z	96.1146	96.1146	1	5b2490abd943	0x16b720
 crt_istream	?read@istream@@QAEAAV1@PADH@Z	100.0000	100.0000	1	2a25e44c4790	0x16a510
@@ -851,18 +862,12 @@ engine_discovered	?ClassUnknown_154_0363a0@ClassUnknown_154@@QAEXXZ	6.2500	6.250
 engine_discovered	?ClassUnknown_164_0deb20@ClassUnknown_164@@QAEXXZ	1.1905	1.1905	1	4627b2908d67	0xdeb20
 engine_discovered	?ClassUnknown_170_113420@ClassUnknown_170@@QAEXXZ	0.3306	0.3306	1	854a47b9fb1b	0x113420
 engine_discovered	?ClassUnknown_17_16f760@ClassUnknown_17@@QAEXXZ	0.8333	0.8333	2	acd8824ba181	0x16f760
-engine_discovered	?ClassUnknown_1_134be0@ClassUnknown_1@@QAEXXZ	0.6349	0.6349	2	e88c6757aadc	0x134be0
-engine_discovered	?ClassUnknown_1_134c60@ClassUnknown_1@@QAEXXZ	11.1111	11.1111	2	215336de55b8	0x134c60
-engine_discovered	?ClassUnknown_1_134c80@ClassUnknown_1@@QAEXXZ	3.3333	3.3333	2	fb6bed5f265a	0x134c80
 engine_discovered	?ClassUnknown_20_16df70@ClassUnknown_20@@QAEXXZ	5.0000	5.0000	2	fce2906f0f57	0x16df70
 engine_discovered	?ClassUnknown_21_16e480@ClassUnknown_21@@QAEXXZ	3.3333	3.3333	2	2e3b23619fa3	0x16e480
 engine_discovered	?ClassUnknown_26_11c630@ClassUnknown_26@@QAEXXZ	1.4286	1.4286	2	d8be2e544c1f	0x11c630
 engine_discovered	?ClassUnknown_29_137110@ClassUnknown_29@@QAEXXZ	1.7544	1.7544	2	7990c18836c1	0x137110
 engine_discovered	?ClassUnknown_33_153180@ClassUnknown_33@@QAEXXZ	0.5714	0.5714	2	b208569f3464	0x153180
 engine_discovered	?ClassUnknown_36_14dd90@ClassUnknown_36@@QAEXXZ	1.2500	1.2500	2	51e7e5f98169	0x14dd90
-engine_discovered	?ClassUnknown_47_0f9280@ClassUnknown_47@@QAEXXZ	0.9709	0.9709	2	a39b6d02d8ec	0xf9280
-engine_discovered	?ClassUnknown_47_17e7b0@ClassUnknown_47@@QAEXXZ	33.3333	33.3333	2	51ba5359455c	0x17e7b0
-engine_discovered	?ClassUnknown_47_17e880@ClassUnknown_47@@QAEXXZ	8.3333	8.3333	2	76a45fc36801	0x17e880
 engine_discovered	?ClassUnknown_51_1154b0@ClassUnknown_51@@QAEXXZ	3.5714	3.5714	2	a514a3b7e143	0x1154b0
 engine_discovered	?ClassUnknown_53_029ac0@ClassUnknown_53@@QAEXXZ	4.0000	4.0000	2	1abf62425a0d	0x29ac0
 engine_discovered	?ClassUnknown_54_135110@ClassUnknown_54@@QAEXXZ	2.2222	2.2222	2	4ce05e15ad8e	0x135110
@@ -881,8 +886,6 @@ engine_discovered	?ClassUnknown_74_16e360@ClassUnknown_74@@QAEXXZ	0.4000	0.4000	
 engine_discovered	?ClassUnknown_82_115520@ClassUnknown_82@@QAEXXZ	3.5714	3.5714	2	a17f44a5e87e	0x115520
 engine_discovered	?ClassUnknown_83_029a30@ClassUnknown_83@@QAEXXZ	6.6667	6.6667	2	f9c50df15528	0x29a30
 engine_discovered	?ClassUnknown_84_09a260@ClassUnknown_84@@QAEXXZ	3.6364	3.6364	2	babcfc589ba5	0x9a260
-engine_discovered	?ClassUnknown_85_139ae0@ClassUnknown_85@@QAEXXZ	10.0000	10.0000	2	e4bb77e7d086	0x139ae0
-engine_discovered	?ClassUnknown_85_139af0@ClassUnknown_85@@QAEXXZ	0.4348	0.4348	2	899ede20ec90	0x139af0
 engine_discovered	?ClassUnknown_88_0311b0@ClassUnknown_88@@QAEXXZ	5.7143	5.7143	2	c8978188c728	0x311b0
 engine_discovered	?ClassUnknown_90_1d38a1@ClassUnknown_90@@QAEXXZ	33.3333	33.3333	2	b4937a92c09d	0x1d38a1
 engine_discovered	?ClassUnknown_91_1d496b@ClassUnknown_91@@QAEXXZ	3.6364	3.6364	2	b4ba66647036	0x1d496b

@@ -1096,6 +1096,21 @@ source = "src/Gruntz/CFader.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "cfixedptrarray32"
+source = "src/Gruntz/CFixedPtrArray32.cpp"
+flags = "base"
+
+[[unit]]
+unit = "cremusreadstream"
+source = "src/Gruntz/CRemusReadStream.cpp"
+flags = "base"
+
+[[unit]]
+unit = "cfxmodedesc"
+source = "src/Gruntz/CFxModeDesc.cpp"
+flags = "base"
+
+[[unit]]
 unit = "blowfish"
 source = "src/Crypto/Blowfish.cpp"
 flags = "base"

@@ -89,11 +89,6 @@ RVA(0x0016ea90, 0x234) void CUserLogic::CUserLogic_16ea90() {}
 // ---- CWayPoint ----
 RVA(0x000102e0, 0x44) void CWayPoint::CWayPoint_0102e0() {}
 
-// ---- ClassUnknown_1 ----
-RVA(0x00134be0, 0x7e) void ClassUnknown_1::ClassUnknown_1_134be0() {}
-RVA(0x00134c60, 0x14) void ClassUnknown_1::ClassUnknown_1_134c60() {}
-RVA(0x00134c80, 0x24) void ClassUnknown_1::ClassUnknown_1_134c80() {}
-
 // ---- ClassUnknown_101 ----
 RVA(0x0011f6b9, 0x17) void ClassUnknown_101::ClassUnknown_101_11f6b9() {}
 
@@ -190,11 +185,6 @@ RVA(0x00153180, 0xda) void ClassUnknown_33::ClassUnknown_33_153180() {}
 // ---- ClassUnknown_36 ----
 RVA(0x0014dd90, 0x74) void ClassUnknown_36::ClassUnknown_36_14dd90() {}
 
-// ---- ClassUnknown_47 ----
-RVA(0x000f9280, 0xe4) void ClassUnknown_47::ClassUnknown_47_0f9280() {}
-RVA(0x0017e7b0, 0x9) void ClassUnknown_47::ClassUnknown_47_17e7b0() {}
-RVA(0x0017e880, 0x28) void ClassUnknown_47::ClassUnknown_47_17e880() {}
-
 // ---- ClassUnknown_5 ----
 RVA(0x00150040, 0x136) void ClassUnknown_5::ClassUnknown_5_150040() {}
 
@@ -244,10 +234,6 @@ RVA(0x00029a30, 0x10) void ClassUnknown_83::ClassUnknown_83_029a30() {}
 
 // ---- ClassUnknown_84 ----
 RVA(0x0009a260, 0x1d) void ClassUnknown_84::ClassUnknown_84_09a260() {}
-
-// ---- ClassUnknown_85 ----
-RVA(0x00139ae0, 0xf) void ClassUnknown_85::ClassUnknown_85_139ae0() {}
-RVA(0x00139af0, 0xcc) void ClassUnknown_85::ClassUnknown_85_139af0() {}
 
 // ---- ClassUnknown_88 ----
 RVA(0x000311b0, 0x14) void ClassUnknown_88::ClassUnknown_88_0311b0() {}
