@@ -10,10 +10,7 @@
 class CBattlezDlg { public: void CBattlezDlg_017340(); };
 class CBootyState { public: void CBootyState_01ce30(); void CBootyState_01d420(); };
 class CChatBoxOwner { public: void CChatBoxOwner_0205c0(); };
-class CFontConfig { public: void CFontConfig_0220f0(); };
-class CImage { public: void CImage_175a00(); void CImage_175b80(); void CImage_175ce0(); void CImage_175d50(); };
-class CMulti { public: void CMulti_0b6220(); void CMulti_0b62a0(); void CMulti_0bc3f0(); };
-class CNetMgr { public: void CNetMgr_0b86c0(); void CNetMgr_0b8960(); void CNetMgr_0b8fc0(); void CNetMgr_0bbc90(); void CNetMgr_0bbec0(); void CNetMgr_0bbf80(); void CNetMgr_0bc750(); void CNetMgr_0bccd0(); };
+class CNetMgr { public: void CNetMgr_0b86c0(); void CNetMgr_0b8fc0(); void CNetMgr_0bbc90(); void CNetMgr_0bbec0(); void CNetMgr_0bbf80(); void CNetMgr_0bc750(); void CNetMgr_0bccd0(); };
 class CSBI_RectOnly { public: void CSBI_RectOnly_109520(); };
 class CSeverusWorker { public: void CSeverusWorker_016410(); void CSeverusWorker_016500(); };
 class CShadeTableCache { public: void CShadeTableCache_14df40(); };

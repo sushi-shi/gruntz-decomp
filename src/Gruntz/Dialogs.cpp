@@ -416,3 +416,13 @@ i32 CBattlezDlg::SetSlotValue(i32 index, i32 val) {
     *(i32*)((char*)((CBattlezSlot*)m_5c + index) + 0x158) = val;
     return 1;
 }
+
+// ~CMultiStartDlg @0x0b8960 - destroy the CObList member m_74 then the CString
+// member m_70, then chain the NAFXCW ~CDialog base dtor (all reloc-masked). /GX
+// frame unwinds the half-torn object across the member dtors.
+// @early-stop
+// vptr-restamp-presence wall (docs/patterns/eh-dtor-vptr-restamp-presence.md): same
+// as ~CBattlezDlg - our polymorphic model emits one extra most-derived vptr re-stamp
+// at entry that retail elided; the member/base teardown chain is otherwise byte-exact.
+RVA(0x000b8960, 0x59)
+CMultiStartDlg::~CMultiStartDlg() {}

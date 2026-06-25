@@ -73,6 +73,7 @@ cimage	10	6
 cimageowned	4	2
 clightfx	2	1
 clightfxrender	22	8
+clobbyobjb	3	2
 cmenustate	3	2
 cmulti	16	7
 configstore	4	0
@@ -86,6 +87,7 @@ crt_istream	3	2
 crt_ostream	4	3
 crt_streambuf	7	5
 crt_strstreambuf	4	2
+cscanlinesurface	4	1
 csecretleveltrigger	4	3
 cserialsub34	1	0
 cseverusentrylist	2	1
@@ -99,11 +101,11 @@ ctoobspikez	3	3
 cvoicetrigger	2	2
 databuffer	7	5
 deflate	6	6
-dialogs	25	11
+dialogs	26	11
 directinputmgr2	29	25
 directsoundmgr	33	23
 dsoundvoice	2	1
-engine_attributed	37	0
+engine_attributed	28	0
 engine_boundary	626	0
 engine_discovered	86	0
 engine_label_stubs	502	117
@@ -728,6 +730,9 @@ clightfxrender	?Shape5@CLightFxRender@@QAEHXZ	74.0326	74.0326	4	158440af6457	0xa
 clightfxrender	?Shape6@CLightFxRender@@QAEHXZ	77.4443	77.4443	4	e353a843eb8e	0xa7260
 clightfxrender	?Shape7@CLightFxRender@@QAEHXZ	73.6008	73.6008	4	2ac3e51a74b2	0xa7d50
 clightfxrender	?Shape8@CLightFxRender@@QAEHXZ	68.0960	68.0960	4	41419e5ec730	0xa8900
+clobbyobjb	??1CLobbyObjB@@QAE@XZ	100.0000	100.0000	1	b5b66af40091	0xb6220
+clobbyobjb	??1CLobbySlot@@QAE@XZ	100.0000	100.0000	1	312133bbe621	0xb62a0
+clobbyobjb	?BuildHostName@CLobbySlot@@QAEPAVCString@@PAV2@@Z	67.2727	67.2727	1	059a51e82835	0xbc3f0
 cmenustate	?LoadGameOptionsToDialog@@YAXPAUHWND__@@@Z	100.0000	100.0000	1	68afdc1f2aba	0x36860
 cmenustate	?ReadMenuOptionsDialog@@YAXPAUHWND__@@@Z	99.9020	99.9020	1	720ff87696f7	0x36a30
 cmenustate	?ReadyGate@CMenuState@@QAEHXZ	100.0000	100.0000	1	6ea0d4b831d8	0xa0d40
@@ -818,6 +823,10 @@ crt_strstreambuf	??0strstreambuf@@QAE@PADH0@Z	100.0000	100.0000	2	92da0ad44c33	0
 crt_strstreambuf	??1strstreambuf@@QAE@XZ	89.6970	89.6970	2	7c53a170b574	0x169220
 crt_strstreambuf	?str@strstreambuf@@QAEPADXZ	100.0000	100.0000	1	08404bbcac2f	0x1692b0
 crt_strstreambuf	?underflow@strstreambuf@@QAEHXZ	91.7353	91.7353	2	b71b810269ba	0x169490
+cscanlinesurface	?Convert8To16@CScanlineSurface@@QAEHPAXPAV1@0@Z	68.6129	68.6129	1	4f8c2147e5a4	0x175b80
+cscanlinesurface	?EnsureSize@CScanlineSurface@@QAEHPAXHHHH@Z	100.0000	100.0000	1	44075cfb09a4	0x175ce0
+cscanlinesurface	?Fill@CScanlineSurface@@QAEXH@Z	91.4194	91.4194	1	64fc9665081a	0x175d50
+cscanlinesurface	?SoftSurfaceBlit@@YGHPAXHHH@Z	67.3077	67.3077	1	9390a80fe8d3	0x175a00
 csecretleveltrigger	??1CSecretLevelTrigger@@UAE@XZ	100.0000	100.0000	1	1a6afbfadd87	0x10c50
 csecretleveltrigger	?InitActReg@CSecretLevelTrigger@@SAXXZ	100.0000	100.0000	1	3a42fbe06ecf	0x426e0
 csecretleveltrigger	?RegisterActs@CSecretLevelTrigger@@SAXXZ	92.9130	92.9130	1	e412341acec4	0x428c0
@@ -863,6 +872,7 @@ dialogs	??0CCheckpointDlg@@QAE@PAVCWnd@@@Z	100.0000	100.0000	3	6c51964bdb81	0x23
 dialogs	??0CMultiStartDlg@@QAE@HPAVCWnd@@@Z	100.0000	100.0000	5	a71396cbe887	0xc1750
 dialogs	??1CBattlezDlg@@UAE@XZ	94.4444	94.4444	1	7ed27cb65fc2	0x14c90
 dialogs	??1CBattlezDlgCustom@@UAE@XZ	94.4444	94.4444	1	8ef41d520506	0x17140
+dialogs	??1CMultiStartDlg@@UAE@XZ	95.6522	95.6522	1	d0a639c25288	0xb8960
 dialogs	?ApplyOption0@CBattlezDlg@@QAEXXZ	100.0000	100.0000	1	a2649603d299	0x15de0
 dialogs	?ApplyOption1@CBattlezDlg@@QAEXXZ	100.0000	100.0000	1	4ca2816e5f53	0x15e60
 dialogs	?ApplyOption2@CBattlezDlg@@QAEXXZ	100.0000	100.0000	1	1e85f0a44dab	0x15ee0
@@ -949,16 +959,7 @@ engine_attributed	?CBattlezDlg_017340@CBattlezDlg@@QAEXXZ	1.1111	1.1111	1	7f90e1
 engine_attributed	?CBootyState_01ce30@CBootyState@@QAEXXZ	6.6667	6.6667	1	ee0938cc3645	0x1ce30
 engine_attributed	?CBootyState_01d420@CBootyState@@QAEXXZ	20.0000	20.0000	1	d54c0ecb7af5	0x1d420
 engine_attributed	?CChatBoxOwner_0205c0@CChatBoxOwner@@QAEXXZ	0.0835	0.0835	1	c73daebdde18	0x205c0
-engine_attributed	?CFontConfig_0220f0@CFontConfig@@QAEXXZ	5.5556	5.5556	1	e56cf98473ea	0x220f0
-engine_attributed	?CImage_175a00@CImage@@QAEXXZ	1.0256	1.0256	1	2acf5c4906a1	0x175a00
-engine_attributed	?CImage_175b80@CImage@@QAEXXZ	0.4301	0.4301	1	44144a88c2bc	0x175b80
-engine_attributed	?CImage_175ce0@CImage@@QAEXXZ	1.0000	1.0000	1	2e9f2a5ac6e7	0x175ce0
-engine_attributed	?CImage_175d50@CImage@@QAEXXZ	0.6452	0.6452	1	561012428e16	0x175d50
-engine_attributed	?CMulti_0b6220@CMulti@@QAEXXZ	4.3478	4.3478	1	5224b768b1e7	0xb6220
-engine_attributed	?CMulti_0b62a0@CMulti@@QAEXXZ	5.2632	5.2632	1	38b72def6b4e	0xb62a0
-engine_attributed	?CMulti_0bc3f0@CMulti@@QAEXXZ	3.6364	3.6364	1	fd31ae8c8cc9	0xbc3f0
 engine_attributed	?CNetMgr_0b86c0@CNetMgr@@QAEXXZ	0.7752	0.7752	2	530d3740ec49	0xb86c0
-engine_attributed	?CNetMgr_0b8960@CNetMgr@@QAEXXZ	4.3478	4.3478	2	ffb7349460c0	0xb8960
 engine_attributed	?CNetMgr_0b8fc0@CNetMgr@@QAEXXZ	0.4255	0.4255	2	a0b6329c7044	0xb8fc0
 engine_attributed	?CNetMgr_0bbc90@CNetMgr@@QAEXXZ	0.7092	0.7092	1	e6648dc5c62e	0xbbc90
 engine_attributed	?CNetMgr_0bbec0@CNetMgr@@QAEXXZ	2.3256	2.3256	1	51787a1cdcf1	0xbbec0

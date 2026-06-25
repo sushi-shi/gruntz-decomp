@@ -3224,3 +3224,4 @@ rva,name,lib,confidence,source
 0x1d6c17,??1_AFX_WIN_STATE@@UAE@XZ,NAFXCW,HIGH,anchored
 0x1d6c4e,?AfxPostQuitMessage@@YGXH@Z,NAFXCW,HIGH,anchored
 0x1d6c71,??1CWinThread@@UAE@XZ,NAFXCW,HIGH,anchored
+0x0220f0,??1CGdiObject@@UAE@XZ,NAFXCW,HIGH,manual-rtti

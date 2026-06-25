@@ -152,6 +152,7 @@ public:
 class CMultiStartDlg : public CDialog {
 public:
     CMultiStartDlg(i32 a0, CWnd* pParent);
+    ~CMultiStartDlg(); // 0x0b8960 (destroy CObList m_74, CString m_70, chain ~CDialog)
 
     // Engine-label backlog stub (non-virtual placeholder; vtable-neutral).
     void InitPlayerSlots();

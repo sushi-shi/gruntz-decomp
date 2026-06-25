@@ -17,20 +17,6 @@ RVA(0x0001d420, 0x8) void CBootyState::CBootyState_01d420() {}  // med
 // ---- CChatBoxOwner ----
 RVA(0x000205c0, 0x741) void CChatBoxOwner::CChatBoxOwner_0205c0() {}  // high
 
-// ---- CFontConfig ----
-RVA(0x000220f0, 0x46) void CFontConfig::CFontConfig_0220f0() {}  // high
-
-// ---- CImage ----
-RVA(0x00175a00, 0x74) void CImage::CImage_175a00() {}  // high
-RVA(0x00175b80, 0x105) void CImage::CImage_175b80() {}  // high
-RVA(0x00175ce0, 0x6b) void CImage::CImage_175ce0() {}  // high
-RVA(0x00175d50, 0xad) void CImage::CImage_175d50() {}  // high
-
-// ---- CMulti ----
-RVA(0x000b6220, 0x54) void CMulti::CMulti_0b6220() {}  // med
-RVA(0x000b62a0, 0x4a) void CMulti::CMulti_0b62a0() {}  // med
-RVA(0x000bc3f0, 0x1e) void CMulti::CMulti_0bc3f0() {}  // med
-
 // ---- CNetMgr ----
 RVA(0x000b86c0, 0x206) void CNetMgr::CNetMgr_0b86c0() {}  // high; large /GX EH func, final-sweep
 // b8960: WRONG CLASS - this is a CDialog-derived dtor (base ~CDialog @1ba51d
@@ -38,7 +24,6 @@ RVA(0x000b86c0, 0x206) void CNetMgr::CNetMgr_0b86c0() {}  // high; large /GX EH 
 // ~CObject-based dtor @1b5d78). CNetMgr+0x70/+0x74 are i32 selection latches
 // (ReadGroupSel/ReadPlayerSel, matched), so this is NOT a CNetMgr method -
 // re-attribute (likely CMultiStartDlg or a sibling multiplayer dialog).
-RVA(0x000b8960, 0x59) void CNetMgr::CNetMgr_0b8960() {}  // WRONG-CLASS (CDialog dtor); re-attribute
 RVA(0x000b8fc0, 0x151) void CNetMgr::CNetMgr_0b8fc0() {}  // high; /GX cond-temp EH wall, final-sweep
 // b93a0/b9410/b9500/b9570/b95f0/ba170/ba1a0/ba3b0 reconstructed in src/Net/NetMgr.cpp
 RVA(0x000bbc90, 0x1b8) void CNetMgr::CNetMgr_0bbc90() {}  // high
