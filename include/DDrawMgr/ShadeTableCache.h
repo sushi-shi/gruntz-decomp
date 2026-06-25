@@ -86,6 +86,11 @@ public:
     // 0x14fa60 - __cdecl qsort comparator: sort palette indices by hue.
     static i32 __cdecl CompareHue(const void* a, const void* b);
 
+    // 0x14fbf0 - __cdecl nearest-color search: scan all 256 entries of `pal` for
+    // the one minimizing the squared (r,g,b) distance to the target, return its
+    // index. The shade-table builders use it to remap a source color into `pal`.
+    static i32 __cdecl FindNearestColor(PalEntry* pal, i32 r, i32 g, i32 b);
+
     i32 m_00;               // +0x00 gate
     CShadeTableArray m_arr; // +0x04 element array subobject
 };

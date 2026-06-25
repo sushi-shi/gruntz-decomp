@@ -178,6 +178,36 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinks() {
 }
 
 // ---------------------------------------------------------------------------
+// CTileTriggerSwitchLogic::LoadState - 0x1139a0. Network deserialize: gate on a
+// non-null stream + the registry active-game flag, then read the eight scalar
+// fields (skipping m_owner at +0x24) and the 24-dword m_block via the stream's
+// read slot (+0x2c). Returns 1 (or 0 when gated off).
+// ---------------------------------------------------------------------------
+RVA(0x001139a0, 0xb4)
+i32 CTileTriggerSwitchLogic::LoadState(CSerialStream* s) {
+    if (s == 0) {
+        return 0;
+    }
+    if (g_gameReg->m_30 == 0) {
+        return 0;
+    }
+    s->TransferIn(&m_08, 4);
+    s->TransferIn(&m_0c, 4);
+    s->TransferIn(&m_10, 4);
+    s->TransferIn(&m_14, 4);
+    s->TransferIn(&m_18, 4);
+    s->TransferIn(&m_1c, 4);
+    s->TransferIn(&m_20, 4);
+    s->TransferIn(&m_28, 4);
+    i32* p = m_block;
+    for (i32 i = 0; i < 24; i++) {
+        s->TransferIn(p, 4);
+        p++;
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
 // CTileTriggerSwitchLogic::ValidateByType
 // Returns 0 if obj is null; for type 4 / 7 defers to the matching validator
 // (returns 0 on its failure); any other type passes (returns 1).

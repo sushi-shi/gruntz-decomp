@@ -318,6 +318,30 @@ i32 CGruntzCommand::Load(CmdStream* s) {
     return 1;
 }
 
+// ---------------------------------------------------------------------------
+// CGruntzMultiCommand::NetLoad() - 0x0247d0 (multi-command vftable 0x5e96b4
+// slot 3). Same gate/shape as the base Load, but reads the +0x10 field as one
+// 16-bit value (the multi-command's flag mask) instead of the m_10/m_11 byte
+// pair. Reached only through the vtable (reloc-masked); modeled non-virtual.
+// ---------------------------------------------------------------------------
+RVA(0x000247d0, 0x8b)
+i32 CGruntzMultiCommand::NetLoad(CmdStream* s) {
+    if (!s) {
+        return 0;
+    }
+    if (!g_gameReg->m_30) {
+        return 0;
+    }
+    s->Read(&m_4, 1);
+    s->Read(&m_5, 1);
+    s->Read(&m_6, 1);
+    s->Read(&m_8, 2);
+    s->Read(&m_a, 2);
+    s->Read(&m_c, 4);
+    s->Read(&m_10, 2);
+    return 1;
+}
+
 // size 0x14 from operator-new vtable attribution (gruntz.analysis.news)
 SIZE(CGruntzMultiCommand, 0x14);
 // size 0x14 from operator-new vtable attribution (gruntz.analysis.news)

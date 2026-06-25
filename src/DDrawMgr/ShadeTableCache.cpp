@@ -774,3 +774,37 @@ void CShadeTableCache::FindRemove(CShadeTable* key) {
         m_arr.m_nSize--;
     }
 }
+
+// ===========================================================================
+// 0x14fbf0 - FindNearestColor: nearest-palette-color search. Mask the target to
+// bytes, seed the running best with entry 0's squared (r,g,b) distance, then scan
+// entries 1..255 keeping the minimum; return its index.
+// ===========================================================================
+// @early-stop
+// regalloc wall (~64%): logic byte-for-byte correct, but retail spills r/b/i/best
+// to stack (keeps only g in a reg) and reserves the extra slot via `push ecx`,
+// whereas MSVC keeps r/g/b all in registers here (4 pushes, reuses the dead arg
+// slot). Pure register-allocation/stack-layout divergence; instruction selection
+// matches. Cascades register names through the whole body. Final-sweep candidate.
+RVA(0x0014fbf0, 0xcb)
+i32 __cdecl CShadeTableCache::FindNearestColor(PalEntry* pal, i32 r, i32 g, i32 b) {
+    r &= 0xff;
+    g &= 0xff;
+    b &= 0xff;
+    i32 dg = g - pal->g;
+    i32 db = b - pal->b;
+    i32 dr = r - pal->r;
+    i32 bestDist = dg * dg + db * db + dr * dr;
+    i32 best = 0;
+    for (i32 i = 1; i < 256; i++) {
+        i32 dr2 = r - pal[i].r;
+        i32 dg2 = g - pal[i].g;
+        i32 db2 = b - pal[i].b;
+        i32 d = dr2 * dr2 + dg2 * dg2 + db2 * db2;
+        if (d < bestDist) {
+            bestDist = d;
+            best = i;
+        }
+    }
+    return best;
+}

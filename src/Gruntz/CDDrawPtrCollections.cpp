@@ -191,6 +191,7 @@ struct CPoolItemB {
     void Teardown();                    // 0x147530 (__thiscall) - frees owned bufs
     i32 Init(void* arg, i32 a, i32 b);  // 0x1474d0 (__thiscall) - returns success
     i32 Init2(void* arg, i32 a, i32 b); // 0x147410 (__thiscall) - alt init, returns success
+    i32 Init3(void* arg, i32 a, i32 b, i32 c); // 0x147840 (__thiscall) - 3-param init, returns success
 
     void* m_pos; // +0x00 cached POSITION
     i32 m_04;    // +0x04
@@ -252,6 +253,7 @@ public:
     CPoolItemA* MakeAndAddB(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x142e60
     CPoolItemB* MakeB(i32 a, i32 b);                            // 0x142fc0
     CPoolItemB* MakeB2(i32 a, i32 b);                           // 0x142f40 (init via 0x147410)
+    CPoolItemB* MakeB3(i32 a, i32 b, i32 c);                    // 0x1430c0 (init via 0x147840)
 
     CCachedSurface* m_surf0; // +0x00 - cached surface object (Release on Clear)
     CCachedSurface* m_surf4; // +0x04 - cached surface object (Release on Clear)
@@ -884,6 +886,42 @@ CPoolItemB* CDDrawPtrCollections::MakeB(i32 a, i32 b) {
         item = 0;
     }
     if (!item->Init(m_surf0, a, b)) {
+        if (item) {
+            item->Teardown();
+            RezFree(item);
+        }
+        return 0;
+    }
+    AddItemB(item);
+    return item;
+}
+
+// ---------------------------------------------------------------------------
+// MakeB3 (0x1430c0).  Third sibling of MakeB: RezAlloc a 0x38-byte CPoolItemB,
+// zero its fields, init it via the 3-param Init3 (0x147840) with (m_surf0, a, b,
+// c); on success add to pool B and return it, else tear down + RezFree and return
+// 0.  No EH frame (no destructible local) -> matches cleanly.
+// ---------------------------------------------------------------------------
+RVA(0x001430c0, 0x81)
+CPoolItemB* CDDrawPtrCollections::MakeB3(i32 a, i32 b, i32 c) {
+    void* mem = operator new(0x38);
+    CPoolItemB* item;
+    if (mem) {
+        ((CPoolItemB*)mem)->m_04 = 0;
+        ((CPoolItemB*)mem)->m_pos = 0;
+        ((CPoolItemB*)mem)->m_08 = 0;
+        ((CPoolItemB*)mem)->m_0c = 0;
+        ((CPoolItemB*)mem)->m_10 = 0;
+        ((CPoolItemB*)mem)->m_34 = 0;
+        ((CPoolItemB*)mem)->m_18 = 0;
+        ((CPoolItemB*)mem)->m_14 = 0;
+        ((CPoolItemB*)mem)->m_2c = 0;
+        ((CPoolItemB*)mem)->m_30 = 0;
+        item = (CPoolItemB*)mem;
+    } else {
+        item = 0;
+    }
+    if (!item->Init3(m_surf0, a, b, c)) {
         if (item) {
             item->Teardown();
             RezFree(item);

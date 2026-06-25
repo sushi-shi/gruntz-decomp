@@ -68,6 +68,7 @@ public:
     i32 LoadFlag74(CSerialStream* s);                        // 0x117e70 (read via slot +0x2c)
     i32 ApplyByType(void* obj, i32 type, i32 a3, i32 a4);    // 0x113d40
     i32 SerializeMatrix(CSerialStream* s);                   // 0x113dd0
+    i32 LoadState(CSerialStream* s);                         // 0x1139a0 (read via slot +0x2c)
 
     // __thiscall validators/appliers used by ApplyByType (reloc-masked).
     i32 ApplyBase(void* obj, i32 type, i32 a3, i32 a4);
@@ -87,10 +88,11 @@ public:
     i32 m_0c;                         // +0x0c  (not accessed here)
     i32 m_10;                         // +0x10  key1 (compared in RemoveByKeys/FindChild)
     i32 m_14;                         // +0x14  link-check gate (VerifyBlockLinks guard)
-    char m_pad18[0x20 - 0x18];        // +0x18..0x1f
+    i32 m_18;                         // +0x18  (serialized in LoadState)
+    i32 m_1c;                         // +0x1c  (serialized in LoadState)
     i32 m_20;                         // +0x20  child-list head (owner) / cleared before delete
     CTileTriggerSwitchLogic* m_owner; // +0x24  back-pointer to the owning switch-logic
-    char m_pad28[0x2c - 0x28];        // +0x28..0x2b
+    i32 m_28;                         // +0x28  (serialized in LoadState)
     i32 m_block[40];                  // +0x2c..0xcb  (first 24 zeroed in ctor)
 
     // Linked-list node: next@0x00, data@0x08.  Encapsulated inline.

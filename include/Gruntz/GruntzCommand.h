@@ -133,6 +133,11 @@ public:
     // scalar params, then the +0x10 16-bit flag mask as a WORD. Returns the number
     // of bytes written.
     i32 Pack(char* buf, i32 unused);
+    // 0x0247d0 - the multi-command network deserialize (vtable slot 3 of vftable
+    // 0x5e96b4): no-op unless the stream is non-null AND the registry's active-game
+    // gate is set, then read the 8 scalar fields, taking the +0x10 flag word as a
+    // single 16-bit READ (vs the base Load's two 1-byte reads).
+    i32 NetLoad(CmdStream* s);
 };
 
 // The per-class recycle lists + their non-empty gates (file-scope globals the

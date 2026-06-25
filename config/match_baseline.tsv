@@ -35,7 +35,7 @@ cbehindcandyani	4	3
 cbrickz	1	0
 ccursorsnapsprite	2	2
 cddrawchildgroup	9	5
-cddrawptrcollections	26	12
+cddrawptrcollections	27	13
 cddrawshadeblit	6	1
 cddrawsubmgr	41	23
 cddrawsubmgrani	3	1
@@ -116,7 +116,7 @@ directinputmgr2	33	29
 directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	28	0
-engine_boundary	567	0
+engine_boundary	563	0
 engine_discovered	72	0
 engine_label_stubs	462	106
 engstr	3	1
@@ -140,7 +140,7 @@ gruntspawnconfig	14	7
 gruntvoice	5	4
 gruntzapp	10	9
 gruntzcmdmgr	12	10
-gruntzcommand	14	14
+gruntzcommand	15	15
 gruntzmgr	87	61
 gruntzplayer	6	1
 gruntzsoundz	12	11
@@ -206,7 +206,7 @@ sbi_warlordhead_eh	1	0
 sbi_wellgoo	1	0
 sbi_wellgoo_eh	1	0
 scattersamples	2	1
-shadetablecache	17	3
+shadetablecache	18	3
 siriusworkerhandlers	4	4
 sounddevice	12	6
 soundstream	7	3
@@ -225,7 +225,7 @@ symtab	12	8
 terraintileloader	1	0
 tileactionevent	7	4
 tilegridcommand	6	3
-tileswitchlogic	16	8
+tileswitchlogic	17	9
 tiletriggercontainer	15	4
 tiletriggerlogic	2	1
 tiletriggertransition	6	5
@@ -443,6 +443,7 @@ cddrawptrcollections	?EmptyPoolA@CDDrawPtrCollections@@QAEXXZ	100.0000	100.0000	
 cddrawptrcollections	?EmptyPoolB@CDDrawPtrCollections@@QAEXXZ	100.0000	100.0000	1	dc3d2b2523b0	0x142ed0
 cddrawptrcollections	?MakeAndAddB@CDDrawPtrCollections@@QAEPAVCPoolItemA@@HHHHH@Z	100.0000	100.0000	1	dd1437d900d0	0x142e60
 cddrawptrcollections	?MakeB2@CDDrawPtrCollections@@QAEPAUCPoolItemB@@HH@Z	100.0000	100.0000	1	2d60d735ebd5	0x142f40
+cddrawptrcollections	?MakeB3@CDDrawPtrCollections@@QAEPAUCPoolItemB@@HHH@Z	100.0000	100.0000	1	f78cbd049da5	0x1430c0
 cddrawptrcollections	?MakeB@CDDrawPtrCollections@@QAEPAUCPoolItemB@@HH@Z	100.0000	100.0000	1	65bf9ff78c84	0x142fc0
 cddrawptrcollections	?RemoveItemA@CDDrawPtrCollections@@QAEXPAVCPoolItemA@@@Z	100.0000	100.0000	1	4ddf350abd6e	0x142160
 cddrawptrcollections	?RemoveItemB@CDDrawPtrCollections@@QAEXPAUCPoolItemB@@@Z	100.0000	100.0000	1	a7726bad4d9a	0x142f10
@@ -1084,7 +1085,6 @@ engine_boundary	?Boundary_021570@@YAXXZ	3.2258	3.2258	1	924d7ca37e1f	0x21570
 engine_boundary	?Boundary_0238d0@@YAXXZ	25.0000	25.0000	1	fa4f90746429	0x238d0
 engine_boundary	?Boundary_023960@@YAXXZ	25.0000	25.0000	1	26fbd4f4b03d	0x23960
 engine_boundary	?Boundary_023d90@@YAXXZ	1.0526	1.0526	1	424a98e16d50	0x23d90
-engine_boundary	?Boundary_0247d0@@YAXXZ	0.6250	0.6250	1	624947157862	0x247d0
 engine_boundary	?Boundary_024ac0@@YAXXZ	3.6364	3.6364	1	bf92e318af13	0x24ac0
 engine_boundary	?Boundary_029af0@@YAXXZ	2.1053	2.1053	1	dae4b5f50f80	0x29af0
 engine_boundary	?Boundary_031610@@YAXXZ	0.1020	0.1020	1	4c0f8d910f52	0x31610
@@ -1273,7 +1273,6 @@ engine_boundary	?Boundary_112080@@YAXXZ	0.9091	0.9091	1	16b555afba27	0x112080
 engine_boundary	?Boundary_112bf0@@YAXXZ	2.7027	2.7027	1	679caf894dcf	0x112bf0
 engine_boundary	?Boundary_113860@@YAXXZ	1.9048	1.9048	1	76752601520d	0x113860
 engine_boundary	?Boundary_1138b0@@YAXXZ	0.4762	0.4762	1	dc81b3fe94d2	0x1138b0
-engine_boundary	?Boundary_1139a0@@YAXXZ	0.4762	0.4762	1	f4476d84e6ec	0x1139a0
 engine_boundary	?Boundary_113e70@@YAXXZ	0.7273	0.7273	1	abac91f19ee2	0x113e70
 engine_boundary	?Boundary_1149c0@@YAXXZ	0.8696	0.8696	1	77d6158334d0	0x1149c0
 engine_boundary	?Boundary_114ec0@@YAXXZ	6.6667	6.6667	1	37de1b769bc4	0x114ec0
@@ -1348,7 +1347,6 @@ engine_boundary	?Boundary_1413b0@@YAXXZ	16.6667	16.6667	1	acfe45cefe8b	0x1413b0
 engine_boundary	?Boundary_1413c0@@YAXXZ	13.3333	13.3333	1	29ae08cae737	0x1413c0
 engine_boundary	?Boundary_141c80@@YAXXZ	20.0000	20.0000	1	4baa158c5416	0x141c80
 engine_boundary	?Boundary_143040@@YAXXZ	0.7547	0.7547	1	b21e7cae6482	0x143040
-engine_boundary	?Boundary_1430c0@@YAXXZ	0.7273	0.7273	1	cfc3d68786c9	0x1430c0
 engine_boundary	?Boundary_143150@@YAXXZ	0.7143	0.7143	1	318e71c2a6a6	0x143150
 engine_boundary	?Boundary_143240@@YAXXZ	0.9009	0.9009	1	ae62a8e09126	0x143240
 engine_boundary	?Boundary_1433d0@@YAXXZ	1.2500	1.2500	1	f37204a4b9ae	0x1433d0
@@ -1380,7 +1378,6 @@ engine_boundary	?Boundary_1493b0@@YAXXZ	0.5263	0.5263	1	7a17bd1dd68c	0x1493b0
 engine_boundary	?Boundary_1495d0@@YAXXZ	0.2721	0.2721	1	a705260243a4	0x1495d0
 engine_boundary	?Boundary_14cfc0@@YAXXZ	0.0734	0.0734	1	74b636bb0d6b	0x14cfc0
 engine_boundary	?Boundary_14d950@@YAXXZ	0.1250	0.1250	1	f0c129116a2d	0x14d950
-engine_boundary	?Boundary_14fbf0@@YAXXZ	1.3333	1.3333	1	1107bab40518	0x14fbf0
 engine_boundary	?Boundary_14fcc0@@YAXXZ	0.8850	0.8850	1	6d7f8be75d2f	0x14fcc0
 engine_boundary	?Boundary_14fe30@@YAXXZ	4.3478	4.3478	1	9218ece46ca3	0x14fe30
 engine_boundary	?Boundary_1503f0@@YAXXZ	0.6780	0.6780	1	b2fd36919703	0x1503f0
@@ -2478,6 +2475,7 @@ gruntzcommand	?ApplyOne@CGruntzCommand@@QAEHPAUCGruntzCmdTarget@@@Z	100.0000	100
 gruntzcommand	?FreeAll@CGruntzMultiCommand@@SAXXZ	100.0000	100.0000	1	a52eb4303e98	0x24490
 gruntzcommand	?FreeAll@CGruntzSingleCommand@@SAXXZ	100.0000	100.0000	1	4e0ead03e65c	0x24450
 gruntzcommand	?Load@CGruntzCommand@@QAEHPAVCmdStream@@@Z	100.0000	100.0000	1	5bb563350350	0x245f0
+gruntzcommand	?NetLoad@CGruntzMultiCommand@@QAEHPAVCmdStream@@@Z	100.0000	100.0000	1	eb627906521b	0x247d0
 gruntzcommand	?Pack@CGruntzMultiCommand@@QAEHPADH@Z	100.0000	100.0000	1	dc044912d246	0x240d0
 gruntzcommand	?Pack@CGruntzSingleCommand@@QAEHPADH@Z	100.0000	100.0000	1	1f0d8b5dc220	0x24050
 gruntzcommand	?Save@CGruntzCommand@@QAEHPAVCmdStream@@@Z	100.0000	100.0000	1	af99872e9928	0x24520
@@ -3057,18 +3055,19 @@ shadetablecache	??1CShadeTableCache@@QAE@XZ	80.1333	80.1333	2	d4743b4c108f	0x14d
 shadetablecache	?AddFromArray@CShadeTableCache@@QAEPAUCShadeTable@@PBD@Z	74.0798	74.0798	1	b231c6aba23f	0x14f6c0
 shadetablecache	?AddFromFile@CShadeTableCache@@QAEPAUCShadeTable@@PBDH@Z	64.8940	64.8940	1	a2cb63cf5993	0x14f8b0
 shadetablecache	?AddTable@CShadeTableCache@@QAEPAUCShadeTable@@M@Z	59.6703	59.6703	2	102c6568e757	0x14f080
-shadetablecache	?AlphaTable@CShadeTableCache@@QAEPAUCShadeTable@@PAE@Z	66.4253	66.4253	2	43e142788133	0x14f5b0
+shadetablecache	?AlphaTable@CShadeTableCache@@QAEPAUCShadeTable@@PAE@Z	66.4483	66.4483	2	43e142788133	0x14f5b0
 shadetablecache	?CompareHue@CShadeTableCache@@SAHPBX0@Z	89.6857	89.6857	1	9fd4c9c2f52f	0x14fa60
+shadetablecache	?FindNearestColor@CShadeTableCache@@SAHPAUPalEntry@@HHH@Z	64.3200	64.3200	1	21c2efef9e51	0x14fbf0
 shadetablecache	?FindRemove@CShadeTableCache@@QAEXPAUCShadeTable@@@Z	91.5556	91.5556	2	c56be1b35741	0x14fb80
 shadetablecache	?FreeNodes@CShadeTableCache@@QAEXXZ	100.0000	100.0000	1	200336a988e4	0x14ded0
-shadetablecache	?GammaTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUPalEntry@@HH@Z	66.6114	66.6114	1	7d8c399c6d6d	0x14e9f0
+shadetablecache	?GammaTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUPalEntry@@HH@Z	63.0457	63.0457	1	7d8c399c6d6d	0x14e9f0
 shadetablecache	?GreyTable@CShadeTableCache@@QAEPAUCShadeTable@@XZ	67.8939	67.8939	2	5602dfea4c43	0x14eef0
 shadetablecache	?HsvShiftTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUPalEntry@@HH@Z	18.5275	18.5275	1	b008e345330c	0x14e540
 shadetablecache	?HueRampTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUPalEntry@@HH@Z	48.5532	48.5532	1	c1e4f02b041a	0x14e830
 shadetablecache	?HueSortTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUPalEntry@@@Z	76.4945	76.4945	1	ba78a935e398	0x14ede0
 shadetablecache	?Init@CShadeTableCache@@QAEHXZ	100.0000	100.0000	1	9851d1a61203	0x14dec0
 shadetablecache	?LumaSortTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUPalEntry@@@Z	76.4945	76.4945	1	a8f24dd3579f	0x14ec00
-shadetablecache	?SubTable@CShadeTableCache@@QAEPAUCShadeTable@@H@Z	62.8309	62.8309	2	16c5c237d296	0x14f310
+shadetablecache	?SubTable@CShadeTableCache@@QAEPAUCShadeTable@@H@Z	60.8937	60.8937	2	16c5c237d296	0x14f310
 siriusworkerhandlers	??0WorkerFull@@QAE@HHH@Z	100.0000	100.0000	2	864075c7c48f	0x15b300
 siriusworkerhandlers	?Handler03d670@@YAHPAUOwner@@@Z	100.0000	100.0000	1	839c531d42a0	0x3d670
 siriusworkerhandlers	?Handler07db20@@YAHPAUOwner@@@Z	100.0000	100.0000	1	b23002ac8904	0x7db20
@@ -3192,6 +3191,7 @@ tileswitchlogic	?FindChild@CTileTriggerSwitchLogic@@QAEPAV1@HH@Z	100.0000	100.00
 tileswitchlogic	?FindIndexByKey@CTileTriggerSwitchLogic@@QAEHH@Z	100.0000	100.0000	5	ad2d81e5fa14	0x110820
 tileswitchlogic	?GetFlag74@CTileTriggerSwitchLogic@@QAEHXZ	100.0000	100.0000	2	89a90096d3b7	0x115f00
 tileswitchlogic	?LoadFlag74@CTileTriggerSwitchLogic@@QAEHPAVCSerialStream@@@Z	100.0000	100.0000	1	39f76f356bc6	0x117e70
+tileswitchlogic	?LoadState@CTileTriggerSwitchLogic@@QAEHPAVCSerialStream@@@Z	100.0000	100.0000	1	918da928681e	0x1139a0
 tileswitchlogic	?RemoveByKeys@CTileTriggerSwitchLogic@@QAEHHH@Z	96.2791	96.2791	2	fc58a314a1eb	0x116320
 tileswitchlogic	?ScanNeighborhood@CTileTriggerSwitchLogic@@QAEHHH@Z	76.2600	76.2600	2	a020770dd925	0x117ec0
 tileswitchlogic	?SerializeMatrix@CTileTriggerSwitchLogic@@QAEHPAVCSerialStream@@@Z	95.0909	95.0909	2	9a34a3e5b7d2	0x113dd0
