@@ -256,7 +256,7 @@ flags = "eh"
 [[unit]]
 unit = "databuffer"
 source = "src/Gruntz/DataBuffer.cpp"
-flags = "base"
+flags = "eh"
 
 [[unit]]
 unit = "gamekeyhandler"
@@ -412,6 +412,11 @@ flags = "base"
 unit = "imageset"
 source = "src/Image/ImageSet.cpp"
 flags = "base"
+
+[[unit]]
+unit = "cfileimage"
+source = "src/Image/CFileImage.cpp"
+flags = "eh"
 
 [[unit]]
 unit = "registryhelper"

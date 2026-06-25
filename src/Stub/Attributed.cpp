@@ -94,22 +94,9 @@ RVA(0x00158d50, 0x61) void CDDrawWorkerMgr::CDDrawWorkerMgr_158d50() {}  // high
 // ---- CDDrawWorkerRegistry ----
 RVA(0x00155460, 0xe2) void CDDrawWorkerRegistry::CDDrawWorkerRegistry_155460() {}  // high
 
-// ---- CDataBuffer ----
-RVA(0x001501f0, 0x54) void CDataBuffer::CDataBuffer_1501f0() {}  // high
-RVA(0x00150250, 0xd1) void CDataBuffer::CDataBuffer_150250() {}  // high
-RVA(0x00150330, 0x87) void CDataBuffer::CDataBuffer_150330() {}  // high
-
 // ---- CFaderMgr ----
 RVA(0x0017d980, 0x1f) void CFaderMgr::CFaderMgr_17d980() {}  // high
 RVA(0x0017e160, 0x8) void CFaderMgr::CFaderMgr_17e160() {}  // high
-
-// ---- CFileImage ----
-RVA(0x0013ebb0, 0x126) void CFileImage::CFileImage_13ebb0() {}  // med
-RVA(0x00141280, 0x4a) void CFileImage::CFileImage_141280() {}  // med
-RVA(0x001443b0, 0x284) void CFileImage::CFileImage_1443b0() {}  // high
-RVA(0x00144900, 0x227) void CFileImage::CFileImage_144900() {}  // high
-RVA(0x00144b30, 0x250) void CFileImage::CFileImage_144b30() {}  // high
-RVA(0x00144d80, 0x15b) void CFileImage::CFileImage_144d80() {}  // high
 
 // ---- CFileMem ----
 RVA(0x00165f00, 0x48) void CFileMem::CFileMem_165f00() {}  // high
@@ -121,12 +108,6 @@ RVA(0x000220f0, 0x46) void CFontConfig::CFontConfig_0220f0() {}  // high
 
 // ---- CGameApp ----
 RVA(0x0013dbc0, 0x57) void CGameApp::CGameApp_13dbc0() {}  // high
-
-// ---- CGameLevel ----
-RVA(0x0015ff20, 0xc0) void CGameLevel::CGameLevel_15ff20() {}  // high
-RVA(0x0015ffe0, 0x99) void CGameLevel::CGameLevel_15ffe0() {}  // high
-RVA(0x00160980, 0xc0) void CGameLevel::CGameLevel_160980() {}  // high
-RVA(0x00160a40, 0x201) void CGameLevel::CGameLevel_160a40() {}  // high
 
 // ---- CGameObject ----
 RVA(0x00150f90, 0x98) void CGameObject::CGameObject_150f90() {}  // med

@@ -2202,3 +2202,187 @@ i32 CGameLevel::AltStepValidate(void* target, void* payload, i32 a1, i32 a2, i32
 fail:
     return 0;
 }
+
+// ---------------------------------------------------------------------------
+// HoldMove (@0x15ff20): the held-payload geometric fit test EditHandlerA/C run when
+// the target's scroll is held against a latched object (anchor = the held payload).
+// Gated like AltStepValidate (a3 bit3 set, payload->+0xe8 == 0x80, both low brackets
+// valid), it checks the target's bracket box (offset by a1) overlaps the payload's
+// world-space box and returns whether the held axis (axisHi + a2) sits exactly on the
+// box's bottom edge (boxT - 1). All field reads; no calls. ret 0x14.
+//
+// @early-stop
+// regalloc/spill wall (~90%): logic + offsets + CFG + the prologue gates + the
+// dec/sete-cl result are byte-faithful; residue is one spill choice in the box-overlap
+// add chain - retail keeps tMid/tLoA both live (boxL via a combined lea) while our cl
+// spills tLoA to [esp+0x24]. Reordering the local computes regresses it (84%); not
+// source-steerable. Deferred to the final sweep.
+struct HoldPayload {
+    char pad_0[0x5c];
+    i32 m_5c; // +0x5c  origin X
+    i32 m_60; // +0x60  origin Y
+    char pad_64[0xe8 - 0x64];
+    i32 m_e8; // +0xe8  kind marker (held == 0x80)
+    char pad_ec[0x144 - 0xec];
+    i32 m_144; // +0x144  box left
+    i32 m_148; // +0x148  box row
+    i32 m_14c; // +0x14c  box right
+};
+RVA(0x0015ff20, 0xc0)
+i32 CGameLevel::HoldMove(void* t, i32 anchor, i32 a1, i32 a2, i32 a3) {
+    HoldPayload* p = (HoldPayload*)anchor;
+    if (p == 0) {
+        return 0;
+    }
+    if ((a3 & 8) == 0) {
+        return 0;
+    }
+    if (p->m_e8 != 0x80) {
+        return 0;
+    }
+    if (p->m_144 == -1) {
+        return 0;
+    }
+    EditTarget* et = (EditTarget*)t;
+    if (et->axisLoA == -1) {
+        return 0;
+    }
+
+    i32 ox = p->m_5c;
+    i32 boxL = ox + p->m_144;
+    i32 boxR = ox + p->m_14c;
+    i32 boxT = p->m_60 + p->m_148;
+    i32 hi = et->axisHi + a2;
+    i32 tMid = et->axisMid + a1;
+    i32 tLoA = et->axisLoA + a1;
+    if (tMid < boxL) {
+        return 0;
+    }
+    if (tLoA > boxR) {
+        return 0;
+    }
+    return hi == boxT - 1;
+}
+
+// ---------------------------------------------------------------------------
+// ClampSpan (@0x15ffe0): clamp (x, y) into the main plane's tile grid, fetch the
+// tile there, and report the tile's column span: *outLo = the tile-aligned x, *outHi
+// = that + the image set's width (+0x04) - 1. Returns 1 (0 for an empty/clear tile).
+// An inlined tile probe that, unlike AxisProbe, keeps the tile-aligned coord and
+// reads the image set's width field instead of dispatching slot +0x20. ret 0x10.
+struct SpanImageSet {
+    char pad_0[0x04];
+    i32 m_04; // +0x04  tile (column) width
+};
+RVA(0x0015ffe0, 0x99)
+i32 CGameLevel::ClampSpan(i32 x, i32 y, i32* outLo, i32* outHi) {
+    if (x < 0) {
+        x = 0;
+    } else {
+        ProbePlane* pc = (ProbePlane*)m_mainPlane;
+        if (x >= pc->wrapW) {
+            x = pc->wrapW - 1;
+        }
+    }
+    if (y < 0) {
+        y = 0;
+    } else {
+        ProbePlane* pc = (ProbePlane*)m_mainPlane;
+        if (y >= pc->wrapH) {
+            y = pc->wrapH - 1;
+        }
+    }
+    ProbePlane* pl = (ProbePlane*)m_mainPlane;
+    i32 qx = x >> pl->shiftX;
+    i32 alignedX = qx << pl->shiftX;
+    i32 qy = y >> pl->shiftY;
+    i32 idx = pl->colOffsets[qy] + qx;
+    i32 tile = pl->tileGrid[idx];
+    if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
+        return 0;
+    }
+    SpanImageSet* set = (SpanImageSet*)m_imageSets[tile & 0xffff];
+    *outLo = alignedX;
+    *outHi = alignedX + set->m_04 - 1;
+    return 1;
+}
+
+// ProbeTarget - the edit target ProbeColumn/WalkColumnDown drive: its +0x5c/+0x60
+// scroll origin and the +0x134/+0x138/+0x140 axis brackets.
+struct ProbeTarget {
+    char pad_0[0x5c];
+    i32 m_5c; // +0x5c  origin X
+    i32 m_60; // +0x60  origin Y
+    char pad_64[0x134 - 0x64];
+    i32 m_134; // +0x134  axis low bracket
+    i32 m_138; // +0x138  axis mid bracket
+    char pad_13c[0x140 - 0x13c];
+    i32 m_140; // +0x140  axis high bracket
+};
+
+// ---------------------------------------------------------------------------
+// ProbeColumn (@0x160980): probe the single tile at the target's column origin
+// (m_5c + dx, m_138 + m_60), clamped into the main plane grid, returning the image
+// set's slot +0x20 dispatch (0 for an empty/clear tile). The inlined AxisProbe shape
+// (PROBE_TILE) applied to a target+offset probe point. ret 8.
+//
+// @early-stop
+// regalloc wall (~93%): logic + offsets + CFG + the inlined PROBE_TILE clamp/shift/
+// dispatch are byte-faithful; residue is the clamp branch's spill/register assignment
+// (the same PROBE_TILE-shape entropy as SpanCheck/AxisProbe). Deferred to the final sweep.
+RVA(0x00160980, 0xc0)
+i32 CGameLevel::ProbeColumn(void* target, i32 dx) {
+    ProbeTarget* t = (ProbeTarget*)target;
+    i32 px = t->m_5c + dx;
+    i32 py = t->m_138 + t->m_60;
+    i32 result;
+    PROBE_TILE(this, px, py, result);
+    return result;
+}
+
+// ---------------------------------------------------------------------------
+// WalkColumnDown (@0x160a40): from the start row (target->m_140 + target->m_60), probe
+// the tile column at the fixed x (target->m_5c) stepping the row downward until the
+// image set's slot +0x20 reports a stop code (1/2/3) or the row runs off the grid
+// (>= plane height). On a stop, commit the resolved row back into target->m_60 as
+// (m_60 + finalRow - startRow - 1) and return 1; an unset low bracket / missing main
+// plane / off-grid walk returns 0.
+//
+// @early-stop
+// register-scheduling wall: the inlined PROBE_TILE + slot-+0x20 dispatch repeated
+// across the down-counting walk (start probe + loop probe) pin the 4 saved regs, the
+// spilled this/start-row/shiftY/wrapH in a spill order MSVC reproduces only for one
+// allocation; logic + offsets + CFG + the commit arithmetic are exact. Deferred to the
+// final sweep.
+RVA(0x00160a40, 0x201)
+i32 CGameLevel::WalkColumnDown(void* target, i32 unused) {
+    ProbeTarget* t = (ProbeTarget*)target;
+    if (t->m_134 == (i32)0x80000000) {
+        return 0;
+    }
+    if (m_mainPlane == 0) {
+        return 0;
+    }
+
+    i32 px = t->m_5c;
+    i32 row = t->m_140 + t->m_60;
+    i32 startRow = row;
+
+    i32 result;
+    PROBE_TILE(this, px, row, result);
+
+    while (result != 1) {
+        if (result == 2 || result == 3) {
+            break;
+        }
+        ++row;
+        if (row >= ((ProbePlane*)m_mainPlane)->wrapH) {
+            return 0;
+        }
+        PROBE_TILE(this, px, row, result);
+    }
+
+    i32 final = row - startRow - 1;
+    t->m_60 += final;
+    return 1;
+}

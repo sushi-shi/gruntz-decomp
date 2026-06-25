@@ -54,6 +54,7 @@ cexittrigger	2	2
 ceyecandy	2	2
 cfader	6	5
 cfadermgr	5	2
+cfileimage	6	1
 cfixedptrarray32	3	2
 cfortressflag	2	2
 cfxmodedesc	3	3
@@ -94,13 +95,13 @@ cteleporter	2	1
 ctimebomb	2	2
 ctoobspikez	2	2
 cvoicetrigger	2	2
-databuffer	4	4
+databuffer	7	5
 deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
 dsoundvoice	2	1
-engine_attributed	224	0
+engine_attributed	211	0
 engine_boundary	628	0
 engine_discovered	86	0
 engine_label_stubs	519	118
@@ -112,7 +113,7 @@ fontconfig	7	4
 fonts	2	1
 gameapp	19	15
 gamekeyhandler	1	0
-gamelevel	47	23
+gamelevel	51	23
 gamemode	41	18
 gamemodeobjlifecycle	3	2
 gameobjectctors	5	0
@@ -584,6 +585,12 @@ cfadermgr	?Add@CFaderMgr@@QAEPAUCFader@@HPAU2@@Z	0.0000	0.0000	2	fefd6e005c49	0x
 cfadermgr	?DeleteAll@CFaderMgr@@QAEXXZ	100.0000	100.0000	1	7c42fa42e763	0x17e1d0
 cfadermgr	?FreeAll@CFaderMgr@@QAEXXZ	100.0000	100.0000	1	f0e41c40b256	0x17d9a0
 cfadermgr	?Remove@CFaderMgr@@QAEXPAUCFader@@@Z	67.1111	67.1111	1	7c395e00a7e3	0x17e170
+cfileimage	?Decode@CFileImage@@QAEHPAVCFileImageInfo@@PAVCFileImageSrc@@HH@Z	87.4720	87.4720	1	dc0d66b3803f	0x144b30
+cfileimage	?DecodeThunk@CFileImage@@QAEXHHHHHHHHHH@Z	48.1538	48.1538	1	4cf4c0ca3850	0x141280
+cfileimage	?FlipVertical@CFileImage@@QAEXXZ	62.4649	62.4649	1	5a7fdb00d65d	0x13ebb0
+cfileimage	?LoadFile@CFileImage@@QAEHPAVCFileImageInfo@@PBDH@Z	100.0000	100.0000	1	8adca29db6ce	0x144d80
+cfileimage	?SaveBmp@CFileImage@@QAEHPBDPAXH@Z	60.8842	60.8842	1	d7bdcf4dd7ed	0x1443b0
+cfileimage	?SaveTga@CFileImage@@QAEHPBDPAXH@Z	60.8182	60.8182	1	c29726d33513	0x144900
 cfixedptrarray32	?Add@CFixedPtrArray32@@QAEHPAX@Z	100.0000	100.0000	1	b24c68f70892	0x134c80
 cfixedptrarray32	?Clear@CFixedPtrArray32@@QAEXXZ	100.0000	100.0000	1	c9c707807f3f	0x134c60
 cfixedptrarray32	?FillFrom@CFixedPtrArray32@@QAEHPAPAXHH@Z	92.3016	92.3016	1	fcb6b0bb6ead	0x134be0
@@ -766,6 +773,9 @@ cvoicetrigger	??1CVoiceTrigger@@UAE@XZ	100.0000	100.0000	1	8939b1cb3841	0x135a0
 cvoicetrigger	?Tick@CVoiceTrigger@@QAEHXZ	100.0000	100.0000	1	352963c16858	0x11a700
 databuffer	??0CDataBuffer@@QAE@XZ	100.0000	100.0000	1	3a641ac221a3	0x150180
 databuffer	?Free@CDataBuffer@@QAEXXZ	100.0000	100.0000	1	be93bfb9147a	0x1503c0
+databuffer	?LoadFromFile@CDataBuffer@@QAEHPBDH@Z	71.5593	71.5593	1	00ebc2b35d96	0x150250
+databuffer	?LoadFromMem@CDataBuffer@@QAEHPAXIH@Z	82.7073	82.7073	1	059a0c8fab44	0x150330
+databuffer	?ReadFrom@CDataBuffer@@QAEHPAVCFile@@H@Z	100.0000	100.0000	1	146cd6d2d4dc	0x1501f0
 databuffer	?Reset@CDataBuffer@@QAEXXZ	100.0000	100.0000	2	75008ba8c576	0x150190
 databuffer	?Set@CDataBuffer@@QAEHIH@Z	100.0000	100.0000	2	637f711a934b	0x1501a0
 deflate	_deflate_fast	100.0000	100.0000	1	3de2151b888f	0x186db0
@@ -898,26 +908,13 @@ engine_attributed	?CDDrawWorkerMgr_158bf0@CDDrawWorkerMgr@@QAEXXZ	0.6061	0.6061	
 engine_attributed	?CDDrawWorkerMgr_158cb0@CDDrawWorkerMgr@@QAEXXZ	0.8511	0.8511	1	33b056024a29	0x158cb0
 engine_attributed	?CDDrawWorkerMgr_158d50@CDDrawWorkerMgr@@QAEXXZ	1.1765	1.1765	1	a2e20c7095b1	0x158d50
 engine_attributed	?CDDrawWorkerRegistry_155460@CDDrawWorkerRegistry@@QAEXXZ	0.5000	0.5000	1	3f6268fdbf55	0x155460
-engine_attributed	?CDataBuffer_1501f0@CDataBuffer@@QAEXXZ	1.0000	1.0000	1	de2bee518c6d	0x1501f0
-engine_attributed	?CDataBuffer_150250@CDataBuffer@@QAEXXZ	0.6780	0.6780	1	2ccc3ea1f232	0x150250
-engine_attributed	?CDataBuffer_150330@CDataBuffer@@QAEXXZ	0.9756	0.9756	1	8e48db9ae26e	0x150330
 engine_attributed	?CFaderMgr_17d980@CFaderMgr@@QAEXXZ	4.4444	4.4444	1	5ef37fabde05	0x17d980
 engine_attributed	?CFaderMgr_17e160@CFaderMgr@@QAEXXZ	20.0000	20.0000	1	756837ef8f09	0x17e160
-engine_attributed	?CFileImage_13ebb0@CFileImage@@QAEXXZ	0.8772	0.8772	1	448a1e5644ff	0x13ebb0
-engine_attributed	?CFileImage_141280@CFileImage@@QAEXXZ	1.5385	1.5385	1	241443c64d7d	0x141280
-engine_attributed	?CFileImage_1443b0@CFileImage@@QAEXXZ	0.2105	0.2105	1	3d54f3358803	0x1443b0
-engine_attributed	?CFileImage_144900@CFileImage@@QAEXXZ	0.2424	0.2424	1	845fba731ecf	0x144900
-engine_attributed	?CFileImage_144b30@CFileImage@@QAEXXZ	0.1869	0.1869	1	9ad9a86657f0	0x144b30
-engine_attributed	?CFileImage_144d80@CFileImage@@QAEXXZ	0.3704	0.3704	1	537b837d9504	0x144d80
 engine_attributed	?CFileMem_165f00@CFileMem@@QAEXXZ	1.1765	1.1765	1	1d80517819fd	0x165f00
 engine_attributed	?CFontConfig_021e20@CFontConfig@@QAEXXZ	0.6897	0.6897	1	05a3270be1d0	0x21e20
 engine_attributed	?CFontConfig_021ef0@CFontConfig@@QAEXXZ	14.2857	14.2857	1	d46e96205815	0x21ef0
 engine_attributed	?CFontConfig_0220f0@CFontConfig@@QAEXXZ	5.5556	5.5556	1	e56cf98473ea	0x220f0
 engine_attributed	?CGameApp_13dbc0@CGameApp@@QAEXXZ	4.1667	4.1667	1	7e93d13fb682	0x13dbc0
-engine_attributed	?CGameLevel_15ff20@CGameLevel@@QAEXXZ	0.4651	0.4651	1	d54b94f6beda	0x15ff20
-engine_attributed	?CGameLevel_15ffe0@CGameLevel@@QAEXXZ	0.6780	0.6780	1	7d6d49feab97	0x15ffe0
-engine_attributed	?CGameLevel_160980@CGameLevel@@QAEXXZ	0.5128	0.5128	1	5e46c1e6831f	0x160980
-engine_attributed	?CGameLevel_160a40@CGameLevel@@QAEXXZ	0.2105	0.2105	1	c20a635dadf6	0x160a40
 engine_attributed	?CGameObject_150f90@CGameObject@@QAEXXZ	0.7018	0.7018	1	13e7741e0009	0x150f90
 engine_attributed	?CGameObject_151070@CGameObject@@QAEXXZ	0.7018	0.7018	1	f03d4d9b51ce	0x151070
 engine_attributed	?CGruntHealthSprite_07ecf0@CGruntHealthSprite@@QAEXXZ	20.0000	20.0000	1	418077d3aae2	0x7ecf0
@@ -2387,6 +2384,7 @@ gamelevel	?AltStepValidate@CGameLevel@@AAEHPAX0HHPAHH@Z	71.9054	71.9054	1	7c1fc1
 gamelevel	?ApplyScroll@CGameLevel@@SGHPAV1@HHH@Z	94.7826	94.7826	2	66b03ea53107	0x167130
 gamelevel	?BuildAllPlanes@CGameLevel@@QAEXPAULevelCoordRect@@@Z	100.0000	100.0000	1	f9a8f0e1ee87	0x15da80
 gamelevel	?ClampScroll@CGameLevel@@QAEHPAXHHH@Z	70.7413	70.7413	3	3f62b93aa933	0x15de40
+gamelevel	?ClampSpan@CGameLevel@@AAEHHHPAH0@Z	99.8305	99.8305	1	2ca0e3403535	0x15ffe0
 gamelevel	?DtorBase@CImageSet1@@QAEXXZ	100.0000	100.0000	1	a95ce5db1ab7	0x161370
 gamelevel	?EditDispatch@CGameLevel@@QAEHPAXHHH@Z	47.8085	47.8085	2	5cfc22d52d40	0x160f70
 gamelevel	?EditHandlerA@CGameLevel@@QAEHPAXHHH@Z	64.9560	64.9560	1	ba4a8952d252	0x15e130
@@ -2397,6 +2395,7 @@ gamelevel	?EditSwitch@CGameLevel@@QAEHPAXHHH@Z	88.8440	88.8440	2	0ff29dc02c1a	0x
 gamelevel	?FindPlaneByName@CGameLevel@@QAEPAVCPlane@@PBD@Z	100.0000	100.0000	2	7baff22dc335	0x15dde0
 gamelevel	?FreeMove@CGameLevel@@AAEHPAXHHH@Z	80.8200	80.8200	1	3fb3107bd23b	0x15eb00
 gamelevel	?GetClassId@CGameLevel@@QAEHXZ	100.0000	100.0000	1	777905dbee18	0x1611b0
+gamelevel	?HoldMove@CGameLevel@@AAEHPAXHHHH@Z	90.3953	90.3953	1	5c4b4f1637f9	0x15ff20
 gamelevel	?IsLoaded@CGameLevel@@QAEHXZ	100.0000	100.0000	1	1cf4b7c05d14	0x161190
 gamelevel	?LoadFromFile@CGameLevel@@QAEHPBD@Z	100.0000	100.0000	1	69e64dfc7d35	0x15d500
 gamelevel	?LoadFromSource@CGameLevel@@QAEHPAURemusParseSource@@@Z	100.0000	100.0000	1	70a85ae50bfb	0x15d630
@@ -2408,6 +2407,7 @@ gamelevel	?MainPlaneQueryB@CGameLevel@@QAEHXZ	100.0000	100.0000	2	306d171e8aab	0
 gamelevel	?NotifyAllPlanes@CGameLevel@@QAEXXZ	100.0000	100.0000	2	98dad37498b1	0x160f40
 gamelevel	?Parse@CImageSet1@@QAEHPAX@Z	60.0000	60.0000	1	68fe32ecebfa	0x166d40
 gamelevel	?PointInBounds@CGameLevel@@SAHPBULevelCoordRect@@HH@Z	100.0000	100.0000	1	39a2c37836c8	0x6b330
+gamelevel	?ProbeColumn@CGameLevel@@QAEHPAXH@Z	92.5641	92.5641	1	21fc5b1c7238	0x160980
 gamelevel	?ReadImageSet@CGameLevel@@AAEPAVCImageSet@@PAX@Z	68.0137	68.0137	4	2da1b330c9e0	0x15d820
 gamelevel	?RecomputePlaneCoords@PlaneGeom@@QAEXXZ	97.0640	97.0640	3	febf93030b44	0x161c90
 gamelevel	?ReleaseChildren@CGameLevel@@QAEXXZ	100.0000	100.0000	1	d9611e42c233	0x15d680
@@ -2426,6 +2426,7 @@ gamelevel	?SyncAfterMainIndex@CGameLevel@@QAEXH@Z	100.0000	100.0000	1	9a13d0c853
 gamelevel	?SyncToMainIndex@CGameLevel@@QAEXH@Z	100.0000	100.0000	1	cf4c78a48dfb	0x15dad0
 gamelevel	?Unload@CGameLevel@@QAEHXZ	100.0000	100.0000	1	0ba658920c46	0x15d1f0
 gamelevel	?VisitVisible@CGameLevel@@QAEXPAXH@Z	87.3206	87.3206	3	3b56c9d6b2ae	0x15dc90
+gamelevel	?WalkColumnDown@CGameLevel@@QAEHPAXH@Z	92.7579	92.7579	1	fbf2cbdeb4cd	0x160a40
 gamemode	??0CState@@QAE@XZ	100.0000	100.0000	4	a1d9fd8bca62	0x8c750
 gamemode	??1CBootyState@@UAE@XZ	100.0000	100.0000	1	899f9930b960	0x8d440
 gamemode	??1CMenuState@@UAE@XZ	100.0000	100.0000	1	7e8055f2f15c	0x8ce60

@@ -43,6 +43,56 @@ i32 CDataBuffer::Set(u32 size, i32 id) {
     return 1;
 }
 
+// 0x1501f0 - ReadFrom: pull a 4-byte element count out of `file` (CFile::Read,
+// vtable slot +0x3c), (re)allocate the blob via Set(count, id), then read the blob
+// bytes through the same CFile::Read. Returns Set's result; on success re-stamps the
+// valid flag + id and returns 1. __thiscall, ret 8.
+RVA(0x001501f0, 0x54)
+i32 CDataBuffer::ReadFrom(CFile* file, i32 id) {
+    file->Read(&m_04, 4);
+    if (Set(m_04, id) == 0) {
+        return 0;
+    }
+    file->Read(m_08, m_04);
+    m_00 = 1;
+    m_0c = id;
+    return 1;
+}
+
+// 0x150250 - LoadFromFile: open `path` read-only-shared through a local CFile, slurp
+// it into the buffer via ReadFrom, and close. The CString temp (from the implicit
+// LPCTSTR open) and the local CFile both destruct on every path -> /GX EH frame.
+// ret 8.
+//
+// @early-stop
+// /GX EH-frame wall (~72%): logic + the CFile ctor/Open/ReadFrom/~CFile call chain +
+// the CFileException CString temp are faithful; residue is the EH-state numbering +
+// the local CFile's stack-slot scheduling inside the 0x10-byte frame. Deferred to the
+// final sweep.
+RVA(0x00150250, 0xd1)
+i32 CDataBuffer::LoadFromFile(const char* path, i32 id) {
+    CFile file;
+    if (!file.Open(path, CFile::modeRead | CFile::shareDenyWrite, 0)) {
+        return 0;
+    }
+    return ReadFrom(&file, id);
+}
+
+// 0x150330 - LoadFromMem: wrap `buf`/`len` in a local CMemFile (0x400-byte grow
+// chunk), Attach the caller's buffer, slurp it via ReadFrom, then ~CMemFile detaches
+// it. /GX EH frame, ret 0xc.
+//
+// @early-stop
+// /GX EH-frame wall (~83%): logic + the CMemFile ctor/Attach/ReadFrom/~CMemFile chain
+// are faithful; residue is the local CMemFile's stack-slot offset (retail lands it at
+// [esp+0x10], our cl at [esp+0x8]) + the EH-state numbering. Deferred to the final sweep.
+RVA(0x00150330, 0x87)
+i32 CDataBuffer::LoadFromMem(void* buf, u32 len, i32 id) {
+    CMemFile file(0x400);
+    file.Attach((BYTE*)buf, len);
+    return ReadFrom(&file, id);
+}
+
 // 0x1503c0 - Free: if valid, free + clear the blob and size, then clear valid.
 RVA(0x001503c0, 0x2e)
 void CDataBuffer::Free() {
