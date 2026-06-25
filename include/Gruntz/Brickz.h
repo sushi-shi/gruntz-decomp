@@ -102,6 +102,13 @@ public:
     // the 3x3 block. __thiscall(x, y, id3) ; ret 0xc.
     void ComputeCellFlags(i32 x, i32 y, i32 id3); // 0x077790
 
+    // The grid allocator/initializer (0x09ea60): allocate the width*height cell
+    // pool + the per-row column table, zero the pool, thread the two node pools,
+    // record the per-step callback, and seed the grid bounding rect (width x
+    // height) via the Win32 IntersectRect. __thiscall(width, height, cb) ; ret 0xc.
+    // (Ghidra labeled it "winapi_09ea60_IntersectRect" off that one import.)
+    i32 AllocGrid(i32 width, i32 height, i32 callback); // 0x09ea60
+
     // The edge-search op (0x081e10): temporarily punch a passage between the two
     // cells (xA,yA)/(xB,yB), run Search() between them, then restore the cells.
     // __thiscall(8 args) ; ret 0x20.

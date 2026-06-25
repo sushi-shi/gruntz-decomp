@@ -103,6 +103,11 @@ source = "src/Gruntz/Brickz.cpp"
 flags = "base"
 
 [[unit]]
+unit = "cbrickz"
+source = "src/Gruntz/CBrickz.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "configstore"
 source = "src/Gruntz/ConfigStore.cpp"
 flags = "framed"

@@ -38,11 +38,19 @@ void CProjectile::CProjectile_0dec60(i32) {}
 // @confidence: med
 // @source: string-xref
 // @stub
+// LoadProjectileSprites (1722 B). DEFERRED to the final sweep (too big to converge
+// without diverging regalloc). Shape: a leading jump-table switch on the projectile
+// type that selects per-type config keys (GRUNTZ_{ROCK,GUNHAT,BOOMERANG,NERFGUN,
+// WELDER,WINGZ}GRUNT_PROJECTILE + the matching {..}ProjectileTimePerTile ints, all
+// under the "Projectile" bute group), then a shared "IMPACT"/"LightFx" sprite-setup
+// tail. Two switchdata tables (the jumptable-data-overlap scoring artifact).
 RVA(0x000df050, 0x6ba)
 void CProjectile::LoadProjectileSprites(i32, i32, i32, i32, i32, i32, i32) {}
 
 // @confidence: med
 // @source: string-xref
 // @stub
+// LoadProjectileEffects (1781 B). DEFERRED to the final sweep (same class as the
+// sprites parser: a multi-case bute config reader, too big to converge in one pass).
 RVA(0x000dfd00, 0x6f5)
 void CProjectile::LoadProjectileEffects() {}

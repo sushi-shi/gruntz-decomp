@@ -95,7 +95,6 @@
 #include "CSBI_SideTab.cpp"
 #include "CSplashState.cpp"
 #include "CSpotLight.cpp"
-#include "CStaticHazard.cpp"
 #include "CStatusBarSprite.cpp"
 #include "CTeleporter.cpp"
 #include "CTileExclusiveTriggerSwitchLogic.cpp"

@@ -23,7 +23,7 @@ backlogstateloaders	3	2
 battlezdata	30	27
 battlezmapconfig	1	0
 blowfish	4	3
-brickz	14	3
+brickz	15	3
 butemgr	40	27
 cambientsound	3	2
 canielement	3	2
@@ -31,6 +31,7 @@ canirecord	8	5
 cattract	11	7
 cbehindcandy	2	2
 cbehindcandyani	4	3
+cbrickz	1	0
 ccursorsnapsprite	2	2
 cddrawchildgroup	9	5
 cddrawptrcollections	26	11
@@ -93,7 +94,7 @@ cserialsub34	1	0
 cseverusentrylist	2	1
 csimpleanimation	4	3
 csingleanimation	1	1
-cstatichazard	2	2
+cstatichazard	5	2
 cstatusbarmgr	2	1
 cteleporter	2	1
 ctimebomb	2	2
@@ -108,7 +109,7 @@ dsoundvoice	2	1
 engine_attributed	28	0
 engine_boundary	626	0
 engine_discovered	85	0
-engine_label_stubs	488	104
+engine_label_stubs	483	104
 engstr	3	1
 filemem	9	8
 filestream	13	9
@@ -305,6 +306,7 @@ blowfish	?Blowfish_InitKey@@YGXPAE@Z	100.0000	100.0000	1	181b6b1750bf	0x16f6c0
 blowfish	?Blowfish_decipher@@YAXPAI0@Z	99.5000	99.5000	2	c61014aad094	0x16fc70
 blowfish	?Blowfish_encipher@@YAXPAI0@Z	100.0000	100.0000	1	3b9987755e2b	0x16f7f0
 blowfish	?InitializeBlowfish@@YAFPAEF@Z	100.0000	100.0000	2	0fe7c64cfdb4	0x170100
+brickz	?AllocGrid@CBrickz@@QAEHHHH@Z	79.5971	79.5971	1	41e0594e8c95	0x9ea60
 brickz	?CellPop@CBrickz@@QAEXPAUBrickzNode@@H@Z	80.3284	80.3284	3	6c5a65d16fa4	0x9f710
 brickz	?CellPush@CBrickz@@QAEXPAUBrickzNode@@@Z	85.9070	85.9070	2	890d04538e3f	0x9f470
 brickz	?ComputeCellFlags@CBrickz@@QAEXHHH@Z	0.0000	0.0000	1	3ad1bf45ba6a	0x77790
@@ -313,7 +315,7 @@ brickz	?Expand@CBrickz@@QAEHPAUBrickzNode@@HHHH@Z	79.0474	79.0474	1	01b62b8644d4
 brickz	?Find@CBrickz@@QAEPAUBrickzNode@@HH@Z	100.0000	100.0000	3	f5b3beabacfa	0x9f500
 brickz	?Insert@CBrickz@@QAEHPAUBrickzNode@@@Z	100.0000	100.0000	2	56f2e32884a9	0x9f370
 brickz	?PopFront@CBrickz@@QAEPAUBrickzNode@@XZ	100.0000	100.0000	1	c73fe77132a8	0x9f430
-brickz	?Reset@CBrickz@@QAEXXZ	64.7115	64.7115	2	2061d42178be	0x9f5d0
+brickz	?Reset@CBrickz@@QAEXXZ	64.6731	64.6731	2	2061d42178be	0x9f5d0
 brickz	?Search@CBrickz@@QAEHHHHHPAXHHH@Z	91.3409	91.3409	2	1cedc5f1f659	0x9eca0
 brickz	?SearchEdge@CBrickz@@QAEHHHHHPAXHHH@Z	82.5373	82.5373	2	9a02e814554f	0x81e10
 brickz	?Serialize@CBrickz@@QAEHHHHH@Z	37.9032	37.9032	1	18774618cdf4	0x9356c
@@ -390,6 +392,7 @@ cbehindcandyani	??1CBehindCandyAni@@UAE@XZ	100.0000	100.0000	1	f4c855a7d8db	0x10
 cbehindcandyani	?AdvanceAnim@CBehindCandyAni@@QAEHXZ	100.0000	100.0000	1	4d7ee7a13f73	0xadbb0
 cbehindcandyani	?InitActReg@CBehindCandyAni@@SAXXZ	100.0000	100.0000	1	0d9455b8c944	0xad7d0
 cbehindcandyani	?RegisterActs@CBehindCandyAni@@SAXXZ	92.9130	92.9130	1	29528d9538e4	0xad9b0
+cbrickz	??0CBrickz@@QAE@PAUCGameObject@@@Z	91.6759	91.6759	1	86c4f819f256	0x10e800
 ccursorsnapsprite	??1CCursorSnapSprite@@UAE@XZ	100.0000	100.0000	1	2eab333c770e	0x11920
 ccursorsnapsprite	?Serialize@CCursorSnapSprite@@QAEHHHHH@Z	100.0000	100.0000	1	1ff3ed4ebd3b	0x11880
 cddrawchildgroup	?Stub_1591f0@CDDrawChildGroup@@QAEXXZ	2.9412	2.9412	4	c142c66f7447	0x1591f0
@@ -848,8 +851,11 @@ csimpleanimation	?AdvanceAnim@CSimpleAnimation@@QAEHXZ	100.0000	100.0000	1	2a87e
 csimpleanimation	?InitSimpleAnimDispatch@@YAXXZ	100.0000	100.0000	1	a84ef2c13047	0xabb90
 csimpleanimation	?RegisterSimpleAnimLogic@@YAXXZ	96.4783	96.4783	1	5c2fab4a8cdd	0xabd70
 csingleanimation	??1CSingleAnimation@@UAE@XZ	100.0000	100.0000	1	96128fb6792b	0x10540
+cstatichazard	??0CStaticHazard@@QAE@PAUCGameObject@@@Z	82.5635	82.5635	1	1756e20b6c41	0xfb7a0
 cstatichazard	??1CStaticHazard@@UAE@XZ	100.0000	100.0000	1	2c9522f3c281	0x12b30
 cstatichazard	?FireActivation@CStaticHazard@@QAEXH@Z	100.0000	100.0000	1	69cb76687143	0xfbbf0
+cstatichazard	?LoadAttributes2@CStaticHazard@@QAEHXZ	97.8214	97.8214	1	918d5a0c02ae	0xfc0b0
+cstatichazard	?LoadAttributes@CStaticHazard@@QAEHXZ	49.4340	49.4340	1	0b7065cfb3f0	0xfc1a0
 cstatusbarmgr	?LoadTabSprites@CStatusBarMgr@@QAEHXZ	16.7383	16.7383	4	045cfeaa498f	0x102250
 cstatusbarmgr	?SetDirection@CSbItem@@QAEXHH@Z	100.0000	100.0000	2	46fcb29ef102	0xea0f0
 cteleporter	??1CTeleporter@@UAE@XZ	100.0000	100.0000	1	0aa6d090845e	0x10dd0
@@ -1711,7 +1717,6 @@ engine_discovered	?RemusParseSource_139800@RemusParseSource@@QAEXXZ	33.3333	33.3
 engine_discovered	?StatusBarItem_0d9290@StatusBarItem@@QAEXXZ	0.5076	0.5076	1	75b9d4dea540	0xd9290
 engine_label_stubs	??0CActionArea@@QAE@H@Z	2.1226	2.1226	1	cpp:6bf52155264d	0x7da0
 engine_label_stubs	??0CBoomerang@@QAE@H@Z	97.3077	97.3077	1	cpp:6bf52155264d	0xe0650
-engine_label_stubs	??0CBrickz@@QAE@H@Z	1.6667	1.6667	1	cpp:6bf52155264d	0x10e800
 engine_label_stubs	??0CButeNodeBase@@QAE@PAXH@Z	59.5806	59.5806	1	cpp:2262ffc5f902	0x16dff0
 engine_label_stubs	??0CCheckpointTrigger@@QAE@H@Z	1.3554	1.3554	1	cpp:6bf52155264d	0x10ee20
 engine_label_stubs	??0CCheckpointTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	1	cpp:45e65336d4b5	0x1127f0
@@ -1742,7 +1747,6 @@ engine_label_stubs	??0CObjectDropper@@QAE@H@Z	0.6406	0.6406	1	cpp:6bf52155264d	0
 engine_label_stubs	??0CRollingBall@@QAE@H@Z	0.7869	0.7869	1	cpp:6bf52155264d	0xaf820
 engine_label_stubs	??0CSBI_ImageSet@@QAE@XZ	0.2465	0.2465	1	cpp:45e65336d4b5	0x101580
 engine_label_stubs	??0CSpotLight@@QAE@H@Z	1.2500	1.2500	1	cpp:6bf52155264d	0xb1200
-engine_label_stubs	??0CStaticHazard@@QAE@H@Z	0.7107	0.7107	1	cpp:6bf52155264d	0xfb7a0
 engine_label_stubs	??0CStatusBarSprite@@QAE@H@Z	2.3854	2.3854	1	cpp:6bf52155264d	0x10c230
 engine_label_stubs	??0CTileExclusiveTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	1	cpp:45e65336d4b5	0x112050
 engine_label_stubs	??0CTileMultiTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	1	cpp:45e65336d4b5	0x111f10
@@ -1887,11 +1891,9 @@ engine_label_stubs	?Load@PalLoad_1479e0@ApiCallerStubs@@QAEHHPADH@Z	89.7286	89.7
 engine_label_stubs	?Load@ResLoad_144270@ApiCallerStubs@@QAEHHPADH@Z	86.9310	86.9310	1	cpp:6bf52155264d	0x144270
 engine_label_stubs	?Load@StrHost_0b7ec0@ApiCallerStubs@@QAEXHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0xb7ec0
 engine_label_stubs	?LoadActionTileSprites@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHH@Z	100.0000	100.0000	1	cpp:e8a4cb0d5b2a	0xdb600
-engine_label_stubs	?LoadAttributes2@CStaticHazard@@QAEHXZ	97.8571	97.8571	1	cpp:6bf52155264d	0xfc0b0
 engine_label_stubs	?LoadAttributes2@CWarlord@@QAEHXZ	91.6296	91.6296	1	cpp:6bf52155264d	0x44d10
 engine_label_stubs	?LoadAttributes@CBrickz@@QAEXHH@Z	0.1490	0.1490	1	cpp:6bf52155264d	0x810f0
 engine_label_stubs	?LoadAttributes@CDroppedObjectShadow@@QAEXXZ	0.4444	0.4444	1	cpp:45e65336d4b5	0xc62e0
-engine_label_stubs	?LoadAttributes@CStaticHazard@@QAEXXZ	0.3774	0.3774	1	cpp:45e65336d4b5	0xfc1a0
 engine_label_stubs	?LoadAttributes@CTeleporter@@QAEXXZ	0.4274	0.4274	1	cpp:45e65336d4b5	0x41aa0
 engine_label_stubs	?LoadAttributes@CTimeBomb@@QAEXXZ	0.7246	0.7246	1	cpp:45e65336d4b5	0xe1e60
 engine_label_stubs	?LoadAttributes@CWarlord@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x44c00
@@ -2094,7 +2096,6 @@ engine_label_stubs	?winapi_092f00_PostMessageA@CGruntzMgr@@QAEHXZ	1.6529	1.6529	
 engine_label_stubs	?winapi_09dff0_EndDialog@ApiCallerStubs@@YGHPAXHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x9dff0
 engine_label_stubs	?winapi_09e2d0_SetDlgItemTextA@ApiCallerStubs@@YAXPAXPAUNameItem_09e2d0@1@HHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x9e2d0
 engine_label_stubs	?winapi_09e390_EndDialog_PostMessageA@ApiCallerStubs@@YAHXZ	1.0417	1.0417	1	cpp:e1535087fe94	0x9e390
-engine_label_stubs	?winapi_09ea60_IntersectRect@CBrickz@@QAEHHHH@Z	1.3669	1.3669	1	cpp:e8a4cb0d5b2a	0x9ea60
 engine_label_stubs	?winapi_0b6b40_timeGetTime_wsprintfA@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHXZ	0.9512	0.9512	1	cpp:e8a4cb0d5b2a	0xb6b40
 engine_label_stubs	?winapi_0b6e90_SetRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHXZ	0.7812	0.7812	1	cpp:e8a4cb0d5b2a	0xb6e90
 engine_label_stubs	?winapi_0bb3e0_GetWindowTextLengthA@ApiCallerStubs@@YGXPAXPAD@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xbb3e0
