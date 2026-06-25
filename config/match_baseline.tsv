@@ -18,7 +18,7 @@ advancedoptions	5	5
 aniplayer	2	0
 appdialogs	1	1
 applyrange	1	1
-areamgr	4	2
+areamgr	5	2
 backlogstateloaders	3	3
 battlezdata	30	27
 battlezmapconfig	1	0
@@ -116,7 +116,7 @@ directinputmgr2	33	29
 directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	28	0
-engine_boundary	560	0
+engine_boundary	557	0
 engine_discovered	66	0
 engine_label_stubs	462	106
 engstr	3	1
@@ -142,7 +142,7 @@ gruntzapp	10	9
 gruntzcmdmgr	12	10
 gruntzcommand	15	15
 gruntzmgr	87	61
-gruntzplayer	6	1
+gruntzplayer	8	3
 gruntzsoundz	12	11
 gruntzwnd	9	7
 hash	10	9
@@ -278,6 +278,7 @@ appdialogs	?WarpDialogProc@@YGHPAXIIJ@Z	100.0000	100.0000	4	abc884dd8cb1	0x8e4e0
 applyrange	?ApplyToRange@@YGXPAVApplyElem@@HHP81@AEXXZ@Z	100.0000	100.0000	1	b977df9605c7	0x7c20
 areamgr	??1CAreaMgr@@QAE@XZ	100.0000	100.0000	1	e6fdf3f99a6a	0x99c20
 areamgr	?Dispatch@CAreaMgr@@QAEHH@Z	78.8584	78.8584	1	149ba02dc7bc	0x99d40
+areamgr	?GetTail@CSpawnEntry@@QAE?AVCString@@XZ	66.3774	66.3774	1	52e0db032316	0x9a830
 areamgr	?Reset@CAreaMgr@@QAEXXZ	100.0000	100.0000	1	8ba7b79b3da8	0x9a0b0
 areamgr	?SameGroup@CAreaMgr@@QAEHH@Z	58.3529	58.3529	1	9eb1e4ec0b0f	0x9b430
 backlogstateloaders	?BuildNamedGruntTable@@YAXXZ	100.0000	100.0000	1	9a87d09f4fe0	0xc16b0
@@ -1165,7 +1166,6 @@ engine_boundary	?Boundary_099ba0@@YAXXZ	7.1429	7.1429	1	9c984076ded9	0x99ba0
 engine_boundary	?Boundary_09a0d0@@YAXXZ	0.4082	0.4082	1	4a5aaf34d45f	0x9a0d0
 engine_boundary	?Boundary_09a290@@YAXXZ	0.4040	0.4040	1	4a0c64e1208a	0x9a290
 engine_boundary	?Boundary_09a420@@YAXXZ	7.6923	7.6923	1	f9ade8ea1491	0x9a420
-engine_boundary	?Boundary_09a830@@YAXXZ	0.7547	0.7547	1	2ad6cd584c9c	0x9a830
 engine_boundary	?Boundary_09b770@@YAXXZ	1.1905	1.1905	1	f73965829ff1	0x9b770
 engine_boundary	?Boundary_09c650@@YAXXZ	0.1246	0.1246	1	77ff0e770f92	0x9c650
 engine_boundary	?Boundary_09cab0@@YAXXZ	3.6364	3.6364	1	4424afe5ea91	0x9cab0
@@ -1235,8 +1235,6 @@ engine_boundary	?Boundary_0d8960@@YAXXZ	2.8571	2.8571	1	a1ecb009d5d4	0xd8960
 engine_boundary	?Boundary_0d9240@@YAXXZ	2.6667	2.6667	1	9bdac58f28de	0xd9240
 engine_boundary	?Boundary_0da3b0@@YAXXZ	2.9412	2.9412	1	e980dc837357	0xda3b0
 engine_boundary	?Boundary_0da440@@YAXXZ	3.5714	3.5714	1	f08ec09743a6	0xda440
-engine_boundary	?Boundary_0db050@@YAXXZ	2.7778	2.7778	1	4b37baedac97	0xdb050
-engine_boundary	?Boundary_0db110@@YAXXZ	2.7778	2.7778	1	81e6f5842b95	0xdb110
 engine_boundary	?Boundary_0db1d0@@YAXXZ	14.2857	14.2857	1	10443a601727	0xdb1d0
 engine_boundary	?Boundary_0db200@@YAXXZ	1.2121	1.2121	1	148cd7ad66ed	0xdb200
 engine_boundary	?Boundary_0db280@@YAXXZ	10.0000	10.0000	1	8e4c4555b755	0xdb280
@@ -2570,7 +2568,9 @@ gruntzmgr	?UnloadSoundChain@CGruntzMgr@@QAEXXZ	100.0000	100.0000	2	d0f043efcdce	
 gruntzmgr	?UpdateScoreHud@CGruntzMgr@@QAEXXZ	100.0000	100.0000	2	11350f0d66b3	0x860b0
 gruntzplayer	??0GruntzPlayer@@QAE@H@Z	42.4510	42.4510	1	451d8a0aae67	0xda870
 gruntzplayer	??0GruntzPlayer@@QAE@XZ	0.0000	0.0000	1	451d8a0aae67	0xda960
+gruntzplayer	?GetColorName@@YA?AVCString@@HH@Z	100.0000	100.0000	1	49f4a398018d	0xdb050
 gruntzplayer	?GetDefaultName@GruntzPlayer@@SA?AVCString@@XZ	97.7778	97.7778	1	c98087cb88a1	0xdafb0
+gruntzplayer	?GetDifficultyName@@YA?AVCString@@HH@Z	100.0000	100.0000	1	545c51a45f83	0xdb110
 gruntzplayer	?GetName@GruntzPlayer@@QAE?AVCString@@XZ	100.0000	100.0000	1	15c1a6f212db	0x1f450
 gruntzplayer	?Reset@GruntzPlayer@@QAEHXZ	94.8750	94.8750	1	c996e038d38b	0xda9e0
 gruntzplayer	?Serialize@GruntzPlayer@@QAEHPAXHHH@Z	98.1333	98.1333	1	7265f073892d	0xdace0
