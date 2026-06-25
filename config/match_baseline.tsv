@@ -62,12 +62,13 @@ crt_ostream	4	3
 crt_streambuf	7	5
 crt_strstreambuf	4	2
 cstatusbarmgr	2	1
+ctimebomb	2	2
 databuffer	4	4
 deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	200	0
+engine_discovered	198	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -607,6 +608,8 @@ crt_strstreambuf	?str@strstreambuf@@QAEPADXZ	100.0000	100.0000	1	08404bbcac2f	0x
 crt_strstreambuf	?underflow@strstreambuf@@QAEHXZ	91.7353	91.7353	2	b71b810269ba	0x169490
 cstatusbarmgr	?LoadTabSprites@CStatusBarMgr@@QAEHXZ	16.7383	16.7383	4	045cfeaa498f	0x102250
 cstatusbarmgr	?SetDirection@CSbItem@@QAEXHH@Z	100.0000	100.0000	2	46fcb29ef102	0xea0f0
+ctimebomb	??1CTimeBomb@@UAE@XZ	100.0000	100.0000	1	82a73e5a479d	0x12a70
+ctimebomb	?FireActivation@CTimeBomb@@QAEXH@Z	100.0000	100.0000	1	f49df59995b0	0xe1830
 databuffer	??0CDataBuffer@@QAE@XZ	100.0000	100.0000	1	3a641ac221a3	0x150180
 databuffer	?Free@CDataBuffer@@QAEXXZ	100.0000	100.0000	1	be93bfb9147a	0x1503c0
 databuffer	?Reset@CDataBuffer@@QAEXXZ	100.0000	100.0000	2	75008ba8c576	0x150190
@@ -768,8 +771,6 @@ engine_discovered	?CStaticHazard_0fbbf0@CStaticHazard@@QAEXXZ	0.5333	0.5333	2	91
 engine_discovered	?CTeleporter_010dd0@CTeleporter@@QAEXXZ	5.8824	5.8824	2	a36b702a54bf	0x10dd0
 engine_discovered	?CTeleporter_0419e0@CTeleporter@@QAEXXZ	2.5641	2.5641	2	a0b0752002ff	0x419e0
 engine_discovered	?CTileTriggerSwitch_0110f0@CTileTriggerSwitch@@QAEXXZ	5.8824	5.8824	2	5bfce3bf793c	0x110f0
-engine_discovered	?CTimeBomb_012a70@CTimeBomb@@QAEXXZ	5.8824	5.8824	1	b497c69c4479	0x12a70
-engine_discovered	?CTimeBomb_0e1830@CTimeBomb@@QAEXXZ	0.5333	0.5333	1	9a7dd4f0775d	0xe1830
 engine_discovered	?CToobSpikez_012c60@CToobSpikez@@QAEXXZ	5.8824	5.8824	2	91d2130216a3	0x12c60
 engine_discovered	?CToobSpikez_114860@CToobSpikez@@QAEXXZ	0.5333	0.5333	2	b5be86c66408	0x114860
 engine_discovered	?CUserLogic_00f2f0@CUserLogic@@QAEXXZ	2.2727	2.2727	2	e125a8d1fcd1	0xf2f0

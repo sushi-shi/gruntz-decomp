@@ -636,6 +636,11 @@ source = "src/Gruntz/KitchenSlime.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "ctimebomb"
+source = "src/Gruntz/CTimeBomb.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "actionoptionsmenubar"
 source = "src/Gruntz/ActionOptionsMenuBar.cpp"
 flags = "base"

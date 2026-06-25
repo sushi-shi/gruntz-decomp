@@ -176,10 +176,6 @@ RVA(0x000419e0, 0x81) void CTeleporter::CTeleporter_0419e0() {}
 // ---- CTileTriggerSwitch ----
 RVA(0x000110f0, 0x44) void CTileTriggerSwitch::CTileTriggerSwitch_0110f0() {}
 
-// ---- CTimeBomb ----
-RVA(0x00012a70, 0x44) void CTimeBomb::CTimeBomb_012a70() {}
-RVA(0x000e1830, 0x102) void CTimeBomb::CTimeBomb_0e1830() {}
-
 // ---- CToobSpikez ----
 RVA(0x00012c60, 0x44) void CToobSpikez::CToobSpikez_012c60() {}
 RVA(0x00114860, 0x102) void CToobSpikez::CToobSpikez_114860() {}
