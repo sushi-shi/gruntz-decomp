@@ -1485,6 +1485,7 @@ rva,name,lib,confidence,source
 0x11ffb0,_atoi,LIBCMT,LOW,anchored
 0x11ffc0,__atoi64,LIBCMT,HIGH,offstart-ghidra-missed
 0x120090,_strstr,LIBCMT,HIGH,anchored
+0x120120,_strchr,LIBCMT,HIGH,anchored
 0x1201e0,__alloca_probe,LIBCMT,AMBIG,anchored
 0x120210,_time,LIBCMT,HIGH,anchored
 0x120340,_strncpy,LIBCMT,HIGH,anchored

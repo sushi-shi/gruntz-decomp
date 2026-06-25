@@ -156,6 +156,20 @@ public:
 };
 
 // ---------------------------------------------------------------------------
+// TextRange - a {begin..end} view over a measured run of text, built on the
+// FontRenderer word-wrap stack (three adjacent CString locals: the line text and
+// its head/tail markers). Span() returns the byte distance end - begin (a signed
+// length fed to the per-line divide in the wrap loop). Only the two char* fields
+// it reads (+0x00 begin, +0x08 end) are load-bearing.
+// ---------------------------------------------------------------------------
+struct TextRange {
+    char* m_begin;     // +0x00
+    char* m_pad04;     // +0x04
+    char* m_end;       // +0x08
+    i32 Span(); // 0x17b500
+};
+
+// ---------------------------------------------------------------------------
 // CWapNodeB - a WAP node carrying packed data + two owned string buffers.
 // Only FreeStrings is matched here.
 // ---------------------------------------------------------------------------

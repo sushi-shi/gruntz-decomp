@@ -333,6 +333,52 @@ i32 SoundDevice::FreeSamples() {
 }
 
 // ---------------------------------------------------------------------------
+// ParseWaveChunks (0x137110, __cdecl). Scan a RIFF/WAVE blob in memory: verify
+// the 'RIFF'/'WAVE' magic, then walk the chunk list (each {u32 id; u32 size;
+// payload} even-aligned), recording the 'fmt ' chunk payload into out->m_fmt and,
+// on the 'data' chunk, the payload pointer/length into *dataOut/*sizeOut. Returns
+// nonzero only when a 'fmt ' chunk was already seen by the time 'data' is found.
+// @early-stop
+// add-fold scheduling wall: the ENTIRE function is byte-identical except the
+// per-chunk cursor advance past the 8-byte {id,size} header - retail emits it as
+// two `add $4,eax` (the source `p += 2` after reading p[0]/p[1]), while MSVC5 /O2
+// strength-reduces consecutive increments into one `add $8,eax`. Not steerable
+// from C source (the optimizer folds `p++;p++` and `p+=2` identically). 98.2% -
+// logic + every other instruction complete, deferred to the final sweep.
+RVA(0x00137110, 0x8d)
+SYMBOL(_ParseWaveChunks)
+extern "C" i32 ParseWaveChunks(void* riff, ParseFmt* out, void** dataOut, u32* sizeOut) {
+    u32* p = (u32*)((char*)riff + 4);
+    u32 riffSize = *p;
+    p++;
+    u32 waveTag = *p;
+    p++;
+    char* end = (char*)p + riffSize - 4;
+    if (*(u32*)riff != 0x46464952) {
+        return 0;
+    }
+    if (waveTag != 0x45564157) {
+        return 0;
+    }
+    out->m_fmt = 0;
+    *dataOut = 0;
+    while ((char*)p < end) {
+        u32 id = p[0];
+        u32 size = p[1];
+        p += 2;
+        if (id == 0x20746d66) {
+            out->m_fmt = (WaveFormatX*)p;
+        } else if (id == 0x61746164) {
+            *dataOut = p;
+            *sizeOut = size;
+            return out->m_fmt != 0;
+        }
+        p = (u32*)((char*)p + ((size + 1) & ~1));
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
 // SoundDevice::SetPrimaryFormat (0x1371a0, __thiscall, 1 arg). Ensure the primary
 // buffer exists, then set its WAVEFORMATEX; report a failing HRESULT and bail.
 RVA(0x001371a0, 0x5a)

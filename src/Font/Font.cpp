@@ -271,6 +271,15 @@ u8 FontRenderer::GetChar(i32 i) {
 }
 
 // =========================================================================
+// TextRange::Span
+// Byte distance between the range's end and begin markers (a signed length).
+//
+RVA(0x0017b500, 0x8)
+i32 TextRange::Span() {
+    return m_end - m_begin;
+}
+
+// =========================================================================
 // FontRenderer::MeasureText
 // Sum the advance widths of every glyph in `text` and pair it with the font's
 // line-height. With no font loaded the extent is {0,0}. The CString arg is

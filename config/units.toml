@@ -499,6 +499,13 @@ source = "src/Gruntz/Grunt.cpp"
 flags = "eh"
 
 [[unit]]
+# GruntDataRecord::SerializeStrings (0x56da0) - the per-record string/field writer
+# the big grunt-data Serialize (0x53f90) calls; non-EH (plain stack buffer).
+unit = "gruntdatarecord"
+source = "src/Gruntz/GruntDataRecord.cpp"
+flags = "base"
+
+[[unit]]
 unit = "gruntzcommand"
 source = "src/Gruntz/GruntzCommand.cpp"
 flags = "base"
