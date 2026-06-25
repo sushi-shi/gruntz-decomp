@@ -59,6 +59,8 @@ struct SoundSample {
 
 class SoundDevice {
 public:
+    SoundDevice(); // base ctor at 0x136440 (Ghidra placeholder "UnknownSalazar");
+                   // external/no-body so SoundStream's ctor emits the base call.
     ~SoundDevice();                    // 0x136500  /GX EH destructor (vtable 0x5ef6c4) -> Shutdown
     void Shutdown();                   // 0x136690  release every owned buffer, primary, device
     void RemoveBuffer(SoundBuf* node); // 0x136d80  reap voices + release + unlink one buffer

@@ -10,6 +10,46 @@
 #include <rva.h>
 #include <string.h>
 
+// The Rez heap allocator/free (_RezAlloc 0x1b9b46 / _RezFree 0x1b9b82, cdecl C).
+extern "C" void* RezAlloc(u32 size);
+extern "C" void RezFree(void* p);
+
+// ===========================================================================
+// 0x139960 - BeginParse: resolve the live source pointer for a parse pass. If
+// the mapped source is active, return its mapped address adjusted for the stream
+// base. Otherwise lazily allocate the +0x38 inline buffer and fill it with one
+// virtual Read of the whole limit; on a short read, free + return 0.
+// ===========================================================================
+RVA(0x00139960, 0x6b)
+i32 CRemusReadStream::BeginParse() {
+    if (m_10->m_48 != 0)
+        return m_14 - m_10->m_0c + m_10->m_48;
+    if (m_38 != 0)
+        return m_38;
+    if (m_0c == 0)
+        return 0;
+    m_38 = (i32)RezAlloc(m_0c);
+    if (m_38 == 0)
+        return 0;
+    if (m_34->Read(m_14, 0, m_0c, (void*)m_38) != (i32)m_0c) {
+        RezFree((void*)m_38);
+        m_38 = 0;
+    }
+    return m_38;
+}
+
+// ===========================================================================
+// 0x1399d0 - EndParse: release the inline parse buffer; returns 1.
+// ===========================================================================
+RVA(0x001399d0, 0x21)
+i32 CRemusReadStream::EndParse() {
+    if (m_38 != 0) {
+        RezFree((void*)m_38);
+        m_38 = 0;
+    }
+    return 1;
+}
+
 // ===========================================================================
 // 0x139ae0 - SetPos(pos): move the read cursor; returns 1.
 // ===========================================================================

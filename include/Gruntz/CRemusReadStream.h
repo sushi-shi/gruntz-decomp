@@ -35,6 +35,10 @@ public:
 
 class CRemusReadStream {
 public:
+    // Ghidra placeholder-named these two "RemusParseSource::BeginParse/EndParse"
+    // (0x139960 / 0x1399d0); same 0x139xxx class + identical layout as SetPos/Read.
+    i32 BeginParse();
+    i32 EndParse();
     i32 SetPos(i32 pos);
     i32 Read(void* dst, u32 len, i32 seekPos);
 

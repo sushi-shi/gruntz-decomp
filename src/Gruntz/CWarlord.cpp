@@ -17,6 +17,8 @@
 
 #include <rva.h>
 
+extern "C" int rand(void); // CRT _rand (reloc-masked)
+
 // ===========================================================================
 // CWarlord::~CWarlord  (0x0107f0)
 // ===========================================================================
@@ -42,6 +44,22 @@
 //       (polymorphic vs manual) flips it. ~74%, deferred to the final sweep.
 RVA(0x000107f0, 0x55)
 CWarlord::~CWarlord() {}
+
+// ===========================================================================
+// CWarlord::CWarlord(int)  (0x042d40)  - the warlord ctor
+// ===========================================================================
+// Builds the CUserLogic base, names the warlord's threat string, then a 4-way
+// switch over the owner-index selects the king/napolean/patton/viking config and
+// seeds the per-state idle/battlecry/death/moving animation table off the
+// "Gruntz" bute group. ~0x73e bytes.
+//
+// @early-stop
+// DEFERRED to the final sweep (big function, >512B, STOP-EARLY). The full body is
+// a deep switch + the engine string-table + bute-config inline expansion; per
+// breadth-first doctrine it is homed here (so the RVA + its LoadAttributes caller
+// pair) as a complete-intent placeholder rather than half-reconstructed.
+RVA(0x00042d40, 0x73e)
+CWarlord::CWarlord(i32) {}
 
 // ===========================================================================
 // CWarlord::ResolveState  (0x044640)  - slot-4 override (the animation dispatcher)
@@ -81,3 +99,106 @@ i32 CWarlord::RearmMoving() {
     }
     return 0;
 }
+
+// ===========================================================================
+// CWarlord::LoadAttributes  (0x044c00)  - the warlord's per-tick threat update
+// ===========================================================================
+// Re-arm the geometry sub-player off the global geo source (bail if not ready);
+// in multiplayer, measure the nearest-enemy distance vs the "Warlordz/PanicRadius"
+// config (default 64) and raise the fort alert when inside the radius; otherwise,
+// past the 64-bit cooldown window, randomly resolve an idle / battlecry animation.
+// Returns int 0 on every path. Plain /O2 leaf (no destructible local, no /GX use).
+RVA(0x00044c00, 0xc6)
+i32 CWarlord::LoadAttributes() {
+    if (((CWarlordAnimPlayer*)m_38)->m_1a0.SetGeoSourceR(g_defaultGeo) != 1) {
+        return 0;
+    }
+
+    WwdGameReg* reg = g_gameReg;
+    if (reg->m_134 != 1) {
+        CWarlordOwner* o = (CWarlordOwner*)m_10;
+        i32 dist = reg->m_68->NearestEnemyDist(o->m_124, o->m_5c, o->m_60);
+        if (dist < g_buteMgr.GetIntDef("Warlordz", "PanicRadius", 0x40)) {
+            NotifyFortUnderAttack();
+            return 0;
+        }
+    }
+
+    if ((i64)(u32)g_645588 - *(i64*)&m_88 >= *(i64*)&m_90) {
+        if (rand() % 10 < 5) {
+            ResolveIdleAnimation();
+            return 0;
+        }
+        ResolveBattlecryAnimation();
+    }
+    return 0;
+}
+
+// ===========================================================================
+// CWarlord::LoadAttributes2  (0x044d10)  - the single-player-aware variant
+// ===========================================================================
+// Same geo-sub re-arm gate; multiplayer raises the battle alert when the nearest
+// enemy is NOT inside the panic radius; single-player resolves the moving anim
+// while the level objective is open, else posts a fort battle event past the
+// cooldown window and re-arms a 0x7530 stamp. Returns int 0 on every path.
+//
+// @early-stop
+// regalloc wall (topic:regalloc, docs/patterns/zero-register-pinning.md +
+// pin-local-for-callee-saved-reg.md): structure/offsets/instruction-selection are
+// byte-exact, but retail keeps g_gameReg in edx (live in BOTH the multiplayer and
+// single-player branches, freeing ecx for the thiscall `this`) while cl parks it
+// in ecx, mirror-swapping g_645588 into the other scratch reg. A pure scratch
+// ecx<->edx coin-flip - no source lever flips it (tried inline vs named helper,
+// m_2c-chain split; all no-change at the same ~91% plateau).
+RVA(0x00044d10, 0x106)
+i32 CWarlord::LoadAttributes2() {
+    if (((CWarlordAnimPlayer*)m_38)->m_1a0.SetGeoSourceR(g_defaultGeo) != 1) {
+        return 0;
+    }
+
+    WwdGameReg* reg = g_gameReg;
+    if (reg->m_134 != 1) {
+        CWarlordOwner* o = (CWarlordOwner*)m_10;
+        i32 dist = reg->m_68->NearestEnemyDist(o->m_124, o->m_5c, o->m_60);
+        if (dist >= g_buteMgr.GetIntDef("Warlordz", "PanicRadius", 0x40)) {
+            RaiseBattleAlert();
+            return 0;
+        }
+    } else {
+        if (reg->m_2c->m_3f4->m_4c == 0) {
+            ResolveMovingAnimation();
+            return 0;
+        }
+        if ((i64)(u32)g_645588 - *(i64*)&m_88 >= *(i64*)&m_90) {
+            reg->m_60->PostBattleEvent(((CWarlordOwner*)m_10)->m_188, 0x436, -1, -1, -1);
+            m_90 = 0x7530;
+            m_94 = 0;
+            m_88 = g_645588;
+            m_8c = 0;
+        }
+    }
+    return 0;
+}
+
+// ===========================================================================
+// CWarlord::BuildFortSplashParticles  (0x044f80)
+// ===========================================================================
+// Re-arm the geo sub-player, and when ready-to-move, spawn the fort splash
+// particle at the warlord's clamped screen position (registry effect dispatch),
+// arm the panic timer on the registry sub-object, then flag the anim player.
+// @early-stop
+// DEFERRED to the final sweep: 0x127-byte function over a dozen WwdGameReg offsets
+// (viewport bounds, the +0x30 effect-spawn dispatch, the +0x68 panic sub-object
+// + its +0x290 timer, the +0x150 owner-array slot). Homed so the RVA is labeled.
+RVA(0x00044f80, 0x127)
+void CWarlord::BuildFortSplashParticles() {}
+
+// ===========================================================================
+// CWarlord::NotifyFortUnderAttack  (0x045270)
+// ===========================================================================
+// Raise the fort-under-attack alert when an enemy breaches the panic radius.
+// @early-stop
+// DEFERRED to the final sweep (big function, 0x2a8 > 512B, STOP-EARLY). Homed so
+// the RVA + its LoadAttributes caller pair; full body left for a leaf-first redo.
+RVA(0x00045270, 0x2a8)
+void CWarlord::NotifyFortUnderAttack() {}

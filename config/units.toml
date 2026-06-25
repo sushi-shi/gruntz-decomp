@@ -1216,6 +1216,16 @@ source = "src/Gruntz/CRemusReadStream.cpp"
 flags = "base"
 
 [[unit]]
+unit = "helperhost"
+source = "src/Gruntz/HelperHost.cpp"
+flags = "base"
+
+[[unit]]
+unit = "unknownclassincgruntzmgr"
+source = "src/Gruntz/UnknownClassInCGruntzMgr.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "cfxmodedesc"
 source = "src/Gruntz/CFxModeDesc.cpp"
 flags = "base"

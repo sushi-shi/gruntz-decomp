@@ -87,6 +87,8 @@ struct StreamVoice {
 
 class SoundStream : public SoundDevice {
 public:
+    SoundStream();             // 0x1376d0  base ctor + zero m_94/m_98 + stamp 0x5ef6ec
+    void* ScalarDtor(i32 flag); // 0x1376f0  ??_G: ~SoundStream then operator delete
     ~SoundStream(); // 0x137710  restamp vptr (0x5ef6ec) then ~SoundDevice
     StreamVoice* CreateStreamBuffer(WaveFormatX* fmt, u32 bytes, i32 a, i32 b, i32 c);
     // 0x137780
@@ -99,6 +101,10 @@ public:
         u32* outDataOff,
         u32* outDataLen
     ); // 0x137b70
+
+    // SoundStream's own first member past the 0x98 SoundDevice base; m_94 (the
+    // ctor's other zeroed word) is the inherited SoundDevice +0x94 list head.
+    i32 m_98; // +0x98
 };
 
 #endif // DSNDMGR_SOUNDSTREAM_H

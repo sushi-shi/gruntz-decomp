@@ -90,7 +90,7 @@ cpathhazard	7	3
 cplay	31	8
 cremusentrylist	2	1
 cremusnode	4	2
-cremusreadstream	2	1
+cremusreadstream	4	2
 crt_istream	3	2
 crt_ostream	4	3
 crt_streambuf	7	5
@@ -117,7 +117,7 @@ dsoundvoice	2	1
 engine_attributed	28	0
 engine_boundary	626	0
 engine_discovered	72	0
-engine_label_stubs	475	104
+engine_label_stubs	462	103
 engstr	3	1
 filemem	9	8
 filestream	13	9
@@ -145,6 +145,7 @@ gruntzplayer	6	1
 gruntzsoundz	12	11
 gruntzwnd	9	7
 hash	10	9
+helperhost	2	0
 iconloaders	5	1
 image	36	22
 imageset	4	4
@@ -207,7 +208,7 @@ scattersamples	2	1
 shadetablecache	17	3
 siriusworkerhandlers	4	3
 sounddevice	12	6
-soundstream	5	2
+soundstream	7	3
 soundvoicelist	4	3
 spriteloaders	10	5
 spriteref	2	1
@@ -233,11 +234,12 @@ triggermgr	42	7
 triggermgr_eh	4	0
 uncompr	1	1
 unknownclassarrays	38	10
+unknownclassincgruntzmgr	2	0
 unknownsalazar	4	0
 userbaselink	9	0
 userlogic	49	19
 videoconfig	2	0
-warlord	3	1
+warlord	8	2
 warpstonefly	3	2
 winapi	5	3
 winapicdrom	1	0
@@ -831,6 +833,8 @@ cremusnode	??0CRemusNode@@QAE@HHH@Z	60.1176	60.1176	2	9b0a333c3352	0x15b2c0
 cremusnode	??0CRemusNode@@QAE@XZ	100.0000	100.0000	1	9b0a333c3352	0x1549d0
 cremusnode	??1CRemusNode@@QAE@XZ	78.8182	78.8182	1	af194ae7afa3	0x154a50
 cremusnode	?Init@CRemusNode@@QAEHHHHHHH@Z	100.0000	100.0000	1	e65680f58643	0x1647e0
+cremusreadstream	?BeginParse@CRemusReadStream@@QAEHXZ	99.7872	99.7872	1	c2e8d649ccf5	0x139960
+cremusreadstream	?EndParse@CRemusReadStream@@QAEHXZ	100.0000	100.0000	1	c71faa6f8df7	0x1399d0
 cremusreadstream	?Read@CRemusReadStream@@QAEHPAXIH@Z	91.1957	91.1957	1	a3c64a9d684b	0x139af0
 cremusreadstream	?SetPos@CRemusReadStream@@QAEHH@Z	100.0000	100.0000	1	dbbfa0bcee57	0x139ae0
 crt_istream	?get@istream@@QAEHXZ	100.0000	100.0000	1	c72ccfaea1d2	0x16a410
@@ -1759,7 +1763,6 @@ engine_label_stubs	??0CTileTimeTriggerLogic@@QAE@XZ	100.0000	100.0000	1	cpp:45e6
 engine_label_stubs	??0CTileTimeTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	1	cpp:45e65336d4b5	0x1127c0
 engine_label_stubs	??0CTimeBomb@@QAE@H@Z	1.4516	1.4516	1	cpp:6bf52155264d	0xe1b90
 engine_label_stubs	??0CToyPeek@@QAE@H@Z	2.1204	2.1204	1	cpp:6bf52155264d	0x98140
-engine_label_stubs	??0CWarlord@@QAE@H@Z	0.2750	0.2750	1	cpp:6bf52155264d	0x42d40
 engine_label_stubs	??0CWayPoint@@QAE@H@Z	2.5455	2.5455	1	cpp:6bf52155264d	0xae3f0
 engine_label_stubs	??0MallocCtor_135b10@@QAE@XZ	2.5000	2.5000	1	cpp:e8a4cb0d5b2a	0x135b10
 engine_label_stubs	??0MallocCtor_136180@@QAE@XZ	2.0513	2.0513	1	cpp:e8a4cb0d5b2a	0x136180
@@ -1791,18 +1794,13 @@ engine_label_stubs	??0MallocCtor_180410@@QAE@XZ	17.5000	17.5000	1	cpp:e8a4cb0d5b
 engine_label_stubs	??0MallocCtor_1816c0@@QAE@XZ	9.3333	9.3333	1	cpp:e8a4cb0d5b2a	0x1816c0
 engine_label_stubs	??0MallocCtor_184960@@QAE@XZ	2.0513	2.0513	1	cpp:e8a4cb0d5b2a	0x184960
 engine_label_stubs	??0MallocCtor_192390@@QAE@XZ	1.0526	1.0526	1	cpp:e8a4cb0d5b2a	0x192390
-engine_label_stubs	??0UnknownClassInCGruntzMgr@@QAE@XZ	3.0435	3.0435	1	cpp:45e65336d4b5	0xda790
-engine_label_stubs	??0UnknownVoldemort@@QAE@XZ	14.0000	14.0000	1	cpp:45e65336d4b5	0x1376d0
 engine_label_stubs	??1CGruntzMapMgr@@QAE@XZ	2.0833	2.0833	1	cpp:45e65336d4b5	0x85d10
 engine_label_stubs	??1CRandomAmbientSound@@UAE@XZ	1.2698	1.2698	1	cpp:e8a4cb0d5b2a	0xbb60
-engine_label_stubs	??1UnknownClassInCGruntzMgr@@QAE@XZ	4.5455	4.5455	1	cpp:45e65336d4b5	0x83260
-engine_label_stubs	??1UnknownVoldemort@@QAE@XZ	3.6364	3.6364	1	cpp:45e65336d4b5	0x1376f0
 engine_label_stubs	?AckDropPlayer@CNetMgr@@QAEXH@Z	40.0000	40.0000	1	cpp:2262ffc5f902	0x16d1
 engine_label_stubs	?Append@EditAppendHost_0c2ce0@ApiCallerStubs@@QAEXPAD@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xc2ce0
 engine_label_stubs	?Apply@PalHost_1775f0@ApiCallerStubs@@QAEHPBDH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x1775f0
 engine_label_stubs	?BaseCleanup@CGameModeBase@@QAEXXZ	40.0000	40.0000	1	cpp:2262ffc5f902	0x3f53
 engine_label_stubs	?Begin@ActionHost_0d7220@ApiCallerStubs@@QAEHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xd7220
-engine_label_stubs	?BeginParse@RemusParseSource@@QAEHXZ	2.9787	2.9787	1	cpp:2262ffc5f902	0x139960
 engine_label_stubs	?Blit1624@CFileImage@@QAEHPAXH@Z	1.4844	1.4844	1	cpp:6bf52155264d	0x13fce0
 engine_label_stubs	?Blit168@CFileImage@@QAEHPAX0H@Z	1.6814	1.6814	1	cpp:6bf52155264d	0x13fbb0
 engine_label_stubs	?Blit2416@CFileImage@@QAEHPAXH@Z	1.5323	1.5323	1	cpp:6bf52155264d	0x13ff80
@@ -1816,7 +1814,6 @@ engine_label_stubs	?Build@PalBuilder_176df0@ApiCallerStubs@@QAEHPAUtagPALETTEENT
 engine_label_stubs	?BuildAnizKeyTable@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXH@Z	0.5525	0.5525	1	cpp:e8a4cb0d5b2a	0xddaa0
 engine_label_stubs	?BuildAssetNamespacePrefixes@EngineLabelBacklog@@YGXHHHH@Z	0.2933	0.2933	1	cpp:6bf52155264d	0xdca70
 engine_label_stubs	?BuildBootyGruntIdleAnimation@EngineLabelBacklog@@YAXXZ	0.3058	0.3058	1	cpp:45e65336d4b5	0x1ce60
-engine_label_stubs	?BuildFortSplashParticles@CWarlord@@QAEXXZ	1.1905	1.1905	1	cpp:e8a4cb0d5b2a	0x44f80
 engine_label_stubs	?BuildGruntExitAnimation@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXXZ	0.4630	0.4630	1	cpp:e8a4cb0d5b2a	0x641b0
 engine_label_stubs	?BuildGruntLoseItemAnimation@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXXZ	0.8065	0.8065	1	cpp:e8a4cb0d5b2a	0x57890
 engine_label_stubs	?BuildGruntNamespaceList@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXH@Z	0.5714	0.5714	1	cpp:e8a4cb0d5b2a	0xdd050
@@ -1863,7 +1860,6 @@ engine_label_stubs	?DrawCount@DrawHost_164380@ApiCallerStubs@@QAEXPAUtagRECT@@H@
 engine_label_stubs	?DrawDebugStats@EngineLabelBacklog@@YAXXZ	0.3390	0.3390	1	cpp:45e65336d4b5	0xcf770
 engine_label_stubs	?DrawLabel@DrawHost2_164420@ApiCallerStubs@@QAEXPAUtagRECT@@PAD@Z	95.0000	95.0000	1	cpp:6bf52155264d	0x164420
 engine_label_stubs	?DrawSaveGameMenu@EngineLabelBacklog@@YAXXZ	0.3436	0.3436	1	cpp:45e65336d4b5	0xe3f40
-engine_label_stubs	?EndParse@RemusParseSource@@QAEXXZ	8.3333	8.3333	1	cpp:2262ffc5f902	0x1399d0
 engine_label_stubs	?ErrorThunk_08dd80@CDirectDrawMgr@@QAEXXZ	5.0000	5.0000	1	cpp:45e65336d4b5	0x8dd80
 engine_label_stubs	?Find@CButeTree@@QAEPAXPBD@Z	1.8868	1.8868	1	cpp:0f6a941a1e75	0x16d190
 engine_label_stubs	?First@RezColl@@QAEPAURezNode@@XZ	11.1111	11.1111	1	cpp:2262ffc5f902	0x184ae0
@@ -1878,8 +1874,6 @@ engine_label_stubs	?GetItem@CStatusBarMgr@@QAEPAVCStatusBarItem2@@XZ	90.3125	90.
 engine_label_stubs	?GetLength@CFileIO@@QAEIXZ	5.6000	5.6000	1	cpp:2262ffc5f902	0x1bf505
 engine_label_stubs	?GetRect@RectQuery_08e3a0@ApiCallerStubs@@QAEXPAUtagRECT@@@Z	85.1200	85.1200	1	cpp:6bf52155264d	0x8e3a0
 engine_label_stubs	?HandleFortConquered@EngineLabelBacklog@@YAXXZ	0.2710	0.2710	1	cpp:45e65336d4b5	0x3f5f0
-engine_label_stubs	?Helper_164790@HelperHost@@QAEHHH@Z	11.1111	11.1111	1	cpp:2262ffc5f902	0x164790
-engine_label_stubs	?Helper_166040@HelperHost@@QAEXHH@Z	2.5000	2.5000	1	cpp:2262ffc5f902	0x166040
 engine_label_stubs	?Init@AilHost_138490@ApiCallerStubs@@QAEHHHH@Z	99.8077	99.8077	1	cpp:6bf52155264d	0x138490
 engine_label_stubs	?Init@Region_182ab0@ApiCallerStubs@@QAEHPAUTileSrcHost_182ab0@2@HPAUtagRECT@@HHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x182ab0
 engine_label_stubs	?Init@RezSync@@QAEXHH@Z	0.0562	0.0562	1	cpp:6bf52155264d	0x83450
@@ -1894,12 +1888,10 @@ engine_label_stubs	?Load@PalLoad_1479e0@ApiCallerStubs@@QAEHHPADH@Z	89.7286	89.7
 engine_label_stubs	?Load@ResLoad_144270@ApiCallerStubs@@QAEHHPADH@Z	86.9310	86.9310	1	cpp:6bf52155264d	0x144270
 engine_label_stubs	?Load@StrHost_0b7ec0@ApiCallerStubs@@QAEXHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0xb7ec0
 engine_label_stubs	?LoadActionTileSprites@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHH@Z	100.0000	100.0000	1	cpp:e8a4cb0d5b2a	0xdb600
-engine_label_stubs	?LoadAttributes2@CWarlord@@QAEHXZ	91.6296	91.6296	1	cpp:6bf52155264d	0x44d10
 engine_label_stubs	?LoadAttributes@CBrickz@@QAEXHH@Z	0.1490	0.1490	1	cpp:6bf52155264d	0x810f0
 engine_label_stubs	?LoadAttributes@CDroppedObjectShadow@@QAEXXZ	0.4444	0.4444	1	cpp:45e65336d4b5	0xc62e0
 engine_label_stubs	?LoadAttributes@CTeleporter@@QAEXXZ	0.4274	0.4274	1	cpp:45e65336d4b5	0x41aa0
 engine_label_stubs	?LoadAttributes@CTimeBomb@@QAEXXZ	0.7246	0.7246	1	cpp:45e65336d4b5	0xe1e60
-engine_label_stubs	?LoadAttributes@CWarlord@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x44c00
 engine_label_stubs	?LoadBombGruntRunConfig2@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXXZ	0.4762	0.4762	1	cpp:e8a4cb0d5b2a	0x68520
 engine_label_stubs	?LoadBombGruntRunConfig@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXHH@Z	0.3922	0.3922	1	cpp:e8a4cb0d5b2a	0x65630
 engine_label_stubs	?LoadBootyCheatState@EngineLabelBacklog@@YGXHHH@Z	0.3788	0.3788	1	cpp:6bf52155264d	0x18830
@@ -1948,7 +1940,6 @@ engine_label_stubs	?LookupToolToyColorKey@ThisStubOwnerUnknown@ApiCallerStubs@@Q
 engine_label_stubs	?Method_10a340@CSBI_Image@@QAEXXZ	0.1126	0.1126	1	cpp:e8a4cb0d5b2a	0x10a340
 engine_label_stubs	?Next@RezNode@@QAEPAU1@XZ	6.0606	6.0606	1	cpp:2262ffc5f902	0x1848b0
 engine_label_stubs	?Notify@ModeHost_08f480@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x8f480
-engine_label_stubs	?NotifyFortUnderAttack@CWarlord@@QAEXXZ	0.5464	0.5464	1	cpp:e8a4cb0d5b2a	0x45270
 engine_label_stubs	?OnActivate_vfunc8@BootyState@@QAEHXZ	100.0000	100.0000	1	cpp:e8a4cb0d5b2a	0x1f6f0
 engine_label_stubs	?OnClick@ClickHost_0394b0@ApiCallerStubs@@QAEHHHH@Z	50.5500	50.5500	1	cpp:e1535087fe94	0x394b0
 engine_label_stubs	?OnInitDialog@TimerDlg_0c2cb0@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:e1535087fe94	0xc2cb0
@@ -2645,6 +2636,8 @@ hash	?Remove@CHashBase@@QAEXPAUCHashEntry@@@Z	100.0000	100.0000	1	8a54ef1211a7	0
 hash	?RemoveAll@CHashBase@@QAEXXZ	100.0000	100.0000	1	04dad41852b8	0x184a40
 hash	?Walk@CHash@@QAEPAXPBDH@Z	100.0000	100.0000	1	51b6d0275c7f	0x13c270
 hash	?Walk@CHashB@@QAEPAXPBDH@Z	100.0000	100.0000	1	12b47125ba1c	0x13c3f0
+helperhost	?Helper_164790@HelperHost@@QAEHHH@Z	90.5556	90.5556	1	6e310bcc0780	0x164790
+helperhost	?Helper_166040@HelperHost@@QAEHHH@Z	95.0000	95.0000	1	1c04f9c106f5	0x166040
 iconloaders	?BuildBootyPerfectAnimation@EngineLabelBacklog@@QAEHXZ	100.0000	100.0000	4	ac754f563924	0x1c070
 iconloaders	?LoadCameraSprite@EngineLabelBacklog@@QAEHXZ	86.8000	86.8000	4	4ee34c31ec20	0x78960
 iconloaders	?LoadExplosionSprites@EngineLabelBacklog@@QAEHHHHH@Z	98.0727	98.0727	4	5700eabe337f	0x7b330
@@ -3111,11 +3104,13 @@ sounddevice	?Shutdown@SoundDevice@@QAEXXZ	100.0000	100.0000	1	fb1766cf3e8b	0x136
 sounddevice	?StopAll@SoundDevice@@QAEXXZ	100.0000	100.0000	1	1bf09dff5de0	0x136de0
 sounddevice	?ValidateRestore@SoundDevice@@QAEHPAVDirectSoundMgr@@PAUWaveFormatX@@I@Z	100.0000	100.0000	1	dc530d81dffa	0x136ab0
 sounddevice	_ParseWaveChunks	98.2281	98.2281	1	55419d1096d0	0x137110
+soundstream	??0SoundStream@@QAE@XZ	96.8000	96.8000	1	434a7f246c67	0x1376d0
 soundstream	??1SoundStream@@QAE@XZ	100.0000	100.0000	1	611af7941630	0x137710
 soundstream	?CreateStreamBuffer@SoundStream@@QAEPAUStreamVoice@@PAUWaveFormatX@@IHHH@Z	47.0744	47.0744	3	4d0bdcd49e08	0x137780
 soundstream	?DestroyVoice@SoundStream@@QAEXPAUStreamVoice@@@Z	100.0000	100.0000	1	faf57eb2e985	0x1379d0
 soundstream	?OpenStream@SoundStream@@QAEPAUStreamVoice@@PAUStreamSource@@HHHHH@Z	90.5714	90.5714	2	9fb428c54620	0x137900
 soundstream	?ParseWave@SoundStream@@QAEHPAUStreamSource@@PAUWaveFormatX@@PAI2@Z	98.2640	98.2640	1	a9b9d366d2b7	0x137b70
+soundstream	?ScalarDtor@SoundStream@@QAEPAXH@Z	100.0000	100.0000	1	be19e171f842	0x1376f0
 soundvoicelist	?InsertHead@DSoundList@@QAEXPAUDSoundLink@@@Z	100.0000	100.0000	1	dbbaa64039bc	0x1390e0
 soundvoicelist	?InsertTail@DSoundList@@QAEXPAUDSoundLink@@@Z	100.0000	100.0000	1	b2001e2d12ac	0x139110
 soundvoicelist	?RemoveMatching@DSoundList@@QAEXII@Z	99.4000	99.4000	1	f32687293f30	0x136f60
@@ -3346,6 +3341,8 @@ unknownclassarrays	?winapi_02dfa0_IntersectRect@UnknownClassArrays@@QAEHHHHH@Z	0
 unknownclassarrays	?winapi_02e3a0_PtInRect@UnknownClassArrays@@QAEHH@Z	0.2997	0.2997	2	9b4883af26aa	0x2e3a0
 unknownclassarrays	?winapi_031ca0_IntersectRect@UnknownClassArrays@@QAEHH@Z	0.6278	0.6278	2	31589f5675b4	0x31ca0
 unknownclassarrays	?winapi_032060_IntersectRect@UnknownClassArrays@@QAEHH@Z	0.3368	0.3368	2	b0505770caf7	0x32060
+unknownclassincgruntzmgr	??0UnknownClassInCGruntzMgr@@QAE@XZ	85.3478	85.3478	1	46bdec786f89	0xda790
+unknownclassincgruntzmgr	??1UnknownClassInCGruntzMgr@@QAE@XZ	72.3182	72.3182	1	0a996778a41d	0x83260
 unknownsalazar	??0UnknownSalazar@@QAE@XZ	4.3750	4.3750	2	4c907e80c2a7	0x136440
 unknownsalazar	??1UnknownSalazar@@QAE@XZ	3.6364	3.6364	2	0f612d9c4729	0x1364c0
 unknownsalazar	?getLookupTableValue@UnknownSalazar@@SAHH@Z	7.4074	7.4074	4	6254d92425a7	0x1350b0
@@ -3410,7 +3407,12 @@ userlogic	?winapi_064540_PostMessageA@CUserLogic@@QAEHXZ	2.5974	2.5974	2	1604491
 userlogic	?winapi_0ee800_IntersectRect_PtInRect@CUserLogic@@QAEHXZ	0.2653	0.2653	2	f2ccbcb9c820	0xee800
 videoconfig	?LoadVideoResolutionConfig@@YAXPAXHH@Z	97.2737	97.2737	7	65cf3f7da201	0x36f30
 videoconfig	?SaveVideoResolutionConfig@@YAXPAX0@Z	88.8148	88.8148	6	6a3159e5dbaa	0x370a0
+warlord	??0CWarlord@@QAE@H@Z	3.5796	3.5796	1	b29f645c5e90	0x42d40
 warlord	??1CWarlord@@UAE@XZ	73.9524	73.9524	1	0524876559f2	0x107f0
+warlord	?BuildFortSplashParticles@CWarlord@@QAEXXZ	1.1905	1.1905	1	46da92888935	0x44f80
+warlord	?LoadAttributes2@CWarlord@@QAEHXZ	91.6296	91.6296	1	3c28e827f939	0x44d10
+warlord	?LoadAttributes@CWarlord@@QAEHXZ	100.0000	100.0000	1	fd1848323ebc	0x44c00
+warlord	?NotifyFortUnderAttack@CWarlord@@QAEXXZ	0.5464	0.5464	1	c2ca723a74ad	0x45270
 warlord	?RearmMoving@CWarlord@@QAEHXZ	100.0000	100.0000	2	636920fedee4	0x44bb0
 warlord	?ResolveState@CWarlord@@QAEHH@Z	1.8667	1.8667	2	3a30038a541f	0x44640
 warpstonefly	??0CWarpStoneFly@@QAE@XZ	100.0000	100.0000	1	4663c4a384a2	0x109bb0
