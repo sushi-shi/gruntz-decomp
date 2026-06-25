@@ -15,9 +15,119 @@
 
 class CVoiceTrigger : public CUserLogic {
 public:
-    i32 Tick();       // 0x11a700
-    ~CVoiceTrigger(); // 0x0135a0 (folds the CUserLogic teardown)
+    void RegisterActs(); // 0x11a500 (binds Tick to the activation key "A")
+    i32 Tick();          // 0x11a700
+    ~CVoiceTrigger();    // 0x0135a0 (folds the CUserLogic teardown)
 };
+
+// ---------------------------------------------------------------------------
+// The activation registry CVoiceTrigger::RegisterActs (0x11a500) binds into - the
+// trigger's OWN instance at 0x651500 (the SAME range/cache shape as every
+// FireActivation registry: g_vtrigColl base + the lo/hi/base/stride/cur/scratch
+// fields). The slow path Finds (0x16da80), and on miss rebuilds (ActAlloc 0x16d990
+// -> g_actCache, Insert 0x16d850) yielding g_vtrigCur. All BSS globals DATA-pinned
+// so the loads reloc-mask; the collection methods are external/no-body.
+// ---------------------------------------------------------------------------
+struct CVTrigEntry; // an entry: first dword is the registered handler
+struct CVTrigColl {
+    i32 Find(i32 coord, i32 z); // 0x16da80 (__thiscall ret 8)
+};
+struct CVTrigColl2 {
+    void Insert(void* coll, void* item, i32 n); // 0x16d850 (__thiscall ret 0xc)
+};
+extern "C" i32 ActAlloc(); // 0x16d990
+
+DATA(0x00251508)
+extern i32 g_vtrigLo;
+DATA(0x0025150c)
+extern i32 g_vtrigHi;
+DATA(0x00251510)
+extern char* g_vtrigBase;
+DATA(0x00251518)
+extern i32 g_vtrigStride;
+DATA(0x00251514)
+extern CVTrigEntry* g_vtrigCur;
+DATA(0x00251520)
+extern i32 g_vtrigScratch;
+DATA(0x00251500)
+extern CVTrigColl g_vtrigColl;
+DATA(0x00251504)
+extern CVTrigColl2* g_vtrigColl2;
+DATA(0x002bf464)
+extern void* g_actCache;
+DATA(0x002bf428)
+extern void* g_actAllocResult;
+
+struct CVTrigEntry {
+    void (CVoiceTrigger::*m_fn)(); // [entry]
+};
+
+// The inlined coordinate->Entry* lookup the registration resolves the slot with.
+static inline CVTrigEntry* VTrigLookup(i32 coord) {
+    g_vtrigScratch = 0;
+    if (coord >= g_vtrigLo && coord <= g_vtrigHi) {
+        return (CVTrigEntry*)(g_vtrigBase + (coord - g_vtrigLo) * g_vtrigStride);
+    }
+    if (g_vtrigColl.Find(coord, 0)) {
+        return (CVTrigEntry*)(g_vtrigBase + (coord - g_vtrigLo) * g_vtrigStride);
+    }
+    void* item = g_actCache;
+    g_actAllocResult = (void*)ActAlloc();
+    g_vtrigColl2->Insert(&g_vtrigColl, item, 0xc);
+    return g_vtrigCur;
+}
+
+// The shared activation-NAME registry (the first block interns "A"). g_buteTree
+// (0x6bf620, mangled-named) doubles as the name->id map; g_nextActId (0x61aea8)
+// is the running id counter; s_actKeyA (0x60a454) is the "A" key; the scratch
+// name registry is @0x6bf650 (same shape as g_vtrigColl).
+DATA(0x0021aea8)
+extern i32 g_nextActId;
+DATA(0x0020a454)
+extern char s_actKeyA[];
+DATA(0x002bf650)
+extern CVTrigColl g_nameReg; // 0x6bf650
+DATA(0x002bf654)
+extern CVTrigColl2* g_nameReg2; // 0x6bf654
+DATA(0x002bf658)
+extern i32 g_nameRegLo;
+DATA(0x002bf65c)
+extern i32 g_nameRegHi;
+DATA(0x002bf660)
+extern char* g_nameRegBase;
+DATA(0x002bf668)
+extern i32 g_nameRegStride;
+DATA(0x002bf664)
+extern char* g_nameRegCur;
+DATA(0x002bf66c)
+extern void** g_nameRegCurList;
+DATA(0x002bf670)
+extern i32 g_nameRegScratch;
+
+extern CButeTree g_buteTree; // ?g_buteTree@@3VCButeTree@@A @0x6bf620
+
+struct CActName {
+    void Free();                  // 0x1b9b93 (~CString)
+    void Assign(const char* key); // 0x1b9e74 (CString::operator=(char const*))
+};
+
+static inline char* ActNameLookup(i32 id) {
+    g_nameRegScratch = 0;
+    if (id >= g_nameRegLo && id <= g_nameRegHi) {
+        return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
+    }
+    if (g_nameReg.Find(id, 0)) {
+        return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
+    }
+    void* item = g_actCache;
+    g_actAllocResult = (void*)ActAlloc();
+    g_nameReg2->Insert(&g_nameReg, item, 0xc);
+    return g_nameRegCur;
+}
+
+// The logic handler bound into the slot (the ILT to CVoiceTrigger::Tick @0x11a700);
+// referenced by address so the DIR32 operand reloc-masks.
+extern i32 VTrigLogic_11a700();
 
 // The on-screen-cue receiver (g_gameReg->m_68). QueryAt (0x75c60, via the 0x32ce
 // thunk) resolves the entity whose screen rect overlaps the trigger; CueA
@@ -96,6 +206,36 @@ extern "C" i32 g_644c54;
 // ~CSecretTeleporterTrigger @0x010ab0; the empty body is enough for cl.
 RVA(0x000135a0, 0x44)
 CVoiceTrigger::~CVoiceTrigger() {}
+
+// CVoiceTrigger::RegisterActs @0x11a500 - bind the per-frame Tick handler to the
+// activation key "A" in the trigger's OWN registry (g_vtrigColl). The SAME
+// archetype as CParticlez::RegisterActs.
+//
+// @early-stop
+// zvec/name-vec IndexToPtr regalloc wall (docs/patterns/zero-register-pinning.md +
+// the documented ZVec family): logic + the bute find/insert + the fn-ptr store are
+// byte-faithful; cl pins the index/this/base across the grow branches differently
+// than retail. Not source-steerable; the SAME plateau as CParticlez::RegisterActs.
+RVA(0x0011a500, 0x18d)
+void CVoiceTrigger::RegisterActs() {
+    i32 id = (i32)g_buteTree.Find(s_actKeyA);
+    if (id == 0) {
+        id = g_nextActId;
+        g_buteTree.Insert(s_actKeyA, (void*)id);
+        char* slot = ActNameLookup(id);
+        i32 n = g_nameRegScratch;
+        void** list = g_nameRegCurList;
+        while (n-- != 0) {
+            if (list != 0) {
+                ((CActName*)list)->Free();
+            }
+            list++;
+        }
+        ((CActName*)slot)->Assign(s_actKeyA);
+        g_nextActId++;
+    }
+    *(void**)VTrigLookup(id) = (void*)&VTrigLogic_11a700;
+}
 
 // CVoiceTrigger::Tick @0x11a700 - query the entity under the trigger's screen
 // rect; if it is in the active area and its sprite sits inside the on-screen

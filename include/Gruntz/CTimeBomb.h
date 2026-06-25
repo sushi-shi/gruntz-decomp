@@ -24,6 +24,7 @@
 class CTimeBomb : public CUserLogic {
 public:
     void FireActivation(i32 coord); // 0x0e1830
+    void RegisterActs();            // 0x0e1990 (binds the logic handler to key "A")
     ~CTimeBomb();                   // 0x012a70 (folds the CUserLogic teardown)
 };
 

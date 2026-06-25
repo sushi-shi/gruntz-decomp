@@ -195,7 +195,6 @@ RVA(0x000db2f0, 0x2b) void Boundary_0db2f0() {}  // proximity: GruntzPlayer@-0x3
 RVA(0x000db750, 0x70) void Boundary_0db750() {}  // proximity: GruntzPlayer@-0x7a0 | CPlay@+0xf80
 RVA(0x000e0d40, 0x6c2) void Boundary_0e0d40() {}  // proximity: CProjectile@-0x230 | CTimeBomb@+0xaf0
 RVA(0x000e17b0, 0x15) void Boundary_0e17b0() {}  // proximity: CProjectile@-0xca0 | CTimeBomb@+0x80
-RVA(0x000e1990, 0x18d) void Boundary_0e1990() {}  // proximity: CTimeBomb@-0x160 | CProjectile@+0x800
 RVA(0x000e56b0, 0x8) void Boundary_0e56b0() {}  // proximity: CSaveGame@-0x20 | CFileIO@+0x50
 RVA(0x000e7cd0, 0xf8) void Boundary_0e7cd0() {}  // proximity: CAniPlayer@-0x1d0 | CSBI_MenuItem@+0x410
 RVA(0x000ea170, 0x5c) void Boundary_0ea170() {}  // proximity: CSbItem@-0x80 | CSBI_StatzTabGruntBar@+0x300
@@ -230,7 +229,6 @@ RVA(0x00112bf0, 0x5e) void Boundary_112bf0() {}  // proximity: CTileGridCommand@
 RVA(0x00113860, 0x3b) void Boundary_113860() {}  // proximity: CTileActionEvent@-0x440 | CTileTriggerSwitchLogic@+0x230
 RVA(0x001138b0, 0xb4) void Boundary_1138b0() {}  // proximity: CTileActionEvent@-0x490 | CTileTriggerSwitchLogic@+0x1e0
 RVA(0x00113e70, 0x7b) void Boundary_113e70() {}  // proximity: CTileTriggerSwitchLogic@-0xa0 | CTileActionEvent@+0xa0
-RVA(0x001149c0, 0x18d) void Boundary_1149c0() {}  // proximity: CToobSpikez@-0x160 | CTileTriggerSwitchLogic@+0x1540
 RVA(0x00114ec0, 0x27) void Boundary_114ec0() {}  // proximity: CToobSpikez@-0x660 | CTileTriggerSwitchLogic@+0x1040
 RVA(0x00114f00, 0x3e) void Boundary_114f00() {}  // proximity: CToobSpikez@-0x6a0 | CTileTriggerSwitchLogic@+0x1000
 RVA(0x00115730, 0xa) void Boundary_115730() {}  // proximity: CToobSpikez@-0xed0 | CTileTriggerSwitchLogic@+0x7d0
@@ -245,7 +243,6 @@ RVA(0x00118310, 0xc) void Boundary_118310() {}  // proximity: CTileTriggerContai
 RVA(0x00118330, 0x57) void Boundary_118330() {}  // proximity: CTileTriggerContainer@-0x3d0 | CGruntVoice@+0x17b0
 RVA(0x00119fa0, 0x2ac) void Boundary_119fa0() {}  // proximity: CGruntVoice@-0x160 | CVoiceTrigger@+0x760
 RVA(0x0011a320, 0x15) void Boundary_11a320() {}  // proximity: CGruntVoice@-0x4e0 | CVoiceTrigger@+0x3e0
-RVA(0x0011a500, 0x18d) void Boundary_11a500() {}  // proximity: CGruntVoice@-0x6c0 | CVoiceTrigger@+0x200
 RVA(0x00133370, 0xb) void Boundary_133370() {}  // proximity: CInputDevice@-0x70 | WAP32@+0x10
 RVA(0x001333b0, 0x55) void Boundary_1333b0() {}  // proximity: WAP32@-0x30 | DirectInputMgr2@+0x1e0
 RVA(0x00133460, 0x6a) void Boundary_133460() {}  // proximity: WAP32@-0xe0 | DirectInputMgr2@+0x130

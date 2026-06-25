@@ -104,9 +104,9 @@ csingleanimation	1	1
 cstatichazard	5	2
 cstatusbarmgr	2	1
 cteleporter	2	1
-ctimebomb	2	2
-ctoobspikez	3	3
-cvoicetrigger	2	2
+ctimebomb	3	2
+ctoobspikez	4	3
+cvoicetrigger	3	2
 cwaypoint	1	1
 cwormholeacts	1	0
 databuffer	7	5
@@ -116,7 +116,7 @@ directinputmgr2	33	29
 directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	28	0
-engine_boundary	563	0
+engine_boundary	560	0
 engine_discovered	72	0
 engine_label_stubs	462	106
 engstr	3	1
@@ -902,10 +902,13 @@ cteleporter	??1CTeleporter@@UAE@XZ	100.0000	100.0000	1	0aa6d090845e	0x10dd0
 cteleporter	?Begin@CTeleporter@@QAEHXZ	87.6667	87.6667	1	ac212a968adf	0x419e0
 ctimebomb	??1CTimeBomb@@UAE@XZ	100.0000	100.0000	1	82a73e5a479d	0x12a70
 ctimebomb	?FireActivation@CTimeBomb@@QAEXH@Z	100.0000	100.0000	1	f49df59995b0	0xe1830
+ctimebomb	?RegisterActs@CTimeBomb@@QAEXXZ	92.9130	92.9130	1	908d9bceacb1	0xe1990
 ctoobspikez	??1CToobSpikez@@UAE@XZ	100.0000	100.0000	1	550e0ced02c4	0x12c60
 ctoobspikez	?FireActivation@CToobSpikez@@QAEXH@Z	100.0000	100.0000	1	44f507f426d2	0x114860
+ctoobspikez	?RegisterActs@CToobSpikez@@QAEXXZ	92.9130	92.9130	1	753529566a46	0x1149c0
 ctoobspikez	?Register_1147e0@CToobSpikez@@QAEXXZ	100.0000	100.0000	1	5a4beef40a63	0x1147e0
 cvoicetrigger	??1CVoiceTrigger@@UAE@XZ	100.0000	100.0000	1	8939b1cb3841	0x135a0
+cvoicetrigger	?RegisterActs@CVoiceTrigger@@QAEXXZ	92.9130	92.9130	1	eb83cede4e29	0x11a500
 cvoicetrigger	?Tick@CVoiceTrigger@@QAEHXZ	100.0000	100.0000	1	352963c16858	0x11a700
 cwaypoint	??1CWayPoint@@UAE@XZ	100.0000	100.0000	1	1792dd04db91	0x102e0
 cwormholeacts	?RegisterActs@CWormhole@@SAXXZ	92.9130	92.9130	1	836ea1f2bd5a	0x3f3f0
@@ -1239,7 +1242,6 @@ engine_boundary	?Boundary_0db2f0@@YAXXZ	5.8824	5.8824	1	45859aa9f791	0xdb2f0
 engine_boundary	?Boundary_0db750@@YAXXZ	1.1111	1.1111	1	57852634c54a	0xdb750
 engine_boundary	?Boundary_0e0d40@@YAXXZ	0.0670	0.0670	1	1fd5c25fbaff	0xe0d40
 engine_boundary	?Boundary_0e17b0@@YAXXZ	20.0000	20.0000	1	cf110a3ebada	0xe17b0
-engine_boundary	?Boundary_0e1990@@YAXXZ	0.8696	0.8696	1	954f11ea5c1a	0xe1990
 engine_boundary	?Boundary_0e56b0@@YAXXZ	50.0000	50.0000	1	7de29b99084b	0xe56b0
 engine_boundary	?Boundary_0e7cd0@@YAXXZ	0.3509	0.3509	1	41a414bf24e7	0xe7cd0
 engine_boundary	?Boundary_0ea170@@YAXXZ	1.0000	1.0000	1	93d2f72a8b52	0xea170
@@ -1274,7 +1276,6 @@ engine_boundary	?Boundary_112bf0@@YAXXZ	2.7027	2.7027	1	679caf894dcf	0x112bf0
 engine_boundary	?Boundary_113860@@YAXXZ	1.9048	1.9048	1	76752601520d	0x113860
 engine_boundary	?Boundary_1138b0@@YAXXZ	0.4762	0.4762	1	dc81b3fe94d2	0x1138b0
 engine_boundary	?Boundary_113e70@@YAXXZ	0.7273	0.7273	1	abac91f19ee2	0x113e70
-engine_boundary	?Boundary_1149c0@@YAXXZ	0.8696	0.8696	1	77d6158334d0	0x1149c0
 engine_boundary	?Boundary_114ec0@@YAXXZ	6.6667	6.6667	1	37de1b769bc4	0x114ec0
 engine_boundary	?Boundary_114f00@@YAXXZ	3.8462	3.8462	1	758b8f9a8a46	0x114f00
 engine_boundary	?Boundary_115730@@YAXXZ	20.0000	20.0000	1	2ccc63d41582	0x115730
@@ -1289,7 +1290,6 @@ engine_boundary	?Boundary_118310@@YAXXZ	20.0000	20.0000	1	9ace41164e4d	0x118310
 engine_boundary	?Boundary_118330@@YAXXZ	3.3333	3.3333	1	dd9ccb81ecaf	0x118330
 engine_boundary	?Boundary_119fa0@@YAXXZ	0.4975	0.4975	1	c02afaff4bbf	0x119fa0
 engine_boundary	?Boundary_11a320@@YAXXZ	20.0000	20.0000	1	9502a6ccbeb9	0x11a320
-engine_boundary	?Boundary_11a500@@YAXXZ	0.8696	0.8696	1	6477db546661	0x11a500
 engine_boundary	?Boundary_133370@@YAXXZ	20.0000	20.0000	1	7a07df51ea0b	0x133370
 engine_boundary	?Boundary_1333b0@@YAXXZ	4.7619	4.7619	1	8682a299c4ec	0x1333b0
 engine_boundary	?Boundary_133460@@YAXXZ	4.0000	4.0000	1	5a1bf79e03ea	0x133460
