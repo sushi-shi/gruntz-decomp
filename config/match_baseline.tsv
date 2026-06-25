@@ -115,7 +115,7 @@ dialogs	31	14
 directinputmgr2	33	29
 directsoundmgr	39	29
 dsoundvoice	2	1
-engine_attributed	23	0
+engine_attributed	22	0
 engine_boundary	557	0
 engine_discovered	66	0
 engine_label_stubs	462	106
@@ -194,7 +194,7 @@ sbi_imageset	1	0
 sbi_imagesetani_eh	1	0
 sbi_menuitem	12	7
 sbi_menuitem_eh	1	0
-sbi_rectonly	67	27
+sbi_rectonly	68	27
 sbi_rectonly_eh	4	1
 sbi_sidetab	3	1
 sbi_sidetab_eh	1	0
@@ -1041,7 +1041,6 @@ engine_attributed	?CNetMgr_0bbec0@CNetMgr@@QAEXXZ	2.3256	2.3256	1	51787a1cdcf1	0
 engine_attributed	?CNetMgr_0bbf80@CNetMgr@@QAEXXZ	1.5152	1.5152	1	966da8c493a8	0xbbf80
 engine_attributed	?CNetMgr_0bc750@CNetMgr@@QAEXXZ	0.9259	0.9259	1	8243db1bde49	0xbc750
 engine_attributed	?CNetMgr_0bccd0@CNetMgr@@QAEXXZ	0.5128	0.5128	1	a059a86d6c08	0xbccd0
-engine_attributed	?CSBI_RectOnly_109520@CSBI_RectOnly@@QAEXXZ	0.0946	0.0946	1	bfcdd55fd70f	0x109520
 engine_attributed	?CShadeTableCache_14df40@CShadeTableCache@@QAEXXZ	0.0797	0.0797	1	e1665bd8bf80	0x14df40
 engine_attributed	?CTileTriggerTransition_10fe70@CTileTriggerTransition@@QAEXXZ	0.8696	0.8696	1	c029553c4df8	0x10fe70
 engine_attributed	?CTriggerMgr_07abc0@CTriggerMgr@@QAEXXZ	0.0948	0.0948	1	d276c5e72e8b	0x7abc0
@@ -2976,6 +2975,7 @@ sbi_rectonly	?ClickToggle@CSBI_RectOnly@@QAEHHHH@Z	99.9677	99.9677	1	986555ef615
 sbi_rectonly	?CommitSlot@CSBI_RectOnly@@QAEXH@Z	100.0000	100.0000	2	3c59433ef69c	0x106790
 sbi_rectonly	?ConfigureRect@CSBI_RectOnly@@QAEHHPAUCSbiCfgHost@@HHHHHHHHH@Z	62.3231	62.3231	2	f21cbba127c3	0xe72f0
 sbi_rectonly	?Deactivate@CSBI_RectOnly@@QAEHXZ	97.2115	97.2115	2	fcae74e9af3e	0x100cb0
+sbi_rectonly	?Deserialize@CSBI_RectOnly@@QAEHPAVCSbiStream@@@Z	93.2199	93.2199	1	61743d43a97f	0x109520
 sbi_rectonly	?EnterHlRow@CSBI_RectOnly@@QAEXHH@Z	100.0000	100.0000	1	2da54fa164bd	0x106820
 sbi_rectonly	?ExitMode@CSBI_RectOnly@@QAEXXZ	100.0000	100.0000	1	831f1003dd04	0x10b210
 sbi_rectonly	?FindReadySlot@CSBI_RectOnly@@QAEHXZ	100.0000	100.0000	2	a54b1bfe5f25	0x109a90

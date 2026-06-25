@@ -295,6 +295,7 @@ public:
     i32 ClearTabSprites(i32 idx);
     i32 HitTest(i32 x, i32 y);
     i32 Serialize(CSbiStream* s);
+    i32 Deserialize(CSbiStream* s);
     void NotifyAllSlots();
 
     // ----- newly reconstructed CSBI_RectOnly methods (RVA-ascending) -----
@@ -976,6 +977,165 @@ i32 CSBI_RectOnly::Serialize(CSbiStream* s) {
     s->Transfer(&count, 4);
     for (u32 n = 0; n < (u32)count; n++) {
         s->Transfer(m_ptrTable[n], 8);
+    }
+    return 1;
+}
+
+// The seq-keyed object map at (g_gameReg->m_30->m_8 + 0x48): Lookup(key, &out)
+// returns found (CMapWordToOb::Lookup-style; reloc-masked sibling).
+struct CSbiSeqMap {
+    i32 Lookup(i32 key, void** out); // 0x1b8760
+};
+
+// The looked-up object whose vtable slot 8 (+0x20) returns a type tag (== 5
+// validates it as the restored sequence holder stored back into m_8).
+class CSbiSeqObj {
+public:
+    virtual void v0();
+    virtual void v4();
+    virtual void v8();
+    virtual void vc();
+    virtual void v10();
+    virtual void v14();
+    virtual void v18();
+    virtual void v1c();
+    virtual i32 TypeTag(); // +0x20 (slot 8)
+};
+
+// CSBI_RectOnly::Deserialize - the load/restore counterpart of Serialize. Pulls
+// the full rect-only item state from the archive via stream slot 0x2c (Read);
+// resolves the base m_8 sequence holder from the streamed seq id through the
+// game-manager's object map (validated by the looked-up object's type tag == 5);
+// reads every field back; returns each pooled m_ptrTable element to the engine
+// free-list, sizes the +0x530 collection, then reloads the pointer table from the
+// free-list. Field buffers are offset-addressed (naming-independent), mirroring
+// Serialize.
+// @early-stop
+// twin of Serialize (95.6%, regalloc/frame wall in the trailing nested loop): the
+// whole ~70-field Read body + the seq resolution + the free-list return/reload are
+// reconstructed byte-faithfully, but the same trailing 3x4 nested-loop induction /
+// frame-size regalloc choice (plus the free-list induction wall shared with
+// Teardown/InsertPtr) caps it below 100%. Not steerable from C; deferred.
+RVA(0x00109520, 0x44c)
+i32 CSBI_RectOnly::Deserialize(CSbiStream* s) {
+    if (s == 0) {
+        return 0;
+    }
+    CSbiGameMgr* gm = g_gameReg->m_30;
+    if (gm == 0) {
+        return 0;
+    }
+    char* B = (char*)this;
+    *(i32*)(B + 0x618) = 0;
+    TeardownNotify(0);
+
+    s->Read(B, 4);
+    s->Read(B + 0x4, 4);
+
+    g_serialCounter++;
+    i32 seq = 0;
+    s->Read(&seq, 4);
+
+    void* obj = 0;
+    CSbiSeqMap* map = (CSbiSeqMap*)(*(char**)((char*)gm + 8) + 0x48);
+    i32 m8 = 0;
+    if (map->Lookup(seq, &obj)) {
+        if (obj != 0) {
+            m8 = (((CSbiSeqObj*)obj)->TypeTag() == 5) ? (i32)obj : 0;
+        }
+    }
+    m_8 = m8;
+    if (m_8 == 0 && seq != 0) {
+        return 0;
+    }
+
+    s->Read(B + 0x10, 0x10);
+    s->Read(B + 0x20, 4);
+    s->Read(B + 0x24, 4);
+    s->Read(B + 0x28, 4);
+    s->Read(B + 0x110, 4);
+    s->Read(B + 0x62c, 4);
+
+    char* p = B + 0x114;
+    for (i32 i = 0; i < 15; i++) {
+        s->Read(p, 4);
+        p += 4;
+    }
+
+    s->Read(B + 0x34c, 4);
+    s->Read(B + 0x350, 4);
+    s->Read(B + 0x354, 4);
+    s->Read(B + 0x35c, 4);
+    s->Read(B + 0x360, 4);
+    s->Read(B + 0x10c, 4);
+    s->Read(B + 0x298, 4);
+    s->Read(B + 0x29c, 4);
+    s->Read(B + 0x524, 4);
+    s->Read(B + 0x52c, 4);
+    s->Read(B + 0x528, 4);
+    s->Read(B + 0x544, 4);
+    s->Read(B + 0x504, 0x10);
+    s->Read(B + 0x514, 0x10);
+    s->Read(B + 0x548, 4);
+    s->Read(B + 0x550, 4);
+    s->Read(B + 0x554, 4);
+    s->Read(B + 0x4c8, 4);
+    s->Read(B + 0x4cc, 4);
+    s->Read(B + 0x4e8, 4);
+    s->Read(B + 0x4ec, 4);
+    s->Read(B + 0x318, 4);
+    s->Read(B + 0x31c, 4);
+    s->Read(B + 0x330, 4);
+    s->Read(B + 0x334, 4);
+    s->Read(B + 0x558, 4);
+    s->Read(B + 0x55c, 4);
+    s->Read(B + 0x574, 4);
+    s->Read(B + 0x578, 4);
+
+    char* q = B + 0x224;
+    for (i32 j = 0; j < 5; j++) {
+        s->Read(q - 4, 4);
+        s->Read(q, 4);
+        q += 0x18;
+    }
+    char* r = B + 0x2c4;
+    for (i32 k = 0; k < 3; k++) {
+        s->Read(r - 4, 4);
+        s->Read(r, 4);
+        r += 0x18;
+    }
+    char* nb = B + 0x378;
+    i32 outer = 3;
+    do {
+        for (i32 m = 0; m < 4; m++) {
+            s->Read(nb, 4);
+            s->Read(nb + 4, 4);
+            nb += 0x18;
+        }
+    } while (--outer);
+
+    for (i32 t = 0; t < m_ptrCount; t++) {
+        void* pp = m_ptrTable[t];
+        if (pp) {
+            void** node = (void**)((char*)pp - g_freeListNodeBias);
+            *node = g_freeList;
+            g_freeList = node;
+        }
+    }
+    m_530.RemoveAll(0, -1);
+
+    i32 count = 0;
+    s->Read(&count, 4);
+    m_530.RemoveAll(count, -1);
+    for (u32 n = 0; n < (u32)count; n++) {
+        char* head = (char*)g_freeList;
+        void* node = 0;
+        if (*(i32*)head != 0) {
+            node = head + 4;
+            g_freeList = *(void**)head;
+        }
+        s->Read(node, 8);
+        m_ptrTable[n] = node;
     }
     return 1;
 }

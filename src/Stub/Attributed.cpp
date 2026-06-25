@@ -23,9 +23,6 @@ RVA(0x000bbf80, 0xb7) void CNetMgr::CNetMgr_0bbf80() {}  // high
 RVA(0x000bc750, 0x151) void CNetMgr::CNetMgr_0bc750() {}  // high
 RVA(0x000bccd0, 0x141) void CNetMgr::CNetMgr_0bccd0() {}  // high
 
-// ---- CSBI_RectOnly ----
-RVA(0x00109520, 0x44c) void CSBI_RectOnly::CSBI_RectOnly_109520() {}  // high
-
 // ---- CShadeTableCache ----
 RVA(0x0014df40, 0x5f4) void CShadeTableCache::CShadeTableCache_14df40() {}  // high
 
