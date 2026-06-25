@@ -173,16 +173,9 @@ RVA(0x00024050, 0x57) void CGruntzCommand::CGruntzCommand_024050() {}  // high
 RVA(0x000240d0, 0x4d) void CGruntzCommand::CGruntzCommand_0240d0() {}  // high
 
 // ---- CGruntzMgr ----
-// 0x08d850/0x08d910/0x08efe0/0x08f060/0x08f0b0/0x08f2f0/0x08f9c0/0x08f9f0
+// 0x08d850/0x08d910/0x08efe0/0x08f060/0x08f0b0/0x08f2f0/0x08f9c0/0x08f9f0 +
+// 0x0901d0/0x090ac0/0x0910d0/0x091170/0x091a40/0x091e20/0x092000/0x092030
 // reconstructed in src/Gruntz/GruntzMgr.cpp.
-RVA(0x000901d0, 0x16) void CGruntzMgr::CGruntzMgr_0901d0() {}  // med
-RVA(0x00090ac0, 0x1bb) void CGruntzMgr::CGruntzMgr_090ac0() {}  // high
-RVA(0x000910d0, 0x75) void CGruntzMgr::CGruntzMgr_0910d0() {}  // high
-RVA(0x00091170, 0xad) void CGruntzMgr::CGruntzMgr_091170() {}  // high
-RVA(0x00091a40, 0x2f9) void CGruntzMgr::CGruntzMgr_091a40() {}  // high
-RVA(0x00091e20, 0x17d) void CGruntzMgr::CGruntzMgr_091e20() {}  // high
-RVA(0x00092000, 0x16) void CGruntzMgr::CGruntzMgr_092000() {}  // high
-RVA(0x00092030, 0x18) void CGruntzMgr::CGruntzMgr_092030() {}  // high
 RVA(0x000923b0, 0x47) void CGruntzMgr::CGruntzMgr_0923b0() {}  // high
 RVA(0x00092500, 0x17) void CGruntzMgr::CGruntzMgr_092500() {}  // high
 RVA(0x00092530, 0x17c) void CGruntzMgr::CGruntzMgr_092530() {}  // high

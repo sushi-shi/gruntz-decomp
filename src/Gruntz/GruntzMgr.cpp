@@ -294,6 +294,131 @@ extern "C" {
     extern i32 g_6455fc; // DAT_006455fc  (round-robin options cursor)
 }
 
+// -------------------------------------------------------------------------
+// The packed-color global SetColorDepth writes + the RGB shift/mask globals it
+// reads (the engine's per-bit-depth color-format conversion table). All reloc-
+// masked DATA refs; only the load/store shapes are load-bearing. g_severusCounterB
+// is the C++-mangled ?g_severusCounterB@@3HA (no extern "C"); the rest are DAT_
+// C globals pinned by their DATA() RVA so the DIR32 reloc pairs.
+extern i32 g_severusCounterB; // ?g_severusCounterB@@3HA  (0x6bf380)
+extern "C" {
+    DATA(0x00283ea0) extern i32 g_683ea0; // DAT_00683ea0  (red shift-up)
+    DATA(0x00283ea4) extern i32 g_683ea4; // DAT_00683ea4  (green shift-up)
+    DATA(0x00283eac) extern i32 g_683eac; // DAT_00683eac  (red shift-down)
+    DATA(0x00283eb0) extern i32 g_683eb0; // DAT_00683eb0  (green shift-down)
+    DATA(0x00283eb4) extern i32 g_683eb4; // DAT_00683eb4  (blue shift-down)
+    // The world-mode reload globals LoadWorldMode resets (reloc-masked).
+    DATA(0x002455dc) extern i32 g_6455dc; // DAT_006455dc
+    DATA(0x002455e0) extern i32 g_6455e0; // DAT_006455e0
+    DATA(0x002455b4) extern i32 g_6455b4; // DAT_006455b4  (alt-flag, reload kind 1/5)
+}
+
+// SetGruntColor reaches a keyed lookup table embedded at +0x10 within the object
+// held in the world's +0x10 slot. Lookup(key, &out) resolves a color row; the row
+// carries a column index (+0x64) into its value table (+0x14). The recolor sink
+// passed in by the caller shares the same row layout (value table at +0x14,
+// column range [+0x64..+0x68]). Each engine call is reloc-masked.
+struct CColorLookup {
+    void Lookup(i32 key, i32** out); // FUN_005b8008 (this, key, &out)
+};
+struct CColorRow {
+    char m_pad0[0x14];
+    i32* m_14; // +0x14  value table
+    char m_pad18[0x64 - 0x18];
+    i32 m_64; // +0x64  column index
+    i32 m_68; // +0x68  column max
+};
+// The object held in CWorldZ +0x10; its +0x10 is the embedded CColorLookup.
+struct CWorldLookupHolder {
+    char m_pad0[0x10];
+    CColorLookup m_10; // +0x10  (sub-object, NOT a pointer)
+};
+// A TU-local view of the world exposing its +0x10 lookup-holder pointer.
+struct CWorldLookupView {
+    char m_pad0[0x10];
+    CWorldLookupHolder* m_10; // +0x10
+};
+// The recolor entrypoint (FUN_005532b0): takes the resolved cell pointer by value;
+// callee cleans the arg (no `add esp,4` at the call site -> __stdcall). Reloc-masked.
+void __stdcall RecolorCell(i32 cell);
+
+// A TU-local view of the world exposing its +0x38 status code (the load-result
+// code ReportWorldStatus maps to a message id). The code is UNSIGNED: the switch
+// range checks emit `cmp;ja/jbe` (unsigned), not the signed `jg/jle`.
+struct CWorldStatusView {
+    char m_pad0[0x38];
+    u32 m_38; // +0x38  status code
+};
+
+// LoadWorldMode's reloc-masked siblings (engine objects reached through the
+// manager's member pointers; all are __thiscall, so each is modeled as a method on
+// its object so `mov ecx,obj; call` falls out - the displacements reloc-mask).
+//   m_34: a 0x94-byte engine surface object built by Build(), configured by
+//         Apply(), torn down by Teardown() + the operator-delete wrapper.
+//   m_54: the input/state object (0x30 bytes; an embedded CObList at +8 ctor'd
+//         CObList(0xa); wired by InitInput(world->m_28, inputFlag); torn down by a
+//         state-flush (+0) + the embedded CObList dtor (+8)).
+extern "C" void* RezAlloc(u32 n); // operator new (reloc-masked, __cdecl)
+extern "C" void RezFree(void* p); // _RezFree (operator delete wrapper, __cdecl)
+struct CRezSurface94 {
+    void Teardown();          // FUN_0053abc0 (this) reloc-masked
+    void Build();             // FUN_0053aa10 (this) reloc-masked
+    i32 Apply(i32 a, i32 b, i32 c); // FUN_0053ad00 (this, *p, 1, 0) reloc-masked
+};
+struct CObListSub {
+    void Init(i32 cap); // CObList ctor (this = obj+8, 0xa) reloc-masked
+    void Dtor();        // ~CObList-family (this = obj+8) reloc-masked
+};
+// The input/state object held at CGruntzMgr +0x54. m_24 is its armed flag; the two
+// parameterless thiscalls toggle its active state; Flush() is its +0 teardown
+// method; InitInput wires it to the world's +0x28 sub-controller. All reloc-masked.
+struct CInput54 {
+    char m_pad0[0x24];
+    i32 m_24;        // +0x24  armed flag
+    void Flush();    // 0x1082-thunk (this) reloc-masked
+    void Arm();      // FUN_0040bcf0 (this) reloc-masked
+    void Disarm();   // FUN_0040bc80 (this) reloc-masked
+    i32 InitInput(void* worldSub28, i32 inputFlag); // FUN_0040b5e0 (this, sub28, flag)
+};
+
+// The world's polymorphic mode-set vtable (slot 7 = +0x1c notify; slot 6 = +0x18
+// SetVideoMode(hwnd, w, h, depth, flag)). MSVC5 forbids __thiscall on a fn-ptr,
+// so model it as a typed polymorphic class with anchor slots.
+class CWorldModeIface {
+public:
+    virtual void s00();
+    virtual void s01();
+    virtual void s02();
+    virtual void s03();
+    virtual void s04();
+    virtual void s05();
+    virtual i32 SetVideoMode(i32 hwnd, i32 w, i32 h, i32 depth, i32 flag); // slot 6 (+0x18)
+    virtual void Notify();                                                 // slot 7 (+0x1c)
+};
+// The mode-reset callback registration reached during LoadWorldMode: a non-virtual
+// thiscall on the world with a code-address callback (LAB_00403193) handed in. The
+// callback is an external function whose pushed address reloc-masks.
+extern "C" void ModeResetCallback(); // LAB_00403193
+struct CWorldRegistrar {
+    void RegisterCallback(void* cb); // UnknownVirtualMethod28 (0x155f50) (this, cb)
+};
+// The per-load world-object factory (CreateGameObjectByName, __cdecl, reloc-masked).
+void CreateWorldObjects(void* world);
+
+// The world view's +0x24 sub-object exposes a two-entry extent pair at +0x64/+0x68
+// the mode reload stamps to 0xe (a default tile-region size).
+struct CWorldModeView {
+    char m_pad0[0x64];
+    i32 m_64, m_68; // +0x64/+0x68
+};
+
+// ResetWorldState's MFC wait-cursor pair. Retail inlines the global ::Begin/
+// EndWaitCursor (AfxGetApp()->...); modeled as reloc-masked free fns here (only
+// the call shape is load-bearing - the inlined AfxGetModuleState/[+4]/thiscall
+// expansion is part of the documented MFC-inline residual on this @early-stop fn).
+void BeginWaitCursor(); // 0x1beafb
+void EndWaitCursor();   // 0x1beb10
+
 // The per-frame input/state object at CGruntzMgr +0x54 (reloc-masked thiscall).
 struct InputStateObj {
     void StoreFlag(i32 v); // FUN_004385e0-family (this, v)
@@ -1130,6 +1255,387 @@ void CGruntzMgr::ClearStateStack() {
 RVA(0x00090aa0, 0x10)
 i32 CGruntzMgr::CheckMovieFileExists() {
     return Utils::WinAPI::FileExists((char*)(const char*)m_strMoviePath);
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::IsMoviePathValid (0x0901d0; cdecl ret). The bool-normalized twin of
+// CheckMovieFileExists: FileExists(m_strMoviePath) run through the neg/sbb/neg
+// 0/1 canonicalizer (the result is consumed as a boolean here).
+RVA(0x000901d0, 0x16)
+i32 CGruntzMgr::IsMoviePathValid() {
+    return Utils::WinAPI::FileExists((char*)(const char*)m_strMoviePath) != 0;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::ReportWorldStatus (0x090ac0; ret 4). Surfaces the loaded world's
+// status code (m_world->m_38) as a (msgId, statusCode) error. Bails to the
+// generic (0x800a) error first when there is no world or no status, then maps the
+// known status codes to their message ids via a switch; the near-consecutive
+// 0x80ea..0x80ed band becomes a dense jump table, the rest a cmp/je tree, and the
+// catch-all status reports 0x8011. Cases that report a FIXED code push the literal
+// status (matching retail's `push <imm>`); the open-ended ones push the variable.
+// The status code is u32 so the range checks emit unsigned `cmp;ja` (not `jg`);
+// see docs/patterns/switch-key-unsigned-ja-vs-jg.md.
+// @early-stop
+// CODE byte-exact: the cmp/je tree, the dense 0x80ea..0x80ed jump table, and every
+// ReportError push match retail to the byte. The residual ~3% is the jump-table
+// DATA scored mismatched against the reloc-masked `jmp [eax*4+tbl]` base - the
+// documented jumptable-data-overlap scoring artifact, NOT a code difference.
+RVA(0x00090ac0, 0x1bb)
+void CGruntzMgr::ReportWorldStatus(i32 a) {
+    if (m_world == 0) {
+        ReportError(0x800a, a);
+    }
+    u32 status = ((CWorldStatusView*)m_world)->m_38;
+    if (status == 0) {
+        ReportError(0x800a, a);
+    }
+    switch (status) {
+        case 0x3f0:
+            ReportError(0x8015, 0x3f0);
+            return;
+        case 0x3f1:
+            ReportError(0x8013, 0x3f1);
+            return;
+        case 0x3f2:
+            ReportError(0x8012, 0x3f2);
+            return;
+        case 0x7d1:
+            ReportError(0x8019, 0x7d1);
+            return;
+        case 0x7d2:
+            ReportError(0x8018, 0x7d2);
+            return;
+        case 0x7d3:
+            ReportError(0x8017, 0x7d3);
+            return;
+        case 0xbb9:
+            ReportError(0x8014, 0xbb9);
+            return;
+        case 0xbba:
+            ReportError(0x8016, status);
+            return;
+        case 0x80e9:
+            ReportError(0x801e, 0x80e9);
+            return;
+        case 0x80ea:
+            ReportError(0x801a, status);
+            return;
+        case 0x80eb:
+            ReportError(0x801b, status);
+            return;
+        case 0x80ec:
+            ReportError(0x801c, status);
+            return;
+        case 0x80ed:
+            ReportError(0x801d, status);
+            return;
+        default:
+            ReportError(0x8011, status);
+            return;
+    }
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::SetGruntColor (0x0910d0; ret 0xc). Recolors one cell of a target
+// row (sink): resolves `key`'s color row in the world's +0x10 lookup table, gates
+// on that row's current cell (row->m_14[row->m_64] != 0), then - when `col` is in
+// the sink's column range [sink->m_64..sink->m_68] - takes the sink's cell
+// (sink->m_14[col]) and recolors it. Returns 1 on a hit, 0 otherwise.
+// The guard chain nests so the success path is deepest and every reject `je`s the
+// single trailing `return 0` (retail's shared `xor eax; pop; ret` tail) instead of
+// a per-guard epilogue; see docs/patterns/nested-if-success-deepest-error-tail.md.
+// @early-stop
+// 95.81% regalloc tiebreak: logic + the nested fail-tail + the range gate are
+// byte-exact. The lone residual is the sink-field loads (m_64/m_14): retail keeps
+// them in edx (ecx is busy holding the row-cell it loads with `mov ecx,[..];test`),
+// MSVC here folds the row-cell test to `cmp [mem],0` (no register) and so the sink
+// loads land in ecx (8b4e64 vs retail 8b5664). A 4-instruction ecx<->edx swap with
+// no source spelling that flips MSVC's `cmp [mem],0` back to a load-and-test;
+// regalloc family (docs/patterns/pin-local-for-callee-saved-reg.md).
+RVA(0x000910d0, 0x75)
+i32 CGruntzMgr::SetGruntColor(i32 sinkArg, i32 key, i32 idx) {
+    CColorRow* sink = (CColorRow*)sinkArg;
+    if (sink && key) {
+        i32* out = 0;
+        ((CWorldLookupView*)m_world)->m_10->m_10.Lookup(key, &out);
+        CColorRow* row = (CColorRow*)out;
+        if (row && row->m_14[row->m_64]) {
+            i32 cell = (idx < sink->m_64 || idx > sink->m_68) ? 0 : sink->m_14[idx];
+            if (cell != 0) {
+                RecolorCell(cell);
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::SetColorDepth (0x091170; ret 4). Sets the engine's packed RGB color
+// (g_severusCounterB) for the given display depth. The depth must be 8/16/24 and a
+// world must be loaded; otherwise it returns 0. For 8bpp the color clears; for
+// 24bpp it is the fixed 0xff0084; for 16bpp it is repacked from the per-channel
+// shift/mask globals (red 0xff, green 0, blue 0x84 each sar'd down then shl'd up
+// and masked to 16 bits). Returns 1 once stored.
+// @early-stop
+// CODE byte-exact: the double depth switch, the 8/24bpp stores, and the 16bpp
+// per-channel pack (u16-truncated so the three `and 0xffff` stay inline, matching
+// retail's schedule) all match to the byte. The residual ~17% is the reloc-typing
+// scoring artifact: the g_683ea*/g_severusCounterB DIR32 data refs score against
+// the differently-typed delinked target (docs/matching-patterns.md fuzzy% note),
+// NOT a code difference.
+RVA(0x00091170, 0xad)
+i32 CGruntzMgr::SetColorDepth(i32 depth) {
+    if (depth != 8 && depth != 0x10 && depth != 0x18) {
+        return 0;
+    }
+    if (m_world == 0) {
+        return 0;
+    }
+    if (depth == 8) {
+        g_severusCounterB = 0;
+        return 1;
+    }
+    if (depth == 0x10) {
+        // Each channel is masked to 16 bits and OR'd incrementally (retail emits
+        // the `and 0xffff` per channel inline, not one fold over the combined
+        // result): red (0xff), green (0), blue (0x84). The masks are spelled as
+        // u16 truncations so MSVC keeps them per-channel (an explicit `& 0xffff`
+        // on all three gets reassociated to one fold).
+        i32 packed = (u16)((0xff >> g_683eac) << g_683ea0);
+        packed |= (u16)((0 >> g_683eb0) << g_683ea4);
+        packed |= (u16)(0x84 >> g_683eb4);
+        g_severusCounterB = packed;
+        return 1;
+    }
+    if (depth == 0x18) {
+        g_severusCounterB = 0xff0084;
+        return 1;
+    }
+    return 1;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::LoadWorldMode (0x091a40; __thiscall; /GX EH; ret 4). Switches the
+// loaded world to a new display color-depth (8 or 16) and rebuilds the per-mode
+// engine objects. Bails (0) with no world; succeeds immediately (1) if already in
+// that mode. Tears down the input (+0x54) and surface (+0x34) objects, records the
+// mode (+0x88), resets the reload globals, re-asserts the display mode through the
+// world's mode-set vtable (slot 6, 640x480), registers the mode-reset callback,
+// stamps the view's tile region to 0xe, rebuilds the world objects, resolves +
+// applies the rez path (a CString temp gives the /GX frame), then rebuilds the
+// input object (+0x54) and re-arms it per the m_104 gate, finally re-storing the
+// input flag. Each engine reject surfaces an error and returns 0.
+// @early-stop
+// big /GX state-machine reload (~27%): the whole flow + per-stage error ladder
+// are reconstructed and the /GX frame + the head (world/mode/8|16 guards + the
+// m_54/m_34 two-stage teardowns) match. The low % is a big-SEH scoring desync:
+// (a) the long chain of reloc-masked engine thiscalls (RezBuild/Apply/Teardown,
+// CObList ctor/dtor, the world mode-set vtable, MakeRezPath/ResolveRezRow) each
+// fuzzy-mismatch until their whole referent set is named; (b) the entry `push ecx`
+// local-slot reservation + the CString-temp EH-state numbering on the fail chain
+// (gx-state-machine + eh-state-numbering walls). Logic-complete; deferred to the
+// final sweep / a leaf-first redo (docs/patterns/big-seh-fuzzy-desync.md).
+RVA(0x00091a40, 0x2f9)
+i32 CGruntzMgr::LoadWorldMode(i32 mode) {
+    if (m_world == 0) {
+        return 0;
+    }
+    if (m_88 == mode) {
+        return 1;
+    }
+    if (mode != 8 && mode != 0x10) {
+        return 0;
+    }
+
+    CInput54* in = (CInput54*)m_inputState;
+    if (in) {
+        in->Flush();
+        ((CObListSub*)((char*)in + 8))->Dtor();
+        RezFree(in);
+    }
+    m_inputState = 0;
+
+    CRezSurface94* surf = (CRezSurface94*)m_34;
+    if (surf) {
+        surf->Teardown();
+        RezFree(surf);
+    }
+    m_34 = 0;
+
+    m_88 = mode;
+    g_6455e0 = 0;
+    g_6455dc = 0;
+    if (m_88 == 0x10) {
+        g_6455dc = 1;
+    }
+
+    ((CWorldModeIface*)m_world)->Notify();
+    i32 kind = (g_6455b4 == 0) ? 1 : 5;
+    if (((CWorldModeIface*)m_world)
+            ->SetVideoMode((i32)((CGameWnd*)m_4)->m_4, 0x280, 0x1e0, m_88, kind)
+        == 0) {
+        ReportWorldStatus(0x43f);
+        return 0;
+    }
+
+    ((CWorldRegistrar*)m_world)->RegisterCallback((void*)ModeResetCallback);
+    CWorldModeView* view = (CWorldModeView*)m_world->m_24;
+    view->m_64 = 0xe;
+    view->m_68 = 0xe;
+    CreateWorldObjects(m_world);
+    if (MakeRezPath() == 0) {
+        return 0;
+    }
+
+    CRezSurface94* old = (CRezSurface94*)m_34;
+    if (old) {
+        old->Teardown();
+        RezFree(old);
+        m_34 = 0;
+    }
+    CRezSurface94* obj = (CRezSurface94*)RezAlloc(0x94);
+    if (obj) {
+        obj->Build();
+    } else {
+        obj = 0;
+    }
+    m_34 = (i32)obj;
+
+    CString path;
+    i32* row = ResolveRezRow(&path);
+    if (((CRezSurface94*)m_34)->Apply(*row, 1, 0)) {
+        ReportError(0x800b, 0x441);
+        return 0;
+    }
+
+    SetColorDepth(m_88);
+
+    CInput54* in2 = (CInput54*)m_inputState;
+    if (in2) {
+        in2->Flush();
+        ((CObListSub*)((char*)in2 + 8))->Dtor();
+        RezFree(in2);
+    }
+    m_inputState = 0;
+
+    void* no = RezAlloc(0x30);
+    CInput54* ni;
+    if (no) {
+        ((CObListSub*)((char*)no + 8))->Init(0xa);
+        *(i32*)no = 0;
+        *(i32*)((char*)no + 4) = 0x64;
+        ni = (CInput54*)no;
+    } else {
+        ni = 0;
+    }
+    m_inputState = (i32)ni;
+    if (ni->InitInput(m_world->m_28, m_inputFlag) == 0) {
+        ReportError(0x800a, 0x442);
+        return 0;
+    }
+
+    CInput54* cur = (CInput54*)m_inputState;
+    if (m_104 != 0) {
+        if (cur->m_24 == 0) {
+            cur->m_24 = 1;
+            cur->Arm();
+        }
+    } else {
+        if (cur->m_24 != 0) {
+            cur->m_24 = 0;
+            cur->Disarm();
+        }
+    }
+    StoreInputFlag(m_inputFlag);
+    return 1;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::ResetWorldState (0x091e20; __thiscall; /GX EH; ret). Quiesces the
+// loaded world when the live state is the idle (5) or paused-exit (2) state:
+// raises the two busy gates (+0xac/+0xb0), tears the live state down (its vtbl slot
+// 0), forces the hardware cursor visible (while ShowCursor(TRUE) < 0), then under
+// an MFC wait-cursor runs the mode reload (LoadWorldMode(8 or 0x10)); on failure it
+// surfaces a (0x801f) error, drops the wait cursor, and returns 0. On success it
+// drives the post-reload transition (slot ?, args (savedId,1,0,0)), clears the
+// gates, restores the cursor, and returns 1. A no-op (1) when not idle/exiting.
+// @early-stop
+// /GX wait-cursor wrapper (~60%): logic + the ShowCursor loops + the per-exit
+// Begin/EndWaitCursor pairs are reconstructed. The residual is the /GX EH frame
+// itself: retail wraps the body in a `CWaitCursor wc;` RAII local (ctor inlines
+// AfxGetApp()->BeginWaitCursor, dtor inlines EndWaitCursor at each exit, + the
+// [esp+N] 0/-1 trylevel around its lifetime), which emits the push -1/fs:0 frame
+// my frameless Begin/EndWaitCursor free-fn model lacks. Closing it needs <afxwin.h>
+// + a real CWaitCursor value member (deferred to the final sweep - heavier include
+// that would re-flow this whole TU). Documented EH-frame wall (docs/seh-eh.md).
+RVA(0x00091e20, 0x17d)
+i32 CGruntzMgr::ResetWorldState(i32 notify) {
+    CState* st = m_curState;
+    if (st == 0) {
+        return 1;
+    }
+    i32 stateId = st->Update();
+    if (stateId != 5 && stateId != 2) {
+        return 1;
+    }
+
+    CState* s = m_curState;
+    m_modalBusy = 1;
+    m_b0 = 1;
+    if (s) {
+        delete s;
+        m_curState = 0;
+    }
+
+    i32(__stdcall * show)(i32) = g_pShowCursor;
+    while (show(1) < 0) {
+    }
+
+    BeginWaitCursor();
+
+    if (m_88 == 8) {
+        if (LoadWorldMode(0x10) == 0) {
+            ReportError(0x801f, 0x443);
+            EndWaitCursor();
+            return 0;
+        }
+    } else {
+        if (LoadWorldMode(8) == 0) {
+            ReportError(0x801f, 0x444);
+            EndWaitCursor();
+            return 0;
+        }
+    }
+
+    while (show(0) >= 0) {
+    }
+    SwitchModeState(stateId, 1, 0, 0);
+    m_modalBusy = 0;
+    m_b0 = 0;
+    EndWaitCursor();
+    return 1;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::StopBankIfActive (0x092000; ret). When a sound object is bound and a
+// level is loaded, tail-calls m_sound->StopAll().
+RVA(0x00092000, 0x16)
+void CGruntzMgr::StopBankIfActive() {
+    if (m_sound && m_14) {
+        m_sound->StopAll();
+    }
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::StopBank0IfActive (0x092030; ret). When a sound object is bound and
+// a level is loaded, stops the bank with flag 0.
+RVA(0x00092030, 0x18)
+void CGruntzMgr::StopBank0IfActive() {
+    if (m_sound && m_14) {
+        m_sound->StopBank(0);
+    }
 }
 
 // -------------------------------------------------------------------------

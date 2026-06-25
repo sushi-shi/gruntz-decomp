@@ -166,6 +166,15 @@ public:
     i32 AppendChatMessage(char* msg);            // @0x08f9c0 (-> m_5c chat-log insert)
     i32 ShowToggleMessage(char* itemName, i32 on); // @0x08f9f0 ("<item> is ON/OFF")
 
+    i32 IsMoviePathValid();        // @0x0901d0 (bool-normalized FileExists(m_strMoviePath))
+    void ReportWorldStatus(i32 a); // @0x090ac0 (map m_world->m_38 status to ReportError)
+    i32 SetGruntColor(i32 sink, i32 key, i32 idx); // @0x0910d0 (recolor a sink cell)
+    i32 SetColorDepth(i32 depth);  // @0x091170 (set the packed g_severusCounterB color by depth)
+    i32 LoadWorldMode(i32 mode);   // @0x091a40 (switch the world video/color mode + reload)
+    i32 ResetWorldState(i32 notify); // @0x091e20 (idle/exit-prep the world, reset cursor)
+    void StopBankIfActive();       // @0x092000 (if m_sound && m_14: m_sound->StopAll())
+    void StopBank0IfActive();      // @0x092030 (if m_sound && m_14: m_sound->StopBank(0))
+
     i32 StoreInputState(i32 v); // @0x091a10 (store m_inputStateVal, forward to m_timer)
     void StoreInputFlag(i32 v); // @0x0919d0 (store m_inputFlag, mirror to g_61ab24 + m_inputState)
     void UnloadSoundChain();    // @0x08f740 (m_world->m_28->m_2c teardown + StopBank2)
@@ -198,6 +207,15 @@ public:
     CState* MakeNextState();       // build/find the next state to switch to
     void ActivateState(CState* s); // install + activate the new live state
     void PostSwitchHook();         // post-switch app hook
+
+    // Reloc-masked CGruntzMgr sibling reached from ResetWorldState (the post-mode-
+    // reload state transition pusher @0x08b960).
+    void SwitchModeState(i32 a, i32 b, i32 c, i32 d);
+
+    // Reloc-masked CGruntzMgr siblings reached from LoadWorldMode (the rez-path
+    // builder + the rez-row resolver that fills a CString and returns the row ptr).
+    i32 MakeRezPath();                  // FUN_0049???? (this) -> path-built ok
+    i32* ResolveRezRow(CString* out); // thunk_FUN_00485500 (this, &out) -> row
 
     // Clock / global helpers.
     void SetGameClock(i32 now, i32 delta, i32 abs); // @0x08f7b0 (mirror the 5 clock globals)
