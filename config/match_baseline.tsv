@@ -117,7 +117,7 @@ dsoundvoice	2	1
 engine_attributed	28	0
 engine_boundary	580	0
 engine_discovered	72	0
-engine_label_stubs	462	103
+engine_label_stubs	462	106
 engstr	3	1
 filemem	9	8
 filestream	13	9
@@ -140,7 +140,7 @@ gruntvoice	5	4
 gruntzapp	10	9
 gruntzcmdmgr	12	10
 gruntzcommand	14	14
-gruntzmgr	87	60
+gruntzmgr	87	61
 gruntzplayer	6	1
 gruntzsoundz	12	11
 gruntzwnd	9	7
@@ -1982,7 +1982,7 @@ engine_label_stubs	?Stub_1ccbfc@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXHHHH@Z	
 engine_label_stubs	?Stub_1d5029@EngineLabelBacklog@@YGXHHHH@Z	1.1236	1.1236	1	cpp:6bf52155264d	0x1d5029
 engine_label_stubs	?Stub_1d513b@EngineLabelBacklog@@YGXHHHH@Z	0.8929	0.8929	1	cpp:6bf52155264d	0x1d513b
 engine_label_stubs	?Teardown@CursHost_17c510@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x17c510
-engine_label_stubs	?Tick@Throttle_137e30@ApiCallerStubs@@QAEHH@Z	99.0476	99.0476	1	cpp:6bf52155264d	0x137e30
+engine_label_stubs	?Tick@Throttle_137e30@ApiCallerStubs@@QAEHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x137e30
 engine_label_stubs	?Tick@Timer_1380d0@ApiCallerStubs@@QAEHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x1380d0
 engine_label_stubs	?Toggle@RosterHost_0c50f0@ApiCallerStubs@@QAEXH@Z	97.6531	97.6531	1	cpp:6bf52155264d	0xc50f0
 engine_label_stubs	?Tune1770e0@PalBuilder_176df0@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x1770e0
@@ -2012,8 +2012,8 @@ engine_label_stubs	?winapi_00cd00_timeGetTime@ApiCallerStubs@@YAHXZ	100.0000	100
 engine_label_stubs	?winapi_0143e0_PostMessageA@ApiCallerStubs@@YAHXZ	2.0833	2.0833	1	cpp:e1535087fe94	0x143e0
 engine_label_stubs	?winapi_014d00_GetWindow_GetWindowLongA_SetWindowLongA@ApiCallerStubs@@YGHH@Z	0.2387	0.2387	1	cpp:6bf52155264d	0x14d00
 engine_label_stubs	?winapi_015cc0_SendMessageA@ApiCallerStubs@@YGHHH@Z	79.8182	79.8182	1	cpp:6bf52155264d	0x15cc0
-engine_label_stubs	?winapi_015d00_SendMessageA@ApiCallerStubs@@YGXH@Z	99.0000	99.0000	1	cpp:e1535087fe94	0x15d00
-engine_label_stubs	?winapi_015d30_SendMessageA@ApiCallerStubs@@YGHH@Z	99.0909	99.0909	1	cpp:6bf52155264d	0x15d30
+engine_label_stubs	?winapi_015d00_SendMessageA@ApiCallerStubs@@YGXH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x15d00
+engine_label_stubs	?winapi_015d30_SendMessageA@ApiCallerStubs@@YGHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x15d30
 engine_label_stubs	?winapi_015d70_SendMessageA@ApiCallerStubs@@YGHHH@Z	80.9167	80.9167	1	cpp:6bf52155264d	0x15d70
 engine_label_stubs	?winapi_015fe0_SendMessageA@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHH@Z	2.0000	2.0000	1	cpp:e8a4cb0d5b2a	0x15fe0
 engine_label_stubs	?winapi_0160f0_CreateSolidBrush_FillRect_GetClientRect@ApiCallerStubs@@YAHXZ	1.1765	1.1765	1	cpp:e1535087fe94	0x160f0
@@ -2512,7 +2512,7 @@ gruntzmgr	?CountReadyOptionsSlots@CGruntzMgr@@QAEHH@Z	100.0000	100.0000	1	d51ff9
 gruntzmgr	?DelayedQuit@CGruntzMgr@@QAEXXZ	3.5246	3.5246	1	a9607fd21901	0x8f530
 gruntzmgr	?EnterModalUI@CGruntzMgr@@QAEXH@Z	93.0159	93.0159	3	a14f93bd4e59	0x8ef10
 gruntzmgr	?ExitModalUI@CGruntzMgr@@QAEHPAVCModalDialog@@H@Z	99.5745	99.5745	3	f310ddd5af40	0x903f0
-gruntzmgr	?FillSaveInfo@CGruntzMgr@@QAEHPAUSaveInfo@@PAX@Z	99.2308	99.2308	3	92b36db40f60	0x927b0
+gruntzmgr	?FillSaveInfo@CGruntzMgr@@QAEHPAUSaveInfo@@PAX@Z	100.0000	100.0000	4	732c773ff72f	0x927b0
 gruntzmgr	?FindOptionsSlot@CGruntzMgr@@QAEPAUOptionsSlot@@H@Z	82.6923	82.6923	1	c64d0179d62f	0x92e80
 gruntzmgr	?FindStateById@CGruntzMgr@@QAEPAVCState@@H@Z	100.0000	100.0000	3	646cf8cda983	0x92900
 gruntzmgr	?FinishLevel@CGruntzMgr@@QAEHHH@Z	84.1471	84.1471	3	168a1e237366	0x8e980

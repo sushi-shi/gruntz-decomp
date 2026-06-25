@@ -2303,13 +2303,12 @@ i32 CGruntzMgr::FillSaveInfo(SaveInfo* dst, void* snapshot) {
     if (src == 0) {
         return 0;
     }
-    {
-        // Scope the name temp so it is destructed before the (potentially
-        // throwing) sink/memcpy calls - keeping its live range free of any such
-        // call lets MSVC /GX elide the EH frame, matching retail's frameless body.
-        CString name = GetLevelName();
-        strcpy(dst->m_75, (const char*)name);
-    }
+    // Consume GetLevelName()'s returned CString temp inline (no named local):
+    // MSVC reads m_pszData straight off the live return pointer in eax (`mov
+    // edi,[eax]`) instead of re-addressing a stack slot, and - with no throwing
+    // call live during the temp's range (the strcpy is inlined rep-movs) - /GX
+    // still elides the EH frame, matching retail's frameless body.
+    strcpy(dst->m_75, (const char*)GetLevelName());
     dst->m_fc = (m_134 == 3);
     dst->m_f8 = m_130;
     ((SaveSink58*)m_saveSink)->Store(dst, src + 0x1d0);
@@ -3008,6 +3007,13 @@ void CGruntzMgr::DelayedQuit() {
 // the cursor visible, runs DialogBoxParamA(hInstance, tmpl, hwnd, dlgProc, 0) under the
 // busy gate, then optionally polls the live state, restores the cursor, runs the per-
 // frame tick, and finalizes the picked play/paused state. Returns the dialog result.
+// @early-stop
+// regalloc free-list-pick wall (docs/patterns/select-zero-mask-dest-register.md):
+// body byte-exact up to the world-dispatch `*m_world->m_1c; ->vtbl->Slot0a(d)`,
+// where retail seeds the container in ecx + vtbl in edx and our cl picks edx +
+// ecx; the swap is a global 3-cycle {eax->edx->ecx} that re-colours the whole
+// downstream (incl. the DialogBoxParamA arg setup) - same instructions, rotated
+// registers. Not source-steerable (~99.4%).
 RVA(0x00090260, 0x13e)
 i32 CGruntzMgr::RunModalDialog(const char* tmpl, void* dlgProc, i32 flag) {
     if (tmpl == 0) {

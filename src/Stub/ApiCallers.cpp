@@ -390,8 +390,8 @@ namespace ApiCallerStubs {
     // __stdcall(id): send 0x147 (clear listbox selection) to the resolved item.
     RVA(0x00015d00, 0x20)
     void __stdcall winapi_015d00_SendMessageA(i32 id) {
-        HWND h = ResolveItem_15ac0(id)->m_hwnd;
-        SendMessageA(h, 0x147, 0, 0);
+        WndItem* it = ResolveItem_15ac0(id);
+        SendMessageA(it->m_hwnd, 0x147, 0, 0);
     }
 
     // @confidence: low
@@ -401,8 +401,8 @@ namespace ApiCallerStubs {
     // __stdcall(id): clear listbox selection (0x147) of the resolved item; return +1.
     RVA(0x00015d30, 0x21)
     i32 __stdcall winapi_015d30_SendMessageA(i32 id) {
-        HWND h = ResolveItem_33a0(id)->m_hwnd;
-        return SendMessageA(h, 0x147, 0, 0) + 1;
+        WndItem* it = ResolveItem_33a0(id);
+        return SendMessageA(it->m_hwnd, 0x147, 0, 0) + 1;
     }
 
     // @source: winapi:SendMessageA
@@ -995,6 +995,13 @@ namespace ApiCallerStubs {
     };
     // Pause audio (slot 0x28), force the cursor visible, MessageBoxA, then hide it.
     void __stdcall Stop_158c70(i32 handle); // RVA 0x158c70
+    // @early-stop
+    // regalloc free-list-pick wall (docs/patterns/select-zero-mask-dest-register.md):
+    // body byte-exact, but every value-holding register is rotated vs retail - the
+    // `m_30->m_4->m_14` chain (ecx/eax vs our eax/ecx), the `*m_30->m_1c; ->vtbl
+    // ->Slot28(p)` dispatch (container ecx + vtbl edx vs our edx + ecx) and the
+    // MessageBoxA arg setup all carry the same global re-colouring. Same
+    // instructions, swapped registers; not source-steerable (~98.5%).
     RVA(0x0008ee70, 0x7c)
     i32 MsgHost_08ee70::Show(i32 type, i32 text) {
         if (m_30) {
@@ -2604,6 +2611,11 @@ namespace ApiCallerStubs {
     // @source: directx-wrapper-caller:calls 0x136550 (DSOUND.#1_DirectSoundCreate)
     i32 __stdcall PlaySound3_136550(i32 a, i32 b, i32 flag); // RVA 0x136550
     // __stdcall(a, b): default the 3rd arg to 0.
+    // @early-stop
+    // regalloc free-list-pick wall (docs/patterns/select-zero-mask-dest-register.md):
+    // body byte-exact except retail loads `a` into edx (`mov edx,[esp+4]`) while our
+    // cl picks ecx after eax is taken by `b` - a single free-list register pick, not
+    // source-steerable (~98.6%).
     RVA(0x00137720, 0x14)
     i32 __stdcall directx_wrapper_caller_137720_DSOUND_1_DirectSoundCreate(i32 a, i32 b) {
         return PlaySound3_136550(a, b, 0);
@@ -2653,7 +2665,7 @@ namespace ApiCallerStubs {
         } else {
             v = m_10 + hi - m_c;
         }
-        if ((u32)v >= (u32)m_14) {
+        if ((u32)v < (u32)m_14) {
             return 1;
         }
         return Work(m_c, v) != 0;
