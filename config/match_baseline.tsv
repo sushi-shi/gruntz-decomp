@@ -30,6 +30,7 @@ cddrawchildgroup	9	5
 cddrawptrcollections	13	10
 cddrawshadeblit	3	1
 cddrawsubmgr	31	15
+cddrawsubmgrani	2	1
 cddrawsubmgrdraco	5	2
 cddrawsubmgrleaf	13	4
 cddrawsubmgrleafscan	9	3
@@ -64,7 +65,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	213	0
+engine_discovered	211	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -352,6 +353,8 @@ cddrawsubmgr	?Setup_15c2d0@CDDrawBlitParam@@QAEXPAVCDDrawBlitParamSrc@@@Z	100.00
 cddrawsubmgr	?Stub_155720@CDDrawSubMgr@@QAEXXZ	3.6364	3.6364	2	da4e92815b42	0x155720
 cddrawsubmgr	?VirtualMethodUnknown1C@CDDrawSubMgr@@UAEXXZ	50.0000	50.0000	2	746bc9d4025a	0x1576c0
 cddrawsubmgr	?VirtualMethodUnknown20@CDDrawSubMgr@@UAEXXZ	50.0000	50.0000	2	0f68242bafed	0x157790
+cddrawsubmgrani	?CreateAniEntry_1528d0@CDDrawSubMgrAni@@QAEPAUCAniElementObj@@PBDPAX@Z	96.8696	96.8696	1	2ee844067849	0x1528d0
+cddrawsubmgrani	?ScanTree_152ad0@CDDrawSubMgrAni@@QAEHPAVCSymTab@@PBD1@Z	100.0000	100.0000	1	4fd0dd36de59	0x152ad0
 cddrawsubmgrdraco	?Stub_1574a0@CDDrawSubMgrDraco@@QAEXXZ	50.0000	50.0000	4	74b5269670c7	0x1574a0
 cddrawsubmgrdraco	?Stub_1574b0@CDDrawSubMgrDraco@@QAEXXZ	3.6364	3.6364	4	542f07a04b77	0x1574b0
 cddrawsubmgrdraco	?Stub_1588f0@CDDrawSubMgrDraco@@QAEXXZ	0.2516	0.2516	4	4e28e05aa3bc	0x1588f0
@@ -496,10 +499,10 @@ cheatmgr	?Empty@CCheatMgr@@QAEXXZ	100.0000	100.0000	1	8cc149232bcc	0x22b00
 cheatmgr	?RegisterCheats@CCheatMgr@@QAEXXZ	100.0000	100.0000	1	368e0d229303	0x22c80
 cimage	??1CImage@@QAE@XZ	94.2857	94.2857	1	3a970ca1c753	0xd5e80
 cimage	?FreeAll@CImage@@QAEXXZ	100.0000	100.0000	1	fc4b51958392	0x153260
-cimage	?LoadDispatch@CImage@@QAEHPAVCImageFrameDesc@@IPAXH@Z	99.8611	99.8611	1	ce4cdd7e901f	0x152fb0
+cimage	?LoadDispatch@CImage@@QAEHPAVCImageFrameDesc@@IPAXH@Z	99.8611	99.8611	2	2044bead9ce7	0x152fb0
 cimage	?RenderFrame@CImage@@QAEXPAX000@Z	100.0000	100.0000	1	43b44fcb1e6d	0x153790
 cimage	?RenderFrameClipped@CImage@@QAEXPAX0000@Z	100.0000	100.0000	1	3da75c815733	0x153810
-cimage	?Resolve@CImage@@QAEHPAVCImageSource@@H@Z	100.0000	100.0000	1	4ec2754e4b70	0x152f20
+cimage	?Resolve@CImage@@QAEHPAVCImageSource@@H@Z	100.0000	100.0000	2	d1cb4ee64159	0x152f20
 clightfx	?Activate@CLightFx@@QAEHHHHH@Z	86.7407	86.7407	1	017ace156fac	0x9d520
 clightfx	?RebindNode@CLightFx@@QAEHXZ	100.0000	100.0000	1	d9610ef994d0	0x9d770
 clightfxrender	?AllocSurface@CLightFxRender@@QAEHXZ	99.6842	99.6842	3	1bad35c5b187	0xa33e0
@@ -814,8 +817,6 @@ engine_discovered	?ClassUnknown_34_1490d0@ClassUnknown_34@@QAEXXZ	0.2985	0.2985	
 engine_discovered	?ClassUnknown_35_151eb0@ClassUnknown_35@@QAEXXZ	3.7037	3.7037	1	e166e0f484fe	0x151eb0
 engine_discovered	?ClassUnknown_35_1557a0@ClassUnknown_35@@QAEXXZ	4.1667	4.1667	1	5c8af7e7edc2	0x1557a0
 engine_discovered	?ClassUnknown_36_14dd90@ClassUnknown_36@@QAEXXZ	1.2500	1.2500	1	5b0b6fe47864	0x14dd90
-engine_discovered	?ClassUnknown_37_1528d0@ClassUnknown_37@@QAEXXZ	0.5797	0.5797	1	d735c9c6e8d7	0x1528d0
-engine_discovered	?ClassUnknown_37_152ad0@ClassUnknown_37@@QAEXXZ	0.2778	0.2778	1	7a90bc268e76	0x152ad0
 engine_discovered	?ClassUnknown_38_06b270@ClassUnknown_38@@QAEXXZ	4.0000	4.0000	1	bafd335436ac	0x6b270
 engine_discovered	?ClassUnknown_38_165460@ClassUnknown_38@@QAEXXZ	0.3053	0.3053	1	fafdd70ac576	0x165460
 engine_discovered	?ClassUnknown_38_1655c0@ClassUnknown_38@@QAEXXZ	1.1765	1.1765	1	664e2d041554	0x1655c0

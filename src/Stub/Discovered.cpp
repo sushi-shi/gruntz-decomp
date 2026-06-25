@@ -776,14 +776,8 @@ RVA(0x0014dd90, 0x74)
 void ClassUnknown_36::ClassUnknown_36_14dd90() {}
 
 // ---- ClassUnknown_37 ----
-// All methods reconstructed in src/Gruntz/CDDrawSubMgrLeaf.cpp (this is the
-// tomalla CDDrawSubMgrLeaf - a CObject-derived string-keyed catalog owning a
-// CMapStringToOb at +0x10). 0x1528d0 (factory) + 0x152ad0 (recursive directory
-// walker) remain stubbed below - large /GX builders deferred to the final sweep.
-RVA(0x001528d0, 0xdd)
-void ClassUnknown_37::ClassUnknown_37_1528d0() {}
-RVA(0x00152ad0, 0x17f)
-void ClassUnknown_37::ClassUnknown_37_152ad0() {}
+// Fully reconstructed in src/Gruntz/CDDrawSubMgrAni.cpp (the 'ANI' animation
+// keyed-catalog sub-manager: factory 0x1528d0 + recursive CSymTab walker 0x152ad0).
 
 // ---- ClassUnknown_38 ----
 RVA(0x0006b270, 0x1b)
