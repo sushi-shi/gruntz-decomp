@@ -164,6 +164,16 @@ source = "src/Gruntz/SBI_WarlordHeadEh.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "sbi_wellgoo"
+source = "src/Gruntz/SBI_WellGoo.cpp"
+flags = "base"
+
+[[unit]]
+unit = "sbi_wellgoo_eh"
+source = "src/Gruntz/SBI_WellGooEh.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "sbi_statztabgruntbar"
 source = "src/Gruntz/SBI_StatzTabGruntBar.cpp"
 flags = "base"

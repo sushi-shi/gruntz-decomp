@@ -66,7 +66,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	200	0
+engine_discovered	198	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -145,6 +145,8 @@ sbi_statztabgruntbar	3	2
 sbi_statztabgruntbar_eh	1	0
 sbi_warlordhead	4	1
 sbi_warlordhead_eh	1	0
+sbi_wellgoo	1	0
+sbi_wellgoo_eh	1	0
 shadetablecache	9	3
 siriusworkerhandlers	4	3
 sounddevice	8	4
@@ -781,8 +783,6 @@ engine_discovered	?ClassUnknown_110_0fb660@ClassUnknown_110@@QAEXXZ	1.1905	1.190
 engine_discovered	?ClassUnknown_111_029a80@ClassUnknown_111@@QAEXXZ	6.2500	6.2500	1	a7fc8d5dcfcb	0x29a80
 engine_discovered	?ClassUnknown_112_021c40@ClassUnknown_112@@QAEXXZ	20.0000	20.0000	1	a402e69418ad	0x21c40
 engine_discovered	?ClassUnknown_113_114480@ClassUnknown_113@@QAEXXZ	1.1905	1.1905	1	951875b2424e	0x114480
-engine_discovered	?ClassUnknown_114_0e6380@ClassUnknown_114@@QAEXXZ	1.0989	1.0989	1	094101133810	0xe6380
-engine_discovered	?ClassUnknown_114_104bb0@ClassUnknown_114@@QAEXXZ	2.7778	2.7778	1	1d9c5ebc12df	0x104bb0
 engine_discovered	?ClassUnknown_116_1047f0@ClassUnknown_116@@QAEXXZ	3.0303	3.0303	1	7cd339e1a88c	0x1047f0
 engine_discovered	?ClassUnknown_116_1048f0@ClassUnknown_116@@QAEXXZ	2.7027	2.7027	1	01bdfccec81f	0x1048f0
 engine_discovered	?ClassUnknown_119_1591b0@ClassUnknown_119@@QAEXXZ	14.2857	14.2857	1	fb191ddfdab1	0x1591b0
@@ -2077,6 +2077,8 @@ sbi_warlordhead	?SetState@CSBI_WarlordHead@@QAEHH@Z	100.0000	100.0000	1	034d9978
 sbi_warlordhead	?SetupImage@CSBI_WarlordHead@@QAEHHHHHHHHHHHH@Z	46.2105	46.2105	1	16d818a3069c	0xeb6b0
 sbi_warlordhead	?ShowFrames@CSBI_WarlordHead@@QAEHHH@Z	92.2716	92.2716	1	73cec54353b2	0xeb740
 sbi_warlordhead_eh	??1CSBI_WarlordHead@@QAE@XZ	43.6061	43.6061	1	bcabec3f0b56	0x104a00
+sbi_wellgoo	?Tick@CSBI_WellGoo@@QAEHXZ	83.0000	83.0000	1	34178faa97ab	0xe6380
+sbi_wellgoo_eh	??1CSBI_WellGoo@@QAE@XZ	51.0833	51.0833	1	6be06cd88e2a	0x104bb0
 shadetablecache	??0CShadeTableCache@@QAE@XZ	100.0000	100.0000	1	8d165746ed6f	0x14de30
 shadetablecache	??1CShadeTableCache@@QAE@XZ	80.1333	80.1333	2	d4743b4c108f	0x14de50
 shadetablecache	?AddTable@CShadeTableCache@@QAEPAUCShadeTable@@M@Z	59.6703	59.6703	2	102c6568e757	0x14f080
@@ -2159,12 +2161,12 @@ streamvoice	??1StreamVoice@@QAE@XZ	42.4643	42.4643	1	59cc0331f52c	0x137650
 streamvoice	?ComputeRatio@StreamVoice@@QAEIXZ	100.0000	100.0000	1	bc813ec12694	0x137590
 streamvoice	?Configure@StreamVoice@@QAEHHHHH@Z	100.0000	100.0000	1	8ec6fd23b06a	0x137520
 streamvoice	?SetSource@StreamVoice@@QAEHPAUStreamSource@@@Z	100.0000	100.0000	1	6052f26a3cfc	0x1374c0
-symparser	??1CSymParser@@QAE@XZ	97.9725	97.9725	1	753911be15cf	0x13abc0
+symparser	??1CSymParser@@QAE@XZ	97.9725	97.9725	2	b820544c77c6	0x13abc0
 symparser	?AddNode@CSymParser@@QAEXPAX@Z	100.0000	100.0000	1	9dbc0f9a4b8a	0x13c210
-symparser	?Clear@CSymParser@@QAEPAXH@Z	91.3803	91.3803	2	d1a32a225d01	0x13b850
+symparser	?Clear@CSymParser@@QAEPAXH@Z	91.3803	91.3803	3	2ea4717a0572	0x13b850
 symparser	?ResolvePath@CSymParser@@QAEPAXPBD@Z	100.0000	100.0000	1	d2f5951f4d21	0x13c030
 symparser	?ResolveQualified@CSymParser@@QAEHPBDPAX@Z	100.0000	100.0000	1	65f97a6deb84	0x13bff0
-symtab	??1CSymTab@@QAE@XZ	88.7245	88.7245	1	3d0073f2a05b	0x139ee0
+symtab	??1CSymTab@@QAE@XZ	88.7245	88.7245	2	ea710bd4bd0f	0x139ee0
 symtab	?FindSub@CSymTab@@QAEPAXPBD@Z	100.0000	100.0000	1	a80b960c2c89	0x13a230
 symtab	?FirstSub@CSymTab@@QAEPAXXZ	100.0000	100.0000	1	592426346612	0x13a260
 symtab	?FirstSym@CSymTab@@QAEPAXXZ	100.0000	100.0000	1	b475808448de	0x13a2b0

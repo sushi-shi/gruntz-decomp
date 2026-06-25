@@ -566,11 +566,11 @@ void ClassUnknown_112::ClassUnknown_112_021c40() {}
 RVA(0x00114480, 0xf1)
 void ClassUnknown_113::ClassUnknown_113_114480() {}
 
-// ---- ClassUnknown_114 ----
-RVA(0x000e6380, 0xf9)
-void ClassUnknown_114::ClassUnknown_114_0e6380() {}
-RVA(0x00104bb0, 0x94)
-void ClassUnknown_114::ClassUnknown_114_104bb0() {}
+// ---- ClassUnknown_114 ---- RECOVERED as CSBI_WellGoo (RTTI .?AVCSBI_WellGoo@@,
+// vtable 0x5eadfc), the most-derived leaf of CSBI_WellGoo : CSBI_Image :
+// CSBI_RectOnly : CStatusBarItem. Reconstructed in src/Gruntz/SBI_WellGoo.cpp (the
+// frameless per-frame goo Tick, vtable slot 5) and src/Gruntz/SBI_WellGooEh.cpp
+// (the 4-level /GX scalar destructor).
 
 // ---- ClassUnknown_115 ----
 // RECOVERED as CSBI_GruntMachine (RTTI .?AVCSBI_GruntMachine@@, vtable 0x5eadbc),
