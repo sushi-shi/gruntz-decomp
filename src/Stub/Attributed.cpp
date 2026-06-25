@@ -135,13 +135,7 @@ RVA(0x00151070, 0x98) void CGameObject::CGameObject_151070() {}  // med
 // ---- CGrunt ----
 RVA(0x00051c00, 0xc7b) void CGrunt::CGrunt_051c00() {}  // high
 RVA(0x0005b050, 0x40b) void CGrunt::CGrunt_05b050() {}  // med
-RVA(0x0005b570, 0x12b) void CGrunt::CGrunt_05b570() {}  // med
-RVA(0x00061940, 0x1cf) void CGrunt::CGrunt_061940() {}  // high
-RVA(0x00061bc0, 0xb2) void CGrunt::CGrunt_061bc0() {}  // high
-RVA(0x00062b70, 0x205) void CGrunt::CGrunt_062b70() {}  // high
-RVA(0x00067b00, 0x92) void CGrunt::CGrunt_067b00() {}  // high
 RVA(0x000692f0, 0x850) void CGrunt::CGrunt_0692f0() {}  // high
-RVA(0x00069fd0, 0x69) void CGrunt::CGrunt_069fd0() {}  // high
 
 // ---- CGruntHealthSprite ----
 RVA(0x0007ecf0, 0x15) void CGruntHealthSprite::CGruntHealthSprite_07ecf0() {}  // med

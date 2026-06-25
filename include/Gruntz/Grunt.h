@@ -540,6 +540,8 @@ public:
     // external/no-body so the calls reloc-mask.
     void CommitTileSlot(i32 ownerHi, i32 ownerLo, i32 px, i32 py);  // 0x6e120
     void CommitTileSlot2(i32 ownerHi, i32 ownerLo, i32 px, i32 py); // 0x6dae0
+    // FinishEntranceMove's tile-mgr drop notify (thunk_0x2a72 -> 0x79fb0), 3 args.
+    void NotifyEntranceDrop(i32 ownerHi, i32 ownerLo, i32 flag); // 0x79fb0
 };
 
 // The on-screen point-visibility predicate the arrival/update steps gate the cue
@@ -1054,7 +1056,50 @@ public:
     void OnReanchor(i32 a);                                // thunk_0x3cce (1-arg reanchor)
     void StepDropApply();                                  // thunk (drop-apply tail)
     i32 ApplyMoveMode(i32 v); // thunk_0x3b75 -> 0x50ca0 (the >=0x32 / <0x17 mode arm)
+
+    // ---- chunk-2 attributed targets (RearmAttack family + entrance-move tail) ----
+    // @0x5b570 (ret 8) - begin the grunt's attack/combat reaction: gated on the
+    // entrance being committed (m_1fc) AND the current anim NOT being "F" AND
+    // m_stamina>=0x64; fires the directional move-sound, latches the powered-up /
+    // combat-timer state, builds the HUD health sprite, and re-arms the ATTACK2 anim.
+    i32 BeginAttack(i32 a, i32 b); // @0x5b570
+    // @0x61940 (ret 8) - re-arm the grunt's attack/struck anim by entrance-reason:
+    // gated on m_entranceReason<0x17; latches neighbor col/row, re-latches the "F"
+    // anim set, switches on (m_entranceReason-2) to pick the powered/random branch,
+    // latches the combat-timer state, fires the focused-grunt drop cue when visible,
+    // marks HUD dirty, drives the ATTACK1/ATTACK2 geometry, re-stamps the cell frame.
+    i32 RearmAttackAnim(i32 col, i32 row); // @0x61940
+    // @0x61bc0 (ret 0) - the simple ATTACK2 re-arm: re-latch "F" anim set, drive the
+    // m_poseAttack2 geometry, re-stamp the entrance-cell frame, set m_214.
+    i32 RearmAttackAnim2(); // @0x61bc0
+    // @0x67b00 (ret 8) - the grunt-in-radius predicate: given a cell coord (col,row)
+    // resolve the occupant grunt via the tile-mgr's 15-wide cell grid, gate it (live,
+    // committed, not state 0x36), then test whether the squared tile-distance from
+    // this grunt to it is within the (radius-sum)^2 threshold.
+    i32 GruntInRadius(i32 col, i32 row); // @0x67b00
+    // @0x69fd0 (ret 0) - finish the entrance move: arm the entrance geometry source,
+    // gate on the armed-but-not-running sub-player, notify the tile-mgr of the drop
+    // (unless m_36c set), then retire the entrance player (m_154->m_8 |= 0x10000).
+    i32 FinishEntranceMove(); // @0x69fd0
 };
+
+// CGrunt segment-vs-box overlap test @0x62b70 - a free (__stdcall, ret 0xc) helper:
+// does the directed segment e1->e2 cross into the axis-aligned box `p`
+// {m_0=x0, m_4=y0, m_8=x1, m_c=y1}? Tests the segment against each of the box's
+// four edges (top y=m_4, bottom y=m_c, left x=m_0, right x=m_8), interpolating the
+// crossing point in float and checking it falls within the opposite span. Returns 1
+// on the first crossing, else 0. Pure stack args (no this); FP-heavy.
+struct GruntBox {
+    i32 m_0; // +0x00 x0
+    i32 m_4; // +0x04 y0
+    i32 m_8; // +0x08 x1
+    i32 m_c; // +0x0c y1
+};
+struct GruntSegEnd {
+    i32 m_0; // +0x00 x
+    i32 m_4; // +0x04 y
+};
+i32 __stdcall CGrunt_SegBoxOverlap(GruntBox* p, GruntSegEnd* e1, GruntSegEnd* e2);
 
 // CGrunt::IsSameType(a, b) @0x3c7f0 - a free (__cdecl) comparator: returns
 // (a->m_8 == b->m_8). Not a member (reads both args off the stack).

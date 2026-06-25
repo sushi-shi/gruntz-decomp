@@ -100,7 +100,7 @@ dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
 dsoundvoice	2	1
-engine_attributed	257	0
+engine_attributed	251	0
 engine_boundary	628	0
 engine_discovered	86	0
 engine_label_stubs	519	118
@@ -118,7 +118,7 @@ gamemodeobjlifecycle	3	2
 gameobjectctors	5	0
 gametext	4	2
 gamewnd	9	8
-grunt	67	14
+grunt	73	15
 gruntdatarecord	1	1
 gruntpuddle	4	2
 gruntspawnconfig	13	6
@@ -927,13 +927,7 @@ engine_attributed	?CGruntToySprite_07f720@CGruntToySprite@@QAEXXZ	0.8696	0.8696	
 engine_attributed	?CGruntVoice_119dc0@CGruntVoice@@QAEXXZ	20.0000	20.0000	1	71c89b0c3d95	0x119dc0
 engine_attributed	?CGrunt_051c00@CGrunt@@QAEXXZ	0.1147	0.1147	1	489bc806fe84	0x51c00
 engine_attributed	?CGrunt_05b050@CGrunt@@QAEXXZ	0.1254	0.1254	1	57460174fcc9	0x5b050
-engine_attributed	?CGrunt_05b570@CGrunt@@QAEXXZ	0.4167	0.4167	1	3cc144791799	0x5b570
-engine_attributed	?CGrunt_061940@CGrunt@@QAEXXZ	0.3053	0.3053	1	8b9f561e7c08	0x61940
-engine_attributed	?CGrunt_061bc0@CGrunt@@QAEXXZ	1.9608	1.9608	1	32fe9135c312	0x61bc0
-engine_attributed	?CGrunt_062b70@CGrunt@@QAEXXZ	0.1980	0.1980	1	1d1d5d643620	0x62b70
-engine_attributed	?CGrunt_067b00@CGrunt@@QAEXXZ	0.8163	0.8163	1	42731ff19cfb	0x67b00
 engine_attributed	?CGrunt_0692f0@CGrunt@@QAEXXZ	0.1439	0.1439	1	123485d47018	0x692f0
-engine_attributed	?CGrunt_069fd0@CGrunt@@QAEXXZ	3.3333	3.3333	1	a0fdd9006bb2	0x69fd0
 engine_attributed	?CGruntzCmdMgr_023b40@CGruntzCmdMgr@@QAEXXZ	1.0000	1.0000	1	1b6fcb317f47	0x23b40
 engine_attributed	?CGruntzCommand_024050@CGruntzCommand@@QAEXXZ	1.0256	1.0256	1	6eefba16e1e7	0x24050
 engine_attributed	?CGruntzCommand_0240d0@CGruntzCommand@@QAEXXZ	1.2121	1.2121	1	1f64a091be09	0x240d0
@@ -2518,8 +2512,10 @@ gamewnd	?PumpMessages@CGameWnd@@QAEXIH@Z	100.0000	100.0000	1	00d21758f5d6	0x13d4
 gamewnd	?QuitMessageLoop@CGameWnd@@UAEHXZ	100.0000	100.0000	4	f2de6543e99e	0x13d490
 grunt	??1CGrunt@@QAE@XZ	55.5455	55.5455	1	7103cc50662d	0xf2f0
 grunt	?ArrivalRecycle@CGrunt@@QAEHHHHHH@Z	52.4272	52.4272	1	f11f19a61424	0x59230
+grunt	?BeginAttack@CGrunt@@QAEHHH@Z	53.7917	53.7917	1	3d02da5c24cc	0x5b570
 grunt	?BuildEntranceAnimation@CGrunt@@QAEXH@Z	71.4562	71.4562	6	31017869150f	0x67bd0
 grunt	?CGrunt_IsSameType@@YA_NPAVCGrunt@@0@Z	100.0000	100.0000	1	04ada45b6431	0x3c7f0
+grunt	?CGrunt_SegBoxOverlap@@YGHPAUGruntBox@@PAUGruntSegEnd@@1@Z	78.7228	78.7228	1	bb4ee352e2c0	0x62b70
 grunt	?CGrunt_TileSwitch@@YGXHHHHHH@Z	66.2000	66.2000	2	e4d83b1d7834	0x4b320
 grunt	?CanShowStamina@CGrunt@@QAEHXZ	100.0000	100.0000	3	e5851737e25e	0x514a0
 grunt	?ClaimSwitchTile@CGrunt@@QAEHXZ	61.5954	61.5954	1	564a86c19254	0x52c70
@@ -2541,8 +2537,10 @@ grunt	?DispatchVtbl24@CGrunt@@QAEXXZ	100.0000	100.0000	1	bc3bd12b926d	0x6b260
 grunt	?EnsureStruckSlot@CGrunt@@QAEXPBD@Z	88.2250	88.2250	1	0158101705e2	0x57b70
 grunt	?EnsureStruckVoice@CGrunt@@QAEXPBD@Z	100.0000	100.0000	1	63219e2db42a	0x57c40
 grunt	?FindGridNeighbor@CGrunt@@QAEPAV1@H@Z	100.0000	100.0000	3	61dd38cb1b46	0x5b6f0
+grunt	?FinishEntranceMove@CGrunt@@QAEHXZ	100.0000	100.0000	1	a2a92c839b90	0x69fd0
 grunt	?FreeNameList@CGrunt@@QAEXXZ	76.9512	76.9512	2	2e3438eb07ba	0x48360
 grunt	?GetTilePos@CGrunt@@QAEPAUGruntTilePos@@PAU2@@Z	85.3000	85.3000	1	995269eb1311	0x31c70
+grunt	?GruntInRadius@CGrunt@@QAEHHH@Z	35.7143	35.7143	1	d9edebac6a79	0x67b00
 grunt	?InitDirVectors@CGrunt@@QAEXXZ	37.3394	37.3394	1	1b1f255f448b	0x5caa0
 grunt	?LoadAnimNameTable@CGrunt@@QAEXHH@Z	75.9312	75.9312	3	f341d57d748b	0x49c60
 grunt	?LoadEntranceConfig@CGrunt@@QAEXXZ	78.8377	78.8377	6	7a2efa979b8d	0x67f80
@@ -2552,6 +2550,8 @@ grunt	?PlayMoveSound@CGrunt@@QAEXHH@Z	100.0000	100.0000	1	aa803a2a8575	0x511b0
 grunt	?PlayMoveSoundAtTile@CGrunt@@QAEXHH@Z	100.0000	100.0000	1	a7adfdf5dae3	0x514e0
 grunt	?PlaySound@CGrunt@@QAEXHUCGruntVoiceRec@@@Z	62.4901	62.4901	1	a2a2cfd991e5	0x4ac10
 grunt	?ReadConfigFromButeMgr@CGrunt@@QAEXXZ	96.8421	96.8421	5	39bb0fe6f60a	0x48400
+grunt	?RearmAttackAnim2@CGrunt@@QAEHXZ	73.0784	73.0784	1	b332a973991f	0x61bc0
+grunt	?RearmAttackAnim@CGrunt@@QAEHHH@Z	54.0229	54.0229	1	7230a3c88ee7	0x61940
 grunt	?RearmEntranceDrop@CGrunt@@QAEXXZ	88.8646	88.8646	2	d64979f40a7e	0x68370
 grunt	?RectContains@CGrunt@@QAEHHH@Z	63.0081	63.0081	1	490b1e26e8f0	0x51850
 grunt	?RectContainsGated@CGrunt@@QAEHHH@Z	63.5433	63.5433	1	e41d77906d32	0x51a20

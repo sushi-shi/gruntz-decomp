@@ -73,6 +73,7 @@
 #include <Gruntz/Grunt.h>
 #include <rva.h>
 #include <math.h>
+#include <stdlib.h>
 #include <string.h>
 
 // The sprite class-name string the factory is asked to build, per creator. These
@@ -4038,5 +4039,317 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
             g->m_60->CueSpawn(this, 0xa, -1, -1, -1);
         }
     }
+    return 0;
+}
+
+// ===========================================================================
+// Chunk-2 attributed targets (RearmAttack family + entrance-move tail). Same
+// raw-offset campaign style; reconstructed in ascending retail-RVA order.
+// ===========================================================================
+static char s_CombatTimeout[] = "CombatTimeout"; // s_CombatTimeout_0060df84
+
+// ---------------------------------------------------------------------------
+// CGrunt::BeginAttack(a, b)  @0x5b570  (__thiscall, ret 8)
+// Gated on the entrance being committed (m_1fc != 0), the current anim NOT being
+// the "F"/struck code, and m_stamina >= 0x64. Fires the directional move-sound to
+// (a, b), latches the powered-up / +0x218 combat state, builds the HUD health
+// sprite, latches the combat-timer block (CombatTimeout config + game clock), and
+// re-arms the ATTACK2 anim (RearmAttackAnim2). Returns 1 on commit, else 0.
+//
+// @early-stop
+// inline-strcmp result-register coin-flip (docs/patterns/return-bool-via-local-setcc):
+// CFG, every member offset/gate, the GetNameRecords+scratch-teardown, the inline
+// CRT strcmp, the PlayMoveSound/CreateHealthSprite/GetDwordDef call shapes, the
+// combat-timer block, and both returns are byte-faithful. Residue = retail lands the
+// inline-strcmp result + the sete bool in eax/cl where cl picks ecx/al, cascading the
+// register pairing through the bool-eval block; source-invariant (named `eq` local
+// already in place). Deferred to the final sweep.
+RVA(0x0005b570, 0x12b)
+i32 CGrunt::BeginAttack(i32 a, i32 b) {
+    if (*(i32*)((char*)this + 0x1fc) == 0) {
+        return 0;
+    }
+    char* nm = g_animNameResolver.GetNameRecords(m_14->m_1c)->m_name;
+    GruntScratchTeardown();
+    bool eq = (strcmp(nm, g_codeF) == 0);
+    if (eq) {
+        return 0;
+    }
+    if (m_stamina < 0x64) {
+        return 0;
+    }
+
+    PlayMoveSound(a, b);
+    m_poweredUp = 1;
+    *(i32*)((char*)this + 0x218) = 1;
+    CreateHealthSprite();
+
+    *(i32*)((char*)this + 0x878) = (i32)g_buteMgr.GetDwordDef(s_Grunt, s_CombatTimeout, 0x1388);
+    *(i32*)((char*)this + 0x87c) = 0;
+    *(i32*)((char*)this + 0x870) = (i32)g_645588;
+    *(i32*)((char*)this + 0x874) = 0;
+    *(i32*)((char*)this + 0x358) = 1;
+    *(i32*)((char*)this + 0x208) = a;
+    *(i32*)((char*)this + 0x20c) = b;
+    RearmAttackAnim2();
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CGrunt::RearmAttackAnim(col, row)  @0x61940  (__thiscall, ret 8)
+// Gated on m_entranceReason < 0x17. Latches the neighbor col/row (+0x200/+0x204),
+// re-latches the "F" anim set, then switches on (m_entranceReason - 2) to pick the
+// branch: reason 2 sets m_entranceActive when m_arrivalState is live; reasons
+// 9/10/11/17/20/21/22 force index 1; else a rand-bit picks index 0/1. Sets the
+// +0x218 combat latch, latches the combat-timer block, fires the focused-grunt drop
+// cue when the grunt is on-screen, marks the HUD anim id dirty, drives the
+// ATTACK1/ATTACK2 geometry by index, and re-stamps the entrance-cell frame.
+//
+// @early-stop
+// switch/regalloc + cell-frame scratch-spill plateau: CFG, the (m_entranceReason-2)
+// switch (the byte+jump table reloc-masks), every member offset/gate, the
+// CreateHealthSprite/GetDwordDef/CueSpawn/SetGeometry/SetAnimFrame call shapes, the
+// combat-timer block, the on-screen cue gate, and the HUD-dirty stamp are
+// byte-faithful. Residue = the switch index register (ecx vs edx), the rand()%2 mask
+// (and eax,1 vs the CSE'd ebx=1), the dead cell[2] read retail spills into a scratch
+// frame, and the cross-arm regalloc; source-invariant. Deferred to the final sweep.
+RVA(0x00061940, 0x1cf)
+i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
+    if (m_entranceReason >= 0x17) {
+        return 0;
+    }
+
+    m_neighborCol = col;
+    m_neighborRow = row;
+    m_prevAnimSetNode = (i32)m_14->m_1c;
+    m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeF);
+
+    *(i32*)((char*)this + 0x218) = 1;
+
+    i32 idx;
+    switch (m_entranceReason - 2) {
+        case 0:
+            if (m_arrivalState != 0) {
+                m_entranceActive = 1;
+            }
+            idx = 1;
+            break;
+        case 7:
+        case 8:
+        case 9:
+        case 15:
+        case 18:
+        case 19:
+        case 20:
+            idx = 1;
+            break;
+        default:
+            idx = GruntRand() % 2;
+            break;
+    }
+
+    CreateHealthSprite();
+
+    *(i32*)((char*)this + 0x878) = (i32)g_buteMgr.GetDwordDef(s_Grunt, s_CombatTimeout, 0x1388);
+    *(i32*)((char*)this + 0x87c) = 0;
+    *(i32*)((char*)this + 0x870) = (i32)g_645588;
+    *(i32*)((char*)this + 0x874) = 0;
+
+    {
+        CGruntHud* h = m_10;
+        WwdGameReg* g = g_gameReg;
+        i32 yy = h->m_60;
+        i32 xx = h->m_5c;
+        i32* rect = (i32*)(*(i32*)(*(char**)((char*)g->m_30 + 0x24) + 0x5c) + 0x40);
+        if (xx < rect[2] && xx >= rect[0] && yy < rect[3] && yy >= rect[1]) {
+            g->m_60->CueSpawn(this, 1, -1, -1, -1);
+        }
+    }
+
+    {
+        CGruntHud* h = m_10;
+        i32 z = h->m_60 + 0x186c1;
+        if (h->m_74 != z) {
+            h->m_74 = z;
+            h->m_8 |= 0x20000;
+        }
+    }
+
+    CEntranceAnimPlayer* p = m_154;
+    m_prevEntranceDesc = (i32)p->m_1b4;
+    p->m_1a0.SetGeometry(*(i32*)((char*)this + idx * 4 + 0x398));
+
+    CEntranceAnimDescColl* desc = m_154->m_1b4;
+    i32* el = desc->m_10 > 0 ? *desc->m_c : 0;
+    i32 frame = el[0x14 / 4];
+
+    i32* cell = m_entranceCell;
+    i32 cc = cell[0];
+    i32 cr = cell[1];
+    i32 base = cc + (cr + 2 * cc);
+    i32 idx2 = base + base * 12;
+    char* buf = GruntStrGetBuffer((char*)this + idx2 * 8 + 0x468, 0);
+    m_154->SetAnimFrame(buf, frame);
+    m_neighborValid = 1;
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// CGrunt::RearmAttackAnim2()  @0x61bc0  (__thiscall, ret 0)
+// The simple ATTACK2 re-arm: re-latch the "F" anim set, drive the m_poseAttack2
+// geometry, re-stamp the entrance-cell frame, set the +0x214 latch. Returns 0.
+//
+// @early-stop
+// cell-frame scratch-spill plateau: CFG, every member offset, the EntranceLookupAnimSet
+// re-latch, the m_poseAttack2 geometry drive, the first-elem frame read, the
+// (3*col+row)*0x68 cell-frame index, and the SetAnimFrame call are byte-faithful.
+// Residue = retail loads the cell as a 3-int read and spills the dead cell[2] to a
+// 0xc scratch frame (sub esp,0xc) where cl strips the unused read (no frame), plus
+// the cell-base register; source-invariant. Deferred to the final sweep.
+RVA(0x00061bc0, 0xb2)
+i32 CGrunt::RearmAttackAnim2() {
+    m_prevAnimSetNode = (i32)m_14->m_1c;
+    m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeF);
+
+    CEntranceAnimPlayer* p = m_154;
+    m_prevEntranceDesc = (i32)p->m_1b4;
+    p->m_1a0.SetGeometry(m_poseAttack2);
+
+    CEntranceAnimDescColl* desc = m_154->m_1b4;
+    i32* el = desc->m_10 > 0 ? *desc->m_c : 0;
+    i32 frame = el[0x14 / 4];
+
+    i32* cell = m_entranceCell;
+    i32 col = cell[0];
+    i32 row = cell[1];
+    i32 base = col + (row + 2 * col);
+    i32 idx2 = base + base * 12;
+    char* buf = GruntStrGetBuffer((char*)this + idx2 * 8 + 0x468, 0);
+    m_154->SetAnimFrame(buf, frame);
+    m_neighborValid = 1;
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// CGrunt_SegBoxOverlap(p, e1, e2)  @0x62b70  (__stdcall, ret 0xc)
+// Does the directed segment e1->e2 cross into the axis-aligned box `p`
+// {x0,y0,x1,y1}? Tests the segment against each box edge (top/bottom horizontals
+// at y0/y1, left/right verticals at x0/x1): when the two endpoints straddle the
+// edge line, interpolate the crossing coordinate in float and test it falls within
+// the opposite span. Returns 1 on the first crossing, else 0. Pure stack args.
+//
+// @early-stop
+// x87 FP instruction-scheduling wall (same family as ComputeFacing 0x57060 /
+// docs/patterns): CFG, the 4 edge tests, every straddle setl/setg sign test, the
+// int subtractions feeding fild/fidiv/fimul/fiadd, and the fcompp comparison
+// structure are byte-faithful in shape/order. Residue = the x87 register-stack
+// scheduling + which spill slot holds each interpolation operand (source-invariant
+// on this leaf). Deferred to the final sweep.
+RVA(0x00062b70, 0x205)
+i32 __stdcall CGrunt_SegBoxOverlap(GruntBox* p, GruntSegEnd* e1, GruntSegEnd* e2) {
+    i32 e1y = e1->m_4;
+    i32 e2y = e2->m_4;
+
+    // Top edge (y = p->m_4): straddle in y, interpolate x.
+    i32 py = p->m_4;
+    if ((e1y < py) != (e2y < py)) {
+        float t = (float)(py - e1y) / (float)(e2y - e1y);
+        float ix = (float)e1->m_0 + t * (float)(e2->m_0 - e1->m_0);
+        if ((float)p->m_0 <= ix && ix <= (float)p->m_8) {
+            return 1;
+        }
+    }
+
+    // Bottom edge (y = p->m_c).
+    i32 pyc = p->m_c;
+    if ((e1y < pyc) != (e2y < pyc)) {
+        float t = (float)(pyc - e1y) / (float)(e2y - e1y);
+        float ix = (float)e1->m_0 + t * (float)(e2->m_0 - e1->m_0);
+        if ((float)p->m_0 <= ix && ix <= (float)p->m_8) {
+            return 1;
+        }
+    }
+
+    // Left edge (x = p->m_0): straddle in x, interpolate y.
+    i32 e1x = e1->m_0;
+    i32 e2x = e2->m_0;
+    i32 px = p->m_0;
+    if ((e1x > px) != (e2x > px)) {
+        float t = (float)(e2x - px) / (float)(e2x - e1x);
+        float iy = (float)e1y + t * (float)(e2y - e1y);
+        if ((float)p->m_4 <= iy && iy <= (float)p->m_c) {
+            return 1;
+        }
+    }
+
+    // Right edge (x = p->m_8).
+    i32 pxr = p->m_8;
+    if ((e1x > pxr) != (e2x > pxr)) {
+        float t = (float)(e2x - pxr) / (float)(e2x - e1x);
+        float iy = (float)e1y + t * (float)(e2y - e1y);
+        if ((float)p->m_4 <= iy && iy <= (float)p->m_c) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// CGrunt::GruntInRadius(col, row)  @0x67b00  (__thiscall, ret 8)
+// Resolve the grunt occupying cell (col, row) via the tile-mgr's 15-wide cell grid
+// (m_tileMgr + (15*col + row)*4 + 0x1c), gate it (live, entrance committed m_1fc, not
+// state 0x36), then test whether the squared tile-distance from this grunt's HUD
+// tile to it is within the (this->m_298 + that->m_2dc)^2 radius-sum threshold.
+//
+// @early-stop
+// load-result register coin-flip (docs/patterns/select-zero-mask-dest-register family):
+// the base disasm is byte-identical to retail (CFG, all 3 gates, the 15*col+row index,
+// the >>5 tile math, the dx*dx+dy*dy, the abs() cdq/xor/sub idiom, the radius-sum
+// compare/setl) EXCEPT the resolved `other` pointer lands in edx where retail reuses
+// the index register eax, cascading the edx/eax pairing through every following
+// operand. Source-invariant (reorder / typed-grid / inline all keep edx). Deferred.
+RVA(0x00067b00, 0x92)
+i32 CGrunt::GruntInRadius(i32 col, i32 row) {
+    CGrunt* other =
+        *(CGrunt**)(*(char**)((char*)this + 0x260) + (15 * col + row) * 4 + 0x1c);
+    if (other == 0) {
+        return 0;
+    }
+    if (*(i32*)((char*)other + 0x1fc) == 0) {
+        return 0;
+    }
+    if (*(i32*)((char*)other + 0x258) == 0x36) {
+        return 0;
+    }
+
+    i32 ox = *(i32*)((char*)other + 0x17c) >> 5;
+    i32 oy = *(i32*)((char*)other + 0x180) >> 5;
+    i32 tx = *(i32*)((char*)this + 0x300) >> 5;
+    i32 ty = *(i32*)((char*)this + 0x304) >> 5;
+    i32 dx = oy - ty;
+    i32 dy = ox - tx;
+    i32 sum = *(i32*)((char*)this + 0x2dc) + *(i32*)((char*)this + 0x298);
+    i32 dist2 = abs(dx * dx + dy * dy);
+    return dist2 < sum * sum ? 1 : 0;
+}
+
+// ---------------------------------------------------------------------------
+// CGrunt::FinishEntranceMove()  @0x69fd0  (__thiscall, ret 0)
+// Arm the entrance geometry source (m_154->m_1a0.SetGeoSourceR(g_defaultGeo)); when
+// the geometry sub-player is armed-but-not-running (sub+0x28 != 0 && sub+0x20 == 0):
+// unless m_36c is already set, notify the tile-mgr of the drop, then retire the
+// entrance player (m_154->m_8 |= 0x10000). Returns 0.
+RVA(0x00069fd0, 0x69)
+i32 CGrunt::FinishEntranceMove() {
+    m_154->m_1a0.SetGeoSourceR(g_defaultGeo);
+    char* sub = (char*)&m_154->m_1a0;
+    if (*(i32*)(sub + 0x28) == 0 || *(i32*)(sub + 0x20) != 0) {
+        return 0;
+    }
+    if (*(i32*)((char*)this + 0x36c) == 0) {
+        m_tileMgr->NotifyEntranceDrop(m_tileOwnerHi, m_tileOwnerLo, 0);
+    }
+    *(i32*)((char*)m_154 + 8) |= 0x10000;
     return 0;
 }

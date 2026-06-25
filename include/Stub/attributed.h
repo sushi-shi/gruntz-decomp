@@ -34,7 +34,7 @@ class CFontConfig { public: void CFontConfig_021e20(); void CFontConfig_021ef0()
 class CGameApp { public: void CGameApp_13dbc0(); };
 class CGameLevel { public: void CGameLevel_15ff20(); void CGameLevel_15ffe0(); void CGameLevel_160980(); void CGameLevel_160a40(); };
 class CGameObject { public: void CGameObject_150f90(); void CGameObject_151070(); };
-class CGrunt { public: void CGrunt_051c00(); void CGrunt_05b050(); void CGrunt_05b570(); void CGrunt_061940(); void CGrunt_061bc0(); void CGrunt_062b70(); void CGrunt_067b00(); void CGrunt_0692f0(); void CGrunt_069fd0(); };
+class CGrunt { public: void CGrunt_051c00(); void CGrunt_05b050(); void CGrunt_0692f0(); };
 class CGruntHealthSprite { public: void CGruntHealthSprite_07ecf0(); void CGruntHealthSprite_07eed0(); };
 class CGruntPowerupSprite { public: void CGruntPowerupSprite_07ffa0(); void CGruntPowerupSprite_080180(); };
 class CGruntSelectedSprite { public: void CGruntSelectedSprite_07e5e0(); void CGruntSelectedSprite_07e7c0(); };
