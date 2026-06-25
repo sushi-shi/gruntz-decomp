@@ -902,5 +902,5 @@ flags = "eh"
 
 [[unit]]
 unit = "blowfish"
-source = "src/Utils/Blowfish.cpp"
+source = "src/Crypto/Blowfish.cpp"
 flags = "base"

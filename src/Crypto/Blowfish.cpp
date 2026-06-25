@@ -17,7 +17,7 @@
 #include <Ints.h>
 #include <rva.h>
 
-#include <Utils/Blowfish.h>
+#include <Crypto/Blowfish.h>
 
 // The global key state (zero-init -> .bss). The four 256-entry S-boxes are
 // contiguous immediately after S[0], so a flat 1024-entry view (0x000/0x100/
