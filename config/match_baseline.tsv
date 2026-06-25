@@ -71,7 +71,7 @@ cimage	6	4
 cimageowned	2	1
 clightfx	2	1
 clightfxrender	22	8
-cmenustate	2	1
+cmenustate	3	2
 cmulti	11	7
 cparticlez	2	2
 cpathhazard	4	2
@@ -99,7 +99,7 @@ dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
 dsoundvoice	2	1
-engine_discovered	99	0
+engine_discovered	97	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -201,7 +201,7 @@ streamvoice	5	3
 symparser	5	3
 symtab	10	7
 terraintileloader	1	0
-tileactionevent	5	3
+tileactionevent	6	3
 tilegridcommand	5	2
 tileswitchlogic	14	7
 tiletriggercontainer	15	4
@@ -630,6 +630,7 @@ clightfxrender	?Shape5@CLightFxRender@@QAEHXZ	74.0326	74.0326	4	158440af6457	0xa
 clightfxrender	?Shape6@CLightFxRender@@QAEHXZ	77.4443	77.4443	4	e353a843eb8e	0xa7260
 clightfxrender	?Shape7@CLightFxRender@@QAEHXZ	73.6008	73.6008	4	2ac3e51a74b2	0xa7d50
 clightfxrender	?Shape8@CLightFxRender@@QAEHXZ	68.0960	68.0960	4	41419e5ec730	0xa8900
+cmenustate	?LoadGameOptionsToDialog@@YAXPAUHWND__@@@Z	100.0000	100.0000	1	68afdc1f2aba	0x36860
 cmenustate	?ReadMenuOptionsDialog@@YAXPAUHWND__@@@Z	99.9020	99.9020	1	720ff87696f7	0x36a30
 cmenustate	?ReadyGate@CMenuState@@QAEHXZ	100.0000	100.0000	1	6ea0d4b831d8	0xa0d40
 cmulti	??1CMulti@@QAE@XZ	0.0000	0.0000	1	301ec69b5a15	0x8d270
@@ -856,11 +857,9 @@ engine_discovered	?ClassUnknown_126_11cf30@ClassUnknown_126@@QAEXXZ	50.0000	50.0
 engine_discovered	?ClassUnknown_127_11cee3@ClassUnknown_127@@QAEXXZ	50.0000	50.0000	2	5f8626bfb64d	0x11cee3
 engine_discovered	?ClassUnknown_128_174d70@ClassUnknown_128@@QAEXXZ	3.2258	3.2258	2	a3ea9c8c5e38	0x174d70
 engine_discovered	?ClassUnknown_129_016460@ClassUnknown_129@@QAEXXZ	5.5556	5.5556	2	821b774a607d	0x16460
-engine_discovered	?ClassUnknown_138_036860@ClassUnknown_138@@QAEXXZ	1.0309	1.0309	1	7aa3994ae9ce	0x36860
 engine_discovered	?ClassUnknown_14_13a000@ClassUnknown_14@@QAEXXZ	1.8182	1.8182	2	589de4675d1d	0x13a000
 engine_discovered	?ClassUnknown_154_0363a0@ClassUnknown_154@@QAEXXZ	6.2500	6.2500	1	d1108cf8d94b	0x363a0
 engine_discovered	?ClassUnknown_164_0deb20@ClassUnknown_164@@QAEXXZ	1.1905	1.1905	1	4627b2908d67	0xdeb20
-engine_discovered	?ClassUnknown_170_113420@ClassUnknown_170@@QAEXXZ	0.3306	0.3306	1	854a47b9fb1b	0x113420
 engine_discovered	?ClassUnknown_17_16f760@ClassUnknown_17@@QAEXXZ	0.8333	0.8333	2	acd8824ba181	0x16f760
 engine_discovered	?ClassUnknown_20_16df70@ClassUnknown_20@@QAEXXZ	5.0000	5.0000	2	fce2906f0f57	0x16df70
 engine_discovered	?ClassUnknown_21_16e480@ClassUnknown_21@@QAEXXZ	3.3333	3.3333	2	2e3b23619fa3	0x16e480
@@ -2234,6 +2233,7 @@ symtab	?NextSym@CSymTab@@QAEPAXPAX@Z	100.0000	100.0000	1	64837c542227	0x13a2d0
 symtab	?ResolvePath@CSymTab@@QAEPAXPBD@Z	32.7876	32.7876	1	5d3e7d2e472f	0x13bae0
 symtab	?ResolveQualified@CSymTab@@QAEHPBDPAX@Z	52.0462	52.0462	1	dd4dfb34a72f	0x13be40
 terraintileloader	?Load@CTerrainTileLoader@@QAGXHHHHHH@Z	1.1273	1.1273	1	0cea279b8baf	0x75e90
+tileactionevent	?MorphByTool@CTileActionEvent@@QAEHHH@Z	0.0000	0.0000	1	49b3c396ebf6	0x113420
 tileactionevent	?Process@CTileActionEvent@@QAEHH@Z	61.6432	61.6432	2	4ebb9cc58043	0x112ee0
 tileactionevent	?ResetFlag@CTileActionEvent@@QAEPAV1@XZ	100.0000	100.0000	1	08bd2f762b58	0x112d80
 tileactionevent	?Serialize@CTileActionEvent@@QAEHPAXHHH@Z	100.0000	100.0000	1	4f4986735ddf	0x113f10

@@ -145,9 +145,6 @@ RVA(0x00174d70, 0x70) void ClassUnknown_128::ClassUnknown_128_174d70() {}
 // ---- ClassUnknown_129 ----
 RVA(0x00016460, 0x46) void ClassUnknown_129::ClassUnknown_129_016460() {}
 
-// ---- ClassUnknown_138 ----
-RVA(0x00036860, 0x16f) void ClassUnknown_138::ClassUnknown_138_036860() {}
-
 // ---- ClassUnknown_14 ----
 RVA(0x0013a000, 0x37) void ClassUnknown_14::ClassUnknown_14_13a000() {}
 
@@ -159,9 +156,6 @@ RVA(0x000deb20, 0xf1) void ClassUnknown_164::ClassUnknown_164_0deb20() {}
 
 // ---- ClassUnknown_17 ----
 RVA(0x0016f760, 0x82) void ClassUnknown_17::ClassUnknown_17_16f760() {}
-
-// ---- ClassUnknown_170 ----
-RVA(0x00113420, 0x1f2) void ClassUnknown_170::ClassUnknown_170_113420() {}
 
 // ---- ClassUnknown_20 ----
 RVA(0x0016df70, 0x22) void ClassUnknown_20::ClassUnknown_20_16df70() {}

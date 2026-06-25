@@ -53,6 +53,12 @@ public:
     // tile/brick effect, mark the per-player flags and re-dispatch. 0x112ee0.
     i32 Process(i32 arg);
 
+    // Apply a tool/key (toolId 0x22..0x26) to the current action code: advance m_0 to
+    // the next code per a per-tool transition table, reset the 4-slot per-player flag
+    // array, mark this player's slot (or all four when slot==5), then re-commit via
+    // SetActionCode. Returns 0 if the (tool, m_0) pair has no transition. 0x113420.
+    i32 MorphByTool(i32 toolId, i32 playerSlot);
+
     // The serialize entry: __thiscall, 4 stack args (ar, mode, ...). Dispatches to
     // SerializeFields on mode 4 (write) / DeserializeFields on mode 7 (read).
     // 0x113f10.
