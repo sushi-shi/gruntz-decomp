@@ -308,6 +308,28 @@ RVA(0x000b0fe0, 0x1ab)
 void CRollingBall::CRollingBall_0b0fe0() {}
 
 // ---- CSBI_RectOnly ----
+// MEMBERSHIP AUDIT (matcher-2): the this-tracer conflated 4 RVAs onto
+// CSBI_RectOnly. Verified via dump_target/caller-scan/Ghidra:
+//   0c8980 - /GX EH destructor of a CSBI_RectOnly-FAMILY object (m_530 collection
+//     + 8 CPtrList of stride 0x1c at +0x2c, the ResetWidgets shape). Called as the
+//     sub-object dtor from the 0xc8xxx render class's teardown (FUN_004c8700, on
+//     [edi+0x2dc]). Tractable only via the eh-dtor-model-members-as-destructible
+//     pattern, which needs the whole owning class polymorphically modeled - out of
+//     scope here. Documented /GX EH-dtor wall; deferred to the final sweep.
+//   0ebd70 - NOT a CSBI_RectOnly member: a free function (no this; calls a method on
+//     ARG1) in the 0xc8xxx-0xd7xxx scroll/render module (reads g_buteMgr, ScrollDistX
+//     /ScrollDistY/ScrollTime/BackPlane butes + DAT_0064cfXX scroll state). Called
+//     only from that module (0xb713d/0xc8f13/0xca002/0xd7011), never from a CSBI
+//     site. SPLIT: belongs to the scroll/viewport subsystem, not the SBI family.
+//   105800 - NOT a CSBI_RectOnly member: a free __stdcall(2 args, ret 8) status
+//     helper (reads g_gameReg->m_68 + DAT_00644c54 grid index; on success latches
+//     m_68+0x230/0x234/0x238). Called BY CSBI methods (UpdateStatusBarTabHighlight
+//     0xfeeaf, ClickToggle 0xff94d), not a member of the class. SPLIT.
+//   1084d0 - genuine CSBI_RectOnly member: a /GX EH Serialize-VARIANT (lazily news
+//     the +0x54c sub-object like EnsureSub, drives the stream slots 0x2c/0x30, jump-
+//     table dispatch on the stream-type arg). But 2412 B, /GX + jump table - a >512B
+//     megafunction. Per doctrine: documented; leave stubbed; deferred to the final
+//     sweep (leaf-first redo), do NOT half-reconstruct.
 RVA(0x000c8980, 0x64)
 void CSBI_RectOnly::CSBI_RectOnly_0c8980() {}
 RVA(0x000ebd70, 0x366)
