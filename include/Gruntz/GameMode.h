@@ -213,6 +213,13 @@ public:
     void StartMusic();     // 0xa05a0 - music start gate
     void StopMusicChain(); // 0xa0640 - stop + cue chain
 
+    // ReadyGate (0xa0d40): the &&-chained ready/transition probe -
+    // Vfunc3() (slot 3) && CommitState() (the 0x1136 thunk) ? Vslot06() (slot 6).
+    i32 ReadyGate();
+    // CommitState (reached via the 0x1136 ILT thunk; external no-body ->
+    // reloc-masked). Returns nonzero when the pending state commit succeeds.
+    i32 CommitState();
+
     // 0x1af70 - the 960-B HUD-text formatter switch (8 cases of sprintf over the
     // game-reg clock/score fields). Deferred to the final sweep (see GameMode.cpp).
     void FormatHudText(i32 sel);

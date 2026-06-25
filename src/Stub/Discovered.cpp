@@ -16,10 +16,6 @@ RVA(0x00023570, 0x6) void CCheckpointDlg::CCheckpointDlg_023570() {}
 // ---- CCheckpointTrigger ----
 RVA(0x00011480, 0x44) void CCheckpointTrigger::CCheckpointTrigger_011480() {}
 
-// ---- CCursorSnapSprite ----
-RVA(0x00011880, 0x47) void CCursorSnapSprite::CCursorSnapSprite_011880() {}
-RVA(0x00011920, 0x44) void CCursorSnapSprite::CCursorSnapSprite_011920() {}
-
 // ---- CDDPalette ----
 RVA(0x001474d0, 0x60) void CDDPalette::CDDPalette_1474d0() {}
 RVA(0x00147530, 0x54) void CDDPalette::CDDPalette_147530() {}
@@ -66,10 +62,6 @@ RVA(0x0009e740, 0x76) void CMapArrayA::CMapArrayA_09e740() {}
 // ---- CMapArrayB ----
 RVA(0x0009e860, 0x7a) void CMapArrayB::CMapArrayB_09e860() {}
 
-// ---- CMenuState ----
-RVA(0x00036a30, 0x14e) void CMenuState::CMenuState_036a30() {}
-RVA(0x000a0d40, 0x24) void CMenuState::CMenuState_0a0d40() {}
-
 // ---- CNetMgr ----
 RVA(0x0011f618, 0x14) void CNetMgr::CNetMgr_11f618() {}
 RVA(0x0018c022, 0x1d3) void CNetMgr::CNetMgr_18c022() {}
@@ -83,10 +75,6 @@ RVA(0x000d1b60, 0xc2f) void CPlay::CPlay_0d1b60() {}
 // ---- CSBI_RectOnly ----
 RVA(0x000ebd70, 0x366) void CSBI_RectOnly::CSBI_RectOnly_0ebd70() {}
 RVA(0x001084d0, 0x96c) void CSBI_RectOnly::CSBI_RectOnly_1084d0() {}
-
-// ---- CTeleporter ----
-RVA(0x00010dd0, 0x44) void CTeleporter::CTeleporter_010dd0() {}
-RVA(0x000419e0, 0x81) void CTeleporter::CTeleporter_0419e0() {}
 
 // ---- CTileTriggerSwitch ----
 RVA(0x000110f0, 0x44) void CTileTriggerSwitch::CTileTriggerSwitch_0110f0() {}

@@ -706,6 +706,21 @@ source = "src/Gruntz/CFortressFlag.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "cteleporter"
+source = "src/Gruntz/CTeleporter.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "ccursorsnapsprite"
+source = "src/Gruntz/CCursorSnapSprite.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cmenustate"
+source = "src/Gruntz/CMenuState.cpp"
+flags = "base"
+
+[[unit]]
 unit = "cdonothing"
 source = "src/Gruntz/CDoNothing.cpp"
 flags = "eh"
