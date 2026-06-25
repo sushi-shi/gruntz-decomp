@@ -50,6 +50,7 @@ clightfxrender	20	8
 cmulti	11	7
 cplay	27	8
 cremusnode	1	0
+crt_istream	3	2
 crt_ostream	4	3
 crt_streambuf	7	5
 crt_strstreambuf	4	2
@@ -59,7 +60,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	265	0
+engine_discovered	262	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -536,6 +537,9 @@ cplay	?winapi_0cdb10_PostMessageA@CPlay@@QAEHHHH@Z	0.2946	0.2946	2	db8d57057a6f	
 cplay	?winapi_0ceae0_PostMessageA@CPlay@@QAEHHHH@Z	0.9500	0.9500	2	fb82d3f55040	0xceae0
 cplay	?winapi_0d0b30_CopyRect@CPlay@@QAEHH@Z	1.2270	1.2270	2	edf43ed7aef3	0xd0b30
 cremusnode	??0CRemusNode@@QAE@HHH@Z	60.1176	60.1176	1	615495e1686f	0x15b2c0
+crt_istream	?get@istream@@QAEHXZ	100.0000	100.0000	1	c72ccfaea1d2	0x16a410
+crt_istream	?ipfx@istream@@QAEHH@Z	96.1146	96.1146	1	5b2490abd943	0x16b720
+crt_istream	?read@istream@@QAEAAV1@PADH@Z	100.0000	100.0000	1	2a25e44c4790	0x16a510
 crt_ostream	??6ostream@@QAEAAV0@E@Z	90.3077	90.3077	1	2e9ddcbfc58c	0x192060
 crt_ostream	?opfx@ostream@@QAEHXZ	100.0000	100.0000	1	c7d033751aea	0x16bd10
 crt_ostream	?osfx@ostream@@QAEXXZ	100.0000	100.0000	1	53782d87a169	0x16bd90
@@ -885,9 +889,6 @@ engine_discovered	?InterfaceObject_179300@InterfaceObject@@QAEXXZ	3.3333	3.3333	
 engine_discovered	?InterfaceObject_179340@InterfaceObject@@QAEXXZ	5.0000	5.0000	1	43d37ba6b4be	0x179340
 engine_discovered	?MallocCtor_136230_1359a0@MallocCtor_136230@@QAEXXZ	11.1111	11.1111	1	c3152ce25ccf	0x1359a0
 engine_discovered	?MallocCtor_1615a0_0311e0@MallocCtor_1615a0@@QAEXXZ	1.2121	1.2121	1	8b5f5f189f13	0x311e0
-engine_discovered	?MallocCtor_16b510_16a410@MallocCtor_16b510@@QAEXXZ	2.0408	2.0408	1	05aec7345dd6	0x16a410
-engine_discovered	?MallocCtor_16b510_16a510@MallocCtor_16b510@@QAEXXZ	0.8163	0.8163	1	d9de152b2e2a	0x16a510
-engine_discovered	?MallocCtor_16b510_16b720@MallocCtor_16b510@@QAEXXZ	0.4167	0.4167	1	5f0a1ffbd4dc	0x16b720
 engine_discovered	?MinervaInner_1366f0@MinervaInner@@QAEXXZ	0.3361	0.3361	1	2a21de0ffbb9	0x1366f0
 engine_discovered	?MinervaInner_136910@MinervaInner@@QAEXXZ	0.3704	0.3704	1	436780529d10	0x136910
 engine_discovered	?NetUnattributed_11f618@NetUnattributed@@QAEXXZ	10.0000	10.0000	1	bfe6623a9a24	0x11f618

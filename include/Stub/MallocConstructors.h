@@ -80,7 +80,12 @@ public:
 };
 SIZE(MallocCtor_1615a0, 0x158);
 
-// non-RTTI ctor @ 0x0016b510 (size TBD)
+// istream::istream(streambuf*) @ 0x0016b510 - MSVC5 LIBCMT iostreams. sizeof 0x60
+// (vbptr/_fGline/x_gcount = 0x0c + ios vbase 0x54). Carries the /GX EH frame and
+// the most-derived-flag vbase init (constructs the ios vbase, stamps the istream
+// vftable 0x5f045c, calls ios::init); LEFT STUBBED like the sibling ostream ctor
+// (0x16bfa0) - the non-polymorphic model can't make cl emit the vbase-ctor vftable
+// store identically. The istream member methods are matched in src/Crt/IStream.cpp.
 class MallocCtor_16b510 {
 public:
     MallocCtor_16b510();

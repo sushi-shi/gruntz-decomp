@@ -1105,14 +1105,6 @@ void MallocCtor_136230::MallocCtor_136230_1359a0() {}
 RVA(0x000311e0, 0x4c)
 void MallocCtor_1615a0::MallocCtor_1615a0_0311e0() {}
 
-// ---- MallocCtor_16b510 ----
-RVA(0x0016a410, 0x7b)
-void MallocCtor_16b510::MallocCtor_16b510_16a410() {}
-RVA(0x0016a510, 0x7d)
-void MallocCtor_16b510::MallocCtor_16b510_16a510() {}
-RVA(0x0016b720, 0xfb)
-void MallocCtor_16b510::MallocCtor_16b510_16b720() {}
-
 // ---- MallocCtor_16bfa0 ---- the MSVC5 LIBCMT `ostream` member functions
 // (write/opfx/osfx/operator<<(unsigned char)) are reconstructed in
 // src/Crt/OStream.cpp (the tracer keyed off the malloc in the ostream ctor

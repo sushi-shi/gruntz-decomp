@@ -484,6 +484,12 @@ source = "src/Crt/OStream.cpp"
 flags = "base"
 
 [[unit]]
+# MSVC5 LIBCMT iostreams `istream` member functions (non-EH leaves).
+unit = "crt_istream"
+source = "src/Crt/IStream.cpp"
+flags = "base"
+
+[[unit]]
 unit = "netmgr"
 source = "src/Net/NetMgr.cpp"
 flags = "eh"

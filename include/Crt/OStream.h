@@ -44,6 +44,7 @@ public:
         badbit = 0x04
     };
     enum {
+        skipws = 0x0001,
         unitbuf = 0x2000,
         stdio = 0x4000
     };
