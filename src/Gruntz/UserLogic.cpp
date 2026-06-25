@@ -955,6 +955,10 @@ CWarpStonePad::CWarpStonePad(CGameObject* obj) : CUserLogic(obj) {
 }
 
 // --- CTileTriggerSwitch (0x10dc40), vptr 0x5e7f6c ---
+// The most-derived dtor at 0x110f0 is the 0x44 folded CUserLogic teardown: the
+// leaf vptr store (0x5e7f6c) is dead-eliminated by the immediately-inlined
+// CUserLogic base dtor (store 0x5e705c, ~EngStr on +0x18, store 0x5e70b4).
+RVA(0x000110f0, 0x44)
 CTileTriggerSwitch::~CTileTriggerSwitch() {}
 RVA(0x0010dc40, 0x154)
 CTileTriggerSwitch::CTileTriggerSwitch(CGameObject* obj) : CUserLogic(obj) {

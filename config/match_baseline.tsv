@@ -25,6 +25,7 @@ battlezmapconfig	1	0
 blowfish	4	3
 brickz	15	3
 butemgr	40	27
+butestoreclear	1	1
 cambientsound	3	2
 canielement	3	2
 canirecord	8	5
@@ -52,7 +53,9 @@ cddrawworkers	4	4
 cdirectdrawmgr	24	11
 cdonothing	2	2
 cdroppedobject	2	2
+cdroppedobjectshadow	1	1
 cexittrigger	2	2
+cexplosion	1	1
 ceyecandy	2	2
 cfader	6	5
 cfadermgr	7	3
@@ -64,8 +67,10 @@ cgruntcreationpoint	2	2
 cgrunthealthsprite	4	3
 cgruntpowerupsprite	5	4
 cgruntselectedsprite	5	3
+cgruntstartingpoint	1	1
 cgrunttoysprite	5	4
 cgruntwingztimesprite	2	2
+cguardpoint	1	1
 chatbox	27	20
 chatbox_eh	1	1
 chatboxowner	5	2
@@ -73,10 +78,12 @@ cheatmgr	5	4
 cimage	10	6
 cimageowned	4	2
 clightfx	2	1
+clightfxeh	1	1
 clightfxrender	22	8
 clobbyobjb	3	2
 cmenustate	3	2
 cmulti	16	7
+cobjectdropper	1	1
 configstore	4	0
 cparticlez	3	3
 cpathhazard	7	3
@@ -100,6 +107,7 @@ cteleporter	2	1
 ctimebomb	2	2
 ctoobspikez	3	3
 cvoicetrigger	2	2
+cwaypoint	1	1
 databuffer	7	5
 deflate	6	6
 dialogs	26	11
@@ -108,7 +116,7 @@ directsoundmgr	39	28
 dsoundvoice	2	1
 engine_attributed	28	0
 engine_boundary	626	0
-engine_discovered	85	0
+engine_discovered	72	0
 engine_label_stubs	475	104
 engstr	3	1
 filemem	9	8
@@ -150,6 +158,7 @@ ingameicon	10	5
 ingametext	4	3
 ingameworkerhandlers	3	3
 inputdeviceconfig	1	0
+interfaceobject	2	1
 kitchenslime	6	3
 leafelementobj	2	2
 leveltilevalidation	1	0
@@ -160,7 +169,7 @@ logictypetable	1	0
 logicworkerhandlers	4	4
 mainmenubuilder	1	0
 maplogic	5	4
-mapmgr	7	7
+mapmgr	9	7
 menuitem	13	11
 menupage	31	16
 mgrtokenquery	1	1
@@ -226,7 +235,7 @@ uncompr	1	1
 unknownclassarrays	38	10
 unknownsalazar	4	0
 userbaselink	9	0
-userlogic	48	18
+userlogic	49	19
 videoconfig	2	0
 warlord	3	1
 warpstonefly	3	2
@@ -361,6 +370,7 @@ butemgr	?SetFloat@CButeValue@@QAEPAU1@HM@Z	92.0000	92.0000	4	2d9f2069caae	0x1726
 butemgr	?SetInt@CButeValue@@QAEPAU1@HH@Z	92.0000	92.0000	4	7a25b2b77a80	0x172b90
 butemgr	?SetSub@CButeMgrHelper@@QAEXPAX@Z	100.0000	100.0000	2	7ceaffd01bf0	0x169dd0
 butemgr	?SkipToTag@CButeMgr@@QAE_NXZ	78.1429	78.1429	2	672209f4feee	0x171160
+butestoreclear	?ClearRecursive@CButeStore@@QAEXH@Z	100.0000	100.0000	1	2c7ef99ca5ed	0x16e070
 cambientsound	??1CAmbientSound@@QAE@XZ	100.0000	100.0000	1	56dbfa3599ca	0xb790
 cambientsound	?SetLevel@CAmbientSound@@QAEHHHH@Z	100.0000	100.0000	2	82d554c23b21	0xc200
 cambientsound	?Update@CAmbientSound@@QAEXHHH@Z	76.7857	76.7857	2	979c7e248495	0xc090
@@ -612,8 +622,10 @@ cdonothing	??1CDoNothing@@UAE@XZ	100.0000	100.0000	1	a06511f63ae0	0xf770
 cdonothing	?GetTypeTag@CDoNothing@@QAEHXZ	100.0000	100.0000	1	6ca2183a4b81	0xf6b0
 cdroppedobject	??1CDroppedObject@@UAE@XZ	100.0000	100.0000	1	dd689e9b78c2	0x125b0
 cdroppedobject	?FireActivation@CDroppedObject@@QAEXH@Z	100.0000	100.0000	1	58092acd8cf9	0xc6bd0
+cdroppedobjectshadow	??1CDroppedObjectShadow@@UAE@XZ	100.0000	100.0000	1	590f3131b16f	0x12670
 cexittrigger	??1CExitTrigger@@UAE@XZ	100.0000	100.0000	1	db4d24e6c64d	0x108c0
 cexittrigger	?GetTypeTag@CExitTrigger@@QAEHXZ	100.0000	100.0000	1	c68ad601ed76	0x10870
+cexplosion	??1CExplosion@@UAE@XZ	100.0000	100.0000	1	937d43f67fbf	0x12ec0
 ceyecandy	??1CEyeCandy@@UAE@XZ	100.0000	100.0000	1	394f31033131	0xfd60
 ceyecandy	?GetTypeTag@CEyeCandy@@QAEHXZ	100.0000	100.0000	1	77b6788a5a6a	0xfca0
 cfader	??0CFader@@QAE@XZ	100.0000	100.0000	1	78cd95dd8e45	0x17e450
@@ -659,6 +671,7 @@ cgruntselectedsprite	?InitActReg@CGruntSelectedSprite@@SAXXZ	100.0000	100.0000	1
 cgruntselectedsprite	?RegisterActs@CGruntSelectedSprite@@SAXXZ	92.9130	92.9130	1	66be750cf79b	0x7e7c0
 cgruntselectedsprite	?SetCell@CGruntSelectedSprite@@QAEHHH@Z	100.0000	100.0000	1	a820dd0fe9f6	0x7e9c0
 cgruntselectedsprite	?Update@CGruntSelectedSprite@@QAEHXZ	99.2424	99.2424	1	d1fdf4765afe	0x7e9f0
+cgruntstartingpoint	??1CGruntStartingPoint@@UAE@XZ	100.0000	100.0000	1	ff7f150cc53c	0x10670
 cgrunttoysprite	??1CGruntToySprite@@UAE@XZ	100.0000	100.0000	1	c705bae9e5ce	0x122b0
 cgrunttoysprite	?InitActReg@CGruntToySprite@@SAXXZ	100.0000	100.0000	1	1d3d94234712	0x7f540
 cgrunttoysprite	?RegisterActs@CGruntToySprite@@SAXXZ	92.9130	92.9130	1	c7cebdf2b945	0x7f720
@@ -666,6 +679,7 @@ cgrunttoysprite	?SetCell@CGruntToySprite@@QAEHHH@Z	100.0000	100.0000	1	a78dbac25
 cgrunttoysprite	?Update@CGruntToySprite@@QAEHXZ	100.0000	100.0000	1	516d5554232c	0x7f960
 cgruntwingztimesprite	??1CGruntWingzTimeSprite@@UAE@XZ	100.0000	100.0000	1	45cfd716baa5	0x121f0
 cgruntwingztimesprite	?GetWingzTime@CGruntWingzTimeSprite@@SGHPAUCWingzTimeHost@@@Z	100.0000	100.0000	1	fd29641ade51	0x7fd90
+cguardpoint	??1CGuardPoint@@UAE@XZ	100.0000	100.0000	1	c53d638223a9	0x10410
 chatbox	?AddNode@CChatBox@@QAEHPAX@Z	100.0000	100.0000	3	88a7b8bd99e7	0x182ba0
 chatbox	?AdvanceRow0@CChatBox@@QAEHPAXHH@Z	94.8718	94.8718	3	5b6842c8ffeb	0x182df0
 chatbox	?AdvanceRow1@CChatBox@@QAEHPAXHH@Z	94.8718	94.8718	3	e91d1d630c54	0x182e60
@@ -720,6 +734,7 @@ cimageowned	?BuildRle@CImageOwned@@QAEHPAXHHHH0@Z	97.7528	97.7528	1	dc2ddfff5723
 cimageowned	?LoadFromFile@CImageOwned@@QAEHVCString@@H@Z	100.0000	100.0000	1	503f5fd8f54d	0x148fc0
 clightfx	?Activate@CLightFx@@QAEHHHHH@Z	86.7407	86.7407	1	017ace156fac	0x9d520
 clightfx	?RebindNode@CLightFx@@QAEHXZ	100.0000	100.0000	1	d9610ef994d0	0x9d770
+clightfxeh	??1CLightFx@@UAE@XZ	100.0000	100.0000	1	70f7940497b3	0x12430
 clightfxrender	?AllocSurface@CLightFxRender@@QAEHXZ	99.6842	99.6842	3	1bad35c5b187	0xa33e0
 clightfxrender	?ApplyA@CLightFxRender@@QAEHHHH@Z	100.0000	100.0000	3	fd8fea7499fa	0xa9480
 clightfxrender	?ApplyB@CLightFxRender@@QAEHHHH@Z	100.0000	100.0000	3	aa96ba8e89bb	0xa95d0
@@ -764,6 +779,7 @@ cmulti	?StartSession@CMulti@@QAEHHH@Z	98.4571	98.4571	1	819ff4c73d1c	0xb6580
 cmulti	?StartTitle@CMulti@@QAEHXZ	36.2880	36.2880	1	6fd7349a26cb	0xb72c0
 cmulti	?Teardown@CMulti@@QAEXXZ	100.0000	100.0000	1	40a558486d68	0xb6110
 cmulti	?Tick@CMulti@@QAEHXZ	85.9939	85.9939	1	93a3a8d8b95c	0xb6890
+cobjectdropper	??1CObjectDropper@@UAE@XZ	100.0000	100.0000	1	c595e9e386aa	0x124f0
 configstore	?GetInt@CConfigStore@@QAEHPAD0H@Z	17.6905	17.6905	1	00a531e13933	0x1d4fbd
 configstore	?OpenRoot@CConfigStore@@QAEPAXXZ	57.7385	57.7385	1	906a02758db6	0x1d4ee3
 configstore	?OpenSubKey@CConfigStore@@QAEPAXPAD@Z	56.9394	56.9394	1	84aab5890a22	0x1d4f77
@@ -867,6 +883,7 @@ ctoobspikez	?FireActivation@CToobSpikez@@QAEXH@Z	100.0000	100.0000	1	44f507f426d
 ctoobspikez	?Register_1147e0@CToobSpikez@@QAEXXZ	100.0000	100.0000	1	5a4beef40a63	0x1147e0
 cvoicetrigger	??1CVoiceTrigger@@UAE@XZ	100.0000	100.0000	1	8939b1cb3841	0x135a0
 cvoicetrigger	?Tick@CVoiceTrigger@@QAEHXZ	100.0000	100.0000	1	352963c16858	0x11a700
+cwaypoint	??1CWayPoint@@UAE@XZ	100.0000	100.0000	1	1792dd04db91	0x102e0
 databuffer	??0CDataBuffer@@QAE@XZ	100.0000	100.0000	1	3a641ac221a3	0x150180
 databuffer	?Free@CDataBuffer@@QAEXXZ	100.0000	100.0000	1	be93bfb9147a	0x1503c0
 databuffer	?LoadFromFile@CDataBuffer@@QAEHPBDH@Z	71.5593	71.5593	1	00ebc2b35d96	0x150250
@@ -1631,32 +1648,21 @@ engine_boundary	?Boundary_1926e0@@YAXXZ	0.7143	0.7143	1	ce48586b6dc8	0x1926e0
 engine_boundary	?Boundary_192780@@YAXXZ	0.6452	0.6452	1	f80d55043394	0x192780
 engine_boundary	?Boundary_192830@@YAXXZ	1.0638	1.0638	1	109a21dd77b9	0x192830
 engine_discovered	?CBattlezDlgColors_017ac0@CBattlezDlgColors@@QAEXXZ	50.0000	50.0000	2	0879229e7eb6	0x17ac0
-engine_discovered	?CButeTree_16e070@CButeTree@@QAEXXZ	0.8000	0.8000	2	449e08018b4b	0x16e070
 engine_discovered	?CCheckpointDlg_023570@CCheckpointDlg@@QAEXXZ	50.0000	50.0000	2	6f7562291252	0x23570
 engine_discovered	?CCheckpointTrigger_011480@CCheckpointTrigger@@QAEXXZ	5.8824	5.8824	2	36760718b34d	0x11480
 engine_discovered	?CDDSurface_142a40@CDDSurface@@QAEXXZ	5.0000	5.0000	2	acbbb47b3378	0x142a40
 engine_discovered	?CDDrawWorkerList_163bc0@CDDrawWorkerList@@QAEXXZ	4.7619	4.7619	2	b51a988cb1ef	0x163bc0
-engine_discovered	?CDroppedObjectShadow_012670@CDroppedObjectShadow@@QAEXXZ	5.8824	5.8824	2	a315b1a9db88	0x12670
-engine_discovered	?CExplosion_012ec0@CExplosion@@QAEXXZ	5.8824	5.8824	2	f5ebfa592daf	0x12ec0
 engine_discovered	?CGruntAnimPlayer_150610@CGruntAnimPlayer@@QAEXXZ	1.7391	1.7391	2	ffb44f05f4d6	0x150610
 engine_discovered	?CGruntSpawnConfig_11c730@CGruntSpawnConfig@@QAEXXZ	1.1111	1.1111	1	c0d81b9b3250	0x11c730
-engine_discovered	?CGruntStartingPoint_010670@CGruntStartingPoint@@QAEXXZ	5.8824	5.8824	2	ec37c4559f0e	0x10670
 engine_discovered	?CGruntToyTimeSprite_012130@CGruntToyTimeSprite@@QAEXXZ	5.8824	5.8824	2	5ffada3946fb	0x12130
 engine_discovered	?CGruntzMgr_08b960@CGruntzMgr@@QAEXXZ	0.0907	0.0907	2	f28c03e9d08a	0x8b960
-engine_discovered	?CGuardPoint_010410@CGuardPoint@@QAEXXZ	5.8824	5.8824	2	cd33984f8d7b	0x10410
-engine_discovered	?CLightFx_012430@CLightFx@@QAEXXZ	5.8824	5.8824	2	9bb66611a638	0x12430
-engine_discovered	?CMapArrayA_09e740@CMapArrayA@@QAEXXZ	0.8000	0.8000	2	6fc8448eb4fd	0x9e740
-engine_discovered	?CMapArrayB_09e860@CMapArrayB@@QAEXXZ	0.7843	0.7843	2	0a64ca5558f1	0x9e860
 engine_discovered	?CNetMgr_11f618@CNetMgr@@QAEXXZ	10.0000	10.0000	1	3e84522a7acc	0x11f618
 engine_discovered	?CNetMgr_18c022@CNetMgr@@QAEXXZ	0.7874	0.7874	1	8f2b6c518a93	0x18c022
-engine_discovered	?CObjectDropper_0124f0@CObjectDropper@@QAEXXZ	5.8824	5.8824	2	a2b3d34aa035	0x124f0
 engine_discovered	?CPlay_0d1b60@CPlay@@QAEXXZ	0.0452	0.0452	2	7d7469983ac7	0xd1b60
 engine_discovered	?CSBI_RectOnly_0ebd70@CSBI_RectOnly@@QAEXXZ	0.3774	0.3774	2	e421395136d1	0xebd70
 engine_discovered	?CSBI_RectOnly_1084d0@CSBI_RectOnly@@QAEXXZ	0.0438	0.0438	2	2752ca66119f	0x1084d0
-engine_discovered	?CTileTriggerSwitch_0110f0@CTileTriggerSwitch@@QAEXXZ	5.8824	5.8824	2	5bfce3bf793c	0x110f0
 engine_discovered	?CUserLogic_16e7f0@CUserLogic@@QAEXXZ	0.2532	0.2532	2	28899d63e9a5	0x16e7f0
 engine_discovered	?CUserLogic_16ea90@CUserLogic@@QAEXXZ	0.6061	0.6061	2	e90c8731b739	0x16ea90
-engine_discovered	?CWayPoint_0102e0@CWayPoint@@QAEXXZ	5.8824	5.8824	2	8ce6a144b1bf	0x102e0
 engine_discovered	?ClassUnknown_101_11f6b9@ClassUnknown_101@@QAEXXZ	9.0909	9.0909	2	7fa3bc6ae63e	0x11f6b9
 engine_discovered	?ClassUnknown_102_06b2e0@ClassUnknown_102@@QAEXXZ	2.2222	2.2222	2	0eef992501d5	0x6b2e0
 engine_discovered	?ClassUnknown_103_148d10@ClassUnknown_103@@QAEXXZ	6.2500	6.2500	2	b03b02f5f4ea	0x148d10
@@ -1709,8 +1715,6 @@ engine_discovered	?ClassUnknown_99_046850@ClassUnknown_99@@QAEXXZ	1.1905	1.1905	
 engine_discovered	?CmdHost_0953f0_08cf30@CmdHost_0953f0@@QAEXXZ	4.7619	4.7619	2	a45cfbe7ddfa	0x8cf30
 engine_discovered	?CmdHost_0953f0_095140@CmdHost_0953f0@@QAEXXZ	1.0000	1.0000	2	75c30673b49d	0x95140
 engine_discovered	?EngStr_193080@EngStr@@QAEXXZ	1.4085	1.4085	2	b6bc792507ee	0x193080
-engine_discovered	?InterfaceObject_179300@InterfaceObject@@QAEXXZ	3.3333	3.3333	2	89213370298b	0x179300
-engine_discovered	?InterfaceObject_179340@InterfaceObject@@QAEXXZ	5.0000	5.0000	2	c79498be900c	0x179340
 engine_discovered	?MallocCtor_1615a0_0311e0@MallocCtor_1615a0@@QAEXXZ	1.2121	1.2121	2	8a26ae8621ed	0x311e0
 engine_discovered	?RegistryHelper_114fa0@RegistryHelper@@QAEXXZ	3.8462	3.8462	2	9de521efe251	0x114fa0
 engine_discovered	?RemusParseSource_139800@RemusParseSource@@QAEXXZ	33.3333	33.3333	2	ebb11c91b919	0x139800
@@ -2727,6 +2731,8 @@ ingameworkerhandlers	?Handler095750@@YAHPAUOwner@@@Z	100.0000	100.0000	1	76ecb60
 ingameworkerhandlers	?Handler095890@@YAHPAUOwner@@@Z	100.0000	100.0000	1	8bf2772ac296	0x95890
 ingameworkerhandlers	?Handler0aa6e0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	f247242b9830	0xaa6e0
 inputdeviceconfig	?LoadInputDeviceConfig@CInputConfig@@QAE?AVCString@@H@Z	77.3265	77.3265	5	a06dac34f93f	0x387c0
+interfaceobject	??1InterfaceObject@@QAE@XZ	89.4000	89.4000	1	8c6e5a007eca	0x179340
+interfaceobject	?GetName@InterfaceObject@@QAE?AVCString@@XZ	100.0000	100.0000	1	d2dccd8a304e	0x179300
 kitchenslime	??1CKitchenSlime@@UAE@XZ	100.0000	100.0000	1	5d147b2b8ea5	0x13100
 kitchenslime	?FireActivation@CKitchenSlime@@QAEXH@Z	100.0000	100.0000	1	b01b90390ef5	0xb2940
 kitchenslime	?LoadSprites@CKitchenSlime@@QAEHXZ	69.1992	69.1992	3	aca206c4359f	0xb3160
@@ -2762,6 +2768,8 @@ mapmgr	??0CMapMgr@@QAE@XZ	100.0000	100.0000	4	67474d81f74b	0x9e940
 mapmgr	??1CMapArrayA@@QAE@XZ	100.0000	100.0000	4	ef24e0e7ace1	0x9e7e0
 mapmgr	??1CMapArrayB@@QAE@XZ	100.0000	100.0000	4	81335f7036b8	0x9e900
 mapmgr	??1CMapMgr@@QAE@XZ	100.0000	100.0000	4	b55e2d3c334c	0x9e9e0
+mapmgr	?Allocate@CMapArrayA@@QAEHI@Z	70.8800	70.8800	1	5c87dca127e3	0x9e740
+mapmgr	?Allocate@CMapArrayB@@QAEHI@Z	62.0000	62.0000	1	eb9ec81cd657	0x9e860
 mapmgr	?Reset@CMapMgr@@UAEXXZ	100.0000	100.0000	4	2dbc6f60f2f5	0x9ec30
 menuitem	??1CMenuItem@@QAE@XZ	96.5714	96.5714	1	5d6d9583cf88	0x184690
 menuitem	?Dispatch0c@CMenuItem@@QAEXXZ	100.0000	100.0000	1	b89ca68497d8	0x185510
@@ -3386,6 +3394,7 @@ userlogic	??1CGiantRock@@UAE@XZ	100.0000	100.0000	1	5f8577cc8ce3	0x11600
 userlogic	??1CSecretTeleporterTrigger@@UAE@XZ	100.0000	100.0000	1	8a1acf755936	0x10ab0
 userlogic	??1CTileSecretTrigger@@UAE@XZ	100.0000	100.0000	1	a32d67055f07	0x11540
 userlogic	??1CTileTrigger@@UAE@XZ	100.0000	100.0000	1	cpp:69062e3bf126	0x11290
+userlogic	??1CTileTriggerSwitch@@UAE@XZ	100.0000	100.0000	1	dab625badc7c	0x110f0
 userlogic	?FireActivation@CSecretTeleporterTrigger@@QAEXH@Z	100.0000	100.0000	2	6d1a80fde174	0x42150
 userlogic	?GetScreenPos@CUserLogic@@QAEXPAUScreenPoint@1@@Z	100.0000	100.0000	2	c09fb9d01a13	0x29a50
 userlogic	?InitActReg@CSecretTeleporterTrigger@@SAXXZ	100.0000	100.0000	1	2f0eeda3c0d0	0x420d0

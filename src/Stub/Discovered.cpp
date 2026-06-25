@@ -7,9 +7,6 @@
 // ---- CBattlezDlgColors ----
 RVA(0x00017ac0, 0x6) void CBattlezDlgColors::CBattlezDlgColors_017ac0() {}
 
-// ---- CButeTree ----
-RVA(0x0016e070, 0x7b) void CButeTree::CButeTree_16e070() {}
-
 // ---- CCheckpointDlg ----
 RVA(0x00023570, 0x6) void CCheckpointDlg::CCheckpointDlg_023570() {}
 
@@ -22,20 +19,11 @@ RVA(0x00142a40, 0x53) void CDDSurface::CDDSurface_142a40() {}
 // ---- CDDrawWorkerList ----
 RVA(0x00163bc0, 0x2c) void CDDrawWorkerList::CDDrawWorkerList_163bc0() {}
 
-// ---- CDroppedObjectShadow ----
-RVA(0x00012670, 0x44) void CDroppedObjectShadow::CDroppedObjectShadow_012670() {}
-
-// ---- CExplosion ----
-RVA(0x00012ec0, 0x44) void CExplosion::CExplosion_012ec0() {}
-
 // ---- CGruntAnimPlayer ----
 RVA(0x00150610, 0x41) void CGruntAnimPlayer::CGruntAnimPlayer_150610() {}
 
 // ---- CGruntSpawnConfig ----
 RVA(0x0011c730, 0x5c) void CGruntSpawnConfig::CGruntSpawnConfig_11c730() {}
-
-// ---- CGruntStartingPoint ----
-RVA(0x00010670, 0x44) void CGruntStartingPoint::CGruntStartingPoint_010670() {}
 
 // ---- CGruntToyTimeSprite ----
 RVA(0x00012130, 0x44) void CGruntToyTimeSprite::CGruntToyTimeSprite_012130() {}
@@ -43,24 +31,9 @@ RVA(0x00012130, 0x44) void CGruntToyTimeSprite::CGruntToyTimeSprite_012130() {}
 // ---- CGruntzMgr ----
 RVA(0x0008b960, 0x7c4) void CGruntzMgr::CGruntzMgr_08b960() {}
 
-// ---- CGuardPoint ----
-RVA(0x00010410, 0x44) void CGuardPoint::CGuardPoint_010410() {}
-
-// ---- CLightFx ----
-RVA(0x00012430, 0x44) void CLightFx::CLightFx_012430() {}
-
-// ---- CMapArrayA ----
-RVA(0x0009e740, 0x76) void CMapArrayA::CMapArrayA_09e740() {}
-
-// ---- CMapArrayB ----
-RVA(0x0009e860, 0x7a) void CMapArrayB::CMapArrayB_09e860() {}
-
 // ---- CNetMgr ----
 RVA(0x0011f618, 0x14) void CNetMgr::CNetMgr_11f618() {}
 RVA(0x0018c022, 0x1d3) void CNetMgr::CNetMgr_18c022() {}
-
-// ---- CObjectDropper ----
-RVA(0x000124f0, 0x44) void CObjectDropper::CObjectDropper_0124f0() {}
 
 // ---- CPlay ----
 RVA(0x000d1b60, 0xc2f) void CPlay::CPlay_0d1b60() {}
@@ -69,15 +42,9 @@ RVA(0x000d1b60, 0xc2f) void CPlay::CPlay_0d1b60() {}
 RVA(0x000ebd70, 0x366) void CSBI_RectOnly::CSBI_RectOnly_0ebd70() {}
 RVA(0x001084d0, 0x96c) void CSBI_RectOnly::CSBI_RectOnly_1084d0() {}
 
-// ---- CTileTriggerSwitch ----
-RVA(0x000110f0, 0x44) void CTileTriggerSwitch::CTileTriggerSwitch_0110f0() {}
-
 // ---- CUserLogic ----
 RVA(0x0016e7f0, 0x1cf) void CUserLogic::CUserLogic_16e7f0() {}
 RVA(0x0016ea90, 0x234) void CUserLogic::CUserLogic_16ea90() {}
-
-// ---- CWayPoint ----
-RVA(0x000102e0, 0x44) void CWayPoint::CWayPoint_0102e0() {}
 
 // ---- ClassUnknown_101 ----
 RVA(0x0011f6b9, 0x17) void ClassUnknown_101::ClassUnknown_101_11f6b9() {}
@@ -232,10 +199,6 @@ RVA(0x00095140, 0x6e) void CmdHost_0953f0::CmdHost_0953f0_095140() {}
 
 // ---- EngStr ----
 RVA(0x00193080, 0xb5) void EngStr::EngStr_193080() {}
-
-// ---- InterfaceObject ----
-RVA(0x00179300, 0x20) void InterfaceObject::InterfaceObject_179300() {}
-RVA(0x00179340, 0x48) void InterfaceObject::InterfaceObject_179340() {}
 
 // ---- MallocCtor_136230 ----
 

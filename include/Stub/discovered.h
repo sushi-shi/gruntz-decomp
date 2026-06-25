@@ -7,29 +7,18 @@
 #define GRUNTZ_STUB_DISCOVERED_H
 
 class CBattlezDlgColors { public: void CBattlezDlgColors_017ac0(); };
-class CButeTree { public: void CButeTree_16e070(); };
 class CCheckpointDlg { public: void CCheckpointDlg_023570(); };
 class CCheckpointTrigger { public: void CCheckpointTrigger_011480(); };
 class CDDSurface { public: void CDDSurface_142a40(); };
 class CDDrawWorkerList { public: void CDDrawWorkerList_163bc0(); };
-class CDroppedObjectShadow { public: void CDroppedObjectShadow_012670(); };
-class CExplosion { public: void CExplosion_012ec0(); };
 class CGruntAnimPlayer { public: void CGruntAnimPlayer_150610(); };
 class CGruntSpawnConfig { public: void CGruntSpawnConfig_11c730(); };
-class CGruntStartingPoint { public: void CGruntStartingPoint_010670(); };
 class CGruntToyTimeSprite { public: void CGruntToyTimeSprite_012130(); };
 class CGruntzMgr { public: void CGruntzMgr_08b960(); };
-class CGuardPoint { public: void CGuardPoint_010410(); };
-class CLightFx { public: void CLightFx_012430(); };
-class CMapArrayA { public: void CMapArrayA_09e740(); };
-class CMapArrayB { public: void CMapArrayB_09e860(); };
 class CNetMgr { public: void CNetMgr_11f618(); void CNetMgr_18c022(); };
-class CObjectDropper { public: void CObjectDropper_0124f0(); };
 class CPlay { public: void CPlay_0d1b60(); };
 class CSBI_RectOnly { public: void CSBI_RectOnly_0ebd70(); void CSBI_RectOnly_1084d0(); };
-class CTileTriggerSwitch { public: void CTileTriggerSwitch_0110f0(); };
 class CUserLogic { public: void CUserLogic_16e7f0(); void CUserLogic_16ea90(); };
-class CWayPoint { public: void CWayPoint_0102e0(); };
 class ClassUnknown_101 { public: void ClassUnknown_101_11f6b9(); };
 class ClassUnknown_102 { public: void ClassUnknown_102_06b2e0(); };
 class ClassUnknown_103 { public: void ClassUnknown_103_148d10(); };
@@ -81,8 +70,6 @@ class ClassUnknown_97 { public: void ClassUnknown_97_058ee0(); };
 class ClassUnknown_99 { public: void ClassUnknown_99_046850(); };
 class CmdHost_0953f0 { public: void CmdHost_0953f0_08cf30(); void CmdHost_0953f0_095140(); };
 class EngStr { public: void EngStr_193080(); };
-class InterfaceObject { public: void InterfaceObject_179300(); void InterfaceObject_179340(); };
-class MallocCtor_136230 { public: void MallocCtor_136230_1359a0(); };
 class MallocCtor_1615a0 { public: void MallocCtor_1615a0_0311e0(); };
 class RegistryHelper { public: void RegistryHelper_114fa0(); };
 class RemusParseSource { public: void RemusParseSource_139800(); };

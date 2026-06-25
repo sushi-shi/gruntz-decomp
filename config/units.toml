@@ -1081,6 +1081,51 @@ source = "src/Gruntz/CLightFxRender.cpp"
 flags = "base"
 
 [[unit]]
+unit = "clightfxeh"
+source = "src/Gruntz/CLightFxEh.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cdroppedobjectshadow"
+source = "src/Gruntz/CDroppedObjectShadow.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cexplosion"
+source = "src/Gruntz/CExplosion.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cgruntstartingpoint"
+source = "src/Gruntz/CGruntStartingPoint.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cguardpoint"
+source = "src/Gruntz/CGuardPoint.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cobjectdropper"
+source = "src/Gruntz/CObjectDropper.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cwaypoint"
+source = "src/Gruntz/CWayPoint.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "butestoreclear"
+source = "src/Bute/ButeStoreClear.cpp"
+flags = "base"
+
+[[unit]]
+unit = "interfaceobject"
+source = "src/Net/InterfaceObject.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "lightfxmgr"
 source = "src/Gruntz/LightFxMgr.cpp"
 flags = "base"
