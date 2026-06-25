@@ -468,12 +468,8 @@ public:
 // ClassUnknown_37 fully reconstructed in src/Gruntz/CDDrawSubMgrAni.cpp (the
 // 'ANI' animation keyed-catalog sub-manager: factory 0x1528d0 + recursive CSymTab
 // directory walker 0x152ad0).
-class ClassUnknown_38 {
-public:
-    void ClassUnknown_38_06b270();
-    void ClassUnknown_38_165460();
-    void ClassUnknown_38_1655c0();
-};
+// ClassUnknown_38 fully reconstructed in src/Gruntz/CAniElement.cpp (the 0x28-byte
+// 'ANI' animation element, primary vftable @0x5efba8, cataloged by CDDrawSubMgrAni).
 class ClassUnknown_39 {
 public:
     void ClassUnknown_39_168c60();

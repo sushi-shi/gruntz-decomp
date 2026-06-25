@@ -776,13 +776,11 @@ void ClassUnknown_36::ClassUnknown_36_14dd90() {}
 // Fully reconstructed in src/Gruntz/CDDrawSubMgrAni.cpp (the 'ANI' animation
 // keyed-catalog sub-manager: factory 0x1528d0 + recursive CSymTab walker 0x152ad0).
 
-// ---- ClassUnknown_38 ----
-RVA(0x0006b270, 0x1b)
-void ClassUnknown_38::ClassUnknown_38_06b270() {}
-RVA(0x00165460, 0x156)
-void ClassUnknown_38::ClassUnknown_38_165460() {}
-RVA(0x001655c0, 0x53)
-void ClassUnknown_38::ClassUnknown_38_1655c0() {}
+// ---- ClassUnknown_38 ----  RECOVERED -> CAniElement (src/Gruntz/CAniElement.cpp).
+// The 0x28-byte 'ANI' animation element (primary vftable @0x5efba8) cataloged by
+// CDDrawSubMgrAni: a CObArray of 0x34-byte frame records (+0x08) + a name buffer
+// (+0x1c) + a 1.0f scale (+0x20) + a frame-size total (+0x24). All 3 methods
+// (AtChecked 0x06b270, Build 0x165460, Configure 0x1655c0) reconstructed there.
 
 // ---- ClassUnknown_39 ----
 RVA(0x00168c60, 0xa0)

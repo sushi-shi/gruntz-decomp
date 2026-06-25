@@ -731,6 +731,11 @@ source = "src/Gruntz/CDDrawSubMgrAni.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "canielement"
+source = "src/Gruntz/CAniElement.cpp"
+flags = "base"
+
+[[unit]]
 unit = "cddrawworkercache"
 source = "src/Gruntz/CDDrawWorkerCache.cpp"
 flags = "base"
