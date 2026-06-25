@@ -681,11 +681,6 @@ class MallocCtor_1615a0 {
 public:
     void MallocCtor_1615a0_0311e0();
 };
-class MinervaInner {
-public:
-    void MinervaInner_1366f0();
-    void MinervaInner_136910();
-};
 // PaintHost_0fac70 reconstructed as CAttract -> src/Gruntz/CAttract.cpp (5 methods)
 // + CState::Vslot11 -> src/Gruntz/GameMode.cpp (1 base body).
 class RegistryHelper {

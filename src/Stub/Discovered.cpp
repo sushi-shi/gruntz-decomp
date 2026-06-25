@@ -1115,15 +1115,11 @@ void MallocCtor_1615a0::MallocCtor_1615a0_0311e0() {}
 // vtable 0x5ef6c4; trace conflated it with the buffer-wrapper DirectSoundMgr).
 // The lifecycle/teardown run (~dtor 0x136500, Shutdown 0x136690, RemoveBuffer
 // 0x136d80, StopAll 0x136de0) is reconstructed in src/Dsndmgr/SoundDevice.cpp.
-// FreeSamples (0x136ed0) + SetPrimaryFormat (0x1371a0) also reconstructed in
+// FreeSamples (0x136ed0) + SetPrimaryFormat (0x1371a0), plus the buffer factory
+// CreateBuffer (0x1366f0) + Acquire (0x136910), also reconstructed in
 // src/Dsndmgr/SoundDevice.cpp. The *derived* streaming class (DSndMgSR.cpp,
 // vtable 0x5ef6ec: 0x137710/0x137780/0x137900/0x1379d0/0x137b70) is
-// reconstructed in src/Dsndmgr/SoundStream.cpp. The remaining device methods
-// (CreateBuffer 0x1366f0, Acquire 0x136910) are left here for a follow-up.
-RVA(0x001366f0, 0x168)
-void MinervaInner::MinervaInner_1366f0() {}
-RVA(0x00136910, 0x119)
-void MinervaInner::MinervaInner_136910() {}
+// reconstructed in src/Dsndmgr/SoundStream.cpp. No MinervaInner stubs remain.
 
 // ---- PaintHost_0fac70 ---- RECONSTRUCTED: the cluster is CAttract (RTTI
 // .?AVCAttract@@, a CState leaf keyed off the WM_PAINT body @0xfac70). Five

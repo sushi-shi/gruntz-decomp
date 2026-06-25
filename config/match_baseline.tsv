@@ -64,7 +64,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	219	0
+engine_discovered	217	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -144,7 +144,7 @@ sbi_warlordhead	4	1
 sbi_warlordhead_eh	1	0
 shadetablecache	9	3
 siriusworkerhandlers	4	3
-sounddevice	6	4
+sounddevice	8	4
 soundstream	5	2
 soundvoicelist	4	3
 spriteloaders	9	4
@@ -877,8 +877,6 @@ engine_discovered	?InterfaceObject_179300@InterfaceObject@@QAEXXZ	3.3333	3.3333	
 engine_discovered	?InterfaceObject_179340@InterfaceObject@@QAEXXZ	5.0000	5.0000	1	43d37ba6b4be	0x179340
 engine_discovered	?MallocCtor_136230_1359a0@MallocCtor_136230@@QAEXXZ	11.1111	11.1111	1	c3152ce25ccf	0x1359a0
 engine_discovered	?MallocCtor_1615a0_0311e0@MallocCtor_1615a0@@QAEXXZ	1.2121	1.2121	1	8b5f5f189f13	0x311e0
-engine_discovered	?MinervaInner_1366f0@MinervaInner@@QAEXXZ	0.3361	0.3361	1	2a21de0ffbb9	0x1366f0
-engine_discovered	?MinervaInner_136910@MinervaInner@@QAEXXZ	0.3704	0.3704	1	436780529d10	0x136910
 engine_discovered	?NetUnattributed_11f618@NetUnattributed@@QAEXXZ	10.0000	10.0000	1	bfe6623a9a24	0x11f618
 engine_discovered	?NetUnattributed_18c022@NetUnattributed@@QAEXXZ	0.7874	0.7874	1	ad41badd75ea	0x18c022
 engine_discovered	?RegistryHelper_114fa0@RegistryHelper@@QAEXXZ	3.8462	3.8462	1	8b09b3ba3fed	0x114fa0
@@ -2092,6 +2090,8 @@ siriusworkerhandlers	?Handler03d670@@YAHPAUOwner@@@Z	100.0000	100.0000	1	839c531
 siriusworkerhandlers	?Handler07db20@@YAHPAUOwner@@@Z	100.0000	100.0000	1	b23002ac8904	0x7db20
 siriusworkerhandlers	?Handler07dda0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	27f15168f4f5	0x7dda0
 sounddevice	??1SoundDevice@@QAE@XZ	28.2353	28.2353	1	980bcd8696e1	0x136500
+sounddevice	?Acquire@SoundDevice@@QAEPAVDirectSoundMgr@@PAXII@Z	99.7685	99.7685	1	efa149c49cbf	0x136910
+sounddevice	?CreateBuffer@SoundDevice@@QAEPAVDirectSoundMgr@@PAUWaveFormatX@@II@Z	45.2437	45.2437	1	6f1c9d1c5aa0	0x1366f0
 sounddevice	?FreeSamples@SoundDevice@@QAEHXZ	77.4074	77.4074	2	252e2641aed3	0x136ed0
 sounddevice	?RemoveBuffer@SoundDevice@@QAEXPAUSoundBuf@@@Z	100.0000	100.0000	1	adf3276a17a2	0x136d80
 sounddevice	?SetPrimaryFormat@SoundDevice@@QAEHPAX@Z	100.0000	100.0000	2	a820b59fa0c9	0x1371a0

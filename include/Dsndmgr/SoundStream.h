@@ -82,17 +82,8 @@ struct StreamVoice {
     void ComputeDuration(); // 0x1359a0  m_28 = m_2c*1000/m_3c
 };
 
-// WAVEFORMATEX as the validator reads it: wFormatTag (PCM == 1), then the
-// 16-byte PCM tail copied verbatim into the DSBUFFERDESC.lpwfxFormat scratch.
-struct WaveFormatX {
-    u16 wFormatTag;      // +0x00  (== 1: PCM)
-    u16 nChannels;       // +0x02
-    u32 nSamplesPerSec;  // +0x04
-    u32 nAvgBytesPerSec; // +0x08
-    u16 nBlockAlign;     // +0x0c
-    u16 wBitsPerSample;  // +0x0e
-    u16 cbSize;          // +0x10
-};
+// WaveFormatX now lives in <Dsndmgr/SoundDevice.h> (shared by the device's
+// CreateBuffer/Acquire and the stream's CreateStreamBuffer/ParseWave).
 
 class SoundStream : public SoundDevice {
 public:

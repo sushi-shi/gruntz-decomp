@@ -18,6 +18,18 @@
 
 #include <Dsndmgr/DirectSoundMgr.h>
 
+// WAVEFORMATEX as the Dsndmgr validators read it: wFormatTag (PCM == 1), then the
+// 16-byte PCM tail copied verbatim into the DSBUFFERDESC.lpwfxFormat scratch.
+struct WaveFormatX {
+    u16 wFormatTag;      // +0x00  (== 1: PCM)
+    u16 nChannels;       // +0x02
+    u32 nSamplesPerSec;  // +0x04
+    u32 nAvgBytesPerSec; // +0x08
+    u16 nBlockAlign;     // +0x0c
+    u16 wBitsPerSample;  // +0x0e
+    u16 cbSize;          // +0x10
+};
+
 // One owned sound-buffer wrapper as the device sees it in its +0x04 collection.
 // It is a DirectSoundMgr (buffer wrapper) whose +0x04 word doubles as the
 // intrusive forward link; the stored link value points 4 bytes past the next
@@ -54,6 +66,12 @@ public:
     i32 FreeSamples(); // 0x136ed0  free + unlink every cached sample in the +0x0c list
     i32 SetPrimaryFormat(void* fmt); // 0x1371a0  CreatePrimaryBuffer + primary SetFormat
     i32 CreatePrimaryBuffer();       // 0x137260  (extern, defined elsewhere)
+    DirectSoundMgr* CreateBuffer(
+        WaveFormatX* fmt,
+        u32 bytes,
+        u32 flags
+    );                                             // 0x1366f0  CreateSoundBuffer + wrap
+    DirectSoundMgr* Acquire(void* riff, u32, u32); // 0x136910  parse RIFF + CreateBuffer + load
 
     // --- layout ---------------------------------------------------------------
     void* m_vtbl;        // +0x00

@@ -9,12 +9,67 @@
 // distinct class from the buffer wrapper DirectSoundMgr (0x5ef6b8). Field names
 // are placeholders; offsets + emitted bytes are load-bearing.
 #include <Dsndmgr/SoundDevice.h>
-#include <Rez/RezMgr.h> // RezFree - the engine resource deallocator (0x1b9b82)
+#include <Rez/RezMgr.h> // RezAlloc/RezFree - the engine heap allocator/deallocator
 #include <rva.h>
 
 // The __FILE__ string the device wrappers pass to GetErrorString (the shared
 // DSNDMGR.CPP $SG pooled constant, 0x619ef8).
 #define DSNDMGR_FILE "C:\\Proj\\Dsndmgr\\DSNDMGR.CPP"
+
+// DSBUFFERDESC.dwSize (the 0x14-byte sound-buffer descriptor).
+#define DSBUFFERDESC_SIZE 0x14
+
+// Placement new (construct in place into the RezAlloc'd block); no allocation, so
+// matching-neutral - it just runs the base init (BaseInit, 0x135b10) on the raw
+// RezAlloc result, exactly as the retail RezAlloc-then-construct does.
+inline void* operator new(u32, void* p) {
+    return p;
+}
+
+// The plain sound-sample voice CreateBuffer wraps a created IDirectSoundBuffer in:
+// a 0x60-byte base DirectSoundMgr-buffer object (retail vtable 0x5ef6bc, stamped
+// by BaseInit). It shares the per-buffer this-shape (the +0x04 word doubles as the
+// owned-buffer-list link); CreateBuffer seeds its format word (+0x18), avg-bytes
+// (+0x38/+0x3c) and byte count (+0x2c) then derives the duration-ms (+0x28) via
+// ComputeDuration. BaseInit (0x135b10) + ComputeDuration (0x1359a0) are the shared
+// DirectSoundMgr-base helpers (defined in their own TUs); reloc-masked __thiscall.
+struct SampleVoice {
+    void* m_vtbl;        // +0x00  (retail vtable 0x5ef6bc; virtuals external)
+    SampleVoice* m_link; // +0x04  owned-buffer-list link, biased +4 (POSITION)
+    char m_pad08[0x18 - 0x08];
+    u32 m_18; // +0x18  format word (wFormatTag|nChannels of the WAVEFORMATEX)
+    char m_pad1c[0x28 - 0x1c];
+    u32 m_28; // +0x28  duration-ms (= m_2c*1000/m_3c)
+    u32 m_2c; // +0x2c  byte count
+    char m_pad30[0x38 - 0x30];
+    u32 m_38; // +0x38  avg-bytes-per-sec
+    u32 m_3c; // +0x3c  avg-bytes-per-sec (divisor)
+    char m_pad40[0x60 - 0x40];
+
+    void BaseInit(IDirectSoundBufferZ* buf, SoundDevice* owner); // 0x135b10
+    void ComputeDuration();                                      // 0x1359a0
+};
+
+// The fmt-chunk descriptor ParseWaveChunks fills (its `out` param). m_fmt is the
+// WAVEFORMATEX pointer into the RIFF blob; m_flag is a parse flag Acquire tests
+// (force-8-bit). Its address escapes to the parser, so the pre-zeroed fields stay
+// live (not constant-folded).
+struct ParseFmt {
+    WaveFormatX* m_fmt; // +0x00
+    u32 m_04;           // +0x04
+    u32 m_flag;         // +0x08  (Acquire: bit 0 forces an 8-bit downconvert)
+    u32 m_0c;           // +0x0c
+    u32 m_10;           // +0x10
+};
+
+// The RIFF/WAVE chunk parser (0x137110, __cdecl): scans a RIFF blob for the `fmt `
+// and `data` chunks, writing the fmt descriptor (*out), the PCM data pointer
+// (*dataOut) and its byte length (*sizeOut); returns nonzero when a `fmt ` chunk
+// was found. Reloc-masked rel32; defined elsewhere.
+extern "C" i32 ParseWaveChunks(void* riff, ParseFmt* out, void** dataOut, u32* sizeOut);
+
+// The owned-buffer-list prepend helper (0x1390e0, __thiscall on the +0x04 head):
+// link one node (biased +4) at the head. Same engine helper as DSoundList::InsertHead.
 
 // The abstract-base ("pure") vftable (0x5ef6c8) a freed sample's vptr is restamped
 // to before RezFree - a transitional reloc-masked DIR32 store.
@@ -35,6 +90,7 @@ struct SoundVoiceList {
 struct SoundBufList {
     void* m_head;
     void* m_tail;
+    void Insert(void* anchor); // 0x1390e0  prepend one biased-+4 node
     void Unlink(void* anchor); // 0x1391e0
 };
 
@@ -84,6 +140,132 @@ void SoundDevice::Shutdown() {
         m_14->vtbl->Release(m_14);
     }
     m_78 = 0;
+}
+
+// ---------------------------------------------------------------------------
+// SoundDevice::CreateBuffer (0x1366f0, __thiscall, /GX EH frame). Validate the
+// PCM WAVEFORMATEX, build a DSBUFFERDESC and ask the IDirectSound device (+0x14)
+// for a sound buffer, then RezAlloc + BaseInit a SampleVoice wrapping it, thread
+// it on the +0x04 owned-buffer list, and seed its format/avg-bytes/byte-count +
+// derived duration.
+// @early-stop
+// RezAlloc+placement-new EH-frame wall (docs/patterns/rezalloc-placement-new-no-eh-frame.md):
+// the body (fmt copy, CreateSoundBuffer, RezAlloc, BaseInit, list insert,
+// ComputeDuration) is byte-exact, but retail's `new`-with-RezAlloc-operator-new
+// emits a /GX ctor-in-flight EH frame (push -1/fs:0 + trylevel) and a single
+// shared `jmp` epilogue that MSVC5's placement-new (no placement operator delete)
+// cannot reproduce. Same wall as the sibling SoundStream::CreateStreamBuffer
+// (0x137780, 47%). Defer to the final sweep once the SampleVoice base ctor is
+// modelled and a real `new T` allocator path emits the frame.
+RVA(0x001366f0, 0x168)
+DirectSoundMgr* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flags) {
+    if (m_78 == 0) {
+        return 0;
+    }
+    if (bytes == 0) {
+        return 0;
+    }
+    if (fmt == 0) {
+        return 0;
+    }
+    if (fmt->wFormatTag != 1) {
+        return 0;
+    }
+
+    WaveFormatX wf;
+    *(u32*)&wf.wFormatTag = *(u32*)&fmt->wFormatTag;
+    wf.nSamplesPerSec = fmt->nSamplesPerSec;
+    wf.nAvgBytesPerSec = fmt->nAvgBytesPerSec;
+    *(u32*)&wf.nBlockAlign = *(u32*)&fmt->nBlockAlign;
+    wf.cbSize = fmt->cbSize;
+
+    IDirectSoundBufferZ* out = 0;
+    DSBUFFERDESC desc;
+    desc.dwSize = DSBUFFERDESC_SIZE;
+    desc.dwFlags = flags;
+    desc.dwBufferBytes = bytes;
+    desc.dwReserved = 0;
+    desc.lpwfxFormat = &wf;
+
+    i32 hr = m_14->vtbl->CreateSoundBuffer(m_14, &desc, &out, 0) != 0;
+    if (hr) {
+        DirectSoundMgr::GetErrorString(DSNDMGR_FILE, 0x422, hr);
+        return 0;
+    }
+    if (out == 0) {
+        return 0;
+    }
+
+    SampleVoice* voice = (SampleVoice*)RezAlloc(0x60);
+    if (voice) {
+        voice = new (voice) SampleVoice;
+        voice->BaseInit(out, this);
+    }
+    voice->m_18 = *(u32*)&fmt->wFormatTag;
+    ((SoundBufList*)&m_04_head)->Insert(voice ? &voice->m_link : 0);
+    voice->m_38 = fmt->nAvgBytesPerSec;
+    voice->m_3c = fmt->nAvgBytesPerSec;
+    voice->m_2c = bytes;
+    voice->ComputeDuration();
+    return (DirectSoundMgr*)voice;
+}
+
+// ---------------------------------------------------------------------------
+// SoundDevice::Acquire (0x136910, __thiscall). Parse a RIFF/WAVE blob for its PCM
+// fmt + data extents, optionally downconvert a 16-bit PCM format to 8-bit (when
+// the device forces it, m_90, or the parse flags request it), create a buffer for
+// the format, then load the PCM data into it; on a load failure the buffer is
+// removed. Only the first arg is live - the other two slots are scratch.
+// @early-stop
+// frame-homing-area-reuse wall (docs/patterns/stack-buffer-size-drives-frame.md):
+// every code byte is IDENTICAL to retail - the only diff is the frame size, retail
+// `sub esp,8` overlays the ParseFmt out-struct onto the dead incoming-arg homing
+// slots ([esp+0x18..]) while MSVC5 here gives it fresh stack (`sub esp,0x18`),
+// shifting the [esp+N] operands by 0x10. MSVC5's /O2 won't write a local above its
+// own params into the caller frame, so the param-homing pack isn't steerable from
+// C source. 99.8% - logic + every instruction complete, deferred to the final sweep.
+RVA(0x00136910, 0x119)
+DirectSoundMgr* SoundDevice::Acquire(void* riff, u32, u32) {
+    if (m_78 == 0) {
+        return 0;
+    }
+    if (riff == 0) {
+        return 0;
+    }
+
+    ParseFmt po;
+    void* data;
+    u32 size;
+    po.m_10 = 0;
+    po.m_flag = 0;
+    po.m_04 = 0;
+    if (ParseWaveChunks(riff, &po, &data, &size) == 0) {
+        return 0;
+    }
+
+    i32 cvt = 0;
+    if (m_90 != 0 || (po.m_flag & 1) == 1) {
+        cvt = 1;
+    }
+    if (po.m_fmt->wBitsPerSample != 0x10 || po.m_fmt->wFormatTag != 1) {
+        cvt = 0;
+    }
+    if (cvt) {
+        size >>= 1;
+        po.m_fmt->wBitsPerSample = 8;
+        po.m_fmt->nAvgBytesPerSec >>= 1;
+        po.m_fmt->nBlockAlign >>= 1;
+    }
+
+    DirectSoundMgr* wrapper = CreateBuffer(po.m_fmt, size, po.m_flag);
+    if (wrapper == 0) {
+        return 0;
+    }
+    if (wrapper->LockConvert(data, size, cvt) == 0) {
+        RemoveBuffer((SoundBuf*)wrapper);
+        return 0;
+    }
+    return wrapper;
 }
 
 // ---------------------------------------------------------------------------
