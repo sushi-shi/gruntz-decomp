@@ -14,7 +14,9 @@
 //   0x0117f0  ~CUserLogic     - the shared base destructor COMDAT the leaf folds.
 //
 // All engine callees are reloc-masked (no body). Functions in ascending retail-RVA
-// order. Field names are placeholders; only OFFSETS + emitted bytes are load-bearing.
+// order. The leaf's own fields are named from usage; the CUserLogic base fields
+// (m_14/m_30/m_38/...) keep their m_<hexoffset> placeholders (shared base, named
+// elsewhere). Only OFFSETS + emitted bytes are load-bearing.
 #include <Gruntz/TileTriggerTransition.h>
 
 #include <rva.h>
@@ -38,8 +40,9 @@ public:
     i32 ApplyAnimation(char* sprite, char* geom); // 0x110070
 
     // Leaf fields: CUserLogic ends at +0x40, the leaf object is 0x54 (the size the
-    // state pump's `operator new(0x54)` allocates). m_40 caches the +0x1b4 descriptor.
-    i32 m_40;                  // +0x40
+    // state pump's `operator new(0x54)` allocates). m_activeAnimDesc caches the
+    // +0x1b4 animation descriptor (same field CGrunt's resolvers name m_activeAnimDesc).
+    i32 m_activeAnimDesc;      // +0x40
     char m_pad44[0x54 - 0x44]; // +0x44..+0x53
 };
 
@@ -92,14 +95,14 @@ CTileTriggerTransition::CTileTriggerTransition(CGameObject* obj) : CUserLogic(ob
 // ---------------------------------------------------------------------------
 RVA(0x00110070, 0x71)
 i32 CTileTriggerTransition::ApplyAnimation(char* sprite, char* geom) {
-    m_40 = m_38->m_1b4;
+    m_activeAnimDesc = m_38->m_1b4;
     if (m_38->ApplyLookupGeometry(geom, 0) == 0) {
         return 0;
     }
-    CAnimDesc* n = (CAnimDesc*)m_38->m_1b4;
-    CAnimDesc* e = n->m_10 > 0 ? (CAnimDesc*)*n->m_0c : 0;
-    m_38->ApplyLookupSprite(sprite, e->m_14);
-    m_30 = m_14->m_1c;
+    CAnimDescColl* desc = (CAnimDescColl*)m_38->m_1b4;
+    CAnimElem* elem = desc->m_10 > 0 ? *desc->m_c : 0;
+    m_38->ApplyLookupSprite(sprite, elem->m_14);
+    m_30 = m_14->m_1c; // save the prev anim-set node (CUserLogic base field)
     m_14->m_1c = g_buteTree.Find("A");
     return 1;
 }
@@ -107,45 +110,45 @@ i32 CTileTriggerTransition::ApplyAnimation(char* sprite, char* geom) {
 // ---------------------------------------------------------------------------
 // StepController (0x10d150) - the aux-controller state pump. `obj` is the bound
 // CGameObject; the controller lives at obj->m_7c. Dispatches on the state id:
-//   0      -> build the CTileTriggerTransition, Enter it, install it
-//   0x1d   -> state->Slot2c   0x1e -> state->Slot28
-//   0x50   -> state->Slot38   0x51 -> state->Slot34
-//   0x52   -> state->Slot30   0x53 -> state->Slot3c
-//   0x3e8  -> idle            other-> the default engine step
+//   0      -> build the CTileTriggerTransition, Activate it, install it
+//   0x1d   -> state->Vfunc2C   0x1e -> state->Vfunc28
+//   0x50   -> state->Vfunc38   0x51 -> state->Vfunc34
+//   0x52   -> state->Vfunc30   0x53 -> state->Vfunc3C
+//   0x3e8  -> idle             other-> the default engine step
 // ---------------------------------------------------------------------------
 RVA(0x0010d150, 0xf1)
 i32 StepController(CGameObject* obj) {
     CTileTransitionController* ctl = (CTileTransitionController*)obj->m_7c;
-    switch (ctl->m_1c) {
+    switch (ctl->m_stateId) {
         case 0: {
-            ctl->m_1c = 0x3e8;
+            ctl->m_stateId = 0x3e8;
             CTileTriggerTransition* t = new CTileTriggerTransition(obj);
-            ((CTileTransitionState*)t)->Enter();
-            ctl->m_18 = (CTileTransitionState*)t;
+            ((CTileTransitionState*)t)->Activate();
+            ctl->m_state = (CTileTransitionState*)t;
             break;
         }
         case 0x1d:
-            ctl->m_18->Slot2c();
+            ctl->m_state->Vfunc2C();
             break;
         case 0x1e:
-            ctl->m_18->Slot28();
+            ctl->m_state->Vfunc28();
             break;
         case 0x50:
-            ctl->m_18->Slot38();
+            ctl->m_state->Vfunc38();
             break;
         case 0x51:
-            ctl->m_18->Slot34();
+            ctl->m_state->Vfunc34();
             break;
         case 0x52:
-            ctl->m_18->Slot30();
+            ctl->m_state->Vfunc30();
             break;
         case 0x53:
-            ctl->m_18->Slot3c();
+            ctl->m_state->Vfunc3C();
             break;
         case 0x3e8:
             break;
         default:
-            TileTransitionDefaultStep(ctl->m_18);
+            TileTransitionDefaultStep(ctl->m_state);
             break;
     }
     return 1;
