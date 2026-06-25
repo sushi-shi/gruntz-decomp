@@ -253,12 +253,6 @@ public:
     void CTileTriggerSwitchLogic_112c70();
     void CTileTriggerSwitchLogic_117280();
 };
-class CTileTriggerTransition {
-public:
-    void CTileTriggerTransition_011730();
-    void CTileTriggerTransition_0117f0();
-    void CTileTriggerTransition_110070();
-};
 class CToobSpikez {
 public:
     void CToobSpikez_012c60();
@@ -630,10 +624,6 @@ class ClassUnknown_68 {
 public:
     void ClassUnknown_68_0a3460();
     void ClassUnknown_68_0a3820();
-};
-class ClassUnknown_69 {
-public:
-    void ClassUnknown_69_10d150();
 };
 class ClassUnknown_70 {
 public:

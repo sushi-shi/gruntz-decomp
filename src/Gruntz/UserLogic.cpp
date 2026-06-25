@@ -168,11 +168,8 @@ public:
     virtual ~CTileTriggerSwitch() OVERRIDE;
 };
 
-class CTileTriggerTransition : public CUserLogic {
-public:
-    CTileTriggerTransition(CGameObject* obj); // 0x10faf0
-    virtual ~CTileTriggerTransition() OVERRIDE;
-};
+// CTileTriggerTransition (vptr 0x5e7db4) + its leaf methods and state pump now
+// live in src/Gruntz/TileTriggerTransition.cpp.
 
 class CToobSpikez : public CUserLogic {
 public:
@@ -978,17 +975,6 @@ RVA(0x0010fa90, 0x19)
 CGiantRock::CGiantRock(CGameObject* obj) : CTileTrigger(obj) {}
 RVA(0x0010fac0, 0x19)
 CCoveredPowerup::CCoveredPowerup(CGameObject* obj) : CTileTrigger(obj) {}
-
-// --- CTileTriggerTransition (0x10faf0), vptr 0x5e7db4 ---
-CTileTriggerTransition::~CTileTriggerTransition() {}
-RVA(0x0010faf0, 0x128)
-CTileTriggerTransition::CTileTriggerTransition(CGameObject* obj) : CUserLogic(obj) {
-    m_38->m_08 |= 0x1000000;
-    if (m_10->m_74 != 0) {
-        m_10->m_74 = 0;
-        m_10->m_08 |= 0x20000;
-    }
-}
 
 // --- CToobSpikez (0x1145c0), vptr 0x5e7774 ---
 CToobSpikez::~CToobSpikez() {}

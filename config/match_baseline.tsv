@@ -60,7 +60,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	262	0
+engine_discovered	258	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -156,6 +156,7 @@ tilegridcommand	5	2
 tileswitchlogic	13	7
 tiletriggercontainer	13	4
 tiletriggerlogic	2	1
+tiletriggertransition	5	4
 tilewireswitchlogic	1	0
 trees	17	17
 triggermgr	38	7
@@ -164,7 +165,7 @@ uncompr	1	1
 unknownclassarrays	31	8
 unknownsalazar	4	0
 userbaselink	7	0
-userlogic	48	17
+userlogic	47	17
 videoconfig	2	0
 warlord	3	1
 winapi	5	3
@@ -721,9 +722,6 @@ engine_discovered	?CTeleporter_0419e0@CTeleporter@@QAEXXZ	2.5641	2.5641	1	9bd08d
 engine_discovered	?CTileTriggerSwitchLogic_112c70@CTileTriggerSwitchLogic@@QAEXXZ	1.1494	1.1494	1	821467b84e39	0x112c70
 engine_discovered	?CTileTriggerSwitchLogic_117280@CTileTriggerSwitchLogic@@QAEXXZ	0.1465	0.1465	1	f1eca530b852	0x117280
 engine_discovered	?CTileTriggerSwitch_0110f0@CTileTriggerSwitch@@QAEXXZ	5.8824	5.8824	1	2020b3bd2f3a	0x110f0
-engine_discovered	?CTileTriggerTransition_011730@CTileTriggerTransition@@QAEXXZ	50.0000	50.0000	1	8c033a33771d	0x11730
-engine_discovered	?CTileTriggerTransition_0117f0@CTileTriggerTransition@@QAEXXZ	5.8824	5.8824	1	9a90d2610500	0x117f0
-engine_discovered	?CTileTriggerTransition_110070@CTileTriggerTransition@@QAEXXZ	1.0526	1.0526	1	d352853f3fcf	0x110070
 engine_discovered	?CToobSpikez_012c60@CToobSpikez@@QAEXXZ	5.8824	5.8824	1	d16ff0f9da5d	0x12c60
 engine_discovered	?CToobSpikez_114860@CToobSpikez@@QAEXXZ	0.5333	0.5333	1	0b1c4042697d	0x114860
 engine_discovered	?CUserLogic_00f2f0@CUserLogic@@QAEXXZ	2.2727	2.2727	1	211acac7460b	0xf2f0
@@ -848,7 +846,6 @@ engine_discovered	?ClassUnknown_67_191b10@ClassUnknown_67@@QAEXXZ	0.3448	0.3448	
 engine_discovered	?ClassUnknown_67_191c30@ClassUnknown_67@@QAEXXZ	1.2195	1.2195	1	a963c7685860	0x191c30
 engine_discovered	?ClassUnknown_68_0a3460@ClassUnknown_68@@QAEXXZ	0.1681	0.1681	1	815fbd276ee5	0xa3460
 engine_discovered	?ClassUnknown_68_0a3820@ClassUnknown_68@@QAEXXZ	0.2564	0.2564	1	09641df9ee29	0xa3820
-engine_discovered	?ClassUnknown_69_10d150@ClassUnknown_69@@QAEXXZ	1.1905	1.1905	1	ca7e05bc985a	0x10d150
 engine_discovered	?ClassUnknown_6_14dcf0@ClassUnknown_6@@QAEXXZ	3.4483	3.4483	1	15185bc126ec	0x14dcf0
 engine_discovered	?ClassUnknown_70_15b2b0@ClassUnknown_70@@QAEXXZ	16.6667	16.6667	1	8df1519a80a9	0x15b2b0
 engine_discovered	?ClassUnknown_71_15b270@ClassUnknown_71@@QAEXXZ	25.0000	25.0000	1	3828d9557c5b	0x15b270
@@ -2210,6 +2207,11 @@ tiletriggercontainer	?SerializeApplyB@@YGHPAUTtcStream@@HHHPAUTtcSwitchObj@@@Z	6
 tiletriggercontainer	?SetCell@CTileTriggerContainer@@QAEHHHH@Z	77.9559	77.9559	1	cd7922705e40	0x117f60
 tiletriggerlogic	??0CTileTriggerLogic@@QAE@XZ	100.0000	100.0000	5	94795c513302	0x1107f0
 tiletriggerlogic	??_GCTileTriggerLogic@@UAEPAXI@Z	4.7624	4.7624	1	cpp:abf93c58a136	0x116610
+tiletriggertransition	??0CTileTriggerTransition@@QAE@PAUCGameObject@@@Z	94.9390	94.9390	1	6da19d3afe62	0x10faf0
+tiletriggertransition	??1CUserLogic@@UAE@XZ	100.0000	100.0000	1	cpp:fe6dc3b6bc73	0x117f0
+tiletriggertransition	?ApplyAnimation@CTileTriggerTransition@@QAEHPAD0@Z	100.0000	100.0000	1	d04c2112f65b	0x110070
+tiletriggertransition	?GetTypeTag@CTileTriggerTransition@@QAEHXZ	100.0000	100.0000	1	f7fb68523138	0x11730
+tiletriggertransition	?StepController@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	9bd102275a97	0x10d150
 tilewireswitchlogic	?WireTileSwitchLogic@CGruntzMgr@@QAEHPAXHH@Z	10.4111	10.4111	1	4f27554a2907	0x6c130
 trees	__tr_flush_block	100.0000	100.0000	1	54a1b09eba2f	0x188ad0
 trees	__tr_stored_block	100.0000	100.0000	1	36d19f528991	0x1887a0
@@ -2340,7 +2342,6 @@ userlogic	??0CTileSecretTrigger@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	1	77f1
 userlogic	??0CTileTrigger@@QAE@PAUCGameObject@@@Z	91.6759	91.6759	2	bc2a30d21c88	0x10e220
 userlogic	??0CTileTrigger@@QAE@XZ	100.0000	100.0000	3	bc2a30d21c88	0x11160
 userlogic	??0CTileTriggerSwitch@@QAE@PAUCGameObject@@@Z	97.9479	97.9479	2	0900a941b158	0x10dc40
-userlogic	??0CTileTriggerTransition@@QAE@PAUCGameObject@@@Z	94.9390	94.9390	2	6da19d3afe62	0x10faf0
 userlogic	??0CToobSpikez@@QAE@PAUCGameObject@@@Z	93.0094	93.0094	2	220a38aa2067	0x1145c0
 userlogic	??0CVoiceTrigger@@QAE@XZ	100.0000	100.0000	2	5f5c27939720	0x13470
 userlogic	??0CWarpStonePad@@QAE@PAUCGameObject@@@Z	91.9406	91.9406	2	8c9f294f9ac0	0x10d650

@@ -396,13 +396,10 @@ void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_112c70() {}
 RVA(0x00117280, 0x2ec)
 void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_117280() {}
 
-// ---- CTileTriggerTransition ----
-RVA(0x00011730, 0x6)
-void CTileTriggerTransition::CTileTriggerTransition_011730() {}
-RVA(0x000117f0, 0x44)
-void CTileTriggerTransition::CTileTriggerTransition_0117f0() {}
-RVA(0x00110070, 0x71)
-void CTileTriggerTransition::CTileTriggerTransition_110070() {}
+// ---- CTileTriggerTransition ---- reconstructed in src/Gruntz/TileTriggerTransition.cpp
+//   0x011730 GetTypeTag, 0x110070 ApplyAnimation, 0x10d150 StepController (was in
+//   the ClassUnknown_69 block), 0x0117f0 ~CUserLogic base COMDAT (the leaf dtor
+//   folds it; pinned via @rva-symbol ??1CUserLogic@@UAE@XZ).
 
 // ---- CToobSpikez ----
 RVA(0x00012c60, 0x44)
@@ -941,10 +938,8 @@ void ClassUnknown_68::ClassUnknown_68_0a3820() {}
 //   0x058b60 -> CGruntAnimPlayer::ApplyGeometryDirect (src/Gruntz/SpriteResource.cpp)
 //   0x1504d0 -> CGruntSprite::CacheFrame             (src/Gruntz/SpriteResource.cpp)
 //   0x15b2c0 -> CRemusNode ctor                      (src/Gruntz/CRemusNode.cpp)
-//   0x10d150 -> the CTileTriggerTransition state dispatcher remains here for the
-//               final sweep (EH frame; this+0x7c controller, big state switch).
-RVA(0x0010d150, 0xf1)
-void ClassUnknown_69::ClassUnknown_69_10d150() {}
+//   0x10d150 -> StepController, the CTileTriggerTransition state pump
+//               (src/Gruntz/TileTriggerTransition.cpp)
 
 // ---- ClassUnknown_70 ----
 RVA(0x0015b2b0, 0xe)
