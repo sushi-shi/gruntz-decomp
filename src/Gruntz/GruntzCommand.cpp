@@ -40,7 +40,9 @@ void CGruntzCommand::Vfunc3() {}
 i32 CGruntzCommand::Vslot05() {
     return 1;
 }
-void CGruntzCommand::Vslot06() {}
+char CGruntzCommand::Vslot06() {
+    return 0;
+}
 void CGruntzCommand::Vslot07() {}
 
 // ---------------------------------------------------------------------------
@@ -94,6 +96,57 @@ i32 CGruntzCommand::SetMaskFromList(char a0, char a1, char a2, i16 a3, i16 a4, i
         *(u16*)&m_10 |= g_cmdBitTable[buf[i]];
     }
     return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CGruntzSingleCommand::Pack() - 0x024050. Serialize the command into a flat
+// byte buffer: the tag byte (vtable slot 6), the kind/sub/aux byte triple
+// (m_4/m_5/m_6), the two words (m_8/m_a), the m_10 byte, and - only when the kind
+// byte m_5 is >= 8 - the m_11 byte. Returns the byte count written. The buffer
+// pointer walks with single-byte post-increments then word stores (the natural
+// running-pointer codegen).
+// ---------------------------------------------------------------------------
+RVA(0x00024050, 0x57)
+i32 CGruntzSingleCommand::Pack(char* buf, i32 /*unused*/) {
+    char* start = buf;
+    *buf = (char)Vslot06();
+    *++buf = m_4;
+    *++buf = m_5;
+    *++buf = m_6;
+    char* w = buf + 1;
+    *(i16*)w = m_8;
+    w += 2;
+    *(i16*)w = m_a;
+    w += 2;
+    *w = m_10;
+    w++;
+    if ((u8)m_5 >= 8) {
+        *w = m_11;
+        w++;
+    }
+    return w - start;
+}
+
+// ---------------------------------------------------------------------------
+// CGruntzMultiCommand::Pack() - 0x0240d0. The multi-target twin: same tag + the
+// five scalar params, but the +0x10 field is written as a full 16-bit flag mask
+// (a WORD) rather than the conditional byte pair. Returns the byte count written.
+// ---------------------------------------------------------------------------
+RVA(0x000240d0, 0x4d)
+i32 CGruntzMultiCommand::Pack(char* buf, i32 /*unused*/) {
+    char* start = buf;
+    *buf = (char)Vslot06();
+    *++buf = m_4;
+    *++buf = m_5;
+    *++buf = m_6;
+    char* w = buf + 1;
+    *(i16*)w = m_8;
+    w += 2;
+    *(i16*)w = m_a;
+    w += 2;
+    *(i16*)w = *(i16*)&m_10;
+    w += 2;
+    return w - start;
 }
 
 // ---------------------------------------------------------------------------

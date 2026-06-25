@@ -101,6 +101,26 @@ i32 CGruntzCmdMgr::ScanTargets(i32 param) {
 }
 
 // ---------------------------------------------------------------------------
+// 0x023b40 - RemoveMatchingTarget: walk the base queue by index and remove the
+// FIRST object that matches both the type byte (m_6 == typeByte) and the index
+// byte (m_4 == indexByte): RemoveAt(pos) + deselect (vtable slot +0x28). Stops at
+// the first hit. typeByte is hoisted out of the loop; indexByte is re-read per
+// iteration (the natural codegen for the two-key compare).
+// ---------------------------------------------------------------------------
+RVA(0x00023b40, 0x53)
+void CGruntzCmdMgr::RemoveMatchingTarget(char indexByte, char typeByte) {
+    for (i32 i = 0; i < m_base.m_c; i++) {
+        void* pos = m_base.FindIndex(i);
+        GzTargetObj* obj = *(GzTargetObj**)((char*)pos + 8);
+        if (obj->m_6 == (u8)typeByte && obj->m_4 == (u8)indexByte) {
+            m_base.RemoveAt(pos);
+            obj->Deselect();
+            return;
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
 // 0x023bc0 - DrainBase: while the base queue is non-empty, RemoveTail() a node
 // and (if non-null) deselect it via its vtable slot +0x28.
 // ---------------------------------------------------------------------------

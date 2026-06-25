@@ -50,6 +50,12 @@ void FreeConnectionSettings(void* p); // FUN_005b9b82 (operator delete wrapper)
 
 void* operator new(u32);
 
+// The Win32 dialog procedures handed to RunModalDialog. Their pushed code
+// addresses reloc-mask (DIR32 against the named LAB_ symbols); only the push
+// shape is load-bearing.
+extern "C" void GruntzLoadGameDlgProc();    // LAB_00402167
+extern "C" void GruntzDebugGruntTypeProc(); // LAB_004021e9
+
 // -------------------------------------------------------------------------
 // Engine objects reached through CGruntzMgr's member pointers. Each engine-side
 // method is a reloc-masked __thiscall (`mov ecx,obj; call rel32`), so only the
@@ -85,10 +91,10 @@ extern i32 g_61ab20; // DAT_0061ab20
 // The game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A), modeled here with
 // the offsets UpdateScoreHud touches (a per-TU view; the DATA pin reloc-masks the
 // `mov eax,ds:g_gameReg` load against the already-named symbol).
-struct ScoreNotifier {          // g_gameReg->m_58
-    void Bump(i32 wp);          // FUN @ 0x4408 thunk (this, wp)
-    void Tick(i32 wp);          // FUN @ 0x1c53 thunk (this, wp)
-    void Notify(i32 a, i32 wp); // FUN @ 0x2d97 thunk (this, a, wp)
+struct ScoreNotifier {         // g_gameReg->m_58
+    void Bump(i32 wp);         // FUN @ 0x4408 thunk (this, wp)
+    void Tick(i32 wp);         // FUN @ 0x1c53 thunk (this, wp)
+    i32 Notify(i32 a, i32 wp); // FUN @ 0x2d97 thunk (this, a, wp) -> nonzero=ok
 };
 struct ScoreSub2c { // g_gameReg->m_2c
     char m_pad0[0x1c];
@@ -437,10 +443,13 @@ struct OptionsTickSub {
     void Activate();                                                        // FUN_0042ade0
 };
 struct OptionsSlot {
-    char m_pad0[0x10];
+    char m_pad0[0x4];
+    CString m_name; // +0x04  per-slot name/config string (LoadOptionsSlotName target)
+    char m_pad8[0x10 - 0x8];
     i32 m_10; // +0x10  per-slot config id
     i32 m_14; // +0x14  arm flag
-    char m_pad18[0x20 - 0x18];
+    i32 m_18; // +0x18  slot key (FindOptionsSlot match)
+    char m_pad1c[0x20 - 0x1c];
     i32 m_20; // +0x20  loaded flag
     char m_pad24[0x38 - 0x24];
     OptionsTickSub m_38;                     // +0x38
@@ -1754,6 +1763,179 @@ CState* CGruntzMgr::PickPausedThenPlayState() {
         return s;
     }
     return FindStateById(3);
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::SetSoundLevelState (0x0923b0; ret 4). Sets the base "level loaded"
+// flag (CGameMgr::m_14) and, when it CHANGES and a sound bank is bound, drives the
+// bank: clearing it stops everything (StopAll); setting it re-launches or stops the
+// current bank depending on its per-bank restart flag (m_pCurrent->m_48).
+// @early-stop
+// ~80% redundant-null-test elision wall: logic byte-exact, the StopAll-at-tail block
+// layout + the m_48 Restart/StopBank split all match. The lone residual is the
+// second `if(cur)` guard before StopBank: retail kept the (provably-true) `test
+// eax,eax; je` re-test of m_pCurrent that our MSVC5 eliminated (it proved cur!=0
+// after the earlier null guard) + a `push 1` schedule shift. Same compiler, no
+// source spelling reinstates the dead test; regalloc/elimination family (see
+// docs/patterns/reread-member-view-pointer.md).
+RVA(0x000923b0, 0x47)
+void CGruntzMgr::SetSoundLevelState(i32 loaded) {
+    if (loaded == m_14) {
+        return;
+    }
+    m_14 = loaded;
+    CGruntzSoundZ* snd = m_sound;
+    if (snd == 0) {
+        return;
+    }
+    if (loaded != 0) {
+        CGruntzSoundInnerZ* cur = snd->m_1c;
+        if (cur == 0) {
+            return;
+        }
+        if (cur->m_48 != 0) {
+            snd->Restart_1388c0(1);
+        } else if (cur != 0) {
+            snd->StopBank(1);
+        }
+        return;
+    }
+    snd->StopAll();
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::RunLoadGameDialog (0x092500; ret). Shows the "GAME_LOAD" modal
+// dialog (through the engine's DialogBoxParamA wrapper) and returns 1.
+RVA(0x00092500, 0x17)
+i32 CGruntzMgr::RunLoadGameDialog() {
+    RunModalDialog("GAME_LOAD", (void*)GruntzLoadGameDlgProc, 0);
+    return 1;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::Quicksave (0x092530; __thiscall; /GX EH; ret). Quicksaves the game.
+// Bails (0) with no save sink (m_saveSink) or when not in the PLAY state (id 3).
+// When the first-frame guard (m_44->m_124) is already set, it pops a localized
+// message (resource 0x81aa) through a modal and returns 1. Otherwise, on a valid
+// save record (m_saveInfoRec with bit 0 set) and a live save source
+// (m_curState + 0x1d0), it stops the timer, fills the save info, then commits the
+// save via the registry notifier; success logs "Game Quicksaved successfully." into
+// the chat log, failure shows the error modal.
+// @early-stop
+// 93.4% - logic + the whole control flow (the modal/LoadString branch, the inlined
+// save-source guard, the FillSaveInfo/Notify commit, the chat insert) are byte for
+// byte. The residual is the reloc-masked g_gameReg/$SG string DIR32 scoring + the
+// /GX trylevel state numbering across the destructible CString temp (documented
+// eh-state-numbering + reloc-typing walls, see docs/seh-eh.md). Final sweep.
+RVA(0x00092530, 0x17c)
+i32 CGruntzMgr::Quicksave() {
+    if (m_saveSink == 0) {
+        return 0;
+    }
+    if (m_curState->Update() != 3) {
+        return 0;
+    }
+    if (((HudGuard44*)m_44)->m_124 != 0) {
+        CString name;
+        name.LoadStringA(0x81aa);
+        EnterModalUI((i32)(const char*)name);
+        return 1;
+    }
+    if (m_saveInfoRec == 0 || !(*(char*)m_saveInfoRec & 1)) {
+        return LoadSaveMessageSprite();
+    }
+    if ((char*)m_curState + 0x1d0 == 0) { // inlined GetSaveSource() non-null guard
+        return 0;
+    }
+    if (m_timer) {
+        ((TimerObj*)m_timer)->Stop();
+    }
+    FillSaveInfo((SaveInfo*)m_saveInfoRec, 0);
+    if (g_gameReg->m_58->Notify((i32)((char*)m_saveInfoRec + 0x35), 0x81a7)) {
+        ((CChatLog*)m_5c)->Insert("Game Quicksaved successfully.", 0, 0x11);
+        return 1;
+    }
+    EnterModalUI((i32) "ERROR - Cannot Save Game.");
+    return 1;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::RunDebugGruntTypeDialog (0x0929e0; ret). Only in the PLAY state (id
+// 3), shows the "DEBUG_GRUNTTYPE" modal dialog (flag 1); returns whether it ran
+// (bool-normalized via setne).
+RVA(0x000929e0, 0x32)
+i32 CGruntzMgr::RunDebugGruntTypeDialog() {
+    i32 ran = 0;
+    if (m_curState->Update() == 3) {
+        ran = RunModalDialog("DEBUG_GRUNTTYPE", (void*)GruntzDebugGruntTypeProc, 1);
+    }
+    return ran != 0;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::LoadOptionsSlotName (0x092d50; ret 0x1c). When in a play-ish state
+// (CheckPlayState) and the indexed options slot has not yet been loaded
+// (slot->m_20 == 0), assign its per-slot name CString from `val`. Returns 0. Only
+// the slot index (arg0) + the value string (arg5) are used; the rest are ignored.
+RVA(0x00092d50, 0x3c)
+i32 CGruntzMgr::LoadOptionsSlotName(
+    i32 slot,
+    i32 /*a2*/,
+    i32 /*a3*/,
+    i32 /*a4*/,
+    i32 /*a5*/,
+    const char* val,
+    i32 /*a7*/
+) {
+    if (CheckPlayState()) {
+        OptionsSlot* s = (OptionsSlot*)((char*)this + slot * 0x238);
+        if (*(i32*)((char*)s + 0x170) == 0) { // s->m_20 (options base +0x150 +0x20)
+            *(CString*)((char*)s + 0x154) = val; // s->m_name (options base +0x150 +0x04)
+        }
+    }
+    return 0;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::CountReadyOptionsSlots (0x092e30; ret 4). Counts the four options
+// slots that are loaded (m_20 != 0) and either `anyState` is set or the slot is
+// armed (m_14 != 0). The running pointer walks at the slot's m_14 field.
+RVA(0x00092e30, 0x39)
+i32 CGruntzMgr::CountReadyOptionsSlots(i32 anyState) {
+    i32 count = 0;
+    char* p = (char*)this + 0x164; // &m_options[0].m_14
+    for (i32 d = 4; d != 0; d--) {
+        char* slot = p - 0x14; // slot base
+        if (slot && *(i32*)(p + 0xc) != 0 && (anyState != 0 || *(i32*)p != 0)) {
+            count++;
+        }
+        p += 0x238;
+    }
+    return count;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::FindOptionsSlot (0x092e80; ret 4). Returns the first options slot
+// whose key field (m_18) equals `x`, or 0 when none match.
+// @early-stop
+// ~83% regalloc reg-swap wall: logic + the dual-induction loop (slot ptr in eax,
+// index, +0x238 stride, the per-iteration null guard + m_18 compare) are byte-
+// exact. The residual is the scratch-register coloring - retail keeps the key `x`
+// in ecx and the loop index in edx; our MSVC5 swaps them (x in edx, i in ecx) +
+// the inc/add tail order. No source spelling flips MSVC's register pick here;
+// zero-register-pinning family (docs/patterns/zero-register-pinning.md).
+RVA(0x00092e80, 0x25)
+OptionsSlot* CGruntzMgr::FindOptionsSlot(i32 x) {
+    OptionsSlot* slot = (OptionsSlot*)((char*)this + 0x150);
+    i32 i = 0;
+    do {
+        if (slot && slot->m_18 == x) {
+            return slot;
+        }
+        i++;
+        slot = (OptionsSlot*)((char*)slot + 0x238);
+    } while (i < 4);
+    return 0;
 }
 
 // -------------------------------------------------------------------------

@@ -159,31 +159,6 @@ RVA(0x0007f720, 0x18d) void CGruntToySprite::CGruntToySprite_07f720() {}  // med
 // ---- CGruntVoice ----
 RVA(0x00119dc0, 0x15) void CGruntVoice::CGruntVoice_119dc0() {}  // med
 
-// ---- CGruntzCmdMgr ----
-RVA(0x00023b40, 0x53) void CGruntzCmdMgr::CGruntzCmdMgr_023b40() {}  // high
-
-// ---- CGruntzCommand ----
-RVA(0x00024050, 0x57) void CGruntzCommand::CGruntzCommand_024050() {}  // high
-RVA(0x000240d0, 0x4d) void CGruntzCommand::CGruntzCommand_0240d0() {}  // high
-
-// ---- CGruntzMgr ----
-// 0x08d850/0x08d910/0x08efe0/0x08f060/0x08f0b0/0x08f2f0/0x08f9c0/0x08f9f0 +
-// 0x0901d0/0x090ac0/0x0910d0/0x091170/0x091a40/0x091e20/0x092000/0x092030
-// reconstructed in src/Gruntz/GruntzMgr.cpp.
-RVA(0x000923b0, 0x47) void CGruntzMgr::CGruntzMgr_0923b0() {}  // high
-RVA(0x00092500, 0x17) void CGruntzMgr::CGruntzMgr_092500() {}  // high
-RVA(0x00092530, 0x17c) void CGruntzMgr::CGruntzMgr_092530() {}  // high
-RVA(0x000929e0, 0x32) void CGruntzMgr::CGruntzMgr_0929e0() {}  // high
-RVA(0x00092d50, 0x3c) void CGruntzMgr::CGruntzMgr_092d50() {}  // high
-RVA(0x00092e30, 0x39) void CGruntzMgr::CGruntzMgr_092e30() {}  // high
-RVA(0x00092e80, 0x25) void CGruntzMgr::CGruntzMgr_092e80() {}  // high
-
-// ---- CGruntzSoundZ ----
-RVA(0x001385e0, 0x85) void CGruntzSoundZ::CGruntzSoundZ_1385e0() {}  // high
-RVA(0x00138780, 0x5b) void CGruntzSoundZ::CGruntzSoundZ_138780() {}  // high
-RVA(0x001387e0, 0x60) void CGruntzSoundZ::CGruntzSoundZ_1387e0() {}  // high
-RVA(0x001388c0, 0x2a) void CGruntzSoundZ::CGruntzSoundZ_1388c0() {}  // high
-
 // ---- CHashBase ----
 RVA(0x00184a70, 0x34) void CHashBase::CHashBase_184a70() {}  // med
 

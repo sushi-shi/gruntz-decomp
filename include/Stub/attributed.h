@@ -41,10 +41,6 @@ class CGruntSelectedSprite { public: void CGruntSelectedSprite_07e5e0(); void CG
 class CGruntSpawnConfig { public: void CGruntSpawnConfig_11c7f0(); };
 class CGruntToySprite { public: void CGruntToySprite_07f540(); void CGruntToySprite_07f720(); };
 class CGruntVoice { public: void CGruntVoice_119dc0(); };
-class CGruntzCmdMgr { public: void CGruntzCmdMgr_023b40(); };
-class CGruntzCommand { public: void CGruntzCommand_024050(); void CGruntzCommand_0240d0(); };
-class CGruntzMgr { public: void CGruntzMgr_0923b0(); void CGruntzMgr_092500(); void CGruntzMgr_092530(); void CGruntzMgr_0929e0(); void CGruntzMgr_092d50(); void CGruntzMgr_092e30(); void CGruntzMgr_092e80(); };
-class CGruntzSoundZ { public: void CGruntzSoundZ_1385e0(); void CGruntzSoundZ_138780(); void CGruntzSoundZ_1387e0(); void CGruntzSoundZ_1388c0(); };
 class CHashBase { public: void CHashBase_184a70(); };
 class CImage { public: void CImage_1530e0(); void CImage_1532b0(); void CImage_153380(); void CImage_175a00(); void CImage_175b80(); void CImage_175ce0(); void CImage_175d50(); };
 class CImageOwned { public: void CImageOwned_148d40(); void CImageOwned_148fc0(); };

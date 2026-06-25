@@ -34,6 +34,8 @@ struct CGruntzMgrOptions {
 // reloc-masked __thiscall helpers (this in ecx) only need the right call shape;
 // the inner object at +0x1c carries the per-frame busy poll.
 struct CGruntzSoundInnerZ {
+    char m_pad0[0x48];
+    i32 m_48;     // +0x48  per-bank restart flag
     i32 IsBusy(); // FUN_00538f60 (this) -> ret (busy state-id 4/0x10)
 };
 
@@ -58,8 +60,9 @@ struct CGruntzSoundZ {
     void StopBank(i32 flag);  // FUN_00538900 (this, 1)  -> ret 4
     void StopAll();           // FUN_005388f0 (this)
     void StopBank2();         // FUN_00538920 (this)     -> ret 4 (busy-driven stop)
+    i32 Restart_1388c0(i32 a1); // FUN_005388c0 (this, 1) re-launch current bank
     char m_pad0[0x1c];        // +0x00..+0x1c
-    CGruntzSoundInnerZ* m_1c; // +0x1c  inner object IsBusy/StopAll deref
+    CGruntzSoundInnerZ* m_1c; // +0x1c  inner object IsBusy/StopAll deref / m_pCurrent
 };
 
 // The level/world object held at CGruntzMgr +0x30 (the loaded map + its active
@@ -227,6 +230,25 @@ public:
     i32 RunFromState();                // @0x090200 (thin wrapper -> ChangeState_8fab0(1))
     CState* PickPlayOrPausedState();   // @0x092990 (FindStateById(3))
     CState* PickPausedThenPlayState(); // @0x0929b0 (FindStateById(0x11)|| (3))
+
+    // The modal-dialog runner sibling (a __thiscall (template, dlgProc, flag) ->
+    // i32; reloc-masked). The leading Ghidra label winapi_090260_DialogBoxParamA
+    // is the engine's DialogBoxParamA wrapper.
+    i32 RunModalDialog(const char* tmpl, void* dlgProc, i32 flag); // @0x090260
+
+    // Sound/level-loaded sync (@0x0923b0): set the base level-loaded flag (m_14)
+    // and, when it changes and a sound bank is bound, drive the bank.
+    void SetSoundLevelState(i32 loaded);
+    i32 RunLoadGameDialog();         // @0x092500 (GAME_LOAD dialog; ret 1)
+    i32 Quicksave();                 // @0x092530 (quicksave the game; /GX)
+    i32 RunDebugGruntTypeDialog();   // @0x0929e0 (DEBUG_GRUNTTYPE dialog when PLAY)
+    // @0x092d50 - if in play state and the options slot is not yet loaded, assign
+    // its name CString. 7 raw args (only the slot index + the value string used).
+    i32 LoadOptionsSlotName(i32 slot, i32 a2, i32 a3, i32 a4, i32 a5, const char* val, i32 a7);
+    i32 CountReadyOptionsSlots(i32 anyState); // @0x092e30 (count loaded/armed slots)
+    struct OptionsSlot* FindOptionsSlot(i32 x); // @0x092e80 (slot whose m_18 == x)
+    // Sibling reached by Quicksave (reloc-masked): plays the save-feedback sprite.
+    i32 LoadSaveMessageSprite();
 
     // Larger sibling reached by RunFromState's reloc-masked call; body still a
     // @stub in GruntzMgr.cpp (migrated from src/Stub/Discovered.cpp) so the call

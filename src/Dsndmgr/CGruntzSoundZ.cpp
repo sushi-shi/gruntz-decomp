@@ -73,6 +73,42 @@ void CGruntzSoundZ::StopAndFlush_138530() {
 }
 
 // ---------------------------------------------------------------------------
+// CreateBank2: the 2-arg twin of CreateBank. Heap-allocate + seed a 0x60-byte
+// inner sound (same field layout), then run its alternate one-time setup via the
+// inner vtable slot +0x18 (Init2, 2 args); on failure destroy it (scalar dtor) and
+// return 0, on success insert it into the map and return it.
+RVA(0x001385e0, 0x85)
+CGruntzSoundInnerZ* CGruntzSoundZ::CreateBank2_1385e0(i32 a1, i32 a2) {
+    if (m_enabled == 0) {
+        return 0;
+    }
+    char* raw = (char*)RezAlloc(0x60);
+    CGruntzSoundInnerZ* inner;
+    if (raw != 0) {
+        *(void**)raw = &g_innerSoundVtbl;
+        *(raw + 0x04) = 0;
+        *(i32*)(raw + 0x44) = 0;
+        *(i32*)(raw + 0x48) = 0;
+        *(i32*)(raw + 0x4c) = 0;
+        *(i32*)(raw + 0x54) = 0x64;
+        *(i32*)(raw + 0x50) = 0x64;
+        *(i32*)(raw + 0x58) = 0;
+        *(i32*)(raw + 0x5c) = 0;
+        inner = (CGruntzSoundInnerZ*)raw;
+    } else {
+        inner = 0;
+    }
+    if (inner->Init2(a1, a2) == 0) {
+        if (inner != 0) {
+            inner->ScalarDtor(1);
+        }
+        return 0;
+    }
+    Insert_138700(inner);
+    return inner;
+}
+
+// ---------------------------------------------------------------------------
 // CreateBank: if enabled, heap-allocate a 0x60-byte inner sound, stamp its vtable
 // and seed its fields, run its one-time Init(+0x14); on failure destroy it and
 // return 0, on success insert it into the map and return it.
@@ -142,6 +178,45 @@ CGruntzSoundInnerZ* CGruntzSoundZ::Lookup_138730(const char* key) {
 }
 
 // ---------------------------------------------------------------------------
+// PlayCreate2: create-or-fail a 2-arg bank, stop the current bank, and start the
+// new one on the digital driver; on success adopt it as current and return 1.
+RVA(0x00138780, 0x5b)
+i32 CGruntzSoundZ::PlayCreate2_138780(i32 a1, i32 a2, i32 a3) {
+    if (m_enabled == 0) {
+        return 0;
+    }
+    CGruntzSoundInnerZ* inner = CreateBank2_1385e0(a1, a3);
+    if (inner == 0) {
+        return 0;
+    }
+    StopCurrent_1388a0();
+    if (inner->Play(m_digHandle, a2) == 0) {
+        return 0;
+    }
+    m_pCurrent = inner;
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// PlayCreate3: the 3-arg twin of PlayCreate2 (creates a 3-arg bank then plays it).
+RVA(0x001387e0, 0x60)
+i32 CGruntzSoundZ::PlayCreate3_1387e0(i32 a1, i32 a2, i32 a3, i32 a4) {
+    if (m_enabled == 0) {
+        return 0;
+    }
+    CGruntzSoundInnerZ* inner = CreateBank_138670(a1, a2, a4);
+    if (inner == 0) {
+        return 0;
+    }
+    StopCurrent_1388a0();
+    if (inner->Play(m_digHandle, a3) == 0) {
+        return 0;
+    }
+    m_pCurrent = inner;
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
 // Play: look the bank up by name, stop whatever is current, start it on the
 // digital driver; on success adopt it as current and return 1.
 RVA(0x00138840, 0x56)
@@ -169,6 +244,19 @@ void CGruntzSoundZ::StopCurrent_1388a0() {
         m_pCurrent->Stop();
         m_pCurrent = 0;
     }
+}
+
+// ---------------------------------------------------------------------------
+// Restart: re-launch the current bank - stop it (vtable +0x30) then replay it on
+// the digital driver with the supplied parameter (vtable +0x24). Returns Play's
+// result; 0 when no current bank.
+RVA(0x001388c0, 0x2a)
+i32 CGruntzSoundZ::Restart_1388c0(i32 a1) {
+    if (m_pCurrent == 0) {
+        return 0;
+    }
+    m_pCurrent->Stop();
+    return m_pCurrent->Play(m_digHandle, a1);
 }
 
 // ---------------------------------------------------------------------------
