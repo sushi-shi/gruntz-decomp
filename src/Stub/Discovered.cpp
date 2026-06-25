@@ -88,14 +88,12 @@ RVA(0x0015c360, 0x555)
 void CDDrawSubMgr::CDDrawSubMgr_15c360() {}
 
 // ---- CDDrawSubMgrLeaf ----
-// 0x05b7e0 / 0x157570 / 0x157c70 / 0x1583c0 / 0x1584f0 / 0x158570 reconstructed
-// in src/Gruntz/CDDrawSubMgrLeafScan.cpp (the keyed-asset cache sibling).
-RVA(0x00114120, 0x70)
-void CDDrawSubMgrLeaf::CDDrawSubMgrLeaf_114120() {}
-RVA(0x00157d70, 0x90)
-void CDDrawSubMgrLeaf::CDDrawSubMgrLeaf_157d70() {}
-RVA(0x00157ee0, 0x1c6)
-void CDDrawSubMgrLeaf::CDDrawSubMgrLeaf_157ee0() {}
+// 0x05b7e0 / 0x157570 / 0x157c70 / 0x1583c0 / 0x1584f0 / 0x158570 reconstructed in
+// src/Gruntz/CDDrawSubMgrLeafScan.cpp (the keyed-asset cache sibling); the
+// directory-scan / factory group (0x114120 RefreshAsset, 0x157d70 CreateEntry,
+// 0x157ee0 ScanTree) reconstructed there too -- these were mislabeled
+// CDDrawSubMgrLeaf but are CDDrawSubMgrLeafScan members (this+0x10 map / +0x30
+// guard / +0x34 redraw arg).
 
 // ---- CDDrawSurfaceMgr ----
 // 0x1558b0 (~CDDrawSurfaceMgr, /GX dtor — eh-dtor-needs-base-subobject wall) and

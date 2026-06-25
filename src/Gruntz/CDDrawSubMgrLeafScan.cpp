@@ -74,6 +74,81 @@ public:
     void VM18(); // 0x157ae0
 };
 
+// ----- The throttled per-asset refresh (RefreshAsset_114120) -----
+// The map value, when refreshed, is a draw-cue record: its +0x10 player drives
+// ConfigureItem (0x1360d0); +0x14 is the last draw-clock, +0x18 the throttle
+// interval. Same shape as the CSBI_MenuItem cue path. Externals are reloc-masked.
+struct LeafCue {
+    char m_pad0[0x10];
+    void* m_10; // +0x10  player (ConfigureItem this)
+    i32 m_14;   // +0x14  last draw-clock
+    i32 m_18;   // +0x18  interval
+};
+struct LeafCuePlayer {
+    i32 ConfigureItem(i32 item, i32 a, i32 b, i32 c); // 0x1360d0
+};
+// The reentrancy gate + cue-item id pair the refresh plays through, and the
+// draw-clock mirror (wrap-safe gate compare). Shared globals (see SBI_MenuItem).
+DATA(0x0061ab20)
+extern i32 g_61ab20; // reentrancy gate
+DATA(0x0061ab24)
+extern i32 g_61ab24; // cue-item id
+DATA(0x006bf3c0)
+extern "C" u32 g_6bf3c0; // draw-clock mirror
+
+// ----- The 0x1c-byte cache element + its factory (CreateEntry_157d70) -----
+// operator new(0x1c); the factory stamps the element vtable (0x5eff08), copies
+// the map count (this+0x1c) and handle (this+0x0c), zeroes the rest, then runs
+// the element's Configure (0x158760) keyed by arg2; on success links it into the
+// map and stamps the redraw arg (this+0x34). The vtable contents are not modeled
+// here, so the manual stamp is the transitional workaround.
+DATA(0x005eff08)
+extern void* g_leafElemVtbl; // 0x5eff08 - the 0x1c-byte element vftable
+// The 0x1c-byte cache element's virtual interface: slot+4 is the scalar-deleting
+// dtor the factory's failure path dispatches through (`mov edx,[e]; push 1;
+// call [edx+4]`). Declared-only (never defined), so no ??_7 is emitted; the
+// factory manually stamps the real foreign vtable instead.
+class LeafElement {
+public:
+    virtual void Slot00();            // +0x00
+    virtual i32 ScalarDtor(i32 flag); // +0x04 scalar-deleting destructor
+    i32 Configure_158760(void* arg2); // 0x158760 __thiscall element configure
+};
+// The 0x1c-byte element layout. Only the seeded offsets are load-bearing.
+struct LeafElementObj : public LeafElement {
+    i32 m_04; // +0x04 = parent map count
+    i32 m_08; // +0x08 = 0
+    i32 m_0c; // +0x0c = parent handle
+    i32 m_10; // +0x10 = 0
+    i32 m_14; // +0x14 = 0
+    i32 m_18; // +0x18 = 0 (-> parent->m_34 on success)
+}; // size = 0x1c
+static inline void StampLeafElemVtbl(LeafElementObj* e) {
+    *(void**)e = &g_leafElemVtbl;
+}
+
+// ----- The recursive directory walker (ScanTree_157ee0) -----
+// The tree node is recursive: each subdir returned by FirstSubdir is itself a tree
+// the walker recurses into. m_name (+0x00) is the entry name; GetTag (0x139800)
+// reads the type tag (0x574156 == 'WAV' is the asset gate); the subdir/file
+// iterators are __thiscall externals. All reloc-masked.
+class DirNode {
+public:
+    DirNode* FirstSubdir();          // 0x13a260
+    DirNode* NextSubdir(DirNode* n); // 0x13a280
+    void* FirstFile();               // 0x13a2b0
+    void* NextFile(void* f);         // 0x13a2d0
+    DirNode* FirstEntry(void* f);    // 0x13a2f0
+    DirNode* NextEntry(DirNode* n);  // 0x13a310
+    i32 GetTag();                    // 0x139800
+
+    const char* m_name; // +0x00
+};
+// The buffer freed at the walker's tail (_RezFree @0x1b9b82).
+extern "C" void RezFree(void* p);
+// Global operator new (engine NAFXCW, operator_new @0x1b9b46); external/no-body.
+void* operator new(u32 n);
+
 // ---------------------------------------------------------------------------
 // The shared base: vptr + status word at +0x04 + handle at +0x0c. Its (inlined)
 // destructor resets those fields and stamps the grand-base dtor vtable -- this is
@@ -104,6 +179,10 @@ inline LeafScanBase::~LeafScanBase() {
 // ---------------------------------------------------------------------------
 class CDDrawSubMgrLeafScan : public LeafScanBase {
 public:
+    i32 RefreshAsset_114120(const char* key);
+    LeafElementObj* CreateEntry_157d70(const char* key, void* arg2);
+    i32 ScanTree_157ee0(DirNode* tree, const char* prefix, const char* suffix);
+
     CObject* Lookup_05b7e0(const char* key);
     i32 RemoveKeysEqual_157c70(const char* base, const char* str);
     i32 HasKeyEqual_1583c0(const char* str);
@@ -117,6 +196,72 @@ public:
     i32 m_30;            // +0x30  busy/loading guard
     i32 m_34;            // +0x34  redraw arg
 };
+
+// Read the map count at parent+0x1c (inside the CMapStringToOb's internal area,
+// its m_nCount). A separate inline so its read schedules before the handle read,
+// matching the factory's register assignment.
+static inline i32 LeafReadMapCount(const CDDrawSubMgrLeafScan* p) {
+    return *(const i32*)((const char*)p + 0x1c);
+}
+
+// Inline element constructor. New's the raw 0x1c block; on success seeds the
+// fields in the exact order the factory writes them (map count, then handle, the
+// foreign vtable stamp, then the zeroed tail with +0x18 before +0x14). The
+// raw/result split reproduces the MSVC `new`-expression null merge (the
+// `mov esi,eax; jmp; xor esi,esi` shape).
+static inline LeafElementObj* MakeLeafElement(const CDDrawSubMgrLeafScan* parent) {
+    LeafElementObj* raw = (LeafElementObj*)operator new(sizeof(LeafElementObj));
+    LeafElementObj* e;
+    if (raw != 0) {
+        i32 count = LeafReadMapCount(parent);
+        i32 handle = parent->m_0c;
+        raw->m_04 = count;
+        raw->m_08 = 0;
+        raw->m_0c = handle;
+        StampLeafElemVtbl(raw);
+        raw->m_10 = 0;
+        raw->m_18 = 0;
+        raw->m_14 = 0;
+        e = raw;
+    } else {
+        e = 0;
+    }
+    return e;
+}
+
+// ---------------------------------------------------------------------------
+// 0x114120: throttled per-asset refresh. While not loading (m_30==0), look up the
+// keyed cue in the map; if present and the reentrancy gate is open, and the
+// throttle interval has elapsed since its last draw-clock, restamp the clock and
+// re-run its player's ConfigureItem with the gated cue-item id. Returns 0 always
+// (the success path falls off the end of ConfigureItem's void return). 1 stack
+// arg (ret 4); same cue-refresh idiom as CSBI_MenuItem's highlight path.
+RVA(0x00114120, 0x70)
+i32 CDDrawSubMgrLeafScan::RefreshAsset_114120(const char* key) {
+    if (m_30 != 0) {
+        return 0;
+    }
+    CObject* val = 0;
+    m_10.Lookup(key, val);
+    if (val == 0) {
+        return 0;
+    }
+    i32 gate = g_61ab20;
+    i32 item = g_61ab24;
+    if (gate == 0) {
+        return 0;
+    }
+    LeafCue* p = (LeafCue*)val;
+    // Throttle: when the interval has elapsed, restamp the clock and tail-return the
+    // (void-modeled) ConfigureItem result so the success epilogue falls through
+    // WITHOUT zeroing eax (retail's split-epilogue shape: the guard-failure paths
+    // return 0 via the trailing `xor eax,eax` exit, success is the fall-through).
+    if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
+        p->m_14 = g_6bf3c0;
+        return ((LeafCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+    }
+    return 0;
+}
 
 // ---------------------------------------------------------------------------
 // 0x5b7e0: Lookup `key` in the map and return the found CObject* (null if not).
@@ -176,6 +321,94 @@ i32 CDDrawSubMgrLeafScan::RemoveKeysEqual_157c70(const char* base, const char* s
         } while (pos != 0);
     }
     return n;
+}
+
+// ---------------------------------------------------------------------------
+// 0x157d70: the 0x1c-byte cache-element factory. While not loading (m_30==0),
+// allocate the element, stamp its vtable + seed it from the map count (m_10's
+// m_nCount at this+0x1c) and the handle (this+0x0c), then run its Configure keyed
+// by `arg2`. On Configure failure, destroy the element via its scalar dtor and
+// return 0; on success link it into the map under `key` and stamp the redraw arg
+// (this+0x34). 2 stack args (ret 8). Returns the element (or 0).
+// @early-stop
+// 99.81% — register-naming coin-flip: every code byte matches retail EXCEPT the
+// ecx<->edx assignment for the two seed reads (count<-this+0x1c, handle<-this+0x0c).
+// Retail pins count in ecx, handle in edx; MSVC5 here swaps them. Same values,
+// same stores, same order; not source-steerable (tried count-first / handle-first /
+// helper-extracted reads). docs/patterns/zero-register-pinning.md.
+RVA(0x00157d70, 0x90)
+LeafElementObj* CDDrawSubMgrLeafScan::CreateEntry_157d70(const char* key, void* arg2) {
+    if (m_30 != 0) {
+        return 0;
+    }
+    LeafElementObj* e = MakeLeafElement(this);
+    if (e == 0) {
+        return 0;
+    }
+    if (e->Configure_158760(arg2) == 0) {
+        e->ScalarDtor(1);
+        return 0;
+    }
+    m_10[key] = (CObject*)e;
+    e->m_18 = m_34; // +0x18 = redraw arg
+    return e;
+}
+
+// ---------------------------------------------------------------------------
+// 0x157ee0: recursive directory walker. While not loading (m_30==0), allocate a
+// 0x100-byte path buffer, then for each subdirectory of `tree` build the joined
+// path (sprintf "%s%s%s" of prefix/suffix/name when prefix is non-empty, else a
+// plain strcpy of the name) and recurse, summing the entry count. Then for each
+// file, for each 'WAV'-tagged entry not already cached, build its path and create
+// the cache element, counting successes. Frees the buffer and returns the count.
+// 3 stack args (ret 0xc).
+RVA(0x00157ee0, 0x1c6)
+i32 CDDrawSubMgrLeafScan::ScanTree_157ee0(DirNode* tree, const char* prefix, const char* suffix) {
+    if (m_30 != 0) {
+        return 0;
+    }
+    i32 count = 0;
+    char* buf = (char*)operator new(0x100);
+    if (buf == 0) {
+        return 0;
+    }
+    buf[0] = 0;
+    DirNode* node = tree->FirstSubdir();
+    while (node != 0) {
+        if (prefix != 0 && *prefix != 0) {
+            sprintf(buf, "%s%s%s", prefix, suffix, node->m_name);
+        } else {
+            strcpy(buf, node->m_name);
+        }
+        count += ScanTree_157ee0(node, buf, suffix);
+        node = tree->NextSubdir(node);
+    }
+    void* file = tree->FirstFile();
+    if (file != 0) {
+        do {
+            DirNode* fn = tree->FirstEntry(file);
+            while (fn != 0) {
+                if (fn->GetTag() == 0x574156) {
+                    if (prefix != 0 && *prefix != 0) {
+                        sprintf(buf, "%s%s%s", prefix, suffix, fn->m_name);
+                    } else {
+                        strcpy(buf, fn->m_name);
+                    }
+                    CObject* val = 0;
+                    m_10.Lookup(buf, val);
+                    if (val == 0) {
+                        if (CreateEntry_157d70(buf, fn) != 0) {
+                            ++count;
+                        }
+                    }
+                }
+                fn = tree->NextEntry(fn);
+            }
+            file = tree->NextFile(file);
+        } while (file != 0);
+    }
+    RezFree(buf);
+    return count;
 }
 
 // ---------------------------------------------------------------------------
