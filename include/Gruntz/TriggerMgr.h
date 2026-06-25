@@ -228,6 +228,12 @@ public:
     // (__stdcall: ret 0x10.)
     i32 SpawnGrunt(i32 col, i32 row, i32 a18, i32 a1c);
 
+    // 0x79d90: ResetSpawnState - when the active game state is live (gameReg->m_134==1)
+    // and this->m_284 is set, free the world status item's pending buffer (+0x54c),
+    // clear +0x548, drop the last entry of the +0x260 array, optionally re-fire the
+    // build-state notifier, re-pulse the pending-fx (+0x2a0), and RefreshB(6). (__thiscall.)
+    void ResetSpawnState();
+
     // 0x85c50: ~CTriggerMgr - the /GX destructor (drains the lists, destructs the member
     // list arrays). Reconstructed to plateau (eh sibling TU).
     ~CTriggerMgr();

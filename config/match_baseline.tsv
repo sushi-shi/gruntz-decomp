@@ -87,7 +87,7 @@ crt_strstreambuf	4	2
 csecretleveltrigger	4	3
 cserialsub34	1	0
 cseverusentrylist	2	1
-csimpleanimation	2	2
+csimpleanimation	4	3
 csingleanimation	1	1
 cstatichazard	2	2
 cstatusbarmgr	2	1
@@ -99,9 +99,9 @@ databuffer	7	5
 deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
-directsoundmgr	27	19
+directsoundmgr	33	23
 dsoundvoice	2	1
-engine_attributed	106	0
+engine_attributed	84	0
 engine_boundary	628	0
 engine_discovered	86	0
 engine_label_stubs	519	118
@@ -191,7 +191,7 @@ sbi_wellgoo_eh	1	0
 scattersamples	2	1
 shadetablecache	17	3
 siriusworkerhandlers	4	3
-sounddevice	9	4
+sounddevice	12	6
 soundstream	5	2
 soundvoicelist	4	3
 spriteloaders	9	4
@@ -214,10 +214,10 @@ tiletriggerlogic	2	1
 tiletriggertransition	5	4
 tilewireswitchlogic	1	0
 trees	17	17
-triggermgr	38	7
+triggermgr	42	7
 triggermgr_eh	4	0
 uncompr	1	1
-unknownclassarrays	33	8
+unknownclassarrays	38	10
 unknownsalazar	4	0
 userbaselink	7	0
 userlogic	47	17
@@ -229,7 +229,7 @@ winapicdrom	1	0
 winapimodule	1	0
 winmain	1	1
 worldsoundset	7	5
-wormhole	6	2
+wormhole	8	3
 wwdfile	10	1
 wwdgameobject	7	2
 wwdgrid	7	4
@@ -802,6 +802,8 @@ cseverusentrylist	??1CSeverusEntryList@@QAE@XZ	95.0000	95.0000	1	281e4331e73c	0x
 cseverusentrylist	?DeleteAll@CSeverusEntryList@@QAEXXZ	100.0000	100.0000	1	bb02994e8868	0x151eb0
 csimpleanimation	??1CSimpleAnimation@@UAE@XZ	100.0000	100.0000	1	90ed99282119	0xf9d0
 csimpleanimation	?AdvanceAnim@CSimpleAnimation@@QAEHXZ	100.0000	100.0000	1	2a87ef63c834	0xabf70
+csimpleanimation	?InitSimpleAnimDispatch@@YAXXZ	100.0000	100.0000	1	a84ef2c13047	0xabb90
+csimpleanimation	?RegisterSimpleAnimLogic@@YAXXZ	96.4783	96.4783	1	5c2fab4a8cdd	0xabd70
 csingleanimation	??1CSingleAnimation@@UAE@XZ	100.0000	100.0000	1	96128fb6792b	0x10540
 cstatichazard	??1CStaticHazard@@UAE@XZ	100.0000	100.0000	1	2c9522f3c281	0x12b30
 cstatichazard	?FireActivation@CStaticHazard@@QAEXH@Z	100.0000	100.0000	1	69cb76687143	0xfbbf0
@@ -874,6 +876,9 @@ directinputmgr2	?Teardown@CInputDevice@@QAEXXZ	100.0000	100.0000	2	f32e81f04bab	
 directinputmgr2	?Unacquire@CInputDevice@@QAEHXZ	100.0000	100.0000	3	76cbc70bdd81	0x134fe0
 directsoundmgr	??0DirectSoundMgr@@QAE@PAUIDirectSoundBufferZ@@PAV0@@Z	100.0000	100.0000	4	3d2da2b93896	0x1351d0
 directsoundmgr	??1DirectSoundMgr@@QAE@XZ	54.4483	54.4483	2	dc5874689677	0x135bb0
+directsoundmgr	?ApplyAndPlay@DirectSoundMgr@@QAEHHHHH@Z	100.0000	100.0000	1	a827ca1814ea	0x136300
+directsoundmgr	?BaseDtor@DirectSoundMgr@@QAEXXZ	100.0000	100.0000	1	220c935476fd	0x136260
+directsoundmgr	?Clone@DirectSoundMgr@@QAEPAV1@H@Z	71.7294	71.7294	1	30a580b810a9	0x135c20
 directsoundmgr	?CloneAndPlay@DirectSoundMgr@@QAEHHHH@Z	99.9872	99.9872	2	67c972e8ad3c	0x135660
 directsoundmgr	?Create@DirectSoundMgr@@QAEHPAXII@Z	100.0000	100.0000	2	e2f738b26faa	0x136550
 directsoundmgr	?CreatePrimaryBuffer@DirectSoundMgr@@QAEHXZ	98.7755	98.7755	4	cfc2cf3f0142	0x137260
@@ -887,7 +892,10 @@ directsoundmgr	?IsLooping@DirectSoundMgr@@QAEHXZ	99.8529	99.8529	4	4f34a91fa01d	
 directsoundmgr	?IsPlaying@DirectSoundMgr@@QAEHXZ	99.8529	99.8529	4	993b4d422d51	0x1353f0
 directsoundmgr	?Lock@DirectSoundMgr@@QAEHIIPAPAXPAI01I@Z	67.6556	67.6556	2	653e44a391b9	0x136370
 directsoundmgr	?LockConvert@DirectSoundMgr@@QAEHPAXII@Z	100.0000	100.0000	3	1195b8fc939d	0x135f40
+directsoundmgr	?ReacquireBuffer@DirectSoundMgr@@QAEHXZ	99.6154	99.6154	1	6438d81d3aff	0x135340
+directsoundmgr	?ReacquireViaCallback@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	1	38853f33f3fc	0x1365e0
 directsoundmgr	?RemoveClone@DirectSoundMgr@@QAEXPAV1@@Z	100.0000	100.0000	2	7875878133be	0x135d20
+directsoundmgr	?RestampBufferVtbl@DirectSoundMgr@@QAEXXZ	100.0000	100.0000	1	aa6cff1de3fb	0x135300
 directsoundmgr	?Restore@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	4	2d71bdf5406d	0x135310
 directsoundmgr	?SetCooperativeLevel@DirectSoundMgr@@QAEHPAXI@Z	100.0000	100.0000	2	d8ac0ca008f6	0x1365f0
 directsoundmgr	?SetCurrentPosition@DirectSoundMgr@@QAEHI@Z	100.0000	100.0000	2	45b5a2f7e845	0x135a70
@@ -957,50 +965,28 @@ engine_attributed	?CSBI_RectOnly_109520@CSBI_RectOnly@@QAEXXZ	0.0946	0.0946	1	bf
 engine_attributed	?CSaveGame_0e52c0@CSaveGame@@QAEXXZ	0.6780	0.6780	1	5a2e30c69cc1	0xe52c0
 engine_attributed	?CSecretTeleporterTrigger_0420d0@CSecretTeleporterTrigger@@QAEXXZ	20.0000	20.0000	1	d3be2e64873b	0x420d0
 engine_attributed	?CShadeTableCache_14df40@CShadeTableCache@@QAEXXZ	0.0797	0.0797	1	e1665bd8bf80	0x14df40
-engine_attributed	?CSimpleAnimation_0abb90@CSimpleAnimation@@QAEXXZ	20.0000	20.0000	1	1ed76df835f6	0xabb90
-engine_attributed	?CSimpleAnimation_0abd70@CSimpleAnimation@@QAEXXZ	0.8696	0.8696	1	1469b35aaf20	0xabd70
 engine_attributed	?CSymTab_13bca0@CSymTab@@QAEXXZ	0.2367	0.2367	1	5ed20d5d994f	0x13bca0
 engine_attributed	?CTileTriggerSwitchLogic_117e70@CTileTriggerSwitchLogic@@QAEXXZ	1.8182	1.8182	1	d5a5a33a4e14	0x117e70
 engine_attributed	?CTileTriggerTransition_10fc90@CTileTriggerTransition@@QAEXXZ	20.0000	20.0000	1	22b7c0b44bbb	0x10fc90
 engine_attributed	?CTileTriggerTransition_10fe70@CTileTriggerTransition@@QAEXXZ	0.8696	0.8696	1	c029553c4df8	0x10fe70
 engine_attributed	?CTimer_09c090@CTimer@@QAEXXZ	2.3529	2.3529	1	e69f7f6cdbd9	0x9c090
 engine_attributed	?CToobSpikez_1147e0@CToobSpikez@@QAEXXZ	20.0000	20.0000	1	938196448f24	0x1147e0
-engine_attributed	?CTriggerMgr_06da60@CTriggerMgr@@QAEXXZ	2.8571	2.8571	1	c778c9fbd2be	0x6da60
-engine_attributed	?CTriggerMgr_06daa0@CTriggerMgr@@QAEXXZ	2.8571	2.8571	1	bfd0cc085f72	0x6daa0
-engine_attributed	?CTriggerMgr_079d90@CTriggerMgr@@QAEXXZ	1.9231	1.9231	1	d340e84d1db4	0x79d90
-engine_attributed	?CTriggerMgr_079ea0@CTriggerMgr@@QAEXXZ	0.5405	0.5405	1	59dd0d6d4754	0x79ea0
 engine_attributed	?CTriggerMgr_07abc0@CTriggerMgr@@QAEXXZ	0.0948	0.0948	1	d276c5e72e8b	0x7abc0
 engine_attributed	?CUserLogic_0646b0@CUserLogic@@QAEXXZ	0.0483	0.0483	1	71a1d4406b96	0x646b0
 engine_attributed	?CWarlord_0447a0@CWarlord@@QAEXXZ	0.4115	0.4115	1	73dc68c6637f	0x447a0
-engine_attributed	?CWormhole_03ffd0@CWormhole@@QAEXXZ	20.0000	20.0000	1	9aab331597c6	0x3ffd0
-engine_attributed	?CWormhole_0401b0@CWormhole@@QAEXXZ	0.8696	0.8696	1	4a609e90b646	0x401b0
 engine_attributed	?CWwdGameObject_150c30@CWwdGameObject@@QAEXXZ	0.3846	0.3846	1	8d6bbde6ae73	0x150c30
 engine_attributed	?CWwdGameObject_151780@CWwdGameObject@@QAEXXZ	0.1003	0.1003	1	39ddec5e2e51	0x151780
 engine_attributed	?CWwdObjMgr_15ab30@CWwdObjMgr@@QAEXXZ	2.1053	2.1053	1	f72989a91f06	0x15ab30
 engine_attributed	?CWwdObjMgr_15ad30@CWwdObjMgr@@QAEXXZ	0.1802	0.1802	1	71b3ebff6e40	0x15ad30
 engine_attributed	?CWwdObjMgr_15b0e0@CWwdObjMgr@@QAEXXZ	0.4255	0.4255	1	eaa6159c57c6	0x15b0e0
 engine_attributed	?DirectInputMgr2_132ee0@DirectInputMgr2@@QAEXXZ	0.7547	0.7547	1	f6306326932d	0x132ee0
-engine_attributed	?DirectSoundMgr_135300@DirectSoundMgr@@QAEXXZ	50.0000	50.0000	1	35b802d5fe1b	0x135300
-engine_attributed	?DirectSoundMgr_135340@DirectSoundMgr@@QAEXXZ	3.8462	3.8462	1	2d98726d3c98	0x135340
-engine_attributed	?DirectSoundMgr_135c20@DirectSoundMgr@@QAEXXZ	0.4706	0.4706	1	e1b8f51564db	0x135c20
-engine_attributed	?DirectSoundMgr_136260@DirectSoundMgr@@QAEXXZ	20.0000	20.0000	1	a2ac7cd75abf	0x136260
-engine_attributed	?DirectSoundMgr_136300@DirectSoundMgr@@QAEXXZ	0.8889	0.8889	1	c88e9c079e4b	0x136300
-engine_attributed	?DirectSoundMgr_1365e0@DirectSoundMgr@@QAEXXZ	16.6667	16.6667	1	8c5f55c55e33	0x1365e0
 engine_attributed	?FontRenderer_17b120@FontRenderer@@QAEXXZ	0.1347	0.1347	1	7d8f493ad072	0x17b120
 engine_attributed	?Font_1799f0@Font@@QAEXXZ	0.3922	0.3922	1	903716e40080	0x1799f0
 engine_attributed	?GruntzPlayer_0da9e0@GruntzPlayer@@QAEXXZ	4.1667	4.1667	1	a6a92ab62d6e	0xda9e0
 engine_attributed	?LeafElementObj_1586e0@LeafElementObj@@QAEXXZ	1.9048	1.9048	1	d2d5a4cbcbc3	0x1586e0
 engine_attributed	?LeafElementObj_158720@LeafElementObj@@QAEXXZ	1.9048	1.9048	1	5718750cbdfd	0x158720
-engine_attributed	?SoundDevice_136860@SoundDevice@@QAEXXZ	0.5333	0.5333	1	9e9b0baf2b2c	0x136860
-engine_attributed	?SoundDevice_136ab0@SoundDevice@@QAEXXZ	1.6667	1.6667	1	0c2e63b7aebc	0x136ab0
-engine_attributed	?SoundDevice_136bd0@SoundDevice@@QAEXXZ	0.3670	0.3670	1	de7a83a67326	0x136bd0
-engine_attributed	?UnknownClassArrays_02ad40@UnknownClassArrays@@QAEXXZ	0.8333	0.8333	1	6bb7c4f0bb7b	0x2ad40
 engine_attributed	?UnknownClassArrays_02b950@UnknownClassArrays@@QAEXXZ	0.0787	0.0787	1	a9440a18a33f	0x2b950
-engine_attributed	?UnknownClassArrays_02c080@UnknownClassArrays@@QAEXXZ	20.0000	20.0000	1	3a4aafd8c3bb	0x2c080
 engine_attributed	?UnknownClassArrays_0302c0@UnknownClassArrays@@QAEXXZ	0.2581	0.2581	1	66195374326c	0x302c0
-engine_attributed	?UnknownClassArrays_0343f0@UnknownClassArrays@@QAEXXZ	4.3478	4.3478	1	36db0f6ac3b5	0x343f0
-engine_attributed	?UnknownClassArrays_034960@UnknownClassArrays@@QAEXXZ	3.0769	3.0769	1	8a88c8339a5d	0x34960
-engine_attributed	?UnknownClassArrays_034c70@UnknownClassArrays@@QAEXXZ	0.4444	0.4444	1	54d3bbcf93c3	0x34c70
 engine_attributed	?istream_16a490@istream@@QAEXXZ	0.8889	0.8889	1	2c8e82552aac	0x16a490
 engine_attributed	?streambuf_16b340@streambuf@@QAEXXZ	6.2500	6.2500	1	831f553e8195	0x16b340
 engine_attributed	?streambuf_16b360@streambuf@@QAEXXZ	5.2632	5.2632	1	57ad3a6f9b4b	0x16b360
@@ -3120,12 +3106,15 @@ siriusworkerhandlers	?Handler07db20@@YAHPAUOwner@@@Z	100.0000	100.0000	1	b23002a
 siriusworkerhandlers	?Handler07dda0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	27f15168f4f5	0x7dda0
 sounddevice	??1SoundDevice@@QAE@XZ	28.2353	28.2353	1	980bcd8696e1	0x136500
 sounddevice	?Acquire@SoundDevice@@QAEPAVDirectSoundMgr@@PAXII@Z	99.7685	99.7685	1	efa149c49cbf	0x136910
+sounddevice	?AcquireFile@SoundDevice@@QAEPAVDirectSoundMgr@@PADII@Z	100.0000	100.0000	1	4fdc15895e38	0x136860
 sounddevice	?CreateBuffer@SoundDevice@@QAEPAVDirectSoundMgr@@PAUWaveFormatX@@II@Z	45.2437	45.2437	1	6f1c9d1c5aa0	0x1366f0
 sounddevice	?FreeSamples@SoundDevice@@QAEHXZ	77.4074	77.4074	2	252e2641aed3	0x136ed0
+sounddevice	?ReloadRiff@SoundDevice@@QAEHPAVDirectSoundMgr@@PAXI@Z	93.1376	93.1376	1	e7242d225e0d	0x136bd0
 sounddevice	?RemoveBuffer@SoundDevice@@QAEXPAUSoundBuf@@@Z	100.0000	100.0000	1	adf3276a17a2	0x136d80
 sounddevice	?SetPrimaryFormat@SoundDevice@@QAEHPAX@Z	100.0000	100.0000	2	a820b59fa0c9	0x1371a0
 sounddevice	?Shutdown@SoundDevice@@QAEXXZ	100.0000	100.0000	1	fb1766cf3e8b	0x136690
 sounddevice	?StopAll@SoundDevice@@QAEXXZ	100.0000	100.0000	1	1bf09dff5de0	0x136de0
+sounddevice	?ValidateRestore@SoundDevice@@QAEHPAVDirectSoundMgr@@PAUWaveFormatX@@I@Z	100.0000	100.0000	1	dc530d81dffa	0x136ab0
 sounddevice	_ParseWaveChunks	98.2281	98.2281	1	55419d1096d0	0x137110
 soundstream	??1SoundStream@@QAE@XZ	100.0000	100.0000	1	611af7941630	0x137710
 soundstream	?CreateStreamBuffer@SoundStream@@QAEPAUStreamVoice@@PAUWaveFormatX@@IHHH@Z	47.0744	47.0744	3	4d0bdcd49e08	0x137780
@@ -3284,6 +3273,8 @@ triggermgr	?ClearRow@CTriggerMgr@@QAEHH@Z	100.0000	100.0000	3	eb16fe8ac3c9	0x7d1
 triggermgr	?ClearRowAndRefresh@CTriggerMgr@@QAEHH@Z	72.0727	72.0727	1	08116ddf5f53	0x7a510
 triggermgr	?ClearSelections@CTriggerMgr@@QAEXXZ	99.8387	99.8387	2	a0b3e8e75bb5	0x7d0c0
 triggermgr	?DestroyAllAnims@CTriggerMgr@@QAEXXZ	96.5000	96.5000	1	2ced2820e161	0x7d330
+triggermgr	?GridAction6@@YAHHH@Z	95.7143	95.7143	1	b86ea5da9bfd	0x6da60
+triggermgr	?GridAction7@@YAHHH@Z	95.7143	95.7143	1	2f3343dbfede	0x6daa0
 triggermgr	?HitTestApply@CTriggerMgr@@QAEHHHH@Z	53.0980	53.0980	2	097db8949544	0x6ea00
 triggermgr	?HitTestCell@CTriggerMgr@@QAEHHHPAH0H@Z	38.6040	38.6040	1	4c34f8594aba	0x75af0
 triggermgr	?NearestCellDist@CTriggerMgr@@QAEHHHH@Z	77.1667	77.1667	1	c3b8b0e26e2d	0x7d1d0
@@ -3301,12 +3292,14 @@ triggermgr	?ReportRecordsB@CTriggerMgr@@QAEXHHHHHH@Z	55.8062	55.8062	1	f1a388014
 triggermgr	?ResetAll@CTriggerMgr@@QAEXXZ	99.3902	99.3902	2	89c8046c20d8	0x78430
 triggermgr	?ResetCell@CTriggerMgr@@QAEHHHHH@Z	62.0690	62.0690	1	f10466e7eb7c	0x6bfd0
 triggermgr	?ResetGroup@CTriggerMgr@@QAEHHHHHHHH@Z	45.1107	45.1107	2	ea9ea3c75d34	0x79520
+triggermgr	?ResetSpawnState@CTriggerMgr@@QAEXXZ	97.7885	97.7885	1	243dcaad914e	0x79d90
 triggermgr	?ScanGroup@CTriggerMgr@@QAEHH@Z	58.5688	58.5688	1	469c316badfd	0x7a760
 triggermgr	?ScreenToCell@CTriggerMgr@@QAEPAXHHPAH0H@Z	74.2143	74.2143	1	0b9dff2ba9ef	0x6be30
 triggermgr	?SelectionListFind@CTriggerMgr@@QAEHHH@Z	84.5833	84.5833	3	5b0c7da2e453	0x7d2a0
 triggermgr	?SetLevel@CTriggerMgr@@QAEHPAX@Z	89.8333	89.8333	3	8b076d5434a0	0x6b640
 triggermgr	?SpawnGrunt@CTriggerMgr@@QAEHHHHH@Z	70.2188	70.2188	1	72ca5ae3f07a	0x7c110
 triggermgr	?SpawnPuddle@CTriggerMgr@@QAEHHHHHHH@Z	100.0000	100.0000	1	ea9e49bf16e2	0x7a180
+triggermgr	?SpawnTileFx@@YAHHHH@Z	78.5270	78.5270	1	99063f46879a	0x79ea0
 triggermgr	?StopPendingFx@CTriggerMgr@@QAEXXZ	100.0000	100.0000	3	1ccff5fe0d81	0x7be10
 triggermgr	?TriggerCell@CTriggerMgr@@QAEHHH@Z	74.5392	74.5392	1	a33cfde4df87	0x7b1b0
 triggermgr_eh	??1CTriggerMgr@@QAE@XZ	46.0625	46.0625	1	acd16ffe98a8	0x85c50
@@ -3322,7 +3315,9 @@ unknownclassarrays	?Method_025c20@UnknownClassArrays@@QAEHXZ	100.0000	100.0000	3
 unknownclassarrays	?Method_025d90@UnknownClassArrays@@QAEHXZ	75.6087	75.6087	2	d8ff2c56564a	0x25d90
 unknownclassarrays	?Method_026470@UnknownClassArrays@@QAEHH@Z	83.1071	83.1071	2	c93b8db81e03	0x26470
 unknownclassarrays	?Method_029b40@UnknownClassArrays@@QAEHH@Z	24.7804	24.7804	3	1e5695e1439c	0x29b40
+unknownclassarrays	?Method_02ad40@UnknownClassArrays@@QAEPAXH@Z	58.8333	58.8333	1	a6747847acb3	0x2ad40
 unknownclassarrays	?Method_02bfc0@UnknownClassArrays@@QAEHHPAXHH@Z	80.7188	80.7188	3	1d37b002a3ec	0x2bfc0
+unknownclassarrays	?Method_02c080@UnknownClassArrays@@QAEHH@Z	100.0000	100.0000	1	3d6b859a301c	0x2c080
 unknownclassarrays	?Method_02c0a0@UnknownClassArrays@@QAEHHH@Z	100.0000	100.0000	3	c59928dcae02	0x2c0a0
 unknownclassarrays	?Method_02d800@UnknownClassArrays@@QAEHHHHH@Z	20.0022	20.0022	3	fd9bac4db9f7	0x2d800
 unknownclassarrays	?Method_02ed90@UnknownClassArrays@@QAEHH@Z	100.0000	100.0000	2	823ca86ef3a1	0x2ed90
@@ -3336,7 +3331,10 @@ unknownclassarrays	?Method_030990@UnknownClassArrays@@QAEHHH@Z	94.5714	94.5714	1
 unknownclassarrays	?Method_030b20@UnknownClassArrays@@QAEHHHH@Z	69.2299	69.2299	3	5660013556cd	0x30b20
 unknownclassarrays	?Method_030f20@UnknownClassArrays@@QAEPAXPAXHH@Z	58.3333	58.3333	2	11302799f028	0x30f20
 unknownclassarrays	?Method_034460@UnknownClassArrays@@QAEHH@Z	80.6851	80.6851	2	9fe11845bca1	0x34460
+unknownclassarrays	?Method_034960@UnknownClassArrays@@QAEXHH@Z	100.0000	100.0000	1	6c8a73b8df1b	0x34960
+unknownclassarrays	?Method_034c70@UnknownClassArrays@@QAEHH@Z	48.9556	48.9556	1	9f492698ed18	0x34c70
 unknownclassarrays	?Method_0350d0@UnknownClassArrays@@QAEHH@Z	72.3595	72.3595	1	adca17c295aa	0x350d0
+unknownclassarrays	?RecycleCoords@GridUnit@@QAEXXZ	99.7826	99.7826	1	8aaa33538ddd	0x343f0
 unknownclassarrays	?Serialize_02b420@UnknownClassArrays@@QAEHPAX@Z	100.0000	100.0000	2	7b63ca13d3d0	0x2b420
 unknownclassarrays	?winapi_0267c0_IntersectRect_PtInRect@UnknownClassArrays@@QAEHXZ	0.0596	0.0596	2	380a71b8d73d	0x267c0
 unknownclassarrays	?winapi_02a570_IntersectRect@UnknownClassArrays@@QAEHH@Z	0.5195	0.5195	2	a9181a69c11a	0x2a570
@@ -3429,7 +3427,9 @@ worldsoundset	?Retune@CWorldSoundSet@@QAEXHH@Z	86.2571	86.2571	1	a8ba0daa5bc0	0x
 worldsoundset	?Stop@CWorldSoundSet@@QAEXXZ	100.0000	100.0000	1	909b0518053a	0xbc80
 worldsoundset	?Teardown@CWorldSoundSet@@QAEXXZ	100.0000	100.0000	1	587b40d75372	0xb660
 wormhole	??1CWormhole@@UAE@XZ	100.0000	100.0000	1	0bc584d4a684	0x10980
+wormhole	?InitWormholeDispatch@@YAXXZ	100.0000	100.0000	1	b32c3c59c233	0x3ffd0
 wormhole	?LoadColors@CWormhole@@QAEXXZ	100.0000	100.0000	8	44774ed3d148	0x411f0
+wormhole	?RegisterWormholeLogic@@YAXXZ	96.4783	96.4783	1	81619d8095cc	0x401b0
 wormhole	?SpawnPartners@CWormhole@@QAEXXZ	93.1500	93.1500	1	9bbbe8484d92	0x403b0
 wormhole	?Stub_03fc70@CWormhole@@QAEXXZ	0.3333	0.3333	4	b52ffef5d830	0x3fc70
 wormhole	?Stub_03fed0@CWormhole@@QAEXXZ	0.6349	0.6349	4	77e92219c343	0x3fed0

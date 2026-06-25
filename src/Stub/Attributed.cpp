@@ -125,10 +125,6 @@ RVA(0x000420d0, 0x15) void CSecretTeleporterTrigger::CSecretTeleporterTrigger_04
 // ---- CShadeTableCache ----
 RVA(0x0014df40, 0x5f4) void CShadeTableCache::CShadeTableCache_14df40() {}  // high
 
-// ---- CSimpleAnimation ----
-RVA(0x000abb90, 0x15) void CSimpleAnimation::CSimpleAnimation_0abb90() {}  // med
-RVA(0x000abd70, 0x18d) void CSimpleAnimation::CSimpleAnimation_0abd70() {}  // med
-
 // ---- CSymTab ----
 RVA(0x0013bca0, 0x19c) void CSymTab::CSymTab_13bca0() {}  // med
 
@@ -146,10 +142,6 @@ RVA(0x0009c090, 0x37) void CTimer::CTimer_09c090() {}  // high
 RVA(0x001147e0, 0x15) void CToobSpikez::CToobSpikez_1147e0() {}  // med
 
 // ---- CTriggerMgr ----
-RVA(0x0006da60, 0x27) void CTriggerMgr::CTriggerMgr_06da60() {}  // high
-RVA(0x0006daa0, 0x27) void CTriggerMgr::CTriggerMgr_06daa0() {}  // high
-RVA(0x00079d90, 0xc5) void CTriggerMgr::CTriggerMgr_079d90() {}  // high
-RVA(0x00079ea0, 0xc2) void CTriggerMgr::CTriggerMgr_079ea0() {}  // high
 RVA(0x0007abc0, 0x4b6) void CTriggerMgr::CTriggerMgr_07abc0() {}  // high
 
 // ---- CUserLogic ----
@@ -157,10 +149,6 @@ RVA(0x000646b0, 0x9c8) void CUserLogic::CUserLogic_0646b0() {}  // med
 
 // ---- CWarlord ----
 RVA(0x000447a0, 0x333) void CWarlord::CWarlord_0447a0() {}  // med
-
-// ---- CWormhole ----
-RVA(0x0003ffd0, 0x15) void CWormhole::CWormhole_03ffd0() {}  // med
-RVA(0x000401b0, 0x18d) void CWormhole::CWormhole_0401b0() {}  // med
 
 // ---- CWwdGameObject ----
 RVA(0x00150c30, 0x130) void CWwdGameObject::CWwdGameObject_150c30() {}  // med
@@ -173,14 +161,6 @@ RVA(0x0015b0e0, 0xec) void CWwdObjMgr::CWwdObjMgr_15b0e0() {}  // high
 
 // ---- DirectInputMgr2 ----
 RVA(0x00132ee0, 0x9a) void DirectInputMgr2::DirectInputMgr2_132ee0() {}  // high
-
-// ---- DirectSoundMgr ----
-RVA(0x00135300, 0x7) void DirectSoundMgr::DirectSoundMgr_135300() {}  // high
-RVA(0x00135340, 0x37) void DirectSoundMgr::DirectSoundMgr_135340() {}  // high
-RVA(0x00135c20, 0xf6) void DirectSoundMgr::DirectSoundMgr_135c20() {}  // high
-RVA(0x00136260, 0xb) void DirectSoundMgr::DirectSoundMgr_136260() {}  // med
-RVA(0x00136300, 0x6f) void DirectSoundMgr::DirectSoundMgr_136300() {}  // med
-RVA(0x001365e0, 0xf) void DirectSoundMgr::DirectSoundMgr_1365e0() {}  // med
 
 // ---- Font ----
 RVA(0x001799f0, 0x16d) void Font::Font_1799f0() {}  // high
@@ -195,19 +175,9 @@ RVA(0x000da9e0, 0x60) void GruntzPlayer::GruntzPlayer_0da9e0() {}  // med
 RVA(0x001586e0, 0x34) void LeafElementObj::LeafElementObj_1586e0() {}  // med
 RVA(0x00158720, 0x34) void LeafElementObj::LeafElementObj_158720() {}  // med
 
-// ---- SoundDevice ----
-RVA(0x00136860, 0xa9) void SoundDevice::SoundDevice_136860() {}  // high
-RVA(0x00136ab0, 0x41) void SoundDevice::SoundDevice_136ab0() {}  // high
-RVA(0x00136bd0, 0x110) void SoundDevice::SoundDevice_136bd0() {}  // high
-
 // ---- UnknownClassArrays ----
-RVA(0x0002ad40, 0x71) void UnknownClassArrays::UnknownClassArrays_02ad40() {}  // high
 RVA(0x0002b950, 0x513) void UnknownClassArrays::UnknownClassArrays_02b950() {}  // high
-RVA(0x0002c080, 0x8) void UnknownClassArrays::UnknownClassArrays_02c080() {}  // high
 RVA(0x000302c0, 0x1ec) void UnknownClassArrays::UnknownClassArrays_0302c0() {}  // high
-RVA(0x000343f0, 0x47) void UnknownClassArrays::UnknownClassArrays_0343f0() {}  // med
-RVA(0x00034960, 0x24) void UnknownClassArrays::UnknownClassArrays_034960() {}  // high
-RVA(0x00034c70, 0x133) void UnknownClassArrays::UnknownClassArrays_034c70() {}  // high
 
 // ---- istream ----
 RVA(0x0016a490, 0x7a) void istream::istream_16a490() {}  // med

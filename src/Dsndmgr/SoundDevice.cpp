@@ -210,6 +210,46 @@ DirectSoundMgr* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flags
     return (DirectSoundMgr*)voice;
 }
 
+// The CRT file helpers AcquireFile drives: fopen (0x11f870, returns a FILE*),
+// a file-size query (0x18c480, reads the FILE*'s +0x10 fd), fread (RezFRead,
+// 0x18c220) and fclose (RezFClose, 0x11f780, from <Rez/RezMgr.h>). The whole-file
+// buffer is allocated/freed through the global operator new/delete.
+extern "C" void* Eng_fopen(const char* path, const char* mode); // 0x11f870
+extern "C" u32 Eng_filelength(i32 fd);                          // 0x18c480
+void* operator new(u32);                                        // 0x1b9b46
+void operator delete(void*);                                    // 0x1b9b82
+
+// The "rb" open mode string the loader passes fopen (.data constant @ 0x60b668).
+DATA(0x0020b668)
+extern const char s_rb[];
+
+// ---------------------------------------------------------------------------
+// SoundDevice::AcquireFile (0x136860, __thiscall, ret 0xc => 3 args). Gated on
+// init. fopen the path "rb", read the whole file into a freshly-new'd buffer (its
+// length from the FILE* fd), Acquire that RIFF blob, then free the buffer and close
+// the file. Returns the acquired buffer wrapper (0 on any I/O failure).
+RVA(0x00136860, 0xa9)
+DirectSoundMgr* SoundDevice::AcquireFile(char* path, u32 a2, u32 a3) {
+    if (m_78 == 0) {
+        return 0;
+    }
+    void* fp = Eng_fopen(path, s_rb);
+    if (fp == 0) {
+        return 0;
+    }
+    u32 size = Eng_filelength(*(i32*)((char*)fp + 0x10));
+    void* buf = operator new(size);
+    if (RezFRead(buf, size, 1, fp) != 1) {
+        RezFClose(fp);
+        operator delete(buf);
+        return 0;
+    }
+    RezFClose(fp);
+    DirectSoundMgr* wrapper = Acquire(buf, a2, a3);
+    operator delete(buf);
+    return wrapper;
+}
+
 // ---------------------------------------------------------------------------
 // SoundDevice::Acquire (0x136910, __thiscall). Parse a RIFF/WAVE blob for its PCM
 // fmt + data extents, optionally downconvert a 16-bit PCM format to 8-bit (when
@@ -266,6 +306,82 @@ DirectSoundMgr* SoundDevice::Acquire(void* riff, u32, u32) {
         return 0;
     }
     return wrapper;
+}
+
+// ---------------------------------------------------------------------------
+// SoundDevice::ValidateRestore (0x136ab0, __thiscall, ret 0xc => 3 args). Gated on
+// init. Validate the size + fmt (non-null) and the PCM format tag (wFormatTag==1),
+// then Restore the buffer and return its normalized 0/1 success.
+RVA(0x00136ab0, 0x41)
+i32 SoundDevice::ValidateRestore(DirectSoundMgr* buf, WaveFormatX* fmt, u32 size) {
+    if (m_78 == 0) {
+        return 0;
+    }
+    if (size == 0) {
+        return 0;
+    }
+    if (fmt == 0) {
+        return 0;
+    }
+    if (fmt->wFormatTag != 1) {
+        return 0;
+    }
+    return buf->Restore() != 0;
+}
+
+// ---------------------------------------------------------------------------
+// SoundDevice::ReloadRiff (0x136bd0, __thiscall, ret 0xc => 3 args). Re-load a RIFF
+// blob into an EXISTING buffer wrapper (the Acquire sibling that reuses a buffer
+// instead of creating one): gate on init + a non-null RIFF, only proceed when the
+// buffer is currently looping, parse the chunks, optionally downconvert a 16-bit
+// PCM format to 8-bit (forced by m_90 or the parse flag), validate+Restore the
+// buffer, then LockConvert the PCM data into it. Returns the LockConvert success.
+// @early-stop
+// frame-homing-area-reuse wall (docs/patterns/stack-buffer-size-drives-frame.md):
+// same family as the sibling Acquire (0x136910, 99.8%) - the body is complete and
+// the parse/downconvert/validate/lock shape matches, but MSVC5 gives the ParseFmt
+// out-struct fresh stack while retail overlays it onto the dead param-homing slots,
+// shifting the [esp+N] operands. Not source-steerable; deferred to the final sweep.
+RVA(0x00136bd0, 0x110)
+i32 SoundDevice::ReloadRiff(DirectSoundMgr* buf, void* riff, u32 a3) {
+    if (m_78 == 0) {
+        return 0;
+    }
+    if (riff == 0) {
+        return 0;
+    }
+    if (buf->IsLooping() == 0) {
+        return 1;
+    }
+
+    ParseFmt po;
+    void* data;
+    u32 size;
+    po.m_10 = 0;
+    po.m_flag = 0;
+    po.m_04 = 0;
+    if (ParseWaveChunks(riff, &po, &data, &size) == 0) {
+        return 0;
+    }
+
+    i32 cvt = 0;
+    if (m_90 != 0 || (po.m_flag & 1) == 1) {
+        cvt = 1;
+    }
+    if (po.m_fmt->wBitsPerSample != 0x10 || po.m_fmt->wFormatTag != 1) {
+        cvt = 0;
+    }
+    if (cvt) {
+        size >>= 1;
+        po.m_fmt->wBitsPerSample = 8;
+        po.m_fmt->nAvgBytesPerSec >>= 1;
+        po.m_fmt->nBlockAlign >>= 1;
+    }
+
+    if (ValidateRestore(buf, po.m_fmt, size) == 0) {
+        return 0;
+    }
+    return buf->LockConvert(data, size, cvt) != 0;
 }
 
 // ---------------------------------------------------------------------------

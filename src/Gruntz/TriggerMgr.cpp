@@ -1843,3 +1843,137 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
     }
     cell->m_36c = 1;
 }
+
+// ===========================================================================
+// The two tiny grid-action wrappers (0x6da60 / 0x6daa0) + the tile-fx spawner
+// (0x79ea0), proximity-attributed to CTriggerMgr but really FREE __stdcall thunks
+// (no `this`): each drives the game registry's spawn/fx sub-managers.
+// ===========================================================================
+
+// The spawn sub-manager at gameReg+0x6c: its 8-arg __thiscall action method
+// (0x23c30, thunk 0x2095). Modeled no-body so the call reloc-masks.
+struct CTmSpawnSub {
+    i32 Action(i32 one, i32 a, i32 b, i32 kind, i32 c, i32 d, i32 e, i32 f); // 0x23c30
+};
+// The world fx-spawner (0x7c620, thunk 0x152d): a __stdcall sprite spawner.
+extern void __stdcall Eng_SpawnFx(i32 type, i32 x, i32 y, i32 a3, i32 a4, i32 a5); // 0x7c620
+
+// The tile occupancy grid reached as gameReg->m_70 (rows table @+0x8, w@+0xc,
+// h@+0x10; each cell 0x1c bytes = 7 dwords).
+struct CTmTileGrid {
+    char p0[0x8];
+    i32** m_8; // +0x08  row-pointer table
+    i32 m_c;   // +0x0c  width
+    i32 m_10;  // +0x10  height
+};
+// The world record reached as gameReg->m_2c: its +0x384 holds 4 {x,y} fx anchors.
+struct CTmFxWorld {
+    char p0[0x384];
+    struct Anchor {
+        i32 m_x;
+        i32 m_y;
+    } m_anchors[4]; // +0x384  (stride 8)
+};
+
+// 0x6da60: GridAction6(a, b) - dispatch the spawn sub-mgr's action with kind 6.
+RVA(0x0006da60, 0x27)
+i32 GridAction6(i32 a, i32 b) {
+    return ((CTmSpawnSub*)(*(void**)((char*)g_gameReg + 0x6c)))->Action(1, a, b, 6, 0, 0, 0, 0);
+}
+
+// 0x6daa0: GridAction7(a, b) - dispatch the spawn sub-mgr's action with kind 7.
+RVA(0x0006daa0, 0x27)
+i32 GridAction7(i32 a, i32 b) {
+    return ((CTmSpawnSub*)(*(void**)((char*)g_gameReg + 0x6c)))->Action(1, a, b, 7, 0, 0, 0, 0);
+}
+
+// 0x79ea0: SpawnTileFx(x, y, a3) - only when the active state is live
+// (gameReg->m_134==1): read the tile at (x>>5, y>>5); if it carries neither the
+// 0x40939 mask nor bit 0x2, spawn a type-0x14 fx centered on the tile. Otherwise
+// (the bit path) map (a3-1) into the world's 4 fx anchors and spawn there. ret 1.
+RVA(0x00079ea0, 0xc2)
+i32 SpawnTileFx(i32 x, i32 y, i32 a3) {
+    if (*(i32*)((char*)g_gameReg + 0x134) != 1) {
+        return 0;
+    }
+    CTmTileGrid* grid = *(CTmTileGrid**)((char*)g_gameReg + 0x70);
+    i32 tx = x >> 5;
+    i32 ty = y >> 5;
+    i32 tile;
+    if ((u32)tx >= (u32)grid->m_c || (u32)ty >= (u32)grid->m_10) {
+        tile = 1;
+    } else {
+        tile = grid->m_8[ty][tx * 8 - tx];
+    }
+    if ((tile & 0x40939) == 0 && (tile & 2) == 0) {
+        Eng_SpawnFx(0x14, (tx << 5) + 0x10, (ty << 5) + 0x10, 0, a3, 0);
+        return 1;
+    }
+    CTmFxWorld* world = *(CTmFxWorld**)((char*)g_gameReg + 0x2c);
+    i32 idx = a3 - 1;
+    CTmFxWorld::Anchor* rec = ((u32)idx < 4) ? &world->m_anchors[idx] : 0;
+    if (rec != 0) {
+        Eng_SpawnFx(0x14, rec->m_x, rec->m_y, 0, a3, 0);
+    }
+    return 1;
+}
+
+// ===========================================================================
+// CTriggerMgr::ResetSpawnState  (0x79d90)
+// ===========================================================================
+
+// The world status-item the reset path frees a buffer on (world->m_2dc).
+struct CTmStatusBuf {
+    i32 m_0; // +0x00  mode
+    char p0[0x10c - 0x4];
+    i32 m_10c; // +0x10c  sub-state
+    char p1[0x548 - 0x110];
+    i32 m_548;     // +0x548
+    void* m_54c;   // +0x54c  the pending buffer to free
+};
+// The +0x260 CObArray RemoveAt helper (0x1b5525) + the two build-state notifiers
+// (0x100930 self-ish / 0x104d60) + the pending-fx Pulse (0x3a1c) + RefreshB (0x3e81).
+struct CTmObArray {
+    void RemoveAt(i32 idx, i32 n); // 0x1b5525
+};
+extern void Eng_BuildNotifyA(i32 a);            // 0x100930 (thunk 0x12fd)
+struct CTmBuildState {
+    void Notify(); // 0x104d60 (thunk 0x16ea)
+};
+struct CTmSelfReset {
+    void PulseFx();    // 0x3a1c (this->m_2a0->Pulse path is via self thunk)
+    void RefreshB(i32 a); // 0x3e81
+};
+extern void __cdecl operator delete(void*);
+
+RVA(0x00079d90, 0xc5)
+void CTriggerMgr::ResetSpawnState() {
+    if (*(i32*)((char*)g_gameReg + 0x134) != 1) {
+        return;
+    }
+    if (*(i32*)((char*)this + 0x284) == 0) {
+        return;
+    }
+    CTmWorld* world = g_gameReg->m_2c;
+    CTmStatusBuf* st = *(CTmStatusBuf**)((char*)world + 0x2dc);
+    if (st->m_54c != 0) {
+        operator delete(st->m_54c);
+        st->m_54c = 0;
+    }
+    (*(CTmStatusBuf**)((char*)world + 0x2dc))->m_548 = 0;
+    if (*(i32*)((char*)this + 0x268) > 0) {
+        ((CTmObArray*)((char*)this + 0x260))->RemoveAt(*(i32*)((char*)this + 0x268) - 1, 1);
+        CTmStatusBuf* ctx = *(CTmStatusBuf**)((char*)world + 0x2dc);
+        if (ctx->m_0 != 2 && ctx->m_10c == 5) {
+            Eng_BuildNotifyA(0);
+            ((CTmBuildState*)*(CTmStatusBuf**)((char*)world + 0x2dc))->Notify();
+        }
+    }
+    if (*(i32*)((char*)g_gameReg + 0x134) == 1) {
+        CTmPendingFx* fx = *(CTmPendingFx**)((char*)this + 0x2a0);
+        if (fx != 0) {
+            fx->Pulse();
+        }
+    }
+    ((CTmSelfReset*)this)->RefreshB(6);
+}

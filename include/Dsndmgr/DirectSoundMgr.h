@@ -58,7 +58,12 @@ struct IDirectSoundZ {
             IDirectSoundBufferZ** out,
             void* unk
         ); // +0x0c
-        char m_pad10[0x18 - 0x10];
+        char m_pad10[0x14 - 0x10];
+        i32(__stdcall* DuplicateSoundBuffer)(
+            IDirectSoundZ*,
+            IDirectSoundBufferZ* original,
+            IDirectSoundBufferZ** out
+        ); // +0x14
         i32(__stdcall* SetCooperativeLevel)(IDirectSoundZ*, void* hwnd, u32 level); // +0x18
     }* vtbl;
 };
@@ -138,6 +143,7 @@ class DirectSoundMgr {
 public:
     // --- per-buffer wrappers (this = a buffer object, m_buffer = the buffer) --
     DirectSoundMgr(IDirectSoundBufferZ* buf, DirectSoundMgr* owner); // 0x1351d0 ctor
+    void RestampBufferVtbl();      // 0x135300  store the buffer vtbl into *this (base dtor tail)
     i32 Restore();                 // 0x135310  m_buffer->Restore()
     i32 StopAndRewind();           // 0x135380  Stop + SetCurrentPosition(0)
     i32 IsPlaying();               // 0x1353f0  GetStatus & DSBSTATUS_PLAYING
@@ -165,7 +171,10 @@ public:
     i32 SetCurrentPosition(u32 pos);                  // 0x135a70
     i32 GetFormat(void* fmt, u32 size, u32* written); // 0x135ac0
     ~DirectSoundMgr();                                // 0x135bb0  destructor (frees clone list)
-    void BaseDtor();                                  // 0x136260  base-subobject dtor (extern)
+    DirectSoundMgr* Clone(i32 a); // 0x135c20  new a clone instance, dup the buffer, link it
+    void BaseDtor();              // 0x136260  base-subobject dtor (stamps clone vtbl, tail 0x135300)
+    i32 ApplyAndPlay(i32 vol, i32 pan, i32 freq, i32 d); // 0x136300  apply params + play
+    i32 ReacquireViaCallback();   // 0x1365e0  tail-dispatch through the +0x80 reacquire fn-ptr
     void RemoveClone(DirectSoundMgr* clone);          // 0x135d20  release + unlink one clone
     i32 LockConvert(void* src, u32 lockBytes, u32 convert); // 0x135f40
     void StopAllClones();                                   // 0x136150
@@ -216,7 +225,11 @@ public:
     char m_pad60[0x78 - 0x60];
     i32 m_initialized; // +0x78  device-up flag (manager this)
     i32 m_7c;          // +0x7c  cleared by Create; role unproven
-    char m_pad80[0x84 - 0x80];
+    // +0x80  reacquire callback fn-ptr (a __thiscall on the manager); the
+    // ReacquireViaCallback dispatch (0x1365e0) tail-jumps through it. Stored as a
+    // raw void* (MSVC5 cannot spell __thiscall on a fn-ptr) and re-typed at the
+    // dispatch site to a member-fn-ptr (which is __thiscall by default).
+    void* m_80;
     IDirectSoundBufferZ* m_primaryBuffer; // +0x84  primary buffer
     i32 m_coopLevel;                      // +0x88  cooperative level
     u32 m_bufferFlags;                    // +0x8c  buffer-desc flags

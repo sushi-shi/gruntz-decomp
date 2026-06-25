@@ -1,4 +1,5 @@
 #include <Gruntz/UserLogic.h>
+#include <Wap32/ZVec.h> // zDArray<member-fn-ptr> dispatch table + the shared registration infra
 #include <rva.h>
 // Wormhole.cpp - CWormhole - a world teleport node (RTTI CWormhole), a CUserLogic
 // game-object leaf. Three methods are matched here:
@@ -174,6 +175,136 @@ public:
 // @source: trace this/ecx (high)
 RVA(0x00010980, 0x44)
 CWormhole::~CWormhole() {}
+
+// ===========================================================================
+// The file-scope CWormhole-logic registration thunks (proximity-attributed to
+// CWormhole, but really the shared CUserLogic dispatch-table registration the
+// engine emits per game-object class - the same archetype as InitIconStateTable
+// / RegisterIconState (CInGameIcon.cpp) and RegisterTextLogic (CInGameText.cpp)).
+// The class-specific member-fn-ptr table is g_wormholeDispatch (0x644660); the
+// handler is the CWormhole logic method at 0x40181b. The bute key store, running
+// counter, scratch name-vec, key string and the error globals are all the SHARED
+// registration infrastructure (same symbols every per-class register thunk uses).
+// ===========================================================================
+#include <Mfc.h> // CString (the scratch name-vec element)
+
+// The shared registration key store (?g_buteTree@@3VCButeTree@@A @ 0x6bf620).
+extern CButeTree g_buteTree;
+
+// The running registration index (0x61aea8) bumped on each fresh insert.
+DATA(0x0021aea8)
+extern i32 g_logicRegCounter;
+
+// The scratch name-vec (zDArray<CString> @ 0x6bf650): the registration path
+// IndexToPtr's it (growing + CString-constructing fresh slots) to stash the key.
+struct NameVec : public zDArray {};
+DATA(0x002bf650)
+extern NameVec g_buteNameVec;
+
+// The zvec error globals + the capture helper the inlined accessor touches on a
+// bounds miss (the same set ZVec.cpp models).
+DATA(0x001f0464)
+extern u32 g_zvecErrSentinel; // 0x6bf464
+DATA(0x001f0428)
+extern void* g_zvecErrToken;     // 0x6bf428
+extern void* zErr_CaptureRetB(); // 0x16d990
+
+// The "Wormhole"-logic registration key (the .data string constant @ 0x60a454,
+// the SAME key string every per-class register thunk inserts).
+DATA(0x0020a454)
+extern const char s_wormholeLogicKey[];
+
+// The CWormhole-logic dispatch table (a zDArray<int (CUserLogic::*)(void)> @
+// 0x644660). The 0x15 thunk constructs it over the index band [0x7d0, 0x7da].
+struct LogicFnTable : public zDArray {
+    LogicFnTable* Construct(i32 lo, i32 hi); // 0x408710 (zDArray<T> ctor, returns this)
+};
+DATA(0x00244660)
+extern LogicFnTable g_wormholeDispatch;
+
+// The handler member function loaded into the dispatch slot (LAB_0040181b, a
+// CWormhole logic method). Referenced by address so its DIR32 operand reloc-masks.
+extern i32 WormholeLogic_40181b();
+
+// The zDArray<CString> accessor inlined WITH the per-slot CString-ctor fixup over
+// the freshly-grown region (the zDArray::IndexToPtr body).
+static inline i32 ResolveNameSlot(NameVec* v, i32 idx) {
+    i32 r;
+    v->m_grown = 0;
+    if (idx >= v->m_lo && idx <= v->m_hi) {
+        r = v->m_base + (idx - v->m_lo) * v->m_stride;
+    } else if (v->GrowTo(idx, 0)) {
+        r = v->m_base + (idx - v->m_lo) * v->m_stride;
+    } else {
+        i32 sentinel = g_zvecErrSentinel;
+        g_zvecErrToken = zErr_CaptureRetB();
+        v->m_err->Error(v, sentinel, 0xc);
+        r = v->m_spare;
+    }
+    CString* slot = (CString*)v->m_alloc;
+    i32 n = v->m_grown;
+    while (n-- != 0) {
+        if (slot) {
+            slot->CString::CString();
+        }
+        slot++;
+    }
+    return r;
+}
+
+// The plain _zvec accessor inlined (no fixup) - the dispatch-table slot resolver.
+static inline i32 ResolveSlot(_zvec* v, i32 idx) {
+    i32 lo = v->m_lo;
+    v->m_grown = 0;
+    if (idx >= lo && idx <= v->m_hi) {
+        return v->m_base + (idx - lo) * v->m_stride;
+    }
+    if (v->GrowTo(idx, 0)) {
+        return v->m_base + (idx - v->m_lo) * v->m_stride;
+    }
+    i32 sentinel = g_zvecErrSentinel;
+    g_zvecErrToken = zErr_CaptureRetB();
+    v->m_err->Error(v, sentinel, 0xc);
+    return v->m_spare;
+}
+
+// ===========================================================================
+// InitWormholeDispatch  (0x03ffd0)
+// File-scope static-init thunk: construct the wormhole-logic dispatch table over
+// the index band [0x7d0, 0x7da].
+// ===========================================================================
+RVA(0x0003ffd0, 0x15)
+void InitWormholeDispatch() {
+    g_wormholeDispatch.Construct(0x7d0, 0x7da);
+}
+
+// ===========================================================================
+// RegisterWormholeLogic  (0x0401b0)
+// Register the wormhole-logic handler into g_wormholeDispatch: look the key up in
+// the bute tree; if absent, Insert it under the running counter and cache the key
+// name into the scratch zDArray<CString> slot (growing it), then bump the counter.
+// Either way, resolve the dispatch-table slot for the key index and load it with
+// the handler member-fn-ptr (0x40181b).
+// ---------------------------------------------------------------------------
+// @early-stop
+// inlined zDArray/zvec IndexToPtr regalloc wall (the documented ZVec family - see
+// ZVec.cpp's IndexToPtr/GrowTo @early-stops + RegisterTextLogic/RegisterIconState
+// ~96%): the two inlined accessors + the CString-ctor fixup loop are reconstructed
+// faithfully, but cl pins the index/this/base across the grow branches differently
+// than retail. Logic + the bute find/insert + the fn-ptr store are correct; the
+// register assignment is not source-steerable.
+RVA(0x000401b0, 0x18d)
+void RegisterWormholeLogic() {
+    i32 idx = (i32)g_buteTree.Find(s_wormholeLogicKey);
+    if (idx == 0) {
+        g_buteTree.Insert(s_wormholeLogicKey, (void*)g_logicRegCounter);
+        i32 slot = ResolveNameSlot(&g_buteNameVec, g_logicRegCounter);
+        *(CString*)slot = s_wormholeLogicKey;
+        g_logicRegCounter++;
+    }
+    i32 dslot = ResolveSlot(&g_wormholeDispatch, idx);
+    *(void**)dslot = (void*)&WormholeLogic_40181b;
+}
 
 // ---------------------------------------------------------------------------
 // CWormhole::SpawnPartners  (0x0403b0)

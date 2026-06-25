@@ -149,6 +149,11 @@ struct GridUnit {
     i32 m_328;                 // +0x328  list count/flag
     char m_pad32c[0x368 - 0x32c];
     i32 m_368; // +0x368  must be 0 to dispatch
+
+    // 0x0343f0 (attributed to UnknownClassArrays but a __thiscall ON a GridUnit):
+    // recycle every occupied-coord node's payload onto g_freeList, then RemoveAll
+    // the +0x31c CObList. Defined out-of-line with its retail RVA below.
+    void RecycleCoords(); // 0x0343f0
 };
 
 // A {x, y} coordinate pair (a list node's +0x8 payload).
@@ -443,6 +448,50 @@ void UnknownClassArrays::FreeArrays() {
     m_104.SetSize(0, -1);
     m_118.SetSize(0, -1);
     m_13c = 0;
+}
+
+// ===========================================================================
+// UnknownClassArrays::Method_02ad40  @0x02ad40
+// Pick a random idle unit from one of the four cell-bands: roll a band [0..3]
+// (avoiding the current cell index m_018 by bumping past it), a random start cell
+// [0..14], then scan the band's 15 units from there (cell index wrapping mod 15),
+// returning the first non-null unit whose +0x364 "busy" slot is clear (0 on miss).
+// The arg is unused. (__thiscall, ret 0x4.)
+// ===========================================================================
+// @early-stop
+// regalloc wall: the double rand()%4 band-pick (with the m_018 skip), the rand()%15
+// start, and the 15-cell scan (incl. the dead running-cell-index recompute via
+// idiv 15) are reconstructed in shape, but retail pins the row walker in esi / the
+// m_364 temp + the 15 const in edi where MSVC5 here swaps them (edi walker, esi
+// counter), and the swap cascades through the small body. Logic + offsets correct;
+// not source-steerable. Deferred to the final sweep.
+RVA(0x0002ad40, 0x71)
+void* UnknownClassArrays::Method_02ad40(i32) {
+    i32 band = rand() % 4;
+    if (band == m_018) {
+        band++;
+    }
+    band = band % 4;
+    i32 cell = rand() % 15;
+    GridUnit** row = (GridUnit**)(m_008 + band * 0x3c + 0x1c);
+    for (i32 i = 0; i < 15; i++) {
+        GridUnit* u = *row;
+        if (u != 0 && *(i32*)((char*)u + 0x364) == 0) {
+            return u;
+        }
+        cell = (cell + 1) % 15;
+        row++;
+    }
+    return 0;
+}
+
+// ===========================================================================
+// UnknownClassArrays::Method_02c080  @0x02c080
+// Trivial: ignore the one arg, return 1. (mov eax,1; ret 4)
+// ===========================================================================
+RVA(0x0002c080, 0x8)
+i32 UnknownClassArrays::Method_02c080(i32) {
+    return 1;
 }
 
 // ===========================================================================
@@ -2845,4 +2894,135 @@ i32 UnknownClassArrays::Method_0350d0(i32 unitArg) {
     }
     unit->m_2ec = 0;
     return 1;
+}
+
+// ===========================================================================
+// GridUnit::RecycleCoords  @0x0343f0  (attributed to UnknownClassArrays; __thiscall
+// on a GridUnit). Recycle each occupied-coord node's payload onto g_freeList (head
+// cached in a register across the loop, written each iteration), then tail into the
+// +0x31c CObList's RemoveAll. Skips everything when the count (m_328) is zero.
+// ===========================================================================
+RVA(0x000343f0, 0x47)
+void GridUnit::RecycleCoords() {
+    if (m_328 == 0) {
+        return;
+    }
+    CoordNode* n = (CoordNode*)m_320;
+    if (n != 0) {
+        void* head = g_freeList;
+        do {
+            CoordNode* cur = n;
+            n = n->m_next;
+            void* coord = cur->m_coord;
+            if (coord != 0) {
+                void** slot = (void**)((char*)coord - g_freeListNodeBias);
+                *slot = head;
+                head = slot;
+                g_freeList = head;
+            }
+        } while (n != 0);
+    }
+    ((CObList*)&m_31c)->RemoveAll();
+}
+
+// The per-unit spawn/place hook Method_034c70 fires (RVA 0x04b320, thunk 0x01640):
+// a __thiscall on the GridUnit taking (x, y, 0, flags, 0, 0); returns nonzero on a
+// successful placement. External, reloc-masked (no body).
+struct GridUnitSpawn {
+    i32 Place(i32 x, i32 y, i32 a2, i32 flags, i32 a4, i32 a5); // 0x04b320
+};
+
+// ===========================================================================
+// UnknownClassArrays::Method_034c70  @0x034c70
+// The queued-unit board-tile resolver. For a unit with no live coord list
+// (m_328==0): look up its target tile (board->m_rows[m_2f4][m_2f0]); if the tile
+// carries the 0x20 "reserved" flag, only place (Method_4b320, flags 0xd87) when the
+// per-level budget (m_2ec) exceeds this->m_0b4 - on a successful place clear m_2ec,
+// otherwise fall to the "give up" path; if the tile is free, give up directly. The
+// give-up path marks the unit mode 4, recycles its coord nodes (onto the coord pool
+// for the reserved-tile branch, onto g_freeList for the free-tile branch), empties
+// its coord list, and resets its target coord (-1,-1) + state. Returns 1.
+// ===========================================================================
+// @early-stop
+// deep-chain regalloc plateau: the board-tile lookup, the budget gate, the
+// Method_4b320 spawn, both coord-recycle loops (coord-pool vs g_freeList) and the
+// reset block are reconstructed in shape + order, but retail pins the unit in edi /
+// the zero const in ebx and the tile-index math (m_2f0*7, m_2f4 row) spills to
+// different stack slots than MSVC5 here. Foreign unit/board chains modeled by raw
+// offset. Deferred to the final sweep.
+RVA(0x00034c70, 0x133)
+i32 UnknownClassArrays::Method_034c70(i32 unitArg) {
+    GridUnit* unit = (GridUnit*)unitArg;
+    if (unit->m_328 != 0) {
+        return 1;
+    }
+    i32 x = unit->m_2f0;
+    i32 y = unit->m_2f4;
+    Tile* tile = &((Tile*)((Board*)m_00c)->m_rows[y])[x];
+    if (tile->m_flags & 0x20) {
+        if (unit->m_2ec <= m_0b4) {
+            return 1;
+        }
+        if (((GridUnitSpawn*)unit)->Place(unit->m_2f0, unit->m_2f4, 0, 0xd87, 0, 0) != 0) {
+            unit->m_2ec = 0;
+            return 1;
+        }
+        unit->m_2d8 = 4;
+        {
+            CoordNode* n = (CoordNode*)unit->m_320;
+            while (n != 0) {
+                CoordNode* cur = n;
+                n = n->m_next;
+                if (cur->m_coord != 0) {
+                    g_coordPool.Recycle(cur->m_coord);
+                }
+            }
+        }
+        ((CObList*)&unit->m_31c)->RemoveAll();
+    } else {
+        unit->m_2d8 = 4;
+        if (unit->m_328 != 0) {
+            CoordNode* n = (CoordNode*)unit->m_320;
+            while (n != 0) {
+                CoordNode* cur = n;
+                n = n->m_next;
+                if (cur->m_coord != 0) {
+                    void** slot = (void**)((char*)cur->m_coord - g_freeListNodeBias);
+                    *slot = g_freeList;
+                    g_freeList = slot;
+                }
+            }
+            ((CObList*)&unit->m_31c)->RemoveAll();
+        }
+    }
+    unit->m_2f0 = -1;
+    unit->m_2f4 = -1;
+    unit->m_2d4 = 0;
+    unit->m_2ec = 0;
+    return 1;
+}
+
+// ===========================================================================
+// _zvec error-report wrapper  @0x034960  (attributed to UnknownClassArrays;
+// __thiscall on a _zvec/zErrHandling-bearing object, ret 0x8 => 2 args). Capture
+// the return address into the global error token, then dispatch the error reporter
+// (this->m_err->Error(this, sentinel, code)). This is the inlined zvec overflow
+// path lifted out as a standalone helper.
+// ===========================================================================
+// The zvec error globals + the return-capture helper + the reporter (the same set
+// ZVec.cpp models). Declared here so the calls/stores reloc-mask.
+DATA(0x001f0428)
+extern void* g_zvecErrToken; // 0x6bf428
+extern void* zErr_CaptureRetB(); // 0x16d990
+struct ZErrTarget {
+    void* m_vptr;
+    struct ZErrReporter {
+        void Error(void* who, i32 sentinel, i32 code); // 0x16d850
+    }* m_err; // +0x04
+};
+RVA(0x00034960, 0x24)
+void UnknownClassArrays::Method_034960(i32 sentinel, i32 code) {
+    ZErrTarget* z = (ZErrTarget*)this;
+    g_zvecErrToken = zErr_CaptureRetB();
+    z->m_err->Error(z, sentinel, code);
 }
