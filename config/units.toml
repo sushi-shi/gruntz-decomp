@@ -641,6 +641,21 @@ source = "src/Gruntz/CTimeBomb.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "cgruntselectedsprite"
+source = "src/Gruntz/CGruntSelectedSprite.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cgruntpowerupsprite"
+source = "src/Gruntz/CGruntPowerupSprite.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cgrunttoysprite"
+source = "src/Gruntz/CGruntToySprite.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "cpathhazard"
 source = "src/Gruntz/CPathHazard.cpp"
 flags = "eh"

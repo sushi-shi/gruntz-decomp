@@ -54,26 +54,11 @@ RVA(0x0003ecc0, 0x17) void CGruntCreationPoint::CGruntCreationPoint_03ecc0() {}
 RVA(0x00011fb0, 0x44) void CGruntHealthSprite::CGruntHealthSprite_011fb0() {}
 RVA(0x0007f0d0, 0x6e) void CGruntHealthSprite::CGruntHealthSprite_07f0d0() {}
 
-// ---- CGruntPowerupSprite ----
-RVA(0x00012370, 0x44) void CGruntPowerupSprite::CGruntPowerupSprite_012370() {}
-RVA(0x00080380, 0x6c) void CGruntPowerupSprite::CGruntPowerupSprite_080380() {}
-RVA(0x00080410, 0x51) void CGruntPowerupSprite::CGruntPowerupSprite_080410() {}
-
-// ---- CGruntSelectedSprite ----
-RVA(0x00011e80, 0x44) void CGruntSelectedSprite::CGruntSelectedSprite_011e80() {}
-RVA(0x0007e9c0, 0x16) void CGruntSelectedSprite::CGruntSelectedSprite_07e9c0() {}
-RVA(0x0007e9f0, 0x5f) void CGruntSelectedSprite::CGruntSelectedSprite_07e9f0() {}
-
 // ---- CGruntSpawnConfig ----
 RVA(0x0011c730, 0x5c) void CGruntSpawnConfig::CGruntSpawnConfig_11c730() {}
 
 // ---- CGruntStartingPoint ----
 RVA(0x00010670, 0x44) void CGruntStartingPoint::CGruntStartingPoint_010670() {}
-
-// ---- CGruntToySprite ----
-RVA(0x000122b0, 0x44) void CGruntToySprite::CGruntToySprite_0122b0() {}
-RVA(0x0007f920, 0x21) void CGruntToySprite::CGruntToySprite_07f920() {}
-RVA(0x0007f960, 0x85) void CGruntToySprite::CGruntToySprite_07f960() {}
 
 // ---- CGruntToyTimeSprite ----
 RVA(0x00012130, 0x44) void CGruntToyTimeSprite::CGruntToyTimeSprite_012130() {}
