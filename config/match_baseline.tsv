@@ -62,7 +62,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	246	0
+engine_discovered	243	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -180,7 +180,7 @@ wormhole	4	1
 wwdfile	10	1
 wwdgameobject	7	2
 wwdgrid	7	4
-wwdspatialmgr	7	4
+wwdspatialmgr	10	5
 zutil	2	2
 zvec	5	2
 # [functions]	unit	function	best_pct	cur_pct	tries	src_hash	rva
@@ -850,9 +850,6 @@ engine_discovered	?ClassUnknown_65_095890@ClassUnknown_65@@QAEXXZ	1.1905	1.1905	
 engine_discovered	?ClassUnknown_65_0aa6e0@ClassUnknown_65@@QAEXXZ	1.1905	1.1905	1	be7d08983e85	0xaa6e0
 engine_discovered	?ClassUnknown_66_161370@ClassUnknown_66@@QAEXXZ	50.0000	50.0000	1	5b39a726447f	0x161370
 engine_discovered	?ClassUnknown_66_166d40@ClassUnknown_66@@QAEXXZ	3.3333	3.3333	1	f2ee01b8e610	0x166d40
-engine_discovered	?ClassUnknown_67_191ad0@ClassUnknown_67@@QAEXXZ	1.9048	1.9048	1	1e4f9d691f96	0x191ad0
-engine_discovered	?ClassUnknown_67_191b10@ClassUnknown_67@@QAEXXZ	0.3448	0.3448	1	f40cbafe2e4a	0x191b10
-engine_discovered	?ClassUnknown_67_191c30@ClassUnknown_67@@QAEXXZ	1.2195	1.2195	1	a963c7685860	0x191c30
 engine_discovered	?ClassUnknown_68_0a3460@ClassUnknown_68@@QAEXXZ	0.1681	0.1681	1	815fbd276ee5	0xa3460
 engine_discovered	?ClassUnknown_68_0a3820@ClassUnknown_68@@QAEXXZ	0.2564	0.2564	1	09641df9ee29	0xa3820
 engine_discovered	?ClassUnknown_6_14dcf0@ClassUnknown_6@@QAEXXZ	3.4483	3.4483	1	15185bc126ec	0x14dcf0
@@ -2212,9 +2209,9 @@ tiletriggerlogic	??0CTileTriggerLogic@@QAE@XZ	100.0000	100.0000	5	94795c513302	0
 tiletriggerlogic	??_GCTileTriggerLogic@@UAEPAXI@Z	4.7624	4.7624	1	cpp:abf93c58a136	0x116610
 tiletriggertransition	??0CTileTriggerTransition@@QAE@PAUCGameObject@@@Z	94.9390	94.9390	1	6da19d3afe62	0x10faf0
 tiletriggertransition	??1CUserLogic@@UAE@XZ	100.0000	100.0000	1	cpp:fe6dc3b6bc73	0x117f0
-tiletriggertransition	?ApplyAnimation@CTileTriggerTransition@@QAEHPAD0@Z	100.0000	100.0000	1	d04c2112f65b	0x110070
+tiletriggertransition	?ApplyAnimation@CTileTriggerTransition@@QAEHPAD0@Z	100.0000	100.0000	2	d2b3725032a8	0x110070
 tiletriggertransition	?GetTypeTag@CTileTriggerTransition@@QAEHXZ	100.0000	100.0000	1	f7fb68523138	0x11730
-tiletriggertransition	?StepController@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	9bd102275a97	0x10d150
+tiletriggertransition	?StepController@@YAHPAUCGameObject@@@Z	100.0000	100.0000	2	7ba829d0b632	0x10d150
 tilewireswitchlogic	?WireTileSwitchLogic@CGruntzMgr@@QAEHPAXHH@Z	10.4111	10.4111	1	4f27554a2907	0x6c130
 trees	__tr_flush_block	100.0000	100.0000	1	54a1b09eba2f	0x188ad0
 trees	__tr_stored_block	100.0000	100.0000	1	36d19f528991	0x1887a0
@@ -2413,13 +2410,16 @@ wwdgrid	?Clear@CWwdGrid@@QAEHXZ	100.0000	100.0000	1	bdf402e6fae5	0x191a70
 wwdgrid	?FreeBuckets@CWwdGrid@@QAEXXZ	100.0000	100.0000	1	1a048d95b55c	0x191800
 wwdgrid	?Query@CWwdGrid@@QAEHHHHHH@Z	99.7188	99.7188	1	e93bb39bd8a3	0x1918c0
 wwdgrid	?Remove@CWwdGrid@@QAEXPAUWwdRegion@@@Z	100.0000	100.0000	1	0d0f14401f48	0x191890
-wwdspatialmgr	?CountInRect@CWwdSpatialMgr@@QAEHPAVCWwdGrid@@@Z	86.1539	86.1539	1	a38237476287	0x168460
+wwdspatialmgr	?CountInRect@CWwdSpatialMgr@@QAEHPAVCWwdGrid@@@Z	86.1539	86.1539	2	bc9ec8d7de46	0x168460
 wwdspatialmgr	?FreeGrids@CWwdSpatialMgr@@QAEXXZ	100.0000	100.0000	1	86831d8ccca0	0x1682f0
+wwdspatialmgr	?GetNext@CWwdGridIter@@QAEPAUWwdGridNode@@XZ	93.7073	93.7073	1	6bcf16606b62	0x191c30
 wwdspatialmgr	?GetSize@CWwdSpatialMgr@@QAEHXZ	100.0000	100.0000	1	38653b262d2f	0x168430
+wwdspatialmgr	?Init@CWwdGridIter@@QAEPAUWwdGridNode@@PAVCWwdGrid@@UWwdRect@@H@Z	95.5000	95.5000	1	9db4c1fe715e	0x191b10
 wwdspatialmgr	?PruneCount@CWwdSpatialMgr@@QAEHXZ	100.0000	100.0000	2	3dd1356074d6	0x1688b0
 wwdspatialmgr	?Relocate@CWwdSpatialMgr@@QAEHHH@Z	0.6515	0.6515	1	48931d868e4f	0x168500
 wwdspatialmgr	?RemoveObject@CWwdSpatialMgr@@QAEXPAVCWwdObject@@@Z	100.0000	100.0000	1	350b60b064c3	0x1688f0
 wwdspatialmgr	?ScrollTo@CWwdSpatialMgr@@QAEHHH@Z	66.1023	66.1023	2	fc9dd921bcc1	0x168340
+wwdspatialmgr	?Start@CWwdGridIter@@QAEPAUWwdGridNode@@PAVCWwdGrid@@H@Z	100.0000	100.0000	1	1c644a738182	0x191ad0
 zutil	_zcalloc	100.0000	100.0000	1	55f82c5a172f	0x188410
 zutil	_zcfree	100.0000	100.0000	1	e741567a7e95	0x188430
 zvec	??1zDArray@@QAE@XZ	100.0000	100.0000	2	9f4fe8844098	0x16df40

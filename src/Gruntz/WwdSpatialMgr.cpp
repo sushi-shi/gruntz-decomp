@@ -44,32 +44,88 @@ struct WwdRect {
     i32 a, b, c, d;
 };
 
+// A grid bucket list node (the region sub-object embedded at CWwdObject+0x9c):
+// intrusive link pair @ +0x00/+0x04, owning-bucket back-pointer @ +0x0c, pixel
+// position @ +0x10/+0x14. The iterator walks these and reads their position.
+struct WwdGridNode {
+    WwdGridNode* m_next; // +0x00
+    WwdGridNode* m_prev; // +0x04
+    char m_pad08[0x0c - 0x08];
+    void* m_bucket; // +0x0c  cached owning bucket head
+    i32 m_x;        // +0x10
+    i32 m_y;        // +0x14
+};
+
+// 8-byte intrusive list head {head, tail} of WwdGridNode; one per grid cell.
+// The unlink op is __thiscall on the head (the node passed as the lone stack
+// arg, callee-cleanup ret 4) - a reloc-masked engine extern.
+struct WwdBucketHead {
+    WwdGridNode* m_head; // +0x00
+    WwdGridNode* m_tail; // +0x04
+    void Unlink_1391e0(WwdGridNode* node);
+};
+
 // CWwdGrid (ClassUnknown_64) - one plane's spatial bucket index. Polymorphic
-// CObject-style: scalar deleting dtor @ vtbl+4.
+// CObject-style: scalar deleting dtor @ vtbl+4. Data fields (offsets per
+// WwdGrid.h) are read by the iterator: the rect bounds, the log2 cell shifts,
+// the column count, and the 8-byte bucket-head array.
 class CWwdGrid {
 public:
     virtual void Slot00();
     virtual i32 ScalarDtor(i32 flag); // +0x04
     i32 Scroll_1918c0(WwdRect r, i32 flag);
     i32 Add_191840(void* region);
-    i32 Remove_191890(CWwdObject* obj);
+    i32 Remove_191890(WwdGridNode* region);
     i32 RemoveAll_191a70();
+
+    i32 m_04;     // +0x04
+    i32 m_count;  // +0x08  live object count
+    i32 m_cols;   // +0x0c  columns
+    i32 m_10;     // +0x10
+    i32 m_shiftY; // +0x14  log2(cellW)
+    i32 m_shiftX; // +0x18  log2(cellH)
+    char m_pad1c[0x28 - 0x1c];
+    i32 m_minX; // +0x28
+    i32 m_minY; // +0x2c
+    i32 m_maxX; // +0x30
+    i32 m_maxY; // +0x34
+    char m_pad38[0x40 - 0x38];
+    WwdBucketHead* m_buckets; // +0x40  array of 8-byte {head,tail} bucket heads
 };
 
-// Position-iterator over a CWwdGrid. The retail object's vptr is the shared
-// engine table at 0x5f02a8 (its virtuals + GetFirst/GetNext live in another TU);
-// stamp it via a reloc-masked DATA() extern (transitional manual vtable).
+// Position-iterator over a CWwdGrid: a rect-restricted cursor that walks every
+// grid cell overlapping a query rectangle and visits each node truly inside it
+// (optionally unlinking it). The retail object's vptr is the shared engine table
+// at 0x5f02a8 (its virtuals live in another TU); stamp it via a reloc-masked
+// DATA() extern (transitional manual vtable).
+//
+// Cursor layout (offsets from 0x191b10/0x191c30): the grid @ +0x04, the current
+// matched node @ +0x08, the saved-next node @ +0x0c, the clamped query rect @
+// +0x10..+0x1c, the cell-range corners @ +0x20..+0x2c, and the live cell-walk
+// counters @ +0x30..+0x3c, with the remove flag @ +0x40.
 class CWwdGridIter {
 public:
     CWwdGridIter();
-    ~CWwdGridIter();                             // 0x191c70-ish engine teardown
-    CWwdObject* Start(CWwdGrid* grid, i32 flag); // 0x191ad0 init cursor + first
-    CWwdObject* GetNext();                       // 0x191c30 __thiscall
+    ~CWwdGridIter();                                // 0x191c70-ish engine teardown
+    WwdGridNode* Start(CWwdGrid* grid, i32 remove); // 0x191ad0 init cursor + first
+    WwdGridNode* Init(CWwdGrid* grid, WwdRect rect,
+                      i32 remove); // 0x191b10 set rect + first
+    WwdGridNode* GetNext();        // 0x191c30 advance the cursor
 
-    void* m_vptr;              // +0x00  = &g_wwdGridIterVtbl (0x5f02a8)
-    i32 m_04;                  // +0x04
-    i32 m_08;                  // +0x08
-    char m_pad0c[0x44 - 0x0c]; // internal cursor state, up to +0x40 (191c30/191b10)
+    void* m_vptr;        // +0x00  = &g_wwdGridIterVtbl (0x5f02a8)
+    CWwdGrid* m_grid;    // +0x04
+    WwdGridNode* m_cur;  // +0x08  current matched node
+    WwdGridNode* m_next; // +0x0c saved-next (cell head cursor)
+    WwdRect m_rect;      // +0x10  clamped query rect (x0,y0,x1,y1)
+    i32 m_rowStart;      // +0x20  (x0-minX)>>shiftY
+    i32 m_colStart;      // +0x24  (y0-minY)>>shiftX
+    i32 m_rowEnd;        // +0x28  (x1-minX)>>shiftY
+    i32 m_colEnd;        // +0x2c  (y1-minY)>>shiftX
+    i32 m_cell;          // +0x30  current linear cell index
+    i32 m_row;           // +0x34  current row counter
+    i32 m_col;           // +0x38  current col counter
+    i32 m_rowBase;       // +0x3c  current row-base linear index
+    i32 m_remove;        // +0x40  unlink-as-visited flag
 };
 DATA(0x005f02a8)
 extern void* g_wwdGridIterVtbl[];
@@ -191,7 +247,7 @@ RVA(0x00168460, 0x95)
 i32 CWwdSpatialMgr::CountInRect(CWwdGrid* grid) {
     i32 count = 0;
     CWwdGridIter it;
-    for (CWwdObject* obj = it.Start(grid, 0); obj != 0; obj = it.GetNext()) {
+    for (WwdGridNode* obj = it.Start(grid, 0); obj != 0; obj = it.GetNext()) {
         CWwdObject* w = *(CWwdObject**)((char*)obj + 0x18);
         if ((*(u8*)((char*)w + 0x8) & 0x2) || (*(u8*)(*(char**)((char*)w + 0x7c) + 0x8) & 0x4)) {
             m_mgr->InsertSorted_159e40(w, 1);
@@ -207,8 +263,8 @@ i32 CWwdSpatialMgr::CountInRect(CWwdGrid* grid) {
 // /GX EH frame. Both are reloc-masked w.r.t. the vtable address.
 inline CWwdGridIter::CWwdGridIter() {
     m_vptr = g_wwdGridIterVtbl;
-    m_04 = 0;
-    m_08 = 0;
+    m_grid = 0;
+    m_cur = 0;
 }
 // Non-trivial dtor: the engine release that, under /GX, registers the unwind
 // funclet (handler 0x5e2518) and gives this method its EH frame.
@@ -275,4 +331,131 @@ void CWwdSpatialMgr::RemoveObject(CWwdObject* obj) {
         m_grid0->Add_191840((char*)obj + 0x9c);
         m_mgr->AddToMap48_15aba0(obj);
     }
+}
+
+// ===========================================================================
+// CWwdGridIter cursor methods (the ClassUnknown_67 cluster). The iterator walks
+// every grid cell overlapping the query rect, visiting each node truly inside it
+// (optionally unlinking it). Self-contained / reloc-free apart from the bucket
+// Unlink helper.
+// ===========================================================================
+
+// 0x191ad0 - Start(grid, remove): seed the cursor over the grid's ENTIRE bounds
+// rect (grid->minX..maxY passed by value) and return the first in-rect node.
+RVA(0x00191ad0, 0x34)
+WwdGridNode* CWwdGridIter::Start(CWwdGrid* grid, i32 remove) {
+    // The grid's full bounds rect (minX,minY,maxX,maxY @ +0x28..+0x34) copied
+    // as a contiguous 16-byte block - a struct assignment through a pointer, so
+    // the four fields move through one register (matching the retail lea+copy).
+    WwdRect full = *(WwdRect*)&grid->m_minX;
+    return Init(grid, full, remove);
+}
+
+// 0x191b10 - Init(grid, rect, remove): cache the grid + clamped query rect, fail
+// fast if the rect is fully outside the grid, derive the cell-range corners and
+// the live cell-walk counters, prime the cursor at the first cell head, then
+// advance to the first in-rect node.
+// @early-stop
+// ~95.5% - imul regalloc wall: body byte-identical (the rect block-copy + all 8
+// clamp guards + the cell-range corners match), but the final
+// base=colStart*cols+rowStart keeps colStart in a different reg than retail
+// (retail imul edi,ecx + m_col=ecx between imul/add; recompile imul ecx,esi),
+// a 3-instr operand-register choice. Not source-steerable (see
+// docs/patterns/zero-register-pinning.md / statement-schedule-faithful.md).
+RVA(0x00191b10, 0x111)
+WwdGridNode* CWwdGridIter::Init(CWwdGrid* grid, WwdRect rect, i32 remove) {
+    m_grid = grid;
+    m_rect = rect;
+    m_remove = remove;
+    if (m_rect.a > grid->m_maxX) {
+        return 0;
+    }
+    if (m_rect.c < grid->m_minX) {
+        return 0;
+    }
+    if (m_rect.b > grid->m_maxY) {
+        return 0;
+    }
+    if (m_rect.d < grid->m_minY) {
+        return 0;
+    }
+    if (m_rect.a < grid->m_minX) {
+        m_rect.a = grid->m_minX;
+    }
+    if (m_rect.c > grid->m_maxX) {
+        m_rect.c = grid->m_maxX;
+    }
+    if (m_rect.b < grid->m_minY) {
+        m_rect.b = grid->m_minY;
+    }
+    if (m_rect.d > grid->m_maxY) {
+        m_rect.d = grid->m_maxY;
+    }
+    m_colStart = (m_rect.b - grid->m_minY) >> grid->m_shiftX;
+    m_rowStart = (m_rect.a - grid->m_minX) >> grid->m_shiftY;
+    m_colEnd = (m_rect.d - grid->m_minY) >> grid->m_shiftX;
+    m_rowEnd = (m_rect.c - grid->m_minX) >> grid->m_shiftY;
+    i32 base = m_colStart * grid->m_cols + m_rowStart;
+    m_col = m_colStart;
+    m_row = m_rowStart;
+    m_rowBase = base;
+    m_cell = base;
+    m_next = grid->m_buckets[base].m_head;
+    return GetNext();
+}
+
+// 0x191c30 - GetNext(): resume the cell walk. Faithful goto transcription of the
+// retail cursor: reload the scan node, advance cells until a non-empty bucket,
+// then walk the bucket testing each node against the query rect; on a hit,
+// optionally unlink it and return it.
+// @early-stop
+// ~93.7% - LICM/regalloc wall: the cell-advance block + the whole control flow
+// are byte-identical, but cl hoists the loop-invariant query bound m_rect.a
+// (+0x10) into a callee-saved register (extra push ebx) where retail reloads it
+// from memory each iteration; this cascades the walk's m_y0 reg (ebx vs edi) and
+// the remove-block reg assignment. Not source-steerable (member-bound LICM
+// choice; see docs/patterns/zero-register-pinning.md).
+RVA(0x00191c30, 0xcc)
+WwdGridNode* CWwdGridIter::GetNext() {
+    WwdGridNode* node;
+top:
+    node = m_next;
+    m_cur = node;
+    if (node == 0) {
+    nextcell:
+        if (m_row < m_rowEnd) {
+            ++m_cell;
+            ++m_row;
+        } else {
+            if (m_col >= m_colEnd) {
+                return 0;
+            }
+            m_rowBase += m_grid->m_cols;
+            m_cell = m_rowBase;
+            m_row = m_rowStart;
+            ++m_col;
+        }
+        m_cur = m_grid->m_buckets[m_cell].m_head;
+        if (m_cur == 0) {
+            goto nextcell;
+        }
+    }
+    if (m_cur == 0) {
+        goto top;
+    }
+walk:
+    m_next = m_cur->m_next;
+    if (m_cur->m_x >= m_rect.a && m_cur->m_y >= m_rect.b && m_cur->m_x <= m_rect.c
+        && m_cur->m_y <= m_rect.d) {
+        if (m_remove) {
+            ((WwdBucketHead*)&m_grid->m_buckets[m_cell])->Unlink_1391e0(m_cur);
+            m_cur->m_bucket = 0;
+            --m_grid->m_count;
+        }
+        return m_cur;
+    }
+    if (m_cur != 0) {
+        goto walk;
+    }
+    goto top;
 }

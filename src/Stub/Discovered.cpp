@@ -915,13 +915,9 @@ void ClassUnknown_66::ClassUnknown_66_161370() {}
 RVA(0x00166d40, 0x24)
 void ClassUnknown_66::ClassUnknown_66_166d40() {}
 
-// ---- ClassUnknown_67 ----
-RVA(0x00191ad0, 0x34)
-void ClassUnknown_67::ClassUnknown_67_191ad0() {}
-RVA(0x00191b10, 0x111)
-void ClassUnknown_67::ClassUnknown_67_191b10() {}
-RVA(0x00191c30, 0xcc)
-void ClassUnknown_67::ClassUnknown_67_191c30() {}
+// ---- ClassUnknown_67 ---- recovered as CWwdGridIter (the rect-restricted cursor
+// over a CWwdGrid) and migrated into src/Gruntz/WwdSpatialMgr.cpp (wwdspatialmgr
+// unit): 0x191ad0 Start / 0x191b10 Init / 0x191c30 GetNext.
 
 // ---- ClassUnknown_68 ----  (recovered: CLightFxRender, src/Gruntz/CLightFxRender.cpp)
 // 0xa3b50 DrawBorder reconstructed in src/Gruntz/CLightFxRender.cpp.
