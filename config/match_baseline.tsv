@@ -100,7 +100,7 @@ dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
 dsoundvoice	2	1
-engine_attributed	282	0
+engine_attributed	274	0
 engine_boundary	628	0
 engine_discovered	86	0
 engine_label_stubs	519	118
@@ -158,7 +158,7 @@ menuitem	11	9
 menupage	22	13
 mgrtokenquery	1	1
 motionstate	4	3
-netmgr	45	25
+netmgr	53	31
 netmgrerror	1	1
 netsession	2	1
 projectile	7	2
@@ -1000,14 +1000,6 @@ engine_attributed	?CMulti_0bc3f0@CMulti@@QAEXXZ	3.6364	3.6364	1	fd31ae8c8cc9	0xb
 engine_attributed	?CNetMgr_0b86c0@CNetMgr@@QAEXXZ	0.7752	0.7752	2	530d3740ec49	0xb86c0
 engine_attributed	?CNetMgr_0b8960@CNetMgr@@QAEXXZ	4.3478	4.3478	2	ffb7349460c0	0xb8960
 engine_attributed	?CNetMgr_0b8fc0@CNetMgr@@QAEXXZ	0.4255	0.4255	2	a0b6329c7044	0xb8fc0
-engine_attributed	?CNetMgr_0b93a0@CNetMgr@@QAEXXZ	1.8182	1.8182	1	fccdb750da75	0xb93a0
-engine_attributed	?CNetMgr_0b9410@CNetMgr@@QAEXXZ	1.5385	1.5385	1	014f0a387786	0xb9410
-engine_attributed	?CNetMgr_0b9500@CNetMgr@@QAEXXZ	1.4286	1.4286	1	2c4c66e796e7	0xb9500
-engine_attributed	?CNetMgr_0b9570@CNetMgr@@QAEXXZ	1.5385	1.5385	1	e9d62fcc43cc	0xb9570
-engine_attributed	?CNetMgr_0b95f0@CNetMgr@@QAEXXZ	0.9709	0.9709	1	8923856a4b4c	0xb95f0
-engine_attributed	?CNetMgr_0ba170@CNetMgr@@QAEXXZ	3.3333	3.3333	1	c65cc32a93da	0xba170
-engine_attributed	?CNetMgr_0ba1a0@CNetMgr@@QAEXXZ	0.9302	0.9302	1	c5e9a524eef7	0xba1a0
-engine_attributed	?CNetMgr_0ba3b0@CNetMgr@@QAEXXZ	0.3333	0.3333	1	8e65f349fe59	0xba3b0
 engine_attributed	?CNetMgr_0ba590@CNetMgr@@QAEXXZ	1.1765	1.1765	1	53424ff80c1f	0xba590
 engine_attributed	?CNetMgr_0ba7d0@CNetMgr@@QAEXXZ	5.5556	5.5556	1	74311ea523a1	0xba7d0
 engine_attributed	?CNetMgr_0ba810@CNetMgr@@QAEXXZ	0.4124	0.4124	1	a38c1ba61204	0xba810
@@ -2912,22 +2904,30 @@ netmgr	?EnumSessions@CNetMgr@@QAEHPAX0@Z	100.0000	100.0000	5	bca9b98ca5df	0x1791
 netmgr	?FindPlayerById@CNetMgr@@QAEPAUCNetPlayerEntry@@H@Z	87.6923	87.6923	4	ce8d7b0def71	0x178e90
 netmgr	?FrameSyncWait@CNetMgr@@QAEIXZ	70.7250	70.7250	5	d648fa188145	0xbc070
 netmgr	?GetMaxAckLatency@CNetMgr@@QAEIXZ	100.0000	100.0000	5	8c803f5d0abb	0xbd030
+netmgr	?GetName@CNetMgr@@QAE?AVCString@@XZ	100.0000	100.0000	1	6686694bfda5	0xba170
 netmgr	?GetPlayerData@CNetMgr@@QAEPAXH@Z	100.0000	100.0000	5	7e1f45c4e8b3	0x178eb0
+netmgr	?HandleControlMsg@CNetMgr@@QAEHPAUCNetCtrlMsg@@H@Z	0.0000	0.0000	1	9761b53b87ce	0xba1a0
 netmgr	?HandleVersionCheck@CNetMgr@@QAEXPAUCNetVersionMsg@@@Z	100.0000	100.0000	5	64e5a91d51b5	0xbd0b0
 netmgr	?OnDropPlayer@CNetMgr@@QAEXXZ	100.0000	100.0000	5	dacf37ef2d41	0xbc110
 netmgr	?OnMultiOptions@CNetMgr@@QAEXXZ	100.0000	100.0000	4	e869ce4641a0	0xbadd0
 netmgr	?OnMultiPause@CNetMgr@@QAEXXZ	100.0000	100.0000	6	ffa262cfaca5	0xbad40
 netmgr	?OnOutOfSync@CNetMgr@@QAEXXZ	100.0000	100.0000	6	d7c1362de8b3	0xbae40
+netmgr	?OnPlayerLeft@CNetMgr@@QAEHH@Z	100.0000	100.0000	1	f7eb816e9c77	0xba3b0
+netmgr	?PollSession@CNetMgr@@QAEHXZ	59.6117	59.6117	1	1eeafc38011b	0xb95f0
 netmgr	?ReadGroupSel@CNetMgr@@QAEHPAX@Z	100.0000	100.0000	3	98ffd04b984c	0x178590
 netmgr	?ReadPlayerSel@CNetMgr@@QAEHPAX@Z	100.0000	100.0000	3	ece2bf78cc19	0x178820
 netmgr	?RemovePlayerObj@CNetMgr@@QAEHPAVCNetPlayerObj@@@Z	100.0000	100.0000	4	7e4b680143de	0x178e20
 netmgr	?ReportAckLatency@CNetMgr@@QAEXXZ	100.0000	100.0000	5	856f3df91558	0xbd000
 netmgr	?ResetPlayerCommands@CNetMgr@@QAEHH@Z	92.7632	92.7632	5	8be7f98da808	0xbcf20
 netmgr	?SendNetStat@CNetMgr@@QAEXHIH@Z	100.0000	100.0000	1	9af02229d0d3	0xb9290
+netmgr	?SendStat3@CNetMgr@@QAEHHIH@Z	100.0000	100.0000	1	f3d012583805	0xb9410
 netmgr	?SendStatBuf@CNetMgr@@QAEHPAUCNetStatPacket@@H@Z	100.0000	100.0000	1	1553725771dc	0xb91f0
 netmgr	?SendStatFlag@CNetMgr@@QAEXHH@Z	100.0000	100.0000	1	8a7d2da1cf51	0xb9240
 netmgr	?SendStatFrom@CNetMgr@@QAEHPAUCNetStatPacket@@HH@Z	100.0000	100.0000	1	fda49e220ade	0xb92e0
 netmgr	?SendStatPair@CNetMgr@@QAEHPAUCNetPlayerEntry@@PAUCNetStatPacket@@H@Z	100.0000	100.0000	1	7b1278600544	0xb9330
+netmgr	?SendStatPairRaw@CNetMgr@@QAEHPAUCNetPlayerEntry@@PAXHH@Z	100.0000	100.0000	1	745d8da92ff1	0xb9500
+netmgr	?SendStatTo@CNetMgr@@QAEHPAUCNetPlayerEntry@@HH@Z	100.0000	100.0000	1	96cfc5c06fb5	0xb93a0
+netmgr	?SendStatValue@CNetMgr@@QAEHHHHH@Z	100.0000	100.0000	1	3f4f54a1c5e5	0xb9570
 netmgr	?SetData@CNetMgr@@QAEHHHHHH@Z	100.0000	100.0000	2	c51a4dd17d7a	0x178fc0
 netmgr	?SetGroupData2@CNetMgr@@QAEHPAUCNetPlayerEntry@@0HHH@Z	100.0000	100.0000	2	ffa1f701cb2e	0x178ef0
 netmgr	?SetGroupDataFrom@CNetMgr@@QAEHPAUCNetPlayerEntry@@HHH@Z	100.0000	100.0000	2	ea3fd468cc71	0x179090

@@ -271,14 +271,7 @@ RVA(0x000b86c0, 0x206) void CNetMgr::CNetMgr_0b86c0() {}  // high; large /GX EH 
 // re-attribute (likely CMultiStartDlg or a sibling multiplayer dialog).
 RVA(0x000b8960, 0x59) void CNetMgr::CNetMgr_0b8960() {}  // WRONG-CLASS (CDialog dtor); re-attribute
 RVA(0x000b8fc0, 0x151) void CNetMgr::CNetMgr_0b8fc0() {}  // high; /GX cond-temp EH wall, final-sweep
-RVA(0x000b93a0, 0x47) void CNetMgr::CNetMgr_0b93a0() {}  // high
-RVA(0x000b9410, 0x51) void CNetMgr::CNetMgr_0b9410() {}  // high
-RVA(0x000b9500, 0x46) void CNetMgr::CNetMgr_0b9500() {}  // high
-RVA(0x000b9570, 0x53) void CNetMgr::CNetMgr_0b9570() {}  // high
-RVA(0x000b95f0, 0x10f) void CNetMgr::CNetMgr_0b95f0() {}  // high
-RVA(0x000ba170, 0x20) void CNetMgr::CNetMgr_0ba170() {}  // high
-RVA(0x000ba1a0, 0x83) void CNetMgr::CNetMgr_0ba1a0() {}  // high
-RVA(0x000ba3b0, 0x17f) void CNetMgr::CNetMgr_0ba3b0() {}  // high
+// b93a0/b9410/b9500/b9570/b95f0/ba170/ba1a0/ba3b0 reconstructed in src/Net/NetMgr.cpp
 RVA(0x000ba590, 0x63) void CNetMgr::CNetMgr_0ba590() {}  // high
 RVA(0x000ba7d0, 0x2e) void CNetMgr::CNetMgr_0ba7d0() {}  // high
 RVA(0x000ba810, 0x11c) void CNetMgr::CNetMgr_0ba810() {}  // high

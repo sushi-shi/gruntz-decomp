@@ -7,6 +7,14 @@
 //   CNetMgr::GetMaxAckLatency   - max ack-latency over the four network slots
 //   CNetMgr::ReportAckLatency   - ships that latency to the engine as stat 0x421
 //   CNetMgr::FindPlayerById     - id lookup over the m_58 player list
+//   CNetMgr::SendStatTo / SendStat3 / SendStatPairRaw / SendStatValue - the rest
+//       of the stat-send family (build/forward a 0x10 packet through SetData /
+//       SetGroupData2)
+//   CNetMgr::GetName            - returns the +0x8 CString member by value
+//   CNetMgr::HandleControlMsg   - the network control-message switch dispatcher
+//                                 (code byte-exact; jump-table scoring artifact)
+//   CNetMgr::OnPlayerLeft       - report + tear down a leaving player (/GX EH)
+//   CNetMgr::PollSession        - pump the DirectPlay receive queue (@early-stop)
 //
 // (CNetMgr::ReportError, the DirectPlay HRESULT->string formatter, lives in its
 // own TU - src/Net/NetMgrReportError.cpp / the netmgrerror unit.)
@@ -19,6 +27,8 @@
 #include <Net/NetMgr.h>
 #include <rva.h>
 #include <string.h> // memset (inlined rep stosl for the version packet)
+
+#include <Gruntz/GruntzPlayer.h> // OnPlayerLeft derefs the leaving player's slot
 
 CGameMgr* g_pGameMgr;
 
@@ -208,6 +218,244 @@ i32 CNetMgr::SendStatPair(CNetPlayerEntry* recipient, CNetStatPacket* pkt, i32 c
         (CNetPlayerEntry*)m_localPlayer, recipient, c, (i32)pkt, 0x10
     );
     return hr == 0;
+}
+
+// ---------------------------------------------------------------------------
+// CNetMgr::SendStatTo  (__thiscall).
+// No-op on a null recipient; otherwise builds the 0x10-byte stat header
+// {flag, id, localPlayer.id} on the stack and ships it to that one player via
+// SendStatPair.
+RVA(0x000b93a0, 0x47)
+i32 CNetMgr::SendStatTo(CNetPlayerEntry* recipient, i32 id, i32 c) {
+    if (recipient == 0) {
+        return 0;
+    }
+    CNetStatPacket pkt;
+    pkt.m_0 |= 0x80;
+    pkt.m_4 = id;
+    pkt.m_8 = ((CNetPlayerEntry*)m_localPlayer)->m_4;
+    return SendStatPair(recipient, &pkt, c);
+}
+
+// ---------------------------------------------------------------------------
+// CNetMgr::SendStat3  (__thiscall).
+// The 3-arg stat sender OnDropPlayer fires: builds the 0x10-byte stat header
+// {flag, value, localPlayer.id} on the stack and ships it through SetData
+// (a=localPlayer.id, b=id, c=flag). Returns the success bool.
+RVA(0x000b9410, 0x51)
+i32 CNetMgr::SendStat3(i32 id, u32 value, i32 flag) {
+    CNetStatPacket pkt;
+    pkt.m_0 |= 0x80;
+    pkt.m_4 = value;
+    pkt.m_8 = ((CNetPlayerEntry*)m_localPlayer)->m_4;
+    i32 hr = m_peer->SetData(((CNetPlayerEntry*)m_localPlayer)->m_4, id, flag, (i32)&pkt, 0x10);
+    return hr == 0;
+}
+
+// ---------------------------------------------------------------------------
+// CNetMgr::SendStatPairRaw  (__thiscall).
+// Forwards a caller packet to one recipient via SetGroupData2 (no bit7 stamp,
+// caller-supplied size): null-recipient or null-packet -> 0, else ships
+// SetGroupData2(localPlayer, recipient, c, pkt, size). Returns the success bool.
+RVA(0x000b9500, 0x46)
+i32 CNetMgr::SendStatPairRaw(CNetPlayerEntry* recipient, void* pkt, i32 size, i32 c) {
+    if (recipient == 0) {
+        return 0;
+    }
+    if (pkt == 0) {
+        return 0;
+    }
+    i32 hr = m_peer->SetGroupData2(
+        (CNetPlayerEntry*)m_localPlayer, recipient, c, (i32)pkt, size
+    );
+    return hr == 0;
+}
+
+// ---------------------------------------------------------------------------
+// CNetMgr::SendStatValue  (__thiscall).
+// Builds the 0x10-byte stat header {flag, statId, value} on the stack and ships
+// it through SetData (a=localPlayer.id, b=id, c=flag). Returns the success bool.
+RVA(0x000b9570, 0x53)
+i32 CNetMgr::SendStatValue(i32 id, i32 statId, i32 value, i32 flag) {
+    CNetStatPacket pkt;
+    pkt.m_0 |= 0x80;
+    pkt.m_4 = statId;
+    pkt.m_8 = value;
+    i32 hr = m_peer->SetData(
+        ((CNetPlayerEntry*)m_localPlayer)->m_4, id, flag, (i32)&pkt, 0x10
+    );
+    return hr == 0;
+}
+
+// ---------------------------------------------------------------------------
+// CNetMgr::PollSession  (__thiscall).
+// Pumps the DirectPlay receive queue. Bails (returns 0) if there is no local
+// player. Asks the peer's interface how many messages are pending for the local
+// player (GetMessageCount, slot 0x44), then receives + dispatches up to that
+// many (each Receive into the shared g_recvBuffer, slot 0x64): a nonzero HRESULT
+// is reported (NetMgr.h:0x141) and breaks; a message not addressed from the
+// local player is handed to the engine dispatcher (Stub_0b9750) and counted.
+// Stops early if the abort latch (m_pollAbort) is set. Returns the dispatched
+// count.
+// @early-stop
+// frame-size + regalloc + COM-slot-aliasing wall (~60%): logic, the null guard,
+// the inlined GetMessageCount (slot 0x44) probe with the neg/sbb/not/and HRESULT
+// mask, the receive loop (Receive slot 0x64), the ReportError on failure, and the
+// per-message DispatchRecvMsg are all reproduced - but retail's frame is 0x10
+// (mine 0xc), it pins this=esi / 0=edi / count=ebx across the function, and it
+// OVERLAPS the receive {size,idFrom} stack slot (one local serves lpidFrom AND
+// lpdwDataSize) which a clean C++ shape won't express. See
+// docs/patterns/stack-buffer-size-drives-frame.md. Deferred to the final sweep.
+RVA(0x000b95f0, 0x10f)
+i32 CNetMgr::PollSession() {
+    if (m_localPlayer == 0) {
+        return 0;
+    }
+
+    i32 count;
+    if (m_localPlayer == 0) {
+        count = 0;
+    } else {
+        IDirectPlay4Z* dp = m_peer->m_directPlay;
+        count = 0;
+        i32 hr = dp->vtbl->GetMessageCount(
+            dp, ((CNetPlayerEntry*)m_localPlayer)->m_4, &count
+        );
+        if (hr) {
+            count = 0;
+        }
+    }
+    if (count <= 0) {
+        return 0;
+    }
+
+    i32 dispatched = 0;
+    i32 sender = 0;
+    while (count > 0) {
+        if (m_pollAbort) {
+            break;
+        }
+
+        i32 size = 0x800;
+        i32 idTo = ((CNetPlayerEntry*)m_localPlayer)->m_4;
+        IDirectPlay4Z* dp = m_peer->m_directPlay;
+        i32 hr = dp->vtbl->Receive(dp, &size, &idTo, 1, (void*)g_recvBuffer, &size);
+        if (hr) {
+            ReportError("c:\\proj\\incs\\netmgr.h", 0x141, hr, 0);
+            if (hr) {
+                break;
+            }
+        }
+        count--;
+        if (sender != ((CNetPlayerEntry*)m_localPlayer)->m_4) {
+            DispatchRecvMsg(sender, g_recvBuffer, size);
+            dispatched++;
+        }
+        if (hr) {
+            break;
+        }
+    }
+    return dispatched;
+}
+
+// ---------------------------------------------------------------------------
+// CNetMgr::GetName  (__thiscall).
+// Returns the +0x8 CString member by value (NRV-construct the return slot as a
+// copy of m_8).
+RVA(0x000ba170, 0x20)
+CString CNetMgr::GetName() {
+    return m_8;
+}
+
+// ---------------------------------------------------------------------------
+// CNetMgr::HandleControlMsg  (__thiscall).
+// Dispatches a network control message on its +0x0 code: 3 -> the sprite/menu
+// handler; 5 -> the player-left path (when sub-code 1, report+teardown then set
+// the shared player-left flag); 0x31 -> latch m_sessionTerminated; 0x101 ->
+// latch m_useChannelLatency. Anything else (or a null/out-of-range code) -> 0;
+// the matched cases return 1.
+// @early-stop
+// jump-table-data-overlap scoring artifact (objdiff 0%, CODE byte-exact: all 37
+// dispatch+case bytes match retail, incl. the two-level byte-index + jump-ptr
+// table). objdiff mis-scores the inline .rdata table region against the
+// differently-named switchdataD_004ba2xx symbols. See
+// docs/patterns/jumptable-data-overlap.md (topic:scoring-artifact). Logic correct.
+RVA(0x000ba1a0, 0x83)
+i32 CNetMgr::HandleControlMsg(CNetCtrlMsg* msg, i32 arg2) {
+    if (msg == 0) {
+        return 0;
+    }
+
+    switch (msg->m_0) {
+        case 3:
+            HandleSpriteMsg(msg);
+            return 1;
+        case 5:
+            if (msg->m_4 != 1) {
+                return 1;
+            }
+            OnPlayerLeft(msg->m_8);
+            g_playerLeftFlag = 1;
+            return 1;
+        case 0x31:
+            m_useChannelLatency = 1;
+            return 1;
+        case 0x101:
+            m_sessionTerminated = 1;
+            return 1;
+        default:
+            return 0;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// CNetMgr::OnPlayerLeft  (__thiscall; /GX EH frame).
+// Tears down a leaving player and announces it. Looks the player's data blob up
+// in the peer (GetPlayerData); ignores the local player. Resolves the player's
+// slot (m_4->FindPlayer); requires its +0x20 / +0x14 gates set. Releases the
+// slot's global flag (g_netSlotTable[slot->m_008] via SetNetSlot, decrement
+// g_activePlayers if armed), clears its list link, builds "<name> has left the
+// game." and appends it to the chat log (m_4->m_5c->AddItem, type 0x20 data
+// 0x11), and unlinks the blob (RemovePlayerObj). If the channel selector is set
+// and not yet connected, fires the rejoin finalizer and sets g_playerLeftFlag.
+// The two CString temps' dtors run under the /GX frame.
+RVA(0x000ba3b0, 0x17f)
+i32 CNetMgr::OnPlayerLeft(i32 playerId) {
+    CNetPlayerObj* blob = (CNetPlayerObj*)m_peer->GetPlayerData(playerId);
+    if ((i32)blob == m_localPlayer) {
+        return 0;
+    }
+
+    CNetGameMgr* gm = (CNetGameMgr*)m_4;
+    GruntzPlayer* slot = gm->FindPlayer(playerId);
+    if (slot == 0) {
+        return 0;
+    }
+    if (slot->m_020 == 0) {
+        return 0;
+    }
+    if (slot->m_014 == 0) {
+        return 0;
+    }
+
+    if (slot->m_030 != 0) {
+        slot->m_030 = 0;
+        g_activePlayers--;
+    }
+    slot->m_020 = 0;
+    SetNetSlot(slot->m_008, 1);
+
+    CString line = slot->GetName() + " has left the game.";
+    ((CNetGameMgr*)m_4)->m_5c->AddItem((char*)(const char*)line, 0x20, 0x11);
+
+    if (blob != 0) {
+        m_peer->RemovePlayerObj(blob);
+    }
+    if (m_useChannelLatency != 0 && m_connected == 0) {
+        RejoinIfNeeded(0);
+        g_playerLeftFlag = 1;
+    }
+    return 1;
 }
 
 // -------------------------------------------------------------------------
