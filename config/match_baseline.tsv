@@ -43,6 +43,7 @@ cfader	6	5
 cfadermgr	5	2
 chatbox	16	9
 chatbox_eh	1	1
+chatboxowner	4	1
 cheatmgr	4	3
 clightfxrender	20	8
 cmulti	11	7
@@ -57,7 +58,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	284	0
+engine_discovered	280	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -459,6 +460,10 @@ chatbox	?ScrollRow0@CChatBox@@QAEHXZ	63.2353	63.2353	3	d54dcc684915	0x183030
 chatbox	?ScrollRow1@CChatBox@@QAEHXZ	63.2353	63.2353	3	3df1f3275a8f	0x1830b0
 chatbox	?Step@CChatBox@@QAEHH@Z	88.9467	88.9467	3	2b61715f864e	0x182ed0
 chatbox_eh	??1CChatBox@@QAE@XZ	100.0000	100.0000	1	ab8e83aa5ef4	0xa0360
+chatboxowner	?Attach@CChatBoxOwner@@QAEXPAXPAUCChatBoxTextHost@@@Z	68.5714	68.5714	1	52d62234b528	0x204e0
+chatboxowner	?Configure@CChatBoxOwner@@QAEXH@Z	69.1600	69.1600	1	ac14c7aa5bf4	0x20530
+chatboxowner	?Deactivate@CChatBoxOwner@@QAEXXZ	100.0000	100.0000	1	5fefd421f983	0x20510
+chatboxowner	?HitTest@CChatBoxOwner@@QAEHHH@Z	38.1212	38.1212	1	15a04f9b3729	0x21140
 cheatmgr	??1CCheatMgr@@QAE@XZ	100.0000	100.0000	1	94bf38f28220	0x85e60
 cheatmgr	?AddCheat@CCheatMgr@@QAEHPBDHH@Z	98.5714	98.5714	1	77144daa4699	0x22be0
 cheatmgr	?Empty@CCheatMgr@@QAEXXZ	100.0000	100.0000	1	8cc149232bcc	0x22b00
@@ -827,10 +832,6 @@ engine_discovered	?ClassUnknown_54_135110@ClassUnknown_54@@QAEXXZ	2.2222	2.2222	
 engine_discovered	?ClassUnknown_55_137060@ClassUnknown_55@@QAEXXZ	0.9302	0.9302	1	c02cbb33260c	0x137060
 engine_discovered	?ClassUnknown_55_1370d0@ClassUnknown_55@@QAEXXZ	4.7619	4.7619	1	4b652533c4c3	0x1370d0
 engine_discovered	?ClassUnknown_56_08c3b0@ClassUnknown_56@@QAEXXZ	25.0000	25.0000	1	2d6e32a3fd2c	0x8c3b0
-engine_discovered	?ClassUnknown_58_0204e0@ClassUnknown_58@@QAEXXZ	5.7143	5.7143	1	c28d385bd094	0x204e0
-engine_discovered	?ClassUnknown_58_020510@ClassUnknown_58@@QAEXXZ	50.0000	50.0000	1	fa6da44a847b	0x20510
-engine_discovered	?ClassUnknown_58_020530@ClassUnknown_58@@QAEXXZ	1.6000	1.6000	1	842d4043b72a	0x20530
-engine_discovered	?ClassUnknown_58_021140@ClassUnknown_58@@QAEXXZ	0.6061	0.6061	1	0daca7ded60d	0x21140
 engine_discovered	?ClassUnknown_5_150040@ClassUnknown_5@@QAEXXZ	0.3226	0.3226	1	faabd5d5e480	0x150040
 engine_discovered	?ClassUnknown_60_0ebd30@ClassUnknown_60@@QAEXXZ	12.5000	12.5000	1	2eccf0c58550	0xebd30
 engine_discovered	?ClassUnknown_61_120120@ClassUnknown_61@@QAEXXZ	1.1628	1.1628	1	a41e00445cad	0x120120

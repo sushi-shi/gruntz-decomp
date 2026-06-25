@@ -884,15 +884,10 @@ void ClassUnknown_56::ClassUnknown_56_08c3b0() {}
 // All four methods reconstructed in src/Gruntz/CDDrawSurfacePair.cpp
 // (CDDrawSurfacePair: BltSelf/~dtor/TeardownSurface/DrawBox).
 
-// ---- ClassUnknown_58 ----
-RVA(0x000204e0, 0x19)
-void ClassUnknown_58::ClassUnknown_58_0204e0() {}
-RVA(0x00020510, 0x8)
-void ClassUnknown_58::ClassUnknown_58_020510() {}
-RVA(0x00020530, 0x61)
-void ClassUnknown_58::ClassUnknown_58_020530() {}
-RVA(0x00021140, 0xda)
-void ClassUnknown_58::ClassUnknown_58_021140() {}
+// ---- ClassUnknown_58 ---- reconstructed as CChatBoxOwner (the chat/text-box owner
+// page) in src/Gruntz/ChatBoxOwner.cpp: Attach (0x204e0), Deactivate (0x20510),
+// Configure (0x20530), HitTest (0x21140). The renderer LoadChatBoxSprite (0x20f40,
+// the trace co-call) stays in src/Stub/ApiCallers.cpp at its scheduling wall.
 
 // ---- ClassUnknown_6 ----
 RVA(0x0014dcf0, 0x69)
