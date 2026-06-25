@@ -425,11 +425,6 @@ class ClassUnknown_19 {
 public:
     void ClassUnknown_19_16fc70();
 };
-class ClassUnknown_2 {
-public:
-    void ClassUnknown_2_14f080();
-    void ClassUnknown_2_14f310();
-};
 class ClassUnknown_20 {
 public:
     void ClassUnknown_20_16df70();

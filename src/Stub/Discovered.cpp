@@ -635,17 +635,11 @@ void ClassUnknown_18::ClassUnknown_18_16f7f0() {}
 RVA(0x0016fc70, 0x48e)
 void ClassUnknown_19::ClassUnknown_19_16fc70() {}
 
-// ---- ClassUnknown_2 ---- reconstructed as the DDrawMgr color/shade lookup-
-// table cache CShadeTableCache in src/DDrawMgr/ShadeTableCache.cpp (a CGruntzMgr
-// member). The ctor/dtor/Init/FreeNodes/FindRemove + two integer-loop builders
-// (GreyTable 0x14eef0, AlphaTable 0x14f5b0) are reconstructed there. The two
-// remaining builders below are large float-curve generators (__ftol + nested
-// fcom/fnstsw-clamped loops on a /GX EH frame this recompile can't emit -
-// rezalloc-placement-new-no-eh-frame.md); deferred to the final sweep.
-RVA(0x0014f080, 0x283)
-void ClassUnknown_2::ClassUnknown_2_14f080() {}
-RVA(0x0014f310, 0x297)
-void ClassUnknown_2::ClassUnknown_2_14f310() {}
+// ---- ClassUnknown_2 ---- fully reconstructed as the DDrawMgr color/shade
+// lookup-table cache CShadeTableCache in src/DDrawMgr/ShadeTableCache.cpp (a
+// CGruntzMgr member). All methods, incl. the two float/int blend-table builders
+// AddTable (0x14f080) and SubTable (0x14f310), live there (the four builders share
+// the /GX EH-frame wall, @early-stop).
 
 // ---- ClassUnknown_20 ----
 RVA(0x0016df70, 0x22)

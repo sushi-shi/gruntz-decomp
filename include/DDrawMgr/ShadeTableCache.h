@@ -55,15 +55,15 @@ struct CShadeTableArray {
 
 class CShadeTableCache {
 public:
-    CShadeTableCache();               // 0x14de30
-    ~CShadeTableCache();              // 0x14de50
-    i32 Init();                       // 0x14dec0
-    void FreeNodes();                 // 0x14ded0
-    CShadeTable* GreyTable();         // 0x14eef0
-    CShadeTable* AddTable();          // 0x14f080
-    CShadeTable* SubTable(i32 c);     // 0x14f310
-    CShadeTable* AlphaTable(u8* pal); // 0x14f5b0
-    void FindRemove(CShadeTable* t);  // 0x14fb80
+    CShadeTableCache();                 // 0x14de30
+    ~CShadeTableCache();                // 0x14de50
+    i32 Init();                         // 0x14dec0
+    void FreeNodes();                   // 0x14ded0
+    CShadeTable* GreyTable();           // 0x14eef0
+    CShadeTable* AddTable(float scale); // 0x14f080
+    CShadeTable* SubTable(i32 color);   // 0x14f310
+    CShadeTable* AlphaTable(u8* pal);   // 0x14f5b0
+    void FindRemove(CShadeTable* t);    // 0x14fb80
 
     i32 m_00;               // +0x00 gate
     CShadeTableArray m_arr; // +0x04 element array subobject

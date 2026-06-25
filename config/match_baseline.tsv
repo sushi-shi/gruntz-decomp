@@ -62,7 +62,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	243	0
+engine_discovered	241	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -138,7 +138,7 @@ sbi_statztabgruntbar	3	2
 sbi_statztabgruntbar_eh	1	0
 sbi_warlordhead	4	1
 sbi_warlordhead_eh	1	0
-shadetablecache	7	3
+shadetablecache	9	3
 siriusworkerhandlers	4	0
 sounddevice	6	4
 soundstream	5	2
@@ -799,8 +799,6 @@ engine_discovered	?ClassUnknown_26_11c630@ClassUnknown_26@@QAEXXZ	1.4286	1.4286	
 engine_discovered	?ClassUnknown_28_01f940@ClassUnknown_28@@QAEXXZ	1.3333	1.3333	1	b91ea722bf78	0x1f940
 engine_discovered	?ClassUnknown_28_158760@ClassUnknown_28@@QAEXXZ	1.0811	1.0811	1	f275e2596af6	0x158760
 engine_discovered	?ClassUnknown_29_137110@ClassUnknown_29@@QAEXXZ	1.7544	1.7544	1	00b82a2022cd	0x137110
-engine_discovered	?ClassUnknown_2_14f080@ClassUnknown_2@@QAEXXZ	0.2198	0.2198	1	2281c0263940	0x14f080
-engine_discovered	?ClassUnknown_2_14f310@ClassUnknown_2@@QAEXXZ	0.1932	0.1932	1	f0e4c9b0b6a8	0x14f310
 engine_discovered	?ClassUnknown_31_152f20@ClassUnknown_31@@QAEXXZ	0.7407	0.7407	1	2933ba7b0e04	0x152f20
 engine_discovered	?ClassUnknown_31_152fb0@ClassUnknown_31@@QAEXXZ	0.3704	0.3704	1	8c9a52559e72	0x152fb0
 engine_discovered	?ClassUnknown_31_153810@ClassUnknown_31@@QAEXXZ	0.8511	0.8511	1	add5b7345b4d	0x153810
@@ -2079,11 +2077,13 @@ sbi_warlordhead	?ShowFrames@CSBI_WarlordHead@@QAEHHH@Z	92.2716	92.2716	1	73cec54
 sbi_warlordhead_eh	??1CSBI_WarlordHead@@QAE@XZ	43.6061	43.6061	1	bcabec3f0b56	0x104a00
 shadetablecache	??0CShadeTableCache@@QAE@XZ	100.0000	100.0000	1	8d165746ed6f	0x14de30
 shadetablecache	??1CShadeTableCache@@QAE@XZ	80.1333	80.1333	2	d4743b4c108f	0x14de50
+shadetablecache	?AddTable@CShadeTableCache@@QAEPAUCShadeTable@@M@Z	59.6703	59.6703	1	39aac9dbe614	0x14f080
 shadetablecache	?AlphaTable@CShadeTableCache@@QAEPAUCShadeTable@@PAE@Z	66.4253	66.4253	2	43e142788133	0x14f5b0
 shadetablecache	?FindRemove@CShadeTableCache@@QAEXPAUCShadeTable@@@Z	91.5556	91.5556	2	c56be1b35741	0x14fb80
 shadetablecache	?FreeNodes@CShadeTableCache@@QAEXXZ	100.0000	100.0000	1	200336a988e4	0x14ded0
 shadetablecache	?GreyTable@CShadeTableCache@@QAEPAUCShadeTable@@XZ	71.7576	71.7576	2	5602dfea4c43	0x14eef0
 shadetablecache	?Init@CShadeTableCache@@QAEHXZ	100.0000	100.0000	1	9851d1a61203	0x14dec0
+shadetablecache	?SubTable@CShadeTableCache@@QAEPAUCShadeTable@@H@Z	60.8937	60.8937	1	4dd41f8d481e	0x14f310
 siriusworkerhandlers	??0WorkerFull@@QAE@HHH@Z	99.7647	99.7647	1	5742f7cb4005	0x15b300
 siriusworkerhandlers	?Handler03d670@@YAHPAUOwner@@@Z	97.8571	97.8571	1	839c531d42a0	0x3d670
 siriusworkerhandlers	?Handler07db20@@YAHPAUOwner@@@Z	97.8571	97.8571	1	b23002ac8904	0x7db20
@@ -2412,7 +2412,7 @@ wwdgrid	?Query@CWwdGrid@@QAEHHHHHH@Z	99.7188	99.7188	1	e93bb39bd8a3	0x1918c0
 wwdgrid	?Remove@CWwdGrid@@QAEXPAUWwdRegion@@@Z	100.0000	100.0000	1	0d0f14401f48	0x191890
 wwdspatialmgr	?CountInRect@CWwdSpatialMgr@@QAEHPAVCWwdGrid@@@Z	86.1539	86.1539	2	bc9ec8d7de46	0x168460
 wwdspatialmgr	?FreeGrids@CWwdSpatialMgr@@QAEXXZ	100.0000	100.0000	1	86831d8ccca0	0x1682f0
-wwdspatialmgr	?GetNext@CWwdGridIter@@QAEPAUWwdGridNode@@XZ	93.7073	93.7073	1	6bcf16606b62	0x191c30
+wwdspatialmgr	?GetNext@CWwdGridIter@@QAEPAUWwdGridNode@@XZ	93.7073	93.7073	2	dbf0141b6da1	0x191c30
 wwdspatialmgr	?GetSize@CWwdSpatialMgr@@QAEHXZ	100.0000	100.0000	1	38653b262d2f	0x168430
 wwdspatialmgr	?Init@CWwdGridIter@@QAEPAUWwdGridNode@@PAVCWwdGrid@@UWwdRect@@H@Z	95.5000	95.5000	1	9db4c1fe715e	0x191b10
 wwdspatialmgr	?PruneCount@CWwdSpatialMgr@@QAEHXZ	100.0000	100.0000	2	3dd1356074d6	0x1688b0

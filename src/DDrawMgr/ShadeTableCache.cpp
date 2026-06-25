@@ -143,6 +143,118 @@ CShadeTable* CShadeTableCache::GreyTable() {
 }
 
 // ===========================================================================
+// 0x14f080 - AddTable: a 0x20000-byte additive/glow blend table. For each alpha
+// level v (0..240 step 16) and each quantized source color (r/g/b = 8..248 step
+// 16), brighten the channel by f = 1 + (v*scale)/255 and pack to RGB565. The
+// channels go through __ftol after a 255 ceiling clamp. EH frame. @early-stop
+// ===========================================================================
+// @early-stop
+// EH-frame wall (rezalloc-placement-new-no-eh-frame.md) + x87 fxch schedule
+// (x87-fp-stack-schedule.md): body reconstructed (4-deep v/r/g/b loop, the factor
+// recomputed per innermost iter to match retail's structure), but the /GX
+// ctor-in-flight frame is absent on MSVC5 and retail fuses the first (r) channel
+// into the factor build via fxch (uniform fild;fmul here); ~60%.
+RVA(0x0014f080, 0x283)
+CShadeTable* CShadeTableCache::AddTable(float scale) {
+    CShadeTable* t = (CShadeTable*)operator new(0x10);
+    if (t) {
+        t = t->Ctor();
+    } else {
+        t = 0;
+    }
+    if (!t) {
+        return 0;
+    }
+    if (!t->Alloc(0x20000, 0)) {
+        t->Free();
+        operator delete(t);
+        return 0;
+    }
+    i32 idx = m_arr.m_nSize;
+    m_arr.SetSizeGrow(idx + 1, -1);
+    m_arr.m_pData[idx] = t;
+    u16* out = (u16*)t->m_data;
+    for (i32 v = 0; v < 0x100; v += 0x10) {
+        for (i32 r = 8; r < 0x100; r += 0x10) {
+            for (i32 g = 8; g < 0x100; g += 0x10) {
+                for (i32 b = 8; b < 0x100; b += 0x10) {
+                    u8 rc = (u8)(r < 0xff ? r : 0xff);
+                    u8 gc = (u8)(g < 0xff ? g : 0xff);
+                    u8 bc = (u8)(b < 0xff ? b : 0xff);
+                    float f = (float)v * scale * (1.0f / 255.0f) + 1.0f;
+                    float fr = (float)(i32)rc * f;
+                    i32 rn = (i32)(fr < 255.0f ? fr : 255.0f);
+                    float fg = (float)(i32)gc * f;
+                    i32 gn = (i32)(fg < 255.0f ? fg : 255.0f);
+                    float fb = (float)(i32)bc * f;
+                    i32 bn = (i32)(fb < 255.0f ? fb : 255.0f);
+                    *out++ = (u16)(((u8)((u8)rn >> (u8)g_rDown) << g_rUp)
+                                   | ((u8)((u8)gn >> (u8)g_gDown) << g_gUp)
+                                   | (u8)((u8)bn >> (u8)g_bDown));
+                }
+            }
+        }
+    }
+    return t;
+}
+
+// ===========================================================================
+// 0x14f310 - SubTable: a 0x20000-byte subtractive/darken blend table keyed by a
+// packed RGB color arg. For each level (15..0) and each quantized source color,
+// quantize src/15 and add the per-level color contribution color*level/15, then
+// pack to RGB565. Pure integer (the /15 lowers to imul 0x88888889; sar 3). EH
+// frame. @early-stop
+// ===========================================================================
+// @early-stop
+// EH-frame wall (rezalloc-placement-new-no-eh-frame.md) + div-by-15 strength
+// reduction scheduling: body reconstructed (level 15..0 x r/g/b, color split into
+// cr/cg/cb, /15 via imul 0x88888889;sar 3), but the /GX frame is absent and MSVC
+// strength-reduces the per-level color accumulators with a different init/step
+// schedule than retail; ~61%.
+RVA(0x0014f310, 0x297)
+CShadeTable* CShadeTableCache::SubTable(i32 color) {
+    CShadeTable* t = (CShadeTable*)operator new(0x10);
+    if (t) {
+        t = t->Ctor();
+    } else {
+        t = 0;
+    }
+    if (!t) {
+        return 0;
+    }
+    if (!t->Alloc(0x20000, 0)) {
+        t->Free();
+        operator delete(t);
+        return 0;
+    }
+    i32 idx = m_arr.m_nSize;
+    m_arr.SetSizeGrow(idx + 1, -1);
+    m_arr.m_pData[idx] = t;
+    u16* out = (u16*)t->m_data;
+    i32 cr = color & 0xff;
+    i32 cg = (color >> 8) & 0xff;
+    i32 cb = (color >> 0x10) & 0xff;
+    for (i32 level = 0xf; level >= 0; level--) {
+        i32 subr = cr * level / 0xf;
+        i32 subg = cg * level / 0xf;
+        i32 subb = cb * level / 0xf;
+        for (i32 r = 0; r < 0x10; r++) {
+            u8 rn = (u8)(((r * level / 0xf) << 4) + subr);
+            for (i32 g = 0; g < 0x10; g++) {
+                u8 gn = (u8)(((g * level / 0xf) << 4) + subg);
+                for (i32 b = 0; b < 0x10; b++) {
+                    u8 bn = (u8)(((b * level / 0xf) << 4) + subb);
+                    *out++ =
+                        (u16)(((u8)(bn >> (u8)g_bDown)) | ((u8)((u8)rn >> (u8)g_rDown) << g_rUp)
+                              | ((u8)((u8)gn >> (u8)g_gDown) << g_gUp));
+                }
+            }
+        }
+    }
+    return t;
+}
+
+// ===========================================================================
 // 0x14f5b0 - AlphaTable: allocate a 0x200-byte (256-entry u16) table and fill it
 // with the RGB565 conversion of a 256-color RGBA palette (arg). EH frame.
 // ===========================================================================
