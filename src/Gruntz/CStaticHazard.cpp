@@ -176,6 +176,65 @@ struct CHaznEntry {
     HaznHandler m_fn; // [entry]
 };
 
+// RegisterActs binds the two i32-returning handler PMFs (LoadAttributes2 /
+// LoadAttributes); a distinct entry view so the store keeps the real signature.
+typedef i32 (CStaticHazard::*HaznHandler2)();
+struct CHaznEntry2 {
+    HaznHandler2 m_fn;
+};
+
+// ---------------------------------------------------------------------------
+// RegisterActs (0x0fbd50) interns the "A" and "B" activation keys into the shared
+// bute store and records each in the shared name registry (@0x6bf650, the SAME
+// instance CTimeBomb/CDroppedObject use), then resolves the id in CStaticHazard's
+// OWN registry (HaznLookup) and stores the per-key handler PMF.
+DATA(0x0021aea8)
+extern i32 g_nextActId;
+DATA(0x0020a454)
+extern char s_actKeyA[]; // "A"
+DATA(0x0020d1bc)
+extern char s_actKeyB[]; // "B"
+DATA(0x002bf650)
+extern CHaznColl g_nameReg; // 0x6bf650
+DATA(0x002bf654)
+extern CHaznColl2* g_nameReg2; // 0x6bf654
+DATA(0x002bf658)
+extern i32 g_nameRegLo;
+DATA(0x002bf65c)
+extern i32 g_nameRegHi;
+DATA(0x002bf660)
+extern char* g_nameRegBase;
+DATA(0x002bf668)
+extern i32 g_nameRegStride;
+DATA(0x002bf664)
+extern char* g_nameRegCur;
+DATA(0x002bf66c)
+extern void** g_nameRegCurList;
+DATA(0x002bf670)
+extern i32 g_nameRegScratch;
+
+// The CString in the resolved name slot: ~CString (0x1b9b93) frees the old list,
+// operator= (0x1b9e74) assigns the new key. Modeled so the calls reloc-mask.
+struct CActName {
+    void Free();                  // 0x1b9b93 (~CString)
+    void Assign(const char* key); // 0x1b9e74 (CString::operator=(char const*))
+};
+
+// The id->name-slot resolve (fast range path + slow Find/ActAlloc/Insert rebuild).
+static inline char* ActNameLookup(i32 id) {
+    g_nameRegScratch = 0;
+    if (id >= g_nameRegLo && id <= g_nameRegHi) {
+        return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
+    }
+    if (g_nameReg.Find(id, 0)) {
+        return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
+    }
+    void* item = g_actCache;
+    g_actAllocResult = (void*)ActAlloc();
+    g_nameReg2->Insert(&g_nameReg, item, 0xc);
+    return g_nameRegCur;
+}
+
 // The inlined coordinate->Entry* lookup FireActivation folds in twice.
 static inline CHaznEntry* HaznLookup(i32 coord) {
     g_haznScratch = 0;
@@ -277,6 +336,56 @@ void CStaticHazard::FireActivation(i32 coord) {
         CHaznEntry* e2 = HaznLookup(coord);
         (this->*(e2->m_fn))();
     }
+}
+
+// CStaticHazard::RegisterActs @0x0fbd50 - intern "A" and "B" and bind each to its
+// handler PMF (LoadAttributes2 @0xfc0b0 for "A", LoadAttributes @0xfc1a0 for "B")
+// in the hazard registry. Two back-to-back single-key registrations; the SAME
+// archetype as CTimeBomb::RegisterActs done twice.
+//
+// @early-stop
+// register-pinning wall (docs/patterns/zero-register-pinning.md +
+// test-old-value-decrement-loop-while-postdec.md, topic:wall topic:regalloc): logic
+// byte-faithful (both intern/name-resolve blocks + the OWN-registry resolves + the
+// `mov [entry],offset handler` stores match retail); residual is the slot-vs-id
+// callee-saved register choice cascading into the free-loop counts. Deferred.
+RVA(0x000fbd50, 0x2ac)
+void CStaticHazard::RegisterActs() {
+    i32 id = (i32)g_buteTree.Find(s_actKeyA);
+    if (id == 0) {
+        id = g_nextActId;
+        g_buteTree.Insert(s_actKeyA, (void*)id);
+        char* slot = ActNameLookup(id);
+        i32 n = g_nameRegScratch;
+        void** list = g_nameRegCurList;
+        while (n-- != 0) {
+            if (list != 0) {
+                ((CActName*)list)->Free();
+            }
+            list++;
+        }
+        ((CActName*)slot)->Assign(s_actKeyA);
+        g_nextActId++;
+    }
+    ((CHaznEntry2*)HaznLookup(id))->m_fn = &CStaticHazard::LoadAttributes2;
+
+    i32 id2 = (i32)g_buteTree.Find(s_actKeyB);
+    if (id2 == 0) {
+        id2 = g_nextActId;
+        g_buteTree.Insert(s_actKeyB, (void*)id2);
+        char* slot = ActNameLookup(id2);
+        i32 n = g_nameRegScratch;
+        void** list = g_nameRegCurList;
+        while (n-- != 0) {
+            if (list != 0) {
+                ((CActName*)list)->Free();
+            }
+            list++;
+        }
+        ((CActName*)slot)->Assign(s_actKeyB);
+        g_nextActId++;
+    }
+    ((CHaznEntry2*)HaznLookup(id2))->m_fn = &CStaticHazard::LoadAttributes;
 }
 
 // ---------------------------------------------------------------------------

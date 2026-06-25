@@ -52,7 +52,7 @@ cddrawworkerregistry	26	12
 cddrawworkers	4	4
 cdirectdrawmgr	24	11
 cdonothing	2	2
-cdroppedobject	2	2
+cdroppedobject	3	2
 cdroppedobjectshadow	1	1
 cexittrigger	2	2
 cexplosion	1	1
@@ -101,7 +101,7 @@ cserialsub34	1	0
 cseverusentrylist	2	1
 csimpleanimation	4	3
 csingleanimation	1	1
-cstatichazard	5	2
+cstatichazard	6	2
 cstatusbarmgr	2	1
 cteleporter	2	1
 ctimebomb	3	2
@@ -116,7 +116,7 @@ directinputmgr2	33	29
 directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	22	0
-engine_boundary	557	0
+engine_boundary	552	0
 engine_discovered	66	0
 engine_label_stubs	462	106
 engstr	3	1
@@ -238,7 +238,7 @@ unknownclassarrays	38	10
 unknownclassincgruntzmgr	2	0
 unknownsalazar	4	0
 userbaselink	10	0
-userlogic	54	19
+userlogic	57	20
 videoconfig	2	0
 warlord	8	2
 warpstonefly	3	2
@@ -633,6 +633,7 @@ cdonothing	??1CDoNothing@@UAE@XZ	100.0000	100.0000	1	a06511f63ae0	0xf770
 cdonothing	?GetTypeTag@CDoNothing@@QAEHXZ	100.0000	100.0000	1	6ca2183a4b81	0xf6b0
 cdroppedobject	??1CDroppedObject@@UAE@XZ	100.0000	100.0000	1	dd689e9b78c2	0x125b0
 cdroppedobject	?FireActivation@CDroppedObject@@QAEXH@Z	100.0000	100.0000	1	58092acd8cf9	0xc6bd0
+cdroppedobject	?RegisterActs@CDroppedObject@@SAXXZ	78.5473	78.5473	1	ddf90768718f	0xc6d30
 cdroppedobjectshadow	??1CDroppedObjectShadow@@UAE@XZ	100.0000	100.0000	1	590f3131b16f	0x12670
 cexittrigger	??1CExitTrigger@@UAE@XZ	100.0000	100.0000	1	db4d24e6c64d	0x108c0
 cexittrigger	?GetTypeTag@CExitTrigger@@QAEHXZ	100.0000	100.0000	1	c68ad601ed76	0x10870
@@ -899,6 +900,7 @@ cstatichazard	??1CStaticHazard@@UAE@XZ	100.0000	100.0000	1	2c9522f3c281	0x12b30
 cstatichazard	?FireActivation@CStaticHazard@@QAEXH@Z	100.0000	100.0000	1	69cb76687143	0xfbbf0
 cstatichazard	?LoadAttributes2@CStaticHazard@@QAEHXZ	97.8214	97.8214	1	918d5a0c02ae	0xfc0b0
 cstatichazard	?LoadAttributes@CStaticHazard@@QAEHXZ	49.4340	49.4340	1	0b7065cfb3f0	0xfc1a0
+cstatichazard	?RegisterActs@CStaticHazard@@SAXXZ	78.5473	78.5473	1	0845d748d7be	0xfbd50
 cstatusbarmgr	?LoadTabSprites@CStatusBarMgr@@QAEHXZ	16.7383	16.7383	4	045cfeaa498f	0x102250
 cstatusbarmgr	?SetDirection@CSbItem@@QAEXHH@Z	100.0000	100.0000	2	46fcb29ef102	0xea0f0
 cteleporter	??1CTeleporter@@UAE@XZ	100.0000	100.0000	1	0aa6d090845e	0x10dd0
@@ -1213,7 +1215,6 @@ engine_boundary	?Boundary_0c2740@@YAXXZ	2.3529	2.3529	1	539fff924c3f	0xc2740
 engine_boundary	?Boundary_0c27c0@@YAXXZ	2.3529	2.3529	1	598eba48b0bd	0xc27c0
 engine_boundary	?Boundary_0c2840@@YAXXZ	2.3529	2.3529	1	c0081fac0a7d	0xc2840
 engine_boundary	?Boundary_0c6b50@@YAXXZ	20.0000	20.0000	1	f4961a0f7186	0xc6b50
-engine_boundary	?Boundary_0c6d30@@YAXXZ	0.4975	0.4975	1	296ace3eb90b	0xc6d30
 engine_boundary	?Boundary_0c8700@@YAXXZ	0.6579	0.6579	1	f5569d49ece3	0xc8700
 engine_boundary	?Boundary_0c9e40@@YAXXZ	0.6410	0.6410	1	5f28c6bdcf93	0xc9e40
 engine_boundary	?Boundary_0ca0a0@@YAXXZ	1.1236	1.1236	1	6de465c7af29	0xca0a0
@@ -1254,7 +1255,6 @@ engine_boundary	?Boundary_0fa790@@YAXXZ	0.3774	0.3774	1	2c4624014978	0xfa790
 engine_boundary	?Boundary_0fa8f0@@YAXXZ	0.3478	0.3478	1	e34e34f9d514	0xfa8f0
 engine_boundary	?Boundary_0faa60@@YAXXZ	0.4494	0.4494	1	aaef6b1a0780	0xfaa60
 engine_boundary	?Boundary_0fbb70@@YAXXZ	20.0000	20.0000	1	b95256d24c08	0xfbb70
-engine_boundary	?Boundary_0fbd50@@YAXXZ	0.4975	0.4975	1	a242b3d701b8	0xfbd50
 engine_boundary	?Boundary_100780@@YAXXZ	20.0000	20.0000	1	2876ff1a6ffd	0x100780
 engine_boundary	?Boundary_104c80@@YAXXZ	8.3333	8.3333	1	ee1e0fdc85e8	0x104c80
 engine_boundary	?Boundary_104dd0@@YAXXZ	2.5000	2.5000	1	bf88cc65113d	0x104dd0
@@ -1264,12 +1264,9 @@ engine_boundary	?Boundary_10bbe0@@YAXXZ	5.8824	5.8824	1	8b396e252394	0x10bbe0
 engine_boundary	?Boundary_10c430@@YAXXZ	20.0000	20.0000	1	d6f89ef2a3d2	0x10c430
 engine_boundary	?Boundary_10c610@@YAXXZ	0.8696	0.8696	1	8265d21d2557	0x10c610
 engine_boundary	?Boundary_10d840@@YAXXZ	20.0000	20.0000	1	24d19734280b	0x10d840
-engine_boundary	?Boundary_10d8c0@@YAXXZ	0.5333	0.5333	1	1c81c1bf5153	0x10d8c0
 engine_boundary	?Boundary_10de20@@YAXXZ	20.0000	20.0000	1	5d6e272220cf	0x10de20
-engine_boundary	?Boundary_10e000@@YAXXZ	0.8696	0.8696	1	4fff0a90ef0e	0x10e000
 engine_boundary	?Boundary_10e420@@YAXXZ	20.0000	20.0000	1	aba489057bd7	0x10e420
 engine_boundary	?Boundary_10ea00@@YAXXZ	20.0000	20.0000	1	530fff7f490c	0x10ea00
-engine_boundary	?Boundary_10f340@@YAXXZ	0.4975	0.4975	1	e8dfb3a40df8	0x10f340
 engine_boundary	?Boundary_112080@@YAXXZ	0.9091	0.9091	1	16b555afba27	0x112080
 engine_boundary	?Boundary_112bf0@@YAXXZ	2.7027	2.7027	1	679caf894dcf	0x112bf0
 engine_boundary	?Boundary_113860@@YAXXZ	1.9048	1.9048	1	76752601520d	0x113860
@@ -3386,6 +3383,7 @@ userlogic	??1CTileSecretTrigger@@UAE@XZ	100.0000	100.0000	1	a32d67055f07	0x11540
 userlogic	??1CTileTrigger@@UAE@XZ	100.0000	100.0000	1	cpp:69062e3bf126	0x11290
 userlogic	??1CTileTriggerSwitch@@UAE@XZ	100.0000	100.0000	1	dab625badc7c	0x110f0
 userlogic	?FireActivation@CSecretTeleporterTrigger@@QAEXH@Z	100.0000	100.0000	2	6d1a80fde174	0x42150
+userlogic	?FireWarp@CWarpStonePad@@QAEXH@Z	100.0000	100.0000	1	123185be1635	0x10d8c0
 userlogic	?GetScreenPos@CUserLogic@@QAEXPAUScreenPoint@1@@Z	100.0000	100.0000	2	c09fb9d01a13	0x29a50
 userlogic	?InitActReg@CSecretTeleporterTrigger@@SAXXZ	100.0000	100.0000	1	2f0eeda3c0d0	0x420d0
 userlogic	?LoadGruntDecayConfig2@CUserLogic@@QAEXXZ	1.2195	1.2195	1	edd8f9929bc3	0x61570
@@ -3396,7 +3394,9 @@ userlogic	?LoadWandGruntItemConfig@CUserLogic@@QAEXXZ	1.0638	1.0638	1	10cb95c552
 userlogic	?RegisterActs@CFrontCandyAni@@SAXXZ	92.9130	92.9130	1	5b5589f53f75	0xacd10
 userlogic	?RegisterActs@CSecretTeleporterTrigger@@SAXXZ	92.9130	92.9130	1	f286c9cc6563	0x422b0
 userlogic	?RegisterActs@CSingleAnimation@@SAXXZ	92.9130	92.9130	1	1cb9c773f47d	0xaeb80
+userlogic	?RegisterActs@CTileSecretTrigger@@SAXXZ	78.5473	78.5473	1	accb3998f8d6	0x10f340
 userlogic	?RegisterActs@CTileTrigger@@SAXXZ	92.9130	92.9130	1	c4c120dce9da	0x10e600
+userlogic	?RegisterActs@CTileTriggerSwitch@@SAXXZ	92.9130	92.9130	1	adcbf64e1d26	0x10e000
 userlogic	?RegisterActs@CWarpStonePad@@SAXXZ	92.9130	92.9130	1	64b7da2cefb1	0x10da20
 userlogic	?Serialize@CSecretTeleporterTrigger@@QAEHHHHH@Z	100.0000	100.0000	2	a2ea3ad09ee4	0x10a10
 userlogic	?SpawnTeleporter@CSecretTeleporterTrigger@@QAEHXZ	100.0000	100.0000	3	0cb6302ce700	0x42b80

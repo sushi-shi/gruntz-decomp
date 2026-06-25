@@ -26,6 +26,7 @@
 class CStaticHazard : public CUserLogic {
 public:
     CStaticHazard(CGameObject* obj); // 0x0fb7a0 (1-arg ctor)
+    static void RegisterActs();      // 0x0fbd50 (binds "A"/"B" handlers)
     i32 LoadAttributes2();           // 0x0fc0b0 (time-gated pulse)
     i32 LoadAttributes();            // 0x0fc1a0 (periodic tick/update)
     void FireActivation(i32 coord);  // 0x0fbbf0
