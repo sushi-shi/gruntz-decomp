@@ -980,13 +980,9 @@ void ClassUnknown_77::ClassUnknown_77_16ecd0() {}
 
 // ---- ClassUnknown_8 ---- reconstructed as StateMgrBZ in src/Gruntz/StateMgrBZ.cpp
 
-// ---- ClassUnknown_81 ----
-RVA(0x0000b790, 0xf)
-void ClassUnknown_81::ClassUnknown_81_00b790() {}
-RVA(0x0000c090, 0x118)
-void ClassUnknown_81::ClassUnknown_81_00c090() {}
-RVA(0x0000c200, 0x7e)
-void ClassUnknown_81::ClassUnknown_81_00c200() {}
+// ---- ClassUnknown_81 ---- reconstructed as CAmbientSound in
+// src/Gruntz/CAmbientSound.cpp (~CAmbientSound 0xb790, Update 0xc090, SetLevel
+// 0xc200). Vtable 0x5e710c / RTTI .?AVCAmbientSound@@ : CUserBase.
 
 // ---- ClassUnknown_82 ----
 RVA(0x00115520, 0x45)

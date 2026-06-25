@@ -606,6 +606,11 @@ source = "src/Gruntz/ActionOptionsMenuBar.cpp"
 flags = "base"
 
 [[unit]]
+unit = "cambientsound"
+source = "src/Gruntz/CAmbientSound.cpp"
+flags = "base"
+
+[[unit]]
 unit = "inputdeviceconfig"
 source = "src/Gruntz/InputDeviceConfig.cpp"
 flags = "eh"

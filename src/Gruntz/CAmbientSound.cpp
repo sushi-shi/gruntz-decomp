@@ -1,0 +1,143 @@
+// CAmbientSound.cpp - the positional ambient-sound game object (see
+// include/Gruntz/CAmbientSound.h). Reconstructs three of its __thiscall methods
+// in ascending retail-RVA order:
+//   0x00b790  ~CAmbientSound  (zero the channel/last fields; restamp the
+//             CUserBase base vptr)
+//   0x00c090  Update          (per-frame: (re)start / fade the channel by whether
+//             the listener is inside either audible rectangle)
+//   0x00c200  SetLevel        (scale + clamp 0..100, then drive the channel)
+//
+// CAmbientSound : CUserBase comes from the header; the sound channel + g_gameReg
+// view are modeled minimally and every cross-class callee is NO-body so its
+// `call`/`mov ds:` reloc-masks. The factory/other ctors (0xb6a0/0xb7b0) stay
+// stubbed in src/Stub/CAmbientSound.cpp.
+#include <Gruntz/CAmbientSound.h>
+
+#include <rva.h>
+
+// ===========================================================================
+// CAmbientSound::~CAmbientSound  (0x00b790)
+// ===========================================================================
+// Clear the channel handle (+0x04) and +0x3c, then restamp the CUserBase base
+// vptr as the sub-object unwinds. Manual vtable store (the family vtables aren't
+// reproduced yet), so the class stays non-polymorphic and the store reloc-masks.
+RVA(0x0000b790, 0xf)
+CAmbientSound::~CAmbientSound() {
+    m_vptr = (void*)g_CUserBaseVtbl;
+    m_04 = 0;
+    m_3c = 0;
+}
+
+// ===========================================================================
+// CAmbientSound::Update  (0x00c090)
+// ===========================================================================
+// Per-frame driver (CAmbientSound vtable slot 3). If the source is bounded, test
+// whether the listener (x,y) sits inside either audible rectangle; if unbounded
+// it is always "in range". When already playing, keep going while in range and
+// fade out when it leaves. When silent and in range, (re)start: with `force` set,
+// fully arm the channel and push it to full level; otherwise fade it in.
+//
+// @early-stop
+// Tail-merge wall (~77%): retail folds the two identical (re)start tails - the
+// unbounded path's and the bounded `force` path's - into ONE block reached by an
+// unconditional `jmp`, and the merge drags a dead `g_gameReg->m_54->m_24` probe
+// into the unbounded path. Our cl emits the tail TWICE (and DCEs the unused m_24
+// load), so the back half re-permutes. The bounded hit-test + the shared back
+// half are byte-exact; only the duplicate-vs-shared tail + a couple of regalloc
+// picks (edx/eax for the m_54 walk) differ. See identical-return-epilogue-
+// tailmerge.md. Logic exact.
+RVA(0x0000c090, 0x118)
+void CAmbientSound::Update(i32 x, i32 y, i32 force) {
+    i32 inRange;
+    if (m_18 == (i32)0x80000000) {
+        // Unbounded source: nothing to do while already playing.
+        if (m_14 != 0) {
+            return;
+        }
+        CSoundChannel* ch = m_04;
+        i32 lvl = m_08;
+        if (ch == 0) {
+            return;
+        }
+        if (lvl == 0) {
+            return;
+        }
+        if (g_ambGameReg->m_10 == 0) {
+            return;
+        }
+        // Retail also probes g_gameReg->m_54->m_24 here, then (re)starts
+        // regardless; our cl DCEs that unused load (tail-merge wall, see below).
+        if (m_04 == 0) {
+            return;
+        }
+        SetupChannel(1, m_38, 0, 1);
+        SetLevel(0x64, 0, 0);
+        m_08 = 0x64;
+        m_14 = 1;
+        return;
+    }
+
+    if (x > m_18 && x < m_20 && y > m_1c && y < m_24) {
+        inRange = 1;
+    } else if (m_28 != (i32)0x80000000 && x > m_28 && x < m_30 && y > m_2c && y < m_34) {
+        inRange = 1;
+    } else {
+        inRange = 0;
+    }
+
+    if (m_14 != 0) {
+        // Currently playing: keep running while in range, fade out otherwise.
+        if (inRange != 0) {
+            return;
+        }
+        Fade(0, 0, 0x3e8);
+        return;
+    }
+
+    // Silent: only start when in range and the audio path is live.
+    if (inRange == 0) {
+        return;
+    }
+    if (g_ambGameReg->m_10 == 0 || g_ambGameReg->m_54->m_24 == 0) {
+        return;
+    }
+    if (force != 0) {
+        if (m_04 == 0) {
+            return;
+        }
+        SetupChannel(1, m_38, 0, 1);
+        SetLevel(0x64, 0, 0);
+        m_08 = 0x64;
+        m_14 = 1;
+    } else {
+        Fade(1, 0x64, 0x3e8);
+    }
+}
+
+// ===========================================================================
+// CAmbientSound::SetLevel  (0x00c200)
+// ===========================================================================
+// Scale `value` through the level mode (m_0c) and the secondary multiplier
+// (m_10), clamp to 0..100, then drive the channel: mode 0 -> SetVolume, else
+// SetVolumePan carrying the `extra` arg.
+RVA(0x0000c200, 0x7e)
+i32 CAmbientSound::SetLevel(i32 value, i32 mode, i32 extra) {
+    m_08 = value;
+    i32 scale = m_0c;
+    if (scale > 5) {
+        scale -= 0xf;
+    }
+    i32 v = (scale * value) / 100;
+    if (m_10 > 0) {
+        v = (v * m_10) / 100;
+    }
+    if (v < 0) {
+        v = 0;
+    } else if (v > 0x64) {
+        v = 0x64;
+    }
+    if (mode == 0) {
+        return m_04->SetVolume(v);
+    }
+    return m_04->SetVolumePan(v, mode, extra);
+}

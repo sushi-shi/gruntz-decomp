@@ -23,6 +23,7 @@ battlezdata	14	11
 battlezmapconfig	1	0
 brickz	14	3
 butemgr	39	27
+cambientsound	3	2
 cattract	9	5
 cddrawchildgroup	9	5
 cddrawptrcollections	13	10
@@ -60,7 +61,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	252	0
+engine_discovered	249	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -275,6 +276,9 @@ butemgr	?SetFloat@CButeValue@@QAEPAU1@HM@Z	92.0000	92.0000	4	2d9f2069caae	0x1726
 butemgr	?SetInt@CButeValue@@QAEPAU1@HH@Z	92.0000	92.0000	4	7a25b2b77a80	0x172b90
 butemgr	?SetSub@CButeMgrHelper@@QAEXPAX@Z	100.0000	100.0000	2	7ceaffd01bf0	0x169dd0
 butemgr	?SkipToTag@CButeMgr@@QAE_NXZ	78.1429	78.1429	2	672209f4feee	0x171160
+cambientsound	??1CAmbientSound@@QAE@XZ	100.0000	100.0000	1	56dbfa3599ca	0xb790
+cambientsound	?SetLevel@CAmbientSound@@QAEHHHH@Z	100.0000	100.0000	1	05fba3a19101	0xc200
+cambientsound	?Update@CAmbientSound@@QAEXHHH@Z	76.7755	76.7755	1	d5afc3bb9b41	0xc090
 cattract	??1CAttract@@UAE@XZ	100.0000	100.0000	1	8f5b73f92144	0x8cd90
 cattract	?Activate@CAttract@@QAEHXZ	99.0000	99.0000	1	c7655128de41	0xa0a30
 cattract	?EnterAttractMode@CAttract@@QAEHHHH@Z	100.0000	100.0000	1	99f233598d02	0x13fb0
@@ -858,9 +862,6 @@ engine_discovered	?ClassUnknown_74_16e360@ClassUnknown_74@@QAEXXZ	0.4000	0.4000	
 engine_discovered	?ClassUnknown_75_0a9cc0@ClassUnknown_75@@QAEXXZ	1.1905	1.1905	1	4e1a9a579eac	0xa9cc0
 engine_discovered	?ClassUnknown_76_0aa5a0@ClassUnknown_76@@QAEXXZ	1.1905	1.1905	1	459253cf8cd4	0xaa5a0
 engine_discovered	?ClassUnknown_77_16ecd0@ClassUnknown_77@@QAEXXZ	0.0718	0.0718	1	aecffd120170	0x16ecd0
-engine_discovered	?ClassUnknown_81_00b790@ClassUnknown_81@@QAEXXZ	20.0000	20.0000	1	0debda0fc977	0xb790
-engine_discovered	?ClassUnknown_81_00c090@ClassUnknown_81@@QAEXXZ	0.4082	0.4082	1	6141a9bee099	0xc090
-engine_discovered	?ClassUnknown_81_00c200@ClassUnknown_81@@QAEXXZ	0.8333	0.8333	1	b385c318ecff	0xc200
 engine_discovered	?ClassUnknown_82_115520@ClassUnknown_82@@QAEXXZ	3.5714	3.5714	1	f7a61272c54b	0x115520
 engine_discovered	?ClassUnknown_83_029a30@ClassUnknown_83@@QAEXXZ	6.6667	6.6667	1	fada2be5e583	0x29a30
 engine_discovered	?ClassUnknown_84_09a260@ClassUnknown_84@@QAEXXZ	3.6364	3.6364	1	d8ff23cf0285	0x9a260
