@@ -44,7 +44,7 @@ TRACKED source/docs, so they are intentionally NOT part of provisioning):
     python -m gruntz.analysis.this_cluster build/game/<mode>/gruntz_edges.csv \\
         --json build/trace/this_clusters.json
     python -m gruntz.analysis.tie_classes build/game/<mode>/gruntz_edges.csv \\
-        --out docs/this-pointer-classes.csv      # regenerates build/trace/labels.csv too
+        --out build/trace/this-pointer-classes.csv   # regenerates build/trace/labels.csv too
     python -m gruntz.analysis.gen_class_stubs    # -> include/Stub/discovered.h, src/Stub/Discovered.cpp
     gruntz build
 """

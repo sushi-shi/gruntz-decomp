@@ -45,14 +45,34 @@ The gdb driver is kept at `scripts/gruntz/analysis/gdb_trace_this.py` as a fallb
   functions↔objects graph — known methods classify objects, objects classify unknown
   functions. Emits the `FUN_ → candidate class` worklist (support + purity).
 
+## rendering (measured — THE blue-screen / two-window fixes)
+
+Two things are load-bearing to get the game to a playable menu in **one** window.
+`provision_trace` bakes both in; this is the why.
+
+- **One wine virtual desktop, launched DIRECTLY.** wine cannot change the real display
+  mode under Wayland, so fullscreen-exclusive fails (`NtUserChangeDisplaySettings -2`).
+  Use ONE wine **registry** virtual desktop (`HKCU\Software\Wine\Explorer`
+  `Desktop=Default`, `Desktops\Default=1024x768`) and launch the EXE **directly**
+  (`wine GRUNTZ.EXE`). Do **NOT** also use `explorer /desktop=` — that stacks a SECOND
+  desktop window ("Wine Desktop" + "gruntz - Wine Desktop", the *two-windows* symptom)
+  and the game renders into one while you watch the other → looks like a blue screen.
+- **32-bit software GL (Mesa llvmpipe).** wine's DirectDraw goes through OpenGL. The
+  game is a **32-bit** PE, so wine runs it 32-bit and it loads **32-bit** Linux GL
+  drivers. Force Mesa llvmpipe via glvnd and point `LIBGL_DRIVERS_PATH` at the **32-bit**
+  dri tree — on NixOS `/run/opengl-driver-32/lib/dri`. Pointing it at the **64-bit** tree
+  (`/run/opengl-driver/lib/dri`) is the wrong ABI: the 32-bit loader can't load it,
+  falls back to the (broken) hardware driver, and the game shows a **blue screen**. Env:
+  `LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe MESA_LOADER_DRIVER_OVERRIDE=llvmpipe
+  __GLX_VENDOR_LIBRARY_NAME=mesa LIBGL_DRIVERS_PATH=/run/opengl-driver-32/lib/dri`.
+  (The `winevulkan` "libnvidia-glvkspirv … unable to open" line at startup is harmless
+  vulkan-probe noise; this DirectDraw game never touches vulkan.)
+- **Resolution**: starts at 640x480 (centered in the 1024x768 desktop). 800x600 and
+  1024x768 are selectable in Options→Video and stay *inside* the 1024x768 desktop, so
+  the in-game mode change holds (it doesn't touch the real display mode).
+
 ## wine / host gotchas (measured)
 
-- **Wayland**: wine cannot change the real display mode, so fullscreen-exclusive fails
-  (`NtUserChangeDisplaySettings -2`). Use a **virtual desktop**
-  (`HKCU\Software\Wine\Explorer` `Desktop=Default`, `Desktops\Default=1024x768`).
-- **nvidia GL**: wine loads Mesa EGL → black/no present on an nvidia card. Force the
-  nvidia vendor: `__GLX_VENDOR_LIBRARY_NAME=nvidia` (also keep the kernel module and
-  userspace driver in sync — a mismatch needs a reboot).
 - **CD check**: `IsGruntzCDInAnyDrive`/`GetGruntzDriveLetter` need a `DRIVE_CDROM`-type
   drive holding `<L>:\GAME\GRUNTZ.EXE` (no volume-label check). A wine drive of type
   `cdrom` (`HKLM\Software\Wine\Drives` `"d:"="cdrom"`) pointing at a tiny `build/game/cd`
@@ -61,17 +81,13 @@ The gdb driver is kept at `scripts/gruntz/analysis/gdb_trace_this.py` as a fallb
   game could resolve the missing `SFManager` export (NULL). As a precaution set
   `HKLM\Software\Monolith Productions\Gruntz\1.0` `"Disable SoundFonts"="1"` so the game
   skips `SFManager` (it still `LoadLibrary`s SFMAN32, so the gadget runs).
-- **Hooking MFC window/dialog funcs corrupts vtables (THE crash we actually hit):**
-  hooking certain functions in the MFC band `0x1b9000–0x1c2000` makes Frida's inline
-  trampoline corrupt a stack object's vtable -> a NULL virtual call in `HandleSetFont`
-  (WM_SETFONT) when the save/checkpoint dialog opens. `gen_frida_script` excludes this
-  band (`_SKIP_RANGES`) plus `jmp`/padding starts; it's MFC, not engine, so no coverage
-  is lost. (Found by reading the edge `seq` order: the last fns hit before the fault were
-  in that band.) Diagnose any residual fault via the script's `Process.setExceptionHandler`
-  dump in `frida_crash.log` (faulting pc + stack return addrs as GRUNTZ RVAs).
-- **Resolution**: leave it at the default 640x480. Changing it in-game re-inits
-  DirectDraw at the new mode, which fails inside wine's virtual desktop (the mode change
-  can't take) and the game exits. Resolution doesn't affect the traced logic.
+- **Hooking MFC window/dialog funcs corrupts vtables:** hooking certain functions in the
+  MFC band `0x1b9000–0x1c2000` makes Frida's inline trampoline corrupt a stack object's
+  vtable → a NULL virtual call in `HandleSetFont` (WM_SETFONT) when the save/checkpoint
+  dialog opens. `gen_frida_script` excludes this band (`_SKIP_RANGES`) plus `jmp`/padding
+  starts; it's MFC, not engine, so no coverage is lost. Diagnose any residual fault via the
+  script's `Process.setExceptionHandler` dump in `frida_crash.log` (faulting pc + stack
+  return addrs as GRUNTZ RVAs).
 
 ## Run it
 
@@ -101,7 +117,7 @@ python -m gruntz.analysis.this_cluster build/game/retail/gruntz_edges.csv \
 # own-vs-inherited from ecx); new groups -> ClassUnknown_n. Grounded in the
 # reconstructed class hierarchy incl. PR #52's RTTI parents. -> the committed table.
 python -m gruntz.analysis.tie_classes build/game/retail/gruntz_edges.csv \
-    --out docs/this-pointer-classes.csv
+    --out build/trace/this-pointer-classes.csv
 
 # integrate the ties into the codebase: minimal class decls + empty __thiscall RVA
 # stubs (own TU `engine_discovered` in config/units.toml; objdiff tracks them like

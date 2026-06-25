@@ -5,1137 +5,501 @@
 #include <Stub/discovered.h>
 
 // ---- CBattlezDlgColors ----
-RVA(0x00017ac0, 0x6)
-void CBattlezDlgColors::CBattlezDlgColors_017ac0() {}
+RVA(0x00017ac0, 0x6) void CBattlezDlgColors::CBattlezDlgColors_017ac0() {}
 
 // ---- CBehindCandy ----
-RVA(0x0000fb70, 0x6)
-void CBehindCandy::CBehindCandy_00fb70() {}
-RVA(0x0000fc30, 0x44)
-void CBehindCandy::CBehindCandy_00fc30() {}
+RVA(0x0000fb70, 0x6) void CBehindCandy::CBehindCandy_00fb70() {}
+RVA(0x0000fc30, 0x44) void CBehindCandy::CBehindCandy_00fc30() {}
 
 // ---- CBehindCandyAni ----
-RVA(0x000100f0, 0x44)
-void CBehindCandyAni::CBehindCandyAni_0100f0() {}
-RVA(0x000adbb0, 0x17)
-void CBehindCandyAni::CBehindCandyAni_0adbb0() {}
+RVA(0x000100f0, 0x44) void CBehindCandyAni::CBehindCandyAni_0100f0() {}
+RVA(0x000adbb0, 0x17) void CBehindCandyAni::CBehindCandyAni_0adbb0() {}
 
-// ---- CBrickz ---- the four terrain-grid methods (ComputeCellFlags 0x077790,
-// SearchEdge 0x081e10, UpdateDiagonals 0x082030, Serialize 0x09356c) were
-// reconstructed into src/Gruntz/Brickz.cpp (the real CBrickz TU); the grid is the
-// BrickzCell pool (+0x4 cell pool / +0x8 column table / +0xc/+0x10 dims / +0x4c
-// mask / +0x5c dirty flag) and the +0x7c Serialize sub-object. (0x82430, the node
-// serializer, is in src/Gruntz/MapLogic.cpp as CMapLogic::SerializeNodes.)
-
-// ---- CButeMgr ---- lexer cluster migrated to src/Bute/ButeMgr.cpp; only the
-// EH-frame scalar destructor remains here (deferred to the final sweep).
-RVA(0x000213c0, 0x14c)
-void CButeMgr::CButeMgr_0213c0() {}
-
-// ---- CButeMgrHelper ---- ctor/dtor + vbase vtable-init thunks migrated to
-// src/Bute/ButeMgr.cpp (CButeMgrHelper, the +0x14 sub-object).
+// ---- CButeMgr ----
+RVA(0x000213c0, 0x14c) void CButeMgr::CButeMgr_0213c0() {}
 
 // ---- CButeTree ----
-RVA(0x0016e070, 0x7b)
-void CButeTree::CButeTree_16e070() {}
+RVA(0x0016e070, 0x7b) void CButeTree::CButeTree_16e070() {}
 
 // ---- CCheckpointDlg ----
-RVA(0x00023570, 0x6)
-void CCheckpointDlg::CCheckpointDlg_023570() {}
+RVA(0x00023570, 0x6) void CCheckpointDlg::CCheckpointDlg_023570() {}
 
 // ---- CCheckpointTrigger ----
-RVA(0x00011480, 0x44)
-void CCheckpointTrigger::CCheckpointTrigger_011480() {}
-
-// ---- CCreditsState ---- all four trace-discovered methods reconstructed in
-// src/Gruntz/GameMode.cpp (the real CCreditsState TU): ReleaseResources (0x38f00),
-// FinishState (0x39c40), StepVideo (0x39c60), FlashColor (0x39d00).
+RVA(0x00011480, 0x44) void CCheckpointTrigger::CCheckpointTrigger_011480() {}
 
 // ---- CCursorSnapSprite ----
-RVA(0x00011880, 0x47)
-void CCursorSnapSprite::CCursorSnapSprite_011880() {}
-RVA(0x00011920, 0x44)
-void CCursorSnapSprite::CCursorSnapSprite_011920() {}
+RVA(0x00011880, 0x47) void CCursorSnapSprite::CCursorSnapSprite_011880() {}
+RVA(0x00011920, 0x44) void CCursorSnapSprite::CCursorSnapSprite_011920() {}
 
 // ---- CDDPalette ----
-RVA(0x001474d0, 0x60)
-void CDDPalette::CDDPalette_1474d0() {}
-RVA(0x00147530, 0x54)
-void CDDPalette::CDDPalette_147530() {}
+RVA(0x001474d0, 0x60) void CDDPalette::CDDPalette_1474d0() {}
+RVA(0x00147530, 0x54) void CDDPalette::CDDPalette_147530() {}
 
 // ---- CDDSurface ----
-RVA(0x00142a40, 0x53)
-void CDDSurface::CDDSurface_142a40() {}
+RVA(0x00142a40, 0x53) void CDDSurface::CDDSurface_142a40() {}
 
 // ---- CDDrawSubMgr ----
-// NOTE: this discovery cluster is a DISTINCT class from the matched small
-// CDDrawSubMgr (different field layout / vtable).  The clean self-contained
-// methods (158b40..158ee0, 159ef0, 15c290/2c0/2d0) plus the whole CMap/CList
-// collection family (159e40, 15aa90..15b1d0 = CWwdObjMgr) and the blit-param
-// serializer/dispatcher (15c900/15c970) were reconstructed into
-// src/Gruntz/CDDrawSubMgr.cpp (CWwdObjMgr / CDDrawBlitParam).
-//   - 0x031250 (CQueueDrainHost::Drain) and 0x159600 (CWwdObjMgr::CreateObject /
-//     CSpriteFactory::CreateSpriteImpl) are now RECONSTRUCTED in CDDrawSubMgr.cpp
-//     (both @early-stop on documented walls: 031250 the loop-top member re-read,
-//     159600 the RezAlloc+placement-construct missing-/GX-EH-frame wall).
-//   - 0x15c360: the 0x555-byte blit-param step/advance megafunction (two .rdata
-//     jump tables, idiv/fild/__ftol float math, ~10 frame-select cases reassigning
-//     m_18 via reloc-masked m_14->GetFrame lookups) — a big jump-table state
-//     machine; deferred to the final sweep for a leaf-first redo (callees
-//     15cc30/15cbe0/etc. are themselves unmatched), NOT half-reconstructed.
-RVA(0x0015c360, 0x555)
-void CDDrawSubMgr::CDDrawSubMgr_15c360() {}
-
-// ---- CDDrawSubMgrLeaf ----
-// 0x05b7e0 / 0x157570 / 0x157c70 / 0x1583c0 / 0x1584f0 / 0x158570 reconstructed in
-// src/Gruntz/CDDrawSubMgrLeafScan.cpp (the keyed-asset cache sibling); the
-// directory-scan / factory group (0x114120 RefreshAsset, 0x157d70 CreateEntry,
-// 0x157ee0 ScanTree) reconstructed there too -- these were mislabeled
-// CDDrawSubMgrLeaf but are CDDrawSubMgrLeafScan members (this+0x10 map / +0x30
-// guard / +0x34 redraw arg).
+RVA(0x0015c360, 0x555) void CDDrawSubMgr::CDDrawSubMgr_15c360() {}
 
 // ---- CDDrawWorkerList ----
-RVA(0x00163bc0, 0x2c)
-void CDDrawWorkerList::CDDrawWorkerList_163bc0() {}
+RVA(0x00163bc0, 0x2c) void CDDrawWorkerList::CDDrawWorkerList_163bc0() {}
 
 // ---- CDDrawWorkerMapSmall ----
-RVA(0x00156d20, 0x82)
-void CDDrawWorkerMapSmall::CDDrawWorkerMapSmall_156d20() {}
-RVA(0x00165810, 0xa9)
-void CDDrawWorkerMapSmall::CDDrawWorkerMapSmall_165810() {}
+RVA(0x00156d20, 0x82) void CDDrawWorkerMapSmall::CDDrawWorkerMapSmall_156d20() {}
+RVA(0x00165810, 0xa9) void CDDrawWorkerMapSmall::CDDrawWorkerMapSmall_165810() {}
 
-// ---- CSeverusWorker ----
-// MISATTRIBUTION CORRECTED: 0x151f00 / 0x15cc30 are methods of the *worker*
-// object (vtable g_severusWorkerVtbl @ RVA 0x1efbe8: 0x151f00 is slot +0x38),
-// NOT of CDDrawWorkerRegistry. They iterate the worker's own CByteArray (m_pData
-// at this+0x14, m_nSize at this+0x18) and track min/max at this+0x64/+0x68 - the
-// SeverusWorkerObj layout, not the registry's CMapStringToOb. Left stubbed for a
-// dedicated worker TU. The other four (0x155360/550/630, 0x165360) were genuine
-// map-holder methods and now live reconstructed in src/Gruntz/CDDrawWorkerRegistry.cpp.
-RVA(0x00151f00, 0xa4)
-void CSeverusWorker::CSeverusWorker_151f00() {}
-RVA(0x0015cc30, 0x1e)
-void CSeverusWorker::CSeverusWorker_15cc30() {}
+// ---- CDDrawWorkerRegistry ----
+RVA(0x00151f00, 0xa4) void CDDrawWorkerRegistry::CDDrawWorkerRegistry_151f00() {}
+RVA(0x0015cc30, 0x1e) void CDDrawWorkerRegistry::CDDrawWorkerRegistry_15cc30() {}
 
 // ---- CDoNothing ----
-RVA(0x0000f6b0, 0x6)
-void CDoNothing::CDoNothing_00f6b0() {}
-RVA(0x0000f770, 0x44)
-void CDoNothing::CDoNothing_00f770() {}
+RVA(0x0000f6b0, 0x6) void CDoNothing::CDoNothing_00f6b0() {}
+RVA(0x0000f770, 0x44) void CDoNothing::CDoNothing_00f770() {}
 
 // ---- CDroppedObject ----
-RVA(0x000125b0, 0x44)
-void CDroppedObject::CDroppedObject_0125b0() {}
-RVA(0x000c6bd0, 0x102)
-void CDroppedObject::CDroppedObject_0c6bd0() {}
+RVA(0x000125b0, 0x44) void CDroppedObject::CDroppedObject_0125b0() {}
+RVA(0x000c6bd0, 0x102) void CDroppedObject::CDroppedObject_0c6bd0() {}
 
 // ---- CDroppedObjectShadow ----
-RVA(0x00012670, 0x44)
-void CDroppedObjectShadow::CDroppedObjectShadow_012670() {}
+RVA(0x00012670, 0x44) void CDroppedObjectShadow::CDroppedObjectShadow_012670() {}
 
 // ---- CExitTrigger ----
-RVA(0x00010870, 0x6)
-void CExitTrigger::CExitTrigger_010870() {}
-RVA(0x000108c0, 0x44)
-void CExitTrigger::CExitTrigger_0108c0() {}
+RVA(0x00010870, 0x6) void CExitTrigger::CExitTrigger_010870() {}
+RVA(0x000108c0, 0x44) void CExitTrigger::CExitTrigger_0108c0() {}
 
 // ---- CExplosion ----
-RVA(0x00012ec0, 0x44)
-void CExplosion::CExplosion_012ec0() {}
+RVA(0x00012ec0, 0x44) void CExplosion::CExplosion_012ec0() {}
 
 // ---- CEyeCandy ----
-RVA(0x0000fca0, 0x6)
-void CEyeCandy::CEyeCandy_00fca0() {}
-RVA(0x0000fd60, 0x44)
-void CEyeCandy::CEyeCandy_00fd60() {}
+RVA(0x0000fca0, 0x6) void CEyeCandy::CEyeCandy_00fca0() {}
+RVA(0x0000fd60, 0x44) void CEyeCandy::CEyeCandy_00fd60() {}
 
 // ---- CFortressFlag ----
-RVA(0x00010e90, 0x44)
-void CFortressFlag::CFortressFlag_010e90() {}
-RVA(0x00046410, 0x92)
-void CFortressFlag::CFortressFlag_046410() {}
+RVA(0x00010e90, 0x44) void CFortressFlag::CFortressFlag_010e90() {}
+RVA(0x00046410, 0x92) void CFortressFlag::CFortressFlag_046410() {}
 
 // ---- CGrunt ----
-RVA(0x00057c40, 0x71)
-void CGrunt::CGrunt_057c40() {}
+RVA(0x00031c70, 0x1d) void CGrunt::CGrunt_031c70() {}
+RVA(0x00057c40, 0x71) void CGrunt::CGrunt_057c40() {}
 
 // ---- CGruntAnimPlayer ----
-RVA(0x00150610, 0x41)
-void CGruntAnimPlayer::CGruntAnimPlayer_150610() {}
+RVA(0x00150610, 0x41) void CGruntAnimPlayer::CGruntAnimPlayer_150610() {}
 
 // ---- CGruntCreationPoint ----
-RVA(0x00010730, 0x44)
-void CGruntCreationPoint::CGruntCreationPoint_010730() {}
-RVA(0x0003ecc0, 0x17)
-void CGruntCreationPoint::CGruntCreationPoint_03ecc0() {}
+RVA(0x00010730, 0x44) void CGruntCreationPoint::CGruntCreationPoint_010730() {}
+RVA(0x0003ecc0, 0x17) void CGruntCreationPoint::CGruntCreationPoint_03ecc0() {}
 
 // ---- CGruntHealthSprite ----
-RVA(0x00011fb0, 0x44)
-void CGruntHealthSprite::CGruntHealthSprite_011fb0() {}
-RVA(0x0007f0d0, 0x6e)
-void CGruntHealthSprite::CGruntHealthSprite_07f0d0() {}
+RVA(0x00011fb0, 0x44) void CGruntHealthSprite::CGruntHealthSprite_011fb0() {}
+RVA(0x0007f0d0, 0x6e) void CGruntHealthSprite::CGruntHealthSprite_07f0d0() {}
 
 // ---- CGruntPowerupSprite ----
-RVA(0x00012370, 0x44)
-void CGruntPowerupSprite::CGruntPowerupSprite_012370() {}
-RVA(0x00080380, 0x6c)
-void CGruntPowerupSprite::CGruntPowerupSprite_080380() {}
-RVA(0x00080410, 0x51)
-void CGruntPowerupSprite::CGruntPowerupSprite_080410() {}
-
-// ---- CGruntPuddle ---- migrated to src/Gruntz/CGruntPuddle.cpp (all 4 methods).
+RVA(0x00012370, 0x44) void CGruntPowerupSprite::CGruntPowerupSprite_012370() {}
+RVA(0x00080380, 0x6c) void CGruntPowerupSprite::CGruntPowerupSprite_080380() {}
+RVA(0x00080410, 0x51) void CGruntPowerupSprite::CGruntPowerupSprite_080410() {}
 
 // ---- CGruntSelectedSprite ----
-RVA(0x00011e80, 0x44)
-void CGruntSelectedSprite::CGruntSelectedSprite_011e80() {}
-RVA(0x0007e9c0, 0x16)
-void CGruntSelectedSprite::CGruntSelectedSprite_07e9c0() {}
-RVA(0x0007e9f0, 0x5f)
-void CGruntSelectedSprite::CGruntSelectedSprite_07e9f0() {}
+RVA(0x00011e80, 0x44) void CGruntSelectedSprite::CGruntSelectedSprite_011e80() {}
+RVA(0x0007e9c0, 0x16) void CGruntSelectedSprite::CGruntSelectedSprite_07e9c0() {}
+RVA(0x0007e9f0, 0x5f) void CGruntSelectedSprite::CGruntSelectedSprite_07e9f0() {}
+
+// ---- CGruntSpawnConfig ----
+RVA(0x0011c730, 0x5c) void CGruntSpawnConfig::CGruntSpawnConfig_11c730() {}
 
 // ---- CGruntStartingPoint ----
-RVA(0x00010670, 0x44)
-void CGruntStartingPoint::CGruntStartingPoint_010670() {}
+RVA(0x00010670, 0x44) void CGruntStartingPoint::CGruntStartingPoint_010670() {}
 
 // ---- CGruntToySprite ----
-RVA(0x000122b0, 0x44)
-void CGruntToySprite::CGruntToySprite_0122b0() {}
-RVA(0x0007f920, 0x21)
-void CGruntToySprite::CGruntToySprite_07f920() {}
-RVA(0x0007f960, 0x85)
-void CGruntToySprite::CGruntToySprite_07f960() {}
+RVA(0x000122b0, 0x44) void CGruntToySprite::CGruntToySprite_0122b0() {}
+RVA(0x0007f920, 0x21) void CGruntToySprite::CGruntToySprite_07f920() {}
+RVA(0x0007f960, 0x85) void CGruntToySprite::CGruntToySprite_07f960() {}
 
 // ---- CGruntToyTimeSprite ----
-RVA(0x00012130, 0x44)
-void CGruntToyTimeSprite::CGruntToyTimeSprite_012130() {}
+RVA(0x00012130, 0x44) void CGruntToyTimeSprite::CGruntToyTimeSprite_012130() {}
 
-// ---- CGruntzMgr ---- (43 methods migrated to src/Gruntz/GruntzMgr.cpp, incl.
-// SyncOptionsState @0x093170, now @early-stop at 92.95%). The one remaining big
-// method stays stubbed for the final sweep (per matcher doctrine: don't half-do a
-// big EH/switch state-factory - a partial under-counts AND diverges its regalloc;
-// redo leaf-first once the ~11 state classes are modeled):
-//   0x08b960 (1988 B) - the state-FACTORY/switch method: /GX EH frame + a 0x11-case
-//     switch (jump table switchdataD_0048c124 @0x48c124) that `new`s a distinct
-//     game-state object per case, each with its own vftable (PTR_LAB_005ea21c ..
-//     PTR_LAB_005e9bdc - 11 distinct, none yet named to a class) + CString/CByteArray
-//     members (out-of-line NAFXCW ctors FUN_0051f5a0 etc.) + a scalar-deleting dtor.
-//     Tearing down m_curState (vtbl 0x10/0x28) then installing+entering the new state
-//     (vtbl 0x4). Blocked on modelling all ~11 state-class layouts + their vtable
-//     contents; reconstruct those leaves FIRST, then this dispatcher.
-RVA(0x0008b960, 0x7c4)
-void CGruntzMgr::CGruntzMgr_08b960() {}
+// ---- CGruntWingzTimeSprite ----
+RVA(0x000121f0, 0x44) void CGruntWingzTimeSprite::CGruntWingzTimeSprite_0121f0() {}
+RVA(0x0007fd90, 0xd) void CGruntWingzTimeSprite::CGruntWingzTimeSprite_07fd90() {}
 
-// ---- CGruntzSoundZ ---- migrated to src/Dsndmgr/CGruntzSoundZ.cpp (all 8 methods).
+// ---- CGruntzMgr ----
+RVA(0x0008b960, 0x7c4) void CGruntzMgr::CGruntzMgr_08b960() {}
+RVA(0x0008d780, 0x95) void CGruntzMgr::CGruntzMgr_08d780() {}
+RVA(0x0008fa40, 0x16) void CGruntzMgr::CGruntzMgr_08fa40() {}
+RVA(0x00092340, 0x49) void CGruntzMgr::CGruntzMgr_092340() {}
 
 // ---- CGuardPoint ----
-RVA(0x00010410, 0x44)
-void CGuardPoint::CGuardPoint_010410() {}
-
-// ---- CInGameIcon ---- migrated to src/Gruntz/CInGameIcon.cpp (all 5 methods).
-
-// ---- CInGameText ---- migrated to src/Gruntz/CInGameText.cpp (all 3 methods).
+RVA(0x00010410, 0x44) void CGuardPoint::CGuardPoint_010410() {}
 
 // ---- CKitchenSlime ----
-RVA(0x00013100, 0x44)
-void CKitchenSlime::CKitchenSlime_013100() {}
-RVA(0x000b2940, 0x102)
-void CKitchenSlime::CKitchenSlime_0b2940() {}
+RVA(0x00013100, 0x44) void CKitchenSlime::CKitchenSlime_013100() {}
+RVA(0x000b2940, 0x102) void CKitchenSlime::CKitchenSlime_0b2940() {}
 
-// ---- CLightFx ----  (recovered: 0x9d520 Activate + 0x9d770 RebindNode are
-// CLightFx leaf methods, reconstructed in src/Gruntz/CLightFx.cpp. 0x12430 is a
-// MIS-ASSIGNED sibling: it is the EH base-destructor of a *different* CUserLogic
-// leaf (byte-identical twin of 0x12370; same CUserLogic/CUserBase vtables + EngStr
-// member at +0x18, only the EH handler RVA differs), reached only from the
-// scalar-deleting dtor at 0x12400 - NOT CLightFx, whose ctor is 0x9cf00. Left
-// stubbed under its placeholder name pending its real owner.)
-RVA(0x00012430, 0x44)
-void CLightFx::CLightFx_012430() {}
+// ---- CLightFx ----
+RVA(0x00012430, 0x44) void CLightFx::CLightFx_012430() {}
 
 // ---- CMapArrayA ----
-RVA(0x0009e740, 0x76)
-void CMapArrayA::CMapArrayA_09e740() {}
+RVA(0x0009e740, 0x76) void CMapArrayA::CMapArrayA_09e740() {}
 
 // ---- CMapArrayB ----
-RVA(0x0009e860, 0x7a)
-void CMapArrayB::CMapArrayB_09e860() {}
+RVA(0x0009e860, 0x7a) void CMapArrayB::CMapArrayB_09e860() {}
 
 // ---- CMenuState ----
-RVA(0x000a0d40, 0x24)
-void CMenuState::CMenuState_0a0d40() {}
+RVA(0x00036a30, 0x14e) void CMenuState::CMenuState_036a30() {}
+RVA(0x000a0d40, 0x24) void CMenuState::CMenuState_0a0d40() {}
 
-// ---- NetUnattributed ----
-// Trace-discovered near the NetMgr DirectPlay body but NOT CNetMgr methods (the
-// 0x178xxx CNetMgr cluster moved to src/Net/NetMgr.cpp). Each verified non-member:
-//   0x007c20 __cdecl/__stdcall callback-iterator (ret 0x10, no `this`)
-//   0x024450 __cdecl teardown of a .data global object (no `this`)
-//   0x099d10 __thiscall on a .data global (ecx = &g_0x6459b0, not CNetMgr)
-//   0x0b89e0 free function taking the net-mgr as a parameter (no `mov reg,ecx`)
-//   0x0f93b0 __cdecl format/log helper (esp args, no `this`)
-//   0x11f618 SEH cleanup funclet (ebp-relative; not a function start)
-//   0x18c022 CRT libm routine (fyl2x/fstcw == pow/log; not a method)
-RVA(0x0011f618, 0x14)
-void NetUnattributed::NetUnattributed_11f618() {}
-RVA(0x0018c022, 0x1d3)
-void NetUnattributed::NetUnattributed_18c022() {}
+// ---- CNetMgr ----
+RVA(0x0011f618, 0x14) void CNetMgr::CNetMgr_11f618() {}
+RVA(0x0018c022, 0x1d3) void CNetMgr::CNetMgr_18c022() {}
 
 // ---- CObjectDropper ----
-RVA(0x000124f0, 0x44)
-void CObjectDropper::CObjectDropper_0124f0() {}
+RVA(0x000124f0, 0x44) void CObjectDropper::CObjectDropper_0124f0() {}
 
 // ---- CParticlez ----
-RVA(0x00012d90, 0x44)
-void CParticlez::CParticlez_012d90() {}
-RVA(0x00046d30, 0x102)
-void CParticlez::CParticlez_046d30() {}
+RVA(0x00012d90, 0x44) void CParticlez::CParticlez_012d90() {}
+RVA(0x00046d30, 0x102) void CParticlez::CParticlez_046d30() {}
 
-// ---- CPlay ---- HandleDragMove (0xd0db0) reconstructed in src/Gruntz/CPlay.cpp.
-// The 0x08d270 / 0x0b6110-0x0bc420 cluster was MIS-ATTRIBUTED to CPlay: RTTI
-// (.?AVCMulti@@) recovered the real class CMulti (the multiplayer/lobby game-
-// state, `CMulti : public CPlay, public CState`), now reconstructed in
-// src/Gruntz/CMulti.cpp (the EH-frame dtor at 0x08d270 + the 10 lobby methods).
-// 0x0d1b60 (3119 B) IS a genuine CPlay method (offsets <=0x464, uses g_64556c/
-// g_644c54/g_buteMgr, strings GAME_BADSELECT/PlayerDefenderRadius/Grunt) - the big
-// selection/command dispatcher built on a jump table (switchdataD_004d2790, 40
-// calls, 104 branches). Too large/entangled to converge in breadth-first mode;
-// deferred to the final sweep (leaf-first redo) - do NOT half-reconstruct.
-RVA(0x000d1b60, 0xc2f)
-void CPlay::CPlay_0d1b60() {}
+// ---- CPathHazard ----
+RVA(0x00013340, 0x44) void CPathHazard::CPathHazard_013340() {}
+RVA(0x000b4020, 0x26c) void CPathHazard::CPathHazard_0b4020() {}
+RVA(0x000b47e0, 0x170) void CPathHazard::CPathHazard_0b47e0() {}
+RVA(0x000b5070, 0x5) void CPathHazard::CPathHazard_0b5070() {}
 
-// ---- CRollingBall ---- the destructor (0x012f80) and Serialize (0x0b0fe0,
-// vtable slot 1) were reconstructed into src/Gruntz/RollingBall.cpp (the real
-// CRollingBall TU, alongside Update 0x0b0140). CRollingBall : CUserLogic models
-// the leaf polymorphically so the dtor folds the bare CUserLogic teardown; the
-// Serialize streams the +0x58..+0x98 ball state through the archive (mode 4 =
-// write slot +0x30, mode 7 = read slot +0x2c). The 1-arg ctor (0xaf820) stays
-// stubbed in src/Stub/CRollingBall.cpp.
+// ---- CPlay ----
+RVA(0x00036be0, 0xd3) void CPlay::CPlay_036be0() {}
+RVA(0x000d1b60, 0xc2f) void CPlay::CPlay_0d1b60() {}
 
 // ---- CSBI_RectOnly ----
-// MEMBERSHIP AUDIT (matcher-2): the this-tracer conflated 4 RVAs onto
-// CSBI_RectOnly. Verified via dump_target/caller-scan/Ghidra:
-//   0c8980 - /GX EH destructor of a CSBI_RectOnly-FAMILY object (m_530 collection
-//     + 8 CPtrList of stride 0x1c at +0x2c, the ResetWidgets shape). Called as the
-//     sub-object dtor from the 0xc8xxx render class's teardown (FUN_004c8700, on
-//     [edi+0x2dc]). Tractable only via the eh-dtor-model-members-as-destructible
-//     pattern, which needs the whole owning class polymorphically modeled - out of
-//     scope here. Documented /GX EH-dtor wall; deferred to the final sweep.
-//   0ebd70 - NOT a CSBI_RectOnly member: a free function (no this; calls a method on
-//     ARG1) in the 0xc8xxx-0xd7xxx scroll/render module (reads g_buteMgr, ScrollDistX
-//     /ScrollDistY/ScrollTime/BackPlane butes + DAT_0064cfXX scroll state). Called
-//     only from that module (0xb713d/0xc8f13/0xca002/0xd7011), never from a CSBI
-//     site. SPLIT: belongs to the scroll/viewport subsystem, not the SBI family.
-//   105800 - NOT a CSBI_RectOnly member: a free __stdcall(2 args, ret 8) status
-//     helper (reads g_gameReg->m_68 + DAT_00644c54 grid index; on success latches
-//     m_68+0x230/0x234/0x238). Called BY CSBI methods (UpdateStatusBarTabHighlight
-//     0xfeeaf, ClickToggle 0xff94d), not a member of the class. SPLIT.
-//   1084d0 - genuine CSBI_RectOnly member: a /GX EH Serialize-VARIANT (lazily news
-//     the +0x54c sub-object like EnsureSub, drives the stream slots 0x2c/0x30, jump-
-//     table dispatch on the stream-type arg). But 2412 B, /GX + jump table - a >512B
-//     megafunction. Per doctrine: documented; leave stubbed; deferred to the final
-//     sweep (leaf-first redo), do NOT half-reconstruct.
-RVA(0x000c8980, 0x64)
-void CSBI_RectOnly::CSBI_RectOnly_0c8980() {}
-RVA(0x000ebd70, 0x366)
-void CSBI_RectOnly::CSBI_RectOnly_0ebd70() {}
-RVA(0x00105800, 0x9e)
-void CSBI_RectOnly::CSBI_RectOnly_105800() {}
-RVA(0x001084d0, 0x96c)
-void CSBI_RectOnly::CSBI_RectOnly_1084d0() {}
+RVA(0x000c8980, 0x64) void CSBI_RectOnly::CSBI_RectOnly_0c8980() {}
+RVA(0x000ebd70, 0x366) void CSBI_RectOnly::CSBI_RectOnly_0ebd70() {}
+RVA(0x00105800, 0x9e) void CSBI_RectOnly::CSBI_RectOnly_105800() {}
+RVA(0x001084d0, 0x96c) void CSBI_RectOnly::CSBI_RectOnly_1084d0() {}
 
 // ---- CSecretLevelTrigger ----
-RVA(0x00010c50, 0x44)
-void CSecretLevelTrigger::CSecretLevelTrigger_010c50() {}
-RVA(0x00042ac0, 0x90)
-void CSecretLevelTrigger::CSecretLevelTrigger_042ac0() {}
+RVA(0x00010c50, 0x44) void CSecretLevelTrigger::CSecretLevelTrigger_010c50() {}
+RVA(0x00042ac0, 0x90) void CSecretLevelTrigger::CSecretLevelTrigger_042ac0() {}
 
 // ---- CSimpleAnimation ----
-RVA(0x0000f9d0, 0x44)
-void CSimpleAnimation::CSimpleAnimation_00f9d0() {}
-RVA(0x000abf70, 0x17)
-void CSimpleAnimation::CSimpleAnimation_0abf70() {}
+RVA(0x0000f9d0, 0x44) void CSimpleAnimation::CSimpleAnimation_00f9d0() {}
+RVA(0x000abf70, 0x17) void CSimpleAnimation::CSimpleAnimation_0abf70() {}
 
 // ---- CSingleAnimation ----
-RVA(0x00010540, 0x44)
-void CSingleAnimation::CSingleAnimation_010540() {}
-
-// ---- CState ---- migrated to src/Gruntz/GameMode.cpp (its real class TU): the
-// two leaf `??1` destructors + slot-2 release virtuals (CMenuState/CBootyState)
-// and the CMenuState per-frame poll methods, plus the two switch dispatchers.
+RVA(0x00010540, 0x44) void CSingleAnimation::CSingleAnimation_010540() {}
 
 // ---- CStaticHazard ----
-RVA(0x00012b30, 0x44)
-void CStaticHazard::CStaticHazard_012b30() {}
-RVA(0x000fbbf0, 0x102)
-void CStaticHazard::CStaticHazard_0fbbf0() {}
-
-// ---- CStatusBarItem ----
-// The 13 methods here were recovered as CSBI_MenuItem (RTTI .?AVCSBI_MenuItem@@,
-// most-derived of CSBI_MenuItem : CSBI_Image : CSBI_RectOnly : CStatusBarItem) and
-// migrated to src/Gruntz/SBI_MenuItem.cpp (+ SBI_MenuItemEh.cpp for the /GX dtor).
+RVA(0x00012b30, 0x44) void CStaticHazard::CStaticHazard_012b30() {}
+RVA(0x000fbbf0, 0x102) void CStaticHazard::CStaticHazard_0fbbf0() {}
 
 // ---- CTeleporter ----
-RVA(0x00010dd0, 0x44)
-void CTeleporter::CTeleporter_010dd0() {}
-RVA(0x000419e0, 0x81)
-void CTeleporter::CTeleporter_0419e0() {}
+RVA(0x00010dd0, 0x44) void CTeleporter::CTeleporter_010dd0() {}
+RVA(0x000419e0, 0x81) void CTeleporter::CTeleporter_0419e0() {}
 
 // ---- CTileTriggerSwitch ----
-RVA(0x000110f0, 0x44)
-void CTileTriggerSwitch::CTileTriggerSwitch_0110f0() {}
+RVA(0x000110f0, 0x44) void CTileTriggerSwitch::CTileTriggerSwitch_0110f0() {}
 
-// ---- CTileTriggerSwitchLogic ---- (leftover misattributed cluster) The block
-// was 3 conflated classes; 10 of the 12 RVAs are now reconstructed in their real
-// homes:
-//   switch-logic (CTileTriggerSwitchLogic, src/Gruntz/TileTriggerSwitchLogic.cpp):
-//     112c70 (VerifyBlockLinks: this+0x24 is a back-pointer to the OWNING switch-
-//     logic, whose +0x20 child list is walked then queried via FindIndexByKey /
-//     FindChild - the very methods reconstructed in that TU; reclassified out of
-//     the "container/command outlier" pile, now reconstructed there).
-//   container (CTileTriggerContainer, src/Gruntz/TileTriggerContainer.cpp):
-//     0xc8640 (~dtor, 100%), 116fa0 (RemoveAll, 100%), 117f60 (SetCell, ~78%),
-//     116a40/116cf0 (AddTo* /GX-new walls, ~43/29%), 117630/117710
-//     (SerializeApplyA/B switch-table walls, ~57/63%).
-//   command   (CTileGridCommand, src/Gruntz/TileGridCommand.cpp):
-//     112970 (Classify, ~96%), 112b70 (BumpCell, ~73%), 112590 (ApplyMove, ~70%).
-// One RVA remains stubbed below (see its note).
+// ---- CTileTriggerSwitchLogic ----
+RVA(0x00116b80, 0x105) void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_116b80() {}
+RVA(0x00117280, 0x2ec) void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_117280() {}
 
-// CTileTriggerContainer::SerializeWalk (0x117280, 748 B, /GX): the big serialize
-// driver that walks all three lists, streams each element's count, and applies
-// SerializeApplyA/B per element (its tag-dispatched helpers 117630/117710 ARE
-// reconstructed in src/Gruntz/TileTriggerContainer.cpp).  Deferred for the final
-// sweep (>512 B EH; would under-count + diverge its regalloc if half-reconstructed).
-RVA(0x00117280, 0x2ec)
-void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_117280() {}
-
-// ---- CTileTriggerTransition ---- reconstructed in src/Gruntz/TileTriggerTransition.cpp
-//   0x011730 GetTypeTag, 0x110070 ApplyAnimation, 0x10d150 StepController (was in
-//   the ClassUnknown_69 block), 0x0117f0 ~CUserLogic base COMDAT (the leaf dtor
-//   folds it; pinned via @rva-symbol ??1CUserLogic@@UAE@XZ).
+// ---- CTimeBomb ----
+RVA(0x00012a70, 0x44) void CTimeBomb::CTimeBomb_012a70() {}
+RVA(0x000e1830, 0x102) void CTimeBomb::CTimeBomb_0e1830() {}
 
 // ---- CToobSpikez ----
-RVA(0x00012c60, 0x44)
-void CToobSpikez::CToobSpikez_012c60() {}
-RVA(0x00114860, 0x102)
-void CToobSpikez::CToobSpikez_114860() {}
+RVA(0x00012c60, 0x44) void CToobSpikez::CToobSpikez_012c60() {}
+RVA(0x00114860, 0x102) void CToobSpikez::CToobSpikez_114860() {}
 
-// ---- CGrunt (migration in progress; see src/Gruntz/Grunt.cpp) ----
-// 0x00f2f0 = the most-derived CGrunt /GX destructor: stamps the CUserLogic/CWapX
-//   vtables (0x5e8754/0x5e705c/0x5e70b4) then tears down the member sub-objects
-//   (CString @+0x468/+0x44c/+0x448/+0x1c0, collections @+0x338/+0x31c, the +0x18
-//   member dtor) under an EH unwind frame. Deferred to the final sweep: the EH
-//   member-teardown trylevel chain needs every member modeled as a real
-//   destructible sub-object (docs/patterns/eh-dtor-model-members-as-destructible).
-RVA(0x0000f2f0, 0xc8)
-void CUserLogic::CUserLogic_00f2f0() {}
-// 0x04ac10 -> CGrunt::PlaySound (src/Gruntz/Grunt.cpp)
-// 0x04b370 -> CGrunt::StepArrivalDrop (src/Gruntz/Grunt.cpp)
-// 0x04c170 -> CGrunt::StepGruntMovement (src/Gruntz/Grunt.cpp)
-// 0x051850 -> CGrunt::RectContains (src/Gruntz/Grunt.cpp)
-// 0x051a20 -> CGrunt::RectContainsGated (src/Gruntz/Grunt.cpp)
-// 0x052fb0 -> CGrunt::StepAnimDispatchA (src/Gruntz/Grunt.cpp)
-// 0x053b80 -> CGrunt::SerializeMove (src/Gruntz/Grunt.cpp) [100% byte-exact]
-// 0x059230 / 0x05caa0 / 0x062110 / 0x0637a0 / 0x067850 are CONFIRMED CGrunt
-//   methods (this=ecx is the grunt; same g_animNameResolver @0x6bf650 + scratch
-//   CString[] @0x6bf66c/+0x670 + single-letter type-code literals @0x60cc.. that
-//   StepAnimDispatchA/B and StepArrivalDrop use). All five are the SAME
-//   anim-name dispatch / move-state / scratch-CString-teardown family already
-//   @early-stopped in Grunt.cpp (StepArrivalDrop/StepGruntMovement/StepAnimDispatchA
-//   /B/StepCoordResolve): the inline-strcmp 12-way type-code cascade + the grid/
-//   board raw-offset chains + the scratch loop-strength-reduction wall (no source
-//   spelling). Deferred to the final sweep for a leaf-first redo with the other
-//   dispatch machines (do NOT half-reconstruct a >512 B dispatch megafn: it
-//   under-counts AND diverges its regalloc).
-RVA(0x00059230, 0x40d)
-void CUserLogic::CUserLogic_059230() {}
-RVA(0x0005caa0, 0x5e4)
-void CUserLogic::CUserLogic_05caa0() {}
-// 0x05f310 -> CGrunt::StepCoordResolve (src/Gruntz/Grunt.cpp)
-RVA(0x00062110, 0x5bc)
-void CUserLogic::CUserLogic_062110() {}
-RVA(0x000637a0, 0x2f8)
-void CUserLogic::CUserLogic_0637a0() {}
-RVA(0x00067850, 0x214)
-void CUserLogic::CUserLogic_067850() {}
-// 0x06a6d0 -> CGrunt::StepAnimDispatchB (src/Gruntz/Grunt.cpp)
-// 0x16e7f0 = CGrunt::SerializeAnimState, the head sub-serializer SerializeMove
-//   (0x53b80) chains: a switch(mode 4=Write/7=Read) over the archive vtable
-//   (slot +0x2c Read / +0x30 Write) like SerializeMove, BUT the load arm (case 7)
-//   reads a length, operator-new's a blob, ar->Read's it, builds a local temp
-//   object (ctor 0x569700 / dtor 0x569d70 @[esp+0x18]), folds it into the +0x18
-//   collection (0x593140) and RezFree's the blob. The temp-object lifecycle +
-//   the deserialize-into-collection shape is a separate reconstruction; deferred
-//   (modeled external/reloc-masked from SerializeMove, which is 100% without it).
-RVA(0x0016e7f0, 0x1cf)
-void CUserLogic::CUserLogic_16e7f0() {}
-// 0x16ea90 = CGrunt::StepMotion, the per-tick velocity/scroll integration step:
-//   m_140/m_144 = (i32)m_78/(i32)m_80; advances the m_38 motion sub-object's
-//   position doubles (+0x28/+0x30/+0x40/+0x48/+0xa0/+0xa8) against the HUD scroll
-//   owner (m_10->m_98->m_174/m_178) and re-maps via m_10->m_0c->m_24 (0x55de40).
-//   The integer control flow is fully recovered, but the two position-clamp
-//   blocks lower to a dense x87 fld/fxch/fsubr stack schedule that no C++ spelling
-//   reproduces (docs/patterns/x87-fp-stack-schedule, c7 wall) and +0x38 is an
-//   EMBEDDED sub-object here (conflicts with the resolvers' `CGruntAnimState* m_38`
-//   pointer typing). >512 B + fp wall -> deferred to the final sweep, NOT
-//   half-reconstructed (would diverge the resolvers' regalloc via m_38 re-typing).
-RVA(0x0016ea90, 0x234)
-void CUserLogic::CUserLogic_16ea90() {}
+// ---- CUserLogic ----
+RVA(0x0000f2f0, 0xc8) void CUserLogic::CUserLogic_00f2f0() {}
+RVA(0x00057b70, 0x77) void CUserLogic::CUserLogic_057b70() {}
+RVA(0x00059230, 0x40d) void CUserLogic::CUserLogic_059230() {}
+RVA(0x0005caa0, 0x5e4) void CUserLogic::CUserLogic_05caa0() {}
+RVA(0x00062110, 0x5bc) void CUserLogic::CUserLogic_062110() {}
+RVA(0x000637a0, 0x2f8) void CUserLogic::CUserLogic_0637a0() {}
+RVA(0x00067850, 0x214) void CUserLogic::CUserLogic_067850() {}
+RVA(0x000690a0, 0x1c5) void CUserLogic::CUserLogic_0690a0() {}
+RVA(0x0016e7f0, 0x1cf) void CUserLogic::CUserLogic_16e7f0() {}
+RVA(0x0016ea90, 0x234) void CUserLogic::CUserLogic_16ea90() {}
 
 // ---- CVoiceTrigger ----
-RVA(0x000135a0, 0x44)
-void CVoiceTrigger::CVoiceTrigger_0135a0() {}
-RVA(0x0011a700, 0xae)
-void CVoiceTrigger::CVoiceTrigger_11a700() {}
+RVA(0x000135a0, 0x44) void CVoiceTrigger::CVoiceTrigger_0135a0() {}
+RVA(0x0011a700, 0xae) void CVoiceTrigger::CVoiceTrigger_11a700() {}
 
 // ---- CWayPoint ----
-RVA(0x000102e0, 0x44)
-void CWayPoint::CWayPoint_0102e0() {}
+RVA(0x000102e0, 0x44) void CWayPoint::CWayPoint_0102e0() {}
 
 // ---- CWormhole ----
-RVA(0x00010980, 0x44)
-void CWormhole::CWormhole_010980() {}
-RVA(0x000403b0, 0xa5)
-void CWormhole::CWormhole_0403b0() {}
+RVA(0x00010980, 0x44) void CWormhole::CWormhole_010980() {}
+RVA(0x000403b0, 0xa5) void CWormhole::CWormhole_0403b0() {}
 
 // ---- ClassUnknown_1 ----
-RVA(0x00134be0, 0x7e)
-void ClassUnknown_1::ClassUnknown_1_134be0() {}
-RVA(0x00134c60, 0x14)
-void ClassUnknown_1::ClassUnknown_1_134c60() {}
-RVA(0x00134c80, 0x24)
-void ClassUnknown_1::ClassUnknown_1_134c80() {}
-
-// ---- ClassUnknown_10 ---- recovered as CSpriteRefTable, the game-registry
-// sprite/animation reference table (g_gameReg+0x74); migrated to
-// src/Gruntz/SpriteRefTable.cpp.
-
-// ---- ClassUnknown_100 ---- recovered as CWarpStoneFly, the flying-warpstone
-// status-bar overlay owned by CSBI_RectOnly at +0x54c; ctor (0x109bb0), Tick
-// (0x10a0f0) and Draw (0x10a2f0) migrated to src/Gruntz/WarpStoneFly.cpp. The
-// Setup (0x109bd0) and mode dispatch (0x109e00) remain unreconstructed.
+RVA(0x00134be0, 0x7e) void ClassUnknown_1::ClassUnknown_1_134be0() {}
+RVA(0x00134c60, 0x14) void ClassUnknown_1::ClassUnknown_1_134c60() {}
+RVA(0x00134c80, 0x24) void ClassUnknown_1::ClassUnknown_1_134c80() {}
 
 // ---- ClassUnknown_101 ----
-RVA(0x0011f6b9, 0x17)
-void ClassUnknown_101::ClassUnknown_101_11f6b9() {}
+RVA(0x0011f6b9, 0x17) void ClassUnknown_101::ClassUnknown_101_11f6b9() {}
 
 // ---- ClassUnknown_102 ----
-RVA(0x0006b2e0, 0x39)
-void ClassUnknown_102::ClassUnknown_102_06b2e0() {}
+RVA(0x0006b2e0, 0x39) void ClassUnknown_102::ClassUnknown_102_06b2e0() {}
 
 // ---- ClassUnknown_103 ----
-RVA(0x00148d10, 0x25)
-void ClassUnknown_103::ClassUnknown_103_148d10() {}
+RVA(0x00148d10, 0x25) void ClassUnknown_103::ClassUnknown_103_148d10() {}
 
 // ---- ClassUnknown_104 ----
-RVA(0x00152e30, 0x53)
-void ClassUnknown_104::ClassUnknown_104_152e30() {}
-RVA(0x00165730, 0x4c)
-void ClassUnknown_104::ClassUnknown_104_165730() {}
+RVA(0x00152e30, 0x53) void ClassUnknown_104::ClassUnknown_104_152e30() {}
+RVA(0x00165730, 0x4c) void ClassUnknown_104::ClassUnknown_104_165730() {}
 
 // ---- ClassUnknown_105 ----
-RVA(0x001657a0, 0x66)
-void ClassUnknown_105::ClassUnknown_105_1657a0() {}
+RVA(0x001657a0, 0x66) void ClassUnknown_105::ClassUnknown_105_1657a0() {}
 
 // ---- ClassUnknown_106 ----
-RVA(0x000af0a0, 0xf4)
-void ClassUnknown_106::ClassUnknown_106_0af0a0() {}
+RVA(0x000af0a0, 0xf4) void ClassUnknown_106::ClassUnknown_106_0af0a0() {}
 
 // ---- ClassUnknown_107 ----
-RVA(0x0010d3d0, 0xf1)
-void ClassUnknown_107::ClassUnknown_107_10d3d0() {}
+RVA(0x0010d3d0, 0xf1) void ClassUnknown_107::ClassUnknown_107_10d3d0() {}
 
 // ---- ClassUnknown_109 ----
-RVA(0x000aa960, 0xf1)
-void ClassUnknown_109::ClassUnknown_109_0aa960() {}
-
-// ---- ClassUnknown_11 ---- reconstructed as CSymParser (the Remus parser/owner)
-// in src/Bute/SymParser.cpp: ~CSymParser (0x13abc0), Clear (0x13b850) and the
-// three path-resolution/insert thunks (0x13bff0/0x13c030/0x13c210).
+RVA(0x000aa960, 0xf1) void ClassUnknown_109::ClassUnknown_109_0aa960() {}
 
 // ---- ClassUnknown_110 ----
-RVA(0x000fb660, 0xf1)
-void ClassUnknown_110::ClassUnknown_110_0fb660() {}
+RVA(0x000fb660, 0xf1) void ClassUnknown_110::ClassUnknown_110_0fb660() {}
 
 // ---- ClassUnknown_111 ----
-RVA(0x00029a80, 0x29)
-void ClassUnknown_111::ClassUnknown_111_029a80() {}
+RVA(0x00029a80, 0x29) void ClassUnknown_111::ClassUnknown_111_029a80() {}
 
 // ---- ClassUnknown_112 ----
-RVA(0x00021c40, 0x8)
-void ClassUnknown_112::ClassUnknown_112_021c40() {}
+RVA(0x00021c40, 0x8) void ClassUnknown_112::ClassUnknown_112_021c40() {}
 
 // ---- ClassUnknown_113 ----
-RVA(0x00114480, 0xf1)
-void ClassUnknown_113::ClassUnknown_113_114480() {}
+RVA(0x00114480, 0xf1) void ClassUnknown_113::ClassUnknown_113_114480() {}
 
-// ---- ClassUnknown_114 ---- RECOVERED as CSBI_WellGoo (RTTI .?AVCSBI_WellGoo@@,
-// vtable 0x5eadfc), the most-derived leaf of CSBI_WellGoo : CSBI_Image :
-// CSBI_RectOnly : CStatusBarItem. Reconstructed in src/Gruntz/SBI_WellGoo.cpp (the
-// frameless per-frame goo Tick, vtable slot 5) and src/Gruntz/SBI_WellGooEh.cpp
-// (the 4-level /GX scalar destructor).
-
-// ---- ClassUnknown_115 ----
-// RECOVERED as CSBI_GruntMachine (RTTI .?AVCSBI_GruntMachine@@, vtable 0x5eadbc),
-// a CStatusBarItem leaf. Reconstructed in src/Gruntz/SBI_GruntMachine.cpp (slots 3/5
-// + the SetFrames helper) and src/Gruntz/SBI_GruntMachineEh.cpp (the /GX destructor).
-
-// ---- ClassUnknown_116 ---- (CONFLATED by the dynamic trace; SPLIT into two
-// real owners by caller/RTTI evidence)
-//   - 0xe7980/0xe7b00 = a timed cel-animation player (Init/Tick); both
-//     reconstructed into src/Gruntz/CAniPlayer.cpp.
-//   - 0xea0f0/0x1047f0/0x1048f0 = the CStatusBar item family. 0xea0f0 is the
-//     CSbItem directional `[vtbl+0x38]` dispatch (called by LoadTabSprites +
-//     FUN_00504f90); reconstructed into src/Gruntz/CStatusBarMgr.cpp. The two
-//     EH-frame chain destructors (0x1047f0/0x1048f0) stamp the CSBI t3/t4/t5/t8
-//     vtables and are reached from the `scalar_deleting_destructor`s at
-//     0x1047c0/0x1048c0 - left stubbed below (CSBI destructor-chain EH wall,
-//     deferred to the final sweep).
-RVA(0x001047f0, 0x94)
-void ClassUnknown_116::ClassUnknown_116_1047f0() {}
-RVA(0x001048f0, 0xa9)
-void ClassUnknown_116::ClassUnknown_116_1048f0() {}
-
-// ---- ClassUnknown_118 -> CSBI_WarlordHead (RTTI .?AVCSBI_WarlordHead@@, vtable
-// 0x5ead24) reconstructed into src/Gruntz/SBI_WarlordHead.cpp (slots 5/11 + two
-// helpers) + the 5-level /GX scalar dtor (0x104a00) in SBI_WarlordHeadEh.cpp; the
-// most-derived leaf of the SBI image chain
-//   CSBI_WarlordHead : CSBI_ImageSet : CSBI_Image : CSBI_RectOnly : CStatusBarItem.
+// ---- ClassUnknown_116 ----
+RVA(0x001047f0, 0x94) void ClassUnknown_116::ClassUnknown_116_1047f0() {}
+RVA(0x001048f0, 0xa9) void ClassUnknown_116::ClassUnknown_116_1048f0() {}
 
 // ---- ClassUnknown_119 ----
-RVA(0x001591b0, 0x19)
-void ClassUnknown_119::ClassUnknown_119_1591b0() {}
-
-// ---- ClassUnknown_12 -> CSymTab (Remus/ButeMgr symbol table) ----
-// All 4 methods reconstructed in src/Bute/SymTab.cpp; class identity recovered
-// from the `zSymTab:`/ButeMgr string family + the RemusParseSource neighbours.
+RVA(0x001591b0, 0x19) void ClassUnknown_119::ClassUnknown_119_1591b0() {}
 
 // ---- ClassUnknown_120 ----
-RVA(0x001852e0, 0x35)
-void ClassUnknown_120::ClassUnknown_120_1852e0() {}
+RVA(0x001852e0, 0x35) void ClassUnknown_120::ClassUnknown_120_1852e0() {}
 
 // ---- ClassUnknown_121 ----
-RVA(0x00139cf0, 0xd7)
-void ClassUnknown_121::ClassUnknown_121_139cf0() {}
+RVA(0x00139cf0, 0xd7) void ClassUnknown_121::ClassUnknown_121_139cf0() {}
 
 // ---- ClassUnknown_122 ----
-RVA(0x001397a0, 0x57)
-void ClassUnknown_122::ClassUnknown_122_1397a0() {}
+RVA(0x001397a0, 0x57) void ClassUnknown_122::ClassUnknown_122_1397a0() {}
 
 // ---- ClassUnknown_123 ----
-RVA(0x0016dfc0, 0x7)
-void ClassUnknown_123::ClassUnknown_123_16dfc0() {}
+RVA(0x0016dfc0, 0x7) void ClassUnknown_123::ClassUnknown_123_16dfc0() {}
 
 // ---- ClassUnknown_124 ----
-RVA(0x0011eaf5, 0x7)
-void ClassUnknown_124::ClassUnknown_124_11eaf5() {}
+RVA(0x0011eaf5, 0x7) void ClassUnknown_124::ClassUnknown_124_11eaf5() {}
 
 // ---- ClassUnknown_125 ----
-RVA(0x0011eaa8, 0x7)
-void ClassUnknown_125::ClassUnknown_125_11eaa8() {}
+RVA(0x0011eaa8, 0x7) void ClassUnknown_125::ClassUnknown_125_11eaa8() {}
 
 // ---- ClassUnknown_126 ----
-RVA(0x0011cf30, 0x7)
-void ClassUnknown_126::ClassUnknown_126_11cf30() {}
+RVA(0x0011cf30, 0x7) void ClassUnknown_126::ClassUnknown_126_11cf30() {}
 
 // ---- ClassUnknown_127 ----
-RVA(0x0011cee3, 0x7)
-void ClassUnknown_127::ClassUnknown_127_11cee3() {}
+RVA(0x0011cee3, 0x7) void ClassUnknown_127::ClassUnknown_127_11cee3() {}
 
 // ---- ClassUnknown_128 ----
-RVA(0x00174d70, 0x70)
-void ClassUnknown_128::ClassUnknown_128_174d70() {}
+RVA(0x00174d70, 0x70) void ClassUnknown_128::ClassUnknown_128_174d70() {}
 
 // ---- ClassUnknown_129 ----
-RVA(0x00016460, 0x46)
-void ClassUnknown_129::ClassUnknown_129_016460() {}
+RVA(0x00016460, 0x46) void ClassUnknown_129::ClassUnknown_129_016460() {}
 
-// ---- ClassUnknown_13 ----
-// Recovered -> CHashBase / CHash / CHashB (the Bute symbol-table hash); see
-// src/Bute/Hash.cpp.
+// ---- ClassUnknown_138 ----
+RVA(0x00036860, 0x16f) void ClassUnknown_138::ClassUnknown_138_036860() {}
 
 // ---- ClassUnknown_14 ----
-RVA(0x0013a000, 0x37)
-void ClassUnknown_14::ClassUnknown_14_13a000() {}
+RVA(0x0013a000, 0x37) void ClassUnknown_14::ClassUnknown_14_13a000() {}
 
-// ---- ClassUnknown_15 ----
-// RECOVERED -> CRezItm (a buffered FILE* reader; base-vtbl @0x5ef768, derived
-// @0x5ef788). The 4 methods are the CRezItmBase/CRezItm dtor pair + Read + Close,
-// migrated to src/Rez/RezMgr.cpp (CRezItm already lives there).
+// ---- ClassUnknown_154 ----
+RVA(0x000363a0, 0x41) void ClassUnknown_154::ClassUnknown_154_0363a0() {}
+
+// ---- ClassUnknown_164 ----
+RVA(0x000deb20, 0xf1) void ClassUnknown_164::ClassUnknown_164_0deb20() {}
 
 // ---- ClassUnknown_17 ----
-RVA(0x0016f760, 0x82)
-void ClassUnknown_17::ClassUnknown_17_16f760() {}
+RVA(0x0016f760, 0x82) void ClassUnknown_17::ClassUnknown_17_16f760() {}
 
-// ---- ClassUnknown_19 -> Blowfish_decipher (src/Crypto/Blowfish.cpp) ----
-// Not a class: Bruce Schneier's reference Blowfish cipher (free __cdecl funcs).
-// 0x16fc70 is the single-block DECIPHER (16 unrolled Feistel rounds over the
-// global P-array @0x61aeb0 + four pi-constant S-boxes @0x61aef8/b2f8/b6f8/baf8).
-// Siblings in the same module (still stubbed under other ClassUnknown labels):
-// Blowfish_encipher 0x16f7f0 (ClassUnknown_18), Blowfish_Init 0x170100 +
-// the key/CBC wrappers 0x16f6c0/0x16f760 (ClassUnknown_17).
-
-// ---- ClassUnknown_2 ---- fully reconstructed as the DDrawMgr color/shade
-// lookup-table cache CShadeTableCache in src/DDrawMgr/ShadeTableCache.cpp (a
-// CGruntzMgr member). All methods, incl. the two float/int blend-table builders
-// AddTable (0x14f080) and SubTable (0x14f310), live there (the four builders share
-// the /GX EH-frame wall, @early-stop).
+// ---- ClassUnknown_170 ----
+RVA(0x00113420, 0x1f2) void ClassUnknown_170::ClassUnknown_170_113420() {}
 
 // ---- ClassUnknown_20 ----
-RVA(0x0016df70, 0x22)
-void ClassUnknown_20::ClassUnknown_20_16df70() {}
+RVA(0x0016df70, 0x22) void ClassUnknown_20::ClassUnknown_20_16df70() {}
 
 // ---- ClassUnknown_21 ----
-RVA(0x0016e480, 0x3e)
-void ClassUnknown_21::ClassUnknown_21_16e480() {}
-
-// ---- ClassUnknown_22 -> CCheatMgr (src/Gruntz/CheatMgr.cpp) ----
-// All 4 methods reconstructed: the cheat-code dictionary. Empty (0x22b00),
-// AddCheat (0x22be0), RegisterCheats (0x22c80, seeds 19 built-ins + calls
-// LoadCheatConfig 0x22e60), and ~CCheatMgr (0x85e60, the 0x85xxx-region teardown
-// wrapper). The class embeds a CMapStringToPtr at +0x04 keyed by each obfuscated
-// code string.
-
-// ---- ClassUnknown_24 -> CGruntSpawnConfig (src/Gruntz/CGruntSpawnConfig.cpp) ----
-// All 10 methods reconstructed: the grunt spawn/voice config manager. The dtor
-// (0x85df0) lives in the 0x85xxx text region but is this class's teardown; the
-// trace discovery conflated the two regions under one stub label.
+RVA(0x0016e480, 0x3e) void ClassUnknown_21::ClassUnknown_21_16e480() {}
 
 // ---- ClassUnknown_25 ----
-RVA(0x00099ca0, 0x49)
-void ClassUnknown_25::ClassUnknown_25_099ca0() {}
-RVA(0x0009a450, 0x36)
-void ClassUnknown_25::ClassUnknown_25_09a450() {}
-RVA(0x0011c560, 0x91)
-void ClassUnknown_25::ClassUnknown_25_11c560() {}
+RVA(0x00099ca0, 0x49) void ClassUnknown_25::ClassUnknown_25_099ca0() {}
+RVA(0x0009a450, 0x36) void ClassUnknown_25::ClassUnknown_25_09a450() {}
+RVA(0x0011c560, 0x91) void ClassUnknown_25::ClassUnknown_25_11c560() {}
 
 // ---- ClassUnknown_26 ----
-RVA(0x0011c630, 0x6e)
-void ClassUnknown_26::ClassUnknown_26_11c630() {}
-
-// ---- ClassUnknown_27 -> CSymTab iteration accessors (src/Bute/SymTab.cpp) ----
-// All 6 reconstructed: First/Next accessors over the two embedded hash tables
-// (m_subTabs +0x38, m_symbols +0x40); each returns the entry's payload.
+RVA(0x0011c630, 0x6e) void ClassUnknown_26::ClassUnknown_26_11c630() {}
 
 // ---- ClassUnknown_28 ----
-RVA(0x0001f940, 0x4c)
-void ClassUnknown_28::ClassUnknown_28_01f940() {}
-RVA(0x00158760, 0x59)
-void ClassUnknown_28::ClassUnknown_28_158760() {}
+RVA(0x0001f940, 0x4c) void ClassUnknown_28::ClassUnknown_28_01f940() {}
+RVA(0x00158760, 0x59) void ClassUnknown_28::ClassUnknown_28_158760() {}
 
 // ---- ClassUnknown_29 ----
-RVA(0x00137110, 0x8d)
-void ClassUnknown_29::ClassUnknown_29_137110() {}
-
-// ---- ClassUnknown_3 ---- recovered as CLightFxMgr (the light-FX / translucency
-// shade-table manager at g_gameReg->m_78); all three methods reconstructed in
-// src/Gruntz/LightFxMgr.cpp (Init 0x9dad0, Reset 0x9dc80, Push 0x9dcb0).
-
-// ---- ClassUnknown_30 -> the WAP32 sound engine intrusive {head,tail} list ----
-// All 4 reconstructed as DSoundList in src/Dsndmgr/SoundVoiceList.cpp: the shared
-// list primitive (InsertHead 0x1390e0, InsertTail 0x139110, Unlink 0x1391e0,
-// RemoveMatching 0x136f60) every Dsndmgr collection embeds and calls __thiscall.
-
-// ---- ClassUnknown_31 == CImage (the RTTI polymorphic image, vftable @0x5eaa2c)
-// -> all three reconstructed in src/Image/CImage.cpp as CImage virtuals/methods:
-//   0x152f20 Resolve (slot 11) - format-tag dispatch -> LoadDispatch
-//   0x152fb0 LoadDispatch (slot 10) - format-index load + surface alloc
-//   0x153810 RenderFrameClipped - the clip-rect render sibling of RenderFrame.
-// (Same class as the ClassUnknown_50 == CImage note below; the trace split CImage's
-// vtable across these two synthetic ids.)
-
-// ---- ClassUnknown_32 ---- RECONSTRUCTED as CDDrawPtrCollections (tomalla
-// UnknownFilch, 0x948 standalone): the dtor + item-pool management for the two
-// CPtrList pools (+0x47c CPoolItemA, +0x498 CPoolItemB) and CPtrArray (+0x4b4).
-// All 12 methods moved to src/Gruntz/CDDrawPtrCollections.cpp.
+RVA(0x00137110, 0x8d) void ClassUnknown_29::ClassUnknown_29_137110() {}
 
 // ---- ClassUnknown_33 ----
-RVA(0x00153180, 0xda)
-void ClassUnknown_33::ClassUnknown_33_153180() {}
-
-// ClassUnknown_34 reconstructed as CImageOwned (the CImage +0x30 owned
-// buffer-holder) in src/Image/CImageOwned.cpp.
+RVA(0x00153180, 0xda) void ClassUnknown_33::ClassUnknown_33_153180() {}
 
 // ---- ClassUnknown_35 ----
-RVA(0x00151eb0, 0x43)
-void ClassUnknown_35::ClassUnknown_35_151eb0() {}
-RVA(0x001557a0, 0x68)
-void ClassUnknown_35::ClassUnknown_35_1557a0() {}
+RVA(0x00151eb0, 0x43) void ClassUnknown_35::ClassUnknown_35_151eb0() {}
+RVA(0x001557a0, 0x68) void ClassUnknown_35::ClassUnknown_35_1557a0() {}
 
 // ---- ClassUnknown_36 ----
-RVA(0x0014dd90, 0x74)
-void ClassUnknown_36::ClassUnknown_36_14dd90() {}
-
-// ---- ClassUnknown_37 ----
-// Fully reconstructed in src/Gruntz/CDDrawSubMgrAni.cpp (the 'ANI' animation
-// keyed-catalog sub-manager: factory 0x1528d0 + recursive CSymTab walker 0x152ad0).
-
-// ---- ClassUnknown_38 ----  RECOVERED -> CAniElement (src/Gruntz/CAniElement.cpp).
-// The 0x28-byte 'ANI' animation element (primary vftable @0x5efba8) cataloged by
-// CDDrawSubMgrAni: a CObArray of 0x34-byte frame records (+0x08) + a name buffer
-// (+0x1c) + a 1.0f scale (+0x20) + a frame-size total (+0x24). All 3 methods
-// (AtChecked 0x06b270, Build 0x165460, Configure 0x1655c0) reconstructed there.
+RVA(0x0014dd90, 0x74) void ClassUnknown_36::ClassUnknown_36_14dd90() {}
 
 // ---- ClassUnknown_39 ----
-RVA(0x00168c60, 0xa0)
-void ClassUnknown_39::ClassUnknown_39_168c60() {}
-RVA(0x00168e50, 0x1e)
-void ClassUnknown_39::ClassUnknown_39_168e50() {}
-
-// ---- ClassUnknown_4 ----  RECOVERED -> CDataBuffer (src/Gruntz/DataBuffer.cpp).
-// A 16-byte RezAlloc-backed serialized buffer holder (valid flag / size / blob /
-// id); ctor + Reset + Set + Free. All 4 methods reconstructed in DataBuffer.cpp.
+RVA(0x00168c60, 0xa0) void ClassUnknown_39::ClassUnknown_39_168c60() {}
+RVA(0x00168e50, 0x1e) void ClassUnknown_39::ClassUnknown_39_168e50() {}
 
 // ---- ClassUnknown_40 ----
-RVA(0x00168d00, 0x14c)
-void ClassUnknown_40::ClassUnknown_40_168d00() {}
+RVA(0x00168d00, 0x14c) void ClassUnknown_40::ClassUnknown_40_168d00() {}
 
 // ---- ClassUnknown_41 ----
-RVA(0x00165dd0, 0x5b)
-void ClassUnknown_41::ClassUnknown_41_165dd0() {}
-RVA(0x00168ee0, 0x40)
-void ClassUnknown_41::ClassUnknown_41_168ee0() {}
-RVA(0x00168fb0, 0x1f)
-void ClassUnknown_41::ClassUnknown_41_168fb0() {}
-
-// ---- ClassUnknown_42 ----
-// Recovered as CSpriteRef (the CSpriteRefTable bucket-element node): Build (0xe2df0)
-// + Free (0xe32e0). Reconstructed in src/Gruntz/SpriteRef.cpp.
-
-// ---- ClassUnknown_43 (CFileImage / CDDSurface, DIRSURF.CPP) ----
-// The bulk of the class (FreeSurfaces/Clear/SaveFile/SaveDispatch/LoadKeyed) is
-// reconstructed in src/Image/Image.cpp. Two members are deferred to the final sweep:
-//
-// 0x142360 - the full object destructor, byte-identical to ~CFileImage (0x141350)
-//   but a second compiled copy (a distinct /GX EH funclet). It must BE a real
-//   destructor (the compiler auto-emits the m_elements CPtrArray member-dtor +
-//   EH frame); modeling a second one cleanly needs the CDDSurface/CFileImage split
-//   as two classes - left for the final sweep. Same EH-ordering wall as its twin.
-//
-// 0x144640 - CFileImage::SaveRle16, the 16bpp surface -> 24bpp BMP file writer.
-//   702 B with a /GX EH frame, inline strcpy, a CFile object lifecycle and a
-//   16bpp->24bpp pixel-conversion inner loop. SaveDispatch reaches it reloc-masked.
+RVA(0x00165dd0, 0x5b) void ClassUnknown_41::ClassUnknown_41_165dd0() {}
+RVA(0x00168ee0, 0x40) void ClassUnknown_41::ClassUnknown_41_168ee0() {}
+RVA(0x00168fb0, 0x1f) void ClassUnknown_41::ClassUnknown_41_168fb0() {}
 
 // ---- ClassUnknown_44 ----
-RVA(0x00158680, 0x5b)
-void ClassUnknown_44::ClassUnknown_44_158680() {}
-RVA(0x001587c0, 0x23)
-void ClassUnknown_44::ClassUnknown_44_1587c0() {}
-
-// ---- ClassUnknown_45 ----  RECOVERED -> CMenuPage (src/Gruntz/MenuPage.cpp).
-// The named menu/list page node (3 CStrings + a CPtrList of child items + focus
-// navigation), built by the main-menu builder (0xa11d0) and driven by the menu
-// host (0x182ab0). All 22 methods reconstructed in MenuPage.cpp. The child-item
-// class recovered -> CMenuItem (src/Gruntz/MenuItem.cpp).
+RVA(0x00158680, 0x5b) void ClassUnknown_44::ClassUnknown_44_158680() {}
+RVA(0x001587c0, 0x23) void ClassUnknown_44::ClassUnknown_44_1587c0() {}
 
 // ---- ClassUnknown_47 ----
-RVA(0x000f9280, 0xe4)
-void ClassUnknown_47::ClassUnknown_47_0f9280() {}
-RVA(0x0017e7b0, 0x9)
-void ClassUnknown_47::ClassUnknown_47_17e7b0() {}
-RVA(0x0017e880, 0x28)
-void ClassUnknown_47::ClassUnknown_47_17e880() {}
-
-// ---- ClassUnknown_48 -> CFaderMgr (src/Gruntz/CFaderMgr.cpp) ----
-
-// ---- ClassUnknown_49 -> two file-static __cdecl math helpers (NOT a class):
-// IsPrime (0x182a80) + ScatterSamples (0x182940) -> src/Gruntz/ScatterSamples.cpp.
+RVA(0x000f9280, 0xe4) void ClassUnknown_47::ClassUnknown_47_0f9280() {}
+RVA(0x0017e7b0, 0x9) void ClassUnknown_47::ClassUnknown_47_17e7b0() {}
+RVA(0x0017e880, 0x28) void ClassUnknown_47::ClassUnknown_47_17e880() {}
 
 // ---- ClassUnknown_5 ----
-RVA(0x00150040, 0x136)
-void ClassUnknown_5::ClassUnknown_5_150040() {}
-
-// ---- ClassUnknown_50 == CImage (the RTTI-confirmed polymorphic image, vftable
-// @0x5eaa2c) -> reconstructed in src/Image/CImage.cpp (dtor 0x0d5e80, FreeAll
-// 0x153260 slot 7, RenderFrame 0x153790, plus the ClassUnknown_31 vtable virtuals
-// Resolve 0x152f20 / LoadDispatch 0x152fb0 and RenderFrameClipped 0x153810). NOTE:
-// distinct from the non-polymorphic loader CImage in src/Image/Image.cpp.
+RVA(0x00150040, 0x136) void ClassUnknown_5::ClassUnknown_5_150040() {}
 
 // ---- ClassUnknown_51 ----
-RVA(0x001154b0, 0x45)
-void ClassUnknown_51::ClassUnknown_51_1154b0() {}
+RVA(0x001154b0, 0x45) void ClassUnknown_51::ClassUnknown_51_1154b0() {}
 
-// ---- ClassUnknown_52 (== FontRenderer, see src/Font/Font.cpp) ----
 // ---- ClassUnknown_53 ----
-RVA(0x00029ac0, 0x20)
-void ClassUnknown_53::ClassUnknown_53_029ac0() {}
+RVA(0x00029ac0, 0x20) void ClassUnknown_53::ClassUnknown_53_029ac0() {}
 
 // ---- ClassUnknown_54 ----
-RVA(0x00135110, 0x8e)
-void ClassUnknown_54::ClassUnknown_54_135110() {}
+RVA(0x00135110, 0x8e) void ClassUnknown_54::ClassUnknown_54_135110() {}
 
 // ---- ClassUnknown_55 ----
-RVA(0x00137060, 0x6b)
-void ClassUnknown_55::ClassUnknown_55_137060() {}
-RVA(0x001370d0, 0x38)
-void ClassUnknown_55::ClassUnknown_55_1370d0() {}
+RVA(0x00137060, 0x6b) void ClassUnknown_55::ClassUnknown_55_137060() {}
+RVA(0x001370d0, 0x38) void ClassUnknown_55::ClassUnknown_55_1370d0() {}
 
 // ---- ClassUnknown_56 ----
-RVA(0x0008c3b0, 0x10)
-void ClassUnknown_56::ClassUnknown_56_08c3b0() {}
-
-// ---- ClassUnknown_57 ----
-// All four methods reconstructed in src/Gruntz/CDDrawSurfacePair.cpp
-// (CDDrawSurfacePair: BltSelf/~dtor/TeardownSurface/DrawBox).
-
-// ---- ClassUnknown_58 ---- reconstructed as CChatBoxOwner (the chat/text-box owner
-// page) in src/Gruntz/ChatBoxOwner.cpp: Attach (0x204e0), Deactivate (0x20510),
-// Configure (0x20530), HitTest (0x21140). The renderer LoadChatBoxSprite (0x20f40,
-// the trace co-call) stays in src/Stub/ApiCallers.cpp at its scheduling wall.
+RVA(0x0008c3b0, 0x10) void ClassUnknown_56::ClassUnknown_56_08c3b0() {}
 
 // ---- ClassUnknown_6 ----
-RVA(0x0014dcf0, 0x69)
-void ClassUnknown_6::ClassUnknown_6_14dcf0() {}
+RVA(0x0014dcf0, 0x69) void ClassUnknown_6::ClassUnknown_6_14dcf0() {}
 
 // ---- ClassUnknown_60 ----
-RVA(0x000ebd30, 0x21)
-void ClassUnknown_60::ClassUnknown_60_0ebd30() {}
+RVA(0x000ebd30, 0x21) void ClassUnknown_60::ClassUnknown_60_0ebd30() {}
 
 // ---- ClassUnknown_61 ----
-RVA(0x00120120, 0xbc)
-void ClassUnknown_61::ClassUnknown_61_120120() {}
-RVA(0x0017b500, 0x8)
-void ClassUnknown_61::ClassUnknown_61_17b500() {}
-
-// ---- ClassUnknown_62 ---- reconstructed as CAreaMgr in src/Gruntz/AreaMgr.cpp
-// (areamgr unit): a global area/zone state object (current-index word + embedded
-// CPtrList + two ints).  ~CAreaMgr / Dispatch / Reset / SameGroup; the 40 per-area
-// handlers (0x09af30..0x09b410, each `mov eax,1; ret`) remain stubbed siblings.
-
-// ---- ClassUnknown_63 ---- reconstructed as CWwdSpatialMgr in
-// src/Gruntz/WwdSpatialMgr.cpp (wwdspatialmgr unit).
-
-// ---- ClassUnknown_64 ---- reconstructed as CWwdGrid in src/Gruntz/WwdGrid.cpp
-// (wwdgrid unit): the per-plane spatial bucket-index grid (ctor/dtor + Add /
-// Remove / Query / Clear / FreeBuckets) the matched CWwdSpatialMgr holds three of.
-
-// ---- ClassUnknown_65 ----
-// The five real members moved to CLogicRecord (src/Gruntz/LogicRecord.cpp). The
-// three __cdecl free message handlers mis-clustered here are reconstructed (3/3
-// byte-exact) as the in-game-HUD worker twin of SiriusWorkerHandlers in
-// src/Gruntz/InGameWorkerHandlers.cpp (ingameworkerhandlers unit):
-//   0x095750 -> new CInGameIcon (0x80)   0x095890 -> new CInGameText (0x5c)
-//   0x0aa6e0 -> new CEyeCandy (0x54).
+RVA(0x00120120, 0xbc) void ClassUnknown_61::ClassUnknown_61_120120() {}
+RVA(0x0017b500, 0x8) void ClassUnknown_61::ClassUnknown_61_17b500() {}
 
 // ---- ClassUnknown_66 ----
-RVA(0x00161370, 0x7)
-void ClassUnknown_66::ClassUnknown_66_161370() {}
-RVA(0x00166d40, 0x24)
-void ClassUnknown_66::ClassUnknown_66_166d40() {}
-
-// ---- ClassUnknown_67 ---- recovered as CWwdGridIter (the rect-restricted cursor
-// over a CWwdGrid) and migrated into src/Gruntz/WwdSpatialMgr.cpp (wwdspatialmgr
-// unit): 0x191ad0 Start / 0x191b10 Init / 0x191c30 GetNext.
-
-// ---- ClassUnknown_68 ----  FULLY recovered as CLightFxRender
-// (src/Gruntz/CLightFxRender.cpp): the whole class - incl. 0xa3460 Resize and
-// 0xa3820 ComputeRect - is reconstructed there. Nothing remains here.
-
-// ---- ClassUnknown_69 ---- (split: NOT one class)
-//   0x058b60 -> CGruntAnimPlayer::ApplyGeometryDirect (src/Gruntz/SpriteResource.cpp)
-//   0x1504d0 -> CGruntSprite::CacheFrame             (src/Gruntz/SpriteResource.cpp)
-//   0x15b2c0 -> CRemusNode ctor                      (src/Gruntz/CRemusNode.cpp)
-//   0x10d150 -> StepController, the CTileTriggerTransition state pump
-//               (src/Gruntz/TileTriggerTransition.cpp)
+RVA(0x00161370, 0x7) void ClassUnknown_66::ClassUnknown_66_161370() {}
+RVA(0x00166d40, 0x24) void ClassUnknown_66::ClassUnknown_66_166d40() {}
 
 // ---- ClassUnknown_70 ----
-RVA(0x0015b2b0, 0xe)
-void ClassUnknown_70::ClassUnknown_70_15b2b0() {}
+RVA(0x0015b2b0, 0xe) void ClassUnknown_70::ClassUnknown_70_15b2b0() {}
 
 // ---- ClassUnknown_71 ----
-RVA(0x0015b270, 0x11)
-void ClassUnknown_71::ClassUnknown_71_15b270() {}
-
-// ---- ClassUnknown_72 ----
-// Reconstructed in src/Gruntz/SiriusWorkerHandlers.cpp: a FALSE cluster - the
-// three 0xf1 functions are __cdecl free message-handlers, 0x15b300 is the
-// out-of-line 3-arg SiriusWorker constructor. See the matcher report.
+RVA(0x0015b270, 0x11) void ClassUnknown_71::ClassUnknown_71_15b270() {}
 
 // ---- ClassUnknown_73 ----
-RVA(0x0015b730, 0x2b)
-void ClassUnknown_73::ClassUnknown_73_15b730() {}
+RVA(0x0015b730, 0x2b) void ClassUnknown_73::ClassUnknown_73_15b730() {}
 
 // ---- ClassUnknown_74 ----
-RVA(0x0016e360, 0x11a)
-void ClassUnknown_74::ClassUnknown_74_16e360() {}
+RVA(0x0016e360, 0x11a) void ClassUnknown_74::ClassUnknown_74_16e360() {}
 
 // ---- ClassUnknown_75 ----
-RVA(0x000a9cc0, 0xf1)
-void ClassUnknown_75::ClassUnknown_75_0a9cc0() {}
+RVA(0x000a9cc0, 0xf1) void ClassUnknown_75::ClassUnknown_75_0a9cc0() {}
 
 // ---- ClassUnknown_76 ----
-RVA(0x000aa5a0, 0xf1)
-void ClassUnknown_76::ClassUnknown_76_0aa5a0() {}
-
-// ---- ClassUnknown_77 ---- fully reconstructed as CMotionState in
-// src/Gruntz/MotionState.cpp (ctor 0x136d0, SetParams 0x58bc0, SetZ 0x58ca0,
-// Step 0x16ecd0 the 3-axis easing integrator).
-
-// ---- ClassUnknown_8 ---- reconstructed as StateMgrBZ in src/Gruntz/StateMgrBZ.cpp
-
-// ---- ClassUnknown_81 ---- reconstructed as CAmbientSound in
-// src/Gruntz/CAmbientSound.cpp (~CAmbientSound 0xb790, Update 0xc090, SetLevel
-// 0xc200). Vtable 0x5e710c / RTTI .?AVCAmbientSound@@ : CUserBase.
+RVA(0x000aa5a0, 0xf1) void ClassUnknown_76::ClassUnknown_76_0aa5a0() {}
 
 // ---- ClassUnknown_82 ----
-RVA(0x00115520, 0x45)
-void ClassUnknown_82::ClassUnknown_82_115520() {}
+RVA(0x00115520, 0x45) void ClassUnknown_82::ClassUnknown_82_115520() {}
 
 // ---- ClassUnknown_83 ----
-RVA(0x00029a30, 0x10)
-void ClassUnknown_83::ClassUnknown_83_029a30() {}
+RVA(0x00029a30, 0x10) void ClassUnknown_83::ClassUnknown_83_029a30() {}
 
 // ---- ClassUnknown_84 ----
-RVA(0x0009a260, 0x1d)
-void ClassUnknown_84::ClassUnknown_84_09a260() {}
+RVA(0x0009a260, 0x1d) void ClassUnknown_84::ClassUnknown_84_09a260() {}
 
 // ---- ClassUnknown_85 ----
-RVA(0x00139ae0, 0xf)
-void ClassUnknown_85::ClassUnknown_85_139ae0() {}
-RVA(0x00139af0, 0xcc)
-void ClassUnknown_85::ClassUnknown_85_139af0() {}
-
-// ---- ClassUnknown_86 ---- reconstructed in src/Gruntz/CDDrawShadeBlit.cpp
-// (CDDrawShadeBlit, the DDrawMgr software shaded-sprite blitter).
-
-// ---- ClassUnknown_87 ---- reconstructed in src/Image/ImageSet.cpp
-// (CImageSet, the engine's sparse CImage-frame collection; 3 leaf accessors).
+RVA(0x00139ae0, 0xf) void ClassUnknown_85::ClassUnknown_85_139ae0() {}
+RVA(0x00139af0, 0xcc) void ClassUnknown_85::ClassUnknown_85_139af0() {}
 
 // ---- ClassUnknown_88 ----
-RVA(0x000311b0, 0x14)
-void ClassUnknown_88::ClassUnknown_88_0311b0() {}
-
-// ---- ClassUnknown_89 ---- reconstructed in src/Gruntz/CDDrawShadeBlit.cpp
-// (CDDrawShadeBlit::ConvertRow, the per-row palette/blend format converter the
-// BlitLoop family dispatches; 9-case dense jump table on m_14 - 2).
+RVA(0x000311b0, 0x14) void ClassUnknown_88::ClassUnknown_88_0311b0() {}
 
 // ---- ClassUnknown_90 ----
-RVA(0x001d38a1, 0x9)
-void ClassUnknown_90::ClassUnknown_90_1d38a1() {}
+RVA(0x001d38a1, 0x9) void ClassUnknown_90::ClassUnknown_90_1d38a1() {}
 
 // ---- ClassUnknown_91 ----
-RVA(0x001d496b, 0x1e)
-void ClassUnknown_91::ClassUnknown_91_1d496b() {}
+RVA(0x001d496b, 0x1e) void ClassUnknown_91::ClassUnknown_91_1d496b() {}
 
 // ---- ClassUnknown_92 ----
-RVA(0x000e3c60, 0x1a3)
-void ClassUnknown_92::ClassUnknown_92_0e3c60() {}
+RVA(0x000e3c60, 0x1a3) void ClassUnknown_92::ClassUnknown_92_0e3c60() {}
 
 // ---- ClassUnknown_93 ----
-RVA(0x0000d170, 0x74)
-void ClassUnknown_93::ClassUnknown_93_00d170() {}
-
-// ---- ClassUnknown_94 ---- reconstructed as CFileMem (the CFile-derived save/
-// pack file stream wrapping a CFileIO) in src/Io/FileMem.cpp.
+RVA(0x0000d170, 0x74) void ClassUnknown_93::ClassUnknown_93_00d170() {}
 
 // ---- ClassUnknown_95 ----
-RVA(0x00008c00, 0x152)
-void ClassUnknown_95::ClassUnknown_95_008c00() {}
+RVA(0x00008c00, 0x152) void ClassUnknown_95::ClassUnknown_95_008c00() {}
 
 // ---- ClassUnknown_96 ----
-RVA(0x0003c8f0, 0x76)
-void ClassUnknown_96::ClassUnknown_96_03c8f0() {}
+RVA(0x0003c8f0, 0x76) void ClassUnknown_96::ClassUnknown_96_03c8f0() {}
 
 // ---- ClassUnknown_97 ----
-RVA(0x00058ee0, 0x5c)
-void ClassUnknown_97::ClassUnknown_97_058ee0() {}
+RVA(0x00058ee0, 0x5c) void ClassUnknown_97::ClassUnknown_97_058ee0() {}
 
 // ---- ClassUnknown_98 ----
-RVA(0x00056da0, 0xc7)
-void ClassUnknown_98::ClassUnknown_98_056da0() {}
+RVA(0x00056da0, 0xc7) void ClassUnknown_98::ClassUnknown_98_056da0() {}
 
 // ---- ClassUnknown_99 ----
-RVA(0x00046850, 0xf1)
-void ClassUnknown_99::ClassUnknown_99_046850() {}
+RVA(0x00046850, 0xf1) void ClassUnknown_99::ClassUnknown_99_046850() {}
 
 // ---- CmdHost_0953f0 ----
-RVA(0x0008cf30, 0x55)
-void CmdHost_0953f0::CmdHost_0953f0_08cf30() {}
-RVA(0x00095140, 0x6e)
-void CmdHost_0953f0::CmdHost_0953f0_095140() {}
+RVA(0x0008cf30, 0x55) void CmdHost_0953f0::CmdHost_0953f0_08cf30() {}
+RVA(0x00095140, 0x6e) void CmdHost_0953f0::CmdHost_0953f0_095140() {}
 
-// ---- EngStr ---- the cluster splits across classes (not one EngStr): the text-
-// draw forwarder (0x115440), CContainerErr::~CContainerErr (0x16da60, NOT ~_zvec)
-// and zBitVec::SetSize (0x16e100) were reconstructed into src/Wap32/EngStr.cpp.
-// 0x193080 (a CButeText bit-set serializer; appends '[' / indices / ']' via the
-// CButeText helpers) belongs in src/Bute/ and remains here for the final sweep.
-RVA(0x00193080, 0xb5)
-void EngStr::EngStr_193080() {}
+// ---- EngStr ----
+RVA(0x00193080, 0xb5) void EngStr::EngStr_193080() {}
 
 // ---- InterfaceObject ----
-RVA(0x00179300, 0x20)
-void InterfaceObject::InterfaceObject_179300() {}
-RVA(0x00179340, 0x48)
-void InterfaceObject::InterfaceObject_179340() {}
+RVA(0x00179300, 0x20) void InterfaceObject::InterfaceObject_179300() {}
+RVA(0x00179340, 0x48) void InterfaceObject::InterfaceObject_179340() {}
 
 // ---- MallocCtor_136230 ----
-RVA(0x001359a0, 0x18)
-void MallocCtor_136230::MallocCtor_136230_1359a0() {}
+RVA(0x001359a0, 0x18) void MallocCtor_136230::MallocCtor_136230_1359a0() {}
 
 // ---- MallocCtor_1615a0 ----
-RVA(0x000311e0, 0x4c)
-void MallocCtor_1615a0::MallocCtor_1615a0_0311e0() {}
-
-// ---- MallocCtor_16bfa0 ---- the MSVC5 LIBCMT `ostream` member functions
-// (write/opfx/osfx/operator<<(unsigned char)) are reconstructed in
-// src/Crt/OStream.cpp (the tracer keyed off the malloc in the ostream ctor
-// 0x16bfa0, which remains in MallocConstructors.cpp).
-
-// ---- MallocCtor_17fdb0 ---- the CFader element base class (vtable 0x5f07a8) +
-// the case-"3" subtype's ~CFaderSine (0x17fdf0, vtable 0x5f0848) are reconstructed
-// in src/Gruntz/CFader.cpp. The subtype ctor 0x17fdb0 itself stays in
-// MallocConstructors.cpp (its own unit). The +0x04 subobject is a CShadeTableCache
-// (ctor 0x14de30 / dtor 0x14de50 / FindRemove 0x14fb80).
-
-// ---- MinervaInner ---- (== the DirectSound *device* manager, DSNDMGR.CPP,
-// vtable 0x5ef6c4; trace conflated it with the buffer-wrapper DirectSoundMgr).
-// The lifecycle/teardown run (~dtor 0x136500, Shutdown 0x136690, RemoveBuffer
-// 0x136d80, StopAll 0x136de0) is reconstructed in src/Dsndmgr/SoundDevice.cpp.
-// FreeSamples (0x136ed0) + SetPrimaryFormat (0x1371a0), plus the buffer factory
-// CreateBuffer (0x1366f0) + Acquire (0x136910), also reconstructed in
-// src/Dsndmgr/SoundDevice.cpp. The *derived* streaming class (DSndMgSR.cpp,
-// vtable 0x5ef6ec: 0x137710/0x137780/0x137900/0x1379d0/0x137b70) is
-// reconstructed in src/Dsndmgr/SoundStream.cpp. No MinervaInner stubs remain.
-
-// ---- PaintHost_0fac70 ---- RECONSTRUCTED: the cluster is CAttract (RTTI
-// .?AVCAttract@@, a CState leaf keyed off the WM_PAINT body @0xfac70). Five
-// methods (~dtor 0x08cd90 + ReleaseResources 0x0140d0 + Vslot07 0x0147b0 +
-// FrameSlot28 0x014340 + RunTitle 0x0fa300) moved to src/Gruntz/CAttract.cpp;
-// the sixth (0x08c610) is the shared CState base body Vslot11, now in GameMode.cpp.
+RVA(0x000311e0, 0x4c) void MallocCtor_1615a0::MallocCtor_1615a0_0311e0() {}
 
 // ---- RegistryHelper ----
-RVA(0x00114fa0, 0x3e)
-void RegistryHelper::RegistryHelper_114fa0() {}
+RVA(0x00114fa0, 0x3e) void RegistryHelper::RegistryHelper_114fa0() {}
 
 // ---- RemusParseSource ----
-RVA(0x00139800, 0x6)
-void RemusParseSource::RemusParseSource_139800() {}
+RVA(0x00139800, 0x6) void RemusParseSource::RemusParseSource_139800() {}
 
-// ---- RngBox_00cd70 ----
-// Reconstructed as the RTTI-true CRandomAmbientSound (vtable 0x5e713c, chain
-// CRandomAmbientSound : CAmbientSound : CUserBase): the base ctor, Setup, Update,
-// and the slot-3 Step now live in src/Gruntz/CRandomAmbientSound.cpp. The Roll
-// (0xcd70) / Set (0xc200) siblings stay in src/Stub/ApiCallers.cpp.
+// ---- StatusBarItem ----
+RVA(0x000d9290, 0x2a7) void StatusBarItem::StatusBarItem_0d9290() {}
 
-// ---- StatusBarItem ---- (MISATTRIBUTION corrected) These were NOT CStatusBarItem
-// (a ~0x2c-byte HUD item) methods - they are lifecycle steps on the big in-game
-// game-mode object (the same physical class as CPlayLevelLoad / EngineLabelBacklog:
-// members at +0x1cc/+0x2dc/+0x2f4/+0x3a8/+0x4fc). Three migrated to
-// src/Gruntz/GameModeObjLifecycle.cpp (CGameModeObj): SetCursorFrame (0xd1b30) and
-// ReleaseLevelOverlay (0xd6560) are byte-exact; ClearPlacedObjects (0xda030, 361 B
-// map-grid free-list walk) is a complete reconstruction parked @early-stop. The
-// remaining method stays stubbed here for the final sweep (per doctrine: don't
-// half-do a >512-B /GX EH function - it under-counts AND diverges its regalloc):
-//   0x0d9290 (679 B) - RandomizeStartColors: a /GX EH frame building a local
-//     CByteArray Fisher-Yates permutation (rand%(n+1)) of 4 team/color slots, then
-//     walking a linked list and classifying each object by probing [obj+0x7c]->m_10
-//     against 6 constant vtable-method addresses to permute the +0x64/+0x134/+0x144/
-//     +0x154 color slots. Big-SEH wall (big-seh-fuzzy-desync.md); leaf-first redo.
-RVA(0x000d9290, 0x2a7)
-void CGameModeObj_stub::CGameModeObj_stub_0d9290() {}
-
-// ---- Timer_1380d0 ---- (reconstructed as StreamFeeder in src/Dsndmgr/StreamFeeder.cpp)
-
-// ---- UnknownClassArrays ---- (all 9 moved into the real class TU
-// src/Gruntz/UnknownClassArrays.cpp: 4 reconstructed [025d90/026470/0300c0/034460],
-// 5 @early-stop placeholders [029b40/02d800/02edb0/02f620/030b20] for the final sweep)
-
-// ---- UnknownClassInCGruntzMgr ---- (all 5 reconstructed as GruntzPlayer in
-// src/Gruntz/GruntzPlayer.cpp: the per-player options record at CGruntzMgr +0x150)
+// ---- UnknownClassArrays ----
+RVA(0x00030990, 0x11b) void UnknownClassArrays::UnknownClassArrays_030990() {}
+RVA(0x000350d0, 0xfa) void UnknownClassArrays::UnknownClassArrays_0350d0() {}
