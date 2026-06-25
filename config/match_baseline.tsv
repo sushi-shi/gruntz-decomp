@@ -27,6 +27,7 @@ brickz	15	3
 butemgr	40	27
 butestoreclear	1	1
 cambientsound	4	3
+canicycle	1	0
 canielement	3	2
 canirecord	8	5
 cattract	13	8
@@ -101,6 +102,7 @@ cserialsub34	1	0
 cseverusentrylist	2	1
 csimpleanimation	4	3
 csingleanimation	1	1
+csingleframemessage	1	0
 cstatichazard	6	2
 cstatusbarmgr	2	1
 cteleporter	2	1
@@ -116,7 +118,7 @@ directinputmgr2	33	29
 directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	22	0
-engine_boundary	552	0
+engine_boundary	550	0
 engine_discovered	66	0
 engine_label_stubs	462	106
 engstr	3	1
@@ -379,6 +381,7 @@ cambientsound	??1CAmbientSound@@QAE@XZ	100.0000	100.0000	1	56dbfa3599ca	0xb790
 cambientsound	?Restart@CAmbientSound@@QAEXXZ	100.0000	100.0000	1	eb0cc7e65b93	0xbfb0
 cambientsound	?SetLevel@CAmbientSound@@QAEHHHH@Z	100.0000	100.0000	2	82d554c23b21	0xc200
 cambientsound	?Update@CAmbientSound@@QAEXHHH@Z	76.7857	76.7857	2	979c7e248495	0xc090
+canicycle	?RegisterActs@CAniCycle@@SAXXZ	92.9130	92.9130	1	17ca46567be1	0xab0e0
 canielement	?AtChecked_06b270@CAniElement@@QBEPAVCObject@@H@Z	100.0000	100.0000	1	2278365ee372	0x6b270
 canielement	?Build_165460@CAniElement@@QAEHPAXPAUCAniSource@@H@Z	89.3359	89.3359	1	c5f9e189a6e5	0x165460
 canielement	?Configure_1655c0@CAniElement@@QAEHPAX0H@Z	100.0000	100.0000	1	45956e3ecb61	0x1655c0
@@ -895,6 +898,7 @@ csimpleanimation	?AdvanceAnim@CSimpleAnimation@@QAEHXZ	100.0000	100.0000	1	2a87e
 csimpleanimation	?InitSimpleAnimDispatch@@YAXXZ	100.0000	100.0000	1	a84ef2c13047	0xabb90
 csimpleanimation	?RegisterSimpleAnimLogic@@YAXXZ	96.4783	96.4783	1	5c2fab4a8cdd	0xabd70
 csingleanimation	??1CSingleAnimation@@UAE@XZ	100.0000	100.0000	1	96128fb6792b	0x10540
+csingleframemessage	?RegisterActs@CSingleFrameMessage@@SAXXZ	92.9130	92.9130	1	138cf13c2240	0xab710
 cstatichazard	??0CStaticHazard@@QAE@PAUCGameObject@@@Z	82.5635	82.5635	1	1756e20b6c41	0xfb7a0
 cstatichazard	??1CStaticHazard@@UAE@XZ	100.0000	100.0000	1	2c9522f3c281	0x12b30
 cstatichazard	?FireActivation@CStaticHazard@@QAEXH@Z	100.0000	100.0000	1	69cb76687143	0xfbbf0
@@ -1171,9 +1175,7 @@ engine_boundary	?Boundary_09cab0@@YAXXZ	3.6364	3.6364	1	4424afe5ea91	0x9cab0
 engine_boundary	?Boundary_09d140@@YAXXZ	20.0000	20.0000	1	0e4713a8d39e	0x9d140
 engine_boundary	?Boundary_09e0b0@@YAXXZ	0.8264	0.8264	1	d1c3b30a9860	0x9e0b0
 engine_boundary	?Boundary_0aaf00@@YAXXZ	20.0000	20.0000	1	a4e5d980f4ed	0xaaf00
-engine_boundary	?Boundary_0ab0e0@@YAXXZ	0.8696	0.8696	1	7ec79e7f3eda	0xab0e0
 engine_boundary	?Boundary_0ab530@@YAXXZ	20.0000	20.0000	1	fc97693a86e6	0xab530
-engine_boundary	?Boundary_0ab710@@YAXXZ	0.8696	0.8696	1	1aa256ca46f2	0xab710
 engine_boundary	?Boundary_0acb30@@YAXXZ	20.0000	20.0000	1	66ab05012df7	0xacb30
 engine_boundary	?Boundary_0ad130@@YAXXZ	20.0000	20.0000	1	ff985a44cf49	0xad130
 engine_boundary	?Boundary_0ad1b0@@YAXXZ	0.5333	0.5333	1	157ee95ddf8a	0xad1b0

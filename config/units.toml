@@ -1254,3 +1254,13 @@ flags = "eh"
 unit = "csingleanimation"
 source = "src/Gruntz/CSingleAnimation.cpp"
 flags = "eh"
+
+[[unit]]
+unit = "csingleframemessage"
+source = "src/Gruntz/CSingleFrameMessage.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "canicycle"
+source = "src/Gruntz/CAniCycle.cpp"
+flags = "eh"

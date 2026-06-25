@@ -120,9 +120,7 @@ RVA(0x0009cab0, 0x23) void Boundary_09cab0() {}  // proximity: CTimer@-0x7d0 | C
 RVA(0x0009d140, 0x15) void Boundary_09d140() {}  // proximity: CTimer@-0xe60 | CLightFx@+0x3e0
 RVA(0x0009e0b0, 0x1a3) void Boundary_09e0b0() {}  // proximity: CLightFxMgr@-0x400 | CMapArrayA@+0x650
 RVA(0x000aaf00, 0x15) void Boundary_0aaf00() {}  // proximity: CAniCycle@-0x1e0 | CSingleFrameMessage@+0x410
-RVA(0x000ab0e0, 0x18d) void Boundary_0ab0e0() {}  // proximity: CAniCycle@-0x3c0 | CSingleFrameMessage@+0x230
 RVA(0x000ab530, 0x15) void Boundary_0ab530() {}  // proximity: CSingleFrameMessage@-0x220 | CSimpleAnimation@+0x410
-RVA(0x000ab710, 0x18d) void Boundary_0ab710() {}  // proximity: CSingleFrameMessage@-0x400 | CSimpleAnimation@+0x230
 RVA(0x000acb30, 0x15) void Boundary_0acb30() {}  // proximity: CEyeCandy@-0x510 | CFrontCandyAni@+0x410
 RVA(0x000ad130, 0x15) void Boundary_0ad130() {}  // proximity: CFrontCandyAni@-0x1f0 | CBehindCandyAni@+0x410
 RVA(0x000ad1b0, 0x102) void Boundary_0ad1b0() {}  // proximity: CFrontCandyAni@-0x270 | CBehindCandyAni@+0x390
