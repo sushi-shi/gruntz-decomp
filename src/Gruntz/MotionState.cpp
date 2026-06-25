@@ -2,6 +2,7 @@
 // CMovingLogic+0x38 (see include/Gruntz/MotionState.h). Standalone helper: a
 // plain ctor (no vptr), two parameter setters, and a per-frame easing integrator.
 #include <Gruntz/MotionState.h>
+#include <math.h>
 #include <rva.h>
 
 // The shared .rdata bound/easing doubles the methods read by plain dword loads.
@@ -85,9 +86,79 @@ void CMotionState::SetZ(double z) {
     m_e8 = z;
 }
 
-// Step (0x16ecd0, 1766 B) - the per-frame 3-axis easing integrator - stays a
-// stub in src/Stub/Discovered.cpp for the final sweep. It is a single large,
-// hand-scheduled x87 routine (fcom/fnstsw/test-ah min-max/conditional-negate +
-// fsqrt chains repeated per axis); a partial reconstruction would diverge its
-// own regalloc and under-count, so per the big-FP STOP-EARLY rule it is left
-// for a dedicated leaf-first pass.
+// ---------------------------------------------------------------------------
+// STEP_AXIS - the per-axis uniformly-accelerated 1D integrator, copy-pasted 3x
+// down the X/Y/Z columns (the retail body is three literal blocks, each with a
+// shallow x87 stack carrying `dt`). Per axis:
+//   v = velocity (m_28/30/38), a = acceleration (m_10/18/20),
+//   s = displacement (m_40/48/50) accumulated by the half-step `(v+0.5*dt*a)*dt`,
+//   vmax = velocity-magnitude clamp (m_d8/e0/e8), [loBand,hiBand] = displacement
+//   band (m_70/78/80, m_88/90/98), posClamp = max velocity (m_f0/f8/100),
+//   scr = output scratch (m_a0/a8/b0). When the half-step or the running
+//   displacement leaves its band the velocity is re-solved from v^2 = v0^2 + 2*a*ds.
+#define STEP_AXIS(v, a, s, vmax, loBand, hiBand, posClamp, scr)                                    \
+    do {                                                                                           \
+        double step0 = dt * a;                                                                     \
+        double t = (v - step0 * g_motionNegHalf) * dt;                                             \
+        scr = t;                                                                                   \
+        if (t > vmax || t < -vmax) {                                                               \
+            double c = (t > vmax) ? vmax : -vmax;                                                  \
+            scr = c;                                                                               \
+            if (a != 0.0) {                                                                        \
+                double disc = v * v - c * a * g_motionNegTwo;                                      \
+                if (disc < 0.0)                                                                    \
+                    disc = 0.0;                                                                    \
+                double r = sqrt(disc);                                                             \
+                v = (v > 0.0) ? r : -r;                                                            \
+            }                                                                                      \
+        }                                                                                          \
+        double oldS = s;                                                                           \
+        double newS = scr + s;                                                                     \
+        s = newS;                                                                                  \
+        if (newS > hiBand) {                                                                       \
+            if (a != 0.0) {                                                                        \
+                double disc = v * v - (hiBand - newS) * a * g_motionNegTwo;                        \
+                if (disc < 0.0)                                                                    \
+                    disc = 0.0;                                                                    \
+                double r = sqrt(disc);                                                             \
+                v = (v > 0.0) ? r : -r;                                                            \
+            }                                                                                      \
+            scr = hiBand - oldS;                                                                   \
+            s = hiBand;                                                                            \
+        } else if (newS < loBand) {                                                                \
+            if (a != 0.0) {                                                                        \
+                double disc = v * v - (loBand - newS) * a * g_motionNegTwo;                        \
+                if (disc < 0.0)                                                                    \
+                    disc = 0.0;                                                                    \
+                double r = sqrt(disc);                                                             \
+                v = (v > 0.0) ? r : -r;                                                            \
+            }                                                                                      \
+            scr = loBand - oldS;                                                                   \
+            s = loBand;                                                                            \
+        } else {                                                                                   \
+            v += step0;                                                                            \
+        }                                                                                          \
+        if (v > posClamp)                                                                          \
+            v = posClamp;                                                                          \
+    } while (0)
+
+// ---------------------------------------------------------------------------
+// @early-stop
+// x87 stack-schedule wall (~65%): math + control flow + every member store are
+// byte-exact; the residual is MSVC5's fld-st(0)-vs-fld-[mem] / fxch choreography
+// in the per-axis quadratic-solve + clamp blocks, which is not source-steerable
+// (docs/patterns/x87-fp-stack-schedule.md, x87-copypaste-vs-inline-fp-block.md).
+RVA(0x0016ecd0, 0x6e6)
+void CMotionState::Step(double dt) {
+    m_58 = m_40;
+    m_60 = m_48;
+    m_68 = m_50;
+    m_08 = dt;
+    m_00 += dt;
+    if (m_b8 != 0) {
+        return;
+    }
+    STEP_AXIS(m_28, m_10, m_40, m_d8, m_70, m_88, m_f0, m_a0);
+    STEP_AXIS(m_30, m_18, m_48, m_e0, m_78, m_90, m_f8, m_a8);
+    STEP_AXIS(m_38, m_20, m_50, m_e8, m_80, m_98, m_100, m_b0);
+}

@@ -598,10 +598,6 @@ class ClassUnknown_76 {
 public:
     void ClassUnknown_76_0aa5a0();
 };
-class ClassUnknown_77 {
-public:
-    void ClassUnknown_77_16ecd0();
-};
 class ClassUnknown_82 {
 public:
     void ClassUnknown_82_115520();

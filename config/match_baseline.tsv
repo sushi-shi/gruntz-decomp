@@ -64,7 +64,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	217	0
+engine_discovered	216	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -116,7 +116,7 @@ mapmgr	7	7
 menuitem	11	9
 menupage	22	13
 mgrtokenquery	1	1
-motionstate	3	3
+motionstate	4	3
 netmgr	40	20
 netmgrerror	1	1
 netsession	2	1
@@ -854,7 +854,6 @@ engine_discovered	?ClassUnknown_73_15b730@ClassUnknown_73@@QAEXXZ	3.0769	3.0769	
 engine_discovered	?ClassUnknown_74_16e360@ClassUnknown_74@@QAEXXZ	0.4000	0.4000	1	60b78d553f76	0x16e360
 engine_discovered	?ClassUnknown_75_0a9cc0@ClassUnknown_75@@QAEXXZ	1.1905	1.1905	1	4e1a9a579eac	0xa9cc0
 engine_discovered	?ClassUnknown_76_0aa5a0@ClassUnknown_76@@QAEXXZ	1.1905	1.1905	1	459253cf8cd4	0xaa5a0
-engine_discovered	?ClassUnknown_77_16ecd0@ClassUnknown_77@@QAEXXZ	0.0718	0.0718	1	aecffd120170	0x16ecd0
 engine_discovered	?ClassUnknown_82_115520@ClassUnknown_82@@QAEXXZ	3.5714	3.5714	1	f7a61272c54b	0x115520
 engine_discovered	?ClassUnknown_83_029a30@ClassUnknown_83@@QAEXXZ	6.6667	6.6667	1	fada2be5e583	0x29a30
 engine_discovered	?ClassUnknown_84_09a260@ClassUnknown_84@@QAEXXZ	3.6364	3.6364	1	d8ff23cf0285	0x9a260
@@ -1884,6 +1883,7 @@ mgrtokenquery	?QueryToken@@YAHH@Z	100.0000	100.0000	1	33f0fb7f4951	0x99d10
 motionstate	??0CMotionState@@QAE@XZ	100.0000	100.0000	1	24ca6b679299	0x136d0
 motionstate	?SetParams@CMotionState@@QAEHNNNNNNNNNNN@Z	100.0000	100.0000	2	57c861974e56	0x58bc0
 motionstate	?SetZ@CMotionState@@QAEXN@Z	100.0000	100.0000	1	9d25f9ec952e	0x58ca0
+motionstate	?Step@CMotionState@@QAEXN@Z	64.9479	64.9479	1	d6e6b53cdc42	0x16ecd0
 netmgr	?AnnounceVersion@CNetMgr@@QAEXH@Z	90.1000	90.1000	5	f9e1f9c715a8	0xbd180
 netmgr	?ApplyCmdDelayDefaults@CNetMgr@@QAEXXZ	100.0000	100.0000	6	f6fa2de8b3f2	0xb85a0
 netmgr	?ClearGroupList@CNetMgr@@QAEXXZ	100.0000	100.0000	3	d0f72cff0bbf	0x178430
