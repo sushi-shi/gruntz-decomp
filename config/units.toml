@@ -14,7 +14,18 @@
 #            handling frame (/GX); `mfc` is the MFC-derived /O1 (favor size) + /GX.
 # [[unit]] - one TU: `unit` (stem; obj is <unit>.obj, target <unit>.c.obj; must
 #            match symbol_names.csv's unit column), `source` (repo-relative path),
-#            and `flags` (a [flags] profile name).
+#            `flags` (a [flags] profile name), and optional `extra` (per-TU flags
+#            appended to the profile - the /GR + /GX knob; see below).
+#
+# Per-TU /GR + /GX knob (`extra`): MSVC5 enables RTTI only under /GR (default OFF),
+# so a polymorphic class compiled here emits a vtable with NO Complete Object
+# Locator - matching retail's NON-RTTI vtables. To match an RTTI class (one whose
+# retail vtable carries a COL at vtable-4) the compiler must emit the COL + RTTI
+# tree (??_R0..R4), which needs `extra = ["/GR"]` on that TU. /GX is likewise
+# available via `extra = ["/GX"]` for a base-profile TU (or just use the `eh`
+# profile). Opt-in per unit; absent == unchanged, so adding the knob is
+# matching-NEUTRAL until a unit reconstructs its full vtable + base subobject and
+# opts in. See docs/vtable-map.md.
 #
 # Add a TU: add an [[unit]] block here (+ its functions to symbol_names.csv), then
 # re-run `python3 configure.py` and `ninja`.
