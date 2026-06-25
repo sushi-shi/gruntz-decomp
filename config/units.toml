@@ -641,6 +641,26 @@ source = "src/Gruntz/CTimeBomb.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "cdroppedobject"
+source = "src/Gruntz/CDroppedObject.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cstatichazard"
+source = "src/Gruntz/CStaticHazard.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "ctoobspikez"
+source = "src/Gruntz/CToobSpikez.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cparticlez"
+source = "src/Gruntz/CParticlez.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "actionoptionsmenubar"
 source = "src/Gruntz/ActionOptionsMenuBar.cpp"
 flags = "base"

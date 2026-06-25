@@ -45,10 +45,6 @@ RVA(0x00163bc0, 0x2c) void CDDrawWorkerList::CDDrawWorkerList_163bc0() {}
 RVA(0x0000f6b0, 0x6) void CDoNothing::CDoNothing_00f6b0() {}
 RVA(0x0000f770, 0x44) void CDoNothing::CDoNothing_00f770() {}
 
-// ---- CDroppedObject ----
-RVA(0x000125b0, 0x44) void CDroppedObject::CDroppedObject_0125b0() {}
-RVA(0x000c6bd0, 0x102) void CDroppedObject::CDroppedObject_0c6bd0() {}
-
 // ---- CDroppedObjectShadow ----
 RVA(0x00012670, 0x44) void CDroppedObjectShadow::CDroppedObjectShadow_012670() {}
 
@@ -135,10 +131,6 @@ RVA(0x0018c022, 0x1d3) void CNetMgr::CNetMgr_18c022() {}
 // ---- CObjectDropper ----
 RVA(0x000124f0, 0x44) void CObjectDropper::CObjectDropper_0124f0() {}
 
-// ---- CParticlez ----
-RVA(0x00012d90, 0x44) void CParticlez::CParticlez_012d90() {}
-RVA(0x00046d30, 0x102) void CParticlez::CParticlez_046d30() {}
-
 // ---- CPathHazard ----
 RVA(0x00013340, 0x44) void CPathHazard::CPathHazard_013340() {}
 RVA(0x000b4020, 0x26c) void CPathHazard::CPathHazard_0b4020() {}
@@ -165,20 +157,12 @@ RVA(0x000abf70, 0x17) void CSimpleAnimation::CSimpleAnimation_0abf70() {}
 // ---- CSingleAnimation ----
 RVA(0x00010540, 0x44) void CSingleAnimation::CSingleAnimation_010540() {}
 
-// ---- CStaticHazard ----
-RVA(0x00012b30, 0x44) void CStaticHazard::CStaticHazard_012b30() {}
-RVA(0x000fbbf0, 0x102) void CStaticHazard::CStaticHazard_0fbbf0() {}
-
 // ---- CTeleporter ----
 RVA(0x00010dd0, 0x44) void CTeleporter::CTeleporter_010dd0() {}
 RVA(0x000419e0, 0x81) void CTeleporter::CTeleporter_0419e0() {}
 
 // ---- CTileTriggerSwitch ----
 RVA(0x000110f0, 0x44) void CTileTriggerSwitch::CTileTriggerSwitch_0110f0() {}
-
-// ---- CToobSpikez ----
-RVA(0x00012c60, 0x44) void CToobSpikez::CToobSpikez_012c60() {}
-RVA(0x00114860, 0x102) void CToobSpikez::CToobSpikez_114860() {}
 
 // ---- CUserLogic ----
 RVA(0x00059230, 0x40d) void CUserLogic::CUserLogic_059230() {}

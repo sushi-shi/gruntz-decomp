@@ -44,6 +44,7 @@ cddrawworkermapsmall	10	3
 cddrawworkerregistry	25	12
 cddrawworkers	3	3
 cdirectdrawmgr	15	9
+cdroppedobject	2	2
 cfader	6	5
 cfadermgr	5	2
 chatbox	16	9
@@ -55,20 +56,23 @@ cimageowned	2	1
 clightfx	2	1
 clightfxrender	22	8
 cmulti	11	7
+cparticlez	2	2
 cplay	28	8
 cremusnode	4	2
 crt_istream	3	2
 crt_ostream	4	3
 crt_streambuf	7	5
 crt_strstreambuf	4	2
+cstatichazard	2	2
 cstatusbarmgr	2	1
 ctimebomb	2	2
+ctoobspikez	2	2
 databuffer	4	4
 deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	195	0
+engine_discovered	187	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -477,6 +481,8 @@ cdirectdrawmgr	?Refresh@CDDSurface@@QAEHPAUIDirectDrawSurfaceZ@@@Z	64.5128	64.51
 cdirectdrawmgr	?SetColorKey@CDDSurface@@QAEHIPAX@Z	100.0000	100.0000	1	d7a9dda893b1	0x13eaa0
 cdirectdrawmgr	?SetPalette@CDDSurface@@QAEHPAVCDDPalette@@H@Z	100.0000	100.0000	3	3730c3ae3c2a	0x13e690
 cdirectdrawmgr	?SetRange@CDDPalette@@QAEHHHEEEI@Z	100.0000	100.0000	2	bfca20776fbd	0x147cd0
+cdroppedobject	??1CDroppedObject@@UAE@XZ	100.0000	100.0000	1	dd689e9b78c2	0x125b0
+cdroppedobject	?FireActivation@CDroppedObject@@QAEXH@Z	100.0000	100.0000	1	58092acd8cf9	0xc6bd0
 cfader	??0CFader@@QAE@XZ	100.0000	100.0000	1	78cd95dd8e45	0x17e450
 cfader	??1CFader@@QAE@XZ	88.2759	88.2759	1	fdbfb44a3d6b	0x17e4a0
 cfader	??1CFaderSine@@QAE@XZ	100.0000	100.0000	1	ae93aa6df1fe	0x17fdf0
@@ -556,6 +562,8 @@ cmulti	?ReportNetError@CMulti@@QAEXXZ	95.2000	95.2000	1	59b1f15e8f6f	0xb7f60
 cmulti	?ReportVersionMsg@CMulti@@QAEXPADH@Z	100.0000	100.0000	1	a2306abc654e	0xb7e30
 cmulti	?RunErrorDialog@CMulti@@QAEHPADPAXH@Z	100.0000	100.0000	1	f5d13574d2fd	0xbc250
 cmulti	?Teardown@CMulti@@QAEXXZ	100.0000	100.0000	1	40a558486d68	0xb6110
+cparticlez	??1CParticlez@@UAE@XZ	100.0000	100.0000	1	4b9c461cd6b8	0x12d90
+cparticlez	?FireActivation@CParticlez@@QAEXH@Z	100.0000	100.0000	1	13bf97e742a3	0x46d30
 cplay	?ApplyGameOptions@CPlay@@QAEXXZ	76.0784	76.0784	1	d7e69de7bf4d	0x36be0
 cplay	?BeginGridWalk@CPlay@@QAEHHHHHH@Z	81.1191	81.1191	4	5929326f7458	0xd0920
 cplay	?BuildGruntTypeNameTable@CPlay@@QAEXHHHH@Z	0.7092	0.7092	2	ed7e76422e54	0xdc6d0
@@ -606,10 +614,14 @@ crt_strstreambuf	??0strstreambuf@@QAE@PADH0@Z	100.0000	100.0000	2	92da0ad44c33	0
 crt_strstreambuf	??1strstreambuf@@QAE@XZ	89.6970	89.6970	2	7c53a170b574	0x169220
 crt_strstreambuf	?str@strstreambuf@@QAEPADXZ	100.0000	100.0000	1	08404bbcac2f	0x1692b0
 crt_strstreambuf	?underflow@strstreambuf@@QAEHXZ	91.7353	91.7353	2	b71b810269ba	0x169490
+cstatichazard	??1CStaticHazard@@UAE@XZ	100.0000	100.0000	1	2c9522f3c281	0x12b30
+cstatichazard	?FireActivation@CStaticHazard@@QAEXH@Z	100.0000	100.0000	1	69cb76687143	0xfbbf0
 cstatusbarmgr	?LoadTabSprites@CStatusBarMgr@@QAEHXZ	16.7383	16.7383	4	045cfeaa498f	0x102250
 cstatusbarmgr	?SetDirection@CSbItem@@QAEXHH@Z	100.0000	100.0000	2	46fcb29ef102	0xea0f0
 ctimebomb	??1CTimeBomb@@UAE@XZ	100.0000	100.0000	1	82a73e5a479d	0x12a70
 ctimebomb	?FireActivation@CTimeBomb@@QAEXH@Z	100.0000	100.0000	1	f49df59995b0	0xe1830
+ctoobspikez	??1CToobSpikez@@UAE@XZ	100.0000	100.0000	1	550e0ced02c4	0x12c60
+ctoobspikez	?FireActivation@CToobSpikez@@QAEXH@Z	100.0000	100.0000	1	44f507f426d2	0x114860
 databuffer	??0CDataBuffer@@QAE@XZ	100.0000	100.0000	1	3a641ac221a3	0x150180
 databuffer	?Free@CDataBuffer@@QAEXXZ	100.0000	100.0000	1	be93bfb9147a	0x1503c0
 databuffer	?Reset@CDataBuffer@@QAEXXZ	100.0000	100.0000	2	75008ba8c576	0x150190
@@ -709,8 +721,6 @@ engine_discovered	?CDDrawWorkerList_163bc0@CDDrawWorkerList@@QAEXXZ	4.7619	4.761
 engine_discovered	?CDoNothing_00f6b0@CDoNothing@@QAEXXZ	50.0000	50.0000	2	9ea9dfd42eb8	0xf6b0
 engine_discovered	?CDoNothing_00f770@CDoNothing@@QAEXXZ	5.8824	5.8824	2	6d92ee4f3d4a	0xf770
 engine_discovered	?CDroppedObjectShadow_012670@CDroppedObjectShadow@@QAEXXZ	5.8824	5.8824	2	a315b1a9db88	0x12670
-engine_discovered	?CDroppedObject_0125b0@CDroppedObject@@QAEXXZ	5.8824	5.8824	2	db0cbe567f14	0x125b0
-engine_discovered	?CDroppedObject_0c6bd0@CDroppedObject@@QAEXXZ	0.5333	0.5333	2	0876e69005d2	0xc6bd0
 engine_discovered	?CExitTrigger_010870@CExitTrigger@@QAEXXZ	50.0000	50.0000	2	388df03c94a7	0x10870
 engine_discovered	?CExitTrigger_0108c0@CExitTrigger@@QAEXXZ	5.8824	5.8824	2	2376a913a35f	0x108c0
 engine_discovered	?CExplosion_012ec0@CExplosion@@QAEXXZ	5.8824	5.8824	2	f5ebfa592daf	0x12ec0
@@ -750,8 +760,6 @@ engine_discovered	?CMenuState_0a0d40@CMenuState@@QAEXXZ	5.2632	5.2632	2	3bcddbd7
 engine_discovered	?CNetMgr_11f618@CNetMgr@@QAEXXZ	10.0000	10.0000	1	3e84522a7acc	0x11f618
 engine_discovered	?CNetMgr_18c022@CNetMgr@@QAEXXZ	0.7874	0.7874	1	8f2b6c518a93	0x18c022
 engine_discovered	?CObjectDropper_0124f0@CObjectDropper@@QAEXXZ	5.8824	5.8824	2	a2b3d34aa035	0x124f0
-engine_discovered	?CParticlez_012d90@CParticlez@@QAEXXZ	5.8824	5.8824	2	2bb0c7d06f8c	0x12d90
-engine_discovered	?CParticlez_046d30@CParticlez@@QAEXXZ	0.5333	0.5333	2	2f4e7dbfccfc	0x46d30
 engine_discovered	?CPathHazard_013340@CPathHazard@@QAEXXZ	5.8824	5.8824	1	c0f93ca4c9ef	0x13340
 engine_discovered	?CPathHazard_0b4020@CPathHazard@@QAEXXZ	0.5025	0.5025	1	ebf3f9c6a076	0xb4020
 engine_discovered	?CPathHazard_0b47e0@CPathHazard@@QAEXXZ	0.9434	0.9434	1	3a6e07617262	0xb47e0
@@ -766,13 +774,9 @@ engine_discovered	?CSecretLevelTrigger_042ac0@CSecretLevelTrigger@@QAEXXZ	1.9608
 engine_discovered	?CSimpleAnimation_00f9d0@CSimpleAnimation@@QAEXXZ	5.8824	5.8824	2	57afe276ba99	0xf9d0
 engine_discovered	?CSimpleAnimation_0abf70@CSimpleAnimation@@QAEXXZ	14.2857	14.2857	2	5df73f1dd9dd	0xabf70
 engine_discovered	?CSingleAnimation_010540@CSingleAnimation@@QAEXXZ	5.8824	5.8824	2	ffe7cf2c61c1	0x10540
-engine_discovered	?CStaticHazard_012b30@CStaticHazard@@QAEXXZ	5.8824	5.8824	2	c64fd371f565	0x12b30
-engine_discovered	?CStaticHazard_0fbbf0@CStaticHazard@@QAEXXZ	0.5333	0.5333	2	91463279e160	0xfbbf0
 engine_discovered	?CTeleporter_010dd0@CTeleporter@@QAEXXZ	5.8824	5.8824	2	a36b702a54bf	0x10dd0
 engine_discovered	?CTeleporter_0419e0@CTeleporter@@QAEXXZ	2.5641	2.5641	2	a0b0752002ff	0x419e0
 engine_discovered	?CTileTriggerSwitch_0110f0@CTileTriggerSwitch@@QAEXXZ	5.8824	5.8824	2	5bfce3bf793c	0x110f0
-engine_discovered	?CToobSpikez_012c60@CToobSpikez@@QAEXXZ	5.8824	5.8824	2	91d2130216a3	0x12c60
-engine_discovered	?CToobSpikez_114860@CToobSpikez@@QAEXXZ	0.5333	0.5333	2	b5be86c66408	0x114860
 engine_discovered	?CUserLogic_059230@CUserLogic@@QAEXXZ	0.1238	0.1238	2	dce9b15cb8a5	0x59230
 engine_discovered	?CUserLogic_05caa0@CUserLogic@@QAEXXZ	0.3030	0.3030	2	ebb13b551fa5	0x5caa0
 engine_discovered	?CUserLogic_062110@CUserLogic@@QAEXXZ	0.0901	0.0901	2	283f0e12fe57	0x62110
