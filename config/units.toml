@@ -651,6 +651,11 @@ source = "src/Gruntz/Wormhole.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "cwormholeacts"
+source = "src/Gruntz/CWormholeActs.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "battlezmapconfig"
 source = "src/Gruntz/BattlezMapConfig.cpp"
 flags = "base"

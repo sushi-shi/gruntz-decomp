@@ -77,7 +77,7 @@ chatboxowner	5	2
 cheatmgr	5	4
 cimage	10	6
 cimageowned	4	2
-clightfx	2	1
+clightfx	3	1
 clightfxeh	1	1
 clightfxrender	22	8
 clobbyobjb	3	2
@@ -108,6 +108,7 @@ ctimebomb	2	2
 ctoobspikez	3	3
 cvoicetrigger	2	2
 cwaypoint	1	1
+cwormholeacts	1	0
 databuffer	7	5
 deflate	6	6
 dialogs	26	11
@@ -115,7 +116,7 @@ directinputmgr2	33	29
 directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	28	0
-engine_boundary	573	0
+engine_boundary	567	0
 engine_discovered	72	0
 engine_label_stubs	462	106
 engstr	3	1
@@ -237,7 +238,7 @@ unknownclassarrays	38	10
 unknownclassincgruntzmgr	2	0
 unknownsalazar	4	0
 userbaselink	10	0
-userlogic	50	19
+userlogic	54	19
 videoconfig	2	0
 warlord	8	2
 warpstonefly	3	2
@@ -747,6 +748,7 @@ cimageowned	?BuildRle@CImageOwned@@QAEHPAXHHHH0@Z	97.7528	97.7528	1	dc2ddfff5723
 cimageowned	?LoadFromFile@CImageOwned@@QAEHVCString@@H@Z	100.0000	100.0000	1	503f5fd8f54d	0x148fc0
 clightfx	?Activate@CLightFx@@QAEHHHHH@Z	86.7407	86.7407	1	017ace156fac	0x9d520
 clightfx	?RebindNode@CLightFx@@QAEHXZ	100.0000	100.0000	1	d9610ef994d0	0x9d770
+clightfx	?RegisterActs@CLightFx@@SAXXZ	92.9130	92.9130	1	f6e4618b35c5	0x9d320
 clightfxeh	??1CLightFx@@UAE@XZ	100.0000	100.0000	1	70f7940497b3	0x12430
 clightfxrender	?AllocSurface@CLightFxRender@@QAEHXZ	99.6842	99.6842	3	1bad35c5b187	0xa33e0
 clightfxrender	?ApplyA@CLightFxRender@@QAEHHHH@Z	100.0000	100.0000	3	fd8fea7499fa	0xa9480
@@ -905,6 +907,7 @@ ctoobspikez	?Register_1147e0@CToobSpikez@@QAEXXZ	100.0000	100.0000	1	5a4beef40a6
 cvoicetrigger	??1CVoiceTrigger@@UAE@XZ	100.0000	100.0000	1	8939b1cb3841	0x135a0
 cvoicetrigger	?Tick@CVoiceTrigger@@QAEHXZ	100.0000	100.0000	1	352963c16858	0x11a700
 cwaypoint	??1CWayPoint@@UAE@XZ	100.0000	100.0000	1	1792dd04db91	0x102e0
+cwormholeacts	?RegisterActs@CWormhole@@SAXXZ	92.9130	92.9130	1	836ea1f2bd5a	0x3f3f0
 databuffer	??0CDataBuffer@@QAE@XZ	100.0000	100.0000	1	3a641ac221a3	0x150180
 databuffer	?Free@CDataBuffer@@QAEXXZ	100.0000	100.0000	1	be93bfb9147a	0x1503c0
 databuffer	?LoadFromFile@CDataBuffer@@QAEHPBDH@Z	71.5593	71.5593	1	00ebc2b35d96	0x150250
@@ -1105,7 +1108,6 @@ engine_boundary	?Boundary_03ad90@@YAXXZ	2.3810	2.3810	1	cdd21b2f6680	0x3ad90
 engine_boundary	?Boundary_03b940@@YAXXZ	1.0417	1.0417	1	774e4bfed5ca	0x3b940
 engine_boundary	?Boundary_03bb50@@YAXXZ	1.0309	1.0309	1	fa8226994405	0x3bb50
 engine_boundary	?Boundary_03f210@@YAXXZ	20.0000	20.0000	1	d97b02e74e56	0x3f210
-engine_boundary	?Boundary_03f3f0@@YAXXZ	0.8696	0.8696	1	c60655513fd1	0x3f3f0
 engine_boundary	?Boundary_0406d0@@YAXXZ	20.0000	20.0000	1	e73d44ab3d95	0x406d0
 engine_boundary	?Boundary_0408b0@@YAXXZ	0.4975	0.4975	1	ff1ca69a421a	0x408b0
 engine_boundary	?Boundary_0414a0@@YAXXZ	20.0000	20.0000	1	f3253ce58078	0x414a0
@@ -1161,14 +1163,12 @@ engine_boundary	?Boundary_09b770@@YAXXZ	1.1905	1.1905	1	f73965829ff1	0x9b770
 engine_boundary	?Boundary_09c650@@YAXXZ	0.1246	0.1246	1	77ff0e770f92	0x9c650
 engine_boundary	?Boundary_09cab0@@YAXXZ	3.6364	3.6364	1	4424afe5ea91	0x9cab0
 engine_boundary	?Boundary_09d140@@YAXXZ	20.0000	20.0000	1	0e4713a8d39e	0x9d140
-engine_boundary	?Boundary_09d320@@YAXXZ	0.8696	0.8696	1	9b5d09c4c5c9	0x9d320
 engine_boundary	?Boundary_09e0b0@@YAXXZ	0.8264	0.8264	1	d1c3b30a9860	0x9e0b0
 engine_boundary	?Boundary_0aaf00@@YAXXZ	20.0000	20.0000	1	a4e5d980f4ed	0xaaf00
 engine_boundary	?Boundary_0ab0e0@@YAXXZ	0.8696	0.8696	1	7ec79e7f3eda	0xab0e0
 engine_boundary	?Boundary_0ab530@@YAXXZ	20.0000	20.0000	1	fc97693a86e6	0xab530
 engine_boundary	?Boundary_0ab710@@YAXXZ	0.8696	0.8696	1	1aa256ca46f2	0xab710
 engine_boundary	?Boundary_0acb30@@YAXXZ	20.0000	20.0000	1	66ab05012df7	0xacb30
-engine_boundary	?Boundary_0acd10@@YAXXZ	0.8696	0.8696	1	487ea6136af3	0xacd10
 engine_boundary	?Boundary_0ad130@@YAXXZ	20.0000	20.0000	1	ff985a44cf49	0xad130
 engine_boundary	?Boundary_0ad1b0@@YAXXZ	0.5333	0.5333	1	157ee95ddf8a	0xad1b0
 engine_boundary	?Boundary_0ad310@@YAXXZ	0.8696	0.8696	1	14b5b781e763	0xad310
@@ -1178,7 +1178,6 @@ engine_boundary	?Boundary_0ade60@@YAXXZ	0.5333	0.5333	1	ff289523ad79	0xade60
 engine_boundary	?Boundary_0adfc0@@YAXXZ	0.8696	0.8696	1	f10252da81d8	0xadfc0
 engine_boundary	?Boundary_0ae1c0@@YAXXZ	0.5000	0.5000	1	dc04c5f279e3	0xae1c0
 engine_boundary	?Boundary_0ae9a0@@YAXXZ	20.0000	20.0000	1	3a1af3f0d455	0xae9a0
-engine_boundary	?Boundary_0aeb80@@YAXXZ	0.8696	0.8696	1	bd5fbdb3d1ae	0xaeb80
 engine_boundary	?Boundary_0b15b0@@YAXXZ	20.0000	20.0000	1	fcf620cdfb46	0xb15b0
 engine_boundary	?Boundary_0b1790@@YAXXZ	0.4975	0.4975	1	cf562673a95a	0xb1790
 engine_boundary	?Boundary_0b28c0@@YAXXZ	20.0000	20.0000	1	dcb330f19a60	0xb28c0
@@ -1265,11 +1264,9 @@ engine_boundary	?Boundary_10c430@@YAXXZ	20.0000	20.0000	1	d6f89ef2a3d2	0x10c430
 engine_boundary	?Boundary_10c610@@YAXXZ	0.8696	0.8696	1	8265d21d2557	0x10c610
 engine_boundary	?Boundary_10d840@@YAXXZ	20.0000	20.0000	1	24d19734280b	0x10d840
 engine_boundary	?Boundary_10d8c0@@YAXXZ	0.5333	0.5333	1	1c81c1bf5153	0x10d8c0
-engine_boundary	?Boundary_10da20@@YAXXZ	0.8696	0.8696	1	c638e71e9401	0x10da20
 engine_boundary	?Boundary_10de20@@YAXXZ	20.0000	20.0000	1	5d6e272220cf	0x10de20
 engine_boundary	?Boundary_10e000@@YAXXZ	0.8696	0.8696	1	4fff0a90ef0e	0x10e000
 engine_boundary	?Boundary_10e420@@YAXXZ	20.0000	20.0000	1	aba489057bd7	0x10e420
-engine_boundary	?Boundary_10e600@@YAXXZ	0.8696	0.8696	1	c60f640f9608	0x10e600
 engine_boundary	?Boundary_10ea00@@YAXXZ	20.0000	20.0000	1	530fff7f490c	0x10ea00
 engine_boundary	?Boundary_10f340@@YAXXZ	0.4975	0.4975	1	e8dfb3a40df8	0x10f340
 engine_boundary	?Boundary_112080@@YAXXZ	0.9091	0.9091	1	16b555afba27	0x112080
@@ -3396,7 +3393,11 @@ userlogic	?LoadGruntDecayConfig@CUserLogic@@QAEXXZ	0.6135	0.6135	1	92fac0c4600f	
 userlogic	?LoadGruntTuningConstants@CUserLogic@@QAEXH@Z	0.0646	0.0646	2	b70d71b09830	0x5d210
 userlogic	?LoadGruntTypeTable@CUserLogic@@QAEXHHHH@Z	0.0415	0.0415	2	57b0cfb95114	0x4dd50
 userlogic	?LoadWandGruntItemConfig@CUserLogic@@QAEXXZ	1.0638	1.0638	1	10cb95c55260	0x65a60
+userlogic	?RegisterActs@CFrontCandyAni@@SAXXZ	92.9130	92.9130	1	5b5589f53f75	0xacd10
 userlogic	?RegisterActs@CSecretTeleporterTrigger@@SAXXZ	92.9130	92.9130	1	f286c9cc6563	0x422b0
+userlogic	?RegisterActs@CSingleAnimation@@SAXXZ	92.9130	92.9130	1	1cb9c773f47d	0xaeb80
+userlogic	?RegisterActs@CTileTrigger@@SAXXZ	92.9130	92.9130	1	c4c120dce9da	0x10e600
+userlogic	?RegisterActs@CWarpStonePad@@SAXXZ	92.9130	92.9130	1	64b7da2cefb1	0x10da20
 userlogic	?Serialize@CSecretTeleporterTrigger@@QAEHHHHH@Z	100.0000	100.0000	2	a2ea3ad09ee4	0x10a10
 userlogic	?SpawnTeleporter@CSecretTeleporterTrigger@@QAEHXZ	100.0000	100.0000	3	0cb6302ce700	0x42b80
 userlogic	?winapi_04d800_CopyRect@CUserLogic@@QAEHHHHHHHHHHHHH@Z	0.6786	0.6786	3	afc4a7cad8e5	0x4d800

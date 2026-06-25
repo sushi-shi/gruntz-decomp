@@ -9,6 +9,7 @@
 // Lookup, the per-frame logic-table push, the layer SetNode) are modeled NO-body
 // so their call displacements reloc-mask. Field names are placeholders; only the
 // OFFSETS + code bytes are load-bearing.
+#include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Gruntz/CLightFx.h>
 
 #include <rva.h>
@@ -96,6 +97,77 @@ struct LfxObj {
     char m_pad1a4[0x1b4 - 0x1a4];
     i32 m_1b4; // +0x1b4 layer base
 };
+
+// The handler entry the per-class registry yields: its first dword receives the
+// per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance
+// class).
+typedef i32 (CLightFx::*LightFxHandler)();
+struct CLightFxActEntry {
+    LightFxHandler m_fn;
+};
+
+// The class's activation-coordinate registry singleton (@0x645ad0). Same
+// [2000,2010] fixed-range shape as CCreationPointActReg, built by the shared
+// registry ctor (0x408710). ResolveEntry folds the VActLookup archetype inline;
+// the slow Insert is __thiscall on m_coll2.
+struct CLightFxActReg {
+    void* m_vptr;       // +0x00
+    CActColl2* m_coll2; // +0x04
+    i32 m_lo;           // +0x08
+    i32 m_hi;           // +0x0c
+    char* m_base;       // +0x10
+    char* m_cur;        // +0x14
+    i32 m_stride;       // +0x18
+    char m_pad1c[0x20 - 0x1c];
+    i32 m_scratch; // +0x20
+
+    char* ResolveEntry(i32 id) {
+        m_scratch = 0;
+        if (id >= m_lo && id <= m_hi) {
+            return m_base + (id - m_lo) * m_stride;
+        }
+        if (((CActColl*)this)->Find(id, 0)) {
+            return m_base + (id - m_lo) * m_stride;
+        }
+        void* item = g_actCache;
+        g_actAllocResult = (void*)ActAlloc();
+        m_coll2->Insert(this, item, 0xc);
+        return m_cur;
+    }
+};
+DATA(0x00245ad0)
+extern CLightFxActReg g_lightFxActReg; // 0x645ad0
+
+// CLightFx::RegisterActs @0x9d320 - bind the per-frame handler (AdvanceAnim
+// @0x9d7b0) to the activation key "A" via the shared name registry. The SAME
+// archetype as CGruntCreationPoint::RegisterActs.
+//
+// @early-stop
+// register-pinning wall (docs/patterns/zero-register-pinning.md +
+// test-old-value-decrement-loop-while-postdec.md, topic:wall topic:regalloc): logic
+// byte-faithful (every call/immediate/branch/offset + the `mov [entry],offset
+// AdvanceAnim` handler store match retail); residual is the slot-vs-id callee-saved
+// register choice cascading into the free-loop count materialization. Deferred.
+RVA(0x0009d320, 0x18d)
+void CLightFx::RegisterActs() {
+    i32 id = (i32)g_buteTree.Find(s_actKeyA);
+    if (id == 0) {
+        id = g_nextActId;
+        g_buteTree.Insert(s_actKeyA, (void*)id);
+        char* slot = ActNameLookup(id);
+        i32 n = g_nameRegScratch;
+        void** list = g_nameRegCurList;
+        while (n-- != 0) {
+            if (list != 0) {
+                ((CActName*)list)->Free();
+            }
+            list++;
+        }
+        ((CActName*)slot)->Assign(s_actKeyA);
+        g_nextActId++;
+    }
+    ((CLightFxActEntry*)g_lightFxActReg.ResolveEntry(id))->m_fn = &CLightFx::AdvanceAnim;
+}
 
 // ===========================================================================
 // CLightFx::Activate  (0x9d520)  - look the effect spec up in the bound object's

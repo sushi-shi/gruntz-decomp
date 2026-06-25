@@ -19,6 +19,11 @@
 
 class CLightFx : public CUserLogic {
 public:
+    // 0x9d320  RegisterActs - intern the activation key "A" and bind the per-frame
+    // handler (AdvanceAnim) into the class's coordinate registry. Static.
+    static void RegisterActs();
+    // 0x9d7b0  AdvanceAnim - the per-frame animation-advance handler PMF.
+    i32 AdvanceAnim();
     // 0x9d520  Activate - look the effect spec up in the object's bute map, prime
     // the bound object's layer descriptor, latch the cell anchor, push the effect
     // node, then rebind. __thiscall, 4 args, ret 0x10.

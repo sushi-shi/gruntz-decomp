@@ -320,6 +320,8 @@ class CTileTrigger : public CUserLogic {
 public:
     CTileTrigger();                 // 0x011160 (no-arg)
     CTileTrigger(CGameObject* obj); // 0x10e220 (1-arg)
+    static void RegisterActs();     // 0x10e600
+    i32 AdvanceAnim();              // 0x10ee00
     // Inline & trivial so it folds into the three leaf dtors (0x11540/0x11600/
     // 0x116c0) rather than being called. MSVC still emits one out-of-line COMDAT
     // copy (called by CTileTrigger's scalar-deleting dtor); it lands at 0x011290
