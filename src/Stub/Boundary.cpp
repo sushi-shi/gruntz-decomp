@@ -355,12 +355,8 @@ RVA(0x0014fcc0, 0x16d) void Boundary_14fcc0() {}  // proximity: CShadeTableCache
 RVA(0x0014fe30, 0x51) void Boundary_14fe30() {}  // proximity: CShadeTableCache@-0x2b0 | CDataBuffer@+0x350
 RVA(0x001503f0, 0xdc) void Boundary_1503f0() {}  // proximity: CDataBuffer@-0x30 | CGruntSprite@+0xe0
 RVA(0x001509c0, 0xab) void Boundary_1509c0() {}  // proximity: CGruntAnimPlayer@-0x410 | CWwdGameObject@+0xb0
-RVA(0x00150eb0, 0x98) void Boundary_150eb0() {}  // proximity: CWwdGameObject@-0x150 | CGameObject@+0xa0
 RVA(0x00151d20, 0x3a) void Boundary_151d20() {}  // proximity: CWwdGameObject@-0x120 | CLogicRecord@+0x80
 RVA(0x00151e70, 0x3b) void Boundary_151e70() {}  // proximity: CLogicRecord@-0x50 | CSeverusEntryList@+0x40
-RVA(0x00151fb0, 0xa4) void Boundary_151fb0() {}  // proximity: CSprite@-0xb0 | CImageSet@+0x4d0
-RVA(0x00152060, 0xab) void Boundary_152060() {}  // proximity: CSprite@-0x160 | CImageSet@+0x420
-RVA(0x00152110, 0xa9) void Boundary_152110() {}  // proximity: CSprite@-0x210 | CImageSet@+0x370
 RVA(0x001523f0, 0x82) void Boundary_1523f0() {}  // proximity: CSprite@-0x4f0 | CImageSet@+0x90
 RVA(0x00152e90, 0x8b) void Boundary_152e90() {}  // proximity: CRemusEntryList@-0x60 | CImage@+0x90
 RVA(0x001570d0, 0x39) void Boundary_1570d0() {}  // proximity: CDDrawWorkerList@-0x100 | CDDrawWorkerA@+0x40
@@ -396,7 +392,6 @@ RVA(0x0015ca70, 0x15b) void Boundary_15ca70() {}  // proximity: CDDrawBlitParam@
 RVA(0x0015cc50, 0x38) void Boundary_15cc50() {}  // proximity: CSprite@-0x20 | CGameLevel@+0x80
 RVA(0x0015cc90, 0x38) void Boundary_15cc90() {}  // proximity: CSprite@-0x60 | CGameLevel@+0x40
 RVA(0x0015d9a0, 0xdc) void Boundary_15d9a0() {}  // proximity: CGameLevelPlanes@-0xd0 | CGameLevel@+0xe0
-RVA(0x00161270, 0xb2) void Boundary_161270() {}  // proximity: CGameLevel@-0x90 | CImageSet1@+0x100
 RVA(0x00161460, 0x7) void Boundary_161460() {}  // proximity: CImageSet1@-0xf0 | PlaneGeom@+0x830
 RVA(0x001614b0, 0x1c) void Boundary_1614b0() {}  // proximity: CImageSet1@-0x140 | PlaneGeom@+0x7e0
 RVA(0x00161500, 0x58) void Boundary_161500() {}  // proximity: CImageSet1@-0x190 | PlaneGeom@+0x790
@@ -406,12 +401,7 @@ RVA(0x00161f00, 0x75) void Boundary_161f00() {}  // proximity: PlaneGeom@-0x270 
 RVA(0x001628d0, 0x12) void Boundary_1628d0() {}  // proximity: CPlaneRender@-0x8c0 | WwdFile@+0x220
 RVA(0x001628f0, 0x1fc) void Boundary_1628f0() {}  // proximity: CPlaneRender@-0x8e0 | WwdFile@+0x200
 RVA(0x001633e0, 0x12) void Boundary_1633e0() {}  // proximity: CPlaneRender@-0x70 | CDDrawWorkerList@+0x810
-RVA(0x00163420, 0xf0) void Boundary_163420() {}  // proximity: CPlaneRender@-0xb0 | CDDrawWorkerList@+0x7d0
-RVA(0x00163510, 0x156) void Boundary_163510() {}  // proximity: CPlaneRender@-0x1a0 | CDDrawWorkerList@+0x6e0
-RVA(0x00163670, 0x95) void Boundary_163670() {}  // proximity: CPlaneRender@-0x300 | CDDrawWorkerList@+0x580
 RVA(0x00163710, 0x42) void Boundary_163710() {}  // proximity: CPlaneRender@-0x3a0 | CDDrawWorkerList@+0x4e0
-RVA(0x00163780, 0x134) void Boundary_163780() {}  // proximity: CPlaneRender@-0x410 | CDDrawWorkerList@+0x470
-RVA(0x001638c0, 0x140) void Boundary_1638c0() {}  // proximity: CPlaneRender@-0x550 | CDDrawWorkerList@+0x330
 RVA(0x00163a10, 0x7) void Boundary_163a10() {}  // proximity: CPlaneRender@-0x6a0 | CDDrawWorkerList@+0x1e0
 RVA(0x00163a40, 0x41) void Boundary_163a40() {}  // proximity: CPlaneRender@-0x6d0 | CDDrawWorkerList@+0x1b0
 RVA(0x00163af0, 0xcd) void Boundary_163af0() {}  // proximity: CPlaneRender@-0x780 | CDDrawWorkerList@+0x100

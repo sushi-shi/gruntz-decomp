@@ -17,6 +17,169 @@
 
 #include <string.h>
 
+// Global operator new (NAFXCW new-handler loop).
+extern void* operator new(u32 size);
+
+// The retail CImageFrame vtable (.?AVCImage@@ @0x5eaa2c) the factory manually
+// stamps into a freshly allocated frame (the frame's own virtuals are unmatched
+// engine code, so the stamp is a transitional reloc-masked DATA ref, not an
+// emitted ??_7).
+DATA(0x001eaa2c)
+extern void* g_imageFrameVtbl[];
+
+// The frame seen through its (unmatched) vtable: the loader virtual each factory
+// overload runs, plus the scalar-deleting dtor at slot +0x04. A polymorphic view
+// so the __thiscall vtable dispatch falls out; no vtable is emitted (no slot is
+// defined here).
+struct CImageFrameLoader {
+    virtual void* v00();
+    virtual void* Delete(i32 flags); // +0x04  scalar-deleting dtor
+    virtual void* v08();
+    virtual void* v0c();
+    virtual void* v10();
+    virtual void* v14();
+    virtual void* v18();
+    virtual void* v1c();
+    virtual void* v20();
+    virtual i32 Load24(i32 a, i32 b, i32 c);        // +0x24
+    virtual i32 Load28(i32 a, i32 b, i32 c, i32 d); // +0x28
+    virtual void* v2c();
+    virtual i32 Load30(i32 a, i32 b); // +0x30
+};
+
+// MFC CObArray::SetAtGrow on the embedded frame array (CImageSet::m_array @+0x10).
+struct CImageFrameArray {
+    void SetAtGrow(i32 index, CImageFrame* f); // 0x1b5822  __thiscall, ret 8
+};
+
+// CreateFrame30 - 0x151fb0 (__thiscall, ret 0xc). Refuse if a frame already
+// occupies `index`; else allocate a CImageFrame (manual vtable stamp), run its
+// loader virtual at slot +0x30, insert it (SetAtGrow at `index`) and widen the
+// populated index range. The frame's loader/dtor are unmatched -> reloc-masked.
+RVA(0x00151fb0, 0xdc)
+CImageFrame* CImageSet::CreateFrame30(i32 a0, i32 index, i32 a2) {
+    if (index < m_count && m_frames[index] != 0) {
+        return 0;
+    }
+
+    void* mem = operator new(0x34);
+    CImageFrame* nf;
+    if (mem != 0) {
+        CImageFrame* f = (CImageFrame*)mem;
+        f->m_4 = index;
+        f->m_8 = 0;
+        f->m_c = m_owner;
+        f->m_vptr = &g_imageFrameVtbl;
+        f->m_10 = 0;
+        f->m_14 = 0;
+        f->m_2c = 0;
+        f->m_format = 0;
+        nf = f;
+    } else {
+        nf = 0;
+    }
+
+    if (((CImageFrameLoader*)nf)->Load30(a0, a2) == 0) {
+        if (nf != 0) {
+            ((CImageFrameLoader*)nf)->Delete(1);
+        }
+        return 0;
+    }
+
+    ((CImageFrameArray*)&m_array)->SetAtGrow(index, nf);
+    if (index < m_minIndex) {
+        m_minIndex = index;
+    }
+    if (index > m_maxIndex) {
+        m_maxIndex = index;
+    }
+    return nf;
+}
+
+// CreateFrame28 - 0x152060 (__thiscall, ret 0x10). As CreateFrame30, but the loader
+// virtual is at slot +0x28 and takes (a0, a1, a3, 1).
+RVA(0x00152060, 0xab)
+CImageFrame* CImageSet::CreateFrame28(i32 a0, i32 a1, i32 index, i32 a3) {
+    if (index < m_count && m_frames[index] != 0) {
+        return 0;
+    }
+
+    void* mem = operator new(0x34);
+    CImageFrame* nf;
+    if (mem != 0) {
+        CImageFrame* f = (CImageFrame*)mem;
+        f->m_4 = index;
+        f->m_8 = 0;
+        f->m_c = m_owner;
+        f->m_vptr = &g_imageFrameVtbl;
+        f->m_10 = 0;
+        f->m_14 = 0;
+        f->m_2c = 0;
+        f->m_format = 0;
+        nf = f;
+    } else {
+        nf = 0;
+    }
+
+    if (((CImageFrameLoader*)nf)->Load28(a0, a1, a3, 1) == 0) {
+        if (nf != 0) {
+            ((CImageFrameLoader*)nf)->Delete(1);
+        }
+        return 0;
+    }
+
+    ((CImageFrameArray*)&m_array)->SetAtGrow(index, nf);
+    if (index < m_minIndex) {
+        m_minIndex = index;
+    }
+    if (index > m_maxIndex) {
+        m_maxIndex = index;
+    }
+    return nf;
+}
+
+// CreateFrame24 - 0x152110 (__thiscall, ret 0x10). As CreateFrame30, but the loader
+// virtual is at slot +0x24 and takes (a0, a1, a3).
+RVA(0x00152110, 0xa9)
+CImageFrame* CImageSet::CreateFrame24(i32 a0, i32 a1, i32 index, i32 a3) {
+    if (index < m_count && m_frames[index] != 0) {
+        return 0;
+    }
+
+    void* mem = operator new(0x34);
+    CImageFrame* nf;
+    if (mem != 0) {
+        CImageFrame* f = (CImageFrame*)mem;
+        f->m_4 = index;
+        f->m_8 = 0;
+        f->m_c = m_owner;
+        f->m_vptr = &g_imageFrameVtbl;
+        f->m_10 = 0;
+        f->m_14 = 0;
+        f->m_2c = 0;
+        f->m_format = 0;
+        nf = f;
+    } else {
+        nf = 0;
+    }
+
+    if (((CImageFrameLoader*)nf)->Load24(a0, a1, a3) == 0) {
+        if (nf != 0) {
+            ((CImageFrameLoader*)nf)->Delete(1);
+        }
+        return 0;
+    }
+
+    ((CImageFrameArray*)&m_array)->SetAtGrow(index, nf);
+    if (index < m_minIndex) {
+        m_minIndex = index;
+    }
+    if (index > m_maxIndex) {
+        m_maxIndex = index;
+    }
+    return nf;
+}
+
 // SetAllTypes - 0x152480 (__thiscall, ret 4). Returns the number of frames touched.
 RVA(0x00152480, 0x4e)
 i32 CImageSet::SetAllTypes(i32 type) {

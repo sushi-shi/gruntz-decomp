@@ -150,10 +150,89 @@ struct CPlaneTile {
 //   +0xf4 m_surface    embedded CDDSurface blit target/param
 // ---------------------------------------------------------------------------
 struct CPlaneScroll {
+    u8 pad_0[0x10];
+    i32 m_10, m_14, m_18, m_1c; // +0x10  rect A  (l,t,r,b = 0,0,w-1,h-1)
+    i32 m_20, m_24, m_28, m_2c; // +0x20  rect C
+    i32 m_30, m_34, m_38, m_3c; // +0x30  rect B
+    i32 m_40, m_44;             // +0x40  center A (w/2, h/2)
+    i32 m_48, m_4c;             // +0x48  center B
+    i32 m_50, m_54;             // +0x50  center C
+    u8 pad_58[0x68 - 0x58];
+    i32 m_68, m_6c; // +0x68
+
     // 0x168340 / 0x168500: SetTarget(x, y) - stores at +0x68/+0x6c when changed,
     // returns nonzero when it moved (0 when unchanged).
     i32 SetTargetA(i32 a, i32 b);
     i32 SetTargetB(i32 a, i32 b);
+};
+
+// The level map/surface source CPlaneRender renders from (this->m_0c). Three
+// chains the boundary methods walk: a pixel-format descriptor (+0x4 -> +0x10 ->
+// +0x18 = bitdepth 8/16), a palette host (+0x18 -> +0x64 -> +0x10 -> +0xc =
+// RGB888 array), and a plane geometry block (+0x24, with the six dim fields the
+// scroll-rect setup reads). Only the offsets are load-bearing.
+struct CPlaneSurfDesc {
+    u8 pad_0[0x18];
+    i32 m_format; // +0x18  8 or 16 (bpp)
+};
+struct CPlaneSurf {
+    u8 pad_0[0x10];
+    CPlaneSurfDesc* m_10; // +0x10
+};
+struct CPlanePalArr {
+    u8 pad_0[0xc];
+    u8* m_rgb; // +0xc  RGB888 triples (4 bytes/entry)
+};
+struct CPlanePalOwner {
+    u8 pad_0[0x10];
+    CPlanePalArr* m_10; // +0x10
+};
+struct CPlanePalHost {
+    u8 pad_0[0x64];
+    CPlanePalOwner* m_64; // +0x64
+};
+struct CPlaneGeom {
+    u8 pad_0[0xc8];
+    i32 m_c8, m_cc, m_d0, m_d4, m_d8, m_dc; // +0xc8..+0xdc
+};
+struct CPlaneMapData {
+    void* m_0;
+    CPlaneSurf* m_4; // +0x4  pixel-format chain
+    u8 pad_8[0x18 - 0x8];
+    CPlanePalHost* m_18; // +0x18  palette host
+    u8 pad_1c[0x24 - 0x1c];
+    CPlaneGeom* m_24; // +0x24  plane geometry
+};
+
+// The serialize stream CPlaneRender::Save/Load drive (a CArchive-like binary I/O
+// object). Virtual Read at slot +0x2c, Write at +0x30; both __thiscall, return an
+// int byte-count. UNMATCHED engine code -> reloc-masked virtual calls.
+struct CWwdStream {
+    virtual void v00();
+    virtual void v04();
+    virtual void v08();
+    virtual void v0c();
+    virtual void v10();
+    virtual void v14();
+    virtual void v18();
+    virtual void v1c();
+    virtual void v20();
+    virtual void v24();
+    virtual void v28();
+    virtual i32 Read(void* buf, i32 len);  // +0x2c
+    virtual i32 Write(void* buf, i32 len); // +0x30
+};
+
+// CPlaneRender's own vtable dispatch view (the +0x14 "is-loaded" virtual the tile
+// validator gates on). Modeled as a polymorphic interface so the vtable call falls
+// out; no vtable is emitted here (no virtual is defined in this TU).
+struct CPlaneRenderPoly {
+    virtual void v00();
+    virtual void v04();
+    virtual void v08();
+    virtual void v0c();
+    virtual void v10();
+    virtual i32 IsLoaded(); // +0x14
 };
 
 class CPlaneRender {
@@ -162,13 +241,18 @@ public:
     void WrapCoord(i32* px, i32* py); // 0x00a000  wrap+transform a world coord
     i32 CenterScrollA();              // 0x163300
     i32 CenterScrollB();              // 0x163370
+    void InitScrollRects();           // 0x163420  seed the scroll sub-object rects
+    i32 ValidateTiles(char* errOut);  // 0x163510  scan the tile grid for bad refs
+    void ResolveColorKey();           // 0x163670  pack the +0x144 index to RGB565
+    i32 Save(CWwdStream* s);          // 0x163780  serialize out
+    i32 Load(CWwdStream* s);          // 0x1638c0  serialize in
 
     u8 pad_0[0x08];
     u32 m_flags; // +0x08
-    u8 pad_c[0x10 - 0x0c];
+    CPlaneMapData* m_0c;
     float m_scaledX; // +0x10
     float m_scaledY; // +0x14
-    u8 pad_18[0x20 - 0x18];
+    i32 m_18, m_1c;
     i32* m_tileGrid;   // +0x20
     i32* m_colOffsets; // +0x24
     i32 m_gridW;       // +0x28
@@ -188,15 +272,18 @@ public:
     i32 m_fillT; // +0x64
     i32 m_fillR; // +0x68
     i32 m_fillB; // +0x6c
-    u8 pad_70[0x8c - 0x70];
-    i32 m_shiftX; // +0x8c
-    i32 m_shiftY; // +0x90
-    u8 pad_94[0xa0 - 0x94];
+    u8 pad_70[0x80 - 0x70];
+    i32 m_80, m_84, m_88; // +0x80..+0x88
+    i32 m_shiftX;         // +0x8c
+    i32 m_shiftY;         // +0x90
+    i32 m_94, m_98, m_9c; // +0x94..+0x9c
     CPlaneFrame** m_planeArray; // +0xa0
     u8 pad_a4[0xb0 - 0xa4];
     CPlaneScroll* m_scroll; // +0xb0
-    u8 pad_b4[0xf4 - 0xb4];
-    CDDSurface m_surface; // +0xf4
+    char m_name[0xf4 - 0xb4]; // +0xb4  plane name (serialized as a fixed 0x80 field)
+    CDDSurface m_surface;     // +0xf4  (empty model, sizeof 1)
+    u8 pad_f5[0x144 - 0xf5];
+    i32 m_144; // +0x144  the color-key palette index, packed in place to RGB565
 };
 
 // ---------------------------------------------------------------------------

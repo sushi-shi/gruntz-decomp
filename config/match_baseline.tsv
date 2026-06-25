@@ -115,7 +115,7 @@ directinputmgr2	33	29
 directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	28	0
-engine_boundary	590	0
+engine_boundary	580	0
 engine_discovered	72	0
 engine_label_stubs	462	103
 engstr	3	1
@@ -126,7 +126,7 @@ fontconfig	9	5
 fonts	2	1
 gameapp	20	16
 gamekeyhandler	1	0
-gamelevel	51	23
+gamelevel	52	23
 gamemode	42	19
 gamemodeobjlifecycle	4	3
 gameobjectctors	5	1
@@ -148,7 +148,7 @@ hash	10	9
 helperhost	2	0
 iconloaders	5	1
 image	39	24
-imageset	4	4
+imageset	7	4
 infblock	5	4
 infcodes	3	2
 inffast	1	1
@@ -236,7 +236,7 @@ uncompr	1	1
 unknownclassarrays	38	10
 unknownclassincgruntzmgr	2	0
 unknownsalazar	4	0
-userbaselink	9	0
+userbaselink	10	0
 userlogic	50	19
 videoconfig	2	0
 warlord	8	2
@@ -247,7 +247,7 @@ winapimodule	1	0
 winmain	1	1
 worldsoundset	8	5
 wormhole	8	3
-wwdfile	10	1
+wwdfile	15	3
 wwdgameobject	9	4
 wwdgrid	7	4
 wwdspatialmgr	10	5
@@ -1393,12 +1393,8 @@ engine_boundary	?Boundary_14fcc0@@YAXXZ	0.8850	0.8850	1	6d7f8be75d2f	0x14fcc0
 engine_boundary	?Boundary_14fe30@@YAXXZ	4.3478	4.3478	1	9218ece46ca3	0x14fe30
 engine_boundary	?Boundary_1503f0@@YAXXZ	0.6780	0.6780	1	b2fd36919703	0x1503f0
 engine_boundary	?Boundary_1509c0@@YAXXZ	1.0989	1.0989	1	8bdca3764bb5	0x1509c0
-engine_boundary	?Boundary_150eb0@@YAXXZ	0.7018	0.7018	1	28500f347118	0x150eb0
 engine_boundary	?Boundary_151d20@@YAXXZ	1.6000	1.6000	1	5d71f969a00d	0x151d20
 engine_boundary	?Boundary_151e70@@YAXXZ	4.1667	4.1667	1	4e46b2c0c863	0x151e70
-engine_boundary	?Boundary_151fb0@@YAXXZ	0.5479	0.5479	1	94274fdf4cf8	0x151fb0
-engine_boundary	?Boundary_152060@@YAXXZ	0.5263	0.5263	1	16f510049c86	0x152060
-engine_boundary	?Boundary_152110@@YAXXZ	0.5333	0.5333	1	d365d5eebce5	0x152110
 engine_boundary	?Boundary_1523f0@@YAXXZ	0.7547	0.7547	1	4586d0c8553f	0x1523f0
 engine_boundary	?Boundary_152e90@@YAXXZ	0.9091	0.9091	1	25a476df81ec	0x152e90
 engine_boundary	?Boundary_1570d0@@YAXXZ	6.6667	6.6667	1	387361f0d66d	0x1570d0
@@ -1434,7 +1430,6 @@ engine_boundary	?Boundary_15ca70@@YAXXZ	0.2985	0.2985	1	4a1ce049d5e0	0x15ca70
 engine_boundary	?Boundary_15cc50@@YAXXZ	5.0000	5.0000	1	9ad992a0388e	0x15cc50
 engine_boundary	?Boundary_15cc90@@YAXXZ	5.0000	5.0000	1	19c230a73a09	0x15cc90
 engine_boundary	?Boundary_15d9a0@@YAXXZ	0.5063	0.5063	1	90efc8f58226	0x15d9a0
-engine_boundary	?Boundary_161270@@YAXXZ	0.5333	0.5333	1	0ed14dabb474	0x161270
 engine_boundary	?Boundary_161460@@YAXXZ	50.0000	50.0000	1	94f26a4eecb3	0x161460
 engine_boundary	?Boundary_1614b0@@YAXXZ	9.0909	9.0909	1	bf9985276a01	0x1614b0
 engine_boundary	?Boundary_161500@@YAXXZ	4.1667	4.1667	1	66461f8208a7	0x161500
@@ -1444,12 +1439,7 @@ engine_boundary	?Boundary_161f00@@YAXXZ	1.0256	1.0256	1	7fbbc22e3bf5	0x161f00
 engine_boundary	?Boundary_1628d0@@YAXXZ	16.6667	16.6667	1	f478d8f3400e	0x1628d0
 engine_boundary	?Boundary_1628f0@@YAXXZ	0.2667	0.2667	1	0497c0d9d40c	0x1628f0
 engine_boundary	?Boundary_1633e0@@YAXXZ	16.6667	16.6667	1	123da14fa21c	0x1633e0
-engine_boundary	?Boundary_163420@@YAXXZ	1.2048	1.2048	1	bec717e0374e	0x163420
-engine_boundary	?Boundary_163510@@YAXXZ	0.3419	0.3419	1	1a4e749bbf1f	0x163510
-engine_boundary	?Boundary_163670@@YAXXZ	1.9608	1.9608	1	ac54885d7525	0x163670
 engine_boundary	?Boundary_163710@@YAXXZ	1.8182	1.8182	1	479aa6aae6a8	0x163710
-engine_boundary	?Boundary_163780@@YAXXZ	0.3333	0.3333	1	23756c577604	0x163780
-engine_boundary	?Boundary_1638c0@@YAXXZ	0.3175	0.3175	1	f1c7f0ce30e7	0x1638c0
 engine_boundary	?Boundary_163a10@@YAXXZ	50.0000	50.0000	1	5d7d73486741	0x163a10
 engine_boundary	?Boundary_163a40@@YAXXZ	5.8824	5.8824	1	d8ad15e170f3	0x163a40
 engine_boundary	?Boundary_163af0@@YAXXZ	1.6667	1.6667	1	f1876c724d87	0x163af0
@@ -2252,8 +2242,9 @@ gamelevel	??0CGameLevel@@QAE@HHH@Z	94.4528	94.4528	5	722b4e18b3dc	0x15ccd0
 gamelevel	??1CGameLevel@@QAE@XZ	96.0000	96.0000	3	be6f9346ae7e	0x1611e0
 gamelevel	?AdvanceA@CGameLevel@@AAEHPAXHHH@Z	93.5194	93.5194	1	ed7962b2eb86	0x15f1c0
 gamelevel	?AdvanceB@CGameLevel@@AAEHPAXHHH@Z	92.2241	92.2241	1	ac1c98577426	0x15ede0
-gamelevel	?AltStepValidate@CGameLevel@@AAEHPAX0HHPAHH@Z	71.9054	71.9054	1	7c1fc1ee8711	0x15fe40
+gamelevel	?AltStepValidate@CGameLevel@@AAEHPAX0HHPAHH@Z	71.8919	71.8919	1	7c1fc1ee8711	0x15fe40
 gamelevel	?ApplyScroll@CGameLevel@@SGHPAV1@HHH@Z	94.7826	94.7826	2	66b03ea53107	0x167130
+gamelevel	?AxisProbe@CGameLevel@@AAEHHH@Z	99.8667	99.8667	1	eed79d5e847e	0x161270
 gamelevel	?BuildAllPlanes@CGameLevel@@QAEXPAULevelCoordRect@@@Z	100.0000	100.0000	1	f9a8f0e1ee87	0x15da80
 gamelevel	?ClampScroll@CGameLevel@@QAEHPAXHHH@Z	70.7413	70.7413	3	3f62b93aa933	0x15de40
 gamelevel	?ClampSpan@CGameLevel@@AAEHHHPAH0@Z	99.8305	99.8305	1	2ca0e3403535	0x15ffe0
@@ -2267,7 +2258,7 @@ gamelevel	?EditSwitch@CGameLevel@@QAEHPAXHHH@Z	88.8440	88.8440	2	0ff29dc02c1a	0x
 gamelevel	?FindPlaneByName@CGameLevel@@QAEPAVCPlane@@PBD@Z	100.0000	100.0000	2	7baff22dc335	0x15dde0
 gamelevel	?FreeMove@CGameLevel@@AAEHPAXHHH@Z	80.8200	80.8200	1	3fb3107bd23b	0x15eb00
 gamelevel	?GetClassId@CGameLevel@@QAEHXZ	100.0000	100.0000	1	777905dbee18	0x1611b0
-gamelevel	?HoldMove@CGameLevel@@AAEHPAXHHHH@Z	90.3953	90.3953	1	5c4b4f1637f9	0x15ff20
+gamelevel	?HoldMove@CGameLevel@@AAEHPAXHHHH@Z	90.3837	90.3837	1	5c4b4f1637f9	0x15ff20
 gamelevel	?IsLoaded@CGameLevel@@QAEHXZ	100.0000	100.0000	1	1cf4b7c05d14	0x161190
 gamelevel	?LoadFromFile@CGameLevel@@QAEHPBD@Z	100.0000	100.0000	1	69e64dfc7d35	0x15d500
 gamelevel	?LoadFromSource@CGameLevel@@QAEHPAURemusParseSource@@@Z	100.0000	100.0000	1	70a85ae50bfb	0x15d630
@@ -2671,6 +2662,9 @@ image	?SaveDispatch@CFileImage@@QAEHPAX00@Z	100.0000	100.0000	1	9a5d2837fd46	0x1
 image	?SaveFile@CFileImage@@QAEHPADHPAX1@Z	100.0000	100.0000	1	aa58601ee0e3	0x13f910
 image	?SaveRle16@CFileImage@@QAEHPAX00@Z	52.5687	52.5687	1	51fca2eecd11	0x144640
 image	?ScalarDelete@CFileImageSurface@@QAEPAXI@Z	100.0000	100.0000	1	9d4075406fc7	0x142340
+imageset	?CreateFrame24@CImageSet@@QAEPAVCImageFrame@@HHHH@Z	99.0800	99.0800	1	81321783b07c	0x152110
+imageset	?CreateFrame28@CImageSet@@QAEPAVCImageFrame@@HHHH@Z	99.0921	99.0921	1	5ecfd5556ac6	0x152060
+imageset	?CreateFrame30@CImageSet@@QAEPAVCImageFrame@@HHH@Z	99.0548	99.0548	1	6ae3972c582a	0x151fb0
 imageset	?FindFrame@CImageSet@@QAEHPAVCImageFrame@@PADPAH@Z	100.0000	100.0000	2	943441ee77bf	0x1525c0
 imageset	?SetAllField18@CImageSet@@QAEHH@Z	100.0000	100.0000	1	a7a2fafe1b75	0x1524d0
 imageset	?SetAllFormats@CImageSet@@QAEHH@Z	100.0000	100.0000	2	e56fd86959b1	0x152520
@@ -3355,6 +3349,7 @@ userbaselink	??4EngStr@@QAEAAU0@ABU0@@Z	2.2222	2.2222	2	d0d3e615ad57	0x16d2f0
 userbaselink	?AddLogicAttack@CGameObject@@QAEXPAD@Z	5.2632	5.2632	2	72e127a9c85b	0x151030
 userbaselink	?AddLogicBump@CGameObject@@QAEXPAD@Z	5.2632	5.2632	2	6cb0e644d71f	0x151110
 userbaselink	?AddLogicHit@CGameObject@@QAEXPAD@Z	5.2632	5.2632	2	c8ba1df48c6e	0x150f50
+userbaselink	?EnsureWorker80@CGameObject@@QAEHPAU1@@Z	92.9474	92.9474	1	55a4078d66d2	0x150eb0
 userbaselink	?EnsureWorker88@CGameObject@@QAEXPAU1@@Z	66.2807	66.2807	1	99c24eb04cfb	0x150f90
 userbaselink	?EnsureWorker90@CGameObject@@QAEXPAU1@@Z	66.2807	66.2807	1	db073fe07139	0x151070
 userlogic	??0CAniCycle@@QAE@PAUCGameObject@@@Z	89.0632	89.0632	2	3fc14839e1e8	0xaad20
@@ -3445,11 +3440,16 @@ wormhole	?Stub_03fc70@CWormhole@@QAEXXZ	0.3333	0.3333	4	b52ffef5d830	0x3fc70
 wormhole	?Stub_03fed0@CWormhole@@QAEXXZ	0.6349	0.6349	4	77e92219c343	0x3fed0
 wormhole	?Stub_0412c0@CWormhole@@QAEXXZ	3.5714	3.5714	4	e051969c2768	0x412c0
 wwdfile	?CenterScrollA@CPlaneRender@@QAEHXZ	87.8750	87.8750	1	caafea006407	0x163300
-wwdfile	?CenterScrollB@CPlaneRender@@QAEHXZ	87.8750	87.8750	1	3eb87c589b6b	0x163370
+wwdfile	?CenterScrollB@CPlaneRender@@QAEHXZ	87.9464	87.9464	1	3eb87c589b6b	0x163370
 wwdfile	?Draw@CPlaneRender@@QAEXPAX@Z	0.1391	0.1391	1	f705be10435a	0x162010
+wwdfile	?InitScrollRects@CPlaneRender@@QAEXXZ	99.9157	99.9157	1	8c5e9227948a	0x163420
+wwdfile	?Load@CPlaneRender@@QAEHPAUCWwdStream@@@Z	100.0000	100.0000	1	465739db8fa7	0x1638c0
 wwdfile	?ReadPlane@CGameLevelPlanes@@QAEPAVCPlane@@PAX00@Z	99.5362	99.5362	4	1345c133fc23	0x15d8d0
 wwdfile	?ReadPlaneObjects@WwdFile@@QAEHPBH@Z	77.1667	77.1667	4	3a0000002e43	0x162af0
+wwdfile	?ResolveColorKey@CPlaneRender@@QAEXXZ	66.6078	66.6078	1	52704319003e	0x163670
+wwdfile	?Save@CPlaneRender@@QAEHPAUCWwdStream@@@Z	100.0000	100.0000	1	0557ec6d7f43	0x163780
 wwdfile	?ValidateMainBlock@WwdFile@@SAHVCString@@@Z	99.6667	99.6667	3	66ad5dacd472	0x3b470
+wwdfile	?ValidateTiles@CPlaneRender@@QAEHPAD@Z	92.4786	92.4786	1	c24918cae354	0x163510
 wwdfile	?WrapCoord@CPlaneRender@@QAEXPAH0@Z	91.4875	91.4875	1	cd67080fb751	0xa000
 wwdfile	?WwdFile_CheckHeader@@YGHPBDPAX@Z	99.9872	99.9872	7	6e939a29d5a1	0x160660
 wwdfile	?WwdFile_IsValidWwd@@YGHPBDPAX@Z	100.0000	100.0000	7	d6fb4886d4a5	0x160530

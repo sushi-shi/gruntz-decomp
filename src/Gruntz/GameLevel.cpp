@@ -1010,6 +1010,49 @@ struct ProbePlane {
         }                                                                                          \
     } while (0)
 
+// AxisProbe - 0x161270 (__thiscall, ret 8). The standalone tile probe the editor
+// loops call as a reloc-masked leaf: clamp (coord, limit) into the main plane's tile
+// grid, split each into tile index + sub-offset, fetch the tile id, and (unless the
+// empty/clear sentinel) dispatch the image set's slot +0x20 with the sub-offsets;
+// returns the tile kind (callers gate on == 3). This IS the body the PROBE_TILE
+// macro inlines elsewhere.
+RVA(0x00161270, 0xb2)
+i32 CGameLevel::AxisProbe(i32 coord, i32 limit) {
+    // Same shape as PROBE_TILE, but the standalone reads the second coord only AFTER
+    // clamping the first (retail defers the edi load past the X-clamp block).
+    i32 px = coord;
+    if (px < 0) {
+        px = 0;
+    } else {
+        ProbePlane* pc = (ProbePlane*)m_mainPlane;
+        if (px >= pc->wrapW) {
+            px = pc->wrapW - 1;
+        }
+    }
+    i32 py = limit;
+    if (py < 0) {
+        py = 0;
+    } else {
+        ProbePlane* pc = (ProbePlane*)m_mainPlane;
+        if (py >= pc->wrapH) {
+            py = pc->wrapH - 1;
+        }
+    }
+    ProbePlane* pl = (ProbePlane*)m_mainPlane;
+    i32 qx = px >> pl->shiftX;
+    i32 qy = py >> pl->shiftY;
+    i32 col = qx;
+    i32 subX = px - (qx << pl->shiftX);
+    i32 idx = pl->colOffsets[qy] + col;
+    i32 subY = py - (qy << pl->shiftY);
+    i32 tile = pl->tileGrid[idx];
+    if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
+        return 0;
+    }
+    CImageSet* set = (CImageSet*)m_imageSets[tile & 0xffff];
+    return set->dummy8(subX, subY);
+}
+
 // EditSink - the serializer `arg0` of EditDispatch: a polymorphic object whose slots
 // +0x2c (read a name into buf) and +0x30 (write buf as a name) are used.
 struct EditSink {

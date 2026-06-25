@@ -32,6 +32,44 @@ static inline void StampWorkerVtbl(CSiriusWorker* w) {
     *(void**)w = &g_siriusWorkerVtbl;
 }
 
+// CGameObject::EnsureWorker80 (0x150eb0): the +0x80 worker variant of
+// EnsureWorker88/90 - same lazy build/reuse/feed, but it RETURNS the slot-9 result
+// (or 0 on the null guards). Called by AddLogicHit (0x150f50).
+// @early-stop
+// Expected to share the zero-register-pinning wall of EnsureWorker88/90 (this/0 in
+// esi<->edi). Logic byte-exact; a pure allocator coin-flip, not source-steerable.
+RVA(0x00150eb0, 0x98)
+i32 CGameObject::EnsureWorker80(CGameObject* src) {
+    if (src == 0) {
+        return 0;
+    }
+    if (m_80 != 0) {
+        m_80->Slot07();
+    } else {
+        CSiriusWorker* w = (CSiriusWorker*)RezOpNew(0x17c);
+        if (w != 0) {
+            w->m_04 = m_04;
+            w->m_08 = 0;
+            w->m_0c = m_0c;
+            StampWorkerVtbl(w);
+            w->m_10 = 0;
+            w->m_14 = 0;
+            w->m_18 = 0;
+            w->m_170 = 0;
+            w->m_1c = 0;
+            w->m_174 = 0;
+            w->m_178 = 0;
+        } else {
+            w = 0;
+        }
+        m_80 = w;
+    }
+    if (m_80 == 0) {
+        return 0;
+    }
+    return m_80->Slot09(src->m_10, 0);
+}
+
 // CGameObject::EnsureWorker88 (0x150f90): lazily build the +0x88 worker - if one
 // already exists, just re-run its slot-7 reuse hook; otherwise operator new a
 // fresh 0x17c-byte worker (seeded m_04=this->m_4, m_08=0, m_0c=this->m_c, the

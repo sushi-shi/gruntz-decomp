@@ -134,6 +134,7 @@ struct CGameObject {
     void ApplyLookupSprite(const char* key, i32 flag);  // 0x1504d0
     void ApplyName(const char* name);                   // 0x150540
     i32 ApplyLookupGeometry(const char* key, i32 flag); // 0x1505b0
+    i32 EnsureWorker80(CGameObject* src);  // 0x150eb0  (lazy worker @ +0x80, dispatch)
     void EnsureWorker88(CGameObject* src); // 0x150f90  (lazy worker @ +0x88, dispatch)
     void EnsureWorker90(CGameObject* src); // 0x151070  (lazy worker @ +0x90, dispatch)
     char m_pad00[0x04];
@@ -151,8 +152,9 @@ struct CGameObject {
     char m_pad64[0x74 - 0x64];
     i32 m_74; // +0x74
     char m_pad78[0x7c - 0x78];
-    CGameObjAux* m_7c; // +0x7c
-    char m_pad80[0x88 - 0x80];
+    CGameObjAux* m_7c;   // +0x7c
+    CSiriusWorker* m_80; // +0x80  lazily-built worker (EnsureWorker80)
+    char m_pad84[0x88 - 0x84];
     CSiriusWorker* m_88; // +0x88  lazily-built worker (EnsureWorker88)
     char m_pad8c[0x90 - 0x8c];
     CSiriusWorker* m_90; // +0x90  lazily-built worker (EnsureWorker90)
