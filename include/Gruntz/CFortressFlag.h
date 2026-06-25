@@ -24,6 +24,13 @@
 
 class CFortressFlag : public CUserLogic {
 public:
+    // Construct the class's activation-coordinate registry (g_fortressFlagActReg
+    // @0x644638) over the fixed [2000,2010] range; free init thunk, reloc-masked.
+    static void InitActReg(); // 0x046000
+    // Bind the per-frame handler (AdvanceAnim) to the activation key "A" via the
+    // shared name registry (the same archetype as CBehindCandyAni::RegisterActs).
+    static void RegisterActs();                   // 0x0461e0
+    i32 AdvanceAnim();                            // 0x0463e0 (re-target bound anim to the draw-delta; ret 0)
     i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x046410 (vtable slot 1)
     ~CFortressFlag();                             // 0x010e90 (folds the CUserLogic teardown)
 };

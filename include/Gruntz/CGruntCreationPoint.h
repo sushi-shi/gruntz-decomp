@@ -23,6 +23,12 @@
 
 class CGruntCreationPoint : public CUserLogic {
 public:
+    // Construct the class's activation-coordinate registry (g_creationPointActReg
+    // @0x644700) over the fixed [2000,2010] range; free init thunk, reloc-masked.
+    static void InitActReg(); // 0x03e8e0
+    // Bind the per-frame handler (AdvanceAnim) to the activation key "A" via the
+    // shared name registry (the same archetype as CBehindCandyAni::RegisterActs).
+    static void RegisterActs(); // 0x03eac0
     i32 AdvanceAnim(); // 0x03ecc0 (re-target bound anim to the draw-delta; ret 0)
     ~CGruntCreationPoint(); // 0x010730 (folds the CUserLogic teardown)
 };

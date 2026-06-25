@@ -23,7 +23,11 @@ class CParticlez : public CUserLogic {
 public:
     static void InitActReg();       // 0x046cb0 (construct g_partColl over [2000,2010])
     void FireActivation(i32 coord); // 0x046d30
-    ~CParticlez();                  // 0x012d90 (folds the CUserLogic teardown)
+    // Bind the per-frame handler (Update) to the activation key "A" via the shared
+    // name registry (the same archetype as CSecretTeleporterTrigger::RegisterActs).
+    static void RegisterActs(); // 0x046e90
+    i32 Update();               // 0x047090 (advance anim + on-screen latch; ret 0)
+    ~CParticlez();              // 0x012d90 (folds the CUserLogic teardown)
 };
 
 #endif // GRUNTZ_CPARTICLEZ_H

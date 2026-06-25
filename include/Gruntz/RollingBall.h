@@ -66,6 +66,13 @@ public:
     CRollingBall(i32);                // 0x0af820 (1-arg; still stubbed)
     virtual ~CRollingBall() OVERRIDE; // 0x012f80 (folds the bare CUserLogic teardown)
 
+    // Construct the class's activation-coordinate registry (g_rollingBallActReg
+    // @0x6461b0) over the fixed [2000,2010] range; free init thunk, reloc-masked.
+    static void InitActReg(); // 0x0afd60
+    // Bind the per-frame handler (Update) to the activation key "A" via the shared
+    // name registry (the same archetype as CBehindCandyAni::RegisterActs).
+    static void RegisterActs(); // 0x0aff40
+
     i32 Serialize(CRbArchive* ar, i32 tag, i32 c, i32 d); // 0x0b0fe0 (vtable slot 1)
     i32 Update();                                         // 0x0b0140
 

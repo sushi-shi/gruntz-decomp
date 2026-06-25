@@ -151,6 +151,9 @@ public:
     // Construct the class's activation-coordinate registry (g_actColl @0x644688)
     // over the fixed [2000,2010] range; a free init thunk, reloc-masked.
     static void InitActReg(); // 0x0420d0
+    // Bind SpawnTeleporter to the activation key "A" via the shared name registry
+    // (the same archetype as CSecretLevelTrigger::RegisterActs).
+    static void RegisterActs(); // 0x0422b0
     // The two overridden CUserLogic virtuals reconstructed below.
     i32 Serialize(i32 a, i32 b, i32 c, i32 d); // 0x010a10 (vtable slot 1)
     void FireActivation(i32 coord);            // 0x042150 (vtable slot 4)
@@ -480,6 +483,67 @@ static inline CActEntry* ActLookup(i32 coord) {
     return g_actCur;
 }
 
+// ---------------------------------------------------------------------------
+// The shared activation-NAME registry RegisterActs interns the key "A" through
+// (@0x6bf650; same range/cache shape as g_actColl). g_buteTree doubles as the
+// name->id map (Find returns the id, 0 == absent; Insert maps a new key->id);
+// g_nextActId (0x61aea8) is the running id counter; s_actKeyA (0x60a454) is the
+// "A" key. The id->name-slot resolve reuses the shared Find/ActAlloc/Insert +
+// g_actCache/g_actAllocResult collection methods already declared above.
+// ---------------------------------------------------------------------------
+DATA(0x0021aea8)
+extern i32 g_nextActId;
+DATA(0x0020a454)
+extern char s_actKeyA[];
+DATA(0x002bf650)
+extern CActColl g_nameReg; // 0x6bf650
+DATA(0x002bf654)
+extern CActColl2* g_nameReg2; // 0x6bf654
+DATA(0x002bf658)
+extern i32 g_nameRegLo;
+DATA(0x002bf65c)
+extern i32 g_nameRegHi;
+DATA(0x002bf660)
+extern char* g_nameRegBase;
+DATA(0x002bf668)
+extern i32 g_nameRegStride;
+DATA(0x002bf664)
+extern char* g_nameRegCur; // slow-path result slot
+DATA(0x002bf66c)
+extern void** g_nameRegCurList; // the slot's CString list base
+DATA(0x002bf670)
+extern i32 g_nameRegScratch; // zeroed first; doubles as the list count
+
+// The CString in the resolved name slot: ~CString (0x1b9b93) frees the old list,
+// operator= (0x1b9e74) assigns the new key. Modeled so the calls reloc-mask.
+struct CActName {
+    void Free();                  // 0x1b9b93 (~CString)
+    void Assign(const char* key); // 0x1b9e74 (CString::operator=(char const*))
+};
+
+// The id->name-slot resolve (the fast range path + the slow Find/ActAlloc/Insert
+// rebuild). Folded inline by RegisterActs once, in the new-id branch.
+static inline char* ActNameLookup(i32 id) {
+    g_nameRegScratch = 0;
+    if (id >= g_nameRegLo && id <= g_nameRegHi) {
+        return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
+    }
+    if (g_nameReg.Find(id, 0)) {
+        return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
+    }
+    void* item = g_actCache;
+    g_actAllocResult = (void*)ActAlloc();
+    g_nameReg2->Insert(&g_nameReg, item, 0xc);
+    return g_nameRegCur;
+}
+
+// The activation-registry entry for SpawnTeleporter (an i32-returning handler PMF
+// on the complete single-inheritance class).
+typedef i32 (CSecretTeleporterTrigger::*SpawnHandler)();
+struct CTelActEntry {
+    SpawnHandler m_fn;
+};
+
 // ===========================================================================
 // Definitions in ascending-RVA order.
 // ===========================================================================
@@ -618,6 +682,39 @@ void CSecretTeleporterTrigger::FireActivation(i32 coord) {
         CActEntry* e2 = ActLookup(coord);
         (this->*(e2->m_fn))();
     }
+}
+
+// --- CSecretTeleporterTrigger::RegisterActs (0x0422b0) ---
+// Bind the per-point handler (SpawnTeleporter @0x042b80) to the activation key
+// "A" via the shared name registry, then bind id->entry in the class's own
+// coordinate registry (g_actColl). The SAME archetype as
+// CSecretLevelTrigger::RegisterActs.
+//
+// @early-stop
+// register-pinning wall (docs/patterns/zero-register-pinning.md +
+// test-old-value-decrement-loop-while-postdec.md, topic:wall topic:regalloc): logic
+// byte-faithful (every call/immediate/branch/offset + the `mov [entry],offset
+// SpawnTeleporter` handler store match retail); residual is the slot-vs-id
+// callee-saved register choice cascading into the free-loop count. Deferred.
+RVA(0x000422b0, 0x18d)
+void CSecretTeleporterTrigger::RegisterActs() {
+    i32 id = (i32)g_buteTree.Find(s_actKeyA);
+    if (id == 0) {
+        id = g_nextActId;
+        g_buteTree.Insert(s_actKeyA, (void*)id);
+        char* slot = ActNameLookup(id);
+        i32 n = g_nameRegScratch;
+        void** list = g_nameRegCurList;
+        while (n-- != 0) {
+            if (list != 0) {
+                ((CActName*)list)->Free();
+            }
+            list++;
+        }
+        ((CActName*)slot)->Assign(s_actKeyA);
+        g_nextActId++;
+    }
+    ((CTelActEntry*)ActLookup(id))->m_fn = &CSecretTeleporterTrigger::SpawnTeleporter;
 }
 
 // --- CSecretLevelTrigger 1-arg (0x0424b0), vptr 0x5e8804 ---
