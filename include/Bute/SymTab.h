@@ -18,8 +18,8 @@
 // code bytes are load-bearing (campaign doctrine); unproven roles keep m_<hex>.
 //
 //   +0x00  m_name    : char* - this scope's owned name buffer (freed in dtor).
-//   +0x04..+0x10     : value/link words (zero-init; nulled in dtor & Clear).
-//   +0x14  m_rec     : void* - the hash-entry payload pointer ([entry+0x14]).
+//   +0x04..+0x14     : value/link words (zero-init; only nulled in the dtor --
+//                      roles unproven by the matched methods, so kept m_<hex>).
 //   +0x18  m_owner   : CSymParser* - the owning parser; supplies the delimiter
 //                      set ([+0x4]) the tokenizer splits on and a flag ([+0x68]
 //                      != 0) passed to the +0x38 walk.
@@ -159,7 +159,7 @@ public:
     void* m_08;          // +0x08
     void* m_0c;          // +0x0c
     void* m_10;          // +0x10
-    void* m_rec;         // +0x14
+    void* m_14;          // +0x14  (role unproven; only nulled in dtor)
     CSymParser* m_owner; // +0x18
     void* m_1c;          // +0x1c
     char m_pad20[0x30 - 0x20];

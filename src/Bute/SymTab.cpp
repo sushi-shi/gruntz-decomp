@@ -69,7 +69,7 @@ CSymTab::~CSymTab() {
         RezFree(m_buf48);
     }
     m_name = 0;
-    m_rec = 0;
+    m_14 = 0;
     m_08 = 0;
     m_04 = 0;
     m_10 = 0;

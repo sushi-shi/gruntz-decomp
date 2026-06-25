@@ -114,9 +114,9 @@ public:
     // /GX member-teardown) and re-stamp the +0x10 list vtable.
     ~CSymParser();
 
-    // Clear (0x13b850): detach the active node (m_20), drop the +0x10 object list,
-    // free the heap root + the +0x64 buffer, then null m_0c. The (discarded) return
-    // is m_20's Detach() result, left in eax. `final` is unused. RVA-keyed pairing
+    // Clear (0x13b850): detach the active node (m_activeNode), drop the +0x10 object
+    // list, free the heap root + the +0x64 buffer, then null m_0c. The (discarded)
+    // return is m_activeNode's Detach() result, left in eax. `final` is unused. RVA-keyed pairing
     // absorbs the void(QAEXH)-vs-void*(QAEPAXH) mangling mismatch.
     void* Clear(i32 final);
 
@@ -130,29 +130,29 @@ public:
     void* ResolvePath(const char* path);               // 0x13c030 -> root->ResolvePath
     void AddNode(void* rec);                           // 0x13c210 -> m_hash insert
 
-    void* m_vtbl;    // +0x00
-    char* m_buf04;   // +0x04
-    i32 m_08;        // +0x08  (=1)
-    void* m_0c;      // +0x0c  Clear guard
-    CObjList m_list; // +0x10  (+0x10..+0x1c)
-    CObjNode* m_20;  // +0x20  the active node (cleared first in Clear)
-    i32 m_24;        // +0x24
-    i32 m_28;        // +0x28
-    i32 m_2c;        // +0x2c
-    i32 m_30;        // +0x30
-    i32 m_34;        // +0x34
-    i32 m_38;        // +0x38
-    i32 m_3c;        // +0x3c
-    i32 m_40;        // +0x40  (=1)
-    CSymTab* m_root; // +0x44
-    i32 m_48;        // +0x48
-    i32 m_4c;        // +0x4c
-    i32 m_50;        // +0x50  (=1)
-    i32 m_54;        // +0x54
-    i32 m_58;        // +0x58
-    i32 m_5c;        // +0x5c
-    i32 m_60;        // +0x60
-    void* m_buf64;   // +0x64
+    void* m_vtbl;           // +0x00
+    char* m_buf04;          // +0x04
+    i32 m_08;               // +0x08  (=1)
+    void* m_0c;             // +0x0c  Clear guard
+    CObjList m_list;        // +0x10  (+0x10..+0x1c)
+    CObjNode* m_activeNode; // +0x20  detached+removed+deleted first in Clear
+    i32 m_24;               // +0x24
+    i32 m_28;               // +0x28
+    i32 m_2c;               // +0x2c
+    i32 m_30;               // +0x30
+    i32 m_34;               // +0x34
+    i32 m_38;               // +0x38
+    i32 m_3c;               // +0x3c
+    i32 m_40;               // +0x40  (=1)
+    CSymTab* m_root;        // +0x44
+    i32 m_48;               // +0x48
+    i32 m_4c;               // +0x4c
+    i32 m_50;               // +0x50  (=1)
+    i32 m_54;               // +0x54
+    i32 m_58;               // +0x58
+    i32 m_5c;               // +0x5c
+    i32 m_60;               // +0x60
+    void* m_buf64;          // +0x64
     char m_pad68[0x80 - 0x68];
     CParserHash m_hash;    // +0x80
     CHashSlotList m_nodes; // +0x88  { head, tail }

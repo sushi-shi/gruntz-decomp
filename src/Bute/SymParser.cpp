@@ -56,7 +56,7 @@ CSymParser::~CSymParser() {
     }
     CSlotNode* node = (CSlotNode*)m_nodes.m_head;
     m_0c = 0;
-    m_20 = 0;
+    m_activeNode = 0;
     m_30 = 0;
     m_34 = 0;
     m_38 = 0;
@@ -84,9 +84,9 @@ CSymParser::~CSymParser() {
     // in reverse declaration order, under the /GX member-teardown trylevels.
 }
 
-// Clear (0x13b850): drop the active node (m_20) + the +0x10 object list, free the
-// heap root CSymTab + the +0x64 buffer, then null m_0c. The arg is unused; the
-// return is the active node's slot[5] (Detach) result, left in eax.
+// Clear (0x13b850): drop the active node (m_activeNode) + the +0x10 object list,
+// free the heap root CSymTab + the +0x64 buffer, then null m_0c. The arg is unused;
+// the return is the active node's slot[5] (Detach) result, left in eax.
 // @early-stop
 // regalloc wall: retail pins `this`->edi + the walked node->esi; recompile swaps
 // them (this->esi, node->edi) - same instruction stream, opposite callee-saved
@@ -95,13 +95,13 @@ CSymParser::~CSymParser() {
 RVA(0x0013b850, 0xa8)
 void* CSymParser::Clear(i32 final) {
     (void) final;
-    void* r = m_20->Detach();
-    m_list.Remove(m_20);
+    void* r = m_activeNode->Detach();
+    m_list.Remove(m_activeNode);
     m_list.m_count--;
-    if (m_20) {
-        m_20->Delete(1);
+    if (m_activeNode) {
+        m_activeNode->Delete(1);
     }
-    m_20 = 0;
+    m_activeNode = 0;
     CObjNode* p;
     for (p = m_list.m_head; p != 0; p = m_list.m_head) {
         p->Detach();
