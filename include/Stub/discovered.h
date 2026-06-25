@@ -140,6 +140,5 @@ class MallocCtor_1615a0 { public: void MallocCtor_1615a0_0311e0(); };
 class RegistryHelper { public: void RegistryHelper_114fa0(); };
 class RemusParseSource { public: void RemusParseSource_139800(); };
 class StatusBarItem { public: void StatusBarItem_0d9290(); };
-class UnknownClassArrays { public: void UnknownClassArrays_030990(); void UnknownClassArrays_0350d0(); };
 
 #endif

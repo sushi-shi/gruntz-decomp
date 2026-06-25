@@ -34,6 +34,8 @@ public:
     i32 Method_02ed90(i32);
     i32 Serialize_02b420(void*);
     i32 Method_030730(i32, i32, i32, i32);
+    i32 Method_030990(i32, i32);
+    i32 Method_0350d0(i32);
     void* Method_030f20(void*, i32, i32);
     i32 Method_0300c0(i32, i32, i32, i32, i32, i32);
     i32 Method_026470(i32);

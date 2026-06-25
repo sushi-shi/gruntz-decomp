@@ -67,7 +67,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	203	0
+engine_discovered	201	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -177,7 +177,7 @@ trees	17	17
 triggermgr	38	7
 triggermgr_eh	4	0
 uncompr	1	1
-unknownclassarrays	31	8
+unknownclassarrays	33	8
 unknownsalazar	4	0
 userbaselink	7	0
 userlogic	47	17
@@ -888,8 +888,6 @@ engine_discovered	?MallocCtor_1615a0_0311e0@MallocCtor_1615a0@@QAEXXZ	1.2121	1.2
 engine_discovered	?RegistryHelper_114fa0@RegistryHelper@@QAEXXZ	3.8462	3.8462	2	9de521efe251	0x114fa0
 engine_discovered	?RemusParseSource_139800@RemusParseSource@@QAEXXZ	33.3333	33.3333	2	ebb11c91b919	0x139800
 engine_discovered	?StatusBarItem_0d9290@StatusBarItem@@QAEXXZ	0.5076	0.5076	1	75b9d4dea540	0xd9290
-engine_discovered	?UnknownClassArrays_030990@UnknownClassArrays@@QAEXXZ	0.4082	0.4082	1	81128e57db9d	0x30990
-engine_discovered	?UnknownClassArrays_0350d0@UnknownClassArrays@@QAEXXZ	0.4494	0.4494	1	1baaea22d366	0x350d0
 engine_label_stubs	??0CActionArea@@QAE@H@Z	2.1226	2.1226	1	cpp:6bf52155264d	0x7da0
 engine_label_stubs	??0CBoomerang@@QAE@H@Z	97.3077	97.3077	1	cpp:6bf52155264d	0xe0650
 engine_label_stubs	??0CBrickz@@QAE@H@Z	1.6667	1.6667	1	cpp:6bf52155264d	0x10e800
@@ -2324,9 +2322,11 @@ unknownclassarrays	?Method_0300c0@UnknownClassArrays@@QAEHHHHHHH@Z	63.8443	63.84
 unknownclassarrays	?Method_030530@UnknownClassArrays@@QAEHH@Z	100.0000	100.0000	3	e73532e1bbab	0x30530
 unknownclassarrays	?Method_0305b0@UnknownClassArrays@@QAEHHHH@Z	46.6224	46.6224	3	c2a0dd095073	0x305b0
 unknownclassarrays	?Method_030730@UnknownClassArrays@@QAEHHHHH@Z	88.4487	88.4487	2	48f0f2797bd5	0x30730
+unknownclassarrays	?Method_030990@UnknownClassArrays@@QAEHHH@Z	94.5714	94.5714	1	86efcafb013c	0x30990
 unknownclassarrays	?Method_030b20@UnknownClassArrays@@QAEHHHH@Z	69.2299	69.2299	3	5660013556cd	0x30b20
 unknownclassarrays	?Method_030f20@UnknownClassArrays@@QAEPAXPAXHH@Z	58.3333	58.3333	2	11302799f028	0x30f20
 unknownclassarrays	?Method_034460@UnknownClassArrays@@QAEHH@Z	80.6851	80.6851	2	9fe11845bca1	0x34460
+unknownclassarrays	?Method_0350d0@UnknownClassArrays@@QAEHH@Z	72.3595	72.3595	1	adca17c295aa	0x350d0
 unknownclassarrays	?Serialize_02b420@UnknownClassArrays@@QAEHPAX@Z	100.0000	100.0000	2	7b63ca13d3d0	0x2b420
 unknownclassarrays	?winapi_0267c0_IntersectRect_PtInRect@UnknownClassArrays@@QAEHXZ	0.0596	0.0596	2	380a71b8d73d	0x267c0
 unknownclassarrays	?winapi_02a570_IntersectRect@UnknownClassArrays@@QAEHH@Z	0.5195	0.5195	2	a9181a69c11a	0x2a570

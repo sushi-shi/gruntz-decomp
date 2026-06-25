@@ -1597,6 +1597,103 @@ i32 UnknownClassArrays::Method_030730(i32 cellX, i32 cellY, i32, i32) {
     return 1;
 }
 
+// The grid object held at this->m_008: SpawnProbe (RVA 0x046b6d0, thunk 0x040bb,
+// shared with Method_026470's cell probe) is a __thiscall that maps a screen
+// coordinate + a flag bag to a candidate cell index (-1 on miss). Called here with
+// ecx = m_008 (kept live since the row-count loop); modeled as a method on the grid
+// so the convention falls out. External, reloc-masked (no body). The 13-arg form is
+// distinct from Method_026470's 9-arg ProbeCell call into the SAME retail routine.
+struct GridSpawnProbe {
+    i32 Probe(
+        i32 cell,
+        i32 sx,
+        i32 sy,
+        i32 a3,
+        i32 a4,
+        i32 a5,
+        i32 a6,
+        i32 a7,
+        i32 a8,
+        i32 a9,
+        i32 a10,
+        i32 a11,
+        i32 a12
+    ); // 0x046b6d0
+};
+
+// ===========================================================================
+// UnknownClassArrays::Method_030990  @0x030990
+// Try to seed a fresh spawn unit at a screen cell. Count the occupied units in the
+// current cell-row; if that count is at/over the per-level record's budget
+// (rec->m_378) bail. Otherwise probe the screen cell mapped from (arg1,arg2) via the
+// grid's SpawnProbe (using rec->m_158 as the kind tag); if it resolves to a unit
+// slot, seed it as a fresh mode-4 spawn (state 0x11, -1 coord block). Returns 1 on a
+// seeded spawn, 0 otherwise.
+// ===========================================================================
+// @early-stop
+// zero-register-pinning wall (~94.6%): structure byte-exact - the occupied-count
+// loop, the rec->m_378 budget gate, the 13-arg SpawnProbe call (rec->m_158 tag +
+// the two shifted coords), the cell->unit index, and the full mode-4 spawn seed are
+// all reproduced in shape + order. Retail pins the occupied counter in ebp and the
+// zero/null constant in ebx; MSVC5 here swaps the two (counter in ebx, zero in ebp),
+// which cascades through every push-0, the budget cmp, and the seed's `=0` stores +
+// reschedules the -1 block. No source lever forces the pinning under /O2 (see
+// docs/patterns/zero-register-pinning.md). Deferred to the final sweep.
+RVA(0x00030990, 0x11b)
+i32 UnknownClassArrays::Method_030990(i32 ax, i32 ay) {
+    GridUnit** row = (GridUnit**)(m_008 + m_018 * 0x3c + 0x1c);
+    i32 occupied = 0;
+    for (i32 c = 15; c != 0; c--) {
+        if (*row != 0) {
+            occupied++;
+        }
+        row++;
+    }
+    char* rec = (char*)m_004 + m_018 * 0x238;
+    if (occupied >= *(i32*)(rec + 0x378)) {
+        return 0;
+    }
+    i32 cell = ((GridSpawnProbe*)m_008)
+                   ->Probe(
+                       m_018,
+                       (ay << 5) + 0x10,
+                       (ax << 5) + 0x10,
+                       0x186a0,
+                       3,
+                       *(i32*)(rec + 0x158),
+                       0,
+                       0,
+                       0x11,
+                       0,
+                       0,
+                       0,
+                       0
+                   );
+    if (cell == -1) {
+        return 0;
+    }
+    GridUnit* unit = ((GridUnit**)((char*)(*(void**)((char*)m_004 + 0x68)) + 0x1c))[cell + m_018 * 15];
+    if (unit == 0) {
+        return 0;
+    }
+    i32* u = (i32*)unit;
+    u[0x2f0 / 4] = -1;
+    u[0x2f8 / 4] = -1;
+    u[0x300 / 4] = -1;
+    u[0x2d0 / 4] = 0x11;
+    u[0x2f4 / 4] = -1;
+    u[0x2e8 / 4] = -1;
+    u[0x2fc / 4] = -1;
+    u[0x2d4 / 4] = 0;
+    u[0x304 / 4] = -1;
+    u[0x2e4 / 4] = 0;
+    u[0x2e0 / 4] = 0;
+    u[0x2ec / 4] = 0;
+    u[0x390 / 4] = 1;
+    u[0x2d8 / 4] = 4;
+    return 1;
+}
+
 // ===========================================================================
 // UnknownClassArrays::Method_030f20  @0x030f20
 // Pick a spawn coordinate for `unit` from the per-level record's candidate list
@@ -2674,5 +2771,78 @@ i32 UnknownClassArrays::Method_030b20(i32 unitArg, i32 col, i32 row) {
     unit->m_174 = (tail->m_x << 5) + 0x10;
     unit->m_178 = (tail->m_y << 5) + 0x10;
     unit->m_2d4 = 5;
+    return 1;
+}
+
+// One node of the grid object's candidate list (head at m_008->m_4): ->next at +0,
+// the candidate sub-object (its level coord at +0x54 / +0x58, an "occupied" flag at
+// +0x5c) at +0x8.
+struct GridCandNode {
+    GridCandNode* m_next; // +0x00
+    char m_pad04[0x04];
+    char* m_payload; // +0x08
+};
+// The candidate sub-object reached via node->m_8: m_54/m_58 carry its grid (>>5)
+// coordinate, m_5c is a nonzero "already occupied" flag.
+struct GridCand {
+    char m_pad00[0x54];
+    i32 m_54; // +0x54  grid x
+    i32 m_58; // +0x58  grid y
+    i32 m_5c; // +0x5c  occupied flag (skip when set)
+};
+
+// ===========================================================================
+// UnknownClassArrays::Method_0350d0  @0x0350d0
+// Periodic re-path of `unit` toward the nearest free candidate cell. Gate on the
+// unit's m_2ec timer exceeding the bundle's m_0c4 budget; otherwise walk the grid
+// object's candidate list (head at m_008->m_4), and among the unoccupied candidates
+// (sub->m_5c == 0, and not already exactly on the unit's level coord) keep the one
+// nearest (min squared distance) to the unit's level (>>5) coordinate. If one is
+// found, re-path the unit to it via Method_0300c0 (flags 0xd87). Clear m_2ec and
+// return 1.
+// ===========================================================================
+// @early-stop
+// regalloc/spill wall (~72%): logic byte-exact - the unsigned m_2ec>m_0c4 gate
+// (jbe), the candidate-list walk, the m_5c-occupied + exact-coord skips, the
+// abs-distance squared min-keep, and the Method_0300c0 (flags 0xd87) re-path are all
+// reproduced in shape + instruction multiset. Retail spills BOTH the list iterator
+// and bestDist to stack locals (frame 0x10, reloading `arg1` from its stack slot each
+// iteration), where MSVC5 here keeps the iterator in ebp and bestDist in ecx (frame
+// 0x8, no reload) - the higher-spill-pressure choice (this-spilled-to-local-for-loop-
+// seed + reread-member-view-pointer family). No source lever forces the spill under
+// /O2; the divergence cascades through every loop register operand. Final sweep.
+RVA(0x000350d0, 0xfa)
+i32 UnknownClassArrays::Method_0350d0(i32 unitArg) {
+    GridUnit* unit = (GridUnit*)unitArg;
+    if ((u32)unit->m_2ec <= (u32)m_0c4) {
+        return 1;
+    }
+    GridCand* best = 0;
+    i32 bestDist = 0x7fffffff;
+    GridCandNode* node = *(GridCandNode**)(m_008 + 4);
+    while (node != 0) {
+        GridCand* cand = (GridCand*)node->m_payload;
+        node = node->m_next;
+        if (cand->m_5c == 0) {
+            UnitLevel* lvl = (UnitLevel*)unit->m_010;
+            i32 lx = lvl->m_5c >> 5;
+            i32 ly = lvl->m_60 >> 5;
+            if (cand->m_54 != lx || cand->m_58 != ly) {
+                i32 dx = cand->m_54 - lx;
+                dx = abs(dx);
+                i32 dy = cand->m_58 - ly;
+                dy = abs(dy);
+                i32 dist = dx * dx + dy * dy;
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    best = cand;
+                }
+            }
+        }
+    }
+    if (best != 0) {
+        Method_0300c0(unitArg, best->m_54, best->m_58, 0xd87, 0, 0);
+    }
+    unit->m_2ec = 0;
     return 1;
 }

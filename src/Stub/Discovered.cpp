@@ -472,7 +472,3 @@ RVA(0x00139800, 0x6) void RemusParseSource::RemusParseSource_139800() {}
 
 // ---- StatusBarItem ----
 RVA(0x000d9290, 0x2a7) void StatusBarItem::StatusBarItem_0d9290() {}
-
-// ---- UnknownClassArrays ----
-RVA(0x00030990, 0x11b) void UnknownClassArrays::UnknownClassArrays_030990() {}
-RVA(0x000350d0, 0xfa) void UnknownClassArrays::UnknownClassArrays_0350d0() {}
