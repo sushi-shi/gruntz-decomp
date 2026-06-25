@@ -1,31 +1,37 @@
-// ImageSet.h - CImageSet, the engine's sparse CImage-frame collection.
+// ImageSet.h - CImageSet, the engine's sparse image-frame collection.
 //
-// A CImageSet owns an array of CImage* frames (the RTTI `.?AVCImage@@` 0x34-byte
-// sprite primitive, vtable @0x5eaa2c) addressed by a signed frame index that runs
-// over the inclusive range [m_minIndex, m_maxIndex]; the set carries an inline name
-// buffer and a CObArray-style backing store at +0x10. Only the three leaf accessors
-// in ImageSet.cpp are matched here - the FUN_* labels carry no real name, so the
-// class name (CImageSet) and field names are descriptive placeholders; the OFFSETS +
-// code bytes are the load-bearing facts (object size 0x6c, vtable @0x5efbe8, the
-// frame array @0x14 / count @0x18 / inline name @0x24 / index range @0x64,0x68).
+// A CImageSet owns an array of frame pointers addressed by a signed frame index
+// that runs over the inclusive range [m_minIndex, m_maxIndex]; the set carries an
+// inline name buffer and a CObArray-style backing store at +0x10. Only the three
+// leaf accessors in ImageSet.cpp are matched here - the FUN_* labels carry no real
+// name, so the class name (CImageSet) and field names are descriptive placeholders
+// recovered from usage; the OFFSETS + code bytes are the load-bearing facts (object
+// size 0x6c, vtable @0x5efbe8, frame array @0x14 / count @0x18 / inline name @0x24 /
+// index range @0x64,0x68). The frame element is plausibly the RTTI CImage
+// (`.?AVCImage@@`, vtable @0x5eaa2c) but its layout here (+0x30 = a format helper)
+// does NOT line up with the real CImage (+0x30 = owned object; vptr @+0), so the
+// frame/format types stay placeholders - see CImageFrame below.
 #ifndef SRC_IMAGE_IMAGESET_H
 #define SRC_IMAGE_IMAGESET_H
 
 #include <Ints.h>
 
-// The CImage frame's +0x30 sub-object: a tiny format/state helper. SetType installs
-// a pixel-format code (m_14) and resolves its DDraw format word (m_1c). It is the
-// engine's CImage::SetType (FUN_0054dd90), external/no-body here so its call
-// reloc-masks; only the m_1c field is touched directly by CImageSet.
+// The frame's +0x30 sub-object: a small format/state helper. SetAllTypes calls its
+// SetType(type, 0) (external no-body @0x14dd90, reloc-masked - the SAME rel32 target
+// SBI_WarlordHead models as WhShowItem, so the callee's true name is unresolved);
+// SetAllFormats writes the resolved format word at +0x1c directly. PLACEHOLDER type:
+// only SetType + m_1c are evidenced; m_1c is the one site touched directly here.
 class CImageFormat {
 public:
     void SetType(i32 type, i32 noResolve); // 0x14dd90 (__thiscall, ret 8)
 
     char m_pad00[0x1c];
-    i32 m_1c; // +0x1c  resolved DDraw format word (written directly by SetAllFormats)
+    i32 m_1c; // +0x1c  resolved format word (written directly by SetAllFormats)
 };
 
-// The CImage frame as seen by CImageSet: only the +0x30 format sub-object is used.
+// The frame as seen by CImageSet: only the +0x30 format sub-object is used. The
+// frame may be the RTTI CImage but the +0x30 here is a format helper, not CImage's
+// +0x30 owned object - so this is a PLACEHOLDER element type (see header note).
 class CImageFrame {
 public:
     char m_pad00[0x30];
