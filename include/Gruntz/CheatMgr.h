@@ -43,6 +43,7 @@ struct CheatEntry {
 // ---------------------------------------------------------------------------
 class CCheatMgr {
 public:
+    BOOL Init(i32 owner);                                 // 0x22ad0  seed +0, clear scalars
     void Empty();                                         // 0x22b00  free entries + clear
     BOOL AddCheat(const char* code, i32 cmdId, i32 flag); // 0x22be0
     void RegisterCheats();                                // 0x22c80  seed built-ins + load

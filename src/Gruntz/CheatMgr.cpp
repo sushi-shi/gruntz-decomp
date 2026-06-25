@@ -21,6 +21,22 @@
 #include <rva.h>
 
 // ===========================================================================
+// CCheatMgr::Init  (0x22ad0)
+// ===========================================================================
+// Seed the +0 owner/count field from the arg and clear the scalar state
+// (m_flag / m_120 / m_124); returns TRUE. The non-iterating counterpart to
+// Empty() - same scalar clear, but it stores the arg into +0 instead of zeroing
+// it and never walks the map (so no CString temp / no /GX frame).
+RVA(0x00022ad0, 0x1f)
+BOOL CCheatMgr::Init(i32 owner) {
+    m_count = owner;
+    m_flag = 0;
+    m_120 = 0;
+    m_124 = 0;
+    return TRUE;
+}
+
+// ===========================================================================
 // CCheatMgr::Empty  (0x22b00)
 // ===========================================================================
 // Iterate the map freeing every CheatEntry payload (operator delete), RemoveAll()

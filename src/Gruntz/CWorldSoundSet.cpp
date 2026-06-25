@@ -150,6 +150,43 @@ void CWorldSoundSet::Retune(i32 pan, i32 vol) {
 }
 
 // ---------------------------------------------------------------------------
+// CSoundChannel::Recompute (0x00bf10): per-channel volume recompute, invoked by
+// CWorldSoundSet::Restart for each live channel. Skip when the frame is unchanged
+// from last time; otherwise scale the frame through m_08 (with the >5 -> -0xf
+// curve), apply the secondary multiplier m_10 (signed /100 by the 0x51eb851f
+// reciprocal each step), clamp to 0..100 and push it to the voice via SetVolByIdx.
+// The level-scale math is the CAmbientSound::SetLevel idiom with frame/m_08
+// transposed and an unconditional voice drive.
+//
+// @early-stop
+// regalloc-coinflip wall (~97.9%) - logic complete, all relocs paired. retail pins
+// the `frame` arg in eax (dead m_0c -> edx); our cl does the reverse (frame in edx),
+// which permutes the first ~5 instrs (cmp modrm, the m_0c store reg, add eax,-0xf vs
+// sub edx,0xf). The compare-operand-order lever did not flip the pin. See
+// docs/patterns/zero-register-pinning.md.
+RVA(0x0000bf10, 0x72)
+void CSoundChannel::Recompute(i32 frame) {
+    if (frame == m_0c) {
+        return;
+    }
+    i32 mult = m_08;
+    m_0c = frame;
+    if (frame > 5) {
+        frame -= 0xf;
+    }
+    i32 v = (frame * mult) / 100;
+    if (m_10 > 0) {
+        v = (v * m_10) / 100;
+    }
+    if (v < 0) {
+        v = 0;
+    } else if (v > 0x64) {
+        v = 0x64;
+    }
+    m_04->SetVolByIdx(v);
+}
+
+// ---------------------------------------------------------------------------
 // ~CWorldSoundSet: deactivate (sibling 0x00b620), then the embedded list's
 // destructor fires from the epilogue. The destructible list member forces the /GX
 // EH frame (state 0 across Deactivate, -1 across ~list).

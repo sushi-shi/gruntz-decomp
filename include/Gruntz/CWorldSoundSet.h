@@ -33,6 +33,7 @@ class DirectSoundMgr {
 public:
     i32 StopAndRewind();                // 0x135380  (thiscall, no args)
     i32 winapi_136e20_timeGetTime(i32); // 0x136e20  (thiscall, 1 arg)
+    i32 SetVolByIdx(i32 idx);           // 0x1355c0  (thiscall, 1 arg) SetVolumeByIndex
 };
 
 // One active sound channel hanging off a list node. Polymorphic: the teardown /
@@ -45,11 +46,13 @@ struct CSoundChannel {
     virtual void Slot2();
     virtual void Retune(i32 a1, i32 a2, i32 a3); // slot 3 -> call [vptr+0xc]
 
-    void Recompute(i32 frame); // 0x00bf10  (non-virtual, defined elsewhere)
+    void Recompute(i32 frame); // 0x00bf10  level-scale -> SetVolByIdx on m_04
 
-    DirectSoundMgr* m_04; // +0x04  DirectSound handle (StopAndRewind target)
-    char m_pad08[0x14 - 0x08];
-    i32 m_14; // +0x14  cleared on stop/retune
+    DirectSoundMgr* m_04; // +0x04  DirectSound handle (StopAndRewind / SetVolByIdx)
+    i32 m_08;             // +0x08  level multiplier (scaled by the frame in Recompute)
+    i32 m_0c;             // +0x0c  last frame fed to Recompute (early-out compare)
+    i32 m_10;             // +0x10  secondary multiplier (>0 gate, percent)
+    i32 m_14;             // +0x14  cleared on stop/retune
 };
 
 // MFC CPtrList node, walked raw: next at +0x00, the channel payload at +0x08.

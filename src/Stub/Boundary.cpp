@@ -13,7 +13,6 @@ RVA(0x00009bb0, 0x367) void Boundary_009bb0() {}  // proximity: CActionOptionsMe
 RVA(0x0000af50, 0xb) void Boundary_00af50() {}  // proximity: CPlaneRender@-0xf50 | Utils@+0x1c0
 RVA(0x0000b940, 0xf) void Boundary_00b940() {}  // proximity: CAmbientSound@-0x1b0 | CRandomAmbientSound@+0x200
 RVA(0x0000bdd0, 0x53) void Boundary_00bdd0() {}  // proximity: CWorldSoundSet@-0x70 | CRandomAmbientSound@+0x80
-RVA(0x0000bf10, 0x72) void Boundary_00bf10() {}  // proximity: CRandomAmbientSound@-0xc0 | CAmbientSound@+0x180
 RVA(0x0000bfb0, 0xa9) void Boundary_00bfb0() {}  // proximity: CRandomAmbientSound@-0x160 | CAmbientSound@+0xe0
 RVA(0x0000d210, 0x65) void Boundary_00d210() {}  // proximity: CRandomAmbientSound@-0x6e0 | CGrunt@+0x20e0
 RVA(0x0000f510, 0x44) void Boundary_00f510() {}  // proximity: CGrunt@-0x220 | CDoNothing@+0x1a0
@@ -40,7 +39,6 @@ RVA(0x000212a0, 0x21) void Boundary_0212a0() {}  // proximity: streambuf@-0x20 |
 RVA(0x00021310, 0x70) void Boundary_021310() {}  // proximity: streambuf@-0x90 | CButeMgr@+0xb0
 RVA(0x000213a0, 0xa) void Boundary_0213a0() {}  // proximity: streambuf@-0x120 | CButeMgr@+0x20
 RVA(0x00021570, 0x70) void Boundary_021570() {}  // proximity: CButeMgr@-0x1b0 | CFontConfig@+0x370
-RVA(0x00022ad0, 0x1f) void Boundary_022ad0() {}  // proximity: CFontConfig@-0x770 | CCheatMgr@+0x30
 RVA(0x000238d0, 0xd) void Boundary_0238d0() {}  // proximity: CCheckpointDlg@-0x430 | CGruntzCmdMgr@+0x100
 RVA(0x00023960, 0xd) void Boundary_023960() {}  // proximity: CCheckpointDlg@-0x4c0 | CGruntzCmdMgr@+0x70
 RVA(0x00023d90, 0x64) void Boundary_023d90() {}  // proximity: CGruntzCmdMgr@-0x80 | CGruntzCommand@+0x90

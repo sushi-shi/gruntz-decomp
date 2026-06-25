@@ -67,7 +67,7 @@ cgruntwingztimesprite	2	2
 chatbox	18	11
 chatbox_eh	1	1
 chatboxowner	5	2
-cheatmgr	4	3
+cheatmgr	5	4
 cimage	10	6
 cimageowned	4	2
 clightfx	2	1
@@ -102,7 +102,7 @@ directinputmgr2	29	25
 directsoundmgr	33	23
 dsoundvoice	2	1
 engine_attributed	61	0
-engine_boundary	628	0
+engine_boundary	626	0
 engine_discovered	86	0
 engine_label_stubs	519	118
 engstr	3	1
@@ -229,7 +229,7 @@ winapi	5	3
 winapicdrom	1	0
 winapimodule	1	0
 winmain	1	1
-worldsoundset	7	5
+worldsoundset	8	5
 wormhole	8	3
 wwdfile	10	1
 wwdgameobject	7	2
@@ -676,6 +676,7 @@ chatboxowner	?HitTest@CChatBoxOwner@@QAEHHH@Z	38.1212	38.1212	1	15a04f9b3729	0x2
 cheatmgr	??1CCheatMgr@@QAE@XZ	100.0000	100.0000	1	94bf38f28220	0x85e60
 cheatmgr	?AddCheat@CCheatMgr@@QAEHPBDHH@Z	98.5714	98.5714	1	77144daa4699	0x22be0
 cheatmgr	?Empty@CCheatMgr@@QAEXXZ	100.0000	100.0000	1	8cc149232bcc	0x22b00
+cheatmgr	?Init@CCheatMgr@@QAEHH@Z	100.0000	100.0000	1	7fab48db9c93	0x22ad0
 cheatmgr	?RegisterCheats@CCheatMgr@@QAEXXZ	100.0000	100.0000	1	368e0d229303	0x22c80
 cimage	??1CImage@@QAE@XZ	94.2857	94.2857	1	3a970ca1c753	0xd5e80
 cimage	?BuildSlot13@CImage@@QAEHPAVCImageFrameDesc@@PAX@Z	98.7000	98.7000	1	cd9ab49c2f5c	0x153180
@@ -988,7 +989,6 @@ engine_boundary	?Boundary_009bb0@@YAXXZ	0.1262	0.1262	1	58e1ad1d2878	0x9bb0
 engine_boundary	?Boundary_00af50@@YAXXZ	50.0000	50.0000	1	9505398c8854	0xaf50
 engine_boundary	?Boundary_00b940@@YAXXZ	20.0000	20.0000	1	ff8ff3f6c097	0xb940
 engine_boundary	?Boundary_00bdd0@@YAXXZ	1.2500	1.2500	1	2471f79cc100	0xbdd0
-engine_boundary	?Boundary_00bf10@@YAXXZ	0.9756	0.9756	1	d042a934bfa2	0xbf10
 engine_boundary	?Boundary_00bfb0@@YAXXZ	1.6129	1.6129	1	3d615b4a1c14	0xbfb0
 engine_boundary	?Boundary_00d210@@YAXXZ	2.1277	2.1277	1	9d0e38f5efbf	0xd210
 engine_boundary	?Boundary_00f510@@YAXXZ	5.8824	5.8824	1	d8839c5dc501	0xf510
@@ -1015,7 +1015,6 @@ engine_boundary	?Boundary_0212a0@@YAXXZ	11.1111	11.1111	1	7cae0d7582c3	0x212a0
 engine_boundary	?Boundary_021310@@YAXXZ	3.2258	3.2258	1	ed61aed9d33e	0x21310
 engine_boundary	?Boundary_0213a0@@YAXXZ	25.0000	25.0000	1	167583b0bb0a	0x213a0
 engine_boundary	?Boundary_021570@@YAXXZ	3.2258	3.2258	1	924d7ca37e1f	0x21570
-engine_boundary	?Boundary_022ad0@@YAXXZ	5.0000	5.0000	1	c48f1c9cf706	0x22ad0
 engine_boundary	?Boundary_0238d0@@YAXXZ	25.0000	25.0000	1	fa4f90746429	0x238d0
 engine_boundary	?Boundary_023960@@YAXXZ	25.0000	25.0000	1	26fbd4f4b03d	0x23960
 engine_boundary	?Boundary_023d90@@YAXXZ	1.0526	1.0526	1	424a98e16d50	0x23d90
@@ -3422,6 +3421,7 @@ winapimodule	?LegacyFindModule@WinAPI@Utils@@YAHKKPAXK@Z	99.9000	99.9000	4	f574b
 winmain	_WinMain@16	100.0000	100.0000	6	a459e7cdd0d6	0x11c860
 worldsoundset	??1CWorldSoundSet@@QAE@XZ	100.0000	100.0000	1	575205cf84c8	0x85ed0
 worldsoundset	?Init@CWorldSoundSet@@QAEHPAX0@Z	100.0000	100.0000	1	316fab8b3cce	0xb5e0
+worldsoundset	?Recompute@CSoundChannel@@QAEXH@Z	97.9268	97.9268	1	1bf3b3913ee1	0xbf10
 worldsoundset	?Restart@CWorldSoundSet@@QAEXPAX@Z	100.0000	100.0000	1	00f3d4b65497	0xbc30
 worldsoundset	?Resume@CWorldSoundSet@@QAEXXZ	99.6970	99.6970	1	526dc5538b8a	0xbcf0
 worldsoundset	?Retune@CWorldSoundSet@@QAEXHH@Z	86.2571	86.2571	1	a8ba0daa5bc0	0xbd60
