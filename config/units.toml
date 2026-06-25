@@ -633,7 +633,7 @@ flags = "base"
 [[unit]]
 unit = "kitchenslime"
 source = "src/Gruntz/KitchenSlime.cpp"
-flags = "base"
+flags = "eh"
 
 [[unit]]
 unit = "actionoptionsmenubar"

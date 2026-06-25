@@ -39,7 +39,6 @@ class CGruntToyTimeSprite { public: void CGruntToyTimeSprite_012130(); };
 class CGruntWingzTimeSprite { public: void CGruntWingzTimeSprite_0121f0(); void CGruntWingzTimeSprite_07fd90(); };
 class CGruntzMgr { public: void CGruntzMgr_08b960(); void CGruntzMgr_08d780(); void CGruntzMgr_08fa40(); void CGruntzMgr_092340(); };
 class CGuardPoint { public: void CGuardPoint_010410(); };
-class CKitchenSlime { public: void CKitchenSlime_013100(); void CKitchenSlime_0b2940(); };
 class CLightFx { public: void CLightFx_012430(); };
 class CMapArrayA { public: void CMapArrayA_09e740(); };
 class CMapArrayB { public: void CMapArrayB_09e860(); };

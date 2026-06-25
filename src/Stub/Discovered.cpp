@@ -126,10 +126,6 @@ RVA(0x00092340, 0x49) void CGruntzMgr::CGruntzMgr_092340() {}
 // ---- CGuardPoint ----
 RVA(0x00010410, 0x44) void CGuardPoint::CGuardPoint_010410() {}
 
-// ---- CKitchenSlime ----
-RVA(0x00013100, 0x44) void CKitchenSlime::CKitchenSlime_013100() {}
-RVA(0x000b2940, 0x102) void CKitchenSlime::CKitchenSlime_0b2940() {}
-
 // ---- CLightFx ----
 RVA(0x00012430, 0x44) void CLightFx::CLightFx_012430() {}
 

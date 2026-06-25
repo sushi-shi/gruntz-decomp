@@ -67,7 +67,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	212	0
+engine_discovered	210	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -108,7 +108,7 @@ ingameicon	5	2
 ingametext	3	3
 ingameworkerhandlers	3	3
 inputdeviceconfig	1	0
-kitchenslime	2	0
+kitchenslime	4	2
 leveltilevalidation	1	0
 lightfxmgr	3	3
 loadlevelbymode	1	0
@@ -742,8 +742,6 @@ engine_discovered	?CGruntzMgr_08d780@CGruntzMgr@@QAEXXZ	0.6250	0.6250	1	c0221294
 engine_discovered	?CGruntzMgr_08fa40@CGruntzMgr@@QAEXXZ	10.0000	10.0000	1	127553f73f6f	0x8fa40
 engine_discovered	?CGruntzMgr_092340@CGruntzMgr@@QAEXXZ	1.5385	1.5385	1	e1ea27f77048	0x92340
 engine_discovered	?CGuardPoint_010410@CGuardPoint@@QAEXXZ	5.8824	5.8824	2	cd33984f8d7b	0x10410
-engine_discovered	?CKitchenSlime_013100@CKitchenSlime@@QAEXXZ	5.8824	5.8824	2	989f59597eef	0x13100
-engine_discovered	?CKitchenSlime_0b2940@CKitchenSlime@@QAEXXZ	0.5333	0.5333	2	9c3a59122eb6	0xb2940
 engine_discovered	?CLightFx_012430@CLightFx@@QAEXXZ	5.8824	5.8824	2	9bb66611a638	0x12430
 engine_discovered	?CMapArrayA_09e740@CMapArrayA@@QAEXXZ	0.8000	0.8000	2	6fc8448eb4fd	0x9e740
 engine_discovered	?CMapArrayB_09e860@CMapArrayB@@QAEXXZ	0.7843	0.7843	2	0a64ca5558f1	0x9e860
@@ -1841,8 +1839,10 @@ ingameworkerhandlers	?Handler095750@@YAHPAUOwner@@@Z	100.0000	100.0000	1	76ecb60
 ingameworkerhandlers	?Handler095890@@YAHPAUOwner@@@Z	100.0000	100.0000	1	8bf2772ac296	0x95890
 ingameworkerhandlers	?Handler0aa6e0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	f247242b9830	0xaa6e0
 inputdeviceconfig	?LoadInputDeviceConfig@CInputConfig@@QAE?AVCString@@H@Z	77.3265	77.3265	5	a06dac34f93f	0x387c0
-kitchenslime	?LoadSprites@CKitchenSlime@@QAEHXZ	69.1992	69.1992	2	2c07cc5dc21b	0xb3160
-kitchenslime	?Tick@CKitchenSlime@@QAEHXZ	94.8551	94.8551	3	c7b9e1dd58eb	0xb2ca0
+kitchenslime	??1CKitchenSlime@@UAE@XZ	100.0000	100.0000	1	5d147b2b8ea5	0x13100
+kitchenslime	?FireActivation@CKitchenSlime@@QAEXH@Z	100.0000	100.0000	1	b01b90390ef5	0xb2940
+kitchenslime	?LoadSprites@CKitchenSlime@@QAEHXZ	69.1992	69.1992	3	aca206c4359f	0xb3160
+kitchenslime	?Tick@CKitchenSlime@@QAEHXZ	94.8551	94.8551	4	dee22bdefc90	0xb2ca0
 leveltilevalidation	?ValidateLevelTiles@CLevelValidator@@QAEHXZ	17.0098	17.0098	2	791c1428e1a4	0xd2dd0
 lightfxmgr	?Init@CLightFxMgr@@QAEHPAVCGameRegistry@@PAX@Z	100.0000	100.0000	1	cabaf9fef223	0x9dad0
 lightfxmgr	?Push@CLightFxMgr@@QAEHPAVCImageSet@@HH@Z	100.0000	100.0000	1	230e8d70c35c	0x9dcb0

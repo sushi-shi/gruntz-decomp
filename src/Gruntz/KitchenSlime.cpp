@@ -1,5 +1,6 @@
 #include <rva.h>
 #include <Bute/ButeMgr.h>
+#include <Gruntz/UserLogic.h> // CUserLogic base (CKitchenSlime : CUserLogic) for the leaf-dtor fold
 // KitchenSlime.cpp - CKitchenSlime::LoadSprites @0x0b3160 (C:\Proj\Gruntz). The
 // kitchen-slime hazard's per-step "advance to the next walkable tile" driver: it
 // probes up to four tiles in the slime's current travel direction (m_10->m_124),
@@ -8,8 +9,7 @@
 // per-tile timing (Hazardz/KitchenSlimeTimePerTile butemgr default), and caches
 // the new direction sprite's first frame. Only offsets / code bytes are
 // load-bearing; names are placeholders for the recovered engine identities.
-
-extern CButeMgr g_buteMgr;
+// CButeMgr g_buteMgr / the CUserLogic base hierarchy come from <Gruntz/UserLogic.h>.
 
 struct CSprite;
 
@@ -127,16 +127,22 @@ extern const double g_slimeZero; // VA 0x5ea400
 DATA(0x002bf3bc)
 extern i32 g_slimeTick; // VA 0x6bf3bc
 
-class CKitchenSlime {
+// CKitchenSlime : CUserLogic - a kitchen-slime hazard game object. The bound
+// CGameObject is held at the inherited m_10/m_38 (CUserLogic sets m_10==m_38==
+// obj); the slime views it as CSlimeLevel/CSlimeAnimPlayer (a typed reinterpret
+// of the same object - the bodies cast m_10/m_38 at each use, codegen-neutral
+// since the slime fields overlay the same offsets). The leaf adds the
+// movement-integrator state at +0x58. The CUserLogic base gives the +0x18
+// destructible link, so ~CKitchenSlime folds the shared teardown (the /GX
+// leaf-dtor archetype, see UserLogic.cpp 0x10ab0).
+class CKitchenSlime : public CUserLogic {
 public:
+    void FireActivation(i32 coord);
     i32 Tick();
     i32 LoadSprites();
+    ~CKitchenSlime(); // 0x013100 (folds the CUserLogic teardown)
 
-    char m_pad0[0x10];
-    CSlimeLevel* m_10; // +0x10
-    char m_pad14[0x38 - 0x14];
-    CSlimeAnimPlayer* m_38; // +0x38
-    char m_pad3c[0x58 - 0x3c];
+    char m_pad40[0x58 - 0x40];
     double m_58; // +0x58  per-frame speed
     double m_60; // +0x60  accumulated dx (double)
     double m_68; // +0x68  accumulated dy (double)
@@ -148,12 +154,103 @@ public:
     i32 m_8c;    // +0x8c  (cleared)
 };
 
+// ---------------------------------------------------------------------------
+// The per-coordinate activation registry CKitchenSlime::FireActivation
+// (0x0b2940) dispatches through - the SAME archetype as
+// CSecretTeleporterTrigger::FireActivation (0x042150, see UserLogic.cpp), but a
+// DIFFERENT registry instance (the slime's, at 0x646228 vs the trigger's at
+// 0x244688). A coordinate maps to an Entry* either directly (when within the
+// fast [g_kslimeLo,g_kslimeHi] range) via g_kslimeBase + (coord-lo)*stride, or
+// by a slow Find in the collection (0x16da80, __thiscall ret 8), which on miss
+// rebuilds (ActAlloc 0x16d990 -> g_actCache, Insert 0x16d850 __thiscall ret
+// 0xc) and yields g_kslimeCur. The entry's first dword is a fn-ptr; a nonzero
+// entry's handler is called __thiscall on `this`. All globals are unnamed BSS
+// (DATA-pinned so the loads reloc-mask); the collection methods are
+// external/no-body (shared with the trigger registry's engine functions). The
+// alloc-cache pair (g_actCache 0x6bf464 / g_actAllocResult 0x6bf428) is the
+// SAME shared global both registries write.
+struct CKSlimeEntry; // an entry: first dword is the registered handler
+struct CKSlimeColl {
+    i32 Find(i32 coord, i32 z); // 0x16da80 (__thiscall ret 8)
+};
+struct CKSlimeColl2 {
+    void Insert(void* coll, void* item, i32 n); // 0x16d850 (__thiscall ret 0xc)
+};
+extern "C" i32 ActAlloc(); // 0x16d990
+
+DATA(0x00246230)
+extern i32 g_kslimeLo;
+DATA(0x00246234)
+extern i32 g_kslimeHi;
+DATA(0x00246238)
+extern char* g_kslimeBase;
+DATA(0x00246240)
+extern i32 g_kslimeStride;
+DATA(0x0024623c)
+extern CKSlimeEntry* g_kslimeCur;
+DATA(0x00246248)
+extern i32 g_kslimeScratch;
+DATA(0x00246228)
+extern CKSlimeColl g_kslimeColl;
+DATA(0x0024622c)
+extern CKSlimeColl2* g_kslimeColl2;
+DATA(0x002bf464)
+extern void* g_actCache;
+DATA(0x002bf428)
+extern void* g_actAllocResult;
+
+// The entry's first dword is a pointer-to-member-function of CKitchenSlime
+// (single inheritance -> 4-byte code pointer); FireActivation invokes it on
+// `this`, emitting `mov ecx,this; call [entry]`. CKitchenSlime is defined
+// COMPLETE above this typedef so the PMF stays 4 bytes (pmf-complete-class-4byte).
+typedef void (CKitchenSlime::*KSlimeHandler)();
+struct CKSlimeEntry {
+    KSlimeHandler m_fn; // [entry]
+};
+
+// The inlined coordinate->Entry* lookup FireActivation folds in twice.
+static inline CKSlimeEntry* KSlimeLookup(i32 coord) {
+    g_kslimeScratch = 0;
+    if (coord >= g_kslimeLo && coord <= g_kslimeHi) {
+        return (CKSlimeEntry*)(g_kslimeBase + (coord - g_kslimeLo) * g_kslimeStride);
+    }
+    if (g_kslimeColl.Find(coord, 0)) {
+        return (CKSlimeEntry*)(g_kslimeBase + (coord - g_kslimeLo) * g_kslimeStride);
+    }
+    void* item = g_actCache;
+    g_actAllocResult = (void*)ActAlloc();
+    g_kslimeColl2->Insert(&g_kslimeColl, item, 0xc);
+    return g_kslimeCur;
+}
+
 // The math externs the movement integrator chains (CRT, reloc-masked):
 //   double floor(double) = 0x120580, double ceil(double) = 0x120480; the (int)
 //   casts lower to __ftol (0x11f570); fabs lowers inline (d9 e1).
 extern "C" double floor(double);
 extern "C" double ceil(double);
 extern "C" double fabs(double);
+
+// CKitchenSlime::~CKitchenSlime @0x013100 - the leaf adds no destructible members
+// beyond CUserLogic, so its dtor folds the bare CUserLogic teardown: store the
+// CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link (the embedded
+// ~EngStr call 0x16d2a0), store the CUserBase vptr (0x5e70b4). The destructible
+// link forces the /GX EH frame. Byte-identical in shape to the established leaf
+// dtors (UserLogic.cpp 0x10ab0 / 0x11540); the empty body is enough for cl.
+RVA(0x00013100, 0x44)
+CKitchenSlime::~CKitchenSlime() {}
+
+// CKitchenSlime::FireActivation @0x0b2940 - look the activation coordinate up in
+// the slime's per-coordinate registry; if the entry has a registered handler,
+// look it up again and dispatch it __thiscall on this. Same archetype as
+// CSecretTeleporterTrigger::FireActivation (0x042150).
+RVA(0x000b2940, 0x102)
+void CKitchenSlime::FireActivation(i32 coord) {
+    CKSlimeEntry* e = KSlimeLookup(coord);
+    if (e->m_fn != 0) {
+        CKSlimeEntry* e2 = KSlimeLookup(coord);
+        (this->*(e2->m_fn))();
+    }
+}
 
 // CKitchenSlime::Tick @0x0b2ca0 - the per-frame driver. Advances the anim
 // sub-mgr, runs the on-screen visibility/scroll gate (unless the registry is in
@@ -169,11 +266,11 @@ extern "C" double fabs(double);
 // schedule. Logic byte-for-byte correct; ~95%, above the documented 60-75% range.
 RVA(0x000b2ca0, 0x29c)
 i32 CKitchenSlime::Tick() {
-    m_38->m_1a0.Advance(g_slimeTick);
+    ((CSlimeAnimPlayer*)m_38)->m_1a0.Advance(g_slimeTick);
 
     CGameReg* reg = g_gameReg;
     if (reg->m_118 == 0 || reg->m_134 != 1) {
-        CSlimeLevel* lvl = m_10;
+        CSlimeLevel* lvl = (CSlimeLevel*)m_10;
         i32 outX, outY;
         CSlimeEntity* ent =
             (CSlimeEntity*)reg->m_68->QueryAt(lvl->m_5c, lvl->m_60, &lvl->m_144, &outY, &outX, 0);
@@ -182,9 +279,9 @@ i32 CKitchenSlime::Tick() {
         }
     }
 
-    CSlimeLevel* lvl = m_10;
+    CSlimeLevel* lvl = (CSlimeLevel*)m_10;
     if (lvl->m_5c == m_80 && lvl->m_60 == m_84 && LoadSprites() == 0) {
-        m_38->m_8 |= 0x10000;
+        ((CSlimeAnimPlayer*)m_38)->m_8 |= 0x10000;
         return 0;
     }
 
@@ -222,8 +319,8 @@ i32 CKitchenSlime::Tick() {
         i32 ty = m_84;
         *m88d = fabs(m_68 - (double)ty);
         if (newY > ty) {
-            m_10->m_5c = newX;
-            m_10->m_60 = ty;
+            ((CSlimeLevel*)m_10)->m_5c = newX;
+            ((CSlimeLevel*)m_10)->m_60 = ty;
             return 0;
         }
     } else if (m_78 < g_slimeZero) {
@@ -232,16 +329,16 @@ i32 CKitchenSlime::Tick() {
         i32 ty = m_84;
         *m88d = fabs(m_68 - (double)ty);
         if (newY < ty) {
-            m_10->m_5c = newX;
-            m_10->m_60 = ty;
+            ((CSlimeLevel*)m_10)->m_5c = newX;
+            ((CSlimeLevel*)m_10)->m_60 = ty;
             return 0;
         }
     } else {
         newY = (i32)floor(m_68);
     }
 
-    m_10->m_5c = newX;
-    m_10->m_60 = newY;
+    ((CSlimeLevel*)m_10)->m_5c = newX;
+    ((CSlimeLevel*)m_10)->m_60 = newY;
     return 0;
 }
 
@@ -252,12 +349,12 @@ i32 CKitchenSlime::Tick() {
 // our 0x14 - an extra direction-magnitude stack temp). ~69%, logic exact.
 RVA(0x000b3160, 0x339)
 i32 CKitchenSlime::LoadSprites() {
-    i32 savedDir = m_10->m_124;
+    i32 savedDir = ((CSlimeLevel*)m_10)->m_124;
 
     i32 tileX, tileY;
     i32 found = 0;
     for (i32 i = 0; i <= 4;) {
-        CSlimeLevel* lvl = m_10;
+        CSlimeLevel* lvl = (CSlimeLevel*)m_10;
         i32 sw = lvl->m_124 - 1;
         switch (sw) {
             case 0:
@@ -300,13 +397,13 @@ i32 CKitchenSlime::LoadSprites() {
 
         if (lvl->m_12c == 1) {
             lvl->m_124 = sw;
-            if (m_10->m_124 <= 0) {
-                m_10->m_124 = 4;
+            if (((CSlimeLevel*)m_10)->m_124 <= 0) {
+                ((CSlimeLevel*)m_10)->m_124 = 4;
             }
         } else {
             lvl->m_124++;
-            if (m_10->m_124 > 4) {
-                m_10->m_124 = 1;
+            if (((CSlimeLevel*)m_10)->m_124 > 4) {
+                ((CSlimeLevel*)m_10)->m_124 = 1;
             }
         }
     }
@@ -316,8 +413,8 @@ i32 CKitchenSlime::LoadSprites() {
 
     m_60 = 0;
     m_68 = 0;
-    i32 changed = (m_10->m_124 != savedDir);
-    switch (m_10->m_124 - 1) {
+    i32 changed = (((CSlimeLevel*)m_10)->m_124 != savedDir);
+    switch (((CSlimeLevel*)m_10)->m_124 - 1) {
         case 0: // north
             m_68 = -(double)*(i32*)&m_88;
             m_70 = 0;
@@ -326,7 +423,7 @@ i32 CKitchenSlime::LoadSprites() {
             *((i32*)&m_70 + 1) = 0;
             *((i32*)&m_78 + 1) = 0xbff00000;
             if (changed) {
-                m_38->CacheFirstFrame("LEVEL_KITCHENSLIME_NORTH");
+                ((CSlimeAnimPlayer*)m_38)->CacheFirstFrame("LEVEL_KITCHENSLIME_NORTH");
             }
             break;
         case 1: // east
@@ -337,7 +434,7 @@ i32 CKitchenSlime::LoadSprites() {
             *((i32*)&m_70 + 1) = 0x3ff00000;
             *((i32*)&m_78 + 1) = 0;
             if (changed) {
-                m_38->CacheFirstFrame("LEVEL_KITCHENSLIME_EAST");
+                ((CSlimeAnimPlayer*)m_38)->CacheFirstFrame("LEVEL_KITCHENSLIME_EAST");
             }
             break;
         case 2: // south
@@ -348,7 +445,7 @@ i32 CKitchenSlime::LoadSprites() {
             *((i32*)&m_78 + 1) = 0x3ff00000;
             *((i32*)&m_70 + 1) = 0;
             if (changed) {
-                m_38->CacheFirstFrame("LEVEL_KITCHENSLIME_SOUTH");
+                ((CSlimeAnimPlayer*)m_38)->CacheFirstFrame("LEVEL_KITCHENSLIME_SOUTH");
             }
             break;
         case 3: // west
@@ -358,17 +455,17 @@ i32 CKitchenSlime::LoadSprites() {
             *((i32*)&m_70 + 1) = 0xbff00000;
             *((i32*)&m_78 + 1) = 0;
             if (changed) {
-                m_38->CacheFirstFrame("LEVEL_KITCHENSLIME_WEST");
+                ((CSlimeAnimPlayer*)m_38)->CacheFirstFrame("LEVEL_KITCHENSLIME_WEST");
             }
             break;
     }
 
-    m_60 = (double)m_10->m_5c + m_60;
-    m_68 = (double)m_10->m_60 + m_68;
+    m_60 = (double)((CSlimeLevel*)m_10)->m_5c + m_60;
+    m_68 = (double)((CSlimeLevel*)m_10)->m_60 + m_68;
 
     u32 time;
-    if (m_10->m_7c->m_bc != 0) {
-        time = m_10->m_7c->m_bc;
+    if (((CSlimeLevel*)m_10)->m_7c->m_bc != 0) {
+        time = ((CSlimeLevel*)m_10)->m_7c->m_bc;
     } else {
         time = g_buteMgr.GetDwordDef("Hazardz", "KitchenSlimeTimePerTile", 1000);
     }
@@ -377,7 +474,7 @@ i32 CKitchenSlime::LoadSprites() {
     m_80 = tileX;
     m_84 = tileY;
 
-    CSlimeAnimPlayer* player = m_38;
+    CSlimeAnimPlayer* player = (CSlimeAnimPlayer*)m_38;
     CSprite* spr = player->m_194;
     if (changed != 0 && spr != 0) {
         if (spr->m_64 <= 1 && spr->m_68 >= 1) {
