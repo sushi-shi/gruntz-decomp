@@ -183,6 +183,7 @@ public:
     void Reset();
     i32 Tick(i32 dt);
     i32 Draw(i32 x, i32 pSurf);
+    void SetTime(i32 a, i32 b);
     void AddTime(i32 seconds, i32 minutes);
     i32 HandleEvent(CTimerArchive* ar, i32 kind, i32 a3, i32 a4);
     i32 Serialize(CTimerArchive* ar);   // 0x9c2e0 (this cluster)
@@ -436,6 +437,25 @@ i32 CTimer::Draw(i32 pSurf, i32 force) {
         ((CTimerFrame*)m_1c)->RenderFrame(pSurf, (i32)m_0 + 0x22, (i32)m_4, 0);
     }
     return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CTimer::SetTime (0x9c090) - set the decoded current value (+0x4c) from a
+// (a<=0x63, b<=0x3b) pair: m_4c = (a*60 + b) * 1000 (ms). The two args are
+// clamped, scaled to the minute, and the *1000 falls out as the lea chain
+// (a*15, b+a*60, *5, *5, <<3).
+// ---------------------------------------------------------------------------
+RVA(0x0009c090, 0x37)
+void CTimer::SetTime(i32 a, i32 b) {
+    u32 av = (u32)a;
+    if (av > 0x63) {
+        av = 0x63;
+    }
+    u32 bv = (u32)b;
+    if (bv > 0x3b) {
+        bv = 0x3b;
+    }
+    m_4c = (i32)((av * 60 + bv) * 1000);
 }
 
 // ---------------------------------------------------------------------------

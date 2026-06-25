@@ -141,6 +141,6 @@ void* CSymParser::ResolvePath(const char* path) {
 RVA(0x0013c210, 0x1a)
 void CSymParser::AddNode(void* rec) {
     if (rec) {
-        m_hash.Insert((char*)rec + 0x1c);
+        m_hash.Insert((CHashInsertNode*)((char*)rec + 0x1c));
     }
 }

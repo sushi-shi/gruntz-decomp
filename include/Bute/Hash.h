@@ -46,13 +46,29 @@ void CHashSlot_Dtor(); // 0x584a30 (retail "empty_stub")
 extern "C" i32 __cdecl _strcmpi(const char* a, const char* b); // 0x11fdf0
 extern "C" i32 strcmp(const char* a, const char* b);           // inline byte loop
 
-// The intrusive doubly-linked-list unlink helper (0x1391e0, __thiscall on the
-// slot's {head,tail} pair): remove `node` (the biased entry+4 pointer). Modeled
-// on a tiny head struct so `mov ecx,&slot.head; call` falls out.
+// The intrusive doubly-linked-list helpers (__thiscall on the slot's {head,tail}
+// pair): Link splices `node` in (0x1390e0), Unlink removes it (0x1391e0). The
+// biased node is entry+4. Modeled on a tiny head struct so `mov ecx,&slot.head;
+// call` falls out reloc-masked.
 struct CHashSlotList {
     void* m_head;            // slot+8
     void* m_tail;            // slot+0xc
+    void Link(void* node);   // 0x1390e0
     void Unlink(void* node); // 0x1391e0
+};
+
+// The entry as seen by Insert: its first dword is a vtable whose slot 0 is the
+// virtual hash (returns the bucket index for this entry's key). Insert stamps the
+// owning table at +0xc and the computed bucket at +0x10, then links entry+4 into
+// the bucket chain. Modeled as a polymorphic class so the `mov eax,[node]; call
+// [eax]` dispatch falls out (no cast); the vtable is owned elsewhere (this TU
+// never emits it - only declares the pure virtual to drive the dispatch shape).
+class CHashInsertNode {
+public:
+    virtual u32 Hash() = 0; // slot 0 (the key-typed bucket hash)
+    char m_pad04[0x0c - 0x04];
+    void* m_0c;   // +0x0c  owning table back-ptr (Insert stamps this)
+    u32 m_bucket; // +0x10  computed bucket (Insert stamps this)
 };
 
 // A 16-byte bucket slot; its per-element destructor (0x584a30, a bare `ret`) is
@@ -89,9 +105,10 @@ public:
     // Drop every entry: array-delete the bucket array (no-op per-slot dtor + free
     // the count-cookie). The table's destructor.
     void RemoveAll(); // 0x184a40
-    // Splice `node` (a record's intrusive node) into the table (0x584a70). External
-    // (no body) so the __thiscall splice falls out reloc-masked.
-    void Insert(void* node); // 0x184a70
+    // Insert `node` into the table (0x184a70): ask the entry for its bucket (the
+    // slot-0 virtual hash), stamp the owning table + bucket into the entry, then
+    // splice entry+4 into the bucket chain.
+    void Insert(CHashInsertNode* node); // 0x184a70
 
     u32 m_count;          // +0x00
     CHashSlot* m_buckets; // +0x04

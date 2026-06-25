@@ -170,6 +170,16 @@ CGameWnd* CGameApp::InitializeGameWindow() {
 }
 
 // -------------------------------------------------------------------------
+// CGameApp::InitializeGameManager (vtbl +0x38) - the base engine's manager
+// factory: `return new WAP32::CGameMgr;` (operator new(0x2c) then the CGameMgr
+// ctor at 0x13dd10, under the C++ EH frame). The CGameMgr-allocation analog of
+// InitializeGameWindow; CGruntzApp overrides it (new CGruntzMgr) in GruntzApp.cpp.
+RVA(0x0013dbc0, 0x57)
+WAP32::CGameMgr* CGameApp::InitializeGameManager() {
+    return new WAP32::CGameMgr;
+}
+
+// -------------------------------------------------------------------------
 // CGameApp::VirtualUnknownMethod03
 // Builds a GameInfo descriptor on the stack from the launch parameters, then
 // hands it to VirtualUnknownMethod02 (vtable +0x4) to register+create.

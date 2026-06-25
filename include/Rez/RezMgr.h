@@ -137,6 +137,11 @@ public:
     // (== count) or 0; updates the +0x20 position cursor. (vtable slot 2)
     i32 Read(i32 off, i32 base, u32 count, void* buf);
 
+    // Write `count` bytes from buf at file position (base+off), recovering through
+    // the owner's Retry() gate on seek/short-write failure (0x13c6c0). The position
+    // cursor is invalidated (-1); the write counterpart of Read.
+    i32 Write(i32 base, i32 off, u32 count, void* buf);
+
     // Close the FILE*, free the read buffer, reset the position cursor. Retries
     // fclose through the owner's gate. Returns 1 on success, 0 if no FILE*/gave up.
     // (vtable slot 5)
@@ -152,9 +157,10 @@ public:
 // The buffered-FILE stdio helpers CRezItm's stream methods call (statically linked
 // CRT in retail; external no-body so their `call rel32` displacements are
 // reloc-masked). __cdecl, args on the stack.
-extern "C" i32 RezFClose(void* fp);                            // 0x11f780
-extern "C" u32 RezFRead(void* buf, u32 size, u32 n, void* fp); // 0x18c220
-extern "C" i32 RezFSeek(void* fp, i32 off, i32 origin);        // 0x18c3a0
+extern "C" i32 RezFClose(void* fp);                             // 0x11f780
+extern "C" u32 RezFRead(void* buf, u32 size, u32 n, void* fp);  // 0x18c220
+extern "C" i32 RezFSeek(void* fp, i32 off, i32 origin);         // 0x18c3a0
+extern "C" u32 RezFWrite(void* buf, u32 size, u32 n, void* fp); // 0x18cb40
 
 // ---------------------------------------------------------------------------
 // CRezDir (ctor builds 0x38 = 56 bytes; runtime fields extend to +0x68) - a

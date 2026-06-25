@@ -23,6 +23,95 @@ EngStr& EngStr::operator=(const EngStr&) {
 RVA(0x0016d2a0, 0x26)
 EngStr::~EngStr() {}
 
+// operator new the engine uses (0x1b9b46, __cdecl); reloc-masked rel32.
+extern "C" void* RezOpNew(u32 n); // 0x1b9b46
+
+// Stamp the foreign worker vtable (0x5efb80) by address - the vptr store the
+// inline worker ctor emits; never a C++ ctor (that would emit a divergent vtable).
+static inline void StampWorkerVtbl(CSiriusWorker* w) {
+    *(void**)w = &g_siriusWorkerVtbl;
+}
+
+// CGameObject::EnsureWorker88 (0x150f90): lazily build the +0x88 worker - if one
+// already exists, just re-run its slot-7 reuse hook; otherwise operator new a
+// fresh 0x17c-byte worker (seeded m_04=this->m_4, m_08=0, m_0c=this->m_c, the
+// foreign vtable, all other fields 0), stow it at +0x88, then feed src->m_10
+// through slot 9. The worker is built MANUALLY (the inline ctor), not via a C++
+// ctor, so the vptr store stamps the retail 0x5efb80 by address.
+// @early-stop
+// zero-register-pinning wall (docs/patterns/zero-register-pinning.md): the whole
+// build sequence + both dispatches are byte-identical, but retail pins this->edi
+// and 0->esi while cl pins this->esi and 0->edi, and lowers the `arg==0` guard as
+// an early `xor eax,eax;ret` block where cl shares the epilogue - the swap cascades
+// every esi/edi. Logic exact; a pure allocator coin-flip, not source-steerable.
+RVA(0x00150f90, 0x98)
+void CGameObject::EnsureWorker88(CGameObject* src) {
+    if (src == 0) {
+        return;
+    }
+    if (m_88 != 0) {
+        m_88->Slot07();
+    } else {
+        CSiriusWorker* w = (CSiriusWorker*)RezOpNew(0x17c);
+        if (w != 0) {
+            w->m_04 = m_04;
+            w->m_08 = 0;
+            w->m_0c = m_0c;
+            StampWorkerVtbl(w);
+            w->m_10 = 0;
+            w->m_14 = 0;
+            w->m_18 = 0;
+            w->m_170 = 0;
+            w->m_1c = 0;
+            w->m_174 = 0;
+            w->m_178 = 0;
+        } else {
+            w = 0;
+        }
+        m_88 = w;
+    }
+    if (m_88 == 0) {
+        return;
+    }
+    m_88->Slot09(src->m_10, 0);
+}
+
+// CGameObject::EnsureWorker90 (0x151070): identical to EnsureWorker88 but for the
+// +0x90 worker slot.
+// @early-stop
+// same zero-register-pinning wall as EnsureWorker88 (this/0 in esi<->edi).
+RVA(0x00151070, 0x98)
+void CGameObject::EnsureWorker90(CGameObject* src) {
+    if (src == 0) {
+        return;
+    }
+    if (m_90 != 0) {
+        m_90->Slot07();
+    } else {
+        CSiriusWorker* w = (CSiriusWorker*)RezOpNew(0x17c);
+        if (w != 0) {
+            w->m_04 = m_04;
+            w->m_08 = 0;
+            w->m_0c = m_0c;
+            StampWorkerVtbl(w);
+            w->m_10 = 0;
+            w->m_14 = 0;
+            w->m_18 = 0;
+            w->m_170 = 0;
+            w->m_1c = 0;
+            w->m_174 = 0;
+            w->m_178 = 0;
+        } else {
+            w = 0;
+        }
+        m_90 = w;
+    }
+    if (m_90 == 0) {
+        return;
+    }
+    m_90->Slot09(src->m_10, 0);
+}
+
 // CGameObject's three built-in logic-handler registrars (engine .text). Pinned
 // here so the ctors' `m_10->AddLogic*(key)` calls reloc-mask.
 RVA(0x00150f50, 0x33)

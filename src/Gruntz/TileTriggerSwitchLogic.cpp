@@ -311,6 +311,24 @@ i32 CTileTriggerSwitchLogic::TransferFlag74(CSerialStream* s) {
 }
 
 // ---------------------------------------------------------------------------
+// CTileTriggerSwitchLogic::LoadFlag74
+// The read counterpart of TransferFlag74: same null/game-manager gates, but
+// reads the 4-byte +0x74 flag (== m_block[18]) through the stream's read slot
+// (vtable +0x2c) instead of the write slot (+0x30). Returns 1 on success.
+// ---------------------------------------------------------------------------
+RVA(0x00117e70, 0x36)
+i32 CTileTriggerSwitchLogic::LoadFlag74(CSerialStream* s) {
+    if (s == 0) {
+        return 0;
+    }
+    if (g_gameReg->m_30 == 0) {
+        return 0;
+    }
+    s->TransferIn(&m_block[18], 4);
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
 // CTileTriggerSwitchLogic::ScanNeighborhood
 // Scans the 3x3 cell neighborhood centered on (x, y): for px in [x-1, x+2) and
 // py in [y-1, y+2), probes cell (py + (px << 8)) with kind 0x16; returns the

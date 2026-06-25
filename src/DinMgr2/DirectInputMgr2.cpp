@@ -999,6 +999,28 @@ i32 CInputDevice::SetProperty(const void* rguid, void* prop) {
     return 1;
 }
 
+// CInputDevice::SetPropertyDword (__thiscall, ret 0x10 => 4 args). Builds a
+// DIPROPDWORD on the stack (the standard DI scalar-property descriptor:
+// {diph{dwSize=0x14, dwHeaderSize=0x10, dwObj, dwHow}, dwData}) and forwards it
+// to SetProperty(rguid, &prop). The data fields are filled from the args first,
+// then the two fixed size words.
+RVA(0x00134f70, 0x40)
+i32 CInputDevice::SetPropertyDword(const void* rguid, u32 dwObj, u32 dwHow, u32 dwData) {
+    struct DIPropDword {
+        u32 dwSize;       // +0x00
+        u32 dwHeaderSize; // +0x04
+        u32 dwObj;        // +0x08
+        u32 dwHow;        // +0x0c
+        u32 dwData;       // +0x10
+    } prop;
+    prop.dwObj = dwObj;
+    prop.dwHow = dwHow;
+    prop.dwData = dwData;
+    prop.dwSize = 0x14;
+    prop.dwHeaderSize = 0x10;
+    return SetProperty(rguid, &prop);
+}
+
 // CInputDevice::Acquire (__thiscall, ret 0 => no args). Pass-through to
 // IDirectInputDevice::Acquire; report on failure.
 RVA(0x00134fb0, 0x29)

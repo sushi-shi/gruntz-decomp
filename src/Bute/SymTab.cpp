@@ -200,6 +200,46 @@ void* CSymTab::ResolvePath(const char* path) {
 }
 
 // @early-stop
+// last-delimiter split + scope resolve; inlined IsTokenChar (2x) + the rep-movs token
+// copy + the Find tail. The read counterpart of ResolveQualified (below) -- same
+// regalloc/scheduling wall (inlined tokenizer + working-pointer reuse). Logic complete.
+RVA(0x0013bca0, 0x19c)
+void* CSymTab::FindQualified(const char* name) {
+    char qual[0x100];
+    char key[0x24];
+    const char* p = name;
+    i32 len = (i32)strlen(name);
+    if (len > 1) {
+        if (!IsTokenChar(m_owner->m_delims, *p)) {
+            ++p;
+            --len;
+        }
+    }
+    i32 i = len - 1;
+    while (!IsTokenChar(m_owner->m_delims, p[i])) {
+        --i;
+        if (i < 0) {
+            break;
+        }
+    }
+    if (i == len) {
+        return 0;
+    }
+    const char* tail = p + i + 1;
+    strncpy(qual, tail, strlen(tail) + 1);
+    if (i <= 1) {
+        return Find(qual);
+    }
+    strncpy(key, p, (u32)i);
+    key[i] = 0;
+    CSymTab* scope = (CSymTab*)ResolvePath(key);
+    if (!scope) {
+        return 0;
+    }
+    return scope->Find(qual);
+}
+
+// @early-stop
 // last-delimiter split + scope resolve; inlined IsTokenChar + the rep-movs token
 // copy + the SymTab_InsertResolved tail. Logic complete; byte-match parked.
 RVA(0x0013be40, 0x1ac)

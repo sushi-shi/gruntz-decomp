@@ -132,6 +132,45 @@ i32 CRezItm::Read(i32 off, i32 base, u32 count, void* buf) {
 }
 
 // ---------------------------------------------------------------------------
+// CRezItm::Write(base, off, count, buf)
+// The write counterpart of Read: invalidate the cursor (m_20 = -1), seek to the
+// absolute position (base+off) recovering through the owner's Retry() gate on a
+// seek failure, then fwrite `count` bytes from buf, retrying the write through
+// the same gate on a short write. Returns 0 on a zero count or a gate that gives
+// up; the write count otherwise. Unlike Read, the cursor is left invalid.
+// ---------------------------------------------------------------------------
+// @early-stop
+// 98.8% (entropy tail) - byte-identical to retail except the SAME two documented
+// walls the sibling Read carries: the unsigned count guard lowers to `test;jne`
+// where retail emits `test;jbe` (the u32 `count>0` form, see Read's note), and
+// the `return 0` paths tail-merge instead of retail's separate inline `xor eax,
+// eax;ret` block (identical-return-epilogue-tailmerge). Logic exact; not steerable.
+RVA(0x0013c6c0, 0x97)
+i32 CRezItm::Write(i32 base, i32 off, u32 count, void* buf) {
+    m_20 = -1;
+    if (count == 0) {
+        return 0;
+    }
+
+    i32 pos = off + base;
+
+    while (RezFSeek(m_10, pos, 0) != 0) {
+        if (((CRezItmOwner*)m_parent)->Retry() == 0) {
+            return 0;
+        }
+    }
+
+    u32 put = RezFWrite(buf, 1, count, m_10);
+    while (put != count) {
+        if (((CRezItmOwner*)m_parent)->Retry() == 0) {
+            return 0;
+        }
+        put = RezFWrite(buf, 1, count, m_10);
+    }
+    return put;
+}
+
+// ---------------------------------------------------------------------------
 // CRezItm::Close()  (vtable slot 5)
 // fclose the FILE*, retrying through the owner's Retry() gate; then free the
 // read buffer and reset the cursor. Returns 1 on success, 0 if there was no open

@@ -270,6 +270,9 @@ public:
     i32 SetDataFormat(void* fmt);                                      // 0x134eb0
     i32 SetCooperativeLevel(u32 flags);                                // 0x134ef0
     i32 SetProperty(const void* rguid, void* prop);                    // 0x134f30
+    // Build a DIPROPDWORD on the stack {dwSize=0x14, dwHeaderSize=0x10, dwObj,
+    // dwHow, dwData} and hand it to SetProperty(rguid, &prop) (0x134f70).
+    i32 SetPropertyDword(const void* rguid, u32 dwObj, u32 dwHow, u32 dwData);
     i32 Acquire();                                                     // 0x134fb0
 
     // --- layout ---------------------------------------------------------------

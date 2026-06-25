@@ -38,8 +38,8 @@ public:
     virtual void Slot20();
     virtual void Slot24();
     virtual void Slot28();
-    virtual void Slot2C();
-    virtual void Transfer(void* buf, i32 n); // +0x30
+    virtual void TransferIn(void* buf, i32 n); // +0x2c  read counterpart of Transfer
+    virtual void Transfer(void* buf, i32 n);   // +0x30
 };
 
 // vftable.  Reconstructed from the methods below; fields only
@@ -64,6 +64,7 @@ public:
     i32 ScanNeighborhood(i32 x, i32 y);                      // 0x117ec0
     i32 ValidateByType(void* obj, i32 type, i32 a3, i32 a4); // 0x113a90
     i32 TransferFlag74(CSerialStream* s);                    // 0x117e20
+    i32 LoadFlag74(CSerialStream* s);                        // 0x117e70 (read via slot +0x2c)
     i32 ApplyByType(void* obj, i32 type, i32 a3, i32 a4);    // 0x113d40
     i32 SerializeMatrix(CSerialStream* s);                   // 0x113dd0
 

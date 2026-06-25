@@ -53,31 +53,14 @@ RVA(0x00165f00, 0x48) void CFileMem::CFileMem_165f00() {}  // high
 // ---- CFontConfig ----
 RVA(0x000220f0, 0x46) void CFontConfig::CFontConfig_0220f0() {}  // high
 
-// ---- CGameApp ----
-RVA(0x0013dbc0, 0x57) void CGameApp::CGameApp_13dbc0() {}  // high
-
-// ---- CGameObject ----
-RVA(0x00150f90, 0x98) void CGameObject::CGameObject_150f90() {}  // med
-RVA(0x00151070, 0x98) void CGameObject::CGameObject_151070() {}  // med
-
 // ---- CGrunt ----
 RVA(0x00051c00, 0xc7b) void CGrunt::CGrunt_051c00() {}  // high
-
-// ---- CHashBase ----
-RVA(0x00184a70, 0x34) void CHashBase::CHashBase_184a70() {}  // med
 
 // ---- CImage ----
 RVA(0x00175a00, 0x74) void CImage::CImage_175a00() {}  // high
 RVA(0x00175b80, 0x105) void CImage::CImage_175b80() {}  // high
 RVA(0x00175ce0, 0x6b) void CImage::CImage_175ce0() {}  // high
 RVA(0x00175d50, 0xad) void CImage::CImage_175d50() {}  // high
-
-// ---- CInGameIcon ----
-
-// ---- CInGameText ----
-
-// ---- CInputDevice ----
-RVA(0x00134f70, 0x40) void CInputDevice::CInputDevice_134f70() {}  // high
 
 // ---- CMenuItem ----
 RVA(0x001845d0, 0x20) void CMenuItem::CMenuItem_1845d0() {}  // high
@@ -108,11 +91,6 @@ RVA(0x000bbf80, 0xb7) void CNetMgr::CNetMgr_0bbf80() {}  // high
 RVA(0x000bc750, 0x151) void CNetMgr::CNetMgr_0bc750() {}  // high
 RVA(0x000bccd0, 0x141) void CNetMgr::CNetMgr_0bccd0() {}  // high
 
-// ---- CRandomAmbientSound ----
-
-// ---- CRezItm ----
-RVA(0x0013c6c0, 0x97) void CRezItm::CRezItm_13c6c0() {}  // high
-
 // ---- CSBI_RectOnly ----
 RVA(0x00109520, 0x44c) void CSBI_RectOnly::CSBI_RectOnly_109520() {}  // high
 
@@ -125,18 +103,9 @@ RVA(0x000420d0, 0x15) void CSecretTeleporterTrigger::CSecretTeleporterTrigger_04
 // ---- CShadeTableCache ----
 RVA(0x0014df40, 0x5f4) void CShadeTableCache::CShadeTableCache_14df40() {}  // high
 
-// ---- CSymTab ----
-RVA(0x0013bca0, 0x19c) void CSymTab::CSymTab_13bca0() {}  // med
-
-// ---- CTileTriggerSwitchLogic ----
-RVA(0x00117e70, 0x36) void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_117e70() {}  // med
-
 // ---- CTileTriggerTransition ----
 RVA(0x0010fc90, 0x15) void CTileTriggerTransition::CTileTriggerTransition_10fc90() {}  // med
 RVA(0x0010fe70, 0x18d) void CTileTriggerTransition::CTileTriggerTransition_10fe70() {}  // med
-
-// ---- CTimer ----
-RVA(0x0009c090, 0x37) void CTimer::CTimer_09c090() {}  // high
 
 // ---- CToobSpikez ----
 RVA(0x001147e0, 0x15) void CToobSpikez::CToobSpikez_1147e0() {}  // med
