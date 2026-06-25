@@ -6,73 +6,237 @@
 #ifndef GRUNTZ_STUB_DISCOVERED_H
 #define GRUNTZ_STUB_DISCOVERED_H
 
-class CBattlezDlgColors { public: void CBattlezDlgColors_017ac0(); };
-class CCheckpointDlg { public: void CCheckpointDlg_023570(); };
-class CCheckpointTrigger { public: void CCheckpointTrigger_011480(); };
-class CDDSurface { public: void CDDSurface_142a40(); };
-class CDDrawWorkerList { public: void CDDrawWorkerList_163bc0(); };
-class CGruntAnimPlayer { public: void CGruntAnimPlayer_150610(); };
-class CGruntSpawnConfig { public: void CGruntSpawnConfig_11c730(); };
-class CGruntToyTimeSprite { public: void CGruntToyTimeSprite_012130(); };
-class CGruntzMgr { public: void CGruntzMgr_08b960(); };
-class CNetMgr { public: void CNetMgr_11f618(); void CNetMgr_18c022(); };
-class CPlay { public: void CPlay_0d1b60(); };
-class CSBI_RectOnly { public: void CSBI_RectOnly_0ebd70(); void CSBI_RectOnly_1084d0(); };
-class CUserLogic { public: void CUserLogic_16e7f0(); void CUserLogic_16ea90(); };
-class ClassUnknown_101 { public: void ClassUnknown_101_11f6b9(); };
-class ClassUnknown_102 { public: void ClassUnknown_102_06b2e0(); };
-class ClassUnknown_103 { public: void ClassUnknown_103_148d10(); };
-class ClassUnknown_105 { public: void ClassUnknown_105_1657a0(); };
-class ClassUnknown_107 { public: void ClassUnknown_107_10d3d0(); };
-class ClassUnknown_110 { public: void ClassUnknown_110_0fb660(); };
-class ClassUnknown_111 { public: void ClassUnknown_111_029a80(); };
-class ClassUnknown_112 { public: void ClassUnknown_112_021c40(); };
-class ClassUnknown_113 { public: void ClassUnknown_113_114480(); };
-class ClassUnknown_119 { public: void ClassUnknown_119_1591b0(); };
-class ClassUnknown_120 { public: void ClassUnknown_120_1852e0(); };
-class ClassUnknown_121 { public: void ClassUnknown_121_139cf0(); };
-class ClassUnknown_122 { public: void ClassUnknown_122_1397a0(); };
-class ClassUnknown_123 { public: void ClassUnknown_123_16dfc0(); };
-class ClassUnknown_124 { public: void ClassUnknown_124_11eaf5(); };
-class ClassUnknown_125 { public: void ClassUnknown_125_11eaa8(); };
-class ClassUnknown_126 { public: void ClassUnknown_126_11cf30(); };
-class ClassUnknown_127 { public: void ClassUnknown_127_11cee3(); };
-class ClassUnknown_128 { public: void ClassUnknown_128_174d70(); };
-class ClassUnknown_129 { public: void ClassUnknown_129_016460(); };
-class ClassUnknown_14 { public: void ClassUnknown_14_13a000(); };
-class ClassUnknown_154 { public: void ClassUnknown_154_0363a0(); };
-class ClassUnknown_164 { public: void ClassUnknown_164_0deb20(); };
-class ClassUnknown_17 { public: void ClassUnknown_17_16f760(); };
-class ClassUnknown_20 { public: void ClassUnknown_20_16df70(); };
-class ClassUnknown_21 { public: void ClassUnknown_21_16e480(); };
-class ClassUnknown_26 { public: void ClassUnknown_26_11c630(); };
-class ClassUnknown_36 { public: void ClassUnknown_36_14dd90(); };
-class ClassUnknown_5 { public: void ClassUnknown_5_150040(); };
-class ClassUnknown_51 { public: void ClassUnknown_51_1154b0(); };
-class ClassUnknown_53 { public: void ClassUnknown_53_029ac0(); };
-class ClassUnknown_54 { public: void ClassUnknown_54_135110(); };
-class ClassUnknown_56 { public: void ClassUnknown_56_08c3b0(); };
-class ClassUnknown_6 { public: void ClassUnknown_6_14dcf0(); };
-class ClassUnknown_60 { public: void ClassUnknown_60_0ebd30(); };
-class ClassUnknown_70 { public: void ClassUnknown_70_15b2b0(); };
-class ClassUnknown_71 { public: void ClassUnknown_71_15b270(); };
-class ClassUnknown_73 { public: void ClassUnknown_73_15b730(); };
-class ClassUnknown_74 { public: void ClassUnknown_74_16e360(); };
-class ClassUnknown_82 { public: void ClassUnknown_82_115520(); };
-class ClassUnknown_83 { public: void ClassUnknown_83_029a30(); };
-class ClassUnknown_84 { public: void ClassUnknown_84_09a260(); };
-class ClassUnknown_88 { public: void ClassUnknown_88_0311b0(); };
-class ClassUnknown_90 { public: void ClassUnknown_90_1d38a1(); };
-class ClassUnknown_91 { public: void ClassUnknown_91_1d496b(); };
-class ClassUnknown_93 { public: void ClassUnknown_93_00d170(); };
-class ClassUnknown_96 { public: void ClassUnknown_96_03c8f0(); };
-class ClassUnknown_97 { public: void ClassUnknown_97_058ee0(); };
-class ClassUnknown_99 { public: void ClassUnknown_99_046850(); };
-class CmdHost_0953f0 { public: void CmdHost_0953f0_08cf30(); void CmdHost_0953f0_095140(); };
-class EngStr { public: void EngStr_193080(); };
-class MallocCtor_1615a0 { public: void MallocCtor_1615a0_0311e0(); };
-class RegistryHelper { public: void RegistryHelper_114fa0(); };
-class RemusParseSource { public: void RemusParseSource_139800(); };
-class StatusBarItem { public: void StatusBarItem_0d9290(); };
+class CAniAdvanceCursor {
+public:
+    void CAniAdvanceCursor_15b730();
+};
+class CAniRecord {
+public:
+    void CAniRecord_1657a0();
+};
+class CButeStore {
+public:
+    void CButeStore_174d70();
+};
+class CCheckpointTrigger {
+public:
+    void CCheckpointTrigger_011480();
+};
+class CDDSurface {
+public:
+    void CDDSurface_142a40();
+};
+class CDDrawWorkerList {
+public:
+    void CDDrawWorkerList_163bc0();
+};
+class CGrunt {
+public:
+    void CGrunt_0ec670();
+    void CGrunt_0ef6b0();
+};
+class CGruntSpawnConfig {
+public:
+    void CGruntSpawnConfig_11c730();
+};
+class CGruntToyTimeSprite {
+public:
+    void CGruntToyTimeSprite_012130();
+};
+class CGruntzMgr {
+public:
+    void CGruntzMgr_08b960();
+};
+class CGruntzSingleCommand {
+public:
+    void CGruntzSingleCommand_0ec1c0();
+    void CGruntzSingleCommand_11f618();
+    void CGruntzSingleCommand_135110();
+    void CGruntzSingleCommand_18c022();
+};
+class CLogicRecord {
+public:
+    void CLogicRecord_0fb660();
+    void CLogicRecord_10d3d0();
+};
+class CPlay {
+public:
+    void CPlay_0cb400();
+    void CPlay_0cb480();
+    void CPlay_0cee70();
+    void CPlay_0d53d0();
+    void CPlay_0d9290();
+    void CPlay_0db8a0();
+    void CPlay_0db930();
+    void CPlay_0db9b0();
+    void CPlay_0dd830();
+};
+class CRemusReadStream {
+public:
+    void CRemusReadStream_139800();
+};
+class CSpotLight {
+public:
+    void CSpotLight_0b1ee0();
+};
+class CUserLogic {
+public:
+    void CUserLogic_029a80();
+    void CUserLogic_16ea90();
+};
+class ClassUnknown_1 {
+public:
+    void ClassUnknown_1_150040();
+};
+class ClassUnknown_11 {
+public:
+    void ClassUnknown_11_14dd90();
+};
+class ClassUnknown_13 {
+public:
+    void ClassUnknown_13_1154b0();
+    void ClassUnknown_13_115520();
+};
+class ClassUnknown_14 {
+public:
+    void ClassUnknown_14_029ac0();
+};
+class ClassUnknown_15 {
+public:
+    void ClassUnknown_15_1d38a1();
+};
+class ClassUnknown_16 {
+public:
+    void ClassUnknown_16_1d496b();
+};
+class ClassUnknown_17 {
+public:
+    void ClassUnknown_17_0ebd30();
+};
+class ClassUnknown_2 {
+public:
+    void ClassUnknown_2_14dcf0();
+};
+class ClassUnknown_21 {
+public:
+    void ClassUnknown_21_15b2b0();
+};
+class ClassUnknown_22 {
+public:
+    void ClassUnknown_22_15b270();
+};
+class ClassUnknown_23 {
+public:
+    void ClassUnknown_23_16e360();
+};
+class ClassUnknown_28 {
+public:
+    void ClassUnknown_28_0311b0();
+};
+class ClassUnknown_29 {
+public:
+    void ClassUnknown_29_029a30();
+};
+class ClassUnknown_3 {
+public:
+    void ClassUnknown_3_13a000();
+};
+class ClassUnknown_30 {
+public:
+    void ClassUnknown_30_09a260();
+};
+class ClassUnknown_33 {
+public:
+    void ClassUnknown_33_11f6b9();
+};
+class ClassUnknown_34 {
+public:
+    void ClassUnknown_34_046850();
+};
+class ClassUnknown_35 {
+public:
+    void ClassUnknown_35_021c40();
+};
+class ClassUnknown_37 {
+public:
+    void ClassUnknown_37_0deb20();
+};
+class ClassUnknown_39 {
+public:
+    void ClassUnknown_39_148d10();
+};
+class ClassUnknown_4 {
+public:
+    void ClassUnknown_4_16f760();
+};
+class ClassUnknown_42 {
+public:
+    void ClassUnknown_42_0f1c70();
+};
+class ClassUnknown_43 {
+public:
+    void ClassUnknown_43_0f7d90();
+};
+class ClassUnknown_45 {
+public:
+    void ClassUnknown_45_08c3b0();
+};
+class ClassUnknown_46 {
+public:
+    void ClassUnknown_46_1591b0();
+};
+class ClassUnknown_47 {
+public:
+    void ClassUnknown_47_1852e0();
+};
+class ClassUnknown_48 {
+public:
+    void ClassUnknown_48_139cf0();
+};
+class ClassUnknown_49 {
+public:
+    void ClassUnknown_49_1397a0();
+};
+class ClassUnknown_50 {
+public:
+    void ClassUnknown_50_16dfc0();
+};
+class ClassUnknown_51 {
+public:
+    void ClassUnknown_51_11eaf5();
+};
+class ClassUnknown_52 {
+public:
+    void ClassUnknown_52_11eaa8();
+};
+class ClassUnknown_53 {
+public:
+    void ClassUnknown_53_11cf30();
+};
+class ClassUnknown_54 {
+public:
+    void ClassUnknown_54_11cee3();
+};
+class ClassUnknown_55 {
+public:
+    void ClassUnknown_55_016460();
+};
+class ClassUnknown_7 {
+public:
+    void ClassUnknown_7_16df70();
+};
+class ClassUnknown_8 {
+public:
+    void ClassUnknown_8_16e480();
+};
+class ClassUnknown_9 {
+public:
+    void ClassUnknown_9_11c630();
+};
+class WwdFile {
+public:
+    void WwdFile_0311e0();
+    void WwdFile_0d53a0();
+};
 
 #endif

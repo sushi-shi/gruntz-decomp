@@ -4,212 +4,250 @@
 #include <rva.h>
 #include <Stub/discovered.h>
 
-// ---- CBattlezDlgColors ----
-RVA(0x00017ac0, 0x6) void CBattlezDlgColors::CBattlezDlgColors_017ac0() {}
+// ---- CAniAdvanceCursor ----
+RVA(0x0015b730, 0x2b)
+void CAniAdvanceCursor::CAniAdvanceCursor_15b730() {}
 
-// ---- CCheckpointDlg ----
-RVA(0x00023570, 0x6) void CCheckpointDlg::CCheckpointDlg_023570() {}
+// ---- CAniRecord ----
+RVA(0x001657a0, 0x66)
+void CAniRecord::CAniRecord_1657a0() {}
+
+// ---- CButeStore ----
+RVA(0x00174d70, 0x70)
+void CButeStore::CButeStore_174d70() {}
 
 // ---- CCheckpointTrigger ----
-RVA(0x00011480, 0x44) void CCheckpointTrigger::CCheckpointTrigger_011480() {}
+RVA(0x00011480, 0x44)
+void CCheckpointTrigger::CCheckpointTrigger_011480() {}
 
 // ---- CDDSurface ----
-RVA(0x00142a40, 0x53) void CDDSurface::CDDSurface_142a40() {}
+RVA(0x00142a40, 0x53)
+void CDDSurface::CDDSurface_142a40() {}
 
 // ---- CDDrawWorkerList ----
-RVA(0x00163bc0, 0x2c) void CDDrawWorkerList::CDDrawWorkerList_163bc0() {}
+RVA(0x00163bc0, 0x2c)
+void CDDrawWorkerList::CDDrawWorkerList_163bc0() {}
 
-// ---- CGruntAnimPlayer ----
-RVA(0x00150610, 0x41) void CGruntAnimPlayer::CGruntAnimPlayer_150610() {}
+// ---- CGrunt ----
+RVA(0x000ec670, 0x298)
+void CGrunt::CGrunt_0ec670() {}
+RVA(0x000ef6b0, 0x61d)
+void CGrunt::CGrunt_0ef6b0() {}
 
 // ---- CGruntSpawnConfig ----
-RVA(0x0011c730, 0x5c) void CGruntSpawnConfig::CGruntSpawnConfig_11c730() {}
+RVA(0x0011c730, 0x5c)
+void CGruntSpawnConfig::CGruntSpawnConfig_11c730() {}
 
 // ---- CGruntToyTimeSprite ----
-RVA(0x00012130, 0x44) void CGruntToyTimeSprite::CGruntToyTimeSprite_012130() {}
+RVA(0x00012130, 0x44)
+void CGruntToyTimeSprite::CGruntToyTimeSprite_012130() {}
 
 // ---- CGruntzMgr ----
-RVA(0x0008b960, 0x7c4) void CGruntzMgr::CGruntzMgr_08b960() {}
+RVA(0x0008b960, 0x7c4)
+void CGruntzMgr::CGruntzMgr_08b960() {}
 
-// ---- CNetMgr ----
-RVA(0x0011f618, 0x14) void CNetMgr::CNetMgr_11f618() {}
-RVA(0x0018c022, 0x1d3) void CNetMgr::CNetMgr_18c022() {}
+// ---- CGruntzSingleCommand ----
+RVA(0x000ec1c0, 0x43)
+void CGruntzSingleCommand::CGruntzSingleCommand_0ec1c0() {}
+RVA(0x0011f618, 0x14)
+void CGruntzSingleCommand::CGruntzSingleCommand_11f618() {}
+RVA(0x00135110, 0x8e)
+void CGruntzSingleCommand::CGruntzSingleCommand_135110() {}
+RVA(0x0018c022, 0x1d3)
+void CGruntzSingleCommand::CGruntzSingleCommand_18c022() {}
+
+// ---- CLogicRecord ----
+RVA(0x000fb660, 0xf1)
+void CLogicRecord::CLogicRecord_0fb660() {}
+RVA(0x0010d3d0, 0xf1)
+void CLogicRecord::CLogicRecord_10d3d0() {}
 
 // ---- CPlay ----
-RVA(0x000d1b60, 0xc2f) void CPlay::CPlay_0d1b60() {}
+RVA(0x000cb400, 0x58)
+void CPlay::CPlay_0cb400() {}
+RVA(0x000cb480, 0x22c)
+void CPlay::CPlay_0cb480() {}
+RVA(0x000cee70, 0x5)
+void CPlay::CPlay_0cee70() {}
+RVA(0x000d53d0, 0x466)
+void CPlay::CPlay_0d53d0() {}
+RVA(0x000d9290, 0x2a7)
+void CPlay::CPlay_0d9290() {}
+RVA(0x000db8a0, 0x67)
+void CPlay::CPlay_0db8a0() {}
+RVA(0x000db930, 0x53)
+void CPlay::CPlay_0db930() {}
+RVA(0x000db9b0, 0x53)
+void CPlay::CPlay_0db9b0() {}
+RVA(0x000dd830, 0x1e3)
+void CPlay::CPlay_0dd830() {}
 
-// ---- CSBI_RectOnly ----
-RVA(0x000ebd70, 0x366) void CSBI_RectOnly::CSBI_RectOnly_0ebd70() {}
-RVA(0x001084d0, 0x96c) void CSBI_RectOnly::CSBI_RectOnly_1084d0() {}
+// ---- CRemusReadStream ----
+RVA(0x00139800, 0x6)
+void CRemusReadStream::CRemusReadStream_139800() {}
+
+// ---- CSpotLight ----
+RVA(0x000b1ee0, 0x11d)
+void CSpotLight::CSpotLight_0b1ee0() {}
 
 // ---- CUserLogic ----
-RVA(0x0016e7f0, 0x1cf) void CUserLogic::CUserLogic_16e7f0() {}
-RVA(0x0016ea90, 0x234) void CUserLogic::CUserLogic_16ea90() {}
+RVA(0x00029a80, 0x29)
+void CUserLogic::CUserLogic_029a80() {}
+RVA(0x0016ea90, 0x234)
+void CUserLogic::CUserLogic_16ea90() {}
 
-// ---- ClassUnknown_101 ----
-RVA(0x0011f6b9, 0x17) void ClassUnknown_101::ClassUnknown_101_11f6b9() {}
+// ---- ClassUnknown_1 ----
+RVA(0x00150040, 0x136)
+void ClassUnknown_1::ClassUnknown_1_150040() {}
 
-// ---- ClassUnknown_102 ----
-RVA(0x0006b2e0, 0x39) void ClassUnknown_102::ClassUnknown_102_06b2e0() {}
+// ---- ClassUnknown_11 ----
+RVA(0x0014dd90, 0x74)
+void ClassUnknown_11::ClassUnknown_11_14dd90() {}
 
-// ---- ClassUnknown_103 ----
-RVA(0x00148d10, 0x25) void ClassUnknown_103::ClassUnknown_103_148d10() {}
-
-// ---- ClassUnknown_105 ----
-RVA(0x001657a0, 0x66) void ClassUnknown_105::ClassUnknown_105_1657a0() {}
-
-// ---- ClassUnknown_107 ----
-RVA(0x0010d3d0, 0xf1) void ClassUnknown_107::ClassUnknown_107_10d3d0() {}
-
-// ---- ClassUnknown_110 ----
-RVA(0x000fb660, 0xf1) void ClassUnknown_110::ClassUnknown_110_0fb660() {}
-
-// ---- ClassUnknown_111 ----
-RVA(0x00029a80, 0x29) void ClassUnknown_111::ClassUnknown_111_029a80() {}
-
-// ---- ClassUnknown_112 ----
-RVA(0x00021c40, 0x8) void ClassUnknown_112::ClassUnknown_112_021c40() {}
-
-// ---- ClassUnknown_113 ----
-RVA(0x00114480, 0xf1) void ClassUnknown_113::ClassUnknown_113_114480() {}
-
-// ---- ClassUnknown_119 ----
-RVA(0x001591b0, 0x19) void ClassUnknown_119::ClassUnknown_119_1591b0() {}
-
-// ---- ClassUnknown_120 ----
-RVA(0x001852e0, 0x35) void ClassUnknown_120::ClassUnknown_120_1852e0() {}
-
-// ---- ClassUnknown_121 ----
-RVA(0x00139cf0, 0xd7) void ClassUnknown_121::ClassUnknown_121_139cf0() {}
-
-// ---- ClassUnknown_122 ----
-RVA(0x001397a0, 0x57) void ClassUnknown_122::ClassUnknown_122_1397a0() {}
-
-// ---- ClassUnknown_123 ----
-RVA(0x0016dfc0, 0x7) void ClassUnknown_123::ClassUnknown_123_16dfc0() {}
-
-// ---- ClassUnknown_124 ----
-RVA(0x0011eaf5, 0x7) void ClassUnknown_124::ClassUnknown_124_11eaf5() {}
-
-// ---- ClassUnknown_125 ----
-RVA(0x0011eaa8, 0x7) void ClassUnknown_125::ClassUnknown_125_11eaa8() {}
-
-// ---- ClassUnknown_126 ----
-RVA(0x0011cf30, 0x7) void ClassUnknown_126::ClassUnknown_126_11cf30() {}
-
-// ---- ClassUnknown_127 ----
-RVA(0x0011cee3, 0x7) void ClassUnknown_127::ClassUnknown_127_11cee3() {}
-
-// ---- ClassUnknown_128 ----
-RVA(0x00174d70, 0x70) void ClassUnknown_128::ClassUnknown_128_174d70() {}
-
-// ---- ClassUnknown_129 ----
-RVA(0x00016460, 0x46) void ClassUnknown_129::ClassUnknown_129_016460() {}
+// ---- ClassUnknown_13 ----
+RVA(0x001154b0, 0x45)
+void ClassUnknown_13::ClassUnknown_13_1154b0() {}
+RVA(0x00115520, 0x45)
+void ClassUnknown_13::ClassUnknown_13_115520() {}
 
 // ---- ClassUnknown_14 ----
-RVA(0x0013a000, 0x37) void ClassUnknown_14::ClassUnknown_14_13a000() {}
+RVA(0x00029ac0, 0x20)
+void ClassUnknown_14::ClassUnknown_14_029ac0() {}
 
-// ---- ClassUnknown_154 ----
-RVA(0x000363a0, 0x41) void ClassUnknown_154::ClassUnknown_154_0363a0() {}
+// ---- ClassUnknown_15 ----
+RVA(0x001d38a1, 0x9)
+void ClassUnknown_15::ClassUnknown_15_1d38a1() {}
 
-// ---- ClassUnknown_164 ----
-RVA(0x000deb20, 0xf1) void ClassUnknown_164::ClassUnknown_164_0deb20() {}
+// ---- ClassUnknown_16 ----
+RVA(0x001d496b, 0x1e)
+void ClassUnknown_16::ClassUnknown_16_1d496b() {}
 
 // ---- ClassUnknown_17 ----
-RVA(0x0016f760, 0x82) void ClassUnknown_17::ClassUnknown_17_16f760() {}
+RVA(0x000ebd30, 0x21)
+void ClassUnknown_17::ClassUnknown_17_0ebd30() {}
 
-// ---- ClassUnknown_20 ----
-RVA(0x0016df70, 0x22) void ClassUnknown_20::ClassUnknown_20_16df70() {}
+// ---- ClassUnknown_2 ----
+RVA(0x0014dcf0, 0x69)
+void ClassUnknown_2::ClassUnknown_2_14dcf0() {}
 
 // ---- ClassUnknown_21 ----
-RVA(0x0016e480, 0x3e) void ClassUnknown_21::ClassUnknown_21_16e480() {}
+RVA(0x0015b2b0, 0xe)
+void ClassUnknown_21::ClassUnknown_21_15b2b0() {}
 
-// ---- ClassUnknown_26 ----
-RVA(0x0011c630, 0x6e) void ClassUnknown_26::ClassUnknown_26_11c630() {}
+// ---- ClassUnknown_22 ----
+RVA(0x0015b270, 0x11)
+void ClassUnknown_22::ClassUnknown_22_15b270() {}
 
-// ---- ClassUnknown_36 ----
-RVA(0x0014dd90, 0x74) void ClassUnknown_36::ClassUnknown_36_14dd90() {}
+// ---- ClassUnknown_23 ----
+RVA(0x0016e360, 0x11a)
+void ClassUnknown_23::ClassUnknown_23_16e360() {}
 
-// ---- ClassUnknown_5 ----
-RVA(0x00150040, 0x136) void ClassUnknown_5::ClassUnknown_5_150040() {}
+// ---- ClassUnknown_28 ----
+RVA(0x000311b0, 0x14)
+void ClassUnknown_28::ClassUnknown_28_0311b0() {}
+
+// ---- ClassUnknown_29 ----
+RVA(0x00029a30, 0x10)
+void ClassUnknown_29::ClassUnknown_29_029a30() {}
+
+// ---- ClassUnknown_3 ----
+RVA(0x0013a000, 0x37)
+void ClassUnknown_3::ClassUnknown_3_13a000() {}
+
+// ---- ClassUnknown_30 ----
+RVA(0x0009a260, 0x1d)
+void ClassUnknown_30::ClassUnknown_30_09a260() {}
+
+// ---- ClassUnknown_33 ----
+RVA(0x0011f6b9, 0x17)
+void ClassUnknown_33::ClassUnknown_33_11f6b9() {}
+
+// ---- ClassUnknown_34 ----
+RVA(0x00046850, 0xf1)
+void ClassUnknown_34::ClassUnknown_34_046850() {}
+
+// ---- ClassUnknown_35 ----
+RVA(0x00021c40, 0x8)
+void ClassUnknown_35::ClassUnknown_35_021c40() {}
+
+// ---- ClassUnknown_37 ----
+RVA(0x000deb20, 0xf1)
+void ClassUnknown_37::ClassUnknown_37_0deb20() {}
+
+// ---- ClassUnknown_39 ----
+RVA(0x00148d10, 0x25)
+void ClassUnknown_39::ClassUnknown_39_148d10() {}
+
+// ---- ClassUnknown_4 ----
+RVA(0x0016f760, 0x82)
+void ClassUnknown_4::ClassUnknown_4_16f760() {}
+
+// ---- ClassUnknown_42 ----
+RVA(0x000f1c70, 0x60d)
+void ClassUnknown_42::ClassUnknown_42_0f1c70() {}
+
+// ---- ClassUnknown_43 ----
+RVA(0x000f7d90, 0x171)
+void ClassUnknown_43::ClassUnknown_43_0f7d90() {}
+
+// ---- ClassUnknown_45 ----
+RVA(0x0008c3b0, 0x10)
+void ClassUnknown_45::ClassUnknown_45_08c3b0() {}
+
+// ---- ClassUnknown_46 ----
+RVA(0x001591b0, 0x19)
+void ClassUnknown_46::ClassUnknown_46_1591b0() {}
+
+// ---- ClassUnknown_47 ----
+RVA(0x001852e0, 0x35)
+void ClassUnknown_47::ClassUnknown_47_1852e0() {}
+
+// ---- ClassUnknown_48 ----
+RVA(0x00139cf0, 0xd7)
+void ClassUnknown_48::ClassUnknown_48_139cf0() {}
+
+// ---- ClassUnknown_49 ----
+RVA(0x001397a0, 0x57)
+void ClassUnknown_49::ClassUnknown_49_1397a0() {}
+
+// ---- ClassUnknown_50 ----
+RVA(0x0016dfc0, 0x7)
+void ClassUnknown_50::ClassUnknown_50_16dfc0() {}
 
 // ---- ClassUnknown_51 ----
-RVA(0x001154b0, 0x45) void ClassUnknown_51::ClassUnknown_51_1154b0() {}
+RVA(0x0011eaf5, 0x7)
+void ClassUnknown_51::ClassUnknown_51_11eaf5() {}
+
+// ---- ClassUnknown_52 ----
+RVA(0x0011eaa8, 0x7)
+void ClassUnknown_52::ClassUnknown_52_11eaa8() {}
 
 // ---- ClassUnknown_53 ----
-RVA(0x00029ac0, 0x20) void ClassUnknown_53::ClassUnknown_53_029ac0() {}
+RVA(0x0011cf30, 0x7)
+void ClassUnknown_53::ClassUnknown_53_11cf30() {}
 
 // ---- ClassUnknown_54 ----
-RVA(0x00135110, 0x8e) void ClassUnknown_54::ClassUnknown_54_135110() {}
+RVA(0x0011cee3, 0x7)
+void ClassUnknown_54::ClassUnknown_54_11cee3() {}
 
-// ---- ClassUnknown_56 ----
-RVA(0x0008c3b0, 0x10) void ClassUnknown_56::ClassUnknown_56_08c3b0() {}
+// ---- ClassUnknown_55 ----
+RVA(0x00016460, 0x46)
+void ClassUnknown_55::ClassUnknown_55_016460() {}
 
-// ---- ClassUnknown_6 ----
-RVA(0x0014dcf0, 0x69) void ClassUnknown_6::ClassUnknown_6_14dcf0() {}
+// ---- ClassUnknown_7 ----
+RVA(0x0016df70, 0x22)
+void ClassUnknown_7::ClassUnknown_7_16df70() {}
 
-// ---- ClassUnknown_60 ----
-RVA(0x000ebd30, 0x21) void ClassUnknown_60::ClassUnknown_60_0ebd30() {}
+// ---- ClassUnknown_8 ----
+RVA(0x0016e480, 0x3e)
+void ClassUnknown_8::ClassUnknown_8_16e480() {}
 
-// ---- ClassUnknown_70 ----
-RVA(0x0015b2b0, 0xe) void ClassUnknown_70::ClassUnknown_70_15b2b0() {}
+// ---- ClassUnknown_9 ----
+RVA(0x0011c630, 0x6e)
+void ClassUnknown_9::ClassUnknown_9_11c630() {}
 
-// ---- ClassUnknown_71 ----
-RVA(0x0015b270, 0x11) void ClassUnknown_71::ClassUnknown_71_15b270() {}
-
-// ---- ClassUnknown_73 ----
-RVA(0x0015b730, 0x2b) void ClassUnknown_73::ClassUnknown_73_15b730() {}
-
-// ---- ClassUnknown_74 ----
-RVA(0x0016e360, 0x11a) void ClassUnknown_74::ClassUnknown_74_16e360() {}
-
-// ---- ClassUnknown_82 ----
-RVA(0x00115520, 0x45) void ClassUnknown_82::ClassUnknown_82_115520() {}
-
-// ---- ClassUnknown_83 ----
-RVA(0x00029a30, 0x10) void ClassUnknown_83::ClassUnknown_83_029a30() {}
-
-// ---- ClassUnknown_84 ----
-RVA(0x0009a260, 0x1d) void ClassUnknown_84::ClassUnknown_84_09a260() {}
-
-// ---- ClassUnknown_88 ----
-RVA(0x000311b0, 0x14) void ClassUnknown_88::ClassUnknown_88_0311b0() {}
-
-// ---- ClassUnknown_90 ----
-RVA(0x001d38a1, 0x9) void ClassUnknown_90::ClassUnknown_90_1d38a1() {}
-
-// ---- ClassUnknown_91 ----
-RVA(0x001d496b, 0x1e) void ClassUnknown_91::ClassUnknown_91_1d496b() {}
-
-// ---- ClassUnknown_93 ----
-RVA(0x0000d170, 0x74) void ClassUnknown_93::ClassUnknown_93_00d170() {}
-
-// ---- ClassUnknown_96 ----
-RVA(0x0003c8f0, 0x76) void ClassUnknown_96::ClassUnknown_96_03c8f0() {}
-
-// ---- ClassUnknown_97 ----
-RVA(0x00058ee0, 0x5c) void ClassUnknown_97::ClassUnknown_97_058ee0() {}
-
-// ---- ClassUnknown_99 ----
-RVA(0x00046850, 0xf1) void ClassUnknown_99::ClassUnknown_99_046850() {}
-
-// ---- CmdHost_0953f0 ----
-RVA(0x0008cf30, 0x55) void CmdHost_0953f0::CmdHost_0953f0_08cf30() {}
-RVA(0x00095140, 0x6e) void CmdHost_0953f0::CmdHost_0953f0_095140() {}
-
-// ---- EngStr ----
-RVA(0x00193080, 0xb5) void EngStr::EngStr_193080() {}
-
-// ---- MallocCtor_136230 ----
-
-// ---- MallocCtor_1615a0 ----
-RVA(0x000311e0, 0x4c) void MallocCtor_1615a0::MallocCtor_1615a0_0311e0() {}
-
-// ---- RegistryHelper ----
-RVA(0x00114fa0, 0x3e) void RegistryHelper::RegistryHelper_114fa0() {}
-
-// ---- RemusParseSource ----
-RVA(0x00139800, 0x6) void RemusParseSource::RemusParseSource_139800() {}
-
-// ---- StatusBarItem ----
-RVA(0x000d9290, 0x2a7) void StatusBarItem::StatusBarItem_0d9290() {}
+// ---- WwdFile ----
+RVA(0x000311e0, 0x4c)
+void WwdFile::WwdFile_0311e0() {}
+RVA(0x000d53a0, 0x19)
+void WwdFile::WwdFile_0d53a0() {}
