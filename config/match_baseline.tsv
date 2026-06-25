@@ -55,7 +55,7 @@ cimageowned	2	1
 clightfx	2	1
 clightfxrender	22	8
 cmulti	11	7
-cplay	27	8
+cplay	28	8
 cremusnode	4	2
 crt_istream	3	2
 crt_ostream	4	3
@@ -67,7 +67,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	201	0
+engine_discovered	200	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -555,6 +555,7 @@ cmulti	?ReportNetError@CMulti@@QAEXXZ	95.2000	95.2000	1	59b1f15e8f6f	0xb7f60
 cmulti	?ReportVersionMsg@CMulti@@QAEXPADH@Z	100.0000	100.0000	1	a2306abc654e	0xb7e30
 cmulti	?RunErrorDialog@CMulti@@QAEHPADPAXH@Z	100.0000	100.0000	1	f5d13574d2fd	0xbc250
 cmulti	?Teardown@CMulti@@QAEXXZ	100.0000	100.0000	1	40a558486d68	0xb6110
+cplay	?ApplyGameOptions@CPlay@@QAEXXZ	76.0784	76.0784	1	d7e69de7bf4d	0x36be0
 cplay	?BeginGridWalk@CPlay@@QAEHHHHHH@Z	81.1191	81.1191	4	5929326f7458	0xd0920
 cplay	?BuildGruntTypeNameTable@CPlay@@QAEXHHHH@Z	0.7092	0.7092	2	ed7e76422e54	0xdc6d0
 cplay	?BuildHelpReveal@CPlay@@QAEHXZ	67.8125	67.8125	3	d63528a8ea0e	0xd72c0
@@ -576,7 +577,7 @@ cplay	?SetBeginClearParams@CState@@QAEHHHH@Z	100.0000	100.0000	4	8f94263b0f6e	0x
 cplay	?StepC@CPlay@@QAEXXZ	85.4545	85.4545	6	9c6f84e46590	0xd8d90
 cplay	?StepGridWalk@CPlay@@QAEHH@Z	66.6667	66.6667	3	1875a002ef47	0xd0a60
 cplay	?StepInputA@CPlay@@QAEHXZ	89.8077	89.8077	7	1348ea35aa98	0xd11e0
-cplay	?StepScroll@CPlay@@QAEXXZ	81.6207	81.6207	6	c4551645db5a	0xd1ac0
+cplay	?StepScroll@CPlay@@QAEXXZ	63.5172	63.5172	6	c4551645db5a	0xd1ac0
 cplay	?Stub_08c9d0@CPlay@@QAEXXZ	0.7407	0.7407	2	18e3eb4c7dcd	0x8c9d0
 cplay	?Update@CPlay@@UAEHXZ	100.0000	100.0000	4	1c6efda4cb9e	0x8c910
 cplay	?winapi_0cdb10_PostMessageA@CPlay@@QAEHHHH@Z	0.2946	0.2946	2	db8d57057a6f	0xcdb10
@@ -752,7 +753,6 @@ engine_discovered	?CPathHazard_013340@CPathHazard@@QAEXXZ	5.8824	5.8824	1	c0f93c
 engine_discovered	?CPathHazard_0b4020@CPathHazard@@QAEXXZ	0.5025	0.5025	1	ebf3f9c6a076	0xb4020
 engine_discovered	?CPathHazard_0b47e0@CPathHazard@@QAEXXZ	0.9434	0.9434	1	3a6e07617262	0xb47e0
 engine_discovered	?CPathHazard_0b5070@CPathHazard@@QAEXXZ	20.0000	20.0000	1	375068be4d7d	0xb5070
-engine_discovered	?CPlay_036be0@CPlay@@QAEXXZ	1.9608	1.9608	1	d9d236dc43c1	0x36be0
 engine_discovered	?CPlay_0d1b60@CPlay@@QAEXXZ	0.0452	0.0452	2	7d7469983ac7	0xd1b60
 engine_discovered	?CSBI_RectOnly_0c8980@CSBI_RectOnly@@QAEXXZ	3.8462	3.8462	2	c46a86133390	0xc8980
 engine_discovered	?CSBI_RectOnly_0ebd70@CSBI_RectOnly@@QAEXXZ	0.3774	0.3774	2	e421395136d1	0xebd70

@@ -268,6 +268,7 @@ public:
     void SnapWalk();
 
     // --- the trace-discovered CPlay sub-steps reconstructed in this TU ---
+    void ApplyGameOptions();                    // 0x036be0 (THIS TU)
     void DrawWorldFrame();                      // 0x0c9c20 (THIS TU)
     i32 DrawWorldFrames();                      // 0x0c9cc0 (THIS TU)
     i32 DispatchHudClick(i32, i32, i32);        // 0x0ce530 (THIS TU)

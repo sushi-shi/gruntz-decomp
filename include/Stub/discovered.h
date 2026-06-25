@@ -44,7 +44,7 @@ class CNetMgr { public: void CNetMgr_11f618(); void CNetMgr_18c022(); };
 class CObjectDropper { public: void CObjectDropper_0124f0(); };
 class CParticlez { public: void CParticlez_012d90(); void CParticlez_046d30(); };
 class CPathHazard { public: void CPathHazard_013340(); void CPathHazard_0b4020(); void CPathHazard_0b47e0(); void CPathHazard_0b5070(); };
-class CPlay { public: void CPlay_036be0(); void CPlay_0d1b60(); };
+class CPlay { public: void CPlay_0d1b60(); };
 class CSBI_RectOnly { public: void CSBI_RectOnly_0c8980(); void CSBI_RectOnly_0ebd70(); void CSBI_RectOnly_105800(); void CSBI_RectOnly_1084d0(); };
 class CSecretLevelTrigger { public: void CSecretLevelTrigger_010c50(); void CSecretLevelTrigger_042ac0(); };
 class CSimpleAnimation { public: void CSimpleAnimation_00f9d0(); void CSimpleAnimation_0abf70(); };

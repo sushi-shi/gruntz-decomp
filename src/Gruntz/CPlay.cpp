@@ -148,6 +148,112 @@ enum {
     VIEW_MODE_B = 2,    // mode-B sub-step
 };
 
+// ===========================================================================
+// ApplyGameOptions (0x036be0) operates entirely on the global game manager
+// (*g_64556c, a CGruntzMgr) -- it ignores `this` (the first instruction reloads
+// the singleton into ecx), so it compiles byte-identically whether modeled as a
+// free fn or a CPlay method (the trace's this/ecx is dead here). Modeled as a
+// CPlay method per the runtime attribution.
+//
+// A minimal VIEW of the manager-settings target the function touches. The three
+// thiscall sinks are the matched CGruntzMgr methods (StoreInputFlag 0x4919d0,
+// StoreInputState 0x491a10, and the option-apply at 0x492340); m_48 is the
+// sound object whose XMIDI master-volume thiscall lives at 0x138950. All are
+// external/no-body so the call rel32 displacements reloc-mask.
+struct CGameMgrSettings {
+    void ApplyOpt(i32 v);        // 0x492340  (thiscall)
+    void StoreInputFlag(i32 v);  // 0x4919d0  CGruntzMgr::StoreInputFlag
+    void StoreInputState(i32 v); // 0x491a10  CGruntzMgr::StoreInputState
+
+    struct CSound {
+        char p0[0x28];
+        i32 m_28;                   // +0x28  gate (skip the XMIDI push when 0)
+        void SetXMidiVolume(i32 v); // 0x138950 (thiscall on m_48)
+    };
+
+    char p0[0x48];
+    CSound* m_48; // +0x48  sound object
+    char p4c[0x100 - 0x4c];
+    i32 m_100; // +0x100
+    char p104[0x118 - 0x104];
+    i32 m_118; // +0x118
+    char p11c[0x124 - 0x11c];
+    i32 m_124; // +0x124
+};
+
+// The option-source globals ApplyGameOptions pushes/stores (uninitialized .bss).
+extern "C" {
+    DATA(0x0024556c)
+    extern CGameMgrSettings* g_mgrSettings; // = g_64556c (the CGruntzMgr singleton)
+    DATA(0x0020ccc4)
+    extern i32 g_videoResolutionMode;
+    DATA(0x0022bd68)
+    extern i32 g_opt_22bd68;
+    DATA(0x0022bd6c)
+    extern i32 g_opt_22bd6c;
+    DATA(0x0022bd70)
+    extern i32 g_opt_22bd70;
+    DATA(0x0022bd84)
+    extern i32 g_opt_22bd84;
+    DATA(0x0022bdc4)
+    extern i32 g_opt_22bdc4;
+    DATA(0x0022bdc8)
+    extern i32 g_opt_22bdc8;
+    DATA(0x0022bdcc)
+    extern i32 g_opt_22bdcc;
+    DATA(0x0022bdd0)
+    extern i32 g_opt_22bdd0;
+    DATA(0x0022bdd4)
+    extern i32 g_opt_22bdd4;
+    DATA(0x002455b4)
+    extern i32 g_gate_2455b4;
+    DATA(0x002455bc)
+    extern i32 g_gate_2455bc;
+    DATA(0x002455c0)
+    extern i32 g_gate_2455c0;
+}
+
+// A free helper (FUN_004923b0, cdecl/1 arg) run on the XMIDI-active path before
+// the sound-object volume push. External/no-body -> reloc-masked.
+extern "C" void Eng_OptCommit(i32 v); // 0x4923b0
+
+// ===========================================================================
+// CPlay::ApplyGameOptions (0x036be0) - push the current option/registry values
+// into the game manager (*g_64556c). Mirrors the video-resolution mode global,
+// stamps three manager words (+0x118/+0x100/+0x124), and - unless the runtime
+// gates g_gate_2455b4/bc/c0 say otherwise - forwards the input flag/state options
+// and (when the sound object's +0x28 gate is live) commits the XMIDI volume.
+// ===========================================================================
+// @early-stop
+// register-coloring wall (~76%). Control flow, all member offsets
+// (+0x118/+0x100/+0x124/+0x48/+0x28), the 12 option/gate globals, the 5 callees
+// and the redundant g_gate_2455b4 re-test are byte-faithful and all relocs pair;
+// the residual is the non-steerable eax-vs-ecx coloring of the reloaded manager
+// pointer (retail pins it in ecx, our cl picks eax) which cascades into the temp
+// regs + the top videomode/b4-load schedule. See docs/patterns/zero-register-pinning.md.
+RVA(0x00036be0, 0xd3)
+void CPlay::ApplyGameOptions() {
+    if (g_mgrSettings == 0) {
+        return;
+    }
+    g_mgrSettings->m_118 = g_opt_22bd70;
+    g_videoResolutionMode = g_opt_22bdc8;
+    if (g_gate_2455b4 == 0) {
+        if (g_gate_2455bc == 0) {
+            g_mgrSettings->ApplyOpt(g_opt_22bd84);
+            g_mgrSettings->StoreInputFlag(g_opt_22bd6c);
+            g_mgrSettings->m_100 = g_opt_22bdd4;
+            g_mgrSettings->StoreInputState(g_opt_22bdc4);
+        }
+        if (g_gate_2455b4 == 0 && g_gate_2455c0 == 0
+            && g_mgrSettings->m_48->m_28 != 0) {
+            Eng_OptCommit(g_opt_22bdd0);
+            g_mgrSettings->m_48->SetXMidiVolume(g_opt_22bdcc);
+        }
+    }
+    g_mgrSettings->m_124 = g_opt_22bd68;
+}
+
 // CPlay::Update() (slot 4): the PLAY state's ID = 3.
 RVA(0x0008c910, 0x6)
 i32 CPlay::Update() {
@@ -585,6 +691,13 @@ i32 CPlay::OnRegion4(i32 z) // (region-3 / gate m_region3Gate, timer +0x460)
 // (m_150/m_154), aligns each axis DOWN to a 0x20 boundary (+0x10 bias) and
 // stores the result into the scroll-offset sink m_scrollSink (+0x5c X, +0x60 Y).
 // ===========================================================================
+// @early-stop
+// register-coloring wall (~81.6%). Logic + all member offsets are byte-faithful;
+// retail pins the draw-surface ptr in edx and geom in esi, our cl swaps them to
+// esi/edx, which renames the temp regs and floats two scheduled adds by one slot.
+// Not source-steerable (no local-pin/re-read variant flips the edx<->esi choice);
+// confirmed coexists with ApplyGameOptions at top/absent/adjacent placement.
+// See docs/patterns/zero-register-pinning.md.
 RVA(0x000d1ac0, 0x4f)
 void CPlay::StepScroll() {
     CDrawSurface* v = m_c->m_24;
