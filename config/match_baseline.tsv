@@ -67,7 +67,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	206	0
+engine_discovered	204	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -157,7 +157,7 @@ soundvoicelist	4	3
 spriteloaders	9	4
 spriteref	2	1
 spritereftable	7	6
-spriteresource	6	2
+spriteresource	8	3
 statemgrbz	5	3
 statusbaritem	2	1
 statusbarupdaters	7	0
@@ -702,8 +702,6 @@ engine_discovered	?CDDPalette_147530@CDDPalette@@QAEXXZ	2.8571	2.8571	2	8705702d
 engine_discovered	?CDDSurface_142a40@CDDSurface@@QAEXXZ	5.0000	5.0000	2	acbbb47b3378	0x142a40
 engine_discovered	?CDDrawSubMgr_15c360@CDDrawSubMgr@@QAEXXZ	0.0877	0.0877	2	cb87cd66d104	0x15c360
 engine_discovered	?CDDrawWorkerList_163bc0@CDDrawWorkerList@@QAEXXZ	4.7619	4.7619	2	b51a988cb1ef	0x163bc0
-engine_discovered	?CDDrawWorkerRegistry_151f00@CDDrawWorkerRegistry@@QAEXXZ	0.5479	0.5479	1	0327183bf3bb	0x151f00
-engine_discovered	?CDDrawWorkerRegistry_15cc30@CDDrawWorkerRegistry@@QAEXXZ	3.6364	3.6364	1	9a65fd41cb5e	0x15cc30
 engine_discovered	?CDoNothing_00f6b0@CDoNothing@@QAEXXZ	50.0000	50.0000	2	9ea9dfd42eb8	0xf6b0
 engine_discovered	?CDoNothing_00f770@CDoNothing@@QAEXXZ	5.8824	5.8824	2	6d92ee4f3d4a	0xf770
 engine_discovered	?CDroppedObjectShadow_012670@CDroppedObjectShadow@@QAEXXZ	5.8824	5.8824	2	a315b1a9db88	0x12670
@@ -2151,10 +2149,12 @@ spritereftable	?Init@CSpriteRefTable@@QAEHHH@Z	100.0000	100.0000	2	f0e34ea5742f	
 spritereftable	?Reset@CSpriteRefTable@@QAEXXZ	100.0000	100.0000	1	1f62670ca9f4	0xe2290
 spriteresource	?ApplyGeometryDirect@CGruntAnimPlayer@@QAEXHH@Z	100.0000	100.0000	1	77aad38a5c97	0x58b60
 spriteresource	?ApplyLookupGeometry@CGruntAnimPlayer@@QAEHPBDH@Z	93.9394	93.9394	4	cb136edb79cc	0x1505b0
-spriteresource	?CacheFirstFrame@CGruntSprite@@QAEXPBD@Z	89.2647	89.2647	4	dbfa3e3333a0	0x150540
-spriteresource	?CacheFrame@CGruntSprite@@QAEXPBDH@Z	84.2571	84.2571	1	a2abe1026505	0x1504d0
+spriteresource	?CacheFirstFrame@CGruntSprite@@QAEXPBD@Z	89.2647	89.2647	5	0cdb67ea8d67	0x150540
+spriteresource	?CacheFrame@CGruntSprite@@QAEXPBDH@Z	84.2571	84.2571	2	37e6bc878135	0x1504d0
 spriteresource	?ConfigureItem@CStatusBarMgr@@QAEHHHHH@Z	100.0000	100.0000	4	be2023a676b3	0x1360d0
 spriteresource	?CreateSprite@CSpriteFactory@@QAEPAUCSprite@@HHHHPBDH@Z	94.1176	94.1176	4	6102cd6262c1	0x1597b0
+spriteresource	?GetFrame@CSprite@@QAEHH@Z	100.0000	100.0000	1	48906c68982d	0x15cc30
+spriteresource	?InsertFrame@CSprite@@QAEPAUCFrameWorker@@PAXHH@Z	84.3836	84.3836	1	8e337ce61c66	0x151f00
 statemgrbz	?Build@StateMgrBZ@@QAEHPAUSbzInputManager@@H@Z	94.7384	94.7384	3	80ed1d5c6cdf	0x383b0
 statemgrbz	?Flush@StateMgrBZ@@QAEHXZ	74.0612	74.0612	2	6dc0743b6fd8	0x385e0
 statemgrbz	?Init@StateMgrBZ@@QAEHPAUSbzInputManager@@H@Z	100.0000	100.0000	2	12e97377255a	0x382c0

@@ -18,7 +18,6 @@ class CDDPalette { public: void CDDPalette_1474d0(); void CDDPalette_147530(); }
 class CDDSurface { public: void CDDSurface_142a40(); };
 class CDDrawSubMgr { public: void CDDrawSubMgr_15c360(); };
 class CDDrawWorkerList { public: void CDDrawWorkerList_163bc0(); };
-class CDDrawWorkerRegistry { public: void CDDrawWorkerRegistry_151f00(); void CDDrawWorkerRegistry_15cc30(); };
 class CDoNothing { public: void CDoNothing_00f6b0(); void CDoNothing_00f770(); };
 class CDroppedObject { public: void CDroppedObject_0125b0(); void CDroppedObject_0c6bd0(); };
 class CDroppedObjectShadow { public: void CDroppedObjectShadow_012670(); };
