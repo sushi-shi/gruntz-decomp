@@ -77,14 +77,6 @@ RVA(0x00147c80, 0x4d) void CDDPalette::CDDPalette_147c80() {}  // high
 RVA(0x0013e9a0, 0xcc) void CDDSurface::CDDSurface_13e9a0() {}  // med
 
 // ---- CDDrawPtrCollections ----
-RVA(0x001421a0, 0xbe) void CDDrawPtrCollections::CDDrawPtrCollections_1421a0() {}  // high
-RVA(0x001424a0, 0xbe) void CDDrawPtrCollections::CDDrawPtrCollections_1424a0() {}  // high
-RVA(0x00142560, 0xc8) void CDDrawPtrCollections::CDDrawPtrCollections_142560() {}  // high
-RVA(0x00142730, 0xc8) void CDDrawPtrCollections::CDDrawPtrCollections_142730() {}  // high
-RVA(0x00142820, 0x53) void CDDrawPtrCollections::CDDrawPtrCollections_142820() {}  // high
-RVA(0x00142880, 0xbe) void CDDrawPtrCollections::CDDrawPtrCollections_142880() {}  // high
-RVA(0x00142940, 0xd4) void CDDrawPtrCollections::CDDrawPtrCollections_142940() {}  // high
-RVA(0x00142aa0, 0xca) void CDDrawPtrCollections::CDDrawPtrCollections_142aa0() {}  // high
 RVA(0x00142b70, 0xce) void CDDrawPtrCollections::CDDrawPtrCollections_142b70() {}  // high
 RVA(0x00142c40, 0xd7) void CDDrawPtrCollections::CDDrawPtrCollections_142c40() {}  // high
 RVA(0x00142d40, 0x53) void CDDrawPtrCollections::CDDrawPtrCollections_142d40() {}  // high
