@@ -889,3 +889,8 @@ flags = "base"
 unit = "cfader"
 source = "src/Gruntz/CFader.cpp"
 flags = "eh"
+
+[[unit]]
+unit = "blowfish"
+source = "src/Crypto/Blowfish.cpp"
+flags = "base"

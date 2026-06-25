@@ -630,9 +630,13 @@ void ClassUnknown_17::ClassUnknown_17_170100() {}
 RVA(0x0016f7f0, 0x47b)
 void ClassUnknown_18::ClassUnknown_18_16f7f0() {}
 
-// ---- ClassUnknown_19 ----
-RVA(0x0016fc70, 0x48e)
-void ClassUnknown_19::ClassUnknown_19_16fc70() {}
+// ---- ClassUnknown_19 -> Blowfish_decipher (src/Crypto/Blowfish.cpp) ----
+// Not a class: Bruce Schneier's reference Blowfish cipher (free __cdecl funcs).
+// 0x16fc70 is the single-block DECIPHER (16 unrolled Feistel rounds over the
+// global P-array @0x61aeb0 + four pi-constant S-boxes @0x61aef8/b2f8/b6f8/baf8).
+// Siblings in the same module (still stubbed under other ClassUnknown labels):
+// Blowfish_encipher 0x16f7f0 (ClassUnknown_18), Blowfish_Init 0x170100 +
+// the key/CBC wrappers 0x16f6c0/0x16f760 (ClassUnknown_17).
 
 // ---- ClassUnknown_2 ---- fully reconstructed as the DDrawMgr color/shade
 // lookup-table cache CShadeTableCache in src/DDrawMgr/ShadeTableCache.cpp (a
