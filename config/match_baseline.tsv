@@ -95,7 +95,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	121	0
+engine_discovered	117	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -142,6 +142,7 @@ lightfxmgr	3	3
 loadlevelbymode	1	0
 logicrecord	5	3
 logictypetable	1	0
+logicworkerhandlers	4	4
 mainmenubuilder	1	0
 maplogic	5	4
 mapmgr	7	7
@@ -821,9 +822,7 @@ engine_discovered	?ClassUnknown_101_11f6b9@ClassUnknown_101@@QAEXXZ	9.0909	9.090
 engine_discovered	?ClassUnknown_102_06b2e0@ClassUnknown_102@@QAEXXZ	2.2222	2.2222	2	0eef992501d5	0x6b2e0
 engine_discovered	?ClassUnknown_103_148d10@ClassUnknown_103@@QAEXXZ	6.2500	6.2500	2	b03b02f5f4ea	0x148d10
 engine_discovered	?ClassUnknown_105_1657a0@ClassUnknown_105@@QAEXXZ	3.8462	3.8462	2	8175532b10e8	0x1657a0
-engine_discovered	?ClassUnknown_106_0af0a0@ClassUnknown_106@@QAEXXZ	1.1905	1.1905	2	2f871a57d93a	0xaf0a0
 engine_discovered	?ClassUnknown_107_10d3d0@ClassUnknown_107@@QAEXXZ	1.1905	1.1905	2	4a5c8da7814a	0x10d3d0
-engine_discovered	?ClassUnknown_109_0aa960@ClassUnknown_109@@QAEXXZ	1.1905	1.1905	2	cb3a79caddcb	0xaa960
 engine_discovered	?ClassUnknown_110_0fb660@ClassUnknown_110@@QAEXXZ	1.1905	1.1905	2	316cd1854e1e	0xfb660
 engine_discovered	?ClassUnknown_111_029a80@ClassUnknown_111@@QAEXXZ	6.2500	6.2500	2	b47bbc945ac9	0x29a80
 engine_discovered	?ClassUnknown_112_021c40@ClassUnknown_112@@QAEXXZ	20.0000	20.0000	2	49daa6667209	0x21c40
@@ -878,8 +877,6 @@ engine_discovered	?ClassUnknown_70_15b2b0@ClassUnknown_70@@QAEXXZ	16.6667	16.666
 engine_discovered	?ClassUnknown_71_15b270@ClassUnknown_71@@QAEXXZ	25.0000	25.0000	2	1fa68e7ac5de	0x15b270
 engine_discovered	?ClassUnknown_73_15b730@ClassUnknown_73@@QAEXXZ	3.0769	3.0769	2	9fdbafb15012	0x15b730
 engine_discovered	?ClassUnknown_74_16e360@ClassUnknown_74@@QAEXXZ	0.4000	0.4000	2	e2897f8c6d9c	0x16e360
-engine_discovered	?ClassUnknown_75_0a9cc0@ClassUnknown_75@@QAEXXZ	1.1905	1.1905	2	87349d70d34c	0xa9cc0
-engine_discovered	?ClassUnknown_76_0aa5a0@ClassUnknown_76@@QAEXXZ	1.1905	1.1905	2	aa3b3f9707d8	0xaa5a0
 engine_discovered	?ClassUnknown_82_115520@ClassUnknown_82@@QAEXXZ	3.5714	3.5714	2	a17f44a5e87e	0x115520
 engine_discovered	?ClassUnknown_83_029a30@ClassUnknown_83@@QAEXXZ	6.6667	6.6667	2	f9c50df15528	0x29a30
 engine_discovered	?ClassUnknown_84_09a260@ClassUnknown_84@@QAEXXZ	3.6364	3.6364	2	babcfc589ba5	0x9a260
@@ -1876,6 +1873,10 @@ logicrecord	?Dispatch@CLogicRecord@@QAEHHHPAX0@Z	79.6203	79.6203	1	5db0447ef675	
 logicrecord	?Init@CLogicRecord@@QAEHPAXH@Z	100.0000	100.0000	1	13cd2b4bb6f4	0x151e20
 logicrecord	?Load@CLogicRecord@@QAEHPAVLogicArchive@@@Z	100.0000	100.0000	1	f15fadec497e	0x164960
 logictypetable	?BuildLogicTypeTable@@YGXPAUCLogicTypeBuilder@@@Z	87.9167	87.9167	6	313ac91839f7	0x8a40
+logicworkerhandlers	?HandlerA9CC0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	cc9db04aaadc	0xa9cc0
+logicworkerhandlers	?HandlerAA5A0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	d909b08dc631	0xaa5a0
+logicworkerhandlers	?HandlerAA960@@YAHPAUOwner@@@Z	100.0000	100.0000	1	8791e12082ce	0xaa960
+logicworkerhandlers	?HandlerAF0A0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	fc95604f0cd1	0xaf0a0
 mainmenubuilder	?BuildMainMenuTree@@YAXPAX@Z	77.6725	77.6725	2	77164b63ab1c	0xa11d0
 maplogic	??1CMapLogic@@UAE@XZ	100.0000	100.0000	1	baec3be51eff	0x113c0
 maplogic	?FreeNodes@CMapLogic@@QAEXXZ	100.0000	100.0000	2	8cb172a03e69	0x85480

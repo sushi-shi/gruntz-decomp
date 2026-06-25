@@ -1031,6 +1031,11 @@ source = "src/Gruntz/InGameWorkerHandlers.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "logicworkerhandlers"
+source = "src/Gruntz/LogicWorkerHandlers.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "loadlevelbymode"
 source = "src/Gruntz/LoadLevelByMode.cpp"
 flags = "eh"
