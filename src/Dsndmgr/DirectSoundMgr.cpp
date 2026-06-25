@@ -109,6 +109,7 @@ struct DSoundVoice {
         Link* m_next;
         Link* m_prev;
     } m_link;
+    char m_pad0c[0x28 - 0x0c]; // full node is 0x28 bytes (the `new` size operand)
     DSoundVoice(i32 key, i32 pct, i32 mode, DirectSoundMgr* owner, i32 slot,
                 i32 stamp); // 0x136fe0
 };

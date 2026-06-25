@@ -19,7 +19,7 @@ aniplayer	2	0
 appdialogs	1	1
 applyrange	1	1
 areamgr	4	2
-backlogstateloaders	3	2
+backlogstateloaders	3	3
 battlezdata	30	27
 battlezmapconfig	1	0
 blowfish	4	3
@@ -35,7 +35,7 @@ cbehindcandyani	4	3
 cbrickz	1	0
 ccursorsnapsprite	2	2
 cddrawchildgroup	9	5
-cddrawptrcollections	26	11
+cddrawptrcollections	26	12
 cddrawshadeblit	6	1
 cddrawsubmgr	41	23
 cddrawsubmgrani	3	1
@@ -112,7 +112,7 @@ databuffer	7	5
 deflate	6	6
 dialogs	26	11
 directinputmgr2	33	29
-directsoundmgr	39	28
+directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	28	0
 engine_boundary	590	0
@@ -129,7 +129,7 @@ gamekeyhandler	1	0
 gamelevel	51	23
 gamemode	42	19
 gamemodeobjlifecycle	4	3
-gameobjectctors	5	0
+gameobjectctors	5	1
 gametext	4	2
 gamewnd	9	8
 grunt	77	15
@@ -137,7 +137,7 @@ gruntdatarecord	2	2
 gruntpuddle	4	2
 gruntspawnconfig	14	7
 gruntvoice	5	4
-gruntzapp	10	8
+gruntzapp	10	9
 gruntzcmdmgr	12	10
 gruntzcommand	14	14
 gruntzmgr	87	60
@@ -281,7 +281,7 @@ areamgr	?Reset@CAreaMgr@@QAEXXZ	100.0000	100.0000	1	8ba7b79b3da8	0x9a0b0
 areamgr	?SameGroup@CAreaMgr@@QAEHH@Z	58.3529	58.3529	1	9eb1e4ec0b0f	0x9b430
 backlogstateloaders	?BuildNamedGruntTable@@YAXXZ	100.0000	100.0000	1	9a87d09f4fe0	0xc16b0
 backlogstateloaders	?LoadAssets@CHelpState@@QAEHHHH@Z	100.0000	100.0000	1	468067a98ba9	0x95090
-backlogstateloaders	?OnActivate_vfunc8@GameLevelState@@QAEHXZ	99.9521	99.9521	1	587ca9541927	0xcb800
+backlogstateloaders	?OnActivate_vfunc8@GameLevelState@@QAEHXZ	100.0000	100.0000	1	587ca9541927	0xcb800
 battlezdata	?AllRecordsInBounds@CBattlezData@@QAEHXZ	100.0000	100.0000	1	2fafef7ab0ef	0xfccf0
 battlezdata	?BumpWin@CBattlezData@@QAEXHH@Z	100.0000	100.0000	2	d6751b8a863d	0xfcc50
 battlezdata	?ClearFlags@CBattlezData@@QAEXXZ	100.0000	100.0000	2	56a78ec21608	0xfcb90
@@ -418,7 +418,7 @@ cddrawchildgroup	?VirtualMethodUnknown30@CDDrawChildGroup@@QAEXHHH@Z	89.0909	89.
 cddrawchildgroup	?VirtualMethodUnknown34@CDDrawChildGroup@@QAEXHHH@Z	89.0909	89.0909	6	5b41e511b849	0x159d40
 cddrawchildgroup	?VirtualMethodUnknown38@CDDrawChildGroup@@UAEXXZ	100.0000	100.0000	5	3b973f16dca8	0x159d90
 cddrawptrcollections	??0CDDrawPtrCollections@@QAE@XZ	100.0000	100.0000	6	dee578ff0baf	0x141cc0
-cddrawptrcollections	??1CDDrawPtrCollections@@QAE@XZ	99.9615	99.9615	1	34dac2207b6a	0x141d50
+cddrawptrcollections	??1CDDrawPtrCollections@@QAE@XZ	100.0000	100.0000	2	2f4c0afd1caf	0x141d50
 cddrawptrcollections	??1CPoolItemA7f0@@QAE@XZ	94.0000	94.0000	1	98f6a0c7dffa	0x142d40
 cddrawptrcollections	??1CPoolItemA@@QAE@XZ	94.0000	94.0000	1	118e251b1768	0x142820
 cddrawptrcollections	?AddItemA@CDDrawPtrCollections@@QAEXPAVCPoolItemA@@@Z	100.0000	100.0000	1	08823e73ec27	0x142100
@@ -980,7 +980,7 @@ directsoundmgr	??1DirectSoundMgr@@QAE@XZ	54.4483	54.4483	2	dc5874689677	0x135bb0
 directsoundmgr	?ApplyAndPlay@DirectSoundMgr@@QAEHHHHH@Z	100.0000	100.0000	2	6af7920ca856	0x136300
 directsoundmgr	?BaseDtor@DirectSoundMgr@@QAEXXZ	100.0000	100.0000	1	220c935476fd	0x136260
 directsoundmgr	?Clone@DirectSoundMgr@@QAEPAV1@H@Z	71.7294	71.7294	1	30a580b810a9	0x135c20
-directsoundmgr	?CloneAndPlay@DirectSoundMgr@@QAEHHHH@Z	99.9872	99.9872	2	67c972e8ad3c	0x135660
+directsoundmgr	?CloneAndPlay@DirectSoundMgr@@QAEHHHH@Z	100.0000	100.0000	2	67c972e8ad3c	0x135660
 directsoundmgr	?ComputeDuration@DirectSoundMgr@@QAEXXZ	100.0000	100.0000	1	cffc13edf66a	0x1359a0
 directsoundmgr	?Create@DirectSoundMgr@@QAEHPAXII@Z	100.0000	100.0000	2	e2f738b26faa	0x136550
 directsoundmgr	?CreatePrimaryBuffer@DirectSoundMgr@@QAEHXZ	98.7755	98.7755	4	cfc2cf3f0142	0x137260
@@ -2348,8 +2348,8 @@ gamemodeobjlifecycle	?SetCursorFrame@CGameModeObj@@QAEHH@Z	100.0000	100.0000	1	9
 gameobjectctors	??0CGruntStaminaSprite@@QAE@PAUCSpriteObj@@@Z	94.7619	94.7619	2	432dc16b6366	0x7fae0
 gameobjectctors	??0CGruntToyTimeSprite@@QAE@PAUCSpriteObj@@@Z	94.7619	94.7619	2	83fe8ba17874	0x7fbd0
 gameobjectctors	??0CGruntWingzTimeSprite@@QAE@PAUCSpriteObj@@@Z	94.7619	94.7619	2	d29f9444e61a	0x7fcc0
-gameobjectctors	??0CRainCloud@@QAE@PAUCHazardObj@@@Z	99.9773	99.9773	3	5f425e89f780	0xb49b0
-gameobjectctors	??0CUFO@@QAE@PAUCHazardObj@@@Z	81.0114	81.0114	3	529d99d92540	0xb4a90
+gameobjectctors	??0CRainCloud@@QAE@PAUCHazardObj@@@Z	100.0000	100.0000	3	5f425e89f780	0xb49b0
+gameobjectctors	??0CUFO@@QAE@PAUCHazardObj@@@Z	81.0227	81.0227	3	529d99d92540	0xb4a90
 gametext	??0CContainerErr@@QAE@PBD@Z	99.7368	99.7368	4	754ef1da6bee	0x16d9c0
 gametext	?GetWarlordName@@YG?AVCString@@H@Z	89.2553	89.2553	4	290253c681a0	0x1ec20
 gametext	_$E1	100.0000	100.0000	1	cpp:a7f73c40eefc	0x82990
@@ -2467,7 +2467,7 @@ gruntvoice	?Reset@CGruntVoice@@QAEXXZ	100.0000	100.0000	1	dade6712d474	0x11a870
 gruntvoice	?Setup@CGruntVoice@@QAEHHPAXHH@Z	85.2500	85.2500	2	7a030505d1b8	0x11a7e0
 gruntzapp	??0CGruntzApp@@QAE@XZ	100.0000	100.0000	6	4559dd088d06	0x80850
 gruntzapp	??1CGruntzApp@@UAE@XZ	100.0000	100.0000	6	43c4ac32e8f0	0x808b0
-gruntzapp	?CreateU10O@@YAPAXXZ	99.9583	99.9583	5	c79c77d4e5bc	0x809a0
+gruntzapp	?CreateU10O@@YAPAXXZ	100.0000	100.0000	5	c79c77d4e5bc	0x809a0
 gruntzapp	?ErrorDialogProc@CGruntzApp@@SGHPAUHWND__@@IIJ@Z	100.0000	100.0000	3	a1645c0810c1	0x80c70
 gruntzapp	?InitializeGameManager@CGruntzApp@@UAEPAVCGameMgr@WAP32@@XZ	100.0000	100.0000	7	fe11f2fe80fb	0x80a20
 gruntzapp	?ShowError@CGruntzApp@@UAEXXZ	100.0000	100.0000	7	aa5e38983cf1	0x80ac0

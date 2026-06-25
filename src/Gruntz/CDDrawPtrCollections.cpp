@@ -283,12 +283,12 @@ CDDrawPtrCollections::CDDrawPtrCollections() : m_poolA(0xa), m_poolB(0xa), m_arr
 }
 
 // ---------------------------------------------------------------------------
-// Destructor (0x141d50).  Clear(2), then tear down the two CPtrLists + CPtrArray
+// Destructor (0x141d50).  Clear(1), then tear down the two CPtrLists + CPtrArray
 // (reverse construction order).  /GX EH frame.
 // ---------------------------------------------------------------------------
 RVA(0x00141d50, 0x6f)
 CDDrawPtrCollections::~CDDrawPtrCollections() {
-    Clear(2);
+    Clear(1);
 }
 
 // ---------------------------------------------------------------------------

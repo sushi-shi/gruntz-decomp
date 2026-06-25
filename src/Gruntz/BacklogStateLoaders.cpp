@@ -129,6 +129,7 @@ public:
     GLSAssetRoot* m_c; // +0x0c
     char m_pad10[0x28 - 0x10];
     GLSNamespace* m_28; // +0x28
+    char m_pad2c[0x30 - 0x2c];
     GLSNamespace* m_30; // +0x30
     char m_pad34[0x2dc - 0x34];
     GLSMapMgr* m_2dc; // +0x2dc

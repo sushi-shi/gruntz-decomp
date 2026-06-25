@@ -222,6 +222,7 @@ void CGruntzApp::ShowMessage(char* msg, HWND hParent) {
 // class with a declared ctor suffices to give `new U10O` a size + ctor call.
 struct U10O {
     U10O();
+    char m_pad[0x10]; // 0x10-byte object (the `new` size operand)
 };
 RVA(0x000809a0, 0x57)
 void* CreateU10O() {
