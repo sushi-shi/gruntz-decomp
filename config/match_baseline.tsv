@@ -64,7 +64,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	229	0
+engine_discovered	226	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -102,6 +102,7 @@ inftrees	6	6
 infutil	1	1
 ingameicon	5	2
 ingametext	3	3
+ingameworkerhandlers	3	3
 inputdeviceconfig	1	0
 kitchenslime	2	0
 leveltilevalidation	1	0
@@ -141,7 +142,7 @@ sbi_statztabgruntbar_eh	1	0
 sbi_warlordhead	4	1
 sbi_warlordhead_eh	1	0
 shadetablecache	9	3
-siriusworkerhandlers	4	0
+siriusworkerhandlers	4	3
 sounddevice	6	4
 soundstream	5	2
 soundvoicelist	4	3
@@ -845,9 +846,6 @@ engine_discovered	?ClassUnknown_5_150040@ClassUnknown_5@@QAEXXZ	0.3226	0.3226	1	
 engine_discovered	?ClassUnknown_60_0ebd30@ClassUnknown_60@@QAEXXZ	12.5000	12.5000	1	2eccf0c58550	0xebd30
 engine_discovered	?ClassUnknown_61_120120@ClassUnknown_61@@QAEXXZ	1.1628	1.1628	1	a41e00445cad	0x120120
 engine_discovered	?ClassUnknown_61_17b500@ClassUnknown_61@@QAEXXZ	25.0000	25.0000	1	50e219956f29	0x17b500
-engine_discovered	?ClassUnknown_65_095750@ClassUnknown_65@@QAEXXZ	1.1905	1.1905	1	1e411b3155fb	0x95750
-engine_discovered	?ClassUnknown_65_095890@ClassUnknown_65@@QAEXXZ	1.1905	1.1905	1	59869a658e05	0x95890
-engine_discovered	?ClassUnknown_65_0aa6e0@ClassUnknown_65@@QAEXXZ	1.1905	1.1905	1	be7d08983e85	0xaa6e0
 engine_discovered	?ClassUnknown_66_161370@ClassUnknown_66@@QAEXXZ	50.0000	50.0000	1	5b39a726447f	0x161370
 engine_discovered	?ClassUnknown_66_166d40@ClassUnknown_66@@QAEXXZ	3.3333	3.3333	1	f2ee01b8e610	0x166d40
 engine_discovered	?ClassUnknown_6_14dcf0@ClassUnknown_6@@QAEXXZ	3.4483	3.4483	1	15185bc126ec	0x14dcf0
@@ -1822,6 +1820,9 @@ ingameicon	?SetField54@CInGameIcon@@QAEXH@Z	100.0000	100.0000	2	996198841286	0x9
 ingametext	??1CInGameText@@UAE@XZ	100.0000	100.0000	1	f69bd50df17d	0x11dc0
 ingametext	?Dispatch@CInGameText@@QAEXH@Z	100.0000	100.0000	1	732a6ae0ef8a	0x99460
 ingametext	?Serialize@CInGameText@@QAEHPAVCTextArchive@@HHH@Z	100.0000	100.0000	1	1cfc09245808	0x99a30
+ingameworkerhandlers	?Handler095750@@YAHPAUOwner@@@Z	100.0000	100.0000	1	76ecb60f46e9	0x95750
+ingameworkerhandlers	?Handler095890@@YAHPAUOwner@@@Z	100.0000	100.0000	1	8bf2772ac296	0x95890
+ingameworkerhandlers	?Handler0aa6e0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	f247242b9830	0xaa6e0
 inputdeviceconfig	?LoadInputDeviceConfig@CInputConfig@@QAE?AVCString@@H@Z	77.3265	77.3265	5	a06dac34f93f	0x387c0
 kitchenslime	?LoadSprites@CKitchenSlime@@QAEHXZ	69.1992	69.1992	2	2c07cc5dc21b	0xb3160
 kitchenslime	?Tick@CKitchenSlime@@QAEHXZ	94.8551	94.8551	3	c7b9e1dd58eb	0xb2ca0
@@ -2085,9 +2086,9 @@ shadetablecache	?GreyTable@CShadeTableCache@@QAEPAUCShadeTable@@XZ	71.7576	71.75
 shadetablecache	?Init@CShadeTableCache@@QAEHXZ	100.0000	100.0000	1	9851d1a61203	0x14dec0
 shadetablecache	?SubTable@CShadeTableCache@@QAEPAUCShadeTable@@H@Z	60.8937	60.8937	2	16c5c237d296	0x14f310
 siriusworkerhandlers	??0WorkerFull@@QAE@HHH@Z	99.7647	99.7647	1	5742f7cb4005	0x15b300
-siriusworkerhandlers	?Handler03d670@@YAHPAUOwner@@@Z	97.8571	97.8571	1	839c531d42a0	0x3d670
-siriusworkerhandlers	?Handler07db20@@YAHPAUOwner@@@Z	97.8571	97.8571	1	b23002ac8904	0x7db20
-siriusworkerhandlers	?Handler07dda0@@YAHPAUOwner@@@Z	97.8571	97.8571	1	27f15168f4f5	0x7dda0
+siriusworkerhandlers	?Handler03d670@@YAHPAUOwner@@@Z	100.0000	100.0000	1	839c531d42a0	0x3d670
+siriusworkerhandlers	?Handler07db20@@YAHPAUOwner@@@Z	100.0000	100.0000	1	b23002ac8904	0x7db20
+siriusworkerhandlers	?Handler07dda0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	27f15168f4f5	0x7dda0
 sounddevice	??1SoundDevice@@QAE@XZ	28.2353	28.2353	1	980bcd8696e1	0x136500
 sounddevice	?FreeSamples@SoundDevice@@QAEHXZ	77.4074	77.4074	2	252e2641aed3	0x136ed0
 sounddevice	?RemoveBuffer@SoundDevice@@QAEXPAUSoundBuf@@@Z	100.0000	100.0000	1	adf3276a17a2	0x136d80

@@ -569,16 +569,11 @@ public:
 // ClassUnknown_64 reconstructed as CWwdGrid in src/Gruntz/WwdGrid.cpp.
 // NOTE: the five real members (151da0/151e20/15b340/164830/164960) of this
 // trace-cluster are reconstructed as CLogicRecord (src/Gruntz/LogicRecord.cpp).
-// The three remaining handlers are __cdecl free functions (no ecx use) that
-// were trace-attributed here by ecx-leftover coincidence - NOT members; they
-// dispatch on arg->m_7c->m_1c and `new` a sub-record. Kept stubbed pending
-// their own (message-handler) cluster.
-class ClassUnknown_65 {
-public:
-    void ClassUnknown_65_095750();
-    void ClassUnknown_65_095890();
-    void ClassUnknown_65_0aa6e0();
-};
+// The three remaining handlers are __cdecl free functions (no ecx use) that were
+// trace-attributed here by ecx-leftover coincidence - NOT members; they dispatch
+// on arg->m_7c->m_1c and `new` a sub-record. Reconstructed (3/3 byte-exact) as
+// the in-game-HUD worker twin of SiriusWorkerHandlers in
+// src/Gruntz/InGameWorkerHandlers.cpp (ingameworkerhandlers unit).
 class ClassUnknown_66 {
 public:
     void ClassUnknown_66_161370();

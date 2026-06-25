@@ -913,13 +913,11 @@ void ClassUnknown_61::ClassUnknown_61_17b500() {}
 
 // ---- ClassUnknown_65 ----
 // The five real members moved to CLogicRecord (src/Gruntz/LogicRecord.cpp). The
-// three below are __cdecl free message handlers mis-clustered here (see header).
-RVA(0x00095750, 0xf4)
-void ClassUnknown_65::ClassUnknown_65_095750() {}
-RVA(0x00095890, 0xf1)
-void ClassUnknown_65::ClassUnknown_65_095890() {}
-RVA(0x000aa6e0, 0xf1)
-void ClassUnknown_65::ClassUnknown_65_0aa6e0() {}
+// three __cdecl free message handlers mis-clustered here are reconstructed (3/3
+// byte-exact) as the in-game-HUD worker twin of SiriusWorkerHandlers in
+// src/Gruntz/InGameWorkerHandlers.cpp (ingameworkerhandlers unit):
+//   0x095750 -> new CInGameIcon (0x80)   0x095890 -> new CInGameText (0x5c)
+//   0x0aa6e0 -> new CEyeCandy (0x54).
 
 // ---- ClassUnknown_66 ----
 RVA(0x00161370, 0x7)

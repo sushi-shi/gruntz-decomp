@@ -851,6 +851,11 @@ source = "src/Gruntz/SiriusWorkerHandlers.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "ingameworkerhandlers"
+source = "src/Gruntz/InGameWorkerHandlers.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "loadlevelbymode"
 source = "src/Gruntz/LoadLevelByMode.cpp"
 flags = "eh"

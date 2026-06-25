@@ -1,13 +1,13 @@
-// SiriusWorkerHandlers.cpp - the Sirius-worker message-handler family + the
-// out-of-line worker constructor (foreign vtable 0x5efb80, the same 0x17c-byte
-// worker family as CDDrawWorkerCache's SiriusWorkerObj and the CWwdGameObject
-// +0x7c AnimWorker).
+// InGameWorkerHandlers.cpp - the in-game-HUD worker message-handler family, the
+// twin of SiriusWorkerHandlers (src/Gruntz/SiriusWorkerHandlers.cpp). Same /GX
+// message-pump shape; these dispatch on the in-game HUD worker hanging at
+// owner->m_7c instead of the Sirius worker.
 //
-// The three 0xf1 handlers (0x03d670 / 0x07db20 / 0x07dda0) are __cdecl FREE
-// functions (the owner is a stack arg at [esp+0x18], ecx is never touched - the
-// trace-clusterer's ClassUnknown_72 "class" is a false grouping; see the report).
-// Each reads owner->m_7c (the worker), then runs a /GX message pump keyed on the
-// worker's state tag worker->m_1c:
+// The three handlers (0x095750 / 0x095890 / 0x0aa6e0) are __cdecl FREE functions
+// (the owner is a stack arg at [esp+0x18], ecx is never `this` - the trace
+// clusterer's ClassUnknown_65 grouping was a false grouping; these are not class
+// members). Each reads owner->m_7c (the worker), then runs a /GX message pump
+// keyed on the worker's state tag worker->m_1c:
 //   state 0      -> `new <SubRecord>(owner)`; activate it (sub->vtbl[0x18]); stow
 //                   it at worker->m_18; advance the state tag to 0x3e8.
 //   state 0x1d   -> sub->vtbl[0x2c]()      state 0x1e -> sub->vtbl[0x28]()
@@ -15,16 +15,17 @@
 //   state 0x52   -> sub->vtbl[0x30]()      state 0x51 -> sub->vtbl[0x34]()
 //   state 0x3e8  -> idle (no-op).          default     -> the engine default pump
 //                   (0x16e4f0, __cdecl, taking the sub-record).
-// The three handlers are byte-identical bar the sub-record TYPE (hence the
-// `new` size + ctor target): 0x54 (CWormhole::Stub_03fc70 family), 0x5c
-// (CGruntSelectedSprite), 0x60 (CGruntToySprite).
+// The three handlers are byte-identical bar the sub-record TYPE (hence the `new`
+// size + ctor target): 0x80 (CInGameIcon, ctor 0x95b10), 0x5c (CInGameText, ctor
+// 0x99110), 0x54 (CEyeCandy, ctor 0xac620).
 //
-// The 0x15b300 ctor is the out-of-line 3-arg SiriusWorker constructor (the body
-// the 0x150eb0 factory / VirtualMethodUnknown24 inline): stamp the foreign vptr,
-// seed +0x04/+0x08/+0x0c from the args, zero the working fields.
+// KEY to 100% (not 97.86%): the worker state tag is `u32 m_1c` (UNSIGNED). MSVC5
+// emits the switch range-checks as unsigned `ja`/`jbe` for an unsigned key; a
+// signed `i32` key would emit `jg`/`jle` and diverge (the only difference vs the
+// retail bytes). See docs/patterns/switch-key-unsigned-ja-vs-jg.md.
 //
-// Field names are placeholders (m_<hexoffset>); only OFFSETS + emitted code
-// bytes are load-bearing (campaign doctrine).
+// Field names are placeholders (m_<hexoffset>); only OFFSETS + emitted code bytes
+// are load-bearing (campaign doctrine).
 #include <rva.h>
 
 // ---------------------------------------------------------------------------
@@ -32,7 +33,7 @@
 // out so the message pump's vtable calls land at the right byte offsets
 // (0x18 = slot 6 activate, 0x28..0x3c = slots 10..15). Declarations only - never
 // defined here, so no ??_7 is emitted; the constructed object's real vtable is
-// the engine sprite class's, stamped by its own (extern) constructor.
+// the engine HUD class's, stamped by its own (extern) constructor.
 class SubRecord {
 public:
     virtual void Slot00();   // +0x00
@@ -53,31 +54,30 @@ public:
     virtual void Vfunc3C();  // +0x3c  (state 0x53)
 };
 
-// The three engine sprite sub-records the handlers `new`. Each is an opaque
-// engine object of its exact retail size with a 1-arg __thiscall constructor
-// matched in another TU; declared with no body so `new T(owner)` lowers to
+// The three engine HUD sub-records the handlers `new`. Each is an opaque engine
+// object of its exact retail size with a 1-arg __thiscall constructor matched in
+// another TU; declared with no body so `new T(owner)` lowers to
 // push sizeof(T); call operator new; mov ecx,raw; push owner; call <ctor>, all
-// reloc-masked. The leading SubRecord base lets the post-construction
-// Activate() dispatch lower to `mov eax,[obj]; call [eax+0x18]`.
+// reloc-masked. The leading SubRecord base lets the post-construction Activate()
+// dispatch lower to `mov eax,[obj]; call [eax+0x18]`.
 struct Owner;
 
-struct SubRecord54 : public SubRecord {
-    SubRecord54(Owner* owner); // 0x03fc70 (CWormhole::Stub_03fc70 family)
-    char m_body[0x54 - 0x04];
-}; // sizeof = 0x54
+struct CInGameIcon : public SubRecord {
+    CInGameIcon(Owner* owner); // 0x095b10
+    char m_body[0x80 - 0x04];
+}; // sizeof = 0x80
 
-struct SubRecord5C : public SubRecord {
-    SubRecord5C(Owner* owner); // 0x07e3e0 CGruntSelectedSprite
+struct CInGameText : public SubRecord {
+    CInGameText(Owner* owner); // 0x099110
     char m_body[0x5c - 0x04];
 }; // sizeof = 0x5c
 
-struct SubRecord60 : public SubRecord {
-    SubRecord60(Owner* owner); // 0x07f350 CGruntToySprite
-    char m_body[0x60 - 0x04];
-}; // sizeof = 0x60
+struct CEyeCandy : public SubRecord {
+    CEyeCandy(Owner* owner); // 0x0ac620
+    char m_body[0x54 - 0x04];
+}; // sizeof = 0x54
 
-// The worker held at owner->m_7c (foreign vtable 0x5efb80). Only the message-
-// pump fields are modeled here.
+// The worker held at owner->m_7c. Only the message-pump fields are modeled here.
 struct Worker {
     void* m_vptr;              // +0x00
     char m_pad04[0x18 - 0x04]; // +0x04..0x17
@@ -96,17 +96,13 @@ struct Owner {
 extern "C" void Worker_DefaultPump(SubRecord* sub);
 
 // ---------------------------------------------------------------------------
-// The switch key worker->m_1c is UNSIGNED (u32); MSVC5 then emits the range
-// checks as unsigned ja/jbe, matching retail byte-for-byte. A signed i32 key
-// emits jg/jle and caps the function at 97.86%. See
-// docs/patterns/switch-key-unsigned-ja-vs-jg.md.
-RVA(0x0003d670, 0xf1)
-i32 Handler03d670(Owner* owner) {
+RVA(0x00095750, 0xf4)
+i32 Handler095750(Owner* owner) {
     Worker* rec = owner->m_7c;
     switch (rec->m_1c) {
         case 0: {
             rec->m_1c = 0x3e8;
-            SubRecord* sub = new SubRecord54(owner);
+            SubRecord* sub = new CInGameIcon(owner);
             sub->Activate();
             rec->m_18 = sub;
             break;
@@ -138,13 +134,13 @@ i32 Handler03d670(Owner* owner) {
     return 1;
 }
 
-RVA(0x0007db20, 0xf1)
-i32 Handler07db20(Owner* owner) {
+RVA(0x00095890, 0xf1)
+i32 Handler095890(Owner* owner) {
     Worker* rec = owner->m_7c;
     switch (rec->m_1c) {
         case 0: {
             rec->m_1c = 0x3e8;
-            SubRecord* sub = new SubRecord5C(owner);
+            SubRecord* sub = new CInGameText(owner);
             sub->Activate();
             rec->m_18 = sub;
             break;
@@ -176,13 +172,13 @@ i32 Handler07db20(Owner* owner) {
     return 1;
 }
 
-RVA(0x0007dda0, 0xf1)
-i32 Handler07dda0(Owner* owner) {
+RVA(0x000aa6e0, 0xf1)
+i32 Handler0aa6e0(Owner* owner) {
     Worker* rec = owner->m_7c;
     switch (rec->m_1c) {
         case 0: {
             rec->m_1c = 0x3e8;
-            SubRecord* sub = new SubRecord60(owner);
+            SubRecord* sub = new CEyeCandy(owner);
             sub->Activate();
             rec->m_18 = sub;
             break;
@@ -212,50 +208,4 @@ i32 Handler07dda0(Owner* owner) {
             break;
     }
     return 1;
-}
-
-// ---------------------------------------------------------------------------
-// SiriusWorker 3-arg ctor (0x15b300, __thiscall, ret 0xc). Stamp the foreign
-// vptr and seed the three context fields (b -> +0x04, c -> +0x08, a -> +0x0c),
-// zeroing the rest.
-//
-// The foreign worker vftable (0x5efb80), DIR32 data (RVA = VA - 0x400000).
-DATA(0x001efb80)
-extern void* g_siriusWorkerVtbl;
-
-struct WorkerFull {
-    WorkerFull(i32 a, i32 b, i32 c);
-    void* m_vptr; // +0x00
-    i32 m_04;     // +0x04  <- b
-    i32 m_08;     // +0x08  <- c
-    i32 m_0c;     // +0x0c  <- a
-    i32 m_10;
-    i32 m_14;
-    i32 m_18;
-    i32 m_1c;
-    char m_pad20[0x170 - 0x20];
-    i32 m_170;
-    i32 m_174;
-    i32 m_178;
-};
-
-// @early-stop
-// reloc-typing scoring artifact (88.6%, reloc-typing-vptr-global.md): the .text
-// is BYTE-IDENTICAL (empty instruction diff) and the lone reloc
-// (?g_siriusWorkerVtbl@@3PAXA DIR32 vptr store) is name-identical on both sides;
-// objdiff's fuzzy still discounts the relocated vptr-store immediate. Code is
-// correct - nothing to chase.
-RVA(0x0015b300, 0x40)
-WorkerFull::WorkerFull(i32 a, i32 b, i32 c) {
-    m_04 = b;
-    m_0c = a;
-    m_08 = c;
-    m_vptr = &g_siriusWorkerVtbl;
-    m_10 = 0;
-    m_14 = 0;
-    m_18 = 0;
-    m_170 = 0;
-    m_1c = 0;
-    m_174 = 0;
-    m_178 = 0;
 }
