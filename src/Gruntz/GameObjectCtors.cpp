@@ -68,7 +68,28 @@ struct CSpriteObjAux {
 struct CGruntSpriteBase {
     CGruntSpriteBase(CSpriteObj* obj);
     ~CGruntSpriteBase(); // out-of-line; unwound on throw
-    void* m_vptr;        // +0x00
+    // Real polymorphic base now: declared-only virtuals (bodies in engine TUs)
+    // make cl emit each leaf's ??_7 vftable + the IMPLICIT post-base-ctor vptr
+    // stamp, replacing the explicit `*(void**)this = &g_...Vtbl` store. Leaf
+    // vtable names auto-derive (RTTI; config/vtable_names.csv).
+    virtual void Vf0();
+    virtual void Vf1();
+    virtual void Vf2();
+    virtual void Vf3();
+    virtual void Vf4();
+    virtual void Vf5();
+    virtual void Vf6();
+    virtual void Vf7();
+    virtual void Vf8();
+    virtual void Vf9();
+    virtual void Vf10();
+    virtual void Vf11();
+    virtual void Vf12();
+    virtual void Vf13();
+    virtual void Vf14();
+    virtual void Vf15();
+    virtual void Vf16();
+    // +0x00  implicit vptr (was an explicit m_vptr struct stamp)
     char m_pad04[0x10 - 0x04];
     CSpriteObj* m_10;    // +0x10
     CSpriteObjAux* m_14; // +0x14
@@ -102,19 +123,13 @@ public:
     i32 m_60; // +0x60
 };
 
-// Leaf vftables, referenced as DIR32 data.
-DATA(0x005e7a44)
-extern void* g_gruntStaminaSpriteVtbl;
-DATA(0x005e79ec)
-extern void* g_gruntToyTimeSpriteVtbl;
-DATA(0x005e77cc)
-extern void* g_gruntWingzTimeSpriteVtbl;
+// Leaf vftables (??_7CGrunt{Stamina,ToyTime,WingzTime}Sprite@@6B@) are now
+// emitted by cl and named on the target automatically (RTTI auto-namer).
 
 // @confidence: high
 // @source: rtti-vptr
 RVA(0x0007fae0, 0xa0)
 CGruntStaminaSprite::CGruntStaminaSprite(CSpriteObj* obj) : CGruntSpriteBase(obj) {
-    *(void**)this = &g_gruntStaminaSpriteVtbl;
     m_38->ApplyLookupSprite("GAME_GRUNTSTAMINASPRITE", 1);
     m_30 = m_14->m_1c;
     m_14->m_1c = g_buteTree.Find("A");
@@ -131,7 +146,6 @@ CGruntStaminaSprite::CGruntStaminaSprite(CSpriteObj* obj) : CGruntSpriteBase(obj
 // @source: rtti-vptr
 RVA(0x0007fbd0, 0xa0)
 CGruntToyTimeSprite::CGruntToyTimeSprite(CSpriteObj* obj) : CGruntSpriteBase(obj) {
-    *(void**)this = &g_gruntToyTimeSpriteVtbl;
     m_38->ApplyLookupSprite("GAME_GRUNTTOYTIMESPRITE", 1);
     m_30 = m_14->m_1c;
     m_14->m_1c = g_buteTree.Find("A");
@@ -148,7 +162,6 @@ CGruntToyTimeSprite::CGruntToyTimeSprite(CSpriteObj* obj) : CGruntSpriteBase(obj
 // @source: rtti-vptr
 RVA(0x0007fcc0, 0xa0)
 CGruntWingzTimeSprite::CGruntWingzTimeSprite(CSpriteObj* obj) : CGruntSpriteBase(obj) {
-    *(void**)this = &g_gruntWingzTimeSpriteVtbl;
     m_38->ApplyLookupSprite("GAME_GRUNTWINGZTIMESPRITE", 1);
     m_30 = m_14->m_1c;
     m_14->m_1c = g_buteTree.Find("A");
@@ -266,7 +279,31 @@ struct CSpotLightFactory {
 struct CPathHazardBase {
     CPathHazardBase(CHazardObj* obj);
     ~CPathHazardBase(); // out-of-line; unwound on throw
-    void* m_vptr;       // +0x00
+    // Real polymorphic base now (21 declared-only virtuals) -> cl emits each
+    // leaf's ??_7 + the implicit post-base-ctor vptr stamp; leaf vtable names
+    // auto-derive (RTTI). Replaces the explicit `*(void**)this = &g_...Vtbl`.
+    virtual void Vf0();
+    virtual void Vf1();
+    virtual void Vf2();
+    virtual void Vf3();
+    virtual void Vf4();
+    virtual void Vf5();
+    virtual void Vf6();
+    virtual void Vf7();
+    virtual void Vf8();
+    virtual void Vf9();
+    virtual void Vf10();
+    virtual void Vf11();
+    virtual void Vf12();
+    virtual void Vf13();
+    virtual void Vf14();
+    virtual void Vf15();
+    virtual void Vf16();
+    virtual void Vf17();
+    virtual void Vf18();
+    virtual void Vf19();
+    virtual void Vf20();
+    // +0x00  implicit vptr (was an explicit m_vptr struct stamp)
     char m_pad04[0x10 - 0x04];
     CHazardObj* m_10; // +0x10  (== obj)
     char m_pad14[0x38 - 0x14];
@@ -284,17 +321,14 @@ public:
     CUFO(CHazardObj* obj);
 };
 
-DATA(0x005e7324)
-extern void* g_rainCloudVtbl;
-DATA(0x005e72b4)
-extern void* g_ufoVtbl;
+// Leaf vftables (??_7CRainCloud@@6B@ / ??_7CUFO@@6B@) are emitted by cl and
+// named on the target automatically (RTTI auto-namer).
 
 // @confidence: high
 // @source: rtti-vptr
 RVA(0x000b49b0, 0xa8)
 CRainCloud::CRainCloud(CHazardObj* obj) : CPathHazardBase(obj) {
     CHazardObj* o = m_10;
-    *(void**)this = &g_rainCloudVtbl;
     i32 n = g_gameReg->m_78->m_28;
     o->m_58 = 1;
     o->m_50 = 0x7;
@@ -312,7 +346,6 @@ CRainCloud::CRainCloud(CHazardObj* obj) : CPathHazardBase(obj) {
 RVA(0x000b4a90, 0x145)
 CUFO::CUFO(CHazardObj* obj) : CPathHazardBase(obj) {
     CHazardObj* o = m_10;
-    *(void**)this = &g_ufoVtbl;
     i32 sx = o->m_5c;
     i32 sy = o->m_60;
     m_40 = m_38->m_1b4;

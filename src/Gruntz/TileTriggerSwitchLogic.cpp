@@ -31,6 +31,85 @@
 // the inlined child-delete in RemoveByKeys.
 extern "C" void RezFree(void* p);
 
+// The class's own vftable address, used by RemoveByKeys' inlined sibling-destroy
+// to restamp the freed node's vptr. The vtable itself is the compiler-emitted
+// ??_7CTileTriggerSwitchLogic@@6B@ (auto-named at 0x1eae8c) - which C++ can't take
+// the address of by name - so this is an undefined extern placeholder: the
+// `mov [data],offset ...` reloc is masked, so the emitted bytes match retail
+// regardless of the (unresolved) referent. NO DATA() here: 0x1eae8c is already
+// the ??_7 data symbol; a second name there would be a duplicate-RVA.
+extern void* g_tileTriggerSwitchLogicVtbl;
+
+// ---------------------------------------------------------------------------
+// Switch-sprite-loader support (vtable slots 2/3 = LoadSwitch{Down,Up}Sprite).
+// These were re-homed from EngineLabelBacklog (statusbarupdaters) to their real
+// owner here; the engine idioms (named-sprite Lookup + status-bar advance) and
+// the registry view are shared with StatusBarUpdaters.cpp. Only offsets / code
+// bytes are load-bearing; names are placeholders (campaign doctrine).
+// ---------------------------------------------------------------------------
+// The frame clock + draw-clock mirror globals (reloc-masked DATA externs).
+extern "C" {
+    extern u32 g_6bf3c0; // draw-clock mirror
+}
+extern i32 g_61ab20; // DAT_0061ab20  gates the status-bar push
+extern i32 g_61ab24; // DAT_0061ab24  the pushed value
+
+// The engine sprite-set hash table: Lookup() hashes the class-name key and writes
+// the found sprite through *ppOut.
+struct CSprite {
+    char m_pad00[0x14];
+};
+class CSpriteHashTable {
+public:
+    i32 Lookup(const char* szName, CSprite** ppOut);
+};
+// CStatusBarMgr::ConfigureItem (the shared status-bar push helper @0x1360d0;
+// external/no-body so the `call rel32` reloc-masks). __thiscall, ret 0x10.
+class CStatusBarMgr {
+public:
+    i32 ConfigureItem(i32 a0, i32 a1, i32 a2, i32 a3);
+};
+// The status-bar item the named Lookup resolves: the mgr to push into (+0x10), a
+// draw-clock latch (+0x14) and a window width (+0x18).
+struct CStatusBarTab {
+    char m_pad00[0x10];
+    CStatusBarMgr* m_10; // +0x10  the mgr ConfigureItem pushes into
+    u32 m_14;            // +0x14  draw-clock latch
+    u32 m_18;            // +0x18  window width
+};
+// The status-bar holder reached through the registry: embedded hash table at +0x10
+// (the `add ecx,0x10` before Lookup) and +0x30 gates the live surface.
+struct CStatusBarHolder {
+    char m_pad00[0x10];
+    CSpriteHashTable m_10map; // +0x10  embedded name->sprite hash table
+    char m_pad14[0x30 - 0x14];
+    i32 m_30; // +0x30  live-surface gate
+};
+// The map tile grid reached via m_30->m_24->m_5c: a cell-state table at +0x20 and
+// a parallel row-offset table at +0x24.
+struct CTileGrid {
+    char m_pad00[0x20];
+    i32* m_20; // +0x20  cell-state table
+    i32* m_24; // +0x24  row-offset table
+};
+// The tile-system notifier at registry +0x70.
+struct CTileNotifier {
+    void Notify(i32 x, i32 y, i32 state);
+};
+// The registry's +0x30 holder: the tile-grid holder (+0x24 -> +0x5c grid) and the
+// status-bar holder (+0x28).
+struct CRegHolder {
+    char m_pad00[0x24];
+    struct M24 {
+        char m_pad00[0x5c];
+        CTileGrid* m_5c;
+    }* m_24;                // +0x24 -> +0x5c grid
+    CStatusBarHolder* m_28; // +0x28
+};
+// g_gameReg (the game-mgr singleton @0x64556c) is declared in the header; the
+// `mov ds:g_gameReg` is a reloc-masked DIR32, so its symbol name is provided
+// cross-unit (gruntzmgr) - no DATA() annotation is needed (or allowed) here.
+
 // Per-type validators used by ValidateByType (reloc-masked rel32 callees; both
 // callee-cleanup taking the object pointer).
 i32 __stdcall TileSwitchCheckType4(void* obj);
@@ -52,11 +131,103 @@ CTileTriggerSwitchLogic::CTileTriggerSwitchLogic() {
     m_20 = 0;
 }
 
-// The 4 virtuals are DECLARED-ONLY: their real bodies live in unmatched engine
-// TUs, so we don't define them here. cl still emits the ??_7 vftable (the ctor
-// references it) with the 4 slots as external refs - enough for the ctor's
-// implicit vptr-stamp to be byte-exact. The vtable's slot CONTENTS are verified
-// only once each virtual is reconstructed (then named via @rva-symbol).
+// ===========================================================================
+// The 4 vtable virtuals (recovered by gruntz.analysis.vtable_scan --emit-vfuncs).
+// Each retail vtable slot stores an ILT `e9 rel32` jmp thunk address; the real
+// body is the jmp target.  All 4 are DEFINED here at their resolved body RVAs so
+// they delink as real, matchable backlog functions:
+//   slot 0  thunk 0x001749 -> body 0x1104f0  Vf0                  (uncarved -> stub)
+//   slot 1  thunk 0x0022e8 -> body 0x110460  Vf1                  (uncarved -> stub)
+//   slot 2  thunk 0x002e0f -> body 0x110570  LoadSwitchDownSprite (re-homed body)
+//   slot 3  thunk 0x0037e2 -> body 0x1106b0  LoadSwitchUpSprite   (re-homed body)
+// Slots 2/3 carry the full reconstructed switch sprite-loader bodies that used to
+// live as EngineLabelBacklog::LoadSwitch{Down,Up}Sprite in StatusBarUpdaters.cpp
+// (now removed there - the body RVA can have only ONE owning symbol).  Slots 0/1
+// (Ghidra FUN_005104f0/FUN_00510460) are not yet reconstructed -> stub bodies.
+// ---------------------------------------------------------------------------
+
+// CTileTriggerSwitchLogic::Vf0 @0x1104f0 (slot 0) - not yet reconstructed.
+// @confidence: high
+// @source: rtti-vptr
+// @stub
+RVA(0x001104f0, 0x56)
+void CTileTriggerSwitchLogic::Vf0() {}
+
+// CTileTriggerSwitchLogic::Vf1 @0x110460 (slot 1) - not yet reconstructed.
+// @confidence: high
+// @source: rtti-vptr
+// @stub
+RVA(0x00110460, 0x64)
+void CTileTriggerSwitchLogic::Vf1() {}
+
+// ---------------------------------------------------------------------------
+// CTileTriggerSwitchLogic::LoadSwitchDownSprite @0x110570 (slot 2)
+// Drives a tile switch into its DOWN state: bumps the switch tile's cell-state
+// counter in the map grid (grid->m_20[grid->m_24[m_0c] + m_08]) and notifies the
+// tile system, then - if the switch tile is on-screen (its pixel rect inside the
+// view bounds) and the status-bar surface is live - runs the GAME_SWITCHDOWN
+// status-bar advance.  Latches m_14 = 1 (down).  __thiscall.
+// ---------------------------------------------------------------------------
+RVA(0x00110570, 0xfb)
+void CTileTriggerSwitchLogic::LoadSwitchDownSprite() {
+    CTileGrid* g = g_gameReg->m_30->m_24->m_5c;
+    i32 v = g->m_20[g->m_24[m_0c] + m_08] + 1;
+    CTileGrid* g2 = g_gameReg->m_30->m_24->m_5c;
+    g2->m_20[g2->m_24[m_0c] + m_08] = v;
+    g_gameReg->m_70->Notify(m_08, m_0c, v);
+
+    i32 px = (m_08 << 5) + 0x10;
+    i32 py = (m_0c << 5) + 0x10;
+    if (px < g_gameReg->m_144 && px >= g_gameReg->m_13c && py < g_gameReg->m_148
+        && py >= g_gameReg->m_140) {
+        CStatusBarHolder* h = g_gameReg->m_30->m_28;
+        if (h->m_30 == 0) {
+            CSprite* spr = 0;
+            h->m_10map.Lookup("GAME_SWITCHDOWN", &spr);
+            if (spr) {
+                CStatusBarTab* t = (CStatusBarTab*)spr;
+                if (g_61ab20 != 0 && g_6bf3c0 - t->m_14 >= t->m_18) {
+                    t->m_14 = g_6bf3c0;
+                    t->m_10->ConfigureItem(g_61ab24, 0, 0, 0);
+                }
+            }
+        }
+    }
+    m_14 = 1;
+}
+
+// ---------------------------------------------------------------------------
+// CTileTriggerSwitchLogic::LoadSwitchUpSprite @0x1106b0 (slot 3)
+// The UP mirror of LoadSwitchDownSprite: decrements the cell-state counter, runs
+// the GAME_SWITCHUP advance, and latches m_14 = 0 (up).  __thiscall.
+// ---------------------------------------------------------------------------
+RVA(0x001106b0, 0xf4)
+void CTileTriggerSwitchLogic::LoadSwitchUpSprite() {
+    CTileGrid* g = g_gameReg->m_30->m_24->m_5c;
+    i32 v = g->m_20[g->m_24[m_0c] + m_08] - 1;
+    CTileGrid* g2 = g_gameReg->m_30->m_24->m_5c;
+    g2->m_20[g2->m_24[m_0c] + m_08] = v;
+    g_gameReg->m_70->Notify(m_08, m_0c, v);
+
+    i32 px = (m_08 << 5) + 0x10;
+    i32 py = (m_0c << 5) + 0x10;
+    if (px < g_gameReg->m_144 && px >= g_gameReg->m_13c && py < g_gameReg->m_148
+        && py >= g_gameReg->m_140) {
+        CStatusBarHolder* h = g_gameReg->m_30->m_28;
+        if (h->m_30 == 0) {
+            CSprite* spr = 0;
+            h->m_10map.Lookup("GAME_SWITCHUP", &spr);
+            if (spr) {
+                CStatusBarTab* t = (CStatusBarTab*)spr;
+                if (g_61ab20 != 0 && g_6bf3c0 - t->m_14 >= t->m_18) {
+                    t->m_14 = g_6bf3c0;
+                    t->m_10->ConfigureItem(g_61ab24, 0, 0, 0);
+                }
+            }
+        }
+    }
+    m_14 = 0;
+}
 
 // ---------------------------------------------------------------------------
 // CTileTriggerSwitchLogic::FindIndexByKey
@@ -252,10 +423,10 @@ i32 CTileTriggerSwitchLogic::RemoveByKeys(i32 k1, i32 k2) {
         node = node->m_next;
         if (data->m_04 == k2 && data->m_10 == k1) {
             if (data) {
-                // NOTE: retail inlines a vptr restamp (mov [data],offset ??_7)
-                // here; with the manual g_...Vtbl removed it's omitted in this
-                // demo (RemoveByKeys was already @early-stop). The real fix is to
-                // model the inlined ~CTileTriggerSwitchLogic.
+                // Inlined sibling-destroy: restamp the freed node's vptr to the
+                // class vtable (retail's `mov [data],offset ??_7...`), clear m_20,
+                // free. Reloc-masked, so the bytes match.
+                *(void**)data = &g_tileTriggerSwitchLogicVtbl;
                 data->m_20 = 0;
                 RezFree(data);
             }

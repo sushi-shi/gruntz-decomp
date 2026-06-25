@@ -102,13 +102,14 @@ MACRO_RE = re.compile(r"\b(?:RVA|DATA|SYMBOL)\s*\(")
 
 # Static rva->symbol table for vendored C TUs whose source carries no labels.
 LABEL_CONFIG = REPO / "config/zlib_labels.csv"
-# Deterministic ??_7<Class>@@6B@ -> (rva, size) map for the RTTI vtables,
-# generated from the retail EXE's RTTI by `gruntz.analysis.vtable_scan
-# --emit-names`. The EXE has no debug symbols, so these target-side names are
+# Deterministic ??_7<Class>@@6B@ -> (rva, size) map for the RTTI vtables, a BUILD
+# ARTIFACT generated from the retail EXE's RTTI by the `gen_vtable_names` edge
+# (`gruntz.analysis.vtable_scan --emit-names`) - not committed, regenerated like
+# symbol_names.csv. The EXE has no debug symbols, so these target-side names are
 # ours and fully derivable from the class name + the vtable RVA. A row is applied
 # ONLY when a TU's base obj actually emits that ??_7 (the class was made
 # real-polymorphic in src) -> inert (no target symbol) until a class is converted.
-VTABLE_NAMES = REPO / "config/vtable_names.csv"
+VTABLE_NAMES = REPO / "build/gen/vtable_names.csv"
 
 
 def log(msg):

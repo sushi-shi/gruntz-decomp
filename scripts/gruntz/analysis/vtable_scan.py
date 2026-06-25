@@ -125,12 +125,15 @@ for m in re.finditer(rb'\.\?A[VUWT][\w@?$]+@@\x00', d):
     if rva is None: continue
     TD[(rva-8)+IMAGEBASE] = m.group(0)[:-1].decode('latin1')
 COL = {}                                   # col_va -> (decorated, base_off)
+COL_CHD = {}                               # col_va -> ClassHierarchyDescriptor VA
 for (nm, va, vsz, rsz, rp, ch) in SECS:
     if nm != '.rdata': continue
     for a in range(va, va+rsz-20, 4):
         if u32(a) != 0: continue
         ptd = u32(a+12)
-        if ptd in TD: COL[a+IMAGEBASE] = (TD[ptd], u32(a+4))
+        if ptd in TD:
+            COL[a+IMAGEBASE] = (TD[ptd], u32(a+4))
+            COL_CHD[a+IMAGEBASE] = u32(a+16)   # COL+16 -> ClassHierarchyDescriptor
 
 # --- data-section code-pointer runs ---
 sites = [s for s in REL if not is_exec(s)]
@@ -198,11 +201,187 @@ if SRC:
         for m in pat.finditer(p.read_text(errors='ignore')):
             a = int(m.group(1), 16); SRC_DATA.add(a-IMAGEBASE if a >= IMAGEBASE else a)
 
+# ===========================================================================
+# RTTI virtual-function recovery (--emit-vfuncs)
+# ---------------------------------------------------------------------------
+# A vtable slot stores the VA of an ILT *jmp thunk* (`e9 rel32`) in the low
+# .text band, not the real body; the body is the jmp target.  resolve_slot
+# follows that one hop.  A class's *new* and *overriding* virtuals are found by
+# slot-diffing its resolved bodies against its direct RTTI parent's: slot i is
+# inherited (parent owns it) when body[i]==parent_body[i]; an OVERRIDE when it
+# differs at i<parent_count; a NEW virtual when i>=parent_count.
+# ===========================================================================
+
+def resolve_slot(rva):
+    """Follow a vtable slot to its real body: an `e9 rel32` jmp thunk -> target,
+    otherwise the slot value itself (already a body)."""
+    o = off(rva)
+    if o is not None and d[o] == 0xe9:
+        rel = struct.unpack_from('<i', d, o+1)[0]
+        return rva + 5 + rel
+    return rva
+
+# decorated TD name -> primary (base_off==0) RTTI vtable RVA.
+PRIMARY_VT = {}
+for v in VTABLES:
+    if v['decorated'] and v['base_off'] == 0:
+        PRIMARY_VT.setdefault(v['decorated'], v['start'])
+
+# decorated TD name -> the vtable dict (so we can read its size + start).
+VT_BY_DECOR = {}
+for v in VTABLES:
+    if v['decorated'] and v['base_off'] == 0:
+        VT_BY_DECOR.setdefault(v['decorated'], v)
+
+def vt_bodies(decorated):
+    """Resolved body RVAs for a class's primary vtable slots, or [] if unknown."""
+    v = VT_BY_DECOR.get(decorated)
+    if not v: return []
+    start = v['start']
+    return [resolve_slot(u32(start + i*4) - IMAGEBASE) for i in range(v['size'])]
+
+def class_bases(decorated):
+    """Direct-parent decorated name for a class via its RTTI hierarchy, or None.
+    Walks the BaseClassArray (COL+16 -> CHD; CHD+8 numBaseClasses, CHD+12 ->
+    array of BaseClassDescriptor VAs; BCD+0 -> TD, BCD+4 numContainedBases).
+    base[0] is always the class itself; the direct parent is the next base with
+    the largest numContainedBases (the closest ancestor in single inheritance)."""
+    # find a COL naming this class with base_off 0
+    col_va = None
+    for cv, (dn, bo) in COL.items():
+        if dn == decorated and bo == 0:
+            col_va = cv; break
+    if col_va is None: return None
+    chd = COL_CHD.get(col_va)
+    if not chd: return None
+    numbase = u32(chd-IMAGEBASE+8)
+    bca = u32(chd-IMAGEBASE+12)
+    if not numbase or not bca: return None
+    bases = []   # (decorated, numContainedBases) excluding self
+    for i in range(numbase):
+        bcd = u32(bca-IMAGEBASE+i*4)
+        if bcd is None: continue
+        btd = u32(bcd-IMAGEBASE+0)
+        ncb = u32(bcd-IMAGEBASE+4)
+        bdn = TD.get(btd)
+        if bdn is None: continue
+        if bdn == decorated:  # base[0] is self
+            continue
+        bases.append((bdn, ncb))
+    if not bases: return None
+    # closest ancestor = most contained bases (deepest non-self base subtree)
+    bases.sort(key=lambda x: -x[1])
+    return bases[0][0]
+
+def emit_vfuncs(decorated):
+    """Per-class virtual-function plan.  Returns a list of dicts, one per slot
+    that THIS class introduces or overrides (inherited slots are omitted)."""
+    bodies = vt_bodies(decorated)
+    if not bodies: return None
+    parent = class_bases(decorated)
+    pbodies = vt_bodies(parent) if parent else []
+    pcount = len(pbodies)
+    out = []
+    for i, body in enumerate(bodies):
+        if i < pcount and body == pbodies[i]:
+            kind = "inherited"          # parent owns it -> do not emit
+        elif i < pcount:
+            kind = "override"
+        else:
+            kind = "new"
+        if kind == "inherited":
+            continue
+        # name: reuse a real (non-FUN_/sub_) functions.csv name, else Vf<i>
+        nm, sz = FN.get(body, (None, None))
+        if not nm or nm.startswith("FUN_") or nm.startswith("sub_"):
+            method = f"Vf{i}"
+        else:
+            method = nm
+        # reconcile: is this body already labeled elsewhere in symbol_names.csv?
+        reconcile = SYM_BY_RVA.get(body)
+        out.append(dict(slot=i, kind=kind, body=body, size=sz,
+                        method=method, reconcile=reconcile,
+                        thunk=u32(VT_BY_DECOR[decorated]['start'] + i*4) - IMAGEBASE))
+    return dict(decorated=decorated, rtti=demangle(decorated),
+                parent=demangle(parent) if parent else None,
+                parent_count=pcount, slots=len(bodies), virtuals=out)
+
+# generated symbol_names.csv: body RVA -> (name, unit) for the reconcile flag.
+SYM_BY_RVA = {}
+_sym = _first(REPO / "build/gen/symbol_names.csv",
+              "/home/sheep/Projects/gruntz/build/gen/symbol_names.csv")
+if _sym:
+    with open(_sym) as f:
+        for r in csv.DictReader(f):
+            try:
+                if r.get('kind') == 'func':
+                    SYM_BY_RVA[int(r['rva'], 16)] = (r['name'], r['unit'])
+            except Exception: pass
+
 def confidence(v):
     if v['rtti']: return "rtti"
     if v['code_refs'] and v['size'] >= 2 and v['sec'] == '.rdata': return "code-ref"
     if v['code_refs']: return "code-ref-weak"   # size1 or in .data: maybe a fn-ptr global
     return "unref"                              # run head, no COL, no code ref: likely EH/jump table
+
+def find_decorated(name):
+    """Resolve a user-supplied class name to a decorated TD name.  Accepts the
+    decorated form, the bare class name (CFoo), or the demangled RTTI form."""
+    for v in VTABLES:
+        if not v['decorated']: continue
+        if name in (v['decorated'], v['rtti'], demangle(v['decorated'])):
+            return v['decorated']
+    return None
+
+
+def run_vfuncs(target):
+    """--emit-vfuncs <ClassName|--all>: print the per-class virtual-function plan
+    (human summary + machine-readable JSON-lines block)."""
+    if target == "--all":
+        decs = sorted({v['decorated'] for v in VTABLES
+                       if v['decorated'] and v['base_off'] == 0})
+    else:
+        dec = find_decorated(target)
+        if not dec:
+            print(f"# class not found: {target!r} (try the bare CFoo name or .?AVCFoo@@)")
+            return
+        decs = [dec]
+
+    plans = []
+    for dec in decs:
+        p = emit_vfuncs(dec)
+        if p: plans.append(p)
+
+    # human summary
+    for p in plans:
+        print(f"# class {p['rtti']}  ({p['slots']} slots) "
+              f"parent={p['parent'] or '<root>'} (parent_count={p['parent_count']})")
+        if not p['virtuals']:
+            print("#   (all slots inherited; nothing to emit)")
+        for vf in p['virtuals']:
+            szs = f"0x{vf['size']:x}" if vf['size'] else "?(uncarved->RVAU)"
+            rc = ""
+            if vf['reconcile']:
+                rc = f"  RECONCILE: already '{vf['reconcile'][0]}' in unit '{vf['reconcile'][1]}'"
+            print(f"#   slot {vf['slot']:>2}  {vf['kind']:<8}  thunk 0x{vf['thunk']:06x}"
+                  f" -> body 0x{vf['body']:06x}  size {szs:<18}  {vf['method']}{rc}")
+        print()
+
+    # machine-readable: one JSON object per (class, virtual) row.
+    import json
+    print("# --- machine-readable (JSON lines) ---")
+    for p in plans:
+        for vf in p['virtuals']:
+            print(json.dumps(dict(
+                rtti=p['rtti'], decorated=p['decorated'],
+                parent=p['parent'], parent_count=p['parent_count'],
+                slot=vf['slot'], kind=vf['kind'],
+                thunk_rva=f"0x{vf['thunk']:06x}", body_rva=f"0x{vf['body']:06x}",
+                size=(f"0x{vf['size']:x}" if vf['size'] else None),
+                method=vf['method'],
+                reconcile=(dict(name=vf['reconcile'][0], unit=vf['reconcile'][1])
+                           if vf['reconcile'] else None))))
+
 
 def main():
     a = sys.argv[1:]
@@ -210,6 +389,9 @@ def main():
     if "--csv" in a: k = a.index("--csv"); csv_path = a[k+1]; del a[k:k+2]
     names_path = None
     if "--emit-names" in a: k = a.index("--emit-names"); names_path = a[k+1]; del a[k:k+2]
+    if "--emit-vfuncs" in a:
+        k = a.index("--emit-vfuncs"); target = a[k+1]; del a[k:k+2]
+        run_vfuncs(target); return
     only_new = "--new" in a
 
     for v in VTABLES: v['conf'] = confidence(v)

@@ -160,7 +160,7 @@ spritereftable	7	6
 spriteresource	6	2
 statemgrbz	5	3
 statusbaritem	2	1
-statusbarupdaters	7	0
+statusbarupdaters	5	0
 streamfeeder	9	7
 streamvoice	5	3
 symparser	5	3
@@ -168,7 +168,7 @@ symtab	10	7
 terraintileloader	1	0
 tileactionevent	5	3
 tilegridcommand	5	2
-tileswitchlogic	14	7
+tileswitchlogic	18	7
 tiletriggercontainer	13	4
 tiletriggerlogic	2	1
 tiletriggertransition	5	4
@@ -1543,11 +1543,11 @@ gamemode	?winapi_0396f0_SelectClipRgn_SetBkMode@CCreditsState@@QAEHXZ	0.9662	0.9
 gamemodeobjlifecycle	?ClearPlacedObjects@CGameModeObj@@QAEHXZ	53.9750	53.9750	1	30192eab88a2	0xda030
 gamemodeobjlifecycle	?ReleaseLevelOverlay@CGameModeObj@@QAEHH@Z	100.0000	100.0000	1	036396bebe2f	0xd6560
 gamemodeobjlifecycle	?SetCursorFrame@CGameModeObj@@QAEHH@Z	100.0000	100.0000	1	98c98e0a8044	0xd1b30
-gameobjectctors	??0CGruntStaminaSprite@@QAE@PAUCSpriteObj@@@Z	94.7619	94.7619	2	432dc16b6366	0x7fae0
-gameobjectctors	??0CGruntToyTimeSprite@@QAE@PAUCSpriteObj@@@Z	94.7619	94.7619	2	83fe8ba17874	0x7fbd0
-gameobjectctors	??0CGruntWingzTimeSprite@@QAE@PAUCSpriteObj@@@Z	94.7619	94.7619	2	d29f9444e61a	0x7fcc0
-gameobjectctors	??0CRainCloud@@QAE@PAUCHazardObj@@@Z	99.9773	99.9773	3	5f425e89f780	0xb49b0
-gameobjectctors	??0CUFO@@QAE@PAUCHazardObj@@@Z	81.0114	81.0114	3	529d99d92540	0xb4a90
+gameobjectctors	??0CGruntStaminaSprite@@QAE@PAUCSpriteObj@@@Z	94.7619	94.7619	3	169495affd03	0x7fae0
+gameobjectctors	??0CGruntToyTimeSprite@@QAE@PAUCSpriteObj@@@Z	94.7619	94.7619	3	5cc9edcada2e	0x7fbd0
+gameobjectctors	??0CGruntWingzTimeSprite@@QAE@PAUCSpriteObj@@@Z	94.7619	94.7619	3	3f0e70425f80	0x7fcc0
+gameobjectctors	??0CRainCloud@@QAE@PAUCHazardObj@@@Z	99.9773	99.9773	4	5d1fe1550086	0xb49b0
+gameobjectctors	??0CUFO@@QAE@PAUCHazardObj@@@Z	81.0114	81.0114	4	e1c3181bcc49	0xb4a90
 gametext	??0CContainerErr@@QAE@PBD@Z	99.7368	99.7368	4	754ef1da6bee	0x16d9c0
 gametext	?GetWarlordName@@YG?AVCString@@H@Z	89.2553	89.2553	4	290253c681a0	0x1ec20
 gametext	_$E1	100.0000	100.0000	1	cpp:a7f73c40eefc	0x82990
@@ -2143,8 +2143,6 @@ statemgrbz	?Setup@StateMgrBZ@@QAEXXZ	100.0000	100.0000	2	76e3a3c435f8	0x38340
 statusbaritem	??0CStatusBarItem@@QAE@XZ	100.0000	100.0000	3	5a450f5db35b	0x1005d0
 statusbaritem	??_GCStatusBarItem@@UAEPAXI@Z	91.6667	91.6667	1	cpp:08500b778fe1	0x100620
 statusbarupdaters	?LoadStatzTabToggleSprite@EngineLabelBacklog@@QAEHHH@Z	80.7867	80.7867	4	ddb115e6490d	0x104e60
-statusbarupdaters	?LoadSwitchDownSprite@EngineLabelBacklog@@QAEXXZ	71.3448	71.3448	4	78a14c4e1de2	0x110570
-statusbarupdaters	?LoadSwitchUpSprite@EngineLabelBacklog@@QAEXXZ	69.1034	69.1034	4	106b899e5e0b	0x1106b0
 statusbarupdaters	?UpdateChipGrinderStatusBar@EngineLabelBacklog@@QAEXXZ	80.7372	80.7372	4	6db7adc98e3d	0x1076a0
 statusbarupdaters	?UpdateDestructButtonStatusBar@EngineLabelBacklog@@QAEXXZ	94.6667	94.6667	4	04a8f72dddff	0x10b320
 statusbarupdaters	?UpdateGruntOvenStatusBar@EngineLabelBacklog@@QAEXXZ	79.8947	79.8947	4	283e98145fb0	0x105310
@@ -2189,7 +2187,7 @@ tilegridcommand	?BumpCell@CTileGridCommand@@QAEHXZ	73.1351	73.1351	1	96bc63908c9
 tilegridcommand	?Classify@CTileGridCommand@@QAEHH@Z	95.9578	95.9578	1	a4fd29c72ab8	0x112970
 tilegridcommand	?RecordMove@CTileGridCommand@@QAEXXZ	100.0000	100.0000	1	23f12c9ec885	0x112880
 tilegridcommand	?Serialize@CTileGridCommand@@QAEHPAVTgcStream@@@Z	100.0000	100.0000	2	b1fae33460f5	0x113ae0
-tileswitchlogic	??0CTileTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	5	a1db8cb5a037	0x110430
+tileswitchlogic	??0CTileTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	6	529bf9cb6306	0x110430
 tileswitchlogic	?ApplyByType@CTileTriggerSwitchLogic@@QAEHPAXHHH@Z	100.0000	100.0000	3	52356dd82278	0x113d40
 tileswitchlogic	?BuildRockBreakInGameText@CTileTriggerSwitchLogic@@QAEXXZ	0.5464	0.5464	1	a6548c9bdd8e	0x1122a0
 tileswitchlogic	?CTileTriggerSwitchLogic_115f60@CTileTriggerSwitchLogic@@QAEXXZ	0.2198	0.2198	2	fedab5b88bae	0x115f60
@@ -2197,12 +2195,16 @@ tileswitchlogic	?FindByField0C@CTileTriggerSwitchLogic@@QAEPAV1@H@Z	100.0000	100
 tileswitchlogic	?FindChild@CTileTriggerSwitchLogic@@QAEPAV1@HH@Z	100.0000	100.0000	2	e29619fbeeb7	0x116ee0
 tileswitchlogic	?FindIndexByKey@CTileTriggerSwitchLogic@@QAEHH@Z	100.0000	100.0000	5	ad2d81e5fa14	0x110820
 tileswitchlogic	?GetFlag74@CTileTriggerSwitchLogic@@QAEHXZ	100.0000	100.0000	2	89a90096d3b7	0x115f00
-tileswitchlogic	?RemoveByKeys@CTileTriggerSwitchLogic@@QAEHHH@Z	96.2791	96.2791	2	fc58a314a1eb	0x116320
+tileswitchlogic	?LoadSwitchDownSprite@CTileTriggerSwitchLogic@@UAEXXZ	71.3448	71.3448	1	fd48fa9a4607	0x110570
+tileswitchlogic	?LoadSwitchUpSprite@CTileTriggerSwitchLogic@@UAEXXZ	69.1034	69.1034	1	4e1619664286	0x1106b0
+tileswitchlogic	?RemoveByKeys@CTileTriggerSwitchLogic@@QAEHHH@Z	96.2791	96.2791	4	60199f1932b6	0x116320
 tileswitchlogic	?ScanNeighborhood@CTileTriggerSwitchLogic@@QAEHHH@Z	76.2600	76.2600	2	a020770dd925	0x117ec0
 tileswitchlogic	?SerializeMatrix@CTileTriggerSwitchLogic@@QAEHPAVCSerialStream@@@Z	95.0909	95.0909	2	9a34a3e5b7d2	0x113dd0
 tileswitchlogic	?TransferFlag74@CTileTriggerSwitchLogic@@QAEHPAVCSerialStream@@@Z	100.0000	100.0000	2	b5b02a407d1e	0x117e20
 tileswitchlogic	?ValidateByType@CTileTriggerSwitchLogic@@QAEHPAXHHH@Z	93.3333	93.3333	3	8268a9fb07a1	0x113a90
 tileswitchlogic	?VerifyBlockLinks@CTileTriggerSwitchLogic@@QAEHXZ	85.9080	85.9080	1	236d7654d4ab	0x112c70
+tileswitchlogic	?Vf0@CTileTriggerSwitchLogic@@UAEXXZ	1.6000	1.6000	1	160caafa7e6c	0x1104f0
+tileswitchlogic	?Vf1@CTileTriggerSwitchLogic@@UAEXXZ	0.9091	0.9091	1	831a34994607	0x110460
 tiletriggercontainer	??1CTileTriggerContainer@@QAE@XZ	100.0000	100.0000	1	4d04187e064e	0xc8640
 tiletriggercontainer	?AddToList1@CTileTriggerContainer@@QAEPAUTtcBaseElem@@HHPAHHHHH@Z	29.2278	29.2278	2	c6aeeebf676a	0x116cf0
 tiletriggercontainer	?AddToList3@CTileTriggerContainer@@QAEPAUTtcMark@@HHHHHHHH@Z	42.8816	42.8816	2	d77f142eae1d	0x116a40

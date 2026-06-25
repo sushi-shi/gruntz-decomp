@@ -103,6 +103,9 @@ GEN_LABELS = "scripts/gruntz/build/labels.py"
 # to the base objs (clang mangledName INTERSECT nm) - no hand-written CSV. See
 # docs/build-system.md.
 GEN_NAMES = "build/gen/symbol_names.csv"
+# Deterministic ??_7<Class>@@6B@ -> rva vtable-name map, generated from the EXE's
+# RTTI (a build artifact, like GEN_NAMES - not committed).
+VTABLE_NAMES = "build/gen/vtable_names.csv"
 # Source-derived Ghidra enrichment metadata (labels.py), merged from per-TU
 # fragments alongside symbol_names.csv; consumed by apply.py during ghidra-refresh.
 FUNCTIONS_JSON = "build/gen/functions.json"
@@ -253,6 +256,16 @@ def emit_ninja(manifest: dict, out: Path) -> None:
         # merge_labels combines all three so apply.py sees EVERY unit, not just the
         # last TU built.
         w.comment("=== LABELS: per-TU fragments -> merge -> symbol_names.csv ===")
+        # The deterministic ??_7<Class>@@6B@ -> rva map labels.py auto-applies is a
+        # pure function of the (pinned) retail EXE's RTTI, so it is GENERATED here
+        # as a build artifact (not committed) - regenerated when the EXE or the
+        # scan tool changes, exactly like symbol_names.csv.
+        VTSCAN = "scripts/gruntz/analysis/vtable_scan.py"
+        w.rule("gen_vtable_names",
+               command=f"{PY} {VTSCAN} --emit-names $out",
+               description="gen_vtable_names (RTTI -> ??_7 map)")
+        w.build(VTABLE_NAMES, "gen_vtable_names", inputs=[], implicit=[EXE, VTSCAN])
+        w.newline()
         w.rule("gen_labels_one",
                command=f"{PY} {GEN_LABELS} --tu $src --obj $obj --unit $unit "
                        f"--compdb {COMPDB} --out $csvfrag "
@@ -262,10 +275,7 @@ def emit_ninja(manifest: dict, out: Path) -> None:
         compdb_dep = [COMPDB] if (REPO / COMPDB).exists() else []
         zlib_dep = (["config/zlib_labels.csv"]
                     if (REPO / "config/zlib_labels.csv").exists() else [])
-        # the deterministic ??_7 vtable-name map labels.py auto-applies (gruntz
-        # build re-runs gen_labels when it changes).
-        zlib_dep += (["config/vtable_names.csv"]
-                     if (REPO / "config/vtable_names.csv").exists() else [])
+        zlib_dep += [VTABLE_NAMES]   # generated above; gen_labels re-runs if it changes
         frags, func_frags, glob_frags = [], [], []
         for u in units:
             frag = f"{LABELS_DIR}/{u['unit']}.csv"
