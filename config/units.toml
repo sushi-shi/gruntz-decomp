@@ -681,6 +681,11 @@ source = "src/Gruntz/IconLoaders.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "backlogstateloaders"
+source = "src/Gruntz/BacklogStateLoaders.cpp"
+flags = "base"
+
+[[unit]]
 unit = "statusbarupdaters"
 source = "src/Gruntz/StatusBarUpdaters.cpp"
 flags = "base"

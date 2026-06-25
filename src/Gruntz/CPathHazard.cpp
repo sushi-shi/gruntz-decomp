@@ -49,7 +49,8 @@ struct CPathHazardVtbl {
 // vtable/layout only at the byte level (Tick reads the vtable raw).
 class CLightningHazard : public CUserLogic {
 public:
-    i32 SiblingTick();   // 0x0b43f0 (virtual slot 16 override)
+    i32 SiblingTick();         // 0x0b43f0 (virtual slot 16 override)
+    i32 ArmStrike(i32, i32);   // 0x0b4640 (arm the strike window + kill cue)
     ~CLightningHazard(); // 0x013280 (folds the CUserLogic teardown)
 
     char m_pad40[0x108 - 0x40];
@@ -90,8 +91,37 @@ struct CLightObj {
     char m_pad148[0x198 - 0x148];
     CPathLayer* m_198; // +0x198 layer descriptor
 };
+// The positional-sound emitter ArmStrike's "LEVEL_CLOUDHAZARDKILL" cue resolves
+// to: m_10 the play host (Play 0x1360d0), m_14 the last-play clock, m_18 the
+// cooldown interval (an unsigned `(now - m_14) >= m_18` gate).
+struct CSndPlayHost {
+    void Play(i32 tag, i32 a, i32 b, i32 c); // FUN_001360d0 __thiscall
+};
+struct CSndEmitter {
+    char m_pad00[0x10];
+    CSndPlayHost* m_10; // +0x10
+    u32 m_14;           // +0x14 last-play clock
+    u32 m_18;           // +0x18 cooldown interval
+};
+// The finder embedded at CSndHost+0x10 (out-param Find, 0x1b8438), the gate at +0x30.
+struct CSndFinder {
+    void Find(char* szName, CSndEmitter** out); // FUN_001b8438 __thiscall
+};
+struct CSndHost { // reg->m_30->m_28
+    char m_pad00[0x10];
+    CSndFinder m_10;          // +0x10 embedded
+    char m_pad11[0x30 - 0x11]; // -> +0x30
+    i32 m_30;                 // +0x30 gate (must be 0 to emit)
+};
+struct CSndSubMgr { // reg->m_30
+    char m_pad00[0x28];
+    CSndHost* m_28; // +0x28
+};
+
 struct CLightGameReg {
-    char m_pad00[0x68];
+    char m_pad00[0x30];
+    CSndSubMgr* m_30; // +0x30 sound sub-mgr (positional-sound emit)
+    char m_pad34[0x68 - 0x34];
     CPathCueGate* m_68; // +0x68 visibility/cue gate
     char m_pad6c[0x78 - 0x6c];
     i32* m_78; // +0x78 ref-index/selector table
@@ -99,9 +129,24 @@ struct CLightGameReg {
     i32 m_118; // +0x118 has-window flag
     char m_pad11c[0x134 - 0x11c];
     i32 m_134; // +0x134 mode discriminator
+    char m_pad138[0x13c - 0x138];
+    i32 m_13c; // +0x13c visible-rect left
+    i32 m_140; // +0x140 visible-rect top
+    i32 m_144; // +0x144 visible-rect right
+    i32 m_148; // +0x148 visible-rect bottom
 };
 DATA(0x0024556c)
 extern CLightGameReg* g_lightGameReg;
+
+// Strike config globals: the bute window source + the sound-enable flag / cue tag
+// pair the positional emit polls, plus the kill-cue clock.
+extern CButeMgr g_buteMgr; // ?g_buteMgr@@3VCButeMgr@@A (butemgr unit)
+DATA(0x0021ab20)
+extern i32 g_sndEnabled; // 0x61ab20 (sound-enable flag)
+DATA(0x0021ab24)
+extern i32 g_sndCueTag; // 0x61ab24 (cue tag)
+DATA(0x002bf3c0)
+extern "C" u32 g_killCueClock; // 0x6bf3c0
 
 // The "A" bute key the new-leg re-bind looks up (DAT_0060a454 $SG literal).
 extern CButeTree g_buteTree;
@@ -291,6 +336,47 @@ i32 CLightningHazard::SiblingTick() {
         m_118 = 0;
     }
     return 0;
+}
+
+// CLightningHazard::ArmStrike @0x0b4640 - arm the strike-window timer (deadline =
+// now, window = bute RainCloudFlashTime), fire the cue gate, and play the
+// "LEVEL_CLOUDHAZARDKILL" positional sound on the bound object when it is on-screen
+// and the per-emitter cooldown has elapsed.  Integer-only; returns 1.  __thiscall,
+// 2 args.
+// @early-stop
+// ~95%: code bytes byte-exact; residual is the same TU-wide reloc-naming artifact
+// SiblingTick carries (the obj names g_lightGameReg as _g_mgrSettings and
+// g_strikeClock as _g_645588). Logic byte-for-byte correct.
+RVA(0x000b4640, 0x104)
+i32 CLightningHazard::ArmStrike(i32 a, i32 b) {
+    m_118 = 1;
+    m_128 = (i64)(u32)g_buteMgr.GetDwordDef("Hazardz", "RainCloudFlashTime", 0x7d0);
+    m_120 = (i64)(u32)g_strikeClock;
+    g_lightGameReg->m_68->Strike(a, b, 9, -1);
+
+    CLightObj* obj = (CLightObj*)m_10;
+    CLightGameReg* reg = g_lightGameReg;
+    i32 y = obj->m_60;
+    i32 x = obj->m_5c;
+    if (x < reg->m_144 && x >= reg->m_13c && y < reg->m_148 && y >= reg->m_140) {
+        CSndHost* host = reg->m_30->m_28;
+        if (host->m_30 == 0) {
+            CSndEmitter* out = 0;
+            host->m_10.Find("LEVEL_CLOUDHAZARDKILL", &out);
+            if (out != 0) {
+                i32 enabled = g_sndEnabled;
+                i32 tag = g_sndCueTag;
+                if (enabled != 0) {
+                    u32 now = g_killCueClock;
+                    if ((u32)(now - out->m_14) >= out->m_18) {
+                        out->m_14 = now;
+                        out->m_10->Play(tag, 0, 0, 0);
+                    }
+                }
+            }
+        }
+    }
+    return 1;
 }
 
 // CPathHazard::BeginLeg @0x0b47e0 (virtual slot 19) - compute the unit vector

@@ -125,14 +125,6 @@ public:
     char m_pad0c[0x2c - 0xc];
     void* m_2c; // +0x2c  the registered "STATEZ_HELP" object (0 on failure)
 };
-class CloudHazard {
-public:
-    void vfunc_20(i32, i32);
-};
-class GameLevelState {
-public:
-    void OnActivate_vfunc8();
-};
 class Projectile {
 public:
     void vfunc_9();
@@ -201,7 +193,6 @@ namespace EngineLabelBacklog {
     void __stdcall WireTileSwitchLogic(i32, i32, i32);
     void __stdcall LoadTerrainTileSprites(i32, i32, i32, i32, i32, i32);
     void LoadCameraSprite();
-    void __stdcall LoadToyBoxIcon(i32, i32, i32, i32, i32);
     void LoadExplosionSprites();
     void __stdcall BuildRockBreakParticles(i32, i32, i32, i32);
     void __stdcall LoadGruntResurrectTuning(i32, i32, i32);
@@ -216,7 +207,6 @@ namespace EngineLabelBacklog {
     void LoadAreaLevelTable();
     void LoadRollingBallHazardSprites();
     void BuildGruntzCrcInfo();
-    void BuildNamedGruntTable();
     void __stdcall LoadLevelByMode(i32, i32);
     void DrawDebugStats();
     void ValidateLevelTiles();
@@ -828,12 +818,7 @@ void Projectile::vfunc_9() {}
 
 // LoadCameraSprite @0x078960 graduated to src/Gruntz/IconLoaders.cpp.
 
-// @confidence: med
-// @source: decomp-xref
-// @proximity: CTriggerMgr (HIGH bracket, tu_layout) is a FALSE POSITIVE - this is an icon loader; siblings LoadCameraSprite/LoadExplosionSprites graduated to src/Gruntz/IconLoaders.cpp. Graduate there, not to CTriggerMgr.
-// @stub
-RVA(0x0007a3f0, 0xd7)
-void __stdcall EngineLabelBacklog::LoadToyBoxIcon(i32, i32, i32, i32, i32) {}
+// LoadToyBoxIcon @0x07a3f0 graduated to src/Gruntz/IconLoaders.cpp.
 
 // LoadExplosionSprites @0x07b330 graduated to src/Gruntz/IconLoaders.cpp.
 
@@ -866,21 +851,7 @@ void __stdcall EngineLabelBacklog::LaunchPortalExe(i32) {}
 RVA(0x00093d40, 0x473)
 void __stdcall EngineLabelBacklog::BuildLevelRezPath(i32, i32, i32, i32, i32) {}
 
-// @source: decomp-xref
-RVA(0x00095090, 0x6e)
-i32 CHelpState::LoadAssets(i32 a1, i32 a2, i32 a3) {
-    if (!LoadGameAssetNamespaces(a1, a2, a3)) {
-        return 0;
-    }
-    while (ShowCursor(0) >= 0)
-        ;
-    m_2c = m_8->Register("STATEZ_HELP");
-    if (!m_2c) {
-        return 0;
-    }
-    m_4->m_4->Pump(0x100, 0x40);
-    return 1;
-}
+// CHelpState::LoadAssets (0x095090) graduated to src/Gruntz/BacklogStateLoaders.cpp.
 
 // @confidence: med
 // @source: decomp-xref
@@ -930,11 +901,8 @@ void __stdcall EngineLabelBacklog::LoadMenuStateAssets(i32, i32, i32) {}
 // frame. Reconstructed (complete body - prologue, action/direction/sink switches,
 // float-interp tail; @early-stop on the branchy nested-jump-table /GX wall).
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
-RVA(0x000b4640, 0x104)
-void CloudHazard::vfunc_20(i32, i32) {}
+// CloudHazard::vfunc_20 (0x0b4640) graduated to src/Gruntz/CPathHazard.cpp as
+// CLightningHazard::ArmStrike (the strike-window arm + LEVEL_CLOUDHAZARDKILL cue).
 
 // @confidence: low
 // @source: decomp-xref
@@ -943,25 +911,7 @@ void CloudHazard::vfunc_20(i32, i32) {}
 RVA(0x000bf1d0, 0x249)
 void EngineLabelBacklog::BuildGruntzCrcInfo() {}
 
-// @confidence: med
-// @source: decomp-xref
-// BuildNamedGruntTable - seeds the 4 named-grunt CString globals (contiguous
-// array at 0x64bdb0) with their default names via CString::operator=(LPCSTR)
-// (FUN_001b9d4c, reloc-masked __thiscall).
-struct EngStrAssign {
-    char* m_pszData;
-    void operator=(const char* s); // CString::operator=, FUN_001b9d4c
-};
-// 4 contiguous CString globals at 0x64bdb0 (defined in the engine's data).
-DATA(0x0064bdb0)
-extern EngStrAssign g_gruntNames[4];
-RVA(0x000c16b0, 0x3d)
-void EngineLabelBacklog::BuildNamedGruntTable() {
-    g_gruntNames[0] = "Beefy";
-    g_gruntNames[1] = "Zed";
-    g_gruntNames[2] = "Serra";
-    g_gruntNames[3] = "Jebediah";
-}
+// BuildNamedGruntTable (0x0c16b0) graduated to src/Gruntz/BacklogStateLoaders.cpp.
 
 // LoadLevelByMode (0x000ca200, 3636 B) is the PLAY game-state per-mode level
 // loader (BATTLEZ/MULTI/CUSTOMLEVEL/TRAINING/Level%i); reconstructed (complete
@@ -969,12 +919,8 @@ void EngineLabelBacklog::BuildNamedGruntTable() {
 // CPlayLevelLoad::LoadByMode in src/Gruntz/LoadLevelByMode.cpp (eh unit). Its
 // area-name / WarpStone CString temps give it the exception frame.
 
-// @confidence: med
-// @source: decomp-xref
-// @proximity: CPlayLevelLoad@-0x1600 | CGamePlayInput@+0x4c0 (boundary - pick one)
-// @stub
-RVA(0x000cb800, 0x191)
-void GameLevelState::OnActivate_vfunc8() {}
+// GameLevelState::OnActivate_vfunc8 (0x0cb800) graduated to
+// src/Gruntz/BacklogStateLoaders.cpp.
 
 // vfunc_12 (0x000cbcc0, 5850 B) is the PLAY-state keyboard/cheat input
 // dispatcher, not a status-bar method; reconstructed (complete top structure,
