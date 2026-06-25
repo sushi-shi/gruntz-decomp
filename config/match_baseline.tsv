@@ -40,7 +40,7 @@ cddrawsubmgrdraco	5	2
 cddrawsubmgrleaf	14	4
 cddrawsubmgrleafscan	17	6
 cddrawsurfacemgr	9	5
-cddrawsurfacemgrserialize	1	0
+cddrawsurfacemgrserialize	2	0
 cddrawsurfacepair	5	2
 cddrawworkercache	4	1
 cddrawworkerlist	10	7
@@ -101,7 +101,7 @@ dialogs	19	7
 directinputmgr2	29	25
 directsoundmgr	33	23
 dsoundvoice	2	1
-engine_attributed	61	0
+engine_attributed	60	0
 engine_boundary	626	0
 engine_discovered	86	0
 engine_label_stubs	519	118
@@ -507,6 +507,7 @@ cddrawsurfacemgr	?UnknownVirtualMethod20@CDDrawSurfaceMgr@@UAEXXZ	100.0000	100.0
 cddrawsurfacemgr	?UnknownVirtualMethod24@CDDrawSurfaceMgr@@UAEHHHH@Z	97.8250	97.8250	6	6cecebef4b0f	0x155f60
 cddrawsurfacemgr	?UnknownVirtualMethod28@CDDrawSurfaceMgr@@UAEXPAX@Z	100.0000	100.0000	5	9480406e5471	0x155f50
 cddrawsurfacemgr	?UnknownVirtualMethod38@CDDrawSurfaceMgr@@UAEHPAXHHH@Z	100.0000	100.0000	6	4f82654368f6	0x156a90
+cddrawsurfacemgrserialize	?RestoreChildren@CDDrawSurfaceMgr@@QAEHP6AHPAX0HHH@ZPADH@Z	45.5092	45.5092	1	da8039a1ef2c	0x156530
 cddrawsurfacemgrserialize	?SnapshotChildren@CDDrawSurfaceMgr@@QAEHP6AHPAX0HHH@ZHPADH@Z	74.6433	74.6433	1	e074f114cd14	0x156020
 cddrawsurfacepair	??1CDDrawSurfacePair@@QAE@XZ	91.5600	91.5600	1	db5a35e769fe	0x1590f0
 cddrawsurfacepair	?BltSelf@CDDrawSurfacePair@@QAEXPAV1@@Z	100.0000	100.0000	1	904242950eca	0x3a1d0
@@ -936,7 +937,6 @@ engine_attributed	?CBootyState_01ce30@CBootyState@@QAEXXZ	6.6667	6.6667	1	ee0938
 engine_attributed	?CBootyState_01d420@CBootyState@@QAEXXZ	20.0000	20.0000	1	d54c0ecb7af5	0x1d420
 engine_attributed	?CChatBoxOwner_0205c0@CChatBoxOwner@@QAEXXZ	0.0835	0.0835	1	c73daebdde18	0x205c0
 engine_attributed	?CCreditsState_0393b0@CCreditsState@@QAEXXZ	4.0000	4.0000	1	a4a6f8b06ca9	0x393b0
-engine_attributed	?CDDrawSurfaceMgr_156530@CDDrawSurfaceMgr@@QAEXXZ	0.1227	0.1227	1	1a8df8b4138d	0x156530
 engine_attributed	?CFileMem_165f00@CFileMem@@QAEXXZ	1.1765	1.1765	1	1d80517819fd	0x165f00
 engine_attributed	?CFontConfig_0220f0@CFontConfig@@QAEXXZ	5.5556	5.5556	1	e56cf98473ea	0x220f0
 engine_attributed	?CGrunt_051c00@CGrunt@@QAEXXZ	0.1147	0.1147	1	489bc806fe84	0x51c00

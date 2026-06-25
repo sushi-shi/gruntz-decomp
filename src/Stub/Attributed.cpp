@@ -32,9 +32,6 @@ RVA(0x000205c0, 0x741) void CChatBoxOwner::CChatBoxOwner_0205c0() {}  // high
 // ---- CCreditsState ----
 RVA(0x000393b0, 0x3a) void CCreditsState::CCreditsState_0393b0() {}  // high
 
-// ---- CDDrawSurfaceMgr ----
-RVA(0x00156530, 0x557) void CDDrawSurfaceMgr::CDDrawSurfaceMgr_156530() {}  // high
-
 // ---- CFileMem ----
 RVA(0x00165f00, 0x48) void CFileMem::CFileMem_165f00() {}  // high
 
