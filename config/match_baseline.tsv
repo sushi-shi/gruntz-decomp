@@ -47,6 +47,7 @@ cdirectdrawmgr	15	9
 cdroppedobject	2	2
 cfader	6	5
 cfadermgr	5	2
+cfortressflag	2	2
 chatbox	16	9
 chatbox_eh	1	1
 chatboxowner	4	1
@@ -64,16 +65,18 @@ crt_istream	3	2
 crt_ostream	4	3
 crt_streambuf	7	5
 crt_strstreambuf	4	2
+csecretleveltrigger	2	2
 cstatichazard	2	2
 cstatusbarmgr	2	1
 ctimebomb	2	2
 ctoobspikez	2	2
+cvoicetrigger	2	2
 databuffer	4	4
 deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	175	0
+engine_discovered	169	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -495,6 +498,8 @@ cfadermgr	?Add@CFaderMgr@@QAEPAUCFader@@HPAU2@@Z	0.0000	0.0000	2	fefd6e005c49	0x
 cfadermgr	?DeleteAll@CFaderMgr@@QAEXXZ	100.0000	100.0000	1	7c42fa42e763	0x17e1d0
 cfadermgr	?FreeAll@CFaderMgr@@QAEXXZ	100.0000	100.0000	1	f0e41c40b256	0x17d9a0
 cfadermgr	?Remove@CFaderMgr@@QAEXPAUCFader@@@Z	67.1111	67.1111	1	7c395e00a7e3	0x17e170
+cfortressflag	??1CFortressFlag@@UAE@XZ	100.0000	100.0000	1	2055bad4ba8d	0x10e90
+cfortressflag	?Serialize@CFortressFlag@@QAEHHHHH@Z	100.0000	100.0000	1	b560b6331961	0x46410
 chatbox	?AddNode@CChatBox@@QAEHPAX@Z	100.0000	100.0000	3	88a7b8bd99e7	0x182ba0
 chatbox	?AdvanceRow0@CChatBox@@QAEHPAXHH@Z	94.8718	94.8718	3	5b6842c8ffeb	0x182df0
 chatbox	?AdvanceRow1@CChatBox@@QAEHPAXHH@Z	94.8718	94.8718	3	e91d1d630c54	0x182e60
@@ -619,6 +624,8 @@ crt_strstreambuf	??0strstreambuf@@QAE@PADH0@Z	100.0000	100.0000	2	92da0ad44c33	0
 crt_strstreambuf	??1strstreambuf@@QAE@XZ	89.6970	89.6970	2	7c53a170b574	0x169220
 crt_strstreambuf	?str@strstreambuf@@QAEPADXZ	100.0000	100.0000	1	08404bbcac2f	0x1692b0
 crt_strstreambuf	?underflow@strstreambuf@@QAEHXZ	91.7353	91.7353	2	b71b810269ba	0x169490
+csecretleveltrigger	??1CSecretLevelTrigger@@UAE@XZ	100.0000	100.0000	1	1a6afbfadd87	0x10c50
+csecretleveltrigger	?Tick@CSecretLevelTrigger@@QAEHXZ	100.0000	100.0000	1	5007af99e855	0x42ac0
 cstatichazard	??1CStaticHazard@@UAE@XZ	100.0000	100.0000	1	2c9522f3c281	0x12b30
 cstatichazard	?FireActivation@CStaticHazard@@QAEXH@Z	100.0000	100.0000	1	69cb76687143	0xfbbf0
 cstatusbarmgr	?LoadTabSprites@CStatusBarMgr@@QAEHXZ	16.7383	16.7383	4	045cfeaa498f	0x102250
@@ -627,6 +634,8 @@ ctimebomb	??1CTimeBomb@@UAE@XZ	100.0000	100.0000	1	82a73e5a479d	0x12a70
 ctimebomb	?FireActivation@CTimeBomb@@QAEXH@Z	100.0000	100.0000	1	f49df59995b0	0xe1830
 ctoobspikez	??1CToobSpikez@@UAE@XZ	100.0000	100.0000	1	550e0ced02c4	0x12c60
 ctoobspikez	?FireActivation@CToobSpikez@@QAEXH@Z	100.0000	100.0000	1	44f507f426d2	0x114860
+cvoicetrigger	??1CVoiceTrigger@@UAE@XZ	100.0000	100.0000	1	8939b1cb3841	0x135a0
+cvoicetrigger	?Tick@CVoiceTrigger@@QAEHXZ	100.0000	100.0000	1	352963c16858	0x11a700
 databuffer	??0CDataBuffer@@QAE@XZ	100.0000	100.0000	1	3a641ac221a3	0x150180
 databuffer	?Free@CDataBuffer@@QAEXXZ	100.0000	100.0000	1	be93bfb9147a	0x1503c0
 databuffer	?Reset@CDataBuffer@@QAEXXZ	100.0000	100.0000	2	75008ba8c576	0x150190
@@ -731,8 +740,6 @@ engine_discovered	?CExitTrigger_0108c0@CExitTrigger@@QAEXXZ	5.8824	5.8824	2	2376
 engine_discovered	?CExplosion_012ec0@CExplosion@@QAEXXZ	5.8824	5.8824	2	f5ebfa592daf	0x12ec0
 engine_discovered	?CEyeCandy_00fca0@CEyeCandy@@QAEXXZ	50.0000	50.0000	2	b3ffa12665e8	0xfca0
 engine_discovered	?CEyeCandy_00fd60@CEyeCandy@@QAEXXZ	5.8824	5.8824	2	b755a57e26bb	0xfd60
-engine_discovered	?CFortressFlag_010e90@CFortressFlag@@QAEXXZ	5.8824	5.8824	2	fa61014eaf06	0x10e90
-engine_discovered	?CFortressFlag_046410@CFortressFlag@@QAEXXZ	0.6897	0.6897	2	7feb58e6771b	0x46410
 engine_discovered	?CGruntAnimPlayer_150610@CGruntAnimPlayer@@QAEXXZ	1.7391	1.7391	2	ffb44f05f4d6	0x150610
 engine_discovered	?CGruntCreationPoint_010730@CGruntCreationPoint@@QAEXXZ	5.8824	5.8824	2	466c632bedc8	0x10730
 engine_discovered	?CGruntCreationPoint_03ecc0@CGruntCreationPoint@@QAEXXZ	14.2857	14.2857	2	83aeb3c656f3	0x3ecc0
@@ -767,8 +774,6 @@ engine_discovered	?CSBI_RectOnly_0c8980@CSBI_RectOnly@@QAEXXZ	3.8462	3.8462	2	c4
 engine_discovered	?CSBI_RectOnly_0ebd70@CSBI_RectOnly@@QAEXXZ	0.3774	0.3774	2	e421395136d1	0xebd70
 engine_discovered	?CSBI_RectOnly_105800@CSBI_RectOnly@@QAEXXZ	0.7273	0.7273	2	ef256b1ce0ce	0x105800
 engine_discovered	?CSBI_RectOnly_1084d0@CSBI_RectOnly@@QAEXXZ	0.0438	0.0438	2	2752ca66119f	0x1084d0
-engine_discovered	?CSecretLevelTrigger_010c50@CSecretLevelTrigger@@QAEXXZ	5.8824	5.8824	2	0a587393efef	0x10c50
-engine_discovered	?CSecretLevelTrigger_042ac0@CSecretLevelTrigger@@QAEXXZ	1.9608	1.9608	2	08465bf68550	0x42ac0
 engine_discovered	?CSimpleAnimation_00f9d0@CSimpleAnimation@@QAEXXZ	5.8824	5.8824	2	57afe276ba99	0xf9d0
 engine_discovered	?CSimpleAnimation_0abf70@CSimpleAnimation@@QAEXXZ	14.2857	14.2857	2	5df73f1dd9dd	0xabf70
 engine_discovered	?CSingleAnimation_010540@CSingleAnimation@@QAEXXZ	5.8824	5.8824	2	ffe7cf2c61c1	0x10540
@@ -780,8 +785,6 @@ engine_discovered	?CUserLogic_05caa0@CUserLogic@@QAEXXZ	0.3030	0.3030	2	ebb13b55
 engine_discovered	?CUserLogic_062110@CUserLogic@@QAEXXZ	0.0901	0.0901	2	283f0e12fe57	0x62110
 engine_discovered	?CUserLogic_16e7f0@CUserLogic@@QAEXXZ	0.2532	0.2532	2	28899d63e9a5	0x16e7f0
 engine_discovered	?CUserLogic_16ea90@CUserLogic@@QAEXXZ	0.6061	0.6061	2	e90c8731b739	0x16ea90
-engine_discovered	?CVoiceTrigger_0135a0@CVoiceTrigger@@QAEXXZ	5.8824	5.8824	2	03bf46371349	0x135a0
-engine_discovered	?CVoiceTrigger_11a700@CVoiceTrigger@@QAEXXZ	1.7241	1.7241	2	810ca6fe8ced	0x11a700
 engine_discovered	?CWayPoint_0102e0@CWayPoint@@QAEXXZ	5.8824	5.8824	2	8ce6a144b1bf	0x102e0
 engine_discovered	?ClassUnknown_101_11f6b9@ClassUnknown_101@@QAEXXZ	9.0909	9.0909	2	7fa3bc6ae63e	0x11f6b9
 engine_discovered	?ClassUnknown_102_06b2e0@ClassUnknown_102@@QAEXXZ	2.2222	2.2222	2	0eef992501d5	0x6b2e0

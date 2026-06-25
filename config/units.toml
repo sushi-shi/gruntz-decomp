@@ -651,6 +651,21 @@ source = "src/Gruntz/CDroppedObject.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "cfortressflag"
+source = "src/Gruntz/CFortressFlag.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "csecretleveltrigger"
+source = "src/Gruntz/CSecretLevelTrigger.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cvoicetrigger"
+source = "src/Gruntz/CVoiceTrigger.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "cstatichazard"
 source = "src/Gruntz/CStaticHazard.cpp"
 flags = "eh"

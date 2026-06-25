@@ -59,10 +59,6 @@ RVA(0x00012ec0, 0x44) void CExplosion::CExplosion_012ec0() {}
 RVA(0x0000fca0, 0x6) void CEyeCandy::CEyeCandy_00fca0() {}
 RVA(0x0000fd60, 0x44) void CEyeCandy::CEyeCandy_00fd60() {}
 
-// ---- CFortressFlag ----
-RVA(0x00010e90, 0x44) void CFortressFlag::CFortressFlag_010e90() {}
-RVA(0x00046410, 0x92) void CFortressFlag::CFortressFlag_046410() {}
-
 // ---- CGruntAnimPlayer ----
 RVA(0x00150610, 0x41) void CGruntAnimPlayer::CGruntAnimPlayer_150610() {}
 
@@ -137,10 +133,6 @@ RVA(0x000ebd70, 0x366) void CSBI_RectOnly::CSBI_RectOnly_0ebd70() {}
 RVA(0x00105800, 0x9e) void CSBI_RectOnly::CSBI_RectOnly_105800() {}
 RVA(0x001084d0, 0x96c) void CSBI_RectOnly::CSBI_RectOnly_1084d0() {}
 
-// ---- CSecretLevelTrigger ----
-RVA(0x00010c50, 0x44) void CSecretLevelTrigger::CSecretLevelTrigger_010c50() {}
-RVA(0x00042ac0, 0x90) void CSecretLevelTrigger::CSecretLevelTrigger_042ac0() {}
-
 // ---- CSimpleAnimation ----
 RVA(0x0000f9d0, 0x44) void CSimpleAnimation::CSimpleAnimation_00f9d0() {}
 RVA(0x000abf70, 0x17) void CSimpleAnimation::CSimpleAnimation_0abf70() {}
@@ -161,10 +153,6 @@ RVA(0x0005caa0, 0x5e4) void CUserLogic::CUserLogic_05caa0() {}
 RVA(0x00062110, 0x5bc) void CUserLogic::CUserLogic_062110() {}
 RVA(0x0016e7f0, 0x1cf) void CUserLogic::CUserLogic_16e7f0() {}
 RVA(0x0016ea90, 0x234) void CUserLogic::CUserLogic_16ea90() {}
-
-// ---- CVoiceTrigger ----
-RVA(0x000135a0, 0x44) void CVoiceTrigger::CVoiceTrigger_0135a0() {}
-RVA(0x0011a700, 0xae) void CVoiceTrigger::CVoiceTrigger_11a700() {}
 
 // ---- CWayPoint ----
 RVA(0x000102e0, 0x44) void CWayPoint::CWayPoint_0102e0() {}
