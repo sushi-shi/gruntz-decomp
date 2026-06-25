@@ -101,7 +101,7 @@ dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
 dsoundvoice	2	1
-engine_attributed	197	0
+engine_attributed	184	0
 engine_boundary	628	0
 engine_discovered	86	0
 engine_label_stubs	519	118
@@ -109,7 +109,7 @@ engstr	3	1
 filemem	8	7
 filestream	13	9
 font	22	11
-fontconfig	7	4
+fontconfig	9	5
 fonts	2	1
 gameapp	19	15
 gamekeyhandler	1	0
@@ -141,8 +141,8 @@ inffast	1	1
 inflate	7	6
 inftrees	6	6
 infutil	1	1
-ingameicon	5	2
-ingametext	3	3
+ingameicon	10	5
+ingametext	4	3
 ingameworkerhandlers	3	3
 inputdeviceconfig	1	0
 kitchenslime	4	2
@@ -164,7 +164,7 @@ netmgrerror	1	1
 netsession	2	1
 projectile	7	2
 pyramidbridgesprites	1	0
-randomambientsound	4	2
+randomambientsound	9	4
 registryhelper	8	8
 rezmgr	14	8
 rollingball	3	2
@@ -911,8 +911,6 @@ engine_attributed	?CDDrawWorkerRegistry_155460@CDDrawWorkerRegistry@@QAEXXZ	0.50
 engine_attributed	?CFaderMgr_17d980@CFaderMgr@@QAEXXZ	4.4444	4.4444	1	5ef37fabde05	0x17d980
 engine_attributed	?CFaderMgr_17e160@CFaderMgr@@QAEXXZ	20.0000	20.0000	1	756837ef8f09	0x17e160
 engine_attributed	?CFileMem_165f00@CFileMem@@QAEXXZ	1.1765	1.1765	1	1d80517819fd	0x165f00
-engine_attributed	?CFontConfig_021e20@CFontConfig@@QAEXXZ	0.6897	0.6897	1	05a3270be1d0	0x21e20
-engine_attributed	?CFontConfig_021ef0@CFontConfig@@QAEXXZ	14.2857	14.2857	1	d46e96205815	0x21ef0
 engine_attributed	?CFontConfig_0220f0@CFontConfig@@QAEXXZ	5.5556	5.5556	1	e56cf98473ea	0x220f0
 engine_attributed	?CGameApp_13dbc0@CGameApp@@QAEXXZ	4.1667	4.1667	1	7e93d13fb682	0x13dbc0
 engine_attributed	?CGameObject_150f90@CGameObject@@QAEXXZ	0.7018	0.7018	1	13e7741e0009	0x150f90
@@ -941,12 +939,6 @@ engine_attributed	?CImage_175a00@CImage@@QAEXXZ	1.0256	1.0256	1	2acf5c4906a1	0x1
 engine_attributed	?CImage_175b80@CImage@@QAEXXZ	0.4301	0.4301	1	44144a88c2bc	0x175b80
 engine_attributed	?CImage_175ce0@CImage@@QAEXXZ	1.0000	1.0000	1	2e9f2a5ac6e7	0x175ce0
 engine_attributed	?CImage_175d50@CImage@@QAEXXZ	0.6452	0.6452	1	561012428e16	0x175d50
-engine_attributed	?CInGameIcon_097800@CInGameIcon@@QAEXXZ	20.0000	20.0000	1	74d6342cf47b	0x97800
-engine_attributed	?CInGameIcon_0979e0@CInGameIcon@@QAEXXZ	0.4975	0.4975	1	a784460599e2	0x979e0
-engine_attributed	?CInGameIcon_097d60@CInGameIcon@@QAEXXZ	20.0000	20.0000	1	726a2f207ecc	0x97d60
-engine_attributed	?CInGameIcon_097f40@CInGameIcon@@QAEXXZ	0.8696	0.8696	1	e23d5f1c257b	0x97f40
-engine_attributed	?CInGameIcon_098340@CInGameIcon@@QAEXXZ	2.2727	2.2727	1	4ad8102d8f9e	0x98340
-engine_attributed	?CInGameText_0995c0@CInGameText@@QAEXXZ	0.8696	0.8696	1	85ee2730f845	0x995c0
 engine_attributed	?CInputDevice_134f70@CInputDevice@@QAEXXZ	2.5000	2.5000	1	c8b5f66e01cf	0x134f70
 engine_attributed	?CKitchenSlime_0b2aa0@CKitchenSlime@@QAEXXZ	0.8696	0.8696	1	a1371bb354df	0xb2aa0
 engine_attributed	?CKitchenSlime_0b2ff0@CKitchenSlime@@QAEXXZ	0.3175	0.3175	1	7b3ae8f5eb33	0xb2ff0
@@ -986,11 +978,6 @@ engine_attributed	?CPlay_0d8ed0@CPlay@@QAEXXZ	0.4082	0.4082	1	c7f93ab63ad6	0xd8e
 engine_attributed	?CPlay_0d9050@CPlay@@QAEXXZ	1.4706	1.4706	1	043f461aec27	0xd9050
 engine_attributed	?CProjectile_0df920@CProjectile@@QAEXXZ	20.0000	20.0000	1	dc0cff2e0f3f	0xdf920
 engine_attributed	?CProjectile_0dfb00@CProjectile@@QAEXXZ	0.8696	0.8696	1	39b1946143ab	0xdfb00
-engine_attributed	?CRandomAmbientSound_00c4b0@CRandomAmbientSound@@QAEXXZ	1.2500	1.2500	1	d70483d15527	0xc4b0
-engine_attributed	?CRandomAmbientSound_00c530@CRandomAmbientSound@@QAEXXZ	1.6667	1.6667	1	3a42a363c183	0xc530
-engine_attributed	?CRandomAmbientSound_00c5b0@CRandomAmbientSound@@QAEXXZ	0.2299	0.2299	1	2a6219ff0bbd	0xc5b0
-engine_attributed	?CRandomAmbientSound_00c9d0@CRandomAmbientSound@@QAEXXZ	16.6667	16.6667	1	2347acb38cc1	0xc9d0
-engine_attributed	?CRandomAmbientSound_00ca00@CRandomAmbientSound@@QAEXXZ	1.2048	1.2048	1	6cbb51578059	0xca00
 engine_attributed	?CRezItm_13c6c0@CRezItm@@QAEXXZ	0.6154	0.6154	1	96c761a61f5c	0x13c6c0
 engine_attributed	?CSBI_RectOnly_0fe3e0@CSBI_RectOnly@@QAEXXZ	1.2121	1.2121	1	b50f2c9ccee1	0xfe3e0
 engine_attributed	?CSBI_RectOnly_0fe670@CSBI_RectOnly@@QAEXXZ	7.6923	7.6923	1	c167ef40b7b9	0xfe670
@@ -2335,10 +2322,12 @@ font	?Stub_17a460@FontRenderer@@QAEXXZ	0.0684	0.0684	1	cf29e8e947ca	0x17a460
 font	?Stub_17ad10@FontRenderer@@QAEXXZ	0.1307	0.1307	1	8384c09d6a21	0x17ad10
 fontconfig	??1CFontConfig@@UAE@XZ	92.7273	92.7273	1	562d70cadd9b	0x85f40
 fontconfig	?AddItem@CFontConfig@@QAEHPBDHH@Z	100.0000	100.0000	2	0ed05f26e3ca	0x21c60
+fontconfig	?EndInput@CFontConfig@@QAEXXZ	100.0000	100.0000	1	850ad7be3868	0x21ef0
 fontconfig	?FreeNodes@CFontConfig@@QAEXXZ	100.0000	100.0000	1	c597192ef01d	0x21bd0
 fontconfig	?LoadFontConfig@CFontConfig@@QAEHHH@Z	99.9735	99.9735	8	3412ed9f71b7	0x218e0
 fontconfig	?Reset@CFontConfig@@QAEXXZ	100.0000	100.0000	1	5854791fe3ee	0x21b60
 fontconfig	?Scroll@CFontConfig@@QAEXH@Z	100.0000	100.0000	2	0b35ba3638c3	0x21d80
+fontconfig	?TypeChar@CFontConfig@@QAEHHH@Z	61.1207	61.1207	1	61e96f9918d9	0x21e20
 fontconfig	?winapi_022360_DrawTextA_SelectObject_SetTextColor@CFontConfig@@QAEHHHHH@Z	0.7353	0.7353	2	02c6bbf147cb	0x22360
 fonts	?FreeFontsMemory@@YAHXZ	100.0000	100.0000	6	91daa7a5370e	0x1158f0
 fonts	?InitializeFonts@@YAHXZ	77.3077	77.3077	7	6a0fc4d959d6	0x115810
@@ -2783,11 +2772,17 @@ inftrees	_inflate_trees_free	100.0000	100.0000	1	f385d577afa6	0x18aab0
 infutil	_inflate_flush	100.0000	100.0000	1	e0e7519d9f47	0x18b300
 ingameicon	??1CInGameIcon@@UAE@XZ	100.0000	100.0000	1	fde4a2ce1197	0x11d00
 ingameicon	?HandleInput@CInGameIcon@@QAEHXZ	90.8442	90.8442	2	d070837e8c0c	0x97680
+ingameicon	?InitIconActionTable@@YAXXZ	100.0000	100.0000	1	e833f3ac9ede	0x97800
+ingameicon	?InitIconStateTable@@YAXXZ	100.0000	100.0000	1	30e4832d02d1	0x97d60
 ingameicon	?PlaceAt@CInGameIcon@@QAEHHH@Z	71.2551	71.2551	3	2fb5c55bf11a	0x986b0
+ingameicon	?RefreshCell@CInGameIcon@@QAEHXZ	100.0000	100.0000	1	d5db15ebd4e1	0x98340
+ingameicon	?RegisterIconActions@@YAXXZ	87.0000	87.0000	1	1762bee03e85	0x979e0
+ingameicon	?RegisterIconState@@YAXXZ	96.4783	96.4783	1	899dde6a8598	0x97f40
 ingameicon	?Serialize@CInGameIcon@@QAEHPAVCArchive@@HHH@Z	0.6826	0.6826	2	958d1db3464e	0x98c90
 ingameicon	?SetField54@CInGameIcon@@QAEXH@Z	100.0000	100.0000	2	996198841286	0x99b10
 ingametext	??1CInGameText@@UAE@XZ	100.0000	100.0000	1	f69bd50df17d	0x11dc0
 ingametext	?Dispatch@CInGameText@@QAEXH@Z	100.0000	100.0000	1	732a6ae0ef8a	0x99460
+ingametext	?RegisterTextLogic@@YAXXZ	96.4783	96.4783	1	99afe765bef2	0x995c0
 ingametext	?Serialize@CInGameText@@QAEHPAVCTextArchive@@HHH@Z	100.0000	100.0000	1	1cfc09245808	0x99a30
 ingameworkerhandlers	?Handler095750@@YAHPAUOwner@@@Z	100.0000	100.0000	1	76ecb60f46e9	0x95750
 ingameworkerhandlers	?Handler095890@@YAHPAUOwner@@@Z	100.0000	100.0000	1	8bf2772ac296	0x95890
@@ -2952,8 +2947,13 @@ projectile	?StepMotion@CProjectile@@QAEXXZ	70.6977	70.6977	2	be95913fb568	0xe08b
 pyramidbridgesprites	?LoadPyramidBridge@CPlayLevelLoad@@QAEXH@Z	7.3030	7.3030	2	fc1e88cb93b0	0x110c10
 randomambientsound	?BaseInit@CRandomAmbientSound@@QAEXXZ	100.0000	100.0000	1	7fdacdff3f87	0xbb40
 randomambientsound	?Setup@CRandomAmbientSound@@QAEHPAVDirectSoundMgr@@HHPAUAmbientBox@@H@Z	100.0000	100.0000	1	55857903aa7d	0xbe50
+randomambientsound	?SetupFromMap@CRandomAmbientSound@@QAEXPAUAmbSoundMapHolder@@PAXHHPAUAmbientPoint@@H@Z	88.7500	88.7500	1	7f2210207717	0xc4b0
+randomambientsound	?SetupPos@CRandomAmbientSound@@QAEHPAVDirectSoundMgr@@HHPAUAmbientPoint@@H@Z	100.0000	100.0000	1	6abfa7f835bd	0xc530
+randomambientsound	?SpawnPosSound@@YAXPAUPosSoundObj@@@Z	75.9638	75.9638	1	6b80be68acd2	0xca00
 randomambientsound	?Step@CRandomAmbientSound@@QAEXHHH@Z	93.6594	93.6594	2	acf931ba19b0	0xcb30
+randomambientsound	?StopPosSound@@YAXPAUPosSoundObj@@@Z	100.0000	100.0000	1	40c068eecb35	0xc9d0
 randomambientsound	?Update@CRandomAmbientSound@@QAEXHHH@Z	35.3264	35.3264	1	e8761bf3bb1a	0xc2a0
+randomambientsound	?UpdateAt@CRandomAmbientSound@@QAEXHHH@Z	89.2586	89.2586	1	42177ff8008f	0xc5b0
 registryhelper	?Close@RegistryHelper@Utils@@QAEXXZ	100.0000	100.0000	4	384a98aaca34	0x139330
 registryhelper	?GetRegistryKey@RegistryHelper@Utils@@QAEHPAUHKEY__@@PADPAPAU3@@Z	100.0000	100.0000	3	90d7795268cd	0x139650
 registryhelper	?GetValueDword@RegistryHelper@Utils@@QAEKPADK@Z	100.0000	100.0000	4	8557af160863	0x1395d0

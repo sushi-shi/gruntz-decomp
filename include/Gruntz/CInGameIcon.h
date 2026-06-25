@@ -133,6 +133,7 @@ public:
     virtual ~CInGameIcon() OVERRIDE; // 0x011d00
 
     i32 HandleInput();                                  // 0x097680
+    i32 RefreshCell();                                  // 0x098340
     i32 PlaceAt(i32 idx, i32 gridBase);                 // 0x0986b0
     i32 Serialize(CArchive* ar, i32 tag, i32 a, i32 b); // 0x098c90
     void SetField54(i32 v);                             // 0x099b10

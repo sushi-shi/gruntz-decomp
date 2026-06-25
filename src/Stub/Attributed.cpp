@@ -102,8 +102,6 @@ RVA(0x0017e160, 0x8) void CFaderMgr::CFaderMgr_17e160() {}  // high
 RVA(0x00165f00, 0x48) void CFileMem::CFileMem_165f00() {}  // high
 
 // ---- CFontConfig ----
-RVA(0x00021e20, 0x95) void CFontConfig::CFontConfig_021e20() {}  // high
-RVA(0x00021ef0, 0x17) void CFontConfig::CFontConfig_021ef0() {}  // high
 RVA(0x000220f0, 0x46) void CFontConfig::CFontConfig_0220f0() {}  // high
 
 // ---- CGameApp ----
@@ -160,14 +158,8 @@ RVA(0x00148fc0, 0x104) void CImageOwned::CImageOwned_148fc0() {}  // med
 RVA(0x001524d0, 0x41) void CImageSet::CImageSet_1524d0() {}  // med
 
 // ---- CInGameIcon ----
-RVA(0x00097800, 0x15) void CInGameIcon::CInGameIcon_097800() {}  // med
-RVA(0x000979e0, 0x2ac) void CInGameIcon::CInGameIcon_0979e0() {}  // med
-RVA(0x00097d60, 0x15) void CInGameIcon::CInGameIcon_097d60() {}  // med
-RVA(0x00097f40, 0x18d) void CInGameIcon::CInGameIcon_097f40() {}  // med
-RVA(0x00098340, 0x71) void CInGameIcon::CInGameIcon_098340() {}  // med
 
 // ---- CInGameText ----
-RVA(0x000995c0, 0x18d) void CInGameText::CInGameText_0995c0() {}  // med
 
 // ---- CInputDevice ----
 RVA(0x00134f70, 0x40) void CInputDevice::CInputDevice_134f70() {}  // high
@@ -235,11 +227,6 @@ RVA(0x000df920, 0x15) void CProjectile::CProjectile_0df920() {}  // high
 RVA(0x000dfb00, 0x18d) void CProjectile::CProjectile_0dfb00() {}  // high
 
 // ---- CRandomAmbientSound ----
-RVA(0x0000c4b0, 0x53) void CRandomAmbientSound::CRandomAmbientSound_00c4b0() {}  // med
-RVA(0x0000c530, 0x51) void CRandomAmbientSound::CRandomAmbientSound_00c530() {}  // med
-RVA(0x0000c5b0, 0x1df) void CRandomAmbientSound::CRandomAmbientSound_00c5b0() {}  // med
-RVA(0x0000c9d0, 0x18) void CRandomAmbientSound::CRandomAmbientSound_00c9d0() {}  // med
-RVA(0x0000ca00, 0xf0) void CRandomAmbientSound::CRandomAmbientSound_00ca00() {}  // med
 
 // ---- CRezItm ----
 RVA(0x0013c6c0, 0x97) void CRezItm::CRezItm_13c6c0() {}  // high
