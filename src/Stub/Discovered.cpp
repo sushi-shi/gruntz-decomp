@@ -614,10 +614,6 @@ void ClassUnknown_17::ClassUnknown_17_16f760() {}
 RVA(0x00170100, 0x104)
 void ClassUnknown_17::ClassUnknown_17_170100() {}
 
-// ---- ClassUnknown_18 ----
-RVA(0x0016f7f0, 0x47b)
-void ClassUnknown_18::ClassUnknown_18_16f7f0() {}
-
 // ---- ClassUnknown_19 -> Blowfish_decipher (src/Crypto/Blowfish.cpp) ----
 // Not a class: Bruce Schneier's reference Blowfish cipher (free __cdecl funcs).
 // 0x16fc70 is the single-block DECIPHER (16 unrolled Feistel rounds over the

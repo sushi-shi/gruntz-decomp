@@ -21,7 +21,7 @@ applyrange	1	1
 areamgr	4	2
 battlezdata	14	11
 battlezmapconfig	1	0
-blowfish	1	0
+blowfish	2	1
 brickz	14	3
 butemgr	39	27
 cambientsound	3	2
@@ -64,7 +64,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	234	0
+engine_discovered	233	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -226,7 +226,8 @@ battlezdata	?SetCount@CBattlezData@@QAEXH@Z	100.0000	100.0000	2	fe4c034429ca	0xf
 battlezdata	?SumFlags@CBattlezData@@QAEHH@Z	100.0000	100.0000	2	06e535f65b73	0xfcbc0
 battlezdata	?SumWinRow@CBattlezData@@QAEHH@Z	100.0000	100.0000	2	f7cb273e44cf	0xfccb0
 battlezmapconfig	?LoadConfig@CBattlezMapConfig@@QAEHPAUCLevelInfo@@HH@Z	85.9933	85.9933	4	f06ecd871376	0x25020
-blowfish	?Blowfish_decipher@@YAXPAI0@Z	56.6187	56.6187	1	9b3bc1ea38b1	0x16fc70
+blowfish	?Blowfish_decipher@@YAXPAI0@Z	99.8438	99.8438	2	c61014aad094	0x16fc70
+blowfish	?Blowfish_encipher@@YAXPAI0@Z	100.0000	100.0000	1	3b9987755e2b	0x16f7f0
 brickz	?CellPop@CBrickz@@QAEXPAUBrickzNode@@H@Z	80.3284	80.3284	3	6c5a65d16fa4	0x9f710
 brickz	?CellPush@CBrickz@@QAEXPAUBrickzNode@@@Z	85.9070	85.9070	2	890d04538e3f	0x9f470
 brickz	?ComputeCellFlags@CBrickz@@QAEXHHH@Z	0.0000	0.0000	1	3ad1bf45ba6a	0x77790
@@ -791,7 +792,6 @@ engine_discovered	?ClassUnknown_14_13a000@ClassUnknown_14@@QAEXXZ	1.8182	1.8182	
 engine_discovered	?ClassUnknown_17_16f6c0@ClassUnknown_17@@QAEXXZ	6.6667	6.6667	1	a128cf579ccc	0x16f6c0
 engine_discovered	?ClassUnknown_17_16f760@ClassUnknown_17@@QAEXXZ	0.8333	0.8333	1	b13325b5e1c8	0x16f760
 engine_discovered	?ClassUnknown_17_170100@ClassUnknown_17@@QAEXXZ	1.0989	1.0989	1	26204a48c417	0x170100
-engine_discovered	?ClassUnknown_18_16f7f0@ClassUnknown_18@@QAEXXZ	0.3215	0.3215	1	83d3dcf1a21f	0x16f7f0
 engine_discovered	?ClassUnknown_1_134be0@ClassUnknown_1@@QAEXXZ	0.6349	0.6349	1	96e70ad0a176	0x134be0
 engine_discovered	?ClassUnknown_1_134c60@ClassUnknown_1@@QAEXXZ	11.1111	11.1111	1	c28045447dbe	0x134c60
 engine_discovered	?ClassUnknown_1_134c80@ClassUnknown_1@@QAEXXZ	3.3333	3.3333	1	7c20426223e1	0x134c80
