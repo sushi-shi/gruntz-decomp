@@ -16,10 +16,6 @@ RVA(0x00023570, 0x6) void CCheckpointDlg::CCheckpointDlg_023570() {}
 // ---- CCheckpointTrigger ----
 RVA(0x00011480, 0x44) void CCheckpointTrigger::CCheckpointTrigger_011480() {}
 
-// ---- CDDPalette ----
-RVA(0x001474d0, 0x60) void CDDPalette::CDDPalette_1474d0() {}
-RVA(0x00147530, 0x54) void CDDPalette::CDDPalette_147530() {}
-
 // ---- CDDSurface ----
 RVA(0x00142a40, 0x53) void CDDSurface::CDDSurface_142a40() {}
 
@@ -209,10 +205,6 @@ RVA(0x000ebd30, 0x21) void ClassUnknown_60::ClassUnknown_60_0ebd30() {}
 // ---- ClassUnknown_61 ----
 RVA(0x00120120, 0xbc) void ClassUnknown_61::ClassUnknown_61_120120() {}
 RVA(0x0017b500, 0x8) void ClassUnknown_61::ClassUnknown_61_17b500() {}
-
-// ---- ClassUnknown_66 ----
-RVA(0x00161370, 0x7) void ClassUnknown_66::ClassUnknown_66_161370() {}
-RVA(0x00166d40, 0x24) void ClassUnknown_66::ClassUnknown_66_166d40() {}
 
 // ---- ClassUnknown_70 ----
 RVA(0x0015b2b0, 0xe) void ClassUnknown_70::ClassUnknown_70_15b2b0() {}

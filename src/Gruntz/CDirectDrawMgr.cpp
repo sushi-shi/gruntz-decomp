@@ -657,6 +657,48 @@ i32 CDDPalette::Create(IDirectDraw2Z* dd, void* entries, u32 flags) {
     return 0;
 }
 
+// CDDPalette::CreateRGB (__thiscall, ret 0xc => 3 args). Takes a packed 256x3
+// RGB-triplet array, expands it on the stack into PALETTEENTRY[256] (peFlags=0),
+// then forwards to Create. The 0x400-byte stack buffer drives `sub esp,0x400`.
+RVA(0x001474d0, 0x60)
+i32 CDDPalette::CreateRGB(IDirectDraw2Z* dd, void* rgb, u32 flags) {
+    u8 entries[0x400];
+    u8* src = (u8*)rgb;
+    for (i32 i = 0; i < 0x100; i++) {
+        entries[i * 4 + 0] = src[0];
+        entries[i * 4 + 1] = src[1];
+        entries[i * 4 + 2] = src[2];
+        entries[i * 4 + 3] = 0;
+        src += 3;
+    }
+    return Create(dd, entries, flags);
+}
+
+// CDDPalette::Destroy (__thiscall, no args). Nulls m_0/m_4/m_8, frees the three
+// owned buffers (m_c/m_10/m_18) via operator delete, clears m_34. m_4 is only
+// nulled (not Released) here.
+RVA(0x00147530, 0x54)
+void CDDPalette::Destroy() {
+    m_0 = 0;
+    m_8 = 0;
+    if (m_4 != 0) {
+        m_4 = 0;
+    }
+    if (m_c != 0) {
+        operator delete(m_c);
+        m_c = 0;
+    }
+    if (m_10 != 0) {
+        operator delete(m_10);
+        m_10 = 0;
+    }
+    if (m_18 != 0) {
+        operator delete(m_18);
+        m_18 = 0;
+    }
+    m_34 = 0;
+}
+
 // CDDPalette::GetEntries (__thiscall, ret 0 => no args). Lazily allocates the
 // readback cache (m_10), then reads all 256 entries; reports a bad HRESULT.
 RVA(0x00147c30, 0x4d)

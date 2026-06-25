@@ -272,17 +272,23 @@ public:
 // ---------------------------------------------------------------------------
 class CDDPalette {
 public:
-    i32 Create(IDirectDraw2Z* dd, void* entries, u32 flags); // 0x147390
-    i32 GetEntries();                                        // 0x147c30
+    i32 Create(IDirectDraw2Z* dd, void* entries, u32 flags);  // 0x147390
+    i32 CreateRGB(IDirectDraw2Z* dd, void* rgb, u32 flags);   // 0x1474d0
+    void Destroy();                                           // 0x147530
+    i32 GetEntries();                                         // 0x147c30
     i32 SetRange(i32 start, i32 count, u8 r, u8 g, u8 b,
                  u32 flags); // 0x147cd0
 
     // --- layout ---------------------------------------------------------------
-    char m_pad0[0x04 - 0x00];
+    i32 m_0;                  // +0x00  cleared by Destroy
     IDirectDrawPaletteZ* m_4; // +0x04  the held palette interface
-    char m_pad8[0x0c - 0x08];
-    u8* m_c;  // +0x0c  PALETTEENTRY cache A (0x400 bytes)
-    u8* m_10; // +0x10  PALETTEENTRY cache B (0x400 bytes)
+    i32 m_8;                  // +0x08  cleared by Destroy
+    u8* m_c;                  // +0x0c  PALETTEENTRY cache A (0x400 bytes)
+    u8* m_10;                 // +0x10  PALETTEENTRY cache B (0x400 bytes)
+    char m_pad14[0x18 - 0x14];
+    u8* m_18; // +0x18  third buffer freed by Destroy
+    char m_pad1c[0x34 - 0x1c];
+    i32 m_34; // +0x34  cleared by Destroy
 };
 
 // ---------------------------------------------------------------------------

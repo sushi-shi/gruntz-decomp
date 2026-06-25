@@ -627,9 +627,12 @@ struct CImageSet1 {
         *(void**)this = &g_imageSet1Vtbl;
         m_04 = 0;
     }
+    void DtorBase();           // 0x161370  base-subobject dtor (vtable restamp)
+    i32 Parse(void* record);   // 0x166d40  vtbl slot +0x14
     void* m_vtbl; // +0x00
     i32 m_04;     // +0x04
-    char pad_8[0x10 - 0x08];
+    i32 m_08;     // +0x08
+    i32 m_0c;     // +0x0c
 };
 struct CImageSet2 {
     CImageSet2() {
@@ -679,6 +682,25 @@ CImageSet* CGameLevel::ReadImageSet(void* record) {
         set->Release(1);
     }
     return 0;
+}
+
+// CImageSet1::DtorBase (0x161370) - the base-subobject destructor invoked by the
+// scalar-deleting-destructor (g_imageSet1Vtbl slot +0x04, unmatched). The base
+// has no members, so it only restamps the base-subobject (CObject-like) dtor
+// vftable @0x5e8cb4 - the same table the level family's ~CSeverusWorker restores.
+RVA(0x00161370, 0x7)
+void CImageSet1::DtorBase() {
+    *(void**)this = &g_severusWorkerDtorVtbl;
+}
+
+// CImageSet1::Parse (0x166d40, g_imageSet1Vtbl slot +0x14). Reads three dwords
+// from the WWD record at +0x08/+0x0c/+0x10 into m_04/m_08/m_0c and returns TRUE.
+RVA(0x00166d40, 0x24)
+i32 CImageSet1::Parse(void* record) {
+    m_04 = *(i32*)((char*)record + 0x08);
+    m_08 = *(i32*)((char*)record + 0x0c);
+    m_0c = *(i32*)((char*)record + 0x10);
+    return 1;
 }
 
 // ---------------------------------------------------------------------------
