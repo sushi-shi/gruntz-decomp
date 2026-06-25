@@ -67,7 +67,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	208	0
+engine_discovered	206	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -189,7 +189,7 @@ winapicdrom	1	0
 winapimodule	1	0
 winmain	1	1
 worldsoundset	7	5
-wormhole	4	1
+wormhole	6	2
 wwdfile	10	1
 wwdgameobject	7	2
 wwdgrid	7	4
@@ -787,8 +787,6 @@ engine_discovered	?CUserLogic_16ea90@CUserLogic@@QAEXXZ	0.6061	0.6061	2	e90c8731
 engine_discovered	?CVoiceTrigger_0135a0@CVoiceTrigger@@QAEXXZ	5.8824	5.8824	2	03bf46371349	0x135a0
 engine_discovered	?CVoiceTrigger_11a700@CVoiceTrigger@@QAEXXZ	1.7241	1.7241	2	810ca6fe8ced	0x11a700
 engine_discovered	?CWayPoint_0102e0@CWayPoint@@QAEXXZ	5.8824	5.8824	2	8ce6a144b1bf	0x102e0
-engine_discovered	?CWormhole_010980@CWormhole@@QAEXXZ	5.8824	5.8824	2	8d684b829b42	0x10980
-engine_discovered	?CWormhole_0403b0@CWormhole@@QAEXXZ	1.6667	1.6667	2	40c476ee8811	0x403b0
 engine_discovered	?ClassUnknown_101_11f6b9@ClassUnknown_101@@QAEXXZ	9.0909	9.0909	2	7fa3bc6ae63e	0x11f6b9
 engine_discovered	?ClassUnknown_102_06b2e0@ClassUnknown_102@@QAEXXZ	2.2222	2.2222	2	0eef992501d5	0x6b2e0
 engine_discovered	?ClassUnknown_103_148d10@ClassUnknown_103@@QAEXXZ	6.2500	6.2500	2	b03b02f5f4ea	0x148d10
@@ -2420,7 +2418,9 @@ worldsoundset	?Resume@CWorldSoundSet@@QAEXXZ	99.6970	99.6970	1	526dc5538b8a	0xbc
 worldsoundset	?Retune@CWorldSoundSet@@QAEXHH@Z	86.2571	86.2571	1	a8ba0daa5bc0	0xbd60
 worldsoundset	?Stop@CWorldSoundSet@@QAEXXZ	100.0000	100.0000	1	909b0518053a	0xbc80
 worldsoundset	?Teardown@CWorldSoundSet@@QAEXXZ	100.0000	100.0000	1	587b40d75372	0xb660
-wormhole	?LoadColors@CWormhole@@QAEXXZ	100.0000	100.0000	7	b6a214116e74	0x411f0
+wormhole	??1CWormhole@@UAE@XZ	100.0000	100.0000	1	0bc584d4a684	0x10980
+wormhole	?LoadColors@CWormhole@@QAEXXZ	100.0000	100.0000	8	44774ed3d148	0x411f0
+wormhole	?SpawnPartners@CWormhole@@QAEXXZ	93.1500	93.1500	1	9bbbe8484d92	0x403b0
 wormhole	?Stub_03fc70@CWormhole@@QAEXXZ	0.3333	0.3333	4	b52ffef5d830	0x3fc70
 wormhole	?Stub_03fed0@CWormhole@@QAEXXZ	0.6349	0.6349	4	77e92219c343	0x3fed0
 wormhole	?Stub_0412c0@CWormhole@@QAEXXZ	3.5714	3.5714	4	e051969c2768	0x412c0

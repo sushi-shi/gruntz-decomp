@@ -59,7 +59,6 @@ class CToobSpikez { public: void CToobSpikez_012c60(); void CToobSpikez_114860()
 class CUserLogic { public: void CUserLogic_00f2f0(); void CUserLogic_057b70(); void CUserLogic_059230(); void CUserLogic_05caa0(); void CUserLogic_062110(); void CUserLogic_0637a0(); void CUserLogic_067850(); void CUserLogic_0690a0(); void CUserLogic_16e7f0(); void CUserLogic_16ea90(); };
 class CVoiceTrigger { public: void CVoiceTrigger_0135a0(); void CVoiceTrigger_11a700(); };
 class CWayPoint { public: void CWayPoint_0102e0(); };
-class CWormhole { public: void CWormhole_010980(); void CWormhole_0403b0(); };
 class ClassUnknown_1 { public: void ClassUnknown_1_134be0(); void ClassUnknown_1_134c60(); void ClassUnknown_1_134c80(); };
 class ClassUnknown_101 { public: void ClassUnknown_101_11f6b9(); };
 class ClassUnknown_102 { public: void ClassUnknown_102_06b2e0(); };

@@ -211,10 +211,6 @@ RVA(0x0011a700, 0xae) void CVoiceTrigger::CVoiceTrigger_11a700() {}
 // ---- CWayPoint ----
 RVA(0x000102e0, 0x44) void CWayPoint::CWayPoint_0102e0() {}
 
-// ---- CWormhole ----
-RVA(0x00010980, 0x44) void CWormhole::CWormhole_010980() {}
-RVA(0x000403b0, 0xa5) void CWormhole::CWormhole_0403b0() {}
-
 // ---- ClassUnknown_1 ----
 RVA(0x00134be0, 0x7e) void ClassUnknown_1::ClassUnknown_1_134be0() {}
 RVA(0x00134c60, 0x14) void ClassUnknown_1::ClassUnknown_1_134c60() {}

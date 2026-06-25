@@ -578,7 +578,7 @@ flags = "base"
 [[unit]]
 unit = "wormhole"
 source = "src/Gruntz/Wormhole.cpp"
-flags = "base"
+flags = "eh"
 
 [[unit]]
 unit = "battlezmapconfig"

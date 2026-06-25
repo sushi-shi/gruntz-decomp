@@ -48,4 +48,15 @@ the call all match — only the push placement differs). Declaring the real `int
 doing; the residual push placement is the wall. Evidence: CPlaneRender::CenterScrollA/B (@0x163300/
 0x163370) 83.5% → 87.9% on the int-return fix, then parked — only the deferred edi/ebx push + an
 adjacent member-load order remain.
+
+INVERSE direction (same wall): RETAIL eager-pushes ALL callee-saved regs in the prologue while the
+RECOMPILE shrink-wraps one of them (`push ebp`) down to a loop preheader. Seen on a function with a
+chain of early-return gates followed by a list-walk loop whose only `ebp` use is a loop-invariant
+constant (a `&LAB` type-marker held in ebp for the per-node `cmp`): retail's prologue is
+`push ebx; push ebp; push esi; mov ecx,esi; push edi; push eax`, the recompile's is the same minus
+`push ebp`, with `push ebp` emitted just before the preheader `mov ebp,&marker`. The body (gates +
+loop) is byte-identical; only the `push ebp`/`pop ebp` position + the guard-exit pop set differ.
+Hoisting the marker constant to the top of the body does NOT help — MSVC's DCE sinks the dead load
+back to the preheader, so ebp stays shrink-wrapped. ~93% (CWormhole::SpawnPartners @0x403b0). Same
+not-source-steerable frame decision as the forward case.
 related: void-vs-bool-return-epilogue-split.md, identical-return-epilogue-tailmerge.md
