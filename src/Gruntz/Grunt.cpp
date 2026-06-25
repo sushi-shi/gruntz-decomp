@@ -1782,6 +1782,73 @@ void CGrunt::SetEntrancePos(i32 a, i32 b) {
     }
 }
 
+// ---------------------------------------------------------------------------
+// CGrunt::SerializeMove(ar, mode, a3, a4)   @0x53b80   (ret 0x10)
+// The grunt move/idle-timer record (de)serializer. mode 4 = save (ar->Write,
+// vtable slot +0x30), mode 7 = load (ar->Read, slot +0x2c). It chains the head
+// anim-state serializer (0x16e7f0, external) and the +0x150/+0x43c sub-records,
+// runs a mode-specific pre-step, then streams the eight 16-byte (double-pair)
+// timer records at +0x810..+0x880 directly, and finishes through the six
+// tail sub-record serializers (+0x890/+0x8a0/+0x8b0/+0x8c0/+0x308/+0x278). The
+// per-record `if (mode==4) Write,Write; else if (mode==7) Read,Read;` inlines
+// once per record (each half is 8 bytes: p, then p+8).
+static __inline void SerRecord(CGruntArchive* ar, i32 mode, char* p) {
+    switch (mode) {
+        case 4:
+            ar->Write(p, 8);
+            ar->Write(p + 8, 8);
+            break;
+        case 7:
+            ar->Read(p, 8);
+            ar->Read(p + 8, 8);
+            break;
+    }
+}
+
+RVA(0x00053b80, 0x340)
+i32 CGrunt::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
+    if (ar == 0) {
+        return 0;
+    }
+    if (SerializeAnimState(ar, mode, a3, a4) == 0) {
+        return 0;
+    }
+    if (((CGruntSubSer*)((char*)this + 0x150))->Serialize(ar, mode, a3, a4) == 0) {
+        return 0;
+    }
+    switch (mode) {
+        case 4:
+            if (SerPreStep4(ar) == 0) {
+                return 0;
+            }
+            break;
+        case 7:
+            if (SerPreStep7(ar) == 0) {
+                return 0;
+            }
+            break;
+        case 8:
+            m_tileMgr = (CGruntTileMgr*)g_gameReg->m_68;
+            break;
+    }
+    ((CGruntSubSer*)((char*)this + 0x43c))->Serialize(ar, mode, a3, a4);
+    SerRecord(ar, mode, (char*)this + 0x810);
+    SerRecord(ar, mode, (char*)this + 0x820);
+    SerRecord(ar, mode, (char*)this + 0x830);
+    SerRecord(ar, mode, (char*)this + 0x840);
+    SerRecord(ar, mode, (char*)this + 0x850);
+    SerRecord(ar, mode, (char*)this + 0x860);
+    SerRecord(ar, mode, (char*)this + 0x870);
+    SerRecord(ar, mode, (char*)this + 0x880);
+    ((CGruntSubSer*)((char*)this + 0x890))->Serialize(ar, mode, a3, a4);
+    ((CGruntSubSer*)((char*)this + 0x8a0))->Serialize(ar, mode, a3, a4);
+    ((CGruntSubSer*)((char*)this + 0x8b0))->Serialize(ar, mode, a3, a4);
+    ((CGruntSubSer*)((char*)this + 0x8c0))->Serialize(ar, mode, a3, a4);
+    ((CGruntSubSer*)((char*)this + 0x308))->Serialize(ar, mode, a3, a4);
+    ((CGruntSubSer*)((char*)this + 0x278))->Serialize(ar, mode, a3, a4);
+    return 1;
+}
+
 // @early-stop
 // reloc-masked-extern tail (94%+): the 4560-byte instruction stream is
 // byte-exact vs retail (no EH frame, same sprite/string/name-id/field/tail

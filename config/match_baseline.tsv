@@ -64,7 +64,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	233	0
+engine_discovered	232	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -80,7 +80,7 @@ gamemodeobjlifecycle	3	2
 gameobjectctors	5	0
 gametext	4	2
 gamewnd	9	8
-grunt	49	9
+grunt	50	10
 gruntpuddle	4	2
 gruntspawnconfig	10	4
 gruntvoice	4	3
@@ -744,7 +744,6 @@ engine_discovered	?CTileTriggerSwitch_0110f0@CTileTriggerSwitch@@QAEXXZ	5.8824	5
 engine_discovered	?CToobSpikez_012c60@CToobSpikez@@QAEXXZ	5.8824	5.8824	1	d16ff0f9da5d	0x12c60
 engine_discovered	?CToobSpikez_114860@CToobSpikez@@QAEXXZ	0.5333	0.5333	1	0b1c4042697d	0x114860
 engine_discovered	?CUserLogic_00f2f0@CUserLogic@@QAEXXZ	2.2727	2.2727	1	211acac7460b	0xf2f0
-engine_discovered	?CUserLogic_053b80@CUserLogic@@QAEXXZ	0.1130	0.1130	1	5d780b659a25	0x53b80
 engine_discovered	?CUserLogic_059230@CUserLogic@@QAEXXZ	0.1238	0.1238	1	0cbaf8303e9e	0x59230
 engine_discovered	?CUserLogic_05caa0@CUserLogic@@QAEXXZ	0.3030	0.3030	1	35e3f27f4fcd	0x5caa0
 engine_discovered	?CUserLogic_062110@CUserLogic@@QAEXXZ	0.0901	0.0901	1	6f4d7a6216ed	0x62110
@@ -1617,6 +1616,7 @@ grunt	?ResolveDeathAnimation@CGrunt@@QAEHXZ	97.8283	97.8283	6	142c8cc4dd01	0x455
 grunt	?ResolveIdleAnimation@CGrunt@@QAEHXZ	92.0598	92.0598	6	4559532e9c2a	0x45960
 grunt	?ResolveMovingAnimation@CGrunt@@QAEHXZ	92.8816	92.8816	6	c96d52636e85	0x45100
 grunt	?Save@CGrunt@@QAEHPAVCGruntArchive@@@Z	94.2489	94.2489	4	40228e139df7	0x53f90
+grunt	?SerializeMove@CGrunt@@QAEHPAVCGruntArchive@@HHH@Z	100.0000	100.0000	1	4dd7714844b4	0x53b80
 grunt	?SetEntrancePos@CGrunt@@QAEXHH@Z	89.3421	89.3421	3	2c26e611f009	0x4d060
 grunt	?StepAnimDispatchA@CGrunt@@QAEHHHHH@Z	41.6245	41.6245	2	cee096a63856	0x52fb0
 grunt	?StepAnimDispatchB@CGrunt@@QAEHXZ	40.7674	40.7674	2	4dbf079670fa	0x6a6d0

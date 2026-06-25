@@ -260,7 +260,7 @@ public:
     void CUserLogic_051850();
     void CUserLogic_051a20();
     // 0x052fb0 -> CGrunt::StepAnimDispatchA (Grunt.cpp)
-    void CUserLogic_053b80();
+    // 0x053b80 -> CGrunt::SerializeMove (Grunt.cpp)
     void CUserLogic_059230();
     void CUserLogic_05caa0();
     // 0x05f310 -> CGrunt::StepCoordResolve (Grunt.cpp)

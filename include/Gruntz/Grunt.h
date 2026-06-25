@@ -371,7 +371,9 @@ struct GruntBoard {
     i32 m_10;   // +0x10  y bound
 };
 struct WwdGameReg {
-    char m_pad0[0x70];
+    char m_pad0[0x68];
+    i32 m_68; // +0x68  (SerializeMove mode-8: -> CGrunt::m_tileMgr)
+    char m_pad6c[0x70 - 0x6c];
     GruntBoard* m_70; // +0x70  the level board
     char m_pad74[0x8];
 };
@@ -460,8 +462,17 @@ public:
     virtual void slot20();
     virtual void slot24();
     virtual void slot28();
-    virtual void slot2c();
+    virtual void Read(void* data, i32 size);        // vtable slot +0x2c
     virtual void Write(const void* data, i32 size); // vtable slot +0x30
+};
+
+// A grunt-embedded sub-record serializer (the CGrunt move/timer state has several
+// at +0x150/+0x278/+0x308/+0x43c/+0x890..+0x8c0). Each is a __thiscall(ar, mode,
+// a3, a4) ret 0x10 reached through an incremental-link thunk; external/no-body so
+// the `lea ecx,[this+N]; call rel32` reloc-masks.
+class CGruntSubSer {
+public:
+    i32 Serialize(CGruntArchive* ar, i32 mode, i32 a3, i32 a4);
 };
 
 // The grunt's name-id resolver the Save reaches via m_158->m_c->m_2c: maps an
@@ -799,6 +810,18 @@ public:
     void OnStruck(i32 wasHit);                     // @0x588f0 (ret 4)
     i32 ResolveArrivalNeighbor();                  // @0xf26f0 (ret 0)
     void RearmEntranceDrop();                      // @0x68370 (ret 0)
+
+    // ---- the move/timer record serializer (@0x53b80, ret 0x10) ----
+    // SerializeMove(ar, mode) drives the grunt move/idle-timer state through an
+    // archive whose Read/Write are vtable slots +0x2c/+0x30. mode 4 = save, 7 =
+    // load. The eight 16-byte (double-pair) records at +0x810..+0x880 stream
+    // directly; the sub-records at +0x150/+0x43c/+0x278/+0x308/+0x890..+0x8c0
+    // serialize through their own engine helpers (external/reloc-masked).
+    i32 SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4);
+    // The head sub-serializer @0x16e7f0 (uncertain shape; left external).
+    i32 SerializeAnimState(CGruntArchive* ar, i32 mode, i32 a3, i32 a4);
+    i32 SerPreStep4(CGruntArchive* ar); // mode-4 pre-step (engine thunk)
+    i32 SerPreStep7(CGruntArchive* ar); // mode-7 pre-step (engine thunk)
 
     // ---- grunt movement / anim-name dispatch state machines (this TU) ----
     // The 5 big per-pose/anim-name resolution state machines: each resolves the

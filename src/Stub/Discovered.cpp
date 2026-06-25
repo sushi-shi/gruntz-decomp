@@ -395,6 +395,12 @@ RVA(0x00114860, 0x102)
 void CToobSpikez::CToobSpikez_114860() {}
 
 // ---- CGrunt (migration in progress; see src/Gruntz/Grunt.cpp) ----
+// 0x00f2f0 = the most-derived CGrunt /GX destructor: stamps the CUserLogic/CWapX
+//   vtables (0x5e8754/0x5e705c/0x5e70b4) then tears down the member sub-objects
+//   (CString @+0x468/+0x44c/+0x448/+0x1c0, collections @+0x338/+0x31c, the +0x18
+//   member dtor) under an EH unwind frame. Deferred to the final sweep: the EH
+//   member-teardown trylevel chain needs every member modeled as a real
+//   destructible sub-object (docs/patterns/eh-dtor-model-members-as-destructible).
 RVA(0x0000f2f0, 0xc8)
 void CUserLogic::CUserLogic_00f2f0() {}
 // 0x04ac10 -> CGrunt::PlaySound (src/Gruntz/Grunt.cpp)
@@ -403,8 +409,18 @@ void CUserLogic::CUserLogic_00f2f0() {}
 // 0x051850 -> CGrunt::RectContains (src/Gruntz/Grunt.cpp)
 // 0x051a20 -> CGrunt::RectContainsGated (src/Gruntz/Grunt.cpp)
 // 0x052fb0 -> CGrunt::StepAnimDispatchA (src/Gruntz/Grunt.cpp)
-RVA(0x00053b80, 0x340)
-void CUserLogic::CUserLogic_053b80() {}
+// 0x053b80 -> CGrunt::SerializeMove (src/Gruntz/Grunt.cpp) [100% byte-exact]
+// 0x059230 / 0x05caa0 / 0x062110 / 0x0637a0 / 0x067850 are CONFIRMED CGrunt
+//   methods (this=ecx is the grunt; same g_animNameResolver @0x6bf650 + scratch
+//   CString[] @0x6bf66c/+0x670 + single-letter type-code literals @0x60cc.. that
+//   StepAnimDispatchA/B and StepArrivalDrop use). All five are the SAME
+//   anim-name dispatch / move-state / scratch-CString-teardown family already
+//   @early-stopped in Grunt.cpp (StepArrivalDrop/StepGruntMovement/StepAnimDispatchA
+//   /B/StepCoordResolve): the inline-strcmp 12-way type-code cascade + the grid/
+//   board raw-offset chains + the scratch loop-strength-reduction wall (no source
+//   spelling). Deferred to the final sweep for a leaf-first redo with the other
+//   dispatch machines (do NOT half-reconstruct a >512 B dispatch megafn: it
+//   under-counts AND diverges its regalloc).
 RVA(0x00059230, 0x40d)
 void CUserLogic::CUserLogic_059230() {}
 RVA(0x0005caa0, 0x5e4)
@@ -417,8 +433,26 @@ void CUserLogic::CUserLogic_0637a0() {}
 RVA(0x00067850, 0x214)
 void CUserLogic::CUserLogic_067850() {}
 // 0x06a6d0 -> CGrunt::StepAnimDispatchB (src/Gruntz/Grunt.cpp)
+// 0x16e7f0 = CGrunt::SerializeAnimState, the head sub-serializer SerializeMove
+//   (0x53b80) chains: a switch(mode 4=Write/7=Read) over the archive vtable
+//   (slot +0x2c Read / +0x30 Write) like SerializeMove, BUT the load arm (case 7)
+//   reads a length, operator-new's a blob, ar->Read's it, builds a local temp
+//   object (ctor 0x569700 / dtor 0x569d70 @[esp+0x18]), folds it into the +0x18
+//   collection (0x593140) and RezFree's the blob. The temp-object lifecycle +
+//   the deserialize-into-collection shape is a separate reconstruction; deferred
+//   (modeled external/reloc-masked from SerializeMove, which is 100% without it).
 RVA(0x0016e7f0, 0x1cf)
 void CUserLogic::CUserLogic_16e7f0() {}
+// 0x16ea90 = CGrunt::StepMotion, the per-tick velocity/scroll integration step:
+//   m_140/m_144 = (i32)m_78/(i32)m_80; advances the m_38 motion sub-object's
+//   position doubles (+0x28/+0x30/+0x40/+0x48/+0xa0/+0xa8) against the HUD scroll
+//   owner (m_10->m_98->m_174/m_178) and re-maps via m_10->m_0c->m_24 (0x55de40).
+//   The integer control flow is fully recovered, but the two position-clamp
+//   blocks lower to a dense x87 fld/fxch/fsubr stack schedule that no C++ spelling
+//   reproduces (docs/patterns/x87-fp-stack-schedule, c7 wall) and +0x38 is an
+//   EMBEDDED sub-object here (conflicts with the resolvers' `CGruntAnimState* m_38`
+//   pointer typing). >512 B + fp wall -> deferred to the final sweep, NOT
+//   half-reconstructed (would diverge the resolvers' regalloc via m_38 re-typing).
 RVA(0x0016ea90, 0x234)
 void CUserLogic::CUserLogic_16ea90() {}
 
