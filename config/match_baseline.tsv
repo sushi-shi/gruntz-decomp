@@ -74,6 +74,7 @@ clightfx	2	1
 clightfxrender	22	8
 cmenustate	3	2
 cmulti	16	7
+configstore	4	0
 cparticlez	3	3
 cpathhazard	6	3
 cplay	31	8
@@ -104,7 +105,7 @@ dsoundvoice	2	1
 engine_attributed	60	0
 engine_boundary	626	0
 engine_discovered	86	0
-engine_label_stubs	513	118
+engine_label_stubs	507	118
 engstr	3	1
 filemem	8	7
 filestream	13	9
@@ -214,7 +215,7 @@ tiletriggercontainer	15	4
 tiletriggerlogic	2	1
 tiletriggertransition	5	4
 tilewireswitchlogic	1	0
-trees	17	17
+trees	19	19
 triggermgr	42	7
 triggermgr_eh	4	0
 uncompr	1	1
@@ -736,6 +737,10 @@ cmulti	?StartSession@CMulti@@QAEHHH@Z	98.4571	98.4571	1	819ff4c73d1c	0xb6580
 cmulti	?StartTitle@CMulti@@QAEHXZ	36.2880	36.2880	1	6fd7349a26cb	0xb72c0
 cmulti	?Teardown@CMulti@@QAEXXZ	100.0000	100.0000	1	40a558486d68	0xb6110
 cmulti	?Tick@CMulti@@QAEHXZ	85.9939	85.9939	1	93a3a8d8b95c	0xb6890
+configstore	?GetInt@CConfigStore@@QAEHPAD0H@Z	17.6905	17.6905	1	00a531e13933	0x1d4fbd
+configstore	?OpenRoot@CConfigStore@@QAEPAXXZ	57.7385	57.7385	1	906a02758db6	0x1d4ee3
+configstore	?OpenSubKey@CConfigStore@@QAEPAXPAD@Z	56.9394	56.9394	1	84aab5890a22	0x1d4f77
+configstore	?WriteString@CConfigStore@@QAEHPAD00@Z	29.6610	29.6610	1	419e55efa54a	0x1ccb5c
 cparticlez	??1CParticlez@@UAE@XZ	100.0000	100.0000	1	4b9c461cd6b8	0x12d90
 cparticlez	?FireActivation@CParticlez@@QAEXH@Z	100.0000	100.0000	1	13bf97e742a3	0x46d30
 cparticlez	?InitActReg@CParticlez@@SAXXZ	100.0000	100.0000	1	913801e82692	0x46cb0
@@ -1854,7 +1859,6 @@ engine_label_stubs	?Free@MinervaInner@@QAEXXZ	3.8462	3.8462	1	cpp:2262ffc5f902	0
 engine_label_stubs	?Free@VoldemortObj@@QAEXXZ	4.0000	4.0000	1	cpp:2262ffc5f902	0x137740
 engine_label_stubs	?FuncA@CButeMgrHelper@@QAEXXZ	10.0000	10.0000	1	cpp:2262ffc5f902	0x169be0
 engine_label_stubs	?FuncB@CButeMgrHelper@@QAEXXZ	90.3571	90.3571	1	cpp:2262ffc5f902	0x169d70
-engine_label_stubs	?GetInt@CConfigStore@@QAEHPAD0H@Z	24.0714	24.0714	1	cpp:e8a4cb0d5b2a	0x1d4fbd
 engine_label_stubs	?GetItem@CStatusBarMgr@@QAEPAVCStatusBarItem2@@XZ	90.3125	90.3125	1	cpp:2262ffc5f902	0x135d70
 engine_label_stubs	?GetLength@CFileIO@@QAEIXZ	5.6000	5.6000	1	cpp:2262ffc5f902	0x1bf505
 engine_label_stubs	?GetRect@RectQuery_08e3a0@ApiCallerStubs@@QAEXPAUtagRECT@@@Z	85.1200	85.1200	1	cpp:6bf52155264d	0x8e3a0
@@ -1949,8 +1953,6 @@ engine_label_stubs	?Open@DPlayHost_0b77a0@ApiCallerStubs@@QAEHXZ	98.3607	98.3607
 engine_label_stubs	?Open@Screen_0fe460@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:e1535087fe94	0xfe460
 engine_label_stubs	?OpenHi@SmkPlayer_17c570@ApiCallerStubs@@QAEHHHHHH@Z	70.7324	70.7324	1	cpp:6bf52155264d	0x17c630
 engine_label_stubs	?OpenLo@SmkPlayer_17c570@ApiCallerStubs@@QAEHHHHHH@Z	70.7324	70.7324	1	cpp:6bf52155264d	0x17c570
-engine_label_stubs	?OpenRoot@CConfigStore@@QAEPAXXZ	54.0462	54.0462	1	cpp:e8a4cb0d5b2a	0x1d4ee3
-engine_label_stubs	?OpenSubKey@CConfigStore@@QAEPAXPAD@Z	54.6667	54.6667	1	cpp:e8a4cb0d5b2a	0x1d4f77
 engine_label_stubs	?Paint@PaintHost_0fac70@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0xfac70
 engine_label_stubs	?Pause@AilSeq@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x138e90
 engine_label_stubs	?Pick0183f0@DlgHost@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x183f0
@@ -2016,7 +2018,6 @@ engine_label_stubs	?Stub_1c1609@EngineLabelBacklog@@YGXHH@Z	1.5625	1.5625	1	cpp:
 engine_label_stubs	?Stub_1c176a@EngineLabelBacklog@@YGXHH@Z	0.8403	0.8403	1	cpp:6bf52155264d	0x1c176a
 engine_label_stubs	?Stub_1c7cb3@EngineLabelBacklog@@YAXXZ	0.9901	0.9901	1	cpp:45e65336d4b5	0x1c7cb3
 engine_label_stubs	?Stub_1ccae7@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXHHH@Z	2.2727	2.2727	1	cpp:e8a4cb0d5b2a	0x1ccae7
-engine_label_stubs	?Stub_1ccb5c@EngineLabelBacklog@@YGXHHH@Z	1.6949	1.6949	1	cpp:6bf52155264d	0x1ccb5c
 engine_label_stubs	?Stub_1ccbfc@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXHHHH@Z	1.4493	1.4493	1	cpp:e8a4cb0d5b2a	0x1ccbfc
 engine_label_stubs	?Stub_1d5029@EngineLabelBacklog@@YGXHHHH@Z	1.1236	1.1236	1	cpp:6bf52155264d	0x1d5029
 engine_label_stubs	?Stub_1d513b@EngineLabelBacklog@@YGXHHHH@Z	0.8929	0.8929	1	cpp:6bf52155264d	0x1d513b
@@ -2034,8 +2035,6 @@ engine_label_stubs	?UpdateBootyWalkingGruntz@EngineLabelBacklog@@YAXXZ	0.1898	0.
 engine_label_stubs	?UpdateClock@RezMgr@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x13ddc0
 engine_label_stubs	?UpdateDestructButtonStatusBar2@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXH@Z	3.5714	3.5714	1	cpp:e8a4cb0d5b2a	0x10bc30
 engine_label_stubs	?Validate@VrHost_094bc0@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x94bc0
-engine_label_stubs	?_ct_init@EngineLabelBacklog@@YAXXZ	0.6329	0.6329	1	cpp:45e65336d4b5	0x1884c0
-engine_label_stubs	?_tr_init@EngineLabelBacklog@@YAXXZ	5.0000	5.0000	1	cpp:45e65336d4b5	0x188440
 engine_label_stubs	?directx_wrapper_caller_137720_DSOUND_1_DirectSoundCreate@ApiCallerStubs@@YGHHH@Z	98.5714	98.5714	1	cpp:6bf52155264d	0x137720
 engine_label_stubs	?directx_wrapper_caller_1644a0_DirectDrawCreate_DirectDrawEnumerateA@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHHH@Z	1.3245	1.3245	1	cpp:e8a4cb0d5b2a	0x1644a0
 engine_label_stubs	?directx_wrapper_caller_17c2a0_DirectDrawCreate@ApiCallerStubs@@YGHHH@Z	1.9417	1.9417	1	cpp:6bf52155264d	0x17c2a0
@@ -3236,6 +3235,7 @@ tiletriggertransition	?GetTypeTag@CTileTriggerTransition@@QAEHXZ	100.0000	100.00
 tiletriggertransition	?StepController@@YAHPAUCGameObject@@@Z	100.0000	100.0000	2	7ba829d0b632	0x10d150
 tilewireswitchlogic	?WireTileSwitchLogic@CGruntzMgr@@QAEHPAXHH@Z	10.4111	10.4111	1	4f27554a2907	0x6c130
 trees	__tr_flush_block	100.0000	100.0000	1	54a1b09eba2f	0x188ad0
+trees	__tr_init	100.0000	100.0000	1	cpp:0c188df83c46	0x188440
 trees	__tr_stored_block	100.0000	100.0000	1	36d19f528991	0x1887a0
 trees	__tr_tally	100.0000	100.0000	1	37e4574f1981	0x189b90
 trees	_bi_reverse	100.0000	100.0000	1	eb8e22915664	0x18a170
@@ -3252,6 +3252,7 @@ trees	_scan_tree	100.0000	100.0000	1	383047072868	0x1892b0
 trees	_send_all_trees	100.0000	100.0000	1	4943fa3be295	0x1893a0
 trees	_send_tree	100.0000	100.0000	1	0a0643654ea9	0x189610
 trees	_set_data_type	100.0000	100.0000	1	167de8f88841	0x18a100
+trees	_tr_static_init	100.0000	100.0000	1	cpp:0c188df83c46	0x1884c0
 triggermgr	?ApplyTriggerA@CTriggerMgr@@QAEHHHHH@Z	12.6014	12.6014	1	bf9ffeb1ee72	0x6dae0
 triggermgr	?ApplyTriggerB@CTriggerMgr@@QAEHHHHH@Z	13.0886	13.0886	2	f555874a0aaf	0x6e120
 triggermgr	?ByteTableHas@CTriggerMgr@@QAEHH@Z	62.0370	62.0370	3	df3f90ab5d78	0x79b30

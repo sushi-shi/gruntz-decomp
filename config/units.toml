@@ -24,9 +24,13 @@ compiler = "msvc5.0"
 platform = "win32"
 
 [flags]
-base = ["/nologo", "/c", "/O2", "/MT"]
-eh   = ["/nologo", "/c", "/O2", "/MT", "/GX"]
-mfc  = ["/nologo", "/c", "/O1", "/MT", "/GX"]
+base   = ["/nologo", "/c", "/O2", "/MT"]
+eh     = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+mfc    = ["/nologo", "/c", "/O1", "/MT", "/GX"]
+# framed: /O2 with frame-pointer omission DISABLED. Retail compiled the
+# registry/COM helper module (0x1bf*-0x1d5*) with ebp frames retained yet fully
+# register-allocated. docs/patterns/o2-optimizer-bailout-framed.md.
+framed = ["/nologo", "/c", "/O2", "/MT", "/Oy-"]
 
 [[unit]]
 unit = "adler32"
@@ -97,6 +101,11 @@ flags = "eh"
 unit = "brickz"
 source = "src/Gruntz/Brickz.cpp"
 flags = "base"
+
+[[unit]]
+unit = "configstore"
+source = "src/Gruntz/ConfigStore.cpp"
+flags = "framed"
 
 [[unit]]
 unit = "statusbaritem"

@@ -1206,13 +1206,11 @@ void __stdcall EngineLabelBacklog::Stub_148940(i32, i32, i32, i32) {}
 // @confidence: high
 // @source: call-xref
 // @stub
-RVA(0x00188440, 0x74)
 void EngineLabelBacklog::_tr_init() {}
 
 // @confidence: high
 // @source: tomalla
 // @stub
-RVA(0x001884c0, 0x1ee)
 void EngineLabelBacklog::_ct_init() {}
 
 // @confidence: low
@@ -1285,7 +1283,6 @@ void EngineLabelBacklog::Stub_1c7cb3() {}
 // @confidence: med
 // @source: import:RegCloseKey,RegSetValueExA
 // @stub
-RVA(0x001ccb5c, 0xa0)
 void __stdcall EngineLabelBacklog::Stub_1ccb5c(i32, i32, i32) {}
 
 // @source: import:RegOpenKeyExA
@@ -1295,7 +1292,6 @@ void __stdcall EngineLabelBacklog::Stub_1ccb5c(i32, i32, i32) {}
 // frame-pointer/regalloc wall (~54%): retail keeps an ebp frame + caches `this`
 // in ebx; the /O2 recompile of the same logic comes out frameless with this in
 // esi. Logic correct; all externs named. See docs/patterns/o2-optimizer-bailout-framed.md.
-RVA(0x001d4ee3, 0x94)
 HKEY CConfigStore::OpenRoot() {
     HKEY hSoftware = 0;
     HKEY hMid = 0;
@@ -1346,7 +1342,6 @@ void EngineLabelBacklog::LoadCheatConfig() {}
 // @early-stop
 // frame-pointer/regalloc wall (~55%): same ebp-frame divergence as OpenRoot.
 // Logic correct; all externs named. See docs/patterns/o2-optimizer-bailout-framed.md.
-RVA(0x001d4f77, 0x46)
 HKEY CConfigStore::OpenSubKey(char* szSub) {
     HKEY hResult = 0;
     DWORD dwDisp;
@@ -1369,7 +1364,6 @@ HKEY CConfigStore::OpenSubKey(char* szSub) {
 // frame-pointer/regalloc wall (~24%): retail reuses the szSection arg slot as
 // cbData and keeps an ebp frame; the recompile allocates a fresh cbData local +
 // frameless. Logic correct; all externs named. docs/patterns/o2-optimizer-bailout-framed.md.
-RVA(0x001d4fbd, 0x6c)
 i32 CConfigStore::GetInt(char* szSection, char* szKey, i32 nDefault) {
     DWORD dwType;
     DWORD dwData;

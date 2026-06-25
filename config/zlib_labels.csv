@@ -21,6 +21,8 @@ rva,name,unit,size,kind
 0x1882d0,_adler32,adler32,,func
 0x188410,_zcalloc,zutil,,func
 0x188430,_zcfree,zutil,,func
+0x188440,__tr_init,trees,,func
+0x1884c0,_tr_static_init,trees,,func
 0x1886b0,_init_block,trees,,func
 0x188720,_gen_codes,trees,,func
 0x1887a0,__tr_stored_block,trees,,func
