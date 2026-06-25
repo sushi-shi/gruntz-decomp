@@ -19,9 +19,6 @@ RVA(0x00011480, 0x44) void CCheckpointTrigger::CCheckpointTrigger_011480() {}
 // ---- CDDSurface ----
 RVA(0x00142a40, 0x53) void CDDSurface::CDDSurface_142a40() {}
 
-// ---- CDDrawSubMgr ----
-RVA(0x0015c360, 0x555) void CDDrawSubMgr::CDDrawSubMgr_15c360() {}
-
 // ---- CDDrawWorkerList ----
 RVA(0x00163bc0, 0x2c) void CDDrawWorkerList::CDDrawWorkerList_163bc0() {}
 

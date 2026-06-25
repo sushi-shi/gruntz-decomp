@@ -11,7 +11,6 @@ class CButeTree { public: void CButeTree_16e070(); };
 class CCheckpointDlg { public: void CCheckpointDlg_023570(); };
 class CCheckpointTrigger { public: void CCheckpointTrigger_011480(); };
 class CDDSurface { public: void CDDSurface_142a40(); };
-class CDDrawSubMgr { public: void CDDrawSubMgr_15c360(); };
 class CDDrawWorkerList { public: void CDDrawWorkerList_163bc0(); };
 class CDroppedObjectShadow { public: void CDroppedObjectShadow_012670(); };
 class CExplosion { public: void CExplosion_012ec0(); };

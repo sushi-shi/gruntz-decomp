@@ -924,6 +924,535 @@ void* CQueueDrainHost::Drain_031250() {
 }
 
 // ===========================================================================
+// 0x15c360 — the animation-playback "Advance" cursor (a.k.a. CDDrawSubMgr_15c360
+// in the discovery backlog).  A DISTINCT class from everything above: its `this`
+// (esi) is a per-instance animation cursor that, given the number of game ticks
+// elapsed (the single __thiscall arg), advances the held sprite-render context's
+// frame sequence by one step of the current animation descriptor, updates the
+// position deltas, fires any per-frame draw/sound trigger, reloads the per-frame
+// timer (optionally scaled by a float speed), and selects the NEXT descriptor in
+// the playlist via a 10-way loop-mode switch.  Returns the per-frame draw value
+// (m_34/m_30), consuming it when the cursor owns the buffer (m_2c != 0).
+//
+// Cursor `this` layout (offsets/sizes load-bearing; names are placeholders):
+//   +0x10  m_10  sprite-render context (the +0x190/+0x194/+0x198 frame cursor,
+//                +0x5c/+0x60 screen pos, +0x08 flags, +0x38 anchor, +0x40 byte)
+//   +0x14  m_14  CObArray* of animation descriptors (the playlist)
+//   +0x18  m_18  current descriptor (a CAniElement-ish: +0x04 byte flags, +0x08
+//                step-mode, +0x0c loop-mode word, +0x10 pos-mode, +0x14 param,
+//                +0x18 frame-time reload, +0x1c draw-value, +0x20/+0x24 pos
+//                deltas, +0x2c random modulus, +0x30 random-trigger table)
+//   +0x1c  m_1c  playlist index
+//   +0x20  m_20  per-frame timer remaining (ticks)
+//   +0x24  m_24  "decrement-each-tick" flag
+//   +0x28  m_28  paused/done flag
+//   +0x2c  m_2c  owns-buffer flag (consume the draw value on read)
+//   +0x30  m_30  pending draw value
+//   +0x34  m_34  current draw value
+//   +0x38  m_38  float speed multiplier (raw bits; compared to 1.0f)
+// ===========================================================================
+
+// The frame sequence held at the render context +0x194: a frame-pointer array at
+// +0x14 indexed by the cursor at +0x190, the valid frame range [+0x64..+0x68], and
+// the resolved frame pointer cache at the context's +0x198.  GetFrame (0x15cc30)
+// is the bounds-checked fetch; ClampFirst/ClampLast (0x15cc50/0x15cc90) reset the
+// context cursor to the range ends.  All reloc-masked __thiscall externals.
+class CAniFrameSeq {
+public:
+    i32 GetFrame_15cc30(i32 n); // 0x15cc30  __thiscall on the +0x194 sequence
+    char m_pad00[0x14];         // +0x00..0x13
+    void** m_14;                // +0x14  frame-pointer array
+    char m_pad18[0x64 - 0x18];  // +0x18..0x63
+    i32 m_64;                   // +0x64  low frame index
+    i32 m_68;                   // +0x68  high frame index
+};
+
+// The sprite-render context the cursor drives (held at cursor+0x10).  ClampFirst/
+// ClampLast (0x15cc50/0x15cc90) clamp its +0x190 cursor to the sequence ends and
+// re-resolve +0x198; both reloc-masked __thiscall on the context.
+class CAniRenderCtx {
+public:
+    void ClampFirst_15cc50(); // 0x15cc50  __thiscall on the context
+    void ClampLast_15cc90();  // 0x15cc90  __thiscall on the context
+    char m_pad00[0x08];       // +0x00..0x07
+    i32 m_08;                 // +0x08  flags (bit 0x2000000 tested)
+    char m_pad0c[0x10 - 0x0c];
+    i32 m_10; // +0x10  pos-mode X
+    i32 m_14; // +0x14  pos-mode Y
+    char m_pad18[0x38 - 0x18];
+    i32 m_38;                  // +0x38  pos anchor (compared to -1)
+    char m_pad3c[0x40 - 0x3c]; // +0x3c
+    char m_40;                 // +0x40  byte flags (bit 0x2 tested)
+    char m_pad41[0x5c - 0x41];
+    i32 m_5c;                   // +0x5c  screen X
+    i32 m_60;                   // +0x60  screen Y
+    char m_pad64[0x190 - 0x64]; // +0x64..0x18f
+    i32 m_190;                  // +0x190  sequence frame cursor
+    CAniFrameSeq* m_194;        // +0x194  active frame sequence
+    i32 m_198;                  // +0x198  resolved current frame pointer
+};
+
+// The animation descriptor (cursor+0x18, a playlist entry).  +0x08 step-mode keys
+// the 7-way frame-step switch; +0x0c loop-mode word keys the 10-way next-descriptor
+// switch (and is range-checked against the 9 sentinel); +0x2c/+0x30 drive a random
+// per-frame trigger.  Rand_15cbe0 is the engine LCG (reloc-masked __thiscall view).
+class CAniDesc {
+public:
+    i32 Rand_15cbe0(); // 0x15cbe0  engine random (reloc-masked)
+    char m_pad00[0x04];
+    unsigned char m_04;        // +0x04  byte flags (bit1 = no-decrement, bit2 = pos-sub, bit3 = trigger-blit, bit8 = anchor)
+    char m_pad05[0x08 - 0x05]; // +0x05..0x07
+    i32 m_08;                  // +0x08  step-mode
+    i32 m_0c;                  // +0x0c  loop-mode word
+    i32 m_10;                  // +0x10  pos-mode
+    i32 m_14;                  // +0x14  step param
+    i32 m_18;                  // +0x18  frame-time reload
+    i32 m_1c;                  // +0x1c  draw value
+    i32 m_20;                  // +0x20  pos delta X
+    i32 m_24;                  // +0x24  pos delta Y
+    char m_pad28[0x2c - 0x28]; // +0x28
+    i32 m_2c;                  // +0x2c  random modulus
+    i32* m_30;                 // +0x30  random-trigger table
+};
+
+// The descriptor playlist (cursor+0x14): a CObArray (data at +0x0c, count at +0x10).
+// AtChecked_06b270 is the bounds-checked __thiscall fetch (shared with CAniElement);
+// some advance cases inline the same bounds-checked index.
+class CAniDescArray {
+public:
+    CAniDesc* AtChecked_06b270(i32 i); // 0x06b270  __thiscall bounds-checked fetch
+    char m_pad00[0x0c];                // +0x00..0x0b
+    CAniDesc** m_0c;                   // +0x0c  data
+    i32 m_10;                          // +0x10  count
+};
+
+// The per-frame draw trigger (the context's +0x5c screen-X is the blit cue arg).
+class CAniBlitTrigger {
+public:
+    void TriggerBlit_1587f0(i32 cue, i32 a1, i32 a2, i32 a3); // 0x1587f0  __thiscall on the cursor
+};
+
+// The random-trigger cue table entry (a LeafCue: the gated sound-play entry).
+DATA(0x0021ab24)
+extern i32 g_aniCueItem; // 0x61ab24  the cue-item id played through PlayIfElapsed
+class CAniCue {
+public:
+    i32 PlayIfElapsed_01f940(i32 a0, i32 a1, i32 a2, i32 a3); // 0x1f940  (ret 0x10)
+};
+
+class CAniAdvanceCursor {
+public:
+    i32 Advance_15c360(u32 elapsed); // 0x15c360
+
+    char m_pad00[0x10];        // +0x00..0x0f
+    CAniRenderCtx* m_10;       // +0x10
+    CAniDescArray* m_14;       // +0x14
+    CAniDesc* m_18;            // +0x18
+    i32 m_1c;                  // +0x1c
+    u32 m_20;                  // +0x20
+    i32 m_24;                  // +0x24
+    i32 m_28;                  // +0x28
+    i32 m_2c;                  // +0x2c
+    i32 m_30;                  // +0x30
+    i32 m_34;                  // +0x34
+    i32 m_38;                  // +0x38  float speed, raw bits
+};
+
+// __ftol the (int)double scale-cast lowers to (0x11f570).
+extern "C" i32 __ftol();
+
+// ---------------------------------------------------------------------------
+// 0x15c360: advance the animation cursor by `elapsed` ticks.  __thiscall, 1 arg
+// (ret 4).
+// @early-stop
+// Zero-register-pinning plateau (1365 B, two jump-table switches): the body is a
+// complete, logic-correct reconstruction.  Byte-exact: the entry + timer-decrement
+// block, both jump-table switches (the 7-way frame step on m_18->m_08 and the
+// 10-way loop-mode on m_18->m_0c — both emit the retail .rdata table AND match its
+// physical case-body order, the lever that moved this 54%->72%), the pos-mode
+// update, the random blit/sound trigger (incl. the LCG % mod table index), the
+// float speed scale (fild/fmul/__ftol), the descriptor-advance variants, and the
+// buffer-consuming return tail.  The residual is purely the documented register-
+// pinning wall: (1) switch1's increment/step cases (+1 / +param / -param) pin the
+// new frame index in a callee-saved ebx as a TWIN copy (`mov ebx,idx; op ebx;
+// mov eax,ebx; mov [..],ebx`) where our cl keeps it single-register in eax; (2) the
+// back half re-materializes the zero in ecx (`xor ecx,ecx`) vs our reuse of the
+// ebp=0 pin, and the pos-mode switch swaps eax<->ecx for the switch value.  Same
+// values, same stores, same CFG; no source lever flips the homing.  Deferred to the
+// final sweep per the big-function stop rule.  docs/patterns/zero-register-pinning.md
+// + linked-list-walk-node-eax-rotation.md (the twin-copy idiom).
+RVA(0x0015c360, 0x555)
+i32 CAniAdvanceCursor::Advance_15c360(u32 elapsed) {
+    if (m_14 == 0) {
+        return -1;
+    }
+
+    // --- per-frame timer decrement --------------------------------------------
+    if (m_20 > 0) {
+        if (m_24 != 0) {
+            if (elapsed >= m_20) {
+                m_20 = 0;
+                m_34 = m_30;
+            } else {
+                m_20 -= elapsed;
+                return m_34;
+            }
+        } else {
+            m_20 -= 1;
+            return m_34;
+        }
+    } else {
+        m_34 = m_30;
+    }
+
+    if (m_28 == 0) {
+        CAniRenderCtx* ctx = m_10;
+        CAniDesc* d = m_18;
+
+        // --- step the active frame sequence one step (7-way on d->m_08) --------
+        switch (d->m_08 - 1) {
+            case 0: { // advance + wrap-to-first on overrun
+                CAniRenderCtx* c = m_10;
+                CAniFrameSeq* seq = c->m_194;
+                if (seq == 0) {
+                    break;
+                }
+                i32 idx = c->m_190 + 1;
+                c->m_190 = idx;
+                c->m_198 = seq->GetFrame_15cc30(idx);
+                if (c->m_198 == 0) {
+                    i32 first = c->m_194->m_64;
+                    c->m_190 = first;
+                    c->m_198 = c->m_194->GetFrame_15cc30(first);
+                }
+                break;
+            }
+            case 1: { // wrap-to-last when at first, else step back
+                CAniRenderCtx* c = m_10;
+                CAniFrameSeq* seq = c->m_194;
+                if (seq == 0) {
+                    break;
+                }
+                i32 idx = c->m_190;
+                if (idx == seq->m_64) {
+                    c->m_190 = seq->m_68;
+                } else {
+                    c->m_190 = idx - 1;
+                }
+                c->m_198 = seq->GetFrame_15cc30(c->m_190);
+                break;
+            }
+            case 2: { // jump to an explicit frame (d->m_14)
+                CAniRenderCtx* c = m_10;
+                i32 frame = d->m_14;
+                CAniFrameSeq* seq = c->m_194;
+                if (seq == 0) {
+                    break;
+                }
+                c->m_198 = seq->GetFrame_15cc30(frame);
+                c->m_190 = frame;
+                break;
+            }
+            case 3: { // reset to first
+                CAniRenderCtx* c = m_10;
+                CAniFrameSeq* seq = c->m_194;
+                if (seq == 0) {
+                    break;
+                }
+                i32 first = seq->m_64;
+                c->m_190 = first;
+                c->m_198 = seq->GetFrame_15cc30(first);
+                break;
+            }
+            case 4: { // reset to last
+                CAniRenderCtx* c = m_10;
+                CAniFrameSeq* seq = c->m_194;
+                if (seq == 0) {
+                    break;
+                }
+                i32 last = seq->m_68;
+                c->m_190 = last;
+                c->m_198 = seq->GetFrame_15cc30(last);
+                break;
+            }
+            case 5: { // advance by d->m_14, clamp-last on overrun
+                CAniRenderCtx* c = m_10;
+                i32 step = d->m_14;
+                CAniFrameSeq* seq = c->m_194;
+                if (seq == 0) {
+                    break;
+                }
+                i32 idx = c->m_190 + step;
+                c->m_190 = idx;
+                c->m_198 = seq->GetFrame_15cc30(idx);
+                if (c->m_198 == 0) {
+                    c->ClampLast_15cc90();
+                }
+                break;
+            }
+            case 6: { // retreat by d->m_14, clamp-first on underrun
+                CAniRenderCtx* c = m_10;
+                i32 step = d->m_14;
+                CAniFrameSeq* seq = c->m_194;
+                if (seq == 0) {
+                    break;
+                }
+                i32 idx = c->m_190 - step;
+                c->m_190 = idx;
+                c->m_198 = seq->GetFrame_15cc30(idx);
+                if (c->m_198 == 0) {
+                    c->ClampFirst_15cc50();
+                }
+                break;
+            }
+            default:
+                break;
+        }
+
+        // --- apply the per-frame position delta (3-way on d->m_10) ------------
+        ctx = m_10;
+        ctx->m_10 = 0;
+        ctx->m_14 = 0;
+        d = m_18;
+        switch (d->m_10) {
+            case 1:
+                m_10->m_10 = d->m_20;
+                m_10->m_14 = d->m_24;
+                break;
+            case 2: {
+                CAniRenderCtx* c = m_10;
+                i32 x = c->m_5c;
+                if (c->m_40 & 0x2) {
+                    i32 dy = d->m_24;
+                    i32 dx = d->m_20;
+                    c->m_5c = x - dx;
+                    c->m_60 = c->m_60 + dy;
+                } else {
+                    i32 dy = d->m_24;
+                    i32 dx = d->m_20;
+                    c->m_5c = x + dx;
+                    c->m_60 = c->m_60 + dy;
+                }
+                break;
+            }
+            case 3:
+                m_10->m_5c = d->m_20;
+                m_10->m_60 = d->m_24;
+                break;
+            default:
+                break;
+        }
+
+        // --- per-frame draw/sound trigger -------------------------------------
+        CAniRenderCtx* c = m_10;
+        i32 fire = 1;
+        if (!(c->m_08 & 0x2000000) && !(m_18->m_04 & 0x8)) {
+            if (c->m_38 == -1) {
+                fire = 0;
+            }
+        }
+        if (fire) {
+            CAniDesc* dd = m_18;
+            if (dd->m_04 & 0x4) {
+                i32 cue = c->m_5c;
+                i32* tbl;
+                i32 entry;
+                if (dd->m_2c == 0) {
+                    entry = 0;
+                } else {
+                    tbl = dd->m_30;
+                    entry = tbl[dd->Rand_15cbe0() % dd->m_2c];
+                }
+                if (entry != 0) {
+                    ((CAniBlitTrigger*)this)->TriggerBlit_1587f0(cue, 0, 0, 0);
+                }
+            } else {
+                i32* tbl;
+                i32 entry;
+                if (dd->m_2c == 0) {
+                    entry = 0;
+                } else {
+                    tbl = dd->m_30;
+                    entry = tbl[dd->Rand_15cbe0() % dd->m_2c];
+                }
+                if (entry != 0) {
+                    ((CAniCue*)entry)->PlayIfElapsed_01f940(g_aniCueItem, 0, 0, 0);
+                }
+            }
+        }
+
+        // --- reload the per-frame timer (optionally float-scaled) -------------
+        CAniDesc* rd = m_18;
+        i32 reload = rd->m_18;
+        m_20 = reload;
+        m_24 = (~rd->m_04) & 1;
+        if (m_38 != 0x3f800000) {
+            m_20 = (i32)((double)(u32)reload * (*(float*)&m_38));
+        }
+
+        // --- select the NEXT descriptor (10-way loop-mode on rd->m_0c) --------
+        // Cases are ordered to reproduce retail's physical case-body layout
+        // (9, 8, 7, 1, 2, 3, 4, 0, 5).  Cases 2/3/4 test a sequence-position
+        // predicate and, on a hit, fall into case 0's shared inline loop-restart
+        // body (a goto into the single emitted block); the block's locals are
+        // declared before the label so no init is bypassed.
+        i32 modeWord = rd->m_0c;
+        CAniDescArray* arr;
+        i32 i;
+        CAniDesc* nd;
+        switch (modeWord & 0xffff) {
+            case 9: // pause
+                m_28 = 1;
+                break;
+            case 8: { // reset to the first descriptor and unscaled timing
+                if (m_14 != 0) {
+                    m_1c = 0;
+                    m_18 = m_14->AtChecked_06b270(0);
+                    m_28 = 0;
+                    m_38 = 0x3f800000;
+                    m_30 = m_18->m_1c;
+                    m_34 = m_18->m_1c;
+                }
+                break;
+            }
+            case 7: { // hold on the first two descriptors (m_1c = 1 then 0)
+                m_1c = 1;
+                m_18 = m_14->AtChecked_06b270(1);
+                if (m_18 == 0) {
+                    m_1c = 0;
+                    m_18 = m_14->AtChecked_06b270(0);
+                }
+                if (m_18 != 0) {
+                    m_28 = 0;
+                    m_20 = 0;
+                    m_34 = m_30;
+                    m_30 = m_18->m_1c;
+                }
+                break;
+            }
+            case 1: { // advance only when the cursor's frame reached the descriptor param
+                CAniRenderCtx* c2 = m_10;
+                if (c2->m_190 == m_18->m_14) {
+                    if (modeWord != 9) {
+                        CAniDescArray* a = m_14;
+                        i32 j = m_1c + 1;
+                        m_1c = j;
+                        m_18 = a->AtChecked_06b270(j);
+                        if (m_18 == 0) {
+                            m_1c = 0;
+                            m_18 = a->AtChecked_06b270(0);
+                        }
+                        if (m_18 != 0) {
+                            m_34 = m_30;
+                            m_30 = m_18->m_1c;
+                        }
+                    }
+                }
+                break;
+            }
+            case 2: { // advance only when the cursor reached the seq low frame
+                CAniRenderCtx* c2 = m_10;
+                CAniFrameSeq* seq = c2->m_194;
+                if (c2->m_190 == seq->m_64) {
+                    goto loop_restart;
+                }
+                break;
+            }
+            case 3: { // advance only when the cursor reached the seq high frame
+                CAniRenderCtx* c2 = m_10;
+                CAniFrameSeq* seq = c2->m_194;
+                if (c2->m_190 == seq->m_68) {
+                    goto loop_restart;
+                }
+                break;
+            }
+            case 4: { // advance one past the seq low frame
+                CAniRenderCtx* c2 = m_10;
+                CAniFrameSeq* seq = c2->m_194;
+                if (c2->m_190 == seq->m_64 + 1) {
+                    goto loop_restart;
+                }
+                break;
+            }
+            case 0: // loop the playlist forward, inline bounds-checked fetch
+            loop_restart:
+                if (modeWord != 9) {
+                    arr = m_14;
+                    i = m_1c + 1;
+                    m_1c = i;
+                    if (i >= 0 && i < arr->m_10) {
+                        nd = arr->m_0c[i];
+                    } else {
+                        nd = 0;
+                    }
+                    m_18 = nd;
+                    if (nd == 0) {
+                        m_1c = 0;
+                        m_18 = arr->AtChecked_06b270(0);
+                    }
+                    if (m_18 != 0) {
+                        m_34 = m_30;
+                        m_30 = m_18->m_1c;
+                    }
+                }
+                break;
+            case 5: { // advance only when the cursor reached one before the high frame
+                CAniRenderCtx* c2 = m_10;
+                CAniFrameSeq* seq = c2->m_194;
+                if (c2->m_190 == seq->m_68 - 1) {
+                    if (modeWord != 9) {
+                        CAniDescArray* a = m_14;
+                        i32 j = m_1c + 1;
+                        m_1c = j;
+                        CAniDesc* p;
+                        if (j >= 0 && j < a->m_10) {
+                            p = a->m_0c[j];
+                        } else {
+                            p = 0;
+                        }
+                        m_18 = p;
+                        if (p == 0) {
+                            m_1c = 0;
+                            i32 cnt = a->m_10;
+                            CAniDesc* first;
+                            if (cnt > 0) {
+                                first = a->m_0c[0];
+                            } else {
+                                first = 0;
+                            }
+                            m_18 = first;
+                        }
+                        if (m_18 != 0) {
+                            m_34 = m_30;
+                            m_30 = m_18->m_1c;
+                        }
+                    }
+                }
+                break;
+            }
+            default:
+                break;
+        }
+    }
+
+    // --- return the per-frame draw value, consuming it when buffer-owned ------
+    if (m_2c != 0) {
+        if (m_20 != 0) {
+            i32 r = m_34;
+            m_34 = 0;
+            return r;
+        }
+        i32 r = m_30;
+        m_30 = 0;
+        return r;
+    }
+    if (m_20 != 0) {
+        return m_34;
+    }
+    return m_30;
+}
+
+// ===========================================================================
 // 0x159600 — CWwdObjMgr::CreateObject (a.k.a. CSpriteFactory::CreateSpriteImpl):
 // allocate + construct a 0x1dc-byte CWwdGameObject, register it in the manager
 // (InsertSorted_159e40), and (when arg `flags & 0x200000`) kick its worker's
