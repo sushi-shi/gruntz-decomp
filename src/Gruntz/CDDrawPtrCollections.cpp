@@ -106,23 +106,32 @@ public:
     i32 m_b8; // +0xb8
     char _bc[0xc0 - 0xbc];
 
-    void Delete(u32 flags);                                     // vtbl[0x00] scalar deleting dtor
-    i32 Init08(CDDrawPtrCollections*, i32);                     // vtbl[0x08]  (1-arg init)
-    i32 Init24(CDDrawPtrCollections*, i32, i32, i32, i32, i32); // vtbl[0x24]
-    i32 Init28(CDDrawPtrCollections*, i32, i32, i32);           // vtbl[0x28]  (3-arg init)
-    i32 Init2c(CDDrawPtrCollections*, i32, i32, i32, i32, i32); // vtbl[0x2c]
+    void Delete(u32 flags);                                          // vtbl[0x00] scalar deleting dtor
+    i32 Init08(CDDrawPtrCollections*, i32);                          // vtbl[0x08]  (1-arg init)
+    i32 Init24(CDDrawPtrCollections*, i32, i32, i32, i32, i32);      // vtbl[0x24]  (5-arg)
+    i32 Init24_3(CDDrawPtrCollections*, i32, i32, i32);              // vtbl[0x24]  (3-arg)
+    i32 Init24_6(CDDrawPtrCollections*, i32, i32, i32, i32, i32, i32); // vtbl[0x24]  (6-arg)
+    i32 Init28(CDDrawPtrCollections*, i32, i32, i32);                // vtbl[0x28]  (3-arg init)
+    i32 Init2c(CDDrawPtrCollections*, i32, i32, i32, i32, i32);      // vtbl[0x2c]
 }; // 0xc0
 
 typedef void (CPoolItemA::*PoolItemDeleteFn)(u32);
 typedef i32 (CPoolItemA::*PoolItemInit1Fn)(CDDrawPtrCollections*, i32);
 typedef i32 (CPoolItemA::*PoolItemInit3Fn)(CDDrawPtrCollections*, i32, i32, i32);
 typedef i32 (CPoolItemA::*PoolItemInitFn)(CDDrawPtrCollections*, i32, i32, i32, i32, i32);
+typedef i32 (CPoolItemA::*PoolItemInit6Fn)(CDDrawPtrCollections*, i32, i32, i32, i32, i32, i32);
 struct CPoolItemAVtbl {
     PoolItemDeleteFn Delete; // [0x00] scalar deleting dtor
     char _04[0x08 - 0x04];
     PoolItemInit1Fn Init08; // [0x08]
     char _0c[0x24 - 0x0c];
-    PoolItemInitFn Init24; // [0x24]
+    // slot [0x24]: the init arity varies per subclass (3 / 5 / 6 args), so the
+    // same 4-byte pointer-to-member slot is viewed through the right type.
+    union {
+        PoolItemInitFn Init24;    // 5-arg (CreateA/CreateB style)
+        PoolItemInit3Fn Init24_3; // 3-arg (vtbl ab8/a88 style)
+        PoolItemInit6Fn Init24_6; // 6-arg (vtbl ae8 style)
+    };
     PoolItemInit3Fn Init28; // [0x28]
     PoolItemInitFn Init2c; // [0x2c]
 };
@@ -134,6 +143,12 @@ inline i32 CPoolItemA::Init08(CDDrawPtrCollections* h, i32 a) {
 }
 inline i32 CPoolItemA::Init24(CDDrawPtrCollections* h, i32 a, i32 b, i32 c, i32 d, i32 e) {
     return (this->*(vptr->Init24))(h, a, b, c, d, e);
+}
+inline i32 CPoolItemA::Init24_3(CDDrawPtrCollections* h, i32 a, i32 b, i32 c) {
+    return (this->*(vptr->Init24_3))(h, a, b, c);
+}
+inline i32 CPoolItemA::Init24_6(CDDrawPtrCollections* h, i32 a, i32 b, i32 c, i32 d, i32 e, i32 f) {
+    return (this->*(vptr->Init24_6))(h, a, b, c, d, e, f);
 }
 inline i32 CPoolItemA::Init28(CDDrawPtrCollections* h, i32 a, i32 b, i32 c) {
     return (this->*(vptr->Init28))(h, a, b, c);
@@ -151,6 +166,21 @@ DATA(0x001efa88)
 extern CPoolItemAVtbl g_poolItemVtbla88; // 0x5efa88
 DATA(0x001efab8)
 extern CPoolItemAVtbl g_poolItemVtblab8; // 0x5efab8
+DATA(0x001efae8)
+extern CPoolItemAVtbl g_poolItemVtblae8; // 0x5efae8
+
+// A SECOND pool-A item subclass that shares the vtbl-7f0 non-deleting dtor shape
+// (vptr restamp -> FreeSurfaces -> CByteArray member dtor).  Distinct retail RVA
+// (0x142d40 vs CPoolItemA::~CPoolItemA @0x142820) but byte-identical codegen.
+class CPoolItemA7f0 {
+public:
+    ~CPoolItemA7f0();    // 0x142d40
+    void FreeSurfaces(); // 0x13e4d0 (__thiscall) - external
+    CPoolItemAVtbl* vptr; // +0x00
+    char _04[0x94 - 0x04];
+    CByteArrayMember m_94; // +0x94
+    char _a8[0xc0 - 0xa8];
+};
 
 
 // The +0x498-pool item: a 0x38-byte struct (RezAlloc'd, vtable-less).  Field 0
@@ -158,8 +188,9 @@ extern CPoolItemAVtbl g_poolItemVtblab8; // 0x5efab8
 // zeroed at create.  Torn down by the engine helper (Teardown, __thiscall 0x147530)
 // then RezFree'd.
 struct CPoolItemB {
-    void Teardown();                   // 0x147530 (__thiscall) - frees owned bufs
-    i32 Init(void* arg, i32 a, i32 b); // 0x1474d0 (__thiscall) - returns success
+    void Teardown();                    // 0x147530 (__thiscall) - frees owned bufs
+    i32 Init(void* arg, i32 a, i32 b);  // 0x1474d0 (__thiscall) - returns success
+    i32 Init2(void* arg, i32 a, i32 b); // 0x147410 (__thiscall) - alt init, returns success
 
     void* m_pos; // +0x00 cached POSITION
     i32 m_04;    // +0x04
@@ -215,8 +246,12 @@ public:
     CPoolItemA* Createa88_1(i32 a);                             // 0x142880 (vtbl a88, slot08)
     CPoolItemA* Createab8_3(i32 a, i32 b, i32 c);               // 0x142940 (vtbl ab8, slot24, +538)
     CPoolItemA* Createab8_1(i32 a);                             // 0x142aa0 (vtbl ab8, slot08, +538)
+    CPoolItemA* Createab8_24_3(i32 a);                          // 0x142b70 (vtbl ab8, slot24 3-arg, +538)
+    CPoolItemA* Createae8_6(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x142c40 (vtbl ae8, slot24 6-arg)
+    CPoolItemA* Createae8_1(i32 a);                             // 0x142da0 (vtbl ae8, slot08)
     CPoolItemA* MakeAndAddB(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x142e60
     CPoolItemB* MakeB(i32 a, i32 b);                            // 0x142fc0
+    CPoolItemB* MakeB2(i32 a, i32 b);                           // 0x142f40 (init via 0x147410)
 
     CCachedSurface* m_surf0; // +0x00 - cached surface object (Release on Clear)
     CCachedSurface* m_surf4; // +0x04 - cached surface object (Release on Clear)
@@ -631,6 +666,117 @@ CPoolItemA* CDDrawPtrCollections::Createab8_1(i32 a) {
 }
 
 // ---------------------------------------------------------------------------
+// Createab8_24_3 (0x142b70).  new 0xc0 item; ctor (vtbl 0x5efab8); dispatch
+// vtbl[0x24] as a 3-arg init with the two literal tags (0x18, 0x21) + the incoming
+// arg; AddItemA + cache item->m_a8 into host->fieldUnknown538 on success. /GX. ret 0x4.
+// ---------------------------------------------------------------------------
+// @early-stop
+// rezalloc-placement-new-no-eh-frame wall: body byte-exact, /GX frame absent.
+RVA(0x00142b70, 0xce)
+CPoolItemA* CDDrawPtrCollections::Createab8_24_3(i32 a) {
+    CPoolItemA* item = (CPoolItemA*)operator new(0xc0);
+    if (item) {
+        new (&item->m_94) CByteArrayMember;
+        item->m_08 = 0;
+        item->m_0c = 0;
+        item->m_pos = 0;
+        item->m_7c = 0;
+        item->m_a8 = 0;
+        item->m_b8 = 0;
+        item->vptr = &g_poolItemVtblab8;
+    } else {
+        item = 0;
+    }
+    if (item->Init24_3(this, 0x18, 0x21, a)) {
+        AddItemA(item);
+        fieldUnknown538 = item->m_a8;
+        return item;
+    }
+    if (item) {
+        item->Delete(1);
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// Createae8_6 (0x142c40).  new 0xc0 item; ctor (vtbl 0x5efae8); dispatch vtbl[0x24]
+// as a 6-arg init with all six incoming args; AddItemA on success. /GX. ret 0x18.
+// ---------------------------------------------------------------------------
+// @early-stop
+// rezalloc-placement-new-no-eh-frame wall: body byte-exact, /GX frame absent.
+RVA(0x00142c40, 0xd7)
+CPoolItemA* CDDrawPtrCollections::Createae8_6(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f) {
+    CPoolItemA* item = (CPoolItemA*)operator new(0xc0);
+    if (item) {
+        new (&item->m_94) CByteArrayMember;
+        item->m_08 = 0;
+        item->m_0c = 0;
+        item->m_pos = 0;
+        item->m_7c = 0;
+        item->m_a8 = 0;
+        item->m_b8 = 0;
+        item->vptr = &g_poolItemVtblae8;
+    } else {
+        item = 0;
+    }
+    if (item->Init24_6(this, a, b, c, d, e, f)) {
+        AddItemA(item);
+        return item;
+    }
+    if (item) {
+        item->Delete(1);
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// ~CPoolItemA7f0 (0x142d40).  Second pool-A subclass non-deleting dtor (vtbl
+// 0x5ef7f0): re-stamp vptr, FreeSurfaces() teardown, then the CByteArray member
+// dtor (auto). /GX. __thiscall, ret 0x0.  Byte-identical to CPoolItemA::~CPoolItemA
+// (0x142820); a distinct subclass whose dtor compiles to the same code.
+// ---------------------------------------------------------------------------
+// @early-stop
+// EH-state wall (same as ~CPoolItemA @0x142820): body byte-identical, residue is the
+// unwind-funcinfo push value (global __ehfuncinfo state index) + the vptr-restamp
+// scheduling around the trylevel-0 init. Deferred to the final sweep.
+RVA(0x00142d40, 0x53)
+CPoolItemA7f0::~CPoolItemA7f0() {
+    vptr = &g_poolItemVtbl7f0;
+    FreeSurfaces();
+}
+
+// ---------------------------------------------------------------------------
+// Createae8_1 (0x142da0).  new 0xc0 item; ctor (vtbl 0x5efae8); dispatch vtbl[0x08]
+// with 1 arg; AddItemA on success. /GX. ret 0x4.
+// ---------------------------------------------------------------------------
+// @early-stop
+// rezalloc-placement-new-no-eh-frame wall: body byte-exact, /GX frame absent.
+RVA(0x00142da0, 0xbe)
+CPoolItemA* CDDrawPtrCollections::Createae8_1(i32 a) {
+    CPoolItemA* item = (CPoolItemA*)operator new(0xc0);
+    if (item) {
+        new (&item->m_94) CByteArrayMember;
+        item->m_08 = 0;
+        item->m_0c = 0;
+        item->m_pos = 0;
+        item->m_7c = 0;
+        item->m_a8 = 0;
+        item->m_b8 = 0;
+        item->vptr = &g_poolItemVtblae8;
+    } else {
+        item = 0;
+    }
+    if (item->Init08(this, a)) {
+        AddItemA(item);
+        return item;
+    }
+    if (item) {
+        item->Delete(1);
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
 // MakeAndAddB (0x142e60).  Tail-thunk into CreateB with arg2 |= 0x840.
 // ---------------------------------------------------------------------------
 RVA(0x00142e60, 0x27)
@@ -675,6 +821,42 @@ void CDDrawPtrCollections::RemoveItemB(CPoolItemB* item) {
         item->Teardown();
         RezFree(item);
     }
+}
+
+// ---------------------------------------------------------------------------
+// MakeB2 (0x142f40).  Sibling of MakeB: RezAlloc a 0x38-byte CPoolItemB, zero its
+// fields, init it via the alternate Init2 (0x147410) with (m_surf0, a, b); on success
+// add to pool B and return it, else tear down + RezFree and return 0.  NO EH frame
+// (no destructible local), so this matches cleanly.
+// ---------------------------------------------------------------------------
+RVA(0x00142f40, 0x7c)
+CPoolItemB* CDDrawPtrCollections::MakeB2(i32 a, i32 b) {
+    void* mem = operator new(0x38);
+    CPoolItemB* item;
+    if (mem) {
+        ((CPoolItemB*)mem)->m_04 = 0;
+        ((CPoolItemB*)mem)->m_pos = 0;
+        ((CPoolItemB*)mem)->m_08 = 0;
+        ((CPoolItemB*)mem)->m_0c = 0;
+        ((CPoolItemB*)mem)->m_10 = 0;
+        ((CPoolItemB*)mem)->m_34 = 0;
+        ((CPoolItemB*)mem)->m_18 = 0;
+        ((CPoolItemB*)mem)->m_14 = 0;
+        ((CPoolItemB*)mem)->m_2c = 0;
+        ((CPoolItemB*)mem)->m_30 = 0;
+        item = (CPoolItemB*)mem;
+    } else {
+        item = 0;
+    }
+    if (!item->Init2(m_surf0, a, b)) {
+        if (item) {
+            item->Teardown();
+            RezFree(item);
+        }
+        return 0;
+    }
+    AddItemB(item);
+    return item;
 }
 
 // ---------------------------------------------------------------------------

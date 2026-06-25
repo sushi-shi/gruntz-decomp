@@ -32,7 +32,7 @@ cbehindcandy	2	2
 cbehindcandyani	2	2
 ccursorsnapsprite	2	2
 cddrawchildgroup	9	5
-cddrawptrcollections	21	10
+cddrawptrcollections	26	11
 cddrawshadeblit	3	1
 cddrawsubmgr	32	15
 cddrawsubmgrani	2	1
@@ -100,7 +100,7 @@ dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
 dsoundvoice	2	1
-engine_attributed	302	0
+engine_attributed	297	0
 engine_boundary	628	0
 engine_discovered	86	0
 engine_label_stubs	519	118
@@ -390,6 +390,7 @@ cddrawchildgroup	?VirtualMethodUnknown34@CDDrawChildGroup@@QAEXHHH@Z	89.0909	89.
 cddrawchildgroup	?VirtualMethodUnknown38@CDDrawChildGroup@@UAEXXZ	100.0000	100.0000	5	3b973f16dca8	0x159d90
 cddrawptrcollections	??0CDDrawPtrCollections@@QAE@XZ	100.0000	100.0000	6	dee578ff0baf	0x141cc0
 cddrawptrcollections	??1CDDrawPtrCollections@@QAE@XZ	99.9615	99.9615	1	34dac2207b6a	0x141d50
+cddrawptrcollections	??1CPoolItemA7f0@@QAE@XZ	94.0000	94.0000	1	98f6a0c7dffa	0x142d40
 cddrawptrcollections	??1CPoolItemA@@QAE@XZ	94.0000	94.0000	1	118e251b1768	0x142820
 cddrawptrcollections	?AddItemA@CDDrawPtrCollections@@QAEXPAVCPoolItemA@@@Z	100.0000	100.0000	1	08823e73ec27	0x142100
 cddrawptrcollections	?AddItemB@CDDrawPtrCollections@@QAEXPAUCPoolItemB@@@Z	100.0000	100.0000	1	49c9c58ce9de	0x142eb0
@@ -402,10 +403,14 @@ cddrawptrcollections	?Createa58_3@CDDrawPtrCollections@@QAEPAVCPoolItemA@@HHH@Z	
 cddrawptrcollections	?Createa88_1@CDDrawPtrCollections@@QAEPAVCPoolItemA@@H@Z	55.6562	55.6562	1	9154701f7115	0x142880
 cddrawptrcollections	?Createa88_3@CDDrawPtrCollections@@QAEPAVCPoolItemA@@HHH@Z	54.3382	54.3382	1	c85806c1a2b2	0x142730
 cddrawptrcollections	?Createab8_1@CDDrawPtrCollections@@QAEPAVCPoolItemA@@H@Z	52.8939	52.8939	1	4ec809ae792a	0x142aa0
+cddrawptrcollections	?Createab8_24_3@CDDrawPtrCollections@@QAEPAVCPoolItemA@@H@Z	54.2794	54.2794	1	5627c2e83402	0x142b70
 cddrawptrcollections	?Createab8_3@CDDrawPtrCollections@@QAEPAVCPoolItemA@@HHH@Z	51.7714	51.7714	1	40151b5248c0	0x142940
+cddrawptrcollections	?Createae8_1@CDDrawPtrCollections@@QAEPAVCPoolItemA@@H@Z	55.6562	55.6562	1	27e78e9ad2fb	0x142da0
+cddrawptrcollections	?Createae8_6@CDDrawPtrCollections@@QAEPAVCPoolItemA@@HHHHHH@Z	61.5811	61.5811	1	3c893bd5b95f	0x142c40
 cddrawptrcollections	?EmptyPoolA@CDDrawPtrCollections@@QAEXXZ	100.0000	100.0000	1	5e3997835593	0x142120
 cddrawptrcollections	?EmptyPoolB@CDDrawPtrCollections@@QAEXXZ	100.0000	100.0000	1	dc3d2b2523b0	0x142ed0
 cddrawptrcollections	?MakeAndAddB@CDDrawPtrCollections@@QAEPAVCPoolItemA@@HHHHH@Z	100.0000	100.0000	1	dd1437d900d0	0x142e60
+cddrawptrcollections	?MakeB2@CDDrawPtrCollections@@QAEPAUCPoolItemB@@HH@Z	100.0000	100.0000	1	2d60d735ebd5	0x142f40
 cddrawptrcollections	?MakeB@CDDrawPtrCollections@@QAEPAUCPoolItemB@@HH@Z	100.0000	100.0000	1	65bf9ff78c84	0x142fc0
 cddrawptrcollections	?RemoveItemA@CDDrawPtrCollections@@QAEXPAVCPoolItemA@@@Z	100.0000	100.0000	1	4ddf350abd6e	0x142160
 cddrawptrcollections	?RemoveItemB@CDDrawPtrCollections@@QAEXPAUCPoolItemB@@@Z	100.0000	100.0000	1	a7726bad4d9a	0x142f10
@@ -870,11 +875,6 @@ engine_attributed	?CDDPalette_1478c0@CDDPalette@@QAEXXZ	0.5333	0.5333	1	d6d30b79
 engine_attributed	?CDDPalette_147aa0@CDDPalette@@QAEXXZ	0.8696	0.8696	1	7dc608d0bc40	0x147aa0
 engine_attributed	?CDDPalette_147c80@CDDPalette@@QAEXXZ	1.2121	1.2121	1	5096f18ad375	0x147c80
 engine_attributed	?CDDSurface_13e9a0@CDDSurface@@QAEXXZ	0.6154	0.6154	1	28cb2fe3e42a	0x13e9a0
-engine_attributed	?CDDrawPtrCollections_142b70@CDDrawPtrCollections@@QAEXXZ	0.5882	0.5882	1	ffb392f67afc	0x142b70
-engine_attributed	?CDDrawPtrCollections_142c40@CDDrawPtrCollections@@QAEXXZ	0.5405	0.5405	1	e7bd2440cccb	0x142c40
-engine_attributed	?CDDrawPtrCollections_142d40@CDDrawPtrCollections@@QAEXXZ	5.0000	5.0000	1	e24cf0a67c7f	0x142d40
-engine_attributed	?CDDrawPtrCollections_142da0@CDDrawPtrCollections@@QAEXXZ	0.6250	0.6250	1	b70ad2cf3b53	0x142da0
-engine_attributed	?CDDrawPtrCollections_142f40@CDDrawPtrCollections@@QAEXXZ	0.7547	0.7547	1	44bd9336c409	0x142f40
 engine_attributed	?CDDrawShadeBlit_149950@CDDrawShadeBlit@@QAEXXZ	0.1250	0.1250	1	beb3e6b3721e	0x149950
 engine_attributed	?CDDrawShadeBlit_149d00@CDDrawShadeBlit@@QAEXXZ	0.0858	0.0858	1	e2cdb9b955e0	0x149d00
 engine_attributed	?CDDrawShadeBlit_14b770@CDDrawShadeBlit@@QAEXXZ	0.0255	0.0255	1	1299e2a7d88d	0x14b770

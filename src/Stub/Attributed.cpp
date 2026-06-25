@@ -58,13 +58,6 @@ RVA(0x00147c80, 0x4d) void CDDPalette::CDDPalette_147c80() {}  // high
 // ---- CDDSurface ----
 RVA(0x0013e9a0, 0xcc) void CDDSurface::CDDSurface_13e9a0() {}  // med
 
-// ---- CDDrawPtrCollections ----
-RVA(0x00142b70, 0xce) void CDDrawPtrCollections::CDDrawPtrCollections_142b70() {}  // high
-RVA(0x00142c40, 0xd7) void CDDrawPtrCollections::CDDrawPtrCollections_142c40() {}  // high
-RVA(0x00142d40, 0x53) void CDDrawPtrCollections::CDDrawPtrCollections_142d40() {}  // high
-RVA(0x00142da0, 0xbe) void CDDrawPtrCollections::CDDrawPtrCollections_142da0() {}  // high
-RVA(0x00142f40, 0x7c) void CDDrawPtrCollections::CDDrawPtrCollections_142f40() {}  // high
-
 // ---- CDDrawShadeBlit ----
 RVA(0x00149950, 0x3a1) void CDDrawShadeBlit::CDDrawShadeBlit_149950() {}  // med
 RVA(0x00149d00, 0x4f8) void CDDrawShadeBlit::CDDrawShadeBlit_149d00() {}  // med

@@ -17,7 +17,6 @@ class CChatBoxOwner { public: void CChatBoxOwner_0205c0(); void CChatBoxOwner_02
 class CCreditsState { public: void CCreditsState_0393b0(); };
 class CDDPalette { public: void CDDPalette_147410(); void CDDPalette_147590(); void CDDPalette_147710(); void CDDPalette_147840(); void CDDPalette_1478c0(); void CDDPalette_147aa0(); void CDDPalette_147c80(); };
 class CDDSurface { public: void CDDSurface_13e9a0(); };
-class CDDrawPtrCollections { public: void CDDrawPtrCollections_142b70(); void CDDrawPtrCollections_142c40(); void CDDrawPtrCollections_142d40(); void CDDrawPtrCollections_142da0(); void CDDrawPtrCollections_142f40(); };
 class CDDrawShadeBlit { public: void CDDrawShadeBlit_149950(); void CDDrawShadeBlit_149d00(); void CDDrawShadeBlit_14b770(); };
 class CDDrawSubMgrAni { public: void CDDrawSubMgrAni_1529b0(); };
 class CDDrawSubMgrLeaf { public: void CDDrawSubMgrLeaf_152660(); };
