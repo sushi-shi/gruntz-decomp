@@ -72,7 +72,7 @@ cimageowned	2	1
 clightfx	2	1
 clightfxrender	22	8
 cmenustate	3	2
-cmulti	11	7
+cmulti	16	7
 cparticlez	2	2
 cpathhazard	4	2
 cplay	28	8
@@ -100,7 +100,7 @@ dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
 dsoundvoice	2	1
-engine_attributed	251	0
+engine_attributed	246	0
 engine_boundary	628	0
 engine_discovered	86	0
 engine_label_stubs	519	118
@@ -672,13 +672,18 @@ cmulti	??1CMulti@@QAE@XZ	0.0000	0.0000	1	301ec69b5a15	0x8d270
 cmulti	?AckJoinFailure@CMulti@@QAEXXZ	100.0000	100.0000	1	bac115793e8c	0xbc420
 cmulti	?ClearString59c@CMulti@@QAEAAVCString@@AAV2@@Z	49.3529	49.3529	1	6f457816186b	0xb76c0
 cmulti	?ClearString5a0@CMulti@@QAEAAVCString@@AAV2@@Z	49.3529	49.3529	1	dc23b4db8d9d	0xb7730
+cmulti	?Connect@CMulti@@QAEHH@Z	78.6487	78.6487	1	2111b7be2021	0xb67f0
+cmulti	?DropTimeout@CMulti@@QAEXXZ	78.9107	78.9107	1	9c15dde73037	0xbc2d0
 cmulti	?GetString59c@CMulti@@QAE?AVCString@@XZ	100.0000	100.0000	1	cc47d2a6b3da	0xb7a90
 cmulti	?GetString5a0@CMulti@@QAE?AVCString@@XZ	100.0000	100.0000	1	dfdf4df5c88a	0xb7ad0
 cmulti	?JoinSession@CMulti@@QAEHXZ	100.0000	100.0000	1	9a2e0c390aa8	0xb7fe0
 cmulti	?ReportNetError@CMulti@@QAEXXZ	95.2000	95.2000	1	59b1f15e8f6f	0xb7f60
 cmulti	?ReportVersionMsg@CMulti@@QAEXPADH@Z	100.0000	100.0000	1	a2306abc654e	0xb7e30
 cmulti	?RunErrorDialog@CMulti@@QAEHPADPAXH@Z	100.0000	100.0000	1	f5d13574d2fd	0xbc250
+cmulti	?StartSession@CMulti@@QAEHHH@Z	98.4571	98.4571	1	819ff4c73d1c	0xb6580
+cmulti	?StartTitle@CMulti@@QAEHXZ	36.2880	36.2880	1	6fd7349a26cb	0xb72c0
 cmulti	?Teardown@CMulti@@QAEXXZ	100.0000	100.0000	1	40a558486d68	0xb6110
+cmulti	?Tick@CMulti@@QAEHXZ	85.9939	85.9939	1	93a3a8d8b95c	0xb6890
 cparticlez	??1CParticlez@@UAE@XZ	100.0000	100.0000	1	4b9c461cd6b8	0x12d90
 cparticlez	?FireActivation@CParticlez@@QAEXH@Z	100.0000	100.0000	1	13bf97e742a3	0x46d30
 cpathhazard	??1CPathHazard@@UAE@XZ	100.0000	100.0000	1	60974e654df7	0x13340
@@ -968,11 +973,6 @@ engine_attributed	?CMultiStartDlg_0c1e60@CMultiStartDlg@@QAEXXZ	1.1765	1.1765	1	
 engine_attributed	?CMultiStartDlg_0c1fd0@CMultiStartDlg@@QAEXXZ	1.7857	1.7857	1	d5a3ff62529f	0xc1fd0
 engine_attributed	?CMulti_0b6220@CMulti@@QAEXXZ	4.3478	4.3478	1	5224b768b1e7	0xb6220
 engine_attributed	?CMulti_0b62a0@CMulti@@QAEXXZ	5.2632	5.2632	1	38b72def6b4e	0xb62a0
-engine_attributed	?CMulti_0b6580@CMulti@@QAEXXZ	0.2857	0.2857	1	c91ffe5923c6	0xb6580
-engine_attributed	?CMulti_0b67f0@CMulti@@QAEXXZ	1.0811	1.0811	1	e640307e7e05	0xb67f0
-engine_attributed	?CMulti_0b6890@CMulti@@QAEXXZ	0.6135	0.6135	1	5df0954f9107	0xb6890
-engine_attributed	?CMulti_0b72c0@CMulti@@QAEXXZ	0.4000	0.4000	1	5f80ebfc5826	0xb72c0
-engine_attributed	?CMulti_0bc2d0@CMulti@@QAEXXZ	1.7857	1.7857	1	4e669902e29f	0xbc2d0
 engine_attributed	?CMulti_0bc3f0@CMulti@@QAEXXZ	3.6364	3.6364	1	fd31ae8c8cc9	0xbc3f0
 engine_attributed	?CNetMgr_0b86c0@CNetMgr@@QAEXXZ	0.7752	0.7752	2	530d3740ec49	0xb86c0
 engine_attributed	?CNetMgr_0b8960@CNetMgr@@QAEXXZ	4.3478	4.3478	2	ffb7349460c0	0xb8960

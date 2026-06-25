@@ -227,11 +227,6 @@ RVA(0x001845f0, 0x20) void CMenuItem::CMenuItem_1845f0() {}  // high
 // ---- CMulti ----
 RVA(0x000b6220, 0x54) void CMulti::CMulti_0b6220() {}  // med
 RVA(0x000b62a0, 0x4a) void CMulti::CMulti_0b62a0() {}  // med
-RVA(0x000b6580, 0x1eb) void CMulti::CMulti_0b6580() {}  // med
-RVA(0x000b67f0, 0x74) void CMulti::CMulti_0b67f0() {}  // med
-RVA(0x000b6890, 0x21b) void CMulti::CMulti_0b6890() {}  // med
-RVA(0x000b72c0, 0x30b) void CMulti::CMulti_0b72c0() {}  // med
-RVA(0x000bc2d0, 0xd2) void CMulti::CMulti_0bc2d0() {}  // med
 RVA(0x000bc3f0, 0x1e) void CMulti::CMulti_0bc3f0() {}  // med
 
 // ---- CMultiStartDlg ----
