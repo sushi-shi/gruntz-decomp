@@ -39,6 +39,8 @@ struct CChatNode {
     i32 HitTest1(i32 x, i32 y); // 0x1840a0
     i32 HitTest2();             // 0x1843f0
     i32 HitTest3();             // 0x1844d0
+    i32 HitTest4();             // 0x184230
+    i32 HitTest5();             // 0x184310
     i32 Measure();              // virtual, vtable slot +0x14
 };
 
@@ -469,4 +471,24 @@ i32 CChatBox::HitTest2() {
         return 0;
     }
     return n->HitTest3() != 0;
+}
+
+// 0x1831d0 - forward a query to the active node (callee 0x184230); bool-normalize.
+RVA(0x001831d0, 0x16)
+i32 CChatBox::HitTest3() {
+    CChatNode* n = (CChatNode*)m_40;
+    if (!n) {
+        return 0;
+    }
+    return n->HitTest4() != 0;
+}
+
+// 0x1831f0 - forward a query to the active node (callee 0x184310); bool-normalize.
+RVA(0x001831f0, 0x16)
+i32 CChatBox::HitTest4() {
+    CChatNode* n = (CChatNode*)m_40;
+    if (!n) {
+        return 0;
+    }
+    return n->HitTest5() != 0;
 }

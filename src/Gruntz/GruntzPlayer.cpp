@@ -137,6 +137,37 @@ GruntzPlayer::GruntzPlayer() {
 }
 
 // ===========================================================================
+// GruntzPlayer::Reset  @0x0da9e0
+// Frameless re-init of an already-live slot: re-empty the name CString (op= to
+// the MFC empty string, NO default ctor / no EH frame since the member is already
+// constructed) and re-seed the scalar config block. Returns 1 (success).
+// ===========================================================================
+// @early-stop
+// store-scheduling wall: every instruction (the op= to g_emptyString + all 14 field
+// stores) is byte-correct, but MSVC's scheduler floats the m_228 = 0xf IMMEDIATE
+// store to the tail of the register-store cluster, where retail keeps it in source
+// position (between m_224 and m_02c). Reordering the source / hoisting to a local
+// does not flip it (the scheduler re-floats the imm). ~94.9%.
+RVA(0x000da9e0, 0x60)
+i32 GruntzPlayer::Reset() {
+    m_000 = -1;
+    m_018 = -2;
+    m_020 = 0;
+    m_014 = 1;
+    m_004 = g_emptyString;
+    m_008 = 0;
+    m_010 = 0;
+    m_220 = 0;
+    m_224 = 0;
+    m_228 = 0xf;
+    m_02c = 0;
+    m_030 = 0;
+    m_22c = 0;
+    m_230 = 0;
+    return 1;
+}
+
+// ===========================================================================
 // GruntzPlayer::Serialize  @0x0dace0
 // Stream every field through the archive order object. kind 7 = Load (read each
 // scalar via [+0x2c], then load the 0x80 name buffer and assign it into m_004),

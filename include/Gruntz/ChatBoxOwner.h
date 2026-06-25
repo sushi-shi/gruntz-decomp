@@ -9,6 +9,8 @@
 
 #include <Ints.h>
 
+#include <Mfc.h> // CString
+
 // The text-stamp host reached through m_14 (its +0x34 is a dirty/redraw flag the
 // configure path raises). External - opaque view.
 struct CChatBoxTextHost {
@@ -27,6 +29,8 @@ public:
     void Configure(i32 mode);
     // Hit-test a screen point against the box rectangle for the current mode.
     i32 HitTest(i32 x, i32 y);
+    // Return the box's caption/key CString (m_1c) by value (copy-ctor into sret).
+    CString GetField1c();
 
     i32 m_0;                // +0x00  box origin X (or 0/0xa0 by mode)
     i32 m_4;                // +0x04  box origin Y (viewport-relative)
@@ -35,6 +39,7 @@ public:
     i32 m_10;               // +0x10  enabled flag (hit-test gate)
     CChatBoxTextHost* m_14; // +0x14  text-stamp host
     void* m_18;             // +0x18  source registry root
+    CString m_1c;           // +0x1c  caption/key string
 };
 
 #endif // GRUNTZ_GRUNTZ_CHATBOXOWNER_H

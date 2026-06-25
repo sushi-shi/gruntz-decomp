@@ -279,6 +279,7 @@ public:
 
     i32 LoadCreditzStateAssets(i32 a1, i32 a2, i32 a3);
     void InitAttractTitle();
+    i32 ShowAttractTitle(); // 0x393b0 (gate on the state core, hide cursor, init title)
 };
 
 class CBootyState : public CState {

@@ -53,6 +53,8 @@ public:
     i32 HitTest0(i32 x, i32 y);                       // 0x1831a0
     i32 HitTest1();                                   // 0x183210
     i32 HitTest2();                                   // 0x183230
+    i32 HitTest3();                                   // 0x1831d0
+    i32 HitTest4();                                   // 0x1831f0
 
     void* m_0; // +0x00 parent/page back pointer
     i32 m_4;   // +0x04

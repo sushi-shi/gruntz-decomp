@@ -902,6 +902,11 @@ source = "src/Gruntz/CDDrawSubMgrLeafScan.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "leafelementobj"
+source = "src/Gruntz/LeafElementObj.cpp"
+flags = "base"
+
+[[unit]]
 unit = "cddrawsubmgrani"
 source = "src/Gruntz/CDDrawSubMgrAni.cpp"
 flags = "eh"
@@ -1034,7 +1039,7 @@ flags = "eh"
 [[unit]]
 unit = "chatboxowner"
 source = "src/Gruntz/ChatBoxOwner.cpp"
-flags = "base"
+flags = "eh"
 
 [[unit]]
 unit = "clightfx"

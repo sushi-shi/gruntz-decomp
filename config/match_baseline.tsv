@@ -64,9 +64,9 @@ cgruntpowerupsprite	5	4
 cgruntselectedsprite	5	3
 cgrunttoysprite	5	4
 cgruntwingztimesprite	2	2
-chatbox	16	9
+chatbox	18	11
 chatbox_eh	1	1
-chatboxowner	4	1
+chatboxowner	5	2
 cheatmgr	4	3
 cimage	10	6
 cimageowned	4	2
@@ -97,11 +97,11 @@ ctoobspikez	2	2
 cvoicetrigger	2	2
 databuffer	7	5
 deflate	6	6
-dialogs	17	7
-directinputmgr2	28	24
+dialogs	19	7
+directinputmgr2	29	25
 directsoundmgr	33	23
 dsoundvoice	2	1
-engine_attributed	75	0
+engine_attributed	64	0
 engine_boundary	628	0
 engine_discovered	86	0
 engine_label_stubs	519	118
@@ -128,7 +128,7 @@ gruntzapp	10	8
 gruntzcmdmgr	12	10
 gruntzcommand	12	12
 gruntzmgr	77	54
-gruntzplayer	5	1
+gruntzplayer	6	1
 gruntzsoundz	12	11
 gruntzwnd	9	7
 hash	10	9
@@ -146,6 +146,7 @@ ingametext	4	3
 ingameworkerhandlers	3	3
 inputdeviceconfig	1	0
 kitchenslime	6	3
+leafelementobj	2	2
 leveltilevalidation	1	0
 lightfxmgr	3	3
 loadlevelbymode	1	0
@@ -155,7 +156,7 @@ logicworkerhandlers	4	4
 mainmenubuilder	1	0
 maplogic	5	4
 mapmgr	7	7
-menuitem	11	9
+menuitem	13	11
 menupage	31	16
 mgrtokenquery	1	1
 motionstate	4	3
@@ -655,6 +656,8 @@ chatbox	?Find@CChatBox@@QAEHPBD@Z	73.8116	73.8116	3	cee49c50736a	0x182be0
 chatbox	?HitTest0@CChatBox@@QAEHHH@Z	100.0000	100.0000	3	3547df0766f1	0x1831a0
 chatbox	?HitTest1@CChatBox@@QAEHXZ	100.0000	100.0000	3	bbf33ebcef9b	0x183210
 chatbox	?HitTest2@CChatBox@@QAEHXZ	100.0000	100.0000	3	6b8028b9870b	0x183230
+chatbox	?HitTest3@CChatBox@@QAEHXZ	100.0000	100.0000	1	297f2fc11ffe	0x1831d0
+chatbox	?HitTest4@CChatBox@@QAEHXZ	100.0000	100.0000	1	f3916b09ecac	0x1831f0
 chatbox	?Init@CChatBox@@QAEXXZ	100.0000	100.0000	1	ee723d15e54c	0xa0280
 chatbox	?ReplaceNode@CChatBox@@QAEHPAX@Z	100.0000	100.0000	2	d1a9e1bb764e	0x182dd0
 chatbox	?Reset@CChatBox@@QAEXXZ	100.0000	100.0000	1	40ea73dae4e4	0x182b30
@@ -665,6 +668,7 @@ chatbox_eh	??1CChatBox@@QAE@XZ	100.0000	100.0000	1	ab8e83aa5ef4	0xa0360
 chatboxowner	?Attach@CChatBoxOwner@@QAEXPAXPAUCChatBoxTextHost@@@Z	68.5714	68.5714	1	52d62234b528	0x204e0
 chatboxowner	?Configure@CChatBoxOwner@@QAEXH@Z	69.1600	69.1600	1	ac14c7aa5bf4	0x20530
 chatboxowner	?Deactivate@CChatBoxOwner@@QAEXXZ	100.0000	100.0000	1	5fefd421f983	0x20510
+chatboxowner	?GetField1c@CChatBoxOwner@@QAE?AVCString@@XZ	100.0000	100.0000	1	4e17040d1b35	0x20ef0
 chatboxowner	?HitTest@CChatBoxOwner@@QAEHHH@Z	38.1212	38.1212	1	15a04f9b3729	0x21140
 cheatmgr	??1CCheatMgr@@QAE@XZ	100.0000	100.0000	1	94bf38f28220	0x85e60
 cheatmgr	?AddCheat@CCheatMgr@@QAEHPBDHH@Z	98.5714	98.5714	1	77144daa4699	0x22be0
@@ -835,6 +839,8 @@ dialogs	??0CBattlezDlgColors@@QAE@HHHPAVCWnd@@@Z	100.0000	100.0000	5	5d4f4eace7a
 dialogs	??0CBattlezDlgCustom@@QAE@PAVCWnd@@@Z	100.0000	100.0000	4	796b59607a47	0x18030
 dialogs	??0CCheckpointDlg@@QAE@PAVCWnd@@@Z	100.0000	100.0000	3	6c51964bdb81	0x234a0
 dialogs	??0CMultiStartDlg@@QAE@HPAVCWnd@@@Z	100.0000	100.0000	5	a71396cbe887	0xc1750
+dialogs	??1CBattlezDlg@@UAE@XZ	94.4444	94.4444	1	7ed27cb65fc2	0x14c90
+dialogs	??1CBattlezDlgCustom@@UAE@XZ	94.4444	94.4444	1	8ef41d520506	0x17140
 dialogs	?GetCtrlA@CBattlezDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	2	f719a29e8f44	0x15ac0
 dialogs	?GetCtrlB@CBattlezDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	2	55fe085491a3	0x15b40
 dialogs	?GetCtrlC@CBattlezDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	2	7882b445b6ec	0x15bc0
@@ -860,6 +866,7 @@ directinputmgr2	?EnumGameControllers@DirectInputMgr2@@QAEHI@Z	100.0000	100.0000	
 directinputmgr2	?FreeDeviceList@DirectInputMgr2@@QAEXXZ	100.0000	100.0000	2	1d3bcb1b2753	0x1331a0
 directinputmgr2	?GetErrorString@DirectInputMgr2@@SAXPADHH@Z	100.0000	100.0000	1	b7c4bb55f899	0x133590
 directinputmgr2	?InitA@DirectInputMgr2@@QAEHI@Z	86.5079	86.5079	1	bddcaf08730b	0x132e20
+directinputmgr2	?InitB@DirectInputMgr2@@QAEHI@Z	100.0000	100.0000	1	1792de47cc8f	0x132ee0
 directinputmgr2	?Poll@CInputDevice@@QAEHXZ	99.9718	99.9718	3	e0e4a7b1be32	0x133d00
 directinputmgr2	?PollAll@DirectInputMgr2@@QAEHXZ	100.0000	100.0000	3	ddf727d1f8d4	0x133080
 directinputmgr2	?PollArrayA@DirectInputMgr2@@QAEHXZ	100.0000	100.0000	3	e426c88a86e9	0x1330d0
@@ -912,23 +919,18 @@ dsoundvoice	?Stop_1370d0@DSoundVoice@@QAEHXZ	100.0000	100.0000	1	6ed65c4dd540	0x
 dsoundvoice	?Tick_137060@DSoundVoice@@QAEHH@Z	95.6977	95.6977	1	e0318068fc4a	0x137060
 engine_attributed	?CAttract_014520@CAttract@@QAEXXZ	1.6129	1.6129	1	8514e7ebdd62	0x14520
 engine_attributed	?CAttract_014630@CAttract@@QAEXXZ	1.6393	1.6393	1	d90c0a9e5a3f	0x14630
-engine_attributed	?CBattlezDlg_014c90@CBattlezDlg@@QAEXXZ	5.5556	5.5556	1	37f955283f27	0x14c90
 engine_attributed	?CBattlezDlg_015de0@CBattlezDlg@@QAEXXZ	2.7027	2.7027	1	fa8f2a6b1825	0x15de0
 engine_attributed	?CBattlezDlg_015e60@CBattlezDlg@@QAEXXZ	2.7027	2.7027	1	2357c1392365	0x15e60
 engine_attributed	?CBattlezDlg_015ee0@CBattlezDlg@@QAEXXZ	2.7027	2.7027	1	61dae10ff74c	0x15ee0
 engine_attributed	?CBattlezDlg_015f60@CBattlezDlg@@QAEXXZ	2.7027	2.7027	1	20a5f80fe0d1	0x15f60
 engine_attributed	?CBattlezDlg_016410@CBattlezDlg@@QAEXXZ	50.0000	50.0000	1	a8025dd69185	0x16410
 engine_attributed	?CBattlezDlg_016500@CBattlezDlg@@QAEXXZ	5.5556	5.5556	1	1893782ac89b	0x16500
-engine_attributed	?CBattlezDlg_017140@CBattlezDlg@@QAEXXZ	5.5556	5.5556	1	15749a8b9e6e	0x17140
 engine_attributed	?CBattlezDlg_017340@CBattlezDlg@@QAEXXZ	1.1111	1.1111	1	7f90e15a8ffa	0x17340
 engine_attributed	?CBehindCandyAni_0ad7d0@CBehindCandyAni@@QAEXXZ	20.0000	20.0000	1	e6b75081af45	0xad7d0
 engine_attributed	?CBehindCandyAni_0ad9b0@CBehindCandyAni@@QAEXXZ	0.8696	0.8696	1	fe9752cfe7fe	0xad9b0
 engine_attributed	?CBootyState_01ce30@CBootyState@@QAEXXZ	6.6667	6.6667	1	ee0938cc3645	0x1ce30
 engine_attributed	?CBootyState_01d420@CBootyState@@QAEXXZ	20.0000	20.0000	1	d54c0ecb7af5	0x1d420
 engine_attributed	?CChatBoxOwner_0205c0@CChatBoxOwner@@QAEXXZ	0.0835	0.0835	1	c73daebdde18	0x205c0
-engine_attributed	?CChatBoxOwner_020ef0@CChatBoxOwner@@QAEXXZ	3.3333	3.3333	1	6deaecad8c30	0x20ef0
-engine_attributed	?CChatBox_1831d0@CChatBox@@QAEXXZ	10.0000	10.0000	1	e7a6a459c595	0x1831d0
-engine_attributed	?CChatBox_1831f0@CChatBox@@QAEXXZ	10.0000	10.0000	1	3d104e6f816f	0x1831f0
 engine_attributed	?CCreditsState_0393b0@CCreditsState@@QAEXXZ	4.0000	4.0000	1	a4a6f8b06ca9	0x393b0
 engine_attributed	?CDDrawShadeBlit_149950@CDDrawShadeBlit@@QAEXXZ	0.1250	0.1250	1	beb3e6b3721e	0x149950
 engine_attributed	?CDDrawShadeBlit_149d00@CDDrawShadeBlit@@QAEXXZ	0.0858	0.0858	1	e2cdb9b955e0	0x149d00
@@ -941,8 +943,6 @@ engine_attributed	?CImage_175a00@CImage@@QAEXXZ	1.0256	1.0256	1	2acf5c4906a1	0x1
 engine_attributed	?CImage_175b80@CImage@@QAEXXZ	0.4301	0.4301	1	44144a88c2bc	0x175b80
 engine_attributed	?CImage_175ce0@CImage@@QAEXXZ	1.0000	1.0000	1	2e9f2a5ac6e7	0x175ce0
 engine_attributed	?CImage_175d50@CImage@@QAEXXZ	0.6452	0.6452	1	561012428e16	0x175d50
-engine_attributed	?CMenuItem_1845d0@CMenuItem@@QAEXXZ	3.3333	3.3333	1	f47117e72b54	0x1845d0
-engine_attributed	?CMenuItem_1845f0@CMenuItem@@QAEXXZ	3.3333	3.3333	1	e85986542b99	0x1845f0
 engine_attributed	?CMultiStartDlg_0c1e60@CMultiStartDlg@@QAEXXZ	1.1765	1.1765	1	48850a629a3d	0xc1e60
 engine_attributed	?CMultiStartDlg_0c1fd0@CMultiStartDlg@@QAEXXZ	1.7857	1.7857	1	d5a3ff62529f	0xc1fd0
 engine_attributed	?CMulti_0b6220@CMulti@@QAEXXZ	4.3478	4.3478	1	5224b768b1e7	0xb6220
@@ -971,12 +971,8 @@ engine_attributed	?CWwdGameObject_151780@CWwdGameObject@@QAEXXZ	0.1003	0.1003	1	
 engine_attributed	?CWwdObjMgr_15ab30@CWwdObjMgr@@QAEXXZ	2.1053	2.1053	1	f72989a91f06	0x15ab30
 engine_attributed	?CWwdObjMgr_15ad30@CWwdObjMgr@@QAEXXZ	0.1802	0.1802	1	71b3ebff6e40	0x15ad30
 engine_attributed	?CWwdObjMgr_15b0e0@CWwdObjMgr@@QAEXXZ	0.4255	0.4255	1	eaa6159c57c6	0x15b0e0
-engine_attributed	?DirectInputMgr2_132ee0@DirectInputMgr2@@QAEXXZ	0.7547	0.7547	1	f6306326932d	0x132ee0
 engine_attributed	?FontRenderer_17b120@FontRenderer@@QAEXXZ	0.1347	0.1347	1	7d8f493ad072	0x17b120
 engine_attributed	?Font_1799f0@Font@@QAEXXZ	0.3922	0.3922	1	903716e40080	0x1799f0
-engine_attributed	?GruntzPlayer_0da9e0@GruntzPlayer@@QAEXXZ	4.1667	4.1667	1	a6a92ab62d6e	0xda9e0
-engine_attributed	?LeafElementObj_1586e0@LeafElementObj@@QAEXXZ	1.9048	1.9048	1	d2d5a4cbcbc3	0x1586e0
-engine_attributed	?LeafElementObj_158720@LeafElementObj@@QAEXXZ	1.9048	1.9048	1	5718750cbdfd	0x158720
 engine_attributed	?UnknownClassArrays_02b950@UnknownClassArrays@@QAEXXZ	0.0787	0.0787	1	a9440a18a33f	0x2b950
 engine_attributed	?UnknownClassArrays_0302c0@UnknownClassArrays@@QAEXXZ	0.2581	0.2581	1	66195374326c	0x302c0
 engine_attributed	?istream_16a490@istream@@QAEXXZ	0.8889	0.8889	1	2c8e82552aac	0x16a490
@@ -2623,6 +2619,7 @@ gruntzplayer	??0GruntzPlayer@@QAE@H@Z	42.4510	42.4510	1	451d8a0aae67	0xda870
 gruntzplayer	??0GruntzPlayer@@QAE@XZ	0.0000	0.0000	1	451d8a0aae67	0xda960
 gruntzplayer	?GetDefaultName@GruntzPlayer@@SA?AVCString@@XZ	97.7778	97.7778	1	c98087cb88a1	0xdafb0
 gruntzplayer	?GetName@GruntzPlayer@@QAE?AVCString@@XZ	100.0000	100.0000	1	15c1a6f212db	0x1f450
+gruntzplayer	?Reset@GruntzPlayer@@QAEHXZ	94.8750	94.8750	1	c996e038d38b	0xda9e0
 gruntzplayer	?Serialize@GruntzPlayer@@QAEHPAXHHH@Z	98.1333	98.1333	1	7265f073892d	0xdace0
 gruntzsoundz	??1CGruntzSoundZ@@UAE@XZ	91.5790	91.5790	1	eadd9784e22d	0x86040
 gruntzsoundz	?CreateBank2_1385e0@CGruntzSoundZ@@QAEPAVCGruntzSoundInnerZ@@HH@Z	100.0000	100.0000	1	70c23a95a540	0x1385e0
@@ -2746,6 +2743,8 @@ kitchenslime	?LoadSprites@CKitchenSlime@@QAEHXZ	69.1992	69.1992	3	aca206c4359f	0
 kitchenslime	?RegisterType@CKitchenSlime@@SAXXZ	91.1739	91.1739	1	df69f8da8be5	0xb2aa0
 kitchenslime	?Serialize@CKitchenSlime@@QAEHPAXHHH@Z	100.0000	100.0000	1	f04e52434960	0xb2ff0
 kitchenslime	?Tick@CKitchenSlime@@QAEHXZ	94.8551	94.8551	4	dee22bdefc90	0xb2ca0
+leafelementobj	?LoadSoundA@LeafElementObj@@QAEHPAX@Z	100.0000	100.0000	1	8d497acabb49	0x1586e0
+leafelementobj	?LoadSoundB@LeafElementObj@@QAEHPAX@Z	100.0000	100.0000	1	e7de8a913105	0x158720
 leveltilevalidation	?ValidateLevelTiles@CLevelValidator@@QAEHXZ	17.0098	17.0098	2	791c1428e1a4	0xd2dd0
 lightfxmgr	?Init@CLightFxMgr@@QAEHPAVCGameRegistry@@PAX@Z	100.0000	100.0000	1	cabaf9fef223	0x9dad0
 lightfxmgr	?Push@CLightFxMgr@@QAEHPAVCImageSet@@HH@Z	100.0000	100.0000	1	230e8d70c35c	0x9dcb0
@@ -2776,6 +2775,8 @@ mapmgr	??1CMapMgr@@QAE@XZ	100.0000	100.0000	4	b55e2d3c334c	0x9e9e0
 mapmgr	?Reset@CMapMgr@@UAEXXZ	100.0000	100.0000	4	2dbc6f60f2f5	0x9ec30
 menuitem	??1CMenuItem@@QAE@XZ	96.5714	96.5714	1	5d6d9583cf88	0x184690
 menuitem	?Dispatch0c@CMenuItem@@QAEXXZ	100.0000	100.0000	1	b89ca68497d8	0x185510
+menuitem	?GetField4c@CMenuItem@@QAE?AVCString@@XZ	100.0000	100.0000	1	08cd19551a24	0x1845d0
+menuitem	?GetField50@CMenuItem@@QAE?AVCString@@XZ	100.0000	100.0000	1	198224ca967a	0x1845f0
 menuitem	?GetField54@CMenuItem@@QAE?AVCString@@XZ	100.0000	100.0000	1	03356630dbee	0x184610
 menuitem	?GetField58@CMenuItem@@QAE?AVCString@@XZ	100.0000	100.0000	1	b1b3c810e677	0x184630
 menuitem	?GetName@CMenuItem@@QAE?AVCString@@XZ	100.0000	100.0000	1	42c38040b74b	0x1845b0

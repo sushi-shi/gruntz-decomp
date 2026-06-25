@@ -77,6 +77,7 @@ struct CBattlezSlot {
 class CBattlezDlg : public CDialog {
 public:
     CBattlezDlg(i32 a0, CWnd* pParent);
+    ~CBattlezDlg(); // 0x14c90 (destroy CString m_6c, chain ~CDialog)
 
     i32 m_5c;        // +0x5c  (= a0; also reused as the CBattlezSlot* slot-array base)
     char m_pad60[8]; // +0x60
@@ -108,6 +109,7 @@ public:
 class CBattlezDlgCustom : public CDialog {
 public:
     CBattlezDlgCustom(CWnd* pParent);
+    ~CBattlezDlgCustom(); // 0x17140 (destroy CString m_5c, chain ~CDialog)
 
     CString m_5c; // +0x5c  (default CString)
 };

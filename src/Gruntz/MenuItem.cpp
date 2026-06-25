@@ -25,6 +25,18 @@ CString CMenuItem::GetName() {
     return m_10;
 }
 
+// 0x1845d0 - return m_4c by value.
+RVA(0x001845d0, 0x20)
+CString CMenuItem::GetField4c() {
+    return m_4c;
+}
+
+// 0x1845f0 - return m_50 by value.
+RVA(0x001845f0, 0x20)
+CString CMenuItem::GetField50() {
+    return m_50;
+}
+
 // 0x184610 - return m_54 by value.
 RVA(0x00184610, 0x20)
 CString CMenuItem::GetField54() {

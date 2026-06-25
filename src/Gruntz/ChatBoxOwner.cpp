@@ -29,6 +29,14 @@ void CChatBoxOwner::Deactivate() {
     m_c = 0;
 }
 
+// GetField1c @0x20ef0 - return the box's caption/key CString (m_1c) by value
+// (copy-construct it into the caller's sret slot; the return slot pointer flows
+// back in eax). The CString copy ctor is NAFXCW (reloc-masked).
+RVA(0x00020ef0, 0x20)
+CString CChatBoxOwner::GetField1c() {
+    return m_1c;
+}
+
 // Configure @0x20530 - origin from the viewport for the given mode; mark dirty.
 // @early-stop
 // dead-global-read-spill wall (docs/patterns/dead-global-read-spill-dce.md): retail

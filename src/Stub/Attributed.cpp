@@ -10,14 +10,12 @@ RVA(0x00014520, 0xc3) void CAttract::CAttract_014520() {}  // high
 RVA(0x00014630, 0xbd) void CAttract::CAttract_014630() {}  // high
 
 // ---- CBattlezDlg ----
-RVA(0x00014c90, 0x47) void CBattlezDlg::CBattlezDlg_014c90() {}  // high
 RVA(0x00015de0, 0x5f) void CBattlezDlg::CBattlezDlg_015de0() {}  // high
 RVA(0x00015e60, 0x5f) void CBattlezDlg::CBattlezDlg_015e60() {}  // high
 RVA(0x00015ee0, 0x5f) void CBattlezDlg::CBattlezDlg_015ee0() {}  // high
 RVA(0x00015f60, 0x5f) void CBattlezDlg::CBattlezDlg_015f60() {}  // high
 RVA(0x00016410, 0x7) void CBattlezDlg::CBattlezDlg_016410() {}  // high
 RVA(0x00016500, 0x46) void CBattlezDlg::CBattlezDlg_016500() {}  // high
-RVA(0x00017140, 0x47) void CBattlezDlg::CBattlezDlg_017140() {}  // high
 RVA(0x00017340, 0x73) void CBattlezDlg::CBattlezDlg_017340() {}  // high
 
 // ---- CBehindCandyAni ----
@@ -28,13 +26,8 @@ RVA(0x000ad9b0, 0x18d) void CBehindCandyAni::CBehindCandyAni_0ad9b0() {}  // med
 RVA(0x0001ce30, 0x1d) void CBootyState::CBootyState_01ce30() {}  // med
 RVA(0x0001d420, 0x8) void CBootyState::CBootyState_01d420() {}  // med
 
-// ---- CChatBox ----
-RVA(0x001831d0, 0x16) void CChatBox::CChatBox_1831d0() {}  // high
-RVA(0x001831f0, 0x16) void CChatBox::CChatBox_1831f0() {}  // high
-
 // ---- CChatBoxOwner ----
 RVA(0x000205c0, 0x741) void CChatBoxOwner::CChatBoxOwner_0205c0() {}  // high
-RVA(0x00020ef0, 0x20) void CChatBoxOwner::CChatBoxOwner_020ef0() {}  // high
 
 // ---- CCreditsState ----
 RVA(0x000393b0, 0x3a) void CCreditsState::CCreditsState_0393b0() {}  // high
@@ -61,10 +54,6 @@ RVA(0x00175a00, 0x74) void CImage::CImage_175a00() {}  // high
 RVA(0x00175b80, 0x105) void CImage::CImage_175b80() {}  // high
 RVA(0x00175ce0, 0x6b) void CImage::CImage_175ce0() {}  // high
 RVA(0x00175d50, 0xad) void CImage::CImage_175d50() {}  // high
-
-// ---- CMenuItem ----
-RVA(0x001845d0, 0x20) void CMenuItem::CMenuItem_1845d0() {}  // high
-RVA(0x001845f0, 0x20) void CMenuItem::CMenuItem_1845f0() {}  // high
 
 // ---- CMulti ----
 RVA(0x000b6220, 0x54) void CMulti::CMulti_0b6220() {}  // med
@@ -128,21 +117,11 @@ RVA(0x0015ab30, 0x38) void CWwdObjMgr::CWwdObjMgr_15ab30() {}  // high
 RVA(0x0015ad30, 0x2be) void CWwdObjMgr::CWwdObjMgr_15ad30() {}  // high
 RVA(0x0015b0e0, 0xec) void CWwdObjMgr::CWwdObjMgr_15b0e0() {}  // high
 
-// ---- DirectInputMgr2 ----
-RVA(0x00132ee0, 0x9a) void DirectInputMgr2::DirectInputMgr2_132ee0() {}  // high
-
 // ---- Font ----
 RVA(0x001799f0, 0x16d) void Font::Font_1799f0() {}  // high
 
 // ---- FontRenderer ----
 RVA(0x0017b120, 0x3c6) void FontRenderer::FontRenderer_17b120() {}  // high
-
-// ---- GruntzPlayer ----
-RVA(0x000da9e0, 0x60) void GruntzPlayer::GruntzPlayer_0da9e0() {}  // med
-
-// ---- LeafElementObj ----
-RVA(0x001586e0, 0x34) void LeafElementObj::LeafElementObj_1586e0() {}  // med
-RVA(0x00158720, 0x34) void LeafElementObj::LeafElementObj_158720() {}  // med
 
 // ---- UnknownClassArrays ----
 RVA(0x0002b950, 0x513) void UnknownClassArrays::UnknownClassArrays_02b950() {}  // high

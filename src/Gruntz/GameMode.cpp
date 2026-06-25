@@ -579,6 +579,7 @@ struct CCreditzImageRegistry { // this->m_4->+0x48
 struct CCreditzStateCore {      // this->m_c->m_4 (the ready/init pump)
     i32 IsReady();              // FUN_00558d20 __thiscall, ret BOOL
     i32 Init(i32 a, i32 flags); // FUN_00558cb0 __thiscall, ret BOOL
+    i32 IsLoaded();             // FUN_00558bc0 __thiscall, ret BOOL (ready-3 predicate)
 };
 struct CCreditzImageRoot { // this->m_4 points here; +0x48 is the registry
     char m_pad00[0x48];

@@ -127,6 +127,34 @@ extern const u8 g_keyboardDataFormat[]; // 0x590aa0
 DATA(0x001ef548)
 extern const u8 g_deviceConfigA[]; // 0x5ef548
 
+// The device-B config object (InputDevice.cpp sibling of CDeviceConfigA): a 0x2c8-
+// byte object with the SAME prefix layout (m_device/+4, m_device2/+8, +0x29c..+0x2b4)
+// but stamped with its own foreign vftable (@0x5ef640) and brought up via a distinct
+// CreateDev entry (0x1342c0). Modeled with no body so the calls reloc-mask; the
+// vtable + config-blob are reloc-masked DIR32 operands.
+DATA(0x001ef640)
+extern void* g_deviceConfigVtblB2; // 0x5ef640 - device-B foreign vftable
+
+DATA(0x001ef538)
+extern const u8 g_deviceConfigB[]; // 0x5ef538 - device-B CreateDev config blob
+
+struct CDeviceConfigB {
+    i32 CreateDev(IDirectInputZ* di, const void* cfg, void* owner, u32 flags); // 0x1342c0
+
+    void* m_vptr;                   // +0x000  stamped to g_deviceConfigVtblB2 (@0x5ef640)
+    IDirectInputDeviceZ* m_device;  // +0x004
+    IDirectInputDeviceZ* m_device2; // +0x008
+    char m_padc[0x29c - 0x0c];
+    void* m_hwnd;          // +0x29c
+    void* m_stateBuffer;   // +0x2a0
+    u32 m_stateBufferSize; // +0x2a4  (untouched by InitB)
+    i32 m_latchedKeys;     // +0x2a8  (= -1)
+    u32 m_currentKeys;     // +0x2ac
+    u32 m_edgeKeys;        // +0x2b0
+    i32 m_2b4;             // +0x2b4  (= 0)
+    char m_pad2b8[0x2c8 - 0x2b8];
+}; // 0x2c8
+
 // ===========================================================================
 // DirectInputMgr2 (DinMgr2.cpp) - the device manager.
 // ===========================================================================
@@ -248,6 +276,44 @@ i32 DirectInputMgr2::InitA(u32 flags) {
             m_deviceA->ScalarDtor(1);
         }
         m_deviceA = 0;
+        return 0;
+    }
+    return 1;
+}
+
+// DirectInputMgr2::InitB (__thiscall, ret 4 => 1 arg = flags). The device-B sibling
+// of InitA: when the DInput object exists, new's a 0x2c8-byte CDeviceConfigB, inits
+// its prefix fields + stamps the device-B foreign vftable (no key-table memset),
+// then CreateDev(m_directInput, g_deviceConfigB, m_owner, flags). On failure
+// scalar-deletes it (m_deviceB) and returns 0; on success keeps it in m_deviceB.
+RVA(0x00132ee0, 0x9a)
+i32 DirectInputMgr2::InitB(u32 flags) {
+    IDirectInputZ* di = m_directInput;
+    if (di == 0) {
+        return 0;
+    }
+    CDeviceConfigB* raw = (CDeviceConfigB*)operator new(sizeof(CDeviceConfigB));
+    CDeviceConfigB* dev;
+    if (raw != 0) {
+        raw->m_device = 0;
+        raw->m_device2 = 0;
+        raw->m_hwnd = 0;
+        raw->m_stateBuffer = 0;
+        raw->m_latchedKeys = -1;
+        raw->m_currentKeys = 0;
+        raw->m_edgeKeys = 0;
+        raw->m_vptr = &g_deviceConfigVtblB2;
+        raw->m_2b4 = 0;
+        dev = raw;
+    } else {
+        dev = 0;
+    }
+    m_deviceB = (CInputDeviceBase*)dev;
+    if (dev->CreateDev(m_directInput, g_deviceConfigB, m_owner, flags) == 0) {
+        if (m_deviceB != 0) {
+            m_deviceB->ScalarDtor(1);
+        }
+        m_deviceB = 0;
         return 0;
     }
     return 1;

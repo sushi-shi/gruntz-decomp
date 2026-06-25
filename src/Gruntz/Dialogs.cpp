@@ -31,9 +31,30 @@ CBattlezDlg::CBattlezDlg(i32 a0, CWnd* pParent) : CDialog(0xc0, pParent) {
     m_68 = 0;
 }
 
+// ~CBattlezDlg @0x14c90 - destroy the CString member m_6c, then chain the NAFXCW
+// ~CDialog base dtor (both reloc-masked). The /GX EH frame unwinds the half-torn
+// object across the member dtor.
+// @early-stop
+// vptr-restamp-presence wall (docs/patterns/eh-dtor-vptr-restamp-presence.md): the
+// /GX frame + member ~CString + base ~CDialog chain are byte-exact, but our
+// polymorphic model emits one extra `mov [esi],&??_7CBattlezDlg` re-stamp at entry
+// that retail elided (its vtable already equals the base through the dtor). Not
+// source-steerable; ~94.4%.
+RVA(0x00014c90, 0x47)
+CBattlezDlg::~CBattlezDlg() {}
+
 // ---------------------------------------------------------------------------
 RVA(0x00018030, 0x56)
 CBattlezDlgCustom::CBattlezDlgCustom(CWnd* pParent) : CDialog(0xc3, pParent) {}
+
+// ~CBattlezDlgCustom @0x17140 - destroy the CString member m_5c, then chain the
+// NAFXCW ~CDialog base dtor. /GX EH frame for the member unwind.
+// @early-stop
+// vptr-restamp-presence wall (docs/patterns/eh-dtor-vptr-restamp-presence.md): same
+// as ~CBattlezDlg - one extra most-derived vptr re-stamp our polymorphic model emits
+// that retail elided; chain otherwise byte-exact. ~94.4%.
+RVA(0x00017140, 0x47)
+CBattlezDlgCustom::~CBattlezDlgCustom() {}
 
 // ---------------------------------------------------------------------------
 RVA(0x00017930, 0x3a)

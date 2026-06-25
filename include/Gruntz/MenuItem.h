@@ -112,6 +112,8 @@ struct CMenuItem {
     CString m_58;       // +0x58
 
     CString GetName();    // 0x1845b0  return m_10
+    CString GetField4c(); // 0x1845d0 return m_4c
+    CString GetField50(); // 0x1845f0 return m_50
     CString GetField54(); // 0x184610 return m_54
     CString GetField58(); // 0x184630 return m_58
     ~CMenuItem();         // 0x184690  /GX teardown
