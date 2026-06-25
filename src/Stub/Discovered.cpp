@@ -1009,13 +1009,8 @@ void ClassUnknown_85::ClassUnknown_85_139af0() {}
 // ---- ClassUnknown_86 ---- reconstructed in src/Gruntz/CDDrawShadeBlit.cpp
 // (CDDrawShadeBlit, the DDrawMgr software shaded-sprite blitter).
 
-// ---- ClassUnknown_87 ----
-RVA(0x00152480, 0x4e)
-void ClassUnknown_87::ClassUnknown_87_152480() {}
-RVA(0x00152520, 0x4b)
-void ClassUnknown_87::ClassUnknown_87_152520() {}
-RVA(0x001525c0, 0x76)
-void ClassUnknown_87::ClassUnknown_87_1525c0() {}
+// ---- ClassUnknown_87 ---- reconstructed in src/Image/ImageSet.cpp
+// (CImageSet, the engine's sparse CImage-frame collection; 3 leaf accessors).
 
 // ---- ClassUnknown_88 ----
 RVA(0x000311b0, 0x14)

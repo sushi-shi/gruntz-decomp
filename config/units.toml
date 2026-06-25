@@ -364,6 +364,11 @@ source = "src/Image/Image.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "imageset"
+source = "src/Image/ImageSet.cpp"
+flags = "base"
+
+[[unit]]
 unit = "registryhelper"
 source = "src/Utils/RegistryHelper.cpp"
 flags = "base"

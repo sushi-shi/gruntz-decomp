@@ -60,7 +60,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	258	0
+engine_discovered	255	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -89,6 +89,7 @@ gruntzwnd	9	7
 hash	9	9
 iconloaders	4	1
 image	32	21
+imageset	3	3
 infblock	5	4
 infcodes	3	2
 inffast	1	1
@@ -862,9 +863,6 @@ engine_discovered	?ClassUnknown_83_029a30@ClassUnknown_83@@QAEXXZ	6.6667	6.6667	
 engine_discovered	?ClassUnknown_84_09a260@ClassUnknown_84@@QAEXXZ	3.6364	3.6364	1	d8ff23cf0285	0x9a260
 engine_discovered	?ClassUnknown_85_139ae0@ClassUnknown_85@@QAEXXZ	10.0000	10.0000	1	97b4f12281f4	0x139ae0
 engine_discovered	?ClassUnknown_85_139af0@ClassUnknown_85@@QAEXXZ	0.4348	0.4348	1	bf63347742e3	0x139af0
-engine_discovered	?ClassUnknown_87_152480@ClassUnknown_87@@QAEXXZ	1.0526	1.0526	1	5eb81d35c41a	0x152480
-engine_discovered	?ClassUnknown_87_152520@ClassUnknown_87@@QAEXXZ	1.1429	1.1429	1	6cb94b29b22b	0x152520
-engine_discovered	?ClassUnknown_87_1525c0@ClassUnknown_87@@QAEXXZ	0.7143	0.7143	1	044691a53f19	0x1525c0
 engine_discovered	?ClassUnknown_88_0311b0@ClassUnknown_88@@QAEXXZ	5.7143	5.7143	1	46eec7c3d0f4	0x311b0
 engine_discovered	?ClassUnknown_89_14c9f0@ClassUnknown_89@@QAEXXZ	0.0769	0.0769	1	346819baf2e1	0x14c9f0
 engine_discovered	?ClassUnknown_90_1d38a1@ClassUnknown_90@@QAEXXZ	33.3333	33.3333	1	447f332acd97	0x1d38a1
@@ -1793,6 +1791,9 @@ image	?Resolve@CFileImage@@QAEHPAX0HI0@Z	100.0000	100.0000	3	2da671d6a3c0	0x13e5
 image	?ResolveEx@CFileImage@@QAEHPAX0HIHH@Z	100.0000	100.0000	4	42be466cd065	0x148890
 image	?SaveDispatch@CFileImage@@QAEHPAX00@Z	100.0000	100.0000	1	9a5d2837fd46	0x144350
 image	?SaveFile@CFileImage@@QAEHPADHPAX1@Z	100.0000	100.0000	1	aa58601ee0e3	0x13f910
+imageset	?FindFrame@CImageSet@@QAEHPAVCImageFrame@@PADPAH@Z	100.0000	100.0000	1	a99711587f63	0x1525c0
+imageset	?SetAllFormats@CImageSet@@QAEHH@Z	100.0000	100.0000	1	4f0c915055a8	0x152520
+imageset	?SetAllTypes@CImageSet@@QAEHH@Z	100.0000	100.0000	1	dcefa349e4ec	0x152480
 infblock	_inflate_blocks	98.6518	98.6518	1	56f158ca58f1	0x1875a0
 infblock	_inflate_blocks_free	100.0000	100.0000	1	1618d6843d69	0x188250
 infblock	_inflate_blocks_new	100.0000	100.0000	1	fc0dd390fb8b	0x187530
