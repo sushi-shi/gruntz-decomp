@@ -32,7 +32,7 @@ struct DataWriter {
     virtual void Slot8();
     virtual void Slot9();
     virtual void Slot10();
-    virtual void Slot11();
+    virtual void Read(void* buf, u32 len);        // +0x2c  slot 11
     virtual void Write(const void* buf, u32 len); // +0x30  slot 12
 };
 
@@ -48,6 +48,10 @@ struct GruntDataRecord {
     // Write the five names (as fixed 0x80 fields) + the four fixed blocks through
     // `ar`; returns 0 if `ar` is null, else 1. (0x56da0, __thiscall, 1 stdcall arg.)
     i32 SerializeStrings(DataWriter* ar);
+    // The read counterpart (0x56eb0): read each fixed 0x80 name field into a temp
+    // and assign it to the owned CString member (CString::operator=), then read the
+    // four fixed blocks back verbatim. Returns 0 if `ar` is null, else 1.
+    i32 DeserializeStrings(DataWriter* ar);
 };
 
 #endif // SRC_GRUNTZ_GRUNTDATARECORD_H

@@ -11,6 +11,35 @@
 // shape to ~CTimeBomb @0x012a70.
 #include <Gruntz/CGruntPowerupSprite.h>
 
+// The (de)serialization archive: Read @ vtable slot 11 (+0x2c), Write @ slot 12
+// (+0x30) - the same CArchive-family shape the other leaf serializers tap. The 11
+// leading virtuals are placeholders fixing the offsets; bodies live elsewhere so
+// the thiscall dispatch reloc-masks.
+class PupArchive {
+public:
+    virtual void Slot00();
+    virtual void Slot04();
+    virtual void Slot08();
+    virtual void Slot0C();
+    virtual void Slot10();
+    virtual void Slot14();
+    virtual void Slot18();
+    virtual void Slot1C();
+    virtual void Slot20();
+    virtual void Slot24();
+    virtual void Slot28();
+    virtual void Read(void* buf, i32 n);  // +0x2c
+    virtual void Write(void* buf, i32 n); // +0x30
+};
+
+// The serializable sub-object overlaid at CUserLogic+0x34; its own serializer is
+// reached as `lea ecx,[this+0x34]; call` through the 0x1aff thunk (the SAME helper
+// the in-game-text leaf uses). External; no body.
+class PupSubObj {
+public:
+    i32 SerializeSub(void* ar, i32 mode, i32 a, i32 b); // 0x001aff (thunk)
+};
+
 // ~CGruntPowerupSprite @0x012370 - the CUserLogic-folded /GX leaf dtor.
 RVA(0x00012370, 0x44)
 CGruntPowerupSprite::~CGruntPowerupSprite() {}
@@ -94,4 +123,36 @@ i32 CGruntPowerupSprite::Update() {
         m_10->m_60 = e->m_10->m_60;
     }
     return 0;
+}
+
+// CGruntPowerupSprite::Serialize @0x080490 - the serialize override. Chain the base
+// CUserLogic::SerializeChain and the +0x34 sub-object, then round-trip the own state:
+// m_54/m_58 (8 B) + m_5c (4 B). mode 4 = write, mode 7 = read. On read, re-resolve the
+// powerup's bute-set record (g_gameReg->m_78[m_5c*4 + 0x14]) into the bound renderable.
+RVA(0x00080490, 0xbe)
+i32 CGruntPowerupSprite::Serialize(PupArchive* ar, i32 mode, i32 a3, i32 a4) {
+    if (SerializeChain((i32)ar, mode, a3, a4) == 0) {
+        return 0;
+    }
+    if (((PupSubObj*)&m_34)->SerializeSub(ar, mode, a3, a4) == 0) {
+        return 0;
+    }
+    switch (mode) {
+        case 4:
+            ar->Write(&m_54, 8);
+            ar->Write(&m_5c, 4);
+            break;
+        case 7: {
+            ar->Read(&m_54, 8);
+            ar->Read(&m_5c, 4);
+            i32 id = m_5c;
+            CGruntRenderable* r = (CGruntRenderable*)m_10;
+            i32 v = *(i32*)(g_gameReg->m_78 + id * 4 + 0x14);
+            r->m_58 = 1;
+            r->m_4c = v;
+            r->m_50 = 7;
+            break;
+        }
+    }
+    return 1;
 }

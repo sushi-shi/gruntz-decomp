@@ -22,6 +22,36 @@
 #include <Gruntz/GruntzCommand.h>
 #include <rva.h>
 
+// The network (de)serialization stream (a CArchive/CSocketFile-family object):
+// Read @ vtable slot 11 (+0x2c), Write @ slot 12 (+0x30). Modeled polymorphic so
+// the thiscall dispatch `mov edx,[s]; mov ecx,s; call [edx+N]` falls out at the
+// right slot; the 11 leading virtuals are placeholders fixing the offsets.
+class CmdStream {
+public:
+    virtual void Slot0();
+    virtual void Slot1();
+    virtual void Slot2();
+    virtual void Slot3();
+    virtual void Slot4();
+    virtual void Slot5();
+    virtual void Slot6();
+    virtual void Slot7();
+    virtual void Slot8();
+    virtual void Slot9();
+    virtual void Slot10();
+    virtual void Read(void* buf, i32 len);  // +0x2c  slot 11
+    virtual void Write(void* buf, i32 len); // +0x30  slot 12
+};
+
+// The game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A @0x64556c). Save/Load
+// no-op unless its +0x30 active-game gate is non-null (same gate the cmd-mgr taps).
+struct WwdGameReg {
+    char m_pad0[0x30];
+    void* m_30; // +0x30  active-game gate
+};
+DATA(0x0024556c)
+extern WwdGameReg* g_gameReg;
+
 // ---------------------------------------------------------------------------
 // CGruntzCommand::~CGruntzCommand() - the slot-0 scalar-deleting dtor (??_G).
 // Restore the vftable, then (if the low bit of the hidden flags arg is set)
@@ -239,6 +269,53 @@ void CGruntzMultiCommand::FreeAll() {
             delete node;
         }
     }
+}
+
+// ---------------------------------------------------------------------------
+// CGruntzCommand::Save() - 0x024520. Network-serialize the 8 scalar fields out
+// through the stream's Write (vtable slot +0x30). No-op (return 0) unless the
+// stream is non-null AND the registry's active-game gate (g_gameReg+0x30) is set.
+// ---------------------------------------------------------------------------
+RVA(0x00024520, 0x98)
+i32 CGruntzCommand::Save(CmdStream* s) {
+    if (!s) {
+        return 0;
+    }
+    if (!g_gameReg->m_30) {
+        return 0;
+    }
+    s->Write(&m_4, 1);
+    s->Write(&m_5, 1);
+    s->Write(&m_6, 1);
+    s->Write(&m_8, 2);
+    s->Write(&m_a, 2);
+    s->Write(&m_c, 4);
+    s->Write(&m_10, 1);
+    s->Write(&m_11, 1);
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CGruntzCommand::Load() - 0x0245f0. The read twin: same gate, the 8 scalar
+// fields read back through the stream's Read (vtable slot +0x2c).
+// ---------------------------------------------------------------------------
+RVA(0x000245f0, 0x98)
+i32 CGruntzCommand::Load(CmdStream* s) {
+    if (!s) {
+        return 0;
+    }
+    if (!g_gameReg->m_30) {
+        return 0;
+    }
+    s->Read(&m_4, 1);
+    s->Read(&m_5, 1);
+    s->Read(&m_6, 1);
+    s->Read(&m_8, 2);
+    s->Read(&m_a, 2);
+    s->Read(&m_c, 4);
+    s->Read(&m_10, 1);
+    s->Read(&m_11, 1);
+    return 1;
 }
 
 // size 0x14 from operator-new vtable attribution (gruntz.analysis.news)

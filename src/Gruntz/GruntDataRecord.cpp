@@ -8,6 +8,8 @@
 #include <rva.h>
 #include <string.h> // memset / strcpy (inlined to rep stos / rep movs at /O2 /Oi)
 
+#include <Mfc.h> // CString::operator= (the owned name members are CStrings)
+
 // ---------------------------------------------------------------------------
 // GruntDataRecord::SerializeStrings (0x56da0, __thiscall, 1 stdcall arg).
 RVA(0x00056da0, 0xc7)
@@ -28,5 +30,29 @@ i32 GruntDataRecord::SerializeStrings(DataWriter* ar) {
     ar->Write(m_24, 0x10);
     ar->Write(m_34, 0x10);
     ar->Write(m_48, 0x20);
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// GruntDataRecord::DeserializeStrings (0x56eb0, __thiscall, 1 stdcall arg). Read
+// each 0x80-byte name field into a temp and assign it to the owned CString member
+// (CString::operator= @0x1b9e74, reloc-masked), then read the four fixed blocks.
+RVA(0x00056eb0, 0x94)
+i32 GruntDataRecord::DeserializeStrings(DataWriter* ar) {
+    if (ar == 0) {
+        return 0;
+    }
+
+    char buf[0x80];
+    i32 i;
+    for (i = 0; i < 5; i++) {
+        ar->Read(buf, sizeof(buf));
+        *(CString*)&m_str[i] = buf;
+    }
+
+    ar->Read(m_14, 0x10);
+    ar->Read(m_24, 0x10);
+    ar->Read(m_34, 0x10);
+    ar->Read(m_48, 0x20);
     return 1;
 }

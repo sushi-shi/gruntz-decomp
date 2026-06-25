@@ -26,7 +26,7 @@ blowfish	4	3
 brickz	15	3
 butemgr	40	27
 butestoreclear	1	1
-cambientsound	3	2
+cambientsound	4	3
 canielement	3	2
 canirecord	8	5
 cattract	11	7
@@ -65,7 +65,7 @@ cfortressflag	2	2
 cfxmodedesc	3	3
 cgruntcreationpoint	2	2
 cgrunthealthsprite	4	3
-cgruntpowerupsprite	5	4
+cgruntpowerupsprite	6	5
 cgruntselectedsprite	5	3
 cgruntstartingpoint	1	1
 cgrunttoysprite	5	4
@@ -115,7 +115,7 @@ directinputmgr2	33	29
 directsoundmgr	39	28
 dsoundvoice	2	1
 engine_attributed	28	0
-engine_boundary	607	0
+engine_boundary	601	0
 engine_discovered	72	0
 engine_label_stubs	462	103
 engstr	3	1
@@ -133,13 +133,13 @@ gameobjectctors	5	0
 gametext	4	2
 gamewnd	9	8
 grunt	77	15
-gruntdatarecord	1	1
+gruntdatarecord	2	2
 gruntpuddle	4	2
 gruntspawnconfig	14	7
 gruntvoice	5	4
 gruntzapp	10	8
 gruntzcmdmgr	12	10
-gruntzcommand	12	12
+gruntzcommand	14	14
 gruntzmgr	87	60
 gruntzplayer	6	1
 gruntzsoundz	12	11
@@ -230,7 +230,7 @@ tiletriggerlogic	2	1
 tiletriggertransition	6	5
 tilewireswitchlogic	1	0
 trees	19	19
-triggermgr	42	7
+triggermgr	43	7
 triggermgr_eh	4	0
 uncompr	1	1
 unknownclassarrays	38	10
@@ -374,6 +374,7 @@ butemgr	?SetSub@CButeMgrHelper@@QAEXPAX@Z	100.0000	100.0000	2	7ceaffd01bf0	0x169
 butemgr	?SkipToTag@CButeMgr@@QAE_NXZ	78.1429	78.1429	2	672209f4feee	0x171160
 butestoreclear	?ClearRecursive@CButeStore@@QAEXH@Z	100.0000	100.0000	1	2c7ef99ca5ed	0x16e070
 cambientsound	??1CAmbientSound@@QAE@XZ	100.0000	100.0000	1	56dbfa3599ca	0xb790
+cambientsound	?Restart@CAmbientSound@@QAEXXZ	100.0000	100.0000	1	eb0cc7e65b93	0xbfb0
 cambientsound	?SetLevel@CAmbientSound@@QAEHHHH@Z	100.0000	100.0000	2	82d554c23b21	0xc200
 cambientsound	?Update@CAmbientSound@@QAEXHHH@Z	76.7857	76.7857	2	979c7e248495	0xc090
 canielement	?AtChecked_06b270@CAniElement@@QBEPAVCObject@@H@Z	100.0000	100.0000	1	2278365ee372	0x6b270
@@ -668,6 +669,7 @@ cgrunthealthsprite	?SetHealthGlyph@CGruntHealthSprite@@QAEHHHH@Z	100.0000	100.00
 cgruntpowerupsprite	??1CGruntPowerupSprite@@UAE@XZ	100.0000	100.0000	1	083563c3491b	0x12370
 cgruntpowerupsprite	?InitActReg@CGruntPowerupSprite@@SAXXZ	100.0000	100.0000	1	ade10531ce1f	0x7ffa0
 cgruntpowerupsprite	?RegisterActs@CGruntPowerupSprite@@SAXXZ	92.9130	92.9130	1	f3c621493d68	0x80180
+cgruntpowerupsprite	?Serialize@CGruntPowerupSprite@@QAEHPAVPupArchive@@HHH@Z	100.0000	100.0000	1	5621db2cd970	0x80490
 cgruntpowerupsprite	?SetCell@CGruntPowerupSprite@@QAEHHHH@Z	100.0000	100.0000	1	88ade8a8af7a	0x80380
 cgruntpowerupsprite	?Update@CGruntPowerupSprite@@QAEHXZ	100.0000	100.0000	1	ff892b66e460	0x80410
 cgruntselectedsprite	??1CGruntSelectedSprite@@UAE@XZ	100.0000	100.0000	1	03f353c22571	0x11e80
@@ -1041,7 +1043,6 @@ engine_boundary	?Boundary_009bb0@@YAXXZ	0.1262	0.1262	1	58e1ad1d2878	0x9bb0
 engine_boundary	?Boundary_00af50@@YAXXZ	50.0000	50.0000	1	9505398c8854	0xaf50
 engine_boundary	?Boundary_00b940@@YAXXZ	20.0000	20.0000	1	ff8ff3f6c097	0xb940
 engine_boundary	?Boundary_00bdd0@@YAXXZ	1.2500	1.2500	1	2471f79cc100	0xbdd0
-engine_boundary	?Boundary_00bfb0@@YAXXZ	1.6129	1.6129	1	3d615b4a1c14	0xbfb0
 engine_boundary	?Boundary_00d210@@YAXXZ	2.1277	2.1277	1	9d0e38f5efbf	0xd210
 engine_boundary	?Boundary_00f510@@YAXXZ	5.8824	5.8824	1	d8839c5dc501	0xf510
 engine_boundary	?Boundary_00f640@@YAXXZ	5.8824	5.8824	1	16ef453fb4e6	0xf640
@@ -1070,8 +1071,6 @@ engine_boundary	?Boundary_021570@@YAXXZ	3.2258	3.2258	1	924d7ca37e1f	0x21570
 engine_boundary	?Boundary_0238d0@@YAXXZ	25.0000	25.0000	1	fa4f90746429	0x238d0
 engine_boundary	?Boundary_023960@@YAXXZ	25.0000	25.0000	1	26fbd4f4b03d	0x23960
 engine_boundary	?Boundary_023d90@@YAXXZ	1.0526	1.0526	1	424a98e16d50	0x23d90
-engine_boundary	?Boundary_024520@@YAXXZ	0.5714	0.5714	1	99276ff974ad	0x24520
-engine_boundary	?Boundary_0245f0@@YAXXZ	0.5714	0.5714	1	db5b1be8f27f	0x245f0
 engine_boundary	?Boundary_0247d0@@YAXXZ	0.6250	0.6250	1	624947157862	0x247d0
 engine_boundary	?Boundary_024ac0@@YAXXZ	3.6364	3.6364	1	bf92e318af13	0x24ac0
 engine_boundary	?Boundary_029af0@@YAXXZ	2.1053	2.1053	1	dae4b5f50f80	0x29af0
@@ -1113,12 +1112,10 @@ engine_boundary	?Boundary_0472d0@@YAXXZ	20.0000	20.0000	1	7e7ec8f398de	0x472d0
 engine_boundary	?Boundary_0474b0@@YAXXZ	0.8696	0.8696	1	b5528f3237f2	0x474b0
 engine_boundary	?Boundary_050a50@@YAXXZ	0.2597	0.2597	1	c341090f0499	0x50a50
 engine_boundary	?Boundary_050ca0@@YAXXZ	3.3333	3.3333	1	630907671c0d	0x50ca0
-engine_boundary	?Boundary_056eb0@@YAXXZ	0.6667	0.6667	1	606b294a6a3c	0x56eb0
 engine_boundary	?Boundary_056f80@@YAXXZ	0.8333	0.8333	1	b0a2d99ab885	0x56f80
 engine_boundary	?Boundary_05bc50@@YAXXZ	20.0000	20.0000	1	7fdc0c03bf09	0x5bc50
 engine_boundary	?Boundary_05be30@@YAXXZ	0.1362	0.1362	1	9dfe685bcbc3	0x5be30
 engine_boundary	?Boundary_077dc0@@YAXXZ	4.4444	4.4444	1	b7815cb49298	0x77dc0
-engine_boundary	?Boundary_077f80@@YAXXZ	0.7018	0.7018	1	ed13b5dc261d	0x77f80
 engine_boundary	?Boundary_0788d0@@YAXXZ	3.4483	3.4483	1	8af949c907ad	0x788d0
 engine_boundary	?Boundary_07c2e0@@YAXXZ	0.6667	0.6667	1	421d548afd6e	0x7c2e0
 engine_boundary	?Boundary_07cc60@@YAXXZ	0.6897	0.6897	1	f1c77c738bcc	0x7cc60
@@ -1127,7 +1124,6 @@ engine_boundary	?Boundary_07cf40@@YAXXZ	0.3540	0.3540	1	b77c4d719642	0x7cf40
 engine_boundary	?Boundary_07d450@@YAXXZ	1.2048	1.2048	1	ffc0463a7fef	0x7d450
 engine_boundary	?Boundary_07d5c0@@YAXXZ	1.3514	1.3514	1	63d6820a7fbd	0x7d5c0
 engine_boundary	?Boundary_07d6e0@@YAXXZ	1.2048	1.2048	1	de87bd3a53c6	0x7d6e0
-engine_boundary	?Boundary_080490@@YAXXZ	0.4819	0.4819	1	35bf3749fe1e	0x80490
 engine_boundary	?Boundary_080cf0@@YAXXZ	25.0000	25.0000	1	416182abe5b8	0x80cf0
 engine_boundary	?Boundary_082aa0@@YAXXZ	25.0000	25.0000	1	52f602cf8c29	0x82aa0
 engine_boundary	?Boundary_082b20@@YAXXZ	20.0000	20.0000	1	b533548f1814	0x82b20
@@ -2446,6 +2442,7 @@ grunt	?TryPowerupAtTile@CGrunt@@QAEHXZ	93.3115	93.3115	1	c79ab0d858c8	0x57aa0
 grunt	?UpdateArrival@CGrunt@@QAEHHH@Z	71.2050	71.2050	1	900cd9d93752	0x62110
 grunt	?UpdateEntranceAnim@CGrunt@@QAEHXZ	88.3088	88.3088	1	277e290dabfb	0x690a0
 grunt	?UpdateGruntStatus@CGrunt@@QAEHXZ	94.5000	94.5000	3	2b7c880860ba	0x617c0
+gruntdatarecord	?DeserializeStrings@GruntDataRecord@@QAEHPAUDataWriter@@@Z	100.0000	100.0000	1	d96d2c87cdd6	0x56eb0
 gruntdatarecord	?SerializeStrings@GruntDataRecord@@QAEHPAUDataWriter@@@Z	100.0000	100.0000	1	71ad52c7e3da	0x56da0
 gruntpuddle	??1CGruntPuddle@@UAE@XZ	100.0000	100.0000	1	d8797374243c	0x10d10
 gruntpuddle	?Place@CGruntPuddle@@QAEHHHHH@Z	73.5400	73.5400	2	f8ec38ad7367	0x40c30
@@ -2499,8 +2496,10 @@ gruntzcommand	?ApplyMask@CGruntzCommand@@QAEHPAUCGruntzCmdTarget@@@Z	100.0000	10
 gruntzcommand	?ApplyOne@CGruntzCommand@@QAEHPAUCGruntzCmdTarget@@@Z	100.0000	100.0000	2	bebca49f3289	0x24140
 gruntzcommand	?FreeAll@CGruntzMultiCommand@@SAXXZ	100.0000	100.0000	1	a52eb4303e98	0x24490
 gruntzcommand	?FreeAll@CGruntzSingleCommand@@SAXXZ	100.0000	100.0000	1	4e0ead03e65c	0x24450
+gruntzcommand	?Load@CGruntzCommand@@QAEHPAVCmdStream@@@Z	100.0000	100.0000	1	5bb563350350	0x245f0
 gruntzcommand	?Pack@CGruntzMultiCommand@@QAEHPADH@Z	100.0000	100.0000	1	dc044912d246	0x240d0
 gruntzcommand	?Pack@CGruntzSingleCommand@@QAEHPADH@Z	100.0000	100.0000	1	1f0d8b5dc220	0x24050
+gruntzcommand	?Save@CGruntzCommand@@QAEHPAVCmdStream@@@Z	100.0000	100.0000	1	af99872e9928	0x24520
 gruntzcommand	?SetMaskFromList@CGruntzCommand@@QAEHDDDFFHPAE@Z	100.0000	100.0000	4	3127710483d2	0x23ed0
 gruntzcommand	?SetParams@CGruntzCommand@@UAEHDDDFF@Z	100.0000	100.0000	2	d1452a90a202	0x23e20
 gruntzcommand	?SetParamsEx@CGruntzCommand@@QAEHDDDFFDD@Z	100.0000	100.0000	2	6b462beb4099	0x23e60
@@ -3269,10 +3268,11 @@ triggermgr	?ClearRow@CTriggerMgr@@QAEHH@Z	100.0000	100.0000	3	eb16fe8ac3c9	0x7d1
 triggermgr	?ClearRowAndRefresh@CTriggerMgr@@QAEHH@Z	72.0727	72.0727	1	08116ddf5f53	0x7a510
 triggermgr	?ClearSelections@CTriggerMgr@@QAEXXZ	99.8387	99.8387	2	a0b3e8e75bb5	0x7d0c0
 triggermgr	?DestroyAllAnims@CTriggerMgr@@QAEXXZ	96.5000	96.5000	1	2ced2820e161	0x7d330
+triggermgr	?FindNearestInRow@CTriggerMgr@@QAEPAXPAX@Z	84.1403	84.1403	1	c9c7e4a27a46	0x77f80
 triggermgr	?GridAction6@@YAHHH@Z	95.7143	95.7143	1	b86ea5da9bfd	0x6da60
 triggermgr	?GridAction7@@YAHHH@Z	95.7143	95.7143	1	2f3343dbfede	0x6daa0
 triggermgr	?HitTestApply@CTriggerMgr@@QAEHHHH@Z	53.0980	53.0980	2	097db8949544	0x6ea00
-triggermgr	?HitTestCell@CTriggerMgr@@QAEHHHPAH0H@Z	38.6040	38.6040	1	4c34f8594aba	0x75af0
+triggermgr	?HitTestCell@CTriggerMgr@@QAEHHHPAH0H@Z	38.5842	38.5842	1	4c34f8594aba	0x75af0
 triggermgr	?NearestCellDist@CTriggerMgr@@QAEHHHH@Z	77.1667	77.1667	1	c3b8b0e26e2d	0x7d1d0
 triggermgr	?NotifyCell@CTriggerMgr@@QAEXHHH@Z	50.6765	50.6765	1	fee0160a92e7	0x79fb0
 triggermgr	?OverlayRelease@CTriggerMgr@@QAEHXZ	100.0000	100.0000	3	814c6331e041	0x79b00

@@ -295,6 +295,42 @@ void* CTriggerMgr::CellHitTest(i32 px, i32 py, i32* outRow, i32* outCol, i32 sta
     return 0;
 }
 
+// 0x77f80: FindNearestInRow(g) - the grunt-to-cell proximity probe: scan the 15 cells
+// of grid row g->m_1ec for the live cell whose display object (cell->m_10) is nearest g's
+// tile position, but only when that squared distance is below the cutoff 2*g->m_2dc.
+// @early-stop
+// regalloc wall (~84%): retail homes tx in ebp / ty in eax (relocating both out of their
+// load registers), and `o` in edx; our cl keeps tx/ty in the load registers (ebx/ebp) and
+// `o` in ecx. Every instruction + offset matches modulo register names; not source-
+// steerable. topic:wall (same family as NearestCellDist/DestroyAllAnims @early-stops).
+RVA(0x00077f80, 0xab)
+void* CTriggerMgr::FindNearestInRow(void* gp) {
+    CTmGrunt* g = (CTmGrunt*)gp;
+    i32 tx = *(i32*)((char*)g + 0x17c) >> 5;
+    i32 rowIdx = *(i32*)((char*)g + 0x1ec);
+    i32 ty = *(i32*)((char*)g + 0x180) >> 5;
+    CTmGrunt** cell = (CTmGrunt**)((char*)this + rowIdx * 15 * 4 + 0x1c);
+    CTmGrunt* best = 0;
+    i32 bestDist = 0x7fffffff;
+    i32 i = 15;
+    do {
+        CTmGrunt* c = *cell;
+        if (c != 0) {
+            char* o = *(char**)((char*)c + 0x10);
+            i32 dy = (*(i32*)(o + 0x60) >> 5) - ty;
+            i32 dx = (*(i32*)(o + 0x5c) >> 5) - tx;
+            i32 d = dx * dx + dy * dy;
+            if (d < bestDist && d < *(i32*)((char*)g + 0x2dc) * 2) {
+                best = c;
+                bestDist = d;
+            }
+        }
+        cell++;
+        i--;
+    } while (i != 0);
+    return best;
+}
+
 // 0x78260: RemoveCellRecord(x, y, fromSelection) - when fromSelection, first unlink the
 // (x,y) node from whichever of the 10 selection lists (+0x2d0) holds it. Then find the
 // (x,y) node in the record list (+0x244); if present, optionally StopPendingFx, clear the

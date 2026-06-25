@@ -39,6 +39,10 @@ struct CGruntzCmdTarget {
     i32 Exec(char kind, char index, char a2, i16 a3, i16 a4, char a5, char a6);
 };
 
+// The network (de)serialization stream the base command Save/Load drive (defined in
+// the .cpp). Forward-declared as a class so the member mangling agrees across clang/MSVC.
+class CmdStream;
+
 // ---------------------------------------------------------------------------
 // CGruntzCommand - the abstract base command.
 //
@@ -90,6 +94,10 @@ public:
                         u8* buf);       // 0x023ed0
     i32 ApplyOne(CGruntzCmdTarget* p);  // 0x024140
     i32 ApplyMask(CGruntzCmdTarget* p); // 0x024190
+    // The network (de)serializers (0x024520 / 0x0245f0): no-op unless the
+    // registry's active-game gate is set, then stream the 8 scalar fields.
+    i32 Save(CmdStream* s); // 0x024520  via stream Write (+0x30)
+    i32 Load(CmdStream* s); // 0x0245f0  via stream Read  (+0x2c)
 };
 
 // The 16-entry 1<<i bit table (0x5e9608; VA) the mask loop indexes/scans.

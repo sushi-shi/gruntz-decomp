@@ -96,6 +96,11 @@ public:
     // declared so Update's `call` reloc-masks.
     i32 Fade(i32 a, i32 b, i32 c); // 0xc2a0
 
+    // 0xbfb0: Restart - re-arm the voice at its CURRENT level (m_08). No-op unless
+    // the voice exists, it is not already playing (m_14==0), and the active level /
+    // world is live. Inlines SetLevel(m_08, 0, 0)'s scale+clamp then SetVolumeByIndex.
+    void Restart(); // 0xbfb0
+
     void* m_vptr;         // +0x00  vptr (manual stamp; CAmbientSound vtable 0x5e710c)
     DirectSoundMgr* m_04; // +0x04  the sound-mgr voice handle
     i32 m_08;             // +0x08  current level (0..100)

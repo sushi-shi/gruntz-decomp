@@ -117,6 +117,11 @@ public:
     // bump a world stat, and re-arm the status item. ret 1.
     i32 ClearRowAndRefresh(i32 startRow);
 
+    // 0x77f80: FindNearestInRow(g) - scan the grid row g->m_1ec (15 cells) for the live
+    // cell whose display object is nearest g's tile pos (g->m_17c/m_180 >> 5), within the
+    // squared cutoff 2*g->m_2dc; ret the nearest cell pointer or 0. (__thiscall: ret 4.)
+    void* FindNearestInRow(void* g);
+
     // 0x78260: RemoveCellRecord(x,y,fromSelection) - unlink the (x,y) node from the
     // selection lists (when fromSelection) and from the record list, clearing the cell's
     // sprites / goal / overlay along the way. ret 1 if a record was removed. (ret 0xc.)

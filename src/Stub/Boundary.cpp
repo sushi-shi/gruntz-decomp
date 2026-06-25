@@ -13,7 +13,6 @@ RVA(0x00009bb0, 0x367) void Boundary_009bb0() {}  // proximity: CActionOptionsMe
 RVA(0x0000af50, 0xb) void Boundary_00af50() {}  // proximity: CPlaneRender@-0xf50 | Utils@+0x1c0
 RVA(0x0000b940, 0xf) void Boundary_00b940() {}  // proximity: CAmbientSound@-0x1b0 | CRandomAmbientSound@+0x200
 RVA(0x0000bdd0, 0x53) void Boundary_00bdd0() {}  // proximity: CWorldSoundSet@-0x70 | CRandomAmbientSound@+0x80
-RVA(0x0000bfb0, 0xa9) void Boundary_00bfb0() {}  // proximity: CRandomAmbientSound@-0x160 | CAmbientSound@+0xe0
 RVA(0x0000d210, 0x65) void Boundary_00d210() {}  // proximity: CRandomAmbientSound@-0x6e0 | CGrunt@+0x20e0
 RVA(0x0000f510, 0x44) void Boundary_00f510() {}  // proximity: CGrunt@-0x220 | CDoNothing@+0x1a0
 RVA(0x0000f640, 0x44) void Boundary_00f640() {}  // proximity: CGrunt@-0x350 | CDoNothing@+0x70
@@ -42,8 +41,6 @@ RVA(0x00021570, 0x70) void Boundary_021570() {}  // proximity: CButeMgr@-0x1b0 |
 RVA(0x000238d0, 0xd) void Boundary_0238d0() {}  // proximity: CCheckpointDlg@-0x430 | CGruntzCmdMgr@+0x100
 RVA(0x00023960, 0xd) void Boundary_023960() {}  // proximity: CCheckpointDlg@-0x4c0 | CGruntzCmdMgr@+0x70
 RVA(0x00023d90, 0x64) void Boundary_023d90() {}  // proximity: CGruntzCmdMgr@-0x80 | CGruntzCommand@+0x90
-RVA(0x00024520, 0x98) void Boundary_024520() {}  // proximity: CGruntzMultiCommand@-0x90 | CGruntzCmdMgr@+0x370
-RVA(0x000245f0, 0x98) void Boundary_0245f0() {}  // proximity: CGruntzMultiCommand@-0x160 | CGruntzCmdMgr@+0x2a0
 RVA(0x000247d0, 0x8b) void Boundary_0247d0() {}  // proximity: CGruntzMultiCommand@-0x340 | CGruntzCmdMgr@+0xc0
 RVA(0x00024ac0, 0x20) void Boundary_024ac0() {}  // proximity: CGruntzCmdMgr@-0x30 | UnknownClassArrays@+0x300
 RVA(0x00029af0, 0x3b) void Boundary_029af0() {}  // proximity: CUserLogic@-0xa0 | UnknownClassArrays@+0x50
@@ -85,12 +82,10 @@ RVA(0x000472d0, 0x15) void Boundary_0472d0() {}  // proximity: CParticlez@-0x5a0
 RVA(0x000474b0, 0x18d) void Boundary_0474b0() {}  // proximity: CParticlez@-0x780 | CGrunt@+0x560
 RVA(0x00050a50, 0x1c5) void Boundary_050a50() {}  // proximity: CUserLogic@-0x2d00 | CGrunt@+0x760
 RVA(0x00050ca0, 0x2b) void Boundary_050ca0() {}  // proximity: CUserLogic@-0x2f50 | CGrunt@+0x510
-RVA(0x00056eb0, 0x94) void Boundary_056eb0() {}  // proximity: GruntDataRecord@-0x110 | CGrunt@+0x1b0
 RVA(0x00056f80, 0x8e) void Boundary_056f80() {}  // proximity: GruntDataRecord@-0x1e0 | CGrunt@+0xe0
 RVA(0x0005bc50, 0x15) void Boundary_05bc50() {}  // proximity: CDDrawSubMgrLeafScan@-0x470 | CGrunt@+0xe50
 RVA(0x0005be30, 0x9e5) void Boundary_05be30() {}  // proximity: CDDrawSubMgrLeafScan@-0x650 | CGrunt@+0xc70
 RVA(0x00077dc0, 0x1d) void Boundary_077dc0() {}  // proximity: CBrickz@-0x630 | CTriggerMgr@+0x4a0
-RVA(0x00077f80, 0xab) void Boundary_077f80() {}  // proximity: CBrickz@-0x7f0 | CTriggerMgr@+0x2e0
 RVA(0x000788d0, 0x64) void Boundary_0788d0() {}  // proximity: CTriggerMgr@-0x50 | EngineLabelBacklog@+0x90
 RVA(0x0007c2e0, 0xb5) void Boundary_07c2e0() {}  // proximity: CTriggerMgr@-0x1d0 | EngineLabelBacklog@+0x340
 RVA(0x0007cc60, 0xa7) void Boundary_07cc60() {}  // proximity: EngineLabelBacklog@-0x640 | CTriggerMgr@+0x460
@@ -99,7 +94,6 @@ RVA(0x0007cf40, 0x12e) void Boundary_07cf40() {}  // proximity: EngineLabelBackl
 RVA(0x0007d450, 0x112) void Boundary_07d450() {}  // proximity: CTriggerMgr@-0x120 | CGruntPuddle@+0x3c0
 RVA(0x0007d5c0, 0xdc) void Boundary_07d5c0() {}  // proximity: CTriggerMgr@-0x290 | CGruntPuddle@+0x250
 RVA(0x0007d6e0, 0xea) void Boundary_07d6e0() {}  // proximity: CTriggerMgr@-0x3b0 | CGruntPuddle@+0x130
-RVA(0x00080490, 0xbe) void Boundary_080490() {}  // proximity: CGruntPowerupSprite@-0x80 | CGruntzApp@+0x3c0
 RVA(0x00080cf0, 0x12) void Boundary_080cf0() {}  // proximity: CGruntzApp@-0x80 | CGameApp@+0xe0
 RVA(0x00082aa0, 0x10) void Boundary_082aa0() {}  // proximity: CGameLevel@-0x4a0 | CGruntzMgr@+0x8c0
 RVA(0x00082b20, 0xa) void Boundary_082b20() {}  // proximity: CGameLevel@-0x520 | CGruntzMgr@+0x840
