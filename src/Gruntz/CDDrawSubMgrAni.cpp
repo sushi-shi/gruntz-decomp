@@ -87,6 +87,7 @@ struct CAniElementObj : public CAniElementBase {
     ~CAniElementObj(); // declared-only -> the new's failure cleanup edge
 
     i32 Configure_1655c0(void* sub, void* entry, i32 flag); // 0x1655c0 __thiscall
+    i32 Configure2_165620(void* sub, void* entry, i32 flag); // 0x165620 variant
 
     i32 m_1c; // +0x1c = 0
 }; // size = 0x28
@@ -116,6 +117,7 @@ public:
 class CDDrawSubMgrAni : public CObject {
 public:
     CAniElementObj* CreateAniEntry_1528d0(const char* key, void* entry);
+    CAniElementObj* CreateAniEntry2_1529b0(const char* key, void* entry);
     i32 ScanTree_152ad0(CSymTab* tree, const char* prefix, const char* suffix);
 
     i32 m_04;            // +0x04  status word
@@ -149,6 +151,33 @@ CAniElementObj* CDDrawSubMgrAni::CreateAniEntry_1528d0(const char* key, void* en
         return 0;
     }
     if (el->Configure_1655c0(AniMgrSubObject(m_0c), entry, 0) == 0) {
+        // Foreign-vtable scalar-deleting dtor dispatch (mov eax,[el]; call [eax+4]).
+        ((CAniElemView*)el)->ScalarDtor(1);
+        return 0;
+    }
+    m_10[key] = (CObject*)el;
+    return el;
+}
+
+// ---------------------------------------------------------------------------
+// 0x1529b0: the 0x28-byte element factory variant. Byte-for-byte twin of
+// CreateAniEntry_1528d0 except the element configure goes through the second
+// Configure (0x165620) instead of 0x1655c0: allocate + CObject-construct the
+// element, run Configure2 keyed by the entry (forwarding the owning manager's
+// +0x28 sub-manager); on failure scalar-delete + return 0, on success link into
+// the map under `key`. /GX EH frame. 2 stack args (ret 8). Returns the element.
+// @early-stop
+// 96.87% - twin of CreateAniEntry_1528d0's wall: the /GX ctor-in-flight frame +
+// the whole body are byte-identical up to the `ret`; the only residue is the
+// appended exception-cleanup unwind funclet (retail section-splits it out of the
+// delinked range). docs/patterns/new-throwing-ctor-unwind-funclet-appended.md.
+RVA(0x001529b0, 0xdd)
+CAniElementObj* CDDrawSubMgrAni::CreateAniEntry2_1529b0(const char* key, void* entry) {
+    CAniElementObj* el = new CAniElementObj;
+    if (el == 0) {
+        return 0;
+    }
+    if (el->Configure2_165620(AniMgrSubObject(m_0c), entry, 0) == 0) {
         // Foreign-vtable scalar-deleting dtor dispatch (mov eax,[el]; call [eax+4]).
         ((CAniElemView*)el)->ScalarDtor(1);
         return 0;

@@ -79,6 +79,32 @@ void CDDrawSurfacePair::TeardownSurface() {
 }
 
 // ---------------------------------------------------------------------------
+// 0x163f00: restore the held surface if it was lost. With no surface, report OK
+// (1). Otherwise, when the held IDirectDrawSurface is present and not lost
+// (IsLost, slot 24 @+0x60, returns DD_OK), report OK; else Restore it (slot 27
+// @+0x6c) and report whether the restore succeeded. __thiscall, no args.
+// @early-stop
+// regalloc coin-flip (98.67%): every code byte matches retail (incl. the setcc
+// boolean) EXCEPT the register the m_2c->m_8 re-read lands in (retail eax / ours
+// edx) + the carried scratch reg in the setcc tail (ecx vs edx). Same values, same
+// stores; not source-steerable. docs/patterns/zero-register-pinning.md.
+RVA(0x00163f00, 0x40)
+i32 CDDrawSurfacePair::RestoreIfLost() {
+    if (m_2c == 0) {
+        return 1;
+    }
+    IDirectDrawSurfaceZ* s = m_2c->m_8;
+    if (s != 0 && s->vtbl->IsLost(s) == 0) {
+        return 1;
+    }
+    IDirectDrawSurfaceZ* r = m_2c->m_8;
+    // Named local before `== 0` so MSVC emits the setcc form (xor/test/sete/mov),
+    // not the neg/sbb/inc normalize. docs/patterns/return-bool-via-local-setcc.md.
+    i32 hr = r->vtbl->Restore(r);
+    return hr == 0;
+}
+
+// ---------------------------------------------------------------------------
 // 0x163f40: draw a 1-pixel rectangle outline of `color` along the rect
 // {left,top,right,bottom} (all four inside [0,width)x[0,height)). Locks the held
 // surface, fills the top + bottom edge rows then walks the left + right edge

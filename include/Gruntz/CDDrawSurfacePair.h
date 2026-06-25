@@ -86,6 +86,7 @@ class CDDrawSurfacePair : public CSurfacePairBase {
 public:
     void BltSelf(CDDrawSurfacePair* src); // 0x03a1d0
     ~CDDrawSurfacePair();                 // 0x1590f0
+    i32 RestoreIfLost();                  // 0x163f00
     void TeardownSurface();               // 0x163e20  (vtable slot 7)
     void DrawBox(i32* rect, i32 color);   // 0x163f40
 

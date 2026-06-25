@@ -32,13 +32,22 @@
 
 // The map value: only the scalar-deleting destructor slot (+0x04) is load-
 // bearing for the RemoveKeysEqual/FindKey teardown dispatch. Declared only -
-// never defined, so no ??_7 emitted here.
+// never defined, so no ??_7 emitted here. m_10 is the held sound-arg the probe
+// helpers forward to MatchSub; FindKeyOfValue compares the value pointer itself.
 class LeafScanValue {
 public:
-    virtual void Slot00();            // +0x00
+    virtual void Slot00();            // +0x00 (vptr)
     virtual i32 ScalarDtor(i32 flag); // +0x04 scalar-deleting destructor
-    char m_pad08[0x10 - 0x08];        // +0x08..0x0f
-    i32 m_10field;                    // +0x10  compared in FindKeyOfValue
+    char m_pad04[0x10 - 0x04];        // +0x04..0x0f (after the vptr)
+    void* m_10;                       // +0x10  held sound-arg (LeafScanSoundArg*)
+};
+
+// The SumField source: the value's m_10 points at a record whose +0x2c word is
+// the per-entry count the prefix scan accumulates. A layout-compatible view so
+// the read lowers to `mov eax,[val+0x10]; add ebp,[eax+0x2c]` (offsets load-bearing).
+struct LeafSumSource {
+    char m_pad00[0x2c];
+    i32 m_2c; // +0x2c  the accumulated count
 };
 
 // ----- DSNDMGR sub-objects used by MatchSub_1584f0 -----
@@ -164,6 +173,7 @@ struct LeafElementBase : public LeafElement {
 struct LeafElementObj : public LeafElementBase {
     ~LeafElementObj();
     i32 Configure_158760(RemusParseSource* src); // 0x158760 __thiscall element configure
+    i32 Configure2_158720(void* riff);           // 0x158720 raw-RIFF configure variant
     void Release_1587c0();                        // 0x1587c0 release the acquired buffer
 
     i32 m_10; // +0x10 = 0  the acquired DirectSound buffer
@@ -228,10 +238,14 @@ class CDDrawSubMgrLeafScan : public LeafScanBase {
 public:
     i32 RefreshAsset_114120(const char* key);
     LeafElementObj* CreateEntry_157d70(const char* key, void* arg2);
+    LeafElementObj* CreateEntry2_157e00(const char* key, void* arg2);
     i32 ScanTree_157ee0(DirNode* tree, const char* prefix, const char* suffix);
 
     CObject* Lookup_05b7e0(const char* key);
     i32 RemoveKeysEqual_157c70(const char* base, const char* str);
+    i32 SumField_1580b0(const char* str);
+    LeafScanValue* GetFirstValue_158210();
+    i32 ProbeFirst_1584a0(i32 arg);
     i32 HasKeyEqual_1583c0(const char* str);
     CString FindKeyOfValue_158570(LeafScanValue* target);
     i32 MatchSub_1584f0(LeafScanSoundArg* arg1, i32 arg2);
@@ -428,6 +442,35 @@ LeafElementObj* CDDrawSubMgrLeafScan::CreateEntry_157d70(const char* key, void* 
 }
 
 // ---------------------------------------------------------------------------
+// 0x157e00: the second cache-element factory. Byte-for-byte twin of
+// CreateEntry_157d70 except the element configure goes through the raw-RIFF
+// Configure2 (0x158720) instead of the parsed Configure (0x158760): allocate +
+// seed the element from the map count (this+0x1c) and handle (this+0x0c), run
+// Configure2 keyed by `arg2`; on failure scalar-delete + return 0, on success
+// link into the map under `key` + stamp the redraw arg (this+0x34). 2 args (ret 8).
+// @early-stop
+// register-naming coin-flip (twin of CreateEntry_157d70's 99.81%): every code byte
+// matches retail EXCEPT the ecx<->edx assignment for the two seed reads. Same
+// values/stores/order; not source-steerable. docs/patterns/zero-register-pinning.md.
+RVA(0x00157e00, 0x90)
+LeafElementObj* CDDrawSubMgrLeafScan::CreateEntry2_157e00(const char* key, void* arg2) {
+    if (m_30 != 0) {
+        return 0;
+    }
+    LeafElementObj* e = MakeLeafElement(this);
+    if (e == 0) {
+        return 0;
+    }
+    if (e->Configure2_158720(arg2) == 0) {
+        e->ScalarDtor(1);
+        return 0;
+    }
+    m_10[key] = (CObject*)e;
+    e->m_18 = m_34; // +0x18 = redraw arg
+    return e;
+}
+
+// ---------------------------------------------------------------------------
 // 0x158680: ~LeafElementObj (the non-deleting destructor). Stamps the element's
 // own vtable, runs Release (frees the acquired buffer), then chains the inlined
 // base teardown: reset +0x04/+0x08/+0x0c and restamp the grand-base dtor vtable.
@@ -551,6 +594,61 @@ i32 CDDrawSubMgrLeafScan::ScanTree_157ee0(DirNode* tree, const char* prefix, con
 }
 
 // ---------------------------------------------------------------------------
+// 0x1580b0: sum each matching entry's count. While not loading (m_30==0), walk
+// the map via GetNextAssoc; for each present value, when `str` is null/empty add
+// its count unconditionally, else add it only when the key strncmp-matches `str`
+// over strlen(str). Returns the accumulated count. /GX EH frame for the local key.
+// @early-stop
+// optimizer loop-peel wall (twin of HasKeyEqual_1583c0's 61% wall): MSVC5 peels
+// the first iteration of the do/while; body/calls/args/offsets reproduced. Not
+// source-steerable. docs/patterns/zero-register-pinning.md.
+RVA(0x001580b0, 0xf6)
+i32 CDDrawSubMgrLeafScan::SumField_1580b0(const char* str) {
+    if (m_30 != 0) {
+        return 0;
+    }
+    i32 sum = 0;
+    CObject* val = 0;
+    CString key;
+    POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
+    if (*(volatile i32*)&pos != 0) {
+        do {
+            m_10.GetNextAssoc(pos, key, val);
+            if (val != 0) {
+                if (str == 0 || *str == 0) {
+                    sum += ((LeafSumSource*)((LeafScanValue*)val)->m_10)->m_2c;
+                } else if (strncmp(key, str, strlen(str)) == 0) {
+                    sum += ((LeafSumSource*)((LeafScanValue*)val)->m_10)->m_2c;
+                }
+            }
+        } while (pos != 0);
+    }
+    return sum;
+}
+
+// ---------------------------------------------------------------------------
+// 0x158210: return the first map value (or 0). While not loading (m_30==0) and
+// the map is non-empty, a single GetNextAssoc reads the head entry's value.
+// /GX EH frame for the local CString key. NB: the single-pass pos test must NOT
+// be `volatile` (that forces a redundant reload retail omits): a plain `pos == 0`
+// matches byte-for-byte. (The looping siblings DO need the volatile to keep the
+// loop-carried pos in a slot.)
+RVA(0x00158210, 0xaa)
+LeafScanValue* CDDrawSubMgrLeafScan::GetFirstValue_158210() {
+    if (m_30 != 0) {
+        return 0;
+    }
+    POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
+    if (pos == 0) {
+        return 0;
+    }
+    CObject* val = 0;
+    CString key;
+    m_10.GetNextAssoc(pos, key, val);
+    return (LeafScanValue*)val;
+}
+
+// ---------------------------------------------------------------------------
 // 0x1583c0: return 1 if any map key strncmp-equals `str` over strlen(str), else
 // 0. Twin of CDDrawWorkerRegistry::HasKeyEqual_155550. /GX EH frame for the local
 // CString key.
@@ -573,6 +671,28 @@ i32 CDDrawSubMgrLeafScan::HasKeyEqual_1583c0(const char* str) {
         } while (pos != 0);
     }
     return 0;
+}
+
+// ---------------------------------------------------------------------------
+// 0x1584a0: probe the first cached value against the held DSound device. When a
+// device is held (m_2c) and the first map value (GetFirstValue) carries a held
+// sound-arg (its m_10), forward it through MatchSub with `arg`; return whether
+// MatchSub succeeded (the !=0 normalized to 1). 1 stack arg (ret 4).
+RVA(0x001584a0, 0x43)
+i32 CDDrawSubMgrLeafScan::ProbeFirst_1584a0(i32 arg) {
+    if (m_2c == 0) {
+        return 0;
+    }
+    LeafScanValue* val = GetFirstValue_158210();
+    if (val == 0) {
+        return 0;
+    }
+    // Retail reads val->m_10 only to null-check it, then passes `val` itself to
+    // MatchSub (whose arg1->m_10 reaches the same held sound-arg).
+    if (val->m_10 == 0) {
+        return 0;
+    }
+    return MatchSub_1584f0((LeafScanSoundArg*)val, arg) != 0;
 }
 
 // ---------------------------------------------------------------------------

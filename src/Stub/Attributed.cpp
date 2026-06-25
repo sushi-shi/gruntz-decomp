@@ -46,15 +46,6 @@ RVA(0x00020ef0, 0x20) void CChatBoxOwner::CChatBoxOwner_020ef0() {}  // high
 // ---- CCreditsState ----
 RVA(0x000393b0, 0x3a) void CCreditsState::CCreditsState_0393b0() {}  // high
 
-// ---- CDDPalette ----
-RVA(0x00147410, 0xbc) void CDDPalette::CDDPalette_147410() {}  // high
-RVA(0x00147590, 0x17e) void CDDPalette::CDDPalette_147590() {}  // high
-RVA(0x00147710, 0x122) void CDDPalette::CDDPalette_147710() {}  // high
-RVA(0x00147840, 0x7e) void CDDPalette::CDDPalette_147840() {}  // high
-RVA(0x001478c0, 0x112) void CDDPalette::CDDPalette_1478c0() {}  // high
-RVA(0x00147aa0, 0x6a) void CDDPalette::CDDPalette_147aa0() {}  // high
-RVA(0x00147c80, 0x4d) void CDDPalette::CDDPalette_147c80() {}  // high
-
 // ---- CDDSurface ----
 RVA(0x0013e9a0, 0xcc) void CDDSurface::CDDSurface_13e9a0() {}  // med
 
@@ -63,23 +54,8 @@ RVA(0x00149950, 0x3a1) void CDDrawShadeBlit::CDDrawShadeBlit_149950() {}  // med
 RVA(0x00149d00, 0x4f8) void CDDrawShadeBlit::CDDrawShadeBlit_149d00() {}  // med
 RVA(0x0014b770, 0x121d) void CDDrawShadeBlit::CDDrawShadeBlit_14b770() {}  // med
 
-// ---- CDDrawSubMgrAni ----
-RVA(0x001529b0, 0xdd) void CDDrawSubMgrAni::CDDrawSubMgrAni_1529b0() {}  // med
-
-// ---- CDDrawSubMgrLeaf ----
-RVA(0x00152660, 0xb2) void CDDrawSubMgrLeaf::CDDrawSubMgrLeaf_152660() {}  // med
-
-// ---- CDDrawSubMgrLeafScan ----
-RVA(0x00157e00, 0x90) void CDDrawSubMgrLeafScan::CDDrawSubMgrLeafScan_157e00() {}  // high
-RVA(0x001580b0, 0xf6) void CDDrawSubMgrLeafScan::CDDrawSubMgrLeafScan_1580b0() {}  // high
-RVA(0x00158210, 0xaa) void CDDrawSubMgrLeafScan::CDDrawSubMgrLeafScan_158210() {}  // high
-RVA(0x001584a0, 0x43) void CDDrawSubMgrLeafScan::CDDrawSubMgrLeafScan_1584a0() {}  // high
-
 // ---- CDDrawSurfaceMgr ----
 RVA(0x00156530, 0x557) void CDDrawSurfaceMgr::CDDrawSurfaceMgr_156530() {}  // high
-
-// ---- CDDrawSurfacePair ----
-RVA(0x00163f00, 0x40) void CDDrawSurfacePair::CDDrawSurfacePair_163f00() {}  // med
 
 // ---- CDDrawWorkerB ----
 RVA(0x001572b0, 0x38) void CDDrawWorkerB::CDDrawWorkerB_1572b0() {}  // med

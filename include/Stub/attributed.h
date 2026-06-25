@@ -15,14 +15,9 @@ class CButeMgrHelper { public: void CButeMgrHelper_1697e0(); void CButeMgrHelper
 class CChatBox { public: void CChatBox_1831d0(); void CChatBox_1831f0(); };
 class CChatBoxOwner { public: void CChatBoxOwner_0205c0(); void CChatBoxOwner_020ef0(); };
 class CCreditsState { public: void CCreditsState_0393b0(); };
-class CDDPalette { public: void CDDPalette_147410(); void CDDPalette_147590(); void CDDPalette_147710(); void CDDPalette_147840(); void CDDPalette_1478c0(); void CDDPalette_147aa0(); void CDDPalette_147c80(); };
 class CDDSurface { public: void CDDSurface_13e9a0(); };
 class CDDrawShadeBlit { public: void CDDrawShadeBlit_149950(); void CDDrawShadeBlit_149d00(); void CDDrawShadeBlit_14b770(); };
-class CDDrawSubMgrAni { public: void CDDrawSubMgrAni_1529b0(); };
-class CDDrawSubMgrLeaf { public: void CDDrawSubMgrLeaf_152660(); };
-class CDDrawSubMgrLeafScan { public: void CDDrawSubMgrLeafScan_157e00(); void CDDrawSubMgrLeafScan_1580b0(); void CDDrawSubMgrLeafScan_158210(); void CDDrawSubMgrLeafScan_1584a0(); };
 class CDDrawSurfaceMgr { public: void CDDrawSurfaceMgr_156530(); };
-class CDDrawSurfacePair { public: void CDDrawSurfacePair_163f00(); };
 class CDDrawWorkerB { public: void CDDrawWorkerB_1572b0(); };
 class CDDrawWorkerMgr { public: void CDDrawWorkerMgr_158b90(); void CDDrawWorkerMgr_158bc0(); void CDDrawWorkerMgr_158bf0(); void CDDrawWorkerMgr_158cb0(); void CDDrawWorkerMgr_158d50(); };
 class CDDrawWorkerRegistry { public: void CDDrawWorkerRegistry_155460(); };

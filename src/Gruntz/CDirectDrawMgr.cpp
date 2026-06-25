@@ -13,15 +13,17 @@
 // `call *off(reg)` COM dispatch falls out; only the called slots are pinned.
 // Locals are placeholders, the switch case VALUES, GetErrorString (file, line,
 // hr) tuples and string contents are load-bearing.
+// The DIRPAL.CPP palette loaders open files through the engine's MFC-derived
+// CFileIO, so this TU is an MFC TU: <Io/FileStream.h> pulls <Mfc.h> FIRST (afx
+// brings <windows.h> the controlled way), which also supplies MessageBeep /
+// MessageBoxA + BOOL/HWND/LPCSTR/UINT for GetErrorString (uType =
+// MB_ICONEXCLAMATION, 0x30). Mfc.h precedes any DirectX header.
+#include <Io/FileStream.h>
+
 #include <Gruntz/CDirectDrawMgr.h>
 #include <rva.h>
 #include <stdio.h>  // engine sprintf (reloc-masked)
-#include <string.h> // inline strcpy / memcpy (rep movs / repne scasb)
-
-// MessageBeep / MessageBoxA + BOOL/HWND/LPCSTR/UINT come from the real
-// <windows.h> (via Win32.h; pure-Win32 TU, no MFC). The reporter's uType is
-// MB_ICONEXCLAMATION (0x30).
-#include <Win32.h>
+#include <string.h> // inline strcpy / memcpy (rep movs / repne scasb), strrchr / _stricmp
 
 // Reporting-mode globals (live in .data).
 DATA(0x00283ec0)
@@ -65,6 +67,13 @@ extern const u8 IID_IDirectDrawSurface3[16]; // 0x5ef888
 
 // operator new(size_t) - the engine allocator (reloc-masked rel32).
 void* operator new(u32);
+
+// The three file-extension literals the LoadFromFile dispatcher stricmp-ladders
+// over (reloc-masked .rdata globals; .BMP/.PCX share the Image.cpp addresses).
+// File-scope so each `push OFFSET` matches the binary's direct-address push.
+static const char s_extBmp[] = ".BMP";
+static const char s_extPcx[] = ".PCX";
+static const char s_extPal[] = ".PAL";
 
 // The process-wide DirectDraw object + the CDirectDrawMgr singleton (.data).
 DATA(0x00283ee8)
@@ -657,6 +666,30 @@ i32 CDDPalette::Create(IDirectDraw2Z* dd, void* entries, u32 flags) {
     return 0;
 }
 
+// CDDPalette::LoadDefault (0x1479e0) is the no-extension / unknown-extension
+// fallback loader - a separate DIRPAL.CPP method defined in another base obj. It
+// is declared on the class (header) but NOT defined here, so the dispatcher's
+// tail call to it reloc-masks (resolved by the engine_label_stubs unit).
+
+// CDDPalette::LoadFromFile (__thiscall, ret 0xc => 3 args). Pick the palette
+// loader by file extension: take ext = strrchr(filename,'.') then a stricmp
+// ladder on .BMP/.PCX/.PAL, forwarding (dd, filename, flags) verbatim to the
+// matching loader; no/unknown extension -> LoadDefault. Same idiom as
+// CImage::LoadFromRez. Each branch re-tests `ext != 0` (the target's per-case
+// `test esi; je default`).
+RVA(0x00147410, 0xbc)
+i32 CDDPalette::LoadFromFile(IDirectDraw2Z* dd, char* filename, u32 flags) {
+    char* ext = strrchr(filename, '.');
+    if (ext && _stricmp(ext, s_extBmp) == 0) {
+        return LoadBmp(dd, filename, flags);
+    } else if (ext && _stricmp(ext, s_extPcx) == 0) {
+        return LoadPcx(dd, filename, flags);
+    } else if (ext && _stricmp(ext, s_extPal) == 0) {
+        return LoadPal(dd, filename, flags);
+    }
+    return LoadDefault(dd, filename, flags);
+}
+
 // CDDPalette::CreateRGB (__thiscall, ret 0xc => 3 args). Takes a packed 256x3
 // RGB-triplet array, expands it on the stack into PALETTEENTRY[256] (peFlags=0),
 // then forwards to Create. The 0x400-byte stack buffer drives `sub esp,0x400`.
@@ -699,6 +732,161 @@ void CDDPalette::Destroy() {
     m_34 = 0;
 }
 
+// CDDPalette::LoadBmp (__thiscall, ret 0xc => 3 args). Open the .BMP file, read
+// the 14-byte BITMAPFILEHEADER then the 0x428-byte info region (BITMAPINFOHEADER
+// + the 256-entry RGBQUAD table) then the 0x400-byte RGBQUAD palette, expand each
+// RGBQUAD (B,G,R) to a PALETTEENTRY (R,G,B,0), and Create. Any short read fails
+// (returns 0). The stack CFileIO forces a /GX EH frame. The CFileIO ctor/Open/
+// Read/dtor are reloc-masked engine calls.
+// @early-stop
+// big EH frame (0x17e B): logic/CFG/all four CFileIO calls/the RGBQUAD->PALETTEENTRY
+// expand loop/the Create call all reproduced. Residual is the EH stack-slot layout
+// of the 0x848-byte scratch frame (retail's exact [esp+N] slot choices for the read
+// buffers + the EH-state stores) + the reloc-masked CFileIO/EH symbol names.
+// Deferred to the final sweep. docs/patterns/zero-register-pinning.md.
+RVA(0x00147590, 0x17e)
+i32 CDDPalette::LoadBmp(IDirectDraw2Z* dd, char* filename, u32 flags) {
+    u8 hdr14[0xe];   // BITMAPFILEHEADER
+    u8 pe[0x400];    // expanded PALETTEENTRY[256]
+    u8 info[0x428];  // BITMAPINFOHEADER + the in-file palette region
+    u8 quads[0x400]; // 256-entry RGBQUAD palette
+    CFileIO file;
+    if (file.Open(filename, 0, 0) == 0) {
+        return 0;
+    }
+    if (file.Read(hdr14, 0xe) != 0xe) {
+        return 0;
+    }
+    if (file.Read(info, 0x428) != 0x428) {
+        return 0;
+    }
+    if (file.Read(quads, 0x400) != 0x400) {
+        return 0;
+    }
+    for (i32 i = 0; i < 0x400; i += 4) {
+        pe[i + 0] = quads[i + 2]; // R <- RGBQUAD.rgbRed
+        pe[i + 1] = quads[i + 1]; // G <- rgbGreen
+        pe[i + 2] = quads[i + 0]; // B <- rgbBlue
+        pe[i + 3] = 0;            // peFlags
+    }
+    return Create(dd, pe, flags);
+}
+
+// CDDPalette::LoadPcx (__thiscall, ret 0xc => 3 args). Open the .PCX file, Seek
+// to -0x300 from EOF (the trailing 768-byte VGA palette), read the 0x300 RGB
+// triplets, expand each to a PALETTEENTRY (R,G,B,0), and Create. /GX EH frame for
+// the stack CFileIO.
+// @early-stop
+// big EH frame (0x122 B): the Open/Seek/Read/Create call chain, the 0x300-triplet
+// expand loop and the Create forward all reproduced. Residual is the EH stack-slot
+// layout of the 0x710-byte scratch frame + the reloc-masked CFileIO/EH symbol
+// names. Deferred to the final sweep. docs/patterns/zero-register-pinning.md.
+RVA(0x00147710, 0x122)
+i32 CDDPalette::LoadPcx(IDirectDraw2Z* dd, char* filename, u32 flags) {
+    u8 pe[0x400];    // expanded PALETTEENTRY[256]
+    u8 rgb[0x300];   // 256 packed RGB triplets (trailing VGA palette)
+    CFileIO file;
+    if (file.Open(filename, 0, 0) == 0) {
+        return 0;
+    }
+    file.Seek(-0x300, 2); // SEEK_END
+    if (file.Read(rgb, 0x300) != 0x300) {
+        return 0;
+    }
+    u8* src = rgb;
+    for (i32 i = 0; i < 0x400; i += 4) {
+        pe[i + 0] = src[0];
+        pe[i + 1] = src[1];
+        pe[i + 2] = src[2];
+        pe[i + 3] = 0;
+        src += 3;
+    }
+    return Create(dd, pe, flags);
+}
+
+// CDDPalette::CreateFromTrailing (__thiscall, ret 0x10 => 4 args). When `size` is
+// at least 0x300 the palette is the trailing 768-byte VGA block (data+size-0x300):
+// expand its 256 RGB triplets to a stack PALETTEENTRY[256] (peFlags=0) and Create;
+// short data returns 0. No EH frame (no destructible local). The 0x400-byte stack
+// buffer drives `sub esp,0x400`.
+// @early-stop
+// loop-scheduling wall (89.09%): byte-identical to retail EXCEPT the inner expand
+// loop's `add edx,4` placement (retail bumps the dst pointer after the first store,
+// our cl bumps it at the loop tail) - a code-scheduling choice, not source-steerable.
+// Same family as Create's SIB-encoding plateau. docs/patterns/zero-register-pinning.md.
+RVA(0x00147840, 0x7e)
+i32 CDDPalette::CreateFromTrailing(IDirectDraw2Z* dd, void* data, u32 size, u32 flags) {
+    if (size < 0x300) {
+        return 0;
+    }
+    u8 entries[0x400];
+    u8* src = (u8*)data + size - 0x300;
+    // Per-byte src increment (`*src++`) + a running dst pointer reproduce retail's
+    // `inc eax`x3 / `add edx,4` loop shape (vs the `src+=3` bulk-add form).
+    u8* dst = entries;
+    for (i32 i = 0; i < 0x100; i++) {
+        dst[0] = *src++;
+        dst[1] = *src++;
+        dst[2] = *src++;
+        dst[3] = 0;
+        dst += 4;
+    }
+    return Create(dd, entries, flags);
+}
+
+// CDDPalette::LoadPal (__thiscall, ret 0xc => 3 args). Open the .PAL file, read
+// the 0x300-byte RGB-triplet block, expand each to a PALETTEENTRY (R,G,B,0), and
+// Create. /GX EH frame for the stack CFileIO.
+// @early-stop
+// big EH frame (0x112 B): the Open/Read/Create chain, the 0x300-triplet expand
+// loop and the Create forward all reproduced. Residual is the EH stack-slot layout
+// of the 0x710-byte scratch frame + the reloc-masked CFileIO/EH symbol names.
+// Deferred to the final sweep. docs/patterns/zero-register-pinning.md.
+RVA(0x001478c0, 0x112)
+i32 CDDPalette::LoadPal(IDirectDraw2Z* dd, char* filename, u32 flags) {
+    u8 pe[0x400];  // expanded PALETTEENTRY[256]
+    u8 rgb[0x300]; // 256 packed RGB triplets
+    CFileIO file;
+    if (file.Open(filename, 0, 0) == 0) {
+        return 0;
+    }
+    if (file.Read(rgb, 0x300) != 0x300) {
+        return 0;
+    }
+    u8* src = rgb;
+    for (i32 i = 0; i < 0x400; i += 4) {
+        pe[i + 0] = src[0];
+        pe[i + 1] = src[1];
+        pe[i + 2] = src[2];
+        pe[i + 3] = 0;
+        src += 3;
+    }
+    return Create(dd, pe, flags);
+}
+
+// CDDPalette::SetAndNotify (__thiscall, ret 0x10 => 4 args; a4 unused). Cache the
+// `count` supplied PALETTEENTRYs into m_c starting at `start`, wait for the next
+// vertical blank through the global DirectDrawMgr's device (slot 22, @+0x58), then
+// push the range straight into the DirectDraw palette via SetEntries(0, start,
+// count, data). The notify only fires when the singleton is up.
+// @early-stop
+// copy-loop SIB / arg-regalloc wall (61.87%): the VBlank-notify + SetEntries call
+// chain match, but MSVC5's strength-reduced cache copy loop (`m_c[start+i]=data[i]`)
+// picks a different induction-var/SIB form + arg-register assignment than retail.
+// Same family as Create's copy-loop plateau. docs/patterns/zero-register-pinning.md.
+RVA(0x00147aa0, 0x6a)
+void CDDPalette::SetAndNotify(i32 start, i32 count, i32* data, i32 a4) {
+    i32* cache = (i32*)m_c;
+    for (i32 i = 0; i < count; i++) {
+        cache[start + i] = data[i];
+    }
+    if (g_DirectDrawMgr != 0) {
+        IDirectDraw2Z* dd = g_DirectDrawMgr->m_0;
+        dd->vtbl->WaitForVerticalBlank(dd, 1, 0);
+    }
+    m_4->vtbl->SetEntries(m_4, 0, start, count, data);
+}
+
 // CDDPalette::GetEntries (__thiscall, ret 0 => no args). Lazily allocates the
 // readback cache (m_10), then reads all 256 entries; reports a bad HRESULT.
 RVA(0x00147c30, 0x4d)
@@ -719,6 +907,32 @@ i32 CDDPalette::GetEntries() {
         CDirectDrawMgr::GetErrorString(DIRPAL_FILE, 0x265, hr);
     }
     return 0;
+}
+
+// CDDPalette::Apply (__thiscall, ret 4 but no real arg). When the readback cache
+// (m_10) is populated, copy it into the working cache (m_c, 0x400 bytes), wait for
+// the next vertical blank through the global DirectDrawMgr's device (slot 22,
+// @+0x58), then push all 256 entries into the DirectDraw palette via SetEntries(0,
+// 0, 0x100, m_10).
+// @early-stop
+// regalloc coin-flip (97.58%): every code byte matches retail EXCEPT the register
+// the m_4 load for SetEntries lands in (retail reuses esi, ours uses eax). Same
+// values/stores/order; not source-steerable. docs/patterns/zero-register-pinning.md.
+RVA(0x00147c80, 0x4d)
+void CDDPalette::Apply(i32 a1) {
+    u8* readback = m_10;
+    if (readback == 0) {
+        return;
+    }
+    // Byte-offset copy loop (i+=4, cmp 0x400) matches retail's index-walk form.
+    for (i32 i = 0; i < 0x400; i += 4) {
+        *(i32*)(m_c + i) = *(i32*)(readback + i);
+    }
+    if (g_DirectDrawMgr != 0) {
+        IDirectDraw2Z* dd = g_DirectDrawMgr->m_0;
+        dd->vtbl->WaitForVerticalBlank(dd, 1, 0);
+    }
+    m_4->vtbl->SetEntries(m_4, 0, 0, 0x100, readback);
 }
 
 // CDDPalette::SetRange (__thiscall, ret 0x18 => 6 args).
