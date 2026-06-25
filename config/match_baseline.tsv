@@ -33,7 +33,7 @@ cbehindcandyani	2	2
 ccursorsnapsprite	2	2
 cddrawchildgroup	9	5
 cddrawptrcollections	26	11
-cddrawshadeblit	3	1
+cddrawshadeblit	6	1
 cddrawsubmgr	37	20
 cddrawsubmgrani	3	1
 cddrawsubmgrdraco	5	2
@@ -101,7 +101,7 @@ dialogs	19	7
 directinputmgr2	29	25
 directsoundmgr	33	23
 dsoundvoice	2	1
-engine_attributed	64	0
+engine_attributed	61	0
 engine_boundary	628	0
 engine_discovered	86	0
 engine_label_stubs	519	118
@@ -416,9 +416,12 @@ cddrawptrcollections	?MakeB2@CDDrawPtrCollections@@QAEPAUCPoolItemB@@HH@Z	100.00
 cddrawptrcollections	?MakeB@CDDrawPtrCollections@@QAEPAUCPoolItemB@@HH@Z	100.0000	100.0000	1	65bf9ff78c84	0x142fc0
 cddrawptrcollections	?RemoveItemA@CDDrawPtrCollections@@QAEXPAVCPoolItemA@@@Z	100.0000	100.0000	1	4ddf350abd6e	0x142160
 cddrawptrcollections	?RemoveItemB@CDDrawPtrCollections@@QAEXPAUCPoolItemB@@@Z	100.0000	100.0000	1	a7726bad4d9a	0x142f10
-cddrawshadeblit	?Blit@CDDrawShadeBlit@@QAEHHPAUShadeSrc@@PAUShadeRect@@HH@Z	100.0000	100.0000	2	3bec4cb0d7c2	0x1497f0
-cddrawshadeblit	?BlitLoop@CDDrawShadeBlit@@QAEXHPAUShadeSrc@@PAUShadeRect@@H@Z	0.0556	0.0556	1	cd0bcbb696d9	0x14a200
-cddrawshadeblit	?ConvertRow@CDDrawShadeBlit@@QAEXPAE0H@Z	56.6096	56.6096	1	c75acd3c59f2	0x14c9f0
+cddrawshadeblit	?Blit@CDDrawShadeBlit@@QAEHPAUShadeRect@@PAUShadeSrc@@0HH@Z	100.0000	100.0000	1	9e02379bfde6	0x1497f0
+cddrawshadeblit	?BlitLoop@CDDrawShadeBlit@@QAEXPAUShadeRect@@PAUShadeSrc@@0H@Z	0.0556	0.0556	1	c4a744d07210	0x14a200
+cddrawshadeblit	?BlitMode_149950@CDDrawShadeBlit@@QAEXPAUShadeRect@@PAUShadeSrc@@0H@Z	31.4438	31.4438	1	f5ffbe02f6d8	0x149950
+cddrawshadeblit	?BlitMode_149d00@CDDrawShadeBlit@@QAEXPAUShadeRect@@PAUShadeSrc@@0H@Z	27.9635	27.9635	1	01f2ae556690	0x149d00
+cddrawshadeblit	?BlitMode_14b770@CDDrawShadeBlit@@QAEXPAUShadeRect@@PAUShadeSrc@@0H@Z	0.0637	0.0637	1	17d63d847449	0x14b770
+cddrawshadeblit	?ConvertRow@CDDrawShadeBlit@@QAEXPAE0H@Z	55.7154	55.7154	1	c75acd3c59f2	0x14c9f0
 cddrawsubmgr	??0CDDrawSubMgr@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	100.0000	100.0000	6	af4f6a250fe2	0x156cb0
 cddrawsubmgr	??1CDDrawSubMgr@@UAE@XZ	100.0000	100.0000	5	450d3140b22a	0x1574d0
 cddrawsubmgr	?AddToMap48_15aba0@CWwdObjMgr@@QAEXPAVCWwdObject@@@Z	100.0000	100.0000	1	cf53df5ddff3	0x15aba0
@@ -932,9 +935,6 @@ engine_attributed	?CBootyState_01ce30@CBootyState@@QAEXXZ	6.6667	6.6667	1	ee0938
 engine_attributed	?CBootyState_01d420@CBootyState@@QAEXXZ	20.0000	20.0000	1	d54c0ecb7af5	0x1d420
 engine_attributed	?CChatBoxOwner_0205c0@CChatBoxOwner@@QAEXXZ	0.0835	0.0835	1	c73daebdde18	0x205c0
 engine_attributed	?CCreditsState_0393b0@CCreditsState@@QAEXXZ	4.0000	4.0000	1	a4a6f8b06ca9	0x393b0
-engine_attributed	?CDDrawShadeBlit_149950@CDDrawShadeBlit@@QAEXXZ	0.1250	0.1250	1	beb3e6b3721e	0x149950
-engine_attributed	?CDDrawShadeBlit_149d00@CDDrawShadeBlit@@QAEXXZ	0.0858	0.0858	1	e2cdb9b955e0	0x149d00
-engine_attributed	?CDDrawShadeBlit_14b770@CDDrawShadeBlit@@QAEXXZ	0.0255	0.0255	1	1299e2a7d88d	0x14b770
 engine_attributed	?CDDrawSurfaceMgr_156530@CDDrawSurfaceMgr@@QAEXXZ	0.1227	0.1227	1	1a8df8b4138d	0x156530
 engine_attributed	?CFileMem_165f00@CFileMem@@QAEXXZ	1.1765	1.1765	1	1d80517819fd	0x165f00
 engine_attributed	?CFontConfig_0220f0@CFontConfig@@QAEXXZ	5.5556	5.5556	1	e56cf98473ea	0x220f0

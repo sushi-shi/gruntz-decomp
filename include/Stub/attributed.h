@@ -13,7 +13,6 @@ class CBehindCandyAni { public: void CBehindCandyAni_0ad7d0(); void CBehindCandy
 class CBootyState { public: void CBootyState_01ce30(); void CBootyState_01d420(); };
 class CChatBoxOwner { public: void CChatBoxOwner_0205c0(); };
 class CCreditsState { public: void CCreditsState_0393b0(); };
-class CDDrawShadeBlit { public: void CDDrawShadeBlit_149950(); void CDDrawShadeBlit_149d00(); void CDDrawShadeBlit_14b770(); };
 class CDDrawSurfaceMgr { public: void CDDrawSurfaceMgr_156530(); };
 class CFileMem { public: void CFileMem_165f00(); };
 class CFontConfig { public: void CFontConfig_0220f0(); };

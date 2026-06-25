@@ -32,11 +32,6 @@ RVA(0x000205c0, 0x741) void CChatBoxOwner::CChatBoxOwner_0205c0() {}  // high
 // ---- CCreditsState ----
 RVA(0x000393b0, 0x3a) void CCreditsState::CCreditsState_0393b0() {}  // high
 
-// ---- CDDrawShadeBlit ----
-RVA(0x00149950, 0x3a1) void CDDrawShadeBlit::CDDrawShadeBlit_149950() {}  // med
-RVA(0x00149d00, 0x4f8) void CDDrawShadeBlit::CDDrawShadeBlit_149d00() {}  // med
-RVA(0x0014b770, 0x121d) void CDDrawShadeBlit::CDDrawShadeBlit_14b770() {}  // med
-
 // ---- CDDrawSurfaceMgr ----
 RVA(0x00156530, 0x557) void CDDrawSurfaceMgr::CDDrawSurfaceMgr_156530() {}  // high
 
