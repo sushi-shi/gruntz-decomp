@@ -1,71 +1,185 @@
 #!/usr/bin/env python3
-"""link_order.py - what the linker layout tells us about the retail build order.
+"""link_order.py - recover the order the linker processed the object files.
 
-Cross-references three things:
-  * build/gen/symbol_names.csv  - retail RVA -> name -> unit, for matched funcs.
-  * a candidate link .map        - OUR link's RVA + source object per symbol
-                                   (from `gruntz link`; intra-object order == the
-                                   compiler's source-definition order).
-  * (implicitly) the retail RVA order of the same functions.
+Retail .text is a sequence of contiguous, mostly-disjoint per-object blocks, laid
+out in the order the objects were fed to the linker (see
+docs/link-order-investigation.md). This recovers that order from the matched retail
+RVAs and writes it to config/link-order.tsv (regenerate as coverage grows).
 
-and reports the three layout facts that drive matching (see
-docs/link-order-investigation.md):
+  1. CROSS-TU / MODULE LINK ORDER. Each unit is positioned at the start of its main
+     code block. CRUCIAL: we DE-POOL first. A class's constructor/destructor are
+     emitted as COMDATs and pooled by the linker into shared low-address runs far
+     from the class's code, so a naive min-RVA sort orders units by where their
+     *dtor* landed (the pool), not their code - flagging almost everything as
+     "conflated". We drop the special members (mangled ??0/??1/??_E/??_G) and
+     position each unit by the min-RVA of its largest non-special code cluster. Units
+     are grouped into modules (Gruntz, Net, Dsndmgr, ... from config/units.toml); the
+     module order and whether modules interleave (smear) is reported. zlib is the
+     anchor - it must come out as one clean ordered run.
 
-  1. INTRA-TU ORDER. For each TU, is our candidate-link function order the same as
-     retail's? They differ iff our src/ defines functions in a different order than
-     the original .cpp did - because MSVC emits COMDATs in source order. So a
-     mismatch here is a concrete TODO: reorder that .cpp's function definitions to
-     retail-RVA order. (zlib TUs already match; they are faithful copies.)
-
-  2. CROSS-TU ORDER == LINK ORDER. Retail .text is a sequence of contiguous,
-     mostly-disjoint per-object blocks. Sorting TUs by their retail address block
-     recovers the order the objects were fed to the linker - the build order we
-     want to replicate.
-
-  3. CONFLATED UNITS. A `unit` whose retail functions split into two well-separated
-     address clusters most likely conflates two real TUs (e.g. an engine base class
-     + its game-side glue) and should be split.
+  2. INTRA-TU ORDER (needs a candidate .map from `gruntz link`). For each TU, is our
+     candidate-link function order the same as retail's? A mismatch is a TODO to
+     reorder that .cpp's function definitions to retail-RVA order (MSVC emits COMDATs
+     in source-definition order).
 
 Usage:
-    python3 -m gruntz.analysis.link_order \
-        --map build/exe/GRUNTZ.candidate.map --names build/gen/symbol_names.csv
+    python3 -m gruntz.analysis.link_order [--map build/exe/GRUNTZ.candidate.map]
 """
 
 import argparse
 import csv
 import re
-from collections import defaultdict
+import tomllib
+from collections import Counter, defaultdict
 from pathlib import Path
 
-# Two MATCHED functions of one unit are normally separated by the unit's own
-# not-yet-matched functions, so small/medium gaps are expected. Only a gap this
-# large means the unit's code occupies two genuinely distant regions of .text -
-# the signature of a `unit` that conflates two real TUs. (Sparse matching means
-# we can't recover exact TU block boundaries, only that the bulk of a unit sits
-# in one region.)
-REGION_GAP = 0x40000
+REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
+            Path(__file__).resolve().parents[3])
 
-# A "Publics by Value" .text line:
-#   0001:00002d60   ??_ECBattlezDlg@@UAEPAXI@Z  00403d60 f i dialogs.obj
-# fields: seg:offset  name  rva  'f' [extra flag letters...]  object
-# (mangled names carry no spaces, so the object is always the LAST token).
+# A gap this large between a unit's matched funcs means two genuinely distant .text
+# regions - the signature of a unit whose code is in >1 object block (truly conflated).
+REGION_GAP = 0x40000
+# ctor / dtor / vector- & scalar-deleting-dtor mangled prefixes. These are COMDATs the
+# linker pools away from the class's code block, so they're excluded when locating a
+# unit's position (else the pooled dtor drags it to the pool, not its real block).
+SPECIAL = ("??0", "??1", "??_E", "??_G")
+
 MAP_SEG_RE = re.compile(r"0001:[0-9a-f]+$")
 RVA_RE = re.compile(r"[0-9a-f]{8}$")
 
 
 def load_retail(names_csv: Path):
-    """name -> (rva, unit) and unit -> [(rva, name)], matched funcs only."""
+    """by_name {name:(rva,unit)}, by_unit {unit:[(rva,name,size)]} - matched funcs."""
     by_name, by_unit = {}, defaultdict(list)
     with names_csv.open() as f:
         for r in csv.DictReader(ln for ln in f if not ln.lstrip().startswith("#")):
             if (r.get("kind") or "func") != "func":
                 continue
             rva = int(r["rva"], 16)
+            size = int(r["size"], 16) if r.get("size") else 0
             by_name[r["name"]] = (rva, r["unit"])
-            by_unit[r["unit"]].append((rva, r["name"]))
+            by_unit[r["unit"]].append((rva, r["name"], size))
     for u in by_unit:
         by_unit[u].sort()
     return by_name, by_unit
+
+
+def load_modules(units_toml: Path):
+    """unit -> module (the src/ subdir, or 'zlib'); aggregate src/Stub/ units excluded."""
+    mod = {}
+    for u in tomllib.load(open(units_toml, "rb"))["unit"]:
+        src = u["source"]
+        if "/Stub/" in src:
+            continue                       # engine_label_stubs/discovered/attributed/... aggregates
+        parts = src.split("/")
+        mod[u["unit"]] = "zlib" if parts[0] == "vendor" else parts[1]
+    return mod
+
+
+def clusters(items, gap=REGION_GAP):
+    """Split [(rva,size),...] (sorted) into runs separated by > gap."""
+    out, run = [], []
+    for it in items:
+        if run and it[0] - run[-1][0] > gap:
+            out.append(run)
+            run = []
+        run.append(it)
+    if run:
+        out.append(run)
+    return out
+
+
+def depool(funcs):
+    """Position a unit at the start of its largest non-special code block.
+
+    funcs: [(rva,name,size)]. Returns (position_rva, [(lo,hi,bytes),...] for every
+    block). Drops ctors/dtors (pooled); falls back to all funcs if a unit matched
+    only special members.
+    """
+    items = sorted((rva, size) for rva, name, size in funcs
+                   if not name.startswith(SPECIAL))
+    if not items:
+        items = sorted((rva, size) for rva, _, size in funcs)
+    cl = clusters(items)
+    blocks = sorted((c[0][0], c[-1][0], sum(s for _, s in c)) for c in cl)
+    main = max(cl, key=lambda c: sum(s for _, s in c))      # largest by code bytes
+    return main[0][0], blocks
+
+
+def report_recovered(by_unit, mod, out_tsv):
+    print("=" * 72)
+    print("1. CROSS-TU / MODULE LINK ORDER  (de-pooled: positioned by main code block)")
+    print("=" * 72)
+    pos, blocks = {}, {}
+    for u, fs in by_unit.items():
+        if u not in mod:                   # skip aggregate Stub units
+            continue
+        pos[u], blocks[u] = depool(fs)
+    order = sorted(pos, key=lambda u: (pos[u], u))
+
+    # ---- module order + fragmentation (how interspersed each module is) -------
+    seq = [mod[u] for u in order]
+    trans = sum(1 for i in range(len(seq) - 1) if seq[i] != seq[i + 1])
+    runs, minpos, nunits = Counter(), {}, Counter()
+    for i, u in enumerate(order):
+        m = mod[u]
+        if i == 0 or mod[order[i - 1]] != m:
+            runs[m] += 1               # a fresh run of this module starts here
+        minpos.setdefault(m, pos[u])
+        nunits[m] += 1
+    print("  module order (by first code block); runs>1 = interspersed with others:")
+    print(f"  {'start':>8} {'units':>5} {'runs':>4}  module")
+    for m in sorted(minpos, key=lambda m: minpos[m]):
+        print(f"  {minpos[m]:8x} {nunits[m]:5d} {runs[m]:4d}  {m}")
+    print(f"\n  {len(order)} units, {trans} module-transitions (low => clean object "
+          f"blocks). zlib anchor must be 1 run.")
+
+    # ---- persist the inferred order -> config/link-order.tsv ------------------
+    if out_tsv:
+        with open(out_tsv, "w", newline="") as fh:
+            w = csv.writer(fh, delimiter="\t")
+            w.writerow(("# generated by gruntz.analysis.link_order - inferred retail link order",))
+            w.writerow(("rank", "rva", "module", "unit", "n_funcs", "n_blocks", "blocks"))
+            for i, u in enumerate(order):
+                bl = ";".join(f"{lo:x}-{hi:x}" for lo, hi, _ in blocks[u])
+                w.writerow((i, f"0x{pos[u]:06x}", mod[u], u, len(by_unit[u]),
+                            len(blocks[u]), bl))
+        print(f"\n  wrote {len(order)} units in inferred link order -> {out_tsv}")
+
+    conflated = [u for u in order if len(blocks[u]) > 1]
+    print(f"  {len(order)} units positioned; {len(conflated)} truly conflated "
+          f"(code in >1 block after de-pooling): {', '.join(sorted(conflated)[:12])}"
+          f"{' ...' if len(conflated) > 12 else ''}")
+    return pos
+
+
+def report_intra_tu(by_name, cand):
+    print("\n" + "=" * 72)
+    print("2. INTRA-TU ORDER  (our candidate-link order vs retail; mismatch => reorder .cpp)")
+    print("=" * 72)
+    if not cand:
+        print("  (no candidate .map - run `gruntz link` first)")
+        return
+    exact = total = 0
+    todo = []
+    for obj in sorted(cand):
+        unit = obj[:-4] if obj.endswith(".obj") else obj
+        our = [n for n in cand[obj] if n in by_name]
+        if len(our) < 2:
+            continue
+        ret_order = sorted(our, key=lambda n: by_name[n][0])
+        p = {n: i for i, n in enumerate(ret_order)}
+        inv = sum(1 for i in range(len(our) - 1) if p[our[i]] > p[our[i + 1]])
+        total += 1
+        ok = our == ret_order
+        exact += ok
+        if not ok:
+            todo.append((unit, len(our), inv))
+    print(f"  {exact}/{total} TUs already in retail source order.")
+    if todo:
+        print("  reorder these .cpp function definitions to retail-RVA order:")
+        for unit, n, inv in sorted(todo, key=lambda t: -t[2])[:20]:
+            print(f"     {unit:24} {n:3d} funcs, {inv} inversions")
 
 
 def load_candidate_order(map_path: Path):
@@ -83,83 +197,21 @@ def load_candidate_order(map_path: Path):
     return by_obj
 
 
-def regions(rvas, gap=REGION_GAP):
-    """Split sorted RVAs into runs separated by > gap. Returns [(lo, hi, count)]."""
-    out, run = [], []
-    for rva in rvas:
-        if run and rva - run[-1] > gap:
-            out.append((run[0], run[-1], len(run)))
-            run = []
-        run.append(rva)
-    if run:
-        out.append((run[0], run[-1], len(run)))
-    return out
-
-
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--map", default="build/exe/GRUNTZ.candidate.map")
     ap.add_argument("--names", default="build/gen/symbol_names.csv")
-    ap.add_argument("--skip-unit", action="append", default=["engine_label_stubs"],
-                    help="units to exclude from the cross-TU order (catch-all backlogs).")
+    ap.add_argument("--out", default=str(REPO / "config" / "link-order.tsv"),
+                    help="where to persist the inferred order (--out '' to skip)")
     args = ap.parse_args()
 
     by_name, by_unit = load_retail(Path(args.names))
+    mod = load_modules(REPO / "config" / "units.toml")
+    report_recovered(by_unit, mod, args.out or None)
+
     cand = load_candidate_order(Path(args.map)) if Path(args.map).exists() else {}
-
-    # ---- 1. intra-TU order: our candidate-link order vs retail order ----------
-    print("=" * 72)
-    print("1. INTRA-TU ORDER  (our link order vs retail; mismatch => reorder .cpp)")
-    print("=" * 72)
-    exact = total = 0
-    todo = []
-    for obj in sorted(cand):
-        unit = obj[:-4] if obj.endswith(".obj") else obj
-        our = [n for n in cand[obj] if n in by_name]
-        if len(our) < 2:
-            continue
-        ret_order = sorted(our, key=lambda n: by_name[n][0])
-        pos = {n: i for i, n in enumerate(ret_order)}
-        inv = sum(1 for i in range(len(our) - 1) if pos[our[i]] > pos[our[i + 1]])
-        total += 1
-        ok = our == ret_order
-        exact += ok
-        if not ok:
-            todo.append((unit, len(our), inv))
-        print(f"  {unit:24} n={len(our):3d}  {'OK' if ok else 'REORDER':>7}"
-              f"  ({inv} adjacent inversion{'s' if inv != 1 else ''})")
-    print(f"\n  {exact}/{total} TUs already in retail source order.")
-    if todo:
-        print("  reorder these .cpp function definitions to retail-RVA order:")
-        for unit, n, inv in sorted(todo, key=lambda t: -t[2]):
-            print(f"     {unit:24} {n:3d} funcs, {inv} inversions")
-
-    # ---- 2 & 3. cross-TU order + conflated-unit detection ---------------------
-    print("\n" + "=" * 72)
-    print("2. CROSS-TU ORDER == inferred object LINK ORDER (units by min retail RVA)")
-    print(f"   3. units spanning >1 region (gap>{REGION_GAP:#x}) likely CONFLATE 2 TUs")
-    print("=" * 72)
-    skip = set(args.skip_unit)
-    rows = []  # (min_rva, unit, max_rva, n, n_regions)
-    for unit, fs in by_unit.items():
-        if unit in skip:
-            continue
-        rvas = [rva for rva, _ in fs]
-        rows.append((rvas[0], unit, rvas[-1], len(rvas), len(regions(rvas))))
-    rows.sort()
-    print(f"  {'#':>3} {'min-rva':>9} {'max-rva':>9} {'span':>8} {'n':>3}  unit")
-    for i, (lo, unit, hi, n, nreg) in enumerate(rows):
-        tag = f"   <- {nreg} regions (conflated TU?)" if nreg > 1 else ""
-        print(f"  {i:3d} {lo:9x} {hi:9x} {hi - lo:8x} {n:3d}  {unit}{tag}")
-
-    multi = sorted(u for _, u, _, _, nreg in rows if nreg > 1)
-    if multi:
-        print(f"\n  conflated-TU candidates (code in >1 distant region of .text, "
-              f"gap>{REGION_GAP:#x}): {', '.join(multi)}")
-    print("\n  NOTE: matching is sparse, so a unit's matched funcs are interspersed")
-    print("  with its not-yet-matched ones; the min-rva ordering above is the")
-    print("  inferred object link order. Exact block boundaries need fuller coverage.")
+    report_intra_tu(by_name, cand)
 
 
 if __name__ == "__main__":

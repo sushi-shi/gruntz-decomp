@@ -28,10 +28,14 @@ COMDAT, and the linker pools those into shared low-address runs — `0x10000-0x1
 `scalar_deleting_destructor` thunks and `~Class` bodies from *unrelated* classes.
 
 **Mechanism.** Out-of-line methods written in one `.cpp` land as a contiguous
-source-order block (the linker keeps an object's COMDATs together — see the
-link-order doc). Special members and other implicitly/inline-emitted functions are
-COMDATs the linker pools elsewhere. So a class's *own block* is tight; its dtor is
-exiled.
+source-order block (the linker keeps an object's COMDATs together). *Why* the
+destructors are exiled is **not yet settled**: a re-link experiment (see
+[link-order-investigation.md](link-order-investigation.md) "Re-link confirms") rules
+out generic object interleaving — our same linker keeps a class's *regular
+out-of-line* dtor right with its methods — but whether retail's are elsewhere
+because they sat in a different TU or because they were COMDAT (header-inline /
+implicit, placed apart from regular `.text`) is open. Either way, empirically a
+class's *own block* is tight and its dtor is elsewhere.
 
 ## Relatedness model
 

@@ -117,3 +117,64 @@ functions to retail-RVA order (fixes intra-TU layout); **(b)** drive the link wi
 the objects in retail-block order (fixes cross-TU layout); **(c)** split the
 flagged conflated units. `gruntz link` + `link_order.py` make each step verifiable
 against the real linker before committing to source.
+
+## Update — de-pooled recovery + the re-link confirmation
+
+`link_order.py` now **recovers and persists** the order. Two fixes/findings:
+
+### De-pool first, or the sort is garbage
+
+A naive min-RVA sort is contaminated: a class's ctor/dtor are emitted as COMDATs and
+end up in the shared low-address runs (`0x10000–0x14000`, `0x80000–0x90000`) far from
+the class's code, so every game-object unit's *min-RVA is its pooled destructor*, not
+its block — the old output flagged almost everything "conflated" and ordered units by
+where their dtor landed. The tool now drops the special members (mangled
+`??0`/`??1`/`??_E`/`??_G`) and positions each unit by the **min-RVA of its largest
+non-special code cluster**. e.g. `userlogic` moves from a contaminated `0x10a10` (its
+pooled dtor) to its real block at `0x29a50`. Units are grouped into **modules**
+(`config/units.toml` source dirs); the recovered module order is
+
+```
+Utils → Wap32 → Gruntz(bulk) → Net → Io → DinMgr2 → Dsndmgr → Rez → Bute
+      → Image → DDrawMgr → Wwd → Crt → Crypto → Font → zlib
+```
+
+— game/engine low, static libs (`Crt`=LIBCMT, `Crypto`, `Font`, `zlib`) last, matching
+the leaked `C:\Proj\{…}` layout. **Anchor:** zlib comes out as one clean ordered run
+(`uncompr → inflate → … → inffast`), exactly the known order. 219 units, only ~49
+module-transitions (Gruntz is the interspersed bulk; engine/lib modules are 1–4 clean
+runs). The full ordered list is persisted to **`config/link-order.tsv`** (regenerate as
+coverage grows — we don't have all TUs yet).
+
+### Re-link confirms: objects are contiguous; the dtor-pool is a *source* fact
+
+Running `gruntz link` and reading the candidate `.map`: all **223 objects lay out as
+exactly one contiguous block each** (222 object-transitions in RVA order) — the linker
+does **not** interleave or "smear" objects within a link. And in a real single-class
+TU object (`cpathhazard.obj`, `grunt.obj`, `image.obj`, …) the **destructor sits right
+with its methods** in one block, while retail puts `~CPathHazard` ~640 KB from its
+methods — *same linker*. So the retail destructor-pool is **not generic object-block
+interleaving**.
+
+**What it actually is remains OPEN — do not jump the gun.** Our test only used
+*regular out-of-line* dtors, so it shows those don't get separated; it does not tell us
+why retail's are. Competing hypotheses, none yet confirmed:
+- (a) retail defined those dtors in a **different TU** than the methods (the
+  `GameObjectCtors.cpp` central-ctor/dtor pattern);
+- (b) retail's dtors were **COMDAT** (header-inline / compiler-generated), which the
+  linker can place apart from regular `.text` — whereas our out-of-line definitions are
+  regular, so they don't move. Under (b) the fix is the *opposite* of (a): make the
+  dtors inline/COMDAT, not centralize them;
+- (c) `/OPT:ICF` (retail on; our layout link forced NOICF) — **TESTED, RULED OUT.**
+  Re-linking with `/OPT:NOREF /OPT:ICF` folds ~1,580 identical functions (EXE −25 KB;
+  1,678 names sharing an address vs 95 under NOICF), so ICF definitely engages — yet
+  every surviving function stays in *its* object's block and `cpathhazard`'s dtor still
+  sits with its methods. ICF dedups, it does not pool or relocate; and retail's pooled
+  dtors are at ~35 *distinct* addresses (so they did not fold together). Not the cause.
+
+So the live hypotheses are (a) separate TU vs (b) COMDAT placement. Remaining experiment
+(TODO): force a dtor to COMDAT (inline in the header) and re-link to see if the linker
+then separates it from regular `.text`; and check whether retail's pooled dtors are
+COMDAT-mangled (`??_G`/`??_E`) vs regular (`??1`). Until then this is an open question,
+**not** a matching recommendation. (The de-pooled link-order recovery above is
+unaffected — it holds whatever the mechanism.)
