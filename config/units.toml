@@ -986,6 +986,11 @@ source = "src/Gruntz/CDDrawSubMgr.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "cwwdobjmgr"
+source = "src/Gruntz/CWwdObjMgr.cpp"
+flags = "base"
+
+[[unit]]
 unit = "cddrawptrcollections"
 source = "src/Gruntz/CDDrawPtrCollections.cpp"
 flags = "eh"

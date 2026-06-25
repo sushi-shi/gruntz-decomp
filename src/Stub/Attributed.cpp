@@ -20,18 +20,11 @@ RVA(0x000bbf80, 0xb7) void CNetMgr::CNetMgr_0bbf80() {}  // high
 RVA(0x000bc750, 0x151) void CNetMgr::CNetMgr_0bc750() {}  // high
 RVA(0x000bccd0, 0x141) void CNetMgr::CNetMgr_0bccd0() {}  // high
 
-// ---- CTileTriggerTransition ----
-RVA(0x0010fe70, 0x18d) void CTileTriggerTransition::CTileTriggerTransition_10fe70() {}  // med
-
 // ---- CTriggerMgr ----
 RVA(0x0007abc0, 0x4b6) void CTriggerMgr::CTriggerMgr_07abc0() {}  // high
 
-// ---- CWwdObjMgr ----
-RVA(0x0015ad30, 0x2be) void CWwdObjMgr::CWwdObjMgr_15ad30() {}  // high
-
 // ---- UnknownClassArrays ----
 RVA(0x0002b950, 0x513) void UnknownClassArrays::UnknownClassArrays_02b950() {}  // high
-RVA(0x000302c0, 0x1ec) void UnknownClassArrays::UnknownClassArrays_0302c0() {}  // high
 
 // ---- istream ----
 RVA(0x0016a490, 0x7a) void istream::istream_16a490() {}  // med

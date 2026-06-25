@@ -38,6 +38,7 @@ public:
     i32 Method_0350d0(i32);
     void* Method_030f20(void*, i32, i32);
     i32 Method_0300c0(i32, i32, i32, i32, i32, i32);
+    i32 Method_0302c0(i32, i32, i32, i32, i32);
     i32 Method_026470(i32);
     i32 Method_034460(i32);
     i32 Method_025d90();

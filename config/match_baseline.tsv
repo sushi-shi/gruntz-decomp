@@ -111,13 +111,14 @@ ctoobspikez	4	3
 cvoicetrigger	3	2
 cwaypoint	1	1
 cwormholeacts	1	0
+cwwdobjmgr	1	0
 databuffer	7	5
 deflate	6	6
 dialogs	31	14
 directinputmgr2	33	29
 directsoundmgr	39	29
 dsoundvoice	2	1
-engine_attributed	18	0
+engine_attributed	15	0
 engine_boundary	545	0
 engine_discovered	66	0
 engine_label_stubs	462	106
@@ -230,13 +231,13 @@ tilegridcommand	6	3
 tileswitchlogic	17	9
 tiletriggercontainer	15	4
 tiletriggerlogic	2	1
-tiletriggertransition	6	5
+tiletriggertransition	7	5
 tilewireswitchlogic	1	0
 trees	19	19
 triggermgr	48	8
 triggermgr_eh	4	0
 uncompr	1	1
-unknownclassarrays	38	10
+unknownclassarrays	39	10
 unknownclassincgruntzmgr	2	0
 unknownsalazar	4	0
 userbaselink	10	0
@@ -926,6 +927,7 @@ cvoicetrigger	?RegisterActs@CVoiceTrigger@@QAEXXZ	92.9130	92.9130	1	eb83cede4e29
 cvoicetrigger	?Tick@CVoiceTrigger@@QAEHXZ	100.0000	100.0000	1	352963c16858	0x11a700
 cwaypoint	??1CWayPoint@@UAE@XZ	100.0000	100.0000	1	1792dd04db91	0x102e0
 cwormholeacts	?RegisterActs@CWormhole@@SAXXZ	92.9130	92.9130	1	836ea1f2bd5a	0x3f3f0
+cwwdobjmgr	?LoadObjects@CWwdObjMgr@@QAEHPAUWwdReader@@IH@Z	54.9009	54.9009	1	48b53cd4169c	0x15ad30
 databuffer	??0CDataBuffer@@QAE@XZ	100.0000	100.0000	1	3a641ac221a3	0x150180
 databuffer	?Free@CDataBuffer@@QAEXXZ	100.0000	100.0000	1	be93bfb9147a	0x1503c0
 databuffer	?LoadFromFile@CDataBuffer@@QAEHPBDH@Z	71.5593	71.5593	1	00ebc2b35d96	0x150250
@@ -1051,11 +1053,8 @@ engine_attributed	?CNetMgr_0bbec0@CNetMgr@@QAEXXZ	2.3256	2.3256	1	51787a1cdcf1	0
 engine_attributed	?CNetMgr_0bbf80@CNetMgr@@QAEXXZ	1.5152	1.5152	1	966da8c493a8	0xbbf80
 engine_attributed	?CNetMgr_0bc750@CNetMgr@@QAEXXZ	0.9259	0.9259	1	8243db1bde49	0xbc750
 engine_attributed	?CNetMgr_0bccd0@CNetMgr@@QAEXXZ	0.5128	0.5128	1	a059a86d6c08	0xbccd0
-engine_attributed	?CTileTriggerTransition_10fe70@CTileTriggerTransition@@QAEXXZ	0.8696	0.8696	1	c029553c4df8	0x10fe70
 engine_attributed	?CTriggerMgr_07abc0@CTriggerMgr@@QAEXXZ	0.0948	0.0948	1	d276c5e72e8b	0x7abc0
-engine_attributed	?CWwdObjMgr_15ad30@CWwdObjMgr@@QAEXXZ	0.1802	0.1802	1	71b3ebff6e40	0x15ad30
 engine_attributed	?UnknownClassArrays_02b950@UnknownClassArrays@@QAEXXZ	0.0787	0.0787	1	a9440a18a33f	0x2b950
-engine_attributed	?UnknownClassArrays_0302c0@UnknownClassArrays@@QAEXXZ	0.2581	0.2581	1	66195374326c	0x302c0
 engine_attributed	?istream_16a490@istream@@QAEXXZ	0.8889	0.8889	1	2c8e82552aac	0x16a490
 engine_attributed	?streambuf_16b340@streambuf@@QAEXXZ	6.2500	6.2500	1	831f553e8195	0x16b340
 engine_attributed	?streambuf_16b360@streambuf@@QAEXXZ	5.2632	5.2632	1	57ad3a6f9b4b	0x16b360
@@ -3218,6 +3217,7 @@ tiletriggertransition	??0CTileTriggerTransition@@QAE@PAUCGameObject@@@Z	94.9390	
 tiletriggertransition	??1CUserLogic@@UAE@XZ	100.0000	100.0000	1	cpp:fe6dc3b6bc73	0x117f0
 tiletriggertransition	?ApplyAnimation@CTileTriggerTransition@@QAEHPAD0@Z	100.0000	100.0000	2	d2b3725032a8	0x110070
 tiletriggertransition	?GetTypeTag@CTileTriggerTransition@@QAEHXZ	100.0000	100.0000	1	f7fb68523138	0x11730
+tiletriggertransition	?RegisterActs@CTileTriggerTransition@@QAEXXZ	92.9130	92.9130	1	4572c8a8da4b	0x10fe70
 tiletriggertransition	?Register_10fc90@CTileTriggerTransition@@QAEXXZ	100.0000	100.0000	1	02a02599fd29	0x10fc90
 tiletriggertransition	?StepController@@YAHPAUCGameObject@@@Z	100.0000	100.0000	2	7ba829d0b632	0x10d150
 tilewireswitchlogic	?WireTileSwitchLogic@CGruntzMgr@@QAEHPAXHH@Z	10.4111	10.4111	1	4f27554a2907	0x6c130
@@ -3310,6 +3310,7 @@ unknownclassarrays	?Method_02ed90@UnknownClassArrays@@QAEHH@Z	100.0000	100.0000	
 unknownclassarrays	?Method_02edb0@UnknownClassArrays@@QAEHHHHH@Z	78.5986	78.5986	3	4756ccc7921a	0x2edb0
 unknownclassarrays	?Method_02f620@UnknownClassArrays@@QAEHH@Z	48.6144	48.6144	3	77b32e4d9c7b	0x2f620
 unknownclassarrays	?Method_0300c0@UnknownClassArrays@@QAEHHHHHHH@Z	63.8443	63.8443	1	2ed8a1bfa8af	0x300c0
+unknownclassarrays	?Method_0302c0@UnknownClassArrays@@QAEHHHHHH@Z	70.7935	70.7935	1	1cd8097d8c88	0x302c0
 unknownclassarrays	?Method_030530@UnknownClassArrays@@QAEHH@Z	100.0000	100.0000	3	e73532e1bbab	0x30530
 unknownclassarrays	?Method_0305b0@UnknownClassArrays@@QAEHHHH@Z	46.6224	46.6224	3	c2a0dd095073	0x305b0
 unknownclassarrays	?Method_030730@UnknownClassArrays@@QAEHHHHH@Z	88.4487	88.4487	2	48f0f2797bd5	0x30730

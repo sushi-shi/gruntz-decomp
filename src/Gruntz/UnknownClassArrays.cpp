@@ -1473,6 +1473,97 @@ i32 UnknownClassArrays::Method_0300c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a
 }
 
 // ===========================================================================
+// UnknownClassArrays::Method_0302c0  @0x0302c0  (/GX EH frame)
+// Re-path `unit` to (gx, gy) - the GetCoord-fronted twin of Method_0300c0. If the
+// unit is already at the goal (its GetCoord (>>5) == (gx, gy)) bail; scan its path
+// for a node already on the goal; ask the board's A* (FindPath) for a route into a
+// local CObList; recycle the route's head + (when the goal was already queued) the
+// path-list base + the unit's existing coord nodes onto g_freeList; then AddTail
+// every new route node onto the unit's path list. Returns 1 on a route, 0 otherwise.
+// ===========================================================================
+// @early-stop
+// EH-frame + regalloc plateau: logic + every call (the two GetCoords, FindPath,
+// RemoveHead, the g_freeList recycles, AddTail, the ~CObList unwind) is reconstructed
+// in shape + order. Two walls: (1) the /GX cond-temp EH state machine (shared
+// `je <unwind>` cleanup vs cl's per-return duplication, same as Method_0300c0); (2)
+// the matched-node g_freeList recycle in the middle compiles to a degenerate
+// loop-invariant `do/while` in retail (the path-segment recycle) that no source
+// spelling reproduces. Foreign unit chains modeled by raw offset. Final sweep.
+RVA(0x000302c0, 0x1ec)
+i32 UnknownClassArrays::Method_0302c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5) {
+    CObList list(10);
+    GridUnit* unit = (GridUnit*)unitArg;
+    Coord cur;
+    ((UnitGeom*)unit)->GetCoord(&cur);
+    if ((cur.m_x >> 5) == gx) {
+        Coord cur2;
+        ((UnitGeom*)unit)->GetCoord(&cur2);
+        if ((cur2.m_y >> 5) == gy) {
+            return 0;
+        }
+    }
+    // Scan the unit's path for a node already on the goal (match = the node after it).
+    CoordNode* match = 0;
+    CoordNode* n = (CoordNode*)unit->m_320;
+    while (n != 0) {
+        CoordNode* cur3 = n;
+        n = n->m_next;
+        Coord* coord = cur3->m_coord;
+        if (coord != 0 && coord->m_x == gx && coord->m_y == gy) {
+            match = n;
+            break;
+        }
+    }
+    UnitLevel* lvl = (UnitLevel*)unit->m_010;
+    if (((Board*)m_00c)->FindPath(lvl->m_5c >> 5, lvl->m_60 >> 5, gx, gy, &list, 0, a5, a5) == 0) {
+        return 0;
+    }
+    if (list.GetCount() == 0) {
+        return 0;
+    }
+    void* head = list.RemoveHead();
+    if (head != 0) {
+        void** node = (void**)((char*)head - g_freeListNodeBias);
+        *node = g_freeList;
+        g_freeList = node;
+    }
+    if (list.GetCount() == 0) {
+        return 0;
+    }
+    // The matched-path-segment recycle (degenerate in retail).
+    if (match != 0 && unit->m_320 != 0) {
+        void** node = (void**)((char*)&unit->m_31c - g_freeListNodeBias);
+        *node = g_freeList;
+        g_freeList = node;
+    }
+    // Recycle the unit's existing coord nodes onto g_freeList, then empty its path.
+    if (unit->m_328 != 0) {
+        CoordNode* p = (CoordNode*)unit->m_320;
+        while (p != 0) {
+            CoordNode* cur4 = p;
+            p = p->m_next;
+            if (cur4->m_coord != 0) {
+                void** node = (void**)((char*)cur4->m_coord - g_freeListNodeBias);
+                *node = g_freeList;
+                g_freeList = node;
+            }
+        }
+        ((CObList*)&unit->m_31c)->RemoveAll();
+    }
+    // AddTail every new route node's coord onto the unit's path list.
+    CoordNode* q = (CoordNode*)list.GetHeadPosition();
+    while (q != 0) {
+        CoordNode* cur5 = q;
+        q = q->m_next;
+        if (cur5->m_coord != 0) {
+            ((CObList*)&unit->m_31c)->AddTail((CObject*)cur5->m_coord);
+        }
+    }
+    list.RemoveAll();
+    return 1;
+}
+
+// ===========================================================================
 // UnknownClassArrays::Method_030530  @0x030530
 // Returns 1 if ANY occupied coordinate of `unit` lands on a board tile whose
 // flag byte has bit 0x4 set; else 0. Bails to 0 if the unit has no coord list.

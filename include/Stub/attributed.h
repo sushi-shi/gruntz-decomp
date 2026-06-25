@@ -8,10 +8,8 @@
 #define GRUNTZ_STUB_ATTRIBUTED_H
 
 class CNetMgr { public: void CNetMgr_0b86c0(); void CNetMgr_0b8fc0(); void CNetMgr_0bbc90(); void CNetMgr_0bbec0(); void CNetMgr_0bbf80(); void CNetMgr_0bc750(); void CNetMgr_0bccd0(); };
-class CTileTriggerTransition { public: void CTileTriggerTransition_10fe70(); };
 class CTriggerMgr { public: void CTriggerMgr_07abc0(); };
-class CWwdObjMgr { public: void CWwdObjMgr_15ad30(); };
-class UnknownClassArrays { public: void UnknownClassArrays_02b950(); void UnknownClassArrays_0302c0(); };
+class UnknownClassArrays { public: void UnknownClassArrays_02b950(); };
 class istream { public: void istream_16a490(); };
 class streambuf { public: void streambuf_16b340(); void streambuf_16b360(); };
 class strstreambuf { public: void strstreambuf_1692c0(); void strstreambuf_1693f0(); void strstreambuf_169400(); };

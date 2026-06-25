@@ -17,23 +17,46 @@
 // order. The leaf's own fields are named from usage; the CUserLogic base fields
 // (m_14/m_30/m_38/...) keep their m_<hexoffset> placeholders (shared base, named
 // elsewhere). Only OFFSETS + emitted bytes are load-bearing.
+#include <Gruntz/ActNameRegistry.h> // shared activation-name registry archetype (g_buteTree etc.)
 #include <Gruntz/TileTriggerTransition.h>
 
 #include <rva.h>
 
-// The engine bute tree singleton (?g_buteTree@@3VCButeTree@@A, RVA 0x2bf620).
-// ApplyAnimation swaps the aux's bute node for the "A" node via CButeTree::Find;
-// reloc-masked DIR32 (the Stub CButeTree TU owns the DATA label).
-DATA(0x002bf620)
-extern CButeTree g_buteTree;
-
-// The CTileTriggerTransition activation registry at 0x64e720 - a coordinate->
-// handler collection of the same family as CToobSpikez's g_toobColl. Its 0x8710
-// method reserves the [0x7d0, 0x7da] coordinate range for this class.  Both the
-// registry object and the method are external (no body) so the load + call
-// reloc-mask in objdiff.
+// The CTileTriggerTransition activation-coordinate registry @0x64e720 - the same
+// VActLookup / CKSlimeColl coord-map archetype as CSecretActReg (see
+// src/Gruntz/CSecretLevelTrigger.cpp): the [lo,hi] fast path + the slow
+// Find/ActAlloc/Insert rebuild. Its 0x8710 ctor reserves the [0x7d0, 0x7da]
+// coordinate range for this class. The registry object + its methods are external
+// (no body) so the loads/calls reloc-mask. g_buteTree, the shared name registry,
+// and the CActColl/CActColl2/ActAlloc helpers come via <Gruntz/ActNameRegistry.h>.
 struct TileActReg {
-    void Reserve8710(i32 lo, i32 hi); // 0x008710 (__thiscall, ret 8)
+    void* m_vptr;       // +0x00
+    CActColl2* m_coll2; // +0x04
+    i32 m_lo;           // +0x08
+    i32 m_hi;           // +0x0c
+    char* m_base;       // +0x10
+    char* m_cur;        // +0x14
+    i32 m_stride;       // +0x18
+    char m_pad1c[0x20 - 0x1c];
+    i32 m_scratch; // +0x20
+
+    void Reserve8710(i32 lo, i32 hi); // 0x008710 (__thiscall ret 8, the shared ctor)
+
+    // id -> handler-entry resolve (folds the VActLookup archetype): fast [lo,hi]
+    // range, the slow Find path, then the ActAlloc/Insert rebuild.
+    char* ResolveEntry(i32 id) {
+        m_scratch = 0;
+        if (id >= m_lo && id <= m_hi) {
+            return m_base + (id - m_lo) * m_stride;
+        }
+        if (((CActColl*)this)->Find(id, 0)) {
+            return m_base + (id - m_lo) * m_stride;
+        }
+        void* item = g_actCache;
+        g_actAllocResult = (void*)ActAlloc();
+        m_coll2->Insert(this, item, 0xc);
+        return m_cur;
+    }
 };
 DATA(0x0024e720)
 extern TileActReg g_tileActReg;
@@ -49,13 +72,23 @@ public:
 
     i32 GetTypeTag();                             // 0x011730
     void Register_10fc90();                       // 0x10fc90
+    void RegisterActs();                          // 0x10fe70  intern "A", bind Handler
     i32 ApplyAnimation(char* sprite, char* geom); // 0x110070
+    i32 Handler_110110();                         // 0x110110  the per-frame handler bound here
 
     // Leaf fields: CUserLogic ends at +0x40, the leaf object is 0x54 (the size the
     // state pump's `operator new(0x54)` allocates). m_activeAnimDesc caches the
     // +0x1b4 animation descriptor (same field CGrunt's resolvers name m_activeAnimDesc).
     i32 m_activeAnimDesc;      // +0x40
     char m_pad44[0x54 - 0x44]; // +0x44..+0x53
+};
+
+// The per-class registry entry: its first dword receives the per-frame handler PMF
+// (a 4-byte code pointer on this complete single-inheritance class). RegisterActs
+// stores &Handler_110110 - the retail thunk (LAB_00404129 -> 0x110110).
+typedef i32 (CTileTriggerTransition::*TileActHandler)();
+struct TileActEntry {
+    TileActHandler m_fn;
 };
 
 // ---------------------------------------------------------------------------
@@ -108,6 +141,42 @@ CTileTriggerTransition::CTileTriggerTransition(CGameObject* obj) : CUserLogic(ob
 RVA(0x0010fc90, 0x15)
 void CTileTriggerTransition::Register_10fc90() {
     g_tileActReg.Reserve8710(0x7d0, 0x7da);
+}
+
+// ---------------------------------------------------------------------------
+// RegisterActs (0x10fe70) - intern this class's activation key "A" into the shared
+// bute-tree name map (assigning it a fresh id + name slot on first sight), then
+// bind that id to this class's per-frame handler (Handler_110110) in the class
+// registry. The SAME activation-name-intern archetype as
+// CSecretLevelTrigger::RegisterActs (same 0x18d size, same global set + order);
+// only the registry (g_tileActReg) and the bound handler differ.
+// ---------------------------------------------------------------------------
+// @early-stop
+// register-pinning wall (docs/patterns/zero-register-pinning.md +
+// test-old-value-decrement-loop-while-postdec.md, topic:wall topic:regalloc): logic
+// byte-faithful (every call/immediate/branch/offset + the `mov [entry],offset
+// Handler` handler store match retail); residual is the slot-vs-id callee-saved
+// register choice cascading into the name-list free-loop count materialization -
+// identical wall to CSecretLevelTrigger::RegisterActs. Deferred to the final sweep.
+RVA(0x0010fe70, 0x18d)
+void CTileTriggerTransition::RegisterActs() {
+    i32 id = (i32)g_buteTree.Find(s_actKeyA);
+    if (id == 0) {
+        id = g_nextActId;
+        g_buteTree.Insert(s_actKeyA, (void*)id);
+        char* slot = ActNameLookup(id);
+        i32 n = g_nameRegScratch;
+        void** list = g_nameRegCurList;
+        while (n-- != 0) {
+            if (list != 0) {
+                ((CActName*)list)->Free();
+            }
+            list++;
+        }
+        ((CActName*)slot)->Assign(s_actKeyA);
+        g_nextActId++;
+    }
+    ((TileActEntry*)g_tileActReg.ResolveEntry(id))->m_fn = &CTileTriggerTransition::Handler_110110;
 }
 
 // ---------------------------------------------------------------------------
