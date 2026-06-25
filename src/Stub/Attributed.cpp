@@ -62,8 +62,6 @@ RVA(0x00151070, 0x98) void CGameObject::CGameObject_151070() {}  // med
 
 // ---- CGrunt ----
 RVA(0x00051c00, 0xc7b) void CGrunt::CGrunt_051c00() {}  // high
-RVA(0x0005b050, 0x40b) void CGrunt::CGrunt_05b050() {}  // med
-RVA(0x000692f0, 0x850) void CGrunt::CGrunt_0692f0() {}  // high
 
 // ---- CHashBase ----
 RVA(0x00184a70, 0x34) void CHashBase::CHashBase_184a70() {}  // med

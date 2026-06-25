@@ -143,6 +143,14 @@ static char s_Grunt[] = "Grunt";                               // s_Grunt_0060a9
 static char s_EntranceSafeTime[] = "EntranceSafeTime";         // s_EntranceSafeTime_0060df98
 static char s_IdleDelay[] = "IdleDelay";                       // s_IdleDelay_0060e1a0
 static char s_PlayerDefenderRadius[] = "PlayerDefenderRadius"; // s_PlayerDefenderRadius_0060e1ac
+static char s_CombatTimeout[] = "CombatTimeout";               // s_CombatTimeout_0060df84
+
+// The death/freeze finalize key string (reloc-masked .rodata, 0x60e0f0).
+static const char s_GRUNTZ_DEATHZ_FREEZE[] = "GRUNTZ_DEATHZ_FREEZE";
+
+// A global enable flag the neighbor-combat gate reads when the candidate IS self
+// (DAT_006455b0, reloc-masked).
+i32 g_6455b0;
 
 // The single-char anim-set keys the entrance reads/looks-up (reloc-masked
 // .rodata; DAT_0060a454 = "A" = the idle anim key, DAT_0060d7f8 = "K" =
@@ -2831,6 +2839,134 @@ i32 CGrunt::ResetGeometry() {
 }
 
 // ---------------------------------------------------------------------------
+// CGrunt::CommitNeighbor(a, b, c, d)   @0x5b050   (__thiscall, ret 0x10)
+// React to the grid-neighbour grunt at cell (a,b): gate on a not being self (or a
+// global flag), the entrance-reason not being 0x13/0x14, and the committed tile
+// (m_17c/m_180) being clear of the spawn-block bit; build the HUD health sprite,
+// re-arm the combat-timer block (CombatTimeout config), then resolve the neighbour
+// grunt from the tile-mgr's 15-wide cell grid (m_260 + (15a+b)*4 + 0x1c), gate it
+// (live, both committed, not anim "F"); dispatch on m_170/m_19c (==1 -> a move
+// config) else on the current anim type code ("I" -> arrival re-notify; "N" -> the
+// align-down/drop-ready/snap re-latch); finally run the shared combat finalize:
+// commit the in-flight move, latch m_220, build the neighbour's HUD health sprite +
+// combat timer, recycle both arrival blocks, and (when not low-stamina/active)
+// re-arm the attack anim. __thiscall, ret 0x10; returns 1 on success, 0 on bail.
+//
+// @early-stop
+// large-state-machine + grid-regalloc plateau: the dispatch CFG, all three strcmp
+// type-code arms (the inline-strcmp setcc form), the combat-timer + 15-wide cell grid
+// index, the align-down/IsDropReady block, and the dual ArrivalRecycle finalize are
+// reconstructed in shape/order. Residue = the deep g_gameReg->m_70 board chain modeled
+// by raw offset, the cross-arm regalloc (the neighbour `ebx` pinned across the tail),
+// and the strcmp-eq sentinel pinning. Deferred to the final sweep.
+RVA(0x0005b050, 0x40b)
+i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
+    if (a == m_tileOwnerHi && g_6455b0 == 0) {
+        return 0;
+    }
+    i32 reason = m_entranceReason;
+    if (reason == 0x14 || reason == 0x13) {
+        return 0;
+    }
+    {
+        GruntBoard* bd = g_gameReg->m_70;
+        i32 tx = m_lastTilePxX >> 5;
+        i32 ty = m_lastTilePxY >> 5;
+        i32 flags;
+        if ((u32)tx >= (u32)bd->m_c || (u32)ty >= (u32)bd->m_10) {
+            flags = 1;
+        } else {
+            flags = ((i32*)bd->m_8[ty])[tx * 7];
+        }
+        if (flags & 0x80) {
+            return 0;
+        }
+    }
+
+    CreateHealthSprite();
+    *(i32*)((char*)this + 0x878) = (i32)g_buteMgr.GetDwordDef(s_Grunt, s_CombatTimeout, 0x1388);
+    *(i32*)((char*)this + 0x87c) = 0;
+    *(i32*)((char*)this + 0x870) = (i32)g_645588;
+    *(i32*)((char*)this + 0x874) = 0;
+    *(i32*)((char*)this + 0x358) = 1;
+
+    CGrunt* nb = (CGrunt*)(*(i32*)((char*)m_tileMgr + (15 * a + b) * 4 + 0x1c));
+    if (nb == 0 || nb->m_entranceCommitted == 0 || m_entranceCommitted == 0) {
+        return 0;
+    }
+
+    bool eq;
+    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeF) == 0);
+    if (eq) {
+        return 0;
+    }
+    i32 v = m_entranceReason;
+    if (v > 0x16) {
+        v = *(i32*)((char*)this + 0x19c);
+    }
+    if (v == 1) {
+        RunMoveConfig(c >> 5, d >> 5);
+        return 1;
+    }
+
+    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeI) == 0);
+    if (eq) {
+        m_tileMgr->ArrivalNotify6(
+            m_tileOwnerHi,
+            m_tileOwnerLo,
+            *(i32*)((char*)this + 0x3e4),
+            *(i32*)((char*)this + 0x3e8),
+            m_entranceReason,
+            -1
+        );
+    } else {
+        eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeN) == 0);
+        if (eq) {
+            i32 px = (m_10->m_5c & ~0x1f) + 0x10;
+            i32 py = (m_10->m_60 & ~0x1f) + 0x10;
+            i32 redo = 1;
+            if (px != m_lastTilePxX || py != m_lastTilePxY) {
+                if (IsDropReady(1)) {
+                    *(i32*)((char*)this + 0x234) = (*(i32*)((char*)this + 0x234) == 0);
+                    redo = 0;
+                }
+            }
+            SnapToLastTile(1);
+            if (redo) {
+                m_prevAnimSetNode = (i32)m_14->m_1c;
+                m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeD);
+                OnCoordCommit(*(i32*)((char*)this + 0x234));
+            }
+        }
+    }
+
+    // The shared combat finalize.
+    if (m_arrivalPending != 0) {
+        m_tileMgr->CommitArrivalMove(this, m_10->m_5c, m_10->m_60);
+        m_arrivalPending = 0;
+    }
+    m_poweredUp = 1;
+    nb->CreateHealthSprite();
+    *(i32*)((char*)nb + 0x878) = (i32)g_buteMgr.GetDwordDef(s_Grunt, s_CombatTimeout, 0x1388);
+    *(i32*)((char*)nb + 0x87c) = 0;
+    *(i32*)((char*)nb + 0x870) = (i32)g_645588;
+    *(i32*)((char*)nb + 0x874) = 0;
+    ArrivalRecycle(c, d, 1, a, b);
+    *(i32*)((char*)this + 0x200) = a;
+    *(i32*)((char*)this + 0x204) = b;
+    *(i32*)((char*)this + 0x208) = c;
+    *(i32*)((char*)this + 0x20c) = d;
+    if (m_stamina < 0x64 || m_entranceActive != 0) {
+        *(i32*)((char*)this + 0x21c) = 1;
+        return 1;
+    }
+    *(i32*)((char*)this + 0x21c) = 0;
+    nb->ArrivalRecycle(m_10->m_5c, m_10->m_60, 0, m_tileOwnerHi, m_tileOwnerLo);
+    RearmAttackAnim(a, b);
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
 // CGrunt::FindGridNeighbor(int validate)   @0x5b6f0
 // Resolves the grunt's stored grid-cell neighbour (the CGrunt* at
 // m_tileMgr's 15-wide cell grid indexed by the latched coords m_neighborCol/m_neighborRow), validates
@@ -2913,6 +3049,7 @@ void CGrunt::RearmEntranceDrop() {
 }
 
 void CGrunt::ApplyMoveKind(i32 v) {} // thunk_0x3c29 (0x57100); external/reloc-masked
+void CGrunt::RunMoveConfig(i32 a, i32 b) {} // thunk_0x2a40 (0x65630); external/reloc-masked
 
 // ---------------------------------------------------------------------------
 // CGrunt::UpdateEntranceAnim()   @0x690a0   (__thiscall, ret 0)
@@ -3000,6 +3137,237 @@ i32 CGrunt::UpdateEntranceAnim() {
         h->m_74 = z;
         h->m_8 |= 0x20000;
     }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// CGrunt::StepArrivalCommit()   @0x692f0   (__thiscall, ret 0; always returns 0)
+// The per-tick death/struck reaction + arrival-commit dispatch. Gated on the
+// entrance being committed (m_1fc), it resolves the grunt's current anim-set name
+// and dispatches on its single-letter type code (A/D -> finalize; I -> arrival
+// re-notify; G/L/P -> idle reseed; O -> commit-move; J -> re-latch "D" + drive the
+// move mode; N -> align-down/drop-ready snap; M -> tile set), then runs the shared
+// finalize tail (arrival consider, clear the HUD stat sprites, latch the entrance
+// reset, commit the tile, re-latch the "Q" anim set, and apply the DEATHZ_FREEZE
+// geometry + first frame). __thiscall, ret 0.
+//
+// @early-stop
+// big-state-machine fuzzy-desync wall (docs/patterns/big-seh-fuzzy-desync +
+// zero-register-pinning): the 10-way type-code cascade (the inline-strcmp `bool eq`
+// setcc form, both the GetNameRecord and scratch-teardown GetNameRecords variants),
+// every dispatch arm, the m_1a0 mode sub-dispatch, the align-down/drop-ready block,
+// and the DEATHZ_FREEZE finalize are reconstructed in shape/order; instruction
+// multiset is close (mov 238/256, push 75/74, call 40/40 exact). Residue collapses
+// the fuzzy% to ~2%: retail reserves a `sub esp,0xc` scratch frame (one dead cell[2]
+// spill in the J-block) my frameless body omits, shifting the epilogue + every block;
+// and retail tests the strcmp results with `test eax,eax` while my m_1fc==0 gate pins
+// `xor ebx,ebx` at entry so all 10 arms emit `cmp eax,ebx`. Pure regalloc/frame
+// (no source lever); the alignment desync rolls the faithful 0x850 carcass up to ~2%.
+// Deferred to the final sweep.
+RVA(0x000692f0, 0x850)
+i32 CGrunt::StepArrivalCommit() {
+    if (m_entranceCommitted == 0) {
+        return 0;
+    }
+
+    bool eq;
+    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeA) == 0);
+    if (eq) {
+        goto finalize;
+    }
+    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeD) == 0);
+    if (eq) {
+        goto finalize;
+    }
+    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeI) == 0);
+    if (eq) {
+        if (m_entranceReason == 0x13) {
+            g_gameReg->m_60->Cue1(m_10->m_188);
+        }
+        m_tileMgr->ArrivalNotify6(
+            m_tileOwnerHi,
+            m_tileOwnerLo,
+            *(i32*)((char*)this + 0x3e4),
+            *(i32*)((char*)this + 0x3e8),
+            m_entranceReason,
+            -1
+        );
+        if (m_entranceReason != 1) {
+            goto finalize;
+        }
+        m_tileMgr->SetTile(m_tileOwnerHi, m_tileOwnerLo, 1, -1);
+        return 0;
+    }
+    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeG) == 0);
+    if (eq) {
+        goto idleReseed;
+    }
+    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeL) == 0);
+    if (eq) {
+        goto idleReseed;
+    }
+    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeP) == 0);
+    if (eq) {
+        goto idleReseed;
+    }
+    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeO) == 0);
+    if (eq) {
+        SnapToLastTile(1);
+        m_tileMgr->CommitArrivalMove(this, m_lastTilePxX, m_lastTilePxY);
+        goto finalize;
+    }
+    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeJ) == 0);
+    if (eq) {
+        // code "J": clear the entrance gate; if the PREVIOUS anim set was "D",
+        // re-latch a fresh "D" set + drive the WALK geometry + stamp the cell frame.
+        m_entranceActive = 0;
+        eq = (strcmp(*g_animNameResolver.GetNameRecord((void*)m_prevAnimSetNode), g_codeD) == 0);
+        if (eq) {
+            if (m_poweredUp == 0 && *(i32*)((char*)this + 0x21c) == 0) {
+                m_entranceActive = 0;
+                *(i32*)((char*)this + 0x218) = 0;
+                *(i32*)((char*)this + 0x21c) = 0;
+                m_poweredUp = 0;
+                Stub_062e10(1, 0, 0);
+            }
+            *(i32*)((char*)this + 0x35c) = 0;
+            m_prevAnimSetNode = (i32)m_14->m_1c;
+            m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeD);
+            m_prevEntranceDesc = (i32)m_154->m_1b4;
+            m_154->m_1a0.SetGeometry(m_poseWalk);
+            i32* cell = m_entranceCell;
+            i32 base = 3 * cell[0] + cell[1];
+            char* nm = GruntStrGetBuffer((char*)this + base * 0x68 + 0x470, 0);
+            m_154->SetAnimName(nm);
+        } else {
+            Stub_062e10(1, 0, 0);
+        }
+        goto modeDispatch;
+    }
+
+    // default: the M / N reject codes.
+    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeN) == 0);
+    if (eq) {
+        i32 px = (m_10->m_5c & ~0x1f) + 0x10;
+        i32 py = (m_10->m_60 & ~0x1f) + 0x10;
+        i32 redo = 1;
+        if (px != m_lastTilePxX || py != m_lastTilePxY) {
+            if (IsDropReady(1)) {
+                *(i32*)((char*)this + 0x234) = (*(i32*)((char*)this + 0x234) == 0);
+                redo = 0;
+            }
+        }
+        SnapToLastTile(1);
+        if (redo) {
+            m_prevAnimSetNode = (i32)m_14->m_1c;
+            m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeD);
+            OnCoordCommit(*(i32*)((char*)this + 0x234));
+        }
+        goto finalize;
+    }
+    {
+        char* prev = g_animNameResolver.GetNameRecords(m_14->m_1c)->m_name;
+        GruntScratchTeardown();
+        eq = (strcmp(prev, g_codeM) == 0);
+        if (eq) {
+            m_tileMgr->SetTile(m_tileOwnerHi, m_tileOwnerLo, 1, -1);
+            return 0;
+        }
+        goto finalize;
+    }
+
+idleReseed:
+    if (m_entranceReason == 0x1e) {
+        g_gameReg->m_60->Cue1(m_10->m_188);
+    }
+    SetMoveStateA(*(i32*)((char*)this + 0x19c), 1, 0, 0);
+    {
+        i32 z = m_10->m_60 + 0x186a0;
+        if (m_10->m_74 != z) {
+            m_10->m_74 = z;
+            m_10->m_8 |= 0x20000;
+        }
+    }
+    if (m_toyTimeSprite != 0) {
+        ((CSpriteRegRecord*)m_toyTimeSprite)->m_8 |= 0x10000;
+        m_toyTimeSprite = 0;
+    }
+    m_toyTime = 0;
+    ClearSubA();
+    goto finalize;
+
+modeDispatch: {
+    i32 mode = *(i32*)((char*)this + 0x1a0);
+    if (mode >= 0x32) {
+        SetMoveStateA(mode, 1, 0, 1);
+        *(i32*)((char*)this + 0x1a0) = -1;
+        *(i32*)((char*)this + 0x1a4) = 0;
+        goto finalize;
+    }
+    if (mode >= 0x22) {
+        *(i32*)((char*)this + 0x194) = mode;
+        *(i32*)((char*)this + 0x1a0) = -1;
+        goto finalize;
+    }
+    if (mode >= 0x17) {
+        EmitMoveCueQ(mode);
+        goto finalize;
+    }
+    SetMoveStateA(mode, 1, 0, 1);
+    *(i32*)((char*)this + 0x1a0) = -1;
+    goto finalize;
+}
+
+finalize:
+    ConsiderArrival(1);
+    if (m_healthSprite != 0) {
+        m_healthSprite->m_8 |= 0x10000;
+        m_healthSprite = 0;
+    }
+    if (m_staminaSprite != 0) {
+        m_staminaSprite->m_8 |= 0x10000;
+        m_staminaSprite = 0;
+    }
+    if (m_toySprite != 0) {
+        m_toySprite->m_8 |= 0x10000;
+        m_toySprite = 0;
+    }
+    if (m_toyTimeSprite != 0) {
+        m_toyTimeSprite->m_8 |= 0x10000;
+        m_toyTimeSprite = 0;
+    }
+    if (m_wingzTimeSprite != 0) {
+        m_wingzTimeSprite->m_8 |= 0x10000;
+        m_wingzTimeSprite = 0;
+    }
+    if (m_poweredUp == 0 && *(i32*)((char*)this + 0x21c) == 0) {
+        m_entranceActive = 0;
+        *(i32*)((char*)this + 0x218) = 0;
+        *(i32*)((char*)this + 0x21c) = 0;
+        m_poweredUp = 0;
+        Stub_062e10(1, 0, 0);
+    }
+    m_entranceActive = 1;
+    m_tileMgr->CommitStruckTile(m_tileOwnerHi, m_tileOwnerLo, 1);
+    m_prevAnimSetNode = (i32)m_14->m_1c;
+    m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeQ);
+    {
+        i32 z = m_10->m_60 + 0x186a0;
+        if (m_10->m_74 != z) {
+            m_10->m_74 = z;
+            m_10->m_8 |= 0x20000;
+        }
+    }
+    m_prevEntranceDesc = (i32)m_154->m_1b4;
+    m_154->ApplyLookupGeometry(s_GRUNTZ_DEATHZ_FREEZE, 0);
+    {
+        CEntranceAnimDescColl* desc = m_154->m_1b4;
+        i32* elem = desc->m_10 > 0 ? *desc->m_c : 0;
+        i32 frame = elem[0x14 / 4];
+        m_154->SetAnimFrame(s_GRUNTZ_DEATHZ_FREEZE, frame);
+    }
+    *(i32*)((char*)this + 0x23c) = 1;
+    *(i32*)((char*)this + 0x240) = 0;
     return 0;
 }
 
@@ -4046,7 +4414,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
 // Chunk-2 attributed targets (RearmAttack family + entrance-move tail). Same
 // raw-offset campaign style; reconstructed in ascending retail-RVA order.
 // ===========================================================================
-static char s_CombatTimeout[] = "CombatTimeout"; // s_CombatTimeout_0060df84
+// (s_CombatTimeout is defined near the top of this TU; shared with CommitNeighbor.)
 
 // ---------------------------------------------------------------------------
 // CGrunt::BeginAttack(a, b)  @0x5b570  (__thiscall, ret 8)

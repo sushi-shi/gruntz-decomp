@@ -209,6 +209,7 @@ class CGrunt; // fwd-declared for CueA's first arg
 class CGruntCueSink {
 public:
     void Cue(i32 a, i32 b, i32 c, i32 d, i32 e);             // via thunk 0x33b4
+    void Cue1(i32 a);                                        // 1-arg cue (thunk_0x1163 -> 0x51c730)
     void CueA(CGrunt* g, i32 b, i32 c, i32 d, i32 e, i32 f); // 6-arg entrance cue (ret 0x18)
     void CueSpawn(CGrunt* g, i32 b, i32 c, i32 d, i32 e);    // via thunk 0x27ac (ret 0x14)
 };
@@ -280,6 +281,9 @@ public:
     // A 1-arg setter the WALK/E arms call on the player itself (FUN_00550540,
     // FUN_005504d0 is the 2-arg form). Takes the resolved cell name.
     void SetAnimName(const char* name); // FUN_00550540 (ret 4)
+    // The death/freeze finalize 2-arg geometry setter (FUN_005505b0); takes the
+    // resolved key string + a flag. External/reloc-masked.
+    void ApplyLookupGeometry(const char* key, i32 flag); // FUN_005505b0 (ret 8)
 
     char m_pad0[0xc];
     CEntranceResMgr* m_c; // +0x0c  resource object (lookup table holder)
@@ -542,6 +546,8 @@ public:
     void CommitTileSlot2(i32 ownerHi, i32 ownerLo, i32 px, i32 py); // 0x6dae0
     // FinishEntranceMove's tile-mgr drop notify (thunk_0x2a72 -> 0x79fb0), 3 args.
     void NotifyEntranceDrop(i32 ownerHi, i32 ownerLo, i32 flag); // 0x79fb0
+    // The death/struck-reaction tile-mgr commit (thunk_0x10eb -> 0x78260), 3 args.
+    void CommitStruckTile(i32 ownerHi, i32 ownerLo, i32 flag); // 0x78260
 };
 
 // The on-screen point-visibility predicate the arrival/update steps gate the cue
@@ -774,9 +780,20 @@ public:
     i32 RectContains(i32 x, i32 y);
     i32
     RectContainsGated(i32 x, i32 y); // @0x51a20 (ret 8) sibling; m_198 gate, rects +0x2b0/+0x2c0
-    void CommitNeighbor(i32 a, i32 b, i32 c, i32 d); // @0x5b050 (ret 0x10)
-    CGrunt* FindGridNeighbor(i32 validate);          // @0x5b6f0 (ret 4)
-    i32 UpdateGruntStatus();                         // @0x617c0 (ret 0)
+    i32 CommitNeighbor(i32 a, i32 b, i32 c, i32 d); // @0x5b050 (ret 0x10)
+    CGrunt* FindGridNeighbor(i32 validate);         // @0x5b6f0 (ret 4)
+    i32 UpdateGruntStatus();                        // @0x617c0 (ret 0)
+    // @0x51c00 (ret 0, /GX) - the per-tick compass-move driver: resolves the grunt's
+    // next move tile by the 8-way direction code (m_444), tests/stamps the board
+    // occupancy + owner, fires the matching compass grunt-voice record, and commits
+    // the move/arrival. Big switch + /GX EH frame + grid raw-offset state machine.
+    i32 StepCompassMove();
+    // @0x692f0 (ret 0) - the death/struck reaction dispatch: gated on m_1fc, resolves
+    // the current anim name + dispatches on its type code (A/D/I/G/L/P/O/J/N/M), then
+    // runs the shared arrival/clear-sprites/DEATHZ_FREEZE finalize tail.
+    i32 StepArrivalCommit();
+    // @0x65630 (2-arg this-method the I-arm of CommitNeighbor runs); external thunk.
+    void RunMoveConfig(i32 a, i32 b);
 
     // --- arrival / move-step helper cluster (proximity-attributed targets) ---
     void PlayMoveSoundAtTile(i32 tx, i32 ty); // @0x514e0 (ret 8) tile->pixel + PlayMoveSound

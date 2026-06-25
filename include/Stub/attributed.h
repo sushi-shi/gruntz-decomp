@@ -20,7 +20,7 @@ class CFileMem { public: void CFileMem_165f00(); };
 class CFontConfig { public: void CFontConfig_0220f0(); };
 class CGameApp { public: void CGameApp_13dbc0(); };
 class CGameObject { public: void CGameObject_150f90(); void CGameObject_151070(); };
-class CGrunt { public: void CGrunt_051c00(); void CGrunt_05b050(); void CGrunt_0692f0(); };
+class CGrunt { public: void CGrunt_051c00(); };
 class CHashBase { public: void CHashBase_184a70(); };
 class CImage { public: void CImage_175a00(); void CImage_175b80(); void CImage_175ce0(); void CImage_175d50(); };
 class CInputDevice { public: void CInputDevice_134f70(); };

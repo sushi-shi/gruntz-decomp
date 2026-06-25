@@ -101,7 +101,7 @@ dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
 dsoundvoice	2	1
-engine_attributed	108	0
+engine_attributed	106	0
 engine_boundary	628	0
 engine_discovered	86	0
 engine_label_stubs	519	118
@@ -119,7 +119,7 @@ gamemodeobjlifecycle	3	2
 gameobjectctors	5	0
 gametext	4	2
 gamewnd	9	8
-grunt	73	15
+grunt	75	15
 gruntdatarecord	1	1
 gruntpuddle	4	2
 gruntspawnconfig	14	7
@@ -931,8 +931,6 @@ engine_attributed	?CGameApp_13dbc0@CGameApp@@QAEXXZ	4.1667	4.1667	1	7e93d13fb682
 engine_attributed	?CGameObject_150f90@CGameObject@@QAEXXZ	0.7018	0.7018	1	13e7741e0009	0x150f90
 engine_attributed	?CGameObject_151070@CGameObject@@QAEXXZ	0.7018	0.7018	1	f03d4d9b51ce	0x151070
 engine_attributed	?CGrunt_051c00@CGrunt@@QAEXXZ	0.1147	0.1147	1	489bc806fe84	0x51c00
-engine_attributed	?CGrunt_05b050@CGrunt@@QAEXXZ	0.1254	0.1254	1	57460174fcc9	0x5b050
-engine_attributed	?CGrunt_0692f0@CGrunt@@QAEXXZ	0.1439	0.1439	1	123485d47018	0x692f0
 engine_attributed	?CHashBase_184a70@CHashBase@@QAEXXZ	1.8182	1.8182	1	df73996a3913	0x184a70
 engine_attributed	?CImage_175a00@CImage@@QAEXXZ	1.0256	1.0256	1	2acf5c4906a1	0x175a00
 engine_attributed	?CImage_175b80@CImage@@QAEXXZ	0.4301	0.4301	1	44144a88c2bc	0x175b80
@@ -2433,11 +2431,11 @@ gamewnd	?OnClose@CGameWnd@@UAEHXZ	100.0000	100.0000	1	afe18af98c56	0x13d4c0
 gamewnd	?PumpMessages@CGameWnd@@QAEXIH@Z	100.0000	100.0000	1	00d21758f5d6	0x13d4e0
 gamewnd	?QuitMessageLoop@CGameWnd@@UAEHXZ	100.0000	100.0000	4	f2de6543e99e	0x13d490
 grunt	??1CGrunt@@QAE@XZ	55.5455	55.5455	1	7103cc50662d	0xf2f0
-grunt	?ArrivalRecycle@CGrunt@@QAEHHHHHH@Z	52.4272	52.4272	1	f11f19a61424	0x59230
+grunt	?ArrivalRecycle@CGrunt@@QAEHHHHHH@Z	51.1858	51.1858	1	f11f19a61424	0x59230
 grunt	?BeginAttack@CGrunt@@QAEHHH@Z	53.7917	53.7917	1	3d02da5c24cc	0x5b570
 grunt	?BuildEntranceAnimation@CGrunt@@QAEXH@Z	71.4562	71.4562	6	31017869150f	0x67bd0
 grunt	?CGrunt_IsSameType@@YA_NPAVCGrunt@@0@Z	100.0000	100.0000	1	04ada45b6431	0x3c7f0
-grunt	?CGrunt_SegBoxOverlap@@YGHPAUGruntBox@@PAUGruntSegEnd@@1@Z	78.7228	78.7228	1	bb4ee352e2c0	0x62b70
+grunt	?CGrunt_SegBoxOverlap@@YGHPAUGruntBox@@PAUGruntSegEnd@@1@Z	78.7723	78.7723	1	bb4ee352e2c0	0x62b70
 grunt	?CGrunt_TileSwitch@@YGXHHHHHH@Z	66.2000	66.2000	2	e4d83b1d7834	0x4b320
 grunt	?CanShowStamina@CGrunt@@QAEHXZ	100.0000	100.0000	3	e5851737e25e	0x514a0
 grunt	?ClaimSwitchTile@CGrunt@@QAEHXZ	61.5954	61.5954	1	564a86c19254	0x52c70
@@ -2445,6 +2443,7 @@ grunt	?ClearAllSprites@CGrunt@@QAEXXZ	100.0000	100.0000	2	ab523f1f3a12	0x4b240
 grunt	?ClearSubA@CGrunt@@QAEXXZ	100.0000	100.0000	1	85ac452dc9a6	0x57c10
 grunt	?ClearSubB@CGrunt@@QAEXXZ	100.0000	100.0000	1	02f416174db0	0x57ce0
 grunt	?CommitArrival@CGrunt@@QAEHXZ	56.7885	56.7885	3	a969605d2819	0x4b130
+grunt	?CommitNeighbor@CGrunt@@QAEHHHHH@Z	91.2633	91.2633	1	128046fac238	0x5b050
 grunt	?ComputeFacing@CGrunt@@QAEXN@Z	88.2727	88.2727	3	9769abac8cd6	0x57060
 grunt	?ConsiderArrival@CGrunt@@QAEXH@Z	83.7667	83.7667	1	a0b86c2279d8	0x52f40
 grunt	?CreateHealthSprite@CGrunt@@QAEHXZ	99.6552	99.6552	6	c4ddd1491b57	0x4d130
@@ -2462,7 +2461,7 @@ grunt	?FindGridNeighbor@CGrunt@@QAEPAV1@H@Z	100.0000	100.0000	3	61dd38cb1b46	0x5
 grunt	?FinishEntranceMove@CGrunt@@QAEHXZ	100.0000	100.0000	1	a2a92c839b90	0x69fd0
 grunt	?FreeNameList@CGrunt@@QAEXXZ	76.9512	76.9512	2	2e3438eb07ba	0x48360
 grunt	?GetTilePos@CGrunt@@QAEPAUGruntTilePos@@PAU2@@Z	85.3000	85.3000	1	995269eb1311	0x31c70
-grunt	?GruntInRadius@CGrunt@@QAEHHH@Z	35.7143	35.7143	1	d9edebac6a79	0x67b00
+grunt	?GruntInRadius@CGrunt@@QAEHHH@Z	35.7347	35.7347	1	d9edebac6a79	0x67b00
 grunt	?InitDirVectors@CGrunt@@QAEXXZ	37.3394	37.3394	1	1b1f255f448b	0x5caa0
 grunt	?LoadAnimNameTable@CGrunt@@QAEXHH@Z	75.9312	75.9312	3	f341d57d748b	0x49c60
 grunt	?LoadEntranceConfig@CGrunt@@QAEXXZ	78.8377	78.8377	6	7a2efa979b8d	0x67f80
@@ -2472,9 +2471,9 @@ grunt	?PlayMoveSound@CGrunt@@QAEXHH@Z	100.0000	100.0000	1	aa803a2a8575	0x511b0
 grunt	?PlayMoveSoundAtTile@CGrunt@@QAEXHH@Z	100.0000	100.0000	1	a7adfdf5dae3	0x514e0
 grunt	?PlaySound@CGrunt@@QAEXHUCGruntVoiceRec@@@Z	62.4901	62.4901	1	a2a2cfd991e5	0x4ac10
 grunt	?ReadConfigFromButeMgr@CGrunt@@QAEXXZ	96.8421	96.8421	5	39bb0fe6f60a	0x48400
-grunt	?RearmAttackAnim2@CGrunt@@QAEHXZ	73.0784	73.0784	1	b332a973991f	0x61bc0
-grunt	?RearmAttackAnim@CGrunt@@QAEHHH@Z	54.0229	54.0229	1	7230a3c88ee7	0x61940
-grunt	?RearmEntranceDrop@CGrunt@@QAEXXZ	88.8646	88.8646	2	d64979f40a7e	0x68370
+grunt	?RearmAttackAnim2@CGrunt@@QAEHXZ	79.2745	79.2745	1	b332a973991f	0x61bc0
+grunt	?RearmAttackAnim@CGrunt@@QAEHHH@Z	55.5420	55.5420	1	7230a3c88ee7	0x61940
+grunt	?RearmEntranceDrop@CGrunt@@QAEXXZ	88.9167	88.9167	2	d64979f40a7e	0x68370
 grunt	?RectContains@CGrunt@@QAEHHH@Z	63.0081	63.0081	1	490b1e26e8f0	0x51850
 grunt	?RectContainsGated@CGrunt@@QAEHHH@Z	63.5433	63.5433	1	e41d77906d32	0x51a20
 grunt	?ResetGeometry@CGrunt@@QAEHXZ	82.8800	82.8800	3	502caa6ebbcc	0x616e0
@@ -2493,6 +2492,7 @@ grunt	?SetEntrancePos@CGrunt@@QAEXHH@Z	89.3421	89.3421	3	2c26e611f009	0x4d060
 grunt	?SnapToLastTile@CGrunt@@QAEXH@Z	100.0000	100.0000	1	0d41d9a7d4a1	0x517b0
 grunt	?StepAnimDispatchA@CGrunt@@QAEHHHHH@Z	41.6245	41.6245	2	cee096a63856	0x52fb0
 grunt	?StepAnimDispatchB@CGrunt@@QAEHXZ	40.7674	40.7674	2	4dbf079670fa	0x6a6d0
+grunt	?StepArrivalCommit@CGrunt@@QAEHXZ	1.8288	1.8288	1	d12f1cd235e5	0x692f0
 grunt	?StepArrivalDrop@CGrunt@@QAEXHHHHHH@Z	7.7088	7.7088	1	731eeff2b7e9	0x4b370
 grunt	?StepCoordResolve@CGrunt@@QAEXXZ	9.3598	9.3598	1	7e18466adeed	0x5f310
 grunt	?StepEntranceReinit@CGrunt@@QAEHXZ	74.9359	74.9359	1	8109213253cf	0x637a0
@@ -2502,7 +2502,7 @@ grunt	?Stub_048470@CGrunt@@QAEXHH@Z	0.0778	0.0778	3	f58a37c3e870	0x48470
 grunt	?Stub_062e10@CGrunt@@QAEXHHH@Z	28.9443	28.9443	6	ffa7fa6815d0	0x62e10
 grunt	?Stub_0633e0@CGrunt@@QAEXXZ	86.4115	86.4115	7	0185a1899216	0x633e0
 grunt	?TryPowerupAtTile@CGrunt@@QAEHXZ	93.3115	93.3115	1	c79ab0d858c8	0x57aa0
-grunt	?UpdateArrival@CGrunt@@QAEHHH@Z	71.2050	71.2050	1	900cd9d93752	0x62110
+grunt	?UpdateArrival@CGrunt@@QAEHHH@Z	70.0360	70.0360	1	900cd9d93752	0x62110
 grunt	?UpdateEntranceAnim@CGrunt@@QAEHXZ	88.3088	88.3088	1	277e290dabfb	0x690a0
 grunt	?UpdateGruntStatus@CGrunt@@QAEHXZ	94.5000	94.5000	3	2b7c880860ba	0x617c0
 gruntdatarecord	?SerializeStrings@GruntDataRecord@@QAEHPAUDataWriter@@@Z	100.0000	100.0000	1	71ad52c7e3da	0x56da0
