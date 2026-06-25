@@ -325,6 +325,21 @@ public:
     i32 ActivateSlot(i32 idx);
     i32 PlaceCursorTarget(i32 row, i32 commit);
 
+    // ----- second batch of reconstructed CSBI_RectOnly methods (RVA-ascending) -----
+    i32 SetState(i32 state);
+    i32 RefreshState();
+    i32 SetSpritePos(i32 x, i32 y);
+    i32 HitTestLayer(i32 x, i32 y);
+    i32 InsertPtr(i32 a, i32 b);
+    void ReportTab(i32 tab);
+    // siblings the second batch dispatches (reloc-masked ILT thunks / bodies elsewhere)
+    i32 StateProbe();   // call 0x2b2b - the subtype-2 activation probe
+    void StateNotify(); // call 0x125d - the non-subtype-2 notify
+    i32 RefreshA();     // jmp 0x2b8a
+    i32 RefreshB();     // jmp 0x2d5b
+    void ReportLog(i32 a, i32 b, i32 c); // call 0x1276
+    i32 ReportApply(i32 a, i32 b);       // call 0x213f
+
     // ----- layout (placeholders; offsets are the load-bearing fact) -----
     i32 m_2c; // +0x2c  Setup arg1 (vtable-slot-2 setup target)
     i32 m_30; // +0x30
@@ -459,7 +474,8 @@ struct CSbiGameMgr {
 // The sub-manager at g_gameReg+0x2c that carries the highlight-busy gate at +0x4f0.
 // PlaceCursorTarget forwards a resolved tile's (x,y) origin pair to ScrollTo.
 struct CSbiSubMgr {
-    i32 ScrollTo(i32 x, i32 y); // __thiscall, 2 args (FUN_004d5f00)
+    i32 ScrollTo(i32 x, i32 y);       // __thiscall, 2 args (FUN_004d5f00)
+    void SetState(i32 cur, i32 prev); // __thiscall, 2 args (call 0xfe3e0 site -> 0x3f8a)
     char m_pad0[0x4f0];
     i32 m_4f0; // +0x4f0  highlight-busy flag (non-zero => bail)
 };
@@ -2100,6 +2116,164 @@ i32 CSBI_RectOnly::ActivateSlot(i32 idx) {
         m_slotNotify[idx]->Notify(1);
     }
     return 1;
+}
+
+// ===========================================================================
+// Second batch of reconstructed CSBI_RectOnly methods (RVA-ascending).
+// ===========================================================================
+
+// The m_8 render object the item drives: a screen-position pair at +0x5c/+0x60
+// and a layer descriptor at +0x198 whose +0x10/+0x14 origin and +0x18/+0x1c
+// inset frame the hit-test rect. (m_8 is the base CStatusBarItem int overlaid as
+// a pointer, same authentic int-as-pointer overlay as Serialize uses.)
+struct CSbiLayer {
+    char m_pad0[0x10];
+    i32 m_10, m_14; // +0x10/+0x14  rect origin (lo X / lo Y)
+    i32 m_18, m_1c; // +0x18/+0x1c  inset (added to the shifted position)
+};
+struct CSbiRenderObj {
+    char m_pad0[0x5c];
+    i32 m_5c, m_60; // +0x5c/+0x60  screen position
+    char m_pad64[0x198 - 0x64];
+    CSbiLayer* m_198; // +0x198  layer descriptor
+};
+
+// The +0x530 pooled-ptr collection InsertPtr appends/inserts into (CObArray-style).
+struct CSbiPtrColl2 {
+    void Append(i32 idx, void* node);            // 0x1b5144 (InsertAt tail)
+    void InsertAt(i32 idx, void* node, i32 cnt); // 0x1b516b (InsertAt with count)
+};
+
+// A free-list node {m_0, m_4}; m_0 doubles as the link, m_4 is the sort key.
+struct CSbiFreeNode {
+    i32 m_0, m_4;
+};
+
+// 0xfe3e0 - SetState(state): if the mode gate (m_548) is up, no-op (return 1);
+// if already in `state`, return 1. For the subtype-2 cursor state, run the
+// activation probe (bail 0 on failure) and mirror the subtype tag into m_4;
+// otherwise fire the plain notify. Then latch the new state into slot 0 and tell
+// the highlight sub-manager (new, old). Returns 1.
+RVA(0x000fe3e0, 0x55)
+i32 CSBI_RectOnly::SetState(i32 state) {
+    if (m_548 != 0) {
+        return 1;
+    }
+    i32 old = *(i32*)this;
+    if (old == state) {
+        return 1;
+    }
+    if (state == 2) {
+        if (StateProbe() == 0) {
+            return 0;
+        }
+        m_4 = *(i32*)this;
+    } else {
+        StateNotify();
+    }
+    old = *(i32*)this;
+    *(i32*)this = state;
+    g_gameReg->m_2c->SetState(state, old);
+    return 1;
+}
+
+// 0xfe670 - RefreshState: gated on m_548 (return 1) and the subtype-2 tag
+// (return 1 when not cursor); for the cursor subtype, tail-call the armed (m_4==1)
+// or idle refresh path.
+RVA(0x000fe670, 0x2b)
+i32 CSBI_RectOnly::RefreshState() {
+    if (m_548 != 0) {
+        return 1;
+    }
+    if (*(i32*)this != 2) {
+        return 1;
+    }
+    if (m_4 == 1) {
+        return RefreshA();
+    }
+    return RefreshB();
+}
+
+// 0xfe860 - SetSpritePos(x, y): push the position into the render object
+// (m_8->m_5c/m_60) and mirror it into m_24/m_28. Bails (0) if there is no render
+// object. Returns 1.
+// @early-stop
+// ~96.7%: every store/offset is byte-correct; the residual is a regalloc choice -
+// retail keeps `y` unloaded until after the m_8 reload (y in edx, m_8 in esi),
+// while the recompile parks y in esi loaded early. Not source-steerable; deferred.
+RVA(0x000fe860, 0x2d)
+i32 CSBI_RectOnly::SetSpritePos(i32 x, i32 y) {
+    CSbiRenderObj* r = (CSbiRenderObj*)m_8;
+    if (r == 0) {
+        return 0;
+    }
+    r->m_5c = x;
+    ((CSbiRenderObj*)m_8)->m_60 = y;
+    m_28 = y;
+    m_24 = x;
+    return 1;
+}
+
+// 0xfe8a0 - HitTestLayer(x, y): test the point against the render object's layer
+// rect - origin (m_198->m_10/m_14) plus the position-relative inset
+// (m_198->m_18/m_1c offset by m_5c/m_60). Returns 1 inside, 0 outside.
+RVA(0x000fe8a0, 0x4e)
+i32 CSBI_RectOnly::HitTestLayer(i32 x, i32 y) {
+    CSbiRenderObj* r = (CSbiRenderObj*)m_8;
+    CSbiLayer* L = r->m_198;
+    i32 xlo = r->m_5c - L->m_18;
+    i32 ylo = r->m_60 - L->m_1c;
+    i32 xhi = L->m_10 + xlo;
+    i32 yhi = L->m_14 + ylo;
+    if (x >= xhi || x < xlo || y >= yhi || y < ylo) {
+        return 0;
+    }
+    return 1;
+}
+
+// 0x108410 - InsertPtr(a, b): pull a node off the engine free-list, fill it with
+// (a, b), then insert it into the m_530 pooled-ptr collection - at the first slot
+// whose key (m_4) exceeds b, or appended at the end. Returns 1.
+// @early-stop
+// ~75.9%: every operation/offset is byte-correct; the residual is regalloc + block
+// layout - retail pins the free-list head in edx and reads arg `a` at the top
+// (before the pushes), and falls through from the scan loop into the append block
+// (jl loop), while the recompile colors the head into eax, loads `a` late, and
+// reaches append via an extra jmp. Not source-steerable; deferred to the final sweep.
+RVA(0x00108410, 0x8e)
+i32 CSBI_RectOnly::InsertPtr(i32 a, i32 b) {
+    CSbiFreeNode* head = (CSbiFreeNode*)g_freeList;
+    CSbiFreeNode* node = 0;
+    if (head->m_0 != 0) {
+        node = (CSbiFreeNode*)&head->m_4;
+        node->m_0 = a;
+        node->m_4 = b;
+        g_freeList = (void*)((CSbiFreeNode*)g_freeList)->m_0;
+    }
+    i32 n = m_ptrCount;
+    i32 i = 0;
+    if (n > 0) {
+        CSbiFreeNode** t = (CSbiFreeNode**)m_ptrTable[0];
+        do {
+            CSbiFreeNode* e = *t;
+            if (e != 0 && b < e->m_4) {
+                ((CSbiPtrColl2*)&m_530)->InsertAt(i, node, 1);
+                return 1;
+            }
+            i++;
+            t++;
+        } while (i < n);
+    }
+    ((CSbiPtrColl2*)&m_530)->Append(m_ptrCount, node);
+    return 1;
+}
+
+// 0x10bb50 - ReportTab(tab): log the tab with the (0x4f, 0x1b3) id pair, then
+// apply it on `this` as (1, tab). Both helpers are reloc-masked siblings.
+RVA(0x0010bb50, 0x24)
+void CSBI_RectOnly::ReportTab(i32 tab) {
+    ReportLog(tab, 0x4f, 0x1b3);
+    ReportApply(1, tab);
 }
 
 // -------------------------------------------------------------------------

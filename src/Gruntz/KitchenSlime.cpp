@@ -137,8 +137,11 @@ extern i32 g_slimeTick; // VA 0x6bf3bc
 // leaf-dtor archetype, see UserLogic.cpp 0x10ab0).
 class CKitchenSlime : public CUserLogic {
 public:
+    static void RegisterType(); // 0x0b2aa0 (level-load class registrar)
     void FireActivation(i32 coord);
     i32 Tick();
+    i32 Serialize(void* stream, i32 tag, i32 c, i32 d); // 0x0b2ff0
+    i32 SerializeChain(void* stream, i32 tag, i32 c, i32 d); // 0x16e7f0 (inherited base chain)
     i32 LoadSprites();
     ~CKitchenSlime(); // 0x013100 (folds the CUserLogic teardown)
 
@@ -238,6 +241,107 @@ extern "C" double fabs(double);
 // dtors (UserLogic.cpp 0x10ab0 / 0x11540); the empty body is enough for cl.
 RVA(0x00013100, 0x44)
 CKitchenSlime::~CKitchenSlime() {}
+
+// ---------------------------------------------------------------------------
+// The shared game-object type-name registry (R1, @0x6bf650) the level-object
+// registration funnels through, keyed by the per-type id the global bute-tree
+// (g_buteTree @0x6bf620) assigns to a class name. Same fast-range/slow-Find/
+// rebuild lookup shape as the per-class activation table (KSlimeLookup); a fresh
+// type-id is allocated by inserting the class name into the bute-tree, recording
+// it into R1's entry (after freeing any CString nodes the slot held), and bumping
+// the global type counter. All globals are BSS (DATA-pinned so the loads
+// reloc-mask); the collection / CString helpers are external/no-body.
+struct CTypeNameEntry; // an R1 entry: a CString-array holder (operator= sets it)
+DATA(0x002bf658)
+extern i32 g_typeLo;
+DATA(0x002bf65c)
+extern i32 g_typeHi;
+DATA(0x002bf660)
+extern char* g_typeBase;
+DATA(0x002bf668)
+extern i32 g_typeStride;
+DATA(0x002bf664)
+extern CTypeNameEntry* g_typeCur;
+DATA(0x002bf670)
+extern i32 g_typeCount;
+DATA(0x002bf650)
+extern CKSlimeColl g_typeColl;
+DATA(0x002bf654)
+extern CKSlimeColl2* g_typeColl2;
+DATA(0x002bf66c)
+extern void* g_typeNodes;
+
+// The global type counter (0x61aea8). The class-name bute key is the shared
+// "A" string literal (DAT_0060a454, the same $SG constant CLightFx.cpp uses).
+DATA(0x0021aea8)
+extern i32 g_typeCounter;
+
+// The global bute store (g_buteTree @0x6bf620; Find 0x16d190 / Insert 0x16db90).
+extern CButeTree g_buteTree;
+
+// The CString helpers the entry teardown/assign reach (free 0x1b9b93 __thiscall,
+// operator= 0x1b9e74 __thiscall) - external/reloc-masked.
+struct CStringNode {
+    void* m_0;   // +0x00 (4-byte stride; the slot the walking pointer steps over)
+    void Free(); // 0x1b9b93 (CString teardown, __thiscall on the slot address)
+};
+struct CTypeNameEntryView {
+    void Assign(const char* name); // 0x1b9e74 (CString::operator=)
+};
+
+// R1 lookup: the type-id -> R1 entry resolution shared with the per-class table.
+static inline CTypeNameEntry* TypeLookup(i32 key) {
+    g_typeCount = 0;
+    if (key >= g_typeLo && key <= g_typeHi) {
+        return (CTypeNameEntry*)(g_typeBase + (key - g_typeLo) * g_typeStride);
+    }
+    if (g_typeColl.Find(key, 0)) {
+        return (CTypeNameEntry*)(g_typeBase + (key - g_typeLo) * g_typeStride);
+    }
+    void* item = g_actCache;
+    g_actAllocResult = (void*)ActAlloc();
+    g_typeColl2->Insert(&g_typeColl, item, 0xc);
+    return g_typeCur;
+}
+
+// The slime's activation handler (LAB_0040180c, an ILT thunk). Referenced by
+// address so the store emits a reloc-masked DIR32 to the named symbol.
+extern "C" void KSlimeActivationHandler(); // 0x40180c
+
+// CKitchenSlime::RegisterType @0x0b2aa0 - the level-load class registrar. Assign
+// the slime class a type-id via the global bute-tree (registering its name on
+// first use), record the name into the shared type-name table, then store the
+// slime's activation handler (0x40180c) into the per-class activation table at
+// that id. A static initializer (no `this`); same archetype as CProjectile's.
+// @early-stop
+// ~91%: every operation/offset/string/call is byte-correct; the residual is pure
+// regalloc + induction-variable coloring - retail pins the type-id in esi (mine
+// edi), reads the node count into ebp via the `ecx=cnt; eax=cnt-1; lea ebp,[eax+1]`
+// count-down idiom (mine a plain --cnt), and orders the `id=key` store before the
+// scratch=0. Not source-steerable (regalloc/strength-reduction wall); deferred.
+RVA(0x000b2aa0, 0x18d)
+void CKitchenSlime::RegisterType() {
+    i32 id = (i32)g_buteTree.Find("A");
+    if (id == 0) {
+        g_buteTree.Insert("A", (void*)g_typeCounter);
+        i32 key = g_typeCounter;
+        id = key;
+        CTypeNameEntry* slot = TypeLookup(key);
+        i32 cnt = g_typeCount;
+        CStringNode* nodes = (CStringNode*)g_typeNodes;
+        if (cnt != 0) {
+            do {
+                if (nodes != 0) {
+                    nodes->Free();
+                }
+                nodes++;
+            } while (--cnt);
+        }
+        ((CTypeNameEntryView*)slot)->Assign("A");
+        g_typeCounter++;
+    }
+    *(void**)KSlimeLookup(id) = (void*)&KSlimeActivationHandler;
+}
 
 // CKitchenSlime::FireActivation @0x0b2940 - look the activation coordinate up in
 // the slime's per-coordinate registry; if the entry has a registered handler,
@@ -340,6 +444,71 @@ i32 CKitchenSlime::Tick() {
     ((CSlimeLevel*)m_10)->m_5c = newX;
     ((CSlimeLevel*)m_10)->m_60 = newY;
     return 0;
+}
+
+// The serialization stream: vtable slot 0x2c (index 11) reads n bytes into a
+// buffer, slot 0x30 (index 12) transfers n bytes. Only the slot offsets are
+// load-bearing (the virtual call is reloc-masked), as in CSBI_RectOnly::Serialize.
+class CSlimeStream {
+public:
+    virtual void Slot00();
+    virtual void Slot04();
+    virtual void Slot08();
+    virtual void Slot0C();
+    virtual void Slot10();
+    virtual void Slot14();
+    virtual void Slot18();
+    virtual void Slot1C();
+    virtual void Slot20();
+    virtual void Slot24();
+    virtual void Slot28();
+    virtual void Read(void* buf, i32 n);     // +0x2c (slot 11)
+    virtual void Transfer(void* buf, i32 n); // +0x30 (slot 12)
+};
+
+// The +0x34 serializable sub-object the slime chains into after the shared
+// CUserLogic::SerializeChain (same archetype as CFortressFlag::Serialize).
+struct CSlimeSerialSub {
+    i32 Chain(void* s, i32 tag, i32 c, i32 d); // 0x408c00 (via 0x1aff thunk)
+};
+
+// CKitchenSlime::Serialize @0x0b2ff0 - the slime's serialize override. For the
+// read tag (7) read the seven motion quadwords (m_58..m_88) through the stream's
+// Read slot; for the transfer tag (4) transfer them through the Transfer slot.
+// Then chain the shared CUserLogic serialize on `this` (bail on failure) and the
+// +0x34 sub-object's chain, returning whether that chain succeeded.
+// The seven 8-byte fields span the doubles m_58..m_78 plus the (m_80,m_84) and
+// (m_88,m_8c) int pairs, so they are addressed by offset (codegen-neutral here).
+RVA(0x000b2ff0, 0x11b)
+i32 CKitchenSlime::Serialize(void* stream, i32 tag, i32 c, i32 d) {
+    char* B = (char*)this;
+    CSlimeStream* s = (CSlimeStream*)stream;
+    // Written as `if (tag != 4) { if (tag == 7) Read... } else Transfer...` so
+    // MSVC lays the tag-7 (Read) block physically first (cmp 4/je else; cmp 7/jne;
+    // Read; jmp; else: Transfer) - the retail dispatch order.
+    if (tag != 4) {
+        if (tag == 7) {
+            s->Read(B + 0x58, 8);
+            s->Read(B + 0x60, 8);
+            s->Read(B + 0x68, 8);
+            s->Read(B + 0x70, 8);
+            s->Read(B + 0x78, 8);
+            s->Read(B + 0x80, 8);
+            s->Read(B + 0x88, 8);
+        }
+    } else {
+        s->Transfer(B + 0x58, 8);
+        s->Transfer(B + 0x60, 8);
+        s->Transfer(B + 0x68, 8);
+        s->Transfer(B + 0x70, 8);
+        s->Transfer(B + 0x78, 8);
+        s->Transfer(B + 0x80, 8);
+        s->Transfer(B + 0x88, 8);
+    }
+    if (SerializeChain(stream, tag, c, d) == 0) {
+        return 0;
+    }
+    return ((CSlimeSerialSub*)(B + 0x34))->Chain(stream, tag, c, d) != 0;
 }
 
 // @early-stop

@@ -70,10 +70,6 @@ RVA(0x00158d50, 0x61) void CDDrawWorkerMgr::CDDrawWorkerMgr_158d50() {}  // high
 // ---- CDDrawWorkerRegistry ----
 RVA(0x00155460, 0xe2) void CDDrawWorkerRegistry::CDDrawWorkerRegistry_155460() {}  // high
 
-// ---- CFaderMgr ----
-RVA(0x0017d980, 0x1f) void CFaderMgr::CFaderMgr_17d980() {}  // high
-RVA(0x0017e160, 0x8) void CFaderMgr::CFaderMgr_17e160() {}  // high
-
 // ---- CFileMem ----
 RVA(0x00165f00, 0x48) void CFileMem::CFileMem_165f00() {}  // high
 
@@ -140,10 +136,6 @@ RVA(0x001524d0, 0x41) void CImageSet::CImageSet_1524d0() {}  // med
 // ---- CInputDevice ----
 RVA(0x00134f70, 0x40) void CInputDevice::CInputDevice_134f70() {}  // high
 
-// ---- CKitchenSlime ----
-RVA(0x000b2aa0, 0x18d) void CKitchenSlime::CKitchenSlime_0b2aa0() {}  // med
-RVA(0x000b2ff0, 0x11b) void CKitchenSlime::CKitchenSlime_0b2ff0() {}  // med
-
 // ---- CMenuItem ----
 RVA(0x001845d0, 0x20) void CMenuItem::CMenuItem_1845d0() {}  // high
 RVA(0x001845f0, 0x20) void CMenuItem::CMenuItem_1845f0() {}  // high
@@ -189,18 +181,10 @@ RVA(0x00178d40, 0xdf) void CNetMgr::CNetMgr_178d40() {}  // high
 // ---- CParticlez ----
 RVA(0x00046cb0, 0x15) void CParticlez::CParticlez_046cb0() {}  // med
 
-// ---- CPathHazard ----
-RVA(0x00013280, 0x44) void CPathHazard::CPathHazard_013280() {}  // med
-RVA(0x000b43f0, 0x1c7) void CPathHazard::CPathHazard_0b43f0() {}  // med
-
 // ---- CPlay ----
 RVA(0x000d8dc0, 0xce) void CPlay::CPlay_0d8dc0() {}  // high
 RVA(0x000d8ed0, 0x128) void CPlay::CPlay_0d8ed0() {}  // high
 RVA(0x000d9050, 0xc7) void CPlay::CPlay_0d9050() {}  // high
-
-// ---- CProjectile ----
-RVA(0x000df920, 0x15) void CProjectile::CProjectile_0df920() {}  // high
-RVA(0x000dfb00, 0x18d) void CProjectile::CProjectile_0dfb00() {}  // high
 
 // ---- CRandomAmbientSound ----
 
@@ -208,13 +192,7 @@ RVA(0x000dfb00, 0x18d) void CProjectile::CProjectile_0dfb00() {}  // high
 RVA(0x0013c6c0, 0x97) void CRezItm::CRezItm_13c6c0() {}  // high
 
 // ---- CSBI_RectOnly ----
-RVA(0x000fe3e0, 0x55) void CSBI_RectOnly::CSBI_RectOnly_0fe3e0() {}  // high
-RVA(0x000fe670, 0x2b) void CSBI_RectOnly::CSBI_RectOnly_0fe670() {}  // high
-RVA(0x000fe860, 0x2d) void CSBI_RectOnly::CSBI_RectOnly_0fe860() {}  // high
-RVA(0x000fe8a0, 0x4e) void CSBI_RectOnly::CSBI_RectOnly_0fe8a0() {}  // high
-RVA(0x00108410, 0x8e) void CSBI_RectOnly::CSBI_RectOnly_108410() {}  // high
 RVA(0x00109520, 0x44c) void CSBI_RectOnly::CSBI_RectOnly_109520() {}  // high
-RVA(0x0010bb50, 0x24) void CSBI_RectOnly::CSBI_RectOnly_10bb50() {}  // high
 
 // ---- CSaveGame ----
 RVA(0x000e52c0, 0x99) void CSaveGame::CSaveGame_0e52c0() {}  // high

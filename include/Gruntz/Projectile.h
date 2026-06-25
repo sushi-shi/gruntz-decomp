@@ -112,6 +112,8 @@ public:
     virtual ~CProjectile() OVERRIDE; // most-derived dtor (0xdef60)
     virtual i32 ProjectileVfunc();   // one added slot anchors the new vftable
 
+    static void RegisterRange();   // 0xdf920 (seed the activation-table fast range)
+    static void RegisterType();    // 0xdfb00 (level-load class registrar)
     void ReleaseDeferred(i32 arg); // 0x13c70 (fire/release the two queued callbacks; arg ignored)
     i32 DetachRenderObj();         // 0xe05e0  (clear +0x154's flag, detach, gate hide)
     void StepMotion();             // 0xe08b0  (advance the parabolic motion + render pos)

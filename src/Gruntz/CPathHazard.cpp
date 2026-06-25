@@ -36,6 +36,82 @@ struct CPathHazardVtbl {
     PathHitFn HitTest;    // +0x50  slot 20
 };
 
+// ---------------------------------------------------------------------------
+// A sibling timed/striking path-hazard (the CRainCloud/CUFO family; proximity-
+// attributed to CPathHazard). It shares CPathHazard's layout + vtable (Tick reads
+// the same slots) and the bare-CUserLogic leaf dtor, adding a strike-window timer
+// pair: m_118 the strike-armed gate, the (m_120,m_124) i64 strike deadline and
+// (m_128,m_12c) i64 window. Only offsets / code bytes are load-bearing.
+// ---------------------------------------------------------------------------
+// Derives from CUserLogic directly (NOT CPathHazard, whose dtor is out-of-line):
+// the leaf dtor must fold the bare CUserLogic teardown inline to match 0x13280,
+// which an out-of-line CPathHazard base dtor would block. It shares CPathHazard's
+// vtable/layout only at the byte level (Tick reads the vtable raw).
+class CLightningHazard : public CUserLogic {
+public:
+    i32 SiblingTick();   // 0x0b43f0 (virtual slot 16 override)
+    ~CLightningHazard(); // 0x013280 (folds the CUserLogic teardown)
+
+    char m_pad40[0x108 - 0x40];
+    i64 m_108; // +0x108 leg deadline (i64: m_108/m_10c)
+    i64 m_110; // +0x110 leg window   (i64: m_110/m_114)
+    i32 m_118; // +0x118 strike-armed gate
+    char m_pad11c[0x120 - 0x11c];
+    i64 m_120; // +0x120 strike deadline (i64)
+    i64 m_128; // +0x128 strike window  (i64)
+};
+
+// The sibling's vtable view (its own slot PMFs; same slot offsets as CPathHazard).
+typedef i32 (CLightningHazard::*LightBeginFn)();
+typedef i32 (CLightningHazard::*LightHitFn)(i32, i32);
+struct CLightVtbl {
+    char s0[0x4c];
+    LightBeginFn BeginLeg; // +0x4c  slot 19
+    LightHitFn HitTest;    // +0x50  slot 20
+};
+
+// The strike-clock + threshold globals the timer windows poll.
+DATA(0x00245588)
+extern i32 g_strikeClock; // 0x645588 (the draw-clock; also g_pathLegTag)
+DATA(0x00245598)
+extern i32 g_strikeThresh; // 0x645598 (compared to 0x64)
+
+// g_gameReg's +0x78 ref-index table (the strike sprite-frame selectors) and the
+// +0x118/+0x134 window-mode gates, plus the bound-object's +0x144 query rect.
+struct CLightObj {
+    char m_pad00[0x4c];
+    i32 m_4c; // +0x4c  sprite-ref handle
+    i32 m_50; // +0x50  state (set to 7)
+    char m_pad54[0x58 - 0x54];
+    i32 m_58; // +0x58  active flag (set to 1)
+    i32 m_5c, m_60; // +0x5c/+0x60 screen position
+    char m_pad64[0x144 - 0x64];
+    i32 m_144; // +0x144 query rect base
+    char m_pad148[0x198 - 0x148];
+    CPathLayer* m_198; // +0x198 layer descriptor
+};
+struct CLightGameReg {
+    char m_pad00[0x68];
+    CPathCueGate* m_68; // +0x68 visibility/cue gate
+    char m_pad6c[0x78 - 0x6c];
+    i32* m_78; // +0x78 ref-index/selector table
+    char m_pad7c[0x118 - 0x7c];
+    i32 m_118; // +0x118 has-window flag
+    char m_pad11c[0x134 - 0x11c];
+    i32 m_134; // +0x134 mode discriminator
+};
+DATA(0x0024556c)
+extern CLightGameReg* g_lightGameReg;
+
+// The "A" bute key the new-leg re-bind looks up (DAT_0060a454 $SG literal).
+extern CButeTree g_buteTree;
+
+// CLightningHazard::~ @0x013280 - byte-identical to ~CPathHazard (the bare
+// CUserLogic leaf teardown); the empty body is enough for cl. (Distinct EH
+// handler funclet from 0x13340, but that is reloc-masked.)
+RVA(0x00013280, 0x44)
+CLightningHazard::~CLightningHazard() {}
+
 // CPathHazard::~CPathHazard @0x013340 - the leaf adds no destructible members
 // beyond CUserLogic, so its dtor folds the bare CUserLogic teardown: store the
 // CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link (the embedded
@@ -141,6 +217,79 @@ i32 CPathHazard::Tick() {
 
     ((CPathObj*)m_10)->m_5c = newX;
     ((CPathObj*)m_10)->m_60 = newY;
+    return 0;
+}
+
+// CLightningHazard::SiblingTick @0x0b43f0 (virtual slot 16 override) - the timed
+// striking hazard's per-frame driver. When armed (m_118), check the strike window:
+// if the i64 (clock - deadline) is past the window OR the strike-threshold gate
+// expired, disarm and pick the "spent" sprite frame; otherwise pick the active
+// frame (selector index 5 vs 0); seed the bound object's draw state (active=1,
+// state=7, sprite-ref from g_gameReg->m_78). Then advance the +0x1a0 sub-mgr, run
+// the on-screen visibility/hit gate, and on arrival fire BeginLeg + re-bind the
+// "A" bute node. Integer-only; returns 0.
+// @early-stop
+// ~86%: the integer scaffolding (the i64 strike-window compares, the visibility
+// gate, the arrival/BeginLeg + bute re-bind) is byte-correct. The residual is two
+// documented tails: (1) the TU models g_gameReg as ?g_lightGameReg while the retail
+// obj names it _g_mgrSettings, so its repeated DIR32 data relocs stay fuzzy (a
+// TU-wide rename, the matcher.md reloc-naming artifact); (2) the dual signed-i64
+// `>=` window compares lay the expire/check branches in a different order than
+// retail's hi-dword `jg/jl; cmp lo; jae` materialization. Logic correct; deferred.
+RVA(0x000b43f0, 0x1c7)
+i32 CLightningHazard::SiblingTick() {
+    if (m_118 != 0) {
+        i32 sel = 5;
+        i64 elapsed = (i64)(u32)g_strikeClock - m_120;
+        if (elapsed >= m_128) {
+            m_118 = 0;
+        } else if (g_strikeThresh < 0x64) {
+            sel = 0;
+        }
+        CLightObj* o = (CLightObj*)m_10;
+        o->m_58 = 1;
+        o->m_50 = 7;
+        o->m_4c = g_lightGameReg->m_78[sel + 5]; // [m_78 + sel*4 + 0x14]
+    }
+
+    ((CPathSubMgr*)((char*)m_38 + 0x1a0))->Advance(g_pathTick);
+
+    CLightObj* obj = (CLightObj*)m_10;
+    i32 rect[4];
+    rect[0] = obj->m_5c - obj->m_198->m_18 + 7;
+    rect[2] = obj->m_198->m_18 + obj->m_5c - 7;
+    rect[1] = obj->m_60 - obj->m_198->m_1c + 7;
+    rect[3] = obj->m_198->m_1c + obj->m_60 - 7;
+
+    CLightGameReg* reg = g_lightGameReg;
+    if (reg->m_118 != 0 && reg->m_134 == 1) {
+        // window mode, skip the query
+    } else {
+        i32 outA, outB;
+        CPathEntity* ent =
+            (CPathEntity*)reg->m_68->QueryAt(obj->m_5c, obj->m_60, &obj->m_144, &outA, &outB, rect);
+        if (ent != 0 && ent->m_258 != 0x38) {
+            if (g_lightGameReg->m_134 != 1 || outA != 0) {
+                CLightVtbl* vt = *(CLightVtbl**)this;
+                if ((this->*(vt->HitTest))(outA, outB) == 0) {
+                    return 0;
+                }
+            }
+        }
+    }
+
+    i64 legElapsed = (i64)(u32)g_strikeClock - m_108;
+    if (legElapsed >= m_110) {
+        CLightObj* o = (CLightObj*)m_10;
+        o->m_58 = 1;
+        o->m_50 = 7;
+        o->m_4c = g_lightGameReg->m_78[0xa]; // [m_78 + 0x28]
+        CLightVtbl* vt = *(CLightVtbl**)this;
+        (this->*(vt->BeginLeg))();
+        m_30 = (void*)m_14->m_1c;
+        m_14->m_1c = g_buteTree.Find("A");
+        m_118 = 0;
+    }
     return 0;
 }
 

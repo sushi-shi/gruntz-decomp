@@ -7,7 +7,8 @@
 // Like the rest of the family it constructs a throwing CUserBaseLink (in the
 // CUserLogic base) + a CObList, so MSVC emits the /GX EH frame -> built eh.
 #include <Gruntz/Projectile.h>
-#include <math.h> // sin / cos (StepMotion's parabola)
+#include <Bute/ButeMgr.h> // CButeTree (the type-registry funnel)
+#include <math.h>         // sin / cos (StepMotion's parabola)
 #include <rva.h>
 
 // StepMotion's two motion-phase thresholds (.rdata doubles) + the int amplitude
@@ -203,6 +204,158 @@ CProjectile::~CProjectile() {
         }
     }
     m_204.RemoveAll();
+}
+
+// ===========================================================================
+// CProjectile level-load registration (the same dual-registry archetype as
+// CKitchenSlime::RegisterType): a per-coordinate activation table (R2, the
+// projectile's own collection at @0x64c758) and the shared game-object type-name
+// table (R1, @0x6bf650) keyed by the per-type id the global bute-tree assigns to
+// the class name ("A"). All globals are BSS / DATA-pinned (reloc-masked); the
+// collection / CString helpers are external/no-body.
+// ===========================================================================
+
+// The global bute store (g_buteTree @0x6bf620; Find 0x16d190 / Insert 0x16db90).
+extern CButeTree g_buteTree;
+
+// The activation-collection methods (shared with the per-class registries):
+//   Find  0x16da80 (__thiscall ret 8), Insert 0x16d850 (__thiscall ret 0xc),
+//   ActAlloc 0x16d990, RegisterRange 0x408710 (via 0x3742 thunk).
+struct CProjColl {
+    i32 Find(i32 coord, i32 z);          // 0x16da80
+    void RegisterRange(i32 lo, i32 hi);  // 0x408710 (0x0df920 callee)
+};
+struct CProjColl2 {
+    void Insert(void* coll, void* item, i32 n); // 0x16d850
+};
+extern "C" i32 ProjActAlloc();              // 0x16d990
+DATA(0x002bf464)
+extern void* g_projActCache;                // 0x6bf464 (shared alloc cache)
+DATA(0x002bf428)
+extern void* g_projActAllocResult;          // 0x6bf428
+
+// R1 - the shared type-name table (@0x6bf650).
+struct CProjTypeEntry;
+DATA(0x002bf658)
+extern i32 g_projTypeLo;
+DATA(0x002bf65c)
+extern i32 g_projTypeHi;
+DATA(0x002bf660)
+extern char* g_projTypeBase;
+DATA(0x002bf668)
+extern i32 g_projTypeStride;
+DATA(0x002bf664)
+extern CProjTypeEntry* g_projTypeCur;
+DATA(0x002bf670)
+extern i32 g_projTypeCount;
+DATA(0x002bf650)
+extern CProjColl g_projTypeColl;
+DATA(0x002bf654)
+extern CProjColl2* g_projTypeColl2;
+DATA(0x002bf66c)
+extern void* g_projTypeNodes;
+DATA(0x0021aea8)
+extern i32 g_projTypeCounter; // 0x61aea8 (global type counter)
+
+// R2 - the projectile's per-coordinate activation table (@0x64c758).
+struct CProjActEntry;
+DATA(0x0024c760)
+extern i32 g_projActLo;
+DATA(0x0024c764)
+extern i32 g_projActHi;
+DATA(0x0024c768)
+extern char* g_projActBase;
+DATA(0x0024c770)
+extern i32 g_projActStride;
+DATA(0x0024c76c)
+extern CProjActEntry* g_projActCur;
+DATA(0x0024c778)
+extern i32 g_projActScratch;
+DATA(0x0024c758)
+extern CProjColl g_projActColl;
+DATA(0x0024c75c)
+extern CProjColl2* g_projActColl2;
+
+// The CString slot teardown (0x1b9b93 __thiscall) + name assign (0x1b9e74).
+struct CProjStringNode {
+    void* m_0;
+    void Free(); // 0x1b9b93
+};
+struct CProjTypeEntryView {
+    void Assign(const char* name); // 0x1b9e74
+};
+
+// The projectile's activation handler (LAB_00403896, an ILT thunk).
+extern "C" void ProjActivationHandler(); // 0x403896
+
+// R2 lookup (projectile activation table).
+static inline CProjActEntry* ProjActLookup(i32 coord) {
+    g_projActScratch = 0;
+    if (coord >= g_projActLo && coord <= g_projActHi) {
+        return (CProjActEntry*)(g_projActBase + (coord - g_projActLo) * g_projActStride);
+    }
+    if (g_projActColl.Find(coord, 0)) {
+        return (CProjActEntry*)(g_projActBase + (coord - g_projActLo) * g_projActStride);
+    }
+    void* item = g_projActCache;
+    g_projActAllocResult = (void*)ProjActAlloc();
+    g_projActColl2->Insert(&g_projActColl, item, 0xc);
+    return g_projActCur;
+}
+
+// R1 lookup (shared type-name table).
+static inline CProjTypeEntry* ProjTypeLookup(i32 key) {
+    g_projTypeCount = 0;
+    if (key >= g_projTypeLo && key <= g_projTypeHi) {
+        return (CProjTypeEntry*)(g_projTypeBase + (key - g_projTypeLo) * g_projTypeStride);
+    }
+    if (g_projTypeColl.Find(key, 0)) {
+        return (CProjTypeEntry*)(g_projTypeBase + (key - g_projTypeLo) * g_projTypeStride);
+    }
+    void* item = g_projActCache;
+    g_projActAllocResult = (void*)ProjActAlloc();
+    g_projTypeColl2->Insert(&g_projTypeColl, item, 0xc);
+    return g_projTypeCur;
+}
+
+// CProjectile::RegisterRange @0x0df920 - seed the projectile's activation table's
+// fast-range bounds (RegisterRange(0x7d0, 0x7da)). A static initializer.
+RVA(0x000df920, 0x15)
+void CProjectile::RegisterRange() {
+    g_projActColl.RegisterRange(0x7d0, 0x7da);
+}
+
+// CProjectile::RegisterType @0x0dfb00 - the level-load class registrar (same
+// archetype as CKitchenSlime::RegisterType): assign the class a type-id via the
+// global bute-tree, record the name into the shared type-name table, then store
+// the projectile's activation handler (0x403896) into the per-class table.
+// @early-stop
+// ~91%: byte-correct operations/offsets/strings/calls; the residual is the same
+// regalloc + count-down induction wall RegisterType carries (type-id register
+// coloring + the `ecx=cnt; eax=cnt-1; lea ebp,[eax+1]` node-free loop idiom). Not
+// source-steerable; deferred to the final sweep.
+RVA(0x000dfb00, 0x18d)
+void CProjectile::RegisterType() {
+    i32 id = (i32)g_buteTree.Find("A");
+    if (id == 0) {
+        g_buteTree.Insert("A", (void*)g_projTypeCounter);
+        i32 key = g_projTypeCounter;
+        id = key;
+        CProjTypeEntry* slot = ProjTypeLookup(key);
+        i32 cnt = g_projTypeCount;
+        CProjStringNode* nodes = (CProjStringNode*)g_projTypeNodes;
+        if (cnt != 0) {
+            do {
+                if (nodes != 0) {
+                    nodes->Free();
+                }
+                nodes++;
+            } while (--cnt);
+        }
+        ((CProjTypeEntryView*)slot)->Assign("A");
+        g_projTypeCounter++;
+    }
+    *(void**)ProjActLookup(id) = (void*)&ProjActivationHandler;
 }
 
 // ---------------------------------------------------------------------------
