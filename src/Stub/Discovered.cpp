@@ -835,11 +835,8 @@ void ClassUnknown_47::ClassUnknown_47_17e880() {}
 
 // ---- ClassUnknown_48 -> CFaderMgr (src/Gruntz/CFaderMgr.cpp) ----
 
-// ---- ClassUnknown_49 ----
-RVA(0x00182940, 0x13c)
-void ClassUnknown_49::ClassUnknown_49_182940() {}
-RVA(0x00182a80, 0x2e)
-void ClassUnknown_49::ClassUnknown_49_182a80() {}
+// ---- ClassUnknown_49 -> two file-static __cdecl math helpers (NOT a class):
+// IsPrime (0x182a80) + ScatterSamples (0x182940) -> src/Gruntz/ScatterSamples.cpp.
 
 // ---- ClassUnknown_5 ----
 RVA(0x00150040, 0x136)

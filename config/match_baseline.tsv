@@ -67,7 +67,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	194	0
+engine_discovered	192	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -148,6 +148,7 @@ sbi_warlordhead	4	1
 sbi_warlordhead_eh	1	0
 sbi_wellgoo	1	0
 sbi_wellgoo_eh	1	0
+scattersamples	2	1
 shadetablecache	9	3
 siriusworkerhandlers	4	3
 sounddevice	8	4
@@ -830,8 +831,6 @@ engine_discovered	?ClassUnknown_44_1587c0@ClassUnknown_44@@QAEXXZ	7.1429	7.1429	
 engine_discovered	?ClassUnknown_47_0f9280@ClassUnknown_47@@QAEXXZ	0.9709	0.9709	1	0b4331a0db85	0xf9280
 engine_discovered	?ClassUnknown_47_17e7b0@ClassUnknown_47@@QAEXXZ	33.3333	33.3333	1	bf775c2f2423	0x17e7b0
 engine_discovered	?ClassUnknown_47_17e880@ClassUnknown_47@@QAEXXZ	8.3333	8.3333	1	910a02366f66	0x17e880
-engine_discovered	?ClassUnknown_49_182940@ClassUnknown_49@@QAEXXZ	0.9009	0.9009	1	f566f81d5390	0x182940
-engine_discovered	?ClassUnknown_49_182a80@ClassUnknown_49@@QAEXXZ	4.5455	4.5455	1	c379a980e6cb	0x182a80
 engine_discovered	?ClassUnknown_51_1154b0@ClassUnknown_51@@QAEXXZ	3.5714	3.5714	1	13cffed88461	0x1154b0
 engine_discovered	?ClassUnknown_53_029ac0@ClassUnknown_53@@QAEXXZ	4.0000	4.0000	1	9c6b3f60ac2b	0x29ac0
 engine_discovered	?ClassUnknown_54_135110@ClassUnknown_54@@QAEXXZ	2.2222	2.2222	1	ac0756dd1290	0x135110
@@ -2080,6 +2079,8 @@ sbi_warlordhead	?ShowFrames@CSBI_WarlordHead@@QAEHHH@Z	92.2716	92.2716	1	73cec54
 sbi_warlordhead_eh	??1CSBI_WarlordHead@@QAE@XZ	43.6061	43.6061	1	bcabec3f0b56	0x104a00
 sbi_wellgoo	?Tick@CSBI_WellGoo@@QAEHXZ	83.0000	83.0000	1	34178faa97ab	0xe6380
 sbi_wellgoo_eh	??1CSBI_WellGoo@@QAE@XZ	51.0833	51.0833	1	6be06cd88e2a	0x104bb0
+scattersamples	?IsPrime@@YAHH@Z	100.0000	100.0000	1	3d4ae8c20789	0x182a80
+scattersamples	?ScatterSamples@@YAXPAHHHH@Z	59.2162	59.2162	1	345a3c1c24dd	0x182940
 shadetablecache	??0CShadeTableCache@@QAE@XZ	100.0000	100.0000	1	8d165746ed6f	0x14de30
 shadetablecache	??1CShadeTableCache@@QAE@XZ	80.1333	80.1333	2	d4743b4c108f	0x14de50
 shadetablecache	?AddTable@CShadeTableCache@@QAEPAUCShadeTable@@M@Z	59.6703	59.6703	2	102c6568e757	0x14f080

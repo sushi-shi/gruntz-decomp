@@ -480,11 +480,6 @@ public:
     void ClassUnknown_47_17e7b0();
     void ClassUnknown_47_17e880();
 };
-class ClassUnknown_49 {
-public:
-    void ClassUnknown_49_182940();
-    void ClassUnknown_49_182a80();
-};
 class ClassUnknown_5 {
 public:
     void ClassUnknown_5_150040();

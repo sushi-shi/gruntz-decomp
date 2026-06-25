@@ -941,6 +941,11 @@ source = "src/Gruntz/MgrTokenQuery.cpp"
 flags = "base"
 
 [[unit]]
+unit = "scattersamples"
+source = "src/Gruntz/ScatterSamples.cpp"
+flags = "base"
+
+[[unit]]
 unit = "cfader"
 source = "src/Gruntz/CFader.cpp"
 flags = "eh"
