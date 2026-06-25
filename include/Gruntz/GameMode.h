@@ -319,6 +319,14 @@ public:
     i32 CheckPerfectBonus(); // 0x1c0f0 - "BOOTY_PERFECT" cue + scroll advance
     i32 QueryGruntSlots();   // 0x1ecf0 - scan 4 reg records for an empty slot
 
+    // Ready-gate + paint (0x1ce30): if the active/ready virtual (CState slot 3) fires,
+    // run the per-frame paint and return its normalized result, else 0.
+    i32 ReadyAndPaint();                        // 0x1ce30
+    i32 ForwardIdleAnim(i32 a, i32 b);     // 0x1d420 -> BuildBootyGruntIdleAnimation
+    i32 Paint();                           // 0xfac70 (reloc-masked engine paint)
+    i32 BuildBootyGruntIdleAnimation();    // 0x1ce60 (reloc-masked, own method;
+                                           // shares the forwarder's arg frame)
+
     // --- CMultiBootyState members (placeholders, beyond the CState layout) ---
     // The +0x1ec and +0x204 sprite-ptr arrays overlap (the two animators index the
     // same letter set from different bases) - accessed by offset in the bodies, not

@@ -5,15 +5,6 @@
 #include <rva.h>
 #include <Stub/attributed.h>
 
-// ---- CBattlezDlg ----
-RVA(0x00016410, 0x7) void CSeverusWorker::CSeverusWorker_016410() {}  // high
-RVA(0x00016500, 0x46) void CSeverusWorker::CSeverusWorker_016500() {}  // high
-RVA(0x00017340, 0x73) void CBattlezDlg::CBattlezDlg_017340() {}  // high
-
-// ---- CBootyState ----
-RVA(0x0001ce30, 0x1d) void CBootyState::CBootyState_01ce30() {}  // med
-RVA(0x0001d420, 0x8) void CBootyState::CBootyState_01d420() {}  // med
-
 // ---- CChatBoxOwner ----
 RVA(0x000205c0, 0x741) void CChatBoxOwner::CChatBoxOwner_0205c0() {}  // high
 

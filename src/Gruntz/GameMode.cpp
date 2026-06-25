@@ -1197,6 +1197,24 @@ i32 CMultiBootyState::CheckPerfectBonus() {
     return 1;
 }
 
+// CMultiBootyState::ReadyAndPaint() (0x1ce30): gate on the active/ready virtual (CState
+// slot 3 / +0xc); when ready, run the per-frame Paint and return the normalized result;
+// otherwise return the (zero) gate result. (Was conflated under "CBootyState" by the trace.)
+RVA(0x0001ce30, 0x1d)
+i32 CMultiBootyState::ReadyAndPaint() {
+    if (Vfunc3() == 0) {
+        return 0;
+    }
+    return Paint() != 0;
+}
+
+// CMultiBootyState::ForwardIdleAnim(a, b) (0x1d420): trivial forwarder to the own
+// BuildBootyGruntIdleAnimation (0x1ce60), passing this/args straight through.
+RVA(0x0001d420, 0x8)
+i32 CMultiBootyState::ForwardIdleAnim(i32 a, i32 b) {
+    return BuildBootyGruntIdleAnimation();
+}
+
 // CMultiBootyState::ReleaseResources() (slot 2 / +0x8, 0x1e520): free the leaf-registry
 // pooled resource (if set), release the "BOOTY" set on the leaf registry, run a teardown
 // on the owner's m_4->m_60 sub-object, then chain BaseCleanup.

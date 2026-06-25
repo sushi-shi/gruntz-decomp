@@ -21,6 +21,8 @@
 
 #include <Ints.h>
 
+class CString; // full def via <Gruntz/CString.h> below; needed by CWnd::GetWindowText
+
 // ---------------------------------------------------------------------------
 // Minimal MFC base models. Only the exact mangled symbol + the calling
 // convention/arg shape are load-bearing; the bodies live in NAFXCW and are
@@ -35,7 +37,9 @@
 class CWnd {
 public:
     void SetWindowTextA(const char* lpszString);
-    void EnableWindow(i32 bEnable); // NAFXCW __thiscall (reloc-masked)
+    void EnableWindow(i32 bEnable);       // NAFXCW __thiscall (reloc-masked)
+    void GetWindowTextA(CString& rString); // NAFXCW __thiscall (reloc-masked)
+                                           // (GetWindowText macro-expands to this)
 };
 
 // CString - the MFC string. Only its default ctor is touched (the embedded
@@ -95,6 +99,11 @@ public:
     void SetCtrlBText(i32 index, const char* text);
     // SetSlotValue - store val into slot[index].field@0x158; returns TRUE.
     i32 SetSlotValue(i32 index, i32 val);
+
+    // ReadCtrlBText (0x17340): read control `index`'s text into a local CString
+    // (GetCtrlB(index)->GetWindowText), then measure it. /GX EH frame unwinds the
+    // half-built local CString.
+    void ReadCtrlBText(i32 index);
 
     // Slot/option helpers reached via ILT thunks (own CBattlezDlg methods, owned
     // as RVA stubs in src/Stub/ApiCallers.cpp; external/no-body here so the calls

@@ -99,6 +99,52 @@ RVA(0x00014c90, 0x47)
 CBattlezDlg::~CBattlezDlg() {}
 
 // ---------------------------------------------------------------------------
+// Small CImageList-holder helper hierarchy compiled into the dialogs TU (its code
+// lands between the CBattlezDlg ctor and CBattlezDlgCustom). A trivial CObject-ish
+// base whose dtor only restamps the shared base dtor-vtable @0x5e8cb4, and a derived
+// holder (vtable @0x5e8cd4) that owns a CImageList the dtor frees. The class names
+// are placeholders (only offsets + code bytes are load-bearing). Both vtables are
+// referenced by ADDRESS (reloc-masked DATA externs), so the manual vptr stores pair.
+// ---------------------------------------------------------------------------
+DATA(0x001e8cb4)
+extern void* g_imgHolderBaseVtbl; // 0x5e8cb4  shared CObject-ish base dtor-vtable
+DATA(0x001e8cd4)
+extern void* g_imgHolderVtbl; // 0x5e8cd4  derived holder vtable
+
+// CImgHolderBase - the base whose dtor only restamps the base vtable. The
+// RestampBase_16410 entry is the standalone 7-byte vptr-set the binary keeps at
+// 0x16410 (also folded inline into the derived dtor's base-teardown tail).
+struct CImgHolderBase {
+    void RestampBase_16410();             // 0x016410
+    ~CImgHolderBase() { *(void**)this = &g_imgHolderBaseVtbl; } // inline base teardown
+};
+
+RVA(0x00016410, 0x7)
+void CImgHolderBase::RestampBase_16410() {
+    *(void**)this = &g_imgHolderBaseVtbl;
+}
+
+// CImgHolder - the derived holder. Its dtor restamps the derived vtable, frees the
+// embedded image list (CImageList::DeleteImageList @0x1c6a5c, reloc-masked), then the
+// inlined base teardown restamps the base vtable. The /GX EH frame guards the base
+// teardown if DeleteImageList throws.
+struct CImgHolder : CImgHolderBase {
+    void DeleteImageList(); // 0x1c6a5c (NAFXCW CImageList::DeleteImageList, reloc-masked)
+    ~CImgHolder();          // 0x016500
+};
+
+// @early-stop
+// eh-dtor-vptr-restamp-presence wall (docs/patterns/eh-dtor-vptr-restamp-presence.md):
+// the derived/base vptr restamps + the DeleteImageList teardown are byte-faithful; the
+// /GX funclet emission for an inline-base teardown is the residual (frame-presence not
+// fully source-steerable).
+RVA(0x00016500, 0x46)
+CImgHolder::~CImgHolder() {
+    *(void**)this = &g_imgHolderVtbl; // store 0x5e8cd4 (derived vptr)
+    DeleteImageList();                // 0x1c6a5c
+}
+
+// ---------------------------------------------------------------------------
 RVA(0x00018030, 0x56)
 CBattlezDlgCustom::CBattlezDlgCustom(CWnd* pParent) : CDialog(0xc3, pParent) {}
 
@@ -434,6 +480,22 @@ RVA(0x00017460, 0x22)
 i32 CBattlezDlg::SetSlotValue(i32 index, i32 val) {
     *(i32*)((char*)((CBattlezSlot*)m_5c + index) + 0x158) = val;
     return 1;
+}
+
+// ReadCtrlBText (0x17340): read the `index` control's text into a local CString via
+// GetCtrlB(index)->GetWindowText, then measure the resulting C-string. The /GX EH
+// frame guards the half-built local CString.
+// @early-stop
+// trailing inlined-strlen block unmodeled (~69%): after GetWindowText, retail measures
+// the filled buffer with an inline `repnz scas` (using edi as the scan pointer, hence an
+// extra `push edi`) and DISCARDS the result. MSVC drops a discarded intrinsic strlen, so
+// the scas can't be re-emitted without the original (unknown) use of the length. The
+// missing `push edi` shifts every [esp+N] reference by 4, depressing the byte score even
+// though the CString ctor/dtor + GetCtrlB->GetWindowText + /GX frame are structurally exact.
+RVA(0x00017340, 0x73)
+void CBattlezDlg::ReadCtrlBText(i32 index) {
+    CString s;
+    GetCtrlB(index)->GetWindowText(s);
 }
 
 // ~CMultiStartDlg @0x0b8960 - destroy the CObList member m_74 then the CString

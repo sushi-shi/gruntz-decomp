@@ -7,12 +7,9 @@
 #ifndef GRUNTZ_STUB_ATTRIBUTED_H
 #define GRUNTZ_STUB_ATTRIBUTED_H
 
-class CBattlezDlg { public: void CBattlezDlg_017340(); };
-class CBootyState { public: void CBootyState_01ce30(); void CBootyState_01d420(); };
 class CChatBoxOwner { public: void CChatBoxOwner_0205c0(); };
 class CNetMgr { public: void CNetMgr_0b86c0(); void CNetMgr_0b8fc0(); void CNetMgr_0bbc90(); void CNetMgr_0bbec0(); void CNetMgr_0bbf80(); void CNetMgr_0bc750(); void CNetMgr_0bccd0(); };
 class CSBI_RectOnly { public: void CSBI_RectOnly_109520(); };
-class CSeverusWorker { public: void CSeverusWorker_016410(); void CSeverusWorker_016500(); };
 class CShadeTableCache { public: void CShadeTableCache_14df40(); };
 class CTileTriggerTransition { public: void CTileTriggerTransition_10fe70(); };
 class CTriggerMgr { public: void CTriggerMgr_07abc0(); };

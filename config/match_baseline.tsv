@@ -111,11 +111,11 @@ cwaypoint	1	1
 cwormholeacts	1	0
 databuffer	7	5
 deflate	6	6
-dialogs	28	13
+dialogs	31	14
 directinputmgr2	33	29
 directsoundmgr	39	29
 dsoundvoice	2	1
-engine_attributed	28	0
+engine_attributed	23	0
 engine_boundary	557	0
 engine_discovered	66	0
 engine_label_stubs	462	106
@@ -128,7 +128,7 @@ fonts	2	1
 gameapp	20	16
 gamekeyhandler	1	0
 gamelevel	52	23
-gamemode	42	19
+gamemode	44	21
 gamemodeobjlifecycle	4	3
 gameobjectctors	5	1
 gametext	4	3
@@ -935,6 +935,7 @@ dialogs	??0CCheckpointDlg@@QAE@PAVCWnd@@@Z	100.0000	100.0000	3	6c51964bdb81	0x23
 dialogs	??0CMultiStartDlg@@QAE@HPAVCWnd@@@Z	100.0000	100.0000	5	a71396cbe887	0xc1750
 dialogs	??1CBattlezDlg@@UAE@XZ	94.4444	94.4444	1	7ed27cb65fc2	0x14c90
 dialogs	??1CBattlezDlgCustom@@UAE@XZ	94.4444	94.4444	1	8ef41d520506	0x17140
+dialogs	??1CImgHolder@@QAE@XZ	93.3333	93.3333	1	ec5139813741	0x16500
 dialogs	??1CMultiStartDlg@@UAE@XZ	95.6522	95.6522	1	d0a639c25288	0xb8960
 dialogs	?ApplyOption0@CBattlezDlg@@QAEXXZ	100.0000	100.0000	1	a2649603d299	0x15de0
 dialogs	?ApplyOption1@CBattlezDlg@@QAEXXZ	100.0000	100.0000	1	4ca2816e5f53	0x15e60
@@ -948,6 +949,8 @@ dialogs	?GetCtrlD@CBattlezDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	2	2df6252ff25e	0x
 dialogs	?GetMessageMap@CBattlezDlgColors@@QAEPBXXZ	100.0000	100.0000	1	8bb5f517fac7	0x17ac0
 dialogs	?GetMessageMap@CCheckpointDlg@@QAEPBXXZ	100.0000	100.0000	1	a1a3e649e0c1	0x23570
 dialogs	?InitPlayerSlots@CMultiStartDlg@@QAEXXZ	0.1294	0.1294	2	460bc8e04d05	0xc20a0
+dialogs	?ReadCtrlBText@CBattlezDlg@@QAEXH@Z	69.1389	69.1389	1	6df8807040af	0x17340
+dialogs	?RestampBase_16410@CImgHolderBase@@QAEXXZ	100.0000	100.0000	1	77e1b4009894	0x16410
 dialogs	?SetCtrlBText@CBattlezDlg@@QAEXHPBD@Z	100.0000	100.0000	2	3b905b2c10b8	0x15db0
 dialogs	?SetSlotValue@CBattlezDlg@@QAEHHH@Z	100.0000	100.0000	2	b1675baacc7b	0x17460
 dialogs	?UpdateSlot@CMultiStartDlg@@QAEHXZ	91.8571	91.8571	1	583597665330	0xc1fd0
@@ -1030,9 +1033,6 @@ directsoundmgr	?winapi_136e20_timeGetTime@DirectSoundMgr@@QAEHH@Z	2.6667	2.6667	
 directsoundmgr	?winapi_137ac0_timeGetTime@DirectSoundMgr@@QAEHH@Z	2.9231	2.9231	2	63f8b426702d	0x137ac0
 dsoundvoice	?Stop_1370d0@DSoundVoice@@QAEHXZ	100.0000	100.0000	1	6ed65c4dd540	0x1370d0
 dsoundvoice	?Tick_137060@DSoundVoice@@QAEHH@Z	95.6977	95.6977	1	e0318068fc4a	0x137060
-engine_attributed	?CBattlezDlg_017340@CBattlezDlg@@QAEXXZ	1.1111	1.1111	1	7f90e15a8ffa	0x17340
-engine_attributed	?CBootyState_01ce30@CBootyState@@QAEXXZ	6.6667	6.6667	1	ee0938cc3645	0x1ce30
-engine_attributed	?CBootyState_01d420@CBootyState@@QAEXXZ	20.0000	20.0000	1	d54c0ecb7af5	0x1d420
 engine_attributed	?CChatBoxOwner_0205c0@CChatBoxOwner@@QAEXXZ	0.0835	0.0835	1	c73daebdde18	0x205c0
 engine_attributed	?CNetMgr_0b86c0@CNetMgr@@QAEXXZ	0.7752	0.7752	2	530d3740ec49	0xb86c0
 engine_attributed	?CNetMgr_0b8fc0@CNetMgr@@QAEXXZ	0.4255	0.4255	2	a0b6329c7044	0xb8fc0
@@ -1042,8 +1042,6 @@ engine_attributed	?CNetMgr_0bbf80@CNetMgr@@QAEXXZ	1.5152	1.5152	1	966da8c493a8	0
 engine_attributed	?CNetMgr_0bc750@CNetMgr@@QAEXXZ	0.9259	0.9259	1	8243db1bde49	0xbc750
 engine_attributed	?CNetMgr_0bccd0@CNetMgr@@QAEXXZ	0.5128	0.5128	1	a059a86d6c08	0xbccd0
 engine_attributed	?CSBI_RectOnly_109520@CSBI_RectOnly@@QAEXXZ	0.0946	0.0946	1	bfcdd55fd70f	0x109520
-engine_attributed	?CSeverusWorker_016410@CSeverusWorker@@QAEXXZ	50.0000	50.0000	1	168662ec10c4	0x16410
-engine_attributed	?CSeverusWorker_016500@CSeverusWorker@@QAEXXZ	5.5556	5.5556	1	e8fb48ba3312	0x16500
 engine_attributed	?CShadeTableCache_14df40@CShadeTableCache@@QAEXXZ	0.0797	0.0797	1	e1665bd8bf80	0x14df40
 engine_attributed	?CTileTriggerTransition_10fe70@CTileTriggerTransition@@QAEXXZ	0.8696	0.8696	1	c029553c4df8	0x10fe70
 engine_attributed	?CTriggerMgr_07abc0@CTriggerMgr@@QAEXXZ	0.0948	0.0948	1	d276c5e72e8b	0x7abc0
@@ -2288,6 +2286,7 @@ gamemode	?CheckWarpLetterBonus@CBootyState@@QAEXXZ	0.2849	0.2849	1	86e864f54e78	
 gamemode	?FinishState@CCreditsState@@QAEHXZ	100.0000	100.0000	1	b2c3a49646dc	0x39c40
 gamemode	?FlashColor@CCreditsState@@QAEHXZ	66.5769	66.5769	1	fcd764f9eff7	0x39d00
 gamemode	?FormatHudText@CMenuState@@QAEXH@Z	0.3094	0.3094	2	639568dc3209	0x1af70
+gamemode	?ForwardIdleAnim@CMultiBootyState@@QAEHHH@Z	100.0000	100.0000	1	4efc3adad86f	0x1d420
 gamemode	?FrameSlot24@CMultiBootyState@@UAEHH@Z	100.0000	100.0000	2	1df26f9626ef	0x1e570
 gamemode	?FrameSlot28@CMenuState@@UAEHH@Z	100.0000	100.0000	2	e9d8da09d7f7	0xa06d0
 gamemode	?GenMenuRandPos@@YGXHPAH0@Z	89.3724	89.3724	3	e5f14c89a313	0x19cd0
@@ -2296,6 +2295,7 @@ gamemode	?LoadCreditzStateAssets@CCreditsState@@QAEHHHH@Z	100.0000	100.0000	2	5f
 gamemode	?LoadGruntEffectSprites@CState@@QAEXXZ	0.2268	0.2268	1	4762f4e00dc7	0x1a040
 gamemode	?MoveLettersByDir@CMultiBootyState@@QAEXXZ	59.9241	59.9241	2	6a387478dfd5	0x19b90
 gamemode	?QueryGruntSlots@CMultiBootyState@@QAEHXZ	87.5000	87.5000	2	ba5d94c9711b	0x1ecf0
+gamemode	?ReadyAndPaint@CMultiBootyState@@QAEHXZ	100.0000	100.0000	1	ad3ed64b137e	0x1ce30
 gamemode	?ReleaseResources@CBootyState@@UAEXXZ	98.4375	98.4375	1	5b3e49874e83	0x18c90
 gamemode	?ReleaseResources@CCreditsState@@UAEXXZ	99.2500	99.2500	1	1ba39beb1650	0x38f00
 gamemode	?ReleaseResources@CMenuState@@UAEXXZ	99.4737	99.4737	1	570eecea03da	0xa02c0
