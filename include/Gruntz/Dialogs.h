@@ -137,6 +137,10 @@ public:
 class CBattlezDlgColors : public CDialog {
 public:
     CBattlezDlgColors(i32 a0, i32 a1, i32 a2, CWnd* pParent);
+    // MFC GetMessageMap override: returns &CBattlezDlgColors::messageMap (modeled
+    // non-virtual so it does not perturb the compiler-emitted vtable/ctor stamp;
+    // only its 6 own bytes `mov eax,OFFSET msgmap; ret` are matched).
+    const void* GetMessageMap();
 
     i32 m_5c; // +0x5c  (= a0)
     i32 m_60; // +0x60  (= a1)
@@ -183,6 +187,8 @@ public:
 class CCheckpointDlg : public CDialog {
 public:
     CCheckpointDlg(CWnd* pParent);
+    // MFC GetMessageMap override (see CBattlezDlgColors): returns the static map.
+    const void* GetMessageMap();
 };
 
 #endif // SRC_GRUNTZ_DIALOGS_H

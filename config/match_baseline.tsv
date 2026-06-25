@@ -46,7 +46,7 @@ cddrawsurfacemgr	9	5
 cddrawsurfacemgrserialize	2	0
 cddrawsurfacepair	5	2
 cddrawworkercache	4	1
-cddrawworkerlist	10	7
+cddrawworkerlist	11	8
 cddrawworkermapsmall	10	3
 cddrawworkerregistry	26	12
 cddrawworkers	4	4
@@ -90,7 +90,7 @@ cpathhazard	7	3
 cplay	34	9
 cremusentrylist	2	1
 cremusnode	4	2
-cremusreadstream	5	3
+cremusreadstream	6	4
 crt_istream	3	2
 crt_ostream	4	3
 crt_streambuf	7	5
@@ -111,13 +111,13 @@ cwaypoint	1	1
 cwormholeacts	1	0
 databuffer	7	5
 deflate	6	6
-dialogs	26	11
+dialogs	28	13
 directinputmgr2	33	29
 directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	28	0
 engine_boundary	560	0
-engine_discovered	72	0
+engine_discovered	66	0
 engine_label_stubs	462	106
 engstr	3	1
 filemem	9	8
@@ -136,7 +136,7 @@ gamewnd	9	8
 grunt	77	15
 gruntdatarecord	2	2
 gruntpuddle	4	2
-gruntspawnconfig	14	7
+gruntspawnconfig	15	8
 gruntvoice	5	4
 gruntzapp	10	9
 gruntzcmdmgr	12	10
@@ -214,7 +214,7 @@ soundvoicelist	4	3
 spriteloaders	10	5
 spriteref	2	1
 spritereftable	7	6
-spriteresource	9	3
+spriteresource	10	3
 statemgrbz	5	3
 statusbaritem	2	1
 statusbarupdaters	7	0
@@ -553,6 +553,7 @@ cddrawworkercache	??1CDDrawWorkerCache@@QAE@XZ	12.1818	12.1818	2	1c01fe704b91	0x
 cddrawworkercache	?VirtualMethodUnknown20@CDDrawWorkerCache@@QAEHXZ	100.0000	100.0000	6	8b0bc0260838	0x1576f0
 cddrawworkercache	?VirtualMethodUnknown24@CDDrawWorkerCache@@QAEPAXHPBDH@Z	99.7857	99.7857	6	5d1d5af84489	0x1652c0
 cddrawworkercache	?VirtualMethod_157720@CDDrawWorkerCache@@QAEXXZ	4.1667	4.1667	2	5f5ba8e66f8f	0x157720
+cddrawworkerlist	??1CDDrawWorkerList@@QAE@XZ	100.0000	100.0000	1	8d1c7e634d56	0x163bc0
 cddrawworkerlist	?Stub_156f50@CDDrawWorkerList@@QAEXXZ	4.1667	4.1667	4	19b01d91357c	0x156f50
 cddrawworkerlist	?Stub_156fc0@CDDrawWorkerList@@QAEXXZ	50.0000	50.0000	4	bdde75ccecb3	0x156fc0
 cddrawworkerlist	?VirtualMethodUnknown14@CDDrawWorkerList@@QAEHXZ	100.0000	100.0000	6	2626d9885b58	0x156f00
@@ -854,6 +855,7 @@ cremusnode	??1CRemusNode@@QAE@XZ	78.8182	78.8182	1	af194ae7afa3	0x154a50
 cremusnode	?Init@CRemusNode@@QAEHHHHHHH@Z	100.0000	100.0000	1	e65680f58643	0x1647e0
 cremusreadstream	?BeginParse@CRemusReadStream@@QAEHXZ	99.7872	99.7872	1	c2e8d649ccf5	0x139960
 cremusreadstream	?EndParse@CRemusReadStream@@QAEHXZ	100.0000	100.0000	1	c71faa6f8df7	0x1399d0
+cremusreadstream	?GetEntryTag@CRemusReadStream@@QAEHXZ	100.0000	100.0000	1	9a94e325da66	0x139800
 cremusreadstream	?Read@CRemusReadStream@@QAEHPAXIH@Z	91.1957	91.1957	1	a3c64a9d684b	0x139af0
 cremusreadstream	?ReadAt@CRemusReadStream@@QAEHPAXHI@Z	100.0000	100.0000	1	235b7f0507a0	0x139a40
 cremusreadstream	?SetPos@CRemusReadStream@@QAEHH@Z	100.0000	100.0000	1	dbbfa0bcee57	0x139ae0
@@ -942,6 +944,8 @@ dialogs	?GetCtrlA@CBattlezDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	2	f719a29e8f44	0x
 dialogs	?GetCtrlB@CBattlezDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	2	55fe085491a3	0x15b40
 dialogs	?GetCtrlC@CBattlezDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	2	7882b445b6ec	0x15bc0
 dialogs	?GetCtrlD@CBattlezDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	2	2df6252ff25e	0x15c40
+dialogs	?GetMessageMap@CBattlezDlgColors@@QAEPBXXZ	100.0000	100.0000	1	8bb5f517fac7	0x17ac0
+dialogs	?GetMessageMap@CCheckpointDlg@@QAEPBXXZ	100.0000	100.0000	1	a1a3e649e0c1	0x23570
 dialogs	?InitPlayerSlots@CMultiStartDlg@@QAEXXZ	0.1294	0.1294	2	460bc8e04d05	0xc20a0
 dialogs	?SetCtrlBText@CBattlezDlg@@QAEXHPBD@Z	100.0000	100.0000	2	3b905b2c10b8	0x15db0
 dialogs	?SetSlotValue@CBattlezDlg@@QAEHHH@Z	100.0000	100.0000	2	b1675baacc7b	0x17460
@@ -1613,13 +1617,8 @@ engine_boundary	?Boundary_192630@@YAXXZ	0.5797	0.5797	1	4d9e16cd8928	0x192630
 engine_boundary	?Boundary_1926e0@@YAXXZ	0.7143	0.7143	1	ce48586b6dc8	0x1926e0
 engine_boundary	?Boundary_192780@@YAXXZ	0.6452	0.6452	1	f80d55043394	0x192780
 engine_boundary	?Boundary_192830@@YAXXZ	1.0638	1.0638	1	109a21dd77b9	0x192830
-engine_discovered	?CBattlezDlgColors_017ac0@CBattlezDlgColors@@QAEXXZ	50.0000	50.0000	2	0879229e7eb6	0x17ac0
-engine_discovered	?CCheckpointDlg_023570@CCheckpointDlg@@QAEXXZ	50.0000	50.0000	2	6f7562291252	0x23570
 engine_discovered	?CCheckpointTrigger_011480@CCheckpointTrigger@@QAEXXZ	5.8824	5.8824	2	36760718b34d	0x11480
 engine_discovered	?CDDSurface_142a40@CDDSurface@@QAEXXZ	5.0000	5.0000	2	acbbb47b3378	0x142a40
-engine_discovered	?CDDrawWorkerList_163bc0@CDDrawWorkerList@@QAEXXZ	4.7619	4.7619	2	b51a988cb1ef	0x163bc0
-engine_discovered	?CGruntAnimPlayer_150610@CGruntAnimPlayer@@QAEXXZ	1.7391	1.7391	2	ffb44f05f4d6	0x150610
-engine_discovered	?CGruntSpawnConfig_11c730@CGruntSpawnConfig@@QAEXXZ	1.1111	1.1111	1	c0d81b9b3250	0x11c730
 engine_discovered	?CGruntToyTimeSprite_012130@CGruntToyTimeSprite@@QAEXXZ	5.8824	5.8824	2	5ffada3946fb	0x12130
 engine_discovered	?CGruntzMgr_08b960@CGruntzMgr@@QAEXXZ	0.0907	0.0907	2	f28c03e9d08a	0x8b960
 engine_discovered	?CNetMgr_11f618@CNetMgr@@QAEXXZ	10.0000	10.0000	1	3e84522a7acc	0x11f618
@@ -1683,7 +1682,6 @@ engine_discovered	?CmdHost_0953f0_095140@CmdHost_0953f0@@QAEXXZ	1.0000	1.0000	2	
 engine_discovered	?EngStr_193080@EngStr@@QAEXXZ	1.4085	1.4085	2	b6bc792507ee	0x193080
 engine_discovered	?MallocCtor_1615a0_0311e0@MallocCtor_1615a0@@QAEXXZ	1.2121	1.2121	2	8a26ae8621ed	0x311e0
 engine_discovered	?RegistryHelper_114fa0@RegistryHelper@@QAEXXZ	3.8462	3.8462	2	9de521efe251	0x114fa0
-engine_discovered	?RemusParseSource_139800@RemusParseSource@@QAEXXZ	33.3333	33.3333	2	ebb11c91b919	0x139800
 engine_discovered	?StatusBarItem_0d9290@StatusBarItem@@QAEXXZ	0.5076	0.5076	1	75b9d4dea540	0xd9290
 engine_label_stubs	??0CActionArea@@QAE@H@Z	2.1226	2.1226	1	cpp:6bf52155264d	0x7da0
 engine_label_stubs	??0CBoomerang@@QAE@H@Z	97.3077	97.3077	1	cpp:6bf52155264d	0xe0650
@@ -2440,6 +2438,7 @@ gruntspawnconfig	?IsReady@CGruntSpawnConfig@@QAEHXZ	100.0000	100.0000	1	920e1a59
 gruntspawnconfig	?LoadGruntVoices@CGruntSpawnConfig@@QAEHXZ	95.3488	95.3488	2	788f9701ac23	0x11af00
 gruntspawnconfig	?PickWeighted@CGruntSpawnConfig@@QAEHHH@Z	1.0870	1.0870	1	b9cc209559f5	0x11bee0
 gruntspawnconfig	?ResetPicks@CGruntSpawnConfig@@QAEXXZ	100.0000	100.0000	1	6d4d20bac4c4	0x11c7f0
+gruntspawnconfig	?StopVoice@CGruntSpawnConfig@@QAEXH@Z	100.0000	100.0000	1	3b4c120126c9	0x11c730
 gruntvoice	??1CGruntVoice@@UAE@XZ	100.0000	100.0000	1	800298c90ba0	0x119ae0
 gruntvoice	?Dispatch@CGruntVoice@@QAEXH@Z	100.0000	100.0000	2	254b7ed0b958	0x119e40
 gruntvoice	?InitActReg@CGruntVoice@@SAXXZ	100.0000	100.0000	1	e700d1dbab0c	0x119dc0
@@ -3123,6 +3122,7 @@ spriteresource	?ConfigureItem@CStatusBarMgr@@QAEHHHHH@Z	100.0000	100.0000	4	be20
 spriteresource	?CreateSprite@CSpriteFactory@@QAEPAUCSprite@@HHHHPBDH@Z	94.1176	94.1176	4	6102cd6262c1	0x1597b0
 spriteresource	?GetFrame@CSprite@@QAEHH@Z	100.0000	100.0000	1	48906c68982d	0x15cc30
 spriteresource	?InsertFrame@CSprite@@QAEPAUCFrameWorker@@PAXHH@Z	84.3836	84.3836	1	8e337ce61c66	0x151f00
+spriteresource	?LookupAnimSprite@CGruntAnimPlayer@@QAEHPBD@Z	73.0435	73.0435	1	07b112262249	0x150610
 statemgrbz	?Build@StateMgrBZ@@QAEHPAUSbzInputManager@@H@Z	94.7384	94.7384	3	80ed1d5c6cdf	0x383b0
 statemgrbz	?Flush@StateMgrBZ@@QAEHXZ	74.0612	74.0612	2	6dc0743b6fd8	0x385e0
 statemgrbz	?Init@StateMgrBZ@@QAEHPAUSbzInputManager@@H@Z	100.0000	100.0000	2	12e97377255a	0x382c0

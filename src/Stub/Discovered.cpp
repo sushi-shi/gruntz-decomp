@@ -4,26 +4,11 @@
 #include <rva.h>
 #include <Stub/discovered.h>
 
-// ---- CBattlezDlgColors ----
-RVA(0x00017ac0, 0x6) void CBattlezDlgColors::CBattlezDlgColors_017ac0() {}
-
-// ---- CCheckpointDlg ----
-RVA(0x00023570, 0x6) void CCheckpointDlg::CCheckpointDlg_023570() {}
-
 // ---- CCheckpointTrigger ----
 RVA(0x00011480, 0x44) void CCheckpointTrigger::CCheckpointTrigger_011480() {}
 
 // ---- CDDSurface ----
 RVA(0x00142a40, 0x53) void CDDSurface::CDDSurface_142a40() {}
-
-// ---- CDDrawWorkerList ----
-RVA(0x00163bc0, 0x2c) void CDDrawWorkerList::CDDrawWorkerList_163bc0() {}
-
-// ---- CGruntAnimPlayer ----
-RVA(0x00150610, 0x41) void CGruntAnimPlayer::CGruntAnimPlayer_150610() {}
-
-// ---- CGruntSpawnConfig ----
-RVA(0x0011c730, 0x5c) void CGruntSpawnConfig::CGruntSpawnConfig_11c730() {}
 
 // ---- CGruntToyTimeSprite ----
 RVA(0x00012130, 0x44) void CGruntToyTimeSprite::CGruntToyTimeSprite_012130() {}
@@ -207,9 +192,6 @@ RVA(0x000311e0, 0x4c) void MallocCtor_1615a0::MallocCtor_1615a0_0311e0() {}
 
 // ---- RegistryHelper ----
 RVA(0x00114fa0, 0x3e) void RegistryHelper::RegistryHelper_114fa0() {}
-
-// ---- RemusParseSource ----
-RVA(0x00139800, 0x6) void RemusParseSource::RemusParseSource_139800() {}
 
 // ---- StatusBarItem ----
 RVA(0x000d9290, 0x2a7) void StatusBarItem::StatusBarItem_0d9290() {}

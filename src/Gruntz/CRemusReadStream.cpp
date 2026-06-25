@@ -15,6 +15,14 @@ extern "C" void* RezAlloc(u32 size);
 extern "C" void RezFree(void* p);
 
 // ===========================================================================
+// 0x139800 - GetEntryTag: return the first dword of the keyed-store entry m_04.
+// ===========================================================================
+RVA(0x00139800, 0x6)
+i32 CRemusReadStream::GetEntryTag() {
+    return *(i32*)m_04;
+}
+
+// ===========================================================================
 // 0x139960 - BeginParse: resolve the live source pointer for a parse pass. If
 // the mapped source is active, return its mapped address adjusted for the stream
 // base. Otherwise lazily allocate the +0x38 inline buffer and fill it with one

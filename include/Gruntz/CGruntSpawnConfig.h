@@ -112,6 +112,7 @@ public:
     i32 PickWeighted(i32 index, i32 seed);                   // 0x11bee0
     BOOL BuildVoiceList();                                   // 0x11c1a0
     void* BuildVoiceSoundList(i32 i); // 0x11c210 (defined in another TU; reloc-masked)
+    void StopVoice(i32 id);           // 0x11c730 (selective per-id voice teardown)
     void DtorBody();                  // 0x11c7b0 (the 2-iter pair teardown)
     void ResetPicks();                // 0x11c7f0 (DtorBody + reset entry m_20s)
     BOOL IsReady();                   // 0x11c830
@@ -153,9 +154,12 @@ struct CSpawnSpriteSource {
 };
 
 // The voice-sprite stored in the m_08/m_0c pair. The teardown (0x11c7b0) calls
-// its Reset (0x11a870, __thiscall); reloc-masked.
+// its Reset (0x11a870, __thiscall); reloc-masked. m_68 holds the voice id the
+// selective teardown (0x11c730) matches against.
 struct CSpawnVoice {
     void Reset(); // 0x11a870
+    char m_pad00[0x68];
+    i32 m_68; // +0x68  voice id
 };
 
 // The "GruntVoice" sound descriptor blob the loader pushes (s_GruntVoice_0060a638).

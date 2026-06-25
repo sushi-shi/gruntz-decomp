@@ -339,6 +339,34 @@ void CSpawnEntry::AddVoiceSound(CString s, i32 flag) {
 }
 
 // ===========================================================================
+// CGruntSpawnConfig::StopVoice  (0x11c730)
+// ===========================================================================
+// Selective per-id teardown: of the two voice slots (m_08, m_0c), find the one
+// whose voice id (m_68) matches `id`. For that slot: if its paired object
+// (m_10/m_14) is set, release the sub-sprite at +0x6c; then if the voice itself
+// (m_08/m_0c) is set, reset it. Both ->m_68 are read eagerly (no null guard).
+RVA(0x0011c730, 0x5c)
+void CGruntSpawnConfig::StopVoice(i32 id) {
+    i32 tag08 = ((CSpawnVoice*)m_08)->m_68;
+    i32 tag0c = ((CSpawnVoice*)m_0c)->m_68;
+    if (tag08 == id) {
+        if (m_10 != 0) {
+            ((CSpriteReleasable*)((char*)m_10 + 0x6c))->Release();
+        }
+        if (m_08 != 0) {
+            ((CSpawnVoice*)m_08)->Reset();
+        }
+    } else if (tag0c == id) {
+        if (m_14 != 0) {
+            ((CSpriteReleasable*)((char*)m_14 + 0x6c))->Release();
+        }
+        if (m_0c != 0) {
+            ((CSpawnVoice*)m_0c)->Reset();
+        }
+    }
+}
+
+// ===========================================================================
 // CGruntSpawnConfig::DtorBody  (0x11c7b0)
 // ===========================================================================
 // The 2-iteration sprite-pair teardown over (m_08,m_10) then (m_0c,m_14): if the

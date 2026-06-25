@@ -129,7 +129,8 @@ struct CResMgr {
     char m_pad00[0x10];
     CSpriteMgr* m_10; // +0x10  (CacheFirstFrame)
     CSpriteMgr* m_14; // +0x14  (CreateSprite)
-    char m_pad18[0x2c - 0x18];
+    char m_pad18[0x28 - 0x18];
+    CSpriteMgr* m_28; // +0x28  (LookupAnimSprite)
     CSpriteMgr* m_2c; // +0x2c  (ApplyGeometry)
 };
 
@@ -394,10 +395,12 @@ class CGruntAnimPlayer {
 public:
     i32 ApplyLookupGeometry(const char* name, i32 applyDefault);
     void ApplyGeometryDirect(i32 srcSprite, i32 applyDefault);
+    i32 LookupAnimSprite(const char* name); // 0x150610
 
     char m_pad00[0xc];
     CResMgr* m_c; // +0x0c
-    char m_pad10[0x1a0 - 0x10];
+    char m_pad10[0x19c - 0x10];
+    CSprite* m_19c;       // +0x19c  cached looked-up sprite
     CGruntAnimSub2 m_1a0; // +0x1a0  geometry sub-player
 };
 
@@ -413,6 +416,28 @@ i32 CGruntAnimPlayer::ApplyLookupGeometry(const char* name, i32 applyDefault) {
         m_1a0.SetGeoSource(g_defaultGeo);
     }
     return 1;
+}
+
+// ===========================================================================
+// CGruntAnimPlayer::LookupAnimSprite  @0x150610
+// ===========================================================================
+//
+// Looks the named sprite-set up through this->m_c->m_28->map; on a hit caches the
+// resolved sprite at this+0x19c and returns 1, else returns 0. __thiscall, ret 4.
+// @early-stop
+// out-param zero-init scheduling wall (docs/patterns/outparam-zeroinit-scheduling.md):
+// identical instruction multiset to the sibling Cache* lookups (CacheFrame 84% /
+// CacheFirstFrame 89%); the `mov [&spr],0` sinks past the arg pushes. ~73%; logic
+// complete, deferred to the final sweep.
+RVA(0x00150610, 0x41)
+i32 CGruntAnimPlayer::LookupAnimSprite(const char* name) {
+    CSprite* spr = 0;
+    m_c->m_28->m_10map.Lookup(name, &spr);
+    if (spr != 0) {
+        m_19c = spr;
+        return 1;
+    }
+    return 0;
 }
 
 // ===========================================================================

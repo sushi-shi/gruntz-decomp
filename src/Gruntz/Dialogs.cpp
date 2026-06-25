@@ -24,6 +24,13 @@ extern i32* g_gameReg; // the CGameRegistry pointer (reloc-masked DATA symbol)
 DATA(0x0024bd5c)
 extern i32 g_64bd5c; // the file-scope int sink (reloc-masked DATA symbol)
 
+// The per-dialog static MFC message maps (each GetMessageMap returns &<map>).
+// Referenced as reloc-masked DATA externs (RVA = VA - 0x400000).
+DATA(0x001e8d10)
+extern const i32 g_msgmap_CBattlezDlgColors;
+DATA(0x001e94b8)
+extern const i32 g_msgmap_CCheckpointDlg;
+
 // ---------------------------------------------------------------------------
 // CMultiStartDlg multiplayer-setup helpers (BuildSlotList / UpdateSlot model).
 // ---------------------------------------------------------------------------
@@ -112,6 +119,12 @@ CBattlezDlgColors::CBattlezDlgColors(i32 a0, i32 a1, i32 a2, CWnd* pParent)
     m_60 = a1;
     m_64 = 0;
     m_68 = a2;
+}
+
+// ---------------------------------------------------------------------------
+RVA(0x00017ac0, 0x6)
+const void* CBattlezDlgColors::GetMessageMap() {
+    return &g_msgmap_CBattlezDlgColors;
 }
 
 // ---------------------------------------------------------------------------
@@ -207,6 +220,12 @@ void CMultiStartDlg::InitPlayerSlots() {}
 // ---------------------------------------------------------------------------
 RVA(0x000234a0, 0x1e)
 CCheckpointDlg::CCheckpointDlg(CWnd* pParent) : CDialog(0xcd, pParent) {}
+
+// ---------------------------------------------------------------------------
+RVA(0x00023570, 0x6)
+const void* CCheckpointDlg::GetMessageMap() {
+    return &g_msgmap_CCheckpointDlg;
+}
 
 // ---------------------------------------------------------------------------
 // CBattlezDlg control accessors: switch(index) over a 4-entry control-ID table,

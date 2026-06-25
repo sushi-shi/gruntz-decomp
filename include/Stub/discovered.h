@@ -6,13 +6,8 @@
 #ifndef GRUNTZ_STUB_DISCOVERED_H
 #define GRUNTZ_STUB_DISCOVERED_H
 
-class CBattlezDlgColors { public: void CBattlezDlgColors_017ac0(); };
-class CCheckpointDlg { public: void CCheckpointDlg_023570(); };
 class CCheckpointTrigger { public: void CCheckpointTrigger_011480(); };
 class CDDSurface { public: void CDDSurface_142a40(); };
-class CDDrawWorkerList { public: void CDDrawWorkerList_163bc0(); };
-class CGruntAnimPlayer { public: void CGruntAnimPlayer_150610(); };
-class CGruntSpawnConfig { public: void CGruntSpawnConfig_11c730(); };
 class CGruntToyTimeSprite { public: void CGruntToyTimeSprite_012130(); };
 class CGruntzMgr { public: void CGruntzMgr_08b960(); };
 class CNetMgr { public: void CNetMgr_11f618(); void CNetMgr_18c022(); };
@@ -72,7 +67,6 @@ class CmdHost_0953f0 { public: void CmdHost_0953f0_08cf30(); void CmdHost_0953f0
 class EngStr { public: void EngStr_193080(); };
 class MallocCtor_1615a0 { public: void MallocCtor_1615a0_0311e0(); };
 class RegistryHelper { public: void RegistryHelper_114fa0(); };
-class RemusParseSource { public: void RemusParseSource_139800(); };
 class StatusBarItem { public: void StatusBarItem_0d9290(); };
 
 #endif
