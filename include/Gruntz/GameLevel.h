@@ -305,6 +305,10 @@ private:
     i32 AdvanceB(void* t, i32 a1, i32 a2, i32 a3);               // @0x15ede0
     i32 SpanCheck(i32 a, i32 b, i32 c, i32* out);                // @0x15f8d0
     i32 AxisProbe(i32 coord, i32 limit);                         // @0x00161270
+    // The two-object span validator StepAxisAlt runs per candidate object (@0x15fe40),
+    // and the alternate axis-2 stepper that drives it (@0x15fdb0). Both are now matched
+    // in GameLevel.cpp.
+    i32 AltStepValidate(void* t, void* payload, i32 a1, i32 a2, i32* outY, i32 a3);
 
 public:
     // vptr@+0x00 (implicit, CGameLevel is polymorphic); +0x04..+0x0c are the

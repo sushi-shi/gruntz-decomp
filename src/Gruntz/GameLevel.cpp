@@ -904,6 +904,112 @@ struct ScrollTarget {
 //   SpanCheck   @0x15f8d0  validate a span fits (4-arg, out via *out)
 //   AxisProbe   @0x00161270  per-axis tile probe (returns a kind code; ==3 blocks)
 
+// ===========================================================================
+// The brush-handler sibling bodies (StepAxisLo/Hi, FreeMove, Advance{A,B},
+// StepAxisAlt, SpanCheck, + the 15fe40 two-object span validator). All are plain
+// /O2 /MT __thiscall leaves (this=this level), NO relocations: they touch only the
+// edit target's +0x134..+0x140 axis brackets, its +0x5c/+0x60 scroll, +0xe4 brush
+// kind, +0xf8/+0xfc per-axis steps, the level's main plane (+0x5c) tile grid, and
+// the image-set array (+0x4c) - dispatching the image set's slot +0x20 to probe a
+// tile, exactly like AxisProbe (@0x161270) inlined.
+// ===========================================================================
+
+// EditTarget - the explicit target arg the brush handlers drive. A window onto the
+// edit-state object (the same offsets ScrollTarget names for the simple path, plus
+// the +0x134/+0x13c axis-low brackets and the +0xf8/+0xfc per-axis step strides).
+struct EditTarget {
+    char pad_0[0x08];
+    u32 flags; // +0x08
+    char pad_c[0x5c - 0x0c];
+    i32 scrollX; // +0x5c
+    i32 scrollY; // +0x60
+    char pad_64[0x98 - 0x64];
+    i32 holdAnchor; // +0x98
+    char pad_9c[0xe4 - 0x9c];
+    i32 editKind; // +0xe4
+    char pad_e8[0xf8 - 0xe8];
+    i32 stepX; // +0xf8
+    i32 stepY; // +0xfc
+    char pad_100[0x134 - 0x100];
+    i32 axisLoA; // +0x134
+    i32 axisLoB; // +0x138
+    i32 axisMid; // +0x13c
+    i32 axisHi;  // +0x140
+};
+
+// ProbeObj - the candidate object AltStepValidate fits against (a game object hanging
+// off the owner's chain). Its world-space bounding box is the +0x144/+0x14c tile span
+// and +0x148 row, offset by the +0x5c/+0x60 origin; +0x178 is a clamp adjustment.
+struct ProbeObj {
+    char pad_0[0x5c];
+    i32 m_5c; // +0x5c  origin X
+    i32 m_60; // +0x60  origin Y
+    char pad_64[0x144 - 0x64];
+    i32 m_144; // +0x144  box left
+    i32 m_148; // +0x148  box row
+    i32 m_14c; // +0x14c  box right
+    char pad_150[0x178 - 0x150];
+    i32 m_178; // +0x178
+};
+
+// ProbePlane - the main plane the tile probe reads. Same object as CPlane/CPlaneRender,
+// viewed at the probe offsets: the wrap moduli at +0x30/+0x34 (clamp bounds), the
+// log2-tile shift amounts at +0x8c/+0x90, the column-offset table at +0x24 and the
+// tile grid at +0x20.
+struct ProbePlane {
+    char pad_0[0x20];
+    i32* tileGrid;   // +0x20
+    i32* colOffsets; // +0x24
+    char pad_28[0x30 - 0x28];
+    i32 wrapW; // +0x30
+    i32 wrapH; // +0x34
+    char pad_38[0x8c - 0x38];
+    i32 shiftX; // +0x8c
+    i32 shiftY; // +0x90
+};
+
+// PROBE_TILE - the inlined per-coord tile probe (== AxisProbe @0x161270). Written as
+// a do/while macro so each of the (up to four) copies in a single function schedules
+// locally, exactly like the retail copy-paste (docs/patterns/x87-copypaste-vs-inline-fp-block.md).
+// Clamps (X,Y) into the plane's tile grid, splits each into a tile index + sub-offset
+// via the +0x8c/+0x90 shift, fetches the tile id, and (unless the empty/clear
+// sentinel) dispatches the image set's slot +0x20 with the sub-offsets.
+#define PROBE_TILE(LVL, X, Y, RESULT)                                                              \
+    do {                                                                                           \
+        i32 px_ = (X);                                                                             \
+        i32 py_ = (Y);                                                                             \
+        if (px_ < 0) {                                                                             \
+            px_ = 0;                                                                               \
+        } else {                                                                                   \
+            ProbePlane* pc_ = (ProbePlane*)(LVL)->m_mainPlane;                                     \
+            if (px_ >= pc_->wrapW) {                                                                \
+                px_ = pc_->wrapW - 1;                                                               \
+            }                                                                                      \
+        }                                                                                          \
+        if (py_ < 0) {                                                                             \
+            py_ = 0;                                                                               \
+        } else {                                                                                   \
+            ProbePlane* pc_ = (ProbePlane*)(LVL)->m_mainPlane;                                     \
+            if (py_ >= pc_->wrapH) {                                                                \
+                py_ = pc_->wrapH - 1;                                                               \
+            }                                                                                      \
+        }                                                                                          \
+        ProbePlane* pl_ = (ProbePlane*)(LVL)->m_mainPlane;                                          \
+        i32 qx_ = px_ >> pl_->shiftX;                                                               \
+        i32 qy_ = py_ >> pl_->shiftY;                                                               \
+        i32 col_ = qx_;                                                                             \
+        i32 subX_ = px_ - (qx_ << pl_->shiftX);                                                     \
+        i32 idx_ = pl_->colOffsets[qy_] + col_;                                                     \
+        i32 subY_ = py_ - (qy_ << pl_->shiftY);                                                     \
+        i32 tile_ = pl_->tileGrid[idx_];                                                            \
+        if (tile_ == TILE_UNINIT || tile_ == TILE_CLEAR) {                                          \
+            (RESULT) = 0;                                                                           \
+        } else {                                                                                   \
+            CImageSet* set_ = (CImageSet*)m_imageSets[tile_ & 0xffff];                              \
+            (RESULT) = set_->dummy8(subX_, subY_);                                                  \
+        }                                                                                          \
+    } while (0)
+
 // EditSink - the serializer `arg0` of EditDispatch: a polymorphic object whose slots
 // +0x2c (read a name into buf) and +0x30 (write buf as a name) are used.
 struct EditSink {
@@ -1710,4 +1816,389 @@ i32 CGameLevel::EditHandlerD(void* target, i32 a1, i32 a2, i32 a3) {
     t->scrollX = coord;
     t->scrollY = cursor;
     return result;
+}
+
+// ===========================================================================
+// The sibling brush-handler leaves the EditHandlers dispatch into (ascending RVA).
+// ===========================================================================
+
+// ---------------------------------------------------------------------------
+// StepAxisLo (@0x15e720): step the target one axis from its low bracket toward the
+// requested mid coord, probing the main plane's tiles along the way. The probe walks
+// `cur` from (axisLoB + a2) up to (axisHi + a2) in +0xfc strides; the first cur whose
+// tile probe returns 1 commits the target's current scroll into *outX and returns
+// 0x60000, else *outX = a1 and 0. The tile probe is AxisProbe inlined (PROBE_TILE).
+//
+// @early-stop
+// register-scheduling wall: the inlined PROBE_TILE block + the strided step loop pin
+// 4 saved regs (mid/lo/hi/cur) across the per-iteration image-set dispatch in an
+// order MSVC reproduces only for one spill assignment; logic + offsets + CFG + the
+// probe dispatch are exact. Deferred to the final sweep.
+RVA(0x0015e720, 0x14c)
+i32 CGameLevel::StepAxisLo(void* target, i32 a1, i32 a2, i32* outX, i32 a3) {
+    EditTarget* t = (EditTarget*)target;
+    i32 mid = t->axisMid + a1;
+    i32 lo = t->axisLoB + a2;
+    i32 hi = t->axisHi + a2;
+    i32 cur = lo;
+
+    if (lo <= hi) {
+        do {
+            i32 result;
+            PROBE_TILE(this, mid, cur, result);
+            if (result == 1) {
+                *outX = t->scrollX;
+                return 0x60000;
+            }
+            if (cur == hi) {
+                ++cur;
+            } else {
+                cur += t->stepY;
+                if (cur > hi) {
+                    cur = hi;
+                }
+            }
+        } while (cur <= hi);
+    }
+
+    *outX = a1;
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// StepAxisHi (@0x15e870): the mirror of StepAxisLo using the +0x134 high bracket
+// (axisLoA) as the loop floor and returning 0xa0000 on a successful step.
+//
+// @early-stop
+// register-scheduling wall: same PROBE_TILE + strided-step shape as StepAxisLo; logic
+// + offsets + CFG exact. Deferred to the final sweep.
+RVA(0x0015e870, 0x14c)
+i32 CGameLevel::StepAxisHi(void* target, i32 a1, i32 a2, i32* outX, i32 a3) {
+    EditTarget* t = (EditTarget*)target;
+    i32 mid = t->axisLoA + a1;
+    i32 lo = t->axisLoB + a2;
+    i32 hi = t->axisHi + a2;
+    i32 cur = lo;
+
+    if (lo <= hi) {
+        do {
+            i32 result;
+            PROBE_TILE(this, mid, cur, result);
+            if (result == 1) {
+                *outX = t->scrollX;
+                return 0xa0000;
+            }
+            if (cur == hi) {
+                ++cur;
+            } else {
+                cur += t->stepY;
+                if (cur > hi) {
+                    cur = hi;
+                }
+            }
+        } while (cur <= hi);
+    }
+
+    *outX = a1;
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// FreeMove (@0x15eb00): drive a free (unheld) axis-2 advance from (axisLoB + a1) up to
+// (axisHi + a2 + 1) in +0xf8 strides. Per cursor it probes the main plane (PROBE_TILE);
+// a kind 1/2 tile re-probes a one-step-back pair, a kind-3 tile re-probes its low pair
+// (AxisProbe), and anything that stays blocked tags the target brush kind 4. Returns
+// the last accepted cursor.
+//
+// @early-stop
+// register-scheduling wall (large /O2 body): four inlined PROBE_TILE copies + two
+// AxisProbe re-probe sites + the strided loop pin 5 saved regs in an order MSVC
+// reproduces only for one spill order; logic + offsets + CFG + the probe/dispatch
+// conventions are exact. Deferred to the final sweep.
+RVA(0x0015eb00, 0x2d2)
+i32 CGameLevel::FreeMove(void* target, i32 a1, i32 a2, i32 a3) {
+    EditTarget* t = (EditTarget*)target;
+    i32 mid = t->axisMid + a1;
+    i32 cur = t->axisLoA + a1;
+    i32 hiY = t->axisHi + a2 + 1;
+
+    if (cur <= mid) {
+        do {
+            i32 result;
+            PROBE_TILE(this, cur, hiY, result);
+            if (result == 1 || result == 2) {
+                // kind 1/2: re-probe the one-step-back pair twice to confirm the
+                // move still fits (retail outlines the 2nd index lookup to a leaf).
+                i32 r2;
+                PROBE_TILE(this, cur, hiY - 1, r2);
+                if (r2 != 1) {
+                    i32 r3;
+                    PROBE_TILE(this, cur, hiY - 1, r3);
+                    if (r3 != 2) {
+                        return a2;
+                    }
+                }
+            } else if (t->editKind != 6 && result == 3) {
+                if (AxisProbe(cur, hiY) == 3) {
+                    if (AxisProbe(cur, hiY - 1) != 3) {
+                        return a2;
+                    }
+                }
+            }
+            if (cur == mid) {
+                ++cur;
+            } else {
+                cur += t->stepX;
+            }
+        } while (cur <= mid);
+    }
+
+    t->editKind = 4;
+    return a2;
+}
+
+// ---------------------------------------------------------------------------
+// AdvanceB (@0x15ede0): advance the axis-2 cursor variant. Probes the start coord,
+// folds a kind-4 result into the target +0x8 flags (0x400000), then walks the cursor
+// down through AxisProbe gates; a clear low/high pair commits brush kind 1 and the
+// adjusted cursor. Returns the resolved cursor.
+//
+// @early-stop
+// register-scheduling wall (large /O2 body): two inlined PROBE_TILE copies + two
+// AxisProbe gate loops + the strided walk pin the saved regs in an order MSVC
+// reproduces only for one spill order; logic + offsets + CFG exact. Deferred.
+RVA(0x0015ede0, 0x2a7)
+i32 CGameLevel::AdvanceB(void* target, i32 a1, i32 a2, i32 a3) {
+    EditTarget* t = (EditTarget*)target;
+    i32 lo = t->axisLoA + a1;
+    i32 mid = t->axisMid + a1;
+    i32 hiY = a2 + t->axisHi + 1;
+
+    i32 first;
+    PROBE_TILE(this, a1, hiY, first);
+    if (first == 4) {
+        t->flags |= 0x400000;
+    }
+    i32 base = a2 - t->scrollY;
+
+    i32 cur = lo;
+    if (cur <= mid) {
+        do {
+            i32 result;
+            PROBE_TILE(this, cur, hiY, result);
+            if (result == 1 || result == 2) {
+                i32 floor = t->scrollY + t->axisHi;
+                if (hiY >= floor) {
+                    i32 y = hiY;
+                    do {
+                        i32 g = AxisProbe(cur, y);
+                        if (g != 1 && g != 2) {
+                            t->editKind = 1;
+                            return y - t->axisHi;
+                        }
+                        --y;
+                    } while (y >= floor);
+                }
+            } else if (t->editKind != 6 && result == 3) {
+                i32 floor = hiY - base;
+                if (hiY > floor) {
+                    i32 y = hiY - 1;
+                    if (y >= floor) {
+                        do {
+                            if (AxisProbe(cur, y) != 3) {
+                                t->editKind = 1;
+                                return (y + 1) - t->axisHi - 1;
+                            }
+                            --y;
+                        } while (y >= floor);
+                    }
+                }
+            }
+            if (cur == mid) {
+                ++cur;
+            } else {
+                cur += t->stepX;
+            }
+        } while (cur <= mid);
+    }
+
+    return a3;
+}
+
+// ---------------------------------------------------------------------------
+// AdvanceA (@0x15f1c0): advance the axis-2 cursor. Probes (cur, hi) across the
+// strided walk; a hit gates an AxisProbe sweep up the +0x138 column, and on the
+// AxisProbe miss commits brush kind 4 and returns the adjusted cursor.
+//
+// @early-stop
+// register-scheduling wall: inlined PROBE_TILE + the AxisProbe gate loop pin the
+// saved regs in an order MSVC reproduces only for one spill order; logic + offsets +
+// CFG exact. Deferred to the final sweep.
+RVA(0x0015f1c0, 0x171)
+i32 CGameLevel::AdvanceA(void* target, i32 a1, i32 a2, i32 a3) {
+    EditTarget* t = (EditTarget*)target;
+    i32 cur = t->axisLoA + a1;
+    i32 mid = t->axisMid + a1;
+    i32 ceil = a2 + t->axisLoB - 1;
+
+    if (cur <= mid) {
+        do {
+            i32 result;
+            PROBE_TILE(this, cur, ceil, result);
+            if (result == 1) {
+                i32 floor = t->scrollY + t->axisLoB - 1;
+                if (ceil <= floor) {
+                    i32 y = ceil;
+                    do {
+                        if (AxisProbe(cur, y) != 1) {
+                            t->editKind = 4;
+                            return y - t->axisLoB;
+                        }
+                        ++y;
+                    } while (y <= floor);
+                }
+            }
+            if (cur == mid) {
+                ++cur;
+            } else {
+                cur += t->stepX;
+            }
+        } while (cur <= mid);
+    }
+
+    return a3;
+}
+
+// ---------------------------------------------------------------------------
+// SpanCheck (@0x15f8d0): validate that the probe column from (b-1) down to c fits -
+// the first cur whose tile probe is not "blocked" (!= 3) commits cur+1 into *out and
+// returns 1; an empty or all-blocked span returns 0.
+//
+// @early-stop
+// register-scheduling wall: the inlined PROBE_TILE block across the down-counting loop
+// pins the saved regs in an order MSVC reproduces only for one spill order; logic +
+// offsets + CFG exact. Deferred to the final sweep.
+RVA(0x0015f8d0, 0x113)
+i32 CGameLevel::SpanCheck(i32 a, i32 b, i32 c, i32* out) {
+    if (b <= c) {
+        return 0;
+    }
+    i32 cur = b - 1;
+    if (cur < c) {
+        return 0;
+    }
+    do {
+        i32 result;
+        PROBE_TILE(this, a, cur, result);
+        if (result != 3) {
+            *out = cur + 1;
+            return 1;
+        }
+        --cur;
+    } while (cur >= c);
+
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// StepAxisAlt (@0x15fdb0): alternate axis-2 stepper. Only runs when a3 bit3 is set;
+// walks the owner's object chain (m_owner->+0x8->+0x14) and, for each node whose
+// payload carries the 0x80 marker at +0xe8, runs AltStepValidate. The first node it
+// validates is latched into the target (+0x98 anchor, brush kind 1, +0x8 flag 0x10)
+// and returns 1; an exhausted chain returns 0.
+RVA(0x0015fdb0, 0x8a)
+i32 CGameLevel::StepAxisAlt(void* target, i32 a1, i32 a2, i32* outY, i32 a3) {
+    EditTarget* t = (EditTarget*)target;
+    if ((a3 & 8) == 0) {
+        return 0;
+    }
+
+    ObjNode* node = *(ObjNode**)((char*)((char**)m_owner)[2] + 0x14);
+    while (node != 0) {
+        ObjNode* cur = node;
+        node = node->next;
+        ObjPayload* pl = cur->obj;
+        if (*(i32*)((char*)pl + 0xe8) == 0x80) {
+            if (AltStepValidate(t, pl, a1, a2, outY, a3) != 0) {
+                t->editKind = 1;
+                t->holdAnchor = (i32)pl;
+                t->flags |= 0x10;
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// AltStepValidate (@0x15fe40): the geometric fit test StepAxisAlt runs per candidate
+// object. Both the candidate payload (+0x144/+0x148/+0x14c/+0x178 extents, +0x5c/+0x60
+// origin) and the target (+0x134/+0x13c/+0x140 brackets, +0x5c/+0x60 scroll) must have
+// valid (!= -1) low brackets, the target's scroll must sit below a2, and the candidate's
+// world-space box (offset by a1/a2) must fall inside the target's bracket box; on a fit
+// it writes the resolved cursor (payload->+0x60 + payload->+0x148 - target->+0x140 - 1)
+// into *outY and returns 1, else 0.
+//
+// The fail exits are written as one `goto fail` epilogue: MSVC tail-merges every
+// `return 0` into the single retail epilogue (the per-`return 0` inline form scored
+// 0% on a fully-divergent layout; the merged form is 71.9%).
+//
+// @early-stop
+// register-scheduling wall (~72%): logic + offsets + CFG + the merged epilogue are
+// exact; residue is the +0x60(scrollY) spill materialization and the cmpHi==tHi
+// branch polarity (retail makes the ok-target fall-through). Deferred to the final sweep.
+RVA(0x0015fe40, 0xd4)
+i32 CGameLevel::AltStepValidate(void* target, void* payload, i32 a1, i32 a2, i32* outY, i32 a3) {
+    EditTarget* t = (EditTarget*)target;
+    ProbeObj* p = (ProbeObj*)payload;
+
+    if (p->m_144 == -1) {
+        goto fail;
+    }
+    if (t->axisLoA == -1) {
+        goto fail;
+    }
+    {
+        i32 sy = t->scrollY;
+        if (sy > a2) {
+            goto fail;
+        }
+
+        i32 boxL = p->m_144 + p->m_5c;
+        i32 boxR = p->m_14c + p->m_5c;
+        i32 boxT = p->m_60 + p->m_148;
+        i32 tLoA = t->axisLoA + a1;
+        i32 tMid = t->axisMid + a1;
+        i32 tHi = t->axisHi + a2;
+        i32 cmpHi = t->axisHi + sy;
+
+        i32 over = p->m_178;
+        if (over > 0) {
+            over = 0;
+        }
+        i32 ceil = boxT - over;
+        if (cmpHi > ceil) {
+            goto fail;
+        }
+        if (tMid < boxL) {
+            goto fail;
+        }
+        if (tLoA > boxR) {
+            goto fail;
+        }
+        if (cmpHi == tHi) {
+            if (tHi != boxT - 1) {
+                goto fail;
+            }
+        } else {
+            if (tHi < boxT - 1) {
+                goto fail;
+            }
+        }
+
+        *outY = boxT - t->axisHi - 1;
+        return 1;
+    }
+fail:
+    return 0;
 }

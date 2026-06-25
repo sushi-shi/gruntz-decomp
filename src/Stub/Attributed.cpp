@@ -123,14 +123,6 @@ RVA(0x000220f0, 0x46) void CFontConfig::CFontConfig_0220f0() {}  // high
 RVA(0x0013dbc0, 0x57) void CGameApp::CGameApp_13dbc0() {}  // high
 
 // ---- CGameLevel ----
-RVA(0x0015e720, 0x14c) void CGameLevel::CGameLevel_15e720() {}  // high
-RVA(0x0015e870, 0x14c) void CGameLevel::CGameLevel_15e870() {}  // high
-RVA(0x0015eb00, 0x2d2) void CGameLevel::CGameLevel_15eb00() {}  // high
-RVA(0x0015ede0, 0x2a7) void CGameLevel::CGameLevel_15ede0() {}  // high
-RVA(0x0015f1c0, 0x171) void CGameLevel::CGameLevel_15f1c0() {}  // high
-RVA(0x0015f8d0, 0x113) void CGameLevel::CGameLevel_15f8d0() {}  // high
-RVA(0x0015fdb0, 0x8a) void CGameLevel::CGameLevel_15fdb0() {}  // high
-RVA(0x0015fe40, 0xd4) void CGameLevel::CGameLevel_15fe40() {}  // high
 RVA(0x0015ff20, 0xc0) void CGameLevel::CGameLevel_15ff20() {}  // high
 RVA(0x0015ffe0, 0x99) void CGameLevel::CGameLevel_15ffe0() {}  // high
 RVA(0x00160980, 0xc0) void CGameLevel::CGameLevel_160980() {}  // high
