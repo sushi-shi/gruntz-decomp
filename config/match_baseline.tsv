@@ -58,7 +58,7 @@ cexittrigger	2	2
 cexplosion	1	1
 ceyecandy	2	2
 cfader	6	5
-cfadermgr	7	3
+cfadermgr	7	4
 cfileimage	6	1
 cfixedptrarray32	3	2
 cfortressflag	5	4
@@ -130,7 +130,7 @@ gamelevel	52	23
 gamemode	42	19
 gamemodeobjlifecycle	4	3
 gameobjectctors	5	1
-gametext	4	2
+gametext	4	3
 gamewnd	9	8
 grunt	77	15
 gruntdatarecord	2	2
@@ -206,7 +206,7 @@ sbi_wellgoo	1	0
 sbi_wellgoo_eh	1	0
 scattersamples	2	1
 shadetablecache	17	3
-siriusworkerhandlers	4	3
+siriusworkerhandlers	4	4
 sounddevice	12	6
 soundstream	7	3
 soundvoicelist	4	3
@@ -645,7 +645,7 @@ cfadermgr	?DeleteAll@CFaderMgr@@QAEXXZ	100.0000	100.0000	1	7c42fa42e763	0x17e1d0
 cfadermgr	?Flush@CFaderMgr@@QAEHXZ	100.0000	100.0000	1	1dbe7078d522	0x17e160
 cfadermgr	?FreeAll@CFaderMgr@@QAEXXZ	100.0000	100.0000	1	f0e41c40b256	0x17d9a0
 cfadermgr	?Remove@CFaderMgr@@QAEXPAUCFader@@@Z	67.1111	67.1111	1	7c395e00a7e3	0x17e170
-cfadermgr	?SetConfig@CFaderMgr@@QAEHHHH@Z	99.5556	99.5556	1	42b75ca6f3b5	0x17d980
+cfadermgr	?SetConfig@CFaderMgr@@QAEHHHH@Z	100.0000	100.0000	2	c2453448947b	0x17d980
 cfileimage	?Decode@CFileImage@@QAEHPAVCFileImageInfo@@PAVCFileImageSrc@@HH@Z	87.4720	87.4720	1	dc0d66b3803f	0x144b30
 cfileimage	?DecodeThunk@CFileImage@@QAEXHHHHHHHHHH@Z	48.1538	48.1538	1	4cf4c0ca3850	0x141280
 cfileimage	?FlipVertical@CFileImage@@QAEXXZ	62.4649	62.4649	1	5a7fdb00d65d	0x13ebb0
@@ -2341,7 +2341,7 @@ gameobjectctors	??0CGruntToyTimeSprite@@QAE@PAUCSpriteObj@@@Z	94.7619	94.7619	2	
 gameobjectctors	??0CGruntWingzTimeSprite@@QAE@PAUCSpriteObj@@@Z	94.7619	94.7619	2	d29f9444e61a	0x7fcc0
 gameobjectctors	??0CRainCloud@@QAE@PAUCHazardObj@@@Z	100.0000	100.0000	3	5f425e89f780	0xb49b0
 gameobjectctors	??0CUFO@@QAE@PAUCHazardObj@@@Z	81.0227	81.0227	3	529d99d92540	0xb4a90
-gametext	??0CContainerErr@@QAE@PBD@Z	99.7368	99.7368	4	754ef1da6bee	0x16d9c0
+gametext	??0CContainerErr@@QAE@PBD@Z	100.0000	100.0000	4	754ef1da6bee	0x16d9c0
 gametext	?GetWarlordName@@YG?AVCString@@H@Z	89.2553	89.2553	4	290253c681a0	0x1ec20
 gametext	_$E1	100.0000	100.0000	1	cpp:a7f73c40eefc	0x82990
 gametext	_$E4	100.0000	100.0000	1	cpp:a7f73c40eefc	0x18740
@@ -3077,7 +3077,7 @@ shadetablecache	?HueSortTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUPalEntry@@
 shadetablecache	?Init@CShadeTableCache@@QAEHXZ	100.0000	100.0000	1	9851d1a61203	0x14dec0
 shadetablecache	?LumaSortTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUPalEntry@@@Z	76.4945	76.4945	1	a8f24dd3579f	0x14ec00
 shadetablecache	?SubTable@CShadeTableCache@@QAEPAUCShadeTable@@H@Z	62.8309	62.8309	2	16c5c237d296	0x14f310
-siriusworkerhandlers	??0WorkerFull@@QAE@HHH@Z	99.7647	99.7647	1	5742f7cb4005	0x15b300
+siriusworkerhandlers	??0WorkerFull@@QAE@HHH@Z	100.0000	100.0000	2	864075c7c48f	0x15b300
 siriusworkerhandlers	?Handler03d670@@YAHPAUOwner@@@Z	100.0000	100.0000	1	839c531d42a0	0x3d670
 siriusworkerhandlers	?Handler07db20@@YAHPAUOwner@@@Z	100.0000	100.0000	1	b23002ac8904	0x7db20
 siriusworkerhandlers	?Handler07dda0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	27f15168f4f5	0x7dda0

@@ -53,13 +53,15 @@ CFaderMgr::~CFaderMgr() {
 // ===========================================================================
 // 0x17d980 - SetConfig(a, b, c): latch the shared timer fields (m_00 = a,
 // m_04 = b, m_24 = c) and mark the manager active (m_08 = 1). Returns 1.
-// __thiscall, three args.
+// __thiscall, three args. Assignment order is load-bearing: m_00/m_04/m_24
+// makes cl hold `b` in edx across the m_24 store (retail's schedule); swapping
+// m_24 ahead of m_04 holds `c` instead and reorders the two stores.
 // ===========================================================================
 RVA(0x0017d980, 0x1f)
 i32 CFaderMgr::SetConfig(i32 a, i32 b, i32 c) {
     m_00 = a;
-    m_24 = c;
     m_04 = b;
+    m_24 = c;
     m_08 = 1;
     return 1;
 }
