@@ -1699,7 +1699,86 @@ public:
     virtual void Vs20();
     virtual void Vs24();
     virtual i32 Build(i32 a, i32 b, i32 c, i32 d); // +0x28 deserialize/build
+
+    // Reset/clear the wide object: release the four +0x7c..0x90 sub-objects and
+    // reset the geometry/status fields.  Documented raw-offset access.
+    void Reset_15b980();  // 0x15b980
+    void Reset_15bf00();  // 0x15bf00
+    void Reload_166810(); // 0x166810 (external base reset, no body)
 };
+
+// ---------------------------------------------------------------------------
+// CWwdGameObject reset (0x15b980): drop the four sub-objects at +0x7c/+0x80/
+// +0x88/+0x90 via their scalar-dtor virtual (slot 1, delete flag), null the
+// geometry cache (+0x18c..+0x198), then re-seed the status fields (+0xd8/+0x38 =
+// -1, +0xc0/+0x5c/+0x20 = 0x80000000).  __thiscall, ret 0.  Raw-offset access.
+RVA(0x0015b980, 0x96)
+void CWwdFactoryObject::Reset_15b980() {
+    char* o = (char*)this;
+    *(i32*)(o + 0x18c) = -1;
+    *(i32*)(o + 0x190) = -1;
+    *(i32*)(o + 0x198) = 0;
+    *(i32*)(o + 0x194) = 0;
+    CWwdFactoryObject* s;
+    if ((s = *(CWwdFactoryObject**)(o + 0x7c)) != 0) {
+        s->ScalarDtor(1);
+        *(i32*)(o + 0x7c) = 0;
+    }
+    if ((s = *(CWwdFactoryObject**)(o + 0x80)) != 0) {
+        s->ScalarDtor(1);
+        *(i32*)(o + 0x80) = 0;
+    }
+    if ((s = *(CWwdFactoryObject**)(o + 0x88)) != 0) {
+        s->ScalarDtor(1);
+        *(i32*)(o + 0x88) = 0;
+    }
+    if ((s = *(CWwdFactoryObject**)(o + 0x90)) != 0) {
+        s->ScalarDtor(1);
+        *(i32*)(o + 0x90) = 0;
+    }
+    *(i32*)(o + 0xd8) = -1;
+    *(i32*)(o + 0xc0) = (i32)0x80000000;
+    *(i32*)(o + 0x5c) = (i32)0x80000000;
+    *(i32*)(o + 0x20) = (i32)0x80000000;
+    *(i32*)(o + 0x38) = -1;
+}
+
+// ---------------------------------------------------------------------------
+// CWwdGameObject reset (0x15bf00): the deeper-reset twin - first run the base
+// reset (Reload_166810), clear +0x1f8, then the identical sub-object teardown +
+// status re-seed as Reset_15b980.  __thiscall, ret 0.  Raw-offset access.
+RVA(0x0015bf00, 0xa1)
+void CWwdFactoryObject::Reset_15bf00() {
+    char* o = (char*)this;
+    Reload_166810();
+    *(i32*)(o + 0x1f8) = 0;
+    *(i32*)(o + 0x18c) = -1;
+    *(i32*)(o + 0x190) = -1;
+    *(i32*)(o + 0x198) = 0;
+    *(i32*)(o + 0x194) = 0;
+    CWwdFactoryObject* s;
+    if ((s = *(CWwdFactoryObject**)(o + 0x7c)) != 0) {
+        s->ScalarDtor(1);
+        *(i32*)(o + 0x7c) = 0;
+    }
+    if ((s = *(CWwdFactoryObject**)(o + 0x80)) != 0) {
+        s->ScalarDtor(1);
+        *(i32*)(o + 0x80) = 0;
+    }
+    if ((s = *(CWwdFactoryObject**)(o + 0x88)) != 0) {
+        s->ScalarDtor(1);
+        *(i32*)(o + 0x88) = 0;
+    }
+    if ((s = *(CWwdFactoryObject**)(o + 0x90)) != 0) {
+        s->ScalarDtor(1);
+        *(i32*)(o + 0x90) = 0;
+    }
+    *(i32*)(o + 0xd8) = -1;
+    *(i32*)(o + 0xc0) = (i32)0x80000000;
+    *(i32*)(o + 0x5c) = (i32)0x80000000;
+    *(i32*)(o + 0x20) = (i32)0x80000000;
+    *(i32*)(o + 0x38) = -1;
+}
 
 // @early-stop
 // RezAlloc + placement-construct EH-frame wall (docs/patterns/rezalloc-placement-

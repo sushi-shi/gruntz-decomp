@@ -216,11 +216,40 @@ void CGruntSprite::CacheFrame(const char* name, i32 frame) {
 // The `name` (lookup key) is consumed by the lookup and is NOT forwarded to the
 // impl - the impl receives the resolved template pointer in its place.
 
+// The sprite object the factory installs/initialises (AttachSprite's arg0). Its
+// init virtual lives at vtable slot 0x28 (a 4-arg method returning a success flag);
+// its +0x7c sub-table holds a plain fn-ptr entry at +0x10 driven post-attach.
+// __single_inheritance keeps the init PMF a 4-byte code pointer (the class is only
+// forward-declared here, else MSVC's general PMF emits a this-adjust thunk).
+struct __single_inheritance CSprite2;
+typedef i32 (CSprite2::*CSprite2InitFn)(i32, i32, i32, CSprite*);
+struct CSprite2Vtbl {
+    char _00[0x28];
+    CSprite2InitFn Init; // [0x28]
+};
+struct CSprite2 {
+    CSprite2Vtbl* vptr; // +0x00
+    char _04[0x08 - 0x04];
+    i32 m_08; // +0x08  flags slot
+    char _0c[0x7c - 0x0c];
+    void** m_7c; // +0x7c  fn-ptr sub-table (entry @+0x10)
+
+    i32 Init(i32 a, i32 b, i32 c, CSprite* tmpl) {
+        return (this->*(vptr->Init))(a, b, c, tmpl);
+    }
+};
+
 class CSpriteFactory {
 public:
     CSprite* CreateSprite(i32 kind, i32 geoB, i32 geoA, i32 hint, const char* name, i32 flags);
     // The real allocator/ctor (external/no-body so the call reloc-masks).
     CSprite* CreateSpriteImpl(i32 kind, i32 geoB, i32 geoA, i32 hint, CSprite* tmpl, i32 flags);
+
+    // Look the named template up, run the sprite's init virtual, splice it into the
+    // factory's child list (AddChild @0x159e40, external) and, when flagged, drive
+    // its +0x7c sub-table. __thiscall, ret 0x18.
+    i32 AttachSprite(CSprite2* obj, i32 a1, i32 a2, i32 a3, const char* name, i32 flags);
+    void AddChild(CSprite2* obj, i32 flag); // 0x159e40 (external/no-body)
 
     char m_pad00[0xc];
     CResMgr* m_c; // +0x0c
@@ -235,6 +264,42 @@ CSpriteFactory::CreateSprite(i32 kind, i32 geoB, i32 geoA, i32 hint, const char*
         return 0;
     }
     return CreateSpriteImpl(kind, geoB, geoA, hint, tmpl, flags);
+}
+
+// ===========================================================================
+// CSpriteFactory::AttachSprite  @0x159830
+// ===========================================================================
+//
+// Initialise an already-allocated sprite (arg0) against a named template: look the
+// template up by class-NAME (arg4) in the factory's sprite-set table; on a miss
+// return 0. On a hit stamp the flags arg into the sprite (+0x8), run its init
+// virtual (vtable slot 0x28) with (a1, a2, a3, template) and bail with 0 if it
+// fails; otherwise splice the sprite into the factory's child list (AddChild) and,
+// when the flags carry 0x200000, drive the sprite's +0x7c sub-table entry @+0x10.
+// Returns 1 on success. __thiscall, ret 0x18.
+// @early-stop
+// 99.5% ebx<->edi coloring wall: byte-identical except retail colors this->edi /
+// flags->ebx while MSVC5 picks this->ebx / flags->edi (6 reg-only instr diffs); the
+// instruction selection (PMF init call, m_7c dispatch) is exact, not source-steerable.
+RVA(0x00159830, 0x92)
+i32 CSpriteFactory::AttachSprite(CSprite2* obj, i32 a1, i32 a2, i32 a3, const char* name, i32 flags) {
+    if (!obj) {
+        return 0;
+    }
+    CSprite* tmpl = 0;
+    m_c->m_14->m_10map.Lookup(name, &tmpl);
+    if (!tmpl) {
+        return 0;
+    }
+    obj->m_08 = flags;
+    if (!obj->Init(a1, a2, a3, tmpl)) {
+        return 0;
+    }
+    AddChild(obj, 1);
+    if (flags & 0x200000) {
+        (*(void (**)(CSprite2*))((char*)obj->m_7c + 0x10))(obj);
+    }
+    return 1;
 }
 
 // ===========================================================================

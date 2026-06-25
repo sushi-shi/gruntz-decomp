@@ -79,6 +79,7 @@ static const char s_extBmp[] = ".BMP";
 static const char s_extPcx[] = ".PCX";
 static const char s_extRid[] = ".RID";
 static const char s_extPid[] = ".PID";
+static const char s_extPal[] = ".PAL"; // the file-loader dispatcher (0x176f90) variant
 
 // ---------------------------------------------------------------------------
 // CImage::DecodeBmpHeader
@@ -153,6 +154,103 @@ i32 CImage::LoadFromRez(char* name, void* a2, void* a3) {
     }
 
     return LoadDefault(name, a2, a3);
+}
+
+// ---------------------------------------------------------------------------
+// CImageExtLoader::LoadByExtension  @0x176f90
+// ---------------------------------------------------------------------------
+// The FILE-loader counterpart of LoadFromRez (sits in the 0x176df0-0x177xxx file
+// cluster just past the CImage rez loaders): strrchr the dot, then a stricmp
+// ladder on .BMP/.PCX/.PAL forwarding (path, arg) verbatim to the matching file
+// loader; an absent/unknown extension falls through to Apply. Each case re-tests
+// `ext != 0` (the target's per-case `test esi; je default`). The four loaders are
+// reloc-masked external siblings (0x177480/0x1772e0/0x1771f0/0x1775f0); `this` is
+// pure-forwarded so its layout is immaterial. __thiscall, ret 8.
+class CImageExtLoader {
+public:
+    i32 LoadByExtension(char* path, i32 arg);
+    i32 LoadBmpFile(char* path, i32 arg); // 0x177480
+    i32 LoadPcxFile(char* path, i32 arg); // 0x1772e0  (.PCX palette tail)
+    i32 LoadPalFile(char* path, i32 arg); // 0x1771f0  (768-byte .PAL)
+    i32 Apply(char* path, i32 arg);       // 0x1775f0  (default)
+    i32 ProcessPal(void* rgb768, i32 arg);  // 0x176e70 (external)
+    i32 BuildPalette(void* rgbq, i32 arg);  // 0x176df0 (external)
+};
+
+RVA(0x00176f90, 0xa4)
+i32 CImageExtLoader::LoadByExtension(char* path, i32 arg) {
+    char* ext = strrchr(path, '.');
+
+    if (ext && _stricmp(ext, s_extBmp) == 0) {
+        return LoadBmpFile(path, arg);
+    } else if (ext && _stricmp(ext, s_extPcx) == 0) {
+        return LoadPcxFile(path, arg);
+    } else if (ext && _stricmp(ext, s_extPal) == 0) {
+        return LoadPalFile(path, arg);
+    }
+
+    return Apply(path, arg);
+}
+
+// ---------------------------------------------------------------------------
+// CImageExtLoader::LoadPalFile  @0x1771f0
+// ---------------------------------------------------------------------------
+// Load a raw 768-byte (.PAL) palette: open the file, require length == 0x300,
+// Read the 256*3 RGB bytes into a stack buffer, hand it to ProcessPal(buf, arg).
+// Any I/O failure returns 0. The CFileIO stack object forces the /GX EH frame.
+// __thiscall, ret 8.
+RVA(0x001771f0, 0xe2)
+i32 CImageExtLoader::LoadPalFile(char* path, i32 arg) {
+    CFileIO file;
+    char rgb[0x300];
+
+    if (!file.Open(path, 0, 0)) {
+        return 0;
+    }
+    if (file.GetLength() != 0x300) {
+        return 0;
+    }
+    file.Read(rgb, 0x300);
+    return ProcessPal(rgb, arg);
+}
+
+// ---------------------------------------------------------------------------
+// CImageExtLoader::LoadPcxFile  @0x1772e0
+// ---------------------------------------------------------------------------
+// Load the trailing palette of a .PCX: seek 0x300 bytes back from EOF, Read the
+// 256*3 RGB triples; on a short read return 0. Expand the triples in place into a
+// 256-entry RGBQUAD table (R,G,B,0) and hand it to BuildPalette(table, arg). The
+// CFileIO stack object forces the /GX EH frame. __thiscall, ret 8.
+// @early-stop
+// 93.9% de-interleave-loop induction-phase wall: the EH frame + open/seek/read +
+// BuildPalette call are byte-exact, but retail phases the dst induction variable at
+// base+1 (`add ecx,4` after the FIRST byte store, the four writes at [iv-1]/[iv-4]/
+// [iv-3]/[iv-2], the zero-store LAST) while clean C reorders the +4 and the zero
+// store; not source-steerable. Logic 100% correct (256 RGB triples -> RGBQUAD).
+RVA(0x001772e0, 0x117)
+i32 CImageExtLoader::LoadPcxFile(char* path, i32 arg) {
+    CFileIO file;
+    u8 rgb[0x300];
+    u8 rgbq[0x400];
+
+    if (!file.Open(path, 0, 0)) {
+        return 0;
+    }
+    file.Seek(-0x300, 2);
+    if (file.Read(rgb, 0x300) == 0) {
+        return 0;
+    }
+
+    u8* src = rgb;
+    u8* dst = rgbq;
+    for (i32 i = 0x100; i != 0; i--) {
+        dst[0] = *src++;
+        dst[1] = *src++;
+        dst[2] = *src++;
+        dst[3] = 0;
+        dst += 4;
+    }
+    return BuildPalette(rgbq, arg);
 }
 
 // The resource module the .DEFAULT loader pulls RT_BITMAP resources from

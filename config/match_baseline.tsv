@@ -37,7 +37,7 @@ ccursorsnapsprite	2	2
 cddrawchildgroup	9	5
 cddrawptrcollections	26	11
 cddrawshadeblit	6	1
-cddrawsubmgr	39	21
+cddrawsubmgr	41	23
 cddrawsubmgrani	3	1
 cddrawsubmgrdraco	5	2
 cddrawsubmgrleaf	14	4
@@ -115,7 +115,7 @@ directinputmgr2	29	25
 directsoundmgr	39	28
 dsoundvoice	2	1
 engine_attributed	28	0
-engine_boundary	622	0
+engine_boundary	616	0
 engine_discovered	72	0
 engine_label_stubs	462	103
 engstr	3	1
@@ -147,7 +147,7 @@ gruntzwnd	9	7
 hash	10	9
 helperhost	2	0
 iconloaders	5	1
-image	36	22
+image	39	24
 imageset	4	4
 infblock	5	4
 infcodes	3	2
@@ -213,7 +213,7 @@ soundvoicelist	4	3
 spriteloaders	10	5
 spriteref	2	1
 spritereftable	7	6
-spriteresource	8	3
+spriteresource	9	3
 statemgrbz	5	3
 statusbaritem	2	1
 statusbarupdaters	7	0
@@ -481,6 +481,8 @@ cddrawsubmgr	?PruneList_15aa90@CWwdObjMgr@@QAEXXZ	95.6410	95.6410	1	56df548d0ecd
 cddrawsubmgr	?PruneOrphans_15b1d0@CWwdObjMgr@@QAEHXZ	94.2295	94.2295	1	d5da28ae9ca6	0x15b1d0
 cddrawsubmgr	?RemoveAll_15ab30@CWwdObjMgr@@QAEXHPAVCWwdObject@@@Z	100.0000	100.0000	1	dad84abfbb00	0x15ab30
 cddrawsubmgr	?RemoveByPosition_15ab70@CWwdObjMgr@@QAEXHPAVCWwdObject@@@Z	100.0000	100.0000	1	bd5215a51066	0x15ab70
+cddrawsubmgr	?Reset_15b980@CWwdFactoryObject@@QAEXXZ	100.0000	100.0000	1	604260c38c11	0x15b980
+cddrawsubmgr	?Reset_15bf00@CWwdFactoryObject@@QAEXXZ	100.0000	100.0000	1	56f3f59b7e96	0x15bf00
 cddrawsubmgr	?Reset_15c2c0@CDDrawBlitParam@@QAEXXZ	100.0000	100.0000	1	d1c77897f6cf	0x15c2c0
 cddrawsubmgr	?Serialize_15c970@CDDrawBlitParam@@QAEHPAVCWwdArchive@@@Z	99.4175	99.4175	1	d9613a190017	0x15c970
 cddrawsubmgr	?Setup_15c2d0@CDDrawBlitParam@@QAEXPAVCDDrawBlitParamSrc@@@Z	100.0000	100.0000	2	de9d51caa4a5	0x15c2d0
@@ -1420,7 +1422,6 @@ engine_boundary	?Boundary_158f30@@YAXXZ	4.0000	4.0000	1	e0263b0b6d40	0x158f30
 engine_boundary	?Boundary_158fb0@@YAXXZ	14.2857	14.2857	1	b12f54b1c3b7	0x158fb0
 engine_boundary	?Boundary_159250@@YAXXZ	0.3419	0.3419	1	4a984389da5f	0x159250
 engine_boundary	?Boundary_159440@@YAXXZ	0.3636	0.3636	1	d8feada52a78	0x159440
-engine_boundary	?Boundary_159830@@YAXXZ	0.6557	0.6557	1	8c1a3f9b1c2d	0x159830
 engine_boundary	?Boundary_1598d0@@YAXXZ	0.4000	0.4000	1	968d4372edeb	0x1598d0
 engine_boundary	?Boundary_15a130@@YAXXZ	0.4598	0.4598	1	1066c1ea0cfb	0x15a130
 engine_boundary	?Boundary_15a860@@YAXXZ	0.9091	0.9091	1	ede8a4c283b4	0x15a860
@@ -1431,12 +1432,10 @@ engine_boundary	?Boundary_15b5d0@@YAXXZ	2.3810	2.3810	1	47da0dd351f1	0x15b5d0
 engine_boundary	?Boundary_15b650@@YAXXZ	1.9048	1.9048	1	2ed9ec2125e9	0x15b650
 engine_boundary	?Boundary_15b6d0@@YAXXZ	4.7619	4.7619	1	f781d0aab429	0x15b6d0
 engine_boundary	?Boundary_15b790@@YAXXZ	0.8403	0.8403	1	9ea19f108bf5	0x15b790
-engine_boundary	?Boundary_15b980@@YAXXZ	2.0833	2.0833	1	9b920c116a54	0x15b980
 engine_boundary	?Boundary_15bad0@@YAXXZ	0.9709	0.9709	1	1ba7481f9958	0x15bad0
 engine_boundary	?Boundary_15bc30@@YAXXZ	5.0000	5.0000	1	291fc6fbc74d	0x15bc30
 engine_boundary	?Boundary_15bc50@@YAXXZ	2.3810	2.3810	1	96d24389e83a	0x15bc50
 engine_boundary	?Boundary_15bd10@@YAXXZ	0.7576	0.7576	1	a15af477c9e3	0x15bd10
-engine_boundary	?Boundary_15bf00@@YAXXZ	2.0000	2.0000	1	782863d383ae	0x15bf00
 engine_boundary	?Boundary_15bfb0@@YAXXZ	1.2500	1.2500	1	0ab300dda311	0x15bfb0
 engine_boundary	?Boundary_15c070@@YAXXZ	0.9615	0.9615	1	e14e88ae8702	0x15c070
 engine_boundary	?Boundary_15c1d0@@YAXXZ	3.3333	3.3333	1	39cde00269b5	0x15c1d0
@@ -1583,10 +1582,7 @@ engine_boundary	?Boundary_176ad0@@YAXXZ	8.0000	8.0000	1	b76cd359f4b0	0x176ad0
 engine_boundary	?Boundary_176b30@@YAXXZ	0.2899	0.2899	1	9c4cd4fa902b	0x176b30
 engine_boundary	?Boundary_176d20@@YAXXZ	0.8696	0.8696	1	a1e1fd6cdf9b	0x176d20
 engine_boundary	?Boundary_176e70@@YAXXZ	1.3793	1.3793	1	d57dbfb8383f	0x176e70
-engine_boundary	?Boundary_176f90@@YAXXZ	0.5714	0.5714	1	25f7bb31fa48	0x176f90
 engine_boundary	?Boundary_177040@@YAXXZ	3.3333	3.3333	1	b2108715739c	0x177040
-engine_boundary	?Boundary_1771f0@@YAXXZ	0.7407	0.7407	1	d3ff07365d29	0x1771f0
-engine_boundary	?Boundary_1772e0@@YAXXZ	0.5195	0.5195	1	92772a151ce0	0x1772e0
 engine_boundary	?Boundary_177400@@YAXXZ	0.9756	0.9756	1	670897daa957	0x177400
 engine_boundary	?Boundary_177480@@YAXXZ	0.4444	0.4444	1	8d3354b312af	0x177480
 engine_boundary	?Boundary_179270@@YAXXZ	0.6250	0.6250	1	007aa2693a6a	0x179270
@@ -2652,24 +2648,27 @@ image	?Build_13e9a0@CImageFactory@@QAEHPAVCImageSource@@H@Z	58.0769	58.0769	1	bc
 image	?Clear@CFileImage@@QAEXH@Z	100.0000	100.0000	2	bfee47867379	0x13edb0
 image	?DecodeBmp@CFileImage@@QAEPAXPADPAXI@Z	31.2544	31.2544	4	ee7ec349a997	0x143fc0
 image	?DecodeBmpHeader@CImage@@QAEHPAXHHH0@Z	95.7395	95.7395	5	5af44e6457a4	0x1757c0
-image	?DecodePcx@CFileImage@@QAEPAXPADPAXI@Z	55.7755	55.7755	4	77f8fc32ed4c	0x144ee0
+image	?DecodePcx@CFileImage@@QAEPAXPADPAXI@Z	55.6786	55.6786	4	77f8fc32ed4c	0x144ee0
 image	?DecodePcxData@CFileImage@@QAEHPAX0HHH@Z	86.2370	86.2370	1	ddfed7a9e89e	0x1457a0
 image	?DecodePcxData@CImage@@QAEHPAX00@Z	91.3291	91.3291	4	da60cf2acb73	0x176000
 image	?DecodePcxEx@CFileImage@@QAEHPAD0PAX1@Z	100.0000	100.0000	5	d07ec29ad6b0	0x1459d0
 image	?DecodePid@CFileImage@@QAEPAXPADPAXI1@Z	35.4204	35.4204	4	5a4b4aeca089	0x145b10
 image	?DecodePidData@CImage@@QAEHPAX00@Z	72.7817	72.7817	4	b5df2e67ba2b	0x176440
-image	?DecodeResData@CImage@@QAEHPAX00@Z	96.2692	96.2692	3	41382a1b71f9	0x175e00
+image	?DecodeResData@CImage@@QAEHPAX00@Z	96.4615	96.4615	3	41382a1b71f9	0x175e00
 image	?DecodeRidData@CImage@@QAEHPAX00@Z	74.2963	74.2963	4	f103995b3209	0x1762c0
 image	?Fill@CFileImage@@QAEHI@Z	100.0000	100.0000	1	b41f9cdd1e9a	0x13e760
 image	?FillPalette@CFileImage@@QAEXPAX@Z	100.0000	100.0000	2	65ca5e916ffd	0x13eb40
 image	?FreeSurfaces@CFileImage@@QAEXXZ	100.0000	100.0000	1	bcff661095f9	0x13e4d0
 image	?LoadBmp@CFileImage@@QAEPAXPAD0@Z	100.0000	100.0000	5	aba7939dc95e	0x144110
 image	?LoadBmp@CImage@@QAEHPADPAX1@Z	100.0000	100.0000	4	39a5505e432b	0x175e40
+image	?LoadByExtension@CImageExtLoader@@QAEHPADH@Z	100.0000	100.0000	1	82f853089727	0x176f90
 image	?LoadDefault@CImage@@QAEHPADPAX1@Z	100.0000	100.0000	3	aa5019cc8673	0x1767d0
 image	?LoadFromRez@CImage@@QAEHPADPAX1@Z	100.0000	100.0000	5	dcb81f348f6b	0x175a90
 image	?LoadKeyed@CFileImage@@QAEHPAXHHHHH@Z	100.0000	100.0000	1	87038f39e0e0	0x148840
+image	?LoadPalFile@CImageExtLoader@@QAEHPADH@Z	100.0000	100.0000	1	dc321cd747b6	0x1771f0
 image	?LoadPcx@CFileImage@@QAEPAXPAD0@Z	100.0000	100.0000	5	1daaffefb0ee	0x145110
 image	?LoadPcx@CImage@@QAEHPADPAX1@Z	100.0000	100.0000	3	a41283680d0c	0x176190
+image	?LoadPcxFile@CImageExtLoader@@QAEHPADH@Z	93.9091	93.9091	1	ba21bdf2c477	0x1772e0
 image	?LoadPid@CFileImage@@QAEPAXPAD0PAX@Z	100.0000	100.0000	5	d56dd78c8d12	0x145cd0
 image	?LoadPid@CImage@@QAEHPADPAX1@Z	100.0000	100.0000	3	7c3ef0acc2f9	0x1766a0
 image	?LoadRid@CImage@@QAEHPADPAX1@Z	100.0000	100.0000	3	85fcdd1f2e69	0x176310
@@ -3136,6 +3135,7 @@ spritereftable	?Init@CSpriteRefTable@@QAEHHH@Z	100.0000	100.0000	2	f0e34ea5742f	
 spritereftable	?Reset@CSpriteRefTable@@QAEXXZ	100.0000	100.0000	1	1f62670ca9f4	0xe2290
 spriteresource	?ApplyGeometryDirect@CGruntAnimPlayer@@QAEXHH@Z	100.0000	100.0000	1	77aad38a5c97	0x58b60
 spriteresource	?ApplyLookupGeometry@CGruntAnimPlayer@@QAEHPBDH@Z	93.9394	93.9394	4	cb136edb79cc	0x1505b0
+spriteresource	?AttachSprite@CSpriteFactory@@QAEHPAUCSprite2@@HHHPBDH@Z	99.5082	99.5082	1	83039a453d40	0x159830
 spriteresource	?CacheFirstFrame@CGruntSprite@@QAEXPBD@Z	89.2647	89.2647	5	0cdb67ea8d67	0x150540
 spriteresource	?CacheFrame@CGruntSprite@@QAEXPBDH@Z	84.2571	84.2571	2	37e6bc878135	0x1504d0
 spriteresource	?ConfigureItem@CStatusBarMgr@@QAEHHHHH@Z	100.0000	100.0000	4	be2023a676b3	0x1360d0
