@@ -183,6 +183,7 @@ namespace EngineLabelBacklog {
     void BuildSoundFontPath();
     i32 Stub_0f90f0(char* szPath);
     void LoadStatzTabToggleSprite();
+    // BuildStatzTabSmall_vfunc1 reconstructed as CStatzTabSmall::BuildSmall below.
     void UpdateGruntOvenStatusBar();
     void UpdateChipGrinderStatusBar();
     void UpdateWarpStoneStatusBar();
@@ -196,12 +197,6 @@ namespace EngineLabelBacklog {
     void FreeAllFonts();
     void FormatGameInfoString();
     void __stdcall BuildVoiceSoundList(i32);
-    void Stub_11f900();
-    void Stub_12abf0();
-    void Stub_12d230();
-    void Stub_12d460();
-    void Stub_12d880();
-    void Stub_1315d0();
     void __stdcall Stub_148940(i32, i32, i32, i32);
     void _tr_init();
     void _ct_init();
@@ -1081,12 +1076,95 @@ void __stdcall EngineLabelBacklog::LoadBridgeMoveSprites(i32) {}
 // unit). Its GAME_<COLOR>PYRAMIDZ / GAME_PYRAMIDUP CString temps give it the
 // exception frame.
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
+// ---------------------------------------------------------------------------
+// BuildStatzTabSmall (0x112a50) - a status-bar StatzTab builder vfunc (slot 1).
+// Bails if already built (m_20 != 0) or, in mode 4, if the caller's rect is empty;
+// otherwise copies the caller's 0x60-byte rect block into this+0x2c, chains the
+// base builder (vtable slot 0) with the forwarded args, and (when a9 != 0) asks
+// the HUD sprite factory (g_gameReg->m_30->m_8->CreateSprite) for the tab sprite
+// at the tile's pixel origin (tile<<5 + 0x10), runs its init slot, configures it,
+// and reports readiness via the sprite's +0x198. Only offsets / code bytes are
+// load-bearing; helpers are reloc-masked externals.
+struct CStatzRect60 {
+    i32 d[0x18]; // 0x60 bytes
+};
+struct CStatzSprite;
+struct CStatzSpriteFactory {
+    // FUN_001597b0 __thiscall, ret 0x18: build the named tab sprite.
+    CStatzSprite* CreateSprite(i32 kind, i32 px, i32 py, i32 hint, void* name, i32 flags);
+};
+struct CStatzFactoryHolder {
+    char m_pad0[0x8];
+    CStatzSpriteFactory* m_8; // +0x08
+};
+struct CStatzGameReg {
+    char m_pad0[0x30];
+    CStatzFactoryHolder* m_30; // +0x30
+};
+DATA(0x0024556c)
+extern CStatzGameReg* g_statzGameReg; // *0x64556c
+struct CStatzSpriteInitVtbl {
+    void* m_slot0[4];                   // slots 0..3
+    void(__cdecl* Init)(CStatzSprite*); // slot 4 (+0x10)
+};
+struct CStatzSprite {
+    char m_pad0[0x7c];
+    CStatzSpriteInitVtbl* m_7c; // +0x7c
+    char m_pad80[0x198 - 0x80];
+    i32 m_198;                       // +0x198
+    void Configure(void* tag, i32 a); // FUN_001504d0 __thiscall
+};
+DATA(0x0020aa34)
+extern char g_statzTabSpriteName[]; // CreateSprite name buffer
+DATA(0x0020f928)
+extern char g_statzTabCfgTag[]; // Configure tag global
+struct CStatzTabSmall {
+    virtual i32 BaseBuild(i32, i32, i32, i32, i32, i32, i32, i32); // slot 0 (reloc-masked)
+    i32 BuildSmall(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, CStatzRect60* a6, i32 a7, i32 a8,
+                   i32 a9);
+    char m_pad04[0x20 - 0x4];
+    i32 m_20; // +0x20  already-built gate
+    char m_pad24[0x2c - 0x24];
+    CStatzRect60 m_2c; // +0x2c  rect block
+};
+// @early-stop
+// regalloc/tail-merge wall (~62%): instruction selection, calls and constants are
+// byte-correct, but retail pins arg3->ebp / arg4->ebx via prologue-interleaved
+// arg-loads (push ebx; mov ebx,[esp+0x14]; push ebp; mov ebp,[esp+0x14]) and
+// tail-merges the early `return 0` exits into the shared post-BaseBuild epilogue;
+// our /O2 build pins different args + emits inline epilogues, cascading the whole
+// register allocation. Logic complete; not source-steerable. See
+// docs/patterns/identical-return-epilogue-tailmerge.md + pin-local-for-callee-saved-reg.md.
 RVA(0x00112a50, 0xdd)
-void __stdcall EngineLabelBacklog::
-    BuildStatzTabSmall_vfunc1(i32, i32, i32, i32, i32, i32, i32, i32, i32) {}
+i32 CStatzTabSmall::BuildSmall(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, CStatzRect60* a6, i32 a7,
+                               i32 a8, i32 a9) {
+    if (m_20 != 0) {
+        return 0;
+    }
+    if (a2 == 4 && a6->d[0] == 0) {
+        return 0;
+    }
+    m_2c = *a6;
+    if (!BaseBuild(a1, a2, a3, a4, a5, a7, a8, a9)) {
+        return 0;
+    }
+    i32 px = (a3 << 5) + 0x10;
+    i32 py = (a4 << 5) + 0x10;
+    if (a9 == 0) {
+        return 1;
+    }
+    CStatzSprite* spr =
+        g_statzGameReg->m_30->m_8->CreateSprite(0, px, py, 0, g_statzTabSpriteName, 0x40001);
+    if (!spr) {
+        return 0;
+    }
+    spr->m_7c->Init(spr);
+    spr->Configure(g_statzTabCfgTag, a9);
+    if (spr->m_198 == 0) {
+        return 0;
+    }
+    return 1;
+}
 
 // @confidence: high
 // @source: decomp-xref
@@ -1109,42 +1187,11 @@ void EngineLabelBacklog::FormatGameInfoString() {}
 RVA(0x0011c210, 0x29d)
 void __stdcall EngineLabelBacklog::BuildVoiceSoundList(i32) {}
 
-// @confidence: low
-// @source: import:FindFirstFileA
-// @stub
-RVA(0x0011f900, 0x101)
-void EngineLabelBacklog::Stub_11f900() {}
-
-// @confidence: low
-// @source: import:WriteFile
-// @stub
-RVA(0x0012abf0, 0x1d6)
-void EngineLabelBacklog::Stub_12abf0() {}
-
-// @confidence: low
-// @source: import:WriteFile
-// @stub
-RVA(0x0012d230, 0x209)
-void EngineLabelBacklog::Stub_12d230() {}
-
-// @confidence: low
-// @source: import:CreateFileA
-// @stub
-RVA(0x0012d460, 0x351)
-void EngineLabelBacklog::Stub_12d460() {}
-
-// @confidence: low
-// @source: import:SetFilePointer
-// @stub
-RVA(0x0012d880, 0x80)
-void EngineLabelBacklog::Stub_12d880() {}
-
-// @confidence: low
-// @source: import:ReadFile
-// @proximity: CGruntSpawnConfig@-0x14da0 | DirectInputMgr2@+0x1710 (boundary - pick one)
-// @stub
-RVA(0x001315d0, 0x225)
-void EngineLabelBacklog::Stub_1315d0() {}
+// CRT lowio/startup internals (FID-anchored in config/library_labels.csv as
+// __findfirst / __write_lk / __sopen / __lseek_lk / __read_lk / __NMSG_WRITE);
+// the library label is canonical, so the redundant backlog stubs were removed:
+//   0x0011f900 __findfirst   0x0012abf0 __NMSG_WRITE  0x0012d230 __write_lk
+//   0x0012d460 __sopen       0x0012d880 __lseek_lk    0x001315d0 __read_lk
 
 // @confidence: low
 // @source: second '.PID' xref; image-format dispatch consumer (entry not pinned)

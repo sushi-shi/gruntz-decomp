@@ -104,7 +104,7 @@ dsoundvoice	2	1
 engine_attributed	60	0
 engine_boundary	626	0
 engine_discovered	86	0
-engine_label_stubs	519	118
+engine_label_stubs	513	118
 engstr	3	1
 filemem	8	7
 filestream	13	9
@@ -1808,10 +1808,10 @@ engine_label_stubs	?BuildNamedGruntTable@EngineLabelBacklog@@YAXXZ	100.0000	100.
 engine_label_stubs	?BuildPowerupIconKeys@EngineLabelBacklog@@YGXPAVPowerupKeyRegistry@@H@Z	53.5443	53.5443	1	cpp:e8a4cb0d5b2a	0x1e720
 engine_label_stubs	?BuildResourceTabStatusBar@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXHHHHHHHHHHH@Z	0.7407	0.7407	1	cpp:e8a4cb0d5b2a	0xe8a70
 engine_label_stubs	?BuildRockBreakParticles@EngineLabelBacklog@@YGXHHHH@Z	0.3344	0.3344	1	cpp:6bf52155264d	0x7b440
+engine_label_stubs	?BuildSmall@CStatzTabSmall@@QAEHHHHHHPAUCStatzRect60@@HHH@Z	62.3936	62.3936	1	cpp:aab6e5a6e511	0x112a50
 engine_label_stubs	?BuildSoundFontPath@EngineLabelBacklog@@YAXXZ	1.0989	1.0989	1	cpp:45e65336d4b5	0xf8f30
 engine_label_stubs	?BuildSpriteImageKeyTable@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXH@Z	0.5208	0.5208	1	cpp:e8a4cb0d5b2a	0xdd540
 engine_label_stubs	?BuildStatzTabSmallSprite@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXXZ	1.0101	1.0101	1	cpp:e8a4cb0d5b2a	0xe9850
-engine_label_stubs	?BuildStatzTabSmall_vfunc1@EngineLabelBacklog@@YGXHHHHHHHHH@Z	1.0638	1.0638	1	cpp:6bf52155264d	0x112a50
 engine_label_stubs	?BuildStatzTabStatusBar@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXHHHHHHHHHHHHH@Z	0.7463	0.7463	1	cpp:e8a4cb0d5b2a	0xe9600
 engine_label_stubs	?BuildToolToyColorKey@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXH@Z	0.3058	0.3058	1	cpp:e8a4cb0d5b2a	0xe2400
 engine_label_stubs	?BuildVoiceSoundList@EngineLabelBacklog@@YGXH@Z	0.5236	0.5236	1	cpp:6bf52155264d	0x11c210
@@ -1872,7 +1872,7 @@ engine_label_stubs	?Key@CmdHost_039440@ApiCallerStubs@@QAEHHH@Z	100.0000	100.000
 engine_label_stubs	?Key@CmdHost_0953f0@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x953f0
 engine_label_stubs	?LaunchPortalExe@EngineLabelBacklog@@YGXH@Z	0.7519	0.7519	1	cpp:6bf52155264d	0x90550
 engine_label_stubs	?Load@PalLoad_1479e0@ApiCallerStubs@@QAEHHPADH@Z	89.7286	89.7286	1	cpp:6bf52155264d	0x1479e0
-engine_label_stubs	?Load@ResLoad_144270@ApiCallerStubs@@QAEHHPADH@Z	86.9885	86.9885	1	cpp:6bf52155264d	0x144270
+engine_label_stubs	?Load@ResLoad_144270@ApiCallerStubs@@QAEHHPADH@Z	86.9310	86.9310	1	cpp:6bf52155264d	0x144270
 engine_label_stubs	?Load@StrHost_0b7ec0@ApiCallerStubs@@QAEXHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0xb7ec0
 engine_label_stubs	?LoadActionTileSprites@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHH@Z	100.0000	100.0000	1	cpp:e8a4cb0d5b2a	0xdb600
 engine_label_stubs	?LoadAssets@CHelpState@@QAEHHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x95090
@@ -2007,12 +2007,6 @@ engine_label_stubs	?Stub_00b850@CAmbientPosSound@@QAEXHHHHH@Z	1.8182	1.8182	1	cp
 engine_label_stubs	?Stub_00b960@CAmbientPosSound@@QAEXHHHHH@Z	1.8868	1.8868	1	cpp:6bf52155264d	0xb960
 engine_label_stubs	?Stub_01fd70@EngineLabelBacklog@@YAHPAD@Z	100.0000	100.0000	1	cpp:e8a4cb0d5b2a	0x1fd70
 engine_label_stubs	?Stub_0f90f0@EngineLabelBacklog@@YAHPAD@Z	100.0000	100.0000	1	cpp:e8a4cb0d5b2a	0xf90f0
-engine_label_stubs	?Stub_11f900@EngineLabelBacklog@@YAXXZ	1.2048	1.2048	1	cpp:45e65336d4b5	0x11f900
-engine_label_stubs	?Stub_12abf0@EngineLabelBacklog@@YAXXZ	0.6211	0.6211	1	cpp:45e65336d4b5	0x12abf0
-engine_label_stubs	?Stub_12d230@EngineLabelBacklog@@YAXXZ	0.5682	0.5682	1	cpp:45e65336d4b5	0x12d230
-engine_label_stubs	?Stub_12d460@EngineLabelBacklog@@YAXXZ	0.3663	0.3663	1	cpp:45e65336d4b5	0x12d460
-engine_label_stubs	?Stub_12d880@EngineLabelBacklog@@YAXXZ	2.0408	2.0408	1	cpp:45e65336d4b5	0x12d880
-engine_label_stubs	?Stub_1315d0@EngineLabelBacklog@@YAXXZ	0.4854	0.4854	1	cpp:45e65336d4b5	0x1315d0
 engine_label_stubs	?Stub_148940@EngineLabelBacklog@@YGXHHHH@Z	0.9174	0.9174	1	cpp:6bf52155264d	0x148940
 engine_label_stubs	?Stub_18c780@EngineLabelBacklog@@YAXXZ	0.3891	0.3891	1	cpp:45e65336d4b5	0x18c780
 engine_label_stubs	?Stub_1bf702@EngineLabelBacklog@@YGHPADPAUEngCString@@@Z	54.8060	54.8060	1	cpp:e8a4cb0d5b2a	0x1bf702
