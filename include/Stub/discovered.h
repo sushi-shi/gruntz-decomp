@@ -68,9 +68,6 @@ class ClassUnknown_28 { public: void ClassUnknown_28_01f940(); void ClassUnknown
 class ClassUnknown_29 { public: void ClassUnknown_29_137110(); };
 class ClassUnknown_33 { public: void ClassUnknown_33_153180(); };
 class ClassUnknown_36 { public: void ClassUnknown_36_14dd90(); };
-class ClassUnknown_39 { public: void ClassUnknown_39_168c60(); void ClassUnknown_39_168e50(); };
-class ClassUnknown_40 { public: void ClassUnknown_40_168d00(); };
-class ClassUnknown_41 { public: void ClassUnknown_41_165dd0(); void ClassUnknown_41_168ee0(); void ClassUnknown_41_168fb0(); };
 class ClassUnknown_44 { public: void ClassUnknown_44_158680(); void ClassUnknown_44_1587c0(); };
 class ClassUnknown_47 { public: void ClassUnknown_47_0f9280(); void ClassUnknown_47_17e7b0(); void ClassUnknown_47_17e880(); };
 class ClassUnknown_5 { public: void ClassUnknown_5_150040(); };

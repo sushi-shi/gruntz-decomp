@@ -26,6 +26,7 @@ brickz	14	3
 butemgr	40	27
 cambientsound	3	2
 canielement	3	2
+canirecord	8	5
 cattract	9	5
 cbehindcandy	2	2
 cbehindcandyani	2	2
@@ -94,7 +95,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	127	0
+engine_discovered	121	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -330,6 +331,14 @@ cambientsound	?Update@CAmbientSound@@QAEXHHH@Z	76.7857	76.7857	2	979c7e248495	0x
 canielement	?AtChecked_06b270@CAniElement@@QBEPAVCObject@@H@Z	100.0000	100.0000	1	2278365ee372	0x6b270
 canielement	?Build_165460@CAniElement@@QAEHPAXPAUCAniSource@@H@Z	89.3359	89.3359	1	c5f9e189a6e5	0x165460
 canielement	?Configure_1655c0@CAniElement@@QAEHPAX0H@Z	100.0000	100.0000	1	45956e3ecb61	0x1655c0
+canirecord	??1CAniRecordBase2@@QAE@XZ	94.2857	94.2857	1	00be0d8eca56	0x165dd0
+canirecord	?Alloc168ea0@CAniRecord@@QAEPAXHH@Z	100.0000	100.0000	1	ccc818e42e08	0x168ea0
+canirecord	?Alloc168ee0@CAniRecord@@QAEPAXHH@Z	100.0000	100.0000	1	3acb1defbfce	0x168ee0
+canirecord	?Alloc168f60@CAniRecord@@QAEPAXHHH@Z	100.0000	100.0000	1	702a9473c8be	0x168f60
+canirecord	?FreeBuf_168fb0@CAniRecord@@QAEXXZ	100.0000	100.0000	1	3a11d5b966eb	0x168fb0
+canirecord	?GetSize_168e50@CAniRecord@@QAEHXZ	87.0833	87.0833	1	900643ae7798	0x168e50
+canirecord	?Parse_168c60@CAniRecord@@QAEHPAXPBF@Z	100.0000	100.0000	1	ccb0e327eed6	0x168c60
+canirecord	?ResolveIndices_168d00@CAniRecord@@QAEXPAUCAniMapOwner@@PBD@Z	97.0686	97.0686	1	cc5e60f35a3f	0x168d00
 cattract	??1CAttract@@UAE@XZ	100.0000	100.0000	1	8f5b73f92144	0x8cd90
 cattract	?Activate@CAttract@@QAEHXZ	99.0000	99.0000	1	c7655128de41	0xa0a30
 cattract	?EnterAttractMode@CAttract@@QAEHHHH@Z	100.0000	100.0000	1	99f233598d02	0x13fb0
@@ -847,12 +856,6 @@ engine_discovered	?ClassUnknown_28_158760@ClassUnknown_28@@QAEXXZ	1.0811	1.0811	
 engine_discovered	?ClassUnknown_29_137110@ClassUnknown_29@@QAEXXZ	1.7544	1.7544	2	7990c18836c1	0x137110
 engine_discovered	?ClassUnknown_33_153180@ClassUnknown_33@@QAEXXZ	0.5714	0.5714	2	b208569f3464	0x153180
 engine_discovered	?ClassUnknown_36_14dd90@ClassUnknown_36@@QAEXXZ	1.2500	1.2500	2	51e7e5f98169	0x14dd90
-engine_discovered	?ClassUnknown_39_168c60@ClassUnknown_39@@QAEXXZ	0.7143	0.7143	2	a7a8efa3c308	0x168c60
-engine_discovered	?ClassUnknown_39_168e50@ClassUnknown_39@@QAEXXZ	8.3333	8.3333	2	11b472c7f642	0x168e50
-engine_discovered	?ClassUnknown_40_168d00@ClassUnknown_40@@QAEXXZ	0.3922	0.3922	2	21c66b09b0d1	0x168d00
-engine_discovered	?ClassUnknown_41_165dd0@ClassUnknown_41@@QAEXXZ	4.7619	4.7619	2	569317f3a726	0x165dd0
-engine_discovered	?ClassUnknown_41_168ee0@ClassUnknown_41@@QAEXXZ	1.7391	1.7391	2	728fc15ad997	0x168ee0
-engine_discovered	?ClassUnknown_41_168fb0@ClassUnknown_41@@QAEXXZ	8.3333	8.3333	2	0148dced4d81	0x168fb0
 engine_discovered	?ClassUnknown_44_158680@ClassUnknown_44@@QAEXXZ	4.7619	4.7619	2	1eecdfcb9bc6	0x158680
 engine_discovered	?ClassUnknown_44_1587c0@ClassUnknown_44@@QAEXXZ	7.1429	7.1429	2	f70a83c923d5	0x1587c0
 engine_discovered	?ClassUnknown_47_0f9280@ClassUnknown_47@@QAEXXZ	0.9709	0.9709	2	a39b6d02d8ec	0xf9280

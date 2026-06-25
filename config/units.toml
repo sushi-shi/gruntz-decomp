@@ -881,6 +881,11 @@ source = "src/Gruntz/CAniElement.cpp"
 flags = "base"
 
 [[unit]]
+unit = "canirecord"
+source = "src/Gruntz/CAniRecord.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "cddrawworkercache"
 source = "src/Gruntz/CDDrawWorkerCache.cpp"
 flags = "base"
