@@ -19,7 +19,7 @@ aniplayer	2	0
 appdialogs	1	1
 applyrange	1	1
 areamgr	4	2
-battlezdata	14	11
+battlezdata	22	19
 battlezmapconfig	1	0
 blowfish	4	3
 brickz	14	3
@@ -100,7 +100,7 @@ dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
 dsoundvoice	2	1
-engine_attributed	338	0
+engine_attributed	330	0
 engine_boundary	628	0
 engine_discovered	86	0
 engine_label_stubs	519	118
@@ -261,12 +261,15 @@ areamgr	??1CAreaMgr@@QAE@XZ	100.0000	100.0000	1	e6fdf3f99a6a	0x99c20
 areamgr	?Dispatch@CAreaMgr@@QAEHH@Z	78.8584	78.8584	1	149ba02dc7bc	0x99d40
 areamgr	?Reset@CAreaMgr@@QAEXXZ	100.0000	100.0000	1	8ba7b79b3da8	0x9a0b0
 areamgr	?SameGroup@CAreaMgr@@QAEHH@Z	58.3529	58.3529	1	9eb1e4ec0b0f	0x9b430
+battlezdata	?AllRecordsInBounds@CBattlezData@@QAEHXZ	100.0000	100.0000	1	2fafef7ab0ef	0xfccf0
 battlezdata	?BumpWin@CBattlezData@@QAEXHH@Z	100.0000	100.0000	2	d6751b8a863d	0xfcc50
 battlezdata	?ClearFlags@CBattlezData@@QAEXXZ	100.0000	100.0000	2	56a78ec21608	0xfcb90
 battlezdata	?ClearWins@CBattlezData@@QAEXXZ	100.0000	100.0000	2	38254a5cab0b	0xfcc90
 battlezdata	?FillRecord@CBattlezData@@QAEXHH@Z	100.0000	100.0000	1	e483d973ee40	0xfd330
 battlezdata	?GetFlag@CBattlezData@@QAEHHH@Z	100.0000	100.0000	2	fd3b6448a4bb	0xfcc10
 battlezdata	?GetRecordValue@CBattlezData@@QAEHH@Z	76.5000	76.5000	2	063ac06e408a	0xfced0
+battlezdata	?GroupAllScored@CBattlezData@@QAEHXZ	100.0000	100.0000	1	9dbd1218a5ac	0xfce80
+battlezdata	?GroupRatio@CBattlezData@@QAEMXZ	100.0000	100.0000	1	84a8c8825840	0xfce00
 battlezdata	?InBounds@CBattlezData@@QAEHH@Z	100.0000	100.0000	2	269416aa7675	0xfcd70
 battlezdata	?Init@CBattlezData@@QAEXXZ	81.0909	81.0909	2	705017f2a3a7	0xfca10
 battlezdata	?InitWithRecords@CBattlezData@@QAEHPAX@Z	100.0000	100.0000	1	bb6157de5263	0xfc9c0
@@ -274,6 +277,11 @@ battlezdata	?MarkFlag@CBattlezData@@QAEXHH@Z	100.0000	100.0000	2	a029df02d459	0x
 battlezdata	?Serialize@CBattlezData@@QAEHPAVBattlezStream@@HHH@Z	92.3907	92.3907	2	d8946f3c0f0c	0xfd3f0
 battlezdata	?SetCount@CBattlezData@@QAEXH@Z	100.0000	100.0000	2	fe4c034429ca	0xfcad0
 battlezdata	?SumFlags@CBattlezData@@QAEHH@Z	100.0000	100.0000	2	06e535f65b73	0xfcbc0
+battlezdata	?SumGroupField0c@CBattlezData@@QAEHXZ	100.0000	100.0000	1	d5f7dac118fc	0xfcf20
+battlezdata	?SumGroupField10@CBattlezData@@QAEHXZ	100.0000	100.0000	1	678bedb7fff6	0xfcfc0
+battlezdata	?SumGroupField1c@CBattlezData@@QAEHXZ	100.0000	100.0000	1	a0d4a6578ee4	0xfd060
+battlezdata	?SumGroupField2c@CBattlezData@@QAEHXZ	100.0000	100.0000	1	d9f2b83d5e83	0xfcf70
+battlezdata	?SumGroupField30@CBattlezData@@QAEHXZ	100.0000	100.0000	1	619cf18bda92	0xfd010
 battlezdata	?SumWinRow@CBattlezData@@QAEHH@Z	100.0000	100.0000	2	f7cb273e44cf	0xfccb0
 battlezmapconfig	?LoadConfig@CBattlezMapConfig@@QAEHPAUCLevelInfo@@HH@Z	85.9933	85.9933	4	f06ecd871376	0x25020
 blowfish	?Blowfish_InitKey@@YGXPAE@Z	100.0000	100.0000	1	181b6b1750bf	0x16f6c0
@@ -823,14 +831,6 @@ dsoundvoice	?Stop_1370d0@DSoundVoice@@QAEHXZ	100.0000	100.0000	1	6ed65c4dd540	0x
 dsoundvoice	?Tick_137060@DSoundVoice@@QAEHH@Z	95.6977	95.6977	1	e0318068fc4a	0x137060
 engine_attributed	?CAttract_014520@CAttract@@QAEXXZ	1.6129	1.6129	1	8514e7ebdd62	0x14520
 engine_attributed	?CAttract_014630@CAttract@@QAEXXZ	1.6393	1.6393	1	d90c0a9e5a3f	0x14630
-engine_attributed	?CBattlezData_0fccf0@CBattlezData@@QAEXXZ	2.6316	2.6316	1	c47cd80d01ae	0xfccf0
-engine_attributed	?CBattlezData_0fce00@CBattlezData@@QAEXXZ	3.2258	3.2258	1	322df6f513fb	0xfce00
-engine_attributed	?CBattlezData_0fce80@CBattlezData@@QAEXXZ	4.7619	4.7619	1	7b0918ffa5ad	0xfce80
-engine_attributed	?CBattlezData_0fcf20@CBattlezData@@QAEXXZ	3.7037	3.7037	1	a1bea48077e6	0xfcf20
-engine_attributed	?CBattlezData_0fcf70@CBattlezData@@QAEXXZ	3.7037	3.7037	1	f8917d6d18b1	0xfcf70
-engine_attributed	?CBattlezData_0fcfc0@CBattlezData@@QAEXXZ	3.7037	3.7037	1	29c13433caa1	0xfcfc0
-engine_attributed	?CBattlezData_0fd010@CBattlezData@@QAEXXZ	3.7037	3.7037	1	d6d252f68477	0xfd010
-engine_attributed	?CBattlezData_0fd060@CBattlezData@@QAEXXZ	3.7037	3.7037	1	b628add902a6	0xfd060
 engine_attributed	?CBattlezData_0fd0b0@CBattlezData@@QAEXXZ	3.7037	3.7037	1	86faa2b115f0	0xfd0b0
 engine_attributed	?CBattlezData_0fd100@CBattlezData@@QAEXXZ	3.7037	3.7037	1	dfc10fe1f3a3	0xfd100
 engine_attributed	?CBattlezData_0fd150@CBattlezData@@QAEXXZ	3.7037	3.7037	1	ead93a360d0f	0xfd150
