@@ -150,6 +150,35 @@ struct CNetPlayerSlot {
     DWORD m_37c; // +0x37c  the slot's latency value
 };
 
+// ---------------------------------------------------------------------------
+// One channel descriptor in the inline array at (m_4 + 0x150), stride 0x238,
+// four entries (the 0x8e0 loop bound == 4 * 0x238). This is the SAME memory
+// CNetPlayerSlot views from m_4 (channel+0x14 == m_4+0x164 gate A,
+// channel+0x20 == m_4+0x170 gate B, channel+0x22c == m_4+0x37c latency); here
+// it is the channel-table base used by the serialize/parse/register run
+// (0xba810..0xbb190). Only the touched fields are pinned. The +0x4 member is a
+// CString (the channel's name); +0x18 a dword id; +0x20 the "active" gate.
+struct CNetChannel {
+    i32 m_0;     // +0x00  id/header dword (serialized at packet+8)
+    CString m_4; // +0x04  channel name (CString)
+    i32 m_8;   // +0x08  net-slot id / player word
+    i32 m_c;   // +0x0c
+    i32 m_10;  // +0x10
+    i32 m_14;  // +0x14  (== m_4+0x164 gate A)
+    i32 m_18;  // +0x18  dword id word
+    i32 m_1c;  // +0x1c  flag (0/1)
+    i32 m_20;  // +0x20  "active" gate (== m_4+0x170 gate B)
+    char m_pad24[0x228 - 0x24];
+    i32 m_228; // +0x228
+    i32 m_22c; // +0x22c (== m_4+0x37c latency)
+    i32 m_230; // +0x230
+
+    // The channel's name fetched by value (NRV into the caller's slot); thiscall
+    // engine routine reached through an incremental-link thunk (no body here so
+    // the call reloc-masks). 0x41f450.
+    CString GetName();
+};
+
 // A payload entry found through the m_58 player list. FindPlayerById matches on
 // the entry's +0x4 id field.
 struct CNetPlayerEntry {
@@ -183,10 +212,10 @@ struct CNetPlayerNode {
 // external incremental-link thunks) clear the slot's command range.
 // ---------------------------------------------------------------------------
 struct CNetCmdSlot {
-    char m_pad0[4];
+    i32 m_0; // +0x0  "armed" flag (AckDropPlayer sets it to 1)
     i32 m_4; // +0x4  "slot already reset" guard
     char m_pad8[0xc - 0x8];
-    i32* m_c; // +0xc  -> command-list head value
+    i32* m_c; // +0xc  -> command-list head value (m_c[0xb] == +0x2c is its own flag)
     char m_pad10[0x14 - 0x10];
     i32 m_14; // +0x14  base command sequence number
     char m_pad18[0x4c - 0x18];
@@ -196,6 +225,7 @@ struct CNetCmdSlot {
     void Touch();             // c1390  latch the slot (sets +4, +8)
     void RemoveCmd(i32 seq);  // c11b0  drop one queued command
     void ResetTriple(i32* p); // c10a0  splat &-1 over three dwords
+    void FullReset();         // c0c20  zero the command fields + both ranges
 };
 
 // The DirectPlay session sub-object at CNetMgr+0x520. Two helpers are reached
@@ -349,17 +379,53 @@ class GruntzPlayer; // include <Gruntz/GruntzPlayer.h> in the TU that derefs it
 
 struct CNetGameMgr {
     GruntzPlayer* FindPlayer(i32 id); // 0x00492e80 -> the leaving player's slot (no storage)
+    i32 CountActiveChannels(i32 flag); // 0x00492e30 -> # active channels (RegisterChannel gate)
     char m_pad0[0x5c];
     CNetChatLog* m_5c; // +0x5c  the chat/text display
+};
+
+// The player slot FindPlayer returns; only its name (GetName, 0x41f450, the same
+// by-value CString fetch as CNetChannel::GetName) and its +0x8 id word are
+// touched by the chat broadcaster.
+struct CNetPlayerName {
+    char m_pad0[8];
+    i32 m_8;        // +0x8  player id word
+    CString GetName(); // 0x41f450
 };
 
 // FUN_004db2b0 (__cdecl): g_netSlotTable[idx] = value (a global flag array at
 // 0x64c3f0). External, no body -> the call reloc-masks.
 void SetNetSlot(i32 idx, i32 value); // 0x004db2b0
 
+// FUN_004db1d0 (__cdecl): zero the whole 0x11-dword net-slot flag table at
+// 0x64c3f0 (ParseChannelTable resets it when not in channel-latency mode).
+// External, no body -> the call reloc-masks.
+void ResetNetSlots(); // 0x004db1d0
+
 // The shared 0x800-byte DirectPlay receive scratch buffer (DAT_006467d8); the
 // poll loop receives each message into it. DIR32 reloc-masked.
 extern "C" char g_recvBuffer[]; // 0x6467d8
+
+// Two file-scope static stat packets the channel-stat senders stamp + ship.
+// Retail emits each field as its OWN .data symbol (disp-0 DIR32 relocs at the
+// three consecutive addresses), so they are modeled as three separate globals
+// per packet (a single struct would emit base+disp and mis-encode the
+// displacement bytes). External; DIR32 reloc-masked.
+extern "C" u8 g_chanStat422_flag; // 0x646fd8
+extern "C" i32 g_chanStat422_id;  // 0x646fdc
+extern "C" i32 g_chanStat422_val; // 0x646fe0
+extern "C" u8 g_chanStat423_flag; // 0x646378
+extern "C" i32 g_chanStat423_id;  // 0x64637c
+extern "C" i32 g_chanStat423_val; // 0x646380
+
+// The file-scope static chat-broadcast packet BroadcastChatLine assembles. Like
+// the channel-stat packets, retail emits each field as its own .data symbol
+// (disp-0 DIR32 relocs): a flag byte (0x6473e0), the stat id 0x3f0 (0x6473e4), a
+// value dword (0x6473e8), then the text buffer (0x6473ec). External; reloc-masked.
+extern "C" u8 g_chatPacket_flag;  // 0x6473e0
+extern "C" i32 g_chatPacket_id;   // 0x6473e4
+extern "C" i32 g_chatPacket_val;  // 0x6473e8
+extern "C" char g_chatPacket_buf; // 0x6473ec  (strcpy dest)
 
 // The shared "a player-left was processed this frame" flag (DAT_00648ce4) and
 // the active-player refcount the leave path decrements (DAT_00648cec). External
@@ -458,6 +524,35 @@ public:
     // routines reached through incremental-link thunks; no body here.
     void ReportVersionMsg(const char* msg, i32 zero);
     void SendStatPacket(i32 param, const void* packet, i32 size, i32 flag);
+
+    // ---- 0xbaxxx channel-table cluster -------------------------------------
+    // The per-channel ack/state table at (m_4 + 0x150) is serialized to / parsed
+    // from a 0x88-byte (whole-table) or 0x2c-byte (single) stat packet, and a
+    // pair of register/remove helpers create / tear down one channel slot.
+    // AckDropPlayer (0xba590) is declared with the bc0xx helper run below.
+    i32 ResolveLocalPlayer();                                    // 0xba7d0  m_localPlayer = peer->FindPlayerById(m_5c0)
+    i32 BroadcastChannelTable(CNetPlayerEntry* recipient);       // 0xba810  serialize all channels -> 0x88 packet
+    i32 ParseChannelTable(void* packet);                         // 0xba980  parse a 0x88 packet -> channels
+    i32 RegisterChannelFrom(const char* name, i32 b, i32 e, i32 f); // 0xbaa90 tail-wrap into RegisterChannel
+    i32 RegisterChannel(const char* name, i32 id, i32 c, i32 d, i32 idx, i32 e); // 0xbaac0 (/GX)
+    i32 RegisterChannelRec(void* rec);                           // 0xbac40  unpack rec -> RegisterChannel
+    i32 RemoveChannel(i32 idx);                                  // 0xbac90  free channel[idx]
+    i32 OnPauseChannel();                                        // 0xbad00  m_580 ? SendStatFlag+OnMultiPause
+    i32 BroadcastOneChannel(CNetChannel* ch);                    // 0xbaf00  serialize one channel -> 0x2c packet
+    i32 ParseOneChannel(void* rec);                              // 0xbaff0  parse one record -> channel[rec.idx]
+    i32 SendChannelStat422();                                    // 0xbb0b0  build {0x422} -> SetGroupDataFrom
+    i32 SendChannelStat423();                                    // 0xbb120  build {0x423} -> SetGroupDataFrom
+    i32 BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd); // 0xbb190
+
+    // The 3-arg record helper AckDropPlayer fires before the slot reset (records
+    // the pending drop into the m_608 id array). __thiscall (id is its 2nd arg);
+    // external incremental-link thunk -> no body here.
+    void RecordDropPlayer(i32 a, i32 id); // 0xbb5e0
+
+    // The chat-window dispatcher BroadcastChatLine fires when the show-window flag
+    // is set: posts the assembled line to a Win32 chat control (SendMessageA-based
+    // helper). __thiscall; external (sibling 0xbb3e0), no body here.
+    void ShowChatLine(const char* line, void* hWnd); // 0xbb3e0
 
     // ---- 0xbc0xx cluster ---------------------------------------------------
     // The cluster's matched methods (defined in NetMgr.cpp).
