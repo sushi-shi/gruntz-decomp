@@ -244,7 +244,6 @@ public:
 };
 class CTileTriggerSwitchLogic {
 public:
-    void CTileTriggerSwitchLogic_112c70();
     void CTileTriggerSwitchLogic_117280();
 };
 class CToobSpikez {

@@ -359,21 +359,20 @@ RVA(0x000110f0, 0x44)
 void CTileTriggerSwitch::CTileTriggerSwitch_0110f0() {}
 
 // ---- CTileTriggerSwitchLogic ---- (leftover misattributed cluster) The block
-// was 3 conflated classes; 9 of the 12 RVAs are now reconstructed in their real
+// was 3 conflated classes; 10 of the 12 RVAs are now reconstructed in their real
 // homes:
+//   switch-logic (CTileTriggerSwitchLogic, src/Gruntz/TileTriggerSwitchLogic.cpp):
+//     112c70 (VerifyBlockLinks: this+0x24 is a back-pointer to the OWNING switch-
+//     logic, whose +0x20 child list is walked then queried via FindIndexByKey /
+//     FindChild - the very methods reconstructed in that TU; reclassified out of
+//     the "container/command outlier" pile, now reconstructed there).
 //   container (CTileTriggerContainer, src/Gruntz/TileTriggerContainer.cpp):
 //     0xc8640 (~dtor, 100%), 116fa0 (RemoveAll, 100%), 117f60 (SetCell, ~78%),
 //     116a40/116cf0 (AddTo* /GX-new walls, ~43/29%), 117630/117710
 //     (SerializeApplyA/B switch-table walls, ~57/63%).
 //   command   (CTileGridCommand, src/Gruntz/TileGridCommand.cpp):
 //     112970 (Classify, ~96%), 112b70 (BumpCell, ~73%), 112590 (ApplyMove, ~70%).
-// Two RVAs remain stubbed below (see each note).
-// The remaining conflated outlier (a tile-trigger/switch object whose this+0x24
-// is a CTileTriggerContainer back-pointer, walked then queried for grid commands)
-// stays stubbed for the final sweep: it is NEITHER the command (its +0x24 is a
-// game clock) NOR the container (its lists are at +0x1c/+0x38/+0x54, not +0x24).
-RVA(0x00112c70, 0xc4)
-void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_112c70() {}
+// One RVA remains stubbed below (see its note).
 
 // CTileTriggerContainer::SerializeWalk (0x117280, 748 B, /GX): the big serialize
 // driver that walks all three lists, streams each element's count, and applies

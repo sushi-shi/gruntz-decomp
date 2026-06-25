@@ -14,6 +14,10 @@
 // The WwdGameReg singleton (g_gameReg, RVA 0x64556c).  Only +0x30 (the active
 // game-manager pointer) is touched by the methods here; reloc-masked DIR32.
 struct WwdGameReg {
+    // The diagnostic ack reporter (RVA 0x8dc60, __thiscall): reports a (line, code)
+    // pair when a switch-logic linkage check fails; reloc-masked rel32 callee.
+    void Ack(i32 line, i32 code); // 0x8dc60
+
     char _pad00[0x30];
     void* m_30; // +0x30  game-manager pointer (null-checked)
 };
@@ -44,6 +48,7 @@ class CTileTriggerSwitchLogic {
 public:
     CTileTriggerSwitchLogic();
     i32 FindIndexByKey(i32 key);
+    i32 VerifyBlockLinks(); // 0x112c70
 
     // CObList::RemoveAt is reached through the inherited CObList base (this == the
     // CObList; head @ +0x04).  Declared no-body, reloc-masked rel32 callee.
@@ -74,15 +79,17 @@ public:
     void CTileTriggerSwitchLogic_115f60();
     void BuildRockBreakInGameText();
 
-    void* m_vptr;              // +0x00  vtable (0x5eae8c, stamped in ctor)
-    i32 m_04;                  // +0x04  list head (owner) / key (data obj)
-    i32 m_08;                  // +0x08  (not accessed here)
-    i32 m_0c;                  // +0x0c  (not accessed here)
-    i32 m_10;                  // +0x10  key1 (compared in RemoveByKeys/FindChild)
-    char m_pad14[0x20 - 0x14]; // +0x14..0x1f
-    i32 m_20;                  // +0x20  cleared before delete
-    char m_pad24[0x2c - 0x24]; // +0x24..0x2b
-    i32 m_block[40];           // +0x2c..0xcb  (first 24 zeroed in ctor)
+    void* m_vptr;                     // +0x00  vtable (0x5eae8c, stamped in ctor)
+    i32 m_04;                         // +0x04  list head (owner) / key (data obj)
+    i32 m_08;                         // +0x08  (not accessed here)
+    i32 m_0c;                         // +0x0c  (not accessed here)
+    i32 m_10;                         // +0x10  key1 (compared in RemoveByKeys/FindChild)
+    i32 m_14;                         // +0x14  link-check gate (VerifyBlockLinks guard)
+    char m_pad18[0x20 - 0x18];        // +0x18..0x1f
+    i32 m_20;                         // +0x20  child-list head (owner) / cleared before delete
+    CTileTriggerSwitchLogic* m_owner; // +0x24  back-pointer to the owning switch-logic
+    char m_pad28[0x2c - 0x28];        // +0x28..0x2b
+    i32 m_block[40];                  // +0x2c..0xcb  (first 24 zeroed in ctor)
 
     // Linked-list node: next@0x00, data@0x08.  Encapsulated inline.
     struct ListNode {

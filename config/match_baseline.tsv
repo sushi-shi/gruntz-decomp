@@ -64,7 +64,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	230	0
+engine_discovered	229	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -159,7 +159,7 @@ symtab	10	7
 terraintileloader	1	0
 tileactionevent	5	3
 tilegridcommand	5	2
-tileswitchlogic	13	7
+tileswitchlogic	14	7
 tiletriggercontainer	13	4
 tiletriggerlogic	2	1
 tiletriggertransition	5	4
@@ -739,7 +739,6 @@ engine_discovered	?CStaticHazard_012b30@CStaticHazard@@QAEXXZ	5.8824	5.8824	1	91
 engine_discovered	?CStaticHazard_0fbbf0@CStaticHazard@@QAEXXZ	0.5333	0.5333	1	7807d7e838b0	0xfbbf0
 engine_discovered	?CTeleporter_010dd0@CTeleporter@@QAEXXZ	5.8824	5.8824	1	b5851b8709c8	0x10dd0
 engine_discovered	?CTeleporter_0419e0@CTeleporter@@QAEXXZ	2.5641	2.5641	1	9bd08dbcc7c2	0x419e0
-engine_discovered	?CTileTriggerSwitchLogic_112c70@CTileTriggerSwitchLogic@@QAEXXZ	1.1494	1.1494	1	821467b84e39	0x112c70
 engine_discovered	?CTileTriggerSwitchLogic_117280@CTileTriggerSwitchLogic@@QAEXXZ	0.1465	0.1465	1	f1eca530b852	0x117280
 engine_discovered	?CTileTriggerSwitch_0110f0@CTileTriggerSwitch@@QAEXXZ	5.8824	5.8824	1	2020b3bd2f3a	0x110f0
 engine_discovered	?CToobSpikez_012c60@CToobSpikez@@QAEXXZ	5.8824	5.8824	1	d16ff0f9da5d	0x12c60
@@ -2195,6 +2194,7 @@ tileswitchlogic	?ScanNeighborhood@CTileTriggerSwitchLogic@@QAEHHH@Z	76.2600	76.2
 tileswitchlogic	?SerializeMatrix@CTileTriggerSwitchLogic@@QAEHPAVCSerialStream@@@Z	95.0909	95.0909	2	9a34a3e5b7d2	0x113dd0
 tileswitchlogic	?TransferFlag74@CTileTriggerSwitchLogic@@QAEHPAVCSerialStream@@@Z	100.0000	100.0000	2	b5b02a407d1e	0x117e20
 tileswitchlogic	?ValidateByType@CTileTriggerSwitchLogic@@QAEHPAXHHH@Z	93.3333	93.3333	3	8268a9fb07a1	0x113a90
+tileswitchlogic	?VerifyBlockLinks@CTileTriggerSwitchLogic@@QAEHXZ	85.9080	85.9080	1	236d7654d4ab	0x112c70
 tiletriggercontainer	??1CTileTriggerContainer@@QAE@XZ	100.0000	100.0000	1	4d04187e064e	0xc8640
 tiletriggercontainer	?AddToList1@CTileTriggerContainer@@QAEPAUTtcBaseElem@@HHPAHHHHH@Z	29.2278	29.2278	2	c6aeeebf676a	0x116cf0
 tiletriggercontainer	?AddToList3@CTileTriggerContainer@@QAEPAUTtcMark@@HHHHHHHH@Z	42.8816	42.8816	2	d77f142eae1d	0x116a40

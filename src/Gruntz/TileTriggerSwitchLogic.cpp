@@ -64,6 +64,65 @@ i32 CTileTriggerSwitchLogic::FindIndexByKey(i32 key) {
 }
 
 // ---------------------------------------------------------------------------
+// CTileTriggerSwitchLogic::VerifyBlockLinks
+// Linkage validator: if this->m_14 is clear, succeed (return 0 short-circuit on
+// the null gate).  Otherwise walk the owner's child list (head @ owner->m_20),
+// asking each child's FindIndexByKey(this->m_10) until one claims this object.
+// If none does, ack diagnostic 0x452 and fail.  Then, for the claiming child,
+// scan its 24-dword key block (child->m_block[4..27]): an empty slot succeeds;
+// each nonzero key must resolve via owner->FindChild(key, 8) to a child whose
+// m_14 gate is set (else fail, acking 0x453 when the lookup itself misses).
+// Returns 1 on the early empty-slot success, 0 otherwise.
+// ---------------------------------------------------------------------------
+// @early-stop
+// this-spill frame wall (~86%): body byte-identical; retail reserves a `push ecx`
+// stack local for `this` + reloads it (`mov edi,[esp+0x10]`) to seed the `child`
+// loop cursor, the recompile seeds it from a register (`mov edi,ebp`) with no slot.
+// Dead seed value, non-steerable frame choice. See
+// docs/patterns/this-spilled-to-local-for-loop-seed.md
+RVA(0x00112c70, 0xc4)
+i32 CTileTriggerSwitchLogic::VerifyBlockLinks() {
+    if (m_14 == 0) {
+        return 0;
+    }
+    ListNode* node = (ListNode*)m_owner->m_20;
+    i32 found = 0;
+    CTileTriggerSwitchLogic* child = this;
+    while (node != 0) {
+        if (found != 0) {
+            break;
+        }
+        ListNode* cur = node;
+        node = node->m_next;
+        child = cur->m_data;
+        if (child != 0 && child->FindIndexByKey(m_10) != 0) {
+            found = 1;
+        }
+    }
+    if (found == 0) {
+        g_gameReg->Ack(0x80de, 0x452);
+        return 0;
+    }
+    i32* p = &child->m_block[4]; // child+0x3c
+    for (i32 i = 0; i < 24; i++) {
+        i32 key = *p;
+        if (key == 0) {
+            return 1;
+        }
+        CTileTriggerSwitchLogic* c = m_owner->FindChild(key, 8);
+        if (c == 0) {
+            g_gameReg->Ack(0x80dd, 0x453);
+            return 0;
+        }
+        if (c->m_14 == 0) {
+            return 0;
+        }
+        p++;
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
 // CTileTriggerSwitchLogic::ValidateByType
 // Returns 0 if obj is null; for type 4 / 7 defers to the matching validator
 // (returns 0 on its failure); any other type passes (returns 1).
