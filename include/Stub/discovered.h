@@ -555,12 +555,7 @@ class ClassUnknown_5 {
 public:
     void ClassUnknown_5_150040();
 };
-class ClassUnknown_50 {
-public:
-    void ClassUnknown_50_0d5e80();
-    void ClassUnknown_50_153260();
-    void ClassUnknown_50_153790();
-};
+// ClassUnknown_50 == CImage (reconstructed in src/Image/CImage.cpp).
 class ClassUnknown_51 {
 public:
     void ClassUnknown_51_1154b0();

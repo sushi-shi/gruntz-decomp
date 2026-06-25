@@ -364,6 +364,11 @@ source = "src/Image/Image.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "cimage"
+source = "src/Image/CImage.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "imageset"
 source = "src/Image/ImageSet.cpp"
 flags = "base"

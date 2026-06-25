@@ -835,13 +835,11 @@ void ClassUnknown_49::ClassUnknown_49_182a80() {}
 RVA(0x00150040, 0x136)
 void ClassUnknown_5::ClassUnknown_5_150040() {}
 
-// ---- ClassUnknown_50 ----
-RVA(0x000d5e80, 0x5b)
-void ClassUnknown_50::ClassUnknown_50_0d5e80() {}
-RVA(0x00153260, 0x41)
-void ClassUnknown_50::ClassUnknown_50_153260() {}
-RVA(0x00153790, 0x6a)
-void ClassUnknown_50::ClassUnknown_50_153790() {}
+// ---- ClassUnknown_50 == CImage (the RTTI-confirmed polymorphic image, vftable
+// @0x5eaa2c) -> reconstructed in src/Image/CImage.cpp (dtor 0x0d5e80, FreeAll
+// 0x153260 slot 7, RenderFrame 0x153790). NOTE: distinct from the non-polymorphic
+// loader CImage in src/Image/Image.cpp. Its other vtable virtuals are still
+// stubbed under ClassUnknown_31 (0x152f20/0x152fb0) below.
 
 // ---- ClassUnknown_51 ----
 RVA(0x001154b0, 0x45)
