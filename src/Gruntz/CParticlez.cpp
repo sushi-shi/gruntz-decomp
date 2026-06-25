@@ -26,7 +26,8 @@
 // writes (already named by KitchenSlime.cpp - re-declared here, address-pinned).
 struct CPartEntry; // an entry: first dword is the registered handler
 struct CPartColl {
-    i32 Find(i32 coord, i32 z); // 0x16da80 (__thiscall ret 8)
+    void Construct(i32 lo, i32 hi); // 0x408710 (__thiscall ret 8: build the registry)
+    i32 Find(i32 coord, i32 z);     // 0x16da80 (__thiscall ret 8)
 };
 struct CPartColl2 {
     void Insert(void* coll, void* item, i32 n); // 0x16d850 (__thiscall ret 0xc)
@@ -86,6 +87,15 @@ static inline CPartEntry* PartLookup(i32 coord) {
 // the empty body is enough for cl.
 RVA(0x00012d90, 0x44)
 CParticlez::~CParticlez() {}
+
+// CParticlez::InitActReg @0x046cb0 - construct the class's activation-coordinate
+// registry singleton (g_partColl @0x644870) over the fixed range [2000, 2010]
+// via the shared registry ctor (FUN_00408710, __thiscall ret 8). A free init
+// thunk (no `this`); reloc-masked.
+RVA(0x00046cb0, 0x15)
+void CParticlez::InitActReg() {
+    g_partColl.Construct(2000, 2010);
+}
 
 // CParticlez::FireActivation @0x046d30 - look the activation coordinate up in
 // the registry; if the entry has a registered handler, look it up again and

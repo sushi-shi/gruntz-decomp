@@ -59,10 +59,10 @@ cfixedptrarray32	3	2
 cfortressflag	2	2
 cfxmodedesc	3	3
 cgruntcreationpoint	2	2
-cgrunthealthsprite	2	2
-cgruntpowerupsprite	3	2
-cgruntselectedsprite	3	2
-cgrunttoysprite	3	2
+cgrunthealthsprite	4	3
+cgruntpowerupsprite	5	4
+cgruntselectedsprite	5	3
+cgrunttoysprite	5	4
 cgruntwingztimesprite	2	2
 chatbox	16	9
 chatbox_eh	1	1
@@ -74,7 +74,7 @@ clightfx	2	1
 clightfxrender	22	8
 cmenustate	3	2
 cmulti	16	7
-cparticlez	2	2
+cparticlez	3	3
 cpathhazard	6	3
 cplay	28	8
 cremusentrylist	2	1
@@ -84,7 +84,7 @@ crt_istream	3	2
 crt_ostream	4	3
 crt_streambuf	7	5
 crt_strstreambuf	4	2
-csecretleveltrigger	2	2
+csecretleveltrigger	4	3
 cserialsub34	1	0
 cseverusentrylist	2	1
 csimpleanimation	2	2
@@ -101,7 +101,7 @@ dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
 dsoundvoice	2	1
-engine_attributed	143	0
+engine_attributed	130	0
 engine_boundary	628	0
 engine_discovered	86	0
 engine_label_stubs	519	118
@@ -122,8 +122,8 @@ gamewnd	9	8
 grunt	73	15
 gruntdatarecord	1	1
 gruntpuddle	4	2
-gruntspawnconfig	13	6
-gruntvoice	4	3
+gruntspawnconfig	14	7
+gruntvoice	5	4
 gruntzapp	10	8
 gruntzcmdmgr	12	10
 gruntzcommand	12	12
@@ -625,16 +625,24 @@ cfxmodedesc	?MakeButeSectionKey@@YAHPADPBD1@Z	100.0000	100.0000	1	c9630b01af12	0
 cgruntcreationpoint	??1CGruntCreationPoint@@UAE@XZ	100.0000	100.0000	1	887125215466	0x10730
 cgruntcreationpoint	?AdvanceAnim@CGruntCreationPoint@@QAEHXZ	100.0000	100.0000	1	f79597535ca0	0x3ecc0
 cgrunthealthsprite	??1CGruntHealthSprite@@UAE@XZ	100.0000	100.0000	1	819b10e75882	0x11fb0
+cgrunthealthsprite	?InitActReg@CGruntHealthSprite@@SAXXZ	100.0000	100.0000	1	dcb0a2ec95e1	0x7ecf0
+cgrunthealthsprite	?RegisterActs@CGruntHealthSprite@@SAXXZ	92.9130	92.9130	1	5bf737bfab96	0x7eed0
 cgrunthealthsprite	?SetHealthGlyph@CGruntHealthSprite@@QAEHHHH@Z	100.0000	100.0000	1	91b6d380eb55	0x7f0d0
 cgruntpowerupsprite	??1CGruntPowerupSprite@@UAE@XZ	100.0000	100.0000	1	083563c3491b	0x12370
+cgruntpowerupsprite	?InitActReg@CGruntPowerupSprite@@SAXXZ	100.0000	100.0000	1	ade10531ce1f	0x7ffa0
+cgruntpowerupsprite	?RegisterActs@CGruntPowerupSprite@@SAXXZ	92.9130	92.9130	1	f3c621493d68	0x80180
 cgruntpowerupsprite	?SetCell@CGruntPowerupSprite@@QAEHHHH@Z	100.0000	100.0000	1	88ade8a8af7a	0x80380
-cgruntpowerupsprite	?Update@CGruntPowerupSprite@@QAEHXZ	89.8214	89.8214	1	ff892b66e460	0x80410
+cgruntpowerupsprite	?Update@CGruntPowerupSprite@@QAEHXZ	100.0000	100.0000	1	ff892b66e460	0x80410
 cgruntselectedsprite	??1CGruntSelectedSprite@@UAE@XZ	100.0000	100.0000	1	03f353c22571	0x11e80
+cgruntselectedsprite	?InitActReg@CGruntSelectedSprite@@SAXXZ	100.0000	100.0000	1	87f14737eb97	0x7e5e0
+cgruntselectedsprite	?RegisterActs@CGruntSelectedSprite@@SAXXZ	92.9130	92.9130	1	66be750cf79b	0x7e7c0
 cgruntselectedsprite	?SetCell@CGruntSelectedSprite@@QAEHHH@Z	100.0000	100.0000	1	a820dd0fe9f6	0x7e9c0
-cgruntselectedsprite	?Update@CGruntSelectedSprite@@QAEHXZ	84.8485	84.8485	1	d1fdf4765afe	0x7e9f0
+cgruntselectedsprite	?Update@CGruntSelectedSprite@@QAEHXZ	99.2424	99.2424	1	d1fdf4765afe	0x7e9f0
 cgrunttoysprite	??1CGruntToySprite@@UAE@XZ	100.0000	100.0000	1	c705bae9e5ce	0x122b0
+cgrunttoysprite	?InitActReg@CGruntToySprite@@SAXXZ	100.0000	100.0000	1	1d3d94234712	0x7f540
+cgrunttoysprite	?RegisterActs@CGruntToySprite@@SAXXZ	92.9130	92.9130	1	c7cebdf2b945	0x7f720
 cgrunttoysprite	?SetCell@CGruntToySprite@@QAEHHH@Z	100.0000	100.0000	1	a78dbac253e5	0x7f920
-cgrunttoysprite	?Update@CGruntToySprite@@QAEHXZ	99.3000	99.3000	1	516d5554232c	0x7f960
+cgrunttoysprite	?Update@CGruntToySprite@@QAEHXZ	100.0000	100.0000	1	516d5554232c	0x7f960
 cgruntwingztimesprite	??1CGruntWingzTimeSprite@@UAE@XZ	100.0000	100.0000	1	45cfd716baa5	0x121f0
 cgruntwingztimesprite	?GetWingzTime@CGruntWingzTimeSprite@@SGHPAUCWingzTimeHost@@@Z	100.0000	100.0000	1	fd29641ade51	0x7fd90
 chatbox	?AddNode@CChatBox@@QAEHPAX@Z	100.0000	100.0000	3	88a7b8bd99e7	0x182ba0
@@ -716,6 +724,7 @@ cmulti	?Teardown@CMulti@@QAEXXZ	100.0000	100.0000	1	40a558486d68	0xb6110
 cmulti	?Tick@CMulti@@QAEHXZ	85.9939	85.9939	1	93a3a8d8b95c	0xb6890
 cparticlez	??1CParticlez@@UAE@XZ	100.0000	100.0000	1	4b9c461cd6b8	0x12d90
 cparticlez	?FireActivation@CParticlez@@QAEXH@Z	100.0000	100.0000	1	13bf97e742a3	0x46d30
+cparticlez	?InitActReg@CParticlez@@SAXXZ	100.0000	100.0000	1	913801e82692	0x46cb0
 cpathhazard	??1CLightningHazard@@UAE@XZ	100.0000	100.0000	1	f8326e95f521	0x13280
 cpathhazard	??1CPathHazard@@UAE@XZ	100.0000	100.0000	1	60974e654df7	0x13340
 cpathhazard	?BeginLeg@CPathHazard@@QAEHXZ	84.2358	84.2358	1	b0e64016c92a	0xb47e0
@@ -777,6 +786,8 @@ crt_strstreambuf	??1strstreambuf@@QAE@XZ	89.6970	89.6970	2	7c53a170b574	0x169220
 crt_strstreambuf	?str@strstreambuf@@QAEPADXZ	100.0000	100.0000	1	08404bbcac2f	0x1692b0
 crt_strstreambuf	?underflow@strstreambuf@@QAEHXZ	91.7353	91.7353	2	b71b810269ba	0x169490
 csecretleveltrigger	??1CSecretLevelTrigger@@UAE@XZ	100.0000	100.0000	1	1a6afbfadd87	0x10c50
+csecretleveltrigger	?InitActReg@CSecretLevelTrigger@@SAXXZ	100.0000	100.0000	1	3a42fbe06ecf	0x426e0
+csecretleveltrigger	?RegisterActs@CSecretLevelTrigger@@SAXXZ	92.9130	92.9130	1	e412341acec4	0x428c0
 csecretleveltrigger	?Tick@CSecretLevelTrigger@@QAEHXZ	100.0000	100.0000	1	5007af99e855	0x42ac0
 cserialsub34	?Chain@CSerialSub34@@QAEHPAVCSerialArchive@@HHPAVCSerialObj@@@Z	88.0496	88.0496	1	6d191bedea8f	0x8c00
 cseverusentrylist	??1CSeverusEntryList@@QAE@XZ	95.0000	95.0000	1	281e4331e73c	0x1557a0
@@ -911,16 +922,6 @@ engine_attributed	?CFontConfig_0220f0@CFontConfig@@QAEXXZ	5.5556	5.5556	1	e56cf9
 engine_attributed	?CGameApp_13dbc0@CGameApp@@QAEXXZ	4.1667	4.1667	1	7e93d13fb682	0x13dbc0
 engine_attributed	?CGameObject_150f90@CGameObject@@QAEXXZ	0.7018	0.7018	1	13e7741e0009	0x150f90
 engine_attributed	?CGameObject_151070@CGameObject@@QAEXXZ	0.7018	0.7018	1	f03d4d9b51ce	0x151070
-engine_attributed	?CGruntHealthSprite_07ecf0@CGruntHealthSprite@@QAEXXZ	20.0000	20.0000	1	418077d3aae2	0x7ecf0
-engine_attributed	?CGruntHealthSprite_07eed0@CGruntHealthSprite@@QAEXXZ	0.8696	0.8696	1	70aa1f945340	0x7eed0
-engine_attributed	?CGruntPowerupSprite_07ffa0@CGruntPowerupSprite@@QAEXXZ	20.0000	20.0000	1	d0dd7aea8f27	0x7ffa0
-engine_attributed	?CGruntPowerupSprite_080180@CGruntPowerupSprite@@QAEXXZ	0.8696	0.8696	1	ea692bb4d0a8	0x80180
-engine_attributed	?CGruntSelectedSprite_07e5e0@CGruntSelectedSprite@@QAEXXZ	20.0000	20.0000	1	daed20837d2b	0x7e5e0
-engine_attributed	?CGruntSelectedSprite_07e7c0@CGruntSelectedSprite@@QAEXXZ	0.8696	0.8696	1	f55603e8af92	0x7e7c0
-engine_attributed	?CGruntSpawnConfig_11c7f0@CGruntSpawnConfig@@QAEXXZ	5.2632	5.2632	1	a018341dee6e	0x11c7f0
-engine_attributed	?CGruntToySprite_07f540@CGruntToySprite@@QAEXXZ	20.0000	20.0000	1	bf444193cc95	0x7f540
-engine_attributed	?CGruntToySprite_07f720@CGruntToySprite@@QAEXXZ	0.8696	0.8696	1	f14af83f840b	0x7f720
-engine_attributed	?CGruntVoice_119dc0@CGruntVoice@@QAEXXZ	20.0000	20.0000	1	71c89b0c3d95	0x119dc0
 engine_attributed	?CGrunt_051c00@CGrunt@@QAEXXZ	0.1147	0.1147	1	489bc806fe84	0x51c00
 engine_attributed	?CGrunt_05b050@CGrunt@@QAEXXZ	0.1254	0.1254	1	57460174fcc9	0x5b050
 engine_attributed	?CGrunt_0692f0@CGrunt@@QAEXXZ	0.1439	0.1439	1	123485d47018	0x692f0
@@ -964,15 +965,12 @@ engine_attributed	?CNetMgr_178a80@CNetMgr@@QAEXXZ	0.9756	0.9756	1	5eec3c4441ba	0
 engine_attributed	?CNetMgr_178b30@CNetMgr@@QAEXXZ	0.3670	0.3670	1	6c2dd5a643e0	0x178b30
 engine_attributed	?CNetMgr_178cb0@CNetMgr@@QAEXXZ	0.7547	0.7547	1	a59d95d7803b	0x178cb0
 engine_attributed	?CNetMgr_178d40@CNetMgr@@QAEXXZ	0.5333	0.5333	1	857d6c577b92	0x178d40
-engine_attributed	?CParticlez_046cb0@CParticlez@@QAEXXZ	20.0000	20.0000	1	c106f93eea88	0x46cb0
 engine_attributed	?CPlay_0d8dc0@CPlay@@QAEXXZ	0.5634	0.5634	1	e2285fac1a67	0xd8dc0
 engine_attributed	?CPlay_0d8ed0@CPlay@@QAEXXZ	0.4082	0.4082	1	c7f93ab63ad6	0xd8ed0
 engine_attributed	?CPlay_0d9050@CPlay@@QAEXXZ	1.4706	1.4706	1	043f461aec27	0xd9050
 engine_attributed	?CRezItm_13c6c0@CRezItm@@QAEXXZ	0.6154	0.6154	1	96c761a61f5c	0x13c6c0
 engine_attributed	?CSBI_RectOnly_109520@CSBI_RectOnly@@QAEXXZ	0.0946	0.0946	1	bfcdd55fd70f	0x109520
 engine_attributed	?CSaveGame_0e52c0@CSaveGame@@QAEXXZ	0.6780	0.6780	1	5a2e30c69cc1	0xe52c0
-engine_attributed	?CSecretLevelTrigger_0426e0@CSecretLevelTrigger@@QAEXXZ	20.0000	20.0000	1	7474c2fbe3bc	0x426e0
-engine_attributed	?CSecretLevelTrigger_0428c0@CSecretLevelTrigger@@QAEXXZ	0.8696	0.8696	1	f2878e3876b5	0x428c0
 engine_attributed	?CSecretTeleporterTrigger_0420d0@CSecretTeleporterTrigger@@QAEXXZ	20.0000	20.0000	1	d3be2e64873b	0x420d0
 engine_attributed	?CShadeTableCache_14df40@CShadeTableCache@@QAEXXZ	0.0797	0.0797	1	e1665bd8bf80	0x14df40
 engine_attributed	?CSimpleAnimation_0abb90@CSimpleAnimation@@QAEXXZ	20.0000	20.0000	1	1ed76df835f6	0xabb90
@@ -2539,8 +2537,10 @@ gruntspawnconfig	?Init@CGruntSpawnConfig@@QAEHPAUCSpawnOwner@@@Z	55.3478	55.3478
 gruntspawnconfig	?IsReady@CGruntSpawnConfig@@QAEHXZ	100.0000	100.0000	1	920e1a592c09	0x11c830
 gruntspawnconfig	?LoadGruntVoices@CGruntSpawnConfig@@QAEHXZ	95.3488	95.3488	2	788f9701ac23	0x11af00
 gruntspawnconfig	?PickWeighted@CGruntSpawnConfig@@QAEHHH@Z	1.0870	1.0870	1	b9cc209559f5	0x11bee0
+gruntspawnconfig	?ResetPicks@CGruntSpawnConfig@@QAEXXZ	100.0000	100.0000	1	6d4d20bac4c4	0x11c7f0
 gruntvoice	??1CGruntVoice@@UAE@XZ	100.0000	100.0000	1	800298c90ba0	0x119ae0
 gruntvoice	?Dispatch@CGruntVoice@@QAEXH@Z	100.0000	100.0000	2	254b7ed0b958	0x119e40
+gruntvoice	?InitActReg@CGruntVoice@@SAXXZ	100.0000	100.0000	1	e700d1dbab0c	0x119dc0
 gruntvoice	?Reset@CGruntVoice@@QAEXXZ	100.0000	100.0000	1	dade6712d474	0x11a870
 gruntvoice	?Setup@CGruntVoice@@QAEHHPAXHH@Z	85.2500	85.2500	2	7a030505d1b8	0x11a7e0
 gruntzapp	??0CGruntzApp@@QAE@XZ	100.0000	100.0000	6	4559dd088d06	0x80850

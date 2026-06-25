@@ -15,6 +15,9 @@ class CGruntPowerupSprite : public CUserLogic {
 public:
     ~CGruntPowerupSprite(); // 0x012370 (folds the CUserLogic teardown)
 
+    static void InitActReg();   // 0x07ffa0 (construct g_powerupActReg over [2000,2010])
+    static void RegisterActs(); // 0x080180 (register the class's activation handlers)
+
     i32 SetCell(i32 x, i32 y, i32 powerup); // 0x080380
     i32 Update();                           // 0x080410
 
@@ -23,6 +26,13 @@ public:
     i32 m_54; // +0x54  grunt cell x
     i32 m_58; // +0x58  grunt cell y
     i32 m_5c; // +0x5c  powerup id
+};
+
+// The class registry entry: its first dword receives the Update handler PMF (a
+// 4-byte code pointer on this complete single-inheritance class).
+typedef i32 (CGruntPowerupSprite::*PowerupActHandler)();
+struct CPowerupActEntry {
+    PowerupActHandler m_fn;
 };
 
 #endif // GRUNTZ_CGRUNTPOWERUPSPRITE_H

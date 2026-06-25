@@ -102,9 +102,64 @@ DATA(0x002bf3bc)
 extern void* g_indicatorSync; // DAT_006bf3bc
 
 // The bute store the powerup setter seeds the "A" node from (g_buteTree.Find).
-// Owned by another TU; declared extern so `ecx=&g_buteTree; call Find` reloc-masks.
+// Also the shared activation-name registry types/globals (CActColl / CActColl2 /
+// g_actCache / g_actAllocResult / ActAlloc / g_buteTree / g_nextActId / s_actKeyA)
+// the RegisterActs id->entry resolve uses.
 #include <Bute/ButeMgr.h>
-DATA(0x002bf620)
-extern CButeTree g_buteTree;
+#include <Gruntz/ActNameRegistry.h>
+
+// ---------------------------------------------------------------------------
+// CIndicatorActReg - the per-class activation-coordinate registry singleton each
+// indicator sprite owns (the SAME shape as CParticlez's g_partColl @0x644870 /
+// CGruntVoice's g_vactColl @0x6514d8). Each class has a tiny free init function
+// (the trace's 0x15 method) that constructs its registry over the fixed
+// coordinate range [2000, 2010] via the shared ctor FUN_00408710 (__thiscall,
+// ret 8: stores the registry vtable 0x5e70fc and a base CDWordArray, m_1c =
+// count). The ctor is external/no-body so the call reloc-masks; modeled as a
+// Construct(lo,hi) method on the registry so `mov ecx,&g_reg; push hi; push lo;
+// call ctor` falls out byte-exact.
+//
+// The full layout (recovered from the RegisterActs id->entry resolve): the
+// fast [m_lo, m_hi] range path yields m_base + (id-m_lo)*m_stride; the slow path
+// Find (0x16da80) / ActAlloc (0x16d990) / coll2 Insert (0x16d850) yields m_cur.
+// ---------------------------------------------------------------------------
+struct CIndicatorActReg {
+    void* m_vptr;     // +0x00  registry vtable (0x5e70fc)
+    CActColl2* m_coll2; // +0x04  the coll2 ptr the slow Insert is __thiscall on
+    i32 m_lo;         // +0x08  fast-range lo
+    i32 m_hi;         // +0x0c  fast-range hi
+    char* m_base;     // +0x10  fast-range entry base
+    char* m_cur;      // +0x14  slow-path result entry
+    i32 m_stride;     // +0x18  entry stride
+    char m_pad1c[0x20 - 0x1c];
+    i32 m_scratch;    // +0x20  zeroed before the slow resolve
+
+    void Construct(i32 lo, i32 hi); // 0x408710 (__thiscall, ret 8)
+
+    // The id->entry resolve RegisterActs folds in (the VActLookup archetype). The
+    // returned slot's first dword receives the handler code address.
+    char* ResolveEntry(i32 id) {
+        m_scratch = 0;
+        if (id >= m_lo && id <= m_hi) {
+            return m_base + (id - m_lo) * m_stride;
+        }
+        if (((CActColl*)this)->Find(id, 0)) {
+            return m_base + (id - m_lo) * m_stride;
+        }
+        void* item = g_actCache;
+        g_actAllocResult = (void*)ActAlloc();
+        m_coll2->Insert(this, item, 0xc);
+        return m_cur;
+    }
+};
+
+DATA(0x00244d80)
+extern CIndicatorActReg g_healthActReg; // 0x644d80
+DATA(0x00244d30)
+extern CIndicatorActReg g_powerupActReg; // 0x644d30
+DATA(0x00244da8)
+extern CIndicatorActReg g_selectedActReg; // 0x644da8
+DATA(0x00244d58)
+extern CIndicatorActReg g_toyActReg; // 0x644d58
 
 #endif // GRUNTZ_GRUNTINDICATORSPRITE_H

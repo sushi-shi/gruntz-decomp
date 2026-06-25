@@ -15,6 +15,9 @@ class CGruntToySprite : public CUserLogic {
 public:
     ~CGruntToySprite(); // 0x0122b0 (folds the CUserLogic teardown)
 
+    static void InitActReg();   // 0x07f540 (construct g_toyActReg over [2000,2010])
+    static void RegisterActs(); // 0x07f720 (register the class's activation handlers)
+
     i32 SetCell(i32 x, i32 y); // 0x07f920
     i32 Update();              // 0x07f960
 
@@ -23,6 +26,13 @@ public:
     i32 m_54; // +0x54  grunt cell x
     i32 m_58; // +0x58  grunt cell y
     i32 m_5c; // +0x5c  last-seen layer index (Update tracks layer change)
+};
+
+// The class registry entry: its first dword receives the Update handler PMF (a
+// 4-byte code pointer on this complete single-inheritance class).
+typedef i32 (CGruntToySprite::*ToyActHandler)();
+struct CToyActEntry {
+    ToyActHandler m_fn;
 };
 
 #endif // GRUNTZ_CGRUNTTOYSPRITE_H

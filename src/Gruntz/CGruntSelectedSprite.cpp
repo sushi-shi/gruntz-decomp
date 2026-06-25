@@ -18,6 +18,45 @@
 RVA(0x00011e80, 0x44)
 CGruntSelectedSprite::~CGruntSelectedSprite() {}
 
+// CGruntSelectedSprite::InitActReg @0x07e5e0 - construct the class's activation-
+// coordinate registry singleton (g_selectedActReg @0x644da8) over [2000, 2010]
+// via the shared registry ctor (FUN_00408710). Free init thunk; reloc-masked.
+RVA(0x0007e5e0, 0x15)
+void CGruntSelectedSprite::InitActReg() {
+    g_selectedActReg.Construct(2000, 2010);
+}
+
+// CGruntSelectedSprite::RegisterActs @0x07e7c0 - bind the class's per-frame handler
+// (Update @0x07e9f0) to the activation key "A" (the SAME activation-name-intern
+// archetype as CGruntHealthSprite::RegisterActs; see that TU for the full notes).
+//
+// @early-stop
+// register-pinning wall (docs/patterns/zero-register-pinning.md +
+// test-old-value-decrement-loop-while-postdec.md, topic:wall topic:regalloc): logic
+// byte-faithful (every call/immediate/branch/offset + the `mov [entry],offset
+// Update` handler store match retail); residual is the slot-vs-id callee-saved
+// register choice cascading into the free-loop count materialization. Deferred.
+RVA(0x0007e7c0, 0x18d)
+void CGruntSelectedSprite::RegisterActs() {
+    i32 id = (i32)g_buteTree.Find(s_actKeyA);
+    if (id == 0) {
+        id = g_nextActId;
+        g_buteTree.Insert(s_actKeyA, (void*)id);
+        char* slot = ActNameLookup(id);
+        i32 n = g_nameRegScratch;
+        void** list = g_nameRegCurList;
+        while (n-- != 0) {
+            if (list != 0) {
+                ((CActName*)list)->Free();
+            }
+            list++;
+        }
+        ((CActName*)slot)->Assign(s_actKeyA);
+        g_nextActId++;
+    }
+    ((CSelectedActEntry*)g_selectedActReg.ResolveEntry(id))->m_fn = &CGruntSelectedSprite::Update;
+}
+
 // SetCell @0x07e9c0 - stash the (x,y) grunt cell into m_54/m_58, return 1.
 RVA(0x0007e9c0, 0x16)
 i32 CGruntSelectedSprite::SetCell(i32 x, i32 y) {

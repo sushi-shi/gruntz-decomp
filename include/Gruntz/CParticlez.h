@@ -21,6 +21,7 @@
 
 class CParticlez : public CUserLogic {
 public:
+    static void InitActReg();       // 0x046cb0 (construct g_partColl over [2000,2010])
     void FireActivation(i32 coord); // 0x046d30
     ~CParticlez();                  // 0x012d90 (folds the CUserLogic teardown)
 };

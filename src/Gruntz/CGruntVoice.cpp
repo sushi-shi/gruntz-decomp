@@ -25,6 +25,17 @@ RVA(0x00119ae0, 0x44)
 CGruntVoice::~CGruntVoice() {}
 
 // ===========================================================================
+// CGruntVoice::InitActReg  (0x119dc0)
+// ===========================================================================
+// Construct the class's activation-coordinate registry singleton (g_vactColl
+// @0x6514d8) over the fixed range [2000, 2010] via the shared registry ctor
+// (FUN_00408710, __thiscall ret 8). A free init thunk (no `this`); reloc-masked.
+RVA(0x00119dc0, 0x15)
+void CGruntVoice::InitActReg() {
+    g_vactColl.Construct(2000, 2010);
+}
+
+// ===========================================================================
 // CGruntVoice::Dispatch  (0x119e40)
 // ===========================================================================
 // The per-coordinate activation registry dispatch - the SAME ActLookup/

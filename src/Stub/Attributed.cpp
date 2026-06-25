@@ -65,28 +65,6 @@ RVA(0x00051c00, 0xc7b) void CGrunt::CGrunt_051c00() {}  // high
 RVA(0x0005b050, 0x40b) void CGrunt::CGrunt_05b050() {}  // med
 RVA(0x000692f0, 0x850) void CGrunt::CGrunt_0692f0() {}  // high
 
-// ---- CGruntHealthSprite ----
-RVA(0x0007ecf0, 0x15) void CGruntHealthSprite::CGruntHealthSprite_07ecf0() {}  // med
-RVA(0x0007eed0, 0x18d) void CGruntHealthSprite::CGruntHealthSprite_07eed0() {}  // med
-
-// ---- CGruntPowerupSprite ----
-RVA(0x0007ffa0, 0x15) void CGruntPowerupSprite::CGruntPowerupSprite_07ffa0() {}  // med
-RVA(0x00080180, 0x18d) void CGruntPowerupSprite::CGruntPowerupSprite_080180() {}  // med
-
-// ---- CGruntSelectedSprite ----
-RVA(0x0007e5e0, 0x15) void CGruntSelectedSprite::CGruntSelectedSprite_07e5e0() {}  // med
-RVA(0x0007e7c0, 0x18d) void CGruntSelectedSprite::CGruntSelectedSprite_07e7c0() {}  // med
-
-// ---- CGruntSpawnConfig ----
-RVA(0x0011c7f0, 0x2b) void CGruntSpawnConfig::CGruntSpawnConfig_11c7f0() {}  // med
-
-// ---- CGruntToySprite ----
-RVA(0x0007f540, 0x15) void CGruntToySprite::CGruntToySprite_07f540() {}  // med
-RVA(0x0007f720, 0x18d) void CGruntToySprite::CGruntToySprite_07f720() {}  // med
-
-// ---- CGruntVoice ----
-RVA(0x00119dc0, 0x15) void CGruntVoice::CGruntVoice_119dc0() {}  // med
-
 // ---- CHashBase ----
 RVA(0x00184a70, 0x34) void CHashBase::CHashBase_184a70() {}  // med
 
@@ -155,9 +133,6 @@ RVA(0x00178b30, 0x140) void CNetMgr::CNetMgr_178b30() {}  // high
 RVA(0x00178cb0, 0x8b) void CNetMgr::CNetMgr_178cb0() {}  // high
 RVA(0x00178d40, 0xdf) void CNetMgr::CNetMgr_178d40() {}  // high
 
-// ---- CParticlez ----
-RVA(0x00046cb0, 0x15) void CParticlez::CParticlez_046cb0() {}  // med
-
 // ---- CPlay ----
 RVA(0x000d8dc0, 0xce) void CPlay::CPlay_0d8dc0() {}  // high
 RVA(0x000d8ed0, 0x128) void CPlay::CPlay_0d8ed0() {}  // high
@@ -173,10 +148,6 @@ RVA(0x00109520, 0x44c) void CSBI_RectOnly::CSBI_RectOnly_109520() {}  // high
 
 // ---- CSaveGame ----
 RVA(0x000e52c0, 0x99) void CSaveGame::CSaveGame_0e52c0() {}  // high
-
-// ---- CSecretLevelTrigger ----
-RVA(0x000426e0, 0x15) void CSecretLevelTrigger::CSecretLevelTrigger_0426e0() {}  // med
-RVA(0x000428c0, 0x18d) void CSecretLevelTrigger::CSecretLevelTrigger_0428c0() {}  // med
 
 // ---- CSecretTeleporterTrigger ----
 RVA(0x000420d0, 0x15) void CSecretTeleporterTrigger::CSecretTeleporterTrigger_0420d0() {}  // med

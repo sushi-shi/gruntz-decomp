@@ -359,6 +359,22 @@ void CGruntSpawnConfig::DtorBody() {
 }
 
 // ===========================================================================
+// CGruntSpawnConfig::ResetPicks  (0x11c7f0)
+// ===========================================================================
+// Run the sprite-pair teardown (DtorBody @0x11c7b0), then walk the m_18 entry
+// array and reset every non-null entry's last-picked index (+0x20) to -1.
+RVA(0x0011c7f0, 0x2b)
+void CGruntSpawnConfig::ResetPicks() {
+    DtorBody();
+    for (i32 i = 0; i < m_18.GetSize(); i++) {
+        CSpawnEntry* e = (CSpawnEntry*)m_18[i];
+        if (e != 0) {
+            e->m_20 = -1;
+        }
+    }
+}
+
+// ===========================================================================
 // CGruntSpawnConfig::IsReady  (0x11c830)
 // ===========================================================================
 // Return whether the owner is ready (owner->m_100 != 0).

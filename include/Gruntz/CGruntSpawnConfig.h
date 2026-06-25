@@ -113,6 +113,7 @@ public:
     BOOL BuildVoiceList();                                   // 0x11c1a0
     void* BuildVoiceSoundList(i32 i); // 0x11c210 (defined in another TU; reloc-masked)
     void DtorBody();                  // 0x11c7b0 (the 2-iter pair teardown)
+    void ResetPicks();                // 0x11c7f0 (DtorBody + reset entry m_20s)
     BOOL IsReady();                   // 0x11c830
     ~CGruntSpawnConfig();             // 0x85df0
 

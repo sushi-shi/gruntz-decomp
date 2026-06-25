@@ -21,7 +21,8 @@
 #define GRUNTZ_CGRUNTHEALTHSPRITE_H
 
 #include <rva.h>
-#include <Gruntz/UserLogic.h> // CUserLogic base (CGruntHealthSprite : CUserLogic)
+#include <Gruntz/GruntIndicatorSprite.h> // CIndicatorActReg + g_healthActReg
+#include <Gruntz/UserLogic.h>            // CUserLogic base (CGruntHealthSprite : CUserLogic)
 
 // The [m_64..m_68]-gated glyph table the bound object holds at +0x194 (the SAME
 // shape as CStatzGlyphMap: glyph table at +0x14, lo/hi index gate at +0x64/+0x68).
@@ -46,6 +47,10 @@ struct CHealthSpriteObj {
 
 class CGruntHealthSprite : public CUserLogic {
 public:
+    static void InitActReg();   // 0x07ecf0 (construct g_healthActReg over [2000,2010])
+    static void RegisterActs(); // 0x07eed0 (register the class's activation handlers)
+
+    void HealthUpdate(); // 0x07f180 (the registered per-frame handler; defined elsewhere)
     i32 SetHealthGlyph(i32 x, i32 y, i32 health); // 0x07f0d0
     ~CGruntHealthSprite();                        // 0x011fb0 (folds the CUserLogic teardown)
 
@@ -55,6 +60,14 @@ public:
     i32 m_54; // +0x54  stashed x
     i32 m_58; // +0x58  stashed y
     i32 m_5c; // +0x5c  stashed health
+};
+
+// The class registry entry: its first dword receives the handler PMF (a 4-byte
+// code pointer on this complete single-inheritance class). CGruntHealthSprite is
+// complete above so the PMF stays 4 bytes (matching `mov [entry], offset thunk`).
+typedef void (CGruntHealthSprite::*HealthActHandler)();
+struct CHealthActEntry {
+    HealthActHandler m_fn;
 };
 
 #endif // GRUNTZ_CGRUNTHEALTHSPRITE_H

@@ -15,6 +15,45 @@
 RVA(0x00012370, 0x44)
 CGruntPowerupSprite::~CGruntPowerupSprite() {}
 
+// CGruntPowerupSprite::InitActReg @0x07ffa0 - construct the class's activation-
+// coordinate registry singleton (g_powerupActReg @0x644d30) over [2000, 2010]
+// via the shared registry ctor (FUN_00408710). Free init thunk; reloc-masked.
+RVA(0x0007ffa0, 0x15)
+void CGruntPowerupSprite::InitActReg() {
+    g_powerupActReg.Construct(2000, 2010);
+}
+
+// CGruntPowerupSprite::RegisterActs @0x080180 - bind the class's per-frame handler
+// (Update @0x080410) to the activation key "A" (the SAME activation-name-intern
+// archetype as CGruntHealthSprite::RegisterActs; see that TU for the full notes).
+//
+// @early-stop
+// register-pinning wall (docs/patterns/zero-register-pinning.md +
+// test-old-value-decrement-loop-while-postdec.md, topic:wall topic:regalloc): logic
+// byte-faithful (every call/immediate/branch/offset + the `mov [entry],offset
+// Update` handler store match retail); residual is the slot-vs-id callee-saved
+// register choice cascading into the free-loop count materialization. Deferred.
+RVA(0x00080180, 0x18d)
+void CGruntPowerupSprite::RegisterActs() {
+    i32 id = (i32)g_buteTree.Find(s_actKeyA);
+    if (id == 0) {
+        id = g_nextActId;
+        g_buteTree.Insert(s_actKeyA, (void*)id);
+        char* slot = ActNameLookup(id);
+        i32 n = g_nameRegScratch;
+        void** list = g_nameRegCurList;
+        while (n-- != 0) {
+            if (list != 0) {
+                ((CActName*)list)->Free();
+            }
+            list++;
+        }
+        ((CActName*)slot)->Assign(s_actKeyA);
+        g_nextActId++;
+    }
+    ((CPowerupActEntry*)g_powerupActReg.ResolveEntry(id))->m_fn = &CGruntPowerupSprite::Update;
+}
+
 // SetCell @0x080380 - stash the grunt cell (x,y) and powerup id, seed the bound
 // renderable's display fields (visible=1, state=7, bute-set record from the
 // registry's +0x78 table indexed by the powerup id), clear bit 0 of the +0x38
