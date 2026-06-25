@@ -32,9 +32,6 @@ RVA(0x000205c0, 0x741) void CChatBoxOwner::CChatBoxOwner_0205c0() {}  // high
 // ---- CCreditsState ----
 RVA(0x000393b0, 0x3a) void CCreditsState::CCreditsState_0393b0() {}  // high
 
-// ---- CFileMem ----
-RVA(0x00165f00, 0x48) void CFileMem::CFileMem_165f00() {}  // high
-
 // ---- CFontConfig ----
 RVA(0x000220f0, 0x46) void CFontConfig::CFontConfig_0220f0() {}  // high
 
@@ -75,9 +72,6 @@ RVA(0x000bccd0, 0x141) void CNetMgr::CNetMgr_0bccd0() {}  // high
 // ---- CSBI_RectOnly ----
 RVA(0x00109520, 0x44c) void CSBI_RectOnly::CSBI_RectOnly_109520() {}  // high
 
-// ---- CSaveGame ----
-RVA(0x000e52c0, 0x99) void CSaveGame::CSaveGame_0e52c0() {}  // high
-
 // ---- CSecretTeleporterTrigger ----
 RVA(0x000420d0, 0x15) void CSecretTeleporterTrigger::CSecretTeleporterTrigger_0420d0() {}  // med
 
@@ -85,11 +79,7 @@ RVA(0x000420d0, 0x15) void CSecretTeleporterTrigger::CSecretTeleporterTrigger_04
 RVA(0x0014df40, 0x5f4) void CShadeTableCache::CShadeTableCache_14df40() {}  // high
 
 // ---- CTileTriggerTransition ----
-RVA(0x0010fc90, 0x15) void CTileTriggerTransition::CTileTriggerTransition_10fc90() {}  // med
 RVA(0x0010fe70, 0x18d) void CTileTriggerTransition::CTileTriggerTransition_10fe70() {}  // med
-
-// ---- CToobSpikez ----
-RVA(0x001147e0, 0x15) void CToobSpikez::CToobSpikez_1147e0() {}  // med
 
 // ---- CTriggerMgr ----
 RVA(0x0007abc0, 0x4b6) void CTriggerMgr::CTriggerMgr_07abc0() {}  // high
@@ -100,17 +90,8 @@ RVA(0x000646b0, 0x9c8) void CUserLogic::CUserLogic_0646b0() {}  // med
 // ---- CWarlord ----
 RVA(0x000447a0, 0x333) void CWarlord::CWarlord_0447a0() {}  // med
 
-// ---- CWwdGameObject ----
-RVA(0x00150c30, 0x130) void CWwdGameObject::CWwdGameObject_150c30() {}  // med
-RVA(0x00151780, 0x40d) void CWwdGameObject::CWwdGameObject_151780() {}  // med
-
 // ---- CWwdObjMgr ----
-RVA(0x0015ab30, 0x38) void CWwdObjMgr::CWwdObjMgr_15ab30() {}  // high
 RVA(0x0015ad30, 0x2be) void CWwdObjMgr::CWwdObjMgr_15ad30() {}  // high
-RVA(0x0015b0e0, 0xec) void CWwdObjMgr::CWwdObjMgr_15b0e0() {}  // high
-
-// ---- Font ----
-RVA(0x001799f0, 0x16d) void Font::Font_1799f0() {}  // high
 
 // ---- FontRenderer ----
 RVA(0x0017b120, 0x3c6) void FontRenderer::FontRenderer_17b120() {}  // high

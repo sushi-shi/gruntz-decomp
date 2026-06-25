@@ -27,7 +27,8 @@
 // re-declared here, address-pinned).
 struct CToobEntry; // an entry: first dword is the registered handler
 struct CToobColl {
-    i32 Find(i32 coord, i32 z); // 0x16da80 (__thiscall ret 8)
+    i32 Find(i32 coord, i32 z);       // 0x16da80 (__thiscall ret 8)
+    void Reserve8710(i32 lo, i32 hi); // 0x008710 (__thiscall ret 8)
 };
 struct CToobColl2 {
     void Insert(void* coll, void* item, i32 n); // 0x16d850 (__thiscall ret 0xc)
@@ -78,6 +79,14 @@ static inline CToobEntry* ToobLookup(i32 coord) {
     g_actAllocResult = (void*)ActAlloc();
     g_toobColl2->Insert(&g_toobColl, item, 0xc);
     return g_toobCur;
+}
+
+// CToobSpikez::Register_1147e0 @0x1147e0 - reserve this class's activation
+// coordinate range [0x7d0, 0x7da] in its registry (g_toobColl).  A trivial
+// forwarder (mov ecx,&reg; push hi; push lo; call); ecx (this) is unused.
+RVA(0x001147e0, 0x15)
+void CToobSpikez::Register_1147e0() {
+    g_toobColl.Reserve8710(0x7d0, 0x7da);
 }
 
 // CToobSpikez::~CToobSpikez @0x012c60 - the leaf adds no destructible members

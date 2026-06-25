@@ -23,6 +23,7 @@
 
 class CToobSpikez : public CUserLogic {
 public:
+    void Register_1147e0();         // 0x1147e0 (reserve the activation range)
     void FireActivation(i32 coord); // 0x114860
     ~CToobSpikez();                 // 0x012c60 (folds the CUserLogic teardown)
 };

@@ -226,6 +226,43 @@ i32 CSaveGame::FillSlot2(SaveSlot* dst, i32 name, void* src) {
 }
 
 // ---------------------------------------------------------------------------
+// CSaveGame::VerifySlot  (0x000e52c0)
+// Re-derive the slot's level rez-path id and validate it: fail (with an "does
+// not exist" notice) if the registry can't resolve it, fail (with a "has
+// changed" notice) if it no longer matches the slot's stored checksum (+0x10),
+// else succeed. Same name-fallback (g_emptyString) and BuildLevelRezPath shape
+// as Register.
+// @early-stop
+// EH-frame wall (same as Register, ~45%): retail builds the local CString name
+// temp WITHOUT a /GX unwind frame and never destroys it (no fs:0 prologue, no
+// ~CString); the faithful `CString s(name)` forces MSVC5 to emit the EH prolog +
+// dtor cleanup, shifting the frame. Field reads, name fallback, BuildLevelRezPath
+// args, both error branches and the checksum compare are all exact - only the
+// extra frame differs. Deferred to the final sweep.
+RVA(0x000e52c0, 0x99)
+i32 CSaveGame::VerifySlot(SaveSlot* slot) {
+    if (slot == 0) {
+        return 0;
+    }
+    i32 fc = *(i32*)((char*)slot + 0xfc);
+    i32 f8 = *(i32*)((char*)slot + 0xf8);
+    const char* name = (fc == 0 && f8 == 0) ? g_emptyString : ((char*)slot + 0x75);
+    CString s(name);
+    i32 r = g_gameReg->BuildLevelRezPath(fc == 0, fc, f8, slot->m_04);
+    if (r == 0) {
+        g_gameReg->LogError("The level that this game was saved on does not exist!\n\nThis "
+                            "saved game cannot be loaded and should be deleted.");
+        return 0;
+    }
+    if (slot->m_checksum != r) {
+        g_gameReg->LogError("The level that this game was saved on has changed!\n\nThis "
+                            "saved game cannot be loaded and should be deleted.");
+        return 0;
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
 // CSaveGame::Register  (0x000e5390)
 // Build a CString from the slot's name (or the empty string) and hand the slot's
 // level id / flags to g_gameReg->BuildLevelRezPath().

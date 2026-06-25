@@ -27,6 +27,17 @@
 DATA(0x002bf620)
 extern CButeTree g_buteTree;
 
+// The CTileTriggerTransition activation registry at 0x64e720 - a coordinate->
+// handler collection of the same family as CToobSpikez's g_toobColl. Its 0x8710
+// method reserves the [0x7d0, 0x7da] coordinate range for this class.  Both the
+// registry object and the method are external (no body) so the load + call
+// reloc-mask in objdiff.
+struct TileActReg {
+    void Reserve8710(i32 lo, i32 hi); // 0x008710 (__thiscall, ret 8)
+};
+DATA(0x0024e720)
+extern TileActReg g_tileActReg;
+
 // ---------------------------------------------------------------------------
 // CTileTriggerTransition - the CUserLogic leaf the state machine builds. Layout
 // is plain CUserLogic (0x40) + the leaf tail; its methods are below.
@@ -37,6 +48,7 @@ public:
     virtual ~CTileTriggerTransition() OVERRIDE;
 
     i32 GetTypeTag();                             // 0x011730
+    void Register_10fc90();                       // 0x10fc90
     i32 ApplyAnimation(char* sprite, char* geom); // 0x110070
 
     // Leaf fields: CUserLogic ends at +0x40, the leaf object is 0x54 (the size the
@@ -86,6 +98,16 @@ CTileTriggerTransition::CTileTriggerTransition(CGameObject* obj) : CUserLogic(ob
         m_10->m_74 = 0;
         m_10->m_08 |= 0x20000;
     }
+}
+
+// ---------------------------------------------------------------------------
+// Register_10fc90 (0x10fc90) - reserve this class's activation coordinate range
+// [0x7d0, 0x7da] in the global tile-trigger activation registry.  A trivial
+// forwarder (mov ecx,&reg; push hi; push lo; call); ecx (this) is unused.
+// ---------------------------------------------------------------------------
+RVA(0x0010fc90, 0x15)
+void CTileTriggerTransition::Register_10fc90() {
+    g_tileActReg.Reserve8710(0x7d0, 0x7da);
 }
 
 // ---------------------------------------------------------------------------

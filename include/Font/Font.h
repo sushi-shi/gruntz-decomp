@@ -71,6 +71,7 @@ public:
     i32 AllocateMemory(i32 count);
     void FreeMemory();
     i32 LoadFont(CString szFileName);
+    i32 SaveFont(CString szFileName); // 0x1799f0
 
     // Accessors matched in this module cluster.
     void** GetSurface(u8 c);

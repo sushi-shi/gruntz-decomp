@@ -34,7 +34,7 @@ ccursorsnapsprite	2	2
 cddrawchildgroup	9	5
 cddrawptrcollections	26	11
 cddrawshadeblit	6	1
-cddrawsubmgr	37	20
+cddrawsubmgr	39	21
 cddrawsubmgrani	3	1
 cddrawsubmgrdraco	5	2
 cddrawsubmgrleaf	14	4
@@ -94,7 +94,7 @@ cstatichazard	2	2
 cstatusbarmgr	2	1
 cteleporter	2	1
 ctimebomb	2	2
-ctoobspikez	2	2
+ctoobspikez	3	3
 cvoicetrigger	2	2
 databuffer	7	5
 deflate	6	6
@@ -102,14 +102,14 @@ dialogs	19	7
 directinputmgr2	29	25
 directsoundmgr	33	23
 dsoundvoice	2	1
-engine_attributed	60	0
+engine_attributed	51	0
 engine_boundary	626	0
 engine_discovered	86	0
 engine_label_stubs	507	118
 engstr	3	1
-filemem	8	7
+filemem	9	8
 filestream	13	9
-font	22	11
+font	23	12
 fontconfig	9	5
 fonts	2	1
 gameapp	20	16
@@ -170,7 +170,7 @@ randomambientsound	9	4
 registryhelper	8	8
 rezmgr	15	8
 rollingball	3	2
-savegame	19	14
+savegame	20	14
 sbi_gruntmachine	3	2
 sbi_gruntmachine_eh	1	0
 sbi_image	1	0
@@ -213,7 +213,7 @@ tilegridcommand	5	2
 tileswitchlogic	15	8
 tiletriggercontainer	15	4
 tiletriggerlogic	2	1
-tiletriggertransition	5	4
+tiletriggertransition	6	5
 tilewireswitchlogic	1	0
 trees	19	19
 triggermgr	42	7
@@ -233,7 +233,7 @@ winmain	1	1
 worldsoundset	8	5
 wormhole	8	3
 wwdfile	10	1
-wwdgameobject	7	2
+wwdgameobject	9	4
 wwdgrid	7	4
 wwdspatialmgr	10	5
 zutil	2	2
@@ -431,6 +431,7 @@ cddrawsubmgr	?Constructor_156e10@CDDrawSubMgrBase@@QAEXXZ	4.1667	4.1667	2	a218d1
 cddrawsubmgr	?Constructor_157630@CDDrawSubMgr@@QAEXXZ	3.3333	3.3333	2	98e6212efc1f	0x157630
 cddrawsubmgr	?CountActive_15abc0@CWwdObjMgr@@QAEHXZ	100.0000	100.0000	1	9d89eae53a89	0x15abc0
 cddrawsubmgr	?CreateObject_159600@CWwdObjMgr@@QAEPAVCWwdGameObject@@HHHHHH@Z	66.6000	66.6000	2	1d70635540fe	0x159600
+cddrawsubmgr	?Deserialize_15b0e0@CWwdObjMgr@@QAEHPAVCWwdArchive@@IH@Z	74.5532	74.5532	1	275bd35e7080	0x15b0e0
 cddrawsubmgr	?Dispatch_15c900@CDDrawBlitParam@@QAEHPAVCWwdArchive@@HHH@Z	80.0000	80.0000	2	1d5cbf09f02a	0x15c900
 cddrawsubmgr	?Drain_031250@CQueueDrainHost@@QAEPAXXZ	37.8462	37.8462	1	6c313cd28fdb	0x31250
 cddrawsubmgr	?ForEachDispatch_15ac20@CWwdObjMgr@@QAEHHHH@Z	100.0000	100.0000	1	ad4a80665824	0x15ac20
@@ -453,6 +454,7 @@ cddrawsubmgr	?Method_158ee0@CDDrawWorkerMgr@@QAEHXZ	100.0000	100.0000	3	103b119f
 cddrawsubmgr	?Method_159ef0@CDDrawWorkerMgr@@QAEXXZ	100.0000	100.0000	1	14f6f09b257f	0x159ef0
 cddrawsubmgr	?PruneList_15aa90@CWwdObjMgr@@QAEXXZ	95.6410	95.6410	1	56df548d0ecd	0x15aa90
 cddrawsubmgr	?PruneOrphans_15b1d0@CWwdObjMgr@@QAEHXZ	94.2295	94.2295	1	d5da28ae9ca6	0x15b1d0
+cddrawsubmgr	?RemoveAll_15ab30@CWwdObjMgr@@QAEXHPAVCWwdObject@@@Z	100.0000	100.0000	1	dad84abfbb00	0x15ab30
 cddrawsubmgr	?RemoveByPosition_15ab70@CWwdObjMgr@@QAEXHPAVCWwdObject@@@Z	100.0000	100.0000	1	bd5215a51066	0x15ab70
 cddrawsubmgr	?Reset_15c2c0@CDDrawBlitParam@@QAEXXZ	100.0000	100.0000	1	d1c77897f6cf	0x15c2c0
 cddrawsubmgr	?Serialize_15c970@CDDrawBlitParam@@QAEHPAVCWwdArchive@@@Z	99.4175	99.4175	1	d9613a190017	0x15c970
@@ -829,6 +831,7 @@ ctimebomb	??1CTimeBomb@@UAE@XZ	100.0000	100.0000	1	82a73e5a479d	0x12a70
 ctimebomb	?FireActivation@CTimeBomb@@QAEXH@Z	100.0000	100.0000	1	f49df59995b0	0xe1830
 ctoobspikez	??1CToobSpikez@@UAE@XZ	100.0000	100.0000	1	550e0ced02c4	0x12c60
 ctoobspikez	?FireActivation@CToobSpikez@@QAEXH@Z	100.0000	100.0000	1	44f507f426d2	0x114860
+ctoobspikez	?Register_1147e0@CToobSpikez@@QAEXXZ	100.0000	100.0000	1	5a4beef40a63	0x1147e0
 cvoicetrigger	??1CVoiceTrigger@@UAE@XZ	100.0000	100.0000	1	8939b1cb3841	0x135a0
 cvoicetrigger	?Tick@CVoiceTrigger@@QAEHXZ	100.0000	100.0000	1	352963c16858	0x11a700
 databuffer	??0CDataBuffer@@QAE@XZ	100.0000	100.0000	1	3a641ac221a3	0x150180
@@ -942,7 +945,6 @@ engine_attributed	?CBootyState_01ce30@CBootyState@@QAEXXZ	6.6667	6.6667	1	ee0938
 engine_attributed	?CBootyState_01d420@CBootyState@@QAEXXZ	20.0000	20.0000	1	d54c0ecb7af5	0x1d420
 engine_attributed	?CChatBoxOwner_0205c0@CChatBoxOwner@@QAEXXZ	0.0835	0.0835	1	c73daebdde18	0x205c0
 engine_attributed	?CCreditsState_0393b0@CCreditsState@@QAEXXZ	4.0000	4.0000	1	a4a6f8b06ca9	0x393b0
-engine_attributed	?CFileMem_165f00@CFileMem@@QAEXXZ	1.1765	1.1765	1	1d80517819fd	0x165f00
 engine_attributed	?CFontConfig_0220f0@CFontConfig@@QAEXXZ	5.5556	5.5556	1	e56cf98473ea	0x220f0
 engine_attributed	?CGrunt_051c00@CGrunt@@QAEXXZ	0.1147	0.1147	1	489bc806fe84	0x51c00
 engine_attributed	?CImage_175a00@CImage@@QAEXXZ	1.0256	1.0256	1	2acf5c4906a1	0x175a00
@@ -963,22 +965,14 @@ engine_attributed	?CNetMgr_0bbf80@CNetMgr@@QAEXXZ	1.5152	1.5152	1	966da8c493a8	0
 engine_attributed	?CNetMgr_0bc750@CNetMgr@@QAEXXZ	0.9259	0.9259	1	8243db1bde49	0xbc750
 engine_attributed	?CNetMgr_0bccd0@CNetMgr@@QAEXXZ	0.5128	0.5128	1	a059a86d6c08	0xbccd0
 engine_attributed	?CSBI_RectOnly_109520@CSBI_RectOnly@@QAEXXZ	0.0946	0.0946	1	bfcdd55fd70f	0x109520
-engine_attributed	?CSaveGame_0e52c0@CSaveGame@@QAEXXZ	0.6780	0.6780	1	5a2e30c69cc1	0xe52c0
 engine_attributed	?CSecretTeleporterTrigger_0420d0@CSecretTeleporterTrigger@@QAEXXZ	20.0000	20.0000	1	d3be2e64873b	0x420d0
 engine_attributed	?CShadeTableCache_14df40@CShadeTableCache@@QAEXXZ	0.0797	0.0797	1	e1665bd8bf80	0x14df40
-engine_attributed	?CTileTriggerTransition_10fc90@CTileTriggerTransition@@QAEXXZ	20.0000	20.0000	1	22b7c0b44bbb	0x10fc90
 engine_attributed	?CTileTriggerTransition_10fe70@CTileTriggerTransition@@QAEXXZ	0.8696	0.8696	1	c029553c4df8	0x10fe70
-engine_attributed	?CToobSpikez_1147e0@CToobSpikez@@QAEXXZ	20.0000	20.0000	1	938196448f24	0x1147e0
 engine_attributed	?CTriggerMgr_07abc0@CTriggerMgr@@QAEXXZ	0.0948	0.0948	1	d276c5e72e8b	0x7abc0
 engine_attributed	?CUserLogic_0646b0@CUserLogic@@QAEXXZ	0.0483	0.0483	1	71a1d4406b96	0x646b0
 engine_attributed	?CWarlord_0447a0@CWarlord@@QAEXXZ	0.4115	0.4115	1	73dc68c6637f	0x447a0
-engine_attributed	?CWwdGameObject_150c30@CWwdGameObject@@QAEXXZ	0.3846	0.3846	1	8d6bbde6ae73	0x150c30
-engine_attributed	?CWwdGameObject_151780@CWwdGameObject@@QAEXXZ	0.1003	0.1003	1	39ddec5e2e51	0x151780
-engine_attributed	?CWwdObjMgr_15ab30@CWwdObjMgr@@QAEXXZ	2.1053	2.1053	1	f72989a91f06	0x15ab30
 engine_attributed	?CWwdObjMgr_15ad30@CWwdObjMgr@@QAEXXZ	0.1802	0.1802	1	71b3ebff6e40	0x15ad30
-engine_attributed	?CWwdObjMgr_15b0e0@CWwdObjMgr@@QAEXXZ	0.4255	0.4255	1	eaa6159c57c6	0x15b0e0
 engine_attributed	?FontRenderer_17b120@FontRenderer@@QAEXXZ	0.1347	0.1347	1	7d8f493ad072	0x17b120
-engine_attributed	?Font_1799f0@Font@@QAEXXZ	0.3922	0.3922	1	903716e40080	0x1799f0
 engine_attributed	?UnknownClassArrays_02b950@UnknownClassArrays@@QAEXXZ	0.0787	0.0787	1	a9440a18a33f	0x2b950
 engine_attributed	?UnknownClassArrays_0302c0@UnknownClassArrays@@QAEXXZ	0.2581	0.2581	1	66195374326c	0x302c0
 engine_attributed	?istream_16a490@istream@@QAEXXZ	0.8889	0.8889	1	2c8e82552aac	0x16a490
@@ -2212,6 +2206,7 @@ engstr	?SetSize@zBitVec@@QAEHH@Z	98.7234	98.7234	1	fcee90903128	0x16e100
 filemem	??0CFileMemBase@@QAE@XZ	100.0000	100.0000	1	04d2148fb703	0x157850
 filemem	??1CFileMem@@QAE@XZ	59.2593	59.2593	1	ec8015f95309	0x157980
 filemem	?Open@CFileMem@@QAEHXZ	100.0000	100.0000	1	a36fe9e8b972	0x165e60
+filemem	?Read@CFileMem@@QAEHPAXH@Z	100.0000	100.0000	1	55b4948cd8de	0x165f00
 filemem	?Ready@CFileMem@@QAEHXZ	100.0000	100.0000	1	26548c100971	0x165ef0
 filemem	?Reset@CFileMem@@QAEXXZ	100.0000	100.0000	1	7ad10b89364a	0x157a50
 filemem	?ResetBase@CFileMem@@QAEXXZ	100.0000	100.0000	1	fd57c8dec978	0x157a40
@@ -2248,6 +2243,7 @@ font	?IsInterface4@InterfaceObject@@QAEHXZ	96.2500	96.2500	4	7db3529fc67b	0x1795
 font	?IsInterface5@InterfaceObject@@QAEHXZ	96.2500	96.2500	4	d40604b6a273	0x179570
 font	?LoadFont@Font@@QAEHVCString@@@Z	100.0000	100.0000	6	fa7f3fc73a82	0x179830
 font	?MeasureText@FontRenderer@@QAE?AUTextExtent@@VCString@@@Z	66.1936	66.1936	1	34f48e4f97c3	0x17ac50
+font	?SaveFont@Font@@QAEHVCString@@@Z	100.0000	100.0000	1	48e384bb1201	0x1799f0
 font	?SetColor@FontRenderer@@QAEXH@Z	100.0000	100.0000	4	945d607c3be9	0x179c20
 font	?Span@TextRange@@QAEHXZ	100.0000	100.0000	1	742f226ebb92	0x17b500
 font	?Stub_17a460@FontRenderer@@QAEXXZ	0.0684	0.0684	1	cf29e8e947ca	0x17a460
@@ -2961,6 +2957,7 @@ savegame	?Save@CSaveGame@@QAEHHH@Z	41.5752	41.5752	2	8dc3f3720c50	0xe4ea0
 savegame	?SetField18@CSaveGame@@QAEXH@Z	96.3333	96.3333	2	805c5816acdb	0xe5620
 savegame	?SetField1c@CSaveGame@@QAEXH@Z	100.0000	100.0000	2	a0994b0515d6	0xe5660
 savegame	?Verify@CSaveGame@@QAEHXZ	100.0000	100.0000	2	99fbc66be447	0xe50f0
+savegame	?VerifySlot@CSaveGame@@QAEHPAUSaveSlot@@@Z	43.9830	43.9830	1	3cb23758a924	0xe52c0
 sbi_gruntmachine	?Render@CSBI_GruntMachine@@QAEHH@Z	87.3590	87.3590	1	d8c0e8492784	0xe8cb0
 sbi_gruntmachine	?Reset@CSBI_GruntMachine@@QAEXXZ	100.0000	100.0000	1	539d6616e793	0xe8c70
 sbi_gruntmachine	?SetFrames@CSBI_GruntMachine@@QAEXHH@Z	100.0000	100.0000	1	90c8ff4c6d8d	0xe8dc0
@@ -3232,6 +3229,7 @@ tiletriggertransition	??0CTileTriggerTransition@@QAE@PAUCGameObject@@@Z	94.9390	
 tiletriggertransition	??1CUserLogic@@UAE@XZ	100.0000	100.0000	1	cpp:fe6dc3b6bc73	0x117f0
 tiletriggertransition	?ApplyAnimation@CTileTriggerTransition@@QAEHPAD0@Z	100.0000	100.0000	2	d2b3725032a8	0x110070
 tiletriggertransition	?GetTypeTag@CTileTriggerTransition@@QAEHXZ	100.0000	100.0000	1	f7fb68523138	0x11730
+tiletriggertransition	?Register_10fc90@CTileTriggerTransition@@QAEXXZ	100.0000	100.0000	1	02a02599fd29	0x10fc90
 tiletriggertransition	?StepController@@YAHPAUCGameObject@@@Z	100.0000	100.0000	2	7ba829d0b632	0x10d150
 tilewireswitchlogic	?WireTileSwitchLogic@CGruntzMgr@@QAEHPAXHH@Z	10.4111	10.4111	1	4f27554a2907	0x6c130
 trees	__tr_flush_block	100.0000	100.0000	1	54a1b09eba2f	0x188ad0
@@ -3446,6 +3444,8 @@ wwdgameobject	?Play@CWwdGameObject@@QAEHHHHH@Z	0.0000	0.0000	2	e9d3e97beeb5	0x15
 wwdgameobject	?ReadState@CWwdGameObject@@QAEHH@Z	99.3491	99.3491	2	f9aba483f647	0x150b00
 wwdgameobject	?Serialize@CWwdGameObject@@QAEHH@Z	99.5745	99.5745	2	5cf4879a0998	0x151320
 wwdgameobject	?Setup@CWwdGameObject@@QAEHHHHH@Z	97.1059	97.1059	2	d6f3fc6ef894	0x150d60
+wwdgameobject	?Sub150c30@CWwdGameObject@@QAEHH@Z	100.0000	100.0000	1	6e45f7421942	0x150c30
+wwdgameobject	?Sub151780@CWwdGameObject@@QAEHH@Z	100.0000	100.0000	1	a5cc9001a34f	0x151780
 wwdgameobject	?WriteSnapshot@CWwdGameObject@@QAEHH@Z	95.9020	95.9020	2	9fee6fde6abb	0x151c00
 wwdgrid	??0CWwdGrid@@QAE@HHHHHH@Z	75.2308	75.2308	2	ad6dbdc254bc	0x1915c0
 wwdgrid	??1CWwdGrid@@QAE@XZ	93.3333	93.3333	1	89dd27ea66ce	0x1682a0

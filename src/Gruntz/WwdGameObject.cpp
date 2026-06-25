@@ -54,8 +54,8 @@ struct Archive {
     virtual void Slot20();
     virtual void Slot24();
     virtual void Slot28();
-    virtual void Slot2C();
-    virtual void Xfer(void* buf, i32 size); // +0x30
+    virtual void ReadBuf(void* buf, i32 size); // +0x2c (the read/load direction)
+    virtual void Xfer(void* buf, i32 size);    // +0x30 (the write/store direction)
 };
 struct EngStr;
 struct MgrSub165360 {
@@ -76,6 +76,22 @@ struct WwdSnapshot {
 };
 struct CMapStringToObLite {
     i32 Lookup(const char* key, void* out); // 0x1b8760  NAFXCW Lookup
+};
+
+// The two name->object maps Sub150c30 (the read direction) resolves through,
+// each a distinct NAFXCW CMapStringTo* instantiation (different Lookup body).
+// Found via the owning mgr's sub-objects at mgr+0x10 and mgr+0x28; the map sits
+// 0x10 into each sub-object. Reloc-masked no-body callees.
+struct MapLookupA {
+    i32 Lookup(const char* key, void** out); // 0x1b8008
+};
+struct MapLookupB {
+    i32 Lookup(const char* key, void** out); // 0x1b8438
+};
+
+// CString::operator=(LPCSTR) on the +0xdc name member (NAFXCW, reloc-masked).
+struct CStringAssign {
+    void Assign(const char* s); // 0x1b9e74
 };
 
 // CString stack-local destructor (NAFXCW out-of-line, reloc-masked rel32).
@@ -106,6 +122,12 @@ public:
     i32 Helper164790(i32 a2, i32 a1); // 0x164790  __thiscall
     i32 Sub150c30(i32 a1);            // 0x150c30
     i32 Sub151780(i32 a1);            // 0x151780
+
+    // The three "resolve object reference" setters Sub151780 dispatches the
+    // deserialized name lookups into (sibling __thiscall methods, reloc-masked).
+    i32 Resolve150eb0(void* obj); // 0x150eb0
+    i32 Resolve150f90(void* obj); // 0x150f90
+    i32 Resolve151070(void* obj); // 0x151070
 
     void* m_00;                // +0x00  vptr (self virtuals at +0x20/+0x40)
     i32 m_04;                  // +0x04
@@ -209,6 +231,55 @@ i32 CWwdGameObject::ReadState(i32 src) {
         ((CStringDtor*)&str)->Dtor();
     }
     ar->Xfer(tmp, 0x80);
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// Sub150c30 (0x150c30): the read/load counterpart of ReadState - pull two ints
+// (+0x18c/+0x190), a flag, and a name back through the archive's +0x2c slot,
+// look the name up in the mgr's first map to resolve m_194; when the flag is 1
+// and the lookup hit, read m_198 from the resolved object's bounded +0x14 table
+// indexed by m_190. Then read a second name, look it up in the mgr's second map
+// to resolve m_19c. (Dispatch case 7.)
+// ---------------------------------------------------------------------------
+RVA(0x00150c30, 0x130)
+i32 CWwdGameObject::Sub150c30(i32 src) {
+    Archive* ar = (Archive*)src;
+    if (ar == 0) {
+        return 0;
+    }
+    ar->ReadBuf((char*)this + 0x18c, 4);
+    ar->ReadBuf((char*)this + 0x190, 4);
+    i32 flag;
+    ar->ReadBuf(&flag, 4);
+    F(this, 0x194, i32) = 0;
+
+    char name[0x100];
+    ar->ReadBuf(name, 0x80);
+    if (strlen(name) != 0) {
+        void* found = 0;
+        void* mgr = F(this, 0xc, void*);
+        ((MapLookupA*)((char*)F(mgr, 0x10, void*) + 0x10))->Lookup(name, &found);
+        F(this, 0x194, void*) = found;
+        if (found != 0 && flag == 1) {
+            i32 idx = F(this, 0x190, i32);
+            if (idx >= F(found, 0x64, i32) && idx <= F(found, 0x68, i32)) {
+                idx = ((i32*)F(found, 0x14, void*))[idx];
+            } else {
+                idx = 0;
+            }
+            F(this, 0x198, i32) = idx;
+        }
+    }
+
+    F(this, 0x19c, i32) = 0;
+    ar->ReadBuf(name, 0x80);
+    if (strlen(name) != 0) {
+        void* found = 0;
+        void* mgr = F(this, 0xc, void*);
+        ((MapLookupB*)((char*)F(mgr, 0x28, void*) + 0x10))->Lookup(name, &found);
+        F(this, 0x19c, void*) = found;
+    }
     return 1;
 }
 
@@ -466,6 +537,100 @@ i32 CWwdGameObject::Serialize(i32 arParam) {
         ((CStringDtor*)&str)->Dtor();
     }
     ar->Xfer(tmp, 0x80);
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// Sub151780 (0x151780): the read/load mirror of Serialize - pull the same field
+// block back through the archive's +0x2c read slot (assigning the +0xdc name
+// CString), then resolve three object references by reading a name, looking it
+// up in the mgr's registry map, and handing the hit to the matching setter.
+// (Dispatch/Play case 7.) Same offset/size sweep as Serialize, reversed.
+// ---------------------------------------------------------------------------
+RVA(0x00151780, 0x40d)
+i32 CWwdGameObject::Sub151780(i32 arParam) {
+    Archive* ar = (Archive*)arParam;
+    if (ar == 0) {
+        return 0;
+    }
+
+    ar->ReadBuf((char*)this + 0xb8, 0x24);
+
+    char name[0x80];
+    ar->ReadBuf(name, 0x80);
+    ((CStringAssign*)((char*)this + 0xdc))->Assign(name);
+
+    ar->ReadBuf((char*)this + 0xe4, 4);
+    ar->ReadBuf((char*)this + 0xe8, 4);
+    ar->ReadBuf((char*)this + 0xec, 4);
+    ar->ReadBuf((char*)this + 0xf0, 4);
+    ar->ReadBuf((char*)this + 0xf4, 4);
+    ar->ReadBuf((char*)this + 0xf8, 4);
+    ar->ReadBuf((char*)this + 0xfc, 4);
+    ar->ReadBuf((char*)this + 0x100, 4);
+    ar->ReadBuf((char*)this + 0x104, 4);
+    ar->ReadBuf((char*)this + 0x108, 4);
+    ar->ReadBuf((char*)this + 0x10c, 4);
+    ar->ReadBuf((char*)this + 0x110, 4);
+    ar->ReadBuf((char*)this + 0x114, 4);
+    ar->ReadBuf((char*)this + 0x118, 4);
+    ar->ReadBuf((char*)this + 0x11c, 4);
+    ar->ReadBuf((char*)this + 0x120, 4);
+    ar->ReadBuf((char*)this + 0x124, 4);
+    ar->ReadBuf((char*)this + 0x128, 4);
+    ar->ReadBuf((char*)this + 0x12c, 4);
+    ar->ReadBuf((char*)this + 0x130, 4);
+    ar->ReadBuf((char*)this + 0x134, 0x10);
+    ar->ReadBuf((char*)this + 0x144, 0x10);
+    ar->ReadBuf((char*)this + 0x154, 0x10);
+    ar->ReadBuf((char*)this + 0x164, 4);
+    ar->ReadBuf((char*)this + 0x168, 4);
+    ar->ReadBuf((char*)this + 0x16c, 4);
+    ar->ReadBuf((char*)this + 0x170, 4);
+    ar->ReadBuf((char*)this + 0x174, 4);
+    ar->ReadBuf((char*)this + 0x178, 4);
+    ar->ReadBuf((char*)this + 0x17c, 4);
+    ar->ReadBuf((char*)this + 0x180, 4);
+    ar->ReadBuf((char*)this + 0x10, 4);
+    ar->ReadBuf((char*)this + 0x14, 4);
+    ar->ReadBuf((char*)this + 0x18, 0x24);
+    ar->ReadBuf((char*)this + 0x40, 4);
+    ar->ReadBuf((char*)this + 0x44, 4);
+    ar->ReadBuf((char*)this + 0x48, 4);
+    ar->ReadBuf((char*)this + 0x50, 4);
+    ar->ReadBuf((char*)this + 0x54, 4);
+    ar->ReadBuf((char*)this + 0x58, 4);
+    ar->ReadBuf((char*)this + 0x64, 0x10);
+    ar->ReadBuf((char*)this + 0x4, 4);
+    ar->ReadBuf((char*)this + 0x8, 4);
+    ar->ReadBuf((char*)this + 0x184, 4);
+
+    ar->ReadBuf(name, 0x80);
+    if (strlen(name) != 0) {
+        void* found = 0;
+        ((MapLookupA*)((char*)F(F(this, 0xc, void*), 0x14, void*) + 0x10))->Lookup(name, &found);
+        if (Resolve150eb0(found) == 0) {
+            return 0;
+        }
+    }
+
+    ar->ReadBuf(name, 0x80);
+    if (strlen(name) != 0) {
+        void* found = 0;
+        ((MapLookupA*)((char*)F(F(this, 0xc, void*), 0x14, void*) + 0x10))->Lookup(name, &found);
+        if (Resolve150f90(found) == 0) {
+            return 0;
+        }
+    }
+
+    ar->ReadBuf(name, 0x80);
+    if (strlen(name) != 0) {
+        void* found = 0;
+        ((MapLookupA*)((char*)F(F(this, 0xc, void*), 0x14, void*) + 0x10))->Lookup(name, &found);
+        if (Resolve151070(found) == 0) {
+            return 0;
+        }
+    }
     return 1;
 }
 

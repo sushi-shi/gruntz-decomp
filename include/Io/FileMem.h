@@ -53,6 +53,7 @@ public:
     i32 SetName(const char* name, i32 a, i32 b); // 0x00165e30
     i32 Open();                                  // 0x00165e60
     i32 Ready();                                 // 0x00165ef0 (returns 1; pokes inner +0x54)
+    i32 Read(void* buf, i32 n);                  // 0x00165f00
     i32 Write(const void* buf, i32 n);           // 0x00165f50
 
     CFileIO m_file; // +0x10

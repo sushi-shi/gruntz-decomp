@@ -33,6 +33,7 @@
 // is the __thiscall method invoked from Register() (reloc-masked no-body callee).
 struct WwdGameReg {
     i32 BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id);
+    void LogError(const char* msg); // 0x00404178 (the save-game error notifier)
 };
 extern WwdGameReg* g_gameReg;
 
@@ -68,6 +69,7 @@ public:
     i32 FillSlot(SaveSlot* dst, const char* name, void* src); // 0x000e5130
     i32 CopySlot(SaveSlot* dst, const SaveSlot* src);         // 0x000e51d0
     i32 FillSlot2(SaveSlot* dst, i32 name, void* src);        // 0x000e5240
+    i32 VerifySlot(SaveSlot* slot);                           // 0x000e52c0
     i32 Register(SaveSlot* slot);                             // 0x000e5390
     i32 Encode(u8* buf);                                      // 0x000e5410
     i32 Decode(u8* buf);                                      // 0x000e5460

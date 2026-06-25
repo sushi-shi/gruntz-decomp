@@ -145,6 +145,36 @@ i32 Font::LoadFont(CString szFileName) {
     return 1;
 }
 
+// ---------------------------------------------------------------------------
+// Font::SaveFont
+// The write mirror of LoadFont: open the named file for create (flags 0x1001),
+// layer a store-mode CArchive over it, emit the glyph count, then for each glyph
+// write its 8-byte metric record + its width*height pixel surface. Same /GX
+// CFile/CArchive/CString stack frame as LoadFont. Returns 0 on open failure, 1
+// once the font is fully written.
+RVA(0x001799f0, 0x16d)
+i32 Font::SaveFont(CString szFileName) {
+    CFile file;
+    if (!file.Open((const char*)szFileName, 0x1001, 0)) {
+        return 0;
+    }
+
+    CArchive ar(&file, 0 /*CArchive::store*/, 0x1000, 0);
+
+    ar << m_count;
+
+    for (i32 i = 0; i < m_count; i++) {
+        Glyph g = m_glyphs[i];
+        ar.Write(&g, sizeof(Glyph));
+        ar.Write(m_surfaces[i], m_glyphs[i].width * m_glyphs[i].height);
+    }
+
+    ar.Close();
+    file.Close();
+
+    return 1;
+}
+
 // =========================================================================
 // IsInterface1
 //

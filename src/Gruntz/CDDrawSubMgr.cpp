@@ -213,8 +213,8 @@ public:
     virtual void Av20();
     virtual void Av24();
     virtual void Av28();
-    virtual void Av2C();
-    virtual void Write(const void* buf, i32 len); // +0x30
+    virtual void Read(void* buf, i32 len);        // +0x2c (the read/load direction)
+    virtual void Write(const void* buf, i32 len); // +0x30 (the write/store direction)
 };
 
 // The worker held at CDDrawBlitParam+0x0c: holds a sub-object at +0x2c whose
@@ -748,6 +748,7 @@ class CWwdGameObject;
 class CWwdObjMgr {
 public:
     CWwdGameObject* CreateObject_159600(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 flags);
+    void RemoveAll_15ab30(i32 pos, CWwdObject* obj);
     void RemoveByPosition_15ab70(i32 pos, CWwdObject* obj);
     void AddToMap48_15aba0(CWwdObject* obj);
     void PruneList_15aa90();
@@ -755,6 +756,7 @@ public:
     i32 ForEachDispatch_15ac20(i32 a1, i32 a2, i32 a3);
     i32 ForEachProbe_15acb0(i32 a1, i32 a2);
     i32 ForEachSerialize_15b020(CWwdArchive* ar, i32 a2);
+    i32 Deserialize_15b0e0(CWwdArchive* ar, u32 count, i32 flag);
     i32 PruneOrphans_15b1d0();
     void InsertSorted_159e40(CWwdObject* obj, i32 addToMaps);
 
@@ -772,6 +774,16 @@ struct CWwdNode {
     void* m_prev;      // +0x04
     CWwdObject* m_obj; // +0x08
 };
+
+// ---------------------------------------------------------------------------
+// 0x15ab30: drop a list slot + BOTH map entries (the +0x2c primary AND the
+// +0x48 active set).  The "remove everywhere" twin of RemoveByPosition_15ab70.
+RVA(0x0015ab30, 0x38)
+void CWwdObjMgr::RemoveAll_15ab30(i32 pos, CWwdObject* obj) {
+    m_10.RemoveAt((POSITION)pos);
+    m_2c.RemoveKey(obj->m_188);
+    m_48.RemoveKey(obj->m_188);
+}
 
 // ---------------------------------------------------------------------------
 // 0x15ab70: drop a list slot + its primary-map entry.
@@ -906,6 +918,47 @@ i32 CWwdObjMgr::ForEachSerialize_15b020(CWwdArchive* ar, i32 a2) {
                 }
             }
         } while (pos != 0);
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// 0x15b0e0: the read/load counterpart of ForEachSerialize - pull `count` object
+// keys back through the archive's +0x2c read slot, resolve each in m_48, require
+// it present + alive (+0x7c != 0), then run its +0x3c dispatch with (ar, 7, flag,
+// obj). Any missing key / object / failed dispatch aborts to 0; all `count`
+// succeed -> 1 (an empty count -> 1).
+// @early-stop
+// retail carries a conditional CString-cleanup latch (a name temp tracked by a
+// stack "alive" flag, destroyed under `flag&1`) whose CONSTRUCTION the optimizer
+// elided in this instantiation, leaving a never-taken `~CString` cleanup branch
+// (docs/patterns/zero-register-pinning + scoring-artifact). The latch isn't
+// reproducible from C without re-introducing the (here dead) name build; logic /
+// CFG / offsets are exact, the dead cleanup branch is the residual.
+RVA(0x0015b0e0, 0xec)
+i32 CWwdObjMgr::Deserialize_15b0e0(CWwdArchive* ar, u32 count, i32 flag) {
+    if (ar == 0) {
+        return 0;
+    }
+    for (u32 i = 0; i < count; i++) {
+        void* key = 0;
+        ar->Read(&key, 4);
+        if (key == 0) {
+            return 0;
+        }
+        CWwdObject* obj = 0;
+        if (!m_48.Lookup(key, (void*&)obj)) {
+            obj = 0;
+        }
+        if (obj == 0) {
+            return 0;
+        }
+        if (*(i32*)((char*)obj + 0x7c) == 0) {
+            return 0;
+        }
+        if (obj->Slot3C((i32)ar, 7, flag, obj) == 0) {
+            return 0;
+        }
     }
     return 1;
 }
