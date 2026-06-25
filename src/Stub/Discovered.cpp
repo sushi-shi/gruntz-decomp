@@ -726,13 +726,9 @@ void ClassUnknown_28::ClassUnknown_28_158760() {}
 RVA(0x00137110, 0x8d)
 void ClassUnknown_29::ClassUnknown_29_137110() {}
 
-// ---- ClassUnknown_3 ----
-RVA(0x0009dad0, 0x14a)
-void ClassUnknown_3::ClassUnknown_3_09dad0() {}
-RVA(0x0009dc80, 0x1d)
-void ClassUnknown_3::ClassUnknown_3_09dc80() {}
-RVA(0x0009dcb0, 0x41)
-void ClassUnknown_3::ClassUnknown_3_09dcb0() {}
+// ---- ClassUnknown_3 ---- recovered as CLightFxMgr (the light-FX / translucency
+// shade-table manager at g_gameReg->m_78); all three methods reconstructed in
+// src/Gruntz/LightFxMgr.cpp (Init 0x9dad0, Reset 0x9dc80, Push 0x9dcb0).
 
 // ---- ClassUnknown_30 -> the WAP32 sound engine intrusive {head,tail} list ----
 // All 4 reconstructed as DSoundList in src/Dsndmgr/SoundVoiceList.cpp: the shared

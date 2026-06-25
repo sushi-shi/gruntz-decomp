@@ -437,12 +437,8 @@ class ClassUnknown_29 {
 public:
     void ClassUnknown_29_137110();
 };
-class ClassUnknown_3 {
-public:
-    void ClassUnknown_3_09dad0();
-    void ClassUnknown_3_09dc80();
-    void ClassUnknown_3_09dcb0();
-};
+// ClassUnknown_3 reconstructed as CLightFxMgr (the light-FX shade-table manager
+// at g_gameReg->m_78) in src/Gruntz/LightFxMgr.cpp.
 // ClassUnknown_31 reconstructed as the RTTI CImage (vftable @0x5eaa2c) in
 // src/Image/CImage.cpp (Resolve / LoadDispatch / RenderFrameClipped).
 // ClassUnknown_32 reconstructed as CDDrawPtrCollections in

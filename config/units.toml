@@ -861,6 +861,11 @@ source = "src/Gruntz/CLightFxRender.cpp"
 flags = "base"
 
 [[unit]]
+unit = "lightfxmgr"
+source = "src/Gruntz/LightFxMgr.cpp"
+flags = "base"
+
+[[unit]]
 unit = "logicrecord"
 source = "src/Gruntz/LogicRecord.cpp"
 flags = "eh"

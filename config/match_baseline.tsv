@@ -66,7 +66,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	205	0
+engine_discovered	202	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -109,6 +109,7 @@ ingameworkerhandlers	3	3
 inputdeviceconfig	1	0
 kitchenslime	2	0
 leveltilevalidation	1	0
+lightfxmgr	3	3
 loadlevelbymode	1	0
 logicrecord	5	3
 logictypetable	1	0
@@ -821,9 +822,6 @@ engine_discovered	?ClassUnknown_35_1557a0@ClassUnknown_35@@QAEXXZ	4.1667	4.1667	
 engine_discovered	?ClassUnknown_36_14dd90@ClassUnknown_36@@QAEXXZ	1.2500	1.2500	1	5b0b6fe47864	0x14dd90
 engine_discovered	?ClassUnknown_39_168c60@ClassUnknown_39@@QAEXXZ	0.7143	0.7143	1	e7203de04b9c	0x168c60
 engine_discovered	?ClassUnknown_39_168e50@ClassUnknown_39@@QAEXXZ	8.3333	8.3333	1	4737591add0c	0x168e50
-engine_discovered	?ClassUnknown_3_09dad0@ClassUnknown_3@@QAEXXZ	0.3478	0.3478	1	fe3a84c15885	0x9dad0
-engine_discovered	?ClassUnknown_3_09dc80@ClassUnknown_3@@QAEXXZ	8.3333	8.3333	1	107db8ec184e	0x9dc80
-engine_discovered	?ClassUnknown_3_09dcb0@ClassUnknown_3@@QAEXXZ	1.5385	1.5385	1	d6addfd09d51	0x9dcb0
 engine_discovered	?ClassUnknown_40_168d00@ClassUnknown_40@@QAEXXZ	0.3922	0.3922	1	8183ae9b0f0d	0x168d00
 engine_discovered	?ClassUnknown_41_165dd0@ClassUnknown_41@@QAEXXZ	4.7619	4.7619	1	1bc24edc742b	0x165dd0
 engine_discovered	?ClassUnknown_41_168ee0@ClassUnknown_41@@QAEXXZ	1.7391	1.7391	1	dcf18fd0ff71	0x168ee0
@@ -1826,6 +1824,9 @@ inputdeviceconfig	?LoadInputDeviceConfig@CInputConfig@@QAE?AVCString@@H@Z	77.326
 kitchenslime	?LoadSprites@CKitchenSlime@@QAEHXZ	69.1992	69.1992	2	2c07cc5dc21b	0xb3160
 kitchenslime	?Tick@CKitchenSlime@@QAEHXZ	94.8551	94.8551	3	c7b9e1dd58eb	0xb2ca0
 leveltilevalidation	?ValidateLevelTiles@CLevelValidator@@QAEHXZ	17.0098	17.0098	2	791c1428e1a4	0xd2dd0
+lightfxmgr	?Init@CLightFxMgr@@QAEHPAVCGameRegistry@@PAX@Z	100.0000	100.0000	1	cabaf9fef223	0x9dad0
+lightfxmgr	?Push@CLightFxMgr@@QAEHPAVCImageSet@@HH@Z	100.0000	100.0000	1	230e8d70c35c	0x9dcb0
+lightfxmgr	?Reset@CLightFxMgr@@QAEXXZ	100.0000	100.0000	1	9e70786cf034	0x9dc80
 loadlevelbymode	?LoadByMode@CPlayLevelLoad@@QAEHH@Z	34.8503	34.8503	2	10b320b3c10a	0xca200
 logicrecord	??1CLogicRecord@@QAE@XZ	56.7250	56.7250	1	574971764638	0x151da0
 logicrecord	?Consume@CLogicRecord@@QAEHH@Z	100.0000	100.0000	1	30815d7b8ca4	0x15b340
@@ -2412,21 +2413,21 @@ wwdgameobject	?ReadState@CWwdGameObject@@QAEHH@Z	99.3491	99.3491	2	f9aba483f647	
 wwdgameobject	?Serialize@CWwdGameObject@@QAEHH@Z	99.5745	99.5745	2	5cf4879a0998	0x151320
 wwdgameobject	?Setup@CWwdGameObject@@QAEHHHHH@Z	97.1059	97.1059	2	d6f3fc6ef894	0x150d60
 wwdgameobject	?WriteSnapshot@CWwdGameObject@@QAEHH@Z	95.9020	95.9020	2	9fee6fde6abb	0x151c00
-wwdgrid	??0CWwdGrid@@QAE@HHHHHH@Z	75.2308	75.2308	1	39f856bc524a	0x1915c0
+wwdgrid	??0CWwdGrid@@QAE@HHHHHH@Z	75.2308	75.2308	2	ad6dbdc254bc	0x1915c0
 wwdgrid	??1CWwdGrid@@QAE@XZ	93.3333	93.3333	1	89dd27ea66ce	0x1682a0
-wwdgrid	?Add@CWwdGrid@@QAEHPAUWwdRegion@@@Z	100.0000	100.0000	1	7696cb6899d9	0x191840
-wwdgrid	?Clear@CWwdGrid@@QAEHXZ	100.0000	100.0000	1	bdf402e6fae5	0x191a70
-wwdgrid	?FreeBuckets@CWwdGrid@@QAEXXZ	100.0000	100.0000	1	1a048d95b55c	0x191800
-wwdgrid	?Query@CWwdGrid@@QAEHHHHHH@Z	99.7188	99.7188	1	e93bb39bd8a3	0x1918c0
-wwdgrid	?Remove@CWwdGrid@@QAEXPAUWwdRegion@@@Z	100.0000	100.0000	1	0d0f14401f48	0x191890
-wwdspatialmgr	?CountInRect@CWwdSpatialMgr@@QAEHPAVCWwdGrid@@@Z	86.1539	86.1539	2	bc9ec8d7de46	0x168460
+wwdgrid	?Add@CWwdGrid@@QAEHPAUWwdRegion@@@Z	100.0000	100.0000	2	a84967689776	0x191840
+wwdgrid	?Clear@CWwdGrid@@QAEHXZ	100.0000	100.0000	2	3fa965687146	0x191a70
+wwdgrid	?FreeBuckets@CWwdGrid@@QAEXXZ	100.0000	100.0000	2	ea8c19f6d6f0	0x191800
+wwdgrid	?Query@CWwdGrid@@QAEHHHHHH@Z	99.7188	99.7188	2	9051339366a4	0x1918c0
+wwdgrid	?Remove@CWwdGrid@@QAEXPAUWwdRegion@@@Z	100.0000	100.0000	2	40d0b5598a9f	0x191890
+wwdspatialmgr	?CountInRect@CWwdSpatialMgr@@QAEHPAVCWwdGrid@@@Z	86.1539	86.1539	3	901c39b3a8ff	0x168460
 wwdspatialmgr	?FreeGrids@CWwdSpatialMgr@@QAEXXZ	100.0000	100.0000	1	86831d8ccca0	0x1682f0
-wwdspatialmgr	?GetNext@CWwdGridIter@@QAEPAUWwdGridNode@@XZ	93.7073	93.7073	2	dbf0141b6da1	0x191c30
+wwdspatialmgr	?GetNext@CWwdGridIter@@QAEPAUWwdGridNode@@XZ	93.7073	93.7073	3	2f17e9d4685f	0x191c30
 wwdspatialmgr	?GetSize@CWwdSpatialMgr@@QAEHXZ	100.0000	100.0000	1	38653b262d2f	0x168430
 wwdspatialmgr	?Init@CWwdGridIter@@QAEPAUWwdGridNode@@PAVCWwdGrid@@UWwdRect@@H@Z	95.5000	95.5000	1	9db4c1fe715e	0x191b10
 wwdspatialmgr	?PruneCount@CWwdSpatialMgr@@QAEHXZ	100.0000	100.0000	2	3dd1356074d6	0x1688b0
 wwdspatialmgr	?Relocate@CWwdSpatialMgr@@QAEHHH@Z	0.6515	0.6515	1	48931d868e4f	0x168500
-wwdspatialmgr	?RemoveObject@CWwdSpatialMgr@@QAEXPAVCWwdObject@@@Z	100.0000	100.0000	1	350b60b064c3	0x1688f0
+wwdspatialmgr	?RemoveObject@CWwdSpatialMgr@@QAEXPAVCWwdObject@@@Z	100.0000	100.0000	2	fa6f939cbb65	0x1688f0
 wwdspatialmgr	?ScrollTo@CWwdSpatialMgr@@QAEHHH@Z	66.1023	66.1023	2	fc9dd921bcc1	0x168340
 wwdspatialmgr	?Start@CWwdGridIter@@QAEPAUWwdGridNode@@PAVCWwdGrid@@H@Z	100.0000	100.0000	1	1c644a738182	0x191ad0
 zutil	_zcalloc	100.0000	100.0000	1	55f82c5a172f	0x188410
