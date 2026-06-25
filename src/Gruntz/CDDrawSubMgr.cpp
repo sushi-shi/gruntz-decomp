@@ -84,25 +84,63 @@ public:
     virtual void v08();
     virtual void v0c();
     virtual void v10();
-    virtual i32 Vfunc14(); // slot 5  (@0x14): surface-ready predicate
+    virtual i32 Vfunc14();      // slot 5  (@0x14): surface-ready predicate
+    virtual void v18();
+    virtual void v1c();
+    virtual void v20();
+    virtual void v24();
+    virtual i32 Vfunc28(i32 w, i32 h, i32 bpp); // slot 10 (@0x28): geometry setter
+    virtual void v2c();
+    virtual i32 Vfunc30(i32 w, i32 h, i32 bpp, i32 a4); // slot 12 (@0x30)
+    virtual i32 Vfunc34(i32 a); // slot 13 (@0x34): 1-arg op
+
+    // Non-virtual surface-state predicates (reloc-masked __thiscall callees).
+    i32 Probe_164660();         // 0x164660
+    i32 Probe_163f00();         // 0x163f00
+
+    char m_pad04[0x10 - 0x04];  // +0x04 .. +0x0f
+    i32 m_geom10;               // +0x10  width  (compared in 0x158bf0)
+    i32 m_geom14;               // +0x14  height
+    i32 m_geom18;               // +0x18  bpp
+    char m_rect1c[0x2c - 0x1c]; // +0x1c  scratch RECT passed to BltFast
+    CDDSurface* m_surface;      // +0x2c
+};
+
+// A geometry source read by the node's +0x2c dispatch (w @0x14, h @0x18).
+class CDDrawWorkerGeom {
+public:
+    char m_pad00[0x14]; // +0x00 .. +0x13
+    i32 m_14;           // +0x14  (1st dispatch arg)
+    i32 m_18;           // +0x18  (2nd dispatch arg)
+};
+
+// A polymorphic dispatcher held at the node's +0x08: vtable slot 0x2c is a
+// 2-arg op called by Method_158b90.
+class CDDrawWorkerDisp {
+public:
+    virtual void v00();
+    virtual void v04();
+    virtual void v08();
+    virtual void v0c();
+    virtual void v10();
+    virtual void v14();
     virtual void v18();
     virtual void v1c();
     virtual void v20();
     virtual void v24();
     virtual void v28();
-    virtual void v2c();
-    virtual void v30();
-    virtual i32 Vfunc34(i32 a); // slot 13 (@0x34): 1-arg op
-    char m_pad04[0x1c - 0x04];  // +0x04 .. +0x1b
-    char m_rect1c[0x2c - 0x1c]; // +0x1c  scratch RECT passed to BltFast
-    CDDSurface* m_surface;      // +0x2c
+    virtual void Vfunc2C(i32 a, i32 b); // slot 11 (@0x2c)
 };
 
-// The worker held at manager+0x0c: a flag byte sits at +0x34.
+// The worker held at manager+0x0c: a geometry source @0x04, a dispatcher @0x08,
+// and a flag word @0x34 (bit1 tested).
 class CDDrawWorkerNode {
 public:
-    char m_pad00[0x34]; // +0x00 .. +0x33
-    i32 m_34flagAt;     // +0x34 flag word (bit1 tested)
+    char m_pad00[0x04];      // +0x00 .. +0x03
+    CDDrawWorkerGeom* m_04;  // +0x04
+    CDDrawWorkerDisp* m_08;  // +0x08
+    char m_pad0c[0x34 - 0x0c];
+    i32 m_34flagAt;          // +0x34 flag word (bit1 tested)
 };
 
 // The worker manager (this for the 0x158xxx methods).  Polymorphic: its own
@@ -128,6 +166,11 @@ public:
 
     // Surface ops.
     i32 Method_158b40(i32 arg1, i32 arg2);
+    void Method_158b90();
+    i32 Method_158bc0();
+    i32 Method_158bf0(i32 a1, i32 a2, i32 a3);
+    i32 Method_158cb0(i32 a1, i32 a2);
+    void Method_158d50(i32 a1);
     i32 Method_158c70(CDDrawSurfacePair* dst);
     i32 Method_158d20();
     i32 Method_158dc0();
@@ -303,6 +346,81 @@ i32 CDDrawWorkerMgr::Method_158b40(i32 arg1, i32 arg2) {
         }
     }
     return p->Vfunc34(arg1);
+}
+
+// 0x158b90: flip m_10's surface, then dispatch the node's +0x08 op with the
+// node's +0x04 geometry (w,h).
+RVA(0x00158b90, 0x28)
+void CDDrawWorkerMgr::Method_158b90() {
+    m_10->m_surface->Flip(0);
+    CDDrawWorkerNode* n = m_0c;
+    CDDrawWorkerDisp* c = n->m_08;
+    CDDrawWorkerGeom* s = n->m_04;
+    c->Vfunc2C(s->m_14, s->m_18);
+}
+
+// 0x158bc0: ready predicate over m_10 (Probe_164660) and m_18 (Probe_163f00).
+RVA(0x00158bc0, 0x2e)
+i32 CDDrawWorkerMgr::Method_158bc0() {
+    if (m_10 && !m_10->Probe_164660()) {
+        return 0;
+    }
+    if (m_18 && !m_18->Probe_163f00()) {
+        return 0;
+    }
+    return 1;
+}
+
+// 0x158bf0: if m_10's cached geometry already == (a1,a2,a3) return 1; else set
+// geometry on m_10, m_14, and (if ready) m_18, returning 0 on any failure.
+RVA(0x00158bf0, 0x7f)
+i32 CDDrawWorkerMgr::Method_158bf0(i32 a1, i32 a2, i32 a3) {
+    CDDrawSurfacePair* p = m_10;
+    if (p->m_geom10 != a1 || p->m_geom14 != a2 || p->m_geom18 != a3) {
+        if (!m_10->Vfunc28(a1, a2, a3)) {
+            return 0;
+        }
+        if (!m_14->Vfunc28(a1, a2, a3)) {
+            return 0;
+        }
+        if (m_18 && m_18->Vfunc14()) {
+            if (!m_18->Vfunc28(a1, a2, a3)) {
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
+
+// 0x158cb0: if m_18 is ready, bail; else copy m_14's geometry into m_18 via slot
+// 0x30 and (if a2) BltFast m_14's surface into m_18's.
+RVA(0x00158cb0, 0x6a)
+i32 CDDrawWorkerMgr::Method_158cb0(i32 a1, i32 a2) {
+    if (m_18->Vfunc14()) {
+        return 0;
+    }
+    CDDrawSurfacePair* s14 = m_14;
+    if (!m_18->Vfunc30(s14->m_geom10, s14->m_geom14, s14->m_geom18, a2)) {
+        return 0;
+    }
+    if (a1) {
+        m_18->m_surface->BltFast(0, 0, m_14->m_surface, m_14->m_rect1c, 0x10);
+    }
+    return 1;
+}
+
+// 0x158d50: fill m_14's surface and flip m_10's, twice unconditionally, then once
+// more if the node's +0x34 flag bit1 is set.
+RVA(0x00158d50, 0x61)
+void CDDrawWorkerMgr::Method_158d50(i32 a1) {
+    m_14->m_surface->Fill(a1);
+    m_10->m_surface->Flip(0);
+    m_14->m_surface->Fill(a1);
+    m_10->m_surface->Flip(0);
+    if (m_0c->m_34flagAt & 2) {
+        m_14->m_surface->Fill(a1);
+        m_10->m_surface->Flip(0);
+    }
 }
 
 // 0x158c70: blt dst's surface <- m_10's surface; return (hr == 0).

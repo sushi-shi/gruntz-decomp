@@ -28,13 +28,6 @@ RVA(0x000ad9b0, 0x18d) void CBehindCandyAni::CBehindCandyAni_0ad9b0() {}  // med
 RVA(0x0001ce30, 0x1d) void CBootyState::CBootyState_01ce30() {}  // med
 RVA(0x0001d420, 0x8) void CBootyState::CBootyState_01d420() {}  // med
 
-// ---- CButeMgrHelper ----
-RVA(0x001697e0, 0xae) void CButeMgrHelper::CButeMgrHelper_1697e0() {}  // high
-RVA(0x001699a0, 0x14) void CButeMgrHelper::CButeMgrHelper_1699a0() {}  // high
-RVA(0x001699e0, 0xb9) void CButeMgrHelper::CButeMgrHelper_1699e0() {}  // med
-RVA(0x00169bc0, 0x14) void CButeMgrHelper::CButeMgrHelper_169bc0() {}  // med
-RVA(0x00169d10, 0x52) void CButeMgrHelper::CButeMgrHelper_169d10() {}  // high
-
 // ---- CChatBox ----
 RVA(0x001831d0, 0x16) void CChatBox::CChatBox_1831d0() {}  // high
 RVA(0x001831f0, 0x16) void CChatBox::CChatBox_1831f0() {}  // high
@@ -46,9 +39,6 @@ RVA(0x00020ef0, 0x20) void CChatBoxOwner::CChatBoxOwner_020ef0() {}  // high
 // ---- CCreditsState ----
 RVA(0x000393b0, 0x3a) void CCreditsState::CCreditsState_0393b0() {}  // high
 
-// ---- CDDSurface ----
-RVA(0x0013e9a0, 0xcc) void CDDSurface::CDDSurface_13e9a0() {}  // med
-
 // ---- CDDrawShadeBlit ----
 RVA(0x00149950, 0x3a1) void CDDrawShadeBlit::CDDrawShadeBlit_149950() {}  // med
 RVA(0x00149d00, 0x4f8) void CDDrawShadeBlit::CDDrawShadeBlit_149d00() {}  // med
@@ -56,19 +46,6 @@ RVA(0x0014b770, 0x121d) void CDDrawShadeBlit::CDDrawShadeBlit_14b770() {}  // me
 
 // ---- CDDrawSurfaceMgr ----
 RVA(0x00156530, 0x557) void CDDrawSurfaceMgr::CDDrawSurfaceMgr_156530() {}  // high
-
-// ---- CDDrawWorkerB ----
-RVA(0x001572b0, 0x38) void CDDrawWorkerB::CDDrawWorkerB_1572b0() {}  // med
-
-// ---- CDDrawWorkerMgr ----
-RVA(0x00158b90, 0x28) void CDDrawWorkerMgr::CDDrawWorkerMgr_158b90() {}  // high
-RVA(0x00158bc0, 0x2e) void CDDrawWorkerMgr::CDDrawWorkerMgr_158bc0() {}  // high
-RVA(0x00158bf0, 0x7f) void CDDrawWorkerMgr::CDDrawWorkerMgr_158bf0() {}  // high
-RVA(0x00158cb0, 0x6a) void CDDrawWorkerMgr::CDDrawWorkerMgr_158cb0() {}  // high
-RVA(0x00158d50, 0x61) void CDDrawWorkerMgr::CDDrawWorkerMgr_158d50() {}  // high
-
-// ---- CDDrawWorkerRegistry ----
-RVA(0x00155460, 0xe2) void CDDrawWorkerRegistry::CDDrawWorkerRegistry_155460() {}  // high
 
 // ---- CFileMem ----
 RVA(0x00165f00, 0x48) void CFileMem::CFileMem_165f00() {}  // high

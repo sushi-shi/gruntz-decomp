@@ -766,6 +766,96 @@ CFileImageSurface::~CFileImageSurface() {
 }
 
 // ---------------------------------------------------------------------------
+// The factory at 0x13e9a0 builds a CFileImageSurface from a source resolver.
+// Modeling pieces (all reloc-masked):
+//   - the source's slot-0 probe(magic, &out) - declared on a tiny polymorphic view;
+//   - the global CObArray registry @0x653c88 + its grow index @0x653c90;
+//   - the 0xc0 surface item (vtbl g_fileImageVtbl, CByteArray @+0x94), the same
+//     shape as CDDrawPtrCollections::Create7f0_1.
+// ---------------------------------------------------------------------------
+inline void* operator new(u32, void* p) {
+    return p;
+} // placement new (construct in place)
+
+class CImageSource {
+public:
+    virtual i32 Probe(void* magic, void** out); // slot 0 (@0x00)
+};
+
+// The data tag passed to the source probe (reloc-masked .rdata datum).
+DATA(0x001ef888)
+extern void* g_imageProbeTag; // 0x5ef888
+
+// The created 0xc0 surface item: vptr @0, the slot-1 Load, a CByteArray @+0x94.
+class CByteArrayMember {
+public:
+    CByteArrayMember(); // 0x1b4f0b (reloc-masked rel32)
+};
+class CImageSurfaceItem {
+public:
+    virtual void* Delete(u32 flags);  // slot 0 (@0x00) scalar-deleting dtor
+    virtual i32 Load(void* src);      // slot 1 (@0x04)
+
+    char m_pad04[0x94 - 0x04]; // +0x04 (m_04/m_08/m_0c/m_7c zeroed)
+    CByteArrayMember m_94;     // +0x94
+    char m_pada8[0xc0 - 0x98]; // +0xa8/+0xb8 zeroed
+};
+
+// The global image cache the new item is filed into.
+class CImageCache {
+public:
+    void SetAtGrow(i32 index, CImageSurfaceItem* item); // 0x1b5144
+};
+DATA(0x00253c88)
+extern CImageCache g_imageCache; // 0x653c88
+DATA(0x00253c90)
+extern i32 g_imageCacheIndex; // 0x653c90
+
+// The owner of the factory (this) is not touched by the body; modeled as an
+// opaque shell so the call lowers to the retail __thiscall frame.
+class CImageFactory {
+public:
+    i32 Build_13e9a0(CImageSource* src, i32 a2);
+};
+
+// ---------------------------------------------------------------------------
+// 0x13e9a0: probe `src` (slot 0); if it yields a payload, allocate a 0xc0 surface
+// item, construct it (CByteArray @+0x94, stamp g_fileImageVtbl, zero the scalar
+// fields), Load the payload through slot 1, and on success file it into the global
+// image cache - else virtual-delete it. /GX. ret 0xc.
+// @early-stop
+// rezalloc-placement-new-no-eh-frame wall (docs/patterns/rezalloc-placement-new-no-eh-
+// frame.md), the same wall as the sibling Create7f0_1/CreateA factories: retail wraps
+// `new`+throwing-member-ctor in a /GX frame; MSVC5 placement-new emits no
+// ctor-in-flight EH state, so the body is byte-exact but the frame differs. Deferred
+// to the final sweep.
+RVA(0x0013e9a0, 0xcc)
+i32 CImageFactory::Build_13e9a0(CImageSource* src, i32 a2) {
+    void* payload = 0;
+    if (src->Probe(&g_imageProbeTag, &payload) != 0) {
+        CImageSurfaceItem* item = (CImageSurfaceItem*)operator new(0xc0);
+        if (item) {
+            new (&item->m_94) CByteArrayMember;
+            *(void**)item = &g_fileImageVtbl;
+            *(i32*)((char*)item + 0x08) = 0;
+            *(i32*)((char*)item + 0x0c) = 0;
+            *(i32*)((char*)item + 0x04) = 0;
+            *(i32*)((char*)item + 0x7c) = 0;
+            *(i32*)((char*)item + 0xa8) = 0;
+            *(i32*)((char*)item + 0xb8) = 0;
+        } else {
+            item = 0;
+        }
+        if (item->Load(payload)) {
+            g_imageCache.SetAtGrow(g_imageCacheIndex, item);
+        } else if (item) {
+            item->Delete(1);
+        }
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
 // CFileImage::Clear (ret 4) - blank the surface. Build a zeroed 0x64-byte DDBLTFX
 // on the stack (dwSize@+0x0 = 0x64, fill flags@+0x8 = 0x42 | (white ? 0xff0020 :
 // 0)), Blt(NULL, NULL, NULL, 0x1020000, &fx) through the held surface, and on a

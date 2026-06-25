@@ -34,7 +34,7 @@ ccursorsnapsprite	2	2
 cddrawchildgroup	9	5
 cddrawptrcollections	26	11
 cddrawshadeblit	3	1
-cddrawsubmgr	32	15
+cddrawsubmgr	37	20
 cddrawsubmgrani	3	1
 cddrawsubmgrdraco	5	2
 cddrawsubmgrleaf	14	4
@@ -45,8 +45,8 @@ cddrawsurfacepair	5	2
 cddrawworkercache	4	1
 cddrawworkerlist	10	7
 cddrawworkermapsmall	10	3
-cddrawworkerregistry	25	12
-cddrawworkers	3	3
+cddrawworkerregistry	26	12
+cddrawworkers	4	4
 cdirectdrawmgr	24	11
 cdonothing	2	2
 cdroppedobject	2	2
@@ -101,7 +101,7 @@ dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
 dsoundvoice	2	1
-engine_attributed	156	0
+engine_attributed	143	0
 engine_boundary	628	0
 engine_discovered	86	0
 engine_label_stubs	519	118
@@ -133,7 +133,7 @@ gruntzsoundz	12	11
 gruntzwnd	9	7
 hash	9	9
 iconloaders	4	1
-image	35	22
+image	36	22
 imageset	3	3
 infblock	5	4
 infcodes	3	2
@@ -434,8 +434,13 @@ cddrawsubmgr	?ForEachSerialize_15b020@CWwdObjMgr@@QAEHPAVCWwdArchive@@H@Z	90.126
 cddrawsubmgr	?Init_15c290@CDDrawBlitParam@@QAEXPAVCDDrawBlitParamSrc@@@Z	94.7500	94.7500	2	03cefac5ad07	0x15c290
 cddrawsubmgr	?InsertSorted_159e40@CWwdObjMgr@@QAEXPAVCWwdObject@@H@Z	97.7465	97.7465	1	1019106e2d3d	0x159e40
 cddrawsubmgr	?Method_158b40@CDDrawWorkerMgr@@QAEHHH@Z	100.0000	100.0000	3	bf1eab5bac0f	0x158b40
+cddrawsubmgr	?Method_158b90@CDDrawWorkerMgr@@QAEXXZ	100.0000	100.0000	1	3a4c7880f088	0x158b90
+cddrawsubmgr	?Method_158bc0@CDDrawWorkerMgr@@QAEHXZ	100.0000	100.0000	1	3287375e7ca5	0x158bc0
+cddrawsubmgr	?Method_158bf0@CDDrawWorkerMgr@@QAEHHHH@Z	100.0000	100.0000	1	dd2e67462e15	0x158bf0
 cddrawsubmgr	?Method_158c70@CDDrawWorkerMgr@@QAEHPAVCDDrawSurfacePair@@@Z	100.0000	100.0000	3	1fde1bab891f	0x158c70
+cddrawsubmgr	?Method_158cb0@CDDrawWorkerMgr@@QAEHHH@Z	100.0000	100.0000	1	21eb117392d2	0x158cb0
 cddrawsubmgr	?Method_158d20@CDDrawWorkerMgr@@QAEHXZ	100.0000	100.0000	3	eb28c9b50478	0x158d20
+cddrawsubmgr	?Method_158d50@CDDrawWorkerMgr@@QAEXH@Z	100.0000	100.0000	1	7ed661fee352	0x158d50
 cddrawsubmgr	?Method_158dc0@CDDrawWorkerMgr@@QAEHXZ	71.1429	71.1429	3	0ffe8ede1b7c	0x158dc0
 cddrawsubmgr	?Method_158e40@CDDrawWorkerMgr@@QAEHXZ	50.1282	50.1282	3	80a89fb331f7	0x158e40
 cddrawsubmgr	?Method_158e90@CDDrawWorkerMgr@@QAEHXZ	100.0000	100.0000	3	62fc0a8b07d0	0x158e90
@@ -538,6 +543,7 @@ cddrawworkerregistry	?Stub_154f80@CDDrawWorkerRegistry@@QAEXXZ	0.2564	0.2564	2	9
 cddrawworkerregistry	?Stub_155160@CDDrawWorkerRegistry@@QAEXXZ	0.3604	0.3604	2	4edfb98ac449	0x155160
 cddrawworkerregistry	?Stub_156df0@CDDrawWorkerRegistry@@QAEXXZ	3.6364	3.6364	2	c007e5b77d77	0x156df0
 cddrawworkerregistry	?Stub_156e80@CDDrawWorkerRegistry@@QAEXXZ	1.9048	1.9048	2	68f3e5edef67	0x156e80
+cddrawworkerregistry	?SumSizesEqual_155460@CDDrawWorkerRegistry@@QAEHPBDH@Z	70.1125	70.1125	1	929b4e88a22e	0x155460
 cddrawworkerregistry	?VirtualMethodUnknown14@CDDrawWorkerRegistry@@QAEHXZ	100.0000	100.0000	4	df7262523054	0x1576d0
 cddrawworkerregistry	?VirtualMethodUnknown18@CDDrawWorkerRegistry@@QAEHXZ	100.0000	100.0000	4	e7e55c1d1ce8	0x154aa0
 cddrawworkerregistry	?VirtualMethodUnknown1C@CDDrawWorkerRegistry@@QAEXXZ	100.0000	100.0000	3	e5fa6ad84ed9	0x154ac0
@@ -555,6 +561,7 @@ cddrawworkerregistry	?VirtualMethodUnknown54@CDDrawWorkerRegistry@@QAEXPBD@Z	77.
 cddrawworkerregistry	?VirtualMethodUnknown58@CDDrawWorkerRegistry@@QAEXXZ	100.0000	100.0000	5	372bb12b0b24	0x165210
 cddrawworkers	?Vfunc2C@CDDrawWorkerA@@QAEHHHH@Z	100.0000	100.0000	6	2a93c347cffa	0x157110
 cddrawworkers	?Vfunc2C@CDDrawWorkerB@@QAEHHHH@Z	100.0000	100.0000	6	8a45134b16f4	0x1572f0
+cddrawworkers	?Vfunc30@CDDrawWorkerB@@QAEHHHHH@Z	100.0000	100.0000	1	e3442c1eb798	0x1572b0
 cddrawworkers	?Vfunc34@CDDrawWorkerB@@QAEHHHHH@Z	100.0000	100.0000	6	a96a95c53a2d	0x157280
 cdirectdrawmgr	?Apply@CDDPalette@@QAEXH@Z	97.5758	97.5758	1	c2b7f4717ef4	0x147c80
 cdirectdrawmgr	?Blt@CDDSurface@@QAEHPAV1@@Z	100.0000	100.0000	3	f79e89a0ee67	0x13ee60
@@ -890,28 +897,15 @@ engine_attributed	?CBehindCandyAni_0ad7d0@CBehindCandyAni@@QAEXXZ	20.0000	20.000
 engine_attributed	?CBehindCandyAni_0ad9b0@CBehindCandyAni@@QAEXXZ	0.8696	0.8696	1	fe9752cfe7fe	0xad9b0
 engine_attributed	?CBootyState_01ce30@CBootyState@@QAEXXZ	6.6667	6.6667	1	ee0938cc3645	0x1ce30
 engine_attributed	?CBootyState_01d420@CBootyState@@QAEXXZ	20.0000	20.0000	1	d54c0ecb7af5	0x1d420
-engine_attributed	?CButeMgrHelper_1697e0@CButeMgrHelper@@QAEXXZ	0.8696	0.8696	1	2d64b9f99bf9	0x1697e0
-engine_attributed	?CButeMgrHelper_1699a0@CButeMgrHelper@@QAEXXZ	12.5000	12.5000	1	9326d6d71323	0x1699a0
-engine_attributed	?CButeMgrHelper_1699e0@CButeMgrHelper@@QAEXXZ	0.7547	0.7547	1	d512a4f786ac	0x1699e0
-engine_attributed	?CButeMgrHelper_169bc0@CButeMgrHelper@@QAEXXZ	12.5000	12.5000	1	d8046431c747	0x169bc0
-engine_attributed	?CButeMgrHelper_169d10@CButeMgrHelper@@QAEXXZ	1.5385	1.5385	1	7cbdf27b3799	0x169d10
 engine_attributed	?CChatBoxOwner_0205c0@CChatBoxOwner@@QAEXXZ	0.0835	0.0835	1	c73daebdde18	0x205c0
 engine_attributed	?CChatBoxOwner_020ef0@CChatBoxOwner@@QAEXXZ	3.3333	3.3333	1	6deaecad8c30	0x20ef0
 engine_attributed	?CChatBox_1831d0@CChatBox@@QAEXXZ	10.0000	10.0000	1	e7a6a459c595	0x1831d0
 engine_attributed	?CChatBox_1831f0@CChatBox@@QAEXXZ	10.0000	10.0000	1	3d104e6f816f	0x1831f0
 engine_attributed	?CCreditsState_0393b0@CCreditsState@@QAEXXZ	4.0000	4.0000	1	a4a6f8b06ca9	0x393b0
-engine_attributed	?CDDSurface_13e9a0@CDDSurface@@QAEXXZ	0.6154	0.6154	1	28cb2fe3e42a	0x13e9a0
 engine_attributed	?CDDrawShadeBlit_149950@CDDrawShadeBlit@@QAEXXZ	0.1250	0.1250	1	beb3e6b3721e	0x149950
 engine_attributed	?CDDrawShadeBlit_149d00@CDDrawShadeBlit@@QAEXXZ	0.0858	0.0858	1	e2cdb9b955e0	0x149d00
 engine_attributed	?CDDrawShadeBlit_14b770@CDDrawShadeBlit@@QAEXXZ	0.0255	0.0255	1	1299e2a7d88d	0x14b770
 engine_attributed	?CDDrawSurfaceMgr_156530@CDDrawSurfaceMgr@@QAEXXZ	0.1227	0.1227	1	1a8df8b4138d	0x156530
-engine_attributed	?CDDrawWorkerB_1572b0@CDDrawWorkerB@@QAEXXZ	2.2222	2.2222	1	12fc912769aa	0x1572b0
-engine_attributed	?CDDrawWorkerMgr_158b90@CDDrawWorkerMgr@@QAEXXZ	5.8824	5.8824	1	7cf18d9759c9	0x158b90
-engine_attributed	?CDDrawWorkerMgr_158bc0@CDDrawWorkerMgr@@QAEXXZ	4.7619	4.7619	1	7a425fb3d15d	0x158bc0
-engine_attributed	?CDDrawWorkerMgr_158bf0@CDDrawWorkerMgr@@QAEXXZ	0.6061	0.6061	1	6a297b2412da	0x158bf0
-engine_attributed	?CDDrawWorkerMgr_158cb0@CDDrawWorkerMgr@@QAEXXZ	0.8511	0.8511	1	33b056024a29	0x158cb0
-engine_attributed	?CDDrawWorkerMgr_158d50@CDDrawWorkerMgr@@QAEXXZ	1.1765	1.1765	1	a2e20c7095b1	0x158d50
-engine_attributed	?CDDrawWorkerRegistry_155460@CDDrawWorkerRegistry@@QAEXXZ	0.5000	0.5000	1	3f6268fdbf55	0x155460
 engine_attributed	?CFileMem_165f00@CFileMem@@QAEXXZ	1.1765	1.1765	1	1d80517819fd	0x165f00
 engine_attributed	?CFontConfig_0220f0@CFontConfig@@QAEXXZ	5.5556	5.5556	1	e56cf98473ea	0x220f0
 engine_attributed	?CGameApp_13dbc0@CGameApp@@QAEXXZ	4.1667	4.1667	1	7e93d13fb682	0x13dbc0
@@ -2704,12 +2698,13 @@ image	??1CFileImageSurface@@QAE@XZ	94.0000	94.0000	1	0bc619f58aa5	0x142360
 image	?Blit@CFileImage@@QAEHPAXH0H@Z	100.0000	100.0000	2	181d8e710203	0x13faa0
 image	?BlitDirect@CFileImage@@QAEHPAXH@Z	70.4941	70.4941	2	d45ef879a365	0x13ece0
 image	?BlitSurf@CFileImage@@QAEHPAXHHHH@Z	100.0000	100.0000	3	f4d5a5e5672c	0x13e0d0
+image	?Build_13e9a0@CImageFactory@@QAEHPAVCImageSource@@H@Z	58.0769	58.0769	1	bcfbee8a08f9	0x13e9a0
 image	?Clear@CFileImage@@QAEXH@Z	100.0000	100.0000	2	bfee47867379	0x13edb0
 image	?DecodeBmp@CFileImage@@QAEPAXPADPAXI@Z	31.2544	31.2544	4	ee7ec349a997	0x143fc0
 image	?DecodeBmpHeader@CImage@@QAEHPAXHHH0@Z	95.7395	95.7395	5	5af44e6457a4	0x1757c0
-image	?DecodePcx@CFileImage@@QAEPAXPADPAXI@Z	55.7755	55.7755	4	77f8fc32ed4c	0x144ee0
+image	?DecodePcx@CFileImage@@QAEPAXPADPAXI@Z	55.6786	55.6786	4	77f8fc32ed4c	0x144ee0
 image	?DecodePcxData@CFileImage@@QAEHPAX0HHH@Z	86.2370	86.2370	1	ddfed7a9e89e	0x1457a0
-image	?DecodePcxData@CImage@@QAEHPAX00@Z	91.3291	91.3291	4	da60cf2acb73	0x176000
+image	?DecodePcxData@CImage@@QAEHPAX00@Z	91.2848	91.2848	4	da60cf2acb73	0x176000
 image	?DecodePcxEx@CFileImage@@QAEHPAD0PAX1@Z	100.0000	100.0000	5	d07ec29ad6b0	0x1459d0
 image	?DecodePid@CFileImage@@QAEPAXPADPAXI1@Z	35.4204	35.4204	4	5a4b4aeca089	0x145b10
 image	?DecodePidData@CImage@@QAEHPAX00@Z	72.7817	72.7817	4	b5df2e67ba2b	0x176440

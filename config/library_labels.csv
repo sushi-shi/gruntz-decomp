@@ -1965,6 +1965,11 @@ rva,name,lib,confidence,source
 0x168bf0,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x169030,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x1694e0,___init_collate,LIBCMT,LOW,anchored
+0x1697e0,msc_iostream_ostream_ctor_1697e0,LIBCMT,LOW,iostream-cluster-bail
+0x1699a0,msc_iostream_ostream_dtor_1699a0,LIBCMT,LOW,iostream-cluster-bail
+0x1699e0,msc_iostream_iostream_ctor_1699e0,LIBCMT,LOW,iostream-cluster-bail
+0x169bc0,msc_iostream_iostream_dtor_169bc0,LIBCMT,LOW,iostream-cluster-bail
+0x169d10,msc_iostream_ios_ctor_169d10,LIBCMT,LOW,iostream-cluster-bail
 0x169c70,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x16ab90,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x16b0c0,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored

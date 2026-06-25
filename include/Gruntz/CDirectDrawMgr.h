@@ -236,6 +236,7 @@ public:
     virtual i32 v20(void* a);  // slot 8, @0x20 (the surface's own blit-into-desc)
 
     i32 Flip(CDDSurface* target);                                                  // 0x13e850
+    i32 Fill(i32 color);                                                           // 0x13e760
     i32 Lock(void* rect);                                                          // 0x13e6d0
     i32 SetPalette(CDDPalette* pal, i32 unused);                                   // 0x13e690
     i32 SetColorKey(u32 flags, void* key);                                         // 0x13eaa0
