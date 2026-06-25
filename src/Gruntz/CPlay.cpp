@@ -1508,6 +1508,76 @@ i32 CPlay::winapi_0d0b30_CopyRect(i32) {
     return 0;
 }
 
+// ===========================================================================
+// DrawWorldPresent (0x0cefc0) - a present-only world frame: run the two camera
+// sub-steps (DrawB then DrawA), guarded on the camera-geom ptr, twice - each
+// pair preceded by a renderer begin-scene(1) - then push the view, present, and
+// tick the manager. Migrated from engine_boundary (CPlay: the m_c draw chain +
+// m_4 manager). All draw callees are out-of-line / reloc-masked.
+// @early-stop
+// ~99%: code structure byte-exact; residual is (a) a 1-2 byte regalloc nit in
+// the first m_c->m_24->m_5c chain load (cl spreads to ecx where retail reuses
+// eax) and (b) the reloc-masked callee symbols (CameraGeom DrawA/DrawB, PushView,
+// ManagerTick) which pair once those engine fns are named.
+RVA(0x000cefc0, 0xa2)
+i32 CPlay::DrawWorldPresent() {
+    if (m_c->m_24->m_5c != 0) {
+        m_c->m_24->m_5c->DrawB();
+    }
+    if (m_c->m_24->m_5c != 0) {
+        m_c->m_24->m_5c->DrawA();
+    }
+    m_c->m_8->BeginScene(1);
+    if (m_c->m_24->m_5c != 0) {
+        m_c->m_24->m_5c->DrawB();
+    }
+    if (m_c->m_24->m_5c != 0) {
+        m_c->m_24->m_5c->DrawA();
+    }
+    m_c->m_8->BeginScene(1);
+    m_c->m_24->PushView(m_c->m_4->m_14, m_c->m_8);
+    m_c->m_c->Present((i32)m_c->m_4->m_14, (i32)m_c->m_4->m_18);
+    m_4w()->ManagerTick();
+    return 1;
+}
+
+// ===========================================================================
+// PresentAndFlush (0x0cba10) - the overlay-frame present path: bail unless the
+// state is active (Vfunc3), restore the saved display mode if it drifted, then
+// either notify-visible (region-1 gate) or push+present, and flush the draw
+// surface. Migrated from engine_boundary (CPlay).
+// @early-stop
+// reloc-masked plateau (~97%): code bytes exact; residual is the call-rel32
+// operands to the unmatched engine callees (m_guts ClampApply 0x500cb0, the
+// PushView 0x15dc90, surface flush 0x13e850, m_4 RestoreVideoMode 0x8df00).
+RVA(0x000cba10, 0xb0)
+i32 CPlay::PresentAndFlush() {
+    if (Vfunc3() == 0) {
+        return 0;
+    }
+    CWorld* w = m_4w();
+    i32 savedW = w->m_94;
+    i32 liveW = w->m_8c;
+    i32 savedH = w->m_98;
+    i32 liveH = w->m_90;
+    if (savedW != liveW || savedH != liveH) {
+        if (w->RestoreVideoMode(savedW, savedH, 1) == 0) {
+            return 0;
+        }
+    }
+    if (m_guts != 0) {
+        m_guts->ClampApply();
+        if (m_region1Gate != 0) {
+            NotifyVisibleEntities();
+        } else {
+            m_c->m_24->PushView(m_c->m_4->m_14, m_c->m_8);
+            m_c->m_c->Present((i32)m_c->m_4->m_14, (i32)m_c->m_4->m_18);
+        }
+        Eng_SurfaceFlush(m_c->m_4->m_10->m_2c, 0);
+    }
+    return 1;
+}
+
 // @confidence: med
 // @source: string-xref
 // @stub

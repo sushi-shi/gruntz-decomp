@@ -3158,5 +3158,80 @@ void* CGruntzMgr::ScalarDeletingDtor(u32 flags) {
     return this;
 }
 
+// ---------------------------------------------------------------------------
+// CheckDisplayBoundsA/B (0x08e1d0 / 0x08e2b0). When the game is in PLAY/PAUSED
+// (m_curState->Update() == 3 || 0x11), resolve a screen point through the world
+// coord-resolver (m_world->m_1c); if it falls off the expected field, force the
+// display back to 640x480 and pop the matching ReportError. The two variants
+// differ only in the resolver entry + the in/out-of-bounds test + the error id.
+//
+// The resolver result is filled into a caller `pt` and returned (the function
+// returns the same out-pointer in eax). m_world->m_1c is reached as a distinct
+// coord-resolver view of the world's +0x1c sub-object (a reinterpret of the
+// shared CWorldDispatch** member). 0x143510/0x143590 + SetVideoMode are out-of-
+// line / reloc-masked; ReportError (0x08dc60) is the matched sibling.
+struct CPointXY {
+    i32 x;
+    i32 y;
+};
+struct CWorldCoordResolver {
+    CPointXY* ResolveHi(CPointXY* out, i32 a, i32 b, i32 c); // 0x143510
+    CPointXY* ResolveLo(CPointXY* out, i32 a, i32 b, i32 c); // 0x143590
+};
+
+// @early-stop
+// reloc-masked plateau (~97%): code bytes exact; the only residual is the
+// call-rel32 operands to the unmatched engine callees ResolveHi (0x143510) and
+// SetVideoMode (0x8df00) - they pair when those siblings get named.
+RVA(0x0008e1d0, 0xa5)
+i32 CGruntzMgr::CheckDisplayBoundsA() {
+    if (m_curState->Update() != 3 && m_curState->Update() != 0x11) {
+        return 1;
+    }
+    CPointXY pt;
+    CPointXY* p = ((CWorldCoordResolver*)m_world->m_1c)
+                      ->ResolveHi(&pt, m_modeW, m_modeH, m_88);
+    i32 x = p->x;
+    i32 y = p->y;
+    if (x > 0x514 || x == -1 || y == -1) {
+        return 1;
+    }
+    if (SetVideoMode(x, y, 1)) {
+        return 1;
+    }
+    if (SetVideoMode(0x280, 0x1e0, 1)) {
+        return 1;
+    }
+    ReportError(0x8008, 0x439);
+    return 0;
+}
+
+// @early-stop
+// reloc-masked plateau (~97%): code bytes exact; residual is the call-rel32
+// operands to unmatched engine callees ResolveLo (0x143590) + SetVideoMode
+// (0x8df00).
+RVA(0x0008e2b0, 0xb1)
+i32 CGruntzMgr::CheckDisplayBoundsB() {
+    if (m_curState->Update() != 3 && m_curState->Update() != 0x11) {
+        return 1;
+    }
+    CPointXY pt;
+    CPointXY* p = ((CWorldCoordResolver*)m_world->m_1c)
+                      ->ResolveLo(&pt, m_modeW, m_modeH, m_88);
+    i32 x = p->x;
+    i32 y = p->y;
+    if (x == -1 || y == -1 || x < 0x140 || y < 0xc8) {
+        return 1;
+    }
+    if (SetVideoMode(x, y, 1)) {
+        return 1;
+    }
+    if (SetVideoMode(0x280, 0x1e0, 1)) {
+        return 1;
+    }
+    ReportError(0x8008, 0x43a);
+    return 0;
+}
+
 // size 0xa30 recovered from operator-new sites (gruntz.analysis.news)
 SIZE(CGruntzMgr, 0xa30);

@@ -121,8 +121,6 @@ RVA(0x0008c830, 0xaf) void Boundary_08c830() {}  // proximity: CState@-0xe0 | CP
 RVA(0x0008d000, 0x55) void Boundary_08d000() {}  // proximity: CMenuState@-0x1a0 | CMulti@+0x270
 RVA(0x0008d0d0, 0xc4) void Boundary_08d0d0() {}  // proximity: CMenuState@-0x270 | CMulti@+0x1a0
 RVA(0x0008df00, 0x238) void Boundary_08df00() {}  // proximity: CGruntzMgr@-0x90 | RezMgr@+0x570
-RVA(0x0008e1d0, 0xa5) void Boundary_08e1d0() {}  // proximity: CGruntzMgr@-0x360 | RezMgr@+0x2a0
-RVA(0x0008e2b0, 0xb1) void Boundary_08e2b0() {}  // proximity: CGruntzMgr@-0x440 | RezMgr@+0x1c0
 RVA(0x0008e880, 0x27) void Boundary_08e880() {}  // proximity: RezMgr@-0x410 | CGruntzMgr@+0x100
 RVA(0x000915d0, 0x3f) void Boundary_0915d0() {}  // proximity: CGruntzMgr@-0xd0 | RezMgr@+0xa0
 RVA(0x00091620, 0x3f) void Boundary_091620() {}  // proximity: CGruntzMgr@-0x120 | RezMgr@+0x50
@@ -196,11 +194,9 @@ RVA(0x000c8700, 0x1f4) void Boundary_0c8700() {}  // proximity: CTileTriggerCont
 RVA(0x000c9e40, 0x1d7) void Boundary_0c9e40() {}  // proximity: CPlay@-0x180 | CPlayLevelLoad@+0x3c0
 RVA(0x000ca0a0, 0x101) void Boundary_0ca0a0() {}  // proximity: CPlay@-0x3e0 | CPlayLevelLoad@+0x160
 RVA(0x000cb740, 0x8f) void Boundary_0cb740() {}  // proximity: CPlayLevelLoad@-0x1540 | CGamePlayInput@+0x580
-RVA(0x000cba10, 0xb0) void Boundary_0cba10() {}  // proximity: CPlayLevelLoad@-0x1810 | CGamePlayInput@+0x2b0
 RVA(0x000cee90, 0x49) void Boundary_0cee90() {}  // proximity: CGameLevel@-0x80 | CPlay@+0x1290
 RVA(0x000cef00, 0x39) void Boundary_0cef00() {}  // proximity: CGameLevel@-0xf0 | CPlay@+0x1220
 RVA(0x000cef50, 0x46) void Boundary_0cef50() {}  // proximity: CGameLevel@-0x140 | CPlay@+0x11d0
-RVA(0x000cefc0, 0xa2) void Boundary_0cefc0() {}  // proximity: CGameLevel@-0x1b0 | CPlay@+0x1160
 RVA(0x000d2b20, 0x21f) void Boundary_0d2b20() {}  // proximity: CGameModeObj@-0xff0 | CLevelValidator@+0x2b0
 RVA(0x000d5960, 0x160) void Boundary_0d5960() {}  // proximity: CLevelValidator@-0x2b90 | CImage@+0x520
 RVA(0x000d5b20, 0xbb) void Boundary_0d5b20() {}  // proximity: CLevelValidator@-0x2d50 | CImage@+0x360

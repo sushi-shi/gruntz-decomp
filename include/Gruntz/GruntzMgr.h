@@ -147,6 +147,12 @@ public:
     i32 CheckPlayState();                           // @0x08ec50 (m_curState->Update()==3||==0x11)
     i32 RestoreVideoMode(i32 save);                 // @0x08ddd0 (re-assert 640x480; save on hit)
     i32 SetVideoMode(i32 w, i32 h, i32 flag);       // @0x08df00 (mode-switch the display; stubbed)
+    // Two play-state cursor/resolution guards: resolve a screen point via the
+    // world coord-resolver (m_world->m_1c) and, if it falls off the expected
+    // field, re-assert 640x480 + ReportError. A = upper-bound (x>0x514) variant,
+    // B = lower-bound (x<0x140 || y<0xc8) variant.
+    i32 CheckDisplayBoundsA(); // @0x08e1d0
+    i32 CheckDisplayBoundsB(); // @0x08e2b0
 
     // Per-state notification forwarders: dispatch (a,b[,c]) into the live state's
     // vtable slot 11..20, returning 0 with no state (0x8d9d0..0x8dbe0).

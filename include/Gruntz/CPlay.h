@@ -137,7 +137,11 @@ struct CInputDispatch {
 
 // m_4 (the CState owner back-ptr -> the world/level object).
 struct CWorld {
-    void ClampApply();   // 0x48f7f0 (thiscall, no arg) ClampViewport apply-tail
+    void ClampApply(); // 0x48f7f0 (thiscall, no arg) ClampViewport apply-tail
+    // The per-frame manager tick + the restore-display-mode helper the play
+    // draw/present sub-steps (DrawWorldPresent / PresentAndFlush) call on m_4.
+    void ManagerTick();                           // 0x48f620 (thiscall, no arg)
+    i32 RestoreVideoMode(i32 w, i32 h, i32 flag); // 0x48df00 (thiscall)
     char p0[0x4];
     CInputDispatch* m_4; // +0x04  the input dispatcher (RegisterInputBindings)
     char p8[0xc - 0x8];
@@ -187,11 +191,13 @@ struct CWorld {
         void* LoadSprite(void* desc, i32 flag); // 0x4e23c0 (thiscall)
     }* m_74;
     char p78[0x8c - 0x78];
-    i32 m_8c; // +0x8c  viewport-clamp horizontal limit (ClampViewport2)
-    i32 m_90; // +0x90  viewport-clamp vertical limit (ClampViewport2)
+    i32 m_8c; // +0x8c  viewport-clamp horizontal limit (ClampViewport2) / live mode W
+    i32 m_90; // +0x90  viewport-clamp vertical limit (ClampViewport2) / live mode H
+    i32 m_94; // +0x94  saved/last-good mode W (PresentAndFlush restore test)
+    i32 m_98; // +0x98  saved/last-good mode H
     // +0x158: a flat config-array (stride 71*8 = 0x238 bytes); entry [id].m_0 is
     // the per-grunt-type sprite descriptor BeginGridWalk feeds to LoadSprite.
-    char p94[0x158 - 0x94];
+    char p9c[0x158 - 0x9c];
     char m_158[1]; // base of the config array (indexed by id*0x238)
 };
 
@@ -294,6 +300,9 @@ public:
     i32 ResetGoals(i32, i32);                   // 0x0d5f00 (THIS TU)
     i32 BuildHelpReveal();                      // 0x0d72c0 (THIS TU)
     i32 RegisterInputBindings();                // 0x0d9160 (THIS TU)
+    // Two more draw/present sub-steps migrated from the engine_boundary backlog:
+    i32 DrawWorldPresent(); // 0x0cefc0 (double world-draw + present + manager tick)
+    i32 PresentAndFlush();  // 0x0cba10 (restore-mode guard + present-or-notify + flush)
     // leaf engine callees the above dispatch to (external, reloc-masked):
     void HudClickInRect(i32 a, i32 x, i32 y); // 0x4a9500 (thiscall on this)
     // HandleDragMove's own leaf callees (external, reloc-masked):
