@@ -57,7 +57,9 @@ struct CSpriteInner {
 };
 
 struct CHudSprite {
-    char m_pad0[0x7c];
+    char m_pad0[0x8];
+    i32 m_8; // +0x08  (sprite flag word; arrival sets |= 0x10000 to retire it)
+    char m_padc[0x7c - 0xc];
     CSpriteInner* m_7c; // +0x7c
 };
 
@@ -326,8 +328,48 @@ class CAnimNameResolver {
 public:
     char** GetNameRecord(void* node);            // thunk_FUN_004310f0 (ret 4)
     CAnimNameRecord* GetNameRecords(void* node); // thunk_FUN_004312a0 (ret 4)
+    // The entrance-cell coordinate -> record-index mappers the arrival recycle
+    // step (0x59230) drives when the raw bounds test misses. Both __thiscall on the
+    // resolver (this = 0x6bf650); external/no-body so the calls reloc-mask.
+    i32 MapCellIndex(i32 coord, i32 flag);  // FUN_0056da80 (ret 8)
+    i32 MapCellRecord(i32 base, i32 size);  // FUN_00434960 (ret 8; block-1 fallback)
+    i32 MapCellRecord2(i32 base, i32 size); // FUN_0056d850 (ret 0xc; block-2 fallback)
+    i32 PinCellIndex();                     // FUN_0056d990 (ret 0; pop/push/ret stub)
 };
 extern CAnimNameResolver g_animNameResolver; // DAT_006bf650
+
+// The resolver's coordinate-range fields (consecutive globals at 0x6bf654..0x6bf664;
+// the cell-resolve path reads them by name - separate externs, reloc-masked - the same
+// way g_animScratch/g_animScratchCount are aliased rather than embedded).
+extern i32 g_cellLo;    // DAT_006bf658
+extern i32 g_cellHi;    // DAT_006bf65c
+extern i32 g_cellBase;  // DAT_006bf660
+extern i32 g_cellRet;   // DAT_006bf664
+extern i32 g_cellScale; // DAT_006bf668
+
+// The entrance-cell record table base + the resolver fallback count (separate
+// globals the cell-resolve path reads; reloc-masked).
+extern i32 g_cellRecordBase; // DAT_006bf464
+extern i32 g_cellRecordRet;  // DAT_006bf428
+
+// ---------------------------------------------------------------------------
+// The 9 runtime direction-index globals InitDirVectors (0x5caa0) reads to place
+// each direction record (index = 3*[0] + [1]). Each is an adjacent {lo, hi} int
+// pair; runtime-filled (.data), so modeled as a 2-int view extern (reloc-masked).
+// The FP unit constants the diagonal vectors are built from (read-only .rodata).
+// ---------------------------------------------------------------------------
+extern i32 g_dirAb0[2]; // DAT_00644ab0
+extern i32 g_dirAe0[2]; // DAT_00644ae0
+extern i32 g_dirAa0[2]; // DAT_00644aa0
+extern i32 g_dirB28[2]; // DAT_00644b28
+extern i32 g_dirAc0[2]; // DAT_00644ac0
+extern i32 g_dirB48[2]; // DAT_00644b48
+extern i32 g_dirAd0[2]; // DAT_00644ad0
+extern i32 g_dirB18[2]; // DAT_00644b18
+extern i32 g_dirB38[2]; // DAT_00644b38
+extern double g_dirConst2;  // DAT_005e9a28 = 2.0
+extern double g_dirConst1;  // DAT_005e9a30 = 1.0
+extern double g_dirConstN1; // DAT_005e9a38 = -1.0
 
 // The second-resolver scratch CString[] (data @0x6bf66c, count @0x6bf670). Each
 // reject path that resolves via GetNameRecords tears these down (Release each
@@ -356,6 +398,7 @@ extern const char g_codeM[]; // 0x60d7f4 "M"
 extern const char g_codeK[]; // 0x60d7f8 "K"
 extern const char g_codeF[]; // 0x60d2e8 "F"  (PlaySound entrance handler)
 extern const char g_codeE[]; // 0x60d2ec "E"  (PlaySound entrance handler)
+extern const char g_codeH[]; // 0x60d7fc "H"  (arrival-recycle reject code)
 
 // The keyed anim-set lookup is g_entranceAnimSrc.LookupAnimSet (FUN_0056d190 @
 // the global @0x6bf620, already modeled above): maps a single-char anim key to a
@@ -390,12 +433,16 @@ struct GruntSoundCat {  // m_30: the sound-category object
 struct WwdGameReg {
     char m_pad0[0x30];
     GruntSoundCat* m_30; // +0x30  the sound category (struck-voice lookup root)
-    char m_pad34[0x68 - 0x34];
+    char m_pad34[0x60 - 0x34];
+    CGruntCueSink* m_60; // +0x60  the on-screen cue receiver (CueA/CueSpawn)
+    char m_pad64[0x68 - 0x64];
     i32 m_68; // +0x68  (SerializeMove mode-8: -> CGrunt::m_tileMgr)
     char m_pad6c[0x70 - 0x6c];
     GruntBoard* m_70; // +0x70  the level board
     char m_pad74[0x11c - 0x74];
     i32 m_11c; // +0x11c  the sound-channel param (struck-voice Play arg)
+    char m_pad120[0x134 - 0x120];
+    i32 m_134; // +0x134  the view-cull mode gate (==1 -> rand%3, else rand%6)
 };
 extern WwdGameReg* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
 
@@ -476,7 +523,19 @@ public:
     // UpdateEntranceAnim's arrival-commit: thunk_0x3dfa (0x6c130), __thiscall on the
     // tile-mgr, the grunt + its last-tile pixel coords as args. Reloc-masked.
     void CommitArrivalMove(CGrunt* g, i32 x, i32 y);
+    // The two big tile-mgr occupancy-commit helpers the arrival/update steps drive
+    // (the in-flight-arrival path commits the grunt's occupied slot to a settled
+    // position). thunk 0x3030 -> 0x6e120 (4-arg) and thunk 0x14bf -> 0x6dae0 (4-arg);
+    // external/no-body so the calls reloc-mask.
+    void CommitTileSlot(i32 ownerHi, i32 ownerLo, i32 px, i32 py);  // 0x6e120
+    void CommitTileSlot2(i32 ownerHi, i32 ownerLo, i32 px, i32 py); // 0x6dae0
 };
+
+// The on-screen point-visibility predicate the arrival/update steps gate the cue
+// on (FUN_0046b330, 0x6b330; __cdecl 3 args -> `add esp,0xc`): given a probe
+// kind and the grunt's HUD point, returns whether it falls inside the live view
+// rect. External/no-body (reloc-masked).
+i32 GruntPointVisible(i32 px, i32 py, i32 cmp);
 
 // The registry focused-grunt slot the arrival gate reads: an array at
 // g_pGameRegistry+0x150, stride 0x238 (= 71*8) indexed by the grunt's m_tileOwnerHi.
@@ -834,7 +893,9 @@ public:
     i32 m_tileClaimed; // +0x420 (arrival-claimed latch)
     char m_pad424[0x43c - 0x424];
     i32 m_entranceCell[3]; // +0x43c (entrance-cell triple: [0]=col, [1]=row, [2]=m_444 reason)
-    char m_pad448[0x460 - 0x448];
+    char m_pad448[0x450 - 0x448];
+    i32 m_arrivalPhase; // +0x450 (arrival/update dispatch phase: 2 = in-flight, 3 = committing)
+    char m_pad454[0x460 - 0x454];
     i32 m_lowStaminaCued;  // +0x460 (low-stamina off-screen cue latch)
     i32 m_arrivalNotified; // +0x464 (entrance-reset latch flag)
     char m_pad468[0x474 - 0x468];
@@ -928,6 +989,13 @@ public:
     // grunt's current anim name (via g_animNameResolver) and dispatches on its
     // single-letter type code (A/D/I/G/L/P/O/Q/J/N/M/K), driving the grunt's
     // movement/arrival state + occupied-coord recycle + a re-latch of m_14->m_1c.
+    // The arrival/update dispatch trio (ex-CUserLogic_* stubs; really CGrunt - every
+    // member offset they touch is in this layout). All three drive the grunt's
+    // arrival/entrance bookkeeping + the occupied-slot recycle.
+    i32 ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e); // @0x59230 (ret 0x14)
+    void InitDirVectors();                                   // @0x5caa0 (ret 0; reset/init)
+    i32 UpdateArrival(i32 a1, i32 a2);                       // @0x62110 (ret 0x8)
+
     void StepArrivalDrop(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // @0x4b370 (ret 0x18, /GX)
     i32 StepGruntMovement(); // @0x4c170 (ret 0)         - the per-tick move step
     i32 StepAnimDispatchA(i32 a, i32 b, i32 c, i32 d); // @0x52fb0 (ret 0x10)

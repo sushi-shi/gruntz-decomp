@@ -3329,3 +3329,478 @@ kArm:
     }
     return 1;
 }
+
+// ===========================================================================
+// The arrival/update dispatch trio (ex-CUserLogic_* stubs @0x59230 / 0x5caa0 /
+// 0x62110). RTTI/this-layout IDENTIFY them as CGrunt methods, NOT CUserLogic:
+// every member offset they touch (m_arrivalState 0x2d0, m_2f0/m_2f4, m_arrivalPhase
+// 0x450, m_tileMgr 0x260, m_tileOwnerHi/Lo 0x1ec/0x1f0, m_14, m_154, the +0x470
+// entrance-cell record table, the +0x4b0 dir-vector table, m_health 0x3ec, ...) is
+// in the CGrunt layout above, and they call the same CGrunt this-method thunks the
+// rest of this TU does. The "CUserLogic" stub attribution was a mislabel (CUserLogic
+// is a small vptr+link base; it has no 0x2d0/0x450/0x4b0 fields - the same mislabel a
+// prior matcher found for other CGrunt stubs, RTTI vtable 0x5e8754 = .?AVCGrunt@@).
+// ===========================================================================
+
+// The "ToyTime" bute key the update step reads (reloc-masked .rodata @0x60e194).
+static char s_ToyTime[] = "ToyTime";
+
+// ---------------------------------------------------------------------------
+// CGrunt::ArrivalRecycle(a, b, mode, d, e)   @0x59230   (__thiscall, ret 0x14)
+// mode==0: latch the pending arrival target (a switch on m_arrivalState seeds
+// m_2f0/m_2f4 from {d,e} and, for the in-flight states, marks m_2d4=2), then - when
+// committing (m_arrivalPhase 2/3, m_230 set) - commit the occupied tile slot to its
+// settled HUD position (RectContains[Gated]). mode!=0: drive the move-sound then run
+// the occupied-coord recycle: for each resolver reject code "H"/"F"/"O", resolve the
+// cell record (the resolver's coord->index map) and bail; final miss -> ResetGeometry().
+//
+// @early-stop
+// large-state-machine + custom-resolver-internals plateau (sibling of RunEntranceMove
+// 0x67850 / StepEntranceReinit 0x637a0): CFG, the switch jump-table mapping, every
+// member offset/gate, the 15-stride tile index, the RectContains-gated commit, and the
+// three sequential strcmp-reject cell-resolves are reconstructed in shape/order. Residue:
+// the resolver coord-range field reads + the two distinct cell-record fallback helpers
+// reloc-mask to differently-named externals, the inline-strcmp setcc sentinel pinning,
+// and the cross-block regalloc on the shared resolve tail. Deferred to the final sweep.
+RVA(0x00059230, 0x40d)
+i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
+    if (mode == 0) {
+        switch (m_arrivalState) {
+        case 2:
+            m_2f0 = d;
+            m_2f4 = e;
+            break;
+        case 1:
+        case 4:
+            m_2f0 = d;
+            m_2f4 = e;
+            m_2d4 = 2;
+            break;
+        case 5:
+            m_2f0 = d;
+            m_2f4 = e;
+            m_2d4 = 2;
+            break;
+        case 3:
+        case 6:
+            m_2f0 = d;
+            m_2f4 = e;
+            m_2d4 = 2;
+            break;
+        case 0x11:
+            m_2f0 = d;
+            m_2f4 = e;
+            break;
+        default:
+            break;
+        }
+
+        i32 phase = m_arrivalPhase;
+        if ((phase == 3 || phase == 2) && m_230 != 0) {
+            i32 idx = 15 * m_2f0 + m_2f4;
+            void* obj = *(void**)((char*)m_tileMgr + idx * 4 + 0x1c);
+            if (obj != 0) {
+                CGruntHud* inner = *(CGruntHud**)((char*)obj + 0x10);
+                i32 yMasked = (inner->m_60 & ~0x1f) + 0x10;
+                i32 xMasked = (inner->m_5c & ~0x1f) + 0x10;
+                i32 hit;
+                if (phase == 3) {
+                    hit = RectContains(xMasked, yMasked);
+                } else {
+                    hit = RectContainsGated(xMasked, yMasked);
+                }
+                if (hit != 0) {
+                    OnReanchor(0);
+                }
+                if (phase == 3) {
+                    m_tileMgr->CommitTileSlot(m_tileOwnerHi, m_tileOwnerLo, inner->m_5c, inner->m_60);
+                } else {
+                    m_tileMgr->CommitTileSlot2(m_tileOwnerHi, m_tileOwnerLo, inner->m_5c, inner->m_60);
+                }
+            }
+        }
+        return 1;
+    }
+
+    PlayMoveSound(a, b);
+
+    // Occupied-coord recycle: three sequential resolver reject codes. Each block
+    // resolves the current anim-set node's cell record (the resolver's coord-range
+    // map; the bounds hit is the fast path, the two fallbacks are engine helpers).
+    char* nm0 = *g_animNameResolver.GetNameRecord(m_14->m_1c);
+    if (strcmp(nm0, g_codeH) == 0) {
+        return 1;
+    }
+    {
+        i32 coord = (i32)m_14->m_1c;
+        g_animScratchCount = 0;
+        i32 rec;
+        if (coord < g_cellLo || coord > g_cellHi) {
+            if (g_animNameResolver.MapCellIndex(coord, 0) != 0) {
+                rec = (coord - g_cellLo) * g_cellScale + g_cellBase;
+            } else {
+                g_animNameResolver.MapCellRecord(g_cellRecordBase, 0xc);
+                rec = g_cellRet;
+            }
+        } else {
+            rec = (coord - g_cellLo) * g_cellScale + g_cellBase;
+        }
+        GruntScratchTeardown();
+        (void)rec;
+    }
+    char* nm1 = *g_animNameResolver.GetNameRecord(m_14->m_1c);
+    if (strcmp(nm1, g_codeF) == 0) {
+        return 1;
+    }
+    {
+        i32 coord = (i32)m_14->m_1c;
+        g_animScratchCount = 0;
+        i32 rec;
+        if (coord < g_cellLo || coord > g_cellHi) {
+            if (g_animNameResolver.MapCellIndex(coord, 0) != 0) {
+                rec = (coord - g_cellLo) * g_cellScale + g_cellBase;
+            } else {
+                i32 pin = g_animNameResolver.PinCellIndex();
+                g_cellRecordRet = g_animNameResolver.MapCellRecord2(g_cellRecordBase, 0xc);
+                rec = g_cellRet;
+                (void)pin;
+            }
+        } else {
+            rec = (coord - g_cellLo) * g_cellScale + g_cellBase;
+        }
+        GruntScratchTeardown();
+        (void)rec;
+    }
+    char* nm2 = *g_animNameResolver.GetNameRecord(m_14->m_1c);
+    if (strcmp(nm2, g_codeO) == 0) {
+        return 1;
+    }
+    ResetGeometry();
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CGrunt::InitDirVectors()   @0x5caa0   (__thiscall, ret 0)
+// The grunt reset/spawn-init step. Fills the per-direction velocity-vector table at
+// this+0x4b0 (9 directions, each a 0x78-stride record, 4 doubles/record) from the 9
+// runtime direction-index globals (0x644aa0..0x644b48; index = 3*dir[0] + dir[1]) with
+// the unit/diagonal direction vectors (0, +-1.0, +-0.5, +-sqrt(2)/2), then resets the
+// grunt's spawn state: HUD anchor, health/stamina (100), the entrance flags, the latches.
+//
+// @early-stop
+// x87 FP instruction-scheduling wall (same family as ComputeFacing 0x57060): the integer
+// stores, the 9 unrolled direction records, the 3*lo+hi index math, and the trailing
+// stat/flag reset are reconstructed faithfully, but MSVC's fld/fst/fstp/fdivr/fdiv stack
+// juggling for sqrt(2.0) and the 1/sqrt2 diagonals (the `fld st(1)` scheduling) rarely
+// matches from C source. Deferred to the final sweep.
+RVA(0x0005caa0, 0x5e4)
+void CGrunt::InitDirVectors() {
+    double diag = sqrt(g_dirConst2);              // sqrt(2.0)
+    double* tbl = (double*)((char*)this + 0x4b0); // 0x78-stride records (15 doubles each)
+    const i32 W = 0x78 / 8;                       // 15 doubles per record
+
+    double s = g_dirConst1 / diag;  // 1 / sqrt2
+    double n = g_dirConstN1 / s;    // -1 / (1/sqrt2)
+
+    // Each record: 4 doubles at the cell's +0/8/0x10/0x18. The 9 globals are processed
+    // in this fixed order (ab0,ae0,aa0,b28,ac0,b48,ad0,b18,b38).
+    {
+        i32 i = W * (3 * g_dirAb0[0] + g_dirAb0[1]);
+        tbl[i + 0] = 0.0;
+        tbl[i + 1] = -1.0;
+        tbl[i + 2] = 0.0;
+        tbl[i + 3] = -0.5;
+    }
+    {
+        i32 i = W * (3 * g_dirAe0[0] + g_dirAe0[1]);
+        tbl[i + 0] = s;
+        tbl[i + 1] = s;
+        tbl[i + 2] = 0.5;
+        tbl[i + 3] = -0.5;
+    }
+    {
+        i32 i = W * (3 * g_dirAa0[0] + g_dirAa0[1]);
+        tbl[i + 0] = 1.0;
+        tbl[i + 1] = 0.0;
+        tbl[i + 2] = 0.5;
+        tbl[i + 3] = 0.0;
+    }
+    {
+        i32 i = W * (3 * g_dirB28[0] + g_dirB28[1]);
+        tbl[i + 0] = s;
+        tbl[i + 1] = s;
+        tbl[i + 2] = 0.5;
+        tbl[i + 3] = 0.5;
+    }
+    {
+        i32 i = W * (3 * g_dirAc0[0] + g_dirAc0[1]);
+        tbl[i + 0] = 0.0;
+        tbl[i + 1] = 1.0;
+        tbl[i + 2] = 0.0;
+        tbl[i + 3] = 0.5;
+    }
+    {
+        i32 i = W * (3 * g_dirB48[0] + g_dirB48[1]);
+        tbl[i + 0] = n;
+        tbl[i + 1] = s;
+        tbl[i + 2] = -0.5;
+        tbl[i + 3] = 0.5;
+    }
+    {
+        i32 i = W * (3 * g_dirAd0[0] + g_dirAd0[1]);
+        tbl[i + 0] = -1.0;
+        tbl[i + 1] = 0.0;
+        tbl[i + 2] = -0.5;
+        tbl[i + 3] = 0.0;
+    }
+    {
+        i32 i = W * (3 * g_dirB18[0] + g_dirB18[1]);
+        tbl[i + 0] = n;
+        tbl[i + 1] = n;
+        tbl[i + 2] = -0.5;
+        tbl[i + 3] = -0.5;
+    }
+    {
+        i32 i = W * (3 * g_dirB38[0] + g_dirB38[1]);
+        tbl[i + 0] = 0.0;
+        tbl[i + 1] = 0.0;
+        tbl[i + 2] = 0.0;
+        tbl[i + 3] = 0.0;
+    }
+
+    // --- spawn-state reset tail (integer field stores) ---
+    CGruntHud* h = m_10;
+    i32 px = h->m_5c;
+    *(i32*)((char*)this + 0x184) = px;
+    *(i32*)((char*)this + 0x17c) = px;
+    *(i32*)((char*)this + 0x174) = px;
+    i32 py = h->m_60;
+    *(i32*)((char*)this + 0x188) = py;
+    *(i32*)((char*)this + 0x180) = py;
+    *(i32*)((char*)this + 0x178) = py;
+    *(i32*)((char*)this + 0x1dc) = 0;
+    *(i32*)((char*)this + 0x1e0) = 0;
+    m_health = 0x64;
+    m_stamina = 0x64;
+    m_toyTime = 0;
+    m_wingzTime = 0;
+    m_entranceActive = 0;
+    *(i32*)((char*)this + 0x1e8) = 0;
+    m_arrivalState = 0;
+    m_poweredUp = 0;
+    m_resetApplied = 0;
+    m_arrivalFlags = 0x4000901;
+    *(i32*)((char*)this + 0x24c) = 0;
+    *(i32*)((char*)this + 0x368) = 0;
+    m_tileClaimed = 0;
+}
+
+// ---------------------------------------------------------------------------
+// CGrunt::UpdateArrival(a1, a2)   @0x62110   (__thiscall, ret 0x8)
+// The per-frame arrival/entrance update step (sibling of UpdateEntranceAnim 0x690a0 and
+// RunEntranceMove 0x67850). a2!=0 -> the commit pass (clear the coord sub, commit the
+// in-flight occupied tile slot, reset the entrance latches, recycle the occupied-coord
+// list onto the free pool + RemoveAll, OR 0x10000 into the toy/health sprite flag words,
+// then either re-latch a "P" anim set + roll a rand toy pose + fire the cue, or load the
+// ToyTime config + snapshot the clock). a1!=0 -> the "L" re-latch + walk geometry + cell
+// SetAnimName + halved-ToyTime timer. a1==0 -> the "G" re-latch + HUD z-clamp + toy-timer
+// pose select + the visible-bounds CueSpawn.
+//
+// @early-stop
+// large-state-machine + reloc-masked-extern plateau (sibling of 0x690a0/0x637a0): CFG, the
+// two-flag dispatch, every member offset/gate, the 15-stride tile index, the board attr
+// chains, the rand()%N pose rolls, the 64-bit toy-timer compare/select, the +0x810/0x820
+// timer snapshots, and all cue/anim call shapes are byte-faithful. Residue: the engine
+// callees reached via incremental-link thunks reloc-mask to differently-named retail thunks,
+// plus the cross-arm regalloc / zero-register pinning. Deferred to the final sweep.
+RVA(0x00062110, 0x5bc)
+i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
+    if (a2 != 0) {
+        ClearSubA();
+        if (m_arrivalPhase == 3 && m_230 != 0) {
+            i32 idx = 15 * m_2f0 + m_2f4;
+            void* obj = *(void**)((char*)m_tileMgr + idx * 4 + 0x1c);
+            if (obj != 0) {
+                CGruntHud* inner = *(CGruntHud**)((char*)obj + 0x10);
+                i32 yMasked = (inner->m_60 & ~0x1f) + 0x10;
+                i32 xMasked = (inner->m_5c & ~0x1f) + 0x10;
+                if (RectContainsGated(xMasked, yMasked) != 0) {
+                    m_tileMgr->CommitTileSlot(m_tileOwnerHi, m_tileOwnerLo, inner->m_5c, inner->m_60);
+                }
+            }
+        }
+
+        if (m_poweredUp != 0 && m_neighborValid == 0) {
+            m_entranceActive = 0;
+            *(i32*)((char*)this + 0x218) = 0;
+            m_neighborValid = 0;
+            m_poweredUp = 0;
+            ReseedIdleReset(1, 0, 0);
+        }
+        m_entranceActive = 1;
+        SetEntrancePos(1, 1);
+
+        // Recycle the occupied-coord list (+0x320) onto the free pool, then RemoveAll.
+        if (*(i32*)((char*)this + 0x328) != 0) {
+            void** node = *(void***)((char*)this + 0x320);
+            while (node != 0) {
+                void* next = node[0];
+                void* buf = node[2];
+                if (buf != 0) {
+                    void** sp = (void**)((char*)buf - g_freePoolBase);
+                    *sp = g_freePoolHead;
+                    g_freePoolHead = sp;
+                }
+                node = (void**)next;
+            }
+            ((CGruntColl*)((char*)this + 0x31c))->Reset();
+        }
+
+        *(i32*)((char*)this + 0x228) = 0;
+        if (m_healthSprite != 0) {
+            m_healthSprite->m_8 |= 0x10000;
+            m_healthSprite = 0;
+        }
+        if (m_toySprite != 0) {
+            m_toySprite->m_8 |= 0x10000;
+            m_toySprite = 0;
+        }
+
+        if (m_entranceReason == 0x1e) {
+            m_prevAnimSetNode = (i32)m_14->m_1c;
+            m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeP);
+            i32 toyIdx = rand() % 2;
+            m_prevEntranceDesc = (i32)m_154->m_1b4;
+            m_154->SetGeometryEx(*(i32*)((char*)this + toyIdx * 4 + 0x3c4), 0);
+
+            CEntranceAnimDescColl* desc = m_154->m_1b4;
+            i32* el = desc->m_10 > 0 ? *desc->m_c : 0;
+            i32 frame = el[0x14 / 4];
+            char* buf = GruntStrGetBuffer((char*)this + 0x448, 0);
+            m_154->SetAnimFrame(buf, frame);
+
+            i32 cueTier = ((toyIdx != 0) ? 0xa : 0) + 0x406;
+            WwdGameReg* g = g_gameReg;
+            i32 m380 = *(i32*)((char*)this + 0x380);
+            if (m380 != 0) {
+                i32 tier = cueTier + m380 - 1;
+                i32 anchor = *(i32*)(*(char**)((char*)g->m_30 + 0x24) + 0x5c) + 0x40;
+                if (GruntPointVisible(m_10->m_60, m_10->m_5c, anchor) != 0) {
+                    g->m_60->CueA(this, tier, 0, -1, -1, -1);
+                }
+            } else {
+                if (*(i32*)((char*)this + 0x37c) == 0) {
+                    i32 md = (g->m_134 == 1) ? 3 : 6;
+                    *(i32*)((char*)this + 0x37c) = rand() % md + 1;
+                }
+                i32 tier = cueTier + *(i32*)((char*)this + 0x37c) - 1;
+                i32 anchor = *(i32*)(*(char**)((char*)g->m_30 + 0x24) + 0x5c) + 0x40;
+                if (GruntPointVisible(m_10->m_60, m_10->m_5c, anchor) != 0) {
+                    g->m_60->CueA(this, tier, 0, -1, -1, -1);
+                }
+            }
+            return 0;
+        } else {
+            DWORD tt = g_buteMgr.GetDword(*(char**)((char*)this + 0x1c0), s_ToyTime);
+            *(i32*)((char*)this + 0x818) = (i32)tt;
+            *(i32*)((char*)this + 0x81c) = 0;
+            *(i32*)((char*)this + 0x810) = (i32)g_645588;
+            *(i32*)((char*)this + 0x814) = 0;
+            m_toyTime = 0x64;
+            CreateToyTimeSprite();
+        }
+    }
+
+    if (a1 != 0) {
+        // a1 != 0: the "L" re-latch + walk geometry + cell SetAnimName + halved-ToyTime timer.
+        *(i32*)((char*)this + 0x388) = 0;
+        if (m_poweredUp != 0 && m_neighborValid == 0) {
+            m_entranceActive = 0;
+            *(i32*)((char*)this + 0x218) = 0;
+            m_neighborValid = 0;
+            m_poweredUp = 0;
+            ReseedIdleReset(1, 0, 0);
+        }
+        m_prevAnimSetNode = (i32)m_14->m_1c;
+        m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeL);
+        m_prevEntranceDesc = (i32)m_154->m_1b4;
+        m_154->m_1a0.SetGeometry(m_poseWalk);
+        i32* cell = m_entranceCell;
+        i32 colv = cell[1] + cell[0] * 2;
+        i32 basev = cell[0] + colv;
+        i32 idxv = basev + basev * 12;
+        char* nm = GruntStrGetBuffer((char*)this + idxv * 8 + 0x470, 0);
+        m_154->SetAnimName(nm);
+
+        DWORD tt = g_buteMgr.GetDword(*(char**)((char*)this + 0x1c0), s_ToyTime);
+        *(i32*)((char*)this + 0x828) = (i32)(tt >> 1);
+        *(i32*)((char*)this + 0x82c) = 0;
+        *(i32*)((char*)this + 0x820) = (i32)g_645588;
+        *(i32*)((char*)this + 0x824) = 0;
+        return 0;
+    }
+
+    // a1 == 0: the "G" re-latch + HUD z-clamp + toy-timer pose select + visible-bounds cue.
+    m_prevAnimSetNode = (i32)m_14->m_1c;
+    m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeG);
+
+    CGruntHud* h = m_10;
+    i32 z = h->m_60 + 0xc3500;
+    if (h->m_74 != z) {
+        h->m_74 = z;
+        h->m_8 |= 0x20000;
+    }
+
+    // Pick the active toy pose by comparing the two toy-pose timers (m_3c4/m_3c8 ->+0x24)
+    // against the elapsed toy timer (m_810/m_814 - clock), then re-stamp on change.
+    i32 t0 = *(i32*)(*(char**)((char*)this + 0x3c4) + 0x24);
+    i32 t1 = *(i32*)(*(char**)((char*)this + 0x3c8) + 0x24);
+    i64 elapsed = *(i64*)((char*)this + 0x810) - (i64)(u32)g_645588;
+    i32 cap = (i32)elapsed;
+    if (elapsed < 0) {
+        cap = 0;
+    }
+    i32 d0 = (t0 > cap) ? (t0 - cap) : 0;
+    i32 d1 = (t1 > cap) ? (t1 - cap) : 0;
+    i32 sel;
+    if (d0 != 0) {
+        sel = (d1 != 0) ? ((d0 < d1) ? 0 : 1) : 0;
+    } else if (d1 != 0) {
+        sel = 1;
+    } else {
+        i32 r = rand() % 0x64 + 1;
+        sel = (r >= m_toyBlendPct) ? 1 : 0;
+    }
+
+    CEntranceAnimDescColl* cur = m_154->m_1b4;
+    i32 want = *(i32*)((char*)this + sel * 4 + 0x3c4);
+    if ((i32)cur != want) {
+        m_prevEntranceDesc = (i32)m_154->m_1b4;
+        m_154->m_1a0.SetGeometry(want);
+        CEntranceAnimDescColl* desc = m_154->m_1b4;
+        i32* el = desc->m_10 > 0 ? *desc->m_c : 0;
+        i32 frame = el[0x14 / 4];
+        char* buf = GruntStrGetBuffer((char*)this + 0x448, 0);
+        m_154->SetAnimFrame(buf, frame);
+    }
+
+    // The visible-bounds cue: probe the grunt's HUD point against the live view rect,
+    // fire CueSpawn(this, 0xa|0xb, -1,-1,-1) when inside.
+    CGruntHud* hud = m_10;
+    WwdGameReg* g = g_gameReg;
+    i32 yy = hud->m_60;
+    i32 xx = hud->m_5c;
+    i32* rectBase = (i32*)(*(char**)((char*)g->m_30 + 0x24) + 0x5c);
+    i32 lim = rectBase[0x48 / 4];
+    i32* rect = (i32*)((char*)rectBase + 0x40);
+    if (sel != 0) {
+        if (xx < lim && xx >= rect[0] && yy < rect[3] && yy >= rect[1]) {
+            g->m_60->CueSpawn(this, 0xb, -1, -1, -1);
+        }
+    } else {
+        if (xx < lim && xx >= rect[0] && yy < rect[3] && yy >= rect[1]) {
+            g->m_60->CueSpawn(this, 0xa, -1, -1, -1);
+        }
+    }
+    return 0;
+}
