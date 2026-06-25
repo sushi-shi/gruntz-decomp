@@ -777,15 +777,9 @@ void ClassUnknown_39::ClassUnknown_39_168c60() {}
 RVA(0x00168e50, 0x1e)
 void ClassUnknown_39::ClassUnknown_39_168e50() {}
 
-// ---- ClassUnknown_4 ----
-RVA(0x00150180, 0xd)
-void ClassUnknown_4::ClassUnknown_4_150180() {}
-RVA(0x00150190, 0xb)
-void ClassUnknown_4::ClassUnknown_4_150190() {}
-RVA(0x001501a0, 0x44)
-void ClassUnknown_4::ClassUnknown_4_1501a0() {}
-RVA(0x001503c0, 0x2e)
-void ClassUnknown_4::ClassUnknown_4_1503c0() {}
+// ---- ClassUnknown_4 ----  RECOVERED -> CDataBuffer (src/Gruntz/DataBuffer.cpp).
+// A 16-byte RezAlloc-backed serialized buffer holder (valid flag / size / blob /
+// id); ctor + Reset + Set + Free. All 4 methods reconstructed in DataBuffer.cpp.
 
 // ---- ClassUnknown_40 ----
 RVA(0x00168d00, 0x14c)

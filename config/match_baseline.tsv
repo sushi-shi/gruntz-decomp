@@ -51,11 +51,12 @@ crt_ostream	4	3
 crt_streambuf	7	5
 crt_strstreambuf	4	2
 cstatusbarmgr	2	1
+databuffer	4	4
 deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	291	0
+engine_discovered	287	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -536,6 +537,10 @@ crt_strstreambuf	?str@strstreambuf@@QAEPADXZ	100.0000	100.0000	1	08404bbcac2f	0x
 crt_strstreambuf	?underflow@strstreambuf@@QAEHXZ	91.7353	91.7353	2	b71b810269ba	0x169490
 cstatusbarmgr	?LoadTabSprites@CStatusBarMgr@@QAEHXZ	16.7383	16.7383	4	045cfeaa498f	0x102250
 cstatusbarmgr	?SetDirection@CSbItem@@QAEXHH@Z	100.0000	100.0000	2	46fcb29ef102	0xea0f0
+databuffer	??0CDataBuffer@@QAE@XZ	100.0000	100.0000	1	3a641ac221a3	0x150180
+databuffer	?Free@CDataBuffer@@QAEXXZ	100.0000	100.0000	1	be93bfb9147a	0x1503c0
+databuffer	?Reset@CDataBuffer@@QAEXXZ	100.0000	100.0000	1	2d8120316da9	0x150190
+databuffer	?Set@CDataBuffer@@QAEHIH@Z	100.0000	100.0000	1	4b0da091778e	0x1501a0
 deflate	_deflate_fast	100.0000	100.0000	1	3de2151b888f	0x186db0
 deflate	_deflate_slow	100.0000	100.0000	1	963869a51c2d	0x187170
 deflate	_deflate_stored	100.0000	100.0000	1	f3d8403d157d	0x186af0
@@ -811,10 +816,6 @@ engine_discovered	?ClassUnknown_47_17e7b0@ClassUnknown_47@@QAEXXZ	33.3333	33.333
 engine_discovered	?ClassUnknown_47_17e880@ClassUnknown_47@@QAEXXZ	8.3333	8.3333	1	910a02366f66	0x17e880
 engine_discovered	?ClassUnknown_49_182940@ClassUnknown_49@@QAEXXZ	0.9009	0.9009	1	f566f81d5390	0x182940
 engine_discovered	?ClassUnknown_49_182a80@ClassUnknown_49@@QAEXXZ	4.5455	4.5455	1	c379a980e6cb	0x182a80
-engine_discovered	?ClassUnknown_4_150180@ClassUnknown_4@@QAEXXZ	16.6667	16.6667	1	dc7096716c82	0x150180
-engine_discovered	?ClassUnknown_4_150190@ClassUnknown_4@@QAEXXZ	25.0000	25.0000	1	ca8f8be2a545	0x150190
-engine_discovered	?ClassUnknown_4_1501a0@ClassUnknown_4@@QAEXXZ	1.6667	1.6667	1	b9c04c2d930d	0x1501a0
-engine_discovered	?ClassUnknown_4_1503c0@ClassUnknown_4@@QAEXXZ	6.6667	6.6667	1	f0e4c4cadd23	0x1503c0
 engine_discovered	?ClassUnknown_50_0d5e80@ClassUnknown_50@@QAEXXZ	4.7619	4.7619	1	9768d5308d3f	0xd5e80
 engine_discovered	?ClassUnknown_50_153260@ClassUnknown_50@@QAEXXZ	3.5714	3.5714	1	e4a09d8d2e88	0x153260
 engine_discovered	?ClassUnknown_50_153790@ClassUnknown_50@@QAEXXZ	1.1111	1.1111	1	7e5717cffdcf	0x153790

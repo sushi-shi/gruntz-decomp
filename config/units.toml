@@ -219,6 +219,11 @@ source = "src/Gruntz/MenuItem.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "databuffer"
+source = "src/Gruntz/DataBuffer.cpp"
+flags = "base"
+
+[[unit]]
 unit = "gamekeyhandler"
 source = "src/Gruntz/GameKeyHandler.cpp"
 flags = "base"
