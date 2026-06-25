@@ -661,12 +661,8 @@ void ClassUnknown_14::ClassUnknown_14_13a000() {}
 // migrated to src/Rez/RezMgr.cpp (CRezItm already lives there).
 
 // ---- ClassUnknown_17 ----
-RVA(0x0016f6c0, 0x12)
-void ClassUnknown_17::ClassUnknown_17_16f6c0() {}
 RVA(0x0016f760, 0x82)
 void ClassUnknown_17::ClassUnknown_17_16f760() {}
-RVA(0x00170100, 0x104)
-void ClassUnknown_17::ClassUnknown_17_170100() {}
 
 // ---- ClassUnknown_19 -> Blowfish_decipher (src/Crypto/Blowfish.cpp) ----
 // Not a class: Bruce Schneier's reference Blowfish cipher (free __cdecl funcs).

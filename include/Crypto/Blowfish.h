@@ -18,8 +18,14 @@
 extern u32 g_bfP[18];
 extern u32 g_bfS[4][256];
 
+// The const digits-of-pi init tables (P @ 0x61bef8, S @ 0x61bf40 in retail) that
+// InitializeBlowfish copies into the runtime key state.
+extern const u32 g_bfInitP[18];
+extern const u32 g_bfInitS[4][256];
+
 void Blowfish_encipher(u32* xl, u32* xr);
 void Blowfish_decipher(u32* xl, u32* xr);
-void InitializeBlowfish(u8* key, i16 keybytes);
+i16 InitializeBlowfish(u8* key, i16 keybytes);
+void __stdcall Blowfish_InitKey(u8* key);
 
 #endif // GRUNTZ_UTILS_BLOWFISH_H

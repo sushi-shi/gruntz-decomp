@@ -5,10 +5,12 @@
 // two-pointer encipher/decipher routines.
 //
 // Recovered from src/Stub/Discovered.cpp's ClassUnknown_18 (encipher, 0x16f7f0)
-// / ClassUnknown_19 (decipher, 0x16fc70) / ClassUnknown_17 (init, 0x170100) -
-// these are __cdecl FREE functions over the global key, NOT class methods (the
-// trace-new this-pointer membership was a false positive: the args are two
-// data pointers, the P/S are absolute globals).
+// / ClassUnknown_19 (decipher, 0x16fc70) / ClassUnknown_17 (init 0x170100 +
+// the 4-byte-key wrapper 0x16f6c0) - these are __cdecl/__stdcall FREE functions
+// over the global key, NOT class methods (the trace-new this-pointer membership
+// was a false positive: the args are data pointers, the P/S are absolute globals).
+// (ClassUnknown_17's third member 0x16f760 is a separate istream/ostream stream
+// decrypt loop that calls Blowfish_decipher; it stays stubbed - see Discovered.cpp.)
 //
 // The Feistel rounds are fully unrolled with the classic OpenSSL F macro
 //   F(x) = ((S0[x>>24] + S1[(x>>16)&0xff]) ^ S2[(x>>8)&0xff]) + S3[x&0xff]
@@ -24,6 +26,15 @@
 // 0x200/0x300 quadrants) drives the F macro exactly as retail addresses them.
 u32 g_bfP[18];
 u32 g_bfS[4][256];
+
+// The const digits-of-pi init tables InitializeBlowfish copies into the runtime
+// key state (rep movs sources). P-init @ 0x61bef8 (18 dwords), S-init @ 0x61bf40
+// (1024 dwords); reloc-masked via the DATA pins so the `mov esi,addr` immediates
+// match retail.
+DATA(0x0021bef8)
+extern const u32 g_bfInitP[18];
+DATA(0x0021bf40)
+extern const u32 g_bfInitS[4][256];
 
 #define BF_S ((u32*)g_bfS)
 
@@ -96,4 +107,52 @@ void Blowfish_decipher(u32* xl, u32* xr) {
 
     *xr = l;
     *xl = r;
+}
+
+// InitializeBlowfish(key, keybytes) - seed the global P/S from the digits-of-pi
+// init tables, fold the key into P[] (4 bytes at a time, index wrapping `% keybytes`
+// via idiv), then re-encipher an all-zero block forward through P[0..17] and the
+// four S-boxes. Classic Schneier reference key schedule.
+RVA(0x00170100, 0x104)
+i16 InitializeBlowfish(u8* key, i16 keybytes) {
+    i16 i, j;
+    u32 data, datal, datar;
+
+    for (i = 0; i < 18; i++) {
+        g_bfP[i] = g_bfInitP[i];
+    }
+    for (i = 0; i < 1024; i++) {
+        BF_S[i] = ((const u32*)g_bfInitS)[i];
+    }
+
+    j = 0;
+    for (i = 0; i < 18; i++) {
+        data = ((u32)key[j] << 24) | ((u32)key[(j + 1) % keybytes] << 16)
+               | ((u32)key[(j + 2) % keybytes] << 8) | (u32)key[(j + 3) % keybytes];
+        g_bfP[i] ^= data;
+        j = (j + 4) % keybytes;
+    }
+
+    datal = 0;
+    datar = 0;
+    for (i = 0; i < 18; i += 2) {
+        Blowfish_encipher(&datal, &datar);
+        g_bfP[i] = datal;
+        g_bfP[i + 1] = datar;
+    }
+    for (i = 0; i < 4; i++) {
+        for (j = 0; j < 256; j += 2) {
+            Blowfish_encipher(&datal, &datar);
+            g_bfS[i][j] = datal;
+            g_bfS[i][j + 1] = datar;
+        }
+    }
+    return 0;
+}
+
+// A thin key wrapper: InitializeBlowfish(key, 4) - seeds the global key from a
+// 4-byte key. __stdcall (callee-cleanup ret 4) over the single key pointer.
+RVA(0x0016f6c0, 0x12)
+void __stdcall Blowfish_InitKey(u8* key) {
+    InitializeBlowfish(key, 4);
 }

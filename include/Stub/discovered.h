@@ -393,9 +393,7 @@ public:
 };
 class ClassUnknown_17 {
 public:
-    void ClassUnknown_17_16f6c0();
     void ClassUnknown_17_16f760();
-    void ClassUnknown_17_170100();
 };
 class ClassUnknown_20 {
 public:
