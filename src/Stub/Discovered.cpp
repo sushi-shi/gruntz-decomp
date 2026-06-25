@@ -181,14 +181,11 @@ RVA(0x00012c60, 0x44) void CToobSpikez::CToobSpikez_012c60() {}
 RVA(0x00114860, 0x102) void CToobSpikez::CToobSpikez_114860() {}
 
 // ---- CUserLogic ----
-RVA(0x0000f2f0, 0xc8) void CUserLogic::CUserLogic_00f2f0() {}
-RVA(0x00057b70, 0x77) void CUserLogic::CUserLogic_057b70() {}
 RVA(0x00059230, 0x40d) void CUserLogic::CUserLogic_059230() {}
 RVA(0x0005caa0, 0x5e4) void CUserLogic::CUserLogic_05caa0() {}
 RVA(0x00062110, 0x5bc) void CUserLogic::CUserLogic_062110() {}
 RVA(0x000637a0, 0x2f8) void CUserLogic::CUserLogic_0637a0() {}
 RVA(0x00067850, 0x214) void CUserLogic::CUserLogic_067850() {}
-RVA(0x000690a0, 0x1c5) void CUserLogic::CUserLogic_0690a0() {}
 RVA(0x0016e7f0, 0x1cf) void CUserLogic::CUserLogic_16e7f0() {}
 RVA(0x0016ea90, 0x234) void CUserLogic::CUserLogic_16ea90() {}
 

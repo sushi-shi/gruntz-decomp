@@ -53,7 +53,7 @@ class CStaticHazard { public: void CStaticHazard_012b30(); void CStaticHazard_0f
 class CTeleporter { public: void CTeleporter_010dd0(); void CTeleporter_0419e0(); };
 class CTileTriggerSwitch { public: void CTileTriggerSwitch_0110f0(); };
 class CToobSpikez { public: void CToobSpikez_012c60(); void CToobSpikez_114860(); };
-class CUserLogic { public: void CUserLogic_00f2f0(); void CUserLogic_057b70(); void CUserLogic_059230(); void CUserLogic_05caa0(); void CUserLogic_062110(); void CUserLogic_0637a0(); void CUserLogic_067850(); void CUserLogic_0690a0(); void CUserLogic_16e7f0(); void CUserLogic_16ea90(); };
+class CUserLogic { public: void CUserLogic_059230(); void CUserLogic_05caa0(); void CUserLogic_062110(); void CUserLogic_0637a0(); void CUserLogic_067850(); void CUserLogic_16e7f0(); void CUserLogic_16ea90(); };
 class CVoiceTrigger { public: void CVoiceTrigger_0135a0(); void CVoiceTrigger_11a700(); };
 class CWayPoint { public: void CWayPoint_0102e0(); };
 class ClassUnknown_1 { public: void ClassUnknown_1_134be0(); void ClassUnknown_1_134c60(); void ClassUnknown_1_134c80(); };

@@ -1209,6 +1209,50 @@ bool CGrunt_IsSameType(CGrunt* a, CGrunt* b) {
     return *(void**)((char*)a + 8) == *(void**)((char*)b + 8);
 }
 
+// The teardown helpers and the three retail vtables (reloc-masked).
+void* g_cgruntVtbl;    // 0x5e8754
+void* g_userLogicVtbl; // 0x5e705c
+void* g_userBaseVtbl;  // 0x5e70b4
+
+// ---------------------------------------------------------------------------
+// CGrunt::~CGrunt   @0xf2f0   (__thiscall, /GX leaf dtor)
+// Stamp the most-derived vtable (0x5e8754), drain the per-grunt name caches
+// (FreeNameList), then tear down the six owned sub-objects in /GX trylevel order
+// (the +0x468 cell array via the vector-dtor iterator, the two +0x44c/+0x448
+// CStrings, the two +0x338/+0x31c CObLists, m_animSetName @+0x1c0), and finally
+// fold the bare CUserLogic base teardown (CUserLogic vptr -> ~EngStr on the +0x18
+// link -> CUserBase vptr). Every callee is external/reloc-masked.
+//
+// @early-stop
+// /GX EH-state-numbering wall (docs/patterns/eh-state-numbering-base.md +
+// eh-dtor-model-members-as-destructible.md): the destructible-member model
+// recovers the full /GX frame (push -1/fs:0), the __thiscall member-dtor calls
+// (lea ecx,[this+off]; call - no stack push/cleanup), the correct member offsets
+// (+0x468/+0x44c/+0x448/+0x338/+0x31c/+0x1c0) in retail order, the vector-dtor
+// iterator args, the three vptr restamps, and the base ~EngStr fold - all
+// byte-faithful in shape/order (42%->55.5%). The residue is the per-member
+// descending trylevel chain ([esp+0x14] = 7,6,5,4,3,2,1 then 8): retail numbers
+// each member's own EH state because CGrunt's members are true value subobjects of
+// a CUserLogic-derived class, whereas the flat CGrunt model destructs them via
+// explicit method calls (one trylevel). Emitting the per-member states needs CGrunt
+// re-rooted on CUserLogic with the six members as real value fields - a TU-wide
+// restructure that would shift the ~40 other matched methods. Deferred to the
+// final sweep.
+RVA(0x0000f2f0, 0xc8)
+CGrunt::~CGrunt() {
+    *(void**)this = &g_cgruntVtbl;
+    FreeNameList();
+    GruntVecDtor((char*)this + 0x468, 0x68, 9, &GruntCellDtor);
+    ((GruntStrSub*)((char*)this + 0x44c))->Dtor();
+    ((GruntStrSub*)((char*)this + 0x448))->Dtor();
+    ((GruntListSub*)((char*)this + 0x338))->Dtor();
+    ((GruntListSub*)((char*)this + 0x31c))->Dtor();
+    ((GruntStrSub*)((char*)this + 0x1c0))->Dtor();
+    *(void**)this = &g_userLogicVtbl;
+    ((GruntLinkSub*)((char*)this + 0x18))->Dtor();
+    *(void**)this = &g_userBaseVtbl;
+}
+
 // ---------------------------------------------------------------------------
 // CGrunt::PlaySound(range, rec)   @0x4ac10   (__thiscall, ret 0x10)
 // The directional grunt-voice entrance handler PlayMoveSound fires. `rec` is the
@@ -1615,6 +1659,45 @@ void CGrunt::OnStruck(i32 wasHit) {
             g->m_60->CueA(this, 0x322, -1, 0, -1, -1);
         }
     }
+}
+
+// CGrunt::EnsureStruckSlot(key) @0x57b70 - the +0x424-slot sibling of
+// EnsureStruckVoice (+0x428): lazily build + play a grunt sound sample for `key`.
+// Bails if the +0x424 slot is already filled, or if the registry's m_10 gate is
+// unset. Otherwise looks `key` up in the global sound table
+// (g_gameReg->m_30->m_28->m_10), clones a sample from the entry's factory (GetItem),
+// stores it into +0x424, and plays it on the registry sound channel (m_11c).
+// __thiscall, ret 4. Same lookup shape as EnsureStruckVoice / CProjectile::LaunchSound.
+//
+// @early-stop
+// reloc-naming scoring artifact (objdiff-reloc-scoring memory): the three engine
+// callees - the sound-map Lookup (0x1b8438), the sample factory GetItem (0x135d70)
+// and the sample Play (0x136300) - are not yet RVA-annotated, so their REL32
+// operands pair to the target's FUN_ names and stay fuzzy until those engine fns
+// get stubs (the SAME referent set EnsureStruckVoice waits on). g_gameReg IS named.
+// Logic complete; flips to exact once that shared referent set is named.
+RVA(0x00057b70, 0x77)
+void CGrunt::EnsureStruckSlot(const char* key) {
+    GruntSoundSample*& sample = *(GruntSoundSample**)((char*)this + 0x424);
+    if (sample != 0) {
+        return;
+    }
+    if (*(i32*)((char*)g_gameReg + 0x10) == 0) {
+        return;
+    }
+    GruntSoundEntry* entry = 0;
+    g_gameReg->m_30->m_28->m_10.Lookup(key, &entry);
+    if (entry == 0) {
+        return;
+    }
+    if (entry->m_10 == 0) {
+        return;
+    }
+    sample = entry->m_10->GetItem();
+    if (sample == 0) {
+        return;
+    }
+    sample->Play(g_gameReg->m_11c, 0, 0, 1);
 }
 
 // CGrunt::ClearSubA() @0x57c10 - destroy the optional sub-object at +0x424.
@@ -2413,6 +2496,97 @@ void CGrunt::RearmEntranceDrop() {
             m_entranceCommitted = 1;
         }
     }
+}
+
+void CGrunt::ApplyMoveKind(i32 v) {} // thunk_0x3c29 (0x57100); external/reloc-masked
+
+// ---------------------------------------------------------------------------
+// CGrunt::UpdateEntranceAnim()   @0x690a0   (__thiscall, ret 0)
+// The per-frame entrance-anim / arrival update step. Re-seeds the entrance
+// player's geometry sub-player (m_154->m_1a0) and bails unless it is armed-but-not-
+// running (m_28!=0 && m_20==0). On the FIRST pass (m_228==0) it stamps the
+// TOY-BREAK pose geometry, applies the active descriptor's frame to the +0x448
+// name CString, latches m_228=1, and kicks the move-kind apply (m_380 ? : m_37c).
+// On a later pass (m_228!=0) it (when arrived) builds the three HUD stat sprites,
+// re-latches the "A"(idle) anim-set node into m_14->m_1c, drives the move state
+// (SetMoveStateA(m_19c,1,0,0)), clears m_entranceActive, then either - when the
+// grunt's last tile carries the 0x80 attribute - commits the arrival move
+// (SetEntrancePos(1,1); tileMgr->CommitArrivalMove(this, lastX, lastY)) or else
+// bumps the HUD z-clamp (m_10->m_74 = m_60 + 0x186a0; m_8 |= 0x20000).
+//
+// @early-stop
+// reloc-masked-extern plateau: CFG, every member offset/gate, the board index math
+// (stride 7, attr bit 0x80), the z-clamp constant 0x186a0, and all call shapes are
+// byte-faithful. Residue = the engine callees reached through incremental-link
+// thunks (SetGeoSourceR/SetGeometry/GetBuffer/SetAnimFrame/LookupAnimSet, the
+// CreateHealthSprite/Stamina/Toy creators, SetMoveStateA/SetEntrancePos/the apply
+// + CommitArrivalMove thunks) are unnamed externals, so their `call rel32`
+// displacements pair to differently-named retail thunks and score fuzzy. Naming
+// that whole referent set is a final-sweep task.
+RVA(0x000690a0, 0x1c5)
+i32 CGrunt::UpdateEntranceAnim() {
+    m_154->m_1a0.SetGeoSourceR(g_defaultGeo);
+    char* sub = (char*)m_154 + 0x1a0;
+    if (*(i32*)(sub + 0x28) == 0 || *(i32*)(sub + 0x20) != 0) {
+        return 0;
+    }
+
+    if (*(i32*)((char*)this + 0x228) == 0) {
+        m_prevEntranceDesc = (i32)m_154->m_1b4;
+        m_154->m_1a0.SetGeometry(m_poseToyBreak);
+
+        CEntranceAnimDescColl* desc = m_154->m_1b4;
+        i32* elem = desc->m_10 > 0 ? *desc->m_c : 0;
+        i32 frame = elem[0x14 / 4];
+
+        char* buf = GruntStrGetBuffer((char*)this + 0x448, 0);
+        m_154->SetAnimFrame(buf, frame);
+
+        *(i32*)((char*)this + 0x228) = 1;
+        i32 v = *(i32*)((char*)this + 0x380);
+        if (v != 0) {
+            ApplyMoveKind(v);
+        } else {
+            ApplyMoveKind(*(i32*)((char*)this + 0x37c));
+        }
+        return 0;
+    }
+
+    if (m_arrived != 0) {
+        CreateHealthSprite();
+        CreateStaminaSprite();
+        CreateToySprite();
+    }
+
+    m_prevAnimSetNode = (i32)m_14->m_1c;
+    m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeA);
+    SetMoveStateA(*(i32*)((char*)this + 0x19c), 1, 0, 0);
+    m_entranceActive = 0;
+
+    WwdGameReg* g = g_gameReg;
+    i32 tx = m_lastTilePxX >> 5;
+    i32 ty = m_lastTilePxY >> 5;
+    GruntBoard* board = g->m_70;
+    i32 flags;
+    if ((u32)tx >= (u32)board->m_c || (u32)ty >= (u32)board->m_10) {
+        flags = 1;
+    } else {
+        flags = ((i32*)board->m_8[ty])[tx * 7];
+    }
+
+    if (flags & 0x80) {
+        SetEntrancePos(1, 1);
+        m_tileMgr->CommitArrivalMove(this, m_lastTilePxX, m_lastTilePxY);
+        return 0;
+    }
+
+    CGruntHud* h = m_10;
+    i32 z = h->m_60 + 0x186a0;
+    if (h->m_74 != z) {
+        h->m_74 = z;
+        h->m_8 |= 0x20000;
+    }
+    return 0;
 }
 
 // ---------------------------------------------------------------------------

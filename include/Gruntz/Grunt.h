@@ -253,7 +253,8 @@ public:
     // Data-less view: the geometry sub-player's m_20/m_28 (abs CGrunt+0x154+0x1a0
     // +0x20/+0x28) live PAST the player's own m_1b4, so they are not modeled as
     // embedded data here (that would corrupt m_1b4's offset). LoadEntranceConfig's
-    // tail reads them via raw offsets off &player->m_1a0 instead.
+    // tail and UpdateEntranceAnim's armed-but-not-running gate read them via raw
+    // offsets off &player->m_1a0 instead (keeps cl on one `add eax,0x1a0` base).
 };
 
 // A per-cell entrance record (0x68-byte stride at CGrunt+0x474). GetName(flag)
@@ -284,6 +285,12 @@ public:
     char m_pad1c4[0x1c8 - 0x1c4];
     i32 m_1c8; // +0x1c8 (entrance-done flag A: nonzero -> bail)
 };
+
+// CString::GetBuffer(int) the entrance-anim update (@0x690a0) calls to hand the
+// grunt's +0x448 name CString raw to SetAnimFrame. __thiscall (this = &CString),
+// ret 4. External/reloc-masked (the engine CString TU); modeled as a free helper
+// taking the CString address so `lea ecx,[this+0x448]; push 0; call` falls out.
+char* GruntStrGetBuffer(void* str, i32 minLen); // 0x1ba11c
 
 // The frame helper BuildEntranceAnimation calls at the tail (FUN_005504d0):
 // __stdcall(keyStr, frameNum) - callee-pops (no `add esp` at the site). External.
@@ -466,6 +473,9 @@ public:
     void ArrivalNotify6(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // thunk (ret 0x18)
     void SetTileState4(i32 a, i32 b, i32 c, i32 d);                // thunk (ret 0x10)
     i32 ProbeFreeTile(i32 a, i32 b, void* c, i32 d, void* e, i32 f, i32 g, i32 h, i32 i); // probe
+    // UpdateEntranceAnim's arrival-commit: thunk_0x3dfa (0x6c130), __thiscall on the
+    // tile-mgr, the grunt + its last-tile pixel coords as args. Reloc-masked.
+    void CommitArrivalMove(CGrunt* g, i32 x, i32 y);
 };
 
 // The registry focused-grunt slot the arrival gate reads: an array at
@@ -544,6 +554,44 @@ class CArchive; // (unused MFC fwd; Save uses CGruntArchive)
 class CGruntSub {
 public:
     void Free();
+};
+
+// ---------------------------------------------------------------------------
+// ~CGrunt teardown support (the leaf dtor @0xf2f0). CGrunt is a CUserLogic leaf
+// (most-derived vtable 0x5e8754) that, unlike the bare game-object leaves, OWNS
+// six destructible sub-objects torn down (in /GX trylevel order) before the base
+// teardown folds in (CUserLogic vptr 0x5e705c -> inline ~EngStr on the +0x18
+// link -> CUserBase vptr 0x5e70b4). All callees external/no-body (reloc-masked).
+//   +0x468  a 9-elem array (stride 0x68) torn via the MSVC vector-dtor iterator
+//           (FUN_0051f640) with the per-element dtor &g_gruntCellDtor (0x4023a6)
+//   +0x44c  ~CString (0x1b9cde)        +0x448  ~CString (0x1b9cde)
+//   +0x338  ~CObList (0x1b48c6)        +0x31c  ~CObList (0x1b48c6)
+//   +0x1c0  ~CString = m_animSetName (0x1b9cde)
+//   +0x18   ~EngStr  (0x16d2a0) the CUserLogic link base teardown
+// The three vptr stores reference the RETAIL vtables by address (reloc-masked
+// DATA externs); the most-derived class isn't fully modelled so the compiler
+// can't emit them.
+extern void* g_cgruntVtbl;    // 0x5e8754  ??_7CGrunt (most-derived)
+extern void* g_userLogicVtbl; // 0x5e705c  ??_7CUserLogic
+extern void* g_userBaseVtbl;  // 0x5e70b4  ??_7CUserBase
+extern void GruntCellDtor();  // 0x4023a6  per-cell vector-dtor element callback
+// The MSVC __ehvec_dtor-style array teardown helper: (base, stride, count, dtor).
+void GruntVecDtor(void* base, i32 stride, i32 count, void (*dtor)()); // 0x51f640
+// Each owned sub-object is torn down by its engine dtor reached __thiscall (this in
+// ecx, no stack arg/cleanup). Modeled as a 1-method receiver so `lea ecx,[this+off];
+// call` falls out, and as a real value member with `~T(){Dtor();}` so the /GX frame's
+// per-member descending trylevel chain is what the compiler emits.
+struct GruntStrSub {  // +0x44c / +0x448 / +0x1c0  (~CString 0x1b9cde)
+    void Dtor();
+    ~GruntStrSub() { Dtor(); }
+};
+struct GruntListSub { // +0x338 / +0x31c  (~CObList 0x1b48c6)
+    void Dtor();
+    ~GruntListSub() { Dtor(); }
+};
+struct GruntLinkSub { // +0x18  the CUserLogic base link (~EngStr 0x16d2a0)
+    void Dtor();
+    ~GruntLinkSub() { Dtor(); }
 };
 
 // A 10-virtual interface view for CGrunt::DispatchVtbl24's tail call (vtable
@@ -824,6 +872,10 @@ public:
     void EntranceArrivalHook(i32 a, i32 b); // thunk_FUN_0044d060 (2-arg; arrival commit)
 
     // ---- migrated CGrunt cluster (ex-CUserLogic_*) ----
+    ~CGrunt();                       // @0xf2f0  /GX leaf dtor (6 members + base fold)
+    void EnsureStruckSlot(const char* key); // @0x57b70 lazily build/play the +0x424 sample
+    i32 UpdateEntranceAnim();        // @0x690a0 entrance-anim/arrival update step
+    void ApplyMoveKind(i32 v);       // @0x57100 (thunk_0x3c29) 1-arg move-kind apply
     i32 Save(CGruntArchive* ar);     // @0x53f90 serialize
     void ClearAllSprites();          // @0x4b240
     i32 CommitArrival();             // @0x4b130
