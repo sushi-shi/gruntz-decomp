@@ -571,6 +571,11 @@ source = "src/Gruntz/UnknownClassArrays.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "gruntzplayer"
+source = "src/Gruntz/GruntzPlayer.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "videoconfig"
 source = "src/Gruntz/VideoConfig.cpp"
 flags = "base"

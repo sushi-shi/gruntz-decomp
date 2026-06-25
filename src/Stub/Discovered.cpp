@@ -1168,14 +1168,5 @@ void CGameModeObj_stub::CGameModeObj_stub_0d9290() {}
 // src/Gruntz/UnknownClassArrays.cpp: 4 reconstructed [025d90/026470/0300c0/034460],
 // 5 @early-stop placeholders [029b40/02d800/02edb0/02f620/030b20] for the final sweep)
 
-// ---- UnknownClassInCGruntzMgr ----
-RVA(0x0001f450, 0x20)
-void UnknownClassInCGruntzMgr::UnknownClassInCGruntzMgr_01f450() {}
-RVA(0x000da870, 0xb8)
-void UnknownClassInCGruntzMgr::UnknownClassInCGruntzMgr_0da870() {}
-RVA(0x000da960, 0x5b)
-void UnknownClassInCGruntzMgr::UnknownClassInCGruntzMgr_0da960() {}
-RVA(0x000dace0, 0x239)
-void UnknownClassInCGruntzMgr::UnknownClassInCGruntzMgr_0dace0() {}
-RVA(0x000dafb0, 0x71)
-void UnknownClassInCGruntzMgr::UnknownClassInCGruntzMgr_0dafb0() {}
+// ---- UnknownClassInCGruntzMgr ---- (all 5 reconstructed as GruntzPlayer in
+// src/Gruntz/GruntzPlayer.cpp: the per-player options record at CGruntzMgr +0x150)

@@ -64,7 +64,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	224	0
+engine_discovered	219	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -88,6 +88,7 @@ gruntzapp	10	8
 gruntzcmdmgr	11	9
 gruntzcommand	10	10
 gruntzmgr	51	39
+gruntzplayer	5	1
 gruntzsoundz	8	7
 gruntzwnd	9	7
 hash	9	9
@@ -882,11 +883,6 @@ engine_discovered	?NetUnattributed_11f618@NetUnattributed@@QAEXXZ	10.0000	10.000
 engine_discovered	?NetUnattributed_18c022@NetUnattributed@@QAEXXZ	0.7874	0.7874	1	ad41badd75ea	0x18c022
 engine_discovered	?RegistryHelper_114fa0@RegistryHelper@@QAEXXZ	3.8462	3.8462	1	8b09b3ba3fed	0x114fa0
 engine_discovered	?RemusParseSource_139800@RemusParseSource@@QAEXXZ	33.3333	33.3333	1	96a1b7b02169	0x139800
-engine_discovered	?UnknownClassInCGruntzMgr_01f450@UnknownClassInCGruntzMgr@@QAEXXZ	3.3333	3.3333	1	52db09c9b515	0x1f450
-engine_discovered	?UnknownClassInCGruntzMgr_0da870@UnknownClassInCGruntzMgr@@QAEXXZ	0.7843	0.7843	1	f1d200e746bc	0xda870
-engine_discovered	?UnknownClassInCGruntzMgr_0da960@UnknownClassInCGruntzMgr@@QAEXXZ	4.3478	4.3478	1	f34feaa5d626	0xda960
-engine_discovered	?UnknownClassInCGruntzMgr_0dace0@UnknownClassInCGruntzMgr@@QAEXXZ	0.1778	0.1778	1	5cba09be3920	0xdace0
-engine_discovered	?UnknownClassInCGruntzMgr_0dafb0@UnknownClassInCGruntzMgr@@QAEXXZ	1.4815	1.4815	1	37af04524cd9	0xdafb0
 engine_label_stubs	??0CActionArea@@QAE@H@Z	2.1226	2.1226	1	cpp:6bf52155264d	0x7da0
 engine_label_stubs	??0CBoomerang@@QAE@H@Z	97.3077	97.3077	1	cpp:6bf52155264d	0xe0650
 engine_label_stubs	??0CBrickz@@QAE@H@Z	1.6667	1.6667	1	cpp:6bf52155264d	0x10e800
@@ -1722,6 +1718,11 @@ gruntzmgr	?TickStateMgrs@CGruntzMgr@@QAEHXZ	100.0000	100.0000	2	6429f081f684	0x9
 gruntzmgr	?TopState@CGruntzMgr@@QAEPAVCState@@XZ	100.0000	100.0000	2	d1407d256efd	0x90980
 gruntzmgr	?UnloadSoundChain@CGruntzMgr@@QAEXXZ	100.0000	100.0000	2	d0f043efcdce	0x8f740
 gruntzmgr	?UpdateScoreHud@CGruntzMgr@@QAEXXZ	100.0000	100.0000	2	11350f0d66b3	0x860b0
+gruntzplayer	??0GruntzPlayer@@QAE@H@Z	42.4510	42.4510	1	451d8a0aae67	0xda870
+gruntzplayer	??0GruntzPlayer@@QAE@XZ	0.0000	0.0000	1	451d8a0aae67	0xda960
+gruntzplayer	?GetDefaultName@GruntzPlayer@@SA?AVCString@@XZ	97.7778	97.7778	1	c98087cb88a1	0xdafb0
+gruntzplayer	?GetName@GruntzPlayer@@QAE?AVCString@@XZ	100.0000	100.0000	1	15c1a6f212db	0x1f450
+gruntzplayer	?Serialize@GruntzPlayer@@QAEHPAXHHH@Z	98.1333	98.1333	1	7265f073892d	0xdace0
 gruntzsoundz	??1CGruntzSoundZ@@UAE@XZ	91.5790	91.5790	1	eadd9784e22d	0x86040
 gruntzsoundz	?CreateBank_138670@CGruntzSoundZ@@QAEPAVCGruntzSoundInnerZ@@HHH@Z	100.0000	100.0000	2	b662c03967cb	0x138670
 gruntzsoundz	?Insert_138700@CGruntzSoundZ@@QAEXPAVCGruntzSoundInnerZ@@@Z	100.0000	100.0000	1	278c200139dc	0x138700

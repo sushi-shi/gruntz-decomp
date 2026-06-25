@@ -703,13 +703,5 @@ class CGameModeObj_stub {
 public:
     void CGameModeObj_stub_0d9290();
 };
-class UnknownClassInCGruntzMgr {
-public:
-    void UnknownClassInCGruntzMgr_01f450();
-    void UnknownClassInCGruntzMgr_0da870();
-    void UnknownClassInCGruntzMgr_0da960();
-    void UnknownClassInCGruntzMgr_0dace0();
-    void UnknownClassInCGruntzMgr_0dafb0();
-};
 
 #endif
