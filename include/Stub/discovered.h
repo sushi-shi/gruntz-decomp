@@ -729,12 +729,6 @@ class EngStr {
 public:
     void EngStr_193080();
 };
-class HelperHost {
-public:
-    void HelperHost_1549d0();
-    void HelperHost_154a50();
-    void HelperHost_1647e0();
-};
 class InterfaceObject {
 public:
     void InterfaceObject_179300();

@@ -1073,14 +1073,6 @@ void CmdHost_0953f0::CmdHost_0953f0_095140() {}
 RVA(0x00193080, 0xb5)
 void EngStr::EngStr_193080() {}
 
-// ---- HelperHost ----
-RVA(0x001549d0, 0x29)
-void HelperHost::HelperHost_1549d0() {}
-RVA(0x00154a50, 0x23)
-void HelperHost::HelperHost_154a50() {}
-RVA(0x001647e0, 0x48)
-void HelperHost::HelperHost_1647e0() {}
-
 // ---- InterfaceObject ----
 RVA(0x00179300, 0x20)
 void InterfaceObject::InterfaceObject_179300() {}

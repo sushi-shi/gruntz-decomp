@@ -49,7 +49,7 @@ clightfx	2	1
 clightfxrender	20	8
 cmulti	11	7
 cplay	27	8
-cremusnode	1	0
+cremusnode	4	2
 crt_istream	3	2
 crt_ostream	4	3
 crt_streambuf	7	5
@@ -60,7 +60,7 @@ deflate	6	6
 dialogs	17	7
 directinputmgr2	27	23
 directsoundmgr	27	19
-engine_discovered	255	0
+engine_discovered	252	0
 engine_label_stubs	519	118
 engstr	3	1
 filemem	8	7
@@ -538,7 +538,10 @@ cplay	?Update@CPlay@@UAEHXZ	100.0000	100.0000	4	1c6efda4cb9e	0x8c910
 cplay	?winapi_0cdb10_PostMessageA@CPlay@@QAEHHHH@Z	0.2946	0.2946	2	db8d57057a6f	0xcdb10
 cplay	?winapi_0ceae0_PostMessageA@CPlay@@QAEHHHH@Z	0.9500	0.9500	2	fb82d3f55040	0xceae0
 cplay	?winapi_0d0b30_CopyRect@CPlay@@QAEHH@Z	1.2270	1.2270	2	edf43ed7aef3	0xd0b30
-cremusnode	??0CRemusNode@@QAE@HHH@Z	60.1176	60.1176	1	615495e1686f	0x15b2c0
+cremusnode	??0CRemusNode@@QAE@HHH@Z	60.1176	60.1176	2	9b0a333c3352	0x15b2c0
+cremusnode	??0CRemusNode@@QAE@XZ	100.0000	100.0000	1	9b0a333c3352	0x1549d0
+cremusnode	??1CRemusNode@@QAE@XZ	78.8182	78.8182	1	af194ae7afa3	0x154a50
+cremusnode	?Init@CRemusNode@@QAEHHHHHHH@Z	100.0000	100.0000	1	e65680f58643	0x1647e0
 crt_istream	?get@istream@@QAEHXZ	100.0000	100.0000	1	c72ccfaea1d2	0x16a410
 crt_istream	?ipfx@istream@@QAEHH@Z	96.1146	96.1146	1	5b2490abd943	0x16b720
 crt_istream	?read@istream@@QAEAAV1@PADH@Z	100.0000	100.0000	1	2a25e44c4790	0x16a510
@@ -877,9 +880,6 @@ engine_discovered	?ClassUnknown_99_046850@ClassUnknown_99@@QAEXXZ	1.1905	1.1905	
 engine_discovered	?CmdHost_0953f0_08cf30@CmdHost_0953f0@@QAEXXZ	4.7619	4.7619	1	b754770039fb	0x8cf30
 engine_discovered	?CmdHost_0953f0_095140@CmdHost_0953f0@@QAEXXZ	1.0000	1.0000	1	51dfad8f6659	0x95140
 engine_discovered	?EngStr_193080@EngStr@@QAEXXZ	1.4085	1.4085	1	57668837d0b4	0x193080
-engine_discovered	?HelperHost_1549d0@HelperHost@@QAEXXZ	8.3333	8.3333	1	e75288bb0c22	0x1549d0
-engine_discovered	?HelperHost_154a50@HelperHost@@QAEXXZ	9.0909	9.0909	1	7e8b49cdcd9c	0x154a50
-engine_discovered	?HelperHost_1647e0@HelperHost@@QAEXXZ	1.6667	1.6667	1	0e6014e8f3aa	0x1647e0
 engine_discovered	?InterfaceObject_179300@InterfaceObject@@QAEXXZ	3.3333	3.3333	1	06be38d7daa8	0x179300
 engine_discovered	?InterfaceObject_179340@InterfaceObject@@QAEXXZ	5.0000	5.0000	1	43d37ba6b4be	0x179340
 engine_discovered	?MallocCtor_136230_1359a0@MallocCtor_136230@@QAEXXZ	11.1111	11.1111	1	c3152ce25ccf	0x1359a0
@@ -1791,8 +1791,8 @@ image	?Resolve@CFileImage@@QAEHPAX0HI0@Z	100.0000	100.0000	3	2da671d6a3c0	0x13e5
 image	?ResolveEx@CFileImage@@QAEHPAX0HIHH@Z	100.0000	100.0000	4	42be466cd065	0x148890
 image	?SaveDispatch@CFileImage@@QAEHPAX00@Z	100.0000	100.0000	1	9a5d2837fd46	0x144350
 image	?SaveFile@CFileImage@@QAEHPADHPAX1@Z	100.0000	100.0000	1	aa58601ee0e3	0x13f910
-imageset	?FindFrame@CImageSet@@QAEHPAVCImageFrame@@PADPAH@Z	100.0000	100.0000	1	a99711587f63	0x1525c0
-imageset	?SetAllFormats@CImageSet@@QAEHH@Z	100.0000	100.0000	1	4f0c915055a8	0x152520
+imageset	?FindFrame@CImageSet@@QAEHPAVCImageFrame@@PADPAH@Z	100.0000	100.0000	2	943441ee77bf	0x1525c0
+imageset	?SetAllFormats@CImageSet@@QAEHH@Z	100.0000	100.0000	2	e56fd86959b1	0x152520
 imageset	?SetAllTypes@CImageSet@@QAEHH@Z	100.0000	100.0000	1	dcefa349e4ec	0x152480
 infblock	_inflate_blocks	98.6518	98.6518	1	56f158ca58f1	0x1875a0
 infblock	_inflate_blocks_free	100.0000	100.0000	1	1618d6843d69	0x188250
