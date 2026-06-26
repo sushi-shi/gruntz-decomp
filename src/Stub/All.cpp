@@ -19,8 +19,6 @@
 #include <rva.h> // RVA()/RVAU() label macros the included stub files use
 
 #include "ImplementedLabels.cpp"
-#include "Backlog.cpp"
-#include "ApiCallers.cpp"
 // CButeTree defines CButeTree + g_buteTree, shared by the game-object ctors that
 // remain here (and by GameObjectCtors.cpp / UserLogic.cpp) -> include early.
 #include "CButeTree.cpp"

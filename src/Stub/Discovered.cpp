@@ -9,36 +9,150 @@ RVA(0x0015b730, 0x2b)
 void CAniAdvanceCursor::CAniAdvanceCursor_15b730() {}
 
 // ---- CAniRecord ----
+RVA(0x0015cbe0, 0x46)
+void CAniRecord::CAniRecord_15cbe0() {}
 RVA(0x001657a0, 0x66)
 void CAniRecord::CAniRecord_1657a0() {}
+
+// ---- CAttract ----
+RVA(0x000143e0, 0xfb)
+void CAttract::CAttract_0143e0() {}
+
+// ---- CBattlezDlg ----
+RVA(0x00014d00, 0xa68)
+void CBattlezDlg::CBattlezDlg_014d00() {}
+RVA(0x00015cc0, 0x23)
+void CBattlezDlg::CBattlezDlg_015cc0() {}
+RVA(0x00015d00, 0x20)
+void CBattlezDlg::CBattlezDlg_015d00() {}
+RVA(0x00015d30, 0x21)
+void CBattlezDlg::CBattlezDlg_015d30() {}
+RVA(0x00015d70, 0x24)
+void CBattlezDlg::CBattlezDlg_015d70() {}
+RVA(0x000160f0, 0x245)
+void CBattlezDlg::CBattlezDlg_0160f0() {}
 
 // ---- CButeStore ----
 RVA(0x00174d70, 0x70)
 void CButeStore::CButeStore_174d70() {}
 
+// ---- CChatBoxOwner ----
+RVA(0x00020f40, 0x188)
+void CChatBoxOwner::CChatBoxOwner_020f40() {}
+
+// ---- CCheatMgr ----
+RVA(0x00022e60, 0x1be)
+void CCheatMgr::CCheatMgr_022e60() {}
+RVA(0x00023090, 0xfc)
+void CCheatMgr::CCheatMgr_023090() {}
+
 // ---- CCheckpointTrigger ----
 RVA(0x00011480, 0x44)
 void CCheckpointTrigger::CCheckpointTrigger_011480() {}
+
+// ---- CCreditsState ----
+RVA(0x00039a60, 0x179)
+void CCreditsState::CCreditsState_039a60() {}
 
 // ---- CDDSurface ----
 RVA(0x00142a40, 0x53)
 void CDDSurface::CDDSurface_142a40() {}
 
+// ---- CDDrawSurfaceMgr ----
+RVA(0x00115930, 0x15b)
+void CDDrawSurfaceMgr::CDDrawSurfaceMgr_115930() {}
+
+// ---- CExitTrigger ----
+RVA(0x0003f5f0, 0x526)
+void CExitTrigger::CExitTrigger_03f5f0() {}
+
+// ---- CFaderSine ----
+RVA(0x0017e620, 0x13b)
+void CFaderSine::CFaderSine_17e620() {}
+RVA(0x0017fe00, 0x12d)
+void CFaderSine::CFaderSine_17fe00() {}
+
+// ---- CFileIO ----
+RVA(0x0009e2d0, 0x84)
+void CFileIO::CFileIO_09e2d0() {}
+RVA(0x0009e390, 0x243)
+void CFileIO::CFileIO_09e390() {}
+
+// ---- CFontConfig ----
+RVA(0x00021f20, 0x162)
+void CFontConfig::CFontConfig_021f20() {}
+RVA(0x00022160, 0x18e)
+void CFontConfig::CFontConfig_022160() {}
+
 // ---- CGrunt ----
+RVA(0x00057890, 0x19c)
+void CGrunt::CGrunt_057890() {}
+RVA(0x00063db0, 0x32f)
+void CGrunt::CGrunt_063db0() {}
+RVA(0x00068520, 0x2a2)
+void CGrunt::CGrunt_068520() {}
+RVA(0x00068880, 0x67c)
+void CGrunt::CGrunt_068880() {}
+RVA(0x00069d60, 0x1e1)
+void CGrunt::CGrunt_069d60() {}
 RVA(0x000ec670, 0x298)
 void CGrunt::CGrunt_0ec670() {}
 RVA(0x000ef6b0, 0x61d)
 void CGrunt::CGrunt_0ef6b0() {}
+
+// ---- CGruntSpawnConfig ----
+RVA(0x0011afb0, 0x321)
+void CGruntSpawnConfig::CGruntSpawnConfig_11afb0() {}
+RVA(0x0011b3b0, 0x338)
+void CGruntSpawnConfig::CGruntSpawnConfig_11b3b0() {}
+RVA(0x0011b7c0, 0x304)
+void CGruntSpawnConfig::CGruntSpawnConfig_11b7c0() {}
+RVA(0x0011c210, 0x29d)
+void CGruntSpawnConfig::CGruntSpawnConfig_11c210() {}
 
 // ---- CGruntToyTimeSprite ----
 RVA(0x00012130, 0x44)
 void CGruntToyTimeSprite::CGruntToyTimeSprite_012130() {}
 
 // ---- CGruntzMgr ----
+RVA(0x0000cd00, 0x46)
+void CGruntzMgr::CGruntzMgr_00cd00() {}
+RVA(0x0006eb80, 0x5ef)
+void CGruntzMgr::CGruntzMgr_06eb80() {}
+RVA(0x00075c60, 0x1ba)
+void CGruntzMgr::CGruntzMgr_075c60() {}
+RVA(0x00077df0, 0x13d)
+void CGruntzMgr::CGruntzMgr_077df0() {}
+RVA(0x00078060, 0x18d)
+void CGruntzMgr::CGruntzMgr_078060() {}
+RVA(0x0007b440, 0x3f0)
+void CGruntzMgr::CGruntzMgr_07b440() {}
+RVA(0x0007b930, 0x3b7)
+void CGruntzMgr::CGruntzMgr_07b930() {}
+RVA(0x0007be60, 0x21e)
+void CGruntzMgr::CGruntzMgr_07be60() {}
+RVA(0x0007c3d0, 0x1ae)
+void CGruntzMgr::CGruntzMgr_07c3d0() {}
+RVA(0x000862f0, 0x3d5a)
+void CGruntzMgr::CGruntzMgr_0862f0() {}
 RVA(0x0008b960, 0x7c4)
 void CGruntzMgr::CGruntzMgr_08b960() {}
+RVA(0x0008f340, 0xf6)
+void CGruntzMgr::CGruntzMgr_08f340() {}
+RVA(0x00090d10, 0x18e)
+void CGruntzMgr::CGruntzMgr_090d10() {}
+RVA(0x00093d40, 0x473)
+void CGruntzMgr::CGruntzMgr_093d40() {}
+RVA(0x001189c0, 0x45)
+void CGruntzMgr::CGruntzMgr_1189c0() {}
 
 // ---- CGruntzSingleCommand ----
+RVA(0x0003af90, 0x194)
+void CGruntzSingleCommand::CGruntzSingleCommand_03af90() {}
+RVA(0x0003b310, 0x10d)
+void CGruntzSingleCommand::CGruntzSingleCommand_03b310() {}
+RVA(0x0009dff0, 0x8c)
+void CGruntzSingleCommand::CGruntzSingleCommand_09dff0() {}
 RVA(0x000ec1c0, 0x43)
 void CGruntzSingleCommand::CGruntzSingleCommand_0ec1c0() {}
 RVA(0x0011f618, 0x14)
@@ -48,41 +162,143 @@ void CGruntzSingleCommand::CGruntzSingleCommand_135110() {}
 RVA(0x0018c022, 0x1d3)
 void CGruntzSingleCommand::CGruntzSingleCommand_18c022() {}
 
+// ---- CGruntzSoundZ ----
+RVA(0x00138950, 0x70)
+void CGruntzSoundZ::CGruntzSoundZ_138950() {}
+RVA(0x001389c0, 0x47)
+void CGruntzSoundZ::CGruntzSoundZ_1389c0() {}
+
+// ---- CInGameText ----
+RVA(0x000997c0, 0x1e7)
+void CInGameText::CInGameText_0997c0() {}
+
+// ---- CLightFxMgr ----
+RVA(0x000f8e20, 0x56)
+void CLightFxMgr::CLightFxMgr_0f8e20() {}
+
 // ---- CLogicRecord ----
+RVA(0x0000c840, 0x13d)
+void CLogicRecord::CLogicRecord_00c840() {}
 RVA(0x000fb660, 0xf1)
 void CLogicRecord::CLogicRecord_0fb660() {}
 RVA(0x0010d3d0, 0xf1)
 void CLogicRecord::CLogicRecord_10d3d0() {}
 
+// ---- CMultiBootyState ----
+RVA(0x0001e720, 0x2fe)
+void CMultiBootyState::CMultiBootyState_01e720() {}
+RVA(0x0001ed30, 0x549)
+void CMultiBootyState::CMultiBootyState_01ed30() {}
+
 // ---- CPlay ----
+RVA(0x000c7ec0, 0x5f5)
+void CPlay::CPlay_0c7ec0() {}
+RVA(0x000c8a10, 0x119)
+void CPlay::CPlay_0c8a10() {}
 RVA(0x000cb400, 0x58)
 void CPlay::CPlay_0cb400() {}
 RVA(0x000cb480, 0x22c)
 void CPlay::CPlay_0cb480() {}
+RVA(0x000cbaf0, 0x16f)
+void CPlay::CPlay_0cbaf0() {}
 RVA(0x000cee70, 0x5)
 void CPlay::CPlay_0cee70() {}
+RVA(0x000cf770, 0x35e)
+void CPlay::CPlay_0cf770() {}
+RVA(0x000cffe0, 0x3c)
+void CPlay::CPlay_0cffe0() {}
 RVA(0x000d53d0, 0x466)
 void CPlay::CPlay_0d53d0() {}
+RVA(0x000d5f90, 0xd7)
+void CPlay::CPlay_0d5f90() {}
+RVA(0x000d60b0, 0x2cd)
+void CPlay::CPlay_0d60b0() {}
+RVA(0x000d65d0, 0x7a4)
+void CPlay::CPlay_0d65d0() {}
+RVA(0x000d8c60, 0xea)
+void CPlay::CPlay_0d8c60() {}
 RVA(0x000d9290, 0x2a7)
 void CPlay::CPlay_0d9290() {}
+RVA(0x000d95f0, 0x756)
+void CPlay::CPlay_0d95f0() {}
+RVA(0x000db600, 0x8f)
+void CPlay::CPlay_0db600() {}
+RVA(0x000db6c0, 0x70)
+void CPlay::CPlay_0db6c0() {}
+RVA(0x000db7e0, 0x84)
+void CPlay::CPlay_0db7e0() {}
 RVA(0x000db8a0, 0x67)
 void CPlay::CPlay_0db8a0() {}
 RVA(0x000db930, 0x53)
 void CPlay::CPlay_0db930() {}
 RVA(0x000db9b0, 0x53)
 void CPlay::CPlay_0db9b0() {}
+RVA(0x000dba30, 0x1ca)
+void CPlay::CPlay_0dba30() {}
+RVA(0x000dc060, 0x51b)
+void CPlay::CPlay_0dc060() {}
+RVA(0x000dca70, 0x4a4)
+void CPlay::CPlay_0dca70() {}
+RVA(0x000dd340, 0x189)
+void CPlay::CPlay_0dd340() {}
+RVA(0x000dd540, 0x241)
+void CPlay::CPlay_0dd540() {}
 RVA(0x000dd830, 0x1e3)
 void CPlay::CPlay_0dd830() {}
+RVA(0x000ddaa0, 0x228)
+void CPlay::CPlay_0ddaa0() {}
+
+// ---- CSBI_GruntMachine ----
+RVA(0x000e8a70, 0x18c)
+void CSBI_GruntMachine::CSBI_GruntMachine_0e8a70() {}
+
+// ---- CSBI_RectOnly ----
+RVA(0x000fe520, 0xa9)
+void CSBI_RectOnly::CSBI_RectOnly_0fe520() {}
+
+// ---- CSBI_SideTab ----
+RVA(0x000e9600, 0x18c)
+void CSBI_SideTab::CSBI_SideTab_0e9600() {}
+RVA(0x000e9850, 0x111)
+void CSBI_SideTab::CSBI_SideTab_0e9850() {}
+
+// ---- CSBI_StatzTabGruntBar ----
+RVA(0x000ea1f0, 0x1fa)
+void CSBI_StatzTabGruntBar::CSBI_StatzTabGruntBar_0ea1f0() {}
 
 // ---- CSpotLight ----
 RVA(0x000b1ee0, 0x11d)
 void CSpotLight::CSpotLight_0b1ee0() {}
 
+// ---- CSpriteRefTable ----
+RVA(0x000e2400, 0x39e)
+void CSpriteRefTable::CSpriteRefTable_0e2400() {}
+RVA(0x000e2980, 0x2cd)
+void CSpriteRefTable::CSpriteRefTable_0e2980() {}
+RVA(0x000e2d10, 0xa1)
+void CSpriteRefTable::CSpriteRefTable_0e2d10() {}
+
+// ---- CState ----
+RVA(0x000f9ea0, 0x21d)
+void CState::CState_0f9ea0() {}
+
+// ---- CTileGridCommand ----
+RVA(0x00110860, 0x25f)
+void CTileGridCommand::CTileGridCommand_110860() {}
+
 // ---- CUserLogic ----
 RVA(0x00029a80, 0x29)
 void CUserLogic::CUserLogic_029a80() {}
+RVA(0x00050ce0, 0x399)
+void CUserLogic::CUserLogic_050ce0() {}
+RVA(0x000597a0, 0x1345)
+void CUserLogic::CUserLogic_0597a0() {}
 RVA(0x0016ea90, 0x234)
 void CUserLogic::CUserLogic_16ea90() {}
+
+// ---- CWwdSpatialMgr ----
+RVA(0x00168080, 0x1f6)
+void CWwdSpatialMgr::CWwdSpatialMgr_168080() {}
 
 // ---- ClassUnknown_1 ----
 RVA(0x00150040, 0x136)
@@ -130,6 +346,14 @@ void ClassUnknown_22::ClassUnknown_22_15b270() {}
 RVA(0x0016e360, 0x11a)
 void ClassUnknown_23::ClassUnknown_23_16e360() {}
 
+// ---- ClassUnknown_26 ----
+RVA(0x0013dfe0, 0x21)
+void ClassUnknown_26::ClassUnknown_26_13dfe0() {}
+
+// ---- ClassUnknown_27 ----
+RVA(0x00153ff0, 0x280)
+void ClassUnknown_27::ClassUnknown_27_153ff0() {}
+
 // ---- ClassUnknown_28 ----
 RVA(0x000311b0, 0x14)
 void ClassUnknown_28::ClassUnknown_28_0311b0() {}
@@ -170,6 +394,10 @@ void ClassUnknown_39::ClassUnknown_39_148d10() {}
 RVA(0x0016f760, 0x82)
 void ClassUnknown_4::ClassUnknown_4_16f760() {}
 
+// ---- ClassUnknown_41 ----
+RVA(0x00153b20, 0x270)
+void ClassUnknown_41::ClassUnknown_41_153b20() {}
+
 // ---- ClassUnknown_42 ----
 RVA(0x000f1c70, 0x60d)
 void ClassUnknown_42::ClassUnknown_42_0f1c70() {}
@@ -177,6 +405,10 @@ void ClassUnknown_42::ClassUnknown_42_0f1c70() {}
 // ---- ClassUnknown_43 ----
 RVA(0x000f7d90, 0x171)
 void ClassUnknown_43::ClassUnknown_43_0f7d90() {}
+
+// ---- ClassUnknown_44 ----
+RVA(0x000ed9f0, 0x8dd)
+void ClassUnknown_44::ClassUnknown_44_0ed9f0() {}
 
 // ---- ClassUnknown_45 ----
 RVA(0x0008c3b0, 0x10)
@@ -233,6 +465,22 @@ void ClassUnknown_8::ClassUnknown_8_16e480() {}
 // ---- ClassUnknown_9 ----
 RVA(0x0011c630, 0x6e)
 void ClassUnknown_9::ClassUnknown_9_11c630() {}
+
+// ---- DSoundVoice ----
+RVA(0x00136fe0, 0x7b)
+void DSoundVoice::DSoundVoice_136fe0() {}
+
+// ---- FontRenderer ----
+RVA(0x00179e70, 0x5ec)
+void FontRenderer::FontRenderer_179e70() {}
+
+// ---- UnknownClassArrays ----
+RVA(0x0002c690, 0xdb4)
+void UnknownClassArrays::UnknownClassArrays_02c690() {}
+RVA(0x00032ce0, 0x448)
+void UnknownClassArrays::UnknownClassArrays_032ce0() {}
+RVA(0x00033520, 0xbc3)
+void UnknownClassArrays::UnknownClassArrays_033520() {}
 
 // ---- WwdFile ----
 RVA(0x000311e0, 0x4c)

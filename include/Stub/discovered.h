@@ -12,24 +12,86 @@ public:
 };
 class CAniRecord {
 public:
+    void CAniRecord_15cbe0();
     void CAniRecord_1657a0();
+};
+class CAttract {
+public:
+    void CAttract_0143e0();
+};
+class CBattlezDlg {
+public:
+    void CBattlezDlg_014d00();
+    void CBattlezDlg_015cc0();
+    void CBattlezDlg_015d00();
+    void CBattlezDlg_015d30();
+    void CBattlezDlg_015d70();
+    void CBattlezDlg_0160f0();
 };
 class CButeStore {
 public:
     void CButeStore_174d70();
 };
+class CChatBoxOwner {
+public:
+    void CChatBoxOwner_020f40();
+};
+class CCheatMgr {
+public:
+    void CCheatMgr_022e60();
+    void CCheatMgr_023090();
+};
 class CCheckpointTrigger {
 public:
     void CCheckpointTrigger_011480();
+};
+class CCreditsState {
+public:
+    void CCreditsState_039a60();
 };
 class CDDSurface {
 public:
     void CDDSurface_142a40();
 };
+class CDDrawSurfaceMgr {
+public:
+    void CDDrawSurfaceMgr_115930();
+};
+class CExitTrigger {
+public:
+    void CExitTrigger_03f5f0();
+};
+class CFaderSine {
+public:
+    void CFaderSine_17e620();
+    void CFaderSine_17fe00();
+};
+class CFileIO {
+public:
+    void CFileIO_09e2d0();
+    void CFileIO_09e390();
+};
+class CFontConfig {
+public:
+    void CFontConfig_021f20();
+    void CFontConfig_022160();
+};
 class CGrunt {
 public:
+    void CGrunt_057890();
+    void CGrunt_063db0();
+    void CGrunt_068520();
+    void CGrunt_068880();
+    void CGrunt_069d60();
     void CGrunt_0ec670();
     void CGrunt_0ef6b0();
+};
+class CGruntSpawnConfig {
+public:
+    void CGruntSpawnConfig_11afb0();
+    void CGruntSpawnConfig_11b3b0();
+    void CGruntSpawnConfig_11b7c0();
+    void CGruntSpawnConfig_11c210();
 };
 class CGruntToyTimeSprite {
 public:
@@ -37,40 +99,132 @@ public:
 };
 class CGruntzMgr {
 public:
+    void CGruntzMgr_00cd00();
+    void CGruntzMgr_06eb80();
+    void CGruntzMgr_075c60();
+    void CGruntzMgr_077df0();
+    void CGruntzMgr_078060();
+    void CGruntzMgr_07b440();
+    void CGruntzMgr_07b930();
+    void CGruntzMgr_07be60();
+    void CGruntzMgr_07c3d0();
+    void CGruntzMgr_0862f0();
     void CGruntzMgr_08b960();
+    void CGruntzMgr_08f340();
+    void CGruntzMgr_090d10();
+    void CGruntzMgr_093d40();
+    void CGruntzMgr_1189c0();
 };
 class CGruntzSingleCommand {
 public:
+    void CGruntzSingleCommand_03af90();
+    void CGruntzSingleCommand_03b310();
+    void CGruntzSingleCommand_09dff0();
     void CGruntzSingleCommand_0ec1c0();
     void CGruntzSingleCommand_11f618();
     void CGruntzSingleCommand_135110();
     void CGruntzSingleCommand_18c022();
 };
+class CGruntzSoundZ {
+public:
+    void CGruntzSoundZ_138950();
+    void CGruntzSoundZ_1389c0();
+};
+class CInGameText {
+public:
+    void CInGameText_0997c0();
+};
+class CLightFxMgr {
+public:
+    void CLightFxMgr_0f8e20();
+};
 class CLogicRecord {
 public:
+    void CLogicRecord_00c840();
     void CLogicRecord_0fb660();
     void CLogicRecord_10d3d0();
 };
+class CMultiBootyState {
+public:
+    void CMultiBootyState_01e720();
+    void CMultiBootyState_01ed30();
+};
 class CPlay {
 public:
+    void CPlay_0c7ec0();
+    void CPlay_0c8a10();
     void CPlay_0cb400();
     void CPlay_0cb480();
+    void CPlay_0cbaf0();
     void CPlay_0cee70();
+    void CPlay_0cf770();
+    void CPlay_0cffe0();
     void CPlay_0d53d0();
+    void CPlay_0d5f90();
+    void CPlay_0d60b0();
+    void CPlay_0d65d0();
+    void CPlay_0d8c60();
     void CPlay_0d9290();
+    void CPlay_0d95f0();
+    void CPlay_0db600();
+    void CPlay_0db6c0();
+    void CPlay_0db7e0();
     void CPlay_0db8a0();
     void CPlay_0db930();
     void CPlay_0db9b0();
+    void CPlay_0dba30();
+    void CPlay_0dc060();
+    void CPlay_0dca70();
+    void CPlay_0dd340();
+    void CPlay_0dd540();
     void CPlay_0dd830();
+    void CPlay_0ddaa0();
+};
+class CSBI_GruntMachine {
+public:
+    void CSBI_GruntMachine_0e8a70();
+};
+class CSBI_RectOnly {
+public:
+    void CSBI_RectOnly_0fe520();
+};
+class CSBI_SideTab {
+public:
+    void CSBI_SideTab_0e9600();
+    void CSBI_SideTab_0e9850();
+};
+class CSBI_StatzTabGruntBar {
+public:
+    void CSBI_StatzTabGruntBar_0ea1f0();
 };
 class CSpotLight {
 public:
     void CSpotLight_0b1ee0();
 };
+class CSpriteRefTable {
+public:
+    void CSpriteRefTable_0e2400();
+    void CSpriteRefTable_0e2980();
+    void CSpriteRefTable_0e2d10();
+};
+class CState {
+public:
+    void CState_0f9ea0();
+};
+class CTileGridCommand {
+public:
+    void CTileGridCommand_110860();
+};
 class CUserLogic {
 public:
     void CUserLogic_029a80();
+    void CUserLogic_050ce0();
+    void CUserLogic_0597a0();
     void CUserLogic_16ea90();
+};
+class CWwdSpatialMgr {
+public:
+    void CWwdSpatialMgr_168080();
 };
 class ClassUnknown_1 {
 public:
@@ -117,6 +271,14 @@ class ClassUnknown_23 {
 public:
     void ClassUnknown_23_16e360();
 };
+class ClassUnknown_26 {
+public:
+    void ClassUnknown_26_13dfe0();
+};
+class ClassUnknown_27 {
+public:
+    void ClassUnknown_27_153ff0();
+};
 class ClassUnknown_28 {
 public:
     void ClassUnknown_28_0311b0();
@@ -157,6 +319,10 @@ class ClassUnknown_4 {
 public:
     void ClassUnknown_4_16f760();
 };
+class ClassUnknown_41 {
+public:
+    void ClassUnknown_41_153b20();
+};
 class ClassUnknown_42 {
 public:
     void ClassUnknown_42_0f1c70();
@@ -164,6 +330,10 @@ public:
 class ClassUnknown_43 {
 public:
     void ClassUnknown_43_0f7d90();
+};
+class ClassUnknown_44 {
+public:
+    void ClassUnknown_44_0ed9f0();
 };
 class ClassUnknown_45 {
 public:
@@ -220,6 +390,20 @@ public:
 class ClassUnknown_9 {
 public:
     void ClassUnknown_9_11c630();
+};
+class DSoundVoice {
+public:
+    void DSoundVoice_136fe0();
+};
+class FontRenderer {
+public:
+    void FontRenderer_179e70();
+};
+class UnknownClassArrays {
+public:
+    void UnknownClassArrays_02c690();
+    void UnknownClassArrays_032ce0();
+    void UnknownClassArrays_033520();
 };
 class WwdFile {
 public:

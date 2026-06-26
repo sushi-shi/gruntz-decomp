@@ -517,10 +517,6 @@ unit = "symparser"
 source = "src/Bute/SymParser.cpp"
 flags = "eh"
 
-[[unit]]
-unit = "winapi"
-source = "src/Utils/WinAPI.cpp"
-flags = "eh"
 
 [[unit]]
 unit = "grunt"
@@ -1055,15 +1051,7 @@ unit = "appdialogs"
 source = "src/Gruntz/AppDialogs.cpp"
 flags = "base"
 
-[[unit]]
-unit = "winapimodule"
-source = "src/Utils/WinAPIModule.cpp"
-flags = "base"
 
-[[unit]]
-unit = "winapicdrom"
-source = "src/Utils/WinAPICdRom.cpp"
-flags = "eh"
 
 [[unit]]
 unit = "chatbox"
