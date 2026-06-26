@@ -179,6 +179,14 @@ public:
     // GetSlotIndex (0xc4b30): the current slot index (own method, reloc-masked).
     i32 GetSlotIndex();
 
+    // Per-slot control accessors: switch(index) over a 4-entry control-ID table,
+    // each case returning this->GetDlgItem(constID). SAME shape as
+    // CBattlezDlg::GetCtrlA..D (the inline .rdata jump table reloc-masks).
+    CWnd* GetCtrlA(i32 index); // 0xc26c0
+    CWnd* GetCtrlB(i32 index); // 0xc2740
+    CWnd* GetCtrlC(i32 index); // 0xc27c0
+    CWnd* GetCtrlD(i32 index); // 0xc2840
+
     // The GetSafeHwnd-style accessor the builders fold inline: (this != 0) ?
     // (handle @ +0x1c) : 0. Inline member so MSVC inlines it and keeps the null
     // test (matching retail's `test esi,esi; jne; xor eax,eax; mov eax,[esi+0x1c]`).

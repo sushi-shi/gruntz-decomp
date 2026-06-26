@@ -55,7 +55,7 @@ cddrawworkers	4	4
 cdirectdrawmgr	25	11
 cdonothing	2	2
 cdonothingnormaldtor	1	1
-cdroppedobject	3	2
+cdroppedobject	4	3
 cdroppedobjectshadow	1	1
 cexittrigger	2	2
 cexplosion	1	1
@@ -120,12 +120,12 @@ cwormholeacts	2	1
 cwwdobjmgr	1	0
 databuffer	7	5
 deflate	6	6
-dialogs	31	14
+dialogs	35	14
 directinputmgr2	33	29
 directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	15	0
-engine_boundary	522	0
+engine_boundary	513	0
 engine_discovered	51	0
 engine_label_stubs	436	104
 engstr	3	1
@@ -170,7 +170,7 @@ ingametext	5	4
 ingameworkerhandlers	3	3
 inputdeviceconfig	1	0
 interfaceobject	2	1
-kitchenslime	6	3
+kitchenslime	7	4
 leafelementobj	2	2
 leveltilevalidation	2	0
 lightfxmgr	3	3
@@ -186,7 +186,7 @@ menuitem	13	11
 menupage	31	16
 mgrtokenquery	1	1
 motionstate	4	3
-netmgr	80	43
+netmgr	82	45
 netmgrerror	1	1
 netsession	2	1
 projectile	9	3
@@ -248,7 +248,7 @@ unknownclassarrays	39	10
 unknownclassincgruntzmgr	2	0
 unknownsalazar	4	0
 userbaselink	10	0
-userlogic	58	21
+userlogic	59	22
 videoconfig	2	0
 warlord	10	3
 warpstonefly	3	2
@@ -657,6 +657,7 @@ cdonothingnormaldtor	??1CDoNothingNormal@@UAE@XZ	100.0000	100.0000	1	9d57e19fe32
 cdroppedobject	??1CDroppedObject@@UAE@XZ	100.0000	100.0000	1	dd689e9b78c2	0x125b0
 cdroppedobject	?FireActivation@CDroppedObject@@QAEXH@Z	100.0000	100.0000	1	58092acd8cf9	0xc6bd0
 cdroppedobject	?RegisterActs@CDroppedObject@@SAXXZ	78.5473	78.5473	1	ddf90768718f	0xc6d30
+cdroppedobject	?RegisterRange@CDroppedObject@@SAXXZ	100.0000	100.0000	1	f8dddf603c11	0xc6b50
 cdroppedobjectshadow	??1CDroppedObjectShadow@@UAE@XZ	100.0000	100.0000	1	590f3131b16f	0x12670
 cexittrigger	??1CExitTrigger@@UAE@XZ	100.0000	100.0000	1	db4d24e6c64d	0x108c0
 cexittrigger	?GetTypeTag@CExitTrigger@@QAEHXZ	100.0000	100.0000	1	c68ad601ed76	0x10870
@@ -1008,9 +1009,13 @@ dialogs	?ApplyOption2@CBattlezDlg@@QAEXXZ	100.0000	100.0000	1	1e85f0a44dab	0x15e
 dialogs	?ApplyOption3@CBattlezDlg@@QAEXXZ	100.0000	100.0000	1	e384d2e48285	0x15f60
 dialogs	?BuildSlotList@CMultiStartDlg@@QAEXXZ	88.8588	88.8588	1	95188a37dcda	0xc1e60
 dialogs	?GetCtrlA@CBattlezDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	2	f719a29e8f44	0x15ac0
+dialogs	?GetCtrlA@CMultiStartDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	1	6faf7bed19d6	0xc26c0
 dialogs	?GetCtrlB@CBattlezDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	2	55fe085491a3	0x15b40
+dialogs	?GetCtrlB@CMultiStartDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	1	c6318a227cc8	0xc2740
 dialogs	?GetCtrlC@CBattlezDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	2	7882b445b6ec	0x15bc0
+dialogs	?GetCtrlC@CMultiStartDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	1	6221887fd888	0xc27c0
 dialogs	?GetCtrlD@CBattlezDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	2	2df6252ff25e	0x15c40
+dialogs	?GetCtrlD@CMultiStartDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	1	69c65a322a5a	0xc2840
 dialogs	?GetMessageMap@CBattlezDlgColors@@QAEPBXXZ	100.0000	100.0000	1	8bb5f517fac7	0x17ac0
 dialogs	?GetMessageMap@CCheckpointDlg@@QAEPBXXZ	100.0000	100.0000	1	a1a3e649e0c1	0x23570
 dialogs	?InitPlayerSlots@CMultiStartDlg@@QAEXXZ	0.1294	0.1294	2	460bc8e04d05	0xc20a0
@@ -1219,18 +1224,14 @@ engine_boundary	?Boundary_0adde0@@YAXXZ	20.0000	20.0000	1	40f696bd4d2d	0xadde0
 engine_boundary	?Boundary_0ade60@@YAXXZ	0.5333	0.5333	1	ff289523ad79	0xade60
 engine_boundary	?Boundary_0adfc0@@YAXXZ	0.8696	0.8696	1	f10252da81d8	0xadfc0
 engine_boundary	?Boundary_0ae1c0@@YAXXZ	0.5000	0.5000	1	dc04c5f279e3	0xae1c0
-engine_boundary	?Boundary_0ae9a0@@YAXXZ	20.0000	20.0000	1	3a1af3f0d455	0xae9a0
 engine_boundary	?Boundary_0b15b0@@YAXXZ	20.0000	20.0000	1	fcf620cdfb46	0xb15b0
 engine_boundary	?Boundary_0b1790@@YAXXZ	0.4975	0.4975	1	cf562673a95a	0xb1790
-engine_boundary	?Boundary_0b28c0@@YAXXZ	20.0000	20.0000	1	dcb330f19a60	0xb28c0
 engine_boundary	?Boundary_0b3ae0@@YAXXZ	20.0000	20.0000	1	7d95af4e26a7	0xb3ae0
 engine_boundary	?Boundary_0b3cc0@@YAXXZ	0.4975	0.4975	1	10d3f2425269	0xb3cc0
 engine_boundary	?Boundary_0b4c40@@YAXXZ	1.4286	1.4286	1	a2b8002579ac	0xb4c40
 engine_boundary	?Boundary_0b4d30@@YAXXZ	0.1476	0.1476	1	2170f5fff4c7	0xb4d30
 engine_boundary	?Boundary_0b5380@@YAXXZ	20.0000	20.0000	1	617bb0c536cc	0xb5380
 engine_boundary	?Boundary_0b5400@@YAXXZ	20.0000	20.0000	1	f94b02abbe70	0xb5400
-engine_boundary	?Boundary_0b6090@@YAXXZ	3.3333	3.3333	1	df7425944a69	0xb6090
-engine_boundary	?Boundary_0b60d0@@YAXXZ	3.3333	3.3333	1	2cc8c9ed229f	0xb60d0
 engine_boundary	?Boundary_0bd430@@YAXXZ	20.0000	20.0000	1	6682fcee4d63	0xbd430
 engine_boundary	?Boundary_0bd450@@YAXXZ	12.5000	12.5000	1	a604c92702d8	0xbd450
 engine_boundary	?Boundary_0bd7f0@@YAXXZ	20.0000	20.0000	1	9ed50d822bce	0xbd7f0
@@ -1246,11 +1247,6 @@ engine_boundary	?Boundary_0c12b0@@YAXXZ	3.0769	3.0769	1	1ea4110232f5	0xc12b0
 engine_boundary	?Boundary_0c12e0@@YAXXZ	5.0000	5.0000	1	4facdc85fbd1	0xc12e0
 engine_boundary	?Boundary_0c1320@@YAXXZ	3.0303	3.0303	1	a5ab440e707d	0xc1320
 engine_boundary	?Boundary_0c1390@@YAXXZ	14.2857	14.2857	1	053e2fe59fed	0xc1390
-engine_boundary	?Boundary_0c26c0@@YAXXZ	2.3529	2.3529	1	a98b436c46c1	0xc26c0
-engine_boundary	?Boundary_0c2740@@YAXXZ	2.3529	2.3529	1	539fff924c3f	0xc2740
-engine_boundary	?Boundary_0c27c0@@YAXXZ	2.3529	2.3529	1	598eba48b0bd	0xc27c0
-engine_boundary	?Boundary_0c2840@@YAXXZ	2.3529	2.3529	1	c0081fac0a7d	0xc2840
-engine_boundary	?Boundary_0c6b50@@YAXXZ	20.0000	20.0000	1	f4961a0f7186	0xc6b50
 engine_boundary	?Boundary_0c8700@@YAXXZ	0.6579	0.6579	1	f5569d49ece3	0xc8700
 engine_boundary	?Boundary_0c9e40@@YAXXZ	0.6410	0.6410	1	5f28c6bdcf93	0xc9e40
 engine_boundary	?Boundary_0ca0a0@@YAXXZ	1.1236	1.1236	1	6de465c7af29	0xca0a0
@@ -2694,6 +2690,7 @@ interfaceobject	?GetName@InterfaceObject@@QAE?AVCString@@XZ	100.0000	100.0000	1	
 kitchenslime	??1CKitchenSlime@@UAE@XZ	100.0000	100.0000	1	5d147b2b8ea5	0x13100
 kitchenslime	?FireActivation@CKitchenSlime@@QAEXH@Z	100.0000	100.0000	1	b01b90390ef5	0xb2940
 kitchenslime	?LoadSprites@CKitchenSlime@@QAEHXZ	69.1992	69.1992	3	aca206c4359f	0xb3160
+kitchenslime	?RegisterRange@CKitchenSlime@@SAXXZ	100.0000	100.0000	1	e64735a29922	0xb28c0
 kitchenslime	?RegisterType@CKitchenSlime@@SAXXZ	91.1739	91.1739	1	df69f8da8be5	0xb2aa0
 kitchenslime	?Serialize@CKitchenSlime@@QAEHPAXHHH@Z	100.0000	100.0000	1	f04e52434960	0xb2ff0
 kitchenslime	?Tick@CKitchenSlime@@QAEHXZ	94.8551	94.8551	4	dee22bdefc90	0xb2ca0
@@ -2804,6 +2801,8 @@ netmgr	?EnumPlayersInto@CNetMgr@@QAEHPAX0@Z	67.6600	67.6600	2	fcffaf584d9e	0x178
 netmgr	?EnumSessions@CNetMgr@@QAEHPAX0@Z	100.0000	100.0000	5	bca9b98ca5df	0x179130
 netmgr	?FindPlayerById@CNetMgr@@QAEPAUCNetPlayerEntry@@H@Z	87.6923	87.6923	4	ce8d7b0def71	0x178e90
 netmgr	?FrameSyncWait@CNetMgr@@QAEIXZ	70.7250	70.7250	5	d648fa188145	0xbc070
+netmgr	?GetConfigNameA@CNetMgr@@QAE?AVCString@@XZ	100.0000	100.0000	1	b8eea0ef362d	0xb6090
+netmgr	?GetConfigNameB@CNetMgr@@QAE?AVCString@@XZ	100.0000	100.0000	1	5afc2c8dee04	0xb60d0
 netmgr	?GetMaxAckLatency@CNetMgr@@QAEIXZ	100.0000	100.0000	5	8c803f5d0abb	0xbd030
 netmgr	?GetName@CNetMgr@@QAE?AVCString@@XZ	100.0000	100.0000	1	6686694bfda5	0xba170
 netmgr	?GetPlayerData@CNetMgr@@QAEPAXH@Z	100.0000	100.0000	5	7e1f45c4e8b3	0x178eb0
@@ -3392,6 +3391,7 @@ userlogic	?FireActivation@CSecretTeleporterTrigger@@QAEXH@Z	100.0000	100.0000	2	
 userlogic	?FireWarp@CWarpStonePad@@QAEXH@Z	100.0000	100.0000	1	123185be1635	0x10d8c0
 userlogic	?GetScreenPos@CUserLogic@@QAEXPAUScreenPoint@1@@Z	100.0000	100.0000	2	c09fb9d01a13	0x29a50
 userlogic	?InitActReg@CSecretTeleporterTrigger@@SAXXZ	100.0000	100.0000	1	2f0eeda3c0d0	0x420d0
+userlogic	?InitActReg@CSingleAnimation@@SAXXZ	100.0000	100.0000	1	883823c700b9	0xae9a0
 userlogic	?IsAtSavedScreenPos@CUserLogic@@QAEHXZ	100.0000	100.0000	1	874bfc9482ed	0x29a80
 userlogic	?LoadGruntDecayConfig2@CUserLogic@@QAEXXZ	1.2195	1.2195	1	edd8f9929bc3	0x61570
 userlogic	?LoadGruntDecayConfig@CUserLogic@@QAEXXZ	0.6135	0.6135	1	92fac0c4600f	0x612a0

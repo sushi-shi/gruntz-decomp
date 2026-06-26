@@ -27,7 +27,8 @@
 // re-declared here, address-pinned).
 struct CDropEntry; // an entry: first dword is the registered handler
 struct CDropColl {
-    i32 Find(i32 coord, i32 z); // 0x16da80 (__thiscall ret 8)
+    i32 Find(i32 coord, i32 z);          // 0x16da80 (__thiscall ret 8)
+    void RegisterRange(i32 lo, i32 hi);  // 0x408710 (zDArray fast-range ctor, __thiscall ret 8)
 };
 struct CDropColl2 {
     void Insert(void* coll, void* item, i32 n); // 0x16d850 (__thiscall ret 0xc)
@@ -152,6 +153,15 @@ static inline CDropEntry* DropLookup(i32 coord) {
 // ~CTimeBomb @0x012a70; the empty body is enough for cl.
 RVA(0x000125b0, 0x44)
 CDroppedObject::~CDroppedObject() {}
+
+// CDroppedObject::RegisterRange @0x0c6b50 - seed the dropped-object activation
+// table's fast-range bounds via the shared zDArray registry ctor
+// (RegisterRange(0x7d0, 0x7da), 0x408710 through the 0x3742 ILT thunk). A static
+// initializer; same archetype as CProjectile::RegisterRange (0x0df920).
+RVA(0x000c6b50, 0x15)
+void CDroppedObject::RegisterRange() {
+    g_dropColl.RegisterRange(0x7d0, 0x7da);
+}
 
 // CDroppedObject::FireActivation @0x0c6bd0 - look the activation coordinate up
 // in the registry; if the entry has a registered handler, look it up again and

@@ -23,6 +23,7 @@
 
 class CDroppedObject : public CUserLogic {
 public:
+    static void RegisterRange();    // 0x0c6b50 (seed the activation table's fast range)
     static void RegisterActs();     // 0x0c6d30
     void FireActivation(i32 coord); // 0x0c6bd0
     ~CDroppedObject();              // 0x0125b0 (folds the CUserLogic teardown)

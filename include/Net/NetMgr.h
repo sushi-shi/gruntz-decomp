@@ -628,6 +628,9 @@ public:
     i32 SendStatTo(CNetPlayerEntry* recipient, i32 id, i32 c);           // 0xb93a0
     i32 SendStatPairRaw(CNetPlayerEntry* recipient, void* pkt, i32 size, i32 c); // 0xb9500
     i32 SendStatValue(i32 id, i32 statId, i32 value, i32 flag);         // 0xb9570
+    // The two config-name accessors: return the m_5b4 / m_5b8 CStrings by value.
+    CString GetConfigNameA();           // 0xb6090  return the m_5b4 CString by value
+    CString GetConfigNameB();           // 0xb60d0  return the m_5b8 CString by value
     // The control-message dispatch + the player-left handler.
     CString GetName();                  // 0xba170  return the m_8 CString by value
     i32 HandleControlMsg(CNetCtrlMsg* msg, i32 arg2); // 0xba1a0  switch on msg->m_0 (arg2 unused)

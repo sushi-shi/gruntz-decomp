@@ -264,6 +264,98 @@ RVA(0x000c20a0, 0x45a)
 void CMultiStartDlg::InitPlayerSlots() {}
 
 // ---------------------------------------------------------------------------
+// CMultiStartDlg per-slot control accessors: switch(index) over a 4-entry
+// control-ID table, each case returning this->GetDlgItem(constID). SAME shape as
+// CBattlezDlg::GetCtrlA..D; the inline .rdata jump table reloc-masks.
+// @early-stop
+// jump-table-data scoring artifact (code byte-exact) - docs/patterns/jumptable-data-overlap.md
+RVA(0x000c26c0, 0x46)
+CWnd* CMultiStartDlg::GetCtrlA(i32 index) {
+    CWnd* result = 0;
+    switch (index) {
+        case 0:
+            result = GetDlgItem(0x51f);
+            break;
+        case 1:
+            result = GetDlgItem(0x523);
+            break;
+        case 2:
+            result = GetDlgItem(0x524);
+            break;
+        case 3:
+            result = GetDlgItem(0x525);
+            break;
+    }
+    return result;
+}
+
+// @early-stop
+// jump-table-data scoring artifact (code byte-exact) - docs/patterns/jumptable-data-overlap.md
+RVA(0x000c2740, 0x46)
+CWnd* CMultiStartDlg::GetCtrlB(i32 index) {
+    CWnd* result = 0;
+    switch (index) {
+        case 0:
+            result = GetDlgItem(0x50a);
+            break;
+        case 1:
+            result = GetDlgItem(0x50b);
+            break;
+        case 2:
+            result = GetDlgItem(0x50c);
+            break;
+        case 3:
+            result = GetDlgItem(0x50d);
+            break;
+    }
+    return result;
+}
+
+// @early-stop
+// jump-table-data scoring artifact (code byte-exact) - docs/patterns/jumptable-data-overlap.md
+RVA(0x000c27c0, 0x46)
+CWnd* CMultiStartDlg::GetCtrlC(i32 index) {
+    CWnd* result = 0;
+    switch (index) {
+        case 0:
+            result = GetDlgItem(0x51e);
+            break;
+        case 1:
+            result = GetDlgItem(0x520);
+            break;
+        case 2:
+            result = GetDlgItem(0x521);
+            break;
+        case 3:
+            result = GetDlgItem(0x522);
+            break;
+    }
+    return result;
+}
+
+// @early-stop
+// jump-table-data scoring artifact (code byte-exact) - docs/patterns/jumptable-data-overlap.md
+RVA(0x000c2840, 0x46)
+CWnd* CMultiStartDlg::GetCtrlD(i32 index) {
+    CWnd* result = 0;
+    switch (index) {
+        case 0:
+            result = GetDlgItem(0x501);
+            break;
+        case 1:
+            result = GetDlgItem(0x503);
+            break;
+        case 2:
+            result = GetDlgItem(0x505);
+            break;
+        case 3:
+            result = GetDlgItem(0x507);
+            break;
+    }
+    return result;
+}
+
+// ---------------------------------------------------------------------------
 RVA(0x000234a0, 0x1e)
 CCheckpointDlg::CCheckpointDlg(CWnd* pParent) : CDialog(0xcd, pParent) {}
 

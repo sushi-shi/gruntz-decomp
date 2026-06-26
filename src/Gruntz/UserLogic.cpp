@@ -209,6 +209,7 @@ class CSingleAnimation : public CUserLogic {
 public:
     CSingleAnimation(CGameObject* obj); // 0x0ae7f0
     virtual ~CSingleAnimation() OVERRIDE;
+    static void InitActReg();   // 0x0ae9a0
     static void RegisterActs(); // 0x0aeb80
     i32 AdvanceAnim();          // 0x0aed80
 };
@@ -475,6 +476,7 @@ extern void* g_actAllocResult;
 // VActLookup archetype inline (constant `this` -> the field loads become absolute
 // addresses); the slow Insert is __thiscall on m_coll2.
 struct CLeafActReg {
+    void Construct(i32 lo, i32 hi); // 0x408710 (shared registry ctor, __thiscall ret 8)
     void* m_vptr;       // +0x00
     CActColl2* m_coll2; // +0x04
     i32 m_lo;           // +0x08
@@ -1163,6 +1165,15 @@ CSingleAnimation::CSingleAnimation(CGameObject* obj) : CUserLogic(obj) {
     m_38->m_08 |= 2;
     m_30 = m_14->m_1c;
     m_14->m_1c = g_buteTree.Find("A");
+}
+
+// --- CSingleAnimation::InitActReg (0x0ae9a0) ---
+// Construct the class's per-coordinate activation registry singleton
+// (g_singleAnimActReg @0x645f70) over the fixed range [2000, 2010] via the shared
+// registry ctor (0x408710). Free init thunk; reloc-masked.
+RVA(0x000ae9a0, 0x15)
+void CSingleAnimation::InitActReg() {
+    g_singleAnimActReg.Construct(2000, 2010);
 }
 
 // --- CSingleAnimation::RegisterActs (0x0aeb80) ---

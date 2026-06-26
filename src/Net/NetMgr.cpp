@@ -360,6 +360,20 @@ i32 CNetMgr::PollSession() {
 }
 
 // ---------------------------------------------------------------------------
+// CNetMgr::GetConfigNameA / GetConfigNameB  (__thiscall).
+// Return the +0x5b4 / +0x5b8 config-name CString members by value (same NRV
+// copy-construct shape as GetName).
+RVA(0x000b6090, 0x23)
+CString CNetMgr::GetConfigNameA() {
+    return m_5b4;
+}
+
+RVA(0x000b60d0, 0x23)
+CString CNetMgr::GetConfigNameB() {
+    return m_5b8;
+}
+
+// ---------------------------------------------------------------------------
 // CNetMgr::GetName  (__thiscall).
 // Returns the +0x8 CString member by value (NRV-construct the return slot as a
 // copy of m_8).
