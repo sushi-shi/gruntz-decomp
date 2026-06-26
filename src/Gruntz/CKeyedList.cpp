@@ -20,7 +20,18 @@ struct CNode {
     CString m_key; // +0x00
     i32 m_4;       // +0x04
     i32 m_8;       // +0x08
+    ~CNode();
 };
+
+// 0x379f0: CNode destructor - the body empties the key + zeros the payload, then
+// the compiler appends the m_key member ~CString. /GX EH-framed (state 0 -> -1
+// around the destructible CString member at +0).
+RVA(0x000379f0, 0x57)
+CNode::~CNode() {
+    m_key.Empty();
+    m_4 = 0;
+    m_8 = 0;
+}
 
 struct CKeyedList {
     char _00[4];

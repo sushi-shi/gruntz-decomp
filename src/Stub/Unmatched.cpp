@@ -7,8 +7,6 @@
 // each and moves it to its real class TU, shrinking this file toward empty.
 #include <rva.h>
 
-RVA(0x000379f0, 0x57)
-void Unmatched_0379f0() {} // Unmatched_0379f0
 RVA(0x0003cc20, 0x14e)
 void Unmatched_03cc20() {} // Unmatched_03cc20
 RVA(0x000555e0, 0x12f8)
