@@ -195,6 +195,7 @@ public:
     // Internal setup helpers reached from CreateDevice (defined in other DDrawMgr
     // TUs; modeled as no-body externs so their rel32 calls are reloc-masked).
     void SetupCaps();                                                 // 0x143240
+    void* CreatePoolItem(void* arg0, void* arg1);                     // 0x143630
     i32 SetVideoMode(i32 width, i32 height, i32 bpp, i32 a4, i32 a5); // 0x143c20
 
     // --- layout (only touched offsets pinned) ---------------------------------

@@ -392,3 +392,122 @@ void* CButeTreeFull::ScalarDtor(u32 flags) {
     }
     return this;
 }
+
+// ===========================================================================
+// 0x16d000 - config field loader.  __cdecl(reader, data): pulls 29 doubles and
+// one int out of the reader into the data block at fixed offsets, returning the
+// reader.  Models the reader's per-field accessors (0x191fe0 double / 0x191f30
+// int, both __thiscall) as reloc-masked no-body methods.
+// ===========================================================================
+class CConfigReader {
+public:
+    void ReadDouble(void* field); // 0x191fe0
+    void ReadInt(void* field);    // 0x191f30
+};
+
+RVA(0x0016d000, 0x189)
+CConfigReader* LoadConfigFields(CConfigReader* r, char* d) {
+    r->ReadDouble(d + 0x00);
+    r->ReadDouble(d + 0x08);
+    r->ReadDouble(d + 0x10);
+    r->ReadDouble(d + 0x18);
+    r->ReadDouble(d + 0x20);
+    r->ReadDouble(d + 0x28);
+    r->ReadDouble(d + 0x30);
+    r->ReadDouble(d + 0x38);
+    r->ReadDouble(d + 0x40);
+    r->ReadDouble(d + 0x48);
+    r->ReadDouble(d + 0x50);
+    r->ReadDouble(d + 0x70);
+    r->ReadDouble(d + 0x78);
+    r->ReadDouble(d + 0x80);
+    r->ReadDouble(d + 0x88);
+    r->ReadDouble(d + 0x90);
+    r->ReadDouble(d + 0x98);
+    r->ReadDouble(d + 0xa0);
+    r->ReadDouble(d + 0xa8);
+    r->ReadDouble(d + 0xb0);
+    r->ReadInt(d + 0xb8);
+    r->ReadDouble(d + 0xc0);
+    r->ReadDouble(d + 0xc8);
+    r->ReadDouble(d + 0xd0);
+    r->ReadDouble(d + 0xd8);
+    r->ReadDouble(d + 0xe0);
+    r->ReadDouble(d + 0xe8);
+    r->ReadDouble(d + 0xf0);
+    r->ReadDouble(d + 0xf8);
+    r->ReadDouble(d + 0x100);
+    return r;
+}
+
+// ===========================================================================
+// 0x16d850 - variant/property setter (the HOT helper, ret 0xc).  Switches on the
+// slot's type tag (m_0c): 4 -> store the low word directly; otherwise probe the
+// global index table (when enabled) and, by tag 2/1, either dispatch through the
+// resolved table entry's fn / word slot, or (unresolved) format the slot's label
+// + invoke the slot's own +0x00 callback / store the word.  The index probe is
+// CKeyFinder::Find (0x16e1d0, defined above); the table + gate are globals.
+// @early-stop
+// 99.85% - reloc-typing / entropy-tail artifact only: the full switch dispatch,
+// indexed-table paths, inline strcpy + Format_18d0f0 and the +0x00 callback are
+// all byte-exact; the residual is the DIR32-vs-REL32 scoring on the named
+// g_varTable / g_varProbeEnabled / Find externs (docs/matching-patterns.md fuzzy%).
+// ===========================================================================
+// The slot's resolved-index dispatch table (12-byte stride): a __cdecl fn at +0,
+// a word slot at +4.  Reloc-masked DATA extern (base 0x6bf49c).
+struct CVarTableEntry {
+    void(__cdecl* fn)(i32 a, i32 b); // +0x00
+    u16 w;                           // +0x04
+    char m_pad06[12 - 6];            // 12-byte stride
+};
+DATA(0x002bf49c)
+extern CVarTableEntry g_varTable[]; // 0x6bf49c
+
+// The probe-enable gate (a function-ptr/flag global; nonzero -> probe the table).
+DATA(0x002bf618)
+extern void* g_varProbeEnabled; // 0x6bf618
+
+// The slot label formatter (__cdecl(buf, value, cap)).
+extern "C" void Format_18d0f0(char* buf, i32 value, i32 cap); // 0x18d0f0
+
+class CVariantSlot {
+public:
+    void Set(void* key, i32 arg2, i32 arg3);          // 0x16d850
+    void(__cdecl* m_callback)(char* buf, i32 v);      // +0x00 (call [this])
+    i32 m_04;                                         // +0x04 probe index slot
+    u16 m_08;                                         // +0x08 word storage
+    u16 m_0a;                                         // +0x0a
+    i32 m_0c;                                         // +0x0c type tag (1/2/4)
+    i32 m_10;                                         // +0x10
+    char* m_14;                                       // +0x14 label / format text
+};
+
+RVA(0x0016d850, 0x11e)
+void CVariantSlot::Set(void* key, i32 arg2, i32 arg3) {
+    if (m_0c == 4) {
+        m_08 = (u16)arg3;
+        return;
+    }
+    i32 idx;
+    if (g_varProbeEnabled != 0) {
+        idx = ((CKeyFinder*)this)->Find((i32)key);
+    } else {
+        idx = -1;
+    }
+    if (idx == -1) {
+        if (m_0c == 2) {
+            char buf[0x94];
+            strcpy(buf, m_14);
+            Format_18d0f0(buf, arg2, 0x4f);
+            m_callback(buf, arg3);
+        } else if (m_0c == 1) {
+            m_08 = (u16)arg3;
+        }
+    } else {
+        if (m_0c == 2) {
+            g_varTable[idx].fn(arg2, arg3);
+        } else if (m_0c == 1) {
+            g_varTable[idx].w = (u16)arg3;
+        }
+    }
+}

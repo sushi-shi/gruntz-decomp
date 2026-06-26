@@ -1117,3 +1117,153 @@ i32 CDDPageMgr::CheckMode16() {
     }
     return 0;
 }
+
+// ===========================================================================
+// CDirectDrawMgr pool-item collection helpers (DDRAWMGR.CPP).  The pool item
+// list is a CObArray at +0x4b4; SetupCaps tears the list down, re-enumerates the
+// device's display modes (rebuilding a global mode array) and re-sorts the pool;
+// CreatePoolItem builds + initialises one pool item from a descriptor source.
+// ===========================================================================
+// Engine heap free / operator new (reloc-masked __cdecl leaves).
+extern "C" void RezFree(void* p);             // 0x1b9b82
+extern "C" void* DdOperatorNew(unsigned int); // 0x1b9b46
+
+// The pool-item CObArray sub-object (raw view at +0x4b4): SetSize(0,-1) clears it,
+// SetAtGrow(m_nSize, x) is MFC CObArray::Add's out-of-line tail.
+struct CDdObArray {
+    void* m_vtbl;                   // +0x00
+    void** m_pData;                 // +0x04
+    i32 m_nSize;                    // +0x08
+    i32 m_nMaxSize;                 // +0x0c
+    i32 m_nGrowBy;                  // +0x10
+    void SetSize(i32 n, i32 grow);  // 0x1b4f75
+    void SetAtGrow(i32 n, void* x); // 0x1b5144
+};
+
+// The transient global mode array EnumDisplayModes rebuilds (a CObArray @0x683ec8).
+DATA(0x00283ec8)
+extern CDdObArray g_modeArray;
+
+// The pool comparator (this->Compare, 0x1433d0) and the AddPoolItem publisher.
+struct CDdPoolThis {
+    i32 Compare(void* a, void* b); // 0x1433d0
+    void AddPoolItem(void* item);  // 0x142100
+};
+
+// IDirectDraw EnumDisplayModes lives at vtable +0x20 (slot 8); reach it through a
+// local vtable view so the shared IDirectDraw2Z struct is untouched.
+struct CDdEnumVtbl {
+    char m_pad00[0x20];
+    i32(__stdcall* EnumModes)(IDirectDraw2Z*, u32, void*, void*, void*); // +0x20
+};
+// The EnumDisplayModes callback (0x143390); only its address is referenced.
+extern "C" void DdEnumModesCallback(); // 0x143390
+
+// @early-stop
+// 81% - regalloc/induction wall: the free loop, RemoveAll/Add (SetSize/SetAtGrow)
+// calls, EnumDisplayModes + GetErrorString and the selection sort are byte-faithful,
+// but retail colours the sort's outer index as a byte offset alongside a separate
+// counter, an induction shape the recompile doesn't reproduce.  No EH frame.
+RVA(0x00143240, 0x143)
+void CDirectDrawMgr::SetupCaps() {
+    CDdObArray* arr = (CDdObArray*)((char*)this + 0x4b4);
+    for (i32 i = 0; i < arr->m_nSize; i++) {
+        RezFree(arr->m_pData[i]);
+    }
+    arr->SetSize(0, -1);
+    g_modeArray.SetSize(0, -1);
+    i32 hr = ((CDdEnumVtbl*)m_0->vtbl)->EnumModes(m_0, 0, 0, 0, (void*)DdEnumModesCallback);
+    if (hr != 0) {
+        CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0x507, hr);
+    }
+    for (i32 j = 0; j < g_modeArray.m_nSize; j++) {
+        arr->SetAtGrow(arr->m_nSize, g_modeArray.m_pData[j]);
+    }
+    g_modeArray.SetSize(0, -1);
+    i32 n = arr->m_nSize;
+    for (i32 a = 0; a < n - 1; a++) {
+        for (i32 b = a + 1; b < n; b++) {
+            if (((CDdPoolThis*)this)->Compare(arr->m_pData[a], arr->m_pData[b])) {
+                void* tmp = arr->m_pData[a];
+                arr->m_pData[a] = arr->m_pData[b];
+                arr->m_pData[b] = tmp;
+            }
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// CDirectDrawMgr::CreatePoolItem (0x143630) - EH-framed factory.  Pulls a
+// descriptor out of arg0's source object (slot +0x30), reports a failure through
+// GetErrorString, else operator-new's the 0xc0-byte pool item, constructs its
+// +0x94 sub-object + stamps the vtable, runs the item's Init (slot +0x04) and
+// publishes it (AddPoolItem); a failed Init scalar-deletes (slot +0x00) the item.
+// @early-stop
+// operator-new ctor-in-flight EH frame: the descriptor call, construction, field
+// stores + Init/Dtor dispatch are byte-faithful, but retail carries the throwing
+// new's /GX cleanup frame (push -1/fs:0 + trylevel) the manual operator-new body
+// omits.  docs/patterns/rezalloc-placement-new-no-eh-frame.md family.
+// ---------------------------------------------------------------------------
+// The descriptor source (arg0->m_8): a COM-style interface; slot +0x30 fills the
+// two out params.  Reloc-masked __stdcall.
+struct CDdDescSrc {
+    struct Vtbl {
+        char m_pad00[0x30];
+        i32(__stdcall* Make)(CDdDescSrc*, void* outB, void* outA); // +0x30
+    }* vtbl;
+};
+struct CDdCreateArg {
+    char m_pad00[8];
+    CDdDescSrc* m_8; // +0x08 descriptor source
+};
+
+// The pool item: vtable stamped by address; Init (+0x04) / scalar-dtor (+0x00) are
+// thiscall, modeled as single-inheritance member pointers (a 4-byte code addr).
+struct CDdPoolItem;
+struct CDdPoolVtbl {
+    i32 (CDdPoolItem::*Dtor)(i32);   // +0x00
+    i32 (CDdPoolItem::*Init)(void*); // +0x04
+};
+DATA(0x001ef7f0)
+extern CDdPoolVtbl g_poolItemVtbl; // 0x5ef7f0
+
+struct CDdPoolSub {
+    void Ctor(); // 0x1b4f0b  (+0x94 sub-object ctor)
+};
+struct CDdPoolItem {
+    CDdPoolVtbl* m_vtbl; // +0x00
+};
+
+RVA(0x00143630, 0x10d)
+void* CDirectDrawMgr::CreatePoolItem(void* arg0v, void* arg1) {
+    CDdCreateArg* arg0 = (CDdCreateArg*)arg0v;
+    void* outA = 0;
+    void* outB;
+    i32 hr = arg0->m_8->vtbl->Make(arg0->m_8, &outB, &outA);
+    if (hr != 0) {
+        CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0x6ae, hr);
+        return 0;
+    }
+    char* item = (char*)DdOperatorNew(0xc0);
+    if (item != 0) {
+        ((CDdPoolSub*)(item + 0x94))->Ctor();
+        *(void**)item = &g_poolItemVtbl;
+        *(i32*)(item + 0x08) = 0;
+        *(i32*)(item + 0x0c) = 0;
+        *(i32*)(item + 0x04) = 0;
+        *(i32*)(item + 0x7c) = 0;
+        *(i32*)(item + 0xa8) = 0;
+        *(i32*)(item + 0xb8) = 0;
+    } else {
+        item = 0;
+    }
+    CDdPoolItem* pi = (CDdPoolItem*)item;
+    if ((pi->*(pi->m_vtbl->Init))(outA) == 0) {
+        if (item != 0) {
+            (pi->*(pi->m_vtbl->Dtor))(1);
+        }
+        return 0;
+    }
+    ((CDdPoolThis*)this)->AddPoolItem(item);
+    return item;
+}

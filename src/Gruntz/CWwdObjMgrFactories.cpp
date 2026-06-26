@@ -297,3 +297,72 @@ CWwdGameObject* CWwdObjMgr::CreateObject_1598d0(int a1, int a2, int a3, int a4, 
     }
     return result;
 }
+
+// ===========================================================================
+// 0x166640 - factory for the 0x1dc-byte kind, sibling of the above but published
+// into the manager's own CPtrList (AddTail) at +0x1dc rather than InsertSorted.
+// __thiscall, 6 stack args (ret 0x18).  Build slot +0x28 (4 args), dtor +0x04.
+// @early-stop
+// rezalloc-placement-new wall (same family as 0x1598d0): the object construction
+// + field stores + vtable stamps are byte-exact, but retail allocates the object
+// through the throwing class operator new and carries the /GX ctor-in-flight EH
+// frame (push -1/fs:0 + trylevel-0 cleanup), while the RezAlloc + placement body
+// emits no frame.  docs/patterns/rezalloc-placement-new-no-eh-frame.md.
+// ===========================================================================
+// The manager's own published-objects list (CPtrList) at +0x1dc; AddTail returns
+// the new node pointer (stored into the object's +0x78).  Reloc-masked thiscall.
+class CWwdObjList {
+public:
+    void* AddTail(void* obj); // 0x1b5af6
+};
+class CWwdObjMgrL {
+public:
+    CWwdGameObject* CreateObject_166640(int a1, int a2, int a3, int a4, int a5, int a6);
+    char m_pad00[0x0c];
+    int m_0c; // +0x0c parent handle
+    char m_pad10[0x1dc - 0x10];
+    CWwdObjList m_1dc; // +0x1dc published-objects list
+};
+
+RVA(0x00166640, 0x13b)
+CWwdGameObject* CWwdObjMgrL::CreateObject_166640(int a1, int a2, int a3, int a4, int a5, int a6) {
+    char* obj = (char*)RezAlloc(0x1dc);
+    CWwdGameObject* result;
+    if (obj != 0) {
+        int root = m_0c;
+        ((CWwdRemusBaseB*)obj)->Ctor(root, a1, a6);
+        *(int*)(obj + 0x1a4) = a1;
+        *(int*)(obj + 0x1a8) = a6;
+        *(int*)(obj + 0x1ac) = root;
+        *(void**)(obj + 0x1a0) = &g_wwdSubVtbl;
+        *(int*)(obj + 0x1b0) = 0;
+        *(int*)(obj + 0x1b4) = 0;
+        *(int*)(obj + 0x1b8) = 0;
+        *(void**)obj = &g_wwdObjVtbl;
+        *(int*)(obj + 0x18c) = -1;
+        *(int*)(obj + 0x190) = -1;
+        *(int*)(obj + 0x198) = 0;
+        *(int*)(obj + 0x194) = 0;
+        *(int*)(obj + 0x19c) = 0;
+        result = (CWwdGameObject*)obj;
+    } else {
+        result = 0;
+    }
+    if (result == 0) {
+        return 0;
+    }
+    if (((CWwdFactoryA*)result)->Build4(a2, a3, a4, a5) == 0) {
+        ((CWwdFactoryA*)result)->ScalarDtor(1);
+        return 0;
+    }
+    void* node = m_1dc.AddTail(result);
+    if (node == 0) {
+        ((CWwdFactoryA*)result)->ScalarDtor(1);
+        return 0;
+    }
+    *(void**)(obj + 0x78) = node;
+    if (*(int*)(obj + 8) & 0x200000) {
+        ((CWwdWorker*)*(void**)(obj + 0x7c))->Kick(result);
+    }
+    return result;
+}

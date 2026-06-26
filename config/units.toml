@@ -1377,3 +1377,16 @@ flags = "base"
 unit = "streamrecordloaders"
 source = "src/Gruntz/StreamRecordLoaders.cpp"
 flags = "base"
+
+[[unit]]
+unit = "statedispatch"
+source = "src/Gruntz/StateDispatch.cpp"
+flags = "base"
+[[unit]]
+unit = "groupops"
+source = "src/Gruntz/GroupOps.cpp"
+flags = "base"
+[[unit]]
+unit = "butesectionctor"
+source = "src/Gruntz/CButeSectionCtor.cpp"
+flags = "base"

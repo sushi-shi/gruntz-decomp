@@ -560,3 +560,29 @@ i32 CProjectile::LaunchSound(const char* key) {
     m_200->Play(g_gameReg->m_11c, 0, 0, 1);
     return 1;
 }
+
+// ===========================================================================
+// 0x0ade60 - per-coordinate projectile-action dispatch.  Resolves the activation
+// entry for `coord` (R2 lookup, inlined); if the entry's leading handler slot is
+// non-null, re-resolves the entry and invokes the handler (__thiscall) on this
+// dispatcher object.  Same global-table-driven shape as ProjActLookup's callers.
+// ===========================================================================
+class CProjActDispatcher {
+public:
+    void Dispatch(i32 coord); // 0x0ade60
+};
+
+// The entry's leading slot is a __thiscall handler taking this dispatcher; MSVC5
+// rejects the __thiscall keyword, so model it as a single-inheritance member
+// pointer (a bare 4-byte code address) reinterpreted from the entry word.
+typedef void (CProjActDispatcher::*ProjActHandler)();
+
+RVA(0x000ade60, 0x102)
+void CProjActDispatcher::Dispatch(i32 coord) {
+    CProjActEntry* e = ProjActLookup(coord);
+    if (*(void**)e != 0) {
+        CProjActEntry* e2 = ProjActLookup(coord);
+        ProjActHandler h = *(ProjActHandler*)e2;
+        (this->*h)();
+    }
+}

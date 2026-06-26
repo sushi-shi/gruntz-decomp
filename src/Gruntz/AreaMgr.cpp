@@ -196,3 +196,97 @@ i32 CAreaMgr::SameGroup(i32 a) {
     i32 gc = (m_00 - 1) % 36 / 4 + 1;
     return gc == ga;
 }
+
+// ===========================================================================
+// CSpawnList - the CPtrList-derived list of CSpawnEntry* (m_pNodeHead @+0x04)
+// that CAreaMgr hangs spawn points off.  FindEntry / Extract walk it comparing
+// each entry's name against a search key, building a CString temp per node and
+// tearing it down (the /GX CString-temp EH that drives both functions' frames).
+//
+// Field names are placeholders; only the OFFSETS + emitted code bytes matter.
+// ===========================================================================
+#include <string.h> // inline strcmp
+
+// Each entry exposes its name as a CString by value (NRV, 0x2a1d thunk).
+class CSpawnEntryN {
+public:
+    CString GetName(); // 0x2a1d
+};
+
+struct CSpawnNode {
+    CSpawnNode* m_next; // +0x00
+    void* m_pad04;
+    CSpawnEntryN* m_8; // +0x08 the entry
+};
+
+class CSpawnList {
+public:
+    CSpawnEntryN* FindEntry(CString name, i32 useHash); // 0x09a0d0
+    CSpawnEntryN* Extract(char* name);                  // 0x09a290
+
+    void* m_vptr;       // +0x00 CPtrList vptr
+    CSpawnNode* m_head; // +0x04 m_pNodeHead
+};
+
+// The name-match helper (__cdecl(entry-name, search-name, len), 0x120440).
+extern "C" i32 SpawnNameCmp(const char* a, const char* b, i32 n); // 0x120440
+
+// ---------------------------------------------------------------------------
+// CSpawnList::FindEntry (0x09a0d0) - find an entry by name, either via the
+// SpawnNameCmp hash helper (useHash) or an inline strcmp.  The search key is a
+// by-value CString (destroyed on exit); each node yields a CString name temp.
+// @early-stop
+// /GX CString-temp EH wall: the list walk, the per-node GetName temp + its
+// teardown, the hash / inline-strcmp branches and the by-value-param destruction
+// are logically faithful, but the EH-state frame + CString temp spill layout do
+// not reproduce byte-for-byte (the documented CString-temp-in-loop residual).
+// ---------------------------------------------------------------------------
+RVA(0x0009a0d0, 0x133)
+CSpawnEntryN* CSpawnList::FindEntry(CString name, i32 useHash) {
+    for (CSpawnNode* n = m_head; n != 0; n = n->m_next) {
+        CSpawnEntryN* e = n->m_8;
+        if (e == 0) {
+            continue;
+        }
+        if (useHash != 0) {
+            CString nm = e->GetName();
+            if (SpawnNameCmp(nm, name, nm.GetLength()) == 0) {
+                return e;
+            }
+        } else {
+            CString nm = e->GetName();
+            if (strcmp(name, nm) == 0) {
+                return e;
+            }
+        }
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// CSpawnList::Extract (0x09a290) - like FindEntry but the search key arrives as a
+// raw char* wrapped into a CString up front; per node it inline-compares, and on
+// a miss re-checks through SpawnNameCmp against an empty CString before moving on.
+// @early-stop
+// /GX CString-temp EH wall: same family as FindEntry; logic faithful, EH-state +
+// CString temp layout is the byte residual.
+// ---------------------------------------------------------------------------
+RVA(0x0009a290, 0x138)
+CSpawnEntryN* CSpawnList::Extract(char* name) {
+    CString key(name);
+    for (CSpawnNode* n = m_head; n != 0; n = n->m_next) {
+        CSpawnEntryN* e = n->m_8;
+        if (e == 0) {
+            continue;
+        }
+        CString nm = e->GetName();
+        if (strcmp(key, nm) == 0) {
+            return e;
+        }
+        CString empty;
+        if (SpawnNameCmp(nm, empty, nm.GetLength()) == 0) {
+            return e;
+        }
+    }
+    return 0;
+}

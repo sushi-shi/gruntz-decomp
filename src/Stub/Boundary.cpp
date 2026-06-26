@@ -134,8 +134,6 @@ RVA(0x000788d0, 0x64)
 void Boundary_0788d0() {} // proximity: CTriggerMgr@-0x50 | EngineLabelBacklog@+0x90
 RVA(0x0007cd40, 0x18f)
 void Boundary_07cd40() {} // proximity: EngineLabelBacklog@-0x720 | CTriggerMgr@+0x380
-RVA(0x0007cf40, 0x12e)
-void Boundary_07cf40() {} // proximity: EngineLabelBacklog@-0x920 | CTriggerMgr@+0x180
 RVA(0x00080cf0, 0x12)
 void Boundary_080cf0() {} // proximity: CGruntzApp@-0x80 | CGameApp@+0xe0
 RVA(0x00082aa0, 0x10)
@@ -190,20 +188,12 @@ RVA(0x00099b80, 0xa)
 void Boundary_099b80() {} // proximity: CInGameIcon@-0x70 | CAreaMgr@+0xa0
 RVA(0x00099ba0, 0x29)
 void Boundary_099ba0() {} // proximity: CInGameIcon@-0x90 | CAreaMgr@+0x80
-RVA(0x0009a0d0, 0x133)
-void Boundary_09a0d0() {} // proximity: CAreaMgr@-0x20 | CSpawnEntry@+0x380
-RVA(0x0009a290, 0x138)
-void Boundary_09a290() {} // proximity: CAreaMgr@-0x1e0 | CSpawnEntry@+0x1c0
 RVA(0x0009a420, 0x1c)
 void Boundary_09a420() {} // proximity: CAreaMgr@-0x370 | CSpawnEntry@+0x30
-RVA(0x0009b770, 0xf1)
-void Boundary_09b770() {} // proximity: CAreaMgr@-0x340 | CTimer@+0x340
 RVA(0x0009cab0, 0x23)
 void Boundary_09cab0() {} // proximity: CTimer@-0x7d0 | CLightFx@+0xa70
 RVA(0x000adde0, 0x15)
 void Boundary_0adde0() {} // proximity: CMenuSparkle@-0x200 | CSingleAnimation@+0xa10
-RVA(0x000ade60, 0x102)
-void Boundary_0ade60() {} // proximity: CMenuSparkle@-0x280 | CSingleAnimation@+0x990
 RVA(0x000adfc0, 0x18d)
 void Boundary_0adfc0() {} // proximity: CMenuSparkle@-0x3e0 | CSingleAnimation@+0x830
 RVA(0x000ae1c0, 0xae)
@@ -290,8 +280,6 @@ RVA(0x0010b4f0, 0xaa)
 void Boundary_10b4f0() {} // proximity: EngineLabelBacklog@-0x1d0 | CSBI_RectOnly@+0xe0
 RVA(0x0010bbe0, 0x34)
 void Boundary_10bbe0() {} // proximity: CSBI_RectOnly@-0x50 | CSBI_MenuItem@+0x3e0
-RVA(0x00112080, 0x138)
-void Boundary_112080() {} // proximity: CGruntzMgr@-0x1c0 | CTileTriggerSwitchLogic@+0x220
 RVA(0x00112bf0, 0x5e)
 void Boundary_112bf0() {} // proximity: CTileGridCommand@-0x80 | CTileTriggerSwitchLogic@+0x80
 RVA(0x00113860, 0x3b)
@@ -409,8 +397,6 @@ RVA(0x00141c80, 0xa)
 void Boundary_141c80() {} // proximity: CDirectDrawMgr@-0x880 | CDDrawPtrCollections@+0x40
 RVA(0x00143040, 0x7c)
 void Boundary_143040() {} // proximity: CDDrawPtrCollections@-0x80 | CFileImage@+0xf80
-RVA(0x00143240, 0x143)
-void Boundary_143240() {} // proximity: CDDrawPtrCollections@-0x280 | CFileImage@+0xd80
 RVA(0x001433d0, 0x4f)
 void Boundary_1433d0() {} // proximity: CDDrawPtrCollections@-0x410 | CFileImage@+0xbf0
 RVA(0x00143470, 0x47)
@@ -421,8 +407,6 @@ RVA(0x00143510, 0x71)
 void Boundary_143510() {} // proximity: CDDrawPtrCollections@-0x550 | CFileImage@+0xab0
 RVA(0x00143590, 0x7e)
 void Boundary_143590() {} // proximity: CDDrawPtrCollections@-0x5d0 | CFileImage@+0xa30
-RVA(0x00143630, 0x10d)
-void Boundary_143630() {} // proximity: CDDrawPtrCollections@-0x670 | CFileImage@+0x990
 RVA(0x001437f0, 0x1b)
 void Boundary_1437f0() {} // proximity: CDDrawPtrCollections@-0x830 | CFileImage@+0x7d0
 RVA(0x00143950, 0x56)
@@ -517,24 +501,16 @@ RVA(0x00163a40, 0x41)
 void Boundary_163a40() {} // proximity: CPlaneRender@-0x6d0 | CDDrawWorkerList@+0x1b0
 RVA(0x00163af0, 0xcd)
 void Boundary_163af0() {} // proximity: CPlaneRender@-0x780 | CDDrawWorkerList@+0x100
-RVA(0x00166640, 0x13b)
-void Boundary_166640() {} // proximity: CFileMem@-0x6f0 | CImageSet1@+0x700
 RVA(0x00166810, 0x32)
 void Boundary_166810() {} // proximity: CFileMem@-0x8c0 | CImageSet1@+0x530
 RVA(0x00168c10, 0x46)
 void Boundary_168c10() {} // proximity: CWwdSpatialMgr@-0x320 | CAniRecord@+0x50
 RVA(0x0016be60, 0x2a)
 void Boundary_16be60() {} // proximity: ostream@-0xd0 | CButeMgrHelper@+0x260
-RVA(0x0016d000, 0x189)
-void Boundary_16d000() {} // proximity: streambuf@-0x300 | EngStr@+0x2a0
 RVA(0x0016d790, 0xb1)
 void Boundary_16d790() {} // proximity: CUserBaseLink@-0x80 | CContainerErr@+0x230
-RVA(0x0016d850, 0x11e)
-void Boundary_16d850() {} // proximity: CUserBaseLink@-0x140 | CContainerErr@+0x170
 RVA(0x0016f4a0, 0x1da)
 void Boundary_16f4a0() {} // proximity: CMotionState@-0x7d0 | CButeMgr@+0xe90
-RVA(0x00170210, 0x118)
-void Boundary_170210() {} // proximity: CMotionState@-0x1540 | CButeMgr@+0x120
 RVA(0x00174ed0, 0x5d)
 void Boundary_174ed0() {} // proximity: CButeMgr@-0x710 | CImage@+0x8f0
 RVA(0x00175780, 0x3f)
