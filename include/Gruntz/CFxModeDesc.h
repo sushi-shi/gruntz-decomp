@@ -20,39 +20,47 @@ public:
     i32 m_08;
     i32 m_0c;
     i32 m_10;
+}; // 0x14 - the shared base; the upper fields (m_14..m_20) belong to whichever
+   // variants actually carry them, so each variant's stack temp is sized to it.
+
+// The concrete modes: each derived ctor runs the base ctor, then stamps its type
+// tag (2..6) and that type's defaults. The upper fields a variant writes are
+// declared here (offsets continue at +0x14); offsets + store order are
+// load-bearing, and the per-variant size determines the caller's stack frame.
+class CFxModeT2 : public CFxModeDesc {
+public:
+    CFxModeT2(); // 0x17e840
     i32 m_14;
     i32 m_18;
     i32 m_1c;
     i32 m_20;
-};
+}; // 0x24
 
-// The concrete modes: each derived ctor runs the base ctor, then stamps its type
-// tag (2..6) and that type's defaults. Each writes a different subset of the
-// shared base fields; offsets + the store order are load-bearing.
-class CFxModeT2 : public CFxModeDesc {
-public:
-    CFxModeT2(); // 0x17e840
-};
-
-// The type-3 mode: base + (type=3, m_0c=1, m_10=0xf).
+// The type-3 mode: base + (type=3, m_0c=1, m_10=0xf). No upper fields => 0x14.
 class CFxModeT3 : public CFxModeDesc {
 public:
     CFxModeT3(); // 0x17e880
-};
+}; // 0x14
 
 class CFxModeT4 : public CFxModeDesc {
 public:
     CFxModeT4(); // 0x17e8b0
-};
+    i32 m_14;
+}; // 0x18
 
 class CFxModeT5 : public CFxModeDesc {
 public:
     CFxModeT5(); // 0x17e8e0
-};
+    i32 m_14;
+}; // 0x18
 
 class CFxModeT6 : public CFxModeDesc {
 public:
     CFxModeT6(); // 0x17e910
-};
+    i32 m_14;
+    i32 m_18;
+    i32 m_1c;
+    i32 m_20;
+}; // 0x24
 
 #endif // GRUNTZ_CFXMODEDESC_H

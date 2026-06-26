@@ -236,16 +236,6 @@ RVA(0x000f2b20, 0x6e1)
 void Boundary_0f2b20() {} // proximity: CGrunt@-0x430 | CAttract@+0x77e0
 RVA(0x000fa150, 0x74)
 void Boundary_0fa150() {} // proximity: CGrunt@-0x7a60 | CAttract@+0x1b0
-RVA(0x000fa410, 0xf5)
-void Boundary_0fa410() {} // proximity: CAttract@-0x110 | CStaticHazard@+0x17e0
-RVA(0x000fa550, 0x10c)
-void Boundary_0fa550() {} // proximity: CAttract@-0x250 | CStaticHazard@+0x16a0
-RVA(0x000fa790, 0x104)
-void Boundary_0fa790() {} // proximity: CAttract@-0x490 | CStaticHazard@+0x1460
-RVA(0x000fa8f0, 0x118)
-void Boundary_0fa8f0() {} // proximity: CAttract@-0x5f0 | CStaticHazard@+0x1300
-RVA(0x000faa60, 0xed)
-void Boundary_0faa60() {} // proximity: CAttract@-0x760 | CStaticHazard@+0x1190
 RVA(0x000fbb70, 0x15)
 void Boundary_0fbb70() {} // proximity: CAttract@-0x1870 | CStaticHazard@+0x80
 RVA(0x00100780, 0xb)
@@ -254,8 +244,6 @@ RVA(0x00104c80, 0x1f)
 void Boundary_104c80() {} // proximity: CSBI_WellGoo@-0xd0 | CSBI_GruntMachine@+0x60
 RVA(0x00104dd0, 0x6b)
 void Boundary_104dd0() {} // proximity: CSBI_RectOnly@-0x70 | EngineLabelBacklog@+0x90
-RVA(0x00109e00, 0x245)
-void Boundary_109e00() {} // proximity: EngineLabelBacklog@-0x230 | CWarpStoneFly@+0x2f0
 RVA(0x0010b4f0, 0xaa)
 void Boundary_10b4f0() {} // proximity: EngineLabelBacklog@-0x1d0 | CSBI_RectOnly@+0xe0
 RVA(0x0010bbe0, 0x34)
@@ -487,8 +475,6 @@ RVA(0x0016be60, 0x2a)
 void Boundary_16be60() {} // proximity: ostream@-0xd0 | CButeMgrHelper@+0x260
 RVA(0x0016d790, 0xb1)
 void Boundary_16d790() {} // proximity: CUserBaseLink@-0x80 | CContainerErr@+0x230
-RVA(0x0016f4a0, 0x1da)
-void Boundary_16f4a0() {} // proximity: CMotionState@-0x7d0 | CButeMgr@+0xe90
 RVA(0x00174ed0, 0x5d)
 void Boundary_174ed0() {} // proximity: CButeMgr@-0x710 | CImage@+0x8f0
 RVA(0x00175780, 0x3f)

@@ -1395,3 +1395,12 @@ flags = "base"
 unit = "logicactreg"
 source = "src/Gruntz/LogicActReg.cpp"
 flags = "base"
+
+[[unit]]
+unit = "csoundfxemitter"
+source = "src/Gruntz/CSoundFxEmitter.cpp"
+flags = "base"
+[[unit]]
+unit = "cmgrsettings"
+source = "src/Gruntz/CMgrSettings.cpp"
+flags = "base"
