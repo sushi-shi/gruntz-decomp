@@ -545,58 +545,26 @@ RVA(0x00157240, 0x3c)
 void Boundary_157240() {} // proximity: CDDrawWorkerList@-0xf0 | CDDrawWorkerB@+0x40
 RVA(0x001578b0, 0x51)
 void Boundary_1578b0() {} // proximity: CFileMemBase@-0x60 | CFileMem@+0xd0
-RVA(0x00157a80, 0x51)
-void Boundary_157a80() {} // proximity: CFileMem@-0x30 | CDDrawSubMgrLeaf@+0x60
 RVA(0x00157b00, 0xb2)
 void Boundary_157b00() {} // proximity: CDDrawSubMgrLeaf@-0x20 | CDDrawMapHolder@+0xc0
-RVA(0x001587f0, 0xf1)
-void Boundary_1587f0() {} // proximity: LeafElementObj@-0x30 | CDDrawSubMgrDraco@+0x100
-RVA(0x00158f30, 0x27)
-void Boundary_158f30() {} // proximity: CDDrawWorkerMgr@-0x50 | CDDrawSurfacePair@+0x1c0
-RVA(0x00158fb0, 0x19)
-void Boundary_158fb0() {} // proximity: CDDrawWorkerMgr@-0xd0 | CDDrawSurfacePair@+0x140
 RVA(0x00159250, 0x185)
 void Boundary_159250() {} // proximity: CDDrawChildGroup@-0x60 | CWwdObjMgr@+0x3b0
 RVA(0x00159440, 0x170)
 void Boundary_159440() {} // proximity: CDDrawChildGroup@-0x250 | CWwdObjMgr@+0x1c0
 RVA(0x001598d0, 0x13d)
 void Boundary_1598d0() {} // proximity: CSpriteFactory@-0x120 | CDDrawChildGroup@+0x1a0
-RVA(0x0015a130, 0xdc)
-void Boundary_15a130() {} // proximity: CDDrawWorkerMgr@-0x240 | CWwdObjMgr@+0x960
-RVA(0x0015a860, 0x57)
-void Boundary_15a860() {} // proximity: CDDrawWorkerMgr@-0x970 | CWwdObjMgr@+0x230
-RVA(0x0015a940, 0x52)
-void Boundary_15a940() {} // proximity: CDDrawWorkerMgr@-0xa50 | CWwdObjMgr@+0x150
-RVA(0x0015b2a0, 0xb)
-void Boundary_15b2a0() {} // proximity: CWwdObjMgr@-0xd0 | CRemusNode@+0x20
 RVA(0x0015b4f0, 0xde)
 void Boundary_15b4f0() {} // proximity: CLogicRecord@-0x1b0 | CWwdGameObject@+0x450
-RVA(0x0015b5d0, 0x7c)
-void Boundary_15b5d0() {} // proximity: CLogicRecord@-0x290 | CWwdGameObject@+0x370
-RVA(0x0015b650, 0x4d)
-void Boundary_15b650() {} // proximity: CLogicRecord@-0x310 | CWwdGameObject@+0x2f0
 RVA(0x0015b6d0, 0x5b)
 void Boundary_15b6d0() {} // proximity: CLogicRecord@-0x390 | CWwdGameObject@+0x270
 RVA(0x0015b790, 0x1a6)
 void Boundary_15b790() {} // proximity: CLogicRecord@-0x450 | CWwdGameObject@+0x1b0
 RVA(0x0015bad0, 0x153)
 void Boundary_15bad0() {} // proximity: CWwdGameObject@-0x190 | CDDrawBlitParam@+0x7c0
-RVA(0x0015bc30, 0x16)
-void Boundary_15bc30() {} // proximity: CWwdGameObject@-0x2f0 | CDDrawBlitParam@+0x660
-RVA(0x0015bc50, 0x7c)
-void Boundary_15bc50() {} // proximity: CWwdGameObject@-0x310 | CDDrawBlitParam@+0x640
 RVA(0x0015bd10, 0x1ef)
 void Boundary_15bd10() {} // proximity: CWwdGameObject@-0x3d0 | CDDrawBlitParam@+0x580
-RVA(0x0015bfb0, 0x4a)
-void Boundary_15bfb0() {} // proximity: CWwdGameObject@-0x670 | CDDrawBlitParam@+0x2e0
 RVA(0x0015c070, 0x159)
 void Boundary_15c070() {} // proximity: CWwdGameObject@-0x730 | CDDrawBlitParam@+0x220
-RVA(0x0015c1d0, 0x26)
-void Boundary_15c1d0() {} // proximity: CWwdGameObject@-0x890 | CDDrawBlitParam@+0xc0
-RVA(0x0015c200, 0x82)
-void Boundary_15c200() {} // proximity: CWwdGameObject@-0x8c0 | CDDrawBlitParam@+0x90
-RVA(0x0015c320, 0x40)
-void Boundary_15c320() {} // proximity: CDDrawBlitParam@-0x50 | CAniAdvanceCursor@+0x40
 RVA(0x0015ca70, 0x15b)
 void Boundary_15ca70() {} // proximity: CDDrawBlitParam@-0x100 | CSprite@+0x1c0
 RVA(0x0015d9a0, 0xdc)

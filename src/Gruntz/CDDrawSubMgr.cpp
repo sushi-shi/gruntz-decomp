@@ -234,6 +234,8 @@ public:
     void Init_15c290(CDDrawBlitParamSrc* src);
     void Reset_15c2c0();
     void Setup_15c2d0(CDDrawBlitParamSrc* src);
+    void Recompute_15c320(i32 a1);
+    i32 SelectCue_157a80(void* force);
     i32 Serialize_15c970(CWwdArchive* ar);
     i32 Deserialize_15ca70(CWwdArchive* ar);
     i32 Dispatch_15c900(CWwdArchive* ar, i32 type, i32 a3, i32 a4);
@@ -615,6 +617,63 @@ void CDDrawBlitParam::Setup_15c2d0(CDDrawBlitParamSrc* src) {
     }
 }
 
+extern i32 g_aniCueItem; // 0x61ab24 (DATA-annotated forward decl below)
+
+// 0x157a80: pick the active cue object from m_0c->+0x20.  When `force` is null,
+// require the cue present and its +0x78 set; cache it at m_2c (m_30 = present?
+// 0 : 1), tag the global cue, and report success.  __thiscall, 1 arg (ret 0x4).
+RVA(0x00157a80, 0x51)
+i32 CDDrawBlitParam::SelectCue_157a80(void* force) {
+    char* mgr = (char*)m_0c;
+    if (mgr == 0) {
+        return 0;
+    }
+    char* cue = *(char**)(mgr + 0x20);
+    if (force == 0) {
+        if (cue == 0) {
+            return 0;
+        }
+        if (*(i32*)(cue + 0x78) == 0) {
+            return 0;
+        }
+    }
+    if (cue == 0) {
+        m_30 = 1;
+    } else {
+        m_30 = 0;
+    }
+    m_2c = (i32)cue;
+    g_aniCueItem = 0x64;
+    return 1;
+}
+
+// 0x15c320: recompute the blit-param from the already-stored m_14 source (the
+// Setup twin that keeps m_14, fixes the scale to 1.0f, and only clears m_20 when
+// `a1` is set).  Reads e = src->m_10 > 0 ? *src->m_0c : 0, then v = *(e+0x1c).
+RVA(0x0015c320, 0x40)
+void CDDrawBlitParam::Recompute_15c320(i32 a1) {
+    CDDrawBlitParamSrc* src = (CDDrawBlitParamSrc*)m_14;
+    if (src == 0) {
+        return;
+    }
+    m_1c = 0;
+    char* e;
+    if (src->m_10 > 0) {
+        e = *(char**)src->m_0c;
+    } else {
+        e = 0;
+    }
+    m_18 = (i32)e;
+    m_28 = 0;
+    i32 v = *(i32*)(e + 0x1c);
+    m_38 = 1.0f;
+    m_30 = v;
+    m_34 = v;
+    if (a1 != 0) {
+        m_20 = 0;
+    }
+}
+
 // ---------------------------------------------------------------------------
 // 0x15c970: serialize the blit-param.  Writes the eight dwords m_1c..m_38 to
 // the archive (4 bytes each via slot +0x30), zeroes a 0x80-byte label buffer,
@@ -719,7 +778,7 @@ public:
     virtual void Slot14();
     virtual void Slot18();
     virtual void Slot1C();
-    virtual void Slot20();
+    virtual i32 Slot20(); // status probe (5 == matched)
     virtual void Slot24();
     virtual void Slot28();
     virtual void Slot2C();
@@ -759,6 +818,8 @@ public:
     i32 Deserialize_15b0e0(CWwdArchive* ar, u32 count, i32 flag);
     i32 PruneOrphans_15b1d0();
     void InsertSorted_159e40(CWwdObject* obj, i32 addToMaps);
+    CWwdObject* FindByWorker_15a860(i32 type, void* key);
+    CWwdObject* FindByField_15a940(i32 type, void* key);
 
     char m_pad00[0x0c]; // +0x00..0x0b
     i32 m_0c;           // +0x0c parent handle
@@ -1035,6 +1096,67 @@ void CWwdObjMgr::InsertSorted_159e40(CWwdObject* obj, i32 addToMaps) {
     obj->m_78 = (i32)m_10.AddTail(obj);
 }
 
+// ---------------------------------------------------------------------------
+// 0x15a860: scan the sorted list for the first object whose status probe (slot
+// +0x20) is 5, whose +0x04 key matches `type`, and whose worker's +0x10 geometry
+// matches the requested key's +0x10.  Returns 0 if none.
+// @early-stop
+// 86% — logic/offsets/CFG byte-exact; the residual is the loop-tail epilogue:
+// retail bottom-tests `jne looptop` and falls through to a SEPARATE `xor eax,eax`
+// return-0 (distinct from the empty-list return-0), our cl shares one return-0 and
+// loops via `je exit; jmp looptop`.  The documented loop-epilogue-merge wall
+// (same as CWwdObjMgr::ForEachSerialize_15b020); no source lever splits it.
+RVA(0x0015a860, 0x57)
+CWwdObject* CWwdObjMgr::FindByWorker_15a860(i32 type, void* key) {
+    struct HLayout {
+        char _pad[0x14];
+        CWwdNode* m_head;
+    };
+    CWwdNode* node = ((HLayout*)this)->m_head;
+    if (node == 0) {
+        return 0;
+    }
+    do {
+        CWwdNode* cur = node;
+        node = node->m_next;
+        CWwdObject* obj = cur->m_obj;
+        if (obj->Slot20() == 5 && *(i32*)((char*)obj + 0x4) == type) {
+            void* worker = *(void**)((char*)obj + 0x7c);
+            if (*(i32*)((char*)worker + 0x10) == *(i32*)((char*)key + 0x10)) {
+                return obj;
+            }
+        }
+    } while (node != 0);
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// 0x15a940: the +0xe8-field twin of FindByWorker_15a860 — match the object's
+// +0xe8 field directly against `key` instead of the worker geometry.
+// @early-stop
+// 85% — same loop-epilogue-merge wall as FindByWorker_15a860 (logic/offsets exact).
+RVA(0x0015a940, 0x52)
+CWwdObject* CWwdObjMgr::FindByField_15a940(i32 type, void* key) {
+    struct HLayout {
+        char _pad[0x14];
+        CWwdNode* m_head;
+    };
+    CWwdNode* node = ((HLayout*)this)->m_head;
+    if (node == 0) {
+        return 0;
+    }
+    do {
+        CWwdNode* cur = node;
+        node = node->m_next;
+        CWwdObject* obj = cur->m_obj;
+        if (obj->Slot20() == 5 && *(i32*)((char*)obj + 0x4) == type &&
+            *(void**)((char*)obj + 0xe8) == key) {
+            return obj;
+        }
+    } while (node != 0);
+    return 0;
+}
+
 // ===========================================================================
 // 0x031250 — a NON-MEMBER of the cluster (distinct class): a queue-drain probe.
 // Walks the singly-linked list at this+0x68, popping each head node; for each
@@ -1197,10 +1319,26 @@ public:
     i32 m_10;                          // +0x10  count
 };
 
+// The sound-cue enable flag + a float pan/volume scale constant.
+DATA(0x0021ab20)
+extern i32 g_sndEnabled; // 0x61ab20
+DATA(0x001eff2c)
+extern float g_sndPanScale; // 0x5eff2c
+
+// The +0x10 sound player: a __thiscall play entry that consumes 4 args.
+class CAniSoundPlay {
+public:
+    i32 Play_1360d0(i32 vol, i32 pan, i32 a3, i32 a4); // 0x1360d0
+};
+
 // The per-frame draw trigger (the context's +0x5c screen-X is the blit cue arg).
+// Overlaid on the cursor: +0x0c context, +0x10 sound player.
 class CAniBlitTrigger {
 public:
-    void TriggerBlit_1587f0(i32 cue, i32 a1, i32 a2, i32 a3); // 0x1587f0  __thiscall on the cursor
+    i32 TriggerBlit_1587f0(i32 pos, i32 center, i32 range1, i32 range2); // 0x1587f0  __thiscall on the cursor
+    char m_pad00[0x0c];   // +0x00..0x0b
+    void* m_0c;           // +0x0c geometry context
+    CAniSoundPlay* m_10;  // +0x10 sound player
 };
 
 // The random-trigger cue table entry (a LeafCue: the gated sound-play entry).
@@ -1231,6 +1369,65 @@ public:
 
 // __ftol the (int)double scale-cast lowers to (0x11f570).
 extern "C" i32 __ftol();
+
+// ---------------------------------------------------------------------------
+// 0x1587f0: per-frame sound-cue trigger.  Defaults the (center,range1,range2)
+// triple from the geometry context when non-positive, clamps the signed offset
+// (pos-center) to +/-min(range1,range2), scales it to a [-100,100] pan, derives
+// the volume (100, or 100*cue*scale when the cue tag != 100), and hands both to
+// the +0x10 sound player.  __thiscall, 4 args (ret 0x10).  No-op (0) when sound
+// is disabled.
+// @early-stop
+// 72% — logic/CFG/offsets/stack-arg flow are instruction-for-instruction identical
+// to retail; the entire residual is a register-allocation rotation: retail pins
+// `this` in a 4th callee-saved register (ebp) and keeps the (center,range1,range2,d)
+// quad in ebx/edi/esi/ecx, our cl reuses ebx for `this` and rotates the quad into
+// edi/esi/ecx/eax — flipping the ModRM byte of nearly every access.  No source
+// lever picks ebp for `this` (docs/patterns/zero-register-pinning.md).
+RVA(0x001587f0, 0xf1)
+i32 CAniBlitTrigger::TriggerBlit_1587f0(i32 pos, i32 center, i32 range1, i32 range2) {
+    if (g_sndEnabled == 0) {
+        return 0;
+    }
+    if (center <= 0) {
+        center = *(i32*)(*(char**)(*(char**)((char*)m_0c + 0x24) + 0x5c) + 0x84);
+    }
+    if (range1 <= 0) {
+        char* m4 = *(char**)((char*)m_0c + 0x4);
+        range1 = *(i32*)(*(char**)(m4 + 0x10) + 0x10) << 2;
+    }
+    if (range2 <= 0) {
+        char* m4 = *(char**)((char*)m_0c + 0x4);
+        range2 = *(i32*)(*(char**)(m4 + 0x10) + 0x10) / 3;
+    }
+    i32 d = pos - center;
+    i32 pan;
+    if (d >= 0) {
+        if (d < range1 && d < range2) {
+            pan = d;
+        } else {
+            pan = range1 >= range2 ? range2 : range1;
+        }
+    } else {
+        i32 ad = -d;
+        if (ad < range1 && ad < range2) {
+            pan = d;
+        } else {
+            pan = range1 < range2 ? range1 : range2;
+            pan = -pan;
+        }
+    }
+    i32 vol = (pan * 100) / range2;
+    i32 cue = g_aniCueItem;
+    i32 amp = 100;
+    i32 vscale;
+    if (cue == 100) {
+        vscale = amp;
+    } else {
+        vscale = (i32)(amp * (cue * g_sndPanScale));
+    }
+    return m_10->Play_1360d0(vscale, vol, 0, 0);
+}
 
 // ---------------------------------------------------------------------------
 // 0x15c360: advance the animation cursor by `elapsed` ticks.  __thiscall, 1 arg
@@ -1745,6 +1942,24 @@ public:
     void Reset_15b980();  // 0x15b980
     void Reset_15bf00();  // 0x15bf00
     void Reload_166810(); // 0x166810 (external base reset, no body)
+
+    // Release the four +0x7c..0x90 sub-objects + re-seed status (the dtor's
+    // shared "drop members" helper; two identical instantiations + a +0x18c
+    // variant).  Raw-offset access (documented).
+    void ReleaseSubs_15b5d0();
+    void ReleaseSubs_15bc50();
+    void ReleaseSubsClearKey_15c200();
+    // 0x15b650: tick/notify — under flag 0x8 decrement the +0x128 budget (latch
+    // the +0x7c sub-object's error on underflow); else hand `p` to the +0x80
+    // notifier's +0x10 cdecl callback.
+    void Notify_15b650(void* p);
+};
+
+// The +0x80 notifier: a cdecl callback pointer at +0x10 invoked with the owner.
+class CWwdNotifier {
+public:
+    char m_pad00[0x10]; // +0x00..0x0f
+    void (*m_10)(void*); // +0x10
 };
 
 // ---------------------------------------------------------------------------
@@ -1818,6 +2033,269 @@ void CWwdFactoryObject::Reset_15bf00() {
     *(i32*)(o + 0x5c) = (i32)0x80000000;
     *(i32*)(o + 0x20) = (i32)0x80000000;
     *(i32*)(o + 0x38) = -1;
+}
+
+// ---------------------------------------------------------------------------
+// 0x15b5d0: drop the four +0x7c/+0x80/+0x88/+0x90 sub-objects (each via its
+// scalar-dtor virtual, delete flag) and re-seed the status fields (+0xc0/+0x5c/
+// +0x20 = 0x80000000, +0xd8/+0x38 = -1).  No geometry reset.  __thiscall, ret 0.
+RVA(0x0015b5d0, 0x7c)
+void CWwdFactoryObject::ReleaseSubs_15b5d0() {
+    char* o = (char*)this;
+    CWwdFactoryObject* s;
+    if ((s = *(CWwdFactoryObject**)(o + 0x7c)) != 0) {
+        s->ScalarDtor(1);
+        *(i32*)(o + 0x7c) = 0;
+    }
+    if ((s = *(CWwdFactoryObject**)(o + 0x80)) != 0) {
+        s->ScalarDtor(1);
+        *(i32*)(o + 0x80) = 0;
+    }
+    if ((s = *(CWwdFactoryObject**)(o + 0x88)) != 0) {
+        s->ScalarDtor(1);
+        *(i32*)(o + 0x88) = 0;
+    }
+    if ((s = *(CWwdFactoryObject**)(o + 0x90)) != 0) {
+        s->ScalarDtor(1);
+        *(i32*)(o + 0x90) = 0;
+    }
+    *(i32*)(o + 0xc0) = (i32)0x80000000;
+    *(i32*)(o + 0xd8) = -1;
+    *(i32*)(o + 0x5c) = (i32)0x80000000;
+    *(i32*)(o + 0x20) = (i32)0x80000000;
+    *(i32*)(o + 0x38) = -1;
+}
+
+// ---------------------------------------------------------------------------
+// 0x15bc50: identical instantiation of ReleaseSubs_15b5d0 in a sibling subclass.
+RVA(0x0015bc50, 0x7c)
+void CWwdFactoryObject::ReleaseSubs_15bc50() {
+    char* o = (char*)this;
+    CWwdFactoryObject* s;
+    if ((s = *(CWwdFactoryObject**)(o + 0x7c)) != 0) {
+        s->ScalarDtor(1);
+        *(i32*)(o + 0x7c) = 0;
+    }
+    if ((s = *(CWwdFactoryObject**)(o + 0x80)) != 0) {
+        s->ScalarDtor(1);
+        *(i32*)(o + 0x80) = 0;
+    }
+    if ((s = *(CWwdFactoryObject**)(o + 0x88)) != 0) {
+        s->ScalarDtor(1);
+        *(i32*)(o + 0x88) = 0;
+    }
+    if ((s = *(CWwdFactoryObject**)(o + 0x90)) != 0) {
+        s->ScalarDtor(1);
+        *(i32*)(o + 0x90) = 0;
+    }
+    *(i32*)(o + 0xc0) = (i32)0x80000000;
+    *(i32*)(o + 0xd8) = -1;
+    *(i32*)(o + 0x5c) = (i32)0x80000000;
+    *(i32*)(o + 0x20) = (i32)0x80000000;
+    *(i32*)(o + 0x38) = -1;
+}
+
+// ---------------------------------------------------------------------------
+// 0x15c200: the +0x18c-clearing twin — clear the byte at +0x18c first, then the
+// identical sub-object release + status re-seed.  __thiscall, ret 0.
+RVA(0x0015c200, 0x82)
+void CWwdFactoryObject::ReleaseSubsClearKey_15c200() {
+    char* o = (char*)this;
+    *(char*)(o + 0x18c) = 0;
+    CWwdFactoryObject* s;
+    if ((s = *(CWwdFactoryObject**)(o + 0x7c)) != 0) {
+        s->ScalarDtor(1);
+        *(i32*)(o + 0x7c) = 0;
+    }
+    if ((s = *(CWwdFactoryObject**)(o + 0x80)) != 0) {
+        s->ScalarDtor(1);
+        *(i32*)(o + 0x80) = 0;
+    }
+    if ((s = *(CWwdFactoryObject**)(o + 0x88)) != 0) {
+        s->ScalarDtor(1);
+        *(i32*)(o + 0x88) = 0;
+    }
+    if ((s = *(CWwdFactoryObject**)(o + 0x90)) != 0) {
+        s->ScalarDtor(1);
+        *(i32*)(o + 0x90) = 0;
+    }
+    *(i32*)(o + 0xc0) = (i32)0x80000000;
+    *(i32*)(o + 0xd8) = -1;
+    *(i32*)(o + 0x5c) = (i32)0x80000000;
+    *(i32*)(o + 0x20) = (i32)0x80000000;
+    *(i32*)(o + 0x38) = -1;
+}
+
+// ---------------------------------------------------------------------------
+// 0x15b650: per-tick notify.  When flag bit 0x8 is set, subtract `p`'s +0x120
+// budget from this+0x128 and, if non-positive, latch error 0x1c on the +0x7c
+// worker.  Otherwise hand `p` to the +0x80 notifier's +0x10 cdecl callback (with
+// the owner), after recording `p` at +0x84.  __thiscall, 1 arg (ret 0x4).
+// @early-stop
+// 84% — structure/CFG/offsets/stores byte-exact; the residual is two instruction-
+// selection coin-flips MSVC5 won't flip from source: the flag test (`movb;testb`
+// vs retail `testb mem`) and the budget subtract (mem-operand `sub eax,[p+0x120]`
+// vs retail's `mov edx,[p+0x120]` reg-load first).  Entropy-tail / zero-register-
+// pinning wall (docs/patterns/zero-register-pinning.md).
+RVA(0x0015b650, 0x4d)
+void CWwdFactoryObject::Notify_15b650(void* p) {
+    char* o = (char*)this;
+    if (*(unsigned char*)(o + 0x8) & 0x8) {
+        i32 d = *(i32*)(o + 0x128) - *(i32*)((char*)p + 0x120);
+        *(i32*)(o + 0x128) = d;
+        if (d <= 0) {
+            *(i32*)(*(char**)(o + 0x7c) + 0x1c) = 0x1c;
+        }
+    } else {
+        CWwdNotifier* h = *(CWwdNotifier**)(o + 0x80);
+        if (h != 0) {
+            *(void**)(o + 0x84) = p;
+            h->m_10(this);
+        }
+    }
+}
+
+// ===========================================================================
+// Small leaf ctors + a rect-overlap predicate from the same cluster.
+// ===========================================================================
+
+// The +0x9c sub-object built by the 0x159250 factory: two zeroed dword fields.
+class CWwdSlot9c {
+public:
+    char m_pad00[0x08]; // +0x00..0x07
+    i32 m_08;           // +0x08
+    i32 m_0c;           // +0x0c
+    CWwdSlot9c();
+};
+
+// 0x15b2a0: zero +0x0c then +0x08; returns `this` (ctor).
+RVA(0x0015b2a0, 0xb)
+CWwdSlot9c::CWwdSlot9c() {
+    m_0c = 0;
+    m_08 = 0;
+}
+
+// The severus worker base vtable (stamped last in the wide-object dtors) and a
+// small polymorphic worker whose 3-arg ctor stamps a leaf vtable.  Reloc-masked
+// DATA externs (RVA = VA - 0x400000).
+DATA(0x001e8cb4)
+extern void* g_severusWorkerDtorVtbl; // 0x5e8cb4
+DATA(0x001effa0)
+extern void* g_severusWorker3Vtbl; // 0x5effa0
+
+// 0x158f30: 3-arg leaf-worker ctor — store the three args at +0x4/+0x8/+0xc,
+// stamp the leaf vtable, zero +0x10.  __thiscall, ret 0xc.
+class CSeverusWorker3 {
+public:
+    void* m_vtbl; // +0x00
+    i32 m_04;     // +0x04
+    i32 m_08;     // +0x08
+    i32 m_0c;     // +0x0c
+    i32 m_10;     // +0x10
+    CSeverusWorker3(i32 a1, i32 a2, i32 a3);
+};
+RVA(0x00158f30, 0x27)
+CSeverusWorker3::CSeverusWorker3(i32 a1, i32 a2, i32 a3) {
+    m_04 = a2;
+    m_08 = a3;
+    m_0c = a1;
+    m_vtbl = &g_severusWorker3Vtbl;
+    m_10 = 0;
+}
+
+// 0x158fb0: severus worker base re-init — +0x4 = -1, +0x8/+0xc/+0x10 = 0, stamp
+// the base vtable.  A void method (keeps `this` in ecx; not a ctor).  ret 0.
+class CSeverusWorkerBase {
+public:
+    void* m_vtbl; // +0x00
+    i32 m_04;     // +0x04
+    i32 m_08;     // +0x08
+    i32 m_0c;     // +0x0c
+    i32 m_10;     // +0x10
+    void Init_158fb0();
+};
+RVA(0x00158fb0, 0x19)
+void CSeverusWorkerBase::Init_158fb0() {
+    m_04 = -1;
+    m_10 = 0;
+    m_08 = 0;
+    m_0c = 0;
+    m_vtbl = &g_severusWorkerDtorVtbl;
+}
+
+// 0x15bfb0: rect-overlap predicate (RECT a, RECT b): true iff a.left <= b.right,
+// a.right >= b.left, a.top <= b.bottom, a.bottom >= b.top.  __stdcall, 2 args.
+struct CDDrawRect {
+    i32 left;   // +0x00
+    i32 top;    // +0x04
+    i32 right;  // +0x08
+    i32 bottom; // +0x0c
+};
+RVA(0x0015bfb0, 0x4a)
+i32 __stdcall RectsOverlap_15bfb0(CDDrawRect* a, CDDrawRect* b) {
+    if (a->left > b->right) {
+        return 0;
+    }
+    if (a->right < b->left) {
+        return 0;
+    }
+    if (a->top > b->bottom) {
+        return 0;
+    }
+    return a->bottom >= b->top;
+}
+
+// 0x15a130: bounding-box overlap test between two wide objects.  Each box is its
+// screen pos (+0x5c/+0x60) plus a local AABB (a1: +0x144..+0x150; a2: +0x154..
+// +0x160).  Either box invalid (its first AABB field == INT_MIN) -> no overlap.
+// __stdcall, 2 args (ret 0x8).
+// @early-stop
+// 76% — logic/CFG/offsets/compares byte-exact (both INT_MIN early-outs + the four
+// edge tests match); the residual is a spill-frame strategy difference: retail
+// allocates a fresh `sub esp,0x20` local frame for the 3 spilled box edges, our cl
+// reuses the incoming arg stack slots (`push ecx`, no frame) — shifting every spill
+// offset + rotating esi/edi.  A non-steerable codegen heuristic (zero-register-
+// pinning family); docs/patterns/zero-register-pinning.md.
+struct CWwdBox {
+    char m_pad00[0x5c];
+    i32 m_5c; // screen X
+    i32 m_60; // screen Y
+    char m_pad64[0x144 - 0x64];
+    i32 m_144; // a1 AABB: left
+    i32 m_148; // a1 AABB: top
+    i32 m_14c; // a1 AABB: right
+    i32 m_150; // a1 AABB: bottom
+    i32 m_154; // a2 AABB: left
+    i32 m_158; // a2 AABB: top
+    i32 m_15c; // a2 AABB: right
+    i32 m_160; // a2 AABB: bottom
+};
+RVA(0x0015a130, 0xdc)
+i32 __stdcall BoxesOverlap_15a130(CWwdBox* a1, CWwdBox* a2) {
+    if (a2->m_154 == (i32)0x80000000) {
+        return 0;
+    }
+    if (a1->m_144 == (i32)0x80000000) {
+        return 0;
+    }
+    i32 a1L = a1->m_144 + a1->m_5c;
+    i32 a1R = a1->m_14c + a1->m_5c;
+    i32 a1T = a1->m_148 + a1->m_60;
+    i32 a1B = a1->m_150 + a1->m_60;
+    i32 a2L = a2->m_154 + a2->m_5c;
+    i32 a2T = a2->m_158 + a2->m_60;
+    i32 a2B = a2->m_160 + a2->m_60;
+    i32 a2R = a2->m_15c + a2->m_5c;
+    if (a1L > a2R) {
+        return 0;
+    }
+    if (a1R < a2L) {
+        return 0;
+    }
+    if (a1T > a2B) {
+        return 0;
+    }
+    return a1B >= a2T;
 }
 
 // @early-stop
