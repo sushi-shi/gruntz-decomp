@@ -169,6 +169,7 @@ class CWarpStonePad : public CUserLogic {
 public:
     CWarpStonePad(CGameObject* obj); // 0x10d650
     virtual ~CWarpStonePad() OVERRIDE;
+    static void InitActReg();   // 0x10d840
     void FireWarp(i32 coord);   // 0x10d8c0 (vtable slot 4)
     static void RegisterActs(); // 0x10da20
     i32 AdvanceAnim();          // 0x10dc20
@@ -178,6 +179,7 @@ class CTileTriggerSwitch : public CUserLogic {
 public:
     CTileTriggerSwitch(CGameObject* obj); // 0x10dc40
     virtual ~CTileTriggerSwitch() OVERRIDE;
+    static void InitActReg();   // 0x10de20
     static void RegisterActs(); // 0x10e000
     i32 AdvanceAnim();          // 0x10e200
 };
@@ -1222,6 +1224,15 @@ CWarpStonePad::CWarpStonePad(CGameObject* obj) : CUserLogic(obj) {
     m_14->m_1c = g_buteTree.Find("A");
 }
 
+// --- CWarpStonePad::InitActReg (0x10d840) ---
+// Construct the class's activation-coordinate registry singleton
+// (g_warpStonePadActReg @0x64e6a0) over the fixed range [2000, 2010] via the
+// shared registry ctor (0x408710). Free init thunk; reloc-masked.
+RVA(0x0010d840, 0x15)
+void CWarpStonePad::InitActReg() {
+    g_warpStonePadActReg.Construct(2000, 2010);
+}
+
 // --- CWarpStonePad::FireWarp (0x10d8c0), vtable slot 4 ---
 // Look the activation coordinate up in the class's own registry singleton
 // (g_warpStonePadActReg); if the resolved entry carries a registered handler,
@@ -1283,6 +1294,15 @@ CTileTriggerSwitch::CTileTriggerSwitch(CGameObject* obj) : CUserLogic(obj) {
     m_38->m_40 |= 1;
 }
 
+// --- CTileTriggerSwitch::InitActReg (0x10de20) ---
+// Construct the class's activation-coordinate registry singleton
+// (g_tileTriggerSwitchActReg @0x64e798) over the fixed range [2000, 2010] via
+// the shared registry ctor (0x408710). Free init thunk; reloc-masked.
+RVA(0x0010de20, 0x15)
+void CTileTriggerSwitch::InitActReg() {
+    g_tileTriggerSwitchActReg.Construct(2000, 2010);
+}
+
 // --- CTileTriggerSwitch::RegisterActs (0x10e000) ---
 // Bind the per-frame handler (AdvanceAnim @0x10e200) to the activation key "A"
 // via the shared name registry + the class's coordinate registry
@@ -1326,6 +1346,15 @@ CTileTrigger::CTileTrigger(CGameObject* obj) : CUserLogic(obj) {
     m_10->m_164 = m_10->m_5c >> 5;
     m_10->m_168 = m_10->m_60 >> 5;
     m_10->m_04 = (m_10->m_164 << 8) + m_10->m_168;
+}
+
+// --- CTileTrigger::InitActReg (0x10e420) ---
+// Construct the class's activation-coordinate registry singleton
+// (g_tileTriggerActReg @0x64e810) over the fixed range [2000, 2010] via the
+// shared registry ctor (0x408710). Free init thunk; reloc-masked.
+RVA(0x0010e420, 0x15)
+void CTileTrigger::InitActReg() {
+    g_tileTriggerActReg.Construct(2000, 2010);
 }
 
 // --- CTileTrigger::RegisterActs (0x10e600) ---

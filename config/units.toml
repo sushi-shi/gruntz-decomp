@@ -1309,3 +1309,8 @@ flags = "eh"
 unit = "cmovinglogicdtor"
 source = "src/Gruntz/CMovingLogicDtor.cpp"
 flags = "eh"
+
+[[unit]]
+unit = "cstatusbarspriteacts"
+source = "src/Gruntz/CStatusBarSpriteActs.cpp"
+flags = "eh"

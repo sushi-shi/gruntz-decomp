@@ -170,12 +170,6 @@ RVA(0x00104dd0, 0x6b) void Boundary_104dd0() {}  // proximity: CSBI_RectOnly@-0x
 RVA(0x00109e00, 0x245) void Boundary_109e00() {}  // proximity: EngineLabelBacklog@-0x230 | CWarpStoneFly@+0x2f0
 RVA(0x0010b4f0, 0xaa) void Boundary_10b4f0() {}  // proximity: EngineLabelBacklog@-0x1d0 | CSBI_RectOnly@+0xe0
 RVA(0x0010bbe0, 0x34) void Boundary_10bbe0() {}  // proximity: CSBI_RectOnly@-0x50 | CSBI_MenuItem@+0x3e0
-RVA(0x0010c430, 0x15) void Boundary_10c430() {}  // proximity: CSBI_MenuItem@-0x470 | CWarpStonePad@+0x1220
-RVA(0x0010c610, 0x18d) void Boundary_10c610() {}  // proximity: CSBI_MenuItem@-0x650 | CWarpStonePad@+0x1040
-RVA(0x0010d840, 0x15) void Boundary_10d840() {}  // proximity: CWarpStonePad@-0x1f0 | CTileTriggerSwitch@+0x400
-RVA(0x0010de20, 0x15) void Boundary_10de20() {}  // proximity: CTileTriggerSwitch@-0x1e0 | CTileTrigger@+0x400
-RVA(0x0010e420, 0x15) void Boundary_10e420() {}  // proximity: CTileTrigger@-0x200 | CTileSecretTrigger@+0x1640
-RVA(0x0010ea00, 0x15) void Boundary_10ea00() {}  // proximity: CTileTrigger@-0x7e0 | CTileSecretTrigger@+0x1060
 RVA(0x00112080, 0x138) void Boundary_112080() {}  // proximity: CGruntzMgr@-0x1c0 | CTileTriggerSwitchLogic@+0x220
 RVA(0x00112bf0, 0x5e) void Boundary_112bf0() {}  // proximity: CTileGridCommand@-0x80 | CTileTriggerSwitchLogic@+0x80
 RVA(0x00113860, 0x3b) void Boundary_113860() {}  // proximity: CTileActionEvent@-0x440 | CTileTriggerSwitchLogic@+0x230
@@ -194,7 +188,6 @@ RVA(0x001182f0, 0xc) void Boundary_1182f0() {}  // proximity: CTileTriggerContai
 RVA(0x00118310, 0xc) void Boundary_118310() {}  // proximity: CTileTriggerContainer@-0x3b0 | CGruntVoice@+0x17d0
 RVA(0x00118330, 0x57) void Boundary_118330() {}  // proximity: CTileTriggerContainer@-0x3d0 | CGruntVoice@+0x17b0
 RVA(0x00119fa0, 0x2ac) void Boundary_119fa0() {}  // proximity: CGruntVoice@-0x160 | CVoiceTrigger@+0x760
-RVA(0x0011a320, 0x15) void Boundary_11a320() {}  // proximity: CGruntVoice@-0x4e0 | CVoiceTrigger@+0x3e0
 RVA(0x00133370, 0xb) void Boundary_133370() {}  // proximity: CInputDevice@-0x70 | WAP32@+0x10
 RVA(0x001333b0, 0x55) void Boundary_1333b0() {}  // proximity: WAP32@-0x30 | DirectInputMgr2@+0x1e0
 RVA(0x00133460, 0x6a) void Boundary_133460() {}  // proximity: WAP32@-0xe0 | DirectInputMgr2@+0x130
