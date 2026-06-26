@@ -1223,6 +1223,11 @@ source = "src/Gruntz/ProjActRegistry.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "pulsehighlight"
+source = "src/Gruntz/PulseHighlight.cpp"
+flags = "base"
+
+[[unit]]
 unit = "gamesave"
 source = "src/Io/GameSave.cpp"
 flags = "base"
