@@ -3308,3 +3308,12 @@ rva,name,lib,confidence,source
 0x1926e0,?attach@fstream@@QAEXH@Z,LIBCIMT,HIGH,anchored
 0x192780,?open@fstream@@QAEXPBDHH@Z,LIBCIMT,HIGH,anchored
 0x192830,?close@fstream@@QAEXXZ,LIBCIMT,HIGH,anchored
+0x192930,??5istream@@QAEAAV0@PAVstreambuf@@@Z,LIBCIMT,HIGH,anchored
+0x1929f0,?get@istream@@QAEAAV1@AAVstreambuf@@D@Z,LIBCIMT,HIGH,anchored
+0x192af0,?seekg@istream@@QAEAAV1@J@Z,LIBCIMT,HIGH,anchored
+0x192b90,?seekg@istream@@QAEAAV1@JW4seek_dir@ios@@@Z,LIBCIMT,HIGH,anchored
+0x192c30,?tellg@istream@@QAEJXZ,LIBCIMT,HIGH,anchored
+0x192cd0,?getint@istream@@AAEHPAD@Z,LIBCIMT,HIGH,anchored
+0x192ed0,?getdouble@istream@@AAEHPADH@Z,LIBCIMT,HIGH,anchored
+0x193950,??6ostream@@QAEAAV0@I@Z,LIBCIMT,HIGH,anchored
+0x193a20,??5istream@@QAEAAV0@AAD@Z,LIBCIMT,HIGH,anchored
