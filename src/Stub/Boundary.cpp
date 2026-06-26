@@ -521,16 +521,6 @@ RVA(0x00166640, 0x13b)
 void Boundary_166640() {} // proximity: CFileMem@-0x6f0 | CImageSet1@+0x700
 RVA(0x00166810, 0x32)
 void Boundary_166810() {} // proximity: CFileMem@-0x8c0 | CImageSet1@+0x530
-RVA(0x00167260, 0x1ef)
-void Boundary_167260() {} // proximity: CGameLevel@-0x130 | CWwdGrid@+0x1040
-RVA(0x00167450, 0x1ef)
-void Boundary_167450() {} // proximity: CGameLevel@-0x320 | CWwdGrid@+0xe50
-RVA(0x00167640, 0x1eb)
-void Boundary_167640() {} // proximity: CGameLevel@-0x510 | CWwdGrid@+0xc60
-RVA(0x00167830, 0x1eb)
-void Boundary_167830() {} // proximity: CGameLevel@-0x700 | CWwdGrid@+0xa70
-RVA(0x00167ea0, 0x1b9)
-void Boundary_167ea0() {} // proximity: CGameLevel@-0xd70 | CWwdGrid@+0x400
 RVA(0x00168c10, 0x46)
 void Boundary_168c10() {} // proximity: CWwdSpatialMgr@-0x320 | CAniRecord@+0x50
 RVA(0x0016be60, 0x2a)

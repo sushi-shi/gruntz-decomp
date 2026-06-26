@@ -303,6 +303,12 @@ public:
     i32 ScrollStepYHi(ScrollTarget* t, i32 x, i32 y, i32* py, i32 flags); // 0x167640
     i32 ScrollStepYLo(ScrollTarget* t, i32 x, i32 y, i32* py, i32 flags); // 0x167830
 
+    // BroadPhase (@0x167ea0): the AABB broad-phase the four steppers tail into. Walks
+    // the owner's object chain; for each object not currently overlapping `t` whose
+    // candidate box (at candX, candY) WOULD overlap, fires t's +0x90 notifier and (on a
+    // nonzero result) the object's own +0x90 notifier, returning 1. 0 if none. ret 0xc.
+    i32 BroadPhase(ScrollTarget* t, i32 candX, i32 candY);
+
     // Destructor (vtable slot 1, the ~CGameLevel @0x1611e0). Stamps the derived
     // vftable, runs the level cleanup (Unload), then the three array members destruct
     // and ~CSeverusWorker restores the base subobject. Declared so the member dtors

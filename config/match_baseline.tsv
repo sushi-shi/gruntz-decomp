@@ -130,7 +130,7 @@ directinputmgr2	36	32
 directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	15	0
-engine_boundary	295	0
+engine_boundary	290	0
 engine_discovered	51	0
 engine_label_stubs	437	105
 engine_unmatched	264	0
@@ -143,7 +143,7 @@ fontconfig	9	5
 fonts	2	1
 gameapp	20	16
 gamekeyhandler	1	0
-gamelevel	55	24
+gamelevel	60	24
 gamemode	44	21
 gamemodeobjlifecycle	4	3
 gameobjectctors	6	2
@@ -1439,11 +1439,6 @@ engine_boundary	?Boundary_163a40@@YAXXZ	5.8824	5.8824	2	77023b928d60	0x163a40
 engine_boundary	?Boundary_163af0@@YAXXZ	1.6667	1.6667	2	2897699d188c	0x163af0
 engine_boundary	?Boundary_166640@@YAXXZ	0.4000	0.4000	2	78e5245c25be	0x166640
 engine_boundary	?Boundary_166810@@YAXXZ	4.7619	4.7619	2	ed36c073ea3b	0x166810
-engine_boundary	?Boundary_167260@@YAXXZ	0.2286	0.2286	2	df7cbfd4a976	0x167260
-engine_boundary	?Boundary_167450@@YAXXZ	0.2286	0.2286	2	a61ecb6658fb	0x167450
-engine_boundary	?Boundary_167640@@YAXXZ	0.2299	0.2299	2	cd770e660642	0x167640
-engine_boundary	?Boundary_167830@@YAXXZ	0.2299	0.2299	2	60290dd3b939	0x167830
-engine_boundary	?Boundary_167ea0@@YAXXZ	0.2985	0.2985	2	ff452ef63be0	0x167ea0
 engine_boundary	?Boundary_168c10@@YAXXZ	5.5556	5.5556	2	9b9658658449	0x168c10
 engine_boundary	?Boundary_16be60@@YAXXZ	2.6667	2.6667	2	78071ccbf190	0x16be60
 engine_boundary	?Boundary_16d000@@YAXXZ	0.7874	0.7874	2	70866d4f51bb	0x16d000
@@ -2316,9 +2311,10 @@ gamelevel	??0CGameLevel@@QAE@HHH@Z	94.4528	94.4528	5	722b4e18b3dc	0x15ccd0
 gamelevel	??1CGameLevel@@QAE@XZ	96.0000	96.0000	3	be6f9346ae7e	0x1611e0
 gamelevel	?AdvanceA@CGameLevel@@AAEHPAXHHH@Z	93.5194	93.5194	1	ed7962b2eb86	0x15f1c0
 gamelevel	?AdvanceB@CGameLevel@@AAEHPAXHHH@Z	92.2241	92.2241	1	ac1c98577426	0x15ede0
-gamelevel	?AltStepValidate@CGameLevel@@AAEHPAX0HHPAHH@Z	71.8919	71.8919	1	7c1fc1ee8711	0x15fe40
+gamelevel	?AltStepValidate@CGameLevel@@AAEHPAX0HHPAHH@Z	71.9054	71.9054	1	7c1fc1ee8711	0x15fe40
 gamelevel	?ApplyScroll@CGameLevel@@SGHPAV1@HHH@Z	94.7826	94.7826	3	ad3d2c3f3167	0x167130
 gamelevel	?AxisProbe@CGameLevel@@AAEHHH@Z	99.8667	99.8667	1	eed79d5e847e	0x161270
+gamelevel	?BroadPhase@CGameLevel@@QAEHPAUScrollTarget@@HH@Z	71.9552	71.9552	1	23fce0a2a0c4	0x167ea0
 gamelevel	?BuildAllPlanes@CGameLevel@@QAEXPAULevelCoordRect@@@Z	100.0000	100.0000	1	f9a8f0e1ee87	0x15da80
 gamelevel	?ClampScroll@CGameLevel@@QAEHPAXHHH@Z	70.7413	70.7413	3	3f62b93aa933	0x15de40
 gamelevel	?ClampSpan@CGameLevel@@AAEHHHPAH0@Z	99.8305	99.8305	1	2ca0e3403535	0x15ffe0
@@ -2332,7 +2328,7 @@ gamelevel	?EditSwitch@CGameLevel@@QAEHPAXHHH@Z	88.8440	88.8440	2	0ff29dc02c1a	0x
 gamelevel	?FindPlaneByName@CGameLevel@@QAEPAVCPlane@@PBD@Z	100.0000	100.0000	2	7baff22dc335	0x15dde0
 gamelevel	?FreeMove@CGameLevel@@AAEHPAXHHH@Z	80.8200	80.8200	1	3fb3107bd23b	0x15eb00
 gamelevel	?GetClassId@CGameLevel@@QAEHXZ	100.0000	100.0000	1	777905dbee18	0x1611b0
-gamelevel	?HoldMove@CGameLevel@@AAEHPAXHHHH@Z	90.3837	90.3837	1	5c4b4f1637f9	0x15ff20
+gamelevel	?HoldMove@CGameLevel@@AAEHPAXHHHH@Z	90.3953	90.3953	1	5c4b4f1637f9	0x15ff20
 gamelevel	?IsLoaded@CGameLevel@@QAEHXZ	100.0000	100.0000	1	1cf4b7c05d14	0x161190
 gamelevel	?LoadFromFile@CGameLevel@@QAEHPBD@Z	100.0000	100.0000	1	69e64dfc7d35	0x15d500
 gamelevel	?LoadFromSource@CGameLevel@@QAEHPAURemusParseSource@@@Z	100.0000	100.0000	1	70a85ae50bfb	0x15d630
@@ -2352,6 +2348,10 @@ gamelevel	?RecomputePlaneCoords@PlaneGeom@@QAEXXZ	97.0640	97.0640	3	febf93030b44
 gamelevel	?ReleaseChildren@CGameLevel@@QAEXXZ	100.0000	100.0000	1	d9611e42c233	0x15d680
 gamelevel	?ScalarDtor@CGameLevel@@QAEPAXI@Z	100.0000	100.0000	3	6b39bf2d7776	0x1611c0
 gamelevel	?ScrollKindDispatch12@CGameLevel@@QAEHPAUScrollTarget@@HHH@Z	100.0000	100.0000	1	5a24aaef4f05	0x1671c0
+gamelevel	?ScrollStepXHi@CGameLevel@@QAEHPAUScrollTarget@@HHPAHH@Z	79.0286	79.0286	1	8fa8a5ab4e2a	0x167260
+gamelevel	?ScrollStepXLo@CGameLevel@@QAEHPAUScrollTarget@@HHPAHH@Z	78.3429	78.3429	1	130c9160712c	0x167450
+gamelevel	?ScrollStepYHi@CGameLevel@@QAEHPAUScrollTarget@@HHPAHH@Z	82.8563	82.8563	1	c36e418b2731	0x167640
+gamelevel	?ScrollStepYLo@CGameLevel@@QAEHPAUScrollTarget@@HHPAHH@Z	82.1667	82.1667	1	c6ca19bf73a3	0x167830
 gamelevel	?SetCoordExtents@CGameLevel@@QAEHHH@Z	84.2800	84.2800	1	af009d24d456	0x15d030
 gamelevel	?SetCoords@CGameLevel@@QAEHPAULevelCoordRect@@@Z	100.0000	100.0000	1	61c6a9d4d0ff	0x15d0d0
 gamelevel	?SetCoordsAndLoad38@CGameLevel@@QAEHHPAULevelCoordRect@@@Z	100.0000	100.0000	1	506670b31d4f	0x15cf70
