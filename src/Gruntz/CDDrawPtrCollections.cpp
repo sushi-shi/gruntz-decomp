@@ -1,5 +1,7 @@
 #include <Ints.h>
 #include <rva.h>
+
+#include <string.h> // memset (inlined to rep stos at /O2 /Oi)
 // CDDrawPtrCollections.cpp - tomalla-named standalone class in the ddrawmgr surface/page
 // manager "Harry Potter" family (tomalla's UnknownFilch, 0x948 B, NO RTTI vtable).
 // It owns two CPtrList item pools (+0x47c / +0x498) plus a CPtrArray (+0x4b4 - its own
@@ -27,9 +29,55 @@ inline void* operator new(u32, void* p) {
 extern "C" void RezFree(void* p);
 
 // Process-wide DirectDraw manager singleton (.data) - cleared by Clear().
-class CDirectDrawMgr;
+class CDirectDrawMgr {
+public:
+    // Static HRESULT->log helper the surface/palette methods report failures through
+    // (reloc-masked rel32; same archetype as DirectInputMgr2::GetErrorString).
+    static void GetErrorString(char* file, i32 line, i32 hr); // 0x141400
+};
 DATA(0x002bed00)
 extern "C" CDirectDrawMgr* g_DirectDrawMgr; // 0x6bed00
+
+// The DDrawMgr source-path $SG the surface/palette methods pass to GetErrorString.
+#define DDRAWMGR_FILE "C:\\Proj\\DDrawMgr\\DDRAWMGR.CPP"
+
+// The RGB low-bit-position / 8-minus-bitcount pair tables ComputeColorMasks fills from
+// the back-buffer's pixel format (reloc-masked .data globals; named g_683* across the
+// run - GruntzMgr.cpp's 16-bit pack reads the same six words).
+extern "C" {
+DATA(0x00283ea0)
+extern i32 g_683ea0; // red   low-bit shift
+DATA(0x00283ea4)
+extern i32 g_683ea4; // green low-bit shift
+DATA(0x00283ea8)
+extern i32 g_683ea8; // blue  low-bit shift
+DATA(0x00283eac)
+extern i32 g_683eac; // red   8-minus-count
+DATA(0x00283eb0)
+extern i32 g_683eb0; // green 8-minus-count
+DATA(0x00283eb4)
+extern i32 g_683eb4; // blue  8-minus-count
+}
+
+// The post-mask surface-format apply (CFileImage/CDDSurface area, 0x13f740); takes no
+// args here (ecx is dead at the call), so a free function emits the bare `call rel32`.
+// Named to pair with the engine_boundary stub symbol so its rel32 reloc matches retail.
+void Boundary_13f740();
+
+// The engine KERNEL32 file wrapper (CFileIO @0x1bef*) the palette loaders open. Minimal
+// local model (no <Mfc.h>, which would clash with the local CPtrList/CPtrArray) - 0x10
+// bytes { vptr, handle, open-flag, name }; the virtual dtor gives the /GX local frame.
+// Every method is a reloc-masked external (no body).
+class CFileIO {
+public:
+    CFileIO();          // 0x1befd7
+    virtual ~CFileIO(); // 0x1bf121
+    i32 Open(const char* name, u32 flags, void* err); // 0x1bf200
+    u32 Read(void* buf, u32 n);                        // 0x1bf328 (returns unsigned)
+    long Seek(long off, i32 from);                     // 0x1bf3ad (LONG Seek(LONG,int))
+    // implicit vptr @+0x00 (the virtual dtor); +0x04..+0x10 = handle/open/name.
+    char _raw[0x10 - 0x04];
+};
 
 // ---------------------------------------------------------------------------
 // Minimal MFC container placeholders - only their ctor symbol + size matter.
@@ -218,7 +266,9 @@ struct CCachedSurfaceVtbl {
     void(__stdcall* Method00)(CCachedSurface*);
     char _04[0x08 - 0x04];
     void(__stdcall* Release)(CCachedSurface*); // +0x08
-    char _0c[0x4c - 0x0c];
+    char _0c[0x30 - 0x0c];
+    i32(__stdcall* GetSurfaceDesc)(CCachedSurface*, void* desc); // +0x30
+    char _34[0x4c - 0x34];
     void(__stdcall* Restore)(CCachedSurface*); // +0x4c
 };
 
@@ -254,6 +304,15 @@ public:
     CPoolItemB* MakeB(i32 a, i32 b);                            // 0x142fc0
     CPoolItemB* MakeB2(i32 a, i32 b);                           // 0x142f40 (init via 0x147410)
     CPoolItemB* MakeB3(i32 a, i32 b, i32 c);                    // 0x1430c0 (init via 0x147840)
+
+    // Read the trailing 0x300-byte palette from a file and register a pool-B item built
+    // from it (0x143150 -> MakeB; 0x143a30 -> Make950, the sibling builder).
+    CPoolItemB* LoadPaletteMakeB(const char* path, i32 z);     // 0x143150
+    CPoolItemB* LoadPaletteMake950(const char* path, i32 z);   // 0x143a30
+    void* Make950(void* buf, i32 z);                           // 0x143950 (external sibling of MakeB)
+    // Derive the R/G/B low-bit shift + 8-minus-count tables from the cached surface's
+    // pixel format, then apply (Func13f740). __thiscall, no stack args (0x143b20).
+    i32 ComputeColorMasks();                                   // 0x143b20
 
     CCachedSurface* m_surf0; // +0x00 - cached surface object (Release on Clear)
     CCachedSurface* m_surf4; // +0x04 - cached surface object (Release on Clear)
@@ -930,4 +989,131 @@ CPoolItemB* CDDrawPtrCollections::MakeB3(i32 a, i32 b, i32 c) {
     }
     AddItemB(item);
     return item;
+}
+
+// ---------------------------------------------------------------------------
+// LoadPaletteMakeB (0x143150).  Open `path` via CFileIO, seek 0x300 from the end and
+// read the trailing 0x300-byte palette into a stack buffer, then register a pool-B item
+// built from it (MakeB(buf, 0)).  Any failure unwinds the CFileIO + returns 0.  The
+// second arg slot is reused as the (always-0) MakeB tag.  /GX EH frame.  ret 0x8.
+// ---------------------------------------------------------------------------
+// @early-stop
+// ~98%: logic + offsets + CFG + the CFileIO open/seek/read shapes are byte-faithful.
+// Residue is (a) the /GX funcinfo state index push (retail `push 0xb` vs the per-TU
+// compiler-generated funcinfo @+0 - the global __ehfuncinfo numbering, not reproducible
+// from one TU; docs/patterns/eh-state-numbering-base.md) and (b) MSVC folds the
+// reloaded-from-param-slot MakeB tag to an immediate 0 where retail reloads it. Deferred.
+RVA(0x00143150, 0xe9)
+CPoolItemB* CDDrawPtrCollections::LoadPaletteMakeB(const char* path, i32 z) {
+    CFileIO file;
+    z = 0;
+    if (!file.Open(path, 0, 0)) {
+        return 0;
+    }
+    file.Seek(-0x300, 2);
+    char buf[0x300];
+    if (file.Read(buf, 0x300) != 0x300) {
+        return 0;
+    }
+    return MakeB((i32)buf, z);
+}
+
+// ---------------------------------------------------------------------------
+// LoadPaletteMake950 (0x143a30).  Identical shape to LoadPaletteMakeB but the trailing
+// palette is handed to the sibling builder Make950 (0x143950) instead of MakeB.  /GX. ret 0x8.
+// ---------------------------------------------------------------------------
+// @early-stop
+// ~98%: same wall as LoadPaletteMakeB (EH funcinfo state index + MakeB-tag const-fold);
+// additionally the Make950 callee (0x143950) is still an unreconstructed engine_boundary
+// stub, so its rel32 reloc pairs by code bytes but not by symbol name. Deferred.
+RVA(0x00143a30, 0xe9)
+CPoolItemB* CDDrawPtrCollections::LoadPaletteMake950(const char* path, i32 z) {
+    CFileIO file;
+    z = 0;
+    if (!file.Open(path, 0, 0)) {
+        return 0;
+    }
+    file.Seek(-0x300, 2);
+    char buf[0x300];
+    if (file.Read(buf, 0x300) != 0x300) {
+        return 0;
+    }
+    return (CPoolItemB*)Make950(buf, z);
+}
+
+// The back-buffer surface description ComputeColorMasks fills (a DDSURFACEDESC, 0x6c
+// bytes); only dwSize@+0 and the pixel-format R/G/B masks @+0x58/+0x5c/+0x60 are touched.
+struct SurfDesc {
+    u32 dwSize; // +0x00
+    char _04[0x58 - 0x04];
+    u32 rMask; // +0x58
+    u32 gMask; // +0x5c
+    u32 bMask; // +0x60
+    char _64[0x6c - 0x64];
+};
+
+// ---------------------------------------------------------------------------
+// ComputeColorMasks (0x143b20).  Query the cached surface's pixel format (vtbl +0x30),
+// and for each of the R/G/B bit masks record the low set-bit position (the shift) and
+// 8-minus-popcount (the scale) into the six g_683* globals, then apply (Func13f740).
+// On a failed GetSurfaceDesc, report via GetErrorString and return 0.  No EH frame.
+// ---------------------------------------------------------------------------
+RVA(0x00143b20, 0xfc)
+i32 CDDrawPtrCollections::ComputeColorMasks() {
+    SurfDesc desc;
+    memset(&desc, 0, 0x6c);
+    desc.dwSize = 0x6c;
+    i32 hr = m_surf0->vtbl->GetSurfaceDesc(m_surf0, &desc);
+    if (hr != 0) {
+        CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0x82c, hr);
+        return 0;
+    }
+
+    u32 m = desc.rMask;
+    i32 count = 0;
+    i32 shift = -1;
+    for (i32 b = 0; b < 0x20; b++) {
+        if ((m & 1) == 1) {
+            if (shift == -1) {
+                shift = b;
+            }
+            count++;
+        }
+        m >>= 1;
+    }
+    g_683ea0 = shift;
+    g_683eac = 8 - count;
+
+    m = desc.gMask;
+    count = 0;
+    shift = -1;
+    for (i32 b2 = 0; b2 < 0x20; b2++) {
+        if ((m & 1) == 1) {
+            if (shift == -1) {
+                shift = b2;
+            }
+            count++;
+        }
+        m >>= 1;
+    }
+    g_683ea4 = shift;
+    g_683eb0 = 8 - count;
+
+    m = desc.bMask;
+    count = 0;
+    shift = -1;
+    for (i32 b3 = 0; b3 < 0x20; b3++) {
+        if ((m & 1) == 1) {
+            if (shift == -1) {
+                shift = b3;
+            }
+            count++;
+        }
+        m >>= 1;
+    }
+    g_683ea8 = shift;
+    g_683eb4 = 8 - count;
+
+    Boundary_13f740();
+    return 1;
 }

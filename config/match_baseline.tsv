@@ -36,7 +36,7 @@ cbehindcandyani	4	3
 cbrickz	1	0
 ccursorsnapsprite	2	2
 cddrawchildgroup	9	5
-cddrawptrcollections	27	13
+cddrawptrcollections	30	14
 cddrawshadeblit	6	1
 cddrawsubmgr	41	23
 cddrawsubmgrani	3	1
@@ -60,7 +60,7 @@ cexplosion	1	1
 ceyecandy	2	2
 cfader	6	5
 cfadermgr	7	4
-cfileimage	6	1
+cfileimage	8	2
 cfixedptrarray32	3	2
 cfortressflag	5	4
 cfxmodedesc	3	3
@@ -119,7 +119,7 @@ directinputmgr2	33	29
 directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	15	0
-engine_boundary	545	0
+engine_boundary	540	0
 engine_discovered	67	0
 engine_label_stubs	462	106
 engstr	3	1
@@ -433,6 +433,7 @@ cddrawptrcollections	??1CPoolItemA@@QAE@XZ	94.0000	94.0000	1	118e251b1768	0x1428
 cddrawptrcollections	?AddItemA@CDDrawPtrCollections@@QAEXPAVCPoolItemA@@@Z	100.0000	100.0000	1	08823e73ec27	0x142100
 cddrawptrcollections	?AddItemB@CDDrawPtrCollections@@QAEXPAUCPoolItemB@@@Z	100.0000	100.0000	1	49c9c58ce9de	0x142eb0
 cddrawptrcollections	?Clear@CDDrawPtrCollections@@QAEXH@Z	100.0000	100.0000	1	e67bb1393aec	0x142060
+cddrawptrcollections	?ComputeColorMasks@CDDrawPtrCollections@@QAEHXZ	100.0000	100.0000	1	56947f610115	0x143b20
 cddrawptrcollections	?Create7f0_1@CDDrawPtrCollections@@QAEPAVCPoolItemA@@H@Z	55.6562	55.6562	1	5028e9edc5a1	0x1421a0
 cddrawptrcollections	?CreateA@CDDrawPtrCollections@@QAEPAVCPoolItemA@@HHHHH@Z	60.5278	60.5278	1	d45039d45b2e	0x142260
 cddrawptrcollections	?CreateB@CDDrawPtrCollections@@QAEPAVCPoolItemA@@HHHHH@Z	60.5278	60.5278	1	235115dc5be2	0x1423c0
@@ -447,6 +448,8 @@ cddrawptrcollections	?Createae8_1@CDDrawPtrCollections@@QAEPAVCPoolItemA@@H@Z	55
 cddrawptrcollections	?Createae8_6@CDDrawPtrCollections@@QAEPAVCPoolItemA@@HHHHHH@Z	61.5811	61.5811	1	3c893bd5b95f	0x142c40
 cddrawptrcollections	?EmptyPoolA@CDDrawPtrCollections@@QAEXXZ	100.0000	100.0000	1	5e3997835593	0x142120
 cddrawptrcollections	?EmptyPoolB@CDDrawPtrCollections@@QAEXXZ	100.0000	100.0000	1	dc3d2b2523b0	0x142ed0
+cddrawptrcollections	?LoadPaletteMake950@CDDrawPtrCollections@@QAEPAUCPoolItemB@@PBDH@Z	97.9464	97.9464	1	fddefc7b5005	0x143a30
+cddrawptrcollections	?LoadPaletteMakeB@CDDrawPtrCollections@@QAEPAUCPoolItemB@@PBDH@Z	97.9464	97.9464	1	f3214b2f0530	0x143150
 cddrawptrcollections	?MakeAndAddB@CDDrawPtrCollections@@QAEPAVCPoolItemA@@HHHHH@Z	100.0000	100.0000	1	dd1437d900d0	0x142e60
 cddrawptrcollections	?MakeB2@CDDrawPtrCollections@@QAEPAUCPoolItemB@@HH@Z	100.0000	100.0000	1	2d60d735ebd5	0x142f40
 cddrawptrcollections	?MakeB3@CDDrawPtrCollections@@QAEPAUCPoolItemB@@HHH@Z	100.0000	100.0000	1	f78cbd049da5	0x1430c0
@@ -661,9 +664,11 @@ cfadermgr	?Flush@CFaderMgr@@QAEHXZ	100.0000	100.0000	1	1dbe7078d522	0x17e160
 cfadermgr	?FreeAll@CFaderMgr@@QAEXXZ	100.0000	100.0000	1	f0e41c40b256	0x17d9a0
 cfadermgr	?Remove@CFaderMgr@@QAEXPAUCFader@@@Z	67.1111	67.1111	1	7c395e00a7e3	0x17e170
 cfadermgr	?SetConfig@CFaderMgr@@QAEHHHH@Z	100.0000	100.0000	2	c2453448947b	0x17d980
-cfileimage	?Decode@CFileImage@@QAEHPAVCFileImageInfo@@PAVCFileImageSrc@@HH@Z	87.4720	87.4720	1	dc0d66b3803f	0x144b30
+cfileimage	?Decode@CFileImage@@QAEHPAVCFileImageInfo@@PAVCFileImageSrc@@HH@Z	87.4065	87.4065	1	dc0d66b3803f	0x144b30
+cfileimage	?DecodeRun@CFileImage@@QAEHPAVCFileImageInfo@@PAXHH@Z	72.3929	72.3929	1	68a1e6f3cd54	0x143cf0
 cfileimage	?DecodeThunk@CFileImage@@QAEXHHHHHHHHHH@Z	48.1538	48.1538	1	4cf4c0ca3850	0x141280
 cfileimage	?FlipVertical@CFileImage@@QAEXXZ	62.4649	62.4649	1	5a7fdb00d65d	0x13ebb0
+cfileimage	?LoadFile2@CFileImage@@QAEHPAVCFileImageInfo@@PBDH@Z	100.0000	100.0000	1	555ef8ac35e2	0x143e60
 cfileimage	?LoadFile@CFileImage@@QAEHPAVCFileImageInfo@@PBDH@Z	100.0000	100.0000	1	8adca29db6ce	0x144d80
 cfileimage	?SaveBmp@CFileImage@@QAEHPBDPAXH@Z	60.8842	60.8842	1	d7bdcf4dd7ed	0x1443b0
 cfileimage	?SaveTga@CFileImage@@QAEHPBDPAXH@Z	60.8182	60.8182	1	c29726d33513	0x144900
@@ -1345,7 +1350,6 @@ engine_boundary	?Boundary_1413b0@@YAXXZ	16.6667	16.6667	1	acfe45cefe8b	0x1413b0
 engine_boundary	?Boundary_1413c0@@YAXXZ	13.3333	13.3333	1	29ae08cae737	0x1413c0
 engine_boundary	?Boundary_141c80@@YAXXZ	20.0000	20.0000	1	4baa158c5416	0x141c80
 engine_boundary	?Boundary_143040@@YAXXZ	0.7547	0.7547	1	b21e7cae6482	0x143040
-engine_boundary	?Boundary_143150@@YAXXZ	0.7143	0.7143	1	318e71c2a6a6	0x143150
 engine_boundary	?Boundary_143240@@YAXXZ	0.9009	0.9009	1	ae62a8e09126	0x143240
 engine_boundary	?Boundary_1433d0@@YAXXZ	1.2500	1.2500	1	f37204a4b9ae	0x1433d0
 engine_boundary	?Boundary_143470@@YAXXZ	1.3333	1.3333	1	8cea8d9160c4	0x143470
@@ -1355,11 +1359,7 @@ engine_boundary	?Boundary_143590@@YAXXZ	0.8000	0.8000	1	309145283191	0x143590
 engine_boundary	?Boundary_143630@@YAXXZ	0.4444	0.4444	1	f1f0f73143e2	0x143630
 engine_boundary	?Boundary_1437f0@@YAXXZ	11.1111	11.1111	1	8eb4b86f5f7b	0x1437f0
 engine_boundary	?Boundary_143950@@YAXXZ	1.1765	1.1765	1	28953ba74c01	0x143950
-engine_boundary	?Boundary_143a30@@YAXXZ	0.7143	0.7143	1	16c15f34e4ac	0x143a30
-engine_boundary	?Boundary_143b20@@YAXXZ	1.0870	1.0870	1	2f893d6e766f	0x143b20
 engine_boundary	?Boundary_143c20@@YAXXZ	0.8696	0.8696	1	edfd8d255f81	0x143c20
-engine_boundary	?Boundary_143cf0@@YAXXZ	0.2857	0.2857	1	218200e68f7f	0x143cf0
-engine_boundary	?Boundary_143e60@@YAXXZ	0.3704	0.3704	1	8608ecc019d6	0x143e60
 engine_boundary	?Boundary_145e00@@YAXXZ	5.8824	5.8824	1	7fece9e8cb3e	0x145e00
 engine_boundary	?Boundary_145f60@@YAXXZ	0.5988	0.5988	1	9aaf8557fcb7	0x145f60
 engine_boundary	?Boundary_1461b0@@YAXXZ	0.3058	0.3058	1	490936a8c0fe	0x1461b0

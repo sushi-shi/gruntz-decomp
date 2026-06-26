@@ -123,6 +123,15 @@ public:
     i32 RunDecode1(void* dst, void* run, i32 w, i32 h); // 0x145270
     i32 RunDecode3(void* dst, void* run, i32 w, i32 h); // 0x1453f0
     i32 Blit(void* run, i32 fmt, void* pal, i32 one);   // 0x13faa0
+    i32 BlitSurf(void* info, i32 a, i32 b, i32 c, i32 d); // 0x13e0d0
+    i32 BlitDirect(void* run, i32 mode);                  // 0x13ece0
+
+    // A second decode/load pair (alongside Decode/LoadFile): DecodeRun reads a run-length
+    // image described by `src` (its own descriptor shape - format word @+0x1c, dims
+    // @+0x12/+0x16, run-data offset @+0x0a) into `info`; LoadFile2 slurps a file (engine
+    // CFileIO) then calls DecodeRun.
+    i32 DecodeRun(CFileImageInfo* info, void* src, i32 a, i32 b);   // 0x143cf0
+    i32 LoadFile2(CFileImageInfo* info, const char* path, i32 mode); // 0x143e60
 
     // The six methods reconstructed in this TU (retail-RVA order):
     void FlipVertical(); // 0x13ebb0

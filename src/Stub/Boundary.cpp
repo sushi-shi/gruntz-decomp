@@ -290,7 +290,6 @@ RVA(0x001413b0, 0xf) void Boundary_1413b0() {}  // proximity: CFileImage@-0x60 |
 RVA(0x001413c0, 0xb) void Boundary_1413c0() {}  // proximity: CFileImage@-0x70 | CDirectDrawMgr@+0x40
 RVA(0x00141c80, 0xa) void Boundary_141c80() {}  // proximity: CDirectDrawMgr@-0x880 | CDDrawPtrCollections@+0x40
 RVA(0x00143040, 0x7c) void Boundary_143040() {}  // proximity: CDDrawPtrCollections@-0x80 | CFileImage@+0xf80
-RVA(0x00143150, 0xe9) void Boundary_143150() {}  // proximity: CDDrawPtrCollections@-0x190 | CFileImage@+0xe70
 RVA(0x00143240, 0x143) void Boundary_143240() {}  // proximity: CDDrawPtrCollections@-0x280 | CFileImage@+0xd80
 RVA(0x001433d0, 0x4f) void Boundary_1433d0() {}  // proximity: CDDrawPtrCollections@-0x410 | CFileImage@+0xbf0
 RVA(0x00143470, 0x47) void Boundary_143470() {}  // proximity: CDDrawPtrCollections@-0x4b0 | CFileImage@+0xb50
@@ -300,11 +299,7 @@ RVA(0x00143590, 0x7e) void Boundary_143590() {}  // proximity: CDDrawPtrCollecti
 RVA(0x00143630, 0x10d) void Boundary_143630() {}  // proximity: CDDrawPtrCollections@-0x670 | CFileImage@+0x990
 RVA(0x001437f0, 0x1b) void Boundary_1437f0() {}  // proximity: CDDrawPtrCollections@-0x830 | CFileImage@+0x7d0
 RVA(0x00143950, 0x56) void Boundary_143950() {}  // proximity: CDDrawPtrCollections@-0x990 | CFileImage@+0x670
-RVA(0x00143a30, 0xe9) void Boundary_143a30() {}  // proximity: CDDrawPtrCollections@-0xa70 | CFileImage@+0x590
-RVA(0x00143b20, 0xfc) void Boundary_143b20() {}  // proximity: CDDrawPtrCollections@-0xb60 | CFileImage@+0x4a0
 RVA(0x00143c20, 0x84) void Boundary_143c20() {}  // proximity: CDDrawPtrCollections@-0xc60 | CFileImage@+0x3a0
-RVA(0x00143cf0, 0x16b) void Boundary_143cf0() {}  // proximity: CDDrawPtrCollections@-0xd30 | CFileImage@+0x2d0
-RVA(0x00143e60, 0x15b) void Boundary_143e60() {}  // proximity: CDDrawPtrCollections@-0xea0 | CFileImage@+0x160
 RVA(0x00145e00, 0x26) void Boundary_145e00() {}  // proximity: CFileImage@-0x130 | CDDPalette@+0x1590
 RVA(0x00145f60, 0x242) void Boundary_145f60() {}  // proximity: CFileImage@-0x290 | CDDPalette@+0x1430
 RVA(0x001461b0, 0x399) void Boundary_1461b0() {}  // proximity: CFileImage@-0x4e0 | CDDPalette@+0x11e0
