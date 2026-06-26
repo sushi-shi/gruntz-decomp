@@ -1238,6 +1238,11 @@ source = "src/Gruntz/DemoSetup.cpp"
 flags = "base"
 
 [[unit]]
+unit = "bzkinddispatch"
+source = "src/Gruntz/BzKindDispatch.cpp"
+flags = "base"
+
+[[unit]]
 unit = "mgrtokenquery"
 source = "src/Gruntz/MgrTokenQuery.cpp"
 flags = "base"
