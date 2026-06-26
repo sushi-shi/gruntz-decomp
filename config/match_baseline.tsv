@@ -127,7 +127,7 @@ directinputmgr2	33	29
 directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	15	0
-engine_boundary	495	0
+engine_boundary	488	0
 engine_discovered	51	0
 engine_label_stubs	437	105
 engstr	3	1
@@ -195,6 +195,7 @@ projectile	9	3
 pyramidbridgesprites	1	0
 randomambientsound	9	4
 registryhelper	8	8
+rezfile	6	6
 rezmgr	15	10
 rollingball	5	3
 savegame	20	14
@@ -232,7 +233,7 @@ statusbaritem	2	1
 statusbarupdaters	7	0
 streamfeeder	9	7
 streamvoice	5	3
-symparser	6	4
+symparser	7	5
 symtab	13	9
 terraintileloader	1	0
 tileactionevent	7	4
@@ -1348,19 +1349,12 @@ engine_boundary	?Boundary_13b300@@YAXXZ	0.0877	0.0877	1	292a63e12cab	0x13b300
 engine_boundary	?Boundary_13b910@@YAXXZ	1.2500	1.2500	1	9ee8bc8370ff	0x13b910
 engine_boundary	?Boundary_13b970@@YAXXZ	1.0256	1.0256	1	b4555b1090b2	0x13b970
 engine_boundary	?Boundary_13ba70@@YAXXZ	14.2857	14.2857	1	8b5f4112fed9	0x13ba70
-engine_boundary	?Boundary_13c050@@YAXXZ	5.2632	5.2632	1	70748204611d	0x13c050
 engine_boundary	?Boundary_13c0c0@@YAXXZ	0.8696	0.8696	1	b749d8f9025d	0x13c0c0
 engine_boundary	?Boundary_13c8a0@@YAXXZ	3.2258	3.2258	1	978c7fd471e0	0x13c8a0
 engine_boundary	?Boundary_13c8f0@@YAXXZ	3.4483	3.4483	1	10425813a13c	0x13c8f0
 engine_boundary	?Boundary_13c9b0@@YAXXZ	2.5000	2.5000	1	3d1f3c7daa01	0x13c9b0
 engine_boundary	?Boundary_13ca30@@YAXXZ	50.0000	50.0000	1	59b1be20d075	0x13ca30
-engine_boundary	?Boundary_13ca80@@YAXXZ	8.3333	8.3333	1	a90ea0964557	0x13ca80
 engine_boundary	?Boundary_13cb80@@YAXXZ	3.0303	3.0303	1	a52929bb13b3	0x13cb80
-engine_boundary	?Boundary_13cc00@@YAXXZ	0.5882	0.5882	1	64c8936a71c6	0x13cc00
-engine_boundary	?Boundary_13cca0@@YAXXZ	0.5882	0.5882	1	4fd1eaaacd2d	0x13cca0
-engine_boundary	?Boundary_13cd60@@YAXXZ	2.9412	2.9412	1	13a870a539db	0x13cd60
-engine_boundary	?Boundary_13cdc0@@YAXXZ	1.5152	1.5152	1	8ba987ac74a8	0x13cdc0
-engine_boundary	?Boundary_13ce70@@YAXXZ	1.8519	1.8519	1	939cb180b762	0x13ce70
 engine_boundary	?Boundary_13dec0@@YAXXZ	2.8571	2.8571	1	d2e54e0929f2	0x13dec0
 engine_boundary	?Boundary_13dee0@@YAXXZ	3.6364	3.6364	1	b962bf8eb1ea	0x13dee0
 engine_boundary	?Boundary_13df30@@YAXXZ	1.4085	1.4085	1	1259d859fef6	0x13df30
@@ -2890,6 +2884,12 @@ registryhelper	?InitializeLastKey@RegistryHelper@Utils@@QAEHPAD@Z	100.0000	100.0
 registryhelper	?Open@RegistryHelper@Utils@@QAEHPAD000PAUHKEY__@@0@Z	100.0000	100.0000	3	051c9b1b8294	0x139210
 registryhelper	?SetValueDword@RegistryHelper@Utils@@QAEHPADK@Z	100.0000	100.0000	5	06fbc6982fb9	0x139460
 registryhelper	?SetValueString@RegistryHelper@Utils@@QAEHPAD0@Z	100.0000	100.0000	5	48906d809fd9	0x1393b0
+rezfile	?Close@CRezFile@@QAEHXZ	100.0000	100.0000	1	2047e03b5407	0x13ce70
+rezfile	?CloseAllOpen@CRezFileMgr@@QAEHXZ	100.0000	100.0000	1	36ef9ed952ae	0x13ca80
+rezfile	?Flush@CRezFile@@QAEHXZ	100.0000	100.0000	1	13a111d74bba	0x13cd60
+rezfile	?Open@CRezFile@@QAEHXZ	100.0000	100.0000	1	1a42a810a19e	0x13cdc0
+rezfile	?Read@CRezFile@@QAEHHHIPAX@Z	100.0000	100.0000	1	a54053486a8c	0x13cc00
+rezfile	?Write@CRezFile@@QAEHHHIPAX@Z	100.0000	100.0000	1	bf47c23ba1f3	0x13cca0
 rezmgr	??0CRezDir@@QAE@PAX0@Z	78.9091	78.9091	5	6e79226f1d72	0x13c940
 rezmgr	??0CRezItm@@QAE@PAX@Z	100.0000	100.0000	4	f168abdbb8b4	0x13c540
 rezmgr	??0CRezItmBase@@QAE@PAX@Z	100.0000	100.0000	4	cb122a3428e6	0x13c4e0
@@ -3151,6 +3151,7 @@ streamvoice	?SetSource@StreamVoice@@QAEHPAUStreamSource@@@Z	100.0000	100.0000	1	
 symparser	??1CSymParser@@QAE@XZ	97.9725	97.9725	2	b820544c77c6	0x13abc0
 symparser	?AddNode@CSymParser@@QAEXPAX@Z	100.0000	100.0000	2	3b86ac8fbdfb	0x13c210
 symparser	?Clear@CSymParser@@QAEPAXH@Z	91.3803	91.3803	3	2ea4717a0572	0x13b850
+symparser	?ReParse@CSymParser@@QAEHXZ	100.0000	100.0000	1	460945270635	0x13c050
 symparser	?Remove@CObjList@@QAEXPAVCObjNode@@@Z	100.0000	100.0000	1	c6b60724f735	0x1852e0
 symparser	?ResolvePath@CSymParser@@QAEPAXPBD@Z	100.0000	100.0000	1	d2f5951f4d21	0x13c030
 symparser	?ResolveQualified@CSymParser@@QAEHPBDPAX@Z	100.0000	100.0000	1	65f97a6deb84	0x13bff0
