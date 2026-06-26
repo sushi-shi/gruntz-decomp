@@ -126,11 +126,11 @@ cwwdobjmgrfactories	3	0
 databuffer	7	5
 deflate	6	6
 dialogs	35	14
-directinputmgr2	33	29
+directinputmgr2	35	31
 directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	15	0
-engine_boundary	304	0
+engine_boundary	300	0
 engine_discovered	51	0
 engine_label_stubs	437	105
 engine_unmatched	264	0
@@ -146,7 +146,7 @@ gamekeyhandler	1	0
 gamelevel	55	24
 gamemode	44	21
 gamemodeobjlifecycle	4	3
-gameobjectctors	5	1
+gameobjectctors	6	2
 gametext	4	3
 gamewnd	9	8
 grunt	81	15
@@ -184,7 +184,7 @@ leveltilevalidation	2	0
 lightfxmgr	3	3
 loadlevelbymode	1	0
 logicdispatchinit	3	3
-logicrecord	5	3
+logicrecord	6	4
 logictypetable	1	0
 logicworkerhandlers	4	4
 mainmenubuilder	1	0
@@ -1109,6 +1109,8 @@ directinputmgr2	?Poll@CInputDevice@@QAEHXZ	99.9718	99.9718	3	e0e4a7b1be32	0x133d
 directinputmgr2	?PollAll@DirectInputMgr2@@QAEHXZ	100.0000	100.0000	3	ddf727d1f8d4	0x133080
 directinputmgr2	?PollArrayA@DirectInputMgr2@@QAEHXZ	100.0000	100.0000	3	e426c88a86e9	0x1330d0
 directinputmgr2	?PollArrayB@DirectInputMgr2@@QAEHXZ	100.0000	100.0000	3	63889117e0e5	0x133160
+directinputmgr2	?PollJoystick@CInputDevice@@QAEHXZ	100.0000	100.0000	1	dba36e7a9124	0x1347d0
+directinputmgr2	?PollMouse@CInputDevice@@QAEHXZ	100.0000	100.0000	1	2d5be5b831f5	0x1343b0
 directinputmgr2	?ReadAll@DirectInputMgr2@@QAEHXZ	100.0000	100.0000	3	c7b72012e78d	0x133110
 directinputmgr2	?ReadState@CInputDevice@@QAEPAXXZ	100.0000	100.0000	3	63f5b847170b	0x134d90
 directinputmgr2	?ReleaseDevices@CInputDevice@@QAEXXZ	100.0000	100.0000	2	c847948a6481	0x134d50
@@ -1285,7 +1287,6 @@ engine_boundary	?Boundary_0b1790@@YAXXZ	0.4975	0.4975	2	7fabac804774	0xb1790
 engine_boundary	?Boundary_0b3ae0@@YAXXZ	20.0000	20.0000	2	ecfadb7cfd56	0xb3ae0
 engine_boundary	?Boundary_0b3cc0@@YAXXZ	0.4975	0.4975	2	e0f1533bc50f	0xb3cc0
 engine_boundary	?Boundary_0b4c40@@YAXXZ	1.4286	1.4286	2	ec37c4089b5a	0xb4c40
-engine_boundary	?Boundary_0b4d30@@YAXXZ	0.1476	0.1476	2	e9173fbf744a	0xb4d30
 engine_boundary	?Boundary_0b5380@@YAXXZ	20.0000	20.0000	2	0e7fbd0663cd	0xb5380
 engine_boundary	?Boundary_0b5400@@YAXXZ	20.0000	20.0000	2	f26abf60f880	0xb5400
 engine_boundary	?Boundary_0bd430@@YAXXZ	20.0000	20.0000	2	f74171d1e2fe	0xbd430
@@ -1346,9 +1347,7 @@ engine_boundary	?Boundary_1333b0@@YAXXZ	4.7619	4.7619	2	bdb358a194a7	0x1333b0
 engine_boundary	?Boundary_133460@@YAXXZ	4.0000	4.0000	2	e2e792097f0d	0x133460
 engine_boundary	?Boundary_1334f0@@YAXXZ	4.0000	4.0000	2	c0a78fe1cf3c	0x1334f0
 engine_boundary	?Boundary_134360@@YAXXZ	7.1429	7.1429	2	88e4002ab8c6	0x134360
-engine_boundary	?Boundary_1343b0@@YAXXZ	0.6098	0.6098	2	90c47ae4ca43	0x1343b0
 engine_boundary	?Boundary_1346d0@@YAXXZ	7.1429	7.1429	2	aee3fadddb20	0x1346d0
-engine_boundary	?Boundary_1347d0@@YAXXZ	0.3788	0.3788	2	487ecd9aed96	0x1347d0
 engine_boundary	?Boundary_135040@@YAXXZ	2.3256	2.3256	2	60096bc4c663	0x135040
 engine_boundary	?Boundary_137200@@YAXXZ	2.7778	2.7778	2	fddb9504b61e	0x137200
 engine_boundary	?Boundary_137300@@YAXXZ	5.8824	5.8824	2	826fcc54f896	0x137300
@@ -1439,7 +1438,6 @@ engine_boundary	?Boundary_163710@@YAXXZ	1.8182	1.8182	2	3b1e8a2c1e14	0x163710
 engine_boundary	?Boundary_163a10@@YAXXZ	50.0000	50.0000	2	97986794367f	0x163a10
 engine_boundary	?Boundary_163a40@@YAXXZ	5.8824	5.8824	2	77023b928d60	0x163a40
 engine_boundary	?Boundary_163af0@@YAXXZ	1.6667	1.6667	2	2897699d188c	0x163af0
-engine_boundary	?Boundary_164d80@@YAXXZ	0.0928	0.0928	2	aba73a41c987	0x164d80
 engine_boundary	?Boundary_166640@@YAXXZ	0.4000	0.4000	2	78e5245c25be	0x166640
 engine_boundary	?Boundary_166810@@YAXXZ	4.7619	4.7619	2	ed36c073ea3b	0x166810
 engine_boundary	?Boundary_167260@@YAXXZ	0.2286	0.2286	2	df7cbfd4a976	0x167260
@@ -2424,6 +2422,7 @@ gameobjectctors	??0CGruntToyTimeSprite@@QAE@PAUCSpriteObj@@@Z	94.7619	94.7619	2	
 gameobjectctors	??0CGruntWingzTimeSprite@@QAE@PAUCSpriteObj@@@Z	94.7619	94.7619	2	d29f9444e61a	0x7fcc0
 gameobjectctors	??0CRainCloud@@QAE@PAUCHazardObj@@@Z	100.0000	100.0000	3	5f425e89f780	0xb49b0
 gameobjectctors	??0CUFO@@QAE@PAUCHazardObj@@@Z	81.0227	81.0227	3	529d99d92540	0xb4a90
+gameobjectctors	?Serialize@CUFO@@QAEHPAXHHH@Z	100.0000	100.0000	1	e328f3778feb	0xb4d30
 gametext	??0CContainerErr@@QAE@PBD@Z	100.0000	100.0000	4	754ef1da6bee	0x16d9c0
 gametext	?GetWarlordName@@YG?AVCString@@H@Z	89.2553	89.2553	4	290253c681a0	0x1ec20
 gametext	_$E1	100.0000	100.0000	1	cpp:a7f73c40eefc	0x82990
@@ -2844,6 +2843,7 @@ logicrecord	?Consume@CLogicRecord@@QAEHH@Z	100.0000	100.0000	1	30815d7b8ca4	0x15
 logicrecord	?Dispatch@CLogicRecord@@QAEHHHPAX0@Z	79.6203	79.6203	1	5db0447ef675	0x164830
 logicrecord	?Init@CLogicRecord@@QAEHPAXH@Z	100.0000	100.0000	1	13cd2b4bb6f4	0x151e20
 logicrecord	?Load@CLogicRecord@@QAEHPAVLogicArchive@@@Z	100.0000	100.0000	1	f15fadec497e	0x164960
+logicrecord	?Save@CLogicRecord@@QAEHPAVLogicArchive@@@Z	100.0000	100.0000	1	72b3a072e2bc	0x164d80
 logictypetable	?BuildLogicTypeTable@@YGXPAUCLogicTypeBuilder@@@Z	87.9167	87.9167	6	313ac91839f7	0x8a40
 logicworkerhandlers	?HandlerA9CC0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	cc9db04aaadc	0xa9cc0
 logicworkerhandlers	?HandlerAA5A0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	d909b08dc631	0xaa5a0

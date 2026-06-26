@@ -222,8 +222,6 @@ RVA(0x000b3cc0, 0x2ac)
 void Boundary_0b3cc0() {} // proximity: CKitchenSlime@-0xb60 | CPathHazard@+0x360
 RVA(0x000b4c40, 0x4b)
 void Boundary_0b4c40() {} // proximity: CUFO@-0x1b0 | CPathHazard@+0x430
-RVA(0x000b4d30, 0x287)
-void Boundary_0b4d30() {} // proximity: CUFO@-0x2a0 | CPathHazard@+0x340
 RVA(0x000b5380, 0xa)
 void Boundary_0b5380() {} // proximity: CPathHazard@-0x310 | CNetMgr@+0xe0
 RVA(0x000b5400, 0xa)
@@ -345,12 +343,8 @@ RVA(0x001334f0, 0x6a)
 void Boundary_1334f0() {} // proximity: WAP32@-0x170 | DirectInputMgr2@+0xa0
 RVA(0x00134360, 0x33)
 void Boundary_134360() {} // proximity: CInputDevice@-0x100 | CFixedPtrArray32@+0x880
-RVA(0x001343b0, 0x27e)
-void Boundary_1343b0() {} // proximity: CInputDevice@-0x150 | CFixedPtrArray32@+0x830
 RVA(0x001346d0, 0x33)
 void Boundary_1346d0() {} // proximity: CInputDevice@-0x470 | CFixedPtrArray32@+0x510
-RVA(0x001347d0, 0x40a)
-void Boundary_1347d0() {} // proximity: CInputDevice@-0x570 | CFixedPtrArray32@+0x410
 RVA(0x00135040, 0x65)
 void Boundary_135040() {} // proximity: CInputDevice@-0x60 | UnknownSalazar@+0x70
 RVA(0x00137200, 0x53)
@@ -531,8 +525,6 @@ RVA(0x00163a40, 0x41)
 void Boundary_163a40() {} // proximity: CPlaneRender@-0x6d0 | CDDrawWorkerList@+0x1b0
 RVA(0x00163af0, 0xcd)
 void Boundary_163af0() {} // proximity: CPlaneRender@-0x780 | CDDrawWorkerList@+0x100
-RVA(0x00164d80, 0x421)
-void Boundary_164d80() {} // proximity: CLogicRecord@-0x420 | CDDrawWorkerRegistry@+0x490
 RVA(0x00166640, 0x13b)
 void Boundary_166640() {} // proximity: CFileMem@-0x6f0 | CImageSet1@+0x700
 RVA(0x00166810, 0x32)

@@ -250,6 +250,20 @@ public:
     // packing the current/edge flags into +0x2ac/+0x2b0/+0x2a8.
     i32 Poll(); // 0x133d00
 
+    // PollMouse (0x1343b0): mouse-device per-frame read. ReadState()s the +0x2a0
+    // DIMOUSESTATE snapshot, packs the lX/lY direction + 4 button-down bits into
+    // m_currentKeys, then edge-reconciles against m_latchedKeys (press edges).
+    i32 PollMouse(); // 0x1343b0
+
+    // PollJoystick (0x1347d0): joystick variant - a SetupAxes-style pre-step
+    // (0x135040) then the same ReadState + edge-reconcile over a DIJOYSTATE2 snapshot.
+    i32 PollJoystick(); // 0x1347d0
+
+    // PollDevice (0x135040): IDirectInputDevice2::Poll() pre-step PollJoystick runs
+    // before sampling the joystick. Declared-only here (its body is a boundary stub
+    // in another unit); the call reloc-masks.
+    i32 PollDevice(); // 0x135040
+
     // CreateDeviceWrap (0x134260): validates (di, guid), runs Create, then the +0x14
     // virtual configure step. ret 0xc => 3 args.
     i32 CreateDeviceWrap(IDirectInputZ* di, const void* guid, void* hwnd); // 0x134260
