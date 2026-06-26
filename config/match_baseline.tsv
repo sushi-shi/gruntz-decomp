@@ -64,6 +64,7 @@ cfadermgr	7	4
 cfileimage	8	2
 cfixedptrarray32	3	2
 cfortressflag	5	4
+cfrontcandyani	4	3
 cfxmodedesc	3	3
 cgruntcreationpoint	4	3
 cgrunthealthsprite	4	3
@@ -79,7 +80,7 @@ chatboxowner	7	2
 cheatmgr	7	4
 cimage	10	6
 cimageowned	4	2
-clightfx	3	1
+clightfx	4	2
 clightfxeh	1	1
 clightfxrender	22	8
 clobbyobjb	3	2
@@ -103,15 +104,15 @@ cserialsub34	1	0
 cseverusentrylist	2	1
 csimpleanimation	4	3
 csingleanimation	1	1
-csingleframemessage	1	0
+csingleframemessage	2	1
 cstatichazard	6	2
 cstatusbarmgr	2	1
-cteleporter	2	1
+cteleporter	3	2
 ctimebomb	3	2
 ctoobspikez	4	3
 cvoicetrigger	3	2
 cwaypoint	1	1
-cwormholeacts	1	0
+cwormholeacts	2	1
 cwwdobjmgr	1	0
 databuffer	7	5
 deflate	6	6
@@ -120,7 +121,7 @@ directinputmgr2	33	29
 directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	15	0
-engine_boundary	540	0
+engine_boundary	531	0
 engine_discovered	51	0
 engine_label_stubs	436	104
 engstr	3	1
@@ -161,7 +162,7 @@ inflate	7	6
 inftrees	6	6
 infutil	1	1
 ingameicon	10	5
-ingametext	4	3
+ingametext	5	4
 ingameworkerhandlers	3	3
 inputdeviceconfig	1	0
 interfaceobject	2	1
@@ -684,6 +685,10 @@ cfortressflag	?AdvanceAnim@CFortressFlag@@QAEHXZ	100.0000	100.0000	1	fe412e5b259
 cfortressflag	?InitActReg@CFortressFlag@@SAXXZ	100.0000	100.0000	1	87b32004eacf	0x46000
 cfortressflag	?RegisterActs@CFortressFlag@@SAXXZ	92.9130	92.9130	1	2f9ffdc53813	0x461e0
 cfortressflag	?Serialize@CFortressFlag@@QAEHHHHH@Z	100.0000	100.0000	1	b560b6331961	0x46410
+cfrontcandyani	?AdvanceAnim@CFrontCandyAni@@QAEHXZ	100.0000	100.0000	1	654419a9e205	0xad510
+cfrontcandyani	?FireActivation@CFrontCandyAni@@QAEXH@Z	100.0000	100.0000	1	ba6b5e25b5c0	0xad1b0
+cfrontcandyani	?InitActReg@CFrontCandyAni@@SAXXZ	100.0000	100.0000	1	c691123e0636	0xad130
+cfrontcandyani	?RegisterActs@CFrontCandyAni@@SAXXZ	92.9130	92.9130	1	b70e27f4d14a	0xad310
 cfxmodedesc	??0CFxModeDesc@@QAE@XZ	100.0000	100.0000	1	1d50e1699c1c	0x17e7b0
 cfxmodedesc	??0CFxModeT3@@QAE@XZ	100.0000	100.0000	1	ed60fc3e1923	0x17e880
 cfxmodedesc	?MakeButeSectionKey@@YAHPADPBD1@Z	100.0000	100.0000	1	c9630b01af12	0xf9280
@@ -772,6 +777,7 @@ cimageowned	?Build@CImageOwned@@QAEHPAVCImageBuildDesc@@HH@Z	79.6791	79.6791	1	6
 cimageowned	?BuildRle@CImageOwned@@QAEHPAXHHHH0@Z	97.7528	97.7528	1	dc2ddfff5723	0x148d40
 cimageowned	?LoadFromFile@CImageOwned@@QAEHVCString@@H@Z	100.0000	100.0000	1	503f5fd8f54d	0x148fc0
 clightfx	?Activate@CLightFx@@QAEHHHHH@Z	86.7407	86.7407	1	017ace156fac	0x9d520
+clightfx	?InitActReg@CLightFx@@SAXXZ	100.0000	100.0000	1	4b1f90b40c30	0x9d140
 clightfx	?RebindNode@CLightFx@@QAEHXZ	100.0000	100.0000	1	d9610ef994d0	0x9d770
 clightfx	?RegisterActs@CLightFx@@SAXXZ	92.9130	92.9130	1	f6e4618b35c5	0x9d320
 clightfxeh	??1CLightFx@@UAE@XZ	100.0000	100.0000	1	70f7940497b3	0x12430
@@ -937,6 +943,7 @@ csimpleanimation	?AdvanceAnim@CSimpleAnimation@@QAEHXZ	100.0000	100.0000	1	2a87e
 csimpleanimation	?InitSimpleAnimDispatch@@YAXXZ	100.0000	100.0000	1	a84ef2c13047	0xabb90
 csimpleanimation	?RegisterSimpleAnimLogic@@YAXXZ	96.4783	96.4783	1	5c2fab4a8cdd	0xabd70
 csingleanimation	??1CSingleAnimation@@UAE@XZ	100.0000	100.0000	1	96128fb6792b	0x10540
+csingleframemessage	?InitActReg@CSingleFrameMessage@@SAXXZ	100.0000	100.0000	1	5fd5a8e1e830	0xab530
 csingleframemessage	?RegisterActs@CSingleFrameMessage@@SAXXZ	92.9130	92.9130	1	138cf13c2240	0xab710
 cstatichazard	??0CStaticHazard@@QAE@PAUCGameObject@@@Z	82.5635	82.5635	1	1756e20b6c41	0xfb7a0
 cstatichazard	??1CStaticHazard@@UAE@XZ	100.0000	100.0000	1	2c9522f3c281	0x12b30
@@ -948,6 +955,7 @@ cstatusbarmgr	?LoadTabSprites@CStatusBarMgr@@QAEHXZ	16.7383	16.7383	4	045cfeaa49
 cstatusbarmgr	?SetDirection@CSbItem@@QAEXHH@Z	100.0000	100.0000	2	46fcb29ef102	0xea0f0
 cteleporter	??1CTeleporter@@UAE@XZ	100.0000	100.0000	1	0aa6d090845e	0x10dd0
 cteleporter	?Begin@CTeleporter@@QAEHXZ	87.6667	87.6667	1	ac212a968adf	0x419e0
+cteleporter	?InitActReg@CTeleporter@@SAXXZ	100.0000	100.0000	1	16ec1bd1d09e	0x414a0
 ctimebomb	??1CTimeBomb@@UAE@XZ	100.0000	100.0000	1	82a73e5a479d	0x12a70
 ctimebomb	?FireActivation@CTimeBomb@@QAEXH@Z	100.0000	100.0000	1	f49df59995b0	0xe1830
 ctimebomb	?RegisterActs@CTimeBomb@@QAEXXZ	92.9130	92.9130	1	908d9bceacb1	0xe1990
@@ -959,6 +967,7 @@ cvoicetrigger	??1CVoiceTrigger@@UAE@XZ	100.0000	100.0000	1	8939b1cb3841	0x135a0
 cvoicetrigger	?RegisterActs@CVoiceTrigger@@QAEXXZ	92.9130	92.9130	1	eb83cede4e29	0x11a500
 cvoicetrigger	?Tick@CVoiceTrigger@@QAEHXZ	100.0000	100.0000	1	352963c16858	0x11a700
 cwaypoint	??1CWayPoint@@UAE@XZ	100.0000	100.0000	1	1792dd04db91	0x102e0
+cwormholeacts	?InitActReg@CWormhole@@SAXXZ	100.0000	100.0000	1	e9b8645c7c2a	0x3f210
 cwormholeacts	?RegisterActs@CWormhole@@SAXXZ	92.9130	92.9130	1	836ea1f2bd5a	0x3f3f0
 cwwdobjmgr	?LoadObjects@CWwdObjMgr@@QAEHPAUWwdReader@@IH@Z	54.9009	54.9009	1	48b53cd4169c	0x15ad30
 databuffer	??0CDataBuffer@@QAE@XZ	100.0000	100.0000	1	3a641ac221a3	0x150180
@@ -1151,10 +1160,8 @@ engine_boundary	?Boundary_03ad30@@YAXXZ	20.0000	20.0000	1	b2627d56b7bc	0x3ad30
 engine_boundary	?Boundary_03ad90@@YAXXZ	2.3810	2.3810	1	cdd21b2f6680	0x3ad90
 engine_boundary	?Boundary_03b940@@YAXXZ	1.0417	1.0417	1	774e4bfed5ca	0x3b940
 engine_boundary	?Boundary_03bb50@@YAXXZ	1.0309	1.0309	1	fa8226994405	0x3bb50
-engine_boundary	?Boundary_03f210@@YAXXZ	20.0000	20.0000	1	d97b02e74e56	0x3f210
 engine_boundary	?Boundary_0406d0@@YAXXZ	20.0000	20.0000	1	e73d44ab3d95	0x406d0
 engine_boundary	?Boundary_0408b0@@YAXXZ	0.4975	0.4975	1	ff1ca69a421a	0x408b0
-engine_boundary	?Boundary_0414a0@@YAXXZ	20.0000	20.0000	1	f3253ce58078	0x414a0
 engine_boundary	?Boundary_041680@@YAXXZ	0.4975	0.4975	1	62039d193f62	0x41680
 engine_boundary	?Boundary_0445c0@@YAXXZ	20.0000	20.0000	1	4cb295b2f8aa	0x445c0
 engine_boundary	?Boundary_0464e0@@YAXXZ	0.8889	0.8889	1	016b698a206f	0x464e0
@@ -1196,7 +1203,6 @@ engine_boundary	?Boundary_091620@@YAXXZ	1.5385	1.5385	1	7783273ad166	0x91620
 engine_boundary	?Boundary_093920@@YAXXZ	0.2020	0.2020	1	c154ab17234f	0x93920
 engine_boundary	?Boundary_093be0@@YAXXZ	0.6667	0.6667	1	0baec05ecccb	0x93be0
 engine_boundary	?Boundary_094c10@@YAXXZ	25.0000	25.0000	1	aba69c93e001	0x94c10
-engine_boundary	?Boundary_0993e0@@YAXXZ	20.0000	20.0000	1	310310503b61	0x993e0
 engine_boundary	?Boundary_099b80@@YAXXZ	20.0000	20.0000	1	75c60382072b	0x99b80
 engine_boundary	?Boundary_099ba0@@YAXXZ	7.1429	7.1429	1	9c984076ded9	0x99ba0
 engine_boundary	?Boundary_09a0d0@@YAXXZ	0.4082	0.4082	1	4a5aaf34d45f	0x9a0d0
@@ -1205,15 +1211,9 @@ engine_boundary	?Boundary_09a420@@YAXXZ	7.6923	7.6923	1	f9ade8ea1491	0x9a420
 engine_boundary	?Boundary_09b770@@YAXXZ	1.1905	1.1905	1	f73965829ff1	0x9b770
 engine_boundary	?Boundary_09c650@@YAXXZ	0.1246	0.1246	1	77ff0e770f92	0x9c650
 engine_boundary	?Boundary_09cab0@@YAXXZ	3.6364	3.6364	1	4424afe5ea91	0x9cab0
-engine_boundary	?Boundary_09d140@@YAXXZ	20.0000	20.0000	1	0e4713a8d39e	0x9d140
 engine_boundary	?Boundary_09e0b0@@YAXXZ	0.8264	0.8264	1	d1c3b30a9860	0x9e0b0
 engine_boundary	?Boundary_0aaf00@@YAXXZ	20.0000	20.0000	1	a4e5d980f4ed	0xaaf00
-engine_boundary	?Boundary_0ab530@@YAXXZ	20.0000	20.0000	1	fc97693a86e6	0xab530
 engine_boundary	?Boundary_0acb30@@YAXXZ	20.0000	20.0000	1	66ab05012df7	0xacb30
-engine_boundary	?Boundary_0ad130@@YAXXZ	20.0000	20.0000	1	ff985a44cf49	0xad130
-engine_boundary	?Boundary_0ad1b0@@YAXXZ	0.5333	0.5333	1	157ee95ddf8a	0xad1b0
-engine_boundary	?Boundary_0ad310@@YAXXZ	0.8696	0.8696	1	14b5b781e763	0xad310
-engine_boundary	?Boundary_0ad510@@YAXXZ	14.2857	14.2857	1	ba4fc4a95e33	0xad510
 engine_boundary	?Boundary_0adde0@@YAXXZ	20.0000	20.0000	1	40f696bd4d2d	0xadde0
 engine_boundary	?Boundary_0ade60@@YAXXZ	0.5333	0.5333	1	ff289523ad79	0xade60
 engine_boundary	?Boundary_0adfc0@@YAXXZ	0.8696	0.8696	1	f10252da81d8	0xadfc0
@@ -2681,6 +2681,7 @@ ingameicon	?Serialize@CInGameIcon@@QAEHPAVCArchive@@HHH@Z	0.6826	0.6826	2	958d1d
 ingameicon	?SetField54@CInGameIcon@@QAEXH@Z	100.0000	100.0000	2	996198841286	0x99b10
 ingametext	??1CInGameText@@UAE@XZ	100.0000	100.0000	1	f69bd50df17d	0x11dc0
 ingametext	?Dispatch@CInGameText@@QAEXH@Z	100.0000	100.0000	1	732a6ae0ef8a	0x99460
+ingametext	?InitActReg@CInGameText@@SAXXZ	100.0000	100.0000	1	e96177786be5	0x993e0
 ingametext	?RegisterTextLogic@@YAXXZ	96.4783	96.4783	1	99afe765bef2	0x995c0
 ingametext	?Serialize@CInGameText@@QAEHPAVCTextArchive@@HHH@Z	100.0000	100.0000	1	1cfc09245808	0x99a30
 ingameworkerhandlers	?Handler095750@@YAHPAUOwner@@@Z	100.0000	100.0000	1	76ecb60f46e9	0x95750

@@ -121,6 +121,8 @@ struct CLightFxActReg {
     char m_pad1c[0x20 - 0x1c];
     i32 m_scratch; // +0x20
 
+    void Construct(i32 lo, i32 hi); // 0x408710 (__thiscall ret 8)
+
     char* ResolveEntry(i32 id) {
         m_scratch = 0;
         if (id >= m_lo && id <= m_hi) {
@@ -137,6 +139,14 @@ struct CLightFxActReg {
 };
 DATA(0x00245ad0)
 extern CLightFxActReg g_lightFxActReg; // 0x645ad0
+
+// CLightFx::InitActReg @0x9d140 - construct the class's activation-coordinate
+// registry singleton (g_lightFxActReg @0x645ad0) over the fixed range
+// [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
+RVA(0x0009d140, 0x15)
+void CLightFx::InitActReg() {
+    g_lightFxActReg.Construct(2000, 2010);
+}
 
 // CLightFx::RegisterActs @0x9d320 - bind the per-frame handler (AdvanceAnim
 // @0x9d7b0) to the activation key "A" via the shared name registry. The SAME

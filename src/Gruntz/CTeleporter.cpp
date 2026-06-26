@@ -27,6 +27,24 @@ struct CTeleBoundOwner {
 RVA(0x00010dd0, 0x44)
 CTeleporter::~CTeleporter() {}
 
+// The class's activation-coordinate registry singleton (@0x6446b0), built over
+// the fixed [2000, 2010] range by the shared registry ctor (0x408710, __thiscall
+// ret 8). Only the Construct entry is needed here (InitActReg's lone call).
+struct CTeleporterActReg {
+    char m_pad[0x24];
+    void Construct(i32 lo, i32 hi); // 0x408710
+};
+DATA(0x002446b0)
+extern CTeleporterActReg g_teleporterActReg; // 0x6446b0
+
+// CTeleporter::InitActReg @0x0414a0 - construct the class's activation-coordinate
+// registry singleton (g_teleporterActReg @0x6446b0) over the fixed range
+// [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
+RVA(0x000414a0, 0x15)
+void CTeleporter::InitActReg() {
+    g_teleporterActReg.Construct(2000, 2010);
+}
+
 // CTeleporter::Begin @0x0419e0 - advance the +0x1a0 anim sub-mgr to the current
 // draw-delta; once it reports idle (m_28==0 && m_20!=0), run the one-shot
 // finalize: snapshot the bound object's per-tile-time / running-clock / bound

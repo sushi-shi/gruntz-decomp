@@ -65,6 +65,9 @@ extern CButeTree g_buteTree;
 // ---------------------------------------------------------------------------
 class CTeleporter : public CUserLogic {
 public:
+    // InitActReg (0x414a0): construct the class's activation-coordinate registry
+    // singleton (g_teleporterActReg @0x6446b0) over the fixed [2000, 2010] range.
+    static void InitActReg();
     // Begin (0x419e0): advance the anim sub-mgr; on its first idle frame, snapshot
     // the bound geometry, apply the teleporter lookup-geometry and re-bind the "B"
     // bute node. Returns 0.

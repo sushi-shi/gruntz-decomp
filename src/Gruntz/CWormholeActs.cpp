@@ -22,6 +22,7 @@
 
 class CWormhole : public CUserLogic {
 public:
+    static void InitActReg();   // 0x03f210
     static void RegisterActs(); // 0x03f3f0
     i32 AdvanceAnim();          // 0x03f5f0 (the per-frame handler PMF)
 };
@@ -49,6 +50,8 @@ struct CWormholeActReg {
     char m_pad1c[0x20 - 0x1c];
     i32 m_scratch; // +0x20
 
+    void Construct(i32 lo, i32 hi); // 0x408710 (__thiscall ret 8)
+
     char* ResolveEntry(i32 id) {
         m_scratch = 0;
         if (id >= m_lo && id <= m_hi) {
@@ -65,6 +68,14 @@ struct CWormholeActReg {
 };
 DATA(0x002445c0)
 extern CWormholeActReg g_wormholeActReg; // 0x6445c0
+
+// CWormhole::InitActReg @0x03f210 - construct the class's activation-coordinate
+// registry singleton (g_wormholeActReg @0x6445c0) over the fixed range
+// [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
+RVA(0x0003f210, 0x15)
+void CWormhole::InitActReg() {
+    g_wormholeActReg.Construct(2000, 2010);
+}
 
 // CWormhole::RegisterActs @0x03f3f0 - bind the per-frame handler (AdvanceAnim
 // @0x03f5f0) to the activation key "A" via the shared name registry. The SAME

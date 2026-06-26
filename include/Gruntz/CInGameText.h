@@ -59,6 +59,7 @@ class CInGameText : public CUserLogic {
 public:
     virtual ~CInGameText() OVERRIDE; // 0x011dc0
 
+    static void InitActReg();                               // 0x0993e0
     void Dispatch(i32 idx);                                 // 0x099460
     i32 Serialize(CTextArchive* ar, i32 tag, i32 a, i32 b); // 0x099a30
 

@@ -102,6 +102,20 @@ static inline i32 ResolveSlot(_zvec* v, i32 idx) {
 RVA(0x00011dc0, 0x44)
 CInGameText::~CInGameText() {}
 
+// The activation-coordinate registry view of the dispatch table (g_textDispatch
+// @0x645950): InitActReg builds it over the fixed [2000, 2010] range via the
+// shared registry ctor (0x408710, __thiscall ret 8).
+struct CTextActReg {
+    void Construct(i32 lo, i32 hi); // 0x408710
+};
+
+// CInGameText::InitActReg @0x0993e0 - construct the class's activation-coordinate
+// registry (g_textDispatch @0x645950) over [2000, 2010]. Free init thunk.
+RVA(0x000993e0, 0x15)
+void CInGameText::InitActReg() {
+    ((CTextActReg*)&g_textDispatch)->Construct(2000, 2010);
+}
+
 // ===========================================================================
 // CInGameText::Dispatch  (0x099460)
 // ===========================================================================

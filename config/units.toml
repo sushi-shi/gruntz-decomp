@@ -1261,6 +1261,11 @@ source = "src/Gruntz/CBehindCandyAni.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "cfrontcandyani"
+source = "src/Gruntz/CFrontCandyAni.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "csingleanimation"
 source = "src/Gruntz/CSingleAnimation.cpp"
 flags = "eh"

@@ -14,6 +14,9 @@
 
 class CSingleFrameMessage : public CUserLogic {
 public:
+    // Construct the class's activation-coordinate registry singleton
+    // (g_singleFrameActReg @0x645ef0) over the fixed [2000, 2010] range. Static.
+    static void InitActReg(); // 0x0ab530
     // Bind the per-frame handler (AdvanceAnim) to the activation key "A" via the
     // shared name registry; the same archetype as CBehindCandyAni::RegisterActs.
     static void RegisterActs(); // 0x0ab710

@@ -29,6 +29,8 @@ struct CSingleFrameActReg {
     char m_pad1c[0x20 - 0x1c];
     i32 m_scratch; // +0x20
 
+    void Construct(i32 lo, i32 hi); // 0x408710 (__thiscall ret 8)
+
     char* ResolveEntry(i32 id) {
         m_scratch = 0;
         if (id >= m_lo && id <= m_hi) {
@@ -45,6 +47,14 @@ struct CSingleFrameActReg {
 };
 DATA(0x00245ef0)
 extern CSingleFrameActReg g_singleFrameActReg; // 0x645ef0
+
+// CSingleFrameMessage::InitActReg @0x0ab530 - construct the class's activation-
+// coordinate registry singleton (g_singleFrameActReg @0x645ef0) over the fixed
+// range [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
+RVA(0x000ab530, 0x15)
+void CSingleFrameMessage::InitActReg() {
+    g_singleFrameActReg.Construct(2000, 2010);
+}
 
 // CSingleFrameMessage::RegisterActs @0x0ab710 - bind the class's per-frame handler
 // (AdvanceAnim @0x0ab910) to the activation key "A" via the shared name registry.
