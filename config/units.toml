@@ -1228,6 +1228,11 @@ source = "src/Gruntz/PulseHighlight.cpp"
 flags = "base"
 
 [[unit]]
+unit = "zdarrayderived"
+source = "src/Gruntz/ZDArrayDerived.cpp"
+flags = "base"
+
+[[unit]]
 unit = "gamesave"
 source = "src/Io/GameSave.cpp"
 flags = "base"
