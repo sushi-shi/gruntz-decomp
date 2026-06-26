@@ -89,15 +89,15 @@ struct CGameObjAux; // the sub-object reached through CGameObject::m_7c
 // drive the dispatch shape - slot 7 @ +0x1c, slot 9 @ +0x24).
 class CSiriusWorker {
 public:
-    virtual void Slot00();           // +0x00
-    virtual void Slot01();           // +0x04
-    virtual void Slot02();           // +0x08
-    virtual void Slot03();           // +0x0c
-    virtual void Slot04();           // +0x10
-    virtual void Slot05();           // +0x14
-    virtual void Slot06();           // +0x18
-    virtual i32 Slot07();            // +0x1c  reuse path
-    virtual void Slot08();           // +0x20
+    virtual void Slot00();              // +0x00
+    virtual void Slot01();              // +0x04
+    virtual void Slot02();              // +0x08
+    virtual void Slot03();              // +0x0c
+    virtual void Slot04();              // +0x10
+    virtual void Slot05();              // +0x14
+    virtual void Slot06();              // +0x18
+    virtual i32 Slot07();               // +0x1c  reuse path
+    virtual void Slot08();              // +0x20
     virtual i32 Slot09(i32 ctx, i32 z); // +0x24  fed CGameObject->m_10
 
     i32 m_04; // +0x04
@@ -134,9 +134,9 @@ struct CGameObject {
     void ApplyLookupSprite(const char* key, i32 flag);  // 0x1504d0
     void ApplyName(const char* name);                   // 0x150540
     i32 ApplyLookupGeometry(const char* key, i32 flag); // 0x1505b0
-    i32 EnsureWorker80(CGameObject* src);  // 0x150eb0  (lazy worker @ +0x80, dispatch)
-    void EnsureWorker88(CGameObject* src); // 0x150f90  (lazy worker @ +0x88, dispatch)
-    void EnsureWorker90(CGameObject* src); // 0x151070  (lazy worker @ +0x90, dispatch)
+    i32 EnsureWorker80(CGameObject* src);               // 0x150eb0  (lazy worker @ +0x80, dispatch)
+    void EnsureWorker88(CGameObject* src);              // 0x150f90  (lazy worker @ +0x88, dispatch)
+    void EnsureWorker90(CGameObject* src);              // 0x151070  (lazy worker @ +0x90, dispatch)
     char m_pad00[0x04];
     i32 m_04; // +0x04
     i32 m_08; // +0x08
@@ -325,6 +325,7 @@ class CTileTrigger : public CUserLogic {
 public:
     CTileTrigger();                 // 0x011160 (no-arg)
     CTileTrigger(CGameObject* obj); // 0x10e220 (1-arg)
+    static void InitActReg();       // 0x10e420
     static void RegisterActs();     // 0x10e600
     i32 AdvanceAnim();              // 0x10ee00
     // Inline & trivial so it folds into the three leaf dtors (0x11540/0x11600/

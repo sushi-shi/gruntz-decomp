@@ -617,6 +617,11 @@ source = "src/Net/NetMgrReportError.cpp"
 flags = "base"
 
 [[unit]]
+unit = "channelslots"
+source = "src/Net/ChannelSlots.cpp"
+flags = "base"
+
+[[unit]]
 unit = "winmain"
 source = "src/Gruntz/WinMain.cpp"
 flags = "eh"
@@ -1311,3 +1316,13 @@ flags = "eh"
 unit = "cmovinglogicdtor"
 source = "src/Gruntz/CMovingLogicDtor.cpp"
 flags = "eh"
+
+[[unit]]
+unit = "cstatusbarspriteacts"
+source = "src/Gruntz/CStatusBarSpriteActs.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "rezfile"
+source = "src/Rez/RezFile.cpp"
+flags = "base"

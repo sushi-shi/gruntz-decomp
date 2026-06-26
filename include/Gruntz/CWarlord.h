@@ -84,13 +84,13 @@ struct CWarlordMission {
 // ---------------------------------------------------------------------------
 struct WwdGameReg {
     char m_pad00[0x2c];
-    CWarlordMission* m_2c;  // +0x2c   single-player level/mission object
+    CWarlordMission* m_2c; // +0x2c   single-player level/mission object
     char m_pad30[0x60 - 0x30];
-    CRegBattleEvent* m_60;  // +0x60   battle-event sink (PostBattleEvent)
+    CRegBattleEvent* m_60; // +0x60   battle-event sink (PostBattleEvent)
     char m_pad64[0x68 - 0x64];
     CRegThreatHelper* m_68; // +0x68   nearest-enemy helper
     char m_pad6c[0x134 - 0x6c];
-    i32 m_134;              // +0x134  game-mode gate (1 = single-player)
+    i32 m_134; // +0x134  game-mode gate (1 = single-player)
 };
 extern WwdGameReg* g_gameReg;
 
@@ -114,6 +114,10 @@ class CWarlord : public CUserLogic {
 public:
     CWarlord(i32); // 0x42d40 (the warlord ctor: base init + name/state setup)
     ~CWarlord();   // 0x107f0 (the home-TU dtor: ~CString(m_54) + the base teardown)
+
+    // construct the file-static per-action handler table (g_actionTable @0x644610)
+    // over the fixed [2000, 2010] range via the shared registry ctor (0x408710).
+    static void InitActReg(); // 0x445c0
 
     // slot-4 override of an inherited CUserLogic virtual: the animation-state
     // dispatcher over the file-static table.

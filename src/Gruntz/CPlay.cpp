@@ -68,6 +68,16 @@
 #include <Gruntz/CPlay.h>
 #include <rva.h>
 
+// The zoned sound-bank manager (CWorld::m_48); RegionEnter/RegionLeave pause +
+// resume the currently-playing zoned sound via its real (named) methods.
+#include <Dsndmgr/CGruntzSoundZ.h>
+
+// The registry's +0x68 cue-sink B sub-object CanQuickSave probes at +0x400.
+struct CRegSub68 {
+    char p0[0x400];
+    i32 m_400; // +0x400  pending/busy gate
+};
+
 // ---- MFC primitives reused verbatim from the engine (reloc-masked). ----
 #include <Gruntz/CString.h>
 extern i32 MapLookup(void* map, void* key, void*& out); // CMapPtrToPtr::Lookup
@@ -245,8 +255,7 @@ void CPlay::ApplyGameOptions() {
             g_mgrSettings->m_100 = g_opt_22bdd4;
             g_mgrSettings->StoreInputState(g_opt_22bdc4);
         }
-        if (g_gate_2455b4 == 0 && g_gate_2455c0 == 0
-            && g_mgrSettings->m_48->m_28 != 0) {
+        if (g_gate_2455b4 == 0 && g_gate_2455c0 == 0 && g_mgrSettings->m_48->m_28 != 0) {
             Eng_OptCommit(g_opt_22bdd0);
             g_mgrSettings->m_48->SetXMidiVolume(g_opt_22bdcc);
         }
@@ -869,6 +878,38 @@ i32 CPlay::ClampViewport2(i32 stride) {
     return 1;
 }
 
+// CPlay::RegionEnter (0x0d88f0) - on entering a special region, save the
+// currently-playing zoned sound (m_518) and silence the bank, then (when the dev
+// window is up) start the "CURSE" cue. The shared on-enter sub-step the OnRegion
+// one-shots call. Migrated from engine_boundary (CPlay).
+RVA(0x000d88f0, 0x44)
+void CPlay::RegionEnter() {
+    if (m_518 == 0) {
+        CWorld* w = m_4w();
+        m_518 = (void*)((CGruntzSoundZ*)w->m_48)->m_pCurrent;
+        ((CGruntzSoundZ*)w->m_48)->StopAll_1388f0();
+    }
+    if (g_64556c->m_14 != 0) {
+        ((CGruntzSoundZ*)m_4w()->m_48)->Play_138840((i32) "CURSE", 0);
+    }
+}
+
+// CPlay::RegionLeave (0x0d8960) - on leaving (only when no region gate is still
+// set and a sound was saved), stop the bank, restore the saved zoned sound, and
+// (dev-window) restart it. Migrated from engine_boundary (CPlay).
+RVA(0x000d8960, 0x75)
+void CPlay::RegionLeave() {
+    if (m_region0Gate == 0 && m_region1Gate == 0 && m_region2Gate == 0 && m_region3Gate == 0
+        && m_518 != 0) {
+        ((CGruntzSoundZ*)m_4w()->m_48)->IsPlaying_138920();
+        ((CGruntzSoundZ*)m_4w()->m_48)->m_pCurrent = (CGruntzSoundInnerZ*)m_518;
+        if (g_64556c->m_14 != 0) {
+            ((CGruntzSoundZ*)m_4w()->m_48)->Restart_1388c0(1);
+        }
+        m_518 = 0;
+    }
+}
+
 // ===========================================================================
 // The four screen-region scroll one-shots.
 // Each: thiscall(int z), set its region-active gate to bool(z), call the shared
@@ -978,8 +1019,8 @@ struct CVisEntityVtbl;
 struct CVisEntity {
     CVisEntityVtbl* vptr;
     char p4[0x7c - 0x04];
-    CVisEntityType* m_7c;     // +0x7c
-    void Notify(void* held);  // vtbl[0x2c]
+    CVisEntityType* m_7c;    // +0x7c
+    void Notify(void* held); // vtbl[0x2c]
 };
 typedef void (CVisEntity::*VisNotifyFn)(void*);
 struct CVisEntityVtbl {
@@ -1001,17 +1042,17 @@ struct CVisNode {
 // the compares lower to `cmp eax, OFFSET Fn` (DIR32). The thunk-vs-direct reloc
 // naming is the scoring artifact; the compare bytes match retail.
 extern "C" {
-    void VisFn_40fe90();  // 0x40fe90
-    void VisFn_4bf150();  // 0x4bf150
-    void VisFn_423b40();  // 0x423b40
-    void VisFn_Roll();    // 0x4cd70  (Roll)
-    void VisFn_41e570();  // 0x41e570
-    void VisFn_41e520();  // 0x41e520
-    void VisFn_49b410();  // 0x49b410
+    void VisFn_40fe90();        // 0x40fe90
+    void VisFn_4bf150();        // 0x4bf150
+    void VisFn_423b40();        // 0x423b40
+    void VisFn_Roll();          // 0x4cd70  (Roll)
+    void VisFn_41e570();        // 0x41e570
+    void VisFn_41e520();        // 0x41e520
+    void VisFn_49b410();        // 0x49b410
     void VisFn_IntersectRect(); // 0x432060 (winapi_032060_IntersectRect)
-    void VisFn_49b310();  // 0x49b310
-    void VisFn_CBattlezDlg();    // 0x414b30 (CBattlezDlg)
-    void VisFn_4fce80();  // 0x4fce80
+    void VisFn_49b310();        // 0x49b310
+    void VisFn_CBattlezDlg();   // 0x414b30 (CBattlezDlg)
+    void VisFn_4fce80();        // 0x4fce80
 }
 
 RVA(0x000d9050, 0xc7)
@@ -1031,9 +1072,8 @@ i32 CPlay::NotifyVisibleEntities() {
     while (node != 0) {
         CVisEntity* o = node->m_8;
         void* id = o->m_7c->m_10;
-        if (id == (void*)VisFn_40fe90 || id == (void*)VisFn_4bf150
-            || id == (void*)VisFn_423b40 || id == (void*)VisFn_Roll
-            || id == (void*)VisFn_41e570 || id == (void*)VisFn_41e520
+        if (id == (void*)VisFn_40fe90 || id == (void*)VisFn_4bf150 || id == (void*)VisFn_423b40
+            || id == (void*)VisFn_Roll || id == (void*)VisFn_41e570 || id == (void*)VisFn_41e520
             || id == (void*)VisFn_40fe90 || id == (void*)VisFn_49b410
             || id == (void*)VisFn_IntersectRect || id == (void*)VisFn_49b310
             || id == (void*)VisFn_CBattlezDlg || id == (void*)VisFn_4fce80) {
@@ -1288,6 +1328,55 @@ i32 CPlay::RegisterInputBindings() {
     m_4w()->m_4->Bind(0x204, 0x40);
     m_4w()->m_4->Bind(0x205, 0x40);
     m_4w()->m_4->Bind(0x206, 0x40);
+    return 1;
+}
+
+// CPlay::ArmSnapshot (0x0d9240) - thiscall(active, dur). When `active`, latch the
+// snapshot duration (dur) and base clock (g_645588) 64-bit timers; always store
+// `active` into m_snapshotActive. Migrated from engine_boundary (CPlay).
+// @early-stop
+// scheduling wall (99.2%): logic + regalloc byte-exact except the two independent
+// 64-bit-base stores (m_snapBaseLo/m_snapBaseHi) emit in hi,lo order where retail
+// emits lo,hi; cl fills the g_645588 load-use latency gap with the hi=0 store.
+// Loading the clock into a local forces lo,hi but diverges the whole regalloc
+// (push edi / immediates) to 62% — not source-steerable.
+RVA(0x000d9240, 0x3c)
+i32 CPlay::ArmSnapshot(i32 active, i32 dur) {
+    if (active != 0) {
+        m_snapDur = dur;
+        m_snapDurHi = 0;
+        m_snapBaseLo = g_645588;
+        m_snapBaseHi = 0;
+    }
+    m_snapshotActive = active;
+    return 1;
+}
+
+// CPlay::CanQuickSave (0x0da3b0) - all-idle predicate: returns 1 only when the
+// render is enabled, not in a main frame, no overlay-drag, no active snapshot, the
+// guts subsystem is idle (m_548/m_busyA/m_busyB all 0), the registry has no active
+// selection (reg->m_c), and the cue-sink B busy gate is set. Migrated from
+// engine_boundary (CPlay).
+RVA(0x000da3b0, 0x6e)
+i32 CPlay::CanQuickSave() {
+    if (m_renderDisabled == 0 && m_inGame == 0 && m_overlayDrag == 0 && m_snapshotActive == 0
+        && m_guts->m_548 == 0 && m_guts->m_busyA == 0 && m_guts->m_busyB == 0 && g_64556c->m_c == 0
+        && ((CRegSub68*)g_64556c->m_68)->m_400 != 0) {
+        return 1;
+    }
+    return 0;
+}
+
+// CPlay::PostHudRect (0x0da440) - if the world is ready, post the HUD/selection
+// rect (by value, with the dev-state 0x20 flag) to the world timeline, then clear
+// the ready / drag-snap gates. Migrated from engine_boundary (CPlay).
+RVA(0x000da440, 0x60)
+i32 CPlay::PostHudRect() {
+    if (m_worldReady != 0) {
+        m_4w()->m_68->HudRect(m_hudRect, g_645578->m_18 & 0x20);
+    }
+    m_worldReady = 0;
+    m_dragSnapActive = 0;
     return 1;
 }
 
@@ -1770,6 +1859,38 @@ i32 CPlay::ForwardReady() {
     return Vfunc3();
 }
 
+// CPlay::PauseGame (0x0cee90) - vtable slot 24 (shared by CDemo/CMulti). Flush
+// the pending mode ops, freeze the guts subsystem (passing whether we were
+// running), clear the world-ready / drag-snap gates, and save the running game
+// clock into m_1cc. Migrated from engine_boundary (CPlay).
+RVA(0x000cee90, 0x49)
+i32 CPlay::PauseGame() {
+    Helper2c7f();
+    if (m_paused) {
+        m_guts->Guts35b2(0);
+    } else {
+        m_guts->Guts35b2(1);
+    }
+    m_worldReady = 0;
+    m_dragSnapActive = 0;
+    m_1cc = g_645588;
+    return 1;
+}
+
+// CPlay::ResumeGame (0x0cef00) - vtable slot 25. Step the guts subsystem, restore
+// the saved game clock from m_1cc, clear the paused flag, and (if the guts object
+// is live) run its resume sub-step. Migrated from engine_boundary (CPlay).
+RVA(0x000cef00, 0x39)
+i32 CPlay::ResumeGame() {
+    m_guts->Guts367a();
+    g_645588 = m_1cc;
+    m_paused = 0;
+    if (m_guts != 0) {
+        m_guts->Guts125d();
+    }
+    return 1;
+}
+
 // @confidence: med
 // @source: string-xref
 // @stub
@@ -2037,7 +2158,7 @@ i32 CPlay::LoadGameAnims(i32 force) {
 struct CMusicEntry {
     void* Load(); // 0x539960 (thiscall) -> resource ptr (null if absent)
     char p0[0xc];
-    void* m_c;    // +0xc  install key
+    void* m_c; // +0xc  install key
 };
 // A named MIDIZ category set (LookupSet result).
 struct CMusicSet {
@@ -2506,12 +2627,12 @@ i32 CPlay::FindStartPointAt(i32 x, i32 y, i32* outX, i32* outY) {
 // goal geometry / per-slot config rows, clear the win-lose/in-game latches and the
 // frame-marker timeline. __thiscall, no args, ret 1 (0 if PrepareReset bails).
 // Self-contained views keep Render's CPlay/CWorld typing untouched.
-struct CRpHandle { // the found sound object
+struct CRpHandle {       // the found sound object
     void Play(i32 flag); // 0x139030 __thiscall
 };
-struct CRpSound { // m_4->m_48 (the level sound manager)
-    void Cue(char* name, i32 flag);  // 0x138840 __thiscall(name, flag)
-    CRpHandle* Find(char* name);     // 0x138730 __thiscall(name) -> handle
+struct CRpSound {                   // m_4->m_48 (the level sound manager)
+    void Cue(char* name, i32 flag); // 0x138840 __thiscall(name, flag)
+    CRpHandle* Find(char* name);    // 0x138730 __thiscall(name) -> handle
     char p0[0x1c];
     CRpHandle* m_1c; // +0x1c  last-found sound handle
 };
@@ -2524,7 +2645,7 @@ struct CRpM30 {
     char p0[0x24];
     CRpGeom* m_24; // +0x24
 };
-struct CRpWho7c { // m_4->m_7c
+struct CRpWho7c {                  // m_4->m_7c
     void Notify(i32 id, i32 flag); // 0x1c8f thunk __thiscall(id, flag)
 };
 struct CRpTimeline { // m_4->m_68 (the per-frame world timeline)
@@ -2608,7 +2729,7 @@ struct CRpReg44 {
     char p0[0x124];
     i32 m_124; // +0x124
 };
-struct CRpRow { // reg + 0x188 + i*0x238 (the per-slot config row)
+struct CRpRow {   // reg + 0x188 + i*0x238 (the per-slot config row)
     void Reset(); // 0x1055 thunk __thiscall
 };
 struct CRpSlot {
@@ -2754,21 +2875,21 @@ extern void* g_freeList;
 DATA(0x0024554c)
 extern i32 g_freeListNodeBias;
 
-struct CRtArr { // a CPtrArray subset (m_data @+4, m_count @+8); 0x14 stride
+struct CRtArr {                    // a CPtrArray subset (m_data @+4, m_count @+8); 0x14 stride
     void SetSize(i32 n, i32 grow); // 0x1b4f75 __thiscall(n, grow)
     char p0[0x4];
     void** m_data; // +0x4
     i32 m_count;   // +0x8
     char pc[0x14 - 0xc];
 };
-struct CRtArr2 { // the m_68+0x260 array variant
+struct CRtArr2 {                   // the m_68+0x260 array variant
     void SetSize(i32 n, i32 grow); // 0x1b52e8 __thiscall(n, grow)
 };
-struct CRtRow { // m_4 + 0x188 + i*0x238  (per-grunt-type config row)
+struct CRtRow {    // m_4 + 0x188 + i*0x238  (per-grunt-type config row)
     void ResetA(); // 0x29a5 thunk
     void ResetB(); // 0x40c5 thunk
 };
-struct CRtTimeline { // m_4->m_68 (also g_64556c->m_68)
+struct CRtTimeline {      // m_4->m_68 (also g_64556c->m_68)
     void Flush(i32 mode); // 0x41b0 thunk(mode)
     void Reset1514();     // 0x1514 thunk
     void Reset15c3();     // 0x15c3 thunk (reg->m_68 reset)
@@ -2780,13 +2901,13 @@ struct CRtTimeline { // m_4->m_68 (also g_64556c->m_68)
     char p288[0x2a0 - 0x288];
     i32 m_2a0; // +0x2a0
 };
-struct CRtSound { // m_4->m_48
+struct CRtSound {       // m_4->m_48
     void Reset138530(); // 0x138530 thunk
 };
 struct CRtWorldDraw { // m_4->m_54
     void Reset28ab(); // 0x28ab thunk
 };
-struct CRtSub60 { // m_4->m_60
+struct CRtSub60 {     // m_4->m_60
     void Reset244b(); // 0x244b thunk
 };
 struct CRtWorld { // this->m_4
@@ -2819,17 +2940,17 @@ struct CRtImageReg { // m_c->m_24 (virtual; the +0x44 slot 17 teardown)
     virtual void v16();
     virtual void Teardown(); // slot 17 (+0x44)
 };
-struct CRtSoundReg2c { // m_c->m_28->m_2c
+struct CRtSoundReg2c {  // m_c->m_28->m_2c
     void Reset137a80(); // 0x137a80 thunk
 };
 struct CRtSoundReg { // m_c->m_28
     char p0[0x2c];
     CRtSoundReg2c* m_2c; // +0x2c
 };
-struct CRtRendererA { // m_c->m_8
+struct CRtRendererA {   // m_c->m_8
     void Reset15aa90(); // 0x15aa90 thunk
 };
-struct CRtRendererB { // m_c->m_c
+struct CRtRendererB {   // m_c->m_c
     void Reset163c60(); // 0x163c60 thunk
 };
 struct CRtResMgr { // this->m_c
@@ -2840,10 +2961,10 @@ struct CRtResMgr { // this->m_c
     CRtImageReg* m_24; // +0x24
     CRtSoundReg* m_28; // +0x28
 };
-struct CRtGuts { // this->m_2dc
+struct CRtGuts {          // this->m_2dc
     void Guts12fd(i32 a); // 0x12fd thunk(a)
 };
-struct CRtMarker { // a no-arg-reset leaf (begin/frame markers)
+struct CRtMarker {     // a no-arg-reset leaf (begin/frame markers)
     void ResetBegin(); // 0x1d7f thunk (this->m_2e4)
     void ResetFrame(); // 0x14ce thunk (this->m_3f4)
 };
@@ -2863,7 +2984,7 @@ struct CRtThis { // view-of-this
     char p2e8[0x370 - 0x2e8];
     CRtArr m_370; // +0x370  (m_374 data / m_378 count)
     char p384[0x3a4 - 0x384];
-    CRtArr m_3a4[4]; // +0x3a4  stride 0x14
+    CRtArr m_3a4[4];  // +0x3a4  stride 0x14
     CRtMarker* m_3f4; // +0x3f4  frame marker
     char p3f8[0x488 - 0x3f8];
     CRtArr m_488; // +0x488  (m_48c data / m_490 count)
@@ -2994,18 +3115,18 @@ struct CEffDesc {
     char p0[0x18];
     i32 m_18; // +0x18  display duration (ms)
 };
-struct CEffMap {                                  // m_c->m_28 + 0x10 (CMapStringToOb)
+struct CEffMap {                           // m_c->m_28 + 0x10 (CMapStringToOb)
     i32 Lookup(char* key, CEffDesc** out); // 0x1b8438 __thiscall (ret 8)
 };
-struct CEffResMgr {                               // m_c->m_28
+struct CEffResMgr { // m_c->m_28
     char p0[0x10];
     CEffMap m_10; // +0x10  embedded name map
 };
-struct CEffMgr {                                  // this->m_c
+struct CEffMgr { // this->m_c
     char p0[0x28];
     CEffResMgr* m_28; // +0x28
 };
-struct CPlayEff {                                 // view-of-this
+struct CPlayEff { // view-of-this
     char p0[0xc];
     CEffMgr* m_c; // +0x0c
 };

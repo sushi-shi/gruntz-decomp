@@ -169,6 +169,7 @@ class CWarpStonePad : public CUserLogic {
 public:
     CWarpStonePad(CGameObject* obj); // 0x10d650
     virtual ~CWarpStonePad() OVERRIDE;
+    static void InitActReg();   // 0x10d840
     void FireWarp(i32 coord);   // 0x10d8c0 (vtable slot 4)
     static void RegisterActs(); // 0x10da20
     i32 AdvanceAnim();          // 0x10dc20
@@ -178,6 +179,7 @@ class CTileTriggerSwitch : public CUserLogic {
 public:
     CTileTriggerSwitch(CGameObject* obj); // 0x10dc40
     virtual ~CTileTriggerSwitch() OVERRIDE;
+    static void InitActReg();   // 0x10de20
     static void RegisterActs(); // 0x10e000
     i32 AdvanceAnim();          // 0x10e200
 };
@@ -209,6 +211,7 @@ class CSingleAnimation : public CUserLogic {
 public:
     CSingleAnimation(CGameObject* obj); // 0x0ae7f0
     virtual ~CSingleAnimation() OVERRIDE;
+    static void InitActReg();   // 0x0ae9a0
     static void RegisterActs(); // 0x0aeb80
     i32 AdvanceAnim();          // 0x0aed80
 };
@@ -440,7 +443,7 @@ extern "C" i32 rand(void);
 // collection methods are external/no-body.
 struct CActEntry; // an entry: first dword is the registered handler vtable
 struct CActColl {
-    i32 Find(i32 coord, i32 z);      // 0x16da80 (__thiscall ret 8)
+    i32 Find(i32 coord, i32 z);     // 0x16da80 (__thiscall ret 8)
     void Construct(i32 lo, i32 hi); // 0x408710 (shared registry ctor, __thiscall ret 8)
 };
 struct CActColl2 {
@@ -475,13 +478,14 @@ extern void* g_actAllocResult;
 // VActLookup archetype inline (constant `this` -> the field loads become absolute
 // addresses); the slow Insert is __thiscall on m_coll2.
 struct CLeafActReg {
-    void* m_vptr;       // +0x00
-    CActColl2* m_coll2; // +0x04
-    i32 m_lo;           // +0x08
-    i32 m_hi;           // +0x0c
-    char* m_base;       // +0x10
-    char* m_cur;        // +0x14
-    i32 m_stride;       // +0x18
+    void Construct(i32 lo, i32 hi); // 0x408710 (shared registry ctor, __thiscall ret 8)
+    void* m_vptr;                   // +0x00
+    CActColl2* m_coll2;             // +0x04
+    i32 m_lo;                       // +0x08
+    i32 m_hi;                       // +0x0c
+    char* m_base;                   // +0x10
+    char* m_cur;                    // +0x14
+    i32 m_stride;                   // +0x18
     char m_pad1c[0x20 - 0x1c];
     i32 m_scratch; // +0x20
 
@@ -1098,7 +1102,8 @@ void CFrontCandyAni::RegisterActs() {
         ((CActName*)slot)->Assign(s_actKeyA);
         g_nextActId++;
     }
-    ((CFrontCandyActEntry*)g_frontCandyActReg.ResolveEntry(id))->m_fn = &CFrontCandyAni::AdvanceAnim;
+    ((CFrontCandyActEntry*)g_frontCandyActReg.ResolveEntry(id))->m_fn =
+        &CFrontCandyAni::AdvanceAnim;
 }
 
 // --- CFrontCandyAni (0x0acf40), vptr 0x5e83e4 ---
@@ -1165,6 +1170,15 @@ CSingleAnimation::CSingleAnimation(CGameObject* obj) : CUserLogic(obj) {
     m_14->m_1c = g_buteTree.Find("A");
 }
 
+// --- CSingleAnimation::InitActReg (0x0ae9a0) ---
+// Construct the class's per-coordinate activation registry singleton
+// (g_singleAnimActReg @0x645f70) over the fixed range [2000, 2010] via the shared
+// registry ctor (0x408710). Free init thunk; reloc-masked.
+RVA(0x000ae9a0, 0x15)
+void CSingleAnimation::InitActReg() {
+    g_singleAnimActReg.Construct(2000, 2010);
+}
+
 // --- CSingleAnimation::RegisterActs (0x0aeb80) ---
 // Bind the per-frame handler (AdvanceAnim @0x0aed80) to the activation key "A"
 // via the shared name registry + the class's coordinate registry
@@ -1194,7 +1208,8 @@ void CSingleAnimation::RegisterActs() {
         ((CActName*)slot)->Assign(s_actKeyA);
         g_nextActId++;
     }
-    ((CSingleAnimActEntry*)g_singleAnimActReg.ResolveEntry(id))->m_fn = &CSingleAnimation::AdvanceAnim;
+    ((CSingleAnimActEntry*)g_singleAnimActReg.ResolveEntry(id))->m_fn =
+        &CSingleAnimation::AdvanceAnim;
 }
 
 // --- CWarpStonePad (0x10d650), vptr 0x5e71ac ---
@@ -1211,6 +1226,15 @@ CWarpStonePad::CWarpStonePad(CGameObject* obj) : CUserLogic(obj) {
     m_14->m_1c = g_buteTree.Find("A");
 }
 
+// --- CWarpStonePad::InitActReg (0x10d840) ---
+// Construct the class's activation-coordinate registry singleton
+// (g_warpStonePadActReg @0x64e6a0) over the fixed range [2000, 2010] via the
+// shared registry ctor (0x408710). Free init thunk; reloc-masked.
+RVA(0x0010d840, 0x15)
+void CWarpStonePad::InitActReg() {
+    g_warpStonePadActReg.Construct(2000, 2010);
+}
+
 // --- CWarpStonePad::FireWarp (0x10d8c0), vtable slot 4 ---
 // Look the activation coordinate up in the class's own registry singleton
 // (g_warpStonePadActReg); if the resolved entry carries a registered handler,
@@ -1220,7 +1244,8 @@ RVA(0x0010d8c0, 0x102)
 void CWarpStonePad::FireWarp(i32 coord) {
     CWarpStonePadActEntry* e = (CWarpStonePadActEntry*)g_warpStonePadActReg.ResolveEntry(coord);
     if (e->m_fn != 0) {
-        CWarpStonePadActEntry* e2 = (CWarpStonePadActEntry*)g_warpStonePadActReg.ResolveEntry(coord);
+        CWarpStonePadActEntry* e2 =
+            (CWarpStonePadActEntry*)g_warpStonePadActReg.ResolveEntry(coord);
         (this->*(e2->m_fn))();
     }
 }
@@ -1254,7 +1279,8 @@ void CWarpStonePad::RegisterActs() {
         ((CActName*)slot)->Assign(s_actKeyA);
         g_nextActId++;
     }
-    ((CWarpStonePadActEntry*)g_warpStonePadActReg.ResolveEntry(id))->m_fn = &CWarpStonePad::AdvanceAnim;
+    ((CWarpStonePadActEntry*)g_warpStonePadActReg.ResolveEntry(id))->m_fn =
+        &CWarpStonePad::AdvanceAnim;
 }
 
 // --- CTileTriggerSwitch (0x10dc40), vptr 0x5e7f6c ---
@@ -1270,6 +1296,15 @@ CTileTriggerSwitch::CTileTriggerSwitch(CGameObject* obj) : CUserLogic(obj) {
     m_38->m_08 |= 2;
     m_38->m_08 |= 1;
     m_38->m_40 |= 1;
+}
+
+// --- CTileTriggerSwitch::InitActReg (0x10de20) ---
+// Construct the class's activation-coordinate registry singleton
+// (g_tileTriggerSwitchActReg @0x64e798) over the fixed range [2000, 2010] via
+// the shared registry ctor (0x408710). Free init thunk; reloc-masked.
+RVA(0x0010de20, 0x15)
+void CTileTriggerSwitch::InitActReg() {
+    g_tileTriggerSwitchActReg.Construct(2000, 2010);
 }
 
 // --- CTileTriggerSwitch::RegisterActs (0x10e000) ---
@@ -1301,7 +1336,8 @@ void CTileTriggerSwitch::RegisterActs() {
         ((CActName*)slot)->Assign(s_actKeyA);
         g_nextActId++;
     }
-    ((CTileTriggerSwitchActEntry*)g_tileTriggerSwitchActReg.ResolveEntry(id))->m_fn = &CTileTriggerSwitch::AdvanceAnim;
+    ((CTileTriggerSwitchActEntry*)g_tileTriggerSwitchActReg.ResolveEntry(id))->m_fn =
+        &CTileTriggerSwitch::AdvanceAnim;
 }
 
 // --- CTileTrigger 1-arg (0x10e220), vptr 0x5e7f14 ---
@@ -1315,6 +1351,15 @@ CTileTrigger::CTileTrigger(CGameObject* obj) : CUserLogic(obj) {
     m_10->m_164 = m_10->m_5c >> 5;
     m_10->m_168 = m_10->m_60 >> 5;
     m_10->m_04 = (m_10->m_164 << 8) + m_10->m_168;
+}
+
+// --- CTileTrigger::InitActReg (0x10e420) ---
+// Construct the class's activation-coordinate registry singleton
+// (g_tileTriggerActReg @0x64e810) over the fixed range [2000, 2010] via the
+// shared registry ctor (0x408710). Free init thunk; reloc-masked.
+RVA(0x0010e420, 0x15)
+void CTileTrigger::InitActReg() {
+    g_tileTriggerActReg.Construct(2000, 2010);
 }
 
 // --- CTileTrigger::RegisterActs (0x10e600) ---
@@ -1346,7 +1391,8 @@ void CTileTrigger::RegisterActs() {
         ((CActName*)slot)->Assign(s_actKeyA);
         g_nextActId++;
     }
-    ((CTileTriggerActEntry*)g_tileTriggerActReg.ResolveEntry(id))->m_fn = &CTileTrigger::AdvanceAnim;
+    ((CTileTriggerActEntry*)g_tileTriggerActReg.ResolveEntry(id))->m_fn =
+        &CTileTrigger::AdvanceAnim;
 }
 
 // --- CTileSecretTrigger::RegisterActs (0x10f340) ---
@@ -1379,7 +1425,8 @@ void CTileSecretTrigger::RegisterActs() {
         ((CActName*)slot)->Assign(s_actKeyA);
         g_nextActId++;
     }
-    ((CTileSecretTriggerActEntry*)g_tileSecretTriggerActReg.ResolveEntry(id))->m_fn = &CTileSecretTrigger::Act_10f6a0;
+    ((CTileSecretTriggerActEntry*)g_tileSecretTriggerActReg.ResolveEntry(id))->m_fn =
+        &CTileSecretTrigger::Act_10f6a0;
 
     i32 id2 = (i32)g_buteTree.Find(s_actKeyB);
     if (id2 == 0) {
@@ -1397,7 +1444,8 @@ void CTileSecretTrigger::RegisterActs() {
         ((CActName*)slot)->Assign(s_actKeyB);
         g_nextActId++;
     }
-    ((CTileSecretTriggerActEntry*)g_tileSecretTriggerActReg.ResolveEntry(id2))->m_fn = &CTileSecretTrigger::Act_10f970;
+    ((CTileSecretTriggerActEntry*)g_tileSecretTriggerActReg.ResolveEntry(id2))->m_fn =
+        &CTileSecretTrigger::Act_10f970;
 }
 
 // --- The three CTileTrigger leaves' 1-arg ctors (0x10fa60/90/c0) ---

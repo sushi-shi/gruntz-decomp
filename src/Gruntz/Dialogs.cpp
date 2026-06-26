@@ -52,7 +52,7 @@ struct CMultiReg {
     CMultiRegSub* m_524; // +0x524
     void* m_528;         // +0x528  mode/team latch
     char m_pad52c[0x588 - 0x52c];
-    void* m_588;         // +0x588  forced-count latch
+    void* m_588; // +0x588  forced-count latch
     char m_pad58c[0x5a4 - 0x58c];
     i32 m_5a4; // +0x5a4
     i32 m_5a8; // +0x5a8
@@ -73,7 +73,9 @@ struct CMultiSlot {
 struct CMultiSlotList {
     CObList m_list; // +0x00  (CObList, 0x1c bytes)
     i32 m_1c;       // +0x1c
-    CMultiSlotList(i32 nBlockSize) : m_list(nBlockSize) { m_1c = 0; }
+    CMultiSlotList(i32 nBlockSize) : m_list(nBlockSize) {
+        m_1c = 0;
+    }
     void Method1546(i32 a);                      // 0x37910
     void Method2a45(i32 a, i32 b);               // 0x37ff0
     void Method3396(i32 a, i32 b, i32 c, i32 d); // 0x38150
@@ -115,8 +117,10 @@ extern void* g_imgHolderVtbl; // 0x5e8cd4  derived holder vtable
 // RestampBase_16410 entry is the standalone 7-byte vptr-set the binary keeps at
 // 0x16410 (also folded inline into the derived dtor's base-teardown tail).
 struct CImgHolderBase {
-    void RestampBase_16410();             // 0x016410
-    ~CImgHolderBase() { *(void**)this = &g_imgHolderBaseVtbl; } // inline base teardown
+    void RestampBase_16410(); // 0x016410
+    ~CImgHolderBase() {
+        *(void**)this = &g_imgHolderBaseVtbl;
+    } // inline base teardown
 };
 
 RVA(0x00016410, 0x7)
@@ -262,6 +266,98 @@ i32 CMultiStartDlg::UpdateSlot() {
 // @stub
 RVA(0x000c20a0, 0x45a)
 void CMultiStartDlg::InitPlayerSlots() {}
+
+// ---------------------------------------------------------------------------
+// CMultiStartDlg per-slot control accessors: switch(index) over a 4-entry
+// control-ID table, each case returning this->GetDlgItem(constID). SAME shape as
+// CBattlezDlg::GetCtrlA..D; the inline .rdata jump table reloc-masks.
+// @early-stop
+// jump-table-data scoring artifact (code byte-exact) - docs/patterns/jumptable-data-overlap.md
+RVA(0x000c26c0, 0x46)
+CWnd* CMultiStartDlg::GetCtrlA(i32 index) {
+    CWnd* result = 0;
+    switch (index) {
+        case 0:
+            result = GetDlgItem(0x51f);
+            break;
+        case 1:
+            result = GetDlgItem(0x523);
+            break;
+        case 2:
+            result = GetDlgItem(0x524);
+            break;
+        case 3:
+            result = GetDlgItem(0x525);
+            break;
+    }
+    return result;
+}
+
+// @early-stop
+// jump-table-data scoring artifact (code byte-exact) - docs/patterns/jumptable-data-overlap.md
+RVA(0x000c2740, 0x46)
+CWnd* CMultiStartDlg::GetCtrlB(i32 index) {
+    CWnd* result = 0;
+    switch (index) {
+        case 0:
+            result = GetDlgItem(0x50a);
+            break;
+        case 1:
+            result = GetDlgItem(0x50b);
+            break;
+        case 2:
+            result = GetDlgItem(0x50c);
+            break;
+        case 3:
+            result = GetDlgItem(0x50d);
+            break;
+    }
+    return result;
+}
+
+// @early-stop
+// jump-table-data scoring artifact (code byte-exact) - docs/patterns/jumptable-data-overlap.md
+RVA(0x000c27c0, 0x46)
+CWnd* CMultiStartDlg::GetCtrlC(i32 index) {
+    CWnd* result = 0;
+    switch (index) {
+        case 0:
+            result = GetDlgItem(0x51e);
+            break;
+        case 1:
+            result = GetDlgItem(0x520);
+            break;
+        case 2:
+            result = GetDlgItem(0x521);
+            break;
+        case 3:
+            result = GetDlgItem(0x522);
+            break;
+    }
+    return result;
+}
+
+// @early-stop
+// jump-table-data scoring artifact (code byte-exact) - docs/patterns/jumptable-data-overlap.md
+RVA(0x000c2840, 0x46)
+CWnd* CMultiStartDlg::GetCtrlD(i32 index) {
+    CWnd* result = 0;
+    switch (index) {
+        case 0:
+            result = GetDlgItem(0x501);
+            break;
+        case 1:
+            result = GetDlgItem(0x503);
+            break;
+        case 2:
+            result = GetDlgItem(0x505);
+            break;
+        case 3:
+            result = GetDlgItem(0x507);
+            break;
+    }
+    return result;
+}
 
 // ---------------------------------------------------------------------------
 RVA(0x000234a0, 0x1e)

@@ -48,7 +48,9 @@ struct CGameRegistry {
     // world-draw frame when m_134==3. External/no-body (reloc-masked).
     void PerFrameCue();
 
-    char m_pad0[0x14];
+    char m_pad0[0xc];
+    void* m_c; // +0x0c  active-selection / busy gate (CanQuickSave)
+    char m_pad10[0x14 - 0x10];
     i32 m_14; // +0x14  has-window / dev flag (gates rect-update calls)
     char m_pad18[0x30 - 0x18];
     CSpriteFactoryHolder* m_30; // +0x30
