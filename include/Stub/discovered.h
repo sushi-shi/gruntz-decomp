@@ -6,10 +6,6 @@
 #ifndef GRUNTZ_STUB_DISCOVERED_H
 #define GRUNTZ_STUB_DISCOVERED_H
 
-class CAniRecord {
-public:
-    void CAniRecord_1657a0();
-};
 class CButeStore {
 public:
     void CButeStore_174d70();

@@ -191,7 +191,6 @@ namespace ApiCallerStubs {
         i32 thirdparty_17c8e0_SmackGoto_8_SmackWait_4(i32, i32);
         i32 thirdparty_17caa0_SmackDoFrame_4_SmackNextFrame_4_SmackToBuffer_28();
         void BootyState_OnActivate2_vfunc8();
-        i32 LoadChatBoxSprite(i32 arg1);
         void LoadCreditzAssets2();
         void BuildWorldLevelKey(i32);
         void LoadGruntAbilityTuning(i32);
@@ -224,7 +223,6 @@ namespace ApiCallerStubs {
         void BuildResourceTabStatusBar(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32);
         void
             BuildStatzTabStatusBar(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32);
-        void BuildStatzTabSmallSprite();
         void BuildMultiplayerTabStatusBar(
             i32,
             i32,
@@ -4144,76 +4142,6 @@ namespace ApiCallerStubs {
     RVA(0x0001c8a0, 0xec)
     void ThisStubOwnerUnknown::BootyState_OnActivate2_vfunc8() {}
 
-    // @confidence: high
-    // @source: decomp-xref
-    // @early-stop
-    // scheduling wall (docs/patterns/outparam-zeroinit-scheduling.md): logic + arg
-    // order + the int(BOOL) per-site epilogues all match; residual is two store
-    // hoist/sink permutations - retail SINKS the Lookup out-param `mov [&spr],0` past
-    // the arg pushes (cl hoists) and SINKS the rect[1] struct store past `push &rect`
-    // at a shifted esp offset (same instruction multiset, /O2-invariant), plus the
-    // frame guard `mov ecx,[..]; test` vs cl's `cmp [..],0` materialization. No local
-    // source diff closes these (hoisting rect[0] regressed 83->82%).
-    RVA(0x00020f40, 0x188)
-    i32 ThisStubOwnerUnknown::LoadChatBoxSprite(i32 arg1) {
-        CChatBoxOwner* self = (CChatBoxOwner*)this;
-        if (!self->m_10) {
-            return 1;
-        }
-
-        CChatBoxCtx* ctx = (CChatBoxCtx*)arg1;
-        CChatBoxDcHost* host = ctx->m_2c;
-        if (!host) {
-            return 0;
-        }
-
-        void* spr = 0;
-        self->m_18->m_10->m_10.Lookup("GAME_CHATBOX", &spr);
-        if (!spr) {
-            return 0;
-        }
-
-        if (self->m_8 == 3) {
-            void* frame = ((CChatBoxFrame*)spr)->m_14[((CChatBoxFrame*)spr)->m_68];
-            if (!frame) {
-                return 0;
-            }
-            RenderChatBoxFrame(arg1, self->m_0 + 0x140, self->m_4 + 0x20, 0);
-        } else {
-            void* frame = ((CChatBoxFrame*)spr)->m_14[((CChatBoxFrame*)spr)->m_64];
-            if (!frame) {
-                return 0;
-            }
-            RenderChatBoxFrame(arg1, self->m_0 + 0xf0, self->m_4 + 0x20, 0);
-        }
-
-        HDC hdc = 0;
-        host->m_8->m_vptr->GetDC(host->m_8, &hdc);
-        if (!hdc) {
-            return 1;
-        }
-        SetBkMode(hdc, 1);
-        SetTextColor(hdc, 0);
-        SetBkColor(hdc, 0);
-
-        void* rect[4];
-        if (self->m_8 == 3) {
-            rect[0] = self->m_0 + 0x4c;
-            rect[2] = self->m_0 + 0x267;
-            rect[1] = self->m_4 + 0x2b;
-            rect[3] = self->m_4 + 0x37;
-            self->m_14->StampText(hdc, 0x21b, rect);
-        } else {
-            rect[0] = self->m_0 + 0x4c;
-            rect[2] = self->m_0 + 0x1c7;
-            rect[1] = self->m_4 + 0x2b;
-            rect[3] = self->m_4 + 0x37;
-            self->m_14->StampText(hdc, 0x17b, rect);
-        }
-        host->m_8->m_vptr->Done(host->m_8, hdc);
-        return 1;
-    }
-
     // @confidence: low
     // @source: decomp-xref
     // @stub
@@ -4399,12 +4327,6 @@ namespace ApiCallerStubs {
     RVA(0x000e9600, 0x18c)
     void ThisStubOwnerUnknown::
         BuildStatzTabStatusBar(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32) {}
-
-    // @confidence: med
-    // @source: decomp-xref
-    // @stub
-    RVA(0x000e9850, 0x111)
-    void ThisStubOwnerUnknown::BuildStatzTabSmallSprite() {}
 
     // @confidence: med
     // @source: decomp-xref

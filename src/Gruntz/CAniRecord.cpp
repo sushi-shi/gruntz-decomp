@@ -38,6 +38,8 @@ DATA(0x001f02d8)
 extern void* g_albusWorkerVtbl; // 0x5f02d8 - the secondary base vftable
 DATA(0x001e8cb4)
 extern void* g_remusBaseDtorVtbl; // 0x5e8cb4 - the CObject base dtor vtable
+DATA(0x001f02c0)
+extern void* g_aniRecordVtbl; // 0x5f02c0 - the primary base vftable (slot-1 dtor 0x1657a0)
 
 // g_aniParsedNameLen (0x6bf3c4): the parsed name length the catalog builder uses
 // to advance the record stream cursor; Parse sets it (strlen of the name).
@@ -159,6 +161,42 @@ CAniRecordBase2::~CAniRecordBase2() {
     m_cobj.m_vptr = &g_albusWorkerVtbl;
     FreeBuf_168fb0();
     // m_cobj auto-destructs here (the CObject base reset) under the /GX frame.
+}
+
+// ---------------------------------------------------------------------------
+// 0x1657a0: the PRIMARY base (g_aniRecordVtbl) slot-1 destructor. /GX. Stamps the
+// primary base vftable, frees the +0x30 resolved-index array (RezFree), clears the
+// owner sentinel (0xffff) / count / array, then the CObject grand-base member
+// restamps to g_remusBaseDtorVtbl. Same MI-dtor device as the base-2 dtor: the
+// CObject grand-base is a destructible value member whose only teardown is the vptr
+// restamp (no field reset here), so the compiler emits the /GX frame + trylevel-0.
+struct CAniRecordCObjBase {
+    void* m_vptr; // +0x00 (shared with the primary-base vptr stamp)
+    ~CAniRecordCObjBase() {
+        m_vptr = &g_remusBaseDtorVtbl;
+    }
+};
+struct CAniRecordPrimary {
+    CAniRecordCObjBase m_cobj; // +0x00 (the CObject grand-base sub-object)
+    ~CAniRecordPrimary();
+};
+
+// @early-stop
+// MI primary-base destructor: complete reconstruction modeling the CObject grand-
+// base as a destructible value member. The /GX frame + body shape are correct; the
+// residual is the documented EH-state-index / vptr-restamp schedule wall (same family
+// as the base-2 dtor 0x165dd0). Deferred to the final sweep (whole-hierarchy model).
+RVA(0x001657a0, 0x66)
+CAniRecordPrimary::~CAniRecordPrimary() {
+    m_cobj.m_vptr = &g_aniRecordVtbl;
+    CAniRecord* r = (CAniRecord*)this;
+    if (r->m_indices != 0) {
+        RezFree(r->m_indices);
+    }
+    r->m_0c = (CAniRecordOwner*)0xffff;
+    r->m_count = 0;
+    r->m_indices = 0;
+    // m_cobj auto-destructs here (vptr -> g_remusBaseDtorVtbl) under the /GX frame.
 }
 
 // ---------------------------------------------------------------------------

@@ -1,8 +1,7 @@
 // ChatBoxOwner.cpp - the on-screen chat/text-box owner page (C:\Proj\Gruntz):
-// place/clear/configure/hit-test helpers. The box origin comes from the active
-// viewport (g_gameReg->m_8c/m_90, the viewport X/Y). The renderer LoadChatBoxSprite
-// (0x20f40) stays in src/Stub/ApiCallers.cpp at its scheduling wall. Only offsets /
-// code bytes are load-bearing; helpers are reloc-masked externals.
+// place/clear/configure/hit-test/render helpers. The box origin comes from the
+// active viewport (g_gameReg->m_8c/m_90, the viewport X/Y). Only offsets / code
+// bytes are load-bearing; helpers are reloc-masked externals.
 #include <rva.h>
 
 #include <Gruntz/CGameRegistry.h>
@@ -11,6 +10,54 @@
 DATA(0x0064556c)
 extern CGameRegistry* g_gameReg;
 
+// ---------------------------------------------------------------------------
+// Engine views the sprite renderer (LoadChatBoxSprite, 0x20f40) reaches through.
+// Modeled minimally; every call/datum through them is reloc-masked.
+
+// The looked-up "GAME_CHATBOX" sprite set: a frame-entry array gated by two indices.
+struct CChatBoxFrame {
+    char m_pad00[0x14];
+    void** m_14; // +0x14  frame-entry array
+    char m_pad18[0x64 - 0x18];
+    i32 m_64; // +0x64  frame index (mode != 3)
+    i32 m_68; // +0x68  frame index (mode == 3)
+};
+// The name->sprite hash embedded at the registry's +0x10 (Lookup 0x1b8008,
+// __thiscall; writes the found set to *out).
+struct CChatBoxHash {
+    void Lookup(char* szName, void** out); // 0x1b8008
+};
+struct CChatBoxRegistry { // m_18->m_10 points here
+    char m_pad00[0x10];
+    CChatBoxHash m_10; // +0x10
+};
+struct CChatBoxRegRoot { // m_18 points here
+    char m_pad00[0x10];
+    CChatBoxRegistry* m_10; // +0x10
+};
+// arg1->m_2c->m_8: a polymorphic DC source. GetDC (slot +0x44 == #17) and Done
+// (slot +0x68 == #26) are __stdcall slots taking the object explicitly.
+struct CChatBoxDcVtbl;
+struct CChatBoxDcSrc {
+    CChatBoxDcVtbl* m_vptr;
+};
+struct CChatBoxDcVtbl {
+    void* s0[0x11];                                   // slots 0..16
+    void(__stdcall* GetDC)(CChatBoxDcSrc*, HDC* out); // slot 17 == +0x44
+    void* s18[0x68 / 4 - 0x12];                       // slots 18..25
+    void(__stdcall* Done)(CChatBoxDcSrc*, HDC);       // slot 26 == +0x68
+};
+struct CChatBoxDcHost { // arg1->m_2c points here
+    char m_pad00[0x8];
+    CChatBoxDcSrc* m_8; // +0x08
+};
+struct CChatBoxCtx { // arg1 points here
+    char m_pad00[0x2c];
+    CChatBoxDcHost* m_2c; // +0x2c
+};
+// 0x153790 (__stdcall): renders the chatbox frame into the looked-up set.
+void __stdcall RenderChatBoxFrame(i32 ctx, void* a, void* b, i32 z);
+
 // Attach @0x204e0 - latch the source registry root + text host, raise active.
 // @early-stop
 // constant-materialization wall: retail emits `mov eax,1; ...; mov [m_c],eax`
@@ -18,7 +65,7 @@ extern CGameRegistry* g_gameReg;
 // `mov [m_c],1`; logic + offsets exact, residual is the last store's form/order.
 RVA(0x000204e0, 0x19)
 void CChatBoxOwner::Attach(void* reg, CChatBoxTextHost* host) {
-    m_18 = reg;
+    m_18 = (CChatBoxRegRoot*)reg;
     m_14 = host;
     m_c = 1;
 }
@@ -154,4 +201,78 @@ RVA(0x000205c0, 0x741)
 void CChatBoxOwner::ProcessCheatInput(i32 a, i32 b) {
     (void)a;
     (void)b;
+}
+
+// ===========================================================================
+// CChatBoxOwner::LoadChatBoxSprite (0x20f40) - look up the "GAME_CHATBOX" sprite
+// set, blit the frame for the current mode, then stamp the caption text via the
+// DC source. int(BOOL) return; the m_10==0 / hdc==0 guards return 1, the
+// m_2c==0 / spr==0 / frame==0 guards return 0.
+// @early-stop
+// scheduling wall (docs/patterns/outparam-zeroinit-scheduling.md): logic + arg
+// order + the int(BOOL) per-site epilogues all match; residual is two store
+// hoist/sink permutations - retail SINKS the Lookup out-param `mov [&spr],0` past
+// the arg pushes (cl hoists) and SINKS the rect[1] struct store past `push &rect`
+// at a shifted esp offset (same instruction multiset, /O2-invariant), plus the
+// frame guard `mov ecx,[..]; test` vs cl's `cmp [..],0` materialization. No local
+// source diff closes these (hoisting rect[0] regressed 83->82%). ~83%; moved from
+// src/Stub/ApiCallers.cpp (was ThisStubOwnerUnknown::LoadChatBoxSprite).
+RVA(0x00020f40, 0x188)
+i32 CChatBoxOwner::LoadChatBoxSprite(i32 arg1) {
+    CChatBoxOwner* self = this;
+    if (!self->m_10) {
+        return 1;
+    }
+
+    CChatBoxCtx* ctx = (CChatBoxCtx*)arg1;
+    CChatBoxDcHost* host = ctx->m_2c;
+    if (!host) {
+        return 0;
+    }
+
+    void* spr = 0;
+    self->m_18->m_10->m_10.Lookup("GAME_CHATBOX", &spr);
+    if (!spr) {
+        return 0;
+    }
+
+    if (self->m_8 == 3) {
+        void* frame = ((CChatBoxFrame*)spr)->m_14[((CChatBoxFrame*)spr)->m_68];
+        if (!frame) {
+            return 0;
+        }
+        RenderChatBoxFrame(arg1, (void*)(self->m_0 + 0x140), (void*)(self->m_4 + 0x20), 0);
+    } else {
+        void* frame = ((CChatBoxFrame*)spr)->m_14[((CChatBoxFrame*)spr)->m_64];
+        if (!frame) {
+            return 0;
+        }
+        RenderChatBoxFrame(arg1, (void*)(self->m_0 + 0xf0), (void*)(self->m_4 + 0x20), 0);
+    }
+
+    HDC hdc = 0;
+    host->m_8->m_vptr->GetDC(host->m_8, &hdc);
+    if (!hdc) {
+        return 1;
+    }
+    SetBkMode(hdc, 1);
+    SetTextColor(hdc, 0);
+    SetBkColor(hdc, 0);
+
+    void* rect[4];
+    if (self->m_8 == 3) {
+        rect[0] = (void*)(self->m_0 + 0x4c);
+        rect[2] = (void*)(self->m_0 + 0x267);
+        rect[1] = (void*)(self->m_4 + 0x2b);
+        rect[3] = (void*)(self->m_4 + 0x37);
+        self->m_14->StampText(hdc, 0x21b, rect);
+    } else {
+        rect[0] = (void*)(self->m_0 + 0x4c);
+        rect[2] = (void*)(self->m_0 + 0x1c7);
+        rect[1] = (void*)(self->m_4 + 0x2b);
+        rect[3] = (void*)(self->m_4 + 0x37);
+        self->m_14->StampText(hdc, 0x17b, rect);
+    }
+    host->m_8->m_vptr->Done(host->m_8, hdc);
+    return 1;
 }

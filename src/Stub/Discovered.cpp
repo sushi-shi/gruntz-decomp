@@ -4,10 +4,6 @@
 #include <rva.h>
 #include <Stub/discovered.h>
 
-// ---- CAniRecord ----
-RVA(0x001657a0, 0x66)
-void CAniRecord::CAniRecord_1657a0() {}
-
 // ---- CButeStore ----
 RVA(0x00174d70, 0x70)
 void CButeStore::CButeStore_174d70() {}

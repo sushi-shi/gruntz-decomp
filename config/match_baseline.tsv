@@ -30,7 +30,7 @@ butestoreclear	1	1
 cambientsound	4	3
 canicycle	1	0
 canielement	3	2
-canirecord	8	5
+canirecord	9	5
 cattract	13	8
 cbehindcandy	2	2
 cbehindcandyani	4	3
@@ -75,7 +75,7 @@ cgruntwingztimesprite	2	2
 cguardpoint	1	1
 chatbox	27	20
 chatbox_eh	1	1
-chatboxowner	6	2
+chatboxowner	7	2
 cheatmgr	5	4
 cimage	10	6
 cimageowned	4	2
@@ -121,8 +121,8 @@ directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	15	0
 engine_boundary	540	0
-engine_discovered	54	0
-engine_label_stubs	448	104
+engine_discovered	53	0
+engine_label_stubs	446	104
 engstr	3	1
 filemem	9	8
 filestream	13	9
@@ -200,7 +200,7 @@ sbi_menuitem	12	7
 sbi_menuitem_eh	1	0
 sbi_rectonly	68	27
 sbi_rectonly_eh	4	1
-sbi_sidetab	3	1
+sbi_sidetab	4	2
 sbi_sidetab_eh	1	0
 sbi_statztabarrow_eh	1	0
 sbi_statztabgruntbar	3	2
@@ -390,6 +390,7 @@ canielement	?AtChecked_06b270@CAniElement@@QBEPAVCObject@@H@Z	100.0000	100.0000	
 canielement	?Build_165460@CAniElement@@QAEHPAXPAUCAniSource@@H@Z	89.3359	89.3359	1	c5f9e189a6e5	0x165460
 canielement	?Configure_1655c0@CAniElement@@QAEHPAX0H@Z	100.0000	100.0000	1	45956e3ecb61	0x1655c0
 canirecord	??1CAniRecordBase2@@QAE@XZ	94.2857	94.2857	1	00be0d8eca56	0x165dd0
+canirecord	??1CAniRecordPrimary@@QAE@XZ	48.3077	48.3077	1	344d35b0a94c	0x1657a0
 canirecord	?Alloc168ea0@CAniRecord@@QAEPAXHH@Z	100.0000	100.0000	1	ccc818e42e08	0x168ea0
 canirecord	?Alloc168ee0@CAniRecord@@QAEPAXHH@Z	100.0000	100.0000	1	3acb1defbfce	0x168ee0
 canirecord	?Alloc168f60@CAniRecord@@QAEPAXHHH@Z	100.0000	100.0000	1	702a9473c8be	0x168f60
@@ -741,11 +742,12 @@ chatbox	?ScrollRow1@CChatBox@@QAEHXZ	63.2353	63.2353	3	3df1f3275a8f	0x1830b0
 chatbox	?Step@CChatBox@@QAEHH@Z	88.9467	88.9467	4	b20402135d1f	0x182ed0
 chatbox	?Step@CChatBox@@QAEHI@Z	100.0000	100.0000	1	b20402135d1f	0x182c70
 chatbox_eh	??1CChatBox@@QAE@XZ	100.0000	100.0000	1	ab8e83aa5ef4	0xa0360
-chatboxowner	?Attach@CChatBoxOwner@@QAEXPAXPAUCChatBoxTextHost@@@Z	68.5714	68.5714	1	52d62234b528	0x204e0
+chatboxowner	?Attach@CChatBoxOwner@@QAEXPAXPAUCChatBoxTextHost@@@Z	68.5714	68.5714	2	3c122ddfa82d	0x204e0
 chatboxowner	?Configure@CChatBoxOwner@@QAEXH@Z	69.1600	69.1600	1	ac14c7aa5bf4	0x20530
 chatboxowner	?Deactivate@CChatBoxOwner@@QAEXXZ	100.0000	100.0000	1	5fefd421f983	0x20510
 chatboxowner	?GetField1c@CChatBoxOwner@@QAE?AVCString@@XZ	100.0000	100.0000	1	4e17040d1b35	0x20ef0
 chatboxowner	?HitTest@CChatBoxOwner@@QAEHHH@Z	38.1212	38.1212	1	15a04f9b3729	0x21140
+chatboxowner	?LoadChatBoxSprite@CChatBoxOwner@@QAEHH@Z	83.3714	83.3714	1	61826b87232e	0x20f40
 chatboxowner	?ProcessCheatInput@CChatBoxOwner@@QAEXHH@Z	0.2088	0.2088	1	648b4b881843	0x205c0
 cheatmgr	??1CCheatMgr@@QAE@XZ	100.0000	100.0000	1	94bf38f28220	0x85e60
 cheatmgr	?AddCheat@CCheatMgr@@QAEHPBDHH@Z	98.5714	98.5714	1	77144daa4699	0x22be0
@@ -1623,7 +1625,6 @@ engine_boundary	?Boundary_192630@@YAXXZ	0.5797	0.5797	1	4d9e16cd8928	0x192630
 engine_boundary	?Boundary_1926e0@@YAXXZ	0.7143	0.7143	1	ce48586b6dc8	0x1926e0
 engine_boundary	?Boundary_192780@@YAXXZ	0.6452	0.6452	1	f80d55043394	0x192780
 engine_boundary	?Boundary_192830@@YAXXZ	1.0638	1.0638	1	109a21dd77b9	0x192830
-engine_discovered	?CAniRecord_1657a0@CAniRecord@@QAEXXZ	3.8462	3.8462	1	900e9ea2cd05	0x1657a0
 engine_discovered	?CButeStore_174d70@CButeStore@@QAEXXZ	3.2258	3.2258	1	cc31d37bf9e8	0x174d70
 engine_discovered	?CCheckpointTrigger_011480@CCheckpointTrigger@@QAEXXZ	5.8824	5.8824	3	ea4c978419c4	0x11480
 engine_discovered	?CDDSurface_142a40@CDDSurface@@QAEXXZ	5.0000	5.0000	3	861706b38678	0x142a40
@@ -1780,7 +1781,6 @@ engine_label_stubs	?BuildResourceTabStatusBar@ThisStubOwnerUnknown@ApiCallerStub
 engine_label_stubs	?BuildRockBreakParticles@EngineLabelBacklog@@YGXHHHH@Z	0.3344	0.3344	1	cpp:6bf52155264d	0x7b440
 engine_label_stubs	?BuildSmall@CStatzTabSmall@@QAEHHHHHHPAUCStatzRect60@@HHH@Z	62.3936	62.3936	1	cpp:aab6e5a6e511	0x112a50
 engine_label_stubs	?BuildSoundFontPath@EngineLabelBacklog@@YAXXZ	1.0989	1.0989	1	cpp:45e65336d4b5	0xf8f30
-engine_label_stubs	?BuildStatzTabSmallSprite@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXXZ	1.0101	1.0101	1	cpp:e8a4cb0d5b2a	0xe9850
 engine_label_stubs	?BuildStatzTabStatusBar@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXHHHHHHHHHHHHH@Z	0.7463	0.7463	1	cpp:e8a4cb0d5b2a	0xe9600
 engine_label_stubs	?BuildVoiceSoundList@EngineLabelBacklog@@YGXH@Z	0.5236	0.5236	1	cpp:6bf52155264d	0x11c210
 engine_label_stubs	?BuildWarlordNameTable@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXH@Z	0.8000	0.8000	1	cpp:e8a4cb0d5b2a	0xdd340
@@ -1845,7 +1845,6 @@ engine_label_stubs	?LoadBombGruntRunConfig2@ThisStubOwnerUnknown@ApiCallerStubs@
 engine_label_stubs	?LoadBombGruntRunConfig@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXHH@Z	0.3922	0.3922	1	cpp:e8a4cb0d5b2a	0x65630
 engine_label_stubs	?LoadBootyCheatState@EngineLabelBacklog@@YGXHHH@Z	0.3788	0.3788	1	cpp:6bf52155264d	0x18830
 engine_label_stubs	?LoadBridgeMoveSprites@EngineLabelBacklog@@YGXH@Z	0.6536	0.6536	1	cpp:6bf52155264d	0x110860
-engine_label_stubs	?LoadChatBoxSprite@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHH@Z	83.3714	83.3714	1	cpp:e8a4cb0d5b2a	0x20f40
 engine_label_stubs	?LoadCheatConfig@EngineLabelBacklog@@YAXXZ	0.8065	0.8065	1	cpp:45e65336d4b5	0x22e60
 engine_label_stubs	?LoadCreditzAssets2@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXXZ	1.1364	1.1364	1	cpp:e8a4cb0d5b2a	0x39dc0
 engine_label_stubs	?LoadCustomWorldInfo@EngineLabelBacklog@@YAHPAX@Z	100.0000	100.0000	1	cpp:aab6e5a6e511	0x3b7c0
@@ -3021,7 +3020,8 @@ sbi_rectonly_eh	??1CSBI_ImageSet@@QAE@XZ	43.0345	43.0345	1	c0e32f2f35be	0x102000
 sbi_rectonly_eh	??1CSBI_RectOnly@@QAE@XZ	34.2381	34.2381	2	d10384bf9660	0x100700
 sbi_rectonly_eh	?DtorMembers@CSBI_RectOnly@@QAEXXZ	49.1923	49.1923	1	4c6d76b17d3f	0xc8980
 sbi_rectonly_eh	?EnsureSub@CSBI_RectOnly@@QAEHHHH@Z	100.0000	100.0000	2	de84c5225915	0x109ad0
-sbi_sidetab	?Refresh@CSBI_SideTab@@QAEXH@Z	85.7143	85.7143	1	c56923938bb0	0xe9820
+sbi_sidetab	?BuildHandle@CSBI_SideTab@@QAEHXZ	86.0101	86.0101	1	26533806f547	0xe9850
+sbi_sidetab	?Refresh@CSBI_SideTab@@QAEHH@Z	100.0000	100.0000	1	333133b9c736	0xe9820
 sbi_sidetab	?Render@CSBI_SideTab@@QAEHH@Z	87.8438	87.8438	1	1361c82e0ba1	0xe99c0
 sbi_sidetab	?Reset@CSBI_SideTab@@QAEXXZ	100.0000	100.0000	1	fc1e8fed52ab	0xe9800
 sbi_sidetab_eh	??1CSBI_SideTab@@QAE@XZ	34.2381	34.2381	1	1bca8911fa32	0x105200
