@@ -4,10 +4,6 @@
 #include <rva.h>
 #include <Stub/discovered.h>
 
-// ---- CAniAdvanceCursor ----
-RVA(0x0015b730, 0x2b)
-void CAniAdvanceCursor::CAniAdvanceCursor_15b730() {}
-
 // ---- CAniRecord ----
 RVA(0x001657a0, 0x66)
 void CAniRecord::CAniRecord_1657a0() {}
@@ -71,8 +67,6 @@ RVA(0x000b1ee0, 0x11d)
 void CSpotLight::CSpotLight_0b1ee0() {}
 
 // ---- CUserLogic ----
-RVA(0x00029a80, 0x29)
-void CUserLogic::CUserLogic_029a80() {}
 RVA(0x0016ea90, 0x234)
 void CUserLogic::CUserLogic_16ea90() {}
 

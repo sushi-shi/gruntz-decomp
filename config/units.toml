@@ -383,6 +383,11 @@ source = "src/Wwd/WwdFile.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "aniadvancecursor"
+source = "src/Wwd/CAniAdvanceCursor.cpp"
+flags = "base"
+
+[[unit]]
 unit = "gamelevel"
 source = "src/Gruntz/GameLevel.cpp"
 flags = "eh"

@@ -244,6 +244,11 @@ public:
     };
     void GetScreenPos(ScreenPoint* out); // 0x29a50
 
+    // True when the bound object's current screen pos (m_10->m_5c/m_60) still
+    // equals the saved pos at this+0x17c/+0x180 (leaf-class fields beyond
+    // CUserLogic's 0x40 - read via offset since the leaf isn't modeled). 0x29a80.
+    i32 IsAtSavedScreenPos(); // 0x29a80
+
     // Inline one-shot wrapper: registers the built-in logic types the first time
     // any tile-logic object is built. Inlined into the 1-arg ctor; its `this`
     // setup is why the retail call carries the dead `mov ecx,esi`.

@@ -708,6 +708,17 @@ void CUserLogic::GetScreenPos(ScreenPoint* out) {
     out->y = y;
 }
 
+// --- CUserLogic::IsAtSavedScreenPos (0x029a80) ---
+RVA(0x00029a80, 0x29)
+i32 CUserLogic::IsAtSavedScreenPos() {
+    CGameObject* o = m_10;
+    i32 sx = *(i32*)((char*)this + 0x17c);
+    if (o->m_5c == sx && o->m_60 == *(i32*)((char*)this + 0x180)) {
+        return 1;
+    }
+    return 0;
+}
+
 // --- CTeleporter (0x041020), vptr 0x5e80cc ---
 CTeleporter::~CTeleporter() {}
 RVA(0x00041020, 0x170)

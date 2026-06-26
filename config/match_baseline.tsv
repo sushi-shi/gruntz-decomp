@@ -15,6 +15,7 @@
 actionoptionsmenubar	11	3
 adler32	1	1
 advancedoptions	5	5
+aniadvancecursor	1	1
 aniplayer	2	0
 appdialogs	1	1
 applyrange	1	1
@@ -120,7 +121,7 @@ directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	15	0
 engine_boundary	540	0
-engine_discovered	58	0
+engine_discovered	56	0
 engine_label_stubs	458	104
 engstr	3	1
 filemem	9	8
@@ -241,7 +242,7 @@ unknownclassarrays	39	10
 unknownclassincgruntzmgr	2	0
 unknownsalazar	4	0
 userbaselink	10	0
-userlogic	57	20
+userlogic	58	21
 videoconfig	2	0
 warlord	9	2
 warpstonefly	3	2
@@ -275,6 +276,7 @@ advancedoptions	?LoadOptions@@YAXPAUHWND__@@PAVRegistryHelper@Utils@@@Z	100.0000
 advancedoptions	?SaveOption@@YAXPAUHWND__@@PAVRegistryHelper@Utils@@PADK@Z	100.0000	100.0000	3	cc78dc6b6272	0xb110
 advancedoptions	?SaveOptions@@YAXPAUHWND__@@PAVRegistryHelper@Utils@@@Z	100.0000	100.0000	3	42bc821feac7	0xb270
 advancedoptions	?SetDefaults@@YAXPAUHWND__@@@Z	100.0000	100.0000	3	debb3761026d	0xb160
+aniadvancecursor	??0CAniAdvanceCursor@@QAE@HHH@Z	100.0000	100.0000	1	10fe94abf57e	0x15b730
 aniplayer	?Init@CAniPlayer@@QAEHPAUAniSeq@@0HHHHHHHHHHHH@Z	64.5543	64.5543	1	af4e113bdde4	0xe7980
 aniplayer	?Tick@CAniPlayer@@QAEHXZ	91.3555	91.3555	2	553040f9cf2b	0xe7b00
 appdialogs	?WarpDialogProc@@YGHPAXIIJ@Z	100.0000	100.0000	4	abc884dd8cb1	0x8e4e0
@@ -1614,7 +1616,6 @@ engine_boundary	?Boundary_192630@@YAXXZ	0.5797	0.5797	1	4d9e16cd8928	0x192630
 engine_boundary	?Boundary_1926e0@@YAXXZ	0.7143	0.7143	1	ce48586b6dc8	0x1926e0
 engine_boundary	?Boundary_192780@@YAXXZ	0.6452	0.6452	1	f80d55043394	0x192780
 engine_boundary	?Boundary_192830@@YAXXZ	1.0638	1.0638	1	109a21dd77b9	0x192830
-engine_discovered	?CAniAdvanceCursor_15b730@CAniAdvanceCursor@@QAEXXZ	3.0769	3.0769	1	a5a69b8d209e	0x15b730
 engine_discovered	?CAniRecord_1657a0@CAniRecord@@QAEXXZ	3.8462	3.8462	1	900e9ea2cd05	0x1657a0
 engine_discovered	?CButeStore_174d70@CButeStore@@QAEXXZ	3.2258	3.2258	1	cc31d37bf9e8	0x174d70
 engine_discovered	?CCheckpointTrigger_011480@CCheckpointTrigger@@QAEXXZ	5.8824	5.8824	3	ea4c978419c4	0x11480
@@ -1635,7 +1636,6 @@ engine_discovered	?CPlay_0d53d0@CPlay@@QAEXXZ	0.3049	0.3049	1	da0931b106f5	0xd53
 engine_discovered	?CPlay_0d9290@CPlay@@QAEXXZ	0.5076	0.5076	1	40021240a52e	0xd9290
 engine_discovered	?CPlay_0dd830@CPlay@@QAEXXZ	0.2721	0.2721	1	5862ad5a596b	0xdd830
 engine_discovered	?CSpotLight_0b1ee0@CSpotLight@@QAEXXZ	1.1236	1.1236	1	bf45931dd31b	0xb1ee0
-engine_discovered	?CUserLogic_029a80@CUserLogic@@QAEXXZ	6.2500	6.2500	1	e46a7c4a447f	0x29a80
 engine_discovered	?CUserLogic_16ea90@CUserLogic@@QAEXXZ	0.6061	0.6061	3	68eaea7fe177	0x16ea90
 engine_discovered	?ClassUnknown_11_14dd90@ClassUnknown_11@@QAEXXZ	1.2500	1.2500	1	2a927f12c10c	0x14dd90
 engine_discovered	?ClassUnknown_13_1154b0@ClassUnknown_13@@QAEXXZ	3.5714	3.5714	1	99d2c63fa454	0x1154b0
@@ -3387,6 +3387,7 @@ userlogic	?FireActivation@CSecretTeleporterTrigger@@QAEXH@Z	100.0000	100.0000	2	
 userlogic	?FireWarp@CWarpStonePad@@QAEXH@Z	100.0000	100.0000	1	123185be1635	0x10d8c0
 userlogic	?GetScreenPos@CUserLogic@@QAEXPAUScreenPoint@1@@Z	100.0000	100.0000	2	c09fb9d01a13	0x29a50
 userlogic	?InitActReg@CSecretTeleporterTrigger@@SAXXZ	100.0000	100.0000	1	2f0eeda3c0d0	0x420d0
+userlogic	?IsAtSavedScreenPos@CUserLogic@@QAEHXZ	100.0000	100.0000	1	874bfc9482ed	0x29a80
 userlogic	?LoadGruntDecayConfig2@CUserLogic@@QAEXXZ	1.2195	1.2195	1	edd8f9929bc3	0x61570
 userlogic	?LoadGruntDecayConfig@CUserLogic@@QAEXXZ	0.6135	0.6135	1	92fac0c4600f	0x612a0
 userlogic	?LoadGruntTuningConstants@CUserLogic@@QAEXH@Z	0.0646	0.0646	2	b70d71b09830	0x5d210

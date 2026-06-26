@@ -6,10 +6,6 @@
 #ifndef GRUNTZ_STUB_DISCOVERED_H
 #define GRUNTZ_STUB_DISCOVERED_H
 
-class CAniAdvanceCursor {
-public:
-    void CAniAdvanceCursor_15b730();
-};
 class CAniRecord {
 public:
     void CAniRecord_1657a0();
@@ -65,7 +61,6 @@ public:
 };
 class CUserLogic {
 public:
-    void CUserLogic_029a80();
     void CUserLogic_16ea90();
 };
 class ClassUnknown_1 {
