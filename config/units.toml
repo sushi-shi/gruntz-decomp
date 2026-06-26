@@ -1253,6 +1253,11 @@ source = "src/Gruntz/CStateLeaf8cf30.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "cmsgdispatch"
+source = "src/Gruntz/CMsgDispatch.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "gamesave"
 source = "src/Io/GameSave.cpp"
 flags = "base"
