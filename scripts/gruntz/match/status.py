@@ -62,12 +62,18 @@ MANIFEST = REPO / "config" / "units.toml"
 BASELINE = REPO / "config" / "match_baseline.tsv"
 DEFAULT_REPORT = REPO / "build" / "objdiff" / "report.json"
 
-# Full-target universe (the denominator: "everything not matched yet"). objdiff's
-# report.json only totals the functions we've pulled into units; for honest
-# progress we weigh against the whole engine - every in-.text non-thunk function
-# minus the FID-identified CRT/MFC library code. functions.csv is the delinker's
-# Ghidra input (present after `gruntz build`); the FID list is committed. Absent
-# (fresh worktree, no build) -> the report falls back to started-unit scope.
+# Reconstruction-target universe (the match-% denominator) + the carve-out
+# categories that are NOT independent reconstruction targets, so are EXCLUDED from
+# the %: linker jump thunks (the leading ILT jmp-table + Ghidra thunk_*), FID-
+# identified CRT/MFC library code, and compiler-emitted EH unwind funclets (named
+# Unwind@*, which reappear automatically when their parent function matches, just
+# as the ILT thunks do when their target body does). objdiff's report.json only
+# totals the functions we've pulled into units; for honest progress we weigh
+# `exact` against the real
+# engine and surface the carve-outs as their own README rows (counted, not hidden).
+# functions.csv is the delinker's Ghidra input (present after `gruntz build`); the
+# FID list is committed. Absent (fresh worktree, no build) -> None and callers
+# fall back to objdiff's started-unit scope.
 FUNCS_CSV = REPO / "build" / "ghidra-enrich" / "exports" / "functions.csv"
 FID_CSV = REPO / "config" / "library_labels.csv"
 
@@ -83,9 +89,13 @@ def _pct(num: float, den: float) -> float:
 
 
 def engine_universe():
-    """(n_functions, total_code) of the reversing target: all in-.text non-thunk
-    functions minus FID library code. None when the Ghidra/FID exports are absent
-    (callers then fall back to objdiff's started-unit totals)."""
+    """Reconstruction-target universe + the excluded carve-out categories.
+
+    Returns {"real_fn","real_code","categories":[(label,fn,code,note),...]} or None
+    when the Ghidra/FID exports are absent (callers then fall back to objdiff's
+    started-unit totals). `real_*` is the match-% denominator; each category is
+    generated/library code carved out of it (shown in the README for transparency,
+    not counted in the %)."""
     if not (FUNCS_CSV.is_file() and FID_CSV.is_file()):
         return None
     import csv
@@ -94,20 +104,21 @@ def engine_universe():
         s = str(s).strip()
         return int(s, 16) if s.lower().startswith("0x") else int(s)
 
-    funcs: dict[int, int] = {}
+    rows = []  # (rva, size, name, is_thunk); in-.text only
     with open(FUNCS_CSV) as f:
         for r in csv.DictReader(f):
             try:
                 rva, sz = rint(r["entry_rva"]), int(r["byte_size"])
             except Exception:
                 continue
-            # The enriched export is (entry_rva,byte_size,name) - no in_text/is_thunk
-            # columns - so exclude jump thunks by name (they are named thunk_*); also
-            # honor the columns when an older export still carries them.
-            if (r.get("name", "").startswith("thunk_")
-                    or r.get("in_text", "1") != "1" or r.get("is_thunk", "0") == "1"):
+            # honor an older export's in_text column; drop anything off .text.
+            if r.get("in_text", "1") != "1":
                 continue
-            funcs[rva] = sz
+            name = r.get("name", "")
+            # jump thunks are named thunk_* (the enriched export carries no is_thunk
+            # column; honor it when an older export still does).
+            is_thunk = name.startswith("thunk_") or r.get("is_thunk", "0") == "1"
+            rows.append((rva, sz, name, is_thunk))
     lib: set[int] = set()
     with open(FID_CSV) as f:
         for r in csv.DictReader(f):
@@ -115,8 +126,39 @@ def engine_universe():
                 lib.add(rint(r["rva"]))
             except Exception:
                 pass
-    eng = [s for rva, s in funcs.items() if rva not in lib]
-    return (len(eng), sum(eng))
+
+    # The leading contiguous run of <=5-byte functions is the linker's ILT jump
+    # table - 5-byte `jmp rel32` forwarders, each named after the body it targets.
+    # They aren't named thunk_*, so a name filter misses them; instead bound the
+    # table by RVA: real code begins at the first >5-byte function, so anything
+    # below that is a thunk (verified: no real fn lives in the leading block, while
+    # the few legit <=5-byte vtable-dispatch methods sit far above it, kept real).
+    ilt_end = min((rva for rva, sz, _n, _t in rows if sz > 5), default=0)
+
+    # Disjoint carve-outs (first match wins); everything else is a real target.
+    acc = {"thunk": [0, 0], "lib": [0, 0], "eh": [0, 0]}
+    real_fn = real_code = 0
+    for rva, sz, name, is_thunk in rows:
+        if rva < ilt_end or is_thunk:      # ILT jmp-table + Ghidra thunk_*
+            k = "thunk"
+        elif rva in lib:
+            k = "lib"
+        elif name.startswith("Unwind@"):   # compiler /GX EH unwind funclet
+            k = "eh"
+        else:
+            real_fn += 1
+            real_code += sz
+            continue
+        acc[k][0] += 1
+        acc[k][1] += sz
+    categories = [
+        ("EH unwind funclets", *acc["eh"],
+         "compiler /GX EH; match with their parent function"),
+        ("CRT/MFC library", *acc["lib"], "FID-identified, statically linked"),
+        ("jump thunks", *acc["thunk"],
+         "linker ILT jmp-table (RVA <%#x) + thunk_*" % ilt_end),
+    ]
+    return {"real_fn": real_fn, "real_code": real_code, "categories": categories}
 
 
 def _md_table(headers: list[str], aligns: str, rows: list[list[str]]) -> list[str]:
@@ -636,7 +678,7 @@ def render_report(overall, mods, started_fzw, started_code) -> str:
 
     eng = engine_universe()
     if eng:
-        tot_fn, tot_code = eng
+        tot_fn, tot_code = eng["real_fn"], eng["real_code"]
         scope = "full engine"
     else:
         tot_fn, tot_code = started_fn, started_code
@@ -659,6 +701,21 @@ def render_report(overall, mods, started_fzw, started_code) -> str:
     table = _md_table(
         ["Module", "Units", "Functions exact", "Fuzzy", "Fuzzy Max"], "lrrrr", rows)
 
+    # Carve-out categories: generated/library code excluded from the % above, shown
+    # for transparency (counted, not hidden). Empty when the engine scope is absent.
+    excl_lines: list[str] = []
+    if eng:
+        ex_rows = [[f"`{label}`", f"{fn:,}", f"{code:,}", note]
+                   for (label, fn, code, note) in eng["categories"]]
+        excl_lines = [
+            "",
+            "_Excluded from the % above — generated/library code, not independent "
+            "reconstruction targets:_",
+            "",
+            *_md_table(["Category", "Functions", "Code (B)", "Why excluded"],
+                       "lrrl", ex_rows),
+        ]
+
     # fuzzy_weighted is already sum(percent * bytes); divide by bytes for the
     # weighted percent - do NOT _pct it (that would multiply by 100 again).
     overall_fuzzy = started_fzw / tot_code if tot_code else 0.0
@@ -677,17 +734,20 @@ def render_report(overall, mods, started_fzw, started_code) -> str:
         f"({_pct(matched_fn, tot_fn):.2f}%) &middot; {overall_fuzzy:.2f}% fuzzy "
         f"&middot; {overall_fuzzy_max:.2f}% fuzzy max.**",
         "",
-        "_Totals are vs the whole engine = every in-`.text` non-thunk function "
-        "minus FID-identified CRT/MFC library code; the bulk we have not started "
-        "is the `(unmatched)` row. `Fuzzy` = code-weighted partial credit (how "
-        "close); `Fuzzy Max` = the same with every function at its best-ever fuzzy% "
-        "- a gap above `Fuzzy` is entropy churn since the last `update`._",
+        "_Totals are vs the whole engine = every in-`.text` reconstruction-target "
+        "function; the generated/library categories tabled below (compiler EH "
+        "funclets, CRT/MFC library, jump thunks) are excluded from the denominator. "
+        "The bulk we have not started is the `(unmatched)` row. `Fuzzy` = code-"
+        "weighted partial credit (how close); `Fuzzy Max` = the same with every "
+        "function at its best-ever fuzzy% - a gap above `Fuzzy` is entropy churn "
+        "since the last `update`._",
         "",
         f"_Started units alone: {matched_fn:,}/{started_fn:,} fns exact, "
         f"{started_fuzzy:.2f}% fuzzy over {started_code:,} of {tot_code:,} engine "
         f"code bytes._",
         "",
         *table,
+        *excl_lines,
         RM_END,
     ]
     return "\n".join(block)
@@ -720,7 +780,12 @@ def cmd_summary(args) -> int:
         eng = engine_universe()
         print(json.dumps({
             "overall": overall,
-            "engine_universe": ({"functions": eng[0], "code": eng[1]} if eng else None),
+            "engine_universe": ({
+                "real_functions": eng["real_fn"], "real_code": eng["real_code"],
+                "excluded_categories": [
+                    {"label": l, "functions": fn, "code": c, "note": note}
+                    for (l, fn, c, note) in eng["categories"]],
+            } if eng else None),
             "modules": {k: {**v, "fuzzy": (v["fzw"] / v["tc"] if v["tc"] else 0.0)}
                         for k, v in mods.items()},
             "units": units,
