@@ -611,3 +611,238 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
         }
     }
 }
+
+// ===========================================================================
+// 0x14cfc0 - ConvertRowFlip: the horizontally-mirrored twin of ConvertRow (the
+// selected-blit row converter). Same dense (m_14-2) jump table over nine blend
+// cases, but the destination run is walked right-to-left and the saved-dest
+// scratch line is read back to front (rep-movs saves the run ending at dst). The
+// 8-bit cases write `*dst--`; the 16-bit RGB565 channel blends decrement by 2.
+// `base` = m_1c ? m_1c->m_08 : src (computed once before the switch).
+// ===========================================================================
+// @early-stop
+// Same stacked walls as ConvertRow (~56%): (1) the jump-table .rdata scoring
+// artifact (docs/patterns/jumptable-data-overlap.md); (2) every counted loop is
+// the predecrement-guard-lea-recover-count regalloc shape
+// (docs/patterns/predecrement-guard-lea-recover-count.md) plus the reverse-walk
+// pointer threading - retail re-materializes the scratch addr and reuses the dead
+// arg slot as the loop counter, our spill schedule diverges. Per-pixel blend math
+// (8/16-bit LUTs, RGB565 channel splits, the /255 alpha lerp) is byte-faithful;
+// scheduling parks it. Cases in retail .text body order (2,7,10,8,11,3,4,5,6).
+RVA(0x0014cfc0, 0x5f1)
+void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
+    u8* base = m_1c ? m_1c->m_08 : src;
+    i32 i;
+    switch (m_14) {
+        case 2: {
+            memcpy(g_scratch, dst - count + 1, count);
+            u8* sc = &g_scratch[count - 1];
+            for (i = count; i > 0; i--) {
+                *dst-- = base[(*sc-- << 8) + *src++];
+            }
+            break;
+        }
+        case 7: {
+            u16* pal1 = (u16*)m_1c->m_08;
+            u16* pal2 = (u16*)g_blendDescr->m_08;
+            memcpy(g_scratch, dst - count * 2 - 2, count * 2);
+            u16* sc = (u16*)&g_scratch[count * 2 - 2];
+            for (i = count; i > 0; i--) {
+                u32 idx = pal2[*sc--];
+                idx += (*src++ >> 4) << 12;
+                *(u16*)dst = pal1[idx];
+                dst -= 2;
+            }
+            break;
+        }
+        case 10: {
+            u16* pal = (u16*)m_1c->m_08;
+            for (i = count; i > 0; i--) {
+                *(u16*)dst = pal[*src++];
+                dst -= 2;
+            }
+            break;
+        }
+        case 8: {
+            memcpy(g_scratch, dst - count * 2 - 2, count * 2);
+            u16* sc = (u16*)&g_scratch[count * 2 - 2];
+            u16* ss = (u16*)src;
+            if (m_2c) {
+                for (i = count; i > 0; i--) {
+                    u32 a = *ss++;
+                    u32 d = *sc--;
+                    u32 r = ((u16*)m_34)[((a >> 5) & 0x1f) + (((d >> 5) & 0x1f) << 5)];
+                    r |= ((u16*)m_38)[(a & 0x1f) + ((d & 0x1f) << 5)];
+                    r |= ((u16*)m_30)[(a >> 0xa) + (((d >> 0xa) & 0x1f) << 5)];
+                    *(u16*)dst = (u16)r;
+                    dst -= 2;
+                }
+            } else {
+                for (i = count; i > 0; i--) {
+                    u32 a = *ss++;
+                    u32 d = *sc--;
+                    u32 r = ((u16*)m_30)[(a >> 0xb) + (((d >> 0xb) & 0x1f) << 5)];
+                    r |= ((u16*)m_38)[(a & 0x1f) + ((d & 0x1f) << 5)];
+                    r |= ((u16*)m_34)[((a >> 6) & 0x1f) + (((d >> 6) & 0x1f) << 5)];
+                    *(u16*)dst = (u16)r;
+                    dst -= 2;
+                }
+            }
+            break;
+        }
+        case 11: {
+            u16* pal = (u16*)m_1c->m_08;
+            memcpy(g_scratch, dst - count * 2 - 2, count * 2);
+            u16* sc = (u16*)&g_scratch[count * 2 - 2];
+            if (m_2c) {
+                for (i = count; i > 0; i--) {
+                    u32 a = pal[*src++];
+                    u32 d = *sc--;
+                    u32 r = ((u16*)m_34)[((a >> 5) & 0x1f) + (((d >> 5) & 0x1f) << 5)];
+                    r |= ((u16*)m_38)[(a & 0x1f) + ((d & 0x1f) << 5)];
+                    r |= ((u16*)m_30)[(a >> 0xa) + (((d >> 0xa) & 0x1f) << 5)];
+                    *(u16*)dst = (u16)r;
+                    dst -= 2;
+                }
+            } else {
+                for (i = count; i > 0; i--) {
+                    u32 a = pal[*src++];
+                    u32 d = *sc--;
+                    u32 r = ((u16*)m_34)[((a >> 6) & 0x1f) + (((d >> 6) & 0x1f) << 5)];
+                    r |= ((u16*)m_38)[(a & 0x1f) + ((d & 0x1f) << 5)];
+                    r |= ((u16*)m_30)[(a >> 0xb) + (((d >> 0xb) & 0x1f) << 5)];
+                    *(u16*)dst = (u16)r;
+                    dst -= 2;
+                }
+            }
+            break;
+        }
+        case 3: {
+            i32 pal = (i32)base;
+            memcpy(g_scratch, dst - count + 1, count);
+            u8* sc = &g_scratch[count - 1];
+            for (i = count; i > 0; i--) {
+                *dst-- = ((u8*)m_18)[(*sc-- << 8) + pal];
+            }
+            break;
+        }
+        case 4: {
+            i32 pal = (i32)base;
+            for (i = count; i > 0; i--) {
+                *dst-- = ((u8*)m_18)[(*src++ << 8) + pal];
+            }
+            break;
+        }
+        case 5: {
+            for (i = count; i > 0; i--) {
+                *dst-- = (u8)m_18;
+            }
+            break;
+        }
+        case 6: {
+            memcpy(g_scratch, dst - count - 1, count);
+            u8* sc = &g_scratch[count + 1];
+            for (i = count; i > 0; i--) {
+                i32 s = base[*sc-- + 0x100];
+                i32 d = base[*src + 0x100];
+                i32 t = (d - s) * m_18 / 255 + s;
+                *dst-- = base[t];
+                src++;
+            }
+            break;
+        }
+    }
+}
+
+// ===========================================================================
+// 0x14d950 - ConvertRowDouble: the vertical-double row converter (writes every
+// converted pixel to dst AND dst+rowDelta). Five (m_14-2) cases (2/3/7/8; 4/5/6
+// fall through to the empty default). The byte cases reverse-walk dst with the
+// saved-dest scratch line; the word cases round rowDelta down to even. Case 3 is
+// asymmetric: the dst row gets the m_18 LUT of the saved dest, the dst+rowDelta
+// row gets the palette blend of the source. __thiscall, ret 0x10.
+// ===========================================================================
+// @early-stop
+// Same family wall as ConvertRow/ConvertRowFlip: jump-table .rdata scoring
+// artifact + the predecrement-guard-lea-recover-count regalloc shape, here with
+// the dual-store thread (retail recomputes the blended pixel for the second store
+// rather than reusing it - reproduced by writing the index expression twice). The
+// per-pixel blend math is byte-faithful; the spill/recompute schedule parks it.
+RVA(0x0014d950, 0x377)
+void CDDrawShadeBlit::ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta) {
+    i32 i;
+    switch (m_14) {
+        case 2: {
+            u8* base = m_1c->m_08;
+            memcpy(g_scratch, dst - count + 1, count);
+            u8* sc = &g_scratch[count - 1];
+            for (i = count; i > 0; i--) {
+                dst[0] = base[(*sc << 8) + *src];
+                dst[rowDelta] = base[(*sc << 8) + *src];
+                dst--;
+                sc--;
+                src++;
+            }
+            break;
+        }
+        case 3: {
+            i32 pal = (i32)m_1c->m_08;
+            u8* base = m_1c->m_08;
+            memcpy(g_scratch, dst - count + 1, count);
+            u8* sc = &g_scratch[count - 1];
+            for (i = count; i > 0; i--) {
+                dst[0] = ((u8*)m_18)[(*sc << 8) + pal];
+                dst[rowDelta] = base[(*sc << 8) + *src];
+                dst--;
+                sc--;
+            }
+            break;
+        }
+        case 7: {
+            u16* pal1 = (u16*)m_1c->m_08;
+            u16* pal2 = (u16*)g_blendDescr->m_08;
+            memcpy(g_scratch, dst - count * 2 - 2, count * 2);
+            u16* sc = (u16*)&g_scratch[count * 2 - 2];
+            i32 rd = rowDelta & ~1;
+            for (i = count; i > 0; i--) {
+                u32 idx = pal2[*sc--];
+                idx += (*src++ >> 4) << 12;
+                u16 v = pal1[idx];
+                *(u16*)dst = v;
+                *(u16*)(dst + rd) = v;
+                dst -= 2;
+            }
+            break;
+        }
+        case 8: {
+            memcpy(g_scratch, dst - count * 2 - 2, count * 2);
+            u16* sc = (u16*)&g_scratch[count * 2 - 2];
+            u16* ss = (u16*)src;
+            i32 rd = rowDelta & ~1;
+            if (m_2c) {
+                for (i = count; i > 0; i--) {
+                    u32 a = *ss++;
+                    u32 d = *sc--;
+                    u32 r = ((u16*)m_30)[(a >> 0xa) + (((d >> 0xa) & 0x1f) << 5)];
+                    r |= ((u16*)m_34)[((a >> 5) & 0x1f) + (((d >> 5) & 0x1f) << 5)];
+                    r |= ((u16*)m_38)[(a & 0x1f) + ((d & 0x1f) << 5)];
+                    *(u16*)dst = (u16)r;
+                    *(u16*)(dst + rd) = (u16)r;
+                    dst -= 2;
+                }
+            } else {
+                for (i = count; i > 0; i--) {
+                    u32 a = *ss++;
+                    u32 d = *sc--;
+                    u32 r = ((u16*)m_30)[(a >> 0xb) + (((d >> 0xb) & 0x1f) << 5)];
+                    r |= ((u16*)m_34)[((a >> 6) & 0x1f) + (((d >> 6) & 0x1f) << 5)];
+                    r |= ((u16*)m_38)[(a & 0x1f) + ((d & 0x1f) << 5)];
+                    *(u16*)dst = (u16)r;
+                    *(u16*)(dst + rd) = (u16)r;
+                    dst -= 2;
+                }
+            }
+            break;
+        }
+    }
+}

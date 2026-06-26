@@ -42,7 +42,7 @@ ccursorsnapsprite	2	2
 cddpagemgr	2	1
 cddrawchildgroup	9	5
 cddrawptrcollections	30	14
-cddrawshadeblit	6	1
+cddrawshadeblit	8	1
 cddrawsubmgr	58	32
 cddrawsubmgrani	3	1
 cddrawsubmgrdraco	5	2
@@ -135,18 +135,20 @@ directinputmgr2	36	32
 directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	15	0
-engine_boundary	246	0
+engine_boundary	241	0
 engine_discovered	51	0
 engine_label_stubs	437	105
 engine_unmatched	264	0
 engstr	3	1
 faderradial	1	0
+fadertilerender	1	0
 feccrypt	3	2
 filemem	9	8
 filestream	13	9
 font	24	12
 fontconfig	9	5
 fonts	2	1
+fxmodet3	1	0
 gameapp	20	16
 gamekeyhandler	1	0
 gamelevel	60	24
@@ -172,6 +174,7 @@ hash	10	9
 helperhost	2	0
 iconloaders	5	1
 image	39	24
+imagepolyclip	1	0
 imagepool	13	7
 imagerotate	1	0
 imagesavebmp	1	0
@@ -506,9 +509,11 @@ cddrawptrcollections	?RemoveItemB@CDDrawPtrCollections@@QAEXPAUCPoolItemB@@@Z	10
 cddrawshadeblit	?Blit@CDDrawShadeBlit@@QAEHPAUShadeRect@@PAUShadeSrc@@0HH@Z	100.0000	100.0000	1	9e02379bfde6	0x1497f0
 cddrawshadeblit	?BlitLoop@CDDrawShadeBlit@@QAEXPAUShadeRect@@PAUShadeSrc@@0H@Z	0.0556	0.0556	1	c4a744d07210	0x14a200
 cddrawshadeblit	?BlitMode_149950@CDDrawShadeBlit@@QAEXPAUShadeRect@@PAUShadeSrc@@0H@Z	31.4438	31.4438	1	f5ffbe02f6d8	0x149950
-cddrawshadeblit	?BlitMode_149d00@CDDrawShadeBlit@@QAEXPAUShadeRect@@PAUShadeSrc@@0H@Z	27.9635	27.9635	1	01f2ae556690	0x149d00
+cddrawshadeblit	?BlitMode_149d00@CDDrawShadeBlit@@QAEXPAUShadeRect@@PAUShadeSrc@@0H@Z	29.3712	29.3712	1	01f2ae556690	0x149d00
 cddrawshadeblit	?BlitMode_14b770@CDDrawShadeBlit@@QAEXPAUShadeRect@@PAUShadeSrc@@0H@Z	0.0637	0.0637	1	17d63d847449	0x14b770
-cddrawshadeblit	?ConvertRow@CDDrawShadeBlit@@QAEXPAE0H@Z	55.7154	55.7154	1	c75acd3c59f2	0x14c9f0
+cddrawshadeblit	?ConvertRow@CDDrawShadeBlit@@QAEXPAE0H@Z	56.2500	56.2500	1	c75acd3c59f2	0x14c9f0
+cddrawshadeblit	?ConvertRowDouble@CDDrawShadeBlit@@QAEXPAE0HH@Z	49.8813	49.8813	1	b366f666933c	0x14d950
+cddrawshadeblit	?ConvertRowFlip@CDDrawShadeBlit@@QAEXPAE0H@Z	53.7083	53.7083	1	85e6a9ce6294	0x14cfc0
 cddrawsubmgr	??0CDDrawSubMgr@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	100.0000	100.0000	6	af4f6a250fe2	0x156cb0
 cddrawsubmgr	??0CSeverusWorker3@@QAE@HHH@Z	100.0000	100.0000	1	0ce29eacd207	0x158f30
 cddrawsubmgr	??0CWwdSlot9c@@QAE@XZ	100.0000	100.0000	1	4f0c763b7d4a	0x15b2a0
@@ -1396,7 +1401,6 @@ engine_boundary	?Boundary_1437f0@@YAXXZ	11.1111	11.1111	2	2caa9f97b022	0x1437f0
 engine_boundary	?Boundary_143950@@YAXXZ	1.1765	1.1765	2	290aac6d0dd2	0x143950
 engine_boundary	?Boundary_143c20@@YAXXZ	0.8696	0.8696	2	0ca2d366574b	0x143c20
 engine_boundary	?Boundary_145e00@@YAXXZ	5.8824	5.8824	2	04ce92668c7c	0x145e00
-engine_boundary	?Boundary_1461b0@@YAXXZ	0.3058	0.3058	2	3d4a5ce5d392	0x1461b0
 engine_boundary	?Boundary_146fe0@@YAXXZ	0.6061	0.6061	2	c849e8a6e72b	0x146fe0
 engine_boundary	?Boundary_1471d0@@YAXXZ	0.7194	0.7194	2	cb287faca66f	0x1471d0
 engine_boundary	?Boundary_148250@@YAXXZ	2.5641	2.5641	2	0d2c81d68da1	0x148250
@@ -1407,8 +1411,6 @@ engine_boundary	?Boundary_148c40@@YAXXZ	1.2500	1.2500	2	85adc477de01	0x148c40
 engine_boundary	?Boundary_148cc0@@YAXXZ	4.4444	4.4444	2	a4a5142d88fe	0x148cc0
 engine_boundary	?Boundary_1493b0@@YAXXZ	0.5263	0.5263	2	dd555e7e5ecb	0x1493b0
 engine_boundary	?Boundary_1495d0@@YAXXZ	0.2721	0.2721	2	2ee1047f03d3	0x1495d0
-engine_boundary	?Boundary_14cfc0@@YAXXZ	0.0734	0.0734	2	7219f6e6e20a	0x14cfc0
-engine_boundary	?Boundary_14d950@@YAXXZ	0.1250	0.1250	2	30174762293e	0x14d950
 engine_boundary	?Boundary_14fe30@@YAXXZ	4.3478	4.3478	2	e94dd8e6ca00	0x14fe30
 engine_boundary	?Boundary_1503f0@@YAXXZ	0.6780	0.6780	2	16d132d3bd3c	0x1503f0
 engine_boundary	?Boundary_1509c0@@YAXXZ	1.0989	1.0989	2	678d73c75fc9	0x1509c0
@@ -1449,11 +1451,9 @@ engine_boundary	?Boundary_17e230@@YAXXZ	13.3333	13.3333	2	fff750a9c682	0x17e230
 engine_boundary	?Boundary_17e240@@YAXXZ	4.3478	4.3478	2	cd965f47662c	0x17e240
 engine_boundary	?Boundary_17e7c0@@YAXXZ	2.5641	2.5641	2	74aad4d30047	0x17e7c0
 engine_boundary	?Boundary_17e990@@YAXXZ	3.3333	3.3333	2	46fb05e7d3d8	0x17e990
-engine_boundary	?Boundary_17ea00@@YAXXZ	0.1013	0.1013	2	c50399a2f6b0	0x17ea00
 engine_boundary	?Boundary_17f9f0@@YAXXZ	5.0000	5.0000	2	791108b88523	0x17f9f0
 engine_boundary	?Boundary_17fc40@@YAXXZ	14.2857	14.2857	2	571f8a84f89c	0x17fc40
 engine_boundary	?Boundary_180450@@YAXXZ	5.0000	5.0000	2	980f4281d4be	0x180450
-engine_boundary	?Boundary_182610@@YAXXZ	0.1695	0.1695	2	e02013f10329	0x182610
 engine_boundary	?Boundary_1847a0@@YAXXZ	13.3333	13.3333	2	b34aa8f4131f	0x1847a0
 engine_boundary	?Boundary_1847e0@@YAXXZ	2.5641	2.5641	2	09ae51b89cc5	0x1847e0
 engine_boundary	?Boundary_184b70@@YAXXZ	20.0000	20.0000	2	d791dc5e7e33	0x184b70
@@ -2215,6 +2215,7 @@ engstr	??1CContainerErr@@QAE@XZ	100.0000	100.0000	1	437607bea3c5	0x16da60
 engstr	?EngStr_DrawText@@YAXPAUEngStrRenderObj@@HHHHHHHH@Z	94.2857	94.2857	2	197473bbe23e	0x115440
 engstr	?SetSize@zBitVec@@QAEHH@Z	98.7234	98.7234	1	fcee90903128	0x16e100
 faderradial	?Build@CFaderRadial@@QAEHPAUFrConfig@@@Z	63.2690	63.2690	1	ae63b5cbe2aa	0x17fa40
+fadertilerender	?RenderTile@CFaderTileRender@@QAEXHH@Z	59.0975	59.0975	1	493537d54304	0x182610
 feccrypt	?FecDecode@@YGXPBDPADG@Z	100.0000	100.0000	1	5b0e31c468f8	0x17bfe0
 feccrypt	?FecEncode@@YGXPBDPAD@Z	100.0000	100.0000	1	6bc3315ae515	0x17bf70
 feccrypt	?ReadArchive@CFecFile@@QAEHPBD@Z	71.3600	71.3600	1	881e317266cf	0x17b5f0
@@ -2275,6 +2276,7 @@ fontconfig	?TypeChar@CFontConfig@@QAEHHH@Z	61.1207	61.1207	1	61e96f9918d9	0x21e2
 fontconfig	?winapi_022360_DrawTextA_SelectObject_SetTextColor@CFontConfig@@QAEHHHHH@Z	0.7353	0.7353	2	02c6bbf147cb	0x22360
 fonts	?FreeFontsMemory@@YAHXZ	100.0000	100.0000	6	91daa7a5370e	0x1158f0
 fonts	?InitializeFonts@@YAHXZ	77.3077	77.3077	7	6a0fc4d959d6	0x115810
+fxmodet3	?Build@CFxModeT3@@QAEHPAUFxConfig@@@Z	65.6025	65.6025	1	9965df7c8c5c	0x17ea00
 gameapp	??0CGameApp@@QAE@XZ	100.0000	100.0000	5	f37910bc454b	0x13d590
 gameapp	??0CGameMgr@WAP32@@QAE@XZ	100.0000	100.0000	3	dcf2748fd972	0x13dd10
 gameapp	?CloseResources@CGameApp@@UAEXXZ	100.0000	100.0000	4	65bffb76d421	0x13d8c0
@@ -2745,6 +2747,7 @@ image	?SaveDispatch@CFileImage@@QAEHPAX00@Z	100.0000	100.0000	1	9a5d2837fd46	0x1
 image	?SaveFile@CFileImage@@QAEHPADHPAX1@Z	100.0000	100.0000	1	aa58601ee0e3	0x13f910
 image	?SaveRle16@CFileImage@@QAEHPAX00@Z	52.5687	52.5687	1	51fca2eecd11	0x144640
 image	?ScalarDelete@CFileImageSurface@@QAEPAXI@Z	100.0000	100.0000	1	9d4075406fc7	0x142340
+imagepolyclip	?ImagePolyClipRect@@YAHPAUPolyVtx@@HHHHH@Z	68.9572	68.9572	1	5c33c21cc94b	0x1461b0
 imagepool	?AddImageDispatch@CImagePool@@QAEPAUPalBuilder_176df0@ApiCallerStubs@@PAXIHH@Z	99.1111	99.1111	1	4da099ace783	0x175680
 imagepool	?AddImageFile@CImagePool@@QAEPAUPalBuilder_176df0@ApiCallerStubs@@PADH@Z	100.0000	100.0000	1	ef74f0fb0428	0x1755f0
 imagepool	?AddPaletteEntries@CImagePool@@QAEPAUPalBuilder_176df0@ApiCallerStubs@@PAUtagPALETTEENTRY@@H@Z	99.0244	99.0244	1	e7899a7d0775	0x1754f0

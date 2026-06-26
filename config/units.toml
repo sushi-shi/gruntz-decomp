@@ -1433,3 +1433,16 @@ flags = "eh"
 unit = "imagesavebmp"
 source = "src/Gruntz/ImageSaveBmp.cpp"
 flags = "eh"
+
+[[unit]]
+unit = "imagepolyclip"
+source = "src/Image/ImagePolyClip.cpp"
+flags = "base"
+[[unit]]
+unit = "fadertilerender"
+source = "src/Gruntz/CFaderTileRender.cpp"
+flags = "base"
+[[unit]]
+unit = "fxmodet3"
+source = "src/Gruntz/CFxModeT3.cpp"
+flags = "base"

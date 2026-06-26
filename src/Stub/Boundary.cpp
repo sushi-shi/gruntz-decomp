@@ -373,8 +373,6 @@ RVA(0x00143c20, 0x84)
 void Boundary_143c20() {} // proximity: CDDrawPtrCollections@-0xc60 | CFileImage@+0x3a0
 RVA(0x00145e00, 0x26)
 void Boundary_145e00() {} // proximity: CFileImage@-0x130 | CDDPalette@+0x1590
-RVA(0x001461b0, 0x399)
-void Boundary_1461b0() {} // proximity: CFileImage@-0x4e0 | CDDPalette@+0x11e0
 RVA(0x00146fe0, 0x1e2)
 void Boundary_146fe0() {} // proximity: CFileImage@-0x1310 | CDDPalette@+0x3b0
 RVA(0x001471d0, 0x1b4)
@@ -395,10 +393,6 @@ RVA(0x001493b0, 0xfd)
 void Boundary_1493b0() {} // proximity: CImageOwned@-0x2e0 | CDDrawShadeBlit@+0x440
 RVA(0x001495d0, 0x1a6)
 void Boundary_1495d0() {} // proximity: CImageOwned@-0x500 | CDDrawShadeBlit@+0x220
-RVA(0x0014cfc0, 0x5f1)
-void Boundary_14cfc0() {} // proximity: CDDrawShadeBlit@-0x5d0 | CShadeTableCache@+0xe70
-RVA(0x0014d950, 0x377)
-void Boundary_14d950() {} // proximity: CDDrawShadeBlit@-0xf60 | CShadeTableCache@+0x4e0
 RVA(0x0014fe30, 0x51)
 void Boundary_14fe30() {} // proximity: CShadeTableCache@-0x2b0 | CDataBuffer@+0x350
 RVA(0x001503f0, 0xdc)
@@ -479,16 +473,12 @@ RVA(0x0017e7c0, 0x7a)
 void Boundary_17e7c0() {} // proximity: CFxModeDesc@-0x10 | CFxModeT3@+0xc0
 RVA(0x0017e990, 0x6b)
 void Boundary_17e990() {} // proximity: CFxModeT3@-0x110 | CFaderSine@+0x1460
-RVA(0x0017ea00, 0x4fc)
-void Boundary_17ea00() {} // proximity: CFxModeT3@-0x180 | CFaderSine@+0x13f0
 RVA(0x0017f9f0, 0x4f)
 void Boundary_17f9f0() {} // proximity: CFxModeT3@-0x1170 | CFaderSine@+0x400
 RVA(0x0017fc40, 0x11)
 void Boundary_17fc40() {} // proximity: CFxModeT3@-0x13c0 | CFaderSine@+0x1b0
 RVA(0x00180450, 0x4f)
 void Boundary_180450() {} // proximity: CFaderSine@-0x660 | CChatBox@+0x26e0
-RVA(0x00182610, 0x2eb)
-void Boundary_182610() {} // proximity: CFaderSine@-0x2820 | CChatBox@+0x520
 RVA(0x001847a0, 0xa)
 void Boundary_1847a0() {} // proximity: CMenuItem@-0x70 | CHashBase@+0x2a0
 RVA(0x001847e0, 0xa6)

@@ -69,6 +69,13 @@ public:
     // The per-row format converter the inner blit loops call: dispatches on
     // (m_14 - 2) to one of nine palette/blend conversions over a row.
     void ConvertRow(u8* dst, u8* src, i32 count); // 0x14c9f0
+    // The h-flipped (right-to-left) twin of ConvertRow: same nine (m_14-2) blend
+    // cases, but dst is walked DOWN and the saved-dest scratch line is read back to
+    // front. Used by the selected (mirrored) blit path BlitMode_14b770.
+    void ConvertRowFlip(u8* dst, u8* src, i32 count); // 0x14cfc0
+    // The dual-write (vertical-double) row converter: each pixel is written to dst
+    // and dst+rowDelta. Five (m_14-2) blend cases (2/3/7/8); 4/5/6 fall through.
+    void ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta); // 0x14d950
 
     char m_00[0x4];
     i32 m_04; // +0x04 sprite row width
