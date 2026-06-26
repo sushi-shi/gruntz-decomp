@@ -59,6 +59,8 @@ struct SoundSample {
 
 class SoundDevice {
 public:
+    SoundDevice(); // base ctor at 0x136440 (Ghidra placeholder "UnknownSalazar");
+                   // external/no-body so SoundStream's ctor emits the base call.
     ~SoundDevice();                    // 0x136500  /GX EH destructor (vtable 0x5ef6c4) -> Shutdown
     void Shutdown();                   // 0x136690  release every owned buffer, primary, device
     void RemoveBuffer(SoundBuf* node); // 0x136d80  reap voices + release + unlink one buffer
@@ -70,8 +72,13 @@ public:
         WaveFormatX* fmt,
         u32 bytes,
         u32 flags
-    );                                             // 0x1366f0  CreateSoundBuffer + wrap
+    );                                                 // 0x1366f0  CreateSoundBuffer + wrap
+    DirectSoundMgr* AcquireFile(char* path, u32, u32); // 0x136860  fopen+fread whole file -> Acquire
     DirectSoundMgr* Acquire(void* riff, u32, u32); // 0x136910  parse RIFF + CreateBuffer + load
+    i32 ValidateRestore(DirectSoundMgr* buf, WaveFormatX* fmt,
+                        u32 size); // 0x136ab0  gate + PCM check + Restore(buf)
+    i32 ReloadRiff(DirectSoundMgr* buf, void* riff,
+                   u32 a3); // 0x136bd0  re-parse RIFF, optionally downconvert, into an existing buffer
 
     // --- layout ---------------------------------------------------------------
     void* m_vtbl;        // +0x00

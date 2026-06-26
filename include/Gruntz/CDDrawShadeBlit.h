@@ -23,12 +23,28 @@ struct ShadeRect {
     i32 m_0c; // +0x0c
 };
 
-// The render-source object (2nd arg of Blit). Its +0xb0 is the blend mode
-// (==2 enables the special global-state check); the inner loop reads +0x0/+0x4/
-// +0xc geometry off the same family of source objects.
+// The unlock interface (ShadeSrc::m_08): a COM-like object whose vtable slot 0x20
+// releases the surface lock. Typed vtable so the dispatch (mov eax,[iface];
+// call [eax+0x80]) falls out with no cast.
+struct ShadeUnlockIface {
+    struct Vtbl {
+        void* s0[0x20];
+        void(__stdcall* Unlock)(ShadeUnlockIface*, i32); // slot 0x20 -> [vtbl+0x80]
+    }* vtbl;
+};
+
+// The render-source / destination surface (2nd arg of Blit). +0xb0 is the blend
+// mode (==2 enables the special global-state check; read in Blit). The per-mode
+// blit loops Lock() it (0x13e6d0 -> locked dest bits), read +0x20 (row pitch),
+// and Unlock via +0x08.
 struct ShadeSrc {
-    char m_pad[0xb0];
-    i32 m_b0; // +0xb0 blend mode
+    char m_00[0x08];
+    ShadeUnlockIface* m_08; // +0x08 unlock interface
+    char m_0c[0x20 - 0x0c];
+    i32 m_20; // +0x20 surface pitch (row stride, bytes)
+    char m_24[0xb0 - 0x24];
+    i32 m_b0;             // +0xb0 blend mode
+    u8* Lock(void* rect); // 0x13e6d0 (CDDSurface::Lock; external, reloc-masked)
 };
 
 // A palette/format descriptor: m_1c on the blitter and the global g_blendDescr
@@ -42,21 +58,23 @@ struct ShadeDescr {
 
 class CDDrawShadeBlit {
 public:
-    i32 Blit(i32 p0, ShadeSrc* src, ShadeRect* clip, i32 sel, i32 p4); // 0x1497f0
-    void BlitLoop(i32 p0, ShadeSrc* src, ShadeRect* clip, i32 p4);     // 0x14a200
+    i32 Blit(ShadeRect* dst, ShadeSrc* src, ShadeRect* clip, i32 sel, i32 p4); // 0x1497f0
+    // The unselected (h-aligned) RLE blit; sel picks the h-flipped sibling. The
+    // big inner loops decode the high-bit RLE sprite stream (m_0c/m_10) into the
+    // Lock'd destination surface, clipping x to [clip->m_00, clip->m_08].
+    void BlitMode_149950(ShadeRect* dst, ShadeSrc* surf, ShadeRect* clip, i32 vflip); // 0x149950
+    void BlitMode_149d00(ShadeRect* dst, ShadeSrc* surf, ShadeRect* clip, i32 vflip); // 0x149d00
+    void BlitLoop(ShadeRect* dst, ShadeSrc* src, ShadeRect* clip, i32 p4);            // 0x14a200
+    void BlitMode_14b770(ShadeRect* dst, ShadeSrc* surf, ShadeRect* clip, i32 vflip); // 0x14b770
     // The per-row format converter the inner blit loops call: dispatches on
     // (m_14 - 2) to one of nine palette/blend conversions over a row.
     void ConvertRow(u8* dst, u8* src, i32 count); // 0x14c9f0
-    // The other three per-blend-mode loop variants (sibling functions, no body):
-    // thiscall on the same object so the call falls out with no stack cleanup.
-    void BlitMode_149950(i32 p0, ShadeSrc* src, ShadeRect* clip, i32 p4);
-    void BlitMode_149d00(i32 p0, ShadeSrc* src, ShadeRect* clip, i32 p4);
-    void BlitMode_14b770(i32 p0, ShadeSrc* src, ShadeRect* clip, i32 p4);
 
     char m_00[0x4];
-    i32 m_04; // +0x04 width
+    i32 m_04; // +0x04 sprite row width
     i32 m_08; // +0x08 height
-    char m_0c[0x14 - 0x0c];
+    u8* m_0c; // +0x0c RLE sprite-stream base
+    i32 m_10; // +0x10 RLE sprite-stream length (byte bound)
     i32 m_14;         // +0x14 draw type / row-convert selector
     i32 m_18;         // +0x18 light level (>>3 indexes the LUT bank) / alpha / fill byte
     ShadeDescr* m_1c; // +0x1c palette / source-descriptor pointer

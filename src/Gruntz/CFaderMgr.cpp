@@ -51,6 +51,22 @@ CFaderMgr::~CFaderMgr() {
 }
 
 // ===========================================================================
+// 0x17d980 - SetConfig(a, b, c): latch the shared timer fields (m_00 = a,
+// m_04 = b, m_24 = c) and mark the manager active (m_08 = 1). Returns 1.
+// __thiscall, three args. Assignment order is load-bearing: m_00/m_04/m_24
+// makes cl hold `b` in edx across the m_24 store (retail's schedule); swapping
+// m_24 ahead of m_04 holds `c` instead and reorders the two stores.
+// ===========================================================================
+RVA(0x0017d980, 0x1f)
+i32 CFaderMgr::SetConfig(i32 a, i32 b, i32 c) {
+    m_00 = a;
+    m_04 = b;
+    m_24 = c;
+    m_08 = 1;
+    return 1;
+}
+
+// ===========================================================================
 // 0x17d9a0 - FreeAll: DeleteAll, then clear m_08.
 // ===========================================================================
 RVA(0x0017d9a0, 0x11)
@@ -327,6 +343,19 @@ append:
         m_arr.m_pData[idx] = fader;
     }
     return fader;
+}
+
+// ===========================================================================
+// 0x17e160 - Flush: a thin forwarder that tail-jumps to the engine method
+// (0x1b9cde) on the sub-object embedded at this+0x24 (`add ecx,0x24; jmp`).
+// Returns the callee's value. The sub-object/callee is external (reloc-masked).
+// ===========================================================================
+struct CFaderTail {
+    i32 Flush(); // 0x1b9cde (__thiscall, 0 args)
+};
+RVA(0x0017e160, 0x8)
+i32 CFaderMgr::Flush() {
+    return ((CFaderTail*)&m_24)->Flush();
 }
 
 // ===========================================================================

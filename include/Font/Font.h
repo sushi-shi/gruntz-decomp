@@ -71,6 +71,7 @@ public:
     i32 AllocateMemory(i32 count);
     void FreeMemory();
     i32 LoadFont(CString szFileName);
+    i32 SaveFont(CString szFileName); // 0x1799f0
 
     // Accessors matched in this module cluster.
     void** GetSurface(u8 c);
@@ -149,10 +150,31 @@ public:
     void Stub_17ad10(); // 0x17ad10 (FontRenderer::MeasureWrapped)
     void Stub_17a460(); // 0x17a460 (FontRenderer::DrawWrapped)
 
+    // 0x17b120 - a third word-wrap entry: greedily lays out `text` from `begin`
+    // down to `bottom`, returns the final cursor {x, y + lineHeight + 1} and writes
+    // the total laid-out character count to *outLen. Same CString-temp /GX family
+    // as the two wrap stubs above; deferred to the final sweep.
+    TextExtent LayoutWrapped(CString text, i32 x0, i32 begin, i32 right, i32 bottom,
+                             i32* outLen); // 0x17b120
+
     Font* m_font;    // +0x00  (Font* to render with)
     i32 m_color;     // +0x04  (packed colour, default 0x00ffffff)
     void* m_surface; // +0x08  (optional dest surface pointer)
     void* m_clip;    // +0x0c  (optional clip rect pointer)
+};
+
+// ---------------------------------------------------------------------------
+// TextRange - a {begin..end} view over a measured run of text, built on the
+// FontRenderer word-wrap stack (three adjacent CString locals: the line text and
+// its head/tail markers). Span() returns the byte distance end - begin (a signed
+// length fed to the per-line divide in the wrap loop). Only the two char* fields
+// it reads (+0x00 begin, +0x08 end) are load-bearing.
+// ---------------------------------------------------------------------------
+struct TextRange {
+    char* m_begin;     // +0x00
+    char* m_pad04;     // +0x04
+    char* m_end;       // +0x08
+    i32 Span(); // 0x17b500
 };
 
 // ---------------------------------------------------------------------------

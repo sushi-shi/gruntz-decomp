@@ -76,6 +76,47 @@ struct CUserBaseLink {
 // ---------------------------------------------------------------------------
 struct CGameObjAux; // the sub-object reached through CGameObject::m_7c
 
+// The lazily-built per-object worker held at CGameObject::m_88 / +0x90 (the same
+// 0x17c-byte "sirius worker" SiriusWorkerHandlers.cpp models): foreign vtable
+// 0x5efb80, the existing worker's slot-7 reuses it (vtbl[0x1c]), and the freshly-
+// built one is fed CGameObject->m_10's payload through slot 9 (vtbl[0x24]).
+// Modeled as a polymorphic class so both `mov eax,[w]; call [eax+N]` dispatches
+// fall out; its vtable lives in another TU (the worker ctor stamps 0x5efb80 by
+// address - g_siriusWorkerVtbl - so this TU never emits one).
+// Polymorphic so the vtable-slot dispatches (`mov eax,[w]; call [eax+0x1c]` and
+// `call [eax+0x24]`) fall out; the vtable itself is the foreign 0x5efb80 stamped
+// by address in the ctor, so this class never emits one (the named virtuals only
+// drive the dispatch shape - slot 7 @ +0x1c, slot 9 @ +0x24).
+class CSiriusWorker {
+public:
+    virtual void Slot00();              // +0x00
+    virtual void Slot01();              // +0x04
+    virtual void Slot02();              // +0x08
+    virtual void Slot03();              // +0x0c
+    virtual void Slot04();              // +0x10
+    virtual void Slot05();              // +0x14
+    virtual void Slot06();              // +0x18
+    virtual i32 Slot07();               // +0x1c  reuse path
+    virtual void Slot08();              // +0x20
+    virtual i32 Slot09(i32 ctx, i32 z); // +0x24  fed CGameObject->m_10
+
+    i32 m_04; // +0x04
+    i32 m_08; // +0x08
+    i32 m_0c; // +0x0c
+    i32 m_10; // +0x10
+    i32 m_14; // +0x14
+    i32 m_18; // +0x18
+    i32 m_1c; // +0x1c
+    char m_pad20[0x170 - 0x20];
+    i32 m_170;
+    i32 m_174;
+    i32 m_178;
+};
+
+// The foreign worker vftable (0x5efb80); the worker ctor stamps it by address so
+// the DIR32 vptr store reloc-masks. Owned by another TU.
+extern void* g_siriusWorkerVtbl;
+
 // The +0x198 layer descriptor several eyecandy ctors poll for z-clamping (its
 // +0x10/+0x14 bounds + +0x1c base offset). Only the touched offsets are modeled.
 struct CGameObjLayer {
@@ -93,10 +134,15 @@ struct CGameObject {
     void ApplyLookupSprite(const char* key, i32 flag);  // 0x1504d0
     void ApplyName(const char* name);                   // 0x150540
     i32 ApplyLookupGeometry(const char* key, i32 flag); // 0x1505b0
+    i32 EnsureWorker80(CGameObject* src);               // 0x150eb0  (lazy worker @ +0x80, dispatch)
+    void EnsureWorker88(CGameObject* src);              // 0x150f90  (lazy worker @ +0x88, dispatch)
+    void EnsureWorker90(CGameObject* src);              // 0x151070  (lazy worker @ +0x90, dispatch)
     char m_pad00[0x04];
     i32 m_04; // +0x04
     i32 m_08; // +0x08
-    char m_pad0c[0x38 - 0x0c];
+    i32 m_0c; // +0x0c
+    i32 m_10; // +0x10  (worker getters pass src->m_10 through slot 9)
+    char m_pad14[0x38 - 0x14];
     i32 m_38; // +0x38
     char m_pad3c[0x40 - 0x3c];
     i32 m_40; // +0x40
@@ -106,8 +152,13 @@ struct CGameObject {
     char m_pad64[0x74 - 0x64];
     i32 m_74; // +0x74
     char m_pad78[0x7c - 0x78];
-    CGameObjAux* m_7c; // +0x7c
-    char m_pad80[0x164 - 0x80];
+    CGameObjAux* m_7c;   // +0x7c
+    CSiriusWorker* m_80; // +0x80  lazily-built worker (EnsureWorker80)
+    char m_pad84[0x88 - 0x84];
+    CSiriusWorker* m_88; // +0x88  lazily-built worker (EnsureWorker88)
+    char m_pad8c[0x90 - 0x8c];
+    CSiriusWorker* m_90; // +0x90  lazily-built worker (EnsureWorker90)
+    char m_pad94[0x164 - 0x94];
     i32 m_164; // +0x164
     i32 m_168; // +0x168
     char m_pad16c[0x198 - 0x16c];
@@ -193,6 +244,11 @@ public:
     };
     void GetScreenPos(ScreenPoint* out); // 0x29a50
 
+    // True when the bound object's current screen pos (m_10->m_5c/m_60) still
+    // equals the saved pos at this+0x17c/+0x180 (leaf-class fields beyond
+    // CUserLogic's 0x40 - read via offset since the leaf isn't modeled). 0x29a80.
+    i32 IsAtSavedScreenPos(); // 0x29a80
+
     // Inline one-shot wrapper: registers the built-in logic types the first time
     // any tile-logic object is built. Inlined into the 1-arg ctor; its `this`
     // setup is why the retail call carries the dead `mov ecx,esi`.
@@ -269,6 +325,9 @@ class CTileTrigger : public CUserLogic {
 public:
     CTileTrigger();                 // 0x011160 (no-arg)
     CTileTrigger(CGameObject* obj); // 0x10e220 (1-arg)
+    static void InitActReg();       // 0x10e420
+    static void RegisterActs();     // 0x10e600
+    i32 AdvanceAnim();              // 0x10ee00
     // Inline & trivial so it folds into the three leaf dtors (0x11540/0x11600/
     // 0x116c0) rather than being called. MSVC still emits one out-of-line COMDAT
     // copy (called by CTileTrigger's scalar-deleting dtor); it lands at 0x011290

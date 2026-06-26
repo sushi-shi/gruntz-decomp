@@ -56,6 +56,18 @@ struct DsndReseed {
     void Reseed(i32 a1, i32 a2, i32 a3, i32 a4); // 0x136300
 };
 
+// The positional driver's voice setters on m_4 (a DirectSoundMgr): SetVolByIdx
+// (0x1355c0, the SetVolumeByIndex mirror) and SetPanByIdx (0x1357a0, the SetPan
+// table sibling). Modeled as one-method shells so the `mov ecx,m_4; call` thiscall
+// dispatch reloc-masks.
+struct DsndPosVoice {
+    i32 SetVolByIdx(i32 idx); // 0x1355c0
+    i32 SetPanByIdx(i32 idx); // 0x1357a0
+};
+
+// The CRT float->int truncation helper (__ftol @ 0x11f570).
+extern "C" i32 __ftol(double v);
+
 // An axis-aligned region the listener must be inside for the sound to play. The
 // sentinel left==0x80000000 means "no box / always pass".
 struct AmbientBox {
@@ -63,6 +75,29 @@ struct AmbientBox {
     i32 top;    // +0x04
     i32 right;  // +0x08
     i32 bottom; // +0x0c
+};
+
+// A 2-int (x,y) point copied wholesale into the +0x40/+0x44 field pair by the
+// positional Setup path (m_40/m_44 serve as the sound's anchor position).
+struct AmbientPoint {
+    i32 x; // +0x00
+    i32 y; // +0x04
+};
+
+// A CMapPtrToPtr-style table (the lookup at 0x1b8438, __thiscall ret 8). The
+// SetupFromMap path resolves the mgr record by key out of the holder's table
+// embedded at +0x10, so `add ecx,0x10; call Lookup` falls out.
+struct AmbSoundMap {
+    i32 Lookup(void* key, void** out); // 0x1b8438
+};
+struct AmbSoundMapHolder {
+    char m_pad00[0x10];
+    AmbSoundMap m_10; // +0x10  the lookup table
+};
+// The mgr record the map resolves to; its +0x10 is the DirectSoundMgr handle.
+struct AmbSoundRecord {
+    char m_pad00[0x10];
+    DirectSoundMgr* m_10; // +0x10
 };
 
 class CRandomAmbientSound {
@@ -73,6 +108,21 @@ public:
     i32 Setup(DirectSoundMgr* mgr, i32 a2, i32 a3, AmbientBox* box, i32 a5); // 0x00be50
     // Update(playFlag, pos, kind): start or stop the sound this frame. 0x00c2a0.
     void Update(i32 playFlag, i32 pos, i32 kind); // 0x00c2a0
+    // The positional variant's entry points (same CAmbientSound base layout, but
+    // m_40/m_44 hold an anchor position instead of the interval roller):
+    void SetupFromMap(
+        AmbSoundMapHolder* holder,
+        void* key,
+        i32 a3,
+        i32 a4,
+        AmbientPoint* pos,
+        i32 a5
+    );
+    i32 SetupPos(DirectSoundMgr* mgr, i32 a2, i32 a3, AmbientPoint* pos, i32 a5);
+    void UpdateAt(i32 x, i32 y, i32 force); // 0x00c5b0  position-driven volume/pan
+    void StopPos(i32 obj);                  // 0x00c9d0  request stop via slot 2
+    i32 TickObj(i32 obj);                   // 0x00ca00  per-object placement tick
+
     // Step(x, y, force): the per-frame tick (vtable slot 3). 0x00cb30.
     void Step(i32 x, i32 y, i32 force); // 0x00cb30
     ~CRandomAmbientSound();             // 0x00bb60  scalar-deleting / full dtor (defined elsewhere)

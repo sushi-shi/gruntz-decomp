@@ -23,6 +23,21 @@ void CHashBase::RemoveAll() {
     }
 }
 
+// Insert (0x184a70): ask the entry for its bucket index (the slot-0 virtual
+// hash), stamp the owning table (+0xc) and the bucket (+0x10) into the entry,
+// then splice the biased node (entry+4) into the bucket's chain. The `?:` keeps
+// the null-check `lea ecx,[esi+4]/xor ecx,ecx` even though the engine never feeds
+// a null entry here.
+RVA(0x00184a70, 0x34)
+void CHashBase::Insert(CHashInsertNode* node) {
+    node->m_0c = this;
+    u32 idx = node->Hash();
+    node->m_bucket = idx;
+    void* biased = node ? (void*)((char*)node + 4) : 0;
+    CHashSlotList* slot = (CHashSlotList*)((idx << 4) + (char*)m_buckets + 8);
+    slot->Link(biased);
+}
+
 // Remove (0x184ab0): unlink `entry` (its biased node = entry+4) from the owning
 // bucket's intrusive {head,tail} chain.
 RVA(0x00184ab0, 0x25)

@@ -125,6 +125,15 @@ public:
     // thunks `call`; external (no body) so its rel32 is reloc-masked.
     CSymTab* GetRoot(); // 0x13b900
 
+    // ParseBuffer (0x13ad00): the big buffer parser/loader (__thiscall, 3 args).
+    // External (no body here) so ReParse's `call` is reloc-masked; the body is a
+    // separate >512 B target deferred to the final sweep.
+    i32 ParseBuffer(void* buf, i32 a, i32 b); // 0x13ad00
+
+    // ReParse (0x13c050): if armed (m_0c), Clear(0) then re-parse the cached
+    // +0x64 buffer. Returns 0 if not armed, else ParseBuffer's result.
+    i32 ReParse(); // 0x13c050
+
     // The three path-resolution thunks: forward into GetRoot()'s CSymTab.
     i32 ResolveQualified(const char* name, void* arg); // 0x13bff0 -> root->ResolveQualified
     void* ResolvePath(const char* path);               // 0x13c030 -> root->ResolvePath

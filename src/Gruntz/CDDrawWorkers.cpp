@@ -16,6 +16,16 @@ struct HelperHost {
     i32 Helper_164790(i32 a, i32 b);
 };
 
+// The frame-source passed as Vfunc30's a3: an int array @0x14 indexed by a4,
+// bounded by [m_64, m_68].
+struct CDDrawFrameSource {
+    char _pad00[0x14];
+    i32* m_14; // +0x14  frame table
+    char _pad18[0x64 - 0x18];
+    i32 m_64; // +0x64  lower bound
+    i32 m_68; // +0x68  upper bound
+};
+
 // =========================================================================
 // CDDrawWorkerA (BYTE-flag, 0x7c bytes)
 // =========================================================================
@@ -96,4 +106,21 @@ i32 CDDrawWorkerB::Vfunc34(i32 a1, i32 a2, i32 a3, i32 a4) {
     h->Helper_166040(a3, a4);
     m_st = 2;
     return h->Helper_164790(a1, a2);
+}
+
+// ---------------------------------------------------------------------------
+// 0x1572b0: store frame `a3->m_14[a4]` (0 if a4 out of [m_64,m_68]) into m_78,
+// set m_st=2, then forward (a1,a2) to Helper_164790.
+RVA(0x001572b0, 0x38)
+i32 CDDrawWorkerB::Vfunc30(i32 a1, i32 a2, i32 a3, i32 a4) {
+    CDDrawFrameSource* src = (CDDrawFrameSource*)a3;
+    i32 frame;
+    if (a4 >= src->m_64 && a4 <= src->m_68) {
+        frame = src->m_14[a4];
+    } else {
+        frame = 0;
+    }
+    m_78 = frame;
+    m_st = 2;
+    return ((HelperHost*)this)->Helper_164790(a1, a2);
 }

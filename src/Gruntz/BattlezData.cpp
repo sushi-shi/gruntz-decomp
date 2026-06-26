@@ -162,6 +162,40 @@ i32 CBattlezData::SumWinRow(i32 y) {
     return sum;
 }
 
+// 0xfccf0 - "every record is populated and within its own bounds": walk all
+// 0x20 records, fail (return 0) on the first whose +0x00/+0x28 is zero or whose
+// progress field falls below the matching bound. The per-record tests mirror
+// InBounds' member-band comparisons, applied to each record's own fields.
+RVA(0x000fccf0, 0x57)
+i32 CBattlezData::AllRecordsInBounds() {
+    i32 i = 0;
+    BattlezRecord* r = m_records;
+    for (; i < 0x20; i++, r++) {
+        if (r->m_00 == 0) {
+            return 0;
+        }
+        if (r->m_28 == 0) {
+            return 0;
+        }
+        if (r->m_10 < r->m_30) {
+            return 0;
+        }
+        if (r->m_0c < r->m_2c) {
+            return 0;
+        }
+        if (r->m_1c < r->m_34) {
+            return 0;
+        }
+        if (r->m_20 < r->m_38) {
+            return 0;
+        }
+        if (r->m_24 < r->m_3c) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
 // 0xfcd70 - gated "within bounds" test: only meaningful when m_44 is set; then
 // the m_30..m_40 band must each stay <= the m_14..m_2c band. Takes one (unused)
 // stack argument (retail cleans 4 bytes on return).
@@ -183,6 +217,181 @@ i32 CBattlezData::InBounds(i32 unused) {
         return 0;
     }
     return m_40 <= m_2c;
+}
+
+// 0xfce00 - ratio over the current group of 4 records: (Sum m_24) / (Sum m_3c),
+// or 0 when the m_3c sum is zero. Both sums are accumulated in float (fild);
+// g_zeroF (0.0f) seeds the accumulators and the divide-by-zero guard.
+DATA(0x005eab40)
+extern float g_zeroF;
+RVA(0x000fce00, 0x56)
+float CBattlezData::GroupRatio() {
+    float den = g_zeroF;
+    float num = g_zeroF;
+    i32 g = (m_count - 1) / 4 * 4;
+    for (i32 i = 0; i < 4; i++) {
+        den += m_records[g + i].m_3c;
+        num += m_records[g + i].m_24;
+    }
+    if (g_zeroF == den) {
+        return g_zeroF;
+    }
+    return num / den;
+}
+
+// 0xfce80 - true iff all 4 records in the current group are scored (m_28 != 0).
+RVA(0x000fce80, 0x32)
+i32 CBattlezData::GroupAllScored() {
+    i32 g = (m_count - 1) / 4 * 4;
+    for (i32 i = 0; i < 4; i++) {
+        if (m_records[g + i].m_28 == 0) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+// 0xfcf20 - sum field m_0c over the 4 records in the current group.
+RVA(0x000fcf20, 0x37)
+i32 CBattlezData::SumGroupField0c() {
+    i32 sum = 0;
+    i32 g = (m_count - 1) / 4 * 4;
+    for (i32 i = g; i < g + 4; i++) {
+        sum += m_records[i].m_0c;
+    }
+    return sum;
+}
+
+// 0xfcf70 - sum field m_2c over the 4 records in the current group.
+RVA(0x000fcf70, 0x37)
+i32 CBattlezData::SumGroupField2c() {
+    i32 sum = 0;
+    i32 g = (m_count - 1) / 4 * 4;
+    for (i32 i = g; i < g + 4; i++) {
+        sum += m_records[i].m_2c;
+    }
+    return sum;
+}
+
+// 0xfcfc0 - sum field m_10 over the 4 records in the current group.
+RVA(0x000fcfc0, 0x37)
+i32 CBattlezData::SumGroupField10() {
+    i32 sum = 0;
+    i32 g = (m_count - 1) / 4 * 4;
+    for (i32 i = g; i < g + 4; i++) {
+        sum += m_records[i].m_10;
+    }
+    return sum;
+}
+
+// 0xfd010 - sum field m_30 over the 4 records in the current group.
+RVA(0x000fd010, 0x37)
+i32 CBattlezData::SumGroupField30() {
+    i32 sum = 0;
+    i32 g = (m_count - 1) / 4 * 4;
+    for (i32 i = g; i < g + 4; i++) {
+        sum += m_records[i].m_30;
+    }
+    return sum;
+}
+
+// 0xfd060 - sum field m_1c over the 4 records in the current group.
+RVA(0x000fd060, 0x37)
+i32 CBattlezData::SumGroupField1c() {
+    i32 sum = 0;
+    i32 g = (m_count - 1) / 4 * 4;
+    for (i32 i = g; i < g + 4; i++) {
+        sum += m_records[i].m_1c;
+    }
+    return sum;
+}
+
+// 0xfd0b0 - sum field m_34 over the 4 records in the current group.
+RVA(0x000fd0b0, 0x37)
+i32 CBattlezData::SumGroupField34() {
+    i32 sum = 0;
+    i32 g = (m_count - 1) / 4 * 4;
+    for (i32 i = g; i < g + 4; i++) {
+        sum += m_records[i].m_34;
+    }
+    return sum;
+}
+
+// 0xfd100 - sum field m_20 over the 4 records in the current group.
+RVA(0x000fd100, 0x37)
+i32 CBattlezData::SumGroupField20() {
+    i32 sum = 0;
+    i32 g = (m_count - 1) / 4 * 4;
+    for (i32 i = g; i < g + 4; i++) {
+        sum += m_records[i].m_20;
+    }
+    return sum;
+}
+
+// 0xfd150 - sum field m_38 over the 4 records in the current group.
+RVA(0x000fd150, 0x37)
+i32 CBattlezData::SumGroupField38() {
+    i32 sum = 0;
+    i32 g = (m_count - 1) / 4 * 4;
+    for (i32 i = g; i < g + 4; i++) {
+        sum += m_records[i].m_38;
+    }
+    return sum;
+}
+
+// 0xfd1a0 - sum field m_24 over the 4 records in the current group.
+RVA(0x000fd1a0, 0x37)
+i32 CBattlezData::SumGroupField24() {
+    i32 sum = 0;
+    i32 g = (m_count - 1) / 4 * 4;
+    for (i32 i = g; i < g + 4; i++) {
+        sum += m_records[i].m_24;
+    }
+    return sum;
+}
+
+// 0xfd1f0 - sum field m_3c over the 4 records in the current group.
+RVA(0x000fd1f0, 0x37)
+i32 CBattlezData::SumGroupField3c() {
+    i32 sum = 0;
+    i32 g = (m_count - 1) / 4 * 4;
+    for (i32 i = g; i < g + 4; i++) {
+        sum += m_records[i].m_3c;
+    }
+    return sum;
+}
+
+// 0xfd240 - sum field m_18 over the 4 records in the current group.
+RVA(0x000fd240, 0x37)
+i32 CBattlezData::SumGroupField18() {
+    i32 sum = 0;
+    i32 g = (m_count - 1) / 4 * 4;
+    for (i32 i = g; i < g + 4; i++) {
+        sum += m_records[i].m_18;
+    }
+    return sum;
+}
+
+// 0xfd290 - sum field m_14 over the 4 records in the current group.
+RVA(0x000fd290, 0x37)
+i32 CBattlezData::SumGroupField14() {
+    i32 sum = 0;
+    i32 g = (m_count - 1) / 4 * 4;
+    for (i32 i = g; i < g + 4; i++) {
+        sum += m_records[i].m_14;
+    }
+    return sum;
+}
+
+// 0xfd2e0 - sum field m_08 over the 4 records in the current group.
+RVA(0x000fd2e0, 0x37)
+i32 CBattlezData::SumGroupField08() {
+    i32 sum = 0;
+    i32 g = (m_count - 1) / 4 * 4;
+    for (i32 i = g; i < g + 4; i++) {
+        sum += m_records[i].m_08;
+    }
+    return sum;
 }
 
 // 0xfced0 - the record's win/score value at the wrap index, or m_44 when the

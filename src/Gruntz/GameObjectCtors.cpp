@@ -271,7 +271,8 @@ struct CPathHazardBase {
     CHazardObj* m_10; // +0x10  (== obj)
     char m_pad14[0x38 - 0x14];
     CHazardObj* m_38; // +0x38  (== obj)
-    i32 m_40;         // +0x40
+    char m_pad3c[0x40 - 0x3c];
+    i32 m_40; // +0x40
 };
 
 class CRainCloud : public CPathHazardBase {

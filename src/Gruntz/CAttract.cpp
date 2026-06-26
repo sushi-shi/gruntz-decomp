@@ -11,6 +11,7 @@
 //   EnterAttractMode     0x013fb0  slot 1  (reached non-virtually; ret 0xc)
 // Non-virtual title/menu logic: RefreshTitle / LoadTitleConfig / Activate /
 // RunTitle. Field names are placeholders; only OFFSETS + code bytes matter.
+#include <Gruntz/CString.h> // MFC CString (the title-roll formats into one); MFC-first
 #include <Gruntz/CAttract.h>
 #include <rva.h>
 
@@ -51,8 +52,96 @@ extern ShowCursorFn g_ShowCursor;
 #define s_SOUNDZ "SOUNDZ"
 #define s_ATTRACT "ATTRACT"
 #define s_UNDERSCORE "_"
+#define s_SCREENZ_PCT_S "\\SCREENZ\\%s"
 
 extern "C" i32 sprintf(char* buf, const char* fmt, ...);
+
+// FadeInTitle's resolved-state object (m_2c re-typed): its ResolveScreen
+// (FUN_00520120) maps the "\SCREENZ\%s" path + a screen-type tag to a fade page.
+class CAttractScreenObj {
+public:
+    void* ResolveScreen(char* path, void* tag); // 0x120120
+};
+
+// The screen-type tag (DAT_00504358) ResolveScreen keys off.
+DATA(0x00104358)
+extern i32 g_screenTag;
+
+// The menu page worker (m_c->m_04 re-typed): its fader (0x158b40, ret 8) runs the
+// title fade, returning non-zero when the fade is still in progress. Named to retail
+// (?Method_158b40@CDDrawWorkerMgr) so the call pairs exactly.
+class CDDrawWorkerMgr {
+public:
+    i32 Method_158b40(i32 page, i32 mode); // 0x158b40
+};
+
+// ---------------------------------------------------------------------------
+// FramePoll (0x143e0) sub-object models.
+// ---------------------------------------------------------------------------
+
+// The render-busy object hung off the flip surface (m_04->m_10->m_2c + 0x8). It
+// is reached through a C-style function-pointer table (vtbl in ecx, self pushed,
+// callee-cleaned) so slot +0x60 reports whether the page is still busy.
+struct AttractBusyVtbl {
+    char m_pad00[0x60];
+    i32(__stdcall* Poll)(void* self); // +0x60
+};
+struct AttractBusyObj {
+    AttractBusyVtbl* m_vtbl; // +0x00
+};
+// A TU-local view onto the flip surface that exposes its +0x8 busy object without
+// perturbing the shared CDDSurface type (which only models Flip).
+struct AttractSurfaceExt {
+    char m_pad00[0x8];
+    AttractBusyObj* m_8; // +0x08
+};
+
+// The per-frame actor list (global pointer DAT_00645574): m_count at +0x4 and an
+// inline array of actor pointers at +0x8. Each actor's slot-4 (+0x10) virtual is
+// the per-frame Update; its +0x2ac flags word raises 0x100 to request the exit.
+class AttractActor {
+public:
+    virtual void Vslot00();
+    virtual void Vslot01();
+    virtual void Vslot02();
+    virtual void Vslot03();
+    virtual void Update(); // slot 4 (+0x10)
+    char m_pad04[0x2ac - 0x4];
+    i32 m_2ac; // +0x2ac flags
+};
+struct AttractActorList {
+    char m_pad00[0x4];
+    i32 m_count;            // +0x04
+    AttractActor* m_data[1]; // +0x08  inline pointer array
+};
+DATA(0x00245574)
+extern AttractActorList* g_actorList;
+
+// The per-frame time delta (countdown source for m_1b4). C linkage so the symbol
+// pairs with the target's _g_645584 (the convention across the gamemode units).
+extern "C" {
+DATA(0x00245584)
+extern u32 g_645584;
+}
+
+// The owner back-ptr (CState::m_4) viewed as the game manager: ReportError fires a
+// WM_COMMAND on idle (0x8006/0x3e8) and m_4->m_4 chains to the top-level HWND.
+struct AttractWndHolder {
+    char m_pad00[0x4];
+    void* m_4; // +0x04  top-level HWND
+};
+class CAttractOwner {
+public:
+    void ReportError(u32 cmd, i32 id); // 0x346d
+
+    char m_pad00[0x4];
+    AttractWndHolder* m_4; // +0x04
+};
+
+// PostMessageA reached through the IAT slot (matches the engine's ff15 indirect).
+typedef i32(__stdcall* PostMessageFn)(void* hwnd, u32 msg, u32 wparam, i32 lparam);
+DATA(0x002c44c8)
+extern PostMessageFn g_pPostMessageA;
 
 // ===========================================================================
 // Virtual-slot overrides.
@@ -100,6 +189,91 @@ i32 CAttract::FrameSlot28(i32 arg) {
         }
     } while (m_1b8->m_10->IsPlaying());
     return 1;
+}
+
+// CAttract::FramePoll (0x143e0): the attract-mode per-frame poll. If the page's
+// render-busy object reports idle AND the InputVirtual slot reports idle, report
+// the exit error (0x8006/0x3e8) and bail. Otherwise stop the registrar's pooled
+// resource, tick the m_1b4 timeout down by the frame delta, run every actor's
+// Update(), and if any actor raised its 0x100 flag post the exit WM_COMMAND.
+// Code byte-identical to retail (~97% fuzzy = reloc-masked plateau): the residual
+// is purely cross-unit/IAT symbol-naming on three reloc operands - ReportError (a
+// bare delinker label), 0x136e20 (already owned by DirectSoundMgr::winapi_136e20_
+// timeGetTime; the sibling FrameSlot28 names it CAttractPooledRes::Stop too), and
+// the PostMessageA IAT call (target bakes a bare absolute 0x6c44c8, no symbol).
+// Not source-steerable; topic:scoring-artifact (docs/matching-patterns.md).
+RVA(0x000143e0, 0xfb)
+i32 CAttract::FramePoll() {
+    AttractBusyObj* busy = ((AttractSurfaceExt*)((CMenuRoot*)m_c)->m_04->m_10->m_2c)->m_8;
+    if (busy == 0 || busy->m_vtbl->Poll(busy) != 0) {
+        if (InputVirtual() == 0) {
+            ((CAttractOwner*)m_4)->ReportError(0x8006, 0x3e8);
+            return 0;
+        }
+    }
+
+    CAttractPooledRes* res = ((CMenuRoot*)m_c)->m_28->m_2c;
+    if (res) {
+        res->Stop(-1);
+    }
+
+    if (g_645584 < m_1b4) {
+        m_1b4 -= g_645584;
+    } else {
+        m_1b4 = 0;
+    }
+
+    AttractActorList* list = g_actorList;
+    i32 i;
+    for (i = 0; i < list->m_count; i++) {
+        list->m_data[i]->Update();
+    }
+
+    i32 n = g_actorList->m_count;
+    for (i = 0; i < n; i++) {
+        if (g_actorList->m_data[i]->m_2ac & 0x100) {
+            g_pPostMessageA(((CAttractOwner*)m_4)->m_4->m_4, 0x111, 0x8023, 0);
+            return 1;
+        }
+    }
+    return 1;
+}
+
+// CAttract::RollTitleByPage (0x14520): gate on the menu page's IsLoaded; if loaded,
+// hide the cursor, pick a random TITLE%d index off the game-reg attract counter, and
+// run that title sequence. The CString format local forces the /GX EH frame.
+RVA(0x00014520, 0xc3)
+i32 CAttract::RollTitleByPage() {
+    if (((CMenuRoot*)m_c)->m_04->IsLoaded() == 0) {
+        return 0;
+    }
+    ShowCursorFn showCursor = g_ShowCursor;
+    if (showCursor(0) >= 0) {
+        do {
+        } while (showCursor(0) >= 0);
+    }
+    i32 idx = *(i32*)((char*)g_gameReg + 0x80) % g_attractStateCount + 1;
+    CString s;
+    s.Format(s_TITLE_d, idx);
+    return RunTitleSeq((char*)(const char*)s, 0, 0, 1, 0);
+}
+
+// CAttract::RollTitleByV3 (0x14630): identical to RollTitleByPage but gated on the
+// slot-3 virtual (Vfunc3) instead of the page IsLoaded.
+RVA(0x00014630, 0xbd)
+i32 CAttract::RollTitleByV3() {
+    if (Vfunc3() == 0) {
+        return 0;
+    }
+    ShowCursorFn showCursor = g_ShowCursor;
+    if (showCursor(0) >= 0) {
+        do {
+        } while (showCursor(0) >= 0);
+    }
+    i32 idx = *(i32*)((char*)g_gameReg + 0x80) % g_attractStateCount + 1;
+    CString s;
+    s.Format(s_TITLE_d, idx);
+    return RunTitleSeq((char*)(const char*)s, 0, 0, 1, 0);
 }
 
 // CAttract::Vslot07() (slot 7 / +0x1c, 0x0147b0): the host/paint poll. Gate on the
@@ -161,6 +335,69 @@ i32 CAttract::RunTitle(i32 a, i32 b, i32 c, i32 d, i32 e) {
     }
     ((CMenuRoot*)m_c)->m_04->m_10->m_2c->Flip(0);
     return 1;
+}
+
+// CAttract::FadeInTitle(name, a, b, c, d, e) (0x0fa1f0, 6 args, ret 0x18): resolve the
+// "\SCREENZ\<name>" fade page off m_2c (with the screen-type tag), then run the page
+// worker's fade (mode 2 when `e`, else 1); on `e` retry once with mode 1. ret 1 on a
+// started fade, else 0.
+// @early-stop
+// frame-reservation + reloc wall (~74%): logic + offsets byte-exact; retail reserves an
+// 0x40 frame (0xc outgoing-arg scratch below the 0x34 buf) where our cl reserves only the
+// 0x34 buf, and the ResolveScreen callee (FUN_00520120) is an unnamed body that can't pair
+// (reloc-masked DIR32). Not source-steerable. topic:wall.
+RVA(0x000fa1f0, 0xc6)
+i32 CAttract::FadeInTitle(char* name, i32 a, i32 b, i32 c, i32 d, i32 e) {
+    (void)a;
+    (void)b;
+    (void)c;
+    (void)d;
+    if (!m_c) {
+        return 0;
+    }
+    if (!m_8) {
+        return 0;
+    }
+    if (!m_2c) {
+        return 0;
+    }
+    char buf[0x34];
+    sprintf(buf, s_SCREENZ_PCT_S, name);
+    void* page = ((CAttractScreenObj*)m_2c)->ResolveScreen(buf, &g_screenTag);
+    if (page == 0) {
+        return 0;
+    }
+    CDDrawWorkerMgr* w = (CDDrawWorkerMgr*)((CMenuRoot*)m_c)->m_04;
+    if (w->Method_158b40((i32)page, e != 0 ? 2 : 1) != 0) {
+        return 1;
+    }
+    if (e == 0) {
+        return 1;
+    }
+    if (w->Method_158b40((i32)page, 1) != 0) {
+        return 1;
+    }
+    return 0;
+}
+
+// CAttract::RunTitleSeq(name, a, b, c, d) (0x0fa350, 5 args, ret 0x14): the title-roll
+// entry. Bail (0) if the menu root/state-machine/active-state is null; FadeInTitle the
+// screen (mode 0); on success return RunTitle() != 0.
+RVA(0x000fa350, 0x84)
+i32 CAttract::RunTitleSeq(char* name, i32 a, i32 b, i32 c, i32 d) {
+    if (!m_c) {
+        return 0;
+    }
+    if (!m_8) {
+        return 0;
+    }
+    if (!m_2c) {
+        return 0;
+    }
+    if (FadeInTitle(name, a, b, c, d, 0) == 0) {
+        return 0;
+    }
+    return RunTitle((i32)name, a, b, c, d) != 0;
 }
 
 // CAttract::EnterAttractMode - enter (or re-enter) the attract scene.

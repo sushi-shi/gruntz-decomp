@@ -158,6 +158,8 @@ public:
     i32 m_pHarryPotter;        // +0x0c  (CDDrawSubMgr+0xc)
     CObList m_10;              // +0x10  worker list (CObList)
 
+    ~CDDrawWorkerList(); // 0x163bc0 (walk+destroy children, then ~CObList(m_10))
+
     // Engine-label backlog stubs.
     void Stub_156f50();
     void Stub_156fc0();
@@ -344,6 +346,27 @@ void CDDrawWorkerList::VirtualMethodUnknown1C() {
 RVA(0x00156f20, 0x6)
 i32 CDDrawWorkerList::VirtualMethodUnknown20() {
     return 0x11;
+}
+
+// ---------------------------------------------------------------------------
+// ~CDDrawWorkerList: walk the work-node list (head @ this+0x14), destroy every
+// node's child via its scalar-deleting destructor, then the embedded CObList
+// member (m_10) auto-destructs (the trailing `lea ecx,[this+0x10]; call ~CObList`).
+// Built /MT (base, no /GX) so the member teardown carries no EH frame.
+RVA(0x00163bc0, 0x2c)
+CDDrawWorkerList::~CDDrawWorkerList() {
+    struct HLayout {
+        char _pad[0x14];
+        WorkNode* m_head;
+    };
+    WorkNode* pNode = ((HLayout*)this)->m_head;
+    while (pNode) {
+        WorkNode* pCurrent = pNode;
+        pNode = pNode->m_next;
+        if (pCurrent->m_child) {
+            pCurrent->m_child->ScalarDtor(1);
+        }
+    }
 }
 
 // ---------------------------------------------------------------------------

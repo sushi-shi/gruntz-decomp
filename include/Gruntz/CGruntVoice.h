@@ -59,7 +59,8 @@ struct CVoiceSample {
 // unnamed BSS (DATA-pinned so the loads reloc-mask).
 // ---------------------------------------------------------------------------
 struct CVActColl {
-    i32 Find(i32 coord, i32 z); // 0x16da80 (__thiscall ret 8)
+    void Construct(i32 lo, i32 hi); // 0x408710 (__thiscall ret 8: build the registry)
+    i32 Find(i32 coord, i32 z);     // 0x16da80 (__thiscall ret 8)
 };
 struct CVActColl2 {
     void Insert(void* coll, void* item, i32 n); // 0x16d850 (__thiscall ret 0xc)
@@ -104,6 +105,7 @@ class CGruntVoice : public CUserLogic {
 public:
     virtual ~CGruntVoice() OVERRIDE; // 0x119ae0
 
+    static void InitActReg();                        // 0x119dc0 (construct g_vactColl over [2000,2010])
     void Dispatch(i32 coord);                        // 0x119e40
     i32 Setup(i32 a0, void* sample, i32 a2, i32 a3); // 0x11a7e0
     void Reset();                                    // 0x11a870

@@ -32,13 +32,22 @@
 
 // The map value: only the scalar-deleting destructor slot (+0x04) is load-
 // bearing for the RemoveKeysEqual/FindKey teardown dispatch. Declared only -
-// never defined, so no ??_7 emitted here.
+// never defined, so no ??_7 emitted here. m_10 is the held sound-arg the probe
+// helpers forward to MatchSub; FindKeyOfValue compares the value pointer itself.
 class LeafScanValue {
 public:
-    virtual void Slot00();            // +0x00
+    virtual void Slot00();            // +0x00 (vptr)
     virtual i32 ScalarDtor(i32 flag); // +0x04 scalar-deleting destructor
-    char m_pad08[0x10 - 0x08];        // +0x08..0x0f
-    i32 m_10field;                    // +0x10  compared in FindKeyOfValue
+    char m_pad04[0x10 - 0x04];        // +0x04..0x0f (after the vptr)
+    void* m_10;                       // +0x10  held sound-arg (LeafScanSoundArg*)
+};
+
+// The SumField source: the value's m_10 points at a record whose +0x2c word is
+// the per-entry count the prefix scan accumulates. A layout-compatible view so
+// the read lowers to `mov eax,[val+0x10]; add ebp,[eax+0x2c]` (offsets load-bearing).
+struct LeafSumSource {
+    char m_pad00[0x2c];
+    i32 m_2c; // +0x2c  the accumulated count
 };
 
 // ----- DSNDMGR sub-objects used by MatchSub_1584f0 -----
@@ -79,6 +88,11 @@ public:
 // ConfigureItem (0x1360d0); +0x14 is the last draw-clock, +0x18 the throttle
 // interval. Same shape as the CSBI_MenuItem cue path. Externals are reloc-masked.
 struct LeafCue {
+    // 0x1f940: gated forward to the player's ConfigureItem when the throttle
+    // interval has elapsed (the cue's own play entry; the same throttle the
+    // manager's RefreshAsset_114120 inlines, but driven by 4 caller-supplied args).
+    i32 PlayIfElapsed_01f940(i32 a0, i32 a1, i32 a2, i32 a3); // 0x1f940 (ret 0x10)
+
     char m_pad0[0x10];
     void* m_10; // +0x10  player (ConfigureItem this)
     i32 m_14;   // +0x14  last draw-clock
@@ -104,6 +118,25 @@ extern "C" u32 g_6bf3c0; // draw-clock mirror
 // here, so the manual stamp is the transitional workaround.
 DATA(0x005eff08)
 extern void* g_leafElemVtbl; // 0x5eff08 - the 0x1c-byte element vftable
+// The element's draw-source the factory passes to Configure: a polymorphic
+// reader whose two virtuals are BeginParse (0x139960 -> the parsed RIFF/WAVE blob,
+// or 0) and EndParse (0x1399d0). Modeled as a layout-compatible view (the
+// `mov ecx,src; call <thunk>` reloc-masks); the trace tagged the same reader
+// RemusParseSource (the symtab/parse-stream node).
+class RemusParseSource {
+public:
+    i32 BeginParse(); // 0x139960  parse + return the RIFF/WAVE blob (or 0)
+    void EndParse();  // 0x1399d0  release the parse cursor
+};
+// The parent root handle the base stores at +0x0c (a raw word in the LeafScanBase
+// shape): its +0x20 word is the SoundDevice the element acquires/releases its
+// buffer through. The handle is a raw word in the base, so reaching the device is
+// an authentic int->object reinterpret (`mov eax,[this+0xc]; mov ecx,[eax+0x20]`).
+struct LeafRootHandle {
+    char m_pad0[0x20];
+    SoundDevice* m_20; // +0x20  the owning DSound device
+};
+
 // The 0x1c-byte cache element's virtual interface: slot+4 is the scalar-deleting
 // dtor the factory's failure path dispatches through (`mov edx,[e]; push 1;
 // call [edx+4]`). Declared-only (never defined), so no ??_7 is emitted; the
@@ -112,14 +145,38 @@ class LeafElement {
 public:
     virtual void Slot00();            // +0x00
     virtual i32 ScalarDtor(i32 flag); // +0x04 scalar-deleting destructor
-    i32 Configure_158760(void* arg2); // 0x158760 __thiscall element configure
 };
-// The 0x1c-byte element layout. Only the seeded offsets are load-bearing.
-struct LeafElementObj : public LeafElement {
-    i32 m_04; // +0x04 = parent map count
+// The element's CObject-like base subobject (vptr + status word at +0x04 + root
+// handle at +0x0c). Its (inlined) destructor resets those fields and restamps the
+// grand-base dtor vtable -- the tail the element dtor chains into AFTER Release.
+// Because this base carries a NON-TRIVIAL dtor, the derived ~LeafElementObj gets a
+// /GX EH frame protecting the base teardown across the Release() call (the
+// half-destructed-element cleanup edge). Same shape as the LeafScanBase / CRemusNode
+// family.
+struct LeafElementBase : public LeafElement {
+    ~LeafElementBase() {
+        m_04 = -1;
+        m_08 = 0;
+        m_0c = 0;
+        *(void**)this = &g_remusBaseDtorVtbl;
+    }
+
+    i32 m_04; // +0x04 = parent map count (-1 when dead)
     i32 m_08; // +0x08 = 0
-    i32 m_0c; // +0x0c = parent handle
-    i32 m_10; // +0x10 = 0
+    i32 m_0c; // +0x0c = parent root handle (LeafRootHandle*)
+};
+// The 0x1c-byte element layout. Only the seeded offsets are load-bearing. Its
+// ~dtor (0x158680) stamps the element vtable, runs Release, then the base
+// subobject dtor auto-fires (reset +0x04/+0x08/+0x0c + restamp grand-base vtbl).
+// Configure (0x158760) loads + acquires the element's buffer; Release (0x1587c0)
+// frees it (both non-virtual __thiscall members reached only from the element).
+struct LeafElementObj : public LeafElementBase {
+    ~LeafElementObj();
+    i32 Configure_158760(RemusParseSource* src); // 0x158760 __thiscall element configure
+    i32 Configure2_158720(void* riff);           // 0x158720 raw-RIFF configure variant
+    void Release_1587c0();                        // 0x1587c0 release the acquired buffer
+
+    i32 m_10; // +0x10 = 0  the acquired DirectSound buffer
     i32 m_14; // +0x14 = 0
     i32 m_18; // +0x18 = 0 (-> parent->m_34 on success)
 }; // size = 0x1c
@@ -181,10 +238,14 @@ class CDDrawSubMgrLeafScan : public LeafScanBase {
 public:
     i32 RefreshAsset_114120(const char* key);
     LeafElementObj* CreateEntry_157d70(const char* key, void* arg2);
+    LeafElementObj* CreateEntry2_157e00(const char* key, void* arg2);
     i32 ScanTree_157ee0(DirNode* tree, const char* prefix, const char* suffix);
 
     CObject* Lookup_05b7e0(const char* key);
     i32 RemoveKeysEqual_157c70(const char* base, const char* str);
+    i32 SumField_1580b0(const char* str);
+    LeafScanValue* GetFirstValue_158210();
+    i32 ProbeFirst_1584a0(i32 arg);
     i32 HasKeyEqual_1583c0(const char* str);
     CString FindKeyOfValue_158570(LeafScanValue* target);
     i32 MatchSub_1584f0(LeafScanSoundArg* arg1, i32 arg2);
@@ -227,6 +288,32 @@ static inline LeafElementObj* MakeLeafElement(const CDDrawSubMgrLeafScan* parent
         e = 0;
     }
     return e;
+}
+
+// ---------------------------------------------------------------------------
+// 0x1f940: LeafCue::PlayIfElapsed -- the cue's own gated play entry. When the
+// reentrancy gate is open AND the throttle interval has elapsed since the last
+// draw-clock, restamp the clock and tail-forward the 4 caller args to the player's
+// ConfigureItem (returning its result); otherwise return 0. 4 stack args (ret 0x10).
+// @early-stop
+// 66% -- split-epilogue wall (twin of RefreshAsset_114120's 100% idiom, but 4-arg):
+// the gate/interval guards, the wrap-safe clock compare, the clock restamp, and the
+// identical 4-arg push sequence into ConfigureItem all match. MSVC5 here MERGES the
+// two guard-failure `return 0` exits into one shared `pop esi; ret 0x10` tail
+// (je/jb to a shared epilogue) where retail emits each failure as its own inline
+// `xor eax; pop esi; ret 0x10` (jne/jae split). The ConfigureItem callee is
+// reloc-masked (CStatusBarMgr vs LeafCuePlayer at the same 0x1360d0). Not source-
+// steerable (tried flat + nested guard forms). Logic complete.
+RVA(0x0001f940, 0x4c)
+i32 LeafCue::PlayIfElapsed_01f940(i32 a0, i32 a1, i32 a2, i32 a3) {
+    if (g_61ab20 == 0) {
+        return 0;
+    }
+    if (g_6bf3c0 - (u32)m_14 >= (u32)m_18) {
+        m_14 = g_6bf3c0;
+        return ((LeafCuePlayer*)m_10)->ConfigureItem(a0, a1, a2, a3);
+    }
+    return 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -345,13 +432,108 @@ LeafElementObj* CDDrawSubMgrLeafScan::CreateEntry_157d70(const char* key, void* 
     if (e == 0) {
         return 0;
     }
-    if (e->Configure_158760(arg2) == 0) {
+    if (e->Configure_158760((RemusParseSource*)arg2) == 0) {
         e->ScalarDtor(1);
         return 0;
     }
     m_10[key] = (CObject*)e;
     e->m_18 = m_34; // +0x18 = redraw arg
     return e;
+}
+
+// ---------------------------------------------------------------------------
+// 0x157e00: the second cache-element factory. Byte-for-byte twin of
+// CreateEntry_157d70 except the element configure goes through the raw-RIFF
+// Configure2 (0x158720) instead of the parsed Configure (0x158760): allocate +
+// seed the element from the map count (this+0x1c) and handle (this+0x0c), run
+// Configure2 keyed by `arg2`; on failure scalar-delete + return 0, on success
+// link into the map under `key` + stamp the redraw arg (this+0x34). 2 args (ret 8).
+// @early-stop
+// register-naming coin-flip (twin of CreateEntry_157d70's 99.81%): every code byte
+// matches retail EXCEPT the ecx<->edx assignment for the two seed reads. Same
+// values/stores/order; not source-steerable. docs/patterns/zero-register-pinning.md.
+RVA(0x00157e00, 0x90)
+LeafElementObj* CDDrawSubMgrLeafScan::CreateEntry2_157e00(const char* key, void* arg2) {
+    if (m_30 != 0) {
+        return 0;
+    }
+    LeafElementObj* e = MakeLeafElement(this);
+    if (e == 0) {
+        return 0;
+    }
+    if (e->Configure2_158720(arg2) == 0) {
+        e->ScalarDtor(1);
+        return 0;
+    }
+    m_10[key] = (CObject*)e;
+    e->m_18 = m_34; // +0x18 = redraw arg
+    return e;
+}
+
+// ---------------------------------------------------------------------------
+// 0x158680: ~LeafElementObj (the non-deleting destructor). Stamps the element's
+// own vtable, runs Release (frees the acquired buffer), then chains the inlined
+// base teardown: reset +0x04/+0x08/+0x0c and restamp the grand-base dtor vtable.
+// /GX EH frame -- Release runs while the base subobject is still live, so its
+// teardown is unwind-protected (the half-destructed-element cleanup edge).
+// @early-stop
+// 94% -- EH-state/funclet plateau (docs/seh-eh.md): every instruction matches; the
+// residual rows are the EH unwind-map index (`push $0` vs retail's `push $8`) + the
+// one-position schedule of the `mov [esp+0x10],0` EH-state store + the reloc-masked
+// vtable/handler symbol names (g_leafElemVtbl/g_remusBaseDtorVtbl/__except_list all
+// pair against differently-named retail symbols at the SAME addresses). Logic complete.
+RVA(0x00158680, 0x5b)
+LeafElementObj::~LeafElementObj() {
+    StampLeafElemVtbl(this);
+    Release_1587c0();
+    // ~LeafElementBase auto-fires here: reset +0x04/+0x08/+0x0c, restamp grand-base vtbl.
+}
+
+// ---------------------------------------------------------------------------
+// 0x158760: LeafElementObj::Configure. Parse the draw-source for its RIFF/WAVE
+// blob; if the parse failed, fail. Otherwise, when the parent root handle's
+// SoundDevice is up, acquire a buffer for the blob into m_10. EndParse always
+// runs; returns whether a buffer was acquired (0 when the device is down).
+// 1 stack arg (ret 4).
+// @early-stop
+// 41% -- regalloc-pinning wall (docs/patterns/zero-register-pinning.md): the CFG,
+// all three calls (BeginParse/Acquire/EndParse), all field stores, and the result
+// merge are reproduced. MSVC5 homes the `src` param into a 3rd callee-saved register
+// (ebx) and carries the return value differently than retail (which pins this->esi,
+// src->edi and reuses esi as the return carrier, computing ok eagerly before
+// EndParse). Tried 3 result/store spellings; no source lever flips the homing. Logic complete.
+RVA(0x00158760, 0x59)
+i32 LeafElementObj::Configure_158760(RemusParseSource* src) {
+    i32 blob = src->BeginParse();
+    if (blob == 0) {
+        return 0;
+    }
+    SoundDevice* dev = ((LeafRootHandle*)m_0c)->m_20;
+    if (dev == 0) {
+        src->EndParse();
+        return 0;
+    }
+    DirectSoundMgr* buf = dev->Acquire((void*)blob, 0x100ea, 0);
+    m_10 = (i32)buf;
+    i32 ok = buf != 0;
+    src->EndParse();
+    return ok;
+}
+
+// ---------------------------------------------------------------------------
+// 0x1587c0: LeafElementObj::Release. When a buffer is held and the root handle's
+// SoundDevice is still up, remove the buffer through the device (reaps voices +
+// releases + unlinks + scalar-deletes), then clear the held pointer. __thiscall,
+// no args.
+RVA(0x001587c0, 0x23)
+void LeafElementObj::Release_1587c0() {
+    if (m_10 != 0) {
+        SoundDevice* dev = ((LeafRootHandle*)m_0c)->m_20;
+        if (dev != 0) {
+            dev->RemoveBuffer((SoundBuf*)m_10);
+            m_10 = 0;
+        }
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -412,6 +594,61 @@ i32 CDDrawSubMgrLeafScan::ScanTree_157ee0(DirNode* tree, const char* prefix, con
 }
 
 // ---------------------------------------------------------------------------
+// 0x1580b0: sum each matching entry's count. While not loading (m_30==0), walk
+// the map via GetNextAssoc; for each present value, when `str` is null/empty add
+// its count unconditionally, else add it only when the key strncmp-matches `str`
+// over strlen(str). Returns the accumulated count. /GX EH frame for the local key.
+// @early-stop
+// optimizer loop-peel wall (twin of HasKeyEqual_1583c0's 61% wall): MSVC5 peels
+// the first iteration of the do/while; body/calls/args/offsets reproduced. Not
+// source-steerable. docs/patterns/zero-register-pinning.md.
+RVA(0x001580b0, 0xf6)
+i32 CDDrawSubMgrLeafScan::SumField_1580b0(const char* str) {
+    if (m_30 != 0) {
+        return 0;
+    }
+    i32 sum = 0;
+    CObject* val = 0;
+    CString key;
+    POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
+    if (*(volatile i32*)&pos != 0) {
+        do {
+            m_10.GetNextAssoc(pos, key, val);
+            if (val != 0) {
+                if (str == 0 || *str == 0) {
+                    sum += ((LeafSumSource*)((LeafScanValue*)val)->m_10)->m_2c;
+                } else if (strncmp(key, str, strlen(str)) == 0) {
+                    sum += ((LeafSumSource*)((LeafScanValue*)val)->m_10)->m_2c;
+                }
+            }
+        } while (pos != 0);
+    }
+    return sum;
+}
+
+// ---------------------------------------------------------------------------
+// 0x158210: return the first map value (or 0). While not loading (m_30==0) and
+// the map is non-empty, a single GetNextAssoc reads the head entry's value.
+// /GX EH frame for the local CString key. NB: the single-pass pos test must NOT
+// be `volatile` (that forces a redundant reload retail omits): a plain `pos == 0`
+// matches byte-for-byte. (The looping siblings DO need the volatile to keep the
+// loop-carried pos in a slot.)
+RVA(0x00158210, 0xaa)
+LeafScanValue* CDDrawSubMgrLeafScan::GetFirstValue_158210() {
+    if (m_30 != 0) {
+        return 0;
+    }
+    POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
+    if (pos == 0) {
+        return 0;
+    }
+    CObject* val = 0;
+    CString key;
+    m_10.GetNextAssoc(pos, key, val);
+    return (LeafScanValue*)val;
+}
+
+// ---------------------------------------------------------------------------
 // 0x1583c0: return 1 if any map key strncmp-equals `str` over strlen(str), else
 // 0. Twin of CDDrawWorkerRegistry::HasKeyEqual_155550. /GX EH frame for the local
 // CString key.
@@ -434,6 +671,28 @@ i32 CDDrawSubMgrLeafScan::HasKeyEqual_1583c0(const char* str) {
         } while (pos != 0);
     }
     return 0;
+}
+
+// ---------------------------------------------------------------------------
+// 0x1584a0: probe the first cached value against the held DSound device. When a
+// device is held (m_2c) and the first map value (GetFirstValue) carries a held
+// sound-arg (its m_10), forward it through MatchSub with `arg`; return whether
+// MatchSub succeeded (the !=0 normalized to 1). 1 stack arg (ret 4).
+RVA(0x001584a0, 0x43)
+i32 CDDrawSubMgrLeafScan::ProbeFirst_1584a0(i32 arg) {
+    if (m_2c == 0) {
+        return 0;
+    }
+    LeafScanValue* val = GetFirstValue_158210();
+    if (val == 0) {
+        return 0;
+    }
+    // Retail reads val->m_10 only to null-check it, then passes `val` itself to
+    // MatchSub (whose arg1->m_10 reaches the same held sound-arg).
+    if (val->m_10 == 0) {
+        return 0;
+    }
+    return MatchSub_1584f0((LeafScanSoundArg*)val, arg) != 0;
 }
 
 // ---------------------------------------------------------------------------

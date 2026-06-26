@@ -7,6 +7,13 @@
 
 #include <Bute/SymTab.h>
 
+// A leaf record's parse stream: EndParse releases its inline buffer (0x1399d0,
+// CRemusReadStream); reloc-masked __thiscall, modeled with no body here.
+class CRemusReadStream {
+public:
+    i32 EndParse(); // 0x1399d0
+};
+
 // The tokenizer's "is this character part of a token" predicate, inlined at each
 // scan site. When the parser supplies a delimiter set, a token char is one NOT in
 // it (strchr == 0); otherwise the default identifier classes apply: printable
@@ -79,6 +86,50 @@ CSymTab::~CSymTab() {
     m_1c = 0;
     m_34 = 0;
     // m_symbols, m_subTabs destruct here (reverse decl order, /GX trylevels).
+}
+
+// Insert (0x13a000): the ResolveQualified tail. Look the record up for `arg` in
+// this scope's leaf table (m_symbols, +0x40); if present, walk its embedded
+// sub-table (record+0x24) for `key`, forwarding m_owner->m_68 == 0 as the flag.
+// The `m_68 == 0` is the int->bool sete. __thiscall, callee-clean of both args.
+// (Trace-discovered; was the ClassUnknown_3 stub.)
+RVA(0x0013a000, 0x37)
+i32 CSymTab::Insert(const char* key, void* arg) {
+    void* rec = m_symbols.Find((const char*)arg);
+    if (!rec) {
+        return (i32)rec;
+    }
+    return (i32)((CHashTable*)((char*)rec + 0x24))->Walk(key, m_owner->m_68 == 0);
+}
+
+// ReleaseParseBuffers (0x13a190): drop this scope's cached parse state. If the owned
+// +0x48 buffer is live, free it; otherwise walk the leaf-symbol table ending each
+// record's parse stream (EndParse over the NextSym2/NextSym3 sub-chain). When
+// `recurse` is set, descend into every child scope (m_subTabs). Returns 1.
+RVA(0x0013a190, 0x94)
+i32 CSymTab::ReleaseParseBuffers(i32 recurse) {
+    if (m_buf48 != 0) {
+        RezFree(m_buf48);
+        m_buf48 = 0;
+    } else {
+        void* rec = FirstSym();
+        while (rec) {
+            void* sub = NextSym2(rec);
+            while (sub) {
+                ((CRemusReadStream*)sub)->EndParse();
+                sub = NextSym3(sub);
+            }
+            rec = NextSym(rec);
+        }
+    }
+    if (recurse) {
+        RezNode* e = ((RezColl*)&m_subTabs)->First();
+        while (e) {
+            ((CSymTab*)e->m_14)->ReleaseParseBuffers(1);
+            e = e->Next();
+        }
+    }
+    return 1;
 }
 
 // FindSub (0x13a230): look up `name` in the child-scope table (m_subTabs, +0x38),
@@ -197,6 +248,46 @@ void* CSymTab::ResolvePath(const char* path) {
         }
     }
     return ((CSymTab*)sub)->ResolvePath(path + n);
+}
+
+// @early-stop
+// last-delimiter split + scope resolve; inlined IsTokenChar (2x) + the rep-movs token
+// copy + the Find tail. The read counterpart of ResolveQualified (below) -- same
+// regalloc/scheduling wall (inlined tokenizer + working-pointer reuse). Logic complete.
+RVA(0x0013bca0, 0x19c)
+void* CSymTab::FindQualified(const char* name) {
+    char qual[0x100];
+    char key[0x24];
+    const char* p = name;
+    i32 len = (i32)strlen(name);
+    if (len > 1) {
+        if (!IsTokenChar(m_owner->m_delims, *p)) {
+            ++p;
+            --len;
+        }
+    }
+    i32 i = len - 1;
+    while (!IsTokenChar(m_owner->m_delims, p[i])) {
+        --i;
+        if (i < 0) {
+            break;
+        }
+    }
+    if (i == len) {
+        return 0;
+    }
+    const char* tail = p + i + 1;
+    strncpy(qual, tail, strlen(tail) + 1);
+    if (i <= 1) {
+        return Find(qual);
+    }
+    strncpy(key, p, (u32)i);
+    key[i] = 0;
+    CSymTab* scope = (CSymTab*)ResolvePath(key);
+    if (!scope) {
+        return 0;
+    }
+    return scope->Find(qual);
 }
 
 // @early-stop

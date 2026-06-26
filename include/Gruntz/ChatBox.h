@@ -53,6 +53,22 @@ public:
     i32 HitTest0(i32 x, i32 y);                       // 0x1831a0
     i32 HitTest1();                                   // 0x183210
     i32 HitTest2();                                   // 0x183230
+    i32 HitTest3();                                   // 0x1831d0
+    i32 HitTest4();                                   // 0x1831f0
+
+    // The front-end menu drive (the menu state's m_1b4 object IS a CChatBox): each
+    // per-frame entity-flag scan fires one of these, then Step/Pre/Post run the
+    // tail. They forward to the owned menu page (m_40, a CMenuPage) navigation and
+    // the surface set hung off the owner (m_0). __thiscall.
+    i32 Step(u32 dt);       // 0x182c70  NotifyAll(page) + inner Step(i32)
+    i32 Pre();              // 0x182cb0  page Layout
+    i32 Post();             // 0x182ce0  Flip + BltFast the menu surfaces
+    i32 OnFlag40000000();   // 0x182d20  page FocusNext
+    i32 OnFlag80000000();   // 0x182d40  page FocusPrev
+    i32 OnFlag00000003();   // 0x182d60  page Activate
+    i32 OnFlag00000100();   // 0x182d80  page Switch(1)
+    i32 OnFlag10000000();   // 0x183130  page FocusBackwardN
+    i32 OnFlag20000000();   // 0x183150  page FocusForwardN
 
     void* m_0; // +0x00 parent/page back pointer
     i32 m_4;   // +0x04

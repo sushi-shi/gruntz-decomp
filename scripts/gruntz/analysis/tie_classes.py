@@ -20,7 +20,7 @@ Requires a LEAK-PATCHED trace (GRUNTZ_TRACE_PATCH=1): every shared ecx is taken 
 truth (no purity vote, unlike this_cluster), so address reuse from an unpatched run would
 mis-merge classes.
 
-Run: python -m gruntz.analysis.tie_classes [edges.csv] [--out docs/this-pointer-classes.csv]
+Run: python -m gruntz.analysis.tie_classes [edges.csv] [--out build/trace/this-pointer-classes.csv]
 """
 import argparse
 import collections
@@ -144,7 +144,7 @@ def main():
     ap.add_argument("edges", nargs="?", default=str(REPO / "build/game/retail/gruntz_edges.csv"))
     ap.add_argument("--labels", default=str(REPO / "build/trace/labels.csv"))
     ap.add_argument("--names", default=str(REPO / "build/trace/cc_all.csv"))
-    ap.add_argument("--out", default=str(REPO / "docs/this-pointer-classes.csv"))
+    ap.add_argument("--out", default=str(REPO / "build/trace/this-pointer-classes.csv"))
     args = ap.parse_args()
 
     func_objs, obj_funcs = load_edges(args.edges)

@@ -51,6 +51,8 @@ struct CRenderer {
     virtual void s0b();
     virtual void s0c();
     virtual void Present(i32 a, i32 b); // slot 13 (+0x34)
+    // Non-virtual leaf the play-exit path runs on renderer A (reloc-masked).
+    void Refresh(); // 0x159ef0 (thiscall, no arg)
 };
 
 // The draw-surface object at m_c->m_24 (the target of the thiscall PushView +
@@ -60,6 +62,7 @@ struct CDrawSurface {
     void PushView(void* view, void* renderer);
     void PreStep();
     void PostStep();
+    void SetClipRect(RECT* r); // 0x15da80 (thiscall) ClampViewport apply-tail
     char p0[0x10];
     // +0x10: the viewport rect {left,top,right,bottom}; StepScroll reads .left/.top
     // as the scroll origin, DispatchHudClick reads all four as the bounds box.
@@ -90,7 +93,10 @@ struct CView {
         }* m_10; // +0x10 -> +0x2c surface
         struct SurfaceB {
             char p0[0x2c];
-            void* m_2c;
+            struct Held {
+                void Prepare(i32 z);      // 0x13e760 (thiscall) ClampViewport apply-tail
+                void NotifyClip(RECT* r); // 0x13e7d0 (thiscall) NotifyVisibleEntities
+            }* m_2c;
         }* m_14;    // +0x14 -> +0x2c draw surface (view obj)
         void* m_18; // +0x18  the present target
     }* m_4;
@@ -111,6 +117,12 @@ struct CView {
 // The world/level draw object at m_4->m_54 (the camera blit thiscall).
 struct CWorldDraw {
     void Blit(i32 a, i32 b);
+    void Reset(); // 0x18e8 thunk (reloc-masked) ResetForMode teardown
+};
+
+// The sub-object at m_4->m_60 (a no-arg reset; ResetForMode third teardown).
+struct CWorldSub60 {
+    void Reset(); // 0x20a4 thunk (reloc-masked)
 };
 
 // The plane/render geom block reached as m_4->m_30->m_24->m_5c (ResetGoals'
@@ -129,10 +141,27 @@ struct CPlaneGeom {
 // the nine keyboard controls on it). 0x53d4e0 is a thiscall(code, flag).
 struct CInputDispatch {
     void Bind(i32 code, i32 flag); // 0x53d4e0
+    char p0[0x4];
+    // +0x4 -> a window host whose +0x4 is the top-level HWND (PostMessageA target).
+    struct WndHost {
+        char p0[0x4];
+        HWND m_4; // +0x04
+    }* m_4;       // +0x04
+};
+
+// The "2nd world layer" reached as m_4->m_5c (OnKeyCommand's overlay forwarder).
+struct CWorldLayer {
+    void Forward3508(i32 a, i32 b); // 0x521e20 (thiscall) reloc-masked
 };
 
 // m_4 (the CState owner back-ptr -> the world/level object).
 struct CWorld {
+    void ClampApply(); // 0x48f7f0 (thiscall, no arg) ClampViewport apply-tail
+    // The per-frame manager tick + the restore-display-mode helper the play
+    // draw/present sub-steps (DrawWorldPresent / PresentAndFlush) call on m_4.
+    void ManagerTick();                           // 0x48f620 (thiscall, no arg)
+    i32 RestoreVideoMode(i32 w, i32 h, i32 flag); // 0x48df00 (thiscall)
+    void ReportError(i32 code, i32 a);            // 0x40346d (thiscall) CGruntzMgr::ReportError
     char p0[0x4];
     CInputDispatch* m_4; // +0x04  the input dispatcher (RegisterInputBindings)
     char p8[0xc - 0x8];
@@ -150,8 +179,9 @@ struct CWorld {
     char p4c[0x54 - 0x4c];
     CWorldDraw* m_54; // +0x54  the world/level draw object (camera blit)
     char p58[0x5c - 0x58];
-    void* m_5c; // +0x5c  a 2nd world layer
-    char p60[0x68 - 0x60];
+    void* m_5c;        // +0x5c  a 2nd world layer
+    CWorldSub60* m_60; // +0x60  reset sub-object (ResetForMode third teardown)
+    char p64[0x68 - 0x64];
     // +0x68: the per-frame world timeline/substep object (the frame-timer step,
     // the fixed-sub-step variant, the HUD-rect post, the drag WorldPost).
     struct WorldTimeline {
@@ -163,6 +193,7 @@ struct CWorld {
         void HudRect(RECT r, i32 flag);
         // 0x478a50: a world post (thiscall(a, b)) -> HandleDragMove out-of-box drag.
         void WorldPost(i32 a, i32 b);
+        void Reset(); // 0x15c3 thunk (reloc-masked) per-frame/teardown reset
         char p0[0x230];
         i32 m_230; // +0x230  substep gate (cleared by ResetGoals)
         char p234[0x23c - 0x234];
@@ -181,9 +212,16 @@ struct CWorld {
     struct SpriteLoader {
         void* LoadSprite(void* desc, i32 flag); // 0x4e23c0 (thiscall)
     }* m_74;
+    char p78[0x8c - 0x78];
+    i32 m_8c; // +0x8c  viewport-clamp horizontal limit (ClampViewport2) / live mode W
+    i32 m_90; // +0x90  viewport-clamp vertical limit (ClampViewport2) / live mode H
+    i32 m_94; // +0x94  saved/last-good mode W (PresentAndFlush restore test)
+    i32 m_98; // +0x98  saved/last-good mode H
+    char p9c[0x134 - 0x9c];
+    i32 m_134; // +0x134  mode/clear word (ResetForMode EnterMode gate)
+    char p138[0x158 - 0x138];
     // +0x158: a flat config-array (stride 71*8 = 0x238 bytes); entry [id].m_0 is
     // the per-grunt-type sprite descriptor BeginGridWalk feeds to LoadSprite.
-    char p78[0x158 - 0x78];
     char m_158[1]; // base of the config array (indexed by id*0x238)
 };
 
@@ -244,6 +282,17 @@ public:
     i32 OnRegion4(i32 z); // (THIS TU)
     void OnRegion5();
 
+    // The viewport-clamp sub-steps (THIS TU): shrink/clamp the active viewport then
+    // push it down the draw chain. Both share a common apply-tail.
+    i32 ClampViewport(i32 inset);   // 0x0d8dc0 (THIS TU)
+    i32 ClampViewport2(i32 stride); // 0x0d8ed0 (THIS TU)
+    i32 NotifyVisibleEntities();    // 0x0d9050 (THIS TU)
+    // ClampViewport's no-change fallback (resets the viewport then re-applies). (THIS TU)
+    i32 ResetViewport(); // 0x0d8c60 (thiscall on this)
+    // CPlay state-exit teardown (THIS TU): ready-gate, slot-21 notify, renderer
+    // refresh, then clear the registry's per-frame words + run its +0x70 teardown.
+    void OnExit(); // 0x0cb400
+
     // --- leaf sub-helpers the THIS-TU functions call (external, reloc-masked) ---
     void StepC_ModeA(i32 z); // (thiscall, 1 arg) StepC m_viewMode==1
     void StepC_ModeB(i32 z); // (thiscall, 1 arg) StepC else
@@ -268,6 +317,7 @@ public:
     void SnapWalk();
 
     // --- the trace-discovered CPlay sub-steps reconstructed in this TU ---
+    void ApplyGameOptions();                    // 0x036be0 (THIS TU)
     void DrawWorldFrame();                      // 0x0c9c20 (THIS TU)
     i32 DrawWorldFrames();                      // 0x0c9cc0 (THIS TU)
     i32 DispatchHudClick(i32, i32, i32);        // 0x0ce530 (THIS TU)
@@ -277,6 +327,26 @@ public:
     i32 ResetGoals(i32, i32);                   // 0x0d5f00 (THIS TU)
     i32 BuildHelpReveal();                      // 0x0d72c0 (THIS TU)
     i32 RegisterInputBindings();                // 0x0d9160 (THIS TU)
+    // Tiny vtable forwarder: tail-call the slot-3 ready gate (Vfunc3).
+    i32 ForwardReady(); // 0x0cee70
+    // Region pause/resume pair (vtable slots 24/25, shared by CDemo/CMulti):
+    // PauseGame saves the game clock into m_1cc + freezes the world; ResumeGame
+    // restores the clock + unpauses. Migrated from engine_boundary (CPlay).
+    i32 PauseGame();  // 0x0cee90
+    i32 ResumeGame(); // 0x0cef00
+    // ArmSnapshot (0x0d9240): latch the snapshot timer (base=clock, dur=arg2) and
+    // the active flag (arg1). CanQuickSave (0x0da3b0): all-idle predicate gating
+    // the auto/quick path. PostHudRect (0x0da440): post the HUD rect to the world
+    // timeline then clear the ready/drag-snap gates. Migrated from engine_boundary.
+    i32 ArmSnapshot(i32 active, i32 dur); // 0x0d9240
+    i32 CanQuickSave();                   // 0x0da3b0
+    i32 PostHudRect();                    // 0x0da440
+    // Two more draw/present sub-steps migrated from the engine_boundary backlog:
+    i32 DrawWorldPresent(); // 0x0cefc0 (double world-draw + present + manager tick)
+    i32 PresentAndFlush();  // 0x0cba10 (restore-mode guard + present-or-notify + flush)
+    // Overlay sub-step migrated from the engine_boundary backlog:
+    i32 EnterOverlayDrag(i32 arg); // 0x0d6440 (arm overlay-drag + guts busy words)
+    void Helper2c7f();             // 0x0d6440 prep sub-step (thiscall on this, reloc-masked)
     // leaf engine callees the above dispatch to (external, reloc-masked):
     void HudClickInRect(i32 a, i32 x, i32 y); // 0x4a9500 (thiscall on this)
     // HandleDragMove's own leaf callees (external, reloc-masked):
@@ -284,11 +354,64 @@ public:
     void DragSnapTo(i32 x, i32 y);           // 0x4fe860 (thiscall on this)
     void EndDragSel();                       // 0x4da2d0 (thiscall on this)
 
+    // ---- per-level resource loaders (trace-discovered, THIS TU) ----
+    // Each casts `this` to a typed loader view (CPlay.cpp): the +0xc resource
+    // manager (with its m_10/m_28/m_2c sub-registries) and the +0x28/+0x34 bank
+    // sources are reached through offset-specific sub-types that Render models
+    // differently, so a single struct-view cast at entry keeps Render's matched
+    // member typing untouched.
+    i32 LoadImageBanks();                       // 0x0cffe0  (the GRUNTZ/GAME bank cache)
+    i32 LoadActionTileSprites(i32 force);       // 0x0db600
+    i32 LoadLevelSounds(i32 force);             // 0x0db6c0
+    i32 LoadLevelImages(i32 force);             // 0x0db7e0
+    i32 LoadGameImages(i32 force);              // 0x0db8a0
+    i32 LoadGameSounds(i32 force);              // 0x0db930
+    i32 LoadGameAnims(i32 force);               // 0x0db9b0
+    i32 BuildMusicCategoryTable(i32);           // 0x0dba30  (the MIDIZ category installer)
+    i32 LoadGruntSoundNamespaces(void* notify); // 0x0dd830 (GRUNTZ_* sound installer)
+    i32 BuildSpriteImageKeyTable(void* notify); // 0x0dd540 (GRUNTZ_* image installer)
+    i32 BuildAnizKeyTable(void* notify);        // 0x0ddaa0 (GRUNTZ_* anim installer)
+
+    // ---- the keyboard/UI command dispatcher (THIS TU) ----
+    i32 OnKeyCommand(i32 key, i32 flag); // 0x0cbaf0
+    // Two large play-state sub-steps the dispatcher tail-calls (external/reloc-masked;
+    // deferred to the final sweep): the mode-enter gate (0x0d6fa0) and the per-frame
+    // play-state reset (0x0d60b0).
+    i32 EnterMode(i32 mode); // 0x0d6fa0
+    i32 ResetPlayState();    // 0x0d60b0
+
+    // ---- the trace-discovered CPlay __thiscall cluster (THIS TU) ----
+    // ResetForMode (0x0c8a10): capture+hide the cursor, enter a mode, then reset
+    // the per-frame drag/world-ready state and three world sub-objects.
+    i32 ResetForMode(i32 mode); // 0x0c8a10
+    // FindStartPointAt (0x0d5f90): registry-gated hit-test over this->m_374[] +-0x20
+    // marker boxes; outputs the matched marker's coords. ret 0x10 (4 args).
+    i32 FindStartPointAt(i32 x, i32 y, i32* outX, i32* outY); // 0x0d5f90
+    // FreeListTeardown (0x0cb480): release the per-level allocations back onto the
+    // global free list (m_374[]/m_3ac[]/m_48c[] arrays + the per-type config rows).
+    void FreeListTeardown(); // 0x0cb480
+    // SetEffectSpriteDurations (0x0dc060): stamp the +0x18 duration on each named
+    // effect-sound descriptor looked up in the sound registry's name map.
+    i32 SetEffectSpriteDurations(); // 0x0dc060
+    // BuildWarlordNameTable (0x0dd340): probe the 0x39/0x3a warlord ids then bind the
+    // NAPOLEAN/VIKING/PATTON CString names. CString temps force the /GX EH frame.
+    i32 BuildWarlordNameTable(i32 arg); // 0x0dd340
+    // ResetPlayState's own reloc-masked CPlay-thiscall leaves (external):
+    void ResetGoalGeom(i32 lo, i32 hi); // 0x2e28 thunk  (this, lo, hi)
+    i32 PrepareReset();                 // 0x1d75 thunk  (this) -> proceed gate
+    // FreeListTeardown's reloc-masked CPlay-thiscall leaf (external):
+    void Teardown1780(); // 0x1780 thunk  (this) early teardown step
+    // BuildWarlordNameTable's reloc-masked CPlay-thiscall leaves (external):
+    i32 ProbeWarlord(i32 id, i32 a, i32 b, i32 c);                 // 0x12da thunk  -> found
+    i32 BindWarlordName(const CString& name, i32 a, i32 b, i32 c); // 0x2bc1 thunk
+
     // ---- CPlay-specific members (offsets pinned by the Render disasm) ----
     i32 m_inputWarmup1; // +0x1a8  StepInputA first-frame one-shot latch
     i32 m_inputWarmup2; // +0x1ac  StepInputA second-frame one-shot latch
     i32 m_inputHalfSel; // +0x1b0  StepInputA mirrored-half selector (0/1)
-    char m_pad1b4[0x2dc - 0x1b4];
+    char m_pad1b4[0x1cc - 0x1b4];
+    i32 m_1cc; // +0x1cc  level start clock (republished to g_645588 on teardown)
+    char m_pad1d0[0x2dc - 0x1d0];
     // +0x2dc: the "guts"/UI subsystem the per-frame Step + the HUD/drag-select
     // dispatches run on (the click/drag/clear entry points + the busy-state words).
     struct GutsSubsystem {
@@ -300,10 +423,27 @@ public:
         void DragSelect(i32 a, i32 x, i32 y);
         // 0x501420: drag-select clear/cancel (thiscall(flag)). reloc-masked.
         void DragClear(i32 flag);
-        i32 m_state; // +0x0  subsystem state (==2 -> ready)
+        // 0x500cb0: the viewport-clamp apply (thiscall, no arg). reloc-masked.
+        void ClampApply();
+        // OnKeyCommand bracket-key guts sub-steps (reloc-masked ILT thunks):
+        void StepBracketR(); // 0x4fe520  (']')
+        void StepBracketL(); // 0x4fe460  ('[')
+        void StepMinus();    // 0x4fe600  ('-')
+        // EnterOverlayDrag (0x0d6440) guts sub-steps (reloc-masked ILT thunks):
+        void Guts123f();             // (thiscall, no arg)  m_state==2 path
+        void Guts1d61(i32 a, i32 b); // (thiscall, 2 args)  m_mode!=5 path
+        void Guts427d(i32 a, i32 b); // (thiscall, 2 args)
+        void Guts125d();             // (thiscall, no arg)
+        void Guts35b2(i32 a);        // (thiscall, 1 arg)
+        void Guts12fd(i32 a);        // (thiscall, 1 arg)
+        void Guts16ea();             // (thiscall, no arg)
+        void Guts367a();             // (thiscall, no arg)  ResumeGame
+        i32 m_state;                 // +0x0  subsystem state (==2 -> ready)
         char p4[0x10c - 0x4];
         i32 m_mode; // +0x10c  mode word (==5 -> overlay busy)
-        char p[0x550 - 0x110];
+        char p[0x548 - 0x110];
+        i32 m_548; // +0x548  overlay-drag arm latch
+        char p54c[0x550 - 0x54c];
         i32 m_busyA, m_busyB; // +0x550  win/lose-suppress busy words
         char q[0x574 - 0x558];
         i32 m_snapPostSel; // +0x574  snapshot post-message selector
@@ -311,6 +451,9 @@ public:
     // +0x2e0: a hit-test/region sink (HandleDragMove: m_hitTest->HitTest(x, y)).
     struct HitTestSink {
         i32 HitTest(i32 x, i32 y); // 0x421140 (thiscall) -> nonzero = consumed
+        void StepZoom(i32 n);      // 0x420530 (thiscall) OnKeyCommand +/- zoom step
+        char p0[0x10];
+        i32 m_10; // +0x10  active-overlay gate (OnKeyCommand forward)
     }* m_hitTest;
     void* m_beginMarker;  // +0x2e4  begin-marker sink (MarkerBegin)
     i32 m_dragSnapActive; // +0x2e8  drag-snap-active latch (HandleDragMove snap path)
@@ -391,6 +534,8 @@ public:
     i32 m_dragEndNotify; // +0x504  drag-end notify gate
     char m_pad508[0x510 - 0x508];
     i32 m_stepCountdown; // +0x510  per-frame entity-step countdown
+    char m_pad514[0x518 - 0x514];
+    void* m_518; // +0x518  saved currently-playing zoned sound (region pause/resume)
 
     // Engine-label backlog stubs.
     void Stub_08c9d0();

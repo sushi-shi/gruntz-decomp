@@ -28,14 +28,17 @@
 
 #include <Ints.h>
 
-// The per-map record the m_records array points at (0x40 bytes / record). Only
-// the two fields the cluster touches are named (the populated flag at +0x00 and
-// the win/score value at +0x28); the rest is opaque.
+// The per-map record the m_records array points at (0x40 bytes / record): 16
+// ints mirroring the owner's m_10..m_44 progress/bound band (see FillRecord's
+// rec[0..15] stores). +0x00 = populated flag; +0x28 = win/score value. The
+// proximity accessors below sum/test these per-record fields over the records
+// in the "current group of 4" (index (m_count-1)/4*4) or over all 0x20.
 struct BattlezRecord {
     i32 m_00; // populated flag (0fcad0 tests, 0fd330 sets to 1)
-    char m_pad04[0x28 - 0x04];
+    i32 m_04; // from gameReg.m_118 (0fd330)
+    i32 m_08, m_0c, m_10, m_14, m_18, m_1c, m_20, m_24;
     i32 m_28; // win/score value (0fced0 returns; 0fd330 fills)
-    char m_pad2c[0x40 - 0x2c];
+    i32 m_2c, m_30, m_34, m_38, m_3c;
 };
 
 // The serialization sink passed to Serialize: a stream/archive whose vtable
@@ -74,6 +77,22 @@ public:
     void ClearWins();                                        // 0xfcc90
     i32 SumWinRow(i32 y);                                    // 0xfccb0
     i32 InBounds(i32 unused);                                // 0xfcd70
+    i32 AllRecordsInBounds();                                // 0xfccf0
+    float GroupRatio();                                      // 0xfce00
+    i32 GroupAllScored();                                    // 0xfce80
+    i32 SumGroupField0c();                                   // 0xfcf20
+    i32 SumGroupField2c();                                   // 0xfcf70
+    i32 SumGroupField10();                                   // 0xfcfc0
+    i32 SumGroupField30();                                   // 0xfd010
+    i32 SumGroupField1c();                                   // 0xfd060
+    i32 SumGroupField34();                                   // 0xfd0b0
+    i32 SumGroupField20();                                   // 0xfd100
+    i32 SumGroupField38();                                   // 0xfd150
+    i32 SumGroupField24();                                   // 0xfd1a0
+    i32 SumGroupField3c();                                   // 0xfd1f0
+    i32 SumGroupField18();                                   // 0xfd240
+    i32 SumGroupField14();                                   // 0xfd290
+    i32 SumGroupField08();                                   // 0xfd2e0
     i32 GetRecordValue(i32 b);                               // 0xfced0
     void FillRecord(i32 index, i32 phase);                   // 0xfd330
     i32 Serialize(BattlezStream* s, i32 op, i32 a2, i32 a3); // 0xfd3f0

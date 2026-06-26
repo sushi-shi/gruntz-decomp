@@ -6,7 +6,7 @@
 //   CRezItm::CRezItm(parent)        BYTE-EXACT  - leaf ctor (new 0x24)
 //   CRezItmBase::~CRezItmBase()     BYTE-EXACT  - base dtor (vtbl restore + m_parent=0)
 //   CRezItm::~CRezItm()             BYTE-EXACT  - leaf dtor (/GX EH; Close + free buf)
-//   CRezItm::Read(off,base,n,buf)   99.3%       - buffered fseek/fread w/ owner Retry()
+//   CRezItm::Read(off,base,n,buf)   99.8%       - buffered fseek/fread w/ owner Retry()
 //   CRezItm::Close()                81% (@early-stop) - fclose/free; esi<->edi regalloc wall
 //   CRezDir::CRezDir(parent,rezmgr) PLATEAU 78% - dir  ctor (new 0x38)
 //   CRezDir::FindEntry(name)        BYTE-EXACT  - is-this-a-dir? stat
@@ -95,15 +95,17 @@ CRezItm::~CRezItm() {
 // success advances the +0x20 cursor and returns the bytes read; 0 / cursor=-1
 // on a zero count or a gate that gives up.
 //
-// 99.30% (entropy tail): EVERY instruction is opcode+ModRM-identical to the
-// disasm except the entry guard - retail emits `test edi,edi; ja` (unsigned
-// `count > 0`) where my `if(count==0)return 0` lowers to `test; jne`. The two are
-// logically identical for the u32 `count`; wrapping the body in `if(count>0)`
-// flips that one opcode but cascades the rest (99.3%->83.4%). The early-return is
-// the right form; green-enough per the doctrine (§2a).
+// 99.77% (reloc-masked plateau): EVERY code byte matches the disasm. The entry
+// guard now spells `if(count <= 0)` (unsigned `count`, so `<= 0` == `== 0`) which
+// lowers to retail's `test edi,edi; ja` - the equality `== 0` form gave `jne`, and
+// wrapping the body in `if(count>0)` cascaded (99.3%->83.4%); the `<= 0`
+// early-return flips the one opcode with no cascade (docs/patterns/
+// unsigned-zero-guard-le-not-eq.md). Only residual: the four buffered-IO calls,
+// which the delinker names bare `fseek`/`fread` (Ghidra FLIRT) vs our
+// `_RezFSeek`/`_RezFRead` - identical `call rel32`, a delinker bare-name artifact.
 RVA(0x0013c600, 0xbd)
 i32 CRezItm::Read(i32 off, i32 base, u32 count, void* buf) {
-    if (count == 0) {
+    if (count <= 0) {
         return 0;
     }
 
@@ -129,6 +131,46 @@ i32 CRezItm::Read(i32 off, i32 base, u32 count, void* buf) {
 
     m_20 = got + pos;
     return got;
+}
+
+// ---------------------------------------------------------------------------
+// CRezItm::Write(base, off, count, buf)
+// The write counterpart of Read: invalidate the cursor (m_20 = -1), seek to the
+// absolute position (base+off) recovering through the owner's Retry() gate on a
+// seek failure, then fwrite `count` bytes from buf, retrying the write through
+// the same gate on a short write. Returns 0 on a zero count or a gate that gives
+// up; the write count otherwise. Unlike Read, the cursor is left invalid.
+// ---------------------------------------------------------------------------
+// @early-stop
+// 99.69% (reloc-masked plateau) - every code byte matches retail. The count guard
+// now spells `if(count <= 0)` (unsigned), lowering to retail's `test;jbe` (the
+// `== 0` form gave `je`; see Read's note + docs/patterns/
+// unsigned-zero-guard-le-not-eq.md). Only residual: the buffered-IO calls the
+// delinker names bare `fseek`/`fread` (Ghidra FLIRT) vs our `_RezFSeek`/`_RezFWrite`
+// - identical `call rel32`, a delinker bare-name artifact (not steerable from src).
+RVA(0x0013c6c0, 0x97)
+i32 CRezItm::Write(i32 base, i32 off, u32 count, void* buf) {
+    m_20 = -1;
+    if (count <= 0) {
+        return 0;
+    }
+
+    i32 pos = off + base;
+
+    while (RezFSeek(m_10, pos, 0) != 0) {
+        if (((CRezItmOwner*)m_parent)->Retry() == 0) {
+            return 0;
+        }
+    }
+
+    u32 put = RezFWrite(buf, 1, count, m_10);
+    while (put != count) {
+        if (((CRezItmOwner*)m_parent)->Retry() == 0) {
+            return 0;
+        }
+        put = RezFWrite(buf, 1, count, m_10);
+    }
+    return put;
 }
 
 // ---------------------------------------------------------------------------

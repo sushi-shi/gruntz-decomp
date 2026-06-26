@@ -1,0 +1,165 @@
+// GruntIndicatorSprite.h - shared layout for the in-game grunt-indicator sprite
+// objects (CGruntSelectedSprite / CGruntPowerupSprite / CGruntToySprite).
+//
+// Each is a CUserLogic-derived game object (vftables 0x5e705c / 0x5e70b4, the
+// CUserLogic / CUserBase pair - proven by each class's 0x44 leaf dtor stamping
+// 0x5e705c then 0x5e70b4 and tearing down the +0x18 link via the embedded
+// ~EngStr, the SAME shape every UserLogic leaf dtor matches, e.g. ~CTimeBomb
+// @0x012a70 / ~CInGameIcon @0x011d00). So despite the trace's "CGruntSprite"
+// label, the dtor RTTI says these are plain CUserLogic leaves; the 0x44 is a
+// DESTRUCTOR (the CUserLogic-folded leaf-dtor archetype), NOT a ctor.
+//
+// The accessor/updater methods anchor at +0x54/+0x58 (a tile coord pair) and
+// poke the bound renderable (CUserLogic::m_10) + the +0x38 game object. They
+// resolve the current grunt for the (m_54,m_58) cell from the global game
+// registry's grunt table and copy that grunt's screen position into the bound
+// renderable so the indicator tracks the grunt.
+//
+// Field names are placeholders (m_<hexoffset>); only OFFSETS + code bytes are
+// load-bearing (campaign doctrine).
+#ifndef GRUNTZ_GRUNTINDICATORSPRITE_H
+#define GRUNTZ_GRUNTINDICATORSPRITE_H
+
+#include <rva.h>
+
+#include <Gruntz/UserLogic.h> // CUserLogic : CUserBase, EngStr, CGameObject
+
+// ---------------------------------------------------------------------------
+// The level layer-clamp holder reached as a grunt's m_10->m_194. The Toy
+// updater clamps the grunt's layer index into [m_64, m_68] and maps it through
+// the +0x14 layer table into m_10->m_198. Only the touched offsets modeled.
+// ---------------------------------------------------------------------------
+struct CGruntLayerHolder {
+    char m_pad00[0x14];
+    i32* m_14; // +0x14  the per-index layer table
+    char m_pad18[0x64 - 0x18];
+    i32 m_64; // +0x64  lo layer bound
+    i32 m_68; // +0x68  hi layer bound
+};
+
+// ---------------------------------------------------------------------------
+// CGruntRenderable - the visible sprite the indicator binds to (CUserLogic::m_10
+// AND each grunt entry's +0x10). The updaters read/copy its screen position
+// (+0x5c/+0x60) and, for the Toy sprite, its layer fields (+0x190/+0x194/+0x198).
+// ---------------------------------------------------------------------------
+struct CGruntRenderable {
+    char m_pad00[0x4c];
+    i32 m_4c; // +0x4c  bute-set record (powerup setter)
+    i32 m_50; // +0x50  display state (== 7)
+    char m_pad54[0x58 - 0x54];
+    i32 m_58; // +0x58  visibility flag (== 1)
+    i32 m_5c; // +0x5c  screen x
+    i32 m_60; // +0x60  screen y
+    char m_pad64[0x190 - 0x64];
+    i32 m_190;                // +0x190  resolved layer index
+    CGruntLayerHolder* m_194; // +0x194  layer-clamp holder
+    i32 m_198;                // +0x198  mapped layer value
+};
+
+// ---------------------------------------------------------------------------
+// CGruntEntry - one grunt slot in the registry's grunt table. The table base is
+// g_gameReg->m_68 + 0x1c, indexed by (m_54*15 + m_58); each slot is a dword
+// pointer to a grunt. The updaters read the grunt's renderable (+0x10), a "drawn"
+// gate (+0x1d8) and a layer index (+0x198).
+// ---------------------------------------------------------------------------
+struct CGruntEntry {
+    char m_pad00[0x10];
+    CGruntRenderable* m_10; // +0x10  the grunt's renderable
+    char m_pad14[0x198 - 0x14];
+    i32 m_198; // +0x198  the grunt's current layer index
+    char m_pad19c[0x1d8 - 0x19c];
+    i32 m_1d8; // +0x1d8  the grunt's "drawn/visible" gate
+};
+
+// ---------------------------------------------------------------------------
+// CIndicatorReg - the minimal game-registry view the indicator updaters use.
+// Same singleton as CGameReg (?g_gameReg@@3PA...@@A @ 0x64556c); modeled with
+// the grunt table at +0x68 and the bute-set table at +0x78 the powerup setter
+// reads. Declared with the registry's own type so the data ref reloc-masks.
+//   +0x68  m_68 : grunt table base (entries at +0x1c, dword stride)
+//   +0x78  m_78 : the bute lookup table the powerup setter indexes
+// ---------------------------------------------------------------------------
+struct CIndicatorReg {
+    char m_pad00[0x68];
+    char* m_68; // +0x68  grunt table base (CGruntEntry* at +0x1c[idx])
+    char m_pad6c[0x78 - 0x6c];
+    char* m_78; // +0x78  bute-set table base
+};
+
+DATA(0x0024556c)
+extern CIndicatorReg* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c
+
+// ---------------------------------------------------------------------------
+// A bound-object sub-object on the +0x38 game object: at +0x1a0 sits a helper
+// whose Sync(arg) (0x15c360, __thiscall ret 4) flushes/advances the indicator's
+// draw state. g_indicatorSync (0x6bf3bc, BSS) is the global arg it is handed.
+// Both are external/no-body so the call + the load reloc-mask.
+// ---------------------------------------------------------------------------
+struct CIndicatorSyncHelper {
+    void Sync(void* ctx); // 0x15c360 (__thiscall ret 4)
+};
+DATA(0x002bf3bc)
+extern void* g_indicatorSync; // DAT_006bf3bc
+
+// The bute store the powerup setter seeds the "A" node from (g_buteTree.Find).
+// Also the shared activation-name registry types/globals (CActColl / CActColl2 /
+// g_actCache / g_actAllocResult / ActAlloc / g_buteTree / g_nextActId / s_actKeyA)
+// the RegisterActs id->entry resolve uses.
+#include <Bute/ButeMgr.h>
+#include <Gruntz/ActNameRegistry.h>
+
+// ---------------------------------------------------------------------------
+// CIndicatorActReg - the per-class activation-coordinate registry singleton each
+// indicator sprite owns (the SAME shape as CParticlez's g_partColl @0x644870 /
+// CGruntVoice's g_vactColl @0x6514d8). Each class has a tiny free init function
+// (the trace's 0x15 method) that constructs its registry over the fixed
+// coordinate range [2000, 2010] via the shared ctor FUN_00408710 (__thiscall,
+// ret 8: stores the registry vtable 0x5e70fc and a base CDWordArray, m_1c =
+// count). The ctor is external/no-body so the call reloc-masks; modeled as a
+// Construct(lo,hi) method on the registry so `mov ecx,&g_reg; push hi; push lo;
+// call ctor` falls out byte-exact.
+//
+// The full layout (recovered from the RegisterActs id->entry resolve): the
+// fast [m_lo, m_hi] range path yields m_base + (id-m_lo)*m_stride; the slow path
+// Find (0x16da80) / ActAlloc (0x16d990) / coll2 Insert (0x16d850) yields m_cur.
+// ---------------------------------------------------------------------------
+struct CIndicatorActReg {
+    void* m_vptr;     // +0x00  registry vtable (0x5e70fc)
+    CActColl2* m_coll2; // +0x04  the coll2 ptr the slow Insert is __thiscall on
+    i32 m_lo;         // +0x08  fast-range lo
+    i32 m_hi;         // +0x0c  fast-range hi
+    char* m_base;     // +0x10  fast-range entry base
+    char* m_cur;      // +0x14  slow-path result entry
+    i32 m_stride;     // +0x18  entry stride
+    char m_pad1c[0x20 - 0x1c];
+    i32 m_scratch;    // +0x20  zeroed before the slow resolve
+
+    void Construct(i32 lo, i32 hi); // 0x408710 (__thiscall, ret 8)
+
+    // The id->entry resolve RegisterActs folds in (the VActLookup archetype). The
+    // returned slot's first dword receives the handler code address.
+    char* ResolveEntry(i32 id) {
+        m_scratch = 0;
+        if (id >= m_lo && id <= m_hi) {
+            return m_base + (id - m_lo) * m_stride;
+        }
+        if (((CActColl*)this)->Find(id, 0)) {
+            return m_base + (id - m_lo) * m_stride;
+        }
+        void* item = g_actCache;
+        g_actAllocResult = (void*)ActAlloc();
+        m_coll2->Insert(this, item, 0xc);
+        return m_cur;
+    }
+};
+
+DATA(0x00244d80)
+extern CIndicatorActReg g_healthActReg; // 0x644d80
+DATA(0x00244d30)
+extern CIndicatorActReg g_powerupActReg; // 0x644d30
+DATA(0x00244da8)
+extern CIndicatorActReg g_selectedActReg; // 0x644da8
+DATA(0x00244d58)
+extern CIndicatorActReg g_toyActReg; // 0x644d58
+
+#endif // GRUNTZ_GRUNTINDICATORSPRITE_H

@@ -6,10 +6,28 @@
 #include <rva.h>
 
 #include <Gruntz/Brickz.h>
+#include <Win32.h> // RECT + IntersectRect (AllocGrid seeds the grid bounding rect)
 
 // abs() is a /Oi intrinsic under /O2: the heuristic's |goal - cur| terms lower
 // branchlessly to `cdq; xor; sub` (matching retail), not a `jns` branch.
 extern "C" i32 __cdecl abs(i32);
+
+// memset (AllocGrid zeroes the freshly-allocated cell pool; the /Oi intrinsic
+// lowers it to the inline `shr ecx,2; rep stosd; and ecx,3; rep stosb` sequence).
+extern "C" void* __cdecl memset(void* dst, i32 val, u32 n);
+
+// The pool allocator the container new's its cell pool + column table off
+// (0x1b9b46, __cdecl). Modeled no-body so the call reloc-masks.
+extern "C" void* __cdecl BrickzGridAlloc(u32 n); // 0x1b9b46
+
+// The two intrusive node-pool sub-objects embedded at +0x30 and +0x3c: AllocGrid
+// seeds each with count*5 nodes through its __thiscall init (reloc-masked thunks).
+struct BrickzNodePoolA {
+    i32 Init(i32 count); // 0x408710 (via the 0x42d7 thunk)
+};
+struct BrickzNodePoolB {
+    i32 Init(i32 count); // via the 0x28c4 thunk
+};
 
 // A recycled result record off the shared free-list: m_0 = next-free link,
 // m_4/m_8 = the path cell (col,row) handed to the result list.
@@ -361,6 +379,68 @@ i32 CBrickz::Serialize(i32 a0, i32 a1, i32 a2, i32 a3) {
         return 0;
     }
     return ((BrickzSerObj*)a3)->Serialize(a0, a1, a2, a3) != 0;
+}
+
+// ---------------------------------------------------------------------------
+// CBrickz::AllocGrid (0x09ea60) - allocate + initialize the width x height grid:
+// new the flat cell pool (0x1c bytes/cell) + the per-row column table, zero the
+// pool, thread each row pointer, seed the two intrusive node pools (count*5
+// nodes each), record the per-step callback, and compute the grid bounding rect
+// (m_60) via the Win32 IntersectRect (of the {0,0,width,height} box with itself),
+// from which m_70/m_74 = the rect width/height. Returns 1, or 0 on any alloc fail.
+// @early-stop
+// alloc/loop spill wall: logic byte-correct (the two new's + null gates, the
+// inline memset, the row-pointer accumulate loop, the two pool inits, the
+// IntersectRect rect build + the m_70/m_74 size compute), but the count*0x1c temp
+// + the rect stack slots spill against retail's slot schedule. Parked for sweep.
+RVA(0x0009ea60, 0x168)
+i32 CBrickz::AllocGrid(i32 width, i32 height, i32 callback) {
+    i32 count = height * width;
+    m_c = width;
+    m_10 = height;
+    m_14 = count;
+    m_4 = (BrickzCell*)BrickzGridAlloc(count * 0x1c);
+    if (m_4 == 0) {
+        return 0;
+    }
+    m_8 = (BrickzCell**)BrickzGridAlloc(height * 4);
+    if (m_8 == 0) {
+        return 0;
+    }
+    memset(m_4, 0, count * 0x1c);
+    i32 stride = width * 0x1c;
+    i32 off = 0;
+    for (i32 i = 0; i < height; i++) {
+        m_8[i] = (BrickzCell*)((char*)m_4 + off);
+        off += stride;
+    }
+    if (((BrickzNodePoolA*)&m_30)->Init(count * 5) == 0) {
+        return 0;
+    }
+    if (((BrickzNodePoolB*)((char*)this + 0x3c))->Init(count * 5) == 0) {
+        return 0;
+    }
+    m_48 = (void (*)())callback;
+    // Build the grid bounding rect: intersect the {0,0,width,height} box with
+    // itself into m_60 (the {left,top,right,bottom} at +0x60); on an empty result
+    // fall back to the box. m_70/m_74 = the resulting width/height.
+    RECT a;
+    RECT b;
+    a.left = 0;
+    a.top = 0;
+    a.right = width;
+    a.bottom = height;
+    b.left = 0;
+    b.top = 0;
+    b.right = width;
+    b.bottom = height;
+    RECT* out = (RECT*)&m_60;
+    if (!IntersectRect(out, &a, &b)) {
+        *out = a;
+    }
+    m_70 = out->right - out->left;
+    m_74 = out->bottom - out->top;
+    return 1;
 }
 
 // ---------------------------------------------------------------------------

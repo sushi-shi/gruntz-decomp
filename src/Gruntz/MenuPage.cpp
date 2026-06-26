@@ -49,13 +49,17 @@ struct CMenuHost {
 };
 
 // Sibling-page helpers (other TUs), reached by name:
-extern "C" i32 MenuPage_CanWrap(CMenuPage* p);                // 0x183e30
 extern CString* MenuPage_KeyFwd(CMenuPage* p, CString* out);  // 0x184610
 extern CString* MenuPage_KeyBack(CMenuPage* p, CString* out); // 0x184630
 
-// The host (m_4) the page renders selected items through (CChatBox::Draw, __thiscall).
+// The host (m_4) the page renders selected items through and asks to switch
+// pages (CChatBox region, __thiscall). Its +0x20 byte gates focus-wrapping.
 struct CMenuRenderHost {
+    char pad0[0x20];
+    char m_20; // +0x20  wrap-enable flag (read as signed char by CanWrap)
     i32 Draw(i32 ctx, CMenuItem* item, i32 x, i32 y); // 0x182f90
+    i32 SwitchToPage(const char* key);                // 0x182dd0
+    void NotifySwitch();                              // 0x1830b0
 };
 // The sub-page's current item placer (0x153790, __thiscall on the head item).
 struct CMenuPlacer {
@@ -300,7 +304,7 @@ i32 CMenuPage::FocusNext() {
         found = 0;
     }
     if (!found) {
-        if (!MenuPage_CanWrap(this)) {
+        if (!CanWrap()) {
             return 0;
         }
         CMenuNode* p2 = (CMenuNode*)m_64->m_2c;
@@ -361,7 +365,7 @@ i32 CMenuPage::FocusPrev() {
         found = 0;
     }
     if (!found) {
-        if (!MenuPage_CanWrap(this)) {
+        if (!CanWrap()) {
             return 0;
         }
         CMenuNode* p2 = (CMenuNode*)m_64->m_2c;
@@ -449,6 +453,179 @@ i32 CMenuPage::Activate() {
     return m_64->Trigger() != 0;
 }
 
+// 0x183df0 - if the page key (m_8) is non-empty, ask the host to switch to it;
+// on success (and if refocus requested) notify the host.
+RVA(0x00183df0, 0x3d)
+i32 CMenuPage::Switch(i32 refocus) {
+    if (m_8.GetLength() == 0) {
+        return 0;
+    }
+    if (!((CMenuRenderHost*)m_4)->SwitchToPage((const char*)m_8)) {
+        return 0;
+    }
+    if (refocus) {
+        ((CMenuRenderHost*)m_4)->NotifySwitch();
+    }
+    return 1;
+}
+
+// 0x183e30 - whether focus may wrap at the page ends: never if hidden (0x2),
+// always if enabled (0x1), else defer to the host's wrap flag.
+// @early-stop
+// movb-vs-movsx peephole wall (~95%, 1 instruction): retail loads the host flag
+// with `movsx eax,byte [eax+0x20]` before `and eax,1`; MSVC5 /O2 unconditionally
+// NARROWS `signed-char & 1` to `movb al,[eax+0x20]; and eax,1` for every source
+// spelling (plain, (int) cast, int temp, inline char accessor, +0 arith - all
+// verified). The retail movsx is unreachable from a `& 1` expression in MSVC5.
+// See docs/patterns/char-and1-movb-vs-movsx.md. Logic complete; deferred.
+RVA(0x00183e30, 0x1f)
+i32 CMenuPage::CanWrap() {
+    i32 f = m_30;
+    if (f & 2) {
+        return 0;
+    }
+    if (f & 1) {
+        return 1;
+    }
+    return ((CMenuRenderHost*)m_4)->m_20 & 1;
+}
+
+// 0x183e50 - single-list grid layout: center each child in the page rect, place
+// it (vtable +0x24), render the selected one (host Draw) and advance x/y, wrapping
+// to a new column every m_50 rows.
+// @early-stop
+// scheduling tail (~99.98%, 1 B): the whole body incl. the now byte-exact `sub
+// esp,0xc` prologue matches; the residual is the same edx/edi commutative
+// operand-order pick as the sibling Layout (0x183b60) at the y-init - not source-
+// steerable (canonicalizes to the same register pick). Logic complete.
+RVA(0x00183e50, 0x11c)
+i32 CMenuPage::LayoutOne(i32 ctx) {
+    i32 x0 = *(i32*)((char*)this + 0x34);
+    i32 x1 = *(i32*)((char*)this + 0x3c);
+    i32 x = (((x1 - x0 + 1) / 2)) + m_58 + x0;
+    i32 y = m_5c + *(i32*)((char*)this + 0x38);
+    CMenuPage* sub = m_60;
+    if (sub) {
+        i32 idx = *(i32*)((char*)sub + 0x64);
+        CMenuItem** tab = *(CMenuItem***)((char*)sub + 0x14);
+        CMenuItem* head = tab[idx];
+        if (head) {
+            y += head->m_1c;
+            ((CMenuPlacer*)head)->Place(ctx, x, y, 0);
+            y += *(i32*)((char*)this + 0x44) + head->m_1c;
+        }
+    }
+    i32 col = (((*(i32*)((char*)this + 0x4c)) / 2)) + *(i32*)((char*)this + 0x34) + *(i32*)((char*)this + 0x54);
+    i32 ytop = y;
+    i32 row = 0;
+    CMenuNode* node = (CMenuNode*)m_14.GetHeadPosition();
+    while (node) {
+        CMenuNode* cur = node;
+        node = node->pNext;
+        CMenuItem* item = cur->data;
+        if (item) {
+            y += item->GetWidth() / 2;
+            item->Place((void*)ctx, col, y);
+            if (item->m_24 == 2 && !(m_30 & 8)) {
+                ((CMenuRenderHost*)m_4)->Draw(ctx, item, col, y);
+            }
+            y += item->GetWidth() / 2;
+            y += *(i32*)((char*)this + 0x48);
+        }
+        if (++row < *(i32*)((char*)this + 0x50)) {
+            // same column
+        } else {
+            col += *(i32*)((char*)this + 0x4c);
+            y = ytop;
+            row = 0;
+        }
+    }
+    return 1;
+}
+
+// 0x183f70 - step focus forward by m_50 list nodes from the focused item, then
+// focus the landed (focusable) item.
+RVA(0x00183f70, 0x74)
+i32 CMenuPage::FocusForwardN() {
+    CMenuItem* cur = m_64;
+    if (!cur) {
+        return 0;
+    }
+    if (!(m_30 & 4)) {
+        return 0;
+    }
+    CMenuNode* pos = (CMenuNode*)cur->m_2c;
+    if (!pos) {
+        return 0;
+    }
+    i32 n = *(i32*)((char*)this + 0x50);
+    CMenuItem* found = 0;
+    if (n >= 0) {
+        n++;
+        do {
+            if (pos) {
+                CMenuNode* node = pos;
+                pos = node->pNext;
+                found = node->data;
+            } else {
+                found = 0;
+            }
+        } while (--n);
+    }
+    if (!found) {
+        return 0;
+    }
+    i32 k = found->m_24;
+    if (k != 1 && k != 2) {
+        return 0;
+    }
+    if (found == cur) {
+        return 0;
+    }
+    return SetFocus(found, 1) != 0;
+}
+
+// 0x183ff0 - mirror of FocusForwardN walking node->prev (m_50 nodes backward).
+RVA(0x00183ff0, 0x75)
+i32 CMenuPage::FocusBackwardN() {
+    CMenuItem* cur = m_64;
+    if (!cur) {
+        return 0;
+    }
+    if (!(m_30 & 4)) {
+        return 0;
+    }
+    CMenuNode* pos = (CMenuNode*)cur->m_2c;
+    if (!pos) {
+        return 0;
+    }
+    i32 n = *(i32*)((char*)this + 0x50);
+    CMenuItem* found = 0;
+    if (n >= 0) {
+        n++;
+        do {
+            if (pos) {
+                CMenuNode* node = pos;
+                pos = node->pPrev;
+                found = node->data;
+            } else {
+                found = 0;
+            }
+        } while (--n);
+    }
+    if (!found) {
+        return 0;
+    }
+    i32 k = found->m_24;
+    if (k != 1 && k != 2) {
+        return 0;
+    }
+    if (found == cur) {
+        return 0;
+    }
+    return SetFocus(found, 1) != 0;
+}
+
 // 0x184070 - hit-test at (a0,a1) and focus the item there.
 RVA(0x00184070, 0x30)
 i32 CMenuPage::FocusAndSelect(i32 a0, i32 a1) {
@@ -520,6 +697,56 @@ CMenuItem* CMenuPage::FindByName(const char* s) {
         }
     }
     return 0;
+}
+
+// 0x184230 - focus the item named by the focused item's forward key (GetKey1),
+// else step focus backward by m_50 nodes.
+// @early-stop
+// /GX EH-state wall (~61%, same family as SelectForward): m_64->GetKey1() ->
+// FindByName -> SetFocus / FocusBackwardN is byte-aligned; the residual is the
+// __try state index (push $8 vs $0) + the per-return CString-temp teardown
+// threading. See docs/seh-eh.md + eh-dtor-vptr-stamp-vs-trylevel-order.md.
+RVA(0x00184230, 0xd2)
+i32 CMenuPage::SelectFwd2() {
+    if (!m_64) {
+        return 0;
+    }
+    CString key = m_64->GetKey1();
+    CMenuItem* item = FindByName((const char*)key);
+    if (item) {
+        i32 k = item->m_24;
+        if (k != 1 && k != 2) {
+            return 0;
+        }
+        if (item == m_64) {
+            return 0;
+        }
+        return SetFocus(item, 1);
+    }
+    return FocusBackwardN();
+}
+
+// 0x184310 - mirror: focused item's backward key (GetKey2), else FocusForwardN.
+// @early-stop
+// same /GX EH-state wall as SelectFwd2 (~61%). Logic complete; deferred.
+RVA(0x00184310, 0xd2)
+i32 CMenuPage::SelectBack2() {
+    if (!m_64) {
+        return 0;
+    }
+    CString key = m_64->GetKey2();
+    CMenuItem* item = FindByName((const char*)key);
+    if (item) {
+        i32 k = item->m_24;
+        if (k != 1 && k != 2) {
+            return 0;
+        }
+        if (item == m_64) {
+            return 0;
+        }
+        return SetFocus(item, 1);
+    }
+    return FocusForwardN();
 }
 
 // 0x1843f0 - focus the item named by the forward key, else step focus forward.
@@ -615,5 +842,78 @@ CMenuItem* CMenuPage::AddSubItem(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5)
     }
     item->m_1c = a4;
     *(i32*)((char*)item + 0x30) = a5;
+    return Append(item) ? item : 0;
+}
+
+// The derived (0x74-byte) item's vtable, referenced by address so the re-stamp
+// reloc-masks against retail (its contents live in the 0x184730+ TU).
+DATA(0x005f08f8)
+extern void* g_menuItem2Vtbl;
+
+// 0x1836f0 - allocate (RezAlloc 0x74) + construct the derived item: run the base
+// ctor, re-stamp the derived vtable, seed the extra fields, Init it (vtable +0x4),
+// then on success run its derived hook (vtable +0x38) and append (else delete).
+// @early-stop
+// /GX placement-new wall (~34%, same as AddItem): retail INLINES the 6-CString
+// base ctor raising a /GX EH frame (push -1/fs:0) with descending trylevel writes
+// around each CString construct; the recompile keeps the ctor out-of-line
+// (Construct()) so it emits no frame. docs/patterns/rezalloc-placement-new-no-eh-frame.md.
+RVA(0x001836f0, 0x160)
+CMenuItem2* CMenuPage::AddItem2(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
+    CMenuItem2* item = (CMenuItem2*)RezAlloc(0x74);
+    if (item) {
+        item->Construct();
+        *(void**)item = &g_menuItem2Vtbl;
+        item->m_5c = 0;
+        item->m_60 = 0;
+        item->m_64 = 0;
+        item->m_68 = 0;
+        item->m_6c = 0;
+        item->m_70 = 0x64;
+    }
+    if (item->Init(a4, a3, a2, a1, a0, (i32)this) == 0) {
+        if (item) {
+            delete item;
+        }
+        return 0;
+    }
+    (*(i32(**)(CMenuItem2*, i32))(*(void***)item + 0xe))(item, a0);
+    return Append(item) ? item : 0;
+}
+
+// 0x183850 - like AddItem2, but the base field-reset is out-of-line (ResetFields,
+// 0x184730) and the new item links its parent context (m_30/m_1c) on success.
+// @early-stop
+// same /GX placement-new wall as AddItem2 (the inlined 6-CString base ctor + the
+// EH trylevel chain). Logic complete; deferred to the final sweep.
+RVA(0x00183850, 0x13b)
+CMenuItem2* CMenuPage::AddSubItem2(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7) {
+    CMenuItem2* item = (CMenuItem2*)RezAlloc(0x74);
+    if (item) {
+        new (&item->m_10) CString();
+        new (&item->m_14) CString();
+        new (&item->m_4c) CString();
+        new (&item->m_50) CString();
+        new (&item->m_54) CString();
+        new (&item->m_58) CString();
+        *(void**)item = &g_menuItemVtbl;
+        item->ResetFields();
+        *(void**)item = &g_menuItem2Vtbl;
+        item->m_5c = 0;
+        item->m_60 = 0;
+        item->m_64 = 0;
+        item->m_68 = 0;
+        item->m_6c = 0;
+        item->m_70 = 0x64;
+    }
+    if (item->Init(a6, a4, a2, a1, a0, (i32)this) == 0) {
+        if (item) {
+            delete item;
+        }
+        return 0;
+    }
+    (*(i32(**)(CMenuItem2*, i32))(*(void***)item + 0xe))(item, a7);
+    *(i32*)((char*)item + 0x30) = a2;
+    item->m_1c = a3;
     return Append(item) ? item : 0;
 }

@@ -143,6 +143,20 @@ public:
     // no body -> reloc-masked. (Currently labeled ClassUnknown_14; a CSymTab method.)
     i32 Insert(const char* key, void* arg);
 
+    // Look `key` up directly in this scope's leaf table (the +0x40 path); the read
+    // counterpart of Insert (0x13a040, one-arg __thiscall). Reloc-masked extern.
+    void* Find(const char* key);
+
+    // Find a fully-qualified name by its last delimiter (0x13bca0): split off the
+    // trailing key, resolve the leading scope (ResolvePath), then Find. The read
+    // counterpart of ResolveQualified.
+    void* FindQualified(const char* name);
+
+    // Drop this scope's cached parse state (0x13a190): free the owned +0x48 buffer
+    // if live, else end each leaf record's parse stream; when `recurse`, descend into
+    // every child scope. Returns 1.
+    i32 ReleaseParseBuffers(i32 recurse);
+
     // Iteration accessors over the two embedded tables. First* are __thiscall on
     // the scope; Next* take a previously-returned record and advance via the node
     // the engine embeds inside it at a fixed offset (each record IS an intrusive

@@ -7,11 +7,13 @@ on (rva,ecx), retires a hook once saturated, and streams (rva,ecx,seq) edges to 
 CSV. Unlike gdb breakpoints this is in-process and does NOT stop the world, so the
 game keeps rendering and stays playable while it traces.
 
-Run: python -m gruntz.analysis.gen_frida_script [funcs.csv] [out.js] [edges_name]
+Run: python -m gruntz.analysis.gen_frida_script [funcs.csv] [out.js] [edges_name] [exe]
   funcs.csv   : rva[,name] list (default build/trace/thiscall_game.csv)
   out.js      : output script   (default build/game/retail/gruntz_trace.js)
   edges_name  : edges file written by the gadget, relative to the game cwd
                 (default gruntz_edges.csv -> build/game/retail/gruntz_edges.csv)
+  exe         : the EXE actually traced; its .text drives the thunk/padding filter
+                (default build/game/retail/GRUNTZ.EXE, else build/exe/GRUNTZ.EXE)
 """
 import csv
 import sys
@@ -188,11 +190,18 @@ def main():
     funcs = Path(sys.argv[1]) if len(sys.argv) > 1 else REPO / "build/trace/thiscall_game.csv"
     out_js = Path(sys.argv[2]) if len(sys.argv) > 2 else REPO / "build/game/retail/gruntz_trace.js"
     edges = sys.argv[3] if len(sys.argv) > 3 else "gruntz_edges.csv"
+    # The .text we filter against MUST be the binary actually traced (demo vs
+    # retail): the thunk/padding/MFC-band drop is byte+RVA specific, so filtering
+    # the demo's hooks against retail bytes is wrong. provision_trace passes the
+    # real game EXE as argv[4]; otherwise fall back to the known on-disk copies.
+    if len(sys.argv) > 4:
+        exe = Path(sys.argv[4])
+    else:
+        exe = REPO / "build/game/retail/GRUNTZ.EXE"
+        if not exe.exists():
+            exe = REPO / "build/exe/GRUNTZ.EXE"
     rvas = load_rvas(funcs)
     # drop thunks/padding/data so Frida only patches real function bodies
-    exe = REPO / "build/game/retail/GRUNTZ.EXE"
-    if not exe.exists():
-        exe = REPO / "build/exe/GRUNTZ.EXE"
     if exe.exists():
         tb, lo, hi = load_text(str(exe))
         before = len(rvas)

@@ -14,11 +14,28 @@
 // ---------------------------------------------------------------------------
 struct CSprite; // the created HUD/anim sprite
 
+// An entry in the factory's live-icon list (m_14): the next-link at +0 and the
+// owned CSprite at +8.  LoadToyBoxIcon walks it to de-dup by class + tile.
+struct CSpriteIconNode {
+    CSpriteIconNode* next; // +0x00
+    char m_pad4[0x8 - 0x4];
+    CSprite* m_8; // +0x08
+};
+
 // The HUD sprite factory reached via g_gameReg->m_30->m_8. CreateSprite looks the
 // template up by class-NAME (the 5th arg) and builds it; __thiscall ret 0x18.
 struct CSpriteFactory {
     CSprite* CreateSprite(i32 kind, i32 geoB, i32 geoA, i32 hint, const char* name, i32 flags);
+    char m_pad0[0x14];
+    CSpriteIconNode* m_14; // +0x14  live-icon list head
 };
+
+// Two icon-class vtable-slot fns the toybox de-dup test compares an existing
+// icon's CSprite::m_7c->Init against (the in-game-icon / in-game-text classes).
+// Declared extern so each `cmp esi, OFFSET fn` immediate carries a DIR32 reloc
+// that pairs with retail's reloc at 0x40288d / 0x402bad (names are reloc-masked).
+extern "C" void IconClassInitA(); // 0x40288d
+extern "C" void IconClassInitB(); // 0x402bad
 
 struct CSpriteFactoryHolder {
     char m_pad0[0x8];
@@ -33,6 +50,8 @@ struct CResourceTracker {
     i32 m_1c; // +0x1c  (Level number source)
 };
 struct CGameReg {
+    void Report(i32 code, i32 sub); // 0x40346d __thiscall (icon-overflow report)
+
     char m_pad0[0x2c];
     CResourceTracker* m_2c;     // +0x2c
     CSpriteFactoryHolder* m_30; // +0x30
@@ -65,7 +84,12 @@ struct CSprite {
     void CacheFirstFrame(const char* name); // CGruntSprite::CacheFirstFrame @0x150540
     i32 ApplyLookupGeometry(const char* name, i32 applyDefault); // CGruntAnimPlayer @0x1505b0
 
-    char m_pad0[0x7c];          // +0x00
+    char m_pad0[0x40]; // +0x00
+    i32 m_40;          // +0x40  flag bits
+    char m_pad44[0x5c - 0x44];
+    i32 m_5c;                   // +0x5c  sub-tile X
+    i32 m_60;                   // +0x60  sub-tile Y
+    char m_pad64[0x7c - 0x64];  // +0x64
     CSpriteVtbl* m_7c;          // +0x7c  init-interface vtable (slot +0x10 = Init)
     char m_pad80[0x114 - 0x80]; // +0x80
     i32 m_114;                  // +0x114
@@ -94,6 +118,7 @@ public:
     i32 LoadPowerupIconSprites(i32 type, i32 geoB, i32 geoA, i32 m130, i32 warpIdx, i32 m120);
     i32 LoadExplosionSprites(i32 geoB, i32 geoA, i32 variant, i32 dummy);
     i32 LoadCameraSprite();
+    i32 LoadToyBoxIcon(i32 x, i32 y, i32 a3, i32 a4, i32 a5);
     i32 BuildBootyPerfectAnimation();
 
     char m_pad00[0x22c];          // +0x000
@@ -159,6 +184,54 @@ i32 EngineLabelBacklog::LoadCameraSprite() {
     m_23c = spr;
     spr->m_7c->Init(spr);
     m_23c->CacheFirstFrame("GAME_CAMERASPRITE");
+    return 1;
+}
+
+// ===========================================================================
+// LoadToyBoxIcon @0x07a3f0
+// ===========================================================================
+//
+// Lazily creates the "GAME_TOYBOX" in-game icon at tile (x>>5, y>>5): first walks
+// the factory's live-icon list (m_22c->m_8->m_14) and bails (return 0) if an
+// existing icon of one of the two icon classes already sits on that tile;
+// otherwise CreateSprite("InGameIcon"), cache its frame, stamp the four config
+// slots and the +0x40 visible bit.  __thiscall, ret 0x14 (5 args).
+//
+// Byte-identical (99.94%): the only residual is the reloc-typing artifact on the
+// two `cmp esi, OFFSET fn` de-dup comparisons (base names IconClassInitA/B vs
+// retail thunk_FUN_004bf150 / CSingleAnimation; code bytes match).
+
+RVA(0x0007a3f0, 0xd7)
+i32 EngineLabelBacklog::LoadToyBoxIcon(i32 x, i32 y, i32 a3, i32 a4, i32 a5) {
+    CSpriteFactory* fac = m_22c->m_8;
+    i32 tx = x >> 5;
+    i32 ty = y >> 5;
+
+    CSpriteIconNode* node = fac->m_14;
+    while (node != 0) {
+        CSpriteIconNode* cur = node;
+        node = node->next;
+        CSprite* obj = cur->m_8;
+        void* init = (void*)obj->m_7c->Init;
+        if (init == (void*)&IconClassInitA || init == (void*)&IconClassInitB) {
+            i32 ox = obj->m_5c >> 5;
+            i32 oy = obj->m_60 >> 5;
+            if (tx == ox && ty == oy) {
+                return 0;
+            }
+        }
+    }
+
+    CSprite* spr = fac->CreateSprite(0, x, y, 0x17318, "InGameIcon", 0x40003);
+    if (!spr) {
+        g_gameReg->Report(0x8009, 0x402);
+        return 0;
+    }
+    spr->CacheFirstFrame("GAME_TOYBOX");
+    spr->m_118 = a4;
+    spr->m_130 = a5;
+    spr->m_114 = a3;
+    spr->m_40 |= 1;
     return 1;
 }
 

@@ -25,7 +25,8 @@ class CImageFormat {
 public:
     void SetType(i32 type, i32 noResolve); // 0x14dd90 (__thiscall, ret 8)
 
-    char m_pad00[0x1c];
+    char m_pad00[0x18];
+    i32 m_18; // +0x18  field written directly by SetAllField18 (0x1524d0)
     i32 m_1c; // +0x1c  resolved format word (written directly by SetAllFormats)
 };
 
@@ -34,8 +35,15 @@ public:
 // +0x30 owned object - so this is a PLACEHOLDER element type (see header note).
 class CImageFrame {
 public:
-    char m_pad00[0x30];
-    CImageFormat* m_format; // +0x30  format/state helper (may be null)
+    void* m_vptr; // +0x00  (manual-stamped to g_imageFrameVtbl @0x5eaa2c by the factory)
+    i32 m_4;      // +0x04  frame index
+    i32 m_8;      // +0x08
+    void* m_c;    // +0x0c  owner (the CImageSet's +0xc)
+    i32 m_10;     // +0x10
+    i32 m_14;     // +0x14
+    char m_pad18[0x2c - 0x18];
+    i32 m_2c;               // +0x2c
+    CImageFormat* m_format; // +0x30  format/state helper (factory inits to null)
 };
 
 class CImageSet {
@@ -48,10 +56,21 @@ public:
     // (+0x1c). A null format is a no-op (returns 0). Returns the count touched.
     i32 SetAllFormats(i32 format);
 
+    // Same walk, writing `value` into each populated frame's format +0x18.
+    i32 SetAllField18(i32 value); // 0x1524d0
+
     // Linear-search the frame array for `frame`; on a hit, copy the set's name into
     // `outName` (when non-null) and store the matched array index through `outIndex`
     // (when non-null). Returns 1 on a hit, 0 otherwise.
     i32 FindFrame(CImageFrame* frame, char* outName, i32* outIndex);
+
+    // Three frame-creation overloads (0x151fb0/0x152060/0x152110). Each refuses if a
+    // frame already occupies `index`, else allocates a CImageFrame, runs the frame's
+    // loader virtual (slot 0x30/0x28/0x24), inserts it (SetAtGrow), and widens the
+    // populated index range. Returns the new frame, or 0 on refusal/load failure.
+    CImageFrame* CreateFrame30(i32 a0, i32 index, i32 a2);
+    CImageFrame* CreateFrame28(i32 a0, i32 a1, i32 index, i32 a3);
+    CImageFrame* CreateFrame24(i32 a0, i32 a1, i32 index, i32 a3);
 
     // The bounds-checked accessor SetAllTypes/SetAllFormats inline: a frame index
     // outside [m_minIndex, m_maxIndex] yields a null frame.
@@ -62,7 +81,9 @@ public:
         return m_frames[index];
     }
 
-    char m_pad00[0x14];
+    char m_pad00[0x0c];
+    void* m_owner;          // +0x0c  shared into each created frame's +0xc
+    char m_array[0x14 - 0x10]; // +0x10  embedded frame array (SetAtGrow this)
     CImageFrame** m_frames; // +0x14  frame pointer array (indexed by signed frame index)
     i32 m_count;            // +0x18  array element count (for the linear FindFrame scan)
     char m_pad1c[0x24 - 0x1c];

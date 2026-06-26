@@ -84,6 +84,7 @@ public:
     void VirtualMethodUnknown1C();
 
     CObject* LookupValue_06b2a0(const char* key);
+    void RemoveValue_152660(CCatalogNode* target);
     void FreeAll_152720();
     i32 RemoveKeysEqual_1527d0(const char* base, const char* str);
     i32 HasKeyPrefix_152c50(const char* str);
@@ -133,6 +134,36 @@ CObject* CDDrawSubMgrLeaf::LookupValue_06b2a0(const char* key) {
     CObject* val = 0;
     m_10.Lookup(key, val);
     return val;
+}
+
+// ---------------------------------------------------------------------------
+// 0x152660: remove ONE value by pointer identity. When `target` is non-null,
+// walk the map via GetNextAssoc; on the first entry whose value pointer equals
+// `target`, RemoveKey it, destroy `target` through its scalar-deleting dtor
+// (vtbl +0x4 arg 1), and stop. /GX EH frame for the local CString key. 1 arg.
+// @early-stop
+// regalloc/loop-peel wall (~same family as RemoveKeysEqual_1527d0): logic/CFG/all
+// calls (GetNextAssoc/RemoveKey/scalar-dtor)/args/offsets reproduced. Residue is
+// the val/pos stack-slot choice + the reloc-masked EH-state push.
+// docs/patterns/zero-register-pinning.md.
+RVA(0x00152660, 0xb2)
+void CDDrawSubMgrLeaf::RemoveValue_152660(CCatalogNode* target) {
+    if (target == 0) {
+        return;
+    }
+    POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
+    CObject* val = 0;
+    CString key;
+    if (*(volatile i32*)&pos != 0) {
+        do {
+            m_10.GetNextAssoc(pos, key, val);
+            if ((CObject*)target == val) {
+                m_10.RemoveKey(key);
+                target->ScalarDtor(1);
+                break;
+            }
+        } while (pos != 0);
+    }
 }
 
 // ---------------------------------------------------------------------------

@@ -138,6 +138,83 @@ i32 CImage::LoadDispatch(CImageFrameDesc* desc, u32 mode, void* a, i32 b) {
 }
 
 // ---------------------------------------------------------------------------
+// 0x1530e0 (vtable slot 9): Create24. Allocate a surface from the parent pool's
+// Create24 variant (CreateB @0x1423c0) for (desc, mode, NULL, capArg, flagsArg) -
+// where flagsArg = keyed ? g_severusCounterB : -1 and capArg = g_severusCounterA ?
+// 0x800 : 0 - then cache the surface geometry (w/h, halved) and clear the m_20/m_24
+// origin. __thiscall, ret 0xc (3 stack args).
+// ---------------------------------------------------------------------------
+RVA(0x001530e0, 0x92)
+i32 CImage::Create24(CImageFrameDesc* desc, i32 mode, i32 keyed) {
+    i32 flagsArg = (keyed != 0) ? g_severusCounterB : -1;
+    i32 capArg = 0;
+    if (g_severusCounterA != 0) {
+        capArg = 0x800;
+    }
+    CImageSurfaceItem* item = m_0c->m_1c->CreateB((i32)desc, mode, 0, capArg, flagsArg);
+    m_2c = item;
+    if (item == 0) {
+        return 0;
+    }
+    i32 w = item->m_1c;
+    m_10 = w;
+    i32 h = item->m_18;
+    m_14 = h;
+    m_18 = w >> 1;
+    m_1c = h >> 1;
+    if (item->m_bc != 0) {
+        m_28 = 0x11;
+    } else {
+        m_28 = 0x10;
+    }
+    m_20 = 0;
+    m_24 = 0;
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// 0x153180: the slot-13 build path (non-virtual /GX builder). Allocate the owned
+// +0x30 object (a CImageOwned), decode one frame into it (Build) with the parent's
+// active surface format, then cache the decoded geometry (w/h, halved) and the
+// descriptor's m_10/m_14 origin into the image. m_28 = 0x11 on success.
+//
+// The `new CImageOwned()` carries the C++ EH state machine (the [esp+0x14] try-
+// level writes 0 then -1 around the ctor), which puts the /GX frame on this method.
+// __thiscall, ret 8 (2 stack args).
+// @early-stop
+// 98.7% - all 70 instructions present and logic byte-faithful (the 0x3c new, the
+// EH try-level machine, the parent-chain fmt, the geometry copy). The residual is
+// (1) the reloc/EH scoring artifacts (push Unwind handler, call _RezAlloc vs
+// operator new, the fs:0 __except_list writes - all reloc-masked, code bytes match)
+// and (2) a 2-3 byte regalloc/scheduling wall: retail loads `a` into edx before
+// completing the fmt chain (we finish the chain first), and orders the tail
+// geometry copy before the fs:0 restore (we interleave). No source lever flips it
+// under /O2 (tried inline vs local for both the chain and the arg). Logic complete;
+// deferred to the final sweep.
+// ---------------------------------------------------------------------------
+RVA(0x00153180, 0xda)
+i32 CImage::BuildSlot13(CImageFrameDesc* desc, void* a) {
+    CImageOwned* owned = new CImageOwned();
+    m_30 = owned;
+    if (owned == 0) {
+        return 0;
+    }
+    if (!owned->Build((CImageBuildDesc*)desc, (i32)a, m_0c->m_04->m_10[0x18 / 4])) {
+        return 0;
+    }
+    i32 w = m_30->m_04;
+    m_10 = w;
+    i32 h = m_30->m_08;
+    m_14 = h;
+    m_28 = 0x11;
+    m_18 = w >> 1;
+    m_1c = h >> 1;
+    m_20 = desc->m_10;
+    m_24 = desc->m_14;
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
 // 0x153260: the cleanup virtual (vtable slot 7). Remove the held surface (m_2c)
 // from the parent collection's surface pool (m_0c->m_1c), then destroy + free the
 // owned +0x30 object; both handles cleared. m_10/m_14 zeroed up front.
@@ -157,6 +234,124 @@ void CImage::FreeAll() {
         RezFree(owned);
         m_30 = 0;
     }
+}
+
+// ---------------------------------------------------------------------------
+// 0x1532b0: CopyFrom - clone another image's surface into this one. Fails unless
+// both images own a held surface (m_2c) and neither carries an owned object (m_30),
+// and the two geometries match (m_10/m_14). On a match it Prepares the held surface
+// (Prepare(0)) then Blts the other image's surface into it, returning whether the
+// blit succeeded. __thiscall, ret 4.
+//
+// The five reject paths each emit the bare `xor eax,eax; pop; pop; ret 4` epilogue
+// inline -> SIBLING guards, not nesting (docs/patterns/redundant-sibling-guard-retest).
+// ---------------------------------------------------------------------------
+RVA(0x001532b0, 0x80)
+i32 CImage::CopyFrom(CImage* other) {
+    if (other == 0) {
+        return 0;
+    }
+    if (other->m_30 != 0) {
+        return 0;
+    }
+    if (m_2c == 0) {
+        return 0;
+    }
+    if (m_30 != 0) {
+        return 0;
+    }
+    if (m_10 != other->m_10) {
+        return 0;
+    }
+    if (m_14 != other->m_14) {
+        return 0;
+    }
+    m_2c->Prepare(0);
+    i32 ok = m_2c->Blt(other->m_2c);
+    return ok != 0;
+}
+
+// ---------------------------------------------------------------------------
+// 0x153380 (vtable slot 13): Reload - refresh the held surface from its parse
+// source. If there is no held surface, succeed. If the surface's source sub-object
+// (m_2c->m_08) reports still-clean (IsClean, vtbl[0x60]), succeed. Else if it still
+// has a live source descriptor (HasSource, vtbl[0x6c]), re-run FreeAll + Resolve
+// (the slot-7 + slot-11 virtuals) with the caller's args. Otherwise parse the new
+// source directly: read its 3-char tag (BMP=1/CPX=2/RID=3/PID=4), prime it, then
+// rebuild the held surface via the pool's Reload (0x13e550) with the resolved
+// index/source/severus-flag. __thiscall, ret 8.
+//
+// The tag switch is the same unsigned binary-search tree as Resolve (key u32, the
+// ja/je fourcc compares); docs/patterns/switch-key-unsigned-ja-vs-jg.md.
+//
+// The FreeAll (slot 7, +0x1c) + Resolve (slot 11, +0x2c) re-runs go through the
+// vtable (`call [this->vptr+N]`), so they are dispatched via a typed vtable view -
+// the manual-vtable CImage's own FreeAll/Resolve are not declared virtual.
+// ---------------------------------------------------------------------------
+struct CImageReloadVtbl;
+class CImageReloadDispatch {
+public:
+    CImageReloadVtbl* vptr;       // +0x00
+    void FreeAllV();              // vtbl[0x1c] slot 7
+    i32 ResolveV(CImageSource* src, i32 arg); // vtbl[0x2c] slot 11
+};
+typedef void (CImageReloadDispatch::*FreeAllVFn)();
+typedef i32 (CImageReloadDispatch::*ResolveVFn)(CImageSource*, i32);
+struct CImageReloadVtbl {
+    char _00[0x1c - 0x00];
+    FreeAllVFn FreeAll; // [0x1c]
+    char _20[0x2c - 0x20];
+    ResolveVFn Resolve; // [0x2c]
+};
+inline void CImageReloadDispatch::FreeAllV() {
+    (this->*(vptr->FreeAll))();
+}
+inline i32 CImageReloadDispatch::ResolveV(CImageSource* src, i32 arg) {
+    return (this->*(vptr->Resolve))(src, arg);
+}
+
+RVA(0x00153380, 0xeb)
+i32 CImage::Reload(CImageSource* src, i32 arg) {
+    if (m_2c == 0) {
+        return 1;
+    }
+    CImageSurfaceSrc* s = m_2c->m_08;
+    if (s != 0) {
+        if (s->vptr->IsClean(s) == 0) {
+            return 1;
+        }
+    }
+    s = m_2c->m_08;
+    if (s->vptr->HasSource(s) != 0) {
+        ((CImageReloadDispatch*)this)->FreeAllV();
+        return ((CImageReloadDispatch*)this)->ResolveV(src, arg);
+    }
+
+    i32 index;
+    switch ((u32)src->GetTag()) {
+        case 0x424d50: // 'PMB' (BMP)
+            index = 1;
+            break;
+        case 0x504358: // 'XCP'
+            index = 2;
+            break;
+        case 0x524944: // 'DIR'
+            index = 3;
+            break;
+        case 0x504944: // 'DIP'
+            index = 4;
+            break;
+        default:
+            return 0;
+    }
+    i32 resolved = src->Resolve();
+    if (resolved == 0) {
+        return 0;
+    }
+    if (src->m_0c == 0) {
+        return 0;
+    }
+    return m_2c->Reload((void*)m_0c->m_1c, resolved, index, (void*)src->m_0c, g_severusCounterB);
 }
 
 // ---------------------------------------------------------------------------

@@ -62,8 +62,10 @@ inline CFaderArray::~CFaderArray() {
 class CFaderMgr {
 public:
     ~CFaderMgr();                               // 0x17d910
+    i32 SetConfig(i32 a, i32 b, i32 c);         // 0x17d980
     void FreeAll();                             // 0x17d9a0
     CFader* Add(i32 nFaderType, CFader* pInit); // 0x17d9c0
+    i32 Flush();                                // 0x17e160
     void Remove(CFader* pFader);                // 0x17e170
     void DeleteAll();                           // 0x17e1d0
 

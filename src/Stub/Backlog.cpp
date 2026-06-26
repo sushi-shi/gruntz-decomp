@@ -40,7 +40,7 @@ struct BootyAssetRoot { // BootyState::m_c
 };
 class BootyState {
 public:
-    void vfunc_9(i32);
+    i32 vfunc_9(i32);
     i32 OnActivate_vfunc8();
     i32 BaseOnActivate();                                             // base vfunc8 (reloc-masked)
     i32 RegisterMultiNamespaces(char* mode, i32, i32, i32, i32, i32); // FUN @ 0x1e60
@@ -54,6 +54,49 @@ public:
     BootyNamespace* m_2c; // +0x2c  "BOOTY" image namespace
     BootyNamespace* m_30; // +0x30  "GRUNTZ" image namespace
 };
+// vfunc_9 (0x18d30) - the BootyState "bg" activation tick. Like OnActivate but
+// installs the "bg" multi-namespace, kicks the grunt-data load + state timer,
+// and (when the BOOTY_LOOP ambient sound entry exists and is enabled by
+// g_61ab20) re-triggers it on a rate-limited timer keyed off the g_6bf3c0 frame
+// counter vs the entry's last-played stamp + interval. The shared game registry
+// (g_gameReg) sound chain is modeled minimally for this method's needs.
+struct BootySndPlayer {
+    void Play(i32 token, i32, i32, i32); // FUN_001360d0 __thiscall
+};
+struct BootySndEntry {
+    char m_pad00[0x10];
+    BootySndPlayer* m_10; // +0x10
+    u32 m_14;             // +0x14  last-played stamp
+    u32 m_18;             // +0x18  interval
+};
+struct BootySndTable {
+    void Find(char* szName, BootySndEntry** out); // FUN_001b8438 __thiscall, out-param
+};
+struct BootySndSet {
+    char m_pad00[0x10];
+    BootySndTable m_10; // +0x10  (&m_10 == set+0x10)
+    char m_pad11[0x30 - 0x11];
+    i32 m_30; // +0x30  active guard
+};
+struct BootySndMgr {
+    char m_pad00[0x28];
+    BootySndSet* m_28; // +0x28
+};
+// A distinct typed view of the *0x24556c game-registry singleton for this method's
+// sound chain (the All.cpp aggregate's shared g_gameReg/CGameReg is defined later
+// in ApiCallers.cpp, so this method uses its own correctly-RVA'd alias).
+struct BzGameReg {
+    char m_pad00[0x30];
+    BootySndMgr* m_30; // +0x30
+    char m_pad34[0x11c - 0x34];
+    i32 m_11c; // +0x11c  sound token
+};
+DATA(0x0024556c)
+extern BzGameReg* g_bzReg;
+DATA(0x0021ab20)
+extern i32 g_61ab20; // BOOTY_LOOP enable gate
+DATA(0x002bf3c0)
+extern "C" u32 g_6bf3c0; // wrap-safe draw clock
 // (class ButeMgr removed - its only method ParseAttributeFile @0x170750 graduated
 // to src/Bute/ButeMgr.cpp; see the migration note further down.)
 // The help-screen game state. LoadAssets() first chains the base-class asset
@@ -81,14 +124,6 @@ public:
     CHelpAssetSet* m_8;  // +0x8
     char m_pad0c[0x2c - 0xc];
     void* m_2c; // +0x2c  the registered "STATEZ_HELP" object (0 on failure)
-};
-class CloudHazard {
-public:
-    void vfunc_20(i32, i32);
-};
-class GameLevelState {
-public:
-    void OnActivate_vfunc8();
 };
 class Projectile {
 public:
@@ -151,14 +186,12 @@ namespace EngineLabelBacklog {
     void DrawBattleStats();
     void StartUpPrompt();
     i32 Stub_01fd70(char* szPath);
-    void LoadCheatConfig();
-    void LoadCustomWorldInfo();
+    i32 LoadCustomWorldInfo(HWND hDlg);
     void HandleFortConquered();
     void __stdcall LoadVehicleGruntSprites(i32);
     void __stdcall WireTileSwitchLogic(i32, i32, i32);
     void __stdcall LoadTerrainTileSprites(i32, i32, i32, i32, i32, i32);
     void LoadCameraSprite();
-    void __stdcall LoadToyBoxIcon(i32, i32, i32, i32, i32);
     void LoadExplosionSprites();
     void __stdcall BuildRockBreakParticles(i32, i32, i32, i32);
     void __stdcall LoadGruntResurrectTuning(i32, i32, i32);
@@ -173,7 +206,6 @@ namespace EngineLabelBacklog {
     void LoadAreaLevelTable();
     void LoadRollingBallHazardSprites();
     void BuildGruntzCrcInfo();
-    void BuildNamedGruntTable();
     void __stdcall LoadLevelByMode(i32, i32);
     void DrawDebugStats();
     void ValidateLevelTiles();
@@ -183,6 +215,7 @@ namespace EngineLabelBacklog {
     void BuildSoundFontPath();
     i32 Stub_0f90f0(char* szPath);
     void LoadStatzTabToggleSprite();
+    // BuildStatzTabSmall_vfunc1 reconstructed as CStatzTabSmall::BuildSmall below.
     void UpdateGruntOvenStatusBar();
     void UpdateChipGrinderStatusBar();
     void UpdateWarpStoneStatusBar();
@@ -196,12 +229,6 @@ namespace EngineLabelBacklog {
     void FreeAllFonts();
     void FormatGameInfoString();
     void __stdcall BuildVoiceSoundList(i32);
-    void Stub_11f900();
-    void Stub_12abf0();
-    void Stub_12d230();
-    void Stub_12d460();
-    void Stub_12d880();
-    void Stub_1315d0();
     void __stdcall Stub_148940(i32, i32, i32, i32);
     void _tr_init();
     void _ct_init();
@@ -218,24 +245,53 @@ namespace EngineLabelBacklog {
 
 // @confidence: high
 // @source: string-xref
+// @proximity: CPlaneRender@-0x3b0 | Utils@+0xd60 (boundary - pick one)
 // @stub
 RVA(0x0000a3b0, 0x6e2)
 void EngineLabelBacklog::CreateGameObjectByName() {}
 
 // @confidence: low
 // @source: string-xref
+// @proximity: CBattlezDlgCustom@-0x800 | CBootyState@+0x460 (boundary - pick one)
 // @stub
 RVA(0x00018830, 0x380)
 void __stdcall EngineLabelBacklog::LoadBootyCheatState(i32, i32, i32) {}
 
-// @confidence: med
 // @source: decomp-xref
-// @stub
+// @early-stop
+// regalloc wall (~95%): retail holds `set` (reg->m_30->m_28) in eax and the play
+// entry `res` live in eax with no reload; the /O2 recompile pins `set` in ecx and
+// spills/reloads `res` at the Play call. Logic + all externs/strings named.
 RVA(0x00018d30, 0xcd)
-void BootyState::vfunc_9(i32) {}
+i32 BootyState::vfunc_9(i32) {
+    while (ShowCursor(FALSE) >= 0)
+        ;
+    if (!RegisterMultiNamespaces("bg", 0, 0, 0, 0, 1)) {
+        return 0;
+    }
+    m_c->m_4->Load();
+    StartTimer(0x50, 0x3e8, 0, 1);
+
+    BzGameReg* reg = g_bzReg;
+    BootySndSet* set = reg->m_30->m_28;
+    i32 token = reg->m_11c;
+    if (set->m_30 == 0) {
+        BootySndEntry* res = 0;
+        set->m_10.Find("BOOTY_LOOP", &res);
+        if (res != 0 && g_61ab20 != 0) {
+            u32 now = g_6bf3c0;
+            if (now - res->m_14 >= res->m_18) {
+                res->m_14 = now;
+                res->m_10->Play(token, 0, 0, 1);
+            }
+        }
+    }
+    return 1;
+}
 
 // @confidence: med
 // @source: string-xref
+// @proximity: CBootyState@-0x270 | CState@+0x640 (boundary - pick one)
 // @stub
 RVA(0x00018f00, 0x4fb)
 void EngineLabelBacklog::ShowSecretBonusMessage() {}
@@ -272,6 +328,7 @@ void EngineLabelBacklog::BuildGruntSprintAnimation() {}
 // leaf-first redo once the callee set + the owning class are modeled.
 // @confidence: med
 // @source: decomp-xref
+// @proximity: CState@-0x240 | EngineLabelBacklog@+0x9e0 (boundary - pick one)
 // @stub
 RVA(0x0001b690, 0x7bf)
 void EngineLabelBacklog::UpdateBootyWalkingGruntz() {}
@@ -442,6 +499,7 @@ void __stdcall EngineLabelBacklog::BuildPowerupIconKeys(PowerupKeyRegistry* reg,
 
 // @confidence: med
 // @source: string-xref
+// @proximity: CMultiBootyState@-0x40 | GruntzPlayer@+0x720 (boundary - pick one)
 // @stub
 RVA(0x0001ed30, 0x549)
 void EngineLabelBacklog::DrawBattleStats() {}
@@ -498,6 +556,7 @@ i32 BootyState::OnActivate_vfunc8() {
 
 // @confidence: high
 // @source: tomalla
+// @proximity: LeafCue@-0x70 | CChatBoxOwner@+0xb30 (boundary - pick one)
 // @stub
 RVA(0x0001f9b0, 0x2d2)
 void EngineLabelBacklog::StartUpPrompt() {}
@@ -660,26 +719,84 @@ struct CCreditzOwner {
     i32 LoadGameAssetNamespaces(i32, i32, i32); // base loader; reloc-masked near call
 };
 
-// @confidence: med
+// LoadCustomWorldInfo (0x3b7c0) - the custom-world picker dialog helper. Reads the
+// level name from the dialog's listbox (id 0x3fc, LB_GETCURSEL/LB_GETTEXT), then
+// builds "<gameDir>\Custom\<level>.WWD" through the two global string-key builders
+// (g_pathStr/g_levelStr; Set=FUN_001b9e74, Append=FUN_001ba0c8, Reset=FUN_001b9c69,
+// the same builder used by BuildPowerupIconKeys). If the file exists it pops the
+// CUSTOM_WORLDINFO dialog. Frameless; helpers reloc-masked externals.
+struct GameKeyStr {
+    char* m_str;          // +0x00  the built C-string
+    void Set(char* s);    // FUN_001b9e74 __thiscall
+    void Append(char* s); // FUN_001ba0c8 __thiscall
+    void Reset();         // FUN_001b9c69 __thiscall
+};
+DATA(0x0022c25c)
+extern GameKeyStr g_pathStr; // 0x62c25c  full path builder
+DATA(0x0022c260)
+extern GameKeyStr g_levelStr; // 0x62c260  level name
+DATA(0x0022c26c)
+extern HWND g_customWorldParent; // 0x62c26c
+DATA(0x0022c270)
+extern HINSTANCE g_customWorldInst; // 0x62c270
+// FUN_0011fc10 __cdecl: writes the gruntz game dir into buf (ret nonzero on ok).
+extern i32 GetGameDir(char* buf, i32 cb);
+// FUN_00004282 __cdecl: tests a path exists (OpenFile probe). ret nonzero on ok.
+extern i32 PathFileExists(char* path);
+// The CUSTOM_WORLDINFO dialog proc (RVA 0x305d), reloc-masked code pointer.
+extern "C" INT_PTR __stdcall CustomWorldInfoDlgProc(HWND, UINT, WPARAM, LPARAM);
+
 // @source: decomp-xref
-// @stub
 RVA(0x0003b7c0, 0x12c)
-void EngineLabelBacklog::LoadCustomWorldInfo() {}
+i32 EngineLabelBacklog::LoadCustomWorldInfo(HWND hDlg) {
+    char szLevel[0x100];
+    char szDir[0x100];
+
+    HWND hList = GetDlgItem(hDlg, 0x3fc);
+    if (!hList) {
+        return 0;
+    }
+    i32 sel = (i32)SendMessageA(hList, 0x188 /*LB_GETCURSEL*/, 0, 0);
+    if (sel == -1) {
+        return 0;
+    }
+    if ((i32)SendMessageA(hList, 0x189 /*LB_GETTEXT*/, sel, (LPARAM)szLevel) == -1) {
+        return 0;
+    }
+    g_levelStr.Set(szLevel);
+    if (!GetGameDir(szDir, 0xfe)) {
+        return 0;
+    }
+    g_pathStr.Set(szDir);
+    g_pathStr.Append("\\Custom\\");
+    g_pathStr.Append(szLevel);
+    g_pathStr.Append(".WWD");
+    if (!PathFileExists(g_pathStr.m_str)) {
+        g_pathStr.Reset();
+        return 0;
+    }
+    DialogBoxParamA(g_customWorldInst, "CUSTOM_WORLDINFO", g_customWorldParent,
+                    (DLGPROC)CustomWorldInfoDlgProc, 0);
+    return 1;
+}
 
 // @confidence: med
 // @source: decomp-xref
+// @proximity: CGruntCreationPoint@-0x930 | CWormhole@+0x680 (boundary - pick one)
 // @stub
 RVA(0x0003f5f0, 0x526)
 void EngineLabelBacklog::HandleFortConquered() {}
 
 // @confidence: med
 // @source: string-xref
+// @proximity: CUserLogic@-0x2f90 | CGrunt@+0x4d0 (boundary - pick one)
 // @stub
 RVA(0x00050ce0, 0x399)
 void __stdcall EngineLabelBacklog::LoadVehicleGruntSprites(i32) {}
 
 // @confidence: med
 // @source: decomp-xref
+// @proximity: CGrunt (HIGH bracket, tu_layout) - CONFLICTS with this Projectile::vfunc_9 guess; verify the real vtable owner before graduating.
 // @stub
 RVA(0x00061cb0, 0x34a)
 void Projectile::vfunc_9() {}
@@ -700,16 +817,13 @@ void Projectile::vfunc_9() {}
 
 // LoadCameraSprite @0x078960 graduated to src/Gruntz/IconLoaders.cpp.
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
-RVA(0x0007a3f0, 0xd7)
-void __stdcall EngineLabelBacklog::LoadToyBoxIcon(i32, i32, i32, i32, i32) {}
+// LoadToyBoxIcon @0x07a3f0 graduated to src/Gruntz/IconLoaders.cpp.
 
 // LoadExplosionSprites @0x07b330 graduated to src/Gruntz/IconLoaders.cpp.
 
 // @confidence: med
 // @source: decomp-xref
+// @proximity: EngineLabelBacklog@-0x110 | CTriggerMgr@+0x9d0 (boundary - pick one)
 // @stub
 RVA(0x0007b440, 0x3f0)
 void __stdcall EngineLabelBacklog::BuildRockBreakParticles(i32, i32, i32, i32) {}
@@ -724,31 +838,19 @@ void __stdcall EngineLabelBacklog::LoadGruntResurrectTuning(i32, i32, i32) {}
 
 // @confidence: low
 // @source: decomp-xref
+// @proximity: CGruntzMgr (HIGH bracket, tu_layout) - plausible owner (existing label is low-confidence); verify before graduating.
 // @stub
 RVA(0x00090550, 0x1e6)
 void __stdcall EngineLabelBacklog::LaunchPortalExe(i32) {}
 
 // @confidence: med
 // @source: string-xref
+// @proximity: CGruntzMgr@-0x720 | CGruntzWnd@+0x900 (boundary - pick one)
 // @stub
 RVA(0x00093d40, 0x473)
 void __stdcall EngineLabelBacklog::BuildLevelRezPath(i32, i32, i32, i32, i32) {}
 
-// @source: decomp-xref
-RVA(0x00095090, 0x6e)
-i32 CHelpState::LoadAssets(i32 a1, i32 a2, i32 a3) {
-    if (!LoadGameAssetNamespaces(a1, a2, a3)) {
-        return 0;
-    }
-    while (ShowCursor(0) >= 0)
-        ;
-    m_2c = m_8->Register("STATEZ_HELP");
-    if (!m_2c) {
-        return 0;
-    }
-    m_4->m_4->Pump(0x100, 0x40);
-    return 1;
-}
+// CHelpState::LoadAssets (0x095090) graduated to src/Gruntz/BacklogStateLoaders.cpp.
 
 // @confidence: med
 // @source: decomp-xref
@@ -758,24 +860,28 @@ void EngineLabelBacklog::LoadHelpBookSprite() {}
 
 // @confidence: med
 // @source: decomp-xref
+// @proximity: CSpawnEntry@-0xc0 | CAreaMgr@+0xf20 (boundary - pick one)
 // @stub
 RVA(0x0009a510, 0x275)
 void __stdcall EngineLabelBacklog::LoadObjectImageResources(i32, i32) {}
 
 // @confidence: med
 // @source: decomp-xref
+// @proximity: CSpawnEntry@-0x4c0 | CAreaMgr@+0xb20 (boundary - pick one)
 // @stub
 RVA(0x0009a910, 0x261)
 void __stdcall EngineLabelBacklog::LoadObjectSoundResources(i32, i32) {}
 
 // @confidence: med
 // @source: decomp-xref
+// @proximity: CSpawnEntry@-0x7d0 | CAreaMgr@+0x810 (boundary - pick one)
 // @stub
 RVA(0x0009ac20, 0x261)
 void __stdcall EngineLabelBacklog::LoadObjectAnimResources(i32, i32) {}
 
 // @confidence: med
 // @source: string-xref
+// @proximity: CMapVisitTarget@-0x660 | CChatBox@+0x430 (boundary - pick one)
 // @stub
 RVA(0x0009fe50, 0x343)
 void __stdcall EngineLabelBacklog::LoadMenuStateAssets(i32, i32, i32) {}
@@ -794,37 +900,17 @@ void __stdcall EngineLabelBacklog::LoadMenuStateAssets(i32, i32, i32) {}
 // frame. Reconstructed (complete body - prologue, action/direction/sink switches,
 // float-interp tail; @early-stop on the branchy nested-jump-table /GX wall).
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
-RVA(0x000b4640, 0x104)
-void CloudHazard::vfunc_20(i32, i32) {}
+// CloudHazard::vfunc_20 (0x0b4640) graduated to src/Gruntz/CPathHazard.cpp as
+// CLightningHazard::ArmStrike (the strike-window arm + LEVEL_CLOUDHAZARDKILL cue).
 
 // @confidence: low
 // @source: decomp-xref
+// @proximity: CFileIO@-0x1df0 | CMultiStartDlg@+0x2580 (boundary - pick one)
 // @stub
 RVA(0x000bf1d0, 0x249)
 void EngineLabelBacklog::BuildGruntzCrcInfo() {}
 
-// @confidence: med
-// @source: decomp-xref
-// BuildNamedGruntTable - seeds the 4 named-grunt CString globals (contiguous
-// array at 0x64bdb0) with their default names via CString::operator=(LPCSTR)
-// (FUN_001b9d4c, reloc-masked __thiscall).
-struct EngStrAssign {
-    char* m_pszData;
-    void operator=(const char* s); // CString::operator=, FUN_001b9d4c
-};
-// 4 contiguous CString globals at 0x64bdb0 (defined in the engine's data).
-DATA(0x0064bdb0)
-extern EngStrAssign g_gruntNames[4];
-RVA(0x000c16b0, 0x3d)
-void EngineLabelBacklog::BuildNamedGruntTable() {
-    g_gruntNames[0] = "Beefy";
-    g_gruntNames[1] = "Zed";
-    g_gruntNames[2] = "Serra";
-    g_gruntNames[3] = "Jebediah";
-}
+// BuildNamedGruntTable (0x0c16b0) graduated to src/Gruntz/BacklogStateLoaders.cpp.
 
 // LoadLevelByMode (0x000ca200, 3636 B) is the PLAY game-state per-mode level
 // loader (BATTLEZ/MULTI/CUSTOMLEVEL/TRAINING/Level%i); reconstructed (complete
@@ -832,11 +918,8 @@ void EngineLabelBacklog::BuildNamedGruntTable() {
 // CPlayLevelLoad::LoadByMode in src/Gruntz/LoadLevelByMode.cpp (eh unit). Its
 // area-name / WarpStone CString temps give it the exception frame.
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
-RVA(0x000cb800, 0x191)
-void GameLevelState::OnActivate_vfunc8() {}
+// GameLevelState::OnActivate_vfunc8 (0x0cb800) graduated to
+// src/Gruntz/BacklogStateLoaders.cpp.
 
 // vfunc_12 (0x000cbcc0, 5850 B) is the PLAY-state keyboard/cheat input
 // dispatcher, not a status-bar method; reconstructed (complete top structure,
@@ -851,6 +934,7 @@ void StatusBarItem::vfunc_16(i32, i32, i32) {}
 
 // @confidence: low
 // @source: decomp-xref
+// @proximity: CGameLevel@-0x960 | CPlay@+0x9b0 (boundary - pick one)
 // @stub
 RVA(0x000cf770, 0x35e)
 void EngineLabelBacklog::DrawDebugStats() {}
@@ -948,6 +1032,7 @@ struct CSoundOwner {
 
 // @confidence: med
 // @source: string-xref
+// @proximity: CPlay@-0x3a0 | CProjectile@+0x24f0 (boundary - pick one)
 // @stub
 RVA(0x000dca70, 0x4a4)
 void __stdcall EngineLabelBacklog::BuildAssetNamespacePrefixes(i32, i32, i32, i32) {}
@@ -1001,24 +1086,28 @@ struct CPaletteOwner {
 
 // @confidence: med
 // @source: string-xref
+// @proximity: CSpriteRef@-0xc60 | CSaveGame@+0xde0 (boundary - pick one)
 // @stub
 RVA(0x000e3f40, 0x3d6)
 void EngineLabelBacklog::DrawSaveGameMenu() {}
 
 // @confidence: med
 // @source: string-xref
+// @proximity: CSpriteRef@-0x1200 | CSaveGame@+0x840 (boundary - pick one)
 // @stub
 RVA(0x000e44e0, 0x2b2)
 void EngineLabelBacklog::BuildLevelTitleString() {}
 
 // @confidence: med
 // @source: decomp-xref
+// @proximity: CGrunt@-0x6280 | CAttract@+0x1990 (boundary - pick one)
 // @stub
 RVA(0x000f8970, 0x3b4)
 void SFManager::SelectBestDevice() {}
 
 // @confidence: high
 // @source: string-xref
+// @proximity: CGrunt@-0x6840 | CAttract@+0x13d0 (boundary - pick one)
 // @stub
 RVA(0x000f8f30, 0x160)
 void EngineLabelBacklog::BuildSoundFontPath() {}
@@ -1041,6 +1130,7 @@ i32 EngineLabelBacklog::Stub_0f90f0(char* szPath) {
 
 // @confidence: med
 // @source: string-xref
+// @proximity: CTileTriggerSwitchLogic@-0x40 | CPlayLevelLoad@+0x3b0 (boundary - pick one)
 // @stub
 RVA(0x00110860, 0x25f)
 void __stdcall EngineLabelBacklog::LoadBridgeMoveSprites(i32) {}
@@ -1053,69 +1143,126 @@ void __stdcall EngineLabelBacklog::LoadBridgeMoveSprites(i32) {}
 // unit). Its GAME_<COLOR>PYRAMIDZ / GAME_PYRAMIDUP CString temps give it the
 // exception frame.
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
+// ---------------------------------------------------------------------------
+// BuildStatzTabSmall (0x112a50) - a status-bar StatzTab builder vfunc (slot 1).
+// Bails if already built (m_20 != 0) or, in mode 4, if the caller's rect is empty;
+// otherwise copies the caller's 0x60-byte rect block into this+0x2c, chains the
+// base builder (vtable slot 0) with the forwarded args, and (when a9 != 0) asks
+// the HUD sprite factory (g_gameReg->m_30->m_8->CreateSprite) for the tab sprite
+// at the tile's pixel origin (tile<<5 + 0x10), runs its init slot, configures it,
+// and reports readiness via the sprite's +0x198. Only offsets / code bytes are
+// load-bearing; helpers are reloc-masked externals.
+struct CStatzRect60 {
+    i32 d[0x18]; // 0x60 bytes
+};
+struct CStatzSprite;
+struct CStatzSpriteFactory {
+    // FUN_001597b0 __thiscall, ret 0x18: build the named tab sprite.
+    CStatzSprite* CreateSprite(i32 kind, i32 px, i32 py, i32 hint, void* name, i32 flags);
+};
+struct CStatzFactoryHolder {
+    char m_pad0[0x8];
+    CStatzSpriteFactory* m_8; // +0x08
+};
+struct CStatzGameReg {
+    char m_pad0[0x30];
+    CStatzFactoryHolder* m_30; // +0x30
+};
+DATA(0x0024556c)
+extern CStatzGameReg* g_statzGameReg; // *0x64556c
+struct CStatzSpriteInitVtbl {
+    void* m_slot0[4];                   // slots 0..3
+    void(__cdecl* Init)(CStatzSprite*); // slot 4 (+0x10)
+};
+struct CStatzSprite {
+    char m_pad0[0x7c];
+    CStatzSpriteInitVtbl* m_7c; // +0x7c
+    char m_pad80[0x198 - 0x80];
+    i32 m_198;                       // +0x198
+    void Configure(void* tag, i32 a); // FUN_001504d0 __thiscall
+};
+DATA(0x0020aa34)
+extern char g_statzTabSpriteName[]; // CreateSprite name buffer
+DATA(0x0020f928)
+extern char g_statzTabCfgTag[]; // Configure tag global
+struct CStatzTabSmall {
+    virtual i32 BaseBuild(i32, i32, i32, i32, i32, i32, i32, i32); // slot 0 (reloc-masked)
+    i32 BuildSmall(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, CStatzRect60* a6, i32 a7, i32 a8,
+                   i32 a9);
+    char m_pad04[0x20 - 0x4];
+    i32 m_20; // +0x20  already-built gate
+    char m_pad24[0x2c - 0x24];
+    CStatzRect60 m_2c; // +0x2c  rect block
+};
+// @early-stop
+// regalloc/tail-merge wall (~62%): instruction selection, calls and constants are
+// byte-correct, but retail pins arg3->ebp / arg4->ebx via prologue-interleaved
+// arg-loads (push ebx; mov ebx,[esp+0x14]; push ebp; mov ebp,[esp+0x14]) and
+// tail-merges the early `return 0` exits into the shared post-BaseBuild epilogue;
+// our /O2 build pins different args + emits inline epilogues, cascading the whole
+// register allocation. Logic complete; not source-steerable. See
+// docs/patterns/identical-return-epilogue-tailmerge.md + pin-local-for-callee-saved-reg.md.
 RVA(0x00112a50, 0xdd)
-void __stdcall EngineLabelBacklog::
-    BuildStatzTabSmall_vfunc1(i32, i32, i32, i32, i32, i32, i32, i32, i32) {}
+i32 CStatzTabSmall::BuildSmall(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, CStatzRect60* a6, i32 a7,
+                               i32 a8, i32 a9) {
+    if (m_20 != 0) {
+        return 0;
+    }
+    if (a2 == 4 && a6->d[0] == 0) {
+        return 0;
+    }
+    m_2c = *a6;
+    if (!BaseBuild(a1, a2, a3, a4, a5, a7, a8, a9)) {
+        return 0;
+    }
+    i32 px = (a3 << 5) + 0x10;
+    i32 py = (a4 << 5) + 0x10;
+    if (a9 == 0) {
+        return 1;
+    }
+    CStatzSprite* spr =
+        g_statzGameReg->m_30->m_8->CreateSprite(0, px, py, 0, g_statzTabSpriteName, 0x40001);
+    if (!spr) {
+        return 0;
+    }
+    spr->m_7c->Init(spr);
+    spr->Configure(g_statzTabCfgTag, a9);
+    if (spr->m_198 == 0) {
+        return 0;
+    }
+    return 1;
+}
 
 // @confidence: high
 // @source: decomp-xref
+// @proximity: CToobSpikez@-0x790 | CTileTriggerSwitchLogic@+0xf10 (boundary - pick one)
 // @stub
 RVA(0x00114ff0, 0x1b3)
 void EngineLabelBacklog::SaveScreenshot() {}
 
 // @confidence: low
 // @source: decomp-xref
+// @proximity: CTileTriggerContainer@-0x450 | CGruntVoice@+0x1730 (boundary - pick one)
 // @stub
 RVA(0x001183b0, 0x211)
 void EngineLabelBacklog::FormatGameInfoString() {}
 
 // @confidence: med
 // @source: decomp-xref
+// @proximity: CGruntSpawnConfig@-0x70 | CSpawnEntry@+0x350 (boundary - pick one)
 // @stub
 RVA(0x0011c210, 0x29d)
 void __stdcall EngineLabelBacklog::BuildVoiceSoundList(i32) {}
 
-// @confidence: low
-// @source: import:FindFirstFileA
-// @stub
-RVA(0x0011f900, 0x101)
-void EngineLabelBacklog::Stub_11f900() {}
-
-// @confidence: low
-// @source: import:WriteFile
-// @stub
-RVA(0x0012abf0, 0x1d6)
-void EngineLabelBacklog::Stub_12abf0() {}
-
-// @confidence: low
-// @source: import:WriteFile
-// @stub
-RVA(0x0012d230, 0x209)
-void EngineLabelBacklog::Stub_12d230() {}
-
-// @confidence: low
-// @source: import:CreateFileA
-// @stub
-RVA(0x0012d460, 0x351)
-void EngineLabelBacklog::Stub_12d460() {}
-
-// @confidence: low
-// @source: import:SetFilePointer
-// @stub
-RVA(0x0012d880, 0x80)
-void EngineLabelBacklog::Stub_12d880() {}
-
-// @confidence: low
-// @source: import:ReadFile
-// @stub
-RVA(0x001315d0, 0x225)
-void EngineLabelBacklog::Stub_1315d0() {}
+// CRT lowio/startup internals (FID-anchored in config/library_labels.csv as
+// __findfirst / __write_lk / __sopen / __lseek_lk / __read_lk / __NMSG_WRITE);
+// the library label is canonical, so the redundant backlog stubs were removed:
+//   0x0011f900 __findfirst   0x0012abf0 __NMSG_WRITE  0x0012d230 __write_lk
+//   0x0012d460 __sopen       0x0012d880 __lseek_lk    0x001315d0 __read_lk
 
 // @confidence: low
 // @source: second '.PID' xref; image-format dispatch consumer (entry not pinned)
+// @proximity: CFileImage@-0xb0 | CImageOwned@+0x3a0 (boundary - pick one)
 // @stub
 RVA(0x00148940, 0x102)
 void __stdcall EngineLabelBacklog::Stub_148940(i32, i32, i32, i32) {}
@@ -1126,13 +1273,11 @@ void __stdcall EngineLabelBacklog::Stub_148940(i32, i32, i32, i32) {}
 // @confidence: high
 // @source: call-xref
 // @stub
-RVA(0x00188440, 0x74)
 void EngineLabelBacklog::_tr_init() {}
 
 // @confidence: high
 // @source: tomalla
 // @stub
-RVA(0x001884c0, 0x1ee)
 void EngineLabelBacklog::_ct_init() {}
 
 // @confidence: low
@@ -1205,7 +1350,6 @@ void EngineLabelBacklog::Stub_1c7cb3() {}
 // @confidence: med
 // @source: import:RegCloseKey,RegSetValueExA
 // @stub
-RVA(0x001ccb5c, 0xa0)
 void __stdcall EngineLabelBacklog::Stub_1ccb5c(i32, i32, i32) {}
 
 // @source: import:RegOpenKeyExA
@@ -1215,7 +1359,6 @@ void __stdcall EngineLabelBacklog::Stub_1ccb5c(i32, i32, i32) {}
 // frame-pointer/regalloc wall (~54%): retail keeps an ebp frame + caches `this`
 // in ebx; the /O2 recompile of the same logic comes out frameless with this in
 // esi. Logic correct; all externs named. See docs/patterns/o2-optimizer-bailout-framed.md.
-RVA(0x001d4ee3, 0x94)
 HKEY CConfigStore::OpenRoot() {
     HKEY hSoftware = 0;
     HKEY hMid = 0;
@@ -1253,19 +1396,12 @@ i32 EngineLabelBacklog::Stub_01fd70(char* szPath) {
     return OpenFile(szPath, &of, 0x4000 /*OF_EXIST*/) != -1;
 }
 
-// @confidence: med
-// @source: string-xref
-// @stub
-RVA(0x00022e60, 0x1be)
-void EngineLabelBacklog::LoadCheatConfig() {}
-
 // @source: import:RegCloseKey,RegCreateKeyExA
 // CConfigStore::OpenSubKey - opens szSub under the OpenRoot() key, then closes
 // the root and returns the opened subkey (0 on failure).
 // @early-stop
 // frame-pointer/regalloc wall (~55%): same ebp-frame divergence as OpenRoot.
 // Logic correct; all externs named. See docs/patterns/o2-optimizer-bailout-framed.md.
-RVA(0x001d4f77, 0x46)
 HKEY CConfigStore::OpenSubKey(char* szSub) {
     HKEY hResult = 0;
     DWORD dwDisp;
@@ -1288,7 +1424,6 @@ HKEY CConfigStore::OpenSubKey(char* szSub) {
 // frame-pointer/regalloc wall (~24%): retail reuses the szSection arg slot as
 // cbData and keeps an ebp frame; the recompile allocates a fresh cbData local +
 // frameless. Logic correct; all externs named. docs/patterns/o2-optimizer-bailout-framed.md.
-RVA(0x001d4fbd, 0x6c)
 i32 CConfigStore::GetInt(char* szSection, char* szKey, i32 nDefault) {
     DWORD dwType;
     DWORD dwData;

@@ -5,9 +5,9 @@
 // touch. All engine callees are reloc-masked (no body).
 //
 // BANKED (code byte-exact, 100% fuzzy): ResetFlag (0x112d80), SetActionCode
-//   (0x112da0), Serialize (0x113f10), SerializeFields (0x113f60). The big
-//   Process (0x112ee0) is a complete logical reconstruction parked at the
-//   two-jump-table wall (@early-stop) for the final sweep.
+//   (0x112da0), MorphByTool (0x113420), Serialize (0x113f10), SerializeFields
+//   (0x113f60). The big Process (0x112ee0) is a complete logical reconstruction
+//   parked at the two-jump-table wall (@early-stop) for the final sweep.
 #include <Win32.h>
 
 #include <Gruntz/TileActionEvent.h>
@@ -388,6 +388,134 @@ i32 CTileActionEvent::Process(i32 arg) {
 }
 
 // ===========================================================================
+// CTileActionEvent::MorphByTool  (0x113420) - __thiscall, ret 8
+// ===========================================================================
+// Apply a tool/key (toolId 0x22..0x26 - the five brick-painting tools) to the
+// current action code m_0: an `if/else-if` chain on toolId, each branch a dense
+// jump-table switch(m_0) over the 0x12f..0x149 brick-code range that advances m_0
+// to the tool's next code (table mappings recovered from the five byte-indexed
+// switch tables at 0x513650/0x513694/0x5136d8/0x51371c/0x513760). A switch default
+// (no transition for this tool+code) returns 0; any other unmatched toolId falls
+// straight through to the shared tail. The tail zeroes the 4-slot per-player flag
+// array (m_18..m_24), marks this player's slot (or all four when playerSlot==5),
+// then re-commits the new code via SetActionCode and returns 1.
+//
+// Code byte-exact (objdiff fuzzy == base, same as the banked sibling SetActionCode);
+// the only residual is the inline .rdata jump-table scoring artifact (the five dense
+// switch tables' DIR32 base relocs pair against $L labels vs the self-symbol, and the
+// SetActionCode call goes through the ILT thunk) - docs/patterns/jumptable-data-overlap.md.
+// No code divergence; the metric undercount is the documented tooling wall.
+RVA(0x00113420, 0x1f2)
+i32 CTileActionEvent::MorphByTool(i32 toolId, i32 playerSlot) {
+    if (toolId == 0x22) {
+        switch (m_0) {
+            case 0x12f: m_0 = 0x130; break;
+            case 0x132: m_0 = 0x133; break;
+            case 0x138: m_0 = 0x139; break;
+            case 0x13e: m_0 = 0x13f; break;
+            case 0x144: m_0 = 0x145; break;
+            case 0x130: m_0 = 0x131; break;
+            case 0x133: m_0 = 0x135; break;
+            case 0x134: m_0 = 0x136; break;
+            case 0x139: m_0 = 0x13b; break;
+            case 0x13a: m_0 = 0x13c; break;
+            case 0x13f: m_0 = 0x141; break;
+            case 0x140: m_0 = 0x142; break;
+            case 0x145: m_0 = 0x147; break;
+            case 0x146: m_0 = 0x148; break;
+            default: return 0;
+        }
+    } else if (toolId == 0x23) {
+        switch (m_0) {
+            case 0x12f:
+            case 0x132:
+            case 0x138:
+            case 0x13e:
+            case 0x144: m_0 = 0x134; break;
+            case 0x130:
+            case 0x133:
+            case 0x134:
+            case 0x139:
+            case 0x13a:
+            case 0x13f:
+            case 0x140:
+            case 0x145:
+            case 0x146: m_0 = 0x137; break;
+            default: return 0;
+        }
+    } else if (toolId == 0x24) {
+        switch (m_0) {
+            case 0x12f:
+            case 0x132:
+            case 0x138:
+            case 0x13e:
+            case 0x144: m_0 = 0x13a; break;
+            case 0x130:
+            case 0x133:
+            case 0x134:
+            case 0x139:
+            case 0x13a:
+            case 0x13f:
+            case 0x140:
+            case 0x145:
+            case 0x146: m_0 = 0x13d; break;
+            default: return 0;
+        }
+    } else if (toolId == 0x26) {
+        switch (m_0) {
+            case 0x12f:
+            case 0x132:
+            case 0x138:
+            case 0x13e:
+            case 0x144: m_0 = 0x146; break;
+            case 0x130:
+            case 0x133:
+            case 0x134:
+            case 0x139:
+            case 0x13a:
+            case 0x13f:
+            case 0x140:
+            case 0x145:
+            case 0x146: m_0 = 0x149; break;
+            default: return 0;
+        }
+    } else if (toolId == 0x25) {
+        switch (m_0) {
+            case 0x12f:
+            case 0x132:
+            case 0x138:
+            case 0x13e:
+            case 0x144: m_0 = 0x140; break;
+            case 0x130:
+            case 0x133:
+            case 0x134:
+            case 0x139:
+            case 0x13a:
+            case 0x13f:
+            case 0x140:
+            case 0x145:
+            case 0x146: m_0 = 0x143; break;
+            default: return 0;
+        }
+    }
+
+    m_18 = 0;
+    m_1c = 0;
+    m_20 = 0;
+    m_24 = 0;
+    if (playerSlot == 5) {
+        m_18 = 1;
+        m_1c = 1;
+        m_20 = 1;
+        m_24 = 1;
+    } else {
+        (&m_18)[playerSlot] = 1;
+    }
+    SetActionCode(m_0);
+    return 1;
+}
+
+// ===========================================================================
 // CTileActionEvent::Serialize  (0x113f10) - __thiscall, ret 0x10
 // ===========================================================================
 // The dispatcher: mode 4 writes the record fields, mode 7 reads them back; any
@@ -437,5 +565,33 @@ i32 CTileActionEvent::SerializeFields(void* ar) {
     a->Write(&m_1c, 4);
     a->Write(&m_20, 4);
     a->Write(&m_24, 4);
+    return 1;
+}
+
+// ===========================================================================
+// CTileActionEvent::DeserializeFields  (0x114040) - __thiscall, ret 4
+// ===========================================================================
+// The mode-7 read counterpart of SerializeFields: read the same 9 record fields
+// (m_0,m_4,m_8,m_c,m_10,m_18,m_1c,m_20,m_24 - m_14 skipped) back through the archive
+// ar's vtable slot +0x2c (read, 4 bytes each). Returns 0 if ar or the registry's
+// +0x30 sub-object is null, else 1.
+RVA(0x00114040, 0xa2)
+i32 CTileActionEvent::DeserializeFields(void* ar) {
+    CTileActionArchive* a = (CTileActionArchive*)ar;
+    if (a == 0) {
+        return 0;
+    }
+    if (g_gameReg->m_30 == 0) {
+        return 0;
+    }
+    a->Read(&m_0, 4);
+    a->Read(&m_4, 4);
+    a->Read(&m_8, 4);
+    a->Read(&m_c, 4);
+    a->Read(&m_10, 4);
+    a->Read(&m_18, 4);
+    a->Read(&m_1c, 4);
+    a->Read(&m_20, 4);
+    a->Read(&m_24, 4);
     return 1;
 }

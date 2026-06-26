@@ -117,6 +117,11 @@ public:
     // bump a world stat, and re-arm the status item. ret 1.
     i32 ClearRowAndRefresh(i32 startRow);
 
+    // 0x77f80: FindNearestInRow(g) - scan the grid row g->m_1ec (15 cells) for the live
+    // cell whose display object is nearest g's tile pos (g->m_17c/m_180 >> 5), within the
+    // squared cutoff 2*g->m_2dc; ret the nearest cell pointer or 0. (__thiscall: ret 4.)
+    void* FindNearestInRow(void* g);
+
     // 0x78260: RemoveCellRecord(x,y,fromSelection) - unlink the (x,y) node from the
     // selection lists (when fromSelection) and from the record list, clearing the cell's
     // sprites / goal / overlay along the way. ret 1 if a record was removed. (ret 0xc.)
@@ -227,6 +232,34 @@ public:
     // world pos, Init it, place it via its userlogic; on success stash the cell. ret 1.
     // (__stdcall: ret 0x10.)
     i32 SpawnGrunt(i32 col, i32 row, i32 a18, i32 a1c);
+
+    // 0x79d90: ResetSpawnState - when the active game state is live (gameReg->m_134==1)
+    // and this->m_284 is set, free the world status item's pending buffer (+0x54c),
+    // clear +0x548, drop the last entry of the +0x260 array, optionally re-fire the
+    // build-state notifier, re-pulse the pending-fx (+0x2a0), and RefreshB(6). (__thiscall.)
+    void ResetSpawnState();
+
+    // 0x7c2e0: CycleMoveIcons(skipRow, enable) - for rows 0..3 except `skipRow`, either
+    // (enable) roll a random move-icon onto each live cell and OnRegion4, or (else) restore
+    // each cell's stashed icon (+0x1f8). ret 1. (__stdcall: ret 8.)
+    i32 CycleMoveIcons(i32 skipRow, i32 enable);
+
+    // 0x7cc60: RebuildSelectionList(idx) - recycle selection list `idx` (+0x2d4) back to the
+    // free list, RemoveAll it, then copy the record list (+0x244) into it as fresh nodes;
+    // reset +0x3e8. ret 1. (__thiscall: ret 4.)
+    i32 RebuildSelectionList(i32 idx);
+
+    // 0x7d450 / 0x7d5c0: the two region-toggle handlers. If a pending fx (+0x2a8) is live,
+    // clear it and LoadCursorSprites(0,0); else look up the active record cell and, by its
+    // logic kind (+0x170/+0x19c/+0x198), either ResetGroup, set a pending fx, or just tick
+    // the overlay. ret 1.
+    i32 ToggleRegionA();
+    i32 ToggleRegionB();
+
+    // 0x7d6e0: EnqueueGroupCells - collect the y-bytes of every magic-group record cell with
+    // a clear +0x1e4 flag, then post the group to the command mgr (+0x6c): EnqueueSingle when
+    // exactly one, else EnqueueMulti. ret 1 (0 when +0x400 is clear). (__thiscall.)
+    i32 EnqueueGroupCells();
 
     // 0x85c50: ~CTriggerMgr - the /GX destructor (drains the lists, destructs the member
     // list arrays). Reconstructed to plateau (eh sibling TU).

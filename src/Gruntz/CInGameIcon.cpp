@@ -14,10 +14,99 @@
 #include <rva.h>
 
 #include <Bute/ButeMgr.h> // CButeTree (the bute store Setup queries)
+#include <Wap32/ZVec.h>   // zDArray (the command-dispatch tables)
 
 // The global bute store the icon Setup queries (g_buteTree.Find). Owned by
 // another TU; declared extern so `ecx=&g_buteTree; call Find` reloc-masks.
 extern CButeTree g_buteTree;
+
+// ===========================================================================
+// The two file-scope command-dispatch tables (zDArray<member-fn-ptr>) the icon
+// registration thunks construct + populate. The ctor (zDArray::Construct, the
+// 0x408710 method: stride-4 base init + the 0x5e70fc vptr stamp) reloc-masks.
+// Their static-init thunks below build each table over the index band [0x7d0,
+// 0x7da].
+// ===========================================================================
+struct LogicFnTable : public zDArray {
+    LogicFnTable* Construct(i32 lo, i32 hi); // 0x408710 (zDArray<T> ctor, returns this)
+};
+
+DATA(0x002458b0)
+extern LogicFnTable g_iconActionTable; // 0x6458b0
+DATA(0x00245928)
+extern LogicFnTable g_iconStateTable; // 0x645928
+
+// --- the shared registration infrastructure (mirror of CInGameText's) --------
+// The zvec error globals the inlined accessors touch on a bounds miss.
+DATA(0x001f0464)
+extern u32 g_zvecErrSentinel; // 0x6bf464
+DATA(0x001f0428)
+extern void* g_zvecErrToken;     // 0x6bf428
+extern void* zErr_CaptureRetB(); // 0x16d990
+
+DATA(0x0021aea8)
+extern i32 g_iconRegCounter; // 0x61aea8  (running registration index)
+
+// The scratch name-vec (zDArray<CString> @ 0x6bf650): the registration path
+// IndexToPtr's it (growing + CString-constructing fresh slots) to stash the key.
+struct NameVec : public zDArray {};
+DATA(0x002bf650)
+extern NameVec g_buteNameVec; // 0x6bf650
+
+// The two registration key strings (.data constants).
+DATA(0x0020a454)
+extern const char s_iconKeyA[]; // 0x60a454
+DATA(0x0020d1bc)
+extern const char s_iconKeyB[]; // 0x60d1bc
+
+// The handler member functions loaded into the dispatch slots (FUN_004023d3 /
+// 0x403c06 into the action table; 0x40370b into the state table). Referenced by
+// address so the stored DIR32 operand reloc-masks.
+extern i32 IconAction_4023d3();
+extern i32 IconAction_403c06();
+extern i32 IconState_40370b();
+
+// The zDArray<CString> accessor inlined WITH the per-slot CString-ctor fixup over
+// the freshly-grown region (the zDArray::IndexToPtr body).
+static inline i32 ResolveNameSlot(NameVec* v, i32 idx) {
+    i32 r;
+    v->m_grown = 0;
+    if (idx >= v->m_lo && idx <= v->m_hi) {
+        r = v->m_base + (idx - v->m_lo) * v->m_stride;
+    } else if (v->GrowTo(idx, 0)) {
+        r = v->m_base + (idx - v->m_lo) * v->m_stride;
+    } else {
+        i32 sentinel = g_zvecErrSentinel;
+        g_zvecErrToken = zErr_CaptureRetB();
+        v->m_err->Error(v, sentinel, 0xc);
+        r = v->m_spare;
+    }
+    CString* slot = (CString*)v->m_alloc;
+    i32 n = v->m_grown;
+    while (n-- != 0) {
+        if (slot) {
+            slot->CString::CString();
+        }
+        slot++;
+    }
+    return r;
+}
+
+// The plain _zvec accessor inlined (no fixup) - the dispatch-table slot resolver.
+static inline i32 ResolveSlot(_zvec* v, i32 idx) {
+    i32 lo = v->m_lo;
+    v->m_grown = 0;
+    if (idx >= lo && idx <= v->m_hi) {
+        return v->m_base + (idx - lo) * v->m_stride;
+    }
+    if (v->GrowTo(idx, 0)) {
+        return v->m_base + (idx - v->m_lo) * v->m_stride;
+    }
+    i32 sentinel = g_zvecErrSentinel;
+    g_zvecErrToken = zErr_CaptureRetB();
+    v->m_err->Error(v, sentinel, 0xc);
+    return v->m_spare;
+}
 
 // ===========================================================================
 // CInGameIcon::~CInGameIcon  (0x011d00)
@@ -106,6 +195,119 @@ i32 CInGameIcon::HandleInput() {
     *(i32*)((char*)o + 0x50) = 0xa;
     *(i32*)((char*)o + 0x4c) = rec;
     return 1;
+}
+
+// ===========================================================================
+// InitIconActionTable  (0x097800)
+// ===========================================================================
+// File-scope static-init thunk: construct the action dispatch table over the
+// index band [0x7d0, 0x7da].
+RVA(0x00097800, 0x15)
+void InitIconActionTable() {
+    g_iconActionTable.Construct(0x7d0, 0x7da);
+}
+
+// ===========================================================================
+// RegisterIconActions  (0x0979e0)
+// ===========================================================================
+// Register two icon-action handlers into g_iconActionTable: key A -> 0x4023d3,
+// key B -> 0x403c06. Each: bute-tree Find (Insert + cache the name into the
+// scratch zDArray<CString> when absent, bump the counter), resolve the table
+// slot for the key index, load the handler member-fn-ptr.
+// ---------------------------------------------------------------------------
+// @early-stop
+// inlined zDArray/zvec IndexToPtr regalloc wall (the documented ZVec family, see
+// ZVec.cpp + RegisterTextLogic): both register blocks + the CString-ctor fixup
+// loops are reconstructed faithfully, but cl pins the index/this/base across the
+// grow branches differently than retail. Logic + find/insert + the fn-ptr stores
+// correct; the register assignment is not source-steerable.
+RVA(0x000979e0, 0x2ac)
+void RegisterIconActions() {
+    i32 idxA = (i32)g_buteTree.Find(s_iconKeyA);
+    if (idxA == 0) {
+        g_buteTree.Insert(s_iconKeyA, (void*)g_iconRegCounter);
+        i32 slot = ResolveNameSlot(&g_buteNameVec, g_iconRegCounter);
+        *(CString*)slot = s_iconKeyA;
+        g_iconRegCounter++;
+    }
+    i32 dslotA = ResolveSlot(&g_iconActionTable, idxA);
+    *(void**)dslotA = (void*)&IconAction_4023d3;
+
+    i32 idxB = (i32)g_buteTree.Find(s_iconKeyB);
+    if (idxB == 0) {
+        g_buteTree.Insert(s_iconKeyB, (void*)g_iconRegCounter);
+        i32 slot = ResolveNameSlot(&g_buteNameVec, g_iconRegCounter);
+        *(CString*)slot = s_iconKeyB;
+        g_iconRegCounter++;
+    }
+    i32 dslotB = ResolveSlot(&g_iconActionTable, idxB);
+    *(void**)dslotB = (void*)&IconAction_403c06;
+}
+
+// ===========================================================================
+// InitIconStateTable  (0x097d60)
+// ===========================================================================
+// File-scope static-init thunk: construct the state dispatch table over the
+// index band [0x7d0, 0x7da].
+RVA(0x00097d60, 0x15)
+void InitIconStateTable() {
+    g_iconStateTable.Construct(0x7d0, 0x7da);
+}
+
+// ===========================================================================
+// RegisterIconState  (0x097f40)
+// ===========================================================================
+// Register one icon-state handler into g_iconStateTable (key A -> 0x40370b):
+// bute-tree Find (Insert + cache the name when absent, bump the counter),
+// resolve the table slot for the key index, load the handler member-fn-ptr.
+// ---------------------------------------------------------------------------
+// @early-stop
+// inlined zDArray/zvec IndexToPtr regalloc wall (the documented ZVec family, see
+// ZVec.cpp + RegisterTextLogic ~96%): faithfully reconstructed; cl's index/this
+// register assignment across the grow branches differs from retail and is not
+// source-steerable. Logic + find/insert + the fn-ptr store correct.
+RVA(0x00097f40, 0x18d)
+void RegisterIconState() {
+    i32 idx = (i32)g_buteTree.Find(s_iconKeyA);
+    if (idx == 0) {
+        g_buteTree.Insert(s_iconKeyA, (void*)g_iconRegCounter);
+        i32 slot = ResolveNameSlot(&g_buteNameVec, g_iconRegCounter);
+        *(CString*)slot = s_iconKeyA;
+        g_iconRegCounter++;
+    }
+    i32 dslot = ResolveSlot(&g_iconStateTable, idx);
+    *(void**)dslot = (void*)&IconState_40370b;
+}
+
+// ===========================================================================
+// CInGameIcon::RefreshCell  (0x098340)
+// ===========================================================================
+// If the icon's tracked position has drifted at least g_iconDefault past the
+// owning object's stored position (a 64-bit signed compare of {m_5c:m_58}
+// against {m_64:m_60}), OR the owning object's tile cell is empty/off-grid,
+// flag the +0x38 render object dirty (|= 0x10000). Returns 0.
+RVA(0x00098340, 0x71)
+i32 CInGameIcon::RefreshCell() {
+    CGameObject* obj = m_10;
+    i32 tileY = obj->m_5c >> 5;
+    i32 tileX = (obj->m_60 + 0x18) >> 5;
+    i64 delta = (i64)(u32)g_iconDefault - *(i64*)&m_58;
+    if (delta < *(i64*)&m_60) {
+        CIconTileGrid* grid = g_gameReg->m_70;
+        i32 cell;
+        if ((u32)tileY < (u32)grid->m_c && (u32)tileX < (u32)grid->m_10) {
+            i32* row = grid->m_8[tileX];
+            cell = row[tileY * 8 - tileY + 2];
+        } else {
+            cell = 0;
+        }
+        if (cell != 0) {
+            return 0;
+        }
+    }
+    CGameObject* r = *(CGameObject**)((char*)this + 0x38);
+    *(i32*)((char*)r + 0x8) |= 0x10000;
+    return 0;
 }
 
 // Clear the "occupied" bit (0x40000) in the tile cell the owning object stands

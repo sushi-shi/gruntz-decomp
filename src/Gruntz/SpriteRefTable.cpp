@@ -9,6 +9,7 @@
 #include <Gruntz/SpriteRefTable.h>
 
 #include <rva.h>
+#include <stdio.h> // engine sprintf (reloc-masked) - LoadGruntzPalette's name format
 
 // Engine CRT/resource helpers reached by Add()/Clear(); reloc-masked DIR32/REL32.
 extern "C" void* RezAlloc(u32 n); // 0x1b9b46 (operator new / RezAlloc)
@@ -144,4 +145,307 @@ CSpriteRef* CSpriteRefTable::Add(char* szName, i32 kind) {
         return 0;
     }
     return node;
+}
+
+// ---------------------------------------------------------------------------
+// CSpriteRefTable::LoadGruntzPalette (0xe2d10) - register a level's
+// "GRUNTZ_PALETTEZ_<name>" palette into the sprite registry reached through
+// this->m_04->m_18. Lookup() (the +0x10 hash sub-table) probes whether it is
+// already present; Install (vtable slot 9) installs the resolved palette. src is
+// the source resolver (FUN_0053bff0 resolves a packed-tag 'PAL'=0x50414c resource
+// by namespaced name); name is the level/name string. Helpers are reloc-masked
+// externals; the typed view-of-`this` (CPaletteOwner) overlays m_04 as the
+// destination-registry root (a struct-view cast at entry).
+//
+// int (BOOL) return: the `!src` and already-present guards return literal 0/1
+// (reusing the zeroed eax / `mov eax,1`); the success path normalizes the
+// Install() return through neg/sbb/neg (`!!x`). A void return would tail-merge
+// the bare epilogues and drop the eax=1 tail.
+
+// The destination registry at m_04->m_18 is polymorphic: a hash sub-table at +0x10
+// backs Lookup() (out-param non-null => already present), and Install (vtable slot
+// 9) takes the resolved palette + two null args.
+struct CPaletteHashTable {            // embedded at CPaletteDestRegistry+0x10
+    void Lookup(char* szName, void** out); // 0x1b8008 __thiscall
+};
+struct CPaletteDestRegistry {
+    virtual void v0();
+    virtual void v1();
+    virtual void v2();
+    virtual void v3();
+    virtual void v4();
+    virtual void v5();
+    virtual void v6();
+    virtual void v7();
+    virtual void v8();
+    virtual i32 Install(void* res, i32 a, i32 b); // slot 9 (+0x24)
+    char m_pad04[0x10 - 0x4];
+    CPaletteHashTable m_10; // +0x10  hash sub-table Lookup runs on
+};
+struct CPaletteDestRoot {        // m_04 points here; +0x18 is the dest registry
+    char m_pad00[0x18];
+    CPaletteDestRegistry* m_18; // +0x18
+};
+// src's source registry: FUN_0053bff0 __thiscall resolves a packed-tag resource by
+// namespaced name, returning the resource (0 if absent).
+struct CPaletteSource {
+    void* Resolve(char* szName, i32 tag); // 0x13bff0
+};
+// Typed view of `this`: m_4 (== CSpriteRefTable::m_04) is the dest registry root.
+struct CPaletteOwner {
+    char m_pad00[0x4];
+    CPaletteDestRoot* m_4; // +0x04
+};
+
+// @early-stop
+// out-param zero-init scheduling wall (docs/patterns/outparam-zeroinit-scheduling.md):
+// the ONLY residual is retail SINKING `mov [&found],0` past the `lea &found` (lea
+// then store) while cl HOISTS it (store then lea) - identical instruction multiset,
+// one 2-instr permutation, source-invariant under /O2. Logic + all bytes otherwise
+// exact (frame 0x40, epilogues, !!x normalize all match).
+RVA(0x000e2d10, 0xa1)
+i32 CSpriteRefTable::LoadGruntzPalette(i32 src, i32 name) {
+    CPaletteOwner* self = (CPaletteOwner*)this;
+    if (!src) {
+        return 0;
+    }
+
+    void* found = 0;
+    self->m_4->m_18->m_10.Lookup((char*)name, &found);
+    if (found) {
+        return 1;
+    }
+
+    char buf[0x40];
+    sprintf(buf, "GRUNTZ_PALETTEZ_%s", (char*)name);
+    void* pal = ((CPaletteSource*)src)->Resolve(buf, 0x50414c);
+    if (!pal) {
+        return 0;
+    }
+    return self->m_4->m_18->Install(pal, 0, 0) != 0;
+}
+
+// ---------------------------------------------------------------------------
+// CSpriteRefTable::LoadToolToyPalettes (0xe2980) - register the full tool/toy color
+// palette set by calling LoadGruntzPalette for each of the 34 fixed color names.
+// Short-circuits to 0 on the first failure (a null src bails immediately); returns 1
+// only when every palette resolved. __thiscall(src), ret 4.
+RVA(0x000e2980, 0x2cd)
+i32 CSpriteRefTable::LoadToolToyPalettes(i32 src) {
+    // One short-circuit && chain so MSVC shares a single return-0 tail (each rung
+    // `test;je fail`), matching retail's layout (an if/return-0 per rung inlines 35
+    // epilogues and bloats the body).
+    if (src && LoadGruntzPalette(src, (i32) "BLACKTOOL") &&
+        LoadGruntzPalette(src, (i32) "BLACKTOY") && LoadGruntzPalette(src, (i32) "DKBLUETOOL") &&
+        LoadGruntzPalette(src, (i32) "DKBLUETOY") && LoadGruntzPalette(src, (i32) "DKGREENTOOL") &&
+        LoadGruntzPalette(src, (i32) "DKGREENTOY") && LoadGruntzPalette(src, (i32) "TURQTOOL") &&
+        LoadGruntzPalette(src, (i32) "TURQTOY") && LoadGruntzPalette(src, (i32) "DKREDTOOL") &&
+        LoadGruntzPalette(src, (i32) "DKREDTOY") && LoadGruntzPalette(src, (i32) "PURPLETOOL") &&
+        LoadGruntzPalette(src, (i32) "PURPLETOY") && LoadGruntzPalette(src, (i32) "DKYELLOWTOOL") &&
+        LoadGruntzPalette(src, (i32) "DKYELLOWTOY") && LoadGruntzPalette(src, (i32) "GREYTOOL") &&
+        LoadGruntzPalette(src, (i32) "GREYTOY") && LoadGruntzPalette(src, (i32) "BLUETOOL") &&
+        LoadGruntzPalette(src, (i32) "BLUETOY") && LoadGruntzPalette(src, (i32) "GREENTOOL") &&
+        LoadGruntzPalette(src, (i32) "GREENTOY") && LoadGruntzPalette(src, (i32) "CYANTOOL") &&
+        LoadGruntzPalette(src, (i32) "CYANTOY") && LoadGruntzPalette(src, (i32) "REDTOOL") &&
+        LoadGruntzPalette(src, (i32) "REDTOY") && LoadGruntzPalette(src, (i32) "PINKTOOL") &&
+        LoadGruntzPalette(src, (i32) "PINKTOY") && LoadGruntzPalette(src, (i32) "YELLOWTOOL") &&
+        LoadGruntzPalette(src, (i32) "YELLOWTOY") && LoadGruntzPalette(src, (i32) "WHITETOOL") &&
+        LoadGruntzPalette(src, (i32) "WHITETOY") && LoadGruntzPalette(src, (i32) "ORANGETOOL") &&
+        LoadGruntzPalette(src, (i32) "ORANGETOY") && LoadGruntzPalette(src, (i32) "HOTPINKTOOL") &&
+        LoadGruntzPalette(src, (i32) "HOTPINKTOY")) {
+        return 1;
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// CSpriteRefTable::BuildToolToyColorTable (0xe2400) - build the per-color tool/toy
+// sprite-ref table. Bails on a null src; if already built (m_90) returns success.
+// Otherwise registers the color palettes (LoadToolToyPalettes), then Add()s each
+// color's "<COLOR>TOOL"/"<COLOR>TOY" sprite into bucket A/B at the color's fixed
+// kind slot (any Add miss aborts with 0), and latches m_90. __thiscall(src), ret 4.
+RVA(0x000e2400, 0x39e)
+i32 CSpriteRefTable::BuildToolToyColorTable(i32 src) {
+    if (!src) {
+        return 0;
+    }
+    if (m_90 != 0) {
+        return 1;
+    }
+    if (!LoadToolToyPalettes(src)) {
+        return 0;
+    }
+    CSpriteRef* r;
+    r = Add("BLACKTOOL", 7);
+    if (!r) {
+        return 0;
+    }
+    m_refA[7] = r;
+    r = Add("BLACKTOY", 7);
+    if (!r) {
+        return 0;
+    }
+    m_refB[7] = r;
+    r = Add("DKBLUETOOL", 8);
+    if (!r) {
+        return 0;
+    }
+    m_refA[8] = r;
+    r = Add("DKBLUETOY", 8);
+    if (!r) {
+        return 0;
+    }
+    m_refB[8] = r;
+    r = Add("DKGREENTOOL", 9);
+    if (!r) {
+        return 0;
+    }
+    m_refA[9] = r;
+    r = Add("DKGREENTOY", 9);
+    if (!r) {
+        return 0;
+    }
+    m_refB[9] = r;
+    r = Add("TURQTOOL", 0xa);
+    if (!r) {
+        return 0;
+    }
+    m_refA[0xa] = r;
+    r = Add("TURQTOY", 0xa);
+    if (!r) {
+        return 0;
+    }
+    m_refB[0xa] = r;
+    r = Add("DKREDTOOL", 0xb);
+    if (!r) {
+        return 0;
+    }
+    m_refA[0xb] = r;
+    r = Add("DKREDTOY", 0xb);
+    if (!r) {
+        return 0;
+    }
+    m_refB[0xb] = r;
+    r = Add("PURPLETOOL", 4);
+    if (!r) {
+        return 0;
+    }
+    m_refA[4] = r;
+    r = Add("PURPLETOY", 4);
+    if (!r) {
+        return 0;
+    }
+    m_refB[4] = r;
+    r = Add("DKYELLOWTOOL", 0xd);
+    if (!r) {
+        return 0;
+    }
+    m_refA[0xd] = r;
+    r = Add("DKYELLOWTOY", 0xd);
+    if (!r) {
+        return 0;
+    }
+    m_refB[0xd] = r;
+    r = Add("GREYTOOL", 0xe);
+    if (!r) {
+        return 0;
+    }
+    m_refA[0xe] = r;
+    r = Add("GREYTOY", 0xe);
+    if (!r) {
+        return 0;
+    }
+    m_refB[0xe] = r;
+    r = Add("BLUETOOL", 2);
+    if (!r) {
+        return 0;
+    }
+    m_refA[2] = r;
+    r = Add("BLUETOY", 2);
+    if (!r) {
+        return 0;
+    }
+    m_refB[2] = r;
+    r = Add("GREENTOOL", 1);
+    if (!r) {
+        return 0;
+    }
+    m_refA[1] = r;
+    r = Add("GREENTOY", 1);
+    if (!r) {
+        return 0;
+    }
+    m_refB[1] = r;
+    r = Add("CYANTOOL", 0xf);
+    if (!r) {
+        return 0;
+    }
+    m_refA[0xf] = r;
+    r = Add("CYANTOY", 0xf);
+    if (!r) {
+        return 0;
+    }
+    m_refB[0xf] = r;
+    r = Add("REDTOOL", 3);
+    if (!r) {
+        return 0;
+    }
+    m_refA[3] = r;
+    r = Add("REDTOY", 3);
+    if (!r) {
+        return 0;
+    }
+    m_refB[3] = r;
+    r = Add("PINKTOOL", 0xc);
+    if (!r) {
+        return 0;
+    }
+    m_refA[0xc] = r;
+    r = Add("PINKTOY", 0xc);
+    if (!r) {
+        return 0;
+    }
+    m_refB[0xc] = r;
+    r = Add("YELLOWTOOL", 5);
+    if (!r) {
+        return 0;
+    }
+    m_refA[5] = r;
+    r = Add("YELLOWTOY", 5);
+    if (!r) {
+        return 0;
+    }
+    m_refB[5] = r;
+    r = Add("WHITETOOL", 0x10);
+    if (!r) {
+        return 0;
+    }
+    m_refA[0x10] = r;
+    r = Add("WHITETOY", 0x10);
+    if (!r) {
+        return 0;
+    }
+    m_refB[0x10] = r;
+    r = Add("ORANGETOOL", 0);
+    if (!r) {
+        return 0;
+    }
+    m_refA[0] = r;
+    r = Add("ORANGETOY", 0);
+    if (!r) {
+        return 0;
+    }
+    m_refB[0] = r;
+    r = Add("HOTPINKTOOL", 6);
+    if (!r) {
+        return 0;
+    }
+    m_refA[6] = r;
+    r = Add("HOTPINKTOY", 6);
+    if (!r) {
+        return 0;
+    }
+    m_refB[6] = r;
+    m_90 = 1;
+    return 1;
 }

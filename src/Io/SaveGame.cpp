@@ -13,6 +13,48 @@
 #include <Io/SaveGame.h>
 #include <rva.h>
 
+// The save-slot dialog labeller (winapi_0e3e80_SetDlgItemTextA, ApiCallers.cpp):
+// labels one slot into four dialog controls. Declared with its real namespace +
+// signature so the rel32 call pairs by mangled name; the slot pointer flows in as
+// the NameItem_09e2d0* it expects (a forward-declared opaque). Reloc-masked.
+namespace ApiCallerStubs {
+struct NameItem_09e2d0;
+void winapi_0e3e80_SetDlgItemTextA(HWND hWnd, NameItem_09e2d0* item, i32 id3, i32 id4, i32 id5,
+                                   i32 id6);
+} // namespace ApiCallerStubs
+
+// ---------------------------------------------------------------------------
+// FillSaveDialog  (0x000e3c60): walk the ten save slots of `sg`, labelling each
+// into its row of four dialog controls (base IDs 0x435 / 0x490 / 0x49a / 0x4a4 +
+// slot index). __cdecl(HWND, CSaveGame*); both pointers null-checked up front.
+RVA(0x000e3c60, 0x1a3)
+void FillSaveDialog(HWND hWnd, CSaveGame* sg) {
+    if (hWnd == 0 || sg == 0) {
+        return;
+    }
+    using ApiCallerStubs::winapi_0e3e80_SetDlgItemTextA;
+    winapi_0e3e80_SetDlgItemTextA(hWnd, (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(0), 0x435,
+                                  0x490, 0x49a, 0x4a4);
+    winapi_0e3e80_SetDlgItemTextA(hWnd, (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(1), 0x436,
+                                  0x491, 0x49b, 0x4a5);
+    winapi_0e3e80_SetDlgItemTextA(hWnd, (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(2), 0x437,
+                                  0x492, 0x49c, 0x4a6);
+    winapi_0e3e80_SetDlgItemTextA(hWnd, (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(3), 0x438,
+                                  0x493, 0x49d, 0x4a7);
+    winapi_0e3e80_SetDlgItemTextA(hWnd, (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(4), 0x439,
+                                  0x494, 0x49e, 0x4a8);
+    winapi_0e3e80_SetDlgItemTextA(hWnd, (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(5), 0x43a,
+                                  0x495, 0x49f, 0x4a9);
+    winapi_0e3e80_SetDlgItemTextA(hWnd, (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(6), 0x43b,
+                                  0x496, 0x4a0, 0x4aa);
+    winapi_0e3e80_SetDlgItemTextA(hWnd, (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(7), 0x43c,
+                                  0x497, 0x4a1, 0x4ab);
+    winapi_0e3e80_SetDlgItemTextA(hWnd, (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(8), 0x43d,
+                                  0x498, 0x4a2, 0x4ac);
+    winapi_0e3e80_SetDlgItemTextA(hWnd, (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(9), 0x43e,
+                                  0x499, 0x4a3, 0x4ad);
+}
+
 // ---------------------------------------------------------------------------
 // CSaveGame::~CSaveGame  (0x00085b50)
 // Reset() then the two CString members destruct in reverse declaration order
@@ -180,6 +222,43 @@ i32 CSaveGame::FillSlot2(SaveSlot* dst, i32 name, void* src) {
         dst->m_type = 3;
     }
     dst->m_checksum = Register(dst);
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CSaveGame::VerifySlot  (0x000e52c0)
+// Re-derive the slot's level rez-path id and validate it: fail (with an "does
+// not exist" notice) if the registry can't resolve it, fail (with a "has
+// changed" notice) if it no longer matches the slot's stored checksum (+0x10),
+// else succeed. Same name-fallback (g_emptyString) and BuildLevelRezPath shape
+// as Register.
+// @early-stop
+// EH-frame wall (same as Register, ~45%): retail builds the local CString name
+// temp WITHOUT a /GX unwind frame and never destroys it (no fs:0 prologue, no
+// ~CString); the faithful `CString s(name)` forces MSVC5 to emit the EH prolog +
+// dtor cleanup, shifting the frame. Field reads, name fallback, BuildLevelRezPath
+// args, both error branches and the checksum compare are all exact - only the
+// extra frame differs. Deferred to the final sweep.
+RVA(0x000e52c0, 0x99)
+i32 CSaveGame::VerifySlot(SaveSlot* slot) {
+    if (slot == 0) {
+        return 0;
+    }
+    i32 fc = *(i32*)((char*)slot + 0xfc);
+    i32 f8 = *(i32*)((char*)slot + 0xf8);
+    const char* name = (fc == 0 && f8 == 0) ? g_emptyString : ((char*)slot + 0x75);
+    CString s(name);
+    i32 r = g_gameReg->BuildLevelRezPath(fc == 0, fc, f8, slot->m_04);
+    if (r == 0) {
+        g_gameReg->LogError("The level that this game was saved on does not exist!\n\nThis "
+                            "saved game cannot be loaded and should be deleted.");
+        return 0;
+    }
+    if (slot->m_checksum != r) {
+        g_gameReg->LogError("The level that this game was saved on has changed!\n\nThis "
+                            "saved game cannot be loaded and should be deleted.");
+        return 0;
+    }
     return 1;
 }
 

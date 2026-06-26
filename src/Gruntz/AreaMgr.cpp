@@ -11,6 +11,16 @@
 #include <Mfc.h>
 #include <Gruntz/AreaMgr.h>
 
+// CSpawnEntry - a spawn-point record held (by pointer) in CAreaMgr's +0x04 list.
+// Its leading member is the entry name CString (+0x00); the class is non-
+// polymorphic (no vtable, the CString is genuinely first). Only GetTail is
+// reconstructed here, so the minimal layout suffices (single-TU helper).
+class CSpawnEntry {
+public:
+    CString GetTail(); // 0x09a830
+    CString m_name;    // +0x00  entry name ("GGGGNNNN..."); the tail is past col 8
+};
+
 // ---------------------------------------------------------------------------
 // CAreaMgr::~CAreaMgr  (0x099c20)
 // The /GX destructor: clears the current-index word (the +0x00 member teardown,
@@ -138,6 +148,31 @@ i32 CAreaMgr::Dispatch(i32 index) {
 RVA(0x0009a0b0, 0x7)
 void CAreaMgr::Reset() {
     m_00 = 0;
+}
+
+// ---------------------------------------------------------------------------
+// CSpawnEntry::GetTail  (0x09a830)  (/GX EH frame)
+// Return the entry name past its 8-char group prefix; an empty string when the
+// name is empty or 8 chars or shorter. NRV: build a local, copy-construct it
+// into the caller's return slot, destruct the local (the /GX frame).
+// ---------------------------------------------------------------------------
+// @early-stop
+// zero-register-pinning wall (~66%, docs/patterns/zero-register-pinning.md,
+// topic:wall topic:regalloc): the branch structure + every CString call/operand
+// is byte-faithful, but retail pins the 0 and 1 constants in callee-saved ebx/edi
+// (push ebx;push esi;push edi; xor ebx,ebx; mov edi,1) and reuses them for the
+// len==0 compare + the EH-state =0/=1 stores; the recompile keeps only esi and
+// emits immediates, so the extra pushes phase-shift every stack offset. Not
+// source-steerable. Deferred to the final sweep.
+RVA(0x0009a830, 0xa4)
+CString CSpawnEntry::GetTail() {
+    CString tmp;
+    i32 len = m_name.GetLength();
+    if (len == 0)
+        return tmp;
+    if (len > 8)
+        tmp = (const char*)m_name + 8;
+    return tmp;
 }
 
 // ---------------------------------------------------------------------------

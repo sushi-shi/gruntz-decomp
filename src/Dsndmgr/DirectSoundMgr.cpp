@@ -78,9 +78,25 @@ extern void* const g_DirectSoundMgrVtbl[];
 DATA(0x001ef6bc)
 extern void* const g_DirectSoundCloneVtbl[];
 
+// The base-subobject vftable (0x5ef6c0) BaseDtor stamps before tail-stamping the
+// buffer vtable - the next stage of the base destruction restamp chain.
+DATA(0x001ef6c0)
+extern void* const g_DirectSoundBaseVtbl[];
+
 // Volume (DSound hundredths-of-dB, [-10000..0]) -> 0..100 linear percent. A free
 // __cdecl helper (0x135110): caller pops the one arg (`add esp,4`).
 extern "C" i32 ConvertVolumeToPercent(i32 vol);
+
+// The 100-entry volume lookup table SetVolumeByIndex indexes (0x653ab8). Defined
+// (and filled at startup) in UnknownSalazar.cpp as g_salazarLookupTable; only
+// referenced here, so no DATA() (the definition carries the label).
+extern i32 g_salazarLookupTable[100];
+
+// The pan lookup table SetPanByIndex indexes (0x653c48, immediately after the
+// volume table). Read at indices <= 0 from this base: a positive arg reads the
+// negated entry, a negative arg the entry direct.
+DATA(0x00253c48)
+extern i32 g_panTable[];
 
 // The 0x28-byte "playing voice" node minted by CloneAndPlay. Its 6-arg __thiscall
 // ctor (0x136fe0) stamps a vtable (0x5ef6d0) + the play params; CloneAndPlay then
@@ -93,6 +109,7 @@ struct DSoundVoice {
         Link* m_next;
         Link* m_prev;
     } m_link;
+    char m_pad0c[0x28 - 0x0c]; // full node is 0x28 bytes (the `new` size operand)
     DSoundVoice(i32 key, i32 pct, i32 mode, DirectSoundMgr* owner, i32 slot,
                 i32 stamp); // 0x136fe0
 };
@@ -125,6 +142,25 @@ struct DSoundCloneList {
 // operator new / operator delete (engine allocator), reloc-masked rel32.
 void* operator new(u32);
 void operator delete(void*);
+
+// The clone-instance ctor (0x136180, __thiscall ret 0xc => 3 args): chains the
+// base DirectSoundMgr ctor (0x1351d0), stamps the clone vtbl (0x5ef6c0), seeds the
+// clone back-pointer (m_4c=self), the original-buffer back-ptr (m_54), m_50=1, the
+// copied param block (m_2c/m_30/m_34/m_38/m_3c) and ComputeDuration (0x1359a0).
+// External, reloc-masked (its /GX EH frame lives there); modeled as a tiny helper
+// so the placement-new `mov ecx,alloc; push ...; call` falls out.
+struct DSoundCloneCtor {
+    DSoundCloneCtor* Construct(IDirectSoundBufferZ* buf, DirectSoundMgr* owner,
+                               DirectSoundMgr* original); // 0x136180
+};
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::RestampBufferVtbl (__thiscall). Single store of the buffer
+// class's vftable into *this; the chained tail of BaseDtor. (mov [ecx],vtbl; ret)
+RVA(0x00135300, 0x7)
+void DirectSoundMgr::RestampBufferVtbl() {
+    *(void**)this = (void*)g_DirectSoundMgrVtbl;
+}
 
 // ---------------------------------------------------------------------------
 // DirectSoundMgr ctor (__thiscall). Wraps a held IDirectSoundBuffer: stamps the
@@ -198,6 +234,26 @@ i32 DirectSoundMgr::Restore() {
 }
 
 // ---------------------------------------------------------------------------
+// DirectSoundMgr::ReacquireBuffer (__thiscall). Gated on the owning manager's init
+// flag. If an instance-specific reacquire callback is installed (m_30, a __cdecl
+// fn-ptr taking (m_34, this)), invoke it and return 1 on success; otherwise tail
+// into the owner's ReacquireViaCallback (0x1365e0). m_30/m_34 are the per-buffer
+// callback + context (zero-inited in the ctor).
+RVA(0x00135340, 0x37)
+i32 DirectSoundMgr::ReacquireBuffer() {
+    if (m_owner->m_initialized == 0) {
+        return 0;
+    }
+    i32(__cdecl * cb)(i32, DirectSoundMgr*) = (i32(__cdecl*)(i32, DirectSoundMgr*))m_30;
+    if (cb != 0) {
+        if (cb(m_34, this) != 0) {
+            return 1;
+        }
+    }
+    return m_owner->ReacquireViaCallback();
+}
+
+// ---------------------------------------------------------------------------
 // DirectSoundMgr::StopAndRewind (__thiscall). Gated on the owning manager's
 // init flag; Stop() then rewind via SetCurrentPosition(0), each reported on
 // failure.
@@ -253,6 +309,23 @@ i32 DirectSoundMgr::IsLooping() {
 }
 
 // ---------------------------------------------------------------------------
+// DirectSoundMgr::SetField3 (__thiscall, 1 arg). Gated on init. Sets/clears bit 0
+// of the +0x14 play-flags word (the IDirectSoundBuffer::Play looping flag). +0x14
+// overlaps m_device in the manager shape; the buffer shape uses it as play-flags,
+// so it is reached via an offset cast (the field is zero-inited as m_device).
+RVA(0x00135510, 0x25)
+void DirectSoundMgr::SetField3(i32 on) {
+    if (m_owner->m_initialized == 0) {
+        return;
+    }
+    if (on) {
+        *(i32*)((char*)this + 0x14) |= 1;
+    } else {
+        *(i32*)((char*)this + 0x14) &= ~1;
+    }
+}
+
+// ---------------------------------------------------------------------------
 // DirectSoundMgr::SetVolume (__thiscall). Gated on init + the volume capability
 // bit (m_caps & 0x80); SetVolume, report on failure.
 RVA(0x00135560, 0x58)
@@ -269,6 +342,17 @@ i32 DirectSoundMgr::SetVolume(i32 vol) {
         return 0;
     }
     return 1;
+}
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::SetVolumeByIndex (__thiscall, 1 arg). Gated on init. Maps a
+// 0..99 index through the volume table and forwards to SetVolume (tail value).
+RVA(0x001355c0, 0x23)
+i32 DirectSoundMgr::SetVolumeByIndex(i32 idx) {
+    if (m_owner->m_initialized == 0) {
+        return 0;
+    }
+    return SetVolume(g_salazarLookupTable[idx]);
 }
 
 // ---------------------------------------------------------------------------
@@ -349,6 +433,21 @@ i32 DirectSoundMgr::SetPan(i32 pan) {
 }
 
 // ---------------------------------------------------------------------------
+// DirectSoundMgr::SetPanByIndex (__thiscall, 1 arg). Gated on init. Maps a signed
+// index through the pan table (read from its base toward lower addresses): a
+// non-negative idx forwards the negated entry, a negative idx the entry direct.
+RVA(0x001357a0, 0x42)
+i32 DirectSoundMgr::SetPanByIndex(i32 idx) {
+    if (m_owner->m_initialized == 0) {
+        return 0;
+    }
+    if (idx >= 0) {
+        return SetPan(-g_panTable[-idx]);
+    }
+    return SetPan(g_panTable[idx]);
+}
+
+// ---------------------------------------------------------------------------
 // DirectSoundMgr::GetPan (__thiscall). GetPan out-param; on failure report and
 // return 0, else return the queried pan.
 RVA(0x001357f0, 0x42)
@@ -384,6 +483,38 @@ i32 DirectSoundMgr::SetFrequency(u32 freq) {
     }
     m_setFreq = freq;
     return 1;
+}
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::SetField2 (__thiscall, 1 arg). Gated on init. Adjusts playback
+// frequency by `pct` percent of the cached base (clamped to [101, 99999]) via
+// SetFrequency, records the matching m_3c rate (pct% of m_38), then recomputes the
+// duration. The SetFrequency result is what is returned. Signed mul/div by 100.
+RVA(0x00135920, 0x80)
+i32 DirectSoundMgr::SetField2(i32 pct) {
+    if (m_owner->m_initialized == 0) {
+        return 0;
+    }
+    i32 v = pct * (i32)m_freq / 100 + (i32)m_freq;
+    if ((u32)v >= 0x186a0) {
+        v = 0x1869f;
+    }
+    if ((u32)v <= 0x64) {
+        v = 0x65;
+    }
+    i32 r = SetFrequency(v);
+    m_3c = pct * m_38 / 100 + m_38;
+    ComputeDuration();
+    return r;
+}
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::ComputeDuration (__thiscall, no args). m_28 = m_2c*1000/m_3c
+// (unsigned), the playback duration in ms from the sample count and the (freshly
+// set) sample rate. The *1000 is the strength-reduced lea*5/*5/*5/shl3 chain.
+RVA(0x001359a0, 0x18)
+void DirectSoundMgr::ComputeDuration() {
+    m_28 = m_2c * 1000 / m_3c;
 }
 
 // ---------------------------------------------------------------------------
@@ -470,6 +601,48 @@ DirectSoundMgr::~DirectSoundMgr() {
         RemoveClone(m_cloneHead->m_inst);
     }
     BaseDtor();
+}
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::Clone (__thiscall, ret 0x4 => 1 arg). Gated on owner init. new's
+// a 0x58-byte clone instance, constructs it (clone ctor 0x136180 chaining the base
+// ctor with this->m_buffer / this->m_owner and recording the original=this), then
+// asks the owner's IDirectSound device to DuplicateSoundBuffer this->m_buffer into
+// the clone's m_buffer; on failure reports via GetErrorString(0x217) and returns 0.
+// On success links the clone's anchor (m_node44) into this->m_cloneHead list,
+// stamps the play key (clone->m_50) and returns the clone. A /GX EH frame wraps the
+// new+ctor (the [esp+0x14] 0/-1 stores are the construction-in-flight trylevel).
+// @early-stop
+// RezAlloc/new-with-ctor-in-flight EH-frame wall (docs/patterns/rezalloc-placement-
+// new-no-eh-frame.md): the body (new, clone ctor, DuplicateSoundBuffer, the
+// neg/sbb/neg HRESULT bool, GetErrorString report, list-insert + m_50 store) is
+// byte-exact, but MSVC5's placement-new path cannot reproduce retail's
+// construction-in-flight /GX trylevel frame the real `new DSoundClone(...)` emits.
+// Same wall as SoundDevice::CreateBuffer (0x1366f0). Defer to the final sweep once
+// the clone ctor is modeled and a real `new T` allocator path emits the frame.
+RVA(0x00135c20, 0xf6)
+DirectSoundMgr* DirectSoundMgr::Clone(i32 a) {
+    if (m_owner->m_initialized == 0) {
+        return 0;
+    }
+    void* raw = operator new(0x58);
+    DSoundCloneCtor* clone = 0;
+    if (raw != 0) {
+        clone = ((DSoundCloneCtor*)raw)->Construct(m_buffer, m_owner, (DirectSoundMgr*)this);
+    }
+    if (clone == 0) {
+        return 0;
+    }
+    DirectSoundMgr* c = (DirectSoundMgr*)clone;
+    IDirectSoundZ* dev = m_owner->m_device;
+    i32 hr = dev->vtbl->DuplicateSoundBuffer(dev, m_buffer, &c->m_buffer) != 0;
+    if (hr) {
+        GetErrorString(DSNDMGR_FILE, 0x217, hr);
+        return 0;
+    }
+    ((DSoundList*)&m_cloneHead)->InsertHead(&c->m_node44);
+    *(i32*)((char*)c + 0x50) = a; // +0x50  the play key
+    return c;
 }
 
 // ---------------------------------------------------------------------------
@@ -574,6 +747,73 @@ void DirectSoundMgr::StopAllClones() {
 }
 
 // ---------------------------------------------------------------------------
+// DirectSoundMgr::BaseDtor (__thiscall). The base-subobject teardown: stamp the
+// base vftable (0x5ef6c0), then tail into RestampBufferVtbl (0x135300) to stamp the
+// buffer vftable (0x5ef6b8) - the two-stage restamp chain ~DirectSoundMgr runs last.
+RVA(0x00136260, 0xb)
+void DirectSoundMgr::BaseDtor() {
+    *(void**)this = (void*)g_DirectSoundBaseVtbl;
+    RestampBufferVtbl();
+}
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::Play (__thiscall, no args). Gated on init. Plays the buffer with
+// the +0x14 looping flag; on DSERR_BUFFERLOST asks m_54 to reacquire and retries
+// once. A retry failure or a non-buffer-lost HRESULT is reported via GetErrorString;
+// a failed reacquire returns 0 silently. Same shape as Lock (0x136370).
+RVA(0x00136270, 0x8b)
+i32 DirectSoundMgr::Play() {
+    if (m_owner->m_initialized == 0) {
+        return 0;
+    }
+    i32 hr = m_buffer->vtbl->Play(m_buffer, 0, 0, *(u32*)((char*)this + 0x14)) != 0;
+    if (hr != 0) {
+        if (hr == (i32)0x88780096) {
+            if (m_54->ReacquireBuffer() == 0) {
+                return 0;
+            }
+            i32 hr2 = m_buffer->vtbl->Play(m_buffer, 0, 0, *(u32*)((char*)this + 0x14)) != 0;
+            if (hr2 != 0) {
+                GetErrorString(DSNDMGR_FILE, 0x34c, hr2);
+                return 0;
+            }
+        } else {
+            GetErrorString(DSNDMGR_FILE, 0x356, hr);
+            return 0;
+        }
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::ApplyAndPlay (__thiscall, ret 0x10 => 4 args). Gated on owner
+// init. Apply the four play params - SetVolumeByIndex, SetPanByIndex, a second and
+// a third field setter - then start playback (Play, 0x136270, with its own
+// DSERR_BUFFERLOST reacquire-retry). The third setter's result is not folded into
+// the success flag; every other failure clears it. Returns the accumulated 0/1.
+RVA(0x00136300, 0x6f)
+i32 DirectSoundMgr::ApplyAndPlay(i32 vol, i32 pan, i32 freq, i32 d) {
+    if (m_owner->m_initialized == 0) {
+        return 0;
+    }
+    i32 ok = 1;
+    if (SetVolumeByIndex(vol) == 0) {
+        ok = 0;
+    }
+    if (SetPanByIndex(pan) == 0) {
+        ok = 0;
+    }
+    if (SetField2(freq) == 0) {
+        ok = 0;
+    }
+    SetField3(d);
+    if (Play() == 0) {
+        ok = 0;
+    }
+    return ok;
+}
+
+// ---------------------------------------------------------------------------
 // DirectSoundMgr::Lock (__thiscall, 7 args). Pass-through IDirectSoundBuffer::Lock;
 // on DSERR_BUFFERLOST (0x88780096) it asks m_54 to reacquire the buffer and, if that
 // succeeds, retries the Lock once. A retry failure or a non-buffer-lost HRESULT is
@@ -631,6 +871,19 @@ i32 DirectSoundMgr::Create(void* hwnd, u32 level, u32 flags) {
     m_7c = 0;
     m_initialized = 1;
     return 1;
+}
+
+// ---------------------------------------------------------------------------
+// DirectSoundMgr::ReacquireViaCallback (__thiscall). Tail-dispatch through the
+// installed reacquire callback fn-ptr (m_80, a __thiscall on the manager); returns
+// its result, or 0 when no callback is installed. (mov eax,[ecx+0x80]; jmp eax)
+RVA(0x001365e0, 0xf)
+i32 DirectSoundMgr::ReacquireViaCallback() {
+    if (m_80 != 0) {
+        i32 (DirectSoundMgr::*cb)() = *(i32(DirectSoundMgr::**)())&m_80;
+        return (this->*cb)();
+    }
+    return 0;
 }
 
 // ---------------------------------------------------------------------------

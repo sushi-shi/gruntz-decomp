@@ -32,6 +32,8 @@
 #include <rva.h>
 #include <Ints.h>
 
+class CString; // MFC CString (4-byte m_pszData ptr); full type in CImageOwned.cpp
+
 // The two vtables in the dtor chain: this class's own (0x5eaa2c) and the
 // grand-base CObject dtor vtable (0x5e8cb4 = g_remusBaseDtorVtbl). Reloc-masked
 // DATA externs (the manual stamps reference the RETAIL tables, whose contents are
@@ -77,26 +79,56 @@ public:
     CImageParent* m_0c; // +0x0c  parent CDDrawPtrCollections (its surface pool at +0x1c)
 };
 
+// The source sub-object held at CImageSurfaceItem::m_08 (a polymorphic Remus
+// parse-node). Reload (slot 13) probes it via two vtable slots: +0x60 reports
+// whether the surface is still clean (skip rebuild), +0x6c returns whether it has
+// a live source descriptor (re-run Resolve) vs none (parse the new source). Its
+// vtable contents are external engine code; only the two slots are evidenced.
+//
+// The two slots are called `mov ecx,[obj]; push obj; call [ecx+N]` - the object is
+// pushed as an explicit stack arg (the vtable fn ptr is __stdcall(this), not a PMF
+// with this-in-ecx). Model the vtable entries as __stdcall fn-ptrs over the object.
+struct CImageSurfaceSrc;
+struct CImageSurfaceSrcVtbl {
+    char _00[0x60 - 0x00];
+    i32(__stdcall* IsClean)(CImageSurfaceSrc*); // [0x60]
+    char _64[0x6c - 0x64];
+    i32(__stdcall* HasSource)(CImageSurfaceSrc*); // [0x6c]
+};
+struct CImageSurfaceSrc {
+    CImageSurfaceSrcVtbl* vptr; // +0x00
+};
+
 // The held +0x2c surface (a CDDrawPtrCollections CPoolItemA): LoadDispatch reads
-// its geometry (+0x18 / +0x1c) and the +0xbc keyed flag. Only those offsets are
-// load-bearing here; the rest of the 0xc0-byte item lives in CDDrawPtrCollections.
+// its geometry (+0x18 / +0x1c) and the +0xbc keyed flag; Reload (slot 13) reaches
+// the parse-source at +0x08, Prepare (0x13e760) and Blt (0x13ee60) drive a clone.
+// Only those offsets are load-bearing here; the rest of the 0xc0-byte item lives in
+// CDDrawPtrCollections.
 class CImageSurfaceItem {
 public:
-    char _00[0x18];
+    char _00[0x08];
+    CImageSurfaceSrc* m_08; // +0x08  parse-source sub-object (Reload path)
+    char _0c[0x18 - 0x0c];
     i32 m_18; // +0x18  height
     i32 m_1c; // +0x1c  width
     char _20[0xbc - 0x20];
     i32 m_bc; // +0xbc  has-color-key flag
+
+    i32 Prepare(i32 z);                // 0x13e760  (__thiscall, ret 4)
+    i32 Blt(CImageSurfaceItem* other); // 0x13ee60  (__thiscall, ret 4)
+    i32 Reload(void* pool, i32 src, i32 index, void* data, i32 flag); // 0x13e550 (__thiscall, ret 0x14)
 };
 
 // The parent CDDrawPtrCollections surface pool, reached through CImage::m_0c->m_1c.
-// RemoveItemA (0x142160) frees a held surface; CreateA (0x142260) allocates one.
-// Reloc-masked __thiscall engine callees modeled on a tiny view so each lowers to
-// `mov ecx,pool; call` with callee-side stack cleanup.
+// RemoveItemA (0x142160) frees a held surface; CreateA (0x142260) allocates one;
+// CreateB (0x1423c0) is the Create24 variant. Reloc-masked __thiscall engine callees
+// modeled on a tiny view so each lowers to `mov ecx,pool; call` with callee-side
+// stack cleanup.
 class CImageSurfacePool {
 public:
     void RemoveItemA(void* item);                                          // 0x142160
     CImageSurfaceItem* CreateA(i32 desc, i32 mode, void* a, i32 b, i32 c); // 0x142260
+    CImageSurfaceItem* CreateB(i32 desc, i32 mode, void* a, i32 b, i32 c); // 0x1423c0
 };
 
 // The owned +0x30 object (a 0x3c-byte buffer holder built by BuildSlot13): a
@@ -109,6 +141,9 @@ class CImageBuildDesc;
 class CImageOwned {
 public:
     CImageOwned();                                      // 0x148ce0
+    i32 BuildRle(void* pixels, i32 width, i32 height, i32 stride, i32 keyVal,
+                 void* palette);                        // 0x148d40  (/GX, CByteArray RLE encode)
+    i32 LoadFromFile(CString name, i32 fmt);            // 0x148fc0  (/GX, open + slurp + Build)
     i32 Build(CImageBuildDesc* src, i32 size, i32 fmt); // 0x1490d0
     void* Remap(void* pixels);                          // 0x1495d0  (palette-remap, external)
     void Teardown();                                    // 0x148d10
@@ -125,6 +160,7 @@ public:
     i32 m_24;   // +0x24  (-1 / src->m_18)
     u8 m_28;    // +0x28  format flag a
     u8 m_29;    // +0x29  format flag b
+    char _2a[0x3c - 0x2a]; // +0x2a  pad to the 0x3c allocation size (operator new(0x3c))
 };
 
 // The CImageFrameDesc as seen by CImageOwned::Build: a flag word at +0x04 (bits
@@ -142,11 +178,23 @@ public:
     u8 m_20[1]; // +0x20  raw frame data (palette + pixels)
 };
 
-// The +0x0c parent (CDDrawPtrCollections): its surface pool sits at +0x1c. Both
+// The display-mode descriptor reached through CImageParent::m_04 in BuildSlot13:
+// m_04->m_10 is the active CDDrawSurface, whose +0x18 holds the format/pitch the
+// owned object's Build needs. Reloc-masked; only the +0x10 / +0x18 offsets matter.
+class CDDrawSurfaceDesc {
+public:
+    char _00[0x10];
+    i32* m_10; // +0x10  active surface (its +0x18 is the format)
+};
+
+// The +0x0c parent (CDDrawPtrCollections): its surface pool sits at +0x1c, and a
+// display-mode descriptor at +0x04 (chased by BuildSlot13 for the build format).
 // FreeAll and LoadDispatch reach the pool through it.
 class CImageParent {
 public:
-    char _00[0x1c];
+    char _00[0x04];
+    CDDrawSurfaceDesc* m_04; // +0x04  display-mode descriptor
+    char _08[0x1c - 0x08];
     CImageSurfacePool* m_1c; // +0x1c  the surface pool
 };
 
@@ -190,9 +238,12 @@ class CImage : public CImageBase {
 public:
     i32 Resolve(CImageSource* src, i32 arg);                           // 0x152f20  (vtable slot 11)
     i32 LoadDispatch(CImageFrameDesc* desc, u32 mode, void* a, i32 b); // 0x152fb0  (vtable slot 10)
+    i32 Create24(CImageFrameDesc* desc, i32 mode, i32 keyed); // 0x1530e0  (vtable slot 9)
     i32
     BuildSlot13(CImageFrameDesc* desc, void* a); // 0x153180  (non-virtual /GX builder, external)
     void FreeAll();                              // 0x153260  (vtable slot 7)
+    i32 CopyFrom(CImage* other);                 // 0x1532b0  (clone the surface from another image)
+    i32 Reload(CImageSource* src, i32 arg);      // 0x153380  (vtable slot 13)
     ~CImage();                                   // 0x0d5e80
     void RenderFrame(void* a, void* b, void* c, void* d);                    // 0x153790
     void RenderFrameClipped(void* a, void* b, void* c, void* d, void* rect); // 0x153810

@@ -49,7 +49,7 @@ struct CFileIOView {
     virtual void v12();
     virtual void v13();
     virtual i32 GetLength();                    // +0x38 (slot 14)
-    virtual void v15();                         // (Read)
+    virtual i32 Read(void* buf, u32 n);         // +0x3c (slot 15)
     virtual void Write(const void* buf, u32 n); // +0x40 (slot 16)
     virtual void v17();
     virtual void v18();
@@ -174,6 +174,26 @@ i32 CFileMem::Open() {
 RVA(0x00165ef0, 0xf)
 i32 CFileMem::Ready() {
     ((CFileIOView*)&m_file)->Status();
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CFileMem::Read  (0x00165f00)
+// Read n bytes through the inner CFileIO (vtable +0x3c), advancing only the
+// consumed-count m_24 by n. buf==0 -> early no-op (eax left = buf = 0); n==0 ->
+// return 0. Fails (0) if the inner Read returns fewer than n bytes; else 1.
+RVA(0x00165f00, 0x48)
+i32 CFileMem::Read(void* buf, i32 n) {
+    if (buf == 0) {
+        return 0; // (no-op path; eax left = buf = 0 in retail)
+    }
+    if (n == 0) {
+        return 0;
+    }
+    if (((CFileIOView*)&m_file)->Read(buf, n) != n) {
+        return 0;
+    }
+    m_24 += n;
     return 1;
 }
 

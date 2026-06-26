@@ -17,6 +17,7 @@
 #define SRC_GRUNTZ_GRUNT_H
 
 #include <Ints.h>
+#include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (g_gameReg->m_74; GetSel)
 
 // ---------------------------------------------------------------------------
 // The receiver the Add* registration call runs on: edi = sprite->m_7c->m_18.
@@ -57,8 +58,26 @@ struct CSpriteInner {
 };
 
 struct CHudSprite {
-    char m_pad0[0x7c];
+    // The CGameObject-base name/geometry setters the one-shot "SingleAnimation"
+    // sprite (BuildGruntLoseItemAnimation) drives: ApplyName(key) (0x150540, ret 4)
+    // and ApplyLookupGeometry(key, frame) (0x1505b0, ret 8). External/reloc-masked.
+    void ApplyName(const char* key);              // 0x150540
+    void ApplyLookupGeometry(const char* key, i32 frame); // 0x1505b0
+
+    char m_pad0[0x8];
+    i32 m_8; // +0x08  (sprite flag word; arrival sets |= 0x10000 to retire it)
+    char m_padc[0x7c - 0xc];
     CSpriteInner* m_7c; // +0x7c
+};
+
+// The on-screen cue gate's visibility rect, reached as
+// (g->m_30->m_24->m_5c + 0x40): {left, top, right, bottom}. The viewport's m_5c is
+// a base address (modeled i32 in CGameRegistry.h), so the +0x40 view is a cast.
+struct CCueRect {
+    i32 left;   // +0x00
+    i32 top;    // +0x04
+    i32 right;  // +0x08
+    i32 bottom; // +0x0c
 };
 
 // ---------------------------------------------------------------------------
@@ -68,7 +87,11 @@ struct CHudSprite {
 struct CGruntHud {
     char m_pad0[0x8];
     i32 m_8; // +0x08   (dirty-flag word; BuildEntrance |= 0x20000)
-    char m_padc[0x5c - 0xc];
+    char m_padc[0x4c - 0xc];
+    i32 m_4c; // +0x4c   (SelectMoveIcon: = GetSel result)
+    i32 m_50; // +0x50   (SelectMoveIcon: = 0xa)
+    char m_pad54[0x58 - 0x54];
+    i32 m_58; // +0x58   (SelectMoveIcon: = 1)
     i32 m_5c; // +0x5c
     i32 m_60; // +0x60
     char m_pad64[0x74 - 0x64];
@@ -202,6 +225,7 @@ class CGrunt; // fwd-declared for CueA's first arg
 class CGruntCueSink {
 public:
     void Cue(i32 a, i32 b, i32 c, i32 d, i32 e);             // via thunk 0x33b4
+    void Cue1(i32 a);                                        // 1-arg cue (thunk_0x1163 -> 0x51c730)
     void CueA(CGrunt* g, i32 b, i32 c, i32 d, i32 e, i32 f); // 6-arg entrance cue (ret 0x18)
     void CueSpawn(CGrunt* g, i32 b, i32 c, i32 d, i32 e);    // via thunk 0x27ac (ret 0x14)
 };
@@ -253,7 +277,8 @@ public:
     // Data-less view: the geometry sub-player's m_20/m_28 (abs CGrunt+0x154+0x1a0
     // +0x20/+0x28) live PAST the player's own m_1b4, so they are not modeled as
     // embedded data here (that would corrupt m_1b4's offset). LoadEntranceConfig's
-    // tail reads them via raw offsets off &player->m_1a0 instead.
+    // tail and UpdateEntranceAnim's armed-but-not-running gate read them via raw
+    // offsets off &player->m_1a0 instead (keeps cl on one `add eax,0x1a0` base).
 };
 
 // A per-cell entrance record (0x68-byte stride at CGrunt+0x474). GetName(flag)
@@ -272,6 +297,17 @@ public:
     // A 1-arg setter the WALK/E arms call on the player itself (FUN_00550540,
     // FUN_005504d0 is the 2-arg form). Takes the resolved cell name.
     void SetAnimName(const char* name); // FUN_00550540 (ret 4)
+    // The death/freeze finalize 2-arg geometry setter (FUN_005505b0); takes the
+    // resolved key string + a flag. External/reloc-masked.
+    void ApplyLookupGeometry(const char* key, i32 flag); // FUN_005505b0 (ret 8)
+    // The combat-reaction dispatch (@0x646b0) drives the player through its
+    // CGameObject base name/sprite setters (0x150540 / 0x1504d0, not the 0x55xxxx
+    // entrance forms). External/no-body so the call rel32 reloc-masks.
+    void GameApplyName(const char* name);                 // 0x150540 (ret 4)
+    void GameApplyLookupSprite(const char* key, i32 flag); // 0x1504d0 (ret 8)
+    // The CGameObject-base lookup-geometry setter (same 0x1505b0 slot CHudSprite
+    // uses) the death/freeze finalize drives with the DEATHZ_SPARKLE/UNFREEZE keys.
+    void GameApplyLookupGeometry(const char* key, i32 flag); // 0x1505b0 (ret 8)
 
     char m_pad0[0xc];
     CEntranceResMgr* m_c; // +0x0c  resource object (lookup table holder)
@@ -284,6 +320,12 @@ public:
     char m_pad1c4[0x1c8 - 0x1c4];
     i32 m_1c8; // +0x1c8 (entrance-done flag A: nonzero -> bail)
 };
+
+// CString::GetBuffer(int) the entrance-anim update (@0x690a0) calls to hand the
+// grunt's +0x448 name CString raw to SetAnimFrame. __thiscall (this = &CString),
+// ret 4. External/reloc-masked (the engine CString TU); modeled as a free helper
+// taking the CString address so `lea ecx,[this+0x448]; push 0; call` falls out.
+char* GruntStrGetBuffer(void* str, i32 minLen); // 0x1ba11c
 
 // The frame helper BuildEntranceAnimation calls at the tail (FUN_005504d0):
 // __stdcall(keyStr, frameNum) - callee-pops (no `add esp` at the site). External.
@@ -319,8 +361,48 @@ class CAnimNameResolver {
 public:
     char** GetNameRecord(void* node);            // thunk_FUN_004310f0 (ret 4)
     CAnimNameRecord* GetNameRecords(void* node); // thunk_FUN_004312a0 (ret 4)
+    // The entrance-cell coordinate -> record-index mappers the arrival recycle
+    // step (0x59230) drives when the raw bounds test misses. Both __thiscall on the
+    // resolver (this = 0x6bf650); external/no-body so the calls reloc-mask.
+    i32 MapCellIndex(i32 coord, i32 flag);  // FUN_0056da80 (ret 8)
+    i32 MapCellRecord(i32 base, i32 size);  // FUN_00434960 (ret 8; block-1 fallback)
+    i32 MapCellRecord2(i32 base, i32 size); // FUN_0056d850 (ret 0xc; block-2 fallback)
+    i32 PinCellIndex();                     // FUN_0056d990 (ret 0; pop/push/ret stub)
 };
 extern CAnimNameResolver g_animNameResolver; // DAT_006bf650
+
+// The resolver's coordinate-range fields (consecutive globals at 0x6bf654..0x6bf664;
+// the cell-resolve path reads them by name - separate externs, reloc-masked - the same
+// way g_animScratch/g_animScratchCount are aliased rather than embedded).
+extern i32 g_cellLo;    // DAT_006bf658
+extern i32 g_cellHi;    // DAT_006bf65c
+extern i32 g_cellBase;  // DAT_006bf660
+extern i32 g_cellRet;   // DAT_006bf664
+extern i32 g_cellScale; // DAT_006bf668
+
+// The entrance-cell record table base + the resolver fallback count (separate
+// globals the cell-resolve path reads; reloc-masked).
+extern i32 g_cellRecordBase; // DAT_006bf464
+extern i32 g_cellRecordRet;  // DAT_006bf428
+
+// ---------------------------------------------------------------------------
+// The 9 runtime direction-index globals InitDirVectors (0x5caa0) reads to place
+// each direction record (index = 3*[0] + [1]). Each is an adjacent {lo, hi} int
+// pair; runtime-filled (.data), so modeled as a 2-int view extern (reloc-masked).
+// The FP unit constants the diagonal vectors are built from (read-only .rodata).
+// ---------------------------------------------------------------------------
+extern i32 g_dirAb0[2]; // DAT_00644ab0
+extern i32 g_dirAe0[2]; // DAT_00644ae0
+extern i32 g_dirAa0[2]; // DAT_00644aa0
+extern i32 g_dirB28[2]; // DAT_00644b28
+extern i32 g_dirAc0[2]; // DAT_00644ac0
+extern i32 g_dirB48[2]; // DAT_00644b48
+extern i32 g_dirAd0[2]; // DAT_00644ad0
+extern i32 g_dirB18[2]; // DAT_00644b18
+extern i32 g_dirB38[2]; // DAT_00644b38
+extern double g_dirConst2;  // DAT_005e9a28 = 2.0
+extern double g_dirConst1;  // DAT_005e9a30 = 1.0
+extern double g_dirConstN1; // DAT_005e9a38 = -1.0
 
 // The second-resolver scratch CString[] (data @0x6bf66c, count @0x6bf670). Each
 // reject path that resolves via GetNameRecords tears these down (Release each
@@ -349,6 +431,7 @@ extern const char g_codeM[]; // 0x60d7f4 "M"
 extern const char g_codeK[]; // 0x60d7f8 "K"
 extern const char g_codeF[]; // 0x60d2e8 "F"  (PlaySound entrance handler)
 extern const char g_codeE[]; // 0x60d2ec "E"  (PlaySound entrance handler)
+extern const char g_codeH[]; // 0x60d7fc "H"  (arrival-recycle reject code)
 
 // The keyed anim-set lookup is g_entranceAnimSrc.LookupAnimSet (FUN_0056d190 @
 // the global @0x6bf620, already modeled above): maps a single-char anim key to a
@@ -370,14 +453,54 @@ struct GruntBoard {
     i32 m_c;    // +0x0c  x bound
     i32 m_10;   // +0x10  y bound
 };
+// The per-effect sound-table object reached via g_gameReg->m_30 (the sound
+// category), whose m_28 holds a CMapStringToOb at +0x10 (the launch-sound lookup
+// the struck-voice creator @0x57c40 queries). Same shape Projectile's LaunchSound
+// reaches. All external (reloc-masked).
+struct GruntSoundEntry; // map value: per-effect sound entry (factory at +0x10)
+struct GruntSoundInner; // m_30->m_28: holds the lookup map at +0x10
+struct GruntSoundCat {  // m_30: the sound-category object
+    char m_pad0[0x28];
+    GruntSoundInner* m_28; // +0x28  -> the lookup map lives at (*m_28)+0x10
+};
 struct WwdGameReg {
-    char m_pad0[0x68];
+    char m_pad0[0x30];
+    GruntSoundCat* m_30; // +0x30  the sound category (struck-voice lookup root)
+    char m_pad34[0x60 - 0x34];
+    CGruntCueSink* m_60; // +0x60  the on-screen cue receiver (CueA/CueSpawn)
+    char m_pad64[0x68 - 0x64];
     i32 m_68; // +0x68  (SerializeMove mode-8: -> CGrunt::m_tileMgr)
     char m_pad6c[0x70 - 0x6c];
-    GruntBoard* m_70; // +0x70  the level board
-    char m_pad74[0x8];
+    GruntBoard* m_70;        // +0x70  the level board
+    CSpriteRefTable* m_74;   // +0x74  the sprite/animation reference table (GetSel)
+    char m_pad78[0x11c - 0x78];
+    i32 m_11c; // +0x11c  the sound-channel param (struck-voice Play arg)
+    char m_pad120[0x134 - 0x120];
+    i32 m_134; // +0x134  the view-cull mode gate (==1 -> rand%3, else rand%6)
 };
 extern WwdGameReg* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
+
+// The struck-voice sound model (creator @0x57c40). The lookup returns a
+// GruntSoundEntry whose +0x10 sub-object owns a sample factory (GetItem @0x135d70,
+// __thiscall ret 0 -> new sample); the sample is Play'd (0x136300) and lives in the
+// grunt's +0x428 slot (freed by ClearSubB). All engine callees external/reloc-masked.
+struct GruntSoundSample {
+    i32 Play(i32 channel, i32 a, i32 b, i32 c); // 0x136300 (__thiscall, 4 args)
+};
+struct GruntSampleFactory {
+    GruntSoundSample* GetItem(); // 0x135d70 (__thiscall, 0 args; returns a new sample)
+};
+struct GruntSoundEntry {
+    char m_pad0[0x10];
+    GruntSampleFactory* m_10; // +0x10  the sample factory
+};
+struct GruntSoundMap {
+    i32 Lookup(const char* key, GruntSoundEntry** out); // 0x1b8438 (ret 8)
+};
+struct GruntSoundInner {
+    char m_pad0[0x10];
+    GruntSoundMap m_10; // +0x10  the lookup map (call this->m_10.Lookup)
+};
 
 // The intrusive coord-node freelist the grunt machines recycle occupied-coord
 // nodes onto (head @0x645544, bias @0x64554c) - the SAME pool g_freePoolHead/Base
@@ -431,7 +554,36 @@ public:
     void ArrivalNotify6(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // thunk (ret 0x18)
     void SetTileState4(i32 a, i32 b, i32 c, i32 d);                // thunk (ret 0x10)
     i32 ProbeFreeTile(i32 a, i32 b, void* c, i32 d, void* e, i32 f, i32 g, i32 h, i32 i); // probe
+    // UpdateEntranceAnim's arrival-commit: thunk_0x3dfa (0x6c130), __thiscall on the
+    // tile-mgr, the grunt + its last-tile pixel coords as args. Reloc-masked.
+    void CommitArrivalMove(CGrunt* g, i32 x, i32 y);
+    // ClaimSwitchTile's tile-mgr apply (thunk_0x26df -> 0x6d300 ApplySwitch),
+    // __thiscall(grunt, lastX, lastY) ret 0xc. External/reloc-masked.
+    void ApplyTileSwitch(CGrunt* g, i32 x, i32 y);
+    // TryPowerupAtTile's tile-mgr probe (thunk_0x152d -> 0x7c620), 6 args ret 0x18.
+    void ProbeMoveTile(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);
+    // The two big tile-mgr occupancy-commit helpers the arrival/update steps drive
+    // (the in-flight-arrival path commits the grunt's occupied slot to a settled
+    // position). thunk 0x3030 -> 0x6e120 (4-arg) and thunk 0x14bf -> 0x6dae0 (4-arg);
+    // external/no-body so the calls reloc-mask.
+    void CommitTileSlot(i32 ownerHi, i32 ownerLo, i32 px, i32 py); // 0x6e120
+    // 0x6dae0 - returns -1 when the slot couldn't be committed (the reposition step
+    // @0xec670 gates on != -1); other callers discard the result.
+    i32 CommitTileSlot2(i32 ownerHi, i32 ownerLo, i32 px, i32 py); // 0x6dae0
+    // FinishEntranceMove's tile-mgr drop notify (thunk_0x2a72 -> 0x79fb0), 3 args.
+    void NotifyEntranceDrop(i32 ownerHi, i32 ownerLo, i32 flag); // 0x79fb0
+    // The death/struck-reaction tile-mgr commit (thunk_0x10eb -> 0x78260), 3 args.
+    void CommitStruckTile(i32 ownerHi, i32 ownerLo, i32 flag); // 0x78260
+    // The run-start drop notify at the grunt's HUD pos (thunk_0x2fb3 -> 0x7b330), 4 args.
+    void NotifyMoveAt(i32 px, i32 py, i32 a, i32 b); // 0x7b330
+
 };
+
+// The on-screen point-visibility predicate the arrival/update steps gate the cue
+// on (FUN_0046b330, 0x6b330; __cdecl 3 args -> `add esp,0xc`): given a probe
+// kind and the grunt's HUD point, returns whether it falls inside the live view
+// rect. External/no-body (reloc-masked).
+i32 GruntPointVisible(i32 px, i32 py, i32 cmp);
 
 // The registry focused-grunt slot the arrival gate reads: an array at
 // g_pGameRegistry+0x150, stride 0x238 (= 71*8) indexed by the grunt's m_tileOwnerHi.
@@ -511,6 +663,44 @@ public:
     void Free();
 };
 
+// ---------------------------------------------------------------------------
+// ~CGrunt teardown support (the leaf dtor @0xf2f0). CGrunt is a CUserLogic leaf
+// (most-derived vtable 0x5e8754) that, unlike the bare game-object leaves, OWNS
+// six destructible sub-objects torn down (in /GX trylevel order) before the base
+// teardown folds in (CUserLogic vptr 0x5e705c -> inline ~EngStr on the +0x18
+// link -> CUserBase vptr 0x5e70b4). All callees external/no-body (reloc-masked).
+//   +0x468  a 9-elem array (stride 0x68) torn via the MSVC vector-dtor iterator
+//           (FUN_0051f640) with the per-element dtor &g_gruntCellDtor (0x4023a6)
+//   +0x44c  ~CString (0x1b9cde)        +0x448  ~CString (0x1b9cde)
+//   +0x338  ~CObList (0x1b48c6)        +0x31c  ~CObList (0x1b48c6)
+//   +0x1c0  ~CString = m_animSetName (0x1b9cde)
+//   +0x18   ~EngStr  (0x16d2a0) the CUserLogic link base teardown
+// The three vptr stores reference the RETAIL vtables by address (reloc-masked
+// DATA externs); the most-derived class isn't fully modelled so the compiler
+// can't emit them.
+extern void* g_cgruntVtbl;    // 0x5e8754  ??_7CGrunt (most-derived)
+extern void* g_userLogicVtbl; // 0x5e705c  ??_7CUserLogic
+extern void* g_userBaseVtbl;  // 0x5e70b4  ??_7CUserBase
+extern void GruntCellDtor();  // 0x4023a6  per-cell vector-dtor element callback
+// The MSVC __ehvec_dtor-style array teardown helper: (base, stride, count, dtor).
+void GruntVecDtor(void* base, i32 stride, i32 count, void (*dtor)()); // 0x51f640
+// Each owned sub-object is torn down by its engine dtor reached __thiscall (this in
+// ecx, no stack arg/cleanup). Modeled as a 1-method receiver so `lea ecx,[this+off];
+// call` falls out, and as a real value member with `~T(){Dtor();}` so the /GX frame's
+// per-member descending trylevel chain is what the compiler emits.
+struct GruntStrSub {  // +0x44c / +0x448 / +0x1c0  (~CString 0x1b9cde)
+    void Dtor();
+    ~GruntStrSub() { Dtor(); }
+};
+struct GruntListSub { // +0x338 / +0x31c  (~CObList 0x1b48c6)
+    void Dtor();
+    ~GruntListSub() { Dtor(); }
+};
+struct GruntLinkSub { // +0x18  the CUserLogic base link (~EngStr 0x16d2a0)
+    void Dtor();
+    ~GruntLinkSub() { Dtor(); }
+};
+
 // A 10-virtual interface view for CGrunt::DispatchVtbl24's tail call (vtable
 // slot 0x24 = index 9). Calling Slot9() emits `mov eax,[ecx]; jmp [eax+0x24]`.
 class CVtblSlot9 {
@@ -575,6 +765,30 @@ struct CGruntVoiceRec {
     i32 m_8;
 };
 
+// The {x, y} tile-coordinate pair GetTilePos (@0x31c70) writes its result into
+// (the grunt's HUD pixel pos >> 5). Returned by pointer (the out arg).
+struct GruntTilePos {
+    i32 m_x; // +0x00
+    i32 m_y; // +0x04
+};
+
+// ---------------------------------------------------------------------------
+// CGrunt::StepCompassMove (@0x51c00) builds a small intrusive byte bag of the 8
+// compass move-directions (1..8), then random-picks + tries each in turn. Modeled
+// as a tiny CByteArray-style object {?, data@+4, count@+8} so the /GX-framed local
+// + the SetAtGrow/RemoveAt/dtor calls fall out (all engine, external/reloc-masked).
+// ---------------------------------------------------------------------------
+class CToyTileBag {
+public:
+    CToyTileBag();                    // 0x1b527e (ctor)
+    ~CToyTileBag();                   // 0x1b52b1 (dtor)
+    void SetAtGrow(i32 idx, i32 val); // 0x1b5485 (append at idx, grow)
+    void RemoveAt(i32 idx, i32 n);    // 0x1b5525 (remove n at idx)
+    i32 m_0;       // +0x00
+    u8* m_data;    // +0x04  byte data
+    i32 m_count;   // +0x08  element count
+};
+
 // ---------------------------------------------------------------------------
 // CGrunt - only the members the HUD sprite creators touch. CGrunt is large;
 // this is a deliberately partial model (load-bearing offsets only).
@@ -612,9 +826,37 @@ public:
     i32 RectContains(i32 x, i32 y);
     i32
     RectContainsGated(i32 x, i32 y); // @0x51a20 (ret 8) sibling; m_198 gate, rects +0x2b0/+0x2c0
-    void CommitNeighbor(i32 a, i32 b, i32 c, i32 d); // @0x5b050 (ret 0x10)
-    CGrunt* FindGridNeighbor(i32 validate);          // @0x5b6f0 (ret 4)
-    i32 UpdateGruntStatus();                         // @0x617c0 (ret 0)
+    i32 CommitNeighbor(i32 a, i32 b, i32 c, i32 d); // @0x5b050 (ret 0x10)
+    CGrunt* FindGridNeighbor(i32 validate);         // @0x5b6f0 (ret 4)
+    i32 UpdateGruntStatus();                        // @0x617c0 (ret 0)
+    // @0x51c00 (ret 0, /GX) - the per-tick compass-move driver: resolves the grunt's
+    // next move tile by the 8-way direction code (m_444), tests/stamps the board
+    // occupancy + owner, fires the matching compass grunt-voice record, and commits
+    // the move/arrival. Big switch + /GX EH frame + grid raw-offset state machine.
+    i32 StepCompassMove();
+    // @0x692f0 (ret 0) - the death/struck reaction dispatch: gated on m_1fc, resolves
+    // the current anim name + dispatches on its type code (A/D/I/G/L/P/O/J/N/M), then
+    // runs the shared arrival/clear-sprites/DEATHZ_FREEZE finalize tail.
+    i32 StepArrivalCommit();
+    // @0x65630 (2-arg this-method the I-arm of CommitNeighbor runs); external thunk.
+    void RunMoveConfig(i32 a, i32 b);
+
+    // @0x57890 (__thiscall ret 0, /GX) - when the entrance reason is a lose-item
+    // pose (0x12/0x16/0xe), spawn the one-shot "SingleAnimation" GRUNTZ_<set>_LOSEITEM
+    // sprite, fire the on-screen spawn cue, then re-run the type-table step.
+    i32 BuildGruntLoseItemAnimation();
+    // The big CUserLogic-base step driver reached via thunk 0x3bd9 -> 0x4dd50
+    // (LoadGruntTypeTable / SelfImpact); external/reloc-masked here.
+    void LoadGruntTypeTable(i32 a, i32 b, i32 c, i32 d);
+
+    // --- arrival / move-step helper cluster (proximity-attributed targets) ---
+    void PlayMoveSoundAtTile(i32 tx, i32 ty); // @0x514e0 (ret 8) tile->pixel + PlayMoveSound
+    void SnapToLastTile(i32 a);               // @0x517b0 (ret 4) snap m_10 to last tile + commit
+    i32 ClaimSwitchTile();                    // @0x52c70 (ret 0) switch-dir tile claim
+    void SetArrivalTarget(i32 a, i32 b, i32 c, i32 d); // @0x52ed0 (ret 0x10)
+    void ConsiderArrival(i32 a);              // @0x52f40 (ret 4) arrival/drop gate
+    void SelectMoveIcon(i32 a);               // @0x57800 (ret 4) pick move-cursor icon
+    i32 TryPowerupAtTile();                   // @0x57aa0 (ret 0) probe move tile
 
     // --- animation resolvers (this TU's targets) ---
     i32 ResolveMovingAnimation();
@@ -657,7 +899,9 @@ public:
     i32 m_entrancePxY;    // +0x178 (SetEntrancePos: committed entrance position Y, pixel)
     i32 m_lastTilePxX;    // +0x17c (LoadEntranceConfig: last occupied tile X, pixel; -1 = none)
     i32 m_lastTilePxY;    // +0x180 (LoadEntranceConfig: last occupied tile Y, pixel; -1 = none)
-    char m_pad184[0x190 - 0x184];
+    i32 m_184;            // +0x184 (ClaimSwitchTile: = m_lastTilePxX after switch)
+    i32 m_188_tilePxY;    // +0x188 (ClaimSwitchTile: = m_lastTilePxY after switch)
+    char m_pad18c[0x190 - 0x18c];
     i32 m_toyBlendPct; // +0x190 (anim-name loader: TOY1/TOY2 blend percent)
     char m_pad194[0x1b8 - 0x194];
     CHudSprite* m_selectedSprite;  // +0x1b8
@@ -671,10 +915,11 @@ public:
     i32 m_arrived;                 // +0x1d8 (entrance-arrival gate)
     char m_pad1dc[0x1e4 - 0x1dc];
     i32 m_entranceActive; // +0x1e4 (entrance: set to 1)
-    char m_pad1e8[0x1ec - 0x1e8];
+    i32 m_arrivalPending;  // +0x1e8 (SnapToLastTile/ClaimSwitchTile arrival-commit latch)
     i32 m_tileOwnerHi; // +0x1ec
     i32 m_tileOwnerLo; // +0x1f0
-    char m_pad1f4[0x1fc - 0x1f4];
+    i32 m_1f4_moveIcon;       // +0x1f4 (SelectMoveIcon: clamped icon index, [0,0x11))
+    char m_pad1f8[0x1fc - 0x1f8];
     i32 m_entranceCommitted; // +0x1fc (entrance: cleared)
     i32 m_neighborCol;       // +0x200 (grid-neighbor: column, -1 = none)
     i32 m_neighborRow;       // +0x204 (grid-neighbor: row, -1 = none)
@@ -744,7 +989,9 @@ public:
     i32 m_tileClaimed; // +0x420 (arrival-claimed latch)
     char m_pad424[0x43c - 0x424];
     i32 m_entranceCell[3]; // +0x43c (entrance-cell triple: [0]=col, [1]=row, [2]=m_444 reason)
-    char m_pad448[0x460 - 0x448];
+    char m_pad448[0x450 - 0x448];
+    i32 m_arrivalPhase; // +0x450 (arrival/update dispatch phase: 2 = in-flight, 3 = committing)
+    char m_pad454[0x460 - 0x454];
     i32 m_lowStaminaCued;  // +0x460 (low-stamina off-screen cue latch)
     i32 m_arrivalNotified; // +0x464 (entrance-reset latch flag)
     char m_pad468[0x474 - 0x468];
@@ -782,12 +1029,22 @@ public:
     void EntranceArrivalHook(i32 a, i32 b); // thunk_FUN_0044d060 (2-arg; arrival commit)
 
     // ---- migrated CGrunt cluster (ex-CUserLogic_*) ----
+    ~CGrunt();                       // @0xf2f0  /GX leaf dtor (6 members + base fold)
+    void EnsureStruckSlot(const char* key); // @0x57b70 lazily build/play the +0x424 sample
+    i32 UpdateEntranceAnim();        // @0x690a0 entrance-anim/arrival update step
+    void ApplyMoveKind(i32 v);       // @0x57100 (thunk_0x3c29) 1-arg move-kind apply
     i32 Save(CGruntArchive* ar);     // @0x53f90 serialize
     void ClearAllSprites();          // @0x4b240
     i32 CommitArrival();             // @0x4b130
     void ClearSubA();                // @0x57c10
     void ClearSubB();                // @0x57ce0
     void DestroyAnims();             // @0x57d80
+    // @0x31c70 (ret 4) - write the grunt's HUD tile coords (m_10->m_5c/m_60 >> 5)
+    // into the caller's {x,y} out slot and return it.
+    struct GruntTilePos* GetTilePos(struct GruntTilePos* out);
+    // @0x57c40 (ret 4) - lazily build + play the grunt's struck-voice sample for the
+    // given sound key (stored into the +0x428 slot ClearSubB frees).
+    void EnsureStruckVoice(const char* key);
     void AnimTeardownA();            // engine thunk (DestroyAnims step 1)
     void AnimTeardownB();            // engine thunk (DestroyAnims step 2)
     void ArrivalClaim(i32 a, i32 b); // CommitArrival's this->claim(1,1)
@@ -828,18 +1085,35 @@ public:
     // grunt's current anim name (via g_animNameResolver) and dispatches on its
     // single-letter type code (A/D/I/G/L/P/O/Q/J/N/M/K), driving the grunt's
     // movement/arrival state + occupied-coord recycle + a re-latch of m_14->m_1c.
+    // The arrival/update dispatch trio (ex-CUserLogic_* stubs; really CGrunt - every
+    // member offset they touch is in this layout). All three drive the grunt's
+    // arrival/entrance bookkeeping + the occupied-slot recycle.
+    i32 ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e); // @0x59230 (ret 0x14)
+    void InitDirVectors();                                   // @0x5caa0 (ret 0; reset/init)
+    i32 UpdateArrival(i32 a1, i32 a2);                       // @0x62110 (ret 0x8)
+
     void StepArrivalDrop(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // @0x4b370 (ret 0x18, /GX)
     i32 StepGruntMovement(); // @0x4c170 (ret 0)         - the per-tick move step
     i32 StepAnimDispatchA(i32 a, i32 b, i32 c, i32 d); // @0x52fb0 (ret 0x10)
     void StepCoordResolve();                           // @0x5f310 (ret 0)
     i32 StepAnimDispatchB();                           // @0x6a6d0 (ret 0)
+    // @0x637a0 (ret 0) - the I-code entrance re-stamp dispatch step: D/L reject,
+    // reset the +0x8c0 struck timer, on the "I" anim re-notify the tile mgr, then
+    // (if the grunt's head tile / HUD point is unobstructed) re-latch a fresh anim
+    // set and re-stamp the first entrance-cell frame.
+    i32 StepEntranceReinit();
+    // @0x67850 (ret 0) - the entrance-move update step: drive the geometry source,
+    // gate on the armed-but-not-running sub-player, resolve the current anim name
+    // (scratch form), re-latch on "D", create the HUD stat sprites on arrival, then
+    // dispatch the +0x1a0 move mode.
+    i32 RunEntranceMove();
 
     // The engine helpers these machines call (all external/no-body, reloc-masked;
     // modeled as __thiscall methods on the grunt so `mov ecx,this; ...; call`
     // falls out). Names describe the observed effect, not a recovered symbol.
-    i32 IsDropReady();                                     // thunk_0x17df (drop-ready predicate)
+    i32 IsDropReady(i32 a = 0); // thunk_0x17df (drop-ready predicate; 1-arg __thiscall)
     void ApplySetState1(i32 v);                            // thunk_0x4322 (1-arg state apply)
-    void SetMoveStateA(i32 v, i32 a, i32 b, i32 c);        // thunk_0x3bd9 (4-arg state set)
+    i32 SetMoveStateA(i32 v, i32 a, i32 b, i32 c);         // thunk_0x3bd9 (4-arg; nonzero = re-roll)
     void SetMoveStateB(i32 v, i32 a, i32 b, i32 c, i32 d); // thunk_0x1401 (5-arg-ish)
     void EmitMoveCueQ(i32 a);                              // thunk_0x4336 (1-arg cue/state)
     void EmitMoveCueShort(i32 a, i32 b, i32 c);            // thunk_0x1163 (3-arg cue on m_10)
@@ -852,7 +1126,81 @@ public:
     i32 ProbeRetry();                                      // thunk_0x3c0b (retry predicate)
     void OnReanchor(i32 a);                                // thunk_0x3cce (1-arg reanchor)
     void StepDropApply();                                  // thunk (drop-apply tail)
+    i32 ApplyMoveMode(i32 v); // thunk_0x3b75 -> 0x50ca0 (the >=0x32 / <0x17 mode arm)
+
+    // ---- chunk-2 attributed targets (RearmAttack family + entrance-move tail) ----
+    // @0x5b570 (ret 8) - begin the grunt's attack/combat reaction: gated on the
+    // entrance being committed (m_1fc) AND the current anim NOT being "F" AND
+    // m_stamina>=0x64; fires the directional move-sound, latches the powered-up /
+    // combat-timer state, builds the HUD health sprite, and re-arms the ATTACK2 anim.
+    i32 BeginAttack(i32 a, i32 b); // @0x5b570
+    // @0x61940 (ret 8) - re-arm the grunt's attack/struck anim by entrance-reason:
+    // gated on m_entranceReason<0x17; latches neighbor col/row, re-latches the "F"
+    // anim set, switches on (m_entranceReason-2) to pick the powered/random branch,
+    // latches the combat-timer state, fires the focused-grunt drop cue when visible,
+    // marks HUD dirty, drives the ATTACK1/ATTACK2 geometry, re-stamps the cell frame.
+    i32 RearmAttackAnim(i32 col, i32 row); // @0x61940
+    // @0x61bc0 (ret 0) - the simple ATTACK2 re-arm: re-latch "F" anim set, drive the
+    // m_poseAttack2 geometry, re-stamp the entrance-cell frame, set m_214.
+    i32 RearmAttackAnim2(); // @0x61bc0
+    // @0x67b00 (ret 8) - the grunt-in-radius predicate: given a cell coord (col,row)
+    // resolve the occupant grunt via the tile-mgr's 15-wide cell grid, gate it (live,
+    // committed, not state 0x36), then test whether the squared tile-distance from
+    // this grunt to it is within the (radius-sum)^2 threshold.
+    i32 GruntInRadius(i32 col, i32 row); // @0x67b00
+    // @0x69fd0 (ret 0) - finish the entrance move: arm the entrance geometry source,
+    // gate on the armed-but-not-running sub-player, notify the tile-mgr of the drop
+    // (unless m_36c set), then retire the entrance player (m_154->m_8 |= 0x10000).
+    i32 FinishEntranceMove(); // @0x69fd0
+    // @0x69d60 (ret 0) - the freeze-spell entrance-anim finalize step (DEATHZ_SPARKLE
+    // -> idle-delay window -> DEATHZ_UNFREEZE + on-screen entrance cue).
+    i32 LoadFreezeSpellAssets(); // @0x69d60
+    // @0xec670 (ret 0 -> 1) - the arrival-reposition step: resolve the tile occupant,
+    // gate on in-radius, commit its slot (or, when no occupant, re-roll a random
+    // in-region target after the idle window elapses) + fire the on-screen entrance cue.
+    i32 ResolveArrivalReposition(); // @0xec670
+    // The 0x4b320 tile-switch entry reached __thiscall here (this in ecx, 6 stack args,
+    // ret 0x18; returns nonzero on success). Same engine fn as the free CGrunt_TileSwitch
+    // passthrough; modeled as a method so `mov ecx,this; ...; call` falls out.
+    i32 TileSwitch6(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x4b320 (thiscall view)
+    // @0x68520 (ret 0 -> 0) - begin the bomb-grunt run reaction: retire the HUD stat
+    // sprites, latch the entrance/struck state, then either re-notify the move or (when
+    // re-rolling) pick a random adjacent tile, play the move sound, latch the "M" anim,
+    // load RunningTimePerTile, fire the on-screen spawn cue, and re-stamp the cell frame.
+    i32 StartBombGruntRun(); // @0x68520
+
+    // @0x646b0 (ret 0x20, 8 stack args) - the combat-reaction anim-dispatch state
+    // machine. MISATTRIBUTED to CUserLogic by proximity bracketing; the +0x1fc gate,
+    // g_animNameResolver grunt anim codes (A/D/I/G/L/P/O/Q/J/N), m_10 HUD dirty bit
+    // and "Grunt"/"CombatTimeout" bute section all prove `this` is a CGrunt (CUserLogic
+    // is only 0x40 bytes; +0x1fc is impossible). Re-homed here.
+    i32 StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7);
+
+    // StepCombatReaction's engine thunks (external/no-body, reloc-masked).
+    void UpdateCombatTimer();                          // call 0x243c (0-arg tail step)
+    void OnTileMismatch(i32 v);                         // call 0x2cb6 (1-arg)
+    i32 ForwardCombatStep(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7); // call 0x1451
+    i32 IsInCombatRange(i32 x, i32 y);                 // call 0x3c4c (2-arg predicate)
+    void CommitCombatMove(i32 a, i32 b, i32 c, i32 d); // call 0x302b (4-arg)
 };
+
+// CGrunt segment-vs-box overlap test @0x62b70 - a free (__stdcall, ret 0xc) helper:
+// does the directed segment e1->e2 cross into the axis-aligned box `p`
+// {m_0=x0, m_4=y0, m_8=x1, m_c=y1}? Tests the segment against each of the box's
+// four edges (top y=m_4, bottom y=m_c, left x=m_0, right x=m_8), interpolating the
+// crossing point in float and checking it falls within the opposite span. Returns 1
+// on the first crossing, else 0. Pure stack args (no this); FP-heavy.
+struct GruntBox {
+    i32 m_0; // +0x00 x0
+    i32 m_4; // +0x04 y0
+    i32 m_8; // +0x08 x1
+    i32 m_c; // +0x0c y1
+};
+struct GruntSegEnd {
+    i32 m_0; // +0x00 x
+    i32 m_4; // +0x04 y
+};
+i32 __stdcall CGrunt_SegBoxOverlap(GruntBox* p, GruntSegEnd* e1, GruntSegEnd* e2);
 
 // CGrunt::IsSameType(a, b) @0x3c7f0 - a free (__cdecl) comparator: returns
 // (a->m_8 == b->m_8). Not a member (reads both args off the stack).

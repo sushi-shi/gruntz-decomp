@@ -67,7 +67,8 @@ struct IDirectDrawSurfaceZ {
         i32(__stdcall* GetColorKey)(IDirectDrawSurfaceZ*, u32 flags, void* key); // +0x40
         char m_pad44[0x58 - 0x44];
         i32(__stdcall* GetSurfaceDesc)(IDirectDrawSurfaceZ*, void* desc); // +0x58
-        char m_pad5c[0x64 - 0x5c];
+        char m_pad5c[0x60 - 0x5c];
+        i32(__stdcall* IsLost)(IDirectDrawSurfaceZ*); // +0x60 (slot 24)
         i32(__stdcall* Lock)(
             IDirectDrawSurfaceZ*,
             void* rect,
@@ -75,7 +76,9 @@ struct IDirectDrawSurfaceZ {
             u32 flags,
             void* event
         ); // +0x64
-        char m_pad68[0x74 - 0x68];
+        char m_pad68[0x6c - 0x68];
+        i32(__stdcall* Restore)(IDirectDrawSurfaceZ*); // +0x6c (slot 27)
+        char m_pad70[0x74 - 0x70];
         i32(__stdcall* SetColorKey)(IDirectDrawSurfaceZ*, u32 flags, void* key); // +0x74
         char m_pad78[0x7c - 0x78];
         i32(__stdcall* SetPalette)(IDirectDrawSurfaceZ*, void* palette); // +0x7c
@@ -126,7 +129,8 @@ struct IDirectDraw2Z {
             u32 bpp,
             u32 refresh,
             u32 flags
-        ); // +0x54
+        );                                                                  // +0x54
+        i32(__stdcall* WaitForVerticalBlank)(IDirectDraw2Z*, u32, void* h); // +0x58 (slot 22)
     }* vtbl;
 };
 
@@ -232,6 +236,7 @@ public:
     virtual i32 v20(void* a);  // slot 8, @0x20 (the surface's own blit-into-desc)
 
     i32 Flip(CDDSurface* target);                                                  // 0x13e850
+    i32 Fill(i32 color);                                                           // 0x13e760
     i32 Lock(void* rect);                                                          // 0x13e6d0
     i32 SetPalette(CDDPalette* pal, i32 unused);                                   // 0x13e690
     i32 SetColorKey(u32 flags, void* key);                                         // 0x13eaa0
@@ -272,17 +277,32 @@ public:
 // ---------------------------------------------------------------------------
 class CDDPalette {
 public:
-    i32 Create(IDirectDraw2Z* dd, void* entries, u32 flags); // 0x147390
-    i32 GetEntries();                                        // 0x147c30
+    i32 LoadFromFile(IDirectDraw2Z* dd, char* filename, u32 flags); // 0x147410
+    i32 Create(IDirectDraw2Z* dd, void* entries, u32 flags);  // 0x147390
+    i32 LoadBmp(IDirectDraw2Z* dd, char* filename, u32 flags); // 0x147590
+    i32 LoadPcx(IDirectDraw2Z* dd, char* filename, u32 flags); // 0x147710
+    i32 CreateRGB(IDirectDraw2Z* dd, void* rgb, u32 flags);   // 0x1474d0
+    i32 CreateFromTrailing(IDirectDraw2Z* dd, void* data, u32 size,
+                           u32 flags); // 0x147840
+    i32 LoadPal(IDirectDraw2Z* dd, char* filename, u32 flags); // 0x1478c0
+    i32 LoadDefault(IDirectDraw2Z* dd, char* filename, u32 flags); // 0x1479e0
+    void Destroy();                                           // 0x147530
+    i32 GetEntries();                                         // 0x147c30
+    void SetAndNotify(i32 start, i32 count, i32* data, i32 a4); // 0x147aa0
+    void Apply(i32 a1);                                         // 0x147c80 (a1 unused)
     i32 SetRange(i32 start, i32 count, u8 r, u8 g, u8 b,
                  u32 flags); // 0x147cd0
 
     // --- layout ---------------------------------------------------------------
-    char m_pad0[0x04 - 0x00];
+    i32 m_0;                  // +0x00  cleared by Destroy
     IDirectDrawPaletteZ* m_4; // +0x04  the held palette interface
-    char m_pad8[0x0c - 0x08];
-    u8* m_c;  // +0x0c  PALETTEENTRY cache A (0x400 bytes)
-    u8* m_10; // +0x10  PALETTEENTRY cache B (0x400 bytes)
+    i32 m_8;                  // +0x08  cleared by Destroy
+    u8* m_c;                  // +0x0c  PALETTEENTRY cache A (0x400 bytes)
+    u8* m_10;                 // +0x10  PALETTEENTRY cache B (0x400 bytes)
+    char m_pad14[0x18 - 0x14];
+    u8* m_18; // +0x18  third buffer freed by Destroy
+    char m_pad1c[0x34 - 0x1c];
+    i32 m_34; // +0x34  cleared by Destroy
 };
 
 // ---------------------------------------------------------------------------

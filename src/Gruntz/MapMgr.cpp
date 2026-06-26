@@ -74,6 +74,16 @@ struct MapElemA {
     char m_pad1c[0x24 - 0x1c];
 };
 
+// @early-stop
+// ~71% loop strength-reduction / regalloc wall (the loop-induction family, cf.
+// docs/patterns/loop-invariant-multiply-strength-reduce-vs-memreread.md): the
+// alloc (count*0x24), the three header stores (m_0/m_block/m_count), the pre-loop
+// block->m_prev=0, and the per-element prev/next link writes are all byte-faithful,
+// but retail strength-reduces `e+1` into a second running pointer (next=cur+0x24)
+// and addresses the link fields as next-relative (next-0x10/next-0xc); cl keeps a
+// single `cur` and derefs cur+0x14/cur+0x18. A whole-loop induction-variable pick,
+// not source-steerable. Logic 100% correct; deferred to the final sweep.
+RVA(0x0009e740, 0x76)
 i32 CMapArrayA::Allocate(u32 count) {
     MapElemA* block = (MapElemA*)MapAlloc(count * sizeof(MapElemA));
     m_0 = block;
@@ -132,6 +142,14 @@ struct MapElemB {
     MapElemB* m_next; // +0x08
 };
 
+// @early-stop
+// ~62% loop strength-reduction / regalloc wall (same family as CMapArrayA::Allocate
+// above): the alloc (count*0xc), header stores, pre-loop block->m_prev=0, and the
+// per-element m_prev/m_0/m_next writes are byte-faithful, but retail carries a
+// second running pointer (next=cur+0xc) and writes the fields as next-0x8/next-0x4
+// while cl keeps a single `cur`. A whole-loop induction-variable pick, not
+// source-steerable. Logic 100% correct; deferred to the final sweep.
+RVA(0x0009e860, 0x7a)
 i32 CMapArrayB::Allocate(u32 count) {
     MapElemB* block = (MapElemB*)MapAlloc(count * sizeof(MapElemB));
     m_0 = block;

@@ -136,11 +136,42 @@ void* CSymParser::ResolvePath(const char* path) {
     return GetRoot()->ResolvePath(path);
 }
 
+// ReParse (0x13c050): if the parser is armed (m_0c non-null), drop the current
+// parse state (Clear(0)) and re-parse the cached +0x64 source buffer; return that
+// parse's result. Not armed -> return 0. (ParseBuffer @0x13ad00 is the big buffer
+// parser, modeled as a reloc-masked extern.)
+RVA(0x0013c050, 0x28)
+i32 CSymParser::ReParse() {
+    if (m_0c == 0) {
+        return 0;
+    }
+    Clear(0);
+    return ParseBuffer(m_buf64, 1, 0);
+}
+
 // AddNode (0x13c210): splice a record's intrusive node (rec+0x1c) into the +0x80
 // hash table, when rec is non-null.
 RVA(0x0013c210, 0x1a)
 void CSymParser::AddNode(void* rec) {
     if (rec) {
-        m_hash.Insert((char*)rec + 0x1c);
+        m_hash.Insert((CHashInsertNode*)((char*)rec + 0x1c));
+    }
+}
+
+// CObjList::Remove (0x1852e0): unlink `node` from the intrusive {head@+4,tail@+8}
+// chain (m_list at CSymParser+0x10). The node's links are m_next@+4 / m_prev@+8; a
+// null prev/next means `node` was the head/tail. __thiscall on the list head,
+// callee-cleanup of the single arg. (Trace-discovered; was the ClassUnknown_47 stub.)
+RVA(0x001852e0, 0x35)
+void CObjList::Remove(CObjNode* node) {
+    if (node->m_prev) {
+        node->m_prev->m_next = node->m_next;
+    } else {
+        m_head = node->m_next;
+    }
+    if (node->m_next) {
+        node->m_next->m_prev = node->m_prev;
+    } else {
+        m_tail = node->m_prev;
     }
 }

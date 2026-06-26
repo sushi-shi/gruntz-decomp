@@ -35,9 +35,13 @@ compiler = "msvc5.0"
 platform = "win32"
 
 [flags]
-base = ["/nologo", "/c", "/O2", "/MT"]
-eh   = ["/nologo", "/c", "/O2", "/MT", "/GX"]
-mfc  = ["/nologo", "/c", "/O1", "/MT", "/GX"]
+base   = ["/nologo", "/c", "/O2", "/MT"]
+eh     = ["/nologo", "/c", "/O2", "/MT", "/GX"]
+mfc    = ["/nologo", "/c", "/O1", "/MT", "/GX"]
+# framed: /O2 with frame-pointer omission DISABLED. Retail compiled the
+# registry/COM helper module (0x1bf*-0x1d5*) with ebp frames retained yet fully
+# register-allocated. docs/patterns/o2-optimizer-bailout-framed.md.
+framed = ["/nologo", "/c", "/O2", "/MT", "/Oy-"]
 
 [[unit]]
 unit = "adler32"
@@ -110,6 +114,16 @@ source = "src/Gruntz/Brickz.cpp"
 flags = "base"
 
 [[unit]]
+unit = "cbrickz"
+source = "src/Gruntz/CBrickz.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "configstore"
+source = "src/Gruntz/ConfigStore.cpp"
+flags = "framed"
+
+[[unit]]
 unit = "statusbaritem"
 source = "src/Gruntz/StatusBarItem.cpp"
 flags = "base"
@@ -152,6 +166,26 @@ flags = "base"
 [[unit]]
 unit = "sbi_image_eh"
 source = "src/Gruntz/SBI_ImageEh.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "sbi_imagesetani_eh"
+source = "src/Gruntz/SBI_ImageSetAniEh.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "sbi_statztabarrow_eh"
+source = "src/Gruntz/SBI_StatzTabArrowEh.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cremusentrylist"
+source = "src/Gruntz/CRemusEntryList.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cseverusentrylist"
+source = "src/Gruntz/CSeverusEntryList.cpp"
 flags = "eh"
 
 [[unit]]
@@ -247,7 +281,7 @@ flags = "eh"
 [[unit]]
 unit = "databuffer"
 source = "src/Gruntz/DataBuffer.cpp"
-flags = "base"
+flags = "eh"
 
 [[unit]]
 unit = "gamekeyhandler"
@@ -360,6 +394,11 @@ source = "src/Wwd/WwdFile.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "aniadvancecursor"
+source = "src/Wwd/CAniAdvanceCursor.cpp"
+flags = "base"
+
+[[unit]]
 unit = "gamelevel"
 source = "src/Gruntz/GameLevel.cpp"
 flags = "eh"
@@ -395,14 +434,29 @@ source = "src/Image/CImage.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "cscanlinesurface"
+source = "src/Image/CScanlineSurface.cpp"
+flags = "base"
+
+[[unit]]
+unit = "clobbyobjb"
+source = "src/Gruntz/CLobbyObjB.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "cimageowned"
 source = "src/Image/CImageOwned.cpp"
-flags = "base"
+flags = "eh"
 
 [[unit]]
 unit = "imageset"
 source = "src/Image/ImageSet.cpp"
 flags = "base"
+
+[[unit]]
+unit = "cfileimage"
+source = "src/Image/CFileImage.cpp"
+flags = "eh"
 
 [[unit]]
 unit = "registryhelper"
@@ -490,6 +544,13 @@ source = "src/Gruntz/Grunt.cpp"
 flags = "eh"
 
 [[unit]]
+# GruntDataRecord::SerializeStrings (0x56da0) - the per-record string/field writer
+# the big grunt-data Serialize (0x53f90) calls; non-EH (plain stack buffer).
+unit = "gruntdatarecord"
+source = "src/Gruntz/GruntDataRecord.cpp"
+flags = "base"
+
+[[unit]]
 unit = "gruntzcommand"
 source = "src/Gruntz/GruntzCommand.cpp"
 flags = "base"
@@ -509,6 +570,27 @@ flags = "base"
 # the minimal class decls never clash with the real models in other units.
 unit = "engine_discovered"
 source = "src/Stub/Discovered.cpp"
+flags = "base"
+
+[[unit]]
+# proximity-attributed class memberships (gruntz.analysis.gen_attributed_stubs); own
+# TU, same minimal-decl pattern as engine_discovered (conflict-free across units).
+unit = "engine_attributed"
+source = "src/Stub/Attributed.cpp"
+flags = "base"
+
+[[unit]]
+# class-boundary FUN_ bodies (gruntz.analysis.gen_boundary_stubs): free-function stubs
+# whose comment records the two adjacent classes (single-class proximity abstains here).
+unit = "engine_boundary"
+source = "src/Stub/Boundary.cpp"
+flags = "base"
+
+[[unit]]
+# catch-all worklist (gruntz.analysis.gen_unmatched_stubs): every real reconstruction
+# target with no stub yet - free-function stubs whose comment is the Ghidra name hint.
+unit = "engine_unmatched"
+source = "src/Stub/Unmatched.cpp"
 flags = "base"
 
 [[unit]]
@@ -543,6 +625,11 @@ flags = "eh"
 [[unit]]
 unit = "netmgrerror"
 source = "src/Net/NetMgrReportError.cpp"
+flags = "base"
+
+[[unit]]
+unit = "channelslots"
+source = "src/Net/ChannelSlots.cpp"
 flags = "base"
 
 [[unit]]
@@ -589,7 +676,12 @@ flags = "base"
 [[unit]]
 unit = "wormhole"
 source = "src/Gruntz/Wormhole.cpp"
-flags = "base"
+flags = "eh"
+
+[[unit]]
+unit = "cwormholeacts"
+source = "src/Gruntz/CWormholeActs.cpp"
+flags = "eh"
 
 [[unit]]
 unit = "battlezmapconfig"
@@ -637,6 +729,11 @@ source = "src/Gruntz/IconLoaders.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "backlogstateloaders"
+source = "src/Gruntz/BacklogStateLoaders.cpp"
+flags = "base"
+
+[[unit]]
 unit = "statusbarupdaters"
 source = "src/Gruntz/StatusBarUpdaters.cpp"
 flags = "base"
@@ -644,7 +741,117 @@ flags = "base"
 [[unit]]
 unit = "kitchenslime"
 source = "src/Gruntz/KitchenSlime.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "ctimebomb"
+source = "src/Gruntz/CTimeBomb.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cgruntcreationpoint"
+source = "src/Gruntz/CGruntCreationPoint.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cgrunthealthsprite"
+source = "src/Gruntz/CGruntHealthSprite.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cgruntwingztimesprite"
+source = "src/Gruntz/CGruntWingzTimeSprite.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cgruntselectedsprite"
+source = "src/Gruntz/CGruntSelectedSprite.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cgruntpowerupsprite"
+source = "src/Gruntz/CGruntPowerupSprite.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cgrunttoysprite"
+source = "src/Gruntz/CGruntToySprite.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cpathhazard"
+source = "src/Gruntz/CPathHazard.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cdroppedobject"
+source = "src/Gruntz/CDroppedObject.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cfortressflag"
+source = "src/Gruntz/CFortressFlag.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cteleporter"
+source = "src/Gruntz/CTeleporter.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "ccursorsnapsprite"
+source = "src/Gruntz/CCursorSnapSprite.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cmenustate"
+source = "src/Gruntz/CMenuState.cpp"
 flags = "base"
+
+[[unit]]
+unit = "cdonothing"
+source = "src/Gruntz/CDoNothing.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cbehindcandy"
+source = "src/Gruntz/CBehindCandy.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "ceyecandy"
+source = "src/Gruntz/CEyeCandy.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cexittrigger"
+source = "src/Gruntz/CExitTrigger.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "csecretleveltrigger"
+source = "src/Gruntz/CSecretLevelTrigger.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cvoicetrigger"
+source = "src/Gruntz/CVoiceTrigger.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cstatichazard"
+source = "src/Gruntz/CStaticHazard.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "ctoobspikez"
+source = "src/Gruntz/CToobSpikez.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cparticlez"
+source = "src/Gruntz/CParticlez.cpp"
+flags = "eh"
 
 [[unit]]
 unit = "actionoptionsmenubar"
@@ -689,7 +896,7 @@ flags = "base"
 [[unit]]
 unit = "cddrawworkermapsmall"
 source = "src/Gruntz/CDDrawWorkerMapSmall.cpp"
-flags = "base"
+flags = "eh"
 
 [[unit]]
 unit = "cddrawsurfacemgr"
@@ -699,6 +906,11 @@ flags = "base"
 [[unit]]
 unit = "cddrawsurfacemgrserialize"
 source = "src/Gruntz/CDDrawSurfaceMgrSerialize.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cserialsub34"
+source = "src/Gruntz/CSerialSub34.cpp"
 flags = "eh"
 
 [[unit]]
@@ -752,6 +964,11 @@ source = "src/Gruntz/CDDrawSubMgrLeafScan.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "leafelementobj"
+source = "src/Gruntz/LeafElementObj.cpp"
+flags = "base"
+
+[[unit]]
 unit = "cddrawsubmgrani"
 source = "src/Gruntz/CDDrawSubMgrAni.cpp"
 flags = "eh"
@@ -760,6 +977,11 @@ flags = "eh"
 unit = "canielement"
 source = "src/Gruntz/CAniElement.cpp"
 flags = "base"
+
+[[unit]]
+unit = "canirecord"
+source = "src/Gruntz/CAniRecord.cpp"
+flags = "eh"
 
 [[unit]]
 unit = "cddrawworkercache"
@@ -792,6 +1014,11 @@ source = "src/Gruntz/CDDrawSubMgr.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "cwwdobjmgr"
+source = "src/Gruntz/CWwdObjMgr.cpp"
+flags = "base"
+
+[[unit]]
 unit = "cddrawptrcollections"
 source = "src/Gruntz/CDDrawPtrCollections.cpp"
 flags = "eh"
@@ -815,6 +1042,11 @@ flags = "eh"
 unit = "directsoundmgr"
 source = "src/Dsndmgr/DirectSoundMgr.cpp"
 flags = "eh"
+
+[[unit]]
+unit = "dsoundvoice"
+source = "src/Dsndmgr/DSoundVoice.cpp"
+flags = "base"
 
 [[unit]]
 unit = "sounddevice"
@@ -874,7 +1106,7 @@ flags = "eh"
 [[unit]]
 unit = "chatboxowner"
 source = "src/Gruntz/ChatBoxOwner.cpp"
-flags = "base"
+flags = "eh"
 
 [[unit]]
 unit = "clightfx"
@@ -885,6 +1117,51 @@ flags = "base"
 unit = "clightfxrender"
 source = "src/Gruntz/CLightFxRender.cpp"
 flags = "base"
+
+[[unit]]
+unit = "clightfxeh"
+source = "src/Gruntz/CLightFxEh.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cdroppedobjectshadow"
+source = "src/Gruntz/CDroppedObjectShadow.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cexplosion"
+source = "src/Gruntz/CExplosion.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cgruntstartingpoint"
+source = "src/Gruntz/CGruntStartingPoint.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cguardpoint"
+source = "src/Gruntz/CGuardPoint.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cobjectdropper"
+source = "src/Gruntz/CObjectDropper.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cwaypoint"
+source = "src/Gruntz/CWayPoint.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "butestoreclear"
+source = "src/Bute/ButeStoreClear.cpp"
+flags = "base"
+
+[[unit]]
+unit = "interfaceobject"
+source = "src/Net/InterfaceObject.cpp"
+flags = "eh"
 
 [[unit]]
 unit = "lightfxmgr"
@@ -904,6 +1181,11 @@ flags = "eh"
 [[unit]]
 unit = "ingameworkerhandlers"
 source = "src/Gruntz/InGameWorkerHandlers.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "logicworkerhandlers"
+source = "src/Gruntz/LogicWorkerHandlers.cpp"
 flags = "eh"
 
 [[unit]]
@@ -962,6 +1244,96 @@ source = "src/Gruntz/CFader.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "cfixedptrarray32"
+source = "src/Gruntz/CFixedPtrArray32.cpp"
+flags = "base"
+
+[[unit]]
+unit = "cremusreadstream"
+source = "src/Gruntz/CRemusReadStream.cpp"
+flags = "base"
+
+[[unit]]
+unit = "helperhost"
+source = "src/Gruntz/HelperHost.cpp"
+flags = "base"
+
+[[unit]]
+unit = "unknownclassincgruntzmgr"
+source = "src/Gruntz/UnknownClassInCGruntzMgr.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cfxmodedesc"
+source = "src/Gruntz/CFxModeDesc.cpp"
+flags = "base"
+
+[[unit]]
 unit = "blowfish"
 source = "src/Crypto/Blowfish.cpp"
+flags = "base"
+
+[[unit]]
+unit = "csimpleanimation"
+source = "src/Gruntz/CSimpleAnimation.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cbehindcandyani"
+source = "src/Gruntz/CBehindCandyAni.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cfrontcandyani"
+source = "src/Gruntz/CFrontCandyAni.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "csingleanimation"
+source = "src/Gruntz/CSingleAnimation.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "csingleframemessage"
+source = "src/Gruntz/CSingleFrameMessage.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "canicycle"
+source = "src/Gruntz/CAniCycle.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cgruntstaminasprite"
+source = "src/Gruntz/CGruntStaminaSprite.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "logicdispatchinit"
+source = "src/Gruntz/LogicDispatchInit.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cdonothingnormaldtor"
+source = "src/Gruntz/CDoNothingNormalDtor.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cleveltimedtor"
+source = "src/Gruntz/CLevelTimeDtor.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cmovinglogicdtor"
+source = "src/Gruntz/CMovingLogicDtor.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cstatusbarspriteacts"
+source = "src/Gruntz/CStatusBarSpriteActs.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "rezfile"
+source = "src/Rez/RezFile.cpp"
 flags = "base"

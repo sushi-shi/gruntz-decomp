@@ -9,11 +9,17 @@
 
 #include <Ints.h>
 
+#include <Mfc.h> // CString, HDC
+
+struct CChatBoxRegRoot; // registry root reached via m_18 (defined in ChatBoxOwner.cpp)
+
 // The text-stamp host reached through m_14 (its +0x34 is a dirty/redraw flag the
-// configure path raises). External - opaque view.
+// configure path raises). External - opaque view. StampText (0x1cd0, __thiscall)
+// is the sprite renderer's text overlay.
 struct CChatBoxTextHost {
     char m_pad0[0x34];
-    i32 m_34; // +0x34  dirty/redraw flag
+    i32 m_34;                                   // +0x34  dirty/redraw flag
+    void StampText(HDC dc, i32 id, void* rect); // 0x1cd0
 };
 
 class CChatBoxOwner {
@@ -27,6 +33,12 @@ public:
     void Configure(i32 mode);
     // Hit-test a screen point against the box rectangle for the current mode.
     i32 HitTest(i32 x, i32 y);
+    // Return the box's caption/key CString (m_1c) by value (copy-ctor into sret).
+    CString GetField1c();
+    // 0x205c0 - the chat-box cheat-code processor ("Enable Cheatzfile" command).
+    void ProcessCheatInput(i32 a, i32 b);
+    // 0x20f40 - render the chat-box sprite + stamp its text for the current mode.
+    i32 LoadChatBoxSprite(i32 arg1);
 
     i32 m_0;                // +0x00  box origin X (or 0/0xa0 by mode)
     i32 m_4;                // +0x04  box origin Y (viewport-relative)
@@ -34,7 +46,8 @@ public:
     i32 m_c;                // +0x0c  active flag
     i32 m_10;               // +0x10  enabled flag (hit-test gate)
     CChatBoxTextHost* m_14; // +0x14  text-stamp host
-    void* m_18;             // +0x18  source registry root
+    CChatBoxRegRoot* m_18;  // +0x18  source registry root
+    CString m_1c;           // +0x1c  caption/key string
 };
 
 #endif // GRUNTZ_GRUNTZ_CHATBOXOWNER_H

@@ -404,6 +404,175 @@ CTileTriggerContainer::AddToList1(i32 a1, i32 a2, i32* block9, i32 a4, i32 a5, i
 }
 
 // ---------------------------------------------------------------------------
+// CTileTriggerContainer::AddToList3Switch  (0x116b80)
+// Twin of AddToList3: allocates+constructs a 0x28-byte mark, and (when its init
+// flag is clear) fills its fields from the args, computes four state flags from a
+// switch on `type` (cases 0..5, default = all clear), notifies it, and appends it
+// to m_list3.  Returns the mark, or 0 on alloc/double-init failure.
+// ---------------------------------------------------------------------------
+// @early-stop
+// RezAlloc + placement-ctor /GX wall (~49%): twin of AddToList3 - retail carries the
+// ctor-in-flight EH frame (push -1/fs:0 + trylevel + shared jmp epilogue) that MSVC5
+// won't emit for the RezAlloc+ctor pair; switch flag-fill + Notify + AddTail are
+// byte-identical (scores above the no-switch twin AddToList3 at 43%).
+// See docs/patterns/rezalloc-placement-new-no-eh-frame.md
+RVA(0x00116b80, 0x105)
+TtcMark* CTileTriggerContainer::AddToList3Switch(i32 a1, i32 a2, i32 a3, i32 a4, i32 type) {
+    TtcMark* raw = (TtcMark*)RezAlloc(0x28);
+    TtcMark* m = raw != 0 ? TtcMarkCtor(raw) : 0;
+    if (m == 0) {
+        return 0;
+    }
+    i32 a = 0, b = 0, c = 0, d = 0;
+    switch (type) {
+        case 0:
+            d = 1;
+            break;
+        case 1:
+            c = 1;
+            break;
+        case 2:
+            b = 1;
+            break;
+        case 3:
+            a = 1;
+            break;
+        case 5:
+            a = 1;
+            b = 1;
+            c = 1;
+            d = 1;
+            break;
+    }
+    if (m->m_10 != 0) {
+        m->m_10 = 0;
+        RezFree(m);
+        return 0;
+    }
+    m->m_04 = a2;
+    m->m_08 = a3;
+    m->m_0c = a4;
+    m->m_20 = b;
+    m->m_00 = a1;
+    m->m_14 = (i32)this;
+    m->m_10 = 1;
+    m->m_18 = d;
+    m->m_1c = c;
+    m->m_24 = a;
+    m->Notify((void*)a1);
+    m_list3.AddTail(m);
+    return m;
+}
+
+// ---------------------------------------------------------------------------
+// CTileTriggerContainer::Serialize  (0x117280)
+// The big save/load serialize walk.  Returns 0 if the stream is null or for any
+// op other than 4/7 returns 1 (no-op).
+//   op 4 (SAVE): for each of the four lists, write its count to the stream then
+//                serialize-apply every element via SerializeApplyA (m_base, m_list3
+//                marks via TtcMark::Serialize) / SerializeApplyB (m_list1, m_list2);
+//                close with Method117e20.
+//   op 7 (LOAD): RemoveAll, then for each list read a count and LoadElement that
+//                many elements, AddTail'd into the list (m_list3 marks alloc'd
+//                inline + TtcMark::Serialize); close with Method117e70.
+// ---------------------------------------------------------------------------
+// @early-stop
+// /GX serialize-walk wall (~30%): 748-byte EH function; the inline RezAlloc + ctor for
+// the m_list3 mark (op 7) hits the same RezAlloc+placement-ctor /GX wall as AddToList3
+// (no ctor-in-flight EH frame on MSVC5), and the four near-identical list-walk loops +
+// vtable serialize calls schedule their node cursors differently from retail.  Logic +
+// list/helper dispatch + count read/write identical.
+// See docs/patterns/rezalloc-placement-new-no-eh-frame.md
+RVA(0x00117280, 0x2ec)
+i32 CTileTriggerContainer::Serialize(TtcStream* s, i32 op, i32 a3, i32 a4) {
+    if (s == 0) {
+        return 0;
+    }
+    if (op == 4) {
+        // SAVE
+        TtcNode* node;
+        i32 cnt = m_base.m_0c;
+        s->Transfer(&cnt, 4);
+        for (node = m_base.m_pNodeHead; node != 0; node = node->m_next) {
+            if (SerializeApplyA(s, 4, a3, a4, (TtcSwitchObj*)node->m_data) == 0) {
+                return 0;
+            }
+        }
+        cnt = m_list1.m_0c;
+        s->Transfer(&cnt, 4);
+        for (node = m_list1.m_pNodeHead; node != 0; node = node->m_next) {
+            if (SerializeApplyB(s, 4, a3, a4, (TtcSwitchObj*)node->m_data) == 0) {
+                return 0;
+            }
+        }
+        cnt = m_list2.m_0c;
+        s->Transfer(&cnt, 4);
+        for (node = m_list2.m_pNodeHead; node != 0; node = node->m_next) {
+            if (SerializeApplyB(s, 4, a3, a4, (TtcSwitchObj*)node->m_data) == 0) {
+                return 0;
+            }
+        }
+        cnt = m_list3.m_0c;
+        s->Transfer(&cnt, 4);
+        for (node = m_list3.m_pNodeHead; node != 0; node = node->m_next) {
+            if (((TtcMark*)node->m_data)->Serialize(s, 4, a3, a4) == 0) {
+                return 0;
+            }
+        }
+        if (Method117e20(s) == 0) {
+            return 0;
+        }
+        return 1;
+    }
+    if (op != 7) {
+        return 1;
+    }
+    // LOAD
+    RemoveAll();
+    i32 n;
+    i32 i;
+    void* e;
+    s->ReadCount(&n, 4);
+    for (i = 0; i < n; i++) {
+        e = LoadElement(s, 7, a3, a4);
+        if (e == 0) {
+            return 0;
+        }
+        m_base.AddTail(e);
+    }
+    s->ReadCount(&n, 4);
+    for (i = 0; i < n; i++) {
+        e = LoadElement(s, 7, a3, a4);
+        if (e == 0) {
+            return 0;
+        }
+        m_list1.AddTail(e);
+    }
+    s->ReadCount(&n, 4);
+    for (i = 0; i < n; i++) {
+        e = LoadElement(s, 7, a3, a4);
+        if (e == 0) {
+            return 0;
+        }
+        m_list2.AddTail(e);
+    }
+    s->ReadCount(&n, 4);
+    for (i = 0; i < n; i++) {
+        TtcMark* raw = (TtcMark*)RezAlloc(0x28);
+        TtcMark* m = raw != 0 ? TtcMarkCtor(raw) : 0;
+        if (m->Serialize(s, 7, a3, a4) == 0) {
+            return 0;
+        }
+        m->m_14 = (i32)this;
+        m_list3.AddTail(m);
+    }
+    if (Method117e70(s) == 0) {
+        return 0;
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
 // SerializeApplyA  (0x117630)
 // Streams the object's type tag, then for tags 1..7 applies operation A and for
 // tag 8 applies it again as the trailing case; returns whether the apply

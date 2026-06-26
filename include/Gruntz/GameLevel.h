@@ -134,6 +134,11 @@ struct CSeverusWorker {
 //   +0xac m_checksum       = WwdHeader::checksum
 //   +0xe0 m_header         WwdHeader copy (1524 B == 0x17d dwords)
 // ---------------------------------------------------------------------------
+// ScrollTarget - the per-axis edit target the scroll dispatch + axis steppers
+// drive (the level itself, viewed via its +0x5c/+0x60 scroll x/y). Defined fully
+// in GameLevel.cpp; only the pointer type appears in the class below.
+struct ScrollTarget;
+
 class CGameLevel : public CSeverusWorker {
 public:
     // The vtable: LoadWwd is slot 0x38 (index 14) and the pre-load reset is slot
@@ -219,10 +224,32 @@ public:
     // Copies *coords into m_planeCtx, then drives every plane's Build(coords).
     void BuildAllPlanes(LevelCoordRect* coords);
 
+    // Builds the [0,0,w-1,h-1] coord rect into m_planeCtx and a local copy, then
+    // Build(&rect) on every plane; returns 1. (ret 8)
+    i32 SetExtentsAndBuildAll(i32 w, i32 h);
+    // Sync(arg) across planes [0 .. m_mainIndex]. (ret 4)
+    void SyncToMainIndex(i32 arg);
+    // Sync(arg) across planes [m_mainIndex+1 .. size). (ret 4)
+    void SyncAfterMainIndex(i32 arg);
+
     // The edit-state switch driver: when this->flags & 4 it tails into ApplyScroll
     // on `target`; otherwise runs `target`'s +0xe4 brush-kind switch. Returns the
     // accumulated state-flag word. `target` is itself a level (passed explicitly).
     i32 EditSwitch(void* target, i32 a1, i32 a2, i32 a3);
+
+    // The four per-brush-kind edit-state handlers EditSwitch dispatches into (each
+    // __thiscall, this=this level, the scroll target passed explicitly). They step
+    // the target's +0x5c/+0x60 scroll toward (a1, a2), probe the +0x138/+0x140 axis
+    // limits and (when blocked) re-clamp, returning the accumulated state-flag word.
+    //   EditHandlerA - axis-1 step + axis-2 advance, then a low/high span re-clamp.
+    //   EditHandlerB - axis-1 step + axis-2 advance, then a low-span re-clamp.
+    //   EditHandlerC - axis-1 step, an alternate axis-2 step, a span re-clamp + a
+    //                  blocked-move retry on the 0x20000 state bit.
+    //   EditHandlerD - a two-probe axis-2 advance + a span validate, then axis-1 step.
+    i32 EditHandlerA(void* target, i32 a1, i32 a2, i32 a3);
+    i32 EditHandlerB(void* target, i32 a1, i32 a2, i32 a3);
+    i32 EditHandlerC(void* target, i32 a1, i32 a2, i32 a3);
+    i32 EditHandlerD(void* target, i32 a1, i32 a2, i32 a3);
 
     // Finds the plane whose name (plane+0xb4) case-insensitively matches `name`.
     CPlane* FindPlaneByName(const char* name);
@@ -231,6 +258,17 @@ public:
     // step limits (m_scrollStepX/m_scrollStepY) drive EditSwitch once; otherwise step
     // toward it in limited increments, re-running EditSwitch until it reaches or is blocked.
     i32 ClampScroll(void* target, i32 arg1, i32 arg2, i32 arg3);
+
+    // ProbeColumn (@0x160980): probe the tile at (target->m_5c + dx, target->m_138 +
+    // target->m_60), clamped into the main plane grid, and return the image set's slot
+    // +0x20 dispatch (0 for an empty/clear tile). ret 8.
+    i32 ProbeColumn(void* target, i32 dx);
+
+    // WalkColumnDown (@0x160a40): from the start row (target->m_140 + target->m_60),
+    // probe tiles stepping the row downward until the image set's slot +0x20 reports a
+    // stop code (1/2/3) or the row runs off the grid; on a stop, commit the resolved
+    // row back into target->m_60. ret 8 (the 2nd stack arg is unused).
+    i32 WalkColumnDown(void* target, i32 unused);
 
     // Forwards a method (vtable +0x28/+0x2c) across every plane.
     void NotifyAllPlanes();
@@ -250,6 +288,21 @@ public:
     // __stdcall (callee-cleans its 4 stack args: ret 0x10).
     static i32 __stdcall ApplyScroll(CGameLevel* lvl, i32 a, i32 b, i32 c);
 
+    // ScrollKindDispatch12 (@0x1671c0, __thiscall this=level): the per-axis scroll
+    // dispatcher ApplyScroll fans brush-kinds 1..2 into. For each axis, when the
+    // target's scroll (+0x5c/+0x60) differs from the goal, call the matching
+    // hi/lo axis stepper (which clamps the coord through a by-ref pointer); OR the
+    // two results, then commit the (possibly stepped) scroll x/y. The target is
+    // passed explicitly (it is itself the level).
+    i32 ScrollKindDispatch12(ScrollTarget* t, i32 x, i32 y, i32 flags);
+
+    // The four axis steppers ScrollKindDispatch12 fans into (reloc-masked engine
+    // leaves; this=level, target + an in/out coord pointer passed explicitly).
+    i32 ScrollStepXHi(ScrollTarget* t, i32 x, i32 y, i32* px, i32 flags); // 0x167260
+    i32 ScrollStepXLo(ScrollTarget* t, i32 x, i32 y, i32* px, i32 flags); // 0x167450
+    i32 ScrollStepYHi(ScrollTarget* t, i32 x, i32 y, i32* py, i32 flags); // 0x167640
+    i32 ScrollStepYLo(ScrollTarget* t, i32 x, i32 y, i32* py, i32 flags); // 0x167830
+
     // Destructor (vtable slot 1, the ~CGameLevel @0x1611e0). Stamps the derived
     // vftable, runs the level cleanup (Unload), then the three array members destruct
     // and ~CSeverusWorker restores the base subobject. Declared so the member dtors
@@ -268,6 +321,25 @@ private:
 
     // The image-set factory (CGameLevel::ReadImageSet) - external.
     CImageSet* ReadImageSet(void* record);
+
+    // The brush-handler sibling leaves dispatched by EditHandlerA..D - unmatched
+    // engine CGameLevel methods (this=this level, the target passed explicitly),
+    // modeled with no body so their thiscall sites reloc-mask. Each takes the
+    // target as a void* (its real type is the ScrollTarget window in GameLevel.cpp).
+    i32 StepAxisLo(void* t, i32 a1, i32 a2, i32* outX, i32 a3);  // @0x15e720
+    i32 StepAxisHi(void* t, i32 a1, i32 a2, i32* outX, i32 a3);  // @0x15e870
+    i32 AdvanceA(void* t, i32 a1, i32 a2, i32 a3);               // @0x15f1c0
+    i32 ClampSpan(i32 lo, i32 hi, i32* outLo, i32* outHi);       // @0x15ffe0
+    i32 HoldMove(void* t, i32 anchor, i32 a1, i32 a2, i32 a3);   // @0x15ff20
+    i32 FreeMove(void* t, i32 a1, i32 a2, i32 a3);               // @0x15eb00
+    i32 StepAxisAlt(void* t, i32 a1, i32 a2, i32* outY, i32 a3); // @0x15fdb0
+    i32 AdvanceB(void* t, i32 a1, i32 a2, i32 a3);               // @0x15ede0
+    i32 SpanCheck(i32 a, i32 b, i32 c, i32* out);                // @0x15f8d0
+    i32 AxisProbe(i32 coord, i32 limit);                         // @0x00161270
+    // The two-object span validator StepAxisAlt runs per candidate object (@0x15fe40),
+    // and the alternate axis-2 stepper that drives it (@0x15fdb0). Both are now matched
+    // in GameLevel.cpp.
+    i32 AltStepValidate(void* t, void* payload, i32 a1, i32 a2, i32* outY, i32 a3);
 
 public:
     // vptr@+0x00 (implicit, CGameLevel is polymorphic); +0x04..+0x0c are the

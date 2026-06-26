@@ -2,6 +2,7 @@
 tags: cpp:ctor cpp:local | asm:mov | topic:wall topic:scheduling
 symptoms: small __thiscall ctor seeding a few arg fields + several constant sentinels (0x80000000 / -1 / 0); identical instruction multiset, the edx-held last-arg store + the `-1` immediate store float to different positions vs retail; ~60%
 confidence: 7/10
+variants: arg-store-order-steers-schedule.md
 
 A tiny ctor that copies a couple of args into fields and then seeds a block of
 constant "sentinel" fields (`0x80000000`, `-1`, `0`) plateaus ~60% because MSVC

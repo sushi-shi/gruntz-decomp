@@ -67,6 +67,24 @@ public:
 };
 SIZE(CButeNodeBase, 0x2c); // measured: new(0x2c) -> ctor 0x16dff0; matches the layout above
 
+// The base vtable the CButeNodeEntry subobject stamps from its own ctor (later
+// restamped to g_buteNodeSubVtbl by the owning CButeNodeBase ctor). Reloc-masked.
+DATA(0x005f04d8)
+void* g_buteNodeEntryVtbl;
+
+// CButeNodeEntry ctor (0x16df70): __thiscall(this, n, desc). Stores desc@+4,
+// (WORD)n@+8, 0@+0xc, then its own base vtable@+0 (stamped LAST -- written in
+// source order; no auto-vptr since the class is modeled with a manual vtbl). Clean
+// leaf ctor, no EH frame. Called out-of-line by the CButeNodeBase ctor's m_entry
+// member-init. (Trace-discovered; was the ClassUnknown_7 stub.)
+RVA(0x0016df70, 0x22)
+CButeNodeEntry::CButeNodeEntry(i32 n, void* desc) {
+    m_4 = desc;
+    m_8 = (i16)n;
+    m_c = 0;
+    m_vtbl = &g_buteNodeEntryVtbl;
+}
+
 // CButeNodeBase scalar-deleting dtor (??_G, vtbl slot 0): restore the two vftables,
 // run the 3 sub-object dtors, then (flags & 1) -> operator delete(this), return this.
 // The ??_G thunk is compiler-generated, but this class is modeled with a MANUAL vtbl

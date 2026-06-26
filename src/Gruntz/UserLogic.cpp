@@ -104,6 +104,9 @@ class CTileSecretTrigger : public CTileTrigger {
 public:
     CTileSecretTrigger(CGameObject* obj); // 0x10fa60
     virtual ~CTileSecretTrigger() OVERRIDE;
+    static void RegisterActs(); // 0x10f340 (binds "A"/"B" handlers)
+    i32 Act_10f6a0();           // 0x10f6a0 ("A" handler)
+    i32 Act_10f970();           // 0x10f970 ("B" handler)
 };
 
 class CGiantRock : public CTileTrigger {
@@ -148,6 +151,12 @@ class CSecretTeleporterTrigger : public CUserLogic {
 public:
     CSecretTeleporterTrigger(CGameObject* obj); // 0x041e90
     virtual ~CSecretTeleporterTrigger() OVERRIDE;
+    // Construct the class's activation-coordinate registry (g_actColl @0x644688)
+    // over the fixed [2000,2010] range; a free init thunk, reloc-masked.
+    static void InitActReg(); // 0x0420d0
+    // Bind SpawnTeleporter to the activation key "A" via the shared name registry
+    // (the same archetype as CSecretLevelTrigger::RegisterActs).
+    static void RegisterActs(); // 0x0422b0
     // The two overridden CUserLogic virtuals reconstructed below.
     i32 Serialize(i32 a, i32 b, i32 c, i32 d); // 0x010a10 (vtable slot 1)
     void FireActivation(i32 coord);            // 0x042150 (vtable slot 4)
@@ -160,12 +169,19 @@ class CWarpStonePad : public CUserLogic {
 public:
     CWarpStonePad(CGameObject* obj); // 0x10d650
     virtual ~CWarpStonePad() OVERRIDE;
+    static void InitActReg();   // 0x10d840
+    void FireWarp(i32 coord);   // 0x10d8c0 (vtable slot 4)
+    static void RegisterActs(); // 0x10da20
+    i32 AdvanceAnim();          // 0x10dc20
 };
 
 class CTileTriggerSwitch : public CUserLogic {
 public:
     CTileTriggerSwitch(CGameObject* obj); // 0x10dc40
     virtual ~CTileTriggerSwitch() OVERRIDE;
+    static void InitActReg();   // 0x10de20
+    static void RegisterActs(); // 0x10e000
+    i32 AdvanceAnim();          // 0x10e200
 };
 
 // CTileTriggerTransition (vptr 0x5e7db4) + its leaf methods and state pump now
@@ -195,6 +211,9 @@ class CSingleAnimation : public CUserLogic {
 public:
     CSingleAnimation(CGameObject* obj); // 0x0ae7f0
     virtual ~CSingleAnimation() OVERRIDE;
+    static void InitActReg();   // 0x0ae9a0
+    static void RegisterActs(); // 0x0aeb80
+    i32 AdvanceAnim();          // 0x0aed80
 };
 
 // ---------------------------------------------------------------------------
@@ -266,7 +285,9 @@ class CFrontCandyAni : public CUserLogic {
 public:
     CFrontCandyAni(CGameObject* obj); // 0x0acf40
     virtual ~CFrontCandyAni() OVERRIDE;
-    i32 m_40; // +0x40
+    static void RegisterActs(); // 0x0acd10
+    i32 AdvanceAnim();          // 0x0acf10
+    i32 m_40;                   // +0x40
 };
 
 class CBehindCandyAni : public CUserLogic {
@@ -422,7 +443,8 @@ extern "C" i32 rand(void);
 // collection methods are external/no-body.
 struct CActEntry; // an entry: first dword is the registered handler vtable
 struct CActColl {
-    i32 Find(i32 coord, i32 z); // 0x16da80 (__thiscall ret 8)
+    i32 Find(i32 coord, i32 z);     // 0x16da80 (__thiscall ret 8)
+    void Construct(i32 lo, i32 hi); // 0x408710 (shared registry ctor, __thiscall ret 8)
 };
 struct CActColl2 {
     void Insert(void* coll, void* item, i32 n); // 0x16d850 (__thiscall ret 0xc)
@@ -450,6 +472,77 @@ extern void* g_actCache;
 DATA(0x002bf428)
 extern void* g_actAllocResult;
 
+// The shared per-leaf activation-coordinate registry singleton each CUserLogic
+// leaf's RegisterActs binds its id->handler entry in - same [2000,2010] range
+// shape as g_actColl but a distinct per-class instance. ResolveEntry folds the
+// VActLookup archetype inline (constant `this` -> the field loads become absolute
+// addresses); the slow Insert is __thiscall on m_coll2.
+struct CLeafActReg {
+    void Construct(i32 lo, i32 hi); // 0x408710 (shared registry ctor, __thiscall ret 8)
+    void* m_vptr;                   // +0x00
+    CActColl2* m_coll2;             // +0x04
+    i32 m_lo;                       // +0x08
+    i32 m_hi;                       // +0x0c
+    char* m_base;                   // +0x10
+    char* m_cur;                    // +0x14
+    i32 m_stride;                   // +0x18
+    char m_pad1c[0x20 - 0x1c];
+    i32 m_scratch; // +0x20
+
+    char* ResolveEntry(i32 id) {
+        m_scratch = 0;
+        if (id >= m_lo && id <= m_hi) {
+            return m_base + (id - m_lo) * m_stride;
+        }
+        if (((CActColl*)this)->Find(id, 0)) {
+            return m_base + (id - m_lo) * m_stride;
+        }
+        void* item = g_actCache;
+        g_actAllocResult = (void*)ActAlloc();
+        m_coll2->Insert(this, item, 0xc);
+        return m_cur;
+    }
+};
+DATA(0x00246060)
+extern CLeafActReg g_frontCandyActReg; // 0x646060
+DATA(0x00245f70)
+extern CLeafActReg g_singleAnimActReg; // 0x645f70
+DATA(0x0024e6a0)
+extern CLeafActReg g_warpStonePadActReg; // 0x64e6a0
+DATA(0x0024e810)
+extern CLeafActReg g_tileTriggerActReg; // 0x64e810
+DATA(0x0024e798)
+extern CLeafActReg g_tileTriggerSwitchActReg; // 0x64e798
+DATA(0x0024e7e8)
+extern CLeafActReg g_tileSecretTriggerActReg; // 0x64e7e8
+
+// Each leaf's handler entry: its first dword receives the per-frame handler PMF
+// (AdvanceAnim, a 4-byte code ptr on the single-inheritance class).
+typedef i32 (CFrontCandyAni::*FrontCandyHandler)();
+struct CFrontCandyActEntry {
+    FrontCandyHandler m_fn;
+};
+typedef i32 (CSingleAnimation::*SingleAnimHandler)();
+struct CSingleAnimActEntry {
+    SingleAnimHandler m_fn;
+};
+typedef i32 (CWarpStonePad::*WarpStonePadHandler)();
+struct CWarpStonePadActEntry {
+    WarpStonePadHandler m_fn;
+};
+typedef i32 (CTileTrigger::*TileTriggerHandler)();
+struct CTileTriggerActEntry {
+    TileTriggerHandler m_fn;
+};
+typedef i32 (CTileTriggerSwitch::*TileTriggerSwitchHandler)();
+struct CTileTriggerSwitchActEntry {
+    TileTriggerSwitchHandler m_fn;
+};
+typedef i32 (CTileSecretTrigger::*TileSecretTriggerHandler)();
+struct CTileSecretTriggerActEntry {
+    TileSecretTriggerHandler m_fn;
+};
+
 // The Entry the registry yields: its first dword is the handler fn-ptr, a
 // __thiscall called with the trigger as `this`.
 class CSecretTeleporterTrigger;
@@ -475,6 +568,69 @@ static inline CActEntry* ActLookup(i32 coord) {
     g_actColl2->Insert(&g_actColl, item, 0xc);
     return g_actCur;
 }
+
+// ---------------------------------------------------------------------------
+// The shared activation-NAME registry RegisterActs interns the key "A" through
+// (@0x6bf650; same range/cache shape as g_actColl). g_buteTree doubles as the
+// name->id map (Find returns the id, 0 == absent; Insert maps a new key->id);
+// g_nextActId (0x61aea8) is the running id counter; s_actKeyA (0x60a454) is the
+// "A" key. The id->name-slot resolve reuses the shared Find/ActAlloc/Insert +
+// g_actCache/g_actAllocResult collection methods already declared above.
+// ---------------------------------------------------------------------------
+DATA(0x0021aea8)
+extern i32 g_nextActId;
+DATA(0x0020a454)
+extern char s_actKeyA[];
+DATA(0x0020d1bc)
+extern char s_actKeyB[]; // "B"
+DATA(0x002bf650)
+extern CActColl g_nameReg; // 0x6bf650
+DATA(0x002bf654)
+extern CActColl2* g_nameReg2; // 0x6bf654
+DATA(0x002bf658)
+extern i32 g_nameRegLo;
+DATA(0x002bf65c)
+extern i32 g_nameRegHi;
+DATA(0x002bf660)
+extern char* g_nameRegBase;
+DATA(0x002bf668)
+extern i32 g_nameRegStride;
+DATA(0x002bf664)
+extern char* g_nameRegCur; // slow-path result slot
+DATA(0x002bf66c)
+extern void** g_nameRegCurList; // the slot's CString list base
+DATA(0x002bf670)
+extern i32 g_nameRegScratch; // zeroed first; doubles as the list count
+
+// The CString in the resolved name slot: ~CString (0x1b9b93) frees the old list,
+// operator= (0x1b9e74) assigns the new key. Modeled so the calls reloc-mask.
+struct CActName {
+    void Free();                  // 0x1b9b93 (~CString)
+    void Assign(const char* key); // 0x1b9e74 (CString::operator=(char const*))
+};
+
+// The id->name-slot resolve (the fast range path + the slow Find/ActAlloc/Insert
+// rebuild). Folded inline by RegisterActs once, in the new-id branch.
+static inline char* ActNameLookup(i32 id) {
+    g_nameRegScratch = 0;
+    if (id >= g_nameRegLo && id <= g_nameRegHi) {
+        return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
+    }
+    if (g_nameReg.Find(id, 0)) {
+        return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
+    }
+    void* item = g_actCache;
+    g_actAllocResult = (void*)ActAlloc();
+    g_nameReg2->Insert(&g_nameReg, item, 0xc);
+    return g_nameRegCur;
+}
+
+// The activation-registry entry for SpawnTeleporter (an i32-returning handler PMF
+// on the complete single-inheritance class).
+typedef i32 (CSecretTeleporterTrigger::*SpawnHandler)();
+struct CTelActEntry {
+    SpawnHandler m_fn;
+};
 
 // ===========================================================================
 // Definitions in ascending-RVA order.
@@ -556,6 +712,17 @@ void CUserLogic::GetScreenPos(ScreenPoint* out) {
     out->y = y;
 }
 
+// --- CUserLogic::IsAtSavedScreenPos (0x029a80) ---
+RVA(0x00029a80, 0x29)
+i32 CUserLogic::IsAtSavedScreenPos() {
+    CGameObject* o = m_10;
+    i32 sx = *(i32*)((char*)this + 0x17c);
+    if (o->m_5c == sx && o->m_60 == *(i32*)((char*)this + 0x180)) {
+        return 1;
+    }
+    return 0;
+}
+
 // --- CTeleporter (0x041020), vptr 0x5e80cc ---
 CTeleporter::~CTeleporter() {}
 RVA(0x00041020, 0x170)
@@ -595,6 +762,15 @@ CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj) : CUserLogi
     }
 }
 
+// --- CSecretTeleporterTrigger::InitActReg (0x0420d0) ---
+// Construct the class's activation-coordinate registry singleton (g_actColl
+// @0x644688) over the fixed range [2000, 2010] via the shared registry ctor
+// (0x408710). Free init thunk; reloc-masked.
+RVA(0x000420d0, 0x15)
+void CSecretTeleporterTrigger::InitActReg() {
+    g_actColl.Construct(2000, 2010);
+}
+
 // --- CSecretTeleporterTrigger::FireActivation (0x042150), vtable slot 4 ---
 // Look the activation coordinate up in the per-coordinate registry; if the entry
 // has a registered handler, look it up again and dispatch it __thiscall on this.
@@ -605,6 +781,39 @@ void CSecretTeleporterTrigger::FireActivation(i32 coord) {
         CActEntry* e2 = ActLookup(coord);
         (this->*(e2->m_fn))();
     }
+}
+
+// --- CSecretTeleporterTrigger::RegisterActs (0x0422b0) ---
+// Bind the per-point handler (SpawnTeleporter @0x042b80) to the activation key
+// "A" via the shared name registry, then bind id->entry in the class's own
+// coordinate registry (g_actColl). The SAME archetype as
+// CSecretLevelTrigger::RegisterActs.
+//
+// @early-stop
+// register-pinning wall (docs/patterns/zero-register-pinning.md +
+// test-old-value-decrement-loop-while-postdec.md, topic:wall topic:regalloc): logic
+// byte-faithful (every call/immediate/branch/offset + the `mov [entry],offset
+// SpawnTeleporter` handler store match retail); residual is the slot-vs-id
+// callee-saved register choice cascading into the free-loop count. Deferred.
+RVA(0x000422b0, 0x18d)
+void CSecretTeleporterTrigger::RegisterActs() {
+    i32 id = (i32)g_buteTree.Find(s_actKeyA);
+    if (id == 0) {
+        id = g_nextActId;
+        g_buteTree.Insert(s_actKeyA, (void*)id);
+        char* slot = ActNameLookup(id);
+        i32 n = g_nameRegScratch;
+        void** list = g_nameRegCurList;
+        while (n-- != 0) {
+            if (list != 0) {
+                ((CActName*)list)->Free();
+            }
+            list++;
+        }
+        ((CActName*)slot)->Assign(s_actKeyA);
+        g_nextActId++;
+    }
+    ((CTelActEntry*)ActLookup(id))->m_fn = &CSecretTeleporterTrigger::SpawnTeleporter;
 }
 
 // --- CSecretLevelTrigger 1-arg (0x0424b0), vptr 0x5e8804 ---
@@ -863,6 +1072,40 @@ CEyeCandy::CEyeCandy(CGameObject* obj) : CUserLogic(obj) {
     }
 }
 
+// --- CFrontCandyAni::RegisterActs (0x0acd10) ---
+// Bind the per-frame handler (AdvanceAnim @0x0acf10) to the activation key "A"
+// via the shared name registry, then bind id->entry in the class's coordinate
+// registry (g_frontCandyActReg). The SAME archetype as
+// CSecretTeleporterTrigger::RegisterActs.
+//
+// @early-stop
+// register-pinning wall (docs/patterns/zero-register-pinning.md +
+// test-old-value-decrement-loop-while-postdec.md, topic:wall topic:regalloc): logic
+// byte-faithful (every call/immediate/branch/offset + the `mov [entry],offset
+// AdvanceAnim` handler store match retail); residual is the slot-vs-id callee-saved
+// register choice cascading into the free-loop count materialization. Deferred.
+RVA(0x000acd10, 0x18d)
+void CFrontCandyAni::RegisterActs() {
+    i32 id = (i32)g_buteTree.Find(s_actKeyA);
+    if (id == 0) {
+        id = g_nextActId;
+        g_buteTree.Insert(s_actKeyA, (void*)id);
+        char* slot = ActNameLookup(id);
+        i32 n = g_nameRegScratch;
+        void** list = g_nameRegCurList;
+        while (n-- != 0) {
+            if (list != 0) {
+                ((CActName*)list)->Free();
+            }
+            list++;
+        }
+        ((CActName*)slot)->Assign(s_actKeyA);
+        g_nextActId++;
+    }
+    ((CFrontCandyActEntry*)g_frontCandyActReg.ResolveEntry(id))->m_fn =
+        &CFrontCandyAni::AdvanceAnim;
+}
+
 // --- CFrontCandyAni (0x0acf40), vptr 0x5e83e4 ---
 CFrontCandyAni::~CFrontCandyAni() {}
 RVA(0x000acf40, 0x16e)
@@ -927,6 +1170,48 @@ CSingleAnimation::CSingleAnimation(CGameObject* obj) : CUserLogic(obj) {
     m_14->m_1c = g_buteTree.Find("A");
 }
 
+// --- CSingleAnimation::InitActReg (0x0ae9a0) ---
+// Construct the class's per-coordinate activation registry singleton
+// (g_singleAnimActReg @0x645f70) over the fixed range [2000, 2010] via the shared
+// registry ctor (0x408710). Free init thunk; reloc-masked.
+RVA(0x000ae9a0, 0x15)
+void CSingleAnimation::InitActReg() {
+    g_singleAnimActReg.Construct(2000, 2010);
+}
+
+// --- CSingleAnimation::RegisterActs (0x0aeb80) ---
+// Bind the per-frame handler (AdvanceAnim @0x0aed80) to the activation key "A"
+// via the shared name registry + the class's coordinate registry
+// (g_singleAnimActReg). SAME archetype as CSecretTeleporterTrigger::RegisterActs.
+//
+// @early-stop
+// register-pinning wall (docs/patterns/zero-register-pinning.md +
+// test-old-value-decrement-loop-while-postdec.md, topic:wall topic:regalloc): logic
+// byte-faithful (every call/immediate/branch/offset + the handler store match
+// retail); residual is the slot-vs-id callee-saved register choice cascading into
+// the free-loop count materialization. Deferred.
+RVA(0x000aeb80, 0x18d)
+void CSingleAnimation::RegisterActs() {
+    i32 id = (i32)g_buteTree.Find(s_actKeyA);
+    if (id == 0) {
+        id = g_nextActId;
+        g_buteTree.Insert(s_actKeyA, (void*)id);
+        char* slot = ActNameLookup(id);
+        i32 n = g_nameRegScratch;
+        void** list = g_nameRegCurList;
+        while (n-- != 0) {
+            if (list != 0) {
+                ((CActName*)list)->Free();
+            }
+            list++;
+        }
+        ((CActName*)slot)->Assign(s_actKeyA);
+        g_nextActId++;
+    }
+    ((CSingleAnimActEntry*)g_singleAnimActReg.ResolveEntry(id))->m_fn =
+        &CSingleAnimation::AdvanceAnim;
+}
+
 // --- CWarpStonePad (0x10d650), vptr 0x5e71ac ---
 CWarpStonePad::~CWarpStonePad() {}
 RVA(0x0010d650, 0x16c)
@@ -941,7 +1226,68 @@ CWarpStonePad::CWarpStonePad(CGameObject* obj) : CUserLogic(obj) {
     m_14->m_1c = g_buteTree.Find("A");
 }
 
+// --- CWarpStonePad::InitActReg (0x10d840) ---
+// Construct the class's activation-coordinate registry singleton
+// (g_warpStonePadActReg @0x64e6a0) over the fixed range [2000, 2010] via the
+// shared registry ctor (0x408710). Free init thunk; reloc-masked.
+RVA(0x0010d840, 0x15)
+void CWarpStonePad::InitActReg() {
+    g_warpStonePadActReg.Construct(2000, 2010);
+}
+
+// --- CWarpStonePad::FireWarp (0x10d8c0), vtable slot 4 ---
+// Look the activation coordinate up in the class's own registry singleton
+// (g_warpStonePadActReg); if the resolved entry carries a registered handler,
+// look it up again and dispatch it __thiscall on this. The SAME archetype as
+// CSecretTeleporterTrigger::FireActivation, but driving the warp-pad registry.
+RVA(0x0010d8c0, 0x102)
+void CWarpStonePad::FireWarp(i32 coord) {
+    CWarpStonePadActEntry* e = (CWarpStonePadActEntry*)g_warpStonePadActReg.ResolveEntry(coord);
+    if (e->m_fn != 0) {
+        CWarpStonePadActEntry* e2 =
+            (CWarpStonePadActEntry*)g_warpStonePadActReg.ResolveEntry(coord);
+        (this->*(e2->m_fn))();
+    }
+}
+
+// --- CWarpStonePad::RegisterActs (0x10da20) ---
+// Bind the per-frame handler (AdvanceAnim @0x10dc20) to the activation key "A"
+// via the shared name registry + the class's coordinate registry
+// (g_warpStonePadActReg). SAME archetype as CSecretTeleporterTrigger::RegisterActs.
+//
+// @early-stop
+// register-pinning wall (docs/patterns/zero-register-pinning.md +
+// test-old-value-decrement-loop-while-postdec.md, topic:wall topic:regalloc): logic
+// byte-faithful (every call/immediate/branch/offset + the handler store match
+// retail); residual is the slot-vs-id callee-saved register choice cascading into
+// the free-loop count materialization. Deferred.
+RVA(0x0010da20, 0x18d)
+void CWarpStonePad::RegisterActs() {
+    i32 id = (i32)g_buteTree.Find(s_actKeyA);
+    if (id == 0) {
+        id = g_nextActId;
+        g_buteTree.Insert(s_actKeyA, (void*)id);
+        char* slot = ActNameLookup(id);
+        i32 n = g_nameRegScratch;
+        void** list = g_nameRegCurList;
+        while (n-- != 0) {
+            if (list != 0) {
+                ((CActName*)list)->Free();
+            }
+            list++;
+        }
+        ((CActName*)slot)->Assign(s_actKeyA);
+        g_nextActId++;
+    }
+    ((CWarpStonePadActEntry*)g_warpStonePadActReg.ResolveEntry(id))->m_fn =
+        &CWarpStonePad::AdvanceAnim;
+}
+
 // --- CTileTriggerSwitch (0x10dc40), vptr 0x5e7f6c ---
+// The most-derived dtor at 0x110f0 is the 0x44 folded CUserLogic teardown: the
+// leaf vptr store (0x5e7f6c) is dead-eliminated by the immediately-inlined
+// CUserLogic base dtor (store 0x5e705c, ~EngStr on +0x18, store 0x5e70b4).
+RVA(0x000110f0, 0x44)
 CTileTriggerSwitch::~CTileTriggerSwitch() {}
 RVA(0x0010dc40, 0x154)
 CTileTriggerSwitch::CTileTriggerSwitch(CGameObject* obj) : CUserLogic(obj) {
@@ -950,6 +1296,48 @@ CTileTriggerSwitch::CTileTriggerSwitch(CGameObject* obj) : CUserLogic(obj) {
     m_38->m_08 |= 2;
     m_38->m_08 |= 1;
     m_38->m_40 |= 1;
+}
+
+// --- CTileTriggerSwitch::InitActReg (0x10de20) ---
+// Construct the class's activation-coordinate registry singleton
+// (g_tileTriggerSwitchActReg @0x64e798) over the fixed range [2000, 2010] via
+// the shared registry ctor (0x408710). Free init thunk; reloc-masked.
+RVA(0x0010de20, 0x15)
+void CTileTriggerSwitch::InitActReg() {
+    g_tileTriggerSwitchActReg.Construct(2000, 2010);
+}
+
+// --- CTileTriggerSwitch::RegisterActs (0x10e000) ---
+// Bind the per-frame handler (AdvanceAnim @0x10e200) to the activation key "A"
+// via the shared name registry + the class's coordinate registry
+// (g_tileTriggerSwitchActReg). SAME archetype as CTileTrigger::RegisterActs.
+//
+// @early-stop
+// register-pinning wall (docs/patterns/zero-register-pinning.md +
+// test-old-value-decrement-loop-while-postdec.md, topic:wall topic:regalloc): logic
+// byte-faithful (every call/immediate/branch/offset + the `mov [entry],offset
+// AdvanceAnim` handler store match retail); residual is the slot-vs-id callee-saved
+// register choice cascading into the free-loop count materialization. Deferred.
+RVA(0x0010e000, 0x18d)
+void CTileTriggerSwitch::RegisterActs() {
+    i32 id = (i32)g_buteTree.Find(s_actKeyA);
+    if (id == 0) {
+        id = g_nextActId;
+        g_buteTree.Insert(s_actKeyA, (void*)id);
+        char* slot = ActNameLookup(id);
+        i32 n = g_nameRegScratch;
+        void** list = g_nameRegCurList;
+        while (n-- != 0) {
+            if (list != 0) {
+                ((CActName*)list)->Free();
+            }
+            list++;
+        }
+        ((CActName*)slot)->Assign(s_actKeyA);
+        g_nextActId++;
+    }
+    ((CTileTriggerSwitchActEntry*)g_tileTriggerSwitchActReg.ResolveEntry(id))->m_fn =
+        &CTileTriggerSwitch::AdvanceAnim;
 }
 
 // --- CTileTrigger 1-arg (0x10e220), vptr 0x5e7f14 ---
@@ -963,6 +1351,101 @@ CTileTrigger::CTileTrigger(CGameObject* obj) : CUserLogic(obj) {
     m_10->m_164 = m_10->m_5c >> 5;
     m_10->m_168 = m_10->m_60 >> 5;
     m_10->m_04 = (m_10->m_164 << 8) + m_10->m_168;
+}
+
+// --- CTileTrigger::InitActReg (0x10e420) ---
+// Construct the class's activation-coordinate registry singleton
+// (g_tileTriggerActReg @0x64e810) over the fixed range [2000, 2010] via the
+// shared registry ctor (0x408710). Free init thunk; reloc-masked.
+RVA(0x0010e420, 0x15)
+void CTileTrigger::InitActReg() {
+    g_tileTriggerActReg.Construct(2000, 2010);
+}
+
+// --- CTileTrigger::RegisterActs (0x10e600) ---
+// Bind the per-frame handler (AdvanceAnim @0x10ee00) to the activation key "A"
+// via the shared name registry + the class's coordinate registry
+// (g_tileTriggerActReg). SAME archetype as CSecretTeleporterTrigger::RegisterActs.
+//
+// @early-stop
+// register-pinning wall (docs/patterns/zero-register-pinning.md +
+// test-old-value-decrement-loop-while-postdec.md, topic:wall topic:regalloc): logic
+// byte-faithful (every call/immediate/branch/offset + the handler store match
+// retail); residual is the slot-vs-id callee-saved register choice cascading into
+// the free-loop count materialization. Deferred.
+RVA(0x0010e600, 0x18d)
+void CTileTrigger::RegisterActs() {
+    i32 id = (i32)g_buteTree.Find(s_actKeyA);
+    if (id == 0) {
+        id = g_nextActId;
+        g_buteTree.Insert(s_actKeyA, (void*)id);
+        char* slot = ActNameLookup(id);
+        i32 n = g_nameRegScratch;
+        void** list = g_nameRegCurList;
+        while (n-- != 0) {
+            if (list != 0) {
+                ((CActName*)list)->Free();
+            }
+            list++;
+        }
+        ((CActName*)slot)->Assign(s_actKeyA);
+        g_nextActId++;
+    }
+    ((CTileTriggerActEntry*)g_tileTriggerActReg.ResolveEntry(id))->m_fn =
+        &CTileTrigger::AdvanceAnim;
+}
+
+// --- CTileSecretTrigger::RegisterActs (0x10f340) ---
+// Intern "A" and "B" and bind each to its per-frame handler (0x10f6a0 / 0x10f970)
+// in the class's coordinate registry (g_tileSecretTriggerActReg). Two back-to-back
+// single-key registrations; the SAME archetype as CTileTrigger::RegisterActs done
+// twice.
+//
+// @early-stop
+// register-pinning wall (docs/patterns/zero-register-pinning.md +
+// test-old-value-decrement-loop-while-postdec.md, topic:wall topic:regalloc): logic
+// byte-faithful (both intern/name-resolve blocks + the OWN-registry resolves + the
+// `mov [entry],offset handler` stores match retail); residual is the slot-vs-id
+// callee-saved register choice cascading into the free-loop counts. Deferred.
+RVA(0x0010f340, 0x2ac)
+void CTileSecretTrigger::RegisterActs() {
+    i32 id = (i32)g_buteTree.Find(s_actKeyA);
+    if (id == 0) {
+        id = g_nextActId;
+        g_buteTree.Insert(s_actKeyA, (void*)id);
+        char* slot = ActNameLookup(id);
+        i32 n = g_nameRegScratch;
+        void** list = g_nameRegCurList;
+        while (n-- != 0) {
+            if (list != 0) {
+                ((CActName*)list)->Free();
+            }
+            list++;
+        }
+        ((CActName*)slot)->Assign(s_actKeyA);
+        g_nextActId++;
+    }
+    ((CTileSecretTriggerActEntry*)g_tileSecretTriggerActReg.ResolveEntry(id))->m_fn =
+        &CTileSecretTrigger::Act_10f6a0;
+
+    i32 id2 = (i32)g_buteTree.Find(s_actKeyB);
+    if (id2 == 0) {
+        id2 = g_nextActId;
+        g_buteTree.Insert(s_actKeyB, (void*)id2);
+        char* slot = ActNameLookup(id2);
+        i32 n = g_nameRegScratch;
+        void** list = g_nameRegCurList;
+        while (n-- != 0) {
+            if (list != 0) {
+                ((CActName*)list)->Free();
+            }
+            list++;
+        }
+        ((CActName*)slot)->Assign(s_actKeyB);
+        g_nextActId++;
+    }
+    ((CTileSecretTriggerActEntry*)g_tileSecretTriggerActReg.ResolveEntry(id2))->m_fn =
+        &CTileSecretTrigger::Act_10f970;
 }
 
 // --- The three CTileTrigger leaves' 1-arg ctors (0x10fa60/90/c0) ---

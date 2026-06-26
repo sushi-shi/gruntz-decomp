@@ -295,6 +295,7 @@ public:
     i32 ClearTabSprites(i32 idx);
     i32 HitTest(i32 x, i32 y);
     i32 Serialize(CSbiStream* s);
+    i32 Deserialize(CSbiStream* s);
     void NotifyAllSlots();
 
     // ----- newly reconstructed CSBI_RectOnly methods (RVA-ascending) -----
@@ -323,6 +324,22 @@ public:
     i32 SetFallRect(i32 a, i32 b, i32 c);
     void ExitMode();
     i32 ActivateSlot(i32 idx);
+    i32 PlaceCursorTarget(i32 row, i32 commit);
+
+    // ----- second batch of reconstructed CSBI_RectOnly methods (RVA-ascending) -----
+    i32 SetState(i32 state);
+    i32 RefreshState();
+    i32 SetSpritePos(i32 x, i32 y);
+    i32 HitTestLayer(i32 x, i32 y);
+    i32 InsertPtr(i32 a, i32 b);
+    void ReportTab(i32 tab);
+    // siblings the second batch dispatches (reloc-masked ILT thunks / bodies elsewhere)
+    i32 StateProbe();   // call 0x2b2b - the subtype-2 activation probe
+    void StateNotify(); // call 0x125d - the non-subtype-2 notify
+    i32 RefreshA();     // jmp 0x2b8a
+    i32 RefreshB();     // jmp 0x2d5b
+    void ReportLog(i32 a, i32 b, i32 c); // call 0x1276
+    i32 ReportApply(i32 a, i32 b);       // call 0x213f
 
     // ----- layout (placeholders; offsets are the load-bearing fact) -----
     i32 m_2c; // +0x2c  Setup arg1 (vtable-slot-2 setup target)
@@ -420,6 +437,10 @@ public:
 DATA(0x00245588)
 extern i32 g_dat645588;
 
+// The current local-player / area index (PlaceCursorTarget's tile-grid column).
+DATA(0x00244c54)
+extern i32 g_644c54;
+
 // The cue-lookup string map embedded at host->m_28 + 0x10 (CMapStringToOb).
 struct CSbiLookupMap {
     i32 Lookup(char* key, void** out); // CMapStringToOb::Lookup (ret 8)
@@ -452,15 +473,41 @@ struct CSbiGameMgr {
 };
 
 // The sub-manager at g_gameReg+0x2c that carries the highlight-busy gate at +0x4f0.
+// PlaceCursorTarget forwards a resolved tile's (x,y) origin pair to ScrollTo.
 struct CSbiSubMgr {
+    i32 ScrollTo(i32 x, i32 y);       // __thiscall, 2 args (FUN_004d5f00)
+    void SetState(i32 cur, i32 prev); // __thiscall, 2 args (call 0xfe3e0 site -> 0x3f8a)
     char m_pad0[0x4f0];
     i32 m_4f0; // +0x4f0  highlight-busy flag (non-zero => bail)
 };
 
-// The active grunt/level object at g_gameReg+0x68: carries a tab-highlight-enabled
-// gate at +0x400 (zero => skip the cue + cursor activation).
+// A resolved tile-grid entry (m_grid[]): carries a sub-object at +0x10 whose
+// +0x5c/+0x60 are the tile origin pair forwarded to ScrollTo.
+struct CSbiTileSub {
+    char m_pad0[0x5c];
+    i32 m_5c; // +0x5c
+    i32 m_60; // +0x60
+};
+struct CSbiTileEntry {
+    char m_pad0[0x10];
+    CSbiTileSub* m_10; // +0x10
+};
+
+// The active grunt/level object at g_gameReg+0x68: a probe pair (ProbeXY at the
+// front, ScrollProbe), a tile-entry grid at +0x1c (15-wide rows), the placed-cursor
+// latch trio at +0x230, the camera-sprite loader, and a tab-highlight-enabled gate
+// at +0x400 (zero => skip the cue + cursor activation).
 struct CSbiActiveObj {
-    char m_pad0[0x400];
+    i32 ProbeXY(i32 col, i32 row, i32 a, i32 b); // __thiscall, 4 args (FUN_0046bfd0)
+    i32 ScrollProbe(i32 col, i32 row);           // __thiscall, 2 args (FUN_004784d0)
+    void LoadCameraSprite();                      // __thiscall (FUN_00478960)
+    char m_pad0[0x1c];
+    CSbiTileEntry* m_grid[1]; // +0x1c  tile-entry grid (15-wide rows, 4-byte stride)
+    char m_pad20[0x230 - 0x20];
+    i32 m_230; // +0x230  cursor-placed flag
+    i32 m_234; // +0x234  placed column
+    i32 m_238; // +0x238  placed row
+    char m_pad23c[0x400 - 0x23c];
     i32 m_400; // +0x400  tab-highlight-enabled gate
 };
 
@@ -613,6 +660,41 @@ RVA(0x001057d0, 0x13)
 void CSBI_RectOnly::SetGauge(i32 value) {
     m_gaugeTarget = value;
     m_gauge = value;
+}
+
+// Place the cursor on the resolved tile under highlight row `row`: probe the active
+// object's tile at (g_644c54, row); bail (0) if the probe fails or the grid
+// cell is empty. Forward the tile's origin pair to the sub-manager's ScrollTo, then
+// (when `commit` is set and the active object accepts the scroll) latch the placed
+// column/row and reload the camera sprite. Always returns 1 past the two probes.
+// @early-stop
+// ~71%: the code bytes are byte-exact vs retail (same regs/order/offsets; verified by
+// llvm-objdump -dr base vs target). The residual is purely the reloc-symbol-naming
+// scoring tail - this TU models the g_gameReg singleton as ?g_gameReg@@3PAUCGameReg@@A
+// while the retail obj names it _g_mgrSettings, so the three DIR32 data relocs don't
+// pair (weighted heavily on a short function). g_644c54 + the ILT call thunks already
+// pair. A TU-wide g_gameReg rename, not a per-function fix; matcher.md reloc artifact.
+RVA(0x00105800, 0x9e)
+i32 CSBI_RectOnly::PlaceCursorTarget(i32 row, i32 commit) {
+    i32 col = g_644c54;
+    if (g_gameReg->m_68->ProbeXY(col, row, 0, 0) == 0) {
+        return 0;
+    }
+    CSbiTileEntry* entry = g_gameReg->m_68->m_grid[row + col * 15];
+    if (entry == 0) {
+        return 0;
+    }
+    g_gameReg->m_2c->ScrollTo(entry->m_10->m_5c, entry->m_10->m_60);
+    if (commit != 0) {
+        CSbiActiveObj* obj = g_gameReg->m_68;
+        if (obj->ScrollProbe(col, row)) {
+            obj->m_234 = col;
+            obj->m_238 = row;
+            obj->m_230 = 1;
+            obj->LoadCameraSprite();
+        }
+    }
+    return 1;
 }
 
 // Run the seven per-stat refresh updaters in sequence.
@@ -895,6 +977,165 @@ i32 CSBI_RectOnly::Serialize(CSbiStream* s) {
     s->Transfer(&count, 4);
     for (u32 n = 0; n < (u32)count; n++) {
         s->Transfer(m_ptrTable[n], 8);
+    }
+    return 1;
+}
+
+// The seq-keyed object map at (g_gameReg->m_30->m_8 + 0x48): Lookup(key, &out)
+// returns found (CMapWordToOb::Lookup-style; reloc-masked sibling).
+struct CSbiSeqMap {
+    i32 Lookup(i32 key, void** out); // 0x1b8760
+};
+
+// The looked-up object whose vtable slot 8 (+0x20) returns a type tag (== 5
+// validates it as the restored sequence holder stored back into m_8).
+class CSbiSeqObj {
+public:
+    virtual void v0();
+    virtual void v4();
+    virtual void v8();
+    virtual void vc();
+    virtual void v10();
+    virtual void v14();
+    virtual void v18();
+    virtual void v1c();
+    virtual i32 TypeTag(); // +0x20 (slot 8)
+};
+
+// CSBI_RectOnly::Deserialize - the load/restore counterpart of Serialize. Pulls
+// the full rect-only item state from the archive via stream slot 0x2c (Read);
+// resolves the base m_8 sequence holder from the streamed seq id through the
+// game-manager's object map (validated by the looked-up object's type tag == 5);
+// reads every field back; returns each pooled m_ptrTable element to the engine
+// free-list, sizes the +0x530 collection, then reloads the pointer table from the
+// free-list. Field buffers are offset-addressed (naming-independent), mirroring
+// Serialize.
+// @early-stop
+// twin of Serialize (95.6%, regalloc/frame wall in the trailing nested loop): the
+// whole ~70-field Read body + the seq resolution + the free-list return/reload are
+// reconstructed byte-faithfully, but the same trailing 3x4 nested-loop induction /
+// frame-size regalloc choice (plus the free-list induction wall shared with
+// Teardown/InsertPtr) caps it below 100%. Not steerable from C; deferred.
+RVA(0x00109520, 0x44c)
+i32 CSBI_RectOnly::Deserialize(CSbiStream* s) {
+    if (s == 0) {
+        return 0;
+    }
+    CSbiGameMgr* gm = g_gameReg->m_30;
+    if (gm == 0) {
+        return 0;
+    }
+    char* B = (char*)this;
+    *(i32*)(B + 0x618) = 0;
+    TeardownNotify(0);
+
+    s->Read(B, 4);
+    s->Read(B + 0x4, 4);
+
+    g_serialCounter++;
+    i32 seq = 0;
+    s->Read(&seq, 4);
+
+    void* obj = 0;
+    CSbiSeqMap* map = (CSbiSeqMap*)(*(char**)((char*)gm + 8) + 0x48);
+    i32 m8 = 0;
+    if (map->Lookup(seq, &obj)) {
+        if (obj != 0) {
+            m8 = (((CSbiSeqObj*)obj)->TypeTag() == 5) ? (i32)obj : 0;
+        }
+    }
+    m_8 = m8;
+    if (m_8 == 0 && seq != 0) {
+        return 0;
+    }
+
+    s->Read(B + 0x10, 0x10);
+    s->Read(B + 0x20, 4);
+    s->Read(B + 0x24, 4);
+    s->Read(B + 0x28, 4);
+    s->Read(B + 0x110, 4);
+    s->Read(B + 0x62c, 4);
+
+    char* p = B + 0x114;
+    for (i32 i = 0; i < 15; i++) {
+        s->Read(p, 4);
+        p += 4;
+    }
+
+    s->Read(B + 0x34c, 4);
+    s->Read(B + 0x350, 4);
+    s->Read(B + 0x354, 4);
+    s->Read(B + 0x35c, 4);
+    s->Read(B + 0x360, 4);
+    s->Read(B + 0x10c, 4);
+    s->Read(B + 0x298, 4);
+    s->Read(B + 0x29c, 4);
+    s->Read(B + 0x524, 4);
+    s->Read(B + 0x52c, 4);
+    s->Read(B + 0x528, 4);
+    s->Read(B + 0x544, 4);
+    s->Read(B + 0x504, 0x10);
+    s->Read(B + 0x514, 0x10);
+    s->Read(B + 0x548, 4);
+    s->Read(B + 0x550, 4);
+    s->Read(B + 0x554, 4);
+    s->Read(B + 0x4c8, 4);
+    s->Read(B + 0x4cc, 4);
+    s->Read(B + 0x4e8, 4);
+    s->Read(B + 0x4ec, 4);
+    s->Read(B + 0x318, 4);
+    s->Read(B + 0x31c, 4);
+    s->Read(B + 0x330, 4);
+    s->Read(B + 0x334, 4);
+    s->Read(B + 0x558, 4);
+    s->Read(B + 0x55c, 4);
+    s->Read(B + 0x574, 4);
+    s->Read(B + 0x578, 4);
+
+    char* q = B + 0x224;
+    for (i32 j = 0; j < 5; j++) {
+        s->Read(q - 4, 4);
+        s->Read(q, 4);
+        q += 0x18;
+    }
+    char* r = B + 0x2c4;
+    for (i32 k = 0; k < 3; k++) {
+        s->Read(r - 4, 4);
+        s->Read(r, 4);
+        r += 0x18;
+    }
+    char* nb = B + 0x378;
+    i32 outer = 3;
+    do {
+        for (i32 m = 0; m < 4; m++) {
+            s->Read(nb, 4);
+            s->Read(nb + 4, 4);
+            nb += 0x18;
+        }
+    } while (--outer);
+
+    for (i32 t = 0; t < m_ptrCount; t++) {
+        void* pp = m_ptrTable[t];
+        if (pp) {
+            void** node = (void**)((char*)pp - g_freeListNodeBias);
+            *node = g_freeList;
+            g_freeList = node;
+        }
+    }
+    m_530.RemoveAll(0, -1);
+
+    i32 count = 0;
+    s->Read(&count, 4);
+    m_530.RemoveAll(count, -1);
+    for (u32 n = 0; n < (u32)count; n++) {
+        char* head = (char*)g_freeList;
+        void* node = 0;
+        if (*(i32*)head != 0) {
+            node = head + 4;
+            g_freeList = *(void**)head;
+        }
+        s->Read(node, 8);
+        m_ptrTable[n] = node;
     }
     return 1;
 }
@@ -2035,6 +2276,164 @@ i32 CSBI_RectOnly::ActivateSlot(i32 idx) {
         m_slotNotify[idx]->Notify(1);
     }
     return 1;
+}
+
+// ===========================================================================
+// Second batch of reconstructed CSBI_RectOnly methods (RVA-ascending).
+// ===========================================================================
+
+// The m_8 render object the item drives: a screen-position pair at +0x5c/+0x60
+// and a layer descriptor at +0x198 whose +0x10/+0x14 origin and +0x18/+0x1c
+// inset frame the hit-test rect. (m_8 is the base CStatusBarItem int overlaid as
+// a pointer, same authentic int-as-pointer overlay as Serialize uses.)
+struct CSbiLayer {
+    char m_pad0[0x10];
+    i32 m_10, m_14; // +0x10/+0x14  rect origin (lo X / lo Y)
+    i32 m_18, m_1c; // +0x18/+0x1c  inset (added to the shifted position)
+};
+struct CSbiRenderObj {
+    char m_pad0[0x5c];
+    i32 m_5c, m_60; // +0x5c/+0x60  screen position
+    char m_pad64[0x198 - 0x64];
+    CSbiLayer* m_198; // +0x198  layer descriptor
+};
+
+// The +0x530 pooled-ptr collection InsertPtr appends/inserts into (CObArray-style).
+struct CSbiPtrColl2 {
+    void Append(i32 idx, void* node);            // 0x1b5144 (InsertAt tail)
+    void InsertAt(i32 idx, void* node, i32 cnt); // 0x1b516b (InsertAt with count)
+};
+
+// A free-list node {m_0, m_4}; m_0 doubles as the link, m_4 is the sort key.
+struct CSbiFreeNode {
+    i32 m_0, m_4;
+};
+
+// 0xfe3e0 - SetState(state): if the mode gate (m_548) is up, no-op (return 1);
+// if already in `state`, return 1. For the subtype-2 cursor state, run the
+// activation probe (bail 0 on failure) and mirror the subtype tag into m_4;
+// otherwise fire the plain notify. Then latch the new state into slot 0 and tell
+// the highlight sub-manager (new, old). Returns 1.
+RVA(0x000fe3e0, 0x55)
+i32 CSBI_RectOnly::SetState(i32 state) {
+    if (m_548 != 0) {
+        return 1;
+    }
+    i32 old = *(i32*)this;
+    if (old == state) {
+        return 1;
+    }
+    if (state == 2) {
+        if (StateProbe() == 0) {
+            return 0;
+        }
+        m_4 = *(i32*)this;
+    } else {
+        StateNotify();
+    }
+    old = *(i32*)this;
+    *(i32*)this = state;
+    g_gameReg->m_2c->SetState(state, old);
+    return 1;
+}
+
+// 0xfe670 - RefreshState: gated on m_548 (return 1) and the subtype-2 tag
+// (return 1 when not cursor); for the cursor subtype, tail-call the armed (m_4==1)
+// or idle refresh path.
+RVA(0x000fe670, 0x2b)
+i32 CSBI_RectOnly::RefreshState() {
+    if (m_548 != 0) {
+        return 1;
+    }
+    if (*(i32*)this != 2) {
+        return 1;
+    }
+    if (m_4 == 1) {
+        return RefreshA();
+    }
+    return RefreshB();
+}
+
+// 0xfe860 - SetSpritePos(x, y): push the position into the render object
+// (m_8->m_5c/m_60) and mirror it into m_24/m_28. Bails (0) if there is no render
+// object. Returns 1.
+// @early-stop
+// ~96.7%: every store/offset is byte-correct; the residual is a regalloc choice -
+// retail keeps `y` unloaded until after the m_8 reload (y in edx, m_8 in esi),
+// while the recompile parks y in esi loaded early. Not source-steerable; deferred.
+RVA(0x000fe860, 0x2d)
+i32 CSBI_RectOnly::SetSpritePos(i32 x, i32 y) {
+    CSbiRenderObj* r = (CSbiRenderObj*)m_8;
+    if (r == 0) {
+        return 0;
+    }
+    r->m_5c = x;
+    ((CSbiRenderObj*)m_8)->m_60 = y;
+    m_28 = y;
+    m_24 = x;
+    return 1;
+}
+
+// 0xfe8a0 - HitTestLayer(x, y): test the point against the render object's layer
+// rect - origin (m_198->m_10/m_14) plus the position-relative inset
+// (m_198->m_18/m_1c offset by m_5c/m_60). Returns 1 inside, 0 outside.
+RVA(0x000fe8a0, 0x4e)
+i32 CSBI_RectOnly::HitTestLayer(i32 x, i32 y) {
+    CSbiRenderObj* r = (CSbiRenderObj*)m_8;
+    CSbiLayer* L = r->m_198;
+    i32 xlo = r->m_5c - L->m_18;
+    i32 ylo = r->m_60 - L->m_1c;
+    i32 xhi = L->m_10 + xlo;
+    i32 yhi = L->m_14 + ylo;
+    if (x >= xhi || x < xlo || y >= yhi || y < ylo) {
+        return 0;
+    }
+    return 1;
+}
+
+// 0x108410 - InsertPtr(a, b): pull a node off the engine free-list, fill it with
+// (a, b), then insert it into the m_530 pooled-ptr collection - at the first slot
+// whose key (m_4) exceeds b, or appended at the end. Returns 1.
+// @early-stop
+// ~75.9%: every operation/offset is byte-correct; the residual is regalloc + block
+// layout - retail pins the free-list head in edx and reads arg `a` at the top
+// (before the pushes), and falls through from the scan loop into the append block
+// (jl loop), while the recompile colors the head into eax, loads `a` late, and
+// reaches append via an extra jmp. Not source-steerable; deferred to the final sweep.
+RVA(0x00108410, 0x8e)
+i32 CSBI_RectOnly::InsertPtr(i32 a, i32 b) {
+    CSbiFreeNode* head = (CSbiFreeNode*)g_freeList;
+    CSbiFreeNode* node = 0;
+    if (head->m_0 != 0) {
+        node = (CSbiFreeNode*)&head->m_4;
+        node->m_0 = a;
+        node->m_4 = b;
+        g_freeList = (void*)((CSbiFreeNode*)g_freeList)->m_0;
+    }
+    i32 n = m_ptrCount;
+    i32 i = 0;
+    if (n > 0) {
+        CSbiFreeNode** t = (CSbiFreeNode**)m_ptrTable[0];
+        do {
+            CSbiFreeNode* e = *t;
+            if (e != 0 && b < e->m_4) {
+                ((CSbiPtrColl2*)&m_530)->InsertAt(i, node, 1);
+                return 1;
+            }
+            i++;
+            t++;
+        } while (i < n);
+    }
+    ((CSbiPtrColl2*)&m_530)->Append(m_ptrCount, node);
+    return 1;
+}
+
+// 0x10bb50 - ReportTab(tab): log the tab with the (0x4f, 0x1b3) id pair, then
+// apply it on `this` as (1, tab). Both helpers are reloc-masked siblings.
+RVA(0x0010bb50, 0x24)
+void CSBI_RectOnly::ReportTab(i32 tab) {
+    ReportLog(tab, 0x4f, 0x1b3);
+    ReportApply(1, tab);
 }
 
 // -------------------------------------------------------------------------

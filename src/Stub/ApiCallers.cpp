@@ -100,24 +100,17 @@ namespace ApiCallerStubs {
     struct ThisStubOwnerUnknown {
         i32 winapi_015fe0_SendMessageA(i32);
         i32 winapi_017030_GetWindow();
-        i32 winapi_023090_PostMessageA(i32);
         i32 winapi_032ce0_IntersectRect(i32);
         i32 winapi_04a9f0_CopyRect_OffsetRect();
         i32 winapi_057db0_IntersectRect();
         i32 winapi_075c60_CopyRect_SetRect(i32, i32, i32, i32, i32, i32);
-        i32 winapi_08f340_PostMessageA();
         i32 winapi_0b6b40_timeGetTime_wsprintfA();
         i32 winapi_0b6e90_SetRect();
         i32 winapi_0bb700_GetAsyncKeyState_Sleep_timeGetTime_wsprintfA();
         i32 winapi_0bba10_Sleep(i32);
         i32 winapi_0c46b0_KillTimer_timeGetTime_wsprintfA();
         i32 winapi_0c7ec0_timeGetTime(i32, i32, i32);
-        i32 winapi_0c8a10_GetCursorPos(i32);
-        i32 winapi_0cbaf0_PostMessageA(i32, i32);
-        i32 winapi_0d5f90_SetRect(i32, i32, i32, i32);
-        i32 winapi_0d60b0_wsprintfA();
         i32 winapi_0d7520_wsprintfA(i32, i32, i32, i32);
-        i32 winapi_0d8c60_SetRect();
         i32 winapi_0d95f0_wsprintfA();
         i32 winapi_0e6020_SetRect(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32);
         i32 winapi_0ecc90_IntersectRect();
@@ -194,11 +187,9 @@ namespace ApiCallerStubs {
         i32 thirdparty_17c8e0_SmackGoto_8_SmackWait_4(i32, i32);
         i32 thirdparty_17caa0_SmackDoFrame_4_SmackNextFrame_4_SmackToBuffer_28();
         void BootyState_OnActivate2_vfunc8();
-        i32 LoadChatBoxSprite(i32 arg1);
         void LoadCreditzAssets2();
         void BuildWorldLevelKey(i32);
         void LoadGruntAbilityTuning(i32);
-        void BuildGruntLoseItemAnimation();
         void LoadGruntCombatAnimations(i32, i32, i32, i32, i32, i32, i32, i32);
         void LoadGruntDeathAnimations(i32, i32);
         void LoadVehicleGruntAnimations();
@@ -214,27 +205,18 @@ namespace ApiCallerStubs {
         void LoadMonologoSprite();
         void LoadStateImages_vfunc8();
         void LoadMenuSelectSprite(i32);
-        void LoadImageBanks_vfunc29();
+        // LoadImageBanks (0x0cffe0), LoadActionTileSprites (0x0db600),
+        // LoadLevelSounds (0x0db6c0), LoadLevelImages (0x0db7e0) re-homed as CPlay
+        // methods in src/Gruntz/CPlay.cpp.
         void LoadSBITextEdges(i32);
         void LoadWarlordSprites(i32, i32);
-        i32 LoadActionTileSprites(i32 force);
-        i32 LoadLevelSounds(i32 force);
-        i32 LoadLevelImages(i32 force);
-        void BuildMusicCategoryTable(i32);
         void BuildWorldLevelPath(i32);
-        void LoadLevelEffectSprites();
         void BuildGruntNamespaceList(i32);
-        void BuildWarlordNameTable(i32);
-        void BuildSpriteImageKeyTable(i32);
-        void BuildAnizKeyTable(i32);
         void LoadLevelPreviewScreen();
-        void BuildToolToyColorKey(i32);
-        void LookupToolToyColorKey(i32);
-        i32 LoadGruntzPalette(i32 src, i32 name);
+        // LoadGruntzPalette (0x0e2d10) re-homed to src/Gruntz/SpriteRefTable.cpp.
         void BuildResourceTabStatusBar(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32);
         void
             BuildStatzTabStatusBar(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32);
-        void BuildStatzTabSmallSprite();
         void BuildMultiplayerTabStatusBar(
             i32,
             i32,
@@ -334,14 +316,6 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:PostMessageA
-    // @stub
-    RVA(0x000143e0, 0xfb)
-    i32 winapi_0143e0_PostMessageA() {
-        return 0;
-    }
-
-    // @confidence: low
-    // @source: winapi:PostMessageA
     // __thiscall(code, _): on ESC/SPACE/ENTER post a 0x8023 command. Returns 1.
     struct CmdChain_014720 {
         i32 m_0;
@@ -390,8 +364,8 @@ namespace ApiCallerStubs {
     // __stdcall(id): send 0x147 (clear listbox selection) to the resolved item.
     RVA(0x00015d00, 0x20)
     void __stdcall winapi_015d00_SendMessageA(i32 id) {
-        HWND h = ResolveItem_15ac0(id)->m_hwnd;
-        SendMessageA(h, 0x147, 0, 0);
+        WndItem* it = ResolveItem_15ac0(id);
+        SendMessageA(it->m_hwnd, 0x147, 0, 0);
     }
 
     // @confidence: low
@@ -401,8 +375,8 @@ namespace ApiCallerStubs {
     // __stdcall(id): clear listbox selection (0x147) of the resolved item; return +1.
     RVA(0x00015d30, 0x21)
     i32 __stdcall winapi_015d30_SendMessageA(i32 id) {
-        HWND h = ResolveItem_33a0(id)->m_hwnd;
-        return SendMessageA(h, 0x147, 0, 0) + 1;
+        WndItem* it = ResolveItem_33a0(id);
+        return SendMessageA(it->m_hwnd, 0x147, 0, 0) + 1;
     }
 
     // @source: winapi:SendMessageA
@@ -550,14 +524,6 @@ namespace ApiCallerStubs {
         i32,
         i32
     ) {
-        return 0;
-    }
-
-    // @confidence: low
-    // @source: winapi:PostMessageA
-    // @stub
-    RVA(0x00023090, 0xfc)
-    i32 ThisStubOwnerUnknown::winapi_023090_PostMessageA(i32) {
         return 0;
     }
 
@@ -995,6 +961,13 @@ namespace ApiCallerStubs {
     };
     // Pause audio (slot 0x28), force the cursor visible, MessageBoxA, then hide it.
     void __stdcall Stop_158c70(i32 handle); // RVA 0x158c70
+    // @early-stop
+    // regalloc free-list-pick wall (docs/patterns/select-zero-mask-dest-register.md):
+    // body byte-exact, but every value-holding register is rotated vs retail - the
+    // `m_30->m_4->m_14` chain (ecx/eax vs our eax/ecx), the `*m_30->m_1c; ->vtbl
+    // ->Slot28(p)` dispatch (container ecx + vtbl edx vs our edx + ecx) and the
+    // MessageBoxA arg setup all carry the same global re-colouring. Same
+    // instructions, swapped registers; not source-steerable (~98.5%).
     RVA(0x0008ee70, 0x7c)
     i32 MsgHost_08ee70::Show(i32 type, i32 text) {
         if (m_30) {
@@ -1021,13 +994,6 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    // @confidence: low
-    // @source: winapi:PostMessageA
-    // @stub
-    RVA(0x0008f340, 0xf6)
-    i32 ThisStubOwnerUnknown::winapi_08f340_PostMessageA() {
-        return 0;
-    }
 
     // @confidence: low
     // @source: winapi:PostMessageA
@@ -1806,21 +1772,11 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    // @confidence: low
-    // @source: winapi:GetCursorPos
-    // @stub
-    RVA(0x000c8a10, 0x119)
-    i32 ThisStubOwnerUnknown::winapi_0c8a10_GetCursorPos(i32) {
-        return 0;
-    }
+    // ResetForMode (0x0c8a10) re-homed (analyzed) as CPlay::ResetForMode in
+    // src/Gruntz/CPlay.cpp.
 
-    // @confidence: low
-    // @source: winapi:PostMessageA
-    // @stub
-    RVA(0x000cbaf0, 0x16f)
-    i32 ThisStubOwnerUnknown::winapi_0cbaf0_PostMessageA(i32, i32) {
-        return 0;
-    }
+    // OnKeyCommand (0x0cbaf0) re-homed (byte-exact) as CPlay::OnKeyCommand in
+    // src/Gruntz/CPlay.cpp.
 
     // @confidence: low
     // Sub-objects reached through the dispatcher's members; each has a __thiscall
@@ -1926,21 +1882,8 @@ namespace ApiCallerStubs {
         m_4->m_5c->Blit(8, arg, &dst, 0x10);
     }
 
-    // @confidence: low
-    // @source: winapi:SetRect
-    // @stub
-    RVA(0x000d5f90, 0xd7)
-    i32 ThisStubOwnerUnknown::winapi_0d5f90_SetRect(i32, i32, i32, i32) {
-        return 0;
-    }
-
-    // @confidence: low
-    // @source: winapi:wsprintfA
-    // @stub
-    RVA(0x000d60b0, 0x2cd)
-    i32 ThisStubOwnerUnknown::winapi_0d60b0_wsprintfA() {
-        return 0;
-    }
+    // FindStartPointAt (0x0d5f90) re-homed (analyzed) as CPlay::FindStartPointAt and
+    // ResetPlayState (0x0d60b0) as CPlay::ResetPlayState in src/Gruntz/CPlay.cpp.
 
     // @confidence: low
     // @source: winapi:PostMessageA
@@ -1990,13 +1933,8 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    // @confidence: low
-    // @source: winapi:SetRect
-    // @stub
-    RVA(0x000d8c60, 0xea)
-    i32 ThisStubOwnerUnknown::winapi_0d8c60_SetRect() {
-        return 0;
-    }
+    // ResetViewport (0x0d8c60) re-homed (byte-exact) as CPlay::ResetViewport in
+    // src/Gruntz/CPlay.cpp.
 
     // @confidence: low
     // @source: winapi:wsprintfA
@@ -2604,6 +2542,11 @@ namespace ApiCallerStubs {
     // @source: directx-wrapper-caller:calls 0x136550 (DSOUND.#1_DirectSoundCreate)
     i32 __stdcall PlaySound3_136550(i32 a, i32 b, i32 flag); // RVA 0x136550
     // __stdcall(a, b): default the 3rd arg to 0.
+    // @early-stop
+    // regalloc free-list-pick wall (docs/patterns/select-zero-mask-dest-register.md):
+    // body byte-exact except retail loads `a` into edx (`mov edx,[esp+4]`) while our
+    // cl picks ecx after eax is taken by `b` - a single free-list register pick, not
+    // source-steerable (~98.6%).
     RVA(0x00137720, 0x14)
     i32 __stdcall directx_wrapper_caller_137720_DSOUND_1_DirectSoundCreate(i32 a, i32 b) {
         return PlaySound3_136550(a, b, 0);
@@ -2653,7 +2596,7 @@ namespace ApiCallerStubs {
         } else {
             v = m_10 + hi - m_c;
         }
-        if ((u32)v >= (u32)m_14) {
+        if ((u32)v < (u32)m_14) {
             return 1;
         }
         return Work(m_c, v) != 0;
@@ -4159,76 +4102,6 @@ namespace ApiCallerStubs {
     RVA(0x0001c8a0, 0xec)
     void ThisStubOwnerUnknown::BootyState_OnActivate2_vfunc8() {}
 
-    // @confidence: high
-    // @source: decomp-xref
-    // @early-stop
-    // scheduling wall (docs/patterns/outparam-zeroinit-scheduling.md): logic + arg
-    // order + the int(BOOL) per-site epilogues all match; residual is two store
-    // hoist/sink permutations - retail SINKS the Lookup out-param `mov [&spr],0` past
-    // the arg pushes (cl hoists) and SINKS the rect[1] struct store past `push &rect`
-    // at a shifted esp offset (same instruction multiset, /O2-invariant), plus the
-    // frame guard `mov ecx,[..]; test` vs cl's `cmp [..],0` materialization. No local
-    // source diff closes these (hoisting rect[0] regressed 83->82%).
-    RVA(0x00020f40, 0x188)
-    i32 ThisStubOwnerUnknown::LoadChatBoxSprite(i32 arg1) {
-        CChatBoxOwner* self = (CChatBoxOwner*)this;
-        if (!self->m_10) {
-            return 1;
-        }
-
-        CChatBoxCtx* ctx = (CChatBoxCtx*)arg1;
-        CChatBoxDcHost* host = ctx->m_2c;
-        if (!host) {
-            return 0;
-        }
-
-        void* spr = 0;
-        self->m_18->m_10->m_10.Lookup("GAME_CHATBOX", &spr);
-        if (!spr) {
-            return 0;
-        }
-
-        if (self->m_8 == 3) {
-            void* frame = ((CChatBoxFrame*)spr)->m_14[((CChatBoxFrame*)spr)->m_68];
-            if (!frame) {
-                return 0;
-            }
-            RenderChatBoxFrame(arg1, self->m_0 + 0x140, self->m_4 + 0x20, 0);
-        } else {
-            void* frame = ((CChatBoxFrame*)spr)->m_14[((CChatBoxFrame*)spr)->m_64];
-            if (!frame) {
-                return 0;
-            }
-            RenderChatBoxFrame(arg1, self->m_0 + 0xf0, self->m_4 + 0x20, 0);
-        }
-
-        HDC hdc = 0;
-        host->m_8->m_vptr->GetDC(host->m_8, &hdc);
-        if (!hdc) {
-            return 1;
-        }
-        SetBkMode(hdc, 1);
-        SetTextColor(hdc, 0);
-        SetBkColor(hdc, 0);
-
-        void* rect[4];
-        if (self->m_8 == 3) {
-            rect[0] = self->m_0 + 0x4c;
-            rect[2] = self->m_0 + 0x267;
-            rect[1] = self->m_4 + 0x2b;
-            rect[3] = self->m_4 + 0x37;
-            self->m_14->StampText(hdc, 0x21b, rect);
-        } else {
-            rect[0] = self->m_0 + 0x4c;
-            rect[2] = self->m_0 + 0x1c7;
-            rect[1] = self->m_4 + 0x2b;
-            rect[3] = self->m_4 + 0x37;
-            self->m_14->StampText(hdc, 0x17b, rect);
-        }
-        host->m_8->m_vptr->Done(host->m_8, hdc);
-        return 1;
-    }
-
     // @confidence: low
     // @source: decomp-xref
     // @stub
@@ -4246,12 +4119,6 @@ namespace ApiCallerStubs {
     // @stub
     RVA(0x00057100, 0x577)
     void ThisStubOwnerUnknown::LoadGruntAbilityTuning(i32) {}
-
-    // @confidence: med
-    // @source: decomp-xref
-    // @stub
-    RVA(0x00057890, 0x19c)
-    void ThisStubOwnerUnknown::BuildGruntLoseItemAnimation() {}
 
     // @confidence: med
     // @source: string-xref
@@ -4289,23 +4156,11 @@ namespace ApiCallerStubs {
     RVA(0x00065e80, 0x12b8)
     void ThisStubOwnerUnknown::LoadPickupSprites(i32, i32, i32, i32, i32) {}
 
-    // @confidence: low
-    // @source: decomp-xref
-    // @stub
-    RVA(0x00068520, 0x2a2)
-    void ThisStubOwnerUnknown::LoadBombGruntRunConfig2() {}
-
     // @confidence: med
     // @source: string-xref
     // @stub
     RVA(0x00068880, 0x67c)
     void ThisStubOwnerUnknown::LoadWingzGruntSprites(i32) {}
-
-    // @confidence: med
-    // @source: decomp-xref
-    // @stub
-    RVA(0x00069d60, 0x1e1)
-    void ThisStubOwnerUnknown::LoadFreezeSpellAssets() {}
 
     // @confidence: med
     // @source: string-xref
@@ -4325,11 +4180,8 @@ namespace ApiCallerStubs {
     RVA(0x0007c3d0, 0x1ae)
     void ThisStubOwnerUnknown::LoadFinishLevelSprite(i32) {}
 
-    // @confidence: med
-    // @source: decomp-xref
-    // @stub
-    RVA(0x00090d10, 0x18e)
-    void ThisStubOwnerUnknown::LoadMonologoSprite() {}
+    // LoadMonologoSprite (0x090d10) re-homed as CGruntzMgr::LoadMonologoSprite in
+    // src/Gruntz/GruntzMgr.cpp (the trace owner; this in ecx == CGruntzMgr).
 
     // @confidence: med
     // @source: decomp-xref
@@ -4343,11 +4195,8 @@ namespace ApiCallerStubs {
     RVA(0x000ba620, 0x14a)
     void ThisStubOwnerUnknown::LoadMenuSelectSprite(i32) {}
 
-    // @confidence: med
-    // @source: decomp-xref
-    // @stub
-    RVA(0x000cffe0, 0x3c)
-    void ThisStubOwnerUnknown::LoadImageBanks_vfunc29() {}
+    // LoadImageBanks (0x0cffe0) re-homed as CPlay::LoadImageBanks in
+    // src/Gruntz/CPlay.cpp.
 
     // @confidence: med
     // @source: decomp-xref
@@ -4361,113 +4210,14 @@ namespace ApiCallerStubs {
     RVA(0x000d65d0, 0x7a4)
     void ThisStubOwnerUnknown::LoadWarlordSprites(i32, i32) {}
 
-    // @confidence: high
-    // @source: decomp-xref
-    // Byte-exact (100%). The real return type is int (BOOL): each guard is `return 0`
-    // reusing the just-zeroed eax (no normalizing mov) and the success path is
-    // `mov eax,1` - declaring the function `void` tail-merges the identical bare
-    // epilogues and never emits `mov eax,1`, capping ~85%; the int return reproduces
-    // retail's inline per-site epilogues + the eax=1 tail. The typed-view-of-`this`
-    // (CActionTileOwner) steers cl to retail's edx (not esi) for the final m_c load.
-    // (Ghidra demangled the symbol as `...QAEXH@Z` = void from the relocs; the
-    // RVA-keyed delinker still pairs the int-return body at this address.)
-    RVA(0x000db600, 0x8f)
-    i32 ThisStubOwnerUnknown::LoadActionTileSprites(i32 force) {
-        CActionTileOwner* self = (CActionTileOwner*)this;
-        if (!self->m_c) {
-            return 0;
-        }
-        if (!force && self->m_c->m_10->Has("ACTION")) {
-            return 1;
-        }
+    // LoadActionTileSprites (0x0db600), LoadLevelSounds (0x0db6c0) and
+    // LoadLevelImages (0x0db7e0) re-homed (byte-exact) as CPlay methods in
+    // src/Gruntz/CPlay.cpp, alongside their GAME-namespace siblings 0x0db8a0/
+    // 0x0db930/0x0db9b0. Their loader-view structs (CActionTileOwner / CSoundOwner
+    // / CActionResRegistry / CSoundResRegistry) remain defined in Backlog.cpp.
 
-        self->m_c->m_10->Register("ACTION", g_emptyString);
-        self->m_c->m_10->Register("BACK", g_emptyString);
-        g_severusCounterA = 0;
-
-        void* tiles = self->m_28->LookupTileSet("TILEZ");
-        if (!tiles) {
-            return 0;
-        }
-        self->m_c->m_10->InstallTileSet(tiles, g_emptyString, "_");
-        return 1;
-    }
-
-    // @confidence: high
-    // @source: decomp-xref
-    // Byte-exact (100%). int (BOOL) return like its tile/image siblings: each guard
-    // is `return 0` reusing the just-zeroed eax and the success path is `mov eax,1`,
-    // reproducing retail's per-site `pop esi; ret 4` epilogues + the eax=1 tail (a
-    // void return tail-merges them and never emits eax=1). Registry reached through
-    // m_c->+0x28 (CSoundResRegistry) - distinct object/class from the tile loader's
-    // m_c->m_10, with direct (non-virtual) Has/Register/Install helpers.
-    RVA(0x000db6c0, 0x70)
-    i32 ThisStubOwnerUnknown::LoadLevelSounds(i32 force) {
-        CSoundOwner* self = (CSoundOwner*)this;
-        if (!self->m_c) {
-            return 0;
-        }
-        if (!force && self->m_c->m_28->Has("LEVEL")) {
-            return 1;
-        }
-
-        self->m_c->m_28->Register("LEVEL", "_");
-
-        void* sounds = self->m_28->LookupSoundSet("SOUNDZ");
-        if (!sounds) {
-            return 0;
-        }
-        self->m_c->m_28->Install(sounds, "LEVEL", "_");
-        return 1;
-    }
-
-    // ---------------------------------------------------------------------------
-    // ThisStubOwnerUnknown::LoadLevelImages - per-level IMAGEZ/LEVEL asset loader. Sibling
-    // of LoadActionTileSprites above; same registry idiom, different namespace keys
-    // ("LEVEL"/"IMAGEZ"/"_") and a SINGLE Register (no second "BACK" namespace).
-    // Reaches the registry through this->m_c (->m_10): if not forced (arg1==0) and
-    // "LEVEL" is already present, bail; otherwise register the "LEVEL" namespace
-    // (key "_"), reset the severus counter, look up the level's "IMAGEZ" set off
-    // this->m_28, and wire it in through the +0x48 virtual slot. Reuses the typed
-    // view-of-`this` (CActionTileOwner) from the sibling. Only offsets / code bytes
-    // are load-bearing; helpers are reloc-masked externals.
-    //
-    // @confidence: high
-    // @source: decomp-xref
-    // Byte-exact (100%). The real return type is int (BOOL): each guard is `return 0`
-    // reusing the just-zeroed eax (no normalizing mov) and the success path is
-    // `mov eax,1` - declaring the function `void` (as the sibling does) tail-merges
-    // the three identical bare epilogues and never emits `mov eax,1`, capping ~82%;
-    // the int return reproduces retail's inline per-site epilogues + the eax=1 tail.
-    // (Ghidra demangled the symbol as `...QAEXH@Z` = void from the relocs alone; the
-    // RVA-keyed delinker still pairs the int-return body at this address.)
-    RVA(0x000db7e0, 0x84)
-    i32 ThisStubOwnerUnknown::LoadLevelImages(i32 force) {
-        CActionTileOwner* self = (CActionTileOwner*)this;
-        if (!self->m_c) {
-            return 0;
-        }
-        if (!force && self->m_c->m_10->Has("LEVEL")) {
-            return 1;
-        }
-
-        self->m_c->m_10->Register("LEVEL", "_");
-        g_severusCounterA = 0;
-
-        void* images = self->m_28->LookupTileSet("IMAGEZ");
-        if (!images) {
-            return 0;
-        }
-        self->m_c->m_10->InstallTileSet(images, "LEVEL", "_");
-        g_severusCounterA = 0;
-        return 1;
-    }
-
-    // @confidence: med
-    // @source: string-xref
-    // @stub
-    RVA(0x000dba30, 0x1ca)
-    void ThisStubOwnerUnknown::BuildMusicCategoryTable(i32) {}
+    // BuildMusicCategoryTable (0x0dba30) re-homed (byte-exact) as
+    // CPlay::BuildMusicCategoryTable in src/Gruntz/CPlay.cpp.
 
     // @confidence: med
     // @source: string-xref
@@ -4475,11 +4225,8 @@ namespace ApiCallerStubs {
     RVA(0x000dbc80, 0x309)
     void ThisStubOwnerUnknown::BuildWorldLevelPath(i32) {}
 
-    // @confidence: med
-    // @source: string-xref
-    // @stub
-    RVA(0x000dc060, 0x51b)
-    void ThisStubOwnerUnknown::LoadLevelEffectSprites() {}
+    // SetEffectSpriteDurations (0x0dc060) re-homed (analyzed) as
+    // CPlay::SetEffectSpriteDurations in src/Gruntz/CPlay.cpp.
 
     // @confidence: low
     // @source: decomp-xref
@@ -4487,23 +4234,11 @@ namespace ApiCallerStubs {
     RVA(0x000dd050, 0x24b)
     void ThisStubOwnerUnknown::BuildGruntNamespaceList(i32) {}
 
-    // @confidence: low
-    // @source: decomp-xref
-    // @stub
-    RVA(0x000dd340, 0x189)
-    void ThisStubOwnerUnknown::BuildWarlordNameTable(i32) {}
+    // BuildWarlordNameTable (0x0dd340) re-homed (analyzed) as
+    // CPlay::BuildWarlordNameTable in src/Gruntz/CPlay.cpp.
 
-    // @confidence: med
-    // @source: string-xref
-    // @stub
-    RVA(0x000dd540, 0x241)
-    void ThisStubOwnerUnknown::BuildSpriteImageKeyTable(i32) {}
-
-    // @confidence: med
-    // @source: string-xref
-    // @stub
-    RVA(0x000ddaa0, 0x228)
-    void ThisStubOwnerUnknown::BuildAnizKeyTable(i32) {}
+    // BuildSpriteImageKeyTable (0x0dd540) and BuildAnizKeyTable (0x0ddaa0) re-homed
+    // (byte-exact) as CPlay methods in src/Gruntz/CPlay.cpp.
 
     // @confidence: med
     // @source: decomp-xref
@@ -4511,54 +4246,15 @@ namespace ApiCallerStubs {
     RVA(0x000de420, 0x115)
     void ThisStubOwnerUnknown::LoadLevelPreviewScreen() {}
 
-    // @confidence: med
-    // @source: string-xref
-    // @stub
-    RVA(0x000e2400, 0x39e)
-    void ThisStubOwnerUnknown::BuildToolToyColorKey(i32) {}
+    // BuildToolToyColorTable (0x0e2400) re-homed (byte-exact) as
+    // CSpriteRefTable::BuildToolToyColorTable in src/Gruntz/SpriteRefTable.cpp.
 
-    // @confidence: med
-    // @source: string-xref
-    // @stub
-    RVA(0x000e2980, 0x2cd)
-    void ThisStubOwnerUnknown::LookupToolToyColorKey(i32) {}
+    // LoadToolToyPalettes (0x0e2980) re-homed (byte-exact) as
+    // CSpriteRefTable::LoadToolToyPalettes in src/Gruntz/SpriteRefTable.cpp.
 
-    // @confidence: high
-    // @source: decomp-xref
-    // int (BOOL) return: the `!arg1` and already-present guards return literal 0/1
-    // (reusing the zeroed eax / `mov eax,1`), and the success path normalizes the
-    // Install() return through neg/sbb/neg (`!!x`). A `void` return would tail-merge
-    // the bare epilogues and drop the eax=1 tail. The "PAL" key is a packed-tag
-    // immediate (0x50414c, not relocated). Lookup() runs on the +0x10 hash sub-table
-    // of m_4->m_18; Install is that object's vtable slot 9.
-    //
-    // @early-stop
-    // out-param zero-init scheduling wall (docs/patterns/outparam-zeroinit-scheduling.md):
-    // the ONLY residual is retail SINKING `mov [&found],0` past the `lea &found` (lea
-    // then store) while cl HOISTS it (store then lea) - identical instruction multiset,
-    // one 2-instr permutation, source-invariant under /O2. Logic + all bytes otherwise
-    // exact (frame 0x40, epilogues, !!x normalize all match).
-    RVA(0x000e2d10, 0xa1)
-    i32 ThisStubOwnerUnknown::LoadGruntzPalette(i32 src, i32 name) {
-        CPaletteOwner* self = (CPaletteOwner*)this;
-        if (!src) {
-            return 0;
-        }
-
-        void* found = 0;
-        self->m_4->m_18->m_10.Lookup((char*)name, &found);
-        if (found) {
-            return 1;
-        }
-
-        char buf[0x40];
-        sprintf(buf, "GRUNTZ_PALETTEZ_%s", (char*)name);
-        void* pal = ((CPaletteSource*)src)->Resolve(buf, 0x50414c);
-        if (!pal) {
-            return 0;
-        }
-        return self->m_4->m_18->Install(pal, 0, 0) != 0;
-    }
+    // LoadGruntzPalette (0x0e2d10) re-homed as CSpriteRefTable::LoadGruntzPalette in
+    // src/Gruntz/SpriteRefTable.cpp (the trace owner; m_4 == CSpriteRefTable::m_04).
+    // Its CPalette* loader-view structs remain defined in Backlog.cpp.
 
     // @confidence: med
     // @source: decomp-xref
@@ -4573,12 +4269,6 @@ namespace ApiCallerStubs {
     RVA(0x000e9600, 0x18c)
     void ThisStubOwnerUnknown::
         BuildStatzTabStatusBar(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32) {}
-
-    // @confidence: med
-    // @source: decomp-xref
-    // @stub
-    RVA(0x000e9850, 0x111)
-    void ThisStubOwnerUnknown::BuildStatzTabSmallSprite() {}
 
     // @confidence: med
     // @source: decomp-xref

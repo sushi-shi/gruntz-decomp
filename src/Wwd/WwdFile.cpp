@@ -29,6 +29,7 @@
 #include <rva.h>
 
 #include <Mfc.h>    // CString (ValidateMainBlock takes one by value; ReadPlaneObjects builds four)
+#include <stdio.h>  // sprintf
 #include <stdlib.h> // atoi
 #include <string.h> // memcpy
 
@@ -703,6 +704,234 @@ i32 CPlaneRender::CenterScrollA() {
     return scroll->SetTargetA(x, y);
 }
 
+// ---------------------------------------------------------------------------
+// CPlaneRender::InitScrollRects (__thiscall, no args). Seed three (0,0,w-1,h-1)
+// rects + their centers (w/2, h/2) into the scroll sub-object from the plane
+// geometry's three dimension pairs (m_0c->m_24: c8/cc, d0/d4, d8/dc), then park
+// the scroll target at (-22222, -22222) so the first SetTarget always moves.
+RVA(0x00163420, 0xf0)
+void CPlaneRender::InitScrollRects() {
+    if (m_scroll == 0) {
+        return;
+    }
+    CPlaneGeom* g = m_0c->m_24;
+    if (g == 0) {
+        return;
+    }
+
+    i32 c8 = g->m_c8;
+    i32 cc = g->m_cc;
+    i32 d0 = g->m_d0;
+    i32 d4 = g->m_d4;
+    i32 d8 = g->m_d8;
+    i32 dc = g->m_dc;
+
+    CPlaneScroll* s = m_scroll;
+    s->m_10 = 0;
+    s->m_14 = 0;
+    s->m_18 = c8 - 1;
+    s->m_1c = cc - 1;
+    s->m_40 = c8 / 2;
+    s->m_44 = cc / 2;
+
+    s = m_scroll;
+    s->m_30 = 0;
+    s->m_34 = 0;
+    s->m_38 = d0 - 1;
+    s->m_3c = d4 - 1;
+    s->m_48 = d0 / 2;
+    s->m_4c = d4 / 2;
+
+    s = m_scroll;
+    s->m_20 = 0;
+    s->m_24 = 0;
+    s->m_28 = d8 - 1;
+    s->m_2c = dc - 1;
+    s->m_50 = d8 / 2;
+    s->m_54 = dc / 2;
+
+    s = m_scroll;
+    s->m_68 = -22222;
+    s->m_6c = -22222;
+}
+
+// ---------------------------------------------------------------------------
+// The live screen RGB-format shift table at 0x683ea0.. (already named by
+// SpriteRef.cpp / CLightFxRender.cpp). Reloc-masked DIR32 data refs.
+DATA(0x00283ea0)
+extern i32 g_rUp; // 0x683ea0
+DATA(0x00283ea4)
+extern i32 g_gUp; // 0x683ea4
+DATA(0x00283eac)
+extern i32 g_rDown; // 0x683eac
+DATA(0x00283eb0)
+extern i32 g_gDown; // 0x683eb0
+DATA(0x00283eb4)
+extern i32 g_bDown; // 0x683eb4
+
+// ---------------------------------------------------------------------------
+// CPlaneRender::ValidateTiles (__thiscall, ret 0x4). When the plane is loaded
+// (vtable +0x14), walk the row-major tile grid: each handle (skipping the -1 and
+// 0xEEEEEEEE sentinels) must resolve to a non-null plane frame (m_planeArray
+// [handle>>16]) and an in-range tile value; on a bad ref, if `errOut` is non-null,
+// format the diagnostic ("Plane %s: Bad map image set value" / "...tile value")
+// into it. Returns 1.
+//
+// @early-stop
+// 92.5%, logic byte-exact (the double loop, both sentinels, the frame/tile range
+// checks, both sprintf+strcpy error paths, and the result/dead-flag stack pair all
+// match retail). Residual is the MSVC5 inlined-sprintf/strcpy register scheduling
+// across the two error sites - a documented entropy/scheduling tail.
+RVA(0x00163510, 0x156)
+i32 CPlaneRender::ValidateTiles(char* errOut) {
+    if (((CPlaneRenderPoly*)this)->IsLoaded() == 0) {
+        return 0;
+    }
+
+    char msg[0x80];
+    i32 result = 1;
+    for (i32 row = 0; row < m_gridH; row++) {
+        for (i32 col = 0; col < m_gridW; col++) {
+            i32 handle = m_tileGrid[m_colOffsets[row] + col];
+            if (handle == -1 || (u32)handle == 0xeeeeeeee) {
+                continue;
+            }
+            CPlaneFrame* frame = m_planeArray[(u32)handle >> 16];
+            if (frame == 0) {
+                result = 0;
+                if (errOut != 0) {
+                    sprintf(msg, "Plane %s: Bad map image set value (%i) at %i,%i\n", m_name, (u32)handle >> 16, col, row);
+                    strcpy(errOut, msg);
+                }
+                continue;
+            }
+            i32 tile = handle & 0xffff;
+            void* resolved;
+            if (tile >= frame->m_lo && tile <= frame->m_hi) {
+                resolved = frame->m_frames[tile];
+            } else {
+                resolved = 0;
+            }
+            if (resolved == 0) {
+                result = 0;
+                if (errOut != 0) {
+                    sprintf(msg, "Plane %s: Bad map tile value (%i) at %i,%i\n", m_name, tile, col, row);
+                    strcpy(errOut, msg);
+                }
+            }
+        }
+    }
+    return result;
+}
+
+// ---------------------------------------------------------------------------
+// CPlaneRender::ResolveColorKey (__thiscall, no args). For a 16bpp plane only
+// (skip 8bpp), pack the RGB888 palette entry at index m_144 (m_0c's palette chain)
+// into a screen-native RGB565 word and store it back in place at m_144.
+//
+// @early-stop
+// 66.6%, logic byte-exact (the format gate, the index bounds, the palette chain,
+// and the RGB565 pack spelling are the proven-exact SpriteRef idiom). Residual is a
+// whole-function regalloc wall: retail pins `this` in ebp (freeing esi/edi for the
+// rgb/index pair) and accumulates the pack in eax; our cl pins `this` in edi and
+// accumulates in edx. Not source-steerable (the live-range allocation differs once
+// rgb/index come from memory rather than register locals). docs/patterns/
+// zero-register-pinning.md family.
+RVA(0x00163670, 0x95)
+void CPlaneRender::ResolveColorKey() {
+    i32 format = m_0c->m_4->m_10->m_format;
+    if (format == 8) {
+        return;
+    }
+    if (format != 0x10) {
+        return;
+    }
+
+    i32 idx = m_144;
+    if (idx < 0) {
+        return;
+    }
+    if (idx > 0xff) {
+        return;
+    }
+
+    CPlanePalOwner* owner = m_0c->m_18->m_64;
+    if (owner == 0) {
+        return;
+    }
+    u8* rgb = owner->m_10->m_rgb;
+    if (rgb == 0) {
+        return;
+    }
+
+    m_144 = (u16)(((u8)((u8)rgb[idx * 4 + 0] >> (u8)g_rDown) << g_rUp) | ((u8)((u8)rgb[idx * 4 + 1] >> (u8)g_gDown) << g_gUp) | (u8)((u8)rgb[idx * 4 + 2] >> (u8)g_bDown));
+}
+
+// ---------------------------------------------------------------------------
+// CPlaneRender::Save (__thiscall, ret 0x4). Serialize the plane to a binary
+// stream: the scroll origin/dims block, the origin/extent rect, four shift/log
+// fields, the tile grid (size-prefixed), and the fixed 0x80-byte name field.
+RVA(0x00163780, 0x134)
+i32 CPlaneRender::Save(CWwdStream* s) {
+    if (s == 0) {
+        return 0;
+    }
+
+    s->Write(&m_scaledX, 4);
+    s->Write(&m_scaledY, 4);
+    s->Write(&m_18, 4);
+    s->Write(&m_1c, 4);
+    s->Write(&m_originX, 0x10);
+    s->Write(&m_80, 4);
+    s->Write(&m_84, 4);
+    s->Write(&m_88, 4);
+    s->Write(&m_94, 4);
+    s->Write(&m_98, 4);
+
+    i32 gridSize = m_gridW * m_gridH * 4;
+    s->Write(&gridSize, 4);
+    s->Write(m_tileGrid, gridSize);
+
+    char buf[0x80];
+    memset(buf, 0, sizeof(buf));
+    strcpy(buf, m_name);
+    s->Write(buf, 0x80);
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CPlaneRender::Load (__thiscall, ret 0x4). Inverse of Save: read back the same
+// field sequence; the size-prefix must equal gridW*gridH*4 or the load aborts.
+RVA(0x001638c0, 0x140)
+i32 CPlaneRender::Load(CWwdStream* s) {
+    if (s == 0) {
+        return 0;
+    }
+
+    s->Read(&m_scaledX, 4);
+    s->Read(&m_scaledY, 4);
+    s->Read(&m_18, 4);
+    s->Read(&m_1c, 4);
+    s->Read(&m_originX, 0x10);
+    s->Read(&m_80, 4);
+    s->Read(&m_84, 4);
+    s->Read(&m_88, 4);
+    s->Read(&m_94, 4);
+    s->Read(&m_98, 4);
+
+    i32 gridSize = 0;
+    s->Read(&gridSize, 4);
+    if (gridSize != m_gridH * m_gridW * 4) {
+        return 0;
+    }
+    s->Read(m_tileGrid, gridSize);
+
+    char buf[0x80];
+    s->Read(buf, 0x80);
+    strcpy(m_name, buf);
+    return 1;
+}
+
 // @early-stop
 // 87.9%, same shrink-wrapped-push / member-load scheduling wall as CenterScrollA.
 RVA(0x00163370, 0x70)
@@ -728,4 +957,31 @@ i32 CPlaneRender::CenterScrollB() {
     }
     y = (m_extentY + m_originY) / 2 + 1;
     return scroll->SetTargetB(x, y);
+}
+
+// ---------------------------------------------------------------------------
+// CPlaneRender::GetTileHandle (__thiscall, ret 8). Index the tile-handle grid:
+// m_colOffsets[col] is the column's base index; +row picks the cell.
+RVA(0x000d53a0, 0x19)
+i32 CPlaneRender::GetTileHandle(i32 row, i32 col) {
+    return m_tileGrid[m_colOffsets[col] + row];
+}
+
+// ---------------------------------------------------------------------------
+// CPlaneRender::SnapToTileCenter (__thiscall, ret 0xc). Floor each axis to its
+// tile boundary (>>shift <<shift) and add half a tile (signed /2).
+// @early-stop
+// ~51%, logic byte-exact (same sar/shl/cltd/sub/sar/add selection). Residual is a
+// whole-function regalloc/coloring wall: retail keeps the two shift counts in
+// caller-saved eax/edx (3 callee-saved pushes) and stores both results last; this
+// build colors a shift count into ebx (a 4th push, ebp) and flips the axis order.
+// Not source-steerable (member-load scheduling / coloring; matching-patterns.md).
+RVA(0x000311e0, 0x4c)
+void CPlaneRender::SnapToTileCenter(i32* out, i32 x, i32 y) {
+    i32 sx = m_shiftX;
+    i32 sy = m_shiftY;
+    i32 rx = ((x >> sx) << sx) + m_tilePxW / 2;
+    i32 ry = ((y >> sy) << sy) + m_tilePxH / 2;
+    out[0] = rx;
+    out[1] = ry;
 }

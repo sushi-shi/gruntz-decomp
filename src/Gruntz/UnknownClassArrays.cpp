@@ -149,6 +149,11 @@ struct GridUnit {
     i32 m_328;                 // +0x328  list count/flag
     char m_pad32c[0x368 - 0x32c];
     i32 m_368; // +0x368  must be 0 to dispatch
+
+    // 0x0343f0 (attributed to UnknownClassArrays but a __thiscall ON a GridUnit):
+    // recycle every occupied-coord node's payload onto g_freeList, then RemoveAll
+    // the +0x31c CObList. Defined out-of-line with its retail RVA below.
+    void RecycleCoords(); // 0x0343f0
 };
 
 // A {x, y} coordinate pair (a list node's +0x8 payload).
@@ -443,6 +448,50 @@ void UnknownClassArrays::FreeArrays() {
     m_104.SetSize(0, -1);
     m_118.SetSize(0, -1);
     m_13c = 0;
+}
+
+// ===========================================================================
+// UnknownClassArrays::Method_02ad40  @0x02ad40
+// Pick a random idle unit from one of the four cell-bands: roll a band [0..3]
+// (avoiding the current cell index m_018 by bumping past it), a random start cell
+// [0..14], then scan the band's 15 units from there (cell index wrapping mod 15),
+// returning the first non-null unit whose +0x364 "busy" slot is clear (0 on miss).
+// The arg is unused. (__thiscall, ret 0x4.)
+// ===========================================================================
+// @early-stop
+// regalloc wall: the double rand()%4 band-pick (with the m_018 skip), the rand()%15
+// start, and the 15-cell scan (incl. the dead running-cell-index recompute via
+// idiv 15) are reconstructed in shape, but retail pins the row walker in esi / the
+// m_364 temp + the 15 const in edi where MSVC5 here swaps them (edi walker, esi
+// counter), and the swap cascades through the small body. Logic + offsets correct;
+// not source-steerable. Deferred to the final sweep.
+RVA(0x0002ad40, 0x71)
+void* UnknownClassArrays::Method_02ad40(i32) {
+    i32 band = rand() % 4;
+    if (band == m_018) {
+        band++;
+    }
+    band = band % 4;
+    i32 cell = rand() % 15;
+    GridUnit** row = (GridUnit**)(m_008 + band * 0x3c + 0x1c);
+    for (i32 i = 0; i < 15; i++) {
+        GridUnit* u = *row;
+        if (u != 0 && *(i32*)((char*)u + 0x364) == 0) {
+            return u;
+        }
+        cell = (cell + 1) % 15;
+        row++;
+    }
+    return 0;
+}
+
+// ===========================================================================
+// UnknownClassArrays::Method_02c080  @0x02c080
+// Trivial: ignore the one arg, return 1. (mov eax,1; ret 4)
+// ===========================================================================
+RVA(0x0002c080, 0x8)
+i32 UnknownClassArrays::Method_02c080(i32) {
+    return 1;
 }
 
 // ===========================================================================
@@ -1424,6 +1473,97 @@ i32 UnknownClassArrays::Method_0300c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a
 }
 
 // ===========================================================================
+// UnknownClassArrays::Method_0302c0  @0x0302c0  (/GX EH frame)
+// Re-path `unit` to (gx, gy) - the GetCoord-fronted twin of Method_0300c0. If the
+// unit is already at the goal (its GetCoord (>>5) == (gx, gy)) bail; scan its path
+// for a node already on the goal; ask the board's A* (FindPath) for a route into a
+// local CObList; recycle the route's head + (when the goal was already queued) the
+// path-list base + the unit's existing coord nodes onto g_freeList; then AddTail
+// every new route node onto the unit's path list. Returns 1 on a route, 0 otherwise.
+// ===========================================================================
+// @early-stop
+// EH-frame + regalloc plateau: logic + every call (the two GetCoords, FindPath,
+// RemoveHead, the g_freeList recycles, AddTail, the ~CObList unwind) is reconstructed
+// in shape + order. Two walls: (1) the /GX cond-temp EH state machine (shared
+// `je <unwind>` cleanup vs cl's per-return duplication, same as Method_0300c0); (2)
+// the matched-node g_freeList recycle in the middle compiles to a degenerate
+// loop-invariant `do/while` in retail (the path-segment recycle) that no source
+// spelling reproduces. Foreign unit chains modeled by raw offset. Final sweep.
+RVA(0x000302c0, 0x1ec)
+i32 UnknownClassArrays::Method_0302c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5) {
+    CObList list(10);
+    GridUnit* unit = (GridUnit*)unitArg;
+    Coord cur;
+    ((UnitGeom*)unit)->GetCoord(&cur);
+    if ((cur.m_x >> 5) == gx) {
+        Coord cur2;
+        ((UnitGeom*)unit)->GetCoord(&cur2);
+        if ((cur2.m_y >> 5) == gy) {
+            return 0;
+        }
+    }
+    // Scan the unit's path for a node already on the goal (match = the node after it).
+    CoordNode* match = 0;
+    CoordNode* n = (CoordNode*)unit->m_320;
+    while (n != 0) {
+        CoordNode* cur3 = n;
+        n = n->m_next;
+        Coord* coord = cur3->m_coord;
+        if (coord != 0 && coord->m_x == gx && coord->m_y == gy) {
+            match = n;
+            break;
+        }
+    }
+    UnitLevel* lvl = (UnitLevel*)unit->m_010;
+    if (((Board*)m_00c)->FindPath(lvl->m_5c >> 5, lvl->m_60 >> 5, gx, gy, &list, 0, a5, a5) == 0) {
+        return 0;
+    }
+    if (list.GetCount() == 0) {
+        return 0;
+    }
+    void* head = list.RemoveHead();
+    if (head != 0) {
+        void** node = (void**)((char*)head - g_freeListNodeBias);
+        *node = g_freeList;
+        g_freeList = node;
+    }
+    if (list.GetCount() == 0) {
+        return 0;
+    }
+    // The matched-path-segment recycle (degenerate in retail).
+    if (match != 0 && unit->m_320 != 0) {
+        void** node = (void**)((char*)&unit->m_31c - g_freeListNodeBias);
+        *node = g_freeList;
+        g_freeList = node;
+    }
+    // Recycle the unit's existing coord nodes onto g_freeList, then empty its path.
+    if (unit->m_328 != 0) {
+        CoordNode* p = (CoordNode*)unit->m_320;
+        while (p != 0) {
+            CoordNode* cur4 = p;
+            p = p->m_next;
+            if (cur4->m_coord != 0) {
+                void** node = (void**)((char*)cur4->m_coord - g_freeListNodeBias);
+                *node = g_freeList;
+                g_freeList = node;
+            }
+        }
+        ((CObList*)&unit->m_31c)->RemoveAll();
+    }
+    // AddTail every new route node's coord onto the unit's path list.
+    CoordNode* q = (CoordNode*)list.GetHeadPosition();
+    while (q != 0) {
+        CoordNode* cur5 = q;
+        q = q->m_next;
+        if (cur5->m_coord != 0) {
+            ((CObList*)&unit->m_31c)->AddTail((CObject*)cur5->m_coord);
+        }
+    }
+    list.RemoveAll();
+    return 1;
+}
+
+// ===========================================================================
 // UnknownClassArrays::Method_030530  @0x030530
 // Returns 1 if ANY occupied coordinate of `unit` lands on a board tile whose
 // flag byte has bit 0x4 set; else 0. Bails to 0 if the unit has no coord list.
@@ -1594,6 +1734,103 @@ i32 UnknownClassArrays::Method_030730(i32 cellX, i32 cellY, i32, i32) {
         u->m_250 = 0xd87;
         u->m_254 = 0;
     }
+    return 1;
+}
+
+// The grid object held at this->m_008: SpawnProbe (RVA 0x046b6d0, thunk 0x040bb,
+// shared with Method_026470's cell probe) is a __thiscall that maps a screen
+// coordinate + a flag bag to a candidate cell index (-1 on miss). Called here with
+// ecx = m_008 (kept live since the row-count loop); modeled as a method on the grid
+// so the convention falls out. External, reloc-masked (no body). The 13-arg form is
+// distinct from Method_026470's 9-arg ProbeCell call into the SAME retail routine.
+struct GridSpawnProbe {
+    i32 Probe(
+        i32 cell,
+        i32 sx,
+        i32 sy,
+        i32 a3,
+        i32 a4,
+        i32 a5,
+        i32 a6,
+        i32 a7,
+        i32 a8,
+        i32 a9,
+        i32 a10,
+        i32 a11,
+        i32 a12
+    ); // 0x046b6d0
+};
+
+// ===========================================================================
+// UnknownClassArrays::Method_030990  @0x030990
+// Try to seed a fresh spawn unit at a screen cell. Count the occupied units in the
+// current cell-row; if that count is at/over the per-level record's budget
+// (rec->m_378) bail. Otherwise probe the screen cell mapped from (arg1,arg2) via the
+// grid's SpawnProbe (using rec->m_158 as the kind tag); if it resolves to a unit
+// slot, seed it as a fresh mode-4 spawn (state 0x11, -1 coord block). Returns 1 on a
+// seeded spawn, 0 otherwise.
+// ===========================================================================
+// @early-stop
+// zero-register-pinning wall (~94.6%): structure byte-exact - the occupied-count
+// loop, the rec->m_378 budget gate, the 13-arg SpawnProbe call (rec->m_158 tag +
+// the two shifted coords), the cell->unit index, and the full mode-4 spawn seed are
+// all reproduced in shape + order. Retail pins the occupied counter in ebp and the
+// zero/null constant in ebx; MSVC5 here swaps the two (counter in ebx, zero in ebp),
+// which cascades through every push-0, the budget cmp, and the seed's `=0` stores +
+// reschedules the -1 block. No source lever forces the pinning under /O2 (see
+// docs/patterns/zero-register-pinning.md). Deferred to the final sweep.
+RVA(0x00030990, 0x11b)
+i32 UnknownClassArrays::Method_030990(i32 ax, i32 ay) {
+    GridUnit** row = (GridUnit**)(m_008 + m_018 * 0x3c + 0x1c);
+    i32 occupied = 0;
+    for (i32 c = 15; c != 0; c--) {
+        if (*row != 0) {
+            occupied++;
+        }
+        row++;
+    }
+    char* rec = (char*)m_004 + m_018 * 0x238;
+    if (occupied >= *(i32*)(rec + 0x378)) {
+        return 0;
+    }
+    i32 cell = ((GridSpawnProbe*)m_008)
+                   ->Probe(
+                       m_018,
+                       (ay << 5) + 0x10,
+                       (ax << 5) + 0x10,
+                       0x186a0,
+                       3,
+                       *(i32*)(rec + 0x158),
+                       0,
+                       0,
+                       0x11,
+                       0,
+                       0,
+                       0,
+                       0
+                   );
+    if (cell == -1) {
+        return 0;
+    }
+    GridUnit* unit = ((GridUnit**)((char*)(*(void**)((char*)m_004 + 0x68)) + 0x1c))[cell + m_018 * 15];
+    if (unit == 0) {
+        return 0;
+    }
+    i32* u = (i32*)unit;
+    u[0x2f0 / 4] = -1;
+    u[0x2f8 / 4] = -1;
+    u[0x300 / 4] = -1;
+    u[0x2d0 / 4] = 0x11;
+    u[0x2f4 / 4] = -1;
+    u[0x2e8 / 4] = -1;
+    u[0x2fc / 4] = -1;
+    u[0x2d4 / 4] = 0;
+    u[0x304 / 4] = -1;
+    u[0x2e4 / 4] = 0;
+    u[0x2e0 / 4] = 0;
+    u[0x2ec / 4] = 0;
+    u[0x390 / 4] = 1;
+    u[0x2d8 / 4] = 4;
     return 1;
 }
 
@@ -2675,4 +2912,208 @@ i32 UnknownClassArrays::Method_030b20(i32 unitArg, i32 col, i32 row) {
     unit->m_178 = (tail->m_y << 5) + 0x10;
     unit->m_2d4 = 5;
     return 1;
+}
+
+// One node of the grid object's candidate list (head at m_008->m_4): ->next at +0,
+// the candidate sub-object (its level coord at +0x54 / +0x58, an "occupied" flag at
+// +0x5c) at +0x8.
+struct GridCandNode {
+    GridCandNode* m_next; // +0x00
+    char m_pad04[0x04];
+    char* m_payload; // +0x08
+};
+// The candidate sub-object reached via node->m_8: m_54/m_58 carry its grid (>>5)
+// coordinate, m_5c is a nonzero "already occupied" flag.
+struct GridCand {
+    char m_pad00[0x54];
+    i32 m_54; // +0x54  grid x
+    i32 m_58; // +0x58  grid y
+    i32 m_5c; // +0x5c  occupied flag (skip when set)
+};
+
+// ===========================================================================
+// UnknownClassArrays::Method_0350d0  @0x0350d0
+// Periodic re-path of `unit` toward the nearest free candidate cell. Gate on the
+// unit's m_2ec timer exceeding the bundle's m_0c4 budget; otherwise walk the grid
+// object's candidate list (head at m_008->m_4), and among the unoccupied candidates
+// (sub->m_5c == 0, and not already exactly on the unit's level coord) keep the one
+// nearest (min squared distance) to the unit's level (>>5) coordinate. If one is
+// found, re-path the unit to it via Method_0300c0 (flags 0xd87). Clear m_2ec and
+// return 1.
+// ===========================================================================
+// @early-stop
+// regalloc/spill wall (~72%): logic byte-exact - the unsigned m_2ec>m_0c4 gate
+// (jbe), the candidate-list walk, the m_5c-occupied + exact-coord skips, the
+// abs-distance squared min-keep, and the Method_0300c0 (flags 0xd87) re-path are all
+// reproduced in shape + instruction multiset. Retail spills BOTH the list iterator
+// and bestDist to stack locals (frame 0x10, reloading `arg1` from its stack slot each
+// iteration), where MSVC5 here keeps the iterator in ebp and bestDist in ecx (frame
+// 0x8, no reload) - the higher-spill-pressure choice (this-spilled-to-local-for-loop-
+// seed + reread-member-view-pointer family). No source lever forces the spill under
+// /O2; the divergence cascades through every loop register operand. Final sweep.
+RVA(0x000350d0, 0xfa)
+i32 UnknownClassArrays::Method_0350d0(i32 unitArg) {
+    GridUnit* unit = (GridUnit*)unitArg;
+    if ((u32)unit->m_2ec <= (u32)m_0c4) {
+        return 1;
+    }
+    GridCand* best = 0;
+    i32 bestDist = 0x7fffffff;
+    GridCandNode* node = *(GridCandNode**)(m_008 + 4);
+    while (node != 0) {
+        GridCand* cand = (GridCand*)node->m_payload;
+        node = node->m_next;
+        if (cand->m_5c == 0) {
+            UnitLevel* lvl = (UnitLevel*)unit->m_010;
+            i32 lx = lvl->m_5c >> 5;
+            i32 ly = lvl->m_60 >> 5;
+            if (cand->m_54 != lx || cand->m_58 != ly) {
+                i32 dx = cand->m_54 - lx;
+                dx = abs(dx);
+                i32 dy = cand->m_58 - ly;
+                dy = abs(dy);
+                i32 dist = dx * dx + dy * dy;
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    best = cand;
+                }
+            }
+        }
+    }
+    if (best != 0) {
+        Method_0300c0(unitArg, best->m_54, best->m_58, 0xd87, 0, 0);
+    }
+    unit->m_2ec = 0;
+    return 1;
+}
+
+// ===========================================================================
+// GridUnit::RecycleCoords  @0x0343f0  (attributed to UnknownClassArrays; __thiscall
+// on a GridUnit). Recycle each occupied-coord node's payload onto g_freeList (head
+// cached in a register across the loop, written each iteration), then tail into the
+// +0x31c CObList's RemoveAll. Skips everything when the count (m_328) is zero.
+// ===========================================================================
+RVA(0x000343f0, 0x47)
+void GridUnit::RecycleCoords() {
+    if (m_328 == 0) {
+        return;
+    }
+    CoordNode* n = (CoordNode*)m_320;
+    if (n != 0) {
+        void* head = g_freeList;
+        do {
+            CoordNode* cur = n;
+            n = n->m_next;
+            void* coord = cur->m_coord;
+            if (coord != 0) {
+                void** slot = (void**)((char*)coord - g_freeListNodeBias);
+                *slot = head;
+                head = slot;
+                g_freeList = head;
+            }
+        } while (n != 0);
+    }
+    ((CObList*)&m_31c)->RemoveAll();
+}
+
+// The per-unit spawn/place hook Method_034c70 fires (RVA 0x04b320, thunk 0x01640):
+// a __thiscall on the GridUnit taking (x, y, 0, flags, 0, 0); returns nonzero on a
+// successful placement. External, reloc-masked (no body).
+struct GridUnitSpawn {
+    i32 Place(i32 x, i32 y, i32 a2, i32 flags, i32 a4, i32 a5); // 0x04b320
+};
+
+// ===========================================================================
+// UnknownClassArrays::Method_034c70  @0x034c70
+// The queued-unit board-tile resolver. For a unit with no live coord list
+// (m_328==0): look up its target tile (board->m_rows[m_2f4][m_2f0]); if the tile
+// carries the 0x20 "reserved" flag, only place (Method_4b320, flags 0xd87) when the
+// per-level budget (m_2ec) exceeds this->m_0b4 - on a successful place clear m_2ec,
+// otherwise fall to the "give up" path; if the tile is free, give up directly. The
+// give-up path marks the unit mode 4, recycles its coord nodes (onto the coord pool
+// for the reserved-tile branch, onto g_freeList for the free-tile branch), empties
+// its coord list, and resets its target coord (-1,-1) + state. Returns 1.
+// ===========================================================================
+// @early-stop
+// deep-chain regalloc plateau: the board-tile lookup, the budget gate, the
+// Method_4b320 spawn, both coord-recycle loops (coord-pool vs g_freeList) and the
+// reset block are reconstructed in shape + order, but retail pins the unit in edi /
+// the zero const in ebx and the tile-index math (m_2f0*7, m_2f4 row) spills to
+// different stack slots than MSVC5 here. Foreign unit/board chains modeled by raw
+// offset. Deferred to the final sweep.
+RVA(0x00034c70, 0x133)
+i32 UnknownClassArrays::Method_034c70(i32 unitArg) {
+    GridUnit* unit = (GridUnit*)unitArg;
+    if (unit->m_328 != 0) {
+        return 1;
+    }
+    i32 x = unit->m_2f0;
+    i32 y = unit->m_2f4;
+    Tile* tile = &((Tile*)((Board*)m_00c)->m_rows[y])[x];
+    if (tile->m_flags & 0x20) {
+        if (unit->m_2ec <= m_0b4) {
+            return 1;
+        }
+        if (((GridUnitSpawn*)unit)->Place(unit->m_2f0, unit->m_2f4, 0, 0xd87, 0, 0) != 0) {
+            unit->m_2ec = 0;
+            return 1;
+        }
+        unit->m_2d8 = 4;
+        {
+            CoordNode* n = (CoordNode*)unit->m_320;
+            while (n != 0) {
+                CoordNode* cur = n;
+                n = n->m_next;
+                if (cur->m_coord != 0) {
+                    g_coordPool.Recycle(cur->m_coord);
+                }
+            }
+        }
+        ((CObList*)&unit->m_31c)->RemoveAll();
+    } else {
+        unit->m_2d8 = 4;
+        if (unit->m_328 != 0) {
+            CoordNode* n = (CoordNode*)unit->m_320;
+            while (n != 0) {
+                CoordNode* cur = n;
+                n = n->m_next;
+                if (cur->m_coord != 0) {
+                    void** slot = (void**)((char*)cur->m_coord - g_freeListNodeBias);
+                    *slot = g_freeList;
+                    g_freeList = slot;
+                }
+            }
+            ((CObList*)&unit->m_31c)->RemoveAll();
+        }
+    }
+    unit->m_2f0 = -1;
+    unit->m_2f4 = -1;
+    unit->m_2d4 = 0;
+    unit->m_2ec = 0;
+    return 1;
+}
+
+// ===========================================================================
+// _zvec error-report wrapper  @0x034960  (attributed to UnknownClassArrays;
+// __thiscall on a _zvec/zErrHandling-bearing object, ret 0x8 => 2 args). Capture
+// the return address into the global error token, then dispatch the error reporter
+// (this->m_err->Error(this, sentinel, code)). This is the inlined zvec overflow
+// path lifted out as a standalone helper.
+// ===========================================================================
+// The zvec error globals + the return-capture helper + the reporter (the same set
+// ZVec.cpp models). Declared here so the calls/stores reloc-mask.
+DATA(0x001f0428)
+extern void* g_zvecErrToken; // 0x6bf428
+extern void* zErr_CaptureRetB(); // 0x16d990
+struct ZErrTarget {
+    void* m_vptr;
+    struct ZErrReporter {
+        void Error(void* who, i32 sentinel, i32 code); // 0x16d850
+    }* m_err; // +0x04
+};
+RVA(0x00034960, 0x24)
+void UnknownClassArrays::Method_034960(i32 sentinel, i32 code) {
+    ZErrTarget* z = (ZErrTarget*)this;
+    g_zvecErrToken = zErr_CaptureRetB();
+    z->m_err->Error(z, sentinel, code);
 }

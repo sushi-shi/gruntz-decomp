@@ -29,6 +29,50 @@ CAmbientSound::~CAmbientSound() {
 }
 
 // ===========================================================================
+// CAmbientSound::Restart  (0x00bfb0)
+// ===========================================================================
+// Re-arm the voice at its current level. Gated on the voice handle, the not-yet-
+// playing flag (m_14==0) and the active level/world (g_gameReg->m_10 and
+// ->m_54->m_24). Reseed the channel, then inline SetLevel(m_08, 0, 0)'s scale+
+// clamp through SetVolumeByIndex; the level read (m_08) is re-stored unchanged on
+// both sides of the voice call (the reseeded channel may have touched it).
+RVA(0x0000bfb0, 0xa9)
+void CAmbientSound::Restart() {
+    DirectSoundMgr* voice = m_04;
+    i32 pos = m_08;
+    if (voice == 0) {
+        return;
+    }
+    if (m_14 != 0) {
+        return;
+    }
+    if (g_gameReg->m_10 == 0) {
+        return;
+    }
+    if (g_gameReg->m_54->m_24 == 0) {
+        return;
+    }
+    ((DsndReseed*)m_04)->Reseed(1, m_38, 0, 1);
+    m_08 = pos;
+    i32 scale = m_0c;
+    if (scale > 5) {
+        scale -= 0xf;
+    }
+    i32 v = (scale * pos) / 100;
+    if (m_10 > 0) {
+        v = (v * m_10) / 100;
+    }
+    if (v < 0) {
+        v = 0;
+    } else if (v > 0x64) {
+        v = 0x64;
+    }
+    m_04->SetVolumeByIndex(v);
+    m_08 = pos;
+    m_14 = 1;
+}
+
+// ===========================================================================
 // CAmbientSound::Update  (0x00c090)
 // ===========================================================================
 // Per-frame driver (CAmbientSound vtable slot 3). If the source is bounded, test

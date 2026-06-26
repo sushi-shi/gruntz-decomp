@@ -93,8 +93,8 @@ CString __stdcall GetWarlordName(i32 id) {
 // and the runtime-seeded message-table slots. The 8 slots
 // are distinct named globals (non-contiguous in the EXE) so the source emits the
 // exact 8 `mov ds:slot,imm32` stores in the target's order. All reloc-masked.
-static char* g_defaultErrMsg;
-static char* g_errMsg_OutOfMem; // the lazy-init guard slot
+static char g_defaultErrMsg[24]; // taken by-address (the default-message buffer)
+static char* g_errMsg_OutOfMem;  // the lazy-init guard slot
 static char* g_errMsg_BadData;
 static char* g_errMsg_Overflow;
 static char* g_errMsg_NoFile;

@@ -12,6 +12,11 @@
 #include <rva.h>
 
 #include <Gruntz/ChatBox.h>
+// The menu-drive methods (0x182c70..0x183150) forward to the owned menu page
+// (m_40 is a CMenuPage - the same class ChatBox.cpp's node-walks view as
+// CChatNode) and blit the menu surface set (CDDSurface) hung off the owner.
+#include <Gruntz/CDirectDrawMgr.h>
+#include <Gruntz/MenuPage.h>
 
 // ---------------------------------------------------------------------------
 // External engine callees / globals (modeled with no body -> reloc-masked).
@@ -39,6 +44,8 @@ struct CChatNode {
     i32 HitTest1(i32 x, i32 y); // 0x1840a0
     i32 HitTest2();             // 0x1843f0
     i32 HitTest3();             // 0x1844d0
+    i32 HitTest4();             // 0x184230
+    i32 HitTest5();             // 0x184310
     i32 Measure();              // virtual, vtable slot +0x14
 };
 
@@ -140,6 +147,31 @@ struct CChatRoster {
     i32 m_30; // +0x30 busy gate
 };
 
+// The menu surface set the Post() flip/blit reaches via the owner (m_0->m_4):
+// three surface holders (a back buffer to Flip, a target + a source to BltFast),
+// each carrying its CDDSurface at +0x2c; the source holder also carries the blit
+// RECT at +0x1c. Field names are placeholders (offsets are load-bearing).
+struct CMenuSurf {
+    char pad0[0x2c];
+    CDDSurface* m_2c; // +0x2c owned surface
+};
+struct CMenuSurfSrc {
+    char pad0[0x1c];
+    i32 m_1c; // +0x1c blit RECT (4 ints, &m_1c)
+    char pad20[0x2c - 0x20];
+    CDDSurface* m_2c; // +0x2c source surface
+};
+struct CMenuRenderSet {
+    char pad0[0x10];
+    CMenuSurf* m_10;    // +0x10 back buffer (Flip)
+    CMenuSurf* m_14;    // +0x14 blit target
+    CMenuSurfSrc* m_18; // +0x18 blit source + RECT
+};
+struct CMenuOwner {
+    char pad0[0x4];
+    CMenuRenderSet* m_4; // +0x04 the menu surface set
+};
+
 // ===========================================================================
 // CChatBox
 // ===========================================================================
@@ -227,6 +259,102 @@ i32 CChatBox::Find(const char* s) {
         }
     }
     return 0;
+}
+
+// ---------------------------------------------------------------------------
+// The front-end menu drive (CMenuState::Render fires these on its m_1b4 CChatBox).
+// Each guards on the owned menu page (m_40, a CMenuPage) and forwards one
+// navigation; the page methods are reloc-masked rel32 callees (MenuPage.cpp).
+// ---------------------------------------------------------------------------
+
+// 0x182c70 - notify the page of the per-frame delta, then run the inner scroll
+// Step (0x182ed0). The dt arg is u32 (Render passes g_645584); the inner Step
+// takes i32, so this is the Step(u32) overload that calls Step(i32).
+RVA(0x00182c70, 0x38)
+i32 CChatBox::Step(u32 dt) {
+    if (!m_40) {
+        return 0;
+    }
+    if (!((CMenuPage*)m_40)->NotifyAll((void*)dt)) {
+        return 0;
+    }
+    return Step((i32)dt) != 0;
+}
+
+// 0x182cb0 - lay out the page using the owner's first surface holder as the ctx.
+RVA(0x00182cb0, 0x26)
+i32 CChatBox::Pre() {
+    if (!m_40) {
+        return 0;
+    }
+    i32 ctx = (i32)((CMenuOwner*)m_0)->m_4->m_14;
+    if (!ctx) {
+        return ctx;
+    }
+    return ((CMenuPage*)m_40)->Layout(ctx) != 0;
+}
+
+// 0x182ce0 - flip the menu back buffer, then blit the source onto the target.
+RVA(0x00182ce0, 0x36)
+i32 CChatBox::Post() {
+    CMenuRenderSet* s = ((CMenuOwner*)m_0)->m_4;
+    s->m_10->m_2c->Flip(0);
+    s->m_14->m_2c->BltFast(0, 0, s->m_18->m_2c, &s->m_18->m_1c, 0x10);
+    return 1;
+}
+
+// 0x182d20 - entity-flag 0x40000000 scan -> advance the page focus.
+RVA(0x00182d20, 0x16)
+i32 CChatBox::OnFlag40000000() {
+    if (!m_40) {
+        return 0;
+    }
+    return ((CMenuPage*)m_40)->FocusNext() != 0;
+}
+
+// 0x182d40 - entity-flag 0x80000000 scan -> retreat the page focus.
+RVA(0x00182d40, 0x16)
+i32 CChatBox::OnFlag80000000() {
+    if (!m_40) {
+        return 0;
+    }
+    return ((CMenuPage*)m_40)->FocusPrev() != 0;
+}
+
+// 0x182d60 - entity-flag 0x00000003 scan -> activate the focused item.
+RVA(0x00182d60, 0x36)
+i32 CChatBox::OnFlag00000003() {
+    if (!m_40) {
+        return 0;
+    }
+    return ((CMenuPage*)m_40)->Activate() != 0;
+}
+
+// 0x182d80 - entity-flag 0x00000100 scan -> switch the page (refocus).
+RVA(0x00182d80, 0x18)
+i32 CChatBox::OnFlag00000100() {
+    if (!m_40) {
+        return 0;
+    }
+    return ((CMenuPage*)m_40)->Switch(1) != 0;
+}
+
+// 0x183130 - entity-flag 0x10000000 scan -> step the focus back N nodes.
+RVA(0x00183130, 0x16)
+i32 CChatBox::OnFlag10000000() {
+    if (!m_40) {
+        return 0;
+    }
+    return ((CMenuPage*)m_40)->FocusBackwardN() != 0;
+}
+
+// 0x183150 - entity-flag 0x20000000 scan -> step the focus forward N nodes.
+RVA(0x00183150, 0x16)
+i32 CChatBox::OnFlag20000000() {
+    if (!m_40) {
+        return 0;
+    }
+    return ((CMenuPage*)m_40)->FocusForwardN() != 0;
 }
 
 // 0x182da0 - make `n` the active node (detach + rebuild it).
@@ -469,4 +597,24 @@ i32 CChatBox::HitTest2() {
         return 0;
     }
     return n->HitTest3() != 0;
+}
+
+// 0x1831d0 - forward a query to the active node (callee 0x184230); bool-normalize.
+RVA(0x001831d0, 0x16)
+i32 CChatBox::HitTest3() {
+    CChatNode* n = (CChatNode*)m_40;
+    if (!n) {
+        return 0;
+    }
+    return n->HitTest4() != 0;
+}
+
+// 0x1831f0 - forward a query to the active node (callee 0x184310); bool-normalize.
+RVA(0x001831f0, 0x16)
+i32 CChatBox::HitTest4() {
+    CChatNode* n = (CChatNode*)m_40;
+    if (!n) {
+        return 0;
+    }
+    return n->HitTest5() != 0;
 }

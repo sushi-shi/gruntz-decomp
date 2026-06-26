@@ -39,6 +39,10 @@ struct CGruntzCmdTarget {
     i32 Exec(char kind, char index, char a2, i16 a3, i16 a4, char a5, char a6);
 };
 
+// The network (de)serialization stream the base command Save/Load drive (defined in
+// the .cpp). Forward-declared as a class so the member mangling agrees across clang/MSVC.
+class CmdStream;
+
 // ---------------------------------------------------------------------------
 // CGruntzCommand - the abstract base command.
 //
@@ -81,7 +85,7 @@ public:
     // the five scalar params; returns 1. Inherited unchanged by both leaves.
     virtual i32 SetParams(char a0, char a1, char a2, i16 a3, i16 a4);
     virtual i32 Vslot05();  // slot 5 (+0x14)
-    virtual void Vslot06(); // slot 6
+    virtual char Vslot06(); // slot 6  (the type/tag byte the packers write first)
     virtual void Vslot07(); // slot 7
 
     // Non-virtual members of the base (called directly, not via the vtable):
@@ -90,6 +94,10 @@ public:
                         u8* buf);       // 0x023ed0
     i32 ApplyOne(CGruntzCmdTarget* p);  // 0x024140
     i32 ApplyMask(CGruntzCmdTarget* p); // 0x024190
+    // The network (de)serializers (0x024520 / 0x0245f0): no-op unless the
+    // registry's active-game gate is set, then stream the 8 scalar fields.
+    i32 Save(CmdStream* s); // 0x024520  via stream Write (+0x30)
+    i32 Load(CmdStream* s); // 0x0245f0  via stream Read  (+0x2c)
 };
 
 // The 16-entry 1<<i bit table (0x5e9608; VA) the mask loop indexes/scans.
@@ -106,6 +114,10 @@ public:
     CGruntzSingleCommand() {} // inline empty ctor (vftable store only)
     static CGruntzSingleCommand* Allocate();
     static void FreeAll(); // 0x024450 - drain g_singleCmdList, delete each node
+    // 0x024050 - pack this command into a flat byte buffer: tag (Vslot06), then the
+    // five scalar params, then m_10, and conditionally m_11 (when m_5 >= 8). Returns
+    // the number of bytes written.
+    i32 Pack(char* buf, i32 unused);
 };
 
 // ---------------------------------------------------------------------------
@@ -117,6 +129,15 @@ public:
     CGruntzMultiCommand() {}
     static CGruntzMultiCommand* Allocate();
     static void FreeAll(); // 0x024490 - drain g_multiCmdList, delete each node
+    // 0x0240d0 - pack this command into a flat byte buffer: tag (Vslot06), the five
+    // scalar params, then the +0x10 16-bit flag mask as a WORD. Returns the number
+    // of bytes written.
+    i32 Pack(char* buf, i32 unused);
+    // 0x0247d0 - the multi-command network deserialize (vtable slot 3 of vftable
+    // 0x5e96b4): no-op unless the stream is non-null AND the registry's active-game
+    // gate is set, then read the 8 scalar fields, taking the +0x10 flag word as a
+    // single 16-bit READ (vs the base Load's two 1-byte reads).
+    i32 NetLoad(CmdStream* s);
 };
 
 // The per-class recycle lists + their non-empty gates (file-scope globals the

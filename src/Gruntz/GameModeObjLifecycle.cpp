@@ -41,6 +41,8 @@ extern i32 g_freeListNodeBias; // ?g_freeListNodeBias@@3HA @0x64554c
 class CLevelWorker {
 public:
     void Teardown();
+    void Worker142e(i32 a);          // (thiscall, 1 arg)  FlushPendingOps block A
+    void Worker213f(i32 a, i32 spr); // (thiscall, 2 args) FlushPendingOps block B
 };
 // CPtrArray::RemoveAt @0x1b5200 and CMapPtrToPtr::Lookup @0x1b8760 - MFC; modeled
 // as methods so the __thiscall `mov ecx,this; call` falls out reloc-masked.
@@ -79,7 +81,12 @@ struct GmReg {
         char m_pad00[0x8];
         char* m_8; // +0x08  the holder the cell map hangs at (+0x48)
     }* m_30;       // +0x30
-    char m_pad34[0x70 - 0x34];
+    char m_pad34[0x68 - 0x34];
+    struct M68 {
+        char m_pad00[0x2a8];
+        i32 m_2a8; // +0x2a8  a pending-flag the teardown clears
+    }* m_68;       // +0x68
+    char m_pad6c[0x70 - 0x6c];
     CMapGrid* m_70; // +0x70  the tile/map grid
 };
 
@@ -95,6 +102,9 @@ public:
     i32 SetCursorFrame(i32 frame); // 0x0d1b30
     i32 ReleaseLevelOverlay(i32);  // 0x0d6560
     i32 ClearPlacedObjects();      // 0x0da030
+    i32 FlushPendingOps();         // 0x0da2d0
+    void Sub17a8(i32 a);           // (thiscall, 1 arg)  reloc-masked ILT thunk
+    void Sub35da(i32 a, i32 b);    // (thiscall, 2 args) reloc-masked ILT thunk
     // RandomizeStartColors (0x0d9290) - the 679-B /GX EH method - stays stubbed in
     // src/Stub/Discovered.cpp for the final sweep (don't half-do a big EH fn).
     char m_pad[4];
@@ -213,4 +223,41 @@ i32 CGameModeObj::ClearPlacedObjects() {
         (void)restart;
     }
     return -1;
+}
+
+// ===========================================================================
+// CGameModeObj::FlushPendingOps (0x0da2d0) - if the object hasn't already been
+// finalized (+0x4f0), flush the two deferred worker operations gated by +0x368
+// and +0x36c (each running a worker step + a this-side sub-step), then clear the
+// registry's m_68 pending flag (+0x2a8) and run the final sub-step. Returns 1 if
+// any of the three was pending, else 0. Migrated from engine_boundary
+// (CGameModeObj: reads the +0x2dc worker, +0x2f4 cursor sprite, +0x368/+0x36c).
+RVA(0x000da2d0, 0xa5)
+i32 CGameModeObj::FlushPendingOps() {
+    if (I32(this, 0x4f0) != 0) {
+        return 0;
+    }
+    i32 changed = 0;
+    if (I32(this, 0x368) != 0) {
+        CLevelWorker* worker = (CLevelWorker*)PTR(this, 0x2dc);
+        I32(this, 0x368) = 0;
+        worker->Worker142e(0);
+        Sub17a8(0);
+        changed = 1;
+    }
+    if (I32(this, 0x36c) != 0) {
+        i32 spr = I32(this, 0x2f4);
+        CLevelWorker* worker = (CLevelWorker*)PTR(this, 0x2dc);
+        I32(this, 0x36c) = 0;
+        worker->Worker213f(0, spr);
+        Sub17a8(0);
+        changed = 1;
+    }
+    GmReg::M68* o = ((GmReg*)g_gameReg)->m_68;
+    if (I32(o, 0x2a8) != 0) {
+        changed = 1;
+    }
+    I32(o, 0x2a8) = 0;
+    Sub35da(0, 0);
+    return changed;
 }

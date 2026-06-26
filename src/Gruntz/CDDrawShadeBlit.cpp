@@ -36,7 +36,7 @@ DATA(0x00273ca0)
 extern u8 g_lutBank0_673ca0[];
 
 RVA(0x001497f0, 0x154)
-i32 CDDrawShadeBlit::Blit(i32 p0, ShadeSrc* src, ShadeRect* clip, i32 sel, i32 p4) {
+i32 CDDrawShadeBlit::Blit(ShadeRect* p0, ShadeSrc* src, ShadeRect* clip, i32 sel, i32 p4) {
     if (clip->m_00 < 0 || clip->m_08 > m_04 - 1 || clip->m_04 < 0 || clip->m_0c > m_08 - 1) {
         return 0;
     }
@@ -86,6 +86,345 @@ i32 CDDrawShadeBlit::Blit(i32 p0, ShadeSrc* src, ShadeRect* clip, i32 sel, i32 p
     return 1;
 }
 
+// ===========================================================================
+// CDDrawShadeBlit::BlitMode_149950  (0x149950) - the unselected, non-shaded RLE
+// sprite blitter (draw type 1, !sel). Lock the destination surface, fast-forward
+// the RLE stream past the top clip->m_04 rows, compute the dest row-start for the
+// (optionally v-flipped) rect, then run one of three per-row inner loops depending
+// on the horizontal clip: full-width (no clip), right-only, or left(+right). Each
+// loop decodes the high-bit RLE (`b&0x80` = transparent skip of `b-0x80`, else an
+// opaque run of `b` pixels) and memcpy's opaque runs into the surface.
+// ===========================================================================
+// @early-stop
+// Regalloc / loop-scheduling wall (the RLE-blit family): logic is complete and
+// correct - prepass, v-flip start, all three clip loops match the retail control
+// flow, and opaque runs lower to the inline rep-movs memcpy idiom. Two residual
+// walls: (1) MSVC pins `this` in ebx and frames `sub esp,0xc` (1 spill local),
+// while retail pins `this` in ebp / frames `sub esp,8` and reuses the dead arg0
+// slot for the pitch - a callee-saved-register choice that renames the modrm byte
+// of every member read; (2) the row counter / x / pos register threading and the
+// redundant clip-dispatch `test;je` are scheduled differently across the three
+// near-identical sub-loops. Inlining the W/clip caches lifted it from ~15% to
+// ~31%; the rest is the zero-register-pinning family. Deferred to the final sweep.
+RVA(0x00149950, 0x3a1)
+void CDDrawShadeBlit::BlitMode_149950(ShadeRect* dst, ShadeSrc* surf, ShadeRect* clip, i32 vflip) {
+    i32 pitch = surf->m_20;
+    u8* base = surf->Lock(0);
+
+    i32 row = 0, pos = 0, x = 0;
+    // Prepass: skip the top clip->m_04 rows of the RLE stream.
+    if (clip->m_04 > 0) {
+        do {
+            u32 b = (u8)m_0c[pos];
+            if (b & 0x80) {
+                x += b - 0x80;
+                pos++;
+            } else {
+                x += b;
+                pos += (i32)b * m_28 + 1;
+            }
+            if (x >= m_04) {
+                row++;
+                x = 0;
+            }
+        } while (row < clip->m_04);
+    }
+
+    // Dest row-start for the (optionally v-flipped) rect.
+    if (vflip) {
+        base += dst->m_0c * pitch + dst->m_00 * m_29;
+        pitch = -pitch;
+    } else {
+        base += dst->m_04 * pitch + dst->m_00 * m_29;
+    }
+
+    x = 0;
+    if (clip->m_00 != 0) {
+        // Left edge clipped (the run that crosses clip->m_00 is partially copied).
+        while (row < clip->m_0c) {
+            if (pos >= m_10) {
+                break;
+            }
+            if (x < clip->m_00) {
+                i32 trans = 0;
+                do {
+                    u32 b = (u8)m_0c[pos];
+                    if (b & 0x80) {
+                        x += b - 0x80;
+                        pos++;
+                        trans = 1;
+                    } else {
+                        x += b;
+                        pos += (i32)b * m_28 + 1;
+                        trans = 0;
+                    }
+                } while (x < clip->m_00);
+                if (x > clip->m_00 && trans == 0) {
+                    i32 bytes = (x - clip->m_00) * m_28;
+                    memcpy(base, &m_0c[pos] - bytes, bytes);
+                }
+            }
+            if (x >= m_04) {
+                row++;
+                base += pitch;
+                x = 0;
+            } else {
+                u32 b = (u8)m_0c[pos];
+                if (b & 0x80) {
+                    x += b - 0x80;
+                    pos++;
+                } else {
+                    memcpy(base + (x - clip->m_00) * m_29, &m_0c[pos + 1], (i32)b * m_28);
+                    x += b;
+                    pos += (i32)b * m_28 + 1;
+                }
+            }
+        }
+    } else if (clip->m_08 != m_04 - 1) {
+        // Right edge clipped.
+        while (row <= clip->m_0c) {
+            if (pos >= m_10) {
+                break;
+            }
+            u32 b = (u8)m_0c[pos];
+            if (b & 0x80) {
+                x += b - 0x80;
+                pos++;
+            } else {
+                i32 bytes;
+                if (x + (i32)b < clip->m_08) {
+                    bytes = (i32)b * m_28;
+                } else {
+                    i32 vis = (clip->m_08 - x) * m_28;
+                    bytes = vis < 0 ? 0 : vis;
+                }
+                memcpy(base + x * m_29, &m_0c[pos + 1], bytes);
+                x += b;
+                pos += (i32)b * m_28 + 1;
+            }
+            if (x >= m_04) {
+                row++;
+                base += pitch;
+                x = 0;
+            }
+        }
+    } else {
+        // Full-width: no horizontal clipping.
+        while (row <= clip->m_0c) {
+            if (pos >= m_10) {
+                break;
+            }
+            u32 b = (u8)m_0c[pos];
+            if (b & 0x80) {
+                x += b - 0x80;
+                pos++;
+            } else {
+                memcpy(base + x * m_29, &m_0c[pos + 1], (i32)b * m_28);
+                x += b;
+                pos += (i32)b * m_28 + 1;
+            }
+            if (x >= m_04) {
+                row++;
+                base += pitch;
+                x = 0;
+            }
+        }
+    }
+
+    surf->m_08->vtbl->Unlock(surf->m_08, 0);
+}
+
+// ===========================================================================
+// CDDrawShadeBlit::BlitMode_149d00  (0x149d00) - the SELECTED (horizontally
+// flipped) sibling of BlitMode_149950. Same prepass / v-flip start / three clip
+// loops, but x runs from the sprite width down to 0 and each opaque run is copied
+// in reverse (dest pointer decreasing). The per-pixel size (m_28 == 1 -> byte,
+// else word) selects a manual byte/word reverse-copy loop instead of memcpy.
+// ===========================================================================
+// @early-stop
+// Loop-scheduling / regalloc wall + the reverse-copy idiom: logic complete and
+// correct (right-to-left mirror blit with the same RLE decode and clip cases), but
+// MSVC's lowering of the `for (k=cnt; k>0; k--) *d-- = *s++;` reverse copy differs
+// from retail's `mov edx,eax; dec eax; test; jle; inc eax; do{..}while(--)` peeled
+// count-down, and the cross-sub-loop register pinning diverges as in 149950.
+// Deferred to the final sweep.
+RVA(0x00149d00, 0x4f8)
+void CDDrawShadeBlit::BlitMode_149d00(ShadeRect* dst, ShadeSrc* surf, ShadeRect* clip, i32 vflip) {
+    i32 pitch = surf->m_20;
+    u8* base = surf->Lock(0);
+
+    i32 row = 0, pos = 0, x = 0;
+    if (clip->m_04 > 0) {
+        do {
+            u32 b = (u8)m_0c[pos];
+            if (b & 0x80) {
+                x += b - 0x80;
+                pos++;
+            } else {
+                x += b;
+                pos += (i32)b * m_28 + 1;
+            }
+            if (x >= m_04) {
+                row++;
+                x = 0;
+            }
+        } while (row < clip->m_04);
+    }
+    if (vflip) {
+        base += dst->m_0c * pitch + dst->m_00 * m_29;
+        pitch = -pitch;
+    } else {
+        base += dst->m_04 * pitch + dst->m_00 * m_29;
+    }
+
+    x = m_04;
+    if (clip->m_00 != 0) {
+        // Left edge clipped, h-flipped (run crossing clip->m_00 partially copied).
+        while (row <= clip->m_0c) {
+            if (pos >= m_10) {
+                break;
+            }
+            u32 b = (u8)m_0c[pos];
+            if (b & 0x80) {
+                x += 0x80 - (i32)b;
+                pos++;
+            } else {
+                i32 cnt = b;
+                u8* sd = &m_0c[pos + 1];
+                i32 bytes;
+                if (x - cnt > clip->m_00) {
+                    bytes = cnt * m_28;
+                } else {
+                    i32 vis = (x - clip->m_00) * m_28;
+                    bytes = vis < 0 ? 0 : vis;
+                }
+                u8* dbase = base + (x - clip->m_00) * m_29;
+                if (m_28 == 1) {
+                    u8* d = dbase;
+                    for (i32 k = bytes; k > 0; k--) {
+                        *d-- = *sd++;
+                    }
+                } else {
+                    u16* d = (u16*)dbase;
+                    u16* sw = (u16*)sd;
+                    for (i32 k = bytes / 2; k > 0; k--) {
+                        *d-- = *sw++;
+                    }
+                }
+                x -= cnt;
+                pos += cnt * m_28 + 1;
+            }
+            if (x <= 0) {
+                row++;
+                base += pitch;
+                x = m_04;
+            }
+        }
+    } else if (clip->m_08 != m_04 - 1) {
+        // Right edge clipped, h-flipped: skip runs while x > clip->m_08.
+        while (row < clip->m_0c) {
+            if (pos >= m_10) {
+                break;
+            }
+            if (x > clip->m_08) {
+                i32 trans = 0;
+                do {
+                    u32 b = (u8)m_0c[pos];
+                    if (b & 0x80) {
+                        x += 0x80 - (i32)b;
+                        pos++;
+                        trans = 1;
+                    } else {
+                        x -= b;
+                        pos += (i32)b * m_28 + 1;
+                        trans = 0;
+                    }
+                } while (x > clip->m_08);
+                if (x >= 0 && trans == 0) {
+                    i32 bytes = (clip->m_08 - x) * m_28;
+                    u8* s = &m_0c[pos] - bytes;
+                    if (m_28 == 1) {
+                        u8* d = base + clip->m_08 * m_29;
+                        for (i32 k = bytes; k > 0; k--) {
+                            *d-- = *s++;
+                        }
+                    } else {
+                        u16* d = (u16*)(base + clip->m_08 * m_29);
+                        u16* sw = (u16*)s;
+                        for (i32 k = bytes / 2; k > 0; k--) {
+                            *d-- = *sw++;
+                        }
+                    }
+                }
+            }
+            if (x <= 0) {
+                row++;
+                base += pitch;
+                x = m_04;
+            } else {
+                u32 b = (u8)m_0c[pos];
+                if (b & 0x80) {
+                    x += 0x80 - (i32)b;
+                    pos++;
+                } else {
+                    i32 cnt = b;
+                    u8* s = &m_0c[pos + 1];
+                    if (m_28 == 1) {
+                        u8* d = base + x * m_29;
+                        for (i32 k = cnt; k > 0; k--) {
+                            *d-- = *s++;
+                        }
+                    } else {
+                        u16* d = (u16*)(base + x * m_29);
+                        u16* sw = (u16*)s;
+                        for (i32 k = cnt; k > 0; k--) {
+                            *d-- = *sw++;
+                        }
+                    }
+                    x -= cnt;
+                    pos += cnt * m_28 + 1;
+                }
+            }
+        }
+    } else {
+        // Full-width, h-flipped: x: m_04 -> 0, runs copied reversed.
+        while (row <= clip->m_0c) {
+            if (pos >= m_10) {
+                break;
+            }
+            u32 b = (u8)m_0c[pos];
+            if (b & 0x80) {
+                x += 0x80 - (i32)b;
+                pos++;
+            } else {
+                i32 cnt = b;
+                u8* s = &m_0c[pos + 1];
+                if (m_28 == 1) {
+                    u8* d = base + x * m_29;
+                    for (i32 k = cnt; k > 0; k--) {
+                        *d-- = *s++;
+                    }
+                } else {
+                    u16* d = (u16*)(base + x * m_29);
+                    u16* sw = (u16*)s;
+                    for (i32 k = cnt; k > 0; k--) {
+                        *d-- = *sw++;
+                    }
+                }
+                x -= cnt;
+                pos += cnt * m_28 + 1;
+            }
+            if (x <= 0) {
+                row++;
+                base += pitch;
+                x = m_04;
+            }
+        }
+    }
+
+    surf->m_08->vtbl->Unlock(surf->m_08, 0);
+}
+
 // @early-stop
 // 5363 B software alpha-compositor: deferred to the final sweep (too large to
 // converge in budget; a partial body diverges regalloc and under-counts). It
@@ -101,7 +440,7 @@ i32 CDDrawShadeBlit::Blit(i32 p0, ShadeSrc* src, ShadeRect* clip, i32 sel, i32 p
 // DAT_006bf218 is a secondary surface/format descriptor. Identity, switch tags,
 // and the LUT plumbing are confirmed; the per-case blend bodies remain.
 RVA(0x0014a200, 0x14f3)
-void CDDrawShadeBlit::BlitLoop(i32 p0, ShadeSrc* src, ShadeRect* clip, i32 p4) {}
+void CDDrawShadeBlit::BlitLoop(ShadeRect* p0, ShadeSrc* src, ShadeRect* clip, i32 p4) {}
 
 // The global scratch line the row converter saves the destination into before an
 // in-place blend (DAT_006bed08), and the secondary palette/format descriptor
@@ -110,6 +449,24 @@ DATA(0x002bed08)
 extern u8 g_scratch[]; // 0x6bed08
 DATA(0x002bf218)
 extern ShadeDescr* g_blendDescr; // 0x6bf218
+
+// @early-stop
+// 4637 B SELECTED (h-flipped) shaded RLE blitter - the sel-path twin of the
+// BlitLoop (0x14a200) software alpha-compositor: deferred to the final sweep (too
+// large to converge in budget; a partial body diverges regalloc and under-counts).
+// Lock()s the destination surface (surf->Lock, 0x13e6d0), fast-forwards the RLE
+// stream past clip->m_04 rows, then runs the per-blend-mode RLE blit reversed
+// (h-flip). THREE dense jump tables dispatch on (m_14 - 2): 0x54c990, 0x54c9ac,
+// 0x54c9d4 (one per horizontal-clip case = full/right/left). Each decodes the
+// high-bit RLE into the global scratch line DAT_006bed08 (+ the sub-offset
+// DAT_006bed06/07/09 partial-pixel taps), reads the 16bpp blend descriptor
+// DAT_006bf218 (g_blendDescr), and writes through this->m_30/m_34/m_38 +
+// [this->m_1c]+8 channel tables. Calls the row-blend helpers 0x14cfc0 and 0x14d950
+// per case, and the IDirectDrawSurface Unlock via [vtbl+0x80]. Identity, switch
+// tags, LUT plumbing and the clip control flow are confirmed; the per-case reverse
+// blend bodies remain. See docs/patterns/jumptable-data-overlap.md.
+RVA(0x0014b770, 0x121d)
+void CDDrawShadeBlit::BlitMode_14b770(ShadeRect* dst, ShadeSrc* surf, ShadeRect* clip, i32 vflip) {}
 
 // @early-stop
 // ~56% (logic complete + correct). 1446 B dense-jump-table per-row format/blend

@@ -145,6 +145,36 @@ i32 Font::LoadFont(CString szFileName) {
     return 1;
 }
 
+// ---------------------------------------------------------------------------
+// Font::SaveFont
+// The write mirror of LoadFont: open the named file for create (flags 0x1001),
+// layer a store-mode CArchive over it, emit the glyph count, then for each glyph
+// write its 8-byte metric record + its width*height pixel surface. Same /GX
+// CFile/CArchive/CString stack frame as LoadFont. Returns 0 on open failure, 1
+// once the font is fully written.
+RVA(0x001799f0, 0x16d)
+i32 Font::SaveFont(CString szFileName) {
+    CFile file;
+    if (!file.Open((const char*)szFileName, 0x1001, 0)) {
+        return 0;
+    }
+
+    CArchive ar(&file, 0 /*CArchive::store*/, 0x1000, 0);
+
+    ar << m_count;
+
+    for (i32 i = 0; i < m_count; i++) {
+        Glyph g = m_glyphs[i];
+        ar.Write(&g, sizeof(Glyph));
+        ar.Write(m_surfaces[i], m_glyphs[i].width * m_glyphs[i].height);
+    }
+
+    ar.Close();
+    file.Close();
+
+    return 1;
+}
+
 // =========================================================================
 // IsInterface1
 //
@@ -271,6 +301,15 @@ u8 FontRenderer::GetChar(i32 i) {
 }
 
 // =========================================================================
+// TextRange::Span
+// Byte distance between the range's end and begin markers (a signed length).
+//
+RVA(0x0017b500, 0x8)
+i32 TextRange::Span() {
+    return m_end - m_begin;
+}
+
+// =========================================================================
 // FontRenderer::MeasureText
 // Sum the advance widths of every glyph in `text` and pair it with the font's
 // line-height. With no font loaded the extent is {0,0}. The CString arg is
@@ -351,6 +390,56 @@ void FontRenderer::Stub_17a460() {}
 // @stub
 RVA(0x0017ad10, 0x402)
 void FontRenderer::Stub_17ad10() {}
+
+// =========================================================================
+// FontRenderer::LayoutWrapped  (0x17b120, 0x3c6 = 966 B) - the third wrap entry.
+// =========================================================================
+// Greedily lays out `text` from y=`begin` down to y<`bottom`, line by line. DECODED
+// STRUCTURE (for the final sweep; ret 0x1c -> sret + 6 args; disasm @0x17b120):
+//   ext.width  = x0;  y = begin;  totalChars = 0;
+//   CString line;                                    // [esp+0x10] accumulator
+//   while (y < bottom) {
+//       int len = text.GetLength();  if (len <= 0) break;
+//       bool hasNL = text.Find('\n') >= 0;           // newline scan
+//       TextExtent e = MeasureText(text);            // 0x17ac50
+//       if (e.width + x0 <= right && !hasNL) {        // remainder fits, last line
+//           line = text;  text = "";                 // 0x1ba104 / 0x1b9e74
+//           if (m_font->GetMaxHeight() + y <= bottom) totalChars += line.GetLength();
+//       } else {                                     // must break a line
+//           int sp = first space/newline index;       // word scan
+//           CString head = text.Left(sp + 1); ...     // 0x1b2944 / 0x1b28c7 Left/Mid
+//           ... measure the candidate, shrink word-by-word until it fits,
+//           ... append the trailing char (0x1ba0ef) / GetChar (0x17b4f0),
+//           ... advancing x0 (ebp) and accumulating per-line widths into totalChars.
+//       }
+//       y = line-advance;                            // run += m_font->GetMaxHeight()
+//   }
+//   if (*outLen) *outLen = totalChars;               // [arg6] = accumulated chars
+//   ext.width  = x0 (final cursor x);
+//   ext.height = m_font->GetMaxHeight() + y + 1;     // final cursor y + line height
+//   return ext;
+//
+// @early-stop
+// DEFERRED to the final sweep. A 966-byte CString-temp-heavy /GX layout (~6 nested
+// Left/Mid line/word temps, cycling EH states, GetChar/+=char concatenation) - the
+// same eh-state-numbering wall as its two siblings (Stub_17a460/Stub_17ad10) and
+// the cheat processor. Homed by RVA as a complete-intent placeholder; the exact
+// greedy-break control flow + EH-state schedule are a leaf-first redo.
+RVA(0x0017b120, 0x3c6)
+TextExtent FontRenderer::LayoutWrapped(CString text, i32 x0, i32 begin, i32 right,
+                                       i32 bottom, i32* outLen) {
+    (void)text;
+    (void)begin;
+    (void)right;
+    (void)bottom;
+    TextExtent ext;
+    ext.width = x0;
+    ext.height = 0;
+    if (outLen) {
+        *outLen = 0;
+    }
+    return ext;
+}
 
 // =========================================================================
 // FontRenderer::DrawLine

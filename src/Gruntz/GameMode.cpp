@@ -579,6 +579,7 @@ struct CCreditzImageRegistry { // this->m_4->+0x48
 struct CCreditzStateCore {      // this->m_c->m_4 (the ready/init pump)
     i32 IsReady();              // FUN_00558d20 __thiscall, ret BOOL
     i32 Init(i32 a, i32 flags); // FUN_00558cb0 __thiscall, ret BOOL
+    i32 IsLoaded();             // FUN_00558bc0 __thiscall, ret BOOL (ready-3 predicate)
 };
 struct CCreditzImageRoot { // this->m_4 points here; +0x48 is the registry
     char m_pad00[0x48];
@@ -689,6 +690,23 @@ i32 CCreditsState::LoadCreditzStateAssets(i32 a1, i32 a2, i32 a3) {
     i32 r = self->FinishState();
     self->m_1b4 = 0;
     return r;
+}
+
+// CCreditsState::ShowAttractTitle @0x393b0 - gate on the state core (m_c->m_4->
+// IsLoaded); if loaded, force the cursor hidden then prime the attract title.
+// Returns 1 (0 when the gate is not yet loaded, reusing the already-zero eax).
+RVA(0x000393b0, 0x3a)
+i32 CCreditsState::ShowAttractTitle() {
+    CCreditzOwner* self = (CCreditzOwner*)this;
+    if (self->m_c->m_4->IsLoaded() == 0) {
+        return 0;
+    }
+    if (ShowCursor(0) >= 0) {
+        do {
+        } while (ShowCursor(0) >= 0);
+    }
+    InitAttractTitle();
+    return 1;
 }
 
 // @confidence: med
@@ -1177,6 +1195,24 @@ i32 CMultiBootyState::CheckPerfectBonus() {
     }
     ((CBootyBonusState*)m_2f8)->m_5c = phase + 0xa;
     return 1;
+}
+
+// CMultiBootyState::ReadyAndPaint() (0x1ce30): gate on the active/ready virtual (CState
+// slot 3 / +0xc); when ready, run the per-frame Paint and return the normalized result;
+// otherwise return the (zero) gate result. (Was conflated under "CBootyState" by the trace.)
+RVA(0x0001ce30, 0x1d)
+i32 CMultiBootyState::ReadyAndPaint() {
+    if (Vfunc3() == 0) {
+        return 0;
+    }
+    return Paint() != 0;
+}
+
+// CMultiBootyState::ForwardIdleAnim(a, b) (0x1d420): trivial forwarder to the own
+// BuildBootyGruntIdleAnimation (0x1ce60), passing this/args straight through.
+RVA(0x0001d420, 0x8)
+i32 CMultiBootyState::ForwardIdleAnim(i32 a, i32 b) {
+    return BuildBootyGruntIdleAnimation();
 }
 
 // CMultiBootyState::ReleaseResources() (slot 2 / +0x8, 0x1e520): free the leaf-registry

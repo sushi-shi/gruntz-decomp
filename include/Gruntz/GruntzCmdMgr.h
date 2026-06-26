@@ -67,12 +67,12 @@ public:
     virtual void Select(GzStateProvider* mgr); // +0x24 (slot 9)
     virtual void Deselect();                   // +0x28 (slot 10)
 
-    char m_pad4[0x6 - 0x4];
+    u8 m_4; // +0x04  per-team index byte
+    char m_pad5[0x6 - 0x5];
     u8 m_6; // +0x06  type/key byte (matched against the param)
     char m_pad7[0xc - 0x7];
     i32 m_c; // +0x0c  flags (bit 0x1 / 0x2)
 };
-// m_4 (the per-team index byte) is read directly from offset +4 (inside the pad).
 
 // The +0x38 manager pointer's state sub-object: ->GetStateId() (vtable slot +0x10)
 // reports the current game-state id (compared against 0x11 / 0x3 / 0x4). Modeled
@@ -134,6 +134,9 @@ struct GzCmdNode {
 
 class CGruntzCmdMgr {
 public:
+    // 0x023b40 - find the first base-queue target matching (indexByte, typeByte)
+    // and remove+deselect it.
+    void RemoveMatchingTarget(char indexByte, char typeByte);
     // 0x0239d0 - install the manager pointer; returns 1.
     i32 SetMgr(GzMgr* mgr);
     // 0x0239f0 - null the manager then drain everything (tail-calls Clear).

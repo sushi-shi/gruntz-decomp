@@ -29,6 +29,10 @@
 #include <rva.h>
 
 #include <Bute/ButeMgr.h>
+
+// The global empty C string the input-reset assigns into m_1c (0x6293f4).
+extern "C" char g_emptyString[];
+
 // The global CButeMgr instance (the ctor stores the bute config tree here).
 // Declared as a named extern so the `mov ecx, offset g_buteMgr` loads
 // reloc-match the engine; @address names the delinked target DATA symbol.
@@ -70,6 +74,8 @@ public:
     void Reset();
     i32 AddItem(const char* str, i32 type, i32 data);
     void Scroll(i32 delta);
+    i32 TypeChar(i32 ch, i32 a2);
+    void EndInput();
     ~CFontConfig();
     i32 winapi_022360_DrawTextA_SelectObject_SetTextColor(i32, i32, i32, i32);
 
@@ -296,6 +302,64 @@ void CFontConfig::Scroll(i32 delta) {
     item->FontItem::~FontItem();
     ::operator delete(item);
     m_20 = 0;
+}
+
+// ---------------------------------------------------------------------------
+// CFontConfig::TypeChar - the typed-character accumulator into the scratch
+// string m_1c. Enter (0xd) toggles the accumulating flag m_30: first press
+// arms it (reset offset/accumulator + clear m_1c); a second press while the
+// buffer is non-empty disarms and returns 1 (commit). While armed, backspace
+// (8) trims one char, and a printable byte (0x20..0xff) appends if under 0x50.
+// @early-stop
+// zero-register-pinning wall (docs/patterns/zero-register-pinning.md): logic +
+// control flow byte-identical, but retail pins `ch` in ebx (loaded early between
+// the prologue pushes) and the 0 constant in edi, while our cl swaps them (ch in
+// edi, 0 in ebx). A 1-instr phase shift through every =0 store / compare; not
+// source-steerable. Effectively matched.
+RVA(0x00021e20, 0x95)
+i32 CFontConfig::TypeChar(i32 ch, i32 a2) {
+    m_2c = 0;
+    if (ch == 0xd) {
+        if (m_30 != 0) {
+            if (m_1c.GetLength() == 0) {
+                return 0;
+            }
+            m_30 = 0;
+            return 1;
+        }
+        m_30 = 1;
+        m_20 = 0;
+        m_2c = 0;
+        m_1c = (const char*)g_emptyString;
+    }
+    if (m_30 == 0) {
+        return 0;
+    }
+    if (ch == 8) {
+        i32 len = m_1c.GetLength();
+        if (len <= 0) {
+            return 0;
+        }
+        m_1c.GetBufferSetLength(len - 1);
+        return 0;
+    }
+    if (ch < 0x20 || ch > 0xff) {
+        return 0;
+    }
+    if (m_1c.GetLength() < 0x50) {
+        m_1c += (char)ch;
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// CFontConfig::EndInput - cancel accumulation: clear the flag and empty m_1c.
+RVA(0x00021ef0, 0x17)
+void CFontConfig::EndInput() {
+    if (m_30 != 0) {
+        m_30 = 0;
+        m_1c.Empty();
+    }
 }
 
 // ---------------------------------------------------------------------------

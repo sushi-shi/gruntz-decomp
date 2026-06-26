@@ -74,6 +74,61 @@ i32 CTileTriggerSwitchLogic::FindIndexByKey(i32 key) {
 }
 
 // ---------------------------------------------------------------------------
+// CTileTriggerSwitchLogic::VerifyBlockLinksB
+// The FindChild(key, 3) variant of VerifyBlockLinks (byte-identical structure,
+// different diagnostic codes 0x44d/0x44e and the slow-lookup kind arg 3 vs 8):
+// gate on m_14, find the owner's child that claims this object (FindIndexByKey),
+// ack 0x44d on miss; then validate each nonzero block key resolves (FindChild
+// (key, 3)) to a gated child, acking 0x44e on a lookup miss.
+// ---------------------------------------------------------------------------
+// @early-stop
+// this-spill frame wall (~86%, same as VerifyBlockLinks 0x112c70): body
+// byte-identical; retail reserves a `push ecx` stack local for `this` + reloads it
+// to seed the `child` loop cursor, the recompile seeds it from a register. Dead seed
+// value, non-steerable frame choice. See docs/patterns/this-spilled-to-local-for-loop-seed.md
+RVA(0x00111f40, 0xc4)
+i32 CTileTriggerSwitchLogic::VerifyBlockLinksB() {
+    if (m_14 == 0) {
+        return 0;
+    }
+    ListNode* node = (ListNode*)m_owner->m_20;
+    i32 found = 0;
+    CTileTriggerSwitchLogic* child = this;
+    while (node != 0) {
+        if (found != 0) {
+            break;
+        }
+        ListNode* cur = node;
+        node = node->m_next;
+        child = cur->m_data;
+        if (child != 0 && child->FindIndexByKey(m_10) != 0) {
+            found = 1;
+        }
+    }
+    if (found == 0) {
+        g_gameReg->Ack(0x80de, 0x44d);
+        return 0;
+    }
+    i32* p = &child->m_block[4]; // child+0x3c
+    for (i32 i = 0; i < 24; i++) {
+        i32 key = *p;
+        if (key == 0) {
+            return 1;
+        }
+        CTileTriggerSwitchLogic* c = m_owner->FindChild(key, 3);
+        if (c == 0) {
+            g_gameReg->Ack(0x80dd, 0x44e);
+            return 0;
+        }
+        if (c->m_14 == 0) {
+            return 0;
+        }
+        p++;
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
 // CTileTriggerSwitchLogic::VerifyBlockLinks
 // Linkage validator: if this->m_14 is clear, succeed (return 0 short-circuit on
 // the null gate).  Otherwise walk the owner's child list (head @ owner->m_20),
@@ -130,6 +185,36 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinks() {
         p++;
     }
     return 0;
+}
+
+// ---------------------------------------------------------------------------
+// CTileTriggerSwitchLogic::LoadState - 0x1139a0. Network deserialize: gate on a
+// non-null stream + the registry active-game flag, then read the eight scalar
+// fields (skipping m_owner at +0x24) and the 24-dword m_block via the stream's
+// read slot (+0x2c). Returns 1 (or 0 when gated off).
+// ---------------------------------------------------------------------------
+RVA(0x001139a0, 0xb4)
+i32 CTileTriggerSwitchLogic::LoadState(CSerialStream* s) {
+    if (s == 0) {
+        return 0;
+    }
+    if (g_gameReg->m_30 == 0) {
+        return 0;
+    }
+    s->TransferIn(&m_08, 4);
+    s->TransferIn(&m_0c, 4);
+    s->TransferIn(&m_10, 4);
+    s->TransferIn(&m_14, 4);
+    s->TransferIn(&m_18, 4);
+    s->TransferIn(&m_1c, 4);
+    s->TransferIn(&m_20, 4);
+    s->TransferIn(&m_28, 4);
+    i32* p = m_block;
+    for (i32 i = 0; i < 24; i++) {
+        s->TransferIn(p, 4);
+        p++;
+    }
+    return 1;
 }
 
 // ---------------------------------------------------------------------------
@@ -320,6 +405,24 @@ i32 CTileTriggerSwitchLogic::TransferFlag74(CSerialStream* s) {
         return 0;
     }
     s->Transfer(&m_block[18], 4);
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CTileTriggerSwitchLogic::LoadFlag74
+// The read counterpart of TransferFlag74: same null/game-manager gates, but
+// reads the 4-byte +0x74 flag (== m_block[18]) through the stream's read slot
+// (vtable +0x2c) instead of the write slot (+0x30). Returns 1 on success.
+// ---------------------------------------------------------------------------
+RVA(0x00117e70, 0x36)
+i32 CTileTriggerSwitchLogic::LoadFlag74(CSerialStream* s) {
+    if (s == 0) {
+        return 0;
+    }
+    if (g_gameReg->m_30 == 0) {
+        return 0;
+    }
+    s->TransferIn(&m_block[18], 4);
     return 1;
 }
 

@@ -54,6 +54,7 @@ public:
     char m_pad00[0x10];
     i32 m_10field; // +0x10
     i32 Probe_1525c0(i32 a1, i32 a2, i32 a3);
+    i32 ComputeSize_1523f0(i32 a1); // 0x1523f0 reloc-masked __thiscall
 };
 
 // CMapStringToOb lives at CDDrawWorkerRegistry+0x10. Lookup/RemoveKey are out-of-line
@@ -156,6 +157,7 @@ public:
 
     // Map-scan helpers (non-virtual; direct-called from the worker code region).
     i32 RemoveKeysEqual_155360(const char* base, const char* str);
+    i32 SumSizesEqual_155460(const char* str, i32 a2);
     i32 HasKeyEqual_155550(const char* str);
     i32 AnyValueMatches_155630(i32 a1, i32 a2, i32 a3);
     CString FindKeyOfValue_165360(SeverusMapValue* target);
@@ -469,6 +471,41 @@ i32 CDDrawWorkerRegistry::RemoveKeysEqual_155360(const char* base, const char* s
         } while (pos != 0);
     }
     return n;
+}
+
+// ---------------------------------------------------------------------------
+// Map scan: sum each non-null value's ComputeSize_1523f0(a2) over the entries
+// whose key strncmp-matches `str` (a null/empty `str` matches every entry).
+// Carries a /GX EH frame for the local CString key.
+// @early-stop
+// regalloc/EH-state wall - complete & correct: the GetNextAssoc scan, the
+// str==0/*str==0 match-all guard, the strlen+strncmp compare, and the per-value
+// ComputeSize_1523f0 thiscall accumulation are reproduced. Residue is the same
+// val/key/loop-flag stack-slot schedule + reloc-masked EH-state push as the
+// sibling RemoveKeysEqual_155360. docs/patterns/zero-register-pinning.md.
+RVA(0x00155460, 0xe2)
+i32 CDDrawWorkerRegistry::SumSizesEqual_155460(const char* str, i32 a2) {
+    i32 total = 0;
+    CObject* val = 0;
+    CString key;
+    POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
+    if (*(volatile i32*)&pos != 0) {
+        do {
+            m_10.GetNextAssoc(pos, key, val);
+            if (val != 0) {
+                i32 matched;
+                if (str != 0 && *str != 0) {
+                    matched = (strncmp(key, str, strlen(str)) == 0);
+                } else {
+                    matched = 1;
+                }
+                if (matched) {
+                    total += ((SeverusMapValue*)val)->ComputeSize_1523f0(a2);
+                }
+            }
+        } while (pos != 0);
+    }
+    return total;
 }
 
 // ---------------------------------------------------------------------------

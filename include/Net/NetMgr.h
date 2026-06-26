@@ -22,6 +22,7 @@
 #include <Mfc.h>
 #include <Utils/RegistryHelper.h>
 #include <Gruntz/CObList.h>
+#include <Rez/RezMgr.h> // RezAlloc - the engine heap allocator the node factories use
 
 // ---------------------------------------------------------------------------
 // Utils::WinAPI::ActiveWait - the engine busy-wait (?ActiveWait@WinAPI@Utils@@YAXI@Z,
@@ -150,11 +151,51 @@ struct CNetPlayerSlot {
     DWORD m_37c; // +0x37c  the slot's latency value
 };
 
+// ---------------------------------------------------------------------------
+// One channel descriptor in the inline array at (m_4 + 0x150), stride 0x238,
+// four entries (the 0x8e0 loop bound == 4 * 0x238). This is the SAME memory
+// CNetPlayerSlot views from m_4 (channel+0x14 == m_4+0x164 gate A,
+// channel+0x20 == m_4+0x170 gate B, channel+0x22c == m_4+0x37c latency); here
+// it is the channel-table base used by the serialize/parse/register run
+// (0xba810..0xbb190). Only the touched fields are pinned. The +0x4 member is a
+// CString (the channel's name); +0x18 a dword id; +0x20 the "active" gate.
+struct CNetChannel {
+    i32 m_0;     // +0x00  id/header dword (serialized at packet+8)
+    CString m_4; // +0x04  channel name (CString)
+    i32 m_8;     // +0x08  net-slot id / player word
+    i32 m_c;     // +0x0c
+    i32 m_10;    // +0x10
+    i32 m_14;    // +0x14  (== m_4+0x164 gate A)
+    i32 m_18;    // +0x18  dword id word
+    i32 m_1c;    // +0x1c  flag (0/1)
+    i32 m_20;    // +0x20  "active" gate (== m_4+0x170 gate B)
+    char m_pad24[0x228 - 0x24];
+    i32 m_228; // +0x228
+    i32 m_22c; // +0x22c (== m_4+0x37c latency)
+    i32 m_230; // +0x230
+
+    // The channel's name fetched by value (NRV into the caller's slot); thiscall
+    // engine routine reached through an incremental-link thunk (no body here so
+    // the call reloc-masks). 0x41f450.
+    CString GetName();
+};
+
 // A payload entry found through the m_58 player list. FindPlayerById matches on
 // the entry's +0x4 id field.
 struct CNetPlayerEntry {
     char m_pad0[4];
     i32 m_4; // +0x4  the entry's id (the lookup key)
+};
+
+// The 0x10-byte stat-packet header the SendStat* helpers fire through the
+// DirectPlay set-data slots. Only the three written fields are pinned: a flag
+// byte (bit7 set on every send), the stat id, and the value/player-id word.
+struct CNetStatPacket {
+    u8 m_0; // +0x0  flag byte (bit7 set)
+    char m_pad1[3];
+    i32 m_4;        // +0x4  stat id
+    i32 m_8;        // +0x8  value / player id
+    char m_padc[4]; // +0xc  (0x10 total)
 };
 
 // A singly-linked node in the m_58 player list: +0x0 next, +0x8 payload.
@@ -172,10 +213,10 @@ struct CNetPlayerNode {
 // external incremental-link thunks) clear the slot's command range.
 // ---------------------------------------------------------------------------
 struct CNetCmdSlot {
-    char m_pad0[4];
+    i32 m_0; // +0x0  "armed" flag (AckDropPlayer sets it to 1)
     i32 m_4; // +0x4  "slot already reset" guard
     char m_pad8[0xc - 0x8];
-    i32* m_c; // +0xc  -> command-list head value
+    i32* m_c; // +0xc  -> command-list head value (m_c[0xb] == +0x2c is its own flag)
     char m_pad10[0x14 - 0x10];
     i32 m_14; // +0x14  base command sequence number
     char m_pad18[0x4c - 0x18];
@@ -185,6 +226,7 @@ struct CNetCmdSlot {
     void Touch();             // c1390  latch the slot (sets +4, +8)
     void RemoveCmd(i32 seq);  // c11b0  drop one queued command
     void ResetTriple(i32* p); // c10a0  splat &-1 over three dwords
+    void FullReset();         // c0c20  zero the command fields + both ranges
 };
 
 // The DirectPlay session sub-object at CNetMgr+0x520. Two helpers are reached
@@ -224,7 +266,26 @@ struct CNetSubObject {
 // ---------------------------------------------------------------------------
 struct IDirectPlay4Z {
     struct Vtbl {
-        char m_pad0[0x34];
+        i32(__stdcall* QueryInterface)(IDirectPlay4Z*, void* riid, void* out); // +0x00 (slot 0)
+        char m_pad4[0xc - 0x4];
+        i32(__stdcall* Open)(IDirectPlay4Z*, void* a, void* b, i32 c); // +0x0c (slot 3)
+        char m_pad10[0x18 - 0x10];
+        i32(__stdcall* GetSessionDesc)(
+            IDirectPlay4Z*,
+            void* a,
+            void* b,
+            i32 c,
+            i32 d,
+            i32 e
+        ); // +0x18 (slot 6)
+        char m_pad1c[0x30 - 0x1c];
+        i32(__stdcall* EnumGroupsCb)(
+            IDirectPlay4Z*,
+            void* desc,
+            void* callback,
+            void* ctx,
+            i32 flags
+        ); // +0x30 (slot 12)
         i32(__stdcall* EnumPlayers)(
             IDirectPlay4Z*,
             void* desc,
@@ -234,7 +295,10 @@ struct IDirectPlay4Z {
             void* flags
         );                                                            // +0x34 (slot 13)
         i32(__stdcall* Enum2)(IDirectPlay4Z*, void* desc, void* ctx); // +0x38
-        char m_pad3c[0x50 - 0x3c];
+        char m_pad3c[0x44 - 0x3c];
+        i32(__stdcall*
+                GetMessageCount)(IDirectPlay4Z*, i32 idPlayer, i32* lpCount); // +0x44 (slot 17)
+        char m_pad48[0x50 - 0x48];
         i32(__stdcall* GetData2)(
             IDirectPlay4Z*,
             i32 id,
@@ -246,8 +310,23 @@ struct IDirectPlay4Z {
         i32(__stdcall* GetPlayerData2)(IDirectPlay4Z*, void* in, void* out); // +0x58 (slot 22)
         char m_pad5c[0x60 - 0x5c];
         i32(__stdcall* EnumGroups)(IDirectPlay4Z*, void* desc, i32 flags); // +0x60 (slot 24)
-        char m_pad64[0x68 - 0x64];
+        i32(__stdcall* Receive)(
+            IDirectPlay4Z*,
+            i32* lpidFrom,
+            i32* lpidTo,
+            i32 flags,
+            void* lpData,
+            i32* lpSize
+        ); // +0x64 (slot 25)
         i32(__stdcall* SetData5)(IDirectPlay4Z*, i32 a, i32 b, i32 c, i32 d, i32 e); // +0x68
+        char m_pad6c[0x74 - 0x6c];
+        i32(__stdcall* GetData5)(
+            IDirectPlay4Z*,
+            i32 id,
+            void* lpData,
+            i32 size,
+            i32 fl
+        ); // +0x74 (slot 29)
     }* vtbl;
 };
 
@@ -282,12 +361,77 @@ struct CNetListNode {
 };
 
 // ---------------------------------------------------------------------------
+// The managed-player object node the +0x38 player list holds. AddPlayerNode
+// (0x1786d0) operator-new's a 0x58-byte node (vptr 0x5f0760), zeroes its body
+// (0x14 dwords from +0x4), inits it from the DirectPlay player descriptor (the
+// 0x1795a0 helper, which copies the 0x50-byte descriptor in and trims its name),
+// and AddTail's it onto the +0x38 CObList, caching the returned __POSITION at
+// +0x54. Modeled polymorphically so `node->SelfDestruct(1)` emits the slot-1
+// thiscall on the new'd node; the vtable is stamped from the retail address.
+// ---------------------------------------------------------------------------
+class CNetPlayerListNode {
+public:
+    virtual void Slot00();               // +0x00
+    virtual void SelfDestruct(i32 flag); // +0x04  slot 1 (self-destruct)
+
+    char m_body[0x54 - 0x4]; // +0x04  the 0x50-byte player descriptor + name ptr
+    __POSITION* m_54;        // +0x54  cached AddTail position
+
+    i32 Init(void* playerDesc); // 0x1795a0  copy + trim the descriptor
+};
+
+// ---------------------------------------------------------------------------
+// The session-list node the +0x54 list holds: AddSessionNode (0x178b30,
+// /GX EH) operator-new's a 0x24-byte node (base-dtor vptr 0x5e8cb4 during the
+// two CString ctors, final vptr 0x5f0778), inits its two CString members at
+// +0x8/+0xc and zeroes +0x4/+0x14/+0x18/+0x20, then GetData5's (slot 0x74) the
+// session blob and AddTail's the node onto the +0x54 list.
+// ---------------------------------------------------------------------------
+class CNetSessionNode {
+public:
+    virtual void Slot00();               // +0x00
+    virtual void SelfDestruct(i32 flag); // +0x04
+
+    i32 m_4;     // +0x04
+    CString m_8; // +0x08  name CString
+    CString m_c; // +0x0c  second CString
+    char m_pad10[0x14 - 0x10];
+    i32 m_14; // +0x14
+    i32 m_18; // +0x18
+    char m_pad1c[0x20 - 0x1c];
+    i32 m_20; // +0x20
+
+    // The 4-arg init the session-node ctor runs (0x1796c0): stores the dword id
+    // and assigns the two CStrings, zeroing +0x14/+0x18/+0x1c. External thunk.
+    i32 InitSession(i32 id, const char* a, const char* b, i32 d); // 0x1796c0
+
+    // The session name fetched by value (NRV into the caller's slot); thiscall
+    // engine routine reached through an incremental-link thunk (no body here).
+    CString GetName();
+};
+
+// The retail vtables stamped into the new'd nodes (transitional: the node
+// classes' virtuals aren't all matched, so cl can't emit a matching vtable -
+// reference the retail tables directly as reloc-masked DATA externs).
+extern "C" void* g_netPlayerNodeVtbl;      // 0x5f0760
+extern "C" void* g_netSessionNodeDtorVtbl; // 0x5e8cb4 (base-dtor vptr during CString ctors)
+extern "C" void* g_netSessionNodeVtbl;     // 0x5f0778 (final vptr)
+// PTR_LAB_005f0588 - the QueryInterface riid pointer the Init wrapper (0x178170)
+// hands to slot 0 (a static GUID blob; DIR32 reloc-masked). 0x5f0588.
+extern "C" void* g_netDirectPlayRiid; // 0x5f0588
+
+// ---------------------------------------------------------------------------
 // The per-player enumeration callback EnumPlayersInto hands to the DirectPlay
 // EnumPlayers slot (its address is taken => DIR32 reloc-masked). The body lives
 // elsewhere in the NetMgr TU (a recovery gap with no carved boundary); declared
 // no-body here so the `push &NetEnumPlayerCb` reloc-masks.
 // ---------------------------------------------------------------------------
 extern "C" void NetEnumPlayerCb();
+
+// The group/session enumeration callback the EnumGroups/EnumSessions wrappers
+// (0x178a40/0x178a80/0x1789e0) hand to the DirectPlay enum slots (its address is
+// taken => DIR32 reloc-masked). 0x00578b00; no body here.
+extern "C" void NetEnumCb();
 
 // ---------------------------------------------------------------------------
 // A COM interface CNetMgr keeps at +0x14 alongside the IDirectPlay4 at +0x18.
@@ -303,6 +447,85 @@ struct INetReleasable {
         i32(__stdcall* Slot10)(INetReleasable*); // +0x10 (slot 4)
     }* vtbl;
 };
+
+// ---------------------------------------------------------------------------
+// The control message HandleControlMsg (0xba1a0) dispatches on: a packed record
+// whose +0x0 is the message code (the switch tag), +0x4 a sub-code, +0x8 a
+// payload word (a player id for the player-left case).
+// ---------------------------------------------------------------------------
+struct CNetCtrlMsg {
+    i32 m_0; // +0x0  message code (switch tag)
+    i32 m_4; // +0x4  sub-code
+    i32 m_8; // +0x8  payload (player id on the player-left path)
+};
+
+// The +0x4 sub-object viewed for OnPlayerLeft: it owns the per-player records
+// (FindPlayer maps a DirectPlay id -> the GruntzPlayer slot, FUN_00492e80) and a
+// chat/text display at +0x5c (a CFontConfig the message text is appended to).
+// Both helpers are external (incremental-link thunks); modeled no-body so the
+// `call rel32` reloc-masks. CFontConfig::AddItem (0x00421c60) is reached as
+// m_4->m_5c->AddItem(text, 0x20, 0x11).
+struct CNetChatLog {
+    i32 AddItem(const char* text, i32 type, i32 data); // 0x00421c60
+};
+
+class GruntzPlayer; // include <Gruntz/GruntzPlayer.h> in the TU that derefs it
+
+struct CNetGameMgr {
+    GruntzPlayer* FindPlayer(i32 id);  // 0x00492e80 -> the leaving player's slot (no storage)
+    i32 CountActiveChannels(i32 flag); // 0x00492e30 -> # active channels (RegisterChannel gate)
+    char m_pad0[0x5c];
+    CNetChatLog* m_5c; // +0x5c  the chat/text display
+};
+
+// The player slot FindPlayer returns; only its name (GetName, 0x41f450, the same
+// by-value CString fetch as CNetChannel::GetName) and its +0x8 id word are
+// touched by the chat broadcaster.
+struct CNetPlayerName {
+    char m_pad0[8];
+    i32 m_8;           // +0x8  player id word
+    CString GetName(); // 0x41f450
+};
+
+// FUN_004db2b0 (__cdecl): g_netSlotTable[idx] = value (a global flag array at
+// 0x64c3f0). External, no body -> the call reloc-masks.
+void SetNetSlot(i32 idx, i32 value); // 0x004db2b0
+
+// FUN_004db1d0 (__cdecl): zero the whole 0x11-dword net-slot flag table at
+// 0x64c3f0 (ParseChannelTable resets it when not in channel-latency mode).
+// External, no body -> the call reloc-masks.
+void ResetNetSlots(); // 0x004db1d0
+
+// The shared 0x800-byte DirectPlay receive scratch buffer (DAT_006467d8); the
+// poll loop receives each message into it. DIR32 reloc-masked.
+extern "C" char g_recvBuffer[]; // 0x6467d8
+
+// Two file-scope static stat packets the channel-stat senders stamp + ship.
+// Retail emits each field as its OWN .data symbol (disp-0 DIR32 relocs at the
+// three consecutive addresses), so they are modeled as three separate globals
+// per packet (a single struct would emit base+disp and mis-encode the
+// displacement bytes). External; DIR32 reloc-masked.
+extern "C" u8 g_chanStat422_flag; // 0x646fd8
+extern "C" i32 g_chanStat422_id;  // 0x646fdc
+extern "C" i32 g_chanStat422_val; // 0x646fe0
+extern "C" u8 g_chanStat423_flag; // 0x646378
+extern "C" i32 g_chanStat423_id;  // 0x64637c
+extern "C" i32 g_chanStat423_val; // 0x646380
+
+// The file-scope static chat-broadcast packet BroadcastChatLine assembles. Like
+// the channel-stat packets, retail emits each field as its own .data symbol
+// (disp-0 DIR32 relocs): a flag byte (0x6473e0), the stat id 0x3f0 (0x6473e4), a
+// value dword (0x6473e8), then the text buffer (0x6473ec). External; reloc-masked.
+extern "C" u8 g_chatPacket_flag;  // 0x6473e0
+extern "C" i32 g_chatPacket_id;   // 0x6473e4
+extern "C" i32 g_chatPacket_val;  // 0x6473e8
+extern "C" char g_chatPacket_buf; // 0x6473ec  (strcpy dest)
+
+// The shared "a player-left was processed this frame" flag (DAT_00648ce4) and
+// the active-player refcount the leave path decrements (DAT_00648cec). External
+// engine globals; DIR32 reloc-masked.
+extern "C" i32 g_playerLeftFlag; // 0x648ce4
+extern "C" i32 g_activePlayers;  // 0x648cec
 
 class CNetMgr {
 public:
@@ -340,6 +563,39 @@ public:
     // COM interface at +0x18 and, on a nonzero HRESULT, route it through ReportError.
     i32 EnumPlayersInto(void* a, void* b); // 0x178610 (@early-stop, scheduling wall)
 
+    // The 0x178xxx session-management wrapper run (continued). Each thin wrapper
+    // fires one IDirectPlay4 slot on the m_18/+0x18 interface and, on a nonzero
+    // HRESULT, routes it through ReportError; the node factories operator-new a
+    // list node and AddTail it onto one of the managed CObLists.
+    i32
+    Init(void* a, i32 c, i32 d, i32 e, i32 f); // 0x178170  Open + QueryInterface + reset selections
+    i32 AddPlayerNode(void* playerDesc);       // 0x1786d0  new player node -> +0x38 list
+    void PopulatePlayerList(void* hList);      // 0x178790  fill a Win32 player list box
+    i32 EnumPlayersCb(
+        void* a,
+        i32 b,
+        i32 c,
+        i32 d
+    );                                         // 0x1789e0  EnumPlayers slot wrapper -> CreatePlayer
+    i32 EnumGroupsAll();                       // 0x178a40  EnumGroups (slot 0xc) wrapper
+    i32 EnumGroupsRange(void* rec, i32 flags); // 0x178a80  EnumGroups (slot 0xc) over a record
+    i32 AddSessionNode(void* a, void* b);      // 0x178b30  (/GX) new session node -> +0x54 list
+    i32 CreatePlayer(void* a, i32 b, i32 c);   // 0x178cb0  GetSessionDesc + AddSessionNode
+    void PopulateSessionList(void* hList);     // 0x178d40  (/GX) fill a Win32 session list box
+
+    // The 0xbbxxx / 0xbcxxx connect/config helpers reconstructed in this TU.
+    void RecordDropPlayer2(i32 a, i32 id); // 0xbb5e0  record a pending drop (matched here)
+    i32 DropChannelPlayer(i32 idx);        // 0xbb510  drop the player on channel[idx]
+    i32 LoadConfig(void* cfg);             // 0xbce80  copy the command-timing config in
+    void AutoTuneCmdDelay();               // 0xbcc10  derive m_cmdDelay/m_resend from the ping
+
+    // AutoTuneCmdDelay's external probes (incremental-link thunks; no body here so
+    // the call rel32 reloc-masks). MeasurePing samples the round-trip; ProbeLatency
+    // returns a secondary latency class; WriteCmdDelay persists the tuned pair.
+    i32 MeasurePing();            // 0x... (thunked) round-trip sample
+    i32 ProbeLatency(i32 flag);   // 0x... secondary latency probe
+    void WriteCmdDelay(i32 flag); // 0x... persist m_cmdDelay/m_resend
+
     // Backlog (not yet reconstructed - left as @stub in NetMgr.cpp):
     //   0x178360  AddGroupNode  - operator-new'd 0x10 node (2-phase vtbl + CString
     //                             member + /GX EH frame) AddTail'd onto the +0x1c list
@@ -359,17 +615,81 @@ public:
     void HandleVersionCheck(CNetVersionMsg* msg);
     void AnnounceVersion(i32 param);
 
-    // External per-instance command/stat dispatcher (reached through an
-    // incremental-link thunk so its `call rel32` reloc-masks; __thiscall, ecx =
-    // this). No body here - the engine routine is external.
-    void SendNetStat(i32 id, u32 value, i32 flag);
-    // The version-report diagnostic (logs a message string + zero) and the two
-    // stat dispatchers the version cluster fires (a 2-arg stat-id/flag form and
-    // a 4-arg stat packet form). All __thiscall engine routines reached through
-    // incremental-link thunks; no body here.
+    // The stat-send family (matched in NetMgr.cpp). All ship a 0x10-byte
+    // CNetStatPacket (or a caller packet) to the local player's peer group
+    // through the DirectPlay set-data wrappers; SendStatFlag/SendNetStat build
+    // the header then funnel through SendStatBuf.
+    //   SendStatBuf   (b91f0) the core: SetGroupDataFrom(localPlayer, flag, pkt, 0x10)
+    //   SendStatFlag  (b9240) build {id, localPlayer.id} then SendStatBuf
+    //   SendNetStat   (b9290) build {id, value} then SendStatBuf
+    //   SendStatFrom  (b92e0) SetGroupDataFrom wrapper, null-guarded packet
+    //   SendStatPair  (b9330) SetGroupData2 wrapper, null-guarded packet
+    i32 SendStatBuf(CNetStatPacket* pkt, i32 flag);                           // 0xb91f0
+    void SendStatFlag(i32 id, i32 flag);                                      // 0xb9240
+    void SendNetStat(i32 id, u32 value, i32 flag);                            // 0xb9290
+    i32 SendStatFrom(CNetStatPacket* pkt, i32 b, i32 c);                      // 0xb92e0
+    i32 SendStatPair(CNetPlayerEntry* recipient, CNetStatPacket* pkt, i32 c); // 0xb9330
+    // Three more stat-send variants in this cluster: each builds a 0x10-byte stat
+    // header on the stack (or forwards a caller packet) and ships it through one
+    // of the DirectPlay set-data wrappers.
+    i32 SendStatTo(CNetPlayerEntry* recipient, i32 id, i32 c);                   // 0xb93a0
+    i32 SendStatPairRaw(CNetPlayerEntry* recipient, void* pkt, i32 size, i32 c); // 0xb9500
+    i32 SendStatValue(i32 id, i32 statId, i32 value, i32 flag);                  // 0xb9570
+    // The two config-name accessors: return the m_5b4 / m_5b8 CStrings by value.
+    CString GetConfigNameA(); // 0xb6090  return the m_5b4 CString by value
+    CString GetConfigNameB(); // 0xb60d0  return the m_5b8 CString by value
+    // The control-message dispatch + the player-left handler.
+    CString GetName();                                // 0xba170  return the m_8 CString by value
+    i32 HandleControlMsg(CNetCtrlMsg* msg, i32 arg2); // 0xba1a0  switch on msg->m_0 (arg2 unused)
+    i32 OnPlayerLeft(i32 playerId); // 0xba3b0  (/GX) report + tear down a leaving player
+    // The sprite/menu-message handler (case 3 of HandleControlMsg); its body lives
+    // in a sibling stub TU (ApiCallers.cpp), declared here no-body so the call
+    // reloc-masks.
+    void HandleSpriteMsg(CNetCtrlMsg* msg); // 0xba620
+    // The "rejoin/reconnect" finalizer fired from OnPlayerLeft when the channel
+    // selector is set; external (the 0xba810 backlog method), no body here.
+    void RejoinIfNeeded(i32 flag); // 0xba810
+    // The version-report diagnostic (logs a message string + zero) and the
+    // 4-arg stat-packet dispatcher AnnounceVersion fires. Both __thiscall engine
+    // routines reached through incremental-link thunks; no body here.
     void ReportVersionMsg(const char* msg, i32 zero);
-    void SendStatFlag(i32 id, i32 flag);
     void SendStatPacket(i32 param, const void* packet, i32 size, i32 flag);
+
+    // ---- 0xbaxxx channel-table cluster -------------------------------------
+    // The per-channel ack/state table at (m_4 + 0x150) is serialized to / parsed
+    // from a 0x88-byte (whole-table) or 0x2c-byte (single) stat packet, and a
+    // pair of register/remove helpers create / tear down one channel slot.
+    // AckDropPlayer (0xba590) is declared with the bc0xx helper run below.
+    i32 ResolveLocalPlayer(); // 0xba7d0  m_localPlayer = peer->FindPlayerById(m_5c0)
+    i32 BroadcastChannelTable(
+        CNetPlayerEntry* recipient
+    );                                   // 0xba810  serialize all channels -> 0x88 packet
+    i32 ParseChannelTable(void* packet); // 0xba980  parse a 0x88 packet -> channels
+    i32 RegisterChannelFrom(
+        const char* name,
+        i32 b,
+        i32 e,
+        i32 f
+    ); // 0xbaa90 tail-wrap into RegisterChannel
+    i32 RegisterChannel(const char* name, i32 id, i32 c, i32 d, i32 idx, i32 e); // 0xbaac0 (/GX)
+    i32 RegisterChannelRec(void* rec);        // 0xbac40  unpack rec -> RegisterChannel
+    i32 RemoveChannel(i32 idx);               // 0xbac90  free channel[idx]
+    i32 OnPauseChannel();                     // 0xbad00  m_580 ? SendStatFlag+OnMultiPause
+    i32 BroadcastOneChannel(CNetChannel* ch); // 0xbaf00  serialize one channel -> 0x2c packet
+    i32 ParseOneChannel(void* rec);           // 0xbaff0  parse one record -> channel[rec.idx]
+    i32 SendChannelStat422();                 // 0xbb0b0  build {0x422} -> SetGroupDataFrom
+    i32 SendChannelStat423();                 // 0xbb120  build {0x423} -> SetGroupDataFrom
+    i32 BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd); // 0xbb190
+
+    // The 3-arg record helper AckDropPlayer fires before the slot reset (records
+    // the pending drop into the m_608 id array). __thiscall (id is its 2nd arg);
+    // external incremental-link thunk -> no body here.
+    void RecordDropPlayer(i32 a, i32 id); // 0xbb5e0
+
+    // The chat-window dispatcher BroadcastChatLine fires when the show-window flag
+    // is set: posts the assembled line to a Win32 chat control (SendMessageA-based
+    // helper). __thiscall; external (sibling 0xbb3e0), no body here.
+    void ShowChatLine(const char* line, void* hWnd); // 0xbb3e0
 
     // ---- 0xbc0xx cluster ---------------------------------------------------
     // The cluster's matched methods (defined in NetMgr.cpp).
@@ -384,14 +704,17 @@ public:
     //   SendStat3      (b9410) the 3-arg stat sender (id, value, flag)
     //   ReportNetError (b7e30) status-bar diagnostic (string, level)
     //   ReportStatusId (b7ec0) status-bar diagnostic by string-resource id
-    //   PollSession    (b95f0) pump the DirectPlay receive queue, no args
     //   AckDropPlayer  (ba590) finalize a dropped player (id)
     //   ResetCmdBuffers(c0070) zero the four per-slot command buffers, no args
-    void SendStat3(i32 id, u32 value, i32 flag);
     void ReportNetError(const char* msg, i32 level);
     void ReportStatusId(UINT strId, i32 level);
-    void PollSession();
     void AckDropPlayer(i32 id);
+    // SendStat3 (b9410) + PollSession (b95f0) are matched in this TU. PollSession
+    // hands each received message to the engine dispatcher (Stub_0b9750), reached
+    // here through an incremental-link thunk; modeled no-body (reloc-masked).
+    i32 SendStat3(i32 id, u32 value, i32 flag);            // 0xb9410
+    i32 PollSession();                                     // 0xb95f0
+    void DispatchRecvMsg(i32 sender, char* buf, i32 size); // 0xb9750
 
     char m_pad0[4]; // +0x000
     // The engine sub-object reached through several views: ->m_4->m_4 is the HWND
@@ -399,11 +722,19 @@ public:
     // (CNetSubObject); and (CNetPlayerSlot*)m_4 is the base of the four per-player
     // ack-latency slots. No single clean type -> left as the +0x4 sub-object ptr.
     void* m_4; // +0x004
-    char m_pad8[0x14 - 0x8];
+    // A CString member at +0x8 (GetName returns a copy of it by value).
+    CString m_8; // +0x008
+    char m_padc[0x14 - 0xc];
     INetReleasable* m_releaseIface; // +0x014  the secondary COM interface Destroy releases (slot 2)
     IDirectPlay4Z* m_directPlay; // +0x018  the DirectPlay session interface (IDirectPlay4-shaped)
     i32 m_1c;                    // +0x01c  WM_COMMAND lParam value the resync handlers post
-    char m_pad20[0x58 - 0x20];
+    char m_pad20[0x28 - 0x20];
+    i32 m_28; // +0x028  group-list item count (ReadGroupSel bound)
+    char m_pad2c[0x3c - 0x2c];
+    CNetListNode* m_3c; // +0x03c  head of the +0x38 player CObList (PopulatePlayerList walks it)
+    char m_pad40[0x44 - 0x40];
+    i32 m_44; // +0x044  player-list item count (ReadPlayerSel bound)
+    char m_pad48[0x58 - 0x48];
     // The managed-player-object list (a by-value CObList embedded at +0x54). Its
     // 0x1c-byte body spans +0x54..+0x70; the +0x58 head node ptr below is the
     // CObList's own m_pHead (what FindPlayerById walks). Modeled as the head
@@ -419,15 +750,19 @@ public:
     i32 m_groupSelId;   // +0x7c  group-list selection id (zeroed with m_groupSel on clear)
     i32 m_playerSelId;  // +0x80  player-list selection id (zeroed with m_playerSel on clear)
     i32 m_sessionSelId; // +0x84  player-object-list selection id (zeroed with m_sessionSel on clear)
-    char m_pad88[0x520 - 0x88];
+    char m_pad88[0x2d8 - 0x88];
+    i32 m_2d8; // +0x2d8  a command-timing config word (LoadConfig copies cfg+0x118)
+    char m_pad2dc[0x520 - 0x2dc];
     CNetSession* m_session; // +0x520  the DirectPlay session sub-object (command slots)
     CNetMgr* m_peer;        // +0x524  peer net-manager (owns the player list); null => no session
     i32 m_useChannelLatency; // +0x528  ack-latency source selector (set => inline m_channelLatency[])
     i32 m_sessionTerminated; // +0x52c  "the game session has been terminated"
-    char m_pad530[0x534 - 0x530];
+    i32 m_530;               // +0x530  config-loaded / connection-active gate
     i32 m_534;             // +0x534  host-mode flag (no use-site in matched code; left placeholder)
     i32 m_removedFromGame; // +0x538  "you have been removed from the game by the host"
-    char m_pad53c[0x56c - 0x53c];
+    char m_pad53c[0x564 - 0x53c];
+    i32 m_pollAbort; // +0x564  set => PollSession stops pumping the receive queue
+    char m_pad568[0x56c - 0x568];
     i32 m_gameFull; // +0x56c  "this game is already full"
     i32 m_versionMismatch; // +0x570  version-mismatch latch (HandleVersionCheck sets; WaitForConnect reports)
     i32 m_outOfSyncGuard; // +0x574  OnOutOfSync per-instance reentrancy guard
@@ -440,17 +775,25 @@ public:
     char m_pad590[0x598 - 0x590];
     CString m_configSection; // +0x598  config section/value-name prefix ("<section>_CmdDelay" etc.)
     char m_pad59c[0x5a4 - 0x59c];
-    DWORD m_cmdDelay; // +0x5a4  the "_CmdDelay" value (also the per-command sequence scale)
-    DWORD m_resend;   // +0x5a8  the "_Resend" value
-    i32 m_gameClosed; // +0x5ac  "this game is closed"
-    char m_pad5b0[0x5bc - 0x5b0];
+    DWORD m_cmdDelay;  // +0x5a4  the "_CmdDelay" value (also the per-command sequence scale)
+    DWORD m_resend;    // +0x5a8  the "_Resend" value
+    i32 m_gameClosed;  // +0x5ac  "this game is closed"
+    i32 m_5b0;         // +0x5b0  config word (LoadConfig copies cfg+0x8)
+    CString m_5b4;     // +0x5b4  config name CString A (LoadConfig <- cfg+0xc)
+    CString m_5b8;     // +0x5b8  config name CString B (LoadConfig <- cfg+0x8c)
     i32 m_localPlayer; // +0x5bc  the local player descriptor ptr (gate in WaitForConnect)
     i32 m_5c0;         // +0x5c0  local player id (inferred from +0x5bc[+4]; no use-site here)
-    char m_pad5c4[0x5e0 - 0x5c4];
+    char m_pad5c4[0x5cc - 0x5c4];
+    i32 m_5cc; // +0x5cc  the resync "tick" byte derived from the session sub-object
+    char m_pad5d0[0x5e0 - 0x5d0];
     u32 m_lastFrameDelta; // +0x5e0  last frame-sync delta (ms)
     u32 m_lastFrameTime;  // +0x5e4  last frame-sync timestamp (timeGetTime)
     char m_pad5e8[0x5f0 - 0x5e8];
     DWORD m_channelLatency[4]; // +0x5f0  per-channel ack-latency values
+    i32 m_600;                 // +0x600  a command-timing config word (LoadConfig copies cfg+0x114)
+    char m_pad604[0x608 - 0x604];
+    i32* m_608; // +0x608  the pending-drop id array (RecordDropPlayer fills it)
+    i32 m_60c;  // +0x60c  the pending-drop id array element count
 
     // Engine-label backlog stubs.
     void Stub_0b5460();

@@ -31,6 +31,13 @@ extern "C" char g_emptyString[]; // 0x6293f4
 DATA(0x00629ad0)
 extern i32 g_serialCount;
 
+// The per-player config name tables the two free getters below index by enum.
+// Each is an array of char* into the rodata string pool. Reloc-masked DATA.
+DATA(0x00612f78)
+extern char* g_colorNames[]; // "Color 0".."Color 7"
+DATA(0x00612fc0)
+extern char* g_difficultyNames[]; // "Easy"/"Normal"/"Hard"
+
 // The archive/order object Serialize streams through. Its field-transfer entries
 // are the virtuals at vtable byte-offsets 0x2c (Load) and 0x30 (Save), each taking
 // a buffer ptr + a byte count. Modeled polymorphic (slot decls only, never defined
@@ -137,6 +144,37 @@ GruntzPlayer::GruntzPlayer() {
 }
 
 // ===========================================================================
+// GruntzPlayer::Reset  @0x0da9e0
+// Frameless re-init of an already-live slot: re-empty the name CString (op= to
+// the MFC empty string, NO default ctor / no EH frame since the member is already
+// constructed) and re-seed the scalar config block. Returns 1 (success).
+// ===========================================================================
+// @early-stop
+// store-scheduling wall: every instruction (the op= to g_emptyString + all 14 field
+// stores) is byte-correct, but MSVC's scheduler floats the m_228 = 0xf IMMEDIATE
+// store to the tail of the register-store cluster, where retail keeps it in source
+// position (between m_224 and m_02c). Reordering the source / hoisting to a local
+// does not flip it (the scheduler re-floats the imm). ~94.9%.
+RVA(0x000da9e0, 0x60)
+i32 GruntzPlayer::Reset() {
+    m_000 = -1;
+    m_018 = -2;
+    m_020 = 0;
+    m_014 = 1;
+    m_004 = g_emptyString;
+    m_008 = 0;
+    m_010 = 0;
+    m_220 = 0;
+    m_224 = 0;
+    m_228 = 0xf;
+    m_02c = 0;
+    m_030 = 0;
+    m_22c = 0;
+    m_230 = 0;
+    return 1;
+}
+
+// ===========================================================================
 // GruntzPlayer::Serialize  @0x0dace0
 // Stream every field through the archive order object. kind 7 = Load (read each
 // scalar via [+0x2c], then load the 0x80 name buffer and assign it into m_004),
@@ -206,4 +244,34 @@ CString GruntzPlayer::GetDefaultName() {
     // `return CString("Player");` would NRV-construct in place (frameless).
     CString name("Player");
     return name;
+}
+
+// ===========================================================================
+// GetColorName  @0x0db050  (/GX EH frame, free fn)
+// Build a CString from the color-name table (g_colorNames[idx]); uppercase it
+// when `upper` is set, then return by value (NRV: the local is copy-ctor'd into
+// the caller's return slot and destructed). Called by the GruntzPlayer player-
+// option accessor at 0x0dab18 (same TU).
+// ===========================================================================
+RVA(0x000db050, 0x90)
+CString GetColorName(i32 colorIdx, i32 upper) {
+    CString s;
+    s = g_colorNames[colorIdx];
+    if (upper)
+        s.MakeUpper();
+    return s;
+}
+
+// ===========================================================================
+// GetDifficultyName  @0x0db110  (/GX EH frame, free fn)
+// As GetColorName but over the difficulty table ("Easy"/"Normal"/"Hard").
+// Called by the GruntzPlayer accessor at 0x0dac38 (same TU).
+// ===========================================================================
+RVA(0x000db110, 0x90)
+CString GetDifficultyName(i32 diffIdx, i32 upper) {
+    CString s;
+    s = g_difficultyNames[diffIdx];
+    if (upper)
+        s.MakeUpper();
+    return s;
 }

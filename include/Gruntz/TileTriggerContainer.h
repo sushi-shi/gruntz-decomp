@@ -63,13 +63,21 @@ public:
     }                         // real subobject dtor: drives the container's /GX frame
     void* m_vptr;             // +0x00
     TtcNode* m_pNodeHead;     // +0x04
-    char _pad08[0x1c - 0x08]; // +0x08..0x1b
+    char _pad08[0x0c - 0x08]; // +0x08..0x0b
+    i32 m_0c;                 // +0x0c  element count (serialized by 117280)
+    char _pad10[0x1c - 0x10]; // +0x10..0x1b
 };
+
+struct TtcStream;
 
 // The list3 (m_list3, +0x54) element: a 0x28-byte record initialised from the
 // AddToList3 args, notified, then appended.  m_10 gates the init (1 = live).
 struct TtcMark {
     void Notify(void* a); // 0x149c (reloc-masked __thiscall)
+    // Per-mark (de)serialize-and-fill helper used by the big serialize walk
+    // (0x117280): reads the mark's fields from the stream and validates them.
+    // __thiscall, returns nonzero on success.  Reloc-masked rel32 callee (0x113f10).
+    i32 Serialize(TtcStream* s, i32 op, i32 a3, i32 a4); // 0x113f10
     i32 m_00;
     i32 m_04;
     i32 m_08;
@@ -124,8 +132,8 @@ struct TtcStream {
     virtual void Slot20();
     virtual void Slot24();
     virtual void Slot28();
-    virtual void Slot2C();
-    virtual void Transfer(void* buf, i32 n); // +0x30
+    virtual void ReadCount(void* buf, i32 n); // +0x2c  read path (slot 11)
+    virtual void Transfer(void* buf, i32 n);  // +0x30  write path (slot 12)
 };
 
 // A switch-logic object operated on by the tag-dispatched serialize helpers; m_04
@@ -165,6 +173,28 @@ public:
     // appends it to m_list1 (the +0x1c list).  /GX.
     TtcBaseElem*
     AddToList1(i32 a1, i32 a2, i32* block9, i32 a4, i32 a5, i32 a6, i32 a7); // 0x116cf0
+
+    // Twin of AddToList3 (0x116a40): allocates+constructs a 0x28-byte mark, and
+    // (when its init flag is clear) fills it from the args plus four state flags
+    // chosen by a switch on `type` (0..5), notifies it, and appends it to m_list3.
+    // Returns the mark, or 0 on alloc/double-init failure.  /GX.
+    TtcMark* AddToList3Switch(i32 a1, i32 a2, i32 a3, i32 a4, i32 type); // 0x116b80
+
+    // The big save/load serialize walk (0x117280).  op 4 = save: writes each list's
+    // count and serialize-applies every element across m_base/m_list1/m_list2/m_list3
+    // via SerializeApplyA/B and the per-element helpers.  op 7 = load: RemoveAll,
+    // then for each list reads a count and LoadElement's that many elements, AddTail'd
+    // into the matching list (m_list3 marks are alloc'd inline).  Returns 1/0.  /GX.
+    i32 Serialize(TtcStream* s, i32 op, i32 a3, i32 a4); // 0x117280
+
+    // Per-element LOAD helper of Serialize op 7: allocates+deserializes one element
+    // and returns it (reloc-masked rel32 callee, 0x117800).  __thiscall on this.
+    void* LoadElement(TtcStream* s, i32 op, i32 a3, i32 a4); // 0x117800
+
+    // The serialize-walk pre/post hooks (reloc-masked rel32 callees).  Method117e70
+    // closes the load (op 7); Method117e20 closes the save (op 4).  __thiscall.
+    i32 Method117e70(TtcStream* s); // 0x117e70
+    i32 Method117e20(TtcStream* s); // 0x117e20
 
     // Empties all four lists (m_base + m_list1/2/3), inline-destroying every
     // element, then clears m_70.  Invoked by DtorBase when m_74 is set.

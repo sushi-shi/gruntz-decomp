@@ -239,17 +239,15 @@ struct WorkerFull {
     i32 m_178;
 };
 
-// @early-stop
-// reloc-typing scoring artifact (88.6%, reloc-typing-vptr-global.md): the .text
-// is BYTE-IDENTICAL (empty instruction diff) and the lone reloc
-// (?g_siriusWorkerVtbl@@3PAXA DIR32 vptr store) is name-identical on both sides;
-// objdiff's fuzzy still discounts the relocated vptr-store immediate. Code is
-// correct - nothing to chase.
+// Byte-exact. The arg-store order is load-bearing: assigning m_04/m_08/m_0c (b,c,a)
+// in THIS order makes cl hold the 2nd-referenced arg (c) in edx across the m_0c store,
+// reproducing retail's `m_4=b; m_c=a; m_8=c` schedule. The natural m_04/m_0c/m_08 order
+// holds `a` instead and ascending-sorts the stores (one byte off).
 RVA(0x0015b300, 0x40)
 WorkerFull::WorkerFull(i32 a, i32 b, i32 c) {
     m_04 = b;
-    m_0c = a;
     m_08 = c;
+    m_0c = a;
     m_vptr = &g_siriusWorkerVtbl;
     m_10 = 0;
     m_14 = 0;

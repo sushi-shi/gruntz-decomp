@@ -30,21 +30,47 @@
 #include <Gruntz/CGameRegistry.h> // WwdGameReg / g_gameReg
 
 // ---------------------------------------------------------------------------
-// The array element (the per-grunt voice/spawn record). Its scalar destructor
-// is FUN_00499ca0 (= ClassUnknown_25 @0x99ca0); the random-picker reads m_0c (a
-// weight/run count) and m_20 (the last-picked index), and serves entries via the
-// GetAt-style accessor FUN_00429a30 and the CString-fill FUN_0049a260. All
-// external/no-body so the calls reloc-mask.
+// The per-grunt voice/spawn record (the CGruntSpawnConfig CDWordArray element;
+// trace-placeholder ClassUnknown_25). It IS a CObList (block size 0xa) of voice-
+// sound nodes (CVoiceSound, ClassUnknown_26) plus two trailing ints: m_1c (= 0 at
+// ctor, the CObList count overlaps its own m_nCount at +0xc) and m_20 (= -1, the
+// last-picked index the random picker reads).
+//
+//   ~CSpawnEntry  0x99ca0  - empties the node list (EmptyVoiceList) then the
+//                            embedded CObList member dtor frees its blocks (the
+//                            trailing ~CObList in the /GX frame). Called as an
+//                            explicit dtor (e->~CSpawnEntry()) + RezFree(e) by
+//                            CGruntSpawnConfig::Clear (a manual `delete e`).
+//   EmptyVoiceList 0x9a450  - walks the CObList nodes, `delete (CVoiceSound*)node`
+//                            on each held element, then m_list.RemoveAll().
+//   AddVoiceSound  0x11c560 - new CVoiceSound(s); m_list.AddTail(node).
+//
+// GetAt (0x429a30) / FillName (0x49a260) serve entries; external/no-body.
 // ---------------------------------------------------------------------------
+
+// A voice-sound node held in the CSpawnEntry CObList. 12 bytes: a CString name +
+// an int + a cached char* of the name's data. Its ctor (FUN_0051c630, the
+// ClassUnknown_26 placeholder) is reloc-masked (defined in another TU); its
+// teardown is `~CString + operator delete` (no vtable - a plain value node).
+struct CVoiceSound {
+    CVoiceSound(CString s); // 0x11c630 (__thiscall, ret 8)
+    CString m_str;          // +0x00
+    i32 m_04;               // +0x04  = 0
+    char* m_08;             // +0x08  = m_str.m_pchData
+};
+
 struct CSpawnEntry {
-    char m_00[0x0c];
-    i32 m_0c; // +0x0c  element count / weight
-    char m_10[0x20 - 0x10];
-    i32 m_20; // +0x20  last-picked index
+    CSpawnEntry();
+    ~CSpawnEntry();        // 0x99ca0  (empties the list, then ~CObList member)
+    void EmptyVoiceList(); // 0x9a450  delete every held CVoiceSound, RemoveAll
+    void AddVoiceSound(CString s, i32 flag); // 0x11c560
 
     void* GetAt(void* out);       // FUN_00429a30 (__thiscall)
     void* FillName(void* outStr); // FUN_0049a260 (__thiscall)
-    void Free();                  // FUN_00499ca0 (scalar dtor)
+
+    CObList m_list; // +0x00  the voice-sound node list (block size 0xa); count @+0xc
+    i32 m_1c;       // +0x1c  = 0
+    i32 m_20;       // +0x20  = -1  last-picked index
 };
 
 // The bute key getter (0x11bba0) is handed a (config, target) pair; it returns a
@@ -86,7 +112,9 @@ public:
     i32 PickWeighted(i32 index, i32 seed);                   // 0x11bee0
     BOOL BuildVoiceList();                                   // 0x11c1a0
     void* BuildVoiceSoundList(i32 i); // 0x11c210 (defined in another TU; reloc-masked)
+    void StopVoice(i32 id);           // 0x11c730 (selective per-id voice teardown)
     void DtorBody();                  // 0x11c7b0 (the 2-iter pair teardown)
+    void ResetPicks();                // 0x11c7f0 (DtorBody + reset entry m_20s)
     BOOL IsReady();                   // 0x11c830
     ~CGruntSpawnConfig();             // 0x85df0
 
@@ -126,9 +154,12 @@ struct CSpawnSpriteSource {
 };
 
 // The voice-sprite stored in the m_08/m_0c pair. The teardown (0x11c7b0) calls
-// its Reset (0x11a870, __thiscall); reloc-masked.
+// its Reset (0x11a870, __thiscall); reloc-masked. m_68 holds the voice id the
+// selective teardown (0x11c730) matches against.
 struct CSpawnVoice {
     void Reset(); // 0x11a870
+    char m_pad00[0x68];
+    i32 m_68; // +0x68  voice id
 };
 
 // The "GruntVoice" sound descriptor blob the loader pushes (s_GruntVoice_0060a638).

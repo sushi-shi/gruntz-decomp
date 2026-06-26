@@ -118,6 +118,16 @@ extern void* g_deviceConfigVtblC; // 0x5ef670
 DATA(0x00190aa0)
 extern const u8 g_keyboardDataFormat[]; // 0x590aa0
 
+// The mouse DIDATAFORMAT (c_dfDIMouse, 0x10-byte DIMOUSESTATE) the device-B
+// bring-up (CDeviceConfigB::CreateDev) passes to SetDataFormat; reloc-masked DIR32.
+DATA(0x00190b30)
+extern const u8 g_mouseDataFormat[]; // 0x590b30
+
+// The joystick DIDATAFORMAT (c_dfDIJoystick2, 0x110-byte DIJOYSTATE2) the joystick
+// bring-up (CDeviceConfigB::CreateDevJoystick) passes to SetDataFormat; reloc-masked DIR32.
+DATA(0x00191590)
+extern const u8 g_joystickDataFormat[]; // 0x591590
+
 // USER32 GetAsyncKeyState - polled across the key table by Poll (0x133d00). Loaded
 // from the IAT into a register (`mov edi,ds:__imp__GetAsyncKeyState; call edi`) and
 // reused across the run; comes from the real <windows.h> via <Win32.h>.
@@ -126,6 +136,42 @@ extern const u8 g_keyboardDataFormat[]; // 0x590aa0
 // by address (reloc-masked DIR32 operand).
 DATA(0x001ef548)
 extern const u8 g_deviceConfigA[]; // 0x5ef548
+
+// The device-B config object (InputDevice.cpp sibling of CDeviceConfigA): a 0x2c8-
+// byte object with the SAME prefix layout (m_device/+4, m_device2/+8, +0x29c..+0x2b4)
+// but stamped with its own foreign vftable (@0x5ef640) and brought up via a distinct
+// CreateDev entry (0x1342c0). Modeled with no body so the calls reloc-mask; the
+// vtable + config-blob are reloc-masked DIR32 operands.
+DATA(0x001ef640)
+extern void* g_deviceConfigVtblB2; // 0x5ef640 - device-B foreign vftable
+
+DATA(0x001ef538)
+extern const u8 g_deviceConfigB[]; // 0x5ef538 - device-B CreateDev config blob
+
+struct CDeviceConfigB {
+    i32 CreateDev(IDirectInputZ* di, const void* cfg, void* owner, u32 flags); // 0x1342c0
+    // The joystick-device sibling bring-up (0x134630) + its DI axis configurator
+    // (0x134710); IsReady (0x1343a0) is the device-B CreateDev success check.
+    // The non-keyboard device-config objects share the CInputDevice IDirectInputDevice-
+    // wrapper prefix, so these call the shared wrappers (CreateDeviceWrap/SetDataFormat/
+    // SetCooperativeLevel/SetProperty) by reinterpreting `this` as CInputDevice*.
+    i32 CreateDevJoystick(IDirectInputZ* di, const void* cfg, void* owner, u32 flags); // 0x134630
+    i32 SetupAxes(); // 0x134710
+    i32 IsReady();   // 0x1343a0
+
+    void* m_vptr;                   // +0x000  stamped to g_deviceConfigVtblB2 (@0x5ef640)
+    IDirectInputDeviceZ* m_device;  // +0x004
+    IDirectInputDeviceZ* m_device2; // +0x008
+    char m_padc[0x29c - 0x0c];
+    void* m_hwnd;          // +0x29c
+    void* m_stateBuffer;   // +0x2a0
+    u32 m_stateBufferSize; // +0x2a4  (untouched by InitB)
+    i32 m_latchedKeys;     // +0x2a8  (= -1)
+    u32 m_currentKeys;     // +0x2ac
+    u32 m_edgeKeys;        // +0x2b0
+    i32 m_2b4;             // +0x2b4  (= 0)
+    char m_pad2b8[0x2c8 - 0x2b8];
+}; // 0x2c8
 
 // ===========================================================================
 // DirectInputMgr2 (DinMgr2.cpp) - the device manager.
@@ -248,6 +294,44 @@ i32 DirectInputMgr2::InitA(u32 flags) {
             m_deviceA->ScalarDtor(1);
         }
         m_deviceA = 0;
+        return 0;
+    }
+    return 1;
+}
+
+// DirectInputMgr2::InitB (__thiscall, ret 4 => 1 arg = flags). The device-B sibling
+// of InitA: when the DInput object exists, new's a 0x2c8-byte CDeviceConfigB, inits
+// its prefix fields + stamps the device-B foreign vftable (no key-table memset),
+// then CreateDev(m_directInput, g_deviceConfigB, m_owner, flags). On failure
+// scalar-deletes it (m_deviceB) and returns 0; on success keeps it in m_deviceB.
+RVA(0x00132ee0, 0x9a)
+i32 DirectInputMgr2::InitB(u32 flags) {
+    IDirectInputZ* di = m_directInput;
+    if (di == 0) {
+        return 0;
+    }
+    CDeviceConfigB* raw = (CDeviceConfigB*)operator new(sizeof(CDeviceConfigB));
+    CDeviceConfigB* dev;
+    if (raw != 0) {
+        raw->m_device = 0;
+        raw->m_device2 = 0;
+        raw->m_hwnd = 0;
+        raw->m_stateBuffer = 0;
+        raw->m_latchedKeys = -1;
+        raw->m_currentKeys = 0;
+        raw->m_edgeKeys = 0;
+        raw->m_vptr = &g_deviceConfigVtblB2;
+        raw->m_2b4 = 0;
+        dev = raw;
+    } else {
+        dev = 0;
+    }
+    m_deviceB = (CInputDeviceBase*)dev;
+    if (dev->CreateDev(m_directInput, g_deviceConfigB, m_owner, flags) == 0) {
+        if (m_deviceB != 0) {
+            m_deviceB->ScalarDtor(1);
+        }
+        m_deviceB = 0;
         return 0;
     }
     return 1;
@@ -886,6 +970,114 @@ i32 CInputDevice::CreateDeviceWrap(IDirectInputZ* di, const void* guid, void* hw
     return 1;
 }
 
+// CDeviceConfigB::CreateDev (__thiscall, ret 0x10 => 4 args). The device-B (mouse)
+// bring-up the manager's InitB drives: validates (di, owner), runs the shared
+// CreateDevice+QI wrapper, caches the flags (+0x2b4), sets the mouse data format,
+// allocates the 0x10-byte DIMOUSESTATE snapshot buffer (+0x2a0/+0x2a4), sets the
+// cooperative level, then returns whether the device came up (IsReady). The shared
+// wrapper thunks live on CInputDevice (the device-config objects share its prefix).
+RVA(0x001342c0, 0x95)
+i32 CDeviceConfigB::CreateDev(IDirectInputZ* di, const void* cfg, void* owner, u32 flags) {
+    if (di == 0) {
+        return 0;
+    }
+    if (owner == 0) {
+        return 0;
+    }
+    if (((CInputDevice*)this)->CreateDeviceWrap(di, cfg, owner) == 0) {
+        return 0;
+    }
+    m_2b4 = flags;
+    if (((CInputDevice*)this)->SetDataFormat((void*)g_mouseDataFormat) == 0) {
+        return 0;
+    }
+    void* buf = operator new(0x10);
+    if (buf == 0) {
+        return 0;
+    }
+    m_stateBuffer = buf;
+    m_stateBufferSize = 0x10;
+    if (((CInputDevice*)this)->SetCooperativeLevel(DISCL_NONEXCLUSIVE | DISCL_FOREGROUND) == 0) {
+        return 0;
+    }
+    return IsReady() != 0;
+}
+
+// CDeviceConfigB::IsReady (__thiscall, no args). The CreateDev success check: the QI'd
+// device interface (m_device2) is non-null.
+RVA(0x001343a0, 0xb)
+i32 CDeviceConfigB::IsReady() {
+    return m_device2 != 0;
+}
+
+// CDeviceConfigB::CreateDevJoystick (__thiscall, ret 0x10 => 4 args). The joystick-device
+// bring-up the enum-devices callback drives: same shape as CreateDev (mouse) but the
+// joystick data format, a 0x110-byte DIJOYSTATE2 snapshot buffer, and a SetupAxes()
+// finalizer that configures the DI axis ranges + dead zones.
+RVA(0x00134630, 0x98)
+i32 CDeviceConfigB::CreateDevJoystick(IDirectInputZ* di, const void* cfg, void* owner, u32 flags) {
+    if (di == 0) {
+        return 0;
+    }
+    if (owner == 0) {
+        return 0;
+    }
+    if (((CInputDevice*)this)->CreateDeviceWrap(di, cfg, owner) == 0) {
+        return 0;
+    }
+    m_2b4 = flags;
+    if (((CInputDevice*)this)->SetDataFormat((void*)g_joystickDataFormat) == 0) {
+        return 0;
+    }
+    void* buf = operator new(0x110);
+    if (buf == 0) {
+        return 0;
+    }
+    m_stateBuffer = buf;
+    m_stateBufferSize = 0x110;
+    if (((CInputDevice*)this)->SetCooperativeLevel(DISCL_NONEXCLUSIVE | DISCL_FOREGROUND) == 0) {
+        return 0;
+    }
+    return SetupAxes() != 0;
+}
+
+// CDeviceConfigB::SetupAxes (__thiscall, no args). Configures the joystick's two axes
+// via IDirectInputDevice::SetProperty: a [-1000, 1000] DIPROP_RANGE on the X (dwObj 0)
+// then Y (dwObj 4) axis, then a 5000-unit DIPROP_DEADZONE on each. The DIPROPRANGE is
+// built once on the stack and reused (only dwObj changes); the dead zones go through the
+// DIPROPDWORD helper. Bails (return 0) the first time a SetProperty fails.
+RVA(0x00134710, 0xb2)
+i32 CDeviceConfigB::SetupAxes() {
+    if (m_device2 == 0) {
+        return 0;
+    }
+    struct DIPropRange {
+        u32 dwSize;       // +0x00
+        u32 dwHeaderSize; // +0x04
+        u32 dwObj;        // +0x08
+        u32 dwHow;        // +0x0c
+        i32 lMin;         // +0x10
+        i32 lMax;         // +0x14
+    } range;
+    range.dwSize = 0x18;
+    range.dwHeaderSize = 0x10;
+    range.dwObj = 0;
+    range.dwHow = 1;
+    range.lMin = -1000;
+    range.lMax = 1000;
+    if (((CInputDevice*)this)->SetProperty((const void*)4, &range) == 0) {
+        return 0;
+    }
+    range.dwObj = 4;
+    if (((CInputDevice*)this)->SetProperty((const void*)4, &range) == 0) {
+        return 0;
+    }
+    if (((CInputDevice*)this)->SetPropertyDword((const void*)5, 0, 1, 0x1388) == 0) {
+        return 0;
+    }
+    return ((CInputDevice*)this)->SetPropertyDword((const void*)5, 4, 1, 0x1388) != 0;
+}
+
 // CInputDevice::Create (__thiscall, ret 0xc => 3 args). Caches the
 // cooperative-level hwnd (m_hwnd), creates the device via
 // IDirectInput::CreateDevice into m_device, then QueryInterfaces it to the v2 device
@@ -997,6 +1189,28 @@ i32 CInputDevice::SetProperty(const void* rguid, void* prop) {
         return 0;
     }
     return 1;
+}
+
+// CInputDevice::SetPropertyDword (__thiscall, ret 0x10 => 4 args). Builds a
+// DIPROPDWORD on the stack (the standard DI scalar-property descriptor:
+// {diph{dwSize=0x14, dwHeaderSize=0x10, dwObj, dwHow}, dwData}) and forwards it
+// to SetProperty(rguid, &prop). The data fields are filled from the args first,
+// then the two fixed size words.
+RVA(0x00134f70, 0x40)
+i32 CInputDevice::SetPropertyDword(const void* rguid, u32 dwObj, u32 dwHow, u32 dwData) {
+    struct DIPropDword {
+        u32 dwSize;       // +0x00
+        u32 dwHeaderSize; // +0x04
+        u32 dwObj;        // +0x08
+        u32 dwHow;        // +0x0c
+        u32 dwData;       // +0x10
+    } prop;
+    prop.dwObj = dwObj;
+    prop.dwHow = dwHow;
+    prop.dwData = dwData;
+    prop.dwSize = 0x14;
+    prop.dwHeaderSize = 0x10;
+    return SetProperty(rguid, &prop);
 }
 
 // CInputDevice::Acquire (__thiscall, ret 0 => no args). Pass-through to

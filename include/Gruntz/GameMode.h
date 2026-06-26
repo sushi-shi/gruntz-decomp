@@ -213,6 +213,13 @@ public:
     void StartMusic();     // 0xa05a0 - music start gate
     void StopMusicChain(); // 0xa0640 - stop + cue chain
 
+    // ReadyGate (0xa0d40): the &&-chained ready/transition probe -
+    // Vfunc3() (slot 3) && CommitState() (the 0x1136 thunk) ? Vslot06() (slot 6).
+    i32 ReadyGate();
+    // CommitState (reached via the 0x1136 ILT thunk; external no-body ->
+    // reloc-masked). Returns nonzero when the pending state commit succeeds.
+    i32 CommitState();
+
     // 0x1af70 - the 960-B HUD-text formatter switch (8 cases of sprintf over the
     // game-reg clock/score fields). Deferred to the final sweep (see GameMode.cpp).
     void FormatHudText(i32 sel);
@@ -272,6 +279,7 @@ public:
 
     i32 LoadCreditzStateAssets(i32 a1, i32 a2, i32 a3);
     void InitAttractTitle();
+    i32 ShowAttractTitle(); // 0x393b0 (gate on the state core, hide cursor, init title)
 };
 
 class CBootyState : public CState {
@@ -310,6 +318,14 @@ public:
     void MoveLettersByDir(); // 0x19b90 - the 8-direction letter walk (jump-table)
     i32 CheckPerfectBonus(); // 0x1c0f0 - "BOOTY_PERFECT" cue + scroll advance
     i32 QueryGruntSlots();   // 0x1ecf0 - scan 4 reg records for an empty slot
+
+    // Ready-gate + paint (0x1ce30): if the active/ready virtual (CState slot 3) fires,
+    // run the per-frame paint and return its normalized result, else 0.
+    i32 ReadyAndPaint();                        // 0x1ce30
+    i32 ForwardIdleAnim(i32 a, i32 b);     // 0x1d420 -> BuildBootyGruntIdleAnimation
+    i32 Paint();                           // 0xfac70 (reloc-masked engine paint)
+    i32 BuildBootyGruntIdleAnimation();    // 0x1ce60 (reloc-masked, own method;
+                                           // shares the forwarder's arg frame)
 
     // --- CMultiBootyState members (placeholders, beyond the CState layout) ---
     // The +0x1ec and +0x204 sprite-ptr arrays overlap (the two animators index the

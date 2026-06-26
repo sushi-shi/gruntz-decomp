@@ -59,7 +59,6 @@ private:
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @stub
-RVA(0x00136270, 0x8b)
 i32 CStatusBarItem2::Finalize() {
     if (!m_10->m_78) {
         return 0;
@@ -85,7 +84,6 @@ i32 CStatusBarItem2::Finalize() {
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @stub
-RVA(0x001355c0, 0x23)
 i32 CStatusBarItem2::SetField0(i32 arg) {
     if (!m_10->m_78) {
         return 0;
@@ -95,7 +93,6 @@ i32 CStatusBarItem2::SetField0(i32 arg) {
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @stub
-RVA(0x001357a0, 0x42)
 i32 CStatusBarItem2::SetField1(i32 arg) {
     if (!m_10->m_78) {
         return 0;
@@ -108,7 +105,6 @@ i32 CStatusBarItem2::SetField1(i32 arg) {
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @stub
-RVA(0x00135920, 0x80)
 i32 CStatusBarItem2::SetField2(i32 arg) {
     if (!m_10->m_78) {
         return 0;
@@ -128,7 +124,6 @@ i32 CStatusBarItem2::SetField2(i32 arg) {
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @stub
-RVA(0x00135510, 0x25)
 void CStatusBarItem2::SetField3(i32 arg) {
     if (m_10->m_78) {
         if (arg) {

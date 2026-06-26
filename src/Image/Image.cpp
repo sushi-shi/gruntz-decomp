@@ -79,6 +79,7 @@ static const char s_extBmp[] = ".BMP";
 static const char s_extPcx[] = ".PCX";
 static const char s_extRid[] = ".RID";
 static const char s_extPid[] = ".PID";
+static const char s_extPal[] = ".PAL"; // the file-loader dispatcher (0x176f90) variant
 
 // ---------------------------------------------------------------------------
 // CImage::DecodeBmpHeader
@@ -153,6 +154,103 @@ i32 CImage::LoadFromRez(char* name, void* a2, void* a3) {
     }
 
     return LoadDefault(name, a2, a3);
+}
+
+// ---------------------------------------------------------------------------
+// CImageExtLoader::LoadByExtension  @0x176f90
+// ---------------------------------------------------------------------------
+// The FILE-loader counterpart of LoadFromRez (sits in the 0x176df0-0x177xxx file
+// cluster just past the CImage rez loaders): strrchr the dot, then a stricmp
+// ladder on .BMP/.PCX/.PAL forwarding (path, arg) verbatim to the matching file
+// loader; an absent/unknown extension falls through to Apply. Each case re-tests
+// `ext != 0` (the target's per-case `test esi; je default`). The four loaders are
+// reloc-masked external siblings (0x177480/0x1772e0/0x1771f0/0x1775f0); `this` is
+// pure-forwarded so its layout is immaterial. __thiscall, ret 8.
+class CImageExtLoader {
+public:
+    i32 LoadByExtension(char* path, i32 arg);
+    i32 LoadBmpFile(char* path, i32 arg); // 0x177480
+    i32 LoadPcxFile(char* path, i32 arg); // 0x1772e0  (.PCX palette tail)
+    i32 LoadPalFile(char* path, i32 arg); // 0x1771f0  (768-byte .PAL)
+    i32 Apply(char* path, i32 arg);       // 0x1775f0  (default)
+    i32 ProcessPal(void* rgb768, i32 arg);  // 0x176e70 (external)
+    i32 BuildPalette(void* rgbq, i32 arg);  // 0x176df0 (external)
+};
+
+RVA(0x00176f90, 0xa4)
+i32 CImageExtLoader::LoadByExtension(char* path, i32 arg) {
+    char* ext = strrchr(path, '.');
+
+    if (ext && _stricmp(ext, s_extBmp) == 0) {
+        return LoadBmpFile(path, arg);
+    } else if (ext && _stricmp(ext, s_extPcx) == 0) {
+        return LoadPcxFile(path, arg);
+    } else if (ext && _stricmp(ext, s_extPal) == 0) {
+        return LoadPalFile(path, arg);
+    }
+
+    return Apply(path, arg);
+}
+
+// ---------------------------------------------------------------------------
+// CImageExtLoader::LoadPalFile  @0x1771f0
+// ---------------------------------------------------------------------------
+// Load a raw 768-byte (.PAL) palette: open the file, require length == 0x300,
+// Read the 256*3 RGB bytes into a stack buffer, hand it to ProcessPal(buf, arg).
+// Any I/O failure returns 0. The CFileIO stack object forces the /GX EH frame.
+// __thiscall, ret 8.
+RVA(0x001771f0, 0xe2)
+i32 CImageExtLoader::LoadPalFile(char* path, i32 arg) {
+    CFileIO file;
+    char rgb[0x300];
+
+    if (!file.Open(path, 0, 0)) {
+        return 0;
+    }
+    if (file.GetLength() != 0x300) {
+        return 0;
+    }
+    file.Read(rgb, 0x300);
+    return ProcessPal(rgb, arg);
+}
+
+// ---------------------------------------------------------------------------
+// CImageExtLoader::LoadPcxFile  @0x1772e0
+// ---------------------------------------------------------------------------
+// Load the trailing palette of a .PCX: seek 0x300 bytes back from EOF, Read the
+// 256*3 RGB triples; on a short read return 0. Expand the triples in place into a
+// 256-entry RGBQUAD table (R,G,B,0) and hand it to BuildPalette(table, arg). The
+// CFileIO stack object forces the /GX EH frame. __thiscall, ret 8.
+// @early-stop
+// 93.9% de-interleave-loop induction-phase wall: the EH frame + open/seek/read +
+// BuildPalette call are byte-exact, but retail phases the dst induction variable at
+// base+1 (`add ecx,4` after the FIRST byte store, the four writes at [iv-1]/[iv-4]/
+// [iv-3]/[iv-2], the zero-store LAST) while clean C reorders the +4 and the zero
+// store; not source-steerable. Logic 100% correct (256 RGB triples -> RGBQUAD).
+RVA(0x001772e0, 0x117)
+i32 CImageExtLoader::LoadPcxFile(char* path, i32 arg) {
+    CFileIO file;
+    u8 rgb[0x300];
+    u8 rgbq[0x400];
+
+    if (!file.Open(path, 0, 0)) {
+        return 0;
+    }
+    file.Seek(-0x300, 2);
+    if (file.Read(rgb, 0x300) == 0) {
+        return 0;
+    }
+
+    u8* src = rgb;
+    u8* dst = rgbq;
+    for (i32 i = 0x100; i != 0; i--) {
+        dst[0] = *src++;
+        dst[1] = *src++;
+        dst[2] = *src++;
+        dst[3] = 0;
+        dst += 4;
+    }
+    return BuildPalette(rgbq, arg);
 }
 
 // The resource module the .DEFAULT loader pulls RT_BITMAP resources from
@@ -763,6 +861,96 @@ RVA(0x00142360, 0x53)
 CFileImageSurface::~CFileImageSurface() {
     *(void**)this = &g_fileImageVtbl;
     FreeSurfaces();
+}
+
+// ---------------------------------------------------------------------------
+// The factory at 0x13e9a0 builds a CFileImageSurface from a source resolver.
+// Modeling pieces (all reloc-masked):
+//   - the source's slot-0 probe(magic, &out) - declared on a tiny polymorphic view;
+//   - the global CObArray registry @0x653c88 + its grow index @0x653c90;
+//   - the 0xc0 surface item (vtbl g_fileImageVtbl, CByteArray @+0x94), the same
+//     shape as CDDrawPtrCollections::Create7f0_1.
+// ---------------------------------------------------------------------------
+inline void* operator new(u32, void* p) {
+    return p;
+} // placement new (construct in place)
+
+class CImageSource {
+public:
+    virtual i32 Probe(void* magic, void** out); // slot 0 (@0x00)
+};
+
+// The data tag passed to the source probe (reloc-masked .rdata datum).
+DATA(0x001ef888)
+extern void* g_imageProbeTag; // 0x5ef888
+
+// The created 0xc0 surface item: vptr @0, the slot-1 Load, a CByteArray @+0x94.
+class CByteArrayMember {
+public:
+    CByteArrayMember(); // 0x1b4f0b (reloc-masked rel32)
+};
+class CImageSurfaceItem {
+public:
+    virtual void* Delete(u32 flags);  // slot 0 (@0x00) scalar-deleting dtor
+    virtual i32 Load(void* src);      // slot 1 (@0x04)
+
+    char m_pad04[0x94 - 0x04]; // +0x04 (m_04/m_08/m_0c/m_7c zeroed)
+    CByteArrayMember m_94;     // +0x94
+    char m_pada8[0xc0 - 0x98]; // +0xa8/+0xb8 zeroed
+};
+
+// The global image cache the new item is filed into.
+class CImageCache {
+public:
+    void SetAtGrow(i32 index, CImageSurfaceItem* item); // 0x1b5144
+};
+DATA(0x00253c88)
+extern CImageCache g_imageCache; // 0x653c88
+DATA(0x00253c90)
+extern i32 g_imageCacheIndex; // 0x653c90
+
+// The owner of the factory (this) is not touched by the body; modeled as an
+// opaque shell so the call lowers to the retail __thiscall frame.
+class CImageFactory {
+public:
+    i32 Build_13e9a0(CImageSource* src, i32 a2);
+};
+
+// ---------------------------------------------------------------------------
+// 0x13e9a0: probe `src` (slot 0); if it yields a payload, allocate a 0xc0 surface
+// item, construct it (CByteArray @+0x94, stamp g_fileImageVtbl, zero the scalar
+// fields), Load the payload through slot 1, and on success file it into the global
+// image cache - else virtual-delete it. /GX. ret 0xc.
+// @early-stop
+// rezalloc-placement-new-no-eh-frame wall (docs/patterns/rezalloc-placement-new-no-eh-
+// frame.md), the same wall as the sibling Create7f0_1/CreateA factories: retail wraps
+// `new`+throwing-member-ctor in a /GX frame; MSVC5 placement-new emits no
+// ctor-in-flight EH state, so the body is byte-exact but the frame differs. Deferred
+// to the final sweep.
+RVA(0x0013e9a0, 0xcc)
+i32 CImageFactory::Build_13e9a0(CImageSource* src, i32 a2) {
+    void* payload = 0;
+    if (src->Probe(&g_imageProbeTag, &payload) != 0) {
+        CImageSurfaceItem* item = (CImageSurfaceItem*)operator new(0xc0);
+        if (item) {
+            new (&item->m_94) CByteArrayMember;
+            *(void**)item = &g_fileImageVtbl;
+            *(i32*)((char*)item + 0x08) = 0;
+            *(i32*)((char*)item + 0x0c) = 0;
+            *(i32*)((char*)item + 0x04) = 0;
+            *(i32*)((char*)item + 0x7c) = 0;
+            *(i32*)((char*)item + 0xa8) = 0;
+            *(i32*)((char*)item + 0xb8) = 0;
+        } else {
+            item = 0;
+        }
+        if (item->Load(payload)) {
+            g_imageCache.SetAtGrow(g_imageCacheIndex, item);
+        } else if (item) {
+            item->Delete(1);
+        }
+    }
+    return 1;
 }
 
 // ---------------------------------------------------------------------------

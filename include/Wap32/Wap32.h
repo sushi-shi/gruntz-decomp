@@ -268,9 +268,7 @@ public:
     virtual BOOL InitializeAccelerators(LPCSTR lpTable);    // +0x2c
     virtual void ShowError() {}                             // +0x30
     virtual CGameWnd* InitializeGameWindow();               // +0x34
-    virtual WAP32::CGameMgr* InitializeGameManager() {
-        return 0;
-    } // +0x38
+    virtual WAP32::CGameMgr* InitializeGameManager();       // +0x38  (0x13dbc0: new CGameMgr)
     virtual void InitializeDefaultWindowClass();  // +0x3c
     virtual void InitializeDefaultCreateStruct(); // +0x40
 

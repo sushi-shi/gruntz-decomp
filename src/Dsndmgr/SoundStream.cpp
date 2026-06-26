@@ -51,6 +51,39 @@ struct StreamVoiceList {
 };
 
 // ---------------------------------------------------------------------------
+// SoundStream::SoundStream (0x1376d0, __thiscall). Run the base ctor, zero the
+// two instance words (m_94 list head / m_98), then stamp the stream vptr.
+// Ghidra placeholder-named this "UnknownVoldemort"; the 0x5ef6ec stamp + the
+// 0x137710 shared dtor (via the scalar dtor below) prove it is SoundStream's.
+// @early-stop
+// two residuals (~97%): (a) base-ctor symbol ambiguity - the base ctor at
+// 0x136440 is delinked under the Ghidra placeholder ??0UnknownSalazar while this
+// TU emits ??0SoundDevice, so the masked base call pairs by bytes but not by name
+// (needs the SoundDevice/UnknownSalazar base identity unified in a later sweep);
+// (b) a vptr-store scheduling coin-flip - retail stamps the 0x5ef6ec vptr AFTER
+// the two zero stores, cl schedules it first (no source order lever flips it).
+RVA(0x001376d0, 0x20)
+SoundStream::SoundStream() {
+    m_94 = 0;
+    m_98 = 0;
+    *(void**)this = (void*)g_SoundStreamVtbl;
+}
+
+// ---------------------------------------------------------------------------
+// SoundStream::ScalarDtor (0x1376f0, __thiscall) - the scalar-deleting dtor
+// (??_G): run ~SoundStream, then operator delete (the engine RezFree) when the
+// low flag bit is set; returns this. Modeled as a plain method (name-independent
+// at delink) since SoundStream is kept non-polymorphic (manual vptr stamp).
+RVA(0x001376f0, 0x1e)
+void* SoundStream::ScalarDtor(i32 flag) {
+    this->~SoundStream();
+    if (flag & 1) {
+        RezFree(this);
+    }
+    return this;
+}
+
+// ---------------------------------------------------------------------------
 // SoundStream::~SoundStream (0x137710, __thiscall). Restamp the stream vptr,
 // then tail-jump into the base SoundDevice destructor (which runs the teardown).
 RVA(0x00137710, 0xb)
