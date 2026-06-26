@@ -54,6 +54,8 @@ public:
     );
     void SetZ(double z);  // 0x58ca0
     void Step(double dt); // 0x16ecd0
+    double ArrivalVelX(double target); // 0x16f3c0
+    double ArrivalVelY(double target); // 0x16f430
 
     double m_00, m_08;       // dt + copy
     double m_10, m_18, m_20; // per-axis rate

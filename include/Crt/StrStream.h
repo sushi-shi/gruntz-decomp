@@ -49,6 +49,9 @@ public:
 
     i32 out_waiting() const;
     i32 sbumpc();
+    i32 snextc();
+    i32 sgetc();
+    i32 stossc();
 
     // in_avail() - bytes available in the get area: _egptr - _gptr, or 0.
     i32 in_avail() const {
@@ -105,8 +108,8 @@ struct SbView {
     virtual void v0();                    // 0x00 ~ / deleting dtor
     virtual i32 sync();                   // 0x04
     virtual void* setbuf();               // 0x08
-    virtual i32 seekoff();                // 0x0c
-    virtual i32 seekpos();                // 0x10
+    virtual i32 seekoff(i32, i32, i32);   // 0x0c
+    virtual i32 seekpos(i32, i32);        // 0x10
     virtual i32 xsputn(const char*, i32); // 0x14
     virtual i32 xsgetn(char*, i32);       // 0x18 (slot 6)
     virtual i32 overflow(i32);            // 0x1c (slot 7)

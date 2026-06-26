@@ -162,3 +162,30 @@ void CMotionState::Step(double dt) {
     STEP_AXIS(m_30, m_18, m_48, m_e0, m_78, m_90, m_f8, m_a8);
     STEP_AXIS(m_38, m_20, m_50, m_e8, m_80, m_98, m_100, m_b0);
 }
+
+// ---------------------------------------------------------------------------
+// Per-axis arrival-velocity solve: with zero rate the current X velocity is
+// returned unchanged; otherwise v_final = signed sqrt(v^2 + 2*a*ds) where
+// ds = target - m_40 (same v^2 = v0^2 + 2*a*ds root used inside STEP_AXIS).
+RVA(0x0016f3c0, 0x61)
+double CMotionState::ArrivalVelX(double target) {
+    if (m_10 == 0.0)
+        return m_28;
+    double disc = m_28 * m_28 - (target - m_40) * m_10 * g_motionNegTwo;
+    if (0.0 > disc)
+        disc = 0.0;
+    double r = sqrt(disc);
+    return (m_28 > 0.0) ? r : -r;
+}
+
+// ---------------------------------------------------------------------------
+RVA(0x0016f430, 0x61)
+double CMotionState::ArrivalVelY(double target) {
+    if (m_18 == 0.0)
+        return m_30;
+    double disc = m_30 * m_30 - (target - m_48) * m_18 * g_motionNegTwo;
+    if (0.0 > disc)
+        disc = 0.0;
+    double r = sqrt(disc);
+    return (m_30 > 0.0) ? r : -r;
+}

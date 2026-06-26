@@ -86,6 +86,26 @@ void streambuf::setb(char* b, char* eb, i32 a) {
     _ebuf = eb;
 }
 
+// snextc() - advance the get pointer one, then return the new current char.
+RVA(0x0016cca0, 0x55)
+i32 streambuf::snextc() {
+    if (_fUnbuf) {
+        if (x_lastc == -1) {
+            ((SbView*)this)->underflow();
+        }
+        x_lastc = ((SbView*)this)->underflow();
+        return x_lastc;
+    }
+    if (_egptr == 0 || _gptr >= _egptr) {
+        ((SbView*)this)->underflow();
+    }
+    ++_gptr;
+    if (_gptr < _egptr) {
+        return (u8)*_gptr;
+    }
+    return ((SbView*)this)->underflow();
+}
+
 // sbumpc() - read the current char and advance the get pointer.
 // @early-stop
 // regalloc wall: in the buffered get path retail keeps `_gptr` in eax and zero-
@@ -110,4 +130,42 @@ i32 streambuf::sbumpc() {
     i32 r = ((SbView*)this)->underflow();
     _gptr++;
     return r;
+}
+
+// stossc() - skip the current char (advance the get pointer one). Unbuffered: a
+// latched char is dropped (x_lastc=EOF), else underflow(). Buffered: pull through
+// underflow() if drained, then gbump(1); the buffered tail falls off (eax=_gptr).
+RVA(0x0016cd50, 0x43)
+i32 streambuf::stossc() {
+    if (_fUnbuf) {
+        if (x_lastc == -1) {
+            return ((SbView*)this)->underflow();
+        }
+        x_lastc = -1;
+        return -1;
+    }
+    if (_gptr >= _egptr) {
+        ((SbView*)this)->underflow();
+    }
+    // The advanced _gptr stays in a register and is the (unspecified) return value
+    // retail leaves in eax - hold it in a local so no reload is emitted.
+    char* p = _gptr;
+    if (p < _egptr) {
+        ++p;
+        _gptr = p;
+    }
+    return (i32)p;
+}
+
+// sgetc() - peek the current char without advancing; in unbuffered mode latch
+// it through x_lastc, else just defer to underflow() (which returns *_gptr).
+RVA(0x0016cda0, 0x26)
+i32 streambuf::sgetc() {
+    if (_fUnbuf) {
+        if (x_lastc == -1) {
+            x_lastc = ((SbView*)this)->underflow();
+        }
+        return x_lastc;
+    }
+    return ((SbView*)this)->underflow();
 }

@@ -57,6 +57,61 @@ void ostream::osfx() {
     unlock();
 }
 
+// seekp(sp) - reposition the put pointer via bp->seekpos, fail-flagging on error.
+// @early-stop
+// vbase-pointer CSE/regalloc wall (~84%): logic + the read-before-lock setstate
+// idiom are byte-exact, but retail hoists the ios vbase address into a callee-saved
+// reg and holds it across the inlined lock/unlock; cl re-derives it from the vbtable
+// per access. Caching via ios*/ios& injects a null-check retail lacks, so neither
+// spelling closes it (regalloc choice, not source-steerable).
+RVA(0x0016c4d0, 0x98)
+ostream& ostream::seekp(i32 sp) {
+    bp->lock();
+    if (((SbView*)bp)->seekpos(sp, 2) == -1) {
+        i32 newst = state | failbit;
+        lock();
+        state = newst;
+        unlock();
+    }
+    bp->unlock();
+    return *this;
+}
+
+// tellp() - report the current put position via bp->seekoff(0, cur, out).
+// @early-stop
+// same ios-vbase CSE/regalloc wall as seekp (~82%): logic byte-exact, residual is
+// the held-vbase-pointer register choice across the inlined lock/unlock.
+RVA(0x0016c610, 0x99)
+i32 ostream::tellp() {
+    bp->lock();
+    i32 sp = ((SbView*)bp)->seekoff(0, 1, 2);
+    if (sp == -1) {
+        i32 newst = state | failbit;
+        lock();
+        state = newst;
+        unlock();
+    }
+    bp->unlock();
+    return sp;
+}
+
+// operator<<(streambuf*) - pump every char from sb through bp until EOF.
+RVA(0x0016c6b0, 0x88)
+ostream& ostream::operator<<(streambuf* sb) {
+    if (opfx()) {
+        i32 c = sb->sbumpc();
+        while (c != -1) {
+            if (bp->sputc(c) == -1) {
+                state |= failbit;
+                break;
+            }
+            c = sb->sbumpc();
+        }
+        osfx();
+    }
+    return *this;
+}
+
 // operator<<(unsigned char) - insert one char, padded to the field width.
 // @early-stop
 // shrink-wrapped callee-save wall: retail defers `push ebx` past the if(opfx())

@@ -89,7 +89,10 @@ public:
     void osfx();
     ostream& flush(); // 0x16be90 (reconstructed elsewhere; extern here)
     ostream& write(const char* s, i32 n);
+    ostream& seekp(i32 sp); // 0x16c4d0
+    i32 tellp();            // 0x16c610
     ostream& operator<<(u8 c);
+    ostream& operator<<(streambuf* sb);
 
 private:
     ostream& writepad(const char* a, const char* b); // 0x16c2d0 (extern)

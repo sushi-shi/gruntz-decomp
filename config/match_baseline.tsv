@@ -100,8 +100,8 @@ cremusentrylist	2	1
 cremusnode	4	2
 cremusreadstream	6	4
 crt_istream	3	2
-crt_ostream	4	3
-crt_streambuf	7	5
+crt_ostream	7	4
+crt_streambuf	10	8
 crt_strstreambuf	7	5
 cscanlinesurface	4	1
 csecretleveltrigger	4	3
@@ -127,7 +127,7 @@ directinputmgr2	33	29
 directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	15	0
-engine_boundary	480	0
+engine_boundary	472	0
 engine_discovered	51	0
 engine_label_stubs	437	105
 engine_unmatched	273	0
@@ -188,7 +188,7 @@ mapmgr	9	7
 menuitem	13	11
 menupage	31	16
 mgrtokenquery	1	1
-motionstate	4	3
+motionstate	6	5
 netmgr	82	45
 netmgrerror	1	1
 netsession	2	1
@@ -938,15 +938,21 @@ cremusreadstream	?SetPos@CRemusReadStream@@QAEHH@Z	100.0000	100.0000	1	dbbfa0bce
 crt_istream	?get@istream@@QAEHXZ	100.0000	100.0000	1	c72ccfaea1d2	0x16a410
 crt_istream	?ipfx@istream@@QAEHH@Z	96.1146	96.1146	1	5b2490abd943	0x16b720
 crt_istream	?read@istream@@QAEAAV1@PADH@Z	100.0000	100.0000	1	2a25e44c4790	0x16a510
-crt_ostream	??6ostream@@QAEAAV0@E@Z	90.3077	90.3077	1	2e9ddcbfc58c	0x192060
+crt_ostream	??6ostream@@QAEAAV0@E@Z	90.3077	90.3077	2	19100700ed33	0x192060
+crt_ostream	??6ostream@@QAEAAV0@PAVstreambuf@@@Z	100.0000	100.0000	1	19100700ed33	0x16c6b0
 crt_ostream	?opfx@ostream@@QAEHXZ	100.0000	100.0000	1	c7d033751aea	0x16bd10
 crt_ostream	?osfx@ostream@@QAEXXZ	100.0000	100.0000	1	53782d87a169	0x16bd90
+crt_ostream	?seekp@ostream@@QAEAAV1@H@Z	84.3390	84.3390	1	ba3a10f0c0b7	0x16c4d0
+crt_ostream	?tellp@ostream@@QAEHXZ	81.7419	81.7419	1	47de21052ef4	0x16c610
 crt_ostream	?write@ostream@@QAEAAV1@PBDH@Z	100.0000	100.0000	1	36a53b2e5b07	0x16ab20
 crt_streambuf	??0streambuf@@QAE@XZ	15.9167	15.9167	1	ef791f1f51c0	0x16b070
 crt_streambuf	??1streambuf@@QAE@XZ	100.0000	100.0000	2	ec449f8fc404	0x16b150
 crt_streambuf	?out_waiting@streambuf@@QBEHXZ	100.0000	100.0000	1	57d78b1417ca	0x21280
 crt_streambuf	?sbumpc@streambuf@@QAEHXZ	93.1429	93.1429	2	9f3e17b7a854	0x16cd00
 crt_streambuf	?setb@streambuf@@IAEXPAD0H@Z	100.0000	100.0000	2	dbebeb558020	0x16b3a0
+crt_streambuf	?sgetc@streambuf@@QAEHXZ	100.0000	100.0000	1	bc4f095bbad2	0x16cda0
+crt_streambuf	?snextc@streambuf@@QAEHXZ	100.0000	100.0000	1	c9bd80293831	0x16cca0
+crt_streambuf	?stossc@streambuf@@QAEHXZ	100.0000	100.0000	1	e6c3b56810bb	0x16cd50
 crt_streambuf	?sync@streambuf@@QAEHXZ	100.0000	100.0000	2	13d9462cc314	0x16b320
 crt_streambuf	?xsputn@streambuf@@QAEHPBDH@Z	100.0000	100.0000	2	78d4cb7f0189	0x16b1d0
 crt_strstreambuf	??0strstreambuf@@QAE@H@Z	100.0000	100.0000	1	0f520a16d08e	0x169050
@@ -1513,18 +1519,12 @@ engine_boundary	?Boundary_16c180@@YAXXZ	1.3333	1.3333	2	e691d83be415	0x16c180
 engine_boundary	?Boundary_16c230@@YAXXZ	1.2500	1.2500	2	abf31e826bea	0x16c230
 engine_boundary	?Boundary_16c2b0@@YAXXZ	10.0000	10.0000	2	a0325d5d1f1d	0x16c2b0
 engine_boundary	?Boundary_16c2d0@@YAXXZ	0.2010	0.2010	2	6dde958d78c2	0x16c2d0
-engine_boundary	?Boundary_16c4d0@@YAXXZ	0.6780	0.6780	2	1e1977b2a3d0	0x16c4d0
-engine_boundary	?Boundary_16c610@@YAXXZ	1.6129	1.6129	2	b0aaa7e0d4dc	0x16c610
-engine_boundary	?Boundary_16c6b0@@YAXXZ	0.7407	0.7407	2	64658cd2fd75	0x16c6b0
 engine_boundary	?Boundary_16c740@@YAXXZ	1.1429	1.1429	2	fa8850e3132f	0x16c740
 engine_boundary	?Boundary_16c800@@YAXXZ	1.0000	1.0000	2	82320364810d	0x16c800
 engine_boundary	?Boundary_16c8a0@@YAXXZ	0.8889	0.8889	2	34aab4e1fa93	0x16c8a0
 engine_boundary	?Boundary_16c950@@YAXXZ	3.7037	3.7037	2	15623437e964	0x16c950
 engine_boundary	?Boundary_16ca00@@YAXXZ	0.8511	0.8511	2	254c1f172220	0x16ca00
 engine_boundary	?Boundary_16ca80@@YAXXZ	0.2740	0.2740	2	87b19d2696cc	0x16ca80
-engine_boundary	?Boundary_16cca0@@YAXXZ	2.5000	2.5000	2	735942143c7d	0x16cca0
-engine_boundary	?Boundary_16cd50@@YAXXZ	3.1250	3.1250	2	5d6cb2a0ed82	0x16cd50
-engine_boundary	?Boundary_16cda0@@YAXXZ	5.5556	5.5556	2	fc18a6d95325	0x16cda0
 engine_boundary	?Boundary_16cdd0@@YAXXZ	0.5376	0.5376	2	fc4c822a638f	0x16cdd0
 engine_boundary	?Boundary_16d000@@YAXXZ	0.7874	0.7874	2	70866d4f51bb	0x16d000
 engine_boundary	?Boundary_16d790@@YAXXZ	0.7143	0.7143	2	5cd48def5c1b	0x16d790
@@ -1537,8 +1537,6 @@ engine_boundary	?Boundary_16e4f0@@YAXXZ	0.7874	0.7874	2	81788ee2ec2a	0x16e4f0
 engine_boundary	?Boundary_16e6a0@@YAXXZ	14.2857	14.2857	2	8d8fddfd8556	0x16e6a0
 engine_boundary	?Boundary_16e730@@YAXXZ	3.5714	3.5714	2	d379398b6dd7	0x16e730
 engine_boundary	?Boundary_16e9c0@@YAXXZ	1.6667	1.6667	2	49adb7df391d	0x16e9c0
-engine_boundary	?Boundary_16f3c0@@YAXXZ	1.2500	1.2500	2	73d614cf0f0b	0x16f3c0
-engine_boundary	?Boundary_16f430@@YAXXZ	1.2500	1.2500	2	183df793e157	0x16f430
 engine_boundary	?Boundary_16f4a0@@YAXXZ	0.2439	0.2439	2	7dd427b0a8c6	0x16f4a0
 engine_boundary	?Boundary_170210@@YAXXZ	1.3158	1.3158	2	708bbd01529e	0x170210
 engine_boundary	?Boundary_172160@@YAXXZ	3.0303	3.0303	2	4d2f58491ca1	0x172160
@@ -3038,6 +3036,8 @@ menupage	?SetFocus@CMenuPage@@QAEHPAVCMenuItem@@H@Z	100.0000	100.0000	1	20f58cb5
 menupage	?Switch@CMenuPage@@QAEHH@Z	100.0000	100.0000	1	493ec45e749b	0x183df0
 mgrtokenquery	?QueryToken@@YAHH@Z	100.0000	100.0000	1	33f0fb7f4951	0x99d10
 motionstate	??0CMotionState@@QAE@XZ	100.0000	100.0000	1	24ca6b679299	0x136d0
+motionstate	?ArrivalVelX@CMotionState@@QAENN@Z	100.0000	100.0000	1	a188e5c69da2	0x16f3c0
+motionstate	?ArrivalVelY@CMotionState@@QAENN@Z	100.0000	100.0000	1	d462958a3e89	0x16f430
 motionstate	?SetParams@CMotionState@@QAEHNNNNNNNNNNN@Z	100.0000	100.0000	2	57c861974e56	0x58bc0
 motionstate	?SetZ@CMotionState@@QAEXN@Z	100.0000	100.0000	1	9d25f9ec952e	0x58ca0
 motionstate	?Step@CMotionState@@QAEXN@Z	64.9479	64.9479	2	877abdf7095d	0x16ecd0

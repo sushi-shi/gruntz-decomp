@@ -755,12 +755,6 @@ RVA(0x0016c2b0, 0x13)
 void Boundary_16c2b0() {} // proximity: CButeMgrHelper@-0x1f0 | streambuf@+0xa50
 RVA(0x0016c2d0, 0x1f5)
 void Boundary_16c2d0() {} // proximity: CButeMgrHelper@-0x210 | streambuf@+0xa30
-RVA(0x0016c4d0, 0x98)
-void Boundary_16c4d0() {} // proximity: CButeMgrHelper@-0x410 | streambuf@+0x830
-RVA(0x0016c610, 0x99)
-void Boundary_16c610() {} // proximity: CButeMgrHelper@-0x550 | streambuf@+0x6f0
-RVA(0x0016c6b0, 0x88)
-void Boundary_16c6b0() {} // proximity: CButeMgrHelper@-0x5f0 | streambuf@+0x650
 RVA(0x0016c740, 0x8f)
 void Boundary_16c740() {} // proximity: CButeMgrHelper@-0x680 | streambuf@+0x5c0
 RVA(0x0016c800, 0x97)
@@ -773,12 +767,6 @@ RVA(0x0016ca00, 0x80)
 void Boundary_16ca00() {} // proximity: CButeMgrHelper@-0x940 | streambuf@+0x300
 RVA(0x0016ca80, 0x19e)
 void Boundary_16ca80() {} // proximity: CButeMgrHelper@-0x9c0 | streambuf@+0x280
-RVA(0x0016cca0, 0x55)
-void Boundary_16cca0() {} // proximity: CButeMgrHelper@-0xbe0 | streambuf@+0x60
-RVA(0x0016cd50, 0x43)
-void Boundary_16cd50() {} // proximity: streambuf@-0x50 | EngStr@+0x550
-RVA(0x0016cda0, 0x26)
-void Boundary_16cda0() {} // proximity: streambuf@-0xa0 | EngStr@+0x500
 RVA(0x0016cdd0, 0x22f)
 void Boundary_16cdd0() {} // proximity: streambuf@-0xd0 | EngStr@+0x4d0
 RVA(0x0016d000, 0x189)
@@ -803,10 +791,6 @@ RVA(0x0016e730, 0x51)
 void Boundary_16e730() {} // proximity: zBitVec@-0x630 | CMotionState@+0x5a0
 RVA(0x0016e9c0, 0x45)
 void Boundary_16e9c0() {} // proximity: zBitVec@-0x8c0 | CMotionState@+0x310
-RVA(0x0016f3c0, 0x61)
-void Boundary_16f3c0() {} // proximity: CMotionState@-0x6f0 | CButeMgr@+0xf70
-RVA(0x0016f430, 0x61)
-void Boundary_16f430() {} // proximity: CMotionState@-0x760 | CButeMgr@+0xf00
 RVA(0x0016f4a0, 0x1da)
 void Boundary_16f4a0() {} // proximity: CMotionState@-0x7d0 | CButeMgr@+0xe90
 RVA(0x00170210, 0x118)
