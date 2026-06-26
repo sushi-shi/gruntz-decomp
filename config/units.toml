@@ -1279,3 +1279,28 @@ flags = "eh"
 unit = "canicycle"
 source = "src/Gruntz/CAniCycle.cpp"
 flags = "eh"
+
+[[unit]]
+unit = "cgruntstaminasprite"
+source = "src/Gruntz/CGruntStaminaSprite.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "logicdispatchinit"
+source = "src/Gruntz/LogicDispatchInit.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cdonothingnormaldtor"
+source = "src/Gruntz/CDoNothingNormalDtor.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cleveltimedtor"
+source = "src/Gruntz/CLevelTimeDtor.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cmovinglogicdtor"
+source = "src/Gruntz/CMovingLogicDtor.cpp"
+flags = "eh"
