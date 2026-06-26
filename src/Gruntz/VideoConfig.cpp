@@ -58,6 +58,32 @@ public:
     void SetRange(i32 nMin, i32 nMax, i32 bRedraw);
 };
 
+// The CGruntzMgr settings singleton; only the current backbuffer width/height
+// (+0x94/+0x98) are touched here. Modeled minimally (defined inline per-TU in the
+// retail source, cf. CMenuState/CPlay).
+struct CGameMgrSettings {
+    char m_pad0[0x94];
+    i32 m_94; // +0x94  backbuffer width
+    i32 m_98; // +0x98  backbuffer height
+};
+DATA(0x0024556c)
+extern CGameMgrSettings* g_mgrSettings;
+
+// 0x363a0: GetResolutionCode - map the live backbuffer (width,height) to the
+// resolution combo index (1024x768 -> 3, 800x600 -> 2, else 1).
+RVA(0x000363a0, 0x41)
+i32 GetResolutionCode() {
+    i32 w = g_mgrSettings->m_94;
+    i32 h = g_mgrSettings->m_98;
+    if (w == 0x400 && h == 0x300) {
+        return 3;
+    }
+    if (w == 0x320 && h == 0x258) {
+        return 2;
+    }
+    return 1;
+}
+
 // ---------------------------------------------------------------------------
 // LoadVideoResolutionConfig
 // hDlg            - the owning dialog.
