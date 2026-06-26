@@ -4304,11 +4304,8 @@ namespace ApiCallerStubs {
     RVA(0x0007c3d0, 0x1ae)
     void ThisStubOwnerUnknown::LoadFinishLevelSprite(i32) {}
 
-    // @confidence: med
-    // @source: decomp-xref
-    // @stub
-    RVA(0x00090d10, 0x18e)
-    void ThisStubOwnerUnknown::LoadMonologoSprite() {}
+    // LoadMonologoSprite (0x090d10) re-homed as CGruntzMgr::LoadMonologoSprite in
+    // src/Gruntz/GruntzMgr.cpp (the trace owner; this in ecx == CGruntzMgr).
 
     // @confidence: med
     // @source: decomp-xref

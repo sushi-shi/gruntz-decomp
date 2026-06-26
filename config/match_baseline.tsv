@@ -122,7 +122,7 @@ dsoundvoice	2	1
 engine_attributed	15	0
 engine_boundary	540	0
 engine_discovered	54	0
-engine_label_stubs	449	104
+engine_label_stubs	448	104
 engstr	3	1
 filemem	9	8
 filestream	13	9
@@ -145,7 +145,7 @@ gruntvoice	5	4
 gruntzapp	10	9
 gruntzcmdmgr	12	10
 gruntzcommand	15	15
-gruntzmgr	88	62
+gruntzmgr	89	62
 gruntzplayer	8	3
 gruntzsoundz	12	11
 gruntzwnd	9	7
@@ -1864,7 +1864,6 @@ engine_label_stubs	?LoadLevelEffectSprites@ThisStubOwnerUnknown@ApiCallerStubs@@
 engine_label_stubs	?LoadLevelPreviewScreen@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXXZ	1.0526	1.0526	1	cpp:e8a4cb0d5b2a	0xde420
 engine_label_stubs	?LoadMenuSelectSprite@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXH@Z	0.8264	0.8264	1	cpp:e8a4cb0d5b2a	0xba620
 engine_label_stubs	?LoadMenuStateAssets@EngineLabelBacklog@@YGXHHH@Z	0.3922	0.3922	1	cpp:6bf52155264d	0x9fe50
-engine_label_stubs	?LoadMonologoSprite@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXXZ	0.6250	0.6250	1	cpp:e8a4cb0d5b2a	0x90d10
 engine_label_stubs	?LoadObjectAnimResources@EngineLabelBacklog@@YGXHH@Z	0.5747	0.5747	1	cpp:6bf52155264d	0x9ac20
 engine_label_stubs	?LoadObjectImageResources@EngineLabelBacklog@@YGXHH@Z	0.5556	0.5556	1	cpp:6bf52155264d	0x9a510
 engine_label_stubs	?LoadObjectSoundResources@EngineLabelBacklog@@YGXHH@Z	0.5747	0.5747	1	cpp:6bf52155264d	0x9a910
@@ -2500,6 +2499,7 @@ gruntzmgr	?InitializeLobbyConnectionSettings@CGruntzMgr@@QAEHXZ	99.5588	99.5588	
 gruntzmgr	?IsInPlayState@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	62d491889452	0x8fa40
 gruntzmgr	?IsLobbyHostReady@CGruntzMgr@@QAEHXZ	100.0000	100.0000	3	8dedad14eb04	0x91500
 gruntzmgr	?IsMoviePathValid@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	81cec570990e	0x901d0
+gruntzmgr	?LoadMonologoSprite@CGruntzMgr@@QAEHXZ	98.5000	98.5000	1	02ec3146bffa	0x90d10
 gruntzmgr	?LoadOptionsSlotName@CGruntzMgr@@QAEHHHHHHPBDH@Z	100.0000	100.0000	1	5dbed70529dd	0x92d50
 gruntzmgr	?LoadSaveMessageSprite@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	04070be0e0e4	0x92420
 gruntzmgr	?LoadWorldMode@CGruntzMgr@@QAEHH@Z	26.6228	26.6228	1	163dd156e145	0x91a40

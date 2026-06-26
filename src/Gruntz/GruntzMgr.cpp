@@ -1490,6 +1490,117 @@ void CGruntzMgr::ReportWorldStatus(i32 a) {
 }
 
 // -------------------------------------------------------------------------
+// CGruntzMgr::LoadMonologoSprite (0x090d10). PLAY-state only (m_curState->Update()
+// == 3): look "GAME_MONOLITH" up in the world config map (m_world->m_10), then
+// find-or-create the "MONOLITH" logo sprite in the world view (m_world->m_24). An
+// existing sprite TOGGLES its visible bit (m_8 & 2) + the g_6455e8 shown-flag; a
+// fresh sprite gets its cell grid checkerboard-seeded with the config index / -1 and
+// the flag set to 1. No destructible local -> no /GX frame (the sprite-grid loop).
+// (placeholder fields; only offsets + code bytes load-bearing.)
+struct CMonoEntry {
+    char m_pad0[0x10];
+    i32 m_10; // +0x10  geometry A
+    i32 m_14; // +0x14  geometry B
+};
+struct CMonoConfigRec {
+    char m_pad0[0x14];
+    CMonoEntry** m_14; // +0x14  entry table
+    char m_pad18[0x64 - 0x18];
+    i32 m_64; // +0x64  selected index
+};
+struct CMonoConfigMap {
+    i32 Lookup(const char* key, void** out); // 0x1b8008  CMapStringToOb::Lookup
+};
+struct CMonoConfigHolder {
+    char m_pad0[0x10];
+    CMonoConfigMap m_10; // +0x10  embedded string map
+};
+struct CMonoSprite;
+struct CMonoView {
+    CMonoSprite* FindSprite(const char* name); // 0x15dde0
+    CMonoSprite*
+    CreateSprite(i32 w, i32 h, i32 geoA, i32 geoB, i32 ox, i32 oy, const char* name); // 0x15d9a0
+};
+struct CMonoCellArray {
+    void SetAtGrow(i32 i, void* elem); // 0x1b5822  CObArray::SetAtGrow
+};
+struct CMonoSprite {
+    char m_pad0[0x8];
+    i32 m_8; // +0x08  flag bits (bit1 = visible)
+    char m_pad0c[0x20 - 0xc];
+    i32* m_20; // +0x20  cell grid
+    i32* m_24; // +0x24  per-row base table
+    i32 m_28;  // +0x28  cols
+    i32 m_2c;  // +0x2c  rows
+    char m_pad30[0x80 - 0x30];
+    i32 m_80; // +0x80
+    char m_pad84[0x9c - 0x84];
+    CMonoCellArray m_9c; // +0x9c  SetAtGrow target
+};
+struct CMonoWorld {
+    char m_pad0[0x10];
+    CMonoConfigHolder* m_10; // +0x10  config holder
+    char m_pad14[0x24 - 0x14];
+    CMonoView* m_24; // +0x24  world view / sprite factory
+};
+
+RVA(0x00090d10, 0x18e)
+i32 CGruntzMgr::LoadMonologoSprite() {
+    if (m_curState == 0) {
+        return 0;
+    }
+    if (m_curState->Update() != 3) {
+        return 0;
+    }
+    if (m_world == 0) {
+        return 0;
+    }
+    void* out = 0;
+    ((CMonoWorld*)m_world)->m_10->m_10.Lookup("GAME_MONOLITH", &out);
+    CMonoConfigRec* rec = (CMonoConfigRec*)out;
+    if (rec == 0) {
+        return 0;
+    }
+    i32 savedIdx = rec->m_64;
+    CMonoEntry* e = rec->m_14[savedIdx];
+    if (e == 0) {
+        return 0;
+    }
+    i32 geoA = e->m_10;
+    i32 geoB = e->m_14;
+    CMonoSprite* found = ((CMonoWorld*)m_world)->m_24->FindSprite("MONOLITH");
+    if (found == 0) {
+        CMonoSprite* spr = ((CMonoWorld*)m_world)
+                               ->m_24->CreateSprite(0x20, 0x20, geoA, geoB, -0x19, -0x19, "MONOLITH");
+        if (spr == 0) {
+            return 0;
+        }
+        spr->m_9c.SetAtGrow(0, rec);
+        spr->m_8 |= 0xc;
+        spr->m_80 = 0xf4241;
+        i32 parity = 1;
+        for (i32 i = 0; i < spr->m_2c; i++) {
+            for (i32 j = 0; j < spr->m_28; j++) {
+                i32 val = parity ? savedIdx : -1;
+                parity ^= 1;
+                spr->m_20[spr->m_24[i] + j] = val;
+            }
+            parity ^= 1;
+        }
+        g_6455e8 = 1;
+        return 1;
+    }
+    if (found->m_8 & 2) {
+        found->m_8 &= ~2;
+        g_6455e8 = 1;
+    } else {
+        found->m_8 |= 2;
+        g_6455e8 = 0;
+    }
+    return 1;
+}
+
+// -------------------------------------------------------------------------
 // CGruntzMgr::SetGruntColor (0x0910d0; ret 0xc). Recolors one cell of a target
 // row (sink): resolves `key`'s color row in the world's +0x10 lookup table, gates
 // on that row's current cell (row->m_14[row->m_64] != 0), then - when `col` is in
