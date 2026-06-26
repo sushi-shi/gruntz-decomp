@@ -98,8 +98,6 @@ RVA(0x00039fa0, 0x188)
 void Boundary_039fa0() {} // proximity: CCreditsState@-0x2a0 | CDDrawSurfacePair@+0x230
 RVA(0x0003a530, 0x15)
 void Boundary_03a530() {} // proximity: CDDrawSurfacePair@-0x360 | WwdFile@+0xf40
-RVA(0x0003a710, 0x18d)
-void Boundary_03a710() {} // proximity: CDDrawSurfacePair@-0x540 | WwdFile@+0xd60
 RVA(0x0003acb0, 0xa)
 void Boundary_03acb0() {} // proximity: CDDrawSurfacePair@-0xae0 | WwdFile@+0x7c0
 RVA(0x0003ad30, 0xa)
@@ -112,8 +110,6 @@ RVA(0x0003bb50, 0x128)
 void Boundary_03bb50() {} // proximity: WwdFile@-0x6e0 | CGruntCreationPoint@+0x3170
 RVA(0x000464e0, 0x74)
 void Boundary_0464e0() {} // proximity: CFortressFlag@-0xd0 | CParticlez@+0x5f0
-RVA(0x000474b0, 0x18d)
-void Boundary_0474b0() {} // proximity: CParticlez@-0x780 | CGrunt@+0x560
 RVA(0x00050a50, 0x1c5)
 void Boundary_050a50() {} // proximity: CUserLogic@-0x2d00 | CGrunt@+0x760
 RVA(0x00050ca0, 0x2b)
@@ -188,8 +184,6 @@ RVA(0x0009cab0, 0x23)
 void Boundary_09cab0() {} // proximity: CTimer@-0x7d0 | CLightFx@+0xa70
 RVA(0x000adde0, 0x15)
 void Boundary_0adde0() {} // proximity: CMenuSparkle@-0x200 | CSingleAnimation@+0xa10
-RVA(0x000adfc0, 0x18d)
-void Boundary_0adfc0() {} // proximity: CMenuSparkle@-0x3e0 | CSingleAnimation@+0x830
 RVA(0x000ae1c0, 0xae)
 void Boundary_0ae1c0() {} // proximity: CMenuSparkle@-0x5e0 | CSingleAnimation@+0x630
 RVA(0x000b15b0, 0x15)

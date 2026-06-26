@@ -1390,3 +1390,8 @@ flags = "base"
 unit = "logicactregistrars"
 source = "src/Gruntz/LogicActRegistrars.cpp"
 flags = "base"
+
+[[unit]]
+unit = "logicactreg"
+source = "src/Gruntz/LogicActReg.cpp"
+flags = "base"
