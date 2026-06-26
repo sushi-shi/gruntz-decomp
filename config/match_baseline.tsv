@@ -25,7 +25,7 @@ battlezdata	30	27
 battlezmapconfig	1	0
 blowfish	4	3
 brickz	15	3
-butemgr	41	27
+butemgr	42	27
 butestoreclear	1	1
 cambientsound	4	3
 canicycle	2	1
@@ -127,7 +127,7 @@ directinputmgr2	33	29
 directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	15	0
-engine_boundary	450	0
+engine_boundary	448	0
 engine_discovered	51	0
 engine_label_stubs	437	105
 engine_unmatched	273	0
@@ -189,7 +189,7 @@ menuitem	13	11
 menupage	31	16
 mgrtokenquery	1	1
 motionstate	6	5
-netmgr	82	45
+netmgr	83	46
 netmgrerror	1	1
 netsession	2	1
 projectile	9	3
@@ -350,6 +350,7 @@ brickz	?Serialize@CBrickz@@QAEHHHHH@Z	37.9032	37.9032	1	18774618cdf4	0x9356c
 brickz	?Unlink@CBrickz@@QAEXPAUBrickzNode@@@Z	74.9487	74.9487	2	ead4b3e1d312	0x9f690
 brickz	?UpdateDiagonals@CBrickz@@QAEHH@Z	53.5683	53.5683	1	e2065e000df7	0x82030
 butemgr	??1CButeMgr@@QAE@XZ	68.6322	68.6322	1	febe7cdf6ea9	0x213c0
+butemgr	??1CButeValue@@QAE@XZ	68.6364	68.6364	1	44a2235fbbca	0x172160
 butemgr	?CharClass@CButeMgr@@QAEFD@Z	100.0000	100.0000	2	6b8d1de98cce	0x1703e0
 butemgr	?ClearHelper@CButeMgr@@QAEXXZ	100.0000	100.0000	3	78033bc3e61d	0x171a40
 butemgr	?Construct@CButeMgrHelper@@QAEPAV1@XZ	100.0000	100.0000	2	b7face8539a4	0x169c00
@@ -1533,7 +1534,6 @@ engine_boundary	?Boundary_16e730@@YAXXZ	3.5714	3.5714	2	d379398b6dd7	0x16e730
 engine_boundary	?Boundary_16e9c0@@YAXXZ	1.6667	1.6667	2	49adb7df391d	0x16e9c0
 engine_boundary	?Boundary_16f4a0@@YAXXZ	0.2439	0.2439	2	7dd427b0a8c6	0x16f4a0
 engine_boundary	?Boundary_170210@@YAXXZ	1.3158	1.3158	2	708bbd01529e	0x170210
-engine_boundary	?Boundary_172160@@YAXXZ	3.0303	3.0303	2	4d2f58491ca1	0x172160
 engine_boundary	?Boundary_174e90@@YAXXZ	5.0000	5.0000	2	aa367b40d115	0x174e90
 engine_boundary	?Boundary_174eb0@@YAXXZ	9.0909	9.0909	2	4506dfa676c9	0x174eb0
 engine_boundary	?Boundary_174ed0@@YAXXZ	1.1765	1.1765	2	32762a10d07f	0x174ed0
@@ -1556,7 +1556,6 @@ engine_boundary	?Boundary_179270@@YAXXZ	0.6250	0.6250	2	4152e88c75cb	0x179270
 engine_boundary	?Boundary_1793b0@@YAXXZ	5.5556	5.5556	2	8b76c7c93391	0x1793b0
 engine_boundary	?Boundary_179420@@YAXXZ	2.3810	2.3810	2	0f850b4a02c3	0x179420
 engine_boundary	?Boundary_1795a0@@YAXXZ	0.4211	0.4211	2	08b7c6217835	0x1795a0
-engine_boundary	?Boundary_1796c0@@YAXXZ	1.9048	1.9048	2	1811429115c9	0x1796c0
 engine_boundary	?Boundary_17b510@@YAXXZ	3.5714	3.5714	2	60ac7308995c	0x17b510
 engine_boundary	?Boundary_17b570@@YAXXZ	8.3333	8.3333	2	a6f12400617a	0x17b570
 engine_boundary	?Boundary_17b5a0@@YAXXZ	4.5455	4.5455	2	1626bf6fc1be	0x17b5a0
@@ -2580,7 +2579,7 @@ grunt	?BeginAttack@CGrunt@@QAEHHH@Z	53.7917	53.7917	1	3d02da5c24cc	0x5b570
 grunt	?BuildEntranceAnimation@CGrunt@@QAEXH@Z	71.4562	71.4562	6	31017869150f	0x67bd0
 grunt	?BuildGruntLoseItemAnimation@CGrunt@@QAEHXZ	99.9032	99.9032	1	38742e98c150	0x57890
 grunt	?CGrunt_IsSameType@@YA_NPAVCGrunt@@0@Z	100.0000	100.0000	1	04ada45b6431	0x3c7f0
-grunt	?CGrunt_SegBoxOverlap@@YGHPAUGruntBox@@PAUGruntSegEnd@@1@Z	77.7970	77.7970	1	bb4ee352e2c0	0x62b70
+grunt	?CGrunt_SegBoxOverlap@@YGHPAUGruntBox@@PAUGruntSegEnd@@1@Z	78.7723	78.7723	1	bb4ee352e2c0	0x62b70
 grunt	?CGrunt_TileSwitch@@YGXHHHHHH@Z	66.2000	66.2000	2	e4d83b1d7834	0x4b320
 grunt	?CanShowStamina@CGrunt@@QAEHXZ	100.0000	100.0000	3	e5851737e25e	0x514a0
 grunt	?ClaimSwitchTile@CGrunt@@QAEHXZ	61.5954	61.5954	1	564a86c19254	0x52c70
@@ -2643,7 +2642,7 @@ grunt	?StepAnimDispatchB@CGrunt@@QAEHXZ	40.7674	40.7674	2	4dbf079670fa	0x6a6d0
 grunt	?StepArrivalCommit@CGrunt@@QAEHXZ	1.8288	1.8288	1	d12f1cd235e5	0x692f0
 grunt	?StepArrivalDrop@CGrunt@@QAEXHHHHHH@Z	7.7088	7.7088	1	731eeff2b7e9	0x4b370
 grunt	?StepCombatReaction@CGrunt@@QAEHHHHHHHHH@Z	71.1751	71.1751	1	335c5dd9ea53	0x646b0
-grunt	?StepCompassMove@CGrunt@@QAEHXZ	33.5138	33.5138	1	98ae4e0ea1aa	0x51c00
+grunt	?StepCompassMove@CGrunt@@QAEHXZ	32.9943	32.9943	1	98ae4e0ea1aa	0x51c00
 grunt	?StepCoordResolve@CGrunt@@QAEXXZ	9.3598	9.3598	1	7e18466adeed	0x5f310
 grunt	?StepEntranceReinit@CGrunt@@QAEHXZ	74.9359	74.9359	1	8109213253cf	0x637a0
 grunt	?StepGruntMovement@CGrunt@@QAEHXZ	5.1672	5.1672	1	ed2029033118	0x4c170
@@ -3067,6 +3066,7 @@ netmgr	?GetPlayerData@CNetMgr@@QAEPAXH@Z	100.0000	100.0000	5	7e1f45c4e8b3	0x178e
 netmgr	?HandleControlMsg@CNetMgr@@QAEHPAUCNetCtrlMsg@@H@Z	0.0000	0.0000	1	9761b53b87ce	0xba1a0
 netmgr	?HandleVersionCheck@CNetMgr@@QAEXPAUCNetVersionMsg@@@Z	100.0000	100.0000	5	64e5a91d51b5	0xbd0b0
 netmgr	?Init@CNetMgr@@QAEHPAXHHHH@Z	79.9296	79.9296	1	f88923563b7a	0x178170
+netmgr	?InitSession@CNetSessionNode@@QAEHHPBD0H@Z	100.0000	100.0000	1	8aa8beb398fd	0x1796c0
 netmgr	?LoadConfig@CNetMgr@@QAEHPAX@Z	100.0000	100.0000	1	66e2eaddb4d0	0xbce80
 netmgr	?OnDropPlayer@CNetMgr@@QAEXXZ	100.0000	100.0000	5	dacf37ef2d41	0xbc110
 netmgr	?OnMultiOptions@CNetMgr@@QAEXXZ	100.0000	100.0000	4	e869ce4641a0	0xbadd0

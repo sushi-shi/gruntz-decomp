@@ -365,6 +365,43 @@ CButeValue* CButeValue::CopyValue(CButeValue* other) {
 }
 
 // ---------------------------------------------------------------------------
+// CButeValue::~CButeValue (@0x172160)
+// Free the owned pValue storage. A dense ButeType jump table picks the teardown:
+// the string case (4) destructs the CString first (null-guarded ~CString + free),
+// every other type-group is a plain `operator delete(pValue)` (no guard). The four
+// distinct case bodies map to the four jump-table arms (string / {2,6} / {0,3,7} /
+// {1,5,8}). __thiscall, no args.
+// @early-stop
+// ~65-80% per-arm regalloc wall, the twin of CButeValue::CopyValue (0x172040): the
+// jump table, the four arms, the string null-guarded ~CString teardown and the
+// plain-delete bodies are all byte-faithful, but retail schedules each identical
+// `operator delete` arm into a different scratch register (eax / ecx / edx), which
+// is not source-steerable from the switch body. Logic 100% correct; deferred to the
+// final sweep (documented switch/regalloc wall).
+RVA(0x00172160, 0x52)
+CButeValue::~CButeValue() {
+    switch (type) {
+        case kButeString:
+            delete (CString*)pValue;
+            break;
+        case kButeDouble:
+        case kButeRef6:
+            delete (double*)pValue;
+            break;
+        case kButeInt:
+        case kButeFloat:
+        case kButeRef7:
+            delete (i32*)pValue;
+            break;
+        case kButeDword:
+        case kButeRef5:
+        case kButeRef8:
+            delete (u32*)pValue;
+            break;
+    }
+}
+
+// ---------------------------------------------------------------------------
 // CButeMgr::GetDwordDef
 // type-1 (dword) getter with default. The type check is `if (--type == 0)` i.e.
 // type == 1 (the disasm `mov ecx,[eax]; dec ecx; je`).

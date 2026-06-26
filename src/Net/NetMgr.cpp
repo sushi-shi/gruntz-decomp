@@ -2061,3 +2061,21 @@ i32 CNetMgr::EnumSessions(void* desc, void* ctx) {
     }
     return 1;
 }
+
+// ---------------------------------------------------------------------------
+// CNetSessionNode::InitSession (0x1796c0, __thiscall) - the 4-arg body the
+// session-node ctor (AddSessionNode) runs on the fresh 0x24-byte node: store the
+// dword id (+0x4) and the second dword (+0x10), assign the two name CStrings
+// (+0x8/+0xc), zero the +0x14/+0x18/+0x1c scratch, return TRUE.
+// ---------------------------------------------------------------------------
+RVA(0x001796c0, 0x3f)
+i32 CNetSessionNode::InitSession(i32 id, const char* a, const char* b, i32 d) {
+    m_4 = id;
+    m_8 = a;
+    m_c = b;
+    m_10 = d;
+    m_18 = 0;
+    m_1c = 0;
+    m_14 = 0;
+    return 1;
+}

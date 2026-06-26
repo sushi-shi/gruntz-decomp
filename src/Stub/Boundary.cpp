@@ -751,8 +751,6 @@ RVA(0x0016f4a0, 0x1da)
 void Boundary_16f4a0() {} // proximity: CMotionState@-0x7d0 | CButeMgr@+0xe90
 RVA(0x00170210, 0x118)
 void Boundary_170210() {} // proximity: CMotionState@-0x1540 | CButeMgr@+0x120
-RVA(0x00172160, 0x52)
-void Boundary_172160() {} // proximity: CButeValue@-0x160 | CButeMgr@+0x80
 RVA(0x00174e90, 0x1c)
 void Boundary_174e90() {} // proximity: CButeMgr@-0x6d0 | CImage@+0x930
 RVA(0x00174eb0, 0x1b)
@@ -797,8 +795,6 @@ RVA(0x00179420, 0x8a)
 void Boundary_179420() {} // proximity: CNetMgr@-0x2f0 | InterfaceObject@+0x90
 RVA(0x001795a0, 0xdb)
 void Boundary_1795a0() {} // proximity: InterfaceObject@-0x30 | CWapNodeB@+0xe0
-RVA(0x001796c0, 0x3f)
-void Boundary_1796c0() {} // proximity: CWapNodeB@-0x40 | Font@+0x40
 RVA(0x0017b510, 0x55)
 void Boundary_17b510() {} // proximity: TextRange@-0x10 | CDDPageMgr@+0xb30
 RVA(0x0017b570, 0x24)

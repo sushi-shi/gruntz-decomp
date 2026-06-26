@@ -395,14 +395,15 @@ public:
     i32 m_4;     // +0x04
     CString m_8; // +0x08  name CString
     CString m_c; // +0x0c  second CString
-    char m_pad10[0x14 - 0x10];
-    i32 m_14; // +0x14
-    i32 m_18; // +0x18
-    char m_pad1c[0x20 - 0x1c];
-    i32 m_20; // +0x20
+    i32 m_10;    // +0x10
+    i32 m_14;    // +0x14
+    i32 m_18;    // +0x18
+    i32 m_1c;    // +0x1c
+    i32 m_20;    // +0x20
 
-    // The 4-arg init the session-node ctor runs (0x1796c0): stores the dword id
-    // and assigns the two CStrings, zeroing +0x14/+0x18/+0x1c. External thunk.
+    // The 4-arg init the session-node ctor runs (0x1796c0): store the dword id
+    // (+0x4) and the second dword (+0x10), assign the two CStrings (+0x8/+0xc), and
+    // zero +0x14/+0x18/+0x1c. Returns TRUE.
     i32 InitSession(i32 id, const char* a, const char* b, i32 d); // 0x1796c0
 
     // The session name fetched by value (NRV into the caller's slot); thiscall

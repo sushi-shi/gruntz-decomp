@@ -71,6 +71,11 @@ struct CButeValue {
     i32 type;     // +0x00  ButeType discriminant (kept i32-width for the ABI)
     void* pValue; // +0x04
 
+    // Destructor: free the owned pValue storage, sized/typed by the type-tag via a
+    // dense ButeType jump table (string frees the CString first; all others are a
+    // plain operator delete).
+    ~CButeValue();
+
     // Value constructors: allocate storage, store the value, return `this`.
     CButeValue* SetInt(i32 type, i32 val);
     CButeValue* SetDword(i32 type, u32 val);
