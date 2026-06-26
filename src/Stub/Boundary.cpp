@@ -260,8 +260,6 @@ RVA(0x000e17b0, 0x15)
 void Boundary_0e17b0() {} // proximity: CProjectile@-0xca0 | CTimeBomb@+0x80
 RVA(0x000e56b0, 0x8)
 void Boundary_0e56b0() {} // proximity: CSaveGame@-0x20 | CFileIO@+0x50
-RVA(0x000e7cd0, 0xf8)
-void Boundary_0e7cd0() {} // proximity: CAniPlayer@-0x1d0 | CSBI_MenuItem@+0x410
 RVA(0x000ea170, 0x5c)
 void Boundary_0ea170() {} // proximity: CSbItem@-0x80 | CSBI_StatzTabGruntBar@+0x300
 RVA(0x000ea990, 0xa72)
@@ -601,8 +599,6 @@ RVA(0x001847e0, 0xa6)
 void Boundary_1847e0() {} // proximity: CMenuItem@-0xb0 | CHashBase@+0x260
 RVA(0x00184b70, 0xa)
 void Boundary_184b70() {} // proximity: CHashBase@-0x30 | CMenuItem@+0x8f0
-RVA(0x00184c10, 0x136)
-void Boundary_184c10() {} // proximity: CHashBase@-0xd0 | CMenuItem@+0x850
 RVA(0x00184fb0, 0x15)
 void Boundary_184fb0() {} // proximity: CHashBase@-0x470 | CMenuItem@+0x4b0
 RVA(0x001853b0, 0xa6)

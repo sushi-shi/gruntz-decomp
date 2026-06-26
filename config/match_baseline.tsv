@@ -100,7 +100,7 @@ configstore	4	0
 cparticlez	5	4
 cpathhazard	7	3
 cplay	65	29
-crangeset	2	2
+crangeset	3	2
 cremusentrylist	2	1
 cremusnode	4	2
 cremusreadstream	6	4
@@ -130,7 +130,7 @@ directinputmgr2	35	31
 directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	15	0
-engine_boundary	300	0
+engine_boundary	298	0
 engine_discovered	51	0
 engine_label_stubs	437	105
 engine_unmatched	264	0
@@ -224,7 +224,7 @@ sbi_sidetab_eh	1	0
 sbi_statztabarrow_eh	1	0
 sbi_statztabgruntbar	3	2
 sbi_statztabgruntbar_eh	1	0
-sbi_warlordhead	4	1
+sbi_warlordhead	5	2
 sbi_warlordhead_eh	1	0
 sbi_wellgoo	1	0
 sbi_wellgoo_eh	1	0
@@ -967,6 +967,7 @@ cplay	?Update@CPlay@@UAEHXZ	100.0000	100.0000	4	1c6efda4cb9e	0x8c910
 cplay	?winapi_0cdb10_PostMessageA@CPlay@@QAEHHHH@Z	0.2946	0.2946	2	db8d57057a6f	0xcdb10
 cplay	?winapi_0ceae0_PostMessageA@CPlay@@QAEHHHH@Z	0.9500	0.9500	2	fb82d3f55040	0xceae0
 cplay	?winapi_0d0b30_CopyRect@CPlay@@QAEHH@Z	1.2270	1.2270	2	edf43ed7aef3	0xd0b30
+crangeset	?AddFromString@CRangeSet@@QAEXPAD@Z	92.1466	92.1466	1	11e3952a28d0	0x184c10
 crangeset	?AddRange@CRangeSet@@QAEXII@Z	100.0000	100.0000	1	ed00b3a920e2	0x184be0
 crangeset	?Contains@CRangeSet@@QAE_NI@Z	100.0000	100.0000	1	958ae75d3e77	0x184ba0
 cremusentrylist	??1CRemusEntryList@@QAE@XZ	94.2857	94.2857	1	91c148d29979	0x152e30
@@ -1306,7 +1307,6 @@ engine_boundary	?Boundary_0db750@@YAXXZ	1.1111	1.1111	2	f141ea19058a	0xdb750
 engine_boundary	?Boundary_0e0d40@@YAXXZ	0.0670	0.0670	2	896f840c3230	0xe0d40
 engine_boundary	?Boundary_0e17b0@@YAXXZ	20.0000	20.0000	2	b820227d73c6	0xe17b0
 engine_boundary	?Boundary_0e56b0@@YAXXZ	50.0000	50.0000	2	6cdec715c748	0xe56b0
-engine_boundary	?Boundary_0e7cd0@@YAXXZ	0.3509	0.3509	2	9ad6fafadc1f	0xe7cd0
 engine_boundary	?Boundary_0ea170@@YAXXZ	1.0000	1.0000	2	fe8eb0cdc74c	0xea170
 engine_boundary	?Boundary_0ea990@@YAXXZ	0.0417	0.0417	2	27a0dd8e5e6f	0xea990
 engine_boundary	?Boundary_0eb970@@YAXXZ	0.7407	0.7407	2	6eefd7e544b2	0xeb970
@@ -1476,7 +1476,6 @@ engine_boundary	?Boundary_182610@@YAXXZ	0.1695	0.1695	2	e02013f10329	0x182610
 engine_boundary	?Boundary_1847a0@@YAXXZ	13.3333	13.3333	2	b34aa8f4131f	0x1847a0
 engine_boundary	?Boundary_1847e0@@YAXXZ	2.5641	2.5641	2	09ae51b89cc5	0x1847e0
 engine_boundary	?Boundary_184b70@@YAXXZ	20.0000	20.0000	2	d791dc5e7e33	0x184b70
-engine_boundary	?Boundary_184c10@@YAXXZ	0.3448	0.3448	2	fa0c694583ed	0x184c10
 engine_boundary	?Boundary_184fb0@@YAXXZ	12.5000	12.5000	2	27f7c3170737	0x184fb0
 engine_boundary	?Boundary_1853b0@@YAXXZ	1.8519	1.8519	2	a07ef3f19c6f	0x1853b0
 engine_discovered	?CButeStore_174d70@CButeStore@@QAEXXZ	3.2258	3.2258	1	cc31d37bf9e8	0x174d70
@@ -3201,7 +3200,8 @@ sbi_statztabgruntbar	?Poll@CSBI_StatzTabGruntBar@@QAEHH@Z	100.0000	100.0000	1	6f
 sbi_statztabgruntbar	?Reset@CSBI_StatzTabGruntBar@@QAEXXZ	100.0000	100.0000	1	776b5b18c203	0xea470
 sbi_statztabgruntbar	?Update@CSBI_StatzTabGruntBar@@QAEHXZ	91.6923	91.6923	1	065f88460c02	0xea6c0
 sbi_statztabgruntbar_eh	??1CSBI_StatzTabGruntBar@@QAE@XZ	34.2381	34.2381	1	535b4502aced	0x104b00
-sbi_warlordhead	?Render@CSBI_WarlordHead@@QAEHH@Z	87.3919	87.3919	1	9b308dc210c6	0xeb880
+sbi_warlordhead	?Render@CSBI_WarlordHead@@QAEHH@Z	86.9054	86.9054	1	9b308dc210c6	0xeb880
+sbi_warlordhead	?Serialize@CSBI_WarlordHead@@QAEHPAUCImageSetStream@@HHH@Z	100.0000	100.0000	1	b6cb91fa6424	0xe7cd0
 sbi_warlordhead	?SetState@CSBI_WarlordHead@@QAEHH@Z	100.0000	100.0000	1	034d997853c4	0xeb830
 sbi_warlordhead	?SetupImage@CSBI_WarlordHead@@QAEHHHHHHHHHHHH@Z	46.2105	46.2105	1	16d818a3069c	0xeb6b0
 sbi_warlordhead	?ShowFrames@CSBI_WarlordHead@@QAEHHH@Z	92.2716	92.2716	1	73cec54353b2	0xeb740
