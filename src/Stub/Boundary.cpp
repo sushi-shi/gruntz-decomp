@@ -859,22 +859,8 @@ RVA(0x00184c10, 0x136)
 void Boundary_184c10() {} // proximity: CHashBase@-0xd0 | CMenuItem@+0x850
 RVA(0x00184fb0, 0x15)
 void Boundary_184fb0() {} // proximity: CHashBase@-0x470 | CMenuItem@+0x4b0
-RVA(0x001851e0, 0x2a)
-void Boundary_1851e0() {} // proximity: CHashBase@-0x6a0 | CMenuItem@+0x280
-RVA(0x00185210, 0x2a)
-void Boundary_185210() {} // proximity: CHashBase@-0x6d0 | CMenuItem@+0x250
 RVA(0x001853b0, 0xa6)
 void Boundary_1853b0() {} // proximity: CHashBase@-0x870 | CMenuItem@+0xb0
-RVA(0x00185750, 0x123)
-void Boundary_185750() {} // proximity: CMenuItem@-0x50 | CWwdGrid@+0xbe70
-RVA(0x001858d0, 0x72)
-void Boundary_1858d0() {} // proximity: CMenuItem@-0x1d0 | CWwdGrid@+0xbcf0
-RVA(0x00185950, 0x1b)
-void Boundary_185950() {} // proximity: CMenuItem@-0x250 | CWwdGrid@+0xbc70
-RVA(0x00185970, 0x4d)
-void Boundary_185970() {} // proximity: CMenuItem@-0x270 | CWwdGrid@+0xbc50
-RVA(0x001859c0, 0x4e)
-void Boundary_1859c0() {} // proximity: CMenuItem@-0x2c0 | CWwdGrid@+0xbc00
 RVA(0x00191d20, 0xc9)
 void Boundary_191d20() {} // proximity: CWwdGridIter@-0xf0 | ostream@+0x340
 RVA(0x00191df0, 0x137)

@@ -1326,3 +1326,13 @@ flags = "eh"
 unit = "rezfile"
 source = "src/Rez/RezFile.cpp"
 flags = "base"
+
+[[unit]]
+unit = "menuitem2"
+source = "src/Gruntz/MenuItem2.cpp"
+flags = "base"
+
+[[unit]]
+unit = "rezlist"
+source = "src/Rez/RezList.cpp"
+flags = "base"

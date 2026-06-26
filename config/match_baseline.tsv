@@ -127,7 +127,7 @@ directinputmgr2	33	29
 directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	15	0
-engine_boundary	448	0
+engine_boundary	441	0
 engine_discovered	51	0
 engine_label_stubs	437	105
 engine_unmatched	273	0
@@ -186,6 +186,7 @@ mainmenubuilder	1	0
 maplogic	5	4
 mapmgr	9	7
 menuitem	13	11
+menuitem2	5	2
 menupage	31	16
 mgrtokenquery	1	1
 motionstate	6	5
@@ -197,6 +198,7 @@ pyramidbridgesprites	1	0
 randomambientsound	9	4
 registryhelper	8	8
 rezfile	6	6
+rezlist	2	2
 rezmgr	15	10
 rollingball	5	3
 savegame	20	14
@@ -1588,14 +1590,7 @@ engine_boundary	?Boundary_184ba0@@YAXXZ	1.6667	1.6667	2	fa049b192711	0x184ba0
 engine_boundary	?Boundary_184be0@@YAXXZ	3.0769	3.0769	2	bc75fdce0532	0x184be0
 engine_boundary	?Boundary_184c10@@YAXXZ	0.3448	0.3448	2	fa0c694583ed	0x184c10
 engine_boundary	?Boundary_184fb0@@YAXXZ	12.5000	12.5000	2	27f7c3170737	0x184fb0
-engine_boundary	?Boundary_1851e0@@YAXXZ	3.0769	3.0769	2	ab620cbe164f	0x1851e0
-engine_boundary	?Boundary_185210@@YAXXZ	3.0769	3.0769	2	94d4fb56f170	0x185210
 engine_boundary	?Boundary_1853b0@@YAXXZ	1.8519	1.8519	2	a07ef3f19c6f	0x1853b0
-engine_boundary	?Boundary_185750@@YAXXZ	0.4211	0.4211	2	78d0a3b9126b	0x185750
-engine_boundary	?Boundary_1858d0@@YAXXZ	0.8163	0.8163	2	1eeefb2f68f5	0x1858d0
-engine_boundary	?Boundary_185950@@YAXXZ	6.6667	6.6667	2	3d0ba1d06e9c	0x185950
-engine_boundary	?Boundary_185970@@YAXXZ	2.7027	2.7027	2	7e89ca1a799b	0x185970
-engine_boundary	?Boundary_1859c0@@YAXXZ	3.0303	3.0303	2	49fd012dc9ea	0x1859c0
 engine_boundary	?Boundary_191d20@@YAXXZ	0.6250	0.6250	2	e5d8f83c9e3c	0x191d20
 engine_boundary	?Boundary_191df0@@YAXXZ	0.3846	0.3846	2	8a83d5dd6dc8	0x191df0
 engine_boundary	?Boundary_191f30@@YAXXZ	0.6897	0.6897	2	b28193245730	0x191f30
@@ -2998,6 +2993,11 @@ menuitem	?Notify@CMenuItem@@QAEHXZ	100.0000	100.0000	1	02ff30273f0b	0x185580
 menuitem	?Place@CMenuItem@@QAEHHHH@Z	99.1364	99.1364	1	c3085a22d234	0x1855f0
 menuitem	?Reset@CMenuItem@@QAEXXZ	100.0000	100.0000	1	fc603e28c52a	0x184730
 menuitem	?Trigger@CMenuItem@@QAEHXZ	100.0000	100.0000	1	d0ee200e0292	0x1856d0
+menuitem2	?Draw@CMenuItem2@@QAEHHHH@Z	98.8367	98.8367	1	f4084e5a89f0	0x1858d0
+menuitem2	?GetCurrentFrame@CMenuItem2@@QAEPAUCMenuFrame@@XZ	60.6757	60.6757	1	bf5ed4e4b532	0x185970
+menuitem2	?GetCurrentSprite@CMenuItem2@@QAEPAUCMenuSprite@@XZ	100.0000	100.0000	1	fb704aea53ca	0x185950
+menuitem2	?Init@CMenuItem2@@QAEHHHHHHH@Z	91.6211	91.6211	1	26fbaff3d87f	0x185750
+menuitem2	?NextFrame@CMenuItem2@@QAEHXZ	100.0000	100.0000	1	ab04a760196f	0x1859c0
 menupage	??1CMenuPage@@QAE@XZ	100.0000	100.0000	1	677d46434f16	0x183250
 menupage	?Activate@CMenuPage@@QAEHXZ	100.0000	100.0000	1	9f249bbb20a4	0x183dd0
 menupage	?AddItem2@CMenuPage@@QAEPAVCMenuItem2@@HHHHH@Z	31.1339	31.1339	1	168c7648ab07	0x1836f0
@@ -3155,6 +3155,8 @@ rezfile	?Flush@CRezFile@@QAEHXZ	100.0000	100.0000	1	13a111d74bba	0x13cd60
 rezfile	?Open@CRezFile@@QAEHXZ	100.0000	100.0000	1	1a42a810a19e	0x13cdc0
 rezfile	?Read@CRezFile@@QAEHHHIPAX@Z	100.0000	100.0000	2	17011088c6b1	0x13cc00
 rezfile	?Write@CRezFile@@QAEHHHIPAX@Z	100.0000	100.0000	2	efc087248e0f	0x13cca0
+rezlist	?AddHead@CRezList@@QAEXPAUCRezListNode@@@Z	100.0000	100.0000	1	446e7c7af5ab	0x1851e0
+rezlist	?AddTail@CRezList@@QAEXPAUCRezListNode@@@Z	100.0000	100.0000	1	99b9e92b8621	0x185210
 rezmgr	??0CRezDir@@QAE@PAX0@Z	78.9091	78.9091	5	6e79226f1d72	0x13c940
 rezmgr	??0CRezItm@@QAE@PAX@Z	100.0000	100.0000	4	f168abdbb8b4	0x13c540
 rezmgr	??0CRezItmBase@@QAE@PAX@Z	100.0000	100.0000	4	cb122a3428e6	0x13c4e0
