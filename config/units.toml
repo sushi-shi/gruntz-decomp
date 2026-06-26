@@ -1248,6 +1248,11 @@ source = "src/Gruntz/OrphanMethods.cpp"
 flags = "base"
 
 [[unit]]
+unit = "cstateleaf8cf30"
+source = "src/Gruntz/CStateLeaf8cf30.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "gamesave"
 source = "src/Io/GameSave.cpp"
 flags = "base"
