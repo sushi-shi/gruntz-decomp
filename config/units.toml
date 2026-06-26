@@ -1404,3 +1404,32 @@ flags = "base"
 unit = "cmgrsettings"
 source = "src/Gruntz/CMgrSettings.cpp"
 flags = "base"
+
+[[unit]]
+unit = "wwdgameobjecteh"
+source = "src/Gruntz/WwdGameObjectEh.cpp"
+flags = "eh"
+[[unit]]
+unit = "colorhsv"
+source = "src/Gruntz/ColorHsv.cpp"
+flags = "base"
+[[unit]]
+unit = "arrayserialize"
+source = "src/Gruntz/ArraySerialize.cpp"
+flags = "base"
+[[unit]]
+unit = "faderradial"
+source = "src/Gruntz/FaderRadial.cpp"
+flags = "base"
+[[unit]]
+unit = "imagerotate"
+source = "src/Gruntz/ImageRotate.cpp"
+flags = "base"
+[[unit]]
+unit = "palettebmp"
+source = "src/Gruntz/PaletteBmp.cpp"
+flags = "eh"
+[[unit]]
+unit = "imagesavebmp"
+source = "src/Gruntz/ImageSaveBmp.cpp"
+flags = "eh"

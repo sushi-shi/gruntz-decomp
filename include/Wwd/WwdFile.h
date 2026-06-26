@@ -363,6 +363,9 @@ class WwdFile {
 public:
     static i32 ValidateMainBlock(CString name);
     i32 ReadPlaneObjects(const i32* src);
+    // 0x1628f0: free the old +0xb0 plane-render worker, allocate+init a fresh one
+    // from the level header geometry, then ReadPlaneObjects `count` times.
+    i32 RebuildPlanes(i32 base, i32 count);
 };
 
 #endif // SRC_WWD_WWDFILE_H

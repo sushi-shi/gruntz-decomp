@@ -467,6 +467,103 @@ extern void* g_wwdObjVtbl[]; // 0x5f00a8
 DATA(0x001f0128)
 extern void* g_wwdSubVtbl[]; // 0x5f0128
 
+// ---------------------------------------------------------------------------
+// RebuildPlanes (0x1628f0): tear down the old +0xb0 plane-render worker, then
+// allocate a fresh 0xb8-byte one, init it from the level header's 6 geometry
+// pairs (CGameReg->m_24->[+0xb0..+0xdc]), and run ReadPlaneObjects `count` times.
+// The throwing operator-new + partial-construct cleanup gives the /GX frame.
+// ---------------------------------------------------------------------------
+extern void* g_severusWorkerDtorVtbl; // 0x5e8cb4
+
+// The level header reached via this->m_c->m_24 (six geometry pairs at +0xb0).
+struct WwdPlaneHdr {
+    char pad[0xb0];
+    i32 geo[12]; // +0xb0..+0xdc
+};
+struct WwdRegOwner {
+    char pad0[0x8];
+    void* m_8; // +0x08  worker source
+    char pad9[0x24 - 0xc];
+    WwdPlaneHdr* m_24; // +0x24
+};
+
+// The 0xb8-byte plane-render worker (vtable 0x5f02a8; embedded CObList at +0x70).
+struct WwdPlaneRender {
+    void DtorBody(); // 0x1682f0  __thiscall
+    void ListDtor(); // 0x163a10  CObList at +0x70
+    // 0x168080: init from source + 6 coordinate-pair pointers.
+    i32 Init(void* src, i32* p0, i32* p1, i32* p2, i32* p3, i32* p4, i32* p5);
+};
+
+DATA(0x001f02a8)
+extern void* g_planeRenderVtbl; // 0x5f02a8
+
+#define WLOADER(t, off) (*(t*)((char*)this + (off)))
+
+// @early-stop
+// throwing-new EH-frame wall: the worker rebuild + the 6-pair init + the
+// ReadPlaneObjects loop are faithful, but the partial-construct exception
+// cleanup frame's trylevel/handler bytes are not source-steerable.
+RVA(0x001628f0, 0x1fc)
+i32 WwdFile::RebuildPlanes(i32 base, i32 count) {
+    if (base == 0)
+        return 0;
+
+    WwdPlaneRender*& worker = WLOADER(WwdPlaneRender*, 0xb0);
+    if (worker) {
+        worker->DtorBody();
+        worker->ListDtor();
+        ::operator delete(worker);
+        worker = 0;
+    }
+
+    WwdRegOwner* reg = WLOADER(WwdRegOwner*, 0xc);
+    void* src = reg->m_8;
+    if (src == 0)
+        return 0;
+    WwdPlaneHdr* hdr = reg->m_24;
+    if (hdr == 0)
+        return 0;
+
+    i32 p0[2] = {hdr->geo[0], hdr->geo[1]};
+    i32 p1[2] = {hdr->geo[2], hdr->geo[3]};
+    i32 p2[2] = {hdr->geo[4], hdr->geo[5]};
+    i32 p3[2] = {hdr->geo[6], hdr->geo[7]};
+    i32 p4[2] = {hdr->geo[8], hdr->geo[9]};
+    i32 p5[2] = {hdr->geo[10], hdr->geo[11]};
+
+    WwdPlaneRender* nw = (WwdPlaneRender*)::operator new(0xb8);
+    if (nw) {
+        *(void**)((char*)nw + 0x70) = &g_planeRenderVtbl;
+        *(i32*)((char*)nw + 0x74) = 0;
+        *(i32*)((char*)nw + 0x78) = 0;
+        *(i32*)((char*)nw + 0x00) = 0;
+        *(i32*)((char*)nw + 0x04) = 0;
+        *(i32*)((char*)nw + 0x08) = 0;
+        *(i32*)((char*)nw + 0x0c) = 0;
+        *(i32*)((char*)nw + 0xb4) = 0;
+    }
+    worker = nw;
+    if (nw->Init(src, p0, p1, p2, p3, p4, p5) == 0) {
+        WwdPlaneRender* w = WLOADER(WwdPlaneRender*, 0xb0);
+        if (w) {
+            w->DtorBody();
+            *(void**)((char*)w + 0x70) = &g_severusWorkerDtorVtbl;
+            ::operator delete(w);
+        }
+        worker = 0;
+        return 0;
+    }
+
+    for (i32 i = 0; i < count; i++) {
+        i32 r = ReadPlaneObjects((const i32*)base);
+        if (r == 0)
+            return 0;
+        base += r;
+    }
+    return 1;
+}
+
 RVA(0x00162af0, 0x806)
 i32 WwdFile::ReadPlaneObjects(const i32* src) {
     if (src == 0) {

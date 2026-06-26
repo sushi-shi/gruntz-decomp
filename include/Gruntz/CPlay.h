@@ -396,6 +396,13 @@ public:
     // FreeListTeardown (0x0cb480): release the per-level allocations back onto the
     // global free list (m_374[]/m_3ac[]/m_48c[] arrays + the per-type config rows).
     void FreeListTeardown(); // 0x0cb480
+    // CPlayDtorBody (0x0c8700): the ~CPlay teardown body - free the per-frame
+    // workers (m_320/m_2dc/m_2e0/m_2e4/m_3f4), clear the four g_mgrSettings config
+    // rows, flush the m_370/m_3a4[4]/m_488 free-list arrays, then run the base dtor.
+    void CPlayDtorBody(); // 0x0c8700
+    // AddLevelGruntz (0x0d5960): walk the registry object list and register each
+    // valid grunt object with the session; logs "Could not add Grunt" on failure.
+    i32 AddLevelGruntz(); // 0x0d5960
     // SetEffectSpriteDurations (0x0dc060): stamp the +0x18 duration on each named
     // effect-sound descriptor looked up in the sound registry's name map.
     i32 SetEffectSpriteDurations(); // 0x0dc060
