@@ -93,6 +93,7 @@ clightfxrender	22	8
 clobbyobjb	3	2
 cmenustate	3	2
 cmovinglogicdtor	1	1
+cmovinglogicserial	1	1
 cmulti	16	7
 cobjectdropper	1	1
 configstore	4	0
@@ -129,7 +130,7 @@ directinputmgr2	33	29
 directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	15	0
-engine_boundary	306	0
+engine_boundary	304	0
 engine_discovered	51	0
 engine_label_stubs	437	105
 engine_unmatched	264	0
@@ -207,7 +208,7 @@ rezfile	6	6
 rezlist	2	2
 rezmgr	15	10
 rollingball	5	3
-savegame	20	14
+savegame	21	15
 sbi_gruntmachine	3	2
 sbi_gruntmachine_eh	1	0
 sbi_image	1	0
@@ -867,6 +868,7 @@ cmenustate	?LoadGameOptionsToDialog@@YAXPAUHWND__@@@Z	100.0000	100.0000	1	68afdc
 cmenustate	?ReadMenuOptionsDialog@@YAXPAUHWND__@@@Z	99.9020	99.9020	1	720ff87696f7	0x36a30
 cmenustate	?ReadyGate@CMenuState@@QAEHXZ	100.0000	100.0000	1	6ea0d4b831d8	0xa0d40
 cmovinglogicdtor	??1CMovingLogic@@UAE@XZ	100.0000	100.0000	1	9d256360ef43	0x13bd0
+cmovinglogicserial	?WriteCurve@@YAAAVCButeText@@AAV1@ABUCMovingLogicCurve@@@Z	100.0000	100.0000	1	a35c198fc271	0x16cdd0
 cmulti	??1CMulti@@QAE@XZ	0.0000	0.0000	1	301ec69b5a15	0x8d270
 cmulti	?AckJoinFailure@CMulti@@QAEXXZ	100.0000	100.0000	1	bac115793e8c	0xbc420
 cmulti	?ClearString59c@CMulti@@QAEAAVCString@@AAV2@@Z	49.3529	49.3529	1	6f457816186b	0xb76c0
@@ -1274,7 +1276,6 @@ engine_boundary	?Boundary_09a420@@YAXXZ	7.6923	7.6923	2	3540619e1237	0x9a420
 engine_boundary	?Boundary_09b770@@YAXXZ	1.1905	1.1905	2	6e72f29dcc08	0x9b770
 engine_boundary	?Boundary_09c650@@YAXXZ	0.1246	0.1246	2	dafb0d39355f	0x9c650
 engine_boundary	?Boundary_09cab0@@YAXXZ	3.6364	3.6364	2	c4332ef7f2e7	0x9cab0
-engine_boundary	?Boundary_09e0b0@@YAXXZ	0.8264	0.8264	2	96eed7f22e83	0x9e0b0
 engine_boundary	?Boundary_0adde0@@YAXXZ	20.0000	20.0000	2	3b79d8aaa5b8	0xadde0
 engine_boundary	?Boundary_0ade60@@YAXXZ	0.5333	0.5333	2	bad87037fdcf	0xade60
 engine_boundary	?Boundary_0adfc0@@YAXXZ	0.8696	0.8696	2	a7fa063c4be3	0xadfc0
@@ -1448,7 +1449,6 @@ engine_boundary	?Boundary_167830@@YAXXZ	0.2299	0.2299	2	60290dd3b939	0x167830
 engine_boundary	?Boundary_167ea0@@YAXXZ	0.2985	0.2985	2	ff452ef63be0	0x167ea0
 engine_boundary	?Boundary_168c10@@YAXXZ	5.5556	5.5556	2	9b9658658449	0x168c10
 engine_boundary	?Boundary_16be60@@YAXXZ	2.6667	2.6667	2	78071ccbf190	0x16be60
-engine_boundary	?Boundary_16cdd0@@YAXXZ	0.5376	0.5376	2	fc4c822a638f	0x16cdd0
 engine_boundary	?Boundary_16d000@@YAXXZ	0.7874	0.7874	2	70866d4f51bb	0x16d000
 engine_boundary	?Boundary_16d790@@YAXXZ	0.7143	0.7143	2	5cd48def5c1b	0x16d790
 engine_boundary	?Boundary_16d850@@YAXXZ	0.4211	0.4211	2	fe2d077675d9	0x16d850
@@ -3083,6 +3083,7 @@ savegame	?ComputeAll@CSaveGame@@QAEXXZ	90.8800	90.8800	2	d62fcdc450f1	0xe50a0
 savegame	?CopySlot@CSaveGame@@QAEHPAUSaveSlot@@PBU2@@Z	100.0000	100.0000	2	bd61e3ee90f6	0xe51d0
 savegame	?Decode@CSaveGame@@QAEHPAE@Z	100.0000	100.0000	2	dcc605c87c7d	0xe5460
 savegame	?Encode@CSaveGame@@QAEHPAE@Z	89.2917	89.2917	2	b5d70bbdf923	0xe5410
+savegame	?FillGameInfoDialog@@YAXPAUHWND__@@PAVCSaveGame@@@Z	100.0000	100.0000	1	dd936f631a61	0x9e0b0
 savegame	?FillSaveDialog@@YAXPAUHWND__@@PAVCSaveGame@@@Z	100.0000	100.0000	1	3a65adb5a2b6	0xe3c60
 savegame	?FillSlot2@CSaveGame@@QAEHPAUSaveSlot@@HPAX@Z	100.0000	100.0000	2	d2b4d97c68ae	0xe5240
 savegame	?FillSlot@CSaveGame@@QAEHPAUSaveSlot@@PBDPAX@Z	100.0000	100.0000	2	6b2e5dd8d8ab	0xe5130

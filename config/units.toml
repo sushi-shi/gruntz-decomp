@@ -1367,3 +1367,8 @@ flags = "base"
 unit = "cwwdobjmgrfactories"
 source = "src/Gruntz/CWwdObjMgrFactories.cpp"
 flags = "eh"
+
+[[unit]]
+unit = "cmovinglogicserial"
+source = "src/Gruntz/CMovingLogicSerial.cpp"
+flags = "base"

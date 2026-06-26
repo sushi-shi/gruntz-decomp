@@ -204,8 +204,6 @@ RVA(0x0009c650, 0x372)
 void Boundary_09c650() {} // proximity: CTimer@-0x370 | CLightFx@+0xed0
 RVA(0x0009cab0, 0x23)
 void Boundary_09cab0() {} // proximity: CTimer@-0x7d0 | CLightFx@+0xa70
-RVA(0x0009e0b0, 0x1a3)
-void Boundary_09e0b0() {} // proximity: CLightFxMgr@-0x400 | CMapArrayA@+0x650
 RVA(0x000adde0, 0x15)
 void Boundary_0adde0() {} // proximity: CMenuSparkle@-0x200 | CSingleAnimation@+0xa10
 RVA(0x000ade60, 0x102)
@@ -553,8 +551,6 @@ RVA(0x00168c10, 0x46)
 void Boundary_168c10() {} // proximity: CWwdSpatialMgr@-0x320 | CAniRecord@+0x50
 RVA(0x0016be60, 0x2a)
 void Boundary_16be60() {} // proximity: ostream@-0xd0 | CButeMgrHelper@+0x260
-RVA(0x0016cdd0, 0x22f)
-void Boundary_16cdd0() {} // proximity: streambuf@-0xd0 | EngStr@+0x4d0
 RVA(0x0016d000, 0x189)
 void Boundary_16d000() {} // proximity: streambuf@-0x300 | EngStr@+0x2a0
 RVA(0x0016d790, 0xb1)

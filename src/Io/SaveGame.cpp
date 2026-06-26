@@ -21,6 +21,10 @@ namespace ApiCallerStubs {
 struct NameItem_09e2d0;
 void winapi_0e3e80_SetDlgItemTextA(HWND hWnd, NameItem_09e2d0* item, i32 id3, i32 id4, i32 id5,
                                    i32 id6);
+// The GAME_INFO dialog's variant of the same per-slot labeller (0x9e2d0); same
+// signature, different control-state side effects. Reloc-masked no-body callee.
+void winapi_09e2d0_SetDlgItemTextA(HWND hWnd, NameItem_09e2d0* item, i32 id3, i32 id4, i32 id5,
+                                   i32 id6);
 } // namespace ApiCallerStubs
 
 // ---------------------------------------------------------------------------
@@ -52,6 +56,40 @@ void FillSaveDialog(HWND hWnd, CSaveGame* sg) {
     winapi_0e3e80_SetDlgItemTextA(hWnd, (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(8), 0x43d,
                                   0x498, 0x4a2, 0x4ac);
     winapi_0e3e80_SetDlgItemTextA(hWnd, (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(9), 0x43e,
+                                  0x499, 0x4a3, 0x4ad);
+}
+
+// ---------------------------------------------------------------------------
+// FillGameInfoDialog  (0x0009e0b0): the GAME_INFO dialog's slot roster filler -
+// the twin of FillSaveDialog, but labelling through the 0x9e2d0 variant of the
+// per-slot helper. Same ten rows / same four base control IDs (0x435 / 0x490 /
+// 0x49a / 0x4a4 + slot index). __cdecl(HWND, CSaveGame*); both pointers null-
+// checked up front.
+RVA(0x0009e0b0, 0x1a3)
+void FillGameInfoDialog(HWND hWnd, CSaveGame* sg) {
+    if (hWnd == 0 || sg == 0) {
+        return;
+    }
+    using ApiCallerStubs::winapi_09e2d0_SetDlgItemTextA;
+    winapi_09e2d0_SetDlgItemTextA(hWnd, (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(0), 0x435,
+                                  0x490, 0x49a, 0x4a4);
+    winapi_09e2d0_SetDlgItemTextA(hWnd, (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(1), 0x436,
+                                  0x491, 0x49b, 0x4a5);
+    winapi_09e2d0_SetDlgItemTextA(hWnd, (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(2), 0x437,
+                                  0x492, 0x49c, 0x4a6);
+    winapi_09e2d0_SetDlgItemTextA(hWnd, (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(3), 0x438,
+                                  0x493, 0x49d, 0x4a7);
+    winapi_09e2d0_SetDlgItemTextA(hWnd, (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(4), 0x439,
+                                  0x494, 0x49e, 0x4a8);
+    winapi_09e2d0_SetDlgItemTextA(hWnd, (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(5), 0x43a,
+                                  0x495, 0x49f, 0x4a9);
+    winapi_09e2d0_SetDlgItemTextA(hWnd, (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(6), 0x43b,
+                                  0x496, 0x4a0, 0x4aa);
+    winapi_09e2d0_SetDlgItemTextA(hWnd, (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(7), 0x43c,
+                                  0x497, 0x4a1, 0x4ab);
+    winapi_09e2d0_SetDlgItemTextA(hWnd, (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(8), 0x43d,
+                                  0x498, 0x4a2, 0x4ac);
+    winapi_09e2d0_SetDlgItemTextA(hWnd, (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(9), 0x43e,
                                   0x499, 0x4a3, 0x4ad);
 }
 
