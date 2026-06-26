@@ -71,14 +71,10 @@ RVA(0x00058ee0, 0x5c)
 void Unmatched_058ee0() {} // Unmatched_058ee0
 RVA(0x0006b2e0, 0x39)
 void Unmatched_06b2e0() {} // Unmatched_06b2e0
-RVA(0x000759e0, 0x18)
-void Unmatched_0759e0() {} // Unmatched_0759e0
 RVA(0x00075a10, 0x12)
 void Unmatched_075a10() {} // Unmatched_075a10
 RVA(0x00075a40, 0x34)
 void Unmatched_075a40() {} // Unmatched_075a40
-RVA(0x00075a90, 0x27)
-void Unmatched_075a90() {} // Unmatched_075a90
 RVA(0x0008cf30, 0x55)
 void Unmatched_08cf30() {} // Unmatched_08cf30
 RVA(0x00095140, 0x6e)
