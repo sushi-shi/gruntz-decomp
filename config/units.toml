@@ -1336,3 +1336,7 @@ flags = "base"
 unit = "rezlist"
 source = "src/Rez/RezList.cpp"
 flags = "base"
+[[unit]]
+unit = "typekeycoll"
+source = "src/Gruntz/TypeKeyColl.cpp"
+flags = "eh"

@@ -127,7 +127,7 @@ directinputmgr2	33	29
 directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	15	0
-engine_boundary	441	0
+engine_boundary	433	0
 engine_discovered	51	0
 engine_label_stubs	437	105
 engine_unmatched	273	0
@@ -249,6 +249,7 @@ tilewireswitchlogic	1	0
 trees	19	19
 triggermgr	48	8
 triggermgr_eh	4	0
+typekeycoll	8	4
 uncompr	1	1
 unknownclassarrays	39	10
 unknownclassincgruntzmgr	2	0
@@ -1526,14 +1527,6 @@ engine_boundary	?Boundary_16cdd0@@YAXXZ	0.5376	0.5376	2	fc4c822a638f	0x16cdd0
 engine_boundary	?Boundary_16d000@@YAXXZ	0.7874	0.7874	2	70866d4f51bb	0x16d000
 engine_boundary	?Boundary_16d790@@YAXXZ	0.7143	0.7143	2	5cd48def5c1b	0x16d790
 engine_boundary	?Boundary_16d850@@YAXXZ	0.4211	0.4211	2	fe2d077675d9	0x16d850
-engine_boundary	?Boundary_16dda0@@YAXXZ	1.7391	1.7391	2	e351c6b57d8a	0x16dda0
-engine_boundary	?Boundary_16de30@@YAXXZ	0.5333	0.5333	2	dca3bdd1299f	0x16de30
-engine_boundary	?Boundary_16e1a0@@YAXXZ	4.4444	4.4444	2	2a8d2b0880b9	0x16e1a0
-engine_boundary	?Boundary_16e1d0@@YAXXZ	1.2500	1.2500	2	4cedbdff2516	0x16e1d0
-engine_boundary	?Boundary_16e4f0@@YAXXZ	0.7874	0.7874	2	81788ee2ec2a	0x16e4f0
-engine_boundary	?Boundary_16e6a0@@YAXXZ	14.2857	14.2857	2	8d8fddfd8556	0x16e6a0
-engine_boundary	?Boundary_16e730@@YAXXZ	3.5714	3.5714	2	d379398b6dd7	0x16e730
-engine_boundary	?Boundary_16e9c0@@YAXXZ	1.6667	1.6667	2	49adb7df391d	0x16e9c0
 engine_boundary	?Boundary_16f4a0@@YAXXZ	0.2439	0.2439	2	7dd427b0a8c6	0x16f4a0
 engine_boundary	?Boundary_170210@@YAXXZ	1.3158	1.3158	2	708bbd01529e	0x170210
 engine_boundary	?Boundary_174e90@@YAXXZ	5.0000	5.0000	2	aa367b40d115	0x174e90
@@ -3562,6 +3555,14 @@ triggermgr_eh	??1CTriggerMgr@@QAE@XZ	46.0625	46.0625	1	acd16ffe98a8	0x85c50
 triggermgr_eh	?ApplySwitch@CTriggerMgr@@QAEHHH@Z	20.7017	20.7017	1	cd338b97d735	0x6d300
 triggermgr_eh	?DestroyGroup@CTriggerMgr@@QAEHHHH@Z	49.1269	49.1269	1	9cd277db7d13	0x798d0
 triggermgr_eh	?ReinitGroup@CTriggerMgr@@QAEHHH@Z	59.1261	59.1261	2	3ea1f63101eb	0x79b80
+typekeycoll	??0CKeyFinder@@QAE@PAX@Z	100.0000	100.0000	1	682e3c55da59	0x16e1a0
+typekeycoll	?Construct@CTypeKeyColl@@QAEPAU1@HHHPAX@Z	100.0000	100.0000	1	de3d0f66c119	0x16dda0
+typekeycoll	?CtorBase@CTypeKeyColl@@QAEXHHHPAX@Z	67.1600	67.1600	1	fd1d00b911d0	0x16de30
+typekeycoll	?DynInitButeTree@@YAXXZ	100.0000	100.0000	1	4a89185c7fcd	0x16e6a0
+typekeycoll	?DynInitTypeColl@@YAXXZ	81.1071	81.1071	1	5e890edf6737	0x16e730
+typekeycoll	?Find@CKeyFinder@@QAEHH@Z	99.6875	99.6875	1	f1af2af50f40	0x16e1d0
+typekeycoll	?ProjTypeXfer@@YAHPAUCXferArchive@@@Z	87.0472	87.0472	1	bd3523e30b37	0x16e4f0
+typekeycoll	?ScalarDtor@CButeTreeFull@@QAEPAXI@Z	100.0000	100.0000	1	2f244c62d2a8	0x16e9c0
 uncompr	_uncompress	100.0000	100.0000	1	b40cccad8cc9	0x185320
 unknownclassarrays	??0UnknownClassArrays@@QAE@XZ	93.3108	93.3108	2	2de6dbacf6b9	0x24dc0
 unknownclassarrays	??1UnknownClassArrays@@QAE@XZ	100.0000	100.0000	2	c7546fcbd111	0x24f80

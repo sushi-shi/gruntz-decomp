@@ -731,22 +731,6 @@ RVA(0x0016d790, 0xb1)
 void Boundary_16d790() {} // proximity: CUserBaseLink@-0x80 | CContainerErr@+0x230
 RVA(0x0016d850, 0x11e)
 void Boundary_16d850() {} // proximity: CUserBaseLink@-0x140 | CContainerErr@+0x170
-RVA(0x0016dda0, 0x3c)
-void Boundary_16dda0() {} // proximity: _zvec@-0x320 | zDArray@+0x1a0
-RVA(0x0016de30, 0xe7)
-void Boundary_16de30() {} // proximity: _zvec@-0x3b0 | zDArray@+0x110
-RVA(0x0016e1a0, 0x23)
-void Boundary_16e1a0() {} // proximity: zBitVec@-0xa0 | CMotionState@+0xb30
-RVA(0x0016e1d0, 0x4b)
-void Boundary_16e1d0() {} // proximity: zBitVec@-0xd0 | CMotionState@+0xb00
-RVA(0x0016e4f0, 0x19b)
-void Boundary_16e4f0() {} // proximity: zBitVec@-0x3f0 | CMotionState@+0x7e0
-RVA(0x0016e6a0, 0x26)
-void Boundary_16e6a0() {} // proximity: zBitVec@-0x5a0 | CMotionState@+0x630
-RVA(0x0016e730, 0x51)
-void Boundary_16e730() {} // proximity: zBitVec@-0x630 | CMotionState@+0x5a0
-RVA(0x0016e9c0, 0x45)
-void Boundary_16e9c0() {} // proximity: zBitVec@-0x8c0 | CMotionState@+0x310
 RVA(0x0016f4a0, 0x1da)
 void Boundary_16f4a0() {} // proximity: CMotionState@-0x7d0 | CButeMgr@+0xe90
 RVA(0x00170210, 0x118)
