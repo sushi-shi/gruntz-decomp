@@ -1370,3 +1370,8 @@ flags = "eh"
 unit = "netcmdslot"
 source = "src/Net/NetCmdSlot.cpp"
 flags = "base"
+
+[[unit]]
+unit = "boundarylib"
+source = "src/Stub/BoundaryLibrary.cpp"
+flags = "base"

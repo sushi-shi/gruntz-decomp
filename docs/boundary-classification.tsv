@@ -1,0 +1,421 @@
+rva	size	category	evidence
+0x000087b0	0x7	GAME	stamps game-class vtable
+0x00008860	0x44	GAME	stamps game-class vtable
+0x00008b90	0x40	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00009bb0	0x367	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0000af50	0xb	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0000b940	0xf	GAME	stamps game-class vtable
+0x0000bdd0	0x53	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0000d210	0x65	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0000f510	0x44	GAME	stamps game-class vtable
+0x0000f640	0x44	GAME	stamps game-class vtable
+0x0000fb00	0x44	GAME	stamps game-class vtable
+0x0000fdf0	0x47	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0000fe90	0x44	GAME	stamps game-class vtable
+0x0000ffc0	0x44	GAME	stamps game-class vtable
+0x000101b0	0x44	GAME	stamps game-class vtable
+0x000104a0	0x47	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000105d0	0x47	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00010fc0	0x44	GAME	stamps game-class vtable
+0x00011b80	0x44	GAME	stamps game-class vtable
+0x00011c40	0x44	GAME	stamps game-class vtable
+0x00013040	0x44	GAME	stamps game-class vtable
+0x00013400	0x44	GAME	stamps game-class vtable
+0x00018430	0xd	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0001f870	0x1d	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000212a0	0x21	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00021310	0x70	GAME	stamps game-class vtable
+0x000213a0	0xa	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00021570	0x70	GAME	stamps game-class vtable
+0x000238d0	0xd	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00023960	0xd	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00023d90	0x64	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00024ac0	0x20	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00029af0	0x3b	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00031610	0x501	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000358a0	0x2d6	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00037870	0x3c	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00037b40	0xb3	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00037c30	0xb3	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00037d20	0xb3	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00037e10	0xb3	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00037f00	0xb3	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00038120	0x1d	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00038fc0	0xa5	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000390a0	0x5d	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00039f20	0x51	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00039fa0	0x188	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0003a530	0x15	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0003a710	0x18d	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0003acb0	0xa	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0003ad30	0xa	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0003ad90	0x97	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0003b940	0x19d	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0003bb50	0x128	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000408b0	0x2ac	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00041680	0x2ac	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000464e0	0x74	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000474b0	0x18d	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00050a50	0x1c5	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00050ca0	0x2b	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00056f80	0x8e	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0005bc50	0x15	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0005be30	0x9e5	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00077dc0	0x1d	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000788d0	0x64	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0007cd40	0x18f	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0007cf40	0x12e	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00080cf0	0x12	GAME	stamps game-class vtable
+0x00082aa0	0x10	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00082b20	0xa	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00082ba0	0xa	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00082c20	0xa	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00082ca0	0xa	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00082d20	0xa	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00082da0	0xa	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00082e20	0xa	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00082ea0	0xa	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00082f20	0xa	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00082fa0	0x17	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000853d0	0x10	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00085500	0x23	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00085540	0xb	GAME	stamps game-class vtable
+0x0008c400	0x46	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0008c470	0xb	GAME	stamps game-class vtable
+0x0008c830	0xaf	GAME	stamps game-class vtable
+0x0008d000	0x55	GAME	stamps game-class vtable
+0x0008d0d0	0xc4	GAME	stamps game-class vtable
+0x0008df00	0x238	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0008e880	0x27	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000915d0	0x3f	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00091620	0x3f	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00093920	0x22f	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00093be0	0x107	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00094c10	0x16	GAME	stamps game-class vtable
+0x00099b80	0xa	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00099ba0	0x29	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0009a0d0	0x133	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0009a290	0x138	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0009a420	0x1c	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0009b770	0xf1	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0009c650	0x372	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0009cab0	0x23	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0009e0b0	0x1a3	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000adde0	0x15	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000ade60	0x102	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000adfc0	0x18d	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000ae1c0	0xae	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000b15b0	0x15	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000b1790	0x2ac	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000b3ae0	0x15	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000b3cc0	0x2ac	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000b4c40	0x4b	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000b4d30	0x287	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000b5380	0xa	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000b5400	0xa	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000bd430	0xa	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000bd450	0x16	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000bd7f0	0xa	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000c0fa0	0x11	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000c0fd0	0x24	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000c1010	0x32	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000c1060	0x29	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000c10a0	0x12	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000c1170	0x26	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000c11b0	0x55	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000c1230	0x55	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000c12b0	0x1f	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000c12e0	0x2c	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000c1320	0x4a	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000c1390	0x15	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000c8700	0x1f4	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000c9e40	0x1d7	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000ca0a0	0x101	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000cb740	0x8f	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000cef50	0x46	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000d2b20	0x21f	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000d5960	0x160	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000d5d70	0x16	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000d5e20	0x1b	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000d6fa0	0x1fa	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000d79d0	0x537	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000db200	0x51	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000db2f0	0x2b	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000db750	0x70	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000e0d40	0x6c2	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000e17b0	0x15	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000e56b0	0x8	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000e7cd0	0xf8	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000ea170	0x5c	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000ea990	0xa72	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000eb970	0x72	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000f2b20	0x6e1	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000fa150	0x74	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000fa410	0xf5	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000fa550	0x10c	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000fa790	0x104	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000fa8f0	0x118	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000faa60	0xed	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x000fbb70	0x15	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00100780	0xb	GAME	stamps game-class vtable
+0x00104c80	0x1f	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00104dd0	0x6b	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00109e00	0x245	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0010b4f0	0xaa	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0010bbe0	0x34	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00112080	0x138	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00112bf0	0x5e	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00113860	0x3b	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x001138b0	0xb4	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00113e70	0x7b	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00114ec0	0x27	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00114f00	0x3e	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00115730	0xa	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x001157b0	0xa	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x001163b0	0xb2	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00117800	0x47f	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00118040	0xb6	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x001181d0	0x70	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00118260	0x63	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x001182f0	0xc	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00118310	0xc	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00118330	0x57	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00119fa0	0x2ac	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00133370	0xb	GAME	engine code (refs=4 in / 0 dir32; no library signal)
+0x001333b0	0x55	GAME	engine code (refs=4 in / 0 dir32; no library signal)
+0x00133460	0x6a	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x001334f0	0x6a	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00134360	0x33	GAME	engine code (refs=1 in / 1 dir32; no library signal)
+0x001343b0	0x27e	GAME	engine code (refs=0 in / 1 dir32; no library signal)
+0x001346d0	0x33	GAME	engine code (refs=1 in / 1 dir32; no library signal)
+0x001347d0	0x40a	GAME	engine code (refs=0 in / 1 dir32; no library signal)
+0x00135040	0x65	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00137200	0x53	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00137300	0x23	ORPHAN	zero-reference COMDAT (no rel32 caller, no DIR32)
+0x00137330	0x7	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00138a50	0x46	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00138aa0	0x175	GAME	engine code (refs=0 in / 1 dir32; no library signal)
+0x00138f20	0x3a	GAME	engine code (refs=0 in / 1 dir32; no library signal)
+0x001396f0	0x1a	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00139710	0x8d	GAME	engine code (refs=3 in / 0 dir32; no library signal)
+0x00139de0	0xd4	GAME	engine code (refs=5 in / 0 dir32; no library signal)
+0x0013a040	0xa2	GAME	engine code (refs=2 in / 0 dir32; no library signal)
+0x0013a330	0xce	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0013a4b0	0x75	GAME	engine code (refs=2 in / 0 dir32; no library signal)
+0x0013a530	0x47	GAME	engine code (refs=2 in / 0 dir32; no library signal)
+0x0013a580	0xb2	GAME	engine code (refs=3 in / 0 dir32; no library signal)
+0x0013a640	0x2f7	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0013a940	0xc2	GAME	engine code (refs=3 in / 0 dir32; no library signal)
+0x0013aaf0	0x7	GAME	engine code (refs=3 in / 0 dir32; no library signal)
+0x0013ab00	0xac	ORPHAN	zero-reference COMDAT (no rel32 caller, no DIR32)
+0x0013ad00	0x3b8	GAME	engine code (refs=4 in / 0 dir32; no library signal)
+0x0013b300	0x545	GAME	engine code (refs=3 in / 0 dir32; no library signal)
+0x0013b910	0x58	GAME	engine code (refs=2 in / 0 dir32; no library signal)
+0x0013b970	0x72	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0013ba70	0x10	GAME	engine code (refs=5 in / 0 dir32; no library signal)
+0x0013c0c0	0x14b	GAME	engine code (refs=3 in / 0 dir32; no library signal)
+0x0013c8a0	0x45	GAME	engine code (refs=0 in / 1 dir32; no library signal)
+0x0013c8f0	0x41	GAME	engine code (refs=0 in / 1 dir32; no library signal)
+0x0013c9b0	0x7f	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0013ca30	0x7	GAME	engine code (refs=2 in / 0 dir32; no library signal)
+0x0013cb80	0x72	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0013dec0	0x20	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0013dee0	0x1b	GAME	engine code (refs=2 in / 0 dir32; no library signal)
+0x0013df30	0xaf	ORPHAN	zero-reference COMDAT (no rel32 caller, no DIR32)
+0x0013e070	0xa	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0013e0a0	0x27	GAME	engine code (refs=6 in / 3 dir32; no library signal)
+0x0013e7d0	0x73	GAME	engine code (refs=2 in / 0 dir32; no library signal)
+0x0013ee30	0x29	ORPHAN	zero-reference COMDAT (no rel32 caller, no DIR32)
+0x0013f740	0x1c8	GAME	engine code (refs=2 in / 0 dir32; no library signal)
+0x001413b0	0xf	GAME	engine code (refs=2 in / 0 dir32; no library signal)
+0x001413c0	0xb	GAME	engine code (refs=4 in / 0 dir32; no library signal)
+0x00141c80	0xa	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00143040	0x7c	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00143240	0x143	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x001433d0	0x4f	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00143470	0x47	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x001434c0	0x45	GAME	engine code (refs=2 in / 0 dir32; no library signal)
+0x00143510	0x71	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00143590	0x7e	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00143630	0x10d	GAME	engine code (refs=2 in / 0 dir32; no library signal)
+0x001437f0	0x1b	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00143950	0x56	GAME	engine code (refs=2 in / 0 dir32; no library signal)
+0x00143c20	0x84	GAME	engine code (refs=2 in / 0 dir32; no library signal)
+0x00145e00	0x26	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00145f60	0x242	GAME	engine code (refs=3 in / 0 dir32; no library signal)
+0x001461b0	0x399	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00146fe0	0x1e2	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x001471d0	0x1b4	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00148250	0x61	GAME	engine code (refs=3 in / 0 dir32; no library signal)
+0x00148a50	0x6b	GAME	engine code (refs=0 in / 1 dir32; no library signal)
+0x00148af0	0x58	GAME	engine code (refs=0 in / 1 dir32; no library signal)
+0x00148b50	0x2c	GAME	engine code (refs=0 in / 1 dir32; no library signal)
+0x00148c40	0x75	GAME	engine code (refs=0 in / 1 dir32; no library signal)
+0x00148cc0	0x18	GAME	engine code (refs=0 in / 1 dir32; no library signal)
+0x00149250	0x158	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x001493b0	0xfd	ORPHAN	zero-reference COMDAT (no rel32 caller, no DIR32)
+0x001495d0	0x1a6	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0014cfc0	0x5f1	GAME	engine code (refs=3 in / 0 dir32; no library signal)
+0x0014d950	0x377	GAME	engine code (refs=2 in / 0 dir32; no library signal)
+0x0014fcc0	0x16d	GAME	engine code (refs=2 in / 0 dir32; no library signal)
+0x0014fe30	0x51	GAME	engine code (refs=2 in / 0 dir32; no library signal)
+0x001503f0	0xdc	ORPHAN	zero-reference COMDAT (no rel32 caller, no DIR32)
+0x001509c0	0xab	ORPHAN	zero-reference COMDAT (no rel32 caller, no DIR32)
+0x00151d20	0x3a	ORPHAN	zero-reference COMDAT (no rel32 caller, no DIR32)
+0x00151e70	0x3b	GAME	engine code (refs=0 in / 1 dir32; no library signal)
+0x001523f0	0x82	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00152e90	0x8b	GAME	RTTI vtable slot = CImage
+0x001570d0	0x39	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00157240	0x3c	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x001578b0	0x51	GAME	engine code (refs=46 in / 0 dir32; no library signal)
+0x00157b00	0xb2	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00159250	0x185	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00159440	0x170	GAME	engine code (refs=2 in / 0 dir32; no library signal)
+0x001598d0	0x13d	GAME	engine code (refs=2 in / 0 dir32; no library signal)
+0x0015b4f0	0xde	GAME	engine code (refs=8 in / 0 dir32; no library signal)
+0x0015b6d0	0x5b	GAME	engine code (refs=3 in / 0 dir32; no library signal)
+0x0015b790	0x1a6	GAME	engine code (refs=3 in / 0 dir32; no library signal)
+0x0015bad0	0x153	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0015bd10	0x1ef	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0015c070	0x159	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0015d9a0	0xdc	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00161460	0x7	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x001614b0	0x1c	GAME	engine code (refs=0 in / 1 dir32; no library signal)
+0x00161500	0x58	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00161560	0x7	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00161bf0	0x5e	GAME	engine code (refs=0 in / 1 dir32; no library signal)
+0x001628d0	0x12	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x001628f0	0x1fc	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x001633e0	0x12	GAME	engine code (refs=2 in / 0 dir32; no library signal)
+0x00163710	0x42	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00163a10	0x7	GAME	engine code (refs=9 in / 0 dir32; no library signal)
+0x00163a40	0x41	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00163af0	0xcd	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00164d80	0x421	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00165620	0x101	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x001660f0	0xd1	GAME	engine code (refs=0 in / 1 dir32; no library signal)
+0x00166640	0x13b	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00166810	0x32	GAME	engine code (refs=2 in / 0 dir32; no library signal)
+0x00167260	0x1ef	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00167450	0x1ef	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00167640	0x1eb	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00167830	0x1eb	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00167ea0	0x1b9	GAME	engine code (refs=4 in / 0 dir32; no library signal)
+0x00168c10	0x46	GAME	game ctor stamps embedded-stream vtable (outside iostream block)
+0x001690f0	0x70	CRT_STL	refs iostream vtable(0x5f03xx); stream-class neighbor(strstreambuf); in iostream impl block
+0x00169610	0xb7	CRT_STL	refs iostream vtable(0x5f03xx); stream-class neighbor(strstreambuf); in iostream impl block
+0x00169e10	0x3c	CRT_STL	stream-class neighbor(istream); in iostream impl block
+0x00169ed0	0xae	CRT_STL	refs iostream vtable(0x5f03xx); stream-class neighbor(istream); in iostream impl block
+0x0016a0a0	0x14	CRT_STL	stream-class neighbor(istream); in iostream impl block
+0x0016a0c0	0xb3	CRT_STL	refs iostream vtable(0x5f03xx); stream-class neighbor(istream); in iostream impl block
+0x0016a180	0xbd	CRT_STL	refs iostream vtable(0x5f03xx); stream-class neighbor(istream); in iostream impl block
+0x0016a240	0x13	CRT_STL	refs iostream vtable(0x5f03xx); ios vbase [reg-0xc]; stream-class neighbor(istream); in iostream impl block
+0x0016a260	0x72	CRT_STL	stream-class neighbor(istream); in iostream impl block
+0x0016a340	0x69	CRT_STL	stream-class neighbor(istream); in iostream impl block
+0x0016a3b0	0x5b	CRT_STL	stream-class neighbor(istream); in iostream impl block
+0x0016a590	0xae	CRT_STL	refs iostream vtable(0x5f03xx); stream-class neighbor(istream/ostream); in iostream impl block
+0x0016a670	0xec	CRT_STL	refs iostream vtable(0x5f03xx); stream-class neighbor(istream/ostream); in iostream impl block
+0x0016a760	0xb3	CRT_STL	refs iostream vtable(0x5f03xx); stream-class neighbor(istream/ostream); in iostream impl block
+0x0016a820	0xbd	CRT_STL	refs iostream vtable(0x5f03xx); stream-class neighbor(istream/ostream); in iostream impl block
+0x0016a8e0	0x13	CRT_STL	refs iostream vtable(0x5f03xx); stream-class neighbor(istream/ostream); in iostream impl block
+0x0016a900	0x72	CRT_STL	stream-class neighbor(istream/ostream); in iostream impl block
+0x0016a9e0	0x69	CRT_STL	stream-class neighbor(istream/ostream); in iostream impl block
+0x0016aa50	0x5b	CRT_STL	stream-class neighbor(istream/ostream); in iostream impl block
+0x0016aab0	0x64	CRT_STL	stream-class neighbor(istream/ostream); in iostream impl block
+0x0016ab70	0x20	CRT_STL	refs iostream vtable(0x5f03xx); stream-class neighbor(ostream/streambuf); in iostream impl block
+0x0016abb0	0x22	CRT_STL	refs iostream vtable(0x5f03xx); stream-class neighbor(ostream/streambuf); in iostream impl block
+0x0016abe0	0x63	CRT_STL	refs iostream vtable(0x5f03xx); stream-class neighbor(ostream/streambuf); in iostream impl block
+0x0016ac50	0x72	CRT_STL	refs iostream vtable(0x5f03xx); stream-class neighbor(ostream/streambuf); in iostream impl block
+0x0016acd0	0x73	CRT_STL	stream-class neighbor(ostream/streambuf); in iostream impl block
+0x0016ad50	0x8c	CRT_STL	RTTI vtable slot = filebuf
+0x0016aef0	0xf7	CRT_STL	RTTI vtable slot = filebuf
+0x0016aff0	0x74	CRT_STL	RTTI vtable slot = filebuf
+0x0016b410	0x69	CRT_STL	RTTI vtable slot = strstreambuf
+0x0016b480	0x55	CRT_STL	refs iostream vtable(0x5f03xx); stream-class neighbor(streambuf); in iostream impl block
+0x0016b5b0	0x9b	CRT_STL	refs iostream vtable(0x5f03xx); stream-class neighbor(streambuf); in iostream impl block
+0x0016b820	0x113	CRT_STL	stream-class neighbor(istream/ostream); in iostream impl block
+0x0016b940	0x63	CRT_STL	stream-class neighbor(istream/ostream); in iostream impl block
+0x0016b9b0	0xbe	CRT_STL	stream-class neighbor(istream/ostream); in iostream impl block
+0x0016ba70	0x93	CRT_STL	stream-class neighbor(istream/ostream); in iostream impl block
+0x0016bb10	0xad	CRT_STL	stream-class neighbor(istream/ostream); in iostream impl block
+0x0016bbc0	0x76	CRT_STL	refs iostream vtable(0x5f03xx); stream-class neighbor(istream/ostream); in iostream impl block
+0x0016bc70	0x7b	CRT_STL	refs iostream vtable(0x5f03xx); stream-class neighbor(istream/ostream); in iostream impl block
+0x0016bcf0	0x13	CRT_STL	refs iostream vtable(0x5f03xx); ios vbase [reg-0xc]; stream-class neighbor(istream/ostream); in iostream impl block
+0x0016be60	0x2a	UNKNOWN	in iostream block but no vtbl/vbase signal and called only by ButeMgr parsers
+0x0016be90	0x99	CRT_STL	stream-class neighbor(ostream); in iostream impl block
+0x0016bf30	0x3c	CRT_STL	refs iostream vtable(0x5f03xx); stream-class neighbor(ostream); in iostream impl block
+0x0016c030	0x8e	CRT_STL	refs iostream vtable(0x5f03xx); stream-class neighbor(ostream); in iostream impl block
+0x0016c180	0x76	CRT_STL	refs iostream vtable(0x5f03xx); stream-class neighbor(streambuf); in iostream impl block
+0x0016c230	0x7b	CRT_STL	refs iostream vtable(0x5f03xx); stream-class neighbor(streambuf); in iostream impl block
+0x0016c2b0	0x13	CRT_STL	refs iostream vtable(0x5f03xx); stream-class neighbor(streambuf); in iostream impl block
+0x0016c2d0	0x1f5	CRT_STL	stream-class neighbor(streambuf); in iostream impl block
+0x0016c740	0x8f	CRT_STL	refs iostream vtable(0x5f03xx); stream-class neighbor(streambuf); in iostream impl block
+0x0016c800	0x97	CRT_STL	refs iostream vtable(0x5f03xx); stream-class neighbor(streambuf); in iostream impl block
+0x0016c8a0	0xa2	CRT_STL	refs iostream vtable(0x5f03xx); stream-class neighbor(streambuf); in iostream impl block
+0x0016c950	0x64	CRT_STL	refs iostream vtable(0x5f03xx); stream-class neighbor(streambuf); in iostream impl block
+0x0016ca00	0x80	CRT_STL	stream-class neighbor(streambuf); in iostream impl block
+0x0016ca80	0x19e	CRT_STL	refs iostream vtable(0x5f03xx); stream-class neighbor(streambuf); in iostream impl block
+0x0016cdd0	0x22f	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0016d000	0x189	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0016d790	0xb1	GAME	game ctor stamps embedded-stream vtable (outside iostream block)
+0x0016d850	0x11e	GAME	engine code (refs=213 in / 0 dir32; no library signal)
+0x0016f4a0	0x1da	GAME	RTTI vtable slot = CMovingLogic
+0x00170210	0x118	GAME	game ctor stamps embedded-stream vtable (outside iostream block)
+0x00174e90	0x1c	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00174eb0	0x1b	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00174ed0	0x5d	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00174f30	0x30	GAME	engine code (refs=2 in / 0 dir32; no library signal)
+0x00174f60	0x37	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00174fa0	0x3e	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x001754f0	0x7b	ORPHAN	zero-reference COMDAT (no rel32 caller, no DIR32)
+0x00175570	0x7b	ORPHAN	zero-reference COMDAT (no rel32 caller, no DIR32)
+0x001755f0	0x82	ORPHAN	zero-reference COMDAT (no rel32 caller, no DIR32)
+0x00175680	0x85	ORPHAN	zero-reference COMDAT (no rel32 caller, no DIR32)
+0x00175780	0x3f	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00176ad0	0x17	GAME	engine code (refs=2 in / 0 dir32; no library signal)
+0x00176b30	0x1e5	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00176d20	0x71	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00176e70	0x4e	GAME	engine code (refs=3 in / 0 dir32; no library signal)
+0x00177040	0x23	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00177400	0x76	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00177480	0x169	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00179270	0x89	ORPHAN	zero-reference COMDAT (no rel32 caller, no DIR32)
+0x001793b0	0x46	GAME	game ctor stamps embedded-stream vtable (outside iostream block)
+0x00179420	0x8a	GAME	game ctor stamps embedded-stream vtable (outside iostream block)
+0x001795a0	0xdb	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0017b510	0x55	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0017b570	0x24	GAME	engine code (refs=7 in / 0 dir32; no library signal)
+0x0017b5a0	0x48	GAME	engine code (refs=2 in / 0 dir32; no library signal)
+0x0017b5f0	0x249	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0017b840	0x53	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0017c6f0	0x9c	GAME	engine code (refs=2 in / 0 dir32; no library signal)
+0x0017e230	0xc	GAME	engine code (refs=14 in / 0 dir32; no library signal)
+0x0017e240	0x51	GAME	game ctor stamps embedded-stream vtable (outside iostream block)
+0x0017e7c0	0x7a	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x0017e990	0x6b	GAME	game ctor stamps embedded-stream vtable (outside iostream block)
+0x0017ea00	0x4fc	GAME	game ctor stamps embedded-stream vtable (outside iostream block)
+0x0017f9f0	0x4f	GAME	game ctor stamps embedded-stream vtable (outside iostream block)
+0x0017fa40	0x1f3	GAME	game ctor stamps embedded-stream vtable (outside iostream block)
+0x0017fc40	0x11	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00180450	0x4f	GAME	game ctor stamps embedded-stream vtable (outside iostream block)
+0x00182610	0x2eb	GAME	engine code (refs=8 in / 0 dir32; no library signal)
+0x001847a0	0xa	GAME	engine code (refs=0 in / 1 dir32; no library signal)
+0x001847e0	0xa6	GAME	game ctor stamps embedded-stream vtable (outside iostream block)
+0x00184b70	0xa	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00184c10	0x136	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00184fb0	0x15	GAME	engine code (refs=2 in / 0 dir32; no library signal)
+0x001853b0	0xa6	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00191d20	0xc9	CRT_STL	refs iostream vtable(0x5f03xx); stream-class neighbor(ostream); in iostream impl block
+0x00191df0	0x137	CRT_STL	refs iostream vtable(0x5f03xx); stream-class neighbor(ostream); in iostream impl block
+0x00191f30	0xaa	CRT_STL	stream-class neighbor(ostream); in iostream impl block
+0x00191fe0	0x7e	CRT_STL	stream-class neighbor(ostream); in iostream impl block
+0x00192120	0xb9	CRT_STL	refs iostream vtable(0x5f03xx); stream-class neighbor(ostream); in iostream impl block
+0x001921e0	0xb5	CRT_STL	refs iostream vtable(0x5f03xx); stream-class neighbor(ostream); in iostream impl block
+0x001922a0	0xb9	CRT_STL	refs iostream vtable(0x5f03xx); stream-class neighbor(ostream); in iostream impl block
+0x00192480	0xbe	CRT_STL	refs iostream vtable(0x5f03xx); stream-class neighbor(ostream); in iostream impl block
+0x00192540	0xc8	CRT_STL	refs iostream vtable(0x5f03xx); stream-class neighbor(ostream); in iostream impl block
+0x00192610	0x13	CRT_STL	refs iostream vtable(0x5f03xx); stream-class neighbor(ostream); in iostream impl block
+0x00192630	0xae	CRT_STL	stream-class neighbor(ostream); in iostream impl block
+0x001926e0	0x94	CRT_STL	stream-class neighbor(ostream); in iostream impl block
+0x00192780	0xa4	CRT_STL	stream-class neighbor(ostream); in iostream impl block
+0x00192830	0xfb	CRT_STL	stream-class neighbor(ostream); in iostream impl block
