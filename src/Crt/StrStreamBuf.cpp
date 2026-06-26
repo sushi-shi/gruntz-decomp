@@ -6,6 +6,41 @@
 // Library code reconstructed for the byte-match; see include/Crt/StrStream.h.
 // ---------------------------------------------------------------------------
 
+// strstreambuf() - default dynamic-mode ctor: allocate-on-demand, no static buf.
+RVA(0x00169000, 0x28)
+strstreambuf::strstreambuf() {
+    m_vptr = (void*)strstreambuf_vtbl;
+    x_dynamic = 1;
+    x_bufmin = 1;
+    x_static = 0;
+    x_alloc = 0;
+    x_free = 0;
+}
+
+// strstreambuf(n) - dynamic-mode ctor with a caller-chosen alloc granularity
+// (setbuf(0,n) stores it iff non-zero). /GX frame from the constructed base.
+RVA(0x00169050, 0x5f)
+strstreambuf::strstreambuf(i32 n) {
+    m_vptr = (void*)strstreambuf_vtbl;
+    x_dynamic = 1;
+    x_static = 0;
+    x_alloc = 0;
+    x_free = 0;
+    setbuf(0, n);
+}
+
+// strstreambuf(allocf, freef) - dynamic-mode ctor with caller-supplied
+// allocate/free hooks.
+RVA(0x001690b0, 0x34)
+strstreambuf::strstreambuf(void* (*allocf)(i32), void (*freef)(void*)) {
+    x_bufmin = 1;
+    x_dynamic = 1;
+    m_vptr = (void*)strstreambuf_vtbl;
+    x_alloc = allocf;
+    x_static = 0;
+    x_free = freef;
+}
+
 // strstreambuf(b, n, curp) - wrap a caller buffer [b, b+n) (n<0 => unbounded,
 // n==0 => strlen), get area starting at b, put area at curp (if any).
 RVA(0x00169160, 0xbc)

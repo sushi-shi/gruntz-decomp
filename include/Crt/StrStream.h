@@ -123,11 +123,18 @@ inline i32 streambuf::sputc(i32 i) {
 // ---------------------------------------------------------------------------
 class strstreambuf : public streambuf {
 public:
+    strstreambuf();
+    strstreambuf(i32 n);
+    strstreambuf(void* (*allocf)(i32), void (*freef)(void*));
     strstreambuf(char* b, i32 n, char* curp);
     ~strstreambuf();
 
     char* str();
     i32 underflow();
+
+    // setbuf(b, n) - set the alloc granularity (0x1693f0, reloc-masked extern);
+    // called by the int-sizing ctor. Returns this in retail; we discard it.
+    streambuf* setbuf(char* b, i32 n);
 
 private:
     i32 x_dynamic;         // 0x4c

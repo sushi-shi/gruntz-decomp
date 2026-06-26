@@ -659,24 +659,8 @@ RVA(0x00167830, 0x1eb)
 void Boundary_167830() {} // proximity: CGameLevel@-0x700 | CWwdGrid@+0xa70
 RVA(0x00167ea0, 0x1b9)
 void Boundary_167ea0() {} // proximity: CGameLevel@-0xd70 | CWwdGrid@+0x400
-RVA(0x00168960, 0x2e)
-void Boundary_168960() {} // proximity: CWwdSpatialMgr@-0x70 | CAniRecord@+0x300
-RVA(0x00168990, 0x85)
-void Boundary_168990() {} // proximity: CWwdSpatialMgr@-0xa0 | CAniRecord@+0x2d0
-RVA(0x00168a70, 0x73)
-void Boundary_168a70() {} // proximity: CWwdSpatialMgr@-0x180 | CAniRecord@+0x1f0
-RVA(0x00168af0, 0x6d)
-void Boundary_168af0() {} // proximity: CWwdSpatialMgr@-0x200 | CAniRecord@+0x170
-RVA(0x00168b60, 0x85)
-void Boundary_168b60() {} // proximity: CWwdSpatialMgr@-0x270 | CAniRecord@+0x100
 RVA(0x00168c10, 0x46)
 void Boundary_168c10() {} // proximity: CWwdSpatialMgr@-0x320 | CAniRecord@+0x50
-RVA(0x00169000, 0x28)
-void Boundary_169000() {} // proximity: CAniRecord@-0x50 | strstreambuf@+0x160
-RVA(0x00169050, 0x5f)
-void Boundary_169050() {} // proximity: CAniRecord@-0xa0 | strstreambuf@+0x110
-RVA(0x001690b0, 0x34)
-void Boundary_1690b0() {} // proximity: CAniRecord@-0x100 | strstreambuf@+0xb0
 RVA(0x001690f0, 0x70)
 void Boundary_1690f0() {} // proximity: CAniRecord@-0x140 | strstreambuf@+0x70
 RVA(0x00169610, 0xb7)

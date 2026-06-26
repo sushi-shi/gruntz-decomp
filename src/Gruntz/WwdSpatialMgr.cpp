@@ -159,6 +159,8 @@ struct CWwdSpatialMgr {
     i32 m_bbMaxY;         // +0x64
     i32 m_scrollX;        // +0x68
     i32 m_scrollY;        // +0x6c
+    CWwdGridIter m_iter;  // +0x70  embedded cursor for the GetFirst/GetNext API
+    CWwdGrid* m_curGrid;  // +0xb4  which grid the embedded cursor is walking
 
     void FreeGrids();
     i32 ScrollTo(i32 dx, i32 dy);
@@ -167,6 +169,11 @@ struct CWwdSpatialMgr {
     i32 Relocate(i32 newX, i32 newY);
     i32 PruneCount();
     void RemoveObject(CWwdObject* obj);
+    i32 FlushAll();
+    i32 FlushGrid(CWwdGrid* grid);
+    i32 ForEachGrid(CWwdGrid* grid, void(__cdecl* cb)(CWwdObject*));
+    CWwdObject* GetFirstObject();
+    CWwdObject* GetNextObject();
 };
 
 // ===========================================================================
@@ -343,6 +350,119 @@ void CWwdSpatialMgr::RemoveObject(CWwdObject* obj) {
         m_grid0->Add_191840(&obj->m_region);
         m_mgr->AddToMap48_15aba0(obj);
     }
+}
+
+// ===========================================================================
+// 0x168960 - FlushAll(): drain every plane grid back into the master manager,
+// summing the per-grid counts.
+// ===========================================================================
+RVA(0x00168960, 0x2e)
+i32 CWwdSpatialMgr::FlushAll() {
+    i32 n = FlushGrid(m_grid0);
+    n += FlushGrid(m_grid1);
+    n += FlushGrid(m_grid2);
+    return n;
+}
+
+// ===========================================================================
+// 0x168990 - FlushGrid(grid): walk the grid with a scratch cursor; re-insert
+// every object into the master manager and unlink it from the grid; return the
+// count drained. /GX frame from the on-stack iterator.
+// ===========================================================================
+// @early-stop
+// /GX scoped-local EH-frame wall - body byte-identical (every mov/call/jcc
+// matches), but the destructible CWwdGridIter local frames differently: retail
+// `sub esp,0x44` + scope cookie, recompile `sub esp,0x40`, shifting [esp+N] by 4.
+// Same wall as CountInRect; docs/patterns/gx-scoped-local-eh-frame-size.md.
+RVA(0x00168990, 0x85)
+i32 CWwdSpatialMgr::FlushGrid(CWwdGrid* grid) {
+    i32 count = 0;
+    CWwdGridIter it;
+    for (WwdGridNode* obj = it.Start(grid, 0); obj != 0; obj = it.GetNext()) {
+        CWwdObject* w = obj->m_object;
+        m_mgr->InsertSorted_159e40(w, 1);
+        grid->Remove_191890(obj);
+        ++count;
+    }
+    return count;
+}
+
+// ===========================================================================
+// 0x168a70 - ForEachGrid(grid, cb): walk the grid with a scratch cursor, firing
+// the __cdecl callback on each object; return how many fired. /GX frame from the
+// on-stack iterator.
+// ===========================================================================
+// @early-stop
+// /GX scoped-local EH-frame wall (same as FlushGrid/CountInRect): body
+// byte-identical, the iterator local's frame numbers off by 4. See
+// docs/patterns/gx-scoped-local-eh-frame-size.md.
+RVA(0x00168a70, 0x73)
+i32 CWwdSpatialMgr::ForEachGrid(CWwdGrid* grid, void(__cdecl* cb)(CWwdObject*)) {
+    i32 count = 0;
+    CWwdGridIter it;
+    for (WwdGridNode* obj = it.Start(grid, 0); obj != 0; obj = it.GetNext()) {
+        cb(obj->m_object);
+        ++count;
+    }
+    return count;
+}
+
+// ===========================================================================
+// 0x168af0 - GetFirstObject(): seed the embedded cursor on the first non-empty
+// plane grid (grid0 -> grid1 -> grid2), remembering which grid in m_curGrid;
+// return its first object, or 0 when all three are empty.
+// ===========================================================================
+RVA(0x00168af0, 0x6d)
+CWwdObject* CWwdSpatialMgr::GetFirstObject() {
+    m_curGrid = m_grid0;
+    WwdGridNode* n = m_iter.Start(m_grid0, 0);
+    if (n) {
+        return n->m_object;
+    }
+    m_curGrid = m_grid1;
+    n = m_iter.Start(m_grid1, 0);
+    if (n) {
+        return n->m_object;
+    }
+    m_curGrid = m_grid2;
+    n = m_iter.Start(m_grid2, 0);
+    if (n) {
+        return n->m_object;
+    }
+    m_curGrid = 0;
+    return 0;
+}
+
+// ===========================================================================
+// 0x168b60 - GetNextObject(): advance the embedded cursor; when its current grid
+// is exhausted, roll over to the next plane grid (grid0 -> grid1 -> grid2) and
+// re-seed. Returns the next object, or 0 when all grids are done.
+// ===========================================================================
+RVA(0x00168b60, 0x85)
+CWwdObject* CWwdSpatialMgr::GetNextObject() {
+    if (m_curGrid == 0) {
+        return 0;
+    }
+    WwdGridNode* n = m_iter.GetNext();
+    if (n) {
+        return n->m_object;
+    }
+    if (m_curGrid == m_grid0) {
+        m_curGrid = m_grid1;
+        n = m_iter.Start(m_grid1, 0);
+        if (n) {
+            return n->m_object;
+        }
+    }
+    if (m_curGrid == m_grid1) {
+        m_curGrid = m_grid2;
+        n = m_iter.Start(m_grid2, 0);
+        if (n) {
+            return n->m_object;
+        }
+    }
+    m_curGrid = 0;
+    return 0;
 }
 
 // ===========================================================================
