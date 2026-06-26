@@ -56,12 +56,11 @@ struct StreamVoiceList {
 // Ghidra placeholder-named this "UnknownVoldemort"; the 0x5ef6ec stamp + the
 // 0x137710 shared dtor (via the scalar dtor below) prove it is SoundStream's.
 // @early-stop
-// two residuals (~97%): (a) base-ctor symbol ambiguity - the base ctor at
-// 0x136440 is delinked under the Ghidra placeholder ??0UnknownSalazar while this
-// TU emits ??0SoundDevice, so the masked base call pairs by bytes but not by name
-// (needs the SoundDevice/UnknownSalazar base identity unified in a later sweep);
-// (b) a vptr-store scheduling coin-flip - retail stamps the 0x5ef6ec vptr AFTER
-// the two zero stores, cl schedules it first (no source order lever flips it).
+// residual (~97%): a vptr-store scheduling coin-flip - retail stamps the 0x5ef6ec
+// vptr AFTER the two zero stores, cl schedules it first (no source-order lever flips
+// it). The former base-ctor symbol ambiguity is RESOLVED: 0x136440 is now modeled as
+// SoundDevice::SoundDevice (was the Ghidra placeholder ??0UnknownSalazar), so the
+// implicit base call pairs by name in both the recompiled and delinked objects.
 RVA(0x001376d0, 0x20)
 SoundStream::SoundStream() {
     m_94 = 0;

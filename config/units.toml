@@ -920,11 +920,6 @@ source = "src/Gruntz/TileGridCommand.cpp"
 flags = "base"
 
 [[unit]]
-unit = "unknownsalazar"
-source = "src/Dsndmgr/UnknownSalazar.cpp"
-flags = "base"
-
-[[unit]]
 unit = "cddrawsubmgrleaf"
 source = "src/Gruntz/CDDrawSubMgrLeaf.cpp"
 flags = "eh"

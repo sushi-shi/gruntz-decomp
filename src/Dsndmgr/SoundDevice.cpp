@@ -10,6 +10,7 @@
 // are placeholders; offsets + emitted bytes are load-bearing.
 #include <Dsndmgr/SoundDevice.h>
 #include <Rez/RezMgr.h> // RezAlloc/RezFree - the engine heap allocator/deallocator
+#include <math.h>       // acos / pow (intrinsic __CIacos / __CIpow) in VolumeToAttenuation
 #include <rva.h>
 
 // The __FILE__ string the device wrappers pass to GetErrorString (the shared
@@ -103,6 +104,113 @@ extern void* const g_SoundDeviceVtbl[];
 // SoundBuf::StopAndRewind (0x135380) / StopAllClones (0x136150) are external
 // DirectSoundMgr buffer methods (defined in DirectSoundMgr.cpp); declared with no
 // body here so their __thiscall calls reloc-mask as rel32.
+
+// The volume->attenuation lookup table (0x653ab8), filled at device-ctor time by
+// BuildVolumeTable with VolumeToAttenuation(i) for i=0..100. SetVolumeByIndex
+// (DirectSoundMgr.cpp) indexes it. The fill loop runs INCLUSIVE to index 100 -
+// the 101st store lands on g_panTable[0] (0x653c48), the adjacent pan table, which
+// the pan-table init overwrites; that is the retail behaviour.
+DATA(0x00653ab8)
+i32 g_volumeTable[100];
+
+// The x87 transfer-curve constants VolumeToAttenuation reads (.rdata doubles);
+// reloc-masked DIR32 operands, named here so the references pair.
+DATA(0x001ef698)
+extern const double c_volScale; // 0x5ef698  v / c_volScale, and the final * c_volScale
+DATA(0x001ef6a0)
+extern const double c_volNum; // 0x5ef6a0  numerator of the reciprocal
+DATA(0x001ef6a8)
+extern const double c_powExp; // 0x5ef6a8  pow() exponent
+DATA(0x001ef6b0)
+extern const double c_acosNorm; // 0x5ef6b0  acos() normalizer arg
+
+// The engine global operator delete (RezFree-backed, 0x1b9b82) the scalar-deleting
+// destructor tail-calls; reloc-masked rel32 (also redeclared near AcquireFile).
+void operator delete(void*);
+
+// ---------------------------------------------------------------------------
+// SoundDevice::VolumeToAttenuation (0x1350b0, static __cdecl, x87). Map a 0..100
+// volume to a DSound hundredths-of-dB attenuation: 100 -> 0 (full), 0 -> -10000
+// (silence), else an acos(pow(...))/acos(...) transfer scaled by c_volScale (==100),
+// floored via __ftol. Constants (measured): c_volScale=100, c_volNum=1, c_powExp=10,
+// c_acosNorm=2; w = pow(1/(v/100), 10), evaluated acos(w) first then acos(2).
+// @early-stop
+// x87-fp-stack-schedule wall (docs/patterns/x87-fp-stack-schedule.md): the integer
+// scaffold (the 100/-10000 guards, the fild/fdiv/fdivr u-chain, the two __CIacos +
+// __CIpow + __ftol calls with the right constants) is faithful, but retail spills the
+// division result `ratio` to [ebp-8] (forcing a push ebp frame + a shared jmp epilogue)
+// and loads c_powExp in natural order, while MSVC5 here keeps ratio in st0 (frameless,
+// per-path ret) and hoists c_powExp + an extra fxch. The spill/frame and the fxch
+// ordering are not steerable from C (3 spellings tried: 58% frameless / 43% swapped /
+// 57.9% w-spill). 58% - logic complete, deferred to the final sweep.
+RVA(0x001350b0, 0x5d)
+i32 SoundDevice::VolumeToAttenuation(i32 value) {
+    if (value == 100) {
+        return 0;
+    }
+    if (value == 0) {
+        return -10000;
+    }
+    double t = (double)value / c_volScale;
+    double ratio = acos(pow(c_volNum / t, c_powExp)) / acos(c_acosNorm);
+    return (i32)(-(ratio * c_volScale));
+}
+
+// ---------------------------------------------------------------------------
+// SoundDevice::BuildVolumeTable (0x1351a0, static __cdecl). Fill g_volumeTable with
+// VolumeToAttenuation(i), the pointer walking until it reaches g_panTable (0x653c48)
+// inclusive (101 stores).
+RVA(0x001351a0, 0x23)
+void SoundDevice::BuildVolumeTable() {
+    for (i32 i = 0; i <= 100; i++) {
+        g_volumeTable[i] = VolumeToAttenuation(i);
+    }
+}
+
+// ---------------------------------------------------------------------------
+// SoundDevice::SoundDevice (0x136440, __thiscall, /GX EH frame). Zero the two
+// intrusive list members (owned-buffer +0x04/+0x08, voice +0x0c/+0x10), stamp the
+// device vptr, clear the init flag, BuildVolumeTable, then zero the device/primary
+// state. SoundStream derives from this, so its ctor emits the base call here.
+// @early-stop
+// eh-dtor-needs-base-subobject wall (docs/patterns/eh-dtor-needs-base-subobject.md):
+// retail's /GX frame (push -1 / fs:0 setup + the 0->1 trylevel around BuildVolumeTable)
+// comes from the two intrusive list members being real destructible subobjects whose
+// dtors register on the unwind; the manual-vptr non-polymorphic model (kept so the 6
+// exact siblings + the @early-stop dtor don't regress) emits a frameless body. Body
+// (member zeros + vptr stamp + BuildVolumeTable + return this) is faithful; same family
+// as ~SoundDevice (0x136500). Deferred to the final sweep when the whole class (ctor +
+// dtor + the list members) is modelled as destructible subobjects atomically.
+RVA(0x00136440, 0x74)
+SoundDevice::SoundDevice() {
+    m_04_head = 0;
+    m_08 = 0;
+    m_0c = 0;
+    m_10 = 0;
+    *(void**)this = (void*)g_SoundDeviceVtbl;
+    m_78 = 0;
+    BuildVolumeTable();
+    m_80 = 0;
+    m_84 = 0;
+    m_88 = 0;
+    m_8c = 0;
+    m_90 = 0;
+}
+
+// ---------------------------------------------------------------------------
+// SoundDevice::ScalarDtor (0x1364c0, __thiscall) - the ??_G vtable slot-0
+// scalar-deleting destructor MSVC auto-emits for the virtual dtor: run ~SoundDevice,
+// then operator delete (the engine RezFree) when the low flag bit is set; returns
+// this. Modeled as a plain method (name-independent at delink) since SoundDevice is
+// kept non-polymorphic (manual vptr stamp); same shape as SoundStream::ScalarDtor.
+RVA(0x001364c0, 0x1e)
+void* SoundDevice::ScalarDtor(i32 flag) {
+    this->~SoundDevice();
+    if (flag & 1) {
+        operator delete(this);
+    }
+    return this;
+}
 
 // ---------------------------------------------------------------------------
 // SoundDevice::~SoundDevice (0x136500, __thiscall, /GX EH frame). Stamp the

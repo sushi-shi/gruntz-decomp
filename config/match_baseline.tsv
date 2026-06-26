@@ -233,7 +233,7 @@ sbi_wellgoo_eh	1	0
 scattersamples	2	1
 shadetablecache	19	3
 siriusworkerhandlers	4	4
-sounddevice	12	6
+sounddevice	16	8
 soundstream	7	3
 soundvoicelist	4	3
 spriteloaders	10	5
@@ -264,7 +264,6 @@ typekeycoll	10	5
 uncompr	1	1
 unknownclassarrays	39	10
 unknownclassincgruntzmgr	2	0
-unknownsalazar	4	0
 userbaselink	10	0
 userlogic	62	25
 videoconfig	2	0
@@ -1168,7 +1167,7 @@ directsoundmgr	?SetFrequency@DirectSoundMgr@@QAEHI@Z	100.0000	100.0000	2	510f636
 directsoundmgr	?SetPan@DirectSoundMgr@@QAEHH@Z	100.0000	100.0000	2	c2969cfa4f21	0x135740
 directsoundmgr	?SetPanByIndex@DirectSoundMgr@@QAEHH@Z	100.0000	100.0000	1	ca81b43045d6	0x1357a0
 directsoundmgr	?SetVolume@DirectSoundMgr@@QAEHH@Z	100.0000	100.0000	2	8fde1fd17e6b	0x135560
-directsoundmgr	?SetVolumeByIndex@DirectSoundMgr@@QAEHH@Z	100.0000	100.0000	1	3bb960801cab	0x1355c0
+directsoundmgr	?SetVolumeByIndex@DirectSoundMgr@@QAEHH@Z	100.0000	100.0000	2	de64fe712122	0x1355c0
 directsoundmgr	?StopAllClones@DirectSoundMgr@@QAEXXZ	100.0000	100.0000	2	9794fd044e46	0x136150
 directsoundmgr	?StopAndRewind@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	4	6573311d6e81	0x135380
 directsoundmgr	?Unlock@DirectSoundMgr@@QAEHPAXI0I@Z	100.0000	100.0000	2	1173b7b823c7	0x1359c0
@@ -3232,17 +3231,21 @@ siriusworkerhandlers	??0WorkerFull@@QAE@HHH@Z	100.0000	100.0000	2	864075c7c48f	0
 siriusworkerhandlers	?Handler03d670@@YAHPAUOwner@@@Z	100.0000	100.0000	1	839c531d42a0	0x3d670
 siriusworkerhandlers	?Handler07db20@@YAHPAUOwner@@@Z	100.0000	100.0000	1	b23002ac8904	0x7db20
 siriusworkerhandlers	?Handler07dda0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	27f15168f4f5	0x7dda0
+sounddevice	??0SoundDevice@@QAE@XZ	56.9688	56.9688	1	a2a1392ec263	0x136440
 sounddevice	??1SoundDevice@@QAE@XZ	28.2353	28.2353	1	980bcd8696e1	0x136500
 sounddevice	?Acquire@SoundDevice@@QAEPAVDirectSoundMgr@@PAXII@Z	99.7685	99.7685	1	efa149c49cbf	0x136910
 sounddevice	?AcquireFile@SoundDevice@@QAEPAVDirectSoundMgr@@PADII@Z	100.0000	100.0000	1	4fdc15895e38	0x136860
+sounddevice	?BuildVolumeTable@SoundDevice@@SAXXZ	100.0000	100.0000	1	7b6c96db57e0	0x1351a0
 sounddevice	?CreateBuffer@SoundDevice@@QAEPAVDirectSoundMgr@@PAUWaveFormatX@@II@Z	45.2437	45.2437	1	6f1c9d1c5aa0	0x1366f0
 sounddevice	?FreeSamples@SoundDevice@@QAEHXZ	77.4074	77.4074	2	252e2641aed3	0x136ed0
 sounddevice	?ReloadRiff@SoundDevice@@QAEHPAVDirectSoundMgr@@PAXI@Z	93.1376	93.1376	1	e7242d225e0d	0x136bd0
 sounddevice	?RemoveBuffer@SoundDevice@@QAEXPAUSoundBuf@@@Z	100.0000	100.0000	1	adf3276a17a2	0x136d80
+sounddevice	?ScalarDtor@SoundDevice@@QAEPAXH@Z	100.0000	100.0000	1	9b104204e4b9	0x1364c0
 sounddevice	?SetPrimaryFormat@SoundDevice@@QAEHPAX@Z	100.0000	100.0000	2	a820b59fa0c9	0x1371a0
 sounddevice	?Shutdown@SoundDevice@@QAEXXZ	100.0000	100.0000	1	fb1766cf3e8b	0x136690
 sounddevice	?StopAll@SoundDevice@@QAEXXZ	100.0000	100.0000	1	1bf09dff5de0	0x136de0
 sounddevice	?ValidateRestore@SoundDevice@@QAEHPAVDirectSoundMgr@@PAUWaveFormatX@@I@Z	100.0000	100.0000	1	dc530d81dffa	0x136ab0
+sounddevice	?VolumeToAttenuation@SoundDevice@@SAHH@Z	58.1111	58.1111	1	ccabb2037a00	0x1350b0
 sounddevice	_ParseWaveChunks	98.2281	98.2281	1	55419d1096d0	0x137110
 soundstream	??0SoundStream@@QAE@XZ	96.8000	96.8000	1	434a7f246c67	0x1376d0
 soundstream	??1SoundStream@@QAE@XZ	100.0000	100.0000	1	611af7941630	0x137710
@@ -3523,10 +3526,6 @@ unknownclassarrays	?winapi_031ca0_IntersectRect@UnknownClassArrays@@QAEHH@Z	0.62
 unknownclassarrays	?winapi_032060_IntersectRect@UnknownClassArrays@@QAEHH@Z	0.3368	0.3368	2	b0505770caf7	0x32060
 unknownclassincgruntzmgr	??0UnknownClassInCGruntzMgr@@QAE@XZ	85.3478	85.3478	1	46bdec786f89	0xda790
 unknownclassincgruntzmgr	??1UnknownClassInCGruntzMgr@@QAE@XZ	72.3182	72.3182	1	0a996778a41d	0x83260
-unknownsalazar	??0UnknownSalazar@@QAE@XZ	4.3750	4.3750	2	4c907e80c2a7	0x136440
-unknownsalazar	??1UnknownSalazar@@QAE@XZ	3.6364	3.6364	2	0f612d9c4729	0x1364c0
-unknownsalazar	?getLookupTableValue@UnknownSalazar@@SAHH@Z	7.4074	7.4074	4	6254d92425a7	0x1350b0
-unknownsalazar	?initializeUnknownLookupTable@UnknownSalazar@@SAXXZ	96.0000	96.0000	6	37d2ca56ac6b	0x1351a0
 userbaselink	??0CUserBaseLink@@QAE@XZ	13.5429	13.5429	3	4f55195a665e	0x16d710
 userbaselink	??0EngStr@@QAE@PBDH@Z	0.6747	0.6747	3	83d426dbd622	0x16d3a0
 userbaselink	??1EngStr@@QAE@XZ	7.1429	7.1429	2	4918c15d78e6	0x16d2a0
