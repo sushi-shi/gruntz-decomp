@@ -224,3 +224,228 @@ i32 CSpriteRefTable::LoadGruntzPalette(i32 src, i32 name) {
     }
     return self->m_4->m_18->Install(pal, 0, 0) != 0;
 }
+
+// ---------------------------------------------------------------------------
+// CSpriteRefTable::LoadToolToyPalettes (0xe2980) - register the full tool/toy color
+// palette set by calling LoadGruntzPalette for each of the 34 fixed color names.
+// Short-circuits to 0 on the first failure (a null src bails immediately); returns 1
+// only when every palette resolved. __thiscall(src), ret 4.
+RVA(0x000e2980, 0x2cd)
+i32 CSpriteRefTable::LoadToolToyPalettes(i32 src) {
+    // One short-circuit && chain so MSVC shares a single return-0 tail (each rung
+    // `test;je fail`), matching retail's layout (an if/return-0 per rung inlines 35
+    // epilogues and bloats the body).
+    if (src && LoadGruntzPalette(src, (i32) "BLACKTOOL") &&
+        LoadGruntzPalette(src, (i32) "BLACKTOY") && LoadGruntzPalette(src, (i32) "DKBLUETOOL") &&
+        LoadGruntzPalette(src, (i32) "DKBLUETOY") && LoadGruntzPalette(src, (i32) "DKGREENTOOL") &&
+        LoadGruntzPalette(src, (i32) "DKGREENTOY") && LoadGruntzPalette(src, (i32) "TURQTOOL") &&
+        LoadGruntzPalette(src, (i32) "TURQTOY") && LoadGruntzPalette(src, (i32) "DKREDTOOL") &&
+        LoadGruntzPalette(src, (i32) "DKREDTOY") && LoadGruntzPalette(src, (i32) "PURPLETOOL") &&
+        LoadGruntzPalette(src, (i32) "PURPLETOY") && LoadGruntzPalette(src, (i32) "DKYELLOWTOOL") &&
+        LoadGruntzPalette(src, (i32) "DKYELLOWTOY") && LoadGruntzPalette(src, (i32) "GREYTOOL") &&
+        LoadGruntzPalette(src, (i32) "GREYTOY") && LoadGruntzPalette(src, (i32) "BLUETOOL") &&
+        LoadGruntzPalette(src, (i32) "BLUETOY") && LoadGruntzPalette(src, (i32) "GREENTOOL") &&
+        LoadGruntzPalette(src, (i32) "GREENTOY") && LoadGruntzPalette(src, (i32) "CYANTOOL") &&
+        LoadGruntzPalette(src, (i32) "CYANTOY") && LoadGruntzPalette(src, (i32) "REDTOOL") &&
+        LoadGruntzPalette(src, (i32) "REDTOY") && LoadGruntzPalette(src, (i32) "PINKTOOL") &&
+        LoadGruntzPalette(src, (i32) "PINKTOY") && LoadGruntzPalette(src, (i32) "YELLOWTOOL") &&
+        LoadGruntzPalette(src, (i32) "YELLOWTOY") && LoadGruntzPalette(src, (i32) "WHITETOOL") &&
+        LoadGruntzPalette(src, (i32) "WHITETOY") && LoadGruntzPalette(src, (i32) "ORANGETOOL") &&
+        LoadGruntzPalette(src, (i32) "ORANGETOY") && LoadGruntzPalette(src, (i32) "HOTPINKTOOL") &&
+        LoadGruntzPalette(src, (i32) "HOTPINKTOY")) {
+        return 1;
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// CSpriteRefTable::BuildToolToyColorTable (0xe2400) - build the per-color tool/toy
+// sprite-ref table. Bails on a null src; if already built (m_90) returns success.
+// Otherwise registers the color palettes (LoadToolToyPalettes), then Add()s each
+// color's "<COLOR>TOOL"/"<COLOR>TOY" sprite into bucket A/B at the color's fixed
+// kind slot (any Add miss aborts with 0), and latches m_90. __thiscall(src), ret 4.
+RVA(0x000e2400, 0x39e)
+i32 CSpriteRefTable::BuildToolToyColorTable(i32 src) {
+    if (!src) {
+        return 0;
+    }
+    if (m_90 != 0) {
+        return 1;
+    }
+    if (!LoadToolToyPalettes(src)) {
+        return 0;
+    }
+    CSpriteRef* r;
+    r = Add("BLACKTOOL", 7);
+    if (!r) {
+        return 0;
+    }
+    m_refA[7] = r;
+    r = Add("BLACKTOY", 7);
+    if (!r) {
+        return 0;
+    }
+    m_refB[7] = r;
+    r = Add("DKBLUETOOL", 8);
+    if (!r) {
+        return 0;
+    }
+    m_refA[8] = r;
+    r = Add("DKBLUETOY", 8);
+    if (!r) {
+        return 0;
+    }
+    m_refB[8] = r;
+    r = Add("DKGREENTOOL", 9);
+    if (!r) {
+        return 0;
+    }
+    m_refA[9] = r;
+    r = Add("DKGREENTOY", 9);
+    if (!r) {
+        return 0;
+    }
+    m_refB[9] = r;
+    r = Add("TURQTOOL", 0xa);
+    if (!r) {
+        return 0;
+    }
+    m_refA[0xa] = r;
+    r = Add("TURQTOY", 0xa);
+    if (!r) {
+        return 0;
+    }
+    m_refB[0xa] = r;
+    r = Add("DKREDTOOL", 0xb);
+    if (!r) {
+        return 0;
+    }
+    m_refA[0xb] = r;
+    r = Add("DKREDTOY", 0xb);
+    if (!r) {
+        return 0;
+    }
+    m_refB[0xb] = r;
+    r = Add("PURPLETOOL", 4);
+    if (!r) {
+        return 0;
+    }
+    m_refA[4] = r;
+    r = Add("PURPLETOY", 4);
+    if (!r) {
+        return 0;
+    }
+    m_refB[4] = r;
+    r = Add("DKYELLOWTOOL", 0xd);
+    if (!r) {
+        return 0;
+    }
+    m_refA[0xd] = r;
+    r = Add("DKYELLOWTOY", 0xd);
+    if (!r) {
+        return 0;
+    }
+    m_refB[0xd] = r;
+    r = Add("GREYTOOL", 0xe);
+    if (!r) {
+        return 0;
+    }
+    m_refA[0xe] = r;
+    r = Add("GREYTOY", 0xe);
+    if (!r) {
+        return 0;
+    }
+    m_refB[0xe] = r;
+    r = Add("BLUETOOL", 2);
+    if (!r) {
+        return 0;
+    }
+    m_refA[2] = r;
+    r = Add("BLUETOY", 2);
+    if (!r) {
+        return 0;
+    }
+    m_refB[2] = r;
+    r = Add("GREENTOOL", 1);
+    if (!r) {
+        return 0;
+    }
+    m_refA[1] = r;
+    r = Add("GREENTOY", 1);
+    if (!r) {
+        return 0;
+    }
+    m_refB[1] = r;
+    r = Add("CYANTOOL", 0xf);
+    if (!r) {
+        return 0;
+    }
+    m_refA[0xf] = r;
+    r = Add("CYANTOY", 0xf);
+    if (!r) {
+        return 0;
+    }
+    m_refB[0xf] = r;
+    r = Add("REDTOOL", 3);
+    if (!r) {
+        return 0;
+    }
+    m_refA[3] = r;
+    r = Add("REDTOY", 3);
+    if (!r) {
+        return 0;
+    }
+    m_refB[3] = r;
+    r = Add("PINKTOOL", 0xc);
+    if (!r) {
+        return 0;
+    }
+    m_refA[0xc] = r;
+    r = Add("PINKTOY", 0xc);
+    if (!r) {
+        return 0;
+    }
+    m_refB[0xc] = r;
+    r = Add("YELLOWTOOL", 5);
+    if (!r) {
+        return 0;
+    }
+    m_refA[5] = r;
+    r = Add("YELLOWTOY", 5);
+    if (!r) {
+        return 0;
+    }
+    m_refB[5] = r;
+    r = Add("WHITETOOL", 0x10);
+    if (!r) {
+        return 0;
+    }
+    m_refA[0x10] = r;
+    r = Add("WHITETOY", 0x10);
+    if (!r) {
+        return 0;
+    }
+    m_refB[0x10] = r;
+    r = Add("ORANGETOOL", 0);
+    if (!r) {
+        return 0;
+    }
+    m_refA[0] = r;
+    r = Add("ORANGETOY", 0);
+    if (!r) {
+        return 0;
+    }
+    m_refB[0] = r;
+    r = Add("HOTPINKTOOL", 6);
+    if (!r) {
+        return 0;
+    }
+    m_refA[6] = r;
+    r = Add("HOTPINKTOY", 6);
+    if (!r) {
+        return 0;
+    }
+    m_refB[6] = r;
+    m_90 = 1;
+    return 1;
+}

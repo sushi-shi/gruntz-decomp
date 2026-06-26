@@ -51,16 +51,12 @@ RVA(0x0010d3d0, 0xf1)
 void CLogicRecord::CLogicRecord_10d3d0() {}
 
 // ---- CPlay ----
-RVA(0x000cb400, 0x58)
-void CPlay::CPlay_0cb400() {}
 RVA(0x000cb480, 0x22c)
 void CPlay::CPlay_0cb480() {}
 RVA(0x000d53d0, 0x466)
 void CPlay::CPlay_0d53d0() {}
 RVA(0x000d9290, 0x2a7)
 void CPlay::CPlay_0d9290() {}
-RVA(0x000dd830, 0x1e3)
-void CPlay::CPlay_0dd830() {}
 
 // ---- CSpotLight ----
 RVA(0x000b1ee0, 0x11d)

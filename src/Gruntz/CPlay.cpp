@@ -591,6 +591,151 @@ alt2:
 }
 
 // ===========================================================================
+// CPlay::OnExit (0x0cb400) - the PLAY-state teardown: run the ready-gate forwarder,
+// the slot-21 notify, refresh renderer A, then clear the registry's per-frame word
+// (+0x128), drop its mode back to 0 if it was 3, and run the +0x70 object's teardown
+// (vtable slot 0). The registry's per-exit fields live in a local member-type view.
+// ===========================================================================
+// Member-type view of the registry singleton for the exit path: its +0x70 teardown
+// object (slot-0 virtual), the +0x128 per-frame clear word and the +0x134 mode.
+struct CRegExit {
+    char p0[0x70];
+    struct Teardown {
+        virtual void Shutdown(); // slot 0 (+0x0)
+    }* m_70;                     // +0x70
+    char p74[0x128 - 0x74];
+    i32 m_128; // +0x128
+    char p12c[0x134 - 0x12c];
+    i32 m_134; // +0x134
+};
+
+// @early-stop
+// ~95% regalloc wall: logic + all 5 relocs pair; retail threads the reloaded registry
+// global through eax for all three accesses (m_70 -> eax -> ecx) where MSVC5 here
+// colors the first store's load into ecx (and the m_70 deref straight into ecx).
+// Not source-steerable (eax/ecx coloring of a thrice-reloaded global).
+// docs/patterns/zero-register-pinning.md.
+RVA(0x000cb400, 0x58)
+void CPlay::OnExit() {
+    ForwardReady();
+    Vslot21();
+    if (m_c) {
+        m_c->m_8->Refresh();
+    }
+    ((CRegExit*)g_64556c)->m_128 = 0;
+    if (((CRegExit*)g_64556c)->m_134 == 3) {
+        ((CRegExit*)g_64556c)->m_134 = 0;
+    }
+    ((CRegExit*)g_64556c)->m_70->Shutdown();
+}
+
+// ===========================================================================
+// CPlay::OnKeyCommand (0x0cbaf0) - the PLAY-state keyboard/UI command dispatcher.
+// Early-outs on the HUD-suppress gate, then a priority chain: resume from a paused/
+// disabled frame (re-arm the in-game mode), bail to ReportError if the per-frame
+// reset is still pending, un-pause, or (no active grunt) forward to the overlay
+// layer / dispatch the bracket-key zoom guts steps. __thiscall(key, flag), ret 8.
+// ===========================================================================
+// @early-stop
+// ~82% identical-return-epilogue tail-merge wall: the whole priority chain + every
+// cmp/call is byte-faithful and all relocs pair, but MSVC5's epilogue merger picks a
+// different set of return-1/return-0 sites to share vs inline than retail (retail
+// inlines the m_hudSuppressed return-1 + shares the two return-0 tails; we do the
+// reverse), cascading a small offset shift. Not source-steerable.
+// docs/patterns/identical-return-epilogue-tailmerge.md.
+RVA(0x000cbaf0, 0x16f)
+i32 CPlay::OnKeyCommand(i32 key, i32 flag) {
+    if (m_hudSuppressed != 0) {
+        return 1;
+    }
+    if (m_renderDisabled != 0) {
+        m_renderDisabled = 0;
+        m_hudSuppressed = 1;
+        EnterMode(3);
+        m_inGame = 1;
+        return 1;
+    }
+    if (m_inGame != 0) {
+        if (ResetPlayState()) {
+            return 1;
+        }
+        m_4w()->ReportError(0x800a, 0x456);
+        return 1;
+    }
+    if (m_paused != 0) {
+        m_paused = 0;
+        PostMessageA(m_4w()->m_4->m_4->m_4, 0x111, 0x816e, 0);
+        return 1;
+    }
+    if (m_4w()->m_c != 0) {
+        return 0;
+    }
+    if (m_hitTest->m_10 != 0) {
+        ((CWorldLayer*)m_4w()->m_5c)->Forward3508(key, flag);
+        return 1;
+    }
+    if (key == 0x5d) {
+        m_guts->StepBracketR();
+        return 1;
+    }
+    if (key == 0x5b) {
+        m_guts->StepBracketL();
+        return 1;
+    }
+    if (key == 0x2d) {
+        m_guts->StepMinus();
+        return 1;
+    }
+    if (key == 0x3d || key == 0x2b) {
+        m_guts->Guts123f();
+        m_hitTest->StepZoom(m_guts->m_state == 1 ? 2 : 1);
+        return 1;
+    }
+    return 0;
+}
+
+// ===========================================================================
+// CPlay::ResetViewport (0x0d8c60) - ClampViewport's no-change fallback: build the
+// full-screen viewport rect (a guts-state-dependent left/right bias), optionally
+// re-center it to a 0xc0 box (region-0 gate), pin the view discriminator to idle,
+// install the rect on the draw-surface and run the world apply-tail. __thiscall.
+// ===========================================================================
+// @early-stop
+// ~95% regalloc wall: the SetRect dispatch, the region-0 re-center block and the
+// apply-tail are byte-faithful with all relocs pairing; only the 5-instruction
+// prologue colors the (m_4, right, bottom) trio eax/ecx-swapped vs retail (retail
+// pins m_4 in ecx and right in eax; we mirror). Tried explicit load ordering.
+// docs/patterns/zero-register-pinning.md.
+RVA(0x000d8c60, 0xea)
+i32 CPlay::ResetViewport() {
+    CWorld* w = m_4w();
+    GutsSubsystem* guts = m_guts;
+    i32 right = w->m_8c;
+    i32 state = guts->m_state;
+    i32 bottom = w->m_90;
+    RECT r;
+    if (state == 1) {
+        SetRect(&r, 0xa0, 0, right - 1, bottom - 1);
+    } else if (state == 0) {
+        SetRect(&r, 0, 0, right - 0xa1, bottom - 1);
+    } else {
+        SetRect(&r, 0, 0, right - 1, bottom - 1);
+    }
+    if (m_region0Gate) {
+        i32 halfW = (r.right - r.left) / 2;
+        i32 halfH = (r.bottom - r.top) / 2;
+        r.left = r.left + halfW - 0x60;
+        r.top = r.top + halfH - 0x60;
+        r.right = r.right + (0x60 - halfW);
+        r.bottom = r.bottom + (0x60 - halfH);
+    }
+    m_viewMode = VIEW_MODE_IDLE;
+    m_c->m_24->SetClipRect(&r);
+    m_4w()->ClampApply();
+    return 1;
+}
+
+// ===========================================================================
 // CPlay::StepC - the menu/overlay-frame view
 // sub-step. A 3-way switch on the view-mode discriminator m_viewMode: 0 = idle (no
 // view yet, bail), 1 = mode-A sub-step, 2(+) = mode-B sub-step. MSVC hoists the
@@ -1877,5 +2022,361 @@ i32 CPlay::LoadGameAnims(i32 force) {
         return 0;
     }
     self->m_c->m_2c->Install(anims, "GAME", "_");
+    return 1;
+}
+
+// ===========================================================================
+// CPlay::BuildMusicCategoryTable (0x0dba30) - install the level's + game's XMI music
+// categories into the sound manager's category table (m_4->m_48). For each of the
+// two MIDIZ sources (level m_28, game m_34) it resolves a fixed list of category
+// names ("AMBIENT0/1", "INTRO0/1" for the level; "POWERUP", "CURSE", "MONOLITH" for
+// the game) as 'XMI' resources and, if the resolved entry loads, installs it under
+// its name. The arg (force flag) is unused. __thiscall, ret 4.
+// ===========================================================================
+// A resolved music-category entry (Resolve result): +0xc field + a Load() accessor.
+struct CMusicEntry {
+    void* Load(); // 0x539960 (thiscall) -> resource ptr (null if absent)
+    char p0[0xc];
+    void* m_c;    // +0xc  install key
+};
+// A named MIDIZ category set (LookupSet result).
+struct CMusicSet {
+    CMusicEntry* Resolve(char* name, i32 tag); // 0x53a000 (thiscall)
+};
+// A music source (level m_28 / game m_34).
+struct CMusicSource {
+    CMusicSet* LookupSet(char* name); // 0x53bae0 (thiscall)
+};
+// The destination category table (the sound manager at m_4->m_48).
+struct CMusicCatTable {
+    void Clear();                                   // 0x538530 (thiscall, no arg)
+    void Install(void* res, void* key, char* name); // 0x538670 (thiscall)
+};
+// Typed view of `this` for this builder: m_4->m_48 = sound manager, m_28/m_34 sources.
+struct CMusicOwner {
+    char p0[0x4];
+    struct SndHolder {
+        char p0[0x48];
+        CMusicCatTable* m_48; // +0x48
+    }* m_4;                   // +0x04
+    char p8[0x28 - 0x8];
+    CMusicSource* m_28; // +0x28
+    char p2c[0x34 - 0x2c];
+    CMusicSource* m_34; // +0x34
+};
+
+#define MUSIC_TAG_XMI 0x584d49 // 'XMI'
+
+RVA(0x000dba30, 0x1ca)
+i32 CPlay::BuildMusicCategoryTable(i32) {
+    CMusicOwner* self = (CMusicOwner*)this;
+    self->m_4->m_48->Clear();
+
+    CMusicSet* levelSet = self->m_28->LookupSet("MIDIZ");
+    if (levelSet) {
+        CMusicEntry* e = levelSet->Resolve("AMBIENT0", MUSIC_TAG_XMI);
+        if (e) {
+            void* res = e->Load();
+            if (res) {
+                self->m_4->m_48->Install(res, e->m_c, "AMBIENT0");
+            }
+        }
+        e = levelSet->Resolve("AMBIENT1", MUSIC_TAG_XMI);
+        if (e) {
+            void* res = e->Load();
+            if (res) {
+                self->m_4->m_48->Install(res, e->m_c, "AMBIENT1");
+            }
+        }
+        e = levelSet->Resolve("INTRO0", MUSIC_TAG_XMI);
+        if (e) {
+            void* res = e->Load();
+            if (res) {
+                self->m_4->m_48->Install(res, e->m_c, "INTRO0");
+            }
+        }
+        e = levelSet->Resolve("INTRO1", MUSIC_TAG_XMI);
+        if (e) {
+            void* res = e->Load();
+            if (res) {
+                self->m_4->m_48->Install(res, e->m_c, "INTRO1");
+            }
+        }
+    }
+
+    CMusicSource* gameSrc = self->m_34;
+    CMusicSet* gameSet = gameSrc->LookupSet("MIDIZ");
+    if (gameSet) {
+        CMusicEntry* e = gameSet->Resolve("POWERUP", MUSIC_TAG_XMI);
+        if (e) {
+            void* res = e->Load();
+            if (res) {
+                self->m_4->m_48->Install(res, e->m_c, "POWERUP");
+            }
+        }
+        e = gameSet->Resolve("CURSE", MUSIC_TAG_XMI);
+        if (e) {
+            void* res = e->Load();
+            if (res) {
+                self->m_4->m_48->Install(res, e->m_c, "CURSE");
+            }
+        }
+        e = gameSet->Resolve("MONOLITH", MUSIC_TAG_XMI);
+        if (e) {
+            void* res = e->Load();
+            if (res) {
+                self->m_4->m_48->Install(res, e->m_c, "MONOLITH");
+            }
+        }
+    }
+    return 1;
+}
+
+// ===========================================================================
+// CPlay::LoadGruntSoundNamespaces (0x0dd830) - register the per-grunt sound
+// namespaces (GRUNTZ_<X>) into the level sound registry (m_c->m_28), sourcing each
+// SOUNDZ_<X> set off the GRUNTZ bank (m_30). The first three namespaces load silently;
+// the last four also tick the load-notify object (arg) when present. __thiscall.
+// ===========================================================================
+// The per-namespace load-notify sink (arg): OnLoaded() probes its ready flags and
+// posts a progress message. External/reloc-masked.
+struct CLoadNotify {
+    void OnLoaded(); // 0x4bc420 (thiscall, no arg)
+};
+
+RVA(0x000dd830, 0x1e3)
+i32 CPlay::LoadGruntSoundNamespaces(void* notify) {
+    CPlayRes* self = (CPlayRes*)this;
+    if (!self->m_c) {
+        return 0;
+    }
+
+    if (!self->m_c->m_28->Has("GRUNTZ_NORMALGRUNT")) {
+        void* s = self->m_30->LookupSet("SOUNDZ_NORMALGRUNT");
+        if (s) {
+            self->m_c->m_28->Install(s, "GRUNTZ_NORMALGRUNT", "_");
+        }
+    }
+    if (!self->m_c->m_28->Has("GRUNTZ_DEATHZ")) {
+        void* s = self->m_30->LookupSet("SOUNDZ_DEATHZ");
+        if (s) {
+            self->m_c->m_28->Install(s, "GRUNTZ_DEATHZ", "_");
+        }
+    }
+    if (!self->m_c->m_28->Has("GRUNTZ_ENTRANCEZ")) {
+        void* s = self->m_30->LookupSet("SOUNDZ_ENTRANCEZ");
+        if (s) {
+            self->m_c->m_28->Install(s, "GRUNTZ_ENTRANCEZ", "_");
+        }
+    }
+    if (!self->m_c->m_28->Has("GRUNTZ_EXITZ")) {
+        void* s = self->m_30->LookupSet("SOUNDZ_EXITZ");
+        if (s) {
+            self->m_c->m_28->Install(s, "GRUNTZ_EXITZ", "_");
+        }
+        if (notify) {
+            ((CLoadNotify*)notify)->OnLoaded();
+        }
+    }
+    if (!self->m_c->m_28->Has("GRUNTZ_GRUNTPUDDLE")) {
+        void* s = self->m_30->LookupSet("SOUNDZ_GRUNTPUDDLE");
+        if (s) {
+            self->m_c->m_28->Install(s, "GRUNTZ_GRUNTPUDDLE", "_");
+        }
+        if (notify) {
+            ((CLoadNotify*)notify)->OnLoaded();
+        }
+    }
+    if (!self->m_c->m_28->Has("GRUNTZ_PICKUPS")) {
+        void* s = self->m_30->LookupSet("SOUNDZ_PICKUPS");
+        if (s) {
+            self->m_c->m_28->Install(s, "GRUNTZ_PICKUPS", "_");
+        }
+        if (notify) {
+            ((CLoadNotify*)notify)->OnLoaded();
+        }
+    }
+    if (!self->m_c->m_28->Has("GRUNTZ_BOMBGRUNT")) {
+        void* s = self->m_30->LookupSet("SOUNDZ_BOMBGRUNT");
+        if (s) {
+            self->m_c->m_28->Install(s, "GRUNTZ_BOMBGRUNT", "_");
+        }
+        if (notify) {
+            ((CLoadNotify*)notify)->OnLoaded();
+        }
+    }
+    return 1;
+}
+
+// ===========================================================================
+// CPlay::BuildSpriteImageKeyTable (0x0dd540) - install the per-grunt IMAGE namespaces
+// (GRUNTZ_<X>) into the image registry (m_c->m_10, virtual install at +0x48), each
+// sourced from the GRUNTZ bank's IMAGEZ_<X> set; brackets the run with the severus
+// counter (1 .. 0) and ticks the notify object after each install. A missing source
+// set aborts (return 0, severus left set). __thiscall.
+// ===========================================================================
+RVA(0x000dd540, 0x241)
+i32 CPlay::BuildSpriteImageKeyTable(void* notify) {
+    CPlayRes* self = (CPlayRes*)this;
+    if (!self->m_c) {
+        return 0;
+    }
+    g_severusCounterA = 1;
+    if (!self->m_c->m_10->Has("GRUNTZ_NORMALGRUNT")) {
+        void* s = self->m_30->LookupSet("IMAGEZ_NORMALGRUNT");
+        if (!s) {
+            return 0;
+        }
+        self->m_c->m_10->Install(s, "GRUNTZ_NORMALGRUNT", "_");
+        if (notify) {
+            ((CLoadNotify*)notify)->OnLoaded();
+        }
+    }
+    if (!self->m_c->m_10->Has("GRUNTZ_DEATHZ")) {
+        void* s = self->m_30->LookupSet("IMAGEZ_DEATHZ");
+        if (!s) {
+            return 0;
+        }
+        self->m_c->m_10->Install(s, "GRUNTZ_DEATHZ", "_");
+        if (notify) {
+            ((CLoadNotify*)notify)->OnLoaded();
+        }
+    }
+    if (!self->m_c->m_10->Has("GRUNTZ_ENTRANCEZ")) {
+        void* s = self->m_30->LookupSet("IMAGEZ_ENTRANCEZ");
+        if (!s) {
+            return 0;
+        }
+        self->m_c->m_10->Install(s, "GRUNTZ_ENTRANCEZ", "_");
+        if (notify) {
+            ((CLoadNotify*)notify)->OnLoaded();
+        }
+    }
+    if (!self->m_c->m_10->Has("GRUNTZ_EXITZ")) {
+        void* s = self->m_30->LookupSet("IMAGEZ_EXITZ");
+        if (!s) {
+            return 0;
+        }
+        self->m_c->m_10->Install(s, "GRUNTZ_EXITZ", "_");
+        if (notify) {
+            ((CLoadNotify*)notify)->OnLoaded();
+        }
+    }
+    if (!self->m_c->m_10->Has("GRUNTZ_GRUNTPUDDLE")) {
+        void* s = self->m_30->LookupSet("IMAGEZ_GRUNTPUDDLE");
+        if (!s) {
+            return 0;
+        }
+        self->m_c->m_10->Install(s, "GRUNTZ_GRUNTPUDDLE", "_");
+        if (notify) {
+            ((CLoadNotify*)notify)->OnLoaded();
+        }
+    }
+    if (!self->m_c->m_10->Has("GRUNTZ_PICKUPS")) {
+        void* s = self->m_30->LookupSet("IMAGEZ_PICKUPS");
+        if (!s) {
+            return 0;
+        }
+        self->m_c->m_10->Install(s, "GRUNTZ_PICKUPS", "_");
+        if (notify) {
+            ((CLoadNotify*)notify)->OnLoaded();
+        }
+    }
+    if (!self->m_c->m_10->Has("GRUNTZ_BOMBGRUNT")) {
+        void* s = self->m_30->LookupSet("IMAGEZ_BOMBGRUNT");
+        if (!s) {
+            return 0;
+        }
+        self->m_c->m_10->Install(s, "GRUNTZ_BOMBGRUNT", "_");
+        if (notify) {
+            ((CLoadNotify*)notify)->OnLoaded();
+        }
+    }
+    g_severusCounterA = 0;
+    return 1;
+}
+
+// ===========================================================================
+// CPlay::BuildAnizKeyTable (0x0ddaa0) - install the per-grunt ANIM namespaces
+// (GRUNTZ_<X>) into the animation registry (m_c->m_2c), each sourced from the GRUNTZ
+// bank's ANIZ_<X> set; ticks the notify object after each install. A missing source
+// set aborts (return 0). __thiscall.
+// ===========================================================================
+RVA(0x000ddaa0, 0x228)
+i32 CPlay::BuildAnizKeyTable(void* notify) {
+    CPlayRes* self = (CPlayRes*)this;
+    if (!self->m_c) {
+        return 0;
+    }
+    if (!self->m_c->m_2c->Has("GRUNTZ_NORMALGRUNT")) {
+        void* s = self->m_30->LookupSet("ANIZ_NORMALGRUNT");
+        if (!s) {
+            return 0;
+        }
+        self->m_c->m_2c->Install(s, "GRUNTZ_NORMALGRUNT", "_");
+        if (notify) {
+            ((CLoadNotify*)notify)->OnLoaded();
+        }
+    }
+    if (!self->m_c->m_2c->Has("GRUNTZ_DEATHZ")) {
+        void* s = self->m_30->LookupSet("ANIZ_DEATHZ");
+        if (!s) {
+            return 0;
+        }
+        self->m_c->m_2c->Install(s, "GRUNTZ_DEATHZ", "_");
+        if (notify) {
+            ((CLoadNotify*)notify)->OnLoaded();
+        }
+    }
+    if (!self->m_c->m_2c->Has("GRUNTZ_ENTRANCEZ")) {
+        void* s = self->m_30->LookupSet("ANIZ_ENTRANCEZ");
+        if (!s) {
+            return 0;
+        }
+        self->m_c->m_2c->Install(s, "GRUNTZ_ENTRANCEZ", "_");
+        if (notify) {
+            ((CLoadNotify*)notify)->OnLoaded();
+        }
+    }
+    if (!self->m_c->m_2c->Has("GRUNTZ_EXITZ")) {
+        void* s = self->m_30->LookupSet("ANIZ_EXITZ");
+        if (!s) {
+            return 0;
+        }
+        self->m_c->m_2c->Install(s, "GRUNTZ_EXITZ", "_");
+        if (notify) {
+            ((CLoadNotify*)notify)->OnLoaded();
+        }
+    }
+    if (!self->m_c->m_2c->Has("GRUNTZ_GRUNTPUDDLE")) {
+        void* s = self->m_30->LookupSet("ANIZ_GRUNTPUDDLE");
+        if (!s) {
+            return 0;
+        }
+        self->m_c->m_2c->Install(s, "GRUNTZ_GRUNTPUDDLE", "_");
+        if (notify) {
+            ((CLoadNotify*)notify)->OnLoaded();
+        }
+    }
+    if (!self->m_c->m_2c->Has("GRUNTZ_PICKUPS")) {
+        void* s = self->m_30->LookupSet("ANIZ_PICKUPS");
+        if (!s) {
+            return 0;
+        }
+        self->m_c->m_2c->Install(s, "GRUNTZ_PICKUPS", "_");
+        if (notify) {
+            ((CLoadNotify*)notify)->OnLoaded();
+        }
+    }
+    if (!self->m_c->m_2c->Has("GRUNTZ_BOMBGRUNT")) {
+        void* s = self->m_30->LookupSet("ANIZ_BOMBGRUNT");
+        if (!s) {
+            return 0;
+        }
+        self->m_c->m_2c->Install(s, "GRUNTZ_BOMBGRUNT", "_");
+        if (notify) {
+            ((CLoadNotify*)notify)->OnLoaded();
+        }
+    }
     return 1;
 }

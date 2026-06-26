@@ -112,11 +112,9 @@ namespace ApiCallerStubs {
         i32 winapi_0c46b0_KillTimer_timeGetTime_wsprintfA();
         i32 winapi_0c7ec0_timeGetTime(i32, i32, i32);
         i32 winapi_0c8a10_GetCursorPos(i32);
-        i32 winapi_0cbaf0_PostMessageA(i32, i32);
         i32 winapi_0d5f90_SetRect(i32, i32, i32, i32);
         i32 winapi_0d60b0_wsprintfA();
         i32 winapi_0d7520_wsprintfA(i32, i32, i32, i32);
-        i32 winapi_0d8c60_SetRect();
         i32 winapi_0d95f0_wsprintfA();
         i32 winapi_0e6020_SetRect(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32);
         i32 winapi_0ecc90_IntersectRect();
@@ -217,16 +215,11 @@ namespace ApiCallerStubs {
         // methods in src/Gruntz/CPlay.cpp.
         void LoadSBITextEdges(i32);
         void LoadWarlordSprites(i32, i32);
-        void BuildMusicCategoryTable(i32);
         void BuildWorldLevelPath(i32);
         void LoadLevelEffectSprites();
         void BuildGruntNamespaceList(i32);
         void BuildWarlordNameTable(i32);
-        void BuildSpriteImageKeyTable(i32);
-        void BuildAnizKeyTable(i32);
         void LoadLevelPreviewScreen();
-        void BuildToolToyColorKey(i32);
-        void LookupToolToyColorKey(i32);
         // LoadGruntzPalette (0x0e2d10) re-homed to src/Gruntz/SpriteRefTable.cpp.
         void BuildResourceTabStatusBar(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32);
         void
@@ -1811,13 +1804,8 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    // @confidence: low
-    // @source: winapi:PostMessageA
-    // @stub
-    RVA(0x000cbaf0, 0x16f)
-    i32 ThisStubOwnerUnknown::winapi_0cbaf0_PostMessageA(i32, i32) {
-        return 0;
-    }
+    // OnKeyCommand (0x0cbaf0) re-homed (byte-exact) as CPlay::OnKeyCommand in
+    // src/Gruntz/CPlay.cpp.
 
     // @confidence: low
     // Sub-objects reached through the dispatcher's members; each has a __thiscall
@@ -1987,13 +1975,8 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    // @confidence: low
-    // @source: winapi:SetRect
-    // @stub
-    RVA(0x000d8c60, 0xea)
-    i32 ThisStubOwnerUnknown::winapi_0d8c60_SetRect() {
-        return 0;
-    }
+    // ResetViewport (0x0d8c60) re-homed (byte-exact) as CPlay::ResetViewport in
+    // src/Gruntz/CPlay.cpp.
 
     // @confidence: low
     // @source: winapi:wsprintfA
@@ -4360,11 +4343,8 @@ namespace ApiCallerStubs {
     // 0x0db930/0x0db9b0. Their loader-view structs (CActionTileOwner / CSoundOwner
     // / CActionResRegistry / CSoundResRegistry) remain defined in Backlog.cpp.
 
-    // @confidence: med
-    // @source: string-xref
-    // @stub
-    RVA(0x000dba30, 0x1ca)
-    void ThisStubOwnerUnknown::BuildMusicCategoryTable(i32) {}
+    // BuildMusicCategoryTable (0x0dba30) re-homed (byte-exact) as
+    // CPlay::BuildMusicCategoryTable in src/Gruntz/CPlay.cpp.
 
     // @confidence: med
     // @source: string-xref
@@ -4390,17 +4370,8 @@ namespace ApiCallerStubs {
     RVA(0x000dd340, 0x189)
     void ThisStubOwnerUnknown::BuildWarlordNameTable(i32) {}
 
-    // @confidence: med
-    // @source: string-xref
-    // @stub
-    RVA(0x000dd540, 0x241)
-    void ThisStubOwnerUnknown::BuildSpriteImageKeyTable(i32) {}
-
-    // @confidence: med
-    // @source: string-xref
-    // @stub
-    RVA(0x000ddaa0, 0x228)
-    void ThisStubOwnerUnknown::BuildAnizKeyTable(i32) {}
+    // BuildSpriteImageKeyTable (0x0dd540) and BuildAnizKeyTable (0x0ddaa0) re-homed
+    // (byte-exact) as CPlay methods in src/Gruntz/CPlay.cpp.
 
     // @confidence: med
     // @source: decomp-xref
@@ -4408,17 +4379,11 @@ namespace ApiCallerStubs {
     RVA(0x000de420, 0x115)
     void ThisStubOwnerUnknown::LoadLevelPreviewScreen() {}
 
-    // @confidence: med
-    // @source: string-xref
-    // @stub
-    RVA(0x000e2400, 0x39e)
-    void ThisStubOwnerUnknown::BuildToolToyColorKey(i32) {}
+    // BuildToolToyColorTable (0x0e2400) re-homed (byte-exact) as
+    // CSpriteRefTable::BuildToolToyColorTable in src/Gruntz/SpriteRefTable.cpp.
 
-    // @confidence: med
-    // @source: string-xref
-    // @stub
-    RVA(0x000e2980, 0x2cd)
-    void ThisStubOwnerUnknown::LookupToolToyColorKey(i32) {}
+    // LoadToolToyPalettes (0x0e2980) re-homed (byte-exact) as
+    // CSpriteRefTable::LoadToolToyPalettes in src/Gruntz/SpriteRefTable.cpp.
 
     // LoadGruntzPalette (0x0e2d10) re-homed as CSpriteRefTable::LoadGruntzPalette in
     // src/Gruntz/SpriteRefTable.cpp (the trace owner; m_4 == CSpriteRefTable::m_04).

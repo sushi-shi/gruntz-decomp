@@ -51,6 +51,8 @@ struct CRenderer {
     virtual void s0b();
     virtual void s0c();
     virtual void Present(i32 a, i32 b); // slot 13 (+0x34)
+    // Non-virtual leaf the play-exit path runs on renderer A (reloc-masked).
+    void Refresh(); // 0x159ef0 (thiscall, no arg)
 };
 
 // The draw-surface object at m_c->m_24 (the target of the thiscall PushView +
@@ -133,6 +135,17 @@ struct CPlaneGeom {
 // the nine keyboard controls on it). 0x53d4e0 is a thiscall(code, flag).
 struct CInputDispatch {
     void Bind(i32 code, i32 flag); // 0x53d4e0
+    char p0[0x4];
+    // +0x4 -> a window host whose +0x4 is the top-level HWND (PostMessageA target).
+    struct WndHost {
+        char p0[0x4];
+        HWND m_4; // +0x04
+    }* m_4;       // +0x04
+};
+
+// The "2nd world layer" reached as m_4->m_5c (OnKeyCommand's overlay forwarder).
+struct CWorldLayer {
+    void Forward3508(i32 a, i32 b); // 0x521e20 (thiscall) reloc-masked
 };
 
 // m_4 (the CState owner back-ptr -> the world/level object).
@@ -142,6 +155,7 @@ struct CWorld {
     // draw/present sub-steps (DrawWorldPresent / PresentAndFlush) call on m_4.
     void ManagerTick();                           // 0x48f620 (thiscall, no arg)
     i32 RestoreVideoMode(i32 w, i32 h, i32 flag); // 0x48df00 (thiscall)
+    void ReportError(i32 code, i32 a);            // 0x40346d (thiscall) CGruntzMgr::ReportError
     char p0[0x4];
     CInputDispatch* m_4; // +0x04  the input dispatcher (RegisterInputBindings)
     char p8[0xc - 0x8];
@@ -263,8 +277,11 @@ public:
     i32 ClampViewport(i32 inset);   // 0x0d8dc0 (THIS TU)
     i32 ClampViewport2(i32 stride); // 0x0d8ed0 (THIS TU)
     i32 NotifyVisibleEntities();    // 0x0d9050 (THIS TU)
-    // ClampViewport's no-change fallback (resets the viewport, external/reloc-masked).
-    void ResetViewport(); // 0x0d8c60 (thiscall on this)
+    // ClampViewport's no-change fallback (resets the viewport then re-applies). (THIS TU)
+    i32 ResetViewport(); // 0x0d8c60 (thiscall on this)
+    // CPlay state-exit teardown (THIS TU): ready-gate, slot-21 notify, renderer
+    // refresh, then clear the registry's per-frame words + run its +0x70 teardown.
+    void OnExit(); // 0x0cb400
 
     // --- leaf sub-helpers the THIS-TU functions call (external, reloc-masked) ---
     void StepC_ModeA(i32 z); // (thiscall, 1 arg) StepC m_viewMode==1
@@ -328,6 +345,18 @@ public:
     i32 LoadGameImages(i32 force);        // 0x0db8a0
     i32 LoadGameSounds(i32 force);        // 0x0db930
     i32 LoadGameAnims(i32 force);         // 0x0db9b0
+    i32 BuildMusicCategoryTable(i32);     // 0x0dba30  (the MIDIZ category installer)
+    i32 LoadGruntSoundNamespaces(void* notify);  // 0x0dd830 (GRUNTZ_* sound installer)
+    i32 BuildSpriteImageKeyTable(void* notify);  // 0x0dd540 (GRUNTZ_* image installer)
+    i32 BuildAnizKeyTable(void* notify);         // 0x0ddaa0 (GRUNTZ_* anim installer)
+
+    // ---- the keyboard/UI command dispatcher (THIS TU) ----
+    i32 OnKeyCommand(i32 key, i32 flag); // 0x0cbaf0
+    // Two large play-state sub-steps the dispatcher tail-calls (external/reloc-masked;
+    // deferred to the final sweep): the mode-enter gate (0x0d6fa0) and the per-frame
+    // play-state reset (0x0d60b0).
+    i32 EnterMode(i32 mode); // 0x0d6fa0
+    i32 ResetPlayState();    // 0x0d60b0
 
     // ---- CPlay-specific members (offsets pinned by the Render disasm) ----
     i32 m_inputWarmup1; // +0x1a8  StepInputA first-frame one-shot latch
@@ -349,6 +378,10 @@ public:
         void DragClear(i32 flag);
         // 0x500cb0: the viewport-clamp apply (thiscall, no arg). reloc-masked.
         void ClampApply();
+        // OnKeyCommand bracket-key guts sub-steps (reloc-masked ILT thunks):
+        void StepBracketR(); // 0x4fe520  (']')
+        void StepBracketL(); // 0x4fe460  ('[')
+        void StepMinus();    // 0x4fe600  ('-')
         // EnterOverlayDrag (0x0d6440) guts sub-steps (reloc-masked ILT thunks):
         void Guts123f();              // (thiscall, no arg)  m_state==2 path
         void Guts1d61(i32 a, i32 b);  // (thiscall, 2 args)  m_mode!=5 path
@@ -370,6 +403,9 @@ public:
     // +0x2e0: a hit-test/region sink (HandleDragMove: m_hitTest->HitTest(x, y)).
     struct HitTestSink {
         i32 HitTest(i32 x, i32 y); // 0x421140 (thiscall) -> nonzero = consumed
+        void StepZoom(i32 n);      // 0x420530 (thiscall) OnKeyCommand +/- zoom step
+        char p0[0x10];
+        i32 m_10; // +0x10  active-overlay gate (OnKeyCommand forward)
     }* m_hitTest;
     void* m_beginMarker;  // +0x2e4  begin-marker sink (MarkerBegin)
     i32 m_dragSnapActive; // +0x2e8  drag-snap-active latch (HandleDragMove snap path)
