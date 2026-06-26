@@ -131,7 +131,7 @@ directinputmgr2	36	32
 directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	15	0
-engine_boundary	278	0
+engine_boundary	270	0
 engine_discovered	51	0
 engine_label_stubs	437	105
 engine_unmatched	264	0
@@ -185,6 +185,7 @@ leafelementobj	2	2
 leveltilevalidation	2	0
 lightfxmgr	3	3
 loadlevelbymode	1	0
+logicactregistrars	6	0
 logicdispatchinit	3	3
 logicrecord	6	4
 logictypetable	1	0
@@ -245,7 +246,7 @@ statemgrbz	5	3
 statusbaritem	2	1
 statusbarupdaters	7	0
 streamfeeder	9	7
-streamrecordloaders	2	0
+streamrecordloaders	4	0
 streamvoice	5	3
 symparser	8	5
 symtab	18	10
@@ -1242,15 +1243,12 @@ engine_boundary	?Boundary_03ad30@@YAXXZ	20.0000	20.0000	2	0c9ab0afd82d	0x3ad30
 engine_boundary	?Boundary_03ad90@@YAXXZ	2.3810	2.3810	2	afd3d289d51d	0x3ad90
 engine_boundary	?Boundary_03b940@@YAXXZ	1.0417	1.0417	2	a315cf6c4613	0x3b940
 engine_boundary	?Boundary_03bb50@@YAXXZ	1.0309	1.0309	2	c744a5355303	0x3bb50
-engine_boundary	?Boundary_0408b0@@YAXXZ	0.4975	0.4975	2	6e1908b1ca34	0x408b0
-engine_boundary	?Boundary_041680@@YAXXZ	0.4975	0.4975	2	0d43d6d74e4e	0x41680
 engine_boundary	?Boundary_0464e0@@YAXXZ	0.8889	0.8889	2	bc437931fe61	0x464e0
 engine_boundary	?Boundary_0474b0@@YAXXZ	0.8696	0.8696	2	0edfee106582	0x474b0
 engine_boundary	?Boundary_050a50@@YAXXZ	0.2597	0.2597	2	13f1f15b0e47	0x50a50
 engine_boundary	?Boundary_050ca0@@YAXXZ	3.3333	3.3333	2	fcc8fa22d59c	0x50ca0
 engine_boundary	?Boundary_056f80@@YAXXZ	0.8333	0.8333	2	d31b844b95ba	0x56f80
 engine_boundary	?Boundary_05bc50@@YAXXZ	20.0000	20.0000	2	aff6b7b7bff4	0x5bc50
-engine_boundary	?Boundary_05be30@@YAXXZ	0.1362	0.1362	2	7333cbc82810	0x5be30
 engine_boundary	?Boundary_077dc0@@YAXXZ	4.4444	4.4444	2	7532af087362	0x77dc0
 engine_boundary	?Boundary_0788d0@@YAXXZ	3.4483	3.4483	2	1393dc22de23	0x788d0
 engine_boundary	?Boundary_07cd40@@YAXXZ	0.2985	0.2985	2	803ef7e6642b	0x7cd40
@@ -1287,9 +1285,7 @@ engine_boundary	?Boundary_0adde0@@YAXXZ	20.0000	20.0000	2	3b79d8aaa5b8	0xadde0
 engine_boundary	?Boundary_0adfc0@@YAXXZ	0.8696	0.8696	2	a7fa063c4be3	0xadfc0
 engine_boundary	?Boundary_0ae1c0@@YAXXZ	0.5000	0.5000	2	629064247a6b	0xae1c0
 engine_boundary	?Boundary_0b15b0@@YAXXZ	20.0000	20.0000	2	1586d0b7f96d	0xb15b0
-engine_boundary	?Boundary_0b1790@@YAXXZ	0.4975	0.4975	2	7fabac804774	0xb1790
 engine_boundary	?Boundary_0b3ae0@@YAXXZ	20.0000	20.0000	2	ecfadb7cfd56	0xb3ae0
-engine_boundary	?Boundary_0b3cc0@@YAXXZ	0.4975	0.4975	2	e0f1533bc50f	0xb3cc0
 engine_boundary	?Boundary_0b4c40@@YAXXZ	1.4286	1.4286	2	ec37c4089b5a	0xb4c40
 engine_boundary	?Boundary_0b5380@@YAXXZ	20.0000	20.0000	2	0e7fbd0663cd	0xb5380
 engine_boundary	?Boundary_0b5400@@YAXXZ	20.0000	20.0000	2	f26abf60f880	0xb5400
@@ -1303,7 +1299,6 @@ engine_boundary	?Boundary_0d5960@@YAXXZ	0.8929	0.8929	2	d4f4b609b7cf	0xd5960
 engine_boundary	?Boundary_0d5d70@@YAXXZ	16.6667	16.6667	2	f463985680de	0xd5d70
 engine_boundary	?Boundary_0d5e20@@YAXXZ	2.8571	2.8571	2	4e874c49ff68	0xd5e20
 engine_boundary	?Boundary_0d6fa0@@YAXXZ	0.2581	0.2581	2	31da0a95531a	0xd6fa0
-engine_boundary	?Boundary_0d79d0@@YAXXZ	0.0830	0.0830	2	617a9df42f03	0xd79d0
 engine_boundary	?Boundary_0db200@@YAXXZ	1.2121	1.2121	2	670ebbd319aa	0xdb200
 engine_boundary	?Boundary_0db2f0@@YAXXZ	5.8824	5.8824	2	72ad3c318ebb	0xdb2f0
 engine_boundary	?Boundary_0db750@@YAXXZ	1.1111	1.1111	2	f141ea19058a	0xdb750
@@ -1311,7 +1306,6 @@ engine_boundary	?Boundary_0e0d40@@YAXXZ	0.0670	0.0670	2	896f840c3230	0xe0d40
 engine_boundary	?Boundary_0e17b0@@YAXXZ	20.0000	20.0000	2	b820227d73c6	0xe17b0
 engine_boundary	?Boundary_0e56b0@@YAXXZ	50.0000	50.0000	2	6cdec715c748	0xe56b0
 engine_boundary	?Boundary_0ea170@@YAXXZ	1.0000	1.0000	2	fe8eb0cdc74c	0xea170
-engine_boundary	?Boundary_0ea990@@YAXXZ	0.0417	0.0417	2	27a0dd8e5e6f	0xea990
 engine_boundary	?Boundary_0eb970@@YAXXZ	0.7407	0.7407	2	6eefd7e544b2	0xeb970
 engine_boundary	?Boundary_0f2b20@@YAXXZ	0.1942	0.1942	2	c768b7b72e23	0xf2b20
 engine_boundary	?Boundary_0fa150@@YAXXZ	2.3810	2.3810	2	a5b17cc6c2bf	0xfa150
@@ -1343,7 +1337,6 @@ engine_boundary	?Boundary_118260@@YAXXZ	0.9524	0.9524	2	76d0f8d03530	0x118260
 engine_boundary	?Boundary_1182f0@@YAXXZ	20.0000	20.0000	2	426ba6a060a9	0x1182f0
 engine_boundary	?Boundary_118310@@YAXXZ	20.0000	20.0000	2	c965a0c15a13	0x118310
 engine_boundary	?Boundary_118330@@YAXXZ	3.3333	3.3333	2	0e86d7342def	0x118330
-engine_boundary	?Boundary_119fa0@@YAXXZ	0.4975	0.4975	2	7b92a42d54ac	0x119fa0
 engine_boundary	?Boundary_133370@@YAXXZ	20.0000	20.0000	2	1cce52b34467	0x133370
 engine_boundary	?Boundary_1333b0@@YAXXZ	4.7619	4.7619	2	bdb358a194a7	0x1333b0
 engine_boundary	?Boundary_133460@@YAXXZ	4.0000	4.0000	2	e2e792097f0d	0x133460
@@ -2831,6 +2824,12 @@ lightfxmgr	?Init@CLightFxMgr@@QAEHPAVCGameRegistry@@PAX@Z	100.0000	100.0000	1	ca
 lightfxmgr	?Push@CLightFxMgr@@QAEHPAVCImageSet@@HH@Z	100.0000	100.0000	1	230e8d70c35c	0x9dcb0
 lightfxmgr	?Reset@CLightFxMgr@@QAEXXZ	100.0000	100.0000	1	9e70786cf034	0x9dc80
 loadlevelbymode	?LoadByMode@CPlayLevelLoad@@QAEHH@Z	34.8503	34.8503	2	10b320b3c10a	0xca200
+logicactregistrars	?CTeleporter_RegisterActs@@YAXXZ	79.0149	79.0149	1	eb82e8a4507b	0x41680
+logicactregistrars	?RegisterActs_644af0@@YAXXZ	94.6935	94.6935	1	87d7ed2716b7	0x5be30
+logicactregistrars	?RegisterActs_646188@@YAXXZ	79.0149	79.0149	1	86a5048475d9	0xb1790
+logicactregistrars	?RegisterActs_646250@@YAXXZ	79.0149	79.0149	1	0fd16742a1d4	0xb3cc0
+logicactregistrars	?RegisterActs_6514d8@@YAXXZ	79.0149	79.0149	1	b83d1b1d5a17	0x119fa0
+logicactregistrars	?RegisterLogic_6445e8@@YAXXZ	79.0149	79.0149	1	f49cc393dbd5	0x408b0
 logicdispatchinit	?InitLogicDispatch_6445e8@@YAXXZ	100.0000	100.0000	1	411a6d3f16f3	0x406d0
 logicdispatchinit	?InitLogicDispatch_6447f8@@YAXXZ	100.0000	100.0000	1	bc277da00830	0x472d0
 logicdispatchinit	?InitLogicDispatch_646060@@YAXXZ	100.0000	100.0000	1	c7a99d1f8f2e	0xacb30
@@ -3314,7 +3313,9 @@ streamfeeder	?FillBuffer@StreamFeeder@@QAEHII@Z	88.5679	88.5679	1	de778cdecdb0	0
 streamfeeder	?Pause@StreamFeeder@@QAEHXZ	100.0000	100.0000	2	52812e99cdff	0x137f00
 streamfeeder	?Resume@StreamFeeder@@QAEHXZ	100.0000	100.0000	2	c47c07137340	0x137ed0
 streamfeeder	?SeedWindow@StreamFeeder@@QAEHPAXII@Z	100.0000	100.0000	1	edea263e685a	0x137340
+streamrecordloaders	?Load@CArchiveLoadRec@@QAEHPAVCArchiveReader@@@Z	99.7718	99.7718	1	7b195ebceee3	0xd79d0
 streamrecordloaders	?Load@CEventLoadRec@@QAEHPAVCStreamReader@@@Z	93.9657	93.9657	1	10830728f95d	0x9c650
+streamrecordloaders	?Load@CGruntStateRec@@QAEHPAVCDualReader@@HHH@Z	90.5323	90.5323	1	621affc80fc6	0xea990
 streamrecordloaders	?Load@CTriggerLoadRec@@QAEHPAVCStreamReader@@@Z	92.2366	92.2366	1	53a7a4f4c4fa	0x9bb0
 streamvoice	??0StreamVoice@@QAE@PAUIDirectSoundBufferZ@@PAVDirectSoundMgr@@HH@Z	35.8824	35.8824	1	32868b69f13b	0x1375b0
 streamvoice	??1StreamVoice@@QAE@XZ	42.4643	42.4643	1	59cc0331f52c	0x137650

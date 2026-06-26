@@ -1385,3 +1385,8 @@ flags = "base"
 unit = "butesectionctor"
 source = "src/Gruntz/CButeSectionCtor.cpp"
 flags = "base"
+
+[[unit]]
+unit = "logicactregistrars"
+source = "src/Gruntz/LogicActRegistrars.cpp"
+flags = "base"
