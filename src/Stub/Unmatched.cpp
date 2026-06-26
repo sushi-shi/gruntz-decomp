@@ -17,16 +17,6 @@ RVA(0x00008600, 0xcd)
 void Unmatched_008600() {} // Unmatched_008600
 RVA(0x00008710, 0x2b)
 void Unmatched_008710() {} // Unmatched_008710
-RVA(0x0000d170, 0x74)
-void Unmatched_00d170() {} // Unmatched_00d170
-RVA(0x0000fa40, 0x6)
-void Unmatched_00fa40() {} // Unmatched_00fa40
-RVA(0x00010f00, 0x6)
-void Unmatched_010f00() {} // Unmatched_010f00
-RVA(0x00011bf0, 0x6)
-void Unmatched_011bf0() {} // Unmatched_011bf0
-RVA(0x00012ff0, 0x6)
-void Unmatched_012ff0() {} // Unmatched_012ff0
 RVA(0x000183d0, 0x6)
 void Unmatched_0183d0() {} // Unmatched_0183d0
 RVA(0x00035f10, 0x155)

@@ -1223,6 +1223,16 @@ source = "src/Gruntz/ProjActRegistry.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "gamesave"
+source = "src/Io/GameSave.cpp"
+flags = "base"
+
+[[unit]]
+unit = "eyecandytypetags"
+source = "src/Gruntz/EyeCandyTypeTags.cpp"
+flags = "base"
+
+[[unit]]
 unit = "mgrtokenquery"
 source = "src/Gruntz/MgrTokenQuery.cpp"
 flags = "base"
