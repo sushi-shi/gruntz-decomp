@@ -58,10 +58,26 @@ struct CSpriteInner {
 };
 
 struct CHudSprite {
+    // The CGameObject-base name/geometry setters the one-shot "SingleAnimation"
+    // sprite (BuildGruntLoseItemAnimation) drives: ApplyName(key) (0x150540, ret 4)
+    // and ApplyLookupGeometry(key, frame) (0x1505b0, ret 8). External/reloc-masked.
+    void ApplyName(const char* key);              // 0x150540
+    void ApplyLookupGeometry(const char* key, i32 frame); // 0x1505b0
+
     char m_pad0[0x8];
     i32 m_8; // +0x08  (sprite flag word; arrival sets |= 0x10000 to retire it)
     char m_padc[0x7c - 0xc];
     CSpriteInner* m_7c; // +0x7c
+};
+
+// The on-screen cue gate's visibility rect, reached as
+// (g->m_30->m_24->m_5c + 0x40): {left, top, right, bottom}. The viewport's m_5c is
+// a base address (modeled i32 in CGameRegistry.h), so the +0x40 view is a cast.
+struct CCueRect {
+    i32 left;   // +0x00
+    i32 top;    // +0x04
+    i32 right;  // +0x08
+    i32 bottom; // +0x0c
 };
 
 // ---------------------------------------------------------------------------
@@ -816,6 +832,14 @@ public:
     i32 StepArrivalCommit();
     // @0x65630 (2-arg this-method the I-arm of CommitNeighbor runs); external thunk.
     void RunMoveConfig(i32 a, i32 b);
+
+    // @0x57890 (__thiscall ret 0, /GX) - when the entrance reason is a lose-item
+    // pose (0x12/0x16/0xe), spawn the one-shot "SingleAnimation" GRUNTZ_<set>_LOSEITEM
+    // sprite, fire the on-screen spawn cue, then re-run the type-table step.
+    i32 BuildGruntLoseItemAnimation();
+    // The big CUserLogic-base step driver reached via thunk 0x3bd9 -> 0x4dd50
+    // (LoadGruntTypeTable / SelfImpact); external/reloc-masked here.
+    void LoadGruntTypeTable(i32 a, i32 b, i32 c, i32 d);
 
     // --- arrival / move-step helper cluster (proximity-attributed targets) ---
     void PlayMoveSoundAtTile(i32 tx, i32 ty); // @0x514e0 (ret 8) tile->pixel + PlayMoveSound

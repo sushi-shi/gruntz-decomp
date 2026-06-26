@@ -117,6 +117,8 @@ static const char s__DEATH[] = "_DEATH";
 static const char s__JOY[] = "_JOY";
 static const char s__IDLE[] = "_IDLE";
 static const char s__BATTLECRY[] = "_BATTLECRY";
+static const char s__LOSEITEM[] = "_LOSEITEM";
+static const char s_SingleAnimation[] = "SingleAnimation";
 static const char s_keyB[] = "B";
 static const char s_keyC[] = "C";
 static const char s_keyE[] = "E";
@@ -1863,6 +1865,44 @@ void CGrunt::SelectMoveIcon(i32 a) {
     h->m_58 = 1;
     h->m_50 = 0xa;
     h->m_4c = sel;
+}
+
+// ---------------------------------------------------------------------------
+// CGrunt::BuildGruntLoseItemAnimation()   @0x57890   (__thiscall, ret 0, /GX)
+// Step the anim dispatch, then if the entrance reason is a lose-item pose
+// (0x12/0x16/0xe) spawn the one-shot "SingleAnimation" sprite, set its
+// GRUNTZ_<animSet>_LOSEITEM key (both ApplyName + ApplyLookupGeometry forms),
+// fire the on-screen spawn cue when the grunt's HUD point is in the cue rect,
+// re-run the type-table step, and clear m_entranceActive.
+//
+// 99.9% (reloc-mask tail): code bytes match incl. the /GX frame + the two
+// `s_GRUNTZ_ + m_animSetName + s__LOSEITEM` concat chains; the residual is the
+// differently-named reloc operands (ApplyName/ApplyLookupGeometry/LoadGruntTypeTable
+// resolve to the engine's own CGameObject/CUserLogic symbols) - the entropy tail.
+RVA(0x00057890, 0x19c)
+i32 CGrunt::BuildGruntLoseItemAnimation() {
+    StepAnimDispatchB();
+    i32 reason = m_entranceReason;
+    if (reason != 0x12 && reason != 0x16 && reason != 0xe) {
+        return 0;
+    }
+
+    CHudSprite* spr = g_pGameRegistry->m_30->m_8
+                          ->CreateSprite(0, m_10->m_5c, m_10->m_60, 0xcf850, s_SingleAnimation, 0x40003);
+    spr->ApplyName(s_GRUNTZ_ + m_animSetName + s__LOSEITEM);
+    spr->ApplyLookupGeometry(s_GRUNTZ_ + m_animSetName + s__LOSEITEM, 0);
+
+    CGameRegistry* g = g_pGameRegistry;
+    i32 x = m_10->m_5c;
+    i32 y = m_10->m_60;
+    CCueRect* rc = (CCueRect*)(g->m_30->m_24->m_5c + 0x40);
+    if (x < rc->right && x >= rc->left && y < rc->bottom && y >= rc->top) {
+        g->m_60->CueSpawn(this, 0xe, -1, -1, -1);
+    }
+
+    LoadGruntTypeTable(0, 1, 0, 1);
+    m_entranceActive = 0;
+    return 1;
 }
 
 // ---------------------------------------------------------------------------

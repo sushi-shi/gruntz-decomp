@@ -122,7 +122,7 @@ dsoundvoice	2	1
 engine_attributed	15	0
 engine_boundary	540	0
 engine_discovered	56	0
-engine_label_stubs	458	104
+engine_label_stubs	456	104
 engstr	3	1
 filemem	9	8
 filestream	13	9
@@ -137,7 +137,7 @@ gamemodeobjlifecycle	4	3
 gameobjectctors	5	1
 gametext	4	3
 gamewnd	9	8
-grunt	77	15
+grunt	78	15
 gruntdatarecord	2	2
 gruntpuddle	4	2
 gruntspawnconfig	15	8
@@ -145,7 +145,7 @@ gruntvoice	5	4
 gruntzapp	10	9
 gruntzcmdmgr	12	10
 gruntzcommand	15	15
-gruntzmgr	87	61
+gruntzmgr	88	62
 gruntzplayer	8	3
 gruntzsoundz	12	11
 gruntzwnd	9	7
@@ -1765,7 +1765,6 @@ engine_label_stubs	?BuildAnizKeyTable@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXH
 engine_label_stubs	?BuildAssetNamespacePrefixes@EngineLabelBacklog@@YGXHHHH@Z	0.2933	0.2933	1	cpp:6bf52155264d	0xdca70
 engine_label_stubs	?BuildBootyGruntIdleAnimation@EngineLabelBacklog@@YAXXZ	0.3058	0.3058	1	cpp:45e65336d4b5	0x1ce60
 engine_label_stubs	?BuildGruntExitAnimation@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXXZ	0.4630	0.4630	1	cpp:e8a4cb0d5b2a	0x641b0
-engine_label_stubs	?BuildGruntLoseItemAnimation@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXXZ	0.8065	0.8065	1	cpp:e8a4cb0d5b2a	0x57890
 engine_label_stubs	?BuildGruntNamespaceList@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXH@Z	0.5714	0.5714	1	cpp:e8a4cb0d5b2a	0xdd050
 engine_label_stubs	?BuildGruntSprintAnimation@EngineLabelBacklog@@YAXXZ	0.7246	0.7246	1	cpp:45e65336d4b5	0x19920
 engine_label_stubs	?BuildGruntzCrcInfo@EngineLabelBacklog@@YAXXZ	0.6098	0.6098	1	cpp:45e65336d4b5	0xbf1d0
@@ -2021,7 +2020,6 @@ engine_label_stubs	?winapi_077df0_PtInRect@ApiCallerStubs@@YGHH@Z	1.9417	1.9417	
 engine_label_stubs	?winapi_078060_SetRect@ApiCallerStubs@@YGHHHHHH@Z	1.5447	1.5447	1	cpp:6bf52155264d	0x78060
 engine_label_stubs	?winapi_0862f0_PostMessageA_wsprintfA@ApiCallerStubs@@YGHHHH@Z	0.0448	0.0448	1	cpp:6bf52155264d	0x862f0
 engine_label_stubs	?winapi_08f120_CreateProcessA_RegQueryValueA@ApiCallerStubs@@YGHH@Z	1.7241	1.7241	1	cpp:6bf52155264d	0x8f120
-engine_label_stubs	?winapi_08f340_PostMessageA@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHXZ	2.8986	2.8986	1	cpp:e8a4cb0d5b2a	0x8f340
 engine_label_stubs	?winapi_090860_CreateProcessA_wsprintfA@ApiCallerStubs@@YGHHH@Z	2.8169	2.8169	1	cpp:6bf52155264d	0x90860
 engine_label_stubs	?winapi_092ab0_EndDialog@ApiCallerStubs@@YGHHHHH@Z	1.0929	1.0929	1	cpp:6bf52155264d	0x92ab0
 engine_label_stubs	?winapi_092f00_PostMessageA@CGruntzMgr@@QAEHXZ	1.6529	1.6529	1	cpp:e8a4cb0d5b2a	0x92f00
@@ -2334,6 +2332,7 @@ grunt	??1CGrunt@@QAE@XZ	55.5455	55.5455	1	7103cc50662d	0xf2f0
 grunt	?ArrivalRecycle@CGrunt@@QAEHHHHHH@Z	52.4272	52.4272	1	f11f19a61424	0x59230
 grunt	?BeginAttack@CGrunt@@QAEHHH@Z	53.7917	53.7917	1	3d02da5c24cc	0x5b570
 grunt	?BuildEntranceAnimation@CGrunt@@QAEXH@Z	71.4562	71.4562	6	31017869150f	0x67bd0
+grunt	?BuildGruntLoseItemAnimation@CGrunt@@QAEHXZ	99.9032	99.9032	1	38742e98c150	0x57890
 grunt	?CGrunt_IsSameType@@YA_NPAVCGrunt@@0@Z	100.0000	100.0000	1	04ada45b6431	0x3c7f0
 grunt	?CGrunt_SegBoxOverlap@@YGHPAUGruntBox@@PAUGruntSegEnd@@1@Z	78.7723	78.7723	1	bb4ee352e2c0	0x62b70
 grunt	?CGrunt_TileSwitch@@YGXHHHHHH@Z	66.2000	66.2000	2	e4d83b1d7834	0x4b320
@@ -2361,7 +2360,7 @@ grunt	?FindGridNeighbor@CGrunt@@QAEPAV1@H@Z	100.0000	100.0000	3	61dd38cb1b46	0x5
 grunt	?FinishEntranceMove@CGrunt@@QAEHXZ	100.0000	100.0000	1	a2a92c839b90	0x69fd0
 grunt	?FreeNameList@CGrunt@@QAEXXZ	76.9512	76.9512	2	2e3438eb07ba	0x48360
 grunt	?GetTilePos@CGrunt@@QAEPAUGruntTilePos@@PAU2@@Z	85.3000	85.3000	1	995269eb1311	0x31c70
-grunt	?GruntInRadius@CGrunt@@QAEHHH@Z	35.7347	35.7347	1	d9edebac6a79	0x67b00
+grunt	?GruntInRadius@CGrunt@@QAEHHH@Z	35.7143	35.7143	1	d9edebac6a79	0x67b00
 grunt	?InitDirVectors@CGrunt@@QAEXXZ	37.3394	37.3394	1	1b1f255f448b	0x5caa0
 grunt	?LoadAnimNameTable@CGrunt@@QAEXHH@Z	75.9312	75.9312	3	f341d57d748b	0x49c60
 grunt	?LoadEntranceConfig@CGrunt@@QAEXXZ	78.8377	78.8377	6	7a2efa979b8d	0x67f80
@@ -2371,10 +2370,10 @@ grunt	?PlayMoveSound@CGrunt@@QAEXHH@Z	100.0000	100.0000	1	aa803a2a8575	0x511b0
 grunt	?PlayMoveSoundAtTile@CGrunt@@QAEXHH@Z	100.0000	100.0000	1	a7adfdf5dae3	0x514e0
 grunt	?PlaySound@CGrunt@@QAEXHUCGruntVoiceRec@@@Z	62.4901	62.4901	1	a2a2cfd991e5	0x4ac10
 grunt	?ReadConfigFromButeMgr@CGrunt@@QAEXXZ	96.8421	96.8421	5	39bb0fe6f60a	0x48400
-grunt	?RearmAttackAnim2@CGrunt@@QAEHXZ	73.0784	73.0784	1	b332a973991f	0x61bc0
-grunt	?RearmAttackAnim@CGrunt@@QAEHHH@Z	54.0229	54.0229	1	7230a3c88ee7	0x61940
+grunt	?RearmAttackAnim2@CGrunt@@QAEHXZ	79.2745	79.2745	1	b332a973991f	0x61bc0
+grunt	?RearmAttackAnim@CGrunt@@QAEHHH@Z	55.5420	55.5420	1	7230a3c88ee7	0x61940
 grunt	?RearmEntranceDrop@CGrunt@@QAEXXZ	88.8646	88.8646	2	d64979f40a7e	0x68370
-grunt	?RectContains@CGrunt@@QAEHHH@Z	63.0081	63.0081	1	490b1e26e8f0	0x51850
+grunt	?RectContains@CGrunt@@QAEHHH@Z	58.8145	58.8145	1	490b1e26e8f0	0x51850
 grunt	?RectContainsGated@CGrunt@@QAEHHH@Z	62.3307	62.3307	1	e41d77906d32	0x51a20
 grunt	?ResetGeometry@CGrunt@@QAEHXZ	82.8800	82.8800	3	502caa6ebbcc	0x616e0
 grunt	?ResolveAnimation@CGrunt@@QAEHXZ	95.4210	95.4210	6	9f3a431918a8	0x457b0
@@ -2395,7 +2394,7 @@ grunt	?StepAnimDispatchB@CGrunt@@QAEHXZ	40.7674	40.7674	2	4dbf079670fa	0x6a6d0
 grunt	?StepArrivalCommit@CGrunt@@QAEHXZ	1.8288	1.8288	1	d12f1cd235e5	0x692f0
 grunt	?StepArrivalDrop@CGrunt@@QAEXHHHHHH@Z	7.7088	7.7088	1	731eeff2b7e9	0x4b370
 grunt	?StepCombatReaction@CGrunt@@QAEHHHHHHHHH@Z	71.1751	71.1751	1	335c5dd9ea53	0x646b0
-grunt	?StepCompassMove@CGrunt@@QAEHXZ	32.9943	32.9943	1	98ae4e0ea1aa	0x51c00
+grunt	?StepCompassMove@CGrunt@@QAEHXZ	33.5138	33.5138	1	98ae4e0ea1aa	0x51c00
 grunt	?StepCoordResolve@CGrunt@@QAEXXZ	9.3598	9.3598	1	7e18466adeed	0x5f310
 grunt	?StepEntranceReinit@CGrunt@@QAEHXZ	74.9359	74.9359	1	8109213253cf	0x637a0
 grunt	?StepGruntMovement@CGrunt@@QAEHXZ	5.1672	5.1672	1	ed2029033118	0x4c170
@@ -2404,7 +2403,7 @@ grunt	?Stub_048470@CGrunt@@QAEXHH@Z	0.0778	0.0778	3	f58a37c3e870	0x48470
 grunt	?Stub_062e10@CGrunt@@QAEXHHH@Z	28.9443	28.9443	6	ffa7fa6815d0	0x62e10
 grunt	?Stub_0633e0@CGrunt@@QAEXXZ	86.4115	86.4115	7	0185a1899216	0x633e0
 grunt	?TryPowerupAtTile@CGrunt@@QAEHXZ	93.3115	93.3115	1	c79ab0d858c8	0x57aa0
-grunt	?UpdateArrival@CGrunt@@QAEHHH@Z	71.2050	71.2050	1	900cd9d93752	0x62110
+grunt	?UpdateArrival@CGrunt@@QAEHHH@Z	70.0360	70.0360	1	900cd9d93752	0x62110
 grunt	?UpdateEntranceAnim@CGrunt@@QAEHXZ	88.3088	88.3088	1	277e290dabfb	0x690a0
 grunt	?UpdateGruntStatus@CGrunt@@QAEHXZ	94.5000	94.5000	3	2b7c880860ba	0x617c0
 gruntdatarecord	?DeserializeStrings@GruntDataRecord@@QAEHPAUDataWriter@@@Z	100.0000	100.0000	1	d96d2c87cdd6	0x56eb0
@@ -2478,6 +2477,7 @@ gruntzmgr	?AdvanceOptionsCycle@CGruntzMgr@@QAEHXZ	100.0000	100.0000	3	b2bfc15c02
 gruntzmgr	?AppendChatMessage@CGruntzMgr@@QAEHPAD@Z	100.0000	100.0000	1	f5b0a3a3127f	0x8f9c0
 gruntzmgr	?BroadcastCmd@CGruntzMgr@@QAEHHHHH@Z	77.8582	77.8582	3	b6f37d352307	0x93460
 gruntzmgr	?BuildMoviePath@CGruntzMgr@@QAE?AVCString@@H@Z	88.0630	88.0630	4	edb3c3ee7d21	0x8ff30
+gruntzmgr	?CaptureWorldFile@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	ef4f5f0c8bfd	0x8f340
 gruntzmgr	?ChangeState_8fab0@CGruntzMgr@@QAEHH@Z	1.1236	1.1236	2	741fdee855ba	0x8fab0
 gruntzmgr	?CheckDisplayBoundsA@CGruntzMgr@@QAEHXZ	96.7797	96.7797	1	97c76924f689	0x8e1d0
 gruntzmgr	?CheckDisplayBoundsB@CGruntzMgr@@QAEHXZ	96.8033	96.8033	1	9d928019ed5e	0x8e2b0

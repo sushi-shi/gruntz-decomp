@@ -105,7 +105,6 @@ namespace ApiCallerStubs {
         i32 winapi_04a9f0_CopyRect_OffsetRect();
         i32 winapi_057db0_IntersectRect();
         i32 winapi_075c60_CopyRect_SetRect(i32, i32, i32, i32, i32, i32);
-        i32 winapi_08f340_PostMessageA();
         i32 winapi_0b6b40_timeGetTime_wsprintfA();
         i32 winapi_0b6e90_SetRect();
         i32 winapi_0bb700_GetAsyncKeyState_Sleep_timeGetTime_wsprintfA();
@@ -198,7 +197,6 @@ namespace ApiCallerStubs {
         void LoadCreditzAssets2();
         void BuildWorldLevelKey(i32);
         void LoadGruntAbilityTuning(i32);
-        void BuildGruntLoseItemAnimation();
         void LoadGruntCombatAnimations(i32, i32, i32, i32, i32, i32, i32, i32);
         void LoadGruntDeathAnimations(i32, i32);
         void LoadVehicleGruntAnimations();
@@ -1027,13 +1025,6 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    // @confidence: low
-    // @source: winapi:PostMessageA
-    // @stub
-    RVA(0x0008f340, 0xf6)
-    i32 ThisStubOwnerUnknown::winapi_08f340_PostMessageA() {
-        return 0;
-    }
 
     // @confidence: low
     // @source: winapi:PostMessageA
@@ -4257,12 +4248,6 @@ namespace ApiCallerStubs {
     // @stub
     RVA(0x00057100, 0x577)
     void ThisStubOwnerUnknown::LoadGruntAbilityTuning(i32) {}
-
-    // @confidence: med
-    // @source: decomp-xref
-    // @stub
-    RVA(0x00057890, 0x19c)
-    void ThisStubOwnerUnknown::BuildGruntLoseItemAnimation() {}
 
     // @confidence: med
     // @source: string-xref

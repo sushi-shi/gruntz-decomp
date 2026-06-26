@@ -634,6 +634,12 @@ struct CNotify70 {
 // destination; reloc-masked - only the call shape is load-bearing).
 extern "C" void Format(CString* dst, const char* fmt, ...);
 
+// The engine's __cdecl struct-returning world-file-name builder (FUN_0003ad90):
+// resolves the current world file from the game window handle into a CString
+// (returned by value -> hidden return-slot arg). Reloc-masked; the (hwnd, flag)
+// arg shape + the cdecl struct-return convention are what is load-bearing.
+CString GetWorldFileFromWindow(HWND hwnd, i32 flag);
+
 // The per-frame draw-clock globals PerFrameTick stamps each tick. g_wap32Now /
 // g_wap32FrameDelta are the engine's just-refreshed clock (mangled C++ globals,
 // stored into the game-side mirror g_645580/g_645584); g_6bf3c0/g_6bf3bc are the
@@ -1045,6 +1051,28 @@ i32 CGruntzMgr::PollUnlessIdle() {
         CheckPlayState();
     }
     return 0;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::CaptureWorldFile (0x08f340; /GX EH). Engine helper FUN_0003ad90
+// (__cdecl, struct-return) builds the current world-file CString from the game
+// window handle; modeled as a value-returning free function so the hidden
+// return-slot + (hwnd, 0) args fall out (the call rel32 reloc-masks).
+RVA(0x0008f340, 0xf6)
+i32 CGruntzMgr::CaptureWorldFile() {
+    i32 st = m_curState->Update();
+    if (st != 5 && st != 2 && st != 3 && st != 7) {
+        return 0;
+    }
+    CString name = GetWorldFileFromWindow(((CGameWnd*)m_4)->m_4, 0);
+    if (name.GetLength() == 0) {
+        return 0;
+    }
+    m_strWorldFile = name;
+    m_12c = 0;
+    m_128 = 0;
+    g_pPostMessageA((i32)((CGameWnd*)m_4)->m_4, 0x111, 0x8005, 0);
+    return 1;
 }
 
 // -------------------------------------------------------------------------

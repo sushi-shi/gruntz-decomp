@@ -140,6 +140,10 @@ public:
     void ReportError(WPARAM wParam, LPARAM lParam); // @0x08dc60  -> m_8->vtbl[0x1c]
     char GetGruntzDriveLetter();                    // @0x08fa70  (memoised CD letter)
     i32 IsInPlayState();                            // @0x08fa40  (m_curState && CheckPlayState())
+    // @0x08f340 (/GX): when the live state is playable (Update() in {5,2,3,7}),
+    // capture the current world-file name from the game window into m_strWorldFile,
+    // clear the score/state slots (m_128/m_12c), and PostMessageA WM_COMMAND 0x8005.
+    i32 CaptureWorldFile();
     i32 InitializeLobbyConnectionSettings();        // @0x08eca0 (DirectPlay lobby connect)
     CString BuildMoviePath(i32 movie);              // @0x08ff30 (per-movie path on the CD)
     void PerFrameTick();                            // @0x08f620 (per-frame draw-clock tick)
