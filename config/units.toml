@@ -1268,6 +1268,11 @@ source = "src/Gruntz/CTileScan.cpp"
 flags = "base"
 
 [[unit]]
+unit = "ckeyedlist"
+source = "src/Gruntz/CKeyedList.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "gamesave"
 source = "src/Io/GameSave.cpp"
 flags = "base"
