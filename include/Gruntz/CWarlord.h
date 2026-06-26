@@ -115,6 +115,10 @@ public:
     CWarlord(i32); // 0x42d40 (the warlord ctor: base init + name/state setup)
     ~CWarlord();   // 0x107f0 (the home-TU dtor: ~CString(m_54) + the base teardown)
 
+    // construct the file-static per-action handler table (g_actionTable @0x644610)
+    // over the fixed [2000, 2010] range via the shared registry ctor (0x408710).
+    static void InitActReg(); // 0x445c0
+
     // slot-4 override of an inherited CUserLogic virtual: the animation-state
     // dispatcher over the file-static table.
     i32 ResolveState(i32 key); // 0x44640 (homed by RVA; non-virtual to keep the

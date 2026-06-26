@@ -28,7 +28,7 @@ brickz	15	3
 butemgr	41	27
 butestoreclear	1	1
 cambientsound	4	3
-canicycle	1	0
+canicycle	2	1
 canielement	3	2
 canirecord	9	5
 cattract	14	8
@@ -125,7 +125,7 @@ directinputmgr2	33	29
 directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	15	0
-engine_boundary	524	0
+engine_boundary	522	0
 engine_discovered	51	0
 engine_label_stubs	436	104
 engstr	3	1
@@ -250,7 +250,7 @@ unknownsalazar	4	0
 userbaselink	10	0
 userlogic	58	21
 videoconfig	2	0
-warlord	9	2
+warlord	10	3
 warpstonefly	3	2
 winapi	5	3
 winapicdrom	1	0
@@ -391,6 +391,7 @@ cambientsound	??1CAmbientSound@@QAE@XZ	100.0000	100.0000	1	56dbfa3599ca	0xb790
 cambientsound	?Restart@CAmbientSound@@QAEXXZ	100.0000	100.0000	1	eb0cc7e65b93	0xbfb0
 cambientsound	?SetLevel@CAmbientSound@@QAEHHHH@Z	100.0000	100.0000	2	82d554c23b21	0xc200
 cambientsound	?Update@CAmbientSound@@QAEXHHH@Z	76.7857	76.7857	2	979c7e248495	0xc090
+canicycle	?InitActReg@CAniCycle@@SAXXZ	100.0000	100.0000	1	5d76d9347b15	0xaaf00
 canicycle	?RegisterActs@CAniCycle@@SAXXZ	92.9130	92.9130	1	17ca46567be1	0xab0e0
 canielement	?AtChecked_06b270@CAniElement@@QBEPAVCObject@@H@Z	100.0000	100.0000	1	2278365ee372	0x6b270
 canielement	?Build_165460@CAniElement@@QAEHPAXPAUCAniSource@@H@Z	89.3359	89.3359	1	c5f9e189a6e5	0x165460
@@ -1167,7 +1168,6 @@ engine_boundary	?Boundary_03b940@@YAXXZ	1.0417	1.0417	1	774e4bfed5ca	0x3b940
 engine_boundary	?Boundary_03bb50@@YAXXZ	1.0309	1.0309	1	fa8226994405	0x3bb50
 engine_boundary	?Boundary_0408b0@@YAXXZ	0.4975	0.4975	1	ff1ca69a421a	0x408b0
 engine_boundary	?Boundary_041680@@YAXXZ	0.4975	0.4975	1	62039d193f62	0x41680
-engine_boundary	?Boundary_0445c0@@YAXXZ	20.0000	20.0000	1	4cb295b2f8aa	0x445c0
 engine_boundary	?Boundary_0464e0@@YAXXZ	0.8889	0.8889	1	016b698a206f	0x464e0
 engine_boundary	?Boundary_0474b0@@YAXXZ	0.8696	0.8696	1	b5528f3237f2	0x474b0
 engine_boundary	?Boundary_050a50@@YAXXZ	0.2597	0.2597	1	c341090f0499	0x50a50
@@ -1215,7 +1215,6 @@ engine_boundary	?Boundary_09b770@@YAXXZ	1.1905	1.1905	1	f73965829ff1	0x9b770
 engine_boundary	?Boundary_09c650@@YAXXZ	0.1246	0.1246	1	77ff0e770f92	0x9c650
 engine_boundary	?Boundary_09cab0@@YAXXZ	3.6364	3.6364	1	4424afe5ea91	0x9cab0
 engine_boundary	?Boundary_09e0b0@@YAXXZ	0.8264	0.8264	1	d1c3b30a9860	0x9e0b0
-engine_boundary	?Boundary_0aaf00@@YAXXZ	20.0000	20.0000	1	a4e5d980f4ed	0xaaf00
 engine_boundary	?Boundary_0adde0@@YAXXZ	20.0000	20.0000	1	40f696bd4d2d	0xadde0
 engine_boundary	?Boundary_0ade60@@YAXXZ	0.5333	0.5333	1	ff289523ad79	0xade60
 engine_boundary	?Boundary_0adfc0@@YAXXZ	0.8696	0.8696	1	f10252da81d8	0xadfc0
@@ -3416,6 +3415,7 @@ videoconfig	?SaveVideoResolutionConfig@@YAXPAX0@Z	88.8148	88.8148	6	6a3159e5dbaa
 warlord	??0CWarlord@@QAE@H@Z	3.5796	3.5796	1	b29f645c5e90	0x42d40
 warlord	??1CWarlord@@UAE@XZ	73.9524	73.9524	1	0524876559f2	0x107f0
 warlord	?BuildFortSplashParticles@CWarlord@@QAEXXZ	1.1905	1.1905	1	46da92888935	0x44f80
+warlord	?InitActReg@CWarlord@@SAXXZ	100.0000	100.0000	1	d3ff00d8c05e	0x445c0
 warlord	?LoadAttributes2@CWarlord@@QAEHXZ	91.6296	91.6296	1	3c28e827f939	0x44d10
 warlord	?LoadAttributes@CWarlord@@QAEHXZ	100.0000	100.0000	1	fd1848323ebc	0x44c00
 warlord	?NotifyFortUnderAttack@CWarlord@@QAEXXZ	0.5464	0.5464	1	c2ca723a74ad	0x45270
