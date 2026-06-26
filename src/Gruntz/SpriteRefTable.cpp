@@ -9,6 +9,7 @@
 #include <Gruntz/SpriteRefTable.h>
 
 #include <rva.h>
+#include <stdio.h> // engine sprintf (reloc-masked) - LoadGruntzPalette's name format
 
 // Engine CRT/resource helpers reached by Add()/Clear(); reloc-masked DIR32/REL32.
 extern "C" void* RezAlloc(u32 n); // 0x1b9b46 (operator new / RezAlloc)
@@ -144,4 +145,82 @@ CSpriteRef* CSpriteRefTable::Add(char* szName, i32 kind) {
         return 0;
     }
     return node;
+}
+
+// ---------------------------------------------------------------------------
+// CSpriteRefTable::LoadGruntzPalette (0xe2d10) - register a level's
+// "GRUNTZ_PALETTEZ_<name>" palette into the sprite registry reached through
+// this->m_04->m_18. Lookup() (the +0x10 hash sub-table) probes whether it is
+// already present; Install (vtable slot 9) installs the resolved palette. src is
+// the source resolver (FUN_0053bff0 resolves a packed-tag 'PAL'=0x50414c resource
+// by namespaced name); name is the level/name string. Helpers are reloc-masked
+// externals; the typed view-of-`this` (CPaletteOwner) overlays m_04 as the
+// destination-registry root (a struct-view cast at entry).
+//
+// int (BOOL) return: the `!src` and already-present guards return literal 0/1
+// (reusing the zeroed eax / `mov eax,1`); the success path normalizes the
+// Install() return through neg/sbb/neg (`!!x`). A void return would tail-merge
+// the bare epilogues and drop the eax=1 tail.
+
+// The destination registry at m_04->m_18 is polymorphic: a hash sub-table at +0x10
+// backs Lookup() (out-param non-null => already present), and Install (vtable slot
+// 9) takes the resolved palette + two null args.
+struct CPaletteHashTable {            // embedded at CPaletteDestRegistry+0x10
+    void Lookup(char* szName, void** out); // 0x1b8008 __thiscall
+};
+struct CPaletteDestRegistry {
+    virtual void v0();
+    virtual void v1();
+    virtual void v2();
+    virtual void v3();
+    virtual void v4();
+    virtual void v5();
+    virtual void v6();
+    virtual void v7();
+    virtual void v8();
+    virtual i32 Install(void* res, i32 a, i32 b); // slot 9 (+0x24)
+    char m_pad04[0x10 - 0x4];
+    CPaletteHashTable m_10; // +0x10  hash sub-table Lookup runs on
+};
+struct CPaletteDestRoot {        // m_04 points here; +0x18 is the dest registry
+    char m_pad00[0x18];
+    CPaletteDestRegistry* m_18; // +0x18
+};
+// src's source registry: FUN_0053bff0 __thiscall resolves a packed-tag resource by
+// namespaced name, returning the resource (0 if absent).
+struct CPaletteSource {
+    void* Resolve(char* szName, i32 tag); // 0x13bff0
+};
+// Typed view of `this`: m_4 (== CSpriteRefTable::m_04) is the dest registry root.
+struct CPaletteOwner {
+    char m_pad00[0x4];
+    CPaletteDestRoot* m_4; // +0x04
+};
+
+// @early-stop
+// out-param zero-init scheduling wall (docs/patterns/outparam-zeroinit-scheduling.md):
+// the ONLY residual is retail SINKING `mov [&found],0` past the `lea &found` (lea
+// then store) while cl HOISTS it (store then lea) - identical instruction multiset,
+// one 2-instr permutation, source-invariant under /O2. Logic + all bytes otherwise
+// exact (frame 0x40, epilogues, !!x normalize all match).
+RVA(0x000e2d10, 0xa1)
+i32 CSpriteRefTable::LoadGruntzPalette(i32 src, i32 name) {
+    CPaletteOwner* self = (CPaletteOwner*)this;
+    if (!src) {
+        return 0;
+    }
+
+    void* found = 0;
+    self->m_4->m_18->m_10.Lookup((char*)name, &found);
+    if (found) {
+        return 1;
+    }
+
+    char buf[0x40];
+    sprintf(buf, "GRUNTZ_PALETTEZ_%s", (char*)name);
+    void* pal = ((CPaletteSource*)src)->Resolve(buf, 0x50414c);
+    if (!pal) {
+        return 0;
+    }
+    return self->m_4->m_18->Install(pal, 0, 0) != 0;
 }

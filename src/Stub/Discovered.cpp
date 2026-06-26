@@ -63,12 +63,6 @@ RVA(0x000d53d0, 0x466)
 void CPlay::CPlay_0d53d0() {}
 RVA(0x000d9290, 0x2a7)
 void CPlay::CPlay_0d9290() {}
-RVA(0x000db8a0, 0x67)
-void CPlay::CPlay_0db8a0() {}
-RVA(0x000db930, 0x53)
-void CPlay::CPlay_0db930() {}
-RVA(0x000db9b0, 0x53)
-void CPlay::CPlay_0db9b0() {}
 RVA(0x000dd830, 0x1e3)
 void CPlay::CPlay_0dd830() {}
 

@@ -214,12 +214,11 @@ namespace ApiCallerStubs {
         void LoadMonologoSprite();
         void LoadStateImages_vfunc8();
         void LoadMenuSelectSprite(i32);
-        void LoadImageBanks_vfunc29();
+        // LoadImageBanks (0x0cffe0), LoadActionTileSprites (0x0db600),
+        // LoadLevelSounds (0x0db6c0), LoadLevelImages (0x0db7e0) re-homed as CPlay
+        // methods in src/Gruntz/CPlay.cpp.
         void LoadSBITextEdges(i32);
         void LoadWarlordSprites(i32, i32);
-        i32 LoadActionTileSprites(i32 force);
-        i32 LoadLevelSounds(i32 force);
-        i32 LoadLevelImages(i32 force);
         void BuildMusicCategoryTable(i32);
         void BuildWorldLevelPath(i32);
         void LoadLevelEffectSprites();
@@ -230,7 +229,7 @@ namespace ApiCallerStubs {
         void LoadLevelPreviewScreen();
         void BuildToolToyColorKey(i32);
         void LookupToolToyColorKey(i32);
-        i32 LoadGruntzPalette(i32 src, i32 name);
+        // LoadGruntzPalette (0x0e2d10) re-homed to src/Gruntz/SpriteRefTable.cpp.
         void BuildResourceTabStatusBar(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32);
         void
             BuildStatzTabStatusBar(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32);
@@ -4355,11 +4354,8 @@ namespace ApiCallerStubs {
     RVA(0x000ba620, 0x14a)
     void ThisStubOwnerUnknown::LoadMenuSelectSprite(i32) {}
 
-    // @confidence: med
-    // @source: decomp-xref
-    // @stub
-    RVA(0x000cffe0, 0x3c)
-    void ThisStubOwnerUnknown::LoadImageBanks_vfunc29() {}
+    // LoadImageBanks (0x0cffe0) re-homed as CPlay::LoadImageBanks in
+    // src/Gruntz/CPlay.cpp.
 
     // @confidence: med
     // @source: decomp-xref
@@ -4373,107 +4369,11 @@ namespace ApiCallerStubs {
     RVA(0x000d65d0, 0x7a4)
     void ThisStubOwnerUnknown::LoadWarlordSprites(i32, i32) {}
 
-    // @confidence: high
-    // @source: decomp-xref
-    // Byte-exact (100%). The real return type is int (BOOL): each guard is `return 0`
-    // reusing the just-zeroed eax (no normalizing mov) and the success path is
-    // `mov eax,1` - declaring the function `void` tail-merges the identical bare
-    // epilogues and never emits `mov eax,1`, capping ~85%; the int return reproduces
-    // retail's inline per-site epilogues + the eax=1 tail. The typed-view-of-`this`
-    // (CActionTileOwner) steers cl to retail's edx (not esi) for the final m_c load.
-    // (Ghidra demangled the symbol as `...QAEXH@Z` = void from the relocs; the
-    // RVA-keyed delinker still pairs the int-return body at this address.)
-    RVA(0x000db600, 0x8f)
-    i32 ThisStubOwnerUnknown::LoadActionTileSprites(i32 force) {
-        CActionTileOwner* self = (CActionTileOwner*)this;
-        if (!self->m_c) {
-            return 0;
-        }
-        if (!force && self->m_c->m_10->Has("ACTION")) {
-            return 1;
-        }
-
-        self->m_c->m_10->Register("ACTION", g_emptyString);
-        self->m_c->m_10->Register("BACK", g_emptyString);
-        g_severusCounterA = 0;
-
-        void* tiles = self->m_28->LookupTileSet("TILEZ");
-        if (!tiles) {
-            return 0;
-        }
-        self->m_c->m_10->InstallTileSet(tiles, g_emptyString, "_");
-        return 1;
-    }
-
-    // @confidence: high
-    // @source: decomp-xref
-    // Byte-exact (100%). int (BOOL) return like its tile/image siblings: each guard
-    // is `return 0` reusing the just-zeroed eax and the success path is `mov eax,1`,
-    // reproducing retail's per-site `pop esi; ret 4` epilogues + the eax=1 tail (a
-    // void return tail-merges them and never emits eax=1). Registry reached through
-    // m_c->+0x28 (CSoundResRegistry) - distinct object/class from the tile loader's
-    // m_c->m_10, with direct (non-virtual) Has/Register/Install helpers.
-    RVA(0x000db6c0, 0x70)
-    i32 ThisStubOwnerUnknown::LoadLevelSounds(i32 force) {
-        CSoundOwner* self = (CSoundOwner*)this;
-        if (!self->m_c) {
-            return 0;
-        }
-        if (!force && self->m_c->m_28->Has("LEVEL")) {
-            return 1;
-        }
-
-        self->m_c->m_28->Register("LEVEL", "_");
-
-        void* sounds = self->m_28->LookupSoundSet("SOUNDZ");
-        if (!sounds) {
-            return 0;
-        }
-        self->m_c->m_28->Install(sounds, "LEVEL", "_");
-        return 1;
-    }
-
-    // ---------------------------------------------------------------------------
-    // ThisStubOwnerUnknown::LoadLevelImages - per-level IMAGEZ/LEVEL asset loader. Sibling
-    // of LoadActionTileSprites above; same registry idiom, different namespace keys
-    // ("LEVEL"/"IMAGEZ"/"_") and a SINGLE Register (no second "BACK" namespace).
-    // Reaches the registry through this->m_c (->m_10): if not forced (arg1==0) and
-    // "LEVEL" is already present, bail; otherwise register the "LEVEL" namespace
-    // (key "_"), reset the severus counter, look up the level's "IMAGEZ" set off
-    // this->m_28, and wire it in through the +0x48 virtual slot. Reuses the typed
-    // view-of-`this` (CActionTileOwner) from the sibling. Only offsets / code bytes
-    // are load-bearing; helpers are reloc-masked externals.
-    //
-    // @confidence: high
-    // @source: decomp-xref
-    // Byte-exact (100%). The real return type is int (BOOL): each guard is `return 0`
-    // reusing the just-zeroed eax (no normalizing mov) and the success path is
-    // `mov eax,1` - declaring the function `void` (as the sibling does) tail-merges
-    // the three identical bare epilogues and never emits `mov eax,1`, capping ~82%;
-    // the int return reproduces retail's inline per-site epilogues + the eax=1 tail.
-    // (Ghidra demangled the symbol as `...QAEXH@Z` = void from the relocs alone; the
-    // RVA-keyed delinker still pairs the int-return body at this address.)
-    RVA(0x000db7e0, 0x84)
-    i32 ThisStubOwnerUnknown::LoadLevelImages(i32 force) {
-        CActionTileOwner* self = (CActionTileOwner*)this;
-        if (!self->m_c) {
-            return 0;
-        }
-        if (!force && self->m_c->m_10->Has("LEVEL")) {
-            return 1;
-        }
-
-        self->m_c->m_10->Register("LEVEL", "_");
-        g_severusCounterA = 0;
-
-        void* images = self->m_28->LookupTileSet("IMAGEZ");
-        if (!images) {
-            return 0;
-        }
-        self->m_c->m_10->InstallTileSet(images, "LEVEL", "_");
-        g_severusCounterA = 0;
-        return 1;
-    }
+    // LoadActionTileSprites (0x0db600), LoadLevelSounds (0x0db6c0) and
+    // LoadLevelImages (0x0db7e0) re-homed (byte-exact) as CPlay methods in
+    // src/Gruntz/CPlay.cpp, alongside their GAME-namespace siblings 0x0db8a0/
+    // 0x0db930/0x0db9b0. Their loader-view structs (CActionTileOwner / CSoundOwner
+    // / CActionResRegistry / CSoundResRegistry) remain defined in Backlog.cpp.
 
     // @confidence: med
     // @source: string-xref
@@ -4535,42 +4435,9 @@ namespace ApiCallerStubs {
     RVA(0x000e2980, 0x2cd)
     void ThisStubOwnerUnknown::LookupToolToyColorKey(i32) {}
 
-    // @confidence: high
-    // @source: decomp-xref
-    // int (BOOL) return: the `!arg1` and already-present guards return literal 0/1
-    // (reusing the zeroed eax / `mov eax,1`), and the success path normalizes the
-    // Install() return through neg/sbb/neg (`!!x`). A `void` return would tail-merge
-    // the bare epilogues and drop the eax=1 tail. The "PAL" key is a packed-tag
-    // immediate (0x50414c, not relocated). Lookup() runs on the +0x10 hash sub-table
-    // of m_4->m_18; Install is that object's vtable slot 9.
-    //
-    // @early-stop
-    // out-param zero-init scheduling wall (docs/patterns/outparam-zeroinit-scheduling.md):
-    // the ONLY residual is retail SINKING `mov [&found],0` past the `lea &found` (lea
-    // then store) while cl HOISTS it (store then lea) - identical instruction multiset,
-    // one 2-instr permutation, source-invariant under /O2. Logic + all bytes otherwise
-    // exact (frame 0x40, epilogues, !!x normalize all match).
-    RVA(0x000e2d10, 0xa1)
-    i32 ThisStubOwnerUnknown::LoadGruntzPalette(i32 src, i32 name) {
-        CPaletteOwner* self = (CPaletteOwner*)this;
-        if (!src) {
-            return 0;
-        }
-
-        void* found = 0;
-        self->m_4->m_18->m_10.Lookup((char*)name, &found);
-        if (found) {
-            return 1;
-        }
-
-        char buf[0x40];
-        sprintf(buf, "GRUNTZ_PALETTEZ_%s", (char*)name);
-        void* pal = ((CPaletteSource*)src)->Resolve(buf, 0x50414c);
-        if (!pal) {
-            return 0;
-        }
-        return self->m_4->m_18->Install(pal, 0, 0) != 0;
-    }
+    // LoadGruntzPalette (0x0e2d10) re-homed as CSpriteRefTable::LoadGruntzPalette in
+    // src/Gruntz/SpriteRefTable.cpp (the trace owner; m_4 == CSpriteRefTable::m_04).
+    // Its CPalette* loader-view structs remain defined in Backlog.cpp.
 
     // @confidence: med
     // @source: decomp-xref

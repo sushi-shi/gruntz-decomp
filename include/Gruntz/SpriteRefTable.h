@@ -83,6 +83,10 @@ public:
     // kind from it, and return the node (null on miss / alloc fail). 0xe2890.
     CSpriteRef* Add(char* szName, i32 kind);
 
+    // Register a level's "GRUNTZ_PALETTEZ_<name>" palette into the sprite registry
+    // (m_04->m_18). src is the source resolver, name the level/name string. 0xe2d10.
+    i32 LoadGruntzPalette(i32 src, i32 name);
+
     CSpriteRefFactory* m_00;  // +0x00  Init arg0 (the alpha/anim factory)
     void* m_04;               // +0x04  Init arg1 (m_04->m_18 -> the sprite mgr)
     CSpriteRef* m_refA[0x11]; // +0x08  bucket A nodes (17 slots)

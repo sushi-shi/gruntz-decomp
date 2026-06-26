@@ -1642,3 +1642,240 @@ void CPlay::LoadScrollSpeedOptions() {}
 // @stub
 RVA(0x000dc6d0, 0x215)
 void CPlay::BuildGruntTypeNameTable(i32, i32, i32, i32) {}
+
+// ===========================================================================
+// Per-level resource loaders (trace-discovered CPlay __thiscall cluster).
+// ===========================================================================
+// A small family of asset-namespace loaders. Each reaches the game resource
+// registry through this->m_c (->m_10 image/tile registry [virtual install slot
+// 18 = +0x48], ->m_28 sound registry, ->m_2c animation registry) and looks the
+// level's named set up off a bank source (this->m_28 or this->m_34, both expose
+// LookupSet @0x13bae0). LoadImageBanks (the parent) caches the GRUNTZ/GAME banks
+// into this->m_30/m_34 first; the per-type loaders then read this->m_34 as their
+// source. Helpers are modeled NO-body so their `call`s reloc-mask; only OFFSETS +
+// code bytes are load-bearing. The loaders touch sub-object faces (m_c->m_10,
+// m_8->Lookup) that Render's matched member typing models differently, so each
+// casts `this` to the self-contained CPlayRes view below (a struct-view-of-this
+// overlay - matching-neutral, keeps Render untouched).
+
+extern i32 g_severusCounterA;    // ?g_severusCounterA@@3HA @0x6bf37c (mangled-name match)
+extern "C" char g_emptyString[]; // _g_emptyString @0x6293f4
+
+// A level's named-set source (this->m_28 / this->m_34, and the banks cached in
+// m_30/m_34). LookupSet (0x13bae0) resolves "TILEZ"/"IMAGEZ"/"SOUNDZ"/"ANIZ".
+struct CResSource {
+    void* LookupSet(char* szName); // 0x13bae0 __thiscall, ret set ptr
+};
+// The bank manager at this->m_8: Lookup (0x13c030) resolves a "GRUNTZ"/"GAME"
+// bank into a CResSource (LoadImageBanks caches the result in m_30/m_34).
+struct CBankMgr {
+    CResSource* Lookup(char* szName); // 0x13c030 __thiscall
+};
+// The image/tile registry at this->m_c->m_10: non-virtual Has/Register helpers +
+// a virtual Install at vtable slot 18 (+0x48).
+struct CImageRegistry {
+    i32 Has(char* szName);                    // 0x155550 __thiscall, ret found
+    void Register(char* szName, char* szKey); // 0x155360 __thiscall
+    virtual void v00();
+    virtual void v01();
+    virtual void v02();
+    virtual void v03();
+    virtual void v04();
+    virtual void v05();
+    virtual void v06();
+    virtual void v07();
+    virtual void v08();
+    virtual void v09();
+    virtual void v10();
+    virtual void v11();
+    virtual void v12();
+    virtual void v13();
+    virtual void v14();
+    virtual void v15();
+    virtual void v16();
+    virtual void v17();
+    virtual void Install(void* set, char* szName, char* szKey); // slot 18 (+0x48)
+};
+// The sound registry at this->m_c->m_28 (plain non-virtual helpers).
+struct CSoundRegistry {
+    i32 Has(char* szName);                              // 0x1583c0 __thiscall, ret found
+    void Register(char* szName, char* szKey);           // 0x157c70 __thiscall
+    void Install(void* set, char* szName, char* szKey); // 0x157ee0 __thiscall
+};
+// The animation registry at this->m_c->m_2c (plain non-virtual helpers).
+struct CAnimRegistry {
+    i32 Has(char* szName);                              // 0x152c50 __thiscall, ret found
+    void Install(void* set, char* szName, char* szKey); // 0x152ad0 __thiscall
+};
+// this->m_c: the resource manager holding the three sub-registries.
+struct CResMgr {
+    char m_pad00[0x10];
+    CImageRegistry* m_10; // +0x10  image/tile registry (virtual install +0x48)
+    char m_pad14[0x28 - 0x14];
+    CSoundRegistry* m_28; // +0x28  sound registry
+    CAnimRegistry* m_2c;  // +0x2c  animation registry
+};
+// Typed view-of-`this` for the loader family.
+struct CPlayRes {
+    char m_pad00[0x8];
+    CBankMgr* m_8; // +0x08  the bank manager (LoadImageBanks)
+    CResMgr* m_c;  // +0x0c  the resource manager
+    char m_pad10[0x28 - 0x10];
+    CResSource* m_28; // +0x28  level bank source (TILEZ/IMAGEZ/SOUNDZ)
+    char m_pad2c[0x30 - 0x2c];
+    CResSource* m_30; // +0x30  GRUNTZ bank (LoadImageBanks out)
+    CResSource* m_34; // +0x34  GAME bank (LoadImageBanks out; GAME-loaders' source)
+};
+
+// LoadImageBanks (0x0cffe0) - cache the GRUNTZ + GAME asset banks off m_8 into
+// m_30/m_34; the int (BOOL) return reuses the just-loaded value at each guard.
+RVA(0x000cffe0, 0x3c)
+i32 CPlay::LoadImageBanks() {
+    CPlayRes* self = (CPlayRes*)this;
+    if (!self->m_8) {
+        return 0;
+    }
+    self->m_30 = self->m_8->Lookup("GRUNTZ");
+    if (!self->m_30) {
+        return 0;
+    }
+    self->m_34 = self->m_8->Lookup("GAME");
+    return self->m_34 != 0;
+}
+
+// LoadActionTileSprites (0x0db600) - register the ACTION/BACK namespaces then
+// install the level's TILEZ set through the +0x48 virtual slot. int (BOOL) return:
+// each guard `return 0` reuses the just-zeroed eax, the success path is `mov
+// eax,1`; a void return tail-merges the bare epilogues and never emits eax=1.
+RVA(0x000db600, 0x8f)
+i32 CPlay::LoadActionTileSprites(i32 force) {
+    CPlayRes* self = (CPlayRes*)this;
+    if (!self->m_c) {
+        return 0;
+    }
+    if (!force && self->m_c->m_10->Has("ACTION")) {
+        return 1;
+    }
+
+    self->m_c->m_10->Register("ACTION", g_emptyString);
+    self->m_c->m_10->Register("BACK", g_emptyString);
+    g_severusCounterA = 0;
+
+    void* tiles = self->m_28->LookupSet("TILEZ");
+    if (!tiles) {
+        return 0;
+    }
+    self->m_c->m_10->Install(tiles, g_emptyString, "_");
+    return 1;
+}
+
+// LoadLevelSounds (0x0db6c0) - register the LEVEL namespace then install the
+// level's SOUNDZ set through m_c->m_28 (non-virtual). Single Register, no severus
+// reset. Same int-return idiom as its siblings.
+RVA(0x000db6c0, 0x70)
+i32 CPlay::LoadLevelSounds(i32 force) {
+    CPlayRes* self = (CPlayRes*)this;
+    if (!self->m_c) {
+        return 0;
+    }
+    if (!force && self->m_c->m_28->Has("LEVEL")) {
+        return 1;
+    }
+
+    self->m_c->m_28->Register("LEVEL", "_");
+
+    void* sounds = self->m_28->LookupSet("SOUNDZ");
+    if (!sounds) {
+        return 0;
+    }
+    self->m_c->m_28->Install(sounds, "LEVEL", "_");
+    return 1;
+}
+
+// LoadLevelImages (0x0db7e0) - sibling of LoadActionTileSprites; a single Register
+// (LEVEL), then install the level's IMAGEZ set through the +0x48 virtual slot.
+// Brackets the install with two severus-counter resets.
+RVA(0x000db7e0, 0x84)
+i32 CPlay::LoadLevelImages(i32 force) {
+    CPlayRes* self = (CPlayRes*)this;
+    if (!self->m_c) {
+        return 0;
+    }
+    if (!force && self->m_c->m_10->Has("LEVEL")) {
+        return 1;
+    }
+
+    self->m_c->m_10->Register("LEVEL", "_");
+    g_severusCounterA = 0;
+
+    void* images = self->m_28->LookupSet("IMAGEZ");
+    if (!images) {
+        return 0;
+    }
+    self->m_c->m_10->Install(images, "LEVEL", "_");
+    g_severusCounterA = 0;
+    return 1;
+}
+
+// LoadGameImages (0x0db8a0) - the GAME-namespace image loader. No force gate, no
+// Register; reads m_34 (the cached GAME bank) for the IMAGEZ set, installs through
+// the +0x48 virtual slot. Brackets the install with severus = 1 then 0.
+RVA(0x000db8a0, 0x67)
+i32 CPlay::LoadGameImages(i32 force) {
+    CPlayRes* self = (CPlayRes*)this;
+    if (!self->m_c) {
+        return 0;
+    }
+    if (self->m_c->m_10->Has("GAME")) {
+        return 1;
+    }
+
+    g_severusCounterA = 1;
+    void* images = self->m_34->LookupSet("IMAGEZ");
+    if (!images) {
+        return 0;
+    }
+    self->m_c->m_10->Install(images, "GAME", "_");
+    g_severusCounterA = 0;
+    return 1;
+}
+
+// LoadGameSounds (0x0db930) - the GAME-namespace sound loader. Reads m_34 for the
+// SOUNDZ set and installs through m_c->m_28 (non-virtual). No Register, no severus.
+RVA(0x000db930, 0x53)
+i32 CPlay::LoadGameSounds(i32 force) {
+    CPlayRes* self = (CPlayRes*)this;
+    if (!self->m_c) {
+        return 0;
+    }
+    if (self->m_c->m_28->Has("GAME")) {
+        return 1;
+    }
+
+    void* sounds = self->m_34->LookupSet("SOUNDZ");
+    if (!sounds) {
+        return 0;
+    }
+    self->m_c->m_28->Install(sounds, "GAME", "_");
+    return 1;
+}
+
+// LoadGameAnims (0x0db9b0) - the GAME-namespace animation loader. Reads m_34 for
+// the ANIZ set and installs through m_c->m_2c (non-virtual). No Register/severus.
+RVA(0x000db9b0, 0x53)
+i32 CPlay::LoadGameAnims(i32 force) {
+    CPlayRes* self = (CPlayRes*)this;
+    if (!self->m_c) {
+        return 0;
+    }
+    if (self->m_c->m_2c->Has("GAME")) {
+        return 1;
+    }
+
+    void* anims = self->m_34->LookupSet("ANIZ");
+    if (!anims) {
+        return 0;
+    }
+    self->m_c->m_2c->Install(anims, "GAME", "_");
+    return 1;
+}

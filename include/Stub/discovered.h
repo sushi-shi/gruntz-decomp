@@ -57,9 +57,6 @@ public:
     void CPlay_0cb480();
     void CPlay_0d53d0();
     void CPlay_0d9290();
-    void CPlay_0db8a0();
-    void CPlay_0db930();
-    void CPlay_0db9b0();
     void CPlay_0dd830();
 };
 class CSpotLight {

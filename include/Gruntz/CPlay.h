@@ -315,6 +315,20 @@ public:
     void DragSnapTo(i32 x, i32 y);           // 0x4fe860 (thiscall on this)
     void EndDragSel();                       // 0x4da2d0 (thiscall on this)
 
+    // ---- per-level resource loaders (trace-discovered, THIS TU) ----
+    // Each casts `this` to a typed loader view (CPlay.cpp): the +0xc resource
+    // manager (with its m_10/m_28/m_2c sub-registries) and the +0x28/+0x34 bank
+    // sources are reached through offset-specific sub-types that Render models
+    // differently, so a single struct-view cast at entry keeps Render's matched
+    // member typing untouched.
+    i32 LoadImageBanks();                 // 0x0cffe0  (the GRUNTZ/GAME bank cache)
+    i32 LoadActionTileSprites(i32 force); // 0x0db600
+    i32 LoadLevelSounds(i32 force);       // 0x0db6c0
+    i32 LoadLevelImages(i32 force);       // 0x0db7e0
+    i32 LoadGameImages(i32 force);        // 0x0db8a0
+    i32 LoadGameSounds(i32 force);        // 0x0db930
+    i32 LoadGameAnims(i32 force);         // 0x0db9b0
+
     // ---- CPlay-specific members (offsets pinned by the Render disasm) ----
     i32 m_inputWarmup1; // +0x1a8  StepInputA first-frame one-shot latch
     i32 m_inputWarmup2; // +0x1ac  StepInputA second-frame one-shot latch
