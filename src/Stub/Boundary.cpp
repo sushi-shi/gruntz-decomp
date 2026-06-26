@@ -575,14 +575,8 @@ RVA(0x00161500, 0x58)
 void Boundary_161500() {} // proximity: CImageSet1@-0x190 | PlaneGeom@+0x790
 RVA(0x00161560, 0x7)
 void Boundary_161560() {} // proximity: CImageSet1@-0x1f0 | PlaneGeom@+0x730
-RVA(0x00161bf0, 0x5e)
-void Boundary_161bf0() {} // proximity: CImageSet1@-0x880 | PlaneGeom@+0xa0
-RVA(0x001628d0, 0x12)
-void Boundary_1628d0() {} // proximity: CPlaneRender@-0x8c0 | WwdFile@+0x220
 RVA(0x001628f0, 0x1fc)
 void Boundary_1628f0() {} // proximity: CPlaneRender@-0x8e0 | WwdFile@+0x200
-RVA(0x001633e0, 0x12)
-void Boundary_1633e0() {} // proximity: CPlaneRender@-0x70 | CDDrawWorkerList@+0x810
 RVA(0x00163710, 0x42)
 void Boundary_163710() {} // proximity: CPlaneRender@-0x3a0 | CDDrawWorkerList@+0x4e0
 RVA(0x00163a10, 0x7)
@@ -593,8 +587,6 @@ RVA(0x00163af0, 0xcd)
 void Boundary_163af0() {} // proximity: CPlaneRender@-0x780 | CDDrawWorkerList@+0x100
 RVA(0x00164d80, 0x421)
 void Boundary_164d80() {} // proximity: CLogicRecord@-0x420 | CDDrawWorkerRegistry@+0x490
-RVA(0x00165620, 0x101)
-void Boundary_165620() {} // proximity: CAniElement@-0x60 | CRemusEntryList@+0x110
 RVA(0x001660f0, 0xd1)
 void Boundary_1660f0() {} // proximity: CFileMem@-0x1a0 | CImageSet1@+0xc50
 RVA(0x00166640, 0x13b)

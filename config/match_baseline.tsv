@@ -30,6 +30,7 @@ butestoreclear	1	1
 cambientsound	4	3
 canicycle	2	1
 canielement	3	2
+canielementeh	1	0
 canirecord	9	5
 cattract	14	8
 cbehindcandy	2	2
@@ -84,6 +85,7 @@ chatboxowner	7	2
 cheatmgr	7	4
 cimage	10	6
 cimageowned	4	2
+cimageset3	3	3
 cleveltimedtor	1	1
 clightfx	4	2
 clightfxeh	1	1
@@ -129,7 +131,7 @@ directinputmgr2	33	29
 directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	15	0
-engine_boundary	420	0
+engine_boundary	416	0
 engine_discovered	51	0
 engine_label_stubs	437	105
 engine_unmatched	273	0
@@ -407,6 +409,7 @@ canicycle	?RegisterActs@CAniCycle@@SAXXZ	92.9130	92.9130	1	17ca46567be1	0xab0e0
 canielement	?AtChecked_06b270@CAniElement@@QBEPAVCObject@@H@Z	100.0000	100.0000	1	2278365ee372	0x6b270
 canielement	?Build_165460@CAniElement@@QAEHPAXPAUCAniSource@@H@Z	89.3359	89.3359	1	c5f9e189a6e5	0x165460
 canielement	?Configure_1655c0@CAniElement@@QAEHPAX0H@Z	100.0000	100.0000	1	45956e3ecb61	0x1655c0
+canielementeh	?LoadFile_165620@CAniElement@@QAEHPAX0H@Z	97.2875	97.2875	1	3562d633122d	0x165620
 canirecord	??1CAniRecordBase2@@QAE@XZ	94.2857	94.2857	1	00be0d8eca56	0x165dd0
 canirecord	??1CAniRecordPrimary@@QAE@XZ	48.3077	48.3077	1	344d35b0a94c	0x1657a0
 canirecord	?Alloc168ea0@CAniRecord@@QAEPAXHH@Z	100.0000	100.0000	1	ccc818e42e08	0x168ea0
@@ -825,6 +828,9 @@ cimageowned	??0CImageOwned@@QAE@XZ	100.0000	100.0000	1	27471851f4c1	0x148ce0
 cimageowned	?Build@CImageOwned@@QAEHPAVCImageBuildDesc@@HH@Z	79.6791	79.6791	1	63cfd0efa565	0x1490d0
 cimageowned	?BuildRle@CImageOwned@@QAEHPAXHHHH0@Z	97.7528	97.7528	1	dc2ddfff5723	0x148d40
 cimageowned	?LoadFromFile@CImageOwned@@QAEHVCString@@H@Z	100.0000	100.0000	1	503f5fd8f54d	0x148fc0
+cimageset3	?Cleanup_161bf0@CImageSet3@@QAEXXZ	100.0000	100.0000	1	e6669699495e	0x161bf0
+cimageset3	?GetSize_1633e0@CImageSet3@@QAEHXZ	100.0000	100.0000	1	33643861e3a8	0x1633e0
+cimageset3	?Prune_1628d0@CImageSet3@@QAEHXZ	100.0000	100.0000	1	b81263dd19cb	0x1628d0
 cleveltimedtor	??1CLevelTime@@UAE@XZ	100.0000	100.0000	1	baf48340916e	0x11a50
 clightfx	?Activate@CLightFx@@QAEHHHHH@Z	86.7407	86.7407	1	017ace156fac	0x9d520
 clightfx	?InitActReg@CLightFx@@SAXXZ	100.0000	100.0000	1	4b1f90b40c30	0x9d140
@@ -1463,16 +1469,12 @@ engine_boundary	?Boundary_161460@@YAXXZ	50.0000	50.0000	2	4fbd3bb32839	0x161460
 engine_boundary	?Boundary_1614b0@@YAXXZ	9.0909	9.0909	2	05c11f0d7bf9	0x1614b0
 engine_boundary	?Boundary_161500@@YAXXZ	4.1667	4.1667	2	83ac9efad6e7	0x161500
 engine_boundary	?Boundary_161560@@YAXXZ	50.0000	50.0000	2	d8be1e42cc2b	0x161560
-engine_boundary	?Boundary_161bf0@@YAXXZ	3.1250	3.1250	2	b26540fcaef3	0x161bf0
-engine_boundary	?Boundary_1628d0@@YAXXZ	16.6667	16.6667	2	e8ea83404910	0x1628d0
 engine_boundary	?Boundary_1628f0@@YAXXZ	0.2667	0.2667	2	cde033bdec01	0x1628f0
-engine_boundary	?Boundary_1633e0@@YAXXZ	16.6667	16.6667	2	244de8122e32	0x1633e0
 engine_boundary	?Boundary_163710@@YAXXZ	1.8182	1.8182	2	3b1e8a2c1e14	0x163710
 engine_boundary	?Boundary_163a10@@YAXXZ	50.0000	50.0000	2	97986794367f	0x163a10
 engine_boundary	?Boundary_163a40@@YAXXZ	5.8824	5.8824	2	77023b928d60	0x163a40
 engine_boundary	?Boundary_163af0@@YAXXZ	1.6667	1.6667	2	2897699d188c	0x163af0
 engine_boundary	?Boundary_164d80@@YAXXZ	0.0928	0.0928	2	aba73a41c987	0x164d80
-engine_boundary	?Boundary_165620@@YAXXZ	0.5000	0.5000	2	3873bb58a88b	0x165620
 engine_boundary	?Boundary_1660f0@@YAXXZ	0.5405	0.5405	2	ea1e143d92f1	0x1660f0
 engine_boundary	?Boundary_166640@@YAXXZ	0.4000	0.4000	2	78e5245c25be	0x166640
 engine_boundary	?Boundary_166810@@YAXXZ	4.7619	4.7619	2	ed36c073ea3b	0x166810

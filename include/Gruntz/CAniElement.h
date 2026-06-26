@@ -55,6 +55,7 @@ public:
     CObject* AtChecked_06b270(i32 i) const;                  // 0x06b270
     i32 Build_165460(void* ctx, CAniSource* src, i32 flags); // 0x165460
     i32 Configure_1655c0(void* ctx, void* entry, i32 flags); // 0x1655c0
+    i32 LoadFile_165620(void* ctx, void* filename, i32 a3);  // 0x165620 (eh TU)
 
     void* m_vptr;              // +0x00
     i32 m_04;                  // +0x04

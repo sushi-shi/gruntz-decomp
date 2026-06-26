@@ -1355,3 +1355,13 @@ flags = "base"
 unit = "cddpagemgr"
 source = "src/Gruntz/CDDPageMgr.cpp"
 flags = "base"
+
+[[unit]]
+unit = "cimageset3"
+source = "src/Gruntz/CImageSet3.cpp"
+flags = "base"
+
+[[unit]]
+unit = "canielementeh"
+source = "src/Gruntz/CAniElementEh.cpp"
+flags = "eh"

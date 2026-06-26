@@ -317,7 +317,12 @@ void CDDrawSurfacePair::DrawCross(i32 x, i32 y) {
 // "needs work" (1).  Otherwise, if the held IDirectDrawSurface is present and not
 // lost (IsLost @+0x60 == DD_OK), report 1; else attempt Restore (@+0x6c) twice,
 // reporting 1 on the first failure, and 0 only when both restores succeed.
-// __thiscall, no args.
+// __thiscall, no args.  The chained `||` gives retail's shared return-1 tail.
+// @early-stop
+// 99.09% — every code byte matches; residual is the register the m_2c->m_8
+// re-read lands in (retail reuses esi for the last block, our cl picks edx) — the
+// same non-steerable regalloc coin-flip as the sibling RestoreIfLost (0x163f00,
+// 98.67%).  docs/patterns/reread-member-view-pointer.md / zero-register-pinning.md.
 RVA(0x00164660, 0x46)
 i32 CDDrawSurfacePair::Probe_164660() {
     return m_2c == 0 ||
