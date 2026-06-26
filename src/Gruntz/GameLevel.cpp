@@ -639,9 +639,16 @@ struct CImageSet2 {
         *(void**)this = &g_imageSet2Vtbl;
         m_04 = 0;
     }
-    void* m_vtbl; // +0x00
-    i32 m_04;     // +0x04
-    char pad_8[0x24 - 0x08];
+    i32 Parse(void* record); // 0x166990  vtbl slot +0x14
+    void* m_vtbl;            // +0x00
+    i32 m_04;                // +0x04
+    i32 m_08;                // +0x08
+    i32 m_0c;                // +0x0c
+    i32 m_10;                // +0x10
+    i32 m_14;                // +0x14
+    i32 m_18;                // +0x18
+    i32 m_1c;                // +0x1c
+    i32 m_20;                // +0x20
 };
 struct CImageSet3 {
     CImageSet3() {
@@ -649,10 +656,13 @@ struct CImageSet3 {
         m_04 = 0;
         m_14 = 0;
     }
-    void* m_vtbl; // +0x00
-    i32 m_04;     // +0x04
-    char pad_8[0x14 - 0x08];
-    i32 m_14; // +0x14
+    i32 Parse(void* record); // 0x166d70  vtbl slot +0x14
+    void* m_vtbl;            // +0x00
+    i32 m_04;                // +0x04  tile width
+    i32 m_08;                // +0x08  tile height
+    i32 m_0c;                // +0x0c  log2(height)
+    i32 m_10;                // +0x10  width*height (byte size)
+    void* m_14;              // +0x14  owned pixel buffer
 };
 
 RVA(0x0015d820, 0xa3)
@@ -700,6 +710,59 @@ i32 CImageSet1::Parse(void* record) {
     m_04 = *(i32*)((char*)record + 0x08);
     m_08 = *(i32*)((char*)record + 0x0c);
     m_0c = *(i32*)((char*)record + 0x10);
+    return 1;
+}
+
+// CImageSet2::Parse (0x166990, g_imageSet2Vtbl slot +0x14). Copies eight dwords
+// from the WWD record at +0x08.. into m_04..m_20 via an advancing source pointer
+// and returns TRUE.
+// @early-stop
+// tail-peephole wall (~94%): retail advances the source pointer on the 7th store
+// (add eax,4) then reads the 8th via [eax]; cl folds the 7th advance into the
+// 8th's +4 displacement. Body otherwise byte-exact; not source-steerable.
+RVA(0x00166990, 0x4c)
+i32 CImageSet2::Parse(void* record) {
+    i32* p = (i32*)((char*)record + 8);
+    m_04 = *p++;
+    m_08 = *p++;
+    m_0c = *p++;
+    m_10 = *p++;
+    m_14 = *p++;
+    m_18 = *p++;
+    m_1c = *p++;
+    m_20 = *p++;
+    return 1;
+}
+
+// CImageSet3::Parse (0x166d70, g_imageSet3Vtbl slot +0x14). Reads tile width/height
+// from the record at +0x08/+0x0c, derives the height log2 shift and the byte size,
+// and - only when the width is the matching power of two - allocates and copies the
+// tile pixels from the record at +0x10 (inline memcpy). TRUE on a successful copy.
+// @early-stop
+// regalloc wall (~88%): retail parks the width in callee-saved edi (push edi, mov
+// edi,ecx) and multiplies via edx; cl keeps the width in edx and multiplies into
+// ecx (one fewer move). Logic + memcpy byte-exact; not source-steerable.
+RVA(0x00166d70, 0x8d)
+i32 CImageSet3::Parse(void* record) {
+    i32* p = (i32*)((char*)record + 8);
+    i32 w = *p++;
+    m_04 = w;
+    i32 h = *p++;
+    m_08 = h;
+    m_0c = 0;
+    m_10 = w * h;
+    for (; h > 1; h >>= 1) {
+        m_0c++;
+    }
+    if ((1 << m_0c) != w) {
+        return 0;
+    }
+    void* dst = operator new(m_10);
+    m_14 = dst;
+    if (dst == 0) {
+        return 0;
+    }
+    memcpy(dst, p, m_10);
     return 1;
 }
 

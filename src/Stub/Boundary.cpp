@@ -599,10 +599,6 @@ RVA(0x0015c320, 0x40)
 void Boundary_15c320() {} // proximity: CDDrawBlitParam@-0x50 | CAniAdvanceCursor@+0x40
 RVA(0x0015ca70, 0x15b)
 void Boundary_15ca70() {} // proximity: CDDrawBlitParam@-0x100 | CSprite@+0x1c0
-RVA(0x0015cc50, 0x38)
-void Boundary_15cc50() {} // proximity: CSprite@-0x20 | CGameLevel@+0x80
-RVA(0x0015cc90, 0x38)
-void Boundary_15cc90() {} // proximity: CSprite@-0x60 | CGameLevel@+0x40
 RVA(0x0015d9a0, 0xdc)
 void Boundary_15d9a0() {} // proximity: CGameLevelPlanes@-0xd0 | CGameLevel@+0xe0
 RVA(0x00161460, 0x7)
@@ -615,8 +611,6 @@ RVA(0x00161560, 0x7)
 void Boundary_161560() {} // proximity: CImageSet1@-0x1f0 | PlaneGeom@+0x730
 RVA(0x00161bf0, 0x5e)
 void Boundary_161bf0() {} // proximity: CImageSet1@-0x880 | PlaneGeom@+0xa0
-RVA(0x00161f00, 0x75)
-void Boundary_161f00() {} // proximity: PlaneGeom@-0x270 | CPlaneRender@+0x110
 RVA(0x001628d0, 0x12)
 void Boundary_1628d0() {} // proximity: CPlaneRender@-0x8c0 | WwdFile@+0x220
 RVA(0x001628f0, 0x1fc)
@@ -639,16 +633,10 @@ RVA(0x00165620, 0x101)
 void Boundary_165620() {} // proximity: CAniElement@-0x60 | CRemusEntryList@+0x110
 RVA(0x001660f0, 0xd1)
 void Boundary_1660f0() {} // proximity: CFileMem@-0x1a0 | CImageSet1@+0xc50
-RVA(0x001665e0, 0x55)
-void Boundary_1665e0() {} // proximity: CFileMem@-0x690 | CImageSet1@+0x760
 RVA(0x00166640, 0x13b)
 void Boundary_166640() {} // proximity: CFileMem@-0x6f0 | CImageSet1@+0x700
 RVA(0x00166810, 0x32)
 void Boundary_166810() {} // proximity: CFileMem@-0x8c0 | CImageSet1@+0x530
-RVA(0x00166990, 0x4c)
-void Boundary_166990() {} // proximity: CFileMem@-0xa40 | CImageSet1@+0x3b0
-RVA(0x00166d70, 0x8d)
-void Boundary_166d70() {} // proximity: CImageSet1@-0x30 | CGameLevel@+0x3c0
 RVA(0x00167260, 0x1ef)
 void Boundary_167260() {} // proximity: CGameLevel@-0x130 | CWwdGrid@+0x1040
 RVA(0x00167450, 0x1ef)

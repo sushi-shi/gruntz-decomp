@@ -273,6 +273,39 @@ i32 __stdcall WwdFile_InflateMainBlock(WwdHeader* src, Bytef* dest, u32 destLen)
 }
 
 // ===========================================================================
+// CPlaneRender::SetTileSize (0x161f00, __thiscall, ret 8) - given the tile pixel
+// size (tileW, tileH), derive the plane's pixel-wrap dims (grid count * tile px),
+// the tile px size, the (0,0,tileW,tileH) default fill rect, and the two log2
+// shift amounts. The retail code derives BOTH shifts from tileW (the shiftY loop
+// reuses the width, not the height - reproduced verbatim).
+//
+// @early-stop
+// scheduling/regalloc wall (~88%): body byte-exact, but retail loads arg1 before
+// the callee-save pushes (product in edi) and parks the shiftY accumulator in esi;
+// cl loads m_gridW before the pushes (product in edx) and reuses edi for shiftY.
+// Operand-order swaps don't move it; not source-steerable.
+// ===========================================================================
+RVA(0x00161f00, 0x75)
+void CPlaneRender::SetTileSize(i32 tileW, i32 tileH) {
+    m_wrapW = m_gridW * tileW;
+    m_tilePxH = tileH;
+    m_fillB = tileH;
+    m_tilePxW = tileW;
+    m_fillL = 0;
+    m_fillT = 0;
+    m_fillR = tileW;
+    m_wrapH = m_gridH * tileH;
+    m_shiftX = 0;
+    for (i32 t = tileW; t > 1; t >>= 1) {
+        m_shiftX++;
+    }
+    m_shiftY = 0;
+    for (i32 u = tileW; u > 1; u >>= 1) {
+        m_shiftY++;
+    }
+}
+
+// ===========================================================================
 // CPlaneRender::Draw (__thiscall, ret 0x4) - the toroidally-wrapped tile-grid
 // renderer. Takes one context arg (the blit destination owner) at +0xA8; ebp =
 // ctx->m_2c is the target CDDSurface (the BltEx/BltFast `this`). If the plane is

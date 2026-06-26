@@ -237,8 +237,9 @@ struct CPlaneRenderPoly {
 
 class CPlaneRender {
 public:
-    void Draw(void* ctx);             // 0x162010  the tile-grid render
-    void WrapCoord(i32* px, i32* py); // 0x00a000  wrap+transform a world coord
+    void Draw(void* ctx);                   // 0x162010  the tile-grid render
+    void SetTileSize(i32 tileW, i32 tileH); // 0x161f00  derive wrap dims/fill/shifts
+    void WrapCoord(i32* px, i32* py);       // 0x00a000  wrap+transform a world coord
     i32 CenterScrollA();              // 0x163300
     i32 CenterScrollB();              // 0x163370
     void InitScrollRects();           // 0x163420  seed the scroll sub-object rects

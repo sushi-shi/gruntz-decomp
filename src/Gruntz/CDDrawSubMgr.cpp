@@ -1623,6 +1623,46 @@ i32 CAniAdvanceCursor::Advance_15c360(u32 elapsed) {
     return m_30;
 }
 
+// CAniRenderCtx::ClampFirst (0x15cc50) / ClampLast (0x15cc90): clamp the +0x190
+// frame cursor to the active sequence's low/high frame and re-resolve +0x198
+// through the same bounds-checked fetch GetFrame (0x15cc30) inlines.
+// @early-stop
+// shrink-wrapped-callee-save-push wall (~62%, docs/patterns/shrink-wrapped-callee-
+// save-push.md): retail defers `push esi` past the null guard (no-save fast-path
+// return) and emits the esi-pop epilogue inline per exit; cl hoists push esi to the
+// prologue and tail-merges the exits. Body byte-exact; not source-steerable.
+RVA(0x0015cc50, 0x38)
+void CAniRenderCtx::ClampFirst_15cc50() {
+    CAniFrameSeq* seq = m_194;
+    if (seq == 0) {
+        return;
+    }
+    i32 n = seq->m_64;
+    m_190 = n;
+    if (n >= seq->m_64 && n <= seq->m_68) {
+        m_198 = (i32)seq->m_14[n];
+    } else {
+        m_198 = 0;
+    }
+}
+
+// @early-stop
+// shrink-wrapped-callee-save-push wall (~62%); twin of ClampFirst above.
+RVA(0x0015cc90, 0x38)
+void CAniRenderCtx::ClampLast_15cc90() {
+    CAniFrameSeq* seq = m_194;
+    if (seq == 0) {
+        return;
+    }
+    i32 n = seq->m_68;
+    m_190 = n;
+    if (n >= seq->m_64 && n <= seq->m_68) {
+        m_198 = (i32)seq->m_14[n];
+    } else {
+        m_198 = 0;
+    }
+}
+
 // ===========================================================================
 // 0x159600 — CWwdObjMgr::CreateObject (a.k.a. CSpriteFactory::CreateSpriteImpl):
 // allocate + construct a 0x1dc-byte CWwdGameObject, register it in the manager

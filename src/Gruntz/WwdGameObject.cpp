@@ -117,6 +117,7 @@ public:
     i32 Serialize(i32 ar);                          // 0x151320
     i32 WriteSnapshot(i32 dst);                     // 0x151c00
     i32 Init(i32 a1, i32 a2, i32 a3, i32 a4);       // 0x15b940
+    i32 ResetAndSetup(i32 a1, i32 a2, i32 a3, i32 a4); // 0x1665e0
 
     // Sibling helpers (modeled as same-class methods so ecx=this matches).
     i32 Helper164790(i32 a2, i32 a1); // 0x164790  __thiscall
@@ -696,4 +697,48 @@ i32 CWwdGameObject::Init(i32 a1, i32 a2, i32 a3, i32 a4) {
     F(this, 0x19c, i32) = 0;
     ((CmdMap*)((char*)this + 0x1a0))->Construct(this);
     return Setup(a1, a2, a3, a4);
+}
+
+// The +0x1dc CObList of owned sub-objects (CObject base vtbl@+0, head@+4) and its
+// list nodes {next@0, prev@4, data@8}; RemoveAll (0x1b5a0b) frees the node cells.
+struct WwdSubDel {
+    virtual void Slot00();
+    virtual void DeleteSelf(i32 flag); // +0x04  scalar deleting dtor
+};
+struct WwdSubNode {
+    WwdSubNode* m_next; // +0x00
+    WwdSubNode* m_prev; // +0x04
+    WwdSubDel* m_data;  // +0x08  owned polymorphic payload
+};
+struct WwdSubList {
+    void RemoveAll_1b5a0b(); // 0x1b5a0b  CObList::RemoveAll (reloc-masked)
+    void* m_vtbl;            // +0x00
+    WwdSubNode* m_head;      // +0x04
+};
+
+// ---------------------------------------------------------------------------
+// ResetAndSetup (0x1665e0): delete every owned sub-object in the +0x1dc CObList
+// (its payload at node+8, via the deleting dtor), empty the list, then re-run
+// Setup with the four forwarded args. Returns Setup() != 0.
+//
+// @early-stop
+// shrink-wrapped-callee-save-push wall (~80%, inverted): retail pushes esi+edi
+// together upfront; cl pushes edi upfront and sinks `push esi` into the
+// list-walk loop (esi only live there). Loop body + delete + Setup-forward
+// byte-equivalent; the push placement + arg-reload offsets cascade, not
+// source-steerable (docs/patterns/shrink-wrapped-callee-save-push.md).
+// ---------------------------------------------------------------------------
+RVA(0x001665e0, 0x55)
+i32 CWwdGameObject::ResetAndSetup(i32 a1, i32 a2, i32 a3, i32 a4) {
+    WwdSubNode* n = F(this, 0x1e0, WwdSubNode*);
+    while (n != 0) {
+        WwdSubNode* next = n->m_next;
+        WwdSubDel* p = n->m_data;
+        if (p != 0) {
+            p->DeleteSelf(1);
+        }
+        n = next;
+    }
+    ((WwdSubList*)((char*)this + 0x1dc))->RemoveAll_1b5a0b();
+    return Setup(a1, a2, a3, a4) != 0;
 }
