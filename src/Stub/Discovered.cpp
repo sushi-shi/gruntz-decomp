@@ -59,8 +59,6 @@ RVA(0x000cb400, 0x58)
 void CPlay::CPlay_0cb400() {}
 RVA(0x000cb480, 0x22c)
 void CPlay::CPlay_0cb480() {}
-RVA(0x000cee70, 0x5)
-void CPlay::CPlay_0cee70() {}
 RVA(0x000d53d0, 0x466)
 void CPlay::CPlay_0d53d0() {}
 RVA(0x000d9290, 0x2a7)
@@ -138,10 +136,6 @@ void ClassUnknown_28::ClassUnknown_28_0311b0() {}
 RVA(0x00029a30, 0x10)
 void ClassUnknown_29::ClassUnknown_29_029a30() {}
 
-// ---- ClassUnknown_3 ----
-RVA(0x0013a000, 0x37)
-void ClassUnknown_3::ClassUnknown_3_13a000() {}
-
 // ---- ClassUnknown_30 ----
 RVA(0x0009a260, 0x1d)
 void ClassUnknown_30::ClassUnknown_30_09a260() {}
@@ -186,10 +180,6 @@ void ClassUnknown_45::ClassUnknown_45_08c3b0() {}
 RVA(0x001591b0, 0x19)
 void ClassUnknown_46::ClassUnknown_46_1591b0() {}
 
-// ---- ClassUnknown_47 ----
-RVA(0x001852e0, 0x35)
-void ClassUnknown_47::ClassUnknown_47_1852e0() {}
-
 // ---- ClassUnknown_48 ----
 RVA(0x00139cf0, 0xd7)
 void ClassUnknown_48::ClassUnknown_48_139cf0() {}
@@ -222,10 +212,6 @@ void ClassUnknown_54::ClassUnknown_54_11cee3() {}
 RVA(0x00016460, 0x46)
 void ClassUnknown_55::ClassUnknown_55_016460() {}
 
-// ---- ClassUnknown_7 ----
-RVA(0x0016df70, 0x22)
-void ClassUnknown_7::ClassUnknown_7_16df70() {}
-
 // ---- ClassUnknown_8 ----
 RVA(0x0016e480, 0x3e)
 void ClassUnknown_8::ClassUnknown_8_16e480() {}
@@ -233,9 +219,3 @@ void ClassUnknown_8::ClassUnknown_8_16e480() {}
 // ---- ClassUnknown_9 ----
 RVA(0x0011c630, 0x6e)
 void ClassUnknown_9::ClassUnknown_9_11c630() {}
-
-// ---- WwdFile ----
-RVA(0x000311e0, 0x4c)
-void WwdFile::WwdFile_0311e0() {}
-RVA(0x000d53a0, 0x19)
-void WwdFile::WwdFile_0d53a0() {}

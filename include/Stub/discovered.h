@@ -55,7 +55,6 @@ class CPlay {
 public:
     void CPlay_0cb400();
     void CPlay_0cb480();
-    void CPlay_0cee70();
     void CPlay_0d53d0();
     void CPlay_0d9290();
     void CPlay_0db8a0();
@@ -125,10 +124,6 @@ class ClassUnknown_29 {
 public:
     void ClassUnknown_29_029a30();
 };
-class ClassUnknown_3 {
-public:
-    void ClassUnknown_3_13a000();
-};
 class ClassUnknown_30 {
 public:
     void ClassUnknown_30_09a260();
@@ -173,10 +168,6 @@ class ClassUnknown_46 {
 public:
     void ClassUnknown_46_1591b0();
 };
-class ClassUnknown_47 {
-public:
-    void ClassUnknown_47_1852e0();
-};
 class ClassUnknown_48 {
 public:
     void ClassUnknown_48_139cf0();
@@ -209,10 +200,6 @@ class ClassUnknown_55 {
 public:
     void ClassUnknown_55_016460();
 };
-class ClassUnknown_7 {
-public:
-    void ClassUnknown_7_16df70();
-};
 class ClassUnknown_8 {
 public:
     void ClassUnknown_8_16e480();
@@ -220,11 +207,6 @@ public:
 class ClassUnknown_9 {
 public:
     void ClassUnknown_9_11c630();
-};
-class WwdFile {
-public:
-    void WwdFile_0311e0();
-    void WwdFile_0d53a0();
 };
 
 #endif

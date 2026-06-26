@@ -144,3 +144,21 @@ void CSymParser::AddNode(void* rec) {
         m_hash.Insert((CHashInsertNode*)((char*)rec + 0x1c));
     }
 }
+
+// CObjList::Remove (0x1852e0): unlink `node` from the intrusive {head@+4,tail@+8}
+// chain (m_list at CSymParser+0x10). The node's links are m_next@+4 / m_prev@+8; a
+// null prev/next means `node` was the head/tail. __thiscall on the list head,
+// callee-cleanup of the single arg. (Trace-discovered; was the ClassUnknown_47 stub.)
+RVA(0x001852e0, 0x35)
+void CObjList::Remove(CObjNode* node) {
+    if (node->m_prev) {
+        node->m_prev->m_next = node->m_next;
+    } else {
+        m_head = node->m_next;
+    }
+    if (node->m_next) {
+        node->m_next->m_prev = node->m_prev;
+    } else {
+        m_tail = node->m_prev;
+    }
+}

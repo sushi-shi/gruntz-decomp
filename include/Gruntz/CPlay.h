@@ -300,6 +300,8 @@ public:
     i32 ResetGoals(i32, i32);                   // 0x0d5f00 (THIS TU)
     i32 BuildHelpReveal();                      // 0x0d72c0 (THIS TU)
     i32 RegisterInputBindings();                // 0x0d9160 (THIS TU)
+    // Tiny vtable forwarder: tail-call the slot-3 ready gate (Vfunc3).
+    i32 ForwardReady(); // 0x0cee70
     // Two more draw/present sub-steps migrated from the engine_boundary backlog:
     i32 DrawWorldPresent(); // 0x0cefc0 (double world-draw + present + manager tick)
     i32 PresentAndFlush();  // 0x0cba10 (restore-mode guard + present-or-notify + flush)

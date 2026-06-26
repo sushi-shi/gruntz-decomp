@@ -88,6 +88,20 @@ CSymTab::~CSymTab() {
     // m_symbols, m_subTabs destruct here (reverse decl order, /GX trylevels).
 }
 
+// Insert (0x13a000): the ResolveQualified tail. Look the record up for `arg` in
+// this scope's leaf table (m_symbols, +0x40); if present, walk its embedded
+// sub-table (record+0x24) for `key`, forwarding m_owner->m_68 == 0 as the flag.
+// The `m_68 == 0` is the int->bool sete. __thiscall, callee-clean of both args.
+// (Trace-discovered; was the ClassUnknown_3 stub.)
+RVA(0x0013a000, 0x37)
+i32 CSymTab::Insert(const char* key, void* arg) {
+    void* rec = m_symbols.Find((const char*)arg);
+    if (!rec) {
+        return (i32)rec;
+    }
+    return (i32)((CHashTable*)((char*)rec + 0x24))->Walk(key, m_owner->m_68 == 0);
+}
+
 // ReleaseParseBuffers (0x13a190): drop this scope's cached parse state. If the owned
 // +0x48 buffer is live, free it; otherwise walk the leaf-symbol table ending each
 // record's parse stream (EndParse over the NextSym2/NextSym3 sub-chain). When

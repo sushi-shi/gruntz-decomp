@@ -1618,6 +1618,13 @@ i32 CPlay::EnterOverlayDrag(i32 arg) {
     return 1;
 }
 
+// CPlay::ForwardReady (0x0cee70) - a 5-byte vtable forwarder: tail-call the
+// slot-3 ready gate (CState::Vfunc3) -> `mov eax,[ecx]; jmp [eax+0xc]`.
+RVA(0x000cee70, 0x5)
+i32 CPlay::ForwardReady() {
+    return Vfunc3();
+}
+
 // @confidence: med
 // @source: string-xref
 // @stub

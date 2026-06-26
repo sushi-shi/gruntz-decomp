@@ -958,3 +958,30 @@ i32 CPlaneRender::CenterScrollB() {
     y = (m_extentY + m_originY) / 2 + 1;
     return scroll->SetTargetB(x, y);
 }
+
+// ---------------------------------------------------------------------------
+// CPlaneRender::GetTileHandle (__thiscall, ret 8). Index the tile-handle grid:
+// m_colOffsets[col] is the column's base index; +row picks the cell.
+RVA(0x000d53a0, 0x19)
+i32 CPlaneRender::GetTileHandle(i32 row, i32 col) {
+    return m_tileGrid[m_colOffsets[col] + row];
+}
+
+// ---------------------------------------------------------------------------
+// CPlaneRender::SnapToTileCenter (__thiscall, ret 0xc). Floor each axis to its
+// tile boundary (>>shift <<shift) and add half a tile (signed /2).
+// @early-stop
+// ~51%, logic byte-exact (same sar/shl/cltd/sub/sar/add selection). Residual is a
+// whole-function regalloc/coloring wall: retail keeps the two shift counts in
+// caller-saved eax/edx (3 callee-saved pushes) and stores both results last; this
+// build colors a shift count into ebx (a 4th push, ebp) and flips the axis order.
+// Not source-steerable (member-load scheduling / coloring; matching-patterns.md).
+RVA(0x000311e0, 0x4c)
+void CPlaneRender::SnapToTileCenter(i32* out, i32 x, i32 y) {
+    i32 sx = m_shiftX;
+    i32 sy = m_shiftY;
+    i32 rx = ((x >> sx) << sx) + m_tilePxW / 2;
+    i32 ry = ((y >> sy) << sy) + m_tilePxH / 2;
+    out[0] = rx;
+    out[1] = ry;
+}

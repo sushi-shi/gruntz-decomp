@@ -246,6 +246,12 @@ public:
     void ResolveColorKey();           // 0x163670  pack the +0x144 index to RGB565
     i32 Save(CWwdStream* s);          // 0x163780  serialize out
     i32 Load(CWwdStream* s);          // 0x1638c0  serialize in
+    // 0x0d53a0 (__thiscall, ret 8): index the tile-handle grid by (row, col):
+    //   m_tileGrid[m_colOffsets[col] + row].
+    i32 GetTileHandle(i32 row, i32 col);
+    // 0x0311e0 (__thiscall, ret 0xc): snap a world (x,y) to its tile centre:
+    //   out = (floor-to-tile) + half a tile, per-axis.
+    void SnapToTileCenter(i32* out, i32 x, i32 y);
 
     u8 pad_0[0x08];
     u32 m_flags; // +0x08
