@@ -27,7 +27,9 @@
 
 #include <Ints.h>
 
-// The Rez heap free (0x1b9b82 _RezFree, __cdecl); reloc-masked.
+// The Rez heap alloc/free (0x1b9b46 _RezAlloc = operator new / 0x1b9b82 _RezFree,
+// both __cdecl); reloc-masked.
+extern "C" void* RezAlloc(u32 size);
 extern "C" void RezFree(void* p);
 
 // The MSVC `'eh vector destructor iterator'` runtime (0x11f640): run `dtor` over
@@ -98,6 +100,8 @@ struct CHashEntry {
 // ---------------------------------------------------------------------------
 class CHashBase {
 public:
+    // First live entry in iteration order (0x184ae0), or 0.
+    CHashEntry* First(); // 0x184ae0
     // Chain head for bucket `idx`, biased back to the entry (head - 4), or 0.
     CHashEntry* Lookup(u32 idx); // 0x184b40
     // Unlink `entry` (its biased node = entry+4) from its owning slot's chain.

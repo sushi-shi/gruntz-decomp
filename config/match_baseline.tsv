@@ -129,7 +129,7 @@ directinputmgr2	33	29
 directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	15	0
-engine_boundary	312	0
+engine_boundary	306	0
 engine_discovered	51	0
 engine_label_stubs	437	105
 engine_unmatched	264	0
@@ -242,8 +242,8 @@ statusbaritem	2	1
 statusbarupdaters	7	0
 streamfeeder	9	7
 streamvoice	5	3
-symparser	7	5
-symtab	13	9
+symparser	8	5
+symtab	18	10
 terraintileloader	1	0
 tileactionevent	7	4
 tilegridcommand	6	3
@@ -1357,14 +1357,9 @@ engine_boundary	?Boundary_138aa0@@YAXXZ	0.3509	0.3509	2	30a1af20adfb	0x138aa0
 engine_boundary	?Boundary_138f20@@YAXXZ	3.8462	3.8462	2	2a499685d3b6	0x138f20
 engine_boundary	?Boundary_1396f0@@YAXXZ	11.1111	11.1111	2	23b02398b1a2	0x1396f0
 engine_boundary	?Boundary_139710@@YAXXZ	0.7407	0.7407	2	c45b8e52eccf	0x139710
-engine_boundary	?Boundary_139de0@@YAXXZ	0.5333	0.5333	2	7b716a3ccad8	0x139de0
-engine_boundary	?Boundary_13a040@@YAXXZ	0.6897	0.6897	2	a3c82d39eff3	0x13a040
-engine_boundary	?Boundary_13a330@@YAXXZ	0.5000	0.5000	2	94ec015b333c	0x13a330
 engine_boundary	?Boundary_13a4b0@@YAXXZ	0.7547	0.7547	2	bb86271d7ac2	0x13a4b0
 engine_boundary	?Boundary_13a530@@YAXXZ	1.6667	1.6667	2	4e006172a643	0x13a530
-engine_boundary	?Boundary_13a580@@YAXXZ	0.5479	0.5479	2	e7920bbea904	0x13a580
 engine_boundary	?Boundary_13a640@@YAXXZ	0.1533	0.1533	2	64ffaa335990	0x13a640
-engine_boundary	?Boundary_13a940@@YAXXZ	0.5634	0.5634	2	8ece84b4f86d	0x13a940
 engine_boundary	?Boundary_13aaf0@@YAXXZ	50.0000	50.0000	2	0025f8629596	0x13aaf0
 engine_boundary	?Boundary_13ab00@@YAXXZ	0.9756	0.9756	2	aa33f2aa31af	0x13ab00
 engine_boundary	?Boundary_13ad00@@YAXXZ	0.1333	0.1333	2	05fd6d258107	0x13ad00
@@ -1372,7 +1367,6 @@ engine_boundary	?Boundary_13b300@@YAXXZ	0.0877	0.0877	2	b5af5398cdb2	0x13b300
 engine_boundary	?Boundary_13b910@@YAXXZ	1.2500	1.2500	2	4a37006ab24d	0x13b910
 engine_boundary	?Boundary_13b970@@YAXXZ	1.0256	1.0256	2	b315ff84a624	0x13b970
 engine_boundary	?Boundary_13ba70@@YAXXZ	14.2857	14.2857	2	f3bc0a239338	0x13ba70
-engine_boundary	?Boundary_13c0c0@@YAXXZ	0.8696	0.8696	2	c9286101ea7d	0x13c0c0
 engine_boundary	?Boundary_13c8a0@@YAXXZ	3.2258	3.2258	2	5a7919ab6c0c	0x13c8a0
 engine_boundary	?Boundary_13c8f0@@YAXXZ	3.4483	3.4483	2	b42290fc8eca	0x13c8f0
 engine_boundary	?Boundary_13c9b0@@YAXXZ	2.5000	2.5000	2	35abfa83d3d8	0x13c9b0
@@ -3324,11 +3318,17 @@ streamvoice	?SetSource@StreamVoice@@QAEHPAUStreamSource@@@Z	100.0000	100.0000	1	
 symparser	??1CSymParser@@QAE@XZ	97.9725	97.9725	2	b820544c77c6	0x13abc0
 symparser	?AddNode@CSymParser@@QAEXPAX@Z	100.0000	100.0000	2	3b86ac8fbdfb	0x13c210
 symparser	?Clear@CSymParser@@QAEPAXH@Z	91.3803	91.3803	3	2ea4717a0572	0x13b850
+symparser	?PopParseSlot@CSymParser@@QAEPAXXZ	77.1304	77.1304	1	5e3e00144d8d	0x13c0c0
 symparser	?ReParse@CSymParser@@QAEHXZ	100.0000	100.0000	1	460945270635	0x13c050
 symparser	?Remove@CObjList@@QAEXPAVCObjNode@@@Z	100.0000	100.0000	1	c6b60724f735	0x1852e0
 symparser	?ResolvePath@CSymParser@@QAEPAXPBD@Z	100.0000	100.0000	1	d2f5951f4d21	0x13c030
 symparser	?ResolveQualified@CSymParser@@QAEHPBDPAX@Z	100.0000	100.0000	1	65f97a6deb84	0x13bff0
+symtab	??0CSymTab@@QAE@PAUCSymParser@@PAXPBD111HH@Z	97.3333	97.3333	1	cf88b96a8a13	0x139de0
 symtab	??1CSymTab@@QAE@XZ	88.7245	88.7245	2	ea710bd4bd0f	0x139ee0
+symtab	?ApplyRecursive@CSymTab@@QAEHHHHH@Z	70.4657	70.4657	1	45e873862fc9	0x13a580
+symtab	?CreateSub@CSymTab@@QAEPAV1@PBD@Z	79.5000	79.5000	1	582583c35490	0x13a330
+symtab	?Find@CSymTab@@QAEPAXPBD@Z	100.0000	100.0000	1	5c207117a72f	0x13a040
+symtab	?FindOrAddSym@CSymTab@@QAEPAXH@Z	85.7746	85.7746	1	173421f84e4f	0x13a940
 symtab	?FindQualified@CSymTab@@QAEPAXPBD@Z	50.9467	50.9467	1	88b1936740aa	0x13bca0
 symtab	?FindSub@CSymTab@@QAEPAXPBD@Z	100.0000	100.0000	1	a80b960c2c89	0x13a230
 symtab	?FirstSub@CSymTab@@QAEPAXXZ	100.0000	100.0000	1	592426346612	0x13a260

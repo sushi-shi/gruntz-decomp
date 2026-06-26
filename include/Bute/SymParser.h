@@ -134,6 +134,12 @@ public:
     // +0x64 buffer. Returns 0 if not armed, else ParseBuffer's result.
     i32 ReParse(); // 0x13c050
 
+    // PopParseSlot (0x13c0c0): pop the first parse-slot record out of m_hash. If the
+    // table is empty, Rez-alloc a fresh block of m_90 parse slots, init each, stamp
+    // their self-ptrs + register them into m_hash, link the block into m_nodes, then
+    // pop the first. Returns the popped record (or 0 on allocation failure).
+    void* PopParseSlot(); // 0x13c0c0
+
     // The three path-resolution thunks: forward into GetRoot()'s CSymTab.
     i32 ResolveQualified(const char* name, void* arg); // 0x13bff0 -> root->ResolveQualified
     void* ResolvePath(const char* path);               // 0x13c030 -> root->ResolvePath
@@ -165,7 +171,7 @@ public:
     char m_pad68[0x80 - 0x68];
     CParserHash m_hash;    // +0x80
     CHashSlotList m_nodes; // +0x88  { head, tail }
-    char m_pad90[0x94 - 0x90];
+    i32 m_90;              // +0x90  number of parse-slot records per allocated block
 };
 
 #endif // SRC_BUTE_SYMPARSER_H

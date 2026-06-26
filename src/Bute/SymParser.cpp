@@ -158,6 +158,69 @@ void CSymParser::AddNode(void* rec) {
     }
 }
 
+// A parse-slot record (0x3c bytes): a CRemusReadStream whose hash-node prefix is at
+// +0x1c (stamped by Init) and whose self-ptr lives at +0x30. Init (0x1396f0) stamps
+// the node vtable + nulls the body; reloc-masked __thiscall, no body here.
+struct CParseSlot {
+    char m_pad00[0x1c];
+    void* m_node1c; // +0x1c  hash-node vtable prefix (the insert handle)
+    char m_pad20[0x30 - 0x20];
+    void* m_30; // +0x30  self-ptr
+    char m_pad34[0x3c - 0x34];
+    void Init(); // 0x1396f0
+};
+
+// PopParseSlot (0x13c0c0): see SymParser.h. The /GX frame guards the freshly Rez-
+// alloc'd slot block while its elements are being initialized + registered.
+// @early-stop
+// EH-state + regalloc wall (~77%): logic complete. The node/array allocations land in
+// a swapped callee-saved register (ebx vs ebp), the operator-new trylevel transitions
+// + the slot-block down-counter init loop idiom diverge, and the hash-method reloc
+// operands are differently named. Banked for the final sweep.
+RVA(0x0013c0c0, 0x14b)
+void* CSymParser::PopParseSlot() {
+    CHashEntry* e = m_hash.First();
+    void* rec = e ? e->m_rec : 0;
+    if (rec == 0) {
+        CSlotNode* node = (CSlotNode*)RezAlloc(0xc);
+        if (node == 0) {
+            return 0;
+        }
+        i32 n = m_90;
+        CParseSlot* arr = (CParseSlot*)RezAlloc(n * 0x3c);
+        if (arr) {
+            CParseSlot* p = arr;
+            i32 i = n;
+            i--;
+            if (i >= 0) {
+                i++;
+                do {
+                    p->Init();
+                    p++;
+                    i--;
+                } while (i);
+            }
+        }
+        node->m_08 = arr;
+        if (arr == 0) {
+            RezFree(node);
+            return 0;
+        }
+        for (i32 j = 0; (u32)j < (u32)m_90; j++) {
+            CParseSlot* el = (CParseSlot*)((char*)node->m_08 + j * 0x3c);
+            el->m_30 = el;
+            m_hash.Insert((CHashInsertNode*)((char*)el + 0x1c));
+        }
+        m_nodes.Link(node);
+        e = m_hash.First();
+        rec = e->m_rec;
+    }
+    if (rec) {
+        m_hash.Remove((CHashEntry*)((char*)rec + 0x1c));
+    }
+    return rec;
+}
+
 // CObjList::Remove (0x1852e0): unlink `node` from the intrusive {head@+4,tail@+8}
 // chain (m_list at CSymParser+0x10). The node's links are m_next@+4 / m_prev@+8; a
 // null prev/next means `node` was the head/tail. __thiscall on the list head,

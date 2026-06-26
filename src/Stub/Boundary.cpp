@@ -371,22 +371,12 @@ RVA(0x001396f0, 0x1a)
 void Boundary_1396f0() {} // proximity: RegistryHelper@-0xa0 | CRemusReadStream@+0x3f0
 RVA(0x00139710, 0x8d)
 void Boundary_139710() {} // proximity: RegistryHelper@-0xc0 | CRemusReadStream@+0x3d0
-RVA(0x00139de0, 0xd4)
-void Boundary_139de0() {} // proximity: CRemusReadStream@-0x2f0 | CSymTab@+0x100
-RVA(0x0013a040, 0xa2)
-void Boundary_13a040() {} // proximity: CSymTab@-0x160 | CRezDirNode@+0xb0
-RVA(0x0013a330, 0xce)
-void Boundary_13a330() {} // proximity: CSymTab@-0x20 | CSymParser@+0x890
 RVA(0x0013a4b0, 0x75)
 void Boundary_13a4b0() {} // proximity: CSymTab@-0x1a0 | CSymParser@+0x710
 RVA(0x0013a530, 0x47)
 void Boundary_13a530() {} // proximity: CSymTab@-0x220 | CSymParser@+0x690
-RVA(0x0013a580, 0xb2)
-void Boundary_13a580() {} // proximity: CSymTab@-0x270 | CSymParser@+0x640
 RVA(0x0013a640, 0x2f7)
 void Boundary_13a640() {} // proximity: CSymTab@-0x330 | CSymParser@+0x580
-RVA(0x0013a940, 0xc2)
-void Boundary_13a940() {} // proximity: CSymTab@-0x630 | CSymParser@+0x280
 RVA(0x0013aaf0, 0x7)
 void Boundary_13aaf0() {} // proximity: CSymTab@-0x7e0 | CSymParser@+0xd0
 RVA(0x0013ab00, 0xac)
@@ -401,8 +391,6 @@ RVA(0x0013b970, 0x72)
 void Boundary_13b970() {} // proximity: CSymParser@-0x120 | CSymTab@+0x170
 RVA(0x0013ba70, 0x10)
 void Boundary_13ba70() {} // proximity: CSymParser@-0x220 | CSymTab@+0x70
-RVA(0x0013c0c0, 0x14b)
-void Boundary_13c0c0() {} // proximity: CRezDir@-0x40 | CSymParser@+0x150
 RVA(0x0013c8a0, 0x45)
 void Boundary_13c8a0() {} // proximity: CRezItm@-0x70 | CRezDir@+0xa0
 RVA(0x0013c8f0, 0x41)
