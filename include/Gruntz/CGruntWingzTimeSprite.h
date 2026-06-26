@@ -29,8 +29,10 @@ struct CWingzTimeHost {
 
 class CGruntWingzTimeSprite : public CUserLogic {
 public:
+    // GetTypeTag (0x121a0): the 6-byte per-class logic-type id accessor (0x417).
+    i32 GetTypeTag();
     static i32 __stdcall GetWingzTime(CWingzTimeHost* o); // 0x07fd90
-    ~CGruntWingzTimeSprite();                             // 0x0121f0 (folds the CUserLogic teardown)
+    ~CGruntWingzTimeSprite(); // 0x0121f0 (folds the CUserLogic teardown)
 };
 
 #endif // GRUNTZ_CGRUNTWINGZTIMESPRITE_H

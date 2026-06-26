@@ -18,8 +18,20 @@
 #include <rva.h>
 #include <Gruntz/UserLogic.h> // CUserLogic base (CGruntStaminaSprite : CUserLogic)
 
+// The bound grunt/game-object the accessor reads the +0x3f0 stamina-timer out of.
+// Only that touched offset is load-bearing; modeled minimally (cf. CWingzTimeHost).
+struct CStaminaTimeHost {
+    char m_pad0[0x3f0];
+    i32 m_3f0; // +0x3f0  stamina timer value
+};
+
 class CGruntStaminaSprite : public CUserLogic {
 public:
+    // GetTypeTag (0x12020): the 6-byte per-class logic-type id accessor (0x410).
+    i32 GetTypeTag();
+    // GetStaminaTime (0x07fbb0): tiny __stdcall +0x3f0 accessor (ret 4), the
+    // stamina-timer sibling of CGruntWingzTimeSprite::GetWingzTime (+0x3f8).
+    static i32 __stdcall GetStaminaTime(CStaminaTimeHost* o); // 0x07fbb0
     ~CGruntStaminaSprite(); // 0x00012070 (folds the CUserLogic teardown)
 };
 

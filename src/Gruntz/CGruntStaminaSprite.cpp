@@ -5,6 +5,14 @@
 // placeholders for the recovered engine identities.
 #include <Gruntz/CGruntStaminaSprite.h>
 
+// CGruntStaminaSprite::GetTypeTag @0x00012020 - return the class's logic-type id.
+// The same 6-byte `mov eax,<id>; ret` virtual archetype as CBehindCandy::GetTypeTag
+// (0x00fb70); precedes the [scalar @0x12040, plain @0x12070] dtor pair.
+RVA(0x00012020, 0x6)
+i32 CGruntStaminaSprite::GetTypeTag() {
+    return 0x410;
+}
+
 // CGruntStaminaSprite::~CGruntStaminaSprite @0x00012070 - the leaf adds no
 // destructible members beyond CUserLogic, so its dtor folds the bare CUserLogic
 // teardown: store the CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link
@@ -13,3 +21,11 @@
 // ~CGruntHealthSprite @0x00011fb0; the empty body is enough for cl.
 RVA(0x00012070, 0x44)
 CGruntStaminaSprite::~CGruntStaminaSprite() {}
+
+// CGruntStaminaSprite::GetStaminaTime @0x0007fbb0 - read the bound object's +0x3f0
+// stamina-timer field and return it. __stdcall (single stack arg, callee cleanup -
+// `mov eax,[esp+4]; mov eax,[eax+0x3f0]; ret 4`).
+RVA(0x0007fbb0, 0xd)
+i32 __stdcall CGruntStaminaSprite::GetStaminaTime(CStaminaTimeHost* o) {
+    return o->m_3f0;
+}

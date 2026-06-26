@@ -31,7 +31,7 @@ struct CPathHazardVtbl {
     char s0[0x40];
     PathArriveFn Tick; // +0x40  slot 16
     char s44[0x48 - 0x44];
-    PathArriveFn Arrive; // +0x48  slot 18
+    PathArriveFn Arrive;  // +0x48  slot 18
     PathBeginFn BeginLeg; // +0x4c  slot 19 (== 0xb47e0)
     PathHitFn HitTest;    // +0x50  slot 20
 };
@@ -49,9 +49,9 @@ struct CPathHazardVtbl {
 // vtable/layout only at the byte level (Tick reads the vtable raw).
 class CLightningHazard : public CUserLogic {
 public:
-    i32 SiblingTick();         // 0x0b43f0 (virtual slot 16 override)
-    i32 ArmStrike(i32, i32);   // 0x0b4640 (arm the strike window + kill cue)
-    ~CLightningHazard(); // 0x013280 (folds the CUserLogic teardown)
+    i32 SiblingTick();       // 0x0b43f0 (virtual slot 16 override)
+    i32 ArmStrike(i32, i32); // 0x0b4640 (arm the strike window + kill cue)
+    ~CLightningHazard();     // 0x013280 (folds the CUserLogic teardown)
 
     char m_pad40[0x108 - 0x40];
     i64 m_108; // +0x108 leg deadline (i64: m_108/m_10c)
@@ -84,7 +84,7 @@ struct CLightObj {
     i32 m_4c; // +0x4c  sprite-ref handle
     i32 m_50; // +0x50  state (set to 7)
     char m_pad54[0x58 - 0x54];
-    i32 m_58; // +0x58  active flag (set to 1)
+    i32 m_58;       // +0x58  active flag (set to 1)
     i32 m_5c, m_60; // +0x5c/+0x60 screen position
     char m_pad64[0x144 - 0x64];
     i32 m_144; // +0x144 query rect base
@@ -109,9 +109,9 @@ struct CSndFinder {
 };
 struct CSndHost { // reg->m_30->m_28
     char m_pad00[0x10];
-    CSndFinder m_10;          // +0x10 embedded
+    CSndFinder m_10;           // +0x10 embedded
     char m_pad11[0x30 - 0x11]; // -> +0x30
-    i32 m_30;                 // +0x30 gate (must be 0 to emit)
+    i32 m_30;                  // +0x30 gate (must be 0 to emit)
 };
 struct CSndSubMgr { // reg->m_30
     char m_pad00[0x28];
@@ -156,6 +156,15 @@ extern CButeTree g_buteTree;
 // handler funclet from 0x13340, but that is reloc-masked.)
 RVA(0x00013280, 0x44)
 CLightningHazard::~CLightningHazard() {}
+
+// CPathHazard::GetTypeTag @0x0132f0 - return the class's logic-type id. The same
+// 6-byte `mov eax,<id>; ret` virtual archetype as CBehindCandy::GetTypeTag
+// (0x00fb70); sits between CLightningHazard::~ and the [scalar,plain] CPathHazard
+// dtor pair, the canonical [GetTypeTag][scalar-dtor][plain-dtor] per-class layout.
+RVA(0x000132f0, 0x6)
+i32 CPathHazard::GetTypeTag() {
+    return 0x425;
+}
 
 // CPathHazard::~CPathHazard @0x013340 - the leaf adds no destructible members
 // beyond CUserLogic, so its dtor folds the bare CUserLogic teardown: store the
