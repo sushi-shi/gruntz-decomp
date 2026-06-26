@@ -61,6 +61,7 @@ struct IDirectInputZ {
 //   +0x24 (slot 9)  GetDeviceState     (DWORD cb, LPVOID data)
 //   +0x2c (slot 11) SetDataFormat      (LPCDIDATAFORMAT)
 //   +0x34 (slot 13) SetCooperativeLevel(HWND, DWORD)
+//   +0x64 (slot 25) Poll               () [IDirectInputDevice2]
 // ---------------------------------------------------------------------------
 struct IDirectInputDeviceZ {
     struct Vtbl {
@@ -77,6 +78,8 @@ struct IDirectInputDeviceZ {
         char m_pad30[0x34 - 0x30];
         i32(__stdcall* SetCooperativeLevel)(IDirectInputDeviceZ*, void* hwnd,
                                             u32 flags); // +0x34
+        char m_pad38[0x64 - 0x38];
+        i32(__stdcall* Poll)(IDirectInputDeviceZ*); // +0x64 (IDirectInputDevice2::Poll)
     }* vtbl;
 };
 
@@ -260,8 +263,8 @@ public:
     i32 PollJoystick(); // 0x1347d0
 
     // PollDevice (0x135040): IDirectInputDevice2::Poll() pre-step PollJoystick runs
-    // before sampling the joystick. Declared-only here (its body is a boundary stub
-    // in another unit); the call reloc-masks.
+    // before sampling the joystick. On INPUTLOST/NOTACQUIRED it re-Acquires and
+    // re-Polls once; a nonzero HRESULT is reported through GetErrorString.
     i32 PollDevice(); // 0x135040
 
     // CreateDeviceWrap (0x134260): validates (di, guid), runs Create, then the +0x14

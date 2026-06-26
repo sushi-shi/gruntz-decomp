@@ -126,11 +126,11 @@ cwwdobjmgrfactories	3	0
 databuffer	7	5
 deflate	6	6
 dialogs	35	14
-directinputmgr2	35	31
+directinputmgr2	36	32
 directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	15	0
-engine_boundary	298	0
+engine_boundary	295	0
 engine_discovered	51	0
 engine_label_stubs	437	105
 engine_unmatched	264	0
@@ -242,6 +242,7 @@ statemgrbz	5	3
 statusbaritem	2	1
 statusbarupdaters	7	0
 streamfeeder	9	7
+streamrecordloaders	2	0
 streamvoice	5	3
 symparser	8	5
 symtab	18	10
@@ -1110,6 +1111,7 @@ directinputmgr2	?Poll@CInputDevice@@QAEHXZ	99.9718	99.9718	3	e0e4a7b1be32	0x133d
 directinputmgr2	?PollAll@DirectInputMgr2@@QAEHXZ	100.0000	100.0000	3	ddf727d1f8d4	0x133080
 directinputmgr2	?PollArrayA@DirectInputMgr2@@QAEHXZ	100.0000	100.0000	3	e426c88a86e9	0x1330d0
 directinputmgr2	?PollArrayB@DirectInputMgr2@@QAEHXZ	100.0000	100.0000	3	63889117e0e5	0x133160
+directinputmgr2	?PollDevice@CInputDevice@@QAEHXZ	100.0000	100.0000	1	c68e92d3c22e	0x135040
 directinputmgr2	?PollJoystick@CInputDevice@@QAEHXZ	100.0000	100.0000	1	dba36e7a9124	0x1347d0
 directinputmgr2	?PollMouse@CInputDevice@@QAEHXZ	100.0000	100.0000	1	2d5be5b831f5	0x1343b0
 directinputmgr2	?ReadAll@DirectInputMgr2@@QAEHXZ	100.0000	100.0000	3	c7b72012e78d	0x133110
@@ -1183,7 +1185,6 @@ engine_attributed	?strstreambuf_169400@strstreambuf@@QAEXXZ	0.7407	0.7407	1	0ea6
 engine_boundary	?Boundary_0087b0@@YAXXZ	50.0000	50.0000	2	5160ec8cab86	0x87b0
 engine_boundary	?Boundary_008860@@YAXXZ	5.8824	5.8824	2	c34f2f6a9d34	0x8860
 engine_boundary	?Boundary_008b90@@YAXXZ	1.8182	1.8182	2	e2f5a6cd8f79	0x8b90
-engine_boundary	?Boundary_009bb0@@YAXXZ	0.1262	0.1262	2	d0b890ae5085	0x9bb0
 engine_boundary	?Boundary_00af50@@YAXXZ	50.0000	50.0000	2	d520e597bf8c	0xaf50
 engine_boundary	?Boundary_00b940@@YAXXZ	20.0000	20.0000	2	dcec8256f702	0xb940
 engine_boundary	?Boundary_00bdd0@@YAXXZ	1.2500	1.2500	2	504d18ca1007	0xbdd0
@@ -1277,7 +1278,6 @@ engine_boundary	?Boundary_09a0d0@@YAXXZ	0.4082	0.4082	2	154c7f94af20	0x9a0d0
 engine_boundary	?Boundary_09a290@@YAXXZ	0.4040	0.4040	2	e859050ac0ec	0x9a290
 engine_boundary	?Boundary_09a420@@YAXXZ	7.6923	7.6923	2	3540619e1237	0x9a420
 engine_boundary	?Boundary_09b770@@YAXXZ	1.1905	1.1905	2	6e72f29dcc08	0x9b770
-engine_boundary	?Boundary_09c650@@YAXXZ	0.1246	0.1246	2	dafb0d39355f	0x9c650
 engine_boundary	?Boundary_09cab0@@YAXXZ	3.6364	3.6364	2	c4332ef7f2e7	0x9cab0
 engine_boundary	?Boundary_0adde0@@YAXXZ	20.0000	20.0000	2	3b79d8aaa5b8	0xadde0
 engine_boundary	?Boundary_0ade60@@YAXXZ	0.5333	0.5333	2	bad87037fdcf	0xade60
@@ -1348,7 +1348,6 @@ engine_boundary	?Boundary_133460@@YAXXZ	4.0000	4.0000	2	e2e792097f0d	0x133460
 engine_boundary	?Boundary_1334f0@@YAXXZ	4.0000	4.0000	2	c0a78fe1cf3c	0x1334f0
 engine_boundary	?Boundary_134360@@YAXXZ	7.1429	7.1429	2	88e4002ab8c6	0x134360
 engine_boundary	?Boundary_1346d0@@YAXXZ	7.1429	7.1429	2	aee3fadddb20	0x1346d0
-engine_boundary	?Boundary_135040@@YAXXZ	2.3256	2.3256	2	60096bc4c663	0x135040
 engine_boundary	?Boundary_137200@@YAXXZ	2.7778	2.7778	2	fddb9504b61e	0x137200
 engine_boundary	?Boundary_137300@@YAXXZ	5.8824	5.8824	2	826fcc54f896	0x137300
 engine_boundary	?Boundary_137330@@YAXXZ	50.0000	50.0000	2	e56dfbe1e8a5	0x137330
@@ -3311,6 +3310,8 @@ streamfeeder	?FillBuffer@StreamFeeder@@QAEHII@Z	88.5679	88.5679	1	de778cdecdb0	0
 streamfeeder	?Pause@StreamFeeder@@QAEHXZ	100.0000	100.0000	2	52812e99cdff	0x137f00
 streamfeeder	?Resume@StreamFeeder@@QAEHXZ	100.0000	100.0000	2	c47c07137340	0x137ed0
 streamfeeder	?SeedWindow@StreamFeeder@@QAEHPAXII@Z	100.0000	100.0000	1	edea263e685a	0x137340
+streamrecordloaders	?Load@CEventLoadRec@@QAEHPAVCStreamReader@@@Z	93.9657	93.9657	1	10830728f95d	0x9c650
+streamrecordloaders	?Load@CTriggerLoadRec@@QAEHPAVCStreamReader@@@Z	92.2366	92.2366	1	53a7a4f4c4fa	0x9bb0
 streamvoice	??0StreamVoice@@QAE@PAUIDirectSoundBufferZ@@PAVDirectSoundMgr@@HH@Z	35.8824	35.8824	1	32868b69f13b	0x1375b0
 streamvoice	??1StreamVoice@@QAE@XZ	42.4643	42.4643	1	59cc0331f52c	0x137650
 streamvoice	?ComputeRatio@StreamVoice@@QAEIXZ	100.0000	100.0000	1	bc813ec12694	0x137590

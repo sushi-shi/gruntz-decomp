@@ -1409,3 +1409,26 @@ i32 CInputDevice::Unacquire() {
     i32 hr = m_device2->vtbl->Unacquire(m_device2);
     return hr == 0;
 }
+
+// CInputDevice::PollDevice (__thiscall, no args). The PollJoystick pre-step:
+// IDirectInputDevice2::Poll (slot +0x64) refreshes the buffered device. On success
+// returns 1; on DIERR_INPUTLOST/NOTACQUIRED it re-Acquires (return 0 if that fails)
+// and re-Polls once. A remaining nonzero HRESULT is reported through GetErrorString
+// (InputDevice.cpp:0x1e5); returns whether the final HRESULT was success (0).
+RVA(0x00135040, 0x65)
+i32 CInputDevice::PollDevice() {
+    i32 hr = m_device2->vtbl->Poll(m_device2);
+    if (hr == 0) {
+        return 1;
+    }
+    if (hr == (i32)DIERR_INPUTLOST || hr == (i32)DIERR_NOTACQUIRED) {
+        if (Acquire() == 0) {
+            return 0;
+        }
+        hr = m_device2->vtbl->Poll(m_device2);
+    }
+    if (hr != 0) {
+        DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x1e5, hr);
+    }
+    return hr == 0;
+}

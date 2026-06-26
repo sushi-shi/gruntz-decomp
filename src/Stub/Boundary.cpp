@@ -12,8 +12,6 @@ RVA(0x00008860, 0x44)
 void Boundary_008860() {} // proximity: zDArray@-0x110 | CSerialSub34@+0x3a0
 RVA(0x00008b90, 0x40)
 void Boundary_008b90() {} // proximity: zDArray@-0x440 | CSerialSub34@+0x70
-RVA(0x00009bb0, 0x367)
-void Boundary_009bb0() {} // proximity: CActionOptionsMenuBar@-0x3a0 | CPlaneRender@+0x450
 RVA(0x0000af50, 0xb)
 void Boundary_00af50() {} // proximity: CPlaneRender@-0xf50 | Utils@+0x1c0
 RVA(0x0000b940, 0xf)
@@ -200,8 +198,6 @@ RVA(0x0009a420, 0x1c)
 void Boundary_09a420() {} // proximity: CAreaMgr@-0x370 | CSpawnEntry@+0x30
 RVA(0x0009b770, 0xf1)
 void Boundary_09b770() {} // proximity: CAreaMgr@-0x340 | CTimer@+0x340
-RVA(0x0009c650, 0x372)
-void Boundary_09c650() {} // proximity: CTimer@-0x370 | CLightFx@+0xed0
 RVA(0x0009cab0, 0x23)
 void Boundary_09cab0() {} // proximity: CTimer@-0x7d0 | CLightFx@+0xa70
 RVA(0x000adde0, 0x15)
@@ -343,8 +339,6 @@ RVA(0x00134360, 0x33)
 void Boundary_134360() {} // proximity: CInputDevice@-0x100 | CFixedPtrArray32@+0x880
 RVA(0x001346d0, 0x33)
 void Boundary_1346d0() {} // proximity: CInputDevice@-0x470 | CFixedPtrArray32@+0x510
-RVA(0x00135040, 0x65)
-void Boundary_135040() {} // proximity: CInputDevice@-0x60 | UnknownSalazar@+0x70
 RVA(0x00137200, 0x53)
 void Boundary_137200() {} // proximity: SoundDevice@-0x60 | DirectSoundMgr@+0x60
 RVA(0x00137300, 0x23)

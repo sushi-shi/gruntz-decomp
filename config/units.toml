@@ -1372,3 +1372,8 @@ flags = "eh"
 unit = "cmovinglogicserial"
 source = "src/Gruntz/CMovingLogicSerial.cpp"
 flags = "base"
+
+[[unit]]
+unit = "streamrecordloaders"
+source = "src/Gruntz/StreamRecordLoaders.cpp"
+flags = "base"
