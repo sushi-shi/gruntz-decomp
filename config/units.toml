@@ -1340,3 +1340,18 @@ flags = "base"
 unit = "typekeycoll"
 source = "src/Gruntz/TypeKeyColl.cpp"
 flags = "eh"
+
+[[unit]]
+unit = "feccrypt"
+source = "src/Gruntz/FecCrypt.cpp"
+flags = "base"
+
+[[unit]]
+unit = "crangeset"
+source = "src/Gruntz/CRangeSet.cpp"
+flags = "base"
+
+[[unit]]
+unit = "cddpagemgr"
+source = "src/Gruntz/CDDPageMgr.cpp"
+flags = "base"

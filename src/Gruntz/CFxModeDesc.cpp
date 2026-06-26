@@ -39,6 +39,29 @@ CFxModeDesc::CFxModeDesc() {
 }
 
 // ===========================================================================
+// 0x17e840 - CFxModeT2(): base ctor, then stamp the type-2 record
+// (type=2, m_10=1, m_18=0x140, m_1c=0xf0; the rest zeroed).
+// ===========================================================================
+// @early-stop
+// constant-materialization/store-scheduling wall: same stores, same offsets/values
+// as retail, but retail pre-loads 0x140->eax / 0xf0->ecx / 0->edx and emits the
+// stores in offset order, while cl keeps 0x140/0xf0 as immediates and groups the
+// zero stores. The other five ctors (no two large distinct constants) match 100%;
+// this one's register-vs-immediate choice is not source-steerable (store order +
+// `int w=0x140` locals both fold back). ~72%.
+RVA(0x0017e840, 0x37)
+CFxModeT2::CFxModeT2() {
+    m_type = 2;
+    m_04 = 0;
+    m_08 = 0;
+    m_10 = 1;
+    m_14 = 0;
+    m_18 = 0x140;
+    m_1c = 0xf0;
+    m_20 = 0;
+}
+
+// ===========================================================================
 // 0x17e880 - CFxModeT3(): run the base ctor, then stamp the type-3 record
 // (type=3, m_0c=1, m_10=0xf; the rest zeroed).
 // ===========================================================================
@@ -49,4 +72,48 @@ CFxModeT3::CFxModeT3() {
     m_08 = 0;
     m_0c = 1;
     m_10 = 0xf;
+}
+
+// ===========================================================================
+// 0x17e8b0 - CFxModeT4(): base ctor, then stamp the type-4 record
+// (type=4, m_0c=1; the rest zeroed). m_0c stored last.
+// ===========================================================================
+RVA(0x0017e8b0, 0x27)
+CFxModeT4::CFxModeT4() {
+    m_type = 4;
+    m_04 = 0;
+    m_08 = 0;
+    m_10 = 0;
+    m_14 = 0;
+    m_0c = 1;
+}
+
+// ===========================================================================
+// 0x17e8e0 - CFxModeT5(): base ctor, then stamp the type-5 record
+// (type=5, m_10=0x19; the rest zeroed). m_10 stored last.
+// ===========================================================================
+RVA(0x0017e8e0, 0x27)
+CFxModeT5::CFxModeT5() {
+    m_type = 5;
+    m_04 = 0;
+    m_08 = 0;
+    m_0c = 0;
+    m_14 = 0;
+    m_10 = 0x19;
+}
+
+// ===========================================================================
+// 0x17e910 - CFxModeT6(): base ctor, then stamp the type-6 record
+// (type=6; m_04..m_20 zeroed, m_0c untouched).
+// ===========================================================================
+RVA(0x0017e910, 0x29)
+CFxModeT6::CFxModeT6() {
+    m_type = 6;
+    m_04 = 0;
+    m_08 = 0;
+    m_10 = 0;
+    m_14 = 0;
+    m_18 = 0;
+    m_1c = 0;
+    m_20 = 0;
 }

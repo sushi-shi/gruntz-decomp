@@ -42,6 +42,7 @@ struct CFaderArray {
     i32 m_nMaxSize;   // +0x0c (manager +0x1c)
     i32 m_nGrowBy;    // +0x10 (manager +0x20)
 
+    CFaderArray();
     ~CFaderArray();
 };
 
@@ -50,6 +51,17 @@ DATA(0x001f0790)
 extern void* g_faderArrayVtbl; // 0x5f0790 - the element-array base vtable
 DATA(0x001e8cb4)
 extern void* g_remusBaseDtorVtbl; // 0x5e8cb4 - the grand-base dtor vtable
+
+// Stamp the array vftable (the vptr init the compiler cannot emit for us while
+// the array's vtable contents are unmodeled) then zero the bookkeeping fields, in
+// declaration-store order pData/growby/maxsize/size. Inlined into CFaderMgr's ctor.
+inline CFaderArray::CFaderArray() {
+    m_vtbl = &g_faderArrayVtbl;
+    m_pData = 0;
+    m_nGrowBy = 0;
+    m_nMaxSize = 0;
+    m_nSize = 0;
+}
 
 inline CFaderArray::~CFaderArray() {
     m_vtbl = &g_faderArrayVtbl;
@@ -61,6 +73,7 @@ inline CFaderArray::~CFaderArray() {
 
 class CFaderMgr {
 public:
+    CFaderMgr();                                // 0x17d8f0
     ~CFaderMgr();                               // 0x17d910
     i32 SetConfig(i32 a, i32 b, i32 c);         // 0x17d980
     void FreeAll();                             // 0x17d9a0

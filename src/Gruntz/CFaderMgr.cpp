@@ -36,6 +36,17 @@ struct CFaderImpl {
 };
 
 // ===========================================================================
+// 0x17d8f0 - CFaderMgr(): construct the embedded element-array subobject (stamp
+// its vftable + zero its bookkeeping, inlined) then zero m_08/m_0c. The shared
+// timer fields m_00/m_04/m_24 are left for SetConfig. Returns this.
+// ===========================================================================
+RVA(0x0017d8f0, 0x1e)
+CFaderMgr::CFaderMgr() {
+    m_08 = 0;
+    m_0c = 0;
+}
+
+// ===========================================================================
 // 0x17d910 - ~CFaderMgr: empty the array (FreeAll), then the member array
 // subobject teardown runs implicitly. /GX EH frame (from the member dtor).
 // ===========================================================================

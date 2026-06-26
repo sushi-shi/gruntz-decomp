@@ -36,6 +36,7 @@ cbehindcandy	2	2
 cbehindcandyani	4	3
 cbrickz	1	0
 ccursorsnapsprite	2	2
+cddpagemgr	2	1
 cddrawchildgroup	9	5
 cddrawptrcollections	30	14
 cddrawshadeblit	6	1
@@ -61,12 +62,12 @@ cexittrigger	2	2
 cexplosion	1	1
 ceyecandy	2	2
 cfader	6	5
-cfadermgr	7	4
+cfadermgr	8	5
 cfileimage	8	2
 cfixedptrarray32	3	2
 cfortressflag	5	4
 cfrontcandyani	4	3
-cfxmodedesc	3	3
+cfxmodedesc	7	6
 cgruntcreationpoint	4	3
 cgrunthealthsprite	4	3
 cgruntpowerupsprite	6	5
@@ -96,6 +97,7 @@ configstore	4	0
 cparticlez	5	4
 cpathhazard	7	3
 cplay	62	29
+crangeset	2	2
 cremusentrylist	2	1
 cremusnode	4	2
 cremusreadstream	6	4
@@ -127,11 +129,12 @@ directinputmgr2	33	29
 directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	15	0
-engine_boundary	433	0
+engine_boundary	422	0
 engine_discovered	51	0
 engine_label_stubs	437	105
 engine_unmatched	273	0
 engstr	3	1
+feccrypt	2	1
 filemem	9	8
 filestream	13	9
 font	24	12
@@ -436,6 +439,8 @@ cbehindcandyani	?RegisterActs@CBehindCandyAni@@SAXXZ	92.9130	92.9130	1	29528d953
 cbrickz	??0CBrickz@@QAE@PAUCGameObject@@@Z	91.6759	91.6759	1	86c4f819f256	0x10e800
 ccursorsnapsprite	??1CCursorSnapSprite@@UAE@XZ	100.0000	100.0000	1	2eab333c770e	0x11920
 ccursorsnapsprite	?Serialize@CCursorSnapSprite@@QAEHHHHH@Z	100.0000	100.0000	1	1ff3ed4ebd3b	0x11880
+cddpagemgr	?FreeAll@CDDPageMgr@@QAEHXZ	100.0000	100.0000	1	cebbfee958ab	0x17d6b0
+cddpagemgr	?RemoveAt@CDDPageMgr@@QAEHH@Z	86.3971	86.3971	1	666936fde3d6	0x17d600
 cddrawchildgroup	?Stub_1591f0@CDDrawChildGroup@@QAEXXZ	2.9412	2.9412	4	c142c66f7447	0x1591f0
 cddrawchildgroup	?Stub_159a70@CDDrawChildGroup@@QAEXXZ	0.2367	0.2367	4	6bb06c5c8409	0x159a70
 cddrawchildgroup	?VirtualMethodUnknown14@CDDrawChildGroup@@QAEHXZ	100.0000	100.0000	6	5bf8fe296b4f	0x1575e0
@@ -694,6 +699,7 @@ cfader	??1CFaderSine@@QAE@XZ	100.0000	100.0000	1	ae93aa6df1fe	0x17fdf0
 cfader	?Set2c@CFader@@QAEXH@Z	100.0000	100.0000	1	ede94c0e181f	0x17e780
 cfader	?SetTimers@CFader@@QAEXHH@Z	100.0000	100.0000	1	f5abacb4e2fd	0x17e760
 cfader	?Wait@CFader@@QAEXH@Z	100.0000	100.0000	1	22403b8571db	0x17e510
+cfadermgr	??0CFaderMgr@@QAE@XZ	100.0000	100.0000	1	b6ac3e227e8f	0x17d8f0
 cfadermgr	??1CFaderMgr@@QAE@XZ	82.8889	82.8889	1	9bd8a535fa45	0x17d910
 cfadermgr	?Add@CFaderMgr@@QAEPAUCFader@@HPAU2@@Z	0.0000	0.0000	2	fefd6e005c49	0x17d9c0
 cfadermgr	?DeleteAll@CFaderMgr@@QAEXXZ	100.0000	100.0000	1	7c42fa42e763	0x17e1d0
@@ -722,7 +728,11 @@ cfrontcandyani	?FireActivation@CFrontCandyAni@@QAEXH@Z	100.0000	100.0000	1	ba6b5
 cfrontcandyani	?InitActReg@CFrontCandyAni@@SAXXZ	100.0000	100.0000	1	c691123e0636	0xad130
 cfrontcandyani	?RegisterActs@CFrontCandyAni@@SAXXZ	92.9130	92.9130	1	b70e27f4d14a	0xad310
 cfxmodedesc	??0CFxModeDesc@@QAE@XZ	100.0000	100.0000	1	1d50e1699c1c	0x17e7b0
+cfxmodedesc	??0CFxModeT2@@QAE@XZ	71.8235	71.8235	1	aad9712f87f2	0x17e840
 cfxmodedesc	??0CFxModeT3@@QAE@XZ	100.0000	100.0000	1	ed60fc3e1923	0x17e880
+cfxmodedesc	??0CFxModeT4@@QAE@XZ	100.0000	100.0000	1	747c8589248b	0x17e8b0
+cfxmodedesc	??0CFxModeT5@@QAE@XZ	100.0000	100.0000	1	dad13d941e04	0x17e8e0
+cfxmodedesc	??0CFxModeT6@@QAE@XZ	100.0000	100.0000	1	1dd6f88f62d8	0x17e910
 cfxmodedesc	?MakeButeSectionKey@@YAHPADPBD1@Z	100.0000	100.0000	1	c9630b01af12	0xf9280
 cgruntcreationpoint	??1CGruntCreationPoint@@UAE@XZ	100.0000	100.0000	1	887125215466	0x10730
 cgruntcreationpoint	?AdvanceAnim@CGruntCreationPoint@@QAEHXZ	100.0000	100.0000	1	f79597535ca0	0x3ecc0
@@ -943,6 +953,8 @@ cplay	?Update@CPlay@@UAEHXZ	100.0000	100.0000	4	1c6efda4cb9e	0x8c910
 cplay	?winapi_0cdb10_PostMessageA@CPlay@@QAEHHHH@Z	0.2946	0.2946	2	db8d57057a6f	0xcdb10
 cplay	?winapi_0ceae0_PostMessageA@CPlay@@QAEHHHH@Z	0.9500	0.9500	2	fb82d3f55040	0xceae0
 cplay	?winapi_0d0b30_CopyRect@CPlay@@QAEHH@Z	1.2270	1.2270	2	edf43ed7aef3	0xd0b30
+crangeset	?AddRange@CRangeSet@@QAEXII@Z	100.0000	100.0000	1	ed00b3a920e2	0x184be0
+crangeset	?Contains@CRangeSet@@QAE_NI@Z	100.0000	100.0000	1	958ae75d3e77	0x184ba0
 cremusentrylist	??1CRemusEntryList@@QAE@XZ	94.2857	94.2857	1	91c148d29979	0x152e30
 cremusentrylist	?DeleteAll@CRemusEntryList@@QAEXXZ	100.0000	100.0000	1	20d4d5477494	0x165730
 cremusnode	??0CRemusNode@@QAE@HHH@Z	60.1176	60.1176	2	9b0a333c3352	0x15b2c0
@@ -1556,19 +1568,10 @@ engine_boundary	?Boundary_17b570@@YAXXZ	8.3333	8.3333	2	a6f12400617a	0x17b570
 engine_boundary	?Boundary_17b5a0@@YAXXZ	4.5455	4.5455	2	1626bf6fc1be	0x17b5a0
 engine_boundary	?Boundary_17b5f0@@YAXXZ	0.2286	0.2286	2	7c4670091f97	0x17b5f0
 engine_boundary	?Boundary_17b840@@YAXXZ	1.2500	1.2500	2	13b4a4361ecb	0x17b840
-engine_boundary	?Boundary_17bf70@@YAXXZ	0.8511	0.8511	2	3f28abffb21f	0x17bf70
-engine_boundary	?Boundary_17bfe0@@YAXXZ	1.0000	1.0000	2	99951f416a2f	0x17bfe0
 engine_boundary	?Boundary_17c6f0@@YAXXZ	0.6154	0.6154	2	1282340469c3	0x17c6f0
-engine_boundary	?Boundary_17d600@@YAXXZ	0.5882	0.5882	2	1401a729b073	0x17d600
-engine_boundary	?Boundary_17d6b0@@YAXXZ	2.3256	2.3256	2	baf3e9260e68	0x17d6b0
-engine_boundary	?Boundary_17d8f0@@YAXXZ	10.0000	10.0000	2	0eda64252160	0x17d8f0
 engine_boundary	?Boundary_17e230@@YAXXZ	13.3333	13.3333	2	fff750a9c682	0x17e230
 engine_boundary	?Boundary_17e240@@YAXXZ	4.3478	4.3478	2	cd965f47662c	0x17e240
 engine_boundary	?Boundary_17e7c0@@YAXXZ	2.5641	2.5641	2	74aad4d30047	0x17e7c0
-engine_boundary	?Boundary_17e840@@YAXXZ	5.8824	5.8824	2	b8a21e6e0d85	0x17e840
-engine_boundary	?Boundary_17e8b0@@YAXXZ	7.6923	7.6923	2	61402b4a743f	0x17e8b0
-engine_boundary	?Boundary_17e8e0@@YAXXZ	7.6923	7.6923	2	70f4056930dd	0x17e8e0
-engine_boundary	?Boundary_17e910@@YAXXZ	6.6667	6.6667	2	39552a58bd87	0x17e910
 engine_boundary	?Boundary_17e990@@YAXXZ	3.3333	3.3333	2	46fb05e7d3d8	0x17e990
 engine_boundary	?Boundary_17ea00@@YAXXZ	0.1013	0.1013	2	c50399a2f6b0	0x17ea00
 engine_boundary	?Boundary_17f9f0@@YAXXZ	5.0000	5.0000	2	791108b88523	0x17f9f0
@@ -1579,8 +1582,6 @@ engine_boundary	?Boundary_182610@@YAXXZ	0.1695	0.1695	2	e02013f10329	0x182610
 engine_boundary	?Boundary_1847a0@@YAXXZ	13.3333	13.3333	2	b34aa8f4131f	0x1847a0
 engine_boundary	?Boundary_1847e0@@YAXXZ	2.5641	2.5641	2	09ae51b89cc5	0x1847e0
 engine_boundary	?Boundary_184b70@@YAXXZ	20.0000	20.0000	2	d791dc5e7e33	0x184b70
-engine_boundary	?Boundary_184ba0@@YAXXZ	1.6667	1.6667	2	fa049b192711	0x184ba0
-engine_boundary	?Boundary_184be0@@YAXXZ	3.0769	3.0769	2	bc75fdce0532	0x184be0
 engine_boundary	?Boundary_184c10@@YAXXZ	0.3448	0.3448	2	fa0c694583ed	0x184c10
 engine_boundary	?Boundary_184fb0@@YAXXZ	12.5000	12.5000	2	27f7c3170737	0x184fb0
 engine_boundary	?Boundary_1853b0@@YAXXZ	1.8519	1.8519	2	a07ef3f19c6f	0x1853b0
@@ -2362,6 +2363,8 @@ engine_unmatched	?Unmatched_1d4c16@@YAXXZ	25.0000	25.0000	1	255fe6be9029	0x1d4c1
 engstr	??1CContainerErr@@QAE@XZ	100.0000	100.0000	1	437607bea3c5	0x16da60
 engstr	?EngStr_DrawText@@YAXPAUEngStrRenderObj@@HHHHHHHH@Z	94.2857	94.2857	2	197473bbe23e	0x115440
 engstr	?SetSize@zBitVec@@QAEHH@Z	98.7234	98.7234	1	fcee90903128	0x16e100
+feccrypt	?FecDecode@@YGXPBDPADG@Z	99.7500	99.7500	1	5b0e31c468f8	0x17bfe0
+feccrypt	?FecEncode@@YGXPBDPAD@Z	100.0000	100.0000	1	6bc3315ae515	0x17bf70
 filemem	??0CFileMemBase@@QAE@XZ	100.0000	100.0000	1	04d2148fb703	0x157850
 filemem	??1CFileMem@@QAE@XZ	59.2593	59.2593	1	ec8015f95309	0x157980
 filemem	?Open@CFileMem@@QAEHXZ	100.0000	100.0000	1	a36fe9e8b972	0x165e60
