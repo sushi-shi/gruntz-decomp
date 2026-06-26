@@ -639,6 +639,132 @@ void CPlay::OnExit() {
 }
 
 // ===========================================================================
+// CPlay::ModeCleanup (0x0cb740) - vtable slot 0x22 mode/state-exit teardown.
+// For each live sub-object of the view holder (m_c) and the world (m_4) it runs
+// that object's teardown method (two are virtual). Self-contained (no DIR32
+// relocs); the view ptr is re-read before every block (no cached local). The
+// sub-object offsets here differ from Render's CView typing, so a local view-cast
+// keeps Render's member typing untouched.
+// ===========================================================================
+// Two renderer/draw sub-objects torn down through a vtable slot. Dummy virtuals
+// pad the slot index so `o->Teardown()` lowers to `mov edx,[o]; call [edx+slot]`.
+struct CExitV58 { // teardown at vtable +0x58 (slot 22)
+    virtual void s00();
+    virtual void s01();
+    virtual void s02();
+    virtual void s03();
+    virtual void s04();
+    virtual void s05();
+    virtual void s06();
+    virtual void s07();
+    virtual void s08();
+    virtual void s09();
+    virtual void s0a();
+    virtual void s0b();
+    virtual void s0c();
+    virtual void s0d();
+    virtual void s0e();
+    virtual void s0f();
+    virtual void s10();
+    virtual void s11();
+    virtual void s12();
+    virtual void s13();
+    virtual void s14();
+    virtual void s15();
+    virtual void Teardown(); // slot 22 (+0x58)
+};
+struct CExitV44 { // teardown at vtable +0x44 (slot 17)
+    virtual void s00();
+    virtual void s01();
+    virtual void s02();
+    virtual void s03();
+    virtual void s04();
+    virtual void s05();
+    virtual void s06();
+    virtual void s07();
+    virtual void s08();
+    virtual void s09();
+    virtual void s0a();
+    virtual void s0b();
+    virtual void s0c();
+    virtual void s0d();
+    virtual void s0e();
+    virtual void s0f();
+    virtual void s10();
+    virtual void Teardown(); // slot 17 (+0x44)
+};
+// The view holder (this->m_c) as the exit walk reads it.
+struct CExitView {
+    char p0[0x8];
+    struct M8 {
+        void Refresh(); // 0x159ef0
+    }* m_8;             // +0x8
+    struct Mc {
+        void Teardown(); // 0x163c60
+    }* m_c;              // +0xc
+    CExitV58* m_10;      // +0x10  virtual slot 0x58
+    char p14[0x24 - 0x14];
+    CExitV44* m_24; // +0x24  virtual slot 0x44
+    struct M28 {
+        char p0[0x2c];
+        struct Inner {
+            void Teardown(); // 0x137a80
+        }* m_2c;             // +0x2c
+        void Release();      // 0x157bc0
+    }* m_28;                 // +0x28
+    struct M2c {
+        void Teardown(); // 0x152720
+    }* m_2c;             // +0x2c
+};
+// The world (this->m_4) as the exit walk reads it.
+struct CExitWorld {
+    char p0[0x48];
+    struct M48 {
+        void Teardown(); // 0x138530
+    }* m_48;             // +0x48
+    char p4c[0x54 - 0x4c];
+    struct M54 {
+        void Reset(); // 0x28ab thunk
+    }* m_54;          // +0x54
+};
+
+// @early-stop
+// reload-register regalloc tail (99.62%): logic byte-exact and every call reloc
+// pairs; the only residual is 4 bytes - the intermediate register cl picks for the
+// re-read of m_c before `m_28->Release` and of m_4 before `m_54->Reset` (cl folds
+// into ecx/edx, retail loads via eax/ecx). The view ptr IS re-read each block as
+// retail does; this is the reread-member-view-pointer.md regalloc residual, not
+// source-steerable (the surrounding standalone blocks already match). Final sweep.
+RVA(0x000cb740, 0x8f)
+void CPlay::ModeCleanup() {
+    if (m_c) {
+        if (((CExitView*)m_c)->m_28->m_2c) {
+            ((CExitView*)m_c)->m_28->m_2c->Teardown();
+        }
+        ((CExitView*)m_c)->m_28->Release();
+    }
+    if (m_4) {
+        ((CExitWorld*)m_4)->m_48->Teardown();
+        ((CExitWorld*)m_4)->m_54->Reset();
+    }
+    if (m_c) {
+        ((CExitView*)m_c)->m_10->Teardown();
+    }
+    if (m_c) {
+        ((CExitView*)m_c)->m_2c->Teardown();
+    }
+    if (m_c) {
+        ((CExitView*)m_c)->m_24->Teardown();
+    }
+    if (m_c) {
+        ((CExitView*)m_c)->m_8->Refresh();
+    }
+    if (m_c) {
+        ((CExitView*)m_c)->m_c->Teardown();
+    }
+}
+
+// ===========================================================================
 // CPlay::OnKeyCommand (0x0cbaf0) - the PLAY-state keyboard/UI command dispatcher.
 // Early-outs on the HUD-suppress gate, then a priority chain: resume from a paused/
 // disabled frame (re-arm the in-game mode), bail to ReportError if the per-frame

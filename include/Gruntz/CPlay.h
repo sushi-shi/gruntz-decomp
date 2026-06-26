@@ -291,7 +291,8 @@ public:
     i32 ResetViewport(); // 0x0d8c60 (thiscall on this)
     // CPlay state-exit teardown (THIS TU): ready-gate, slot-21 notify, renderer
     // refresh, then clear the registry's per-frame words + run its +0x70 teardown.
-    void OnExit(); // 0x0cb400
+    void OnExit();      // 0x0cb400
+    void ModeCleanup(); // 0x0cb740  vtable slot 0x22 mode/state-exit teardown
 
     // --- leaf sub-helpers the THIS-TU functions call (external, reloc-masked) ---
     void StepC_ModeA(i32 z); // (thiscall, 1 arg) StepC m_viewMode==1

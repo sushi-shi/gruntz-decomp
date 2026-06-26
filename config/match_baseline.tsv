@@ -98,7 +98,7 @@ cobjectdropper	1	1
 configstore	4	0
 cparticlez	5	4
 cpathhazard	7	3
-cplay	62	29
+cplay	63	29
 crangeset	2	2
 cremusentrylist	2	1
 cremusnode	4	2
@@ -131,7 +131,7 @@ directinputmgr2	33	29
 directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	15	0
-engine_boundary	416	0
+engine_boundary	403	0
 engine_discovered	51	0
 engine_label_stubs	437	105
 engine_unmatched	273	0
@@ -195,6 +195,7 @@ menuitem2	5	2
 menupage	31	16
 mgrtokenquery	1	1
 motionstate	6	5
+netcmdslot	12	10
 netmgr	83	46
 netmgrerror	1	1
 netsession	2	1
@@ -930,6 +931,7 @@ cplay	?LoadImageBanks@CPlay@@QAEHXZ	100.0000	100.0000	1	f5cca6022e05	0xcffe0
 cplay	?LoadLevelImages@CPlay@@QAEHH@Z	100.0000	100.0000	1	6d6d0a76484e	0xdb7e0
 cplay	?LoadLevelSounds@CPlay@@QAEHH@Z	100.0000	100.0000	1	6500e8a7f24a	0xdb6c0
 cplay	?LoadScrollSpeedOptions@CPlay@@QAEXXZ	0.5000	0.5000	1	1bb238e16fd9	0xd12b0
+cplay	?ModeCleanup@CPlay@@QAEXXZ	99.6154	99.6154	1	49243b4e5268	0xcb740
 cplay	?NotifyVisibleEntities@CPlay@@QAEHXZ	74.8676	74.8676	2	3cd6ac295b6a	0xd9050
 cplay	?OnExit@CPlay@@QAEXXZ	94.7917	94.7917	1	a2f4e9737e46	0xcb400
 cplay	?OnKeyCommand@CPlay@@QAEHHH@Z	82.2718	82.2718	1	58b0ff524cd7	0xcbaf0
@@ -955,7 +957,7 @@ cplay	?SetEffectSpriteDurations@CPlay@@QAEHXZ	67.0648	67.0648	1	86fac1400fa3	0xd
 cplay	?StepC@CPlay@@QAEXXZ	85.4545	85.4545	6	9c6f84e46590	0xd8d90
 cplay	?StepGridWalk@CPlay@@QAEHH@Z	66.6667	66.6667	3	1875a002ef47	0xd0a60
 cplay	?StepInputA@CPlay@@QAEHXZ	89.8077	89.8077	7	1348ea35aa98	0xd11e0
-cplay	?StepScroll@CPlay@@QAEXXZ	81.6207	81.6207	6	c4551645db5a	0xd1ac0
+cplay	?StepScroll@CPlay@@QAEXXZ	63.5172	63.5172	6	c4551645db5a	0xd1ac0
 cplay	?Stub_08c9d0@CPlay@@QAEXXZ	0.7407	0.7407	2	18e3eb4c7dcd	0x8c9d0
 cplay	?Update@CPlay@@UAEHXZ	100.0000	100.0000	4	1c6efda4cb9e	0x8c910
 cplay	?winapi_0cdb10_PostMessageA@CPlay@@QAEHHHH@Z	0.2946	0.2946	2	db8d57057a6f	0xcdb10
@@ -1302,22 +1304,9 @@ engine_boundary	?Boundary_0b5400@@YAXXZ	20.0000	20.0000	2	f26abf60f880	0xb5400
 engine_boundary	?Boundary_0bd430@@YAXXZ	20.0000	20.0000	2	f74171d1e2fe	0xbd430
 engine_boundary	?Boundary_0bd450@@YAXXZ	12.5000	12.5000	2	7e6329f4d124	0xbd450
 engine_boundary	?Boundary_0bd7f0@@YAXXZ	20.0000	20.0000	2	68d20db436e9	0xbd7f0
-engine_boundary	?Boundary_0c0fa0@@YAXXZ	6.6667	6.6667	2	d59b83fee644	0xc0fa0
-engine_boundary	?Boundary_0c0fd0@@YAXXZ	3.0769	3.0769	2	1a233cc121b7	0xc0fd0
-engine_boundary	?Boundary_0c1010@@YAXXZ	1.7391	1.7391	2	8fc2bf39e7f4	0xc1010
-engine_boundary	?Boundary_0c1060@@YAXXZ	2.5000	2.5000	2	add165d4844a	0xc1060
-engine_boundary	?Boundary_0c10a0@@YAXXZ	6.6667	6.6667	2	1a2f1fb5804a	0xc10a0
-engine_boundary	?Boundary_0c1170@@YAXXZ	2.3529	2.3529	2	a7e532127199	0xc1170
-engine_boundary	?Boundary_0c11b0@@YAXXZ	1.1111	1.1111	2	07a595041e25	0xc11b0
-engine_boundary	?Boundary_0c1230@@YAXXZ	1.0256	1.0256	2	adf03a87dcc7	0xc1230
-engine_boundary	?Boundary_0c12b0@@YAXXZ	3.0769	3.0769	2	37522d733ac4	0xc12b0
-engine_boundary	?Boundary_0c12e0@@YAXXZ	5.0000	5.0000	2	6d9f9ea49073	0xc12e0
-engine_boundary	?Boundary_0c1320@@YAXXZ	3.0303	3.0303	2	1aaf0d6d4359	0xc1320
-engine_boundary	?Boundary_0c1390@@YAXXZ	14.2857	14.2857	2	3988d13a9a26	0xc1390
 engine_boundary	?Boundary_0c8700@@YAXXZ	0.6579	0.6579	2	984828ab4df6	0xc8700
 engine_boundary	?Boundary_0c9e40@@YAXXZ	0.6410	0.6410	2	6de635effbff	0xc9e40
 engine_boundary	?Boundary_0ca0a0@@YAXXZ	1.1236	1.1236	2	85eb7ac5df48	0xca0a0
-engine_boundary	?Boundary_0cb740@@YAXXZ	1.9231	1.9231	2	c35498275333	0xcb740
 engine_boundary	?Boundary_0cef50@@YAXXZ	4.5455	4.5455	2	23c07606b0c9	0xcef50
 engine_boundary	?Boundary_0d2b20@@YAXXZ	0.6024	0.6024	2	64e959194a19	0xd2b20
 engine_boundary	?Boundary_0d5960@@YAXXZ	0.8929	0.8929	2	d4f4b609b7cf	0xd5960
@@ -3034,6 +3023,18 @@ motionstate	?ArrivalVelY@CMotionState@@QAENN@Z	100.0000	100.0000	1	d462958a3e89	
 motionstate	?SetParams@CMotionState@@QAEHNNNNNNNNNNN@Z	100.0000	100.0000	2	57c861974e56	0x58bc0
 motionstate	?SetZ@CMotionState@@QAEXN@Z	100.0000	100.0000	1	9d25f9ec952e	0x58ca0
 motionstate	?Step@CMotionState@@QAEXN@Z	64.9479	64.9479	2	877abdf7095d	0x16ecd0
+netcmdslot	?AddCmd@CNetCmdSlot@@QAEXPAUCNetCmd@@@Z	100.0000	100.0000	1	528aa8665723	0xc1170
+netcmdslot	?AllSlotsReady@CNetSyncCheck@@QAEHXZ	78.6970	78.6970	1	a7d244a6dbc7	0xc1320
+netcmdslot	?ClearCmds@CNetCmdSlot@@QAEXXZ	100.0000	100.0000	1	332af5aba420	0xc12e0
+netcmdslot	?FindCmd@CNetCmdSlot@@QAEPAUCNetCmd@@H@Z	100.0000	100.0000	1	9bae5f56d570	0xc12b0
+netcmdslot	?GetRange@CNetCmdSlot@@QAEXPAH0@Z	100.0000	100.0000	1	f6a5342b0a43	0xc1230
+netcmdslot	?NetCmdIdAdd@@YGXPAHH@Z	100.0000	100.0000	1	0ea326438a3a	0xc1010
+netcmdslot	?NetCmdIdClear@@YGXPAHH@Z	100.0000	100.0000	1	61ec535a3595	0xc1060
+netcmdslot	?NetCmdIdFind@@YGHPAHH@Z	100.0000	100.0000	1	e06feaba51c4	0xc0fd0
+netcmdslot	?RaiseMax@CNetCmdSlot@@QAEXH@Z	100.0000	100.0000	1	422670451b5f	0xc0fa0
+netcmdslot	?RemoveCmd@CNetCmdSlot@@QAEXH@Z	100.0000	100.0000	1	df62c77e645e	0xc11b0
+netcmdslot	?ResetTriple@CNetCmdSlot@@QAEXPAH@Z	93.3333	93.3333	1	a247b7dd0f0c	0xc10a0
+netcmdslot	?Touch@CNetCmdSlot@@QAEXXZ	100.0000	100.0000	1	fdc8cfd7e8c1	0xc1390
 netmgr	?AckDropPlayer@CNetMgr@@QAEXH@Z	100.0000	100.0000	1	ede05f6eaecc	0xba590
 netmgr	?AddPlayerNode@CNetMgr@@QAEHPAX@Z	92.2727	92.2727	1	f4b1a6c46c27	0x1786d0
 netmgr	?AddSessionNode@CNetMgr@@QAEHPAX0@Z	55.7706	55.7706	1	00e6d9440227	0x178b30

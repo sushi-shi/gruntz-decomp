@@ -212,21 +212,36 @@ struct CNetPlayerNode {
 // reset reads are pinned. The three engine helpers it fires (slot methods,
 // external incremental-link thunks) clear the slot's command range.
 // ---------------------------------------------------------------------------
-struct CNetCmdSlot {
-    i32 m_0; // +0x0  "armed" flag (AckDropPlayer sets it to 1)
-    i32 m_4; // +0x4  "slot already reset" guard
-    char m_pad8[0xc - 0x8];
-    i32* m_c; // +0xc  -> command-list head value (m_c[0xb] == +0x2c is its own flag)
-    char m_pad10[0x14 - 0x10];
-    i32 m_14; // +0x14  base command sequence number
-    char m_pad18[0x4c - 0x18];
-    i32 m_4c[3]; // +0x4c  command-range A (reset to -1)
-    i32 m_58[3]; // +0x58  command-range B (reset to -1)
+// A queued player command the slot's CObList holds; only its +0x0 sequence
+// number is read by the slot methods. Defined in src/Net/NetCmdSlot.cpp.
+struct CNetCmd;
 
-    void Touch();             // c1390  latch the slot (sets +4, +8)
-    void RemoveCmd(i32 seq);  // c11b0  drop one queued command
-    void ResetTriple(i32* p); // c10a0  splat &-1 over three dwords
-    void FullReset();         // c0c20  zero the command fields + both ranges
+struct CNetCmdSlot {
+    i32 m_0;        // +0x0   "armed" flag (AckDropPlayer sets it to 1; ==3 => active)
+    i32 m_4;        // +0x4   "slot already reset" guard
+    i32 m_8;        // +0x8   latched sequence (Touch copies m_14 here)
+    i32* m_c;       // +0xc   -> command-list head value (m_c[0xb] == +0x2c is its own flag)
+    i32 m_10;       // +0x10
+    i32 m_14;       // +0x14  base command sequence number
+    i32 m_18;       // +0x18  high-water sequence (RaiseMax keeps the max)
+    i32 m_1c;       // +0x1c
+    CObList m_cmds; // +0x20  queued-command list (CObList, 0x1c bytes)
+    i32 m_3c;       // +0x3c
+    i32 m_40;       // +0x40
+    i32 m_44;       // +0x44
+    i32 m_48;       // +0x48
+    i32 m_4c[3];    // +0x4c  command-range A (reset to -1)
+    i32 m_58[3];    // +0x58  command-range B (reset to -1)
+
+    void RaiseMax(i32 v);                // c0fa0  keep the high-water sequence
+    void ResetTriple(i32* p);            // c10a0  splat -1 over three dwords
+    void AddCmd(CNetCmd* cmd);           // c1170  enqueue a command (dedup by seq)
+    void RemoveCmd(i32 seq);             // c11b0  drop one queued command
+    void GetRange(i32* pMin, i32* pMax); // c1230  min/max queued sequence
+    CNetCmd* FindCmd(i32 seq);           // c12b0  find a queued command by seq
+    void ClearCmds();                    // c12e0  drain + recycle the queue
+    void Touch();                        // c1390  latch the slot (sets +4, +8)
+    void FullReset();                    // c0c20  zero the command fields + both ranges
 };
 
 // The DirectPlay session sub-object at CNetMgr+0x520. Two helpers are reached
@@ -234,6 +249,9 @@ struct CNetCmdSlot {
 // command slots for the one whose player id matches; ResetCmdBuffers zeroes the
 // head of each of those four slots.
 struct CNetSession {
+    char m_pad0[0x20];      // +0x00
+    CNetCmdSlot m_slots[4]; // +0x20  four inline command slots (0x64 each)
+
     CNetCmdSlot* FindCmdSlot(i32 playerId); // c00a0
     void ResetCmdBuffers();                 // c0070
 };

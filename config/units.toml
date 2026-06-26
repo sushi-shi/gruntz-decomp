@@ -1365,3 +1365,8 @@ flags = "base"
 unit = "canielementeh"
 source = "src/Gruntz/CAniElementEh.cpp"
 flags = "eh"
+
+[[unit]]
+unit = "netcmdslot"
+source = "src/Net/NetCmdSlot.cpp"
+flags = "base"

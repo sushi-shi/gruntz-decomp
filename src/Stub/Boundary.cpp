@@ -240,38 +240,12 @@ RVA(0x000bd450, 0x16)
 void Boundary_0bd450() {} // proximity: CFileIO@-0x70 | CMultiStartDlg@+0x4300
 RVA(0x000bd7f0, 0xa)
 void Boundary_0bd7f0() {} // proximity: CFileIO@-0x410 | CMultiStartDlg@+0x3f60
-RVA(0x000c0fa0, 0x11)
-void Boundary_0c0fa0() {} // proximity: CFileIO@-0x3bc0 | CMultiStartDlg@+0x7b0
-RVA(0x000c0fd0, 0x24)
-void Boundary_0c0fd0() {} // proximity: CFileIO@-0x3bf0 | CMultiStartDlg@+0x780
-RVA(0x000c1010, 0x32)
-void Boundary_0c1010() {} // proximity: CFileIO@-0x3c30 | CMultiStartDlg@+0x740
-RVA(0x000c1060, 0x29)
-void Boundary_0c1060() {} // proximity: CFileIO@-0x3c80 | CMultiStartDlg@+0x6f0
-RVA(0x000c10a0, 0x12)
-void Boundary_0c10a0() {} // proximity: CFileIO@-0x3cc0 | CMultiStartDlg@+0x6b0
-RVA(0x000c1170, 0x26)
-void Boundary_0c1170() {} // proximity: CFileIO@-0x3d90 | CMultiStartDlg@+0x5e0
-RVA(0x000c11b0, 0x55)
-void Boundary_0c11b0() {} // proximity: CFileIO@-0x3dd0 | CMultiStartDlg@+0x5a0
-RVA(0x000c1230, 0x55)
-void Boundary_0c1230() {} // proximity: CFileIO@-0x3e50 | CMultiStartDlg@+0x520
-RVA(0x000c12b0, 0x1f)
-void Boundary_0c12b0() {} // proximity: CFileIO@-0x3ed0 | CMultiStartDlg@+0x4a0
-RVA(0x000c12e0, 0x2c)
-void Boundary_0c12e0() {} // proximity: CFileIO@-0x3f00 | CMultiStartDlg@+0x470
-RVA(0x000c1320, 0x4a)
-void Boundary_0c1320() {} // proximity: CFileIO@-0x3f40 | CMultiStartDlg@+0x430
-RVA(0x000c1390, 0x15)
-void Boundary_0c1390() {} // proximity: CFileIO@-0x3fb0 | CMultiStartDlg@+0x3c0
 RVA(0x000c8700, 0x1f4)
 void Boundary_0c8700() {} // proximity: CTileTriggerContainer@-0xc0 | CSBI_RectOnly@+0x280
 RVA(0x000c9e40, 0x1d7)
 void Boundary_0c9e40() {} // proximity: CPlay@-0x180 | CPlayLevelLoad@+0x3c0
 RVA(0x000ca0a0, 0x101)
 void Boundary_0ca0a0() {} // proximity: CPlay@-0x3e0 | CPlayLevelLoad@+0x160
-RVA(0x000cb740, 0x8f)
-void Boundary_0cb740() {} // proximity: CPlayLevelLoad@-0x1540 | CGamePlayInput@+0x580
 RVA(0x000cef50, 0x46)
 void Boundary_0cef50() {} // proximity: CGameLevel@-0x140 | CPlay@+0x11d0
 RVA(0x000d2b20, 0x21f)
