@@ -132,7 +132,7 @@ directinputmgr2	33	29
 directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	15	0
-engine_boundary	337	0
+engine_boundary	320	0
 engine_discovered	51	0
 engine_label_stubs	437	105
 engine_unmatched	273	0
@@ -167,6 +167,7 @@ hash	10	9
 helperhost	2	0
 iconloaders	5	1
 image	39	24
+imagepool	13	7
 imageset	7	4
 infblock	5	4
 infcodes	3	2
@@ -197,9 +198,10 @@ menupage	31	16
 mgrtokenquery	1	1
 motionstate	6	5
 netcmdslot	12	10
-netmgr	83	46
+netmgr	84	46
 netmgrerror	1	1
 netsession	2	1
+netsessionnode	3	1
 projectile	9	3
 pyramidbridgesprites	1	0
 randomambientsound	9	4
@@ -1547,28 +1549,11 @@ engine_boundary	?Boundary_16d790@@YAXXZ	0.7143	0.7143	2	5cd48def5c1b	0x16d790
 engine_boundary	?Boundary_16d850@@YAXXZ	0.4211	0.4211	2	fe2d077675d9	0x16d850
 engine_boundary	?Boundary_16f4a0@@YAXXZ	0.2439	0.2439	2	7dd427b0a8c6	0x16f4a0
 engine_boundary	?Boundary_170210@@YAXXZ	1.3158	1.3158	2	708bbd01529e	0x170210
-engine_boundary	?Boundary_174e90@@YAXXZ	5.0000	5.0000	2	aa367b40d115	0x174e90
-engine_boundary	?Boundary_174eb0@@YAXXZ	9.0909	9.0909	2	4506dfa676c9	0x174eb0
 engine_boundary	?Boundary_174ed0@@YAXXZ	1.1765	1.1765	2	32762a10d07f	0x174ed0
-engine_boundary	?Boundary_174f30@@YAXXZ	2.3529	2.3529	2	5997247e8574	0x174f30
-engine_boundary	?Boundary_174f60@@YAXXZ	4.0000	4.0000	2	5c1f843f942e	0x174f60
-engine_boundary	?Boundary_174fa0@@YAXXZ	3.8462	3.8462	2	850551f5e15c	0x174fa0
-engine_boundary	?Boundary_1754f0@@YAXXZ	0.9756	0.9756	2	27744b26b0f1	0x1754f0
-engine_boundary	?Boundary_175570@@YAXXZ	0.9756	0.9756	2	1f7d562d5524	0x175570
-engine_boundary	?Boundary_1755f0@@YAXXZ	0.9302	0.9302	2	2b81308329fa	0x1755f0
-engine_boundary	?Boundary_175680@@YAXXZ	0.8889	0.8889	2	3e22f199a398	0x175680
 engine_boundary	?Boundary_175780@@YAXXZ	1.8182	1.8182	2	1be00794c735	0x175780
-engine_boundary	?Boundary_176ad0@@YAXXZ	8.0000	8.0000	2	f553b1de3f6f	0x176ad0
 engine_boundary	?Boundary_176b30@@YAXXZ	0.2899	0.2899	2	598b644c8ad2	0x176b30
 engine_boundary	?Boundary_176d20@@YAXXZ	0.8696	0.8696	2	3a0a8e740969	0x176d20
-engine_boundary	?Boundary_176e70@@YAXXZ	1.3793	1.3793	2	18870c1a4357	0x176e70
-engine_boundary	?Boundary_177040@@YAXXZ	3.3333	3.3333	2	43f977396cb5	0x177040
-engine_boundary	?Boundary_177400@@YAXXZ	0.9756	0.9756	2	c1df4fbf147a	0x177400
 engine_boundary	?Boundary_177480@@YAXXZ	0.4444	0.4444	2	8552a2ff6631	0x177480
-engine_boundary	?Boundary_179270@@YAXXZ	0.6250	0.6250	2	4152e88c75cb	0x179270
-engine_boundary	?Boundary_1793b0@@YAXXZ	5.5556	5.5556	2	8b76c7c93391	0x1793b0
-engine_boundary	?Boundary_179420@@YAXXZ	2.3810	2.3810	2	0f850b4a02c3	0x179420
-engine_boundary	?Boundary_1795a0@@YAXXZ	0.4211	0.4211	2	08b7c6217835	0x1795a0
 engine_boundary	?Boundary_17b510@@YAXXZ	3.5714	3.5714	2	60ac7308995c	0x17b510
 engine_boundary	?Boundary_17b570@@YAXXZ	8.3333	8.3333	2	a6f12400617a	0x17b570
 engine_boundary	?Boundary_17b5a0@@YAXXZ	4.5455	4.5455	2	1626bf6fc1be	0x17b5a0
@@ -2874,6 +2859,19 @@ image	?SaveDispatch@CFileImage@@QAEHPAX00@Z	100.0000	100.0000	1	9a5d2837fd46	0x1
 image	?SaveFile@CFileImage@@QAEHPADHPAX1@Z	100.0000	100.0000	1	aa58601ee0e3	0x13f910
 image	?SaveRle16@CFileImage@@QAEHPAX00@Z	52.5687	52.5687	1	51fca2eecd11	0x144640
 image	?ScalarDelete@CFileImageSurface@@QAEPAXI@Z	100.0000	100.0000	1	9d4075406fc7	0x142340
+imagepool	?AddImageDispatch@CImagePool@@QAEPAUPalBuilder_176df0@ApiCallerStubs@@PAXIHH@Z	99.1111	99.1111	1	4da099ace783	0x175680
+imagepool	?AddImageFile@CImagePool@@QAEPAUPalBuilder_176df0@ApiCallerStubs@@PADH@Z	100.0000	100.0000	1	ef74f0fb0428	0x1755f0
+imagepool	?AddPaletteEntries@CImagePool@@QAEPAUPalBuilder_176df0@ApiCallerStubs@@PAUtagPALETTEENTRY@@H@Z	99.0244	99.0244	1	e7899a7d0775	0x1754f0
+imagepool	?AddPaletteRGB@CImagePool@@QAEPAUPalBuilder_176df0@ApiCallerStubs@@PAXH@Z	99.0244	99.0244	1	f951bcc90000	0x175570
+imagepool	?Clear@CImagePool@@QAEXXZ	100.0000	100.0000	1	7f1e608c2a92	0x174eb0
+imagepool	?ClearPalettes@CImagePool@@QAEXXZ	100.0000	100.0000	1	48fde518564a	0x174fa0
+imagepool	?ClearSurfaces@CImagePool@@QAEXXZ	100.0000	100.0000	1	6baebb11bcb7	0x174f60
+imagepool	?ParseDispatch@PalBuilder_176df0@ApiCallerStubs@@QAEHPAXIHH@Z	100.0000	100.0000	1	65c944481157	0x177040
+imagepool	?ParsePaletteTail@PalBuilder_176df0@ApiCallerStubs@@QAEHPAXIH@Z	88.5610	88.5610	1	f696124a2655	0x177400
+imagepool	?ProcessPal@PalBuilder_176df0@ApiCallerStubs@@QAEHPAXH@Z	99.8621	99.8621	1	b34f7cbec296	0x176e70
+imagepool	?RemovePalette@CImagePool@@QAEXPAUPalBuilder_176df0@ApiCallerStubs@@@Z	100.0000	100.0000	1	1dc2cba2336a	0x174f30
+imagepool	?SetHandles@CImagePool@@QAEHHHH@Z	99.5000	99.5000	1	595da9f86264	0x174e90
+imagepool	?SetPalette@GdiOwner_175c90@ApiCallerStubs@@QAEXPAXH@Z	100.0000	100.0000	1	6e6ebb51b1d0	0x176ad0
 imageset	?CreateFrame24@CImageSet@@QAEPAVCImageFrame@@HHHH@Z	99.0800	99.0800	1	81321783b07c	0x152110
 imageset	?CreateFrame28@CImageSet@@QAEPAVCImageFrame@@HHHH@Z	99.0921	99.0921	1	5ecfd5556ac6	0x152060
 imageset	?CreateFrame30@CImageSet@@QAEPAVCImageFrame@@HHH@Z	99.0548	99.0548	1	6ae3972c582a	0x151fb0
@@ -3056,6 +3054,7 @@ netmgr	?EnumGroupsRange@CNetMgr@@QAEHPAXH@Z	84.0732	84.0732	1	917a5a73372a	0x178
 netmgr	?EnumPlayersCb@CNetMgr@@QAEHPAXHHH@Z	100.0000	100.0000	1	6c515e6f1f57	0x1789e0
 netmgr	?EnumPlayersInto@CNetMgr@@QAEHPAX0@Z	67.6600	67.6600	2	fcffaf584d9e	0x178610
 netmgr	?EnumSessions@CNetMgr@@QAEHPAX0@Z	100.0000	100.0000	5	bca9b98ca5df	0x179130
+netmgr	?Find@CNetMgr@@QAEPAUInterfaceObject@@H@Z	94.9219	94.9219	1	944963884730	0x179270
 netmgr	?FindPlayerById@CNetMgr@@QAEPAUCNetPlayerEntry@@H@Z	87.6923	87.6923	4	ce8d7b0def71	0x178e90
 netmgr	?FrameSyncWait@CNetMgr@@QAEIXZ	70.7250	70.7250	5	d648fa188145	0xbc070
 netmgr	?GetConfigNameA@CNetMgr@@QAE?AVCString@@XZ	100.0000	100.0000	1	b8eea0ef362d	0xb6090
@@ -3122,6 +3121,9 @@ netmgr	?WaitForConnect@CNetMgr@@QAEHXZ	74.0809	74.0809	5	5676879b5f9c	0xbca50
 netmgrerror	?ReportError@CNetMgr@@SAXPADHHPAX@Z	100.0000	100.0000	1	4c76abe210b0	0x1776a0
 netsession	?AppendInt@@YAXPADPBDH@Z	100.0000	100.0000	1	b2f3e4307dc7	0xf93b0
 netsession	?FillPlayerList@@YAXPAUHWND__@@PAUSession@@@Z	91.5352	91.5352	1	94ce9d538305	0xb89e0
+netsessionnode	??1CNetPlayerListNode@@QAE@XZ	93.3333	93.3333	1	22ffe4c6f404	0x1793b0
+netsessionnode	??1CNetSessionNode@@QAE@XZ	90.6429	90.6429	1	19e17967622d	0x179420
+netsessionnode	?Init@CNetPlayerListNode@@QAEHPAX@Z	100.0000	100.0000	1	cc762f1c337c	0x1795a0
 projectile	??0CProjectile@@QAE@XZ	99.0472	99.0472	1	4eead4695d92	0x126e0
 projectile	??1CProjectile@@UAE@XZ	89.8367	89.8367	1	8e9ce0f777d4	0xdef60
 projectile	?DetachRenderObj@CProjectile@@QAEHXZ	100.0000	100.0000	2	5f5b4f60ca08	0xe05e0

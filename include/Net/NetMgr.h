@@ -556,6 +556,11 @@ public:
     void ReportAckLatency();
     CNetPlayerEntry* FindPlayerById(i32 id);
 
+    // Find (0x179270): walk the +0x1c group CObList (m_pHead @+0x20, running
+    // POSITION cached @+0x7c) and return the first InterfaceObject payload whose
+    // GUID matches the service-provider class selected by `kind` (1/2/5).
+    struct InterfaceObject* Find(i32 kind);
+
     // The DirectPlay session-management wrapper run (engine CNetMgr base;
     // ~0x178xxx). Each thin wrapper calls one IDirectPlay4 vtable slot on the
     // m_18 interface and, on a nonzero HRESULT, routes it through the static

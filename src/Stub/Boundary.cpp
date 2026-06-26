@@ -593,50 +593,16 @@ RVA(0x0016f4a0, 0x1da)
 void Boundary_16f4a0() {} // proximity: CMotionState@-0x7d0 | CButeMgr@+0xe90
 RVA(0x00170210, 0x118)
 void Boundary_170210() {} // proximity: CMotionState@-0x1540 | CButeMgr@+0x120
-RVA(0x00174e90, 0x1c)
-void Boundary_174e90() {} // proximity: CButeMgr@-0x6d0 | CImage@+0x930
-RVA(0x00174eb0, 0x1b)
-void Boundary_174eb0() {} // proximity: CButeMgr@-0x6f0 | CImage@+0x910
 RVA(0x00174ed0, 0x5d)
 void Boundary_174ed0() {} // proximity: CButeMgr@-0x710 | CImage@+0x8f0
-RVA(0x00174f30, 0x30)
-void Boundary_174f30() {} // proximity: CButeMgr@-0x770 | CImage@+0x890
-RVA(0x00174f60, 0x37)
-void Boundary_174f60() {} // proximity: CButeMgr@-0x7a0 | CImage@+0x860
-RVA(0x00174fa0, 0x3e)
-void Boundary_174fa0() {} // proximity: CButeMgr@-0x7e0 | CImage@+0x820
-RVA(0x001754f0, 0x7b)
-void Boundary_1754f0() {} // proximity: CButeMgr@-0xd30 | CImage@+0x2d0
-RVA(0x00175570, 0x7b)
-void Boundary_175570() {} // proximity: CButeMgr@-0xdb0 | CImage@+0x250
-RVA(0x001755f0, 0x82)
-void Boundary_1755f0() {} // proximity: CButeMgr@-0xe30 | CImage@+0x1d0
-RVA(0x00175680, 0x85)
-void Boundary_175680() {} // proximity: CButeMgr@-0xec0 | CImage@+0x140
 RVA(0x00175780, 0x3f)
 void Boundary_175780() {} // proximity: CButeMgr@-0xfc0 | CImage@+0x40
-RVA(0x00176ad0, 0x17)
-void Boundary_176ad0() {} // proximity: CImage@-0x300 | CNetMgr@+0xbd0
 RVA(0x00176b30, 0x1e5)
 void Boundary_176b30() {} // proximity: CImage@-0x360 | CNetMgr@+0xb70
 RVA(0x00176d20, 0x71)
 void Boundary_176d20() {} // proximity: CImage@-0x550 | CNetMgr@+0x980
-RVA(0x00176e70, 0x4e)
-void Boundary_176e70() {} // proximity: CImage@-0x6a0 | CNetMgr@+0x830
-RVA(0x00177040, 0x23)
-void Boundary_177040() {} // proximity: CImage@-0x870 | CNetMgr@+0x660
-RVA(0x00177400, 0x76)
-void Boundary_177400() {} // proximity: CImage@-0xc30 | CNetMgr@+0x2a0
 RVA(0x00177480, 0x169)
 void Boundary_177480() {} // proximity: CImage@-0xcb0 | CNetMgr@+0x220
-RVA(0x00179270, 0x89)
-void Boundary_179270() {} // proximity: CNetMgr@-0x140 | InterfaceObject@+0x240
-RVA(0x001793b0, 0x46)
-void Boundary_1793b0() {} // proximity: CNetMgr@-0x280 | InterfaceObject@+0x100
-RVA(0x00179420, 0x8a)
-void Boundary_179420() {} // proximity: CNetMgr@-0x2f0 | InterfaceObject@+0x90
-RVA(0x001795a0, 0xdb)
-void Boundary_1795a0() {} // proximity: InterfaceObject@-0x30 | CWapNodeB@+0xe0
 RVA(0x0017b510, 0x55)
 void Boundary_17b510() {} // proximity: TextRange@-0x10 | CDDPageMgr@+0xb30
 RVA(0x0017b570, 0x24)

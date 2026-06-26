@@ -1375,3 +1375,13 @@ flags = "base"
 unit = "boundarylib"
 source = "src/Stub/BoundaryLibrary.cpp"
 flags = "base"
+
+[[unit]]
+unit = "netsessionnode"
+source = "src/Net/NetSessionNode.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "imagepool"
+source = "src/Image/ImagePool.cpp"
+flags = "base"
