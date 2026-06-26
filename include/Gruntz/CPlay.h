@@ -329,6 +329,18 @@ public:
     i32 RegisterInputBindings();                // 0x0d9160 (THIS TU)
     // Tiny vtable forwarder: tail-call the slot-3 ready gate (Vfunc3).
     i32 ForwardReady(); // 0x0cee70
+    // Region pause/resume pair (vtable slots 24/25, shared by CDemo/CMulti):
+    // PauseGame saves the game clock into m_1cc + freezes the world; ResumeGame
+    // restores the clock + unpauses. Migrated from engine_boundary (CPlay).
+    i32 PauseGame();  // 0x0cee90
+    i32 ResumeGame(); // 0x0cef00
+    // ArmSnapshot (0x0d9240): latch the snapshot timer (base=clock, dur=arg2) and
+    // the active flag (arg1). CanQuickSave (0x0da3b0): all-idle predicate gating
+    // the auto/quick path. PostHudRect (0x0da440): post the HUD rect to the world
+    // timeline then clear the ready/drag-snap gates. Migrated from engine_boundary.
+    i32 ArmSnapshot(i32 active, i32 dur); // 0x0d9240
+    i32 CanQuickSave();                   // 0x0da3b0
+    i32 PostHudRect();                    // 0x0da440
     // Two more draw/present sub-steps migrated from the engine_boundary backlog:
     i32 DrawWorldPresent(); // 0x0cefc0 (double world-draw + present + manager tick)
     i32 PresentAndFlush();  // 0x0cba10 (restore-mode guard + present-or-notify + flush)
@@ -425,6 +437,7 @@ public:
         void Guts35b2(i32 a);         // (thiscall, 1 arg)
         void Guts12fd(i32 a);         // (thiscall, 1 arg)
         void Guts16ea();              // (thiscall, no arg)
+        void Guts367a();              // (thiscall, no arg)  ResumeGame
         i32 m_state; // +0x0  subsystem state (==2 -> ready)
         char p4[0x10c - 0x4];
         i32 m_mode; // +0x10c  mode word (==5 -> overlay busy)
@@ -521,6 +534,8 @@ public:
     i32 m_dragEndNotify; // +0x504  drag-end notify gate
     char m_pad508[0x510 - 0x508];
     i32 m_stepCountdown; // +0x510  per-frame entity-step countdown
+    char m_pad514[0x518 - 0x514];
+    void* m_518; // +0x518  saved currently-playing zoned sound (region pause/resume)
 
     // Engine-label backlog stubs.
     void Stub_08c9d0();

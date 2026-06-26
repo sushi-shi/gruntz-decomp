@@ -76,6 +76,7 @@ cgruntstartingpoint	1	1
 cgrunttoysprite	5	4
 cgruntwingztimesprite	2	2
 cguardpoint	1	1
+channelslots	4	4
 chatbox	27	20
 chatbox_eh	1	1
 chatboxowner	7	2
@@ -94,7 +95,7 @@ cobjectdropper	1	1
 configstore	4	0
 cparticlez	5	4
 cpathhazard	7	3
-cplay	55	23
+cplay	62	29
 cremusentrylist	2	1
 cremusnode	4	2
 cremusreadstream	6	4
@@ -125,7 +126,7 @@ directinputmgr2	33	29
 directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	15	0
-engine_boundary	513	0
+engine_boundary	502	0
 engine_discovered	51	0
 engine_label_stubs	436	104
 engstr	3	1
@@ -729,6 +730,10 @@ cgrunttoysprite	?Update@CGruntToySprite@@QAEHXZ	100.0000	100.0000	1	516d5554232c
 cgruntwingztimesprite	??1CGruntWingzTimeSprite@@UAE@XZ	100.0000	100.0000	1	45cfd716baa5	0x121f0
 cgruntwingztimesprite	?GetWingzTime@CGruntWingzTimeSprite@@SGHPAUCWingzTimeHost@@@Z	100.0000	100.0000	1	fd29641ade51	0x7fd90
 cguardpoint	??1CGuardPoint@@UAE@XZ	100.0000	100.0000	1	c53d638223a9	0x10410
+channelslots	?ChannelSlots_FindFree@@YAHXZ	100.0000	100.0000	1	27d73fb7a817	0xdb280
+channelslots	?ChannelSlots_Get@@YAHH@Z	100.0000	100.0000	1	eb06c9e5aa36	0xdb2d0
+channelslots	?ChannelSlots_InitAll@@YAXXZ	100.0000	100.0000	1	a2a4df52ff9d	0xdb1d0
+channelslots	?ChannelSlots_Set@@YAXHH@Z	100.0000	100.0000	1	dd65a8262c74	0xdb2b0
 chatbox	?AddNode@CChatBox@@QAEHPAX@Z	100.0000	100.0000	3	88a7b8bd99e7	0x182ba0
 chatbox	?AdvanceRow0@CChatBox@@QAEHPAXHH@Z	94.8718	94.8718	3	5b6842c8ffeb	0x182df0
 chatbox	?AdvanceRow1@CChatBox@@QAEHPAXHH@Z	94.8718	94.8718	3	e91d1d630c54	0x182e60
@@ -854,6 +859,7 @@ cpathhazard	?ForwardTick@CPathHazard@@QAEXXZ	100.0000	100.0000	1	a46d1c7f75bb	0x
 cpathhazard	?SiblingTick@CLightningHazard@@QAEHXZ	86.0469	86.0469	1	c0b436f08c48	0xb43f0
 cpathhazard	?Tick@CPathHazard@@QAEHXZ	94.8794	94.8794	1	ceab0bf804bc	0xb4020
 cplay	?ApplyGameOptions@CPlay@@QAEXXZ	76.0784	76.0784	1	d7e69de7bf4d	0x36be0
+cplay	?ArmSnapshot@CPlay@@QAEHHH@Z	99.2000	99.2000	1	896666303e5b	0xd9240
 cplay	?BeginGridWalk@CPlay@@QAEHHHHHH@Z	81.1191	81.1191	4	5929326f7458	0xd0920
 cplay	?BuildAnizKeyTable@CPlay@@QAEHPAX@Z	100.0000	100.0000	1	b165ae0cb8b9	0xddaa0
 cplay	?BuildGruntTypeNameTable@CPlay@@QAEXHHHH@Z	0.7092	0.7092	2	ed7e76422e54	0xdc6d0
@@ -861,6 +867,7 @@ cplay	?BuildHelpReveal@CPlay@@QAEHXZ	67.8125	67.8125	3	d63528a8ea0e	0xd72c0
 cplay	?BuildMusicCategoryTable@CPlay@@QAEHH@Z	100.0000	100.0000	1	9e03b7354b74	0xdba30
 cplay	?BuildSpriteImageKeyTable@CPlay@@QAEHPAX@Z	100.0000	100.0000	1	045d8ff5898b	0xdd540
 cplay	?BuildWarlordNameTable@CPlay@@QAEHH@Z	100.0000	100.0000	1	a4e6377a94b1	0xdd340
+cplay	?CanQuickSave@CPlay@@QAEHXZ	100.0000	100.0000	1	c45bde940ef7	0xda3b0
 cplay	?ClampViewport2@CPlay@@QAEHH@Z	85.8469	85.8469	1	d86b53cc96eb	0xd8ed0
 cplay	?ClampViewport@CPlay@@QAEHH@Z	93.7887	93.7887	1	bbb07397f61a	0xd8dc0
 cplay	?DispatchHudClick@CPlay@@QAEHHHH@Z	72.0125	72.0125	3	36e8f5c3bdc6	0xce530
@@ -889,14 +896,19 @@ cplay	?OnRegion1@CPlay@@QAEHH@Z	100.0000	100.0000	7	de5f579dd781	0xd8aa0
 cplay	?OnRegion2@CPlay@@QAEHH@Z	100.0000	100.0000	7	93fcc0db3658	0xd8a00
 cplay	?OnRegion3@CPlay@@QAEHH@Z	100.0000	100.0000	7	78f1ec75009e	0xd8b20
 cplay	?OnRegion4@CPlay@@QAEHH@Z	100.0000	100.0000	7	edc8c453d057	0xd8bc0
+cplay	?PauseGame@CPlay@@QAEHXZ	100.0000	100.0000	1	add2279bc0de	0xcee90
 cplay	?PlayCueAt@CPlay@@QAEXHHHHHHHH@Z	87.9580	87.9580	8	f61db82265dd	0xd1890
+cplay	?PostHudRect@CPlay@@QAEHXZ	100.0000	100.0000	1	ee065b23a324	0xda440
 cplay	?PresentAndFlush@CPlay@@QAEHXZ	96.5942	96.5942	1	5a33edb55fd8	0xcba10
+cplay	?RegionEnter@CPlay@@QAEXXZ	100.0000	100.0000	1	d65c90739db8	0xd88f0
+cplay	?RegionLeave@CPlay@@QAEXXZ	100.0000	100.0000	1	7df1a96cd452	0xd8960
 cplay	?RegisterInputBindings@CPlay@@QAEHXZ	100.0000	100.0000	2	2b2e83b92f68	0xd9160
 cplay	?Render@CPlay@@UAEHXZ	0.0000	0.0000	9	8bb8b98a5a0d	0xc8cf0
 cplay	?ResetForMode@CPlay@@QAEHH@Z	100.0000	100.0000	1	0cdeb80fb398	0xc8a10
 cplay	?ResetGoals@CPlay@@QAEHHH@Z	100.0000	100.0000	3	2926f5e5c18f	0xd5f00
 cplay	?ResetPlayState@CPlay@@QAEHXZ	92.0100	92.0100	1	b2f4b850d4e0	0xd60b0
 cplay	?ResetViewport@CPlay@@QAEHXZ	95.5455	95.5455	1	c74260db4bee	0xd8c60
+cplay	?ResumeGame@CPlay@@QAEHXZ	100.0000	100.0000	1	08937b78aeb8	0xcef00
 cplay	?SetBeginClearParams@CState@@QAEHHHH@Z	100.0000	100.0000	4	8f94263b0f6e	0x8c970
 cplay	?SetEffectSpriteDurations@CPlay@@QAEHXZ	67.0648	67.0648	1	86fac1400fa3	0xdc060
 cplay	?StepC@CPlay@@QAEXXZ	85.4545	85.4545	6	9c6f84e46590	0xd8d90
@@ -1251,8 +1263,6 @@ engine_boundary	?Boundary_0c8700@@YAXXZ	0.6579	0.6579	1	f5569d49ece3	0xc8700
 engine_boundary	?Boundary_0c9e40@@YAXXZ	0.6410	0.6410	1	5f28c6bdcf93	0xc9e40
 engine_boundary	?Boundary_0ca0a0@@YAXXZ	1.1236	1.1236	1	6de465c7af29	0xca0a0
 engine_boundary	?Boundary_0cb740@@YAXXZ	1.9231	1.9231	1	f96ee192fbf6	0xcb740
-engine_boundary	?Boundary_0cee90@@YAXXZ	5.5556	5.5556	1	24a5287c1c5f	0xcee90
-engine_boundary	?Boundary_0cef00@@YAXXZ	7.1429	7.1429	1	8041146c8970	0xcef00
 engine_boundary	?Boundary_0cef50@@YAXXZ	4.5455	4.5455	1	daa7270750ba	0xcef50
 engine_boundary	?Boundary_0d2b20@@YAXXZ	0.6024	0.6024	1	116a3f9222ea	0xd2b20
 engine_boundary	?Boundary_0d5960@@YAXXZ	0.8929	0.8929	1	5d338889358d	0xd5960
@@ -1260,16 +1270,7 @@ engine_boundary	?Boundary_0d5d70@@YAXXZ	16.6667	16.6667	1	a6a72ab11c94	0xd5d70
 engine_boundary	?Boundary_0d5e20@@YAXXZ	2.8571	2.8571	1	8419fec6f89d	0xd5e20
 engine_boundary	?Boundary_0d6fa0@@YAXXZ	0.2581	0.2581	1	3bcbc9afa981	0xd6fa0
 engine_boundary	?Boundary_0d79d0@@YAXXZ	0.0830	0.0830	1	82509a0fe41f	0xd79d0
-engine_boundary	?Boundary_0d88f0@@YAXXZ	4.5455	4.5455	1	0311122b64f0	0xd88f0
-engine_boundary	?Boundary_0d8960@@YAXXZ	2.8571	2.8571	1	a1ecb009d5d4	0xd8960
-engine_boundary	?Boundary_0d9240@@YAXXZ	2.6667	2.6667	1	9bdac58f28de	0xd9240
-engine_boundary	?Boundary_0da3b0@@YAXXZ	2.9412	2.9412	1	e980dc837357	0xda3b0
-engine_boundary	?Boundary_0da440@@YAXXZ	3.5714	3.5714	1	f08ec09743a6	0xda440
-engine_boundary	?Boundary_0db1d0@@YAXXZ	14.2857	14.2857	1	10443a601727	0xdb1d0
 engine_boundary	?Boundary_0db200@@YAXXZ	1.2121	1.2121	1	148cd7ad66ed	0xdb200
-engine_boundary	?Boundary_0db280@@YAXXZ	10.0000	10.0000	1	8e4c4555b755	0xdb280
-engine_boundary	?Boundary_0db2b0@@YAXXZ	25.0000	25.0000	1	589f72de14d4	0xdb2b0
-engine_boundary	?Boundary_0db2d0@@YAXXZ	33.3333	33.3333	1	d7aae7f5c1f1	0xdb2d0
 engine_boundary	?Boundary_0db2f0@@YAXXZ	5.8824	5.8824	1	45859aa9f791	0xdb2f0
 engine_boundary	?Boundary_0db750@@YAXXZ	1.1111	1.1111	1	57852634c54a	0xdb750
 engine_boundary	?Boundary_0e0d40@@YAXXZ	0.0670	0.0670	1	1fd5c25fbaff	0xe0d40

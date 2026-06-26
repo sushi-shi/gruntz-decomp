@@ -610,6 +610,11 @@ source = "src/Net/NetMgrReportError.cpp"
 flags = "base"
 
 [[unit]]
+unit = "channelslots"
+source = "src/Net/ChannelSlots.cpp"
+flags = "base"
+
+[[unit]]
 unit = "winmain"
 source = "src/Gruntz/WinMain.cpp"
 flags = "eh"

@@ -68,6 +68,16 @@
 #include <Gruntz/CPlay.h>
 #include <rva.h>
 
+// The zoned sound-bank manager (CWorld::m_48); RegionEnter/RegionLeave pause +
+// resume the currently-playing zoned sound via its real (named) methods.
+#include <Dsndmgr/CGruntzSoundZ.h>
+
+// The registry's +0x68 cue-sink B sub-object CanQuickSave probes at +0x400.
+struct CRegSub68 {
+    char p0[0x400];
+    i32 m_400; // +0x400  pending/busy gate
+};
+
 // ---- MFC primitives reused verbatim from the engine (reloc-masked). ----
 #include <Gruntz/CString.h>
 extern i32 MapLookup(void* map, void* key, void*& out); // CMapPtrToPtr::Lookup
@@ -869,6 +879,38 @@ i32 CPlay::ClampViewport2(i32 stride) {
     return 1;
 }
 
+// CPlay::RegionEnter (0x0d88f0) - on entering a special region, save the
+// currently-playing zoned sound (m_518) and silence the bank, then (when the dev
+// window is up) start the "CURSE" cue. The shared on-enter sub-step the OnRegion
+// one-shots call. Migrated from engine_boundary (CPlay).
+RVA(0x000d88f0, 0x44)
+void CPlay::RegionEnter() {
+    if (m_518 == 0) {
+        CWorld* w = m_4w();
+        m_518 = (void*)((CGruntzSoundZ*)w->m_48)->m_pCurrent;
+        ((CGruntzSoundZ*)w->m_48)->StopAll_1388f0();
+    }
+    if (g_64556c->m_14 != 0) {
+        ((CGruntzSoundZ*)m_4w()->m_48)->Play_138840((i32) "CURSE", 0);
+    }
+}
+
+// CPlay::RegionLeave (0x0d8960) - on leaving (only when no region gate is still
+// set and a sound was saved), stop the bank, restore the saved zoned sound, and
+// (dev-window) restart it. Migrated from engine_boundary (CPlay).
+RVA(0x000d8960, 0x75)
+void CPlay::RegionLeave() {
+    if (m_region0Gate == 0 && m_region1Gate == 0 && m_region2Gate == 0
+        && m_region3Gate == 0 && m_518 != 0) {
+        ((CGruntzSoundZ*)m_4w()->m_48)->IsPlaying_138920();
+        ((CGruntzSoundZ*)m_4w()->m_48)->m_pCurrent = (CGruntzSoundInnerZ*)m_518;
+        if (g_64556c->m_14 != 0) {
+            ((CGruntzSoundZ*)m_4w()->m_48)->Restart_1388c0(1);
+        }
+        m_518 = 0;
+    }
+}
+
 // ===========================================================================
 // The four screen-region scroll one-shots.
 // Each: thiscall(int z), set its region-active gate to bool(z), call the shared
@@ -1288,6 +1330,56 @@ i32 CPlay::RegisterInputBindings() {
     m_4w()->m_4->Bind(0x204, 0x40);
     m_4w()->m_4->Bind(0x205, 0x40);
     m_4w()->m_4->Bind(0x206, 0x40);
+    return 1;
+}
+
+// CPlay::ArmSnapshot (0x0d9240) - thiscall(active, dur). When `active`, latch the
+// snapshot duration (dur) and base clock (g_645588) 64-bit timers; always store
+// `active` into m_snapshotActive. Migrated from engine_boundary (CPlay).
+// @early-stop
+// scheduling wall (99.2%): logic + regalloc byte-exact except the two independent
+// 64-bit-base stores (m_snapBaseLo/m_snapBaseHi) emit in hi,lo order where retail
+// emits lo,hi; cl fills the g_645588 load-use latency gap with the hi=0 store.
+// Loading the clock into a local forces lo,hi but diverges the whole regalloc
+// (push edi / immediates) to 62% — not source-steerable.
+RVA(0x000d9240, 0x3c)
+i32 CPlay::ArmSnapshot(i32 active, i32 dur) {
+    if (active != 0) {
+        m_snapDur = dur;
+        m_snapDurHi = 0;
+        m_snapBaseLo = g_645588;
+        m_snapBaseHi = 0;
+    }
+    m_snapshotActive = active;
+    return 1;
+}
+
+// CPlay::CanQuickSave (0x0da3b0) - all-idle predicate: returns 1 only when the
+// render is enabled, not in a main frame, no overlay-drag, no active snapshot, the
+// guts subsystem is idle (m_548/m_busyA/m_busyB all 0), the registry has no active
+// selection (reg->m_c), and the cue-sink B busy gate is set. Migrated from
+// engine_boundary (CPlay).
+RVA(0x000da3b0, 0x6e)
+i32 CPlay::CanQuickSave() {
+    if (m_renderDisabled == 0 && m_inGame == 0 && m_overlayDrag == 0
+        && m_snapshotActive == 0 && m_guts->m_548 == 0 && m_guts->m_busyA == 0
+        && m_guts->m_busyB == 0 && g_64556c->m_c == 0
+        && ((CRegSub68*)g_64556c->m_68)->m_400 != 0) {
+        return 1;
+    }
+    return 0;
+}
+
+// CPlay::PostHudRect (0x0da440) - if the world is ready, post the HUD/selection
+// rect (by value, with the dev-state 0x20 flag) to the world timeline, then clear
+// the ready / drag-snap gates. Migrated from engine_boundary (CPlay).
+RVA(0x000da440, 0x60)
+i32 CPlay::PostHudRect() {
+    if (m_worldReady != 0) {
+        m_4w()->m_68->HudRect(m_hudRect, g_645578->m_18 & 0x20);
+    }
+    m_worldReady = 0;
+    m_dragSnapActive = 0;
     return 1;
 }
 
@@ -1768,6 +1860,38 @@ i32 CPlay::EnterOverlayDrag(i32 arg) {
 RVA(0x000cee70, 0x5)
 i32 CPlay::ForwardReady() {
     return Vfunc3();
+}
+
+// CPlay::PauseGame (0x0cee90) - vtable slot 24 (shared by CDemo/CMulti). Flush
+// the pending mode ops, freeze the guts subsystem (passing whether we were
+// running), clear the world-ready / drag-snap gates, and save the running game
+// clock into m_1cc. Migrated from engine_boundary (CPlay).
+RVA(0x000cee90, 0x49)
+i32 CPlay::PauseGame() {
+    Helper2c7f();
+    if (m_paused) {
+        m_guts->Guts35b2(0);
+    } else {
+        m_guts->Guts35b2(1);
+    }
+    m_worldReady = 0;
+    m_dragSnapActive = 0;
+    m_1cc = g_645588;
+    return 1;
+}
+
+// CPlay::ResumeGame (0x0cef00) - vtable slot 25. Step the guts subsystem, restore
+// the saved game clock from m_1cc, clear the paused flag, and (if the guts object
+// is live) run its resume sub-step. Migrated from engine_boundary (CPlay).
+RVA(0x000cef00, 0x39)
+i32 CPlay::ResumeGame() {
+    m_guts->Guts367a();
+    g_645588 = m_1cc;
+    m_paused = 0;
+    if (m_guts != 0) {
+        m_guts->Guts125d();
+    }
+    return 1;
 }
 
 // @confidence: med

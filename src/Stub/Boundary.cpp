@@ -139,8 +139,6 @@ RVA(0x000c8700, 0x1f4) void Boundary_0c8700() {}  // proximity: CTileTriggerCont
 RVA(0x000c9e40, 0x1d7) void Boundary_0c9e40() {}  // proximity: CPlay@-0x180 | CPlayLevelLoad@+0x3c0
 RVA(0x000ca0a0, 0x101) void Boundary_0ca0a0() {}  // proximity: CPlay@-0x3e0 | CPlayLevelLoad@+0x160
 RVA(0x000cb740, 0x8f) void Boundary_0cb740() {}  // proximity: CPlayLevelLoad@-0x1540 | CGamePlayInput@+0x580
-RVA(0x000cee90, 0x49) void Boundary_0cee90() {}  // proximity: CGameLevel@-0x80 | CPlay@+0x1290
-RVA(0x000cef00, 0x39) void Boundary_0cef00() {}  // proximity: CGameLevel@-0xf0 | CPlay@+0x1220
 RVA(0x000cef50, 0x46) void Boundary_0cef50() {}  // proximity: CGameLevel@-0x140 | CPlay@+0x11d0
 RVA(0x000d2b20, 0x21f) void Boundary_0d2b20() {}  // proximity: CGameModeObj@-0xff0 | CLevelValidator@+0x2b0
 RVA(0x000d5960, 0x160) void Boundary_0d5960() {}  // proximity: CLevelValidator@-0x2b90 | CImage@+0x520
@@ -148,16 +146,7 @@ RVA(0x000d5d70, 0x16) void Boundary_0d5d70() {}  // proximity: CLevelValidator@-
 RVA(0x000d5e20, 0x1b) void Boundary_0d5e20() {}  // proximity: CLevelValidator@-0x3050 | CImage@+0x60
 RVA(0x000d6fa0, 0x1fa) void Boundary_0d6fa0() {}  // proximity: CGameModeObj@-0xa40 | CPlay@+0x320
 RVA(0x000d79d0, 0x537) void Boundary_0d79d0() {}  // proximity: CLoadingBar@-0x590 | CPlay@+0x1030
-RVA(0x000d88f0, 0x44) void Boundary_0d88f0() {}  // proximity: CLoadingBar@-0x14b0 | CPlay@+0x110
-RVA(0x000d8960, 0x75) void Boundary_0d8960() {}  // proximity: CLoadingBar@-0x1520 | CPlay@+0xa0
-RVA(0x000d9240, 0x3c) void Boundary_0d9240() {}  // proximity: CPlay@-0xe0 | CGameModeObj@+0xdf0
-RVA(0x000da3b0, 0x6e) void Boundary_0da3b0() {}  // proximity: CGameModeObj@-0x380 | GruntzPlayer@+0x4c0
-RVA(0x000da440, 0x60) void Boundary_0da440() {}  // proximity: CGameModeObj@-0x410 | GruntzPlayer@+0x430
-RVA(0x000db1d0, 0x14) void Boundary_0db1d0() {}  // proximity: GruntzPlayer@-0x220 | CPlay@+0x1500
 RVA(0x000db200, 0x51) void Boundary_0db200() {}  // proximity: GruntzPlayer@-0x250 | CPlay@+0x14d0
-RVA(0x000db280, 0x1b) void Boundary_0db280() {}  // proximity: GruntzPlayer@-0x2d0 | CPlay@+0x1450
-RVA(0x000db2b0, 0x10) void Boundary_0db2b0() {}  // proximity: GruntzPlayer@-0x300 | CPlay@+0x1420
-RVA(0x000db2d0, 0xc) void Boundary_0db2d0() {}  // proximity: GruntzPlayer@-0x320 | CPlay@+0x1400
 RVA(0x000db2f0, 0x2b) void Boundary_0db2f0() {}  // proximity: GruntzPlayer@-0x340 | CPlay@+0x13e0
 RVA(0x000db750, 0x70) void Boundary_0db750() {}  // proximity: GruntzPlayer@-0x7a0 | CPlay@+0xf80
 RVA(0x000e0d40, 0x6c2) void Boundary_0e0d40() {}  // proximity: CProjectile@-0x230 | CTimeBomb@+0xaf0
