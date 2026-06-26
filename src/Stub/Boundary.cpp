@@ -513,12 +513,6 @@ RVA(0x001578b0, 0x51)
 void Boundary_1578b0() {} // proximity: CFileMemBase@-0x60 | CFileMem@+0xd0
 RVA(0x00157b00, 0xb2)
 void Boundary_157b00() {} // proximity: CDDrawSubMgrLeaf@-0x20 | CDDrawMapHolder@+0xc0
-RVA(0x00159250, 0x185)
-void Boundary_159250() {} // proximity: CDDrawChildGroup@-0x60 | CWwdObjMgr@+0x3b0
-RVA(0x00159440, 0x170)
-void Boundary_159440() {} // proximity: CDDrawChildGroup@-0x250 | CWwdObjMgr@+0x1c0
-RVA(0x001598d0, 0x13d)
-void Boundary_1598d0() {} // proximity: CSpriteFactory@-0x120 | CDDrawChildGroup@+0x1a0
 RVA(0x0015b4f0, 0xde)
 void Boundary_15b4f0() {} // proximity: CLogicRecord@-0x1b0 | CWwdGameObject@+0x450
 RVA(0x0015b6d0, 0x5b)
@@ -553,8 +547,6 @@ RVA(0x00163af0, 0xcd)
 void Boundary_163af0() {} // proximity: CPlaneRender@-0x780 | CDDrawWorkerList@+0x100
 RVA(0x00164d80, 0x421)
 void Boundary_164d80() {} // proximity: CLogicRecord@-0x420 | CDDrawWorkerRegistry@+0x490
-RVA(0x001660f0, 0xd1)
-void Boundary_1660f0() {} // proximity: CFileMem@-0x1a0 | CImageSet1@+0xc50
 RVA(0x00166640, 0x13b)
 void Boundary_166640() {} // proximity: CFileMem@-0x6f0 | CImageSet1@+0x700
 RVA(0x00166810, 0x32)

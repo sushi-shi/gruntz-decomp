@@ -107,6 +107,7 @@ struct AnimWorkerEx {
 // ---------------------------------------------------------------------------
 // CWwdGameObject layout (raw-offset access; only offsets are load-bearing).
 // ---------------------------------------------------------------------------
+struct WwdRenderCtx;
 class CWwdGameObject {
 public:
     // Dispatch entry (0x150a70) and the methods it routes to.
@@ -120,6 +121,7 @@ public:
     i32 ResetAndSetup(i32 a1, i32 a2, i32 a3, i32 a4); // 0x1665e0
     i32 SetupFlagged(i32 a1, i32 a2, i32 a3, i32 a4, i32 flag); // 0x15c1d0
     i32 SetupDeferred(i32 a3, i32 a4);              // 0x15bc30
+    void RenderDot(WwdRenderCtx* a);                // 0x1660f0
 
     // Sibling helpers (modeled as same-class methods so ecx=this matches).
     i32 Helper164790(i32 a2, i32 a1); // 0x164790  __thiscall
@@ -169,6 +171,29 @@ public:
     virtual void Slot38();
     virtual void Slot3C();
     virtual i32 Vfunc40(); // +0x40
+};
+
+// The render context RenderDot (0x1660f0) plots into: a clip extent at +0x10/
+// +0x14 and the destination surface at +0x2c.
+struct WwdRenderCtx {
+    char m_pad00[0x10];
+    i32 m_10; // +0x10  clip width
+    i32 m_14; // +0x14  clip height
+    char m_pad18[0x2c - 0x18];
+    void* m_2c; // +0x2c  destination surface
+};
+
+// The 8-bit destination surface: GetRowBase (0x13e6d0) yields the buffer base
+// offset for a row, +0x20 is the row pitch, +0xb0 the per-column stride, +0x08 a
+// post-plot notifier whose vtable slot +0x80 is a free function fn(self, 0).
+struct WwdSurface {
+    i32 GetRowBase(i32 a); // 0x13e6d0  __thiscall -> base offset
+    char m_pad00[0x08];
+    void* m_08; // +0x08
+    char m_pad0c[0x20 - 0x0c];
+    i32 m_20; // +0x20  row pitch
+    char m_pad24[0xb0 - 0x24];
+    i32 m_b0; // +0xb0  per-column stride
 };
 
 // Raw this-offset helpers (documented offset access for the wide object).
@@ -762,4 +787,76 @@ i32 CWwdGameObject::SetupFlagged(i32 a1, i32 a2, i32 a3, i32 a4, i32 flag) {
 RVA(0x0015bc30, 0x16)
 i32 CWwdGameObject::SetupDeferred(i32 a3, i32 a4) {
     return Setup(0, 0, a3, a4);
+}
+
+// ---------------------------------------------------------------------------
+// RenderDot (0x1660f0): plot the object's (+0x5c,+0x60) position as a single
+// 8-bit pixel into the render context's surface, after a bounds check (either
+// against the context clip extent when +0x64 is unbounded (0x80000000) or
+// against the object's own +0x64..+0x70 clip rect). On a successful plot, cache
+// the position to +0x18/+0x1c, mark +0x30/+0x34 dirty and +0x38 = 0; on a clip
+// reject, +0x38 = -1.  __thiscall, 1 stack arg (ret 4), no EH frame.
+//
+// @early-stop
+// regalloc-coloring wall (~57%): logic byte-equivalent, but cl swaps x/y across
+// the lone free callee-saved pair (x->ebp,y->ebx vs retail x->ebx,y->ebp) so
+// every x/y modrm differs, and the 8-bit color either pins bl (forcing an x
+// spill + `push ecx`, 47%) or reads inline (dropping retail's early-load+stack-
+// spill of color, shrinking the body). No source spelling reproduces retail's
+// "x in ebx + color spilled" layout. See const-materialize-into-reg-vs-immediate.
+// ---------------------------------------------------------------------------
+RVA(0x001660f0, 0xd1)
+void CWwdGameObject::RenderDot(WwdRenderCtx* a) {
+    i32 x = F(this, 0x5c, i32);
+    i32 m64 = F(this, 0x64, i32);
+    i32 y;
+    if (m64 == (i32)0x80000000) {
+        if (x < 0) {
+            goto reject;
+        }
+        y = F(this, 0x60, i32);
+        if (y < 0) {
+            goto reject;
+        }
+        if (x >= a->m_10) {
+            goto reject;
+        }
+        if (y >= a->m_14) {
+            goto reject;
+        }
+    } else {
+        if (x < m64) {
+            goto reject;
+        }
+        y = F(this, 0x60, i32);
+        if (y < F(this, 0x68, i32)) {
+            goto reject;
+        }
+        if (x > F(this, 0x6c, i32)) {
+            goto reject;
+        }
+        if (y > F(this, 0x70, i32)) {
+            goto reject;
+        }
+    }
+
+    {
+        WwdSurface* surf = (WwdSurface*)a->m_2c;
+        i32 base = surf->GetRowBase(0);
+        if (base != 0) {
+            i32 row = surf->m_20 * y;
+            i32 col = surf->m_b0 * x;
+            *(char*)(base + row + col) = F(this, 0x18c, char);
+            void* n = surf->m_08;
+            (*(void(**)(void*, i32))((char*)*(void**)n + 0x80))(n, 0);
+        }
+    }
+    F(this, 0x18, i32) = F(this, 0x5c, i32);
+    F(this, 0x1c, i32) = F(this, 0x60, i32);
+    F(this, 0x30, i32) = 1;
+    F(this, 0x34, i32) = 1;
+    F(this, 0x38, i32) = 0;
+    return;
+reject:
+    F(this, 0x38, i32) = -1;
 }

@@ -1362,3 +1362,8 @@ flags = "eh"
 unit = "imagepool"
 source = "src/Image/ImagePool.cpp"
 flags = "base"
+
+[[unit]]
+unit = "cwwdobjmgrfactories"
+source = "src/Gruntz/CWwdObjMgrFactories.cpp"
+flags = "eh"
