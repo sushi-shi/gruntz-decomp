@@ -1218,6 +1218,11 @@ source = "src/Utils/ApplyRange.cpp"
 flags = "base"
 
 [[unit]]
+unit = "projactregistry"
+source = "src/Gruntz/ProjActRegistry.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "mgrtokenquery"
 source = "src/Gruntz/MgrTokenQuery.cpp"
 flags = "base"
