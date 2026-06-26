@@ -9,8 +9,6 @@
 
 RVA(0x000379f0, 0x57)
 void Unmatched_0379f0() {} // Unmatched_0379f0
-RVA(0x00037a70, 0x9a)
-void Unmatched_037a70() {} // Unmatched_037a70
 RVA(0x0003cc20, 0x14e)
 void Unmatched_03cc20() {} // Unmatched_03cc20
 RVA(0x000555e0, 0x12f8)
