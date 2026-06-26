@@ -1263,6 +1263,11 @@ source = "src/Gruntz/ActReg4.cpp"
 flags = "base"
 
 [[unit]]
+unit = "ctilescan"
+source = "src/Gruntz/CTileScan.cpp"
+flags = "base"
+
+[[unit]]
 unit = "gamesave"
 source = "src/Io/GameSave.cpp"
 flags = "base"
