@@ -47,7 +47,8 @@ public:
     void Empty();                                         // 0x22b00  free entries + clear
     BOOL AddCheat(const char* code, i32 cmdId, i32 flag); // 0x22be0
     void RegisterCheats();                                // 0x22c80  seed built-ins + load
-    void LoadCheatConfig();                               // 0x22e60  (defined in another TU)
+    void LoadCheatConfig();                               // 0x22e60  bute/registry config loader
+    BOOL CheckCode(CString code);                         // 0x23090  player-typed cheat probe
     ~CCheatMgr();                                         // 0x85e60
 
     // --- fields (placeholders; offsets load-bearing) ---

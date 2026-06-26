@@ -20,6 +20,27 @@
 
 #include <rva.h>
 
+#include <Bute/ButeMgr.h>
+
+// The global empty C string the default CString temp copies from (0x6293f4).
+extern "C" char g_emptyString[];
+
+// The global CButeMgr instance (the config tree LoadCheatConfig reads cheats from).
+DATA(0x002453d8)
+extern CButeMgr g_buteMgr;
+
+// The cheat-config tag/key string literals (objdiff matches these .data relocs by
+// value). The obfuscated code stored under each "Cheat%i" group's "Text" key is
+// recovered by CheckCode by uppercasing then adding 0x3d to every byte.
+#define s_Cheatz "Cheatz"
+#define s_NumCheatz "NumCheatz"
+#define s_Cheat_i "Cheat%i"
+#define s_ExpMonth "ExpMonth"
+#define s_ExpYear "ExpYear"
+#define s_Text "Text"
+#define s_NonCheat "NonCheat"
+#define s_Value "Value"
+
 // ===========================================================================
 // CCheatMgr::Init  (0x22ad0)
 // ===========================================================================
@@ -125,6 +146,84 @@ void CCheatMgr::RegisterCheats() {
     AddCheat(s_cheat_20c84c, 0x80be, 1);
     AddCheat(s_cheat_20c838, 0x8175, 1);
     LoadCheatConfig();
+}
+
+// ===========================================================================
+// CCheatMgr::LoadCheatConfig  (0x22e60)
+// ===========================================================================
+// Walk the "Cheatz"/"NumCheatz" config groups ("Cheat1".."CheatN"); for each that
+// is not date-expired and carries a "Text" payload, register its de-obfuscated
+// code -> "Value" WM_COMMAND (flag 1 when "NonCheat"==1, else 0). The two
+// destructible CString temps force the /GX EH frame.
+// @early-stop
+// CString/EH + SYSTEMTIME-WORD wall: logic + control-flow + every bute/AddCheat
+// extern correct; the residual is the /GX EH-state plateau plus the wYear/wMonth
+// WORD reads (retail `mov dword + and 0xffff` vs cl's movzx). Not source-steerable.
+RVA(0x00022e60, 0x1be)
+void CCheatMgr::LoadCheatConfig() {
+    CString defStr((const char*)g_emptyString);
+    CString group;
+    SYSTEMTIME now;
+    GetLocalTime(&now);
+
+    i32 i = 1;
+    if (g_buteMgr.GetIntDef(s_Cheatz, s_NumCheatz, 0) >= 1) {
+        do {
+            group.Format(s_Cheat_i, i);
+            char* grp = (char*)(const char*)group;
+            i32 expMonth = g_buteMgr.GetIntDef(grp, s_ExpMonth, 0);
+            i32 expYear = g_buteMgr.GetIntDef((char*)(const char*)group, s_ExpYear, 0);
+            if (expMonth == 0 || expYear == 0 || expYear > now.wYear || expMonth > now.wMonth) {
+                if (g_buteMgr.Exists((char*)(const char*)group, s_Text)) {
+                    if (g_buteMgr.GetIntDef((char*)(const char*)group, s_NonCheat, 0) == 1) {
+                        char* code = (char*)(const char*)*g_buteMgr.GetStringDef(
+                            (char*)(const char*)group, s_Text, &defStr
+                        );
+                        AddCheat(code, g_buteMgr.GetIntDef((char*)(const char*)group, s_Value, 0x807b), 1);
+                    } else {
+                        char* code = (char*)(const char*)*g_buteMgr.GetStringDef(
+                            (char*)(const char*)group, s_Text, &defStr
+                        );
+                        AddCheat(code, g_buteMgr.GetIntDef((char*)(const char*)group, s_Value, 0x807b), 0);
+                    }
+                }
+            }
+            i++;
+        } while (i <= g_buteMgr.GetIntDef(s_Cheatz, s_NumCheatz, 0));
+    }
+}
+
+// ===========================================================================
+// CCheatMgr::CheckCode  (0x23090)
+// ===========================================================================
+// A player-typed code (passed by value) is uppercased then de-obfuscated (+0x3d
+// per byte) to match the stored keys; on a map hit with a positive command id,
+// post the WM_COMMAND to the owner (m_count) and update the armed-cheat state.
+// The by-value CString forces the /GX EH frame.
+// @early-stop
+// CString/EH plateau: logic + the branchless Lookup mask-AND idiom + the SetAt
+// de-obfuscation loop are byte-exact; the residual is the /GX EH-state tracking
+// around the by-value CString teardown. Not source-steerable.
+RVA(0x00023090, 0xfc)
+BOOL CCheatMgr::CheckCode(CString code) {
+    code.MakeUpper();
+    for (i32 i = 0; i < code.GetLength(); i++) {
+        code.SetAt(i, (char)(((const char*)code)[i] + 0x3d));
+    }
+
+    void* value = 0;
+    CheatEntry* found = (CheatEntry*)((m_map.Lookup((const char*)code, value) ? -1 : 0) & (i32)value);
+    if (found != 0) {
+        if (found->commandId > 0) {
+            PostMessageA((HWND)m_count, 0x111, found->commandId, 0);
+            if ((found->flag & 1) == 0) {
+                m_124 = 1;
+            }
+            m_flag = 0;
+            m_120 = 0;
+        }
+    }
+    return TRUE;
 }
 
 // ===========================================================================

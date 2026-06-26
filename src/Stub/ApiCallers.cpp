@@ -100,7 +100,6 @@ namespace ApiCallerStubs {
     struct ThisStubOwnerUnknown {
         i32 winapi_015fe0_SendMessageA(i32);
         i32 winapi_017030_GetWindow();
-        i32 winapi_023090_PostMessageA(i32);
         i32 winapi_032ce0_IntersectRect(i32);
         i32 winapi_04a9f0_CopyRect_OffsetRect();
         i32 winapi_057db0_IntersectRect();
@@ -322,14 +321,6 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:PostMessageA
-    // @stub
-    RVA(0x000143e0, 0xfb)
-    i32 winapi_0143e0_PostMessageA() {
-        return 0;
-    }
-
-    // @confidence: low
-    // @source: winapi:PostMessageA
     // __thiscall(code, _): on ESC/SPACE/ENTER post a 0x8023 command. Returns 1.
     struct CmdChain_014720 {
         i32 m_0;
@@ -538,14 +529,6 @@ namespace ApiCallerStubs {
         i32,
         i32
     ) {
-        return 0;
-    }
-
-    // @confidence: low
-    // @source: winapi:PostMessageA
-    // @stub
-    RVA(0x00023090, 0xfc)
-    i32 ThisStubOwnerUnknown::winapi_023090_PostMessageA(i32) {
         return 0;
     }
 

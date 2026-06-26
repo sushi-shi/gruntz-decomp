@@ -75,6 +75,74 @@ public:
     i32 Method_158b40(i32 page, i32 mode); // 0x158b40
 };
 
+// ---------------------------------------------------------------------------
+// FramePoll (0x143e0) sub-object models.
+// ---------------------------------------------------------------------------
+
+// The render-busy object hung off the flip surface (m_04->m_10->m_2c + 0x8). It
+// is reached through a C-style function-pointer table (vtbl in ecx, self pushed,
+// callee-cleaned) so slot +0x60 reports whether the page is still busy.
+struct AttractBusyVtbl {
+    char m_pad00[0x60];
+    i32(__stdcall* Poll)(void* self); // +0x60
+};
+struct AttractBusyObj {
+    AttractBusyVtbl* m_vtbl; // +0x00
+};
+// A TU-local view onto the flip surface that exposes its +0x8 busy object without
+// perturbing the shared CDDSurface type (which only models Flip).
+struct AttractSurfaceExt {
+    char m_pad00[0x8];
+    AttractBusyObj* m_8; // +0x08
+};
+
+// The per-frame actor list (global pointer DAT_00645574): m_count at +0x4 and an
+// inline array of actor pointers at +0x8. Each actor's slot-4 (+0x10) virtual is
+// the per-frame Update; its +0x2ac flags word raises 0x100 to request the exit.
+class AttractActor {
+public:
+    virtual void Vslot00();
+    virtual void Vslot01();
+    virtual void Vslot02();
+    virtual void Vslot03();
+    virtual void Update(); // slot 4 (+0x10)
+    char m_pad04[0x2ac - 0x4];
+    i32 m_2ac; // +0x2ac flags
+};
+struct AttractActorList {
+    char m_pad00[0x4];
+    i32 m_count;            // +0x04
+    AttractActor* m_data[1]; // +0x08  inline pointer array
+};
+DATA(0x00245574)
+extern AttractActorList* g_actorList;
+
+// The per-frame time delta (countdown source for m_1b4). C linkage so the symbol
+// pairs with the target's _g_645584 (the convention across the gamemode units).
+extern "C" {
+DATA(0x00245584)
+extern u32 g_645584;
+}
+
+// The owner back-ptr (CState::m_4) viewed as the game manager: ReportError fires a
+// WM_COMMAND on idle (0x8006/0x3e8) and m_4->m_4 chains to the top-level HWND.
+struct AttractWndHolder {
+    char m_pad00[0x4];
+    void* m_4; // +0x04  top-level HWND
+};
+class CAttractOwner {
+public:
+    void ReportError(u32 cmd, i32 id); // 0x346d
+
+    char m_pad00[0x4];
+    AttractWndHolder* m_4; // +0x04
+};
+
+// PostMessageA reached through the IAT slot (matches the engine's ff15 indirect).
+typedef i32(__stdcall* PostMessageFn)(void* hwnd, u32 msg, u32 wparam, i32 lparam);
+DATA(0x002c44c8)
+extern PostMessageFn g_pPostMessageA;
+
 // ===========================================================================
 // Virtual-slot overrides.
 // ===========================================================================
@@ -120,6 +188,54 @@ i32 CAttract::FrameSlot28(i32 arg) {
             r->Stop(-1);
         }
     } while (m_1b8->m_10->IsPlaying());
+    return 1;
+}
+
+// CAttract::FramePoll (0x143e0): the attract-mode per-frame poll. If the page's
+// render-busy object reports idle AND the InputVirtual slot reports idle, report
+// the exit error (0x8006/0x3e8) and bail. Otherwise stop the registrar's pooled
+// resource, tick the m_1b4 timeout down by the frame delta, run every actor's
+// Update(), and if any actor raised its 0x100 flag post the exit WM_COMMAND.
+// Code byte-identical to retail (~97% fuzzy = reloc-masked plateau): the residual
+// is purely cross-unit/IAT symbol-naming on three reloc operands - ReportError (a
+// bare delinker label), 0x136e20 (already owned by DirectSoundMgr::winapi_136e20_
+// timeGetTime; the sibling FrameSlot28 names it CAttractPooledRes::Stop too), and
+// the PostMessageA IAT call (target bakes a bare absolute 0x6c44c8, no symbol).
+// Not source-steerable; topic:scoring-artifact (docs/matching-patterns.md).
+RVA(0x000143e0, 0xfb)
+i32 CAttract::FramePoll() {
+    AttractBusyObj* busy = ((AttractSurfaceExt*)((CMenuRoot*)m_c)->m_04->m_10->m_2c)->m_8;
+    if (busy == 0 || busy->m_vtbl->Poll(busy) != 0) {
+        if (InputVirtual() == 0) {
+            ((CAttractOwner*)m_4)->ReportError(0x8006, 0x3e8);
+            return 0;
+        }
+    }
+
+    CAttractPooledRes* res = ((CMenuRoot*)m_c)->m_28->m_2c;
+    if (res) {
+        res->Stop(-1);
+    }
+
+    if (g_645584 < m_1b4) {
+        m_1b4 -= g_645584;
+    } else {
+        m_1b4 = 0;
+    }
+
+    AttractActorList* list = g_actorList;
+    i32 i;
+    for (i = 0; i < list->m_count; i++) {
+        list->m_data[i]->Update();
+    }
+
+    i32 n = g_actorList->m_count;
+    for (i = 0; i < n; i++) {
+        if (g_actorList->m_data[i]->m_2ac & 0x100) {
+            g_pPostMessageA(((CAttractOwner*)m_4)->m_4->m_4, 0x111, 0x8023, 0);
+            return 1;
+        }
+    }
     return 1;
 }
 

@@ -31,7 +31,7 @@ cambientsound	4	3
 canicycle	1	0
 canielement	3	2
 canirecord	9	5
-cattract	13	8
+cattract	14	8
 cbehindcandy	2	2
 cbehindcandyani	4	3
 cbrickz	1	0
@@ -76,7 +76,7 @@ cguardpoint	1	1
 chatbox	27	20
 chatbox_eh	1	1
 chatboxowner	7	2
-cheatmgr	5	4
+cheatmgr	7	4
 cimage	10	6
 cimageowned	4	2
 clightfx	3	1
@@ -122,7 +122,7 @@ dsoundvoice	2	1
 engine_attributed	15	0
 engine_boundary	540	0
 engine_discovered	52	0
-engine_label_stubs	444	104
+engine_label_stubs	441	104
 engstr	3	1
 filemem	9	8
 filestream	13	9
@@ -402,6 +402,7 @@ cattract	??1CAttract@@UAE@XZ	100.0000	100.0000	1	8f5b73f92144	0x8cd90
 cattract	?Activate@CAttract@@QAEHXZ	99.0000	99.0000	1	c7655128de41	0xa0a30
 cattract	?EnterAttractMode@CAttract@@QAEHHHH@Z	100.0000	100.0000	1	99f233598d02	0x13fb0
 cattract	?FadeInTitle@CAttract@@QAEHPADHHHHH@Z	73.5119	73.5119	1	7e9ba337baab	0xfa1f0
+cattract	?FramePoll@CAttract@@QAEHXZ	97.0833	97.0833	1	bd7d61b967bc	0x143e0
 cattract	?FrameSlot28@CAttract@@UAEHH@Z	99.7143	99.7143	1	97bf0c4b3f17	0x14340
 cattract	?LoadTitleConfig@CAttract@@QAEHH@Z	99.0991	99.0991	1	ebd81004bad7	0xa03f0
 cattract	?RefreshTitle@CAttract@@QAEHH@Z	100.0000	100.0000	1	ec73ee41ee24	0x39160
@@ -751,8 +752,10 @@ chatboxowner	?LoadChatBoxSprite@CChatBoxOwner@@QAEHH@Z	83.3714	83.3714	1	61826b8
 chatboxowner	?ProcessCheatInput@CChatBoxOwner@@QAEXHH@Z	0.2088	0.2088	1	648b4b881843	0x205c0
 cheatmgr	??1CCheatMgr@@QAE@XZ	100.0000	100.0000	1	94bf38f28220	0x85e60
 cheatmgr	?AddCheat@CCheatMgr@@QAEHPBDHH@Z	98.5714	98.5714	1	77144daa4699	0x22be0
+cheatmgr	?CheckCode@CCheatMgr@@QAEHVCString@@@Z	82.6351	82.6351	1	ebca26565e81	0x23090
 cheatmgr	?Empty@CCheatMgr@@QAEXXZ	100.0000	100.0000	1	8cc149232bcc	0x22b00
 cheatmgr	?Init@CCheatMgr@@QAEHH@Z	100.0000	100.0000	1	7fab48db9c93	0x22ad0
+cheatmgr	?LoadCheatConfig@CCheatMgr@@QAEXXZ	91.5726	91.5726	1	e266cc5c2356	0x22e60
 cheatmgr	?RegisterCheats@CCheatMgr@@QAEXXZ	100.0000	100.0000	1	368e0d229303	0x22c80
 cimage	??1CImage@@QAE@XZ	94.2857	94.2857	1	3a970ca1c753	0xd5e80
 cimage	?BuildSlot13@CImage@@QAEHPAVCImageFrameDesc@@PAX@Z	98.7000	98.7000	1	cd9ab49c2f5c	0x153180
@@ -1843,7 +1846,6 @@ engine_label_stubs	?LoadAttributes@CTimeBomb@@QAEXXZ	0.7246	0.7246	1	cpp:45e6533
 engine_label_stubs	?LoadBombGruntRunConfig@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXHH@Z	0.3922	0.3922	1	cpp:e8a4cb0d5b2a	0x65630
 engine_label_stubs	?LoadBootyCheatState@EngineLabelBacklog@@YGXHHH@Z	0.3788	0.3788	1	cpp:6bf52155264d	0x18830
 engine_label_stubs	?LoadBridgeMoveSprites@EngineLabelBacklog@@YGXH@Z	0.6536	0.6536	1	cpp:6bf52155264d	0x110860
-engine_label_stubs	?LoadCheatConfig@EngineLabelBacklog@@YAXXZ	0.8065	0.8065	1	cpp:45e65336d4b5	0x22e60
 engine_label_stubs	?LoadCreditzAssets2@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXXZ	1.1364	1.1364	1	cpp:e8a4cb0d5b2a	0x39dc0
 engine_label_stubs	?LoadCustomWorldInfo@EngineLabelBacklog@@YAHPAX@Z	100.0000	100.0000	1	cpp:aab6e5a6e511	0x3b7c0
 engine_label_stubs	?LoadDroppedObjectEffects@CDroppedObject@@QAEXXZ	0.6289	0.6289	1	cpp:e8a4cb0d5b2a	0xc7090
@@ -1975,7 +1977,6 @@ engine_label_stubs	?vfunc_9@BootyState@@QAEHH@Z	94.7973	94.7973	1	cpp:aab6e5a6e5
 engine_label_stubs	?vfunc_9@Projectile@@QAEXXZ	0.3891	0.3891	1	cpp:45e65336d4b5	0x61cb0
 engine_label_stubs	?winapi_00c840_CopyRect_SetRect@ApiCallerStubs@@YAHXZ	1.3084	1.3084	1	cpp:e1535087fe94	0xc840
 engine_label_stubs	?winapi_00cd00_timeGetTime@ApiCallerStubs@@YAHXZ	100.0000	100.0000	1	cpp:e1535087fe94	0xcd00
-engine_label_stubs	?winapi_0143e0_PostMessageA@ApiCallerStubs@@YAHXZ	2.0833	2.0833	1	cpp:e1535087fe94	0x143e0
 engine_label_stubs	?winapi_014d00_GetWindow_GetWindowLongA_SetWindowLongA@ApiCallerStubs@@YGHH@Z	0.2387	0.2387	1	cpp:6bf52155264d	0x14d00
 engine_label_stubs	?winapi_015cc0_SendMessageA@ApiCallerStubs@@YGHHH@Z	79.8182	79.8182	1	cpp:6bf52155264d	0x15cc0
 engine_label_stubs	?winapi_015d00_SendMessageA@ApiCallerStubs@@YGXH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x15d00
@@ -1990,7 +1991,6 @@ engine_label_stubs	?winapi_01a700_CopyRect@ApiCallerStubs@@YAHXZ	0.3934	0.3934	1
 engine_label_stubs	?winapi_021f20_DrawTextA@ApiCallerStubs@@YGHHH@Z	1.6964	1.6964	1	cpp:6bf52155264d	0x21f20
 engine_label_stubs	?winapi_022160_GetAsyncKeyState_SelectObject@ApiCallerStubs@@YGHHHH@Z	1.4179	1.4179	1	cpp:6bf52155264d	0x22160
 engine_label_stubs	?winapi_022810_DrawTextA_SelectObject_SetBkColor_SetBkMode_SetTextColor@ApiCallerStubs@@YGHHHHHHHHHHH@Z	1.0417	1.0417	1	cpp:6bf52155264d	0x22810
-engine_label_stubs	?winapi_023090_PostMessageA@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHH@Z	2.7027	2.7027	1	cpp:e8a4cb0d5b2a	0x23090
 engine_label_stubs	?winapi_02c690_IntersectRect@ApiCallerStubs@@YGHH@Z	0.1763	0.1763	1	cpp:6bf52155264d	0x2c690
 engine_label_stubs	?winapi_032ce0_IntersectRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHH@Z	0.5322	0.5322	1	cpp:e8a4cb0d5b2a	0x32ce0
 engine_label_stubs	?winapi_033520_IntersectRect@ApiCallerStubs@@YGHH@Z	0.1990	0.1990	1	cpp:6bf52155264d	0x33520

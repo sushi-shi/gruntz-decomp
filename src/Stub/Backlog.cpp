@@ -186,7 +186,6 @@ namespace EngineLabelBacklog {
     void DrawBattleStats();
     void StartUpPrompt();
     i32 Stub_01fd70(char* szPath);
-    void LoadCheatConfig();
     i32 LoadCustomWorldInfo(HWND hDlg);
     void HandleFortConquered();
     void __stdcall LoadVehicleGruntSprites(i32);
@@ -1396,13 +1395,6 @@ i32 EngineLabelBacklog::Stub_01fd70(char* szPath) {
     }
     return OpenFile(szPath, &of, 0x4000 /*OF_EXIST*/) != -1;
 }
-
-// @confidence: med
-// @source: string-xref
-// @proximity: CCheatMgr@-0x1e0 | CCheckpointDlg@+0x640 (boundary - pick one)
-// @stub
-RVA(0x00022e60, 0x1be)
-void EngineLabelBacklog::LoadCheatConfig() {}
 
 // @source: import:RegCloseKey,RegCreateKeyExA
 // CConfigStore::OpenSubKey - opens szSub under the OpenRoot() key, then closes
