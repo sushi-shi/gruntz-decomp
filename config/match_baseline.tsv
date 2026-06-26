@@ -89,7 +89,7 @@ cobjectdropper	1	1
 configstore	4	0
 cparticlez	5	4
 cpathhazard	7	3
-cplay	49	21
+cplay	55	23
 cremusentrylist	2	1
 cremusnode	4	2
 cremusreadstream	6	4
@@ -121,8 +121,8 @@ directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	15	0
 engine_boundary	540	0
-engine_discovered	52	0
-engine_label_stubs	441	104
+engine_discovered	51	0
+engine_label_stubs	436	104
 engstr	3	1
 filemem	9	8
 filestream	13	9
@@ -843,6 +843,7 @@ cplay	?BuildGruntTypeNameTable@CPlay@@QAEXHHHH@Z	0.7092	0.7092	2	ed7e76422e54	0x
 cplay	?BuildHelpReveal@CPlay@@QAEHXZ	67.8125	67.8125	3	d63528a8ea0e	0xd72c0
 cplay	?BuildMusicCategoryTable@CPlay@@QAEHH@Z	100.0000	100.0000	1	9e03b7354b74	0xdba30
 cplay	?BuildSpriteImageKeyTable@CPlay@@QAEHPAX@Z	100.0000	100.0000	1	045d8ff5898b	0xdd540
+cplay	?BuildWarlordNameTable@CPlay@@QAEHH@Z	100.0000	100.0000	1	a4e6377a94b1	0xdd340
 cplay	?ClampViewport2@CPlay@@QAEHH@Z	85.8469	85.8469	1	d86b53cc96eb	0xd8ed0
 cplay	?ClampViewport@CPlay@@QAEHH@Z	93.7887	93.7887	1	bbb07397f61a	0xd8dc0
 cplay	?DispatchHudClick@CPlay@@QAEHHHH@Z	72.0125	72.0125	3	36e8f5c3bdc6	0xce530
@@ -850,7 +851,9 @@ cplay	?DrawWorldFrame@CPlay@@QAEXXZ	94.4118	94.4118	4	44530c630c5b	0xc9c20
 cplay	?DrawWorldFrames@CPlay@@QAEHXZ	88.8529	88.8529	3	78116a60398a	0xc9cc0
 cplay	?DrawWorldPresent@CPlay@@QAEHXZ	98.8333	98.8333	1	b0333d8dcaa6	0xcefc0
 cplay	?EnterOverlayDrag@CPlay@@QAEHH@Z	100.0000	100.0000	1	c542438d6e9a	0xd6440
+cplay	?FindStartPointAt@CPlay@@QAEHHHPAH0@Z	83.2237	83.2237	1	39473fdf4fa0	0xd5f90
 cplay	?ForwardReady@CPlay@@QAEHXZ	100.0000	100.0000	1	4cf18aed0e73	0xcee70
+cplay	?FreeListTeardown@CPlay@@QAEXXZ	99.1195	99.1195	1	b71aa3bef15e	0xcb480
 cplay	?HandleDragMove@CPlay@@QAEHHHH@Z	34.9732	34.9732	5	b6fa80cc293f	0xd0db0
 cplay	?LoadActionTileSprites@CPlay@@QAEHH@Z	100.0000	100.0000	1	41bdcb1f7ef0	0xdb600
 cplay	?LoadCursorSprites@CPlay@@QAEXHH@Z	0.1664	0.1664	2	858399a45131	0xd0120
@@ -873,9 +876,12 @@ cplay	?PlayCueAt@CPlay@@QAEXHHHHHHHH@Z	87.9580	87.9580	8	f61db82265dd	0xd1890
 cplay	?PresentAndFlush@CPlay@@QAEHXZ	96.5942	96.5942	1	5a33edb55fd8	0xcba10
 cplay	?RegisterInputBindings@CPlay@@QAEHXZ	100.0000	100.0000	2	2b2e83b92f68	0xd9160
 cplay	?Render@CPlay@@UAEHXZ	0.0000	0.0000	9	8bb8b98a5a0d	0xc8cf0
+cplay	?ResetForMode@CPlay@@QAEHH@Z	100.0000	100.0000	1	0cdeb80fb398	0xc8a10
 cplay	?ResetGoals@CPlay@@QAEHHH@Z	100.0000	100.0000	3	2926f5e5c18f	0xd5f00
+cplay	?ResetPlayState@CPlay@@QAEHXZ	92.0100	92.0100	1	b2f4b850d4e0	0xd60b0
 cplay	?ResetViewport@CPlay@@QAEHXZ	95.5455	95.5455	1	c74260db4bee	0xd8c60
 cplay	?SetBeginClearParams@CState@@QAEHHHH@Z	100.0000	100.0000	4	8f94263b0f6e	0x8c970
+cplay	?SetEffectSpriteDurations@CPlay@@QAEHXZ	67.0648	67.0648	1	86fac1400fa3	0xdc060
 cplay	?StepC@CPlay@@QAEXXZ	85.4545	85.4545	6	9c6f84e46590	0xd8d90
 cplay	?StepGridWalk@CPlay@@QAEHH@Z	66.6667	66.6667	3	1875a002ef47	0xd0a60
 cplay	?StepInputA@CPlay@@QAEHXZ	89.8077	89.8077	7	1348ea35aa98	0xd11e0
@@ -1640,7 +1646,6 @@ engine_discovered	?CGruntzSingleCommand_135110@CGruntzSingleCommand@@QAEXXZ	2.22
 engine_discovered	?CGruntzSingleCommand_18c022@CGruntzSingleCommand@@QAEXXZ	0.7874	0.7874	1	ad61ecca3c94	0x18c022
 engine_discovered	?CLogicRecord_0fb660@CLogicRecord@@QAEXXZ	1.1905	1.1905	1	3d21ecb376dc	0xfb660
 engine_discovered	?CLogicRecord_10d3d0@CLogicRecord@@QAEXXZ	1.1905	1.1905	1	7bb9d88643d5	0x10d3d0
-engine_discovered	?CPlay_0cb480@CPlay@@QAEXXZ	0.6289	0.6289	1	19cc92fef394	0xcb480
 engine_discovered	?CPlay_0d53d0@CPlay@@QAEXXZ	0.3049	0.3049	1	da0931b106f5	0xd53d0
 engine_discovered	?CPlay_0d9290@CPlay@@QAEXXZ	0.5076	0.5076	1	40021240a52e	0xd9290
 engine_discovered	?CSpotLight_0b1ee0@CSpotLight@@QAEXXZ	1.1236	1.1236	1	bf45931dd31b	0xb1ee0
@@ -1785,7 +1790,6 @@ engine_label_stubs	?BuildSmall@CStatzTabSmall@@QAEHHHHHHPAUCStatzRect60@@HHH@Z	6
 engine_label_stubs	?BuildSoundFontPath@EngineLabelBacklog@@YAXXZ	1.0989	1.0989	1	cpp:45e65336d4b5	0xf8f30
 engine_label_stubs	?BuildStatzTabStatusBar@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXHHHHHHHHHHHHH@Z	0.7463	0.7463	1	cpp:e8a4cb0d5b2a	0xe9600
 engine_label_stubs	?BuildVoiceSoundList@EngineLabelBacklog@@YGXH@Z	0.5236	0.5236	1	cpp:6bf52155264d	0x11c210
-engine_label_stubs	?BuildWarlordNameTable@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXH@Z	0.8000	0.8000	1	cpp:e8a4cb0d5b2a	0xdd340
 engine_label_stubs	?BuildWorldLevelKey@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXH@Z	1.4286	1.4286	1	cpp:e8a4cb0d5b2a	0x3c0e0
 engine_label_stubs	?BuildWorldLevelPath@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXH@Z	0.4484	0.4484	1	cpp:e8a4cb0d5b2a	0xdbc80
 engine_label_stubs	?CGruntzCommand_0242f0@CGruntzCommand@@QAEXXZ	50.0000	50.0000	1	cpp:45e65336d4b5	0x242f0
@@ -1858,7 +1862,6 @@ engine_label_stubs	?LoadGruntDeathAnimations@ThisStubOwnerUnknown@ApiCallerStubs
 engine_label_stubs	?LoadGruntResurrectTuning@EngineLabelBacklog@@YGXHHH@Z	0.5525	0.5525	1	cpp:6bf52155264d	0x7be60
 engine_label_stubs	?LoadGruntSpawnConfig@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXHHHHH@Z	0.4049	0.4049	1	cpp:e8a4cb0d5b2a	0x11afb0
 engine_label_stubs	?LoadHelpBookSprite@EngineLabelBacklog@@YAXXZ	0.5988	0.5988	1	cpp:45e65336d4b5	0x997c0
-engine_label_stubs	?LoadLevelEffectSprites@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXXZ	0.2494	0.2494	1	cpp:e8a4cb0d5b2a	0xdc060
 engine_label_stubs	?LoadLevelPreviewScreen@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXXZ	1.0526	1.0526	1	cpp:e8a4cb0d5b2a	0xde420
 engine_label_stubs	?LoadMenuSelectSprite@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXH@Z	0.8264	0.8264	1	cpp:e8a4cb0d5b2a	0xba620
 engine_label_stubs	?LoadMenuStateAssets@EngineLabelBacklog@@YGXHHH@Z	0.3922	0.3922	1	cpp:6bf52155264d	0x9fe50
@@ -2044,9 +2047,6 @@ engine_label_stubs	?winapi_0c3e30_SendMessageA@ApiCallerStubs@@YAHXZ	2.1212	2.12
 engine_label_stubs	?winapi_0c4230_GetFocus_SendMessageA@ApiCallerStubs@@YGHH@Z	0.6757	0.6757	1	cpp:6bf52155264d	0xc4230
 engine_label_stubs	?winapi_0c46b0_KillTimer_timeGetTime_wsprintfA@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHXZ	0.7336	0.7336	1	cpp:e8a4cb0d5b2a	0xc46b0
 engine_label_stubs	?winapi_0c7ec0_timeGetTime@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHHH@Z	0.5181	0.5181	1	cpp:e8a4cb0d5b2a	0xc7ec0
-engine_label_stubs	?winapi_0c8a10_GetCursorPos@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHH@Z	2.0879	2.0879	1	cpp:e8a4cb0d5b2a	0xc8a10
-engine_label_stubs	?winapi_0d5f90_SetRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHHHH@Z	2.6316	2.6316	1	cpp:e8a4cb0d5b2a	0xd5f90
-engine_label_stubs	?winapi_0d60b0_wsprintfA@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHXZ	0.9500	0.9500	1	cpp:e8a4cb0d5b2a	0xd60b0
 engine_label_stubs	?winapi_0d7520_wsprintfA@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHHHH@Z	0.5089	0.5089	1	cpp:e8a4cb0d5b2a	0xd7520
 engine_label_stubs	?winapi_0d95f0_wsprintfA@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHXZ	0.3909	0.3909	1	cpp:e8a4cb0d5b2a	0xd95f0
 engine_label_stubs	?winapi_0e35f0_EndDialog@ApiCallerStubs@@YGHPAXHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xe35f0

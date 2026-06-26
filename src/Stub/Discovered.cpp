@@ -45,8 +45,7 @@ RVA(0x0010d3d0, 0xf1)
 void CLogicRecord::CLogicRecord_10d3d0() {}
 
 // ---- CPlay ----
-RVA(0x000cb480, 0x22c)
-void CPlay::CPlay_0cb480() {}
+// 0x0cb480 re-homed (analyzed) as CPlay::FreeListTeardown in src/Gruntz/CPlay.cpp.
 RVA(0x000d53d0, 0x466)
 void CPlay::CPlay_0d53d0() {}
 RVA(0x000d9290, 0x2a7)

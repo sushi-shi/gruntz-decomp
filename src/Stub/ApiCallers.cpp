@@ -110,9 +110,6 @@ namespace ApiCallerStubs {
         i32 winapi_0bba10_Sleep(i32);
         i32 winapi_0c46b0_KillTimer_timeGetTime_wsprintfA();
         i32 winapi_0c7ec0_timeGetTime(i32, i32, i32);
-        i32 winapi_0c8a10_GetCursorPos(i32);
-        i32 winapi_0d5f90_SetRect(i32, i32, i32, i32);
-        i32 winapi_0d60b0_wsprintfA();
         i32 winapi_0d7520_wsprintfA(i32, i32, i32, i32);
         i32 winapi_0d95f0_wsprintfA();
         i32 winapi_0e6020_SetRect(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32);
@@ -214,9 +211,7 @@ namespace ApiCallerStubs {
         void LoadSBITextEdges(i32);
         void LoadWarlordSprites(i32, i32);
         void BuildWorldLevelPath(i32);
-        void LoadLevelEffectSprites();
         void BuildGruntNamespaceList(i32);
-        void BuildWarlordNameTable(i32);
         void LoadLevelPreviewScreen();
         // LoadGruntzPalette (0x0e2d10) re-homed to src/Gruntz/SpriteRefTable.cpp.
         void BuildResourceTabStatusBar(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32);
@@ -1777,13 +1772,8 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    // @confidence: low
-    // @source: winapi:GetCursorPos
-    // @stub
-    RVA(0x000c8a10, 0x119)
-    i32 ThisStubOwnerUnknown::winapi_0c8a10_GetCursorPos(i32) {
-        return 0;
-    }
+    // ResetForMode (0x0c8a10) re-homed (analyzed) as CPlay::ResetForMode in
+    // src/Gruntz/CPlay.cpp.
 
     // OnKeyCommand (0x0cbaf0) re-homed (byte-exact) as CPlay::OnKeyCommand in
     // src/Gruntz/CPlay.cpp.
@@ -1892,21 +1882,8 @@ namespace ApiCallerStubs {
         m_4->m_5c->Blit(8, arg, &dst, 0x10);
     }
 
-    // @confidence: low
-    // @source: winapi:SetRect
-    // @stub
-    RVA(0x000d5f90, 0xd7)
-    i32 ThisStubOwnerUnknown::winapi_0d5f90_SetRect(i32, i32, i32, i32) {
-        return 0;
-    }
-
-    // @confidence: low
-    // @source: winapi:wsprintfA
-    // @stub
-    RVA(0x000d60b0, 0x2cd)
-    i32 ThisStubOwnerUnknown::winapi_0d60b0_wsprintfA() {
-        return 0;
-    }
+    // FindStartPointAt (0x0d5f90) re-homed (analyzed) as CPlay::FindStartPointAt and
+    // ResetPlayState (0x0d60b0) as CPlay::ResetPlayState in src/Gruntz/CPlay.cpp.
 
     // @confidence: low
     // @source: winapi:PostMessageA
@@ -4248,11 +4225,8 @@ namespace ApiCallerStubs {
     RVA(0x000dbc80, 0x309)
     void ThisStubOwnerUnknown::BuildWorldLevelPath(i32) {}
 
-    // @confidence: med
-    // @source: string-xref
-    // @stub
-    RVA(0x000dc060, 0x51b)
-    void ThisStubOwnerUnknown::LoadLevelEffectSprites() {}
+    // SetEffectSpriteDurations (0x0dc060) re-homed (analyzed) as
+    // CPlay::SetEffectSpriteDurations in src/Gruntz/CPlay.cpp.
 
     // @confidence: low
     // @source: decomp-xref
@@ -4260,11 +4234,8 @@ namespace ApiCallerStubs {
     RVA(0x000dd050, 0x24b)
     void ThisStubOwnerUnknown::BuildGruntNamespaceList(i32) {}
 
-    // @confidence: low
-    // @source: decomp-xref
-    // @stub
-    RVA(0x000dd340, 0x189)
-    void ThisStubOwnerUnknown::BuildWarlordNameTable(i32) {}
+    // BuildWarlordNameTable (0x0dd340) re-homed (analyzed) as
+    // CPlay::BuildWarlordNameTable in src/Gruntz/CPlay.cpp.
 
     // BuildSpriteImageKeyTable (0x0dd540) and BuildAnizKeyTable (0x0ddaa0) re-homed
     // (byte-exact) as CPlay methods in src/Gruntz/CPlay.cpp.

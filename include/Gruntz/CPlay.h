@@ -117,6 +117,12 @@ struct CView {
 // The world/level draw object at m_4->m_54 (the camera blit thiscall).
 struct CWorldDraw {
     void Blit(i32 a, i32 b);
+    void Reset(); // 0x18e8 thunk (reloc-masked) ResetForMode teardown
+};
+
+// The sub-object at m_4->m_60 (a no-arg reset; ResetForMode third teardown).
+struct CWorldSub60 {
+    void Reset(); // 0x20a4 thunk (reloc-masked)
 };
 
 // The plane/render geom block reached as m_4->m_30->m_24->m_5c (ResetGoals'
@@ -173,8 +179,9 @@ struct CWorld {
     char p4c[0x54 - 0x4c];
     CWorldDraw* m_54; // +0x54  the world/level draw object (camera blit)
     char p58[0x5c - 0x58];
-    void* m_5c; // +0x5c  a 2nd world layer
-    char p60[0x68 - 0x60];
+    void* m_5c;        // +0x5c  a 2nd world layer
+    CWorldSub60* m_60; // +0x60  reset sub-object (ResetForMode third teardown)
+    char p64[0x68 - 0x64];
     // +0x68: the per-frame world timeline/substep object (the frame-timer step,
     // the fixed-sub-step variant, the HUD-rect post, the drag WorldPost).
     struct WorldTimeline {
@@ -186,6 +193,7 @@ struct CWorld {
         void HudRect(RECT r, i32 flag);
         // 0x478a50: a world post (thiscall(a, b)) -> HandleDragMove out-of-box drag.
         void WorldPost(i32 a, i32 b);
+        void Reset(); // 0x15c3 thunk (reloc-masked) per-frame/teardown reset
         char p0[0x230];
         i32 m_230; // +0x230  substep gate (cleared by ResetGoals)
         char p234[0x23c - 0x234];
@@ -209,9 +217,11 @@ struct CWorld {
     i32 m_90; // +0x90  viewport-clamp vertical limit (ClampViewport2) / live mode H
     i32 m_94; // +0x94  saved/last-good mode W (PresentAndFlush restore test)
     i32 m_98; // +0x98  saved/last-good mode H
+    char p9c[0x134 - 0x9c];
+    i32 m_134; // +0x134  mode/clear word (ResetForMode EnterMode gate)
+    char p138[0x158 - 0x138];
     // +0x158: a flat config-array (stride 71*8 = 0x238 bytes); entry [id].m_0 is
     // the per-grunt-type sprite descriptor BeginGridWalk feeds to LoadSprite.
-    char p9c[0x158 - 0x9c];
     char m_158[1]; // base of the config array (indexed by id*0x238)
 };
 
@@ -357,6 +367,31 @@ public:
     // play-state reset (0x0d60b0).
     i32 EnterMode(i32 mode); // 0x0d6fa0
     i32 ResetPlayState();    // 0x0d60b0
+
+    // ---- the trace-discovered CPlay __thiscall cluster (THIS TU) ----
+    // ResetForMode (0x0c8a10): capture+hide the cursor, enter a mode, then reset
+    // the per-frame drag/world-ready state and three world sub-objects.
+    i32 ResetForMode(i32 mode); // 0x0c8a10
+    // FindStartPointAt (0x0d5f90): registry-gated hit-test over this->m_374[] +-0x20
+    // marker boxes; outputs the matched marker's coords. ret 0x10 (4 args).
+    i32 FindStartPointAt(i32 x, i32 y, i32* outX, i32* outY); // 0x0d5f90
+    // FreeListTeardown (0x0cb480): release the per-level allocations back onto the
+    // global free list (m_374[]/m_3ac[]/m_48c[] arrays + the per-type config rows).
+    void FreeListTeardown(); // 0x0cb480
+    // SetEffectSpriteDurations (0x0dc060): stamp the +0x18 duration on each named
+    // effect-sound descriptor looked up in the sound registry's name map.
+    i32 SetEffectSpriteDurations(); // 0x0dc060
+    // BuildWarlordNameTable (0x0dd340): probe the 0x39/0x3a warlord ids then bind the
+    // NAPOLEAN/VIKING/PATTON CString names. CString temps force the /GX EH frame.
+    i32 BuildWarlordNameTable(i32 arg); // 0x0dd340
+    // ResetPlayState's own reloc-masked CPlay-thiscall leaves (external):
+    void ResetGoalGeom(i32 lo, i32 hi); // 0x2e28 thunk  (this, lo, hi)
+    i32 PrepareReset();                 // 0x1d75 thunk  (this) -> proceed gate
+    // FreeListTeardown's reloc-masked CPlay-thiscall leaf (external):
+    void Teardown1780(); // 0x1780 thunk  (this) early teardown step
+    // BuildWarlordNameTable's reloc-masked CPlay-thiscall leaves (external):
+    i32 ProbeWarlord(i32 id, i32 a, i32 b, i32 c);    // 0x12da thunk  -> found
+    i32 BindWarlordName(const CString& name, i32 a, i32 b, i32 c); // 0x2bc1 thunk
 
     // ---- CPlay-specific members (offsets pinned by the Render disasm) ----
     i32 m_inputWarmup1; // +0x1a8  StepInputA first-frame one-shot latch

@@ -2380,3 +2380,806 @@ i32 CPlay::BuildAnizKeyTable(void* notify) {
     }
     return 1;
 }
+
+// ===========================================================================
+// The trace-discovered CPlay __thiscall cluster (analyzed; this TU).
+// ===========================================================================
+
+// The "ShowCursor" Win32 import slot, reused verbatim from the engine
+// (?g_ShowCursor@@3P6GHH@ZA, an indirect `i32 __stdcall(i32)` fn-ptr global).
+typedef i32(__stdcall* ShowCursorFn)(i32);
+DATA(0x002c44c4)
+extern ShowCursorFn g_ShowCursor;
+
+// ResetForMode (0x0c8a10) - capture the live cursor position into the
+// BeginFrameClear args (m_150/m_154), force the cursor hidden, enter the
+// requested mode (publishing the level-start clock for mode 9), then reset the
+// per-frame drag/world-ready latches and the three world sub-objects.
+RVA(0x000c8a10, 0x119)
+i32 CPlay::ResetForMode(i32 mode) {
+    POINT pt;
+    GetCursorPos(&pt);
+    ShowCursorFn showCursor = g_ShowCursor;
+    m_150 = pt.x;
+    m_154 = pt.y;
+    if (showCursor(0) >= 0) {
+        do {
+        } while (showCursor(0) >= 0);
+    }
+    if (mode == 9) {
+        g_645588 = m_1cc;
+        if (!EnterMode(9)) {
+            return 0;
+        }
+        m_stepCountdown = 2;
+    } else if (m_renderDisabled == 0 || m_4w()->m_134 == 2) {
+        if (!EnterMode(mode)) {
+            return 0;
+        }
+    }
+    if (showCursor(0) >= 0) {
+        do {
+        } while (showCursor(0) >= 0);
+    }
+    m_dragSnapActive = 0;
+    m_dragInProgress = 0;
+    m_dragInhibit1 = 0;
+    m_dragInhibit2 = 0;
+    m_dragEndNotify = 0;
+    m_worldReady = 0;
+    if (m_renderDisabled == 0) {
+        if (mode != 9) {
+            m_4w()->m_54->Reset();
+        }
+        m_4w()->m_68->Reset();
+        m_4w()->m_60->Reset();
+    }
+    return 1;
+}
+
+// FindStartPointAt (0x0d5f90) - a registry-gated hit-test over this->m_374[]
+// markers: bail unless the active config slot's per-slot counter is below its
+// cap, then return the first marker whose +-0x20 box contains (x, y), reporting
+// its coords. __thiscall(x, y, outX, outY), ret 0x10.
+struct CHitMarker {
+    i32 m_0; // x
+    i32 m_4; // y
+};
+struct CPlayHitView { // view-of-this (keeps Render's CPlay typing untouched)
+    char p0[0x374];
+    CHitMarker** m_374; // +0x374  marker array
+    i32 m_378;          // +0x378  marker count
+};
+// g_64556c view: a per-active-slot config array at +0x150 (stride 0x238) plus the
+// +0x68 sub-object's per-slot value table at +0x10c (gated against slot->m_228).
+struct CRegSlot {
+    char p0[0x228];
+    i32 m_228; // threshold cap
+    char p22c[0x238 - 0x22c];
+};
+struct CRegHitGate {
+    char p0[0x10c];
+    i32 m_10c[1]; // +0x10c  per-slot value table (indexed by active id)
+};
+struct CRegHitView {
+    char p0[0x68];
+    CRegHitGate* m_68; // +0x68
+    char p6c[0x150 - 0x6c];
+    CRegSlot m_slots[1]; // +0x150  stride 0x238
+};
+
+// @early-stop
+// ~83% regalloc-coloring wall: logic + all relocs pair, but MSVC5 colors the
+// registry base into edx and the id*0x238 slot-index into ecx (we get the
+// opposite swap), cascading through the whole gate; plus a return-0 epilogue
+// tail-merge difference. Not source-steerable. docs/patterns/zero-register-pinning.md.
+RVA(0x000d5f90, 0xd7)
+i32 CPlay::FindStartPointAt(i32 x, i32 y, i32* outX, i32* outY) {
+    i32 id = g_644c54;
+    CRegHitView* reg = (CRegHitView*)g_64556c;
+    CRegSlot* slot = &reg->m_slots[id];
+    if (slot == 0) {
+        return 0;
+    }
+    if (reg->m_68->m_10c[id] >= slot->m_228) {
+        return 0;
+    }
+    CPlayHitView* self = (CPlayHitView*)this;
+    for (i32 i = 0; i < self->m_378; i++) {
+        CHitMarker* m = self->m_374[i];
+        if (m != 0) {
+            RECT rc;
+            SetRect(&rc, m->m_0 - 0x20, m->m_4 - 0x20, m->m_0 + 0x20, m->m_4 + 0x20);
+            if (x < rc.right && x >= rc.left && y < rc.bottom && y >= rc.top) {
+                *outX = m->m_0;
+                *outY = m->m_4;
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
+// ResetPlayState (0x0d60b0) - the per-frame play-state reset OnKeyCommand runs to
+// (re)prime the level: pick the INTRO vs AMBIENT ambient-sound cue (formatting
+// "INTRO%d"/"AMBIENT%d" off GetAmbientId), re-seed the ambient timer, reset the
+// goal geometry / per-slot config rows, clear the win-lose/in-game latches and the
+// frame-marker timeline. __thiscall, no args, ret 1 (0 if PrepareReset bails).
+// Self-contained views keep Render's CPlay/CWorld typing untouched.
+struct CRpHandle { // the found sound object
+    void Play(i32 flag); // 0x139030 __thiscall
+};
+struct CRpSound { // m_4->m_48 (the level sound manager)
+    void Cue(char* name, i32 flag);  // 0x138840 __thiscall(name, flag)
+    CRpHandle* Find(char* name);     // 0x138730 __thiscall(name) -> handle
+    char p0[0x1c];
+    CRpHandle* m_1c; // +0x1c  last-found sound handle
+};
+struct CRpGeom { // m_4->m_30->m_24 (the goal-geometry block)
+    char p0[0x3b0];
+    i32 m_3b0; // +0x3b0
+    i32 m_3b4; // +0x3b4
+};
+struct CRpM30 {
+    char p0[0x24];
+    CRpGeom* m_24; // +0x24
+};
+struct CRpWho7c { // m_4->m_7c
+    void Notify(i32 id, i32 flag); // 0x1c8f thunk __thiscall(id, flag)
+};
+struct CRpTimeline { // m_4->m_68 (the per-frame world timeline)
+    char p0[0x288];
+    i32 m_288; // +0x288
+    char p28c[0x2a4 - 0x28c];
+    i32 m_2a4; // +0x2a4
+    i32 m_2a8; // +0x2a8
+    char p2ac[0x2b0 - 0x2ac];
+    i32 m_2b0; // +0x2b0
+    i32 m_2b4; // +0x2b4
+    i32 m_2b8; // +0x2b8
+    i32 m_2bc; // +0x2bc
+    i32 m_2c0; // +0x2c0
+    i32 m_2c4; // +0x2c4
+    i32 m_2c8; // +0x2c8
+    i32 m_2cc; // +0x2cc
+    char p2d0[0x3ec - 0x2d0];
+    i32 m_3ec; // +0x3ec
+    char p3f0[0x3f8 - 0x3f0];
+    i32 m_3f8; // +0x3f8
+    i32 m_3fc; // +0x3fc
+    i32 m_400; // +0x400
+};
+struct CRpWorld { // this->m_4
+    char p0[0x14];
+    i32 m_14; // +0x14  view gate
+    char p18[0x30 - 0x18];
+    CRpM30* m_30; // +0x30
+    char p34[0x48 - 0x34];
+    CRpSound* m_48; // +0x48  sound manager
+    char p4c[0x68 - 0x4c];
+    CRpTimeline* m_68; // +0x68
+    char p6c[0x7c - 0x6c];
+    CRpWho7c* m_7c; // +0x7c
+    char p80[0x134 - 0x80];
+    i32 m_134; // +0x134  mode word
+};
+struct CRpFrame { // this->m_3f4 (the frame-marker timeline)
+    char p0[0x28];
+    i32 m_28; // +0x28
+    i32 m_2c; // +0x2c
+    i32 m_30; // +0x30
+    i32 m_34; // +0x34
+    i32 m_38; // +0x38
+    i32 m_3c; // +0x3c
+    i32 m_40; // +0x40
+    i32 m_44; // +0x44
+    i32 m_48; // +0x48
+    i32 m_4c; // +0x4c
+};
+struct CRpScroll { // this->m_4e4
+    char p0[0x40];
+    i32 m_40; // +0x40  drag/select flags (bit0 cleared)
+};
+struct CRpThis { // view-of-this
+    char p0[0x4];
+    CRpWorld* m_4; // +0x04
+    char p8[0x1c - 0x8];
+    i32 m_1c; // +0x1c  cue id
+    char p20[0x338 - 0x20];
+    i32 m_338; // +0x338  ambient timer base lo
+    i32 m_33c; // +0x33c  base hi
+    i32 m_340; // +0x340  interval lo
+    i32 m_344; // +0x344  interval hi
+    i32 m_348; // +0x348  ambient-init done
+    char p34c[0x3f4 - 0x34c];
+    CRpFrame* m_3f4; // +0x3f4
+    char p3f8[0x4e4 - 0x3f8];
+    CRpScroll* m_4e4; // +0x4e4
+    char p4e8[0x4f4 - 0x4e8];
+    i32 m_4f4; // +0x4f4  win/lose banner
+    i32 m_4f8; // +0x4f8  in-game
+};
+// reg = g_64556c view.
+struct CRpReg58 {
+    void CueA(i32 id);       // 0x1c53 thunk __thiscall(id)
+    void CueB(i32 a, i32 b); // 0x2d97 thunk __thiscall(a, b)
+};
+struct CRpReg44 {
+    char p0[0x124];
+    i32 m_124; // +0x124
+};
+struct CRpRow { // reg + 0x188 + i*0x238 (the per-slot config row)
+    void Reset(); // 0x1055 thunk __thiscall
+};
+struct CRpSlot {
+    char p0[0x220];
+    i32 m_220; // +0x220
+    i32 m_224; // +0x224
+    char p228[0x238 - 0x228];
+};
+struct CRpReg {
+    char p0[0x14];
+    i32 m_14; // +0x14
+    char p18[0x44 - 0x18];
+    CRpReg44* m_44; // +0x44
+    char p48[0x58 - 0x48];
+    CRpReg58* m_58; // +0x58
+    char p5c[0xc8 - 0x5c];
+    i32* m_c8; // +0xc8  (reads m_c8[-2])
+    char pcc[0x134 - 0xcc];
+    i32 m_134; // +0x134
+    char p138[0x150 - 0x138];
+    CRpSlot m_slots[1]; // +0x150  stride 0x238
+};
+
+// @early-stop
+// ~92% regalloc-coloring cascade (large fn): every branch + call + store is
+// byte-faithful and all relocs pair, but MSVC5 colors several reloaded base
+// pointers (m_4/reg + the cue-block id) into different registers than retail,
+// plus a couple of store-scheduling/tail-merge offsets in the frame-marker
+// block. Not source-steerable. docs/patterns/zero-register-pinning.md.
+RVA(0x000d60b0, 0x2cd)
+i32 CPlay::ResetPlayState() {
+    CRpThis* self = (CRpThis*)this;
+    char buf[0x40];
+    if (self->m_4->m_14 != 0 && ((CRpReg*)g_64556c)->m_134 == 1) {
+        self->m_340 = 0x1f40;
+        self->m_344 = 0;
+        self->m_338 = g_645588;
+        self->m_33c = 0;
+        wsprintfA(buf, "INTRO%d", GetAmbientId());
+        if (((CRpReg*)g_64556c)->m_14 != 0) {
+            self->m_4->m_48->Cue(buf, 0);
+        }
+        self->m_348 = 0;
+    } else {
+        wsprintfA(buf, "AMBIENT%d", GetAmbientId());
+        CRpSound* snd = self->m_4->m_48;
+        CRpHandle* h = snd->Find(buf);
+        if (h != 0) {
+            snd->m_1c = h;
+        }
+        if (self->m_4->m_48->m_1c != 0) {
+            self->m_4->m_48->m_1c->Play(1);
+        }
+        CRpReg* reg = (CRpReg*)g_64556c;
+        if (reg->m_14 != 0 && reg->m_134 == 3) {
+            self->m_4->m_48->Cue(buf, 1);
+        }
+        self->m_338 = 0;
+        self->m_340 = 0;
+        self->m_33c = 0;
+        self->m_344 = 0;
+        self->m_348 = 1;
+    }
+    if (self->m_4->m_134 == 1) {
+        CRpReg* reg = (CRpReg*)g_64556c;
+        if (reg->m_c8[-2] == 0) {
+            self->m_4->m_7c->Notify(self->m_1c, 1);
+            reg = (CRpReg*)g_64556c;
+            if (reg->m_44->m_124 == 0) {
+                i32 id = self->m_1c;
+                if (id > 0x24 || id == 1) {
+                    reg->m_58->CueA(id);
+                    reg = (CRpReg*)g_64556c;
+                }
+            }
+            reg->m_58->CueB(0, 0x81a6);
+        }
+        CRpGeom* g = self->m_4->m_30->m_24;
+        ResetGoalGeom(g->m_3b0, g->m_3b4);
+    } else {
+        CRpSlot* slot = &((CRpReg*)g_64556c)->m_slots[g_644c54];
+        if (slot != 0) {
+            ResetGoalGeom(slot->m_220, slot->m_224);
+        } else {
+            CRpGeom* g = self->m_4->m_30->m_24;
+            ResetGoalGeom(g->m_3b0, g->m_3b4);
+        }
+    }
+    if (self->m_4e4 != 0) {
+        self->m_4e4->m_40 &= ~1;
+    }
+    self->m_4f8 = 0;
+    if (!PrepareReset()) {
+        return 0;
+    }
+    for (i32 off = 0; off < 0x8e0; off += 0x238) {
+        ((CRpRow*)((char*)g_64556c + 0x188 + off))->Reset();
+    }
+    self->m_4f4 = 0;
+    CRpFrame* fm = self->m_3f4;
+    if (fm != 0) {
+        fm->m_40 = -1;
+        fm->m_44 = 0;
+        if (fm->m_4c != 0) {
+            fm->m_38 = g_645588;
+            fm->m_3c = 0;
+            fm->m_30 = fm->m_4c;
+            fm->m_34 = 0;
+            fm->m_28 = g_645588;
+            fm->m_2c = 0;
+            fm->m_48 = 1;
+        } else {
+            fm->m_38 = g_645588;
+            fm->m_3c = 0;
+        }
+    }
+    CRpTimeline* tl = self->m_4->m_68;
+    tl->m_2a4 = 1;
+    tl->m_288 = 0;
+    tl->m_2a8 = 0;
+    tl->m_2b0 = 0;
+    tl->m_2b8 = 0;
+    tl->m_2b4 = 0;
+    tl->m_2bc = 0;
+    tl->m_2c0 = 0;
+    tl->m_2c8 = 0;
+    tl->m_2c4 = 0;
+    tl->m_2cc = 0;
+    tl->m_3ec = 0;
+    tl->m_3f8 = 0;
+    tl->m_3fc = 0;
+    tl->m_400 = 1;
+    return 1;
+}
+
+// FreeListTeardown (0x0cb480) - the per-level teardown OnExit runs: flush the
+// world timeline, reset the resource sub-registries / world sub-objects, release
+// every per-level allocation (the m_370/m_3a4[4]/m_488 pointer arrays) back onto
+// the global node free list, then reset the per-grunt-type config rows.
+// __thiscall, no args, no return. Self-contained view.
+DATA(0x00245544)
+extern void* g_freeList;
+DATA(0x0024554c)
+extern i32 g_freeListNodeBias;
+
+struct CRtArr { // a CPtrArray subset (m_data @+4, m_count @+8); 0x14 stride
+    void SetSize(i32 n, i32 grow); // 0x1b4f75 __thiscall(n, grow)
+    char p0[0x4];
+    void** m_data; // +0x4
+    i32 m_count;   // +0x8
+    char pc[0x14 - 0xc];
+};
+struct CRtArr2 { // the m_68+0x260 array variant
+    void SetSize(i32 n, i32 grow); // 0x1b52e8 __thiscall(n, grow)
+};
+struct CRtRow { // m_4 + 0x188 + i*0x238  (per-grunt-type config row)
+    void ResetA(); // 0x29a5 thunk
+    void ResetB(); // 0x40c5 thunk
+};
+struct CRtTimeline { // m_4->m_68 (also g_64556c->m_68)
+    void Flush(i32 mode); // 0x41b0 thunk(mode)
+    void Reset1514();     // 0x1514 thunk
+    void Reset15c3();     // 0x15c3 thunk (reg->m_68 reset)
+    void Reset1b48a6();   // 0x1b48a6 thunk
+    char p0[0x260];
+    CRtArr2 m_260; // +0x260
+    char p264[0x284 - 0x264];
+    i32 m_284; // +0x284
+    char p288[0x2a0 - 0x288];
+    i32 m_2a0; // +0x2a0
+};
+struct CRtSound { // m_4->m_48
+    void Reset138530(); // 0x138530 thunk
+};
+struct CRtWorldDraw { // m_4->m_54
+    void Reset28ab(); // 0x28ab thunk
+};
+struct CRtSub60 { // m_4->m_60
+    void Reset244b(); // 0x244b thunk
+};
+struct CRtWorld { // this->m_4
+    char p0[0x48];
+    CRtSound* m_48; // +0x48
+    char p4c[0x54 - 0x4c];
+    CRtWorldDraw* m_54; // +0x54
+    char p58[0x60 - 0x58];
+    CRtSub60* m_60; // +0x60
+    char p64[0x68 - 0x64];
+    CRtTimeline* m_68; // +0x68
+};
+struct CRtImageReg { // m_c->m_24 (virtual; the +0x44 slot 17 teardown)
+    virtual void v00();
+    virtual void v01();
+    virtual void v02();
+    virtual void v03();
+    virtual void v04();
+    virtual void v05();
+    virtual void v06();
+    virtual void v07();
+    virtual void v08();
+    virtual void v09();
+    virtual void v10();
+    virtual void v11();
+    virtual void v12();
+    virtual void v13();
+    virtual void v14();
+    virtual void v15();
+    virtual void v16();
+    virtual void Teardown(); // slot 17 (+0x44)
+};
+struct CRtSoundReg2c { // m_c->m_28->m_2c
+    void Reset137a80(); // 0x137a80 thunk
+};
+struct CRtSoundReg { // m_c->m_28
+    char p0[0x2c];
+    CRtSoundReg2c* m_2c; // +0x2c
+};
+struct CRtRendererA { // m_c->m_8
+    void Reset15aa90(); // 0x15aa90 thunk
+};
+struct CRtRendererB { // m_c->m_c
+    void Reset163c60(); // 0x163c60 thunk
+};
+struct CRtResMgr { // this->m_c
+    char p0[0x8];
+    CRtRendererA* m_8; // +0x08
+    CRtRendererB* m_c; // +0x0c
+    char p10[0x24 - 0x10];
+    CRtImageReg* m_24; // +0x24
+    CRtSoundReg* m_28; // +0x28
+};
+struct CRtGuts { // this->m_2dc
+    void Guts12fd(i32 a); // 0x12fd thunk(a)
+};
+struct CRtMarker { // a no-arg-reset leaf (begin/frame markers)
+    void ResetBegin(); // 0x1d7f thunk (this->m_2e4)
+    void ResetFrame(); // 0x14ce thunk (this->m_3f4)
+};
+struct CRtReg { // g_64556c (only its +0x68 timeline is touched here)
+    char p0[0x68];
+    CRtTimeline* m_68; // +0x68
+};
+struct CRtThis { // view-of-this
+    char p0[0x4];
+    CRtWorld* m_4; // +0x04
+    char p8[0xc - 0x8];
+    CRtResMgr* m_c; // +0x0c
+    char p10[0x2dc - 0x10];
+    CRtGuts* m_2dc; // +0x2dc  guts subsystem
+    char p2e0[0x2e4 - 0x2e0];
+    CRtMarker* m_2e4; // +0x2e4  begin marker
+    char p2e8[0x370 - 0x2e8];
+    CRtArr m_370; // +0x370  (m_374 data / m_378 count)
+    char p384[0x3a4 - 0x384];
+    CRtArr m_3a4[4]; // +0x3a4  stride 0x14
+    CRtMarker* m_3f4; // +0x3f4  frame marker
+    char p3f8[0x488 - 0x3f8];
+    CRtArr m_488; // +0x488  (m_48c data / m_490 count)
+    i32 m_49c;    // +0x49c
+    char p4a0[0x4e4 - 0x4a0];
+    i32 m_4e4; // +0x4e4
+};
+
+// @early-stop
+// ~99% register-coloring plateau: logic + all relocs pair; the only residual is
+// MSVC5 coloring the reloaded m_4/m_c base pointers into eax/edx/ecx differently
+// than retail across the six teardown-call setups. Not source-steerable.
+// docs/patterns/zero-register-pinning.md.
+RVA(0x000cb480, 0x22c)
+void CPlay::FreeListTeardown() {
+    CRtThis* self = (CRtThis*)this;
+    i32 i;
+    i32 k;
+    if (self->m_c == 0) {
+        return;
+    }
+    if (self->m_4 == 0) {
+        return;
+    }
+    if (self->m_4->m_68 != 0) {
+        self->m_4->m_68->Flush(5);
+    }
+    Teardown1780();
+    if (self->m_c->m_28->m_2c != 0) {
+        self->m_c->m_28->m_2c->Reset137a80();
+    }
+    self->m_4->m_48->Reset138530();
+    self->m_4->m_54->Reset28ab();
+    self->m_4->m_60->Reset244b();
+    ((CRtReg*)g_64556c)->m_68->Reset15c3();
+    self->m_c->m_24->Teardown();
+    self->m_c->m_8->Reset15aa90();
+    if (self->m_2dc != 0) {
+        self->m_2dc->Guts12fd(0);
+    }
+    if (self->m_2e4 != 0) {
+        self->m_2e4->ResetBegin();
+    }
+    if (self->m_3f4 != 0) {
+        self->m_3f4->ResetFrame();
+    }
+    self->m_4e4 = 0;
+    self->m_4->m_68->Reset1514();
+    CRtTimeline* tl68 = self->m_4->m_68;
+    tl68->m_260.SetSize(0, -1);
+    tl68->m_284 = 0;
+    self->m_4->m_68->Reset1b48a6();
+    self->m_4->m_68->m_2a0 = 0;
+    self->m_c->m_c->Reset163c60();
+    for (i = 0; i < self->m_370.m_count; i++) {
+        void* node = self->m_370.m_data[i];
+        if (node != 0) {
+            void** p = (void**)((char*)node - g_freeListNodeBias);
+            *p = g_freeList;
+            g_freeList = p;
+        }
+    }
+    self->m_370.SetSize(0, -1);
+    for (k = 0; k < 4; k++) {
+        for (i = 0; i < self->m_3a4[k].m_count; i++) {
+            void* node = self->m_3a4[k].m_data[i];
+            if (node != 0) {
+                void** p = (void**)((char*)node - g_freeListNodeBias);
+                *p = g_freeList;
+                g_freeList = p;
+            }
+        }
+        self->m_3a4[k].SetSize(0, -1);
+    }
+    for (i = 0; i < self->m_488.m_count; i++) {
+        void* node = self->m_488.m_data[i];
+        if (node != 0) {
+            void** p = (void**)((char*)node - g_freeListNodeBias);
+            *p = g_freeList;
+            g_freeList = p;
+        }
+    }
+    self->m_488.SetSize(0, -1);
+    for (i32 off = 0; off < 0x8e0; off += 0x238) {
+        ((CRtRow*)((char*)self->m_4 + 0x188 + off))->ResetA();
+        ((CRtRow*)((char*)self->m_4 + 0x188 + off))->ResetB();
+    }
+    self->m_49c = -1;
+}
+
+// BuildWarlordNameTable (0x0dd340) - verify warlord ids 2..0x20 are present, then
+// the two boss ids 0x39/0x3a, then bind the three named warlord sprite sets
+// (NAPOLEAN/VIKING/PATTON). The CString name temp forces the /GX EH frame.
+// __thiscall(arg), ret 4.
+RVA(0x000dd340, 0x189)
+i32 CPlay::BuildWarlordNameTable(i32 arg) {
+    for (i32 id = 2; id <= 0x20; id++) {
+        if (!ProbeWarlord(id, 0, 0, 0)) {
+            return 0;
+        }
+    }
+    if (!ProbeWarlord(0x39, 0, 0, arg)) {
+        return 0;
+    }
+    if (!ProbeWarlord(0x3a, 0, 0, arg)) {
+        return 0;
+    }
+    CString s("WARLORDZ_NAPOLEAN");
+    if (!BindWarlordName(s, 0, 0, arg)) {
+        return 0;
+    }
+    s = "WARLORDZ_VIKING";
+    if (!BindWarlordName(s, 0, 0, arg)) {
+        return 0;
+    }
+    s = "WARLORDZ_PATTON";
+    if (!BindWarlordName(s, 0, 0, arg)) {
+        return 0;
+    }
+    return 1;
+}
+
+// SetEffectSpriteDurations (0x0dc060) - stamp the per-effect display duration
+// (+0x18) onto each named effect-sound descriptor looked up by name in the sound
+// registry's embedded CMapStringToOb. __thiscall, no args, ret 1. Self-contained
+// view (an unrolled run of Lookup-then-store).
+struct CEffDesc {
+    char p0[0x18];
+    i32 m_18; // +0x18  display duration (ms)
+};
+struct CEffMap {                                  // m_c->m_28 + 0x10 (CMapStringToOb)
+    i32 Lookup(char* key, CEffDesc** out); // 0x1b8438 __thiscall (ret 8)
+};
+struct CEffResMgr {                               // m_c->m_28
+    char p0[0x10];
+    CEffMap m_10; // +0x10  embedded name map
+};
+struct CEffMgr {                                  // this->m_c
+    char p0[0x28];
+    CEffResMgr* m_28; // +0x28
+};
+struct CPlayEff {                                 // view-of-this
+    char p0[0xc];
+    CEffMgr* m_c; // +0x0c
+};
+
+// @early-stop
+// ~67% Lookup out-param zero-init scheduling wall (large unrolled fn): logic is
+// complete and every name string + duration is byte-exact (all relocs pair), but
+// MSVC5 permutes each block's `lea &out` / `out = 0` init / m_c->m_28 load vs
+// retail (retail hoists the first `lea &out` into the prologue, shifting the
+// out-slot operand 0xc<->0x10), repeating across all 32 blocks. Documented wall;
+// deferred to the final sweep. docs/patterns/outparam-zeroinit-scheduling.md.
+RVA(0x000dc060, 0x51b)
+i32 CPlay::SetEffectSpriteDurations() {
+    CPlayEff* self = (CPlayEff*)this;
+    CEffDesc* d;
+    d = 0;
+    self->m_c->m_28->m_10.Lookup("GAME_PYRAMIDMOVE", &d);
+    if (d != 0) {
+        d->m_18 = 100;
+    }
+    d = 0;
+    self->m_c->m_28->m_10.Lookup("GAME_TELEPORTEROPEN", &d);
+    if (d != 0) {
+        d->m_18 = 1000;
+    }
+    d = 0;
+    self->m_c->m_28->m_10.Lookup("GAME_TELEPORTERCLOSE", &d);
+    if (d != 0) {
+        d->m_18 = 1000;
+    }
+    d = 0;
+    self->m_c->m_28->m_10.Lookup("GAME_TELEPORTERALL", &d);
+    if (d != 0) {
+        d->m_18 = 4000;
+    }
+    d = 0;
+    self->m_c->m_28->m_10.Lookup("GAME_BRICKBREAK", &d);
+    if (d != 0) {
+        d->m_18 = 100;
+    }
+    d = 0;
+    self->m_c->m_28->m_10.Lookup("LEVEL_DEATHBRIDGEMOVE", &d);
+    if (d != 0) {
+        d->m_18 = 100;
+    }
+    d = 0;
+    self->m_c->m_28->m_10.Lookup("LEVEL_WATERBRIDGEMOVE", &d);
+    if (d != 0) {
+        d->m_18 = 100;
+    }
+    d = 0;
+    self->m_c->m_28->m_10.Lookup("LEVEL_ROCKBREAK", &d);
+    if (d != 0) {
+        d->m_18 = 100;
+    }
+    d = 0;
+    self->m_c->m_28->m_10.Lookup("LEVEL_LAVAGEYSER", &d);
+    if (d != 0) {
+        d->m_18 = 100;
+    }
+    d = 0;
+    self->m_c->m_28->m_10.Lookup("LEVEL_TRAPDOORCLOSE", &d);
+    if (d != 0) {
+        d->m_18 = 100;
+    }
+    d = 0;
+    self->m_c->m_28->m_10.Lookup("LEVEL_TRAPDOOROPEN", &d);
+    if (d != 0) {
+        d->m_18 = 100;
+    }
+    d = 0;
+    self->m_c->m_28->m_10.Lookup("LEVEL_CANDLEIGNITE", &d);
+    if (d != 0) {
+        d->m_18 = 100;
+    }
+    d = 0;
+    self->m_c->m_28->m_10.Lookup("LEVEL_CANDLEUP", &d);
+    if (d != 0) {
+        d->m_18 = 100;
+    }
+    d = 0;
+    self->m_c->m_28->m_10.Lookup("LEVEL_CANDLEDOWN", &d);
+    if (d != 0) {
+        d->m_18 = 100;
+    }
+    d = 0;
+    self->m_c->m_28->m_10.Lookup("LEVEL_GOLFBALLAIR2", &d);
+    if (d != 0) {
+        d->m_18 = 250;
+    }
+    d = 0;
+    self->m_c->m_28->m_10.Lookup("LEVEL_GOLFBALLHOLE", &d);
+    if (d != 0) {
+        d->m_18 = 250;
+    }
+    d = 0;
+    self->m_c->m_28->m_10.Lookup("LEVEL_GOLFBALLSINK", &d);
+    if (d != 0) {
+        d->m_18 = 250;
+    }
+    d = 0;
+    self->m_c->m_28->m_10.Lookup("GAME_EXPLOSION1", &d);
+    if (d != 0) {
+        d->m_18 = 100;
+    }
+    d = 0;
+    self->m_c->m_28->m_10.Lookup("LEVEL_OUTLETHAZARD", &d);
+    if (d != 0) {
+        d->m_18 = 100;
+    }
+    d = 0;
+    self->m_c->m_28->m_10.Lookup("GRUNTZ_DEATHZ_DEATHZFREEZE1A", &d);
+    if (d != 0) {
+        d->m_18 = 100;
+    }
+    d = 0;
+    self->m_c->m_28->m_10.Lookup("GRUNTZ_DEATHZ_DEATHZFREEZE2A", &d);
+    if (d != 0) {
+        d->m_18 = 100;
+    }
+    d = 0;
+    self->m_c->m_28->m_10.Lookup("GRUNTZ_DEATHZ_DEATHZUNFREEZE1A", &d);
+    if (d != 0) {
+        d->m_18 = 100;
+    }
+    d = 0;
+    self->m_c->m_28->m_10.Lookup("GRUNTZ_DEATHZ_DEATHZUNFREEZE1A", &d);
+    if (d != 0) {
+        d->m_18 = 100;
+    }
+    d = 0;
+    self->m_c->m_28->m_10.Lookup("GRUNTZ_DEATHZ_RESSURECT", &d);
+    if (d != 0) {
+        d->m_18 = 100;
+    }
+    d = 0;
+    self->m_c->m_28->m_10.Lookup("GRUNTZ_DEATHZ_DEATHZSQUASH1A", &d);
+    if (d != 0) {
+        d->m_18 = 100;
+    }
+    d = 0;
+    self->m_c->m_28->m_10.Lookup("LEVEL_CLOUDHAZARDMOVE", &d);
+    if (d != 0) {
+        d->m_18 = 10000;
+    }
+    d = 0;
+    self->m_c->m_28->m_10.Lookup("LEVEL_CLOUDHAZARDKILL", &d);
+    if (d != 0) {
+        d->m_18 = 3000;
+    }
+    d = 0;
+    self->m_c->m_28->m_10.Lookup("GRUNTZ_DEATHZ_DEATHZELECTROCUTE1A", &d);
+    if (d != 0) {
+        d->m_18 = 1000;
+    }
+    d = 0;
+    self->m_c->m_28->m_10.Lookup("GRUNTZ_NERFGUNGRUNT_NERFGUNZGRUNTP1AS1", &d);
+    if (d != 0) {
+        d->m_18 = 1000;
+    }
+    d = 0;
+    self->m_c->m_28->m_10.Lookup("GRUNTZ_GUNHATGRUNT_GUNHATGRUNTP1AS1", &d);
+    if (d != 0) {
+        d->m_18 = 1000;
+    }
+    d = 0;
+    self->m_c->m_28->m_10.Lookup("GRUNTZ_WELDERGRUNT_WELDERZGRUNTP1AS1", &d);
+    if (d != 0) {
+        d->m_18 = 1000;
+    }
+    d = 0;
+    self->m_c->m_28->m_10.Lookup("LEVEL_PLANEHAZARDFLY", &d);
+    if (d != 0) {
+        d->m_18 = 5000;
+    }
+    return 1;
+}

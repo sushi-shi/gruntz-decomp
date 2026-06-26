@@ -44,7 +44,6 @@ public:
 };
 class CPlay {
 public:
-    void CPlay_0cb480();
     void CPlay_0d53d0();
     void CPlay_0d9290();
 };
