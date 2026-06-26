@@ -98,7 +98,7 @@ cobjectdropper	1	1
 configstore	4	0
 cparticlez	5	4
 cpathhazard	7	3
-cplay	63	29
+cplay	65	29
 crangeset	2	2
 cremusentrylist	2	1
 cremusnode	4	2
@@ -128,7 +128,7 @@ directinputmgr2	33	29
 directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	15	0
-engine_boundary	320	0
+engine_boundary	316	0
 engine_discovered	51	0
 engine_label_stubs	437	105
 engine_unmatched	264	0
@@ -155,7 +155,7 @@ gruntvoice	5	4
 gruntzapp	10	9
 gruntzcmdmgr	12	10
 gruntzcommand	15	15
-gruntzmgr	89	62
+gruntzmgr	91	63
 gruntzplayer	8	3
 gruntzsoundz	12	11
 gruntzwnd	9	7
@@ -942,6 +942,8 @@ cplay	?PauseGame@CPlay@@QAEHXZ	100.0000	100.0000	1	add2279bc0de	0xcee90
 cplay	?PlayCueAt@CPlay@@QAEXHHHHHHHH@Z	87.9580	87.9580	8	f61db82265dd	0xd1890
 cplay	?PostHudRect@CPlay@@QAEHXZ	100.0000	100.0000	1	ee065b23a324	0xda440
 cplay	?PresentAndFlush@CPlay@@QAEHXZ	96.5942	96.5942	1	5a33edb55fd8	0xcba10
+cplay	?ProfileDeltaFrame@CPlay@@QAEHXZ	99.8876	99.8876	1	5bc514997c97	0xca0a0
+cplay	?ProfileInputFrame@CPlay@@QAEHXZ	97.2115	97.2115	1	e290b13748c8	0xc9e40
 cplay	?RegionEnter@CPlay@@QAEXXZ	100.0000	100.0000	1	d65c90739db8	0xd88f0
 cplay	?RegionLeave@CPlay@@QAEXXZ	100.0000	100.0000	2	54ec39bb23e4	0xd8960
 cplay	?RegisterInputBindings@CPlay@@QAEHXZ	100.0000	100.0000	2	2b2e83b92f68	0xd9160
@@ -956,7 +958,7 @@ cplay	?SetEffectSpriteDurations@CPlay@@QAEHXZ	67.0648	67.0648	1	86fac1400fa3	0xd
 cplay	?StepC@CPlay@@QAEXXZ	85.4545	85.4545	6	9c6f84e46590	0xd8d90
 cplay	?StepGridWalk@CPlay@@QAEHH@Z	66.6667	66.6667	3	1875a002ef47	0xd0a60
 cplay	?StepInputA@CPlay@@QAEHXZ	89.8077	89.8077	7	1348ea35aa98	0xd11e0
-cplay	?StepScroll@CPlay@@QAEXXZ	63.5172	63.5172	6	c4551645db5a	0xd1ac0
+cplay	?StepScroll@CPlay@@QAEXXZ	76.6207	76.6207	6	c4551645db5a	0xd1ac0
 cplay	?Stub_08c9d0@CPlay@@QAEXXZ	0.7407	0.7407	2	18e3eb4c7dcd	0x8c9d0
 cplay	?Update@CPlay@@UAEHXZ	100.0000	100.0000	4	1c6efda4cb9e	0x8c910
 cplay	?winapi_0cdb10_PostMessageA@CPlay@@QAEHHHH@Z	0.2946	0.2946	2	db8d57057a6f	0xcdb10
@@ -1255,11 +1257,9 @@ engine_boundary	?Boundary_08c470@@YAXXZ	20.0000	20.0000	2	7daa207329c2	0x8c470
 engine_boundary	?Boundary_08c830@@YAXXZ	2.5000	2.5000	2	3cb332bfb432	0x8c830
 engine_boundary	?Boundary_08d000@@YAXXZ	4.7619	4.7619	2	14a1a930744b	0x8d000
 engine_boundary	?Boundary_08d0d0@@YAXXZ	2.2727	2.2727	2	6ffb2785f51b	0x8d0d0
-engine_boundary	?Boundary_08df00@@YAXXZ	0.2312	0.2312	2	1164d429d025	0x8df00
 engine_boundary	?Boundary_08e880@@YAXXZ	6.6667	6.6667	2	fbe17e6452d3	0x8e880
 engine_boundary	?Boundary_0915d0@@YAXXZ	1.5385	1.5385	2	1fc184bbdd15	0x915d0
 engine_boundary	?Boundary_091620@@YAXXZ	1.5385	1.5385	2	a0c99c7925fd	0x91620
-engine_boundary	?Boundary_093920@@YAXXZ	0.2020	0.2020	2	51f603cdf757	0x93920
 engine_boundary	?Boundary_093be0@@YAXXZ	0.6667	0.6667	2	a36c10699ab8	0x93be0
 engine_boundary	?Boundary_094c10@@YAXXZ	25.0000	25.0000	2	fe33b7b53fc6	0x94c10
 engine_boundary	?Boundary_099b80@@YAXXZ	20.0000	20.0000	2	bfe9c664b24f	0x99b80
@@ -1287,8 +1287,6 @@ engine_boundary	?Boundary_0bd430@@YAXXZ	20.0000	20.0000	2	f74171d1e2fe	0xbd430
 engine_boundary	?Boundary_0bd450@@YAXXZ	12.5000	12.5000	2	7e6329f4d124	0xbd450
 engine_boundary	?Boundary_0bd7f0@@YAXXZ	20.0000	20.0000	2	68d20db436e9	0xbd7f0
 engine_boundary	?Boundary_0c8700@@YAXXZ	0.6579	0.6579	2	984828ab4df6	0xc8700
-engine_boundary	?Boundary_0c9e40@@YAXXZ	0.6410	0.6410	2	6de635effbff	0xc9e40
-engine_boundary	?Boundary_0ca0a0@@YAXXZ	1.1236	1.1236	2	85eb7ac5df48	0xca0a0
 engine_boundary	?Boundary_0cef50@@YAXXZ	4.5455	4.5455	2	23c07606b0c9	0xcef50
 engine_boundary	?Boundary_0d2b20@@YAXXZ	0.6024	0.6024	2	64e959194a19	0xd2b20
 engine_boundary	?Boundary_0d5960@@YAXXZ	0.8929	0.8929	2	d4f4b609b7cf	0xd5960
@@ -2625,6 +2623,7 @@ gruntzmgr	?IsMoviePathValid@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	81cec570990e	
 gruntzmgr	?LoadMonologoSprite@CGruntzMgr@@QAEHXZ	98.5000	98.5000	1	02ec3146bffa	0x90d10
 gruntzmgr	?LoadOptionsSlotName@CGruntzMgr@@QAEHHHHHHPBDH@Z	100.0000	100.0000	1	5dbed70529dd	0x92d50
 gruntzmgr	?LoadSaveMessageSprite@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	04070be0e0e4	0x92420
+gruntzmgr	?LoadState@CGruntzMgr@@QAEHPAVCSerializerZ@@@Z	100.0000	100.0000	1	45dfec1e6623	0x93920
 gruntzmgr	?LoadWorldMode@CGruntzMgr@@QAEHH@Z	26.6228	26.6228	1	163dd156e145	0x91a40
 gruntzmgr	?NotifyState0b@CGruntzMgr@@QAEHHH@Z	100.0000	100.0000	3	64e27a6fc2b8	0x8d9d0
 gruntzmgr	?NotifyState0c@CGruntzMgr@@QAEHHH@Z	100.0000	100.0000	3	cd6b9998f035	0x8da00
@@ -2663,6 +2662,7 @@ gruntzmgr	?SetGameClock@CGruntzMgr@@QAEXHHH@Z	100.0000	100.0000	2	6f4e825cb466	0
 gruntzmgr	?SetGruntColor@CGruntzMgr@@QAEHHHH@Z	95.8140	95.8140	1	e01e3f1473e6	0x910d0
 gruntzmgr	?SetRunState@CGruntzMgr@@QAEXH@Z	99.6154	99.6154	1	c9feb86d24a3	0x92340
 gruntzmgr	?SetSoundLevelState@CGruntzMgr@@QAEXH@Z	80.5769	80.5769	1	42a1cfa75770	0x923b0
+gruntzmgr	?SetVideoMode@CGruntzMgr@@QAEHHHH@Z	91.9075	91.9075	1	2bde823e6637	0x8df00
 gruntzmgr	?ShowToggleMessage@CGruntzMgr@@QAEHPADH@Z	100.0000	100.0000	1	3bbf04942740	0x8f9f0
 gruntzmgr	?StopBank0IfActive@CGruntzMgr@@QAEXXZ	100.0000	100.0000	1	88fb6eab0bc9	0x92030
 gruntzmgr	?StopBankIfActive@CGruntzMgr@@QAEXXZ	100.0000	100.0000	1	82f6300febc2	0x92000

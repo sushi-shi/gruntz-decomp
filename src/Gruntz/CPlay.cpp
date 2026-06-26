@@ -1411,6 +1411,160 @@ i32 CPlay::DrawWorldFrames() {
 }
 
 // ===========================================================================
+// The dev frame profiler (CPlay::ProfileDeltaFrame / ProfileInputFrame).
+// Instrumented variants of the world-draw + present that bracket each phase with
+// the cached timeGetTime fn-ptr (g_pTimeGetTime, pinned in a callee-saved reg)
+// and emit a per-phase timing line through the variadic logger ProfLog into the
+// shared text sink g_profSink.
+// ===========================================================================
+extern "C" {
+    DATA(0x002c4650)
+    extern u32(__stdcall* g_pTimeGetTime)(); // PTR_timeGetTime_006c4650
+    // The profiler line sink (a global text buffer; its ADDRESS is the logger arg).
+    DATA(0x00245524)
+    extern i32 g_profSink; // DAT_00645524
+    // The variadic profiler logger (cdecl). 0x1b2cf5.
+    void ProfLog(void* sink, const char* fmt, ...);
+}
+// The two timing accumulators ProfileInputFrame folds the back-half phases into.
+extern "C" {
+    DATA(0x0024c284)
+    extern i32 g_profAccA; // DAT_0064c284
+    DATA(0x0024c288)
+    extern i32 g_profAccB; // DAT_0064c288
+}
+
+// The draw-surface flush sink (m_c->m_4->m_10->m_2c) torn through a thiscall flush.
+struct CProfFlush {
+    void Flush(i32 z); // 0x13e850 (thiscall)
+};
+
+// ===========================================================================
+// CPlay::ProfileDeltaFrame (0x0ca0a0) - the simple profiled frame: run the
+// frame-rate split (RenderFast/Slow), world-blit, push-view + present, then log
+// "Delta/Update/Draw/NumUpdates", flush, and run the final camera draw-B.
+// ===========================================================================
+RVA(0x000ca0a0, 0x101)
+i32 CPlay::ProfileDeltaFrame() {
+    u32(__stdcall * tg)() = g_pTimeGetTime;
+    i32 updates = 0;
+    u32 t0 = tg();
+    u32 d = g_645584;
+    if (d > 0x12 && d < 0xc8) {
+        updates = RenderFast();
+    } else {
+        RenderSlow();
+    }
+    i32 renderMs = (i32)(tg() - t0);
+    m_4w()->m_54->Blit(m_c->m_24->m_5c->m_84, m_c->m_24->m_5c->m_88);
+    u32 t2 = tg();
+    m_c->m_24->PushView(m_c->m_4->m_14, m_c->m_8);
+    m_c->m_c->Present((i32)m_c->m_4->m_14, (i32)m_c->m_4->m_18);
+    i32 presentMs = (i32)(tg() - t2);
+    ProfLog(
+        &g_profSink,
+        "Delta=%i, Update=%i, Draw=%i, NumUpdates=%i    ",
+        (i32)g_645584,
+        renderMs,
+        presentMs,
+        updates
+    );
+    ProfFlushTail();
+    ((CProfFlush*)m_c->m_4->m_10->m_2c)->Flush(0);
+    if (m_c->m_24->m_5c != 0) {
+        m_c->m_24->m_5c->DrawB();
+    }
+    return 1;
+}
+
+// The profiled-frame report tail (cdecl free fn, 3 args): the manager singleton,
+// the guts subsystem and the region-0 gate. 0xebd70. reloc-masked.
+extern "C" void ProfReport(void* mgr, void* guts, i32 gate);
+
+// ===========================================================================
+// CPlay::ProfileInputFrame (0x0c9e40) - the fully-instrumented frame: nine
+// timeGetTime-bracketed phases (input/activate/deact/update/hit-test/draw/fixed/
+// status-bar) logged in one "Input=.." line, then the flush + camera draw-B whose
+// times are stashed in the cross-frame accumulators (g_profAccA/g_profAccB read
+// at log time = the PREVIOUS frame's flush/draw-B). __thiscall, ret 0.
+// ===========================================================================
+// @early-stop
+// profiler-scheduling wall: the body is the complete, correct reconstruction (the
+// nine phase brackets in order, the BeginScene(1)/m_68->Step/m_guts->Step update
+// block, the PushView/Present draw block, the m_guts status-bar tick, the 11-arg
+// ProfLog with the cross-frame g_profAccA/g_profAccB accumulators, then the timed
+// flush + draw-B writing those globals for next frame, and the ProfReport tail).
+// MSVC pins the g_pTimeGetTime fn-ptr in esi across all 14 calls as retail does,
+// but the seven live phase-times spill to a different set of stack slots / the
+// ebx/ebp coloring of deact/update differs, so the slot-reuse schedule diverges
+// despite identical logic. Same idiom as ProfileDeltaFrame (byte-exact); the extra
+// phases push it onto the documented register/stack-scheduling plateau. Deferred
+// to the final sweep. docs/patterns/zero-register-pinning.md.
+RVA(0x000c9e40, 0x1d7)
+i32 CPlay::ProfileInputFrame() {
+    m_4w()->m_54->Blit(m_c->m_24->m_5c->m_84, m_c->m_24->m_5c->m_88); // untimed
+    u32(__stdcall * tg)() = g_pTimeGetTime;
+
+    u32 t1 = tg();
+    Vslot26(); // this->vtbl[+0x98]
+    i32 activateMs = (i32)(tg() - t1);
+
+    u32 t3 = tg();
+    if (m_c->m_24->m_5c != 0) {
+        m_c->m_24->m_5c->DrawA();
+    }
+    i32 deactMs = (i32)(tg() - t3);
+
+    u32 t5 = tg();
+    m_c->m_8->BeginScene(1);
+    m_4w()->m_68->Step((i32)g_645584);
+    m_guts->Step((i32)g_645584);
+    i32 updateMs = (i32)(tg() - t5);
+
+    u32 t7 = tg();
+    i32 hitTestMs = (i32)(tg() - t7);
+
+    u32 t9 = tg();
+    m_c->m_24->PushView(m_c->m_4->m_14, m_c->m_8);
+    i32 drawMs = (i32)(tg() - t9);
+
+    u32 t11 = tg();
+    m_c->m_c->Present((i32)m_c->m_4->m_14, (i32)m_c->m_4->m_18);
+    i32 fixedMs = (i32)(tg() - t11);
+
+    u32 t13 = tg();
+    m_guts->StatusBarTick(); // 0xfe6b0
+    i32 statusBarMs = (i32)(tg() - t13);
+
+    ProfLog(
+        &g_profSink,
+        "Input=%i, Activate=%i, Deact=%i, Update=%i, HitTest=%i, Draw=%i, Fixed=%i, "
+        "StatusBar=%i, Flip=%i  ",
+        activateMs,
+        deactMs,
+        g_profAccA,
+        updateMs,
+        hitTestMs,
+        drawMs,
+        fixedMs,
+        statusBarMs,
+        g_profAccB
+    );
+
+    ProfFlushTail();
+    g_profAccB = (i32)tg();
+    ((CProfFlush*)m_c->m_4->m_10->m_2c)->Flush(0);
+    g_profAccB = (i32)(tg() - (u32)g_profAccB);
+    g_profAccA = (i32)tg();
+    if (m_c->m_24->m_5c != 0) {
+        m_c->m_24->m_5c->DrawB();
+    }
+    g_profAccA = (i32)(tg() - (u32)g_profAccA);
+    ProfReport(g_64556c, m_guts, m_region0Gate);
+    return 1;
+}
+
+// ===========================================================================
 // CPlay::ResetGoals (0x0d5f00) - clear the world goal object's pending bit
 // (m_4->m_68->m_23c, OR 0x10000 into +0x8), reset the substep gate (m_68->m_230),
 // then recompute the plane geom (m_4->m_30->m_24->m_5c) from the (x,y) args:

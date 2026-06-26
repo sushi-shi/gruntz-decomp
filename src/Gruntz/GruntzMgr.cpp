@@ -270,7 +270,7 @@ public:
     virtual void s08();
     virtual void s09();
     virtual void s0a();
-    virtual void s0b();
+    virtual void Transfer(void* data, i32 size);  // slot 11 (+0x2c) (Load read path)
     virtual void Serialize(void* data, i32 size); // slot 12 (+0x30)
 };
 
@@ -2422,6 +2422,61 @@ i32 CGruntzMgr::SaveState(CSerializerZ* ar) {
 }
 
 // -------------------------------------------------------------------------
+// CGruntzMgr::LoadState (0x093920; ret 4). The deserialize counterpart of
+// SaveState: streams the SAME clock/scroll/warp run back IN through the
+// serializer's read slot (+0x2c, vs SaveState's write slot +0x30). Bails unless a
+// reader is supplied and the GLOBAL manager's world is loaded (`g_pMgr->m_world`,
+// the singleton at 0x64556c - not `this`), bumps the save serial, reads the world
+// file name into a scratch buffer and assigns it to m_strWorldFile, then transfers
+// each scalar field/global in the identical order as SaveState.
+RVA(0x00093920, 0x22f)
+i32 CGruntzMgr::LoadState(CSerializerZ* ar) {
+    if (ar == 0) {
+        return 0;
+    }
+    if (((CGruntzMgr*)g_gameReg)->m_world == 0) {
+        return 0;
+    }
+    g_629ad0++;
+
+    char buf[0x80];
+    ar->Transfer(buf, 0x80);
+    m_strWorldFile = buf;
+
+    ar->Transfer(&m_114, 4);
+    ar->Transfer(&m_inputFlag, 4);
+    ar->Transfer(&m_128, 4);
+    ar->Transfer(&m_12c, 4);
+    ar->Transfer(&m_130, 4);
+    ar->Transfer(&m_134, 4);
+    ar->Transfer(&m_optionsCount, 4);
+    ar->Transfer(&m_viewOriginL, 0x10); // view-origin block (+0x13c..+0x148)
+    ar->Transfer(&g_645580, 4);
+    ar->Transfer(&g_645584, 4);
+    ar->Transfer(&g_645588, 4);
+    ar->Transfer(&g_64558c, 4);
+    ar->Transfer(&g_645590, 4);
+    ar->Transfer(&g_645594, 4);
+    ar->Transfer(&g_645598, 4);
+    ar->Transfer(&g_64559c, 4);
+    ar->Transfer(&g_6455a0, 4);
+    ar->Transfer(&g_6455b0, 4);
+    ar->Transfer(&g_6455a8, 4);
+    ar->Transfer(&g_6455a4, 4);
+    ar->Transfer(&g_6455ac, 4);
+    ar->Transfer(&g_6455f8, 4);
+    ar->Transfer(&m_118, 4);
+    ar->Transfer(&g_6455e8, 4);
+    ar->Transfer(&g_6452a4, 4);
+    ar->Transfer(&g_6452cc, 4);
+    ar->Transfer(&g_645508, 4);
+    ar->Transfer(&g_64550c, 4);
+    ar->Transfer(&g_warpX, 4);
+    ar->Transfer(&g_warpY, 4);
+    return 1;
+}
+
+// -------------------------------------------------------------------------
 // CGruntzMgr::FillSaveInfo (0x0927b0; ret 8). Populates a save-slot record from
 // the live game: bails if there is no record or no live source state, copies the
 // level name into the record (inline strcpy), stamps the win/level state flags
@@ -3376,6 +3431,128 @@ i32 CGruntzMgr::CheckDisplayBoundsB() {
     }
     ReportError(0x8008, 0x43a);
     return 0;
+}
+
+// ---------------------------------------------------------------------------
+// CGruntzMgr::SetVideoMode (0x08df00; ret 0xc). Switch the display to (w,h) at
+// the current bit depth (m_88). No-op if already at (w,h). When the live state is
+// playable (Update() in {3,0x11}) and the new size exceeds the loaded map's
+// playable field (m_world->m_24->m_5c->{m_30,m_34}), it refuses: pokes the HUD
+// guts subsystem (m_2dc) and surfaces the "map too small" modal, returning 0.
+// Otherwise it applies the mode through the engine, re-hides the cursor, stamps
+// m_modeW/m_modeH (+ the saved pair when arg3 is set), re-pokes the guts, runs the
+// two post-mode resync siblings, and (once) logs "Resolution is now %ix%ix%i".
+//
+// The SetVideoMode symbol pairs the @early-stop CheckDisplayBoundsA/B and the
+// RestoreVideoMode/CheckSavedMode call sites (previously the Boundary_08df00 stub).
+struct SvmField {   // m_world->m_24->m_5c: the loaded map's playable extent
+    char p0[0x30];
+    i32 m_30, m_34; // +0x30/+0x34  field width/height limits
+};
+struct SvmWorldView { // m_world->m_24
+    char p0[0x5c];
+    SvmField* m_5c; // +0x5c
+};
+struct SvmGuts {    // m_curState->m_2dc: the HUD/guts subsystem
+    i32 m_0;        // +0x00  state (0/1 -> which poke order)
+    char p4[0x614 - 4];
+    i32 m_614;      // +0x614  receives the mode height
+    void CallA();   // 0x2b8a (thiscall) reloc-masked
+    void CallB();   // 0x2d5b (thiscall) reloc-masked
+};
+struct SvmStateView { // a view of m_curState (the live play state)
+    char p0[0x2dc];
+    SvmGuts* m_2dc;   // +0x2dc
+    void Prep();      // 0x3d55 (thiscall) reloc-masked
+};
+// The engine display-mode apply (0x155f60, __stdcall(w,h,depth) -> nonzero ok).
+extern "C" i32 __stdcall SvmApply(i32 w, i32 h, i32 depth);
+
+// @early-stop
+// regalloc wall (~92%): the control flow, every branch/call, the two play-state
+// Update() pairs, the guts (m_2dc) poke order, the ShowCursor hide loop and the
+// "Resolution is now" log are byte-for-byte the same SHAPE. The residual is a
+// pure register-allocation tiebreak: retail dedicates ebp (the 4th callee-saved
+// reg) to `w` and keeps m_curState in edi separately, while MSVC5 here coalesces
+// `w` into edi (reusing it for m_curState once w is dead) -> 3 saved regs not 4,
+// so `sub esp,0x70` vs retail's 0x80 and every later [esp+N] sits -4. Logic is
+// complete + correct; defining this symbol also pairs the SetVideoMode call in
+// CheckSavedMode (-> 100%) + CheckDisplayBoundsA/B. See pin-local-for-callee-saved-reg.md.
+RVA(0x0008df00, 0x238)
+i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
+    if (w == m_modeW && h == m_modeH) {
+        return 1;
+    }
+    if (m_world == 0) {
+        return 0;
+    }
+    if (m_curState->Update() == 3 || m_curState->Update() == 0x11) {
+        if (m_world->m_24 != 0) {
+            SvmField* f = ((SvmWorldView*)m_world->m_24)->m_5c;
+            if (f != 0) {
+                if (w > f->m_30 || h > f->m_34) {
+                    SvmStateView* st = (SvmStateView*)m_curState;
+                    st->Prep();
+                    if (st->m_2dc != 0) {
+                        st->m_2dc->m_614 = m_modeH;
+                        if (st->m_2dc->m_0 == 0) {
+                            st->m_2dc->CallA();
+                            st->m_2dc->CallB();
+                            ReportMapTooSmall(
+                                "This map is too small to be displayed under your "
+                                "desired video resolution. Default resolution will "
+                                "be used."
+                            );
+                            return 0;
+                        }
+                        if (st->m_2dc->m_0 == 1) {
+                            st->m_2dc->CallB();
+                            st->m_2dc->CallA();
+                        }
+                    }
+                    ReportMapTooSmall(
+                        "This map is too small to be displayed under your desired "
+                        "video resolution. Default resolution will be used."
+                    );
+                    return 0;
+                }
+            }
+        }
+    }
+    if (!SvmApply(w, h, m_88)) {
+        return 0;
+    }
+    while (g_pShowCursor(0) >= 0) {
+    }
+    m_modeW = w;
+    m_modeH = h;
+    if (m_curState->Update() == 3 || m_curState->Update() == 0x11) {
+        if (flag) {
+            m_savedModeW = w;
+            m_savedModeH = h;
+        }
+        SvmStateView* st = (SvmStateView*)m_curState;
+        st->Prep();
+        if (st->m_2dc != 0) {
+            st->m_2dc->m_614 = h;
+            if (st->m_2dc->m_0 == 0) {
+                st->m_2dc->CallA();
+                st->m_2dc->CallB();
+            } else if (st->m_2dc->m_0 == 1) {
+                st->m_2dc->CallB();
+                st->m_2dc->CallA();
+            }
+        }
+    }
+    Step1db6();
+    Step3d23();
+    if (g_645600 != 0) {
+        g_645600 = 0;
+        char buf[0x70];
+        sprintf(buf, "Resolution is now %ix%ix%i", m_modeW, m_modeH, m_88);
+        LogLine(buf);
+    }
+    return 1;
 }
 
 // size 0xa30 recovered from operator-new sites (gruntz.analysis.news)

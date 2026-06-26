@@ -179,6 +179,12 @@ public:
     i32 CheckMovieFileExists();     // @0x090aa0 (FileExists(m_strMoviePath))
     CState* FindStateById(i32 id);  // @0x092900 (live + stack search by Update id)
 
+    // SetVideoMode (0x08df00) reloc-masked CGruntzMgr siblings (all thiscall):
+    void Step1db6();                 // @0x1db6 thunk  post-mode resync
+    void Step3d23();                 // @0x3d23 thunk  post-mode resync
+    void ReportMapTooSmall(char* s); // @0x417e thunk  surface the modal text
+    void LogLine(char* s);           // @0x1b54 thunk  log the resolution line
+
     // Level cycle + debug layer toggles (proximity-attributed, reconstructed).
     i32 GoToNextLevel();     // @0x08d850 (PLAY: advance current level index, wrap)
     i32 GoToPrevLevel();     // @0x08d910 (PLAY: retreat current level index, wrap)
@@ -214,6 +220,7 @@ public:
     i32 FinishLevel(i32 full, i32 stopBank);              // @0x08e980
     i32 FillSaveInfo(struct SaveInfo* dst, void* snapshot); // @0x0927b0
     i32 SaveState(class CSerializerZ* ar);                  // @0x093620
+    i32 LoadState(class CSerializerZ* ar);                  // @0x093920 (deserialize counterpart)
     void UpdateScoreHud();                                  // @0x0860b0
     i32 BroadcastCmd(i32 a0, i32 cmd, i32 a2, i32 a3);      // @0x093460
     void RecomputeViewScale();                              // @0x08f7f0
