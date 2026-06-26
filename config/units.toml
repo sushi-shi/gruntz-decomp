@@ -589,24 +589,6 @@ source = "src/Crt/StreamBuf.cpp"
 flags = "base"
 
 [[unit]]
-# MSVC5 LIBCMT iostreams `strstreambuf` (ctor/dtor carry the /GX SEH frame).
-unit = "crt_strstreambuf"
-source = "src/Crt/StrStreamBuf.cpp"
-flags = "eh"
-
-[[unit]]
-# MSVC5 LIBCMT iostreams `ostream` member functions (non-EH leaves).
-unit = "crt_ostream"
-source = "src/Crt/OStream.cpp"
-flags = "base"
-
-[[unit]]
-# MSVC5 LIBCMT iostreams `istream` member functions (non-EH leaves).
-unit = "crt_istream"
-source = "src/Crt/IStream.cpp"
-flags = "base"
-
-[[unit]]
 unit = "netmgr"
 source = "src/Net/NetMgr.cpp"
 flags = "eh"
@@ -1369,11 +1351,6 @@ flags = "eh"
 [[unit]]
 unit = "netcmdslot"
 source = "src/Net/NetCmdSlot.cpp"
-flags = "base"
-
-[[unit]]
-unit = "boundarylib"
-source = "src/Stub/BoundaryLibrary.cpp"
 flags = "base"
 
 [[unit]]

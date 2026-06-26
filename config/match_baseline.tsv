@@ -24,7 +24,6 @@ backlogstateloaders	3	3
 battlezdata	30	27
 battlezmapconfig	1	0
 blowfish	4	3
-boundarylib	66	0
 brickz	15	3
 butemgr	42	27
 butestoreclear	1	1
@@ -104,10 +103,7 @@ crangeset	2	2
 cremusentrylist	2	1
 cremusnode	4	2
 cremusreadstream	6	4
-crt_istream	3	2
-crt_ostream	7	4
 crt_streambuf	10	8
-crt_strstreambuf	7	5
 cscanlinesurface	4	1
 csecretleveltrigger	4	3
 cserialsub34	1	0
@@ -346,72 +342,6 @@ blowfish	?Blowfish_InitKey@@YGXPAE@Z	100.0000	100.0000	1	181b6b1750bf	0x16f6c0
 blowfish	?Blowfish_decipher@@YAXPAI0@Z	99.5000	99.5000	2	c61014aad094	0x16fc70
 blowfish	?Blowfish_encipher@@YAXPAI0@Z	100.0000	100.0000	1	3b9987755e2b	0x16f7f0
 blowfish	?InitializeBlowfish@@YAFPAEF@Z	100.0000	100.0000	2	0fe7c64cfdb4	0x170100
-boundarylib	?Boundary_1690f0@@YAXXZ	1.4286	1.4286	1	fc95a10b6b7d	0x1690f0
-boundarylib	?Boundary_169610@@YAXXZ	0.8000	0.8000	1	7774e21d9077	0x169610
-boundarylib	?Boundary_169e10@@YAXXZ	2.0000	2.0000	1	0129c8fac846	0x169e10
-boundarylib	?Boundary_169ed0@@YAXXZ	0.8696	0.8696	1	ceb2033e90bf	0x169ed0
-boundarylib	?Boundary_16a0a0@@YAXXZ	12.5000	12.5000	1	af9ef70b3d40	0x16a0a0
-boundarylib	?Boundary_16a0c0@@YAXXZ	0.8333	0.8333	1	e48e48ef43ef	0x16a0c0
-boundarylib	?Boundary_16a180@@YAXXZ	0.7692	0.7692	1	66c97c1a0ec3	0x16a180
-boundarylib	?Boundary_16a240@@YAXXZ	10.0000	10.0000	1	134ae9709492	0x16a240
-boundarylib	?Boundary_16a260@@YAXXZ	0.8696	0.8696	1	6968930cbee5	0x16a260
-boundarylib	?Boundary_16a340@@YAXXZ	0.9756	0.9756	1	65bc86ec134e	0x16a340
-boundarylib	?Boundary_16a3b0@@YAXXZ	2.6316	2.6316	1	43703c90c9af	0x16a3b0
-boundarylib	?Boundary_16a590@@YAXXZ	0.8696	0.8696	1	0905d6297881	0x16a590
-boundarylib	?Boundary_16a670@@YAXXZ	0.6061	0.6061	1	4f1785ef7457	0x16a670
-boundarylib	?Boundary_16a760@@YAXXZ	0.8333	0.8333	1	e0d534ec6d83	0x16a760
-boundarylib	?Boundary_16a820@@YAXXZ	0.7692	0.7692	1	789146ae0b4f	0x16a820
-boundarylib	?Boundary_16a8e0@@YAXXZ	10.0000	10.0000	1	1cf861d48bbe	0x16a8e0
-boundarylib	?Boundary_16a900@@YAXXZ	0.8696	0.8696	1	c726a9b94fb8	0x16a900
-boundarylib	?Boundary_16a9e0@@YAXXZ	0.9756	0.9756	1	dc5b424a0195	0x16a9e0
-boundarylib	?Boundary_16aa50@@YAXXZ	2.6316	2.6316	1	d9ffa2721f67	0x16aa50
-boundarylib	?Boundary_16aab0@@YAXXZ	1.0526	1.0526	1	cecf050eccab	0x16aab0
-boundarylib	?Boundary_16ab70@@YAXXZ	11.1111	11.1111	1	3ac3d3fc9e51	0x16ab70
-boundarylib	?Boundary_16abb0@@YAXXZ	4.0000	4.0000	1	438760feb5dd	0x16abb0
-boundarylib	?Boundary_16abe0@@YAXXZ	1.4815	1.4815	1	465829d847d4	0x16abe0
-boundarylib	?Boundary_16ac50@@YAXXZ	3.0303	3.0303	1	5b62657d3aff	0x16ac50
-boundarylib	?Boundary_16acd0@@YAXXZ	2.1277	2.1277	1	ab4fc1ee72cb	0x16acd0
-boundarylib	?Boundary_16ad50@@YAXXZ	0.7407	0.7407	1	38ae5c4f1358	0x16ad50
-boundarylib	?Boundary_16aef0@@YAXXZ	0.8929	0.8929	1	598e718f384a	0x16aef0
-boundarylib	?Boundary_16aff0@@YAXXZ	0.7843	0.7843	1	42e2616cf2c8	0x16aff0
-boundarylib	?Boundary_16b410@@YAXXZ	0.8163	0.8163	1	bea20963e88c	0x16b410
-boundarylib	?Boundary_16b480@@YAXXZ	1.6000	1.6000	1	4b61b9777f8e	0x16b480
-boundarylib	?Boundary_16b5b0@@YAXXZ	0.8511	0.8511	1	7045c861511c	0x16b5b0
-boundarylib	?Boundary_16b820@@YAXXZ	0.3960	0.3960	1	d4a427cc7c9c	0x16b820
-boundarylib	?Boundary_16b940@@YAXXZ	2.4390	2.4390	1	933b66482971	0x16b940
-boundarylib	?Boundary_16b9b0@@YAXXZ	0.5556	0.5556	1	9eb888407089	0x16b9b0
-boundarylib	?Boundary_16ba70@@YAXXZ	1.6949	1.6949	1	106870b7a5f7	0x16ba70
-boundarylib	?Boundary_16bb10@@YAXXZ	1.5385	1.5385	1	dc725a653ca9	0x16bb10
-boundarylib	?Boundary_16bbc0@@YAXXZ	1.3333	1.3333	1	fe7610356b30	0x16bbc0
-boundarylib	?Boundary_16bc70@@YAXXZ	1.2500	1.2500	1	02fe227faa4c	0x16bc70
-boundarylib	?Boundary_16bcf0@@YAXXZ	10.0000	10.0000	1	3b94e9bbd445	0x16bcf0
-boundarylib	?Boundary_16be90@@YAXXZ	1.7241	1.7241	1	c65293d2a3b5	0x16be90
-boundarylib	?Boundary_16bf30@@YAXXZ	2.2222	2.2222	1	e35f9600d0bb	0x16bf30
-boundarylib	?Boundary_16c030@@YAXXZ	1.0811	1.0811	1	95c649d6892f	0x16c030
-boundarylib	?Boundary_16c180@@YAXXZ	1.3333	1.3333	1	e691d83be415	0x16c180
-boundarylib	?Boundary_16c230@@YAXXZ	1.2500	1.2500	1	abf31e826bea	0x16c230
-boundarylib	?Boundary_16c2b0@@YAXXZ	10.0000	10.0000	1	a0325d5d1f1d	0x16c2b0
-boundarylib	?Boundary_16c2d0@@YAXXZ	0.2010	0.2010	1	6dde958d78c2	0x16c2d0
-boundarylib	?Boundary_16c740@@YAXXZ	1.1429	1.1429	1	fa8850e3132f	0x16c740
-boundarylib	?Boundary_16c800@@YAXXZ	1.0000	1.0000	1	82320364810d	0x16c800
-boundarylib	?Boundary_16c8a0@@YAXXZ	0.8889	0.8889	1	34aab4e1fa93	0x16c8a0
-boundarylib	?Boundary_16c950@@YAXXZ	3.7037	3.7037	1	15623437e964	0x16c950
-boundarylib	?Boundary_16ca00@@YAXXZ	0.8511	0.8511	1	254c1f172220	0x16ca00
-boundarylib	?Boundary_16ca80@@YAXXZ	0.2740	0.2740	1	87b19d2696cc	0x16ca80
-boundarylib	?Boundary_191d20@@YAXXZ	0.6250	0.6250	1	e5d8f83c9e3c	0x191d20
-boundarylib	?Boundary_191df0@@YAXXZ	0.3846	0.3846	1	8a83d5dd6dc8	0x191df0
-boundarylib	?Boundary_191f30@@YAXXZ	0.6897	0.6897	1	b28193245730	0x191f30
-boundarylib	?Boundary_191fe0@@YAXXZ	0.8696	0.8696	1	934f56b36d39	0x191fe0
-boundarylib	?Boundary_192120@@YAXXZ	0.6557	0.6557	1	3b2dd63176de	0x192120
-boundarylib	?Boundary_1921e0@@YAXXZ	0.6780	0.6780	1	5668f3e869ca	0x1921e0
-boundarylib	?Boundary_1922a0@@YAXXZ	0.7547	0.7547	1	441195bcdcc9	0x1922a0
-boundarylib	?Boundary_192480@@YAXXZ	0.7273	0.7273	1	e91be05dc08e	0x192480
-boundarylib	?Boundary_192540@@YAXXZ	0.6780	0.6780	1	5b5e9903a77e	0x192540
-boundarylib	?Boundary_192610@@YAXXZ	10.0000	10.0000	1	b1f254f056a8	0x192610
-boundarylib	?Boundary_192630@@YAXXZ	0.5797	0.5797	1	9cffe281d380	0x192630
-boundarylib	?Boundary_1926e0@@YAXXZ	0.7143	0.7143	1	0cdd830c59f9	0x1926e0
-boundarylib	?Boundary_192780@@YAXXZ	0.6452	0.6452	1	7a9528cd27c6	0x192780
-boundarylib	?Boundary_192830@@YAXXZ	1.0638	1.0638	1	384e684efc7d	0x192830
 brickz	?AllocGrid@CBrickz@@QAEHHHH@Z	79.5971	79.5971	1	41e0594e8c95	0x9ea60
 brickz	?CellPop@CBrickz@@QAEXPAUBrickzNode@@H@Z	80.3284	80.3284	3	6c5a65d16fa4	0x9f710
 brickz	?CellPush@CBrickz@@QAEXPAUBrickzNode@@@Z	85.9070	85.9070	2	890d04538e3f	0x9f470
@@ -1046,16 +976,6 @@ cremusreadstream	?GetEntryTag@CRemusReadStream@@QAEHXZ	100.0000	100.0000	1	9a94e
 cremusreadstream	?Read@CRemusReadStream@@QAEHPAXIH@Z	91.1957	91.1957	1	a3c64a9d684b	0x139af0
 cremusreadstream	?ReadAt@CRemusReadStream@@QAEHPAXHI@Z	100.0000	100.0000	1	235b7f0507a0	0x139a40
 cremusreadstream	?SetPos@CRemusReadStream@@QAEHH@Z	100.0000	100.0000	1	dbbfa0bcee57	0x139ae0
-crt_istream	?get@istream@@QAEHXZ	100.0000	100.0000	1	c72ccfaea1d2	0x16a410
-crt_istream	?ipfx@istream@@QAEHH@Z	96.1146	96.1146	1	5b2490abd943	0x16b720
-crt_istream	?read@istream@@QAEAAV1@PADH@Z	100.0000	100.0000	1	2a25e44c4790	0x16a510
-crt_ostream	??6ostream@@QAEAAV0@E@Z	90.3077	90.3077	2	19100700ed33	0x192060
-crt_ostream	??6ostream@@QAEAAV0@PAVstreambuf@@@Z	100.0000	100.0000	1	19100700ed33	0x16c6b0
-crt_ostream	?opfx@ostream@@QAEHXZ	100.0000	100.0000	1	c7d033751aea	0x16bd10
-crt_ostream	?osfx@ostream@@QAEXXZ	100.0000	100.0000	1	53782d87a169	0x16bd90
-crt_ostream	?seekp@ostream@@QAEAAV1@H@Z	84.3390	84.3390	1	ba3a10f0c0b7	0x16c4d0
-crt_ostream	?tellp@ostream@@QAEHXZ	81.7419	81.7419	1	47de21052ef4	0x16c610
-crt_ostream	?write@ostream@@QAEAAV1@PBDH@Z	100.0000	100.0000	1	36a53b2e5b07	0x16ab20
 crt_streambuf	??0streambuf@@QAE@XZ	15.9167	15.9167	1	ef791f1f51c0	0x16b070
 crt_streambuf	??1streambuf@@QAE@XZ	100.0000	100.0000	2	ec449f8fc404	0x16b150
 crt_streambuf	?out_waiting@streambuf@@QBEHXZ	100.0000	100.0000	1	57d78b1417ca	0x21280
@@ -1066,13 +986,6 @@ crt_streambuf	?snextc@streambuf@@QAEHXZ	100.0000	100.0000	1	c9bd80293831	0x16cca
 crt_streambuf	?stossc@streambuf@@QAEHXZ	100.0000	100.0000	1	e6c3b56810bb	0x16cd50
 crt_streambuf	?sync@streambuf@@QAEHXZ	100.0000	100.0000	2	13d9462cc314	0x16b320
 crt_streambuf	?xsputn@streambuf@@QAEHPBDH@Z	100.0000	100.0000	2	78d4cb7f0189	0x16b1d0
-crt_strstreambuf	??0strstreambuf@@QAE@H@Z	100.0000	100.0000	1	0f520a16d08e	0x169050
-crt_strstreambuf	??0strstreambuf@@QAE@P6APAXH@ZP6AXPAX@Z@Z	100.0000	100.0000	1	0f520a16d08e	0x1690b0
-crt_strstreambuf	??0strstreambuf@@QAE@PADH0@Z	100.0000	100.0000	3	0f520a16d08e	0x169160
-crt_strstreambuf	??0strstreambuf@@QAE@XZ	100.0000	100.0000	1	0f520a16d08e	0x169000
-crt_strstreambuf	??1strstreambuf@@QAE@XZ	89.6970	89.6970	2	7c53a170b574	0x169220
-crt_strstreambuf	?str@strstreambuf@@QAEPADXZ	100.0000	100.0000	1	08404bbcac2f	0x1692b0
-crt_strstreambuf	?underflow@strstreambuf@@QAEHXZ	91.7353	91.7353	2	b71b810269ba	0x169490
 cscanlinesurface	?Convert8To16@CScanlineSurface@@QAEHPAXPAV1@0@Z	68.6129	68.6129	1	4f8c2147e5a4	0x175b80
 cscanlinesurface	?EnsureSize@CScanlineSurface@@QAEHPAXHHHH@Z	100.0000	100.0000	1	44075cfb09a4	0x175ce0
 cscanlinesurface	?Fill@CScanlineSurface@@QAEXH@Z	91.4194	91.4194	1	64fc9665081a	0x175d50

@@ -156,14 +156,18 @@ def extract_signatures(path, lib, member, min_len):
     return sigs, None
 
 def main():
-    libcmt_dir = sys.argv[1]
-    nafxcw_dir = sys.argv[2]
-    out_pkl    = sys.argv[3]
-    min_len    = int(sys.argv[4]) if len(sys.argv)>4 else 1
+    # usage: coff_sig <name_objs dir> [<name_objs dir> ...] <out.pkl> [min_len]
+    args = list(sys.argv[1:])
+    min_len = 1
+    if args and args[-1].isdigit():
+        min_len = int(args[-1]); args = args[:-1]
+    out_pkl  = args[-1]
+    obj_dirs = args[:-1]   # one or more <name>_objs dirs; lib label inferred from basename
     all_sigs = []
     errors = {}
     counts = {}
-    for lib, d in [("LIBCMT", libcmt_dir), ("NAFXCW", nafxcw_dir)]:
+    for d in obj_dirs:
+        lib = os.path.basename(str(d).rstrip("/")).replace("_objs", "").upper()
         members = sorted(f for f in os.listdir(d) if f.endswith('.obj'))
         nfunc = 0
         for m in members:
