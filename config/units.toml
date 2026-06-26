@@ -1233,6 +1233,11 @@ source = "src/Gruntz/EyeCandyTypeTags.cpp"
 flags = "base"
 
 [[unit]]
+unit = "demosetup"
+source = "src/Gruntz/DemoSetup.cpp"
+flags = "base"
+
+[[unit]]
 unit = "mgrtokenquery"
 source = "src/Gruntz/MgrTokenQuery.cpp"
 flags = "base"

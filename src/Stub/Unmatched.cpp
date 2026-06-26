@@ -31,8 +31,6 @@ RVA(0x00037a70, 0x9a)
 void Unmatched_037a70() {} // Unmatched_037a70
 RVA(0x0003ac30, 0xa)
 void Unmatched_03ac30() {} // Unmatched_03ac30
-RVA(0x0003c070, 0x47)
-void Unmatched_03c070() {} // Unmatched_03c070
 RVA(0x0003c220, 0xa4)
 void Unmatched_03c220() {} // Unmatched_03c220
 RVA(0x0003c8f0, 0x76)
