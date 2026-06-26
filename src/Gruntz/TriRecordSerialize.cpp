@@ -28,3 +28,25 @@ i32 CTriRecord::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
     }
     return 1;
 }
+
+// 0x58ee0: the Serialize override of a 16-byte two-i64 record (m_0 / m_8).
+struct CPairRecord {
+    i64 m_0;
+    i64 m_8;
+    i32 Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d); // 0x58ee0
+};
+
+RVA(0x00058ee0, 0x5c)
+i32 CPairRecord::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
+    switch (tag) {
+        case 4:
+            ar->Write(&m_0, 8);
+            ar->Write(&m_8, 8);
+            break;
+        case 7:
+            ar->Read(&m_0, 8);
+            ar->Read(&m_8, 8);
+            break;
+    }
+    return 1;
+}

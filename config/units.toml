@@ -1243,6 +1243,11 @@ source = "src/Gruntz/TriRecordSerialize.cpp"
 flags = "base"
 
 [[unit]]
+unit = "orphanmethods"
+source = "src/Gruntz/OrphanMethods.cpp"
+flags = "base"
+
+[[unit]]
 unit = "gamesave"
 source = "src/Io/GameSave.cpp"
 flags = "base"
