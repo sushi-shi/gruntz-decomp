@@ -4196,23 +4196,11 @@ namespace ApiCallerStubs {
     RVA(0x00065e80, 0x12b8)
     void ThisStubOwnerUnknown::LoadPickupSprites(i32, i32, i32, i32, i32) {}
 
-    // @confidence: low
-    // @source: decomp-xref
-    // @stub
-    RVA(0x00068520, 0x2a2)
-    void ThisStubOwnerUnknown::LoadBombGruntRunConfig2() {}
-
     // @confidence: med
     // @source: string-xref
     // @stub
     RVA(0x00068880, 0x67c)
     void ThisStubOwnerUnknown::LoadWingzGruntSprites(i32) {}
-
-    // @confidence: med
-    // @source: decomp-xref
-    // @stub
-    RVA(0x00069d60, 0x1e1)
-    void ThisStubOwnerUnknown::LoadFreezeSpellAssets() {}
 
     // @confidence: med
     // @source: string-xref

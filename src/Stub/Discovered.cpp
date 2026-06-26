@@ -17,8 +17,6 @@ RVA(0x00142a40, 0x53)
 void CDDSurface::CDDSurface_142a40() {}
 
 // ---- CGrunt ----
-RVA(0x000ec670, 0x298)
-void CGrunt::CGrunt_0ec670() {}
 RVA(0x000ef6b0, 0x61d)
 void CGrunt::CGrunt_0ef6b0() {}
 

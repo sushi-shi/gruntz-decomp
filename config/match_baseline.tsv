@@ -121,8 +121,8 @@ directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	15	0
 engine_boundary	540	0
-engine_discovered	53	0
-engine_label_stubs	446	104
+engine_discovered	52	0
+engine_label_stubs	444	104
 engstr	3	1
 filemem	9	8
 filestream	13	9
@@ -137,7 +137,7 @@ gamemodeobjlifecycle	4	3
 gameobjectctors	5	1
 gametext	4	3
 gamewnd	9	8
-grunt	78	15
+grunt	81	15
 gruntdatarecord	2	2
 gruntpuddle	4	2
 gruntspawnconfig	15	8
@@ -1629,7 +1629,6 @@ engine_discovered	?CButeStore_174d70@CButeStore@@QAEXXZ	3.2258	3.2258	1	cc31d37b
 engine_discovered	?CCheckpointTrigger_011480@CCheckpointTrigger@@QAEXXZ	5.8824	5.8824	3	ea4c978419c4	0x11480
 engine_discovered	?CDDSurface_142a40@CDDSurface@@QAEXXZ	5.0000	5.0000	3	861706b38678	0x142a40
 engine_discovered	?CGruntToyTimeSprite_012130@CGruntToyTimeSprite@@QAEXXZ	5.8824	5.8824	3	28eca57e8d98	0x12130
-engine_discovered	?CGrunt_0ec670@CGrunt@@QAEXXZ	0.5102	0.5102	1	a15dbc288150	0xec670
 engine_discovered	?CGrunt_0ef6b0@CGrunt@@QAEXXZ	0.2151	0.2151	1	5d439146fea0	0xef6b0
 engine_discovered	?CGruntzMgr_08b960@CGruntzMgr@@QAEXXZ	0.0907	0.0907	3	4a22ea071af3	0x8b960
 engine_discovered	?CGruntzSingleCommand_0ec1c0@CGruntzSingleCommand@@QAEXXZ	6.2500	6.2500	1	5052fb3f609d	0xec1c0
@@ -1841,7 +1840,6 @@ engine_label_stubs	?LoadAttributes@CBrickz@@QAEXHH@Z	0.1490	0.1490	1	cpp:6bf5215
 engine_label_stubs	?LoadAttributes@CDroppedObjectShadow@@QAEXXZ	0.4444	0.4444	1	cpp:45e65336d4b5	0xc62e0
 engine_label_stubs	?LoadAttributes@CTeleporter@@QAEXXZ	0.4274	0.4274	1	cpp:45e65336d4b5	0x41aa0
 engine_label_stubs	?LoadAttributes@CTimeBomb@@QAEXXZ	0.7246	0.7246	1	cpp:45e65336d4b5	0xe1e60
-engine_label_stubs	?LoadBombGruntRunConfig2@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXXZ	0.4762	0.4762	1	cpp:e8a4cb0d5b2a	0x68520
 engine_label_stubs	?LoadBombGruntRunConfig@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXHH@Z	0.3922	0.3922	1	cpp:e8a4cb0d5b2a	0x65630
 engine_label_stubs	?LoadBootyCheatState@EngineLabelBacklog@@YGXHHH@Z	0.3788	0.3788	1	cpp:6bf52155264d	0x18830
 engine_label_stubs	?LoadBridgeMoveSprites@EngineLabelBacklog@@YGXH@Z	0.6536	0.6536	1	cpp:6bf52155264d	0x110860
@@ -1850,7 +1848,6 @@ engine_label_stubs	?LoadCreditzAssets2@ThisStubOwnerUnknown@ApiCallerStubs@@QAEX
 engine_label_stubs	?LoadCustomWorldInfo@EngineLabelBacklog@@YAHPAX@Z	100.0000	100.0000	1	cpp:aab6e5a6e511	0x3b7c0
 engine_label_stubs	?LoadDroppedObjectEffects@CDroppedObject@@QAEXXZ	0.6289	0.6289	1	cpp:e8a4cb0d5b2a	0xc7090
 engine_label_stubs	?LoadFinishLevelSprite@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXH@Z	0.9804	0.9804	1	cpp:e8a4cb0d5b2a	0x7c3d0
-engine_label_stubs	?LoadFreezeSpellAssets@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXXZ	0.7463	0.7463	1	cpp:e8a4cb0d5b2a	0x69d60
 engine_label_stubs	?LoadGameAssetNamespaces@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXHHH@Z	0.5525	0.5525	1	cpp:e8a4cb0d5b2a	0xf9ea0
 engine_label_stubs	?LoadGruntAbilityTuning@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXH@Z	0.2538	0.2538	1	cpp:e8a4cb0d5b2a	0x57100
 engine_label_stubs	?LoadGruntCombatAnimations@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXHHHHHHHH@Z	0.0777	0.0777	1	cpp:e8a4cb0d5b2a	0x597a0
@@ -2330,7 +2327,7 @@ grunt	?BeginAttack@CGrunt@@QAEHHH@Z	53.7917	53.7917	1	3d02da5c24cc	0x5b570
 grunt	?BuildEntranceAnimation@CGrunt@@QAEXH@Z	71.4562	71.4562	6	31017869150f	0x67bd0
 grunt	?BuildGruntLoseItemAnimation@CGrunt@@QAEHXZ	99.9032	99.9032	1	38742e98c150	0x57890
 grunt	?CGrunt_IsSameType@@YA_NPAVCGrunt@@0@Z	100.0000	100.0000	1	04ada45b6431	0x3c7f0
-grunt	?CGrunt_SegBoxOverlap@@YGHPAUGruntBox@@PAUGruntSegEnd@@1@Z	78.8911	78.8911	1	bb4ee352e2c0	0x62b70
+grunt	?CGrunt_SegBoxOverlap@@YGHPAUGruntBox@@PAUGruntSegEnd@@1@Z	77.7970	77.7970	1	bb4ee352e2c0	0x62b70
 grunt	?CGrunt_TileSwitch@@YGXHHHHHH@Z	66.2000	66.2000	2	e4d83b1d7834	0x4b320
 grunt	?CanShowStamina@CGrunt@@QAEHXZ	100.0000	100.0000	3	e5851737e25e	0x514a0
 grunt	?ClaimSwitchTile@CGrunt@@QAEHXZ	61.5954	61.5954	1	564a86c19254	0x52c70
@@ -2360,6 +2357,7 @@ grunt	?GruntInRadius@CGrunt@@QAEHHH@Z	35.7143	35.7143	1	d9edebac6a79	0x67b00
 grunt	?InitDirVectors@CGrunt@@QAEXXZ	37.3394	37.3394	1	1b1f255f448b	0x5caa0
 grunt	?LoadAnimNameTable@CGrunt@@QAEXHH@Z	75.9312	75.9312	3	f341d57d748b	0x49c60
 grunt	?LoadEntranceConfig@CGrunt@@QAEXXZ	78.8377	78.8377	6	7a2efa979b8d	0x67f80
+grunt	?LoadFreezeSpellAssets@CGrunt@@QAEHXZ	87.3881	87.3881	1	d26b2e9a8e95	0x69d60
 grunt	?LoadGruntMovingDeathConfig@CGrunt@@QAEXXZ	0.4132	0.4132	1	7e3c13f46f60	0x6a060
 grunt	?OnStruck@CGrunt@@QAEXH@Z	76.2798	76.2798	1	adbf392072d5	0x588f0
 grunt	?PlayMoveSound@CGrunt@@QAEXHH@Z	100.0000	100.0000	1	aa803a2a8575	0x511b0
@@ -2374,6 +2372,7 @@ grunt	?RectContainsGated@CGrunt@@QAEHHH@Z	62.3307	62.3307	1	e41d77906d32	0x51a20
 grunt	?ResetGeometry@CGrunt@@QAEHXZ	82.8800	82.8800	3	502caa6ebbcc	0x616e0
 grunt	?ResolveAnimation@CGrunt@@QAEHXZ	95.4210	95.4210	6	9f3a431918a8	0x457b0
 grunt	?ResolveArrivalNeighbor@CGrunt@@QAEHXZ	74.9747	74.9747	2	85816637f608	0xf26f0
+grunt	?ResolveArrivalReposition@CGrunt@@QAEHXZ	66.3520	66.3520	1	7df8c353b8b0	0xec670
 grunt	?ResolveBattlecryAnimation@CGrunt@@QAEHXZ	90.3365	90.3365	6	871a141b3eab	0x45b60
 grunt	?ResolveDeathAnimation@CGrunt@@QAEHXZ	97.8283	97.8283	6	142c8cc4dd01	0x455f0
 grunt	?ResolveIdleAnimation@CGrunt@@QAEHXZ	92.0598	92.0598	6	4559532e9c2a	0x45960
@@ -2385,6 +2384,7 @@ grunt	?SerializeMove@CGrunt@@QAEHPAVCGruntArchive@@HHH@Z	100.0000	100.0000	2	bc7
 grunt	?SetArrivalTarget@CGrunt@@QAEXHHHH@Z	64.4000	64.4000	1	422a2e1078e7	0x52ed0
 grunt	?SetEntrancePos@CGrunt@@QAEXHH@Z	89.3421	89.3421	3	2c26e611f009	0x4d060
 grunt	?SnapToLastTile@CGrunt@@QAEXH@Z	100.0000	100.0000	1	0d41d9a7d4a1	0x517b0
+grunt	?StartBombGruntRun@CGrunt@@QAEHXZ	93.4333	93.4333	1	4dffa6857538	0x68520
 grunt	?StepAnimDispatchA@CGrunt@@QAEHHHHH@Z	41.6245	41.6245	2	cee096a63856	0x52fb0
 grunt	?StepAnimDispatchB@CGrunt@@QAEHXZ	40.7674	40.7674	2	4dbf079670fa	0x6a6d0
 grunt	?StepArrivalCommit@CGrunt@@QAEHXZ	1.8288	1.8288	1	d12f1cd235e5	0x692f0

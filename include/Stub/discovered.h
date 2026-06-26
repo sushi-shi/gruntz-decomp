@@ -20,7 +20,6 @@ public:
 };
 class CGrunt {
 public:
-    void CGrunt_0ec670();
     void CGrunt_0ef6b0();
 };
 class CGruntToyTimeSprite {

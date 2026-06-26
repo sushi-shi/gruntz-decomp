@@ -305,6 +305,9 @@ public:
     // entrance forms). External/no-body so the call rel32 reloc-masks.
     void GameApplyName(const char* name);                 // 0x150540 (ret 4)
     void GameApplyLookupSprite(const char* key, i32 flag); // 0x1504d0 (ret 8)
+    // The CGameObject-base lookup-geometry setter (same 0x1505b0 slot CHudSprite
+    // uses) the death/freeze finalize drives with the DEATHZ_SPARKLE/UNFREEZE keys.
+    void GameApplyLookupGeometry(const char* key, i32 flag); // 0x1505b0 (ret 8)
 
     char m_pad0[0xc];
     CEntranceResMgr* m_c; // +0x0c  resource object (lookup table holder)
@@ -563,12 +566,17 @@ public:
     // (the in-flight-arrival path commits the grunt's occupied slot to a settled
     // position). thunk 0x3030 -> 0x6e120 (4-arg) and thunk 0x14bf -> 0x6dae0 (4-arg);
     // external/no-body so the calls reloc-mask.
-    void CommitTileSlot(i32 ownerHi, i32 ownerLo, i32 px, i32 py);  // 0x6e120
-    void CommitTileSlot2(i32 ownerHi, i32 ownerLo, i32 px, i32 py); // 0x6dae0
+    void CommitTileSlot(i32 ownerHi, i32 ownerLo, i32 px, i32 py); // 0x6e120
+    // 0x6dae0 - returns -1 when the slot couldn't be committed (the reposition step
+    // @0xec670 gates on != -1); other callers discard the result.
+    i32 CommitTileSlot2(i32 ownerHi, i32 ownerLo, i32 px, i32 py); // 0x6dae0
     // FinishEntranceMove's tile-mgr drop notify (thunk_0x2a72 -> 0x79fb0), 3 args.
     void NotifyEntranceDrop(i32 ownerHi, i32 ownerLo, i32 flag); // 0x79fb0
     // The death/struck-reaction tile-mgr commit (thunk_0x10eb -> 0x78260), 3 args.
     void CommitStruckTile(i32 ownerHi, i32 ownerLo, i32 flag); // 0x78260
+    // The run-start drop notify at the grunt's HUD pos (thunk_0x2fb3 -> 0x7b330), 4 args.
+    void NotifyMoveAt(i32 px, i32 py, i32 a, i32 b); // 0x7b330
+
 };
 
 // The on-screen point-visibility predicate the arrival/update steps gate the cue
@@ -1105,7 +1113,7 @@ public:
     // falls out). Names describe the observed effect, not a recovered symbol.
     i32 IsDropReady(i32 a = 0); // thunk_0x17df (drop-ready predicate; 1-arg __thiscall)
     void ApplySetState1(i32 v);                            // thunk_0x4322 (1-arg state apply)
-    void SetMoveStateA(i32 v, i32 a, i32 b, i32 c);        // thunk_0x3bd9 (4-arg state set)
+    i32 SetMoveStateA(i32 v, i32 a, i32 b, i32 c);         // thunk_0x3bd9 (4-arg; nonzero = re-roll)
     void SetMoveStateB(i32 v, i32 a, i32 b, i32 c, i32 d); // thunk_0x1401 (5-arg-ish)
     void EmitMoveCueQ(i32 a);                              // thunk_0x4336 (1-arg cue/state)
     void EmitMoveCueShort(i32 a, i32 b, i32 c);            // thunk_0x1163 (3-arg cue on m_10)
@@ -1144,6 +1152,22 @@ public:
     // gate on the armed-but-not-running sub-player, notify the tile-mgr of the drop
     // (unless m_36c set), then retire the entrance player (m_154->m_8 |= 0x10000).
     i32 FinishEntranceMove(); // @0x69fd0
+    // @0x69d60 (ret 0) - the freeze-spell entrance-anim finalize step (DEATHZ_SPARKLE
+    // -> idle-delay window -> DEATHZ_UNFREEZE + on-screen entrance cue).
+    i32 LoadFreezeSpellAssets(); // @0x69d60
+    // @0xec670 (ret 0 -> 1) - the arrival-reposition step: resolve the tile occupant,
+    // gate on in-radius, commit its slot (or, when no occupant, re-roll a random
+    // in-region target after the idle window elapses) + fire the on-screen entrance cue.
+    i32 ResolveArrivalReposition(); // @0xec670
+    // The 0x4b320 tile-switch entry reached __thiscall here (this in ecx, 6 stack args,
+    // ret 0x18; returns nonzero on success). Same engine fn as the free CGrunt_TileSwitch
+    // passthrough; modeled as a method so `mov ecx,this; ...; call` falls out.
+    i32 TileSwitch6(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x4b320 (thiscall view)
+    // @0x68520 (ret 0 -> 0) - begin the bomb-grunt run reaction: retire the HUD stat
+    // sprites, latch the entrance/struck state, then either re-notify the move or (when
+    // re-rolling) pick a random adjacent tile, play the move sound, latch the "M" anim,
+    // load RunningTimePerTile, fire the on-screen spawn cue, and re-stamp the cell frame.
+    i32 StartBombGruntRun(); // @0x68520
 
     // @0x646b0 (ret 0x20, 8 stack args) - the combat-reaction anim-dispatch state
     // machine. MISATTRIBUTED to CUserLogic by proximity bracketing; the +0x1fc gate,

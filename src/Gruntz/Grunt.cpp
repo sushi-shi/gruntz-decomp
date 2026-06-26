@@ -150,6 +150,16 @@ static char s_CombatTimeout[] = "CombatTimeout";               // s_CombatTimeou
 // The death/freeze finalize key string (reloc-masked .rodata, 0x60e0f0).
 static const char s_GRUNTZ_DEATHZ_FREEZE[] = "GRUNTZ_DEATHZ_FREEZE";
 
+// LoadFreezeSpellAssets (@0x69d60) finalize keys + bute lookup tag/key (reloc-masked).
+static const char s_GRUNTZ_DEATHZ_SPARKLE[] = "GRUNTZ_DEATHZ_SPARKLE";  // 0x60ee48
+static const char s_GRUNTZ_DEATHZ_UNFREEZE[] = "GRUNTZ_DEATHZ_UNFREEZE"; // 0x60ee1c
+static char s_Spellz[] = "Spellz";                                       // 0x60cca8
+static char s_FreezeDelay[] = "FreezeDelay";                             // 0x60ee38
+
+// StartBombGruntRun (@0x68520) bute tag/key (reloc-masked).
+static char s_BOMBGRUNT[] = "BOMBGRUNT";                   // 0x60dbd0
+static char s_RunningTimePerTile[] = "RunningTimePerTile"; // 0x60e264
+
 // A global enable flag the neighbor-combat gate reads when the candidate IS self
 // (DAT_006455b0, reloc-masked).
 i32 g_6455b0;
@@ -5096,6 +5106,68 @@ i32 CGrunt::GruntInRadius(i32 col, i32 row) {
 }
 
 // ---------------------------------------------------------------------------
+// CGrunt::LoadFreezeSpellAssets()  @0x69d60  (__thiscall, ret 0)
+// The freeze-spell entrance-anim finalize step. Arm the geometry source; when the
+// sub-player is armed-but-not-running (sub+0x28 != 0 && sub+0x20 == 0):
+//   * if the +0x240 "finalized" latch is set, clear the entrance, re-init the anim
+//     name table, reseed the idle reset, and (if the last tile carries the high
+//     occupancy bit) commit the arrival move - then return.
+//   * else (+0x240 clear) stamp the DEATHZ_SPARKLE finalize geometry, seed the
+//     freeze-delay idle window (Spellz/FreezeDelay bute, default 0x2710) anchored
+//     at the game clock, and clear the +0x23c latch.
+// Then, when +0x23c is clear and the idle-delay window has elapsed, stamp the
+// DEATHZ_UNFREEZE geometry, fire the on-screen 6-arg entrance cue (0x35c) when the
+// grunt's HUD point is in view, and set the +0x240/+0x23c latches. Returns 0.
+// @early-stop
+// callee-save rematerialization wall (docs/patterns/shrink-wrapped-callee-save-push):
+// retail reloads m_lastTilePxX/Y for CommitArrivalMove, so the tile-read uses 4 regs
+// (no ebp push); cl caches them in a callee-saved reg, pushing ebp and shifting the
+// 64-bit idle-timer compare's regalloc. Body byte-exact apart from that one-register
+// cascade (~87.4%). Logic complete; deferred to the final sweep.
+RVA(0x00069d60, 0x1e1)
+i32 CGrunt::LoadFreezeSpellAssets() {
+    m_154->m_1a0.SetGeoSourceR(g_defaultGeo);
+    char* sub = (char*)&m_154->m_1a0;
+    if (*(i32*)(sub + 0x28) != 0 && *(i32*)(sub + 0x20) == 0) {
+        if (*(i32*)((char*)this + 0x240) != 0) {
+            m_entranceActive = 0;
+            Stub_048400();
+            Stub_048470(0, 0);
+            LoadAnimNameTable(0, 0);
+            Stub_062e10(1, 0, 0);
+            if (s_TileFlags(g_gameReg->m_70, m_lastTilePxX >> 5, m_lastTilePxY >> 5) & 0x80) {
+                m_tileMgr->CommitArrivalMove(this, m_lastTilePxX, m_lastTilePxY);
+            }
+            return 0;
+        }
+        m_prevEntranceDesc = (i32)m_154->m_1b4;
+        m_154->GameApplyLookupGeometry(s_GRUNTZ_DEATHZ_SPARKLE, 0);
+        m_idleDelayLo = g_buteMgr.GetIntDef(s_Spellz, s_FreezeDelay, 0x2710);
+        m_idleDelayHi = 0;
+        m_idleAnchorLo = (i32)g_645588;
+        m_idleAnchorHi = 0;
+        *(i32*)((char*)this + 0x23c) = 0;
+    }
+    if (*(i32*)((char*)this + 0x23c) == 0) {
+        if ((i64)(u32)g_645588 - *(i64*)&m_idleAnchorLo >= *(i64*)&m_idleDelayLo) {
+            m_prevEntranceDesc = (i32)m_154->m_1b4;
+            m_154->GameApplyLookupGeometry(s_GRUNTZ_DEATHZ_UNFREEZE, 0);
+            CGruntHud* h = m_10;
+            i32 vx = h->m_5c;
+            i32 vy = h->m_60;
+            char* sc = *(char**)((char*)g_gameReg->m_30 + 0x24);
+            i32* rect = (i32*)(*(char**)(sc + 0x5c) + 0x40);
+            if (vx < rect[2] && vx >= rect[0] && vy < rect[3] && vy >= rect[1]) {
+                g_gameReg->m_60->CueA(this, 0x35c, -1, 0, -1, -1);
+            }
+            *(i32*)((char*)this + 0x240) = 1;
+            *(i32*)((char*)this + 0x23c) = 1;
+        }
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
 // CGrunt::FinishEntranceMove()  @0x69fd0  (__thiscall, ret 0)
 // Arm the entrance geometry source (m_154->m_1a0.SetGeoSourceR(g_defaultGeo)); when
 // the geometry sub-player is armed-but-not-running (sub+0x28 != 0 && sub+0x20 == 0):
@@ -5346,5 +5418,208 @@ tail:
             g_gameReg->m_60->CueSpawn(this, 7, -1, -1, -1);
         }
     }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// CGrunt::ResolveArrivalReposition()   @0xec670   (__thiscall, ret 0 -> 1)
+// The per-tick arrival-reposition step. Latch the defender position to the last
+// tile; if the tile occupant is in radius and the +0x2ec dwell exceeds 0xfa, try to
+// tile-switch onto it and commit its slot - on a -1 commit (slot not yet free) fire
+// the on-screen entrance cue (0x366) when in view. With no in-radius occupant, once
+// the +0x2ec dwell window passes the thresholds and the (m_308..m_314) idle timer has
+// elapsed, reset that timer to a fresh rand%0x7530; otherwise re-roll a random target
+// inside the HUD scroll region (m_134..m_140) and tile-switch onto it, escalating to
+// SetEntrancePos when the spread exceeds m_328. Returns 1.
+// @early-stop
+// idiv/rand + abs + shared-tail-zero-reg + 64-bit-sbb-timer plateau: the occupant
+// resolve, the in-radius/dwell gates, the random-region re-roll (two rand()%span via
+// abs spans), the max-spread SetEntrancePos escalation, the idle-timer reset, and the
+// structure-1 on-screen cue are all reconstructed in shape/order. Residue is the
+// MSVC /O2 idiv scheduling + the ebx zero-register tail sharing. Final sweep.
+RVA(0x000ec670, 0x298)
+i32 CGrunt::ResolveArrivalReposition() {
+    CGrunt* occ = m_tileMgr->GetOccupant(this);
+    m_defenderX = m_lastTilePxX;
+    m_defenderY = m_lastTilePxY;
+    if (occ != 0 && GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) != 0) {
+        if ((u32) * (u32*)((char*)this + 0x2ec) > 0xfa) {
+            CGruntHud* oh = occ->m_10;
+            if (TileSwitch6(oh->m_5c >> 5, oh->m_60 >> 5, 0, m_arrivalFlags, 1, 0) != 0) {
+                CGruntHud* oh2 = occ->m_10;
+                if (m_tileMgr->CommitTileSlot2(m_tileOwnerHi, m_tileOwnerLo, oh2->m_5c, oh2->m_60) ==
+                    -1) {
+                    *(i32*)((char*)this + 0x2ec) = 0;
+                    if (*(i32*)((char*)this + 0x390) != 0) {
+                        CGruntHud* h = m_10;
+                        i32 vx = h->m_5c;
+                        i32 vy = h->m_60;
+                        char* sc = *(char**)((char*)g_gameReg->m_30 + 0x24);
+                        i32* rect = (i32*)(*(char**)(sc + 0x5c) + 0x40);
+                        if (vx < rect[2] && vx >= rect[0] && vy < rect[3] && vy >= rect[1]) {
+                            g_gameReg->m_60->CueA(this, 0x366, -1, 0, -1, -1);
+                        }
+                        *(i32*)((char*)this + 0x390) = 0;
+                        *(i32*)((char*)this + 0x2ec) = 0;
+                        return 1;
+                    }
+                }
+            }
+            goto L8a2;
+        }
+        return 1;
+    }
+
+    {
+        u32 dwell = *(u32*)((char*)this + 0x2ec);
+        if (dwell > 0x3e8 && m_resetApplied == 0 && *(i32*)((char*)this + 0x318) != 0 &&
+            dwell > 0xbb8) {
+            if ((i64)(u32)g_645588 - *(i64*)((char*)this + 0x308) >=
+                *(i64*)((char*)this + 0x310)) {
+                goto L8b5;
+            }
+            CGruntHud* h = m_10;
+            i32 baseX = h->m_134;
+            i32 spanX = abs(h->m_13c - baseX);
+            i32 baseY = h->m_138;
+            i32 spanY = abs(h->m_140 - baseY);
+            i32 outX = baseX;
+            if (spanX != 0) {
+                outX += GruntRand() % spanX;
+            }
+            i32 outY = baseY;
+            if (spanY != 0) {
+                outY += GruntRand() % spanY;
+            }
+            TileSwitch6(outX, outY, 0, m_arrivalFlags, 1, 0);
+            i32 m328 = *(i32*)((char*)this + 0x328);
+            if (m328 != 0) {
+                i32 mx = spanX > spanY ? spanX : spanY;
+                if (m328 > mx) {
+                    SetEntrancePos(1, 1);
+                }
+            }
+            *(i32*)((char*)this + 0x390) = 1;
+            goto L8a2;
+        }
+    }
+    return 1;
+
+L8a2:
+    *(i32*)((char*)this + 0x2ec) = 0;
+    return 1;
+
+L8b5:
+    Stub_062e10(1, 1, 0);
+    *(i32*)((char*)this + 0x308) = 0;
+    *(i32*)((char*)this + 0x310) = 0;
+    *(i32*)((char*)this + 0x30c) = 0;
+    *(i32*)((char*)this + 0x314) = 0;
+    *(i32*)((char*)this + 0x310) = GruntRand() % 0x7530 + 0x7530;
+    *(i32*)((char*)this + 0x314) = 0;
+    *(i32*)((char*)this + 0x308) = (i32)g_645588;
+    *(i32*)((char*)this + 0x30c) = 0;
+    *(i32*)((char*)this + 0x390) = 1;
+    goto L8a2;
+}
+
+// ---------------------------------------------------------------------------
+// CGrunt::StartBombGruntRun()   @0x68520   (__thiscall, ret 0)
+// Begin the bomb-grunt run reaction: run the anim-dispatch step, retire all seven
+// HUD stat sprites, clear the grunt-kind, and (when powered-up with no live
+// neighbor) reset the entrance + idle state. Latch the entrance/struck state, apply
+// the move-state; if the move-state driver declines (returns 0) just re-notify the
+// move at the current HUD pos and return. Otherwise pick a random adjacent tile
+// (rand%3-1 in each axis, forced non-zero), play the directional move sound, latch
+// the resolved tile + the "M" run anim-set, load RunningTimePerTile, fire the
+// on-screen spawn cue when in view, drive the _ITEM geometry, and re-stamp the
+// entrance-cell frame name. Returns 0.
+// @early-stop
+// frame-slot wall: the instruction stream is byte-identical to retail EXCEPT the
+// 0xc-byte stack frame retail reserves for a DEAD m_entranceCell[2] spill (a missed
+// MSVC5 optimization not reproducible from clean source - the dead local is DCE'd
+// here). Missing `sub esp,0xc`/`add esp,0xc`+spill (~93.4%, body exact). Final sweep.
+RVA(0x00068520, 0x2a2)
+i32 CGrunt::StartBombGruntRun() {
+    StepAnimDispatchB();
+    if (m_healthSprite != 0) {
+        ((CSpriteRegRecord*)m_healthSprite)->m_8 |= 0x10000;
+        m_healthSprite = 0;
+    }
+    if (m_staminaSprite != 0) {
+        ((CSpriteRegRecord*)m_staminaSprite)->m_8 |= 0x10000;
+        m_staminaSprite = 0;
+    }
+    if (m_toySprite != 0) {
+        ((CSpriteRegRecord*)m_toySprite)->m_8 |= 0x10000;
+        m_toySprite = 0;
+    }
+    if (m_toyTimeSprite != 0) {
+        ((CSpriteRegRecord*)m_toyTimeSprite)->m_8 |= 0x10000;
+        m_toyTimeSprite = 0;
+    }
+    if (m_wingzTimeSprite != 0) {
+        ((CSpriteRegRecord*)m_wingzTimeSprite)->m_8 |= 0x10000;
+        m_wingzTimeSprite = 0;
+    }
+    if (m_powerupSprite != 0) {
+        ((CSpriteRegRecord*)m_powerupSprite)->m_8 |= 0x10000;
+        m_powerupSprite = 0;
+    }
+    if (m_selectedSprite != 0) {
+        ((CSpriteRegRecord*)m_selectedSprite)->m_8 |= 0x10000;
+        m_selectedSprite = 0;
+    }
+    m_gruntKind = 0;
+    if (m_poweredUp != 0 && m_neighborValid == 0) {
+        m_entranceActive = 0;
+        *(i32*)((char*)this + 0x218) = 0;
+        m_neighborValid = 0;
+        m_poweredUp = 0;
+        ReseedIdleReset(1, 0, 0);
+    }
+    m_entranceActive = 1;
+    m_tileMgr->CommitStruckTile(m_tileOwnerHi, m_tileOwnerLo, 1);
+    ApplySetState1(1);
+    SetEntrancePos(1, 1);
+    if (SetMoveStateA(1, 1, 0, 1) == 0) {
+        CGruntHud* h = m_10;
+        m_tileMgr->NotifyMoveAt(h->m_5c, h->m_60, -1, 0);
+        return 0;
+    }
+    i32 dx = GruntRand() % 3 - 1;
+    i32 dy = GruntRand() % 3 - 1;
+    if (dx == 0 && dy == 0) {
+        dx = 1;
+    }
+    {
+        CGruntHud* h = m_10;
+        dy += h->m_60 >> 5;
+        dx += h->m_5c >> 5;
+    }
+    PlayMoveSoundAtTile(dx, dy);
+    *(i32*)((char*)this + 0x3e4) = dx;
+    *(i32*)((char*)this + 0x3e8) = dy;
+    m_prevAnimSetNode = (i32)m_14->m_1c;
+    m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeM);
+    m_timePerTile = g_buteMgr.GetIntDef(s_BOMBGRUNT, s_RunningTimePerTile, 0x64);
+    m_22c = 1;
+    {
+        CGruntHud* h = m_10;
+        i32 vx = h->m_5c;
+        i32 vy = h->m_60;
+        char* sc = *(char**)((char*)g_gameReg->m_30 + 0x24);
+        i32* rect = (i32*)(*(char**)(sc + 0x5c) + 0x40);
+        if (vx < rect[2] && vx >= rect[0] && vy < rect[3] && vy >= rect[1]) {
+            g_gameReg->m_60->CueSpawn(this, 8, -1, -1, -1);
+        }
+    }
+    m_prevEntranceDesc = (i32)m_154->m_1b4;
+    m_154->m_1a0.SetGeometry(m_poseItem);
+    i32 col = m_entranceCell[1] + m_entranceCell[0] * 2;
+    i32 base = m_entranceCell[0] + col + 0xb;
+    i32 idx = base + base * 3 * 4;
+    char* cn = GruntStrGetBuffer((char*)this + idx * 8, 0);
+    m_154->GameApplyName(cn);
     return 0;
 }
