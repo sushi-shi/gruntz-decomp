@@ -224,9 +224,17 @@ public:
     char m_pad00[0x2c]; // +0x00..0x2b
     void* m_2c;         // +0x2c sub-object (Method_152d30 -> CString)
 };
+// The label map embedded at +0x10 in the worker sub-object: Lookup(key, &out)
+// resolves a worker-label string to its worker pointer.  0x1b8438, reloc-masked.
+class CBlitLabelMap {
+public:
+    i32 Lookup(const char* key, void** out); // 0x1b8438
+};
 class CDDrawBlitLabelSource {
 public:
     CString GetLabel_152d30(i32 a);
+    char m_pad00[0x10];  // +0x00..+0x0f
+    CBlitLabelMap m_10;  // +0x10 label -> worker map
 };
 
 class CDDrawBlitParam {
@@ -748,6 +756,72 @@ i32 CDDrawBlitParam::Dispatch_15c900(CWwdArchive* ar, i32 type, i32 a3, i32 a4) 
             break;
         default:
             break;
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// 0x15ca70: deserialize the blit-param (the Serialize_15c970 twin).  Reads the
+// eight dwords m_1c..m_38 from the archive (4 bytes each via slot +0x2c), reads
+// the 0x80-byte label buffer, and — when the label is non-empty — looks it up in
+// the worker sub-object's +0x10 map to recover the worker into m_14.  Then the
+// Setup_15c2d0-style tail: pick element [m_1c] (falling back to element 0 with
+// m_1c=0) into m_18 and, when valid, reset m_20/m_28, snapshot m_30 into m_34,
+// and recompute m_30 = elem->+0x1c.  __thiscall, ret 0x4.
+// @early-stop
+// 89.9% — every instruction/CFG/offset present and the logic is byte-faithful;
+// residual is a register-allocation cascade seeded at the first field read:
+// retail keeps &m_30 in callee-saved ebp across the function (frame 0x90, no
+// spill slot), our cl spills &m_30 to [esp+0x20] (frame 0x94) and rotates
+// eax/ebp through the eight reads + the index tail.  Pinning &m_30 in a named
+// local regressed to 88.4%; not source-steerable.  docs/patterns/pin-local-for-
+// callee-saved-reg.md / zero-register-pinning.md.
+RVA(0x0015ca70, 0x15b)
+i32 CDDrawBlitParam::Deserialize_15ca70(CWwdArchive* ar) {
+    if (ar == 0) {
+        return 0;
+    }
+    ar->Read(&m_1c, 4);
+    ar->Read(&m_20, 4);
+    ar->Read(&m_24, 4);
+    ar->Read(&m_28, 4);
+    ar->Read(&m_2c, 4);
+    ar->Read(&m_30, 4);
+    ar->Read(&m_34, 4);
+    ar->Read(&m_38, 4);
+    char buf[0x80];
+    ar->Read(buf, 0x80);
+    if (strlen(buf) == 0) {
+        m_14 = 0;
+    } else {
+        void* out = 0;
+        ((CDDrawBlitLabelSource*)m_0c->m_2c)->m_10.Lookup(buf, &out);
+        m_14 = (i32)out;
+    }
+    CDDrawBlitParamSrc* w = (CDDrawBlitParamSrc*)m_14;
+    if (w != 0) {
+        char* e;
+        if (m_1c >= 0 && m_1c < w->m_10) {
+            e = ((char**)w->m_0c)[m_1c];
+        } else {
+            e = 0;
+        }
+        m_18 = (i32)e;
+        if (e == 0) {
+            m_1c = 0;
+            if (w->m_10 > 0) {
+                e = *(char**)w->m_0c;
+            } else {
+                e = 0;
+            }
+            m_18 = (i32)e;
+        }
+        if (m_18 != 0) {
+            m_20 = 0;
+            m_28 = 0;
+            m_34 = m_30;
+            m_30 = *(i32*)((char*)m_18 + 0x1c);
+        }
     }
     return 1;
 }

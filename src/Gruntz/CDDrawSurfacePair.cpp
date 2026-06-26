@@ -311,3 +311,17 @@ void CDDrawSurfacePair::DrawCross(i32 x, i32 y) {
     DrawSurfaceView* sv = (DrawSurfaceView*)m_2c;
     sv->m_8->vtbl->Unlock(sv->m_8, 0);
 }
+
+// ---------------------------------------------------------------------------
+// 0x164660: surface-lost probe (the RestoreIfLost twin).  With no surface, report
+// "needs work" (1).  Otherwise, if the held IDirectDrawSurface is present and not
+// lost (IsLost @+0x60 == DD_OK), report 1; else attempt Restore (@+0x6c) twice,
+// reporting 1 on the first failure, and 0 only when both restores succeed.
+// __thiscall, no args.
+RVA(0x00164660, 0x46)
+i32 CDDrawSurfacePair::Probe_164660() {
+    return m_2c == 0 ||
+           (m_2c->m_8 != 0 && m_2c->m_8->vtbl->IsLost(m_2c->m_8) == 0) ||
+           m_2c->m_8->vtbl->Restore(m_2c->m_8) == 0 ||
+           m_2c->m_8->vtbl->Restore(m_2c->m_8) == 0;
+}

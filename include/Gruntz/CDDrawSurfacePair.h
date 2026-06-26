@@ -115,6 +115,7 @@ public:
     void TeardownSurface();                    // 0x163e20  (vtable slot 7)
     void DrawBox(i32* rect, i32 color);        // 0x163f40
     void DrawCross(i32 x, i32 y);              // 0x164180
+    i32 Probe_164660();                        // 0x164660  (surface-lost probe)
 
     // --- layout (continues the base; base ends at +0x10) ----------------------
     i32 m_10;                   // +0x10  width

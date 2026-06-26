@@ -40,14 +40,14 @@ cddpagemgr	2	1
 cddrawchildgroup	9	5
 cddrawptrcollections	30	14
 cddrawshadeblit	6	1
-cddrawsubmgr	57	32
+cddrawsubmgr	58	32
 cddrawsubmgrani	3	1
 cddrawsubmgrdraco	5	2
 cddrawsubmgrleaf	14	4
 cddrawsubmgrleafscan	17	6
 cddrawsurfacemgr	9	5
 cddrawsurfacemgrserialize	2	0
-cddrawsurfacepair	7	2
+cddrawsurfacepair	8	2
 cddrawworkercache	4	1
 cddrawworkerlist	11	8
 cddrawworkermapsmall	10	3
@@ -129,7 +129,7 @@ directinputmgr2	33	29
 directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	15	0
-engine_boundary	422	0
+engine_boundary	420	0
 engine_discovered	51	0
 engine_label_stubs	437	105
 engine_unmatched	273	0
@@ -500,6 +500,7 @@ cddrawsubmgr	?Constructor_157630@CDDrawSubMgr@@QAEXXZ	3.3333	3.3333	2	98e6212efc
 cddrawsubmgr	?CountActive_15abc0@CWwdObjMgr@@QAEHXZ	100.0000	100.0000	1	9d89eae53a89	0x15abc0
 cddrawsubmgr	?CreateObject_159600@CWwdObjMgr@@QAEPAVCWwdGameObject@@HHHHHH@Z	66.6000	66.6000	2	1d70635540fe	0x159600
 cddrawsubmgr	?Deserialize_15b0e0@CWwdObjMgr@@QAEHPAVCWwdArchive@@IH@Z	74.5532	74.5532	1	275bd35e7080	0x15b0e0
+cddrawsubmgr	?Deserialize_15ca70@CDDrawBlitParam@@QAEHPAVCWwdArchive@@@Z	89.8881	89.8881	1	0481ba86f7dc	0x15ca70
 cddrawsubmgr	?Dispatch_15c900@CDDrawBlitParam@@QAEHPAVCWwdArchive@@HHH@Z	80.0000	80.0000	2	1d5cbf09f02a	0x15c900
 cddrawsubmgr	?Drain_031250@CQueueDrainHost@@QAEPAXXZ	37.8462	37.8462	1	6c313cd28fdb	0x31250
 cddrawsubmgr	?FindByField_15a940@CWwdObjMgr@@QAEPAVCWwdObject@@HPAX@Z	84.8781	84.8781	1	5f50d8bcd730	0x15a940
@@ -598,6 +599,7 @@ cddrawsurfacepair	?BltSelf@CDDrawSurfacePair@@QAEXPAV1@@Z	100.0000	100.0000	1	90
 cddrawsurfacepair	?Create@CDDrawSurfacePair@@QAEHHHHH@Z	96.0198	96.0198	1	a02e29676183	0x163c90
 cddrawsurfacepair	?DrawBox@CDDrawSurfacePair@@QAEXPAHH@Z	52.7371	52.7371	1	e1b13d28ceaa	0x163f40
 cddrawsurfacepair	?DrawCross@CDDrawSurfacePair@@QAEXHH@Z	75.0548	75.0548	1	fbd121a65b8e	0x164180
+cddrawsurfacepair	?Probe_164660@CDDrawSurfacePair@@QAEHXZ	99.0909	99.0909	1	d1a31be83c11	0x164660
 cddrawsurfacepair	?RestoreIfLost@CDDrawSurfacePair@@QAEHXZ	98.6667	98.6667	1	b65fb337bbc7	0x163f00
 cddrawsurfacepair	?TeardownSurface@CDDrawSurfacePair@@QAEXXZ	100.0000	100.0000	1	d5bf012fb165	0x163e20
 cddrawworkercache	??1CDDrawWorkerCache@@QAE@XZ	12.1818	12.1818	2	1c01fe704b91	0x157700
@@ -1456,7 +1458,6 @@ engine_boundary	?Boundary_15b790@@YAXXZ	0.8403	0.8403	2	2c78bbeeb37d	0x15b790
 engine_boundary	?Boundary_15bad0@@YAXXZ	0.9709	0.9709	2	dbd1c4a34f59	0x15bad0
 engine_boundary	?Boundary_15bd10@@YAXXZ	0.7576	0.7576	2	451a4be03f61	0x15bd10
 engine_boundary	?Boundary_15c070@@YAXXZ	0.9615	0.9615	2	7512df24a90c	0x15c070
-engine_boundary	?Boundary_15ca70@@YAXXZ	0.2985	0.2985	2	e26ab48b2d7c	0x15ca70
 engine_boundary	?Boundary_15d9a0@@YAXXZ	0.5063	0.5063	2	c6d2eb43c446	0x15d9a0
 engine_boundary	?Boundary_161460@@YAXXZ	50.0000	50.0000	2	4fbd3bb32839	0x161460
 engine_boundary	?Boundary_1614b0@@YAXXZ	9.0909	9.0909	2	05c11f0d7bf9	0x1614b0
@@ -1470,7 +1471,6 @@ engine_boundary	?Boundary_163710@@YAXXZ	1.8182	1.8182	2	3b1e8a2c1e14	0x163710
 engine_boundary	?Boundary_163a10@@YAXXZ	50.0000	50.0000	2	97986794367f	0x163a10
 engine_boundary	?Boundary_163a40@@YAXXZ	5.8824	5.8824	2	77023b928d60	0x163a40
 engine_boundary	?Boundary_163af0@@YAXXZ	1.6667	1.6667	2	2897699d188c	0x163af0
-engine_boundary	?Boundary_164660@@YAXXZ	3.0303	3.0303	2	b68487a495f7	0x164660
 engine_boundary	?Boundary_164d80@@YAXXZ	0.0928	0.0928	2	aba73a41c987	0x164d80
 engine_boundary	?Boundary_165620@@YAXXZ	0.5000	0.5000	2	3873bb58a88b	0x165620
 engine_boundary	?Boundary_1660f0@@YAXXZ	0.5405	0.5405	2	ea1e143d92f1	0x1660f0
