@@ -14,6 +14,9 @@
 
 class CAniCycle : public CUserLogic {
 public:
+    // Construct the class's activation-coordinate registry singleton over the
+    // fixed [2000, 2010] range via the shared registry ctor (0x408710).
+    static void InitActReg(); // 0x0aaf00
     // Bind the per-frame handler (AdvanceAnim) to the activation key "A" via the
     // shared name registry; the same archetype as CBehindCandyAni::RegisterActs.
     static void RegisterActs(); // 0x0ab0e0

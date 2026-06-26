@@ -94,7 +94,7 @@ struct CView {
         struct SurfaceB {
             char p0[0x2c];
             struct Held {
-                void Prepare(i32 z);   // 0x13e760 (thiscall) ClampViewport apply-tail
+                void Prepare(i32 z);      // 0x13e760 (thiscall) ClampViewport apply-tail
                 void NotifyClip(RECT* r); // 0x13e7d0 (thiscall) NotifyVisibleEntities
             }* m_2c;
         }* m_14;    // +0x14 -> +0x2c draw surface (view obj)
@@ -329,6 +329,18 @@ public:
     i32 RegisterInputBindings();                // 0x0d9160 (THIS TU)
     // Tiny vtable forwarder: tail-call the slot-3 ready gate (Vfunc3).
     i32 ForwardReady(); // 0x0cee70
+    // Region pause/resume pair (vtable slots 24/25, shared by CDemo/CMulti):
+    // PauseGame saves the game clock into m_1cc + freezes the world; ResumeGame
+    // restores the clock + unpauses. Migrated from engine_boundary (CPlay).
+    i32 PauseGame();  // 0x0cee90
+    i32 ResumeGame(); // 0x0cef00
+    // ArmSnapshot (0x0d9240): latch the snapshot timer (base=clock, dur=arg2) and
+    // the active flag (arg1). CanQuickSave (0x0da3b0): all-idle predicate gating
+    // the auto/quick path. PostHudRect (0x0da440): post the HUD rect to the world
+    // timeline then clear the ready/drag-snap gates. Migrated from engine_boundary.
+    i32 ArmSnapshot(i32 active, i32 dur); // 0x0d9240
+    i32 CanQuickSave();                   // 0x0da3b0
+    i32 PostHudRect();                    // 0x0da440
     // Two more draw/present sub-steps migrated from the engine_boundary backlog:
     i32 DrawWorldPresent(); // 0x0cefc0 (double world-draw + present + manager tick)
     i32 PresentAndFlush();  // 0x0cba10 (restore-mode guard + present-or-notify + flush)
@@ -348,17 +360,17 @@ public:
     // sources are reached through offset-specific sub-types that Render models
     // differently, so a single struct-view cast at entry keeps Render's matched
     // member typing untouched.
-    i32 LoadImageBanks();                 // 0x0cffe0  (the GRUNTZ/GAME bank cache)
-    i32 LoadActionTileSprites(i32 force); // 0x0db600
-    i32 LoadLevelSounds(i32 force);       // 0x0db6c0
-    i32 LoadLevelImages(i32 force);       // 0x0db7e0
-    i32 LoadGameImages(i32 force);        // 0x0db8a0
-    i32 LoadGameSounds(i32 force);        // 0x0db930
-    i32 LoadGameAnims(i32 force);         // 0x0db9b0
-    i32 BuildMusicCategoryTable(i32);     // 0x0dba30  (the MIDIZ category installer)
-    i32 LoadGruntSoundNamespaces(void* notify);  // 0x0dd830 (GRUNTZ_* sound installer)
-    i32 BuildSpriteImageKeyTable(void* notify);  // 0x0dd540 (GRUNTZ_* image installer)
-    i32 BuildAnizKeyTable(void* notify);         // 0x0ddaa0 (GRUNTZ_* anim installer)
+    i32 LoadImageBanks();                       // 0x0cffe0  (the GRUNTZ/GAME bank cache)
+    i32 LoadActionTileSprites(i32 force);       // 0x0db600
+    i32 LoadLevelSounds(i32 force);             // 0x0db6c0
+    i32 LoadLevelImages(i32 force);             // 0x0db7e0
+    i32 LoadGameImages(i32 force);              // 0x0db8a0
+    i32 LoadGameSounds(i32 force);              // 0x0db930
+    i32 LoadGameAnims(i32 force);               // 0x0db9b0
+    i32 BuildMusicCategoryTable(i32);           // 0x0dba30  (the MIDIZ category installer)
+    i32 LoadGruntSoundNamespaces(void* notify); // 0x0dd830 (GRUNTZ_* sound installer)
+    i32 BuildSpriteImageKeyTable(void* notify); // 0x0dd540 (GRUNTZ_* image installer)
+    i32 BuildAnizKeyTable(void* notify);        // 0x0ddaa0 (GRUNTZ_* anim installer)
 
     // ---- the keyboard/UI command dispatcher (THIS TU) ----
     i32 OnKeyCommand(i32 key, i32 flag); // 0x0cbaf0
@@ -390,7 +402,7 @@ public:
     // FreeListTeardown's reloc-masked CPlay-thiscall leaf (external):
     void Teardown1780(); // 0x1780 thunk  (this) early teardown step
     // BuildWarlordNameTable's reloc-masked CPlay-thiscall leaves (external):
-    i32 ProbeWarlord(i32 id, i32 a, i32 b, i32 c);    // 0x12da thunk  -> found
+    i32 ProbeWarlord(i32 id, i32 a, i32 b, i32 c);                 // 0x12da thunk  -> found
     i32 BindWarlordName(const CString& name, i32 a, i32 b, i32 c); // 0x2bc1 thunk
 
     // ---- CPlay-specific members (offsets pinned by the Render disasm) ----
@@ -418,18 +430,19 @@ public:
         void StepBracketL(); // 0x4fe460  ('[')
         void StepMinus();    // 0x4fe600  ('-')
         // EnterOverlayDrag (0x0d6440) guts sub-steps (reloc-masked ILT thunks):
-        void Guts123f();              // (thiscall, no arg)  m_state==2 path
-        void Guts1d61(i32 a, i32 b);  // (thiscall, 2 args)  m_mode!=5 path
-        void Guts427d(i32 a, i32 b);  // (thiscall, 2 args)
-        void Guts125d();              // (thiscall, no arg)
-        void Guts35b2(i32 a);         // (thiscall, 1 arg)
-        void Guts12fd(i32 a);         // (thiscall, 1 arg)
-        void Guts16ea();              // (thiscall, no arg)
-        i32 m_state; // +0x0  subsystem state (==2 -> ready)
+        void Guts123f();             // (thiscall, no arg)  m_state==2 path
+        void Guts1d61(i32 a, i32 b); // (thiscall, 2 args)  m_mode!=5 path
+        void Guts427d(i32 a, i32 b); // (thiscall, 2 args)
+        void Guts125d();             // (thiscall, no arg)
+        void Guts35b2(i32 a);        // (thiscall, 1 arg)
+        void Guts12fd(i32 a);        // (thiscall, 1 arg)
+        void Guts16ea();             // (thiscall, no arg)
+        void Guts367a();             // (thiscall, no arg)  ResumeGame
+        i32 m_state;                 // +0x0  subsystem state (==2 -> ready)
         char p4[0x10c - 0x4];
         i32 m_mode; // +0x10c  mode word (==5 -> overlay busy)
         char p[0x548 - 0x110];
-        i32 m_548;          // +0x548  overlay-drag arm latch
+        i32 m_548; // +0x548  overlay-drag arm latch
         char p54c[0x550 - 0x54c];
         i32 m_busyA, m_busyB; // +0x550  win/lose-suppress busy words
         char q[0x574 - 0x558];
@@ -521,6 +534,8 @@ public:
     i32 m_dragEndNotify; // +0x504  drag-end notify gate
     char m_pad508[0x510 - 0x508];
     i32 m_stepCountdown; // +0x510  per-frame entity-step countdown
+    char m_pad514[0x518 - 0x514];
+    void* m_518; // +0x518  saved currently-playing zoned sound (region pause/resume)
 
     // Engine-label backlog stubs.
     void Stub_08c9d0();

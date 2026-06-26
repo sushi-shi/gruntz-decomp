@@ -136,6 +136,19 @@ void* CSymParser::ResolvePath(const char* path) {
     return GetRoot()->ResolvePath(path);
 }
 
+// ReParse (0x13c050): if the parser is armed (m_0c non-null), drop the current
+// parse state (Clear(0)) and re-parse the cached +0x64 source buffer; return that
+// parse's result. Not armed -> return 0. (ParseBuffer @0x13ad00 is the big buffer
+// parser, modeled as a reloc-masked extern.)
+RVA(0x0013c050, 0x28)
+i32 CSymParser::ReParse() {
+    if (m_0c == 0) {
+        return 0;
+    }
+    Clear(0);
+    return ParseBuffer(m_buf64, 1, 0);
+}
+
 // AddNode (0x13c210): splice a record's intrusive node (rec+0x1c) into the +0x80
 // hash table, when rec is non-null.
 RVA(0x0013c210, 0x1a)

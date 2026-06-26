@@ -58,6 +58,7 @@ public:
     i32 Play_138840(i32 a1, i32 a2);
     void StopCurrent_1388a0();
     i32 Restart_1388c0(i32 a1);
+    void StopAll_1388f0();
     i32 IsPlaying_138920();
 
     CGruntzSoundInnerZ* m_pCurrent; // +0x1c

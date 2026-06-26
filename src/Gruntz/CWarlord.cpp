@@ -61,6 +61,28 @@ CWarlord::~CWarlord() {}
 RVA(0x00042d40, 0x73e)
 CWarlord::CWarlord(i32) {}
 
+// The file-static per-action handler dispatch array (g_actionTable @0x644610), a
+// VActColl-shaped growable table: InitActReg builds it over the fixed [2000, 2010]
+// range via the shared registry ctor (0x408710, __thiscall ret 8); ElementAt
+// resolves a per-type slot (used by RegisterWarlordActions below).
+struct CActionTable {
+    void** ElementAt(i32 id);       // -> &slot (thunked CArray ElementAt)
+    void Construct(i32 lo, i32 hi); // 0x408710 (__thiscall ret 8)
+};
+DATA(0x00244610)
+extern CActionTable g_actionTable; // 0x644610
+
+// ===========================================================================
+// CWarlord::InitActReg  (0x0445c0)
+// ===========================================================================
+// Construct the file-static per-action handler table (g_actionTable @0x644610)
+// over the fixed range [2000, 2010] via the shared registry ctor (0x408710).
+// Free init thunk; the SAME archetype as the eyecandy classes' InitActReg.
+RVA(0x000445c0, 0x15)
+void CWarlord::InitActReg() {
+    g_actionTable.Construct(2000, 2010);
+}
+
 // ===========================================================================
 // CWarlord::ResolveState  (0x044640)  - slot-4 override (the animation dispatcher)
 // ===========================================================================
@@ -124,11 +146,7 @@ extern CTypeKeyColl g_typeColl; // 0x6bf650 (?g_typeColl@@3UCKSlimeColl@@A)
 DATA(0x0021aea8)
 extern i32 g_typeCounter; // 0x61aea8 (next free type id)
 
-struct CActionTable {
-    void** ElementAt(i32 id); // -> &slot (thunked CArray ElementAt)
-};
-DATA(0x00244610)
-extern CActionTable g_actionTable; // 0x644610
+// g_actionTable (CActionTable @0x644610) is declared above, near InitActReg.
 
 // The six action-type handler entry points (reloc-masked code addresses; their
 // mid-function LAB_ addresses are stored as raw dispatch pointers).

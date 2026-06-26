@@ -576,6 +576,13 @@ source = "src/Stub/Boundary.cpp"
 flags = "base"
 
 [[unit]]
+# catch-all worklist (gruntz.analysis.gen_unmatched_stubs): every real reconstruction
+# target with no stub yet - free-function stubs whose comment is the Ghidra name hint.
+unit = "engine_unmatched"
+source = "src/Stub/Unmatched.cpp"
+flags = "base"
+
+[[unit]]
 # MSVC5 LIBCMT iostreams `streambuf` base (non-EH leaves).
 unit = "crt_streambuf"
 source = "src/Crt/StreamBuf.cpp"
@@ -607,6 +614,11 @@ flags = "eh"
 [[unit]]
 unit = "netmgrerror"
 source = "src/Net/NetMgrReportError.cpp"
+flags = "base"
+
+[[unit]]
+unit = "channelslots"
+source = "src/Net/ChannelSlots.cpp"
 flags = "base"
 
 [[unit]]
@@ -1304,3 +1316,13 @@ flags = "eh"
 unit = "cmovinglogicdtor"
 source = "src/Gruntz/CMovingLogicDtor.cpp"
 flags = "eh"
+
+[[unit]]
+unit = "cstatusbarspriteacts"
+source = "src/Gruntz/CStatusBarSpriteActs.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "rezfile"
+source = "src/Rez/RezFile.cpp"
+flags = "base"

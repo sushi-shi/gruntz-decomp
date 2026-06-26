@@ -15,9 +15,10 @@
 
 class CVoiceTrigger : public CUserLogic {
 public:
-    void RegisterActs(); // 0x11a500 (binds Tick to the activation key "A")
-    i32 Tick();          // 0x11a700
-    ~CVoiceTrigger();    // 0x0135a0 (folds the CUserLogic teardown)
+    static void InitActReg(); // 0x11a320 (constructs g_vtrigColl @0x651500)
+    void RegisterActs();      // 0x11a500 (binds Tick to the activation key "A")
+    i32 Tick();               // 0x11a700
+    ~CVoiceTrigger();         // 0x0135a0 (folds the CUserLogic teardown)
 };
 
 // ---------------------------------------------------------------------------
@@ -30,7 +31,8 @@ public:
 // ---------------------------------------------------------------------------
 struct CVTrigEntry; // an entry: first dword is the registered handler
 struct CVTrigColl {
-    i32 Find(i32 coord, i32 z); // 0x16da80 (__thiscall ret 8)
+    i32 Find(i32 coord, i32 z);     // 0x16da80 (__thiscall ret 8)
+    void Construct(i32 lo, i32 hi); // 0x408710 (shared registry ctor, __thiscall ret 8)
 };
 struct CVTrigColl2 {
     void Insert(void* coll, void* item, i32 n); // 0x16d850 (__thiscall ret 0xc)
@@ -207,6 +209,14 @@ extern "C" i32 g_644c54;
 RVA(0x000135a0, 0x44)
 CVoiceTrigger::~CVoiceTrigger() {}
 
+// CVoiceTrigger::InitActReg @0x11a320 - construct the trigger's OWN activation-
+// coordinate registry singleton (g_vtrigColl @0x651500) over the fixed range
+// [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
+RVA(0x0011a320, 0x15)
+void CVoiceTrigger::InitActReg() {
+    g_vtrigColl.Construct(2000, 2010);
+}
+
 // CVoiceTrigger::RegisterActs @0x11a500 - bind the per-frame Tick handler to the
 // activation key "A" in the trigger's OWN registry (g_vtrigColl). The SAME
 // archetype as CParticlez::RegisterActs.
@@ -244,17 +254,28 @@ void CVoiceTrigger::RegisterActs() {
 RVA(0x0011a700, 0xae)
 i32 CVoiceTrigger::Tick() {
     i32 outA, outB;
-    CVoiceHit* hit = g_gameReg->m_68->QueryAt(((CVoiceSprite*)m_10)->m_5c, ((CVoiceSprite*)m_10)->m_60,
-                                              &((CVoiceSprite*)m_10)->m_134, &outA, &outB,
-                                              &((CVoiceSprite*)m_10)->m_144);
+    CVoiceHit* hit = g_gameReg->m_68->QueryAt(
+        ((CVoiceSprite*)m_10)->m_5c,
+        ((CVoiceSprite*)m_10)->m_60,
+        &((CVoiceSprite*)m_10)->m_134,
+        &outA,
+        &outB,
+        &((CVoiceSprite*)m_10)->m_144
+    );
     if (hit && outA == g_644c54) {
         CVoiceHitSprite* hs = hit->m_10;
         i32 hy = hs->m_60;
         i32 hx = hs->m_5c;
         if (hx < g_gameReg->m_144 && hx >= g_gameReg->m_13c && hy < g_gameReg->m_148
             && hy >= g_gameReg->m_140) {
-            if (g_gameReg->m_60->CueA(hit, ((CVoiceSprite*)m_10)->m_124,
-                                      ((CVoiceSprite*)m_10)->m_128, 0, -1, -1)) {
+            if (g_gameReg->m_60->CueA(
+                    hit,
+                    ((CVoiceSprite*)m_10)->m_124,
+                    ((CVoiceSprite*)m_10)->m_128,
+                    0,
+                    -1,
+                    -1
+                )) {
                 ((CVoiceWindow*)m_38)->m_8 |= 0x10000;
             }
         }

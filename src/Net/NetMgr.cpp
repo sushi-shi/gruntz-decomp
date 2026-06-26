@@ -215,9 +215,7 @@ i32 CNetMgr::SendStatPair(CNetPlayerEntry* recipient, CNetStatPacket* pkt, i32 c
         return 0;
     }
     pkt->m_0 |= 0x80;
-    i32 hr = m_peer->SetGroupData2(
-        (CNetPlayerEntry*)m_localPlayer, recipient, c, (i32)pkt, 0x10
-    );
+    i32 hr = m_peer->SetGroupData2((CNetPlayerEntry*)m_localPlayer, recipient, c, (i32)pkt, 0x10);
     return hr == 0;
 }
 
@@ -266,9 +264,7 @@ i32 CNetMgr::SendStatPairRaw(CNetPlayerEntry* recipient, void* pkt, i32 size, i3
     if (pkt == 0) {
         return 0;
     }
-    i32 hr = m_peer->SetGroupData2(
-        (CNetPlayerEntry*)m_localPlayer, recipient, c, (i32)pkt, size
-    );
+    i32 hr = m_peer->SetGroupData2((CNetPlayerEntry*)m_localPlayer, recipient, c, (i32)pkt, size);
     return hr == 0;
 }
 
@@ -282,9 +278,7 @@ i32 CNetMgr::SendStatValue(i32 id, i32 statId, i32 value, i32 flag) {
     pkt.m_0 |= 0x80;
     pkt.m_4 = statId;
     pkt.m_8 = value;
-    i32 hr = m_peer->SetData(
-        ((CNetPlayerEntry*)m_localPlayer)->m_4, id, flag, (i32)&pkt, 0x10
-    );
+    i32 hr = m_peer->SetData(((CNetPlayerEntry*)m_localPlayer)->m_4, id, flag, (i32)&pkt, 0x10);
     return hr == 0;
 }
 
@@ -319,9 +313,7 @@ i32 CNetMgr::PollSession() {
     } else {
         IDirectPlay4Z* dp = m_peer->m_directPlay;
         count = 0;
-        i32 hr = dp->vtbl->GetMessageCount(
-            dp, ((CNetPlayerEntry*)m_localPlayer)->m_4, &count
-        );
+        i32 hr = dp->vtbl->GetMessageCount(dp, ((CNetPlayerEntry*)m_localPlayer)->m_4, &count);
         if (hr) {
             count = 0;
         }
@@ -357,6 +349,20 @@ i32 CNetMgr::PollSession() {
         }
     }
     return dispatched;
+}
+
+// ---------------------------------------------------------------------------
+// CNetMgr::GetConfigNameA / GetConfigNameB  (__thiscall).
+// Return the +0x5b4 / +0x5b8 config-name CString members by value (same NRV
+// copy-construct shape as GetName).
+RVA(0x000b6090, 0x23)
+CString CNetMgr::GetConfigNameA() {
+    return m_5b4;
+}
+
+RVA(0x000b60d0, 0x23)
+CString CNetMgr::GetConfigNameB() {
+    return m_5b8;
 }
 
 // ---------------------------------------------------------------------------
@@ -669,9 +675,7 @@ RVA(0x000bac40, 0x38)
 i32 CNetMgr::RegisterChannelRec(void* rec) {
     u8* r = (u8*)rec;
     if (r[8] != 0) {
-        RegisterChannel(
-            (const char*)(r + 0x14), r[9], r[0xa], r[0xb], r[0xc], *(i32*)(r + 0x10)
-        );
+        RegisterChannel((const char*)(r + 0x14), r[9], r[0xa], r[0xb], r[0xc], *(i32*)(r + 0x10));
     }
     return 1;
 }
@@ -850,8 +854,8 @@ i32 CNetMgr::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) 
 
     char line[0x12c];
     if (toChat != 0) {
-        CNetPlayerName* player =
-            (CNetPlayerName*)((CNetGameMgr*)m_4)->FindPlayer(((CNetPlayerEntry*)m_localPlayer)->m_4);
+        CNetPlayerName* player = (CNetPlayerName*)((CNetGameMgr*)m_4)
+                                     ->FindPlayer(((CNetPlayerEntry*)m_localPlayer)->m_4);
         CString name = player->GetName();
         sprintf(line, "%s: %s", (const char*)name, text);
     } else {
@@ -873,7 +877,12 @@ i32 CNetMgr::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) 
     g_chatPacket_val = 0;
     strcpy(&g_chatPacket_buf, line);
     g_chatPacket_flag |= 0x80;
-    m_peer->SetGroupDataFrom((CNetPlayerEntry*)m_localPlayer, 1, (i32)&g_chatPacket_flag, strlen(line) + 0xd);
+    m_peer->SetGroupDataFrom(
+        (CNetPlayerEntry*)m_localPlayer,
+        1,
+        (i32)&g_chatPacket_flag,
+        strlen(line) + 0xd
+    );
     return 1;
 }
 
@@ -1654,8 +1663,8 @@ void CNetMgr::PopulatePlayerList(void* hList) {
     }
 
     while (payload != 0) {
-        i32 r =
-            (i32)SendMessageA((HWND)hList, LB_ADDSTRING, 0, (LPARAM) * (i32*)((char*)payload + 0x34));
+        i32 r = (i32)
+            SendMessageA((HWND)hList, LB_ADDSTRING, 0, (LPARAM) * (i32*)((char*)payload + 0x34));
         if (r != -1) {
             SendMessageA((HWND)hList, LB_SETITEMDATA, r, (LPARAM)payload);
         }

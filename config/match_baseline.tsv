@@ -28,7 +28,7 @@ brickz	15	3
 butemgr	41	27
 butestoreclear	1	1
 cambientsound	4	3
-canicycle	1	0
+canicycle	2	1
 canielement	3	2
 canirecord	9	5
 cattract	14	8
@@ -55,7 +55,7 @@ cddrawworkers	4	4
 cdirectdrawmgr	25	11
 cdonothing	2	2
 cdonothingnormaldtor	1	1
-cdroppedobject	3	2
+cdroppedobject	4	3
 cdroppedobjectshadow	1	1
 cexittrigger	2	2
 cexplosion	1	1
@@ -76,6 +76,7 @@ cgruntstartingpoint	1	1
 cgrunttoysprite	5	4
 cgruntwingztimesprite	2	2
 cguardpoint	1	1
+channelslots	4	4
 chatbox	27	20
 chatbox_eh	1	1
 chatboxowner	7	2
@@ -94,7 +95,7 @@ cobjectdropper	1	1
 configstore	4	0
 cparticlez	5	4
 cpathhazard	7	3
-cplay	55	23
+cplay	62	29
 cremusentrylist	2	1
 cremusnode	4	2
 cremusreadstream	6	4
@@ -111,23 +112,24 @@ csingleanimation	1	1
 csingleframemessage	2	1
 cstatichazard	6	2
 cstatusbarmgr	2	1
+cstatusbarspriteacts	2	1
 cteleporter	3	2
 ctimebomb	3	2
 ctoobspikez	4	3
-cvoicetrigger	3	2
+cvoicetrigger	4	3
 cwaypoint	1	1
 cwormholeacts	2	1
 cwwdobjmgr	1	0
 databuffer	7	5
 deflate	6	6
-dialogs	31	14
+dialogs	35	14
 directinputmgr2	33	29
 directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	15	0
-engine_boundary	524	0
+engine_boundary	488	0
 engine_discovered	51	0
-engine_label_stubs	436	104
+engine_label_stubs	437	105
 engstr	3	1
 filemem	9	8
 filestream	13	9
@@ -170,7 +172,7 @@ ingametext	5	4
 ingameworkerhandlers	3	3
 inputdeviceconfig	1	0
 interfaceobject	2	1
-kitchenslime	6	3
+kitchenslime	7	4
 leafelementobj	2	2
 leveltilevalidation	2	0
 lightfxmgr	3	3
@@ -186,13 +188,14 @@ menuitem	13	11
 menupage	31	16
 mgrtokenquery	1	1
 motionstate	4	3
-netmgr	80	43
+netmgr	82	45
 netmgrerror	1	1
 netsession	2	1
 projectile	9	3
 pyramidbridgesprites	1	0
 randomambientsound	9	4
 registryhelper	8	8
+rezfile	6	6
 rezmgr	15	10
 rollingball	5	3
 savegame	20	14
@@ -230,7 +233,7 @@ statusbaritem	2	1
 statusbarupdaters	7	0
 streamfeeder	9	7
 streamvoice	5	3
-symparser	6	4
+symparser	7	5
 symtab	13	9
 terraintileloader	1	0
 tileactionevent	7	4
@@ -248,9 +251,9 @@ unknownclassarrays	39	10
 unknownclassincgruntzmgr	2	0
 unknownsalazar	4	0
 userbaselink	10	0
-userlogic	58	21
+userlogic	62	25
 videoconfig	2	0
-warlord	9	2
+warlord	10	3
 warpstonefly	3	2
 winapi	5	3
 winapicdrom	1	0
@@ -391,6 +394,7 @@ cambientsound	??1CAmbientSound@@QAE@XZ	100.0000	100.0000	1	56dbfa3599ca	0xb790
 cambientsound	?Restart@CAmbientSound@@QAEXXZ	100.0000	100.0000	1	eb0cc7e65b93	0xbfb0
 cambientsound	?SetLevel@CAmbientSound@@QAEHHHH@Z	100.0000	100.0000	2	82d554c23b21	0xc200
 cambientsound	?Update@CAmbientSound@@QAEXHHH@Z	76.7857	76.7857	2	979c7e248495	0xc090
+canicycle	?InitActReg@CAniCycle@@SAXXZ	100.0000	100.0000	1	5d76d9347b15	0xaaf00
 canicycle	?RegisterActs@CAniCycle@@SAXXZ	92.9130	92.9130	1	17ca46567be1	0xab0e0
 canielement	?AtChecked_06b270@CAniElement@@QBEPAVCObject@@H@Z	100.0000	100.0000	1	2278365ee372	0x6b270
 canielement	?Build_165460@CAniElement@@QAEHPAXPAUCAniSource@@H@Z	89.3359	89.3359	1	c5f9e189a6e5	0x165460
@@ -656,6 +660,7 @@ cdonothingnormaldtor	??1CDoNothingNormal@@UAE@XZ	100.0000	100.0000	1	9d57e19fe32
 cdroppedobject	??1CDroppedObject@@UAE@XZ	100.0000	100.0000	1	dd689e9b78c2	0x125b0
 cdroppedobject	?FireActivation@CDroppedObject@@QAEXH@Z	100.0000	100.0000	1	58092acd8cf9	0xc6bd0
 cdroppedobject	?RegisterActs@CDroppedObject@@SAXXZ	78.5473	78.5473	1	ddf90768718f	0xc6d30
+cdroppedobject	?RegisterRange@CDroppedObject@@SAXXZ	100.0000	100.0000	1	f8dddf603c11	0xc6b50
 cdroppedobjectshadow	??1CDroppedObjectShadow@@UAE@XZ	100.0000	100.0000	1	590f3131b16f	0x12670
 cexittrigger	??1CExitTrigger@@UAE@XZ	100.0000	100.0000	1	db4d24e6c64d	0x108c0
 cexittrigger	?GetTypeTag@CExitTrigger@@QAEHXZ	100.0000	100.0000	1	c68ad601ed76	0x10870
@@ -727,6 +732,10 @@ cgrunttoysprite	?Update@CGruntToySprite@@QAEHXZ	100.0000	100.0000	1	516d5554232c
 cgruntwingztimesprite	??1CGruntWingzTimeSprite@@UAE@XZ	100.0000	100.0000	1	45cfd716baa5	0x121f0
 cgruntwingztimesprite	?GetWingzTime@CGruntWingzTimeSprite@@SGHPAUCWingzTimeHost@@@Z	100.0000	100.0000	1	fd29641ade51	0x7fd90
 cguardpoint	??1CGuardPoint@@UAE@XZ	100.0000	100.0000	1	c53d638223a9	0x10410
+channelslots	?ChannelSlots_FindFree@@YAHXZ	100.0000	100.0000	1	27d73fb7a817	0xdb280
+channelslots	?ChannelSlots_Get@@YAHH@Z	100.0000	100.0000	1	eb06c9e5aa36	0xdb2d0
+channelslots	?ChannelSlots_InitAll@@YAXXZ	100.0000	100.0000	1	a2a4df52ff9d	0xdb1d0
+channelslots	?ChannelSlots_Set@@YAXHH@Z	100.0000	100.0000	1	dd65a8262c74	0xdb2b0
 chatbox	?AddNode@CChatBox@@QAEHPAX@Z	100.0000	100.0000	3	88a7b8bd99e7	0x182ba0
 chatbox	?AdvanceRow0@CChatBox@@QAEHPAXHH@Z	94.8718	94.8718	3	5b6842c8ffeb	0x182df0
 chatbox	?AdvanceRow1@CChatBox@@QAEHPAXHH@Z	94.8718	94.8718	3	e91d1d630c54	0x182e60
@@ -852,6 +861,7 @@ cpathhazard	?ForwardTick@CPathHazard@@QAEXXZ	100.0000	100.0000	1	a46d1c7f75bb	0x
 cpathhazard	?SiblingTick@CLightningHazard@@QAEHXZ	86.0469	86.0469	1	c0b436f08c48	0xb43f0
 cpathhazard	?Tick@CPathHazard@@QAEHXZ	94.8794	94.8794	1	ceab0bf804bc	0xb4020
 cplay	?ApplyGameOptions@CPlay@@QAEXXZ	76.0784	76.0784	1	d7e69de7bf4d	0x36be0
+cplay	?ArmSnapshot@CPlay@@QAEHHH@Z	99.2000	99.2000	1	896666303e5b	0xd9240
 cplay	?BeginGridWalk@CPlay@@QAEHHHHHH@Z	81.1191	81.1191	4	5929326f7458	0xd0920
 cplay	?BuildAnizKeyTable@CPlay@@QAEHPAX@Z	100.0000	100.0000	1	b165ae0cb8b9	0xddaa0
 cplay	?BuildGruntTypeNameTable@CPlay@@QAEXHHHH@Z	0.7092	0.7092	2	ed7e76422e54	0xdc6d0
@@ -859,6 +869,7 @@ cplay	?BuildHelpReveal@CPlay@@QAEHXZ	67.8125	67.8125	3	d63528a8ea0e	0xd72c0
 cplay	?BuildMusicCategoryTable@CPlay@@QAEHH@Z	100.0000	100.0000	1	9e03b7354b74	0xdba30
 cplay	?BuildSpriteImageKeyTable@CPlay@@QAEHPAX@Z	100.0000	100.0000	1	045d8ff5898b	0xdd540
 cplay	?BuildWarlordNameTable@CPlay@@QAEHH@Z	100.0000	100.0000	1	a4e6377a94b1	0xdd340
+cplay	?CanQuickSave@CPlay@@QAEHXZ	100.0000	100.0000	1	c45bde940ef7	0xda3b0
 cplay	?ClampViewport2@CPlay@@QAEHH@Z	85.8469	85.8469	1	d86b53cc96eb	0xd8ed0
 cplay	?ClampViewport@CPlay@@QAEHH@Z	93.7887	93.7887	1	bbb07397f61a	0xd8dc0
 cplay	?DispatchHudClick@CPlay@@QAEHHHH@Z	72.0125	72.0125	3	36e8f5c3bdc6	0xce530
@@ -887,14 +898,19 @@ cplay	?OnRegion1@CPlay@@QAEHH@Z	100.0000	100.0000	7	de5f579dd781	0xd8aa0
 cplay	?OnRegion2@CPlay@@QAEHH@Z	100.0000	100.0000	7	93fcc0db3658	0xd8a00
 cplay	?OnRegion3@CPlay@@QAEHH@Z	100.0000	100.0000	7	78f1ec75009e	0xd8b20
 cplay	?OnRegion4@CPlay@@QAEHH@Z	100.0000	100.0000	7	edc8c453d057	0xd8bc0
+cplay	?PauseGame@CPlay@@QAEHXZ	100.0000	100.0000	1	add2279bc0de	0xcee90
 cplay	?PlayCueAt@CPlay@@QAEXHHHHHHHH@Z	87.9580	87.9580	8	f61db82265dd	0xd1890
+cplay	?PostHudRect@CPlay@@QAEHXZ	100.0000	100.0000	1	ee065b23a324	0xda440
 cplay	?PresentAndFlush@CPlay@@QAEHXZ	96.5942	96.5942	1	5a33edb55fd8	0xcba10
+cplay	?RegionEnter@CPlay@@QAEXXZ	100.0000	100.0000	1	d65c90739db8	0xd88f0
+cplay	?RegionLeave@CPlay@@QAEXXZ	100.0000	100.0000	1	7df1a96cd452	0xd8960
 cplay	?RegisterInputBindings@CPlay@@QAEHXZ	100.0000	100.0000	2	2b2e83b92f68	0xd9160
 cplay	?Render@CPlay@@UAEHXZ	0.0000	0.0000	9	8bb8b98a5a0d	0xc8cf0
 cplay	?ResetForMode@CPlay@@QAEHH@Z	100.0000	100.0000	1	0cdeb80fb398	0xc8a10
 cplay	?ResetGoals@CPlay@@QAEHHH@Z	100.0000	100.0000	3	2926f5e5c18f	0xd5f00
 cplay	?ResetPlayState@CPlay@@QAEHXZ	92.0100	92.0100	1	b2f4b850d4e0	0xd60b0
 cplay	?ResetViewport@CPlay@@QAEHXZ	95.5455	95.5455	1	c74260db4bee	0xd8c60
+cplay	?ResumeGame@CPlay@@QAEHXZ	100.0000	100.0000	1	08937b78aeb8	0xcef00
 cplay	?SetBeginClearParams@CState@@QAEHHHH@Z	100.0000	100.0000	4	8f94263b0f6e	0x8c970
 cplay	?SetEffectSpriteDurations@CPlay@@QAEHXZ	67.0648	67.0648	1	86fac1400fa3	0xdc060
 cplay	?StepC@CPlay@@QAEXXZ	85.4545	85.4545	6	9c6f84e46590	0xd8d90
@@ -962,6 +978,8 @@ cstatichazard	?LoadAttributes@CStaticHazard@@QAEHXZ	49.4340	49.4340	1	0b7065cfb3
 cstatichazard	?RegisterActs@CStaticHazard@@SAXXZ	78.5473	78.5473	1	0845d748d7be	0xfbd50
 cstatusbarmgr	?LoadTabSprites@CStatusBarMgr@@QAEHXZ	16.7383	16.7383	4	045cfeaa498f	0x102250
 cstatusbarmgr	?SetDirection@CSbItem@@QAEXHH@Z	100.0000	100.0000	2	46fcb29ef102	0xea0f0
+cstatusbarspriteacts	?InitActReg@CStatusBarSprite@@SAXXZ	100.0000	100.0000	1	162867839555	0x10c430
+cstatusbarspriteacts	?RegisterActs@CStatusBarSprite@@SAXXZ	92.9130	92.9130	1	90e3b0d4ac66	0x10c610
 cteleporter	??1CTeleporter@@UAE@XZ	100.0000	100.0000	1	0aa6d090845e	0x10dd0
 cteleporter	?Begin@CTeleporter@@QAEHXZ	87.6667	87.6667	1	ac212a968adf	0x419e0
 cteleporter	?InitActReg@CTeleporter@@SAXXZ	100.0000	100.0000	1	16ec1bd1d09e	0x414a0
@@ -973,6 +991,7 @@ ctoobspikez	?FireActivation@CToobSpikez@@QAEXH@Z	100.0000	100.0000	1	44f507f426d
 ctoobspikez	?RegisterActs@CToobSpikez@@QAEXXZ	92.9130	92.9130	1	753529566a46	0x1149c0
 ctoobspikez	?Register_1147e0@CToobSpikez@@QAEXXZ	100.0000	100.0000	1	5a4beef40a63	0x1147e0
 cvoicetrigger	??1CVoiceTrigger@@UAE@XZ	100.0000	100.0000	1	8939b1cb3841	0x135a0
+cvoicetrigger	?InitActReg@CVoiceTrigger@@SAXXZ	100.0000	100.0000	1	a1ec03ca782c	0x11a320
 cvoicetrigger	?RegisterActs@CVoiceTrigger@@QAEXXZ	92.9130	92.9130	1	eb83cede4e29	0x11a500
 cvoicetrigger	?Tick@CVoiceTrigger@@QAEHXZ	100.0000	100.0000	1	352963c16858	0x11a700
 cwaypoint	??1CWayPoint@@UAE@XZ	100.0000	100.0000	1	1792dd04db91	0x102e0
@@ -1007,9 +1026,13 @@ dialogs	?ApplyOption2@CBattlezDlg@@QAEXXZ	100.0000	100.0000	1	1e85f0a44dab	0x15e
 dialogs	?ApplyOption3@CBattlezDlg@@QAEXXZ	100.0000	100.0000	1	e384d2e48285	0x15f60
 dialogs	?BuildSlotList@CMultiStartDlg@@QAEXXZ	88.8588	88.8588	1	95188a37dcda	0xc1e60
 dialogs	?GetCtrlA@CBattlezDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	2	f719a29e8f44	0x15ac0
+dialogs	?GetCtrlA@CMultiStartDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	1	6faf7bed19d6	0xc26c0
 dialogs	?GetCtrlB@CBattlezDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	2	55fe085491a3	0x15b40
+dialogs	?GetCtrlB@CMultiStartDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	1	c6318a227cc8	0xc2740
 dialogs	?GetCtrlC@CBattlezDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	2	7882b445b6ec	0x15bc0
+dialogs	?GetCtrlC@CMultiStartDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	1	6221887fd888	0xc27c0
 dialogs	?GetCtrlD@CBattlezDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	2	2df6252ff25e	0x15c40
+dialogs	?GetCtrlD@CMultiStartDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	1	69c65a322a5a	0xc2840
 dialogs	?GetMessageMap@CBattlezDlgColors@@QAEPBXXZ	100.0000	100.0000	1	8bb5f517fac7	0x17ac0
 dialogs	?GetMessageMap@CCheckpointDlg@@QAEPBXXZ	100.0000	100.0000	1	a1a3e649e0c1	0x23570
 dialogs	?InitPlayerSlots@CMultiStartDlg@@QAEXXZ	0.1294	0.1294	2	460bc8e04d05	0xc20a0
@@ -1167,7 +1190,6 @@ engine_boundary	?Boundary_03b940@@YAXXZ	1.0417	1.0417	1	774e4bfed5ca	0x3b940
 engine_boundary	?Boundary_03bb50@@YAXXZ	1.0309	1.0309	1	fa8226994405	0x3bb50
 engine_boundary	?Boundary_0408b0@@YAXXZ	0.4975	0.4975	1	ff1ca69a421a	0x408b0
 engine_boundary	?Boundary_041680@@YAXXZ	0.4975	0.4975	1	62039d193f62	0x41680
-engine_boundary	?Boundary_0445c0@@YAXXZ	20.0000	20.0000	1	4cb295b2f8aa	0x445c0
 engine_boundary	?Boundary_0464e0@@YAXXZ	0.8889	0.8889	1	016b698a206f	0x464e0
 engine_boundary	?Boundary_0474b0@@YAXXZ	0.8696	0.8696	1	b5528f3237f2	0x474b0
 engine_boundary	?Boundary_050a50@@YAXXZ	0.2597	0.2597	1	c341090f0499	0x50a50
@@ -1215,23 +1237,18 @@ engine_boundary	?Boundary_09b770@@YAXXZ	1.1905	1.1905	1	f73965829ff1	0x9b770
 engine_boundary	?Boundary_09c650@@YAXXZ	0.1246	0.1246	1	77ff0e770f92	0x9c650
 engine_boundary	?Boundary_09cab0@@YAXXZ	3.6364	3.6364	1	4424afe5ea91	0x9cab0
 engine_boundary	?Boundary_09e0b0@@YAXXZ	0.8264	0.8264	1	d1c3b30a9860	0x9e0b0
-engine_boundary	?Boundary_0aaf00@@YAXXZ	20.0000	20.0000	1	a4e5d980f4ed	0xaaf00
 engine_boundary	?Boundary_0adde0@@YAXXZ	20.0000	20.0000	1	40f696bd4d2d	0xadde0
 engine_boundary	?Boundary_0ade60@@YAXXZ	0.5333	0.5333	1	ff289523ad79	0xade60
 engine_boundary	?Boundary_0adfc0@@YAXXZ	0.8696	0.8696	1	f10252da81d8	0xadfc0
 engine_boundary	?Boundary_0ae1c0@@YAXXZ	0.5000	0.5000	1	dc04c5f279e3	0xae1c0
-engine_boundary	?Boundary_0ae9a0@@YAXXZ	20.0000	20.0000	1	3a1af3f0d455	0xae9a0
 engine_boundary	?Boundary_0b15b0@@YAXXZ	20.0000	20.0000	1	fcf620cdfb46	0xb15b0
 engine_boundary	?Boundary_0b1790@@YAXXZ	0.4975	0.4975	1	cf562673a95a	0xb1790
-engine_boundary	?Boundary_0b28c0@@YAXXZ	20.0000	20.0000	1	dcb330f19a60	0xb28c0
 engine_boundary	?Boundary_0b3ae0@@YAXXZ	20.0000	20.0000	1	7d95af4e26a7	0xb3ae0
 engine_boundary	?Boundary_0b3cc0@@YAXXZ	0.4975	0.4975	1	10d3f2425269	0xb3cc0
 engine_boundary	?Boundary_0b4c40@@YAXXZ	1.4286	1.4286	1	a2b8002579ac	0xb4c40
 engine_boundary	?Boundary_0b4d30@@YAXXZ	0.1476	0.1476	1	2170f5fff4c7	0xb4d30
 engine_boundary	?Boundary_0b5380@@YAXXZ	20.0000	20.0000	1	617bb0c536cc	0xb5380
 engine_boundary	?Boundary_0b5400@@YAXXZ	20.0000	20.0000	1	f94b02abbe70	0xb5400
-engine_boundary	?Boundary_0b6090@@YAXXZ	3.3333	3.3333	1	df7425944a69	0xb6090
-engine_boundary	?Boundary_0b60d0@@YAXXZ	3.3333	3.3333	1	2cc8c9ed229f	0xb60d0
 engine_boundary	?Boundary_0bd430@@YAXXZ	20.0000	20.0000	1	6682fcee4d63	0xbd430
 engine_boundary	?Boundary_0bd450@@YAXXZ	12.5000	12.5000	1	a604c92702d8	0xbd450
 engine_boundary	?Boundary_0bd7f0@@YAXXZ	20.0000	20.0000	1	9ed50d822bce	0xbd7f0
@@ -1247,17 +1264,10 @@ engine_boundary	?Boundary_0c12b0@@YAXXZ	3.0769	3.0769	1	1ea4110232f5	0xc12b0
 engine_boundary	?Boundary_0c12e0@@YAXXZ	5.0000	5.0000	1	4facdc85fbd1	0xc12e0
 engine_boundary	?Boundary_0c1320@@YAXXZ	3.0303	3.0303	1	a5ab440e707d	0xc1320
 engine_boundary	?Boundary_0c1390@@YAXXZ	14.2857	14.2857	1	053e2fe59fed	0xc1390
-engine_boundary	?Boundary_0c26c0@@YAXXZ	2.3529	2.3529	1	a98b436c46c1	0xc26c0
-engine_boundary	?Boundary_0c2740@@YAXXZ	2.3529	2.3529	1	539fff924c3f	0xc2740
-engine_boundary	?Boundary_0c27c0@@YAXXZ	2.3529	2.3529	1	598eba48b0bd	0xc27c0
-engine_boundary	?Boundary_0c2840@@YAXXZ	2.3529	2.3529	1	c0081fac0a7d	0xc2840
-engine_boundary	?Boundary_0c6b50@@YAXXZ	20.0000	20.0000	1	f4961a0f7186	0xc6b50
 engine_boundary	?Boundary_0c8700@@YAXXZ	0.6579	0.6579	1	f5569d49ece3	0xc8700
 engine_boundary	?Boundary_0c9e40@@YAXXZ	0.6410	0.6410	1	5f28c6bdcf93	0xc9e40
 engine_boundary	?Boundary_0ca0a0@@YAXXZ	1.1236	1.1236	1	6de465c7af29	0xca0a0
 engine_boundary	?Boundary_0cb740@@YAXXZ	1.9231	1.9231	1	f96ee192fbf6	0xcb740
-engine_boundary	?Boundary_0cee90@@YAXXZ	5.5556	5.5556	1	24a5287c1c5f	0xcee90
-engine_boundary	?Boundary_0cef00@@YAXXZ	7.1429	7.1429	1	8041146c8970	0xcef00
 engine_boundary	?Boundary_0cef50@@YAXXZ	4.5455	4.5455	1	daa7270750ba	0xcef50
 engine_boundary	?Boundary_0d2b20@@YAXXZ	0.6024	0.6024	1	116a3f9222ea	0xd2b20
 engine_boundary	?Boundary_0d5960@@YAXXZ	0.8929	0.8929	1	5d338889358d	0xd5960
@@ -1265,16 +1275,7 @@ engine_boundary	?Boundary_0d5d70@@YAXXZ	16.6667	16.6667	1	a6a72ab11c94	0xd5d70
 engine_boundary	?Boundary_0d5e20@@YAXXZ	2.8571	2.8571	1	8419fec6f89d	0xd5e20
 engine_boundary	?Boundary_0d6fa0@@YAXXZ	0.2581	0.2581	1	3bcbc9afa981	0xd6fa0
 engine_boundary	?Boundary_0d79d0@@YAXXZ	0.0830	0.0830	1	82509a0fe41f	0xd79d0
-engine_boundary	?Boundary_0d88f0@@YAXXZ	4.5455	4.5455	1	0311122b64f0	0xd88f0
-engine_boundary	?Boundary_0d8960@@YAXXZ	2.8571	2.8571	1	a1ecb009d5d4	0xd8960
-engine_boundary	?Boundary_0d9240@@YAXXZ	2.6667	2.6667	1	9bdac58f28de	0xd9240
-engine_boundary	?Boundary_0da3b0@@YAXXZ	2.9412	2.9412	1	e980dc837357	0xda3b0
-engine_boundary	?Boundary_0da440@@YAXXZ	3.5714	3.5714	1	f08ec09743a6	0xda440
-engine_boundary	?Boundary_0db1d0@@YAXXZ	14.2857	14.2857	1	10443a601727	0xdb1d0
 engine_boundary	?Boundary_0db200@@YAXXZ	1.2121	1.2121	1	148cd7ad66ed	0xdb200
-engine_boundary	?Boundary_0db280@@YAXXZ	10.0000	10.0000	1	8e4c4555b755	0xdb280
-engine_boundary	?Boundary_0db2b0@@YAXXZ	25.0000	25.0000	1	589f72de14d4	0xdb2b0
-engine_boundary	?Boundary_0db2d0@@YAXXZ	33.3333	33.3333	1	d7aae7f5c1f1	0xdb2d0
 engine_boundary	?Boundary_0db2f0@@YAXXZ	5.8824	5.8824	1	45859aa9f791	0xdb2f0
 engine_boundary	?Boundary_0db750@@YAXXZ	1.1111	1.1111	1	57852634c54a	0xdb750
 engine_boundary	?Boundary_0e0d40@@YAXXZ	0.0670	0.0670	1	1fd5c25fbaff	0xe0d40
@@ -1298,12 +1299,6 @@ engine_boundary	?Boundary_104dd0@@YAXXZ	2.5000	2.5000	1	bf88cc65113d	0x104dd0
 engine_boundary	?Boundary_109e00@@YAXXZ	0.1754	0.1754	1	bab5d5c90b12	0x109e00
 engine_boundary	?Boundary_10b4f0@@YAXXZ	0.8511	0.8511	1	811b3d067399	0x10b4f0
 engine_boundary	?Boundary_10bbe0@@YAXXZ	5.8824	5.8824	1	8b396e252394	0x10bbe0
-engine_boundary	?Boundary_10c430@@YAXXZ	20.0000	20.0000	1	d6f89ef2a3d2	0x10c430
-engine_boundary	?Boundary_10c610@@YAXXZ	0.8696	0.8696	1	8265d21d2557	0x10c610
-engine_boundary	?Boundary_10d840@@YAXXZ	20.0000	20.0000	1	24d19734280b	0x10d840
-engine_boundary	?Boundary_10de20@@YAXXZ	20.0000	20.0000	1	5d6e272220cf	0x10de20
-engine_boundary	?Boundary_10e420@@YAXXZ	20.0000	20.0000	1	aba489057bd7	0x10e420
-engine_boundary	?Boundary_10ea00@@YAXXZ	20.0000	20.0000	1	530fff7f490c	0x10ea00
 engine_boundary	?Boundary_112080@@YAXXZ	0.9091	0.9091	1	16b555afba27	0x112080
 engine_boundary	?Boundary_112bf0@@YAXXZ	2.7027	2.7027	1	679caf894dcf	0x112bf0
 engine_boundary	?Boundary_113860@@YAXXZ	1.9048	1.9048	1	76752601520d	0x113860
@@ -1322,7 +1317,6 @@ engine_boundary	?Boundary_1182f0@@YAXXZ	20.0000	20.0000	1	42ef0a002088	0x1182f0
 engine_boundary	?Boundary_118310@@YAXXZ	20.0000	20.0000	1	9ace41164e4d	0x118310
 engine_boundary	?Boundary_118330@@YAXXZ	3.3333	3.3333	1	dd9ccb81ecaf	0x118330
 engine_boundary	?Boundary_119fa0@@YAXXZ	0.4975	0.4975	1	c02afaff4bbf	0x119fa0
-engine_boundary	?Boundary_11a320@@YAXXZ	20.0000	20.0000	1	9502a6ccbeb9	0x11a320
 engine_boundary	?Boundary_133370@@YAXXZ	20.0000	20.0000	1	7a07df51ea0b	0x133370
 engine_boundary	?Boundary_1333b0@@YAXXZ	4.7619	4.7619	1	8682a299c4ec	0x1333b0
 engine_boundary	?Boundary_133460@@YAXXZ	4.0000	4.0000	1	5a1bf79e03ea	0x133460
@@ -1355,19 +1349,12 @@ engine_boundary	?Boundary_13b300@@YAXXZ	0.0877	0.0877	1	292a63e12cab	0x13b300
 engine_boundary	?Boundary_13b910@@YAXXZ	1.2500	1.2500	1	9ee8bc8370ff	0x13b910
 engine_boundary	?Boundary_13b970@@YAXXZ	1.0256	1.0256	1	b4555b1090b2	0x13b970
 engine_boundary	?Boundary_13ba70@@YAXXZ	14.2857	14.2857	1	8b5f4112fed9	0x13ba70
-engine_boundary	?Boundary_13c050@@YAXXZ	5.2632	5.2632	1	70748204611d	0x13c050
 engine_boundary	?Boundary_13c0c0@@YAXXZ	0.8696	0.8696	1	b749d8f9025d	0x13c0c0
 engine_boundary	?Boundary_13c8a0@@YAXXZ	3.2258	3.2258	1	978c7fd471e0	0x13c8a0
 engine_boundary	?Boundary_13c8f0@@YAXXZ	3.4483	3.4483	1	10425813a13c	0x13c8f0
 engine_boundary	?Boundary_13c9b0@@YAXXZ	2.5000	2.5000	1	3d1f3c7daa01	0x13c9b0
 engine_boundary	?Boundary_13ca30@@YAXXZ	50.0000	50.0000	1	59b1be20d075	0x13ca30
-engine_boundary	?Boundary_13ca80@@YAXXZ	8.3333	8.3333	1	a90ea0964557	0x13ca80
 engine_boundary	?Boundary_13cb80@@YAXXZ	3.0303	3.0303	1	a52929bb13b3	0x13cb80
-engine_boundary	?Boundary_13cc00@@YAXXZ	0.5882	0.5882	1	64c8936a71c6	0x13cc00
-engine_boundary	?Boundary_13cca0@@YAXXZ	0.5882	0.5882	1	4fd1eaaacd2d	0x13cca0
-engine_boundary	?Boundary_13cd60@@YAXXZ	2.9412	2.9412	1	13a870a539db	0x13cd60
-engine_boundary	?Boundary_13cdc0@@YAXXZ	1.5152	1.5152	1	8ba987ac74a8	0x13cdc0
-engine_boundary	?Boundary_13ce70@@YAXXZ	1.8519	1.8519	1	939cb180b762	0x13ce70
 engine_boundary	?Boundary_13dec0@@YAXXZ	2.8571	2.8571	1	d2e54e0929f2	0x13dec0
 engine_boundary	?Boundary_13dee0@@YAXXZ	3.6364	3.6364	1	b962bf8eb1ea	0x13dee0
 engine_boundary	?Boundary_13df30@@YAXXZ	1.4085	1.4085	1	1259d859fef6	0x13df30
@@ -1835,6 +1822,7 @@ engine_label_stubs	?HandleFortConquered@EngineLabelBacklog@@YAXXZ	0.2710	0.2710	
 engine_label_stubs	?Init@AilHost_138490@ApiCallerStubs@@QAEHHHH@Z	99.8077	99.8077	1	cpp:6bf52155264d	0x138490
 engine_label_stubs	?Init@Region_182ab0@ApiCallerStubs@@QAEHPAUTileSrcHost_182ab0@2@HPAUtagRECT@@HHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x182ab0
 engine_label_stubs	?Init@RezSync@@QAEXHH@Z	0.0562	0.0562	1	cpp:6bf52155264d	0x83450
+engine_label_stubs	?InitActReg@CCheckpointTrigger@@SAXXZ	100.0000	100.0000	1	cpp:590eddff1627	0x10ea00
 engine_label_stubs	?InitCFileIOMember@CGruntzMgr@@QAEXXZ	3.0303	3.0303	1	cpp:45e65336d4b5	0x8fea0
 engine_label_stubs	?Insert@CButeTree@@QAEXPBDPAX@Z	0.5155	0.5155	1	cpp:2262ffc5f902	0x16db90
 engine_label_stubs	?IsBusy@CGruntzSoundInnerZ@@QAEHXZ	9.5238	9.5238	1	cpp:2262ffc5f902	0x138f60
@@ -2695,6 +2683,7 @@ interfaceobject	?GetName@InterfaceObject@@QAE?AVCString@@XZ	100.0000	100.0000	1	
 kitchenslime	??1CKitchenSlime@@UAE@XZ	100.0000	100.0000	1	5d147b2b8ea5	0x13100
 kitchenslime	?FireActivation@CKitchenSlime@@QAEXH@Z	100.0000	100.0000	1	b01b90390ef5	0xb2940
 kitchenslime	?LoadSprites@CKitchenSlime@@QAEHXZ	69.1992	69.1992	3	aca206c4359f	0xb3160
+kitchenslime	?RegisterRange@CKitchenSlime@@SAXXZ	100.0000	100.0000	1	e64735a29922	0xb28c0
 kitchenslime	?RegisterType@CKitchenSlime@@SAXXZ	91.1739	91.1739	1	df69f8da8be5	0xb2aa0
 kitchenslime	?Serialize@CKitchenSlime@@QAEHPAXHHH@Z	100.0000	100.0000	1	f04e52434960	0xb2ff0
 kitchenslime	?Tick@CKitchenSlime@@QAEHXZ	94.8551	94.8551	4	dee22bdefc90	0xb2ca0
@@ -2805,6 +2794,8 @@ netmgr	?EnumPlayersInto@CNetMgr@@QAEHPAX0@Z	67.6600	67.6600	2	fcffaf584d9e	0x178
 netmgr	?EnumSessions@CNetMgr@@QAEHPAX0@Z	100.0000	100.0000	5	bca9b98ca5df	0x179130
 netmgr	?FindPlayerById@CNetMgr@@QAEPAUCNetPlayerEntry@@H@Z	87.6923	87.6923	4	ce8d7b0def71	0x178e90
 netmgr	?FrameSyncWait@CNetMgr@@QAEIXZ	70.7250	70.7250	5	d648fa188145	0xbc070
+netmgr	?GetConfigNameA@CNetMgr@@QAE?AVCString@@XZ	100.0000	100.0000	1	b8eea0ef362d	0xb6090
+netmgr	?GetConfigNameB@CNetMgr@@QAE?AVCString@@XZ	100.0000	100.0000	1	5afc2c8dee04	0xb60d0
 netmgr	?GetMaxAckLatency@CNetMgr@@QAEIXZ	100.0000	100.0000	5	8c803f5d0abb	0xbd030
 netmgr	?GetName@CNetMgr@@QAE?AVCString@@XZ	100.0000	100.0000	1	6686694bfda5	0xba170
 netmgr	?GetPlayerData@CNetMgr@@QAEPAXH@Z	100.0000	100.0000	5	7e1f45c4e8b3	0x178eb0
@@ -2893,6 +2884,12 @@ registryhelper	?InitializeLastKey@RegistryHelper@Utils@@QAEHPAD@Z	100.0000	100.0
 registryhelper	?Open@RegistryHelper@Utils@@QAEHPAD000PAUHKEY__@@0@Z	100.0000	100.0000	3	051c9b1b8294	0x139210
 registryhelper	?SetValueDword@RegistryHelper@Utils@@QAEHPADK@Z	100.0000	100.0000	5	06fbc6982fb9	0x139460
 registryhelper	?SetValueString@RegistryHelper@Utils@@QAEHPAD0@Z	100.0000	100.0000	5	48906d809fd9	0x1393b0
+rezfile	?Close@CRezFile@@QAEHXZ	100.0000	100.0000	1	2047e03b5407	0x13ce70
+rezfile	?CloseAllOpen@CRezFileMgr@@QAEHXZ	100.0000	100.0000	1	36ef9ed952ae	0x13ca80
+rezfile	?Flush@CRezFile@@QAEHXZ	100.0000	100.0000	1	13a111d74bba	0x13cd60
+rezfile	?Open@CRezFile@@QAEHXZ	100.0000	100.0000	1	1a42a810a19e	0x13cdc0
+rezfile	?Read@CRezFile@@QAEHHHIPAX@Z	100.0000	100.0000	1	a54053486a8c	0x13cc00
+rezfile	?Write@CRezFile@@QAEHHHIPAX@Z	100.0000	100.0000	1	bf47c23ba1f3	0x13cca0
 rezmgr	??0CRezDir@@QAE@PAX0@Z	78.9091	78.9091	5	6e79226f1d72	0x13c940
 rezmgr	??0CRezItm@@QAE@PAX@Z	100.0000	100.0000	4	f168abdbb8b4	0x13c540
 rezmgr	??0CRezItmBase@@QAE@PAX@Z	100.0000	100.0000	4	cb122a3428e6	0x13c4e0
@@ -3154,6 +3151,7 @@ streamvoice	?SetSource@StreamVoice@@QAEHPAUStreamSource@@@Z	100.0000	100.0000	1	
 symparser	??1CSymParser@@QAE@XZ	97.9725	97.9725	2	b820544c77c6	0x13abc0
 symparser	?AddNode@CSymParser@@QAEXPAX@Z	100.0000	100.0000	2	3b86ac8fbdfb	0x13c210
 symparser	?Clear@CSymParser@@QAEPAXH@Z	91.3803	91.3803	3	2ea4717a0572	0x13b850
+symparser	?ReParse@CSymParser@@QAEHXZ	100.0000	100.0000	1	460945270635	0x13c050
 symparser	?Remove@CObjList@@QAEXPAVCObjNode@@@Z	100.0000	100.0000	1	c6b60724f735	0x1852e0
 symparser	?ResolvePath@CSymParser@@QAEPAXPBD@Z	100.0000	100.0000	1	d2f5951f4d21	0x13c030
 symparser	?ResolveQualified@CSymParser@@QAEHPBDPAX@Z	100.0000	100.0000	1	65f97a6deb84	0x13bff0
@@ -3393,6 +3391,10 @@ userlogic	?FireActivation@CSecretTeleporterTrigger@@QAEXH@Z	100.0000	100.0000	2	
 userlogic	?FireWarp@CWarpStonePad@@QAEXH@Z	100.0000	100.0000	1	123185be1635	0x10d8c0
 userlogic	?GetScreenPos@CUserLogic@@QAEXPAUScreenPoint@1@@Z	100.0000	100.0000	2	c09fb9d01a13	0x29a50
 userlogic	?InitActReg@CSecretTeleporterTrigger@@SAXXZ	100.0000	100.0000	1	2f0eeda3c0d0	0x420d0
+userlogic	?InitActReg@CSingleAnimation@@SAXXZ	100.0000	100.0000	1	883823c700b9	0xae9a0
+userlogic	?InitActReg@CTileTrigger@@SAXXZ	100.0000	100.0000	1	38a3a9c69832	0x10e420
+userlogic	?InitActReg@CTileTriggerSwitch@@SAXXZ	100.0000	100.0000	1	18b0022f5bf2	0x10de20
+userlogic	?InitActReg@CWarpStonePad@@SAXXZ	100.0000	100.0000	1	199d7a379d83	0x10d840
 userlogic	?IsAtSavedScreenPos@CUserLogic@@QAEHXZ	100.0000	100.0000	1	874bfc9482ed	0x29a80
 userlogic	?LoadGruntDecayConfig2@CUserLogic@@QAEXXZ	1.2195	1.2195	1	edd8f9929bc3	0x61570
 userlogic	?LoadGruntDecayConfig@CUserLogic@@QAEXXZ	0.6135	0.6135	1	92fac0c4600f	0x612a0
@@ -3416,6 +3418,7 @@ videoconfig	?SaveVideoResolutionConfig@@YAXPAX0@Z	88.8148	88.8148	6	6a3159e5dbaa
 warlord	??0CWarlord@@QAE@H@Z	3.5796	3.5796	1	b29f645c5e90	0x42d40
 warlord	??1CWarlord@@UAE@XZ	73.9524	73.9524	1	0524876559f2	0x107f0
 warlord	?BuildFortSplashParticles@CWarlord@@QAEXXZ	1.1905	1.1905	1	46da92888935	0x44f80
+warlord	?InitActReg@CWarlord@@SAXXZ	100.0000	100.0000	1	d3ff00d8c05e	0x445c0
 warlord	?LoadAttributes2@CWarlord@@QAEHXZ	91.6296	91.6296	1	3c28e827f939	0x44d10
 warlord	?LoadAttributes@CWarlord@@QAEHXZ	100.0000	100.0000	1	fd1848323ebc	0x44c00
 warlord	?NotifyFortUnderAttack@CWarlord@@QAEXXZ	0.5464	0.5464	1	c2ca723a74ad	0x45270
