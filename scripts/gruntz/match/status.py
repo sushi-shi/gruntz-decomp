@@ -127,6 +127,22 @@ def engine_universe():
             except Exception:
                 pass
 
+    # Functions already pulled into a unit (the objdiff "started" set, from the
+    # build's symbol map). A carve-out that's been claimed/reconstructed is a real
+    # target, not boilerplate - e.g. the zlib module functions FID also tags as
+    # library - so it counts toward the denominator. This keeps started <= real
+    # (everything in a unit is in the universe) instead of inflating the carve-outs.
+    claimed: set[int] = set()
+    sym = REPO / "build" / "gen" / "symbol_names.csv"
+    if sym.is_file():
+        for line in sym.read_text().splitlines():
+            head = line.split(",", 1)[0].strip()
+            if head.lower().startswith("0x"):
+                try:
+                    claimed.add(int(head, 16))
+                except ValueError:
+                    pass
+
     # The leading contiguous run of <=5-byte functions is the linker's ILT jump
     # table - 5-byte `jmp rel32` forwarders, each named after the body it targets.
     # They aren't named thunk_*, so a name filter misses them; instead bound the
@@ -135,10 +151,15 @@ def engine_universe():
     # the few legit <=5-byte vtable-dispatch methods sit far above it, kept real).
     ilt_end = min((rva for rva, sz, _n, _t in rows if sz > 5), default=0)
 
-    # Disjoint carve-outs (first match wins); everything else is a real target.
+    # Disjoint carve-outs (first match wins); a claimed function is always real,
+    # so only UNCLAIMED carve-outs are excluded - everything else is a real target.
     acc = {"thunk": [0, 0], "lib": [0, 0], "eh": [0, 0]}
     real_fn = real_code = 0
     for rva, sz, name, is_thunk in rows:
+        if rva in claimed:                 # claimed/reconstructed -> real target
+            real_fn += 1
+            real_code += sz
+            continue
         if rva < ilt_end or is_thunk:      # ILT jmp-table + Ghidra thunk_*
             k = "thunk"
         elif rva in lib:

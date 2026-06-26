@@ -576,6 +576,13 @@ source = "src/Stub/Boundary.cpp"
 flags = "base"
 
 [[unit]]
+# catch-all worklist (gruntz.analysis.gen_unmatched_stubs): every real reconstruction
+# target with no stub yet - free-function stubs whose comment is the Ghidra name hint.
+unit = "engine_unmatched"
+source = "src/Stub/Unmatched.cpp"
+flags = "base"
+
+[[unit]]
 # MSVC5 LIBCMT iostreams `streambuf` base (non-EH leaves).
 unit = "crt_streambuf"
 source = "src/Crt/StreamBuf.cpp"
