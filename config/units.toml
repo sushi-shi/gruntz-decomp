@@ -1233,6 +1233,11 @@ source = "src/Gruntz/ZDArrayDerived.cpp"
 flags = "base"
 
 [[unit]]
+unit = "orphanleaves"
+source = "src/Gruntz/OrphanLeaves.cpp"
+flags = "base"
+
+[[unit]]
 unit = "gamesave"
 source = "src/Io/GameSave.cpp"
 flags = "base"

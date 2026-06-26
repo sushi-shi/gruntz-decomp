@@ -7,8 +7,6 @@
 // each and moves it to its real class TU, shrinking this file toward empty.
 #include <rva.h>
 
-RVA(0x000183d0, 0x6)
-void Unmatched_0183d0() {} // Unmatched_0183d0
 RVA(0x00035f10, 0x155)
 void Unmatched_035f10() {} // Unmatched_035f10
 RVA(0x000379a0, 0x3d)
@@ -17,20 +15,12 @@ RVA(0x000379f0, 0x57)
 void Unmatched_0379f0() {} // Unmatched_0379f0
 RVA(0x00037a70, 0x9a)
 void Unmatched_037a70() {} // Unmatched_037a70
-RVA(0x0003ac30, 0xa)
-void Unmatched_03ac30() {} // Unmatched_03ac30
 RVA(0x0003c220, 0xa4)
 void Unmatched_03c220() {} // Unmatched_03c220
 RVA(0x0003c8f0, 0x76)
 void Unmatched_03c8f0() {} // Unmatched_03c8f0
-RVA(0x0003cbc0, 0x14)
-void Unmatched_03cbc0() {} // Unmatched_03cbc0
-RVA(0x0003cbf0, 0x14)
-void Unmatched_03cbf0() {} // Unmatched_03cbf0
 RVA(0x0003cc20, 0x14e)
 void Unmatched_03cc20() {} // Unmatched_03cc20
-RVA(0x0003e120, 0x15)
-void Unmatched_03e120() {} // Unmatched_03e120
 RVA(0x0003e300, 0x18d)
 void Unmatched_03e300() {} // Unmatched_03e300
 RVA(0x000555e0, 0x12f8)
@@ -39,8 +29,6 @@ RVA(0x00058ee0, 0x5c)
 void Unmatched_058ee0() {} // Unmatched_058ee0
 RVA(0x0006b2e0, 0x39)
 void Unmatched_06b2e0() {} // Unmatched_06b2e0
-RVA(0x00075a10, 0x12)
-void Unmatched_075a10() {} // Unmatched_075a10
 RVA(0x00075a40, 0x34)
 void Unmatched_075a40() {} // Unmatched_075a40
 RVA(0x0008cf30, 0x55)
@@ -53,8 +41,6 @@ RVA(0x000aa1e0, 0xf1)
 void Unmatched_0aa1e0() {} // Unmatched_0aa1e0
 RVA(0x000aa460, 0xf1)
 void Unmatched_0aa460() {} // Unmatched_0aa460
-RVA(0x000b4330, 0x8)
-void Unmatched_0b4330() {} // Unmatched_0b4330
 RVA(0x000b4350, 0x7e)
 void Unmatched_0b4350() {} // Unmatched_0b4350
 RVA(0x000b4cb0, 0x56)
