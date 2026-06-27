@@ -32,6 +32,7 @@ boundaryleaflogic	15	15
 boundarymisc	13	11
 boundarythunks	15	15
 brickz	15	3
+buildgruntzcrcinfo	1	0
 butemgr	42	27
 butemgrparse	1	0
 butesectionctor	1	0
@@ -172,7 +173,7 @@ ehfunclets	6	6
 engine_attributed	9	0
 engine_boundary	153	0
 engine_discovered	29	5
-engine_label_stubs	393	106
+engine_label_stubs	390	106
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -318,6 +319,7 @@ palettebmp	1	0
 palettecopy	1	0
 playercommandstep	1	0
 polyclipraster	1	0
+portalpath	1	1
 projactcache	3	1
 projactregistry	4	3
 projectile	10	4
@@ -335,6 +337,7 @@ rezlist	2	2
 rezmgr	15	10
 rollingball	5	3
 savegame	21	15
+savescreenshot	1	0
 sbi_gruntmachine	3	2
 sbi_gruntmachine_eh	1	1
 sbi_image	1	0
@@ -555,6 +558,7 @@ brickz	?SearchEdge@CBrickz@@QAEHHHHHPAXHHH@Z	82.5373	82.5373	2	9a02e814554f	0x81
 brickz	?Serialize@CBrickz@@QAEHHHHH@Z	37.9032	37.9032	1	18774618cdf4	0x9356c
 brickz	?Unlink@CBrickz@@QAEXPAUBrickzNode@@@Z	74.9487	74.9487	2	ead4b3e1d312	0x9f690
 brickz	?UpdateDiagonals@CBrickz@@QAEHH@Z	53.5683	53.5683	1	e2065e000df7	0x82030
+buildgruntzcrcinfo	?BuildGruntzCrcInfo@CrcOwner@@QAEXXZ	70.9695	70.9695	1	f80ed12c68f6	0xbf1d0
 butemgr	??1CButeMgr@@QAE@XZ	68.6322	68.6322	1	febe7cdf6ea9	0x213c0
 butemgr	??1CButeValue@@QAE@XZ	68.6364	68.6364	1	44a2235fbbca	0x172160
 butemgr	?CharClass@CButeMgr@@QAEFD@Z	100.0000	100.0000	2	6b8d1de98cce	0x1703e0
@@ -1744,7 +1748,6 @@ engine_label_stubs	?Build@PalBuilder_176df0@ApiCallerStubs@@QAEHPAUtagPALETTEENT
 engine_label_stubs	?BuildAssetNamespacePrefixes@EngineLabelBacklog@@YGXHHHH@Z	0.2933	0.2933	1	cpp:6bf52155264d	0xdca70
 engine_label_stubs	?BuildBootyGruntIdleAnimation@EngineLabelBacklog@@YAXXZ	0.3058	0.3058	1	cpp:45e65336d4b5	0x1ce60
 engine_label_stubs	?BuildGruntSprintAnimation@EngineLabelBacklog@@YAXXZ	0.7246	0.7246	1	cpp:45e65336d4b5	0x19920
-engine_label_stubs	?BuildGruntzCrcInfo@EngineLabelBacklog@@YAXXZ	0.6098	0.6098	1	cpp:45e65336d4b5	0xbf1d0
 engine_label_stubs	?BuildLevelRezPath@EngineLabelBacklog@@YGXHHHHH@Z	0.3731	0.3731	1	cpp:6bf52155264d	0x93d40
 engine_label_stubs	?BuildLevelTitleString@EngineLabelBacklog@@YAXXZ	0.5000	0.5000	1	cpp:45e65336d4b5	0xe44e0
 engine_label_stubs	?BuildPowerupIconKeys@EngineLabelBacklog@@YGXPAVPowerupKeyRegistry@@H@Z	53.5443	53.5443	1	cpp:e8a4cb0d5b2a	0x1e720
@@ -1799,7 +1802,6 @@ engine_label_stubs	?IsBusy@CGruntzSoundInnerZ@@QAEHXZ	9.5238	9.5238	1	cpp:2262ff
 engine_label_stubs	?Key@CmdHost_014720@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x14720
 engine_label_stubs	?Key@CmdHost_039440@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x39440
 engine_label_stubs	?Key@CmdHost_0953f0@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x953f0
-engine_label_stubs	?LaunchPortalExe@EngineLabelBacklog@@YGXH@Z	0.7519	0.7519	1	cpp:6bf52155264d	0x90550
 engine_label_stubs	?Load@PalLoad_1479e0@ApiCallerStubs@@QAEHHPADH@Z	89.7286	89.7286	1	cpp:6bf52155264d	0x1479e0
 engine_label_stubs	?Load@ResLoad_144270@ApiCallerStubs@@QAEHHPADH@Z	86.9885	86.9885	1	cpp:6bf52155264d	0x144270
 engine_label_stubs	?Load@StrHost_0b7ec0@ApiCallerStubs@@QAEXHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0xb7ec0
@@ -1865,7 +1867,6 @@ engine_label_stubs	?Run@LibHost_1bf577@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	
 engine_label_stubs	?RunDecode1@CFileImage@@QAEHPAX0HH@Z	1.7094	1.7094	1	cpp:e1535087fe94	0x145270
 engine_label_stubs	?RunDecode3@CFileImage@@QAEHPAX0HH@Z	0.6826	0.6826	1	cpp:e1535087fe94	0x1453f0
 engine_label_stubs	?SaveGameFile@CFileIO@@QAEXH@Z	0.9709	0.9709	1	cpp:e8a4cb0d5b2a	0xe4b60
-engine_label_stubs	?SaveScreenshot@EngineLabelBacklog@@YAXXZ	0.6410	0.6410	1	cpp:45e65336d4b5	0x114ff0
 engine_label_stubs	?SelectBestDevice@SFManager@@QAEXXZ	0.3937	0.3937	1	cpp:45e65336d4b5	0xf8970
 engine_label_stubs	?SendNetStat@CNetMgr@@QAEXHIH@Z	40.0000	40.0000	1	cpp:2262ffc5f902	0x2955
 engine_label_stubs	?SendStat3@CNetMgr@@QAEXHIH@Z	40.0000	40.0000	1	cpp:2262ffc5f902	0x3d0a
@@ -3055,6 +3056,7 @@ palettebmp	?LoadBmpPalette@CPalLoader@@QAEHPBDH@Z	98.4889	98.4889	2	dc1d1e374304
 palettecopy	?UploadPalette@CPaletteHost@@QAEXXZ	61.1613	61.1613	1	a0802ff9a4b4	0x17ca10
 playercommandstep	?Dispatch@CCmdHandler@@QAEHIIIIIII@Z	16.7062	16.7062	1	95482dec7f17	0xd1b60
 polyclipraster	?RotateRasterize@@YAHPAUClipVtx@@HHHHHHHHH@Z	53.4152	53.4152	1	0f617ce05cfb	0x146550
+portalpath	?LaunchPortalExe@@YGHPAD@Z	100.0000	100.0000	1	7220403c8bd3	0x90550
 projactcache	??0zBitVec@@QAE@HH@Z	77.7679	77.7679	1	cebeacca76fa	0x16d790
 projactcache	?EnsureSize@zBitVec@@QAEHH@Z	100.0000	100.0000	1	151b7a363677	0x1936e0
 projactcache	?Insert@CProjActMap@@QAEPAXPBDPAX@Z	57.9532	57.9532	1	08fb691d7565	0x1933b0
@@ -3170,6 +3172,7 @@ savegame	?SetField18@CSaveGame@@QAEXH@Z	96.3333	96.3333	2	805c5816acdb	0xe5620
 savegame	?SetField1c@CSaveGame@@QAEXH@Z	100.0000	100.0000	2	a0994b0515d6	0xe5660
 savegame	?Verify@CSaveGame@@QAEHXZ	100.0000	100.0000	2	99fbc66be447	0xe50f0
 savegame	?VerifySlot@CSaveGame@@QAEHPAUSaveSlot@@@Z	43.9830	43.9830	2	2e50dc6efad8	0xe52c0
+savescreenshot	?SaveScreenshot@@YAHHPAUScrConfig@@PAUScrOwner@@HHPADH@Z	96.7564	96.7564	1	c0bad30d527c	0x114ff0
 sbi_gruntmachine	?Render@CSBI_GruntMachine@@QAEHH@Z	87.3590	87.3590	1	d8c0e8492784	0xe8cb0
 sbi_gruntmachine	?Reset@CSBI_GruntMachine@@QAEXXZ	100.0000	100.0000	1	539d6616e793	0xe8c70
 sbi_gruntmachine	?SetFrames@CSBI_GruntMachine@@QAEXHH@Z	100.0000	100.0000	1	90c8ff4c6d8d	0xe8dc0

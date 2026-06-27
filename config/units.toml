@@ -152,6 +152,21 @@ source = "src/Gruntz/SoundFontPath.cpp"
 flags = "base"
 
 [[unit]]
+unit = "savescreenshot"
+source = "src/Gruntz/SaveScreenshot.cpp"
+flags = "base"
+
+[[unit]]
+unit = "portalpath"
+source = "src/Gruntz/PortalPath.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "buildgruntzcrcinfo"
+source = "src/Gruntz/BuildGruntzCrcInfo.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "statusbaritem"
 source = "src/Gruntz/StatusBarItem.cpp"
 flags = "base"

@@ -175,7 +175,6 @@ namespace EngineLabelBacklog {
     void LoadExplosionSprites();
     void __stdcall BuildRockBreakParticles(i32, i32, i32, i32);
     void LoadPowerupIconSprites();
-    void __stdcall LaunchPortalExe(i32);
     void __stdcall BuildLevelRezPath(i32, i32, i32, i32, i32);
     void LoadHelpBookSprite();
     void __stdcall LoadObjectImageResources(i32, i32);
@@ -184,7 +183,6 @@ namespace EngineLabelBacklog {
     void __stdcall LoadMenuStateAssets(i32, i32, i32);
     void LoadAreaLevelTable();
     void LoadRollingBallHazardSprites();
-    void BuildGruntzCrcInfo();
     void __stdcall LoadLevelByMode(i32, i32);
     void DrawDebugStats();
     void ValidateLevelTiles();
@@ -203,7 +201,6 @@ namespace EngineLabelBacklog {
     void __stdcall LoadBridgeMoveSprites(i32);
     void LoadPyramidBridgeSprites();
     void __stdcall BuildStatzTabSmall_vfunc1(i32, i32, i32, i32, i32, i32, i32, i32, i32);
-    void SaveScreenshot();
     void FreeAllFonts();
     void FormatGameInfoString();
     void __stdcall BuildVoiceSoundList(i32);
@@ -967,12 +964,7 @@ i32 CGruntResurrector::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
 
 // LoadPowerupIconSprites @0x07c620 graduated to src/Gruntz/IconLoaders.cpp.
 
-// @confidence: low
-// @source: decomp-xref
-// @proximity: CGruntzMgr (HIGH bracket, tu_layout) - plausible owner (existing label is low-confidence); verify before graduating.
-// @stub
-RVA(0x00090550, 0x1e6)
-void __stdcall EngineLabelBacklog::LaunchPortalExe(i32) {}
+// LaunchPortalExe (0x90550) graduated to src/Gruntz/PortalPath.cpp.
 
 // @confidence: med
 // @source: string-xref
@@ -1034,12 +1026,7 @@ void __stdcall EngineLabelBacklog::LoadMenuStateAssets(i32, i32, i32) {}
 // CloudHazard::vfunc_20 (0x0b4640) graduated to src/Gruntz/CPathHazard.cpp as
 // CLightningHazard::ArmStrike (the strike-window arm + LEVEL_CLOUDHAZARDKILL cue).
 
-// @confidence: low
-// @source: decomp-xref
-// @proximity: CFileIO@-0x1df0 | CMultiStartDlg@+0x2580 (boundary - pick one)
-// @stub
-RVA(0x000bf1d0, 0x249)
-void EngineLabelBacklog::BuildGruntzCrcInfo() {}
+// BuildGruntzCrcInfo (0xbf1d0) graduated to src/Gruntz/BuildGruntzCrcInfo.cpp.
 
 // BuildNamedGruntTable (0x0c16b0) graduated to src/Gruntz/BacklogStateLoaders.cpp.
 
@@ -1359,12 +1346,7 @@ i32 CStatzTabSmall::BuildSmall(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, CStatzRec
     return 1;
 }
 
-// @confidence: high
-// @source: decomp-xref
-// @proximity: CToobSpikez@-0x790 | CTileTriggerSwitchLogic@+0xf10 (boundary - pick one)
-// @stub
-RVA(0x00114ff0, 0x1b3)
-void EngineLabelBacklog::SaveScreenshot() {}
+// SaveScreenshot (0x114ff0) graduated to src/Gruntz/SaveScreenshot.cpp.
 
 // @confidence: low
 // @source: decomp-xref
