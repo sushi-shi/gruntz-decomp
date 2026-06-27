@@ -94,6 +94,7 @@ cgruntpowerupsprite	6	5
 cgruntselectedsprite	5	3
 cgruntstaminasprite	3	3
 cgruntstartingpoint	1	1
+cgrunttilemgr	1	0
 cgrunttoysprite	5	4
 cgrunttoytimesprite	1	1
 cgruntwingztimesprite	3	3
@@ -178,7 +179,7 @@ ehfunclets	6	6
 engine_attributed	9	0
 engine_boundary	49	0
 engine_discovered	29	5
-engine_label_stubs	388	106
+engine_label_stubs	387	105
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -1091,6 +1092,7 @@ cgruntstaminasprite	??1CGruntStaminaSprite@@UAE@XZ	100.0000	100.0000	1	5ffcecb6c
 cgruntstaminasprite	?GetStaminaTime@CGruntStaminaSprite@@SGHPAUCStaminaTimeHost@@@Z	100.0000	100.0000	1	8243fe1fcda1	0x7fbb0
 cgruntstaminasprite	?GetTypeTag@CGruntStaminaSprite@@QAEHXZ	100.0000	100.0000	1	7751a50cef8a	0x12020
 cgruntstartingpoint	??1CGruntStartingPoint@@UAE@XZ	100.0000	100.0000	1	ff7f150cc53c	0x10670
+cgrunttilemgr	?CombatCue@CGruntTileMgr@@QAEHHHHHH@Z	82.3978	82.3978	1	b820bd8070e6	0x7b930
 cgrunttoysprite	??1CGruntToySprite@@UAE@XZ	100.0000	100.0000	1	c705bae9e5ce	0x122b0
 cgrunttoysprite	?InitActReg@CGruntToySprite@@SAXXZ	100.0000	100.0000	1	1d3d94234712	0x7f540
 cgrunttoysprite	?RegisterActs@CGruntToySprite@@SAXXZ	92.9130	92.9130	1	c7cebdf2b945	0x7f720
@@ -1817,11 +1819,10 @@ engine_label_stubs	?LoadAttributes@CTeleporter@@QAEXXZ	0.4274	0.4274	1	cpp:45e65
 engine_label_stubs	?LoadAttributes@CTimeBomb@@QAEXXZ	0.7246	0.7246	1	cpp:45e65336d4b5	0xe1e60
 engine_label_stubs	?LoadBootyCheatState@EngineLabelBacklog@@YGXHHH@Z	0.3788	0.3788	1	cpp:6bf52155264d	0x18830
 engine_label_stubs	?LoadBridgeMoveSprites@EngineLabelBacklog@@YGXH@Z	0.6536	0.6536	1	cpp:6bf52155264d	0x110860
-engine_label_stubs	?LoadByExt@CFileImage@@QAEHPAVCFileImageInfo@@PADHH@Z	100.0000	100.0000	1	cpp:590eddff1627	0x148940
+engine_label_stubs	?LoadByExt@CFileImage@@QAEHPAVCFileImageInfo@@PADHH@Z	99.8899	99.8899	1	cpp:590eddff1627	0x148940
 engine_label_stubs	?LoadCustomWorldInfo@EngineLabelBacklog@@YAHPAX@Z	100.0000	100.0000	1	cpp:aab6e5a6e511	0x3b7c0
 engine_label_stubs	?LoadDroppedObjectEffects@CDroppedObject@@QAEXXZ	0.6289	0.6289	1	cpp:e8a4cb0d5b2a	0xc7090
 engine_label_stubs	?LoadGruntCombatAnimations@CGrunt@ApiCallerStubs@@QAEXHHHHHHHH@Z	0.0777	0.0777	1	cpp:590eddff1627	0x597a0
-engine_label_stubs	?LoadGruntCombatTuning@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXHHHHH@Z	0.3650	0.3650	1	cpp:e8a4cb0d5b2a	0x7b930
 engine_label_stubs	?LoadGruntDeathAnimations@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXHH@Z	0.1015	0.1015	1	cpp:e8a4cb0d5b2a	0x60150
 engine_label_stubs	?LoadGruntResurrectTuning@CGruntResurrector@@QAEHHHH@Z	65.4807	65.4807	1	cpp:590eddff1627	0x7be60
 engine_label_stubs	?LoadHelpBookSprite@EngineLabelBacklog@@YAXXZ	0.5988	0.5988	1	cpp:45e65336d4b5	0x997c0
@@ -2322,7 +2323,7 @@ grunt	?FindGridNeighbor@CGrunt@@QAEPAV1@H@Z	100.0000	100.0000	3	61dd38cb1b46	0x5
 grunt	?FinishEntranceMove@CGrunt@@QAEHXZ	100.0000	100.0000	1	a2a92c839b90	0x69fd0
 grunt	?FreeNameList@CGrunt@@QAEXXZ	76.9512	76.9512	2	2e3438eb07ba	0x48360
 grunt	?GetTilePos@CGrunt@@QAEPAUGruntTilePos@@PAU2@@Z	85.3000	85.3000	1	995269eb1311	0x31c70
-grunt	?GruntInRadius@CGrunt@@QAEHHH@Z	35.6939	35.6939	2	b9c8261e66de	0x67b00
+grunt	?GruntInRadius@CGrunt@@QAEHHH@Z	35.7143	35.7143	2	b9c8261e66de	0x67b00
 grunt	?InitDirVectors@CGrunt@@QAEXXZ	37.3394	37.3394	2	4fcfcf14ed6b	0x5caa0
 grunt	?Load@CGrunt@@QAEHPAVCGruntArchive@@@Z	87.2286	87.2286	1	f698d71b679c	0xd8060
 grunt	?LoadAnimNameTable@CGrunt@@QAEXHH@Z	75.9312	75.9312	3	f341d57d748b	0x49c60
@@ -2338,8 +2339,8 @@ grunt	?ReadConfigFromButeMgr@CGrunt@@QAEXXZ	96.8421	96.8421	5	39bb0fe6f60a	0x484
 grunt	?RearmAttackAnim2@CGrunt@@QAEHXZ	79.2745	79.2745	1	b332a973991f	0x61bc0
 grunt	?RearmAttackAnim@CGrunt@@QAEHHH@Z	55.5420	55.5420	1	7230a3c88ee7	0x61940
 grunt	?RearmEntranceDrop@CGrunt@@QAEXXZ	88.8646	88.8646	2	d64979f40a7e	0x68370
-grunt	?RectContains@CGrunt@@QAEHHH@Z	58.8145	58.8145	1	490b1e26e8f0	0x51850
-grunt	?RectContainsGated@CGrunt@@QAEHHH@Z	62.3307	62.3307	1	e41d77906d32	0x51a20
+grunt	?RectContains@CGrunt@@QAEHHH@Z	63.0081	63.0081	1	490b1e26e8f0	0x51850
+grunt	?RectContainsGated@CGrunt@@QAEHHH@Z	63.5433	63.5433	1	e41d77906d32	0x51a20
 grunt	?ResetGeometry@CGrunt@@QAEHXZ	72.7800	72.7800	3	502caa6ebbcc	0x616e0
 grunt	?ResolveAnimation@CGrunt@@QAEHXZ	95.4210	95.4210	6	9f3a431918a8	0x457b0
 grunt	?ResolveArrivalNeighbor@CGrunt@@QAEHXZ	74.9747	74.9747	2	85816637f608	0xf26f0
@@ -2378,7 +2379,7 @@ grunt	?UpdateEntranceAnim@CGrunt@@QAEHXZ	88.3088	88.3088	1	277e290dabfb	0x690a0
 grunt	?UpdateGruntStatus@CGrunt@@QAEHXZ	94.5000	94.5000	3	2b7c880860ba	0x617c0
 grunt	?winapi_04a9f0_CopyRect_OffsetRect@CGrunt@@QAEHXZ	100.0000	100.0000	1	dbbfdbcac471	0x4a9f0
 gruntassetloaders	?LoadGruntAbilityTuning@CGrunt@@QAEHH@Z	90.5457	90.5457	1	713b0b5aa10d	0x57100
-gruntassetloaders	?LoadWingzGruntSprites@CGrunt@@QAEHH@Z	75.5349	75.5349	1	69b35c90dfb1	0x68880
+gruntassetloaders	?LoadWingzGruntSprites@CGrunt@@QAEHH@Z	75.0193	75.0193	1	69b35c90dfb1	0x68880
 gruntcmdpercent	?ComputeCmdPercent@@YAHH@Z	100.0000	100.0000	1	4c48926cc60c	0x135110
 gruntdatarecord	?DeserializeStrings@GruntDataRecord@@QAEHPAUDataWriter@@@Z	100.0000	100.0000	1	d96d2c87cdd6	0x56eb0
 gruntdatarecord	?SerializeStrings@GruntDataRecord@@QAEHPAUDataWriter@@@Z	100.0000	100.0000	1	71ad52c7e3da	0x56da0

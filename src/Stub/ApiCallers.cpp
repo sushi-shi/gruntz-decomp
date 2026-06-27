@@ -174,7 +174,6 @@ namespace ApiCallerStubs {
         void LoadBombGruntRunConfig2();
         void LoadFreezeSpellAssets();
         void LoadTeleporterGooConfig(i32);
-        void LoadGruntCombatTuning(i32, i32, i32, i32, i32);
         void LoadFinishLevelSprite(i32);
         void LoadMonologoSprite();
         void LoadStateImages_vfunc8();
@@ -3997,12 +3996,8 @@ namespace ApiCallerStubs {
     RVA(0x0006eb80, 0x5ef)
     void ThisStubOwnerUnknown::LoadTeleporterGooConfig(i32) {}
 
-    // @confidence: med
-    // @source: string-xref
-    // @stub
-    // proximity: EngineLabelBacklog@-0x600 | CTriggerMgr@+0x4e0
-    RVA(0x0007b930, 0x3b7)
-    void ThisStubOwnerUnknown::LoadGruntCombatTuning(i32, i32, i32, i32, i32) {}
+    // LoadGruntCombatTuning (0x7b930) re-homed as CGruntTileMgr::CombatCue in
+    // src/Gruntz/CGruntTileMgr.cpp (owner = CGrunt::m_260's class).
 
 
     // LoadMonologoSprite (0x090d10) re-homed as CGruntzMgr::LoadMonologoSprite in

@@ -614,6 +614,13 @@ source = "src/Gruntz/GruntAssetLoaders.cpp"
 flags = "base"
 
 [[unit]]
+# CGruntTileMgr::CombatCue (0x7b930) - the grunt path/occupancy mgr's spell-area
+# cue (re-homed from ApiCallers). No destructible locals -> /base.
+unit = "cgrunttilemgr"
+source = "src/Gruntz/CGruntTileMgr.cpp"
+flags = "base"
+
+[[unit]]
 # GruntDataRecord::SerializeStrings (0x56da0) - the per-record string/field writer
 # the big grunt-data Serialize (0x53f90) calls; non-EH (plain stack buffer).
 unit = "gruntdatarecord"

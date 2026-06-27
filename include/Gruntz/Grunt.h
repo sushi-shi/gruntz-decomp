@@ -560,6 +560,22 @@ struct GruntCoordNode {
 // (DAT_00644c54, reloc-masked).
 extern i32 g_focusedGruntSentinel; // DAT_00644c54
 
+// The level board-dimension path the area cues read off the tile-mgr's +0x22c
+// registry: m_22c -> m_24 -> m_5c -> {m_28 = width, m_2c = height}.
+struct CTileBoardDims {
+    char m_pad0[0x28];
+    i32 m_28; // +0x28  board width
+    i32 m_2c; // +0x2c  board height
+};
+struct CTileRegMid {
+    char m_pad0[0x5c];
+    CTileBoardDims* m_5c; // +0x5c
+};
+struct CTileReg {
+    char m_pad0[0x24];
+    CTileRegMid* m_24; // +0x24
+};
+
 // ---------------------------------------------------------------------------
 // The grunt's path/occupancy sub-manager (CGrunt+0x260). LoadEntranceConfig
 // drives it through four engine thunks (all external/no-body, reloc-masked):
@@ -613,6 +629,16 @@ public:
     // (thunk 0x1fff -> LoadGruntResurrectTuning). External/no-body (reloc-masked).
     i32 CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag); // 0x400c (ret 0x14)
     i32 ResurrectCue(i32 x, i32 y, i32 radius);                  // 0x1fff (ret 0xc)
+    // CombatCue's per-grid-cell effect for tiers 1/6/7 (thunk 0x2e96, __thiscall on
+    // the tile-mgr, ret 0x10): apply the (i,j) cell effect with the tier value + flag.
+    void ApplyCellEffect(i32 i, i32 j, i32 k, i32 flag); // 0x2e96
+
+    // CombatCue's grid (this+0x1c): a 4x15 grunt-pointer board scanned i=0..3, j=0..14
+    // (the address is monotonic, so retail strength-reduces it to a running pointer).
+    char m_pad0[0x1c];
+    CGrunt* m_grid[4][15]; // +0x1c
+    char m_pad10c[0x22c - 0x10c];
+    CTileReg* m_22c; // +0x22c  the level registry (board dims)
 };
 
 // The on-screen point-visibility predicate the arrival/update steps gate the cue
@@ -1353,6 +1379,12 @@ public:
     );                                                 // call 0x1451
     i32 IsInCombatRange(i32 x, i32 y);                 // call 0x3c4c (2-arg predicate)
     void CommitCombatMove(i32 a, i32 b, i32 c, i32 d); // call 0x302b (4-arg)
+
+    // CombatCue per-grunt spell effects (external/no-body, reloc-masked):
+    //   TeleportMove(dx,dy,a,b) thunk 0x2f3b (ret 0x10; nonzero = moved)
+    //   FreezeApply()           thunk 0x28d8 (0-arg freeze)
+    i32 TeleportMove(i32 dx, i32 dy, i32 a, i32 b); // 0x2f3b
+    void FreezeApply();                             // 0x28d8
 };
 
 // CGrunt segment-vs-box overlap test @0x62b70 - a free (__stdcall, ret 0xc) helper:
