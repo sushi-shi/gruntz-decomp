@@ -695,6 +695,14 @@ source = "src/Gruntz/ClassUnknown43.cpp"
 flags = "base"
 
 [[unit]]
+# CGrunt::StepArrivalDefenseAlt (0xf1c70) - the powered-up arrival-defender variant,
+# trace mis-attributed to ClassUnknown_42; re-homed from Discovered.cpp as the real
+# CGrunt method. No destructible locals -> /base.
+unit = "gruntarrivalstep"
+source = "src/Gruntz/GruntArrivalStep.cpp"
+flags = "base"
+
+[[unit]]
 # __stdcall Blowfish bit-decode loop (0x16f760), trace mis-attributed to
 # ClassUnknown_4; re-homed from Discovered.cpp.
 unit = "bitstreamblowfish"

@@ -169,7 +169,6 @@ namespace ApiCallerStubs {
         void BootyState_OnActivate2_vfunc8();
         void LoadCreditzAssets2();
         void BuildWorldLevelKey(i32);
-        void LoadGruntDeathAnimations(i32, i32);
         void LoadPickupSprites(i32, i32, i32, i32, i32);
         void LoadBombGruntRunConfig2();
         void LoadFreezeSpellAssets();
@@ -3963,12 +3962,8 @@ namespace ApiCallerStubs {
     RVA(0x000597a0, 0x1345)
     void CGrunt::LoadGruntCombatAnimations(i32, i32, i32, i32, i32, i32, i32, i32) {}
 
-    // @confidence: med
-    // @source: string-xref
-    // @stub
-    // proximity: CGrunt@-0xe40 | CUserLogic@+0x1150
-    RVA(0x00060150, 0xd90)
-    void ThisStubOwnerUnknown::LoadGruntDeathAnimations(i32, i32) {}
+    // LoadGruntDeathAnimations (0x60150) re-homed as CGrunt::LoadGruntDeathAnimations
+    // in src/Gruntz/GruntAssetLoaders.cpp.
 
     // LoadVehicleGruntAnimations (0x63db0) re-homed as
     // CGrunt::LoadVehicleGruntAnimations in src/Gruntz/Grunt.cpp (trace owner CGrunt).

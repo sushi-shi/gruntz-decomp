@@ -389,3 +389,363 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             return 0;
     }
 }
+
+// ---------------------------------------------------------------------------
+// CGrunt::LoadGruntDeathAnimations(int deathType, int a2)   @0x60150   (ret 8)
+// The grunt death dispatch: tear down the running anim state + retire the 7 HUD
+// stat sprites, latch a fresh "C" death anim-set node, then switch on the death
+// type (0..0xf, table @0x460ee0) to resolve + apply the matching GRUNTZ_DEATHZ_*
+// sprite set, fire the on-screen death cue, and run the shared finalize/tail.
+//
+// The per-direction tile-attribute (n/t = 0x6e/0x74) splits FALL vs QUICKFALL.
+// The g->m_7c sub-object the early arrival-notify drives.
+struct CDeathReg7c {
+    void Notify(i32 a, i32 b); // 0xfcc50 (__thiscall, 2 args)
+};
+
+// The death anim-set key (DAT_0060cc90) + the per-type GRUNTZ_DEATHZ_* keys.
+static const char s_dAnimKeyC[] = "C";
+static const char s_DEATHZ_SQUASH[] = "GRUNTZ_DEATHZ_SQUASH";
+static const char s_DEATHZ_SINK[] = "GRUNTZ_DEATHZ_SINK";
+static const char s_DEATHZ_HOLE[] = "GRUNTZ_DEATHZ_HOLE";
+static const char s_DEATHZ_SHATTER[] = "GRUNTZ_DEATHZ_SHATTER";
+static const char s_DEATHZ_FREEZE[] = "GRUNTZ_DEATHZ_FREEZE";
+static const char s_DEATHZ_BURN[] = "GRUNTZ_DEATHZ_BURN";
+static const char s_DEATHZ_QUICKFALL[] = "GRUNTZ_DEATHZ_QUICKFALL";
+static const char s_DEATHZ_FALL[] = "GRUNTZ_DEATHZ_FALL";
+static const char s_DEATHZ_FALL2[] = "GRUNTZ_DEATHZ_FALL2";
+static const char s_DEATHZ_QUICKFALL2[] = "GRUNTZ_DEATHZ_QUICKFALL2";
+static const char s_DEATHZ_ELECTROCUTE[] = "GRUNTZ_DEATHZ_ELECTROCUTE";
+static const char s_DEATHZ_MELT[] = "GRUNTZ_DEATHZ_MELT";
+static const char s_DEATHZ_KAROKE[] = "GRUNTZ_DEATHZ_KAROKE";
+static const char s_DEATHZ_EXPLODE[] = "GRUNTZ_DEATHZ_EXPLODE";
+static const char s_EXITZ_DRAIN[] = "GRUNTZ_EXITZ_DRAIN";
+static const char s_dEXITZ[] = "GRUNTZ_EXITZ";
+static const char s_dExitKeyB[] = "B";
+static const char s_NORMALGRUNT_DEATH[] = "GRUNTZ_NORMALGRUNT_DEATH";
+
+// Resolve the active-anim descriptor's first-element frame number.
+#define DEATH_FRAME()                                                                              \
+    (m_154->m_1b4->m_10 > 0 ? (*m_154->m_1b4->m_c)[0x14 / 4] : ((i32*)0)[0x14 / 4])
+
+// Fire the on-screen death cue (CueA) when the grunt point is visible.
+#define DEATH_CUE(tag)                                                                              \
+    do {                                                                                           \
+        CGameRegistry* _g = g_pGameRegistry;                                                       \
+        if (GruntPointVisible(_g->m_30->m_24->m_5c + 0x40, m_10->m_5c, m_10->m_60)) {              \
+            _g->m_60->CueA(this, (tag), -1, 0, -1, -1);                                             \
+        }                                                                                          \
+    } while (0)
+
+// @early-stop
+// switch tail cross-jump wall (~big body): the prologue (anim-state teardown, the 7
+// HUD-sprite retire chain, the powered-up reset gate, the CommitStruckTile, the "C"
+// anim-set re-latch, the m_154/m_10 dirty stamps, the arrival-notify gate) and every
+// one of the 16 death-type cases (LookupValue / m_10map.Lookup resolve, SetGeometryEx
+// / m_1a0.SetGeometry, the GameApplyLookupSprite first-frame stamp, the FALL/QUICKFALL
+// tile-attribute split, the on-screen CueA/CueSpawn cues, the NORMALGRUNT_DEATH + m_38c
+// finalize tail) are byte-faithful in shape/offsets/symbols/constants. Residue: retail
+// cross-jumps the shared cue-emit (0x60d0c), entrance-drop finalize (0x60d15) and
+// m_170==1 geometry path (0x60c0a) into the middle of the case body (between case 11 and
+// case 12) - structured C++ places them after the switch, permuting the block layout +
+// the ebx/edi/ebp zero/0x10000/0x20000 register pins across the 16 near-identical cases.
+// Source-invariant (the documented switch-tail-merge + register-pin wall); deferred to
+// the final sweep.
+RVA(0x00060150, 0xd90)
+i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
+    if (*(i32*)((char*)this + 0x368) != 0) {
+        return 0;
+    }
+
+    StepAnimDispatchB(); // 0x6a6d0
+    ClearSubA();         // 0x57c10
+    ClearSubB();         // 0x57ce0
+
+    m_10->m_40 &= ~8;
+    *(i32*)((char*)this + 0x368) = 1;
+    m_health = 0;
+    m_entranceCommitted = 0;
+
+    if (m_healthSprite) {
+        m_healthSprite->m_8 |= 0x10000;
+        m_healthSprite = 0;
+    }
+    if (m_staminaSprite) {
+        m_staminaSprite->m_8 |= 0x10000;
+        m_staminaSprite = 0;
+    }
+    if (m_toySprite) {
+        m_toySprite->m_8 |= 0x10000;
+        m_toySprite = 0;
+    }
+    if (m_toyTimeSprite) {
+        m_toyTimeSprite->m_8 |= 0x10000;
+        m_toyTimeSprite = 0;
+    }
+    if (m_wingzTimeSprite) {
+        m_wingzTimeSprite->m_8 |= 0x10000;
+        m_wingzTimeSprite = 0;
+    }
+    if (m_powerupSprite) {
+        m_powerupSprite->m_8 |= 0x10000;
+        m_powerupSprite = 0;
+    }
+    if (m_selectedSprite) {
+        m_selectedSprite->m_8 |= 0x10000;
+        m_selectedSprite = 0;
+    }
+
+    if (m_poweredUp != 0 && m_neighborValid == 0) {
+        m_entranceActive = 0;
+        *(i32*)((char*)this + 0x218) = 0;
+        m_neighborValid = 0;
+        m_poweredUp = 0;
+        Stub_062e10(1, 0, 0); // 0x62e10
+    }
+    m_tileMgr->CommitStruckTile(m_tileOwnerHi, m_tileOwnerLo, 1); // 0x78260
+
+    m_prevAnimSetNode = (i32)m_14->m_1c;
+    m_14->m_1c = (void*)EntranceLookupAnimSet(s_dAnimKeyC);
+
+    m_154->m_8 |= 1;
+    if (m_10->m_74 != 0x15f90) {
+        m_10->m_74 = 0x15f90;
+        m_10->m_8 |= 0x20000;
+    }
+
+    if (a2 != -1) {
+        *(i32*)((char*)this + 0x370) = a2;
+        (*(CDeathReg7c**)((char*)g_pGameRegistry + 0x7c))->Notify(a2, m_tileOwnerHi); // 0xfcc50
+    }
+
+    switch (deathType) {
+        case 2: // GRUNTZ_DEATHZ_SQUASH
+            if (m_entranceReason == 1) {
+                m_prevEntranceDesc = (i32)m_154->m_1b4;
+                m_154->SetGeometryEx(m_poseDeath, 0);
+                goto pathA;
+            }
+            m_poseDeath = (i32)m_154->m_c->m_2c->LookupValue(s_DEATHZ_SQUASH);
+            m_prevEntranceDesc = (i32)m_154->m_1b4;
+            m_154->SetGeometryEx(m_poseDeath, 0);
+            m_154->GameApplyLookupSprite(s_DEATHZ_SQUASH, DEATH_FRAME());
+            DEATH_CUE(0x35b);
+            goto finalize;
+
+        case 0:
+            m_tileMgr->NotifyEntranceDrop(m_tileOwnerHi, m_tileOwnerLo, 0);
+            m_154->m_8 |= 0x10000;
+            goto tail;
+
+        case 4: // GRUNTZ_DEATHZ_SINK
+            m_poseDeath = (i32)m_154->m_c->m_2c->LookupValue(s_DEATHZ_SINK);
+            m_prevEntranceDesc = (i32)m_154->m_1b4;
+            m_154->SetGeometryEx(m_poseDeath, 0);
+            m_154->GameApplyLookupSprite(s_DEATHZ_SINK, DEATH_FRAME());
+            DEATH_CUE(0x35a);
+            m_tileMgr->NotifyEntranceDrop(m_tileOwnerHi, m_tileOwnerLo, 0);
+            Step6a060();
+            goto tail;
+
+        case 3: // GRUNTZ_DEATHZ_HOLE
+            m_poseDeath = (i32)m_154->m_c->m_2c->LookupValue(s_DEATHZ_HOLE);
+            m_prevEntranceDesc = (i32)m_154->m_1b4;
+            m_154->SetGeometryEx(m_poseDeath, 0);
+            m_154->GameApplyLookupSprite(s_DEATHZ_HOLE, DEATH_FRAME());
+            DEATH_CUE(0x357);
+            goto finalize;
+
+        case 6: // GRUNTZ_DEATHZ_SHATTER (apply FREEZE)
+            m_poseDeath = (i32)m_154->m_c->m_2c->LookupValue(s_DEATHZ_SHATTER);
+            m_prevEntranceDesc = (i32)m_154->m_1b4;
+            m_154->SetGeometryEx(m_poseDeath, 0);
+            m_154->GameApplyLookupSprite(s_DEATHZ_FREEZE, DEATH_FRAME());
+            DEATH_CUE(0x354);
+            goto finalize;
+
+        case 7: // GRUNTZ_DEATHZ_BURN
+            m_poseDeath = (i32)m_154->m_c->m_2c->LookupValue(s_DEATHZ_BURN);
+            m_prevEntranceDesc = (i32)m_154->m_1b4;
+            m_154->SetGeometryEx(m_poseDeath, 0);
+            m_154->GameApplyLookupSprite(s_DEATHZ_BURN, DEATH_FRAME());
+            DEATH_CUE(0x352);
+            goto finalize;
+
+        case 15: // GRUNTZ_DEATHZ_QUICKFALL (apply FALL), snap to tile center
+            m_10->m_5c = (m_10->m_5c & ~0x1f) + 0x10;
+            m_10->m_60 = (m_10->m_60 & ~0x1f) + 0x10;
+            m_poseDeath = (i32)m_154->m_c->m_2c->LookupValue(s_DEATHZ_QUICKFALL);
+            m_prevEntranceDesc = (i32)m_154->m_1b4;
+            m_154->SetGeometryEx(m_poseDeath, 0);
+            m_154->GameApplyLookupSprite(s_DEATHZ_FALL, DEATH_FRAME());
+            if (m_10->m_74 != -1) {
+                m_10->m_74 = -1;
+                m_10->m_8 |= 0x20000;
+            }
+            DEATH_CUE(0x357);
+            goto finalize;
+
+        case 8: { // FALL / QUICKFALL by tile attribute
+            CTileGrid* grid = g_pGameRegistry->m_70;
+            i32 attr = ((i32*)grid->m_8[m_10->m_60 >> 5])[(m_10->m_5c >> 5) * 7 + 4];
+            i32 tag = 0x355;
+            if (attr == 0x6e || attr == 0x74) {
+                m_poseDeath = (i32)m_154->m_c->m_2c->LookupValue(s_DEATHZ_QUICKFALL);
+                tag = 0x357;
+                if (m_10->m_74 != -1) {
+                    m_10->m_74 = -1;
+                    m_10->m_8 |= 0x20000;
+                }
+                m_10->m_5c = (m_10->m_5c & ~0x1f) + 0x10;
+                m_10->m_60 = (m_10->m_60 & ~0x1f) + 0x10;
+            } else {
+                m_poseDeath = (i32)m_154->m_c->m_2c->LookupValue(s_DEATHZ_FALL);
+            }
+            m_prevEntranceDesc = (i32)m_154->m_1b4;
+            m_154->SetGeometryEx(m_poseDeath, 0);
+            m_154->GameApplyLookupSprite(s_DEATHZ_FALL, DEATH_FRAME());
+            DEATH_CUE(tag);
+            m_tileMgr->NotifyEntranceDrop(m_tileOwnerHi, m_tileOwnerLo, 0);
+            Step6a060();
+            goto tail;
+        }
+
+        case 14: { // FALL2 / QUICKFALL2 by tile attribute
+            CTileGrid* grid = g_pGameRegistry->m_70;
+            i32 attr = ((i32*)grid->m_8[m_10->m_60 >> 5])[(m_10->m_5c >> 5) * 7 + 4];
+            i32 tag = 0x355;
+            if (attr == 0x6e || attr == 0x74) {
+                m_poseDeath = (i32)m_154->m_c->m_2c->LookupValue(s_DEATHZ_QUICKFALL2);
+                tag = 0x357;
+                if (m_10->m_74 != -1) {
+                    m_10->m_74 = -1;
+                    m_10->m_8 |= 0x20000;
+                }
+                m_10->m_5c = (m_10->m_5c & ~0x1f) + 0x10;
+                m_10->m_60 = (m_10->m_60 & ~0x1f) + 0x10;
+            } else {
+                CSprite* out = 0;
+                m_154->m_c->m_2c->m_10map.Lookup(s_DEATHZ_FALL2, &out);
+                m_poseDeath = (i32)out;
+            }
+            m_prevEntranceDesc = (i32)m_154->m_1b4;
+            m_154->SetGeometryEx(m_poseDeath, 0);
+            m_154->GameApplyLookupSprite(s_DEATHZ_FALL, DEATH_FRAME());
+            DEATH_CUE(tag);
+            m_tileMgr->NotifyEntranceDrop(m_tileOwnerHi, m_tileOwnerLo, 0);
+            Step6a060();
+            goto tail;
+        }
+
+        case 9: { // GRUNTZ_DEATHZ_ELECTROCUTE
+            CSprite* out = 0;
+            m_154->m_c->m_2c->m_10map.Lookup(s_DEATHZ_ELECTROCUTE, &out);
+            m_poseDeath = (i32)out;
+            m_prevEntranceDesc = (i32)m_154->m_1b4;
+            m_154->SetGeometryEx(m_poseDeath, 0);
+            m_154->GameApplyLookupSprite(s_DEATHZ_ELECTROCUTE, DEATH_FRAME());
+            DEATH_CUE(0x353);
+            goto finalize;
+        }
+
+        case 5: { // GRUNTZ_DEATHZ_MELT
+            ApplySetState1(1); // 0x4322
+            CSprite* out = 0;
+            m_154->m_c->m_2c->m_10map.Lookup(s_DEATHZ_MELT, &out);
+            m_poseDeath = (i32)out;
+            m_prevEntranceDesc = (i32)m_154->m_1b4;
+            m_154->SetGeometryEx(m_poseDeath, 0);
+            m_154->GameApplyLookupSprite(s_DEATHZ_MELT, DEATH_FRAME());
+            DEATH_CUE(0x359);
+            goto finalize;
+        }
+
+        case 10: { // GRUNTZ_DEATHZ_KAROKE
+            CSprite* out = 0;
+            m_154->m_c->m_2c->m_10map.Lookup(s_DEATHZ_KAROKE, &out);
+            m_poseDeath = (i32)out;
+            m_prevEntranceDesc = (i32)m_154->m_1b4;
+            m_154->SetGeometryEx(m_poseDeath, 0);
+            m_154->GameApplyLookupSprite(s_DEATHZ_KAROKE, DEATH_FRAME());
+            DEATH_CUE(0x358);
+            goto tail;
+        }
+
+        case 11: { // GRUNTZ_DEATHZ_EXPLODE
+            if (m_entranceReason == 1) {
+                m_prevEntranceDesc = (i32)m_154->m_1b4;
+                m_154->m_1a0.SetGeometry(m_poseDeath);
+                goto pathA;
+            }
+            CSprite* out = 0;
+            m_154->m_c->m_2c->m_10map.Lookup(s_DEATHZ_EXPLODE, &out);
+            m_poseDeath = (i32)out;
+            m_prevEntranceDesc = (i32)m_154->m_1b4;
+            m_154->m_1a0.SetGeometry(m_poseDeath);
+            m_154->GameApplyLookupSprite(s_DEATHZ_EXPLODE, DEATH_FRAME());
+            DEATH_CUE(0x354);
+            goto finalize;
+        }
+
+        case 12: { // GRUNTZ_EXITZ_DRAIN (apply EXITZ), re-latch "B"
+            CSprite* out = 0;
+            m_154->m_c->m_2c->m_10map.Lookup(s_EXITZ_DRAIN, &out);
+            m_poseDeath = (i32)out;
+            m_prevEntranceDesc = (i32)m_154->m_1b4;
+            m_154->m_1a0.SetGeometry(m_poseDeath);
+            m_154->GameApplyLookupSprite(s_dEXITZ, DEATH_FRAME());
+            m_prevAnimSetNode = (i32)m_14->m_1c;
+            m_14->m_1c = (void*)EntranceLookupAnimSet(s_dExitKeyB);
+            goto tail;
+        }
+
+        default:
+            m_prevEntranceDesc = (i32)m_154->m_1b4;
+            m_154->m_1a0.SetGeometry(m_poseDeath);
+            m_154->GameApplyName(*(char**)((char*)this + 0x44c));
+            {
+                CGameRegistry* g = g_pGameRegistry;
+                i32* rect = (i32*)(g->m_30->m_24->m_5c + 0x40);
+                i32 x = m_10->m_5c;
+                i32 y = m_10->m_60;
+                if (x < rect[2] && x >= rect[0] && y < rect[3] && y >= rect[1]) {
+                    g->m_60->CueSpawn(this, 3, -1, -1, -1);
+                }
+            }
+            // block A: NORMALGRUNT_DEATH override
+            if (m_entranceReason == 0x14 && g_pGameRegistry->m_134 != 1) {
+                m_154->GameApplyLookupGeometry(s_NORMALGRUNT_DEATH, 0);
+                m_154->GameApplyName(s_NORMALGRUNT_DEATH);
+            }
+            goto tail;
+    }
+
+pathA:
+    m_154->GameApplyName(*(char**)((char*)this + 0x44c));
+    {
+        CGameRegistry* g = g_pGameRegistry;
+        if (GruntPointVisible(g->m_30->m_24->m_5c + 0x40, m_10->m_5c, m_10->m_60)) {
+            g->m_60->CueSpawn(this, 3, -1, -1, -1);
+        }
+    }
+    deathType = 1;
+    goto tail;
+
+finalize:
+    m_tileMgr->NotifyEntranceDrop(m_tileOwnerHi, m_tileOwnerLo, 0);
+
+tail:
+    // block B: m_38c finalize cue
+    if (m_entranceReason == 0x14 && g_pGameRegistry->m_134 != 1) {
+        m_tileMgr->NotifyDeathTile(m_10->m_5c, m_10->m_60, *(i32*)((char*)this + 0x38c));
+    }
+    if (*(i32*)((char*)this + 0x2d0) == 0xd) {
+        TryPowerupAtTile();
+    }
+    m_gruntKind = 0;
+    *(i32*)((char*)this + 0x360) = deathType;
+    return 0;
+}
+
+#undef DEATH_FRAME
+#undef DEATH_CUE

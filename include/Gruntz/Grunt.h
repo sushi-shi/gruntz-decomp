@@ -334,7 +334,8 @@ public:
     // uses) the death/freeze finalize drives with the DEATHZ_SPARKLE/UNFREEZE keys.
     void GameApplyLookupGeometry(const char* key, i32 flag); // 0x1505b0 (ret 8)
 
-    char m_pad0[0xc];
+    char m_pad0[0x8];
+    i32 m_8;              // +0x08  state-flag word (death loader |= 1 / |= 0x10000)
     CEntranceResMgr* m_c; // +0x0c  resource object (lookup table holder)
     char m_pad10[0x1a0 - 0x10];
     CEntranceAnimSub m_1a0; // +0x1a0 geometry sub-player
@@ -620,6 +621,9 @@ public:
     void NotifyEntranceDrop(i32 ownerHi, i32 ownerLo, i32 flag); // 0x79fb0
     // The death/struck-reaction tile-mgr commit (thunk_0x10eb -> 0x78260), 3 args.
     void CommitStruckTile(i32 ownerHi, i32 ownerLo, i32 flag); // 0x78260
+    // The DEATHZ finalize tile-notify at the grunt's HUD pos (thunk_0x290a -> 0x79ea0),
+    // 3 args (px, py, m_38c). External/no-body (reloc-masked).
+    void NotifyDeathTile(i32 px, i32 py, i32 c); // 0x79ea0
     // The run-start drop notify at the grunt's HUD pos (thunk_0x2fb3 -> 0x7b330), 4 args.
     void NotifyMoveAt(i32 px, i32 py, i32 a, i32 b); // 0x7b330
     // RunMoveConfig's I-pose tile load (thunk_0x3945 -> 0x75e90), 6 args. External.
@@ -991,6 +995,10 @@ public:
     // sound cue, then dispatch on the (random or forced) ability index to build
     // the matching LightFx/rolling-ball effect + tuning.
     i32 LoadGruntAbilityTuning(i32 forced);
+    // @0x60150 (ret 8) - the grunt death dispatch: tear down the running anim state,
+    // retire the HUD sprites, latch the "C" death anim-set, then switch on the death
+    // type to resolve + apply the matching GRUNTZ_DEATHZ_* sprite + cue.
+    i32 LoadGruntDeathAnimations(i32 deathType, i32 a2);
 
     // @0x57890 (__thiscall ret 0, /GX) - when the entrance reason is a lose-item
     // pose (0x12/0x16/0xe), spawn the one-shot "SingleAnimation" GRUNTZ_<set>_LOSEITEM
@@ -1344,6 +1352,13 @@ public:
     // state-0 path commits the occupant's tile slot on a rand%100 roll + re-rolls a
     // random in-region target / resets the idle timer.
     i32 StepArrivalDefenseLean();
+    // @0xf1c70 (ret 0 -> 1) - the powered-up arrival-defender variant (trace
+    // mis-attributed to "ClassUnknown_42"; every offset/helper proves CGrunt). Sets
+    // m_arrivalFlags |= 0x40000, then either runs the powered-up release gate
+    // (m_poweredUp!=0: FindGridNeighbor + clear-state) or the m_2d4 (0/1/2/3) defender
+    // dispatch: GetOccupant/grid-occupant settle + CommitNeighbor, the 4-way
+    // StepArrivalDrop tile walk toward m_defenderX/Y, and the on-screen entrance cue.
+    i32 StepArrivalDefenseAlt();
     // CUserLogic::GetScreenPos (0x29a50) reached on the occupant grunt: copies its
     // m_10->{m_5c,m_60} into the out point. External/reloc-masked.
     void GetScreenPos(struct GruntTilePos* out); // 0x29a50
@@ -1351,6 +1366,10 @@ public:
     // ret 0x18; returns nonzero on success). Same engine fn as the free CGrunt_TileSwitch
     // passthrough; modeled as a method so `mov ecx,this; ...; call` falls out.
     i32 TileSwitch6(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x4b320 (thiscall view)
+    // @0x6a060 (ret 0) - the SINK/FALL death-finalize step the death-anim loader runs
+    // after the entrance-drop notify. External/no-body (reloc-masked here).
+    void Step6a060();
+
     // @0x68520 (ret 0 -> 0) - begin the bomb-grunt run reaction: retire the HUD stat
     // sprites, latch the entrance/struck state, then either re-notify the move or (when
     // re-rolling) pick a random adjacent tile, play the move sound, latch the "M" anim,

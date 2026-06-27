@@ -87,8 +87,8 @@ void ClassUnknown_35::ClassUnknown_35_021c40() {}
 // trace mis-attribution) in src/Gruntz/BitStreamBlowfish.cpp.
 
 // ---- ClassUnknown_42 ----
-RVA(0x000f1c70, 0x60d)
-void ClassUnknown_42::ClassUnknown_42_0f1c70() {}
+// 0xf1c70 re-homed (reconstructed) as CGrunt::StepArrivalDefenseAlt in
+// src/Gruntz/GruntArrivalStep.cpp (trace mis-attribution; really CGrunt).
 
 // ---- ClassUnknown_43 ----
 // 0x0f7d90 re-homed (reconstructed) as Update_0f7d90 in src/Gruntz/ClassUnknown43.cpp.
