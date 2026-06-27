@@ -314,7 +314,7 @@ sbi_warlordhead_eh	1	1
 sbi_wellgoo	1	0
 sbi_wellgoo_eh	1	1
 scattersamples	2	1
-severusworkerdtor	1	0
+severusworkerdtor	1	1
 shadetablecache	19	3
 siriusworkerhandlers	4	4
 sounddevice	16	8
@@ -1149,11 +1149,11 @@ csecretleveltrigger	?InitActReg@CSecretLevelTrigger@@SAXXZ	100.0000	100.0000	1	3
 csecretleveltrigger	?RegisterActs@CSecretLevelTrigger@@SAXXZ	92.9130	92.9130	1	e412341acec4	0x428c0
 csecretleveltrigger	?Tick@CSecretLevelTrigger@@QAEHXZ	100.0000	100.0000	1	5007af99e855	0x42ac0
 cserialsub34	?Chain@CSerialSub34@@QAEHPAVCSerialArchive@@HHPAVCSerialObj@@@Z	88.0496	88.0496	1	6d191bedea8f	0x8c00
-cseverusentrylist	??1CSeverusEntryList@@QAE@XZ	95.0000	95.0000	1	281e4331e73c	0x1557a0
+cseverusentrylist	??1CSeverusEntryList@@UAE@XZ	94.8750	94.8750	1	0a46d4842985	0x1557a0
 cseverusentrylist	?DeleteAll@CSeverusEntryList@@QAEXXZ	100.0000	100.0000	1	bb02994e8868	0x151eb0
 cseverusworker	?Open@CSeverusWorker@@QAEHHHHHHH@Z	100.0000	100.0000	1	1baa840512e1	0x17c6f0
 cseverusworkereh	??1CSeverusWorker@@QAE@XZ	73.5000	73.5000	1	0360d32ce5bf	0x38fc0
-cseverusworkerhost	??1CSeverusWorkerHost@@QAE@XZ	82.3500	82.3500	2	8e8748ab9e9a	0x163af0
+cseverusworkerhost	??1CSeverusWorkerHost@@UAE@XZ	85.7500	85.7500	1	437f3fb71271	0x163af0
 csimpleanimation	??1CSimpleAnimation@@UAE@XZ	100.0000	100.0000	1	90ed99282119	0xf9d0
 csimpleanimation	?AdvanceAnim@CSimpleAnimation@@QAEHXZ	100.0000	100.0000	1	2a87ef63c834	0xabf70
 csimpleanimation	?InitSimpleAnimDispatch@@YAXXZ	100.0000	100.0000	1	a84ef2c13047	0xabb90
@@ -3245,7 +3245,7 @@ sbi_wellgoo	?Tick@CSBI_WellGoo@@QAEHXZ	83.0000	83.0000	1	34178faa97ab	0xe6380
 sbi_wellgoo_eh	??1CSBI_WellGoo@@UAE@XZ	100.0000	100.0000	1	ecc4144cec7a	0x104bb0
 scattersamples	?IsPrime@@YAHH@Z	100.0000	100.0000	1	3d4ae8c20789	0x182a80
 scattersamples	?ScatterSamples@@YAXPAHHHH@Z	59.2162	59.2162	1	345a3c1c24dd	0x182940
-severusworkerdtor	??1CSeverusWorkerX@@QAE@XZ	87.8261	87.8261	1	4dcdb44701a6	0x17f330
+severusworkerdtor	??1CSeverusWorkerX@@UAE@XZ	100.0000	100.0000	1	ac004e95dba5	0x17f330
 shadetablecache	??0CShadeTableCache@@QAE@XZ	100.0000	100.0000	1	8d165746ed6f	0x14de30
 shadetablecache	??1CShadeTableCache@@QAE@XZ	80.1333	80.1333	2	d4743b4c108f	0x14de50
 shadetablecache	?AddFromArray@CShadeTableCache@@QAEPAUCShadeTable@@PBD@Z	74.0798	74.0798	1	b231c6aba23f	0x14f6c0
@@ -3736,11 +3736,11 @@ wwdgameobject	?SetupFlagged@CWwdGameObject@@QAEHHHHHH@Z	100.0000	100.0000	1	6a12
 wwdgameobject	?Sub150c30@CWwdGameObject@@QAEHH@Z	100.0000	100.0000	1	6e45f7421942	0x150c30
 wwdgameobject	?Sub151780@CWwdGameObject@@QAEHH@Z	100.0000	100.0000	1	a5cc9001a34f	0x151780
 wwdgameobject	?WriteSnapshot@CWwdGameObject@@QAEHH@Z	95.9020	95.9020	2	9fee6fde6abb	0x151c00
-wwdgameobjecteh	??1CWwdGameObjectA@@QAE@XZ	75.0672	75.0672	1	8ba01aacac45	0x15b790
+wwdgameobjecteh	??1CWwdGameObjectA@@UAE@XZ	95.5378	95.5378	1	777925195fbe	0x15b790
 wwdgameobjecteh	??1CWwdGameObjectB@@QAE@XZ	70.7424	70.7424	1	c7fb487544c2	0x15bd10
-wwdgameobjecteh	??1CWwdGameObjectC@@QAE@XZ	88.3077	88.3077	1	310efc76c075	0x15c070
-wwdgameobjecteh	??1CWwdGameObjectE@@QAE@XZ	79.4559	79.4559	1	b4ee05ae6f86	0x15b4f0
-wwdgameobjecteh	??1CWwdGameObjectF@@QAE@XZ	87.0000	87.0000	1	d9a6b88d99b1	0x15bad0
+wwdgameobjecteh	??1CWwdGameObjectC@@UAE@XZ	93.6346	93.6346	1	af996333ea4c	0x15c070
+wwdgameobjecteh	??1CWwdGameObjectE@@UAE@XZ	88.7941	88.7941	1	e20ec4de9067	0x15b4f0
+wwdgameobjecteh	??1CWwdGameObjectF@@UAE@XZ	93.4466	93.4466	1	fc1f680ea25f	0x15bad0
 wwdgrid	??0CWwdGrid@@QAE@HHHHHH@Z	75.2308	75.2308	2	ad6dbdc254bc	0x1915c0
 wwdgrid	??1CWwdGrid@@QAE@XZ	93.3333	93.3333	1	89dd27ea66ce	0x1682a0
 wwdgrid	?Add@CWwdGrid@@QAEHPAUWwdRegion@@@Z	100.0000	100.0000	2	a84967689776	0x191840

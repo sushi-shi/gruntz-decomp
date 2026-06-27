@@ -17,13 +17,12 @@ extern void* g_remusBaseDtorVtbl;
 // as potentially-throwing and keeps the /GX base-subobject unwind frame.
 void RezFree(void* p);
 
-// The CObject base subobject: its dtor restamps the base vptr (0x5e8cb4) last.
+// The CObject base subobject, modeled polymorphically: empty dtor body; cl stamps
+// ??_7SeverusWorkerBase (masks g_remusBaseDtorVtbl @0x5e8cb4) as the folded base.
 struct SeverusWorkerBase {
-    void* m_vptr; // +0x00
-    ~SeverusWorkerBase() {
-        m_vptr = &g_remusBaseDtorVtbl;
-    }
+    virtual ~SeverusWorkerBase(); // implicit vptr @ +0x00
 };
+inline SeverusWorkerBase::~SeverusWorkerBase() {}
 
 // The worker: a +0x4 heap buffer freed on teardown.
 struct CSeverusWorkerX : SeverusWorkerBase {
@@ -32,20 +31,13 @@ struct CSeverusWorkerX : SeverusWorkerBase {
 };
 
 // ---------------------------------------------------------------------------
-// 0x17f330 - ~CSeverusWorkerX (/GX): stamp the derived vptr, RezFree the +0x4
-// buffer, then (base subobject) restamp the base vptr.
+// 0x17f330 - ~CSeverusWorkerX (/GX): cl stamps the derived vptr (prologue), RezFree
+// the +0x4 buffer, then folds the base subobject (restamps the base vptr). Real
+// polymorphic hierarchy now -> the derived-vptr stamp is emitted in the prologue
+// (before the m_4 load), matching retail's "stamp first".
 // ---------------------------------------------------------------------------
-// @early-stop
-// /GX eh-dtor vptr-stamp scheduling wall (87.8%): the EH prologue, the trylevel=0
-// write, the `if(m_4) RezFree(m_4)` guard+free, and both vptr stamps are all
-// byte-faithful; the only residual is that retail schedules the derived-vptr
-// stamp as the FIRST body op (before the m_4 load) while cl emits it between the
-// `test`/`je` of the guard - the independent [esi] store vs [esi+4] load are
-// freely reordered by the /GX scheduler (eh-dtor-vptr-stamp-vs-trylevel-order.md
-// family, cf. InterfaceObject::~InterfaceObject). Logic 100% correct; deferred.
 RVA(0x0017f330, 0x51)
 CSeverusWorkerX::~CSeverusWorkerX() {
-    *(void**)this = &g_severusWorkerVtbl;
     if (m_4) {
         RezFree(m_4);
     }

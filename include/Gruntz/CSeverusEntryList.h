@@ -52,12 +52,11 @@ extern void* g_severusBaseDtorVtbl; // 0x5e8cb4
 // the leaf dtor FOLDS the base teardown (the field resets + vptr restore emit
 // inline) and the /GX frame falls out of the destructible base subobject.
 struct CSeverusBase {
-    void* m_vptr; // +0x00
-    i32 m_04;     // +0x04
-    i32 m_08;     // +0x08
-    i32 m_0c;     // +0x0c
+    virtual ~CSeverusBase(); // implicit vptr @ +0x00; INLINE-defined below
+    i32 m_04;                // +0x04
+    i32 m_08;                // +0x08
+    i32 m_0c;                // +0x0c
     CSeverusBase() {}
-    ~CSeverusBase(); // INLINE-defined below
 };
 
 class CSeverusEntryList : public CSeverusBase {
@@ -71,11 +70,13 @@ public:
     i32 m_68;                 // +0x68
 };
 
+// Call-free field resets; cl stamps ??_7CSeverusBase (masks g_severusBaseDtorVtbl
+// @0x5e8cb4) and sinks the vptr store past the writes so it lands last, matching
+// retail. Folded as the grand-base of every severus node.
 inline CSeverusBase::~CSeverusBase() {
     m_04 = -1;
     m_08 = 0;
     m_0c = 0;
-    m_vptr = &g_severusBaseDtorVtbl;
 }
 
 #endif // GRUNTZ_CSEVERUSENTRYLIST_H

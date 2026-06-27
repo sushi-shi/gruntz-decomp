@@ -24,19 +24,13 @@ extern "C" void RezFree(void* p);
 // buffers; then the +0x9c SeverusObArray member and ~CSeverusBase fold in.
 // ===========================================================================
 // @early-stop
-// /GX multi-member EH funclet/state-machine wall (~82%; same plateau class as
-// CSeverusEntryList::~ 0x1557a0 and CWwdGrid::~ 0x1682a0). Logic is complete and
-// the callee identities are confirmed from the delinked relocs: the +0xb0 worker
-// is a CWwdSpatialMgr (PreDestroy = PruneCount 0x1688b0, DtorImpl = FreeGrids
-// 0x1682f0, freed via _RezFree); the +0x9c member is a CByteArray (~ 0x1b561c);
-// the two owned buffers are RezFree'd. The residual is structural: cl emits the
-// member unwind funclets (~CSeverusBase / the array dtor / __CxxFrameHandler)
-// INTO this COMDAT and reserves a 2-slot trylevel frame (sub esp,8 + [esp+0x1c]/
-// [esp+0x20]) whose state-write ordering and own-vptr-stamp placement the delinked
-// target carries differently - not steerable from C.
+// Vtable recovery applied (real polymorphic CSeverusBase): own-vptr stamp is now
+// compiler-emitted (82.3%->85.8%). Residual is the multi-member /GX funclet/state
+// ordering across the worker delete + two buffer frees + SeverusObArray member +
+// ~CSeverusBase fold (grand-base stamp position + EH state writes), same wall class
+// as the entry-list dtor. Logic complete.
 RVA(0x00163af0, 0xcd)
 CSeverusWorkerHost::~CSeverusWorkerHost() {
-    m_vptr = &g_severusWorkerHostVtbl;
     if (m_b0 != 0) {
         m_b0->PreDestroy();
     }

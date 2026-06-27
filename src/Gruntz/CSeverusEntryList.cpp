@@ -48,14 +48,15 @@ void CSeverusEntryList::DeleteAll() {
 // destructible base+member.
 // ===========================================================================
 // @early-stop
-// EH-state-machine order wall (eh-dtor-vptr-stamp-vs-trylevel-order): body
-// byte-identical, but retail emits the own-vptr stamp before the entry trylevel
-// write (the /GX state machine's order; not steerable from C). Same plateau class
-// as CWwdGrid::~CWwdGrid (0x1682a0, ~93%). Logic complete.
+// Vtable recovery applied (real polymorphic CSeverusBase): own-vptr stamp + trylevel
+// chain now compiler-emitted and byte-identical through ~SeverusObArray. Residual is
+// the grand-base vptr-stamp POSITION: cl places `mov [esi],??_7CSeverusBase` before
+// the m_04/m_08/m_0c field writes; retail sinks it after (same stamp-scheduling wall
+// as CWwdGameObjectE 0x15b4f0). Moving the fields to a derived member would sink the
+// stamp but add a trylevel state that mismatches retail's 1->0. ~95%.
 RVA(0x001557a0, 0x68)
 CSeverusEntryList::~CSeverusEntryList() {
-    m_vptr = &g_severusEntryListVtbl;
     DeleteAll();
     // m_items.~SeverusObArray() (trylevel 0) + ~CSeverusBase() (field resets +
-    // grand-base restore) fold here.
+    // grand-base vtable stamp) fold here.
 }
