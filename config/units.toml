@@ -1962,3 +1962,34 @@ flags = "eh"
 unit = "m2_mgrslotswap"
 source = "src/Gruntz/MgrSlotSwap.cpp"
 flags = "base"
+
+# trace-discovered leaf dtors re-homed from src/Stub/Discovered.cpp (matcher-1):
+[[unit]]
+unit = "ccheckpointtrigger"
+source = "src/Gruntz/CCheckpointTrigger.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cgrunttoytimesprite"
+source = "src/Gruntz/CGruntToyTimeSprite.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "discoveredsmall"
+source = "src/Gruntz/DiscoveredSmall.cpp"
+flags = "base"
+
+[[unit]]
+unit = "logicrecorddispatch"
+source = "src/Gruntz/LogicRecordDispatch.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cddsurfacedtor"
+source = "src/Gruntz/CDDSurfaceDtor.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cmdscrollapply"
+source = "src/Gruntz/CmdScrollApply.cpp"
+flags = "base"

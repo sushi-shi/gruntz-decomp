@@ -8,41 +8,21 @@
 RVA(0x00174d70, 0x70)
 void CButeStore::CButeStore_174d70() {}
 
-// ---- CCheckpointTrigger ----
-RVA(0x00011480, 0x44)
-void CCheckpointTrigger::CCheckpointTrigger_011480() {}
-
-// ---- CDDSurface ----
-RVA(0x00142a40, 0x53)
-void CDDSurface::CDDSurface_142a40() {}
-
 // ---- CGrunt ----
 RVA(0x000ef6b0, 0x61d)
 void CGrunt::CGrunt_0ef6b0() {}
-
-// ---- CGruntToyTimeSprite ----
-RVA(0x00012130, 0x44)
-void CGruntToyTimeSprite::CGruntToyTimeSprite_012130() {}
 
 // ---- CGruntzMgr ----
 RVA(0x0008b960, 0x7c4)
 void CGruntzMgr::CGruntzMgr_08b960() {}
 
 // ---- CGruntzSingleCommand ----
-RVA(0x000ec1c0, 0x43)
-void CGruntzSingleCommand::CGruntzSingleCommand_0ec1c0() {}
 RVA(0x0011f618, 0x14)
 void CGruntzSingleCommand::CGruntzSingleCommand_11f618() {}
 RVA(0x00135110, 0x8e)
 void CGruntzSingleCommand::CGruntzSingleCommand_135110() {}
 RVA(0x0018c022, 0x1d3)
 void CGruntzSingleCommand::CGruntzSingleCommand_18c022() {}
-
-// ---- CLogicRecord ----
-RVA(0x000fb660, 0xf1)
-void CLogicRecord::CLogicRecord_0fb660() {}
-RVA(0x0010d3d0, 0xf1)
-void CLogicRecord::CLogicRecord_10d3d0() {}
 
 // ---- CPlay ----
 // 0x0cb480 re-homed (analyzed) as CPlay::FreeListTeardown in src/Gruntz/CPlay.cpp.
@@ -73,10 +53,6 @@ void ClassUnknown_13::ClassUnknown_13_1154b0() {}
 RVA(0x00115520, 0x45)
 void ClassUnknown_13::ClassUnknown_13_115520() {}
 
-// ---- ClassUnknown_14 ----
-RVA(0x00029ac0, 0x20)
-void ClassUnknown_14::ClassUnknown_14_029ac0() {}
-
 // ---- ClassUnknown_15 ----
 RVA(0x001d38a1, 0x9)
 void ClassUnknown_15::ClassUnknown_15_1d38a1() {}
@@ -85,33 +61,13 @@ void ClassUnknown_15::ClassUnknown_15_1d38a1() {}
 RVA(0x001d496b, 0x1e)
 void ClassUnknown_16::ClassUnknown_16_1d496b() {}
 
-// ---- ClassUnknown_17 ----
-RVA(0x000ebd30, 0x21)
-void ClassUnknown_17::ClassUnknown_17_0ebd30() {}
-
 // ---- ClassUnknown_2 ----
 RVA(0x0014dcf0, 0x69)
 void ClassUnknown_2::ClassUnknown_2_14dcf0() {}
 
-// ---- ClassUnknown_21 ----
-RVA(0x0015b2b0, 0xe)
-void ClassUnknown_21::ClassUnknown_21_15b2b0() {}
-
-// ---- ClassUnknown_22 ----
-RVA(0x0015b270, 0x11)
-void ClassUnknown_22::ClassUnknown_22_15b270() {}
-
 // ---- ClassUnknown_23 ----
 RVA(0x0016e360, 0x11a)
 void ClassUnknown_23::ClassUnknown_23_16e360() {}
-
-// ---- ClassUnknown_28 ----
-RVA(0x000311b0, 0x14)
-void ClassUnknown_28::ClassUnknown_28_0311b0() {}
-
-// ---- ClassUnknown_29 ----
-RVA(0x00029a30, 0x10)
-void ClassUnknown_29::ClassUnknown_29_029a30() {}
 
 // ---- ClassUnknown_30 ----
 RVA(0x0009a260, 0x1d)
@@ -121,21 +77,9 @@ void ClassUnknown_30::ClassUnknown_30_09a260() {}
 RVA(0x0011f6b9, 0x17)
 void ClassUnknown_33::ClassUnknown_33_11f6b9() {}
 
-// ---- ClassUnknown_34 ----
-RVA(0x00046850, 0xf1)
-void ClassUnknown_34::ClassUnknown_34_046850() {}
-
 // ---- ClassUnknown_35 ----
 RVA(0x00021c40, 0x8)
 void ClassUnknown_35::ClassUnknown_35_021c40() {}
-
-// ---- ClassUnknown_37 ----
-RVA(0x000deb20, 0xf1)
-void ClassUnknown_37::ClassUnknown_37_0deb20() {}
-
-// ---- ClassUnknown_39 ----
-RVA(0x00148d10, 0x25)
-void ClassUnknown_39::ClassUnknown_39_148d10() {}
 
 // ---- ClassUnknown_4 ----
 RVA(0x0016f760, 0x82)
@@ -153,17 +97,9 @@ void ClassUnknown_43::ClassUnknown_43_0f7d90() {}
 RVA(0x0008c3b0, 0x10)
 void ClassUnknown_45::ClassUnknown_45_08c3b0() {}
 
-// ---- ClassUnknown_46 ----
-RVA(0x001591b0, 0x19)
-void ClassUnknown_46::ClassUnknown_46_1591b0() {}
-
 // ---- ClassUnknown_48 ----
 RVA(0x00139cf0, 0xd7)
 void ClassUnknown_48::ClassUnknown_48_139cf0() {}
-
-// ---- ClassUnknown_49 ----
-RVA(0x001397a0, 0x57)
-void ClassUnknown_49::ClassUnknown_49_1397a0() {}
 
 // ---- ClassUnknown_50 ----
 RVA(0x0016dfc0, 0x7)
@@ -188,10 +124,6 @@ void ClassUnknown_54::ClassUnknown_54_11cee3() {}
 // ---- ClassUnknown_55 ----
 RVA(0x00016460, 0x46)
 void ClassUnknown_55::ClassUnknown_55_016460() {}
-
-// ---- ClassUnknown_8 ----
-RVA(0x0016e480, 0x3e)
-void ClassUnknown_8::ClassUnknown_8_16e480() {}
 
 // ---- ClassUnknown_9 ----
 RVA(0x0011c630, 0x6e)
