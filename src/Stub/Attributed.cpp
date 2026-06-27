@@ -6,34 +6,49 @@
 #include <Stub/attributed.h>
 
 // ---- CNetMgr ----
-RVA(0x000b86c0, 0x206) void CNetMgr::CNetMgr_0b86c0() {}  // high; large /GX EH func, final-sweep
+RVA(0x000b86c0, 0x206)
+void CNetMgr::CNetMgr_0b86c0() {} // high; large /GX EH func, final-sweep
 // b8960: WRONG CLASS - this is a CDialog-derived dtor (base ~CDialog @1ba51d
 // vtbl 0x5eb174; CString member @+0x70; CStringList member @+0x74 via
 // ~CObject-based dtor @1b5d78). CNetMgr+0x70/+0x74 are i32 selection latches
 // (ReadGroupSel/ReadPlayerSel, matched), so this is NOT a CNetMgr method -
 // re-attribute (likely CMultiStartDlg or a sibling multiplayer dialog).
-RVA(0x000b8fc0, 0x151) void CNetMgr::CNetMgr_0b8fc0() {}  // high; /GX cond-temp EH wall, final-sweep
+RVA(0x000b8fc0, 0x151)
+void CNetMgr::CNetMgr_0b8fc0() {} // high; /GX cond-temp EH wall, final-sweep
 // b93a0/b9410/b9500/b9570/b95f0/ba170/ba1a0/ba3b0 reconstructed in src/Net/NetMgr.cpp
-RVA(0x000bbc90, 0x1b8) void CNetMgr::CNetMgr_0bbc90() {}  // high
-RVA(0x000bbec0, 0x81) void CNetMgr::CNetMgr_0bbec0() {}  // high
-RVA(0x000bbf80, 0xb7) void CNetMgr::CNetMgr_0bbf80() {}  // high
-RVA(0x000bc750, 0x151) void CNetMgr::CNetMgr_0bc750() {}  // high
-RVA(0x000bccd0, 0x141) void CNetMgr::CNetMgr_0bccd0() {}  // high
+RVA(0x000bbc90, 0x1b8)
+void CNetMgr::CNetMgr_0bbc90() {} // high
+RVA(0x000bbec0, 0x81)
+void CNetMgr::CNetMgr_0bbec0() {} // high
+RVA(0x000bbf80, 0xb7)
+void CNetMgr::CNetMgr_0bbf80() {} // high
+RVA(0x000bc750, 0x151)
+void CNetMgr::CNetMgr_0bc750() {} // high
+RVA(0x000bccd0, 0x141)
+void CNetMgr::CNetMgr_0bccd0() {} // high
 
 // ---- CTriggerMgr ----
-RVA(0x0007abc0, 0x4b6) void CTriggerMgr::CTriggerMgr_07abc0() {}  // high
+RVA(0x0007abc0, 0x4b6)
+void CTriggerMgr::CTriggerMgr_07abc0() {} // high
 
-// ---- UnknownClassArrays ----
-RVA(0x0002b950, 0x513) void UnknownClassArrays::UnknownClassArrays_02b950() {}  // high
+// ---- CBattlezSpawnMgr_or_CGruntSpawnMgr ----
+RVA(0x0002b950, 0x513)
+void CBattlezSpawnMgr_or_CGruntSpawnMgr::UnknownClassArrays_02b950() {} // high
 
 // ---- istream ----
-RVA(0x0016a490, 0x7a) void istream::istream_16a490() {}  // med
+RVA(0x0016a490, 0x7a)
+void istream::istream_16a490() {} // med
 
 // ---- streambuf ----
-RVA(0x0016b340, 0x20) void streambuf::streambuf_16b340() {}  // high
-RVA(0x0016b360, 0x31) void streambuf::streambuf_16b360() {}  // high
+RVA(0x0016b340, 0x20)
+void streambuf::streambuf_16b340() {} // high
+RVA(0x0016b360, 0x31)
+void streambuf::streambuf_16b360() {} // high
 
 // ---- strstreambuf ----
-RVA(0x001692c0, 0x129) void strstreambuf::strstreambuf_1692c0() {}  // high
-RVA(0x001693f0, 0x10) void strstreambuf::strstreambuf_1693f0() {}  // high
-RVA(0x00169400, 0x8a) void strstreambuf::strstreambuf_169400() {}  // high
+RVA(0x001692c0, 0x129)
+void strstreambuf::strstreambuf_1692c0() {} // high
+RVA(0x001693f0, 0x10)
+void strstreambuf::strstreambuf_1693f0() {} // high
+RVA(0x00169400, 0x8a)
+void strstreambuf::strstreambuf_169400() {} // high

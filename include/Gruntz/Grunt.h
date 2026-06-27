@@ -61,7 +61,7 @@ struct CHudSprite {
     // The CGameObject-base name/geometry setters the one-shot "SingleAnimation"
     // sprite (BuildGruntLoseItemAnimation) drives: ApplyName(key) (0x150540, ret 4)
     // and ApplyLookupGeometry(key, frame) (0x1505b0, ret 8). External/reloc-masked.
-    void ApplyName(const char* key);              // 0x150540
+    void ApplyName(const char* key);                      // 0x150540
     void ApplyLookupGeometry(const char* key, i32 frame); // 0x1505b0
 
     char m_pad0[0x8];
@@ -303,7 +303,7 @@ public:
     // The combat-reaction dispatch (@0x646b0) drives the player through its
     // CGameObject base name/sprite setters (0x150540 / 0x1504d0, not the 0x55xxxx
     // entrance forms). External/no-body so the call rel32 reloc-masks.
-    void GameApplyName(const char* name);                 // 0x150540 (ret 4)
+    void GameApplyName(const char* name);                  // 0x150540 (ret 4)
     void GameApplyLookupSprite(const char* key, i32 flag); // 0x1504d0 (ret 8)
     // The CGameObject-base lookup-geometry setter (same 0x1505b0 slot CHudSprite
     // uses) the death/freeze finalize drives with the DEATHZ_SPARKLE/UNFREEZE keys.
@@ -391,15 +391,15 @@ extern i32 g_cellRecordRet;  // DAT_006bf428
 // pair; runtime-filled (.data), so modeled as a 2-int view extern (reloc-masked).
 // The FP unit constants the diagonal vectors are built from (read-only .rodata).
 // ---------------------------------------------------------------------------
-extern i32 g_dirAb0[2]; // DAT_00644ab0
-extern i32 g_dirAe0[2]; // DAT_00644ae0
-extern i32 g_dirAa0[2]; // DAT_00644aa0
-extern i32 g_dirB28[2]; // DAT_00644b28
-extern i32 g_dirAc0[2]; // DAT_00644ac0
-extern i32 g_dirB48[2]; // DAT_00644b48
-extern i32 g_dirAd0[2]; // DAT_00644ad0
-extern i32 g_dirB18[2]; // DAT_00644b18
-extern i32 g_dirB38[2]; // DAT_00644b38
+extern i32 g_dirAb0[2];     // DAT_00644ab0
+extern i32 g_dirAe0[2];     // DAT_00644ae0
+extern i32 g_dirAa0[2];     // DAT_00644aa0
+extern i32 g_dirB28[2];     // DAT_00644b28
+extern i32 g_dirAc0[2];     // DAT_00644ac0
+extern i32 g_dirB48[2];     // DAT_00644b48
+extern i32 g_dirAd0[2];     // DAT_00644ad0
+extern i32 g_dirB18[2];     // DAT_00644b18
+extern i32 g_dirB38[2];     // DAT_00644b38
 extern double g_dirConst2;  // DAT_005e9a28 = 2.0
 extern double g_dirConst1;  // DAT_005e9a30 = 1.0
 extern double g_dirConstN1; // DAT_005e9a38 = -1.0
@@ -471,8 +471,8 @@ struct WwdGameReg {
     char m_pad64[0x68 - 0x64];
     i32 m_68; // +0x68  (SerializeMove mode-8: -> CGrunt::m_tileMgr)
     char m_pad6c[0x70 - 0x6c];
-    GruntBoard* m_70;        // +0x70  the level board
-    CSpriteRefTable* m_74;   // +0x74  the sprite/animation reference table (GetSel)
+    GruntBoard* m_70;      // +0x70  the level board
+    CSpriteRefTable* m_74; // +0x74  the sprite/animation reference table (GetSel)
     char m_pad78[0x11c - 0x78];
     i32 m_11c; // +0x11c  the sound-channel param (struck-voice Play arg)
     char m_pad120[0x134 - 0x120];
@@ -576,7 +576,6 @@ public:
     void CommitStruckTile(i32 ownerHi, i32 ownerLo, i32 flag); // 0x78260
     // The run-start drop notify at the grunt's HUD pos (thunk_0x2fb3 -> 0x7b330), 4 args.
     void NotifyMoveAt(i32 px, i32 py, i32 a, i32 b); // 0x7b330
-
 };
 
 // The on-screen point-visibility predicate the arrival/update steps gate the cue
@@ -688,17 +687,23 @@ void GruntVecDtor(void* base, i32 stride, i32 count, void (*dtor)()); // 0x51f64
 // ecx, no stack arg/cleanup). Modeled as a 1-method receiver so `lea ecx,[this+off];
 // call` falls out, and as a real value member with `~T(){Dtor();}` so the /GX frame's
 // per-member descending trylevel chain is what the compiler emits.
-struct GruntStrSub {  // +0x44c / +0x448 / +0x1c0  (~CString 0x1b9cde)
+struct GruntStrSub { // +0x44c / +0x448 / +0x1c0  (~CString 0x1b9cde)
     void Dtor();
-    ~GruntStrSub() { Dtor(); }
+    ~GruntStrSub() {
+        Dtor();
+    }
 };
 struct GruntListSub { // +0x338 / +0x31c  (~CObList 0x1b48c6)
     void Dtor();
-    ~GruntListSub() { Dtor(); }
+    ~GruntListSub() {
+        Dtor();
+    }
 };
 struct GruntLinkSub { // +0x18  the CUserLogic base link (~EngStr 0x16d2a0)
     void Dtor();
-    ~GruntLinkSub() { Dtor(); }
+    ~GruntLinkSub() {
+        Dtor();
+    }
 };
 
 // A 10-virtual interface view for CGrunt::DispatchVtbl24's tail call (vtable
@@ -784,9 +789,9 @@ public:
     ~CToyTileBag();                   // 0x1b52b1 (dtor)
     void SetAtGrow(i32 idx, i32 val); // 0x1b5485 (append at idx, grow)
     void RemoveAt(i32 idx, i32 n);    // 0x1b5525 (remove n at idx)
-    i32 m_0;       // +0x00
-    u8* m_data;    // +0x04  byte data
-    i32 m_count;   // +0x08  element count
+    i32 m_0;                          // +0x00
+    u8* m_data;                       // +0x04  byte data
+    i32 m_count;                      // +0x08  element count
 };
 
 // ---------------------------------------------------------------------------
@@ -854,9 +859,9 @@ public:
     void SnapToLastTile(i32 a);               // @0x517b0 (ret 4) snap m_10 to last tile + commit
     i32 ClaimSwitchTile();                    // @0x52c70 (ret 0) switch-dir tile claim
     void SetArrivalTarget(i32 a, i32 b, i32 c, i32 d); // @0x52ed0 (ret 0x10)
-    void ConsiderArrival(i32 a);              // @0x52f40 (ret 4) arrival/drop gate
-    void SelectMoveIcon(i32 a);               // @0x57800 (ret 4) pick move-cursor icon
-    i32 TryPowerupAtTile();                   // @0x57aa0 (ret 0) probe move tile
+    void ConsiderArrival(i32 a);                       // @0x52f40 (ret 4) arrival/drop gate
+    void SelectMoveIcon(i32 a);                        // @0x57800 (ret 4) pick move-cursor icon
+    i32 TryPowerupAtTile();                            // @0x57aa0 (ret 0) probe move tile
 
     // --- animation resolvers (this TU's targets) ---
     i32 ResolveMovingAnimation();
@@ -915,10 +920,10 @@ public:
     i32 m_arrived;                 // +0x1d8 (entrance-arrival gate)
     char m_pad1dc[0x1e4 - 0x1dc];
     i32 m_entranceActive; // +0x1e4 (entrance: set to 1)
-    i32 m_arrivalPending;  // +0x1e8 (SnapToLastTile/ClaimSwitchTile arrival-commit latch)
-    i32 m_tileOwnerHi; // +0x1ec
-    i32 m_tileOwnerLo; // +0x1f0
-    i32 m_1f4_moveIcon;       // +0x1f4 (SelectMoveIcon: clamped icon index, [0,0x11))
+    i32 m_arrivalPending; // +0x1e8 (SnapToLastTile/ClaimSwitchTile arrival-commit latch)
+    i32 m_tileOwnerHi;    // +0x1ec
+    i32 m_tileOwnerLo;    // +0x1f0
+    i32 m_1f4_moveIcon;   // +0x1f4 (SelectMoveIcon: clamped icon index, [0,0x11))
     char m_pad1f8[0x1fc - 0x1f8];
     i32 m_entranceCommitted; // +0x1fc (entrance: cleared)
     i32 m_neighborCol;       // +0x200 (grid-neighbor: column, -1 = none)
@@ -1029,16 +1034,16 @@ public:
     void EntranceArrivalHook(i32 a, i32 b); // thunk_FUN_0044d060 (2-arg; arrival commit)
 
     // ---- migrated CGrunt cluster (ex-CUserLogic_*) ----
-    ~CGrunt();                       // @0xf2f0  /GX leaf dtor (6 members + base fold)
+    ~CGrunt();                              // @0xf2f0  /GX leaf dtor (6 members + base fold)
     void EnsureStruckSlot(const char* key); // @0x57b70 lazily build/play the +0x424 sample
-    i32 UpdateEntranceAnim();        // @0x690a0 entrance-anim/arrival update step
-    void ApplyMoveKind(i32 v);       // @0x57100 (thunk_0x3c29) 1-arg move-kind apply
-    i32 Save(CGruntArchive* ar);     // @0x53f90 serialize
-    void ClearAllSprites();          // @0x4b240
-    i32 CommitArrival();             // @0x4b130
-    void ClearSubA();                // @0x57c10
-    void ClearSubB();                // @0x57ce0
-    void DestroyAnims();             // @0x57d80
+    i32 UpdateEntranceAnim();               // @0x690a0 entrance-anim/arrival update step
+    void ApplyMoveKind(i32 v);              // @0x57100 (thunk_0x3c29) 1-arg move-kind apply
+    i32 Save(CGruntArchive* ar);            // @0x53f90 serialize
+    void ClearAllSprites();                 // @0x4b240
+    i32 CommitArrival();                    // @0x4b130
+    void ClearSubA();                       // @0x57c10
+    void ClearSubB();                       // @0x57ce0
+    void DestroyAnims();                    // @0x57d80
     // @0x31c70 (ret 4) - write the grunt's HUD tile coords (m_10->m_5c/m_60 >> 5)
     // into the caller's {x,y} out slot and return it.
     struct GruntTilePos* GetTilePos(struct GruntTilePos* out);
@@ -1089,8 +1094,8 @@ public:
     // member offset they touch is in this layout). All three drive the grunt's
     // arrival/entrance bookkeeping + the occupied-slot recycle.
     i32 ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e); // @0x59230 (ret 0x14)
-    void InitDirVectors();                                   // @0x5caa0 (ret 0; reset/init)
-    i32 UpdateArrival(i32 a1, i32 a2);                       // @0x62110 (ret 0x8)
+    void InitDirVectors();                                    // @0x5caa0 (ret 0; reset/init)
+    i32 UpdateArrival(i32 a1, i32 a2);                        // @0x62110 (ret 0x8)
 
     void StepArrivalDrop(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // @0x4b370 (ret 0x18, /GX)
     i32 StepGruntMovement(); // @0x4c170 (ret 0)         - the per-tick move step
@@ -1112,8 +1117,8 @@ public:
     // modeled as __thiscall methods on the grunt so `mov ecx,this; ...; call`
     // falls out). Names describe the observed effect, not a recovered symbol.
     i32 IsDropReady(i32 a = 0); // thunk_0x17df (drop-ready predicate; 1-arg __thiscall)
-    void ApplySetState1(i32 v);                            // thunk_0x4322 (1-arg state apply)
-    i32 SetMoveStateA(i32 v, i32 a, i32 b, i32 c);         // thunk_0x3bd9 (4-arg; nonzero = re-roll)
+    void ApplySetState1(i32 v); // thunk_0x4322 (1-arg state apply)
+    i32 SetMoveStateA(i32 v, i32 a, i32 b, i32 c); // thunk_0x3bd9 (4-arg; nonzero = re-roll)
     void SetMoveStateB(i32 v, i32 a, i32 b, i32 c, i32 d); // thunk_0x1401 (5-arg-ish)
     void EmitMoveCueQ(i32 a);                              // thunk_0x4336 (1-arg cue/state)
     void EmitMoveCueShort(i32 a, i32 b, i32 c);            // thunk_0x1163 (3-arg cue on m_10)
@@ -1159,6 +1164,16 @@ public:
     // gate on in-radius, commit its slot (or, when no occupant, re-roll a random
     // in-region target after the idle window elapses) + fire the on-screen entrance cue.
     i32 ResolveArrivalReposition(); // @0xec670
+    // @0xf2b20 (ret 0 -> 1) - the multi-state arrival-defender step. Latch the
+    // defender position to the last tile, then dispatch on m_2d4 (0/1/2): resolve
+    // the cell occupant (the m_tileMgr 15-wide grid in states 1/2, GetOccupant in
+    // state 0), gate it (in-radius, committed, settled, on-screen via RectContains),
+    // and commit/neighbor-link onto it or, on the no-occupant path, re-roll a random
+    // in-region defender target + fire the on-screen entrance cue + reset the idle timer.
+    i32 StepArrivalDefense();
+    // CUserLogic::GetScreenPos (0x29a50) reached on the occupant grunt: copies its
+    // m_10->{m_5c,m_60} into the out point. External/reloc-masked.
+    void GetScreenPos(struct GruntTilePos* out); // 0x29a50
     // The 0x4b320 tile-switch entry reached __thiscall here (this in ecx, 6 stack args,
     // ret 0x18; returns nonzero on success). Same engine fn as the free CGrunt_TileSwitch
     // passthrough; modeled as a method so `mov ecx,this; ...; call` falls out.
@@ -1177,9 +1192,18 @@ public:
     i32 StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7);
 
     // StepCombatReaction's engine thunks (external/no-body, reloc-masked).
-    void UpdateCombatTimer();                          // call 0x243c (0-arg tail step)
-    void OnTileMismatch(i32 v);                         // call 0x2cb6 (1-arg)
-    i32 ForwardCombatStep(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7); // call 0x1451
+    void UpdateCombatTimer();   // call 0x243c (0-arg tail step)
+    void OnTileMismatch(i32 v); // call 0x2cb6 (1-arg)
+    i32 ForwardCombatStep(
+        i32 a0,
+        i32 a1,
+        i32 a2,
+        i32 a3,
+        i32 a4,
+        i32 a5,
+        i32 a6,
+        i32 a7
+    );                                                 // call 0x1451
     i32 IsInCombatRange(i32 x, i32 y);                 // call 0x3c4c (2-arg predicate)
     void CommitCombatMove(i32 a, i32 b, i32 c, i32 d); // call 0x302b (4-arg)
 };

@@ -1,7 +1,7 @@
 // GruntzPlayer.h - the per-player options/state record embedded in CGruntzMgr at
 // +0x150 (a 4-element array, one slot per player; each 0x238 bytes). The slot
 // carries a name CString (default "Player"), a block of config scalars, an
-// embedded UnknownClassArrays config bundle at +0x38, and a trailing scalar
+// embedded CBattlezSpawnMgr_or_CGruntSpawnMgr config bundle at +0x38, and a trailing scalar
 // block (+0x220..). No vtable (the class is non-polymorphic).
 //
 // Two constructors (a default and an int-seeded one), a frameless re-init that
@@ -41,7 +41,7 @@ public:
     i32 m_02c;                    // +0x02c  = 0
     i32 m_030;                    // +0x030  = 0
     char m_pad034[0x38 - 0x34];   // +0x034
-    char m_038[0x220 - 0x38];     // +0x038  embedded UnknownClassArrays bundle
+    char m_038[0x220 - 0x38];     // +0x038  embedded CBattlezSpawnMgr_or_CGruntSpawnMgr bundle
     i32 m_220;                    // +0x220  = 0
     i32 m_224;                    // +0x224  = 0
     i32 m_228;                    // +0x228  = 0xf

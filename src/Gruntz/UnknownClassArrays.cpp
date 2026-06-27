@@ -1,4 +1,4 @@
-// UnknownClassArrays.cpp - the ctor / dtor / FreeArrays of the (tomalla-named)
+// CBattlezSpawnMgr_or_CGruntSpawnMgr.cpp - the ctor / dtor / FreeArrays of the (tomalla-named)
 // config-array bundle. The class owns four growable MFC arrays - two CPtrArray
 // (+0xdc / +0xf0) and two CDWordArray (+0x104 / +0x118) - and a block of scalar
 // config fields. See <Gruntz/UnknownClassArrays.h> for the layout and the array
@@ -31,7 +31,7 @@ extern "C" i32 strcmp(const char*, const char*);
 
 // The WwdGameReg singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c). It
 // fronts an array of per-level records (0x238-byte stride = the
-// UnknownClassInCGruntzMgr sub-objects); only the two fields Method_025c20 reads
+// CGruntSpawnLevel sub-objects); only the two fields Method_025c20 reads
 // are named. Reloc-masked DATA. A struct (mangles `U`) gives the retail name.
 struct WwdGameReg {
     char m_pad000[0x164];
@@ -150,7 +150,7 @@ struct GridUnit {
     char m_pad32c[0x368 - 0x32c];
     i32 m_368; // +0x368  must be 0 to dispatch
 
-    // 0x0343f0 (attributed to UnknownClassArrays but a __thiscall ON a GridUnit):
+    // 0x0343f0 (attributed to CBattlezSpawnMgr_or_CGruntSpawnMgr but a __thiscall ON a GridUnit):
     // recycle every occupied-coord node's payload onto g_freeList, then RemoveAll
     // the +0x31c CObList. Defined out-of-line with its retail RVA below.
     void RecycleCoords(); // 0x0343f0
@@ -343,13 +343,13 @@ DATA(0x001e96ec)
 extern const float g_diffScale;
 
 // ===========================================================================
-// UnknownClassArrays::UnknownClassArrays  @0x024dc0
+// CBattlezSpawnMgr_or_CGruntSpawnMgr::CBattlezSpawnMgr_or_CGruntSpawnMgr  @0x024dc0
 // Member-constructs the four arrays (CPtrArray x2, CDWordArray x2) - the /GX
 // compiler frames the ctor and advances the EH try-level after each constructed
 // member - then seeds the scalar config block. Returns `this`.
 // ===========================================================================
 RVA(0x00024dc0, 0x158)
-UnknownClassArrays::UnknownClassArrays()
+CBattlezSpawnMgr_or_CGruntSpawnMgr::CBattlezSpawnMgr_or_CGruntSpawnMgr()
     // The four 0x78..0x87 fields are member-init-list initializations (NOT body
     // assignments): the /GX compiler schedules them into the array-construction
     // region (some land before the first array ctor), which is what retail does -
@@ -393,23 +393,23 @@ UnknownClassArrays::UnknownClassArrays()
 }
 
 // ===========================================================================
-// UnknownClassArrays::~UnknownClassArrays  @0x024f80
+// CBattlezSpawnMgr_or_CGruntSpawnMgr::~CBattlezSpawnMgr_or_CGruntSpawnMgr  @0x024f80
 // Calls FreeArrays() (covered by the full unwind, try-level 3), then the compiler
 // auto-destructs the four arrays in reverse construction order (+0x118, +0x104,
 // +0xf0, +0xdc), lowering the try-level after each.
 // ===========================================================================
 RVA(0x00024f80, 0x7d)
-UnknownClassArrays::~UnknownClassArrays() {
+CBattlezSpawnMgr_or_CGruntSpawnMgr::~CBattlezSpawnMgr_or_CGruntSpawnMgr() {
     FreeArrays();
 }
 
 // ===========================================================================
-// UnknownClassArrays::Method_025c20  @0x025c20
+// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_025c20  @0x025c20
 // If the current level's WwdGameReg record is not-yet-loaded but active, refresh
 // every element of the first CPtrArray (m_0dc). Returns 1 unconditionally.
 // ===========================================================================
 RVA(0x00025c20, 0x55)
-i32 UnknownClassArrays::Method_025c20() {
+i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_025c20() {
     if (g_gameReg[m_018].m_164 == 0 && g_gameReg[m_018].m_170 != 0) {
         for (i32 i = 0; i < m_0dc.GetSize(); i++) {
             ((ElementRefresher*)this)->Refresh(0);
@@ -419,14 +419,14 @@ i32 UnknownClassArrays::Method_025c20() {
 }
 
 // ===========================================================================
-// UnknownClassArrays::FreeArrays  @0x025ca0
+// CBattlezSpawnMgr_or_CGruntSpawnMgr::FreeArrays  @0x025ca0
 // For each non-null element of the two CPtrArrays (+0xdc, +0xf0), recover its
 // freelist node (element - bias), push it onto g_freeList. Loop 1 guards on a
 // non-null element; loop 2 does not (the retail asymmetry). Then SetSize(0,-1)
 // empties all four arrays and m_13c is cleared.
 // ===========================================================================
 RVA(0x00025ca0, 0xbf)
-void UnknownClassArrays::FreeArrays() {
+void CBattlezSpawnMgr_or_CGruntSpawnMgr::FreeArrays() {
     i32 i;
     for (i = 0; i < m_0dc.GetSize(); i++) {
         void* p = m_0dc[i];
@@ -451,7 +451,7 @@ void UnknownClassArrays::FreeArrays() {
 }
 
 // ===========================================================================
-// UnknownClassArrays::Method_02ad40  @0x02ad40
+// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02ad40  @0x02ad40
 // Pick a random idle unit from one of the four cell-bands: roll a band [0..3]
 // (avoiding the current cell index m_018 by bumping past it), a random start cell
 // [0..14], then scan the band's 15 units from there (cell index wrapping mod 15),
@@ -466,7 +466,7 @@ void UnknownClassArrays::FreeArrays() {
 // counter), and the swap cascades through the small body. Logic + offsets correct;
 // not source-steerable. Deferred to the final sweep.
 RVA(0x0002ad40, 0x71)
-void* UnknownClassArrays::Method_02ad40(i32) {
+void* CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02ad40(i32) {
     i32 band = rand() % 4;
     if (band == m_018) {
         band++;
@@ -486,16 +486,16 @@ void* UnknownClassArrays::Method_02ad40(i32) {
 }
 
 // ===========================================================================
-// UnknownClassArrays::Method_02c080  @0x02c080
+// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02c080  @0x02c080
 // Trivial: ignore the one arg, return 1. (mov eax,1; ret 4)
 // ===========================================================================
 RVA(0x0002c080, 0x8)
-i32 UnknownClassArrays::Method_02c080(i32) {
+i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02c080(i32) {
     return 1;
 }
 
 // ===========================================================================
-// UnknownClassArrays::Method_025d90  @0x025d90
+// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_025d90  @0x025d90
 // The per-tick board step. Run the two timers (claim/spawn budget via
 // Method_026470, and a periodic re-pick), level off mode-3 units' countdowns,
 // then scan the current cell-row for the one eligible unit (passes the cached-
@@ -512,7 +512,7 @@ i32 UnknownClassArrays::Method_02c080(i32) {
 // chosen-unit override local, and the foreign unit/level chains modeled by raw
 // offset. Deferred to the final sweep.
 RVA(0x00025d90, 0x580)
-i32 UnknownClassArrays::Method_025d90() {
+i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_025d90() {
     if (m_000 == 0) {
         return 1;
     }
@@ -694,7 +694,7 @@ i32 UnknownClassArrays::Method_025d90() {
 }
 
 // ===========================================================================
-// UnknownClassArrays::Method_026470  @0x026470
+// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_026470  @0x026470
 // Spawn/claim decision for the current cell-row: if the row is already at/over
 // its per-level unit budget (rec->m_378) return early; otherwise scan the first
 // CPtrArray (m_0dc) of candidate coords, skip ones whose tile carries the
@@ -711,7 +711,7 @@ i32 UnknownClassArrays::Method_025d90() {
 // the choice cascades through the two 15-slot scans' operands. The foreign render/
 // level chains (m_004->m_30->m_24->m_5c) are modeled by raw offset. Final sweep.
 RVA(0x00026470, 0x29d)
-i32 UnknownClassArrays::Method_026470(i32) {
+i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_026470(i32) {
     GridUnit** row = (GridUnit**)(m_008 + m_018 * 0x3c + 0x1c);
     i32 occupied = 0;
     for (i32 c = 15; c != 0; c--) {
@@ -817,7 +817,7 @@ i32 UnknownClassArrays::Method_026470(i32) {
 // @source: winapi:IntersectRect;PtInRect
 // @stub
 RVA(0x000267c0, 0x281d)
-i32 UnknownClassArrays::winapi_0267c0_IntersectRect_PtInRect() {
+i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_0267c0_IntersectRect_PtInRect() {
     return 0;
 }
 
@@ -825,7 +825,7 @@ i32 UnknownClassArrays::winapi_0267c0_IntersectRect_PtInRect() {
 // @source: winapi:IntersectRect
 // @stub
 RVA(0x0002a570, 0x4c6)
-i32 UnknownClassArrays::winapi_02a570_IntersectRect(i32) {
+i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02a570_IntersectRect(i32) {
     return 0;
 }
 
@@ -833,16 +833,16 @@ i32 UnknownClassArrays::winapi_02a570_IntersectRect(i32) {
 // @source: winapi:PtInRect
 // @stub
 RVA(0x0002ab80, 0x15e)
-i32 UnknownClassArrays::winapi_02ab80_PtInRect(i32, i32, i32, i32) {
+i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02ab80_PtInRect(i32, i32, i32, i32) {
     return 0;
 }
 
 // ===========================================================================
-// UnknownClassArrays::Clear_02ade0  @0x02ade0
+// CBattlezSpawnMgr_or_CGruntSpawnMgr::Clear_02ade0  @0x02ade0
 // Single-store setter: zero the first dword. (mov [ecx],0; ret)
 // ===========================================================================
 RVA(0x0002ade0, 0x7)
-void UnknownClassArrays::Clear_02ade0() {
+void CBattlezSpawnMgr_or_CGruntSpawnMgr::Clear_02ade0() {
     m_000 = 0;
 }
 
@@ -850,19 +850,19 @@ void UnknownClassArrays::Clear_02ade0() {
 // @source: winapi:IntersectRect
 // @stub
 RVA(0x0002ae00, 0x42e)
-i32 UnknownClassArrays::winapi_02ae00_IntersectRect(i32, i32) {
+i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02ae00_IntersectRect(i32, i32) {
     return 0;
 }
 
 // ===========================================================================
-// UnknownClassArrays::Serialize_02b420  @0x02b420
+// CBattlezSpawnMgr_or_CGruntSpawnMgr::Serialize_02b420  @0x02b420
 // Stream every config scalar (then the four growable arrays + the inline 4-dword
 // block) into the archive via its Write(buf, count) vtable slot. Each array
 // section writes the element count first, then each element (the two CPtrArrays'
 // elements are 8-byte payloads; the two CDWordArrays' are 4-byte dwords).
 // ===========================================================================
 RVA(0x0002b420, 0x419)
-i32 UnknownClassArrays::Serialize_02b420(void* arArg) {
+i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Serialize_02b420(void* arArg) {
     Serializer* ar = (Serializer*)arArg;
     if (ar == 0) {
         return 0;
@@ -954,7 +954,7 @@ i32 UnknownClassArrays::Serialize_02b420(void* arArg) {
 }
 
 // ===========================================================================
-// UnknownClassArrays::Method_02bfc0  @0x02bfc0
+// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02bfc0  @0x02bfc0
 // Validate an EmitArg by kind (4 or 7); on success, dispatch through its vtable
 // to emit a {x,y} pair into the bundle's m_078/m_080 scratch via slot +0x2c
 // (kind 7) or +0x30 (kind 4).
@@ -966,7 +966,7 @@ i32 UnknownClassArrays::Serialize_02b420(void* arArg) {
 // inline (cmp 4; jne). No steerable source spelling found (switch would add a
 // jump table). Deferred to the final sweep.
 RVA(0x0002bfc0, 0x8a)
-i32 UnknownClassArrays::Method_02bfc0(i32 objArg, void* kindArg, i32, i32) {
+i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02bfc0(i32 objArg, void* kindArg, i32, i32) {
     EmitArg* obj = (EmitArg*)objArg;
     i32 kind = (i32)(i32)kindArg;
     if (kind == 4) {
@@ -992,13 +992,13 @@ i32 UnknownClassArrays::Method_02bfc0(i32 objArg, void* kindArg, i32, i32) {
 }
 
 // ===========================================================================
-// UnknownClassArrays::Method_02c0a0  @0x02c0a0
+// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02c0a0  @0x02c0a0
 // Mark a unit as "state 3" with a value, then count how many OTHER units in the
 // current cell-row are also state 3 and record that count on the unit.
 //   grid row = m_008 + m_018*0x3c, the 15-entry unit array starts at +0x1c.
 // ===========================================================================
 RVA(0x0002c0a0, 0x78)
-i32 UnknownClassArrays::Method_02c0a0(i32 unitArg, i32 value) {
+i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02c0a0(i32 unitArg, i32 value) {
     GridUnit* unit = (GridUnit*)unitArg;
     if (unit->m_2d4 == 3) {
         return 1;
@@ -1022,7 +1022,7 @@ i32 UnknownClassArrays::Method_02c0a0(i32 unitArg, i32 value) {
 // @source: winapi:IntersectRect;PtInRect
 // @stub
 RVA(0x0002c140, 0x3e7)
-i32 UnknownClassArrays::winapi_02c140_IntersectRect_PtInRect(i32) {
+i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02c140_IntersectRect_PtInRect(i32) {
     return 0;
 }
 
@@ -1030,7 +1030,7 @@ i32 UnknownClassArrays::winapi_02c140_IntersectRect_PtInRect(i32) {
 // @source: winapi:IntersectRect
 // @stub
 RVA(0x0002dfa0, 0x325)
-i32 UnknownClassArrays::winapi_02dfa0_IntersectRect(i32, i32, i32, i32) {
+i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02dfa0_IntersectRect(i32, i32, i32, i32) {
     return 0;
 }
 
@@ -1038,12 +1038,12 @@ i32 UnknownClassArrays::winapi_02dfa0_IntersectRect(i32, i32, i32, i32) {
 // @source: winapi:PtInRect
 // @stub
 RVA(0x0002e3a0, 0x7e1)
-i32 UnknownClassArrays::winapi_02e3a0_PtInRect(i32) {
+i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02e3a0_PtInRect(i32) {
     return 0;
 }
 
 // ===========================================================================
-// UnknownClassArrays::Method_02f620  @0x02f620
+// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02f620  @0x02f620
 // The grunt idle-behaviour chooser (the cluster's largest method). Gate the unit
 // on the four clear-flag guards, then reject the I/G/L/P/J/C/R type codes (I via
 // GetRecord, the rest via the scratch-teardown GetRecords). For an eligible unit,
@@ -1066,7 +1066,7 @@ i32 UnknownClassArrays::winapi_02e3a0_PtInRect(i32) {
 // with Method_034460); (2) the threshold-cascade regalloc (retail pins the rolled
 // value in edx, the band divisors in esi). Deferred to the final sweep.
 RVA(0x0002f620, 0x871)
-i32 UnknownClassArrays::Method_02f620(i32 unitArg) {
+i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02f620(i32 unitArg) {
     GridUnit* unit = (GridUnit*)unitArg;
     if (unit->m_1fc == 0) {
         return 0;
@@ -1394,16 +1394,16 @@ i32 UnknownClassArrays::Method_02f620(i32 unitArg) {
 }
 
 // ===========================================================================
-// UnknownClassArrays::Method_02ed90  @0x02ed90
+// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02ed90  @0x02ed90
 // One-arg predicate that always returns 0. (xor eax,eax; ret 4)
 // ===========================================================================
 RVA(0x0002ed90, 0x5)
-i32 UnknownClassArrays::Method_02ed90(i32) {
+i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02ed90(i32) {
     return 0;
 }
 
 // ===========================================================================
-// UnknownClassArrays::Method_0300c0  @0x0300c0  (/GX EH frame)
+// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0300c0  @0x0300c0  (/GX EH frame)
 // Re-path `unit` to (gx,gy): if it is already there (its level geometry's
 // (>>5) coord equals the goal) succeed trivially; otherwise ask the board's
 // A* (FindPath) for a route into a local CObList, then swap the unit's path:
@@ -1421,7 +1421,14 @@ i32 UnknownClassArrays::Method_02ed90(i32) {
 // the ~CObList/xor/jmp at each early return. No steerable source spelling closes
 // either. Deferred to the final sweep.
 RVA(0x000300c0, 0x190)
-i32 UnknownClassArrays::Method_0300c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5, i32 a6) {
+i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0300c0(
+    i32 unitArg,
+    i32 gx,
+    i32 gy,
+    i32 a4,
+    i32 a5,
+    i32 a6
+) {
     CObList list(10);
     GridUnit* unit = (GridUnit*)unitArg;
     UnitLevel* lvl = (UnitLevel*)unit->m_010;
@@ -1473,7 +1480,7 @@ i32 UnknownClassArrays::Method_0300c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a
 }
 
 // ===========================================================================
-// UnknownClassArrays::Method_0302c0  @0x0302c0  (/GX EH frame)
+// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0302c0  @0x0302c0  (/GX EH frame)
 // Re-path `unit` to (gx, gy) - the GetCoord-fronted twin of Method_0300c0. If the
 // unit is already at the goal (its GetCoord (>>5) == (gx, gy)) bail; scan its path
 // for a node already on the goal; ask the board's A* (FindPath) for a route into a
@@ -1490,7 +1497,7 @@ i32 UnknownClassArrays::Method_0300c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a
 // loop-invariant `do/while` in retail (the path-segment recycle) that no source
 // spelling reproduces. Foreign unit chains modeled by raw offset. Final sweep.
 RVA(0x000302c0, 0x1ec)
-i32 UnknownClassArrays::Method_0302c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5) {
+i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0302c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5) {
     CObList list(10);
     GridUnit* unit = (GridUnit*)unitArg;
     Coord cur;
@@ -1564,12 +1571,12 @@ i32 UnknownClassArrays::Method_0302c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a
 }
 
 // ===========================================================================
-// UnknownClassArrays::Method_030530  @0x030530
+// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030530  @0x030530
 // Returns 1 if ANY occupied coordinate of `unit` lands on a board tile whose
 // flag byte has bit 0x4 set; else 0. Bails to 0 if the unit has no coord list.
 // ===========================================================================
 RVA(0x00030530, 0x56)
-i32 UnknownClassArrays::Method_030530(i32 unitArg) {
+i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030530(i32 unitArg) {
     GridUnit* unit = (GridUnit*)unitArg;
     if (unit->m_328 == 0) {
         return 0;
@@ -1593,7 +1600,7 @@ i32 UnknownClassArrays::Method_030530(i32 unitArg) {
 }
 
 // ===========================================================================
-// UnknownClassArrays::Method_0305b0  @0x0305b0
+// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0305b0  @0x0305b0
 // Scan the current cell-row for any OTHER unit that occupies coordinate
 // (arg1, arg2): either via a "blocked tile" hit on the unit's occupied-coord
 // list, via the unit's own packed coord (m_174/m_178 >> 5), or via its level
@@ -1607,7 +1614,7 @@ i32 UnknownClassArrays::Method_030530(i32 unitArg) {
 // ebx. The divergence cascades through every register operand. No steerable
 // spelling found. Deferred to the final sweep.
 RVA(0x000305b0, 0x121)
-i32 UnknownClassArrays::Method_0305b0(i32 selfUnit, i32 qx, i32 qy) {
+i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0305b0(i32 selfUnit, i32 qx, i32 qy) {
     void** units = (void**)m_008 + m_018 * 15 + 7;
     for (i32 i = 0; i < 15; i++) {
         GridUnit* unit = (GridUnit*)units[i];
@@ -1652,7 +1659,7 @@ i32 UnknownClassArrays::Method_0305b0(i32 selfUnit, i32 qx, i32 qy) {
 }
 
 // ===========================================================================
-// UnknownClassArrays::Method_030730  @0x030730
+// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030730  @0x030730
 // Cell-claim scan: for the (cellX,cellY) source unit, walk the 15 unit slots of
 // the CURRENT cell-row (m_018) and, for each candidate whose mode is 3 (or a
 // 2/3-of-the-time random pick) and whose per-level record lands within distance
@@ -1667,7 +1674,7 @@ i32 UnknownClassArrays::Method_0305b0(i32 selfUnit, i32 qx, i32 qy) {
 // locals (no spill slot) vs retail's 0xc. Cascades through the cellX/cellY
 // reg-vs-memory operand choice. No steerable spelling found; final sweep.
 RVA(0x00030730, 0x1da)
-i32 UnknownClassArrays::Method_030730(i32 cellX, i32 cellY, i32, i32) {
+i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030730(i32 cellX, i32 cellY, i32, i32) {
     if (m_000 == 0) {
         return 0;
     }
@@ -1762,7 +1769,7 @@ struct GridSpawnProbe {
 };
 
 // ===========================================================================
-// UnknownClassArrays::Method_030990  @0x030990
+// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030990  @0x030990
 // Try to seed a fresh spawn unit at a screen cell. Count the occupied units in the
 // current cell-row; if that count is at/over the per-level record's budget
 // (rec->m_378) bail. Otherwise probe the screen cell mapped from (arg1,arg2) via the
@@ -1780,7 +1787,7 @@ struct GridSpawnProbe {
 // reschedules the -1 block. No source lever forces the pinning under /O2 (see
 // docs/patterns/zero-register-pinning.md). Deferred to the final sweep.
 RVA(0x00030990, 0x11b)
-i32 UnknownClassArrays::Method_030990(i32 ax, i32 ay) {
+i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030990(i32 ax, i32 ay) {
     GridUnit** row = (GridUnit**)(m_008 + m_018 * 0x3c + 0x1c);
     i32 occupied = 0;
     for (i32 c = 15; c != 0; c--) {
@@ -1836,7 +1843,7 @@ i32 UnknownClassArrays::Method_030990(i32 ax, i32 ay) {
 }
 
 // ===========================================================================
-// UnknownClassArrays::Method_030f20  @0x030f20
+// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030f20  @0x030f20
 // Pick a spawn coordinate for `unit` from the per-level record's candidate list
 // (index `kind`, 0..3): start at a random candidate and walk forward (mod count)
 // looking for one not already occupied by any unit in the current cell-row; on
@@ -1851,7 +1858,7 @@ i32 UnknownClassArrays::Method_030990(i32 ax, i32 ay) {
 // collision loop's register operands (load-then-test vs memory-compare on
 // u->m_328, cand coord regs). No steerable spelling found; final sweep.
 RVA(0x00030f20, 0x16d)
-void* UnknownClassArrays::Method_030f20(void* out, i32 unitArg, i32 kind) {
+void* CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030f20(void* out, i32 unitArg, i32 kind) {
     Coord* o = (Coord*)out;
     GridUnit* unit = (GridUnit*)unitArg;
     if (kind < 0 || kind >= 4) {
@@ -1914,7 +1921,7 @@ void* UnknownClassArrays::Method_030f20(void* out, i32 unitArg, i32 kind) {
 // @source: winapi:IntersectRect
 // @stub
 RVA(0x00031ca0, 0x2f2)
-i32 UnknownClassArrays::winapi_031ca0_IntersectRect(i32) {
+i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_031ca0_IntersectRect(i32) {
     return 0;
 }
 
@@ -1922,12 +1929,12 @@ i32 UnknownClassArrays::winapi_031ca0_IntersectRect(i32) {
 // @source: winapi:IntersectRect
 // @stub
 RVA(0x00032060, 0x7bd)
-i32 UnknownClassArrays::winapi_032060_IntersectRect(i32) {
+i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_032060_IntersectRect(i32) {
     return 0;
 }
 
 // ===========================================================================
-// UnknownClassArrays::Method_034460  @0x034460
+// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_034460  @0x034460
 // Anim-name gate: a unit is eligible for a "special" anim only when it sits on
 // its cached cell (lvl coord == m_17c/m_180) and a block of state flags is clear.
 // Then resolve the unit's anim name and reject the simple type codes (I/G/L/J/C)
@@ -1943,7 +1950,7 @@ i32 UnknownClassArrays::winapi_032060_IntersectRect(i32) {
 // reconstructed but its global-scratch regalloc and the imul/bounds arithmetic
 // diverge from retail's. Deferred to the final sweep.
 RVA(0x00034460, 0x3fc)
-i32 UnknownClassArrays::Method_034460(i32 unitArg) {
+i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_034460(i32 unitArg) {
     GridUnit* unit = (GridUnit*)unitArg;
     if (unit == 0) {
         return 0;
@@ -2086,7 +2093,7 @@ struct CoordCheck {
 };
 
 // ===========================================================================
-// UnknownClassArrays::Method_029b40  @0x029b40
+// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_029b40  @0x029b40
 // The per-unit tile/coord cleanup step. Recover the unit's first occupied coord +
 // its level geometry; if they have drifted >= 2 cells apart, recycle the unit's
 // coord nodes and bail. Otherwise read the tile under the unit (and a second tile
@@ -2105,7 +2112,7 @@ struct CoordCheck {
 // scheduling of the manual 7-dword tile-record copies (rep movs/stos) + the arm
 // regalloc; foreign unit/board chains are modeled by raw offset. Final sweep.
 RVA(0x00029b40, 0x813)
-i32 UnknownClassArrays::Method_029b40(i32 unitArg) {
+i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_029b40(i32 unitArg) {
     GridUnit* unit = (GridUnit*)unitArg;
     if (unit->m_328 == 0) {
         return 0;
@@ -2248,7 +2255,7 @@ i32 UnknownClassArrays::Method_029b40(i32 unitArg) {
             }
         }
         if (flags & 0x20000000) {
-            ((UnknownClassArrays*)this)->winapi_02a570_IntersectRect((i32)unit);
+            ((CBattlezSpawnMgr_or_CGruntSpawnMgr*)this)->winapi_02a570_IntersectRect((i32)unit);
             return 0;
         }
         i32 pm2 = unit->m_170;
@@ -2301,7 +2308,7 @@ struct CellResolver {
 };
 
 // ===========================================================================
-// UnknownClassArrays::Method_02d800  @0x02d800  (/GX EH frame, RECURSIVE)
+// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02d800  @0x02d800  (/GX EH frame, RECURSIVE)
 // The flood-fill board step. While g_stepRun is set, examine the tile at
 // (col,row): a 0x800000-bit tile tries a direct Board::FindPath (flags 0x4903) and,
 // on a route, recycles the path + returns; a 0x400000-bit tile resolves the cell
@@ -2320,7 +2327,7 @@ struct CellResolver {
 // and the /GX cleanup epilogues funnel differently; the board/cell chains are
 // modeled by raw offset. Deferred to the final sweep.
 RVA(0x0002d800, 0x605)
-i32 UnknownClassArrays::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
+i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
     if (g_stepRun == 0) {
         return 0;
     }
@@ -2496,7 +2503,7 @@ i32 UnknownClassArrays::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
 }
 
 // ===========================================================================
-// UnknownClassArrays::Method_02edb0  @0x02edb0  (/GX EH frame)
+// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02edb0  @0x02edb0  (/GX EH frame)
 // Reroute a unit toward a target cell. The target is (arg2,arg3) when `useArg` is
 // set, else the first of the unit's occupied coords that lands on a blocked (bit
 // 0x4) tile. If the unit already collides there (Method_0305b0) recycle its path +
@@ -2516,7 +2523,7 @@ i32 UnknownClassArrays::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
 // (retail pins the slot index in [esp+0x4c] and the candidate in ebp) plus the /GX
 // cleanup epilogue funnel; foreign chains modeled by raw offset. Final sweep.
 RVA(0x0002edb0, 0x6b4)
-i32 UnknownClassArrays::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
+i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
     GridUnit* unit = (GridUnit*)unitArg;
     if (unit->m_328 == 0) {
         return 0;
@@ -2766,7 +2773,7 @@ struct LevelQuery {
 };
 
 // ===========================================================================
-// UnknownClassArrays::Method_030b20  @0x030b20  (/GX EH frame)
+// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030b20  @0x030b20  (/GX EH frame)
 // Best-fit reroute: locate the cell record for (col,row) - directly when its tile
 // dword[4] == 0x67, else via LevelQuery::QueryA - then scan its 24-entry sub-cell
 // pointer block for the candidate, not colliding with `unit` (Method_0305b0),
@@ -2785,7 +2792,7 @@ struct LevelQuery {
 // upfront and spills) plus the /GX cleanup epilogue funnel; the foreign cell/level
 // chains are modeled by raw offset. Deferred to the final sweep.
 RVA(0x00030b20, 0x328)
-i32 UnknownClassArrays::Method_030b20(i32 unitArg, i32 col, i32 row) {
+i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030b20(i32 unitArg, i32 col, i32 row) {
     GridUnit* unit = (GridUnit*)unitArg;
     UnitLevel* lvl = (UnitLevel*)unit->m_010;
     i32 goalX = lvl->m_5c >> 5;
@@ -2933,7 +2940,7 @@ struct GridCand {
 };
 
 // ===========================================================================
-// UnknownClassArrays::Method_0350d0  @0x0350d0
+// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0350d0  @0x0350d0
 // Periodic re-path of `unit` toward the nearest free candidate cell. Gate on the
 // unit's m_2ec timer exceeding the bundle's m_0c4 budget; otherwise walk the grid
 // object's candidate list (head at m_008->m_4), and among the unoccupied candidates
@@ -2953,7 +2960,7 @@ struct GridCand {
 // seed + reread-member-view-pointer family). No source lever forces the spill under
 // /O2; the divergence cascades through every loop register operand. Final sweep.
 RVA(0x000350d0, 0xfa)
-i32 UnknownClassArrays::Method_0350d0(i32 unitArg) {
+i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0350d0(i32 unitArg) {
     GridUnit* unit = (GridUnit*)unitArg;
     if ((u32)unit->m_2ec <= (u32)m_0c4) {
         return 1;
@@ -2989,7 +2996,7 @@ i32 UnknownClassArrays::Method_0350d0(i32 unitArg) {
 }
 
 // ===========================================================================
-// GridUnit::RecycleCoords  @0x0343f0  (attributed to UnknownClassArrays; __thiscall
+// GridUnit::RecycleCoords  @0x0343f0  (attributed to CBattlezSpawnMgr_or_CGruntSpawnMgr; __thiscall
 // on a GridUnit). Recycle each occupied-coord node's payload onto g_freeList (head
 // cached in a register across the loop, written each iteration), then tail into the
 // +0x31c CObList's RemoveAll. Skips everything when the count (m_328) is zero.
@@ -3025,7 +3032,7 @@ struct GridUnitSpawn {
 };
 
 // ===========================================================================
-// UnknownClassArrays::Method_034c70  @0x034c70
+// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_034c70  @0x034c70
 // The queued-unit board-tile resolver. For a unit with no live coord list
 // (m_328==0): look up its target tile (board->m_rows[m_2f4][m_2f0]); if the tile
 // carries the 0x20 "reserved" flag, only place (Method_4b320, flags 0xd87) when the
@@ -3043,7 +3050,7 @@ struct GridUnitSpawn {
 // different stack slots than MSVC5 here. Foreign unit/board chains modeled by raw
 // offset. Deferred to the final sweep.
 RVA(0x00034c70, 0x133)
-i32 UnknownClassArrays::Method_034c70(i32 unitArg) {
+i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_034c70(i32 unitArg) {
     GridUnit* unit = (GridUnit*)unitArg;
     if (unit->m_328 != 0) {
         return 1;
@@ -3095,7 +3102,7 @@ i32 UnknownClassArrays::Method_034c70(i32 unitArg) {
 }
 
 // ===========================================================================
-// _zvec error-report wrapper  @0x034960  (attributed to UnknownClassArrays;
+// _zvec error-report wrapper  @0x034960  (attributed to CBattlezSpawnMgr_or_CGruntSpawnMgr;
 // __thiscall on a _zvec/zErrHandling-bearing object, ret 0x8 => 2 args). Capture
 // the return address into the global error token, then dispatch the error reporter
 // (this->m_err->Error(this, sentinel, code)). This is the inlined zvec overflow
@@ -3113,14 +3120,14 @@ struct ZErrTarget {
     }* m_err;                                          // +0x04
 };
 RVA(0x00034960, 0x24)
-void UnknownClassArrays::Method_034960(i32 sentinel, i32 code) {
+void CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_034960(i32 sentinel, i32 code) {
     ZErrTarget* z = (ZErrTarget*)this;
     g_zvecErrToken = zErr_CaptureRetB();
     z->m_err->Error(z, sentinel, code);
 }
 
 // ===========================================================================
-// UnknownClassArrays::Method_0358a0  @0x0358a0  (__thiscall ret 4 => 1 GridUnit* arg)
+// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0358a0  @0x0358a0  (__thiscall ret 4 => 1 GridUnit* arg)
 // The idle-unit policy step: when the unit holds no occupied coords it either
 // retargets to a random band (m_2f0 == -1, idle timer past m_0bc) or re-places at its
 // band's default coord (timer past 0x7d0); when it DOES hold coords it despawns
@@ -3155,7 +3162,7 @@ struct SelfCommit {
 // wall (cl strength-reduces the idx*0x238 lea-chain + folds the band sub-object offsets
 // differently across the four arms) and the dead saved-m_2f0 reload; logic complete.
 RVA(0x000358a0, 0x2d6)
-i32 UnknownClassArrays::Method_0358a0(i32 unitArg) {
+i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0358a0(i32 unitArg) {
     GridUnit* unit = (GridUnit*)unitArg;
     char* recA = 0;
     char* recB0 = 0;

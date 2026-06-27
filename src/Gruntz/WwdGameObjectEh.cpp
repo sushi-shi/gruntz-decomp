@@ -22,6 +22,7 @@ extern void* g_severusWorkerDtorVtbl; // 0x5e8cb4
 extern void* g_wwdGameObjectVtbl;     // 0x5f0020
 extern void* g_remusNodeVtbl;         // 0x5efbc0
 extern void* g_wwd159250FinalVtbl;    // 0x5effd0
+extern void* g_wwd159440FinalVtbl;    // 0x5f0060 (own name in CWwdObjMgrFactories.cpp)
 
 // An owned polymorphic worker. Its scalar-deleting destructor is vtable slot 1
 // (`mov eax,[ecx]; push 1; call [eax+4]`); declared-only (foreign vtable).
@@ -303,4 +304,133 @@ CWwdGameObjectB::~CWwdGameObjectB() {
     m_20 = (i32)0x80000000;
     m_38 = -1;
     DtorBase();
+}
+
+// ---------------------------------------------------------------------------
+// 0x15b4f0 - the base ~CWwdGameObject itself (single vtable phase: stamp the
+// CWwdGameObject vtable, free the four workers, destroy the +0xdc CString name,
+// then re-stamp the severus-worker base vtable). No embedded command sub-object
+// and no m_18c/m_190 block (this is the bare base, not the complete object).
+// ---------------------------------------------------------------------------
+class CWwdGameObjectE {
+public:
+    ~CWwdGameObjectE(); // 0x15b4f0
+
+    void* m_vptr; // 0x00
+    i32 m_04;     // 0x04
+    i32 m_08;     // 0x08
+    i32 m_0c;     // 0x0c
+    char _p10[0x20 - 0x10];
+    i32 m_20; // 0x20
+    char _p24[0x38 - 0x24];
+    i32 m_38; // 0x38
+    char _p3c[0x5c - 0x3c];
+    i32 m_5c; // 0x5c
+    char _p60[0x7c - 0x60];
+    WwdWorker* m_7c; // 0x7c
+    WwdWorker* m_80; // 0x80
+    char _p84[0x88 - 0x84];
+    WwdWorker* m_88; // 0x88
+    char _p8c[0x90 - 0x8c];
+    WwdWorker* m_90; // 0x90
+    char _p94[0xc0 - 0x94];
+    i32 m_c0; // 0xc0
+    char _pc4[0xd8 - 0xc4];
+    i32 m_d8;     // 0xd8
+    WwdName m_dc; // 0xdc  CString name
+};
+
+// @early-stop
+// eh-dtor wall (see 0x15b790): single-phase vtable re-stamp + the /GX trylevel
+// numbering across the worker pass + name dtor; not source-steerable.
+RVA(0x0015b4f0, 0xde)
+CWwdGameObjectE::~CWwdGameObjectE() {
+    m_vptr = &g_wwdGameObjectVtbl;
+    WORKER_FREE(m_7c);
+    WORKER_FREE(m_80);
+    WORKER_FREE(m_88);
+    WORKER_FREE(m_90);
+    m_c0 = (i32)0x80000000;
+    m_d8 = -1;
+    m_5c = (i32)0x80000000;
+    m_20 = (i32)0x80000000;
+    m_38 = -1;
+    // m_dc (CString) auto-destroyed.
+    m_5c = (i32)0x80000000;
+    m_20 = (i32)0x80000000;
+    m_38 = -1;
+    m_04 = -1;
+    m_08 = 0;
+    m_0c = 0;
+    m_vptr = &g_severusWorkerDtorVtbl;
+}
+
+// ---------------------------------------------------------------------------
+// 0x15bad0 - the 0x159440-final-vtable derived variant: stamp its own most-derived
+// vtable (0x5f0060), free the four workers, then fold in the base ~CWwdGameObject
+// (stamp g_wwdGameObjectVtbl, free the workers again, destroy the +0xdc CString,
+// re-stamp the severus base). Like CWwdGameObjectE but with the extra derived
+// phase; no m_18c/m_190 block and no m_1a0 sub-object.
+// ---------------------------------------------------------------------------
+class CWwdGameObjectF {
+public:
+    ~CWwdGameObjectF(); // 0x15bad0
+
+    void* m_vptr; // 0x00
+    i32 m_04;     // 0x04
+    i32 m_08;     // 0x08
+    i32 m_0c;     // 0x0c
+    char _p10[0x20 - 0x10];
+    i32 m_20; // 0x20
+    char _p24[0x38 - 0x24];
+    i32 m_38; // 0x38
+    char _p3c[0x5c - 0x3c];
+    i32 m_5c; // 0x5c
+    char _p60[0x7c - 0x60];
+    WwdWorker* m_7c; // 0x7c
+    WwdWorker* m_80; // 0x80
+    char _p84[0x88 - 0x84];
+    WwdWorker* m_88; // 0x88
+    char _p8c[0x90 - 0x8c];
+    WwdWorker* m_90; // 0x90
+    char _p94[0xc0 - 0x94];
+    i32 m_c0; // 0xc0
+    char _pc4[0xd8 - 0xc4];
+    i32 m_d8;     // 0xd8
+    WwdName m_dc; // 0xdc  CString name
+};
+
+// @early-stop
+// eh-dtor wall (see 0x15b790): two-phase manual vtable re-stamp + double worker
+// pass + the /GX trylevel chain across the phases; not source-steerable.
+RVA(0x0015bad0, 0x153)
+CWwdGameObjectF::~CWwdGameObjectF() {
+    m_vptr = &g_wwd159440FinalVtbl;
+    WORKER_FREE(m_7c);
+    WORKER_FREE(m_80);
+    WORKER_FREE(m_88);
+    WORKER_FREE(m_90);
+    m_c0 = (i32)0x80000000;
+    m_d8 = -1;
+    m_5c = (i32)0x80000000;
+    m_20 = (i32)0x80000000;
+    m_38 = -1;
+    m_vptr = &g_wwdGameObjectVtbl;
+    WORKER_FREE(m_7c);
+    WORKER_FREE(m_80);
+    WORKER_FREE(m_88);
+    WORKER_FREE(m_90);
+    m_c0 = (i32)0x80000000;
+    m_d8 = -1;
+    m_5c = (i32)0x80000000;
+    m_20 = (i32)0x80000000;
+    m_38 = -1;
+    // m_dc (CString) auto-destroyed.
+    m_5c = (i32)0x80000000;
+    m_20 = (i32)0x80000000;
+    m_38 = -1;
+    m_08 = 0;
+    m_0c = 0;
+    m_04 = -1;
+    m_vptr = &g_severusWorkerDtorVtbl;
 }

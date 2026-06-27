@@ -11,7 +11,7 @@
 #include <Win32.h>
 typedef i32 intptr_t; // VC5 predates <stdint.h>; the one HP_Callback cast below needs it.
 
-class UnknownCGruntzMgrLuciusChild {
+class CDDrawSubMgrItem {
 public:
     i32 m_10;
     i32 m_14;
@@ -27,7 +27,7 @@ public:
     virtual i32 Vfunc14();
 
     void* m_04;
-    UnknownCGruntzMgrLuciusChild* m_10;
+    CDDrawSubMgrItem* m_10;
 };
 
 struct MinervaMgr; // defined below; m_28 points at one
@@ -281,7 +281,7 @@ void CDDrawSurfaceMgr::UnknownVirtualMethod20() {
 // Validates/sets surface dimensions.
 RVA(0x00155f60, 0x56)
 i32 CDDrawSurfaceMgr::UnknownVirtualMethod24(i32 x, i32 y, i32 flags) {
-    UnknownCGruntzMgrLuciusChild* child = m_04->m_10;
+    CDDrawSubMgrItem* child = m_04->m_10;
     if (child->m_10 != x || child->m_14 != y) {
         if (CreateChildSurface(x, y, flags) == 0) {
             return 0;

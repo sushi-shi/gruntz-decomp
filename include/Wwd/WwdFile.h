@@ -72,15 +72,17 @@ public:
     CPlane(void* a, i32 planeIndex, void* c);
     // vtable: +0x28 reader(planeData, blockBase, outCtx) -> nonzero on success.
     virtual i32 dummy0();
-    virtual void dtor(i32 flags);                                     // +0x04  scalar-deleting dtor
-    virtual i32 dummy2();                                             // +0x08
-    virtual i32 dummy3();                                             // +0x0c
-    virtual i32 dummy4();                                             // +0x10
-    virtual i32 dummy5();                                             // +0x14
-    virtual i32 dummy6();                                             // +0x18
-    virtual i32 dummy7();                                             // +0x1c
-    virtual i32 dummy8();                                             // +0x20
-    virtual i32 dummy9();                                             // +0x24
+    virtual void dtor(i32 flags); // +0x04  scalar-deleting dtor
+    virtual i32 dummy2();         // +0x08
+    virtual i32 dummy3();         // +0x0c
+    virtual i32 dummy4();         // +0x10
+    virtual i32 dummy5();         // +0x14
+    virtual i32 dummy6();         // +0x18
+    virtual i32 dummy7();         // +0x1c
+    virtual i32 dummy8();         // +0x20
+    // +0x24  the object-plane block reader: 6 forwarded args, the plane context
+    // (&CGameLevelPlanes::m_planeCtx) as the 7th, and a trailing 8th arg.
+    virtual i32 ReadObjects(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, void* outCtx, i32 a7);
     virtual i32 Read(void* planeData, void* blockBase, void* outCtx); // +0x28
 
     u8 pad_4[0x4]; // +0x04
@@ -309,6 +311,9 @@ public:
     // ReadPlane: new CPlane; if its block reader
     // succeeds, append it to m_planes and record the MAIN plane; else delete it.
     CPlane* ReadPlane(void* planeData, void* blockBase, void* unused);
+    // ReadObjectPlane (0x15d9a0): same shape as ReadPlane but the plane is built
+    // via the +0x24 object-block reader (6 forwarded args + &m_planeCtx + a7).
+    CPlane* ReadObjectPlane(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7);
 
     u8 pad_0[0x0c];
     void* m_field0c;            // +0x0C
@@ -362,6 +367,11 @@ class CString;
 class WwdFile {
 public:
     static i32 ValidateMainBlock(CString name);
+    // GetMapBaseName (0x3bb50, static __cdecl, returns CString by value): given a
+    // map file path, return the filename portion (after the last '\\') with the
+    // 4-char extension dropped, via the shared 0x62c010 scratch buffer. Empty or
+    // <= 4-char paths come back unchanged.
+    static CString GetMapBaseName(CString path);
     i32 ReadPlaneObjects(const i32* src);
     // 0x1628f0: free the old +0xb0 plane-render worker, allocate+init a fresh one
     // from the level header geometry, then ReadPlaneObjects `count` times.

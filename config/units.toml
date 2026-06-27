@@ -1566,3 +1566,20 @@ flags = "base"
 unit = "gruntmovestep"
 source = "src/Gruntz/GruntMoveStep.cpp"
 flags = "base"
+
+[[unit]]
+unit = "connslotlist"
+source = "src/Net/ConnSlotList.cpp"
+flags = "base"
+[[unit]]
+unit = "tiletriggerload"
+source = "src/Gruntz/TileTriggerLoad.cpp"
+flags = "base"
+[[unit]]
+unit = "namerecord"
+source = "src/Gruntz/NameRecord.cpp"
+flags = "base"
+[[unit]]
+unit = "cseverusworkerhost"
+source = "src/Gruntz/CSeverusWorkerHost.cpp"
+flags = "eh"

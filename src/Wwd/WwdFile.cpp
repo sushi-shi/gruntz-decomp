@@ -31,7 +31,15 @@
 #include <Mfc.h>    // CString (ValidateMainBlock takes one by value; ReadPlaneObjects builds four)
 #include <stdio.h>  // sprintf
 #include <stdlib.h> // atoi
-#include <string.h> // memcpy
+#include <string.h> // memcpy + inline strcpy/strlen (rep movs / repne scas)
+
+// The shared map-name scratch buffer GetMapBaseName strcpy's the path into
+// (0x62c010), plus its 4-byte predecessor slot (0x62c00c) the extension-truncation
+// store indexes through. Reloc-masked DATA pins.
+DATA(0x0062c00c)
+extern char g_mapNamePre[4];
+DATA(0x0062c010)
+extern char g_mapNameBuf[0x200];
 
 // ---------------------------------------------------------------------------
 // The game registry global (?g_gameReg@@3PAUCGameReg@@A @ VA 0x64556c). Only the
@@ -211,6 +219,34 @@ CPlane* CGameLevelPlanes::ReadPlane(void* planeData, void* blockBase, void* /*un
     CPlane* plane = new CPlane(m_field0c, m_planeCount, 0);
 
     if (plane->Read(planeData, blockBase, &m_planeCtx) == 0) {
+        if (plane) {
+            plane->dtor(1); // scalar-deleting dtor (vtable +0x4)
+        }
+        return 0;
+    }
+
+    ((CPlanePtrArray*)&m_planes)->SetAtGrow(m_planeCount, plane);
+
+    if (plane->m_flags & 1) // MAIN plane
+    {
+        m_mainPlane = plane;
+        m_mainIndex = m_planeCount - 1;
+    }
+
+    return plane;
+}
+
+// ---------------------------------------------------------------------------
+// CGameLevelPlanes::ReadObjectPlane (0x15d9a0) - the object-plane sibling of
+// ReadPlane: `new CPlane(m_field0c, m_planeCount, 0)`, then drive the plane's
+// +0x24 object-block reader with the six forwarded args, &m_planeCtx (7th), and
+// the trailing arg (8th). Append/record/delete identically to ReadPlane.
+// The CPlane ctor + virtuals are UNMATCHED engine code -> reloc-masked calls.
+RVA(0x0015d9a0, 0xdc)
+CPlane* CGameLevelPlanes::ReadObjectPlane(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7) {
+    CPlane* plane = new CPlane(m_field0c, m_planeCount, 0);
+
+    if (plane->ReadObjects(a1, a2, a3, a4, a5, a6, &m_planeCtx, a7) == 0) {
         if (plane) {
             plane->dtor(1); // scalar-deleting dtor (vtable +0x4)
         }
@@ -1134,4 +1170,47 @@ void CPlaneRender::SnapToTileCenter(i32* out, i32 x, i32 y) {
     i32 ry = ((y >> sy) << sy) + m_tilePxH / 2;
     out[0] = rx;
     out[1] = ry;
+}
+
+// ---------------------------------------------------------------------------
+// WwdFile::GetMapBaseName (0x3bb50, static __cdecl, returns CString by value)
+// Copy the path into the shared 0x62c010 scratch buffer, drop the 4-char
+// extension (write a NUL at len-4 via the preceding 0x62c00c slot), then return
+// the filename portion after the last backslash. Empty/short (<= 4 char) paths
+// come back unchanged. The arg CString is taken by value (callee destroys it),
+// and a working-copy CString temp carries the result, so cl emits the /GX frame.
+// @early-stop
+// /GX CString-temp wall: the inline strcpy/strlen, the extension truncation, the
+// last-'\\' scan, the by-value arg + result CString teardown and the return-copy
+// are byte-faithful; residue is the EH scope-table cookie + the descending
+// trylevel numbering across the two CString temps (not source-steerable).
+RVA(0x0003bb50, 0x128)
+CString WwdFile::GetMapBaseName(CString path) {
+    CString result = path;
+    i32 len = path.GetLength();
+    if (len == 0) {
+        return result;
+    }
+    if (len <= 4) {
+        return result;
+    }
+    strcpy(g_mapNameBuf, path);
+    i32 blen = strlen(g_mapNameBuf);
+    if (blen >= 5) {
+        g_mapNamePre[blen] = 0; // g_mapNameBuf[blen - 4] = 0 (drop the ".ext")
+        i32 blen2 = strlen(g_mapNameBuf);
+        if (blen2 >= 1) {
+            i32 i = blen2 - 1;
+            if (i >= 0) {
+                while (g_mapNameBuf[i] != '\\') {
+                    i--;
+                    if (i < 0) {
+                        break;
+                    }
+                }
+            }
+            result = &g_mapNameBuf[i + 1];
+        }
+    }
+    return result;
 }
