@@ -1665,3 +1665,44 @@ flags = "base"
 unit = "m1_faderdtor"
 source = "src/Wap32/FaderDtor.cpp"
 flags = "base"
+
+[[unit]]
+unit = "netcmdsession"
+source = "src/Net/NetCmdSession.cpp"
+flags = "base"
+[[unit]]
+unit = "ehfunclets"
+source = "src/Wap32/EhFunclets.cpp"
+flags = "base"
+[[unit]]
+unit = "comhelperthunks"
+source = "src/Wap32/ComHelperThunks.cpp"
+flags = "framed"
+[[unit]]
+unit = "recordfill"
+source = "src/Utils/RecordFill.cpp"
+flags = "base"
+[[unit]]
+unit = "netmgrmisc"
+source = "src/Net/NetMgrMisc.cpp"
+flags = "base"
+[[unit]]
+unit = "mgrlistfind"
+source = "src/Gruntz/MgrListFind.cpp"
+flags = "base"
+[[unit]]
+unit = "vtblforward"
+source = "src/Gruntz/VtblForward.cpp"
+flags = "base"
+[[unit]]
+unit = "palettecopy"
+source = "src/Gruntz/PaletteCopy.cpp"
+flags = "base"
+[[unit]]
+unit = "chainforward"
+source = "src/Gruntz/ChainForward.cpp"
+flags = "base"
+[[unit]]
+unit = "severusworkerdtor"
+source = "src/Gruntz/SeverusWorkerDtor.cpp"
+flags = "eh"

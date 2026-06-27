@@ -83,6 +83,7 @@ cgruntstartingpoint	1	1
 cgrunttoysprite	5	4
 cgruntwingztimesprite	3	3
 cguardpoint	1	1
+chainforward	1	0
 channelslots	4	4
 chatbox	27	20
 chatbox_eh	1	1
@@ -105,6 +106,7 @@ cmsgdispatch	3	3
 cmulti	16	7
 cobjectdropper	1	1
 colorhsv	1	0
+comhelperthunks	7	7
 configstore	4	0
 connslotlist	3	3
 cparticlez	5	4
@@ -150,11 +152,12 @@ dialogs	35	14
 directinputmgr2	36	32
 directsoundmgr	39	29
 dsoundvoice	2	1
+ehfunclets	6	6
 engine_attributed	15	0
 engine_boundary	196	0
 engine_discovered	51	0
 engine_label_stubs	437	105
-engine_unmatched	147	0
+engine_unmatched	117	0
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -241,23 +244,28 @@ menuitem	14	11
 menuitem2	5	2
 menupage	31	16
 menusparkleserial	1	1
+mgrlistfind	1	0
 mgrtokenquery	1	1
 motionstate	6	5
 namerecord	1	0
+netcmdsession	5	4
 netcmdslot	12	10
 netmgr	84	46
 netmgrerror	1	1
+netmgrmisc	5	4
 netsession	2	1
 netsessionnode	3	1
 orphanleaves	7	7
 orphanmethods	4	2
 palettebmp	1	0
+palettecopy	1	0
 projactcache	1	0
 projactregistry	4	3
 projectile	10	4
 pulsehighlight	2	2
 pyramidbridgesprites	1	0
 randomambientsound	9	4
+recordfill	2	2
 registryhelper	8	8
 rezfile	6	6
 rezlist	2	2
@@ -284,6 +292,7 @@ sbi_warlordhead_eh	1	0
 sbi_wellgoo	1	0
 sbi_wellgoo_eh	1	0
 scattersamples	2	1
+severusworkerdtor	1	0
 shadetablecache	19	3
 siriusworkerhandlers	4	4
 sounddevice	16	8
@@ -325,6 +334,7 @@ unknownclassincgruntzmgr	2	0
 userbaselink	10	0
 userlogic	64	27
 videoconfig	4	1
+vtblforward	1	1
 wallproject	1	0
 wapuncompress	1	0
 warlord	10	3
@@ -852,6 +862,7 @@ cgruntwingztimesprite	??1CGruntWingzTimeSprite@@UAE@XZ	100.0000	100.0000	1	45cfd
 cgruntwingztimesprite	?GetTypeTag@CGruntWingzTimeSprite@@QAEHXZ	100.0000	100.0000	1	05a69356373a	0x121a0
 cgruntwingztimesprite	?GetWingzTime@CGruntWingzTimeSprite@@SGHPAUCWingzTimeHost@@@Z	100.0000	100.0000	1	fd29641ade51	0x7fd90
 cguardpoint	??1CGuardPoint@@UAE@XZ	100.0000	100.0000	1	c53d638223a9	0x10410
+chainforward	?ChainForward@@YAXHPAUChainRoot@@HHHH@Z	87.6923	87.6923	1	98b57d07e0ef	0x114fa0
 channelslots	?ChannelSlots_FindFree@@YAHXZ	100.0000	100.0000	1	27d73fb7a817	0xdb280
 channelslots	?ChannelSlots_Get@@YAHH@Z	100.0000	100.0000	1	eb06c9e5aa36	0xdb2d0
 channelslots	?ChannelSlots_InitAll@@YAXXZ	100.0000	100.0000	1	a2a4df52ff9d	0xdb1d0
@@ -978,6 +989,13 @@ cmulti	?Teardown@CMulti@@QAEXXZ	100.0000	100.0000	1	40a558486d68	0xb6110
 cmulti	?Tick@CMulti@@QAEHXZ	85.9939	85.9939	1	93a3a8d8b95c	0xb6890
 cobjectdropper	??1CObjectDropper@@UAE@XZ	100.0000	100.0000	1	c595e9e386aa	0x124f0
 colorhsv	?RgbToHsv@@YAXPAUColorHSV@@I@Z	45.7699	45.7699	2	671fce63329c	0x14fcc0
+comhelperthunks	?ComActivate2f00@@YAXXZ	100.0000	100.0000	1	a4800685df63	0x1bae1f
+comhelperthunks	?ComAtexit_5ce97f@@YAXXZ	100.0000	100.0000	1	c5e0abfd52fa	0x1ce973
+comhelperthunks	?ComAtexit_5d4245@@YAXXZ	100.0000	100.0000	1	5e7510af6c0c	0x1d4239
+comhelperthunks	?ComAtexit_5d4c22@@YAXXZ	100.0000	100.0000	1	9c9d6eb5df8c	0x1d4c16
+comhelperthunks	?ComDetach_1c0a41@@YAXXZ	100.0000	100.0000	1	669f59f2acaa	0x1c0a41
+comhelperthunks	?ComPump3210@@YAXXZ	100.0000	100.0000	1	4d940e10e212	0x1d4c0c
+comhelperthunks	?Ctor@ComStamp@@QAEXXZ	100.0000	100.0000	1	8f58e507d3dd	0x1d4722
 configstore	?GetInt@CConfigStore@@QAEHPAD0H@Z	17.6905	17.6905	1	00a531e13933	0x1d4fbd
 configstore	?OpenRoot@CConfigStore@@QAEPAXXZ	57.7385	57.7385	1	906a02758db6	0x1d4ee3
 configstore	?OpenSubKey@CConfigStore@@QAEPAXPAD@Z	56.9394	56.9394	1	84aab5890a22	0x1d4f77
@@ -1284,6 +1302,12 @@ directsoundmgr	?winapi_136e20_timeGetTime@DirectSoundMgr@@QAEHH@Z	2.6667	2.6667	
 directsoundmgr	?winapi_137ac0_timeGetTime@DirectSoundMgr@@QAEHH@Z	2.9231	2.9231	2	63f8b426702d	0x137ac0
 dsoundvoice	?Stop_1370d0@DSoundVoice@@QAEHXZ	100.0000	100.0000	1	6ed65c4dd540	0x1370d0
 dsoundvoice	?Tick_137060@DSoundVoice@@QAEHH@Z	95.6977	95.6977	1	e0318068fc4a	0x137060
+ehfunclets	?Funclet_11ec46@@YAXXZ	100.0000	100.0000	1	4eeac03a2744	0x11ec46
+ehfunclets	?Funclet_1baad2@@YAXXZ	100.0000	100.0000	1	25f93c17bc26	0x1baad2
+ehfunclets	?Funclet_1bd98f@@YAXXZ	100.0000	100.0000	1	6f313d2acec3	0x1bd98f
+ehfunclets	?Funclet_1bff99@@YAXXZ	100.0000	100.0000	1	75ed351a28e5	0x1bff99
+ehfunclets	?Funclet_1c1188@@YAXXZ	100.0000	100.0000	1	4ffcf8d636f7	0x1c1188
+ehfunclets	?Funclet_1ca116@@YAXXZ	100.0000	100.0000	1	4dd8201534e7	0x1ca116
 engine_attributed	?CNetMgr_0b86c0@CNetMgr@@QAEXXZ	0.7752	0.7752	3	a51b44030698	0xb86c0
 engine_attributed	?CNetMgr_0b8fc0@CNetMgr@@QAEXXZ	0.4255	0.4255	3	196330bf73bc	0xb8fc0
 engine_attributed	?CNetMgr_0bbc90@CNetMgr@@QAEXXZ	0.7092	0.7092	2	49fbc8745ed8	0xbbc90
@@ -1986,7 +2010,6 @@ engine_label_stubs	_VersionScan	8.6957	8.6957	1	cpp:2262ffc5f902	0x120900
 engine_unmatched	?Unmatched_0be820@@YAXXZ	3.2258	3.2258	1	13252c18b308	0xbe820
 engine_unmatched	?Unmatched_0bef80@@YAXXZ	1.1765	1.1765	1	e3f52286c915	0xbef80
 engine_unmatched	?Unmatched_0bf000@@YAXXZ	1.3699	1.3699	1	734348443213	0xbf000
-engine_unmatched	?Unmatched_0bf120@@YAXXZ	14.2857	14.2857	1	8ed27e6201fd	0xbf120
 engine_unmatched	?Unmatched_0bf150@@YAXXZ	2.9412	2.9412	1	617b21d31930	0xbf150
 engine_unmatched	?Unmatched_0bf580@@YAXXZ	20.0000	20.0000	1	c2d2dacba04e	0xbf580
 engine_unmatched	?Unmatched_0bf5a0@@YAXXZ	0.4040	0.4040	1	1198bc51bb89	0xbf5a0
@@ -1997,30 +2020,22 @@ engine_unmatched	?Unmatched_0bfb40@@YAXXZ	1.2346	1.2346	1	65cabeb638cb	0xbfb40
 engine_unmatched	?Unmatched_0bfc70@@YAXXZ	0.7018	0.7018	1	7da1fdc17e50	0xbfc70
 engine_unmatched	?Unmatched_0bfd40@@YAXXZ	0.8264	0.8264	1	70ecf45f8759	0xbfd40
 engine_unmatched	?Unmatched_0bfeb0@@YAXXZ	0.4211	0.4211	1	890c0959e886	0xbfeb0
-engine_unmatched	?Unmatched_0bfff0@@YAXXZ	1.0000	1.0000	1	c9de9dfe39d6	0xbfff0
 engine_unmatched	?Unmatched_0c0070@@YAXXZ	14.2857	14.2857	1	d48b901653b4	0xc0070
-engine_unmatched	?Unmatched_0c00a0@@YAXXZ	1.8182	1.8182	1	749cd3133d5d	0xc00a0
 engine_unmatched	?Unmatched_0c00f0@@YAXXZ	1.2987	1.2987	1	f0e07c33a177	0xc00f0
 engine_unmatched	?Unmatched_0c01d0@@YAXXZ	1.5385	1.5385	1	b22a2075d92c	0xc01d0
 engine_unmatched	?Unmatched_0c0290@@YAXXZ	0.9302	0.9302	1	307f2c0731c4	0xc0290
 engine_unmatched	?Unmatched_0c0460@@YAXXZ	2.0000	2.0000	1	6a55dfbaaff1	0xc0460
-engine_unmatched	?Unmatched_0c04a0@@YAXXZ	1.7391	1.7391	1	c936724dd2fa	0xc04a0
-engine_unmatched	?Unmatched_0c04f0@@YAXXZ	1.6667	1.6667	1	8956b7881960	0xc04f0
 engine_unmatched	?Unmatched_0c0590@@YAXXZ	0.8000	0.8000	1	1497411168eb	0xc0590
-engine_unmatched	?Unmatched_0c0b10@@YAXXZ	0.8889	0.8889	1	36a9145f58a0	0xc0b10
 engine_unmatched	?Unmatched_0c0bb0@@YAXXZ	3.7037	3.7037	1	5f593de1b214	0xc0bb0
 engine_unmatched	?Unmatched_0c0c70@@YAXXZ	0.2000	0.2000	1	840ea28b587c	0xc0c70
 engine_unmatched	?Unmatched_0c0f10@@YAXXZ	0.7843	0.7843	1	98cd471dcbdb	0xc0f10
-engine_unmatched	?Unmatched_0c2a20@@YAXXZ	12.5000	12.5000	1	53325d8859c5	0xc2a20
 engine_unmatched	?Unmatched_0c2a80@@YAXXZ	12.5000	12.5000	1	7cd84fbd02ac	0xc2a80
 engine_unmatched	?Unmatched_0c2ab0@@YAXXZ	0.3125	0.3125	1	6ac6965e1e89	0xc2ab0
-engine_unmatched	?Unmatched_0c40b0@@YAXXZ	4.5455	4.5455	1	470daefd79c1	0xc40b0
 engine_unmatched	?Unmatched_0c4120@@YAXXZ	1.9608	1.9608	1	64c637078a55	0xc4120
 engine_unmatched	?Unmatched_0c4b30@@YAXXZ	9.0909	9.0909	1	c2e2c41bb730	0xc4b30
 engine_unmatched	?Unmatched_0c4b60@@YAXXZ	1.0000	1.0000	1	7e89cf263a3a	0xc4b60
 engine_unmatched	?Unmatched_0c4c00@@YAXXZ	0.8850	0.8850	1	19d815e2fcce	0xc4c00
 engine_unmatched	?Unmatched_0c5280@@YAXXZ	5.2632	5.2632	1	b55ffe6247c8	0xc5280
-engine_unmatched	?Unmatched_0c5f00@@YAXXZ	20.0000	20.0000	1	b628a3951e6f	0xc5f00
 engine_unmatched	?Unmatched_0c60e0@@YAXXZ	0.8696	0.8696	1	d182ef08ce02	0xc60e0
 engine_unmatched	?Unmatched_0c78b0@@YAXXZ	0.8696	0.8696	1	69de4cf90a37	0xc78b0
 engine_unmatched	?Unmatched_0d1b60@@YAXXZ	0.0452	0.0452	1	c68199c5794a	0xd1b60
@@ -2029,12 +2044,10 @@ engine_unmatched	?Unmatched_0de140@@YAXXZ	5.8824	5.8824	1	1f3ddc1d47b4	0xde140
 engine_unmatched	?Unmatched_0de200@@YAXXZ	2.1739	2.1739	1	b78e04f65416	0xde200
 engine_unmatched	?Unmatched_0ebd70@@YAXXZ	0.3774	0.3774	1	bd5ad318d981	0xebd70
 engine_unmatched	?Unmatched_0f0130@@YAXXZ	0.1761	0.1761	1	ad8cb88c7979	0xf0130
-engine_unmatched	?Unmatched_0f0db0@@YAXXZ	3.1250	3.1250	1	c8e3302dddd2	0xf0db0
 engine_unmatched	?Unmatched_0f71c0@@YAXXZ	0.1789	0.1789	1	f03b261cc267	0xf71c0
 engine_unmatched	?Unmatched_0f8240@@YAXXZ	0.2257	0.2257	1	3ea41b268007	0xf8240
 engine_unmatched	?Unmatched_0f8ec0@@YAXXZ	4.5455	4.5455	1	c55da87f9e5f	0xf8ec0
 engine_unmatched	?Unmatched_0f9160@@YAXXZ	1.1236	1.1236	1	847d68f7f5be	0xf9160
-engine_unmatched	?Unmatched_0f9710@@YAXXZ	20.0000	20.0000	1	0f03447c6389	0xf9710
 engine_unmatched	?Unmatched_0f9840@@YAXXZ	6.6667	6.6667	1	0d04104834c8	0xf9840
 engine_unmatched	?Unmatched_0fab90@@YAXXZ	0.6250	0.6250	1	9a3e332420a6	0xfab90
 engine_unmatched	?Unmatched_0face0@@YAXXZ	0.8065	0.8065	1	b8d7ece1db26	0xface0
@@ -2045,13 +2058,11 @@ engine_unmatched	?Unmatched_0fb1c0@@YAXXZ	0.2703	0.2703	1	7d2f0ecb0267	0xfb1c0
 engine_unmatched	?Unmatched_1084d0@@YAXXZ	0.0438	0.0438	1	733c20a72572	0x1084d0
 engine_unmatched	?Unmatched_10ebe0@@YAXXZ	0.8696	0.8696	1	58355f5f537a	0x10ebe0
 engine_unmatched	?Unmatched_10f160@@YAXXZ	20.0000	20.0000	1	e263e6a52b63	0x10f160
-engine_unmatched	?Unmatched_110460@@YAXXZ	0.9091	0.9091	1	727e8a3db597	0x110460
 engine_unmatched	?Unmatched_1104f0@@YAXXZ	1.6000	1.6000	1	77d38b3a2dc1	0x1104f0
 engine_unmatched	?Unmatched_112840@@YAXXZ	20.0000	20.0000	1	57517ef2f054	0x112840
 engine_unmatched	?Unmatched_112860@@YAXXZ	20.0000	20.0000	1	a7963aad413c	0x112860
 engine_unmatched	?Unmatched_1128b0@@YAXXZ	1.8868	1.8868	1	6344e0a3238e	0x1128b0
 engine_unmatched	?Unmatched_114480@@YAXXZ	1.1905	1.1905	1	44269c7ee8d9	0x114480
-engine_unmatched	?Unmatched_114fa0@@YAXXZ	3.8462	3.8462	1	d7cd5690cee9	0x114fa0
 engine_unmatched	?Unmatched_115220@@YAXXZ	1.2048	1.2048	1	ad26b5348abc	0x115220
 engine_unmatched	?Unmatched_115630@@YAXXZ	20.0000	20.0000	1	6d5c43404607	0x115630
 engine_unmatched	?Unmatched_1156b0@@YAXXZ	20.0000	20.0000	1	b8007589abe0	0x1156b0
@@ -2060,7 +2071,6 @@ engine_unmatched	?Unmatched_1190f0@@YAXXZ	1.4493	1.4493	1	30b339bd7c22	0x1190f0
 engine_unmatched	?Unmatched_11e4d0@@YAXXZ	25.0000	25.0000	1	a33ce460124d	0x11e4d0
 engine_unmatched	?Unmatched_11e8dc@@YAXXZ	50.0000	50.0000	1	fb31d5114998	0x11e8dc
 engine_unmatched	?Unmatched_11ebed@@YAXXZ	25.0000	25.0000	1	1998c39f9b42	0x11ebed
-engine_unmatched	?Unmatched_11ec46@@YAXXZ	25.0000	25.0000	1	4225fdd76f5b	0x11ec46
 engine_unmatched	?Unmatched_11ec59@@YAXXZ	5.7143	5.7143	1	dbad64771a3d	0x11ec59
 engine_unmatched	?Unmatched_11ecdb@@YAXXZ	5.7143	5.7143	1	30e5a51cb8f8	0x11ecdb
 engine_unmatched	?Unmatched_146550@@YAXXZ	0.2232	0.2232	1	0ab3f0923a57	0x146550
@@ -2068,15 +2078,12 @@ engine_unmatched	?Unmatched_146a20@@YAXXZ	0.2198	0.2198	1	dbe19730debd	0x146a20
 engine_unmatched	?Unmatched_14d5e0@@YAXXZ	0.1316	0.1316	1	5aad3eaac12c	0x14d5e0
 engine_unmatched	?Unmatched_16e7f0@@YAXXZ	0.2532	0.2532	1	48c03834226b	0x16e7f0
 engine_unmatched	?Unmatched_16f6e0@@YAXXZ	0.8696	0.8696	1	34fbcd03ca7f	0x16f6e0
-engine_unmatched	?Unmatched_17ca10@@YAXXZ	3.2258	3.2258	1	f7b0a6969c33	0x17ca10
 engine_unmatched	?Unmatched_17ca60@@YAXXZ	4.7619	4.7619	1	2e14071bacbc	0x17ca60
 engine_unmatched	?Unmatched_17cbe0@@YAXXZ	1.6949	1.6949	1	fca74341e8e5	0x17cbe0
 engine_unmatched	?Unmatched_17cc80@@YAXXZ	0.9434	0.9434	1	ee9ab81aa27b	0x17cc80
 engine_unmatched	?Unmatched_17cdf0@@YAXXZ	0.2632	0.2632	1	5b24239a6df0	0x17cdf0
 engine_unmatched	?Unmatched_17cfc0@@YAXXZ	0.2062	0.2062	1	eae9d3b1bc0c	0x17cfc0
-engine_unmatched	?Unmatched_17f330@@YAXXZ	4.3478	4.3478	1	4f771c72b68d	0x17f330
 engine_unmatched	?Unmatched_17f390@@YAXXZ	0.2759	0.2759	1	384b651463e8	0x17f390
-engine_unmatched	?Unmatched_17f500@@YAXXZ	2.8571	2.8571	1	3a0d1ce3d305	0x17f500
 engine_unmatched	?Unmatched_17f5e0@@YAXXZ	0.9302	0.9302	1	4d13ebefdf45	0x17f5e0
 engine_unmatched	?Unmatched_180fb0@@YAXXZ	0.0928	0.0928	1	06ef34252706	0x180fb0
 engine_unmatched	?Unmatched_181660@@YAXXZ	4.1667	4.1667	1	618fc7645477	0x181660
@@ -2090,46 +2097,33 @@ engine_unmatched	?Unmatched_186a20@@YAXXZ	5.8824	5.8824	1	f413b88231d3	0x186a20
 engine_unmatched	?Unmatched_186a50@@YAXXZ	2.0833	2.0833	1	e0aa6a3651a8	0x186a50
 engine_unmatched	?Unmatched_188860@@YAXXZ	0.5952	0.5952	1	4b8d88bbbea0	0x188860
 engine_unmatched	?Unmatched_18a190@@YAXXZ	2.2222	2.2222	1	e1f27bf1b0bf	0x18a190
-engine_unmatched	?Unmatched_18c1f5@@YAXXZ	4.7619	4.7619	1	b077cf86d1d2	0x18c1f5
 engine_unmatched	?Unmatched_193340@@YAXXZ	0.8696	0.8696	1	4f8eb3adbf8a	0x193340
 engine_unmatched	?Unmatched_1933b0@@YAXXZ	0.1702	0.1702	1	8d74db23dbae	0x1933b0
 engine_unmatched	?Unmatched_193640@@YAXXZ	1.5385	1.5385	1	6fab87bec0e2	0x193640
 engine_unmatched	?Unmatched_1936e0@@YAXXZ	0.4706	0.4706	1	4feb64b1e41c	0x1936e0
 engine_unmatched	?Unmatched_1b9b8d@@YAXXZ	50.0000	50.0000	1	ce7b61530ea8	0x1b9b8d
 engine_unmatched	?Unmatched_1ba7ff@@YAXXZ	16.6667	16.6667	1	584137dd3926	0x1ba7ff
-engine_unmatched	?Unmatched_1baad2@@YAXXZ	16.6667	16.6667	1	f37caa2e94ac	0x1baad2
 engine_unmatched	?Unmatched_1bade1@@YAXXZ	25.0000	25.0000	1	b000a57e4f7b	0x1bade1
-engine_unmatched	?Unmatched_1bae1f@@YAXXZ	25.0000	25.0000	1	3632ec4fdbaa	0x1bae1f
 engine_unmatched	?Unmatched_1bae9b@@YAXXZ	25.0000	25.0000	1	f795bc8204f0	0x1bae9b
 engine_unmatched	?Unmatched_1bb075@@YAXXZ	7.6923	7.6923	1	97318af289cf	0x1bb075
 engine_unmatched	?Unmatched_1bb09f@@YAXXZ	3.0769	3.0769	1	30750a71cb1b	0x1bb09f
 engine_unmatched	?Unmatched_1bb42c@@YAXXZ	5.0000	5.0000	1	00757fcefe50	0x1bb42c
 engine_unmatched	?Unmatched_1bc087@@YAXXZ	14.2857	14.2857	1	aee9f7bb8586	0x1bc087
 engine_unmatched	?Unmatched_1bd989@@YAXXZ	50.0000	50.0000	1	4660205c2c59	0x1bd989
-engine_unmatched	?Unmatched_1bd98f@@YAXXZ	10.0000	10.0000	1	5f9f2f601b72	0x1bd98f
 engine_unmatched	?Unmatched_1bd9b0@@YAXXZ	4.0000	4.0000	1	cf05789b35de	0x1bd9b0
 engine_unmatched	?Unmatched_1bef71@@YAXXZ	25.0000	25.0000	1	3383846e4ddf	0x1bef71
-engine_unmatched	?Unmatched_1bff99@@YAXXZ	9.0909	9.0909	1	12314e0160cf	0x1bff99
-engine_unmatched	?Unmatched_1c0a41@@YAXXZ	33.3333	33.3333	1	2a9a34f12dd2	0x1c0a41
 engine_unmatched	?Unmatched_1c0fa8@@YAXXZ	33.3333	33.3333	1	b98f4a47afa0	0x1c0fa8
-engine_unmatched	?Unmatched_1c1188@@YAXXZ	14.2857	14.2857	1	4d12f8cefc8c	0x1c1188
 engine_unmatched	?Unmatched_1c741c@@YAXXZ	7.1429	7.1429	1	237594eaf4f0	0x1c741c
 engine_unmatched	?Unmatched_1c990a@@YAXXZ	25.0000	25.0000	1	42b970f170c6	0x1c990a
-engine_unmatched	?Unmatched_1ca116@@YAXXZ	25.0000	25.0000	1	3571a4f0b0e3	0x1ca116
 engine_unmatched	?Unmatched_1ca249@@YAXXZ	5.0000	5.0000	1	9cba63c0cf9b	0x1ca249
 engine_unmatched	?Unmatched_1ce95f@@YAXXZ	33.3333	33.3333	1	6d21f9431c2e	0x1ce95f
-engine_unmatched	?Unmatched_1ce973@@YAXXZ	25.0000	25.0000	1	63f97801abc8	0x1ce973
 engine_unmatched	?Unmatched_1d047f@@YAXXZ	50.0000	50.0000	1	3d3dcb3593e4	0x1d047f
 engine_unmatched	?Unmatched_1d31bc@@YAXXZ	25.0000	25.0000	1	9baead1b4313	0x1d31bc
 engine_unmatched	?Unmatched_1d3330@@YAXXZ	25.0000	25.0000	1	3737bd0f8b9b	0x1d3330
 engine_unmatched	?Unmatched_1d3ee4@@YAXXZ	25.0000	25.0000	1	9fe346649556	0x1d3ee4
-engine_unmatched	?Unmatched_1d4239@@YAXXZ	25.0000	25.0000	1	ef214fb25ba3	0x1d4239
-engine_unmatched	?Unmatched_1d4722@@YAXXZ	50.0000	50.0000	1	4e4ccc71a8a8	0x1d4722
 engine_unmatched	?Unmatched_1d4952@@YAXXZ	14.2857	14.2857	1	0bcaef54d1ec	0x1d4952
 engine_unmatched	?Unmatched_1d4bc1@@YAXXZ	25.0000	25.0000	1	ea7b5c4cedde	0x1d4bc1
 engine_unmatched	?Unmatched_1d4be7@@YAXXZ	25.0000	25.0000	1	71668764fe00	0x1d4be7
-engine_unmatched	?Unmatched_1d4c0c@@YAXXZ	20.0000	20.0000	1	6462cb804735	0x1d4c0c
-engine_unmatched	?Unmatched_1d4c16@@YAXXZ	25.0000	25.0000	1	255fe6be9029	0x1d4c16
 engine_unmatched_lib	?Unmatched_124848@@YAXXZ	4.0000	4.0000	1	81c658f8d097	0x124848
 engine_unmatched_lib	?Unmatched_130570@@YAXXZ	33.3333	33.3333	2	82aafcb7cba9	0x130570
 engine_unmatched_lib	?Unmatched_18bf4d@@YAXXZ	2.1739	2.1739	1	fba7903ca863	0x18bf4d
@@ -2896,6 +2890,7 @@ menupage	?SelectFwd2@CMenuPage@@QAEHXZ	62.0000	62.0000	1	be98c737a2a4	0x184230
 menupage	?SetFocus@CMenuPage@@QAEHPAVCMenuItem@@H@Z	100.0000	100.0000	1	20f58cb55e3b	0x183ad0
 menupage	?Switch@CMenuPage@@QAEHH@Z	100.0000	100.0000	1	493ec45e749b	0x183df0
 menusparkleserial	?Serialize@CMenuSparkle@@QAEHPAVCMsSerialArchive@@HHH@Z	100.0000	100.0000	1	69a5586462c4	0xae1c0
+mgrlistfind	?MgrListFind@@YAHHH@Z	73.2188	73.2188	1	3f1ad7a54cca	0xf0db0
 mgrtokenquery	?QueryToken@@YAHH@Z	100.0000	100.0000	1	33f0fb7f4951	0x99d10
 motionstate	??0CMotionState@@QAE@XZ	100.0000	100.0000	1	24ca6b679299	0x136d0
 motionstate	?ArrivalVelX@CMotionState@@QAENN@Z	100.0000	100.0000	1	a188e5c69da2	0x16f3c0
@@ -2904,6 +2899,11 @@ motionstate	?SetParams@CMotionState@@QAEHNNNNNNNNNNN@Z	100.0000	100.0000	2	57c86
 motionstate	?SetZ@CMotionState@@QAEXN@Z	100.0000	100.0000	1	9d25f9ec952e	0x58ca0
 motionstate	?Step@CMotionState@@QAEXN@Z	64.9479	64.9479	2	877abdf7095d	0x16ecd0
 namerecord	?SetNames@CNameRecord@@QAEHPAD0H@Z	96.5909	96.5909	2	2e5a80e5f1dd	0x118040
+netcmdsession	?CheckLatency@CNetSession@@QAEHH@Z	100.0000	100.0000	1	583391306bf3	0xc04a0
+netcmdsession	?CreateSlot@CNetSession@@QAEPAUCNetCmdSlot@@HH@Z	100.0000	100.0000	1	598d87caa8e2	0xbfff0
+netcmdsession	?FindCmdSlot@CNetSession@@QAEPAUCNetCmdSlot@@H@Z	100.0000	100.0000	1	6f362443ee37	0xc00a0
+netcmdsession	?Init@CNetCmdSlot@@QAEHHPAHH@Z	74.1111	74.1111	1	2c356b098b69	0xc0b10
+netcmdsession	?Verify@CNetSession@@QAEHXZ	100.0000	100.0000	1	456b2ae98de4	0xc04f0
 netcmdslot	?AddCmd@CNetCmdSlot@@QAEXPAUCNetCmd@@@Z	100.0000	100.0000	1	528aa8665723	0xc1170
 netcmdslot	?AllSlotsReady@CNetSyncCheck@@QAEHXZ	78.6970	78.6970	1	a7d244a6dbc7	0xc1320
 netcmdslot	?ClearCmds@CNetCmdSlot@@QAEXXZ	100.0000	100.0000	1	332af5aba420	0xc12e0
@@ -3001,6 +3001,11 @@ netmgr	?Stub_178360@CNetMgr@@QAEXXZ	0.6557	0.6557	1	dd88549d2542	0x178360
 netmgr	?Stub_1788a0@CNetMgr@@QAEXXZ	0.3419	0.3419	1	864a5d19b888	0x1788a0
 netmgr	?WaitForConnect@CNetMgr@@QAEHXZ	74.0809	74.0809	5	5676879b5f9c	0xbca50
 netmgrerror	?ReportError@CNetMgr@@SAXPADHHPAX@Z	100.0000	100.0000	1	4c76abe210b0	0x1776a0
+netmgrmisc	?ClearRange@CNetSlotAux@@QAEXXZ	84.2857	84.2857	1	3bf776dc8916	0xbf120
+netmgrmisc	?Drive@CNetConnCoord@@QAEXXZ	100.0000	100.0000	1	7e13b70436c3	0xc40b0
+netmgrmisc	?NetConfigureBe90@@YAXXZ	100.0000	100.0000	1	39468a8eca59	0xc5f00
+netmgrmisc	?NetPollE25c@@YAHXZ	100.0000	100.0000	1	2f309aba1fc2	0xf9710
+netmgrmisc	?Step@CNetConnCoord@@QAEXXZ	100.0000	100.0000	1	de12e712a594	0xc2a20
 netsession	?AppendInt@@YAXPADPBDH@Z	100.0000	100.0000	1	b2f3e4307dc7	0xf93b0
 netsession	?FillPlayerList@@YAXPAUHWND__@@PAUSession@@@Z	91.5352	91.5352	1	94ce9d538305	0xb89e0
 netsessionnode	??1CNetPlayerListNode@@QAE@XZ	93.3333	93.3333	1	22ffe4c6f404	0x1793b0
@@ -3018,6 +3023,7 @@ orphanmethods	?Lookup@CGridLookup@@QAEHHH@Z	100.0000	100.0000	1	a8138c0f2e4d	0x7
 orphanmethods	?Step@CState95@@QAEHH@Z	100.0000	100.0000	1	676520cbbd0b	0x95140
 orphanmethods	?Tick@CStrikeEffect@@QAEHXZ	98.9429	98.9429	1	4e61b877ab77	0xb4350
 palettebmp	?LoadBmpPalette@CPalLoader@@QAEHPBDH@Z	98.4889	98.4889	2	dc1d1e374304	0x177480
+palettecopy	?UploadPalette@CPaletteHost@@QAEXXZ	61.1613	61.1613	1	a0802ff9a4b4	0x17ca10
 projactcache	??0zBitVec@@QAE@HH@Z	77.7679	77.7679	1	cebeacca76fa	0x16d790
 projactregistry	??1CProjActOwner@@UAE@XZ	100.0000	100.0000	1	3a018279bc02	0x7fd0
 projactregistry	?FireActivation@CProjActObj@@QAEXH@Z	100.0000	100.0000	1	11e9b3a5f0e8	0x80e0
@@ -3045,6 +3051,8 @@ randomambientsound	?Step@CRandomAmbientSound@@QAEXHHH@Z	93.6594	93.6594	2	acf931
 randomambientsound	?StopPosSound@@YAXPAUPosSoundObj@@@Z	100.0000	100.0000	1	40c068eecb35	0xc9d0
 randomambientsound	?Update@CRandomAmbientSound@@QAEXHHH@Z	35.3264	35.3264	1	e8761bf3bb1a	0xc2a0
 randomambientsound	?UpdateAt@CRandomAmbientSound@@QAEXHHH@Z	89.2586	89.2586	1	42177ff8008f	0xc5b0
+recordfill	?IntegerScale@@YAXXZ	100.0000	100.0000	1	75e29ae82c34	0x18c1f5
+recordfill	?ZeroRecords@@YGXPAXH@Z	100.0000	100.0000	1	aed5c7f7274a	0x17f500
 registryhelper	?Close@RegistryHelper@Utils@@QAEXXZ	100.0000	100.0000	4	384a98aaca34	0x139330
 registryhelper	?GetRegistryKey@RegistryHelper@Utils@@QAEHPAUHKEY__@@PADPAPAU3@@Z	100.0000	100.0000	3	90d7795268cd	0x139650
 registryhelper	?GetValueDword@RegistryHelper@Utils@@QAEKPADK@Z	100.0000	100.0000	4	8557af160863	0x1395d0
@@ -3216,6 +3224,7 @@ sbi_wellgoo	?Tick@CSBI_WellGoo@@QAEHXZ	83.0000	83.0000	1	34178faa97ab	0xe6380
 sbi_wellgoo_eh	??1CSBI_WellGoo@@QAE@XZ	51.0833	51.0833	1	6be06cd88e2a	0x104bb0
 scattersamples	?IsPrime@@YAHH@Z	100.0000	100.0000	1	3d4ae8c20789	0x182a80
 scattersamples	?ScatterSamples@@YAXPAHHHH@Z	59.2162	59.2162	1	345a3c1c24dd	0x182940
+severusworkerdtor	??1CSeverusWorkerX@@QAE@XZ	87.8261	87.8261	1	4dcdb44701a6	0x17f330
 shadetablecache	??0CShadeTableCache@@QAE@XZ	100.0000	100.0000	1	8d165746ed6f	0x14de30
 shadetablecache	??1CShadeTableCache@@QAE@XZ	80.1333	80.1333	2	d4743b4c108f	0x14de50
 shadetablecache	?AddFromArray@CShadeTableCache@@QAEPAUCShadeTable@@PBD@Z	74.0798	74.0798	1	b231c6aba23f	0x14f6c0
@@ -3629,6 +3638,7 @@ videoconfig	?GetResolutionCode@@YAHXZ	100.0000	100.0000	1	b2828982b562	0x363a0
 videoconfig	?LoadVideoResolutionConfig@@YAXPAXHH@Z	97.2737	97.2737	7	65cf3f7da201	0x36f30
 videoconfig	?SaveVideoCheckboxes@@YAXPAX@Z	99.5000	99.5000	1	3ee4b1c6c6fb	0x378c0
 videoconfig	?SaveVideoResolutionConfig@@YAXPAX0@Z	88.8148	88.8148	6	6a3159e5dbaa	0x370a0
+vtblforward	?Accept@CVtblRecv@@QAEHHHHHHPAHHHH@Z	100.0000	100.0000	1	0ce4b442400b	0x110460
 wallproject	?ProjectWallQuad@@YAHHHHHHHHHHHH@Z	39.5180	39.5180	2	ec1b9f828e2a	0x1471d0
 wapuncompress	?WapUncompress@@YAHPAEPAK0K@Z	85.9259	85.9259	1	4d214cd761d3	0x1853b0
 warlord	??0CWarlord@@QAE@H@Z	3.5796	3.5796	1	b29f645c5e90	0x42d40

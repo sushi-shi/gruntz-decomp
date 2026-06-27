@@ -242,18 +242,44 @@ struct CNetCmdSlot {
     void ClearCmds();                    // c12e0  drain + recycle the queue
     void Touch();                        // c1390  latch the slot (sets +4, +8)
     void FullReset();                    // c0c20  zero the command fields + both ranges
+    i32 Init(i32 a1, i32* a2, i32 a3);   // c0b10  seed a fresh slot, then ClearCmds + reset both ranges
 };
 
 // The DirectPlay session sub-object at CNetMgr+0x520. Two helpers are reached
 // here (external __thiscall thunks): FindCmdSlot linear-scans the four inline
 // command slots for the one whose player id matches; ResetCmdBuffers zeroes the
 // head of each of those four slots.
+// One 0x238-byte command buffer the session keeps an array of at +0x0; CreateSlot
+// hands slot[i] a pointer to the +0x150 field of buffer[i].
+struct CNetCmdBuf {
+    char m_pad0[0x150]; // +0x000
+    i32 m_150;          // +0x150
+    char m_pad154[0x238 - 0x154];
+};
+
+// One 0x410-byte resync entry the session keeps at +0x3b0; Verify compares slot
+// command +0x4 against entry[(m_18-2)%128].m_4.
+struct CNetResyncEntry {
+    i32 m_0;
+    i32 m_4; // +0x4
+    char m_pad8[0x410 - 8];
+};
+
 struct CNetSession {
-    char m_pad0[0x20];      // +0x00
-    CNetCmdSlot m_slots[4]; // +0x20  four inline command slots (0x64 each)
+    CNetCmdBuf* m_0;             // +0x00  base of the per-slot command-buffer array
+    i32 m_4;                    // +0x04
+    char m_pad8[0x18 - 8];      // +0x08
+    i32 m_18;                   // +0x18  resync tick base (Verify: (m_18-2)%128)
+    char m_pad1c[0x20 - 0x1c];  // +0x1c
+    CNetCmdSlot m_slots[4];     // +0x20  four inline command slots (0x64 each)
+    char m_pad1b0[0x3b0 - 0x1b0];
+    CNetResyncEntry m_entries[1]; // +0x3b0  resync entries (indexed signed, base here)
 
     CNetCmdSlot* FindCmdSlot(i32 playerId); // c00a0
     void ResetCmdBuffers();                 // c0070
+    i32 CheckLatency(i32 cap);              // c04a0  any active slot with m_10 > cap?
+    CNetCmdSlot* CreateSlot(i32 index, i32 owner); // bfff0  init slot[index]
+    i32 Verify();                           // c04f0  resync consistency check
 };
 
 // The command-dispatch queue hanging off the CNetMgr's m_4 sub-object at +0x6c;
