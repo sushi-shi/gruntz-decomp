@@ -3117,3 +3117,153 @@ void UnknownClassArrays::Method_034960(i32 sentinel, i32 code) {
     g_zvecErrToken = zErr_CaptureRetB();
     z->m_err->Error(z, sentinel, code);
 }
+
+// ===========================================================================
+// UnknownClassArrays::Method_0358a0  @0x0358a0  (__thiscall ret 4 => 1 GridUnit* arg)
+// The idle-unit policy step: when the unit holds no occupied coords it either
+// retargets to a random band (m_2f0 == -1, idle timer past m_0bc) or re-places at its
+// band's default coord (timer past 0x7d0); when it DOES hold coords it despawns
+// (recycling them onto g_coordPool) if both band slots are clear, else keeps the unit
+// only when it is within 6 tiles of a band candidate (recycling onto g_freeList).
+// m_004 indexes the per-band records at stride 0x238; the +0x150/+0x188 sub-objects'
+// candidate vectors live at +0xf4 (array) / +0xf8 (count) / +0xd0,+0xd4 (default coord).
+// ===========================================================================
+// The m_004-indexed per-band record (0x238 stride); only the touched band sub-object
+// fields are reached (by raw offset, since they extend past the nominal stride).
+struct BandRec {
+    char m_pad[0x238];
+};
+// A band candidate {x, y} pair the candidate-vector entries point at.
+struct ProbePair {
+    i32 m_x; // +0x00
+    i32 m_y; // +0x04
+};
+// The unit-side place/probe (thunk 0x1640, __thiscall, 6 args) and the bundle's
+// per-unit commit (thunk 0x42e1, __thiscall on `this`, 1 arg). Reloc-masked externs.
+struct UnitPlace {
+    i32 Place(i32 x, i32 y, i32 a, i32 b, i32 c, i32 d); // 0x1640
+};
+struct SelfCommit {
+    void Commit(void* unit); // 0x42e1
+};
+// @early-stop
+// 0x2d6 (726 B) no-EH grid policy step: the body reproduces all four arms (random-band
+// retarget, fixed-band re-place, despawn-recycle, near-band keep) incl. the signed
+// rand()%4 / idiv rand()%cnt modulo idioms and both coord recyclers (g_coordPool vs
+// g_freeList). The plateau is the documented register-relative record-address regalloc
+// wall (cl strength-reduces the idx*0x238 lea-chain + folds the band sub-object offsets
+// differently across the four arms) and the dead saved-m_2f0 reload; logic complete.
+RVA(0x000358a0, 0x2d6)
+i32 UnknownClassArrays::Method_0358a0(i32 unitArg) {
+    GridUnit* unit = (GridUnit*)unitArg;
+    char* recA = 0;
+    char* recB0 = 0;
+    i32 cell = unit->m_2f0;
+    if (cell >= 0 && cell < 4) {
+        char* rec = (char*)((BandRec*)m_004 + cell);
+        recA = rec + 0x150;
+        recB0 = rec + 0x188;
+    }
+    if (unit->m_328 == 0) {
+        if (cell == -1) {
+            if ((u32)unit->m_2ec <= (u32)m_0bc) {
+                return 1;
+            }
+            i32 r = rand() % 4;
+            if (r == m_018) {
+                r++;
+            }
+            i32 band = r % 4;
+            char* recB = (char*)((BandRec*)m_004 + band) + 0x188;
+            i32 cnt = *(i32*)(recB + 0xf8);
+            i32 x = *(i32*)(recB + 0xd0);
+            i32 y = *(i32*)(recB + 0xd4);
+            if (cnt != 0) {
+                ProbePair** arr = *(ProbePair***)(recB + 0xf4);
+                ProbePair* pair = arr[rand() % cnt];
+                x = pair->m_x;
+                y = pair->m_y;
+            }
+            if (((UnitPlace*)unit)->Place(x, y, 0, 0x9cf, 0, 0x4020) != 0) {
+                unit->m_2f0 = band;
+                unit->m_2f4 = 0;
+                ((SelfCommit*)this)->Commit(unit);
+            }
+            unit->m_2ec = 0;
+            return 1;
+        }
+        char* recB = (char*)((BandRec*)m_004 + cell) + 0x188;
+        if (recB == 0) {
+            return 1;
+        }
+        if ((u32)unit->m_2ec <= 0x7d0) {
+            return 1;
+        }
+        i32 y = *(i32*)(recB + 0xd4);
+        i32 x = *(i32*)(recB + 0xd0);
+        ((UnitPlace*)unit)->Place(x, y, 0, 0x987, 0, 0x4068);
+        unit->m_2ec = 0;
+        return 1;
+    }
+    if (recA == 0 || recB0 == 0) {
+        unit->m_2f0 = -1;
+        unit->m_2f4 = -1;
+        return 1;
+    }
+    if (*(i32*)(recA + 0x14) == 0 && *(i32*)recB0 == 0) {
+        CoordNode* n = (CoordNode*)unit->m_320;
+        while (n != 0) {
+            CoordNode* cur = n;
+            n = n->m_next;
+            if (cur->m_coord != 0) {
+                g_coordPool.Recycle(cur->m_coord);
+            }
+        }
+        ((CObList*)&unit->m_31c)->RemoveAll();
+        unit->m_2f0 = -1;
+        unit->m_2f4 = -1;
+        return 1;
+    }
+    i32 saved = unit->m_2f0;
+    (void)saved;
+    if (unit->m_2f4 == 1) {
+        return 1;
+    }
+    UnitLevel* lvl = (UnitLevel*)unit->m_010;
+    i32 px = lvl->m_5c >> 5;
+    i32 py = lvl->m_60 >> 5;
+    i32 nearBand = 0;
+    i32 cnt2 = *(i32*)(recB0 + 0xf8);
+    if (cnt2 > 0) {
+        ProbePair** vec = *(ProbePair***)(recB0 + 0xf4);
+        for (i32 j = cnt2; j > 0; j--) {
+            ProbePair* pair = *vec;
+            i32 dy = abs(pair->m_y - py);
+            i32 dx = abs(pair->m_x - px);
+            if (dx + dy <= 6) {
+                nearBand = 1;
+            }
+            vec++;
+        }
+    }
+    if (nearBand == 0) {
+        return 1;
+    }
+    unit->m_2f0 = unit->m_2f0;
+    unit->m_2f4 = 1;
+    if (unit->m_328 == 0) {
+        return 1;
+    }
+    CoordNode* n = (CoordNode*)unit->m_320;
+    while (n != 0) {
+        CoordNode* cur = n;
+        n = n->m_next;
+        if (cur->m_coord != 0) {
+            void** slot = (void**)((char*)cur->m_coord - g_freeListNodeBias);
+            *slot = g_freeList;
+            g_freeList = slot;
+        }
+    }
+    ((CObList*)&unit->m_31c)->RemoveAll();
+    return 1;
+}

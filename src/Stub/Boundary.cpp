@@ -72,8 +72,6 @@ RVA(0x00029af0, 0x3b)
 void Boundary_029af0() {} // proximity: CUserLogic@-0xa0 | UnknownClassArrays@+0x50
 RVA(0x00031610, 0x501)
 void Boundary_031610() {} // proximity: _zvec@-0x370 | CGrunt@+0x660
-RVA(0x000358a0, 0x2d6)
-void Boundary_0358a0() {} // proximity: UnknownClassArrays@-0x7d0 | CPlay@+0x1340
 RVA(0x00037870, 0x3c)
 void Boundary_037870() {} // proximity: CWnd@-0x7d0 | StateMgrBZ@+0xa50
 RVA(0x00037b40, 0xb3)
@@ -258,9 +256,6 @@ RVA(0x001157b0, 0xa)
 void Boundary_1157b0() {} // proximity: CToobSpikez@-0xf50 | CTileTriggerSwitchLogic@+0x750
 RVA(0x001163b0, 0xb2)
 void Boundary_1163b0() {} // proximity: CTileTriggerSwitchLogic@-0x90 | CTileTriggerContainer@+0x690
-RVA(0x00117800, 0x47f)
-void Boundary_117800() {
-} // proximity: CTileTriggerContainer@-0x580 | CTileTriggerSwitchLogic@+0x620
 RVA(0x00118040, 0xb6)
 void Boundary_118040() {} // proximity: CTileTriggerContainer@-0xe0 | CGruntVoice@+0x1aa0
 RVA(0x001181d0, 0x70)
@@ -305,16 +300,10 @@ RVA(0x0013a4b0, 0x75)
 void Boundary_13a4b0() {} // proximity: CSymTab@-0x1a0 | CSymParser@+0x710
 RVA(0x0013a530, 0x47)
 void Boundary_13a530() {} // proximity: CSymTab@-0x220 | CSymParser@+0x690
-RVA(0x0013a640, 0x2f7)
-void Boundary_13a640() {} // proximity: CSymTab@-0x330 | CSymParser@+0x580
 RVA(0x0013aaf0, 0x7)
 void Boundary_13aaf0() {} // proximity: CSymTab@-0x7e0 | CSymParser@+0xd0
 RVA(0x0013ab00, 0xac)
 void Boundary_13ab00() {} // proximity: CSymTab@-0x7f0 | CSymParser@+0xc0
-RVA(0x0013ad00, 0x3b8)
-void Boundary_13ad00() {} // proximity: CSymParser@-0x140 | CRezDir@+0x3c0
-RVA(0x0013b300, 0x545)
-void Boundary_13b300() {} // proximity: CRezDir@-0x240 | CSymParser@+0x550
 RVA(0x0013b910, 0x58)
 void Boundary_13b910() {} // proximity: CSymParser@-0xc0 | CSymTab@+0x1d0
 RVA(0x0013b970, 0x72)

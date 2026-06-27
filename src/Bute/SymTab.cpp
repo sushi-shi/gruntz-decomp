@@ -328,6 +328,141 @@ i32 CSymTab::ApplyRecursive(i32 a0, i32 a1, i32 a2, i32 a3) {
     return ok;
 }
 
+// The parse stream ApplyRange reads each record block out of: stream->Read(pos, 0,
+// len, buf) (vtable slot 2 = +0x8) fills `len` bytes and returns the count read.
+// Reloc-masked virtual; modeled polymorphically so `mov eax,[a0]; call [eax+8]` falls
+// out with no cast.
+struct CSymRangeStream {
+    virtual void s0();
+    virtual void s1();
+    virtual i32 Read(i32 pos, i32 zero, i32 len, void* buf); // slot 2 (+0x8)
+};
+
+// The 11-arg leaf-record builder at 0x139710 (__thiscall on a parse slot popped from
+// the owner; callee-cleans its 11 stack args, ret 0x2c). Reloc-masked extern -- only
+// the call shape (the 11 reversed pushes) is load-bearing.
+struct CSymLeafBuilder {
+    i32 Build(void* owner, void* name, void* f4, void* rec, void* str2, void* f3,
+              void* f1, void* f2, void* f6, void* arr, void* a0); // 0x139710
+    void* m_00;
+    char m_pad04[0x0c - 0x04];
+    i32 m_0c; // +0x0c
+    char m_pad10[0x14 - 0x10];
+    i32 m_14; // +0x14
+};
+
+// The owner's parse-slot pool (CSymParser::PopParseSlot @0x13c0c0). Reloc-masked.
+struct CSymSlotPool {
+    void* PopParseSlot(); // 0x13c0c0
+};
+
+// @early-stop
+// >512 B (0x2f7) /GX leaf-builder loop: the body reproduces both record arms (sub-scope
+// merge into m_subTabs incl. the `new CSymTab` ctor-throw cleanup, and the leaf arm's
+// FindOrAddSym + +0x24 Walk + the 11-arg builder + the dword-array copy). The plateau is
+// the documented heavy-regalloc + /GX trylevel wall plus the tail max-accumulator (a dead
+// store retail keeps but cl DCE's) and the differently-named Walk/builder reloc operands.
+// The 0x139710 builder's callee-cleanup (ret 0x2c) is inferred from the absence of an
+// `add esp,0x2c` after the call; the arg order is the reversed push sequence at 0x13a893.
+RVA(0x0013a640, 0x2f7)
+i32 CSymTab::ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3) {
+    m_10 = 0;
+    m_0c = (void*)-1;
+    i32 maxVal = 0;
+    char* buf = (char*)::operator new((u32)a2);
+    if (!buf) {
+        return 0;
+    }
+    CSymRangeStream* stream = (CSymRangeStream*)a0;
+    if (stream->Read(a1, 0, a2, buf) != a2) {
+        ::operator delete(buf);
+        return 0;
+    }
+    char* p = buf;
+    char* end = buf + a2;
+    while (p < end) {
+        if (*(i32*)p == 1) {
+            // sub-scope record: { tag, fA, fB, fC, name\0 }
+            void* fA = *(void**)(p + 4);
+            p += 8;
+            void* fB = *(void**)p;
+            void* fC = *(void**)(p + 4);
+            p += 8;
+            char* name = p;
+            p += strlen(name) + 1;
+            void* existing = m_subTabs.Walk(name, m_owner->m_68 == 0);
+            if (existing == 0) {
+                CSymParser* o = m_owner;
+                CSymTab* node = new CSymTab(o, this, name, fA, fB, fC, o->m_78, o->m_7c);
+                m_subTabs.Insert((char*)node + 0x20);
+            } else {
+                ((CSymTab*)existing)->m_04 = fA;
+                ((CSymTab*)existing)->m_08 = fB;
+                ((CSymTab*)existing)->m_14 = fC;
+            }
+        } else {
+            // leaf record: { tag, f1, f3, f2, f4, f5(key), f6, name\0, str2\0, dwords[f6] }
+            void* f1 = *(void**)(p + 4);
+            p += 8;
+            void* f3 = *(void**)p;
+            void* f2 = *(void**)(p + 4);
+            p += 8;
+            void* f4 = *(void**)p;
+            void* f5 = *(void**)(p + 4);
+            p += 8;
+            void* f6 = *(void**)p;
+            p += 4;
+            char* name1 = p;
+            p += strlen(name1) + 1;
+            void* rec = (void*)FindOrAddSym((i32)f5);
+            i32 skip = 0;
+            void* found = ((CHashTable*)((char*)rec + 0x24))->Walk(name1, 1);
+            if (found) {
+                if (a3 != 0) {
+                    Method530(rec, found);
+                } else {
+                    skip = 1;
+                }
+            }
+            char* str2 = p;
+            if (*str2 == 0) {
+                str2 = 0;
+            }
+            p += strlen(p) + 1;
+            void* arr;
+            if (f6 != 0) {
+                arr = ::operator new((u32)((i32)f6 * 4));
+                for (i32 i = (i32)f6; i != 0; i--) {
+                    *(void**)arr = *(void**)p;
+                    arr = (char*)arr + 4;
+                    p += 4;
+                }
+                arr = (char*)arr - (i32)f6 * 4;
+            } else {
+                arr = 0;
+            }
+            if (!skip) {
+                CSymLeafBuilder* slot =
+                    (CSymLeafBuilder*)((CSymSlotPool*)m_owner)->PopParseSlot();
+                slot->Build(this, name1, f4, rec, str2, f3, f1, f2, f6, arr, (void*)a0);
+                ((CHashTable*)((char*)rec + 0x24))->Insert((char*)slot + 0x1c);
+                m_10 = (void*)((i32)m_10 + slot->m_0c);
+                if ((u32)slot->m_14 < (u32)(i32)m_0c) {
+                    m_0c = (void*)slot->m_14;
+                }
+                if ((u32)slot->m_14 > (u32)maxVal) {
+                    maxVal = slot->m_14;
+                }
+            }
+            if (arr) {
+                ::operator delete(arr);
+            }
+        }
+    }
+    ::operator delete(buf);
+    return 1;
+}
+
 // FindOrAddSym (0x13a940): look the int key up in m_symbols; if absent, `new CSymRec`
 // (Rez heap, ctor-throw cleanup) the right leaf-record flavor (4-arg when the parser's
 // m_6c is set, else 3-arg) and splice it into m_symbols via its +0x04 hash node.

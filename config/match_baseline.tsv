@@ -135,7 +135,7 @@ directinputmgr2	36	32
 directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	15	0
-engine_boundary	241	0
+engine_boundary	236	0
 engine_discovered	51	0
 engine_label_stubs	437	105
 engine_unmatched	264	0
@@ -260,13 +260,14 @@ statusbarupdaters	7	0
 streamfeeder	9	7
 streamrecordloaders	4	0
 streamvoice	5	3
-symparser	8	5
-symtab	18	10
+symparser	10	5
+symtab	19	10
 terraintileloader	1	0
 tileactionevent	7	4
 tilegridcommand	6	3
 tileswitchlogic	17	9
 tiletriggercontainer	15	4
+tiletriggerfactory	1	0
 tiletriggerlogic	2	1
 tiletriggertransition	7	5
 tilewireswitchlogic	1	0
@@ -275,7 +276,7 @@ triggermgr	48	8
 triggermgr_eh	4	0
 typekeycoll	10	5
 uncompr	1	1
-unknownclassarrays	39	10
+unknownclassarrays	40	10
 unknownclassincgruntzmgr	2	0
 userbaselink	10	0
 userlogic	62	25
@@ -1251,7 +1252,6 @@ engine_boundary	?Boundary_023d90@@YAXXZ	1.0526	1.0526	2	2999679ada02	0x23d90
 engine_boundary	?Boundary_024ac0@@YAXXZ	3.6364	3.6364	2	97599e6128a4	0x24ac0
 engine_boundary	?Boundary_029af0@@YAXXZ	2.1053	2.1053	2	efc261072fd9	0x29af0
 engine_boundary	?Boundary_031610@@YAXXZ	0.1020	0.1020	2	f83341bafa0f	0x31610
-engine_boundary	?Boundary_0358a0@@YAXXZ	0.1762	0.1762	2	788106cf7ca5	0x358a0
 engine_boundary	?Boundary_037870@@YAXXZ	4.7619	4.7619	2	8512d0f5f358	0x37870
 engine_boundary	?Boundary_037b40@@YAXXZ	1.3514	1.3514	2	536cccd799df	0x37b40
 engine_boundary	?Boundary_037c30@@YAXXZ	1.3514	1.3514	2	dbd6bf68ce39	0x37c30
@@ -1344,7 +1344,6 @@ engine_boundary	?Boundary_114f00@@YAXXZ	3.8462	3.8462	2	b1d354c5ac24	0x114f00
 engine_boundary	?Boundary_115730@@YAXXZ	20.0000	20.0000	2	735f422cae6d	0x115730
 engine_boundary	?Boundary_1157b0@@YAXXZ	20.0000	20.0000	2	4b68d100e39b	0x1157b0
 engine_boundary	?Boundary_1163b0@@YAXXZ	0.6061	0.6061	2	86e4a17d32e8	0x1163b0
-engine_boundary	?Boundary_117800@@YAXXZ	0.1190	0.1190	2	911ffa4d543e	0x117800
 engine_boundary	?Boundary_118040@@YAXXZ	0.4545	0.4545	2	df4503434cfc	0x118040
 engine_boundary	?Boundary_1181d0@@YAXXZ	0.8333	0.8333	2	98ad14884ed2	0x1181d0
 engine_boundary	?Boundary_118260@@YAXXZ	0.9524	0.9524	2	76d0f8d03530	0x118260
@@ -1367,11 +1366,8 @@ engine_boundary	?Boundary_1396f0@@YAXXZ	11.1111	11.1111	2	23b02398b1a2	0x1396f0
 engine_boundary	?Boundary_139710@@YAXXZ	0.7407	0.7407	2	c45b8e52eccf	0x139710
 engine_boundary	?Boundary_13a4b0@@YAXXZ	0.7547	0.7547	2	bb86271d7ac2	0x13a4b0
 engine_boundary	?Boundary_13a530@@YAXXZ	1.6667	1.6667	2	4e006172a643	0x13a530
-engine_boundary	?Boundary_13a640@@YAXXZ	0.1533	0.1533	2	64ffaa335990	0x13a640
 engine_boundary	?Boundary_13aaf0@@YAXXZ	50.0000	50.0000	2	0025f8629596	0x13aaf0
 engine_boundary	?Boundary_13ab00@@YAXXZ	0.9756	0.9756	2	aa33f2aa31af	0x13ab00
-engine_boundary	?Boundary_13ad00@@YAXXZ	0.1333	0.1333	2	05fd6d258107	0x13ad00
-engine_boundary	?Boundary_13b300@@YAXXZ	0.0877	0.0877	2	b5af5398cdb2	0x13b300
 engine_boundary	?Boundary_13b910@@YAXXZ	1.2500	1.2500	2	4a37006ab24d	0x13b910
 engine_boundary	?Boundary_13b970@@YAXXZ	1.0256	1.0256	2	b315ff84a624	0x13b970
 engine_boundary	?Boundary_13ba70@@YAXXZ	14.2857	14.2857	2	f3bc0a239338	0x13ba70
@@ -3334,6 +3330,8 @@ streamvoice	?SetSource@StreamVoice@@QAEHPAUStreamSource@@@Z	100.0000	100.0000	1	
 symparser	??1CSymParser@@QAE@XZ	97.9725	97.9725	2	b820544c77c6	0x13abc0
 symparser	?AddNode@CSymParser@@QAEXPAX@Z	100.0000	100.0000	2	3b86ac8fbdfb	0x13c210
 symparser	?Clear@CSymParser@@QAEPAXH@Z	91.3803	91.3803	3	2ea4717a0572	0x13b850
+symparser	?ParseBuffer@CSymParser@@QAEHPAXHH@Z	74.3600	74.3600	1	29b2b9712133	0x13ad00
+symparser	?ParseRecords@CSymParser@@QAEHPAXPAVCSymTab@@PADH@Z	55.4189	55.4189	1	4f5c28fcf099	0x13b300
 symparser	?PopParseSlot@CSymParser@@QAEPAXXZ	77.1304	77.1304	1	5e3e00144d8d	0x13c0c0
 symparser	?ReParse@CSymParser@@QAEHXZ	100.0000	100.0000	1	460945270635	0x13c050
 symparser	?Remove@CObjList@@QAEXPAVCObjNode@@@Z	100.0000	100.0000	1	c6b60724f735	0x1852e0
@@ -3341,6 +3339,7 @@ symparser	?ResolvePath@CSymParser@@QAEPAXPBD@Z	100.0000	100.0000	1	d2f5951f4d21	
 symparser	?ResolveQualified@CSymParser@@QAEHPBDPAX@Z	100.0000	100.0000	1	65f97a6deb84	0x13bff0
 symtab	??0CSymTab@@QAE@PAUCSymParser@@PAXPBD111HH@Z	97.3333	97.3333	1	cf88b96a8a13	0x139de0
 symtab	??1CSymTab@@QAE@XZ	88.7245	88.7245	2	ea710bd4bd0f	0x139ee0
+symtab	?ApplyRange@CSymTab@@QAEHHHHH@Z	75.6782	75.6782	1	1627b21b3a9f	0x13a640
 symtab	?ApplyRecursive@CSymTab@@QAEHHHHH@Z	70.4657	70.4657	1	45e873862fc9	0x13a580
 symtab	?CreateSub@CSymTab@@QAEPAV1@PBD@Z	79.5000	79.5000	1	582583c35490	0x13a330
 symtab	?Find@CSymTab@@QAEPAXPBD@Z	100.0000	100.0000	1	5c207117a72f	0x13a040
@@ -3403,6 +3402,7 @@ tiletriggercontainer	?Serialize@CTileTriggerContainer@@QAEHPAUTtcStream@@HHH@Z	2
 tiletriggercontainer	?SerializeApplyA@@YGHPAUTtcStream@@HHHPAUTtcSwitchObj@@@Z	57.3077	57.3077	2	a1a03c04f1a2	0x117630
 tiletriggercontainer	?SerializeApplyB@@YGHPAUTtcStream@@HHHPAUTtcSwitchObj@@@Z	63.2576	63.2576	2	fe53fda39900	0x117710
 tiletriggercontainer	?SetCell@CTileTriggerContainer@@QAEHHHH@Z	77.9559	77.9559	1	cd7922705e40	0x117f60
+tiletriggerfactory	?Build@CTileTriggerFactory@@QAEPAXPAUCTrigReader@@HHH@Z	26.4732	26.4732	1	f2a4896ed393	0x117800
 tiletriggerlogic	??0CTileTriggerLogic@@QAE@XZ	100.0000	100.0000	5	94795c513302	0x1107f0
 tiletriggerlogic	??_GCTileTriggerLogic@@UAEPAXI@Z	4.7624	4.7624	1	cpp:abf93c58a136	0x116610
 tiletriggertransition	??0CTileTriggerTransition@@QAE@PAUCGameObject@@@Z	94.9390	94.9390	1	6da19d3afe62	0x10faf0
@@ -3523,6 +3523,7 @@ unknownclassarrays	?Method_034460@UnknownClassArrays@@QAEHH@Z	80.6851	80.6851	2	
 unknownclassarrays	?Method_034960@UnknownClassArrays@@QAEXHH@Z	100.0000	100.0000	1	6c8a73b8df1b	0x34960
 unknownclassarrays	?Method_034c70@UnknownClassArrays@@QAEHH@Z	48.9556	48.9556	1	9f492698ed18	0x34c70
 unknownclassarrays	?Method_0350d0@UnknownClassArrays@@QAEHH@Z	72.3595	72.3595	1	adca17c295aa	0x350d0
+unknownclassarrays	?Method_0358a0@UnknownClassArrays@@QAEHH@Z	83.2775	83.2775	1	bc3f1a58bb37	0x358a0
 unknownclassarrays	?RecycleCoords@GridUnit@@QAEXXZ	99.7826	99.7826	1	8aaa33538ddd	0x343f0
 unknownclassarrays	?Serialize_02b420@UnknownClassArrays@@QAEHPAX@Z	100.0000	100.0000	2	7b63ca13d3d0	0x2b420
 unknownclassarrays	?winapi_0267c0_IntersectRect_PtInRect@UnknownClassArrays@@QAEHXZ	0.0596	0.0596	2	380a71b8d73d	0x267c0

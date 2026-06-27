@@ -211,9 +211,14 @@ public:
     // Returns 1 unless a recursion failed. (a2 == 0 is a no-op returning 1.)
     i32 ApplyRecursive(i32 a0, i32 a1, i32 a2, i32 a3);
 
-    // The big range operation 0x13a640 invoked by ApplyRecursive (>512 B; deferred to
-    // the final sweep). External (no body here) so the recursion's call is reloc-masked.
+    // The big range operation 0x13a640 invoked by ApplyRecursive: reads a block of
+    // (a0-stream) records into a temp buffer and folds each into this scope's tables
+    // (sub-scope records -> m_subTabs; leaf records -> the leaf builder + m_symbols).
     i32 ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3); // 0x13a640
+
+    // The leaf-merge helper ApplyRange calls when a leaf record's +0x24 sub-table walk
+    // already has the key (0x13a530, __thiscall(rec, found)). Reloc-masked extern.
+    i32 Method530(void* rec, void* found); // 0x13a530
 
     // Walk m_subTabs (+0x38) for `name`, forwarding m_owner->m_68 == 0 (0x13a230).
     void* FindSub(const char* name);
