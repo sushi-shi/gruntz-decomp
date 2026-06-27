@@ -607,6 +607,13 @@ source = "src/Gruntz/Grunt.cpp"
 flags = "eh"
 
 [[unit]]
+# The mechanical CGrunt asset/sprite/tuning loaders (re-homed from ApiCallers).
+# No destructible locals -> /base (no /GX EH frame).
+unit = "gruntassetloaders"
+source = "src/Gruntz/GruntAssetLoaders.cpp"
+flags = "base"
+
+[[unit]]
 # GruntDataRecord::SerializeStrings (0x56da0) - the per-record string/field writer
 # the big grunt-data Serialize (0x53f90) calls; non-EH (plain stack buffer).
 unit = "gruntdatarecord"

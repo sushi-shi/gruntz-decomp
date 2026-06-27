@@ -40,6 +40,8 @@ public:
     i32 AddB(i32 a, i32 b);
     i32 AddC(i32 a, i32 b, i32 c);
     i32 AddD(i32 a, i32 b);
+    // The LightFx activate (0x2117): m_18->Activate(setKey, flashKey, frame, loop).
+    void Activate(const char* setKey, const char* flashKey, i32 frame, i32 loop);
 
     char m_pad0[0x38];
     CSpriteRegRecord* m_38; // +0x38  (failure-flag record holder)
@@ -55,6 +57,8 @@ struct CSpriteInner {
     void (*m_init)(void* self); // +0x10  init virtual (called with sprite)
     char m_pad14[0x18 - 0x14];
     CSpriteRegistrar* m_18; // +0x18  the registrar
+    char m_pad1c[0xbc - 0x1c];
+    i32 m_bc; // +0xbc  (rolling-ball speed; LoadGruntAbilityTuning)
 };
 
 struct CHudSprite {
@@ -68,6 +72,10 @@ struct CHudSprite {
     i32 m_8; // +0x08  (sprite flag word; arrival sets |= 0x10000 to retire it)
     char m_padc[0x7c - 0xc];
     CSpriteInner* m_7c; // +0x7c
+    char m_pad80[0x118 - 0x80];
+    i32 m_118; // +0x118  (rolling-ball time; LoadGruntAbilityTuning)
+    char m_pad11c[0x124 - 0x11c];
+    i32 m_124; // +0x124  (rolling-ball; cleared)
 };
 
 // The on-screen cue gate's visibility rect, reached as
@@ -378,6 +386,10 @@ class CAnimNameResolver {
 public:
     char** GetNameRecord(void* node);            // thunk_FUN_004310f0 (ret 4)
     CAnimNameRecord* GetNameRecords(void* node); // thunk_FUN_004312a0 (ret 4)
+    // The scratch-resolve variant (thunk 0x3864, zDArray::IndexToPtr-class): returns
+    // the resolved record; the caller then tears down the g_animScratch CString[]
+    // (the inlined teardown loop) before reading rec->m_name. Reloc-masked.
+    CAnimNameRecord* ScratchResolve(void* node); // 0x3864
     // The entrance-cell coordinate -> record-index mappers the arrival recycle
     // step (0x59230) drives when the raw bounds test misses. Both __thiscall on the
     // resolver (this = 0x6bf650); external/no-body so the calls reloc-mask.
@@ -596,6 +608,11 @@ public:
     void NotifyMoveAt(i32 px, i32 py, i32 a, i32 b); // 0x7b330
     // RunMoveConfig's I-pose tile load (thunk_0x3945 -> 0x75e90), 6 args. External.
     void Load6(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x75e90
+    // The spell-ability area cues (LoadGruntAbilityTuning): the 5-arg combat-area cue
+    // (thunk 0x400c -> LoadGruntCombatTuning 0x7b930) + the 3-arg resurrect-area cue
+    // (thunk 0x1fff -> LoadGruntResurrectTuning). External/no-body (reloc-masked).
+    i32 CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag); // 0x400c (ret 0x14)
+    i32 ResurrectCue(i32 x, i32 y, i32 radius);                  // 0x1fff (ret 0xc)
 };
 
 // The on-screen point-visibility predicate the arrival/update steps gate the cue
@@ -939,6 +956,16 @@ public:
     // @0x63db0 - (re)loads the vehicle-grunt (gokart/bigwheel) entrance animation set.
     void LoadVehicleGruntAnimations();
 
+    // --- GruntAssetLoaders.cpp cluster (mechanical asset/sprite/tuning loaders) ---
+    // @0x68880 (ret 4, /base) - (re)load the wingz-grunt's per-direction sprite
+    // name cells (flying ITEM set when enabled, WALK/IDLE set when disabled), the
+    // pose-index lookups, then re-stamp the current entrance-cell frame.
+    i32 LoadWingzGruntSprites(i32 enable);
+    // @0x57100 (ret 4, /base) - the spell-ability tuning loader: fire the attack
+    // sound cue, then dispatch on the (random or forced) ability index to build
+    // the matching LightFx/rolling-ball effect + tuning.
+    i32 LoadGruntAbilityTuning(i32 forced);
+
     // @0x57890 (__thiscall ret 0, /GX) - when the entrance reason is a lose-item
     // pose (0x12/0x16/0xe), spawn the one-shot "SingleAnimation" GRUNTZ_<set>_LOSEITEM
     // sprite, fire the on-screen spawn cue, then re-run the type-table step.
@@ -995,8 +1022,8 @@ public:
     i32 m_animResolved; // +0xa8  (resolve gate / dirty flag)
     i32 m_deathCueArg;  // +0xac  (cue arg)
     char m_padb0[0x154 - 0xb0];
-    CEntranceAnimPlayer* m_154; // +0x154 (entrance animation player)
-    char m_pad158[0x15c - 0x158];
+    CEntranceAnimPlayer* m_154;     // +0x154 (entrance animation player)
+    struct CGruntSndResMgr* m_158;  // +0x158 (ability/sound resource mgr)
     i32 m_prevEntranceDesc; // +0x15c (= m_154->m_1b4 cache)
     char m_pad160[0x170 - 0x160];
     i32 m_entranceReason; // +0x170 (entrance-reason / movement state)
@@ -1117,6 +1144,17 @@ public:
     char m_pad850[0x858 - 0x850];
     i32 m_858; // +0x858 (entrance: = 0)
     i32 m_85c; // +0x85c (entrance: = 0)
+    char m_pad860[0x870 - 0x860];
+    // Combat/wingz state timers (the GruntAssetLoaders cluster fills them).
+    i32 m_870; // +0x870 (combat: = g_645588 clock low)
+    i32 m_874; // +0x874 (combat: = 0)
+    i32 m_878; // +0x878 (combat: = CombatTimeout config)
+    i32 m_87c; // +0x87c (combat: = 0)
+    char m_pad880[0x890 - 0x880];
+    i32 m_890; // +0x890 (wingz: = g_645588 clock low)
+    i32 m_894; // +0x894 (wingz: = 0)
+    i32 m_898; // +0x898 (wingz: = wingz-duration; (long)(m_wingzTime*scale-bias))
+    i32 m_89c; // +0x89c (wingz: = 0)
 
     // Engine-label backlog stubs.
     void Stub_047a10();

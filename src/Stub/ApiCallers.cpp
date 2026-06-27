@@ -203,10 +203,8 @@ namespace ApiCallerStubs {
         i32 winapi_17e620_GetTickCount(i32, i32, i32);
     };
     struct CGrunt {
-        void LoadGruntAbilityTuning(i32);
         i32 winapi_057db0_IntersectRect();
         void LoadGruntCombatAnimations(i32, i32, i32, i32, i32, i32, i32, i32);
-        void LoadWingzGruntSprites(i32);
     };
     struct CGruntSpawnConfig {
         // LoadGruntSpawnConfig (0x11afb0) re-homed as a real CGruntSpawnConfig method
@@ -3957,11 +3955,8 @@ namespace ApiCallerStubs {
 
 
 
-    // @confidence: med
-    // @source: string-xref
-    // @stub
-    RVA(0x00057100, 0x577)
-    void CGrunt::LoadGruntAbilityTuning(i32) {}
+    // LoadGruntAbilityTuning (0x57100) re-homed as CGrunt::LoadGruntAbilityTuning
+    // in src/Gruntz/GruntAssetLoaders.cpp.
 
     // @confidence: med
     // @source: string-xref
@@ -3992,11 +3987,8 @@ namespace ApiCallerStubs {
     RVA(0x00065e80, 0x12b8)
     void ThisStubOwnerUnknown::LoadPickupSprites(i32, i32, i32, i32, i32) {}
 
-    // @confidence: med
-    // @source: string-xref
-    // @stub
-    RVA(0x00068880, 0x67c)
-    void CGrunt::LoadWingzGruntSprites(i32) {}
+    // LoadWingzGruntSprites (0x68880) re-homed as CGrunt::LoadWingzGruntSprites
+    // in src/Gruntz/GruntAssetLoaders.cpp.
 
     // @confidence: med
     // @source: string-xref
