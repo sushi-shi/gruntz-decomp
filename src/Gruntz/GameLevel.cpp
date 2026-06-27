@@ -70,9 +70,9 @@ struct RemusParseSource {
     void EndParse();
 };
 
-// UnknownChild - placeholder for whatever class lives in the pointer arrays
+// CGameLevelChild - placeholder for whatever class lives in the pointer arrays
 // at +0x38 and +0x4c. Only vtable slot 4 (+0x04, virtual Release(1)) is used.
-class UnknownChild {
+class CGameLevelChild {
 public:
     virtual void Dummy();
     virtual void Release(i32 arg);
@@ -501,14 +501,14 @@ RVA(0x0015d1f0, 0x87)
 i32 CGameLevel::Unload() {
     i32 i;
     for (i = 0; i < m_planes.GetSize(); i++) {
-        UnknownChild* child = (UnknownChild*)m_planes.GetData()[i];
+        CGameLevelChild* child = (CGameLevelChild*)m_planes.GetData()[i];
         if (child) {
             child->Release(1);
         }
     }
     m_planes.SetSize(0, -1);
     for (i = 0; i < m_imageSets.GetSize(); i++) {
-        UnknownChild* child = (UnknownChild*)m_imageSets.GetData()[i];
+        CGameLevelChild* child = (CGameLevelChild*)m_imageSets.GetData()[i];
         if (child) {
             child->Release(1);
         }
@@ -529,14 +529,14 @@ RVA(0x0015d680, 0x71)
 void CGameLevel::ReleaseChildren() {
     i32 i;
     for (i = 0; i < m_planes.GetSize(); i++) {
-        UnknownChild* child = (UnknownChild*)m_planes.GetData()[i];
+        CGameLevelChild* child = (CGameLevelChild*)m_planes.GetData()[i];
         if (child) {
             child->Release(1);
         }
     }
     m_planes.SetSize(0, -1);
     for (i = 0; i < m_imageSets.GetSize(); i++) {
-        UnknownChild* child = (UnknownChild*)m_imageSets.GetData()[i];
+        CGameLevelChild* child = (CGameLevelChild*)m_imageSets.GetData()[i];
         if (child) {
             child->Release(1);
         }

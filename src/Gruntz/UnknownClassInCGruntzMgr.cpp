@@ -1,5 +1,5 @@
-// UnknownClassInCGruntzMgr.cpp - a CString-owning collection object embedded in
-// CGruntzMgr (Ghidra/tomalla placeholder "UnknownClassInCGruntzMgr"). Its own TU
+// CGruntSpawnLevel.cpp - a CString-owning collection object embedded in
+// CGruntzMgr (Ghidra/tomalla placeholder "CGruntSpawnLevel"). Its own TU
 // (NOT folded into GruntzMgr.cpp - a separate lane edits that). The ctor (0xda790)
 // builds a CString + a +0x38 sub-object then seeds the GruntzPlayer-shaped field
 // block (m_0=-1 / m_18=-2 / m_14=1 / m_228=0xf hash size); the dtor (0x83260)
@@ -18,10 +18,10 @@ public:
     ~Mgr38(); // 0x24f80
 };
 
-class UnknownClassInCGruntzMgr {
+class CGruntSpawnLevel {
 public:
-    UnknownClassInCGruntzMgr();  // 0xda790
-    ~UnknownClassInCGruntzMgr(); // 0x83260
+    CGruntSpawnLevel();  // 0xda790
+    ~CGruntSpawnLevel(); // 0x83260
 
     i32 m_0;     // +0x00  = -1
     CString m_4; // +0x04  destructible name string
@@ -47,7 +47,7 @@ public:
 };
 
 // ===========================================================================
-// UnknownClassInCGruntzMgr::UnknownClassInCGruntzMgr  (0xda790)
+// CGruntSpawnLevel::CGruntSpawnLevel  (0xda790)
 // ===========================================================================
 // Construct the CString m_4 + the +0x38 sub-object, then seed the field block to
 // its empty state (sentinels -1/-2/1, hash size 0xf, the rest zeroed) and assign
@@ -60,7 +60,7 @@ public:
 // wall) - deferred to the final sweep once the GruntzPlayer cross-attribution of
 // the shared init (0xda960) is unified.
 RVA(0x000da790, 0xb0)
-UnknownClassInCGruntzMgr::UnknownClassInCGruntzMgr() {
+CGruntSpawnLevel::CGruntSpawnLevel() {
     m_22c = 0;
     m_230 = 0;
     m_0 = -1;
@@ -81,7 +81,7 @@ UnknownClassInCGruntzMgr::UnknownClassInCGruntzMgr() {
 }
 
 // ===========================================================================
-// UnknownClassInCGruntzMgr::~UnknownClassInCGruntzMgr  (0x83260)
+// CGruntSpawnLevel::~CGruntSpawnLevel  (0x83260)
 // ===========================================================================
 // Reverse the ctor: clear the field block (the shared Reset at 0xda960), destruct
 // the +0x38 sub-object, then the CString m_4. The /GX frame numbers the three
@@ -92,6 +92,6 @@ UnknownClassInCGruntzMgr::UnknownClassInCGruntzMgr() {
 // RVA), so it cannot be referenced here without a duplicate-RVA conflict. Modeled
 // as the 2-destructible-member teardown (sub + CString) only; the leading Reset
 // call + the /GX state numbering are the residual, deferred to the final sweep
-// once the GruntzPlayer/UnknownClassInCGruntzMgr identity is unified.
+// once the GruntzPlayer/CGruntSpawnLevel identity is unified.
 RVA(0x00083260, 0x57)
-UnknownClassInCGruntzMgr::~UnknownClassInCGruntzMgr() {}
+CGruntSpawnLevel::~CGruntSpawnLevel() {}

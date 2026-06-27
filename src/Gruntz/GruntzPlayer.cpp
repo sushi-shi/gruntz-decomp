@@ -1,7 +1,7 @@
 // GruntzPlayer.cpp - the per-player options/state record CGruntzMgr embeds at
 // +0x150 (a 4-element array; each slot 0x238 bytes). The slot carries a name
 // CString (default "Player"), a scalar config block, an embedded
-// UnknownClassArrays config bundle at +0x38, and a trailing scalar block. See
+// CBattlezSpawnMgr_or_CGruntSpawnMgr config bundle at +0x38, and a trailing scalar block. See
 // <Gruntz/GruntzPlayer.h> for the layout.
 //
 // The class is non-polymorphic (no vtable). The five reconstructed members:
@@ -59,7 +59,7 @@ struct PlayerArchive {
     virtual void Save(void* buf, i32 n); // +0x30
 };
 
-// The embedded UnknownClassArrays config bundle at this+0x38: Serialize forwards
+// The embedded CBattlezSpawnMgr_or_CGruntSpawnMgr config bundle at this+0x38: Serialize forwards
 // its 4-arg command to the bundle's Method_02bfc0 (thunk 0x2df1 -> 0x2bfc0), a
 // __thiscall returning nonzero on success. Modeled as a tiny helper laid over
 // (this+0x38) so the `mov ecx,this+0x38; call` lowers + reloc-masks (no body).

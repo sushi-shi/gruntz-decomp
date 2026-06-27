@@ -23,8 +23,8 @@ RVA(0x000bccd0, 0x141) void CNetMgr::CNetMgr_0bccd0() {}  // high
 // ---- CTriggerMgr ----
 RVA(0x0007abc0, 0x4b6) void CTriggerMgr::CTriggerMgr_07abc0() {}  // high
 
-// ---- UnknownClassArrays ----
-RVA(0x0002b950, 0x513) void UnknownClassArrays::UnknownClassArrays_02b950() {}  // high
+// ---- CBattlezSpawnMgr_or_CGruntSpawnMgr ----
+RVA(0x0002b950, 0x513) void CBattlezSpawnMgr_or_CGruntSpawnMgr::UnknownClassArrays_02b950() {}  // high
 
 // ---- istream ----
 RVA(0x0016a490, 0x7a) void istream::istream_16a490() {}  // med

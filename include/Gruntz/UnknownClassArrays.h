@@ -20,10 +20,10 @@
 
 #include <Mfc.h> // CPtrArray, CDWordArray (real afxcoll, 0x14 layout)
 
-class UnknownClassArrays {
+class CBattlezSpawnMgr_or_CGruntSpawnMgr {
 public:
-    UnknownClassArrays();
-    ~UnknownClassArrays();
+    CBattlezSpawnMgr_or_CGruntSpawnMgr();
+    ~CBattlezSpawnMgr_or_CGruntSpawnMgr();
     void FreeArrays();
     i32 Method_025c20();
     void Clear_02ade0();

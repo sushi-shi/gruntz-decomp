@@ -87,14 +87,14 @@ struct Pair {
 class UnknownClassCGruntzMgrHarryPotter;
 
 /*
- * UnknownClassArrays — nested array bundle inside UnknownClassInCGruntzMgr.
+ * CBattlezSpawnMgr_or_CGruntSpawnMgr — nested array bundle inside CGruntSpawnLevel.
  * Ported from tomalla; almost entirely unknown (padding + int blocks + four MFC
  * arrays). No vtable. Size 0x144.
  */
-class UnknownClassArrays {
+class CBattlezSpawnMgr_or_CGruntSpawnMgr {
 public:
-    UnknownClassArrays();
-    ~UnknownClassArrays();
+    CBattlezSpawnMgr_or_CGruntSpawnMgr();
+    ~CBattlezSpawnMgr_or_CGruntSpawnMgr();
     void FreeArrays();
 
     char _pad000[0x18];                                                     // +0x000
@@ -121,13 +121,13 @@ public:
 }; // 0x144
 
 /*
- * UnknownClassInCGruntzMgr — a 0x238-byte sub-object; CGruntzMgr holds an array
+ * CGruntSpawnLevel — a 0x238-byte sub-object; CGruntzMgr holds an array
  * of 4 (one per player?). Ported from tomalla. No vtable.
  */
-class UnknownClassInCGruntzMgr {
+class CGruntSpawnLevel {
 public:
-    UnknownClassInCGruntzMgr();
-    ~UnknownClassInCGruntzMgr();
+    CGruntSpawnLevel();
+    ~CGruntSpawnLevel();
     void ResetFields();
 
     i32 fieldUnknown000;                                   // +0x000
@@ -140,7 +140,7 @@ public:
     char _pad024[4];                                       // +0x024
     i32 fieldUnknown028, fieldUnknown02C, fieldUnknown030; // +0x028..0x33
     char _pad034[4];                                       // +0x034
-    UnknownClassArrays unknownObjectArrays;                // +0x038 (0x144)
+    CBattlezSpawnMgr_or_CGruntSpawnMgr unknownObjectArrays;                // +0x038 (0x144)
     char _pad17C[0xA4];                                    // +0x17c
     i32 fieldUnknown220, fieldUnknown224, fieldUnknown228; // +0x220..
     i32 fieldUnknown22C, fieldUnknown230;                  // ..0x233
@@ -206,7 +206,7 @@ public:
     i32 fieldUnknown128, fieldUnknown12C, fieldUnknown130, fieldUnknown134,
         fieldUnknown138;                      // +0x128..0x13b
     char _pad13C[0x14];                       // +0x13c
-    UnknownClassInCGruntzMgr aUnknownObjs[4]; // +0x150 (4 * 0x238 = 0x8e0)
+    CGruntSpawnLevel aUnknownObjs[4]; // +0x150 (4 * 0x238 = 0x8e0)
 
     //@address: 00646498  (init 0x482ec0 / dtor 0x482f10)
     static Utils::MemoryPool<Pair> memory_pool;
