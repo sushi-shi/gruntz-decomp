@@ -1451,3 +1451,12 @@ flags = "base"
 unit = "tiletriggerfactory"
 source = "src/Gruntz/TileTriggerFactory.cpp"
 flags = "eh"
+
+[[unit]]
+unit = "ddrawpolyfill"
+source = "src/Gruntz/DDrawPolyFill.cpp"
+flags = "framed"
+[[unit]]
+unit = "cscanlinesurfacesave"
+source = "src/Image/CScanlineSurfaceSave.cpp"
+flags = "eh"

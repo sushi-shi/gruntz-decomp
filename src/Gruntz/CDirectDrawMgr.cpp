@@ -216,6 +216,92 @@ i32 CDDSurface::BltFast(u32 x, u32 y, CDDSurface* src, void* srcRect, u32 trans)
     return hr;
 }
 
+// The live screen RGB-format shift table (same globals ShadeTableCache reads): the
+// per-channel "up" shifts (ea0/ea4/ea8 = R/G/B) and the device "down" widths
+// (eac/eb0/eb4). Reloc-masked DIR32.
+DATA(0x00283ea0)
+extern i32 g_rUp; // 0x683ea0
+DATA(0x00283ea4)
+extern i32 g_gUp; // 0x683ea4
+DATA(0x00283ea8)
+extern i32 g_bUp; // 0x683ea8
+DATA(0x00283eac)
+extern i32 g_rDown; // 0x683eac
+DATA(0x00283eb0)
+extern i32 g_gDown; // 0x683eb0
+DATA(0x00283eb4)
+extern i32 g_bDown; // 0x683eb4
+
+// The three 64 KB RGB channel-spread lookup tables, one contiguous 0x30000 block:
+// G @0x653c9e, B @+0x10000, R @+0x20000. Indexed by a byte offset built from the
+// (a<<11) block + 2*n. Modeled as one base so the three writes keep retail's three
+// independent disp32 encodings (each masked by its own DIR32 reloc).
+DATA(0x00253c9e)
+extern u8 g_clut[]; // 0x653c9e (G; B=+0x10000, R=+0x20000)
+
+// BuildColorChannelTables (0x13f740, __cdecl) - precompute the per-channel CLUTs that
+// map a (row, hi, lo) triple onto a packed 16-bit colour. The 32x32x32 nest folds a
+// row/col interpolation (rounded /32) into a channel sum that is shifted into the R/G/B
+// field positions. The common 555 device (rUp==0xa, gUp==5, all downs==3) takes a fast
+// path with hard-coded R<<10 / G<<5 shifts; every other format re-reads the live shifts
+// per write (green gets an extra <<1).
+// @early-stop
+// scheduling tail (~97%): logic + the (a<<11)+2n index + the single-base disp32 table
+// writes are byte-exact; retail computes the blue `sum<<bShift` one slot earlier (before
+// the green store) than our cl schedules it. Hoisting it into a temp spills (regresses to
+// ~90%); not source-steerable. Entropy tail. topic:wall.
+RVA(0x0013f740, 0x1c8)
+void BuildColorChannelTables() {
+    if (g_rDown == 3 && g_gDown == 3 && g_bDown == 3 && g_rUp == 0xa && g_gUp == 5) {
+        i32 bShift = g_bUp;
+        i32 a = 0;
+        i32 stepA = 0x20;
+        do {
+            i32 base = a << 0xb;
+            i32 varB = 0;
+            i32 countB = 0x20;
+            do {
+                i32 bDiv = varB / 32;
+                i32 varD = 0;
+                i32 k = 0x20;
+                do {
+                    base += 2;
+                    i32 sum = varD / 32 + bDiv;
+                    *(i16*)(g_clut + 0x20000 + base) = (i16)(sum << 0xa);
+                    *(i16*)(g_clut + base) = (i16)(sum << 5);
+                    *(i16*)(g_clut + 0x10000 + base) = (i16)(sum << bShift);
+                    varD += stepA;
+                } while (--k != 0);
+                varB += a;
+            } while (--countB != 0);
+            a++;
+        } while (--stepA > 0);
+    } else {
+        i32 a = 0;
+        i32 stepA = 0x20;
+        do {
+            i32 base = a << 0xb;
+            i32 varB = 0;
+            i32 countB = 0x20;
+            do {
+                i32 bDiv = varB / 32;
+                i32 varD = 0;
+                i32 k = 0x20;
+                do {
+                    base += 2;
+                    i32 sum = varD / 32 + bDiv;
+                    *(i16*)(g_clut + 0x20000 + base) = (i16)(sum << g_rUp);
+                    *(i16*)(g_clut + base) = (i16)((sum << g_gUp) << 1);
+                    *(i16*)(g_clut + 0x10000 + base) = (i16)(sum << g_bUp);
+                    varD += stepA;
+                } while (--k != 0);
+                varB += a;
+            } while (--countB != 0);
+            a++;
+        } while (--stepA > 0);
+    }
+}
+
 // CDDSurface::GetColorKey (__thiscall). GetColorKey(8, &local); NOCOLORKEY is a
 // non-error returning -1; on success returns the key, on error reports + -1.
 RVA(0x0013fa60, 0x40)

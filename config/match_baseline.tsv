@@ -56,7 +56,7 @@ cddrawworkerlist	11	8
 cddrawworkermapsmall	10	3
 cddrawworkerregistry	26	12
 cddrawworkers	4	4
-cdirectdrawmgr	27	11
+cdirectdrawmgr	28	11
 cdonothing	2	2
 cdonothingnormaldtor	1	1
 cdroppedobject	4	3
@@ -110,6 +110,7 @@ cremusnode	4	2
 cremusreadstream	6	4
 crt_streambuf	10	8
 cscanlinesurface	4	1
+cscanlinesurfacesave	1	0
 csecretleveltrigger	4	3
 cserialsub34	1	0
 cseverusentrylist	2	1
@@ -129,13 +130,14 @@ cwormholeacts	2	1
 cwwdobjmgr	1	0
 cwwdobjmgrfactories	4	0
 databuffer	7	5
+ddrawpolyfill	1	0
 deflate	6	6
 dialogs	35	14
 directinputmgr2	36	32
 directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	15	0
-engine_boundary	236	0
+engine_boundary	231	0
 engine_discovered	51	0
 engine_label_stubs	437	105
 engine_unmatched	264	0
@@ -192,7 +194,7 @@ inputdeviceconfig	1	0
 interfaceobject	2	1
 kitchenslime	7	4
 leafelementobj	2	2
-leveltilevalidation	2	0
+leveltilevalidation	3	0
 lightfxmgr	3	3
 loadlevelbymode	1	0
 logicactreg	3	0
@@ -272,7 +274,7 @@ tiletriggerlogic	2	1
 tiletriggertransition	7	5
 tilewireswitchlogic	1	0
 trees	19	19
-triggermgr	48	8
+triggermgr	49	8
 triggermgr_eh	4	0
 typekeycoll	10	5
 uncompr	1	1
@@ -690,6 +692,7 @@ cdirectdrawmgr	?Apply@CDDPalette@@QAEXH@Z	97.5758	97.5758	1	c2b7f4717ef4	0x147c8
 cdirectdrawmgr	?Blt@CDDSurface@@QAEHPAV1@@Z	100.0000	100.0000	3	f79e89a0ee67	0x13ee60
 cdirectdrawmgr	?BltEx@CDDSurface@@QAEHPAXPAV1@0I0@Z	100.0000	100.0000	2	50e520fe06c6	0x13eef0
 cdirectdrawmgr	?BltFast@CDDSurface@@QAEHIIPAV1@PAXI@Z	100.0000	100.0000	2	709a5b24a748	0x13ef90
+cdirectdrawmgr	?BuildColorChannelTables@@YAXXZ	96.8561	96.8561	1	e03ea6f4dd2a	0x13f740
 cdirectdrawmgr	?CheckMode16@CDDPageMgr@@QAEHXZ	83.9000	83.9000	1	3acf127e615a	0x17d2b0
 cdirectdrawmgr	?Create@CDDPalette@@QAEHPAUIDirectDraw2Z@@PAXI@Z	99.5455	99.5455	1	a95e29b12327	0x147390
 cdirectdrawmgr	?CreateDevice@CDirectDrawMgr@@QAEHPAX0HHHI@Z	95.5882	95.5882	1	77ccf72ae821	0x141dc0
@@ -1028,6 +1031,7 @@ cscanlinesurface	?Convert8To16@CScanlineSurface@@QAEHPAXPAV1@0@Z	68.6129	68.6129
 cscanlinesurface	?EnsureSize@CScanlineSurface@@QAEHPAXHHHH@Z	100.0000	100.0000	1	44075cfb09a4	0x175ce0
 cscanlinesurface	?Fill@CScanlineSurface@@QAEXH@Z	91.4194	91.4194	1	64fc9665081a	0x175d50
 cscanlinesurface	?SoftSurfaceBlit@@YGHPAXHHH@Z	67.3077	67.3077	1	9390a80fe8d3	0x175a00
+cscanlinesurfacesave	?SaveBmp@CScanlineSurface@@QAEHPBDPAX@Z	57.1449	57.1449	1	2ce6e4b930f4	0x176b30
 csecretleveltrigger	??1CSecretLevelTrigger@@UAE@XZ	100.0000	100.0000	1	1a6afbfadd87	0x10c50
 csecretleveltrigger	?InitActReg@CSecretLevelTrigger@@SAXXZ	100.0000	100.0000	1	3a42fbe06ecf	0x426e0
 csecretleveltrigger	?RegisterActs@CSecretLevelTrigger@@SAXXZ	92.9130	92.9130	1	e412341acec4	0x428c0
@@ -1086,6 +1090,7 @@ databuffer	?LoadFromMem@CDataBuffer@@QAEHPAXIH@Z	82.7073	82.7073	1	059a0c8fab44	
 databuffer	?ReadFrom@CDataBuffer@@QAEHPAVCFile@@H@Z	100.0000	100.0000	1	146cd6d2d4dc	0x1501f0
 databuffer	?Reset@CDataBuffer@@QAEXXZ	100.0000	100.0000	2	75008ba8c576	0x150190
 databuffer	?Set@CDataBuffer@@QAEHIH@Z	100.0000	100.0000	2	637f711a934b	0x1501a0
+ddrawpolyfill	?FillPolygon@@YAHPAUFillVert@@HPAVCDDSurface@@F@Z	67.4485	67.4485	1	44a8c1f046af	0x146fe0
 deflate	_deflate_fast	100.0000	100.0000	1	3de2151b888f	0x186db0
 deflate	_deflate_slow	100.0000	100.0000	1	963869a51c2d	0x187170
 deflate	_deflate_stored	100.0000	100.0000	1	f3d8403d157d	0x186af0
@@ -1275,7 +1280,6 @@ engine_boundary	?Boundary_056f80@@YAXXZ	0.8333	0.8333	2	d31b844b95ba	0x56f80
 engine_boundary	?Boundary_05bc50@@YAXXZ	20.0000	20.0000	2	aff6b7b7bff4	0x5bc50
 engine_boundary	?Boundary_077dc0@@YAXXZ	4.4444	4.4444	2	7532af087362	0x77dc0
 engine_boundary	?Boundary_0788d0@@YAXXZ	3.4483	3.4483	2	1393dc22de23	0x788d0
-engine_boundary	?Boundary_07cd40@@YAXXZ	0.2985	0.2985	2	803ef7e6642b	0x7cd40
 engine_boundary	?Boundary_080cf0@@YAXXZ	25.0000	25.0000	2	7a819c56d2ac	0x80cf0
 engine_boundary	?Boundary_082aa0@@YAXXZ	25.0000	25.0000	2	606fcf8308c0	0x82aa0
 engine_boundary	?Boundary_082b20@@YAXXZ	20.0000	20.0000	2	802ada62e33a	0x82b20
@@ -1316,7 +1320,6 @@ engine_boundary	?Boundary_0bd430@@YAXXZ	20.0000	20.0000	2	f74171d1e2fe	0xbd430
 engine_boundary	?Boundary_0bd450@@YAXXZ	12.5000	12.5000	2	7e6329f4d124	0xbd450
 engine_boundary	?Boundary_0bd7f0@@YAXXZ	20.0000	20.0000	2	68d20db436e9	0xbd7f0
 engine_boundary	?Boundary_0cef50@@YAXXZ	4.5455	4.5455	2	23c07606b0c9	0xcef50
-engine_boundary	?Boundary_0d2b20@@YAXXZ	0.6024	0.6024	2	64e959194a19	0xd2b20
 engine_boundary	?Boundary_0d5d70@@YAXXZ	16.6667	16.6667	2	f463985680de	0xd5d70
 engine_boundary	?Boundary_0d5e20@@YAXXZ	2.8571	2.8571	2	4e874c49ff68	0xd5e20
 engine_boundary	?Boundary_0db200@@YAXXZ	1.2121	1.2121	2	670ebbd319aa	0xdb200
@@ -1383,7 +1386,6 @@ engine_boundary	?Boundary_13e070@@YAXXZ	20.0000	20.0000	2	b87b817ec23e	0x13e070
 engine_boundary	?Boundary_13e0a0@@YAXXZ	2.3529	2.3529	2	6187f7723149	0x13e0a0
 engine_boundary	?Boundary_13e7d0@@YAXXZ	0.9756	0.9756	2	d310f04f12ae	0x13e7d0
 engine_boundary	?Boundary_13ee30@@YAXXZ	5.5556	5.5556	2	e9f6902e78c3	0x13ee30
-engine_boundary	?Boundary_13f740@@YAXXZ	0.7576	0.7576	2	73313d21a470	0x13f740
 engine_boundary	?Boundary_1413b0@@YAXXZ	16.6667	16.6667	2	1b71ded2c194	0x1413b0
 engine_boundary	?Boundary_1413c0@@YAXXZ	13.3333	13.3333	2	446263a8597c	0x1413c0
 engine_boundary	?Boundary_141c80@@YAXXZ	20.0000	20.0000	2	e21434fb4611	0x141c80
@@ -1397,7 +1399,6 @@ engine_boundary	?Boundary_1437f0@@YAXXZ	11.1111	11.1111	2	2caa9f97b022	0x1437f0
 engine_boundary	?Boundary_143950@@YAXXZ	1.1765	1.1765	2	290aac6d0dd2	0x143950
 engine_boundary	?Boundary_143c20@@YAXXZ	0.8696	0.8696	2	0ca2d366574b	0x143c20
 engine_boundary	?Boundary_145e00@@YAXXZ	5.8824	5.8824	2	04ce92668c7c	0x145e00
-engine_boundary	?Boundary_146fe0@@YAXXZ	0.6061	0.6061	2	c849e8a6e72b	0x146fe0
 engine_boundary	?Boundary_1471d0@@YAXXZ	0.7194	0.7194	2	cb287faca66f	0x1471d0
 engine_boundary	?Boundary_148250@@YAXXZ	2.5641	2.5641	2	0d2c81d68da1	0x148250
 engine_boundary	?Boundary_148a50@@YAXXZ	1.2903	1.2903	2	66ec2413ec96	0x148a50
@@ -1436,7 +1437,6 @@ engine_boundary	?Boundary_16be60@@YAXXZ	2.6667	2.6667	2	78071ccbf190	0x16be60
 engine_boundary	?Boundary_16d790@@YAXXZ	0.7143	0.7143	2	5cd48def5c1b	0x16d790
 engine_boundary	?Boundary_174ed0@@YAXXZ	1.1765	1.1765	2	32762a10d07f	0x174ed0
 engine_boundary	?Boundary_175780@@YAXXZ	1.8182	1.8182	2	1be00794c735	0x175780
-engine_boundary	?Boundary_176b30@@YAXXZ	0.2899	0.2899	2	598b644c8ad2	0x176b30
 engine_boundary	?Boundary_176d20@@YAXXZ	0.8696	0.8696	2	3a0a8e740969	0x176d20
 engine_boundary	?Boundary_17b510@@YAXXZ	3.5714	3.5714	2	60ac7308995c	0x17b510
 engine_boundary	?Boundary_17b570@@YAXXZ	8.3333	8.3333	2	a6f12400617a	0x17b570
@@ -2819,6 +2819,7 @@ kitchenslime	?Serialize@CKitchenSlime@@QAEHPAXHHH@Z	100.0000	100.0000	1	f04e5243
 kitchenslime	?Tick@CKitchenSlime@@QAEHXZ	94.8551	94.8551	4	dee22bdefc90	0xb2ca0
 leafelementobj	?LoadSoundA@LeafElementObj@@QAEHPAX@Z	100.0000	100.0000	1	8d497acabb49	0x1586e0
 leafelementobj	?LoadSoundB@LeafElementObj@@QAEHPAX@Z	100.0000	100.0000	1	e7de8a913105	0x158720
+leveltilevalidation	?PlaceStartGruntz@CLevelValidator@@QAEHXZ	65.2349	65.2349	1	da7e240d5f7c	0xd2b20
 leveltilevalidation	?PositionBridgeToggle@CLevelValidator@@QAEHHH@Z	91.2321	91.2321	1	939f7480c9e7	0xd5b20
 leveltilevalidation	?ValidateLevelTiles@CLevelValidator@@QAEHXZ	17.0098	17.0098	2	791c1428e1a4	0xd2dd0
 lightfxmgr	?Init@CLightFxMgr@@QAEHPAVCGameRegistry@@PAX@Z	100.0000	100.0000	1	cabaf9fef223	0x9dad0
@@ -3437,6 +3438,7 @@ triggermgr	?ApplyTriggerB@CTriggerMgr@@QAEHHHHH@Z	13.0886	13.0886	2	f555874a0aaf
 triggermgr	?ByteTableHas@CTriggerMgr@@QAEHH@Z	62.0370	62.0370	3	df3f90ab5d78	0x79b30
 triggermgr	?CellDispatch@CTriggerMgr@@QAEHHHHH@Z	100.0000	100.0000	3	a1ad6c6f57fe	0x6bcb0
 triggermgr	?CellHitTest@CTriggerMgr@@QAEPAXHHPAH0H@Z	73.4419	73.4419	1	32cb03d0d199	0x6bea0
+triggermgr	?CenterSelectionGroup@CTriggerMgr@@QAEHH@Z	86.8284	86.8284	1	7a9772fe06c9	0x7cd40
 triggermgr	?Cleanup@CTriggerMgr@@QAEXXZ	100.0000	100.0000	1	7423cc9ff1b0	0x6b680
 triggermgr	?ClearCell@CTriggerMgr@@QAEHHHHHH@Z	59.2576	59.2576	1	f5f91b1b326a	0x6e800
 triggermgr	?ClearGridRange@CTriggerMgr@@QAEHH@Z	52.1094	52.1094	1	3dc60b0e14fd	0x6bd40

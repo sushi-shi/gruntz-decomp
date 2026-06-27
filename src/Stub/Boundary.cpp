@@ -118,8 +118,6 @@ RVA(0x00077dc0, 0x1d)
 void Boundary_077dc0() {} // proximity: CBrickz@-0x630 | CTriggerMgr@+0x4a0
 RVA(0x000788d0, 0x64)
 void Boundary_0788d0() {} // proximity: CTriggerMgr@-0x50 | EngineLabelBacklog@+0x90
-RVA(0x0007cd40, 0x18f)
-void Boundary_07cd40() {} // proximity: EngineLabelBacklog@-0x720 | CTriggerMgr@+0x380
 RVA(0x00080cf0, 0x12)
 void Boundary_080cf0() {} // proximity: CGruntzApp@-0x80 | CGameApp@+0xe0
 RVA(0x00082aa0, 0x10)
@@ -200,8 +198,6 @@ RVA(0x000bd7f0, 0xa)
 void Boundary_0bd7f0() {} // proximity: CFileIO@-0x410 | CMultiStartDlg@+0x3f60
 RVA(0x000cef50, 0x46)
 void Boundary_0cef50() {} // proximity: CGameLevel@-0x140 | CPlay@+0x11d0
-RVA(0x000d2b20, 0x21f)
-void Boundary_0d2b20() {} // proximity: CGameModeObj@-0xff0 | CLevelValidator@+0x2b0
 RVA(0x000d5d70, 0x16)
 void Boundary_0d5d70() {} // proximity: CLevelValidator@-0x2fa0 | CImage@+0x110
 RVA(0x000d5e20, 0x1b)
@@ -334,8 +330,6 @@ RVA(0x0013e7d0, 0x73)
 void Boundary_13e7d0() {} // proximity: CFileImage@-0x70 | CDDSurface@+0x80
 RVA(0x0013ee30, 0x29)
 void Boundary_13ee30() {} // proximity: CFileImage@-0x80 | CDDSurface@+0x30
-RVA(0x0013f740, 0x1c8)
-void Boundary_13f740() {} // proximity: CDDSurface@-0x7b0 | CFileImage@+0x1d0
 RVA(0x001413b0, 0xf)
 void Boundary_1413b0() {} // proximity: CFileImage@-0x60 | CDirectDrawMgr@+0x50
 RVA(0x001413c0, 0xb)
@@ -362,8 +356,6 @@ RVA(0x00143c20, 0x84)
 void Boundary_143c20() {} // proximity: CDDrawPtrCollections@-0xc60 | CFileImage@+0x3a0
 RVA(0x00145e00, 0x26)
 void Boundary_145e00() {} // proximity: CFileImage@-0x130 | CDDPalette@+0x1590
-RVA(0x00146fe0, 0x1e2)
-void Boundary_146fe0() {} // proximity: CFileImage@-0x1310 | CDDPalette@+0x3b0
 RVA(0x001471d0, 0x1b4)
 void Boundary_1471d0() {} // proximity: CFileImage@-0x1500 | CDDPalette@+0x1c0
 RVA(0x00148250, 0x61)
@@ -440,8 +432,6 @@ RVA(0x00174ed0, 0x5d)
 void Boundary_174ed0() {} // proximity: CButeMgr@-0x710 | CImage@+0x8f0
 RVA(0x00175780, 0x3f)
 void Boundary_175780() {} // proximity: CButeMgr@-0xfc0 | CImage@+0x40
-RVA(0x00176b30, 0x1e5)
-void Boundary_176b30() {} // proximity: CImage@-0x360 | CNetMgr@+0xb70
 RVA(0x00176d20, 0x71)
 void Boundary_176d20() {} // proximity: CImage@-0x550 | CNetMgr@+0x980
 RVA(0x0017b510, 0x55)

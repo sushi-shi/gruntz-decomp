@@ -249,6 +249,13 @@ public:
     // reset +0x3e8. ret 1. (__thiscall: ret 4.)
     i32 RebuildSelectionList(i32 idx);
 
+    // 0x7cd40: CenterSelectionGroup(slot) - ResetAll + overlay tick, then walk the slot's
+    // selection list (+0x2d4[slot*0x1c]), ResetCell each live cell and recycle dead nodes.
+    // On the second pass for the same slot (m_3e8==slot) accumulate the cell bbox and scroll-
+    // center the world on it (then m_3e8=-1); else latch m_3e8=slot. ret 1 (0 when the slot
+    // list is empty). (__thiscall: ret 4.)
+    i32 CenterSelectionGroup(i32 slot);
+
     // 0x7d450 / 0x7d5c0: the two region-toggle handlers. If a pending fx (+0x2a8) is live,
     // clear it and LoadCursorSprites(0,0); else look up the active record cell and, by its
     // logic kind (+0x170/+0x19c/+0x198), either ResetGroup, set a pending fx, or just tick
