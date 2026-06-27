@@ -169,13 +169,12 @@ engine_attributed	15	0
 engine_boundary	196	0
 engine_discovered	33	0
 engine_label_stubs	402	105
-engine_unmatched	6	0
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
 faderradial	1	0
 fadershapesetup	1	0
-fadertilerender	1	0
+fadertilerender	2	0
 feccrypt	3	2
 filemem	9	8
 filestream	13	9
@@ -200,6 +199,7 @@ gruntmovestep	1	0
 gruntpuddle	4	2
 gruntspawnconfig	15	8
 grunttubeanim	1	0
+gruntupdatestep	2	0
 gruntvoice	5	4
 gruntzapp	10	9
 gruntzcmdmgr	12	10
@@ -209,6 +209,7 @@ gruntzplayer	8	3
 gruntzsoundz	12	11
 gruntzwnd	9	8
 hash	10	9
+heapdiag	1	0
 helperhost	2	0
 iconloaders	5	1
 image	39	26
@@ -232,6 +233,7 @@ interfaceobject	2	1
 kitchenslime	7	4
 latencylist	2	2
 leafelementobj	2	2
+levelsync	1	0
 leveltilevalidation	3	0
 lightfxmgr	3	3
 loadlevelbymode	1	0
@@ -309,6 +311,7 @@ orphanleaves	7	7
 orphanmethods	4	2
 palettebmp	1	0
 palettecopy	1	0
+playercommandstep	1	0
 polyclipraster	1	0
 projactcache	3	1
 projactregistry	4	3
@@ -2050,12 +2053,6 @@ engine_label_stubs	_RezStrrchr	8.6957	8.6957	1	cpp:2262ffc5f902	0x120680
 engine_label_stubs	_StartupGate	0.0000	0.0000	1	cpp:2262ffc5f902	0x2f59
 engine_label_stubs	_SubstringMatch	2.8986	2.8986	1	cpp:2262ffc5f902	0x120090
 engine_label_stubs	_VersionScan	8.6957	8.6957	1	cpp:2262ffc5f902	0x120900
-engine_unmatched	?Unmatched_0d1b60@@YAXXZ	0.0452	0.0452	1	c68199c5794a	0xd1b60
-engine_unmatched	?Unmatched_0f0130@@YAXXZ	0.1761	0.1761	1	ad8cb88c7979	0xf0130
-engine_unmatched	?Unmatched_0f71c0@@YAXXZ	0.1789	0.1789	1	f03b261cc267	0xf71c0
-engine_unmatched	?Unmatched_1084d0@@YAXXZ	0.0438	0.0438	1	733c20a72572	0x1084d0
-engine_unmatched	?Unmatched_118a30@@YAXXZ	1.4085	1.4085	1	5d19500e03c1	0x118a30
-engine_unmatched	?Unmatched_181e50@@YAXXZ	0.0648	0.0648	1	955d1d4e182f	0x181e50
 engine_unmatched_lib	?Unmatched_124848@@YAXXZ	4.0000	4.0000	1	81c658f8d097	0x124848
 engine_unmatched_lib	?Unmatched_130570@@YAXXZ	33.3333	33.3333	2	82aafcb7cba9	0x130570
 engine_unmatched_lib	?Unmatched_18bf4d@@YAXXZ	2.1739	2.1739	1	fba7903ca863	0x18bf4d
@@ -2077,6 +2074,7 @@ eyecandytypetags	?GetTypeTag@CTileLogicTag429@@QAEHXZ	100.0000	100.0000	1	a1b467
 faderradial	?Build@CFaderRadial@@QAEHPAUFrConfig@@@Z	63.2690	63.2690	2	0dcdc6f34b74	0x17fa40
 fadershapesetup	?Setup@CFaderShape@@QAEHPAUFInit@@@Z	40.6732	40.6732	1	cb2d7152a556	0x1817e0
 fadertilerender	?RenderTile@CFaderTileRender@@QAEXHH@Z	59.0975	59.0975	1	493537d54304	0x182610
+fadertilerender	?RenderWarpTile@CFaderTileRender@@QAEXHH@Z	44.0194	44.0194	1	42cfac26153d	0x181e50
 feccrypt	?FecDecode@@YGXPBDPADG@Z	100.0000	100.0000	1	5b0e31c468f8	0x17bfe0
 feccrypt	?FecEncode@@YGXPBDPAD@Z	100.0000	100.0000	1	6bc3315ae515	0x17bf70
 feccrypt	?ReadArchive@CFecFile@@QAEHPBD@Z	71.3600	71.3600	2	b0a1392b9cfe	0x17b5f0
@@ -2404,6 +2402,8 @@ gruntspawnconfig	?PickWeighted@CGruntSpawnConfig@@QAEHHH@Z	1.0870	1.0870	1	b9cc2
 gruntspawnconfig	?ResetPicks@CGruntSpawnConfig@@QAEXXZ	100.0000	100.0000	1	6d4d20bac4c4	0x11c7f0
 gruntspawnconfig	?StopVoice@CGruntSpawnConfig@@QAEXH@Z	100.0000	100.0000	1	3b4c120126c9	0x11c730
 grunttubeanim	?SetupTubeAnim@CGruntTube@@QAEHH@Z	72.3636	72.3636	1	bc25d7867fff	0x50a50
+gruntupdatestep	?SeekTarget@CGruntStep@@QAEHXZ	13.3685	13.3685	1	bcdf7faaf4cc	0xf71c0
+gruntupdatestep	?UpdateArrival@CGruntStep@@QAEHXZ	33.5792	33.5792	1	ecf9d373769d	0xf0130
 gruntvoice	??1CGruntVoice@@UAE@XZ	100.0000	100.0000	1	800298c90ba0	0x119ae0
 gruntvoice	?Dispatch@CGruntVoice@@QAEXH@Z	100.0000	100.0000	2	254b7ed0b958	0x119e40
 gruntvoice	?InitActReg@CGruntVoice@@SAXXZ	100.0000	100.0000	1	e700d1dbab0c	0x119dc0
@@ -2577,6 +2577,7 @@ hash	?Remove@CHashBase@@QAEXPAUCHashEntry@@@Z	100.0000	100.0000	1	8a54ef1211a7	0
 hash	?RemoveAll@CHashBase@@QAEXXZ	100.0000	100.0000	1	04dad41852b8	0x184a40
 hash	?Walk@CHash@@QAEPAXPBDH@Z	100.0000	100.0000	1	51b6d0275c7f	0x13c270
 hash	?Walk@CHashB@@QAEPAXPBDH@Z	100.0000	100.0000	1	12b47125ba1c	0x13c3f0
+heapdiag	?HeapCheckDump@@YAHH@Z	96.7042	96.7042	1	d1a9a5a46091	0x118a30
 helperhost	?Helper_164790@HelperHost@@QAEHHH@Z	90.5556	90.5556	1	6e310bcc0780	0x164790
 helperhost	?Helper_166040@HelperHost@@QAEHHH@Z	95.0000	95.0000	1	1c04f9c106f5	0x166040
 iconloaders	?BuildBootyPerfectAnimation@EngineLabelBacklog@@QAEHXZ	100.0000	100.0000	4	ac754f563924	0x1c070
@@ -2708,6 +2709,7 @@ latencylist	?PopulateModemFast@CLatencyList@@QAEHXZ	100.0000	100.0000	1	f54745ae
 latencylist	?PopulateModemSlow@CLatencyList@@QAEHXZ	100.0000	100.0000	1	cfacc7c87a46	0x37b40
 leafelementobj	?LoadSoundA@LeafElementObj@@QAEHPAX@Z	100.0000	100.0000	1	8d497acabb49	0x1586e0
 leafelementobj	?LoadSoundB@LeafElementObj@@QAEHPAX@Z	100.0000	100.0000	1	e7de8a913105	0x158720
+levelsync	?Sync@CLevelSync@@QAEHPAUSyncStream@@HHH@Z	47.0701	47.0701	1	d92c6f9004d9	0x1084d0
 leveltilevalidation	?PlaceStartGruntz@CLevelValidator@@QAEHXZ	65.2349	65.2349	1	da7e240d5f7c	0xd2b20
 leveltilevalidation	?PositionBridgeToggle@CLevelValidator@@QAEHHH@Z	91.2321	91.2321	1	939f7480c9e7	0xd5b20
 leveltilevalidation	?ValidateLevelTiles@CLevelValidator@@QAEHXZ	17.0098	17.0098	2	791c1428e1a4	0xd2dd0
@@ -3050,6 +3052,7 @@ orphanmethods	?Step@CState95@@QAEHH@Z	100.0000	100.0000	1	676520cbbd0b	0x95140
 orphanmethods	?Tick@CStrikeEffect@@QAEHXZ	98.9429	98.9429	1	4e61b877ab77	0xb4350
 palettebmp	?LoadBmpPalette@CPalLoader@@QAEHPBDH@Z	98.4889	98.4889	2	dc1d1e374304	0x177480
 palettecopy	?UploadPalette@CPaletteHost@@QAEXXZ	61.1613	61.1613	1	a0802ff9a4b4	0x17ca10
+playercommandstep	?Dispatch@CCmdHandler@@QAEHIIIIIII@Z	16.7062	16.7062	1	95482dec7f17	0xd1b60
 polyclipraster	?RotateRasterize@@YAHPAUClipVtx@@HHHHHHHHH@Z	53.4152	53.4152	1	0f617ce05cfb	0x146550
 projactcache	??0zBitVec@@QAE@HH@Z	77.7679	77.7679	1	cebeacca76fa	0x16d790
 projactcache	?EnsureSize@zBitVec@@QAEHH@Z	100.0000	100.0000	1	151b7a363677	0x1936e0

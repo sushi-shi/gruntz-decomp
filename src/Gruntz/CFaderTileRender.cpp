@@ -29,7 +29,8 @@ struct TileLut {
 
 class CFaderTileRender {
 public:
-    void RenderTile(i32 arg0, i32 arg1); // 0x182610
+    void RenderTile(i32 arg0, i32 arg1);     // 0x182610
+    void RenderWarpTile(i32 arg0, i32 arg1); // 0x181e50
 
     char m_00[0x1c];
     TileLut* m_1c; // +0x1c remap-table descriptor
@@ -43,8 +44,8 @@ public:
     i32 m_54;  // +0x54 dest-strip mode (copy vs zero)
     i32 m_58;  // +0x58 half-width (line is 2*m_58 pixels)
     i32 m_5c;  // +0x5c LUT-gather flag
-    char m_60[0x64 - 0x60];
-    i32 m_64; // +0x64 column count
+    i32 m_60;  // +0x60 wrap span (used by the PI-scaled warp)
+    i32 m_64;  // +0x64 column count
     char m_68[0x478 - 0x68];
     u8** m_478; // +0x478 per-pixel source-tap table (pointers / indices)
     u8* m_47c;  // +0x47c straight src base
@@ -142,5 +143,262 @@ void CFaderTileRender::RenderTile(i32 arg0, i32 arg1) {
         for (i32 n = bpp * rowBytes; n > 0; n--) {
             *d++ = *s++;
         }
+    }
+}
+
+// ===========================================================================
+// 0x181e50 - RenderWarpTile: the PI-scaled counterpart of RenderTile. Computes a
+// per-tile column split point from a circular (m_58 * PI) arc scaling, then for
+// each of m_64 columns gathers a (2*m_58) line (straight bytes + the m_478-tapped
+// remainder, or the m_5c LUT path) and writes it back, with the m_54 copy/zero
+// dest strip. param_2 = base pixel row, param_3 = leading width.
+// ===========================================================================
+// @early-stop
+// Dual wall: (1) the same deep-loop / many-live-base regalloc schedule that parks
+// the sibling RenderTile, and (2) the x87 arc/scale block (fild/fmul PI/fidiv/fimul
+// /__ftol) whose fp-stack scheduling cl reorders. Logic (the two condition-gated
+// scroll halves, the per-bpp 1/2/3 gather, the LUT remap, the copy/zero strip and
+// the scratch write-back) is reconstructed faithfully; FP scheduling + spill order
+// park it. Final-sweep candidate.
+RVA(0x00181e50, 0x7b9)
+void CFaderTileRender::RenderWarpTile(i32 arg0, i32 arg1) {
+    i32 stride = m_58 * 2;
+    if (arg1 <= 0) {
+        return;
+    }
+    i32 arc = (i32)((double)m_58 * 3.14159);
+    i32 bpp = m_38->m_b0;
+
+    i32 colBase;
+    if ((m_50 == 1 && m_54 != 0) || (m_50 == 2 && m_54 == 0)) {
+        colBase = stride - (i32)((double)stride / (arc - m_58) * (m_60 - arg0 - stride));
+    } else {
+        colBase = arg0;
+    }
+    if ((m_50 == 1 && m_54 == 0) || (m_50 == 2 && m_54 != 0)) {
+        colBase = (i32)((double)stride / (arc - m_58) * arg0);
+    }
+
+    if ((m_50 == 1 && m_54 != 0) || (m_50 == 2 && m_54 == 0)) {
+        i32 col = 0;
+        if (m_64 > 0) {
+            i32 base = bpp * arg0;
+            do {
+                u8* dstLine = (u8*)(m_44[col] + base + (i32)m_47c);
+                i32 gsrc = m_4c[col] + base + (i32)m_484;
+                i32 ssrc = m_48[col] + base + (i32)m_480;
+                if (m_5c == 0) {
+                    if (bpp == 1) {
+                        i32 i = 0;
+                        i32 t = colBase;
+                        if (colBase > 0) {
+                            do {
+                                *(u8*)(i + (i32)m_488) = *(u8*)(ssrc + i);
+                                i++;
+                            } while (i < colBase);
+                        }
+                        for (; t < stride; t++) {
+                            *(u8*)(t + (i32)m_488) = *(u8*)((i32)m_478[t] + gsrc);
+                        }
+                    } else if (bpp == 2) {
+                        i32 i = 0;
+                        i32 t = colBase;
+                        if (colBase > 0) {
+                            do {
+                                i32 o = i * 2;
+                                *(u8*)(o + (i32)m_488) = *(u8*)(ssrc + o);
+                                *(u8*)(o + 1 + (i32)m_488) = *(u8*)(ssrc + 1 + o);
+                                i++;
+                            } while (i < colBase);
+                        }
+                        while (t < stride) {
+                            i32 e = t + 1;
+                            *(u8*)((i32)m_488 - 2 + e * 2) = *(u8*)(gsrc + (i32)m_478[t] * 2);
+                            *(u8*)((i32)m_488 - 1 + e * 2) = *(u8*)(gsrc + 1 + (i32)m_478[t] * 2);
+                            t = e;
+                        }
+                    } else if (bpp == 3) {
+                        if (colBase > 0) {
+                            i32 d = 0;
+                            u8* sp = (u8*)(ssrc + 2);
+                            i32 c = colBase;
+                            do {
+                                *(u8*)(d + (i32)m_488) = sp[-2];
+                                *(u8*)(d + 1 + (i32)m_488) = sp[-1];
+                                *(u8*)(d + 2 + (i32)m_488) = *sp;
+                                d += 3;
+                                c--;
+                                sp += 3;
+                            } while (c != 0);
+                        }
+                        if (colBase < stride) {
+                            i32 d = colBase * 3;
+                            for (i32 t = colBase; t < stride; t++) {
+                                *(u8*)(d + (i32)m_488) = *(u8*)(gsrc + (i32)m_478[t] * 3);
+                                *(u8*)(d + 1 + (i32)m_488) = *(u8*)((i32)m_478[t] * 3 + 1 + gsrc);
+                                *(u8*)(d + 2 + (i32)m_488) = *(u8*)((i32)m_478[t] * 3 + 2 + gsrc);
+                                d += 3;
+                            }
+                        }
+                    }
+                } else {
+                    i32 lut = (i32)m_1c->m_08;
+                    i32 i = 0;
+                    i32 t = colBase;
+                    if (colBase > 0) {
+                        do {
+                            *(u8*)(i + (i32)m_488) = *(u8*)(ssrc + i);
+                            i++;
+                        } while (i < colBase);
+                    }
+                    for (; t < stride; t++) {
+                        *(u8*)(t + (i32)m_488) =
+                            *(u8*)((u32)m_48c[t] + lut + (u32) * (u8*)((i32)m_478[t] + gsrc) * 0x40);
+                    }
+                }
+                u8* sp = m_488;
+                i32 cnt = bpp * stride;
+                u8* dp = dstLine;
+                i32 n = cnt;
+                if (cnt > 0) {
+                    do {
+                        *dp = *sp;
+                        sp++;
+                        n--;
+                        dp++;
+                    } while (n != 0);
+                }
+                if (m_54 == 0) {
+                    if (bpp * arg1 > 0) {
+                        memset(dstLine + cnt, 0, bpp * arg1);
+                    }
+                } else {
+                    i32 c2 = bpp * arg1;
+                    dstLine -= c2;
+                    u8* s2 = (u8*)((arg0 - arg1) * bpp + m_48[col] + (i32)m_480);
+                    if (c2 > 0) {
+                        do {
+                            *dstLine = *s2;
+                            dstLine++;
+                            s2++;
+                            c2--;
+                        } while (c2 != 0);
+                    }
+                }
+                col++;
+            } while (col < m_64);
+        }
+    } else if (((m_50 == 1 && m_54 == 0) || (m_50 == 2 && m_54 != 0)) && m_64 > 0) {
+        i32 col = 0;
+        i32 base = bpp * arg0;
+        do {
+            u8* dstLine = (u8*)(m_44[col] + base + (i32)m_47c);
+            i32 gsrc = m_4c[col] + base + (i32)m_484;
+            i32 ssrc = m_48[col] + base + (i32)m_480;
+            if (m_5c == 0) {
+                if (bpp == 1) {
+                    i32 i = 0;
+                    i32 t = colBase;
+                    i32 e;
+                    if (colBase > 0) {
+                        do {
+                            e = i + 1;
+                            *(u8*)(i + (i32)m_488) = *(u8*)((i32)m_478[i] + gsrc);
+                            i = e;
+                        } while (e < colBase);
+                    }
+                    for (; t < stride; t++) {
+                        *(u8*)(t + (i32)m_488) = *(u8*)(ssrc + t);
+                    }
+                } else if (bpp == 2) {
+                    i32 i = 0;
+                    i32 t = colBase;
+                    if (colBase > 0) {
+                        do {
+                            i32 o = i * 4;
+                            i++;
+                            *(u8*)((i32)m_488 - 2 + i * 2) = *(u8*)(gsrc + (i32)m_478[o / 4] * 2);
+                            *(u8*)((i32)m_488 - 1 + i * 2) = *(u8*)(gsrc + 1 + (i32)m_478[i - 1] * 2);
+                        } while (i < colBase);
+                    }
+                    for (; t < stride; t++) {
+                        i32 o = t * 2;
+                        *(u8*)(o + (i32)m_488) = *(u8*)(ssrc + o);
+                        *(u8*)(o + 1 + (i32)m_488) = *(u8*)(ssrc + 1 + o);
+                    }
+                } else if (bpp == 3) {
+                    i32 k = 0;
+                    if (colBase > 0) {
+                        i32 d = 0;
+                        do {
+                            *(u8*)(d + (i32)m_488) = *(u8*)(gsrc + (i32)m_478[k] * 3);
+                            *(u8*)(d + 1 + (i32)m_488) = *(u8*)((i32)m_478[k] * 3 + 1 + gsrc);
+                            *(u8*)(d + 2 + (i32)m_488) = *(u8*)((i32)m_478[k] * 3 + 2 + gsrc);
+                            k++;
+                            d += 3;
+                        } while (k < colBase);
+                    }
+                    if (colBase < stride) {
+                        i32 d = colBase * 3;
+                        i32 c = stride - colBase;
+                        u8* sp = (u8*)(ssrc + 2 + d);
+                        do {
+                            *(u8*)(d + (i32)m_488) = sp[-2];
+                            *(u8*)(d + 1 + (i32)m_488) = sp[-1];
+                            *(u8*)(d + 2 + (i32)m_488) = *sp;
+                            d += 3;
+                            c--;
+                            sp += 3;
+                        } while (c != 0);
+                    }
+                }
+            } else {
+                i32 lut = (i32)m_1c->m_08;
+                i32 i = 0;
+                i32 t = colBase;
+                i32 e;
+                if (colBase > 0) {
+                    do {
+                        e = i + 1;
+                        *(u8*)(i + (i32)m_488) =
+                            *(u8*)((u32)m_48c[i] + lut + (u32) * (u8*)((i32)m_478[i] + gsrc) * 0x40);
+                        i = e;
+                    } while (e < colBase);
+                }
+                for (; t < stride; t++) {
+                    *(u8*)(t + (i32)m_488) = *(u8*)(ssrc + t);
+                }
+            }
+            u8* sp = m_488;
+            i32 cnt = bpp * stride;
+            u8* dp = dstLine;
+            i32 n = cnt;
+            if (cnt > 0) {
+                do {
+                    *dp = *sp;
+                    sp++;
+                    n--;
+                    dp++;
+                } while (n != 0);
+            }
+            if (m_54 == 0) {
+                if (bpp * arg1 > 0) {
+                    memset(dstLine - bpp * arg1, 0, bpp * arg1);
+                }
+            } else {
+                i32 c2 = bpp * arg1;
+                u8* s2 = (u8*)((arg0 + stride) * bpp + m_48[col] + (i32)m_480);
+                dstLine += cnt;
+                if (c2 > 0) {
+                    do {
+                        *dstLine = *s2;
+                        dstLine++;
+                        s2++;
+                        c2--;
+                    } while (c2 != 0);
+                }
+            }
+            col++;
+        } while (col < m_64);
     }
 }

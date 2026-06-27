@@ -1635,6 +1635,26 @@ source = "src/Gruntz/GruntMoveStep.cpp"
 flags = "base"
 
 [[unit]]
+unit = "heapdiag"
+source = "src/Gruntz/HeapDiag.cpp"
+flags = "base"
+
+[[unit]]
+unit = "levelsync"
+source = "src/Gruntz/LevelSync.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "gruntupdatestep"
+source = "src/Gruntz/GruntUpdateStep.cpp"
+flags = "base"
+
+[[unit]]
+unit = "playercommandstep"
+source = "src/Gruntz/PlayerCommandStep.cpp"
+flags = "base"
+
+[[unit]]
 unit = "connslotlist"
 source = "src/Net/ConnSlotList.cpp"
 flags = "base"
