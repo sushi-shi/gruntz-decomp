@@ -40,38 +40,33 @@ class CString; // MFC CString (4-byte m_pszData ptr); full type in CImageOwned.c
 // unmatched engine code).
 class CImageParent; // +0x0c parent (CDDrawPtrCollections); defined below
 
-DATA(0x001eaa2c)
-extern void* g_imageVtbl; // 0x5eaa2c - CImage primary vftable
-DATA(0x001e8cb4)
-extern void* g_imageBaseDtorVtbl; // 0x5e8cb4 - the CObject grand-base dtor vtable
-
 // ---------------------------------------------------------------------------
 // CImageBase - the polymorphic SeverusWorker/"Remus" base (same one as
-// CSurfacePairBase). POLYMORPHIC so the vptr sits at +0x00 and ~CImageBase is a
-// real non-trivial base subobject dtor: its inline body folds into the leaf
+// CSurfacePairBase). POLYMORPHIC with a REAL virtual destructor: its inline body
+// resets the three base fields, and MSVC appends the implicit base-vptr re-stamp
+// (the grand-base dtor vtable @0x5e8cb4) - so the dtor's TWO vptr stamps are both
+// compiler-emitted and land in the retail "stamp-first" order (resolving the
+// eh-dtor-vptr-stamp-vs-trylevel-order wall). ~CImageBase folds into the leaf
 // ~CImage and supplies the /GX EH frame (docs/patterns/
-// inline-base-dtor-folds-into-leaves.md, eh-dtor-needs-base-subobject.md). Its
-// vtable contents are external engine code, so the vptr is MANUAL-stamped (the
-// declared virtuals only fix the +0 vptr slot; they are never called here).
+// eh-dtor-multilevel-polymorphic-chain.md, inline-base-dtor-folds-into-leaves.md).
+// Its emitted vtable (??_7CImageBase) reloc-masks against the target's 0x5e8cb4
+// grand-base stamp (which the shared g_severusWorkerDtorVtbl names; the stamp
+// bytes are identical, the masked operand differs only in symbol name).
 // ---------------------------------------------------------------------------
 class CImageBase {
 public:
+    // The base-subobject destructor is an EMPTY non-trivial inline dtor: MSVC emits
+    // ONLY the implicit grand-base vptr re-stamp for it, which folds in as the LAST
+    // store of ~CImage (matching retail's stamp-after-resets order). The empty body
+    // is still non-trivial, so it supplies the leaf's /GX EH frame. The base-field
+    // resets live in ~CImage's body (so they precede this fold's stamp).
+    virtual ~CImageBase() {}
     virtual void v00();
     virtual void v04();
     virtual void v08();
     virtual void v0c();
     virtual void v10();
     virtual void v14();
-
-    // The base-subobject destructor: resets the three base fields and restores the
-    // grand-base vftable. INLINE so it folds into ~CImage exactly as retail's
-    // base-dtor tail.
-    ~CImageBase() {
-        m_04 = -1;
-        m_08 = 0;
-        m_0c = 0;
-        *(void**)this = &g_imageBaseDtorVtbl;
-    }
 
     // vptr @+0x00 (implicit, polymorphic)
     i32 m_04;           // +0x04  status word (-1 inactive)
@@ -246,7 +241,7 @@ public:
     void FreeAll();                              // 0x153260  (vtable slot 7)
     i32 CopyFrom(CImage* other);                 // 0x1532b0  (clone the surface from another image)
     i32 Reload(CImageSource* src, i32 arg);      // 0x153380  (vtable slot 13)
-    ~CImage();                                   // 0x0d5e80
+    virtual ~CImage();                           // 0x0d5e80
     void RenderFrame(void* a, void* b, void* c, void* d);                    // 0x153790
     void RenderFrameClipped(void* a, void* b, void* c, void* d, void* rect); // 0x153810
 

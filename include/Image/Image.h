@@ -132,10 +132,11 @@ public:
 class CFileImageSurface {
 public:
     void* ScalarDelete(u32 flags); // 0x142340 (`??_G` scalar-deleting destructor)
-    ~CFileImageSurface();          // 0x142360 (the second compiled teardown copy)
+    virtual ~CFileImageSurface();  // 0x142360 (virtual: the implicit vptr stamp lands stamp-first)
     void FreeSurfaces();           // 0x13e4d0 (shared teardown, external/no-body)
 
-    char m_pad00[0x94 - 0x00]; // +0x00  (vptr @0, manually stamped by the dtor)
+    // vptr @+0x00 (implicit, polymorphic; the compiler emits the dtor's stamp).
+    char m_pad04[0x94 - 0x04]; // +0x04
     CPtrArray m_elements;      // +0x94  owned element array (auto member-dtor)
 };
 
@@ -175,8 +176,8 @@ public:
     // runs the *Data decoders and installs the transparency colour after.
     i32 Resolve(void* surf, void* buf, i32 type, u32 size, void* surf2);
     i32 ResolveEx(void* surf, void* buf, i32 type, u32 size, i32 ctrl, i32 trans);
-    i32 Fill(u32 color); // colour-fill blt (0x13e760)
-    ~CFileImage();       // 0x141350
+    i32 Fill(u32 color);  // colour-fill blt (0x13e760)
+    virtual ~CFileImage(); // 0x141350  (virtual: the implicit vptr stamp lands stamp-first)
 
     // The shared surface-teardown helper the destructor calls before destroying
     // its CByteArray member (external no-body, reloc-masked): releases the held
@@ -224,7 +225,8 @@ public:
     // Layout. The OFFSETS are load-bearing. This is the same physical object the
     // CDDSurface wrapper holds (DIRSURF.CPP); the decoders touch only the geometry
     // (height/width) and the palette context (bitcount/palette/have-palette flag).
-    char m_pad00[0x18];         // +0x00  (vptr @0, manually stamped by ~CFileImage)
+    // vptr @+0x00 (implicit, polymorphic; the compiler emits the dtor's stamp).
+    char m_pad04[0x18 - 0x04];  // +0x04
     i32 m_height;               // +0x18  surface height (compared vs decoded height)
     i32 m_width;                // +0x1c  surface width  (compared vs decoded width)
     char m_pad20[0x94 - 0x20];  // +0x20

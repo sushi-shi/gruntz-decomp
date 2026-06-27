@@ -789,17 +789,13 @@ extern void* g_fileImageVtbl; // 0x5ef7f0
 
 // ---------------------------------------------------------------------------
 // CFileImage::~CFileImage
-// Restore the vptr, run the shared surface teardown (FreeSurfaces: release the
-// held DirectDraw surfaces + walk the +0x98 object array), then destroy the owned
-// CByteArray at +0x94. The CByteArray member-dtor is guarded -> the /GX EH frame.
-// @early-stop
-// EH-state wall: the compiler-generated entry trylevel-0 write is scheduled
-// BEFORE the user vptr re-stamp (retail emits the stamp first); body otherwise
-// byte-identical. Not steerable by source spelling - the /GX EH-state machine
-// fixes the order. See docs/patterns/eh-dtor-vptr-stamp-vs-trylevel-order.md.
+// The virtual destructor: MSVC stamps the vptr (compiler-implicit, stamp-first),
+// runs the shared surface teardown (FreeSurfaces: release the held DirectDraw
+// surfaces + walk the +0x98 object array), then destroys the owned CPtrArray at
+// +0x94. The CPtrArray member-dtor is guarded -> the /GX EH frame. The implicit
+// stamp reloc-masks against the shared 0x5ef7f0 surface vtable.
 RVA(0x00141350, 0x53)
 CFileImage::~CFileImage() {
-    *(void**)this = &g_fileImageVtbl;
     FreeSurfaces();
 }
 
@@ -840,7 +836,9 @@ void CFileImage::FreeSurfaces() {
 // when the low bit of the hidden flags arg is set - RezFree the object; return this.
 RVA(0x00142340, 0x1e)
 void* CFileImageSurface::ScalarDelete(u32 flags) {
-    this->~CFileImageSurface();
+    // Qualified call -> direct (non-virtual) dispatch to the 0x142360 teardown copy,
+    // matching retail's ??_G which calls the non-deleting dtor directly.
+    this->CFileImageSurface::~CFileImageSurface();
     if (flags & 1) {
         RezFree(this);
     }
@@ -849,17 +847,12 @@ void* CFileImageSurface::ScalarDelete(u32 flags) {
 
 // ---------------------------------------------------------------------------
 // CFileImageSurface::~CFileImageSurface (0x142360) - the second compiled teardown
-// copy, byte-identical to ~CFileImage (0x141350): re-stamp the base vptr, run the
-// shared FreeSurfaces teardown, destroy the owned CPtrArray member at +0x94. The
-// guarded member dtor -> the /GX EH frame.
-// @early-stop
-// Same EH-state wall as its ~CFileImage twin: the compiler-generated entry trylevel-0
-// write is scheduled BEFORE the user vptr re-stamp (retail emits the stamp first);
-// body otherwise byte-identical, ~94%. Not steerable - the /GX EH-state machine fixes
-// the order. See docs/patterns/eh-dtor-vptr-stamp-vs-trylevel-order.md.
+// copy, byte-identical to ~CFileImage (0x141350): the virtual destructor's implicit
+// vptr stamp lands stamp-first, then the shared FreeSurfaces teardown runs and the
+// owned CPtrArray member at +0x94 is destroyed (guarded -> the /GX EH frame). The
+// implicit stamp reloc-masks against the shared 0x5ef7f0 surface vtable.
 RVA(0x00142360, 0x53)
 CFileImageSurface::~CFileImageSurface() {
-    *(void**)this = &g_fileImageVtbl;
     FreeSurfaces();
 }
 

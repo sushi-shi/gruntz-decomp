@@ -396,23 +396,19 @@ i32 CImage::Reload(CImageSource* src, i32 arg) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x0d5e80: the (non-deleting) destructor. Stamps this class's own vtable, runs
-// the cleanup virtual (FreeAll), then the base subobject dtor folds in (sets
-// m_04=-1, zeroes m_08/m_0c, stamps the grand-base CObject dtor vtable). The /GX
-// EH frame falls out of the non-trivial base subobject.
-// @early-stop
-// 94.29% - body byte-identical. Two non-steerable /GX EH-machine residuals:
-// (1) the entry trylevel-0 write `mov [esp+0x10],0` and the vptr re-stamp
-//     `mov [esi],&g_imageVtbl` are emitted in the opposite order vs retail's
-//     stamp-first (docs/patterns/eh-dtor-vptr-stamp-vs-trylevel-order.md, ~94%);
-// (2) the EH scope-table cookie `push 0x8`/Unwind@005de0e0 vs our `push 0x0`/$L303
-//     (docs/patterns/gx-scoped-local-eh-frame-size.md). Both are the EH-state
-//     machine's, not source-steerable. Logic complete. Deferred to the final sweep.
+// 0x0d5e80: the virtual destructor. MSVC stamps this class's own vtable
+// (??_7CImage, catalog auto-named) at entry, runs the cleanup virtual (FreeAll),
+// then the base subobject dtor folds in (sets m_04=-1, zeroes m_08/m_0c, stamps
+// the grand-base dtor vtable). Both vptr stamps are compiler-implicit now, so they
+// land in the retail "stamp-first" order. The /GX EH frame falls out of the
+// non-trivial CImageBase subobject.
 RVA(0x000d5e80, 0x5b)
 CImage::~CImage() {
-    *(void**)this = &g_imageVtbl;
     FreeAll();
-    // ~CImageBase() folds here: m_04=-1; m_08=0; m_0c=0; stamp grand-base vtable.
+    m_04 = -1; // base-field resets (precede the folded ~CImageBase grand stamp)
+    m_08 = 0;
+    m_0c = 0;
+    // ~CImageBase() folds here: emits only the grand-base vptr re-stamp.
 }
 
 // ---------------------------------------------------------------------------

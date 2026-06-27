@@ -1,8 +1,14 @@
 # /GX dtor: the entry trylevel-0 write is scheduled BEFORE the vptr re-stamp — vs retail's stamp-first
 
-tags: cpp:dtor cpp:eh cpp:virtual | asm:mov | topic:wall topic:eh
+tags: cpp:dtor cpp:eh cpp:virtual | asm:mov | topic:codegen-idiom topic:eh
 symptoms: body+offsets byte-identical except the compiler-generated entry `mov [esp+N],0` (trylevel=0) and the user's `mov [this],<vtbl>` vptr re-stamp are emitted in the OPPOSITE order vs retail; ~94%
 confidence: 7/10
+
+> **RESOLVED — STEERABLE.** This is NOT a wall when the stamp is a MANUAL
+> `*(void**)this=&g_vtbl`: make the class a real polymorphic type (`virtual ~Class()`,
+> drop the manual stamp) so cl emits the COMPILER-implicit stamp, which lands in the
+> entry state (stamp-first) like retail. See **eh-dtor-implicit-vptr-stamp-first.md**.
+> The "not steerable" note below applies only to a *non-convertible* manual stamp.
 
 In a `/GX` (`flags="eh"`) destructor that (a) restores the most-derived vptr (`*(void**)this =
 &g_vtbl`, the manual transitional stamp), (b) calls an out-of-line teardown helper, then (c)

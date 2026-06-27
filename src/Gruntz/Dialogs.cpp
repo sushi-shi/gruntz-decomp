@@ -110,17 +110,16 @@ CBattlezDlg::~CBattlezDlg() {}
 // ---------------------------------------------------------------------------
 DATA(0x001e8cb4)
 extern void* g_imgHolderBaseVtbl; // 0x5e8cb4  shared CObject-ish base dtor-vtable
-DATA(0x001e8cd4)
-extern void* g_imgHolderVtbl; // 0x5e8cd4  derived holder vtable
 
-// CImgHolderBase - the base whose dtor only restamps the base vtable. The
-// RestampBase_16410 entry is the standalone 7-byte vptr-set the binary keeps at
-// 0x16410 (also folded inline into the derived dtor's base-teardown tail).
+// CImgHolderBase - the polymorphic CObject-ish base with an EMPTY non-trivial
+// virtual dtor: MSVC emits ONLY the implicit base-vptr re-stamp for it, which folds
+// in as the LAST store of ~CImgHolder (the retail stamp-after-teardown order), and
+// the empty body still earns the leaf's /GX EH frame. The RestampBase_16410 entry is
+// the standalone 7-byte vptr-set the binary keeps at 0x16410 (the same store, out of
+// line). The emitted ??_7CImgHolderBase reloc-masks against the shared 0x5e8cb4 stamp.
 struct CImgHolderBase {
-    void RestampBase_16410(); // 0x016410
-    ~CImgHolderBase() {
-        *(void**)this = &g_imgHolderBaseVtbl;
-    } // inline base teardown
+    void RestampBase_16410();      // 0x016410
+    virtual ~CImgHolderBase() {} // empty; cl emits the implicit grand-base re-stamp
 };
 
 RVA(0x00016410, 0x7)
@@ -128,24 +127,18 @@ void CImgHolderBase::RestampBase_16410() {
     *(void**)this = &g_imgHolderBaseVtbl;
 }
 
-// CImgHolder - the derived holder. Its dtor restamps the derived vtable, frees the
-// embedded image list (CImageList::DeleteImageList @0x1c6a5c, reloc-masked), then the
-// inlined base teardown restamps the base vtable. The /GX EH frame guards the base
-// teardown if DeleteImageList throws.
+// CImgHolder - the derived holder. Its virtual dtor's implicit vptr stamp lands
+// stamp-first, frees the embedded image list (CImageList::DeleteImageList @0x1c6a5c,
+// reloc-masked), then the folded base teardown re-stamps the base vtable. The /GX EH
+// frame guards the base teardown if DeleteImageList throws.
 struct CImgHolder : CImgHolderBase {
     void DeleteImageList(); // 0x1c6a5c (NAFXCW CImageList::DeleteImageList, reloc-masked)
-    ~CImgHolder();          // 0x016500
+    virtual ~CImgHolder();  // 0x016500
 };
 
-// @early-stop
-// eh-dtor-vptr-restamp-presence wall (docs/patterns/eh-dtor-vptr-restamp-presence.md):
-// the derived/base vptr restamps + the DeleteImageList teardown are byte-faithful; the
-// /GX funclet emission for an inline-base teardown is the residual (frame-presence not
-// fully source-steerable).
 RVA(0x00016500, 0x46)
 CImgHolder::~CImgHolder() {
-    *(void**)this = &g_imgHolderVtbl; // store 0x5e8cd4 (derived vptr)
-    DeleteImageList();                // 0x1c6a5c
+    DeleteImageList(); // 0x1c6a5c
 }
 
 // ---------------------------------------------------------------------------

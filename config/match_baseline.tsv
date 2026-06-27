@@ -90,7 +90,7 @@ chatbox	27	20
 chatbox_eh	1	1
 chatboxowner	7	2
 cheatmgr	7	4
-cimage	11	6
+cimage	11	7
 cimageowned	4	2
 cimageset3	3	3
 ckeyedlist	3	2
@@ -150,7 +150,7 @@ databuffer	7	5
 ddrawpolyfill	1	0
 deflate	9	9
 demosetup	1	1
-dialogs	35	14
+dialogs	35	15
 directinputmgr2	36	32
 directsoundmgr	39	29
 dsoundvoice	2	1
@@ -196,11 +196,11 @@ gruntzcommand	15	15
 gruntzmgr	92	63
 gruntzplayer	8	3
 gruntzsoundz	12	11
-gruntzwnd	9	7
+gruntzwnd	9	8
 hash	10	9
 helperhost	2	0
 iconloaders	5	1
-image	39	24
+image	39	26
 imagepolyclip	1	0
 imagepool	13	7
 imagerle16encode	1	0
@@ -934,7 +934,7 @@ cheatmgr	?Empty@CCheatMgr@@QAEXXZ	100.0000	100.0000	1	8cc149232bcc	0x22b00
 cheatmgr	?Init@CCheatMgr@@QAEHH@Z	100.0000	100.0000	1	7fab48db9c93	0x22ad0
 cheatmgr	?LoadCheatConfig@CCheatMgr@@QAEXXZ	91.5726	91.5726	1	e266cc5c2356	0x22e60
 cheatmgr	?RegisterCheats@CCheatMgr@@QAEXXZ	100.0000	100.0000	1	368e0d229303	0x22c80
-cimage	??1CImage@@QAE@XZ	94.2857	94.2857	1	3a970ca1c753	0xd5e80
+cimage	??1CImage@@UAE@XZ	100.0000	100.0000	1	b6b4020bc2f0	0xd5e80
 cimage	?BuildSlot13@CImage@@QAEHPAVCImageFrameDesc@@PAX@Z	98.7000	98.7000	1	cd9ab49c2f5c	0x153180
 cimage	?CopyFrom@CImage@@QAEHPAV1@@Z	100.0000	100.0000	1	cbde75f4bdc5	0x1532b0
 cimage	?Create24@CImage@@QAEHPAVCImageFrameDesc@@HH@Z	100.0000	100.0000	1	d26457d6ef2e	0x1530e0
@@ -1227,7 +1227,7 @@ dialogs	??0CCheckpointDlg@@QAE@PAVCWnd@@@Z	100.0000	100.0000	3	6c51964bdb81	0x23
 dialogs	??0CMultiStartDlg@@QAE@HPAVCWnd@@@Z	100.0000	100.0000	5	a71396cbe887	0xc1750
 dialogs	??1CBattlezDlg@@UAE@XZ	94.4444	94.4444	1	7ed27cb65fc2	0x14c90
 dialogs	??1CBattlezDlgCustom@@UAE@XZ	94.4444	94.4444	1	8ef41d520506	0x17140
-dialogs	??1CImgHolder@@QAE@XZ	93.3333	93.3333	1	ec5139813741	0x16500
+dialogs	??1CImgHolder@@UAE@XZ	100.0000	100.0000	1	b1f5658a71a2	0x16500
 dialogs	??1CMultiStartDlg@@UAE@XZ	95.6522	95.6522	1	d0a639c25288	0xb8960
 dialogs	?ApplyOption0@CBattlezDlg@@QAEXXZ	100.0000	100.0000	1	a2649603d299	0x15de0
 dialogs	?ApplyOption1@CBattlezDlg@@QAEXXZ	100.0000	100.0000	1	4ca2816e5f53	0x15e60
@@ -2570,7 +2570,7 @@ gruntzsoundz	?Restart_1388c0@CGruntzSoundZ@@QAEHH@Z	100.0000	100.0000	1	4fba0906
 gruntzsoundz	?StopAndFlush_138530@CGruntzSoundZ@@QAEXXZ	100.0000	100.0000	1	fc55b1345f19	0x138530
 gruntzsoundz	?StopCurrent_1388a0@CGruntzSoundZ@@QAEXXZ	100.0000	100.0000	1	99f267d9da6f	0x1388a0
 gruntzwnd	??0CGruntzWnd@@QAE@XZ	100.0000	100.0000	5	cce3fed8f7f8	0x94640
-gruntzwnd	??1CGruntzWnd@@UAE@XZ	39.4545	39.4545	1	e178d8d8603b	0x946a0
+gruntzwnd	??1CGruntzWnd@@UAE@XZ	100.0000	100.0000	1	e178d8d8603b	0x946a0
 gruntzwnd	?OnActivateAppImpl@CGruntzWnd@@QAEHIJ@Z	100.0000	100.0000	1	d43076a1cc33	0x94b20
 gruntzwnd	?OnCloseImpl@CGruntzWnd@@QAEHXZ	100.0000	100.0000	1	d976afe1279e	0x94b90
 gruntzwnd	?OnKeyUpImpl@CGruntzWnd@@QAEHIJ@Z	100.0000	100.0000	1	c94c3c4c140c	0x94920
@@ -2595,8 +2595,8 @@ iconloaders	?LoadCameraSprite@EngineLabelBacklog@@QAEHXZ	86.8000	86.8000	4	4ee34
 iconloaders	?LoadExplosionSprites@EngineLabelBacklog@@QAEHHHHH@Z	98.0727	98.0727	4	5700eabe337f	0x7b330
 iconloaders	?LoadPowerupIconSprites@EngineLabelBacklog@@QAEHHHHHHH@Z	33.8559	33.8559	4	bad99fd7c80f	0x7c620
 iconloaders	?LoadToyBoxIcon@EngineLabelBacklog@@QAEHHHHHH@Z	99.9444	99.9444	1	9716aad5572f	0x7a3f0
-image	??1CFileImage@@QAE@XZ	94.0000	94.0000	1	ddf6abceee3f	0x141350
-image	??1CFileImageSurface@@QAE@XZ	94.0000	94.0000	1	0bc619f58aa5	0x142360
+image	??1CFileImage@@UAE@XZ	100.0000	100.0000	1	7252e7ab41e8	0x141350
+image	??1CFileImageSurface@@UAE@XZ	100.0000	100.0000	1	8f95b4aa6ff0	0x142360
 image	?Blit@CFileImage@@QAEHPAXH0H@Z	100.0000	100.0000	2	181d8e710203	0x13faa0
 image	?BlitDirect@CFileImage@@QAEHPAXH@Z	70.4941	70.4941	2	d45ef879a365	0x13ece0
 image	?BlitSurf@CFileImage@@QAEHPAXHHHH@Z	100.0000	100.0000	3	f4d5a5e5672c	0x13e0d0
@@ -2604,7 +2604,7 @@ image	?Build_13e9a0@CImageFactory@@QAEHPAVCImageSource@@H@Z	58.0769	58.0769	1	bc
 image	?Clear@CFileImage@@QAEXH@Z	100.0000	100.0000	2	bfee47867379	0x13edb0
 image	?DecodeBmp@CFileImage@@QAEPAXPADPAXI@Z	31.2544	31.2544	4	ee7ec349a997	0x143fc0
 image	?DecodeBmpHeader@CImage@@QAEHPAXHHH0@Z	95.7395	95.7395	5	5af44e6457a4	0x1757c0
-image	?DecodePcx@CFileImage@@QAEPAXPADPAXI@Z	55.6786	55.6786	4	77f8fc32ed4c	0x144ee0
+image	?DecodePcx@CFileImage@@QAEPAXPADPAXI@Z	55.7755	55.7755	4	77f8fc32ed4c	0x144ee0
 image	?DecodePcxData@CFileImage@@QAEHPAX0HHH@Z	86.2370	86.2370	1	ddfed7a9e89e	0x1457a0
 image	?DecodePcxData@CImage@@QAEHPAX00@Z	91.2848	91.2848	4	da60cf2acb73	0x176000
 image	?DecodePcxEx@CFileImage@@QAEHPAD0PAX1@Z	100.0000	100.0000	5	d07ec29ad6b0	0x1459d0
@@ -2633,7 +2633,7 @@ image	?ResolveEx@CFileImage@@QAEHPAX0HIHH@Z	100.0000	100.0000	4	42be466cd065	0x1
 image	?SaveDispatch@CFileImage@@QAEHPAX00@Z	100.0000	100.0000	1	9a5d2837fd46	0x144350
 image	?SaveFile@CFileImage@@QAEHPADHPAX1@Z	100.0000	100.0000	1	aa58601ee0e3	0x13f910
 image	?SaveRle16@CFileImage@@QAEHPAX00@Z	52.5687	52.5687	1	51fca2eecd11	0x144640
-image	?ScalarDelete@CFileImageSurface@@QAEPAXI@Z	100.0000	100.0000	1	9d4075406fc7	0x142340
+image	?ScalarDelete@CFileImageSurface@@QAEPAXI@Z	100.0000	100.0000	2	faea0c2b336a	0x142340
 imagepolyclip	?ImagePolyClipRect@@YAHPAUPolyVtx@@HHHHH@Z	68.9572	68.9572	1	5c33c21cc94b	0x1461b0
 imagepool	?AddImageDispatch@CImagePool@@QAEPAUPalBuilder_176df0@ApiCallerStubs@@PAXIHH@Z	99.1111	99.1111	1	4da099ace783	0x175680
 imagepool	?AddImageFile@CImagePool@@QAEPAUPalBuilder_176df0@ApiCallerStubs@@PADH@Z	100.0000	100.0000	1	ef74f0fb0428	0x1755f0

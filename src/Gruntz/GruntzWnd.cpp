@@ -47,15 +47,10 @@ CGruntzWnd::CGruntzWnd() {}
 // -------------------------------------------------------------------------
 // CGruntzWnd::~CGruntzWnd (0x946a0; /GX EH frame). Runs Destroy() (the inherited
 // window teardown) at trylevel 0, then the inline CGameWnd base dtor (Destroy +
-// clear the active-window singleton) folds in at trylevel -1.
-// @early-stop
-// /GX EH-frame wall (docs/patterns/eh-dtor-needs-base-subobject.md): the body is
-// byte-exact - both vptr re-stamps, both Destroy calls, and the g_activeGameWnd
-// clear match retail. Only the /GX SEH frame is absent: retail wraps the base-
-// subobject teardown in a try-region (push -1/push handler/mov fs:0 + the
-// [esp+0x10]=0/-1 trylevel writes), which MSVC5 does not emit here because both
-// Destroy() calls are non-throwing leaves. Logic complete; deferred to the final
-// sweep when the whole CGameWnd hierarchy's EH state is modeled.
+// clear the active-window singleton) folds in at trylevel -1. The non-trivial
+// CGameWnd base subobject earns the /GX SEH frame once the TU is compiled /GX
+// (flags="eh" in config/units.toml) - both vptr re-stamps (??_7CGruntzWnd /
+// ??_7CGameWnd, catalog auto-named) reloc-mask. 100%.
 RVA(0x000946a0, 0x5f)
 CGruntzWnd::~CGruntzWnd() {
     Destroy();
