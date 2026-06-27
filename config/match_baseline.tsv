@@ -101,6 +101,7 @@ cmulti	16	7
 cobjectdropper	1	1
 colorhsv	1	0
 configstore	4	0
+connslotlist	3	3
 cparticlez	5	4
 cpathhazard	7	3
 cplay	68	29
@@ -114,6 +115,7 @@ cscanlinesurfacesave	1	0
 csecretleveltrigger	4	3
 cserialsub34	1	0
 cseverusentrylist	2	1
+cseverusworkerhost	1	0
 csimpleanimation	4	3
 csingleanimation	1	1
 csingleframemessage	2	1
@@ -138,7 +140,7 @@ directinputmgr2	36	32
 directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	15	0
-engine_boundary	225	0
+engine_boundary	219	0
 engine_discovered	51	0
 engine_label_stubs	437	105
 engine_unmatched	264	0
@@ -215,6 +217,7 @@ menuitem2	5	2
 menupage	31	16
 mgrtokenquery	1	1
 motionstate	6	5
+namerecord	1	0
 netcmdslot	12	10
 netmgr	84	46
 netmgrerror	1	1
@@ -274,6 +277,7 @@ tilegridcommand	6	3
 tileswitchlogic	17	9
 tiletriggercontainer	15	4
 tiletriggerfactory	1	0
+tiletriggerload	1	1
 tiletriggerlogic	2	1
 tiletriggertransition	7	5
 tilewireswitchlogic	1	0
@@ -927,6 +931,9 @@ configstore	?GetInt@CConfigStore@@QAEHPAD0H@Z	17.6905	17.6905	1	00a531e13933	0x1
 configstore	?OpenRoot@CConfigStore@@QAEPAXXZ	57.7385	57.7385	1	906a02758db6	0x1d4ee3
 configstore	?OpenSubKey@CConfigStore@@QAEPAXPAD@Z	56.9394	56.9394	1	84aab5890a22	0x1d4f77
 configstore	?WriteString@CConfigStore@@QAEHPAD00@Z	29.6610	29.6610	1	419e55efa54a	0x1ccb5c
+connslotlist	?InitLan@CConnSlotList@@QAEHXZ	100.0000	100.0000	1	8a491425a2c9	0x37e10
+connslotlist	?InitModem@CConnSlotList@@QAEHXZ	100.0000	100.0000	1	3b8cc2356a71	0x37c30
+connslotlist	?InitNet@CConnSlotList@@QAEHXZ	100.0000	100.0000	1	d2f9439c9e61	0x37f00
 cparticlez	??1CParticlez@@UAE@XZ	100.0000	100.0000	1	4b9c461cd6b8	0x12d90
 cparticlez	?FireActivation@CParticlez@@QAEXH@Z	100.0000	100.0000	1	13bf97e742a3	0x46d30
 cparticlez	?InitActReg@CParticlez@@SAXXZ	100.0000	100.0000	1	913801e82692	0x46cb0
@@ -1044,6 +1051,7 @@ csecretleveltrigger	?Tick@CSecretLevelTrigger@@QAEHXZ	100.0000	100.0000	1	5007af
 cserialsub34	?Chain@CSerialSub34@@QAEHPAVCSerialArchive@@HHPAVCSerialObj@@@Z	88.0496	88.0496	1	6d191bedea8f	0x8c00
 cseverusentrylist	??1CSeverusEntryList@@QAE@XZ	95.0000	95.0000	1	281e4331e73c	0x1557a0
 cseverusentrylist	?DeleteAll@CSeverusEntryList@@QAEXXZ	100.0000	100.0000	1	bb02994e8868	0x151eb0
+cseverusworkerhost	??1CSeverusWorkerHost@@QAE@XZ	82.3500	82.3500	1	cfe076046ca1	0x163af0
 csimpleanimation	??1CSimpleAnimation@@UAE@XZ	100.0000	100.0000	1	90ed99282119	0xf9d0
 csimpleanimation	?AdvanceAnim@CSimpleAnimation@@QAEHXZ	100.0000	100.0000	1	2a87ef63c834	0xabf70
 csimpleanimation	?InitSimpleAnimDispatch@@YAXXZ	100.0000	100.0000	1	a84ef2c13047	0xabb90
@@ -1264,10 +1272,7 @@ engine_boundary	?Boundary_024ac0@@YAXXZ	3.6364	3.6364	2	97599e6128a4	0x24ac0
 engine_boundary	?Boundary_029af0@@YAXXZ	2.1053	2.1053	2	efc261072fd9	0x29af0
 engine_boundary	?Boundary_037870@@YAXXZ	4.7619	4.7619	2	8512d0f5f358	0x37870
 engine_boundary	?Boundary_037b40@@YAXXZ	1.3514	1.3514	2	536cccd799df	0x37b40
-engine_boundary	?Boundary_037c30@@YAXXZ	1.3514	1.3514	2	dbd6bf68ce39	0x37c30
 engine_boundary	?Boundary_037d20@@YAXXZ	1.3514	1.3514	2	f75553a07e30	0x37d20
-engine_boundary	?Boundary_037e10@@YAXXZ	1.3514	1.3514	2	99eb4862d70f	0x37e10
-engine_boundary	?Boundary_037f00@@YAXXZ	1.3514	1.3514	2	903cd310002e	0x37f00
 engine_boundary	?Boundary_038120@@YAXXZ	3.6364	3.6364	2	bcf7d5189930	0x38120
 engine_boundary	?Boundary_038fc0@@YAXXZ	2.5000	2.5000	2	6f243b77d8be	0x38fc0
 engine_boundary	?Boundary_0390a0@@YAXXZ	4.5455	4.5455	2	309d62cabebc	0x390a0
@@ -1342,14 +1347,12 @@ engine_boundary	?Boundary_10b4f0@@YAXXZ	0.8511	0.8511	2	325fb84a1013	0x10b4f0
 engine_boundary	?Boundary_10bbe0@@YAXXZ	5.8824	5.8824	2	879a41e63843	0x10bbe0
 engine_boundary	?Boundary_112bf0@@YAXXZ	2.7027	2.7027	2	c8e07c025e13	0x112bf0
 engine_boundary	?Boundary_113860@@YAXXZ	1.9048	1.9048	2	cd620e2b5be6	0x113860
-engine_boundary	?Boundary_1138b0@@YAXXZ	0.4762	0.4762	2	7c4c1db0af16	0x1138b0
 engine_boundary	?Boundary_113e70@@YAXXZ	0.7273	0.7273	2	fa5058bbd9bb	0x113e70
 engine_boundary	?Boundary_114ec0@@YAXXZ	6.6667	6.6667	2	1793e89417ab	0x114ec0
 engine_boundary	?Boundary_114f00@@YAXXZ	3.8462	3.8462	2	b1d354c5ac24	0x114f00
 engine_boundary	?Boundary_115730@@YAXXZ	20.0000	20.0000	2	735f422cae6d	0x115730
 engine_boundary	?Boundary_1157b0@@YAXXZ	20.0000	20.0000	2	4b68d100e39b	0x1157b0
 engine_boundary	?Boundary_1163b0@@YAXXZ	0.6061	0.6061	2	86e4a17d32e8	0x1163b0
-engine_boundary	?Boundary_118040@@YAXXZ	0.4545	0.4545	2	df4503434cfc	0x118040
 engine_boundary	?Boundary_1181d0@@YAXXZ	0.8333	0.8333	2	98ad14884ed2	0x1181d0
 engine_boundary	?Boundary_118260@@YAXXZ	0.9524	0.9524	2	76d0f8d03530	0x118260
 engine_boundary	?Boundary_1182f0@@YAXXZ	20.0000	20.0000	2	426ba6a060a9	0x1182f0
@@ -1430,7 +1433,6 @@ engine_boundary	?Boundary_161560@@YAXXZ	50.0000	50.0000	2	d8be1e42cc2b	0x161560
 engine_boundary	?Boundary_163710@@YAXXZ	1.8182	1.8182	2	3b1e8a2c1e14	0x163710
 engine_boundary	?Boundary_163a10@@YAXXZ	50.0000	50.0000	2	97986794367f	0x163a10
 engine_boundary	?Boundary_163a40@@YAXXZ	5.8824	5.8824	2	77023b928d60	0x163a40
-engine_boundary	?Boundary_163af0@@YAXXZ	1.6667	1.6667	2	2897699d188c	0x163af0
 engine_boundary	?Boundary_166810@@YAXXZ	4.7619	4.7619	2	ed36c073ea3b	0x166810
 engine_boundary	?Boundary_168c10@@YAXXZ	5.5556	5.5556	2	9b9658658449	0x168c10
 engine_boundary	?Boundary_16be60@@YAXXZ	2.6667	2.6667	2	78071ccbf190	0x16be60
@@ -2923,6 +2925,7 @@ motionstate	?ArrivalVelY@CMotionState@@QAENN@Z	100.0000	100.0000	1	d462958a3e89	
 motionstate	?SetParams@CMotionState@@QAEHNNNNNNNNNNN@Z	100.0000	100.0000	2	57c861974e56	0x58bc0
 motionstate	?SetZ@CMotionState@@QAEXN@Z	100.0000	100.0000	1	9d25f9ec952e	0x58ca0
 motionstate	?Step@CMotionState@@QAEXN@Z	64.9479	64.9479	2	877abdf7095d	0x16ecd0
+namerecord	?SetNames@CNameRecord@@QAEHPAD0H@Z	96.5909	96.5909	1	cad8c7359af4	0x118040
 netcmdslot	?AddCmd@CNetCmdSlot@@QAEXPAUCNetCmd@@@Z	100.0000	100.0000	1	528aa8665723	0xc1170
 netcmdslot	?AllSlotsReady@CNetSyncCheck@@QAEHXZ	78.6970	78.6970	1	a7d244a6dbc7	0xc1320
 netcmdslot	?ClearCmds@CNetCmdSlot@@QAEXXZ	100.0000	100.0000	1	332af5aba420	0xc12e0
@@ -3408,6 +3411,7 @@ tiletriggercontainer	?SerializeApplyA@@YGHPAUTtcStream@@HHHPAUTtcSwitchObj@@@Z	5
 tiletriggercontainer	?SerializeApplyB@@YGHPAUTtcStream@@HHHPAUTtcSwitchObj@@@Z	63.2576	63.2576	2	fe53fda39900	0x117710
 tiletriggercontainer	?SetCell@CTileTriggerContainer@@QAEHHHH@Z	77.9559	77.9559	1	cd7922705e40	0x117f60
 tiletriggerfactory	?Build@CTileTriggerFactory@@QAEPAXPAUCTrigReader@@HHH@Z	26.4732	26.4732	1	f2a4896ed393	0x117800
+tiletriggerload	?LoadV4@CTileTriggerData@@QAEHPAVCSerialArchive@@@Z	100.0000	100.0000	1	403439b98a8d	0x1138b0
 tiletriggerlogic	??0CTileTriggerLogic@@QAE@XZ	100.0000	100.0000	5	94795c513302	0x1107f0
 tiletriggerlogic	??_GCTileTriggerLogic@@UAEPAXI@Z	4.7624	4.7624	1	cpp:abf93c58a136	0x116610
 tiletriggertransition	??0CTileTriggerTransition@@QAE@PAUCGameObject@@@Z	94.9390	94.9390	1	6da19d3afe62	0x10faf0
