@@ -1395,6 +1395,16 @@ source = "src/Gruntz/PyramidBridgeSprites.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "bridgemovesprites"
+source = "src/Gruntz/BridgeMoveSprites.cpp"
+flags = "base"
+
+[[unit]]
+unit = "sfselectdevice"
+source = "src/Gruntz/SFSelectDevice.cpp"
+flags = "base"
+
+[[unit]]
 unit = "shadetablecache"
 source = "src/DDrawMgr/ShadeTableCache.cpp"
 flags = "eh"

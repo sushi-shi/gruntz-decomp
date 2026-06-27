@@ -42,6 +42,7 @@ boundaryupper2	26	19
 boundaryupper2eh	6	2
 boundaryuppereh	10	10
 brickz	15	3
+bridgemovesprites	1	0
 buildgruntzcrcinfo	1	0
 butemgr	42	27
 butemgrparse	1	0
@@ -194,7 +195,7 @@ ehfunclets	6	6
 engine_attributed	7	0
 engine_boundary	7	0
 engine_discovered	22	5
-engine_label_stubs	324	97
+engine_label_stubs	322	97
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -387,6 +388,7 @@ sbi_wellgoo	1	0
 sbi_wellgoo_eh	1	1
 scattersamples	2	1
 severusworkerdtor	1	1
+sfselectdevice	1	0
 shadedescrtable	2	0
 shadetablecache	19	3
 siriusworkerhandlers	4	4
@@ -733,6 +735,7 @@ brickz	?SearchEdge@CBrickz@@QAEHHHHHPAXHHH@Z	82.5373	82.5373	2	9a02e814554f	0x81
 brickz	?Serialize@CBrickz@@QAEHHHHH@Z	37.9032	37.9032	1	18774618cdf4	0x9356c
 brickz	?Unlink@CBrickz@@QAEXPAUBrickzNode@@@Z	74.9487	74.9487	2	ead4b3e1d312	0x9f690
 brickz	?UpdateDiagonals@CBrickz@@QAEHH@Z	53.5683	53.5683	1	e2065e000df7	0x82030
+bridgemovesprites	?LoadBridgeMove@CPlayLevelLoad@@QAEXH@Z	77.0457	77.0457	1	8e1c162b9ed0	0x110860
 buildgruntzcrcinfo	?BuildGruntzCrcInfo@CrcOwner@@QAEXXZ	70.9695	70.9695	2	2542753d7d88	0xbf1d0
 butemgr	??1CButeMgr@@QAE@XZ	68.6322	68.6322	1	febe7cdf6ea9	0x213c0
 butemgr	??1CButeValue@@QAE@XZ	68.6364	68.6364	1	44a2235fbbca	0x172160
@@ -1820,7 +1823,6 @@ engine_label_stubs	?LoadAttributes@CDroppedObjectShadow@@QAEXXZ	0.4444	0.4444	1	
 engine_label_stubs	?LoadAttributes@CTeleporter@@QAEXXZ	0.4274	0.4274	1	cpp:45e65336d4b5	0x41aa0
 engine_label_stubs	?LoadAttributes@CTimeBomb@@QAEXXZ	0.7246	0.7246	1	cpp:45e65336d4b5	0xe1e60
 engine_label_stubs	?LoadBootyCheatState@EngineLabelBacklog@@YGXHHH@Z	0.3788	0.3788	1	cpp:6bf52155264d	0x18830
-engine_label_stubs	?LoadBridgeMoveSprites@EngineLabelBacklog@@YGXH@Z	0.6536	0.6536	1	cpp:6bf52155264d	0x110860
 engine_label_stubs	?LoadByExt@CFileImage@@QAEHPAVCFileImageInfo@@PADHH@Z	100.0000	100.0000	1	cpp:590eddff1627	0x148940
 engine_label_stubs	?LoadCustomWorldInfo@EngineLabelBacklog@@YAHPAX@Z	100.0000	100.0000	1	cpp:aab6e5a6e511	0x3b7c0
 engine_label_stubs	?LoadDroppedObjectEffects@CDroppedObject@@QAEXXZ	0.6289	0.6289	1	cpp:e8a4cb0d5b2a	0xc7090
@@ -1866,7 +1868,6 @@ engine_label_stubs	?Roll@RngBox_00cd70@ApiCallerStubs@@QAEXHHHH@Z	72.3590	72.359
 engine_label_stubs	?Run@DeleteObjHost_177070@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:e1535087fe94	0x177070
 engine_label_stubs	?Run@LibHost_1bf577@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:e1535087fe94	0x1bf577
 engine_label_stubs	?SaveGameFile@CFileIO@@QAEXH@Z	0.9709	0.9709	1	cpp:e8a4cb0d5b2a	0xe4b60
-engine_label_stubs	?SelectBestDevice@SFManager@@QAEXXZ	0.3937	0.3937	1	cpp:45e65336d4b5	0xf8970
 engine_label_stubs	?Set@RectHost_08c380@ApiCallerStubs@@QAEXHHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x8c380
 engine_label_stubs	?SetLoop@AilSeq@ApiCallerStubs@@QAEHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x139030
 engine_label_stubs	?SetTempo@AilSeq@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x138f90
@@ -3301,6 +3302,7 @@ sbi_wellgoo_eh	??1CSBI_WellGoo@@UAE@XZ	100.0000	100.0000	1	ecc4144cec7a	0x104bb0
 scattersamples	?IsPrime@@YAHH@Z	100.0000	100.0000	1	3d4ae8c20789	0x182a80
 scattersamples	?ScatterSamples@@YAXPAHHHH@Z	59.2162	59.2162	1	345a3c1c24dd	0x182940
 severusworkerdtor	??1CSeverusWorkerX@@UAE@XZ	100.0000	100.0000	1	ac004e95dba5	0x17f330
+sfselectdevice	?SFManager_SelectBestDevice@@YAHXZ	73.5827	73.5827	1	bb5aee452751	0xf8970
 shadedescrtable	?Select@ShadeSelector@@QAEXHPAUShadeDescr@@@Z	68.5938	68.5938	1	53dd69440698	0x14dd90
 shadedescrtable	?SetShadeDescr@@YAXPAUShadeDescr@@H@Z	61.8966	61.8966	1	4f6dd40482ce	0x14dcf0
 shadetablecache	??0CShadeTableCache@@QAE@XZ	100.0000	100.0000	1	8d165746ed6f	0x14de30

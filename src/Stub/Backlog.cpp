@@ -130,10 +130,6 @@ class Projectile {
 public:
     void vfunc_9();
 };
-class SFManager {
-public:
-    void SelectBestDevice();
-};
 class StatusBarItem {
 public:
     void vfunc_12(i32, i32);
@@ -195,7 +191,6 @@ namespace EngineLabelBacklog {
     void UpdateDestructButtonStatusBar();
     void LoadSwitchDownSprite();
     void LoadSwitchUpSprite();
-    void __stdcall LoadBridgeMoveSprites(i32);
     void LoadPyramidBridgeSprites();
     void __stdcall BuildStatzTabSmall_vfunc1(i32, i32, i32, i32, i32, i32, i32, i32, i32);
     void FreeAllFonts();
@@ -1360,12 +1355,9 @@ void EngineLabelBacklog::DrawSaveGameMenu() {}
 RVA(0x000e44e0, 0x2b2)
 void EngineLabelBacklog::BuildLevelTitleString() {}
 
-// @confidence: med
-// @source: decomp-xref
-// @proximity: CGrunt@-0x6280 | CAttract@+0x1990 (boundary - pick one)
-// @stub
-RVA(0x000f8970, 0x3b4)
-void SFManager::SelectBestDevice() {}
+// SelectBestDevice (0xf8970) graduated to src/Gruntz/SFSelectDevice.cpp as
+// SFManager_SelectBestDevice (the SFMAN32.DLL music-device picker on the same
+// *0x64e0b0 receiver as BuildSoundFontPath).
 
 // BuildSoundFontPath (0xf8f30) graduated to src/Gruntz/SoundFontPath.cpp.
 
@@ -1385,12 +1377,9 @@ i32 EngineLabelBacklog::Stub_0f90f0(char* szPath) {
     return OpenFile(szPath, &of, 0x4000 /*OF_EXIST*/) != -1;
 }
 
-// @confidence: med
-// @source: string-xref
-// @proximity: CTileTriggerSwitchLogic@-0x40 | CPlayLevelLoad@+0x3b0 (boundary - pick one)
-// @stub
-RVA(0x00110860, 0x25f)
-void __stdcall EngineLabelBacklog::LoadBridgeMoveSprites(i32) {}
+// LoadBridgeMoveSprites (0x110860) graduated to src/Gruntz/BridgeMoveSprites.cpp
+// as CPlayLevelLoad::LoadBridgeMove (the frameless 0x66-case bridge-transition
+// sound dispatcher; sibling of CPlayLevelLoad::LoadPyramidBridge at 0x110c10).
 
 // LoadPyramidBridgeSprites (0x00110c10, 3647 B) is the pyramid/bridge tile-
 // transition dispatcher (a 0x66-case jump table over the sprite-type id);
