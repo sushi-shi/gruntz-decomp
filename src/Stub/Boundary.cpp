@@ -8,140 +8,18 @@
 
 RVA(0x0000bdd0, 0x53)
 void Boundary_00bdd0() {} // proximity: CWorldSoundSet@-0x70 | CRandomAmbientSound@+0x80
-RVA(0x00021310, 0x70)
-void Boundary_021310() {} // proximity: streambuf@-0x90 | CButeMgr@+0xb0
-RVA(0x000213a0, 0xa)
-void Boundary_0213a0() {} // proximity: streambuf@-0x120 | CButeMgr@+0x20
-RVA(0x00021570, 0x70)
-void Boundary_021570() {} // proximity: CButeMgr@-0x1b0 | CFontConfig@+0x370
 RVA(0x00023d90, 0x64)
 void Boundary_023d90() {} // proximity: CGruntzCmdMgr@-0x80 | CGruntzCommand@+0x90
 RVA(0x00038120, 0x1d)
 void Boundary_038120() {} // proximity: CWnd@-0x1080 | StateMgrBZ@+0x1a0
-RVA(0x000390a0, 0x5d)
-void Boundary_0390a0() {} // proximity: CCreditsState@-0x1a0 | CAttract@+0xc0
-RVA(0x00039f20, 0x51)
-void Boundary_039f20() {} // proximity: CCreditsState@-0x220 | CDDrawSurfacePair@+0x2b0
-RVA(0x0003a530, 0x15)
-void Boundary_03a530() {} // proximity: CDDrawSurfacePair@-0x360 | WwdFile@+0xf40
-RVA(0x0003acb0, 0xa)
-void Boundary_03acb0() {} // proximity: CDDrawSurfacePair@-0xae0 | WwdFile@+0x7c0
-RVA(0x0003ad30, 0xa)
-void Boundary_03ad30() {} // proximity: CDDrawSurfacePair@-0xb60 | WwdFile@+0x740
-RVA(0x000464e0, 0x74)
-void Boundary_0464e0() {} // proximity: CFortressFlag@-0xd0 | CParticlez@+0x5f0
-RVA(0x00050ca0, 0x2b)
-void Boundary_050ca0() {} // proximity: CUserLogic@-0x2f50 | CGrunt@+0x510
-RVA(0x0005bc50, 0x15)
-void Boundary_05bc50() {} // proximity: CDDrawSubMgrLeafScan@-0x470 | CGrunt@+0xe50
-RVA(0x00077dc0, 0x1d)
-void Boundary_077dc0() {} // proximity: CBrickz@-0x630 | CTriggerMgr@+0x4a0
 RVA(0x000788d0, 0x64)
 void Boundary_0788d0() {} // proximity: CTriggerMgr@-0x50 | EngineLabelBacklog@+0x90
-RVA(0x00080cf0, 0x12)
-void Boundary_080cf0() {} // proximity: CGruntzApp@-0x80 | CGameApp@+0xe0
-RVA(0x00082aa0, 0x10)
-void Boundary_082aa0() {} // proximity: CGameLevel@-0x4a0 | CGruntzMgr@+0x8c0
-RVA(0x00082fa0, 0x17)
-void Boundary_082fa0() {} // proximity: CGameLevel@-0x9a0 | CGruntzMgr@+0x3c0
 RVA(0x00085500, 0x23)
 void Boundary_085500() {} // proximity: CMapLogic@-0x80 | CSaveGame@+0x650
-RVA(0x00085540, 0xb)
-void Boundary_085540() {} // proximity: CMapLogic@-0xc0 | CSaveGame@+0x610
-RVA(0x0008c400, 0x46)
-void Boundary_08c400() {} // proximity: RezMgr@-0xcc0 | CState@+0x90
 RVA(0x0008c830, 0xaf)
 void Boundary_08c830() {} // proximity: CState@-0xe0 | CPlay@+0xe0
-RVA(0x0008d000, 0x55)
-void Boundary_08d000() {} // proximity: CMenuState@-0x1a0 | CMulti@+0x270
 RVA(0x0008d0d0, 0xc4)
 void Boundary_08d0d0() {} // proximity: CMenuState@-0x270 | CMulti@+0x1a0
-RVA(0x0008e880, 0x27)
-void Boundary_08e880() {} // proximity: RezMgr@-0x410 | CGruntzMgr@+0x100
-RVA(0x000915d0, 0x3f)
-void Boundary_0915d0() {} // proximity: CGruntzMgr@-0xd0 | RezMgr@+0xa0
-RVA(0x00091620, 0x3f)
-void Boundary_091620() {} // proximity: CGruntzMgr@-0x120 | RezMgr@+0x50
-RVA(0x00094c10, 0x16)
-void Boundary_094c10() {} // proximity: CGruntzWnd@-0x80 | CInGameIcon@+0x2a70
-RVA(0x00099ba0, 0x29)
-void Boundary_099ba0() {} // proximity: CInGameIcon@-0x90 | CAreaMgr@+0x80
-RVA(0x0009a420, 0x1c)
-void Boundary_09a420() {} // proximity: CAreaMgr@-0x370 | CSpawnEntry@+0x30
-RVA(0x0009cab0, 0x23)
-void Boundary_09cab0() {} // proximity: CTimer@-0x7d0 | CLightFx@+0xa70
-RVA(0x000adde0, 0x15)
-void Boundary_0adde0() {} // proximity: CMenuSparkle@-0x200 | CSingleAnimation@+0xa10
-RVA(0x000b15b0, 0x15)
-void Boundary_0b15b0() {} // proximity: CRollingBall@-0x5d0 | CKitchenSlime@+0x1390
-RVA(0x000b3ae0, 0x15)
-void Boundary_0b3ae0() {} // proximity: CKitchenSlime@-0x980 | CPathHazard@+0x540
-RVA(0x000b4c40, 0x4b)
-void Boundary_0b4c40() {} // proximity: CUFO@-0x1b0 | CPathHazard@+0x430
-RVA(0x000b5380, 0xa)
-void Boundary_0b5380() {} // proximity: CPathHazard@-0x310 | CNetMgr@+0xe0
-RVA(0x000b5400, 0xa)
-void Boundary_0b5400() {} // proximity: CPathHazard@-0x390 | CNetMgr@+0x60
-RVA(0x000bd430, 0xa)
-void Boundary_0bd430() {} // proximity: CFileIO@-0x50 | CMultiStartDlg@+0x4320
-RVA(0x000bd450, 0x16)
-void Boundary_0bd450() {} // proximity: CFileIO@-0x70 | CMultiStartDlg@+0x4300
-RVA(0x000bd7f0, 0xa)
-void Boundary_0bd7f0() {} // proximity: CFileIO@-0x410 | CMultiStartDlg@+0x3f60
-RVA(0x000cef50, 0x46)
-void Boundary_0cef50() {} // proximity: CGameLevel@-0x140 | CPlay@+0x11d0
-RVA(0x000d5d70, 0x16)
-void Boundary_0d5d70() {} // proximity: CLevelValidator@-0x2fa0 | CImage@+0x110
-RVA(0x000d5e20, 0x1b)
-void Boundary_0d5e20() {} // proximity: CLevelValidator@-0x3050 | CImage@+0x60
-RVA(0x000db200, 0x51)
-void Boundary_0db200() {} // proximity: GruntzPlayer@-0x250 | CPlay@+0x14d0
-RVA(0x000db2f0, 0x2b)
-void Boundary_0db2f0() {} // proximity: GruntzPlayer@-0x340 | CPlay@+0x13e0
-RVA(0x000db750, 0x70)
-void Boundary_0db750() {} // proximity: GruntzPlayer@-0x7a0 | CPlay@+0xf80
-RVA(0x000e17b0, 0x15)
-void Boundary_0e17b0() {} // proximity: CProjectile@-0xca0 | CTimeBomb@+0x80
-RVA(0x000e56b0, 0x8)
-void Boundary_0e56b0() {} // proximity: CSaveGame@-0x20 | CFileIO@+0x50
-RVA(0x000ea170, 0x5c)
-void Boundary_0ea170() {} // proximity: CSbItem@-0x80 | CSBI_StatzTabGruntBar@+0x300
-RVA(0x000eb970, 0x72)
-void Boundary_0eb970() {} // proximity: CSBI_WarlordHead@-0xf0 | CUserLogic@+0x2e90
-RVA(0x000fa150, 0x74)
-void Boundary_0fa150() {} // proximity: CGrunt@-0x7a60 | CAttract@+0x1b0
-RVA(0x000fbb70, 0x15)
-void Boundary_0fbb70() {} // proximity: CAttract@-0x1870 | CStaticHazard@+0x80
-RVA(0x00100780, 0xb)
-void Boundary_100780() {} // proximity: CSBI_RectOnly@-0x80 | CSBI_MenuItem@+0x50
-RVA(0x00104c80, 0x1f)
-void Boundary_104c80() {} // proximity: CSBI_WellGoo@-0xd0 | CSBI_GruntMachine@+0x60
-RVA(0x00104dd0, 0x6b)
-void Boundary_104dd0() {} // proximity: CSBI_RectOnly@-0x70 | EngineLabelBacklog@+0x90
-RVA(0x0010bbe0, 0x34)
-void Boundary_10bbe0() {} // proximity: CSBI_RectOnly@-0x50 | CSBI_MenuItem@+0x3e0
-RVA(0x00112bf0, 0x5e)
-void Boundary_112bf0() {} // proximity: CTileGridCommand@-0x80 | CTileTriggerSwitchLogic@+0x80
-RVA(0x00113860, 0x3b)
-void Boundary_113860() {} // proximity: CTileActionEvent@-0x440 | CTileTriggerSwitchLogic@+0x230
-RVA(0x00113e70, 0x7b)
-void Boundary_113e70() {} // proximity: CTileTriggerSwitchLogic@-0xa0 | CTileActionEvent@+0xa0
-RVA(0x00114ec0, 0x27)
-void Boundary_114ec0() {} // proximity: CToobSpikez@-0x660 | CTileTriggerSwitchLogic@+0x1040
-RVA(0x00114f00, 0x3e)
-void Boundary_114f00() {} // proximity: CToobSpikez@-0x6a0 | CTileTriggerSwitchLogic@+0x1000
-RVA(0x00115730, 0xa)
-void Boundary_115730() {} // proximity: CToobSpikez@-0xed0 | CTileTriggerSwitchLogic@+0x7d0
-RVA(0x001157b0, 0xa)
-void Boundary_1157b0() {} // proximity: CToobSpikez@-0xf50 | CTileTriggerSwitchLogic@+0x750
-RVA(0x001181d0, 0x70)
-void Boundary_1181d0() {} // proximity: CTileTriggerContainer@-0x270 | CGruntVoice@+0x1910
-RVA(0x00118260, 0x63)
-void Boundary_118260() {} // proximity: CTileTriggerContainer@-0x300 | CGruntVoice@+0x1880
-RVA(0x001182f0, 0xc)
-void Boundary_1182f0() {} // proximity: CTileTriggerContainer@-0x390 | CGruntVoice@+0x17f0
-RVA(0x00118310, 0xc)
-void Boundary_118310() {} // proximity: CTileTriggerContainer@-0x3b0 | CGruntVoice@+0x17d0
 RVA(0x00118330, 0x57)
 void Boundary_118330() {} // proximity: CTileTriggerContainer@-0x3d0 | CGruntVoice@+0x17b0
 RVA(0x00133370, 0xb)

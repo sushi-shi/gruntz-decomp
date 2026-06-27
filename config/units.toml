@@ -1517,6 +1517,21 @@ source = "src/Gruntz/BoundaryUpperEh.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "boundarylowerthunks"
+source = "src/Gruntz/BoundaryLowerThunks.cpp"
+flags = "base"
+
+[[unit]]
+unit = "boundarylowermethods"
+source = "src/Gruntz/BoundaryLowerMethods.cpp"
+flags = "base"
+
+[[unit]]
+unit = "boundarylowerdtors"
+source = "src/Gruntz/BoundaryLowerDtors.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "cmovinglogicdtor"
 source = "src/Gruntz/CMovingLogicDtor.cpp"
 flags = "eh"
