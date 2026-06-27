@@ -4,6 +4,7 @@
 // cannot attribute the COMDAT-folded leaf methods, so the owning class names are
 // placeholders. Only OFFSETS + code shape are load-bearing. The /GX EH-frame
 // siblings live in BoundaryTailEh.cpp.
+#include <Mfc.h> // real MFC CString (copy-ctor 0x1b9ba3 / dtor 0x1b9cde, reloc-masked)
 #include <rva.h>
 
 #include <string.h> // inline memset intrinsic
@@ -79,15 +80,6 @@ void CImg176d20::Fill(FillRect176d20* r, int color) {
     }
 }
 
-
-// MFC CString (statically-linked NAFXCW); copy-ctor 0x1b9ba3 / dtor 0x1b9cde
-// reloc-masked.
-class CString {
-public:
-    CString(const CString& o); // 0x1b9ba3
-    ~CString();                // 0x1b9cde
-    char* m_pchData;
-};
 
 // ---------------------------------------------------------------------------
 // 0x788d0 - sound-emitter screen-position update: index the per-channel emitter

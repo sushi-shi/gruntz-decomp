@@ -3,16 +3,12 @@
 // and on success runs the record's load hook + NotifyAllPlanes and raises its
 // dirty bit. Field names are placeholders; only offsets + code bytes are
 // load-bearing.
+#include <Mfc.h> // real MFC CString (default ctor 0x1b9b93 / dtor 0x1b9cde, reloc-masked)
 #include <rva.h>
 
 #include <Ints.h>
 
-// The CString key built by the engine sprintf-into-CString helper (cdecl).
-struct CString {
-    char* m_pchData; // +0x00
-    CString();       // 0x1b9b93
-    ~CString();      // 0x1b9cde
-};
+// The engine sprintf-into-CString helper (cdecl).
 void Format(CString* out, const char* fmt, ...); // 0x1b2cf5 (cdecl)
 
 class CSymTab {
@@ -67,7 +63,7 @@ i32 CWorldState::BuildWorldLevelKey(i32 unused) {
     m_0c->m_24->Reset();
     CString key;
     Format(&key, "WORLDZ\\LEVEL%i", 1);
-    i32 node = m_28->ResolveQualified(key.m_pchData, (void*)0x575744);
+    i32 node = m_28->ResolveQualified((char*)(const char*)key, (void*)0x575744);
     if (node == 0) {
         return 0;
     }

@@ -4,6 +4,7 @@
 // its title in and (when the live surface is free) plays the teleporter-open cue;
 // on a failed fade it cancels the command. Field names are placeholders; only
 // offsets + code bytes are load-bearing.
+#include <Mfc.h> // real MFC CString (operator=(LPCSTR) 0x1b9e74, reloc-masked)
 #include <rva.h>
 
 #include <stdio.h>
@@ -18,11 +19,6 @@ extern "C" {
     DATA(0x006bf3c0)
     extern u32 g_killCueClock;
 }
-
-struct CString {
-    char* m_pchData; // +0x00
-    CString& operator=(const char* s); // 0x1b9e74
-};
 
 class CStatusBarMgr {
 public:
@@ -187,10 +183,10 @@ void CPreviewState::LoadLevelPreviewScreen() {
     m_1c0 = idx + 1;
     sprintf(buf, "PREVIEW%i", idx);
     m_1bc = buf;
-    sprintf(buf, "\\SCREENZ\\%s", m_1bc.m_pchData);
+    sprintf(buf, "\\SCREENZ\\%s", (const char*)m_1bc);
     m_2c->ResolveQualified(buf, &g_screenTag);
     i32 failed = 0;
-    if (FadeInTitle(m_1bc.m_pchData, 0, 0, 0, 0, 1) == 0) {
+    if (FadeInTitle((char*)(const char*)m_1bc, 0, 0, 0, 0, 1) == 0) {
         failed = 1;
     } else {
         CStatusBarHolder* h = m_0c->m_28;

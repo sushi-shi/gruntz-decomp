@@ -13,11 +13,9 @@
 #ifndef GRUNTZ_CONFIGSTORE_H
 #define GRUNTZ_CONFIGSTORE_H
 
-#include <Win32.h>
+#include <Mfc.h> // real MFC CString (returned by GetString) + <windows.h> (afx-first)
 
 #include <Ints.h>
-
-class CString; // MFC CString (4-byte m_pszData); modeled locally in ConfigStoreRead.cpp
 
 class CConfigStore {
 public:

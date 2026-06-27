@@ -3,17 +3,9 @@
 // context at +0x0c. Self-contained except the MFC CMapStringToOb::Lookup
 // (0x1b8008) named-object lookup in 0x166040. Names are placeholders; offsets +
 // code bytes are load-bearing.
+#include <Mfc.h> // real MFC CMapStringToOb / CObject (Lookup 0x1b8008, reloc-masked)
 #include <Ints.h>
 #include <rva.h>
-
-// MFC CMapStringToOb::Lookup (NAFXCW 0x1b8008). Minimal decl - the mangled name
-// ?Lookup@CMapStringToOb@@QBEHPBDAAPAVCObject@@@Z reloc-masks against the library
-// symbol, so no <Mfc.h> is needed (keeps this a /O2 /MT `base` TU).
-class CObject;
-class CMapStringToOb {
-public:
-    i32 Lookup(const char* key, CObject*& rValue) const;
-};
 
 // The owner context at HelperHost+0x0c: a sub-manager ptr at +0x10 (its +0x10 is
 // the string->object map) and an int at +0x24.

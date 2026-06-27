@@ -7,22 +7,10 @@
 // fills a stack buffer and the CString is returned by value (hidden return-slot
 // arg, MFC CString copy-ctor from the stack temp -> /GX EH frame). Field names
 // are placeholders; only offsets + code bytes are load-bearing.
+#include <Mfc.h> // real MFC CString (ctor(const char*) 0x1b9d4c / copy 0x1b9ba3 / dtor 0x1b9cde)
 #include <rva.h>
 
 #include <stdio.h>
-
-// MFC CString (the engine's statically-linked copy); only the three operations
-// this helper drives are modeled, all reloc-masked engine calls:
-//   CString(const char*)   = 0x1b9d4c
-//   CString(const CString&)= 0x1b9ba3
-//   ~CString()             = 0x1b9cde
-class CString {
-public:
-    CString(const char* s);    // 0x1b9d4c
-    CString(const CString& o); // 0x1b9ba3
-    ~CString();                // 0x1b9cde
-    char* m_pchData;           // +0x00
-};
 
 // 0x1190f0: split `ms` into h:m:s by the sequential remainder reduction and
 // format it as "h:mm:ss".

@@ -18,6 +18,7 @@
 #include <Mfc.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Enums.h>
+#include <Io/FileStream.h> // CFileIO (the engine file reader IsBattlezMapFile opens)
 #include <rva.h>
 #include <stdio.h>  // engine sprintf (reloc-masked) for the toggle-message formatter
 #include <string.h> // engine strstr (reloc-masked) for the Battlez header probe
@@ -3585,19 +3586,8 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
 // so cl emits the /GX frame: the destructible stack file reader + the arg CString
 // each unwind at their own trylevel.
 // ---------------------------------------------------------------------------
-// The stack-local WWD file reader (the engine CFileIO; virtual dtor). Non-trivial
-// ctor+dtor -> destructible-local /GX frame. All __thiscall engine callees,
-// reloc-masked; signatures pinned to the retail mangled names.
-class CFileIO {
-public:
-    CFileIO();                                        // ??0CFileIO@@QAE@XZ   (0x1befd7)
-    virtual ~CFileIO();                               // ??1CFileIO@@UAE@XZ   (0x1bf121)
-    i32 Open(const char* name, u32 flags, void* err); // ?Open@CFileIO@@QAEHPBDIPAX@Z (0x1bf200)
-    u32 GetLength();                                  // ?GetLength@CFileIO@@QAEIXZ (0x1bf505)
-    void Close();                                     // ?Close@CFileIO@@QAEXXZ (0x1bf426)
-    u32 Read(void* buf, u32 len);                     // ?Read@CFileIO@@QAEIPAXI@Z (0x1bf328)
-    char m_pad[0xc]; // pad to the real CFileIO size (0x10) so the stack layout matches
-};
+// The stack-local WWD file reader is the engine CFileIO (include/Io/FileStream.h);
+// its virtual dtor makes the local destructible -> /GX frame.
 
 // The strstr-class substring helper (0x120090); nonzero when `needle` occurs.
 extern "C" i32 SubstringMatch(const char* haystack, const char* needle);

@@ -34,7 +34,7 @@ boundarylowerdtors	6	5
 boundarylowermethods	30	19
 boundarylowerthunks	26	26
 boundarymisc	13	11
-boundarytail	9	2
+boundarytail	9	3
 boundarytaileh	1	0
 boundarythunks	15	15
 boundaryupper	33	30
@@ -621,11 +621,11 @@ boundarymisc	?TileSwitch29af0@@YGXPAUCTileSwitch29af0@@HHHHH@Z	100.0000	100.0000
 boundarytail	?Blit@CObj23d90@@QAEXHHHHH@Z	50.4474	50.4474	1	26a8ee853016	0x23d90
 boundarytail	?BuildRecord118330@@YAHPAUOut118330@@@Z	92.6667	92.6667	1	66a6d8f7f7f7	0x118330
 boundarytail	?Dispatch@CObj_bdd0@@QAEPAXPAUArg1_bdd0@@PBDHHHH@Z	100.0000	100.0000	1	fbeffa950bde	0xbdd0
-boundarytail	?Fill@CImg176d20@@QAEXPAUFillRect176d20@@H@Z	91.3043	91.3043	1	3337862c0c6f	0x176d20
+boundarytail	?Fill@CImg176d20@@QAEXPAUFillRect176d20@@H@Z	100.0000	100.0000	1	3337862c0c6f	0x176d20
 boundarytail	?Flush@CBlit148250@@QAEXXZ	100.0000	100.0000	1	936c1cbb24f3	0x148250
 boundarytail	?GetName@Obj38120@@QAE?AVCString@@XZ	66.7273	66.7273	1	76c2bc684825	0x38120
 boundarytail	?GetName@Obj85500@@QAE?AVCString@@XZ	74.5000	74.5000	1	c798a7feb39e	0x85500
-boundarytail	?PositionUpdate@CSnd788d0@@QAEHXZ	65.3448	65.3448	1	a7c1ff565747	0x788d0
+boundarytail	?PositionUpdate@CSnd788d0@@QAEHXZ	64.8276	64.8276	1	a7c1ff565747	0x788d0
 boundarytail	?WaitKeyEdge@@YAXHH@Z	97.0422	97.0422	1	fccae64ad893	0x13df30
 boundarytaileh	??1CFmb1578b0@@QAE@XZ	91.0000	91.0000	1	733b6b91b074	0x1578b0
 boundarythunks	?ButeMgrFlush82b20@@YAXXZ	100.0000	100.0000	1	d388b45bede6	0x82b20
@@ -733,7 +733,7 @@ brickz	?SearchEdge@CBrickz@@QAEHHHHHPAXHHH@Z	82.5373	82.5373	2	9a02e814554f	0x81
 brickz	?Serialize@CBrickz@@QAEHHHHH@Z	37.9032	37.9032	1	18774618cdf4	0x9356c
 brickz	?Unlink@CBrickz@@QAEXPAUBrickzNode@@@Z	74.9487	74.9487	2	ead4b3e1d312	0x9f690
 brickz	?UpdateDiagonals@CBrickz@@QAEHH@Z	53.5683	53.5683	1	e2065e000df7	0x82030
-buildgruntzcrcinfo	?BuildGruntzCrcInfo@CrcOwner@@QAEXXZ	70.9695	70.9695	1	f80ed12c68f6	0xbf1d0
+buildgruntzcrcinfo	?BuildGruntzCrcInfo@CrcOwner@@QAEXXZ	70.9695	70.9695	2	2542753d7d88	0xbf1d0
 butemgr	??1CButeMgr@@QAE@XZ	68.6322	68.6322	1	febe7cdf6ea9	0x213c0
 butemgr	??1CButeValue@@QAE@XZ	68.6364	68.6364	1	44a2235fbbca	0x172160
 butemgr	?CharClass@CButeMgr@@QAEFD@Z	100.0000	100.0000	2	6b8d1de98cce	0x1703e0
@@ -844,21 +844,21 @@ cddrawptrcollections	??1CPoolItemA7f0@@QAE@XZ	94.0000	94.0000	1	98f6a0c7dffa	0x1
 cddrawptrcollections	??1CPoolItemA@@QAE@XZ	94.0000	94.0000	1	118e251b1768	0x142820
 cddrawptrcollections	?AddItemA@CDDrawPtrCollections@@QAEXPAVCPoolItemA@@@Z	100.0000	100.0000	1	08823e73ec27	0x142100
 cddrawptrcollections	?AddItemB@CDDrawPtrCollections@@QAEXPAUCPoolItemB@@@Z	100.0000	100.0000	1	49c9c58ce9de	0x142eb0
-cddrawptrcollections	?Clear@CDDrawPtrCollections@@QAEXH@Z	100.0000	100.0000	1	e67bb1393aec	0x142060
+cddrawptrcollections	?Clear@CDDrawPtrCollections@@QAEXH@Z	100.0000	100.0000	2	96a1ff5065ae	0x142060
 cddrawptrcollections	?ComputeColorMasks@CDDrawPtrCollections@@QAEHXZ	100.0000	100.0000	1	56947f610115	0x143b20
 cddrawptrcollections	?ConfigureSurface@CDDrawPtrCollections@@QAEHHHHHH@Z	100.0000	100.0000	1	a21244aa5783	0x143c20
-cddrawptrcollections	?Create7f0_1@CDDrawPtrCollections@@QAEPAVCPoolItemA@@H@Z	55.6562	55.6562	1	5028e9edc5a1	0x1421a0
-cddrawptrcollections	?CreateA@CDDrawPtrCollections@@QAEPAVCPoolItemA@@HHHHH@Z	60.5278	60.5278	1	d45039d45b2e	0x142260
-cddrawptrcollections	?CreateB@CDDrawPtrCollections@@QAEPAVCPoolItemA@@HHHHH@Z	60.5278	60.5278	1	235115dc5be2	0x1423c0
-cddrawptrcollections	?Createa58_1@CDDrawPtrCollections@@QAEPAVCPoolItemA@@H@Z	55.6562	55.6562	1	913794634234	0x1424a0
-cddrawptrcollections	?Createa58_3@CDDrawPtrCollections@@QAEPAVCPoolItemA@@HHH@Z	58.2353	58.2353	1	16f775514997	0x142560
-cddrawptrcollections	?Createa88_1@CDDrawPtrCollections@@QAEPAVCPoolItemA@@H@Z	55.6562	55.6562	1	9154701f7115	0x142880
-cddrawptrcollections	?Createa88_3@CDDrawPtrCollections@@QAEPAVCPoolItemA@@HHH@Z	54.3382	54.3382	1	c85806c1a2b2	0x142730
-cddrawptrcollections	?Createab8_1@CDDrawPtrCollections@@QAEPAVCPoolItemA@@H@Z	52.8939	52.8939	1	4ec809ae792a	0x142aa0
-cddrawptrcollections	?Createab8_24_3@CDDrawPtrCollections@@QAEPAVCPoolItemA@@H@Z	54.2794	54.2794	1	5627c2e83402	0x142b70
-cddrawptrcollections	?Createab8_3@CDDrawPtrCollections@@QAEPAVCPoolItemA@@HHH@Z	51.7714	51.7714	1	40151b5248c0	0x142940
-cddrawptrcollections	?Createae8_1@CDDrawPtrCollections@@QAEPAVCPoolItemA@@H@Z	55.6562	55.6562	1	27e78e9ad2fb	0x142da0
-cddrawptrcollections	?Createae8_6@CDDrawPtrCollections@@QAEPAVCPoolItemA@@HHHHHH@Z	61.5811	61.5811	1	3c893bd5b95f	0x142c40
+cddrawptrcollections	?Create7f0_1@CDDrawPtrCollections@@QAEPAVCPoolItemA@@H@Z	55.6562	55.6562	2	11adc84acda7	0x1421a0
+cddrawptrcollections	?CreateA@CDDrawPtrCollections@@QAEPAVCPoolItemA@@HHHHH@Z	60.5278	60.5278	2	475fc4e97474	0x142260
+cddrawptrcollections	?CreateB@CDDrawPtrCollections@@QAEPAVCPoolItemA@@HHHHH@Z	60.5278	60.5278	2	50ab2da89d14	0x1423c0
+cddrawptrcollections	?Createa58_1@CDDrawPtrCollections@@QAEPAVCPoolItemA@@H@Z	55.6562	55.6562	2	e98ad8af214e	0x1424a0
+cddrawptrcollections	?Createa58_3@CDDrawPtrCollections@@QAEPAVCPoolItemA@@HHH@Z	58.2353	58.2353	2	c359a29c9ff5	0x142560
+cddrawptrcollections	?Createa88_1@CDDrawPtrCollections@@QAEPAVCPoolItemA@@H@Z	55.6562	55.6562	2	4f4bc29542f5	0x142880
+cddrawptrcollections	?Createa88_3@CDDrawPtrCollections@@QAEPAVCPoolItemA@@HHH@Z	54.3382	54.3382	2	1c00b9dee74d	0x142730
+cddrawptrcollections	?Createab8_1@CDDrawPtrCollections@@QAEPAVCPoolItemA@@H@Z	52.8939	52.8939	2	c1dbcc3ff78d	0x142aa0
+cddrawptrcollections	?Createab8_24_3@CDDrawPtrCollections@@QAEPAVCPoolItemA@@H@Z	54.2794	54.2794	2	7141e8ed4144	0x142b70
+cddrawptrcollections	?Createab8_3@CDDrawPtrCollections@@QAEPAVCPoolItemA@@HHH@Z	51.7714	51.7714	2	751dcdf41903	0x142940
+cddrawptrcollections	?Createae8_1@CDDrawPtrCollections@@QAEPAVCPoolItemA@@H@Z	55.6562	55.6562	2	1b1f8e2254b1	0x142da0
+cddrawptrcollections	?Createae8_6@CDDrawPtrCollections@@QAEPAVCPoolItemA@@HHHHHH@Z	61.5811	61.5811	2	c8ff559d862c	0x142c40
 cddrawptrcollections	?EmptyPoolA@CDDrawPtrCollections@@QAEXXZ	100.0000	100.0000	1	5e3997835593	0x142120
 cddrawptrcollections	?EmptyPoolB@CDDrawPtrCollections@@QAEXXZ	100.0000	100.0000	1	dc3d2b2523b0	0x142ed0
 cddrawptrcollections	?LoadPaletteMake950@CDDrawPtrCollections@@QAEPAUCPoolItemB@@PBDH@Z	97.9464	97.9464	1	fddefc7b5005	0x143a30
@@ -867,8 +867,8 @@ cddrawptrcollections	?MakeAndAddB@CDDrawPtrCollections@@QAEPAVCPoolItemA@@HHHHH@
 cddrawptrcollections	?MakeB2@CDDrawPtrCollections@@QAEPAUCPoolItemB@@HH@Z	100.0000	100.0000	1	2d60d735ebd5	0x142f40
 cddrawptrcollections	?MakeB3@CDDrawPtrCollections@@QAEPAUCPoolItemB@@HHH@Z	100.0000	100.0000	1	f78cbd049da5	0x1430c0
 cddrawptrcollections	?MakeB@CDDrawPtrCollections@@QAEPAUCPoolItemB@@HH@Z	100.0000	100.0000	1	65bf9ff78c84	0x142fc0
-cddrawptrcollections	?RemoveItemA@CDDrawPtrCollections@@QAEXPAVCPoolItemA@@@Z	100.0000	100.0000	1	4ddf350abd6e	0x142160
-cddrawptrcollections	?RemoveItemB@CDDrawPtrCollections@@QAEXPAUCPoolItemB@@@Z	100.0000	100.0000	1	a7726bad4d9a	0x142f10
+cddrawptrcollections	?RemoveItemA@CDDrawPtrCollections@@QAEXPAVCPoolItemA@@@Z	100.0000	100.0000	2	d62301ad2e3e	0x142160
+cddrawptrcollections	?RemoveItemB@CDDrawPtrCollections@@QAEXPAUCPoolItemB@@@Z	100.0000	100.0000	2	945ec6f0b8bd	0x142f10
 cddrawshadeblit	?Blit@CDDrawShadeBlit@@QAEHPAUShadeRect@@PAUShadeSrc@@0HH@Z	100.0000	100.0000	1	9e02379bfde6	0x1497f0
 cddrawshadeblit	?BlitLoop@CDDrawShadeBlit@@QAEXPAUShadeRect@@PAUShadeSrc@@0H@Z	0.0556	0.0556	1	c4a744d07210	0x14a200
 cddrawshadeblit	?BlitMode_149950@CDDrawShadeBlit@@QAEXPAUShadeRect@@PAUShadeSrc@@0H@Z	31.4438	31.4438	1	f5ffbe02f6d8	0x149950
@@ -1345,8 +1345,8 @@ comhelperthunks	?ComDetach_1c0a41@@YAXXZ	100.0000	100.0000	1	669f59f2acaa	0x1c0a
 comhelperthunks	?ComPump3210@@YAXXZ	100.0000	100.0000	1	4d940e10e212	0x1d4c0c
 comhelperthunks	?Ctor@ComStamp@@QAEXXZ	100.0000	100.0000	1	8f58e507d3dd	0x1d4722
 configstore	?GetInt@CConfigStore@@QAEHPAD0H@Z	17.6905	17.6905	1	00a531e13933	0x1d4fbd
-configstore	?OpenRoot@CConfigStore@@QAEPAXXZ	57.7385	57.7385	1	906a02758db6	0x1d4ee3
-configstore	?OpenSubKey@CConfigStore@@QAEPAXPAD@Z	56.9394	56.9394	1	84aab5890a22	0x1d4f77
+configstore	?OpenRoot@CConfigStore@@QAEPAUHKEY__@@XZ	57.7385	57.7385	1	cpp:1c21c2a0733c	0x1d4ee3
+configstore	?OpenSubKey@CConfigStore@@QAEPAUHKEY__@@PAD@Z	56.9394	56.9394	1	cpp:1c21c2a0733c	0x1d4f77
 configstore	?WriteString@CConfigStore@@QAEHPAD00@Z	29.6610	29.6610	1	419e55efa54a	0x1ccb5c
 configstoreread	?GetBinary@CConfigStore@@QAEHPAD0PAPAXPAH@Z	16.7143	16.7143	1	ae753c051c22	0x1d513b
 configstoreread	?GetString@CConfigStore@@QAE?AVCString@@PAD00@Z	40.7753	40.7753	1	3cb9ee408923	0x1d5029
@@ -2774,7 +2774,7 @@ m1_lobbysync	?DispatchMsg@CLobbySync@@QAEHPAULobbyMsg@@H@Z	0.0000	0.0000	1	a88be
 m1_lobbysync	?M_bfc70@CCluster0c@@QAEHHPAUGruntRec@@HHH@Z	90.2632	90.2632	1	b7176a0d95bb	0xbfc70
 m1_lobbysync	?Poll@CLobbySync@@QAEHH@Z	62.8081	62.8081	1	892c719e78db	0xbf5a0
 m1_lobbysync	?Reconcile@CLobbySync@@QAEXXZ	100.0000	100.0000	1	139d138e8b71	0xc00f0
-m1_lobbysync	?Reset@CLobbySync@@QAEXXZ	84.7260	84.7260	1	ee547fbcfd8f	0xbf000
+m1_lobbysync	?Reset@CLobbySync@@QAEXXZ	84.7260	84.7260	2	cabbeea247ca	0xbf000
 m1_lobbysync	?SendAll@CLobbySync@@QAEHXZ	67.4321	67.4321	1	0a585184c2da	0xbfb40
 m1_lobbysync	?SendBatch@CLobbySync@@QAEHXZ	100.0000	100.0000	1	0a2e5e55933e	0xbfd40
 m1_lobbysync	?SendOne@CLobbySync@@QAEHPAUCCluster0c@@H@Z	84.2105	84.2105	1	6fc308620036	0xbfeb0
@@ -2833,7 +2833,7 @@ m5_filegetstatus	?GetStatus@CFile@@QAEHPAUCFileStatus@@@Z	42.5882	42.5882	1	6c09
 m5_finishlevelsprite	?LoadFinishLevelSprite@CFinishLevelState@@QAEXH@Z	58.1863	58.1863	1	69a53edd1eb6	0x7c3d0
 m5_freelibhostdtor	?FreeLibHost_Dtor@@YAHXZ	100.0000	100.0000	1	784aecf4b678	0x1d4a18
 m5_gameassetnamespaces	?LoadGameAssetNamespaces@CAssetLoader@@QAEXPAUAssetMgr@@HH@Z	72.7569	72.7569	1	693b148c3200	0xf9ea0
-m5_levelpreview	?LoadLevelPreviewScreen@CPreviewState@@QAEXXZ	94.7368	94.7368	2	ee10d5526ec2	0xde420
+m5_levelpreview	?LoadLevelPreviewScreen@CPreviewState@@QAEXXZ	94.7368	94.7368	3	f6d3100a3ff2	0xde420
 m5_levelpreview	?LoadScreen@CPreviewState@@QAEHPADHHH@Z	96.3906	96.3906	1	7c55f1425856	0xfab90
 m5_levelpreview	?Tick@CPreviewState@@QAEHXZ	99.7826	99.7826	1	f4822c18b722	0xde200
 m5_lighteffectsetup	?Setup@CLightEffect@@QAEHPAULightDesc@@@Z	92.2465	92.2465	1	bad170dabaae	0x1804a0
@@ -2841,7 +2841,7 @@ m5_palettelerp	?Tick@PaletteLerp@@QAEHXZ	100.0000	100.0000	1	65633700ddb4	0x1480
 m5_soundtickctor	?SoundTick_Ctor@@YAHXZ	100.0000	100.0000	1	eb13fef5cc82	0x136fe0
 m5_stateimages	?LoadStateImages@CImageState@@QAEHXZ	100.0000	100.0000	1	4d5c29c4f8ad	0xa09a0
 m5_stateimages	?OnActivate2@CBootyState@@QAEHXZ	100.0000	100.0000	1	9339daaf41bd	0x1c8a0
-m5_worldlevelkey	?BuildWorldLevelKey@CWorldState@@QAEHH@Z	100.0000	100.0000	1	d5f9fc215621	0x3c0e0
+m5_worldlevelkey	?BuildWorldLevelKey@CWorldState@@QAEHH@Z	100.0000	100.0000	2	f6e34c309ea3	0x3c0e0
 mainmenubuilder	?BuildMainMenuTree@@YAXPAX@Z	77.6725	77.6725	2	77164b63ab1c	0xa11d0
 maplogic	??1CMapLogic@@UAE@XZ	100.0000	100.0000	1	baec3be51eff	0x113c0
 maplogic	?FreeNodes@CMapLogic@@QAEXXZ	100.0000	100.0000	2	8cb172a03e69	0x85480

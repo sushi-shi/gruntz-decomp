@@ -45,13 +45,9 @@ struct CSyncObj {
 };
 void NoopSync(CSyncObj* p);  // 0xbfb20 (empty)
 
-// --- The recycled-node free pool drained at the tail of Reset. ----------------
-struct CPtrList0c {
-    void* RemoveTail();  // 0x1b4a27
-    void* RemoveHead();  // 0x1b4a03
-};
-DATA(0x0024aca8) extern CPtrList0c g_pool;  // 0x64aca8
-extern i32 g_poolCount;    // 0x64acb4 (g_pool.m_count)
+// --- The recycled-node free pool drained at the tail of Reset (real MFC CPtrList
+// from <Rez/RezMgr.h> -> <Mfc.h>; RemoveTail 0x1b4a27 / GetCount inline @+0xc). ---
+DATA(0x0024aca8) extern CPtrList g_pool;  // 0x64aca8
 
 // The "[end]"-tagged broadcast scratch buffer for the receive loop (0x800 B).
 extern char g_649858[0x800];  // 0x649858
@@ -461,7 +457,7 @@ void CLobbySync::Reset() {
         r->m_04 = 0;
         r++;
     } while (--k);
-    while (g_poolCount != 0) {
+    while (g_pool.GetCount() != 0) {
         void* p = g_pool.RemoveTail();
         if (p)
             RezFree(p);

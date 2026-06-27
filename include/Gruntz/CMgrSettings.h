@@ -10,6 +10,7 @@
 #ifndef GRUNTZ_CMGRSETTINGS_H
 #define GRUNTZ_CMGRSETTINGS_H
 
+#include <Mfc.h> // real MFC CMapStringToOb / CObject (Lookup 0x1b8008, reloc-masked)
 #include <Ints.h>
 #include <rva.h>
 
@@ -34,13 +35,6 @@ inline void CMgrArchive::Read(void* buf, i32 len) {
 inline void CMgrArchive::Write(const void* buf, i32 len) {
     (this->*(vptr->Write))((void*)buf, len);
 }
-
-// The MFC name->object map (Lookup 0x1b8008, reloc-masked by mangled name).
-class CObject;
-class CMapStringToOb {
-public:
-    i32 Lookup(const char* key, CObject*& rValue) const; // 0x1b8008
-};
 
 // The registry leaf reached as g_gameReg->m_30->m_10: a CDDrawWorkerRegistry with
 // the name map at +0x10 (read path) and the reverse name+index probe (write path).

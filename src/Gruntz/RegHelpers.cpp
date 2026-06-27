@@ -4,21 +4,11 @@
 // ebp,esp WITH full register allocation), which the frameless /O2 backlog
 // aggregate could not reproduce. This TU uses the `framed` profile (/O2 /Oy-).
 // See docs/patterns/o2-optimizer-bailout-framed.md.
+#include <Mfc.h> // real MFC CString (GetBuffer 0x1ba11c / ReleaseBuffer 0x1ba16b) + <windows.h>
 #include <rva.h>
-
-#include <Win32.h>
 
 #include <stdlib.h> // strtol (0x1240b0, reloc-masked CRT)
 #include <string.h> // memset (0x121380, reloc-masked CRT)
-
-// MFC CString modeled by the two operations 1bf702 drives (reloc-masked
-// __thiscall externals).
-class CString {
-public:
-    char* GetBuffer(int nMinBufLength); // 0x1ba11c
-    void ReleaseBuffer(int nNewLength); // 0x1ba16b
-    char* m_pszData;                    // +0x00
-};
 
 // The empty global string used as RegQueryValueEx's value name (default value).
 extern "C" char g_emptyString[]; // 0x6293f4

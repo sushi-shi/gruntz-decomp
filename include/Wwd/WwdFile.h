@@ -5,6 +5,7 @@
 #ifndef SRC_WWD_WWDFILE_H
 #define SRC_WWD_WWDFILE_H
 
+#include <Mfc.h> // real MFC CString (the WwdFile members take it by value)
 #include <Ints.h>
 
 typedef u8 Bytef;
@@ -351,9 +352,7 @@ i32 __stdcall WwdFile_IsValidWwd(const char* name, void* headerBuf);
 // header into the caller buffer. __stdcall (callee cleans 8 bytes); returns 1 / 0.
 i32 __stdcall WwdFile_CheckHeader(const char* name, void* headerOut);
 
-// MFC forward decl so the WwdFile members below can take CString by value
-// without pulling <Mfc.h> into every includer (the .cpp includes it).
-class CString;
+// (real MFC CString from <Mfc.h> at the top; the WwdFile members take it by value)
 
 // ---------------------------------------------------------------------------
 // WwdFile - the WWD level-file loader namespace-class. IsValidWwd/CheckHeader/

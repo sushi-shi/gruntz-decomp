@@ -7,22 +7,7 @@
 // docs/patterns/o2-optimizer-bailout-framed.md.
 #include <rva.h>
 
-#include <Gruntz/ConfigStore.h>
-
-// MFC CString (the engine's statically-linked copy); only the operations these
-// getters drive are modeled, all reloc-masked engine calls.
-class CString {
-public:
-    CString();                 // 0x1b9b93  default ctor
-    CString(const char* s);    // 0x1b9d4c  ctor from C-string
-    CString(const CString& o); // 0x1b9ba3  copy ctor
-    ~CString();                // 0x1b9cde
-    char* GetBuffer(int nMinBufLength);                 // 0x1ba11c
-    void ReleaseBuffer(int nNewLength);                 // 0x1ba16b
-    int GetLength() const { return ((int*)m_pszData)[-2]; }
-    operator const char*() const { return m_pszData; }
-    char* m_pszData; // +0x00
-};
+#include <Gruntz/ConfigStore.h> // real MFC CString via <Mfc.h>
 
 extern "C" void* RezAlloc(u32 n); // 0x1b9b46 (engine operator new)
 extern "C" void RezFree(void* p); // 0x1b9b82

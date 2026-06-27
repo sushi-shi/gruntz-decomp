@@ -5,19 +5,9 @@
 //   ~InterfaceObject (0x179340) - the /GX node destructor.
 //   GetName         (0x179300) - return the +0x8 name CString by value.
 // Field names are placeholders; only offsets + code bytes are load-bearing.
+#include <Mfc.h> // real MFC CString (NAFXCW copy-ctor 0x1b9ba3 / dtor 0x1b9cde, reloc-masked)
 #include <Ints.h>
 #include <rva.h>
-
-// The minimal MFC CString model (a single char* @+0). Its copy-ctor
-// (0x1b9ba3) and dtor (0x1b9cde) are MFC/CRT (NAFXCW) - declared no-body so the
-// member operations' rel32 calls reloc-mask.
-class CString {
-public:
-    CString();
-    CString(const CString& s);
-    ~CString();
-    char* m_data; // +0x00
-};
 
 // The CObject base subobject (CObject-like, grand-base vtable @0x5e8cb4): the
 // implicit vptr @+0x00 + the 5-slot CObject-style interface. Real polymorphic: the

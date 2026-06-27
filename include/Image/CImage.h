@@ -32,7 +32,8 @@
 #include <rva.h>
 #include <Ints.h>
 
-class CString; // MFC CString (4-byte m_pszData ptr); full type in CImageOwned.cpp
+class CString;  // real MFC CString (4-byte ptr); completed via <Mfc.h> in the .cpp
+                // (forward-decl here so includers needn't choose <Mfc.h> vs <Win32.h>)
 class CBlitInfo; // the sprite blit/draw request (esi); defined in CImageSpriteBlit.cpp
 
 // The two vtables in the dtor chain: this class's own (0x5eaa2c) and the

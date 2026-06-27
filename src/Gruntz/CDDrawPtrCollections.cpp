@@ -1,7 +1,9 @@
+#include <Mfc.h> // real MFC CPtrList / CPtrArray / CByteArray (NAFXCW, reloc-masked)
 #include <Ints.h>
 #include <rva.h>
 
-#include <string.h> // memset (inlined to rep stos at /O2 /Oi)
+#include <Io/FileStream.h> // engine CFileIO (palette loaders)
+#include <string.h>        // memset (inlined to rep stos at /O2 /Oi)
 // CDDrawPtrCollections.cpp - tomalla-named standalone class in the ddrawmgr surface/page
 // manager "Harry Potter" family (tomalla's UnknownFilch, 0x948 B, NO RTTI vtable).
 // It owns two CPtrList item pools (+0x47c / +0x498) plus a CPtrArray (+0x4b4 - its own
@@ -63,47 +65,8 @@ extern i32 g_683eb4; // blue  8-minus-count
 // Named to pair with the engine_boundary stub symbol so its rel32 reloc matches retail.
 void Boundary_13f740();
 
-// The engine KERNEL32 file wrapper (CFileIO @0x1bef*) the palette loaders open. Minimal
-// local model (no <Mfc.h>, which would clash with the local CPtrList/CPtrArray) - 0x10
-// bytes { vptr, handle, open-flag, name }; the virtual dtor gives the /GX local frame.
-// Every method is a reloc-masked external (no body).
-class CFileIO {
-public:
-    CFileIO();          // 0x1befd7
-    virtual ~CFileIO(); // 0x1bf121
-    i32 Open(const char* name, u32 flags, void* err); // 0x1bf200
-    u32 Read(void* buf, u32 n);                        // 0x1bf328 (returns unsigned)
-    long Seek(long off, i32 from);                     // 0x1bf3ad (LONG Seek(LONG,int))
-    // implicit vptr @+0x00 (the virtual dtor); +0x04..+0x10 = handle/open/name.
-    char _raw[0x10 - 0x04];
-};
-
-// ---------------------------------------------------------------------------
-// Minimal MFC container placeholders - only their ctor symbol + size matter.
-// CPtrList: vptr@0 + 6 scalar fields = 0x1c.  CPtrArray: vptr@0 + 4 fields = 0x14.
-// ---------------------------------------------------------------------------
-class CPtrList {
-public:
-    CPtrList(i32 nBlockSize);
-    ~CPtrList(); // (invoked on EH unwind / dtor)
-    void* AddTail(void* p);
-    void RemoveAt(void* pos);
-    void RemoveAll();
-    void* GetHeadPosition() const;
-    void* vptr;          // +0x00
-    char _raw[0x1c - 4]; // 0x1c incl vptr
-};
-
-class CPtrArray {
-public:
-    CPtrArray();
-    ~CPtrArray();
-    void SetSize(i32 nNewSize, i32 nGrowBy);
-    void* vptr;     // +0x00
-    void** m_pData; // +0x04 - element storage
-    i32 m_nSize;    // +0x08 - element count
-    char _raw[0x14 - 0xc];
-}; // 0x14
+// The engine KERNEL32 file wrapper CFileIO (include/Io/FileStream.h) the palette
+// loaders open; its virtual dtor gives the /GX local frame.
 
 // A CPtrList internal node: { Node* pNext; Node* pPrev; void* data; }.  The pool
 // walk in Clear/Empty derefs node->pNext (+0) and node->data (+8) directly.
@@ -113,14 +76,8 @@ struct CPtrListNode {
     void* data;
 };
 
-// A 0x14-byte CByteArray-shaped sub-object embedded at item+0x94.  Only its ctor
-// symbol + size matter (constructed in place by the factories).
-class CByteArrayMember {
-public:
-    CByteArrayMember(); // 0x1b4f0b (reloc-masked rel32)
-    ~CByteArrayMember(); // 0x1b4f3e (reloc-masked rel32, member dtor on teardown)
-    char _raw[0x14];
-};
+// The real MFC CByteArray sub-object embedded at item+0x94 (ctor 0x1b4f0b /
+// dtor 0x1b4f3e, reloc-masked; constructed in place by the factories).
 
 class CDDrawPtrCollections;
 
@@ -147,7 +104,7 @@ public:
     char _10[0x7c - 0x10];
     i32 m_7c; // +0x7c
     char _80[0x94 - 0x80];
-    CByteArrayMember m_94; // +0x94
+    CByteArray m_94; // +0x94
     i32 m_a8;              // +0xa8
     char _ac[0xb8 - 0xac];
     i32 m_b8; // +0xb8
@@ -225,7 +182,7 @@ public:
     void FreeSurfaces(); // 0x13e4d0 (__thiscall) - external
     CPoolItemAVtbl* vptr; // +0x00
     char _04[0x94 - 0x04];
-    CByteArrayMember m_94; // +0x94
+    CByteArray m_94; // +0x94
     char _a8[0xc0 - 0xa8];
 };
 
@@ -367,8 +324,8 @@ void CDDrawPtrCollections::Clear(i32 mode) {
     if (mode && m_surf0) {
         m_surf0->vtbl->Restore(m_surf0);
     }
-    for (i32 i = 0; i < m_array.m_nSize; i++) {
-        RezFree(m_array.m_pData[i]);
+    for (i32 i = 0; i < m_array.GetSize(); i++) {
+        RezFree(m_array.GetData()[i]);
     }
     m_array.SetSize(0, -1);
     EmptyPoolA();
@@ -415,7 +372,7 @@ void CDDrawPtrCollections::EmptyPoolA() {
 // ---------------------------------------------------------------------------
 RVA(0x00142160, 0x24)
 void CDDrawPtrCollections::RemoveItemA(CPoolItemA* item) {
-    m_poolA.RemoveAt(item->m_pos);
+    m_poolA.RemoveAt((POSITION)item->m_pos);
     if (item) {
         item->Delete(1);
     }
@@ -435,7 +392,7 @@ RVA(0x001421a0, 0xbe)
 CPoolItemA* CDDrawPtrCollections::Create7f0_1(i32 a) {
     CPoolItemA* item = (CPoolItemA*)operator new(0xc0);
     if (item) {
-        new (&item->m_94) CByteArrayMember;
+        new (&item->m_94) CByteArray;
         item->vptr = &g_poolItemVtbl7f0;
         item->m_08 = 0;
         item->m_0c = 0;
@@ -470,7 +427,7 @@ RVA(0x00142260, 0xd2)
 CPoolItemA* CDDrawPtrCollections::CreateA(i32 a, i32 b, i32 c, i32 d, i32 e) {
     CPoolItemA* item = (CPoolItemA*)operator new(0xc0);
     if (item) {
-        new (&item->m_94) CByteArrayMember;
+        new (&item->m_94) CByteArray;
         item->m_08 = 0;
         item->m_0c = 0;
         item->m_pos = 0;
@@ -501,7 +458,7 @@ RVA(0x001423c0, 0xd2)
 CPoolItemA* CDDrawPtrCollections::CreateB(i32 a, i32 b, i32 c, i32 d, i32 e) {
     CPoolItemA* item = (CPoolItemA*)operator new(0xc0);
     if (item) {
-        new (&item->m_94) CByteArrayMember;
+        new (&item->m_94) CByteArray;
         item->m_08 = 0;
         item->m_0c = 0;
         item->m_pos = 0;
@@ -533,7 +490,7 @@ RVA(0x001424a0, 0xbe)
 CPoolItemA* CDDrawPtrCollections::Createa58_1(i32 a) {
     CPoolItemA* item = (CPoolItemA*)operator new(0xc0);
     if (item) {
-        new (&item->m_94) CByteArrayMember;
+        new (&item->m_94) CByteArray;
         item->m_08 = 0;
         item->m_0c = 0;
         item->m_pos = 0;
@@ -564,7 +521,7 @@ RVA(0x00142560, 0xc8)
 CPoolItemA* CDDrawPtrCollections::Createa58_3(i32 a, i32 b, i32 c) {
     CPoolItemA* item = (CPoolItemA*)operator new(0xc0);
     if (item) {
-        new (&item->m_94) CByteArrayMember;
+        new (&item->m_94) CByteArray;
         item->m_08 = 0;
         item->m_0c = 0;
         item->m_pos = 0;
@@ -595,7 +552,7 @@ RVA(0x00142730, 0xc8)
 CPoolItemA* CDDrawPtrCollections::Createa88_3(i32 a, i32 b, i32 c) {
     CPoolItemA* item = (CPoolItemA*)operator new(0xc0);
     if (item) {
-        new (&item->m_94) CByteArrayMember;
+        new (&item->m_94) CByteArray;
         item->m_08 = 0;
         item->m_0c = 0;
         item->m_pos = 0;
@@ -644,7 +601,7 @@ RVA(0x00142880, 0xbe)
 CPoolItemA* CDDrawPtrCollections::Createa88_1(i32 a) {
     CPoolItemA* item = (CPoolItemA*)operator new(0xc0);
     if (item) {
-        new (&item->m_94) CByteArrayMember;
+        new (&item->m_94) CByteArray;
         item->m_08 = 0;
         item->m_0c = 0;
         item->m_pos = 0;
@@ -676,7 +633,7 @@ RVA(0x00142940, 0xd4)
 CPoolItemA* CDDrawPtrCollections::Createab8_3(i32 a, i32 b, i32 c) {
     CPoolItemA* item = (CPoolItemA*)operator new(0xc0);
     if (item) {
-        new (&item->m_94) CByteArrayMember;
+        new (&item->m_94) CByteArray;
         item->m_08 = 0;
         item->m_0c = 0;
         item->m_pos = 0;
@@ -709,7 +666,7 @@ RVA(0x00142aa0, 0xca)
 CPoolItemA* CDDrawPtrCollections::Createab8_1(i32 a) {
     CPoolItemA* item = (CPoolItemA*)operator new(0xc0);
     if (item) {
-        new (&item->m_94) CByteArrayMember;
+        new (&item->m_94) CByteArray;
         item->m_08 = 0;
         item->m_0c = 0;
         item->m_pos = 0;
@@ -742,7 +699,7 @@ RVA(0x00142b70, 0xce)
 CPoolItemA* CDDrawPtrCollections::Createab8_24_3(i32 a) {
     CPoolItemA* item = (CPoolItemA*)operator new(0xc0);
     if (item) {
-        new (&item->m_94) CByteArrayMember;
+        new (&item->m_94) CByteArray;
         item->m_08 = 0;
         item->m_0c = 0;
         item->m_pos = 0;
@@ -774,7 +731,7 @@ RVA(0x00142c40, 0xd7)
 CPoolItemA* CDDrawPtrCollections::Createae8_6(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f) {
     CPoolItemA* item = (CPoolItemA*)operator new(0xc0);
     if (item) {
-        new (&item->m_94) CByteArrayMember;
+        new (&item->m_94) CByteArray;
         item->m_08 = 0;
         item->m_0c = 0;
         item->m_pos = 0;
@@ -821,7 +778,7 @@ RVA(0x00142da0, 0xbe)
 CPoolItemA* CDDrawPtrCollections::Createae8_1(i32 a) {
     CPoolItemA* item = (CPoolItemA*)operator new(0xc0);
     if (item) {
-        new (&item->m_94) CByteArrayMember;
+        new (&item->m_94) CByteArray;
         item->m_08 = 0;
         item->m_0c = 0;
         item->m_pos = 0;
@@ -882,7 +839,7 @@ void CDDrawPtrCollections::EmptyPoolB() {
 // ---------------------------------------------------------------------------
 RVA(0x00142f10, 0x2b)
 void CDDrawPtrCollections::RemoveItemB(CPoolItemB* item) {
-    m_poolB.RemoveAt(item->m_pos);
+    m_poolB.RemoveAt((POSITION)item->m_pos);
     if (item) {
         item->Teardown();
         RezFree(item);

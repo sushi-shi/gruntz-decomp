@@ -10,19 +10,8 @@
 // exits) gives the body the exception frame, so it lives in an `eh` unit. Only
 // offsets / strings / code bytes are load-bearing; the CString ops, wsprintfA,
 // the rand nonce and WriteLog are reloc-masked engine calls.
+#include <Mfc.h> // real MFC CString + <windows.h> wsprintfA (afx-first)
 #include <rva.h>
-
-#include <Win32.h> // wsprintfA
-
-// The engine's MFC CString (statically linked); reloc-masked engine calls:
-//   CString(const char*) = 0x1b9d4c   ~CString() = 0x1b9cde   += = 0x1ba0c8
-class CString {
-public:
-    CString(const char* s);     // 0x1b9d4c
-    ~CString();                 // 0x1b9cde
-    void Concat(const char* s); // 0x1ba0c8 (operator+= LPCSTR)
-    char* m_pchData;            // +0x00
-};
 
 // A grunt record: only the dumped fields are named (sparse, raw offsets).
 struct CrcGrunt {
@@ -133,9 +122,9 @@ void CrcOwner::BuildGruntzCrcInfo() {
                       player, g, grunt->m_3ec, grunt->m_10->m_5c, grunt->m_10->m_60, grunt->m_444,
                       grunt->m_3f0, grunt->m_3f4, tool, grunt->m_198, grunt->m_224, wp,
                       grunt->m_220, grunt->m_21c, grunt->m_450, grunt->m_218, grunt->m_358, rnd);
-            info.Concat("\n");
-            info.Concat(szLine);
+            info += "\n";
+            info += szLine;
         }
     }
-    m_4->WriteLog(info.m_pchData, 0);
+    m_4->WriteLog((char*)(const char*)info, 0);
 }
