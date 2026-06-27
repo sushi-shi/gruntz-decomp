@@ -31,6 +31,8 @@ blowfish	4	3
 boundaryleaflogic	15	15
 boundarymisc	13	11
 boundarythunks	15	15
+boundaryupper	33	30
+boundaryuppereh	10	10
 brickz	15	3
 buildgruntzcrcinfo	1	0
 butemgr	42	27
@@ -171,7 +173,7 @@ discoveredsmall	9	9
 dsoundvoice	2	1
 ehfunclets	6	6
 engine_attributed	9	0
-engine_boundary	153	0
+engine_boundary	110	0
 engine_discovered	29	5
 engine_label_stubs	388	106
 engine_unmatched_lib	11	0
@@ -544,6 +546,49 @@ boundarythunks	?ProfSinkTick82e20@@YAXXZ	100.0000	100.0000	1	f778a22a6905	0x82e2
 boundarythunks	?ProfSinkTick82ea0@@YAXXZ	100.0000	100.0000	1	7dd59ab11723	0x82ea0
 boundarythunks	?ProfSinkTick82f20@@YAXXZ	100.0000	100.0000	1	5256e2a016cf	0x82f20
 boundarythunks	?TokenMgrReset99b80@@YAXXZ	100.0000	100.0000	1	6604edef85bb	0x99b80
+boundaryupper	?Append@C16be60@@QAEPAU1@H@Z	100.0000	100.0000	1	ce1fde796a00	0x16be60
+boundaryupper	?Apply@ImgOwned@@QAEHHPBX@Z	100.0000	100.0000	1	1f04305a41ac	0x13e0a0
+boundaryupper	?Check@RezDir@@QAEHXZ	100.0000	100.0000	1	98453d83b56c	0x13c8f0
+boundaryupper	?Clear@B_151e70@@QAEXXZ	100.0000	100.0000	1	900839fd5ad0	0x151e70
+boundaryupper	?Clear@B_166810@@QAEXXZ	100.0000	100.0000	1	d12296113bdf	0x166810
+boundaryupper	?ClearImageCache_13e070@@YAXXZ	100.0000	100.0000	1	9568ebab3519	0x13e070
+boundaryupper	?ClearModeArray_141c80@@YAXXZ	100.0000	100.0000	1	3f009686a07b	0x141c80
+boundaryupper	?Commit@ImgOwned@@QAEHHPBX@Z	100.0000	100.0000	1	da22fbd8ab12	0x148b50
+boundaryupper	?Compare_1433d0@@YGHPAUDdOb_1433d0@@0@Z	100.0000	100.0000	1	f6ccfbab6fa8	0x1433d0
+boundaryupper	?Delay_13dec0@@YGXI@Z	83.9286	83.9286	1	1bca1af5c87c	0x13dec0
+boundaryupper	?FindBack@ModeArr@@QAEXPAUPair2@@HHH@Z	72.7800	72.7800	1	f4512954edeb	0x143590
+boundaryupper	?FindFwd@ModeArr@@QAEXPAUPair2@@HHH@Z	82.5532	82.5532	1	7d78a9251dc9	0x143510
+boundaryupper	?FindIndex@ModeArr@@QAEHHHH@Z	100.0000	100.0000	1	3c047a0e4c06	0x1434c0
+boundaryupper	?FindLast@ModeArr@@QAEHIIH@Z	100.0000	100.0000	1	b60c92b8f2f6	0x143470
+boundaryupper	?Forward@ImgOwned@@QAEHHPBX@Z	100.0000	100.0000	1	aaa8c9d9a9da	0x148cc0
+boundaryupper	?Free360@DevCfg@@QAEXXZ	100.0000	100.0000	1	c329e3f374e8	0x134360
+boundaryupper	?Free6d0@DevCfg@@QAEXXZ	100.0000	100.0000	1	c5e269e71089	0x1346d0
+boundaryupper	?Free@B_17fc40@@QAEXXZ	100.0000	100.0000	1	b47a30c33fde	0x17fc40
+boundaryupper	?Fwd_184fb0@@YAXHH@Z	100.0000	100.0000	1	a4a98da2a993	0x184fb0
+boundaryupper	?Gate@Snd138f20@@QAEHXZ	100.0000	100.0000	1	cf1bc0e464d3	0x138f20
+boundaryupper	?Get@Snd_137300@@QAEHXZ	100.0000	100.0000	1	adb125e8bc05	0x137300
+boundaryupper	?Notify@B_151d20@@QAEHPAX@Z	100.0000	100.0000	1	2bb62aff1ba1	0x151d20
+boundaryupper	?PopcountIsOne_145e00@@YAHH@Z	100.0000	100.0000	1	57afe372783e	0x145e00
+boundaryupper	?Release@B_1614b0@@QAEXXZ	100.0000	100.0000	1	6cf061e9de48	0x1614b0
+boundaryupper	?Restamp@SW_161460@@QAEXXZ	100.0000	100.0000	1	f32b8173c6f0	0x161460
+boundaryupper	?Restamp@SW_161560@@QAEXXZ	100.0000	100.0000	1	635e7dacff8a	0x161560
+boundaryupper	?Restamp@SW_163a10@@QAEXXZ	100.0000	100.0000	1	f3bd510f1181	0x163a10
+boundaryupper	?Scale@B_1413c0@@QAEHH@Z	100.0000	100.0000	1	ad81da85e719	0x1413c0
+boundaryupper	?Scan@RezItm@@QAEHXZ	100.0000	100.0000	1	e4a78b6cec05	0x13c8a0
+boundaryupper	?Set@B_13dee0@@QAEXH@Z	100.0000	100.0000	1	5c4bd00d038d	0x13dee0
+boundaryupper	?Set@B_1847a0@@QAEXH@Z	100.0000	100.0000	1	770d3e3e02e3	0x1847a0
+boundaryupper	?Thunk@Owner1413@@QAEXXZ	100.0000	100.0000	1	c580554997a0	0x1413b0
+boundaryupper	?WaitFlip@B_13ee30@@QAEXXZ	100.0000	100.0000	1	c983cf6c32d5	0x13ee30
+boundaryuppereh	??1C138a50@@UAE@XZ	100.0000	100.0000	1	b68d57ee7bc8	0x138a50
+boundaryuppereh	??1C14fe30@@UAE@XZ	100.0000	100.0000	1	91170cbb768f	0x14fe30
+boundaryuppereh	??1C15b6d0@@UAE@XZ	100.0000	100.0000	1	08895d124e69	0x15b6d0
+boundaryuppereh	??1C161500@@UAE@XZ	100.0000	100.0000	1	305dc9dfadc3	0x161500
+boundaryuppereh	??1C163a40@@QAE@XZ	100.0000	100.0000	1	eacc2d51df58	0x163a40
+boundaryuppereh	??1C168c10@@UAE@XZ	100.0000	100.0000	1	cb110268334a	0x168c10
+boundaryuppereh	??1C17e240@@UAE@XZ	100.0000	100.0000	1	d53fc98c1d22	0x17e240
+boundaryuppereh	??1C17e990@@UAE@XZ	100.0000	100.0000	1	12cd4a9d5ae0	0x17e990
+boundaryuppereh	??1C17f9f0@@UAE@XZ	100.0000	100.0000	1	75b5ce8163d5	0x17f9f0
+boundaryuppereh	??1C180450@@UAE@XZ	100.0000	100.0000	1	b8f24c976556	0x180450
 brickz	?AllocGrid@CBrickz@@QAEHHHH@Z	79.5971	79.5971	1	41e0594e8c95	0x9ea60
 brickz	?CellPop@CBrickz@@QAEXPAUBrickzNode@@H@Z	80.3284	80.3284	3	6c5a65d16fa4	0x9f710
 brickz	?CellPush@CBrickz@@QAEXPAUBrickzNode@@@Z	85.9070	85.9070	2	890d04538e3f	0x9f470
@@ -1549,13 +1594,8 @@ engine_boundary	?Boundary_133370@@YAXXZ	20.0000	20.0000	2	1cce52b34467	0x133370
 engine_boundary	?Boundary_1333b0@@YAXXZ	4.7619	4.7619	2	bdb358a194a7	0x1333b0
 engine_boundary	?Boundary_133460@@YAXXZ	4.0000	4.0000	2	e2e792097f0d	0x133460
 engine_boundary	?Boundary_1334f0@@YAXXZ	4.0000	4.0000	2	c0a78fe1cf3c	0x1334f0
-engine_boundary	?Boundary_134360@@YAXXZ	7.1429	7.1429	2	88e4002ab8c6	0x134360
-engine_boundary	?Boundary_1346d0@@YAXXZ	7.1429	7.1429	2	aee3fadddb20	0x1346d0
 engine_boundary	?Boundary_137200@@YAXXZ	2.7778	2.7778	2	fddb9504b61e	0x137200
-engine_boundary	?Boundary_137300@@YAXXZ	5.8824	5.8824	2	826fcc54f896	0x137300
-engine_boundary	?Boundary_138a50@@YAXXZ	5.5556	5.5556	2	af646272dd3e	0x138a50
 engine_boundary	?Boundary_138aa0@@YAXXZ	0.3509	0.3509	2	30a1af20adfb	0x138aa0
-engine_boundary	?Boundary_138f20@@YAXXZ	3.8462	3.8462	2	2a499685d3b6	0x138f20
 engine_boundary	?Boundary_1396f0@@YAXXZ	11.1111	11.1111	2	23b02398b1a2	0x1396f0
 engine_boundary	?Boundary_13a4b0@@YAXXZ	0.7547	0.7547	2	bb86271d7ac2	0x13a4b0
 engine_boundary	?Boundary_13a530@@YAXXZ	1.6667	1.6667	2	4e006172a643	0x13a530
@@ -1563,55 +1603,24 @@ engine_boundary	?Boundary_13ab00@@YAXXZ	0.9756	0.9756	2	aa33f2aa31af	0x13ab00
 engine_boundary	?Boundary_13b910@@YAXXZ	1.2500	1.2500	2	4a37006ab24d	0x13b910
 engine_boundary	?Boundary_13b970@@YAXXZ	1.0256	1.0256	2	b315ff84a624	0x13b970
 engine_boundary	?Boundary_13ba70@@YAXXZ	14.2857	14.2857	2	f3bc0a239338	0x13ba70
-engine_boundary	?Boundary_13c8a0@@YAXXZ	3.2258	3.2258	2	5a7919ab6c0c	0x13c8a0
-engine_boundary	?Boundary_13c8f0@@YAXXZ	3.4483	3.4483	2	b42290fc8eca	0x13c8f0
 engine_boundary	?Boundary_13c9b0@@YAXXZ	2.5000	2.5000	2	35abfa83d3d8	0x13c9b0
 engine_boundary	?Boundary_13cb80@@YAXXZ	3.0303	3.0303	2	c8e8a68c6c69	0x13cb80
-engine_boundary	?Boundary_13dec0@@YAXXZ	2.8571	2.8571	2	a98221214486	0x13dec0
-engine_boundary	?Boundary_13dee0@@YAXXZ	3.6364	3.6364	2	cd1a6b21d83d	0x13dee0
 engine_boundary	?Boundary_13df30@@YAXXZ	1.4085	1.4085	2	21b498f8b22e	0x13df30
-engine_boundary	?Boundary_13e070@@YAXXZ	20.0000	20.0000	2	b87b817ec23e	0x13e070
-engine_boundary	?Boundary_13e0a0@@YAXXZ	2.3529	2.3529	2	6187f7723149	0x13e0a0
 engine_boundary	?Boundary_13e7d0@@YAXXZ	0.9756	0.9756	2	d310f04f12ae	0x13e7d0
-engine_boundary	?Boundary_13ee30@@YAXXZ	5.5556	5.5556	2	e9f6902e78c3	0x13ee30
-engine_boundary	?Boundary_1413b0@@YAXXZ	16.6667	16.6667	2	1b71ded2c194	0x1413b0
-engine_boundary	?Boundary_1413c0@@YAXXZ	13.3333	13.3333	2	446263a8597c	0x1413c0
-engine_boundary	?Boundary_141c80@@YAXXZ	20.0000	20.0000	2	e21434fb4611	0x141c80
 engine_boundary	?Boundary_143040@@YAXXZ	0.7547	0.7547	2	665a33d12b10	0x143040
-engine_boundary	?Boundary_1433d0@@YAXXZ	1.2500	1.2500	2	b8adf2e57837	0x1433d0
-engine_boundary	?Boundary_143470@@YAXXZ	1.3333	1.3333	2	93c70a7dc565	0x143470
-engine_boundary	?Boundary_1434c0@@YAXXZ	1.3793	1.3793	2	62b391ab6936	0x1434c0
-engine_boundary	?Boundary_143510@@YAXXZ	0.8511	0.8511	2	6594b5a851c9	0x143510
-engine_boundary	?Boundary_143590@@YAXXZ	0.8000	0.8000	2	3a88fead4514	0x143590
 engine_boundary	?Boundary_1437f0@@YAXXZ	11.1111	11.1111	2	2caa9f97b022	0x1437f0
 engine_boundary	?Boundary_143950@@YAXXZ	1.1765	1.1765	2	290aac6d0dd2	0x143950
-engine_boundary	?Boundary_145e00@@YAXXZ	5.8824	5.8824	2	04ce92668c7c	0x145e00
 engine_boundary	?Boundary_148250@@YAXXZ	2.5641	2.5641	2	0d2c81d68da1	0x148250
 engine_boundary	?Boundary_148a50@@YAXXZ	1.2903	1.2903	2	66ec2413ec96	0x148a50
 engine_boundary	?Boundary_148af0@@YAXXZ	1.2121	1.2121	2	b4ad79dd710b	0x148af0
-engine_boundary	?Boundary_148b50@@YAXXZ	2.2222	2.2222	2	89303a019409	0x148b50
 engine_boundary	?Boundary_148c40@@YAXXZ	1.2500	1.2500	2	85adc477de01	0x148c40
-engine_boundary	?Boundary_148cc0@@YAXXZ	4.4444	4.4444	2	a4a5142d88fe	0x148cc0
 engine_boundary	?Boundary_1493b0@@YAXXZ	0.5263	0.5263	2	dd555e7e5ecb	0x1493b0
-engine_boundary	?Boundary_14fe30@@YAXXZ	4.3478	4.3478	2	e94dd8e6ca00	0x14fe30
 engine_boundary	?Boundary_1503f0@@YAXXZ	0.6780	0.6780	2	16d132d3bd3c	0x1503f0
 engine_boundary	?Boundary_1509c0@@YAXXZ	1.0989	1.0989	2	678d73c75fc9	0x1509c0
-engine_boundary	?Boundary_151d20@@YAXXZ	1.6000	1.6000	2	fe9fba626f35	0x151d20
-engine_boundary	?Boundary_151e70@@YAXXZ	4.1667	4.1667	2	4bdea990bc4b	0x151e70
 engine_boundary	?Boundary_1570d0@@YAXXZ	6.6667	6.6667	2	b4668a6fa173	0x1570d0
 engine_boundary	?Boundary_157240@@YAXXZ	6.6667	6.6667	2	b83812631c11	0x157240
 engine_boundary	?Boundary_1578b0@@YAXXZ	5.0000	5.0000	2	3920e5309778	0x1578b0
-engine_boundary	?Boundary_15b6d0@@YAXXZ	4.7619	4.7619	2	fb8179c45da4	0x15b6d0
-engine_boundary	?Boundary_161460@@YAXXZ	50.0000	50.0000	2	4fbd3bb32839	0x161460
-engine_boundary	?Boundary_1614b0@@YAXXZ	9.0909	9.0909	2	05c11f0d7bf9	0x1614b0
-engine_boundary	?Boundary_161500@@YAXXZ	4.1667	4.1667	2	83ac9efad6e7	0x161500
-engine_boundary	?Boundary_161560@@YAXXZ	50.0000	50.0000	2	d8be1e42cc2b	0x161560
 engine_boundary	?Boundary_163710@@YAXXZ	1.8182	1.8182	2	3b1e8a2c1e14	0x163710
-engine_boundary	?Boundary_163a10@@YAXXZ	50.0000	50.0000	2	97986794367f	0x163a10
-engine_boundary	?Boundary_163a40@@YAXXZ	5.8824	5.8824	2	77023b928d60	0x163a40
-engine_boundary	?Boundary_166810@@YAXXZ	4.7619	4.7619	2	ed36c073ea3b	0x166810
-engine_boundary	?Boundary_168c10@@YAXXZ	5.5556	5.5556	2	9b9658658449	0x168c10
-engine_boundary	?Boundary_16be60@@YAXXZ	2.6667	2.6667	2	78071ccbf190	0x16be60
 engine_boundary	?Boundary_174ed0@@YAXXZ	1.1765	1.1765	2	32762a10d07f	0x174ed0
 engine_boundary	?Boundary_175780@@YAXXZ	1.8182	1.8182	2	1be00794c735	0x175780
 engine_boundary	?Boundary_176d20@@YAXXZ	0.8696	0.8696	2	3a0a8e740969	0x176d20
@@ -1620,15 +1629,8 @@ engine_boundary	?Boundary_17b570@@YAXXZ	8.3333	8.3333	2	a6f12400617a	0x17b570
 engine_boundary	?Boundary_17b5a0@@YAXXZ	4.5455	4.5455	2	1626bf6fc1be	0x17b5a0
 engine_boundary	?Boundary_17b840@@YAXXZ	1.2500	1.2500	2	13b4a4361ecb	0x17b840
 engine_boundary	?Boundary_17e230@@YAXXZ	13.3333	13.3333	2	fff750a9c682	0x17e230
-engine_boundary	?Boundary_17e240@@YAXXZ	4.3478	4.3478	2	cd965f47662c	0x17e240
 engine_boundary	?Boundary_17e7c0@@YAXXZ	2.5641	2.5641	2	74aad4d30047	0x17e7c0
-engine_boundary	?Boundary_17e990@@YAXXZ	3.3333	3.3333	2	46fb05e7d3d8	0x17e990
-engine_boundary	?Boundary_17f9f0@@YAXXZ	5.0000	5.0000	2	791108b88523	0x17f9f0
-engine_boundary	?Boundary_17fc40@@YAXXZ	14.2857	14.2857	2	571f8a84f89c	0x17fc40
-engine_boundary	?Boundary_180450@@YAXXZ	5.0000	5.0000	2	980f4281d4be	0x180450
-engine_boundary	?Boundary_1847a0@@YAXXZ	13.3333	13.3333	2	b34aa8f4131f	0x1847a0
 engine_boundary	?Boundary_184b70@@YAXXZ	20.0000	20.0000	2	d791dc5e7e33	0x184b70
-engine_boundary	?Boundary_184fb0@@YAXXZ	12.5000	12.5000	2	27f7c3170737	0x184fb0
 engine_discovered	?CButeStore_174d70@CButeStore@@QAEXXZ	3.2258	3.2258	1	cc31d37bf9e8	0x174d70
 engine_discovered	?CGrunt_0ef6b0@CGrunt@@QAEXXZ	0.2151	0.2151	1	5d439146fea0	0xef6b0
 engine_discovered	?CGruntzMgr_08b960@CGruntzMgr@@QAEXXZ	0.0907	0.0907	3	4a22ea071af3	0x8b960
