@@ -872,6 +872,11 @@ source = "src/Gruntz/IconLoaders.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "gruntsprintanim"
+source = "src/Gruntz/GruntSprintAnim.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "backlogstateloaders"
 source = "src/Gruntz/BacklogStateLoaders.cpp"
 flags = "base"

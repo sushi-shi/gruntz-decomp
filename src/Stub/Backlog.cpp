@@ -1,5 +1,6 @@
 #include <Win32.h> // ShowCursor (matching-neutral; ApiCallers.cpp in this aggregate already pulls it)
-#include <stdio.h> // engine sprintf (reloc-masked) - LoadGruntzPalette
+#include <stdio.h>  // engine sprintf (reloc-masked) - LoadGruntzPalette / FormatGameInfoString
+#include <string.h> // inline strlen/strcat/memset intrinsics (/O2) - FormatGameInfoString
 
 #include <rva.h>
 // Backlog.cpp - engine-label stubs without a class attribution.
@@ -157,7 +158,6 @@ namespace EngineLabelBacklog {
     void CreateGameObjectByName();
     void __stdcall LoadBootyCheatState(i32, i32, i32);
     void ShowSecretBonusMessage();
-    void BuildGruntSprintAnimation();
     void UpdateBootyWalkingGruntz();
     void BuildBootyPerfectAnimation();
     void ShowLevelCompleteMessage();
@@ -199,7 +199,6 @@ namespace EngineLabelBacklog {
     void LoadPyramidBridgeSprites();
     void __stdcall BuildStatzTabSmall_vfunc1(i32, i32, i32, i32, i32, i32, i32, i32, i32);
     void FreeAllFonts();
-    void FormatGameInfoString();
     void __stdcall BuildVoiceSoundList(i32);
     void _tr_init();
     void _ct_init();
@@ -262,11 +261,9 @@ i32 BootyState::vfunc_9(i32) {
 RVA(0x00018f00, 0x4fb)
 void EngineLabelBacklog::ShowSecretBonusMessage() {}
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
-RVA(0x00019920, 0x1c2)
-void EngineLabelBacklog::BuildGruntSprintAnimation() {}
+// BuildGruntSprintAnimation @0x019920 graduated to src/Gruntz/GruntSprintAnim.cpp
+// (eh unit) as CGruntSprintAnim::BuildGruntSprintAnimation - the /GX directional
+// grunt-sprint animation builder (the "GRUNTZ_NORMALGRUNT_<DIR>_WALK" CString set).
 
 // UpdateBootyWalkingGruntz (0x1b690, 1983 B) - the per-frame update of the booty
 // (treasure / "WARP" spell) walking-grunt animation state machine, a __thiscall
@@ -1495,12 +1492,96 @@ i32 CStatzTabSmall::BuildSmall(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, CStatzRec
 
 // SaveScreenshot (0x114ff0) graduated to src/Gruntz/SaveScreenshot.cpp.
 
-// @confidence: low
+// FormatGameInfoString (0x1183b0) - builds a URL/POST query string describing a
+// saved game into the global accumulator g_infoMaster, by sprintf'ing each piece
+// into the scratch buffer g_infoScratch and strcat-appending it. Pieces:
+//   "Name=%s&Type=%i&Location=%s&Version=%lu"  (name buf, type, location buf, ver)
+//   "&S=%lu&H=%i&M=%02i&SE=%02i"               (timestamp decompose: S/H/M/SE)
+//   "&Month=%i&Day=%i&Year=%i"
+//   "&Checksum=%lu"                            (a fold of the time fields)
+// then it URL-encodes spaces to '+'. Frameless __thiscall on the save-info record;
+// the time sub-object lives at this+0xb8 (0x1c bytes). Only offsets / code bytes
+// are load-bearing; the sprintf/strcat/strlen/memset are reloc-masked CRT
+// (inlined intrinsics), and Check1/ValidateGameTime/DecodeGameTime are reloc-
+// masked engine helpers.
+struct CGameInfoTime { // this+0xb8 (0x1c bytes; zeroed on a failed validate)
+    i32 m_0;           // +0x00 (this+0xb8)
+    u32 m_4;           // +0x04 (this+0xbc)  S (seconds, %lu)
+    i32 m_8;           // +0x08 (this+0xc0)  timestamp fed to DecodeGameTime
+    i32 m_c;           // +0x0c (this+0xc4)  Month
+    i32 m_10;          // +0x10 (this+0xc8)  Day
+    i32 m_14;          // +0x14 (this+0xcc)  Year
+    i32 m_18;          // +0x18 (this+0xd0)
+};
+// FUN_00118310 __cdecl(&time) -> validity flag; FUN_00119210 __cdecl(ts, &a, &b,
+// &c) -> decompose the timestamp into three out-values.
+i32 ValidateGameTime(CGameInfoTime* t);                       // 0x118310
+void DecodeGameTime(i32 ts, i32* outA, i32* outB, i32* outC); // 0x119210
+class CGameInfo {
+public:
+    i32 Check1();               // FUN_001182f0 __thiscall (ready/dirty gate)
+    i32 FormatGameInfoString(); // 0x1183b0
+
+    char m_pad0[0x8];
+    u32 m_8; // +0x08  Version (%lu)
+    char m_pad0c[0x14 - 0xc];
+    char m_14[0x36 - 0x14]; // +0x14  Name buffer
+    char m_36[0xb8 - 0x36]; // +0x36  Location buffer
+    CGameInfoTime m_b8;     // +0xb8
+    u32 m_d4;               // +0xd4  Type (%i)
+};
+DATA(0x0024ecf8)
+extern char g_infoMaster[0x800]; // 0x64ecf8  query accumulator
+DATA(0x0024ebf8)
+extern char g_infoScratch[0x100]; // 0x64ebf8  per-piece scratch
+
 // @source: decomp-xref
-// @proximity: CTileTriggerContainer@-0x450 | CGruntVoice@+0x1730 (boundary - pick one)
-// @stub
 RVA(0x001183b0, 0x211)
-void EngineLabelBacklog::FormatGameInfoString() {}
+i32 CGameInfo::FormatGameInfoString() {
+    char* name = m_14;
+    if (name == 0) {
+        return 0;
+    }
+    if (strlen(name) == 0) {
+        return 0;
+    }
+    if (!Check1()) {
+        return 0;
+    }
+
+    g_infoMaster[0] = 0;
+    sprintf(g_infoScratch, "Name=%s&Type=%i&Location=%s&Version=%lu", name, m_d4, m_36, m_8);
+    strcat(g_infoMaster, g_infoScratch);
+
+    CGameInfoTime* t = &m_b8;
+    if (t == 0) {
+        return 0;
+    }
+    if (!ValidateGameTime(t)) {
+        memset(t, 0, 28);
+    }
+
+    i32 a = 0, b = 0, c = 0;
+    DecodeGameTime(t->m_8, &a, &b, &c);
+    sprintf(g_infoScratch, "&S=%lu&H=%i&M=%02i&SE=%02i", t->m_4, a, b, c);
+    strcat(g_infoMaster, g_infoScratch);
+
+    sprintf(g_infoScratch, "&Month=%i&Day=%i&Year=%i", t->m_c, t->m_10, t->m_14);
+    strcat(g_infoMaster, g_infoScratch);
+
+    i32 chk = (69 * (b * a) + 1) * c + b + a + t->m_c + t->m_14 + t->m_10 + t->m_4;
+    sprintf(g_infoScratch, "&Checksum=%lu", chk);
+    strcat(g_infoMaster, g_infoScratch);
+
+    if (g_infoMaster[0] != 0) {
+        for (char* p = g_infoMaster; *p != 0; p++) {
+            if (*p == ' ') {
+                *p = '+';
+            }
+        }
+    }
+    return 0;
+}
 
 // @confidence: med
 // @source: decomp-xref

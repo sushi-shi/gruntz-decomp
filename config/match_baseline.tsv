@@ -192,7 +192,7 @@ ehfunclets	6	6
 engine_attributed	7	0
 engine_boundary	7	0
 engine_discovered	22	5
-engine_label_stubs	340	96
+engine_label_stubs	339	97
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -225,6 +225,7 @@ gruntdatarecord	2	2
 gruntmovestep	1	0
 gruntpuddle	5	2
 gruntspawnconfig	16	8
+gruntsprintanim	1	0
 grunttubeanim	1	0
 gruntupdatestep	2	0
 gruntvoice	5	4
@@ -1759,7 +1760,6 @@ engine_label_stubs	?Build@GeoHost_161e80@ApiCallerStubs@@QAEXPAUtagRECT@@@Z	90.4
 engine_label_stubs	?Build@PalBuilder_176df0@ApiCallerStubs@@QAEHPAUtagPALETTEENTRY@@H@Z	62.0750	62.0750	1	cpp:6bf52155264d	0x176df0
 engine_label_stubs	?BuildAssetNamespacePrefixes@EngineLabelBacklog@@YGXHHHH@Z	0.2933	0.2933	1	cpp:6bf52155264d	0xdca70
 engine_label_stubs	?BuildBootyGruntIdleAnimation@EngineLabelBacklog@@YAXXZ	0.3058	0.3058	1	cpp:45e65336d4b5	0x1ce60
-engine_label_stubs	?BuildGruntSprintAnimation@EngineLabelBacklog@@YAXXZ	0.7246	0.7246	1	cpp:45e65336d4b5	0x19920
 engine_label_stubs	?BuildLevelRezPath@EngineLabelBacklog@@YGXHHHHH@Z	0.3731	0.3731	1	cpp:6bf52155264d	0x93d40
 engine_label_stubs	?BuildLevelTitleString@EngineLabelBacklog@@YAXXZ	0.5000	0.5000	1	cpp:45e65336d4b5	0xe44e0
 engine_label_stubs	?BuildPowerupIconKeys@EngineLabelBacklog@@YGXPAVPowerupKeyRegistry@@H@Z	53.5443	53.5443	1	cpp:e8a4cb0d5b2a	0x1e720
@@ -1794,7 +1794,7 @@ engine_label_stubs	?ErrorThunk_08dd80@CDirectDrawMgr@@QAEXXZ	5.0000	5.0000	1	cpp
 engine_label_stubs	?Find@CButeTree@@QAEPAXPBD@Z	1.8868	1.8868	1	cpp:0f6a941a1e75	0x16d190
 engine_label_stubs	?First@RezColl@@QAEPAURezNode@@XZ	11.1111	11.1111	1	cpp:2262ffc5f902	0x184ae0
 engine_label_stubs	?Flip@CoinHost_0da200@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:e1535087fe94	0xda200
-engine_label_stubs	?FormatGameInfoString@EngineLabelBacklog@@YAXXZ	0.5208	0.5208	1	cpp:45e65336d4b5	0x1183b0
+engine_label_stubs	?FormatGameInfoString@CGameInfo@@QAEHXZ	100.0000	100.0000	1	cpp:7e7ce1192d49	0x1183b0
 engine_label_stubs	?Free@GlobalOwner_1c09de@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x1c09de
 engine_label_stubs	?Free@MinervaInner@@QAEXXZ	3.8462	3.8462	1	cpp:2262ffc5f902	0x137a80
 engine_label_stubs	?Free@VoldemortObj@@QAEXXZ	4.0000	4.0000	1	cpp:2262ffc5f902	0x137740
@@ -2394,6 +2394,7 @@ gruntspawnconfig	?LoadGruntVoices@CGruntSpawnConfig@@QAEHXZ	95.3488	95.3488	2	78
 gruntspawnconfig	?PickWeighted@CGruntSpawnConfig@@QAEHHH@Z	1.0870	1.0870	1	b9cc209559f5	0x11bee0
 gruntspawnconfig	?ResetPicks@CGruntSpawnConfig@@QAEXXZ	100.0000	100.0000	1	6d4d20bac4c4	0x11c7f0
 gruntspawnconfig	?StopVoice@CGruntSpawnConfig@@QAEXH@Z	100.0000	100.0000	1	3b4c120126c9	0x11c730
+gruntsprintanim	?BuildGruntSprintAnimation@CGruntSprintAnim@@QAEHXZ	79.5942	79.5942	1	5f1ffbaa3fb2	0x19920
 grunttubeanim	?SetupTubeAnim@CGruntTube@@QAEHH@Z	72.3636	72.3636	1	bc25d7867fff	0x50a50
 gruntupdatestep	?SeekTarget@CGruntStep@@QAEHXZ	13.3685	13.3685	1	bcdf7faaf4cc	0xf71c0
 gruntupdatestep	?UpdateArrival@CGruntStep@@QAEHXZ	33.5792	33.5792	1	ecf9d373769d	0xf0130
