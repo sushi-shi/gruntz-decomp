@@ -6,6 +6,16 @@
 #include <Stub/attributed.h>
 
 // ---- CNetMgr ----
+// DEFERRED (matcher-4): big /GX EH func - leaf-first redo for the final sweep.
+// Analysis: CNetMgr method that STACK-CONSTRUCTS a CMultiStartDlg at [esp+0x10]
+// (ctor 0x2fea(m_4, 0)), runs it (0x196f), clears DAT_00648ce0, then branches on
+// m_useChannelLatency (+0x528) / m_removedFromGame (+0x538) / m_c->m_28->m_30 to
+// fire a registry GAME_KEY ("0x611ec4") lookup (0x1b8438) gated by the sound
+// globals g_sndEnabled(0x61ab20)/g_sndCueTag(0x61ab24)/g_killCueClock(0x6bf3c0),
+// and Sleep(0xfa) (0x13dfe0). The dialog has a CString member @+0x70 ([esp+0x80],
+// ~CString 0x1b9cde) and a CStringList @+0x74 ([esp+0x84], ~CObject 0x1b5d78) over
+// a CDialog base (0x1ba51d) - the 3-member /GX unwind (states 2/1, 4/3, 6/5 per
+// exit) is the CMultiStartDlg dtor sequence; needs the dialog class modeled first.
 RVA(0x000b86c0, 0x206)
 void CNetMgr::CNetMgr_0b86c0() {} // high; large /GX EH func, final-sweep
 // b8960: WRONG CLASS - this is a CDialog-derived dtor (base ~CDialog @1ba51d
@@ -13,25 +23,26 @@ void CNetMgr::CNetMgr_0b86c0() {} // high; large /GX EH func, final-sweep
 // ~CObject-based dtor @1b5d78). CNetMgr+0x70/+0x74 are i32 selection latches
 // (ReadGroupSel/ReadPlayerSel, matched), so this is NOT a CNetMgr method -
 // re-attribute (likely CMultiStartDlg or a sibling multiplayer dialog).
-RVA(0x000b8fc0, 0x151)
-void CNetMgr::CNetMgr_0b8fc0() {} // high; /GX cond-temp EH wall, final-sweep
+// b8fc0: CNetMgr::VerifyCustomLevel reconstructed in src/Net/NetMgr.cpp
 // b93a0/b9410/b9500/b9570/b95f0/ba170/ba1a0/ba3b0 reconstructed in src/Net/NetMgr.cpp
-RVA(0x000bbc90, 0x1b8)
-void CNetMgr::CNetMgr_0bbc90() {} // high
-RVA(0x000bbec0, 0x81)
-void CNetMgr::CNetMgr_0bbec0() {} // high
-RVA(0x000bbf80, 0xb7)
-void CNetMgr::CNetMgr_0bbf80() {} // high
-RVA(0x000bc750, 0x151)
-void CNetMgr::CNetMgr_0bc750() {} // high
-RVA(0x000bccd0, 0x141)
-void CNetMgr::CNetMgr_0bccd0() {} // high
+// bc750: CNetMgr::CreateLocalPlayer reconstructed in src/Net/NetMgr.cpp
+// bccd0: CNetMgr::SaveConfig reconstructed in src/Net/NetMgr.cpp
 
 // ---- CTriggerMgr ----
+// DEFERRED (matcher-4): 1206-byte /GX EH serializer (home -> src/Gruntz/TriggerMgr*.cpp).
+// A CButeMgr/archive (de)serialize: repeated `call [edx+0x2c]` (vtable slot 0x2c =
+// the read/write-field primitive) over the trigger-mgr's fields, plus g_645544
+// swaps and external helpers (0x1b8760/0x1b52e8/0x1b4991/...). Needs the serializer
+// vtable + the full field list enumerated in order; leaf-first redo for the final sweep.
 RVA(0x0007abc0, 0x4b6)
 void CTriggerMgr::CTriggerMgr_07abc0() {} // high
 
 // ---- CBattlezSpawnMgr_or_CGruntSpawnMgr ----
+// DEFERRED (matcher-4): 1299-byte serializer (NO EH; home -> the real spawn-mgr TU).
+// __thiscall(serializer*) returning eax; bails when the arg is null, else drives a
+// long run of `call [eax+0x2c]` (the archive read/write-field slot) over the class's
+// arrays/fields. No EH frame, so a faithful field-by-field enumeration should match
+// high - just long; leaf-first redo for the final sweep.
 RVA(0x0002b950, 0x513)
 void CBattlezSpawnMgr_or_CGruntSpawnMgr::UnknownClassArrays_02b950() {} // high
 

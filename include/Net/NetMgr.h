@@ -233,6 +233,7 @@ struct CNetCmdSlot {
     i32 m_4c[3];    // +0x4c  command-range A (reset to -1)
     i32 m_58[3];    // +0x58  command-range B (reset to -1)
 
+    CNetCmdSlot();                       // bbec0  construct m_cmds (/GX EH) + reset fields
     void ResetAll();                     // c0bb0  zero all fields (incl. m_0/m_c/m_1c) + ranges
     void AdvanceSeq(i32 id);             // c0f10  fold an ack id into the high-water window
     void RaiseMax(i32 v);                // c0fa0  keep the high-water sequence
@@ -261,28 +262,49 @@ struct CNetCmdBuf {
 };
 
 // One 0x410-byte resync entry the session keeps at +0x3b0; Verify compares slot
-// command +0x4 against entry[(m_18-2)%128].m_4.
+// command +0x4 against entry[(m_18-2)%128].m_4. ResetAll zeroes m_0/m_4, the
+// byte at +0x8 and the dword at +0xc per entry.
 struct CNetResyncEntry {
     i32 m_0;
     i32 m_4; // +0x4
-    char m_pad8[0x410 - 8];
+    u8 m_8;  // +0x8  flag byte (zeroed by ResetAll)
+    char m_pad9[0xc - 9];
+    i32 m_c; // +0xc
+    char m_padc[0x410 - 0x10];
 };
 
 struct CNetSession {
-    CNetCmdBuf* m_0;             // +0x00  base of the per-slot command-buffer array
-    i32 m_4;                    // +0x04
-    char m_pad8[0x18 - 8];      // +0x08
-    i32 m_18;                   // +0x18  resync tick base (Verify: (m_18-2)%128)
-    char m_pad1c[0x20 - 0x1c];  // +0x1c
-    CNetCmdSlot m_slots[4];     // +0x20  four inline command slots (0x64 each)
-    char m_pad1b0[0x3b0 - 0x1b0];
-    CNetResyncEntry m_entries[1]; // +0x3b0  resync entries (indexed signed, base here)
+    CNetCmdBuf* m_0;        // +0x00  base of the per-slot command-buffer array
+    i32 m_4;               // +0x04
+    i32 m_8;               // +0x08
+    i32 m_c;               // +0x0c
+    i32 m_10;              // +0x10
+    i32 m_14;              // +0x14
+    i32 m_18;              // +0x18  resync tick base (Verify: (m_18-2)%128)
+    i32 m_1c;              // +0x1c
+    CNetCmdSlot m_slots[4]; // +0x20  four inline command slots (0x64 each)
+    i32 m_1b0[0x80];        // +0x1b0  0x200-byte scratch block ResetAll memsets to 0
+    CNetResyncEntry m_entries[0x80]; // +0x3b0  resync entries (indexed signed, base here)
 
     CNetCmdSlot* FindCmdSlot(i32 playerId); // c00a0
     void ResetCmdBuffers();                 // c0070
     i32 CheckLatency(i32 cap);              // c04a0  any active slot with m_10 > cap?
     CNetCmdSlot* CreateSlot(i32 index, i32 owner); // bfff0  init slot[index]
     i32 Verify();                           // c04f0  resync consistency check
+    void ResetAll();                        // bbf80  full reset: header + 4 slots + entries
+    // Wiring init (retail symbol ?Init@CNetSession2@@; reloc-masked here): caches
+    // the owner pointers then resets the per-slot buffers. Returns TRUE on success.
+    i32 Init(void* gameSub, class CNetMgr* owner, class CNetMgr* peer); // bef80
+
+    // The engine routes global new/delete through RezAlloc/RezFree; model that as
+    // the class allocator so `new CNetSession()` emits a direct RezAlloc call.
+    void* operator new(size_t n) { return RezAlloc((u32)n); }
+    void operator delete(void* p) { RezFree(p); }
+
+    // Inline ctor so CNetMgr::CreateSession's `new CNetSession()` lowers to the
+    // 4-slot vector-construct + ResetAll (no out-of-line ctor call), matching the
+    // retail allocation shape.
+    CNetSession() { ResetAll(); }
 };
 
 // The command-dispatch queue hanging off the CNetMgr's m_4 sub-object at +0x6c;
@@ -575,6 +597,15 @@ extern "C" char g_chatPacket_buf; // 0x6473ec  (strcpy dest)
 extern "C" i32 g_playerLeftFlag; // 0x648ce4
 extern "C" i32 g_activePlayers;  // 0x648cec
 
+// The multiplayer-create context singleton (DAT_00648cf4): CreateSession reads
+// its +0x74 group-enumeration record and hands it to the peer's EnumGroupsRange.
+// External engine global pointer; DIR32 reloc-masked.
+struct CNetCreateCtx {
+    char m_pad0[0x74];
+    void* m_74; // +0x74  the group-enumeration record
+};
+extern "C" CNetCreateCtx* g_648cf4; // 0x648cf4
+
 class CNetMgr {
 public:
     void OnMultiOptions();
@@ -667,6 +698,32 @@ public:
     // stat 0x417 through the engine dispatcher.
     void HandleVersionCheck(CNetVersionMsg* msg);
     void AnnounceVersion(i32 param);
+
+    // CreateSession (0xbbc90, /GX EH): enumerate the host group, resolve the
+    // local player, allocate + construct the DirectPlay command-session
+    // (new CNetSession -> 4-slot vector-ctor + ResetAll), wire it (Init), derive
+    // the resync tick (m_5cc), and seed one command slot per active channel.
+    i32 CreateSession();                // 0xbbc90
+
+    // VerifyCustomLevel (0xb8fc0, /GX EH): build the level-name rez path from the
+    // config name CStrings, run it past the active session (Poll), and pop the
+    // appropriate g_mgrSettings error modal on failure / level mismatch.
+    i32 VerifyCustomLevel(i32 a1, i32 a2); // 0xb8fc0
+
+    // Poll the active session for the verify response (0xbba10, reloc-masked).
+    i32 Poll(i32 token); // 0xbba10
+
+    // CreateLocalPlayer (0xbc750, /GX EH): register the local player with the peer
+    // under the local name, latch its id (m_5c0), wait for the host to admit it,
+    // then announce the join (stat 0x3f9 packet carrying the name). Returns 1.
+    i32 CreateLocalPlayer();        // 0xbc750
+    CString GetString5a0();         // 0xb7ad0  the local player-name CString
+    void ReportConnectFailed(i32);  // 0xb7f60  connect-failed diagnostic (1-arg)
+
+    // SaveConfig (0xbccd0, /GX EH): pack the command-timing config (m_5b0, the two
+    // config-name strings, m_cmdDelay/m_resend/m_600/m_2d8) into a 0x11c-byte stat
+    // 0x416 blob and ship it - to one recipient when given, else broadcast.
+    i32 SaveConfig(CNetPlayerEntry* recipient); // 0xbccd0
 
     // The stat-send family (matched in NetMgr.cpp). All ship a 0x10-byte
     // CNetStatPacket (or a caller packet) to the local player's peer group
@@ -813,7 +870,8 @@ public:
     i32 m_530;               // +0x530  config-loaded / connection-active gate
     i32 m_534;             // +0x534  host-mode flag (no use-site in matched code; left placeholder)
     i32 m_removedFromGame; // +0x538  "you have been removed from the game by the host"
-    char m_pad53c[0x564 - 0x53c];
+    i32 m_53c;             // +0x53c  level-verify response latch (VerifyCustomLevel)
+    char m_pad540[0x564 - 0x540];
     i32 m_pollAbort; // +0x564  set => PollSession stops pumping the receive queue
     char m_pad568[0x56c - 0x568];
     i32 m_gameFull; // +0x56c  "this game is already full"

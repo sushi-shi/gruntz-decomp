@@ -165,7 +165,7 @@ directsoundmgr	39	29
 discoveredsmall	9	9
 dsoundvoice	2	1
 ehfunclets	6	6
-engine_attributed	15	0
+engine_attributed	9	0
 engine_boundary	196	0
 engine_discovered	33	0
 engine_label_stubs	402	105
@@ -298,9 +298,9 @@ motionstate	6	5
 msgpacket	2	2
 namerecord	1	0
 netcmdmgr	1	1
-netcmdsession	5	4
+netcmdsession	6	4
 netcmdslot	16	11
-netmgr	84	46
+netmgr	89	46
 netmgrerror	1	1
 netmgrmisc	5	4
 netsession	2	1
@@ -1408,12 +1408,6 @@ ehfunclets	?Funclet_1bff99@@YAXXZ	100.0000	100.0000	1	75ed351a28e5	0x1bff99
 ehfunclets	?Funclet_1c1188@@YAXXZ	100.0000	100.0000	1	4ffcf8d636f7	0x1c1188
 ehfunclets	?Funclet_1ca116@@YAXXZ	100.0000	100.0000	1	4dd8201534e7	0x1ca116
 engine_attributed	?CNetMgr_0b86c0@CNetMgr@@QAEXXZ	0.7752	0.7752	3	a51b44030698	0xb86c0
-engine_attributed	?CNetMgr_0b8fc0@CNetMgr@@QAEXXZ	0.4255	0.4255	3	196330bf73bc	0xb8fc0
-engine_attributed	?CNetMgr_0bbc90@CNetMgr@@QAEXXZ	0.7092	0.7092	2	49fbc8745ed8	0xbbc90
-engine_attributed	?CNetMgr_0bbec0@CNetMgr@@QAEXXZ	2.3256	2.3256	2	7ddff4f9b2a8	0xbbec0
-engine_attributed	?CNetMgr_0bbf80@CNetMgr@@QAEXXZ	1.5152	1.5152	2	17c908679c90	0xbbf80
-engine_attributed	?CNetMgr_0bc750@CNetMgr@@QAEXXZ	0.9259	0.9259	2	8485a08bfddb	0xbc750
-engine_attributed	?CNetMgr_0bccd0@CNetMgr@@QAEXXZ	0.5128	0.5128	2	3912923d4799	0xbccd0
 engine_attributed	?CTriggerMgr_07abc0@CTriggerMgr@@QAEXXZ	0.0948	0.0948	2	038c7b099177	0x7abc0
 engine_attributed	?UnknownClassArrays_02b950@CBattlezSpawnMgr_or_CGruntSpawnMgr@@QAEXXZ	0.0787	0.0787	2	e6b5374536b3	0x2b950
 engine_attributed	?istream_16a490@istream@@QAEXXZ	0.8889	0.8889	2	827c5011e266	0x16a490
@@ -2923,6 +2917,7 @@ netcmdsession	?CheckLatency@CNetSession@@QAEHH@Z	100.0000	100.0000	1	583391306bf
 netcmdsession	?CreateSlot@CNetSession@@QAEPAUCNetCmdSlot@@HH@Z	100.0000	100.0000	1	598d87caa8e2	0xbfff0
 netcmdsession	?FindCmdSlot@CNetSession@@QAEPAUCNetCmdSlot@@H@Z	100.0000	100.0000	1	6f362443ee37	0xc00a0
 netcmdsession	?Init@CNetCmdSlot@@QAEHHPAHH@Z	74.1111	74.1111	1	2c356b098b69	0xc0b10
+netcmdsession	?ResetAll@CNetSession@@QAEXXZ	71.4697	71.4697	1	d022d6e98690	0xbbf80
 netcmdsession	?Verify@CNetSession@@QAEHXZ	100.0000	100.0000	1	456b2ae98de4	0xc04f0
 netcmdslot	?AddCmd@CNetCmdSlot@@QAEXPAUCNetCmd@@@Z	100.0000	100.0000	1	528aa8665723	0xc1170
 netcmdslot	?AdvanceSeq@CNetCmdSlot@@QAEXH@Z	86.5686	86.5686	1	6a3d7384a515	0xc0f10
@@ -2940,6 +2935,7 @@ netcmdslot	?ResetAll@CNetCmdSlot@@QAEXXZ	73.6667	73.6667	1	e225fb4f97a4	0xc0bb0
 netcmdslot	?ResetCmdBuffers@CNetSession@@QAEXXZ	100.0000	100.0000	1	5a2ae3884a59	0xc0070
 netcmdslot	?ResetTriple@CNetCmdSlot@@QAEXPAH@Z	93.3333	93.3333	1	a247b7dd0f0c	0xc10a0
 netcmdslot	?Touch@CNetCmdSlot@@QAEXXZ	100.0000	100.0000	1	fdc8cfd7e8c1	0xc1390
+netmgr	??0CNetCmdSlot@@QAE@XZ	78.8372	78.8372	1	2257abc0da6c	0xbbec0
 netmgr	?AckDropPlayer@CNetMgr@@QAEXH@Z	100.0000	100.0000	1	ede05f6eaecc	0xba590
 netmgr	?AddPlayerNode@CNetMgr@@QAEHPAX@Z	92.2727	92.2727	1	f4b1a6c46c27	0x1786d0
 netmgr	?AddSessionNode@CNetMgr@@QAEHPAX0@Z	55.7706	55.7706	1	00e6d9440227	0x178b30
@@ -2952,7 +2948,9 @@ netmgr	?BroadcastOneChannel@CNetMgr@@QAEHPAUCNetChannel@@@Z	87.0333	87.0333	1	b4
 netmgr	?ClearGroupList@CNetMgr@@QAEXXZ	100.0000	100.0000	3	d0f72cff0bbf	0x178430
 netmgr	?ClearPlayerList@CNetMgr@@QAEXXZ	100.0000	100.0000	3	f238d0eff503	0x178750
 netmgr	?ClearSessionList@CNetMgr@@QAEXXZ	100.0000	100.0000	3	25a99683eade	0x178c70
+netmgr	?CreateLocalPlayer@CNetMgr@@QAEHXZ	94.4815	94.4815	1	89e16aa89dbf	0xbc750
 netmgr	?CreatePlayer@CNetMgr@@QAEHPAXHH@Z	71.3585	71.3585	1	4ce05776878e	0x178cb0
+netmgr	?CreateSession@CNetMgr@@QAEHXZ	95.3546	95.3546	1	a2b241c59285	0xbbc90
 netmgr	?Destroy@CNetMgr@@QAEXXZ	100.0000	100.0000	2	5ed8576f2ebe	0x178230
 netmgr	?DropChannelPlayer@CNetMgr@@QAEHH@Z	97.8814	97.8814	1	106bd3de0d60	0xbb510
 netmgr	?EnumGroupsAll@CNetMgr@@QAEHXZ	100.0000	100.0000	1	ca75be4d2355	0x178a40
@@ -2995,6 +2993,7 @@ netmgr	?RemovePlayerObj@CNetMgr@@QAEHPAVCNetPlayerObj@@@Z	100.0000	100.0000	4	7e
 netmgr	?ReportAckLatency@CNetMgr@@QAEXXZ	100.0000	100.0000	5	856f3df91558	0xbd000
 netmgr	?ResetPlayerCommands@CNetMgr@@QAEHH@Z	92.7632	92.7632	5	8be7f98da808	0xbcf20
 netmgr	?ResolveLocalPlayer@CNetMgr@@QAEHXZ	100.0000	100.0000	1	0b6943e67aac	0xba7d0
+netmgr	?SaveConfig@CNetMgr@@QAEHPAUCNetPlayerEntry@@@Z	96.4103	96.4103	1	524253f65997	0xbccd0
 netmgr	?SendChannelStat422@CNetMgr@@QAEHXZ	100.0000	100.0000	1	4db90ca4907b	0xbb0b0
 netmgr	?SendChannelStat423@CNetMgr@@QAEHXZ	100.0000	100.0000	1	e564fa450c80	0xbb120
 netmgr	?SendNetStat@CNetMgr@@QAEXHIH@Z	100.0000	100.0000	1	9af02229d0d3	0xb9290
@@ -3023,6 +3022,7 @@ netmgr	?Stub_178280@CNetMgr@@QAEXXZ	1.7391	1.7391	2	f5e1440882db	0x178280
 netmgr	?Stub_1782d0@CNetMgr@@QAEXXZ	0.7692	0.7692	2	1f22cfc4150b	0x1782d0
 netmgr	?Stub_178360@CNetMgr@@QAEXXZ	0.6557	0.6557	1	dd88549d2542	0x178360
 netmgr	?Stub_1788a0@CNetMgr@@QAEXXZ	0.3419	0.3419	1	864a5d19b888	0x1788a0
+netmgr	?VerifyCustomLevel@CNetMgr@@QAEHHH@Z	7.1702	7.1702	1	779adbd0ee17	0xb8fc0
 netmgr	?WaitForConnect@CNetMgr@@QAEHXZ	74.0809	74.0809	5	5676879b5f9c	0xbca50
 netmgrerror	?ReportError@CNetMgr@@SAXPADHHPAX@Z	100.0000	100.0000	1	4c76abe210b0	0x1776a0
 netmgrmisc	?ClearRange@CNetSlotAux@@QAEXXZ	84.2857	84.2857	1	3bf776dc8916	0xbf120

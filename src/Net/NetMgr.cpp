@@ -2147,3 +2147,296 @@ i32 CNetSessionNode::InitSession(i32 id, const char* a, const char* b, i32 d) {
     m_14 = 0;
     return 1;
 }
+
+// The game-settings singleton (_g_mgrSettings @0x64556c) - only the level-name
+// rez-path builder and the modal reporter are reached here. External; the
+// `call rel32` reloc-masks.
+struct CGameSettings {
+    void* BuildRezPath(i32 a, void* name, i32 c, i32 d, CString cap); // 0x93d40
+    void ShowModal(const char* msg);                                  // 0x8ef10
+};
+extern "C" CGameSettings* g_mgrSettings; // 0x64556c
+
+// The active net session the verify path polls (DAT_00648cf8, a CNetMgr*).
+extern "C" CNetMgr* g_648cf8; // 0x648cf8
+
+// The shared empty-string literal CreateLocalPlayer hands to the peer's player
+// factory (0x6293f4; DIR32 reloc-masked).
+extern "C" char g_emptyString[]; // 0x6293f4
+
+// The 0x28-byte "player joined" announce packet CreateLocalPlayer builds and ships
+// as stat 0x3f9: a flag byte, the stat id, a small fixed config block, the local
+// player id, then the 0x14-byte name buffer.
+struct CNetJoinPacket {
+    u8 m_0; // +0x00  flag byte (bit7)
+    char m_pad1[3];
+    i32 m_4;        // +0x04  stat id (0x3f9)
+    u8 m_8;         // +0x08
+    u8 m_9;         // +0x09
+    u8 m_a;         // +0x0a
+    u8 m_b;         // +0x0b
+    u8 m_c;         // +0x0c
+    u8 m_d;         // +0x0d
+    u8 m_e;         // +0x0e
+    char m_padf;    // +0x0f
+    i32 m_10;       // +0x10  local player id (m_5c0)
+    char m_14[0x14]; // +0x14  player name (strcpy)
+};
+
+// The 0x11c-byte command-timing config blob SaveConfig builds and ships as stat
+// 0x416 (the inverse of LoadConfig): a flag byte, the stat id, the config word,
+// the two config-name strings (wsprintf'd in), then the four timing dwords.
+struct CNetConfigBlob {
+    u8 m_0; // +0x000  flag byte (bit7)
+    char m_pad1[3];
+    i32 m_4;            // +0x004  stat id (0x416)
+    i32 m_8;            // +0x008  m_5b0
+    char m_nameA[0x80]; // +0x00c  config name A
+    char m_nameB[0x80]; // +0x08c  config name B
+    i32 m_10c;          // +0x10c  m_cmdDelay
+    i32 m_110;          // +0x110  m_resend
+    i32 m_114;          // +0x114  m_600
+    i32 m_118;          // +0x118  m_2d8
+};
+
+// ---------------------------------------------------------------------------
+// CNetMgr::SaveConfig  (__thiscall; ret 4; /GX EH frame).
+// Serializes the command-timing config into a 0x11c-byte stat-0x416 blob and
+// ships it: the config word (m_5b0), the two config names formatted in with
+// wsprintfA, and the four timing dwords (m_cmdDelay/m_resend/m_600/m_2d8). When a
+// recipient is given it goes point-to-point (SendStatPairRaw), else it broadcasts
+// (SendStatFrom). The two config-name CString temps run under the /GX frame.
+// @early-stop
+// reloc-masked plateau (96.4%): the instruction stream is byte-faithful (the
+// memset, the |0x80 flag, every blob field store, both GetConfigName + cached
+// wsprintfA-through-IAT formats, the four timing dwords, the recipient-vs-broadcast
+// send). The residual is non-steerable: the /GX unwind cookie immediate (push 0xb
+// vs 0x0), the wsprintfA IAT pointer symbol (__imp vs raw 0x6c44c0; reloc-masked),
+// the CString-buffer read kept in the return reg vs re-read from the temp slot, and
+// a tail `mov eax,1` materialization. Final sweep.
+RVA(0x000bccd0, 0x141)
+i32 CNetMgr::SaveConfig(CNetPlayerEntry* recipient) {
+    CNetConfigBlob blob;
+    memset(&blob, 0, sizeof(blob));
+    blob.m_0 |= 0x80;
+    blob.m_4 = 0x416;
+    blob.m_8 = m_5b0;
+    {
+        CString a = GetConfigNameA();
+        wsprintfA(blob.m_nameA, (const char*)a);
+    }
+    {
+        CString b = GetConfigNameB();
+        wsprintfA(blob.m_nameB, (const char*)b);
+    }
+    blob.m_10c = m_cmdDelay;
+    blob.m_110 = m_resend;
+    blob.m_114 = m_600;
+    blob.m_118 = m_2d8;
+
+    if (recipient != 0) {
+        return SendStatPairRaw(recipient, &blob, 0x11c, 1);
+    }
+    return SendStatFrom((CNetStatPacket*)&blob, 0x11c, 1);
+}
+
+// ---------------------------------------------------------------------------
+// CNetMgr::CreateLocalPlayer  (__thiscall; /GX EH frame).
+// Registers the local player with the peer manager under the local name, latches
+// its DirectPlay id (m_5c0), blocks until the host admits it, and announces the
+// join. Bails (reports + 0) when the peer rejects the player or the connect wait
+// times out. The two name CString temps run under the /GX frame; the join packet's
+// name field is filled with an inline strcpy.
+// @early-stop
+// reloc-masked + scheduling plateau (94.5%): the instruction stream is byte-faithful
+// (GetString5a0 + CreatePlayer, the id latch, WaitForConnect, the full join-packet
+// build, the inline strlen/rep-movs strcpy, SendStatFrom). The residual is non-
+// steerable: the /GX unwind-cookie immediate (push 0x8 vs 0x0), a CString-buffer
+// read kept in the return reg vs re-read from the temp slot, and the order MSVC
+// schedules the adjacent packet byte-stores (0x63/0xf and the m_5c0 load). Final sweep.
+RVA(0x000bc750, 0x151)
+i32 CNetMgr::CreateLocalPlayer() {
+    {
+        CString name = GetString5a0();
+        m_localPlayer = m_peer->CreatePlayer((void*)(const char*)name, (i32)g_emptyString, 0);
+    }
+    if (m_localPlayer == 0) {
+        ReportConnectFailed(0);
+        return 0;
+    }
+
+    m_5c0 = ((CNetPlayerEntry*)m_localPlayer)->m_4;
+    if (WaitForConnect() == 0) {
+        return 0;
+    }
+
+    CNetJoinPacket pkt;
+    memset(&pkt, 0, 0x28);
+    pkt.m_0 = 0x80;
+    pkt.m_4 = 0x3f9;
+    pkt.m_8 = 1;
+    pkt.m_9 = 0;
+    pkt.m_a = 1;
+    pkt.m_b = 0;
+    pkt.m_c = 0x63;
+    pkt.m_d = 0xf;
+    pkt.m_e = 0;
+    pkt.m_10 = m_5c0;
+    {
+        CString name = GetString5a0();
+        strcpy(pkt.m_14, (const char*)name);
+    }
+    SendStatFrom((CNetStatPacket*)&pkt, 0x28, 1);
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CNetMgr::VerifyCustomLevel  (__thiscall; /GX EH frame).
+// Confirms every player is on the same custom level before the match starts.
+// No-op (0) on a null token pair or when the config isn't loaded (m_530 == 0; that
+// path just pumps the receive queue). Builds the level rez path from the active
+// config name (GetConfigNameB when a custom id m_5b0 is set, else GetConfigNameA),
+// hands it to the active session's Poll, and reports: Poll failure -> re-disable +
+// "unable to verify"; verified-but-mismatch (m_53c still 0) -> "not all players
+// have the same level"; agreement -> 1. The by-value CString rez-path arg + the
+// name temp run under the /GX frame.
+// @early-stop
+// /GX CString-by-value EH-frame-layout wall (7%): the instruction SEQUENCE is
+// faithful (the arg1/arg2/m_530 guards, the GetConfigNameA/B selection, the
+// BuildRezPath by-value CString copy-ctor, the multi-temp destruct bitmask, the
+// g_648cf8 Poll dispatch and both ShowModal reports), but retail reserves two
+// dedicated EH-state dwords (`sub esp,8`) and overlaps the CString temps onto the
+// now-dead arg slots, while cl folds the EH state into the arg-overlap area and
+// omits the sub - an 8-byte frame-size delta that cascades through every
+// stack-relative offset. Same CString-EH residue family as the dialog sibling
+// CNetGameDlg::VerifyCustomLevel (0xc4c00, parked ~55%); not source-steerable.
+// See docs/patterns/gx-scoped-local-eh-frame-size.md. Final sweep.
+RVA(0x000b8fc0, 0x151)
+i32 CNetMgr::VerifyCustomLevel(i32 a1, i32 a2) {
+    if (a1 == 0) {
+        return 0;
+    }
+    if (a2 == 0) {
+        return 0;
+    }
+    if (m_530 == 0) {
+        PollSession();
+        return 0;
+    }
+
+    void* token;
+    if (m_5b0 != 0) {
+        CString b = GetConfigNameB();
+        token = g_mgrSettings->BuildRezPath(0, (void*)m_5b0, 0, 0, b);
+    } else {
+        CString a = GetConfigNameA();
+        token = g_mgrSettings->BuildRezPath(0, (void*)m_5b0, 0, 0, a);
+    }
+
+    g_648cf8->m_53c = 0;
+    if (g_648cf8->Poll((i32)token) == 0) {
+        m_530 = 0;
+        g_mgrSettings->ShowModal("Unable to verify custom level with other players");
+        return 0;
+    }
+    if (g_648cf8->m_53c == 0) {
+        g_mgrSettings->ShowModal("Not all players have the (same) custom level.");
+        m_530 = 0;
+        return 0;
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CNetMgr::CreateSession  (__thiscall; /GX EH frame).
+// Stands up the DirectPlay command session: enumerate the host's group (via the
+// peer's EnumGroupsRange over the create-context record), resolve the local
+// player, then allocate + construct the 0x20bb0-byte CNetSession (operator new +
+// the 4-slot vector-ctor + ResetAll), wire it (Init with the game sub-object,
+// this manager and the peer), latch the local player and derive the resync tick
+// byte (m_5cc), and finally seed one command slot per channel with a per-channel
+// owner code (1 inactive, 2 local, 3 remote). The new'd session is the /GX-tracked
+// object. Returns 1 once every slot is created, 0 on any failure.
+// @early-stop
+// reloc-masked + EH-cookie plateau (95.4%): the instruction stream is byte-identical
+// to retail (RezAlloc alloc, the 4-slot vector-ctor + ResetAll, Init, the tick-byte
+// derivation, the per-channel CreateSlot loop). The residual is non-steerable: the
+// /GX unwind-table cookie immediate (push 0x16 vs 0x0; gx-scoped-local-eh-frame-
+// size.md), the MSVC-internal vector-ctor/ctor/dtor helper symbols (delinker named
+// them Boundary_/CGruntWingzTimeSprite - unalignable reloc names), and a 4-insn
+// register shuffle around the m_session->m_c store. Final sweep.
+RVA(0x000bbc90, 0x1b8)
+i32 CNetMgr::CreateSession() {
+    void* rec = g_648cf4->m_74;
+    if (rec == 0) {
+        return 0;
+    }
+    m_peer->EnumGroupsRange(rec, 0);
+    if (ResolveLocalPlayer() == 0) {
+        return 0;
+    }
+
+    CNetSession* session = new CNetSession();
+    m_session = session;
+    if (session == 0) {
+        return 0;
+    }
+    if (session->Init(m_4, this, m_peer) == 0) {
+        return 0;
+    }
+
+    m_session->m_c = m_localPlayer;
+    i32 raw10 = m_session->m_10;
+    u8 b = (u8)raw10;
+    if (b == 0) {
+        b = 0x7f;
+    } else {
+        b = b - 1;
+    }
+    m_5cc = b;
+
+    for (i32 i = 0; i < 4; i++) {
+        CNetChannel* ch = (CNetChannel*)((char*)m_4 + 0x150 + i * 0x238);
+        i32 code = 1;
+        if (ch->m_20 != 0 && ch->m_14 != 0) {
+            code = (ch->m_18 == m_5c0) ? 2 : 3;
+        }
+        if (m_session->CreateSlot(i, code) == 0) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CNetCmdSlot::CNetCmdSlot  (__thiscall; /GX EH frame).
+// Constructs the queued-command list (CObList m_cmds, default nBlockSize 10),
+// then resets the slot to its empty state: zero the scalar header, drain the
+// queue (ClearCmds), zero the command fields and splat both command ranges.
+// The CObList member's dtor pulls in the /GX EH frame.
+// @early-stop
+// zero-register-pinning wall (78.8%): code bytes byte-faithful (EH frame, CObList
+// ctor, every field store, ClearCmds + both ResetTriple calls all match retail).
+// Retail re-materializes the splat 0 in eax (caller-saved, `xor eax,eax` after the
+// CObList ctor AND after ClearCmds) and pushes only esi; cl pins 0 in callee-saved
+// edi (one xor, an extra push/pop edi). Identical coin-flip to the sibling
+// CNetCmdSlot::ResetAll/Init in netcmdslot; not source-steerable. See
+// docs/patterns/zero-register-pinning.md. Final sweep.
+RVA(0x000bbec0, 0x81)
+CNetCmdSlot::CNetCmdSlot() {
+    m_0 = 0;
+    m_4 = 0;
+    m_8 = 0;
+    m_c = 0;
+    m_10 = 0;
+    m_14 = 0;
+    m_18 = 0;
+    m_1c = 0;
+    ClearCmds();
+    m_3c = 0;
+    m_40 = 0;
+    m_44 = 0;
+    m_48 = 0;
+    ResetTriple(m_4c);
+    ResetTriple(m_58);
+}
