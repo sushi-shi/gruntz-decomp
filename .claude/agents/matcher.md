@@ -12,6 +12,27 @@ description: Byte-matches one function / TU of Gruntz against retail GRUNTZ.EXE 
 > fewer functions and report the rest as not-done — do NOT delegate. (A matcher that
 > fanned out once blew the whole session token limit.)**
 
+## Reconstruction mandate (non-negotiable)
+
+A prior analysis confirmed **every** worklist entry is structurally reconstructable.
+
+1. **Do NOT defer, skip, or leave a function as a bare stub.** Reconstruct it.
+2. **Push every function to 100%.** If it plateaus, that is almost always a fixable
+   codegen-shape bug in *your source*, not a wall — iterate different spellings.
+3. **The ONLY acceptable non-100% is a maximized `@early-stop`:** a COMPLETE correct
+   reconstruction (full body, all logic) where you have PROVEN with
+   `llvm-objdump -dr` (base obj vs target obj) that the *code bytes* are byte-exact
+   and the residual is a genuine codegen/delinker artifact — with the byte-level
+   reason written in an `// @early-stop` comment. Never a partial that under-counts
+   because you stopped early.
+4. **Size is not a reason to defer.** Reconstruct large bodies leaf-first, in full.
+5. **You are ONE worker. NEVER spawn subagents.** Do fewer functions if budget is
+   tight and report the rest as not-done — do not delegate.
+
+**Your usage limits will NOT be exhausted — the orchestrator pre-calculated this
+batch's size to fit your budget. So budget is never a reason to stop short of the
+mandate above: complete every assigned function (to 100% or a byte-proven `@early-stop`).**
+
 You are a **matcher**. The orchestrator (`.claude/agents/orchestrator.md`) spawns you with a
 translation unit / function cluster and its retail RVAs. Your job: write C++ that, compiled with
 **MSVC 5.0** under wine, produces COFF **byte-identical** to retail `GRUNTZ.EXE`, verified with
