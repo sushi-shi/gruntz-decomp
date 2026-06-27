@@ -92,8 +92,6 @@ RVA(0x0003ad30, 0xa)
 void Boundary_03ad30() {} // proximity: CDDrawSurfacePair@-0xb60 | WwdFile@+0x740
 RVA(0x0003ad90, 0x97)
 void Boundary_03ad90() {} // proximity: CDDrawSurfacePair@-0xbc0 | WwdFile@+0x6e0
-RVA(0x0003bb50, 0x128)
-void Boundary_03bb50() {} // proximity: WwdFile@-0x6e0 | CGruntCreationPoint@+0x3170
 RVA(0x000464e0, 0x74)
 void Boundary_0464e0() {} // proximity: CFortressFlag@-0xd0 | CParticlez@+0x5f0
 RVA(0x00050ca0, 0x2b)
@@ -152,8 +150,6 @@ RVA(0x000915d0, 0x3f)
 void Boundary_0915d0() {} // proximity: CGruntzMgr@-0xd0 | RezMgr@+0xa0
 RVA(0x00091620, 0x3f)
 void Boundary_091620() {} // proximity: CGruntzMgr@-0x120 | RezMgr@+0x50
-RVA(0x00093be0, 0x107)
-void Boundary_093be0() {} // proximity: CGruntzMgr@-0x5c0 | CGruntzWnd@+0xa60
 RVA(0x00094c10, 0x16)
 void Boundary_094c10() {} // proximity: CGruntzWnd@-0x80 | CInGameIcon@+0x2a70
 RVA(0x00099b80, 0xa)
@@ -204,8 +200,6 @@ RVA(0x000ea170, 0x5c)
 void Boundary_0ea170() {} // proximity: CSbItem@-0x80 | CSBI_StatzTabGruntBar@+0x300
 RVA(0x000eb970, 0x72)
 void Boundary_0eb970() {} // proximity: CSBI_WarlordHead@-0xf0 | CUserLogic@+0x2e90
-RVA(0x000f2b20, 0x6e1)
-void Boundary_0f2b20() {} // proximity: CGrunt@-0x430 | CAttract@+0x77e0
 RVA(0x000fa150, 0x74)
 void Boundary_0fa150() {} // proximity: CGrunt@-0x7a60 | CAttract@+0x1b0
 RVA(0x000fbb70, 0x15)
@@ -374,14 +368,8 @@ RVA(0x001578b0, 0x51)
 void Boundary_1578b0() {} // proximity: CFileMemBase@-0x60 | CFileMem@+0xd0
 RVA(0x00157b00, 0xb2)
 void Boundary_157b00() {} // proximity: CDDrawSubMgrLeaf@-0x20 | CDDrawMapHolder@+0xc0
-RVA(0x0015b4f0, 0xde)
-void Boundary_15b4f0() {} // proximity: CLogicRecord@-0x1b0 | CWwdGameObject@+0x450
 RVA(0x0015b6d0, 0x5b)
 void Boundary_15b6d0() {} // proximity: CLogicRecord@-0x390 | CWwdGameObject@+0x270
-RVA(0x0015bad0, 0x153)
-void Boundary_15bad0() {} // proximity: CWwdGameObject@-0x190 | CDDrawBlitParam@+0x7c0
-RVA(0x0015d9a0, 0xdc)
-void Boundary_15d9a0() {} // proximity: CGameLevelPlanes@-0xd0 | CGameLevel@+0xe0
 RVA(0x00161460, 0x7)
 void Boundary_161460() {} // proximity: CImageSet1@-0xf0 | PlaneGeom@+0x830
 RVA(0x001614b0, 0x1c)

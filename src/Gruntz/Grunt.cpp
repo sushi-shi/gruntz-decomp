@@ -5524,6 +5524,252 @@ L8b5:
 }
 
 // ---------------------------------------------------------------------------
+// CGrunt::StepArrivalDefense()   @0xf2b20   (__thiscall, ret 0 -> 1)
+// The multi-state arrival-defender step (the big sibling of ResolveArrival-
+// Reposition / ResolveArrivalNeighbor). Latch the defender position to the last
+// tile, then dispatch on m_2d4:
+//   state 2: resolve the stored grid occupant; if it is in radius + committed +
+//            settled on its own tile + on-screen, commit the tile slot (m_198==0x1e)
+//            or neighbour-link onto it; on a gate miss mark m_2d4=1 and cue.
+//   state 1: re-resolve the grid occupant + GetOccupant agreement; gated on dwell
+//            run a StepArrivalDrop, then commit/neighbour-link and advance to state 2.
+//   state 0: GetOccupant; if settled + on-screen commit/neighbour onto it, else
+//            (dwell elapsed) tile-switch to the occupant + advance to state 1 + cue,
+//            or (no occupant) reset the idle timer / re-roll a random in-region target.
+// @early-stop
+// shared ResolveArrivalReposition wall: the m_2d4 switch subtract-chain, the grid
+// index math, the in-radius/settled/on-screen gates, the CommitTileSlot/CommitNeighbor
+// paths, the 64-bit sbb idle-timer, the idiv/rand re-roll + abs spans and the
+// structure-1 cue are all reconstructed in shape/order. Residue is the MSVC /O2
+// idiv/rand scheduling, the shared-tail zero-register sharing and the redundant
+// CommitNeighbor stack spills - pure regalloc/scheduling placement. Final sweep.
+RVA(0x000f2b20, 0x6e1)
+i32 CGrunt::StepArrivalDefense() {
+    m_defenderX = m_lastTilePxX;
+    m_defenderY = m_lastTilePxY;
+    CGrunt* occ;
+    switch (m_2d4) {
+        case 2:
+            if (m_poweredUp == 0) {
+                m_2d4 = 1;
+                return 1;
+            }
+            occ = *(CGrunt**)((char*)m_tileMgr + (m_2f4 + 15 * m_2f0) * 4 + 0x1c);
+            if (occ == 0) {
+                m_2d4 = 0;
+                return 1;
+            }
+            if (GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) == 0) {
+                goto c2_occcheck;
+            }
+            if (occ->m_entranceCommitted == 0) {
+                goto c2_occcheck;
+            }
+            if (m_neighborValid != 0) {
+                return 1;
+            }
+            if (*(i32*)((char*)this + 0x218) != 0) {
+                return 1;
+            }
+            if (m_stamina < 0x64) {
+                return 1;
+            }
+            if (RectContains(occ->m_10->m_5c, occ->m_10->m_60) == 0) {
+                goto c2_miss;
+            }
+            if (occ->m_10->m_5c != occ->m_lastTilePxX) {
+                goto c2_miss;
+            }
+            if (occ->m_10->m_60 != occ->m_lastTilePxY) {
+                goto c2_miss;
+            }
+            if (*(i32*)((char*)this + 0x198) == 0x1e) {
+                ((CGruntTileMgr*)g_gameReg->m_68)
+                    ->CommitTileSlot(m_tileOwnerHi, m_tileOwnerLo, occ->m_10->m_5c, occ->m_10->m_60);
+                return 1;
+            }
+            CommitNeighbor(occ->m_tileOwnerHi, occ->m_tileOwnerLo, occ->m_lastTilePxX,
+                           occ->m_lastTilePxY);
+            return 1;
+        c2_occcheck:
+            if (occ == 0) {
+                m_2d4 = 0;
+                return 1;
+            }
+        c2_miss:
+            m_2d4 = 1;
+            {
+                CGruntHud* h = m_10;
+                i32 vx = h->m_5c;
+                i32 vy = h->m_60;
+                char* m24 = *(char**)((char*)g_gameReg->m_30 + 0x24);
+                i32* rect = (i32*)(*(char**)(m24 + 0x5c) + 0x40);
+                if (vx < rect[2] && vx >= rect[0] && vy < rect[3] && vy >= rect[1]) {
+                    g_gameReg->m_60->CueA(this, 0x366, -1, 0, -1, -1);
+                }
+            }
+            return 1;
+
+        case 1: {
+            occ = *(CGrunt**)((char*)m_tileMgr + (m_2f4 + 15 * m_2f0) * 4 + 0x1c);
+            CGrunt* g = m_tileMgr->GetOccupant(this);
+            if (g != 0 && g != occ) {
+                m_2f0 = -1;
+                m_2d4 = 0;
+                m_2f4 = -1;
+                return 1;
+            }
+            if (occ == 0) {
+                m_2d4 = 0;
+                return 1;
+            }
+            if (occ->m_entranceCommitted == 0) {
+                m_2d4 = 0;
+                return 1;
+            }
+            if (GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) == 0) {
+                m_2d4 = 0;
+                return 1;
+            }
+            if ((u32) * (u32*)((char*)this + 0x2ec) > 0x1f4) {
+                StepArrivalDrop(occ->m_lastTilePxX, occ->m_lastTilePxY, 0, m_arrivalFlags, 1, 0);
+                *(i32*)((char*)this + 0x2ec) = 0;
+            }
+            if (m_poweredUp != 0) {
+                return 1;
+            }
+            if (m_stamina < 0x64) {
+                return 1;
+            }
+            if (RectContains(occ->m_10->m_5c, occ->m_10->m_60) == 0) {
+                return 1;
+            }
+            if (*(i32*)((char*)this + 0x198) == 0x1e) {
+                ((CGruntTileMgr*)g_gameReg->m_68)
+                    ->CommitTileSlot(m_tileOwnerHi, m_tileOwnerLo, occ->m_10->m_5c, occ->m_10->m_60);
+                m_2d4 = 2;
+                return 1;
+            }
+            if (occ->m_10->m_5c == occ->m_lastTilePxX && occ->m_10->m_60 == occ->m_lastTilePxY) {
+                CommitNeighbor(occ->m_tileOwnerHi, occ->m_tileOwnerLo, occ->m_lastTilePxX,
+                               occ->m_lastTilePxY);
+            }
+            m_2d4 = 2;
+            return 1;
+        }
+
+        case 0:
+            occ = m_tileMgr->GetOccupant(this);
+            if (occ == 0) {
+                goto L_f308a;
+            }
+            if (m_poweredUp == 0 && m_stamina >= 0x64 && occ->m_10->m_5c == occ->m_lastTilePxX &&
+                occ->m_10->m_60 == occ->m_lastTilePxY &&
+                RectContains(occ->m_10->m_5c, occ->m_10->m_60) != 0) {
+                if (*(i32*)((char*)this + 0x198) == 0x1e) {
+                    ((CGruntTileMgr*)g_gameReg->m_68)
+                        ->CommitTileSlot(m_tileOwnerHi, m_tileOwnerLo, occ->m_10->m_5c,
+                                         occ->m_10->m_60);
+                    return 1;
+                }
+                if (occ->m_10->m_5c != occ->m_lastTilePxX) {
+                    return 1;
+                }
+                if (occ->m_10->m_60 != occ->m_lastTilePxY) {
+                    return 1;
+                }
+                CommitNeighbor(occ->m_tileOwnerHi, occ->m_tileOwnerLo, occ->m_lastTilePxX,
+                               occ->m_lastTilePxY);
+                return 1;
+            }
+            if (occ == 0) {
+                goto L_f308a;
+            }
+            if ((u32) * (u32*)((char*)this + 0x2ec) <= 0x3e8) {
+                goto L_f308a;
+            }
+            if (GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) == 0) {
+                goto L_f318a;
+            }
+            {
+                GruntTilePos sp;
+                occ->GetScreenPos(&sp);
+                if (TileSwitch6(sp.m_x >> 5, sp.m_y >> 5, 0, m_arrivalFlags, 1, 0) == 0) {
+                    goto L_f318a;
+                }
+                SetEntrancePos(1, 1);
+                m_2f0 = occ->m_tileOwnerHi;
+                m_2f4 = occ->m_tileOwnerLo;
+                m_2d4 = 1;
+                CGruntHud* h = m_10;
+                char* m24 = *(char**)((char*)g_gameReg->m_30 + 0x24);
+                i32* rect = (i32*)(*(char**)(m24 + 0x5c) + 0x40);
+                if (CueVisible((i32)rect, h->m_5c, h->m_60) == 0) {
+                    goto L_f318a;
+                }
+                g_gameReg->m_60->CueA(this, 0x366, -1, 0, -1, -1);
+            }
+        L_f318a:
+            *(i32*)((char*)this + 0x2ec) = 0;
+            return 1;
+        L_f308a:
+            if (m_resetApplied != 0) {
+                return 1;
+            }
+            if (*(i32*)((char*)this + 0x318) == 0) {
+                return 1;
+            }
+            if ((u32) * (u32*)((char*)this + 0x2ec) <= 0xbb8) {
+                return 1;
+            }
+            if ((i64)(u32)g_645588 - *(i64*)((char*)this + 0x308) >=
+                *(i64*)((char*)this + 0x310)) {
+                Stub_062e10(1, 1, 0);
+                *(i32*)((char*)this + 0x308) = 0;
+                *(i32*)((char*)this + 0x310) = 0;
+                *(i32*)((char*)this + 0x30c) = 0;
+                *(i32*)((char*)this + 0x314) = 0;
+                *(i32*)((char*)this + 0x310) = GruntRand() % 0x7530 + 0x7530;
+                *(i32*)((char*)this + 0x314) = 0;
+                *(i32*)((char*)this + 0x308) = (i32)g_645588;
+                *(i32*)((char*)this + 0x30c) = 0;
+                *(i32*)((char*)this + 0x2ec) = 0;
+                return 1;
+            }
+            {
+                CGruntHud* h = m_10;
+                i32 baseX = h->m_134;
+                i32 spanX = abs(h->m_13c - baseX);
+                i32 baseY = h->m_138;
+                i32 spanY = abs(h->m_140 - baseY);
+                i32 outX = baseX;
+                if (spanX != 0) {
+                    outX += GruntRand() % spanX;
+                }
+                i32 outY = baseY;
+                if (spanY != 0) {
+                    outY += GruntRand() % spanY;
+                }
+                if (outX < g_gameReg->m_70->m_c && outY < g_gameReg->m_70->m_10) {
+                    TileSwitch6(outX, outY, 0, m_arrivalFlags, 1, 0);
+                }
+                i32 m328 = *(i32*)((char*)this + 0x328);
+                if (m328 != 0) {
+                    i32 mx = spanX > spanY ? spanX : spanY;
+                    if (m328 > mx) {
+                        SetEntrancePos(1, 1);
+                    }
+                }
+            }
+            *(i32*)((char*)this + 0x2ec) = 0;
+            return 1;
+
+        default:
+            return 1;
+    }
+}
+
+// ---------------------------------------------------------------------------
 // CGrunt::StartBombGruntRun()   @0x68520   (__thiscall, ret 0)
 // Begin the bomb-grunt run reaction: run the anim-dispatch step, retire all seven
 // HUD stat sprites, clear the grunt-kind, and (when powered-up with no live

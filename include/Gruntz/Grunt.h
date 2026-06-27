@@ -1159,6 +1159,16 @@ public:
     // gate on in-radius, commit its slot (or, when no occupant, re-roll a random
     // in-region target after the idle window elapses) + fire the on-screen entrance cue.
     i32 ResolveArrivalReposition(); // @0xec670
+    // @0xf2b20 (ret 0 -> 1) - the multi-state arrival-defender step. Latch the
+    // defender position to the last tile, then dispatch on m_2d4 (0/1/2): resolve
+    // the cell occupant (the m_tileMgr 15-wide grid in states 1/2, GetOccupant in
+    // state 0), gate it (in-radius, committed, settled, on-screen via RectContains),
+    // and commit/neighbor-link onto it or, on the no-occupant path, re-roll a random
+    // in-region defender target + fire the on-screen entrance cue + reset the idle timer.
+    i32 StepArrivalDefense();
+    // CUserLogic::GetScreenPos (0x29a50) reached on the occupant grunt: copies its
+    // m_10->{m_5c,m_60} into the out point. External/reloc-masked.
+    void GetScreenPos(struct GruntTilePos* out); // 0x29a50
     // The 0x4b320 tile-switch entry reached __thiscall here (this in ecx, 6 stack args,
     // ret 0x18; returns nonzero on success). Same engine fn as the free CGrunt_TileSwitch
     // passthrough; modeled as a method so `mov ecx,this; ...; call` falls out.

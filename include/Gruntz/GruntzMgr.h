@@ -278,6 +278,12 @@ public:
     // Sibling reached by Quicksave (reloc-masked): plays the save-feedback sprite.
     i32 LoadSaveMessageSprite();
 
+    // @0x093be0 (/GX) - "is this a Battlez map file" predicate: open `path`, and if
+    // it has at least a full 0x5f4-byte WWD header, read it and test whether
+    // "Battlez" appears past the 0x10-byte magic. `this` is unused; the path arg is
+    // taken by value (callee destroys it). ret 4.
+    i32 IsBattlezMapFile(CString path);
+
     // Larger sibling reached by RunFromState's reloc-masked call; body still a
     // @stub in GruntzMgr.cpp (migrated from src/Stub/Discovered.cpp) so the call
     // binds to a CGruntzMgr symbol at 0x08fab0.

@@ -18,7 +18,8 @@
 #include <Mfc.h>
 #include <Gruntz/GruntzMgr.h>
 #include <rva.h>
-#include <stdio.h> // engine sprintf (reloc-masked) for the toggle-message formatter
+#include <stdio.h>  // engine sprintf (reloc-masked) for the toggle-message formatter
+#include <string.h> // engine strstr (reloc-masked) for the Battlez header probe
 
 namespace Utils {
     namespace WinAPI {
@@ -3553,6 +3554,57 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
         LogLine(buf);
     }
     return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CGruntzMgr::IsBattlezMapFile(CString path) @0x093be0 (/GX, ret 4)
+// Open the file at `path`; if it carries a full WWD header (>= 0x5f4 bytes), read
+// the header and report whether the literal "Battlez" appears past the 0x10-byte
+// magic. `this` is unused. The path CString is taken by value (callee destroys it),
+// so cl emits the /GX frame: the destructible stack file reader + the arg CString
+// each unwind at their own trylevel.
+// ---------------------------------------------------------------------------
+// The stack-local WWD file reader (the engine CFileIO; virtual dtor). Non-trivial
+// ctor+dtor -> destructible-local /GX frame. All __thiscall engine callees,
+// reloc-masked; signatures pinned to the retail mangled names.
+class CFileIO {
+public:
+    CFileIO();                                    // ??0CFileIO@@QAE@XZ   (0x1befd7)
+    virtual ~CFileIO();                           // ??1CFileIO@@UAE@XZ   (0x1bf121)
+    i32 Open(const char* name, u32 flags, void* err); // ?Open@CFileIO@@QAEHPBDIPAX@Z (0x1bf200)
+    u32 GetLength();                              // ?GetLength@CFileIO@@QAEIXZ (0x1bf505)
+    void Close();                                 // ?Close@CFileIO@@QAEXXZ (0x1bf426)
+    u32 Read(void* buf, u32 len);                // ?Read@CFileIO@@QAEIPAXI@Z (0x1bf328)
+    char m_pad[0xc]; // pad to the real CFileIO size (0x10) so the stack layout matches
+};
+
+// The strstr-class substring helper (0x120090); nonzero when `needle` occurs.
+extern "C" i32 SubstringMatch(const char* haystack, const char* needle);
+
+// @early-stop
+// zero-register-pinning + /GX EH-frame wall (docs/patterns/zero-register-pinning.md):
+// the file open/read/SubstringMatch logic, the >= 0x5f4 header gate, the "Battlez"
+// constant and the by-value CString-arg teardown all pair byte-faithfully. Residue:
+// retail pins `0` in ebx (xor ebx,ebx + push ebx, reusing %bl for the /GX trylevel
+// byte writes), which shifts every stack local up 4 (CFile at [esp+4] not [esp+0]);
+// our cl emits immediate-0 trylevel writes + no ebx save. No source lever forces the
+// pin under /O2; also the EH scope-table cookie (Unwind vs $L) is not steerable.
+RVA(0x00093be0, 0x107)
+i32 CGruntzMgr::IsBattlezMapFile(CString path) {
+    CFileIO file;
+    if (file.Open(path, 0, 0)) {
+        if (file.GetLength() >= 0x5f4) {
+            char hdr[0x5f4];
+            file.Read(hdr, 0x5f4);
+            file.Close();
+            if (SubstringMatch(hdr + 0x10, "Battlez")) {
+                return 1;
+            }
+        } else {
+            file.Close();
+        }
+    }
+    return 0;
 }
 
 // size 0xa30 recovered from operator-new sites (gruntz.analysis.news)
